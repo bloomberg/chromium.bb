@@ -5,6 +5,7 @@
 """The deep heap profiler script for Chrome."""
 
 import copy
+import cStringIO
 import datetime
 import json
 import logging
@@ -17,6 +18,15 @@ import sys
 import tempfile
 import time
 import zipfile
+
+try:
+  from collections import OrderedDict  # pylint: disable=E0611
+except ImportError:
+  # TODO(dmikurube): Remove this once Python 2.7 is required.
+  BASE_PATH = os.path.dirname(os.path.abspath(__file__))
+  SIMPLEJSON_PATH = os.path.join(BASE_PATH, os.pardir, os.pardir, 'third_party')
+  sys.path.insert(0, SIMPLEJSON_PATH)
+  from simplejson import OrderedDict
 
 from range_dict import ExclusiveRangeDict
 
@@ -43,6 +53,13 @@ NULL_REGEX = re.compile('')
 LOGGER = logging.getLogger('dmprof')
 POLICIES_JSON_PATH = os.path.join(BASE_PATH, 'policies.json')
 CHROME_SRC_PATH = os.path.join(BASE_PATH, os.pardir, os.pardir)
+
+DEFAULT_SORTERS = [
+    os.path.join(BASE_PATH, 'sorter.malloc-component.json'),
+    os.path.join(BASE_PATH, 'sorter.malloc-type.json'),
+    os.path.join(BASE_PATH, 'sorter.vm-map.json'),
+    os.path.join(BASE_PATH, 'sorter.vm-sharing.json'),
+    ]
 
 
 # Heap Profile Dump versions
@@ -411,7 +428,7 @@ class Rule(object):
       self._mappedpermission_pattern = re.compile(
           mappedpermission_pattern + r'\Z')
 
-    self._sharedwith = list()
+    self._sharedwith = []
     if sharedwith:
       self._sharedwith = sharedwith
 
@@ -1009,7 +1026,7 @@ class PFNCounts(object):
     self._pagesize = 4096
     self._path = path
     self._pfn_meta = ''
-    self._pfnset = dict()
+    self._pfnset = {}
     self._reason = ''
     self._time = modified_time
 
@@ -1145,6 +1162,10 @@ class Dump(object):
 
   def global_stat(self, name):
     return self._global_stats[name]
+
+  @property
+  def run_id(self):
+    return self._run_id
 
   @property
   def pagesize(self):
@@ -1301,7 +1322,7 @@ class Dump(object):
           elif word == 'PageCount':
             self._has_pagecount = True
       elif self._lines[ln].startswith('RunID: '):
-        self._run_id = self._lines[ln][7:]
+        self._run_id = self._lines[ln][7:].strip()
       elif (self._lines[ln].startswith('MMAP_LIST:') or
             self._lines[ln].startswith('GLOBAL_STATS:')):
         # Skip until "MMAP_LIST:" or "GLOBAL_STATS" is found.
@@ -1319,13 +1340,13 @@ class Dump(object):
       return {}
 
     ln += 1
-    self._map = dict()
-    current_vma = dict()
-    pageframe_list = list()
+    self._map = {}
+    current_vma = {}
+    pageframe_list = []
     while True:
       entry = proc_maps.ProcMaps.parse_line(self._lines[ln])
       if entry:
-        current_vma = dict()
+        current_vma = {}
         for _, _, attr in self._procmaps.iter_range(entry.begin, entry.end):
           for key, value in entry.as_dict().iteritems():
             attr[key] = value
@@ -1384,7 +1405,7 @@ class Dump(object):
         pageframe_list[-1].set_size(
             pageframe_list[-1].size - (self._pagesize - end % self._pagesize))
       region_info['pageframe'] = pageframe_list
-      pageframe_list = list()
+      pageframe_list = []
 
       self._map[(start, end)] = (matched.group(7), region_info)
       ln += 1
@@ -1457,6 +1478,428 @@ class DumpList(object):
 
   def __getitem__(self, index):
     return self._dump_list[index]
+
+
+class Unit(object):
+  """Represents a minimum unit of memory usage categorization.
+
+  It is supposed to be inherited for some different spaces like the entire
+  virtual memory and malloc arena. Such different spaces are called "worlds"
+  in dmprof. (For example, the "vm" world and the "malloc" world.)
+  """
+  def __init__(self, unit_id, size):
+    self._unit_id = unit_id
+    self._size = size
+
+  @property
+  def unit_id(self):
+    return self._unit_id
+
+  @property
+  def size(self):
+    return self._size
+
+
+class VMUnit(Unit):
+  """Represents a Unit for a memory region on virtual memory."""
+  def __init__(self, unit_id, committed, reserved, mmap, region,
+               pageframe=None, group_pfn_counts=None):
+    super(VMUnit, self).__init__(unit_id, committed)
+    self._reserved = reserved
+    self._mmap = mmap
+    self._region = region
+    self._pageframe = pageframe
+    self._group_pfn_counts = group_pfn_counts
+
+  @property
+  def committed(self):
+    return self._size
+
+  @property
+  def reserved(self):
+    return self._reserved
+
+  @property
+  def mmap(self):
+    return self._mmap
+
+  @property
+  def region(self):
+    return self._region
+
+  @property
+  def pageframe(self):
+    return self._pageframe
+
+  @property
+  def group_pfn_counts(self):
+    return self._group_pfn_counts
+
+
+class MMapUnit(VMUnit):
+  """Represents a Unit for a mmap'ed region."""
+  def __init__(self, unit_id, committed, reserved, region, bucket_set,
+               pageframe=None, group_pfn_counts=None):
+    super(MMapUnit, self).__init__(unit_id, committed, reserved, True,
+                                   region, pageframe, group_pfn_counts)
+    self._bucket_set = bucket_set
+
+  def __repr__(self):
+    return str(self.region)
+
+  @property
+  def bucket_set(self):
+    return self._bucket_set
+
+
+class UnhookedUnit(VMUnit):
+  """Represents a Unit for a non-mmap'ed memory region on virtual memory."""
+  def __init__(self, unit_id, committed, reserved, region,
+               pageframe=None, group_pfn_counts=None):
+    super(UnhookedUnit, self).__init__(unit_id, committed, reserved, False,
+                                       region, pageframe, group_pfn_counts)
+
+  def __repr__(self):
+    return str(self.region)
+
+
+class MallocUnit(Unit):
+  """Represents a Unit for a malloc'ed memory block."""
+  def __init__(self, unit_id, size, alloc_count, free_count, bucket):
+    super(MallocUnit, self).__init__(unit_id, size)
+    self._bucket = bucket
+    self._alloc_count = alloc_count
+    self._free_count = free_count
+
+  def __repr__(self):
+    return str(self.bucket)
+
+  @property
+  def bucket(self):
+    return self._bucket
+
+  @property
+  def alloc_count(self):
+    return self._alloc_count
+
+  @property
+  def free_count(self):
+    return self._free_count
+
+
+class UnitSet(object):
+  """Represents an iterable set of Units."""
+  def __init__(self, world):
+    self._units = {}
+    self._world = world
+
+  def __repr__(self):
+    return str(self._units)
+
+  def __iter__(self):
+    for unit_id in sorted(self._units):
+      yield self._units[unit_id]
+
+  def append(self, unit, overwrite=False):
+    if not overwrite and unit.unit_id in self._units:
+      LOGGER.error('The unit id=%s already exists.' % str(unit.unit_id))
+    self._units[unit.unit_id] = unit
+
+
+class AbstractRule(object):
+  """An abstract class for rules to be matched with units."""
+  def __init__(self, dct):
+    self._name = dct['name']
+    self._hidden = dct.get('hidden', False)
+    self._subworlds = dct.get('subworlds', [])
+
+  def match(self, unit):
+    raise NotImplementedError()
+
+  @property
+  def name(self):
+    return self._name
+
+  @property
+  def hidden(self):
+    return self._hidden
+
+  def iter_subworld(self):
+    for subworld in self._subworlds:
+      yield subworld
+
+
+class VMRule(AbstractRule):
+  """Represents a Rule to match with virtual memory regions."""
+  def __init__(self, dct):
+    super(VMRule, self).__init__(dct)
+    self._backtrace_function = dct.get('backtrace_function', None)
+    if self._backtrace_function:
+      self._backtrace_function = re.compile(self._backtrace_function)
+    self._backtrace_sourcefile = dct.get('backtrace_sourcefile', None)
+    if self._backtrace_sourcefile:
+      self._backtrace_sourcefile = re.compile(self._backtrace_sourcefile)
+    self._mmap = dct.get('mmap', None)
+    self._sharedwith = dct.get('sharedwith', [])
+    self._mapped_pathname = dct.get('mapped_pathname', None)
+    if self._mapped_pathname:
+      self._mapped_pathname = re.compile(self._mapped_pathname)
+    self._mapped_permission = dct.get('mapped_permission', None)
+    if self._mapped_permission:
+      self._mapped_permission = re.compile(self._mapped_permission)
+
+  def __repr__(self):
+    result = cStringIO.StringIO()
+    result.write('{"%s"=>' % self._name)
+    attributes = []
+    attributes.append('mmap: %s' % self._mmap)
+    if self._backtrace_function:
+      attributes.append('backtrace_function: "%s"' %
+                        self._backtrace_function.pattern)
+    if self._sharedwith:
+      attributes.append('sharedwith: "%s"' % self._sharedwith)
+    if self._mapped_pathname:
+      attributes.append('mapped_pathname: "%s"' % self._mapped_pathname.pattern)
+    if self._mapped_permission:
+      attributes.append('mapped_permission: "%s"' %
+                        self._mapped_permission.pattern)
+    result.write('%s}' % ', '.join(attributes))
+    return result.getvalue()
+
+  def match(self, unit):
+    if unit.mmap:
+      assert unit.region[0] == 'hooked'
+      bucket = unit.bucket_set.get(unit.region[1]['bucket_id'])
+      assert bucket
+      assert bucket.allocator_type == 'mmap'
+
+      stackfunction = bucket.symbolized_joined_stackfunction
+      stacksourcefile = bucket.symbolized_joined_stacksourcefile
+
+      # TODO(dmikurube): Support shared memory.
+      sharedwith = None
+
+      if self._mmap == False: # (self._mmap == None) should go through.
+        return False
+      if (self._backtrace_function and
+          not self._backtrace_function.match(stackfunction)):
+        return False
+      if (self._backtrace_sourcefile and
+          not self._backtrace_sourcefile.match(stacksourcefile)):
+        return False
+      if (self._mapped_pathname and
+          not self._mapped_pathname.match(unit.region[1]['vma']['name'])):
+        return False
+      if (self._mapped_permission and
+          not self._mapped_permission.match(
+              unit.region[1]['vma']['readable'] +
+              unit.region[1]['vma']['writable'] +
+              unit.region[1]['vma']['executable'] +
+              unit.region[1]['vma']['private'])):
+        return False
+      if (self._sharedwith and
+          unit.pageframe and sharedwith not in self._sharedwith):
+        return False
+
+      return True
+
+    else:
+      assert unit.region[0] == 'unhooked'
+
+      # TODO(dmikurube): Support shared memory.
+      sharedwith = None
+
+      if self._mmap == True: # (self._mmap == None) should go through.
+        return False
+      if (self._mapped_pathname and
+          not self._mapped_pathname.match(unit.region[1]['vma']['name'])):
+        return False
+      if (self._mapped_permission and
+          not self._mapped_permission.match(
+              unit.region[1]['vma']['readable'] +
+              unit.region[1]['vma']['writable'] +
+              unit.region[1]['vma']['executable'] +
+              unit.region[1]['vma']['private'])):
+        return False
+      if (self._sharedwith and
+          unit.pageframe and sharedwith not in self._sharedwith):
+        return False
+
+      return True
+
+
+class MallocRule(AbstractRule):
+  """Represents a Rule to match with malloc'ed blocks."""
+  def __init__(self, dct):
+    super(MallocRule, self).__init__(dct)
+    self._backtrace_function = dct.get('backtrace_function', None)
+    if self._backtrace_function:
+      self._backtrace_function = re.compile(self._backtrace_function)
+    self._backtrace_sourcefile = dct.get('backtrace_sourcefile', None)
+    if self._backtrace_sourcefile:
+      self._backtrace_sourcefile = re.compile(self._backtrace_sourcefile)
+    self._typeinfo = dct.get('typeinfo', None)
+    if self._typeinfo:
+      self._typeinfo = re.compile(self._typeinfo)
+
+  def __repr__(self):
+    result = cStringIO.StringIO()
+    result.write('{"%s"=>' % self._name)
+    attributes = []
+    if self._backtrace_function:
+      attributes.append('backtrace_function: "%s"' % self._backtrace_function)
+    if self._typeinfo:
+      attributes.append('typeinfo: "%s"' % self._typeinfo)
+    result.write('%s}' % ', '.join(attributes))
+    return result.getvalue()
+
+  def match(self, unit):
+    assert unit.bucket.allocator_type == 'malloc'
+
+    stackfunction = unit.bucket.symbolized_joined_stackfunction
+    stacksourcefile = unit.bucket.symbolized_joined_stacksourcefile
+    typeinfo = unit.bucket.symbolized_typeinfo
+    if typeinfo.startswith('0x'):
+      typeinfo = unit.bucket.typeinfo_name
+
+    return ((not self._backtrace_function or
+             self._backtrace_function.match(stackfunction)) and
+            (not self._backtrace_sourcefile or
+             self._backtrace_sourcefile.match(stacksourcefile)) and
+            (not self._typeinfo or self._typeinfo.match(typeinfo)))
+
+
+class NoBucketMallocRule(MallocRule):
+  """Represents a Rule that small ignorable units match with."""
+  def __init__(self):
+    super(NoBucketMallocRule, self).__init__({'name': 'tc-no-bucket'})
+    self._no_bucket = True
+
+  @property
+  def no_bucket(self):
+    return self._no_bucket
+
+
+class AbstractSorter(object):
+  """An abstract class for classifying Units with a set of Rules."""
+  def __init__(self, dct):
+    self._type = 'sorter'
+    self._version = dct['version']
+    self._world = dct['world']
+    self._name = dct['name']
+    self._order = dct['order']
+
+    self._rules = []
+    for rule in dct['rules']:
+      if dct['world'] == 'vm':
+        self._rules.append(VMRule(rule))
+      elif dct['world'] == 'malloc':
+        self._rules.append(MallocRule(rule))
+      else:
+        LOGGER.error('Unknown sorter world type')
+
+  def __repr__(self):
+    result = cStringIO.StringIO()
+    result.write('world=%s' % self._world)
+    result.write('order=%s' % self._order)
+    result.write('rules:')
+    for rule in self._rules:
+      result.write('  %s' % rule)
+    return result.getvalue()
+
+  @staticmethod
+  def load(filename):
+    with open(filename) as sorter_f:
+      sorter_dict = json.load(sorter_f)
+    if sorter_dict['world'] == 'vm':
+      return VMSorter(sorter_dict)
+    elif sorter_dict['world'] == 'malloc':
+      return MallocSorter(sorter_dict)
+    else:
+      LOGGER.error('Unknown sorter world type')
+      return None
+
+  @property
+  def world(self):
+    return self._world
+
+  @property
+  def name(self):
+    return self._name
+
+  def find(self, unit):
+    raise NotImplementedError()
+
+  def find_rule(self, name):
+    """Finds a rule whose name is |name|. """
+    for rule in self._rules:
+      if rule.name == name:
+        return rule
+    return None
+
+
+class VMSorter(AbstractSorter):
+  """Represents a Sorter for memory regions on virtual memory."""
+  def __init__(self, dct):
+    assert dct['world'] == 'vm'
+    super(VMSorter, self).__init__(dct)
+
+  def find(self, unit):
+    for rule in self._rules:
+      if rule.match(unit):
+        return rule
+    assert False
+
+
+class MallocSorter(AbstractSorter):
+  """Represents a Sorter for malloc'ed blocks."""
+  def __init__(self, dct):
+    assert dct['world'] == 'malloc'
+    super(MallocSorter, self).__init__(dct)
+    self._no_bucket_rule = NoBucketMallocRule()
+
+  def find(self, unit):
+    if not unit.bucket:
+      return self._no_bucket_rule
+    assert unit.bucket.allocator_type == 'malloc'
+
+    if unit.bucket.component_cache:
+      return unit.bucket.component_cache
+
+    for rule in self._rules:
+      if rule.match(unit):
+        unit.bucket.component_cache = rule
+        return rule
+    assert False
+
+
+class SorterSet(object):
+  """Represents an iterable set of Sorters."""
+  def __init__(self, additional=None, default=None):
+    if not additional:
+      additional = []
+    if not default:
+      default = DEFAULT_SORTERS
+    self._sorters = {}
+    for filename in default + additional:
+      sorter = AbstractSorter.load(filename)
+      if sorter.world not in self._sorters:
+        self._sorters[sorter.world] = []
+      self._sorters[sorter.world].append(sorter)
+
+  def __repr__(self):
+    result = cStringIO.StringIO()
+    result.write(self._sorters)
+    return result.getvalue()
+
+  def __iter__(self):
+    for sorters in self._sorters.itervalues():
+      for sorter in sorters:
+        yield sorter
+
+  def iter_world(self, world):
+    for sorter in self._sorters.get(world, []):
+      yield sorter
 
 
 class Command(object):
@@ -1680,13 +2123,13 @@ class PolicyCommands(Command):
     (bucket_set, dumps) = Command.load_basic_files(
         dump_path, True, alternative_dirs=alternative_dirs_dict)
 
-    pfn_counts_dict = dict()
+    pfn_counts_dict = {}
     for shared_first_dump_path in shared_first_dump_paths:
       shared_dumps = Command._find_all_dumps(shared_first_dump_path)
       for shared_dump in shared_dumps:
         pfn_counts = PFNCounts.load(shared_dump)
         if pfn_counts.pid not in pfn_counts_dict:
-          pfn_counts_dict[pfn_counts.pid] = list()
+          pfn_counts_dict[pfn_counts.pid] = []
         pfn_counts_dict[pfn_counts.pid].append(pfn_counts)
 
     policy_set = PolicySet.load(Command._parse_policy_list(options.policy))
@@ -1711,7 +2154,7 @@ class PolicyCommands(Command):
         A dict mapping components and their corresponding sizes.
     """
     LOGGER.info('  %s' % dump.path)
-    all_pfn_dict = dict()
+    all_pfn_dict = {}
     if pfn_counts_dict:
       LOGGER.info('    shared with...')
       for pid, pfnset_list in pfn_counts_dict.iteritems():
@@ -2372,9 +2815,167 @@ class UploadCommand(Command):
       LOGGER.error('Error to run gsutil: %s', e)
 
 
+class CatCommand(Command):
+  def __init__(self):
+    super(CatCommand, self).__init__('Usage: %prog cat <first-dump>')
+    self._parser.add_option('--alternative-dirs', dest='alternative_dirs',
+                            metavar='/path/on/target@/path/on/host[:...]',
+                            help='Read files in /path/on/host/ instead of '
+                                 'files in /path/on/target/.')
+    self._parser.add_option('--indent', dest='indent', action='store_true',
+                            help='Indent the output.')
+
+  def do(self, sys_argv):
+    options, args = self._parse_args(sys_argv, 1)
+    dump_path = args[1]
+    # TODO(dmikurube): Support shared memory.
+    alternative_dirs_dict = {}
+    if options.alternative_dirs:
+      for alternative_dir_pair in options.alternative_dirs.split(':'):
+        target_path, host_path = alternative_dir_pair.split('@', 1)
+        alternative_dirs_dict[target_path] = host_path
+    (bucket_set, dumps) = Command.load_basic_files(
+        dump_path, True, alternative_dirs=alternative_dirs_dict)
+
+    json_root = OrderedDict()
+    json_root['version'] = 1
+    json_root['run_id'] = None
+    for dump in dumps:
+      if json_root['run_id'] and json_root['run_id'] != dump.run_id:
+        LOGGER.error('Inconsistent heap profile dumps.')
+        json_root['run_id'] = ''
+        break
+      json_root['run_id'] = dump.run_id
+    json_root['snapshots'] = []
+
+    # Load all sorters.
+    sorters = SorterSet()
+
+    for dump in dumps:
+      json_root['snapshots'].append(
+          self._fill_snapshot(dump, bucket_set, sorters))
+
+    if options.indent:
+      json.dump(json_root, sys.stdout, indent=2)
+    else:
+      json.dump(json_root, sys.stdout)
+    print ''
+
+  @staticmethod
+  def _fill_snapshot(dump, bucket_set, sorters):
+    root = OrderedDict()
+    root['time'] = dump.time
+    root['worlds'] = OrderedDict()
+    root['worlds']['vm'] = CatCommand._fill_world(
+        dump, bucket_set, sorters, 'vm')
+    root['worlds']['malloc'] = CatCommand._fill_world(
+        dump, bucket_set, sorters, 'malloc')
+    return root
+
+  @staticmethod
+  def _fill_world(dump, bucket_set, sorters, world):
+    root = OrderedDict()
+
+    root['name'] = 'world'
+    if world == 'vm':
+      root['unit_fields'] = ['committed', 'reserved']
+    elif world == 'malloc':
+      root['unit_fields'] = ['size', 'alloc_count', 'free_count']
+
+    # Make { vm | malloc } units with their sizes.
+    root['units'] = OrderedDict()
+    unit_set = UnitSet(world)
+    if world == 'vm':
+      for unit in CatCommand._iterate_vm_unit(dump, None, bucket_set):
+        unit_set.append(unit)
+      for unit in unit_set:
+        root['units'][unit.unit_id] = [unit.committed, unit.reserved]
+    elif world == 'malloc':
+      for unit in CatCommand._iterate_malloc_unit(dump, bucket_set):
+        unit_set.append(unit)
+      for unit in unit_set:
+        root['units'][unit.unit_id] = [
+            unit.size, unit.alloc_count, unit.free_count]
+
+    # Iterate for { vm | malloc } sorters.
+    root['breakdown'] = OrderedDict()
+    for sorter in sorters.iter_world(world):
+      breakdown = OrderedDict()
+      for unit in unit_set:
+        found = sorter.find(unit)
+        if found.name not in breakdown:
+          category = OrderedDict()
+          category['name'] = found.name
+          category['color'] = 'random'
+          subworlds = {}
+          for subworld in found.iter_subworld():
+            subworlds[subworld] = False
+          if subworlds:
+            category['subworlds'] = subworlds
+          if found.hidden:
+            category['hidden'] = True
+          category['units'] = []
+          breakdown[found.name] = category
+        breakdown[found.name]['units'].append(unit.unit_id)
+      root['breakdown'][sorter.name] = breakdown
+
+    return root
+
+  @staticmethod
+  def _iterate_vm_unit(dump, pfn_dict, bucket_set):
+    unit_id = 0
+    for _, region in dump.iter_map:
+      unit_id += 1
+      if region[0] == 'unhooked':
+        if pfn_dict and dump.pageframe_length:
+          for pageframe in region[1]['pageframe']:
+            yield UnhookedUnit(unit_id, pageframe.size, pageframe.size,
+                               region, pageframe, pfn_dict)
+        else:
+          yield UnhookedUnit(unit_id,
+                             int(region[1]['committed']),
+                             int(region[1]['reserved']),
+                             region)
+      elif region[0] == 'hooked':
+        if pfn_dict and dump.pageframe_length:
+          for pageframe in region[1]['pageframe']:
+            yield MMapUnit(unit_id,
+                           pageframe.size,
+                           pageframe.size,
+                           region, bucket_set, pageframe, pfn_dict)
+        else:
+          yield MMapUnit(unit_id,
+                         int(region[1]['committed']),
+                         int(region[1]['reserved']),
+                         region,
+                         bucket_set)
+      else:
+        LOGGER.error('Unrecognized mapping status: %s' % region[0])
+
+  @staticmethod
+  def _iterate_malloc_unit(dump, bucket_set):
+    for line in dump.iter_stacktrace:
+      words = line.split()
+      bucket = bucket_set.get(int(words[BUCKET_ID]))
+      if bucket and bucket.allocator_type == 'malloc':
+        yield MallocUnit(int(words[BUCKET_ID]),
+                         int(words[COMMITTED]),
+                         int(words[ALLOC_COUNT]),
+                         int(words[FREE_COUNT]),
+                         bucket)
+      elif not bucket:
+        # 'Not-found' buckets are all assumed as malloc buckets.
+        yield MallocUnit(int(words[BUCKET_ID]),
+                         int(words[COMMITTED]),
+                         int(words[ALLOC_COUNT]),
+                         int(words[FREE_COUNT]),
+                         None)
+
+
 def main():
   COMMANDS = {
     'buckets': BucketsCommand,
+    'cat': CatCommand,
     'csv': CSVCommand,
     'expand': ExpandCommand,
     'json': JSONCommand,
@@ -2390,6 +2991,7 @@ def main():
 
 Commands:
    buckets      Dump a bucket list with resolving symbols
+   cat          Categorize memory usage (under development)
    csv          Classify memory usage in CSV
    expand       Show all stacktraces contained in the specified component
    json         Classify memory usage in JSON
@@ -2401,6 +3003,7 @@ Commands:
 
 Quick Reference:
    dmprof buckets <first-dump>
+   dmprof cat <first-dump>
    dmprof csv [-p POLICY] <first-dump>
    dmprof expand <dump> <policy> <component> <depth>
    dmprof json [-p POLICY] <first-dump>
