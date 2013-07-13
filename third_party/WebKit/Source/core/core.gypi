@@ -757,6 +757,8 @@
             'css/resolver/MediaQueryResult.h',
             'css/resolver/ScopedStyleResolver.cpp',
             'css/resolver/ScopedStyleResolver.h',
+            'css/resolver/SharedStyleFinder.cpp',
+            'css/resolver/SharedStyleFinder.h',
             'css/resolver/StyleBuilderCustom.cpp',
             'css/resolver/StyleResolver.cpp',
             'css/resolver/StyleResolver.h',

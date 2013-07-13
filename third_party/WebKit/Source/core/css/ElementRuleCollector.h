@@ -58,7 +58,7 @@ public:
 
     void setMode(SelectorChecker::Mode mode) { m_mode = mode; }
     void setPseudoStyleRequest(const PseudoStyleRequest& request) { m_pseudoStyleRequest = request; }
-    void setSameOriginOnly(bool f) { m_sameOriginOnly = f; } 
+    void setSameOriginOnly(bool f) { m_sameOriginOnly = f; }
     void setRegionForStyling(const RenderRegion* regionForStyling) { m_regionForStyling = regionForStyling; }
 
     void setMatchingUARules(bool matchingUARules) { m_matchingUARules = matchingUARules; }
@@ -86,7 +86,7 @@ private:
     void addMatchedRule(const RuleData*);
 
     StaticCSSRuleList* ensureRuleList();
-        
+
 private:
     const ElementResolveContext& m_context;
     const SelectorFilter& m_selectorFilter;
