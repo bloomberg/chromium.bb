@@ -60,6 +60,12 @@ ContentRendererClient::OverrideCreateMIDIAccessor(
   return NULL;
 }
 
+WebKit::WebAudioDevice*
+ContentRendererClient::OverrideCreateAudioDevice(
+    double sample_rate) {
+  return NULL;
+}
+
 WebKit::WebClipboard* ContentRendererClient::OverrideWebClipboard() {
   return NULL;
 }

@@ -781,6 +781,12 @@ RendererWebKitPlatformSupportImpl::createAudioDevice(
     double sample_rate,
     WebAudioDevice::RenderCallback* callback,
     const WebKit::WebString& input_device_id) {
+  // Use a mock for testing.
+  WebKit::WebAudioDevice* mock_device =
+      GetContentClient()->renderer()->OverrideCreateAudioDevice(sample_rate);
+  if (mock_device)
+    return mock_device;
+
   // The |channels| does not exactly identify the channel layout of the
   // device. The switch statement below assigns a best guess to the channel
   // layout based on number of channels.

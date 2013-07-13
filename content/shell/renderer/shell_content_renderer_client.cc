@@ -25,6 +25,7 @@
 #include "webkit/mocks/mock_webhyphenator.h"
 #include "webkit/support/mock_webclipboard_impl.h"
 
+using WebKit::WebAudioDevice;
 using WebKit::WebClipboard;
 using WebKit::WebFrame;
 using WebKit::WebHyphenator;
@@ -151,6 +152,14 @@ ShellContentRendererClient::OverrideCreateMIDIAccessor(
   WebTestInterfaces* interfaces =
       ShellRenderProcessObserver::GetInstance()->test_interfaces();
   return interfaces->createMIDIAccessor(client);
+}
+
+WebAudioDevice*
+ShellContentRendererClient::OverrideCreateAudioDevice(
+    double sample_rate) {
+  WebTestInterfaces* interfaces =
+      ShellRenderProcessObserver::GetInstance()->test_interfaces();
+  return interfaces->createAudioDevice(sample_rate);
 }
 
 WebClipboard* ShellContentRendererClient::OverrideWebClipboard() {

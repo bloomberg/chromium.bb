@@ -26,6 +26,7 @@ class MessageLoop;
 }
 
 namespace WebKit {
+class WebAudioDevice;
 class WebClipboard;
 class WebFrame;
 class WebHyphenator;
@@ -140,6 +141,11 @@ class CONTENT_EXPORT ContentRendererClient {
   // returns NULL the content layer will create the MIDI accessor.
   virtual WebKit::WebMIDIAccessor* OverrideCreateMIDIAccessor(
       WebKit::WebMIDIAccessorClient* client);
+
+  // Allows the embedder to override creating a WebAudioDevice.  If it
+  // returns NULL the content layer will create the audio device.
+  virtual WebKit::WebAudioDevice* OverrideCreateAudioDevice(
+      double sample_rate);
 
   // Allows the embedder to override the WebKit::WebClipboard used. If it
   // returns NULL the content layer will handle clipboard interactions.
