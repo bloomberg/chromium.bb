@@ -381,7 +381,7 @@ static VisiblePosition visualWordPosition(const VisiblePosition& visiblePosition
         else if (offsetInBox == box->caretMaxOffset())
             iter = wordBreakIteratorForMaxOffsetBoundary(visiblePosition, textBox, nextBoxInDifferentBlock, string, leafBoxes);
         else if (movingIntoNewBox) {
-            iter = wordBreakIterator(textBox->textRenderer()->text().bloatedCharacters() + textBox->start(), textBox->len());
+            iter = wordBreakIterator(textBox->textRenderer()->text(), textBox->start(), textBox->len());
             previouslyVisitedBox = box;
         }
 

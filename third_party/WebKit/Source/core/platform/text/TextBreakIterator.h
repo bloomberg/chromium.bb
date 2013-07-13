@@ -37,6 +37,7 @@ class TextBreakIterator;
 // Use this for insertion point and selection manipulations.
 TextBreakIterator* cursorMovementIterator(const UChar*, int length);
 
+TextBreakIterator* wordBreakIterator(const String&, int start, int length);
 TextBreakIterator* wordBreakIterator(const UChar*, int length);
 TextBreakIterator* acquireLineBreakIterator(const LChar*, int length, const AtomicString& locale, const UChar* priorContext, unsigned priorContextLength);
 TextBreakIterator* acquireLineBreakIterator(const UChar*, int length, const AtomicString& locale, const UChar* priorContext, unsigned priorContextLength);

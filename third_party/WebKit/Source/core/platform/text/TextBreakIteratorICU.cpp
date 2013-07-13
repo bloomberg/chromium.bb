@@ -30,26 +30,14 @@ using namespace std;
 
 namespace WebCore {
 
-static TextBreakIterator* setUpIterator(bool& createdIterator, TextBreakIterator*& iterator,
-    UBreakIteratorType type, const UChar* string, int length)
+static TextBreakIterator* ensureIterator(bool& createdIterator, TextBreakIterator*& iterator, UBreakIteratorType type)
 {
-    if (!string)
-        return 0;
-
     if (!createdIterator) {
         UErrorCode openStatus = U_ZERO_ERROR;
         iterator = reinterpret_cast<TextBreakIterator*>(ubrk_open(type, currentTextBreakLocaleID(), 0, 0, &openStatus));
         createdIterator = true;
         ASSERT_WITH_MESSAGE(U_SUCCESS(openStatus), "ICU could not open a break iterator: %s (%d)", u_errorName(openStatus), openStatus);
     }
-    if (!iterator)
-        return 0;
-
-    UErrorCode setTextStatus = U_ZERO_ERROR;
-    ubrk_setText(reinterpret_cast<UBreakIterator*>(iterator), string, length, &setTextStatus);
-    if (U_FAILURE(setTextStatus))
-        return 0;
-
     return iterator;
 }
 
@@ -419,15 +407,83 @@ static UText* textOpenUTF16(UText* text, const UChar* string, unsigned length, c
     return text;
 }
 
-TextBreakIterator* wordBreakIterator(const UChar* string, int length)
+static UText emptyText = UTEXT_INITIALIZER;
+
+static TextBreakIterator* setUpIterator(bool& createdIterator, TextBreakIterator*& iterator, UBreakIteratorType type, const UChar* string, int length)
 {
-    static bool createdWordBreakIterator = false;
-    static TextBreakIterator* staticWordBreakIterator;
-    return setUpIterator(createdWordBreakIterator,
-        staticWordBreakIterator, UBRK_WORD, string, length);
+    if (!string)
+        return 0;
+
+    iterator = ensureIterator(createdIterator, iterator, type);
+    if (!iterator)
+        return 0;
+
+    UErrorCode setTextStatus = U_ZERO_ERROR;
+    ubrk_setText(reinterpret_cast<UBreakIterator*>(iterator), string, length, &setTextStatus);
+    if (U_FAILURE(setTextStatus))
+        return 0;
+
+    return iterator;
 }
 
-static UText emptyText = UTEXT_INITIALIZER;
+static TextBreakIterator* setUpIterator(bool& createdIterator, TextBreakIterator*& iterator, UBreakIteratorType type, const LChar* string, int length)
+{
+    if (!string)
+        return 0;
+
+    iterator = ensureIterator(createdIterator, iterator, type);
+    if (!iterator)
+        return 0;
+
+    UTextWithBuffer textLocal;
+    textLocal.text = emptyText;
+    textLocal.text.extraSize = sizeof(textLocal.buffer);
+    textLocal.text.pExtra = textLocal.buffer;
+
+    UErrorCode openStatus = U_ZERO_ERROR;
+    UText* text = textOpenLatin1(&textLocal, string, length, 0, 0, &openStatus);
+    if (U_FAILURE(openStatus)) {
+        LOG_ERROR("textOpenLatin1 failed with status %d", openStatus);
+        return 0;
+    }
+
+    UErrorCode setTextStatus = U_ZERO_ERROR;
+    ubrk_setUText(reinterpret_cast<UBreakIterator*>(iterator), text, &setTextStatus);
+    if (U_FAILURE(setTextStatus)) {
+        LOG_ERROR("ubrk_setUText failed with status %d", setTextStatus);
+        // FIXME: Do we need to call utext_close(text) here?
+        return 0;
+    }
+
+    utext_close(text);
+
+    return iterator;
+}
+
+static TextBreakIterator* wordBreakIterator(const LChar* string, int length)
+{
+    static bool createdWordBreakIterator8 = false;
+    static TextBreakIterator* staticWordBreakIterator8;
+    return setUpIterator(createdWordBreakIterator8,
+        staticWordBreakIterator8, UBRK_WORD, string, length);
+}
+
+TextBreakIterator* wordBreakIterator(const UChar* string, int length)
+{
+    static bool createdWordBreakIterator16 = false;
+    static TextBreakIterator* staticWordBreakIterator16;
+    return setUpIterator(createdWordBreakIterator16,
+        staticWordBreakIterator16, UBRK_WORD, string, length);
+}
+
+TextBreakIterator* wordBreakIterator(const String& string, int start, int length)
+{
+    if (string.isEmpty())
+        return 0;
+    if (string.is8Bit())
+        return wordBreakIterator(string.characters8() + start, length);
+    return wordBreakIterator(string.characters16() + start, length);
+}
 
 TextBreakIterator* acquireLineBreakIterator(const LChar* string, int length, const AtomicString& locale, const UChar* priorContext, unsigned priorContextLength)
 {
@@ -443,13 +499,14 @@ TextBreakIterator* acquireLineBreakIterator(const LChar* string, int length, con
     UErrorCode openStatus = U_ZERO_ERROR;
     UText* text = textOpenLatin1(&textLocal, string, length, priorContext, priorContextLength, &openStatus);
     if (U_FAILURE(openStatus)) {
-        LOG_ERROR("textOpenUTF16 failed with status %d", openStatus);
+        LOG_ERROR("textOpenLatin1 failed with status %d", openStatus);
         return 0;
     }
 
     UErrorCode setTextStatus = U_ZERO_ERROR;
     ubrk_setUText(iterator, text, &setTextStatus);
     if (U_FAILURE(setTextStatus)) {
+        // FIXME: Do we need to call utext_close(text) here?
         LOG_ERROR("ubrk_setUText failed with status %d", setTextStatus);
         return 0;
     }
@@ -477,6 +534,7 @@ TextBreakIterator* acquireLineBreakIterator(const UChar* string, int length, con
     UErrorCode setTextStatus = U_ZERO_ERROR;
     ubrk_setUText(iterator, text, &setTextStatus);
     if (U_FAILURE(setTextStatus)) {
+        // FIXME: Do we need to call utext_close(text) here?
         LOG_ERROR("ubrk_setUText failed with status %d", setTextStatus);
         return 0;
     }

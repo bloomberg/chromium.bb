@@ -99,7 +99,7 @@ static WebURL urlFromFrame(Frame* frame)
 // Helper function to determine whether text is a single word.
 static bool isASingleWord(const String& text)
 {
-    TextBreakIterator* it = wordBreakIterator(text.bloatedCharacters(), text.length());
+    TextBreakIterator* it = wordBreakIterator(text, 0, text.length());
     return it && textBreakNext(it) == static_cast<int>(text.length());
 }
 
