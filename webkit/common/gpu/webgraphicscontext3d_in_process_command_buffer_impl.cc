@@ -96,7 +96,6 @@ WebGraphicsContext3DInProcessCommandBufferImpl::
       window_(window),
       initialized_(false),
       initialize_failed_(false),
-      context_(NULL),
       gl_(NULL),
       context_lost_callback_(NULL),
       context_lost_reason_(GL_NO_ERROR),
@@ -148,7 +147,7 @@ bool WebGraphicsContext3DInProcessCommandBufferImpl::MaybeInitializeGL() {
       base::Bind(&WebGraphicsContext3DInProcessCommandBufferImpl::OnContextLost,
                  base::Unretained(this));
 
-  context_ = GLInProcessContext::CreateContext(
+  context_.reset(GLInProcessContext::CreateContext(
       is_offscreen_,
       window_,
       gfx::Size(1, 1),
@@ -156,7 +155,7 @@ bool WebGraphicsContext3DInProcessCommandBufferImpl::MaybeInitializeGL() {
       preferred_extensions,
       attribs,
       gpu_preference,
-      context_lost_callback);
+      context_lost_callback));
 
   if (!context_) {
     initialize_failed_ = true;
