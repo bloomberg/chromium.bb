@@ -18,7 +18,9 @@
 using WebKit::WebIDBCallbacks;
 using WebKit::WebIDBDatabaseCallbacks;
 using WebKit::WebIDBMetadata;
+using WebKit::WebIDBKey;
 using WebKit::WebIDBKeyPath;
+using WebKit::WebIDBKeyRange;
 using WebKit::WebString;
 using WebKit::WebVector;
 using webkit_glue::WorkerTaskRunner;
@@ -31,8 +33,7 @@ RendererWebIDBDatabaseImpl::RendererWebIDBDatabaseImpl(
     ThreadSafeSender* thread_safe_sender)
     : ipc_database_id_(ipc_database_id),
       ipc_database_callbacks_id_(ipc_database_callbacks_id),
-      thread_safe_sender_(thread_safe_sender) {
-}
+      thread_safe_sender_(thread_safe_sender) {}
 
 RendererWebIDBDatabaseImpl::~RendererWebIDBDatabaseImpl() {
   // It's not possible for there to be pending callbacks that address this
@@ -49,8 +50,8 @@ RendererWebIDBDatabaseImpl::~RendererWebIDBDatabaseImpl() {
 void RendererWebIDBDatabaseImpl::createObjectStore(
     long long transaction_id,
     long long object_store_id,
-    const WebKit::WebString& name,
-    const WebKit::WebIDBKeyPath& key_path,
+    const WebString& name,
+    const WebIDBKeyPath& key_path,
     bool auto_increment) {
   IndexedDBHostMsg_DatabaseCreateObjectStore_Params params;
   params.ipc_database_id = ipc_database_id_;
@@ -76,10 +77,9 @@ void RendererWebIDBDatabaseImpl::deleteObjectStore(
 
 void RendererWebIDBDatabaseImpl::createTransaction(
     long long transaction_id,
-    WebKit::WebIDBDatabaseCallbacks* callbacks,
+    WebIDBDatabaseCallbacks* callbacks,
     const WebVector<long long>& object_store_ids,
-    unsigned short mode)
-{
+    unsigned short mode) {
   IndexedDBDispatcher* dispatcher =
       IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_.get());
   dispatcher->RequestIDBDatabaseCreateTransaction(
@@ -97,7 +97,7 @@ void RendererWebIDBDatabaseImpl::get(
     long long transaction_id,
     long long object_store_id,
     long long index_id,
-    const WebKit::WebIDBKeyRange& key_range,
+    const WebIDBKeyRange& key_range,
     bool key_only,
     WebIDBCallbacks* callbacks) {
   IndexedDBDispatcher* dispatcher =
@@ -115,7 +115,7 @@ void RendererWebIDBDatabaseImpl::put(
     long long transaction_id,
     long long object_store_id,
     const WebKit::WebData& value,
-    const WebKit::WebIDBKey& key,
+    const WebIDBKey& key,
     PutMode put_mode,
     WebIDBCallbacks* callbacks,
     const WebVector<long long>& web_index_ids,
@@ -136,7 +136,7 @@ void RendererWebIDBDatabaseImpl::put(
 void RendererWebIDBDatabaseImpl::setIndexKeys(
     long long transaction_id,
     long long object_store_id,
-    const WebKit::WebIDBKey& primary_key,
+    const WebIDBKey& primary_key,
     const WebVector<long long>& index_ids,
     const WebVector<WebIndexKeys>& index_keys) {
   IndexedDBHostMsg_DatabaseSetIndexKeys_Params params;
@@ -156,8 +156,7 @@ void RendererWebIDBDatabaseImpl::setIndexKeys(
       params.index_keys[i][j] = content::IndexedDBKey(index_keys[i][j]);
     }
   }
-  thread_safe_sender_->Send(new IndexedDBHostMsg_DatabaseSetIndexKeys(
-      params));
+  thread_safe_sender_->Send(new IndexedDBHostMsg_DatabaseSetIndexKeys(params));
 }
 
 void RendererWebIDBDatabaseImpl::setIndexesReady(
@@ -174,7 +173,7 @@ void RendererWebIDBDatabaseImpl::openCursor(
     long long transaction_id,
     long long object_store_id,
     long long index_id,
-    const WebKit::WebIDBKeyRange& key_range,
+    const WebIDBKeyRange& key_range,
     unsigned short direction,
     bool key_only,
     TaskType task_type,
@@ -196,7 +195,7 @@ void RendererWebIDBDatabaseImpl::count(
     long long transaction_id,
     long long object_store_id,
     long long index_id,
-    const WebKit::WebIDBKeyRange& key_range,
+    const WebIDBKeyRange& key_range,
     WebIDBCallbacks* callbacks) {
   IndexedDBDispatcher* dispatcher =
       IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_.get());
@@ -211,7 +210,7 @@ void RendererWebIDBDatabaseImpl::count(
 void RendererWebIDBDatabaseImpl::deleteRange(
     long long transaction_id,
     long long object_store_id,
-    const WebKit::WebIDBKeyRange& key_range,
+    const WebIDBKeyRange& key_range,
     WebIDBCallbacks* callbacks) {
   IndexedDBDispatcher* dispatcher =
       IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_.get());
@@ -251,8 +250,7 @@ void RendererWebIDBDatabaseImpl::createIndex(
   params.unique = unique;
   params.multi_entry = multi_entry;
 
-  thread_safe_sender_->Send(
-      new IndexedDBHostMsg_DatabaseCreateIndex(params));
+  thread_safe_sender_->Send(new IndexedDBHostMsg_DatabaseCreateIndex(params));
 }
 
 void RendererWebIDBDatabaseImpl::deleteIndex(

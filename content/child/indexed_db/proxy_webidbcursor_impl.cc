@@ -116,8 +116,7 @@ void RendererWebIDBCursorImpl::SetPrefetchData(
   pending_onsuccess_callbacks_ = 0;
 }
 
-void RendererWebIDBCursorImpl::CachedContinue(
-    WebKit::WebIDBCallbacks* callbacks) {
+void RendererWebIDBCursorImpl::CachedContinue(WebIDBCallbacks* callbacks) {
   DCHECK_GT(prefetch_keys_.size(), 0ul);
   DCHECK(prefetch_primary_keys_.size() == prefetch_keys_.size());
   DCHECK(prefetch_values_.size() == prefetch_keys_.size());

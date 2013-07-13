@@ -31,38 +31,23 @@ class CONTENT_EXPORT IndexedDBCallbacks
     : public base::RefCounted<IndexedDBCallbacks> {
  public:
   // Simple payload responses
-  static scoped_refptr<IndexedDBCallbacks> Create(
-      IndexedDBDispatcherHost* dispatcher_host,
-      int32 ipc_thread_id,
-      int32 ipc_callbacks_id) {
-    return make_scoped_refptr(new IndexedDBCallbacks(
-        dispatcher_host, ipc_thread_id, ipc_callbacks_id));
-  }
+  IndexedDBCallbacks(IndexedDBDispatcherHost* dispatcher_host,
+                     int32 ipc_thread_id,
+                     int32 ipc_callbacks_id);
 
   // IndexedDBCursor responses
-  static scoped_refptr<IndexedDBCallbacks> Create(
-      IndexedDBDispatcherHost* dispatcher_host,
-      int32 ipc_thread_id,
-      int32 ipc_callbacks_id,
-      int32 ipc_cursor_id) {
-    return make_scoped_refptr(new IndexedDBCallbacks(
-        dispatcher_host, ipc_thread_id, ipc_callbacks_id, ipc_cursor_id));
-  }
+  IndexedDBCallbacks(IndexedDBDispatcherHost* dispatcher_host,
+                     int32 ipc_thread_id,
+                     int32 ipc_callbacks_id,
+                     int32 ipc_cursor_id);
+
   // IndexedDBDatabase responses
-  static scoped_refptr<IndexedDBCallbacks> Create(
-      IndexedDBDispatcherHost* dispatcher_host,
-      int32 ipc_thread_id,
-      int32 ipc_callbacks_id,
-      int32 ipc_database_callbacks_id,
-      int64 host_transaction_id,
-      const GURL& origin_url) {
-    return make_scoped_refptr(new IndexedDBCallbacks(dispatcher_host,
-                                                     ipc_thread_id,
-                                                     ipc_callbacks_id,
-                                                     ipc_database_callbacks_id,
-                                                     host_transaction_id,
-                                                     origin_url));
-  }
+  IndexedDBCallbacks(IndexedDBDispatcherHost* dispatcher_host,
+                     int32 ipc_thread_id,
+                     int32 ipc_callbacks_id,
+                     int32 ipc_database_callbacks_id,
+                     int64 host_transaction_id,
+                     const GURL& origin_url);
 
   virtual void OnError(const IndexedDBDatabaseError& error);
 
@@ -118,25 +103,6 @@ class CONTENT_EXPORT IndexedDBCallbacks
 
  protected:
   virtual ~IndexedDBCallbacks();
-
-  // Simple payload responses
-  IndexedDBCallbacks(IndexedDBDispatcherHost* dispatcher_host,
-                     int32 ipc_thread_id,
-                     int32 ipc_callbacks_id);
-
-  // IndexedDBCursor responses
-  IndexedDBCallbacks(IndexedDBDispatcherHost* dispatcher_host,
-                     int32 ipc_thread_id,
-                     int32 ipc_callbacks_id,
-                     int32 ipc_cursor_id);
-
-  // IndexedDBDatabase responses
-  IndexedDBCallbacks(IndexedDBDispatcherHost* dispatcher_host,
-                     int32 ipc_thread_id,
-                     int32 ipc_callbacks_id,
-                     int32 ipc_database_callbacks_id,
-                     int64 host_transaction_id,
-                     const GURL& origin_url);
 
  private:
   friend class base::RefCounted<IndexedDBCallbacks>;

@@ -234,8 +234,7 @@ WARN_UNUSED_RESULT static bool SetUpMetadata(
   const std::string schema_version_key = SchemaVersionKey::Encode();
   const std::string data_version_key = DataVersionKey::Encode();
 
-  scoped_refptr<LevelDBTransaction> transaction =
-      LevelDBTransaction::Create(db);
+  scoped_refptr<LevelDBTransaction> transaction = new LevelDBTransaction(db);
 
   int64 db_schema_version = 0;
   int64 db_data_version = 0;
@@ -722,8 +721,7 @@ bool IndexedDBBackingStore::GetIDBDatabaseMetaData(
 
 WARN_UNUSED_RESULT static bool GetNewDatabaseId(LevelDBDatabase* db,
                                                 int64* new_id) {
-  scoped_refptr<LevelDBTransaction> transaction =
-      LevelDBTransaction::Create(db);
+  scoped_refptr<LevelDBTransaction> transaction = new LevelDBTransaction(db);
 
   *new_id = -1;
   int64 max_database_id = -1;
@@ -762,7 +760,7 @@ bool IndexedDBBackingStore::CreateIDBDatabaseMetaData(const string16& name,
     int_version = IndexedDBDatabaseMetadata::DEFAULT_INT_VERSION;
 
   scoped_refptr<LevelDBTransaction> transaction =
-      LevelDBTransaction::Create(db_.get());
+      new LevelDBTransaction(db_.get());
   PutInt(
       transaction.get(), DatabaseNameKey::Encode(identifier_, name), *row_id);
   PutString(
@@ -2582,7 +2580,7 @@ IndexedDBBackingStore::Transaction::~Transaction() {}
 void IndexedDBBackingStore::Transaction::Begin() {
   IDB_TRACE("IndexedDBBackingStore::Transaction::Begin");
   DCHECK(!transaction_.get());
-  transaction_ = LevelDBTransaction::Create(backing_store_->db_.get());
+  transaction_ = new LevelDBTransaction(backing_store_->db_.get());
 }
 
 bool IndexedDBBackingStore::Transaction::Commit() {

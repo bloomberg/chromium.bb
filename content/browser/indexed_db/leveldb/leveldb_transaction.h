@@ -24,7 +24,7 @@ class LevelDBWriteBatch;
 class CONTENT_EXPORT LevelDBTransaction
     : public base::RefCounted<LevelDBTransaction> {
  public:
-  static scoped_refptr<LevelDBTransaction> Create(LevelDBDatabase* db);
+  explicit LevelDBTransaction(LevelDBDatabase* db);
 
   void Put(const base::StringPiece& key, std::string* value);
   void Remove(const base::StringPiece& key);
@@ -35,7 +35,6 @@ class CONTENT_EXPORT LevelDBTransaction
   scoped_ptr<LevelDBIterator> CreateIterator();
 
  private:
-  explicit LevelDBTransaction(LevelDBDatabase* db);
   virtual ~LevelDBTransaction();
   friend class base::RefCounted<LevelDBTransaction>;
 

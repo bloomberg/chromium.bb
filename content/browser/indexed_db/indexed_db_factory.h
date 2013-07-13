@@ -26,9 +26,7 @@ class IndexedDBDatabase;
 class CONTENT_EXPORT IndexedDBFactory
     : NON_EXPORTED_BASE(public base::RefCounted<IndexedDBFactory>) {
  public:
-  static scoped_refptr<IndexedDBFactory> Create() {
-    return make_scoped_refptr(new IndexedDBFactory());
-  }
+  IndexedDBFactory();
 
   // Notifications from weak pointers.
   void RemoveIDBDatabaseBackend(const string16& unique_identifier);
@@ -52,7 +50,6 @@ class CONTENT_EXPORT IndexedDBFactory
  protected:
   friend class base::RefCounted<IndexedDBFactory>;
 
-  IndexedDBFactory();
   virtual ~IndexedDBFactory();
 
   scoped_refptr<IndexedDBBackingStore> OpenBackingStore(

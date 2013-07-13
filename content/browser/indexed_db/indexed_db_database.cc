@@ -5,6 +5,7 @@
 #include "content/browser/indexed_db/indexed_db_database.h"
 
 #include <math.h>
+#include <set>
 
 #include "base/auto_reset.h"
 #include "base/logging.h"
@@ -586,7 +587,7 @@ bool IndexedDBDatabase::ValidateObjectStoreIdAndIndexId(int64 object_store_id,
   const IndexedDBObjectStoreMetadata& object_store_metadata =
       metadata_.object_stores.find(object_store_id)->second;
   if (!Contains(object_store_metadata.indexes, index_id)) {
-      DLOG(ERROR) << "Invalid index_id";
+    DLOG(ERROR) << "Invalid index_id";
     return false;
   }
   return true;
@@ -1322,10 +1323,8 @@ void OpenCursorOperation::Perform(IndexedDBTransaction* transaction) {
     return;
   }
 
-  IndexedDBDatabase::TaskType task_type(
-      static_cast<IndexedDBDatabase::TaskType>(task_type_));
-  scoped_refptr<IndexedDBCursor> cursor = IndexedDBCursor::Create(
-      backing_store_cursor.Pass(), cursor_type_, task_type, transaction);
+  scoped_refptr<IndexedDBCursor> cursor = new IndexedDBCursor(
+      backing_store_cursor.Pass(), cursor_type_, task_type_, transaction);
   callbacks_->OnSuccess(
       cursor, cursor->key(), cursor->primary_key(), cursor->Value());
 }
@@ -1486,8 +1485,9 @@ void IndexedDBDatabase::VersionChangeOperation::Perform(
           database_->metadata_.int_version)) {
     IndexedDBDatabaseError error(
         WebKit::WebIDBDatabaseExceptionUnknownError,
-        ASCIIToUTF16("Internal error writing data to stable storage when "
-                     "updating version."));
+        ASCIIToUTF16(
+            "Internal error writing data to stable storage when "
+            "updating version."));
     callbacks_->OnError(error);
     transaction->Abort(error);
     return;
@@ -1614,13 +1614,12 @@ void IndexedDBDatabase::CreateTransaction(
 
   DCHECK(connections_.has(connection));
 
-  scoped_refptr<IndexedDBTransaction> transaction =
-      IndexedDBTransaction::Create(
-          transaction_id,
-          connection->callbacks(),
-          object_store_ids,
-          static_cast<indexed_db::TransactionMode>(mode),
-          this);
+  scoped_refptr<IndexedDBTransaction> transaction = new IndexedDBTransaction(
+      transaction_id,
+      connection->callbacks(),
+      std::set<int64>(object_store_ids.begin(), object_store_ids.end()),
+      static_cast<indexed_db::TransactionMode>(mode),
+      this);
   DCHECK(transactions_.find(transaction_id) == transactions_.end());
   transactions_[transaction_id] = transaction;
 }

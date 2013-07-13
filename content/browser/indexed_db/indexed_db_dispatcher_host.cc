@@ -211,7 +211,7 @@ void IndexedDBDispatcherHost::OnIDBFactoryGetDatabaseNames(
   base::FilePath indexed_db_path = indexed_db_context_->data_path();
 
   Context()->GetIDBFactory()->GetDatabaseNames(
-      IndexedDBCallbacks::Create(
+      new IndexedDBCallbacks(
           this, params.ipc_thread_id, params.ipc_callbacks_id),
       params.database_identifier,
       indexed_db_path);
@@ -230,23 +230,22 @@ void IndexedDBDispatcherHost::OnIDBFactoryOpen(
   // TODO(dgrogan): Don't let a non-existing database be opened (and therefore
   // created) if this origin is already over quota.
   scoped_refptr<IndexedDBCallbacks> callbacks =
-      IndexedDBCallbacks::Create(this,
-                                 params.ipc_thread_id,
-                                 params.ipc_callbacks_id,
-                                 params.ipc_database_callbacks_id,
-                                 host_transaction_id,
-                                 origin_url);
+      new IndexedDBCallbacks(this,
+                             params.ipc_thread_id,
+                             params.ipc_callbacks_id,
+                             params.ipc_database_callbacks_id,
+                             host_transaction_id,
+                             origin_url);
   scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks =
-      IndexedDBDatabaseCallbacks::Create(
+      new IndexedDBDatabaseCallbacks(
           this, params.ipc_thread_id, params.ipc_database_callbacks_id);
-  Context()->GetIDBFactory()->
-      Open(params.name,
-           params.version,
-           host_transaction_id,
-           callbacks,
-           database_callbacks,
-           params.database_identifier,
-           indexed_db_path);
+  Context()->GetIDBFactory()->Open(params.name,
+                                   params.version,
+                                   host_transaction_id,
+                                   callbacks,
+                                   database_callbacks,
+                                   params.database_identifier,
+                                   indexed_db_path);
 }
 
 void IndexedDBDispatcherHost::OnIDBFactoryDeleteDatabase(
@@ -255,7 +254,7 @@ void IndexedDBDispatcherHost::OnIDBFactoryDeleteDatabase(
   base::FilePath indexed_db_path = indexed_db_context_->data_path();
   Context()->GetIDBFactory()->DeleteDatabase(
       params.name,
-      IndexedDBCallbacks::Create(
+      new IndexedDBCallbacks(
           this, params.ipc_thread_id, params.ipc_callbacks_id),
       params.database_identifier,
       indexed_db_path);
@@ -462,10 +461,8 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnCreateTransaction(
 
   int64 host_transaction_id = parent_->HostTransactionId(params.transaction_id);
 
-  connection->database()->CreateTransaction(host_transaction_id,
-                                            connection,
-                                            params.object_store_ids,
-                                            params.mode);
+  connection->database()->CreateTransaction(
+      host_transaction_id, connection, params.object_store_ids, params.mode);
   transaction_database_map_[host_transaction_id] = params.ipc_database_id;
   parent_->RegisterTransactionId(host_transaction_id,
                                  database_url_map_[params.ipc_database_id]);
@@ -502,7 +499,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnGet(
   if (!connection)
     return;
 
-  scoped_refptr<IndexedDBCallbacks> callbacks(IndexedDBCallbacks::Create(
+  scoped_refptr<IndexedDBCallbacks> callbacks(new IndexedDBCallbacks(
       parent_, params.ipc_thread_id, params.ipc_callbacks_id));
   connection->database()->Get(
       parent_->HostTransactionId(params.transaction_id),
@@ -522,7 +519,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnPut(
       parent_->GetOrTerminateProcess(&map_, params.ipc_database_id);
   if (!connection)
     return;
-  scoped_refptr<IndexedDBCallbacks> callbacks(IndexedDBCallbacks::Create(
+  scoped_refptr<IndexedDBCallbacks> callbacks(new IndexedDBCallbacks(
       parent_, params.ipc_thread_id, params.ipc_callbacks_id));
 
   int64 host_transaction_id = parent_->HostTransactionId(params.transaction_id);
@@ -596,7 +593,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnOpenCursor(
   if (!connection)
     return;
 
-  scoped_refptr<IndexedDBCallbacks> callbacks(IndexedDBCallbacks::Create(
+  scoped_refptr<IndexedDBCallbacks> callbacks(new IndexedDBCallbacks(
       parent_, params.ipc_thread_id, params.ipc_callbacks_id, -1));
   connection->database()->OpenCursor(
       parent_->HostTransactionId(params.transaction_id),
@@ -618,7 +615,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnCount(
   if (!connection)
     return;
 
-  scoped_refptr<IndexedDBCallbacks> callbacks(IndexedDBCallbacks::Create(
+  scoped_refptr<IndexedDBCallbacks> callbacks(new IndexedDBCallbacks(
       parent_, params.ipc_thread_id, params.ipc_callbacks_id));
   connection->database()->Count(
       parent_->HostTransactionId(params.transaction_id),
@@ -637,7 +634,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnDeleteRange(
   if (!connection)
     return;
 
-  scoped_refptr<IndexedDBCallbacks> callbacks(IndexedDBCallbacks::Create(
+  scoped_refptr<IndexedDBCallbacks> callbacks(new IndexedDBCallbacks(
       parent_, params.ipc_thread_id, params.ipc_callbacks_id));
   connection->database()->DeleteRange(
       parent_->HostTransactionId(params.transaction_id),
@@ -660,7 +657,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnClear(
     return;
 
   scoped_refptr<IndexedDBCallbacks> callbacks(
-      IndexedDBCallbacks::Create(parent_, ipc_thread_id, ipc_callbacks_id));
+      new IndexedDBCallbacks(parent_, ipc_thread_id, ipc_callbacks_id));
 
   connection->database()->Clear(
       parent_->HostTransactionId(transaction_id), object_store_id, callbacks);
@@ -794,7 +791,7 @@ void IndexedDBDispatcherHost::CursorDispatcherHost::OnAdvance(
 
   idb_cursor->Advance(
       count,
-      IndexedDBCallbacks::Create(
+      new IndexedDBCallbacks(
           parent_, ipc_thread_id, ipc_callbacks_id, ipc_cursor_id));
 }
 
@@ -812,7 +809,7 @@ void IndexedDBDispatcherHost::CursorDispatcherHost::OnContinue(
 
   idb_cursor->Continue(
       make_scoped_ptr(new IndexedDBKey(key)),
-      IndexedDBCallbacks::Create(
+      new IndexedDBCallbacks(
           parent_, ipc_thread_id, ipc_callbacks_id, ipc_cursor_id));
 }
 
@@ -830,7 +827,7 @@ void IndexedDBDispatcherHost::CursorDispatcherHost::OnPrefetch(
 
   idb_cursor->PrefetchContinue(
       n,
-      IndexedDBCallbacks::Create(
+      new IndexedDBCallbacks(
           parent_, ipc_thread_id, ipc_callbacks_id, ipc_cursor_id));
 }
 

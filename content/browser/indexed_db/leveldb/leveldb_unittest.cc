@@ -101,7 +101,7 @@ TEST(LevelDBDatabaseTest, Transaction) {
   EXPECT_TRUE(success);
 
   scoped_refptr<LevelDBTransaction> transaction =
-      LevelDBTransaction::Create(leveldb.get());
+      new LevelDBTransaction(leveldb.get());
 
   const std::string new_value("new value");
   put_value = new_value;
@@ -170,7 +170,7 @@ TEST(LevelDBDatabaseTest, TransactionIterator) {
   EXPECT_TRUE(success);
 
   scoped_refptr<LevelDBTransaction> transaction =
-      LevelDBTransaction::Create(leveldb.get());
+      new LevelDBTransaction(leveldb.get());
 
   success = leveldb->Remove(key2);
   EXPECT_TRUE(success);

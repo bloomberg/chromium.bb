@@ -8,7 +8,6 @@
 #include <queue>
 #include <set>
 #include <stack>
-#include <vector>
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
@@ -24,12 +23,11 @@ class IndexedDBDatabaseCallbacks;
 
 class IndexedDBTransaction : public base::RefCounted<IndexedDBTransaction> {
  public:
-  static scoped_refptr<IndexedDBTransaction> Create(
-      int64 transaction_id,
-      scoped_refptr<IndexedDBDatabaseCallbacks> callbacks,
-      const std::vector<int64>& scope,
-      indexed_db::TransactionMode,
-      IndexedDBDatabase* db);
+  IndexedDBTransaction(int64 id,
+                       scoped_refptr<IndexedDBDatabaseCallbacks> callbacks,
+                       const std::set<int64>& object_store_ids,
+                       indexed_db::TransactionMode,
+                       IndexedDBDatabase* db);
 
   virtual void Abort();
   void Commit();
@@ -77,12 +75,6 @@ class IndexedDBTransaction : public base::RefCounted<IndexedDBTransaction> {
   friend class base::RefCounted<IndexedDBTransaction>;
 
  private:
-  IndexedDBTransaction(int64 id,
-                       scoped_refptr<IndexedDBDatabaseCallbacks> callbacks,
-                       const std::set<int64>& object_store_ids,
-                       indexed_db::TransactionMode,
-                       IndexedDBDatabase* db);
-
   enum State {
     UNUSED,         // Created, but no tasks yet.
     START_PENDING,  // Enqueued tasks, but backing store transaction not yet

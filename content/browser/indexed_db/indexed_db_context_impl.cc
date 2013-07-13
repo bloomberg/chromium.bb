@@ -110,7 +110,7 @@ IndexedDBFactory* IndexedDBContextImpl::GetIDBFactory() {
     // Prime our cache of origins with existing databases so we can
     // detect when dbs are newly created.
     GetOriginSet();
-    idb_factory_ = IndexedDBFactory::Create();
+    idb_factory_ = new IndexedDBFactory();
   }
   return idb_factory_;
 }

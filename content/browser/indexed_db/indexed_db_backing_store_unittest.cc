@@ -321,10 +321,6 @@ TEST_F(IndexedDBBackingStoreTest, CreateDatabase) {
 
 class MockIDBFactory : public IndexedDBFactory {
  public:
-  static scoped_refptr<MockIDBFactory> Create() {
-    return make_scoped_refptr(new MockIDBFactory());
-  }
-
   scoped_refptr<IndexedDBBackingStore> TestOpenBackingStore(
       const GURL& origin,
       const base::FilePath& data_directory) {
@@ -346,7 +342,7 @@ TEST(IndexedDBFactoryTest, BackingStoreLifetime) {
   GURL origin1("http://localhost:81");
   GURL origin2("http://localhost:82");
 
-  scoped_refptr<MockIDBFactory> factory = MockIDBFactory::Create();
+  scoped_refptr<MockIDBFactory> factory = new MockIDBFactory();
 
   base::ScopedTempDir temp_directory;
   ASSERT_TRUE(temp_directory.CreateUniqueTempDir());
@@ -372,7 +368,7 @@ TEST(IndexedDBFactoryTest, MemoryBackingStoreLifetime) {
   GURL origin1("http://localhost:81");
   GURL origin2("http://localhost:82");
 
-  scoped_refptr<MockIDBFactory> factory = MockIDBFactory::Create();
+  scoped_refptr<MockIDBFactory> factory = new MockIDBFactory();
   scoped_refptr<IndexedDBBackingStore> mem_store1 =
       factory->TestOpenBackingStore(origin1, base::FilePath());
   EXPECT_FALSE(mem_store1->HasOneRef());  // mem_store1 and factory
@@ -401,7 +397,7 @@ TEST(IndexedDBFactoryTest, RejectLongOrigins) {
   base::ScopedTempDir temp_directory;
   ASSERT_TRUE(temp_directory.CreateUniqueTempDir());
   const base::FilePath base_path = temp_directory.path();
-  scoped_refptr<MockIDBFactory> factory = MockIDBFactory::Create();
+  scoped_refptr<MockIDBFactory> factory = new MockIDBFactory();
 
   int limit = file_util::GetMaximumPathComponentLength(base_path);
   EXPECT_GT(limit, 0);

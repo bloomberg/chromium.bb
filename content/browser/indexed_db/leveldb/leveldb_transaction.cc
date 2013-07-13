@@ -13,11 +13,6 @@ using base::StringPiece;
 
 namespace content {
 
-scoped_refptr<LevelDBTransaction> LevelDBTransaction::Create(
-    LevelDBDatabase* db) {
-  return make_scoped_refptr(new LevelDBTransaction(db));
-}
-
 LevelDBTransaction::LevelDBTransaction(LevelDBDatabase* db)
     : db_(db), snapshot_(db), comparator_(db->Comparator()), finished_(false) {
   tree_.abstractor().comparator_ = comparator_;
@@ -257,9 +252,9 @@ void LevelDBTransaction::TransactionIterator::Next() {
   if (direction_ != FORWARD) {
     // Ensure the non-current iterator is positioned after Key().
 
-    LevelDBIterator* non_current =
-        (current_ == db_iterator_.get()) ? tree_iterator_.get()
-                                         : db_iterator_.get();
+    LevelDBIterator* non_current = (current_ == db_iterator_.get())
+                                       ? tree_iterator_.get()
+                                       : db_iterator_.get();
 
     non_current->Seek(Key());
     if (non_current->IsValid() &&
@@ -286,9 +281,9 @@ void LevelDBTransaction::TransactionIterator::Prev() {
   if (direction_ != REVERSE) {
     // Ensure the non-current iterator is positioned before Key().
 
-    LevelDBIterator* non_current =
-        (current_ == db_iterator_.get()) ? tree_iterator_.get()
-                                         : db_iterator_.get();
+    LevelDBIterator* non_current = (current_ == db_iterator_.get())
+                                       ? tree_iterator_.get()
+                                       : db_iterator_.get();
 
     non_current->Seek(Key());
     if (non_current->IsValid()) {

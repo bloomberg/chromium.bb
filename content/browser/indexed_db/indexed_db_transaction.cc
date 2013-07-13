@@ -50,20 +50,6 @@ IndexedDBTransaction::TaskStack::pop() {
   return task.Pass();
 }
 
-scoped_refptr<IndexedDBTransaction> IndexedDBTransaction::Create(
-    int64 id,
-    scoped_refptr<IndexedDBDatabaseCallbacks> callbacks,
-    const std::vector<int64>& object_store_ids,
-    indexed_db::TransactionMode mode,
-    IndexedDBDatabase* database) {
-  std::set<int64> object_store_hash_set;
-  for (size_t i = 0; i < object_store_ids.size(); ++i)
-    object_store_hash_set.insert(object_store_ids[i]);
-
-  return make_scoped_refptr(new IndexedDBTransaction(
-      id, callbacks, object_store_hash_set, mode, database));
-}
-
 IndexedDBTransaction::IndexedDBTransaction(
     int64 id,
     scoped_refptr<IndexedDBDatabaseCallbacks> callbacks,
@@ -111,8 +97,7 @@ void IndexedDBTransaction::ScheduleTask(IndexedDBDatabase::TaskType type,
   } else if (state_ == RUNNING && !should_process_queue_) {
     should_process_queue_ = true;
     base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&IndexedDBTransaction::ProcessTaskQueue, this));
+        FROM_HERE, base::Bind(&IndexedDBTransaction::ProcessTaskQueue, this));
   }
 }
 
@@ -194,8 +179,7 @@ void IndexedDBTransaction::Run() {
 
   should_process_queue_ = true;
   base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&IndexedDBTransaction::ProcessTaskQueue, this));
+      FROM_HERE, base::Bind(&IndexedDBTransaction::ProcessTaskQueue, this));
 }
 
 void IndexedDBTransaction::Start() {

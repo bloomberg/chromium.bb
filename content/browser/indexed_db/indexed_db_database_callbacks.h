@@ -16,14 +16,9 @@ class IndexedDBDispatcherHost;
 class CONTENT_EXPORT IndexedDBDatabaseCallbacks
     : public base::RefCounted<IndexedDBDatabaseCallbacks> {
  public:
-  static scoped_refptr<IndexedDBDatabaseCallbacks> Create(
-      IndexedDBDispatcherHost* dispatcher_host,
-      int ipc_thread_id,
-      int ipc_database_callbacks_id) {
-    return make_scoped_refptr(
-        new IndexedDBDatabaseCallbacks(
-            dispatcher_host, ipc_thread_id, ipc_database_callbacks_id));
-  }
+  IndexedDBDatabaseCallbacks(IndexedDBDispatcherHost* dispatcher_host,
+                             int ipc_thread_id,
+                             int ipc_database_callbacks_id);
 
   virtual void OnForcedClose();
   virtual void OnVersionChange(int64 old_version, int64 new_version);
@@ -33,10 +28,6 @@ class CONTENT_EXPORT IndexedDBDatabaseCallbacks
   virtual void OnComplete(int64 host_transaction_id);
 
  protected:
-  IndexedDBDatabaseCallbacks(
-      IndexedDBDispatcherHost* dispatcher_host,
-      int ipc_thread_id,
-      int ipc_database_callbacks_id);
   virtual ~IndexedDBDatabaseCallbacks();
 
  private:
