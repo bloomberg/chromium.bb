@@ -50,9 +50,9 @@ typedef std::vector<metrics::OmniboxEventProto_ProviderInfo> ProvidersInfo;
 // Search Primary Provider (past query in history older than 2 days)   | 1050--
 // HistoryURL (some inexact matches)                                   |  900++
 // BookmarkProvider (prefix match in bookmark title)                   |  900+-
+// Built-in                                                            |  860++
 // Search Primary Provider (navigational suggestion)                   |  800++
 // Search Primary Provider (suggestion)                                |  600++
-// Built-in                                                            |  575++
 // Keyword (inexact match)                                             |  450
 // Search Secondary Provider (what you typed)                          |  250
 // Search Secondary Provider (past query in history)                   |  200--
@@ -69,11 +69,11 @@ typedef std::vector<metrics::OmniboxEventProto_ProviderInfo> ProvidersInfo;
 // Extension App (inexact match)                                       | 1175*~
 // Keyword (substituting, exact match)                                 | 1100
 // HistoryURL (some inexact matches)                                   |  900++
+// Built-in                                                            |  860++
 // Search Primary Provider (what you typed)                            |  850
 // Search Primary Provider (navigational suggestion)                   |  800++
 // Search Primary Provider (past query in history)                     |  750--
 // Keyword (inexact match)                                             |  700
-// Built-in                                                            |  575++
 // Search Primary Provider (suggestion)                                |  300++
 // Search Secondary Provider (what you typed)                          |  250
 // Search Secondary Provider (past query in history)                   |  200--

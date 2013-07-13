@@ -32,7 +32,7 @@ const char* kChromeSettingsSubPages[] = {
 
 }  // namespace
 
-const int BuiltinProvider::kRelevance = 575;
+const int BuiltinProvider::kRelevance = 860;
 
 BuiltinProvider::BuiltinProvider(AutocompleteProviderListener* listener,
                                  Profile* profile)
