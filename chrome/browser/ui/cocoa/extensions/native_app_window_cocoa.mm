@@ -86,6 +86,13 @@ enum {
   return YES;
 }
 
+// Allow non resizable windows (without NSResizableWindowMask) to enter
+// fullscreen by passing through the full size in willUseFullScreenContentSize.
+- (NSSize)window:(NSWindow *)window
+    willUseFullScreenContentSize:(NSSize)proposedSize {
+  return proposedSize;
+}
+
 - (void)executeCommand:(int)command {
   // No-op, swallow the event.
 }
