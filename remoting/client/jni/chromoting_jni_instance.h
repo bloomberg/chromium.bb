@@ -36,31 +36,35 @@ const int CHAT_PORT = 5222;
 const bool CHAT_USE_TLS = true;
 const char* const CHAT_AUTH_METHOD = "oauth2";
 
-// ClientUserInterface that makes and (indirectly) receives JNI calls.
+// ClientUserInterface that makes and (indirectly) receives JNI calls. It also
+// contains global resources on which the Chromoting components run
+// (e.g. message loops and task runners).
 class ChromotingJNIInstance : public ClientUserInterface {
  public:
+  // This class is instantiated at process initialization and persists until
+  // we close. It reuses many of its components between connections (i.e. when
+  // a DisconnectFromHost() call is followed by a ConnectToHost() one.
   static ChromotingJNIInstance* GetInstance();
 
-  // Call from UI thread.
+  // Initiates a connection with the specified host. This may only be called
+  // when |connected_| is false, and must be invoked on the UI thread.
   void ConnectToHost(
-      jstring username,
-      jstring auth_token,
-      jstring host_jid,
-      jstring host_id,
-      jstring host_pubkey);
+      const char* username,
+      const char* auth_token,
+      const char* host_jid,
+      const char* host_id,
+      const char* host_pubkey);
 
-  // Call from UI thread.
+  // Terminates the current connection (if it hasn't already failed) and clean
+  // up. This may only be called when |connected_|, and only from the UI thread.
   void DisconnectFromHost();
 
-  // Call from UI thread.
-  void AuthenticateWithPin(jstring pin);
+  // Provides the user's PIN and resumes the host authentication attempt. Call
+  // on the UI thread once the user has finished entering this PIN into the UI,
+  // but only after the UI has been asked to provide a PIN (via FetchSecret()).
+  void ProvideSecret(const char* pin);
 
-  // Called by client authenticator.
-  // Gets notified if the user needs to enter a PIN, and notifies Java in turn.
-  void FetchSecret(bool pairable,
-                   const protocol::SecretFetchedCallback& callback_encore);
-
-  // ClientUserInterface implementation:
+  // ClientUserInterface implementation.
   virtual void OnConnectionState(
       protocol::ConnectionToHost::State state,
       protocol::ErrorCode error) OVERRIDE;
@@ -75,6 +79,12 @@ class ChromotingJNIInstance : public ClientUserInterface {
 
  private:
   ChromotingJNIInstance();
+
+  // Any existing or attempted connection must have been terminated using
+  // DisconnectFromHost() before this singleton is destroyed. Because
+  // destruction only occurs at application exit after all connections have
+  // terminated, it is safe to make unretained cross-thread calls on the class.
+  // As a singleton, this object must be destroyed on the main (UI) thread.
   virtual ~ChromotingJNIInstance();
 
   void ConnectToHostOnDisplayThread();
@@ -82,41 +92,61 @@ class ChromotingJNIInstance : public ClientUserInterface {
 
   void DisconnectFromHostOnNetworkThread();
 
-  // Reusable between sessions:
-  jclass class_;  // Reference to the Java class into which we make JNI calls.
-  scoped_ptr<base::AtExitManager> collector_;
-  scoped_ptr<base::MessageLoopForUI> ui_loop_;
-  scoped_refptr<AutoThreadTaskRunner> ui_runner_;
-  scoped_refptr<AutoThreadTaskRunner> net_runner_;
-  scoped_refptr<AutoThreadTaskRunner> disp_runner_;
-  scoped_refptr<net::URLRequestContextGetter> url_requester_;
-  scoped_refptr<FrameConsumerProxy> frames_;
+  // Notifies the user interface that the user needs to enter a PIN. The
+  // current authentication attempt is put on hold until |callback| is invoked.
+  void FetchSecret(bool pairable,
+                   const protocol::SecretFetchedCallback& callback);
 
-  // Specific to each session:
+  // The below variables are reused across consecutive sessions.
+
+  // Reference to the Java class into which we make JNI calls.
+  jclass class_;
+
+  // Used by the Chromium libraries to clean up the base and net libraries' JNI
+  // bindings. It must persist for the lifetime of the singleton.
+  scoped_ptr<base::AtExitManager> collector_;
+
+  // Chromium code's connection to the Java message loop.
+  scoped_ptr<base::MessageLoopForUI> ui_loop_;
+
+  // Runners that allow posting tasks to the various native threads.
+  scoped_refptr<AutoThreadTaskRunner> ui_task_runner_;
+  scoped_refptr<AutoThreadTaskRunner> network_task_runner_;
+  scoped_refptr<AutoThreadTaskRunner> display_task_runner_;
+
+  scoped_refptr<net::URLRequestContextGetter> url_requester_;
+  scoped_refptr<FrameConsumerProxy> frame_consumer_;
+
+  // All below variables are specific to each connection.
+
+  // True iff ConnectToHost() has been called without a subsequent
+  // call to DisconnectFromHost() (i.e. while connecting, once connected, and
+  // between the time a connection fails and DisconnectFromHost() is called).
+  // To be used on the UI thread.
+  bool connected_;
+
+  // This group of variables is to be used on the network thread.
   scoped_ptr<ClientConfig> client_config_;
   scoped_ptr<ClientContext> client_context_;
   scoped_ptr<protocol::ConnectionToHost> connection_;
   scoped_ptr<ChromotingClient> client_;
-  scoped_ptr<XmppSignalStrategy::XmppServerConfig> chat_config_;
-  scoped_ptr<XmppSignalStrategy> chat_;  // must outlive client_
-  scoped_ptr<NetworkSettings> netset_;
-  protocol::SecretFetchedCallback announce_secret_;
+  scoped_ptr<XmppSignalStrategy::XmppServerConfig> signaling_config_;
+  scoped_ptr<XmppSignalStrategy> signaling_;  // Must outlive client_
+  scoped_ptr<NetworkSettings> network_settings_;
 
-  // Java string handles:
-  jstring username_jstr_;
-  jstring auth_token_jstr_;
-  jstring host_jid_jstr_;
-  jstring host_id_jstr_;
-  jstring host_pubkey_jstr_;
-  jstring pin_jstr_;
+  // Pass this the user's PIN once we have it. To be assigned and accessed on
+  // the UI thread, but must be posted to the network thread to call it.
+  protocol::SecretFetchedCallback pin_callback_;
 
-  // C string pointers:
-  const char* username_cstr_;
-  const char* auth_token_cstr_;
-  const char* host_jid_cstr_;
-  const char* host_id_cstr_;
-  const char* host_pubkey_cstr_;
-  const char* pin_cstr_;
+  // These strings describe the current connection, and are not reused. They
+  // are initialized in ConnectionToHost(), but thereafter are only to be used
+  // on the network thread. (This is safe because ConnectionToHost()'s finishes
+  // using them on the UI thread before they are ever touched from network.)
+  std::string username_;
+  std::string auth_token_;
+  std::string host_jid_;
+  std::string host_id_;
+  std::string host_pubkey_;
 
   friend struct DefaultSingletonTraits<ChromotingJNIInstance>;
 

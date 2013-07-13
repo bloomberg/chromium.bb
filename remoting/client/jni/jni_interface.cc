@@ -40,7 +40,8 @@ JNIEXPORT void JNICALL JNI_IMPLEMENTATION(loadNative)(JNIEnv* env,
   // them from DCHECKing out when they go looking.
   CommandLine::Init(0, NULL);
 
-  remoting::ChromotingJNIInstance::GetInstance(); // Initialize threads now.
+  // Create the singleton now so that the Chromoting threads will be set up.
+  remoting::ChromotingJNIInstance::GetInstance();
 }
 
 JNIEXPORT jstring JNICALL JNI_IMPLEMENTATION(getApiKey)(JNIEnv* env,
@@ -60,18 +61,32 @@ JNIEXPORT jstring JNICALL JNI_IMPLEMENTATION(getClientSecret)(JNIEnv* env,
       google_apis::GetOAuth2ClientSecret(google_apis::CLIENT_REMOTING).c_str());
 }
 
-JNIEXPORT void JNICALL JNI_IMPLEMENTATION(connectNative)(JNIEnv* env,
-                                                         jobject that,
-                                                         jstring username,
-                                                         jstring auth_token,
-                                                         jstring host_jid,
-                                                         jstring host_id,
-                                                         jstring host_pubkey) {
-  remoting::ChromotingJNIInstance::GetInstance()->ConnectToHost(username,
-                                                                auth_token,
-                                                                host_jid,
-                                                                host_id,
-                                                                host_pubkey);
+JNIEXPORT void JNICALL JNI_IMPLEMENTATION(connectNative)(
+    JNIEnv* env,
+    jobject that,
+    jstring username_jstr,
+    jstring auth_token_jstr,
+    jstring host_jid_jstr,
+    jstring host_id_jstr,
+    jstring host_pubkey_jstr) {
+  const char* username_cstr = env->GetStringUTFChars(username_jstr, NULL);
+  const char* auth_token_cstr = env->GetStringUTFChars(auth_token_jstr, NULL);
+  const char* host_jid_cstr = env->GetStringUTFChars(host_jid_jstr, NULL);
+  const char* host_id_cstr = env->GetStringUTFChars(host_id_jstr, NULL);
+  const char* host_pubkey_cstr = env->GetStringUTFChars(host_pubkey_jstr, NULL);
+
+  remoting::ChromotingJNIInstance::GetInstance()->ConnectToHost(
+      username_cstr,
+      auth_token_cstr,
+      host_jid_cstr,
+      host_id_cstr,
+      host_pubkey_cstr);
+
+  env->ReleaseStringUTFChars(username_jstr, username_cstr);
+  env->ReleaseStringUTFChars(auth_token_jstr, auth_token_cstr);
+  env->ReleaseStringUTFChars(host_jid_jstr, host_jid_cstr);
+  env->ReleaseStringUTFChars(host_id_jstr, host_id_cstr);
+  env->ReleaseStringUTFChars(host_pubkey_jstr, host_pubkey_cstr);
 }
 
 JNIEXPORT void JNICALL JNI_IMPLEMENTATION(disconnectNative)(JNIEnv* env,
@@ -79,10 +94,15 @@ JNIEXPORT void JNICALL JNI_IMPLEMENTATION(disconnectNative)(JNIEnv* env,
   remoting::ChromotingJNIInstance::GetInstance()->DisconnectFromHost();
 }
 
-JNIEXPORT void JNICALL JNI_IMPLEMENTATION(authenticationResponse)(JNIEnv* env,
-                                                                  jobject that,
-                                                                  jstring pin) {
-  remoting::ChromotingJNIInstance::GetInstance()->AuthenticateWithPin(pin);
+JNIEXPORT void JNICALL JNI_IMPLEMENTATION(authenticationResponse)(
+    JNIEnv* env,
+    jobject that,
+    jstring pin_jstr) {
+  const char* pin_cstr = env->GetStringUTFChars(pin_jstr, NULL);
+
+  remoting::ChromotingJNIInstance::GetInstance()->ProvideSecret(pin_cstr);
+
+  env->ReleaseStringUTFChars(pin_jstr, pin_cstr);
 }
 
 }  // extern "C"

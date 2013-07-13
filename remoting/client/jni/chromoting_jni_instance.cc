@@ -23,139 +23,91 @@ ChromotingJNIInstance* ChromotingJNIInstance::GetInstance() {
 }
 
 ChromotingJNIInstance::ChromotingJNIInstance()
-    : username_cstr_(NULL),
-      auth_token_cstr_(NULL),
-      host_jid_cstr_(NULL),
-      host_id_cstr_(NULL),
-      host_pubkey_cstr_(NULL),
-      pin_cstr_(NULL) {
+    : connected_(false) {
   JNIEnv* env = base::android::AttachCurrentThread();
 
+  // The base and networks stacks must be registered with JNI in order to work
+  // on Android. An AtExitManager cleans this up at world's end.
   collector_.reset(new base::AtExitManager());
   base::android::RegisterJni(env);
   net::android::RegisterJni(env);
 
-  LOG(INFO) << "starting main message loop";
+  // On Android, the UI thread is managed by Java, so we need to attach and
+  // start a special type of message loop to allow Chromium code to run tasks.
+  LOG(INFO) << "Starting main message loop";
   ui_loop_.reset(new base::MessageLoopForUI());
   ui_loop_->Start();
 
-  LOG(INFO) << "spawning additional threads";
-  ui_runner_ = new AutoThreadTaskRunner(ui_loop_->message_loop_proxy(),
-                                        base::MessageLoop::QuitClosure());
-  net_runner_ = AutoThread::CreateWithType("native_net",
-                                           ui_runner_,
-                                           base::MessageLoop::TYPE_IO);
-  disp_runner_ = AutoThread::CreateWithType("native_disp",
-                                            ui_runner_,
-                                            base::MessageLoop::TYPE_DEFAULT);
+  LOG(INFO) << "Spawning additional threads";
+  // TODO(solb) Stop pretending to control the managed UI thread's lifetime.
+  ui_task_runner_ = new AutoThreadTaskRunner(ui_loop_->message_loop_proxy(),
+                                             base::MessageLoop::QuitClosure());
+  network_task_runner_ = AutoThread::CreateWithType("native_net",
+                                                    ui_task_runner_,
+                                                    base::MessageLoop::TYPE_IO);
+  display_task_runner_ = AutoThread::Create("native_disp",
+                                            ui_task_runner_);
 
-  url_requester_ = new URLRequestContextGetter(ui_runner_, net_runner_);
+  url_requester_ = new URLRequestContextGetter(ui_task_runner_,
+                                               network_task_runner_);
 
   class_ = static_cast<jclass>(env->NewGlobalRef(env->FindClass(JAVA_CLASS)));
 }
 
 ChromotingJNIInstance::~ChromotingJNIInstance() {
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
+  DCHECK(!connected_);
+
   JNIEnv* env = base::android::AttachCurrentThread();
   env->DeleteGlobalRef(class_);
-  // TODO(solb) detach all threads from JVM
+  // TODO(solb): crbug.com/259594 Detach all threads from JVM here.
 }
 
-void ChromotingJNIInstance::ConnectToHost(jstring username,
-                                          jstring auth_token,
-                                          jstring host_jid,
-                                          jstring host_id,
-                                          jstring host_pubkey) {
-  JNIEnv* env = base::android::AttachCurrentThread();
+void ChromotingJNIInstance::ConnectToHost(const char* username,
+                                          const char* auth_token,
+                                          const char* host_jid,
+                                          const char* host_id,
+                                          const char* host_pubkey) {
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
+  DCHECK(!connected_);
+  connected_ = true;
 
-  username_jstr_ = static_cast<jstring>(env->NewGlobalRef(username));
-  auth_token_jstr_ = static_cast<jstring>(env->NewGlobalRef(auth_token));
-  host_jid_jstr_ = static_cast<jstring>(env->NewGlobalRef(host_jid));
-  host_id_jstr_ = static_cast<jstring>(env->NewGlobalRef(host_id));
-  host_pubkey_jstr_ = static_cast<jstring>(env->NewGlobalRef(host_pubkey));
+  username_ = username;
+  auth_token_ = auth_token;
+  host_jid_ = host_jid;
+  host_id_ = host_id;
+  host_pubkey_ = host_pubkey;
 
-  username_cstr_ = env->GetStringUTFChars(username_jstr_, NULL);
-  auth_token_cstr_ = env->GetStringUTFChars(auth_token_jstr_, NULL);
-  host_jid_cstr_ = env->GetStringUTFChars(host_jid_jstr_, NULL);
-  host_id_cstr_ = env->GetStringUTFChars(host_id_jstr_, NULL);
-  host_pubkey_cstr_ = env->GetStringUTFChars(host_pubkey_jstr_, NULL);
-
-  // We're a singleton, so Unretained is safe here.
-  disp_runner_->PostTask(FROM_HERE, base::Bind(
+  display_task_runner_->PostTask(FROM_HERE, base::Bind(
       &ChromotingJNIInstance::ConnectToHostOnDisplayThread,
       base::Unretained(this)));
 }
 
 void ChromotingJNIInstance::DisconnectFromHost() {
-  JNIEnv* env = base::android::AttachCurrentThread();
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
+  DCHECK(connected_);
+  connected_ = false;
 
-  env->ReleaseStringUTFChars(username_jstr_, username_cstr_);
-  env->ReleaseStringUTFChars(auth_token_jstr_, auth_token_cstr_);
-  env->ReleaseStringUTFChars(host_jid_jstr_, host_jid_cstr_);
-  env->ReleaseStringUTFChars(host_id_jstr_, host_id_cstr_);
-  env->ReleaseStringUTFChars(host_pubkey_jstr_, host_pubkey_cstr_);
-
-  username_cstr_ = NULL;
-  auth_token_cstr_ = NULL;
-  host_jid_cstr_ = NULL;
-  host_id_cstr_ = NULL;
-  host_pubkey_cstr_ = NULL;
-
-  env->DeleteGlobalRef(username_jstr_);
-  env->DeleteGlobalRef(auth_token_jstr_);
-  env->DeleteGlobalRef(host_jid_jstr_);
-  env->DeleteGlobalRef(host_id_jstr_);
-  env->DeleteGlobalRef(host_pubkey_jstr_);
-
-  if (pin_cstr_) {
-    // AuthenticatedWithPin() has been called.
-    env->ReleaseStringUTFChars(pin_jstr_, pin_cstr_);
-    pin_cstr_ = NULL;
-    env->DeleteGlobalRef(pin_jstr_);
-  }
-
-  // We're a singleton, so Unretained is safe here.
-  net_runner_->PostTask(FROM_HERE, base::Bind(
+  network_task_runner_->PostTask(FROM_HERE, base::Bind(
       &ChromotingJNIInstance::DisconnectFromHostOnNetworkThread,
       base::Unretained(this)));
 }
 
-void ChromotingJNIInstance::AuthenticateWithPin(jstring pin) {
-  JNIEnv* env = base::android::AttachCurrentThread();
+void ChromotingJNIInstance::ProvideSecret(const char* pin) {
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
+  DCHECK(!pin_callback_.is_null());
 
-  pin_jstr_ = static_cast<jstring>(env->NewGlobalRef(pin));
-  pin_cstr_ = env->GetStringUTFChars(pin_jstr_, NULL);
-
-  net_runner_->PostTask(FROM_HERE, base::Bind(announce_secret_, pin_cstr_));
-}
-
-void ChromotingJNIInstance::FetchSecret(
-    bool pairable,
-    const protocol::SecretFetchedCallback& callback_encore) {
-  // All our work must be done on the UI thread.
-  if (!ui_runner_->BelongsToCurrentThread()) {
-    // We're a singleton, so Unretained is safe here.
-    ui_runner_->PostTask(FROM_HERE, base::Bind(
-        &ChromotingJNIInstance::FetchSecret,
-        base::Unretained(this),
-        pairable,
-        callback_encore));
-    return;
-  }
-
-  announce_secret_ = callback_encore;
-  JNIEnv* env = base::android::AttachCurrentThread();
-  env->CallStaticVoidMethod(
-      class_,
-      env->GetStaticMethodID(class_, "displayAuthenticationPrompt", "()V"));
+  // We invoke the string constructor to ensure |pin| gets copied *before* the
+  // asynchronous run, since Java might want it back as soon as we return.
+  network_task_runner_->PostTask(FROM_HERE,
+                                 base::Bind(pin_callback_, std::string(pin)));
 }
 
 void ChromotingJNIInstance::OnConnectionState(
     protocol::ConnectionToHost::State state,
     protocol::ErrorCode error) {
-  // All our work must be done on the UI thread.
-  if (!ui_runner_->BelongsToCurrentThread()) {
-    // We're a singleton, so Unretained is safe here.
-    ui_runner_->PostTask(FROM_HERE, base::Bind(
+  if (!ui_task_runner_->BelongsToCurrentThread()) {
+    ui_task_runner_->PostTask(FROM_HERE, base::Bind(
         &ChromotingJNIInstance::OnConnectionState,
         base::Unretained(this),
         state,
@@ -172,12 +124,15 @@ void ChromotingJNIInstance::OnConnectionState(
 }
 
 void ChromotingJNIInstance::OnConnectionReady(bool ready) {
+  // We ignore this message, since OnConnectionState() tells us the same thing.
 }
 
 void ChromotingJNIInstance::SetCapabilities(const std::string& capabilities) {}
 
 void ChromotingJNIInstance::SetPairingResponse(
-    const protocol::PairingResponse& response) {}
+    const protocol::PairingResponse& response) {
+  NOTIMPLEMENTED();
+}
 
 protocol::ClipboardStub* ChromotingJNIInstance::GetClipboardStub() {
   NOTIMPLEMENTED();
@@ -189,50 +144,44 @@ protocol::CursorShapeStub* ChromotingJNIInstance::GetCursorShapeStub() {
   return NULL;
 }
 
-// We don't use NOTIMPLEMENTED() here because NegotiatingClientAuthenticator
-// calls this even if it doesn't use the configuration method, and we don't
-// want to print an error on every run.
 scoped_ptr<protocol::ThirdPartyClientAuthenticator::TokenFetcher>
     ChromotingJNIInstance::GetTokenFetcher(const std::string& host_public_key) {
-  LOG(INFO) << "ChromotingJNIInstance::GetTokenFetcher(...) [unimplemented]";
+  // Return null to indicate that third-party authentication is unsupported.
   return scoped_ptr<protocol::ThirdPartyClientAuthenticator::TokenFetcher>();
 }
 
 void ChromotingJNIInstance::ConnectToHostOnDisplayThread() {
-  DCHECK(disp_runner_->BelongsToCurrentThread());
+  DCHECK(display_task_runner_->BelongsToCurrentThread());
 
-  if (!frames_.get()) {
-    frames_ = new FrameConsumerProxy(disp_runner_);
+  if (!frame_consumer_.get()) {
+    frame_consumer_ = new FrameConsumerProxy(display_task_runner_);
     // TODO(solb) Instantiate some FrameConsumer implementation and attach it.
   }
 
-  // We're a singleton, so Unretained is safe here.
-  net_runner_->PostTask(FROM_HERE, base::Bind(
+  network_task_runner_->PostTask(FROM_HERE, base::Bind(
       &ChromotingJNIInstance::ConnectToHostOnNetworkThread,
       base::Unretained(this)));
 }
 
 void ChromotingJNIInstance::ConnectToHostOnNetworkThread() {
-  DCHECK(net_runner_->BelongsToCurrentThread());
+  DCHECK(network_task_runner_->BelongsToCurrentThread());
 
   client_config_.reset(new ClientConfig());
-  client_config_->host_jid = host_jid_cstr_;
-  client_config_->host_public_key = host_pubkey_cstr_;
-  // We're a singleton, so Unretained is safe here.
+  client_config_->host_jid = host_jid_;
+  client_config_->host_public_key = host_pubkey_;
+
   client_config_->fetch_secret_callback = base::Bind(
       &ChromotingJNIInstance::FetchSecret,
       base::Unretained(this));
-  client_config_->authentication_tag = host_id_cstr_;
+  client_config_->authentication_tag = host_id_;
 
   // TODO(solb) Move these hardcoded values elsewhere:
-  client_config_->authentication_methods.push_back(
-      protocol::AuthenticationMethod::FromString("spake2_pair"));
   client_config_->authentication_methods.push_back(
       protocol::AuthenticationMethod::FromString("spake2_hmac"));
   client_config_->authentication_methods.push_back(
       protocol::AuthenticationMethod::FromString("spake2_plain"));
 
-  client_context_.reset(new ClientContext(net_runner_.get()));
+  client_context_.reset(new ClientContext(network_task_runner_.get()));
   client_context_->Start();
 
   connection_.reset(new protocol::ConnectionToHost(true));
@@ -241,37 +190,66 @@ void ChromotingJNIInstance::ConnectToHostOnNetworkThread() {
                                      client_context_.get(),
                                      connection_.get(),
                                      this,
-                                     frames_,
+                                     frame_consumer_,
                                      scoped_ptr<AudioPlayer>()));
 
-  chat_config_.reset(new XmppSignalStrategy::XmppServerConfig());
-  chat_config_->host = CHAT_SERVER;
-  chat_config_->port = CHAT_PORT;
-  chat_config_->use_tls = CHAT_USE_TLS;
+  signaling_config_.reset(new XmppSignalStrategy::XmppServerConfig());
+  signaling_config_->host = CHAT_SERVER;
+  signaling_config_->port = CHAT_PORT;
+  signaling_config_->use_tls = CHAT_USE_TLS;
 
-  chat_.reset(new XmppSignalStrategy(url_requester_,
-                                     username_cstr_,
-                                     auth_token_cstr_,
-                                     CHAT_AUTH_METHOD,
-                                     *chat_config_));
+  signaling_.reset(new XmppSignalStrategy(url_requester_,
+                                          username_,
+                                          auth_token_,
+                                          CHAT_AUTH_METHOD,
+                                          *signaling_config_));
 
-  netset_.reset(new NetworkSettings(NetworkSettings::NAT_TRAVERSAL_OUTGOING));
+  network_settings_.reset(new NetworkSettings(
+      NetworkSettings::NAT_TRAVERSAL_OUTGOING));
   scoped_ptr<protocol::TransportFactory> fact(
-      protocol::LibjingleTransportFactory::Create(*netset_, url_requester_));
+      protocol::LibjingleTransportFactory::Create(*network_settings_,
+                                                  url_requester_));
 
-  client_->Start(chat_.get(), fact.Pass());
+  client_->Start(signaling_.get(), fact.Pass());
 }
 
 void ChromotingJNIInstance::DisconnectFromHostOnNetworkThread() {
-  DCHECK(net_runner_->BelongsToCurrentThread());
+  DCHECK(network_task_runner_->BelongsToCurrentThread());
 
+  username_ = "";
+  auth_token_ = "";
+  host_jid_ = "";
+  host_id_ = "";
+  host_pubkey_ = "";
+
+  // |client_| must be torn down before |signaling_|.
+  pin_callback_.Reset();
   client_.reset();
   connection_.reset();
   client_context_.reset();
   client_config_.reset();
-  chat_.reset();  // This object must outlive client_.
-  chat_config_.reset();  // TODO(solb) Restructure to reuse between sessions.
-  netset_.reset();
+  signaling_.reset();
+  signaling_config_.reset();
+  network_settings_.reset();
+}
+
+void ChromotingJNIInstance::FetchSecret(
+    bool pairable,
+    const protocol::SecretFetchedCallback& callback) {
+  if (!ui_task_runner_->BelongsToCurrentThread()) {
+    ui_task_runner_->PostTask(FROM_HERE, base::Bind(
+        &ChromotingJNIInstance::FetchSecret,
+        base::Unretained(this),
+        pairable,
+        callback));
+    return;
+  }
+
+  pin_callback_ = callback;
+  JNIEnv* env = base::android::AttachCurrentThread();
+  env->CallStaticVoidMethod(
+      class_,
+      env->GetStaticMethodID(class_, "displayAuthenticationPrompt", "()V"));
 }
 
 }  // namespace remoting
