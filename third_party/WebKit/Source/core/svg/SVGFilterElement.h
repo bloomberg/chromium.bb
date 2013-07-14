@@ -75,10 +75,10 @@ private:
     END_DECLARE_ANIMATED_PROPERTIES
 };
 
-inline SVGFilterElement* toSVGFilterElement(SVGElement* element)
+inline SVGFilterElement* toSVGFilterElement(Node* node)
 {
-    ASSERT_WITH_SECURITY_IMPLICATION(!element || element->hasTagName(SVGNames::filterTag));
-    return static_cast<SVGFilterElement*>(element);
+    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(SVGNames::filterTag));
+    return static_cast<SVGFilterElement*>(node);
 }
 
 }

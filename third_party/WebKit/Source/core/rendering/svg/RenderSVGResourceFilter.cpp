@@ -79,7 +79,7 @@ void RenderSVGResourceFilter::removeClientFromCache(RenderObject* client, bool m
 
 PassRefPtr<SVGFilterBuilder> RenderSVGResourceFilter::buildPrimitives(SVGFilter* filter)
 {
-    SVGFilterElement* filterElement = static_cast<SVGFilterElement*>(node());
+    SVGFilterElement* filterElement = toSVGFilterElement(node());
     FloatRect targetBoundingBox = filter->targetBoundingBox();
 
     // Add effects to the builder
@@ -139,7 +139,7 @@ bool RenderSVGResourceFilter::applyResource(RenderObject* object, RenderStyle*, 
     OwnPtr<FilterData> filterData(adoptPtr(new FilterData));
     FloatRect targetBoundingBox = object->objectBoundingBox();
 
-    SVGFilterElement* filterElement = static_cast<SVGFilterElement*>(node());
+    SVGFilterElement* filterElement = toSVGFilterElement(node());
     filterData->boundaries = SVGLengthContext::resolveRectangle<SVGFilterElement>(filterElement, filterElement->filterUnitsCurrentValue(), targetBoundingBox);
     if (filterData->boundaries.isEmpty())
         return false;
@@ -311,7 +311,7 @@ void RenderSVGResourceFilter::postApplyResource(RenderObject* object, GraphicsCo
 
 FloatRect RenderSVGResourceFilter::resourceBoundingBox(RenderObject* object)
 {
-    if (SVGFilterElement* element = static_cast<SVGFilterElement*>(node()))
+    if (SVGFilterElement* element = toSVGFilterElement(node()))
         return SVGLengthContext::resolveRectangle<SVGFilterElement>(element, element->filterUnitsCurrentValue(), object->objectBoundingBox());
 
     return FloatRect();

@@ -147,7 +147,7 @@ static inline String targetReferenceFromResource(SVGElement* element)
     else if (element->hasTagName(SVGNames::linearGradientTag) || element->hasTagName(SVGNames::radialGradientTag))
         target = static_cast<SVGGradientElement*>(element)->hrefCurrentValue();
     else if (element->hasTagName(SVGNames::filterTag))
-        target = static_cast<SVGFilterElement*>(element)->hrefCurrentValue();
+        target = toSVGFilterElement(element)->hrefCurrentValue();
     else
         ASSERT_NOT_REACHED();
 
