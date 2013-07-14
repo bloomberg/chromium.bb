@@ -426,6 +426,9 @@ Binding.prototype = {
     if (!availability.is_available && $Object.keys(mod).length == 0) {
       console.error('chrome.' + schema.namespace + ' is not available: ' +
                         availability.message);
+      logActivity.LogBlockedCall(extensionId,
+                                 schema.namespace,
+                                 availability.result);
       return;
     }
 

@@ -177,6 +177,8 @@ class V8ContextNativeHandler : public ObjectBackedNativeHandler {
              v8::Boolean::New(availability.is_available()));
     ret->Set(v8::String::New("message"),
              v8::String::New(availability.message().c_str()));
+    ret->Set(v8::String::New("result"),
+             v8::Integer::New(availability.result()));
     args.GetReturnValue().Set(ret);
   }
 
@@ -1444,6 +1446,9 @@ bool Dispatcher::CheckContextAccessToExtensionAPI(
 
   Feature::Availability availability = context->GetAvailability(function_name);
   if (!availability.is_available()) {
+    APIActivityLogger::LogBlockedCall(context->extension()->id(),
+                                      function_name,
+                                      availability.result());
     v8::ThrowException(v8::Exception::Error(
         v8::String::New(availability.message().c_str())));
   }
