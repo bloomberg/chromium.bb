@@ -46,6 +46,7 @@
 #include "core/animation/AnimatableValue.h"
 #include "core/animation/Animation.h"
 #include "core/css/BasicShapeFunctions.h"
+#include "core/css/CSSAspectRatioValue.h"
 #include "core/css/CSSCalculationValue.h"
 #include "core/css/CSSCursorImageValue.h"
 #include "core/css/CSSDefaultStyleSheets.h"
@@ -71,6 +72,7 @@
 #include "core/css/MediaQueryEvaluator.h"
 #include "core/css/PageRuleCollector.h"
 #include "core/css/Pair.h"
+#include "core/css/Rect.h"
 #include "core/css/RuleSet.h"
 #include "core/css/ShadowValue.h"
 #include "core/css/StylePropertySet.h"
@@ -122,12 +124,339 @@
 
 namespace WebCore {
 
+static Length clipConvertToLength(StyleResolverState& state, CSSPrimitiveValue* value)
+{
+    return value->convertToLength<FixedIntegerConversion | PercentConversion | FractionConversion | AutoConversion>(state.style(), state.rootElementStyle(), state.style()->effectiveZoom());
+}
+
+void StyleBuilderFunctions::applyInitialCSSPropertyClip(StyleResolver*, StyleResolverState& state)
+{
+    state.style()->setClip(Length(), Length(), Length(), Length());
+    state.style()->setHasClip(false);
+}
+
+void StyleBuilderFunctions::applyInheritCSSPropertyClip(StyleResolver* styleResolver, StyleResolverState& state)
+{
+    RenderStyle* parentStyle = state.parentStyle();
+    if (!parentStyle->hasClip())
+        return applyInitialCSSPropertyClip(styleResolver, state);
+    state.style()->setClip(parentStyle->clipTop(), parentStyle->clipRight(), parentStyle->clipBottom(), parentStyle->clipLeft());
+    state.style()->setHasClip(true);
+}
+
+void StyleBuilderFunctions::applyValueCSSPropertyClip(StyleResolver*, StyleResolverState& state, CSSValue* value)
+{
+    if (!value->isPrimitiveValue())
+        return;
+
+    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
+
+    if (Rect* rect = primitiveValue->getRectValue()) {
+        Length top = clipConvertToLength(state, rect->top());
+        Length right = clipConvertToLength(state, rect->right());
+        Length bottom = clipConvertToLength(state, rect->bottom());
+        Length left = clipConvertToLength(state, rect->left());
+        state.style()->setClip(top, right, bottom, left);
+        state.style()->setHasClip(true);
+    } else if (primitiveValue->getValueID() == CSSValueAuto) {
+        state.style()->setClip(Length(), Length(), Length(), Length());
+        state.style()->setHasClip(false);
+    }
+}
+
+void StyleBuilderFunctions::applyInitialCSSPropertyCursor(StyleResolver*, StyleResolverState& state)
+{
+    state.style()->clearCursorList();
+    state.style()->setCursor(RenderStyle::initialCursor());
+}
+
+void StyleBuilderFunctions::applyInheritCSSPropertyCursor(StyleResolver*, StyleResolverState& state)
+{
+    state.style()->setCursor(state.parentStyle()->cursor());
+    state.style()->setCursorList(state.parentStyle()->cursors());
+}
+
+void StyleBuilderFunctions::applyValueCSSPropertyCursor(StyleResolver*, StyleResolverState& state, CSSValue* value)
+{
+    state.style()->clearCursorList();
+    if (value->isValueList()) {
+        CSSValueList* list = toCSSValueList(value);
+        int len = list->length();
+        state.style()->setCursor(CURSOR_AUTO);
+        for (int i = 0; i < len; i++) {
+            CSSValue* item = list->itemWithoutBoundsCheck(i);
+            if (item->isCursorImageValue()) {
+                CSSCursorImageValue* image = static_cast<CSSCursorImageValue*>(item);
+                if (image->updateIfSVGCursorIsUsed(state.element())) // Elements with SVG cursors are not allowed to share style.
+                    state.style()->setUnique();
+                state.style()->addCursor(state.styleImage(CSSPropertyCursor, image), image->hotSpot());
+            } else if (item->isPrimitiveValue()) {
+                CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(item);
+                if (primitiveValue->isValueID())
+                    state.style()->setCursor(*primitiveValue);
+            }
+        }
+    } else if (value->isPrimitiveValue()) {
+        CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
+        if (primitiveValue->isValueID() && state.style()->cursor() != ECursor(*primitiveValue))
+            state.style()->setCursor(*primitiveValue);
+    }
+}
+
 void StyleBuilderFunctions::applyValueCSSPropertyDirection(StyleResolver*, StyleResolverState& state, CSSValue* value)
 {
     state.style()->setDirection(*toCSSPrimitiveValue(value));
     Element* element = state.element();
     if (element && element == element->document()->documentElement())
         element->document()->setDirectionSetOnDocumentElement(true);
+}
+
+static inline bool isValidDisplayValue(StyleResolverState& state, EDisplay displayPropertyValue)
+{
+    if (state.element() && state.element()->isSVGElement() && state.style()->styleType() == NOPSEUDO)
+        return (displayPropertyValue == INLINE || displayPropertyValue == BLOCK || displayPropertyValue == NONE);
+    return true;
+}
+
+void StyleBuilderFunctions::applyInheritCSSPropertyDisplay(StyleResolver*, StyleResolverState& state)
+{
+    EDisplay display = state.parentStyle()->display();
+    if (!isValidDisplayValue(state, display))
+        return;
+    state.style()->setDisplay(display);
+}
+
+void StyleBuilderFunctions::applyValueCSSPropertyDisplay(StyleResolver*, StyleResolverState& state, CSSValue* value)
+{
+    if (!value->isPrimitiveValue())
+        return;
+
+    EDisplay display = *toCSSPrimitiveValue(value);
+
+    if (!isValidDisplayValue(state, display))
+        return;
+
+    state.style()->setDisplay(display);
+}
+
+void StyleBuilderFunctions::applyInitialCSSPropertyFontFamily(StyleResolver* styleResolver, StyleResolverState& state)
+{
+    FontDescription fontDescription = state.style()->fontDescription();
+    FontDescription initialDesc = FontDescription();
+
+    // We need to adjust the size to account for the generic family change from monospace to non-monospace.
+    if (fontDescription.keywordSize() && fontDescription.useFixedDefaultSize())
+        styleResolver->setFontSize(fontDescription, FontSize::fontSizeForKeyword(styleResolver->document(), CSSValueXxSmall + fontDescription.keywordSize() - 1, false));
+    fontDescription.setGenericFamily(initialDesc.genericFamily());
+    if (!initialDesc.firstFamily().familyIsEmpty())
+        fontDescription.setFamily(initialDesc.firstFamily());
+
+    state.setFontDescription(fontDescription);
+    return;
+}
+
+void StyleBuilderFunctions::applyInheritCSSPropertyFontFamily(StyleResolver*, StyleResolverState& state)
+{
+    FontDescription fontDescription = state.style()->fontDescription();
+    FontDescription parentFontDescription = state.parentStyle()->fontDescription();
+
+    fontDescription.setGenericFamily(parentFontDescription.genericFamily());
+    fontDescription.setFamily(parentFontDescription.firstFamily());
+    fontDescription.setIsSpecifiedFont(parentFontDescription.isSpecifiedFont());
+    state.setFontDescription(fontDescription);
+    return;
+}
+
+void StyleBuilderFunctions::applyValueCSSPropertyFontFamily(StyleResolver* styleResolver, StyleResolverState& state, CSSValue* value)
+{
+    if (!value->isValueList())
+        return;
+
+    FontDescription fontDescription = state.style()->fontDescription();
+    FontFamily& firstFamily = fontDescription.firstFamily();
+    FontFamily* currFamily = 0;
+
+    // Before mapping in a new font-family property, we should reset the generic family.
+    bool oldFamilyUsedFixedDefaultSize = fontDescription.useFixedDefaultSize();
+    fontDescription.setGenericFamily(FontDescription::NoFamily);
+
+    for (CSSValueListIterator i = value; i.hasMore(); i.advance()) {
+        CSSValue* item = i.value();
+        if (!item->isPrimitiveValue())
+            continue;
+        CSSPrimitiveValue* contentValue = toCSSPrimitiveValue(item);
+        AtomicString face;
+        Settings* settings = styleResolver->document()->settings();
+        if (contentValue->isString()) {
+            face = contentValue->getStringValue();
+        } else if (settings) {
+            switch (contentValue->getValueID()) {
+            case CSSValueWebkitBody:
+                face = settings->standardFontFamily();
+                break;
+            case CSSValueSerif:
+                face = serifFamily;
+                fontDescription.setGenericFamily(FontDescription::SerifFamily);
+                break;
+            case CSSValueSansSerif:
+                face = sansSerifFamily;
+                fontDescription.setGenericFamily(FontDescription::SansSerifFamily);
+                break;
+            case CSSValueCursive:
+                face = cursiveFamily;
+                fontDescription.setGenericFamily(FontDescription::CursiveFamily);
+                break;
+            case CSSValueFantasy:
+                face = fantasyFamily;
+                fontDescription.setGenericFamily(FontDescription::FantasyFamily);
+                break;
+            case CSSValueMonospace:
+                face = monospaceFamily;
+                fontDescription.setGenericFamily(FontDescription::MonospaceFamily);
+                break;
+            case CSSValueWebkitPictograph:
+                face = pictographFamily;
+                fontDescription.setGenericFamily(FontDescription::PictographFamily);
+                break;
+            default:
+                break;
+            }
+        }
+
+        if (!face.isEmpty()) {
+            if (!currFamily) {
+                // Filling in the first family.
+                firstFamily.setFamily(face);
+                firstFamily.appendFamily(0); // Remove any inherited family-fallback list.
+                currFamily = &firstFamily;
+                fontDescription.setIsSpecifiedFont(fontDescription.genericFamily() == FontDescription::NoFamily);
+            } else {
+                RefPtr<SharedFontFamily> newFamily = SharedFontFamily::create();
+                newFamily->setFamily(face);
+                currFamily->appendFamily(newFamily);
+                currFamily = newFamily.get();
+            }
+        }
+    }
+
+    // We can't call useFixedDefaultSize() until all new font families have been added
+    // If currFamily is non-zero then we set at least one family on this description.
+    if (currFamily) {
+        if (fontDescription.keywordSize() && fontDescription.useFixedDefaultSize() != oldFamilyUsedFixedDefaultSize)
+            styleResolver->setFontSize(fontDescription, FontSize::fontSizeForKeyword(styleResolver->document(), CSSValueXxSmall + fontDescription.keywordSize() - 1, !oldFamilyUsedFixedDefaultSize));
+
+        state.setFontDescription(fontDescription);
+    }
+    return;
+}
+
+// FIXME: Figure out where we fall in the size ranges (xx-small to xxx-large)
+// and scale down/up to the next size level.
+static float largerFontSize(float size)
+{
+    return size * 1.2f;
+}
+
+static float smallerFontSize(float size)
+{
+    return size / 1.2f;
+}
+
+void StyleBuilderFunctions::applyInitialCSSPropertyFontSize(StyleResolver* styleResolver, StyleResolverState& state)
+{
+    FontDescription fontDescription = state.style()->fontDescription();
+    float size = FontSize::fontSizeForKeyword(styleResolver->document(), CSSValueMedium, fontDescription.useFixedDefaultSize());
+
+    if (size < 0)
+        return;
+
+    fontDescription.setKeywordSize(CSSValueMedium - CSSValueXxSmall + 1);
+    styleResolver->setFontSize(fontDescription, size);
+    state.setFontDescription(fontDescription);
+    return;
+}
+
+void StyleBuilderFunctions::applyInheritCSSPropertyFontSize(StyleResolver* styleResolver, StyleResolverState& state)
+{
+    float size = state.parentStyle()->fontDescription().specifiedSize();
+
+    if (size < 0)
+        return;
+
+    FontDescription fontDescription = state.style()->fontDescription();
+    fontDescription.setKeywordSize(state.parentStyle()->fontDescription().keywordSize());
+    styleResolver->setFontSize(fontDescription, size);
+    state.setFontDescription(fontDescription);
+    return;
+}
+
+void StyleBuilderFunctions::applyValueCSSPropertyFontSize(StyleResolver* styleResolver, StyleResolverState& state, CSSValue* value)
+{
+    if (!value->isPrimitiveValue())
+        return;
+
+    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
+
+    FontDescription fontDescription = state.style()->fontDescription();
+    fontDescription.setKeywordSize(0);
+    float parentSize = 0;
+    bool parentIsAbsoluteSize = false;
+    float size = 0;
+
+    if (state.parentStyle()) {
+        parentSize = state.parentStyle()->fontDescription().specifiedSize();
+        parentIsAbsoluteSize = state.parentStyle()->fontDescription().isAbsoluteSize();
+    }
+
+    if (CSSValueID valueID = primitiveValue->getValueID()) {
+        // Keywords are being used.
+        switch (valueID) {
+        case CSSValueXxSmall:
+        case CSSValueXSmall:
+        case CSSValueSmall:
+        case CSSValueMedium:
+        case CSSValueLarge:
+        case CSSValueXLarge:
+        case CSSValueXxLarge:
+        case CSSValueWebkitXxxLarge:
+            size = FontSize::fontSizeForKeyword(styleResolver->document(), valueID, fontDescription.useFixedDefaultSize());
+            fontDescription.setKeywordSize(valueID - CSSValueXxSmall + 1);
+            break;
+        case CSSValueLarger:
+            size = largerFontSize(parentSize);
+            break;
+        case CSSValueSmaller:
+            size = smallerFontSize(parentSize);
+            break;
+        default:
+            return;
+        }
+
+        fontDescription.setIsAbsoluteSize(parentIsAbsoluteSize && (valueID == CSSValueLarger || valueID == CSSValueSmaller));
+    } else {
+        fontDescription.setIsAbsoluteSize(parentIsAbsoluteSize || !(primitiveValue->isPercentage() || primitiveValue->isFontRelativeLength()));
+        if (primitiveValue->isLength())
+            size = primitiveValue->computeLength<float>(state.parentStyle(), state.rootElementStyle(), 1.0, true);
+        else if (primitiveValue->isPercentage())
+            size = (primitiveValue->getFloatValue() * parentSize) / 100.0f;
+        else if (primitiveValue->isCalculatedPercentageWithLength())
+            size = primitiveValue->cssCalcValue()->toCalcValue(state.parentStyle(), state.rootElementStyle())->evaluate(parentSize);
+        else if (primitiveValue->isViewportPercentageLength())
+            size = valueForLength(primitiveValue->viewportPercentageLength(), 0, styleResolver->document()->renderView());
+        else
+            return;
+    }
+
+    if (size < 0)
+        return;
+
+    // Overly large font sizes will cause crashes on some platforms (such as Windows).
+    // Cap font size here to make sure that doesn't happen.
+    size = std::min(maximumAllowedFontSize, size);
+
+    styleResolver->setFontSize(fontDescription, size);
+    state.setFontDescription(fontDescription);
+    return;
 }
 
 void StyleBuilderFunctions::applyInitialCSSPropertyFontWeight(StyleResolver*, StyleResolverState& state)
@@ -166,9 +495,306 @@ void StyleBuilderFunctions::applyValueCSSPropertyFontWeight(StyleResolver*, Styl
     state.setFontDescription(fontDescription);
 }
 
+void StyleBuilderFunctions::applyValueCSSPropertyLineHeight(StyleResolver* styleResolver, StyleResolverState& state, CSSValue* value)
+{
+    if (!value->isPrimitiveValue())
+        return;
+
+    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
+    Length lineHeight;
+
+    if (primitiveValue->getValueID() == CSSValueNormal) {
+        lineHeight = RenderStyle::initialLineHeight();
+    } else if (primitiveValue->isLength()) {
+        double multiplier = state.style()->effectiveZoom();
+        if (Frame* frame = styleResolver->document()->frame())
+            multiplier *= frame->textZoomFactor();
+        lineHeight = primitiveValue->computeLength<Length>(state.style(), state.rootElementStyle(), multiplier);
+    } else if (primitiveValue->isPercentage()) {
+        // FIXME: percentage should not be restricted to an integer here.
+        lineHeight = Length((state.style()->fontSize() * primitiveValue->getIntValue()) / 100, Fixed);
+    } else if (primitiveValue->isNumber()) {
+        // FIXME: number and percentage values should produce the same type of Length (ie. Fixed or Percent).
+        lineHeight = Length(primitiveValue->getDoubleValue() * 100.0, Percent);
+    } else if (primitiveValue->isViewportPercentageLength()) {
+        lineHeight = primitiveValue->viewportPercentageLength();
+    } else {
+        return;
+    }
+    state.style()->setLineHeight(lineHeight);
+}
+
 void StyleBuilderFunctions::applyValueCSSPropertyListStyleImage(StyleResolver*, StyleResolverState& state, CSSValue* value)
 {
     state.style()->setListStyleImage(state.styleImage(CSSPropertyListStyleImage, value));
+}
+
+void StyleBuilderFunctions::applyInitialCSSPropertyOutlineStyle(StyleResolver*, StyleResolverState& state)
+{
+    state.style()->setOutlineStyleIsAuto(RenderStyle::initialOutlineStyleIsAuto());
+    state.style()->setOutlineStyle(RenderStyle::initialBorderStyle());
+}
+
+void StyleBuilderFunctions::applyInheritCSSPropertyOutlineStyle(StyleResolver*, StyleResolverState& state)
+{
+    state.style()->setOutlineStyleIsAuto(state.parentStyle()->outlineStyleIsAuto());
+    state.style()->setOutlineStyle(state.parentStyle()->outlineStyle());
+}
+
+void StyleBuilderFunctions::applyValueCSSPropertyOutlineStyle(StyleResolver*, StyleResolverState& state, CSSValue* value)
+{
+    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
+    state.style()->setOutlineStyleIsAuto(*primitiveValue);
+    state.style()->setOutlineStyle(*primitiveValue);
+}
+
+void StyleBuilderFunctions::applyValueCSSPropertyResize(StyleResolver* styleResolver, StyleResolverState& state, CSSValue* value)
+{
+    if (!value->isPrimitiveValue())
+        return;
+
+    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
+
+    EResize r = RESIZE_NONE;
+    switch (primitiveValue->getValueID()) {
+    case 0:
+        return;
+    case CSSValueAuto:
+        if (Settings* settings = styleResolver->document()->settings())
+            r = settings->textAreasAreResizable() ? RESIZE_BOTH : RESIZE_NONE;
+        break;
+    default:
+        r = *primitiveValue;
+    }
+    state.style()->setResize(r);
+}
+
+static Length mmLength(double mm) { return CSSPrimitiveValue::create(mm, CSSPrimitiveValue::CSS_MM)->computeLength<Length>(0, 0); }
+static Length inchLength(double inch) { return CSSPrimitiveValue::create(inch, CSSPrimitiveValue::CSS_IN)->computeLength<Length>(0, 0); }
+static bool getPageSizeFromName(CSSPrimitiveValue* pageSizeName, CSSPrimitiveValue* pageOrientation, Length& width, Length& height)
+{
+    DEFINE_STATIC_LOCAL(Length, a5Width, (mmLength(148)));
+    DEFINE_STATIC_LOCAL(Length, a5Height, (mmLength(210)));
+    DEFINE_STATIC_LOCAL(Length, a4Width, (mmLength(210)));
+    DEFINE_STATIC_LOCAL(Length, a4Height, (mmLength(297)));
+    DEFINE_STATIC_LOCAL(Length, a3Width, (mmLength(297)));
+    DEFINE_STATIC_LOCAL(Length, a3Height, (mmLength(420)));
+    DEFINE_STATIC_LOCAL(Length, b5Width, (mmLength(176)));
+    DEFINE_STATIC_LOCAL(Length, b5Height, (mmLength(250)));
+    DEFINE_STATIC_LOCAL(Length, b4Width, (mmLength(250)));
+    DEFINE_STATIC_LOCAL(Length, b4Height, (mmLength(353)));
+    DEFINE_STATIC_LOCAL(Length, letterWidth, (inchLength(8.5)));
+    DEFINE_STATIC_LOCAL(Length, letterHeight, (inchLength(11)));
+    DEFINE_STATIC_LOCAL(Length, legalWidth, (inchLength(8.5)));
+    DEFINE_STATIC_LOCAL(Length, legalHeight, (inchLength(14)));
+    DEFINE_STATIC_LOCAL(Length, ledgerWidth, (inchLength(11)));
+    DEFINE_STATIC_LOCAL(Length, ledgerHeight, (inchLength(17)));
+
+    if (!pageSizeName)
+        return false;
+
+    switch (pageSizeName->getValueID()) {
+    case CSSValueA5:
+        width = a5Width;
+        height = a5Height;
+        break;
+    case CSSValueA4:
+        width = a4Width;
+        height = a4Height;
+        break;
+    case CSSValueA3:
+        width = a3Width;
+        height = a3Height;
+        break;
+    case CSSValueB5:
+        width = b5Width;
+        height = b5Height;
+        break;
+    case CSSValueB4:
+        width = b4Width;
+        height = b4Height;
+        break;
+    case CSSValueLetter:
+        width = letterWidth;
+        height = letterHeight;
+        break;
+    case CSSValueLegal:
+        width = legalWidth;
+        height = legalHeight;
+        break;
+    case CSSValueLedger:
+        width = ledgerWidth;
+        height = ledgerHeight;
+        break;
+    default:
+        return false;
+    }
+
+    if (pageOrientation) {
+        switch (pageOrientation->getValueID()) {
+        case CSSValueLandscape:
+            std::swap(width, height);
+            break;
+        case CSSValuePortrait:
+            // Nothing to do.
+            break;
+        default:
+            return false;
+        }
+    }
+    return true;
+}
+
+void StyleBuilderFunctions::applyInitialCSSPropertySize(StyleResolver*, StyleResolverState&) { }
+void StyleBuilderFunctions::applyInheritCSSPropertySize(StyleResolver*, StyleResolverState&) { }
+void StyleBuilderFunctions::applyValueCSSPropertySize(StyleResolver*, StyleResolverState& state, CSSValue* value)
+{
+    state.style()->resetPageSizeType();
+    Length width;
+    Length height;
+    PageSizeType pageSizeType = PAGE_SIZE_AUTO;
+    CSSValueListInspector inspector(value);
+    switch (inspector.length()) {
+    case 2: {
+        // <length>{2} | <page-size> <orientation>
+        if (!inspector.first()->isPrimitiveValue() || !inspector.second()->isPrimitiveValue())
+            return;
+        CSSPrimitiveValue* first = toCSSPrimitiveValue(inspector.first());
+        CSSPrimitiveValue* second = toCSSPrimitiveValue(inspector.second());
+        if (first->isLength()) {
+            // <length>{2}
+            if (!second->isLength())
+                return;
+            width = first->computeLength<Length>(state.style(), state.rootElementStyle());
+            height = second->computeLength<Length>(state.style(), state.rootElementStyle());
+        } else {
+            // <page-size> <orientation>
+            // The value order is guaranteed. See CSSParser::parseSizeParameter.
+            if (!getPageSizeFromName(first, second, width, height))
+                return;
+        }
+        pageSizeType = PAGE_SIZE_RESOLVED;
+        break;
+    }
+    case 1: {
+        // <length> | auto | <page-size> | [ portrait | landscape]
+        if (!inspector.first()->isPrimitiveValue())
+            return;
+        CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(inspector.first());
+        if (primitiveValue->isLength()) {
+            // <length>
+            pageSizeType = PAGE_SIZE_RESOLVED;
+            width = height = primitiveValue->computeLength<Length>(state.style(), state.rootElementStyle());
+        } else {
+            switch (primitiveValue->getValueID()) {
+            case 0:
+                return;
+            case CSSValueAuto:
+                pageSizeType = PAGE_SIZE_AUTO;
+                break;
+            case CSSValuePortrait:
+                pageSizeType = PAGE_SIZE_AUTO_PORTRAIT;
+                break;
+            case CSSValueLandscape:
+                pageSizeType = PAGE_SIZE_AUTO_LANDSCAPE;
+                break;
+            default:
+                // <page-size>
+                pageSizeType = PAGE_SIZE_RESOLVED;
+                if (!getPageSizeFromName(primitiveValue, 0, width, height))
+                    return;
+            }
+        }
+        break;
+    }
+    default:
+        return;
+    }
+    state.style()->setPageSizeType(pageSizeType);
+    state.style()->setPageSize(LengthSize(width, height));
+}
+
+void StyleBuilderFunctions::applyValueCSSPropertyTextAlign(StyleResolver*, StyleResolverState& state, CSSValue* value)
+{
+    if (!value->isPrimitiveValue())
+        return;
+
+    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
+
+    if (primitiveValue->getValueID() != CSSValueWebkitMatchParent)
+        state.style()->setTextAlign(*primitiveValue);
+    else if (state.parentStyle()->textAlign() == TASTART)
+        state.style()->setTextAlign(state.parentStyle()->isLeftToRightDirection() ? LEFT : RIGHT);
+    else if (state.parentStyle()->textAlign() == TAEND)
+        state.style()->setTextAlign(state.parentStyle()->isLeftToRightDirection() ? RIGHT : LEFT);
+    else
+        state.style()->setTextAlign(state.parentStyle()->textAlign());
+}
+
+void StyleBuilderFunctions::applyValueCSSPropertyTextDecoration(StyleResolver*, StyleResolverState& state, CSSValue* value)
+{
+    TextDecoration t = RenderStyle::initialTextDecoration();
+    for (CSSValueListIterator i(value); i.hasMore(); i.advance()) {
+        CSSValue* item = i.value();
+        t |= *toCSSPrimitiveValue(item);
+    }
+    state.style()->setTextDecoration(t);
+}
+
+void StyleBuilderFunctions::applyInheritCSSPropertyTextIndent(StyleResolver*, StyleResolverState& state)
+{
+    state.style()->setTextIndent(state.parentStyle()->textIndent());
+#if ENABLE(CSS3_TEXT)
+    state.style()->setTextIndentLine(state.parentStyle()->textIndentLine());
+#endif
+}
+
+void StyleBuilderFunctions::applyInitialCSSPropertyTextIndent(StyleResolver*, StyleResolverState& state)
+{
+    state.style()->setTextIndent(RenderStyle::initialTextIndent());
+#if ENABLE(CSS3_TEXT)
+    state.style()->setTextIndentLine(RenderStyle::initialTextIndentLine());
+#endif
+}
+
+void StyleBuilderFunctions::applyValueCSSPropertyTextIndent(StyleResolver*, StyleResolverState& state, CSSValue* value)
+{
+    if (!value->isValueList())
+        return;
+
+    // [ <length> | <percentage> ] -webkit-each-line
+    // The order is guaranteed. See CSSParser::parseTextIndent.
+    // The second value, -webkit-each-line is handled only when CSS3_TEXT is enabled.
+
+    CSSValueList* valueList = toCSSValueList(value);
+    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(valueList->itemWithoutBoundsCheck(0));
+    Length lengthOrPercentageValue = primitiveValue->convertToLength<FixedIntegerConversion | PercentConversion | CalculatedConversion | ViewportPercentageConversion>(state.style(), state.rootElementStyle(), state.style()->effectiveZoom());
+    ASSERT(!lengthOrPercentageValue.isUndefined());
+    state.style()->setTextIndent(lengthOrPercentageValue);
+
+#if ENABLE(CSS3_TEXT)
+    ASSERT(valueList->length() <= 2);
+    CSSPrimitiveValue* eachLineValue = toCSSPrimitiveValue(valueList->item(1));
+    if (eachLineValue) {
+        ASSERT(eachLineValue->getValueID() == CSSValueWebkitEachLine);
+        state.style()->setTextIndentLine(TextIndentEachLine);
+    } else {
+        state.style()->setTextIndentLine(TextIndentFirstLine);
+    }
+#endif
+}
+
+void StyleBuilderFunctions::applyValueCSSPropertyVerticalAlign(StyleResolver*, StyleResolverState& state, CSSValue* value)
+{
+    if (!value->isPrimitiveValue())
+        return;
+
+    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
+
+    if (primitiveValue->getValueID())
+        return state.style()->setVerticalAlign(*primitiveValue);
+
+    state.style()->setVerticalAlignLength(primitiveValue->convertToLength<FixedIntegerConversion | PercentConversion | CalculatedConversion | ViewportPercentageConversion>(state.style(), state.rootElementStyle(), state.style()->effectiveZoom()));
 }
 
 static void resetEffectiveZoom(StyleResolverState& state)
@@ -215,6 +841,34 @@ void StyleBuilderFunctions::applyValueCSSPropertyZoom(StyleResolver*, StyleResol
     }
 }
 
+void StyleBuilderFunctions::applyInitialCSSPropertyWebkitAspectRatio(StyleResolver*, StyleResolverState& state)
+{
+    state.style()->setHasAspectRatio(RenderStyle::initialHasAspectRatio());
+    state.style()->setAspectRatioDenominator(RenderStyle::initialAspectRatioDenominator());
+    state.style()->setAspectRatioNumerator(RenderStyle::initialAspectRatioNumerator());
+}
+
+void StyleBuilderFunctions::applyInheritCSSPropertyWebkitAspectRatio(StyleResolver*, StyleResolverState& state)
+{
+    if (!state.parentStyle()->hasAspectRatio())
+        return;
+    state.style()->setHasAspectRatio(true);
+    state.style()->setAspectRatioDenominator(state.parentStyle()->aspectRatioDenominator());
+    state.style()->setAspectRatioNumerator(state.parentStyle()->aspectRatioNumerator());
+}
+
+void StyleBuilderFunctions::applyValueCSSPropertyWebkitAspectRatio(StyleResolver*, StyleResolverState& state, CSSValue* value)
+{
+    if (!value->isAspectRatioValue()) {
+        state.style()->setHasAspectRatio(false);
+        return;
+    }
+    CSSAspectRatioValue* aspectRatioValue = static_cast<CSSAspectRatioValue*>(value);
+    state.style()->setHasAspectRatio(true);
+    state.style()->setAspectRatioDenominator(aspectRatioValue->denominatorValue());
+    state.style()->setAspectRatioNumerator(aspectRatioValue->numeratorValue());
+}
+
 void StyleBuilderFunctions::applyValueCSSPropertyWebkitClipPath(StyleResolver* styleResolver, StyleResolverState& state, CSSValue* value)
 {
     if (value->isPrimitiveValue()) {
@@ -229,6 +883,109 @@ void StyleBuilderFunctions::applyValueCSSPropertyWebkitClipPath(StyleResolver* s
             // FIXME: It doesn't work with forward or external SVG references (see https://bugs.webkit.org/show_bug.cgi?id=90405)
             state.style()->setClipPath(ReferenceClipPathOperation::create(cssURLValue, url.fragmentIdentifier()));
         }
+    }
+}
+
+void StyleBuilderFunctions::applyInitialCSSPropertyWebkitFontVariantLigatures(StyleResolver*, StyleResolverState& state)
+{
+    FontDescription fontDescription = state.fontDescription();
+
+    fontDescription.setCommonLigaturesState(FontDescription::NormalLigaturesState);
+    fontDescription.setDiscretionaryLigaturesState(FontDescription::NormalLigaturesState);
+    fontDescription.setHistoricalLigaturesState(FontDescription::NormalLigaturesState);
+
+    state.setFontDescription(fontDescription);
+}
+
+void StyleBuilderFunctions::applyInheritCSSPropertyWebkitFontVariantLigatures(StyleResolver*, StyleResolverState& state)
+{
+    const FontDescription& parentFontDescription = state.parentFontDescription();
+    FontDescription fontDescription = state.fontDescription();
+
+    fontDescription.setCommonLigaturesState(parentFontDescription.commonLigaturesState());
+    fontDescription.setDiscretionaryLigaturesState(parentFontDescription.discretionaryLigaturesState());
+    fontDescription.setHistoricalLigaturesState(parentFontDescription.historicalLigaturesState());
+
+    state.setFontDescription(fontDescription);
+}
+
+void StyleBuilderFunctions::applyValueCSSPropertyWebkitFontVariantLigatures(StyleResolver*, StyleResolverState& state, CSSValue* value)
+{
+    FontDescription::LigaturesState commonLigaturesState = FontDescription::NormalLigaturesState;
+    FontDescription::LigaturesState discretionaryLigaturesState = FontDescription::NormalLigaturesState;
+    FontDescription::LigaturesState historicalLigaturesState = FontDescription::NormalLigaturesState;
+
+    if (value->isValueList()) {
+        CSSValueList* valueList = toCSSValueList(value);
+        for (size_t i = 0; i < valueList->length(); ++i) {
+            CSSValue* item = valueList->itemWithoutBoundsCheck(i);
+            ASSERT(item->isPrimitiveValue());
+            if (item->isPrimitiveValue()) {
+                CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(item);
+                switch (primitiveValue->getValueID()) {
+                case CSSValueNoCommonLigatures:
+                    commonLigaturesState = FontDescription::DisabledLigaturesState;
+                    break;
+                case CSSValueCommonLigatures:
+                    commonLigaturesState = FontDescription::EnabledLigaturesState;
+                    break;
+                case CSSValueNoDiscretionaryLigatures:
+                    discretionaryLigaturesState = FontDescription::DisabledLigaturesState;
+                    break;
+                case CSSValueDiscretionaryLigatures:
+                    discretionaryLigaturesState = FontDescription::EnabledLigaturesState;
+                    break;
+                case CSSValueNoHistoricalLigatures:
+                    historicalLigaturesState = FontDescription::DisabledLigaturesState;
+                    break;
+                case CSSValueHistoricalLigatures:
+                    historicalLigaturesState = FontDescription::EnabledLigaturesState;
+                    break;
+                default:
+                    ASSERT_NOT_REACHED();
+                    break;
+                }
+            }
+        }
+    }
+#if !ASSERT_DISABLED
+    else {
+        ASSERT_WITH_SECURITY_IMPLICATION(value->isPrimitiveValue());
+        ASSERT(toCSSPrimitiveValue(value)->getValueID() == CSSValueNormal);
+    }
+#endif
+
+    FontDescription fontDescription = state.fontDescription();
+    fontDescription.setCommonLigaturesState(commonLigaturesState);
+    fontDescription.setDiscretionaryLigaturesState(discretionaryLigaturesState);
+    fontDescription.setHistoricalLigaturesState(historicalLigaturesState);
+    state.setFontDescription(fontDescription);
+}
+
+void StyleBuilderFunctions::applyValueCSSPropertyWebkitMarqueeSpeed(StyleResolver*, StyleResolverState& state, CSSValue* value)
+{
+    if (!value->isPrimitiveValue())
+        return;
+
+    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
+    if (CSSValueID valueID = primitiveValue->getValueID()) {
+        switch (valueID) {
+        case CSSValueSlow:
+            state.style()->setMarqueeSpeed(500); // 500 msec.
+            break;
+        case CSSValueNormal:
+            state.style()->setMarqueeSpeed(85); // 85msec. The WinIE default.
+            break;
+        case CSSValueFast:
+            state.style()->setMarqueeSpeed(10); // 10msec. Super fast.
+            break;
+        default:
+            break;
+        }
+    } else if (primitiveValue->isTime()) {
+        state.style()->setMarqueeSpeed(primitiveValue->computeTime<int, CSSPrimitiveValue::Milliseconds>());
+    } else if (primitiveValue->isNumber()) { // For scrollamount support.
+        state.style()->setMarqueeSpeed(primitiveValue->getIntValue());
     }
 }
 
@@ -250,6 +1007,84 @@ void StyleBuilderFunctions::applyValueCSSPropertyWebkitPerspectiveOrigin(StyleRe
     // This is expanded in the parser
     ASSERT_NOT_REACHED();
 }
+
+void StyleBuilderFunctions::applyInitialCSSPropertyWebkitTextEmphasisStyle(StyleResolver*, StyleResolverState& state)
+{
+    state.style()->setTextEmphasisFill(RenderStyle::initialTextEmphasisFill());
+    state.style()->setTextEmphasisMark(RenderStyle::initialTextEmphasisMark());
+    state.style()->setTextEmphasisCustomMark(RenderStyle::initialTextEmphasisCustomMark());
+}
+
+void StyleBuilderFunctions::applyInheritCSSPropertyWebkitTextEmphasisStyle(StyleResolver*, StyleResolverState& state)
+{
+    state.style()->setTextEmphasisFill(state.parentStyle()->textEmphasisFill());
+    state.style()->setTextEmphasisMark(state.parentStyle()->textEmphasisMark());
+    state.style()->setTextEmphasisCustomMark(state.parentStyle()->textEmphasisCustomMark());
+}
+
+void StyleBuilderFunctions::applyValueCSSPropertyWebkitTextEmphasisStyle(StyleResolver*, StyleResolverState& state, CSSValue* value)
+{
+    if (value->isValueList()) {
+        CSSValueList* list = toCSSValueList(value);
+        ASSERT(list->length() == 2);
+        if (list->length() != 2)
+            return;
+        for (unsigned i = 0; i < 2; ++i) {
+            CSSValue* item = list->itemWithoutBoundsCheck(i);
+            if (!item->isPrimitiveValue())
+                continue;
+
+            CSSPrimitiveValue* value = toCSSPrimitiveValue(item);
+            if (value->getValueID() == CSSValueFilled || value->getValueID() == CSSValueOpen)
+                state.style()->setTextEmphasisFill(*value);
+            else
+                state.style()->setTextEmphasisMark(*value);
+        }
+        state.style()->setTextEmphasisCustomMark(nullAtom);
+        return;
+    }
+
+    if (!value->isPrimitiveValue())
+        return;
+    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
+
+    if (primitiveValue->isString()) {
+        state.style()->setTextEmphasisFill(TextEmphasisFillFilled);
+        state.style()->setTextEmphasisMark(TextEmphasisMarkCustom);
+        state.style()->setTextEmphasisCustomMark(primitiveValue->getStringValue());
+        return;
+    }
+
+    state.style()->setTextEmphasisCustomMark(nullAtom);
+
+    if (primitiveValue->getValueID() == CSSValueFilled || primitiveValue->getValueID() == CSSValueOpen) {
+        state.style()->setTextEmphasisFill(*primitiveValue);
+        state.style()->setTextEmphasisMark(TextEmphasisMarkAuto);
+    } else {
+        state.style()->setTextEmphasisFill(TextEmphasisFillFilled);
+        state.style()->setTextEmphasisMark(*primitiveValue);
+    }
+}
+
+#if ENABLE(CSS3_TEXT)
+void StyleBuilderFunctions::applyValueCSSPropetyWebkitTextUnderlinePosition(StyleResolver*, StyleResolverState& state, CSSValue* value)
+{
+    // This is true if value is 'auto' or 'alphabetic'.
+    if (value->isPrimitiveValue()) {
+        TextUnderlinePosition t = *toCSSPrimitiveValue(value);
+        state.style()->setTextUnderlinePosition(t);
+        return;
+    }
+
+    unsigned t = 0;
+    for (CSSValueListIterator i(value); i.hasMore(); i.advance()) {
+        CSSValue* item = i.value();
+        TextUnderlinePosition t2 = *toCSSPrimitiveValue(item);
+        t |= t2;
+    }
+    state.style()->setTextUnderlinePosition(static_cast<TextUnderlinePosition>(t));
+}
+#endif // CSS3_TEXT
 
 
 // Everything below this line is from the old StyleResolver::applyProperty
@@ -1088,13 +1923,13 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolver* styleResolv
         return;
     }
 
-    // These properties are aliased and DeprecatedStyleBuilder already applied the property on the prefixed version.
+    // These properties are aliased and we already applied the property on the prefixed version.
     case CSSPropertyTransitionDelay:
     case CSSPropertyTransitionDuration:
     case CSSPropertyTransitionProperty:
     case CSSPropertyTransitionTimingFunction:
         return;
-    // These properties are implemented in the DeprecatedStyleBuilder lookup table or in the new StyleBuilder.
+    // These properties are implemented in StyleBuilder::applyProperty.
     case CSSPropertyBackgroundAttachment:
     case CSSPropertyBackgroundBlendMode:
     case CSSPropertyBackgroundClip:

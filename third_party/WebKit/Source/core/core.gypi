@@ -667,8 +667,6 @@
             'css/CSSViewportRule.h',
             'css/CSSViewportRule.cpp',
             'css/Counter.h',
-            'css/DeprecatedStyleBuilder.cpp',
-            'css/DeprecatedStyleBuilder.h',
             'css/DOMWindowCSS.cpp',
             'css/DOMWindowCSS.h',
             'css/DocumentRuleSets.cpp',

@@ -60,7 +60,6 @@ class CSSSelector;
 class CSSStyleSheet;
 class CSSValue;
 class ContainerNode;
-class DeprecatedStyleBuilder;
 class Document;
 class Element;
 class ElementRuleCollector;
@@ -311,7 +310,6 @@ private:
 
     RefPtr<ViewportStyleResolver> m_viewportStyleResolver;
 
-    const DeprecatedStyleBuilder& m_styleBuilder;
     ScopedStyleTree m_styleTree;
 
     RuleFeatureSet m_features;
@@ -323,7 +321,6 @@ private:
     StyleResolverState m_state;
     StyleResourceLoader m_styleResourceLoader;
 
-    friend class DeprecatedStyleBuilder;
     friend void StyleBuilder::oldApplyProperty(CSSPropertyID, StyleResolver*, StyleResolverState&, CSSValue*, bool isInitial, bool isInherit);
 
 };

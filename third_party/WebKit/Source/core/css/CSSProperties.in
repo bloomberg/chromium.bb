@@ -42,10 +42,13 @@ bottom apply_type=length, initial=initialOffset, use_auto
 box-sizing
 caption-side
 clear
+clip custom_all
 color custom_all
 counter-increment custom_all
 counter-reset custom_all
+cursor custom_all
 direction custom_value
+display custom_inherit, custom_value
 empty-cells type_name=EEmptyCell
 flex-basis apply_type=length, use_auto
 flex-direction
@@ -53,6 +56,8 @@ flex-grow type_name=float
 flex-shrink type_name=float
 flex-wrap
 float type_name=EFloat, name_for_methods=Floating
+font-family custom_all
+font-size custom_all
 font-style custom_all
 font-variant custom_all
 font-weight custom_all
@@ -62,6 +67,7 @@ justify-content
 image-rendering
 left apply_type=length, initial=initialOffset, use_auto
 letter-spacing type_name=float, initial=initialLetterWordSpacing, custom_value
+line-height getter=specifiedLineHeight, custom_value
 list-style-image type_name=StyleImage*, custom_value
 list-style-position
 list-style-type
@@ -79,6 +85,7 @@ order type_name=int
 orphans type_name=short, custom_all
 outline-color custom_all
 outline-offset type_name=int, custom_value
+outline-style custom_all
 outline-width type_name=unsigned short, custom_value
 overflow-wrap
 overflow-x type_name=EOverflow
@@ -92,19 +99,26 @@ page-break-before type_name=EPageBreak, initial=initialPageBreak
 page-break-inside type_name=EPageBreak, initial=initialPageBreak
 pointer-events
 position
+resize custom_value
 right apply_type=length, initial=initialOffset, use_auto
+size custom_all
 speak
 table-layout
 tab-size type_name=unsigned
+text-align custom_value
 text-align-last type_name=TextAlignLast
+text-decoration custom_value
+text-decoration-line use_handlers_for=CSSPropertyTextDecoration
 text-decoration-color custom_all
 text-decoration-style type_name=TextDecorationStyle
+text-indent custom_all
 text-overflow type_name=TextOverflow
 text-rendering custom_all
 text-transform
 top apply_type=length, initial=initialOffset, use_auto
 touch-action type_name=TouchAction, initial=initialTouchAction
 unicode-bidi
+vertical-align custom_value
 visibility
 white-space
 widows type_name=short, custom_all
@@ -125,6 +139,7 @@ z-index type_name=int, custom_all
 -webkit-animation-play-state custom_all
 -webkit-animation-timing-function custom_all
 -webkit-appearance type_name=ControlPart
+-webkit-aspect-ratio custom_all
 -webkit-backface-visibility
 -webkit-background-clip use_handlers_for=CSSPropertyBackgroundClip
 -webkit-background-composite custom_all
@@ -160,6 +175,7 @@ z-index type_name=int, custom_all
 -webkit-flow-into type_name=const AtomicString&, name_for_methods=FlowThread, custom_value
 -webkit-font-kerning custom_all
 -webkit-font-smoothing custom_all
+-webkit-font-variant-ligatures custom_all
 -webkit-highlight type_name=const AtomicString&, custom_value
 -webkit-hyphenate-character type_name=const AtomicString&, name_for_methods=HyphenationString, custom_value
 -webkit-hyphenate-limit-after type_name=short, name_for_methods=HyphenationLimitAfter, custom_value
@@ -178,6 +194,7 @@ z-index type_name=int, custom_all
 -webkit-marquee-direction
 -webkit-marquee-increment custom_value
 -webkit-marquee-repetition type_name=int, name_for_methods=MarqueeLoopCount, custom_value
+-webkit-marquee-speed custom_value
 -webkit-marquee-style name_for_methods=MarqueeBehavior
 -webkit-mask-box-image initial=initialNinePieceImage, custom_value
 -webkit-mask-box-image-outset custom_all
@@ -211,9 +228,11 @@ z-index type_name=int, custom_all
 -webkit-text-combine type_name=TextCombine
 -webkit-text-emphasis-color custom_all
 -webkit-text-emphasis-position type_name=TextEmphasisPosition
+-webkit-text-emphasis-style custom_all
 -webkit-text-fill-color custom_all
 -webkit-text-security
 -webkit-text-stroke-color custom_all
+-webkit-text-underline-position custom_value, condition=CSS3_TEXT
 -webkit-transform-origin-x apply_type=length
 -webkit-transform-origin-y apply_type=length
 -webkit-transform-origin-z type_name=float, custom_value

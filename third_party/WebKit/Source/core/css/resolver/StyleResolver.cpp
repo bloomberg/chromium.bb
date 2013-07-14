@@ -54,7 +54,6 @@
 #include "core/css/CSSStyleRule.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/CSSVariableValue.h"
-#include "core/css/DeprecatedStyleBuilder.h"
 #include "core/css/ElementRuleCollector.h"
 #include "core/css/FontFeatureValue.h"
 #include "core/css/FontSize.h"
@@ -152,7 +151,6 @@ StyleResolver::StyleResolver(Document* document, bool matchAuthorAndUserStyles)
     , m_matchAuthorAndUserStyles(matchAuthorAndUserStyles)
     , m_fontSelector(CSSFontSelector::create(document))
     , m_viewportStyleResolver(ViewportStyleResolver::create(document))
-    , m_styleBuilder(DeprecatedStyleBuilder::sharedStyleBuilder())
     , m_styleResourceLoader(document->cachedResourceLoader())
 {
     Element* root = document->documentElement();
@@ -1828,19 +1826,6 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
         return;
     }
 
-    // Check lookup table for implementations and use when available.
-    const PropertyHandler& handler = m_styleBuilder.propertyHandler(id);
-    if (handler.isValid()) {
-        if (isInherit)
-            handler.applyInheritValue(id, this, state);
-        else if (isInitial)
-            handler.applyInitialValue(id, this, state);
-        else
-            handler.applyValue(id, this, state, value);
-        return;
-    }
-
-    // Use the new StyleBuilder.
     if (StyleBuilder::applyProperty(id, this, state, value, isInitial, isInherit))
         return;
 
@@ -1947,7 +1932,6 @@ void StyleResolver::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
 
     info.addMember(m_fontSelector, "fontSelector");
     info.addMember(m_viewportDependentMediaQueryResults, "viewportDependentMediaQueryResults");
-    info.ignoreMember(m_styleBuilder);
     info.addMember(m_inspectorCSSOMWrappers);
 
     info.addMember(m_styleTree, "scopedStyleTree");
