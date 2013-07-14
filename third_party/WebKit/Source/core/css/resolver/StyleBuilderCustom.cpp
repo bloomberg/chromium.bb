@@ -1116,7 +1116,7 @@ if (isInitial) { \
     return; \
 }
 
-float getComputedSizeFromSpecifiedSize(Document* document, RenderStyle* style, bool isAbsoluteSize, float specifiedSize, bool useSVGZoomRules)
+float getComputedSizeFromSpecifiedSize(const Document* document, const RenderStyle* style, bool isAbsoluteSize, float specifiedSize, bool useSVGZoomRules)
 {
     float zoomFactor = 1.0f;
     if (!useSVGZoomRules) {
@@ -1463,7 +1463,7 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolver* styleResolv
             state.setLineHeightValue(0);
             state.setFontDescription(fontDescription);
         } else if (isInitial) {
-            Settings* settings = styleResolver->documentSettings();
+            const Settings* settings = state.document()->settings();
             ASSERT(settings); // If we're doing style resolution, this document should always be in a frame and thus have settings
             if (!settings)
                 return;
@@ -1478,14 +1478,15 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolver* styleResolv
             // Double-check and see if the theme did anything. If not, don't bother updating the font.
             if (fontDescription.isAbsoluteSize()) {
                 // Make sure the rendering mode and printer font settings are updated.
-                Settings* settings = styleResolver->documentSettings();
+                const Document* document = state.document();
+                const Settings* settings = document->settings();
                 ASSERT(settings); // If we're doing style resolution, this document should always be in a frame and thus have settings
                 if (!settings)
                     return;
-                fontDescription.setUsePrinterFont(styleResolver->document()->printing());
+                fontDescription.setUsePrinterFont(document->printing());
 
                 // Handle the zoom factor.
-                fontDescription.setComputedSize(getComputedSizeFromSpecifiedSize(styleResolver->document(), state.style(), fontDescription.isAbsoluteSize(), fontDescription.specifiedSize(), state.useSVGZoomRules()));
+                fontDescription.setComputedSize(getComputedSizeFromSpecifiedSize(document, state.style(), fontDescription.isAbsoluteSize(), fontDescription.specifiedSize(), state.useSVGZoomRules()));
                 state.setFontDescription(fontDescription);
             }
         } else if (value->isFontValue()) {

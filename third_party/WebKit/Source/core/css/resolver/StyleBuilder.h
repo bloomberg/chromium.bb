@@ -55,7 +55,7 @@ public:
 // Used by both StyleResolver and StyleBuilder.
 // FIXME: Font logic should be removed from StyleResolver then this
 // can live closer to where it's used.
-float getComputedSizeFromSpecifiedSize(Document*, RenderStyle*, bool isAbsoluteSize, float specifiedSize, bool useSVGZoomRules);
+float getComputedSizeFromSpecifiedSize(const Document*, const RenderStyle*, bool isAbsoluteSize, float specifiedSize, bool useSVGZoomRules);
 
 }
 

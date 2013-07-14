@@ -576,9 +576,9 @@ static void getFontAndGlyphOrientation(const RenderStyle* style, FontOrientation
     }
 }
 
-PassRefPtr<RenderStyle> StyleResolver::styleForDocument(Document* document, CSSFontSelector* fontSelector)
+PassRefPtr<RenderStyle> StyleResolver::styleForDocument(const Document* document, CSSFontSelector* fontSelector)
 {
-    Frame* frame = document->frame();
+    const Frame* frame = document->frame();
 
     // HTML5 states that seamless iframes should replace default CSS values
     // with values inherited from the containing iframe element. However,
@@ -972,7 +972,7 @@ PassRefPtr<RenderStyle> StyleResolver::defaultStyleForElement()
 {
     m_state.setStyle(RenderStyle::create());
     // Make sure our fonts are initialized if we don't inherit them from our parent style.
-    if (Settings* settings = documentSettings()) {
+    if (const Settings* settings = documentSettings()) {
         initializeFontStyle(settings);
         m_state.style()->font().update(fontSelector());
     } else
@@ -1882,7 +1882,7 @@ void StyleResolver::checkForGenericFamilyChange(RenderStyle* style, RenderStyle*
     style->setFontDescription(newFontDescription);
 }
 
-void StyleResolver::initializeFontStyle(Settings* settings)
+void StyleResolver::initializeFontStyle(const Settings* settings)
 {
     FontDescription fontDescription;
     fontDescription.setGenericFamily(FontDescription::StandardFamily);

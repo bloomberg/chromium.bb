@@ -35,14 +35,14 @@ private:
     }
 
 public:
-    static float getComputedSizeFromSpecifiedSize(Document*, float zoomFactor, bool isAbsoluteSize, float specifiedSize, ESmartMinimumForFontSize = UseSmartMinimumForFontFize);
+    static float getComputedSizeFromSpecifiedSize(const Document*, float zoomFactor, bool isAbsoluteSize, float specifiedSize, ESmartMinimumForFontSize = UseSmartMinimumForFontFize);
 
     // Given a CSS keyword in the range (xx-small to -webkit-xxx-large), this function will return
     // the correct font size scaled relative to the user's default (medium).
-    static float fontSizeForKeyword(Document*, int keyword, bool shouldUseFixedDefaultSize);
+    static float fontSizeForKeyword(const Document*, int keyword, bool shouldUseFixedDefaultSize);
 
     // Given a font size in pixel, this function will return legacy font size between 1 and 7.
-    static int legacyFontSize(Document*, int pixelFontSize, bool shouldUseFixedDefaultSize);
+    static int legacyFontSize(const Document*, int pixelFontSize, bool shouldUseFixedDefaultSize);
 };
 
 } // namespace WebCore

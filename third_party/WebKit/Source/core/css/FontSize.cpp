@@ -35,7 +35,7 @@
 
 namespace WebCore {
 
-float FontSize::getComputedSizeFromSpecifiedSize(Document* document, float zoomFactor, bool isAbsoluteSize, float specifiedSize, ESmartMinimumForFontSize useSmartMinimumForFontSize)
+float FontSize::getComputedSizeFromSpecifiedSize(const Document* document, float zoomFactor, bool isAbsoluteSize, float specifiedSize, ESmartMinimumForFontSize useSmartMinimumForFontSize)
 {
     // Text with a 0px font size should not be visible and therefore needs to be
     // exempt from minimum font size rules. Acid3 relies on this for pixel-perfect
@@ -120,9 +120,9 @@ static const int strictFontSizeTable[fontSizeTableMax - fontSizeTableMin + 1][to
 // factors for each keyword value.
 static const float fontSizeFactors[totalKeywords] = { 0.60f, 0.75f, 0.89f, 1.0f, 1.2f, 1.5f, 2.0f, 3.0f };
 
-float FontSize::fontSizeForKeyword(Document* document, int keyword, bool shouldUseFixedDefaultSize)
+float FontSize::fontSizeForKeyword(const Document* document, int keyword, bool shouldUseFixedDefaultSize)
 {
-    Settings* settings = document->settings();
+    const Settings* settings = document->settings();
     if (!settings)
         return 1.0f;
 
@@ -153,9 +153,9 @@ static int findNearestLegacyFontSize(int pixelFontSize, const T* table, int mult
     return totalKeywords - 1;
 }
 
-int FontSize::legacyFontSize(Document* document, int pixelFontSize, bool shouldUseFixedDefaultSize)
+int FontSize::legacyFontSize(const Document* document, int pixelFontSize, bool shouldUseFixedDefaultSize)
 {
-    Settings* settings = document->settings();
+    const Settings* settings = document->settings();
     if (!settings)
         return 1;
 

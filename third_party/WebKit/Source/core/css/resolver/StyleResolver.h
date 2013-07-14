@@ -155,7 +155,7 @@ public:
     PassRefPtr<RenderStyle> defaultStyleForElement();
     PassRefPtr<RenderStyle> styleForText(Text*);
 
-    static PassRefPtr<RenderStyle> styleForDocument(Document*, CSSFontSelector* = 0);
+    static PassRefPtr<RenderStyle> styleForDocument(const Document*, CSSFontSelector* = 0);
 
     Document* document() { return m_document; }
 
@@ -202,7 +202,7 @@ public:
     void applyPropertiesToStyle(const CSSPropertyValue* properties, size_t count, RenderStyle*);
 
     void updateFont();
-    void initializeFontStyle(Settings*);
+    void initializeFontStyle(const Settings*);
     void setFontSize(FontDescription&, float size);
 
 public:
