@@ -138,10 +138,19 @@
             <text x="20" y="475">How it should look like...</text>
         </a>
 
+    <script type="text/javascript">
+    if (window.testRunner)
+        window.waitUntilDone();
+
+    function onlogoload() {
+        if (window.testRunner)
+            window.notifyDone();
+    }
+    </script>
 
     <!-- ============================================================= -->
     <!-- Batik sample mark                                             -->
     <!-- ============================================================= -->
-    <use xlink:href="../resources/batikLogo.svg#Batik_Tag_Box" />
+    <use xlink:href="../resources/batikLogo.svg#Batik_Tag_Box" onload="onlogoload()" />
     
 </svg>
