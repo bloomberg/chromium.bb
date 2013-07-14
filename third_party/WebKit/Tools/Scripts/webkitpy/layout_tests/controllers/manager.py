@@ -34,6 +34,7 @@ objects to the Manager. The Manager then aggregates the TestFailures to
 create a final report.
 """
 
+import datetime
 import json
 import logging
 import random
@@ -113,6 +114,10 @@ class Manager(object):
             tests_to_run.sort(key=self._port.test_key)
         elif self._options.order == 'random':
             random.shuffle(tests_to_run)
+        elif self._options.order == 'random-daily-seed':
+            rnd = random.Random()
+            rnd.seed(int(datetime.datetime.utcnow().date().strftime('%Y%m%d')))
+            rnd.shuffle(tests_to_run)
 
         tests_to_run, tests_in_other_chunks = self._finder.split_into_chunks(tests_to_run)
         self._expectations.add_extra_skipped_tests(tests_in_other_chunks)
