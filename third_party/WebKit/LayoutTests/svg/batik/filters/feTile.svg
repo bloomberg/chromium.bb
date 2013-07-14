@@ -29,7 +29,7 @@
 
 <?xml-stylesheet type="text/css" href="../resources/test.css" ?>
 
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="body" width="450" height="500" viewBox="0 0 450 500">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="body" width="450" height="500" viewBox="0 0 450 500" externalResourcesRequired="true">
 <title>feTile Test</title>
 
     <!-- ============================================================= -->
@@ -138,19 +138,10 @@
             <text x="20" y="475">How it should look like...</text>
         </a>
 
-    <script type="text/javascript">
-    if (window.testRunner)
-        testRunner.waitUntilDone();
-
-    function onlogoload() {
-        if (window.testRunner)
-            testRunner.notifyDone();
-    }
-    </script>
 
     <!-- ============================================================= -->
     <!-- Batik sample mark                                             -->
     <!-- ============================================================= -->
-    <use xlink:href="../resources/batikLogo.svg#Batik_Tag_Box" onload="onlogoload()" />
+    <use xlink:href="../resources/batikLogo.svg#Batik_Tag_Box" />
     
 </svg>
