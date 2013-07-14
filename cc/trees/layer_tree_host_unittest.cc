@@ -1556,14 +1556,14 @@ class LayerTreeHostTestSurfaceNotAllocatedForLayersOutsideMemoryLimit
   }
 
   virtual void DidCommit() OVERRIDE {
-    if (!TestEnded())
+    if (layer_tree_host()->commit_number() < 2)
       root_layer_->SetNeedsDisplay();
   }
 
   virtual void AfterTest() OVERRIDE {
-    EXPECT_EQ(3u, root_layer_->update_count());
-    EXPECT_EQ(3u, surface_layer1_->update_count());
-    EXPECT_EQ(3u, surface_layer2_->update_count());
+    EXPECT_EQ(2u, root_layer_->update_count());
+    EXPECT_EQ(2u, surface_layer1_->update_count());
+    EXPECT_EQ(2u, surface_layer2_->update_count());
   }
 
  private:
