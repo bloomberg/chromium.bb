@@ -1,5 +1,4 @@
 include_rules = [
-  "+googleurl",
   "+net",
   "+sync/base",
   "+sync/engine",

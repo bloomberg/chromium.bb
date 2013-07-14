@@ -1,8 +1,6 @@
 include_rules = [
-  "+base",
   "+content/public/common",
   "+crypto",
-  "+googleurl",
   "+testing",
   "+ui"
 ]
