@@ -1,17 +1,18 @@
-{% from "macros.tmpl" import lower_first, wrap_with_condition -%}
+{% from "macros.tmpl" import lower_first -%}
 
 {#
     This file is for property handlers which use the templating engine to
     reduce (handwritten) code duplication.
 
     The `properties' dict can be used to access a property's parameters in
-    jinja2 templates (i.e. setter, getter, initial, type_name, condition)
+    jinja2 templates (i.e. setter, getter, initial, type_name)
 -#}
 
 #include "config.h"
 #include "StyleBuilderFunctions.h"
 
 #include "CSSValueKeywords.h"
+#include "core/css/BasicShapeFunctions.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/Pair.h"
 #include "core/css/resolver/StyleResolver.h"
@@ -285,7 +286,6 @@ namespace WebCore {
 
 {%- macro apply_color(property_id, default_getter="color", initial_color=none, inherit_color=false) %}
 {%- set property = properties[property_id] %}
-{%- call wrap_with_condition(property.condition) %}
 {%- set visited_link_setter = "setVisitedLink" + property.camel_case_name %}
 {{ apply_initial(property_id) }}
 {
@@ -327,7 +327,6 @@ namespace WebCore {
     if (state.applyPropertyToVisitedLinkStyle())
         state.style()->{{visited_link_setter}}(state.document()->textLinkColors().colorFromPrimitiveValue(primitiveValue, state.style()->visitedDependentColor(CSSPropertyColor), state.element()->isLink() /* forVisitedLink */));
 }
-{%- endcall %}
 {%- endmacro %}
 
 {{ apply_color("CSSPropertyBackgroundColor", default_getter="invalidColor") }}
@@ -360,6 +359,62 @@ namespace WebCore {
 {{ apply_value_compute_length("CSSPropertyWebkitBorderHorizontalSpacing") }}
 {{ apply_value_compute_length("CSSPropertyWebkitBorderVerticalSpacing") }}
 {{ apply_value_compute_length("CSSPropertyWebkitTransformOriginZ") }}
+
+{%- macro apply_counter(property_id, action) %}
+{%- set property = properties[property_id] %}
+{{ apply_initial(property_id) }} { }
+
+{{ apply_inherit(property_id) }}
+{
+    CounterDirectiveMap& map = state.style()->accessCounterDirectives();
+    CounterDirectiveMap& parentMap = state.parentStyle()->accessCounterDirectives();
+
+    typedef CounterDirectiveMap::iterator Iterator;
+    Iterator end = parentMap.end();
+    for (Iterator it = parentMap.begin(); it != end; ++it) {
+        CounterDirectives& directives = map.add(it->key, CounterDirectives()).iterator->value;
+        directives.inherit{{action}}(it->value);
+    }
+}
+
+{{ apply_value(property_id) }}
+{
+    if (!value->isValueList())
+        return;
+
+    CSSValueList* list = toCSSValueList(value);
+
+    CounterDirectiveMap& map = state.style()->accessCounterDirectives();
+    typedef CounterDirectiveMap::iterator Iterator;
+
+    Iterator end = map.end();
+    for (Iterator it = map.begin(); it != end; ++it)
+        it->value.clear{{action}}();
+
+    int length = list ? list->length() : 0;
+    for (int i = 0; i < length; ++i) {
+        CSSValue* currValue = list->itemWithoutBoundsCheck(i);
+        if (!currValue->isPrimitiveValue())
+            continue;
+
+        Pair* pair = toCSSPrimitiveValue(currValue)->getPairValue();
+        if (!pair || !pair->first() || !pair->second())
+            continue;
+
+        AtomicString identifier = pair->first()->getStringValue();
+        int value = pair->second()->getIntValue();
+        CounterDirectives& directives = map.add(identifier, CounterDirectives()).iterator->value;
+        {%- if action == "Reset" %}
+        directives.setResetValue(value);
+        {%- else %}
+        directives.addIncrementValue(value);
+        {%- endif %}
+    }
+}
+{%- endmacro %}
+
+{{ apply_counter("CSSPropertyCounterIncrement", "Increment") }}
+{{ apply_counter("CSSPropertyCounterReset", "Reset") }}
 
 {%- macro apply_fill_layer(property_id, fill_type) %}
 {%- set layer_type = "Background" if "Background" in property_id else "Mask" %}
@@ -448,6 +503,42 @@ namespace WebCore {
 {{ apply_fill_layer("CSSPropertyWebkitMaskRepeatY", "RepeatY") }}
 {{ apply_fill_layer("CSSPropertyWebkitMaskSize", "Size") }}
 
+{%- macro apply_font(property_id, name_for_methods, initial, type_name) %}
+{#- We specify the getters/setters here since they are on FontDescription
+        and not RenderStyle #}
+{%- set getter = lower_first(name_for_methods) %}
+{%- set setter = "set" + name_for_methods %}
+{{ apply_initial(property_id) }}
+{
+    FontDescription fontDescription = state.fontDescription();
+    fontDescription.{{setter}}({{initial}});
+    state.setFontDescription(fontDescription);
+}
+
+{{ apply_inherit(property_id) }}
+{
+    FontDescription fontDescription = state.fontDescription();
+    fontDescription.{{setter}}(state.parentFontDescription().{{getter}}());
+    state.setFontDescription(fontDescription);
+}
+
+{{ apply_value(property_id) }}
+{
+    if (!value->isPrimitiveValue())
+        return;
+    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
+    FontDescription fontDescription = state.fontDescription();
+    fontDescription.{{setter}}(static_cast<{{type_name}}>(*primitiveValue));
+    state.setFontDescription(fontDescription);
+}
+{%- endmacro %}
+
+{{ apply_font("CSSPropertyFontStyle", "Italic", "FontItalicOff", "FontItalic") }}
+{{ apply_font("CSSPropertyFontVariant", "SmallCaps", "FontSmallCapsOff", "FontSmallCaps") }}
+{{ apply_font("CSSPropertyTextRendering", "TextRenderingMode", "AutoTextRendering", "TextRenderingMode") }}
+{{ apply_font("CSSPropertyWebkitFontKerning", "Kerning", "FontDescription::AutoKerning", "FontDescription::Kerning") }}
+{{ apply_font("CSSPropertyWebkitFontSmoothing", "FontSmoothing", "AutoSmoothing", "FontSmoothingMode") }}
+
 {%- macro apply_value_line_width(property_id) %}
 {{ apply_value(property_id) }}
 {
@@ -509,6 +600,28 @@ namespace WebCore {
 {{ apply_value_number("CSSPropertyWebkitHyphenateLimitBefore", "CSSValueAuto") }}
 {{ apply_value_number("CSSPropertyWebkitHyphenateLimitLines", "CSSValueNoLimit") }}
 {{ apply_value_number("CSSPropertyWebkitMarqueeRepetition", "CSSValueInfinite") }}
+
+{%- macro apply_value_shape(property_id) %}
+{{ apply_value(property_id) }}
+{
+    {%- set property = properties[property_id] %}
+    if (value->isPrimitiveValue()) {
+        CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
+        if (primitiveValue->getValueID() == CSSValueAuto)
+            {{ set_value(property) }}(0);
+        else if (primitiveValue->getValueID() == CSSValueOutsideShape)
+            {{ set_value(property) }}(ShapeValue::createOutsideValue());
+        else if (primitiveValue->isShape()) {
+            {{ set_value(property) }}(ShapeValue::createShapeValue(basicShapeForValue(state, primitiveValue->getShapeValue())));
+        }
+    } else if (value->isImageValue()) {
+        {{ set_value(property) }}(ShapeValue::createImageValue(state.styleImage({{property_id}}, value)));
+    }
+}
+{%- endmacro %}
+
+{{ apply_value_shape("CSSPropertyWebkitShapeInside") }}
+{{ apply_value_shape("CSSPropertyWebkitShapeOutside") }}
 
 {%- macro apply_value_spacing(property_id) %}
 {{ apply_value(property_id) }}

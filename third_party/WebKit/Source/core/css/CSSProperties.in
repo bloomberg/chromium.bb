@@ -43,6 +43,9 @@ box-sizing
 caption-side
 clear
 color custom_all
+counter-increment custom_all
+counter-reset custom_all
+direction custom_value
 empty-cells type_name=EEmptyCell
 flex-basis apply_type=length, use_auto
 flex-direction
@@ -50,12 +53,16 @@ flex-grow type_name=float
 flex-shrink type_name=float
 flex-wrap
 float type_name=EFloat, name_for_methods=Floating
+font-style custom_all
+font-variant custom_all
+font-weight custom_all
 grid-auto-flow type_name=GridAutoFlow
 height apply_type=length, initial=initialSize, use_auto, use_intrinsic
 justify-content
 image-rendering
 left apply_type=length, initial=initialOffset, use_auto
 letter-spacing type_name=float, initial=initialLetterWordSpacing, custom_value
+list-style-image type_name=StyleImage*, custom_value
 list-style-position
 list-style-type
 margin-bottom apply_type=length, initial=initialMargin, use_auto
@@ -93,6 +100,7 @@ text-align-last type_name=TextAlignLast
 text-decoration-color custom_all
 text-decoration-style type_name=TextDecorationStyle
 text-overflow type_name=TextOverflow
+text-rendering custom_all
 text-transform
 top apply_type=length, initial=initialOffset, use_auto
 touch-action type_name=TouchAction, initial=initialTouchAction
@@ -135,6 +143,7 @@ z-index type_name=int, custom_all
 -webkit-box-ordinal-group type_name=unsigned int
 -webkit-box-orient
 -webkit-box-pack
+-webkit-clip-path custom_value
 -webkit-column-axis type_name=ColumnAxis
 -webkit-column-break-after type_name=EPageBreak, initial=initialPageBreak
 -webkit-column-break-before type_name=EPageBreak, initial=initialPageBreak
@@ -149,6 +158,8 @@ z-index type_name=int, custom_all
 -webkit-column-width type_name=float, custom_all
 -webkit-flow-from type_name=const AtomicString&, name_for_methods=RegionThread, custom_value
 -webkit-flow-into type_name=const AtomicString&, name_for_methods=FlowThread, custom_value
+-webkit-font-kerning custom_all
+-webkit-font-smoothing custom_all
 -webkit-highlight type_name=const AtomicString&, custom_value
 -webkit-hyphenate-character type_name=const AtomicString&, name_for_methods=HyphenationString, custom_value
 -webkit-hyphenate-limit-after type_name=short, name_for_methods=HyphenationLimitAfter, custom_value
@@ -183,6 +194,7 @@ z-index type_name=int, custom_all
 -webkit-mask-repeat-x custom_all
 -webkit-mask-repeat-y custom_all
 -webkit-mask-size custom_all
+-webkit-perspective-origin custom_all
 -webkit-perspective-origin-x apply_type=length
 -webkit-perspective-origin-y apply_type=length
 -webkit-print-color-adjust type_name=PrintColorAdjust
@@ -192,7 +204,9 @@ z-index type_name=int, custom_all
 -webkit-region-fragment type_name=RegionFragment
 -webkit-rtl-ordering type_name=Order, getter=rtlOrdering, setter=setRTLOrdering, initial=initialRTLOrdering
 -webkit-ruby-position type_name=RubyPosition
+-webkit-shape-inside type_name=ShapeValue*, custom_value
 -webkit-shape-margin apply_type=length
+-webkit-shape-outside type_name=ShapeValue*, custom_value
 -webkit-shape-padding apply_type=length
 -webkit-text-combine type_name=TextCombine
 -webkit-text-emphasis-color custom_all

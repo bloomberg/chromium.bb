@@ -45,6 +45,7 @@
 #include "StyleBuilderFunctions.h"
 #include "core/animation/AnimatableValue.h"
 #include "core/animation/Animation.h"
+#include "core/css/BasicShapeFunctions.h"
 #include "core/css/CSSCalculationValue.h"
 #include "core/css/CSSCursorImageValue.h"
 #include "core/css/CSSDefaultStyleSheets.h"
@@ -121,6 +122,55 @@
 
 namespace WebCore {
 
+void StyleBuilderFunctions::applyValueCSSPropertyDirection(StyleResolver*, StyleResolverState& state, CSSValue* value)
+{
+    state.style()->setDirection(*toCSSPrimitiveValue(value));
+    Element* element = state.element();
+    if (element && element == element->document()->documentElement())
+        element->document()->setDirectionSetOnDocumentElement(true);
+}
+
+void StyleBuilderFunctions::applyInitialCSSPropertyFontWeight(StyleResolver*, StyleResolverState& state)
+{
+    FontDescription fontDescription = state.fontDescription();
+    fontDescription.setWeight(FontWeightNormal);
+    state.setFontDescription(fontDescription);
+}
+
+void StyleBuilderFunctions::applyInheritCSSPropertyFontWeight(StyleResolver*, StyleResolverState& state)
+{
+    FontDescription fontDescription = state.fontDescription();
+    fontDescription.setWeight(state.parentFontDescription().weight());
+    state.setFontDescription(fontDescription);
+}
+
+void StyleBuilderFunctions::applyValueCSSPropertyFontWeight(StyleResolver*, StyleResolverState& state, CSSValue* value)
+{
+    if (!value->isPrimitiveValue())
+        return;
+    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
+    FontDescription fontDescription = state.fontDescription();
+    switch (primitiveValue->getValueID()) {
+    case CSSValueInvalid:
+        ASSERT_NOT_REACHED();
+        break;
+    case CSSValueBolder:
+        fontDescription.setWeight(fontDescription.bolderWeight());
+        break;
+    case CSSValueLighter:
+        fontDescription.setWeight(fontDescription.lighterWeight());
+        break;
+    default:
+        fontDescription.setWeight(*primitiveValue);
+    }
+    state.setFontDescription(fontDescription);
+}
+
+void StyleBuilderFunctions::applyValueCSSPropertyListStyleImage(StyleResolver*, StyleResolverState& state, CSSValue* value)
+{
+    state.style()->setListStyleImage(state.styleImage(CSSPropertyListStyleImage, value));
+}
+
 static void resetEffectiveZoom(StyleResolverState& state)
 {
     // Reset the zoom in effect. This allows the setZoom method to accurately compute a new zoom in effect.
@@ -163,6 +213,42 @@ void StyleBuilderFunctions::applyValueCSSPropertyZoom(StyleResolver*, StyleResol
         if (float number = primitiveValue->getFloatValue())
             state.setZoom(number);
     }
+}
+
+void StyleBuilderFunctions::applyValueCSSPropertyWebkitClipPath(StyleResolver* styleResolver, StyleResolverState& state, CSSValue* value)
+{
+    if (value->isPrimitiveValue()) {
+        CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
+        if (primitiveValue->getValueID() == CSSValueNone) {
+            state.style()->setClipPath(0);
+        } else if (primitiveValue->isShape()) {
+            state.style()->setClipPath(ShapeClipPathOperation::create(basicShapeForValue(state, primitiveValue->getShapeValue())));
+        } else if (primitiveValue->primitiveType() == CSSPrimitiveValue::CSS_URI) {
+            String cssURLValue = primitiveValue->getStringValue();
+            KURL url = styleResolver->document()->completeURL(cssURLValue);
+            // FIXME: It doesn't work with forward or external SVG references (see https://bugs.webkit.org/show_bug.cgi?id=90405)
+            state.style()->setClipPath(ReferenceClipPathOperation::create(cssURLValue, url.fragmentIdentifier()));
+        }
+    }
+}
+
+// FIXME: We should use the same system for this as the rest of the pseudo-shorthands (e.g. background-position)
+void StyleBuilderFunctions::applyInitialCSSPropertyWebkitPerspectiveOrigin(StyleResolver* styleResolver, StyleResolverState& state)
+{
+    applyInitialCSSPropertyWebkitPerspectiveOriginX(styleResolver, state);
+    applyInitialCSSPropertyWebkitPerspectiveOriginY(styleResolver, state);
+}
+
+void StyleBuilderFunctions::applyInheritCSSPropertyWebkitPerspectiveOrigin(StyleResolver* styleResolver, StyleResolverState& state)
+{
+    applyInheritCSSPropertyWebkitPerspectiveOriginX(styleResolver, state);
+    applyInheritCSSPropertyWebkitPerspectiveOriginY(styleResolver, state);
+}
+
+void StyleBuilderFunctions::applyValueCSSPropertyWebkitPerspectiveOrigin(StyleResolver*, StyleResolverState&, CSSValue* value)
+{
+    // This is expanded in the parser
+    ASSERT_NOT_REACHED();
 }
 
 
