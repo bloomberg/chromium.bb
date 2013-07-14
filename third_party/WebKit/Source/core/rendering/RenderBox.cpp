@@ -197,6 +197,7 @@ void RenderBox::removeFloatingOrPositionedChildFromBlockLists()
             parentBlock->markSiblingsWithFloatsForLayout(this);
             parentBlock->markAllDescendantsWithFloatsForLayout(this, false);
         }
+        RenderBlock::floatWillBeRemoved(this);
     }
 
     if (isOutOfFlowPositioned())
