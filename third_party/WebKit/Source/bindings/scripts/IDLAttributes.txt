@@ -20,6 +20,7 @@
 
 ActiveDOMObject
 ActivityLog=Access|Setter|Getter|AccessForIsolatedWorlds|SetterForIsolatedWorlds|GetterForIsolatedWorlds
+AllowJSCreationOnlyIfFeatureEnabled
 CachedAttribute
 KeepAttributeAliveForGC
 CallWith=ScriptExecutionContext|ScriptState|ScriptArguments|ActiveWindow|FirstWindow|ThisValue

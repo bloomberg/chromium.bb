@@ -184,6 +184,8 @@ def generate_event_names_file(destination_filename, event_names, only_if_changed
                 suffix = 'Enabled'
             if key in extended_attributes:
                 attributes.append('%s=%s%s' % (key, extended_attributes[key], suffix))
+        if 'AllowJSCreationOnlyIfFeatureEnabled' in extended_attributes:
+            attributes.append('AllowJSCreationOnlyIfFeatureEnabled')
         refined_filename, _ = os.path.splitext(os.path.relpath(filename, source_dir))
         lines.append('%s %s\n' % (refined_filename, ', '.join(attributes)))
     write_file(lines, destination_filename, only_if_changed)
