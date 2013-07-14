@@ -15,7 +15,12 @@
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppapi_webplugin_impl.h"
 #include "webkit/renderer/media/crypto/ppapi_decryptor.h"
+#elif defined(OS_ANDROID)
+#include "content/renderer/media/android/proxy_media_keys.h"
+#include "content/renderer/media/android/webmediaplayer_proxy_android.h"
+#endif  // defined(ENABLE_PEPPER_CDMS)
 
+#if defined(ENABLE_PEPPER_CDMS)
 using webkit_media::PpapiDecryptor;
 #endif  // defined(ENABLE_PEPPER_CDMS)
 
@@ -94,7 +99,8 @@ scoped_ptr<media::MediaKeys> ContentDecryptionModuleFactory::Create(
     WebKit::WebFrame* web_frame,
     const base::Closure& destroy_plugin_cb,
 #elif defined(OS_ANDROID)
-    scoped_ptr<media::MediaKeys> proxy_media_keys,
+    WebMediaPlayerProxyAndroid* proxy,
+    int media_keys_id,
 #endif  // defined(ENABLE_PEPPER_CDMS)
     const media::KeyAddedCB& key_added_cb,
     const media::KeyErrorCB& key_error_cb,
@@ -114,7 +120,10 @@ scoped_ptr<media::MediaKeys> ContentDecryptionModuleFactory::Create(
       key_system, key_added_cb, key_error_cb, key_message_cb,
       destroy_plugin_cb, web_media_player_client, web_frame);
 #elif defined(OS_ANDROID)
-  return proxy_media_keys.Pass();
+  scoped_ptr<ProxyMediaKeys> proxy_media_keys(
+      new ProxyMediaKeys(proxy, media_keys_id));
+  proxy_media_keys->InitializeCDM(key_system);
+  return proxy_media_keys.PassAs<media::MediaKeys>();
 #else
   return scoped_ptr<media::MediaKeys>();
 #endif  // defined(ENABLE_PEPPER_CDMS)

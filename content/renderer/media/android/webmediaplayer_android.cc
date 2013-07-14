@@ -143,9 +143,9 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
         client,
         frame,
 #else
-        // TODO(xhwang): Use media_keys_id when MediaKeys are separated from
-        // WebMediaPlayer.
-        scoped_ptr<media::MediaKeys>(new ProxyMediaKeys(proxy_, player_id_)),
+        proxy_,
+        player_id_,  // TODO(xhwang): Use media_keys_id when MediaKeys are
+                     // separated from WebMediaPlayer.
 #endif // defined(ENABLE_PEPPER_CDMS)
         // |decryptor_| is owned, so Unretained() is safe here.
         base::Bind(&WebMediaPlayerAndroid::OnKeyAdded, base::Unretained(this)),

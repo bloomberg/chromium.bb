@@ -23,7 +23,8 @@ ProxyDecryptor::ProxyDecryptor(
     WebKit::WebMediaPlayerClient* web_media_player_client,
     WebKit::WebFrame* web_frame,
 #elif defined(OS_ANDROID)
-    scoped_ptr<media::MediaKeys> media_keys,
+    WebMediaPlayerProxyAndroid* proxy,
+    int media_keys_id,
 #endif  // defined(ENABLE_PEPPER_CDMS)
     const media::KeyAddedCB& key_added_cb,
     const media::KeyErrorCB& key_error_cb,
@@ -33,7 +34,8 @@ ProxyDecryptor::ProxyDecryptor(
       web_media_player_client_(web_media_player_client),
       web_frame_(web_frame),
 #elif defined(OS_ANDROID)
-      proxy_media_keys_(media_keys.Pass()),
+      proxy_(proxy),
+      media_keys_id_(media_keys_id),
 #endif  // defined(ENABLE_PEPPER_CDMS)
       key_added_cb_(key_added_cb),
       key_error_cb_(key_error_cb),
@@ -126,7 +128,8 @@ scoped_ptr<media::MediaKeys> ProxyDecryptor::CreateMediaKeys(
       base::Bind(&ProxyDecryptor::DestroyHelperPlugin,
                  weak_ptr_factory_.GetWeakPtr()),
 #elif defined(OS_ANDROID)
-      proxy_media_keys_.Pass(),
+      proxy_,
+      media_keys_id_,
 #endif  // defined(ENABLE_PEPPER_CDMS)
       base::Bind(&ProxyDecryptor::KeyAdded, weak_ptr_factory_.GetWeakPtr()),
       base::Bind(&ProxyDecryptor::KeyError, weak_ptr_factory_.GetWeakPtr()),

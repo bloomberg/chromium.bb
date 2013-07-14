@@ -24,6 +24,8 @@ class WebMediaPlayerClient;
 
 namespace content {
 
+class WebMediaPlayerProxyAndroid;
+
 // ProxyDecryptor is for EME v0.1b only. It should not be used for the WD API.
 // A decryptor proxy that creates a real decryptor object on demand and
 // forwards decryptor calls to it.
@@ -37,7 +39,8 @@ class ProxyDecryptor : public media::MediaKeys {
       WebKit::WebMediaPlayerClient* web_media_player_client,
       WebKit::WebFrame* web_frame,
 #elif defined(OS_ANDROID)
-    scoped_ptr<media::MediaKeys> media_keys,
+      WebMediaPlayerProxyAndroid* proxy,
+      int media_keys_id,
 #endif  // defined(ENABLE_PEPPER_CDMS)
       const media::KeyAddedCB& key_added_cb,
       const media::KeyErrorCB& key_error_cb,
@@ -86,7 +89,8 @@ class ProxyDecryptor : public media::MediaKeys {
   WebKit::WebMediaPlayerClient* web_media_player_client_;
   WebKit::WebFrame* web_frame_;
 #elif defined(OS_ANDROID)
-  scoped_ptr<media::MediaKeys> proxy_media_keys_;
+  WebMediaPlayerProxyAndroid* proxy_;
+  int media_keys_id_;
 #endif  // defined(ENABLE_PEPPER_CDMS)
 
   // The real MediaKeys that manages key operations for the ProxyDecryptor.

@@ -4,8 +4,12 @@
 
 #include "content/renderer/media/android/proxy_media_keys.h"
 
+#include <vector>
+
+#include "base/basictypes.h"
 #include "base/logging.h"
 #include "content/renderer/media/android/webmediaplayer_proxy_android.h"
+#include "content/renderer/media/crypto/key_systems.h"
 
 namespace content {
 
@@ -13,6 +17,12 @@ ProxyMediaKeys::ProxyMediaKeys(WebMediaPlayerProxyAndroid* proxy,
                                int media_keys_id)
     : proxy_(proxy), media_keys_id_(media_keys_id) {
   DCHECK(proxy_);
+}
+
+void ProxyMediaKeys::InitializeCDM(const std::string& key_system) {
+  std::vector<uint8> uuid = GetUUID(key_system);
+  DCHECK(!uuid.empty());
+  proxy_->InitializeCDM(media_keys_id_, uuid);
 }
 
 bool ProxyMediaKeys::GenerateKeyRequest(const std::string& type,

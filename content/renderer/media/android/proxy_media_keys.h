@@ -20,6 +20,8 @@ class ProxyMediaKeys : public media::MediaKeys {
  public:
   ProxyMediaKeys(WebMediaPlayerProxyAndroid* proxy, int media_keys_id);
 
+  void InitializeCDM(const std::string& key_system);
+
   // MediaKeys implementation.
   virtual bool GenerateKeyRequest(const std::string& type,
                                   const uint8* init_data,

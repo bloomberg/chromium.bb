@@ -85,11 +85,12 @@ bool SessionIdAdapter::Initialize(const std::string& key_system,
           base::Closure(),
 #elif defined(OS_ANDROID)
           // TODO(xhwang): Support Android.
-          scoped_ptr<media::MediaKeys>(),
+          NULL,
+          0,
 #endif  // defined(ENABLE_PEPPER_CDMS)
-        base::Bind(&SessionIdAdapter::KeyAdded, weak_this),
-        base::Bind(&SessionIdAdapter::KeyError, weak_this),
-        base::Bind(&SessionIdAdapter::KeyMessage, weak_this));
+          base::Bind(&SessionIdAdapter::KeyAdded, weak_this),
+          base::Bind(&SessionIdAdapter::KeyError, weak_this),
+          base::Bind(&SessionIdAdapter::KeyMessage, weak_this));
   if (!created_media_keys)
     return false;
 

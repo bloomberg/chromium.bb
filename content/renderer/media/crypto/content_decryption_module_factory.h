@@ -19,6 +19,8 @@ class WebMediaPlayerClient;
 
 namespace content {
 
+class WebMediaPlayerProxyAndroid;
+
 class ContentDecryptionModuleFactory {
  public:
   static scoped_ptr<media::MediaKeys> Create(
@@ -29,10 +31,8 @@ class ContentDecryptionModuleFactory {
       WebKit::WebFrame* web_frame,
       const base::Closure& destroy_plugin_cb,
 #elif defined(OS_ANDROID)
-      // TODO(scherkus): Revert the ProxyDecryptor changes from r208040 so that
-      // this class always creates the MediaKeys.
-      // A ProxyMediaKeys to be used if |key_system| is not Clear Key.
-      scoped_ptr<media::MediaKeys> proxy_media_keys,
+      WebMediaPlayerProxyAndroid* proxy,
+      int media_keys_id,
 #endif  // defined(ENABLE_PEPPER_CDMS)
       const media::KeyAddedCB& key_added_cb,
       const media::KeyErrorCB& key_error_cb,
