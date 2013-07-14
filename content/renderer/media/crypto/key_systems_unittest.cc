@@ -5,9 +5,9 @@
 #include <string>
 #include <vector>
 
+#include "content/renderer/media/crypto/key_systems.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebString.h"
-#include "webkit/renderer/media/crypto/key_systems.h"
 
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
 
@@ -74,7 +74,7 @@ using WebKit::WebString;
 #define EXPECT_WVAAC EXPECT_FALSE
 #endif  // defined(WIDEVINE_CDM_AVAILABLE)
 
-namespace webkit_media {
+namespace content {
 
 static const char* const kClearKey = "webkit-org.w3.clearkey";
 static const char* const kExternalClearKey = "org.chromium.externalclearkey";
@@ -768,4 +768,4 @@ TEST_F(KeySystemsTest, GetUUID_Unrecognized) {
 }
 #endif  // defined(OS_ANDROID)
 
-}  // namespace webkit_media
+}  // namespace content

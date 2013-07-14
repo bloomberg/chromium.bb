@@ -23,9 +23,6 @@
       'target_name': 'webkit_media',
       'type': 'static_library',
       'variables': { 'enable_wexit_time_destructors': 1, },
-      'include_dirs': [
-        '<(SHARED_INTERMEDIATE_DIR)',  # Needed by key_systems_info.cc.
-      ],
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
@@ -38,10 +35,6 @@
         '<(DEPTH)/webkit/renderer/compositor_bindings/compositor_bindings.gyp:webkit_compositor_bindings',
       ],
       'sources': [
-        'crypto/key_systems.cc',
-        'crypto/key_systems.h',
-        'crypto/key_systems_info.cc',
-        'crypto/key_systems_info.h',
         'crypto/ppapi_decryptor.cc',
         'crypto/ppapi_decryptor.h',
       ],
@@ -53,11 +46,6 @@
         }, { # OS != "android"'
           'sources/': [
             ['exclude', '^android/'],
-          ],
-        }],
-        ['google_tv == 1', {
-          'sources!': [
-            'crypto/key_systems_info.cc',
           ],
         }],
         ['enable_pepper_cdms != 1', {

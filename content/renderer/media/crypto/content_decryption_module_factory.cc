@@ -5,8 +5,8 @@
 #include "content/renderer/media/crypto/content_decryption_module_factory.h"
 
 #include "base/logging.h"
+#include "content/renderer/media/crypto/key_systems.h"
 #include "media/crypto/aes_decryptor.h"
-#include "webkit/renderer/media/crypto/key_systems.h"
 
 #if defined(ENABLE_PEPPER_CDMS)
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -16,11 +16,8 @@
 #include "webkit/plugins/ppapi/ppapi_webplugin_impl.h"
 #include "webkit/renderer/media/crypto/ppapi_decryptor.h"
 
-using webkit_media::GetPepperType;
 using webkit_media::PpapiDecryptor;
 #endif  // defined(ENABLE_PEPPER_CDMS)
-
-using webkit_media::CanUseAesDecryptor;
 
 namespace content {
 

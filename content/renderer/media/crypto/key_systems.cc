@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <map>
+#include "content/renderer/media/crypto/key_systems.h"
 
-#include "webkit/renderer/media/crypto/key_systems.h"
+#include <map>
 
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
+#include "content/renderer/media/crypto/key_systems_info.h"
 #include "net/base/mime_util.h"
 #include "third_party/WebKit/public/platform/WebCString.h"
 #include "third_party/WebKit/public/platform/WebString.h"
-#include "webkit/renderer/media/crypto/key_systems_info.h"
 
-namespace webkit_media {
+namespace content {
 
 // Convert a WebString to ASCII, falling back on an empty string in the case
 // of a non-ASCII string.
@@ -172,4 +172,4 @@ std::vector<uint8> GetUUID(const std::string& key_system) {
 }
 #endif  // defined(OS_ANDROID)
 
-}  // namespace webkit_media
+}  // namespace content

@@ -8,7 +8,6 @@
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "content/renderer/media/crypto/content_decryption_module_factory.h"
-#include "webkit/renderer/media/crypto/key_systems.h"
 
 namespace content {
 

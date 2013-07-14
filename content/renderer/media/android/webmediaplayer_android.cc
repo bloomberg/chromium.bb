@@ -14,6 +14,7 @@
 #include "content/renderer/media/android/proxy_media_keys.h"
 #include "content/renderer/media/android/renderer_media_player_manager.h"
 #include "content/renderer/media/android/webmediaplayer_proxy_android.h"
+#include "content/renderer/media/crypto/key_systems.h"
 #include "content/renderer/media/webmediaplayer_delegate.h"
 #include "content/renderer/media/webmediaplayer_util.h"
 #include "gpu/GLES2/gl2extchromium.h"
@@ -30,7 +31,6 @@
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "webkit/renderer/compositor_bindings/web_layer_impl.h"
-#include "webkit/renderer/media/crypto/key_systems.h"
 
 #if defined(GOOGLE_TV)
 #include "content/renderer/media/media_stream_audio_renderer.h"
@@ -47,8 +47,6 @@ using WebKit::WebTimeRanges;
 using WebKit::WebURL;
 using media::MediaPlayerAndroid;
 using media::VideoFrame;
-using webkit_media::IsSupportedKeySystem;
-using webkit_media::KeySystemNameForUMA;
 
 namespace {
 // Prefix for histograms related to Encrypted Media Extensions.

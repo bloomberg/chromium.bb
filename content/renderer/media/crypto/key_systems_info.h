@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_RENDERER_MEDIA_CRYPTO_KEY_SYSTEMS_INFO_H_
-#define WEBKIT_RENDERER_MEDIA_CRYPTO_KEY_SYSTEMS_INFO_H_
+#ifndef CONTENT_RENDERER_MEDIA_CRYPTO_KEY_SYSTEMS_INFO_H_
+#define CONTENT_RENDERER_MEDIA_CRYPTO_KEY_SYSTEMS_INFO_H_
 
 #include <string>
 
@@ -13,7 +13,7 @@ namespace WebKit {
 class WebString;
 }
 
-namespace webkit_media {
+namespace content {
 
 struct MediaFormatAndKeySystem {
   const char* mime_type;
@@ -70,6 +70,6 @@ std::string KeySystemNameForUMAInternal(const WebKit::WebString& key_system);
 // Returns whether built-in AesDecryptor can be used for the given |key_system|.
 bool CanUseBuiltInAesDecryptor(const std::string& key_system);
 
-}  // namespace webkit_media
+}  // namespace content
 
-#endif  // WEBKIT_RENDERER_MEDIA_CRYPTO_KEY_SYSTEMS_INFO_H_
+#endif  // CONTENT_RENDERER_MEDIA_CRYPTO_KEY_SYSTEMS_INFO_H_

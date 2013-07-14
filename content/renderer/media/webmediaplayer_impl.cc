@@ -20,6 +20,7 @@
 #include "cc/layers/video_layer.h"
 #include "content/public/common/content_switches.h"
 #include "content/renderer/media/buffered_data_source.h"
+#include "content/renderer/media/crypto/key_systems.h"
 #include "content/renderer/media/texttrack_impl.h"
 #include "content/renderer/media/webaudiosourceprovider_impl.h"
 #include "content/renderer/media/webinbandtexttrack_impl.h"
@@ -54,7 +55,6 @@
 #include "v8/include/v8.h"
 #include "webkit/plugins/ppapi/ppapi_webplugin_impl.h"
 #include "webkit/renderer/compositor_bindings/web_layer_impl.h"
-#include "webkit/renderer/media/crypto/key_systems.h"
 
 using WebKit::WebCanvas;
 using WebKit::WebMediaPlayer;
@@ -62,8 +62,6 @@ using WebKit::WebRect;
 using WebKit::WebSize;
 using WebKit::WebString;
 using media::PipelineStatus;
-using webkit_media::IsSupportedKeySystem;
-using webkit_media::KeySystemNameForUMA;
 
 namespace {
 
@@ -98,6 +96,7 @@ const double kMaxRate = 16.0;
 
 // Prefix for histograms related to Encrypted Media Extensions.
 const char* kMediaEme = "Media.EME.";
+
 }  // namespace
 
 namespace content {

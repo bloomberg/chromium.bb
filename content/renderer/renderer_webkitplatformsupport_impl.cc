@@ -32,6 +32,7 @@
 #include "content/renderer/gamepad_shared_memory_reader.h"
 #include "content/renderer/hyphenator/hyphenator.h"
 #include "content/renderer/media/audio_decoder.h"
+#include "content/renderer/media/crypto/key_systems.h"
 #include "content/renderer/media/media_stream_dependency_factory.h"
 #include "content/renderer/media/renderer_webaudiodevice_impl.h"
 #include "content/renderer/media/renderer_webmidiaccessor_impl.h"
@@ -62,7 +63,6 @@
 #include "webkit/glue/simple_webmimeregistry_impl.h"
 #include "webkit/glue/webfileutilities_impl.h"
 #include "webkit/glue/webkit_glue.h"
-#include "webkit/renderer/media/crypto/key_systems.h"
 
 #if defined(OS_WIN)
 #include "content/common/child_process_messages.h"
@@ -423,14 +423,14 @@ RendererWebKitPlatformSupportImpl::MimeRegistry::supportsMediaMIMEType(
     // Check whether the key system is supported with the mime_type and codecs.
 
     // Not supporting the key system is a flat-out no.
-    if (!webkit_media::IsSupportedKeySystem(key_system))
+    if (!IsSupportedKeySystem(key_system))
       return IsNotSupported;
 
     std::vector<std::string> strict_codecs;
     bool strip_suffix = !net::IsStrictMediaMimeType(mime_type_ascii);
     net::ParseCodecString(ToASCIIOrEmpty(codecs), &strict_codecs, strip_suffix);
 
-    if (!webkit_media::IsSupportedKeySystemWithMediaMimeType(
+    if (!IsSupportedKeySystemWithMediaMimeType(
             mime_type_ascii, strict_codecs, ToASCIIOrEmpty(key_system)))
       return IsNotSupported;
 

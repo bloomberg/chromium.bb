@@ -418,6 +418,7 @@
         'renderer/media/buffered_data_source_unittest.cc',
         'renderer/media/buffered_resource_loader_unittest.cc',
         'renderer/media/cache_util_unittest.cc',
+        'renderer/media/crypto/key_systems_unittest.cc',
         'renderer/media/test_response_generator.cc',
         'renderer/media/test_response_generator.h',
         'renderer/media/video_capture_impl_unittest.cc',
@@ -551,7 +552,6 @@
         '../webkit/renderer/cpp_variant_unittest.cc',
         '../webkit/renderer/dom_storage/dom_storage_cached_area_unittest.cc',
         '../webkit/renderer/fileapi/webfilewriter_base_unittest.cc',
-        '../webkit/renderer/media/crypto/key_systems_unittest.cc',
       ],
       'conditions': [
         ['OS == "ios"', {
