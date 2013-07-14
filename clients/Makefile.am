@@ -2,12 +2,21 @@ bin_PROGRAMS =					\
 	weston-info				\
 	$(terminal)
 
+if ENABLE_DEMO_CLIENTS
+bin_PROGRAMS +=					\
+	$(clients_programs)			\
+	$(pango_programs)			\
+	$(poppler_programs)			\
+	$(simple_clients_programs)		\
+	$(simple_egl_clients_programs)
+else
 noinst_PROGRAMS =				\
 	$(clients_programs)			\
 	$(pango_programs)			\
 	$(poppler_programs)			\
 	$(simple_clients_programs)		\
 	$(simple_egl_clients_programs)
+endif
 
 libexec_PROGRAMS =				\
 	$(desktop_shell)			\

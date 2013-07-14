@@ -383,6 +383,12 @@ AC_MSG_NOTICE([Weston's native backend: $WESTON_NATIVE_BACKEND])
 AC_DEFINE_UNQUOTED([WESTON_NATIVE_BACKEND], ["$WESTON_NATIVE_BACKEND"],
 		   [The default backend to load, if not wayland nor x11.])
 
+AC_ARG_ENABLE(demo-clients,
+              AS_HELP_STRING([--enable-demo-clients],
+                             [install demo clients built with weston]),,
+              enable_demo_clients=no)
+AM_CONDITIONAL(ENABLE_DEMO_CLIENTS, [test "x$enable_demo_clients" = "xyes"])
+
 PKG_CHECK_MODULES(LCMS, lcms2,
                   [have_lcms=yes], [have_lcms=no])
 if test "x$have_lcms" = xyes; then
