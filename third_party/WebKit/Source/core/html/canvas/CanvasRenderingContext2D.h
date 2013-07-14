@@ -53,6 +53,7 @@ class GraphicsContext;
 class HTMLCanvasElement;
 class HTMLImageElement;
 class HTMLVideoElement;
+class ImageBitmap;
 class ImageData;
 class TextMetrics;
 
@@ -160,15 +161,18 @@ public:
 
     void clearShadow();
 
+    void drawImage(ImageBitmap*, float x, float y, ExceptionCode&);
+    void drawImage(ImageBitmap*, float x, float y, float width, float height, ExceptionCode&);
+    void drawImage(ImageBitmap*, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh, ExceptionCode&);
     void drawImage(HTMLImageElement*, float x, float y, ExceptionCode&);
     void drawImage(HTMLImageElement*, float x, float y, float width, float height, ExceptionCode&);
     void drawImage(HTMLImageElement*, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh, ExceptionCode&);
     void drawImage(HTMLImageElement*, const FloatRect& srcRect, const FloatRect& dstRect, ExceptionCode&);
+    void drawImage(HTMLImageElement*, const FloatRect& srcRect, const FloatRect& dstRect, const CompositeOperator&, const BlendMode&, ExceptionCode&);
     void drawImage(HTMLCanvasElement*, float x, float y, ExceptionCode&);
     void drawImage(HTMLCanvasElement*, float x, float y, float width, float height, ExceptionCode&);
     void drawImage(HTMLCanvasElement*, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh, ExceptionCode&);
     void drawImage(HTMLCanvasElement*, const FloatRect& srcRect, const FloatRect& dstRect, ExceptionCode&);
-    void drawImage(HTMLImageElement*, const FloatRect& srcRect, const FloatRect& dstRect, const CompositeOperator&, const BlendMode&, ExceptionCode&);
     void drawImage(HTMLVideoElement*, float x, float y, ExceptionCode&);
     void drawImage(HTMLVideoElement*, float x, float y, float width, float height, ExceptionCode&);
     void drawImage(HTMLVideoElement*, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh, ExceptionCode&);
@@ -279,6 +283,7 @@ private:
     void applyShadow();
     bool shouldDrawShadows() const;
 
+    void drawImageInternal(Image*, const FloatRect&, const FloatRect&, const CompositeOperator&, const BlendMode&);
     void didDraw(const FloatRect&, unsigned options = CanvasDidDrawApplyAll);
     void didDrawEntireCanvas();
 

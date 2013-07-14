@@ -1,0 +1,437 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+<head>
+<script src="../js/resources/js-test-pre.js"></script>
+</head>
+<body>
+<script>
+
+description("Ensure correct behavior of drawImage with ImageBitmaps.");
+window.jsTestIsAsync = true;
+
+function jsWrapperClass(node)
+{
+    // returns the ClassName of node
+    if (!node)
+        return "[null]";
+    var string = Object.prototype.toString.apply(node);
+
+    // string will be of the form [object ClassName]
+    return string.substr(8, string.length - 9);
+}
+
+function shouldBeType(expression, className)
+{
+    shouldBe("jsWrapperClass(" + expression + ")", "'" + className + "'");
+}
+
+function shouldBeRed(x, y) {
+    d = ctx.getImageData(x, y, 1, 1).data;
+    shouldBeTrue("d[0] == 255");
+    shouldBeTrue("d[1] == 0");
+    shouldBeTrue("d[2] == 0");
+    shouldBeTrue("d[3] == 255");
+}
+
+function shouldBeGreen(x, y) {
+    d = ctx.getImageData(x, y, 1, 1).data;
+    shouldBeTrue("d[0] == 0");
+    shouldBeTrue("d[1] == 255");
+    shouldBeTrue("d[2] == 0");
+    shouldBeTrue("d[3] == 255");
+}
+
+function shouldBeBlue(x, y) {
+    d = ctx.getImageData(x, y, 1, 1).data;
+    shouldBeTrue("d[0] == 0");
+    shouldBeTrue("d[1] == 0");
+    shouldBeTrue("d[2] == 255");
+    shouldBeTrue("d[3] == 255");
+}
+
+function shouldBeBlack(x, y) {
+    d = ctx.getImageData(x, y, 1, 1).data;
+    shouldBeTrue("d[0] == 0");
+    shouldBeTrue("d[1] == 0");
+    shouldBeTrue("d[2] == 0");
+    shouldBeTrue("d[3] == 255");
+}
+
+function shouldBeClear(x, y) {
+    // should be transparent black pixels
+    d = ctx.getImageData(x, y, 1, 1).data;
+    shouldBeTrue("d[0] == 0");
+    shouldBeTrue("d[1] == 0");
+    shouldBeTrue("d[2] == 0");
+    shouldBeTrue("d[3] == 0");
+}
+
+function drawPattern(ctx) {
+    // Draw a four-color pattern
+    ctx.beginPath();
+    ctx.fillStyle = "rgb(255, 0, 0)";
+    ctx.fillRect(0, 0, 100, 100);
+    ctx.fillStyle = "rgb(0, 255, 0)";
+    ctx.fillRect(100, 0, 100, 100);
+    ctx.fillStyle = "rgb(0, 0, 255)";
+    ctx.fillRect(0, 100, 100, 100);
+    ctx.fillStyle = "rgb(0, 0, 0)";
+    ctx.fillRect(100, 100, 100, 100);
+}
+
+function clearContext(context) {
+    context.clearRect(0, 0, 500, 500);
+}
+
+var bitmap;
+var image;
+var testBitmap; // this is an ImageBitmap that is uncropped. We use this to test createImageBitmap(testBitmap)
+var d;          // image.imageData
+var checks;
+var elements;
+
+// Create auxiliary canvas to draw to and create an image from.
+var aCanvas = document.createElement("canvas");
+aCanvas.setAttribute("width", "200");
+aCanvas.setAttribute("height", "200");
+var aCtx = aCanvas.getContext("2d");
+drawPattern(aCtx);
+
+var canvas = document.createElement("canvas");
+canvas.setAttribute("width", "500");
+canvas.setAttribute("height", "500");
+var ctx = canvas.getContext("2d");
+
+image = new Image();
+image.onload = imageLoaded;
+image.src = aCanvas.toDataURL(); // set a data URI of the base64 enconded image as the source
+
+var imageLoaded = false;
+var imageBitmapLoaded = false;
+
+function imageLoaded() {
+    createImageBitmap(image, imageBitmapLoadedCallback);
+    d = aCtx.getImageData(0, 0, 200, 200);
+    imageLoaded = true;
+    loaded();
+}
+
+function imageBitmapLoadedCallback(imageBitmap) {
+    testBitmap = imageBitmap;
+    imageBitmapLoaded = true;
+    loaded();
+}
+
+function loaded() {
+    if (imageLoaded && imageBitmapLoaded) {
+        // check all of these elements
+        elements = [image, aCanvas, d, aCtx, testBitmap];
+
+        // with all of these checks
+        checks = [checkNoCrop, checkCrop, checkCropRight, checkOverCrop, checkOverCropRight, checkNegativeCrop, checkEmpty, checkEmpty2, checkImmutable];
+
+        // wait for callback to finish before each check to ensure synchronous behavior
+        nextCheck();
+    }
+}
+
+// these counters are incremented after every check
+var i = 0;
+var j = 0;
+var callbackCount = 0;
+
+function nextCheck() {
+    checks[j](elements[i]);
+}
+
+function checkNoCrop(element) {
+    debug("checkNoCrop with ".concat(jsWrapperClass(element)));
+    createImageBitmap(element, callbackNoCrop);
+}
+
+function checkCrop(element) {
+    debug("checkCrop with ".concat(jsWrapperClass(element)));
+    createImageBitmap(element, callbackCrop, 0, 0, 100, 100);
+}
+
+function checkCropCenter(element) {
+    debug("checkCropCenter with ".concat(jsWrapperClass(element)));
+    createImageBitmap(element, callbackCropCenter, 50, 50, 150, 150);
+}
+
+function checkCropRight(element) {
+    debug("checkCropRight with ".concat(jsWrapperClass(element)));
+    createImageBitmap(element, callbackCropRight, 100, 100, 100, 100);
+}
+
+function checkOverCrop(element) {
+    debug("checkOverCrop with ".concat(jsWrapperClass(element)));
+    createImageBitmap(element, callbackOverCrop, -100, -100, 600, 600);
+}
+
+function checkOverCropRight(element) {
+    debug("checkOverCropRight with ".concat(jsWrapperClass(element)));
+    createImageBitmap(element, callbackOverCropRight, 100, 100, 500, 500);
+}
+
+function checkNegativeCrop(element) {
+    debug("checkNegativeCrop with ".concat(jsWrapperClass(element)));
+    createImageBitmap(element, callbackCrop, 100, 100, -100, -100);
+}
+
+function checkEmpty(element) {
+    debug("checkEmpty with ".concat(jsWrapperClass(element)));
+    createImageBitmap(element, callbackEmpty, -300, -300, 300, 300);
+}
+
+function checkEmpty2(element) {
+    debug("checkEmpty2 with ".concat(jsWrapperClass(element)));
+    createImageBitmap(element, callbackEmpty, 400, 300, 300, 300);
+}
+
+function checkImmutable(element) {
+    debug("checkImmutable with ".concat(jsWrapperClass(element)));
+    createImageBitmap(element, callbackImmutable);
+}
+
+function callbackNoCrop(imageBitmap) {
+    // should be drawn to (0, 0), (200, 200)
+    clearContext(ctx);
+    ctx.drawImage(imageBitmap, 0, 0);
+    shouldBeRed(90, 90);
+    shouldBeGreen(110, 90);
+    shouldBeBlue(90, 110);
+    shouldBeBlack(110, 110);
+    shouldBeBlack(190, 190);
+    shouldBeClear(10, 210);
+    shouldBeClear(210, 10);
+    shouldBeClear(210, 210);
+
+    // shrunk to (0, 0), (100, 100)
+    clearContext(ctx);
+    ctx.drawImage(imageBitmap, 0, 0, 100, 100);
+    shouldBeRed(40, 40);
+    shouldBeGreen(60, 40);
+    shouldBeBlue(40, 60);
+    shouldBeBlack(60, 60);
+    shouldBeBlack(90, 90);
+    shouldBeClear(10, 110);
+    shouldBeClear(110, 10);
+    shouldBeClear(110, 110);
+
+    // shrunk to (100, 100), (200, 200)
+    clearContext(ctx);
+    ctx.drawImage(imageBitmap, 100, 100, 100, 100);
+    shouldBeRed(140, 140);
+    shouldBeGreen(160, 140);
+    shouldBeBlue(140, 160);
+    shouldBeBlack(160, 160);
+    shouldBeBlack(190, 190);
+    shouldBeClear(110, 210);
+    shouldBeClear(210, 110);
+    shouldBeClear(210, 210);
+
+    // black should be drawn to (100, 100), (200, 200)
+    clearContext(ctx);
+    ctx.drawImage(imageBitmap, 100, 100, 100, 100, 100, 100, 100, 100);
+    shouldBeClear(90, 90);
+    shouldBeBlack(110, 110);
+    shouldBeBlack(190, 190);
+    shouldBeClear(10, 210);
+    shouldBeClear(210, 10);
+    shouldBeClear(210, 210);
+
+    commonCallback(imageBitmap);
+}
+
+function callbackCrop(imageBitmap) {
+    // red should be drawn to (0, 0), (100, 100)
+    clearContext(ctx);
+    ctx.drawImage(imageBitmap, 0, 0);
+    shouldBeRed(10, 10);
+    shouldBeRed(90, 90);
+    shouldBeClear(110, 110);
+    shouldBeClear(10, 110);
+    shouldBeClear(110, 10);
+
+    // red should be drawn to (0, 0), (200, 200)
+    clearContext(ctx);
+    ctx.drawImage(imageBitmap, 0, 0, 200, 200);
+    shouldBeRed(10, 10);
+    shouldBeRed(190, 190);
+    shouldBeClear(210, 210);
+    shouldBeClear(10, 210);
+    shouldBeClear(210, 10);
+
+    commonCallback(imageBitmap);
+}
+
+function callbackCropCenter(imageBitmap) {
+    // should be drawn to (0, 0), (100, 100) with all four colors
+    clearContext(ctx);
+    ctx.drawImage(imageBitmap, 0, 0);
+    shouldBeRed(40, 40);
+    shouldBeGreen(60, 40);
+    shouldBeBlue(40, 60);
+    shouldBeBlack(60, 60);
+    shouldBeBlack(90, 90);
+    shouldBeClear(110, 110);
+    shouldBeClear(10, 110);
+    shouldBeClear(110, 10);
+
+    // should be drawn to (0, 0), (200, 200) with all four colors
+    clearContext(ctx);
+    ctx.drawImage(imageBitmap, 0, 0, 200, 200);
+    shouldBeRed(90, 90);
+    shouldBeGreen(110, 90);
+    shouldBeBlue(90, 110);
+    shouldBeBlack(110, 110);
+    shouldBeBlack(190, 190);
+    shouldBeClear(210, 210);
+    shouldBeClear(10, 210);
+    shouldBeClear(210, 10);
+
+    commonCallback(imageBitmap);
+}
+
+function callbackCropRight(imageBitmap) {
+    // black should be drawn to (0, 0), (100, 100)
+    clearContext(ctx);
+    ctx.drawImage(imageBitmap, 0, 0);
+    shouldBeBlack(10, 10);
+    shouldBeBlack(90, 90);
+    shouldBeClear(110, 110);
+    shouldBeClear(10, 110);
+    shouldBeClear(110, 10);
+
+    commonCallback(imageBitmap);
+}
+
+function callbackOverCrop(imageBitmap) {
+    // should be drawn to (100, 100), (300, 300)
+    clearContext(ctx);
+    ctx.drawImage(imageBitmap, 0, 0);
+    shouldBeClear(10, 10);
+    shouldBeClear(90, 90);
+    shouldBeRed(110, 110);
+    shouldBeRed(190, 190);
+    shouldBeGreen(210, 190);
+    shouldBeBlue(190, 210);
+    shouldBeBlack(210, 210);
+    shouldBeBlack(290, 290);
+    shouldBeClear(310, 10);
+    shouldBeClear(10, 310);
+    shouldBeClear(310, 310);
+
+    // should be drawn to (50, 50), (150, 150)
+    clearContext(ctx);
+    ctx.drawImage(imageBitmap, 0, 0, 300, 300);
+    shouldBeClear(10, 10);
+    shouldBeClear(40, 40);
+    shouldBeRed(60, 60);
+    shouldBeRed(90, 90);
+    shouldBeGreen(110, 90);
+    shouldBeBlue(90, 110);
+    shouldBeBlack(110, 110);
+    shouldBeBlack(140, 140);
+    shouldBeClear(160, 10);
+    shouldBeClear(10, 160);
+    shouldBeClear(160, 160);
+
+    commonCallback(imageBitmap);
+}
+
+function callbackOverCropRight(imageBitmap) {
+    // black should be drawn to (0, 0), (100, 100)
+    clearContext(ctx);
+    ctx.drawImage(imageBitmap, 0, 0);
+    shouldBeBlack(10, 10);
+    shouldBeBlack(90, 90);
+    shouldBeClear(110, 110);
+    shouldBeClear(10, 110);
+    shouldBeClear(110, 10);
+
+    // black should be drawn to (0, 0), (40, 40)
+    clearContext(ctx);
+    ctx.drawImage(imageBitmap, 0, 0, 200, 200);
+    shouldBeBlack(10, 10);
+    shouldBeBlack(30, 30);
+    shouldBeClear(50, 50);
+    shouldBeClear(10, 50);
+    shouldBeClear(50, 10);
+
+    // nothing should be drawn
+    clearContext(ctx);
+    ctx.drawImage(imageBitmap, 100, 100, 200, 200, 0, 0, 200, 200);
+    shouldBeClear(10, 10);
+    shouldBeClear(30, 30);
+    shouldBeClear(50, 50);
+    shouldBeClear(10, 50);
+    shouldBeClear(50, 10);
+
+    commonCallback(imageBitmap);
+}
+
+function callbackEmpty(imageBitmap) {
+    // nothing should be drawn
+    clearContext(ctx);
+    ctx.drawImage(imageBitmap, 0, 0);
+    shouldBeClear(10, 10);
+    shouldBeClear(90, 90);
+    shouldBeClear(110, 110);
+    shouldBeClear(210, 210);
+
+    commonCallback(imageBitmap);
+}
+
+function callbackImmutable(imageBitmap) {
+    // change the underlying element to ensure that it does not change the imageBitmap
+    switch(i) {
+    case 0: // image
+        image = new Image();
+        break;
+    case 1: // canvas
+        clearContext(aCtx);
+        break;
+    case 2: // data
+        d = 0;
+        break;
+    case 3: // context
+        clearContext(aCtx);
+        break;
+    case 4: // bitmap
+        testBitmap = 0;
+        break;
+    default:
+        testFailed("Default should not be called.");
+    }
+    // should be drawn to (0, 0), (200, 200)
+    callbackNoCrop(imageBitmap);
+
+    // we potentially cleared our auxillary context, so redraw the image
+    drawPattern(aCtx);
+}
+
+function commonCallback(imageBitmap) {
+    bitmap = imageBitmap;
+    shouldBeType("bitmap", "ImageBitmap");
+
+    callbackCount += 1;
+
+    if (callbackCount < elements.length * checks.length) {
+        ++j;
+        if(j == checks.length) {
+            // completed all the checks for the ith element
+            j = 0;
+            ++i;
+        }
+        nextCheck();
+    } else {
+        finishJSTest();
+    }
+}
+
+</script>
+<script src="../js/resources/js-test-post.js"></script>
+</body>
+</html>

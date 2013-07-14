@@ -52,6 +52,7 @@
 #include "core/html/canvas/CanvasStyle.h"
 #include "core/html/canvas/DOMPath.h"
 #include "core/loader/cache/CachedImage.h"
+#include "core/page/ImageBitmap.h"
 #include "core/platform/graphics/DrawLooper.h"
 #include "core/platform/graphics/FloatQuad.h"
 #include "core/platform/graphics/FontCache.h"
@@ -1190,6 +1191,95 @@ static inline FloatRect normalizeRect(const FloatRect& rect)
         max(rect.height(), -rect.height()));
 }
 
+void CanvasRenderingContext2D::drawImageInternal(Image* image, const FloatRect& srcRect, const FloatRect& dstRect, const CompositeOperator& op, const BlendMode& blendMode)
+{
+    if (!image)
+        return;
+
+    GraphicsContext* c = drawingContext();
+    if (!c)
+        return;
+    if (!state().m_invertibleCTM)
+        return;
+
+    if (rectContainsCanvas(dstRect)) {
+        c->drawImage(image, dstRect, srcRect, op, blendMode);
+        didDrawEntireCanvas();
+    } else if (isFullCanvasCompositeMode(op)) {
+        fullCanvasCompositedDrawImage(image, dstRect, srcRect, op);
+        didDrawEntireCanvas();
+    } else if (op == CompositeCopy) {
+        clearCanvas();
+        c->drawImage(image, dstRect, srcRect, op, blendMode);
+        didDrawEntireCanvas();
+    } else {
+        c->drawImage(image, dstRect, srcRect, op, blendMode);
+        didDraw(dstRect);
+    }
+}
+
+void CanvasRenderingContext2D::drawImage(ImageBitmap* bitmap, float x, float y, ExceptionCode& ec)
+{
+    if (!bitmap) {
+        ec = TypeMismatchError;
+        return;
+    }
+    drawImage(bitmap, x, y, bitmap->width(), bitmap->height(), ec);
+}
+
+void CanvasRenderingContext2D::drawImage(ImageBitmap* bitmap,
+    float x, float y, float width, float height, ExceptionCode& ec)
+{
+    if (!bitmap) {
+        ec = TypeMismatchError;
+        return;
+    }
+    if (!bitmap->bitmapWidth() || !bitmap->bitmapHeight())
+        return;
+
+    drawImage(bitmap, 0, 0, bitmap->bitmapWidth(), bitmap->bitmapHeight(), x, y, width, height, ec);
+}
+
+void CanvasRenderingContext2D::drawImage(ImageBitmap* bitmap,
+    float sx, float sy, float sw, float sh,
+    float dx, float dy, float dw, float dh, ExceptionCode& ec)
+{
+    if (!bitmap) {
+        ec = TypeMismatchError;
+        return;
+    }
+
+    FloatRect srcRect(sx, sy, sw, sh);
+    FloatRect dstRect(dx, dy, dw, dh);
+
+    if (!std::isfinite(dstRect.x()) || !std::isfinite(dstRect.y()) || !std::isfinite(dstRect.width()) || !std::isfinite(dstRect.height())
+        || !std::isfinite(srcRect.x()) || !std::isfinite(srcRect.y()) || !std::isfinite(srcRect.width()) || !std::isfinite(srcRect.height()))
+        return;
+
+    if (!dstRect.width() || !dstRect.height())
+        return;
+
+    ASSERT(bitmap->height() && bitmap->width());
+
+    FloatRect normalizedSrcRect = normalizeRect(srcRect);
+    FloatRect normalizedDstRect = normalizeRect(dstRect);
+    FloatRect actualDstRect(FloatPoint(bitmap->bitmapOffset()), bitmap->bitmapSize());
+    actualDstRect.scale(normalizedDstRect.width() / bitmap->width(), normalizedDstRect.height() / bitmap->height());
+    actualDstRect.moveBy(normalizedDstRect.location());
+
+    FloatRect imageRect = FloatRect(FloatPoint(), bitmap->bitmapSize());
+    if (!srcRect.width() || !srcRect.height()) {
+        ec = IndexSizeError;
+        return;
+    }
+    if (!imageRect.contains(normalizedSrcRect))
+        return;
+
+    Image* imageForRendering = bitmap->bitmapImage();
+
+    drawImageInternal(imageForRendering, normalizedSrcRect, actualDstRect, state().m_globalComposite, state().m_globalBlend);
+}
+
 void CanvasRenderingContext2D::drawImage(HTMLImageElement* image, float x, float y, ExceptionCode& ec)
 {
     if (!image) {
@@ -1253,12 +1343,6 @@ void CanvasRenderingContext2D::drawImage(HTMLImageElement* image, const FloatRec
     if (!imageRect.contains(normalizedSrcRect))
         return;
 
-    GraphicsContext* c = drawingContext();
-    if (!c)
-        return;
-    if (!state().m_invertibleCTM)
-        return;
-
     CachedImage* cachedImage = image->cachedImage();
     if (!cachedImage)
         return;
@@ -1273,20 +1357,7 @@ void CanvasRenderingContext2D::drawImage(HTMLImageElement* image, const FloatRec
     if (!image->renderer() && imageForRendering->usesContainerSize())
         imageForRendering->setContainerSize(imageForRendering->size());
 
-    if (rectContainsCanvas(normalizedDstRect)) {
-        c->drawImage(imageForRendering, normalizedDstRect, normalizedSrcRect, op, blendMode);
-        didDrawEntireCanvas();
-    } else if (isFullCanvasCompositeMode(op)) {
-        fullCanvasCompositedDrawImage(imageForRendering, normalizedDstRect, normalizedSrcRect, op);
-        didDrawEntireCanvas();
-    } else if (op == CompositeCopy) {
-        clearCanvas();
-        c->drawImage(imageForRendering, normalizedDstRect, normalizedSrcRect, op, blendMode);
-        didDrawEntireCanvas();
-    } else {
-        c->drawImage(imageForRendering, normalizedDstRect, normalizedSrcRect, op, blendMode);
-        didDraw(normalizedDstRect);
-    }
+    drawImageInternal(imageForRendering, normalizedSrcRect, normalizedDstRect, op, blendMode);
 }
 
 void CanvasRenderingContext2D::drawImage(HTMLCanvasElement* sourceCanvas, float x, float y, ExceptionCode& ec)

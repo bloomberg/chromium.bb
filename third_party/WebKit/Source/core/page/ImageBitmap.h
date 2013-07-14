@@ -30,12 +30,16 @@ public:
     static PassRefPtr<ImageBitmap> create(ImageData*, IntRect);
     static PassRefPtr<ImageBitmap> create(ImageBitmap*, IntRect);
 
-    BitmapImage* bitmapImage() { return m_bitmap.get(); }
+    BitmapImage* bitmapImage() const { return m_bitmap.get(); }
 
-    int width() { return m_bitmap->width(); }
-    int height() { return m_bitmap->height(); }
-    IntSize size() { return IntSize(m_bitmap->width(), m_bitmap->height()); }
-    IntPoint originOffset() { return m_originOffset; }
+    int bitmapWidth() const { return m_bitmap->width(); }
+    int bitmapHeight() const { return m_bitmap->height(); }
+    IntSize bitmapSize() const { return m_bitmap->size(); }
+    IntPoint bitmapOffset() const { return m_bitmapOffset; }
+
+    int width() const { return m_size.width(); }
+    int height() const { return m_size.height(); }
+    IntSize size() const { return m_size; }
 
     ~ImageBitmap() { };
 
@@ -49,7 +53,8 @@ private:
     RefPtr<BitmapImage> m_bitmap;
     OwnPtr<ImageBuffer> m_buffer;
 
-    IntPoint m_originOffset; // offset applied to the image when it is drawn to the context
+    IntPoint m_bitmapOffset; // offset applied to the image when it is drawn to the context
+    IntSize m_size; // user defined size of the ImageBitmap
 };
 
 } // namespace WebCore

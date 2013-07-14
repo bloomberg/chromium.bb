@@ -1,0 +1,227 @@
+Ensure correct behavior of drawImage with ImageBitmaps from video elements.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+checkNoCrop with HTMLVideoElement
+PASS d[3] == 255 is true
+PASS d[3] == 255 is true
+PASS d[3] == 255 is true
+PASS d[3] == 255 is true
+PASS d[0] == 0 is true
+PASS d[1] == 0 is true
+PASS d[2] == 0 is true
+PASS d[3] == 0 is true
+PASS d[0] == 0 is true
+PASS d[1] == 0 is true
+PASS d[2] == 0 is true
+PASS d[3] == 0 is true
+PASS d[3] == 255 is true
+PASS d[3] == 255 is true
+PASS d[0] == 0 is true
+PASS d[1] == 0 is true
+PASS d[2] == 0 is true
+PASS d[3] == 0 is true
+PASS d[0] == 0 is true
+PASS d[1] == 0 is true
+PASS d[2] == 0 is true
+PASS d[3] == 0 is true
+PASS d[0] == 0 is true
+PASS d[1] == 0 is true
+PASS d[2] == 0 is true
+PASS d[3] == 0 is true
+PASS d[0] == 0 is true
+PASS d[1] == 0 is true
+PASS d[2] == 0 is true
+PASS d[3] == 0 is true
+PASS d[3] == 255 is true
+PASS d[3] == 255 is true
+PASS d[0] == 0 is true
+PASS d[1] == 0 is true
+PASS d[2] == 0 is true
+PASS d[3] == 0 is true
+PASS d[0] == 0 is true
+PASS d[1] == 0 is true
+PASS d[2] == 0 is true
+PASS d[3] == 0 is true
+PASS d[0] == 0 is true
+PASS d[1] == 0 is true
+PASS d[2] == 0 is true
+PASS d[3] == 0 is true
+PASS d[0] == 0 is true
+PASS d[1] == 0 is true
+PASS d[2] == 0 is true
+PASS d[3] == 0 is true
+PASS d[3] == 255 is true
+PASS d[3] == 255 is true
+PASS d[0] == 0 is true
+PASS d[1] == 0 is true
+PASS d[2] == 0 is true
+PASS d[3] == 0 is true
+PASS d[0] == 0 is true
+PASS d[1] == 0 is true
+PASS d[2] == 0 is true
+PASS d[3] == 0 is true
+PASS d[0] == 0 is true
+PASS d[1] == 0 is true
+PASS d[2] == 0 is true
+PASS d[3] == 0 is true
+PASS d[0] == 0 is true
+PASS d[1] == 0 is true
+PASS d[2] == 0 is true
+PASS d[3] == 0 is true
+PASS d[0] == 0 is true
+PASS d[1] == 0 is true
+PASS d[2] == 0 is true
+PASS d[3] == 0 is true
+PASS d[0] == 0 is true
+PASS d[1] == 0 is true
+PASS d[2] == 0 is true
+PASS d[3] == 0 is true
+PASS d[0] == 0 is true
+PASS d[1] == 0 is true
+PASS d[2] == 0 is true
+PASS d[3] == 0 is true
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+checkCrop with HTMLVideoElement
+PASS d[3] == 255 is true
+PASS d[3] == 255 is true
+PASS d[0] == 0 is true
+PASS d[1] == 0 is true
+PASS d[2] == 0 is true
+PASS d[3] == 0 is true
+PASS d[0] == 0 is true
+PASS d[1] == 0 is true
+PASS d[2] == 0 is true
+PASS d[3] == 0 is true
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+checkCropRight with HTMLVideoElement
+PASS d[3] == 255 is true
+PASS d[3] == 255 is true
+PASS d[0] == 0 is true
+PASS d[1] == 0 is true
+PASS d[2] == 0 is true
+PASS d[3] == 0 is true
+PASS d[0] == 0 is true
+PASS d[1] == 0 is true
+PASS d[2] == 0 is true
+PASS d[3] == 0 is true
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+checkOverCrop with HTMLVideoElement
+PASS d[0] == 0 is true
+PASS d[1] == 0 is true
+PASS d[2] == 0 is true
+PASS d[3] == 0 is true
+PASS d[0] == 0 is true
+PASS d[1] == 0 is true
+PASS d[2] == 0 is true
+PASS d[3] == 0 is true
+PASS d[3] == 255 is true
+PASS d[3] == 255 is true
+PASS d[3] == 255 is true
+PASS d[0] == 0 is true
+PASS d[1] == 0 is true
+PASS d[2] == 0 is true
+PASS d[3] == 0 is true
+PASS d[0] == 0 is true
+PASS d[1] == 0 is true
+PASS d[2] == 0 is true
+PASS d[3] == 0 is true
+PASS d[0] == 0 is true
+PASS d[1] == 0 is true
+PASS d[2] == 0 is true
+PASS d[3] == 0 is true
+PASS d[0] == 0 is true
+PASS d[1] == 0 is true
+PASS d[2] == 0 is true
+PASS d[3] == 0 is true
+PASS d[0] == 0 is true
+PASS d[1] == 0 is true
+PASS d[2] == 0 is true
+PASS d[3] == 0 is true
+PASS d[3] == 255 is true
+PASS d[3] == 255 is true
+PASS d[0] == 0 is true
+PASS d[1] == 0 is true
+PASS d[2] == 0 is true
+PASS d[3] == 0 is true
+PASS d[0] == 0 is true
+PASS d[1] == 0 is true
+PASS d[2] == 0 is true
+PASS d[3] == 0 is true
+PASS d[0] == 0 is true
+PASS d[1] == 0 is true
+PASS d[2] == 0 is true
+PASS d[3] == 0 is true
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+checkOverCropRight with HTMLVideoElement
+PASS d[3] == 255 is true
+PASS d[3] == 255 is true
+PASS d[3] == 255 is true
+PASS d[3] == 255 is true
+PASS d[3] == 255 is true
+PASS d[0] == 0 is true
+PASS d[1] == 0 is true
+PASS d[2] == 0 is true
+PASS d[3] == 0 is true
+PASS d[0] == 0 is true
+PASS d[1] == 0 is true
+PASS d[2] == 0 is true
+PASS d[3] == 0 is true
+PASS d[0] == 0 is true
+PASS d[1] == 0 is true
+PASS d[2] == 0 is true
+PASS d[3] == 0 is true
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+checkNegativeCrop with HTMLVideoElement
+PASS d[3] == 255 is true
+PASS d[3] == 255 is true
+PASS d[0] == 0 is true
+PASS d[1] == 0 is true
+PASS d[2] == 0 is true
+PASS d[3] == 0 is true
+PASS d[0] == 0 is true
+PASS d[1] == 0 is true
+PASS d[2] == 0 is true
+PASS d[3] == 0 is true
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+checkNoCrop with HTMLVideoElement
+PASS d[0] == 0 is true
+PASS d[1] == 0 is true
+PASS d[2] == 0 is true
+PASS d[3] == 0 is true
+PASS d[0] == 0 is true
+PASS d[1] == 0 is true
+PASS d[2] == 0 is true
+PASS d[3] == 0 is true
+PASS d[0] == 0 is true
+PASS d[1] == 0 is true
+PASS d[2] == 0 is true
+PASS d[3] == 0 is true
+PASS d[0] == 0 is true
+PASS d[1] == 0 is true
+PASS d[2] == 0 is true
+PASS d[3] == 0 is true
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+checkNoCrop with HTMLVideoElement
+PASS d[0] == 0 is true
+PASS d[1] == 0 is true
+PASS d[2] == 0 is true
+PASS d[3] == 0 is true
+PASS d[0] == 0 is true
+PASS d[1] == 0 is true
+PASS d[2] == 0 is true
+PASS d[3] == 0 is true
+PASS d[0] == 0 is true
+PASS d[1] == 0 is true
+PASS d[2] == 0 is true
+PASS d[3] == 0 is true
+PASS d[0] == 0 is true
+PASS d[1] == 0 is true
+PASS d[2] == 0 is true
+PASS d[3] == 0 is true
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

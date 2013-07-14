@@ -126,6 +126,9 @@ interface CanvasRenderingContext2D : CanvasRenderingContext {
     [RaisesException] void drawImage(HTMLVideoElement? video, float x, float y);
     [RaisesException] void drawImage(HTMLVideoElement? video, float x, float y, float width, float height);
     [RaisesException] void drawImage(HTMLVideoElement? video, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh);
+    [EnabledAtRuntime=experimentalCanvasFeatures, RaisesException] void drawImage(ImageBitmap? imageBitmap, float x, float y);
+    [EnabledAtRuntime=experimentalCanvasFeatures, RaisesException] void drawImage(ImageBitmap? imageBitmap, float x, float y, float width, float height);
+    [EnabledAtRuntime=experimentalCanvasFeatures, RaisesException] void drawImage(ImageBitmap? imageBitmap, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh);
 
     void drawImageFromRect(HTMLImageElement image,
                            optional float sx, optional float sy, optional float sw, optional float sh,

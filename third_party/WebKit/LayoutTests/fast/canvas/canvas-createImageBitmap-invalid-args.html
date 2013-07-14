@@ -5,38 +5,21 @@
 </head>
 <body>
 <script>
-description("Ensure correct behavior of createImageBitmap.");
+
+description("Ensure correct behavior of createImageBitmap for invalid inputs.");
 window.jsTestIsAsync = true;
 
 var InvalidStateError = "InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable.";
 var TypeError = "TypeError: Type error";
 var IndexSizeError = "IndexSizeError: Index or size was negative, or greater than the allowed value.";
 
-function jsWrapperClass(node)
-{
-    // returns the ClassName of node
-    if (!node)
-        return "[null]";
-    var string = Object.prototype.toString.apply(node);
-
-    // string will be of the form [object ClassName]
-    return string.substr(8, string.length - 9);
-}
-
-function shouldBeType(expression, className)
-{
-    shouldBe("jsWrapperClass(" + expression + ")", "'" + className + "'");
-}
-
 function shouldNotBeCalled(imageBitmap) {
     testFailed("shouldNotBeCalled was called.");
 }
 
-var bitmap;
-var video;
 var image;
-var slowImage;
-var d;
+var testBitmap; // this is an ImageBitmap that is uncropped. We use this to test createImageBitmap(testBitmap)
+var d;          // image.imageData
 
 // Create auxiliary canvas to draw to and create an image from.
 var aCanvas = document.createElement("canvas");
@@ -44,35 +27,28 @@ aCanvas.setAttribute("width", "200");
 aCanvas.setAttribute("height", "200");
 var aCtx = aCanvas.getContext("2d");
 
-// Draw a circle on the same canvas.
-aCtx.beginPath();
-aCtx.fillStyle = "blue";
-aCtx.arc(100, 100, 100, 0, Math.PI*2, false);
-aCtx.fill();
-
-slowImage = new Image();
-description("Before image loads.");
-shouldThrow("createImageBitmap(slowImage, shouldNotBeCalled)", "InvalidStateError");
-
 image = new Image();
 image.onload = imageLoaded;
+
+// Before image loads
+shouldThrow("createImageBitmap(image, shouldNotBeCalled)", "InvalidStateError");
 image.src = aCanvas.toDataURL(); // set a data URI of the base64 enconded image as the source
 
 video = document.createElement("video");
 video.addEventListener("canplaythrough", videoLoaded, false);
 
-description("Before video loads.");
+// Before video loads
 shouldThrow("createImageBitmap(video, shouldNotBeCalled)", "InvalidStateError");
-
 video.src = "../../compositing/resources/video.ogv";
 
 var imageLoaded = false;
 var videoLoaded = false;
-var bitmapLoaded = false;
+var imageBitmapLoaded = false;
 
 function imageLoaded() {
+    createImageBitmap(image, imageBitmapLoadedCallback);
+    d = aCtx.getImageData(0, 0, 200, 200);
     imageLoaded = true;
-    createImageBitmap(image, bitmapLoadedCallback);
     loaded();
 }
 
@@ -81,14 +57,14 @@ function videoLoaded() {
     loaded();
 }
 
-function bitmapLoadedCallback(imageBitmap) {
-    bitmap = imageBitmap;
-    bitmapLoaded = true;
+function imageBitmapLoadedCallback(imageBitmap) {
+    testBitmap = imageBitmap;
+    imageBitmapLoaded = true;
     loaded();
 }
 
 function loaded() {
-    if (imageLoaded && videoLoaded && bitmapLoaded) {
+    if (imageLoaded && videoLoaded && imageBitmapLoaded) {
         shouldThrow("createImageBitmap(undefined, shouldNotBeCalled)", "TypeError");
 
         shouldThrow("createImageBitmap(image, undefined)", "TypeError");
@@ -103,7 +79,6 @@ function loaded() {
         shouldThrow("createImageBitmap(aCanvas, shouldNotBeCalled, 0, 0, 10, 0)", "IndexSizeError");
         shouldThrow("createImageBitmap(aCanvas, shouldNotBeCalled, 0, 0, 0, 10)", "IndexSizeError");
 
-        d = aCtx.getImageData(0, 0, 200, 200);
         shouldThrow("createImageBitmap(d, undefined)", "TypeError");
         shouldThrow("createImageBitmap(d, shouldNotBeCalled, 0, 0, 10, 0)", "IndexSizeError");
         shouldThrow("createImageBitmap(d, shouldNotBeCalled, 0, 0, 0, 10)", "IndexSizeError");
@@ -112,61 +87,10 @@ function loaded() {
         shouldThrow("createImageBitmap(aCtx, shouldNotBeCalled, 0, 0, 10, 0)", "IndexSizeError");
         shouldThrow("createImageBitmap(aCtx, shouldNotBeCalled, 0, 0, 0, 10)", "IndexSizeError");
 
-        shouldThrow("createImageBitmap(bitmap, undefined)", "TypeError");
-        shouldThrow("createImageBitmap(bitmap, shouldNotBeCalled, 0, 0, 10, 0)", "IndexSizeError");
-        shouldThrow("createImageBitmap(bitmap, shouldNotBeCalled, 0, 0, 0, 10)", "IndexSizeError");
+        shouldThrow("createImageBitmap(testBitmap, undefined)", "TypeError");
+        shouldThrow("createImageBitmap(testBitmap, shouldNotBeCalled, 0, 0, 10, 0)", "IndexSizeError");
+        shouldThrow("createImageBitmap(testBitmap, shouldNotBeCalled, 0, 0, 0, 10)", "IndexSizeError");
 
-        createImageBitmap(image, callbackImage);
-        createImageBitmap(video, callbackVideo);
-        createImageBitmap(aCanvas, callbackCanvas);
-        createImageBitmap(d, callbackData);
-        createImageBitmap(aCtx, callbackContext);
-        createImageBitmap(bitmap, callbackBitmap);
-    }
-}
-
-var callbackImageCalled = false;
-var callbackVideoCalled = false;
-var callbackCanvasCalled = false;
-var callbackDataCalled = false;
-var callbackContextCalled = false;
-var callbackBitmapCalled = false;
-
-function callbackImage(imageBitmap) {
-    callbackImageCalled = true;
-    commonCallback(imageBitmap);
-}
-
-function callbackVideo(imageBitmap) {
-    callbackVideoCalled = true;
-    commonCallback(imageBitmap);
-}
-
-function callbackCanvas(imageBitmap) {
-    callbackCanvasCalled = true;
-    commonCallback(imageBitmap);
-}
-
-function callbackData(imageBitmap) {
-    callbackDataCalled = true;
-    commonCallback(imageBitmap);
-}
-
-function callbackContext(imageBitmap) {
-    callbackContextCalled = true;
-    commonCallback(imageBitmap);
-}
-
-function callbackBitmap(imageBitmap) {
-    callbackBitmapCalled = true;
-    commonCallback(imageBitmap);
-}
-
-function commonCallback(imageBitmap) {
-    bitmap = imageBitmap;
-    shouldBeType("bitmap", "ImageBitmap");
-
-    if (callbackImageCalled && callbackVideoCalled && callbackCanvasCalled && callbackDataCalled && callbackContextCalled && callbackBitmapCalled) {
         finishJSTest();
     }
 }

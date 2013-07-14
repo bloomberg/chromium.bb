@@ -33,7 +33,8 @@ static inline PassRefPtr<BitmapImage> cropImage(Image* image, IntRect cropRect)
 }
 
 ImageBitmap::ImageBitmap(HTMLImageElement* image, IntRect cropRect)
-    : m_originOffset(max(0, -cropRect.x()), max(0, -cropRect.y()))
+    : m_bitmapOffset(max(0, -cropRect.x()), max(0, -cropRect.y()))
+    , m_size(cropRect.size())
 {
     Image* bitmapImage = image->cachedImage()->image();
     m_bitmap = cropImage(bitmapImage, cropRect).get();
@@ -42,7 +43,8 @@ ImageBitmap::ImageBitmap(HTMLImageElement* image, IntRect cropRect)
 }
 
 ImageBitmap::ImageBitmap(HTMLVideoElement* video, IntRect cropRect)
-    : m_originOffset(max(0, -cropRect.x()), max(0, -cropRect.y()))
+    : m_bitmapOffset(max(0, -cropRect.x()), max(0, -cropRect.y()))
+    , m_size(cropRect.size())
 {
     IntRect videoRect = IntRect(IntPoint(), video->player()->naturalSize());
     IntRect srcRect = intersection(cropRect, videoRect);
@@ -59,7 +61,8 @@ ImageBitmap::ImageBitmap(HTMLVideoElement* video, IntRect cropRect)
 }
 
 ImageBitmap::ImageBitmap(HTMLCanvasElement* canvas, IntRect cropRect)
-    : m_originOffset(max(0, -cropRect.x()), max(0, -cropRect.y()))
+    : m_bitmapOffset(max(0, -cropRect.x()), max(0, -cropRect.y()))
+    , m_size(cropRect.size())
 {
     IntSize canvasSize = canvas->size();
     IntRect srcRect = intersection(cropRect, IntRect(IntPoint(), canvasSize));
@@ -73,7 +76,8 @@ ImageBitmap::ImageBitmap(HTMLCanvasElement* canvas, IntRect cropRect)
 }
 
 ImageBitmap::ImageBitmap(ImageData* data, IntRect cropRect)
-    : m_originOffset(max(0, -cropRect.x()), max(0, -cropRect.y()))
+    : m_bitmapOffset(max(0, -cropRect.x()), max(0, -cropRect.y()))
+    , m_size(cropRect.size())
 {
     IntRect srcRect = intersection(cropRect, IntRect(IntPoint(), data->size()));
 
@@ -87,9 +91,11 @@ ImageBitmap::ImageBitmap(ImageData* data, IntRect cropRect)
 }
 
 ImageBitmap::ImageBitmap(ImageBitmap* bitmap, IntRect cropRect)
-    : m_originOffset(max(0, -cropRect.x()), max(0, -cropRect.y()))
+    : m_bitmapOffset(max(0, bitmap->bitmapOffset().x() - cropRect.x()), max(0, bitmap->bitmapOffset().y() - cropRect.y()))
+    , m_size(cropRect.size())
 {
     Image* bitmapImage = bitmap->bitmapImage();
+    cropRect.moveBy(IntPoint(-bitmap->bitmapOffset().x(), -bitmap->bitmapOffset().y()));
     m_bitmap = cropImage(bitmapImage, cropRect).get();
 
     ScriptWrappable::init(this);
