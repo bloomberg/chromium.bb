@@ -176,7 +176,7 @@ public:
     void stopAutoscrollTimer();
     void updateAutoscrollRenderer();
     void updateDragAndDrop(Node* targetNode, const IntPoint& eventPosition, double eventTime);
-#if ENABLE(PAN_SCROLLING)
+#if OS(WINDOWS)
     void handleMouseReleaseForPanScrolling(Frame*, const PlatformMouseEvent&);
     void startPanScrolling(RenderBox*, const IntPoint&);
 #endif

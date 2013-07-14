@@ -853,7 +853,7 @@ bool EventHandler::handleMouseReleaseEvent(const MouseEventWithHitTestResults& e
     return handled;
 }
 
-#if ENABLE(PAN_SCROLLING)
+#if OS(WINDOWS)
 
 void EventHandler::startPanScrolling(RenderObject* renderer)
 {
@@ -866,7 +866,7 @@ void EventHandler::startPanScrolling(RenderObject* renderer)
     invalidateClick();
 }
 
-#endif // ENABLE(PAN_SCROLLING)
+#endif // OS(WINDOWS)
 
 bool EventHandler::panScrollInProgress() const
 {
@@ -1096,7 +1096,7 @@ OptionalCursor EventHandler::selectCursor(const MouseEventWithHitTestResults& ev
     Page* page = m_frame->page();
     if (!page)
         return NoCursorChange;
-#if ENABLE(PAN_SCROLLING)
+#if OS(WINDOWS)
     if (panScrollInProgress())
         return NoCursorChange;
 #endif
@@ -1312,7 +1312,7 @@ bool EventHandler::handleMousePressEvent(const PlatformMouseEvent& mouseEvent)
         return true;
     }
 
-#if ENABLE(PAN_SCROLLING)
+#if OS(WINDOWS)
     // We store whether pan scrolling is in progress before calling stopAutoscrollTimer()
     // because it will set m_autoscrollType to NoAutoscroll on return.
     bool isPanScrollInProgress = panScrollInProgress();
@@ -1598,7 +1598,7 @@ bool EventHandler::handleMouseReleaseEvent(const PlatformMouseEvent& mouseEvent)
     else
         gestureIndicator = adoptPtr(new UserGestureIndicator(DefinitelyProcessingUserGesture));
 
-#if ENABLE(PAN_SCROLLING)
+#if OS(WINDOWS)
     if (Page* page = m_frame->page())
         page->handleMouseReleaseForPanScrolling(m_frame, mouseEvent);
 #endif
@@ -2948,7 +2948,7 @@ bool EventHandler::keyEvent(const PlatformKeyboardEvent& initialKeyEvent)
     if (initialKeyEvent.windowsVirtualKeyCode() == VK_CAPITAL)
         capsLockStateMayHaveChanged();
 
-#if ENABLE(PAN_SCROLLING)
+#if OS(WINDOWS)
     if (panScrollInProgress()) {
         // If a key is pressed while the panScroll is in progress then we want to stop
         if (initialKeyEvent.type() == PlatformEvent::KeyDown || initialKeyEvent.type() == PlatformEvent::RawKeyDown)

@@ -101,11 +101,6 @@
           'ENABLE_OPENTYPE_VERTICAL=1',
         ],
       }],
-      ['OS=="win"', {
-        'feature_defines': [
-          'ENABLE_PAN_SCROLLING=1',
-        ],
-      }],
       ['OS=="mac"', {
         'feature_defines': [
           'ENABLE_RUBBER_BANDING=1',
