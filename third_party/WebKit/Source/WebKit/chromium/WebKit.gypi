@@ -34,7 +34,6 @@
             'tests/ArenaTestHelpers.h',
             'tests/AssociatedURLLoaderTest.cpp',
             'tests/ChromeClientImplTest.cpp',
-            'tests/CustomEventTest.cpp',
             'tests/DragImageTest.cpp',
             'tests/FakeWebPlugin.cpp',
             'tests/FakeWebPlugin.h',
