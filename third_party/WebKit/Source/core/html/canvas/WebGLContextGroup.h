@@ -27,9 +27,9 @@
 #define WebGLContextGroup_h
 
 #include "core/html/canvas/WebGLRenderingContext.h"
-#include <wtf/HashSet.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
+#include "wtf/HashSet.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 

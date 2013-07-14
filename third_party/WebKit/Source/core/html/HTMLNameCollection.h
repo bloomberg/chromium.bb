@@ -25,7 +25,7 @@
 
 #include "core/html/HTMLCollection.h"
 
-#include <wtf/text/AtomicString.h>
+#include "wtf/text/AtomicString.h"
 
 namespace WebCore {
 

@@ -27,9 +27,9 @@
 #define HTMLFormattingElementList_h
 
 #include "core/html/parser/HTMLStackItem.h"
-#include <wtf/Forward.h>
-#include <wtf/RefPtr.h>
-#include <wtf/Vector.h>
+#include "wtf/Forward.h"
+#include "wtf/RefPtr.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

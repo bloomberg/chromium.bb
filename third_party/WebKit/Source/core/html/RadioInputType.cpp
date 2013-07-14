@@ -30,7 +30,7 @@
 #include "core/html/InputTypeNames.h"
 #include "core/page/SpatialNavigation.h"
 #include "core/platform/LocalizedStrings.h"
-#include <wtf/PassOwnPtr.h>
+#include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
 

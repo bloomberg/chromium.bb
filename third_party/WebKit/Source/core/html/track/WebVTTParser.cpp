@@ -29,14 +29,13 @@
  */
 
 #include "config.h"
-
 #include "core/html/track/WebVTTParser.h"
 
 #include "core/dom/ProcessingInstruction.h"
 #include "core/dom/Text.h"
 #include "core/html/track/WebVTTElement.h"
 #include "core/platform/text/SegmentedString.h"
-#include <wtf/text/WTFString.h>
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

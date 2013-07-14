@@ -30,8 +30,8 @@
 #include "core/dom/KeyboardEvent.h"
 #include "core/platform/graphics/Font.h"
 #include "core/platform/text/TextBreakIterator.h"
-#include <wtf/text/StringBuilder.h>
-#include <wtf/unicode/Unicode.h>
+#include "wtf/text/StringBuilder.h"
+#include "wtf/unicode/Unicode.h"
 
 namespace WebCore {
 

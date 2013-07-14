@@ -27,8 +27,8 @@
 #define TypeAhead_h
 
 #include "core/dom/DOMTimeStamp.h"
-#include <wtf/text/StringBuilder.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/text/StringBuilder.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

@@ -31,9 +31,9 @@
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/TimeRanges.h"
 #include "core/platform/Clock.h"
-#include <wtf/CurrentTime.h>
-#include <wtf/StdLibExtras.h>
-#include <wtf/text/AtomicString.h>
+#include "wtf/CurrentTime.h"
+#include "wtf/StdLibExtras.h"
+#include "wtf/text/AtomicString.h"
 
 using namespace WebCore;
 using namespace std;

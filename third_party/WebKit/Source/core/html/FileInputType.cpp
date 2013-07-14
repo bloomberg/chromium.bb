@@ -39,9 +39,9 @@
 #include "core/platform/LocalizedStrings.h"
 #include "core/platform/graphics/Icon.h"
 #include "core/rendering/RenderFileUploadControl.h"
-#include <wtf/PassOwnPtr.h>
-#include <wtf/text/StringBuilder.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/PassOwnPtr.h"
+#include "wtf/text/StringBuilder.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

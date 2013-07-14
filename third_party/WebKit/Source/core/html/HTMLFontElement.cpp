@@ -30,7 +30,7 @@
 #include "core/css/CSSValuePool.h"
 #include "core/css/StylePropertySet.h"
 #include "core/html/parser/HTMLParserIdioms.h"
-#include <wtf/text/StringBuilder.h>
+#include "wtf/text/StringBuilder.h"
 
 using namespace WTF;
 

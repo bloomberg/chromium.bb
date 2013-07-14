@@ -32,9 +32,9 @@
 #include "core/platform/LocalizedStrings.h"
 #include "core/platform/text/RegularExpression.h"
 #include "public/platform/Platform.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/text/StringBuilder.h"
 #include <unicode/uidna.h>
-#include <wtf/PassOwnPtr.h>
-#include <wtf/text/StringBuilder.h>
 
 namespace WebCore {
 

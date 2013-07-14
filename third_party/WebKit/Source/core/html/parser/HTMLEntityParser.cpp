@@ -31,7 +31,7 @@
 #include "core/html/parser/HTMLEntitySearch.h"
 #include "core/html/parser/HTMLEntityTable.h"
 #include "core/xml/parser/CharacterReferenceParserInlines.h"
-#include <wtf/text/StringBuilder.h>
+#include "wtf/text/StringBuilder.h"
 
 using namespace WTF;
 

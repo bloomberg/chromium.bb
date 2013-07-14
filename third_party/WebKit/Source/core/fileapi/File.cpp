@@ -29,9 +29,9 @@
 #include "core/platform/FileMetadata.h"
 #include "core/platform/FileSystem.h"
 #include "core/platform/MIMETypeRegistry.h"
-#include <wtf/CurrentTime.h>
-#include <wtf/DateMath.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/CurrentTime.h"
+#include "wtf/DateMath.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

@@ -31,10 +31,9 @@
 #include "SVGNames.h"
 #include "core/dom/Element.h"
 #include "core/html/parser/AtomicHTMLToken.h"
-
-#include <wtf/RefCounted.h>
-#include <wtf/RefPtr.h>
-#include <wtf/text/AtomicString.h>
+#include "wtf/RefCounted.h"
+#include "wtf/RefPtr.h"
+#include "wtf/text/AtomicString.h"
 
 namespace WebCore {
 

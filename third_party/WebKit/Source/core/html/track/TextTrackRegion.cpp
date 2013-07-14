@@ -42,8 +42,8 @@
 #include "core/platform/Logging.h"
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderObject.h"
-#include <wtf/MathExtras.h>
-#include <wtf/text/StringBuilder.h>
+#include "wtf/MathExtras.h"
+#include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
 

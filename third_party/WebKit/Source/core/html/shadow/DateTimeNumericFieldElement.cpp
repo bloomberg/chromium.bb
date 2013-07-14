@@ -32,7 +32,7 @@
 #include "core/dom/KeyboardEvent.h"
 #include "core/platform/graphics/Font.h"
 #include "core/platform/text/PlatformLocale.h"
-#include <wtf/text/StringBuilder.h>
+#include "wtf/text/StringBuilder.h"
 
 using namespace WTF::Unicode;
 

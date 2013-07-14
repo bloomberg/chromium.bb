@@ -33,13 +33,13 @@
 #include "core/html/canvas/WebGLRenderbuffer.h"
 #include "core/html/canvas/WebGLTexture.h"
 #include "core/html/canvas/WebGLVertexArrayObjectOES.h"
-#include <wtf/Float32Array.h>
-#include <wtf/Int32Array.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefPtr.h>
-#include <wtf/text/WTFString.h>
-#include <wtf/Uint32Array.h>
-#include <wtf/Uint8Array.h>
+#include "wtf/Float32Array.h"
+#include "wtf/Int32Array.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefPtr.h"
+#include "wtf/Uint32Array.h"
+#include "wtf/Uint8Array.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

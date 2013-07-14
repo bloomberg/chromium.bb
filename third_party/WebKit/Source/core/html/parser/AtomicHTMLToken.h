@@ -29,8 +29,8 @@
 #include "core/dom/Attribute.h"
 #include "core/html/parser/CompactHTMLToken.h"
 #include "core/html/parser/HTMLToken.h"
-#include <wtf/RefCounted.h>
-#include <wtf/RefPtr.h>
+#include "wtf/RefCounted.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 

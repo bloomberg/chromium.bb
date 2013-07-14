@@ -74,9 +74,9 @@
 #include "core/platform/text/TextBreakIterator.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderTheme.h"
-#include <wtf/Assertions.h>
-#include <wtf/HashMap.h>
-#include <wtf/text/StringHash.h>
+#include "wtf/Assertions.h"
+#include "wtf/HashMap.h"
+#include "wtf/text/StringHash.h"
 
 namespace WebCore {
 

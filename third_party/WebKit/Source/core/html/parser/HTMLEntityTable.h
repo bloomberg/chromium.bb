@@ -26,7 +26,7 @@
 #ifndef HTMLEntityTable_h
 #define HTMLEntityTable_h
 
-#include <wtf/text/WTFString.h>
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

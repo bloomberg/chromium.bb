@@ -29,7 +29,7 @@
 
 #include "core/html/parser/HTMLResourcePreloader.h"
 #include "core/html/parser/HTMLToken.h"
-#include <wtf/text/StringBuilder.h>
+#include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
 

@@ -26,7 +26,7 @@
 #ifndef HTMLScriptRunnerHost_h
 #define HTMLScriptRunnerHost_h
 
-#include <wtf/Forward.h>
+#include "wtf/Forward.h"
 
 namespace WebCore {
 

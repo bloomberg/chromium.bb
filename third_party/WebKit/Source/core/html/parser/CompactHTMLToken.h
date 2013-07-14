@@ -28,9 +28,9 @@
 
 #include "core/html/parser/HTMLIdentifier.h"
 #include "core/html/parser/HTMLToken.h"
-#include <wtf/text/TextPosition.h>
-#include <wtf/text/WTFString.h>
-#include <wtf/Vector.h>
+#include "wtf/Vector.h"
+#include "wtf/text/TextPosition.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

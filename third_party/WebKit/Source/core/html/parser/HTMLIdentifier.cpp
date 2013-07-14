@@ -27,9 +27,9 @@
 #include "core/html/parser/HTMLIdentifier.h"
 
 #include "HTMLNames.h"
-#include <wtf/HashMap.h>
-#include <wtf/MainThread.h>
-#include <wtf/text/StringHash.h>
+#include "wtf/HashMap.h"
+#include "wtf/MainThread.h"
+#include "wtf/text/StringHash.h"
 
 namespace WebCore {
 

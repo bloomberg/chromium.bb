@@ -24,10 +24,6 @@
 #include "config.h"
 #include "core/html/HTMLAnchorElement.h"
 
-#include "public/platform/Platform.h"
-#include "public/platform/WebPrescientNetworking.h"
-#include "public/platform/WebURL.h"
-#include <wtf/text/StringBuilder.h>
 #include "HTMLNames.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/EventNames.h"
@@ -52,9 +48,13 @@
 #include "core/platform/network/DNS.h"
 #include "core/platform/network/ResourceRequest.h"
 #include "core/rendering/RenderImage.h"
+#include "public/platform/Platform.h"
+#include "public/platform/WebPrescientNetworking.h"
+#include "public/platform/WebURL.h"
 #include "weborigin/KnownPorts.h"
 #include "weborigin/SecurityOrigin.h"
 #include "weborigin/SecurityPolicy.h"
+#include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
 

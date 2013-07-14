@@ -24,13 +24,12 @@
  */
 
 #include "config.h"
-
 #include "core/html/MediaFragmentURIParser.h"
 
 #include "core/platform/graphics/MediaPlayer.h"
-#include <wtf/text/CString.h>
-#include <wtf/text/StringBuilder.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/text/CString.h"
+#include "wtf/text/StringBuilder.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

@@ -51,8 +51,8 @@
 #include "core/page/Frame.h"
 #include "core/page/Settings.h"
 #include "core/rendering/RenderWordBreak.h"
-#include <wtf/StdLibExtras.h>
-#include <wtf/text/CString.h>
+#include "wtf/StdLibExtras.h"
+#include "wtf/text/CString.h"
 
 namespace WebCore {
 

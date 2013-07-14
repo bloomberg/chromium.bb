@@ -31,9 +31,9 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/platform/graphics/IntSize.h"
-#include <wtf/RefCounted.h>
-#include <wtf/RefPtr.h>
-#include <wtf/Uint8ClampedArray.h>
+#include "wtf/RefCounted.h"
+#include "wtf/RefPtr.h"
+#include "wtf/Uint8ClampedArray.h"
 
 namespace WebCore {
 

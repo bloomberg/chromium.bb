@@ -41,7 +41,7 @@
 #include "core/rendering/RenderBox.h"
 #include "core/rendering/RenderTextControl.h"
 #include "core/rendering/RenderTheme.h"
-#include <wtf/text/StringBuilder.h>
+#include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
 

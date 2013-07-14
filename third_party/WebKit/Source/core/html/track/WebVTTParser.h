@@ -36,8 +36,8 @@
 #include "core/html/track/TextTrackCue.h"
 #include "core/html/track/TextTrackRegion.h"
 #include "core/html/track/WebVTTTokenizer.h"
-#include <wtf/PassOwnPtr.h>
-#include <wtf/text/StringBuilder.h>
+#include "wtf/PassOwnPtr.h"
+#include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
 

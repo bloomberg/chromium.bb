@@ -26,7 +26,7 @@
 #ifndef HTMLIdentifier_h
 #define HTMLIdentifier_h
 
-#include <wtf/text/WTFString.h>
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

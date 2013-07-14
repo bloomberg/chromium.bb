@@ -32,7 +32,7 @@
 #include "core/dom/Text.h"
 #include "core/platform/LocalizedStrings.h"
 #include "core/platform/text/PlatformLocale.h"
-#include <wtf/text/WTFString.h>
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

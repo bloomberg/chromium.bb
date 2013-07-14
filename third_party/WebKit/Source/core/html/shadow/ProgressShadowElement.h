@@ -33,7 +33,7 @@
 #define ProgressShadowElement_h
 
 #include "core/html/HTMLDivElement.h"
-#include <wtf/Forward.h>
+#include "wtf/Forward.h"
 
 namespace WebCore {
 
