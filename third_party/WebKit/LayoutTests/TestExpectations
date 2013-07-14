@@ -245,11 +245,7 @@ crbug.com/254971 [ Mac ] fast/speech/input-appearance-searchandspeech.html [ Ima
 
 crbug.com/239554 http/tests/security/frameNavigation/opener.html [ Pass Timeout ]
 
-crbug.com/246105 [ Release ] fast/events/scale-and-scroll-body.html [ ImageOnlyFailure ]
-crbug.com/246105 [ Release ] fast/events/scale-and-scroll-iframe-body.html [ ImageOnlyFailure ]
-crbug.com/246105 [ Release ] fast/events/scale-and-scroll-iframe-window.html [ ImageOnlyFailure ]
-crbug.com/246105 [ Release ] fast/events/scale-and-scroll-window.html [ ImageOnlyFailure ]
-crbug.com/246105 [ Mac Release ] fast/events/scrollbar-double-click.html [ Failure Pass ]
+crbug.com/260129 [ Mac Release ] fast/events/scrollbar-double-click.html [ Failure Pass ]
 
 crbug.com/241869 [ Debug ] css3/flexbox/multiline-justify-content.html [ Pass Timeout ]
 
