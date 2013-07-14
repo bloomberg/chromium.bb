@@ -34,10 +34,7 @@ class FakeVideoDecoderTest : public testing::Test {
   }
 
   void InitializeWithConfig(const VideoDecoderConfig& config) {
-    decoder_->Initialize(config,
-                         NewExpectedStatusCB(PIPELINE_OK),
-                         base::Bind(&MockStatisticsCB::OnStatistics,
-                                    base::Unretained(&statistics_cb_)));
+    decoder_->Initialize(config, NewExpectedStatusCB(PIPELINE_OK));
     message_loop_.RunUntilIdle();
     current_config_ = config;
   }
@@ -243,7 +240,6 @@ class FakeVideoDecoderTest : public testing::Test {
   VideoDecoderConfig current_config_;
 
   scoped_ptr<FakeVideoDecoder> decoder_;
-  MockStatisticsCB statistics_cb_;
 
   int num_input_buffers_;
   int num_decoded_frames_;

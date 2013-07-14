@@ -38,7 +38,8 @@ class VideoFrameStreamTest : public testing::TestWithParam<bool> {
         num_decoded_frames_(0),
         pending_read_(false),
         pending_reset_(false),
-        pending_stop_(false) {
+        pending_stop_(false),
+        total_bytes_decoded_(0) {
     ScopedVector<VideoDecoder> decoders;
     decoders.push_back(decoder_);
 
@@ -63,14 +64,22 @@ class VideoFrameStreamTest : public testing::TestWithParam<bool> {
     DCHECK(!pending_read_);
     DCHECK(!pending_reset_);
     DCHECK(!pending_stop_);
+
+    // Check that the pipeline statistics callback was fired correctly.
+    if (decoder_)
+      EXPECT_EQ(decoder_->total_bytes_decoded(), total_bytes_decoded_);
+
     if (is_initialized_)
       Stop();
     EXPECT_FALSE(is_initialized_);
   }
 
-  MOCK_METHOD1(OnStatistics, void(const PipelineStatistics&));
   MOCK_METHOD1(SetDecryptorReadyCallback, void(const media::DecryptorReadyCB&));
   MOCK_METHOD2(OnInitialized, void(bool, bool));
+
+  void OnStatistics(const PipelineStatistics& statistics) {
+     total_bytes_decoded_ += statistics.video_bytes_decoded;
+  }
 
   // Fake Decrypt() function used by DecryptingDemuxerStream. It does nothing
   // but removes the DecryptConfig to make the buffer unencrypted.
@@ -264,6 +273,7 @@ class VideoFrameStreamTest : public testing::TestWithParam<bool> {
   bool pending_read_;
   bool pending_reset_;
   bool pending_stop_;
+  int total_bytes_decoded_;
   scoped_refptr<VideoFrame> frame_read_;
 
  private:

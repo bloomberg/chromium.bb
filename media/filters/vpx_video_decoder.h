@@ -33,8 +33,7 @@ class MEDIA_EXPORT VpxVideoDecoder : public VideoDecoder {
 
   // VideoDecoder implementation.
   virtual void Initialize(const VideoDecoderConfig& config,
-                          const PipelineStatusCB& status_cb,
-                          const StatisticsCB& statistics_cb) OVERRIDE;
+                          const PipelineStatusCB& status_cb) OVERRIDE;
   virtual void Decode(const scoped_refptr<DecoderBuffer>& buffer,
                       const ReadCB& read_cb) OVERRIDE;
   virtual void Reset(const base::Closure& closure) OVERRIDE;
@@ -73,7 +72,6 @@ class MEDIA_EXPORT VpxVideoDecoder : public VideoDecoder {
 
   DecoderState state_;
 
-  StatisticsCB statistics_cb_;
   ReadCB read_cb_;
   base::Closure reset_cb_;
 

@@ -130,8 +130,7 @@ static void ReleaseVideoBufferImpl(AVCodecContext* s, AVFrame* frame) {
 }
 
 void FFmpegVideoDecoder::Initialize(const VideoDecoderConfig& config,
-                                    const PipelineStatusCB& status_cb,
-                                    const StatisticsCB& statistics_cb) {
+                                    const PipelineStatusCB& status_cb) {
   DCHECK(message_loop_->BelongsToCurrentThread());
   DCHECK(read_cb_.is_null());
   DCHECK(reset_cb_.is_null());
@@ -141,7 +140,6 @@ void FFmpegVideoDecoder::Initialize(const VideoDecoderConfig& config,
   weak_this_ = weak_factory_.GetWeakPtr();
 
   config_ = config;
-  statistics_cb_ = statistics_cb;
   PipelineStatusCB initialize_cb = BindToCurrentLoop(status_cb);
 
   if (!config.IsValidConfig() || !ConfigureDecoder()) {
@@ -268,13 +266,6 @@ void FFmpegVideoDecoder::DecodeBuffer(
     state_ = kError;
     base::ResetAndReturn(&read_cb_).Run(kDecodeError, NULL);
     return;
-  }
-
-  // Any successful decode counts!
-  if (!buffer->IsEndOfStream() && buffer->GetDataSize() > 0) {
-    PipelineStatistics statistics;
-    statistics.video_bytes_decoded = buffer->GetDataSize();
-    statistics_cb_.Run(statistics);
   }
 
   if (!video_frame.get()) {

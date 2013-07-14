@@ -17,7 +17,8 @@ FakeVideoDecoder::FakeVideoDecoder(int decoding_delay)
     : message_loop_(base::MessageLoopProxy::current()),
       weak_factory_(this),
       decoding_delay_(decoding_delay),
-      state_(UNINITIALIZED) {
+      state_(UNINITIALIZED),
+      total_bytes_decoded_(0) {
   DCHECK_GE(decoding_delay, 0);
 }
 
@@ -26,8 +27,7 @@ FakeVideoDecoder::~FakeVideoDecoder() {
 }
 
 void FakeVideoDecoder::Initialize(const VideoDecoderConfig& config,
-                                  const PipelineStatusCB& status_cb,
-                                  const StatisticsCB& statistics_cb) {
+                                  const PipelineStatusCB& status_cb) {
   DCHECK(message_loop_->BelongsToCurrentThread());
   DCHECK(config.IsValidConfig());
   DCHECK(read_cb_.IsNull()) << "No reinitialization during pending read.";
@@ -35,7 +35,6 @@ void FakeVideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   weak_this_ = weak_factory_.GetWeakPtr();
 
-  statistics_cb_ = statistics_cb;
   current_config_ = config;
   init_cb_.SetCallback(BindToCurrentLoop(status_cb));
 
@@ -55,7 +54,9 @@ void FakeVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
   DCHECK(reset_cb_.IsNull());
   DCHECK_LE(decoded_frames_.size(), static_cast<size_t>(decoding_delay_));
 
-  read_cb_.SetCallback(BindToCurrentLoop(read_cb));
+  int buffer_size = buffer->IsEndOfStream() ? 0 : buffer->GetDataSize();
+  read_cb_.SetCallback(BindToCurrentLoop(base::Bind(
+      &FakeVideoDecoder::OnFrameDecoded, weak_this_, buffer_size, read_cb)));
 
   if (buffer->IsEndOfStream() && decoded_frames_.empty()) {
     read_cb_.RunOrHold(kOk, VideoFrame::CreateEmptyFrame());
@@ -178,6 +179,16 @@ void FakeVideoDecoder::DoStop() {
   state_ = UNINITIALIZED;
   decoded_frames_.clear();
   stop_cb_.RunOrHold();
+}
+
+void FakeVideoDecoder::OnFrameDecoded(
+    int buffer_size,
+    const ReadCB& read_cb,
+    Status status,
+    const scoped_refptr<VideoFrame>& video_frame) {
+  if (status == kOk || status == kNotEnoughData)
+    total_bytes_decoded_ += buffer_size;
+  read_cb.Run(status, video_frame);
 }
 
 }  // namespace media

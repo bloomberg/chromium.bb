@@ -102,7 +102,8 @@ class MEDIA_EXPORT VideoFrameStream {
   void FlushDecoder();
 
   // Callback for VideoDecoder::Decode().
-  void OnFrameReady(const VideoDecoder::Status status,
+  void OnFrameReady(int buffer_size,
+                    const VideoDecoder::Status status,
                     const scoped_refptr<VideoFrame>& frame);
 
   // Reads a buffer from |stream_| and returns the result via OnBufferReady().

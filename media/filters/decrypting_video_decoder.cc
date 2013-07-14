@@ -31,10 +31,8 @@ DecryptingVideoDecoder::DecryptingVideoDecoder(
       trace_id_(0) {
 }
 
-void DecryptingVideoDecoder::Initialize(
-    const VideoDecoderConfig& config,
-    const PipelineStatusCB& status_cb,
-    const StatisticsCB& statistics_cb) {
+void DecryptingVideoDecoder::Initialize(const VideoDecoderConfig& config,
+                                        const PipelineStatusCB& status_cb) {
   DVLOG(2) << "Initialize()";
   DCHECK(message_loop_->BelongsToCurrentThread());
   DCHECK(state_ == kUninitialized ||
@@ -48,7 +46,6 @@ void DecryptingVideoDecoder::Initialize(
   init_cb_ = BindToCurrentLoop(status_cb);
   weak_this_ = weak_factory_.GetWeakPtr();
   config_ = config;
-  statistics_cb_ = statistics_cb;
 
   if (state_ == kUninitialized) {
     state_ = kDecryptorRequested;
@@ -278,13 +275,6 @@ void DecryptingVideoDecoder::DeliverFrame(
 
     state_ = kWaitingForKey;
     return;
-  }
-
-  // The buffer has been accepted by the decoder, let's report statistics.
-  if (buffer_size) {
-    PipelineStatistics statistics;
-    statistics.video_bytes_decoded = buffer_size;
-    statistics_cb_.Run(statistics);
   }
 
   if (status == Decryptor::kNeedMoreData) {

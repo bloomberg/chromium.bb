@@ -68,9 +68,7 @@ class FFmpegVideoDecoderTest : public testing::Test {
 
   void InitializeWithConfigAndStatus(const VideoDecoderConfig& config,
                                      PipelineStatus status) {
-    decoder_->Initialize(config, NewExpectedStatusCB(status),
-                         base::Bind(&MockStatisticsCB::OnStatistics,
-                                    base::Unretained(&statistics_cb_)));
+    decoder_->Initialize(config, NewExpectedStatusCB(status));
     message_loop_.RunUntilIdle();
   }
 
@@ -169,9 +167,6 @@ class FFmpegVideoDecoderTest : public testing::Test {
     InputBuffers input_buffers;
     input_buffers.push_back(buffer);
 
-    if (!buffer->IsEndOfStream())
-      EXPECT_CALL(statistics_cb_, OnStatistics(_));
-
     OutputFrames output_frames;
     *status = DecodeMultipleFrames(input_buffers, &output_frames);
 
@@ -197,9 +192,6 @@ class FFmpegVideoDecoderTest : public testing::Test {
     InputBuffers input_buffers;
     input_buffers.push_back(i_frame_buffer_);
     input_buffers.push_back(buffer);
-
-    EXPECT_CALL(statistics_cb_, OnStatistics(_))
-        .Times(2);
 
     OutputFrames output_frames;
     VideoDecoder::Status status =
@@ -235,7 +227,6 @@ class FFmpegVideoDecoderTest : public testing::Test {
 
   base::MessageLoop message_loop_;
   scoped_ptr<FFmpegVideoDecoder> decoder_;
-  MockStatisticsCB statistics_cb_;
 
   VideoDecoder::ReadCB read_cb_;
 
@@ -383,9 +374,6 @@ TEST_F(FFmpegVideoDecoderTest, DecodeFrame_0ByteFrame) {
   input_buffers.push_back(zero_byte_buffer);
   input_buffers.push_back(i_frame_buffer_);
 
-  EXPECT_CALL(statistics_cb_, OnStatistics(_))
-      .Times(2);
-
   OutputFrames output_frames;
   VideoDecoder::Status status =
       DecodeMultipleFrames(input_buffers, &output_frames);
@@ -400,24 +388,24 @@ TEST_F(FFmpegVideoDecoderTest, DecodeFrame_0ByteFrame) {
 TEST_F(FFmpegVideoDecoderTest, DecodeFrame_DecodeError) {
   Initialize();
 
-  InputBuffers input_buffers;
-  input_buffers.push_back(corrupt_i_frame_buffer_);
-  input_buffers.push_back(i_frame_buffer_);
-  input_buffers.push_back(i_frame_buffer_);
+  VideoDecoder::Status status;
+  scoped_refptr<VideoFrame> frame;
 
   // The error is only raised on the second decode attempt, so we expect at
-  // least one successful decode but we don't expect FrameReady() to be
-  // executed as an error is raised instead.
-  EXPECT_CALL(statistics_cb_, OnStatistics(_));
+  // least one successful decode but we don't expect valid frame to be decoded.
+  // During the second decode attempt an error is raised.
+  Decode(corrupt_i_frame_buffer_, &status, &frame);
+  DCHECK(!frame);
+  DCHECK_EQ(VideoDecoder::kNotEnoughData, status);
+  Decode(i_frame_buffer_, &status, &frame);
+  DCHECK(!frame);
+  DCHECK_EQ(VideoDecoder::kDecodeError, status);
 
-  OutputFrames output_frames;
-  VideoDecoder::Status status =
-      DecodeMultipleFrames(input_buffers, &output_frames);
-
-  EXPECT_EQ(VideoDecoder::kDecodeError, status);
   // After a decode error occurred, all following decodes will return
-  // kDecodeError. Therefore, no |output_frames| will be available.
-  ASSERT_TRUE(output_frames.empty());
+  // kDecodeError.
+  Decode(i_frame_buffer_, &status, &frame);
+  DCHECK(!frame);
+  DCHECK_EQ(VideoDecoder::kDecodeError, status);
 }
 
 // Multi-threaded decoders have different behavior than single-threaded

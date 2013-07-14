@@ -32,7 +32,6 @@ class MEDIA_EXPORT VideoDecoder {
 
   // Initializes a VideoDecoder with the given |config|, executing the
   // |status_cb| upon completion.
-  // |statistics_cb| is used to update the global pipeline statistics.
   //
   // Note:
   // 1) The VideoDecoder will be reinitialized if it was initialized before.
@@ -41,8 +40,7 @@ class MEDIA_EXPORT VideoDecoder {
   // 3) No VideoDecoder calls except for Stop() should be made before
   //    |status_cb| is executed.
   virtual void Initialize(const VideoDecoderConfig& config,
-                          const PipelineStatusCB& status_cb,
-                          const StatisticsCB& statistics_cb) = 0;
+                          const PipelineStatusCB& status_cb) = 0;
 
   // Requests a |buffer| to be decoded. The status of the decoder and decoded
   // frame are returned via the provided callback. Only one decode may be in

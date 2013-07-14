@@ -85,9 +85,7 @@ class DecryptingVideoDecoderTest : public testing::Test {
 
   void InitializeAndExpectStatus(const VideoDecoderConfig& config,
                                  PipelineStatus status) {
-    decoder_->Initialize(config, NewExpectedStatusCB(status),
-                         base::Bind(&MockStatisticsCB::OnStatistics,
-                                    base::Unretained(&statistics_cb_)));
+    decoder_->Initialize(config, NewExpectedStatusCB(status));
     message_loop_.RunUntilIdle();
   }
 
@@ -129,8 +127,6 @@ class DecryptingVideoDecoderTest : public testing::Test {
         .WillOnce(RunCallback<1>(Decryptor::kSuccess, decoded_video_frame_))
         .WillRepeatedly(RunCallback<1>(Decryptor::kNeedMoreData,
                                        scoped_refptr<VideoFrame>()));
-    EXPECT_CALL(statistics_cb_, OnStatistics(_));
-
     ReadAndExpectFrameReadyWith(
         encrypted_buffer_, VideoDecoder::kOk, decoded_video_frame_);
   }
@@ -214,7 +210,6 @@ class DecryptingVideoDecoderTest : public testing::Test {
   base::MessageLoop message_loop_;
   scoped_ptr<DecryptingVideoDecoder> decoder_;
   scoped_ptr<StrictMock<MockDecryptor> > decryptor_;
-  MockStatisticsCB statistics_cb_;
 
   Decryptor::DecoderInitCB pending_init_cb_;
   Decryptor::NewKeyCB key_added_cb_;
@@ -302,8 +297,6 @@ TEST_F(DecryptingVideoDecoderTest, DecryptAndDecode_NeedMoreData) {
                              scoped_refptr<VideoFrame>()))
       .WillRepeatedly(RunCallback<1>(Decryptor::kSuccess,
                                      decoded_video_frame_));
-  EXPECT_CALL(statistics_cb_, OnStatistics(_))
-      .Times(2);
 
   ReadAndExpectFrameReadyWith(
       encrypted_buffer_, VideoDecoder::kNotEnoughData, decoded_video_frame_);
@@ -327,7 +320,6 @@ TEST_F(DecryptingVideoDecoderTest, KeyAdded_DuringWaitingForKey) {
   EXPECT_CALL(*decryptor_, DecryptAndDecodeVideo(_, _))
       .WillRepeatedly(RunCallback<1>(Decryptor::kSuccess,
                                      decoded_video_frame_));
-  EXPECT_CALL(statistics_cb_, OnStatistics(_));
   EXPECT_CALL(*this, FrameReady(VideoDecoder::kOk, decoded_video_frame_));
   key_added_cb_.Run();
   message_loop_.RunUntilIdle();
@@ -342,7 +334,6 @@ TEST_F(DecryptingVideoDecoderTest, KeyAdded_DruingPendingDecode) {
   EXPECT_CALL(*decryptor_, DecryptAndDecodeVideo(_, _))
       .WillRepeatedly(RunCallback<1>(Decryptor::kSuccess,
                                      decoded_video_frame_));
-  EXPECT_CALL(statistics_cb_, OnStatistics(_));
   EXPECT_CALL(*this, FrameReady(VideoDecoder::kOk, decoded_video_frame_));
   // The video decode callback is returned after the correct decryption key is
   // added.
@@ -410,9 +401,7 @@ TEST_F(DecryptingVideoDecoderTest, Stop_DuringDecryptorRequested) {
   EXPECT_CALL(*this, RequestDecryptorNotification(_))
       .WillOnce(SaveArg<0>(&decryptor_ready_cb));
   decoder_->Initialize(TestVideoConfig::NormalEncrypted(),
-                       NewExpectedStatusCB(DECODER_ERROR_NOT_SUPPORTED),
-                       base::Bind(&MockStatisticsCB::OnStatistics,
-                                  base::Unretained(&statistics_cb_)));
+                       NewExpectedStatusCB(DECODER_ERROR_NOT_SUPPORTED));
   message_loop_.RunUntilIdle();
   // |decryptor_ready_cb| is saved but not called here.
   EXPECT_FALSE(decryptor_ready_cb.is_null());

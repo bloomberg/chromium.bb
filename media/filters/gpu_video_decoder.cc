@@ -234,8 +234,7 @@ static bool IsCodedSizeSupported(const gfx::Size& coded_size) {
 }
 
 void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,
-                                 const PipelineStatusCB& orig_status_cb,
-                                 const StatisticsCB& statistics_cb) {
+                                 const PipelineStatusCB& orig_status_cb) {
   DVLOG(3) << "Initialize()";
   DCHECK(gvd_loop_proxy_->BelongsToCurrentThread());
   DCHECK(config.IsValidConfig());
@@ -269,7 +268,6 @@ void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,
   }
 
   config_ = config;
-  statistics_cb_ = statistics_cb;
   needs_bitstream_conversion_ = (config.codec() == kCodecH264);
 
   DVLOG(3) << "GpuVideoDecoder::Initialize() succeeded.";
@@ -661,12 +659,6 @@ void GpuVideoDecoder::NotifyEndOfBitstreamBuffer(int32 id) {
   }
 
   PutSHM(it->second.shm_buffer);
-  const scoped_refptr<DecoderBuffer>& buffer = it->second.buffer;
-  if (buffer->GetDataSize()) {
-    PipelineStatistics statistics;
-    statistics.video_bytes_decoded = buffer->GetDataSize();
-    statistics_cb_.Run(statistics);
-  }
   bitstream_buffers_in_decoder_.erase(it);
 
   if (pending_reset_cb_.is_null() && state_ != kDrainingDecoder &&

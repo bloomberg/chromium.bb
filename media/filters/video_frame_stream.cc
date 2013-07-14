@@ -26,9 +26,9 @@ VideoFrameStream::VideoFrameStream(
       weak_factory_(this),
       state_(STATE_UNINITIALIZED),
       stream_(NULL),
-      decoder_selector_(new VideoDecoderSelector(
-          message_loop, decoders.Pass(), set_decryptor_ready_cb)) {
-}
+      decoder_selector_(new VideoDecoderSelector(message_loop,
+                                                 decoders.Pass(),
+                                                 set_decryptor_ready_cb)) {}
 
 VideoFrameStream::~VideoFrameStream() {
   DCHECK(state_ == STATE_UNINITIALIZED || state_ == STATE_STOPPED) << state_;
@@ -50,8 +50,8 @@ void VideoFrameStream::Initialize(DemuxerStream* stream,
 
   state_ = STATE_INITIALIZING;
   // TODO(xhwang): VideoDecoderSelector only needs a config to select a decoder.
-  decoder_selector_->SelectVideoDecoder(stream, statistics_cb, base::Bind(
-      &VideoFrameStream::OnDecoderSelected, weak_this_));
+  decoder_selector_->SelectVideoDecoder(
+      stream, base::Bind(&VideoFrameStream::OnDecoderSelected, weak_this_));
 }
 
 void VideoFrameStream::Read(const VideoDecoder::ReadCB& read_cb) {
@@ -205,15 +205,17 @@ void VideoFrameStream::Decode(const scoped_refptr<DecoderBuffer>& buffer) {
   DCHECK(stop_cb_.is_null());
   DCHECK(buffer);
 
+  int buffer_size = buffer->IsEndOfStream() ? 0 : buffer->GetDataSize();
   decoder_->Decode(buffer, base::Bind(&VideoFrameStream::OnFrameReady,
-                                      weak_this_));
+                                      weak_this_, buffer_size));
 }
 
 void VideoFrameStream::FlushDecoder() {
   Decode(DecoderBuffer::CreateEOSBuffer());
 }
 
-void VideoFrameStream::OnFrameReady(const VideoDecoder::Status status,
+void VideoFrameStream::OnFrameReady(int buffer_size,
+                                    const VideoDecoder::Status status,
                                     const scoped_refptr<VideoFrame>& frame) {
   DCHECK(state_ == STATE_NORMAL || state_ == STATE_FLUSHING_DECODER) << state_;
   DCHECK(!read_cb_.is_null());
@@ -224,6 +226,13 @@ void VideoFrameStream::OnFrameReady(const VideoDecoder::Status status,
     state_ = STATE_ERROR;
     SatisfyRead(status, NULL);
     return;
+  }
+
+  // Any successful decode counts!
+  if (buffer_size > 0) {
+    PipelineStatistics statistics;
+    statistics.video_bytes_decoded = buffer_size;
+    statistics_cb_.Run(statistics);
   }
 
   // Drop decoding result if Reset()/Stop() was called during decoding.
@@ -318,8 +327,7 @@ void VideoFrameStream::ReinitializeDecoder() {
   state_ = STATE_REINITIALIZING_DECODER;
   decoder_->Initialize(
       stream_->video_decoder_config(),
-      base::Bind(&VideoFrameStream::OnDecoderReinitialized, weak_this_),
-      statistics_cb_);
+      base::Bind(&VideoFrameStream::OnDecoderReinitialized, weak_this_));
 }
 
 void VideoFrameStream::OnDecoderReinitialized(PipelineStatus status) {

@@ -82,8 +82,7 @@ class MEDIA_EXPORT GpuVideoDecoder
 
   // VideoDecoder implementation.
   virtual void Initialize(const VideoDecoderConfig& config,
-                          const PipelineStatusCB& status_cb,
-                          const StatisticsCB& statistics_cb) OVERRIDE;
+                          const PipelineStatusCB& status_cb) OVERRIDE;
   virtual void Decode(const scoped_refptr<DecoderBuffer>& buffer,
                       const ReadCB& read_cb) OVERRIDE;
   virtual void Reset(const base::Closure& closure) OVERRIDE;
@@ -159,9 +158,6 @@ class MEDIA_EXPORT GpuVideoDecoder
   void PutSHM(SHMBuffer* shm_buffer);
 
   void DestroyTextures();
-
-  StatisticsCB statistics_cb_;
-
 
   bool needs_bitstream_conversion_;
 

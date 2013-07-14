@@ -93,7 +93,7 @@ class VideoRendererBaseTest : public ::testing::Test {
 
     InSequence s;
 
-    EXPECT_CALL(*decoder_, Initialize(_, _, _))
+    EXPECT_CALL(*decoder_, Initialize(_, _))
         .WillOnce(RunCallback<1>(PIPELINE_OK));
 
     // Set playback rate before anything else happens.
@@ -396,7 +396,7 @@ static void ExpectNotCalled(PipelineStatus) {
 }
 
 TEST_F(VideoRendererBaseTest, StopWhileInitializing) {
-  EXPECT_CALL(*decoder_, Initialize(_, _, _))
+  EXPECT_CALL(*decoder_, Initialize(_, _))
       .WillOnce(RunCallback<1>(PIPELINE_OK));
   CallInitialize(base::Bind(&ExpectNotCalled));
   Stop();
@@ -664,7 +664,7 @@ TEST_F(VideoRendererBaseTest, AbortPendingRead_Preroll) {
 TEST_F(VideoRendererBaseTest, VideoDecoder_InitFailure) {
   InSequence s;
 
-  EXPECT_CALL(*decoder_, Initialize(_, _, _))
+  EXPECT_CALL(*decoder_, Initialize(_, _))
       .WillOnce(RunCallback<1>(DECODER_ERROR_NOT_SUPPORTED));
   InitializeRenderer(DECODER_ERROR_NOT_SUPPORTED);
 

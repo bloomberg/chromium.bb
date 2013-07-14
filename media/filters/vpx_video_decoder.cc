@@ -74,8 +74,7 @@ VpxVideoDecoder::~VpxVideoDecoder() {
 }
 
 void VpxVideoDecoder::Initialize(const VideoDecoderConfig& config,
-                                 const PipelineStatusCB& status_cb,
-                                 const StatisticsCB& statistics_cb) {
+                                 const PipelineStatusCB& status_cb) {
   DCHECK(message_loop_->BelongsToCurrentThread());
   DCHECK(config.IsValidConfig());
   DCHECK(!config.is_encrypted());
@@ -91,7 +90,6 @@ void VpxVideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   // Success!
   config_ = config;
-  statistics_cb_ = statistics_cb;
   state_ = kNormal;
   status_cb.Run(PIPELINE_OK);
 }
@@ -235,13 +233,6 @@ void VpxVideoDecoder::DecodeBuffer(const scoped_refptr<DecoderBuffer>& buffer) {
     state_ = kError;
     base::ResetAndReturn(&read_cb_).Run(kDecodeError, NULL);
     return;
-  }
-
-  // Any successful decode counts!
-  if (buffer->GetDataSize() && buffer->GetSideDataSize()) {
-    PipelineStatistics statistics;
-    statistics.video_bytes_decoded = buffer->GetDataSize();
-    statistics_cb_.Run(statistics);
   }
 
   if (!video_frame.get()) {

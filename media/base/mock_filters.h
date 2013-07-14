@@ -71,9 +71,8 @@ class MockVideoDecoder : public VideoDecoder {
   virtual ~MockVideoDecoder();
 
   // VideoDecoder implementation.
-  MOCK_METHOD3(Initialize, void(const VideoDecoderConfig& config,
-                                const PipelineStatusCB&,
-                                const StatisticsCB&));
+  MOCK_METHOD2(Initialize, void(const VideoDecoderConfig& config,
+                                const PipelineStatusCB&));
   MOCK_METHOD2(Decode, void(const scoped_refptr<DecoderBuffer>& buffer,
                             const ReadCB&));
   MOCK_METHOD1(Reset, void(const base::Closure&));

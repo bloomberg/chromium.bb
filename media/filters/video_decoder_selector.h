@@ -55,7 +55,6 @@ class MEDIA_EXPORT VideoDecoderSelector {
   // Selected VideoDecoder (and DecryptingDemuxerStream) is returned via
   // the |select_decoder_cb|.
   void SelectVideoDecoder(DemuxerStream* stream,
-                          const StatisticsCB& statistics_cb,
                           const SelectDecoderCB& select_decoder_cb);
 
  private:
@@ -70,7 +69,6 @@ class MEDIA_EXPORT VideoDecoderSelector {
   SetDecryptorReadyCB set_decryptor_ready_cb_;
 
   DemuxerStream* input_stream_;
-  StatisticsCB statistics_cb_;
   SelectDecoderCB select_decoder_cb_;
 
   scoped_ptr<VideoDecoder> video_decoder_;
