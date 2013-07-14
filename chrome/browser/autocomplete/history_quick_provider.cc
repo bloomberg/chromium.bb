@@ -56,12 +56,7 @@ HistoryQuickProvider::HistoryQuickProvider(
     Profile* profile)
     : HistoryProvider(listener, profile,
           AutocompleteProvider::TYPE_HISTORY_QUICK),
-      languages_(profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)),
-      reorder_for_inlining_(false) {
-  reorder_for_inlining_ = CommandLine::ForCurrentProcess()->
-      GetSwitchValueASCII(switches::
-                          kOmniboxHistoryQuickProviderReorderForInlining) ==
-      switches::kOmniboxHistoryQuickProviderReorderForInliningEnabled;
+      languages_(profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)) {
 }
 
 void HistoryQuickProvider::Start(const AutocompleteInput& input,
@@ -116,29 +111,6 @@ void HistoryQuickProvider::DoAutocomplete() {
       autocomplete_input_.cursor_position());
   if (matches.empty())
     return;
-
-  // If we're allowed to reorder results in order to get an inlineable
-  // result to appear first (and hence have a HistoryQuickProvider
-  // suggestion possibly appear first), find the first inlineable
-  // result and then swap it to the front.  Obviously, don't do this
-  // if we're told to prevent inline autocompletion.  (If we're told
-  // we're going to prevent inline autocompletion, we're going to
-  // later demote the score of all results so none will be inlined.
-  // Hence there's no need to reorder the results so an inlineable one
-  // appears first.)
-  if (reorder_for_inlining_ &&
-      !PreventInlineAutocomplete(autocomplete_input_)) {
-    for (ScoredHistoryMatches::iterator i(matches.begin());
-         (i != matches.end()) &&
-             (i->raw_score >= AutocompleteResult::kLowestDefaultScore);
-         ++i) {
-      if (i->can_inline) {  // this test is only true once because of the break
-        if (i != matches.begin())
-          std::rotate(matches.begin(), i, i + 1);
-        break;
-      }
-    }
-  }
 
   // Figure out if HistoryURL provider has a URL-what-you-typed match
   // that ought to go first and what its score will be.

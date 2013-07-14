@@ -118,19 +118,6 @@ std::set<CommandLine::StringType> ExtractFlagsFromCommandLine(
   return flags;
 }
 
-const Experiment::Choice
-    kOmniboxHistoryQuickProviderReorderForInliningChoices[] = {
-  { IDS_FLAGS_OMNIBOX_HISTORY_QUICK_PROVIDER_REORDER_FOR_INLINING_AUTOMATIC,
-    "",
-    "" },
-  { IDS_FLAGS_OMNIBOX_HISTORY_QUICK_PROVIDER_REORDER_FOR_INLINING_ENABLED,
-    switches::kOmniboxHistoryQuickProviderReorderForInlining,
-    switches::kOmniboxHistoryQuickProviderReorderForInliningEnabled },
-  { IDS_FLAGS_OMNIBOX_HISTORY_QUICK_PROVIDER_REORDER_FOR_INLINING_DISABLED,
-    switches::kOmniboxHistoryQuickProviderReorderForInlining,
-    switches::kOmniboxHistoryQuickProviderReorderForInliningDisabled }
-};
-
 const Experiment::Choice kEnableCompositingForFixedPositionChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
   { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
@@ -690,13 +677,6 @@ const Experiment kExperiments[] = {
     // On by default for the Mac (different implementation in WebKit).
     kOsWin | kOsLinux,
     SINGLE_VALUE_TYPE(switches::kEnableSmoothScrolling)
-  },
-  {
-    "omnibox-history-quick-provider-reorder-for-inlining",
-    IDS_FLAGS_OMNIBOX_HISTORY_QUICK_PROVIDER_REORDER_FOR_INLINING_NAME,
-    IDS_FLAGS_OMNIBOX_HISTORY_QUICK_PROVIDER_REORDER_FOR_INLINING_DESCRIPTION,
-    kOsAll,
-    MULTI_VALUE_TYPE(kOmniboxHistoryQuickProviderReorderForInliningChoices)
   },
   {
     "enable-panels",
