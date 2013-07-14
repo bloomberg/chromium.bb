@@ -25,46 +25,46 @@ AM_CPPFLAGS =					\
 
 if BUILD_SIMPLE_CLIENTS
 simple_clients_programs =			\
-	simple-shm				\
-	simple-touch
+	weston-simple-shm			\
+	weston-simple-touch
 
-simple_shm_SOURCES = simple-shm.c 		\
+weston_simple_shm_SOURCES = simple-shm.c 	\
 	../shared/os-compatibility.c		\
 	../shared/os-compatibility.h
-simple_shm_CPPFLAGS = $(SIMPLE_CLIENT_CFLAGS)
-simple_shm_LDADD = $(SIMPLE_CLIENT_LIBS)
+weston_simple_shm_CPPFLAGS = $(SIMPLE_CLIENT_CFLAGS)
+weston_simple_shm_LDADD = $(SIMPLE_CLIENT_LIBS)
 
-simple_touch_SOURCES = simple-touch.c		\
+weston_simple_touch_SOURCES = simple-touch.c	\
 	../shared/os-compatibility.c		\
 	../shared/os-compatibility.h
-simple_touch_CPPFLAGS = $(SIMPLE_CLIENT_CFLAGS)
-simple_touch_LDADD = $(SIMPLE_CLIENT_LIBS)
+weston_simple_touch_CPPFLAGS = $(SIMPLE_CLIENT_CFLAGS)
+weston_simple_touch_LDADD = $(SIMPLE_CLIENT_LIBS)
 endif
 
 if BUILD_SIMPLE_EGL_CLIENTS
-simple_egl_clients_programs =			\
+weston_simple_egl_clients_programs =		\
 	simple-egl
 
-simple_egl_SOURCES = simple-egl.c
-simple_egl_CPPFLAGS = $(SIMPLE_EGL_CLIENT_CFLAGS)
-simple_egl_LDADD = $(SIMPLE_EGL_CLIENT_LIBS) -lm
+weston_simple_egl_SOURCES = simple-egl.c
+weston_simple_egl_CPPFLAGS = $(SIMPLE_EGL_CLIENT_CFLAGS)
+weston_simple_egl_LDADD = $(SIMPLE_EGL_CLIENT_LIBS) -lm
 endif
 
 if BUILD_CLIENTS
 terminal = weston-terminal
 
 clients_programs =				\
-	flower					\
-	image					\
-	cliptest				\
-	dnd					\
-	smoke					\
-	resizor					\
-	eventdemo				\
-	clickdot				\
-	transformed				\
-	fullscreen				\
-	calibrator				\
+	weston-flower				\
+	weston-image				\
+	weston-cliptest				\
+	weston-dnd				\
+	weston-smoke				\
+	weston-resizor				\
+	weston-eventdemo			\
+	weston-clickdot				\
+	weston-transformed			\
+	weston-fullscreen			\
+	weston-calibrator			\
 	$(subsurfaces)				\
 	$(full_gl_client_programs)		\
 	$(cairo_glesv2_programs)
@@ -94,8 +94,8 @@ libtoytoolkit_la_LIBADD =			\
 	$(CAIRO_EGL_LIBS)			\
 	../shared/libshared-cairo.la -lrt -lm
 
-flower_SOURCES = flower.c
-flower_LDADD = libtoytoolkit.la
+weston_flower_SOURCES = flower.c
+weston_flower_LDADD = libtoytoolkit.la
 
 weston_screenshooter_SOURCES =			\
 	screenshot.c				\
@@ -106,62 +106,64 @@ weston_screenshooter_LDADD = libtoytoolkit.la
 weston_terminal_SOURCES = terminal.c
 weston_terminal_LDADD = libtoytoolkit.la -lutil
 
-image_SOURCES = image.c
-image_LDADD = libtoytoolkit.la
+weston_image_SOURCES = image.c
+weston_image_LDADD = libtoytoolkit.la
 
-cliptest_SOURCES = cliptest.c
-cliptest_CPPFLAGS = $(AM_CPPFLAGS) $(PIXMAN_CFLAGS)
-cliptest_LDADD = libtoytoolkit.la $(PIXMAN_LIBS)
+weston_cliptest_SOURCES = cliptest.c
+weston_cliptest_CPPFLAGS = $(AM_CPPFLAGS) $(PIXMAN_CFLAGS)
+weston_cliptest_LDADD = libtoytoolkit.la $(PIXMAN_LIBS)
 
-dnd_SOURCES = dnd.c
-dnd_LDADD = libtoytoolkit.la
+weston_dnd_SOURCES = dnd.c
+weston_dnd_LDADD = libtoytoolkit.la
 
-smoke_SOURCES = smoke.c
-smoke_LDADD = libtoytoolkit.la
+weston_smoke_SOURCES = smoke.c
+weston_smoke_LDADD = libtoytoolkit.la
 
-resizor_SOURCES = resizor.c
-resizor_LDADD = libtoytoolkit.la
+weston_resizor_SOURCES = resizor.c
+weston_resizor_LDADD = libtoytoolkit.la
 
 if HAVE_CAIRO_GLESV2
-cairo_glesv2_programs = nested nested-client
+cairo_glesv2_programs = weston-nested weston-nested-client
 
-nested_SOURCES = nested.c
-nested_LDADD = libtoytoolkit.la $(SERVER_LIBS)
+weston_nested_SOURCES = nested.c
+weston_nested_LDADD = libtoytoolkit.la $(SERVER_LIBS)
 
-nested_client_SOURCES = nested-client.c
-nested_client_LDADD = $(SIMPLE_EGL_CLIENT_LIBS) -lm
+weston_nested_client_SOURCES = nested-client.c
+weston_nested_client_LDADD = $(SIMPLE_EGL_CLIENT_LIBS) -lm
 endif
 
-eventdemo_SOURCES = eventdemo.c
-eventdemo_LDADD = libtoytoolkit.la
+weston_eventdemo_SOURCES = eventdemo.c
+weston_eventdemo_LDADD = libtoytoolkit.la
 
-clickdot_SOURCES = clickdot.c
-clickdot_LDADD = libtoytoolkit.la
+weston_clickdot_SOURCES = clickdot.c
+weston_clickdot_LDADD = libtoytoolkit.la
 
-transformed_SOURCES = transformed.c
-transformed_LDADD = libtoytoolkit.la
+weston_transformed_SOURCES = transformed.c
+weston_transformed_LDADD = libtoytoolkit.la
 
-fullscreen_SOURCES = fullscreen.c
-fullscreen_LDADD = libtoytoolkit.la
+weston_fullscreen_SOURCES = fullscreen.c
+weston_fullscreen_LDADD = libtoytoolkit.la
 
-calibrator_SOURCES = calibrator.c ../shared/matrix.c ../shared/matrix.h
-calibrator_LDADD = libtoytoolkit.la
+weston_calibrator_SOURCES = calibrator.c	\
+	../shared/matrix.c			\
+	../shared/matrix.h
+weston_calibrator_LDADD = libtoytoolkit.la
 
 if BUILD_SUBSURFACES_CLIENT
-subsurfaces = subsurfaces
-subsurfaces_SOURCES = subsurfaces.c
-subsurfaces_CPPFLAGS = $(AM_CPPFLAGS) $(SIMPLE_EGL_CLIENT_CFLAGS)
-subsurfaces_LDADD = libtoytoolkit.la $(SIMPLE_EGL_CLIENT_LIBS) -lm
+subsurfaces = weston-subsurfaces
+weston_subsurfaces_SOURCES = subsurfaces.c
+weston_subsurfaces_CPPFLAGS = $(AM_CPPFLAGS) $(SIMPLE_EGL_CLIENT_CFLAGS)
+weston_subsurfaces_LDADD = libtoytoolkit.la $(SIMPLE_EGL_CLIENT_LIBS) -lm
 endif
 
 if HAVE_PANGO
-pango_programs = editor
-editor_SOURCES = 				\
+pango_programs = weston-editor
+weston_editor_SOURCES = 			\
 	editor.c				\
 	text-protocol.c				\
 	text-client-protocol.h
-editor_LDADD = libtoytoolkit.la $(PANGO_LIBS)
-editor_CPPFLAGS = $(AM_CPPFLAGS) $(PANGO_CFLAGS)
+weston_editor_LDADD = libtoytoolkit.la $(PANGO_LIBS)
+weston_editor_CPPFLAGS = $(AM_CPPFLAGS) $(PANGO_CFLAGS)
 endif
 
 keyboard = weston-keyboard
@@ -219,10 +221,10 @@ CLEANFILES = $(BUILT_SOURCES)
 endif
 
 if BUILD_FULL_GL_CLIENTS
-full_gl_client_programs = gears
+full_gl_client_programs = weston-gears
 
-gears_SOURCES = gears.c
-gears_LDADD = libtoytoolkit.la
+weston_gears_SOURCES = gears.c
+weston_gears_LDADD = libtoytoolkit.la
 
 if HAVE_GLU
 screensaver = weston-screensaver
@@ -244,8 +246,8 @@ endif
 @wayland_scanner_rules@
 
 if HAVE_POPPLER
-poppler_programs = view
-view_SOURCES = view.c
-view_LDADD = libtoytoolkit.la $(POPPLER_LIBS)
-view_CPPFLAGS = $(AM_CPPFLAGS) $(POPPLER_CFLAGS)
+poppler_programs = weston-view
+weston_view_SOURCES = view.c
+weston_view_LDADD = libtoytoolkit.la $(POPPLER_LIBS)
+weston_view_CPPFLAGS = $(AM_CPPFLAGS) $(POPPLER_CFLAGS)
 endif
