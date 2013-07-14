@@ -10,6 +10,8 @@
 #include <pthread.h>
 #include <semaphore.h>
 
+#include "sdk_util/atomicops.h"
+
 // typdef helper for work function
 typedef void (*WorkFunction)(int task_index, void* data);
 
@@ -33,7 +35,7 @@ class ThreadPool {
   static void* WorkerThreadEntry(void* data);
   void PostExitAndJoinAll();
   pthread_t* threads_;
-  int counter_;
+  Atomic32 counter_;
   const int num_threads_;
   bool exiting_;
   void* user_data_;

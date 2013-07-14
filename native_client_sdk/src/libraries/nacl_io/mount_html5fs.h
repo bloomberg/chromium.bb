@@ -10,6 +10,7 @@
 #include "nacl_io/mount.h"
 #include "nacl_io/pepper_interface.h"
 #include "nacl_io/typed_mount_factory.h"
+#include "sdk_util/simple_lock.h"
 
 class MountNode;
 
@@ -39,7 +40,9 @@ class MountHtml5Fs : public Mount {
   PP_Resource filesystem_resource_;
   bool filesystem_open_has_result_;  // protected by lock_.
   Error filesystem_open_error_;      // protected by lock_.
+
   pthread_cond_t filesystem_open_cond_;
+  SimpleLock filesysem_open_lock_;
 
   friend class TypedMountFactory<MountHtml5Fs>;
 };

@@ -354,16 +354,12 @@ ssize_t KernelProxy::read(int fd, void* buf, size_t nbytes) {
     return -1;
   }
 
-  AutoLock lock(&handle->lock_);
   int cnt = 0;
-  error = handle->node_->Read(handle->offs_, buf, nbytes, &cnt);
+  error = handle->Read(buf, nbytes, &cnt);
   if (error) {
     errno = error;
     return -1;
   }
-
-  if (cnt > 0)
-    handle->offs_ += cnt;
 
   return cnt;
 }
@@ -376,16 +372,12 @@ ssize_t KernelProxy::write(int fd, const void* buf, size_t nbytes) {
     return -1;
   }
 
-  AutoLock lock(&handle->lock_);
   int cnt = 0;
-  error = handle->node_->Write(handle->offs_, buf, nbytes, &cnt);
+  error = handle->Write(buf, nbytes, &cnt);
   if (error) {
     errno = error;
     return -1;
   }
-
-  if (cnt > 0)
-    handle->offs_ += cnt;
 
   return cnt;
 }
@@ -398,7 +390,7 @@ int KernelProxy::fstat(int fd, struct stat* buf) {
     return -1;
   }
 
-  error = handle->node_->GetStat(buf);
+  error = handle->node()->GetStat(buf);
   if (error) {
     errno = error;
     return -1;
@@ -415,15 +407,10 @@ int KernelProxy::getdents(int fd, void* buf, unsigned int count) {
     return -1;
   }
 
-  AutoLock lock(&handle->lock_);
   int cnt = 0;
-  error = handle->node_
-      ->GetDents(handle->offs_, static_cast<dirent*>(buf), count, &cnt);
+  error = handle->GetDents(static_cast<dirent*>(buf), count, &cnt);
   if (error)
     errno = error;
-
-  if (cnt > 0)
-    handle->offs_ += cnt;
 
   return cnt;
 }
@@ -436,7 +423,7 @@ int KernelProxy::ftruncate(int fd, off_t length) {
     return -1;
   }
 
-  error = handle->node_->FTruncate(length);
+  error = handle->node()->FTruncate(length);
   if (error) {
     errno = error;
     return -1;
@@ -453,7 +440,7 @@ int KernelProxy::fsync(int fd) {
     return -1;
   }
 
-  error = handle->node_->FSync();
+  error = handle->node()->FSync();
   if (error) {
     errno = error;
     return -1;
@@ -470,7 +457,7 @@ int KernelProxy::isatty(int fd) {
     return -1;
   }
 
-  error = handle->node_->IsaTTY();
+  error = handle->node()->IsaTTY();
   if (error) {
     errno = error;
     return -1;
@@ -487,7 +474,7 @@ int KernelProxy::ioctl(int d, int request, char* argp) {
     return -1;
   }
 
-  error = handle->node_->Ioctl(request, argp);
+  error = handle->node()->Ioctl(request, argp);
   if (error) {
     errno = error;
     return -1;
@@ -504,7 +491,6 @@ off_t KernelProxy::lseek(int fd, off_t offset, int whence) {
     return -1;
   }
 
-  AutoLock lock(&handle->lock_);
   off_t new_offset;
   error = handle->Seek(offset, whence, &new_offset);
   if (error) {
@@ -612,8 +598,7 @@ void* KernelProxy::mmap(void* addr,
   }
 
   void* new_addr;
-  AutoLock lock(&handle->lock_);
-  error = handle->node_->MMap(addr, length, prot, flags, offset, &new_addr);
+  error = handle->node()->MMap(addr, length, prot, flags, offset, &new_addr);
   if (error) {
     errno = error;
     return MAP_FAILED;

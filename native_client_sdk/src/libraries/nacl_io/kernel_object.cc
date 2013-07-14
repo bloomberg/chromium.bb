@@ -23,24 +23,16 @@
 #include "sdk_util/scoped_ref.h"
 
 KernelObject::KernelObject() {
-  pthread_mutex_init(&mount_lock_, NULL);
-  pthread_mutex_init(&handle_lock_, NULL);
-  pthread_mutex_init(&cwd_lock_,NULL);
-
   cwd_ = "/";
 }
 
-KernelObject::~KernelObject() {
-  pthread_mutex_destroy(&cwd_lock_);
-  pthread_mutex_destroy(&handle_lock_);
-  pthread_mutex_destroy(&mount_lock_);
-}
+KernelObject::~KernelObject() {};
 
 Error KernelObject::AttachMountAtPath(const ScopedMount& mnt,
                                 const std::string& path) {
   std::string abs_path = GetAbsParts(path).Join();
 
-  AutoLock lock(&mount_lock_);
+  AUTO_LOCK(mount_lock_);
   if (mounts_.find(abs_path) != mounts_.end())
     return EBUSY;
 
@@ -51,7 +43,7 @@ Error KernelObject::AttachMountAtPath(const ScopedMount& mnt,
 Error KernelObject::DetachMountAtPath(const std::string& path) {
   std::string abs_path = GetAbsParts(path).Join();
 
-  AutoLock lock(&mount_lock_);
+  AUTO_LOCK(mount_lock_);
   MountMap_t::iterator it = mounts_.find(abs_path);
   if (mounts_.end() == it)
     return EINVAL;
@@ -74,7 +66,7 @@ Error KernelObject::AcquireMountAndRelPath(const std::string& path,
   out_mount->reset(NULL);
   *rel_parts = Path();
 
-  AutoLock lock(&mount_lock_);
+  AUTO_LOCK(mount_lock_);
 
   // Find longest prefix
   size_t max = abs_parts.Size();
@@ -113,7 +105,7 @@ Error KernelObject::AcquireMountAndNode(const std::string& path,
 }
 
 Path KernelObject::GetAbsParts(const std::string& path) {
-  AutoLock lock(&cwd_lock_);
+  AUTO_LOCK(cwd_lock_);
 
   Path abs_parts(cwd_);
   if (path[0] == '/') {
@@ -127,7 +119,7 @@ Path KernelObject::GetAbsParts(const std::string& path) {
 }
 
 std::string KernelObject::GetCWD() {
-  AutoLock lock(&cwd_lock_);
+  AUTO_LOCK(cwd_lock_);
   std::string out = cwd_;
 
   return out;
@@ -146,7 +138,7 @@ Error KernelObject::SetCWD(const std::string& path) {
   if ((node->GetType() & S_IFDIR) == 0)
     return ENOTDIR;
 
-  AutoLock lock(&cwd_lock_);
+  AUTO_LOCK(cwd_lock_);
   cwd_ = abs_path;
   return 0;
 }
@@ -154,7 +146,7 @@ Error KernelObject::SetCWD(const std::string& path) {
 Error KernelObject::AcquireHandle(int fd, ScopedKernelHandle* out_handle) {
   out_handle->reset(NULL);
 
-  AutoLock lock(&handle_lock_);
+  AUTO_LOCK(handle_lock_);
   if (fd < 0 || fd >= static_cast<int>(handle_map_.size()))
     return EBADF;
 
@@ -165,7 +157,7 @@ Error KernelObject::AcquireHandle(int fd, ScopedKernelHandle* out_handle) {
 }
 
 int KernelObject::AllocateFD(const ScopedKernelHandle& handle) {
-  AutoLock lock(&handle_lock_);
+  AUTO_LOCK(handle_lock_);
   int id;
 
   // If we can recycle and FD, use that first
@@ -186,7 +178,7 @@ void KernelObject::FreeAndReassignFD(int fd, const ScopedKernelHandle& handle) {
   if (NULL == handle) {
     FreeFD(fd);
   } else {
-    AutoLock lock(&handle_lock_);
+    AUTO_LOCK(handle_lock_);
 
     // If the required FD is larger than the current set, grow the set
     if (fd >= handle_map_.size())
@@ -197,7 +189,7 @@ void KernelObject::FreeAndReassignFD(int fd, const ScopedKernelHandle& handle) {
 }
 
 void KernelObject::FreeFD(int fd) {
-  AutoLock lock(&handle_lock_);
+  AUTO_LOCK(handle_lock_);
 
   handle_map_[fd].reset(NULL);
   free_fds_.push_back(fd);

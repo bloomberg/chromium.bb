@@ -155,7 +155,7 @@ Error MountNodeHtml5Fs::GetDents(size_t offs,
 }
 
 Error MountNodeHtml5Fs::GetStat(struct stat* stat) {
-  AutoLock lock(&lock_);
+  AUTO_LOCK(node_lock_);
 
   PP_FileInfo info;
   int32_t result = mount_->ppapi()->GetFileRefInterface()->Query(
@@ -244,7 +244,7 @@ Error MountNodeHtml5Fs::Write(size_t offs,
 Error MountNodeHtml5Fs::GetSize(size_t* out_size) {
   *out_size = 0;
 
-  AutoLock lock(&lock_);
+  AUTO_LOCK(node_lock_);
 
   PP_FileInfo info;
   int32_t result = mount_->ppapi()->GetFileIoInterface()

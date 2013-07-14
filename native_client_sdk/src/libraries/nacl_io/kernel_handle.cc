@@ -12,6 +12,8 @@
 #include "nacl_io/mount_node.h"
 #include "nacl_io/osunistd.h"
 
+#include "sdk_util/auto_lock.h"
+
 // It is only legal to construct a handle while the kernel lock is held.
 KernelHandle::KernelHandle()
     : mount_(NULL), node_(NULL), offs_(0) {}
@@ -33,9 +35,10 @@ Error KernelHandle::Init(int open_mode) {
 Error KernelHandle::Seek(off_t offset, int whence, off_t* out_offset) {
   // By default, don't move the offset.
   *out_offset = offset;
-
   size_t base;
   size_t node_size;
+
+  AUTO_LOCK(offs_lock_);
   Error error = node_->GetSize(&node_size);
   if (error)
     return error;
@@ -71,3 +74,29 @@ Error KernelHandle::Seek(off_t offset, int whence, off_t* out_offset) {
   return 0;
 }
 
+Error KernelHandle::Read(void* buf, size_t nbytes, int* cnt) {
+  AUTO_LOCK(offs_lock_);
+  Error error = node_->Read(offs_, buf, nbytes, cnt);
+  if (0 == error)
+    offs_ += *cnt;
+  return error;
+}
+
+Error KernelHandle::Write(const void* buf, size_t nbytes, int* cnt) {
+  AUTO_LOCK(offs_lock_);
+  Error error = node_->Write(offs_, buf, nbytes, cnt);
+  if (0 == error)
+    offs_ += *cnt;
+  return error;
+}
+
+Error KernelHandle::GetDents(struct dirent* pdir, size_t nbytes, int* cnt) {
+  AUTO_LOCK(offs_lock_);
+  Error error = node_->GetDents(offs_, pdir, nbytes, cnt);
+  if (0 == error)
+    offs_ += *cnt;
+  return error;
+}
+
+const ScopedRef<MountNode>& KernelHandle::node() { return node_; }
+const ScopedRef<Mount>& KernelHandle::mount() { return mount_; }

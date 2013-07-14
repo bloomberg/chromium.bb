@@ -169,9 +169,9 @@ void MountHtml5Fs::Destroy() {
 }
 
 Error MountHtml5Fs::BlockUntilFilesystemOpen() {
-  AutoLock lock(&lock_);
+  AUTO_LOCK(filesysem_open_lock_);
   while (!filesystem_open_has_result_) {
-    pthread_cond_wait(&filesystem_open_cond_, &lock_);
+    pthread_cond_wait(&filesystem_open_cond_, filesysem_open_lock_.mutex());
   }
   return filesystem_open_error_;
 }
@@ -184,7 +184,7 @@ void MountHtml5Fs::FilesystemOpenCallbackThunk(void* user_data,
 }
 
 void MountHtml5Fs::FilesystemOpenCallback(int32_t result) {
-  AutoLock lock(&lock_);
+  AUTO_LOCK(filesysem_open_lock_);
   filesystem_open_has_result_ = true;
   filesystem_open_error_ = PPErrorToErrno(result);
   pthread_cond_signal(&filesystem_open_cond_);

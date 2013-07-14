@@ -160,7 +160,7 @@ Error MountNodeHttp::GetDents(size_t offs,
 }
 
 Error MountNodeHttp::GetStat(struct stat* stat) {
-  AutoLock lock(&lock_);
+  AUTO_LOCK(node_lock_);
 
   // Assume we need to 'HEAD' if we do not know the size, otherwise, assume
   // that the information is constant.  We can add a timeout if needed.
@@ -218,7 +218,7 @@ Error MountNodeHttp::Read(size_t offs,
                           int* out_bytes) {
   *out_bytes = 0;
 
-  AutoLock lock(&lock_);
+  AUTO_LOCK(node_lock_);
   if (cache_content_) {
     if (cached_data_.empty()) {
       Error error = DownloadToCache();
@@ -248,7 +248,7 @@ Error MountNodeHttp::GetSize(size_t* out_size) {
 
   // TODO(binji): This value should be cached properly; i.e. obey the caching
   // headers returned by the server.
-  AutoLock lock(&lock_);
+  AUTO_LOCK(node_lock_);
   if (!has_cached_size_) {
     // Even if DownloadToCache fails, the best result we can return is what
     // was written to stat_.st_size.

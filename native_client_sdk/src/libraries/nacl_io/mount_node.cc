@@ -59,7 +59,7 @@ Error MountNode::GetDents(size_t offs,
 }
 
 Error MountNode::GetStat(struct stat* pstat) {
-  AutoLock lock(&lock_);
+  AUTO_LOCK(node_lock_);
   memcpy(pstat, &stat_, sizeof(stat_));
   return 0;
 }

@@ -12,6 +12,7 @@
 
 #include "sdk_util/ref_object.h"
 #include "sdk_util/scoped_ref.h"
+#include "sdk_util/simple_lock.h"
 
 struct dirent;
 struct stat;
@@ -96,6 +97,7 @@ class MountNode : public RefObject {
 
  protected:
   struct stat stat_;
+  SimpleLock node_lock_;
 
   // We use a pointer directly to avoid cycles in the ref count.
   // TODO(noelallen) We should change this so it's unnecessary for the node

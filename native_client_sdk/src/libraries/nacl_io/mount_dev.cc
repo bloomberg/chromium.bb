@@ -220,7 +220,7 @@ Error TtyNode::Write(size_t offs,
   const char* data = static_cast<const char*>(buf);
   std::string message;
   {
-    AutoLock lock(&lock_);
+    AUTO_LOCK(node_lock_);
     message = prefix_;
   }
   message.append(data, count);
@@ -232,9 +232,9 @@ Error TtyNode::Write(size_t offs,
 }
 
 Error TtyNode::Read(size_t offs, void* buf, size_t count, int* out_bytes) {
-  AutoLock lock(&lock_);
+  AUTO_LOCK(node_lock_);
   while (input_buffer_.size() <= 0) {
-    pthread_cond_wait(&is_readable_, &lock_);
+    pthread_cond_wait(&is_readable_, node_lock_.mutex());
   }
 
   // Copies data from the input buffer into buf.
@@ -253,7 +253,7 @@ Error TtyNode::Ioctl(int request, char* arg) {
     // The prefix is used to distinguish messages intended for this
     // tty node from all the other messages cluttering up the
     // javascript postMessage() channel.
-    AutoLock lock(&lock_);
+    AUTO_LOCK(node_lock_);
     prefix_ = arg;
     return 0;
   } else if (request == TIOCNACLINPUT) {
@@ -262,7 +262,7 @@ Error TtyNode::Ioctl(int request, char* arg) {
     // prefix for this node, and only deliver the data if so.
     struct tioc_nacl_input_string* message =
       reinterpret_cast<struct tioc_nacl_input_string*>(arg);
-    AutoLock lock(&lock_);
+    AUTO_LOCK(node_lock_);
     if (message->length >= prefix_.size() &&
         strncmp(message->buffer, prefix_.data(), prefix_.size()) == 0) {
       input_buffer_.insert(input_buffer_.end(),
@@ -363,7 +363,6 @@ Error MountDev::Access(const Path& path, int a_mode) {
 
 Error MountDev::Open(const Path& path, int mode, ScopedMountNode* out_node) {
   out_node->reset(NULL);
-  AutoLock lock(&lock_);
 
   // Don't allow creating any files.
   if (mode & O_CREAT)

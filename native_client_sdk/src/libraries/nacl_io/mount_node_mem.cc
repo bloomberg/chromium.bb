@@ -23,7 +23,7 @@ MountNodeMem::~MountNodeMem() { free(data_); }
 Error MountNodeMem::Read(size_t offs, void* buf, size_t count, int* out_bytes) {
   *out_bytes = 0;
 
-  AutoLock lock(&lock_);
+  AUTO_LOCK(node_lock_);
   if (count == 0)
     return 0;
 
@@ -43,7 +43,7 @@ Error MountNodeMem::Write(size_t offs,
                           size_t count,
                           int* out_bytes) {
   *out_bytes = 0;
-  AutoLock lock(&lock_);
+  AUTO_LOCK(node_lock_);
 
   if (count == 0)
     return 0;

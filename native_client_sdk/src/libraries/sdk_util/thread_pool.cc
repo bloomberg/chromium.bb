@@ -60,15 +60,7 @@ void ThreadPool::Setup(int counter, WorkFunction work, void *data) {
 // Return decremented task counter.  This function
 // can be called from multiple threads at any given time.
 int ThreadPool::DecCounter() {
-#if defined(__native_client__)
-  // Use fast atomic sub & fetch.
-  return __sync_sub_and_fetch(&counter_, 1);
-#else
-  // Fallback to a more platform independent pthread mutex via AutoLock.
-  static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-  AutoLock lock(&mutex);
-  return --counter_;
-#endif
+  return AtomicAddFetch(&counter_, 1);
 }
 
 // Set exit flag, post and join all the threads in the pool.  This function is

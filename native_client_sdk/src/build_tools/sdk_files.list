@@ -565,6 +565,7 @@ include/sdk_util/auto_lock.h
 include/sdk_util/macros.h
 include/sdk_util/ref_object.h
 include/sdk_util/scoped_ref.h
+include/sdk_util/simple_lock.h
 include/sdk_util/thread_pool.h
 include/sdk_util/thread_safe_queue.h
 [win]include/win/config.h

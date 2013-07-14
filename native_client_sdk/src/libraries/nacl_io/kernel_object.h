@@ -17,6 +17,8 @@
 #include "nacl_io/mount_node.h"
 #include "nacl_io/path.h"
 
+#include "sdk_util/simple_lock.h"
+
 
 // KernelObject provides basic functionality for threadsafe access to kernel
 // objects such as the CWD, mount points, file descriptors and file handles.
@@ -79,13 +81,13 @@ private:
   MountMap_t mounts_;
 
   // Lock to protect free_fds_ and handle_map_.
-  pthread_mutex_t handle_lock_;
+  SimpleLock handle_lock_;
 
   // Lock to protect handle_map_.
-  pthread_mutex_t mount_lock_;
+  SimpleLock mount_lock_;
 
   // Lock to protect cwd_.
-  pthread_mutex_t cwd_lock_;
+  SimpleLock cwd_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(KernelObject);
 };

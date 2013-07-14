@@ -44,7 +44,7 @@ Error MountNodeDir::GetDents(size_t offs,
                              int* out_bytes) {
   *out_bytes = 0;
 
-  AutoLock lock(&lock_);
+  AUTO_LOCK(node_lock_);
 
   // If the buffer pointer is invalid, fail
   if (NULL == pdir)
@@ -75,7 +75,7 @@ Error MountNodeDir::GetDents(size_t offs,
 
 Error MountNodeDir::AddChild(const std::string& name,
                              const ScopedMountNode& node) {
-  AutoLock lock(&lock_);
+  AUTO_LOCK(node_lock_);
 
   if (name.empty())
     return ENOENT;
@@ -94,7 +94,7 @@ Error MountNodeDir::AddChild(const std::string& name,
 }
 
 Error MountNodeDir::RemoveChild(const std::string& name) {
-  AutoLock lock(&lock_);
+  AUTO_LOCK(node_lock_);
   MountNodeMap_t::iterator it = map_.find(name);
   if (it != map_.end()) {
     it->second->Unlink();
@@ -109,7 +109,7 @@ Error MountNodeDir::FindChild(const std::string& name,
                               ScopedMountNode* out_node) {
   out_node->reset(NULL);
 
-  AutoLock lock(&lock_);
+  AUTO_LOCK(node_lock_);
   MountNodeMap_t::iterator it = map_.find(name);
   if (it == map_.end())
     return ENOENT;
@@ -119,7 +119,7 @@ Error MountNodeDir::FindChild(const std::string& name,
 }
 
 int MountNodeDir::ChildCount() {
-  AutoLock lock(&lock_);
+  AUTO_LOCK(node_lock_);
   return map_.size();
 }
 

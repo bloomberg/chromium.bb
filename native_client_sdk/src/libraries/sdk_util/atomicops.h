@@ -17,8 +17,26 @@ static inline void MemoryBarrier() {
 }
 #endif
 
+inline Atomic32 AtomicCompareExchange(volatile Atomic32* ptr,
+                                      Atomic32 new_value,
+                                      Atomic32 old_value) {
+  return __sync_val_compare_and_swap(ptr, new_value, old_value);
+}
+
 inline Atomic32 AtomicAddFetch(volatile Atomic32* ptr, Atomic32 value) {
   return __sync_add_and_fetch(ptr, value);
+}
+
+inline Atomic32 AtomicAndFetch(volatile Atomic32* ptr, Atomic32 value) {
+  return __sync_and_and_fetch(ptr, value);
+}
+
+inline Atomic32 AtomicOrFetch(volatile Atomic32* ptr, Atomic32 value) {
+  return __sync_or_and_fetch(ptr, value);
+}
+
+inline Atomic32 AtomicXorFetch(volatile Atomic32* ptr, Atomic32 value) {
+  return __sync_xor_and_fetch(ptr, value);
 }
 
 #else
@@ -35,9 +53,49 @@ typedef long Atomic32;
 
 /* Windows.h already defines a MemoryBarrier macro. */
 
+inline Atomic32 AtomicCompareExchange(volatile Atomic32* ptr,
+                                      Atomic32 newvalue,
+                                      Atomic32 oldvalue) {
+  return InterlockedCompareExchange(ptr, newvalue, oldvalue);
+}
+
 inline Atomic32 AtomicAddFetch(volatile Atomic32* ptr, Atomic32 value) {
   return InterlockedExchangeAdd(ptr, value);
 }
+
+inline Atomic32 AtomicAndFetch(volatile Atomic32* ptr, Atomic32 value) {
+  Atomic32 oldval;
+  Atomic32 newval;
+  do {
+    oldval = *ptr;
+    newval = oldval & value;
+  } while (InterlockedCompareExchange(ptr, newval, oldval) != oldval);
+
+  return newval;
+}
+
+inline Atomic32 AtomicOrFetch(volatile Atomic32* ptr, Atomic32 value) {
+  Atomic32 oldval;
+  Atomic32 newval;
+  do {
+    oldval = *ptr;
+    newval = oldval | value;
+  } while (InterlockedCompareExchange(ptr,newval, oldval) != oldval);
+
+  return newval;
+}
+
+inline Atomic32 AtomicXorFetch(volatile Atomic32* ptr, Atomic32 value) {
+  Atomic32 oldval;
+  Atomic32 newval;
+  do {
+    oldval = *ptr;
+    newval = oldval ^ value;
+  } while (InterlockedCompareExchange(ptr,newval, oldval) != oldval);
+
+  return newval;
+}
+
 #endif
 
 
