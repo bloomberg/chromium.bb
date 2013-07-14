@@ -28,7 +28,7 @@ WebContentsVideoCaptureDeviceTest.BadFramesGoodFrames
 RenderWidgetHostViewMacTest.*
 WebContentsVideoCaptureDeviceTest.*
 RenderViewHostTest.*
-DeviceMotionEventPumpTest.DidStartPolling
+DeviceMotionEventPumpTest.*
 
 # Speculative disable of hanging tests. http://crbug.com/241919
 VideoCaptureControllerTest.*
