@@ -60,9 +60,7 @@ StyleResolveScope::~StyleResolveScope()
 
 void StyleResolverState::clear()
 {
-    // FIXME: Use m_elementContent = ElementContext() instead.
-    m_elementContext.deprecatedPartialClear();
-
+    m_elementContext = ElementResolveContext();
     m_style = 0;
     m_parentStyle = 0;
     m_regionForStyling = 0;

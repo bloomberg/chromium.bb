@@ -54,15 +54,6 @@ public:
 
     explicit ElementResolveContext(Element*);
 
-    // FIXME: This should be removed, this exists to avoid changing behavior
-    // while refactoring, but callers should just assign a null context instead.
-    // FIXME: This is the only method making this class not immutable!
-    void deprecatedPartialClear()
-    {
-        m_element = 0;
-        m_parentNode = 0;
-    }
-
     Document* document() const { return m_element->document(); }
     bool isDocumentElement() const { return m_element && m_element == m_element->document()->documentElement(); }
 
