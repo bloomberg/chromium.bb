@@ -1302,7 +1302,7 @@ bool WebFrameImpl::hasSelection() const
         return pluginContainer->plugin()->hasSelection();
 
     // frame()->selection()->isNone() never returns true.
-    return (frame()->selection()->start() != frame()->selection()->end());
+    return frame()->selection()->start() != frame()->selection()->end();
 }
 
 WebRange WebFrameImpl::selectionRange() const

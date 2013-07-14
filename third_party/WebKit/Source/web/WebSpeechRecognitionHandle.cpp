@@ -44,12 +44,12 @@ void WebSpeechRecognitionHandle::assign(const WebSpeechRecognitionHandle& other)
 
 bool WebSpeechRecognitionHandle::equals(const WebSpeechRecognitionHandle& other) const
 {
-    return (m_private.get() == other.m_private.get());
+    return m_private.get() == other.m_private.get();
 }
 
 bool WebSpeechRecognitionHandle::lessThan(const WebSpeechRecognitionHandle& other) const
 {
-    return (m_private.get() < other.m_private.get());
+    return m_private.get() < other.m_private.get();
 }
 
 WebSpeechRecognitionHandle::WebSpeechRecognitionHandle(const PassRefPtr<SpeechRecognition>& speechRecognition)

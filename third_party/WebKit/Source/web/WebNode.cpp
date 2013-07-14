@@ -70,12 +70,12 @@ void WebNode::assign(const WebNode& other)
 
 bool WebNode::equals(const WebNode& n) const
 {
-    return (m_private.get() == n.m_private.get());
+    return m_private.get() == n.m_private.get();
 }
 
 bool WebNode::lessThan(const WebNode& n) const
 {
-    return (m_private.get() < n.m_private.get());
+    return m_private.get() < n.m_private.get();
 }
 
 WebNode::NodeType WebNode::nodeType() const

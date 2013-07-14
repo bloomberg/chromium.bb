@@ -50,6 +50,16 @@ WebMIDIPermissionRequest::WebMIDIPermissionRequest(WebCore::MIDIAccess* midi)
 {
 }
 
+void WebMIDIPermissionRequest::assign(const WebMIDIPermissionRequest& other)
+{
+    m_private = other.m_private;
+}
+
+bool WebMIDIPermissionRequest::equals(const WebMIDIPermissionRequest& n) const
+{
+    return m_private.get() == n.m_private.get();
+}
+
 WebSecurityOrigin WebMIDIPermissionRequest::securityOrigin() const
 {
     return WebSecurityOrigin(m_private->scriptExecutionContext()->securityOrigin());

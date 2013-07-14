@@ -49,8 +49,13 @@ class WebSecurityOrigin;
 // WebMIDIClient::cancelPermissionRequest (request canceled).
 class WebMIDIPermissionRequest {
 public:
+    WebMIDIPermissionRequest(const WebMIDIPermissionRequest& o) { assign(o); }
+
     WEBKIT_EXPORT WebSecurityOrigin securityOrigin() const;
     WEBKIT_EXPORT void setIsAllowed(bool);
+
+    WEBKIT_EXPORT void assign(const WebMIDIPermissionRequest&);
+    WEBKIT_EXPORT bool equals(const WebMIDIPermissionRequest&) const;
 
 #if WEBKIT_IMPLEMENTATION
     explicit WebMIDIPermissionRequest(const PassRefPtr<WebCore::MIDIAccess>&);
@@ -60,6 +65,16 @@ public:
 private:
     WebPrivatePtr<WebCore::MIDIAccess> m_private;
 };
+
+inline bool operator==(const WebMIDIPermissionRequest& a, const WebMIDIPermissionRequest& b)
+{
+    return a.equals(b);
+}
+
+inline bool operator!=(const WebMIDIPermissionRequest& a, const WebMIDIPermissionRequest& b)
+{
+    return !(a == b);
+}
 
 } // namespace WebKit
 

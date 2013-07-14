@@ -69,7 +69,7 @@ void WebAccessibilityObject::assign(const WebKit::WebAccessibilityObject& other)
 
 bool WebAccessibilityObject::equals(const WebAccessibilityObject& n) const
 {
-    return (m_private.get() == n.m_private.get());
+    return m_private.get() == n.m_private.get();
 }
 
 // static

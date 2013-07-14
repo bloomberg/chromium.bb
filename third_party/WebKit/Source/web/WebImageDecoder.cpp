@@ -99,7 +99,7 @@ bool WebImageDecoder::isFrameCompleteAtIndex(int index) const
     ImageFrame* const frameBuffer = m_private->frameBufferAtIndex(index);
     if (!frameBuffer)
         return false;
-    return (frameBuffer->status() == ImageFrame::FrameComplete);
+    return frameBuffer->status() == ImageFrame::FrameComplete;
 }
 
 WebImage WebImageDecoder::getFrameAtIndex(int index = 0) const
