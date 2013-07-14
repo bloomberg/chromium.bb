@@ -381,7 +381,8 @@ public:
 
   // Note that |target| must use YV12 format.
   virtual void ReadbackYUV(
-      WebKit::WebGLId texture,
+      const gpu::Mailbox& mailbox,
+      uint32 sync_point,
       media::VideoFrame* target,
       const base::Callback<void(bool)>& callback) = 0;
   virtual GLHelper::ScalerInterface* scaler() = 0;

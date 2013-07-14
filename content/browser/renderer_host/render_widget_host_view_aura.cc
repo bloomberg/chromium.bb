@@ -1189,77 +1189,25 @@ void RenderWidgetHostViewAura::CopyFromCompositingSurfaceToVideoFrame(
       const gfx::Rect& src_subrect,
       const scoped_refptr<media::VideoFrame>& target,
       const base::Callback<void(bool)>& callback) {
-  base::ScopedClosureRunner scoped_callback_runner(base::Bind(callback, false));
-
-  if (!current_surface_.get())
-    return;
-
-  // Compute the dest size we want after the letterboxing resize. Make the
-  // coordinates and sizes even because we letterbox in YUV space
-  // (see CopyRGBToVideoFrame). They need to be even for the UV samples to
-  // line up correctly.
-  // The video frame's coded_size() is in pixels and src_subrect is in DIP, but
-  // we are only concerned with the video frame's aspect ratio in this case.
-  gfx::Rect region_in_frame =
-      media::ComputeLetterboxRegion(gfx::Rect(target->coded_size()),
-                                    src_subrect.size());
-  region_in_frame = gfx::Rect(region_in_frame.x() & ~1,
-                              region_in_frame.y() & ~1,
-                              region_in_frame.width() & ~1,
-                              region_in_frame.height() & ~1);
-  ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-  GLHelper* gl_helper = factory->GetGLHelper();
-  if (!gl_helper) {
+  if (!window_->layer()->has_external_content()) {
+    callback.Run(false);
     return;
   }
-  // Convert |src_subrect| from the views coordinate (upper-left origin) into
-  // the OpenGL coordinate (lower-left origin).
-  gfx::Rect src_subrect_in_gl = src_subrect;
-  src_subrect_in_gl.set_y(GetViewBounds().height() - src_subrect.bottom());
-  gfx::Rect src_subrect_in_pixel =
-      ConvertRectToPixel(current_surface_->device_scale_factor(),
-                         src_subrect_in_gl);
 
-  if (!yuv_readback_pipeline_ ||
-      yuv_readback_pipeline_->scaler()->SrcSize() != current_surface_->size() ||
-      yuv_readback_pipeline_->scaler()->SrcSubrect() != src_subrect_in_pixel ||
-      yuv_readback_pipeline_->scaler()->DstSize() != region_in_frame.size()) {
-    GLHelper::ScalerQuality quality = GLHelper::SCALER_QUALITY_FAST;
-    std::string quality_switch = switches::kTabCaptureDownscaleQuality;
-    // If we're scaling up, we can use the "best" quality.
-    if (current_surface_->size().width() < region_in_frame.size().width() &&
-        current_surface_->size().height() < region_in_frame.size().height()) {
-      quality_switch = switches::kTabCaptureUpscaleQuality;
-    }
-
-    std::string switch_value =
-        CommandLine::ForCurrentProcess()->GetSwitchValueASCII(quality_switch);
-    if (switch_value == "fast") {
-      quality = GLHelper::SCALER_QUALITY_FAST;
-    } else if (switch_value == "good") {
-      quality = GLHelper::SCALER_QUALITY_GOOD;
-    } else if (switch_value == "best") {
-      quality = GLHelper::SCALER_QUALITY_BEST;
-    }
-
-    yuv_readback_pipeline_.reset(
-        gl_helper->CreateReadbackPipelineYUV(quality,
-                                             current_surface_->size(),
-                                             src_subrect_in_pixel,
-                                             target->coded_size(),
-                                             region_in_frame,
-                                             true,
-                                             true));
-  }
-
-  scoped_callback_runner.Release();
-  yuv_readback_pipeline_->ReadbackYUV(
-      current_surface_->PrepareTexture(), target.get(), callback);
+  scoped_ptr<cc::CopyOutputRequest> request =
+      cc::CopyOutputRequest::CreateRequest(base::Bind(
+          &RenderWidgetHostViewAura::
+              CopyFromCompositingSurfaceHasResultForVideo,
+          AsWeakPtr(),  // For caching the ReadbackYUVInterface on this class.
+          target,
+          callback));
+  request->set_area(src_subrect);
+  window_->layer()->RequestCopyOfOutput(request.Pass());
 }
 
 bool RenderWidgetHostViewAura::CanCopyToVideoFrame() const {
   // TODO(skaslev): Implement this path for s/w compositing.
-  return current_surface_.get() != NULL &&
+  return window_->layer()->has_external_content() &&
          host_->is_accelerated_compositing_active();
 }
 
@@ -1841,6 +1789,94 @@ void RenderWidgetHostViewAura::PrepareBitmapCopyOutputResult(
       dst_size_in_pixel.width(),
       dst_size_in_pixel.height());
   callback.Run(true, bitmap);
+}
+
+// static
+void RenderWidgetHostViewAura::CopyFromCompositingSurfaceHasResultForVideo(
+    base::WeakPtr<RenderWidgetHostViewAura> rwhva,
+    scoped_refptr<media::VideoFrame> video_frame,
+    const base::Callback<void(bool)>& callback,
+    scoped_ptr<cc::CopyOutputResult> result) {
+  base::ScopedClosureRunner scoped_callback_runner(base::Bind(callback, false));
+
+  if (!rwhva)
+    return;
+
+  if (result->IsEmpty())
+    return;
+  if (result->size().IsEmpty())
+    return;
+
+  // We only handle texture readbacks for now. If the compositor is in software
+  // mode, we could produce a software-backed VideoFrame here as well.
+  if (!result->HasTexture())
+    return;
+
+  ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
+  GLHelper* gl_helper = factory->GetGLHelper();
+  if (!gl_helper)
+    return;
+
+  scoped_ptr<cc::TextureMailbox> texture_mailbox = result->TakeTexture();
+  DCHECK(texture_mailbox->IsTexture());
+  if (!texture_mailbox->IsTexture())
+    return;
+
+  // Compute the dest size we want after the letterboxing resize. Make the
+  // coordinates and sizes even because we letterbox in YUV space
+  // (see CopyRGBToVideoFrame). They need to be even for the UV samples to
+  // line up correctly.
+  // The video frame's coded_size() and the result's size() are both physical
+  // pixels.
+  gfx::Rect region_in_frame =
+      media::ComputeLetterboxRegion(gfx::Rect(video_frame->coded_size()),
+                                    result->size());
+  region_in_frame = gfx::Rect(region_in_frame.x() & ~1,
+                              region_in_frame.y() & ~1,
+                              region_in_frame.width() & ~1,
+                              region_in_frame.height() & ~1);
+
+  gfx::Rect result_rect(result->size());
+
+  content::ReadbackYUVInterface* yuv_readback_pipeline =
+      rwhva->yuv_readback_pipeline_.get();
+  if (yuv_readback_pipeline == NULL ||
+      yuv_readback_pipeline->scaler()->SrcSize() != result_rect.size() ||
+      yuv_readback_pipeline->scaler()->SrcSubrect() != result_rect ||
+      yuv_readback_pipeline->scaler()->DstSize() != region_in_frame.size()) {
+    GLHelper::ScalerQuality quality = GLHelper::SCALER_QUALITY_FAST;
+    std::string quality_switch = switches::kTabCaptureDownscaleQuality;
+    // If we're scaling up, we can use the "best" quality.
+    if (result_rect.size().width() < region_in_frame.size().width() &&
+        result_rect.size().height() < region_in_frame.size().height())
+      quality_switch = switches::kTabCaptureUpscaleQuality;
+
+    std::string switch_value =
+        CommandLine::ForCurrentProcess()->GetSwitchValueASCII(quality_switch);
+    if (switch_value == "fast")
+      quality = GLHelper::SCALER_QUALITY_FAST;
+    else if (switch_value == "good")
+      quality = GLHelper::SCALER_QUALITY_GOOD;
+    else if (switch_value == "best")
+      quality = GLHelper::SCALER_QUALITY_BEST;
+
+    rwhva->yuv_readback_pipeline_.reset(
+        gl_helper->CreateReadbackPipelineYUV(quality,
+                                             result_rect.size(),
+                                             result_rect,
+                                             video_frame->coded_size(),
+                                             region_in_frame,
+                                             true,
+                                             false));
+    yuv_readback_pipeline = rwhva->yuv_readback_pipeline_.get();
+  }
+
+  scoped_callback_runner.Release();
+  yuv_readback_pipeline->ReadbackYUV(
+      texture_mailbox->name(),
+      texture_mailbox->sync_point(),
+      video_frame.get(),
+      callback);
 }
 
 void RenderWidgetHostViewAura::GetScreenInfo(WebScreenInfo* results) {

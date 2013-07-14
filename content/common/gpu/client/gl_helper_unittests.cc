@@ -849,9 +849,15 @@ class GLHelperTest : public testing::Test {
             gfx::Size(output_xsize, output_ysize),
             base::TimeDelta::FromSeconds(0));
 
+    gpu::Mailbox mailbox;
+    context_->genMailboxCHROMIUM(mailbox.name);
+    context_->produceTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
+    uint32 sync_point = context_->insertSyncPoint();
+
     base::RunLoop run_loop;
     yuv_reader->ReadbackYUV(
-        src_texture,
+        mailbox,
+        sync_point,
         output_frame.get(),
         base::Bind(&callcallback, run_loop.QuitClosure()));
     run_loop.Run();

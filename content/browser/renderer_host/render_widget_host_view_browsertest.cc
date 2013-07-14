@@ -20,7 +20,11 @@
 #include "content/test/content_browser_test.h"
 #include "content/test/content_browser_test_utils.h"
 #include "media/base/video_frame.h"
+#include "media/filters/skcanvas_video_renderer.h"
 #include "net/base/net_util.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkDevice.h"
 #include "ui/compositor/compositor_setup.h"
 #include "ui/gl/gl_switches.h"
 
@@ -477,6 +481,10 @@ class CompositingRenderWidgetHostViewBrowserTestTabCapture
                                           bool result,
                                           const SkBitmap& bitmap) {
     EXPECT_EQ(expected_copy_from_compositing_surface_result_, result);
+    if (!result) {
+      quit_callback.Run();
+      return;
+    }
 
     const SkBitmap& expected_bitmap =
         expected_copy_from_compositing_surface_bitmap_;
@@ -488,9 +496,35 @@ class CompositingRenderWidgetHostViewBrowserTestTabCapture
     int fails = 0;
     for (int i = 0; i < bitmap.width() && fails < 10; ++i) {
       for (int j = 0; j < bitmap.height() && fails < 10; ++j) {
+        if (!exclude_rect_.IsEmpty() && exclude_rect_.Contains(i, j))
+          continue;
+
         SkColor expected_color = expected_bitmap.getColor(i, j);
         SkColor color = bitmap.getColor(i, j);
-        EXPECT_NEAR(expected_color, color, allowable_error_)
+        int expected_alpha = SkColorGetA(expected_color);
+        int alpha = SkColorGetA(color);
+        int expected_red = SkColorGetR(expected_color);
+        int red = SkColorGetR(color);
+        int expected_green = SkColorGetG(expected_color);
+        int green = SkColorGetG(color);
+        int expected_blue = SkColorGetB(expected_color);
+        int blue = SkColorGetB(color);
+        EXPECT_NEAR(expected_alpha, alpha, allowable_error_)
+            << "expected_color: " << std::hex << expected_color
+            << " color: " <<  color
+            << " Failed at " << std::dec << i << ", " << j
+            << " Failure " << ++fails;
+        EXPECT_NEAR(expected_red, red, allowable_error_)
+            << "expected_color: " << std::hex << expected_color
+            << " color: " <<  color
+            << " Failed at " << std::dec << i << ", " << j
+            << " Failure " << ++fails;
+        EXPECT_NEAR(expected_green, green, allowable_error_)
+            << "expected_color: " << std::hex << expected_color
+            << " color: " <<  color
+            << " Failed at " << std::dec << i << ", " << j
+            << " Failure " << ++fails;
+        EXPECT_NEAR(expected_blue, blue, allowable_error_)
             << "expected_color: " << std::hex << expected_color
             << " color: " <<  color
             << " Failed at " << std::dec << i << ", " << j
@@ -500,7 +534,39 @@ class CompositingRenderWidgetHostViewBrowserTestTabCapture
     EXPECT_LT(fails, 10);
 
     quit_callback.Run();
- }
+  }
+
+  void CopyFromCompositingSurfaceCallbackForVideo(
+      scoped_refptr<media::VideoFrame> video_frame,
+      base::Closure quit_callback,
+      bool result) {
+    EXPECT_EQ(expected_copy_from_compositing_surface_result_, result);
+    if (!result) {
+      quit_callback.Run();
+      return;
+    }
+
+    media::SkCanvasVideoRenderer video_renderer;
+
+    SkBitmap bitmap;
+    bitmap.setConfig(SkBitmap::kARGB_8888_Config,
+                     video_frame->visible_rect().width(),
+                     video_frame->visible_rect().height());
+    bitmap.allocPixels();
+    bitmap.setIsOpaque(true);
+
+    SkDevice device(bitmap);
+    SkCanvas canvas(&device);
+
+    video_renderer.Paint(video_frame.get(),
+                         &canvas,
+                         video_frame->visible_rect(),
+                         0xff);
+
+    CopyFromCompositingSurfaceCallback(quit_callback,
+                                       result,
+                                       bitmap);
+  }
 
   void SetExpectedCopyFromCompositingSurfaceResult(bool result,
                                                    const SkBitmap& bitmap) {
@@ -509,6 +575,7 @@ class CompositingRenderWidgetHostViewBrowserTestTabCapture
   }
 
   void SetAllowableError(int amount) { allowable_error_ = amount; }
+  void SetExcludeRect(gfx::Rect exclude) { exclude_rect_ = exclude; }
 
   virtual GURL TestUrl() OVERRIDE {
     return GURL(test_url_);
@@ -520,6 +587,7 @@ class CompositingRenderWidgetHostViewBrowserTestTabCapture
   bool expected_copy_from_compositing_surface_result_;
   SkBitmap expected_copy_from_compositing_surface_bitmap_;
   int allowable_error_;
+  gfx::Rect exclude_rect_;
   std::string test_url_;
 };
 
@@ -812,11 +880,190 @@ IN_PROC_BROWSER_TEST_F(CompositingRenderWidgetHostViewBrowserTestTabCapture,
 
   base::RunLoop run_loop;
   base::Callback<void(bool, const SkBitmap&)> callback =
-     base::Bind(&CompositingRenderWidgetHostViewBrowserTestTabCapture::
+      base::Bind(&CompositingRenderWidgetHostViewBrowserTestTabCapture::
                      CopyFromCompositingSurfaceCallback,
                  base::Unretained(this),
                  run_loop.QuitClosure());
   rwhvp->CopyFromCompositingSurface(bounds, out_size, callback);
+  run_loop.Run();
+}
+
+IN_PROC_BROWSER_TEST_F(CompositingRenderWidgetHostViewBrowserTestTabCapture,
+                       CopyFromCompositingSurface_ForVideoFrame) {
+  SetTestUrl("data:text/html,<!doctype html>"
+             "<div class='left'>"
+             "  <div class='right'></div>"
+             "</div>"
+             "<style>"
+             "body { padding: 0; margin: 0; }"
+             ".left { position: absolute;"
+             "        background: #0ff;"
+             "        width: 200px;"
+             "        height: 300px;"
+             "}"
+             ".right { position: absolute;"
+             "         left: 200px;"
+             "         background: #ff0;"
+             "         width: 200px;"
+             "         height: 300px;"
+             "}"
+             "</style>"
+             "<script>"
+             "  domAutomationController.setAutomationId(0);"
+             "  domAutomationController.send(\"DONE\");"
+             "</script>");
+
+  SET_UP_SURFACE_OR_PASS_TEST("\"DONE\"");
+
+  RenderViewHost* const rwh =
+      shell()->web_contents()->GetRenderViewHost();
+  RenderWidgetHostViewPort* rwhvp =
+      static_cast<RenderWidgetHostViewPort*>(rwh->GetView());
+
+  // The page is loaded in the renderer, wait for a new frame to arrive.
+  uint32 frame = rwhvp->RendererFrameNumber();
+  RenderWidgetHostImpl::From(rwh)->ScheduleComposite();
+  while (rwhvp->RendererFrameNumber() == frame)
+    GiveItSomeTime();
+
+  gfx::Rect bounds = gfx::Rect(400, 300);
+  EXPECT_LE(bounds.width(), rwhvp->GetViewBounds().width());
+  EXPECT_LE(bounds.height(), rwhvp->GetViewBounds().height());
+
+  // Grab 90x60 pixels from the center of the tab contents.
+  bounds = gfx::Rect(bounds.CenterPoint() - gfx::Vector2d(45, 30),
+                     gfx::Size(90, 60));
+
+  gfx::Size out_size = bounds.size();
+
+  SkBitmap expected_bitmap;
+  expected_bitmap.setConfig(
+      SkBitmap::kARGB_8888_Config, out_size.width(), out_size.height());
+  expected_bitmap.allocPixels();
+  // Left half is #0ff.
+  expected_bitmap.eraseARGB(255, 0, 0xff, 0xff);
+  {
+    SkAutoLockPixels lock(expected_bitmap);
+
+    // Right half is #ff0.
+    for (int i = 0; i < out_size.width() / 2; ++i) {
+      for (int j = 0; j < out_size.height(); ++j) {
+        *expected_bitmap.getAddr32(out_size.width() / 2 + i, j) =
+            SkColorSetARGB(255, 0xff, 0xff, 0x00);
+      }
+    }
+  }
+  // Allow pixel differences as long as we have the right idea.
+  SetAllowableError(0x10);
+  // Exclude the middle two columns which are blended between the two sides.
+  SetExcludeRect(gfx::Rect(out_size.width() / 2 - 1, 0, 2, out_size.height()));
+  SetExpectedCopyFromCompositingSurfaceResult(true, expected_bitmap);
+
+  scoped_refptr<media::VideoFrame> video_frame = media::VideoFrame::CreateFrame(
+      media::VideoFrame::YV12,
+      out_size,
+      gfx::Rect(out_size),
+      out_size,
+      base::TimeDelta());
+
+  base::RunLoop run_loop;
+  base::Callback<void(bool success)> callback =
+      base::Bind(&CompositingRenderWidgetHostViewBrowserTestTabCapture::
+                     CopyFromCompositingSurfaceCallbackForVideo,
+                 base::Unretained(this),
+                 video_frame,
+                 run_loop.QuitClosure());
+  rwhvp->CopyFromCompositingSurfaceToVideoFrame(bounds, video_frame, callback);
+  run_loop.Run();
+}
+
+IN_PROC_BROWSER_TEST_F(CompositingRenderWidgetHostViewBrowserTestTabCapture,
+                       CopyFromCompositingSurface_ForVideoFrame_Scaled) {
+  SetTestUrl("data:text/html,<!doctype html>"
+             "<div class='left'>"
+             "  <div class='right'></div>"
+             "</div>"
+             "<style>"
+             "body { padding: 0; margin: 0; }"
+             ".left { position: absolute;"
+             "        background: #0ff;"
+             "        width: 200px;"
+             "        height: 300px;"
+             "}"
+             ".right { position: absolute;"
+             "         left: 200px;"
+             "         background: #ff0;"
+             "         width: 200px;"
+             "         height: 300px;"
+             "}"
+             "</style>"
+             "<script>"
+             "  domAutomationController.setAutomationId(0);"
+             "  domAutomationController.send(\"DONE\");"
+             "</script>");
+
+  SET_UP_SURFACE_OR_PASS_TEST("\"DONE\"");
+
+  RenderViewHost* const rwh =
+      shell()->web_contents()->GetRenderViewHost();
+  RenderWidgetHostViewPort* rwhvp =
+      static_cast<RenderWidgetHostViewPort*>(rwh->GetView());
+
+  // The page is loaded in the renderer, wait for a new frame to arrive.
+  uint32 frame = rwhvp->RendererFrameNumber();
+  RenderWidgetHostImpl::From(rwh)->ScheduleComposite();
+  while (rwhvp->RendererFrameNumber() == frame)
+    GiveItSomeTime();
+
+  gfx::Rect bounds = gfx::Rect(400, 300);
+  EXPECT_LE(bounds.width(), rwhvp->GetViewBounds().width());
+  EXPECT_LE(bounds.height(), rwhvp->GetViewBounds().height());
+
+  // Grab 90x60 pixels from the center of the tab contents.
+  bounds = gfx::Rect(bounds.CenterPoint() - gfx::Vector2d(45, 30),
+                     gfx::Size(90, 60));
+
+  // Scale to 30 x 20 (preserve aspect ratio).
+  gfx::Size out_size(30, 20);
+
+  SkBitmap expected_bitmap;
+  expected_bitmap.setConfig(
+      SkBitmap::kARGB_8888_Config, out_size.width(), out_size.height());
+  expected_bitmap.allocPixels();
+  // Left half is #0ff.
+  expected_bitmap.eraseARGB(255, 0, 0xff, 0xff);
+  {
+    SkAutoLockPixels lock(expected_bitmap);
+
+    // Right half is #ff0.
+    for (int i = 0; i < out_size.width() / 2; ++i) {
+      for (int j = 0; j < out_size.height(); ++j) {
+        *expected_bitmap.getAddr32(out_size.width() / 2 + i, j) =
+            SkColorSetARGB(255, 0xff, 0xff, 0x00);
+      }
+    }
+  }
+  // Allow pixel differences as long as we have the right idea.
+  SetAllowableError(0x10);
+  // Exclude the middle two columns which are blended between the two sides.
+  SetExcludeRect(gfx::Rect(out_size.width() / 2 - 1, 0, 2, out_size.height()));
+  SetExpectedCopyFromCompositingSurfaceResult(true, expected_bitmap);
+
+  scoped_refptr<media::VideoFrame> video_frame = media::VideoFrame::CreateFrame(
+      media::VideoFrame::YV12,
+      out_size,
+      gfx::Rect(out_size),
+      out_size,
+      base::TimeDelta());
+
+  base::RunLoop run_loop;
+  base::Callback<void(bool success)> callback =
+      base::Bind(&CompositingRenderWidgetHostViewBrowserTestTabCapture::
+                     CopyFromCompositingSurfaceCallbackForVideo,
+                 base::Unretained(this),
+                 video_frame,
+                 run_loop.QuitClosure());
+  rwhvp->CopyFromCompositingSurfaceToVideoFrame(bounds, video_frame, callback);
   run_loop.Run();
 }
 

@@ -995,6 +995,7 @@
             'content_common',
             'test_support_content',
             '../base/base.gyp:test_support_base',
+            '../gpu/gpu.gyp:command_buffer_common',
             '../testing/gtest.gyp:gtest',
             '../ui/ui.gyp:ui',
             '../ui/gl/gl.gyp:gl',

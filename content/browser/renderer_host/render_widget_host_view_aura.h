@@ -449,6 +449,11 @@ class RenderWidgetHostViewAura
       const gfx::Size& dst_size_in_pixel,
       const base::Callback<void(bool, const SkBitmap&)>& callback,
       scoped_ptr<cc::CopyOutputResult> result);
+  static void CopyFromCompositingSurfaceHasResultForVideo(
+      base::WeakPtr<RenderWidgetHostViewAura> rwhva,
+      scoped_refptr<media::VideoFrame> video_frame,
+      const base::Callback<void(bool)>& callback,
+      scoped_ptr<cc::CopyOutputResult> result);
 
   ui::Compositor* GetCompositor();
 

@@ -126,6 +126,11 @@ class GLHelper::CopyTextureToImpl :
     CancelRequests();
   }
 
+  WebGLId ConsumeMailboxToTexture(const gpu::Mailbox& mailbox,
+                                  uint32 sync_point) {
+    return helper_->ConsumeMailboxToTexture(mailbox, sync_point);
+  }
+
   void CropScaleReadbackAndCleanTexture(
       WebGLId src_texture,
       const gfx::Size& src_size,
@@ -221,7 +226,8 @@ class GLHelper::CopyTextureToImpl :
                     bool flip_vertically);
 
     virtual void ReadbackYUV(
-        WebKit::WebGLId src_texture,
+        const gpu::Mailbox& mailbox,
+        uint32 sync_point,
         media::VideoFrame* target,
         const base::Callback<void(bool)>& callback) OVERRIDE;
 
@@ -258,7 +264,8 @@ class GLHelper::CopyTextureToImpl :
                     bool flip_vertically);
 
     virtual void ReadbackYUV(
-        WebKit::WebGLId src_texture,
+        const gpu::Mailbox& mailbox,
+        uint32 sync_point,
         media::VideoFrame* target,
         const base::Callback<void(bool)>& callback) OVERRIDE;
 
@@ -786,11 +793,16 @@ GLHelper::CopyTextureToImpl::ReadbackYUVImpl::ReadbackYUVImpl(
 
 
 void GLHelper::CopyTextureToImpl::ReadbackYUVImpl::ReadbackYUV(
-    WebKit::WebGLId src_texture,
+    const gpu::Mailbox& mailbox,
+    uint32 sync_point,
     media::VideoFrame *target,
     const base::Callback<void(bool)>& callback) {
+  WebGLId mailbox_texture =
+      copy_impl_->ConsumeMailboxToTexture(mailbox, sync_point);
+
   // Scale texture to right size.
-  scaler_.Scale(src_texture);
+  scaler_.Scale(mailbox_texture);
+  context_->deleteTexture(mailbox_texture);
 
   // Convert the scaled texture in to Y, U and V planes.
   y_.Scale(scaler_.texture());
@@ -897,11 +909,17 @@ GLHelper::CopyTextureToImpl::ReadbackYUV_MRT::ReadbackYUV_MRT(
 }
 
 void GLHelper::CopyTextureToImpl::ReadbackYUV_MRT::ReadbackYUV(
-    WebKit::WebGLId src_texture,
+    const gpu::Mailbox& mailbox,
+    uint32 sync_point,
     media::VideoFrame *target,
     const base::Callback<void(bool)>& callback) {
+  WebGLId mailbox_texture =
+      copy_impl_->ConsumeMailboxToTexture(mailbox, sync_point);
+
   // Scale texture to right size.
-  scaler_.Scale(src_texture);
+  scaler_.Scale(mailbox_texture);
+  context_->deleteTexture(mailbox_texture);
+
   std::vector<WebKit::WebGLId> outputs(2);
   // Convert the scaled texture in to Y, U and V planes.
   outputs[0] = y_.texture();
