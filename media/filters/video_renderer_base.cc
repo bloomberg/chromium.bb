@@ -453,8 +453,8 @@ void VideoRendererBase::AttemptRead_Locked() {
     case kPrerolling:
     case kPlaying:
       pending_read_ = true;
-      video_frame_stream_.ReadFrame(base::Bind(&VideoRendererBase::FrameReady,
-                                               weak_this_));
+      video_frame_stream_.Read(base::Bind(&VideoRendererBase::FrameReady,
+                                          weak_this_));
       return;
 
     case kUninitialized:

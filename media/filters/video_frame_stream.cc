@@ -54,7 +54,7 @@ void VideoFrameStream::Initialize(DemuxerStream* stream,
       &VideoFrameStream::OnDecoderSelected, weak_this_));
 }
 
-void VideoFrameStream::ReadFrame(const VideoDecoder::ReadCB& read_cb) {
+void VideoFrameStream::Read(const VideoDecoder::ReadCB& read_cb) {
   DCHECK(message_loop_->BelongsToCurrentThread());
   DCHECK(state_ == STATE_NORMAL || state_ == STATE_FLUSHING_DECODER ||
          state_ == STATE_ERROR) << state_;

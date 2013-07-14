@@ -48,8 +48,7 @@ class MEDIA_EXPORT VideoFrameStream {
   // |read_cb| is always called asynchronously. This method should only be
   // called after initialization has succeeded and must not be called during
   // any pending Reset() and/or Stop().
-  // TODO(xhwang): Rename this back to Read().
-  void ReadFrame(const VideoDecoder::ReadCB& read_cb);
+  void Read(const VideoDecoder::ReadCB& read_cb);
 
   // Resets the decoder, flushes all decoded frames and/or internal buffers,
   // fires any existing pending read callback and calls |closure| on completion.
