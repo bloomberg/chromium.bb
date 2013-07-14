@@ -28,8 +28,6 @@
 
 namespace WebCore {
 
-class RenderStyle;
-
 struct Pagination {
     enum Mode { Unpaginated, LeftToRightPaginated, RightToLeftPaginated, TopToBottomPaginated, BottomToTopPaginated };
 
@@ -55,8 +53,6 @@ struct Pagination {
     bool behavesLikeColumns;
     unsigned pageLength;
     unsigned gap;
-
-    static void setStylesForPaginationMode(Mode, RenderStyle*);
 };
 
 } // namespace WebCore
