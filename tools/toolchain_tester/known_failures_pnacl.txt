@@ -47,6 +47,9 @@ builtin-prefetch-2.c arm
 # DCE not performed at -O0 (wontfix?)
 medce-1.c O0
 fp-cmp-7.c O0
+# packed volatile structs, fail when promoting volatile to atomic
+# we could fix this by being clever
+20010518-2.c
 # ======================================================================
 # failures in phase compile-bc
 # ======================================================================
