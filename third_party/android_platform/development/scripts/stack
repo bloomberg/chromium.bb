@@ -26,6 +26,8 @@ import subprocess
 import symbol
 import sys
 
+DEFAULT_SYMROOT='/tmp/symbols'
+
 def PrintUsage():
   """Print usage and exit with error."""
   # pylint: disable-msg=C6310
