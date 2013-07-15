@@ -43,14 +43,26 @@ base::string16 GetDisplayName(int64 display_id) {
   return UTF8ToUTF16(GetDisplayManager()->GetDisplayNameForId(display_id));
 }
 
+base::string16 GetDisplaySize(int64 display_id) {
+  DisplayManager* display_manager = GetDisplayManager();
+
+  const gfx::Display* display = &display_manager->GetDisplayForId(display_id);
+  if (display_manager->IsMirrored() &&
+      display_manager->mirrored_display().id() == display_id) {
+    display = &display_manager->mirrored_display();
+  }
+
+  DCHECK(display->is_valid());
+  return UTF8ToUTF16(display->size().ToString());
+}
+
 // Returns 1-line information for the specified display, like
 // "InternalDisplay: 1280x750"
 base::string16 GetDisplayInfoLine(int64 display_id) {
   const DisplayInfo& display_info =
       GetDisplayManager()->GetDisplayInfo(display_id);
 
-  base::string16 size_text = UTF8ToUTF16(
-      display_info.size_in_pixel().ToString());
+  base::string16 size_text = GetDisplaySize(display_id);
   base::string16 display_data;
   if (display_info.has_overscan()) {
     display_data = l10n_util::GetStringFUTF16(
@@ -368,7 +380,7 @@ base::string16 TrayDisplay::GetDisplayMessageForNotification() {
       return l10n_util::GetStringFUTF16(
           IDS_ASH_STATUS_TRAY_DISPLAY_RESOLUTION_CHANGED,
           GetDisplayName(iter->first),
-          UTF8ToUTF16(iter->second.size_in_pixel().ToString()));
+          GetDisplaySize(iter->first));
     }
     if (iter->second.rotation() != old_iter->second.rotation()) {
       return l10n_util::GetStringFUTF16(
