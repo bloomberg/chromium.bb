@@ -108,6 +108,7 @@
 
 #if defined(OS_MACOSX)
 #include "chrome/browser/ui/cocoa/confirm_quit.h"
+#include "chrome/browser/ui/cocoa/extensions/browser_actions_controller_prefs.h"
 #endif
 
 #if defined(TOOLKIT_VIEWS)
@@ -380,6 +381,10 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 
 #if defined(OS_WIN)
   NetworkProfileBubble::RegisterProfilePrefs(registry);
+#endif
+
+#if defined(OS_MACOSX)
+  RegisterBrowserActionsControllerProfilePrefs(registry);
 #endif
 
   // Prefs registered only for migration (clearing or moving to a new

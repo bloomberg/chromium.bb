@@ -23,10 +23,6 @@ namespace extensions {
 class Extension;
 }
 
-namespace user_prefs {
-class PrefRegistrySyncable;
-}
-
 // Sent when the visibility of the Browser Actions changes.
 extern NSString* const kBrowserActionVisibilityChangedNotification;
 
@@ -107,9 +103,6 @@ extern NSString* const kBrowserActionVisibilityChangedNotification;
 // being hidden (fading out). Will return NO if it is not hidden or is in the
 // process of fading in.
 - (BOOL)chevronIsHidden;
-
-// Registers the user preferences used by this class.
-+ (void)registerUserPrefs:(user_prefs::PrefRegistrySyncable*)prefs;
 
 @end  // @interface BrowserActionsController
 

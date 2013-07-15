@@ -27,7 +27,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "chrome/common/pref_names.h"
-#include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -267,13 +266,6 @@ class ExtensionServiceObserverBridge : public content::NotificationObserver,
     browser_ = browser;
     profile_ = browser->profile();
 
-    // TODO(joi): Do all registrations up front.
-    if (!profile_->GetPrefs()->FindPreference(
-        prefs::kBrowserActionContainerWidth))
-      [BrowserActionsController registerUserPrefs:(
-          (user_prefs::PrefRegistrySyncable*)
-          profile_->GetPrefs()->DeprecatedGetPrefRegistry())];
-
     observer_.reset(new ExtensionServiceObserverBridge(self, browser_));
     ExtensionService* extensionService =
         extensions::ExtensionSystem::Get(profile_)->extension_service();
@@ -445,13 +437,6 @@ class ExtensionServiceObserverBridge : public content::NotificationObserver,
 
   NOTREACHED();
   return YES;
-}
-
-+ (void)registerUserPrefs:(user_prefs::PrefRegistrySyncable*)registry {
-  registry->RegisterDoublePref(
-      prefs::kBrowserActionContainerWidth,
-      0,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 #pragma mark -
