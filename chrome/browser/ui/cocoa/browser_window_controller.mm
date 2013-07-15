@@ -16,6 +16,7 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/devtools/devtools_window.h"
+#include "chrome/browser/fullscreen.h"
 #include "chrome/browser/profiles/avatar_menu_model.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
@@ -1118,7 +1119,7 @@ enum {
                     IDS_ENTER_FULLSCREEN_MAC);
             [static_cast<NSMenuItem*>(item) setTitle:menuTitle];
 
-            if (base::mac::IsOSSnowLeopard())
+            if (!chrome::mac::SupportsSystemFullscreen())
               [static_cast<NSMenuItem*>(item) setHidden:YES];
           }
           break;
@@ -2028,7 +2029,7 @@ willAnimateFromState:(BookmarkBar::State)oldState
   if (!chrome::IsCommandEnabled(browser_.get(), IDC_FULLSCREEN))
     return;
 
-  if (base::mac::IsOSLionOrLater()) {
+  if (chrome::mac::SupportsSystemFullscreen()) {
     enteredPresentationModeFromFullscreen_ = YES;
     if ([[self window] isKindOfClass:[FramedBrowserWindow class]])
       [static_cast<FramedBrowserWindow*>([self window]) toggleSystemFullScreen];
@@ -2073,8 +2074,9 @@ willAnimateFromState:(BookmarkBar::State)oldState
   fullscreenUrl_ = url;
   fullscreenBubbleType_ = bubbleType;
 
-  // Presentation mode on Snow Leopard maps directly to fullscreen mode.
-  if (base::mac::IsOSSnowLeopard()) {
+  // Presentation mode on systems without fullscreen support maps directly to
+  // fullscreen mode.
+  if (!chrome::mac::SupportsSystemFullscreen()) {
     [self setFullscreen:presentationMode];
     return;
   }

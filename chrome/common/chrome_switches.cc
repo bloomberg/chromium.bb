@@ -1482,6 +1482,11 @@ const char kPasswordStore[]                 = "password-store";
 #endif  // OS_POSIX
 
 #if defined(OS_MACOSX)
+// Forcibly disables Lion-style on newer OSes, to allow developers to test the
+// older, SnowLeopard-style fullscreen.
+const char kDisableSystemFullscreenForTesting[] =
+    "disable-system-fullscreen-for-testing";
+
 // Enables the app list OSX .app shim, for showing the app list. If the flag is
 // not present, Chrome will check if the shim exists at startup, and delete it
 // if it does.

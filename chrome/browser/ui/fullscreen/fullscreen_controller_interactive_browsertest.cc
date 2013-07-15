@@ -4,6 +4,7 @@
 
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/browser/fullscreen.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -387,7 +388,7 @@ IN_PROC_BROWSER_TEST_F(
     EXPECT_FALSE(browser()->window()->IsFullscreenWithoutChrome());
   }
 
-  if (base::mac::IsOSLionOrLater()) {
+  if (chrome::mac::SupportsSystemFullscreen()) {
     // Test that tab fullscreen mode doesn't make presentation mode the default
     // on Lion.
     FullscreenNotificationObserver fullscreen_observer;

@@ -10,6 +10,7 @@
 #import "base/mac/scoped_nsobject.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/fullscreen.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_util.h"
@@ -318,10 +319,10 @@ willPositionSheet:(NSWindow*)sheet
   // toggle button on Lion.  On non-Lion systems, the right indent needs to be
   // adjusted to make room for the new tab button when an avatar is present.
   CGFloat rightIndent = 0;
-  if (base::mac::IsOSLionOrLater()) {
+  if (base::mac::IsOSLionOrLater() &&
+      [[self window] isKindOfClass:[FramedBrowserWindow class]]) {
     FramedBrowserWindow* window =
         static_cast<FramedBrowserWindow*>([self window]);
-    DCHECK([window isKindOfClass:[FramedBrowserWindow class]]);
     rightIndent += -[window fullScreenButtonOriginAdjustment].x;
   } else if ([self shouldShowAvatar]) {
     rightIndent += kAvatarTabStripShrink;
@@ -492,14 +493,14 @@ willPositionSheet:(NSWindow*)sheet
 // Fullscreen and presentation mode methods
 
 - (BOOL)shouldShowPresentationModeToggle {
-  return base::mac::IsOSLionOrLater() && [self isFullscreen];
+  return chrome::mac::SupportsSystemFullscreen() && [self isFullscreen];
 }
 
 - (void)moveViewsForFullscreenForSnowLeopard:(BOOL)fullscreen
     regularWindow:(NSWindow*)regularWindow
     fullscreenWindow:(NSWindow*)fullscreenWindow {
-  // This method is only for Snow Leopard.
-  DCHECK(base::mac::IsOSSnowLeopard());
+  // This method is only for systems without fullscreen support.
+  DCHECK(!chrome::mac::SupportsSystemFullscreen());
 
   NSWindow* sourceWindow = fullscreen ? regularWindow : fullscreenWindow;
   NSWindow* destWindow = fullscreen ? fullscreenWindow : regularWindow;
@@ -613,7 +614,9 @@ willPositionSheet:(NSWindow*)sheet
 }
 
 - (void)enterFullscreenForSnowLeopard {
-  DCHECK(base::mac::IsOSSnowLeopard());
+  // TODO(rohitrao): This method is misnamed now, since there is a flag that
+  // enables 10.6-style fullscreen on newer OSes.
+  DCHECK(!chrome::mac::SupportsSystemFullscreen());
 
   // Fade to black.
   const CGDisplayReservationInterval kFadeDurationSeconds = 0.6;
@@ -650,7 +653,9 @@ willPositionSheet:(NSWindow*)sheet
 }
 
 - (void)exitFullscreenForSnowLeopard {
-  DCHECK(base::mac::IsOSSnowLeopard());
+  // TODO(rohitrao): This method is misnamed now, since there is a flag that
+  // enables 10.6-style fullscreen on newer OSes.
+  DCHECK(!chrome::mac::SupportsSystemFullscreen());
 
   // Fade to black.
   const CGDisplayReservationInterval kFadeDurationSeconds = 0.6;
@@ -779,7 +784,7 @@ willPositionSheet:(NSWindow*)sheet
 }
 
 - (void)windowDidEnterFullScreen:(NSNotification*)notification {
-  if (base::mac::IsOSLionOrLater())
+  if (chrome::mac::SupportsSystemFullscreen())
     [self deregisterForContentViewResizeNotifications];
   enteringFullscreen_ = NO;
   enteringPresentationMode_ = NO;
@@ -788,14 +793,14 @@ willPositionSheet:(NSWindow*)sheet
 }
 
 - (void)windowWillExitFullScreen:(NSNotification*)notification {
-  if (base::mac::IsOSLionOrLater())
+  if (chrome::mac::SupportsSystemFullscreen())
     [self registerForContentViewResizeNotifications];
   [self destroyFullscreenExitBubbleIfNecessary];
   [self setPresentationModeInternal:NO forceDropdown:NO];
 }
 
 - (void)windowDidExitFullScreen:(NSNotification*)notification {
-  if (base::mac::IsOSLionOrLater())
+  if (chrome::mac::SupportsSystemFullscreen())
     [self deregisterForContentViewResizeNotifications];
   browser_->WindowFullscreenStateChanged();
 }

@@ -412,6 +412,7 @@ extern const char kPasswordStore[];
 #endif
 
 #if defined(OS_MACOSX)
+extern const char kDisableSystemFullscreenForTesting[];
 extern const char kEnableAppListShim[];
 extern const char kEnableAppShims[];
 extern const char kEnableExposeForTabs[];

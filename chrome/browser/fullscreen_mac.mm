@@ -6,6 +6,10 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/command_line.h"
+#include "base/mac/mac_util.h"
+#include "chrome/common/chrome_switches.h"
+
 // Replicate specific 10.7 SDK declarations for building with prior SDKs.
 #if !defined(MAC_OS_X_VERSION_10_7) || \
     MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
@@ -40,3 +44,17 @@ bool IsFullScreenMode() {
 
   return false;
 }
+
+namespace chrome {
+namespace mac {
+
+bool SupportsSystemFullscreen() {
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kDisableSystemFullscreenForTesting))
+    return false;
+
+  return base::mac::IsOSLionOrLater();
+}
+
+}  // namespace mac
+}  // namespace chrome

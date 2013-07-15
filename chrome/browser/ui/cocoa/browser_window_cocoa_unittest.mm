@@ -7,6 +7,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/fullscreen.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #import "chrome/browser/ui/cocoa/browser_window_cocoa.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
@@ -94,7 +95,7 @@ TEST_F(BrowserWindowCocoaTest, TestFullscreen) {
 }
 
 TEST_F(BrowserWindowCocoaTest, TestFullscreenWithChrome) {
-  if (!base::mac::IsOSLionOrLater())
+  if (!chrome::mac::SupportsSystemFullscreen())
     return;
   // Wrap the FakeController in a scoped_nsobject instead of autoreleasing in
   // windowWillClose: because we never actually open a window in this test (so

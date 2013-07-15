@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/browser_commands_mac.h"
 
 #include "base/mac/mac_util.h"
+#include "chrome/browser/fullscreen.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
@@ -12,7 +13,7 @@
 namespace chrome {
 
 void ToggleFullscreenWithChromeOrFallback(Browser* browser) {
-  if (base::mac::IsOSLionOrLater())
+  if (chrome::mac::SupportsSystemFullscreen())
     browser->fullscreen_controller()->ToggleFullscreenWithChrome();
   else
     ToggleFullscreenMode(browser);

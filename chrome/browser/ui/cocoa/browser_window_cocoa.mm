@@ -17,6 +17,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/extensions/tab_helper.h"
+#include "chrome/browser/fullscreen.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/shell_integration.h"
@@ -624,7 +625,7 @@ void BrowserWindowCocoa::OpenTabpose() {
 }
 
 void BrowserWindowCocoa::EnterFullscreenWithChrome() {
-  CHECK(base::mac::IsOSLionOrLater());
+  CHECK(chrome::mac::SupportsSystemFullscreen());
   if ([controller_ inPresentationMode])
     [controller_ exitPresentationMode];
   else
@@ -652,7 +653,7 @@ gfx::Rect BrowserWindowCocoa::GetInstantBounds() {
 WindowOpenDisposition BrowserWindowCocoa::GetDispositionForPopupBounds(
     const gfx::Rect& bounds) {
   // In Lion fullscreen mode, convert popups into tabs.
-  if (base::mac::IsOSLionOrLater() && IsFullscreen())
+  if (chrome::mac::SupportsSystemFullscreen() && IsFullscreen())
     return NEW_FOREGROUND_TAB;
   return NEW_POPUP;
 }

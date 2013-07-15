@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #import "base/mac/mac_util.h"
+#include "chrome/browser/fullscreen.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "chrome/common/chrome_switches.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
@@ -421,7 +422,7 @@ const CGFloat kFloatingBarVerticalOffset = 22;
 }
 
 - (BOOL)shouldToggleMenuBar {
-  return base::mac::IsOSSnowLeopard() &&
+  return !chrome::mac::SupportsSystemFullscreen() &&
          [self isWindowOnPrimaryScreen] &&
          [[browserController_ window] isMainWindow];
 }
