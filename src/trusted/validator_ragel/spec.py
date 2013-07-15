@@ -455,6 +455,88 @@ def _InstructionNameIn(name, candidates):
   return re.match('(%s)[bwlq]?$' % '|'.join(candidates), name) is not None
 
 
+_X87_INSTRUCTIONS = set([
+  'f2xm1',
+  'fabs',
+  'fadd', 'fadds', 'faddl', 'faddp',
+  'fiadd', 'fiaddl',
+  'fbld',
+  'fbstp',
+  'fchs',
+  'fnclex',
+  'fcmovb', 'fcmovbe', 'fcmove', 'fcmovnb',
+  'fcmovnbe', 'fcmovne', 'fcmovnu', 'fcmovu',
+  'fcom', 'fcoms', 'fcoml',
+  'fcomp', 'fcomps', 'fcompl',
+  'fcompp',
+  'fcomi',
+  'fcomip',
+  'fcos',
+  'fdecstp',
+  'fdiv', 'fdivs', 'fdivl',
+  'fdivp',
+  'fdivr', 'fdivrs', 'fdivrl',
+  'fdivrp',
+  'fidiv', 'fidivl',
+  'fidivp',
+  'fidivr', 'fidivrl',
+  'ffree',
+  'ficom', 'ficoml',
+  'ficomp', 'ficompl',
+  'fild', 'fildl', 'fildll',
+  'fincstp',
+  'fninit',
+  'fist', 'fistl',
+  'fistp', 'fistpl', 'fistpll',
+  'fisttp', 'fisttpl', 'fisttpll',
+  'fld', 'flds', 'fldl', 'fldt',
+  'fld1',
+  'fldcw',
+  'fldenv', 'fldenvs',
+  'fldl2e',
+  'fldl2t',
+  'fldlg2',
+  'fldln2',
+  'fldpi',
+  'fldz',
+  'fmul', 'fmuls', 'fmull',
+  'fmulp',
+  'fimul', 'fimull',
+  'fnop',
+  'fpatan',
+  'fprem',
+  'fprem1',
+  'fptan',
+  'frndint',
+  'frstor', 'frstors',
+  'fnsave', 'fnsaves',
+  'fscale',
+  'fsin',
+  'fsincos',
+  'fsqrt',
+  'fst', 'fsts', 'fstl',
+  'fstp', 'fstps', 'fstpl', 'fstpt',
+  'fnstcw',
+  'fnstenv', 'fnstenvs',
+  'fnstsw',
+  'fsub', 'fsubs', 'fsubl',
+  'fsubp',
+  'fsubr', 'fsubrs', 'fsubrl',
+  'fsubrp',
+  'fisub', 'fisubl',
+  'fisubr', 'fisubrl',
+  'ftst',
+  'fucom', 'fucomp', 'fucompp',
+  'fucomi', 'fucomip',
+  'fwait',
+  'fxam',
+  'fxch',
+  'fxtract',
+  'fyl2x',
+  'fyl2xp1',
+])
+
+
 def ValidateRegularInstruction(instruction, bitness):
   """Validate regular instruction (not direct jump).
 
@@ -572,6 +654,9 @@ def ValidateRegularInstruction(instruction, bitness):
       return Condition(), Condition()
 
     elif re.match(r'(cmov|set)%s$' % _CONDITION_SUFFIX_RE, name):
+      return Condition(), Condition()
+
+    elif name in _X87_INSTRUCTIONS:
       return Condition(), Condition()
 
     else:
@@ -733,6 +818,13 @@ def ValidateRegularInstruction(instruction, bitness):
     elif re.match(r'set%s$' % _CONDITION_SUFFIX_RE, name):
       assert len(ops) == 1
       write_ops = ops
+
+    elif name in _X87_INSTRUCTIONS:
+      assert 0 <= len(ops) <= 2
+      # Actually, x87 instructions can write to x87 registers and to memory,
+      # and there is even one instruction (fstsw/fnstsw) that writes to ax.
+      # But these writes do not matter for sandboxing purposes.
+      write_ops = []
 
     else:
       raise DoNotMatchError(instruction)

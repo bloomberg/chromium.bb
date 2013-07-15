@@ -23,6 +23,8 @@
      e:	41 db 2c 07                                  	fldt   (%r15,%rax,1)
 @rdfa_output:
   return code: 0
+@spec:
+  SAFE
 ----------------------------------------------------------------------
 @hex:
   # Load integer value.
@@ -42,6 +44,8 @@
      8:	41 df 2c 07                                  	fildll (%r15,%rax,1)
 @rdfa_output:
   return code: 0
+@spec:
+  SAFE
 ----------------------------------------------------------------------
 @hex:
   # Store floating point value.
@@ -82,6 +86,8 @@
     1a:	41 db 3c 07                                  	fstpt  (%r15,%rax,1)
 @rdfa_output:
   return code: 0
+@spec:
+  SAFE
 ----------------------------------------------------------------------
 @hex:
   # Store integer value
@@ -122,6 +128,8 @@
     1a:	41 df 3c 07                                  	fistpll (%r15,%rax,1)
 @rdfa_output:
   return code: 0
+@spec:
+  SAFE
 ----------------------------------------------------------------------
 @hex:
   # Basic arithmetic
@@ -148,3 +156,5 @@
      c:	41 dc 04 07                                  	faddl  (%r15,%rax,1)
 @rdfa_output:
   return code: 0
+@spec:
+  SAFE

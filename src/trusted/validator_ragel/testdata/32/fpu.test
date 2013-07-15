@@ -1,70 +1,77 @@
 @hex:
   # Load floating point value
-  # flds (%eax)
   D9 00
-  # fldl (%eax)
   DD 00
-  # fldt (%eax)
   DB 28
-  
-  # Load integer value
-  # fildl (%eax)
-  DB 00
-  # fildq (%eax)
-  DF 28
-  
-  # Store floating point value
-  # fsts (%eax)
-  D9 10
-  # fstl (%eax)
-  DD 10
-  # fstps (%eax)
-  D9 18
-  # fstpl (%eax)
-  DD 18
-  # fstpt (%eax)
-  DB 38
-  
-  # Store integer value
-  # fists (%eax)
-  DF 10
-  # fistl (%eax)
-  DB 10
-  # fistps (%eax)
-  DF 18
-  # fistpl (%eax)
-  DB 18
-  # fistpq (%eax)
-  DF 38
-  
-  # Basic arithmetic
-  # fadd %st(1),%st(0)
-  D8 C1
-  # faddp %st(0),%st(1)
-  DE C1
-  # fadds (%eax)
-  D8 00
-  # faddl (%eax)
-  DC 00
 @dis:
      0:	d9 00                                        	flds   (%eax)
      2:	dd 00                                        	fldl   (%eax)
      4:	db 28                                        	fldt   (%eax)
-     6:	db 00                                        	fildl  (%eax)
-     8:	df 28                                        	fildll (%eax)
-     a:	d9 10                                        	fsts   (%eax)
-     c:	dd 10                                        	fstl   (%eax)
-     e:	d9 18                                        	fstps  (%eax)
-    10:	dd 18                                        	fstpl  (%eax)
-    12:	db 38                                        	fstpt  (%eax)
-    14:	df 10                                        	fist   (%eax)
-    16:	db 10                                        	fistl  (%eax)
-    18:	df 18                                        	fistp  (%eax)
-    1a:	db 18                                        	fistpl (%eax)
-    1c:	df 38                                        	fistpll (%eax)
-    1e:	d8 c1                                        	fadd   %st(1),%st
-    20:	de c1                                        	faddp  %st,%st(1)
-    22:	d8 00                                        	fadds  (%eax)
-    24:	dc 00                                        	faddl  (%eax)
 @rdfa_output:
   return code: 0
+@spec:
+  SAFE
+----------------------------------------------------------------------
+@hex:
+  # Load integer value
+  DB 00
+  DF 28
+@dis:
+     0:	db 00                                        	fildl  (%eax)
+     2:	df 28                                        	fildll (%eax)
+@rdfa_output:
+  return code: 0
+@spec:
+  SAFE
+----------------------------------------------------------------------
+@hex:
+  # Store floating point value
+  D9 10
+  DD 10
+  D9 18
+  DD 18
+  DB 38
+@dis:
+     0:	d9 10                                        	fsts   (%eax)
+     2:	dd 10                                        	fstl   (%eax)
+     4:	d9 18                                        	fstps  (%eax)
+     6:	dd 18                                        	fstpl  (%eax)
+     8:	db 38                                        	fstpt  (%eax)
+@rdfa_output:
+  return code: 0
+@spec:
+  SAFE
+----------------------------------------------------------------------
+@hex:
+  # Store integer value
+  DF 10
+  DB 10
+  DF 18
+  DB 18
+  DF 38
+@dis:
+     0:	df 10                                        	fist   (%eax)
+     2:	db 10                                        	fistl  (%eax)
+     4:	df 18                                        	fistp  (%eax)
+     6:	db 18                                        	fistpl (%eax)
+     8:	df 38                                        	fistpll (%eax)
+@rdfa_output:
+  return code: 0
+@spec:
+  SAFE
+----------------------------------------------------------------------
+@hex:
+  # Basic arithmetic
+  D8 C1
+  DE C1
+  D8 00
+  DC 00
+@dis:
+     0:	d8 c1                                        	fadd   %st(1),%st
+     2:	de c1                                        	faddp  %st,%st(1)
+     4:	d8 00                                        	fadds  (%eax)
+     6:	dc 00                                        	faddl  (%eax)
+@rdfa_output:
+  return code: 0
+@spec:
+  SAFE
