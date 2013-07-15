@@ -401,6 +401,7 @@ Document::Document(Frame* frame, const KURL& url, DocumentClassFlags documentCla
     , m_inStyleRecalc(false)
     , m_closeAfterStyleRecalc(false)
     , m_gotoAnchorNeededAfterStylesheetsLoad(false)
+    , m_pendingStyleRecalcShouldForce(false)
     , m_containsValidityStyleRules(false)
     , m_updateFocusAppearanceRestoresSelection(false)
     , m_ignoreDestructiveWriteCount(0)
@@ -1130,7 +1131,7 @@ void Document::setContentLanguage(const String& language)
     m_contentLanguage = language;
 
     // Document's style depends on the content language.
-    setNeedsStyleRecalc();
+    scheduleForcedStyleRecalc();
 }
 
 void Document::setXMLVersion(const String& version, ExceptionCode& ec)
@@ -1526,6 +1527,12 @@ PassRefPtr<TreeWalker> Document::createTreeWalker(Node* root, unsigned whatToSho
     return TreeWalker::create(root, whatToShow, filter);
 }
 
+void Document::scheduleForcedStyleRecalc()
+{
+    m_pendingStyleRecalcShouldForce = true;
+    scheduleStyleRecalc();
+}
+
 void Document::scheduleStyleRecalc()
 {
     if (shouldDisplaySeamlesslyWithParent()) {
@@ -1538,7 +1545,7 @@ void Document::scheduleStyleRecalc()
     if (m_styleRecalcTimer.isActive())
         return;
 
-    ASSERT(needsStyleRecalc() || childNeedsStyleRecalc());
+    ASSERT(childNeedsStyleRecalc() || m_pendingStyleRecalcShouldForce);
 
     m_styleRecalcTimer.startOneShot(0);
 
@@ -1547,9 +1554,10 @@ void Document::scheduleStyleRecalc()
 
 void Document::unscheduleStyleRecalc()
 {
-    ASSERT(!needsStyleRecalc() && !childNeedsStyleRecalc());
+    ASSERT(!childNeedsStyleRecalc());
 
     m_styleRecalcTimer.stop();
+    m_pendingStyleRecalcShouldForce = false;
 }
 
 bool Document::hasPendingStyleRecalc() const
@@ -1559,12 +1567,17 @@ bool Document::hasPendingStyleRecalc() const
 
 bool Document::hasPendingForcedStyleRecalc() const
 {
-    return hasPendingStyleRecalc() && styleChangeType() == SubtreeStyleChange;
+    return m_styleRecalcTimer.isActive() && m_pendingStyleRecalcShouldForce;
 }
 
 void Document::styleRecalcTimerFired(Timer<Document>*)
 {
     updateStyleIfNeeded();
+}
+
+bool Document::childNeedsAndNotInStyleRecalc()
+{
+    return childNeedsStyleRecalc() && !m_inStyleRecalc;
 }
 
 void Document::recalcStyle(StyleChange change)
@@ -1610,7 +1623,7 @@ void Document::recalcStyle(StyleChange change)
         if (!renderer() || !renderArena())
             goto bailOut;
 
-        if (styleChangeType() == SubtreeStyleChange)
+        if (m_pendingStyleRecalcShouldForce)
             change = Force;
 
         // Recalculating the root style (on the document) is not needed in the common case.
@@ -1639,11 +1652,6 @@ void Document::recalcStyle(StyleChange change)
         clearNeedsStyleRecalc();
         clearChildNeedsStyleRecalc();
         unscheduleStyleRecalc();
-
-        // FIXME: SVG <use> element can schedule a recalc in the middle of an already running one.
-        // See DocumentStyleSheetCollection::updateActiveStyleSheets.
-        if (m_styleSheetCollection->needsUpdateActiveStylesheetsOnStyleRecalc())
-            setNeedsStyleRecalc();
 
         m_inStyleRecalc = false;
 
@@ -1677,7 +1685,7 @@ void Document::updateStyleIfNeeded()
     ASSERT(isMainThread());
     ASSERT(!view() || (!view()->isInLayout() && !view()->isPainting()));
 
-    if (!needsStyleRecalc() && !childNeedsStyleRecalc())
+    if (!m_pendingStyleRecalcShouldForce && !childNeedsStyleRecalc())
         return;
 
     AnimationUpdateBlock animationUpdateBlock(m_frame ? m_frame->animation() : 0);
@@ -1997,7 +2005,7 @@ void Document::setVisuallyOrdered()
     // FIXME: How is possible to not have a renderer here?
     if (renderer())
         renderer()->style()->setRTLOrdering(VisualOrder);
-    setNeedsStyleRecalc();
+    scheduleForcedStyleRecalc();
 }
 
 PassRefPtr<DocumentParser> Document::createParser()
@@ -2972,7 +2980,7 @@ void Document::styleResolverChanged(StyleResolverUpdateType updateType, StyleRes
     bool needsRecalc = m_styleSheetCollection->updateActiveStyleSheets(updateMode);
 
     if (updateType >= DeferRecalcStyle) {
-        setNeedsStyleRecalc();
+        scheduleForcedStyleRecalc();
         return;
     }
 
@@ -3911,7 +3919,7 @@ void Document::setDesignMode(InheritedBool value)
 {
     m_designMode = value;
     for (Frame* frame = m_frame; frame && frame->document(); frame = frame->tree()->traverseNext(m_frame))
-        frame->document()->setNeedsStyleRecalc();
+        frame->document()->scheduleForcedStyleRecalc();
 }
 
 Document::InheritedBool Document::getDesignMode() const
