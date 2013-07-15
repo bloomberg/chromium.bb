@@ -27,7 +27,6 @@
  */
 
 #include "config.h"
-
 #include "core/inspector/InspectorDatabaseAgent.h"
 
 #include "InspectorFrontend.h"
@@ -50,8 +49,7 @@
 #include "modules/webdatabase/SQLTransaction.h"
 #include "modules/webdatabase/SQLTransactionCallback.h"
 #include "modules/webdatabase/SQLTransactionErrorCallback.h"
-
-#include <wtf/Vector.h>
+#include "wtf/Vector.h"
 
 typedef WebCore::InspectorBackendDispatcher::DatabaseCommandHandler::ExecuteSQLCallback ExecuteSQLCallback;
 

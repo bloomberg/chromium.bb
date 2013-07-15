@@ -31,12 +31,10 @@
 #ifndef InspectorInputAgent_h
 #define InspectorInputAgent_h
 
-
 #include "core/inspector/InspectorBaseAgent.h"
-
-#include <wtf/Noncopyable.h>
-#include <wtf/PassOwnPtr.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/Noncopyable.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 class InspectorClient;

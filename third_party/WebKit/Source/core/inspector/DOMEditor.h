@@ -32,8 +32,7 @@
 #define DOMEditor_h
 
 #include "core/dom/ExceptionCode.h"
-
-#include <wtf/text/WTFString.h>
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

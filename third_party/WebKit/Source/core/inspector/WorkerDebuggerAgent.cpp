@@ -29,13 +29,12 @@
  */
 
 #include "config.h"
-
 #include "core/inspector/WorkerDebuggerAgent.h"
 
 #include "bindings/v8/ScriptDebugServer.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerThread.h"
-#include <wtf/MessageQueue.h>
+#include "wtf/MessageQueue.h"
 
 namespace WebCore {
 

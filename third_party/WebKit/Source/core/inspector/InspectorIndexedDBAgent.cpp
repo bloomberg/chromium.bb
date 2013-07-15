@@ -29,7 +29,6 @@
  */
 
 #include "config.h"
-
 #include "core/inspector/InspectorIndexedDBAgent.h"
 
 #include "bindings/v8/ExceptionState.h"
@@ -60,8 +59,7 @@
 #include "modules/indexeddb/IDBRequest.h"
 #include "modules/indexeddb/IDBTransaction.h"
 #include "weborigin/SecurityOrigin.h"
-
-#include <wtf/Vector.h>
+#include "wtf/Vector.h"
 
 using WebCore::TypeBuilder::Array;
 using WebCore::TypeBuilder::IndexedDB::DatabaseWithObjectStores;

@@ -26,7 +26,7 @@
 #ifndef InspectorFrontendChannel_h
 #define InspectorFrontendChannel_h
 
-#include <wtf/Forward.h>
+#include "wtf/Forward.h"
 
 namespace WebCore {
 

@@ -34,7 +34,7 @@
 #include "core/loader/cache/CachedResource.h"
 #include "core/platform/SharedBuffer.h"
 #include "core/platform/network/ResourceResponse.h"
-#include <wtf/MemoryInstrumentationHashMap.h>
+#include "wtf/MemoryInstrumentationHashMap.h"
 
 namespace {
 // 100MB

@@ -31,11 +31,10 @@
 #ifndef InspectorMemoryAgent_h
 #define InspectorMemoryAgent_h
 
-
 #include "InspectorFrontend.h"
 #include "core/inspector/InspectorBaseAgent.h"
-#include <wtf/PassOwnPtr.h>
-#include <wtf/RefPtr.h>
+#include "wtf/PassOwnPtr.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 

@@ -32,8 +32,8 @@
 #define InspectorIndexedDBAgent_h
 
 #include "core/inspector/InspectorBaseAgent.h"
-#include <wtf/PassOwnPtr.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/PassOwnPtr.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

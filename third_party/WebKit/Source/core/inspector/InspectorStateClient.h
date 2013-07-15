@@ -26,7 +26,7 @@
 #ifndef InspectorStateClient_h
 #define InspectorStateClient_h
 
-#include <wtf/Forward.h>
+#include "wtf/Forward.h"
 
 namespace WebCore {
 

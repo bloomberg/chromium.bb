@@ -31,8 +31,8 @@
 #ifndef InspectorFrontendClient_h
 #define InspectorFrontendClient_h
 
-#include <wtf/Forward.h>
-#include <wtf/Vector.h>
+#include "wtf/Forward.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

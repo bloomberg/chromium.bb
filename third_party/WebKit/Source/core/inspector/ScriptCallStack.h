@@ -32,11 +32,10 @@
 #define ScriptCallStack_h
 
 #include "InspectorTypeBuilder.h"
-
 #include "core/inspector/ScriptCallFrame.h"
-#include <wtf/Forward.h>
-#include <wtf/RefCounted.h>
-#include <wtf/Vector.h>
+#include "wtf/Forward.h"
+#include "wtf/RefCounted.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

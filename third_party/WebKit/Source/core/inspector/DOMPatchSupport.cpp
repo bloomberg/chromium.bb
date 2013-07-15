@@ -29,8 +29,6 @@
  */
 
 #include "config.h"
-
-
 #include "core/inspector/DOMPatchSupport.h"
 
 #include "HTMLNames.h"
@@ -44,13 +42,12 @@
 #include "core/inspector/DOMEditor.h"
 #include "core/inspector/InspectorHistory.h"
 #include "core/xml/parser/XMLDocumentParser.h"
-
-#include <wtf/Deque.h>
-#include <wtf/HashTraits.h>
-#include <wtf/RefPtr.h>
-#include <wtf/SHA1.h>
-#include <wtf/text/Base64.h>
-#include <wtf/text/CString.h>
+#include "wtf/Deque.h"
+#include "wtf/HashTraits.h"
+#include "wtf/RefPtr.h"
+#include "wtf/SHA1.h"
+#include "wtf/text/Base64.h"
+#include "wtf/text/CString.h"
 
 using namespace std;
 

@@ -29,8 +29,6 @@
  */
 
 #include "config.h"
-
-
 #include "core/inspector/DOMEditor.h"
 
 #include "core/dom/DOMException.h"
@@ -38,12 +36,10 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/Node.h"
 #include "core/dom/Text.h"
+#include "core/editing/markup.h"
 #include "core/inspector/DOMPatchSupport.h"
 #include "core/inspector/InspectorHistory.h"
-
-#include "core/editing/markup.h"
-
-#include <wtf/RefPtr.h>
+#include "wtf/RefPtr.h"
 
 using namespace std;
 

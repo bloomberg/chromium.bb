@@ -32,11 +32,11 @@
 #define WorkerInspectorController_h
 
 #include "core/inspector/InspectorBaseAgent.h"
-#include <wtf/FastAllocBase.h>
-#include <wtf/Forward.h>
-#include <wtf/Noncopyable.h>
-#include <wtf/OwnPtr.h>
-#include <wtf/RefPtr.h>
+#include "wtf/FastAllocBase.h"
+#include "wtf/Forward.h"
+#include "wtf/Noncopyable.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 

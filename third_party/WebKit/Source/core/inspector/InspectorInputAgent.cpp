@@ -43,9 +43,8 @@
 #include "core/platform/graphics/IntPoint.h"
 #include "core/platform/graphics/IntRect.h"
 #include "core/platform/graphics/IntSize.h"
-
-#include <wtf/CurrentTime.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/CurrentTime.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

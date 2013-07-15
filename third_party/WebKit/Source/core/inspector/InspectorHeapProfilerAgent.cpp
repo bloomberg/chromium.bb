@@ -37,8 +37,8 @@
 #include "core/inspector/InjectedScriptHost.h"
 #include "core/inspector/InspectorState.h"
 #include "core/platform/Timer.h"
-#include <wtf/CurrentTime.h>
-#include <wtf/MemoryInstrumentationHashMap.h>
+#include "wtf/CurrentTime.h"
+#include "wtf/MemoryInstrumentationHashMap.h"
 
 namespace WebCore {
 

@@ -115,10 +115,10 @@ template_instrumenting_agents_h = string.Template("""// Code generated from Insp
 #ifndef InstrumentingAgentsInl_h
 #define InstrumentingAgentsInl_h
 
-#include <wtf/FastAllocBase.h>
-#include <wtf/Noncopyable.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
+#include "wtf/FastAllocBase.h"
+#include "wtf/Noncopyable.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 

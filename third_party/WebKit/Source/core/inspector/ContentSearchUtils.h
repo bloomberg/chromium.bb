@@ -29,12 +29,11 @@
 #ifndef ContentSearchUtils_h
 #define ContentSearchUtils_h
 
-
 #include "InspectorTypeBuilder.h"
-#include <wtf/Vector.h>
-#include <wtf/PassOwnPtr.h>
-#include <wtf/text/TextPosition.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/PassOwnPtr.h"
+#include "wtf/Vector.h"
+#include "wtf/text/TextPosition.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
