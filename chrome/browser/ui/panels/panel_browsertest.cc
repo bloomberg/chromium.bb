@@ -1324,10 +1324,20 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CreateInactiveSwitchToActive) {
   panel->Close();
 }
 
+// TODO(dimich): try/enable on other platforms. See bug 103253 for details on
+// why this is disabled on windows.
+#if defined(OS_MACOSX)
+#define MAYBE_MinimizeTwoPanelsWithoutTabbedWindow \
+    MinimizeTwoPanelsWithoutTabbedWindow
+#else
+#define MAYBE_MinimizeTwoPanelsWithoutTabbedWindow \
+    DISABLED_MinimizeTwoPanelsWithoutTabbedWindow
+#endif
+
 // When there are 2 panels and no chrome window, minimizing one panel does
 // not expand/focuses another.
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
-                       MinimizeTwoPanelsWithoutTabbedWindow) {
+                       MAYBE_MinimizeTwoPanelsWithoutTabbedWindow) {
   CreatePanelParams params("Initially Inactive", gfx::Rect(), SHOW_AS_INACTIVE);
   Panel* panel1 = CreatePanelWithParams(params);
   Panel* panel2 = CreatePanelWithParams(params);
