@@ -70,12 +70,10 @@ void StyleResolverState::clear()
 void StyleResolverState::initForStyleResolve(const Document* newDocument, Element* newElement, RenderStyle* parentStyle, RenderRegion* regionForStyling)
 {
     ASSERT(!element() || document() == newDocument);
-    if (newElement != element()) {
-        if (newElement)
-            m_elementContext = ElementResolveContext(newElement);
-        else
-            m_elementContext = ElementResolveContext();
-    }
+    if (newElement)
+        m_elementContext = ElementResolveContext(newElement);
+    else
+        m_elementContext = ElementResolveContext();
 
     m_regionForStyling = regionForStyling;
 
