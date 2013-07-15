@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "cc/base/math_util.h"
 #include "cc/base/util.h"
+#include "cc/debug/benchmark_instrumentation.h"
 #include "cc/debug/rendering_stats_instrumentation.h"
 #include "cc/debug/traced_picture.h"
 #include "cc/debug/traced_value.h"
@@ -184,11 +185,10 @@ void Picture::CloneForDrawing(int num_threads) {
 void Picture::Record(ContentLayerClient* painter,
                      const SkTileGridPicture::TileGridInfo& tile_grid_info,
                      RenderingStatsInstrumentation* stats_instrumentation) {
-  // If you change the name of this event or its arguments, please update
-  // tools/perf/perf_tools/rasterize_and_record_benchmark.py as well.
-  TRACE_EVENT2("cc", "Picture::Record",
-               "width", layer_rect_.width(),
-               "height", layer_rect_.height());
+  TRACE_EVENT2(benchmark_instrumentation::kCategory,
+               benchmark_instrumentation::kPictureRecord,
+               benchmark_instrumentation::kWidth, layer_rect_.width(),
+               benchmark_instrumentation::kHeight, layer_rect_.height());
 
   DCHECK(!tile_grid_info.fTileInterval.isEmpty());
   picture_ = skia::AdoptRef(new SkTileGridPicture(
@@ -291,10 +291,10 @@ void Picture::Raster(
     SkDrawPictureCallback* callback,
     gfx::Rect content_rect,
     float contents_scale) {
-  // If you change the name of this event or its arguments, please update
-  // tools/perf/perf_tools/rasterize_and_record_benchmark.py as well.
-  TRACE_EVENT_BEGIN1("cc", "Picture::Raster",
-    "data", AsTraceableRasterData(content_rect, contents_scale));
+  TRACE_EVENT_BEGIN1(benchmark_instrumentation::kCategory,
+                     benchmark_instrumentation::kPictureRaster,
+                     "data",
+                     AsTraceableRasterData(content_rect, contents_scale));
 
   DCHECK(picture_);
 
@@ -306,10 +306,10 @@ void Picture::Raster(
   SkIRect bounds;
   canvas->getClipDeviceBounds(&bounds);
   canvas->restore();
-  // If you change the name of this event or its arguments, please update
-  // tools/perf/perf_tools/rasterize_and_record_benchmark.py as well.
-  TRACE_EVENT_END1("cc", "Picture::Raster",
-                   "num_pixels_rasterized", bounds.width() * bounds.height());
+  TRACE_EVENT_END1(benchmark_instrumentation::kCategory,
+                   benchmark_instrumentation::kPictureRaster,
+                   benchmark_instrumentation::kNumPixelsRasterized,
+                   bounds.width() * bounds.height());
 }
 
 void Picture::Replay(SkCanvas* canvas) {

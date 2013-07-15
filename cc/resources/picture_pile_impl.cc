@@ -7,6 +7,7 @@
 
 #include "base/debug/trace_event.h"
 #include "cc/base/region.h"
+#include "cc/debug/benchmark_instrumentation.h"
 #include "cc/debug/debug_colors.h"
 #include "cc/resources/picture_pile_impl.h"
 #include "skia/ext/analysis_canvas.h"
@@ -197,6 +198,8 @@ void PicturePileImpl::RasterCommon(
           base::TimeDelta::FromInternalValue(std::numeric_limits<int64>::max());
       int repeat_count = std::max(1, slow_down_raster_scale_factor_for_debug_);
 
+      TRACE_EVENT0(benchmark_instrumentation::kCategory,
+                   benchmark_instrumentation::kRasterLoop);
       for (int j = 0; j < repeat_count; ++j) {
         base::TimeTicks start_time;
         if (raster_stats)

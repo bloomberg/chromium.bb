@@ -7,6 +7,7 @@
 #include "base/json/json_writer.h"
 #include "base/metrics/histogram.h"
 #include "base/values.h"
+#include "cc/debug/benchmark_instrumentation.h"
 #include "cc/debug/devtools_instrumentation.h"
 #include "cc/debug/traced_value.h"
 #include "cc/resources/picture_pile_impl.h"
@@ -89,12 +90,10 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
   }
 
   bool RunRasterOnThread(SkDevice* device, unsigned thread_index) {
-    // If you change the name of this event or its arguments, please update
-    // tools/perf/perf_tools/rasterize_and_record_benchmark.py as well.
     TRACE_EVENT2(
-        "cc",
-        "RasterWorkerPoolTaskImpl::RunRasterOnThread",
-        "data",
+        benchmark_instrumentation::kCategory,
+        benchmark_instrumentation::kRunRasterOnThread,
+        benchmark_instrumentation::kData,
         TracedValue::FromValue(DataAsValue().release()),
         "raster_mode",
         TracedValue::FromValue(RasterModeAsValue(raster_mode_).release()));

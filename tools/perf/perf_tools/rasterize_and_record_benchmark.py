@@ -45,30 +45,32 @@ class StatsCollector(object):
     for event in self.timeline.GetAllEventsOfName(
         "RasterWorkerPoolTaskImpl::RunRasterOnThread"):
       if event.args["data"]["source_frame_number"] == frame_number:
-        best_rasterize_time = float("inf")
-        for child in event.GetAllSubSlices():
-          if child.name == "Picture::Raster":
-            best_rasterize_time = min(best_rasterize_time, child.duration)
-            if "num_pixels_rasterized" in child.args:
+        for raster_loop_event in event.GetAllSubSlicesOfName("RasterLoop"):
+          best_rasterize_time = float("inf")
+          for raster_event in raster_loop_event.GetAllSubSlicesOfName(
+              "Picture::Raster"):
+            if "num_pixels_rasterized" in raster_event.args:
+              best_rasterize_time = min(best_rasterize_time,
+                                        raster_event.duration)
               self.total_pixels_rasterized += \
-                  child.args["num_pixels_rasterized"]
-        if best_rasterize_time == float('inf'):
-          best_rasterize_time = 0
-        self.total_best_rasterize_time += best_rasterize_time
+                  raster_event.args["num_pixels_rasterized"]
+          if best_rasterize_time == float('inf'):
+            best_rasterize_time = 0
+          self.total_best_rasterize_time += best_rasterize_time
 
   def GatherRecordStats(self, frame_number):
-    for event in self.timeline.GetAllEventsOfName(
-        "PicturePile::Update recording loop"):
+    for event in self.timeline.GetAllEventsOfName("PictureLayer::Update"):
       if event.args["commit_number"] == frame_number:
-        best_record_time = float('inf')
-        for child in event.GetAllSubSlices():
-          if child.name == "Picture::Record":
-            best_record_time = min(best_record_time, child.duration)
-            self.total_pixels_recorded += \
-                child.args["width"] * child.args["height"]
-        if best_record_time == float('inf'):
-          best_record_time = 0
-        self.total_best_record_time += best_record_time
+        for record_loop_event in event.GetAllSubSlicesOfName("RecordLoop"):
+          best_record_time = float('inf')
+          for record_event in record_loop_event.GetAllSubSlicesOfName(
+              "Picture::Record"):
+            best_record_time = min(best_record_time, record_event.duration)
+            self.total_pixels_recorded += (record_event.args["width"] *
+                                           record_event.args["height"])
+          if best_record_time == float('inf'):
+            best_record_time = 0
+          self.total_best_record_time += best_record_time
 
   def GatherRenderingStats(self):
     trigger_time = self.FindTriggerTime()
@@ -90,13 +92,27 @@ class RasterizeAndPaintMeasurement(page_measurement.PageMeasurement):
     parser.add_option('--report-all-results', dest='report_all_results',
                       action='store_true',
                       help='Reports all data collected')
+    parser.add_option('--raster-record-repeat', dest='raster_record_repeat',
+                      default=20,
+                      help='Repetitions in raster and record loops.' +
+                      'Higher values reduce variance, but can cause' +
+                      'instability (timeouts, event buffer overflows, etc.).')
+    parser.add_option('--start-wait-time', dest='start_wait_time',
+                      default=2,
+                      help='Wait time before the benchmark is started ' +
+                      '(must be long enought to load all content)')
+    parser.add_option('--stop-wait-time', dest='stop_wait_time',
+                      default=5,
+                      help='Wait time before measurement is taken ' +
+                      '(must be long enough to render one frame)')
 
   def CustomizeBrowserOptions(self, options):
     options.extra_browser_args.append('--enable-gpu-benchmarking')
-    # Run each raster task 100 times. This allows us to report the time for the
+    # Run each raster task N times. This allows us to report the time for the
     # best run, effectively excluding cache effects and time when the thread is
     # de-scheduled.
-    options.extra_browser_args.append('--slow-down-raster-scale-factor=100')
+    options.extra_browser_args.append(
+        '--slow-down-raster-scale-factor=' + str(options.raster_record_repeat))
     # Enable impl-side-painting. Current version of benchmark only works for
     # this mode.
     options.extra_browser_args.append('--enable-impl-side-painting')
@@ -106,13 +122,13 @@ class RasterizeAndPaintMeasurement(page_measurement.PageMeasurement):
   def MeasurePage(self, page, tab, results):
     self._metrics = smoothness_metrics.SmoothnessMetrics(tab)
 
-    # Rasterize only what's visible
+    # Rasterize only what's visible.
     tab.ExecuteJavaScript(
         'chrome.gpuBenchmarking.setRasterizeOnlyVisibleContent();')
 
-    # Wait until the page has loaded and come to a somewhat steady state
-    # Empirical wait time for workstation. May need to adjust for other devices
-    time.sleep(5)
+    # Wait until the page has loaded and come to a somewhat steady state.
+    # Needs to be adjusted for every device (~2 seconds for workstation).
+    time.sleep(float(self.options.start_wait_time))
 
     # Render one frame before we start gathering a trace. On some pages, the
     # first frame requested has more variance in the number of pixels
@@ -125,7 +141,7 @@ class RasterizeAndPaintMeasurement(page_measurement.PageMeasurement):
         });
     """)
 
-    tab.browser.StartTracing('webkit,cc', 60)
+    tab.browser.StartTracing('webkit,benchmark', 60)
     self._metrics.Start()
 
     tab.ExecuteJavaScript("""
@@ -136,10 +152,11 @@ class RasterizeAndPaintMeasurement(page_measurement.PageMeasurement):
           window.__rafFired  = true;
         });
     """)
-    # Wait until the frame was drawn
-    # Empirical wait time for workstation. May need to adjust for other devices
+    # Wait until the frame was drawn.
+    # Needs to be adjusted for every device and for different
+    # raster_record_repeat counts.
     # TODO(ernstm): replace by call-back.
-    time.sleep(5)
+    time.sleep(float(self.options.stop_wait_time))
     tab.ExecuteJavaScript('console.timeEnd("measureNextFrame")')
 
     tab.browser.StopTracing()

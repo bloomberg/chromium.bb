@@ -17,6 +17,7 @@
 #include "cc/animation/animation_registrar.h"
 #include "cc/animation/layer_animation_controller.h"
 #include "cc/base/math_util.h"
+#include "cc/debug/benchmark_instrumentation.h"
 #include "cc/debug/overdraw_metrics.h"
 #include "cc/debug/rendering_stats_instrumentation.h"
 #include "cc/input/top_controls_manager.h"
@@ -690,10 +691,10 @@ bool LayerTreeHost::UsingSharedMemoryResources() {
 
 bool LayerTreeHost::UpdateLayers(Layer* root_layer,
                                  ResourceUpdateQueue* queue) {
-  // If you change the name of this event or its arguments, please update
-  // tools/perf/perf_tools/rasterize_and_record_benchmark.py as well.
-  TRACE_EVENT1("cc", "LayerTreeHost::UpdateLayers",
-               "SourceFrameNumber", commit_number());
+  TRACE_EVENT1(benchmark_instrumentation::kCategory,
+               benchmark_instrumentation::kLayerTreeHostUpdateLayers,
+               benchmark_instrumentation::kCommitNumber,
+               commit_number());
 
   LayerList update_list;
   {

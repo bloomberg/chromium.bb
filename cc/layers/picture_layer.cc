@@ -4,6 +4,7 @@
 
 #include "cc/layers/picture_layer.h"
 
+#include "cc/debug/benchmark_instrumentation.h"
 #include "cc/debug/devtools_instrumentation.h"
 #include "cc/layers/picture_layer_impl.h"
 #include "cc/trees/layer_tree_impl.h"
@@ -84,6 +85,11 @@ bool PictureLayer::Update(ResourceUpdateQueue*,
   // Do not early-out of this function so that PicturePile::Update has a chance
   // to record pictures due to changing visibility of this layer.
 
+  TRACE_EVENT1(benchmark_instrumentation::kCategory,
+               benchmark_instrumentation::kPictureLayerUpdate,
+               benchmark_instrumentation::kCommitNumber,
+               layer_tree_host()->commit_number());
+
   pile_->Resize(paint_properties().bounds);
 
   // Calling paint in WebKit can sometimes cause invalidations, so save
@@ -100,8 +106,7 @@ bool PictureLayer::Update(ResourceUpdateQueue*,
                                contents_opaque(),
                                pile_invalidation_,
                                visible_layer_rect,
-                               rendering_stats_instrumentation(),
-                               layer_tree_host()->commit_number());
+                               rendering_stats_instrumentation());
   if (!updated) {
     // If this invalidation did not affect the pile, then it can be cleared as
     // an optimization.
