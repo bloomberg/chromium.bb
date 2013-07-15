@@ -191,6 +191,17 @@ class VIEWS_EXPORT DesktopRootWindowHostX11 :
   // The bounds of |xwindow_|.
   gfx::Rect bounds_;
 
+  // Whenever the bounds are set, we keep the previous set of bounds around so
+  // we can have a better chance of getting the real |restored_bounds_|. Window
+  // managers tend to send a Configure message with the maximized bounds, and
+  // then set the window maximized property. (We don't rely on this for when we
+  // request that the window be maximized, only when we detect that some other
+  // process has requested that we become the maximized window.)
+  gfx::Rect previous_bounds_;
+
+  // The bounds of our window before we were maximized.
+  gfx::Rect restored_bounds_;
+
   // True if the window should be focused when the window is shown.
   bool focus_when_shown_;
 

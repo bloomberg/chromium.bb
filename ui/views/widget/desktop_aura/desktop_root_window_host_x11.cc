@@ -438,10 +438,8 @@ void DesktopRootWindowHostX11::ShowWindowWithState(
 
 void DesktopRootWindowHostX11::ShowMaximizedWithBounds(
     const gfx::Rect& restored_bounds) {
-  // TODO(erg):
-  NOTIMPLEMENTED();
-
-  // TODO(erg): We shouldn't completely fall down here.
+  restored_bounds_ = restored_bounds;
+  Maximize();
   Show();
 }
 
@@ -507,9 +505,14 @@ gfx::Rect DesktopRootWindowHostX11::GetClientAreaBoundsInScreen() const {
 }
 
 gfx::Rect DesktopRootWindowHostX11::GetRestoredBounds() const {
-  // TODO(erg):
-  NOTIMPLEMENTED();
-  return gfx::Rect();
+  // We can't reliably track the restored bounds of a window, but we can get
+  // the 90% case down. When *chrome* is the process that requests maximizing
+  // or restoring bounds, we can record the current bounds before we request
+  // maximization, and clear it when we detect a state change.
+  if (!restored_bounds_.IsEmpty())
+    return restored_bounds_;
+
+  return GetWindowBoundsInScreen();
 }
 
 gfx::Rect DesktopRootWindowHostX11::GetWorkAreaBoundsInScreen() const {
@@ -555,6 +558,11 @@ bool DesktopRootWindowHostX11::IsActive() const {
 }
 
 void DesktopRootWindowHostX11::Maximize() {
+  // When we're the process requesting the maximizing, we can accurately keep
+  // track of our restored bounds instead of relying on the heuristics that are
+  // in the PropertyNotify and ConfigureNotify handlers.
+  restored_bounds_ = bounds_;
+
   SetWMSpecState(true,
                  atom_cache_.GetAtom("_NET_WM_STATE_MAXIMIZED_VERT"),
                  atom_cache_.GetAtom("_NET_WM_STATE_MAXIMIZED_HORZ"));
@@ -1022,6 +1030,7 @@ bool DesktopRootWindowHostX11::Dispatch(const base::NativeEvent& event) {
                        xev->xconfigure.width, xev->xconfigure.height);
       bool size_changed = bounds_.size() != bounds.size();
       bool origin_changed = bounds_.origin() != bounds.origin();
+      previous_bounds_ = bounds_;
       bounds_ = bounds;
       if (size_changed)
         root_window_host_delegate_->OnHostResized(bounds.size());
@@ -1205,6 +1214,19 @@ bool DesktopRootWindowHostX11::Dispatch(const base::NativeEvent& event) {
         window_properties_.clear();
         std::copy(atom_list.begin(), atom_list.end(),
                   inserter(window_properties_, window_properties_.begin()));
+
+        if (!restored_bounds_.IsEmpty() && !IsMaximized()) {
+          // If we have restored bounds, but WM_STATE no longer claims to be
+          // maximized, we should clear our restored bounds.
+          restored_bounds_ = gfx::Rect();
+        } else if (IsMaximized() && restored_bounds_.IsEmpty()) {
+          // The request that we become maximized originated from a different
+          // process. |bounds_| already contains our maximized bounds. Do a
+          // best effort attempt to get restored bounds by setting it to our
+          // previously set bounds (and if we get this wrong, we aren't any
+          // worse off since we'd otherwise be returning our maximized bounds).
+          restored_bounds_ = previous_bounds_;
+        }
 
         // Now that we have different window properties, we may need to
         // relayout the window. (The windows code doesn't need this because
