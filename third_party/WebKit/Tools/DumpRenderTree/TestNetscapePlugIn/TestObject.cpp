@@ -107,7 +107,7 @@ static void initializeIdentifiers(void)
     browser->getstringidentifiers(testMethodIdentifierNames, NUM_METHOD_IDENTIFIERS, testMethodIdentifiers);
 }
 
-static NPObject* testAllocate(NPP /*npp*/, NPClass* /*theClass*/)
+static NPObject* testAllocate(NPP npp, NPClass* /*theClass*/)
 {
     TestObject* newInstance = static_cast<TestObject*>(malloc(sizeof(TestObject)));
     newInstance->testObject = 0;

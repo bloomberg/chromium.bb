@@ -72,7 +72,8 @@ typedef struct {
     NPWindow lastWindow;
 } PluginObject;
 
-extern NPClass *getPluginClass(void);
+extern NPClass* createPluginClass(void);
+
 extern void handleCallback(PluginObject* object, const char *url, NPReason reason, void *notifyData);
 extern void notifyStream(PluginObject* object, const char *url, const char *headers);
 extern void testNPRuntime(NPP npp);
