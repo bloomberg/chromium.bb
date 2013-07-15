@@ -994,15 +994,26 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
         assertEquals(1, gestureHandler.getNumberOfPendingMotionEventsForTesting());
         assertTrue(gestureHandler.isEventCancelledForTesting(
                 gestureHandler.peekFirstInPendingMotionEventsForTesting()));
+        MotionEvent canceledEvent = gestureHandler.peekFirstInPendingMotionEventsForTesting();
 
         event = motionEvent(MotionEvent.ACTION_POINTER_DOWN, downTime + 15, downTime + 15);
         assertTrue(gestureHandler.onTouchEvent(event));
         assertEquals(2, gestureHandler.getNumberOfPendingMotionEventsForTesting());
 
-        // Acking the touchcancel will drain all the events.
+        // Acking the touchcancel will drain all the events, and clear the event previously marked
+        // for cancellation.
         gestureHandler.confirmTouchEvent(
                 ContentViewGestureHandler.INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
         assertEquals(0, gestureHandler.getNumberOfPendingMotionEventsForTesting());
+        assertFalse(gestureHandler.isEventCancelledForTesting(canceledEvent));
+
+        // Note: This check relies on an implementation detail of MotionEvent, namely, that the last
+        //       event recycled is the the first returned by MotionEvent.obtain(). Should
+        //       MotioEvent's implementation change, this assumption will need to be rebased.
+        MotionEvent recycledCanceledEvent =
+                motionEvent(MotionEvent.ACTION_DOWN, downTime + 20 , downTime + 20);
+        assertSame("The canceled event should have been recycled.",
+                canceledEvent, recycledCanceledEvent);
     }
 
     /**
@@ -1108,11 +1119,17 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
             public boolean sendTouchEvent(long timeMs, int action, TouchPoint[] pts) {
                 if (action == TouchPoint.TOUCH_EVENT_TYPE_CANCEL) {
                     // Ensure the event to be cancelled is already in the pending queue.
-                    assertTrue(mGestureHandler.isEventCancelledForTesting(
-                            mGestureHandler.peekFirstInPendingMotionEventsForTesting()));
+                    MotionEvent canceledEvent =
+                            mGestureHandler.peekFirstInPendingMotionEventsForTesting();
+                    assertTrue(mGestureHandler.isEventCancelledForTesting(canceledEvent));
 
                     mGestureHandler.confirmTouchEvent(
                             ContentViewGestureHandler.INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+
+                    // Ensure that the canceled event has been removed from the event queue and is
+                    // no longer scheduled for cancellation.
+                    assertEquals(0, mGestureHandler.getNumberOfPendingMotionEventsForTesting());
+                    assertFalse(mGestureHandler.isEventCancelledForTesting(canceledEvent));
                 }
                 return super.sendTouchEvent(timeMs, action, pts);
             }

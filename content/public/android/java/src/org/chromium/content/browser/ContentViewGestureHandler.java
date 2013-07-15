@@ -202,7 +202,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
             while (!mPendingMotionEvents.isEmpty()) {
                 MotionEvent nextEvent = mPendingMotionEvents.removeFirst();
                 processTouchEvent(nextEvent);
-                nextEvent.recycle();
+                recycleEvent(nextEvent);
             }
             // We are waiting for 2 ACKs: one for the timed-out event, the other for
             // the touchcancel event injected when the timed-out event is ACK'ed.
@@ -225,6 +225,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
                     mTouchPoints = null;
                     return false;
                 case PENDING_ACK_ORIGINAL_EVENT:
+                    TraceEvent.instant("TouchEventTimeout:ConfirmOriginalEvent");
                     // The ACK to the original event is received after timeout.
                     // Inject a touchcancel event.
                     mPendingAckState = PENDING_ACK_CANCEL_EVENT;
@@ -233,6 +234,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
                     mTouchPoints = null;
                     return true;
                 case PENDING_ACK_CANCEL_EVENT:
+                    TraceEvent.instant("TouchEventTimeout:ConfirmCancelEvent");
                     // The ACK to the injected touchcancel event is received.
                     mPendingAckState = PENDING_ACK_NONE;
                     drainAllPendingEventsUntilNextDown();
@@ -842,6 +844,8 @@ class ContentViewGestureHandler implements LongPressDelegate {
                     && previousEvent != mPendingMotionEvents.peekFirst()
                     && previousEvent.getActionMasked() == MotionEvent.ACTION_MOVE
                     && previousEvent.getPointerCount() == event.getPointerCount()) {
+                TraceEvent.instant("offerTouchEventToJavaScript:EventCoalesced",
+                                   "QueueSize = " + mPendingMotionEvents.size());
                 MotionEvent.PointerCoords[] coords =
                         new MotionEvent.PointerCoords[event.getPointerCount()];
                 for (int i = 0; i < coords.length; ++i) {
@@ -864,6 +868,8 @@ class ContentViewGestureHandler implements LongPressDelegate {
             if (forward == EVENT_NOT_FORWARDED) mPendingMotionEvents.remove(clone);
             return forward != EVENT_NOT_FORWARDED;
         } else {
+            TraceEvent.instant("offerTouchEventToJavaScript:EventQueued",
+                               "QueueSize = " + mPendingMotionEvents.size());
             // Copy the event, as the original may get mutated after this method returns.
             MotionEvent clone = MotionEvent.obtain(event);
             mPendingMotionEvents.add(clone);
@@ -959,12 +965,13 @@ class ContentViewGestureHandler implements LongPressDelegate {
             Log.w(TAG, "confirmTouchEvent with Empty pending list!");
             return;
         }
-        TraceEvent.begin();
+        TraceEvent.begin("confirmTouchEvent");
         MotionEvent ackedEvent = mPendingMotionEvents.removeFirst();
-        if (ackedEvent.equals(mLastCancelledEvent)) {
+        if (ackedEvent == mLastCancelledEvent) {
             // The event is canceled, just drain all the pending events until next
             // touch down.
             ackResult = INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS;
+            TraceEvent.instant("confirmTouchEvent:CanceledEvent");
         }
         switch (ackResult) {
             case INPUT_EVENT_ACK_STATE_UNKNOWN:
@@ -974,15 +981,11 @@ class ContentViewGestureHandler implements LongPressDelegate {
             case INPUT_EVENT_ACK_STATE_CONSUMED:
                 mJavaScriptIsConsumingGesture = true;
                 mZoomManager.passTouchEventThrough(ackedEvent);
-                if (!mPendingMotionEvents.isEmpty()) {
-                    trySendNextEventToNative(mPendingMotionEvents.peekFirst());
-                }
+                trySendNextEventToNative();
                 break;
             case INPUT_EVENT_ACK_STATE_NOT_CONSUMED:
                 if (!mJavaScriptIsConsumingGesture) processTouchEvent(ackedEvent);
-                if (!mPendingMotionEvents.isEmpty()) {
-                    trySendNextEventToNative(mPendingMotionEvents.peekFirst());
-                }
+                trySendNextEventToNative();
                 break;
             case INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS:
                 mNoTouchHandlerForGesture = true;
@@ -995,23 +998,22 @@ class ContentViewGestureHandler implements LongPressDelegate {
 
         mLongPressDetector.cancelLongPressIfNeeded(mPendingMotionEvents.iterator());
 
-        ackedEvent.recycle();
-        TraceEvent.end();
+        recycleEvent(ackedEvent);
+        TraceEvent.end("confirmTouchEvent");
     }
 
-    private void trySendNextEventToNative(MotionEvent nextEvent) {
-        assert(nextEvent != null);
+    private void trySendNextEventToNative() {
+        while (!mPendingMotionEvents.isEmpty()) {
+            MotionEvent nextEvent = mPendingMotionEvents.peekFirst();
+            int forward = sendTouchEventToNative(nextEvent);
+            if (forward != EVENT_NOT_FORWARDED) break;
 
-        int forward = sendTouchEventToNative(nextEvent);
-        if (forward == EVENT_NOT_FORWARDED) {
-            if (!mJavaScriptIsConsumingGesture) processTouchEvent(nextEvent);
-            mPendingMotionEvents.removeFirst();
             // Even though we missed sending one event to native, as long as we haven't
             // received INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS, we should keep sending
             // events on the queue to native.
-            if (!mPendingMotionEvents.isEmpty()) {
-                trySendNextEventToNative(mPendingMotionEvents.peekFirst());
-            }
+            if (!mJavaScriptIsConsumingGesture) processTouchEvent(nextEvent);
+            mPendingMotionEvents.removeFirst();
+            recycleEvent(nextEvent);
         }
     }
 
@@ -1021,14 +1023,21 @@ class ContentViewGestureHandler implements LongPressDelegate {
         while (nextEvent != null && nextEvent.getActionMasked() != MotionEvent.ACTION_DOWN) {
             processTouchEvent(nextEvent);
             mPendingMotionEvents.removeFirst();
-            nextEvent.recycle();
+            recycleEvent(nextEvent);
             nextEvent = mPendingMotionEvents.peekFirst();
         }
 
         if (nextEvent == null) return;
 
         mNoTouchHandlerForGesture = false;
-        trySendNextEventToNative(nextEvent);
+        trySendNextEventToNative();
+    }
+
+    private void recycleEvent(MotionEvent event) {
+        if (event == mLastCancelledEvent) {
+            mLastCancelledEvent = null;
+        }
+        event.recycle();
     }
 
     private boolean sendMotionEventAsGesture(
@@ -1092,7 +1101,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
      * @return Whether the motion event is cancelled.
      */
     boolean isEventCancelledForTesting(MotionEvent event) {
-        return event != null && event.equals(mLastCancelledEvent);
+        return event != null && event == mLastCancelledEvent;
     }
 
     /**
