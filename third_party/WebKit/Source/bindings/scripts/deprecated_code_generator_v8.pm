@@ -833,16 +833,16 @@ class ${nativeType};
 v8::Handle<v8::Value> toV8(${nativeType}*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
 v8::Handle<v8::Value> toV8ForMainWorld(${nativeType}*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
 
-template<class HolderContainer, class Wrappable>
-inline v8::Handle<v8::Value> toV8Fast(${nativeType}* impl, const HolderContainer& container, Wrappable*)
+template<class CallbackInfo, class Wrappable>
+inline v8::Handle<v8::Value> toV8Fast(${nativeType}* impl, const CallbackInfo& callbackInfo, Wrappable*)
 {
-    return toV8(impl, container.Holder(), container.GetIsolate());
+    return toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate());
 }
 
-template<class HolderContainer, class Wrappable>
-inline v8::Handle<v8::Value> toV8FastForMainWorld(${nativeType}* impl, const HolderContainer& container, Wrappable*)
+template<class CallbackInfo, class Wrappable>
+inline v8::Handle<v8::Value> toV8FastForMainWorld(${nativeType}* impl, const CallbackInfo& callbackInfo, Wrappable*)
 {
-    return toV8ForMainWorld(impl, container.Holder(), container.GetIsolate());
+    return toV8ForMainWorld(impl, callbackInfo.Holder(), callbackInfo.GetIsolate());
 }
 END
     } else {
@@ -895,33 +895,33 @@ inline v8::Handle<v8::Value> toV8ForMainWorld(${nativeType}* impl, v8::Handle<v8
     return wrap(impl, creationContext, isolate);
 }
 
-template<class HolderContainer, class Wrappable>
-inline v8::Handle<v8::Value> toV8Fast(${nativeType}* impl, const HolderContainer& container, Wrappable* wrappable)
+template<class CallbackInfo, class Wrappable>
+inline v8::Handle<v8::Value> toV8Fast(${nativeType}* impl, const CallbackInfo& callbackInfo, Wrappable* wrappable)
 {
     if (UNLIKELY(!impl))
-        return v8::Null(container.GetIsolate());
-    v8::Handle<v8::Object> wrapper = DOMDataStore::getWrapperFast<${v8ClassName}>(impl, container, wrappable);
+        return v8::Null(callbackInfo.GetIsolate());
+    v8::Handle<v8::Object> wrapper = DOMDataStore::getWrapperFast<${v8ClassName}>(impl, callbackInfo, wrappable);
     if (!wrapper.IsEmpty())
         return wrapper;
-    return wrap(impl, container.Holder(), container.GetIsolate());
+    return wrap(impl, callbackInfo.Holder(), callbackInfo.GetIsolate());
 }
 
-template<class HolderContainer, class Wrappable>
-inline v8::Handle<v8::Value> toV8FastForMainWorld(${nativeType}* impl, const HolderContainer& container, Wrappable* wrappable)
+template<class CallbackInfo, class Wrappable>
+inline v8::Handle<v8::Value> toV8FastForMainWorld(${nativeType}* impl, const CallbackInfo& callbackInfo, Wrappable* wrappable)
 {
-    ASSERT(worldType(container.GetIsolate()) == MainWorld);
+    ASSERT(worldType(callbackInfo.GetIsolate()) == MainWorld);
     if (UNLIKELY(!impl))
-        return v8::Null(container.GetIsolate());
+        return v8::Null(callbackInfo.GetIsolate());
     v8::Handle<v8::Object> wrapper = DOMDataStore::getWrapperForMainWorld<${v8ClassName}>(impl);
     if (!wrapper.IsEmpty())
         return wrapper;
-    return wrap(impl, container.Holder(), container.GetIsolate());
+    return wrap(impl, callbackInfo.Holder(), callbackInfo.GetIsolate());
 }
 
-template<class HolderContainer, class Wrappable>
-inline v8::Handle<v8::Value> toV8FastForMainWorld(PassRefPtr< ${nativeType} > impl, const HolderContainer& container, Wrappable* wrappable)
+template<class CallbackInfo, class Wrappable>
+inline v8::Handle<v8::Value> toV8FastForMainWorld(PassRefPtr< ${nativeType} > impl, const CallbackInfo& callbackInfo, Wrappable* wrappable)
 {
-    return toV8FastForMainWorld(impl.get(), container, wrappable);
+    return toV8FastForMainWorld(impl.get(), callbackInfo, wrappable);
 }
 
 END
@@ -929,10 +929,10 @@ END
 
     $header{nameSpaceWebCore}->add(<<END);
 
-template<class HolderContainer, class Wrappable>
-inline v8::Handle<v8::Value> toV8Fast(PassRefPtr< ${nativeType} > impl, const HolderContainer& container, Wrappable* wrappable)
+template<class CallbackInfo, class Wrappable>
+inline v8::Handle<v8::Value> toV8Fast(PassRefPtr< ${nativeType} > impl, const CallbackInfo& callbackInfo, Wrappable* wrappable)
 {
-    return toV8Fast(impl.get(), container, wrappable);
+    return toV8Fast(impl.get(), callbackInfo, wrappable);
 }
 
 inline v8::Handle<v8::Value> toV8(PassRefPtr< ${nativeType} > impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
@@ -5342,8 +5342,8 @@ sub NativeToJSValue
     my $getCreationContext = shift;
     my $getIsolate = shift;
     die "An Isolate is mandatory for native value => JS value conversion." unless $getIsolate;
-    my $getHolderContainer = shift || "";
-    my $getHolderContainerArg = $getHolderContainer ? ", $getHolderContainer" : "";
+    my $getCallbackInfo = shift || "";
+    my $getCallbackInfoArg = $getCallbackInfo ? ", $getCallbackInfo" : "";
     my $getScriptWrappable = shift || "";
     my $getScriptWrappableArg = $getScriptWrappable ? ", $getScriptWrappable" : "";
     my $forMainWorldSuffix = shift || "";
@@ -5360,7 +5360,7 @@ sub NativeToJSValue
             my $unionMemberEnabledVariable = $nativeValue . $i . "Enabled";
             my $unionMemberNativeValue = $unionMemberVariable;
             $unionMemberNativeValue .= ".release()" if (IsRefPtrType($unionMemberType));
-            my $returnJSValueCode = NativeToJSValue($unionMemberType, $extendedAttributes, $unionMemberNativeValue, $indent . "    ", $receiver, $getCreationContext, $getIsolate, $getHolderContainer, $getScriptWrappable, $forMainWorldSuffix, $returnValueArg);
+            my $returnJSValueCode = NativeToJSValue($unionMemberType, $extendedAttributes, $unionMemberNativeValue, $indent . "    ", $receiver, $getCreationContext, $getIsolate, $getCallbackInfo, $getScriptWrappable, $forMainWorldSuffix, $returnValueArg);
             my $code = "";
             if ($isReturnValue) {
               $code .= "${indent}if (${unionMemberEnabledVariable}) {\n";
@@ -5377,7 +5377,7 @@ sub NativeToJSValue
     }
 
     if ($type eq "boolean") {
-        return "${indent}v8SetReturnValueBool(${getHolderContainer}, ${nativeValue});" if $isReturnValue;
+        return "${indent}v8SetReturnValueBool(${getCallbackInfo}, ${nativeValue});" if $isReturnValue;
         return "$indent$receiver v8Boolean($nativeValue, $getIsolate);";
     }
 
@@ -5391,40 +5391,40 @@ sub NativeToJSValue
     # should be returned instead.
     if ($extendedAttributes->{"Reflect"} and ($type eq "unsigned long" or $type eq "unsigned short")) {
         $nativeValue =~ s/getUnsignedIntegralAttribute/getIntegralAttribute/g;
-        return "${indent}v8SetReturnValueUnsigned(${getHolderContainer}, std::max(0, ${nativeValue}));" if $isReturnValue;
+        return "${indent}v8SetReturnValueUnsigned(${getCallbackInfo}, std::max(0, ${nativeValue}));" if $isReturnValue;
         return "$indent$receiver v8::Integer::NewFromUnsigned(std::max(0, " . $nativeValue . "), $getIsolate);";
     }
 
     my $nativeType = GetNativeType($type);
     if ($nativeType eq "int") {
-        return "${indent}v8SetReturnValueInt(${getHolderContainer}, ${nativeValue});" if $isReturnValue;
+        return "${indent}v8SetReturnValueInt(${getCallbackInfo}, ${nativeValue});" if $isReturnValue;
         return "$indent$receiver v8::Integer::New($nativeValue, $getIsolate);";
     }
 
     if ($nativeType eq "unsigned") {
-        return "${indent}v8SetReturnValueUnsigned(${getHolderContainer}, ${nativeValue});" if $isReturnValue;
+        return "${indent}v8SetReturnValueUnsigned(${getCallbackInfo}, ${nativeValue});" if $isReturnValue;
         return "$indent$receiver v8::Integer::NewFromUnsigned($nativeValue, $getIsolate);";
     }
 
     if ($type eq "Date") {
-        return "${indent}v8SetReturnValue(${getHolderContainer}, v8DateOrNull($nativeValue, $getIsolate));" if $isReturnValue;
+        return "${indent}v8SetReturnValue(${getCallbackInfo}, v8DateOrNull($nativeValue, $getIsolate));" if $isReturnValue;
         return "$indent$receiver v8DateOrNull($nativeValue, $getIsolate);"
     }
 
     # long long and unsigned long long are not representable in ECMAScript.
     if ($type eq "long long" or $type eq "unsigned long long" or $type eq "DOMTimeStamp") {
-        return "${indent}v8SetReturnValue(${getHolderContainer}, static_cast<double>($nativeValue));" if $isReturnValue;
+        return "${indent}v8SetReturnValue(${getCallbackInfo}, static_cast<double>($nativeValue));" if $isReturnValue;
         return "$indent$receiver v8::Number::New(static_cast<double>($nativeValue));";
     }
 
     if (IsPrimitiveType($type)) {
         die "unexpected type $type" if not ($type eq "float" or $type eq "double");
-        return "${indent}v8SetReturnValue(${getHolderContainer}, ${nativeValue});" if $isReturnValue;
+        return "${indent}v8SetReturnValue(${getCallbackInfo}, ${nativeValue});" if $isReturnValue;
         return "$indent$receiver v8::Number::New($nativeValue);";
     }
 
     if ($nativeType eq "ScriptValue") {
-        return "${indent}v8SetReturnValue(${getHolderContainer}, ${nativeValue}.v8Value());" if $isReturnValue;
+        return "${indent}v8SetReturnValue(${getCallbackInfo}, ${nativeValue}.v8Value());" if $isReturnValue;
         return "$indent$receiver $nativeValue.v8Value();";
     }
 
@@ -5440,7 +5440,7 @@ sub NativeToJSValue
                 die "Unknown value for TreatReturnedNullStringAs extended attribute";
             }
         }
-        return "${indent}v8SetReturnValueString(${getHolderContainer}, $nativeValue, $getIsolate, $nullAs);";
+        return "${indent}v8SetReturnValueString(${getCallbackInfo}, $nativeValue, $getIsolate, $nullAs);";
     }
 
     if ($type eq "DOMString" or IsEnumType($type)) {
@@ -5465,7 +5465,7 @@ sub NativeToJSValue
         if (IsRefPtrType($arrayOrSequenceType)) {
             AddIncludesForType($arrayOrSequenceType);
         }
-        return "${indent}v8SetReturnValue(${getHolderContainer}, v8Array($nativeValue, $getIsolate));" if $isReturnValue;
+        return "${indent}v8SetReturnValue(${getCallbackInfo}, v8Array($nativeValue, $getIsolate));" if $isReturnValue;
         return "$indent$receiver v8Array($nativeValue, $getIsolate);";
     }
 
@@ -5474,7 +5474,7 @@ sub NativeToJSValue
     if ($type eq "SerializedScriptValue") {
         AddToImplIncludes("$type.h");
         my $returnValue = "$nativeValue ? $nativeValue->deserialize() : v8::Handle<v8::Value>(v8::Null($getIsolate))";
-        return "${indent}v8SetReturnValue(${getHolderContainer}, $returnValue);" if $isReturnValue;
+        return "${indent}v8SetReturnValue(${getCallbackInfo}, $returnValue);" if $isReturnValue;
         return "$indent$receiver $returnValue;";
     }
 
@@ -5483,11 +5483,11 @@ sub NativeToJSValue
 
     if ($getScriptWrappable) {
         # FIXME: Use safe handles
-        return "${indent}v8SetReturnValue(${getHolderContainer}, toV8Fast${forMainWorldSuffix}($nativeValue$getHolderContainerArg$getScriptWrappableArg));" if $isReturnValue;
-        return "$indent$receiver toV8Fast${forMainWorldSuffix}($nativeValue$getHolderContainerArg$getScriptWrappableArg);";
+        return "${indent}v8SetReturnValue(${getCallbackInfo}, toV8Fast${forMainWorldSuffix}($nativeValue$getCallbackInfoArg$getScriptWrappableArg));" if $isReturnValue;
+        return "$indent$receiver toV8Fast${forMainWorldSuffix}($nativeValue$getCallbackInfoArg$getScriptWrappableArg);";
     }
     # FIXME: Use safe handles
-    return "${indent}v8SetReturnValue(${getHolderContainer}, toV8($nativeValue, $getCreationContext, $getIsolate));" if $isReturnValue;
+    return "${indent}v8SetReturnValue(${getCallbackInfo}, toV8($nativeValue, $getCreationContext, $getIsolate));" if $isReturnValue;
     return "$indent$receiver toV8($nativeValue, $getCreationContext, $getIsolate);";
 }
 

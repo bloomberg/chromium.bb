@@ -40,8 +40,8 @@
 
 namespace WebCore {
 
-template<class HolderContainer>
-static v8::Handle<v8::Value> getNamedItems(HTMLAllCollection* collection, AtomicString name, const HolderContainer& holder)
+template<class CallbackInfo>
+static v8::Handle<v8::Value> getNamedItems(HTMLAllCollection* collection, AtomicString name, const CallbackInfo& callbackInfo)
 {
     Vector<RefPtr<Node> > namedItems;
     collection->namedItems(name, namedItems);
@@ -50,19 +50,19 @@ static v8::Handle<v8::Value> getNamedItems(HTMLAllCollection* collection, Atomic
         return v8Undefined();
 
     if (namedItems.size() == 1)
-        return toV8Fast(namedItems.at(0).release(), holder, collection);
+        return toV8Fast(namedItems.at(0).release(), callbackInfo, collection);
 
     // FIXME: HTML5 specification says this should be a HTMLCollection.
     // http://www.whatwg.org/specs/web-apps/current-work/multipage/common-dom-interfaces.html#htmlallcollection
-    return toV8Fast(NamedNodesCollection::create(namedItems), holder, collection);
+    return toV8Fast(NamedNodesCollection::create(namedItems), callbackInfo, collection);
 }
 
-template<class HolderContainer>
-static v8::Handle<v8::Value> getItem(HTMLAllCollection* collection, v8::Handle<v8::Value> argument, const HolderContainer& holder)
+template<class CallbackInfo>
+static v8::Handle<v8::Value> getItem(HTMLAllCollection* collection, v8::Handle<v8::Value> argument, const CallbackInfo& callbackInfo)
 {
     v8::Local<v8::Uint32> index = argument->ToArrayIndex();
     if (index.IsEmpty()) {
-        v8::Handle<v8::Value> result = getNamedItems(collection, toWebCoreString(argument->ToString()), holder);
+        v8::Handle<v8::Value> result = getNamedItems(collection, toWebCoreString(argument->ToString()), callbackInfo);
 
         if (result.IsEmpty())
             return v8::Undefined();
@@ -71,7 +71,7 @@ static v8::Handle<v8::Value> getItem(HTMLAllCollection* collection, v8::Handle<v
     }
 
     RefPtr<Node> result = collection->item(index->Uint32Value());
-    return toV8Fast(result.release(), holder, collection);
+    return toV8Fast(result.release(), callbackInfo, collection);
 }
 
 void V8HTMLAllCollection::itemMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)

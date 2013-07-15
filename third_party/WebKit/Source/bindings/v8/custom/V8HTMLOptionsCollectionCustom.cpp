@@ -45,23 +45,23 @@
 
 namespace WebCore {
 
-template<typename HolderContainer>
-static void getNamedItems(HTMLOptionsCollection* collection, const AtomicString& name, const HolderContainer& holder)
+template<typename CallbackInfo>
+static void getNamedItems(HTMLOptionsCollection* collection, const AtomicString& name, const CallbackInfo& callbackInfo)
 {
     Vector<RefPtr<Node> > namedItems;
     collection->namedItems(name, namedItems);
 
     if (!namedItems.size()) {
-        v8SetReturnValueNull(holder);
+        v8SetReturnValueNull(callbackInfo);
         return;
     }
 
     if (namedItems.size() == 1) {
-        v8SetReturnValue(holder, toV8Fast(namedItems.at(0).release(), holder, collection));
+        v8SetReturnValue(callbackInfo, toV8Fast(namedItems.at(0).release(), callbackInfo, collection));
         return;
     }
 
-    v8SetReturnValue(holder, toV8Fast(NamedNodesCollection::create(namedItems), holder, collection));
+    v8SetReturnValue(callbackInfo, toV8Fast(NamedNodesCollection::create(namedItems), callbackInfo, collection));
 }
 
 void V8HTMLOptionsCollection::namedItemMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)

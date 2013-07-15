@@ -71,8 +71,8 @@ private:
 
     v8::Handle<v8::String> v8ExternalStringSlow(StringImpl*, v8::Isolate*);
 
-    template <class T>
-    void setReturnValueFromStringSlow(const T& info, StringImpl* stringImpl, v8::Isolate* isolate)
+    template <class CallbackInfo>
+    void setReturnValueFromStringSlow(const CallbackInfo& info, StringImpl* stringImpl, v8::Isolate* isolate)
     {
         if (!stringImpl->length()) {
             info.GetReturnValue().SetEmptyString();

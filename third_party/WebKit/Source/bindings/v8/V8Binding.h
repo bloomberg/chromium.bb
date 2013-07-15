@@ -86,26 +86,26 @@ namespace WebCore {
         return v8::Handle<v8::Value>(isolate ? v8::Null(isolate) : v8::Null());
     }
 
-    template<typename T, typename V>
-    inline void v8SetReturnValue(const T& args, V v)
+    template<typename CallbackInfo, typename V>
+    inline void v8SetReturnValue(const CallbackInfo& args, V v)
     {
         args.GetReturnValue().Set(v);
     }
 
-    template<typename T>
-    inline void v8SetReturnValueBool(const T& args, bool v)
+    template<typename CallbackInfo>
+    inline void v8SetReturnValueBool(const CallbackInfo& args, bool v)
     {
         args.GetReturnValue().Set(v);
     }
 
-    template<typename T>
-    inline void v8SetReturnValueInt(const T& args, int v)
+    template<typename CallbackInfo>
+    inline void v8SetReturnValueInt(const CallbackInfo& args, int v)
     {
         args.GetReturnValue().Set(v);
     }
 
-    template<typename T>
-    inline void v8SetReturnValueUnsigned(const T& args, unsigned v)
+    template<typename CallbackInfo>
+    inline void v8SetReturnValueUnsigned(const CallbackInfo& args, unsigned v)
     {
         // FIXME: this is temporary workaround to a v8 bug
         if (V8_LIKELY((v & (1 << 31)) == 0)) {
@@ -115,8 +115,8 @@ namespace WebCore {
         args.GetReturnValue().Set(v8::Integer::NewFromUnsigned(v, args.GetReturnValue().GetIsolate()));
     }
 
-    template<typename T>
-    inline void v8SetReturnValueNull(const T& args)
+    template<typename CallbackInfo>
+    inline void v8SetReturnValueNull(const CallbackInfo& args)
     {
         args.GetReturnValue().SetNull();
     }
@@ -127,8 +127,8 @@ namespace WebCore {
         NullStringAsUndefined,
     };
 
-    template <class T>
-    inline void v8SetReturnValueString(const T& info, const String& string, v8::Isolate* isolate, TreatNullStringAs treatNullStringAs = NullStringAsEmpty)
+    template <class CallbackInfo>
+    inline void v8SetReturnValueString(const CallbackInfo& info, const String& string, v8::Isolate* isolate, TreatNullStringAs treatNullStringAs = NullStringAsEmpty)
     {
         if (string.isNull()) {
             switch (treatNullStringAs) {
