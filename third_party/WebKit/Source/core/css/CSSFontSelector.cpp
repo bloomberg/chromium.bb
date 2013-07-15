@@ -339,7 +339,7 @@ void CSSFontSelector::dispatchInvalidationCallbacks()
         styleResolver->invalidateMatchedPropertiesCache();
     if (!m_document->renderer())
         return;
-    m_document->scheduleForcedStyleRecalc();
+    m_document->setNeedsStyleRecalc();
 }
 
 void CSSFontSelector::fontLoaded()

@@ -259,7 +259,7 @@ bool DocumentStyleSheetCollection::updateActiveStyleSheets(StyleResolverUpdateMo
         // https://bugs.webkit.org/show_bug.cgi?id=54344
         // FIXME: This should be fixed in SVG and the call site replaced by ASSERT(!m_inStyleRecalc).
         m_needsUpdateActiveStylesheetsOnStyleRecalc = true;
-        m_document->scheduleForcedStyleRecalc();
+        m_document->setNeedsStyleRecalc();
         return false;
 
     }
