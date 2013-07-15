@@ -221,7 +221,8 @@ Galore.controller = {
   /** @private */
   getDataVersion_: function() {
     var version = navigator.appVersion.replace(/^.* Chrome\//, '');
-    return (version > '27.0.1433.1') ? '27.0.1433.1.json' :
+    return (version > '28.0.1500.70') ? '28.0.1500.70.json' :
+           (version > '27.0.1433.1') ? '27.0.1433.1.json' :
            (version > '27.0.1432.2') ? '27.0.1432.2.json' :
            '27.0.0.0.json';
   },

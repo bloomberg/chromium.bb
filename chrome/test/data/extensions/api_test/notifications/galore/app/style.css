@@ -91,7 +91,7 @@ img {
 
 #events {
   position: relative;
-  height: 112px;
+  height: 183px;
 }
 
 #events-scroll {
@@ -99,7 +99,7 @@ img {
   font-weight: lighter;
   left: 4px;
   padding: 0;
-  max-height: 119px;
+  max-height: 190px;
   overflow: scroll;
   position: absolute;
   right: 4px;
