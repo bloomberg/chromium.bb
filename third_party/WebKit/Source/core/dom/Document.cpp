@@ -1698,8 +1698,8 @@ void Document::updateStyleForNodeIfNeeded(Node* node)
         return;
 
     bool needsStyleRecalc = hasPendingForcedStyleRecalc();
-    for (Node* n = node; n && !needsStyleRecalc; n = n->parentNode())
-        needsStyleRecalc = n->needsStyleRecalc();
+    for (Node* ancestor = node; ancestor && !needsStyleRecalc; ancestor = ancestor->parentOrShadowHostNode())
+        needsStyleRecalc = ancestor->needsStyleRecalc();
     if (needsStyleRecalc)
         updateStyleIfNeeded();
 }
