@@ -376,6 +376,7 @@ void PluginProxyMultiThreadTest::Run() {
   ProxyAutoLock auto_lock;
   ASSERT_EQ(PP_OK, secondary_thread_message_loop_->AttachToCurrentThread());
   ASSERT_EQ(PP_OK, secondary_thread_message_loop_->Run());
+  secondary_thread_message_loop_->DetachFromThread();
 }
 
 void PluginProxyMultiThreadTest::QuitNestedLoop() {
