@@ -1105,10 +1105,20 @@ void Widget::OnMouseEvent(ui::MouseEvent* event) {
       // We may get deleted by the time we return from OnMousePressed. So we
       // use an observer to make sure we are still alive.
       WidgetDeletionObserver widget_deletion_observer(this);
+
       // Make sure we're still visible before we attempt capture as the mouse
       // press processing may have made the window hide (as happens with menus).
+
+      // It is possible for a View to show a context menu on mouse-press. Since
+      // the menu does a capture and starts a nested message-loop, the release
+      // would go to the menu. The next click (i.e. both mouse-press and release
+      // events) also go to the menu. The menu (and the nested message-loop)
+      // gets closed after this second release event. The code then resumes from
+      // here. So make sure that the mouse-button is still down before doing a
+      // capture.
       if (root_view && root_view->OnMousePressed(*event) &&
-          widget_deletion_observer.IsWidgetAlive() && IsVisible()) {
+          widget_deletion_observer.IsWidgetAlive() && IsVisible() &&
+          internal::NativeWidgetPrivate::IsMouseButtonDown()) {
         is_mouse_button_pressed_ = true;
         if (!native_widget_->HasCapture())
           native_widget_->SetCapture();

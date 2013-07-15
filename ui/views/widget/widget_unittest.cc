@@ -3,8 +3,10 @@
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/events/event_utils.h"
@@ -20,6 +22,7 @@
 
 #if defined(USE_AURA)
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/test_cursor_client.h"
 #include "ui/aura/test/test_window_delegate.h"
@@ -259,6 +262,54 @@ class EventCountHandler : public ui::EventHandler {
   std::map<ui::EventType, int> event_count_;
 
   DISALLOW_COPY_AND_ASSIGN(EventCountHandler);
+};
+
+// A View that shows a different widget, sets capture on that widget, and
+// initiates a nested message-loop when it receives a mouse-press event.
+class NestedLoopCaptureView : public View {
+ public:
+  explicit NestedLoopCaptureView(Widget* widget) : widget_(widget) {}
+  virtual ~NestedLoopCaptureView() {}
+
+ private:
+  // Overridden from View:
+  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE {
+    // Start a nested loop.
+    widget_->Show();
+    widget_->SetCapture(widget_->GetContentsView());
+    EXPECT_TRUE(widget_->HasCapture());
+
+    base::MessageLoopForUI* loop = base::MessageLoopForUI::current();
+    base::MessageLoop::ScopedNestableTaskAllower allow(loop);
+
+    base::RunLoop run_loop;
+#if defined(USE_AURA)
+    run_loop.set_dispatcher(aura::Env::GetInstance()->GetDispatcher());
+#endif
+    run_loop.Run();
+    return true;
+  }
+
+  Widget* widget_;
+
+  DISALLOW_COPY_AND_ASSIGN(NestedLoopCaptureView);
+};
+
+// A View that closes the Widget and exits the current message-loop when it
+// receives a mouse-release event.
+class ExitLoopOnRelease : public View {
+ public:
+  ExitLoopOnRelease() {}
+  virtual ~ExitLoopOnRelease() {}
+
+ private:
+  // Overridden from View:
+  virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE {
+    GetWidget()->Close();
+    base::MessageLoop::current()->QuitNow();
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(ExitLoopOnRelease);
 };
 
 class WidgetTest : public ViewsTestBase {
@@ -1111,6 +1162,43 @@ TEST_F(WidgetTest, ExitFullscreenRestoreState) {
 
   // Clean up.
   toplevel->Close();
+  RunPendingMessages();
+}
+
+// Checks that if a mouse-press triggers a capture on a different widget (which
+// consumes the mouse-release event), then the target of the press does not have
+// capture.
+TEST_F(WidgetTest, CaptureWidgetFromMousePress) {
+  // The test creates two widgets: |first| and |second|.
+  // The View in |first| makes |second| visible, sets capture on it, and starts
+  // a nested loop (like a menu does). The View in |second| terminates the
+  // nested loop and closes the widget.
+  // The test sends a mouse-press event to |first|, and posts a task to send a
+  // release event to |second|, to make sure that the release event is
+  // dispatched after the nested loop starts.
+
+  Widget* first = CreateTopLevelFramelessPlatformWidget();
+  Widget* second = CreateTopLevelFramelessPlatformWidget();
+
+  View* container = new NestedLoopCaptureView(second);
+  first->SetContentsView(container);
+
+  second->SetContentsView(new ExitLoopOnRelease());
+
+  first->SetSize(gfx::Size(100, 100));
+  first->Show();
+
+  gfx::Point location(20, 20);
+  base::MessageLoop::current()->PostTask(FROM_HERE,
+      base::Bind(&Widget::OnMouseEvent,
+                 base::Unretained(second),
+                 new ui::MouseEvent(ui::ET_MOUSE_RELEASED, location, location,
+                                    ui::EF_LEFT_MOUSE_BUTTON)));
+  ui::MouseEvent press(ui::ET_MOUSE_PRESSED, location, location,
+                       ui::EF_LEFT_MOUSE_BUTTON);
+  first->OnMouseEvent(&press);
+  EXPECT_FALSE(first->HasCapture());
+  first->Close();
   RunPendingMessages();
 }
 
