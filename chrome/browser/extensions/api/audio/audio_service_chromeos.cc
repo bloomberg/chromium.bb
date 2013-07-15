@@ -171,7 +171,7 @@ void AudioServiceImpl::OnGetNodes(const GetInfoCallback& callback,
       if (!iter->is_input) {
         linked_ptr<OutputDeviceInfo> info(new OutputDeviceInfo());
         info->id = base::Uint64ToString(iter->id);
-        info->name = iter->name;
+        info->name = iter->device_name + ": " + iter->name;
         info->is_active = iter->active;
         info->volume = cras_audio_handler_->GetOutputVolumePercentForDevice(
             iter->id);
@@ -180,7 +180,7 @@ void AudioServiceImpl::OnGetNodes(const GetInfoCallback& callback,
       } else {
         linked_ptr<InputDeviceInfo> info(new InputDeviceInfo());
         info->id = base::Uint64ToString(iter->id);
-        info->name = iter->name;
+        info->name = iter->device_name + ": " + iter->name;
         info->is_active = iter->active;
         info->gain = cras_audio_handler_->GetInputGainPercentForDevice(
             iter->id);
