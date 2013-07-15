@@ -76,7 +76,7 @@ private:
 // Initializes a StyleResolverState within a scope.
 class StyleResolveScope {
 public:
-    StyleResolveScope(StyleResolverState*, Document*, Element*, RenderStyle* parentStyle = 0, RenderRegion* regionForStyling = 0);
+    StyleResolveScope(StyleResolverState*, const Document*, Element*, RenderStyle* parentStyle = 0, RenderRegion* regionForStyling = 0);
     ~StyleResolveScope();
 private:
     StyleResolverState* m_state;
@@ -175,7 +175,7 @@ public:
 private:
     friend class StyleResolveScope;
 
-    void initForStyleResolve(Document*, Element*, RenderStyle* parentStyle = 0, RenderRegion* regionForStyling = 0);
+    void initForStyleResolve(const Document*, Element*, RenderStyle* parentStyle = 0, RenderRegion* regionForStyling = 0);
     void clear();
 
     void initElement(Element*);

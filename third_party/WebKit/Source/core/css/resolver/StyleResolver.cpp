@@ -675,6 +675,13 @@ static inline bool isAtShadowBoundary(const Element* element)
     return parentNode && parentNode->isShadowRoot();
 }
 
+static inline void resetDirectionAndWritingModeOnDocument(Document* document)
+{
+    document->setDirectionSetOnDocumentElement(false);
+    document->setWritingModeSetOnDocumentElement(false);
+}
+
+
 PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderStyle* defaultParent, StyleSharingBehavior sharingBehavior,
     RuleMatchingBehavior matchingBehavior, RenderRegion* regionForStyling)
 {
@@ -690,8 +697,11 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
         return s_styleNotYetAvailable;
     }
 
+    if (element == document()->documentElement())
+        resetDirectionAndWritingModeOnDocument(document());
     StyleResolverState& state = m_state;
     StyleResolveScope resolveScope(&state, document(), element, defaultParent, regionForStyling);
+
     if (sharingBehavior == AllowStyleSharing && !state.distributedToInsertionPoint() && state.parentStyle()) {
         SharedStyleFinder styleFinder(m_features, m_siblingRuleSet.get(), m_uncommonAttributeRuleSet.get(), this);
         RefPtr<RenderStyle> sharedStyle = styleFinder.locateSharedStyle(state.elementContext());
@@ -759,6 +769,8 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
 
 PassRefPtr<RenderStyle> StyleResolver::styleForKeyframe(Element* e, const RenderStyle* elementStyle, const StyleKeyframe* keyframe, KeyframeValue& keyframeValue)
 {
+    if (e == document()->documentElement())
+        resetDirectionAndWritingModeOnDocument(document());
     StyleResolveScope resolveScope(&m_state, document(), e);
 
     MatchResult result;
@@ -882,8 +894,9 @@ PassRefPtr<RenderStyle> StyleResolver::pseudoStyleForElement(Element* e, const P
     if (!e)
         return 0;
 
+    if (e == document()->documentElement())
+        resetDirectionAndWritingModeOnDocument(document());
     StyleResolverState& state = m_state;
-
     StyleResolveScope resolveScope(&state, document(), e, parentStyle);
 
     if (pseudoStyleRequest.allowsInheritance(state.parentStyle())) {
@@ -929,6 +942,7 @@ PassRefPtr<RenderStyle> StyleResolver::pseudoStyleForElement(Element* e, const P
 
 PassRefPtr<RenderStyle> StyleResolver::styleForPage(int pageIndex)
 {
+    resetDirectionAndWritingModeOnDocument(document());
     StyleResolverState& state = m_state;
     StyleResolveScope resolveScope(&state, document(), document()->documentElement()); // m_rootElementStyle will be set to the document style.
 
@@ -1386,6 +1400,8 @@ PassRefPtr<CSSRuleList> StyleResolver::pseudoStyleRulesForElement(Element* e, Ps
     if (!e || !e->document()->haveStylesheetsLoaded())
         return 0;
 
+    if (e == document()->documentElement())
+        resetDirectionAndWritingModeOnDocument(document());
     StyleResolveScope resolveScope(&m_state, document(), e);
 
     ElementRuleCollector collector(m_state.elementContext(), m_selectorFilter, m_state.style(), m_inspectorCSSOMWrappers);

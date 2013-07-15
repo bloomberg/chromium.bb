@@ -47,7 +47,7 @@ ElementResolveContext::ElementResolveContext(Element* element)
     m_rootElementStyle = documentElement && element != documentElement ? documentElement->renderStyle() : documentStyle;
 }
 
-StyleResolveScope::StyleResolveScope(StyleResolverState* state, Document* document, Element* e, RenderStyle* parentStyle, RenderRegion* regionForStyling)
+StyleResolveScope::StyleResolveScope(StyleResolverState* state, const Document* document, Element* e, RenderStyle* parentStyle, RenderRegion* regionForStyling)
     : m_state(state)
 {
     m_state->initForStyleResolve(document, e, parentStyle, regionForStyling);
@@ -67,7 +67,7 @@ void StyleResolverState::clear()
     m_elementStyleResources.clear();
 }
 
-void StyleResolverState::initForStyleResolve(Document* newDocument, Element* newElement, RenderStyle* parentStyle, RenderRegion* regionForStyling)
+void StyleResolverState::initForStyleResolve(const Document* newDocument, Element* newElement, RenderStyle* parentStyle, RenderRegion* regionForStyling)
 {
     ASSERT(!element() || document() == newDocument);
     if (newElement != element()) {
@@ -75,12 +75,6 @@ void StyleResolverState::initForStyleResolve(Document* newDocument, Element* new
             m_elementContext = ElementResolveContext(newElement);
         else
             m_elementContext = ElementResolveContext();
-
-        // FIXME: This method should not be modifying Document.
-        if (m_elementContext.isDocumentElement()) {
-            document()->setDirectionSetOnDocumentElement(false);
-            document()->setWritingModeSetOnDocumentElement(false);
-        }
     }
 
     m_regionForStyling = regionForStyling;
