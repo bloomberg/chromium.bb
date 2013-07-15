@@ -108,6 +108,7 @@ MyClass.prototype = {
         }
     },
 }
+</pre>
 <div>--------------TEST 5--------------</div>
 <pre id="test5" class="test">
   a
@@ -127,5 +128,33 @@ c
 </pre>
 <div>--------------TEST 7-------------- (empty content)</div>
 <pre id="test7" class="test"></pre>
+<div>--------------TEST 8--------------</div>
+<pre id="test8" class="test">
+function foo() {
+  var i = 0;
+  function bar() {
+    var a = [];
+    a.push(1);
+    a.push(12);
+    a.push(42);
+    a.push(44);
+    return a.join("!");
+  }
+
+  (function() {
+    var a = {
+      a: function() {
+        vbr b = [];
+        b.push(1);
+        b.push(12);
+        b.push(42);
+        b.push(44);
+        b.push(44 * 2);
+        return b.join("?");
+      }
+    };
+  })();
+}
+</pre>
 </body>
 </html>

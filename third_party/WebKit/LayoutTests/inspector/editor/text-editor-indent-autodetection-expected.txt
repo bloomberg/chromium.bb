@@ -53,7 +53,6 @@ MyClass.prototype = {
     },
 }
 --------------TEST 5--------------
-
   a
   a
     b
@@ -61,20 +60,39 @@ MyClass.prototype = {
     b
 c
 c
-
 --------------TEST 6--------------
-
 	tab
 		tab
 	tab
 	tab
-
 --------------TEST 7-------------- (empty content)
+--------------TEST 8--------------
+function foo() {
+  var i = 0;
+  function bar() {
+    var a = [];
+    a.push(1);
+    a.push(12);
+    a.push(42);
+    a.push(44);
+    return a.join("!");
+  }
 
-
-
-
-Tests number: 7
+  (function() {
+    var a = {
+      a: function() {
+        vbr b = [];
+        b.push(1);
+        b.push(12);
+        b.push(42);
+        b.push(44);
+        b.push(44 * 2);
+        return b.join("?");
+      }
+    };
+  })();
+}
+Tests number: 8
 
 Running: 
 Autodetected indentation for test1: 8 spaces
@@ -96,4 +114,7 @@ Autodetected indentation for test6: Tab
 
 Running: 
 Autodetected indentation for test7: 4 spaces
+
+Running: 
+Autodetected indentation for test8: 2 spaces
 
