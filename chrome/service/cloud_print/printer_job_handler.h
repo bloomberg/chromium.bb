@@ -194,7 +194,7 @@ class PrinterJobHandler : public base::RefCountedThreadSafe<PrinterJobHandler>,
       const GURL& url,
       const std::string& data);
 
-  CloudPrintURLFetcher::ResponseAction HandleSuccessStatusUpdateResponse(
+  CloudPrintURLFetcher::ResponseAction HandleInProgressStatusUpdateResponse(
       const net::URLFetcher* source,
       const GURL& url,
       base::DictionaryValue* json_data,
