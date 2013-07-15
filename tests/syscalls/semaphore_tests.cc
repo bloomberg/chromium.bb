@@ -163,10 +163,39 @@ int TestSemNormalOperation() {
   END_TEST();
 }
 
+int TestSemTryWait() {
+  START_TEST("test sem_trywait() and sem_getvalue()");
+
+  int start_value = 10;
+  sem_t sem;
+  EXPECT(0 == sem_init(&sem, 0, start_value));
+
+  int value = -1;
+  EXPECT(0 == sem_getvalue(&sem, &value));
+  EXPECT(10 == value);
+  // When the semaphore's value is positive, each call to
+  // sem_trywait() should decrement the semaphore's value.
+  for (int i = 1; i <= start_value; i++) {
+    EXPECT(0 == sem_trywait(&sem));
+    EXPECT(0 == sem_getvalue(&sem, &value));
+    EXPECT(start_value - i == value);
+  }
+  // When the semaphore's value is zero, sem_trywait() should fail.
+  EXPECT(-1 == sem_trywait(&sem));
+  EXPECT(EAGAIN == errno);
+  EXPECT(0 == sem_getvalue(&sem, &value));
+  EXPECT(0 == value);
+
+  EXPECT(0 == sem_destroy(&sem));
+
+  END_TEST();
+}
+
 int main() {
   int fail_count = 0;
   fail_count += TestSemInitErrors();
   fail_count += TestSemPostErrors();
   fail_count += TestSemNormalOperation();
+  fail_count += TestSemTryWait();
   std::exit(fail_count);
 }

@@ -90,6 +90,14 @@ int sem_wait(sem_t *sem) {
   return 0;
 }
 
+int sem_trywait(sem_t *sem) {
+  if (decrement_if_positive(&sem->count))
+    return 0;
+
+  errno = EAGAIN;
+  return -1;
+}
+
 int sem_post(sem_t *sem) {
   /* Increment sem->count, checking for overflow. */
   int old_value;
@@ -112,5 +120,10 @@ int sem_post(sem_t *sem) {
     int woken_count;
     __nc_irt_futex.futex_wake(&sem->count, 1, &woken_count);
   }
+  return 0;
+}
+
+int sem_getvalue(sem_t *sem, int *value) {
+  *value = sem->count;
   return 0;
 }
