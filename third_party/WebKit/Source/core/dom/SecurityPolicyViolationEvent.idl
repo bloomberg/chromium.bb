@@ -35,4 +35,5 @@
     [InitializedByEventConstructor] readonly attribute DOMString sourceFile;
     [InitializedByEventConstructor] readonly attribute long      lineNumber;
     [InitializedByEventConstructor] readonly attribute long      columnNumber;
+    [InitializedByEventConstructor] readonly attribute long      statusCode;
 };

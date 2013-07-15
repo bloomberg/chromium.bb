@@ -35,6 +35,7 @@
 #include "core/dom/SecurityPolicyViolationEvent.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/ScriptCallStack.h"
+#include "core/loader/DocumentLoader.h"
 #include "core/loader/PingLoader.h"
 #include "core/page/Frame.h"
 #include "core/page/UseCounter.h"
@@ -1689,6 +1690,10 @@ static void gatherSecurityPolicyViolationEventData(SecurityPolicyViolationEventI
     init.sourceFile = String();
     init.lineNumber = 0;
     init.columnNumber = 0;
+    init.statusCode = 0;
+
+    if (!SecurityOrigin::isSecure(document->url()) && document->loader())
+        init.statusCode = document->loader()->response().httpStatusCode();
 
     RefPtr<ScriptCallStack> stack = createScriptCallStack(1, false);
     if (!stack)
@@ -1749,6 +1754,7 @@ void ContentSecurityPolicy::reportViolation(const String& directiveText, const S
         cspReport->setNumber("line-number", violationData.lineNumber);
         cspReport->setNumber("column-number", violationData.columnNumber);
     }
+    cspReport->setNumber("status-code", violationData.statusCode);
 
     RefPtr<JSONObject> reportObject = JSONObject::create();
     reportObject->setObject("csp-report", cspReport.release());
