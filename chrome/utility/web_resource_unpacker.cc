@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/web_resource/web_resource_unpacker.h"
+#include "chrome/utility/web_resource_unpacker.h"
 
 #include "base/json/json_reader.h"
 #include "base/values.h"

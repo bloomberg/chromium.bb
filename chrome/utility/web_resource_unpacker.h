@@ -9,8 +9,8 @@
 // it will be set up to unpack and verify image data in addition to
 // just parsing a JSON feed.
 
-#ifndef CHROME_COMMON_WEB_RESOURCE_WEB_RESOURCE_UNPACKER_H_
-#define CHROME_COMMON_WEB_RESOURCE_WEB_RESOURCE_UNPACKER_H_
+#ifndef CHROME_UTILITY_WEB_RESOURCE_UNPACKER_H_
+#define CHROME_UTILITY_WEB_RESOURCE_UNPACKER_H_
 
 #include <string>
 
@@ -54,4 +54,4 @@ class WebResourceUnpacker {
   DISALLOW_COPY_AND_ASSIGN(WebResourceUnpacker);
 };
 
-#endif  // CHROME_COMMON_WEB_RESOURCE_WEB_RESOURCE_UNPACKER_H_
+#endif  // CHROME_UTILITY_WEB_RESOURCE_UNPACKER_H_

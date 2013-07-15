@@ -304,6 +304,8 @@
             'utility/itunes_pref_parser_win.h',
             'utility/profile_import_handler.cc',
             'utility/profile_import_handler.h',
+            'utility/web_resource_unpacker.cc',
+            'utility/web_resource_unpacker.h',
           ],
           'include_dirs': [
             '..',

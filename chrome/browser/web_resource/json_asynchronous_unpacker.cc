@@ -8,9 +8,7 @@
 #include "chrome/browser/web_resource/web_resource_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_utility_messages.h"
-#include "chrome/common/web_resource/web_resource_unpacker.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/utility_process_host.h"
 #include "content/public/browser/utility_process_host_client.h"
 
@@ -34,29 +32,13 @@ class JSONAsynchronousUnpackerImpl
   virtual void Start(const std::string& json_data) OVERRIDE {
     AddRef();  // balanced in Cleanup.
 
-    // TODO(willchan): Look for a better signal of whether we're in a unit test
-    // or not. Using |ResourceDispatcherHost::Get()| for this is pretty lame.
-    // If we don't have a ResourceDispatcherHost, assume we're in a test and
-    // run the unpacker directly in-process.
-    bool use_utility_process =
-        content::ResourceDispatcherHost::Get() &&
-        !CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess);
-    if (use_utility_process) {
-      BrowserThread::ID thread_id;
-      CHECK(BrowserThread::GetCurrentThreadIdentifier(&thread_id));
-      BrowserThread::PostTask(
-          BrowserThread::IO, FROM_HERE,
-          base::Bind(
-              &JSONAsynchronousUnpackerImpl::StartProcessOnIOThread,
-              this, thread_id, json_data));
-    } else {
-      WebResourceUnpacker unpacker(json_data);
-      if (unpacker.Run()) {
-        OnUnpackWebResourceSucceeded(*unpacker.parsed_json());
-      } else {
-        OnUnpackWebResourceFailed(unpacker.error_message());
-      }
-    }
+    BrowserThread::ID thread_id;
+    CHECK(BrowserThread::GetCurrentThreadIdentifier(&thread_id));
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(
+            &JSONAsynchronousUnpackerImpl::StartProcessOnIOThread,
+            this, thread_id, json_data));
   }
 
  private:

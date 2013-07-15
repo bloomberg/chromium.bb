@@ -461,8 +461,6 @@
         'common/validation_message_messages.h',
         'common/web_application_info.cc',
         'common/web_application_info.h',
-        'common/web_resource/web_resource_unpacker.cc',
-        'common/web_resource/web_resource_unpacker.h',
         'common/worker_thread_ticker.cc',
         'common/worker_thread_ticker.h',
         '../components/nacl/common/nacl_process_type.h',
