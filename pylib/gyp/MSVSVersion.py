@@ -197,6 +197,24 @@ def _CreateVersion(name, path, sdk_based=False):
   if path:
     path = os.path.normpath(path)
   versions = {
+      '2013': VisualStudioVersion('2013',
+                                  'Visual Studio 2013',
+                                  solution_version='13.00',
+                                  project_version='4.0',
+                                  flat_sln=False,
+                                  uses_vcxproj=True,
+                                  path=path,
+                                  sdk_based=sdk_based,
+                                  default_toolset='v110'),
+      '2013e': VisualStudioVersion('2013e',
+                                   'Visual Studio 2013',
+                                   solution_version='13.00',
+                                   project_version='4.0',
+                                   flat_sln=True,
+                                   uses_vcxproj=True,
+                                   path=path,
+                                   sdk_based=sdk_based,
+                                   default_toolset='v110'),
       '2012': VisualStudioVersion('2012',
                                   'Visual Studio 2012',
                                   solution_version='12.00',
@@ -288,10 +306,16 @@ def _DetectVisualStudioVersions(versions_to_check, force_express):
       2008(e) - Visual Studio 2008 (9)
       2010(e) - Visual Studio 2010 (10)
       2012(e) - Visual Studio 2012 (11)
+      2013(e) - Visual Studio 2013 (11)
     Where (e) is e for express editions of MSVS and blank otherwise.
   """
   version_to_year = {
-      '8.0': '2005', '9.0': '2008', '10.0': '2010', '11.0': '2012'}
+      '8.0': '2005',
+      '9.0': '2008',
+      '10.0': '2010',
+      '11.0': '2012',
+      '12.0': '2013',
+  }
   versions = []
   for version in versions_to_check:
     # Old method of searching for which VS version is installed
@@ -354,6 +378,8 @@ def SelectVisualStudioVersion(version='auto'):
     '2010e': ('10.0',),
     '2012': ('11.0',),
     '2012e': ('11.0',),
+    '2013': ('12.0',),
+    '2013e': ('12.0',),
   }
   override_path = os.environ.get('GYP_MSVS_OVERRIDE_PATH')
   if override_path:
