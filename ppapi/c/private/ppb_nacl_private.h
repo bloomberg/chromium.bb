@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_nacl_private.idl modified Wed Jul  3 17:49:33 2013. */
+/* From private/ppb_nacl_private.idl modified Mon Jul 15 09:19:33 2013. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
@@ -101,9 +101,6 @@ struct PPB_NaCl_Private_1_0 {
    * code to be processed by the graphics stack.
    */
   PP_Bool (*Are3DInterfacesDisabled)(void);
-  /* Enables the creation of sel_ldr processes off of the main thread.
-   */
-  void (*EnableBackgroundSelLdrLaunch)(void);
   /* This is Windows-specific.  This is a replacement for DuplicateHandle() for
    * use inside the Windows sandbox.  Note that we provide this via dependency
    * injection only to avoid the linkage problems that occur because the NaCl

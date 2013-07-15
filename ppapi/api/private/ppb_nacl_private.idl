@@ -79,10 +79,6 @@ interface PPB_NaCl_Private {
    */
   PP_Bool Are3DInterfacesDisabled();
 
-  /* Enables the creation of sel_ldr processes off of the main thread.
-   */
-  void EnableBackgroundSelLdrLaunch();
-
   /* This is Windows-specific.  This is a replacement for DuplicateHandle() for
    * use inside the Windows sandbox.  Note that we provide this via dependency
    * injection only to avoid the linkage problems that occur because the NaCl

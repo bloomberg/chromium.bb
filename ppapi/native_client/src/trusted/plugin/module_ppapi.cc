@@ -71,9 +71,6 @@ class ModulePpapi : public pp::Module {
   virtual pp::Instance* CreateInstance(PP_Instance pp_instance) {
     MODULE_PRINTF(("ModulePpapi::CreateInstance (pp_instance=%"NACL_PRId32")\n",
                    pp_instance));
-    // This must be called from here rather than Init, as it relies on
-    // chrome state that is not set at the time Init runs.
-    private_interface_->EnableBackgroundSelLdrLaunch();
     Plugin* plugin = Plugin::New(pp_instance);
     MODULE_PRINTF(("ModulePpapi::CreateInstance (return %p)\n",
                    static_cast<void* >(plugin)));

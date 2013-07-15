@@ -21,7 +21,6 @@
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
-#include "ipc/ipc_sync_message_filter.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/private/pp_file_handle.h"
 #include "ppapi/native_client/src/trusted/plugin/nacl_entry_points.h"
@@ -38,14 +37,6 @@
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 
 namespace {
-
-// This allows us to send requests from background threads.
-// E.g., to do LaunchSelLdr for helper nexes (which is done synchronously),
-// in a background thread, to avoid jank.
-// TODO(jvoung): remove this since we are no longer launching from background
-// threads (or rename this if others are using it).
-base::LazyInstance<scoped_refptr<IPC::SyncMessageFilter> >
-    g_background_thread_sender = LAZY_INSTANCE_INITIALIZER;
 
 base::LazyInstance<scoped_refptr<PnaclTranslationResourceHost> >
     g_pnacl_resource_host = LAZY_INSTANCE_INITIALIZER;
@@ -206,11 +197,6 @@ PP_Bool Are3DInterfacesDisabled() {
                          switches::kDisable3DAPIs));
 }
 
-void EnableBackgroundSelLdrLaunch() {
-  g_background_thread_sender.Get() =
-      content::RenderThread::Get()->GetSyncMessageFilter();
-}
-
 int32_t BrokerDuplicateHandle(PP_FileHandle source_handle,
                               uint32_t process_id,
                               PP_FileHandle* target_handle,
@@ -228,9 +214,7 @@ int32_t BrokerDuplicateHandle(PP_FileHandle source_handle,
 PP_FileHandle GetReadonlyPnaclFD(const char* filename) {
   IPC::PlatformFileForTransit out_fd = IPC::InvalidPlatformFileForTransit();
   IPC::Sender* sender = content::RenderThread::Get();
-  if (sender == NULL)
-    sender = g_background_thread_sender.Pointer()->get();
-
+  DCHECK(sender);
   if (!sender->Send(new NaClHostMsg_GetReadonlyPnaclFD(
           std::string(filename),
           &out_fd))) {
@@ -249,9 +233,7 @@ PP_FileHandle GetReadonlyPnaclFD(const char* filename) {
 PP_FileHandle CreateTemporaryFile(PP_Instance instance) {
   IPC::PlatformFileForTransit transit_fd = IPC::InvalidPlatformFileForTransit();
   IPC::Sender* sender = content::RenderThread::Get();
-  if (sender == NULL)
-    sender = g_background_thread_sender.Pointer()->get();
-
+  DCHECK(sender);
   if (!sender->Send(new NaClHostMsg_NaClCreateTemporaryFile(
           &transit_fd))) {
     return base::kInvalidPlatformFileValue;
@@ -346,9 +328,7 @@ PP_FileHandle OpenNaClExecutable(PP_Instance instance,
                                  uint64_t* nonce_hi) {
   IPC::PlatformFileForTransit out_fd = IPC::InvalidPlatformFileForTransit();
   IPC::Sender* sender = content::RenderThread::Get();
-  if (sender == NULL)
-    sender = g_background_thread_sender.Pointer()->get();
-
+  DCHECK(sender);
   *nonce_lo = 0;
   *nonce_hi = 0;
   base::FilePath file_path;
@@ -375,7 +355,6 @@ const PPB_NaCl_Private nacl_interface = {
   &StartPpapiProxy,
   &UrandomFD,
   &Are3DInterfacesDisabled,
-  &EnableBackgroundSelLdrLaunch,
   &BrokerDuplicateHandle,
   &GetReadonlyPnaclFD,
   &CreateTemporaryFile,
