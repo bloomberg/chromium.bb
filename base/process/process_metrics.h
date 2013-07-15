@@ -237,6 +237,23 @@ struct BASE_EXPORT SystemMemoryInfoKB {
 BASE_EXPORT bool GetSystemMemoryInfo(SystemMemoryInfoKB* meminfo);
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
 
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+// Get the number of threads of |process| as available in /proc/<pid>/stat.
+// This should be used with care as no synchronization with running threads is
+// done. This is mostly useful to guarantee being single-threaded.
+// Returns 0 on failure.
+BASE_EXPORT int GetNumberOfThreads(ProcessHandle process);
+
+// /proc/self/exe refers to the current executable.
+BASE_EXPORT extern const char kProcSelfExe[];
+#endif  // defined(OS_LINUX) || defined(OS_ANDROID)
+
+#if defined(OS_POSIX)
+// Returns the maximum number of file descriptors that can be open by a process
+// at once. If the number is unavailable, a conservative best guess is returned.
+size_t GetMaxFds();
+#endif  // defined(OS_POSIX)
+
 }  // namespace base
 
 #endif  // BASE_PROCESS_PROCESS_METRICS_H_

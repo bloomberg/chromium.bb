@@ -4,27 +4,9 @@
 
 #include "base/process_util.h"
 
-#include <ctype.h>
-#include <dirent.h>
-#include <dlfcn.h>
-#include <errno.h>
-#include <fcntl.h>
-#include <sys/param.h>
 #include <sys/sysctl.h>
-#include <sys/time.h>
 #include <sys/types.h>
-#include <sys/user.h>
-#include <sys/wait.h>
-#include <time.h>
 #include <unistd.h>
-
-#include "base/logging.h"
-#include "base/string_tokenizer.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/string_split.h"
-#include "base/strings/string_util.h"
-#include "base/sys_info.h"
-#include "base/threading/thread_restrictions.h"
 
 namespace base {
 

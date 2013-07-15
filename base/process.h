@@ -7,31 +7,10 @@
 
 #include "base/base_export.h"
 #include "base/basictypes.h"
+#include "base/process/process_handle.h"
 #include "build/build_config.h"
 
-#include <sys/types.h>
-#if defined(OS_WIN)
-#include <windows.h>
-#endif
-
 namespace base {
-
-// ProcessHandle is a platform specific type which represents the underlying OS
-// handle to a process.
-// ProcessId is a number which identifies the process in the OS.
-#if defined(OS_WIN)
-typedef HANDLE ProcessHandle;
-typedef DWORD ProcessId;
-typedef HANDLE UserTokenHandle;
-const ProcessHandle kNullProcessHandle = NULL;
-const ProcessId kNullProcessId = 0;
-#elif defined(OS_POSIX)
-// On POSIX, our ProcessHandle will just be the PID.
-typedef pid_t ProcessHandle;
-typedef pid_t ProcessId;
-const ProcessHandle kNullProcessHandle = 0;
-const ProcessId kNullProcessId = 0;
-#endif  // defined(OS_WIN)
 
 class BASE_EXPORT Process {
  public:

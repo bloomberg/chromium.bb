@@ -162,44 +162,6 @@ void ResetChildSignalHandlersToDefaults(void) {
 
 }  // anonymous namespace
 
-ProcessId GetCurrentProcId() {
-  return getpid();
-}
-
-ProcessHandle GetCurrentProcessHandle() {
-  return GetCurrentProcId();
-}
-
-bool OpenProcessHandle(ProcessId pid, ProcessHandle* handle) {
-  // On Posix platforms, process handles are the same as PIDs, so we
-  // don't need to do anything.
-  *handle = pid;
-  return true;
-}
-
-bool OpenPrivilegedProcessHandle(ProcessId pid, ProcessHandle* handle) {
-  // On POSIX permissions are checked for each operation on process,
-  // not when opening a "handle".
-  return OpenProcessHandle(pid, handle);
-}
-
-bool OpenProcessHandleWithAccess(ProcessId pid,
-                                 uint32 access_flags,
-                                 ProcessHandle* handle) {
-  // On POSIX permissions are checked for each operation on process,
-  // not when opening a "handle".
-  return OpenProcessHandle(pid, handle);
-}
-
-void CloseProcessHandle(ProcessHandle process) {
-  // See OpenProcessHandle, nothing to do.
-  return;
-}
-
-ProcessId GetProcId(ProcessHandle process) {
-  return process;
-}
-
 // A class to handle auto-closing of DIR*'s.
 class ScopedDIRClose {
  public:
@@ -212,41 +174,18 @@ class ScopedDIRClose {
 typedef scoped_ptr_malloc<DIR, ScopedDIRClose> ScopedDIR;
 
 #if defined(OS_LINUX)
-  static const rlim_t kSystemDefaultMaxFds = 8192;
-  static const char kFDDir[] = "/proc/self/fd";
+static const char kFDDir[] = "/proc/self/fd";
 #elif defined(OS_MACOSX)
-  static const rlim_t kSystemDefaultMaxFds = 256;
-  static const char kFDDir[] = "/dev/fd";
+static const char kFDDir[] = "/dev/fd";
 #elif defined(OS_SOLARIS)
-  static const rlim_t kSystemDefaultMaxFds = 8192;
-  static const char kFDDir[] = "/dev/fd";
+static const char kFDDir[] = "/dev/fd";
 #elif defined(OS_FREEBSD)
-  static const rlim_t kSystemDefaultMaxFds = 8192;
-  static const char kFDDir[] = "/dev/fd";
+static const char kFDDir[] = "/dev/fd";
 #elif defined(OS_OPENBSD)
-  static const rlim_t kSystemDefaultMaxFds = 256;
-  static const char kFDDir[] = "/dev/fd";
+static const char kFDDir[] = "/dev/fd";
 #elif defined(OS_ANDROID)
-  static const rlim_t kSystemDefaultMaxFds = 1024;
-  static const char kFDDir[] = "/proc/self/fd";
+static const char kFDDir[] = "/proc/self/fd";
 #endif
-
-size_t GetMaxFds() {
-  rlim_t max_fds;
-  struct rlimit nofile;
-  if (getrlimit(RLIMIT_NOFILE, &nofile)) {
-    // getrlimit failed. Take a best guess.
-    max_fds = kSystemDefaultMaxFds;
-    RAW_LOG(ERROR, "getrlimit(RLIMIT_NOFILE) failed");
-  } else {
-    max_fds = nofile.rlim_cur;
-  }
-
-  if (max_fds > INT_MAX)
-    max_fds = INT_MAX;
-
-  return static_cast<size_t>(max_fds);
-}
 
 void CloseSuperfluousFds(const base::InjectiveMultimap& saved_mapping) {
   // DANGER: no calls to malloc are allowed from now on:

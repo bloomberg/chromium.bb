@@ -38,6 +38,7 @@ typedef struct _malloc_zone_t malloc_zone_t;
 #include "base/process.h"
 #include "base/process/memory.h"
 #include "base/process/kill.h"
+#include "base/process/process_handle.h"
 #include "base/process/process_iterator.h"
 #include "base/process/process_metrics.h"
 
@@ -55,63 +56,7 @@ namespace base {
 BASE_EXPORT void RouteStdioToConsole();
 #endif
 
-// Returns the id of the current process.
-BASE_EXPORT ProcessId GetCurrentProcId();
-
-// Returns the ProcessHandle of the current process.
-BASE_EXPORT ProcessHandle GetCurrentProcessHandle();
-
-// Converts a PID to a process handle. This handle must be closed by
-// CloseProcessHandle when you are done with it. Returns true on success.
-BASE_EXPORT bool OpenProcessHandle(ProcessId pid, ProcessHandle* handle);
-
-// Converts a PID to a process handle. On Windows the handle is opened
-// with more access rights and must only be used by trusted code.
-// You have to close returned handle using CloseProcessHandle. Returns true
-// on success.
-// TODO(sanjeevr): Replace all calls to OpenPrivilegedProcessHandle with the
-// more specific OpenProcessHandleWithAccess method and delete this.
-BASE_EXPORT bool OpenPrivilegedProcessHandle(ProcessId pid,
-                                             ProcessHandle* handle);
-
-// Converts a PID to a process handle using the desired access flags. Use a
-// combination of the kProcessAccess* flags defined above for |access_flags|.
-BASE_EXPORT bool OpenProcessHandleWithAccess(ProcessId pid,
-                                             uint32 access_flags,
-                                             ProcessHandle* handle);
-
-// Closes the process handle opened by OpenProcessHandle.
-BASE_EXPORT void CloseProcessHandle(ProcessHandle process);
-
-// Returns the unique ID for the specified process. This is functionally the
-// same as Windows' GetProcessId(), but works on versions of Windows before
-// Win XP SP1 as well.
-BASE_EXPORT ProcessId GetProcId(ProcessHandle process);
-
-#if defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_BSD)
-// Returns the path to the executable of the given process.
-BASE_EXPORT FilePath GetProcessExecutablePath(ProcessHandle process);
-#endif
-
-#if defined(OS_LINUX) || defined(OS_ANDROID)
-// Get the number of threads of |process| as available in /proc/<pid>/stat.
-// This should be used with care as no synchronization with running threads is
-// done. This is mostly useful to guarantee being single-threaded.
-// Returns 0 on failure.
-BASE_EXPORT int GetNumberOfThreads(ProcessHandle process);
-
-// /proc/self/exe refers to the current executable.
-BASE_EXPORT extern const char kProcSelfExe[];
-#endif  // defined(OS_LINUX) || defined(OS_ANDROID)
-
 #if defined(OS_POSIX)
-// Returns the ID for the parent of the given process.
-BASE_EXPORT ProcessId GetParentProcessId(ProcessHandle process);
-
-// Returns the maximum number of file descriptors that can be open by a process
-// at once. If the number is unavailable, a conservative best guess is returned.
-size_t GetMaxFds();
-
 // Close all file descriptors, except those which are a destination in the
 // given multimap. Only call this function in a child process where you know
 // that there aren't any other threads.
@@ -251,19 +196,6 @@ BASE_EXPORT bool LaunchProcess(const CommandLine& cmdline,
                                ProcessHandle* process_handle);
 
 #if defined(OS_WIN)
-
-enum IntegrityLevel {
-  INTEGRITY_UNKNOWN,
-  LOW_INTEGRITY,
-  MEDIUM_INTEGRITY,
-  HIGH_INTEGRITY,
-};
-// Determine the integrity level of the specified process. Returns false
-// if the system does not support integrity levels (pre-Vista) or in the case
-// of an underlying system failure.
-BASE_EXPORT bool GetProcessIntegrityLevel(ProcessHandle process,
-                                          IntegrityLevel* level);
-
 // Windows-specific LaunchProcess that takes the command line as a
 // string.  Useful for situations where you need to control the
 // command line arguments directly, but prefer the CommandLine version

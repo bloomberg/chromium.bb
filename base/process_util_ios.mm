@@ -15,33 +15,8 @@
 
 namespace base {
 
-ProcessId GetCurrentProcId() {
-  return getpid();
-}
-
-ProcessHandle GetCurrentProcessHandle() {
-  return GetCurrentProcId();
-}
-
 void RaiseProcessToHighPriority() {
   // Impossible on iOS. Do nothing.
-}
-
-size_t GetMaxFds() {
-  static const rlim_t kSystemDefaultMaxFds = 256;
-  rlim_t max_fds;
-  struct rlimit nofile;
-  if (getrlimit(RLIMIT_NOFILE, &nofile)) {
-    // Error case: Take a best guess.
-    max_fds = kSystemDefaultMaxFds;
-  } else {
-    max_fds = nofile.rlim_cur;
-  }
-
-  if (max_fds > INT_MAX)
-    max_fds = INT_MAX;
-
-  return static_cast<size_t>(max_fds);
 }
 
 }  // namespace base

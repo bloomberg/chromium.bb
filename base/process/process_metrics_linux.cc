@@ -496,4 +496,11 @@ bool GetSystemMemoryInfo(SystemMemoryInfoKB* meminfo) {
   return true;
 }
 
+const char kProcSelfExe[] = "/proc/self/exe";
+
+int GetNumberOfThreads(ProcessHandle process) {
+  return internal::ReadProcStatsAndGetFieldAsInt(process,
+                                                 internal::VM_NUMTHREADS);
+}
+
 }  // namespace base
