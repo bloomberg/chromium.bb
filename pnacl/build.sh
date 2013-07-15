@@ -56,7 +56,7 @@ fi
 # TODO(pdox): Decide what the target should really permanently be
 readonly CROSS_TARGET_ARM=arm-none-linux-gnueabi
 readonly BINUTILS_TARGET=arm-pc-nacl
-readonly REAL_CROSS_TARGET=le32-unknown-nacl
+readonly REAL_CROSS_TARGET=le32-nacl
 readonly NACL64_TARGET=x86_64-nacl
 
 readonly DRIVER_DIR="${PNACL_ROOT}/driver"
@@ -178,7 +178,7 @@ readonly PNACL_FINALIZE="${INSTALL_NEWLIB_BIN}/pnacl-finalize"
 readonly PNACL_NM="${INSTALL_NEWLIB_BIN}/pnacl-nm"
 readonly PNACL_TRANSLATE="${INSTALL_NEWLIB_BIN}/pnacl-translate"
 readonly PNACL_READELF="${INSTALL_NEWLIB_BIN}/pnacl-readelf"
-readonly PNACL_SIZE="${BINUTILS_INSTALL_DIR}/bin/arm-pc-nacl-size"
+readonly PNACL_SIZE="${BINUTILS_INSTALL_DIR}/bin/${REAL_CROSS_TARGET}-size"
 readonly PNACL_STRIP="${INSTALL_NEWLIB_BIN}/pnacl-strip"
 readonly ILLEGAL_TOOL="${INSTALL_NEWLIB_BIN}"/pnacl-illegal
 
@@ -1789,8 +1789,8 @@ binutils-configure() {
   # c.f.:  http://sourceware.org/ml/binutils/2009-05/msg00252.html
   # all we try to do here is to add "$ORIGIN/../lib to "rpath".
   # If you ever touch this please make sure that rpath is correct via:
-  # objdump -p toolchain/${TOOLCHAIN_LABEL}/host/bin/arm-pc-nacl-ld.gold
-  # objdump -p toolchain/${TOOLCHAIN_LABEL}/host/bin/arm-pc-nacl-objdump
+  # objdump -p toolchain/${TOOLCHAIN_LABEL}/host/bin/le32-nacl-ld.gold
+  # objdump -p toolchain/${TOOLCHAIN_LABEL}/host/bin/le32-nacl-objdump
   if ${BUILD_PLATFORM_LINUX} ; then
       local flags='-Xlinker -rpath -Xlinker '"'"'$\\$$\$$\\$$\$$ORIGIN/../lib'"'"
       local shared='yes'
@@ -1823,6 +1823,7 @@ binutils-configure() {
       ${srcdir}/configure \
           --prefix="${BINUTILS_INSTALL_DIR}" \
           --target=${BINUTILS_TARGET} \
+          --program-prefix=${REAL_CROSS_TARGET}- \
           --enable-targets=${targ} \
           --enable-shared=${shared} \
           --enable-gold=default \
@@ -1899,20 +1900,21 @@ binutils-install() {
   # TODO(robertm): remove this once we manage to avoid building
   #                ld in the first place
   echo "pruning hack: ${BINUTILS_INSTALL_DIR}"
-  rm -f "${BINUTILS_INSTALL_DIR}/bin/arm-pc-nacl-ld"
-  rm -f "${BINUTILS_INSTALL_DIR}/bin/arm-pc-nacl-ld.bfd"
+  rm -f "${BINUTILS_INSTALL_DIR}/bin/${REAL_CROSS_TARGET}-ld"
+  rm -f "${BINUTILS_INSTALL_DIR}/bin/${REAL_CROSS_TARGET}-ld.bfd"
 
-  # Also remove "${BINUTILS_INSTALL_DIR}/arm-pc-nacl" which contains
+  # Also remove "${BINUTILS_INSTALL_DIR}/${BINUTILS_TARGET}" which contains
   # duplicate binaries and unused linker scripts
-  echo "remove unused ${BINUTILS_INSTALL_DIR}/arm-pc-nacl/"
-  rm -rf "${BINUTILS_INSTALL_DIR}/arm-pc-nacl/"
+  echo "remove unused ${BINUTILS_INSTALL_DIR}/${BINUTILS_TARGET}/"
+  rm -rf "${BINUTILS_INSTALL_DIR}/${BINUTILS_TARGET}/"
 
   # Move binutils shared libs to host/lib.
   # The first "*" expands to the host string, e.g.
   # x86_64-unknown-linux-gnu
   if ${BUILD_PLATFORM_LINUX} ; then
     echo "move shared libs to ${BINUTILS_INSTALL_DIR}/${SO_DIR}"
-    for lib in ${BINUTILS_INSTALL_DIR}/*/arm-pc-nacl/lib/lib*${SO_EXT} ; do
+    for lib in ${BINUTILS_INSTALL_DIR}/*/${BINUTILS_TARGET}/lib/lib*${SO_EXT}
+    do
       echo "moving ${lib}"
       mv ${lib} ${BINUTILS_INSTALL_DIR}/${SO_DIR}
     done
@@ -3064,7 +3066,7 @@ DumpAllRevisions() {
 
 # Note: we could replace this with a modified version of tools/elf_checker.py
 #       if we do not want to depend on binutils
-readonly NACL_OBJDUMP=${BINUTILS_INSTALL_DIR}/bin/${BINUTILS_TARGET}-objdump
+readonly NACL_OBJDUMP=${BINUTILS_INSTALL_DIR}/bin/${REAL_CROSS_TARGET}-objdump
 
 # Usage: VerifyArchive <checker> <pattern> <filename>
 ExtractAndCheck() {
