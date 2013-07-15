@@ -244,7 +244,7 @@ if env.Bit('mac') or env.Bit('windows'):
   # files, but ReFs does not.  (We don't run on VFAT, so we can ignore
   # that case.)  Whether this is an expensive test depends on the
   # filesystem type, so we err on the side of caution.
-  test_size = 'large'
+  test_size = 'huge'
 else:
   # On Linux, sparse file support at the filesystem level means that
   # the test is fast -- cost is proportional to actual number of bytes
