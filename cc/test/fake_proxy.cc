@@ -41,10 +41,6 @@ void FakeProxy::SetMaxPartialTextureUpdates(size_t max) {
 
 bool FakeProxy::CommitPendingForTesting() { return false; }
 
-skia::RefPtr<SkPicture> FakeProxy::CapturePicture() {
-  return skia::RefPtr<SkPicture>();
-}
-
 scoped_ptr<base::Value> FakeProxy::AsValue() const {
   scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue());
   return state.PassAs<base::Value>();

@@ -486,10 +486,4 @@ void SingleThreadProxy::DidSwapFrame() {
 
 bool SingleThreadProxy::CommitPendingForTesting() { return false; }
 
-skia::RefPtr<SkPicture> SingleThreadProxy::CapturePicture() {
-  // Impl-side painting only.
-  NOTREACHED();
-  return skia::RefPtr<SkPicture>();
-}
-
 }  // namespace cc

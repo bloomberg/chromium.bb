@@ -25,9 +25,7 @@
 #include "cc/output/renderer.h"
 #include "cc/quads/render_pass.h"
 #include "cc/resources/tile_manager.h"
-#include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "third_party/skia/include/core/SkPicture.h"
 #include "ui/gfx/rect.h"
 
 namespace cc {
@@ -351,8 +349,6 @@ class CC_EXPORT LayerTreeHostImpl
   template <typename RenderPassCuller>
       static void RemoveRenderPasses(RenderPassCuller culler, FrameData* frame);
 
-  skia::RefPtr<SkPicture> CapturePicture();
-
   gfx::Vector2dF accumulated_root_overscroll() const {
     return accumulated_root_overscroll_;
   }
@@ -435,8 +431,6 @@ class CC_EXPORT LayerTreeHostImpl
 
   void AnimateScrollbarsRecursive(LayerImpl* layer,
                                   base::TimeTicks time);
-
-  static LayerImpl* GetNonCompositedContentLayerRecursive(LayerImpl* layer);
 
   void UpdateCurrentFrameTime(base::TimeTicks* ticks, base::Time* now) const;
 

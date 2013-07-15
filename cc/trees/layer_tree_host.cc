@@ -1064,8 +1064,4 @@ void LayerTreeHost::AnimateLayers(base::TimeTicks time) {
   }
 }
 
-skia::RefPtr<SkPicture> LayerTreeHost::CapturePicture() {
-  return proxy_->CapturePicture();
-}
-
 }  // namespace cc

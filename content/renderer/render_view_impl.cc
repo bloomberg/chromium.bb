@@ -196,8 +196,6 @@
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
-#include "third_party/skia/include/core/SkBitmap.h"
-#include "third_party/skia/include/core/SkPicture.h"
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/point.h"
@@ -230,6 +228,7 @@
 #include "content/renderer/media/android/stream_texture_factory_android.h"
 #include "content/renderer/media/android/webmediaplayer_android.h"
 #include "content/renderer/media/android/webmediaplayer_proxy_android.h"
+#include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/web/WebHitTestResult.h"
 #include "third_party/WebKit/public/platform/WebFloatPoint.h"
 #include "third_party/WebKit/public/platform/WebFloatRect.h"
@@ -6734,11 +6733,6 @@ bool RenderViewImpl::didTapMultipleTargets(
                                                transport_dib->id()));
 
   return true;
-}
-
-skia::RefPtr<SkPicture> RenderViewImpl::CapturePicture() {
-  return compositor_ ? compositor_->CapturePicture() :
-      skia::RefPtr<SkPicture>();
 }
 #endif
 

@@ -1350,30 +1350,6 @@ void ThreadProxy::SchedulerStateAsStringOnImplThreadForTesting(
   request->completion.Signal();
 }
 
-skia::RefPtr<SkPicture> ThreadProxy::CapturePicture() {
-  DCHECK(IsMainThread());
-  CompletionEvent completion;
-  skia::RefPtr<SkPicture> picture;
-  {
-    DebugScopedSetMainThreadBlocked main_thread_blocked(this);
-    Proxy::ImplThreadTaskRunner()->PostTask(
-        FROM_HERE,
-        base::Bind(&ThreadProxy::CapturePictureOnImplThread,
-                   impl_thread_weak_ptr_,
-                   &completion,
-                   &picture));
-    completion.Wait();
-  }
-  return picture;
-}
-
-void ThreadProxy::CapturePictureOnImplThread(CompletionEvent* completion,
-                                             skia::RefPtr<SkPicture>* picture) {
-  DCHECK(IsImplThread());
-  *picture = layer_tree_host_impl_->CapturePicture();
-  completion->Signal();
-}
-
 void ThreadProxy::RenewTreePriority() {
   bool smoothness_takes_priority =
       layer_tree_host_impl_->pinch_gesture_active() ||

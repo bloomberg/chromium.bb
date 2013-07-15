@@ -2379,32 +2379,6 @@ scoped_ptr<base::Value> LayerTreeHostImpl::ActivationStateAsValue() const {
   return state.PassAs<base::Value>();
 }
 
-// static
-LayerImpl* LayerTreeHostImpl::GetNonCompositedContentLayerRecursive(
-    LayerImpl* layer) {
-  if (!layer)
-    return NULL;
-
-  if (layer->DrawsContent())
-    return layer;
-
-  for (LayerImplList::const_iterator it = layer->children().begin();
-       it != layer->children().end(); ++it) {
-    LayerImpl* nccr = GetNonCompositedContentLayerRecursive(*it);
-    if (nccr)
-      return nccr;
-  }
-
-  return NULL;
-}
-
-skia::RefPtr<SkPicture> LayerTreeHostImpl::CapturePicture() {
-  LayerTreeImpl* tree =
-      pending_tree_ ? pending_tree_.get() : active_tree_.get();
-  LayerImpl* layer = GetNonCompositedContentLayerRecursive(tree->root_layer());
-  return layer ? layer->GetPicture() : skia::RefPtr<SkPicture>();
-}
-
 void LayerTreeHostImpl::SetDebugState(
     const LayerTreeDebugState& new_debug_state) {
   if (LayerTreeDebugState::Equal(debug_state_, new_debug_state))

@@ -40,7 +40,6 @@ class FakeProxy : public Proxy {
   virtual size_t MaxPartialTextureUpdates() const OVERRIDE;
   virtual void AcquireLayerTextures() OVERRIDE {}
   virtual bool CommitPendingForTesting() OVERRIDE;
-  virtual skia::RefPtr<SkPicture> CapturePicture() OVERRIDE;
   virtual scoped_ptr<base::Value> AsValue() const OVERRIDE;
 
   virtual RendererCapabilities& GetRendererCapabilities();

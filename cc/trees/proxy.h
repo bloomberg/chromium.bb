@@ -14,8 +14,6 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "cc/base/cc_export.h"
-#include "skia/ext/refptr.h"
-#include "third_party/skia/include/core/SkPicture.h"
 
 namespace base { class SingleThreadTaskRunner; }
 
@@ -93,7 +91,6 @@ class CC_EXPORT Proxy {
 
   virtual void AcquireLayerTextures() = 0;
 
-  virtual skia::RefPtr<SkPicture> CapturePicture() = 0;
   virtual scoped_ptr<base::Value> AsValue() const = 0;
 
   // Testing hooks

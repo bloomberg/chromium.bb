@@ -328,10 +328,6 @@ void RenderWidgetCompositor::GetRenderingStats(cc::RenderingStats* stats) {
   layer_tree_host_->CollectRenderingStats(stats);
 }
 
-skia::RefPtr<SkPicture> RenderWidgetCompositor::CapturePicture() {
-  return layer_tree_host_->CapturePicture();
-}
-
 void RenderWidgetCompositor::UpdateTopControlsState(
     cc::TopControlsState constraints,
     cc::TopControlsState current,

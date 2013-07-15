@@ -59,7 +59,6 @@ class ThreadProxy : public Proxy,
   virtual size_t MaxPartialTextureUpdates() const OVERRIDE;
   virtual void AcquireLayerTextures() OVERRIDE;
   virtual void ForceSerializeOnSwapBuffers() OVERRIDE;
-  virtual skia::RefPtr<SkPicture> CapturePicture() OVERRIDE;
   virtual scoped_ptr<base::Value> AsValue() const OVERRIDE;
   virtual bool CommitPendingForTesting() OVERRIDE;
   virtual std::string SchedulerStateAsStringForTesting() OVERRIDE;
@@ -173,8 +172,6 @@ class ThreadProxy : public Proxy,
   void CommitPendingOnImplThreadForTesting(CommitPendingRequest* request);
   void SchedulerStateAsStringOnImplThreadForTesting(
       SchedulerStateRequest* request);
-  void CapturePictureOnImplThread(CompletionEvent* completion,
-                                  skia::RefPtr<SkPicture>* picture);
   void AsValueOnImplThread(CompletionEvent* completion,
                            base::DictionaryValue* state) const;
   void RenewTreePriorityOnImplThread();

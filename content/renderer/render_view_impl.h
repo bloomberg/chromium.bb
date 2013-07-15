@@ -742,7 +742,6 @@ class CONTENT_EXPORT RenderViewImpl
   virtual void ClearEditCommands() OVERRIDE;
   virtual SSLStatus GetSSLStatusOfFrame(WebKit::WebFrame* frame) const OVERRIDE;
 #if defined(OS_ANDROID)
-  virtual skia::RefPtr<SkPicture> CapturePicture() OVERRIDE;
   virtual void UpdateTopControlsState(TopControlsState constraints,
                                       TopControlsState current,
                                       bool animate) OVERRIDE;

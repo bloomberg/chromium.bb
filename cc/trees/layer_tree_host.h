@@ -29,9 +29,7 @@
 #include "cc/trees/layer_tree_settings.h"
 #include "cc/trees/occlusion_tracker.h"
 #include "cc/trees/proxy.h"
-#include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "third_party/skia/include/core/SkPicture.h"
 #include "ui/base/latency_info.h"
 #include "ui/gfx/rect.h"
 
@@ -246,8 +244,6 @@ class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
   AnimationRegistrar* animation_registrar() const {
     return animation_registrar_.get();
   }
-
-  skia::RefPtr<SkPicture> CapturePicture();
 
   bool BlocksPendingCommit() const;
 
