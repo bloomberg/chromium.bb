@@ -77,4 +77,8 @@ MESSAGE_CENTER_EXPORT
 
 @end
 
+@interface MCNotificationController (TestingInterface)
+- (NSImageView*)iconView;
+@end
+
 #endif  // UI_MESSAGE_CENTER_COCOA_NOTIFICATION_CONTROLLER_H_

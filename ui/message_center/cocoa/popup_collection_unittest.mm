@@ -17,12 +17,6 @@
 #include "ui/message_center/message_center_style.h"
 #include "ui/message_center/notification.h"
 
-@implementation MCNotificationController (TestingInterface)
-- (NSImageView*)iconView {
-  return icon_.get();
-}
-@end
-
 class PopupCollectionTest : public ui::CocoaTest {
  public:
   PopupCollectionTest()

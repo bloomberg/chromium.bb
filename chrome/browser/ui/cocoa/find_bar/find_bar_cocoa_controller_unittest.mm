@@ -15,15 +15,10 @@
 
 // Expose private variables to make testing easier.
 @interface FindBarCocoaController(Testing)
-- (NSView*)findBarView;
 - (FindBarTextField*)findTextField;
 @end
 
 @implementation FindBarCocoaController(Testing)
-- (NSView*)findBarView {
-  return findBarView_;
-}
-
 - (FindBarTextField*)findTextField {
   return findText_;
 }
