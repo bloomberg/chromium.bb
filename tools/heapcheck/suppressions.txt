@@ -936,56 +936,6 @@
    fun:ash::test::DisplayControllerTest_XWidowNameForRootWindow_Test::TestBody
 }
 {
-   bug_255729a
-   Heapcheck:Leak
-   fun:v8::internal::Malloced::New
-   fun:v8::internal::Zone::NewSegment
-   fun:v8::internal::Zone::NewExpand
-   fun:v8::internal::Zone::New
-   fun:v8::internal::ZoneAllocationPolicy::New
-   fun:v8::internal::List::NewData
-   fun:v8::internal::List::Resize
-   fun:v8::internal::List::ResizeAddInternal
-   fun:v8::internal::List::ResizeAdd
-   fun:v8::internal::List::Add
-   fun:v8::internal::ZoneList::Add
-   fun:v8::internal::HGraph::GetNextValueID
-   fun:v8::internal::HValue::SetBlock
-   fun:v8::internal::HInstruction::InsertAfter
-}
-{
-   bug_255729b
-   Heapcheck:Leak
-   fun:v8::internal::Malloced::New
-   fun:v8::internal::Zone::NewSegment
-   fun:v8::internal::Zone::NewExpand
-   fun:v8::internal::Zone::New
-   fun:v8::internal::ZoneObject::operator new
-   fun:v8::internal::HOptimizedGraphBuilder::SetUpScope
-   fun:v8::internal::HOptimizedGraphBuilder::BuildGraph
-   fun:v8::internal::HGraphBuilder::CreateGraph
-   fun:v8::internal::OptimizingCompiler::CreateGraph
-   fun:v8::internal::Compiler::RecompileParallel
-   fun:__RT_impl_Runtime_ParallelRecompile
-   fun:v8::internal::Runtime_ParallelRecompile
-}
-{
-   bug_255729c
-   Heapcheck:Leak
-   fun:v8::internal::Malloced::New
-   fun:v8::internal::Zone::NewSegment
-   fun:v8::internal::Zone::NewExpand
-   fun:v8::internal::Zone::New
-   fun:v8::internal::ZoneObject::operator new
-   fun:v8::internal::Parser::ParseLazy
-   fun:v8::internal::Parser::ParseLazy
-   fun:v8::internal::Parser::Parse
-   fun:v8::internal::Parser::Parse
-   fun:v8::internal::Compiler::RecompileParallel
-   fun:__RT_impl_Runtime_ParallelRecompile
-   fun:v8::internal::Runtime_ParallelRecompile
-}
-{
    bug_258113
    Heapcheck:Leak
    fun:ppapi::proxy::PPP_Class_Proxy::CreateProxiedObject
@@ -1013,15 +963,6 @@
    ...
    fun:ppapi::proxy::PluginProxyMultiThreadTest::RunTest
    fun:ppapi::ThreadAwareCallbackMultiThreadTest_RunOnTargetThread_Test::TestBody
-}
-{
-   bug_259188
-   Heapcheck:Leak
-   ...
-   fun:WebCore::V8PerIsolateData::create
-   fun:WebCore::V8PerIsolateData::ensureInitialized
-   fun:WebKit::initialize
-   fun:UnitTestTestSuite
 }
 {
    bug_259350a
