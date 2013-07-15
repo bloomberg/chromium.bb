@@ -20,6 +20,7 @@
 
 using base::android::AppendJavaStringArrayToStringVector;
 using base::android::AttachCurrentThread;
+using base::android::ConvertUTF8ToJavaString;
 using base::android::GetApplicationContext;
 using base::android::JavaFloatArrayToFloatVector;
 
@@ -46,16 +47,17 @@ void SpeechRecognizerImplAndroid::StartRecognition(
       SpeechRecognitionManager::GetInstance()->GetSessionConfig(session_id());
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(
       &content::SpeechRecognizerImplAndroid::StartRecognitionOnUIThread, this,
-      config.continuous, config.interim_results));
+      config.language, config.continuous, config.interim_results));
 }
 
 void SpeechRecognizerImplAndroid::StartRecognitionOnUIThread(
-    bool continuous, bool interim_results) {
+    std::string language, bool continuous, bool interim_results) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   JNIEnv* env = AttachCurrentThread();
   j_recognition_.Reset(Java_SpeechRecognition_createSpeechRecognition(env,
       GetApplicationContext(), reinterpret_cast<jint>(this)));
-  Java_SpeechRecognition_startRecognition(env, j_recognition_.obj(), continuous,
+  Java_SpeechRecognition_startRecognition(env, j_recognition_.obj(),
+      ConvertUTF8ToJavaString(env, language).obj(), continuous,
       interim_results);
 }
 

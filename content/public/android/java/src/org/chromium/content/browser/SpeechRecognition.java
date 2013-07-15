@@ -180,12 +180,13 @@ class SpeechRecognition {
     }
 
     @CalledByNative
-    private void startRecognition(boolean continuous, boolean interim_results) {
+    private void startRecognition(String language, boolean continuous, boolean interim_results) {
         if (mRecognizer == null)
             return;
 
         mContinuous = continuous;
         mIntent.putExtra("android.speech.extra.DICTATION_MODE", continuous);
+        mIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, language);
         mIntent.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, interim_results);
         mRecognizer.startListening(mIntent);
     }
