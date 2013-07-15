@@ -221,7 +221,6 @@ int SimpleBackendImpl::GetMaxFileSize() const {
 }
 
 void SimpleBackendImpl::OnDeactivated(const SimpleEntryImpl* entry) {
-  DCHECK_LT(0U, active_entries_.count(entry->entry_hash()));
   active_entries_.erase(entry->entry_hash());
 }
 
@@ -452,8 +451,6 @@ void SimpleBackendImpl::GetNextEntryInIterator(
       int error_code_open = OpenEntryFromHash(entry_hash,
                                               next_entry,
                                               continue_iteration);
-      // TODO(clamy): Write a unit test that checks that getting ERR_FAILED here
-      // will not stop the enumeration.
       if (error_code_open == net::ERR_IO_PENDING)
         return;
       if (error_code_open != net::ERR_FAILED) {
@@ -505,6 +502,7 @@ void SimpleBackendImpl::OnEntryOpenedFromKey(
   if (final_code == net::OK) {
     bool key_matches = key.compare(simple_entry->key()) == 0;
     if (!key_matches) {
+      // TODO(clamy): Add a unit test to check this code path.
       DLOG(WARNING) << "Key mismatch on open.";
       simple_entry->Doom();
       simple_entry->Close();

@@ -1539,6 +1539,8 @@
         'disk_cache/mapped_file_unittest.cc',
         'disk_cache/simple/simple_index_file_unittest.cc',
         'disk_cache/simple/simple_index_unittest.cc',
+        'disk_cache/simple/simple_test_util.h',
+        'disk_cache/simple/simple_test_util.cc',
         'disk_cache/simple/simple_util_unittest.cc',
         'disk_cache/storage_block_unittest.cc',
         'disk_cache/flash/log_store_entry_unittest.cc',
