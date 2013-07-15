@@ -102,7 +102,6 @@ bool Socket::InitSocketInternal() {
   int reuse_addr = 1;
   setsockopt(socket_, SOL_SOCKET, SO_REUSEADDR,
              &reuse_addr, sizeof(reuse_addr));
-  tools::DeferAccept(socket_);
   return true;
 }
 
