@@ -210,21 +210,46 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
   EXPECT_EQ(ASCIIToUTF16(search_string), model->CurrentMatch(NULL).contents);
 }
 
-IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, BetterPopupBlockerTest) {
+IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, BlockWebContentsCreation) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableBetterPopupBlocking);
 
   CountRenderViewHosts counter;
 
-  // If the popup blocker blocked the blank post, there should be only one tab.
   ui_test_utils::NavigateToURL(browser(), GetTestURL());
 
+  // If the popup blocker blocked the blank post, there should be only one tab.
   EXPECT_EQ(1u, chrome::GetBrowserCount(browser()->profile(),
                                         browser()->host_desktop_type()));
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
   WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_EQ(GetTestURL(), web_contents->GetURL());
+
+  // And no new RVH created.
+  EXPECT_EQ(0, counter.GetRenderViewHostCreatedCount());
+}
+
+IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
+                       PopupBlockedFakeClickOnAnchorNoTarget) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableBetterPopupBlocking);
+
+  GURL url(ui_test_utils::GetTestUrl(
+      base::FilePath(kTestDir),
+      base::FilePath(FILE_PATH_LITERAL("popup-fake-click-on-anchor2.html"))));
+
+  CountRenderViewHosts counter;
+
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // If the popup blocker blocked the blank post, there should be only one tab.
+  EXPECT_EQ(1u, chrome::GetBrowserCount(browser()->profile(),
+                                        browser()->host_desktop_type()));
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
+  WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_EQ(url, web_contents->GetURL());
 
   // And no new RVH created.
   EXPECT_EQ(0, counter.GetRenderViewHostCreatedCount());

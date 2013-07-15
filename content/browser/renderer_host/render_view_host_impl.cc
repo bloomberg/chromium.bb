@@ -1373,7 +1373,7 @@ void RenderViewHostImpl::OnOpenURL(
 
   delegate_->RequestOpenURL(
       this, validated_url, params.referrer, params.disposition, params.frame_id,
-      params.is_cross_site_redirect);
+      params.is_cross_site_redirect, params.user_gesture);
 }
 
 void RenderViewHostImpl::OnDidContentsPreferredSizeChange(

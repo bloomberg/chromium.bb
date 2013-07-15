@@ -68,6 +68,10 @@ struct CONTENT_EXPORT OpenURLParams {
   // in which case it should replace the current navigation entry.
   bool is_cross_site_redirect;
 
+  // Indicates whether this navigation was triggered while processing a user
+  // gesture if the navigation was initiated by the renderer.
+  bool user_gesture;
+
  private:
   OpenURLParams();
 };

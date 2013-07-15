@@ -2038,6 +2038,14 @@ void RenderViewImpl::OpenURL(WebFrame* frame,
   } else {
     params.is_cross_site_redirect = false;
   }
+  params.user_gesture = WebUserGestureIndicator::isProcessingUserGesture();
+
+  if (policy == WebKit::WebNavigationPolicyNewBackgroundTab ||
+      policy == WebKit::WebNavigationPolicyNewForegroundTab ||
+      policy == WebKit::WebNavigationPolicyNewWindow ||
+      policy == WebKit::WebNavigationPolicyNewPopup) {
+    WebUserGestureIndicator::consumeUserGesture();
+  }
 
   Send(new ViewHostMsg_OpenURL(routing_id_, params));
 }

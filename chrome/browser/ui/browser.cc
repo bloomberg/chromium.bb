@@ -1270,7 +1270,31 @@ WebContents* Browser::OpenURLFromTab(WebContents* source,
   nav_params.source_contents = source;
   nav_params.tabstrip_add_types = TabStripModel::ADD_NONE;
   nav_params.window_action = chrome::NavigateParams::SHOW_WINDOW;
-  nav_params.user_gesture = true;
+  nav_params.user_gesture = params.user_gesture;
+
+  BlockedContentTabHelper* blocked_content_helper = NULL;
+  if (source)
+    blocked_content_helper = BlockedContentTabHelper::FromWebContents(source);
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBetterPopupBlocking) &&
+      blocked_content_helper) {
+
+    if (blocked_content_helper->all_contents_blocked()) {
+      // TODO(jochen): store information about the blocked pop-up in the
+      // helper.
+      return NULL;
+    }
+
+    if ((params.disposition == NEW_POPUP ||
+         params.disposition == NEW_FOREGROUND_TAB ||
+         params.disposition == NEW_BACKGROUND_TAB) &&
+        !params.user_gesture && !CommandLine::ForCurrentProcess()->HasSwitch(
+                                    switches::kDisablePopupBlocking)) {
+      return NULL;
+    }
+  }
+
   chrome::Navigate(&nav_params);
 
   return nav_params.target_contents;

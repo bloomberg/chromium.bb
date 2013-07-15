@@ -18,7 +18,8 @@ OpenURLParams::OpenURLParams(
       disposition(disposition),
       transition(transition),
       is_renderer_initiated(is_renderer_initiated),
-      is_cross_site_redirect(false) {
+      is_cross_site_redirect(false),
+      user_gesture(!is_renderer_initiated) {
 }
 
 OpenURLParams::OpenURLParams(
@@ -34,7 +35,8 @@ OpenURLParams::OpenURLParams(
       disposition(disposition),
       transition(transition),
       is_renderer_initiated(is_renderer_initiated),
-      is_cross_site_redirect(false) {
+      is_cross_site_redirect(false),
+      user_gesture(!is_renderer_initiated) {
 }
 
 OpenURLParams::OpenURLParams()
@@ -42,7 +44,8 @@ OpenURLParams::OpenURLParams()
       disposition(UNKNOWN),
       transition(PageTransitionFromInt(0)),
       is_renderer_initiated(false),
-      is_cross_site_redirect(false) {
+      is_cross_site_redirect(false),
+      user_gesture(true) {
 }
 
 OpenURLParams::~OpenURLParams() {

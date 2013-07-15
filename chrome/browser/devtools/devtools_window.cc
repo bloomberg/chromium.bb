@@ -639,7 +639,7 @@ WebContents* DevToolsWindow::OpenURLFromTab(WebContents* source,
   nav_params.source_contents = source;
   nav_params.tabstrip_add_types = TabStripModel::ADD_NONE;
   nav_params.window_action = chrome::NavigateParams::SHOW_WINDOW;
-  nav_params.user_gesture = true;
+  nav_params.user_gesture = params.user_gesture;
   chrome::Navigate(&nav_params);
   return nav_params.target_contents;
 }
