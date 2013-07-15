@@ -34,7 +34,8 @@ AndroidUsbSocket::AndroidUsbSocket(scoped_refptr<AndroidUsbDevice> device,
       delete_callback_(delete_callback),
       local_id_(socket_id),
       remote_id_(0),
-      is_connected_(false) {
+      is_connected_(false),
+      is_closed_(false) {
 }
 
 AndroidUsbSocket::~AndroidUsbSocket() {
@@ -51,34 +52,38 @@ void AndroidUsbSocket::HandleIncoming(scoped_refptr<AdbMessage> message) {
       if (!is_connected_) {
         remote_id_ = message->arg0;
         is_connected_ = true;
-        connect_callback_.Run(net::OK);
-        // Can be NULL after response.
+        net::CompletionCallback callback = connect_callback_;
+        connect_callback_.Reset();
+        callback.Run(net::OK);
+        // "this" can be NULL.
       } else {
         RespondToWriters();
-        // Can be NULL after response.
+        // "this" can be NULL.
       }
       break;
     case AdbMessage::kCommandWRTE:
       device_->Send(AdbMessage::kCommandOKAY, local_id_, message->arg0, "");
       read_buffer_ += message->body;
       // Allow WRTE over new connection even though OKAY ack was not received.
-      // TODO(pfeldman): fix libusb for Mac so that it did not happen.
       if (!is_connected_) {
         remote_id_ = message->arg0;
         is_connected_ = true;
-        connect_callback_.Run(net::OK);
-        // "this" can be NULL after response.
+        net::CompletionCallback callback = connect_callback_;
+        connect_callback_.Reset();
+        callback.Run(net::OK);
+        // "this" can be NULL.
       } else {
         RespondToReaders(false);
-        // "this" can be NULL after response.
+        // "this" can be NULL.
       }
       break;
     case AdbMessage::kCommandCLSE:
       if (is_connected_)
         device_->Send(AdbMessage::kCommandCLSE, local_id_, 0, "");
       is_connected_ = false;
+      is_closed_ = true;
       RespondToReaders(true);
-      // Can be NULL after response.
+      // "this" can be NULL.
       break;
     default:
       break;
@@ -87,6 +92,14 @@ void AndroidUsbSocket::HandleIncoming(scoped_refptr<AdbMessage> message) {
 
 void AndroidUsbSocket::Terminated() {
   is_connected_ = false;
+  is_closed_ = true;
+  if (!connect_callback_.is_null()) {
+    net::CompletionCallback callback = connect_callback_;
+    connect_callback_.Reset();
+    callback.Run(net::ERR_FAILED);
+    // "this" can be NULL.
+    return;
+  }
   RespondToReaders(true);
 }
 
@@ -94,7 +107,7 @@ int AndroidUsbSocket::Read(net::IOBuffer* buffer,
                            int length,
                            const net::CompletionCallback& callback) {
   if (!is_connected_)
-    return net::ERR_SOCKET_NOT_CONNECTED;
+    return is_closed_ ? 0 : net::ERR_SOCKET_NOT_CONNECTED;
 
   if (read_buffer_.empty()) {
     read_requests_.push_back(IORequest(buffer, length, callback));
@@ -137,6 +150,8 @@ bool AndroidUsbSocket::SetSendBufferSize(int32 size) {
 
 int AndroidUsbSocket::Connect(const net::CompletionCallback& callback) {
   CHECK_EQ(message_loop_, base::MessageLoop::current());
+  if (device_->terminated())
+    return net::ERR_FAILED;
   connect_callback_ = callback;
   device_->Send(AdbMessage::kCommandOPEN, local_id_, 0, command_);
   return net::ERR_IO_PENDING;
@@ -144,7 +159,7 @@ int AndroidUsbSocket::Connect(const net::CompletionCallback& callback) {
 
 void AndroidUsbSocket::Disconnect() {
   is_connected_ = false;
-  device_->Send(AdbMessage::kCommandCLSE, local_id_, remote_id_, "");
+  device_->Send(AdbMessage::kCommandCLSE, local_id_, 0, "");
   RespondToReaders(true);
 }
 

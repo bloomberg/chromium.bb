@@ -31,7 +31,7 @@ const int kAdbClass = 0xff;
 const int kAdbSubclass = 0x42;
 const int kAdbProtocol = 0x1;
 
-const int kUsbTimeout = 1000;
+const int kUsbTimeout = 0;
 
 const uint32 kMaxPayload = 4096;
 const uint32 kVersion = 0x01000000;
@@ -389,8 +389,10 @@ void AndroidUsbDevice::ParseHeader(UsbTransferStatus status,
   uint32 data_length = header[3];
   uint32 data_check = header[4];
   uint32 magic = header[5];
-  if ((message->command ^ 0xffffffff) != magic)
+  if ((message->command ^ 0xffffffff) != magic) {
+    TransferError(USB_TRANSFER_ERROR);
     return;
+  }
 
   if (data_length == 0) {
     message_loop_->PostTask(FROM_HERE,

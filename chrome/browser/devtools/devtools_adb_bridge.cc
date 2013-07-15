@@ -103,8 +103,10 @@ class UsbDeviceImpl : public DevToolsAdbBridge::AndroidDevice {
   virtual void RunCommand(const std::string& command,
                           const CommandCallback& callback) OVERRIDE {
     net::StreamSocket* socket = device_->CreateSocket(command);
-    socket->Connect(base::Bind(&UsbDeviceImpl::OpenedForCommand, this, callback,
-                               socket));
+    int result = socket->Connect(base::Bind(&UsbDeviceImpl::OpenedForCommand,
+                                            this, callback, socket));
+    if (result != net::ERR_IO_PENDING)
+      callback.Run(result, std::string());
   }
 
   virtual void OpenSocket(const std::string& name,
@@ -112,8 +114,10 @@ class UsbDeviceImpl : public DevToolsAdbBridge::AndroidDevice {
     std::string socket_name =
         base::StringPrintf(kLocalAbstractCommand, name.c_str());
     net::StreamSocket* socket = device_->CreateSocket(socket_name);
-    socket->Connect(base::Bind(&UsbDeviceImpl::OnOpenSocket, this, callback,
-                               socket));
+    int result = socket->Connect(base::Bind(&UsbDeviceImpl::OnOpenSocket, this,
+                                            callback, socket));
+    if (result != net::ERR_IO_PENDING)
+      callback.Run(result, NULL);
   }
 
  private:
@@ -130,7 +134,6 @@ class UsbDeviceImpl : public DevToolsAdbBridge::AndroidDevice {
       callback.Run(result, std::string());
       return;
     }
-
     scoped_refptr<net::IOBuffer> buffer = new net::IOBuffer(kBufferSize);
     result = socket->Read(buffer, kBufferSize,
                           base::Bind(&UsbDeviceImpl::OnRead, this,
@@ -154,6 +157,8 @@ class UsbDeviceImpl : public DevToolsAdbBridge::AndroidDevice {
     result = socket->Read(buffer, kBufferSize,
                           base::Bind(&UsbDeviceImpl::OnRead, this,
                                      socket, buffer, new_data, callback));
+    if (result != net::ERR_IO_PENDING)
+      OnRead(socket, buffer, new_data, callback, result);
   }
 
   virtual ~UsbDeviceImpl() {}
@@ -222,32 +227,33 @@ class AdbPagesCommand : public base::RefCounted<AdbPagesCommand> {
       return;
     }
 
+#if defined(DEBUG_DEVTOOLS)
+    // For desktop remote debugging.
+    if (devices_.back()->serial().empty()) {
+      scoped_refptr<DevToolsAdbBridge::AndroidDevice> device =
+          devices_.back();
+      sockets_.push_back(std::string());
+      device->set_model(kUnknownModel);
+      device->HttpQuery(
+          std::string(), kVersionRequest,
+          base::Bind(&AdbPagesCommand::ReceivedVersion, this));
+      return;
+    }
+#endif  // defined(DEBUG_DEVTOOLS)
+
     scoped_refptr<DevToolsAdbBridge::AndroidDevice> device = devices_.back();
     device->RunCommand(kDeviceModelCommand,
                        base::Bind(&AdbPagesCommand::ReceivedModel, this));
   }
 
   void ReceivedModel(int result, const std::string& response) {
-    std::string model;
-    if (result == net::OK) {
-      model = response;
-    } else {
-      model = kUnknownModel;
-#if defined(DEBUG_DEVTOOLS)
-      // For desktop remote debugging.
-      if (devices_.back()->serial().empty()) {
-        scoped_refptr<DevToolsAdbBridge::AndroidDevice> device =
-            devices_.back();
-        sockets_.push_back(std::string());
-        device->HttpQuery(
-            std::string(), kVersionRequest,
-            base::Bind(&AdbPagesCommand::ReceivedVersion, this));
-        return;
-      }
-#endif  // defined(DEBUG_DEVTOOLS)
+    if (result < 0) {
+      devices_.pop_back();
+      ProcessSerials();
+      return;
     }
     scoped_refptr<DevToolsAdbBridge::AndroidDevice> device = devices_.back();
-    device->set_model(model);
+    device->set_model(response);
     device->RunCommand(kOpenedUnixSocketsCommand,
                        base::Bind(&AdbPagesCommand::ReceivedSockets, this));
   }

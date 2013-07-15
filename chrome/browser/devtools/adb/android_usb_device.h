@@ -85,6 +85,8 @@ class AndroidUsbDevice : public base::RefCountedThreadSafe<AndroidUsbDevice> {
 
   std::string serial() { return serial_; }
 
+  bool terminated() { return terminated_; }
+
  private:
   friend class base::RefCountedThreadSafe<AndroidUsbDevice>;
   virtual ~AndroidUsbDevice();
