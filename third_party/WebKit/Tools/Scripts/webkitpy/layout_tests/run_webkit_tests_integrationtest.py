@@ -331,7 +331,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
 
     def test_random_daily_seed_order(self):
         tests_to_run = ['passes/audio.html', 'failures/expected/text.html', 'failures/expected/missing_text.html', 'passes/args.html']
-        tests_run = get_tests_run(['--order=random-daily-seed'] + tests_to_run)
+        tests_run = get_tests_run(['--order=random-seeded'] + tests_to_run)
         self.assertEqual(sorted(tests_to_run), sorted(tests_run))
 
     def test_random_order_test_specified_multiple_times(self):

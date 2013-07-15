@@ -114,9 +114,9 @@ class Manager(object):
             tests_to_run.sort(key=self._port.test_key)
         elif self._options.order == 'random':
             random.shuffle(tests_to_run)
-        elif self._options.order == 'random-daily-seed':
+        elif self._options.order == 'random-seeded':
             rnd = random.Random()
-            rnd.seed(int(datetime.datetime.utcnow().date().strftime('%Y%m%d')))
+            rnd.seed(4) # http://xkcd.com/221/
             rnd.shuffle(tests_to_run)
 
         tests_to_run, tests_in_other_chunks = self._finder.split_into_chunks(tests_to_run)

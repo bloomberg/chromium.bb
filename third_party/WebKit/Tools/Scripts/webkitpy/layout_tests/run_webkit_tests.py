@@ -205,7 +205,7 @@ def parse_args(args):
             help=("determine the order in which the test cases will be run. "
                   "'none' == use the order in which the tests were listed either in arguments or test list, "
                   "'natural' == use the natural order (default), "
-                  "'random-daily-seed' == randomize the test order using a daily seed, "
+                  "'random-seeded' == randomize the test order using a fixed seed, "
                   "'random' == randomize the test order.")),
         optparse.make_option("--run-chunk",
             help=("Run a specified chunk (n:l), the nth of len l, "
