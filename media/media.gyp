@@ -1415,12 +1415,21 @@
           ],
           'link_settings': {
             'libraries': [
-              '-ldl',
               '-lX11',
               '-lXrender',
               '-lXext',
             ],
           },
+          'conditions': [
+            # Linux/Solaris need libdl for dlopen() and friends.
+            ['OS=="linux" or OS=="solaris"', {
+              'link_settings': {
+                'libraries': [
+                  '-ldl',
+                ],
+              },
+            }],
+          ],
           'sources': [
             'tools/player_x11/data_source_logger.cc',
             'tools/player_x11/data_source_logger.h',
