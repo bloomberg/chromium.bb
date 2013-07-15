@@ -1831,8 +1831,7 @@ translateString ()
   startType = prevSrc = -1;
   src = dest = 0;
   srcIncremented = 1;
-  for (k = 0; k < NUMVAR; k++)
-    passVariables[k] = 0;
+  memset (passVariables, 0, sizeof(int) * NUMVAR);
   if (typebuf && table->capitalSign)
     for (k = 0; k < srcmax; k++)
       if (checkAttr (currentInput[k], CTC_UpperCase, 0))

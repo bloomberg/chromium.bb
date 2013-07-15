@@ -35,7 +35,6 @@ space \x000c 0
 space \x000d 0 carriage return
 space \x001b 1b escape character for html back-translation
 space \x00A0 a NO-BREAK SPACE <noBreak> 0020 NON-BREAKING SPACE 
-context `$s1-10 ?
 
 # Sequences which should be represented by blank spaces
 repeated \s 0
@@ -46,5 +45,6 @@ repeated --- 36
 repeated ___ 456
 repeated === 123456
 
-pass2 $s1-10 @0
+pass2 `$s1-10 ?
+#pass2 $s1-10 @0
 
