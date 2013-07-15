@@ -72,6 +72,11 @@ enum RequestOriginPolicy {
     PotentiallyCrossOriginEnabled // Indicates "potentially CORS-enabled fetch" in HTML standard.
 };
 
+enum RequestInitiatorContext {
+    DocumentContext,
+    WorkerContext,
+};
+
 struct ResourceLoaderOptions {
     ResourceLoaderOptions()
         : sendLoadCallbacks(DoNotSendCallbacks)
@@ -83,6 +88,7 @@ struct ResourceLoaderOptions {
         , securityCheck(DoSecurityCheck)
         , contentSecurityPolicyOption(CheckContentSecurityPolicy)
         , requestOriginPolicy(UseDefaultOriginRestrictionsForType)
+        , requestInitiatorContext(DocumentContext)
     {
     }
 
@@ -95,7 +101,8 @@ struct ResourceLoaderOptions {
         ClientCrossOriginCredentialPolicy crossOriginCredentialPolicy,
         SecurityCheckPolicy securityCheck,
         ContentSecurityPolicyCheck contentSecurityPolicyOption,
-        RequestOriginPolicy requestOriginPolicy)
+        RequestOriginPolicy requestOriginPolicy,
+        RequestInitiatorContext requestInitiatorContext)
         : sendLoadCallbacks(sendLoadCallbacks)
         , sniffContent(sniffContent)
         , dataBufferingPolicy(dataBufferingPolicy)
@@ -105,6 +112,7 @@ struct ResourceLoaderOptions {
         , securityCheck(securityCheck)
         , contentSecurityPolicyOption(contentSecurityPolicyOption)
         , requestOriginPolicy(requestOriginPolicy)
+        , requestInitiatorContext(requestInitiatorContext)
     {
     }
     SendCallbackPolicy sendLoadCallbacks;
@@ -117,6 +125,7 @@ struct ResourceLoaderOptions {
     ContentSecurityPolicyCheck contentSecurityPolicyOption;
     CachedResourceInitiatorInfo initiatorInfo;
     RequestOriginPolicy requestOriginPolicy;
+    RequestInitiatorContext requestInitiatorContext;
 };
 
 } // namespace WebCore
