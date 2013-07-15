@@ -45,8 +45,8 @@ namespace feedbackPrivate {
 
     // TODO(rkc): Remove these once we have bindings to send blobs to Chrome.
     // Used internally to store the blob Url after parameter customization.
-    DOMString attachedFileBlobUrl;
-    DOMString screenshotBlobUrl;
+    DOMString? attachedFileBlobUrl;
+    DOMString? screenshotBlobUrl;
   };
 
   // Status of the sending of a feedback report.

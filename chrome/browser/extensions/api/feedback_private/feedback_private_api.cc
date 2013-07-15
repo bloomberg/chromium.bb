@@ -101,8 +101,18 @@ bool FeedbackPrivateSendFeedbackFunction::RunImpl() {
   const FeedbackInfo &feedback_info = params->feedback;
 
   std::string description = feedback_info.description;
-  std::string attached_file_url = feedback_info.attached_file_blob_url;
-  std::string screenshot_url = feedback_info.screenshot_blob_url;
+  std::string attached_file_url, screenshot_url;
+  if (feedback_info.attached_file.get() &&
+      feedback_info.attached_file_blob_url.get() &&
+      !feedback_info.attached_file_blob_url->empty()) {
+    attached_file_url = *feedback_info.attached_file_blob_url;
+  }
+
+  if (feedback_info.screenshot.get() &&
+      feedback_info.screenshot_blob_url.get() &&
+      !feedback_info.screenshot_blob_url->empty()) {
+    screenshot_url = *feedback_info.screenshot_blob_url;
+  }
 
   // Populate feedback data.
   scoped_refptr<FeedbackData> feedback_data(new FeedbackData());
@@ -116,14 +126,14 @@ bool FeedbackPrivateSendFeedbackFunction::RunImpl() {
   if (feedback_info.email.get())
     feedback_data->set_user_email(*feedback_info.email.get());
 
-  if (feedback_info.attached_file.get() &&
-      !feedback_info.attached_file_blob_url.empty()) {
+  if (!attached_file_url.empty()) {
     feedback_data->set_attached_filename(
         (*feedback_info.attached_file.get()).name);
-    feedback_data->set_attached_file_url(
-        GURL(feedback_info.attached_file_blob_url));
+    feedback_data->set_attached_file_url(GURL(attached_file_url));
   }
-  feedback_data->set_screenshot_url(GURL(feedback_info.screenshot_blob_url));
+
+  if (!screenshot_url.empty())
+    feedback_data->set_screenshot_url(GURL(screenshot_url));
 
   // TODO(rkc): Take this out of OS_CHROMEOS once we have FeedbackData and
   // FeedbackUtil migrated to handle system logs for both Chrome and ChromeOS.

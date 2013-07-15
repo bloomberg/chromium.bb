@@ -236,6 +236,11 @@
   "extension.sendRequest": {
     "contexts": ["blessed_extension", "unblessed_extension", "content_script"]
   },
+  "feedbackPrivate": {
+    "platform": "chromeos",
+    "dependencies": ["permission:feedbackPrivate"],
+    "contexts": ["blessed_extension"]
+  },
   "fileBrowserHandler": {
     "platform": "chromeos",
     "dependencies": ["permission:fileBrowserHandler"],
