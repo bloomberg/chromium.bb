@@ -76,7 +76,7 @@ void StringCache::remove(StringImpl* stringImpl)
     clearOnGC();
 }
 
-v8::Handle<v8::String> StringCache::v8ExternalStringSlow(StringImpl* stringImpl, ReturnHandleType handleType, v8::Isolate* isolate)
+v8::Handle<v8::String> StringCache::v8ExternalStringSlow(StringImpl* stringImpl, v8::Isolate* isolate)
 {
     if (!stringImpl->length())
         return v8::String::Empty(isolate);
@@ -85,8 +85,6 @@ v8::Handle<v8::String> StringCache::v8ExternalStringSlow(StringImpl* stringImpl,
     if (cachedV8String.isWeak()) {
         m_lastStringImpl = stringImpl;
         m_lastV8String = cachedV8String;
-        if (handleType == ReturnUnsafeHandle)
-            return cachedV8String.handle();
         return cachedV8String.newLocal(isolate);
     }
 

@@ -36,28 +36,15 @@
 
 namespace WebCore {
 
-// ReturnUnsafeHandle can be used only when it is guaranteed
-// that no V8 object allocation is conducted before the handle
-// is returned to V8. For safety, ReturnUnsafeHandle should be
-// used by auto-generated code.
-enum ReturnHandleType {
-    ReturnLocalHandle,
-    ReturnUnsafeHandle
-};
-
 class StringCache {
 public:
     StringCache() { }
 
-    v8::Handle<v8::String> v8ExternalString(StringImpl* stringImpl, ReturnHandleType handleType, v8::Isolate* isolate)
+    v8::Handle<v8::String> v8ExternalString(StringImpl* stringImpl, v8::Isolate* isolate)
     {
-        if (m_lastStringImpl.get() == stringImpl && m_lastV8String.isWeak()) {
-            if (handleType == ReturnUnsafeHandle)
-                return m_lastV8String.handle();
+        if (m_lastStringImpl.get() == stringImpl && m_lastV8String.isWeak())
             return m_lastV8String.newLocal(isolate);
-        }
-
-        return v8ExternalStringSlow(stringImpl, handleType, isolate);
+        return v8ExternalStringSlow(stringImpl, isolate);
     }
 
     template <class T>
@@ -82,7 +69,7 @@ private:
     static v8::Local<v8::String> makeExternalString(const String&);
     static void makeWeakCallback(v8::Isolate*, v8::Persistent<v8::String>*, StringImpl*);
 
-    v8::Handle<v8::String> v8ExternalStringSlow(StringImpl*, ReturnHandleType, v8::Isolate*);
+    v8::Handle<v8::String> v8ExternalStringSlow(StringImpl*, v8::Isolate*);
 
     template <class T>
     void setReturnValueFromStringSlow(const T& info, StringImpl* stringImpl, v8::Isolate* isolate)

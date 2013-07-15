@@ -1405,7 +1405,7 @@ END
             # Generate super-compact call for regular attribute getter:
             my ($functionName, @arguments) = GetterExpression($interfaceName, $attribute);
             $code .= "    Element* imp = V8Element::toNative(info.Holder());\n";
-            $code .= "    v8SetReturnValue(info, v8String(imp->${functionName}(" . join(", ", @arguments) . "), info.GetIsolate(), ReturnUnsafeHandle));\n";
+            $code .= "    v8SetReturnValue(info, v8String(imp->${functionName}(" . join(", ", @arguments) . "), info.GetIsolate()));\n";
             $code .= "    return;\n";
             $code .= "}\n\n";
             $code .= "#endif // ${conditionalString}\n\n" if $conditionalString;
@@ -1617,7 +1617,7 @@ END
         $code .= "    v8SetReturnValue(info, listener ? v8::Handle<v8::Value>(V8AbstractEventListener::cast(listener)->getListenerObject(imp->scriptExecutionContext())) : v8::Handle<v8::Value>(v8::Null(info.GetIsolate())));\n";
         $code .= "    return;\n";
     } else {
-        my $nativeValue = NativeToJSValue($attribute->type, $attribute->extendedAttributes, $expression, "    ", "", "info.Holder()", "info.GetIsolate()", "info", "imp", "ReturnUnsafeHandle", $forMainWorldSuffix, "return");
+        my $nativeValue = NativeToJSValue($attribute->type, $attribute->extendedAttributes, $expression, "    ", "", "info.Holder()", "info.GetIsolate()", "info", "imp", $forMainWorldSuffix, "return");
         $code .= "${nativeValue}\n";
         $code .= "    return;\n";
     }
@@ -3259,7 +3259,7 @@ sub GenerateImplementationIndexedPropertyGetter
     my $nativeValue = "element";
     $nativeValue .= ".release()" if (IsRefPtrType($returnType));
     my $isNull = GenerateIsNullExpression($returnType, "element");
-    my $returnJSValueCode = NativeToJSValue($indexedGetterFunction->type, $indexedGetterFunction->extendedAttributes, $nativeValue, "    ", "", "info.Holder()", "info.GetIsolate()", "info", "collection", "", "", "return");
+    my $returnJSValueCode = NativeToJSValue($indexedGetterFunction->type, $indexedGetterFunction->extendedAttributes, $nativeValue, "    ", "", "info.Holder()", "info.GetIsolate()", "info", "collection", "", "return");
     my $raisesExceptions = $indexedGetterFunction->extendedAttributes->{"RaisesException"};
     my $methodCallCode = GenerateMethodCall($returnType, "element", "collection->${methodName}", "index", $raisesExceptions);
     my $getterCode = "static void indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)\n";
@@ -3611,7 +3611,7 @@ sub GenerateImplementationNamedPropertyGetter
     my $isNull = GenerateIsNullExpression($returnType, "element");
     my $nativeValue = "element";
     $nativeValue .= ".release()" if (IsRefPtrType($returnType));
-    my $returnJSValueCode = NativeToJSValue($namedGetterFunction->type, $namedGetterFunction->extendedAttributes, $nativeValue, "    ", "", "info.Holder()", "info.GetIsolate()", "info", "collection", "", "", "return");
+    my $returnJSValueCode = NativeToJSValue($namedGetterFunction->type, $namedGetterFunction->extendedAttributes, $nativeValue, "    ", "", "info.Holder()", "info.GetIsolate()", "info", "collection", "", "return");
     my $raisesExceptions = $namedGetterFunction->extendedAttributes->{"RaisesException"};
     my $methodCallCode = GenerateMethodCall($returnType, "element", "collection->${methodName}", "propertyName", $raisesExceptions);
 
@@ -4958,9 +4958,9 @@ sub GenerateFunctionCallString
     my $nativeValue;
     # FIXME: Update for all ScriptWrappables.
     if (IsDOMNodeType($interfaceName)) {
-        $nativeValue = NativeToJSValue($function->type, $function->extendedAttributes, $return, $indent, "", "args.Holder()", "args.GetIsolate()", "args", "imp", "ReturnUnsafeHandle", $forMainWorldSuffix, "return");
+        $nativeValue = NativeToJSValue($function->type, $function->extendedAttributes, $return, $indent, "", "args.Holder()", "args.GetIsolate()", "args", "imp", $forMainWorldSuffix, "return");
     } else {
-        $nativeValue = NativeToJSValue($function->type, $function->extendedAttributes, $return, $indent, "", "args.Holder()", "args.GetIsolate()", "args", 0, "ReturnUnsafeHandle", $forMainWorldSuffix, "return");
+        $nativeValue = NativeToJSValue($function->type, $function->extendedAttributes, $return, $indent, "", "args.Holder()", "args.GetIsolate()", "args", 0, $forMainWorldSuffix, "return");
     }
 
     $code .= $nativeValue . "\n";
@@ -5346,8 +5346,6 @@ sub NativeToJSValue
     my $getHolderContainerArg = $getHolderContainer ? ", $getHolderContainer" : "";
     my $getScriptWrappable = shift || "";
     my $getScriptWrappableArg = $getScriptWrappable ? ", $getScriptWrappable" : "";
-    my $returnHandleType = shift || "";
-    my $returnHandleTypeArg = $returnHandleType ? ", $returnHandleType" : "";
     my $forMainWorldSuffix = shift || "";
     my $returnValueArg = shift || 0;
     my $isReturnValue = $returnValueArg eq "return";
@@ -5362,7 +5360,7 @@ sub NativeToJSValue
             my $unionMemberEnabledVariable = $nativeValue . $i . "Enabled";
             my $unionMemberNativeValue = $unionMemberVariable;
             $unionMemberNativeValue .= ".release()" if (IsRefPtrType($unionMemberType));
-            my $returnJSValueCode = NativeToJSValue($unionMemberType, $extendedAttributes, $unionMemberNativeValue, $indent . "    ", $receiver, $getCreationContext, $getIsolate, $getHolderContainer, $getScriptWrappable, $returnHandleType, $forMainWorldSuffix, $returnValueArg);
+            my $returnJSValueCode = NativeToJSValue($unionMemberType, $extendedAttributes, $unionMemberNativeValue, $indent . "    ", $receiver, $getCreationContext, $getIsolate, $getHolderContainer, $getScriptWrappable, $forMainWorldSuffix, $returnValueArg);
             my $code = "";
             if ($isReturnValue) {
               $code .= "${indent}if (${unionMemberEnabledVariable}) {\n";
@@ -5449,14 +5447,14 @@ sub NativeToJSValue
         my $returnValue = "";
         if (defined $conv) {
             if ($conv eq "Null") {
-                $returnValue = "v8StringOrNull($nativeValue, $getIsolate$returnHandleTypeArg)";
+                $returnValue = "v8StringOrNull($nativeValue, $getIsolate)";
             } elsif ($conv eq "Undefined") {
-                $returnValue = "v8StringOrUndefined($nativeValue, $getIsolate$returnHandleTypeArg)";
+                $returnValue = "v8StringOrUndefined($nativeValue, $getIsolate)";
             } else {
                 die "Unknown value for TreatReturnedNullStringAs extended attribute";
             }
         } else {
-            $returnValue = "v8String($nativeValue, $getIsolate$returnHandleTypeArg)";
+            $returnValue = "v8String($nativeValue, $getIsolate)";
         }
         return "$indent$receiver $returnValue;";
     }
