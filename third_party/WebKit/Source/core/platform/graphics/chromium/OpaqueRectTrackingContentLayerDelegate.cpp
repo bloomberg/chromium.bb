@@ -26,6 +26,7 @@
 
 #include "core/platform/graphics/chromium/OpaqueRectTrackingContentLayerDelegate.h"
 
+#include "core/platform/EventTracer.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/IntRect.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"
@@ -53,6 +54,9 @@ void OpaqueRectTrackingContentLayerDelegate::paintContents(SkCanvas* canvas, con
     context.setTrackOpaqueRegion(!m_opaque);
     context.setCertainlyOpaque(m_opaque);
     context.setShouldSmoothFonts(canPaintLCDText);
+
+    if (*EventTracer::getTraceCategoryEnabledFlag("blink.graphics_context_annotations"))
+        context.setAnnotationMode(AnnotateAll);
 
     // Record transform prior to painting, as all opaque tracking will be
     // relative to this current value.
