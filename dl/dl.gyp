@@ -54,8 +54,6 @@
         'sp/src/omxSP_FFTInit_R_S32.c',
         'sp/src/omxSP_FFTInv_CCSToR_S32_Sfs_s.S',
         # Complex 16-bit fixed-point FFT
-        'sp/src/omxSP_FFTInit_C_SC16.c',
-        'sp/src/omxSP_FFTGetBufSize_C_SC16.c',
         'sp/src/armSP_FFT_CToC_SC16_Radix2_fs_unsafe_s.S',
         'sp/src/armSP_FFT_CToC_SC16_Radix2_ls_unsafe_s.S',
         'sp/src/armSP_FFT_CToC_SC16_Radix2_ps_unsafe_s.S',
@@ -65,11 +63,18 @@
         'sp/src/armSP_FFT_CToC_SC16_Radix4_unsafe_s.S',
         'sp/src/armSP_FFT_CToC_SC16_Radix8_fs_unsafe_s.S',
         'sp/src/omxSP_FFTFwd_CToC_SC16_Sfs_s.S',
+        'sp/src/omxSP_FFTGetBufSize_C_SC16.c',
+        'sp/src/omxSP_FFTInit_C_SC16.c',
         'sp/src/omxSP_FFTInv_CToC_SC16_Sfs_s.S',
         # Real 16-bit fixed-point FFT
+        'sp/src/omxSP_FFTFwd_RToCCS_S16_Sfs_s.S',
         'sp/src/omxSP_FFTFwd_RToCCS_S16S32_Sfs_s.S',
+        'sp/src/omxSP_FFTGetBufSize_R_S16.c',
         'sp/src/omxSP_FFTGetBufSize_R_S16S32.c',
+        'sp/src/omxSP_FFTInit_R_S16.c',
         'sp/src/omxSP_FFTInit_R_S16S32.c',
+        'sp/src/omxSP_FFTInv_CCSToR_S16_Sfs_s.S',
+        'sp/src/armSP_FFTInv_CCSToR_S16_preTwiddleRadix2_unsafe_s.S',
         'sp/src/omxSP_FFTInv_CCSToR_S32S16_Sfs_s.S',
         # Complex floating-point FFT
         'sp/src/armSP_FFT_CToC_FC32_Radix2_fs_unsafe_s.S',

@@ -20,8 +20,13 @@
 #include "dl/sp/src/test/aligned_ptr.h"
 #include "dl/sp/src/test/gensig.h"
 
-#define MAX_FFT_ORDER   TWIDDLE_TABLE_ORDER
+#define MAX_FFT_ORDER TWIDDLE_TABLE_ORDER
 #define MAX_FFT_ORDER_FIXED_POINT 12
+
+typedef enum {
+  rfft16_s16,
+  rfft16_s16s32,
+} rfft16_type;
 
 void TimeOneFloatFFT(int count, int fft_log_size, float signal_value,
                      int signal_type);
@@ -33,7 +38,7 @@ void TimeOneSC32FFT(int count, int fft_log_size, float signal_value,
                     int signal_type);
 void TimeSC32FFT(int count, float signal_value, int signal_type);
 void TimeOneRFFT16(int count, int fft_log_size, float signal_value,
-                   int signal_type);
+                   int signal_type, rfft16_type rfft16_type_selection);
 void TimeRFFT16(int count, float signal_value, int signal_type);
 void TimeOneRFFT32(int count, int fft_log_size, float signal_value,
                    int signal_type);
@@ -99,7 +104,7 @@ void TimeFFTUsage(const char* prog) {
 
 void main(int argc, char* argv[]) {
   int fft_log_size = 4;
-  float signal_value = 1024;
+  float signal_value = 32767;
   int signal_type = 0;
   int test_mode = 1;
   int count = 100;
@@ -190,7 +195,8 @@ void main(int argc, char* argv[]) {
         TimeOneSC32FFT(count, fft_log_size, signal_value, signal_type);
         break;
       case 3:
-        TimeOneRFFT16(count, fft_log_size, signal_value, signal_type);
+        TimeOneRFFT16(count, fft_log_size, signal_value, signal_type, rfft16_s16s32);
+        TimeOneRFFT16(count, fft_log_size, signal_value, signal_type, rfft16_s16);
         break;
       case 4:
         TimeOneRFFT32(count, fft_log_size, signal_value, signal_type);
@@ -666,8 +672,12 @@ void GenerateRFFT16Signal(OMX_S16* x, OMX_SC32* fft, int size, int signal_type,
   free(true_fft);
 }
 
+/* Argument rfft16_type_selection:
+ *     rfft16_s16s32:       Calculate RFFT16 with 32 bit complex FFT;
+ *     otherwise: Calculate RFFT16 with 16 bit complex FFT.
+ */
 void TimeOneRFFT16(int count, int fft_log_size, float signal_value,
-                   int signal_type) {
+                   int signal_type, rfft16_type rfft16_type_selection) {
   OMX_S16* x;
   OMX_S32* y;
   OMX_S16* z;
@@ -689,8 +699,8 @@ void TimeOneRFFT16(int count, int fft_log_size, float signal_value,
 
   OMX_INT n, fft_spec_buffer_size;
   OMXResult status;
-  OMXFFTSpec_R_S16S32 * fft_fwd_spec = NULL;
-  OMXFFTSpec_R_S16S32 * fft_inv_spec = NULL;
+  OMXFFTSpec_R_S16 * fft_fwd_spec = NULL;
+  OMXFFTSpec_R_S16 * fft_inv_spec = NULL;
   int fft_size;
   struct timeval start_time;
   struct timeval end_time;
@@ -728,13 +738,20 @@ void TimeOneRFFT16(int count, int fft_log_size, float signal_value,
   GenerateRealFloatSignal(xr, (OMX_FC32*) yrTrue, fft_size, signal_type,
                           signal_value);
 
-  status = omxSP_FFTGetBufSize_R_S16S32(fft_log_size, &fft_spec_buffer_size);
-
-  fft_fwd_spec = (OMXFFTSpec_R_S16S32*) malloc(fft_spec_buffer_size);
-  fft_inv_spec = (OMXFFTSpec_R_S16S32*) malloc(fft_spec_buffer_size);
-  status = omxSP_FFTInit_R_S16S32(fft_fwd_spec, fft_log_size);
-
-  status = omxSP_FFTInit_R_S16S32(fft_inv_spec, fft_log_size);
+  if(rfft16_type_selection == rfft16_s16s32) {
+    status = omxSP_FFTGetBufSize_R_S16S32(fft_log_size, &fft_spec_buffer_size);
+    fft_fwd_spec = malloc(fft_spec_buffer_size);
+    fft_inv_spec = malloc(fft_spec_buffer_size);
+    status = omxSP_FFTInit_R_S16S32(fft_fwd_spec, fft_log_size);
+    status = omxSP_FFTInit_R_S16S32(fft_inv_spec, fft_log_size);
+  }
+  else {
+    status = omxSP_FFTGetBufSize_R_S16(fft_log_size, &fft_spec_buffer_size);
+    fft_fwd_spec = malloc(fft_spec_buffer_size);
+    fft_inv_spec = malloc(fft_spec_buffer_size);
+    status = omxSP_FFTInit_R_S16(fft_fwd_spec, fft_log_size);
+    status = omxSP_FFTInit_R_S16(fft_inv_spec, fft_log_size);
+  }
 
   if (do_forward_test) {
     if (include_conversion) {
@@ -757,9 +774,14 @@ void TimeOneRFFT16(int count, int fft_log_size, float signal_value,
           temp16[n] = factor * xr[n];
         }
 
-        status = omxSP_FFTFwd_RToCCS_S16S32_Sfs(x, y, fft_fwd_spec,
-                                                (OMX_INT) scaleFactor);
-
+        if(rfft16_type_selection == rfft16_s16s32) {
+          status = omxSP_FFTFwd_RToCCS_S16S32_Sfs(x, y,
+              (OMXFFTSpec_R_S16S32*)fft_fwd_spec, (OMX_INT) scaleFactor);
+        }
+        else {
+          status = omxSP_FFTFwd_RToCCS_S16_Sfs(x, y,
+              (OMXFFTSpec_R_S16*)fft_fwd_spec, (OMX_INT) scaleFactor);
+        }
         /*
          * Now spend some time converting the fixed-point FFT back to float.
          */
@@ -774,15 +796,26 @@ void TimeOneRFFT16(int count, int fft_log_size, float signal_value,
 
       GetUserTime(&start_time);
       for (n = 0; n < count; ++n) {
-        status = omxSP_FFTFwd_RToCCS_S16S32_Sfs(x, y, fft_fwd_spec,
-                                                (OMX_INT) scaleFactor);
+      if(rfft16_type_selection == rfft16_s16s32) {
+        status = omxSP_FFTFwd_RToCCS_S16S32_Sfs(x, y, 
+            (OMXFFTSpec_R_S16S32*)fft_fwd_spec, (OMX_INT) scaleFactor);
+      }
+      else {
+        status = omxSP_FFTFwd_RToCCS_S16_Sfs(x, y,
+            (OMXFFTSpec_R_S16*)fft_fwd_spec, (OMX_INT) scaleFactor);
+      }
       }
       GetUserTime(&end_time);
     }
 
     elapsed_time = TimeDifference(&start_time, &end_time);
 
-    PrintResult("Forward RFFT16", fft_log_size, elapsed_time, count);
+    if(rfft16_type_selection == rfft16_s16s32) {
+      PrintResult("Forward RFFT16 (with rfft16_s16s32)", fft_log_size, elapsed_time, count);
+    }
+    else {
+      PrintResult("Forward RFFT16 (with rfft16_s16)", fft_log_size, elapsed_time, count);
+    }
   }
 
   if (do_inverse_test) {
@@ -804,9 +837,14 @@ void TimeOneRFFT16(int count, int fft_log_size, float signal_value,
           temp32[n] = factor * yrTrue[n];
         }
 
-        status = omxSP_FFTFwd_RToCCS_S16S32_Sfs(x, y, fft_fwd_spec,
-                                                (OMX_INT) scaleFactor);
-
+        if(rfft16_type_selection == rfft16_s16s32) {
+          status = omxSP_FFTInv_CCSToR_S32S16_Sfs(y, z,
+              (OMXFFTSpec_R_S16S32*)fft_inv_spec, 0);
+        }
+        else {
+          status = omxSP_FFTInv_CCSToR_S16_Sfs(y, z,
+              (OMXFFTSpec_R_S16*)fft_inv_spec, 0);
+        }
         /*
          * Spend some time converting the result back to float
          */
@@ -819,14 +857,26 @@ void TimeOneRFFT16(int count, int fft_log_size, float signal_value,
     } else {
       GetUserTime(&start_time);
       for (n = 0; n < count; ++n) {
-        status = omxSP_FFTInv_CCSToR_S32S16_Sfs(y, z, fft_inv_spec, 0);
+        if(rfft16_type_selection == rfft16_s16s32) {
+          status = omxSP_FFTInv_CCSToR_S32S16_Sfs(y, z,
+              (OMXFFTSpec_R_S16S32*)fft_inv_spec, 0);
+        }
+        else {
+          status = omxSP_FFTInv_CCSToR_S16_Sfs(y, z,
+              (OMXFFTSpec_R_S16*)fft_inv_spec, 0);
+        }
       }
       GetUserTime(&end_time);
     }
 
     elapsed_time = TimeDifference(&start_time, &end_time);
 
-    PrintResult("Inverse RFFT16", fft_log_size, elapsed_time, count);
+    if(rfft16_type_selection == rfft16_s16s32) {
+      PrintResult("Inverse RFFT16 (with rfft16_s16s32)", fft_log_size, elapsed_time, count);
+    }
+    else {
+      PrintResult("Inverse RFFT16 (with rfft16_s16)", fft_log_size, elapsed_time, count);
+    }
   }
 
   FreeAlignedPointer(x_aligned);
@@ -843,13 +893,18 @@ void TimeRFFT16(int count, float signal_value, int signal_type) {
   int k;
   int max_order = (max_fft_order > MAX_FFT_ORDER_FIXED_POINT)
       ? MAX_FFT_ORDER_FIXED_POINT : max_fft_order;
-
   if (verbose == 0)
-    printf("RFFT16\n");
-
+    printf("RFFT16 (with rfft16_s16s32)\n");
   for (k = min_fft_order; k <= max_order; ++k) {
     int testCount = ComputeCount(count, k);
-    TimeOneRFFT16(testCount, k, signal_value, signal_type);
+    TimeOneRFFT16(testCount, k, signal_value, signal_type, 1);
+  }
+
+  if (verbose == 0)
+    printf("RFFT16 (with rfft16_s16)\n");
+  for (k = min_fft_order; k <= max_order; ++k) {
+    int testCount = ComputeCount(count, k);
+    TimeOneRFFT16(testCount, k, signal_value, signal_type, 0);
   }
 }
 

@@ -24,7 +24,7 @@
 #define MAX_FFT_ORDER   12
 
 int verbose = 0;
-int signal_value = 1024;
+int signal_value = 32767;
 int scale_factor = 0;
 
 struct KnownTestFailures known_failures[] = {

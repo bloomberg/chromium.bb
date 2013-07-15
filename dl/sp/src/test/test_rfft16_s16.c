@@ -21,23 +21,28 @@
 #include "dl/sp/src/test/gensig.h"
 #include "dl/sp/src/test/test_util.h"
 
-int verbose;
-int signal_value;
-
 #define MAX_FFT_ORDER   12
 
-void TestFFT(int fft_log_size, int signal_type, int scale_factor);
+int verbose = 0;
+int signal_value = 32767;
+int scale_factor = 0;
+
+void TestFFT(int fftLogSize, int scale_factor, int signalType);
 
 void main(int argc, char* argv[]) {
   struct Options options;
 
   SetDefaultOptions(&options, 1, MAX_FFT_ORDER);
 
-  ProcessCommandLine(&options, argc, argv,
-                     "Test forward and inverse real 16-bit fixed-point FFT\n");
+  options.signal_value_ = signal_value;
+  options.scale_factor_ = scale_factor;
+
+  ProcessCommandLine(&options, argc, argv, "Test forward and inverse real 16 \
+                     -bit fixed-point FFT, with 16-bit complex FFT routines\n");
 
   verbose = options.verbose_;
   signal_value = options.signal_value_;
+  scale_factor = options.scale_factor_;
 
   if (verbose > 255)
     DumpOptions(stderr, &options);
@@ -52,9 +57,9 @@ void main(int argc, char* argv[]) {
     info.do_inverse_tests_ = options.do_inverse_tests_;
     /* No known failures */
     info.known_failures_ = 0;
-    info.forward_threshold_ = 90.12;
-    info.inverse_threshold_ = 89.28;
-    signal_value = 32767;
+    info.forward_threshold_ = 45;
+    info.inverse_threshold_ = 14;
+
     RunAllTests(&info);
   } else {
     TestFFT(options.fft_log_size_,
@@ -63,31 +68,23 @@ void main(int argc, char* argv[]) {
   }
 }
 
-void GenerateSignal(OMX_S16* x, OMX_SC32* fft, int size, int signal_type) {
+void GenerateSignal(struct ComplexFloat* fft,
+                    float* x_true, int size, int sigtype) {
   int k;
   struct ComplexFloat *test_signal;
-  struct ComplexFloat *true_fft;
 
   test_signal = (struct ComplexFloat*) malloc(sizeof(*test_signal) * size);
-  true_fft = (struct ComplexFloat*) malloc(sizeof(*true_fft) * size);
-  GenerateTestSignalAndFFT(test_signal, true_fft, size, signal_type,
-                           signal_value, 1);
+  GenerateTestSignalAndFFT(test_signal, fft, size, sigtype, signal_value, 1);
 
   /*
    * Convert the complex result to what we want
    */
 
   for (k = 0; k < size; ++k) {
-    x[k] = test_signal[k].Re;
-  }
-
-  for (k = 0; k < size / 2 + 1; ++k) {
-    fft[k].Re = true_fft[k].Re;
-    fft[k].Im = true_fft[k].Im;
+    x_true[k] = test_signal[k].Re;
   }
 
   free(test_signal);
-  free(true_fft);
 }
 
 void TestFFT(int fft_log_size, int signal_type, int scale_factor) {
@@ -104,30 +101,39 @@ void TestFFT(int fft_log_size, int signal_type, int scale_factor) {
   printf("SNR:  %f dB\n", snr.real_snr_);
 }
 
-float RunOneForwardTest(int fft_log_size, int signal_type, float signal_value,
+float RunOneForwardTest(int fft_log_size, int signal_type,
+                        float unused_signal_value,
                         struct SnrResult* snr) {
   OMX_S16* x;
-  OMX_SC32* y;
+  OMX_SC16* y;
 
   struct AlignedPtr* x_aligned;
   struct AlignedPtr* y_aligned;
 
-  OMX_SC32* y_true;
+  float* x_true;
+  struct ComplexFloat* y_true;
+  OMX_SC16* y_scaled;
 
   OMX_INT n, fft_spec_buffer_size;
   OMXResult status;
-  OMXFFTSpec_R_S16S32 * fft_fwd_spec = NULL;
+  OMXFFTSpec_R_S16 * fft_fwd_spec = NULL;
   int fft_size;
+
+  /*
+   * To get good FFT results, set the forward FFT scale factor
+   * to be the same as the order.
+   */
+  scale_factor = fft_log_size;
 
   fft_size = 1 << fft_log_size;
 
-  status = omxSP_FFTGetBufSize_R_S16S32(fft_log_size, &fft_spec_buffer_size);
+  status = omxSP_FFTGetBufSize_R_S16(fft_log_size, &fft_spec_buffer_size);
   if (verbose > 63) {
     printf("fft_spec_buffer_size = %d\n", fft_spec_buffer_size);
   }
 
-  fft_fwd_spec = (OMXFFTSpec_R_S16S32*) malloc(fft_spec_buffer_size);
-  status = omxSP_FFTInit_R_S16S32(fft_fwd_spec, fft_log_size);
+  fft_fwd_spec = (OMXFFTSpec_R_S16*) malloc(fft_spec_buffer_size);
+  status = omxSP_FFTInit_R_S16(fft_fwd_spec, fft_log_size);
   if (status) {
     fprintf(stderr, "Failed to init forward FFT:  status = %d\n", status);
     exit(1);
@@ -135,22 +141,37 @@ float RunOneForwardTest(int fft_log_size, int signal_type, float signal_value,
 
   x_aligned = AllocAlignedPointer(32, sizeof(*x) * fft_size);
   y_aligned = AllocAlignedPointer(32, sizeof(*y) * (fft_size + 2));
-  y_true = (OMX_SC32*) malloc(sizeof(*y_true) * (fft_size / 2 + 1));
 
   x = x_aligned->aligned_pointer_;
   y = y_aligned->aligned_pointer_;
 
-  GenerateSignal(x, y_true, fft_size, signal_type);
+  x_true = (float*) malloc(sizeof(*x_true) * fft_size);
+  y_true = (struct ComplexFloat*) malloc(sizeof(*y_true) * (fft_size / 2 + 1));
+  y_scaled = (OMX_SC16*) malloc(sizeof(*y_true) * (fft_size / 2 + 1));
+
+  GenerateSignal(y_true, x_true, fft_size, signal_type);
+  for (n = 0; n < fft_size; ++n) {
+    x[n] = 0.5 + x_true[n];
+  }
+
+  {
+    float scale = 1 << fft_log_size;
+
+    for (n = 0; n < fft_size; ++n) {
+      y_scaled[n].Re = 0.5 + y_true[n].Re / scale;
+      y_scaled[n].Im = 0.5 + y_true[n].Im / scale;
+    }
+  }
 
   if (verbose > 63) {
     printf("Signal\n");
     DumpArrayReal16("x", fft_size, x);
 
     printf("Expected FFT output\n");
-    DumpArrayComplex32("y", fft_size / 2, y_true);
+    DumpArrayComplex16("y", fft_size / 2 + 1, y_scaled);
   }
 
-  status = omxSP_FFTFwd_RToCCS_S16S32_Sfs(x, (OMX_S32*) y, fft_fwd_spec, 0);
+  status = omxSP_FFTFwd_RToCCS_S16_Sfs(x, (OMX_S16*) y, fft_fwd_spec, scale_factor);
   if (status) {
     fprintf(stderr, "Forward FFT failed: status = %d\n", status);
     exit(1);
@@ -158,10 +179,10 @@ float RunOneForwardTest(int fft_log_size, int signal_type, float signal_value,
 
   if (verbose > 63) {
     printf("FFT Output\n");
-    DumpArrayComplex32("y", fft_size / 2, y);
+    DumpArrayComplex16("y", fft_size / 2 + 1, y);
   }
 
-  CompareComplex32(snr, y, y_true, fft_size / 2 + 1);
+  CompareComplex16(snr, y, y_scaled, fft_size / 2 + 1);
 
   FreeAlignedPointer(x_aligned);
   FreeAlignedPointer(y_aligned);
@@ -170,60 +191,97 @@ float RunOneForwardTest(int fft_log_size, int signal_type, float signal_value,
   return snr->complex_snr_;
 }
 
-float RunOneInverseTest(int fft_log_size, int signal_type, float signal_value,
+float RunOneInverseTest(int fft_log_size, int signal_type,
+                        float unused_signal_value,
                         struct SnrResult* snr) {
-  OMX_S16* x;
-  OMX_SC32* y;
+  OMX_S16* x_scaled;
   OMX_S16* z;
-  OMX_SC32* y_true;
+  OMX_SC16* y;
+  OMX_SC16* y_scaled;
 
-  struct AlignedPtr* x_aligned;
   struct AlignedPtr* y_aligned;
   struct AlignedPtr* z_aligned;
-  struct AlignedPtr* y_true_aligned;
 
-  OMX_INT n;
-  OMX_INT fft_spec_buffer_size;
+  float* x_true;
+  struct ComplexFloat* y_true;
+
+  OMX_INT n, fft_spec_buffer_size;
   OMXResult status;
-  OMXFFTSpec_R_S16S32 * fft_inv_spec = NULL;
+  OMXFFTSpec_R_S16 * fft_inv_spec = NULL;
   int fft_size;
 
   fft_size = 1 << fft_log_size;
 
-  status = omxSP_FFTGetBufSize_R_S16S32(fft_log_size, &fft_spec_buffer_size);
+  status = omxSP_FFTGetBufSize_R_S16(fft_log_size, &fft_spec_buffer_size);
   if (verbose > 3) {
     printf("fft_spec_buffer_size = %d\n", fft_spec_buffer_size);
   }
 
-  fft_inv_spec = (OMXFFTSpec_R_S16S32*)malloc(fft_spec_buffer_size);
-  status = omxSP_FFTInit_R_S16S32(fft_inv_spec, fft_log_size);
+  fft_inv_spec = (OMXFFTSpec_R_S16*)malloc(fft_spec_buffer_size);
+  status = omxSP_FFTInit_R_S16(fft_inv_spec, fft_log_size);
   if (status) {
     fprintf(stderr, "Failed to init backward FFT:  status = %d\n", status);
     exit(1);
   }
 
-  x_aligned = AllocAlignedPointer(32, sizeof(*x) * fft_size);
   y_aligned = AllocAlignedPointer(32, sizeof(*y) * (fft_size / 2 + 1));
   z_aligned = AllocAlignedPointer(32, sizeof(*z) * fft_size);
-  y_true_aligned = AllocAlignedPointer(32, sizeof(*y) * (fft_size / 2 + 1));
 
-  x = x_aligned->aligned_pointer_;
-  y = y_aligned->aligned_pointer_;
+  x_true = (float*) malloc(sizeof(*x_true) * fft_size);
+  x_scaled = (OMX_S16*) malloc(sizeof(*x_scaled) * fft_size);
+  y_true = (struct ComplexFloat*) malloc(sizeof(*y_true) * fft_size);
+  y_scaled = y_aligned->aligned_pointer_;
   z = z_aligned->aligned_pointer_;
-  y_true = y_true_aligned->aligned_pointer_;
 
-  GenerateSignal(x, y_true, fft_size, signal_type);
+  GenerateSignal(y_true, x_true, fft_size, signal_type);
+
+  {
+    /*
+     * To get max accuracy, scale the input to the inverse FFT up
+     * to use as many bits as we can.
+     */
+    float scale = 1;
+    float max = 0;
+
+    for (n = 0; n < fft_size / 2 + 1; ++n) {
+      float val;
+      val = fabs(y_true[n].Re);
+      if (val > max) {
+        max = val;
+      }
+      val = fabs(y_true[n].Im);
+      if (val > max) {
+        max = val;
+      }
+    }
+
+    scale = 16384 / max;
+    if (verbose > 63)
+      printf("Inverse FFT input scaled factor %g\n", scale);
+
+    /*
+     * Scale both the true FFT signal and the input so we can
+     * compare them correctly later
+     */
+    for (n = 0; n < fft_size / 2 + 1; ++n) {
+      y_scaled[n].Re = (OMX_S16)(0.5 + y_true[n].Re * scale);
+      y_scaled[n].Im = (OMX_S16)(0.5 + y_true[n].Im * scale);
+    }
+    for (n = 0; n < fft_size; ++n) {
+      x_scaled[n] = 0.5 + x_true[n] * scale;
+    }
+  }
+
 
   if (verbose > 63) {
     printf("Inverse FFT Input Signal\n");
-    DumpArrayComplex32("y", fft_size / 2, y_true);
+    DumpArrayComplex16("y", fft_size / 2 + 1, y_scaled);
 
     printf("Expected Inverse FFT output\n");
-    DumpArrayReal16("x", fft_size, x);
+    DumpArrayReal16("x", fft_size, x_scaled);
   }
 
-  status = omxSP_FFTInv_CCSToR_S32S16_Sfs((OMX_S32*) y_true, z,
-                                          fft_inv_spec, 0);
+  status = omxSP_FFTInv_CCSToR_S16_Sfs((OMX_S32*) y_scaled, z, fft_inv_spec, 0);
   if (status) {
     fprintf(stderr, "Inverse FFT failed: status = %d\n", status);
     exit(1);
@@ -231,15 +289,13 @@ float RunOneInverseTest(int fft_log_size, int signal_type, float signal_value,
 
   if (verbose > 63) {
     printf("Actual Inverse FFT Output\n");
-    DumpArrayReal16("x", fft_size, z);
+    DumpArrayReal16("z", fft_size, z);
   }
 
-  CompareReal16(snr, z, x, fft_size);
+  CompareReal16(snr, z, x_scaled, fft_size);
 
-  FreeAlignedPointer(x_aligned);
   FreeAlignedPointer(y_aligned);
   FreeAlignedPointer(z_aligned);
-  FreeAlignedPointer(y_true_aligned);
   free(fft_inv_spec);
 
   return snr->real_snr_;

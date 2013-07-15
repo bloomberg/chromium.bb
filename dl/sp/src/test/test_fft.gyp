@@ -67,11 +67,19 @@
       ],
     },
     {
-      # Test real 16-bit fixed-point FFT
-      'target_name': 'test_rfft16',
+      # Test real 16-bit fixed-point FFT implemented with S32 routines.
+      'target_name': 'test_rfft16_s32',
       'type': 'executable',
       'sources': [
-        'test_rfft16.c',
+        'test_rfft16_s32.c',
+      ],
+    },
+    {
+      # Test real 16-bit fixed-point FFT implemented with S16 routines.
+      'target_name': 'test_rfft16_s16',
+      'type': 'executable',
+      'sources': [
+        'test_rfft16_s16.c',
       ],
     },
     {
@@ -107,7 +115,8 @@
         'test_fft32',
         'test_float_fft',
         'test_float_rfft',
-        'test_rfft16',
+        'test_rfft16_s32',
+        'test_rfft16_s16',
         'test_rfft32',
         'test_fft_time',
       ],
