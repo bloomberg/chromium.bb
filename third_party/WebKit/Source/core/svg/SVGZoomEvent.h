@@ -24,6 +24,7 @@
 
 #include "core/dom/UIEvent.h"
 #include "core/svg/SVGPoint.h"
+#include "core/svg/SVGRect.h"
 
 namespace WebCore {
 
@@ -32,7 +33,7 @@ public:
     static PassRefPtr<SVGZoomEvent> create() { return adoptRef(new SVGZoomEvent); }
 
     // 'SVGZoomEvent' functions
-    FloatRect zoomRectScreen() const;
+    SVGRect zoomRectScreen() const;
 
     float previousScale() const;
     void setPreviousScale(float);
@@ -52,7 +53,7 @@ private:
     float m_newScale;
     float m_previousScale;
 
-    FloatRect m_zoomRectScreen;
+    SVGRect m_zoomRectScreen;
 
     SVGPoint m_newTranslate;
     SVGPoint m_previousTranslate;

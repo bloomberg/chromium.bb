@@ -33,7 +33,7 @@ SVGAnimatedRectAnimator::SVGAnimatedRectAnimator(SVGAnimationElement* animationE
 
 PassOwnPtr<SVGAnimatedType> SVGAnimatedRectAnimator::constructFromString(const String& string)
 {
-    OwnPtr<SVGAnimatedType> animatedType = SVGAnimatedType::createRect(new FloatRect);
+    OwnPtr<SVGAnimatedType> animatedType = SVGAnimatedType::createRect(new SVGRect);
     parseRect(string, animatedType->rect());
     return animatedType.release();
 }
@@ -76,10 +76,10 @@ void SVGAnimatedRectAnimator::calculateAnimatedValue(float percentage, unsigned 
     ASSERT(m_animationElement);
     ASSERT(m_contextElement);
 
-    const FloatRect& fromRect = m_animationElement->animationMode() == ToAnimation ? animated->rect() : from->rect();
-    const FloatRect& toRect = to->rect();
-    const FloatRect& toAtEndOfDurationRect = toAtEndOfDuration->rect();
-    FloatRect& animatedRect = animated->rect();
+    const SVGRect& fromRect = m_animationElement->animationMode() == ToAnimation ? animated->rect() : from->rect();
+    const SVGRect& toRect = to->rect();
+    const SVGRect& toAtEndOfDurationRect = toAtEndOfDuration->rect();
+    SVGRect& animatedRect = animated->rect();
 
     float animatedX = animatedRect.x();
     float animatedY = animatedRect.y();
@@ -90,7 +90,7 @@ void SVGAnimatedRectAnimator::calculateAnimatedValue(float percentage, unsigned 
     m_animationElement->animateAdditiveNumber(percentage, repeatCount, fromRect.width(), toRect.width(), toAtEndOfDurationRect.width(), animatedWidth);
     m_animationElement->animateAdditiveNumber(percentage, repeatCount, fromRect.height(), toRect.height(), toAtEndOfDurationRect.height(), animatedHeight);
 
-    animatedRect = FloatRect(animatedX, animatedY, animatedWidth, animatedHeight);
+    animatedRect = SVGRect(animatedX, animatedY, animatedWidth, animatedHeight);
 }
 
 float SVGAnimatedRectAnimator::calculateDistance(const String&, const String&)

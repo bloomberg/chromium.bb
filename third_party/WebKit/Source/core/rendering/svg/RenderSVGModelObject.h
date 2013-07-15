@@ -33,6 +33,7 @@
 
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/svg/SVGRenderSupport.h"
+#include "core/svg/SVGRect.h"
 
 namespace WebCore {
 
@@ -59,8 +60,8 @@ public:
     virtual void styleWillChange(StyleDifference, const RenderStyle* newStyle) OVERRIDE FINAL;
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle);
 
-    static bool checkIntersection(RenderObject*, const FloatRect&);
-    static bool checkEnclosure(RenderObject*, const FloatRect&);
+    static bool checkIntersection(RenderObject*, const SVGRect&);
+    static bool checkEnclosure(RenderObject*, const SVGRect&);
 
     virtual FloatRect repaintRectInLocalCoordinatesExcludingSVGShadow() const { return repaintRectInLocalCoordinates(); }
     bool hasSVGShadow() const { return m_hasSVGShadow; }

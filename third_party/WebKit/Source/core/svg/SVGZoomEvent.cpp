@@ -34,7 +34,7 @@ SVGZoomEvent::SVGZoomEvent()
     ScriptWrappable::init(this);
 }
 
-FloatRect SVGZoomEvent::zoomRectScreen() const
+SVGRect SVGZoomEvent::zoomRectScreen() const
 {
     return m_zoomRectScreen;
 }

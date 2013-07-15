@@ -149,13 +149,13 @@ SVGPoint SVGTextContentElement::getEndPositionOfChar(unsigned charnum, Exception
     return SVGTextQuery(renderer()).endPositionOfCharacter(charnum);
 }
 
-FloatRect SVGTextContentElement::getExtentOfChar(unsigned charnum, ExceptionCode& ec)
+SVGRect SVGTextContentElement::getExtentOfChar(unsigned charnum, ExceptionCode& ec)
 {
     document()->updateLayoutIgnorePendingStylesheets();
 
     if (charnum > getNumberOfChars()) {
         ec = IndexSizeError;
-        return FloatRect();
+        return SVGRect();
     }
 
     return SVGTextQuery(renderer()).extentOfCharacter(charnum);

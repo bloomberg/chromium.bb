@@ -27,14 +27,14 @@
 
 namespace WebCore {
 
-typedef SVGAnimatedPropertyTearOff<FloatRect> SVGAnimatedRect;
+typedef SVGAnimatedPropertyTearOff<SVGRect> SVGAnimatedRect;
 
 // Helper macros to declare/define a SVGAnimatedRect object
 #define DECLARE_ANIMATED_RECT(UpperProperty, LowerProperty) \
-DECLARE_ANIMATED_PROPERTY(SVGAnimatedRect, FloatRect, UpperProperty, LowerProperty)
+DECLARE_ANIMATED_PROPERTY(SVGAnimatedRect, SVGRect, UpperProperty, LowerProperty)
 
 #define DEFINE_ANIMATED_RECT(OwnerType, DOMAttribute, UpperProperty, LowerProperty) \
-DEFINE_ANIMATED_PROPERTY(AnimatedRect, OwnerType, DOMAttribute, DOMAttribute.localName(), UpperProperty, LowerProperty, SVGAnimatedRect, FloatRect)
+DEFINE_ANIMATED_PROPERTY(AnimatedRect, OwnerType, DOMAttribute, DOMAttribute.localName(), UpperProperty, LowerProperty, SVGAnimatedRect, SVGRect)
 
 class SVGAnimationElement;
 
@@ -53,8 +53,6 @@ public:
     virtual void addAnimatedTypes(SVGAnimatedType*, SVGAnimatedType*);
     virtual void calculateAnimatedValue(float percentage, unsigned repeatCount, SVGAnimatedType*, SVGAnimatedType*, SVGAnimatedType*, SVGAnimatedType*);
     virtual float calculateDistance(const String& fromString, const String& toString);
-
-    static bool parseSVGRect(const String&, FloatRect&);
 };
 
 } // namespace WebCore

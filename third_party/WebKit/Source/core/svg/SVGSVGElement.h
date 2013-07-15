@@ -59,7 +59,7 @@ public:
     const AtomicString& contentStyleType() const;
     void setContentStyleType(const AtomicString& type);
 
-    FloatRect viewport() const;
+    SVGRect viewport() const;
 
     float pixelUnitToMillimeterX() const;
     float pixelUnitToMillimeterY() const;
@@ -78,7 +78,7 @@ public:
     Length intrinsicWidth(ConsiderCSSMode = RespectCSSProperties) const;
     Length intrinsicHeight(ConsiderCSSMode = RespectCSSProperties) const;
     FloatSize currentViewportSize() const;
-    FloatRect currentViewBoxRect() const;
+    SVGRect currentViewBoxRect() const;
 
     float currentScale() const;
     void setCurrentScale(float scale);
@@ -103,10 +103,10 @@ public:
     void unsuspendRedrawAll();
     void forceRedraw();
 
-    PassRefPtr<NodeList> getIntersectionList(const FloatRect&, SVGElement* referenceElement) const;
-    PassRefPtr<NodeList> getEnclosureList(const FloatRect&, SVGElement* referenceElement) const;
-    bool checkIntersection(SVGElement*, const FloatRect&) const;
-    bool checkEnclosure(SVGElement*, const FloatRect&) const;
+    PassRefPtr<NodeList> getIntersectionList(const SVGRect&, SVGElement* referenceElement) const;
+    PassRefPtr<NodeList> getEnclosureList(const SVGRect&, SVGElement* referenceElement) const;
+    bool checkIntersection(SVGElement*, const SVGRect&) const;
+    bool checkEnclosure(SVGElement*, const SVGRect&) const;
     void deselectAll();
 
     static float createSVGNumber();
@@ -114,7 +114,7 @@ public:
     static SVGAngle createSVGAngle();
     static SVGPoint createSVGPoint();
     static SVGMatrix createSVGMatrix();
-    static FloatRect createSVGRect();
+    static SVGRect createSVGRect();
     static SVGTransform createSVGTransform();
     static SVGTransform createSVGTransformFromMatrix(const SVGMatrix&);
 
@@ -157,7 +157,7 @@ private:
         CollectEnclosureList
     };
 
-    PassRefPtr<NodeList> collectIntersectionOrEnclosureList(const FloatRect&, SVGElement*, CollectIntersectionOrEnclosure) const;
+    PassRefPtr<NodeList> collectIntersectionOrEnclosureList(const SVGRect&, SVGElement*, CollectIntersectionOrEnclosure) const;
 
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGSVGElement)
         DECLARE_ANIMATED_LENGTH(X, x)

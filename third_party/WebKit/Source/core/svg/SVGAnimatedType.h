@@ -20,7 +20,6 @@
 #ifndef SVGAnimatedType_h
 #define SVGAnimatedType_h
 
-#include "core/platform/graphics/FloatRect.h"
 #include "core/svg/SVGAngle.h"
 #include "core/svg/SVGColor.h"
 #include "core/svg/SVGLength.h"
@@ -28,6 +27,7 @@
 #include "core/svg/SVGNumberList.h"
 #include "core/svg/SVGPointList.h"
 #include "core/svg/SVGPreserveAspectRatio.h"
+#include "core/svg/SVGRect.h"
 #include "core/svg/SVGTransformList.h"
 #include "core/svg/properties/SVGPropertyInfo.h"
 
@@ -54,7 +54,7 @@ public:
     static PassOwnPtr<SVGAnimatedType> createPath(PassOwnPtr<SVGPathByteStream>);
     static PassOwnPtr<SVGAnimatedType> createPointList(SVGPointList*);
     static PassOwnPtr<SVGAnimatedType> createPreserveAspectRatio(SVGPreserveAspectRatio*);
-    static PassOwnPtr<SVGAnimatedType> createRect(FloatRect*);
+    static PassOwnPtr<SVGAnimatedType> createRect(SVGRect*);
     static PassOwnPtr<SVGAnimatedType> createString(String*);
     static PassOwnPtr<SVGAnimatedType> createTransformList(SVGTransformList*);
     static bool supportsAnimVal(AnimatedPropertyType);
@@ -146,7 +146,7 @@ public:
         return *m_data.preserveAspectRatio;
     }
 
-    const FloatRect& rect() const
+    const SVGRect& rect() const
     {
         ASSERT(m_type == AnimatedRect);
         return *m_data.rect;
@@ -249,7 +249,7 @@ public:
         return *m_data.preserveAspectRatio;
     }
 
-    FloatRect& rect()
+    SVGRect& rect()
     {
         ASSERT(m_type == AnimatedRect);
         return *m_data.rect;
@@ -295,7 +295,7 @@ private:
         SVGPathByteStream* path;
         SVGPreserveAspectRatio* preserveAspectRatio;
         SVGPointList* pointList;
-        FloatRect* rect;
+        SVGRect* rect;
         String* string;
         SVGTransformList* transformList;
     } m_data;

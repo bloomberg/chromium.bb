@@ -79,7 +79,7 @@ public:
     float getSubStringLength(unsigned charnum, unsigned nchars, ExceptionCode&);
     SVGPoint getStartPositionOfChar(unsigned charnum, ExceptionCode&);
     SVGPoint getEndPositionOfChar(unsigned charnum, ExceptionCode&);
-    FloatRect getExtentOfChar(unsigned charnum, ExceptionCode&);
+    SVGRect getExtentOfChar(unsigned charnum, ExceptionCode&);
     float getRotationOfChar(unsigned charnum, ExceptionCode&);
     int getCharNumAtPosition(const SVGPoint&);
     void selectSubString(unsigned charnum, unsigned nchars, ExceptionCode&);

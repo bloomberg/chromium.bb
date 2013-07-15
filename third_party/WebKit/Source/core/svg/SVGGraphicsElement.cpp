@@ -155,7 +155,7 @@ SVGElement* SVGGraphicsElement::farthestViewportElement() const
     return SVGTransformable::farthestViewportElement(this);
 }
 
-FloatRect SVGGraphicsElement::getBBox(StyleUpdateStrategy styleUpdateStrategy)
+SVGRect SVGGraphicsElement::getBBox(StyleUpdateStrategy styleUpdateStrategy)
 {
     return SVGTransformable::getBBox(this, styleUpdateStrategy);
 }

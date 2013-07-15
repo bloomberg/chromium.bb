@@ -44,7 +44,7 @@ public:
     virtual AffineTransform animatedLocalTransform() const;
     virtual AffineTransform* supplementalTransform();
 
-    virtual FloatRect getBBox(StyleUpdateStrategy = AllowStyleUpdate);
+    virtual SVGRect getBBox(StyleUpdateStrategy = AllowStyleUpdate);
 
     // "base class" methods for all the elements which render as paths
     virtual void toClipPath(Path&);

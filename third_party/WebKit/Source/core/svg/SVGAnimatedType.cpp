@@ -203,7 +203,7 @@ PassOwnPtr<SVGAnimatedType> SVGAnimatedType::createPreserveAspectRatio(SVGPreser
     return animatedType.release();
 }
 
-PassOwnPtr<SVGAnimatedType> SVGAnimatedType::createRect(FloatRect* rect)
+PassOwnPtr<SVGAnimatedType> SVGAnimatedType::createRect(SVGRect* rect)
 {
     ASSERT(rect);
     OwnPtr<SVGAnimatedType> animatedType = adoptPtr(new SVGAnimatedType(AnimatedRect));

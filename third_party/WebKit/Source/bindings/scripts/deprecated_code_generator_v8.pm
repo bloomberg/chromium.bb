@@ -216,7 +216,7 @@ my %svgTypeNeedingTearOff = (
     "SVGPoint" => "SVGPropertyTearOff<SVGPoint>",
     "SVGPointList" => "SVGListPropertyTearOff<SVGPointList>",
     "SVGPreserveAspectRatio" => "SVGPropertyTearOff<SVGPreserveAspectRatio>",
-    "SVGRect" => "SVGPropertyTearOff<FloatRect>",
+    "SVGRect" => "SVGPropertyTearOff<SVGRect>",
     "SVGStringList" => "SVGStaticListPropertyTearOff<SVGStringList>",
     "SVGTransform" => "SVGPropertyTearOff<SVGTransform>",
     "SVGTransformList" => "SVGTransformListPropertyTearOff"
@@ -629,7 +629,6 @@ sub GenerateHeader
         }
     }
 
-    $header{nameSpaceWebCore}->addHeader("class FloatRect;\n") if $svgPropertyType && $svgPropertyType eq "FloatRect";
     $header{nameSpaceWebCore}->addHeader("\nclass Dictionary;") if IsConstructorTemplate($interface, "Event");
 
     my $nativeType = GetNativeTypeForConversions($interface);

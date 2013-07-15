@@ -131,11 +131,11 @@ void SVGSVGElement::setContentStyleType(const AtomicString& type)
     setAttribute(SVGNames::contentStyleTypeAttr, type);
 }
 
-FloatRect SVGSVGElement::viewport() const
+SVGRect SVGSVGElement::viewport() const
 {
     // FIXME: This method doesn't follow the spec and is basically untested. Parent documents are not considered here.
     // As we have no test coverage for this, we're going to disable it completly for now.
-    return FloatRect();
+    return SVGRect();
 }
 
 float SVGSVGElement::pixelUnitToMillimeterX() const
@@ -327,7 +327,7 @@ void SVGSVGElement::forceRedraw()
     // FIXME: Implement me (see bug 11275)
 }
 
-PassRefPtr<NodeList> SVGSVGElement::collectIntersectionOrEnclosureList(const FloatRect& rect, SVGElement* referenceElement, CollectIntersectionOrEnclosure collect) const
+PassRefPtr<NodeList> SVGSVGElement::collectIntersectionOrEnclosureList(const SVGRect& rect, SVGElement* referenceElement, CollectIntersectionOrEnclosure collect) const
 {
     Vector<RefPtr<Node> > nodes;
     Element* element = ElementTraversal::next(referenceElement ? referenceElement : this);
@@ -348,24 +348,24 @@ PassRefPtr<NodeList> SVGSVGElement::collectIntersectionOrEnclosureList(const Flo
     return StaticNodeList::adopt(nodes);
 }
 
-PassRefPtr<NodeList> SVGSVGElement::getIntersectionList(const FloatRect& rect, SVGElement* referenceElement) const
+PassRefPtr<NodeList> SVGSVGElement::getIntersectionList(const SVGRect& rect, SVGElement* referenceElement) const
 {
     return collectIntersectionOrEnclosureList(rect, referenceElement, CollectIntersectionList);
 }
 
-PassRefPtr<NodeList> SVGSVGElement::getEnclosureList(const FloatRect& rect, SVGElement* referenceElement) const
+PassRefPtr<NodeList> SVGSVGElement::getEnclosureList(const SVGRect& rect, SVGElement* referenceElement) const
 {
     return collectIntersectionOrEnclosureList(rect, referenceElement, CollectEnclosureList);
 }
 
-bool SVGSVGElement::checkIntersection(SVGElement* element, const FloatRect& rect) const
+bool SVGSVGElement::checkIntersection(SVGElement* element, const SVGRect& rect) const
 {
     if (!element)
         return false;
     return RenderSVGModelObject::checkIntersection(element->renderer(), rect);
 }
 
-bool SVGSVGElement::checkEnclosure(SVGElement* element, const FloatRect& rect) const
+bool SVGSVGElement::checkEnclosure(SVGElement* element, const SVGRect& rect) const
 {
     if (!element)
         return false;
@@ -403,9 +403,9 @@ SVGMatrix SVGSVGElement::createSVGMatrix()
     return SVGMatrix();
 }
 
-FloatRect SVGSVGElement::createSVGRect()
+SVGRect SVGSVGElement::createSVGRect()
 {
-    return FloatRect();
+    return SVGRect();
 }
 
 SVGTransform SVGSVGElement::createSVGTransform()
@@ -544,27 +544,27 @@ bool SVGSVGElement::selfHasRelativeLengths() const
         || hasAttribute(SVGNames::viewBoxAttr);
 }
 
-FloatRect SVGSVGElement::currentViewBoxRect() const
+SVGRect SVGSVGElement::currentViewBoxRect() const
 {
     if (m_useCurrentView)
-        return m_viewSpec ? m_viewSpec->viewBoxCurrentValue() : FloatRect();
+        return m_viewSpec ? m_viewSpec->viewBoxCurrentValue() : SVGRect();
 
     FloatRect useViewBox = viewBoxCurrentValue();
     if (!useViewBox.isEmpty())
         return useViewBox;
     if (!renderer() || !renderer()->isSVGRoot())
-        return FloatRect();
+        return SVGRect();
     if (!toRenderSVGRoot(renderer())->isEmbeddedThroughSVGImage())
-        return FloatRect();
+        return SVGRect();
 
     Length intrinsicWidth = this->intrinsicWidth();
     Length intrinsicHeight = this->intrinsicHeight();
     if (!intrinsicWidth.isFixed() || !intrinsicHeight.isFixed())
-        return FloatRect();
+        return SVGRect();
 
     // If no viewBox is specified but non-relative width/height values, then we
     // should always synthesize a viewBox if we're embedded through a SVGImage.    
-    return FloatRect(FloatPoint(), FloatSize(floatValueForLength(intrinsicWidth, 0), floatValueForLength(intrinsicHeight, 0)));
+    return SVGRect(FloatPoint(), FloatSize(floatValueForLength(intrinsicWidth, 0), floatValueForLength(intrinsicHeight, 0)));
 }
 
 FloatSize SVGSVGElement::currentViewportSize() const
