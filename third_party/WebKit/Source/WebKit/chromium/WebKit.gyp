@@ -104,6 +104,7 @@
                     ],
                     'sources': [
                         '<@(core_unittest_files)',
+                        '<@(web_unittest_files)',
                         '<@(webkit_unittest_files)',
                         '../../web/WebTestingSupport.cpp',
                         'tests/WebUnitTests.cpp',   # Components test runner support.

@@ -292,5 +292,8 @@
       'painting/PaintAggregator.h',
       'win/WebInputEventFactory.cpp',
     ],
+    'web_unittest_files': [
+      'tests/AssociatedURLLoaderTest.cpp',
+    ],
   },
 }
