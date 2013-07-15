@@ -29,14 +29,14 @@ define C_COMPILER_RULE
 -include $(call SRC_TO_DEP,$(1),_pnacl)
 $(call SRC_TO_OBJ,$(1),_pnacl): $(1) $(TOP_MAKE) | $(dir $(call SRC_TO_OBJ,$(1)))dir.stamp
 	$(call LOG,CC  ,$$@,$(PNACL_CC) -o $$@ -c $$< $(POSIX_FLAGS) $(2) $(NACL_CFLAGS))
-	@$(FIXDEPS) $(call SRC_TO_DEP,$(1),_pnacl)
+	@$(FIXDEPS) $(call SRC_TO_DEP_PRE_FIXUP,$(1),_pnacl)
 endef
 
 define CXX_COMPILER_RULE
 -include $(call SRC_TO_DEP,$(1),_pnacl)
 $(call SRC_TO_OBJ,$(1),_pnacl): $(1) $(TOP_MAKE) | $(dir $(call SRC_TO_OBJ,$(1)))dir.stamp
 	$(call LOG,CXX ,$$@,$(PNACL_CXX) -o $$@ -c $$< $(POSIX_FLAGS) $(2) $(NACL_CFLAGS))
-	@$(FIXDEPS) $(call SRC_TO_DEP,$(1),_pnacl)
+	@$(FIXDEPS) $(call SRC_TO_DEP_PRE_FIXUP,$(1),_pnacl)
 endef
 
 

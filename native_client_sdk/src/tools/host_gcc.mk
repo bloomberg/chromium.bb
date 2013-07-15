@@ -41,14 +41,14 @@ define C_COMPILER_RULE
 -include $(call SRC_TO_DEP,$(1))
 $(call SRC_TO_OBJ,$(1)): $(1) $(TOP_MAKE) | $(dir $(call SRC_TO_OBJ,$(1)))dir.stamp
 	$(call LOG,CC  ,$$@,$(HOST_CC) -o $$@ -c $$< -fPIC $(POSIX_FLAGS) $(2) $(LINUX_FLAGS))
-	@$(FIXDEPS) $(call SRC_TO_DEP,$(1))
+	@$(FIXDEPS) $(call SRC_TO_DEP_PRE_FIXUP,$(1))
 endef
 
 define CXX_COMPILER_RULE
 -include $(call SRC_TO_DEP,$(1))
 $(call SRC_TO_OBJ,$(1)): $(1) $(TOP_MAKE) | $(dir $(call SRC_TO_OBJ,$(1)))dir.stamp
 	$(call LOG,CXX ,$$@,$(HOST_CXX) -o $$@ -c $$< -fPIC $(POSIX_FLAGS) $(2) $(LINUX_FLAGS))
-	@$(FIXDEPS) $(call SRC_TO_DEP,$(1))
+	@$(FIXDEPS) $(call SRC_TO_DEP_PRE_FIXUP,$(1))
 endef
 
 #
