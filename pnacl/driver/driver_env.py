@@ -173,7 +173,7 @@ INITIAL_ENV = {
   'LLVM_MC'       : '${BASE_LLVM_BIN}/llvm-mc${EXEC_EXT}',
 
   # Binutils
-  'BINUTILS_BASE'  : '${BASE_BINUTILS}/bin/le32-nacl-',
+  'BINUTILS_BASE'  : '${BASE_BINUTILS}/bin/arm-pc-nacl-',
   'OBJDUMP'        : '${BINUTILS_BASE}objdump${EXEC_EXT}',
   'NM'             : '${BINUTILS_BASE}nm${EXEC_EXT}',
   'AR'             : '${BINUTILS_BASE}ar${EXEC_EXT}',
