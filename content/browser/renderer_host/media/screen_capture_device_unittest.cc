@@ -95,7 +95,15 @@ class ScreenCaptureDeviceTest : public testing::Test {
 
 }  // namespace
 
-TEST_F(ScreenCaptureDeviceTest, Capture) {
+// There is currently no screen capturer implementation for ozone. So disable
+// the test that uses a real screen-capturer instead of FakeScreenCapturer.
+// http://crbug.com/260318
+#if defined(USE_OZONE)
+#define MAYBE_Capture DISABLED_Capture
+#else
+#define MAYBE_Capture Capture
+#endif
+TEST_F(ScreenCaptureDeviceTest, MAYBE_Capture) {
   ScreenCaptureDevice capture_device(
       worker_pool_->GetSequencedTaskRunner(worker_pool_->GetSequenceToken()));
   media::VideoCaptureCapability caps;
