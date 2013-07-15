@@ -15,18 +15,6 @@ namespace {
 
 const base::FilePath::CharType kJournal[] = FILE_PATH_LITERAL("-journal");
 
-void DatabaseErrorCallback(int error, sql::Statement* stmt) {
-  // Without a callback to ignore errors,
-  // DomStorageDatabaseTest.TestCanOpenFileThatIsNotADatabase fails with:
-  // ERROR:connection.cc(735)] sqlite error 522, errno 0: disk I/O error
-  // FATAL:connection.cc(750)] disk I/O error
-  // <backtrace>
-  // <crash>
-  //
-  // TODO(shess): If/when infrastructure lands which can allow tests
-  // to handle SQLite errors appropriately, remove this.
-}
-
 }  // anon namespace
 
 namespace dom_storage {
@@ -162,7 +150,6 @@ bool DomStorageDatabase::LazyOpen(bool create_if_needed) {
 
   db_.reset(new sql::Connection());
   db_->set_histogram_tag("DomStorageDatabase");
-  db_->set_error_callback(base::Bind(&DatabaseErrorCallback));
 
   if (file_path_.empty()) {
     // This code path should only be triggered by unit tests.

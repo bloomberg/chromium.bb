@@ -259,6 +259,7 @@
         '../net/net.gyp:net_test_support',
         '../skia/skia.gyp:skia',
         '../sql/sql.gyp:sql',
+        '../sql/sql.gyp:test_support_sql',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         '../ui/ui.gyp:ui',

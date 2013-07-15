@@ -10,7 +10,9 @@
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "sql/statement.h"
+#include "sql/test/scoped_error_ignorer.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/sqlite/sqlite3.h"
 
 namespace dom_storage {
 
@@ -345,6 +347,9 @@ TEST(DomStorageDatabaseTest, TestCanOpenFileThatIsNotADatabase) {
   file_util::WriteFile(file_name, kData, strlen(kData));
 
   {
+    sql::ScopedErrorIgnorer ignore_errors;
+    ignore_errors.IgnoreError(SQLITE_IOERR_SHORT_READ);
+
     // Try and open the file. As it's not a database, we should end up deleting
     // it and creating a new, valid file, so everything should actually
     // succeed.
@@ -356,9 +361,14 @@ TEST(DomStorageDatabaseTest, TestCanOpenFileThatIsNotADatabase) {
     EXPECT_TRUE(db.IsOpen());
 
     CheckValuesMatch(&db, values);
+
+    ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
   }
 
   {
+    sql::ScopedErrorIgnorer ignore_errors;
+    ignore_errors.IgnoreError(SQLITE_CANTOPEN);
+
     // Try to open a directory, we should fail gracefully and not attempt
     // to delete it.
     DomStorageDatabase db(temp_dir.path());
@@ -375,6 +385,8 @@ TEST(DomStorageDatabaseTest, TestCanOpenFileThatIsNotADatabase) {
     EXPECT_FALSE(db.IsOpen());
 
     EXPECT_TRUE(base::PathExists(temp_dir.path()));
+
+    ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
   }
 }
 

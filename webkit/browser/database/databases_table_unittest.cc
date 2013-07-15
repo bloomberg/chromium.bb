@@ -7,18 +7,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
+#include "sql/test/scoped_error_ignorer.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/sqlite/sqlite3.h"
 #include "webkit/browser/database/databases_table.h"
-
-namespace {
-
-// Set this error callback to "handle" errors by ignoring them.  This
-// causes the sql/ machinery to not throw fatal reports and allow
-// higher-level code to return failures.
-void IgnoreDatabaseErrors(int error, sql::Statement* stmt) {
-}
-
-}  // namespace
 
 namespace webkit_database {
 
@@ -40,7 +32,13 @@ TEST(DatabasesTableTest, TestIt) {
   // Initialize the 'Databases' table.
   sql::Connection db;
 
-  db.set_error_callback(base::Bind(&IgnoreDatabaseErrors));
+  sql::ScopedErrorIgnorer ignore_errors;
+  // TODO(shess): Suppressing SQLITE_CONSTRAINT because the code
+  // expects that and handles the resulting error.  Consider revising
+  // the code to use INSERT OR IGNORE (which would not throw
+  // SQLITE_CONSTRAINT) and then check ChangeCount() to see if any
+  // changes were made.
+  ignore_errors.IgnoreError(SQLITE_CONSTRAINT);
 
   // Initialize the temp dir and the 'Databases' table.
   EXPECT_TRUE(db.OpenInMemory());
@@ -143,6 +141,8 @@ TEST(DatabasesTableTest, TestIt) {
   // Check that trying to delete a record that doesn't exist fails.
   EXPECT_FALSE(databases_table.DeleteDatabaseDetails(
       "unknown_origin", ASCIIToUTF16("unknown_database")));
+
+  ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
 }
 
 }  // namespace webkit_database
