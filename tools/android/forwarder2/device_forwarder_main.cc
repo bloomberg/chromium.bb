@@ -70,8 +70,6 @@ class ServerDelegate : public Daemon::ServerDelegate {
     initialized_ = true;
   }
 
-  virtual void OnServerExited() OVERRIDE {}
-
  private:
   static void StartController(int exit_notifier_fd,
                               scoped_ptr<Socket> client_socket) {

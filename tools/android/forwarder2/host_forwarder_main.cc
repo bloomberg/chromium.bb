@@ -15,6 +15,8 @@
 #include <utility>
 #include <vector>
 
+#include "base/at_exit.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
@@ -31,6 +33,8 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/task_runner.h"
+#include "base/threading/thread.h"
 #include "tools/android/forwarder2/common.h"
 #include "tools/android/forwarder2/daemon.h"
 #include "tools/android/forwarder2/host_controller.h"
@@ -76,40 +80,68 @@ void KillHandler(int signal_number) {
     exit(1);
 }
 
-class ServerDelegate : public Daemon::ServerDelegate {
+class HostControllersManager {
  public:
-  ServerDelegate() : has_failed_(false) {}
+  HostControllersManager() : has_failed_(false) {}
+
+  void HandleRequest(const std::string& device_serial,
+                     int device_port,
+                     int host_port,
+                     scoped_ptr<Socket> client_socket) {
+    // Lazy initialize so that the CLI process doesn't get this thread created.
+    InitOnce();
+    thread_->message_loop_proxy()->PostTask(
+        FROM_HERE,
+        base::Bind(
+            &HostControllersManager::HandleRequestOnInternalThread,
+            base::Unretained(this), device_serial, device_port, host_port,
+            base::Passed(&client_socket)));
+  }
 
   bool has_failed() const { return has_failed_; }
 
-  // Daemon::ServerDelegate:
-  virtual void Init() OVERRIDE {
-    LOG(INFO) << "Starting host process daemon (pid=" << getpid() << ")";
-    DCHECK(!g_notifier);
-    g_notifier = new PipeNotifier();
-    signal(SIGTERM, KillHandler);
-    signal(SIGINT, KillHandler);
+ private:
+  typedef base::hash_map<
+      std::string, linked_ptr<HostController> > HostControllerMap;
+
+  static std::string MakeHostControllerMapKey(int adb_port, int device_port) {
+    return base::StringPrintf("%d:%d", adb_port, device_port);
   }
 
-  virtual void OnClientConnected(scoped_ptr<Socket> client_socket) OVERRIDE {
-    char buf[kBufSize];
-    const int bytes_read = client_socket->Read(buf, sizeof(buf));
-    if (bytes_read <= 0) {
-      if (client_socket->DidReceiveEvent())
-        return;
-      PError("Read()");
-      has_failed_ = true;
+  void InitOnce() {
+    if (thread_.get())
+      return;
+    at_exit_manager_.reset(new base::AtExitManager());
+    thread_.reset(new base::Thread("HostControllersManagerThread"));
+    thread_->Start();
+  }
+
+  // Invoked when a HostController instance reports an error (e.g. due to a
+  // device connectivity issue).
+  void DeleteHostController(HostController* host_controller) {
+    if (!thread_->message_loop_proxy()->RunsTasksOnCurrentThread()) {
+      // This can be invoked from the host controller internal thread.
+      thread_->message_loop_proxy()->PostTask(
+          FROM_HERE,
+          base::Bind(
+              &HostControllersManager::DeleteHostControllerOnInternalThread,
+              base::Unretained(this), host_controller));
       return;
     }
-    const Pickle command_pickle(buf, bytes_read);
-    PickleIterator pickle_it(command_pickle);
-    std::string device_serial;
-    CHECK(pickle_it.ReadString(&device_serial));
-    int device_port;
-    if (!pickle_it.ReadInt(&device_port)) {
-      SendMessage("ERROR: missing device port", client_socket.get());
-      return;
-    }
+    DeleteHostControllerOnInternalThread(host_controller);
+  }
+
+  void DeleteHostControllerOnInternalThread(HostController* host_controller) {
+    // Note that this will delete |host_controller| which is owned by the map.
+    controllers_.erase(
+        MakeHostControllerMapKey(host_controller->adb_port(),
+                                 host_controller->device_port()));
+  }
+
+  void HandleRequestOnInternalThread(const std::string& device_serial,
+                                     int device_port,
+                                     int host_port,
+                                     scoped_ptr<Socket> client_socket) {
     const int adb_port = GetAdbPortForDevice(device_serial);
     if (adb_port < 0) {
       SendMessage(
@@ -129,8 +161,7 @@ class ServerDelegate : public Daemon::ServerDelegate {
           client_socket.get());
       return;
     }
-    int host_port;
-    if (!pickle_it.ReadInt(&host_port)) {
+    if (host_port < 0) {
       SendMessage("ERROR: missing host port", client_socket.get());
       return;
     }
@@ -138,9 +169,9 @@ class ServerDelegate : public Daemon::ServerDelegate {
     if (!use_dynamic_port_allocation) {
       const std::string controller_key = MakeHostControllerMapKey(
           adb_port, device_port);
-      LOG(INFO) << "Already forwarding device port " << device_port
-                << " to host port " << host_port;
       if (controllers_.find(controller_key) != controllers_.end()) {
+        LOG(INFO) << "Already forwarding device port " << device_port
+                  << " to host port " << host_port;
         SendMessage(base::StringPrintf("%d:%d", device_port, host_port),
                     client_socket.get());
         return;
@@ -148,8 +179,10 @@ class ServerDelegate : public Daemon::ServerDelegate {
     }
     // Create a new host controller.
     scoped_ptr<HostController> host_controller(
-        new HostController(device_port, "127.0.0.1", host_port, adb_port,
-                           GetExitNotifierFD()));
+        new HostController(
+            device_port, "127.0.0.1", host_port, adb_port, GetExitNotifierFD(),
+            base::Bind(&HostControllersManager::DeleteHostController,
+                       base::Unretained(this))));
     if (!host_controller->Connect()) {
       has_failed_ = true;
       SendMessage("ERROR: Connection to device failed.", client_socket.get());
@@ -163,31 +196,9 @@ class ServerDelegate : public Daemon::ServerDelegate {
     if (!SendMessage(msg, client_socket.get()))
       return;
     host_controller->Start();
-    const std::string controller_key = MakeHostControllerMapKey(
-        adb_port, device_port);
     controllers_.insert(
-        std::make_pair(controller_key,
+        std::make_pair(MakeHostControllerMapKey(adb_port, device_port),
                        linked_ptr<HostController>(host_controller.release())));
-  }
-
-  virtual void OnServerExited() OVERRIDE {
-    for (HostControllerMap::iterator it = controllers_.begin();
-         it != controllers_.end(); ++it) {
-      linked_ptr<HostController> host_controller = it->second;
-      host_controller->Join();
-    }
-    if (controllers_.size() == 0) {
-      LOG(ERROR) << "No forwarder servers could be started. Exiting.";
-      has_failed_ = true;
-    }
-  }
-
- private:
-  typedef base::hash_map<
-      std::string, linked_ptr<HostController> > HostControllerMap;
-
-  static std::string MakeHostControllerMapKey(int adb_port, int device_port) {
-    return base::StringPrintf("%d:%d", adb_port, device_port);
   }
 
   int GetAdbPortForDevice(const std::string& device_serial) {
@@ -224,6 +235,56 @@ class ServerDelegate : public Daemon::ServerDelegate {
   base::hash_map<std::string, int> device_serial_to_adb_port_map_;
   HostControllerMap controllers_;
   bool has_failed_;
+  scoped_ptr<base::AtExitManager> at_exit_manager_;  // Needed by base::Thread.
+  scoped_ptr<base::Thread> thread_;
+};
+
+class ServerDelegate : public Daemon::ServerDelegate {
+ public:
+  ServerDelegate() : has_failed_(false) {}
+
+  bool has_failed() const {
+    return has_failed_ || controllers_manager_.has_failed();
+  }
+
+  // Daemon::ServerDelegate:
+  virtual void Init() OVERRIDE {
+    LOG(INFO) << "Starting host process daemon (pid=" << getpid() << ")";
+    DCHECK(!g_notifier);
+    g_notifier = new PipeNotifier();
+    signal(SIGTERM, KillHandler);
+    signal(SIGINT, KillHandler);
+  }
+
+  virtual void OnClientConnected(scoped_ptr<Socket> client_socket) OVERRIDE {
+    char buf[kBufSize];
+    const int bytes_read = client_socket->Read(buf, sizeof(buf));
+    if (bytes_read <= 0) {
+      if (client_socket->DidReceiveEvent())
+        return;
+      PError("Read()");
+      has_failed_ = true;
+      return;
+    }
+    const Pickle command_pickle(buf, bytes_read);
+    PickleIterator pickle_it(command_pickle);
+    std::string device_serial;
+    CHECK(pickle_it.ReadString(&device_serial));
+    int device_port;
+    if (!pickle_it.ReadInt(&device_port)) {
+      client_socket->WriteString("ERROR: missing device port");
+      return;
+    }
+    int host_port;
+    if (!pickle_it.ReadInt(&host_port))
+      host_port = -1;
+    controllers_manager_.HandleRequest(
+        device_serial, device_port, host_port, client_socket.Pass());
+  }
+
+ private:
+  bool has_failed_;
+  HostControllersManager controllers_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ServerDelegate);
 };

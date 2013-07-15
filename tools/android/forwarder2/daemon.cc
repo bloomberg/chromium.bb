@@ -72,7 +72,6 @@ bool RunServerAcceptLoop(const std::string& welcome_message,
     }
     server_delegate->OnClientConnected(client_socket.Pass());
   }
-  server_delegate->OnServerExited();
   return !failed;
 }
 
@@ -210,8 +209,8 @@ bool Daemon::SpawnIfNeeded() {
         }
         server_delegate_->Init();
         command_socket.AddEventFd(get_exit_fd_callback_());
-        exit(!RunServerAcceptLoop(identifier_, &command_socket,
-                                  server_delegate_));
+        return RunServerAcceptLoop(
+            identifier_, &command_socket, server_delegate_);
       }
       default:
         break;

@@ -38,8 +38,6 @@ class Daemon {
     virtual void Init() = 0;
 
     virtual void OnClientConnected(scoped_ptr<Socket> client_socket) = 0;
-
-    virtual void OnServerExited() = 0;
   };
 
   // |identifier| should be a unique string identifier. It is used to
