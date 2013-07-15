@@ -1345,8 +1345,9 @@ void ContentViewCoreImpl::DetachExternalVideoSurface(JNIEnv* env,
 #if defined(GOOGLE_TV)
   RenderViewHostImpl* rvhi = static_cast<RenderViewHostImpl*>(
       web_contents_->GetRenderViewHost());
-  MediaPlayerManagerImpl* browser_media_player_manager =
-      rvhi ? static_cast<MediaPlayerManagerImpl*>(rvhi->media_player_manager())
+  BrowserMediaPlayerManager* browser_media_player_manager =
+      rvhi ? static_cast<BrowserMediaPlayerManager*>(
+                 rvhi->media_player_manager())
            : NULL;
   if (browser_media_player_manager) {
     browser_media_player_manager->DetachExternalVideoSurface(
