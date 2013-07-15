@@ -213,7 +213,7 @@ def RunWebkitLayoutTests(options):
         '--build-number', str(options.build_properties.get('buildnumber', '')),
         '--master-name', options.build_properties.get('mastername', ''),
         '--build-name', options.build_properties.get('buildername', ''),
-        '--platform=chromium-android']
+        '--platform=android']
 
   for flag in 'test_results_server', 'driver_name', 'additional_drt_flag':
     if flag in options.factory_properties:
