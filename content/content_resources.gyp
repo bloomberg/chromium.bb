@@ -6,36 +6,29 @@
 # content.gyp doesn't depend on gyp files from chrome/ anymore:
 # http://crbug.com/10394
 {
-  'variables': {
-    'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/content',
-  },
   'targets': [
     {
       'target_name': 'content_resources',
       'type': 'none',
-      'dependencies': [
-        'generate_content_resources',
+      'variables': {
+        'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/content',
+      },
+      'actions': [
+        {
+          'action_name': 'generate_content_resources',
+          'variables': {
+            'grit_grd_file': 'content_resources.grd',
+          },
+          'includes': [ '../build/grit_action.gypi' ],
+        },
       ],
+      'includes': [ '../build/grit_target.gypi' ],
       'copies': [
         {
           'destination': '<(PRODUCT_DIR)',
           'files': [
             '<(SHARED_INTERMEDIATE_DIR)/content/content_resources.pak'
           ],
-        },
-      ],
-      'includes': [ '../build/grit_target.gypi' ],
-    },
-    {
-      'target_name': 'generate_content_resources',
-      'type': 'none',
-      'actions': [
-        {
-          'action_name': 'content_resources',
-          'variables': {
-            'grit_grd_file': 'content_resources.grd',
-          },
-          'includes': [ '../build/grit_action.gypi' ],
         },
       ],
     },
