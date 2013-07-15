@@ -538,7 +538,7 @@ cr.define('options', function() {
       if (profileInfo.isManaged) {
         profileInfo.custodianEmail = this.signedInEmail_;
         ManagedUserCreateConfirmOverlay.setProfileInfo(profileInfo);
-        OptionsPage.navigateToPage('managedUserCreateConfirm');
+        OptionsPage.showPageByName('managedUserCreateConfirm', false);
       }
     },
 

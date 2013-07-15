@@ -81,6 +81,11 @@ cr.define('options', function() {
                                   HTMLEscape(info.name),
                                   HTMLEscape(info.custodianEmail));
     },
+
+    /** @override */
+    canShowPage: function() {
+      return this.profileInfo_ != null;
+    },
   };
 
   // Forward public APIs to private implementations.
