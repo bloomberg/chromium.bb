@@ -6,7 +6,7 @@ CONSOLE MESSAGE: line 2: Refused to execute inline script because it violates th
 Frame: '<!--framePath //<!--frame0-->-->'
 --------
 CSP report received:
-CONTENT_TYPE: application/json
+CONTENT_TYPE: application/csp-report
 HTTP_REFERER: http://127.0.0.1:8000/security/contentSecurityPolicy/resources/generate-csp-report.html
 REQUEST_METHOD: POST
 === POST DATA ===

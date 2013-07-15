@@ -55,9 +55,14 @@ class ResourceResponse;
 class PingLoader : private ResourceHandleClient {
     WTF_MAKE_NONCOPYABLE(PingLoader); WTF_MAKE_FAST_ALLOCATED;
 public:
+    enum ViolationReportType {
+        ContentSecurityPolicyViolationReport,
+        XSSAuditorViolationReport
+    };
+
     static void loadImage(Frame*, const KURL& url);
     static void sendPing(Frame*, const KURL& pingURL, const KURL& destinationURL);
-    static void sendViolationReport(Frame*, const KURL& reportURL, PassRefPtr<FormData> report);
+    static void sendViolationReport(Frame*, const KURL& reportURL, PassRefPtr<FormData> report, ViolationReportType);
 
     virtual ~PingLoader();
 

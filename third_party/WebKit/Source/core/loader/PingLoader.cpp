@@ -99,12 +99,12 @@ void PingLoader::sendPing(Frame* frame, const KURL& pingURL, const KURL& destina
     UNUSED_PARAM(leakedPingLoader);
 }
 
-void PingLoader::sendViolationReport(Frame* frame, const KURL& reportURL, PassRefPtr<FormData> report)
+void PingLoader::sendViolationReport(Frame* frame, const KURL& reportURL, PassRefPtr<FormData> report, ViolationReportType type)
 {
     ResourceRequest request(reportURL);
     request.setTargetType(ResourceRequest::TargetIsSubresource);
     request.setHTTPMethod("POST");
-    request.setHTTPContentType("application/json");
+    request.setHTTPContentType(type == ContentSecurityPolicyViolationReport ? "application/csp-report" : "application/json");
     request.setHTTPBody(report);
     frame->loader()->addExtraFieldsToRequest(request);
 
