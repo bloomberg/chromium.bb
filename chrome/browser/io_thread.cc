@@ -658,50 +658,50 @@ void IOThread::InitializeNetworkOptions(const CommandLine& command_line) {
     net::CookieMonster::EnableFileScheme();
   }
 
-  // If "spdy.disabled" preference is controlled via policy, then skip use-spdy
-  // command line flags.
-  if (is_spdy_disabled_by_policy_)
-    return;
+  // Only handle use-spdy command line flags if "spdy.disabled" preference is
+  // not disabled via policy.
+  if (!is_spdy_disabled_by_policy_) {
+    if (command_line.HasSwitch(switches::kEnableIPPooling))
+      globals_->enable_spdy_ip_pooling.set(true);
 
-  if (command_line.HasSwitch(switches::kEnableIPPooling))
-    globals_->enable_spdy_ip_pooling.set(true);
+    if (command_line.HasSwitch(switches::kDisableIPPooling))
+      globals_->enable_spdy_ip_pooling.set(false);
 
-  if (command_line.HasSwitch(switches::kDisableIPPooling))
-    globals_->enable_spdy_ip_pooling.set(false);
+    if (command_line.HasSwitch(switches::kEnableSpdyCredentialFrames))
+      globals_->enable_spdy_credential_frames.set(true);
 
-  if (command_line.HasSwitch(switches::kEnableSpdyCredentialFrames))
-    globals_->enable_spdy_credential_frames.set(true);
+    if (command_line.HasSwitch(switches::kEnableWebSocketOverSpdy)) {
+      // Enable WebSocket over SPDY.
+      net::WebSocketJob::set_websocket_over_spdy_enabled(true);
+    }
+    if (command_line.HasSwitch(switches::kMaxSpdyConcurrentStreams)) {
+      globals_->max_spdy_concurrent_streams_limit.set(
+          GetSwitchValueAsInt(command_line,
+                              switches::kMaxSpdyConcurrentStreams));
+    }
+    if (command_line.HasSwitch(switches::kTrustedSpdyProxy)) {
+      globals_->trusted_spdy_proxy.set(
+          command_line.GetSwitchValueASCII(switches::kTrustedSpdyProxy));
+    }
+    if (command_line.HasSwitch(switches::kIgnoreUrlFetcherCertRequests))
+      net::URLFetcher::SetIgnoreCertificateRequests(true);
 
-  if (command_line.HasSwitch(switches::kEnableWebSocketOverSpdy)) {
-    // Enable WebSocket over SPDY.
-    net::WebSocketJob::set_websocket_over_spdy_enabled(true);
-  }
-  if (command_line.HasSwitch(switches::kMaxSpdyConcurrentStreams)) {
-    globals_->max_spdy_concurrent_streams_limit.set(
-        GetSwitchValueAsInt(command_line, switches::kMaxSpdyConcurrentStreams));
-  }
-  if (command_line.HasSwitch(switches::kTrustedSpdyProxy)) {
-    globals_->trusted_spdy_proxy.set(
-        command_line.GetSwitchValueASCII(switches::kTrustedSpdyProxy));
-  }
-  if (command_line.HasSwitch(switches::kIgnoreUrlFetcherCertRequests))
-    net::URLFetcher::SetIgnoreCertificateRequests(true);
-
-  if (command_line.HasSwitch(switches::kUseSpdy)) {
-    std::string spdy_mode =
-        command_line.GetSwitchValueASCII(switches::kUseSpdy);
-    EnableSpdy(spdy_mode);
-  } else if (command_line.HasSwitch(switches::kEnableSpdy4a2)) {
-    net::HttpStreamFactory::EnableNpnSpdy4a2();
-  } else if (command_line.HasSwitch(switches::kDisableSpdy31)) {
-    net::HttpStreamFactory::EnableNpnSpdy3();
-  } else if (command_line.HasSwitch(switches::kEnableNpn)) {
-    net::HttpStreamFactory::EnableNpnSpdy();
-  } else if (command_line.HasSwitch(switches::kEnableNpnHttpOnly)) {
-    net::HttpStreamFactory::EnableNpnHttpOnly();
-  } else {
-    // Use SPDY/3.1 by default.
-    net::HttpStreamFactory::EnableNpnSpdy31();
+    if (command_line.HasSwitch(switches::kUseSpdy)) {
+      std::string spdy_mode =
+          command_line.GetSwitchValueASCII(switches::kUseSpdy);
+      EnableSpdy(spdy_mode);
+    } else if (command_line.HasSwitch(switches::kEnableSpdy4a2)) {
+      net::HttpStreamFactory::EnableNpnSpdy4a2();
+    } else if (command_line.HasSwitch(switches::kDisableSpdy31)) {
+      net::HttpStreamFactory::EnableNpnSpdy3();
+    } else if (command_line.HasSwitch(switches::kEnableNpn)) {
+      net::HttpStreamFactory::EnableNpnSpdy();
+    } else if (command_line.HasSwitch(switches::kEnableNpnHttpOnly)) {
+      net::HttpStreamFactory::EnableNpnHttpOnly();
+    } else {
+      // Use SPDY/3.1 by default.
+      net::HttpStreamFactory::EnableNpnSpdy31();
+    }
   }
 
   // TODO(rch): Make the client socket factory a per-network session
