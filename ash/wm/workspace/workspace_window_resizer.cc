@@ -706,7 +706,7 @@ bool WorkspaceWindowResizer::UpdateMagnetismWindow(const gfx::Rect& bounds,
     const aura::Window::Windows& children =
         workspace_controller->GetActiveWorkspaceWindow()->children();
     for (aura::Window::Windows::const_reverse_iterator i = children.rbegin();
-         i != children.rend(); ++i) {
+         i != children.rend() && !matcher.AreEdgesObscured(); ++i) {
       aura::Window* other = *i;
       if (other == window() ||
           !other->IsVisible() ||
