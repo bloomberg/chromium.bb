@@ -152,14 +152,6 @@ uint64 TickCount() {
 #endif
 }
 
-void CloseFile(FileHandle log) {
-#if defined(OS_WIN)
-  CloseHandle(log);
-#else
-  fclose(log);
-#endif
-}
-
 void DeleteFilePath(const PathString& log_name) {
 #if defined(OS_WIN)
   DeleteFile(log_name.c_str());
@@ -341,6 +333,22 @@ bool InitializeLogFileHandle() {
   return true;
 }
 
+void CloseFile(FileHandle log) {
+#if defined(OS_WIN)
+  CloseHandle(log);
+#else
+  fclose(log);
+#endif
+}
+
+void CloseLogFileUnlocked() {
+  if (!log_file)
+    return;
+
+  CloseFile(log_file);
+  log_file = NULL;
+}
+
 }  // namespace
 
 LoggingSettings::LoggingSettings()
@@ -373,22 +381,18 @@ bool BaseInitLoggingImpl(const LoggingSettings& settings) {
                      &min_log_level);
   }
 
-  LoggingLock::Init(settings.lock_log, settings.log_file);
-
-  LoggingLock logging_lock;
-
-  if (log_file) {
-    // calling InitLogging twice or after some log call has already opened the
-    // default log file will re-initialize to the new options
-    CloseFile(log_file);
-    log_file = NULL;
-  }
-
   logging_destination = settings.logging_dest;
 
   // ignore file options unless logging to file is set.
   if ((logging_destination & LOG_TO_FILE) == 0)
     return true;
+
+  LoggingLock::Init(settings.lock_log, settings.log_file);
+  LoggingLock logging_lock;
+
+  // Calling InitLogging twice or after some log call has already opened the
+  // default log file will re-initialize to the new options.
+  CloseLogFileUnlocked();
 
   if (!log_file_name)
     log_file_name = new PathString();
@@ -608,16 +612,16 @@ LogMessage::~LogMessage() {
     fflush(stderr);
   }
 
-  // We can have multiple threads and/or processes, so try to prevent them
-  // from clobbering each other's writes.
-  // If the client app did not call InitLogging, and the lock has not
-  // been created do it now. We do this on demand, but if two threads try
-  // to do this at the same time, there will be a race condition to create
-  // the lock. This is why InitLogging should be called from the main
-  // thread at the beginning of execution.
-  LoggingLock::Init(LOCK_LOG_FILE, NULL);
   // write to log file
   if ((logging_destination & LOG_TO_FILE) != 0) {
+    // We can have multiple threads and/or processes, so try to prevent them
+    // from clobbering each other's writes.
+    // If the client app did not call InitLogging, and the lock has not
+    // been created do it now. We do this on demand, but if two threads try
+    // to do this at the same time, there will be a race condition to create
+    // the lock. This is why InitLogging should be called from the main
+    // thread at the beginning of execution.
+    LoggingLock::Init(LOCK_LOG_FILE, NULL);
     LoggingLock logging_lock;
     if (InitializeLogFileHandle()) {
 #if defined(OS_WIN)
@@ -810,12 +814,7 @@ ErrnoLogMessage::~ErrnoLogMessage() {
 
 void CloseLogFile() {
   LoggingLock logging_lock;
-
-  if (!log_file)
-    return;
-
-  CloseFile(log_file);
-  log_file = NULL;
+  CloseLogFileUnlocked();
 }
 
 void RawLog(int level, const char* message) {
