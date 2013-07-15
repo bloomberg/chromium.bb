@@ -29,7 +29,11 @@ def main():
   if popen.returncode != 0:
     return 1
   for line in out.splitlines():
-    attrs, fro, to = line.split('\t')
+    parts = line.split('\t')
+    if len(parts) != 3:
+      print 'Skipping: %s -- not a rename?' % parts
+      continue
+    attrs, fro, to = parts
     if attrs.split()[4].startswith('R'):
       subprocess.check_call([
         sys.executable,
@@ -38,7 +42,7 @@ def main():
         '--no_error_for_non_source_file',
         fro, to])
     else:
-      print "Skipping: %s -- not a rename?" % fro
+      print 'Skipping: %s -- not a rename?' % fro
   return 0
 
 

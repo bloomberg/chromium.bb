@@ -55,6 +55,8 @@ def IncludeCompareKey(line):
     return '1' + line
   if line.startswith('<unknwn.h>'):  # Must be before e.g. intshcut.h
     return '1' + line
+  if line.startswith('<ole2.h>'):  # Must be before e.g. intshcut.h
+    return '1' + line
 
   # C++ system headers should come after C system headers.
   if line.startswith('<'):
