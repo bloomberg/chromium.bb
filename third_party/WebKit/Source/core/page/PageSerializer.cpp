@@ -224,7 +224,7 @@ void PageSerializer::serializeFrame(Frame* frame)
             CachedImage* cachedImage = imageElement->cachedImage();
             addImageToResources(cachedImage, imageElement->renderer(), url);
         } else if (element->hasTagName(HTMLNames::linkTag)) {
-            HTMLLinkElement* linkElement = static_cast<HTMLLinkElement*>(element);
+            HTMLLinkElement* linkElement = toHTMLLinkElement(element);
             if (CSSStyleSheet* sheet = linkElement->sheet()) {
                 KURL url = document->completeURL(linkElement->getAttribute(HTMLNames::hrefAttr));
                 serializeCSSStyleSheet(sheet, url);

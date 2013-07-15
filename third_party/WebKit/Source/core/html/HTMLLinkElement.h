@@ -203,6 +203,12 @@ private:
     int m_beforeLoadRecurseCount;
 };
 
+inline HTMLLinkElement* toHTMLLinkElement(Node* node)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(HTMLNames::linkTag));
+    return static_cast<HTMLLinkElement*>(node);
+}
+
 } //namespace
 
 #endif

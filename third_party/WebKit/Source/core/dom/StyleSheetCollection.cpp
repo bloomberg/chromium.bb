@@ -113,7 +113,7 @@ void StyleSheetCollection::collectStyleSheets(DocumentStyleSheetCollection* coll
             bool enabledViaScript = false;
             if (e->hasLocalName(linkTag)) {
                 // <LINK> element
-                HTMLLinkElement* linkElement = static_cast<HTMLLinkElement*>(n);
+                HTMLLinkElement* linkElement = toHTMLLinkElement(n);
                 enabledViaScript = linkElement->isEnabledViaScript();
                 if (!linkElement->isDisabled() && linkElement->styleSheetIsLoading()) {
                     // it is loading but we should still decide which style sheet set to use
