@@ -172,13 +172,14 @@ void OutdatedPluginInfoBarDelegate::Create(
     InfoBarService* infobar_service,
     PluginInstaller* installer,
     scoped_ptr<PluginMetadata> plugin_metadata) {
+  string16 name(plugin_metadata->name());
   infobar_service->AddInfoBar(scoped_ptr<InfoBarDelegate>(
       new OutdatedPluginInfoBarDelegate(
           infobar_service, installer, plugin_metadata.Pass(),
           l10n_util::GetStringFUTF16(
               (installer->state() == PluginInstaller::INSTALLER_STATE_IDLE) ?
                   IDS_PLUGIN_OUTDATED_PROMPT : IDS_PLUGIN_DOWNLOADING,
-              plugin_metadata->name()))));
+              name))));
 }
 
 OutdatedPluginInfoBarDelegate::OutdatedPluginInfoBarDelegate(

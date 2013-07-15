@@ -298,8 +298,7 @@ void PluginObserver::OnBlockedOutdatedPlugin(int placeholder_id,
   PluginInstaller* installer = NULL;
   scoped_ptr<PluginMetadata> plugin;
   bool ret = finder->FindPluginWithIdentifier(identifier, &installer, &plugin);
-  base::debug::ScopedCrashKey identifier_key("plugin_identifier", identifier);
-  CHECK(ret);
+  DCHECK(ret);
 
   plugin_placeholders_[placeholder_id] =
       new PluginPlaceholderHost(this, placeholder_id,
@@ -406,8 +405,7 @@ void PluginObserver::OnNPAPINotSupported(const std::string& identifier) {
   scoped_ptr<PluginMetadata> plugin;
   bool ret = PluginFinder::GetInstance()->FindPluginWithIdentifier(
           identifier, NULL, &plugin);
-  base::debug::ScopedCrashKey identifier_key("plugin_identifier", identifier);
-  CHECK(ret);
+  DCHECK(ret);
 
   PluginMetroModeInfoBarDelegate::Create(
       InfoBarService::FromWebContents(web_contents()),
