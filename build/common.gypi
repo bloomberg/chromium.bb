@@ -418,6 +418,12 @@
       # Managed users are enabled by default.
       'enable_managed_users%': 1,
 
+      # Platform natively supports discardable memory.
+      'native_discardable_memory%': 0,
+
+      # Platform sends memory pressure signals natively.
+      'native_memory_pressure_signals%': 0,
+
       'spdy_proxy_auth_origin%' : '',
       'spdy_proxy_auth_property%' : '',
       'spdy_proxy_auth_value%' : '',
@@ -514,6 +520,8 @@
           'remoting%': 0,
           'arm_neon%': 0,
           'arm_neon_optional%': 1,
+          'native_discardable_memory%': 1,
+          'native_memory_pressure_signals%': 1,
         }],
 
         # Enable autofill dialog for Android and Views-enabled platforms for now.
@@ -835,6 +843,8 @@
     'google_default_client_id%': '<(google_default_client_id)',
     'google_default_client_secret%': '<(google_default_client_secret)',
     'enable_managed_users%': '<(enable_managed_users)',
+    'native_discardable_memory%': '<(native_discardable_memory)',
+    'native_memory_pressure_signals%': '<(native_memory_pressure_signals)',
     'spdy_proxy_auth_origin%': '<(spdy_proxy_auth_origin)',
     'spdy_proxy_auth_property%': '<(spdy_proxy_auth_property)',
     'spdy_proxy_auth_value%': '<(spdy_proxy_auth_value)',
@@ -3416,6 +3426,12 @@
               # gets the right path.
               '-B<(PRODUCT_DIR)/../../third_party/gold',
             ],
+          }],
+          ['native_discardable_memory', {
+            'defines': ['DISCARDABLE_MEMORY_ALWAYS_SUPPORTED_NATIVELY'],
+          }],
+          ['native_memory_pressure_signals', {
+            'defines': ['SYSTEM_NATIVELY_SIGNALS_MEMORY_PRESSURE'],
           }],
         ],
       },

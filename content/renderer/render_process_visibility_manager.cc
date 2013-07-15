@@ -22,14 +22,14 @@ RenderProcessVisibilityManager* RenderProcessVisibilityManager::GetInstance() {
 }
 
 void RenderProcessVisibilityManager::WidgetVisibilityChanged(bool visible) {
-#if !defined(DISCARDABLE_MEMORY_ALWAYS_SUPPORTED_NATIVELY)
+#if !defined(SYSTEM_NATIVELY_SIGNALS_MEMORY_PRESSURE)
   num_visible_render_widgets_ += visible ? 1 : -1;
   DCHECK_LE(0, num_visible_render_widgets_);
   if (num_visible_render_widgets_ == 0) {
     // TODO(vollick): Remove this this heavy-handed approach once we're polling
     // the real system memory pressure.
     base::MemoryPressureListener::NotifyMemoryPressure(
-        base::MemoryPressureListener::MEMORY_PRESSURE_CRITICAL);
+        base::MemoryPressureListener::MEMORY_PRESSURE_MODERATE);
   }
 #endif
 }
