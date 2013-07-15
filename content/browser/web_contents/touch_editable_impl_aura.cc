@@ -46,7 +46,7 @@ void TouchEditableImplAura::AttachToView(RenderWidgetHostViewAura* view) {
 }
 
 void TouchEditableImplAura::UpdateEditingController() {
-  if (!rwhva_)
+  if (!rwhva_ || !rwhva_->HasFocus())
     return;
 
   // If touch editing handles were not visible, we bring them up only if
@@ -129,6 +129,11 @@ bool TouchEditableImplAura::HandleInputEvent(const ui::Event* event) {
           return true;
         }
       }
+      // For single taps, not inside selected region, we want to show handles
+      // only when the tap is on an already focused textfield.
+      if (gesture_event->details().tap_count() == 1 &&
+          text_input_type_ != ui::TEXT_INPUT_TYPE_NONE)
+        selection_gesture_in_process_ = true;
       break;
     case ui::ET_GESTURE_LONG_PRESS:
       selection_gesture_in_process_ = true;
@@ -160,7 +165,8 @@ bool TouchEditableImplAura::HandleInputEvent(const ui::Event* event) {
 void TouchEditableImplAura::GestureEventAck(int gesture_event_type) {
   DCHECK(rwhva_);
   if (gesture_event_type == WebKit::WebInputEvent::GestureTap &&
-      text_input_type_ != ui::TEXT_INPUT_TYPE_NONE) {
+      text_input_type_ != ui::TEXT_INPUT_TYPE_NONE &&
+      selection_gesture_in_process_) {
     StartTouchEditing();
     if (touch_selection_controller_)
       touch_selection_controller_->SelectionChanged();
