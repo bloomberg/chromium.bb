@@ -67,8 +67,12 @@ public:
         v8::Persistent<v8::Object> persistent(m_isolate, wrapper);
         configuration.configureWrapper(&persistent, m_isolate);
         persistent.MakeWeak(this, &makeWeakCallback);
-        typename MapType::AddResult result = m_map.set(key, UnsafePersistent<v8::Object>(persistent));
-        RELEASE_ASSERT(result.isNewEntry);
+        typename MapType::AddResult result = m_map.add(key, UnsafePersistent<v8::Object>());
+        ASSERT(result.isNewEntry);
+        // FIXME: Stop handling this case once duplicate wrappers are guaranteed not to be created.
+        if (!result.isNewEntry)
+            result.iterator->value.dispose();
+        result.iterator->value = UnsafePersistent<v8::Object>(persistent);
     }
 
     void clear()
