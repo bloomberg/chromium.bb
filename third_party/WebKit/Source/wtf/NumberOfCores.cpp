@@ -36,9 +36,7 @@
 #include <unistd.h>
 #elif OS(WINDOWS)
 #include "wtf/UnusedParam.h"
-#if OS(WINDOWS)
 #include <windows.h>
-#endif
 #endif
 
 namespace WTF {
