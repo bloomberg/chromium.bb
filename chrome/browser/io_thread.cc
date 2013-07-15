@@ -540,7 +540,10 @@ void IOThread::Init() {
     globals_->testing_fixed_https_port =
         GetSwitchValueAsInt(command_line, switches::kTestingFixedHttpsPort);
   }
-  globals_->enable_quic.set(ShouldEnableQuic(command_line));
+  bool enable_quic = ShouldEnableQuic(command_line);
+  globals_->enable_quic.set(enable_quic);
+  if (enable_quic && command_line.HasSwitch(switches::kEnableQuicHttps))
+    globals_->enable_quic_https.set(true);
   if (command_line.HasSwitch(switches::kOriginToForceQuicOn)) {
     net::HostPortPair quic_origin =
         net::HostPortPair::FromString(
@@ -880,6 +883,7 @@ void IOThread::InitializeNetworkSessionParams(
   globals_->trusted_spdy_proxy.CopyToIfSet(
       &params->trusted_spdy_proxy);
   globals_->enable_quic.CopyToIfSet(&params->enable_quic);
+  globals_->enable_quic_https.CopyToIfSet(&params->enable_quic_https);
   globals_->origin_to_force_quic_on.CopyToIfSet(
       &params->origin_to_force_quic_on);
   params->enable_user_alternate_protocol_ports =
@@ -962,8 +966,10 @@ bool IOThread::ShouldEnableQuic(const CommandLine& command_line) {
   if (command_line.HasSwitch(switches::kDisableQuic))
     return false;
 
-  if (command_line.HasSwitch(switches::kEnableQuic))
+  if (command_line.HasSwitch(switches::kEnableQuic) ||
+      command_line.HasSwitch(switches::kEnableQuicHttps)) {
     return true;
+  }
 
   return quic_trial_group == kQuicFieldTrialEnabledGroupName;
 }

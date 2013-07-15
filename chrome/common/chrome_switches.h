@@ -183,6 +183,7 @@ extern const char kEnablePnacl[];
 extern const char kDisablePnaclInstall[];
 extern const char kEnableProfiling[];
 extern const char kEnableQuic[];
+extern const char kEnableQuicHttps[];
 extern const char kEnableQuickofficeEdit[];
 extern const char kEnableResetProfileSettings[];
 extern const char kEnableResourceContentSettings[];

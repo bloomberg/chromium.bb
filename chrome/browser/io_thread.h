@@ -164,6 +164,7 @@ class IOThread : public content::BrowserThreadDelegate {
     Optional<net::NextProto> spdy_default_protocol;
     Optional<string> trusted_spdy_proxy;
     Optional<bool> enable_quic;
+    Optional<bool> enable_quic_https;
     Optional<net::HostPortPair> origin_to_force_quic_on;
     bool enable_user_alternate_protocol_ports;
     // NetErrorTabHelper uses |dns_probe_service| to send DNS probes when a
