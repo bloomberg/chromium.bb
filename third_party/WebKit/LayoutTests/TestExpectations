@@ -992,8 +992,6 @@ webkit.org/b/92279 [ Debug ] http/tests/inspector/resource-har-pages.html [ Fail
 
 webkit.org/b/86674 [ Debug ] fast/dom/HTMLObjectElement/beforeload-set-text-crash.xhtml [ Pass Timeout ]
 
-webkit.org/b/86908 [ Win ] http/tests/security/cross-frame-access-put.html [ Failure Pass ]
-
 # Ref-tests can't have platform specific results.
 webkit.org/b/87175 [ Win Linux ] fast/regions/floats-basic-in-variable-width-regions.html [ ImageOnlyFailure ]
 webkit.org/b/87175 [ Win Linux MountainLion ] fast/regions/overflow-in-uniform-regions.html [ ImageOnlyFailure ]

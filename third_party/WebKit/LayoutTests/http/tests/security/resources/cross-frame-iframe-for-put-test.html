@@ -396,9 +396,9 @@
             shouldBe("window.personalbar", "personalbarOld");
             shouldBe("window.plugins", "pluginsOld");
             shouldBe("window.screen", "screenOld");
-            shouldBe("window.screenLeft", "screenLeftOld");
+            shouldBe("window.screenLeft", "screenLeftOld", true); // The result is based on the physical screen size, so don't display the values.
             shouldBe("window.screenTop", "screenTopOld", true); // The result is based on the physical screen size, so don't display the values.
-            shouldBe("window.screenX", "screenXOld");
+            shouldBe("window.screenX", "screenXOld", true); // The result is based on the physical screen size, so don't display the values.
             shouldBe("window.screenY", "screenYOld", true); // The result is based on the physical screen size, so don't display the values.
             shouldBe("window.scrollbars", "scrollbarsOld");
             shouldBe("window.scrollX", "scrollXOld");
