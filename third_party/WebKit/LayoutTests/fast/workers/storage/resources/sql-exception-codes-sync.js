@@ -7,6 +7,7 @@ function testTransaction(db, executeStatementsCallback, expectedError)
             executeStatementsCallback(tx);
             postMessage("FAIL: an exception (" + expectedError + ") should've been thrown.");
         } catch (err) {
+            postMessage("LOG: " + err);
             if (typeof err == "string" && err == expectedError)
                 postMessage("PASS: expected and got error with message " + expectedError);
             else if (err.name == expectedError)
