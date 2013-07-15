@@ -327,8 +327,11 @@ bool Breakpad::ExtractParameters(NSDictionary *parameters) {
   NSString *urlStr = [parameters objectForKey:@BREAKPAD_URL];
   NSString *vendor =
       [parameters objectForKey:@BREAKPAD_VENDOR];
-  NSString *dumpSubdirectory =
-      [parameters objectForKey:@BREAKPAD_DUMP_DIRECTORY];
+  // We check both parameters and the environment variable here.
+  char *envVarDumpSubdirectory = getenv(BREAKPAD_DUMP_DIRECTORY);
+  NSString *dumpSubdirectory = envVarDumpSubdirectory ?
+      [[NSString alloc] initWithUTF8String:envVarDumpSubdirectory] :
+          [parameters objectForKey:@BREAKPAD_DUMP_DIRECTORY];
 
   NSDictionary *serverParameters =
       [parameters objectForKey:@BREAKPAD_SERVER_PARAMETER_DICT];
