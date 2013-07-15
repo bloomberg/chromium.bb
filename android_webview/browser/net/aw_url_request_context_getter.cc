@@ -88,7 +88,7 @@ void AwURLRequestContextGetter::Init() {
   scoped_refptr<net::CookieStore> cookie_store =
       content::CreatePersistentCookieStore(
           browser_context_->GetPath().Append(FILE_PATH_LITERAL("Cookies")),
-          false,
+          true,
           NULL,
           NULL);
   cookie_store->GetCookieMonster()->SetPersistSessionCookies(true);
