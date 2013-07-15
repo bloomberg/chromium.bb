@@ -17,9 +17,10 @@
 <div id="console"></div>
 
 <script>
-description('This test verify dragging an image in the page keeps its attributes. To test manually, drag the image and drop it in the rect with a blue border.');
+description('This test verifies dropping an image does nothing. To test manually, drag the image and drop it in the rect with a blue border.');
 var jsTestIsAsync = true;
 var target = document.getElementById('target');
+var imageIsInserted = false;
 
 function contentInserted() {
     shouldBe('target.getElementsByTagName("object").length', '1');
@@ -29,12 +30,17 @@ function contentInserted() {
     shouldBeTrue('target.getElementsByTagName("object")[0].draggable');
     shouldBeEqualToString('target.getElementsByTagName("object")[0].attributes["itemprop"].value', 'somedata');
     shouldBeEqualToString('target.getElementsByTagName("object")[0].attributes["arbitrary"].value', 'green');
-
-    finishJSTest();
+    imageIsInserted = true;
 }
 
 function runTest() {
     target.addEventListener('DOMNodeInserted', contentInserted, false);
+
+    document.getElementById('source').addEventListener('dragend', function() {
+        shouldBeFalse('imageIsInserted');
+        finishJSTest();
+    });
+
     if (!window.testRunner)
         return;
 
