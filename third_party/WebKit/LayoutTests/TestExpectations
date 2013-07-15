@@ -1147,9 +1147,6 @@ webkit.org/b/100806 [ Win7 ] fast/css/font-face-download-error.html [ Failure Pa
 webkit.org/b/102131 fast/workers/worker-exception-during-navigation.html [ Crash Pass ]
 webkit.org/b/102264 [ Debug ] css3/filters/custom/custom-filter-property-computed-style.html [ Pass Timeout ]
 
-# This test is consistently leaking state into the next test.
-webkit.org/b/85522 http/tests/security/sandboxed-iframe-form-top.html [ Skip ]
-
 webkit.org/b/102724 svg/carto.net/colourpicker.svg [ ImageOnlyFailure Pass ]
 
 crbug.com/237003 [ Win Mac Debug ] http/tests/w3c/webperf/submission/Google/resource-timing/html/test_resource_iframe_self_navigation.html [ Failure Pass ]
