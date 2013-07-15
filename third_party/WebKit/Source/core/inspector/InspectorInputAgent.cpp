@@ -146,7 +146,7 @@ void InspectorInputAgent::dispatchMouseEvent(ErrorString* error, const String& t
         handler->handleMouseReleaseEvent(event);
         break;
     case PlatformEvent::MouseMoved:
-        handler->handleMouseMoveEvent(event);
+        handler->mouseMoved(event);
         break;
     default:
         *error = "Unhandled type: " + type;

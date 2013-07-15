@@ -194,7 +194,7 @@ void PageWidgetEventHandler::handleMouseMove(Frame& mainFrame, const WebMouseEve
 
 void PageWidgetEventHandler::handleMouseLeave(Frame& mainFrame, const WebMouseEvent& event)
 {
-    mainFrame.eventHandler()->handleMouseMoveEvent(PlatformMouseEventBuilder(mainFrame.view(), event));
+    mainFrame.eventHandler()->mouseMoved(PlatformMouseEventBuilder(mainFrame.view(), event));
 }
 
 void PageWidgetEventHandler::handleMouseDown(Frame& mainFrame, const WebMouseEvent& event)

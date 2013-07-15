@@ -495,12 +495,6 @@ void WebViewImpl::setTabKeyCyclesThroughElements(bool value)
         m_page->setTabKeyCyclesThroughElements(value);
 }
 
-void WebViewImpl::handleMouseLeave(Frame& mainFrame, const WebMouseEvent& event)
-{
-    m_client->setMouseOverURL(WebURL());
-    PageWidgetEventHandler::handleMouseLeave(mainFrame, event);
-}
-
 void WebViewImpl::handleMouseDown(Frame& mainFrame, const WebMouseEvent& event)
 {
     // If there is a popup open, close it as the user is clicking on the page (outside of the

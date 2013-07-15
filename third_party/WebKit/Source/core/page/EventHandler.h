@@ -143,7 +143,6 @@ public:
     void lostMouseCapture();
 
     bool handleMousePressEvent(const PlatformMouseEvent&);
-    bool handleMouseMoveEvent(const PlatformMouseEvent&, HitTestResult* hoveredNode = 0, bool onlyUpdateScrollbars = false);
     bool handleMouseReleaseEvent(const PlatformMouseEvent&);
     bool handleWheelEvent(const PlatformWheelEvent&);
     void defaultWheelEventHandler(Node*, WheelEvent*);
@@ -208,6 +207,7 @@ private:
     void selectClosestMisspellingFromMouseEvent(const MouseEventWithHitTestResults&);
     void selectClosestWordOrLinkFromMouseEvent(const MouseEventWithHitTestResults&);
 
+    bool handleMouseMoveEvent(const PlatformMouseEvent&, HitTestResult* hoveredNode = 0, bool onlyUpdateScrollbars = false);
     bool handleMousePressEvent(const MouseEventWithHitTestResults&);
     bool handleMousePressEventSingleClick(const MouseEventWithHitTestResults&);
     bool handleMousePressEventDoubleClick(const MouseEventWithHitTestResults&);
