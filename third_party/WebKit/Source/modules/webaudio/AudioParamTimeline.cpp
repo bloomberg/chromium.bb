@@ -38,27 +38,27 @@ using namespace std;
 
 namespace WebCore {
 
-void AudioParamTimeline::setValueAtTime(float value, float time)
+void AudioParamTimeline::setValueAtTime(float value, double time)
 {
     insertEvent(ParamEvent(ParamEvent::SetValue, value, time, 0, 0, 0));
 }
 
-void AudioParamTimeline::linearRampToValueAtTime(float value, float time)
+void AudioParamTimeline::linearRampToValueAtTime(float value, double time)
 {
     insertEvent(ParamEvent(ParamEvent::LinearRampToValue, value, time, 0, 0, 0));
 }
 
-void AudioParamTimeline::exponentialRampToValueAtTime(float value, float time)
+void AudioParamTimeline::exponentialRampToValueAtTime(float value, double time)
 {
     insertEvent(ParamEvent(ParamEvent::ExponentialRampToValue, value, time, 0, 0, 0));
 }
 
-void AudioParamTimeline::setTargetAtTime(float target, float time, float timeConstant)
+void AudioParamTimeline::setTargetAtTime(float target, double time, double timeConstant)
 {
     insertEvent(ParamEvent(ParamEvent::SetTarget, target, time, timeConstant, 0, 0));
 }
 
-void AudioParamTimeline::setValueCurveAtTime(Float32Array* curve, float time, float duration)
+void AudioParamTimeline::setValueCurveAtTime(Float32Array* curve, double time, double duration)
 {
     insertEvent(ParamEvent(ParamEvent::SetValueCurve, 0, time, 0, duration, curve));
 }
@@ -85,7 +85,7 @@ void AudioParamTimeline::insertEvent(const ParamEvent& event)
     MutexLocker locker(m_eventsLock);
     
     unsigned i = 0;
-    float insertTime = event.time();
+    double insertTime = event.time();
     for (i = 0; i < m_events.size(); ++i) {
         // Overwrite same event type and time.
         if (m_events[i].time() == insertTime && m_events[i].type() == event.type()) {
@@ -100,7 +100,7 @@ void AudioParamTimeline::insertEvent(const ParamEvent& event)
     m_events.insert(i, event);
 }
 
-void AudioParamTimeline::cancelScheduledValues(float startTime)
+void AudioParamTimeline::cancelScheduledValues(double startTime)
 {
     MutexLocker locker(m_eventsLock);
 

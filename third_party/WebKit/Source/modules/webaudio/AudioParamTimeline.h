@@ -44,12 +44,12 @@ public:
     {
     }
 
-    void setValueAtTime(float value, float time);
-    void linearRampToValueAtTime(float value, float time);
-    void exponentialRampToValueAtTime(float value, float time);
-    void setTargetAtTime(float target, float time, float timeConstant);
-    void setValueCurveAtTime(Float32Array* curve, float time, float duration);
-    void cancelScheduledValues(float startTime);
+    void setValueAtTime(float value, double time);
+    void linearRampToValueAtTime(float value, double time);
+    void exponentialRampToValueAtTime(float value, double time);
+    void setTargetAtTime(float target, double time, double timeConstant);
+    void setValueCurveAtTime(Float32Array* curve, double time, double duration);
+    void cancelScheduledValues(double startTime);
 
     // hasValue is set to true if a valid timeline value is returned.
     // otherwise defaultValue is returned.
@@ -76,7 +76,7 @@ private:
             LastType
         };
 
-        ParamEvent(Type type, float value, float time, float timeConstant, float duration, PassRefPtr<Float32Array> curve)
+        ParamEvent(Type type, float value, double time, double timeConstant, double duration, PassRefPtr<Float32Array> curve)
             : m_type(type)
             , m_value(value)
             , m_time(time)
@@ -88,17 +88,17 @@ private:
 
         unsigned type() const { return m_type; }
         float value() const { return m_value; }
-        float time() const { return m_time; }
-        float timeConstant() const { return m_timeConstant; }
-        float duration() const { return m_duration; }
+        double time() const { return m_time; }
+        double timeConstant() const { return m_timeConstant; }
+        double duration() const { return m_duration; }
         Float32Array* curve() { return m_curve.get(); }
 
     private:
         unsigned m_type;
         float m_value;
-        float m_time;
-        float m_timeConstant;
-        float m_duration;
+        double m_time;
+        double m_timeConstant;
+        double m_duration;
         RefPtr<Float32Array> m_curve;
     };
 
