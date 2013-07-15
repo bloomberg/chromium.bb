@@ -1,21 +1,3 @@
-function fetchManifestAndData(test, manifestFilename, callback)
-{
-    var baseURL = '/media/resources/media-source/';
-    var manifestURL = baseURL + manifestFilename;
-    MediaSourceUtil.loadTextData(test, manifestURL, function(manifestText)
-    {
-        var manifest = JSON.parse(manifestText);
-
-        assert_true(MediaSource.isTypeSupported(manifest.type), manifest.type + " is supported.");
-
-        var mediaURL = baseURL + manifest.url;
-        MediaSourceUtil.loadBinaryData(test, mediaURL, function(mediaData)
-        {
-            callback(manifest.type, mediaData);
-        });
-    });
-}
-
 function appendBuffer(test, sourceBuffer, data)
 {
     test.expectEvent(sourceBuffer, "update");
@@ -33,9 +15,9 @@ function mediaSourceConfigChangeTest(directory, idA, idB, description)
         test.failOnEvent(mediaElement, 'error');
         test.endOnEvent(mediaElement, 'ended');
 
-        fetchManifestAndData(test, manifestFilenameA, function(typeA, dataA)
+        MediaSourceUtil.fetchManifestAndData(test, manifestFilenameA, function(typeA, dataA)
         {
-            fetchManifestAndData(test, manifestFilenameB, function(typeB, dataB)
+            MediaSourceUtil.fetchManifestAndData(test, manifestFilenameB, function(typeB, dataB)
             {
                 assert_equals(typeA, typeB, "Media format types match");
 

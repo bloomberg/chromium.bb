@@ -38,6 +38,7 @@
 #include "core/platform/graphics/MediaSourcePrivate.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 
@@ -62,6 +63,7 @@ public:
     virtual void close() OVERRIDE;
     virtual bool isClosed() const OVERRIDE;
     virtual double duration() const OVERRIDE;
+    virtual PassRefPtr<TimeRanges> buffered() const OVERRIDE;
     virtual void refHTMLMediaSource() OVERRIDE { ref(); }
     virtual void derefHTMLMediaSource() OVERRIDE { deref(); }
 
@@ -94,6 +96,8 @@ protected:
     explicit MediaSourceBase(ScriptExecutionContext*);
 
     virtual void onReadyStateChange(const AtomicString& oldState, const AtomicString& newState) = 0;
+    virtual Vector<RefPtr<TimeRanges> > activeRanges() const = 0;
+
     PassOwnPtr<SourceBufferPrivate> createSourceBufferPrivate(const String& type, const MediaSourcePrivate::CodecsArray&, ExceptionCode&);
     void scheduleEvent(const AtomicString& eventName);
     GenericEventQueue* asyncEventQueue() const { return m_asyncEventQueue.get(); }

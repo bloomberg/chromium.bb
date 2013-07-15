@@ -31,6 +31,7 @@
 #include "config.h"
 #include "modules/mediasource/WebKitMediaSource.h"
 
+#include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/html/TimeRanges.h"
 #include "core/platform/ContentType.h"
 #include "core/platform/MIMETypeRegistry.h"
@@ -161,6 +162,15 @@ void WebKitMediaSource::onReadyStateChange(const AtomicString& oldState, const A
         scheduleEvent(eventNames().webkitsourceopenEvent);
         return;
     }
+}
+
+Vector<RefPtr<TimeRanges> > WebKitMediaSource::activeRanges() const
+{
+    Vector<RefPtr<TimeRanges> > activeRanges(m_activeSourceBuffers->length());
+    for (size_t i = 0; i < m_activeSourceBuffers->length(); ++i)
+        activeRanges[i] = m_activeSourceBuffers->item(i)->buffered(ASSERT_NO_EXCEPTION);
+
+    return activeRanges;
 }
 
 bool WebKitMediaSource::isTypeSupported(const String& type)

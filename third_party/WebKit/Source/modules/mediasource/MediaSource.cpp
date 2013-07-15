@@ -31,6 +31,7 @@
 #include "config.h"
 #include "modules/mediasource/MediaSource.h"
 
+#include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/dom/GenericEventQueue.h"
 #include "core/html/TimeRanges.h"
 #include "core/platform/ContentType.h"
@@ -169,6 +170,15 @@ void MediaSource::onReadyStateChange(const AtomicString& oldState, const AtomicS
     m_sourceBuffers->clear();
 
     scheduleEvent(eventNames().sourcecloseEvent);
+}
+
+Vector<RefPtr<TimeRanges> > MediaSource::activeRanges() const
+{
+    Vector<RefPtr<TimeRanges> > activeRanges(m_activeSourceBuffers->length());
+    for (size_t i = 0; i < m_activeSourceBuffers->length(); ++i)
+        activeRanges[i] = m_activeSourceBuffers->item(i)->buffered(ASSERT_NO_EXCEPTION);
+
+    return activeRanges;
 }
 
 bool MediaSource::isTypeSupported(const String& type)

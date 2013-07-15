@@ -37,6 +37,7 @@
 namespace WebCore {
 
 class MediaSourcePrivate;
+class TimeRanges;
 
 class HTMLMediaSource : public URLRegistrable {
 public:
@@ -56,6 +57,7 @@ public:
     virtual void close() = 0;
     virtual bool isClosed() const = 0;
     virtual double duration() const = 0;
+    virtual PassRefPtr<TimeRanges> buffered() const = 0;
     virtual void refHTMLMediaSource() = 0;
     virtual void derefHTMLMediaSource() = 0;
 

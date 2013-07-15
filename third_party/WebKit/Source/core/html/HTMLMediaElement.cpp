@@ -3183,6 +3183,10 @@ PassRefPtr<TimeRanges> HTMLMediaElement::buffered() const
 {
     if (!m_player)
         return TimeRanges::create();
+
+    if (m_mediaSource)
+        return m_mediaSource->buffered();
+
     return m_player->buffered();
 }
 

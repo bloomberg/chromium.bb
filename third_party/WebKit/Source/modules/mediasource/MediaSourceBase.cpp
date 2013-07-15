@@ -33,6 +33,7 @@
 
 #include "core/dom/Event.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/dom/GenericEventQueue.h"
 #include "core/platform/Logging.h"
 #include "core/platform/graphics/SourceBufferPrivate.h"
@@ -93,6 +94,50 @@ void MediaSourceBase::removedFromRegistry()
 double MediaSourceBase::duration() const
 {
     return isClosed() ? std::numeric_limits<float>::quiet_NaN() : m_private->duration();
+}
+
+PassRefPtr<TimeRanges> MediaSourceBase::buffered() const
+{
+    // Implements MediaSource algorithm for HTMLMediaElement.buffered.
+    // https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#htmlmediaelement-extensions
+    Vector<RefPtr<TimeRanges> > ranges = activeRanges();
+
+    // 1. If activeSourceBuffers.length equals 0 then return an empty TimeRanges object and abort these steps.
+    if (ranges.isEmpty())
+        return TimeRanges::create();
+
+    // 2. Let active ranges be the ranges returned by buffered for each SourceBuffer object in activeSourceBuffers.
+    // 3. Let highest end time be the largest range end time in the active ranges.
+    double highestEndTime = -1;
+    for (size_t i = 0; i < ranges.size(); ++i) {
+        unsigned length = ranges[i]->length();
+        if (length)
+            highestEndTime = std::max(highestEndTime, ranges[i]->end(length - 1, ASSERT_NO_EXCEPTION));
+    }
+
+    // Return an empty range if all ranges are empty.
+    if (highestEndTime < 0)
+        return TimeRanges::create();
+
+    // 4. Let intersection ranges equal a TimeRange object containing a single range from 0 to highest end time.
+    RefPtr<TimeRanges> intersectionRanges = TimeRanges::create(0, highestEndTime);
+
+    // 5. For each SourceBuffer object in activeSourceBuffers run the following steps:
+    bool ended = readyState() == endedKeyword();
+    for (size_t i = 0; i < ranges.size(); ++i) {
+        // 5.1 Let source ranges equal the ranges returned by the buffered attribute on the current SourceBuffer.
+        TimeRanges* sourceRanges = ranges[i].get();
+
+        // 5.2 If readyState is "ended", then set the end time on the last range in source ranges to highest end time.
+        if (ended && sourceRanges->length())
+            sourceRanges->add(sourceRanges->start(sourceRanges->length() - 1, ASSERT_NO_EXCEPTION), highestEndTime);
+
+        // 5.3 Let new intersection ranges equal the the intersection between the intersection ranges and the source ranges.
+        // 5.4 Replace the ranges in intersection ranges with the new intersection ranges.
+        intersectionRanges->intersectWith(sourceRanges);
+    }
+
+    return intersectionRanges.release();
 }
 
 void MediaSourceBase::setDuration(double duration, ExceptionCode& ec)

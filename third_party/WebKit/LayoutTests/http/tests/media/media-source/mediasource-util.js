@@ -121,6 +121,24 @@
         loadData_(test, url, callback, true);
     };
 
+    MediaSourceUtil.fetchManifestAndData = function(test, manifestFilename, callback)
+    {
+        var baseURL = '/media/resources/media-source/';
+        var manifestURL = baseURL + manifestFilename;
+        MediaSourceUtil.loadTextData(test, manifestURL, function(manifestText)
+        {
+            var manifest = JSON.parse(manifestText);
+
+            assert_true(MediaSource.isTypeSupported(manifest.type), manifest.type + " is supported.");
+
+            var mediaURL = baseURL + manifest.url;
+            MediaSourceUtil.loadBinaryData(test, mediaURL, function(mediaData)
+            {
+                callback(manifest.type, mediaData);
+            });
+        });
+    };
+
     function getFirstSupportedType(typeList)
     {
         for (var i = 0; i < typeList.length; ++i) {
