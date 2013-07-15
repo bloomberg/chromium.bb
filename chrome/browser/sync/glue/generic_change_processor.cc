@@ -44,7 +44,8 @@ syncer::SyncData BuildRemoteSyncData(
   // already been handled).
   if (read_node.GetModelType() != syncer::PASSWORDS) {
     return syncer::SyncData::CreateRemoteData(sync_id,
-                                              read_node.GetEntitySpecifics());
+                                              read_node.GetEntitySpecifics(),
+                                              read_node.GetModificationTime());
   }
 
   // Passwords must be accessed differently, to account for their encryption,
@@ -52,7 +53,9 @@ syncer::SyncData BuildRemoteSyncData(
   sync_pb::EntitySpecifics password_holder;
   password_holder.mutable_password()->mutable_client_only_encrypted_data()->
       CopyFrom(read_node.GetPasswordSpecifics());
-  return syncer::SyncData::CreateRemoteData(sync_id, password_holder);
+  return syncer::SyncData::CreateRemoteData(sync_id,
+                                            password_holder,
+                                            read_node.GetModificationTime());
 }
 
 }  // namespace
@@ -86,7 +89,8 @@ void GenericChangeProcessor::ApplyChangesFromSyncModel(
           syncer::SyncChange(
               FROM_HERE,
               syncer::SyncChange::ACTION_DELETE,
-              syncer::SyncData::CreateRemoteData(it->id, it->specifics)));
+              syncer::SyncData::CreateRemoteData(
+                  it->id, it->specifics, base::Time())));
     } else {
       syncer::SyncChange::SyncChangeType action =
           (it->action == syncer::ChangeRecord::ACTION_ADD) ?

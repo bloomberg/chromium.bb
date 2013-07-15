@@ -180,7 +180,7 @@ SyncData ManagedUserRegistrationServiceTest::CreateRemoteData(
   specifics.mutable_managed_user()->set_id(id);
   specifics.mutable_managed_user()->set_name(name);
   specifics.mutable_managed_user()->set_acknowledged(true);
-  return SyncData::CreateRemoteData(++sync_data_id_, specifics);
+  return SyncData::CreateRemoteData(++sync_data_id_, specifics, base::Time());
 }
 
 SyncMergeResult ManagedUserRegistrationServiceTest::StartInitialSync() {
@@ -212,7 +212,9 @@ void ManagedUserRegistrationServiceTest::Acknowledge() {
     specifics.mutable_managed_user()->set_acknowledged(true);
     new_changes.push_back(
         SyncChange(FROM_HERE, SyncChange::ACTION_UPDATE,
-                   SyncData::CreateRemoteData(++sync_data_id_, specifics)));
+                   SyncData::CreateRemoteData(++sync_data_id_,
+                                              specifics,
+                                              base::Time())));
   }
   service()->ProcessSyncChanges(FROM_HERE, new_changes);
 

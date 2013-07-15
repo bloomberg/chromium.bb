@@ -8,6 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/time/time.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/profiles/profile.h"
@@ -436,10 +437,11 @@ TEST_F(ThemeSyncableServiceTest, ProcessSyncThemeChange) {
   sync_pb::EntitySpecifics entity_specifics;
   entity_specifics.mutable_theme()->CopyFrom(theme_specifics);
   syncer::SyncChangeList change_list;
-  change_list.push_back(syncer::SyncChange(FROM_HERE,
-                                           syncer::SyncChange::ACTION_UPDATE,
-                                           syncer::SyncData::CreateRemoteData(
-                                               1, entity_specifics)));
+  change_list.push_back(syncer::SyncChange(
+      FROM_HERE,
+      syncer::SyncChange::ACTION_UPDATE,
+      syncer::SyncData::CreateRemoteData(
+          1, entity_specifics, base::Time())));
   error = theme_sync_service_->ProcessSyncChanges(FROM_HERE, change_list);
   EXPECT_FALSE(error.IsSet()) << error.message();
   EXPECT_EQ(fake_theme_service_->theme_extension(), theme_extension_.get());

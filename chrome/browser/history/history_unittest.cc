@@ -1547,7 +1547,7 @@ TEST_F(HistoryTest, ProcessGlobalIdDeleteDirective) {
   global_id_directive->set_start_time_usec(3);
   global_id_directive->set_end_time_usec(10);
   directives.push_back(
-      syncer::SyncData::CreateRemoteData(1, entity_specs));
+      syncer::SyncData::CreateRemoteData(1, entity_specs, base::Time()));
 
   // 2nd directive.
   global_id_directive->Clear();
@@ -1557,7 +1557,7 @@ TEST_F(HistoryTest, ProcessGlobalIdDeleteDirective) {
   global_id_directive->set_start_time_usec(13);
   global_id_directive->set_end_time_usec(19);
   directives.push_back(
-      syncer::SyncData::CreateRemoteData(2, entity_specs));
+      syncer::SyncData::CreateRemoteData(2, entity_specs, base::Time()));
 
   TestChangeProcessor change_processor;
   EXPECT_FALSE(
@@ -1623,13 +1623,17 @@ TEST_F(HistoryTest, ProcessTimeRangeDeleteDirective) {
           ->mutable_time_range_directive();
   time_range_directive->set_start_time_usec(2);
   time_range_directive->set_end_time_usec(5);
-  directives.push_back(syncer::SyncData::CreateRemoteData(1, entity_specs));
+  directives.push_back(syncer::SyncData::CreateRemoteData(1,
+                                                          entity_specs,
+                                                          base::Time()));
 
   // 2nd directive.
   time_range_directive->Clear();
   time_range_directive->set_start_time_usec(8);
   time_range_directive->set_end_time_usec(10);
-  directives.push_back(syncer::SyncData::CreateRemoteData(2, entity_specs));
+  directives.push_back(syncer::SyncData::CreateRemoteData(2,
+                                                          entity_specs,
+                                                          base::Time()));
 
   TestChangeProcessor change_processor;
   EXPECT_FALSE(

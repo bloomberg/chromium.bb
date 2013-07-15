@@ -46,9 +46,12 @@ SyncData::SyncData()
     : is_valid_(false),
       id_(kInvalidId) {}
 
-SyncData::SyncData(int64 id, sync_pb::SyncEntity* entity)
+SyncData::SyncData(int64 id,
+                   sync_pb::SyncEntity* entity,
+                   const base::Time& remote_modification_time)
     : is_valid_(true),
       id_(id),
+      remote_modification_time_(remote_modification_time),
       immutable_entity_(entity) {}
 
 SyncData::~SyncData() {}
@@ -71,16 +74,17 @@ SyncData SyncData::CreateLocalData(
   entity.set_client_defined_unique_tag(sync_tag);
   entity.set_non_unique_name(non_unique_title);
   entity.mutable_specifics()->CopyFrom(specifics);
-  return SyncData(kInvalidId, &entity);
+  return SyncData(kInvalidId, &entity, base::Time());
 }
 
 // Static.
 SyncData SyncData::CreateRemoteData(
-    int64 id, const sync_pb::EntitySpecifics& specifics) {
+    int64 id, const sync_pb::EntitySpecifics& specifics,
+    const base::Time& modification_time) {
   DCHECK_NE(id, kInvalidId);
   sync_pb::SyncEntity entity;
   entity.mutable_specifics()->CopyFrom(specifics);
-  return SyncData(id, &entity);
+  return SyncData(id, &entity, modification_time);
 }
 
 bool SyncData::IsValid() const {
@@ -104,6 +108,11 @@ const std::string& SyncData::GetTitle() const {
   // TODO(zea): set this for data coming from the syncer too.
   DCHECK(immutable_entity_.Get().has_non_unique_name());
   return immutable_entity_.Get().non_unique_name();
+}
+
+const base::Time& SyncData::GetRemoteModifiedTime() const {
+  DCHECK(!IsLocal());
+  return remote_modification_time_;
 }
 
 int64 SyncData::GetRemoteId() const {

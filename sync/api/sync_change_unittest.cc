@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "sync/protocol/preference_specifics.pb.h"
 #include "sync/protocol/proto_value_conversions.h"
@@ -84,7 +85,7 @@ TEST_F(SyncChangeTest, SyncerChanges) {
   change_list.push_back(SyncChange(
       FROM_HERE,
       SyncChange::ACTION_UPDATE,
-      SyncData::CreateRemoteData(1, update_specifics)));
+      SyncData::CreateRemoteData(1, update_specifics, base::Time())));
 
   // Create an add.
   sync_pb::EntitySpecifics add_specifics;
@@ -93,7 +94,7 @@ TEST_F(SyncChangeTest, SyncerChanges) {
   change_list.push_back(SyncChange(
       FROM_HERE,
       SyncChange::ACTION_ADD,
-      SyncData::CreateRemoteData(2, add_specifics)));
+      SyncData::CreateRemoteData(2, add_specifics, base::Time())));
 
   // Create a delete.
   sync_pb::EntitySpecifics delete_specifics;
@@ -102,7 +103,7 @@ TEST_F(SyncChangeTest, SyncerChanges) {
   change_list.push_back(SyncChange(
       FROM_HERE,
       SyncChange::ACTION_DELETE,
-      SyncData::CreateRemoteData(3, delete_specifics)));
+      SyncData::CreateRemoteData(3, delete_specifics, base::Time())));
 
   ASSERT_EQ(3U, change_list.size());
 

@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/time/time.h"
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/util/immutable.h"
@@ -50,7 +51,9 @@ class SYNC_EXPORT SyncData {
 
   // Helper method for creating SyncData objects originating from the syncer.
   static SyncData CreateRemoteData(
-      int64 id, const sync_pb::EntitySpecifics& specifics);
+      int64 id,
+      const sync_pb::EntitySpecifics& specifics,
+      const base::Time& last_modified_time);
 
   // Whether this SyncData holds valid data. The only way to have a SyncData
   // without valid data is to use the default constructor.
@@ -70,6 +73,11 @@ class SYNC_EXPORT SyncData {
   // Returns the non unique title (for debugging). Currently only set for data
   // going TO the syncer, not from.
   const std::string& GetTitle() const;
+
+  // Returns the last motification time according to the server. This is
+  // only valid if IsLocal() is false, and may be null if the SyncData
+  // represents a deleted item.
+  const base::Time& GetRemoteModifiedTime() const;
 
   // Should only be called by sync code when IsLocal() is false.
   int64 GetRemoteId() const;
@@ -102,13 +110,19 @@ class SYNC_EXPORT SyncData {
       ImmutableSyncEntity;
 
   // Clears |entity|.
-  SyncData(int64 id, sync_pb::SyncEntity* entity);
+  SyncData(int64 id,
+           sync_pb::SyncEntity* entity,
+           const base::Time& remote_modification_time);
 
   // Whether this SyncData holds valid data.
   bool is_valid_;
 
   // Equal to kInvalidId iff this is local.
   int64 id_;
+
+  // This is only valid if IsLocal() is false, and may be null if the
+  // SyncData represents a deleted item.
+  base::Time remote_modification_time_;
 
   // The actual shared sync entity being held.
   ImmutableSyncEntity immutable_entity_;
