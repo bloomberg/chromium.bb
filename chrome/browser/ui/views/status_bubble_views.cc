@@ -699,8 +699,10 @@ void StatusBubbleViews::Hide() {
 void StatusBubbleViews::MouseMoved(const gfx::Point& location,
                                    bool left_content) {
   contains_mouse_ = !left_content;
-  if (left_content)
+  if (left_content) {
+    Reposition();
     return;
+  }
   last_mouse_moved_location_ = location;
 
   if (view_) {
