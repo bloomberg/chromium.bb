@@ -164,15 +164,17 @@ class ResourceClientProxy : public webkit::npapi::WebPluginResourceClient {
                                                 data, data_offset));
   }
 
-  virtual void DidFinishLoading() OVERRIDE {
+  virtual void DidFinishLoading(unsigned long resource_id) OVERRIDE {
     DCHECK(channel_.get() != NULL);
+    DCHECK_EQ(resource_id, resource_id_);
     channel_->Send(new PluginMsg_DidFinishLoading(instance_id_, resource_id_));
     channel_ = NULL;
     base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
   }
 
-  virtual void DidFail() OVERRIDE {
+  virtual void DidFail(unsigned long resource_id) OVERRIDE {
     DCHECK(channel_.get() != NULL);
+    DCHECK_EQ(resource_id, resource_id_);
     channel_->Send(new PluginMsg_DidFail(instance_id_, resource_id_));
     channel_ = NULL;
     base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);

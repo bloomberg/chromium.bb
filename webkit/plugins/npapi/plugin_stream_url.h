@@ -5,6 +5,8 @@
 #ifndef WEBKIT_PLUGINS_NPAPI_PLUGIN_STREAM_URL_H_
 #define WEBKIT_PLUGINS_NPAPI_PLUGIN_STREAM_URL_H_
 
+#include <vector>
+
 #include "url/gurl.h"
 #include "webkit/plugins/npapi/plugin_stream.h"
 #include "webkit/plugins/npapi/webplugin.h"
@@ -45,17 +47,23 @@ class PluginStreamUrl : public PluginStream,
   virtual void DidReceiveData(const char* buffer,
                               int length,
                               int data_offset) OVERRIDE;
-  virtual void DidFinishLoading() OVERRIDE;
-  virtual void DidFail() OVERRIDE;
+  virtual void DidFinishLoading(unsigned long resource_id) OVERRIDE;
+  virtual void DidFail(unsigned long resource_id) OVERRIDE;
   virtual bool IsMultiByteResponseExpected() OVERRIDE;
   virtual int ResourceId() OVERRIDE;
+  virtual void AddRangeRequestResourceId(unsigned long resource_id) OVERRIDE;
 
  protected:
   virtual ~PluginStreamUrl();
 
  private:
+  void SetDeferLoading(bool value);
+
   GURL url_;
   unsigned long id_;
+  // Ids of additional resources requested via range requests issued on
+  // seekable streams.
+  std::vector<unsigned long> range_requests_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginStreamUrl);
 };

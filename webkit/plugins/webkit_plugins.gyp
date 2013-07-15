@@ -151,6 +151,8 @@
             'npapi/test/plugin_npobject_lifetime_test.h',
             'npapi/test/plugin_npobject_proxy_test.cc',
             'npapi/test/plugin_npobject_proxy_test.h',
+            'npapi/test/plugin_request_read_test.h',
+            'npapi/test/plugin_request_read_test.cc',
             'npapi/test/plugin_schedule_timer_test.cc',
             'npapi/test/plugin_schedule_timer_test.h',
             'npapi/test/plugin_setup_test.cc',

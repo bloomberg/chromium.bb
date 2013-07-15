@@ -772,7 +772,7 @@ void WebPluginImpl::URLRedirectResponse(bool allow, int resource_id) {
         } else {
           clients_[i].loader->cancel();
           if (clients_[i].client)
-            clients_[i].client->DidFail();
+            clients_[i].client->DidFail(clients_[i].id);
         }
       }
       break;
@@ -879,7 +879,7 @@ void WebPluginImpl::willSendRequest(WebURLLoader* loader,
         webframe_ &&
         !webframe_->checkIfRunInsecureContent(request.url())) {
       loader->cancel();
-      client_info->client->DidFail();
+      client_info->client->DidFail(client_info->id);
       return;
     }
     if (net::HttpResponseHeaders::IsRedirectResponseCode(
@@ -894,7 +894,7 @@ void WebPluginImpl::willSendRequest(WebURLLoader* loader,
           if (original_request_url.GetOrigin() != response_url.GetOrigin()) {
             loader->setDefersLoading(true);
             loader->cancel();
-            client_info->client->DidFail();
+            client_info->client->DidFail(client_info->id);
             return;
           }
         }
@@ -923,6 +923,9 @@ void WebPluginImpl::didReceiveResponse(WebURLLoader* loader,
 
   ResponseInfo response_info;
   GetResponseInfo(response, &response_info);
+  ClientInfo* client_info = GetClientInfoFromLoader(loader);
+  if (!client_info)
+    return;
 
   bool request_is_seekable = true;
   if (client->IsMultiByteResponseExpected()) {
@@ -1052,7 +1055,7 @@ void WebPluginImpl::didFinishLoading(WebURLLoader* loader, double finishTime) {
     // The ClientInfo can get deleted in the call to DidFinishLoading below.
     // It is not safe to access this structure after that.
     client_info->client = NULL;
-    resource_client->DidFinishLoading();
+    resource_client->DidFinishLoading(client_info->id);
   }
 }
 
@@ -1065,7 +1068,7 @@ void WebPluginImpl::didFail(WebURLLoader* loader,
     // The ClientInfo can get deleted in the call to DidFail below.
     // It is not safe to access this structure after that.
     client_info->client = NULL;
-    resource_client->DidFail();
+    resource_client->DidFail(client_info->id);
   }
 }
 
@@ -1162,7 +1165,7 @@ void WebPluginImpl::HandleURLRequestInternal(const char* url,
   // back to the plugin asynchronously.
   if ((routing_status == INVALID_URL) ||
       (routing_status == GENERAL_FAILURE)) {
-    resource_client->DidFail();
+    resource_client->DidFail(resource_id);
     return;
   }
 
@@ -1288,7 +1291,7 @@ void WebPluginImpl::SetDeferResourceLoading(unsigned long resource_id,
         WebPluginResourceClient* resource_client = client_info.client;
         client_info.loader->cancel();
         clients_.erase(client_index++);
-        resource_client->DidFail();
+        resource_client->DidFail(resource_id);
       }
       break;
     }

@@ -340,6 +340,10 @@ IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(PluginThreadAsyncCall)) {
   LoadAndWait(GetURL("plugin_thread_async_call.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(PluginTest, PluginSingleRangeRequest) {
+  LoadAndWait(GetURL("plugin_single_range_request.html"));
+}
+
 // Test checking the privacy mode is on.
 // If this flakes on Linux, use http://crbug.com/104380
 IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(PrivateEnabled)) {

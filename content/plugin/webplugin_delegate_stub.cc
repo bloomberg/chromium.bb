@@ -243,7 +243,7 @@ void WebPluginDelegateStub::OnDidFinishLoading(int id) {
   if (!client)
     return;
 
-  client->DidFinishLoading();
+  client->DidFinishLoading(id);
 }
 
 void WebPluginDelegateStub::OnDidFail(int id) {
@@ -251,7 +251,7 @@ void WebPluginDelegateStub::OnDidFail(int id) {
   if (!client)
     return;
 
-  client->DidFail();
+  client->DidFail(id);
 }
 
 void WebPluginDelegateStub::OnDidFinishLoadWithReason(

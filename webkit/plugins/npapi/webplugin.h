@@ -180,10 +180,16 @@ class WebPluginResourceClient {
                                   bool request_is_seekable) = 0;
   virtual void DidReceiveData(const char* buffer, int length,
                               int data_offset) = 0;
-  virtual void DidFinishLoading() = 0;
-  virtual void DidFail() = 0;
+  // The resource ids passed here ensures that data for range requests
+  // is cleared. This applies for seekable streams.
+  virtual void DidFinishLoading(unsigned long resource_id) = 0;
+  virtual void DidFail(unsigned long resource_id) = 0;
   virtual bool IsMultiByteResponseExpected() = 0;
   virtual int ResourceId() = 0;
+  // Tells this object that it will get responses from multiple resources.
+  // This is necessary since the plugin process uses a single instance of
+  // PluginStreamUrl object for multiple range requests.
+  virtual void AddRangeRequestResourceId(unsigned long resource_id) { }
 };
 
 }  // namespace npapi

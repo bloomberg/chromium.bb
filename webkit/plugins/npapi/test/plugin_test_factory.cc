@@ -16,6 +16,7 @@
 #include "webkit/plugins/npapi/test/plugin_npobject_lifetime_test.h"
 #include "webkit/plugins/npapi/test/plugin_npobject_proxy_test.h"
 #include "webkit/plugins/npapi/test/plugin_private_test.h"
+#include "webkit/plugins/npapi/test/plugin_request_read_test.h"
 #include "webkit/plugins/npapi/test/plugin_schedule_timer_test.h"
 #include "webkit/plugins/npapi/test/plugin_setup_test.h"
 #include "webkit/plugins/npapi/test/plugin_thread_async_call_test.h"
@@ -104,6 +105,8 @@ PluginTest* CreatePluginTest(const std::string& test_name,
     new_test = new PluginSetupTest(instance, host_functions);
   } else if (test_name == "delete_plugin_in_deallocate_test") {
     new_test = new DeletePluginInDeallocateTest(instance, host_functions);
+  } else if (test_name == "plugin_request_read_single_range") {
+    new_test = new PluginRequestReadTest(instance, host_functions);
   }
 
   return new_test;

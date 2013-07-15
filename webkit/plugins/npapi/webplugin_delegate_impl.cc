@@ -299,7 +299,11 @@ WebPluginResourceClient* WebPluginDelegateImpl::CreateResourceClient(
 
 WebPluginResourceClient* WebPluginDelegateImpl::CreateSeekableResourceClient(
     unsigned long resource_id, int range_request_id) {
-  return instance()->GetRangeRequest(range_request_id);
+  WebPluginResourceClient* resource_client = instance()->GetRangeRequest(
+      range_request_id);
+  if (resource_client)
+    resource_client->AddRangeRequestResourceId(resource_id);
+  return resource_client;
 }
 
 }  // namespace npapi

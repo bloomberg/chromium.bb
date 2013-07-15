@@ -418,7 +418,7 @@ void PluginInstance::DidReceiveManualData(const char* buffer, int length) {
 void PluginInstance::DidFinishManualLoading() {
   DCHECK(load_manually_);
   if (plugin_data_stream_.get() != NULL) {
-    plugin_data_stream_->DidFinishLoading();
+    plugin_data_stream_->DidFinishLoading(plugin_data_stream_->ResourceId());
     plugin_data_stream_->Close(NPRES_DONE);
     plugin_data_stream_ = NULL;
   }
@@ -427,7 +427,7 @@ void PluginInstance::DidFinishManualLoading() {
 void PluginInstance::DidManualLoadFail() {
   DCHECK(load_manually_);
   if (plugin_data_stream_.get() != NULL) {
-    plugin_data_stream_->DidFail();
+    plugin_data_stream_->DidFail(plugin_data_stream_->ResourceId());
     plugin_data_stream_ = NULL;
   }
 }

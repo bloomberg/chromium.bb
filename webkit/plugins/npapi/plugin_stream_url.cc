@@ -4,6 +4,8 @@
 
 #include "webkit/plugins/npapi/plugin_stream_url.h"
 
+#include <algorithm>
+
 #include "net/http/http_response_headers.h"
 #include "webkit/plugins/npapi/plugin_host.h"
 #include "webkit/plugins/npapi/plugin_instance.h"
@@ -45,6 +47,11 @@ void PluginStreamUrl::CancelRequest() {
     }
     id_ = 0;
   }
+  if (instance()->webplugin()) {
+    for (size_t i = 0; i < range_requests_.size(); ++i)
+      instance()->webplugin()->CancelResource(range_requests_[i]);
+  }
+  range_requests_.clear();
 }
 
 void PluginStreamUrl::WillSendRequest(const GURL& url, int http_status_code) {
@@ -80,8 +87,7 @@ void PluginStreamUrl::DidReceiveResponse(const std::string& mime_type,
     CancelRequest();
     instance()->RemoveStream(this);
   } else {
-    if (id_ > 0)
-      instance()->webplugin()->SetDeferResourceLoading(id_, false);
+    SetDeferLoading(false);
   }
 }
 
@@ -98,19 +104,32 @@ void PluginStreamUrl::DidReceiveData(const char* buffer, int length,
     // The PluginStreamUrl instance could get deleted if the plugin fails to
     // accept data in NPP_Write.
     if (Write(const_cast<char*>(buffer), length, data_offset) > 0) {
-      if (id_ > 0)
-        instance()->webplugin()->SetDeferResourceLoading(id_, false);
+      SetDeferLoading(false);
     }
   }
 }
 
-void PluginStreamUrl::DidFinishLoading() {
+void PluginStreamUrl::DidFinishLoading(unsigned long resource_id) {
   if (!seekable()) {
     Close(NPRES_DONE);
+  } else {
+    std::vector<unsigned long>::iterator it_resource = std::find(
+        range_requests_.begin(),
+        range_requests_.end(),
+        resource_id);
+    // Resource id must be known to us - either main resource id, or one
+    // of the resources, created for range requests.
+    DCHECK(resource_id == id_ || it_resource != range_requests_.end());
+    // We should notify the plugin about failed/finished requests to ensure
+    // that the number of active resource clients does not continue to grow.
+    if (instance()->webplugin())
+      instance()->webplugin()->CancelResource(resource_id);
+    if (it_resource != range_requests_.end())
+      range_requests_.erase(it_resource);
   }
 }
 
-void PluginStreamUrl::DidFail() {
+void PluginStreamUrl::DidFail(unsigned long resource_id) {
   Close(NPRES_NETWORK_ERR);
 }
 
@@ -126,6 +145,19 @@ PluginStreamUrl::~PluginStreamUrl() {
   if (instance() && instance()->webplugin()) {
     instance()->webplugin()->ResourceClientDeleted(AsResourceClient());
   }
+}
+
+void PluginStreamUrl::AddRangeRequestResourceId(unsigned long resource_id) {
+  DCHECK_NE(resource_id, 0u);
+  range_requests_.push_back(resource_id);
+}
+
+void PluginStreamUrl::SetDeferLoading(bool value) {
+  if (id_ > 0)
+    instance()->webplugin()->SetDeferResourceLoading(id_, value);
+  for (size_t i = 0; i < range_requests_.size(); ++i)
+    instance()->webplugin()->SetDeferResourceLoading(range_requests_[i],
+                                                     value);
 }
 
 }  // namespace npapi
