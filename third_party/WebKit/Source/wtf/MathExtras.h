@@ -291,41 +291,6 @@ inline bool isWithinIntRange(float x)
     return x > static_cast<float>(std::numeric_limits<int>::min()) && x < static_cast<float>(std::numeric_limits<int>::max());
 }
 
-template<typename T> inline bool hasOneBitSet(T value)
-{
-    return !((value - 1) & value) && value;
-}
-
-template<typename T> inline bool hasZeroOrOneBitsSet(T value)
-{
-    return !((value - 1) & value);
-}
-
-template<typename T> inline bool hasTwoOrMoreBitsSet(T value)
-{
-    return !hasZeroOrOneBitsSet(value);
-}
-
-template <typename T> inline unsigned getLSBSet(T value)
-{
-    unsigned result = 0;
-
-    while (value >>= 1)
-        ++result;
-
-    return result;
-}
-
-template<typename T> inline T timesThreePlusOneDividedByTwo(T value)
-{
-    // Mathematically equivalent to:
-    //   (value * 3 + 1) / 2;
-    // or:
-    //   (unsigned)ceil(value * 1.5));
-    // This form is not prone to internal overflow.
-    return value + (value >> 1) + (value & 1);
-}
-
 #ifndef UINT64_C
 #if COMPILER(MSVC)
 #define UINT64_C(c) c ## ui64
@@ -333,27 +298,6 @@ template<typename T> inline T timesThreePlusOneDividedByTwo(T value)
 #define UINT64_C(c) c ## ull
 #endif
 #endif
-
-// decompose 'number' to its sign, exponent, and mantissa components.
-// The result is interpreted as:
-//     (sign ? -1 : 1) * pow(2, exponent) * (mantissa / (1 << 52))
-inline void decomposeDouble(double number, bool& sign, int32_t& exponent, uint64_t& mantissa)
-{
-    ASSERT(std::isfinite(number));
-
-    sign = std::signbit(number);
-
-    uint64_t bits = WTF::bitwise_cast<uint64_t>(number);
-    exponent = (static_cast<int32_t>(bits >> 52) & 0x7ff) - 0x3ff;
-    mantissa = bits & 0xFFFFFFFFFFFFFull;
-
-    // Check for zero/denormal values; if so, adjust the exponent,
-    // if not insert the implicit, omitted leading 1 bit.
-    if (exponent == -0x3ff)
-        exponent = mantissa ? -0x3fe : 0;
-    else
-        mantissa |= 0x10000000000000ull;
-}
 
 // Calculate d % 2^{64}.
 inline void doubleToInteger(double d, unsigned long long& value)
@@ -379,19 +323,6 @@ inline void doubleToInteger(double d, unsigned long long& value)
 }
 
 namespace WTF {
-
-// From http://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2
-inline uint32_t roundUpToPowerOfTwo(uint32_t v)
-{
-    v--;
-    v |= v >> 1;
-    v |= v >> 2;
-    v |= v >> 4;
-    v |= v >> 8;
-    v |= v >> 16;
-    v++;
-    return v;
-}
 
 inline unsigned fastLog2(unsigned i)
 {
