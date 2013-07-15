@@ -127,7 +127,7 @@ class ServiceResolverImpl
   virtual ~ServiceResolverImpl();
 
   // ServiceResolver implementation:
-  virtual bool StartResolving() OVERRIDE;
+  virtual void StartResolving() OVERRIDE;
 
   virtual std::string GetName() const OVERRIDE;
 

@@ -229,15 +229,13 @@ ServiceResolverImpl::ServiceResolverImpl(
   service_staging_.service_name = service_name_;
 }
 
-bool ServiceResolverImpl::StartResolving() {
+void ServiceResolverImpl::StartResolving() {
   address_resolved_ = false;
   metadata_resolved_ = false;
 
-  if (!CreateTxtTransaction())
-    return false;
-  if (!CreateSrvTransaction())
-    return false;
-  return true;
+  if (!CreateTxtTransaction() || !CreateSrvTransaction()) {
+    ServiceNotFound(ServiceResolver::STATUS_REQUEST_TIMEOUT);
+  }
 }
 
 ServiceResolverImpl::~ServiceResolverImpl() {

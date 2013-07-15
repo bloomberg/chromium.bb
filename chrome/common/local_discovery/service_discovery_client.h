@@ -73,9 +73,9 @@ class ServiceWatcher {
 class ServiceResolver {
  public:
   enum RequestStatus {
-    STATUS_SUCCESS = 0,
-    STATUS_REQUEST_TIMEOUT = 1,
-    STATUS_KNOWN_NONEXISTENT = 2
+    STATUS_SUCCESS,
+    STATUS_REQUEST_TIMEOUT,
+    STATUS_KNOWN_NONEXISTENT
   };
 
   // A callback called once the service has been resolved.
@@ -86,7 +86,7 @@ class ServiceResolver {
   virtual ~ServiceResolver() {}
 
   // Start the service reader.
-  virtual bool StartResolving() = 0;
+  virtual void StartResolving() = 0;
 
   virtual std::string GetName() const = 0;
 };

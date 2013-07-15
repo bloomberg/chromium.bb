@@ -352,7 +352,7 @@ TEST_F(ServiceResolverTest, TxtAndSrvButNoA) {
   EXPECT_CALL(*socket_factory_, OnSendTo(_))
       .Times(4);
 
-  EXPECT_TRUE(resolver_->StartResolving());
+  resolver_->StartResolving();
 
   socket_factory_->SimulateReceive(
       kSamplePacketSRV, sizeof(kSamplePacketSRV));
@@ -373,7 +373,7 @@ TEST_F(ServiceResolverTest, TxtSrvAndA) {
   EXPECT_CALL(*socket_factory_, OnSendTo(_))
       .Times(4);
 
-  EXPECT_TRUE(resolver_->StartResolving());
+  resolver_->StartResolving();
 
   EXPECT_CALL(*this,
               OnFinishedResolvingInternal(ServiceResolver::STATUS_SUCCESS,
@@ -392,7 +392,7 @@ TEST_F(ServiceResolverTest, JustSrv) {
   EXPECT_CALL(*socket_factory_, OnSendTo(_))
       .Times(4);
 
-  EXPECT_TRUE(resolver_->StartResolving());
+  resolver_->StartResolving();
 
   EXPECT_CALL(*this,
               OnFinishedResolvingInternal(ServiceResolver::STATUS_SUCCESS,
@@ -412,7 +412,7 @@ TEST_F(ServiceResolverTest, WithNothing) {
   EXPECT_CALL(*socket_factory_, OnSendTo(_))
       .Times(4);
 
-  EXPECT_TRUE(resolver_->StartResolving());
+  resolver_->StartResolving();
 
   EXPECT_CALL(*this, OnFinishedResolvingInternal(
                         ServiceResolver::STATUS_REQUEST_TIMEOUT, _, _, _));
