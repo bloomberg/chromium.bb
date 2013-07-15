@@ -38,8 +38,7 @@ def GetClassesInZipFile(zip_file):
 def CallJavap(classpath, classes):
   javap_cmd = [
       'javap',
-      '-public',
-      '-protected',
+      '-protected',  # In reality both public & protected.
       # -verbose is required to get constant values (which can be inlined in
       # dependents).
       '-verbose',
@@ -109,4 +108,3 @@ def main(argv):
 
 if __name__ == '__main__':
   sys.exit(main(sys.argv))
-
