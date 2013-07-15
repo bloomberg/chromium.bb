@@ -127,13 +127,7 @@ public:
     CSSValue* lineHeightValue() { return m_lineHeightValue; }
 
     void cacheUserAgentBorderAndBackground() { m_cachedUAStyle = CachedUAStyle(style()); }
-    const CachedUAStyle& cachedUAStyle() const
-    {
-        // We should only ever be asking for these cached values
-        // if the style being resolved has appearance.
-        ASSERT(style()->hasAppearance());
-        return m_cachedUAStyle;
-    }
+    const CachedUAStyle& cachedUAStyle() const { return m_cachedUAStyle; }
 
     ElementStyleResources& elementStyleResources() { return m_elementStyleResources; }
     const CSSToStyleMap& styleMap() const { return m_styleMap; }

@@ -41,9 +41,9 @@ public:
         : hasAppearance(style->hasAppearance())
         , backgroundLayers(BackgroundFillLayer)
     {
-        // If the style doesn't have appearance
-        // we don't need to even bother copying the
-        // border or background data.
+        // RenderTheme::adjustStyle is the only consumer of this data.
+        // It only cares about the styles if appearance is set,
+        // so we cheat and don't bother to copy them when !hasAppearance.
         if (!hasAppearance)
             return;
         border = style->border();
