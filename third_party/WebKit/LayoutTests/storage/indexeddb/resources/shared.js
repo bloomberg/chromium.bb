@@ -97,6 +97,8 @@ function evalAndExpectException(cmd, exceptionCode, exceptionName, _quiet)
             ename = e.name;
             shouldBe("ename", exceptionName, _quiet);
         }
+        if (!_quiet)
+            debug("Exception message: " + e.message);
     }
 }
 

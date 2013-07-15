@@ -22,14 +22,17 @@ store = transaction.objectStore('storeName')
 Expecting exception from store.put(blob, 'key')
 PASS Exception was thrown.
 PASS code is DOMException.DATA_CLONE_ERR
+Exception message: An object could not be cloned.
 Expecting exception from store.add(blob, 'key')
 PASS Exception was thrown.
 PASS code is DOMException.DATA_CLONE_ERR
+Exception message: An object could not be cloned.
 request = store.openCursor()
 cursor = request.result
 Expecting exception from cursor.update(blob)
 PASS Exception was thrown.
 PASS code is DOMException.DATA_CLONE_ERR
+Exception message: An object could not be cloned.
 
 testFile():
 file = fileInput.files[0]
@@ -40,14 +43,17 @@ store = transaction.objectStore('storeName')
 Expecting exception from store.put(file, 'key')
 PASS Exception was thrown.
 PASS code is DOMException.DATA_CLONE_ERR
+Exception message: An object could not be cloned.
 Expecting exception from store.add(file, 'key')
 PASS Exception was thrown.
 PASS code is DOMException.DATA_CLONE_ERR
+Exception message: An object could not be cloned.
 request = store.openCursor()
 cursor = request.result
 Expecting exception from cursor.update(file)
 PASS Exception was thrown.
 PASS code is DOMException.DATA_CLONE_ERR
+Exception message: An object could not be cloned.
 
 testFileList():
 filelist = fileInput.files
@@ -58,14 +64,17 @@ store = transaction.objectStore('storeName')
 Expecting exception from store.put(filelist, 'key')
 PASS Exception was thrown.
 PASS code is DOMException.DATA_CLONE_ERR
+Exception message: An object could not be cloned.
 Expecting exception from store.add(filelist, 'key')
 PASS Exception was thrown.
 PASS code is DOMException.DATA_CLONE_ERR
+Exception message: An object could not be cloned.
 request = store.openCursor()
 cursor = request.result
 Expecting exception from cursor.update(filelist)
 PASS Exception was thrown.
 PASS code is DOMException.DATA_CLONE_ERR
+Exception message: An object could not be cloned.
 PASS successfullyParsed is true
 
 TEST COMPLETE

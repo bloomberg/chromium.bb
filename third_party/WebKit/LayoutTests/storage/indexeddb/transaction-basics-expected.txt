@@ -23,6 +23,7 @@ Expecting exception from store.deleteIndex('indexFail')
 PASS Exception was thrown.
 PASS code is DOMException.INVALID_STATE_ERR
 PASS ename is 'InvalidStateError'
+Exception message: The object store has been deleted.
 
 testSetVersionAbort2():
 PASS self.db.objectStoreNames is []
@@ -40,6 +41,7 @@ Expecting exception from store.deleteIndex('indexFail')
 PASS Exception was thrown.
 PASS code is DOMException.INVALID_STATE_ERR
 PASS ename is 'InvalidStateError'
+Exception message: The object store has been deleted.
 store = db.createObjectStore('storeFail', null)
 index = store.createIndex('indexFail', 'x')
 
@@ -62,46 +64,57 @@ Expecting exception from index.openCursor()
 PASS Exception was thrown.
 PASS code is 0
 PASS ename is 'TransactionInactiveError'
+Exception message: The transaction has finished.
 Expecting exception from index.openKeyCursor()
 PASS Exception was thrown.
 PASS code is 0
 PASS ename is 'TransactionInactiveError'
+Exception message: The transaction has finished.
 Expecting exception from index.get(0)
 PASS Exception was thrown.
 PASS code is 0
 PASS ename is 'TransactionInactiveError'
+Exception message: The transaction has finished.
 Expecting exception from index.getKey(0)
 PASS Exception was thrown.
 PASS code is 0
 PASS ename is 'TransactionInactiveError'
+Exception message: The transaction has finished.
 Expecting exception from index.count()
 PASS Exception was thrown.
 PASS code is 0
 PASS ename is 'TransactionInactiveError'
+Exception message: The transaction has finished.
 Expecting exception from store.put(0, 0)
 PASS Exception was thrown.
 PASS code is 0
 PASS ename is 'TransactionInactiveError'
+Exception message: The transaction has finished.
 Expecting exception from store.add(0, 0)
 PASS Exception was thrown.
 PASS code is 0
 PASS ename is 'TransactionInactiveError'
+Exception message: The transaction has finished.
 Expecting exception from store.delete(0)
 PASS Exception was thrown.
 PASS code is 0
 PASS ename is 'TransactionInactiveError'
+Exception message: The transaction has finished.
 Expecting exception from store.clear()
 PASS Exception was thrown.
 PASS code is 0
 PASS ename is 'TransactionInactiveError'
+Exception message: The transaction has finished.
 Expecting exception from store.get(0)
 PASS Exception was thrown.
 PASS code is 0
 PASS ename is 'TransactionInactiveError'
+Exception message: The transaction has finished.
 Expecting exception from store.openCursor()
 PASS Exception was thrown.
 PASS code is 0
 PASS ename is 'TransactionInactiveError'
+Exception message: The transaction has finished.
 
 testSetVersionAbort4():
 PASS self.db.objectStoreNames is []
@@ -120,46 +133,57 @@ Expecting exception from index.openCursor()
 PASS Exception was thrown.
 PASS code is 0
 PASS ename is 'TransactionInactiveError'
+Exception message: The transaction has finished.
 Expecting exception from index.openKeyCursor()
 PASS Exception was thrown.
 PASS code is 0
 PASS ename is 'TransactionInactiveError'
+Exception message: The transaction has finished.
 Expecting exception from index.get(0)
 PASS Exception was thrown.
 PASS code is 0
 PASS ename is 'TransactionInactiveError'
+Exception message: The transaction has finished.
 Expecting exception from index.getKey(0)
 PASS Exception was thrown.
 PASS code is 0
 PASS ename is 'TransactionInactiveError'
+Exception message: The transaction has finished.
 Expecting exception from index.count()
 PASS Exception was thrown.
 PASS code is 0
 PASS ename is 'TransactionInactiveError'
+Exception message: The transaction has finished.
 Expecting exception from store.put(0, 0)
 PASS Exception was thrown.
 PASS code is 0
 PASS ename is 'TransactionInactiveError'
+Exception message: The transaction has finished.
 Expecting exception from store.add(0, 0)
 PASS Exception was thrown.
 PASS code is 0
 PASS ename is 'TransactionInactiveError'
+Exception message: The transaction has finished.
 Expecting exception from store.delete(0)
 PASS Exception was thrown.
 PASS code is 0
 PASS ename is 'TransactionInactiveError'
+Exception message: The transaction has finished.
 Expecting exception from store.clear()
 PASS Exception was thrown.
 PASS code is 0
 PASS ename is 'TransactionInactiveError'
+Exception message: The transaction has finished.
 Expecting exception from store.get(0)
 PASS Exception was thrown.
 PASS code is 0
 PASS ename is 'TransactionInactiveError'
+Exception message: The transaction has finished.
 Expecting exception from store.openCursor()
 PASS Exception was thrown.
 PASS code is 0
 PASS ename is 'TransactionInactiveError'
+Exception message: The transaction has finished.
 
 testSetVersionAbort5():
 PASS db.objectStoreNames is ['storeFail']
@@ -213,10 +237,12 @@ Expecting exception from db.transaction(null)
 PASS Exception was thrown.
 PASS code is DOMException.NOT_FOUND_ERR
 PASS ename is 'NotFoundError'
+Exception message: One of the specified object stores was not found.
 Expecting exception from db.transaction(undefined)
 PASS Exception was thrown.
 PASS code is DOMException.NOT_FOUND_ERR
 PASS ename is 'NotFoundError'
+Exception message: One of the specified object stores was not found.
 request = newConnection()
 indexedDB.open(dbname, 8)
 db.createObjectStore('null')
