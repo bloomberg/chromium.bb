@@ -357,7 +357,9 @@ void RenderText::SetFont(const Font& font) {
 }
 
 void RenderText::SetFontSize(int size) {
-  SetFontList(font_list_.DeriveFontListWithSize(size));
+  font_list_ = font_list_.DeriveFontListWithSize(size);
+  cached_bounds_and_offset_valid_ = false;
+  ResetLayout();
 }
 
 void RenderText::SetCursorEnabled(bool cursor_enabled) {

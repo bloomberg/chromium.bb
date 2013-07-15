@@ -232,30 +232,4 @@ TEST(FontListTest, Fonts_DeriveFontListWithSize) {
   EXPECT_EQ("Sans serif|5", FontToString(derived_fonts[1]));
 }
 
-TEST(FontListTest, Fonts_GetHeight_GetBaseline) {
-  // If the font list has only one font, the height and baseline must be
-  // the same.
-  Font font_arial8("Arial", 8);
-  FontList font_list_arial8("Arial, 8px");
-  EXPECT_EQ(font_arial8.GetHeight(), font_list_arial8.GetHeight());
-  EXPECT_EQ(font_arial8.GetBaseline(), font_list_arial8.GetBaseline());
-
-  Font font_sansserif10("Sans serif", 10);
-  FontList font_list_sansserif10("Sans serif, 10px");
-  EXPECT_EQ(font_sansserif10.GetHeight(), font_list_sansserif10.GetHeight());
-  EXPECT_EQ(font_sansserif10.GetBaseline(),
-            font_list_sansserif10.GetBaseline());
-
-  // If there are two different fonts, the font list returns the max value.
-  FontList font_list_mix(font_arial8);
-  // Bypass DCHECK in a constructor of FontList which checks that all the fonts
-  // have the same font size.
-  font_list_mix.fonts_.push_back(font_sansserif10);
-  // Helvetica 20px must be larger than Arial 10px.
-  EXPECT_GT(font_sansserif10.GetHeight(), font_arial8.GetHeight());
-  EXPECT_EQ(font_sansserif10.GetHeight(), font_list_mix.GetHeight());
-  EXPECT_GT(font_sansserif10.GetBaseline(), font_arial8.GetBaseline());
-  EXPECT_EQ(font_sansserif10.GetBaseline(), font_list_mix.GetBaseline());
-}
-
 }  // namespace gfx

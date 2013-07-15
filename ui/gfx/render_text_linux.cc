@@ -83,17 +83,12 @@ Size RenderTextLinux::GetStringSize() {
   EnsureLayout();
   int width = 0, height = 0;
   pango_layout_get_pixel_size(layout_, &width, &height);
-  // Keep a consistent height between this particular string's PangoLayout and
-  // potentially larger text supported by the FontList.
-  return Size(width, std::max(height, font_list().GetHeight()));
+  return Size(width, height);
 }
 
 int RenderTextLinux::GetBaseline() {
   EnsureLayout();
-  // Keep a consistent baseline between this particular string's PangoLayout and
-  // potentially larger text supported by the FontList.
-  return std::max(PANGO_PIXELS(pango_layout_get_baseline(layout_)),
-                  font_list().GetBaseline());
+  return PANGO_PIXELS(pango_layout_get_baseline(layout_));
 }
 
 SelectionModel RenderTextLinux::FindCursorPosition(const Point& point) {
@@ -369,7 +364,8 @@ void RenderTextLinux::DrawVisualText(Canvas* canvas) {
   DCHECK(layout_);
 
   // Skia will draw glyphs with respect to the baseline.
-  Vector2d offset(GetTextOffset() + Vector2d(0, GetBaseline()));
+  Vector2d offset(GetTextOffset() +
+      Vector2d(0, PANGO_PIXELS(pango_layout_get_baseline(layout_))));
 
   SkScalar x = SkIntToScalar(offset.x());
   SkScalar y = SkIntToScalar(offset.y());
