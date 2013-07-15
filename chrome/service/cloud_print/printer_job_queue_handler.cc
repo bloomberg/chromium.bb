@@ -39,7 +39,7 @@ void JobDetails::Clear() {
 
 // static
 bool JobDetails::ordering(const JobDetails& first, const JobDetails& second) {
-  return first.time_remaining_ <= second.time_remaining_;
+  return first.time_remaining_ < second.time_remaining_;
 }
 
 PrinterJobQueueHandler::PrinterJobQueueHandler(TimeProvider* time_provider)
