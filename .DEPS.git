@@ -98,11 +98,11 @@ deps = {
     'src/third_party/sfntly/cpp/src':
         Var('git_url') + '/external/sfntly/cpp/src.git@cfb2f1743f0169ad8d01035458617bce97107539',
     'src/third_party/skia/gyp':
-        Var('git_url') + '/external/skia/gyp.git@fdeccc4d5e5c95833f130697af3900aa8f9b174c',
+        Var('git_url') + '/external/skia/gyp.git@ad7a341f7b112bbaf02c05f60a3d6fee3d3209cf',
     'src/third_party/skia/include':
-        Var('git_url') + '/external/skia/include.git@008a19c500f8e2c5f02b02561b98ed5726189a32',
+        Var('git_url') + '/external/skia/include.git@6e0b6824a69b643c9f7799420d96414ee3d3fea1',
     'src/third_party/skia/src':
-        Var('git_url') + '/external/skia/src.git@20b8fa9e36fe6b5622dd2bc53169b8bf75fe0954',
+        Var('git_url') + '/external/skia/src.git@f007becabce72c9ea9532d4cb58a89221fa0d959',
     'src/third_party/smhasher/src':
         Var('git_url') + '/external/smhasher.git@6f63a4882e6b2cf87e8eec1a3ef8644e0d963283',
     'src/third_party/snappy/src':
