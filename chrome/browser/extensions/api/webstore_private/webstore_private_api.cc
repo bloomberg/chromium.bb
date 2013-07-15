@@ -560,7 +560,7 @@ bool CompleteInstallFunction::RunImpl() {
   AddRef();
 
   if (approval_->enable_launcher)
-    AppListService::Get()->EnableAppList();
+    AppListService::Get()->EnableAppList(profile());
 
   if (apps::IsAppLauncherEnabled()) {
     // Show the app list to show download is progressing. Don't show the app
@@ -616,7 +616,7 @@ EnableAppLauncherFunction::EnableAppLauncherFunction() {}
 EnableAppLauncherFunction::~EnableAppLauncherFunction() {}
 
 bool EnableAppLauncherFunction::RunImpl() {
-  AppListService::Get()->EnableAppList();
+  AppListService::Get()->EnableAppList(profile());
   SendResponse(true);
   return true;
 }

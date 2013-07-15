@@ -60,7 +60,7 @@ class AppListService {
 
   // Enable the app list. What this does specifically will depend on the host
   // operating system and shell.
-  virtual void EnableAppList() = 0;
+  virtual void EnableAppList(Profile* initial_profile) = 0;
 
   // Get the window the app list is in, or NULL if the app list isn't visible.
   virtual gfx::NativeWindow GetAppListWindow() = 0;

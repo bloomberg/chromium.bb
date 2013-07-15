@@ -63,7 +63,7 @@ class AppListServiceMac : public AppListServiceImpl,
   virtual void ShowAppList(Profile* requested_profile) OVERRIDE;
   virtual void DismissAppList() OVERRIDE;
   virtual bool IsAppListVisible() const OVERRIDE;
-  virtual void EnableAppList() OVERRIDE;
+  virtual void EnableAppList(Profile* initial_profile) OVERRIDE;
   virtual gfx::NativeWindow GetAppListWindow() OVERRIDE;
 
   // AppListServiceImpl override:
@@ -320,7 +320,7 @@ bool AppListServiceMac::IsAppListVisible() const {
   return [[window_controller_ window] isVisible];
 }
 
-void AppListServiceMac::EnableAppList() {
+void AppListServiceMac::EnableAppList(Profile* initial_profile) {
   // TODO(tapted): Implement enable logic here for OSX.
 }
 
