@@ -331,8 +331,6 @@ crbug.com/39423 security/block-test.html [ Failure ]
 
 crbug.com/20345 http/tests/security/cross-frame-access-getOwnPropertyDescriptor.html [ Failure ]
 
-crbug.com/42044 [ Win ] http/tests/security/xss-DENIED-mime-type-execute-as-html.html [ Pass Timeout ]
-
 # -----------------------------------------------------------------
 # Plugin tests
 # -----------------------------------------------------------------
