@@ -195,6 +195,8 @@ void ChromeBrowserMainPartsWin::PreMainMessageLoopStart() {
 }
 
 int ChromeBrowserMainPartsWin::PreCreateThreads() {
+  int rv = ChromeBrowserMainParts::PreCreateThreads();
+
   // TODO(viettrungluu): why don't we run this earlier?
   if (!parsed_command_line().HasSwitch(switches::kNoErrorDialogs) &&
       base::win::GetVersion() < base::win::VERSION_XP) {
@@ -204,7 +206,7 @@ int ChromeBrowserMainPartsWin::PreCreateThreads() {
         chrome::MESSAGE_BOX_TYPE_WARNING);
   }
 
-  return ChromeBrowserMainParts::PreCreateThreads();
+  return rv;
 }
 
 void ChromeBrowserMainPartsWin::PostMainMessageLoopRun() {
