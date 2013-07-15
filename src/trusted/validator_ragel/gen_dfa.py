@@ -1318,7 +1318,7 @@ def SplitL(instruction):
 
 
 def ParseDefFile(filename):
-  # .def file format is documented in general_purpose_instructions.def.
+  # .def file format is documented in def_format.py.
 
   with open(filename) as def_file:
     lines = [line for line in def_file if not line.startswith('#')]
