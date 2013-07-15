@@ -149,6 +149,7 @@ public class AwContents {
 
     private boolean mIsPaused;
     private boolean mIsVisible;  // Equivalent to windowVisible && viewVisible && !mIsPaused.
+    private boolean mIsAttachedToWindow;
     private Bitmap mFavicon;
     private boolean mHasRequestedVisitedHistoryFromClient;
     // TODO(boliu): This should be in a global context, not per webview.
@@ -536,14 +537,29 @@ public class AwContents {
     // Recap: supplyContentsForPopup() is called on the parent window's content, this method is
     // called on the popup window's content.
     private void receivePopupContents(int popupNativeAwContents) {
+        // Save existing view state.
+        final boolean wasAttached = mIsAttachedToWindow;
+        final boolean wasVisible = getContainerViewVisible();
+        final boolean wasPaused = mIsPaused;
+        final boolean wasFocused = mWindowFocused;
+
+        // Properly clean up existing mContentViewCore and mNativeAwContents.
+        if (wasFocused) onWindowFocusChanged(false);
+        if (wasVisible) setVisibilityInternal(false);
+        // TODO(boliu): This may destroy GL resources outside of functor.
+        if (wasAttached) onDetachedFromWindow();
+        if (!wasPaused) onPause();
+
         setNewAwContents(popupNativeAwContents);
 
-        // Finally refresh view size and visibility, to poke new values into ContentViewCore.
+        // Finally refresh all view state for mContentViewCore and mNativeAwContents.
+        if (!wasPaused) onResume();
+        if (wasAttached) onAttachedToWindow();
         mLastGlobalVisibleWidth = 0;
         mLastGlobalVisibleHeight = 0;
         onSizeChanged(mContainerView.getWidth(), mContainerView.getHeight(), 0, 0);
-        updateVisibilityStateForced();
-        onWindowFocusChanged(mWindowFocused);
+        if (wasVisible) setVisibilityInternal(true);
+        if (wasFocused) onWindowFocusChanged(true);
     }
 
     public void destroy() {
@@ -924,6 +940,7 @@ public class AwContents {
     public void onPause() {
         mIsPaused = true;
         updateVisibilityState();
+        mContentViewCore.onActivityPause();
     }
 
     /**
@@ -932,6 +949,9 @@ public class AwContents {
     public void onResume() {
         mIsPaused = false;
         updateVisibilityState();
+        // Not calling mContentViewCore.onActivityResume because it is the same
+        // as onShow, but we do not want to call onShow yet, since AwContents
+        // visibility depends on other things. TODO(boliu): Clean this up.
     }
 
     /**
@@ -1207,8 +1227,11 @@ public class AwContents {
 
     /**
      * @see android.view.View#onAttachedToWindow()
+     *
+     * Note that this is also called from receivePopupContents.
      */
     public void onAttachedToWindow() {
+        mIsAttachedToWindow = true;
         if (mScrollChangeListener == null) {
             mScrollChangeListener = new ScrollChangeListener();
         }
@@ -1228,6 +1251,7 @@ public class AwContents {
      * @see android.view.View#onDetachedFromWindow()
      */
     public void onDetachedFromWindow() {
+        mIsAttachedToWindow = false;
         if (mNativeAwContents != 0) {
             nativeOnDetachedFromWindow(mNativeAwContents);
         }
@@ -1283,21 +1307,23 @@ public class AwContents {
     }
 
     private void updateVisibilityState() {
-        doUpdateVisibilityState(false);
+        boolean visible = getContainerViewVisible();
+        if (mIsVisible == visible) return;
+
+        setVisibilityInternal(visible);
     }
 
-    private void updateVisibilityStateForced() {
-        doUpdateVisibilityState(true);
-    }
-
-    private void doUpdateVisibilityState(boolean forced) {
-        if (mNativeAwContents == 0) return;
+    private boolean getContainerViewVisible() {
         boolean windowVisible = mContainerView.getWindowVisibility() == View.VISIBLE;
         boolean viewVisible = mContainerView.getVisibility() == View.VISIBLE;
 
-        boolean visible = windowVisible && viewVisible && !mIsPaused;
-        if (mIsVisible == visible && !forced) return;
+        return windowVisible && viewVisible && !mIsPaused;
+    }
 
+    private void setVisibilityInternal(boolean visible) {
+        // Note that this skips mIsVisible check and unconditionally sets
+        // visibility. In general, callers should use updateVisibilityState
+        // instead.
         mIsVisible = visible;
         if (mIsVisible) {
             mContentViewCore.onShow();
