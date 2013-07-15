@@ -7,7 +7,7 @@ After clicking on the first element (Mac):
 | <div>
 |   class="select-all"
 |   id="first"
-|   "F<#selection-caret>irst element"
+|   "<#selection-anchor>First element<#selection-focus>"
 | "
 Some other text.
 "
@@ -24,14 +24,14 @@ After shift clicking on the second element (Mac):
 | <div>
 |   class="select-all"
 |   id="first"
-|   "F<#selection-anchor>irst element"
+|   "<#selection-anchor>First element"
 | "
 Some other text.
 "
 | <div>
 |   class="select-all"
 |   id="second"
-|   "S<#selection-focus>econd element"
+|   "Second element<#selection-focus>"
 | "
 "
 
@@ -48,7 +48,7 @@ Some other text.
 | <div>
 |   class="select-all"
 |   id="second"
-|   "<#selection-anchor>Second<#selection-focus> element"
+|   "<#selection-anchor>Second element<#selection-focus>"
 | "
 "
 
@@ -65,7 +65,7 @@ Some other text.
 | <div>
 |   class="select-all"
 |   id="second"
-|   "Second <#selection-anchor>element"
+|   "Second element<#selection-anchor>"
 | "
 "
 
@@ -82,7 +82,7 @@ Some other text.
 | <div>
 |   class="select-all"
 |   id="second"
-|   "Second <#selection-anchor>element"
+|   "Second element<#selection-anchor>"
 | "
 "
 
@@ -99,7 +99,7 @@ Some other text.
 | <div>
 |   class="select-all"
 |   id="second"
-|   "<#selection-focus>Second <#selection-anchor>element"
+|   "<#selection-focus>Second element<#selection-anchor>"
 | "
 "
 
@@ -116,7 +116,7 @@ Some other text.
 | <div>
 |   class="select-all"
 |   id="second"
-|   "<#selection-anchor>Second<#selection-focus> element"
+|   "<#selection-anchor>Second element<#selection-focus>"
 | "
 "
 
@@ -167,7 +167,7 @@ Some other text.
 | <div>
 |   class="select-all"
 |   id="second"
-|   "<#selection-anchor>Second<#selection-focus> element"
+|   "<#selection-anchor>Second element<#selection-focus>"
 | "
 "
 
@@ -184,7 +184,7 @@ Some other text.
 | <div>
 |   class="select-all"
 |   id="second"
-|   "<#selection-anchor>Second<#selection-focus> element"
+|   "<#selection-anchor>Second element<#selection-focus>"
 | "
 "
 
