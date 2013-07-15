@@ -174,10 +174,10 @@ result: data:text/plain;base64,SGVsbG8=
 Received loadend event
 Test calling multiple concurrent read methods
 readyState: 0
-Received exception 11: InvalidStateError
-Received exception 11: InvalidStateError
-Received exception 11: InvalidStateError
-Received exception 11: InvalidStateError
+Received exception, code: 11, name: InvalidStateError, message: An attempt was made to use an object that is not, or is no longer, usable.
+Received exception, code: 11, name: InvalidStateError, message: An attempt was made to use an object that is not, or is no longer, usable.
+Received exception, code: 11, name: InvalidStateError, message: An attempt was made to use an object that is not, or is no longer, usable.
+Received exception, code: 11, name: InvalidStateError, message: An attempt was made to use an object that is not, or is no longer, usable.
 Received loadstart event
 readyState: 1
 Received load event

@@ -19,7 +19,7 @@ function sendXMLHttpRequest(method, url)
         log("Status: " + xhr.status);
         log("Response: " + xhr.responseText);
     } catch (error) {
-        log("Received exception " + error.code + ": " + error.name);
+        log("Received exception, code: " + error.code + ", name: " + error.name + ", message: " + error.message);
     }
 }
 

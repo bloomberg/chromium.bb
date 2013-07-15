@@ -21,11 +21,13 @@ var error;
 function assertEncodingErr(e) {
     error = e;
     shouldBe("error.name", "'EncodingError'");
+    debug(e.message);
 }
 
 function assertSecurityErr(e) {
     error = e;
     shouldBe("error.name", "'SecurityError'");
+    debug(e.message);
 }
 
 function assertPathsMatch(expected, actual) {

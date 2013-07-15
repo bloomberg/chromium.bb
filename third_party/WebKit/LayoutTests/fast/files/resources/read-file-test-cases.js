@@ -179,22 +179,22 @@ function testMultipleReads(testFiles)
     try {
         reader.readAsArrayBuffer(testFiles['UTF8-file']);
     } catch (error) {
-        log("Received exception " + error.code + ": " + error.name);
+        log("Received exception, code: " + error.code + ", name: " + error.name + ", message: " + error.message);
     }
     try {
         reader.readAsBinaryString(testFiles['UTF8-file']);
     } catch (error) {
-        log("Received exception " + error.code + ": " + error.name);
+        log("Received exception, code: " + error.code + ", name: " + error.name + ", message: " + error.message);
     }
     try {
         reader.readAsText(testFiles['UTF8-file']);
     } catch (error) {
-        log("Received exception " + error.code + ": " + error.name);
+        log("Received exception, code: " + error.code + ", name: " + error.name + ", message: " + error.message);
     }
     try {
         reader.readAsDataURL(testFiles['UTF8-file']);
     } catch (error) {
-        log("Received exception " + error.code + ": " + error.name);
+        log("Received exception, code: " + error.code + ", name: " + error.name + ", message: " + error.message);
     }
 }
 

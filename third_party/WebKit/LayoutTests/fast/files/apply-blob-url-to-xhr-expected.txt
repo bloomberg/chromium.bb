@@ -3,7 +3,7 @@ Test that XMLHttpRequest GET succeeds.
 Status: 200
 Response: Hello
 Test that XMLHttpRequest POST fails.
-Received exception 19: NetworkError
+Received exception, code: 19, name: NetworkError, message: A network error occurred.
 Test that XMLHttpRequest GET fails after the blob URL is revoked.
 Status: 404
 Response: 
