@@ -471,7 +471,7 @@
     { "name": "betnet.fr", "include_subdomains": true, "mode": "force-https" },
     { "name": "uprotect.it", "include_subdomains": true, "mode": "force-https" },
     { "name": "squareup.com", "mode": "force-https" },
-    { "name": "square.com", "mode": "force-https" },
+    { "name": "square.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "cert.se", "include_subdomains": true, "mode": "force-https" },
     { "name": "crypto.is", "include_subdomains": true, "mode": "force-https" },
     { "name": "simon.butcher.name", "include_subdomains": true, "mode": "force-https" },
