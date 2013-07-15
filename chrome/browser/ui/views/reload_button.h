@@ -47,19 +47,20 @@ class ReloadButton : public views::ButtonDropDown,
 
   void LoadImages(ui::ThemeProvider* tp);
 
-  // Overridden from views::ButtonListener:
-  virtual void ButtonPressed(views::Button* /* button */,
-                             const ui::Event& event) OVERRIDE;
-
   // Overridden from views::View:
   virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
   virtual bool GetTooltipText(const gfx::Point& p,
                               string16* tooltip) const OVERRIDE;
   virtual const char* GetClassName() const OVERRIDE;
+  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
   // Overridden from views::ButtonDropDown:
   virtual bool ShouldShowMenu() OVERRIDE;
   virtual void ShowDropDownMenu(ui::MenuSourceType source_type) OVERRIDE;
+
+  // Overridden from views::ButtonListener:
+  virtual void ButtonPressed(views::Button* /* button */,
+                             const ui::Event& event) OVERRIDE;
 
   // Overridden from ui::SimpleMenuModel::Delegate:
   virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
