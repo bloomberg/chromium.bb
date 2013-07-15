@@ -36,7 +36,6 @@
 #include "V8HTMLElement.h"
 #include "V8Window.h"
 #include "bindings/v8/BindingSecurity.h"
-#include "bindings/v8/NPObjectWrapper.h"
 #include "bindings/v8/NPV8Object.h"
 #include "bindings/v8/ScriptCallStackFactory.h"
 #include "bindings/v8/ScriptSourceCode.h"
@@ -94,7 +93,7 @@ ScriptController::ScriptController(Frame* frame)
     , m_isolate(v8::Isolate::GetCurrent())
     , m_windowShell(V8WindowShell::create(frame, mainThreadNormalWorld(), m_isolate))
     , m_paused(false)
-    , m_wrappedWindowScriptNPObject(0)
+    , m_windowScriptNPObject(0)
 {
 }
 
@@ -112,21 +111,14 @@ void ScriptController::clearScriptObjects()
     }
     m_pluginObjects.clear();
 
-    if (m_wrappedWindowScriptNPObject) {
-        NPObjectWrapper* windowScriptObjectWrapper = NPObjectWrapper::getWrapper(m_wrappedWindowScriptNPObject);
-        ASSERT(windowScriptObjectWrapper);
-
-        NPObject* windowScriptNPObject = NPObjectWrapper::getUnderlyingNPObject(m_wrappedWindowScriptNPObject);
-        ASSERT(windowScriptNPObject);
-        // Call _NPN_DeallocateObject() instead of _NPN_ReleaseObject() so that we don't leak if a plugin fails to release the window
-        // script object properly.
-        // This shouldn't cause any problems for plugins since they should have already been stopped and destroyed at this point.
-        _NPN_DeallocateObject(windowScriptNPObject);
-
-        // Clear out the wrapped window script object pointer held by the wrapper.
-        windowScriptObjectWrapper->clear();
-        _NPN_ReleaseObject(m_wrappedWindowScriptNPObject);
-        m_wrappedWindowScriptNPObject = 0;
+    if (m_windowScriptNPObject) {
+        // Dispose of the underlying V8 object before releasing our reference
+        // to it, so that if a plugin fails to release it properly we will
+        // only leak the NPObject wrapper, not the object, its document, or
+        // anything else they reference.
+        disposeUnderlyingV8Object(m_windowScriptNPObject);
+        _NPN_ReleaseObject(m_windowScriptNPObject);
+        m_windowScriptNPObject = 0;
     }
 }
 
@@ -474,29 +466,27 @@ static NPObject* createScriptObject(Frame* frame)
     DOMWindow* window = frame->document()->domWindow();
     v8::Handle<v8::Value> global = toV8(window, v8::Handle<v8::Object>(), v8Context->GetIsolate());
     ASSERT(global->IsObject());
+
     return npCreateV8ScriptObject(0, v8::Handle<v8::Object>::Cast(global), window);
 }
 
 NPObject* ScriptController::windowScriptNPObject()
 {
-    if (m_wrappedWindowScriptNPObject)
-        return m_wrappedWindowScriptNPObject;
+    if (m_windowScriptNPObject)
+        return m_windowScriptNPObject;
 
-    NPObject* windowScriptNPObject = 0;
     if (canExecuteScripts(NotAboutToExecuteScript)) {
         // JavaScript is enabled, so there is a JavaScript window object.
         // Return an NPObject bound to the window object.
-        windowScriptNPObject = createScriptObject(m_frame);
-        _NPN_RegisterObject(windowScriptNPObject, 0);
+        m_windowScriptNPObject = createScriptObject(m_frame);
+        _NPN_RegisterObject(m_windowScriptNPObject, 0);
     } else {
         // JavaScript is not enabled, so we cannot bind the NPObject to the
         // JavaScript window object. Instead, we create an NPObject of a
         // different class, one which is not bound to a JavaScript object.
-        windowScriptNPObject = createNoScriptObject();
+        m_windowScriptNPObject = createNoScriptObject();
     }
-
-    m_wrappedWindowScriptNPObject = NPObjectWrapper::create(windowScriptNPObject);
-    return m_wrappedWindowScriptNPObject;
+    return m_windowScriptNPObject;
 }
 
 NPObject* ScriptController::createScriptObjectForPluginElement(HTMLPlugInElement* plugin)

@@ -45,10 +45,9 @@ static const int npObjectInternalFieldCount = v8DefaultWrapperInternalFieldCount
 
 WrapperTypeInfo* npObjectTypeInfo();
 
-extern NPClass* npScriptObjectClass;
-
-// A V8NPObject is a NPObject which carries additional V8-specific information. It is allocated and deallocated by
-// AllocV8NPObject() and FreeV8NPObject() methods.
+// A V8NPObject is a NPObject which carries additional V8-specific information.
+// It is created with npCreateV8ScriptObject() and deallocated via the deallocate
+// method in the same way as other NPObjects.
 struct V8NPObject {
     WTF_MAKE_NONCOPYABLE(V8NPObject);
 public:
@@ -68,6 +67,10 @@ struct PrivateIdentifier {
 NPObject* npCreateV8ScriptObject(NPP, v8::Handle<v8::Object>, DOMWindow*);
 
 NPObject* v8ObjectToNPObject(v8::Handle<v8::Object>);
+
+V8NPObject* npObjectToV8NPObject(NPObject*);
+
+void disposeUnderlyingV8Object(NPObject*);
 
 } // namespace WebCore
 

@@ -424,10 +424,9 @@ v8::Local<v8::Object> createV8ObjectForNPObject(NPObject* object, NPObject* root
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
 
     // If this is a v8 object, just return it.
-    if (object->_class == npScriptObjectClass) {
-        V8NPObject* v8NPObject = reinterpret_cast<V8NPObject*>(object);
+    V8NPObject* v8NPObject = npObjectToV8NPObject(object);
+    if (v8NPObject)
         return v8::Local<v8::Object>::New(isolate, v8NPObject->v8Object);
-    }
 
     // If we've already wrapped this object, just return it.
     v8::Handle<v8::Object> wrapper = staticNPObjectMap().get(object);

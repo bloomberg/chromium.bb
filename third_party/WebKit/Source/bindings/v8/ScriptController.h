@@ -164,6 +164,7 @@ public:
 
 private:
     typedef HashMap<int, OwnPtr<V8WindowShell> > IsolatedWorldMap;
+    typedef HashMap<Widget*, NPObject*> PluginObjectMap;
 
     void clearForClose(bool destroyGlobal);
 
@@ -176,21 +177,13 @@ private:
 
     bool m_paused;
 
-    typedef HashMap<Widget*, NPObject*> PluginObjectMap;
-
     // A mapping between Widgets and their corresponding script object.
     // This list is used so that when the plugin dies, we can immediately
     // invalidate all sub-objects which are associated with that plugin.
     // The frame keeps a NPObject reference for each item on the list.
     PluginObjectMap m_pluginObjects;
-    // The window script object can get destroyed while there are outstanding
-    // references to it. Please refer to ScriptController::clearScriptObjects
-    // for more information as to why this is necessary. To avoid crashes due
-    // to calls on the destroyed window object, we return a proxy NPObject
-    // which wraps the underlying window object. The wrapped window object
-    // pointer in this object is cleared out when the window object is
-    // destroyed.
-    NPObject* m_wrappedWindowScriptNPObject;
+
+    NPObject* m_windowScriptNPObject;
 };
 
 } // namespace WebCore

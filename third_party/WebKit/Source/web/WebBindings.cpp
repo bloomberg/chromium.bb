@@ -172,7 +172,7 @@ void WebBindings::unregisterObjectOwner(NPP)
 {
 }
 
-NPP WebBindings::getObjectOwner(NPObject* object)
+NPP WebBindings::getObjectOwner(NPObject*)
 {
     return 0;
 }
@@ -205,12 +205,17 @@ void WebBindings::extractIdentifierData(const NPIdentifier& identifier, const NP
 
 static bool getRangeImpl(NPObject* object, WebRange* webRange, v8::Isolate* isolate)
 {
-    if (!object || (object->_class != npScriptObjectClass))
+    if (!object)
         return false;
 
-    V8NPObject* v8NPObject = reinterpret_cast<V8NPObject*>(object);
+    V8NPObject* v8NPObject = npObjectToV8NPObject(object);
+    if (!v8NPObject)
+        return false;
+
     v8::HandleScope handleScope(isolate);
     v8::Handle<v8::Object> v8Object = v8::Local<v8::Object>::New(isolate, v8NPObject->v8Object);
+    if (v8Object.IsEmpty())
+        return false;
     if (!V8Range::info.equals(toWrapperTypeInfo(v8Object)))
         return false;
 
@@ -224,12 +229,17 @@ static bool getRangeImpl(NPObject* object, WebRange* webRange, v8::Isolate* isol
 
 static bool getNodeImpl(NPObject* object, WebNode* webNode, v8::Isolate* isolate)
 {
-    if (!object || (object->_class != npScriptObjectClass))
+    if (!object)
         return false;
 
-    V8NPObject* v8NPObject = reinterpret_cast<V8NPObject*>(object);
+    V8NPObject* v8NPObject = npObjectToV8NPObject(object);
+    if (!v8NPObject)
+        return false;
+
     v8::HandleScope handleScope(isolate);
     v8::Handle<v8::Object> v8Object = v8::Local<v8::Object>::New(isolate, v8NPObject->v8Object);
+    if (v8Object.IsEmpty())
+        return false;
     Node* native = V8Node::HasInstanceInAnyWorld(v8Object, isolate) ? V8Node::toNative(v8Object) : 0;
     if (!native)
         return false;
@@ -240,12 +250,17 @@ static bool getNodeImpl(NPObject* object, WebNode* webNode, v8::Isolate* isolate
 
 static bool getElementImpl(NPObject* object, WebElement* webElement, v8::Isolate* isolate)
 {
-    if (!object || (object->_class != npScriptObjectClass))
+    if (!object)
         return false;
 
-    V8NPObject* v8NPObject = reinterpret_cast<V8NPObject*>(object);
+    V8NPObject* v8NPObject = npObjectToV8NPObject(object);
+    if (!v8NPObject)
+        return false;
+
     v8::HandleScope handleScope(isolate);
     v8::Handle<v8::Object> v8Object = v8::Local<v8::Object>::New(isolate, v8NPObject->v8Object);
+    if (v8Object.IsEmpty())
+        return false;
     Element* native = V8Element::HasInstanceInAnyWorld(v8Object, isolate) ? V8Element::toNative(v8Object) : 0;
     if (!native)
         return false;
@@ -256,12 +271,17 @@ static bool getElementImpl(NPObject* object, WebElement* webElement, v8::Isolate
 
 static bool getArrayBufferImpl(NPObject* object, WebArrayBuffer* arrayBuffer, v8::Isolate* isolate)
 {
-    if (!object || (object->_class != npScriptObjectClass))
+    if (!object)
         return false;
 
-    V8NPObject* v8NPObject = reinterpret_cast<V8NPObject*>(object);
+    V8NPObject* v8NPObject = npObjectToV8NPObject(object);
+    if (!v8NPObject)
+        return false;
+
     v8::HandleScope handleScope(isolate);
     v8::Handle<v8::Object> v8Object = v8::Local<v8::Object>::New(isolate, v8NPObject->v8Object);
+    if (v8Object.IsEmpty())
+        return false;
     ArrayBuffer* native = V8ArrayBuffer::HasInstanceInAnyWorld(v8Object, isolate) ? V8ArrayBuffer::toNative(v8Object) : 0;
     if (!native)
         return false;
@@ -272,12 +292,17 @@ static bool getArrayBufferImpl(NPObject* object, WebArrayBuffer* arrayBuffer, v8
 
 static bool getArrayBufferViewImpl(NPObject* object, WebArrayBufferView* arrayBufferView, v8::Isolate* isolate)
 {
-    if (!object || (object->_class != npScriptObjectClass))
+    if (!object)
         return false;
 
-    V8NPObject* v8NPObject = reinterpret_cast<V8NPObject*>(object);
+    V8NPObject* v8NPObject = npObjectToV8NPObject(object);
+    if (!v8NPObject)
+        return false;
+
     v8::HandleScope handleScope(isolate);
     v8::Handle<v8::Object> v8Object = v8::Local<v8::Object>::New(isolate, v8NPObject->v8Object);
+    if (v8Object.IsEmpty())
+        return false;
     ArrayBufferView* native = V8ArrayBufferView::HasInstanceInAnyWorld(v8Object, isolate) ? V8ArrayBufferView::toNative(v8Object) : 0;
     if (!native)
         return false;
@@ -364,9 +389,9 @@ v8::Handle<v8::Value> WebBindings::toV8Value(const NPVariant* variant)
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     if (variant->type == NPVariantType_Object) {
         NPObject* object = NPVARIANT_TO_OBJECT(*variant);
-        if (object->_class != npScriptObjectClass)
+        V8NPObject* v8Object = npObjectToV8NPObject(object);
+        if (!v8Object)
             return v8::Undefined();
-        V8NPObject* v8Object = reinterpret_cast<V8NPObject*>(object);
         return convertNPVariantToV8Object(variant, v8Object->rootObject->frame()->script()->windowScriptNPObject(), isolate);
     }
     // Safe to pass 0 since we have checked the script object class to make sure the
