@@ -6,11 +6,12 @@
 #define CONTENT_BROWSER_DEVTOOLS_DEVTOOLS_BROWSER_TARGET_H_
 
 #include <map>
+#include <set>
 #include <string>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/stl_util.h"
 #include "content/browser/devtools/devtools_protocol.h"
@@ -28,31 +29,47 @@ class HttpServer;
 namespace content {
 
 // This class handles the "Browser" target for remote debugging.
-class DevToolsBrowserTarget {
+class DevToolsBrowserTarget
+    : public base::RefCountedThreadSafe<DevToolsBrowserTarget> {
  public:
   DevToolsBrowserTarget(base::MessageLoopProxy* message_loop_proxy,
                         net::HttpServer* server,
                         int connection_id);
-  ~DevToolsBrowserTarget();
 
   int connection_id() const { return connection_id_; }
 
   // Takes ownership of |handler|.
   void RegisterDomainHandler(const std::string& domain,
-                             DevToolsProtocol::Handler* handler);
+                             DevToolsProtocol::Handler* handler,
+                             bool handle_on_ui_thread);
 
-  std::string HandleMessage(const std::string& data);
+  void HandleMessage(const std::string& data);
+
+  void Detach();
 
  private:
-  void OnNotification(const std::string& message);
+  friend class base::RefCountedThreadSafe<DevToolsBrowserTarget>;
+  ~DevToolsBrowserTarget();
 
-  base::MessageLoopProxy* const message_loop_proxy_;
-  net::HttpServer* const http_server_;
+  void HandleCommandOnUIThread(DevToolsProtocol::Handler*,
+                               DevToolsProtocol::Command* command);
+
+  void DeleteHandlersOnUIThread(
+      std::vector<DevToolsProtocol::Handler*> handlers);
+
+  void Noop();
+
+  void Respond(const std::string& message);
+  void RespondFromUIThread(const std::string& message);
+
+  base::MessageLoopProxy* message_loop_proxy_;
+  net::HttpServer* http_server_;
   const int connection_id_;
 
   typedef std::map<std::string, DevToolsProtocol::Handler*> DomainHandlerMap;
   DomainHandlerMap handlers_;
   STLValueDeleter<DomainHandlerMap> handlers_deleter_;
+  std::set<std::string> handle_on_ui_thread_;
   base::WeakPtrFactory<DevToolsBrowserTarget> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsBrowserTarget);

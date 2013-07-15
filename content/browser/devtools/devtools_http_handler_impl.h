@@ -128,7 +128,7 @@ class DevToolsHttpHandlerImpl
   scoped_ptr<DevToolsHttpHandlerDelegate> delegate_;
   DevToolsAgentHostBinding* binding_;
   scoped_ptr<DevToolsAgentHostBinding> default_binding_;
-  scoped_ptr<DevToolsBrowserTarget> browser_target_;
+  scoped_refptr<DevToolsBrowserTarget> browser_target_;
   typedef std::map<int, TetheringHandler*> TetheringHandlers;
   TetheringHandlers tethering_handlers_;
   DISALLOW_COPY_AND_ASSIGN(DevToolsHttpHandlerImpl);

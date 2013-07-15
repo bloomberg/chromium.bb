@@ -365,6 +365,22 @@ void DevToolsHttpHandlerImpl::OnHttpRequest(
 void DevToolsHttpHandlerImpl::OnWebSocketRequest(
     int connection_id,
     const net::HttpServerRequestInfo& request) {
+  std::string browser_prefix = "/devtools/browser";
+  size_t browser_pos = request.path.find(browser_prefix);
+  if (browser_pos == 0) {
+    if (browser_target_) {
+      server_->Send500(connection_id, "Another client already attached");
+      return;
+    }
+    browser_target_ = new DevToolsBrowserTarget(
+        thread_->message_loop_proxy().get(), server_.get(), connection_id);
+    browser_target_->RegisterDomainHandler(
+        DevToolsTracingHandler::kDomain, new DevToolsTracingHandler(), true);
+
+    server_->AcceptWebSocket(connection_id, request);
+    return;
+  }
+
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
@@ -378,6 +394,11 @@ void DevToolsHttpHandlerImpl::OnWebSocketRequest(
 void DevToolsHttpHandlerImpl::OnWebSocketMessage(
     int connection_id,
     const std::string& data) {
+  if (browser_target_ && connection_id == browser_target_->connection_id()) {
+    browser_target_->HandleMessage(data);
+    return;
+  }
+
   std::string error_response;
   scoped_ptr<DevToolsProtocol::Command> command(
       DevToolsProtocol::ParseCommand(data, &error_response));
@@ -413,6 +434,12 @@ void DevToolsHttpHandlerImpl::OnWebSocketMessage(
 }
 
 void DevToolsHttpHandlerImpl::OnClose(int connection_id) {
+  if (browser_target_ && browser_target_->connection_id() == connection_id) {
+    browser_target_->Detach();
+    browser_target_ = NULL;
+    return;
+  }
+
   TetheringHandlers::iterator it = tethering_handlers_.find(connection_id);
   if (it != tethering_handlers_.end()) {
     delete it->second;
@@ -614,20 +641,6 @@ void DevToolsHttpHandlerImpl::OnWebSocketRequestUI(
     const net::HttpServerRequestInfo& request) {
   if (!thread_)
     return;
-  std::string browser_prefix = "/devtools/browser";
-  size_t browser_pos = request.path.find(browser_prefix);
-  if (browser_pos == 0) {
-    if (browser_target_) {
-      Send500(connection_id, "Another client already attached");
-      return;
-    }
-    browser_target_.reset(new DevToolsBrowserTarget(
-        thread_->message_loop_proxy().get(), server_.get(), connection_id));
-    browser_target_->RegisterDomainHandler(
-        DevToolsTracingHandler::kDomain, new DevToolsTracingHandler());
-    AcceptWebSocket(connection_id, request);
-    return;
-  }
 
   size_t pos = request.path.find(kPageUrlPrefix);
   if (pos != 0) {
@@ -661,18 +674,6 @@ void DevToolsHttpHandlerImpl::OnWebSocketRequestUI(
 void DevToolsHttpHandlerImpl::OnWebSocketMessageUI(
     int connection_id,
     const std::string& data) {
-  if (browser_target_ && connection_id == browser_target_->connection_id()) {
-    std::string json_response = browser_target_->HandleMessage(data);
-
-    thread_->message_loop()->PostTask(
-        FROM_HERE,
-        base::Bind(&net::HttpServer::SendOverWebSocket,
-                   server_.get(),
-                   connection_id,
-                   json_response));
-    return;
-  }
-
   ConnectionToClientHostMap::iterator it =
       connection_to_client_host_ui_.find(connection_id);
   if (it == connection_to_client_host_ui_.end())
@@ -691,10 +692,6 @@ void DevToolsHttpHandlerImpl::OnCloseUI(int connection_id) {
     DevToolsManager::GetInstance()->ClientHostClosing(client_host);
     delete client_host;
     connection_to_client_host_ui_.erase(connection_id);
-  }
-  if (browser_target_ && browser_target_->connection_id() == connection_id) {
-    browser_target_.reset();
-    return;
   }
 }
 
