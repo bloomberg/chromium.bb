@@ -5,6 +5,7 @@
 #include "ppapi/proxy/handle_converter.h"
 
 #include <vector>
+#include "base/bind.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
 #include "ppapi/proxy/ppapi_messages.h"

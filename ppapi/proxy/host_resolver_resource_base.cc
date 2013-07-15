@@ -4,6 +4,7 @@
 
 #include "ppapi/proxy/host_resolver_resource_base.h"
 
+#include "base/bind.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/proxy/net_address_resource.h"
 #include "ppapi/proxy/ppapi_messages.h"

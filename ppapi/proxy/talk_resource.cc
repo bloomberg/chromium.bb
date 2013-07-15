@@ -4,6 +4,7 @@
 
 #include "ppapi/proxy/talk_resource.h"
 
+#include "base/bind.h"
 #include "ppapi/proxy/ppapi_messages.h"
 
 namespace ppapi {

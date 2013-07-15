@@ -6,6 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/debug/trace_event.h"
+#include "base/threading/platform_thread.h"
 #include "ppapi/thunk/thunk.h"
 
 

@@ -4,6 +4,7 @@
 
 #include "ppapi/proxy/truetype_font_singleton_resource.h"
 
+#include "base/bind.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/serialized_structs.h"
 #include "ppapi/shared_impl/array_writer.h"
