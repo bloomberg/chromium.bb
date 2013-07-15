@@ -23,9 +23,9 @@ ServiceDiscoveryClientImpl::~ServiceDiscoveryClientImpl() {
 
 scoped_ptr<ServiceWatcher> ServiceDiscoveryClientImpl::CreateServiceWatcher(
     const std::string& service_type,
-    ServiceWatcher::Delegate* delegate) {
+    const ServiceWatcher::UpdatedCallback& callback) {
   return scoped_ptr<ServiceWatcher>(new ServiceWatcherImpl(
-      service_type,  delegate, mdns_client_));
+      service_type,  callback, mdns_client_));
 }
 
 scoped_ptr<ServiceResolver> ServiceDiscoveryClientImpl::CreateServiceResolver(
@@ -37,35 +37,22 @@ scoped_ptr<ServiceResolver> ServiceDiscoveryClientImpl::CreateServiceResolver(
 
 ServiceWatcherImpl::ServiceWatcherImpl(
     const std::string& service_type,
-    ServiceWatcher::Delegate* delegate,
+    const ServiceWatcher::UpdatedCallback& callback,
     net::MDnsClient* mdns_client)
-    : service_type_(service_type), delegate_(delegate), started_(false),
+    : service_type_(service_type), callback_(callback), started_(false),
       mdns_client_(mdns_client) {
 }
 
-bool ServiceWatcherImpl::Start() {
+void ServiceWatcherImpl::Start() {
   DCHECK(!started_);
   listener_ = mdns_client_->CreateListener(
       net::dns_protocol::kTypePTR, service_type_, this);
-  if (!listener_->Start())
-    return false;
-
-  started_ = true;
-  return true;
+  started_ = listener_->Start();
+  if (started_)
+    ReadCachedServices();
 }
 
 ServiceWatcherImpl::~ServiceWatcherImpl() {
-}
-
-void ServiceWatcherImpl::GetAvailableServices(
-    std::vector<std::string>* services) const {
-  DCHECK(started_);
-  DCHECK(services);
-  services->reserve(services_.size());
-  for (ServiceListenersMap::const_iterator i = services_.begin();
-       i != services_.end(); i++) {
-    services->push_back(i->first);
-  }
 }
 
 void ServiceWatcherImpl::DiscoverNewServices(bool force_update) {
@@ -211,7 +198,8 @@ void ServiceWatcherImpl::DeliverDeferredUpdate(
 
   if (found != services_.end()) {
     found->second->set_update_pending(false);
-    delegate_->OnServiceUpdated(update_type, service_name);
+    if (!callback_.is_null())
+      callback_.Run(update_type, service_name);
   }
 }
 
@@ -220,7 +208,8 @@ void ServiceWatcherImpl::RemoveService(const std::string& service) {
   ServiceListenersMap::iterator found = services_.find(service);
   if (found != services_.end()) {
     services_.erase(found);
-    delegate_->OnServiceUpdated(UPDATE_REMOVED, service);
+    if (!callback_.is_null())
+      callback_.Run(UPDATE_REMOVED, service);
   }
 }
 
@@ -235,15 +224,12 @@ ServiceResolverImpl::ServiceResolverImpl(
     const ResolveCompleteCallback& callback,
     net::MDnsClient* mdns_client)
     : service_name_(service_name), callback_(callback),
-      is_resolving_(false), has_resolved_(false), metadata_resolved_(false),
-      address_resolved_(false), service_staging_(new ServiceDescription),
-      service_final_(new ServiceDescription), mdns_client_(mdns_client) {
-  service_staging_->service_name = service_name_;
-  service_final_->service_name = service_name_;
+      metadata_resolved_(false), address_resolved_(false),
+      mdns_client_(mdns_client) {
+  service_staging_.service_name = service_name_;
 }
 
 bool ServiceResolverImpl::StartResolving() {
-  is_resolving_ = true;
   address_resolved_ = false;
   metadata_resolved_ = false;
 
@@ -252,14 +238,6 @@ bool ServiceResolverImpl::StartResolving() {
   if (!CreateSrvTransaction())
     return false;
   return true;
-}
-
-bool ServiceResolverImpl::IsResolving() const {
-  return is_resolving_;
-}
-
-bool ServiceResolverImpl::HasResolved() const {
-  return has_resolved_;
 }
 
 ServiceResolverImpl::~ServiceResolverImpl() {
@@ -279,7 +257,7 @@ bool ServiceResolverImpl::CreateTxtTransaction() {
 void ServiceResolverImpl::CreateATransaction() {
   a_transaction_ = mdns_client_->CreateTransaction(
       net::dns_protocol::kTypeA,
-      service_staging_.get()->address.host(),
+      service_staging_.address.host(),
       net::MDnsTransaction::SINGLE_RESULT | net::MDnsTransaction::QUERY_CACHE,
       base::Bind(&ServiceResolverImpl::ARecordTransactionResponse,
                  AsWeakPtr()));
@@ -305,8 +283,8 @@ void ServiceResolverImpl::SrvRecordTransactionResponse(
   srv_transaction_.reset();
   if (status == net::MDnsTransaction::RESULT_RECORD) {
     DCHECK(record);
-    service_staging_.get()->address = RecordToAddress(record);
-    service_staging_.get()->last_seen = record->time_created();
+    service_staging_.address = RecordToAddress(record);
+    service_staging_.last_seen = record->time_created();
     CreateATransaction();
   } else {
     ServiceNotFound(MDnsStatusToRequestStatus(status));
@@ -318,9 +296,9 @@ void ServiceResolverImpl::TxtRecordTransactionResponse(
   txt_transaction_.reset();
   if (status == net::MDnsTransaction::RESULT_RECORD) {
     DCHECK(record);
-    service_staging_.get()->metadata = RecordToMetadata(record);
+    service_staging_.metadata = RecordToMetadata(record);
   } else {
-    service_staging_.get()->metadata = std::vector<std::string>();
+    service_staging_.metadata = std::vector<std::string>();
   }
 
   metadata_resolved_ = true;
@@ -333,9 +311,9 @@ void ServiceResolverImpl::ARecordTransactionResponse(
 
   if (status == net::MDnsTransaction::RESULT_RECORD) {
     DCHECK(record);
-    service_staging_.get()->ip_address = RecordToIPAddress(record);
+    service_staging_.ip_address = RecordToIPAddress(record);
   } else {
-    service_staging_.get()->ip_address = net::IPAddressNumber();
+    service_staging_.ip_address = net::IPAddressNumber();
   }
 
   address_resolved_ = true;
@@ -347,10 +325,9 @@ void ServiceResolverImpl::AlertCallbackIfReady() {
     txt_transaction_.reset();
     srv_transaction_.reset();
     a_transaction_.reset();
-    has_resolved_ = true;
-    is_resolving_ = false;
-    service_final_.swap(service_staging_);
-    callback_.Run(STATUS_SUCCESS, GetServiceDescription());
+    if (!callback_.is_null())
+      callback_.Run(STATUS_SUCCESS, service_staging_);
+    service_staging_ = ServiceDescription();
   }
 }
 
@@ -359,13 +336,8 @@ void ServiceResolverImpl::ServiceNotFound(
   txt_transaction_.reset();
   srv_transaction_.reset();
   a_transaction_.reset();
-  is_resolving_ = false;
-
-  callback_.Run(status, GetServiceDescription());
-}
-
-const ServiceDescription& ServiceResolverImpl::GetServiceDescription() const {
-  return *service_final_.get();
+  if (!callback_.is_null())
+    callback_.Run(status, ServiceDescription());
 }
 
 ServiceResolver::RequestStatus ServiceResolverImpl::MDnsStatusToRequestStatus(

@@ -37,15 +37,15 @@ class ServicePrinter {
 
 // Monitors a service type and prints information regarding all services on it
 // to the console. |client| must outlive the ServiceTypePrinter.
-class ServiceTypePrinter : public ServiceWatcher::Delegate {
+class ServiceTypePrinter {
  public:
   ServiceTypePrinter(ServiceDiscoveryClient* client,
                      const std::string& service_type);
   virtual ~ServiceTypePrinter();
 
-  bool Start();
-  virtual void OnServiceUpdated(ServiceWatcher::UpdateType,
-                                const std::string& service_name) OVERRIDE;
+  void Start();
+  void OnServiceUpdated(ServiceWatcher::UpdateType,
+                        const std::string& service_name);
 
  private:
   typedef std::map<std::string, linked_ptr<ServicePrinter> > ServiceMap;

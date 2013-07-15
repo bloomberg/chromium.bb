@@ -53,29 +53,14 @@ class ServiceWatcher {
     UPDATE_REMOVED
   };
 
-  class Delegate {
-   public:
-    virtual ~Delegate() {}
-
-    // A service has been added or removed for a certain service name.
-    virtual void OnServiceUpdated(UpdateType update,
-                                  const std::string& service_name) = 0;
-  };
+  // Called when a service has been added or removed for a certain service name.
+  typedef base::Callback<void(UpdateType, const std::string&)> UpdatedCallback;
 
   // Listening will automatically stop when the destructor is called.
   virtual ~ServiceWatcher() {}
 
   // Start the service type watcher.
-  virtual bool Start() = 0;
-
-  // Get all known services names of this watcher's type. Return them in
-  // |services|.
-  virtual void GetAvailableServices(
-      std::vector<std::string>* services) const = 0;
-
-  // Read services from the cache, alerting the delegate to any service that
-  // is not yet known.
-  virtual void ReadCachedServices() = 0;
+  virtual void Start() = 0;
 
   // Probe for services of this type.
   virtual void DiscoverNewServices(bool force_update) = 0;
@@ -103,16 +88,7 @@ class ServiceResolver {
   // Start the service reader.
   virtual bool StartResolving() = 0;
 
-  // Check whether the resolver is currently resolving. Can be called multiple
-  // times.
-  virtual bool IsResolving() const = 0;
-
-  // Check wheteher the resolver has resolved the service already.
-  virtual bool HasResolved() const = 0;
-
   virtual std::string GetName() const = 0;
-
-  virtual const ServiceDescription& GetServiceDescription() const = 0;
 };
 
 class ServiceDiscoveryClient {
@@ -123,7 +99,7 @@ class ServiceDiscoveryClient {
   // on service type |service_type|.
   virtual scoped_ptr<ServiceWatcher> CreateServiceWatcher(
       const std::string& service_type,
-      ServiceWatcher::Delegate* delegate) = 0;
+      const ServiceWatcher::UpdatedCallback& callback) = 0;
 
   // Create a service resolver object for getting detailed service information
   // for the service called |service_name|.

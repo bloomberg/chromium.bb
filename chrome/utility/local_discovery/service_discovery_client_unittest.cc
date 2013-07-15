@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/memory/weak_ptr.h"
+#include "base/run_loop.h"
 #include "chrome/utility/local_discovery/service_discovery_client_impl.h"
 #include "net/base/net_errors.h"
 #include "net/dns/dns_protocol.h"
@@ -134,13 +135,15 @@ const char kSamplePacketSRVA[] = {
   '\x03', '\x04',
 };
 
-class MockServiceWatcherDelegate : public ServiceWatcher::Delegate {
+class MockServiceWatcherClient {
  public:
-  MockServiceWatcherDelegate() {}
-  virtual ~MockServiceWatcherDelegate() {}
+  MOCK_METHOD2(OnServiceUpdated,
+               void(ServiceWatcher::UpdateType, const std::string&));
 
-  MOCK_METHOD2(OnServiceUpdated, void(ServiceWatcher::UpdateType,
-                                      const std::string&));
+  ServiceWatcher::UpdatedCallback GetCallback() {
+    return base::Bind(&MockServiceWatcherClient::OnServiceUpdated,
+                      base::Unretained(this));
+  }
 };
 
 class ServiceDiscoveryTest : public ::testing::Test {
@@ -179,11 +182,11 @@ class ServiceDiscoveryTest : public ::testing::Test {
 };
 
 TEST_F(ServiceDiscoveryTest, AddRemoveService) {
-  scoped_ptr<ServiceWatcher> watcher;
-  StrictMock<MockServiceWatcherDelegate> delegate;
+  StrictMock<MockServiceWatcherClient> delegate;
 
-  watcher = service_discovery_client_.CreateServiceWatcher(
-      "_privet._tcp.local", &delegate);
+  scoped_ptr<ServiceWatcher> watcher(
+      service_discovery_client_.CreateServiceWatcher(
+          "_privet._tcp.local", delegate.GetCallback()));
 
   watcher->Start();
 
@@ -202,11 +205,11 @@ TEST_F(ServiceDiscoveryTest, AddRemoveService) {
 };
 
 TEST_F(ServiceDiscoveryTest, DiscoverNewServices) {
-  scoped_ptr<ServiceWatcher> watcher;
-  StrictMock<MockServiceWatcherDelegate> delegate;
+  StrictMock<MockServiceWatcherClient> delegate;
 
-  watcher = service_discovery_client_.CreateServiceWatcher(
-      "_privet._tcp.local", &delegate);
+  scoped_ptr<ServiceWatcher> watcher(
+      service_discovery_client_.CreateServiceWatcher(
+          "_privet._tcp.local", delegate.GetCallback()));
 
   watcher->Start();
 
@@ -216,43 +219,21 @@ TEST_F(ServiceDiscoveryTest, DiscoverNewServices) {
   watcher->DiscoverNewServices(false);
 };
 
-TEST_F(ServiceDiscoveryTest, GetAvailableServices) {
-  NiceMock<MockServiceWatcherDelegate> delegate;
-
-  std::vector<std::string> data_expected;
-  std::vector<std::string> data;
-
-  data_expected.push_back("hello._privet._tcp.local");
-
-  scoped_ptr<ServiceWatcher> watcher =
-      service_discovery_client_.CreateServiceWatcher(
-          "_privet._tcp.local", &delegate);
-
-  watcher->Start();
-
-  socket_factory_->SimulateReceive(
-      kSamplePacketPTR, sizeof(kSamplePacketPTR));
-
-  watcher->GetAvailableServices(&data);
-
-  EXPECT_EQ(data, data_expected);
-};
-
 TEST_F(ServiceDiscoveryTest, ReadCachedServices) {
-  NiceMock<MockServiceWatcherDelegate> delegate_irrelevant;
-  scoped_ptr<ServiceWatcher> watcher_irrelevant =
+  scoped_ptr<ServiceWatcher> watcher_irrelevant(
       service_discovery_client_.CreateServiceWatcher(
-          "_privet._tcp.local", &delegate_irrelevant);
+          "_privet._tcp.local", ServiceWatcher::UpdatedCallback()));
 
   watcher_irrelevant->Start();
 
   socket_factory_->SimulateReceive(
       kSamplePacketPTR, sizeof(kSamplePacketPTR));
 
-  StrictMock<MockServiceWatcherDelegate> delegate;
-  scoped_ptr<ServiceWatcher> watcher =
+  StrictMock<MockServiceWatcherClient> delegate;
+
+  scoped_ptr<ServiceWatcher> watcher(
       service_discovery_client_.CreateServiceWatcher(
-          "_privet._tcp.local", &delegate);
+          "_privet._tcp.local", delegate.GetCallback()));
 
   watcher->Start();
 
@@ -260,16 +241,14 @@ TEST_F(ServiceDiscoveryTest, ReadCachedServices) {
                                          "hello._privet._tcp.local"))
       .Times(Exactly(1));
 
-  watcher->ReadCachedServices();
-
   base::MessageLoop::current()->RunUntilIdle();
 };
 
 TEST_F(ServiceDiscoveryTest, OnServiceChanged) {
-  StrictMock<MockServiceWatcherDelegate> delegate;
-  scoped_ptr<ServiceWatcher> watcher =
+  StrictMock<MockServiceWatcherClient> delegate;
+  scoped_ptr<ServiceWatcher> watcher(
       service_discovery_client_.CreateServiceWatcher(
-          "_privet._tcp.local", &delegate);
+          "_privet._tcp.local", delegate.GetCallback()));
 
   watcher->Start();
 
@@ -296,10 +275,10 @@ TEST_F(ServiceDiscoveryTest, OnServiceChanged) {
 };
 
 TEST_F(ServiceDiscoveryTest, SinglePacket) {
-  StrictMock<MockServiceWatcherDelegate> delegate;
-  scoped_ptr<ServiceWatcher> watcher =
+  StrictMock<MockServiceWatcherClient> delegate;
+  scoped_ptr<ServiceWatcher> watcher(
       service_discovery_client_.CreateServiceWatcher(
-          "_privet._tcp.local", &delegate);
+          "_privet._tcp.local", delegate.GetCallback()));
 
   watcher->Start();
 
@@ -342,18 +321,24 @@ class ServiceResolverTest : public ServiceDiscoveryTest {
 
   void SetUp()  {
     resolver_ = service_discovery_client_.CreateServiceResolver(
-        "hello._privet._tcp.local",
-        base::Bind(&ServiceResolverTest::OnFinishedResolving,
-                   base::Unretained(this)));
+                    "hello._privet._tcp.local",
+                     base::Bind(&ServiceResolverTest::OnFinishedResolving,
+                                base::Unretained(this)));
   }
 
   void OnFinishedResolving(ServiceResolver::RequestStatus request_status,
                            const ServiceDescription& service_description) {
-    OnFinishedResolvingInternal(request_status);
+    OnFinishedResolvingInternal(request_status,
+                                service_description.address.ToString(),
+                                service_description.metadata,
+                                service_description.ip_address);
   }
 
-  MOCK_METHOD1(OnFinishedResolvingInternal, void(
-      ServiceResolver::RequestStatus));
+  MOCK_METHOD4(OnFinishedResolvingInternal,
+               void(ServiceResolver::RequestStatus,
+                    const std::string&,
+                    const std::vector<std::string>&,
+                    const net::IPAddressNumber&));
 
  protected:
   scoped_ptr<ServiceResolver> resolver_;
@@ -367,68 +352,53 @@ TEST_F(ServiceResolverTest, TxtAndSrvButNoA) {
   EXPECT_CALL(*socket_factory_, OnSendTo(_))
       .Times(4);
 
-  EXPECT_FALSE(resolver_->IsResolving());
-  EXPECT_FALSE(resolver_->HasResolved());
   EXPECT_TRUE(resolver_->StartResolving());
-  EXPECT_TRUE(resolver_->IsResolving());
-  EXPECT_FALSE(resolver_->HasResolved());
 
   socket_factory_->SimulateReceive(
       kSamplePacketSRV, sizeof(kSamplePacketSRV));
 
   base::MessageLoop::current()->RunUntilIdle();
 
-  EXPECT_CALL(*this, OnFinishedResolvingInternal(
-      ServiceResolver::STATUS_SUCCESS));
+  EXPECT_CALL(*this,
+              OnFinishedResolvingInternal(ServiceResolver::STATUS_SUCCESS,
+                                          address_expected_.ToString(),
+                                          metadata_expected_,
+                                          net::IPAddressNumber()));
 
   socket_factory_->SimulateReceive(
       kSamplePacketTXT, sizeof(kSamplePacketTXT));
-
-  EXPECT_EQ(address_expected_.ToString(),
-            resolver_->GetServiceDescription().address.ToString());
-  EXPECT_EQ(metadata_expected_, resolver_->GetServiceDescription().metadata);
-  EXPECT_EQ(net::IPAddressNumber(),
-            resolver_->GetServiceDescription().ip_address);
 };
 
 TEST_F(ServiceResolverTest, TxtSrvAndA) {
   EXPECT_CALL(*socket_factory_, OnSendTo(_))
       .Times(4);
 
-  EXPECT_FALSE(resolver_->IsResolving());
-  EXPECT_FALSE(resolver_->HasResolved());
   EXPECT_TRUE(resolver_->StartResolving());
-  EXPECT_TRUE(resolver_->IsResolving());
-  EXPECT_FALSE(resolver_->HasResolved());
 
-  EXPECT_CALL(*this, OnFinishedResolvingInternal(
-      ServiceResolver::STATUS_SUCCESS));
+  EXPECT_CALL(*this,
+              OnFinishedResolvingInternal(ServiceResolver::STATUS_SUCCESS,
+                                          address_expected_.ToString(),
+                                          metadata_expected_,
+                                          ip_address_expected_));
 
   socket_factory_->SimulateReceive(
       kSamplePacketTXT, sizeof(kSamplePacketTXT));
 
   socket_factory_->SimulateReceive(
       kSamplePacketSRVA, sizeof(kSamplePacketSRVA));
-
-  EXPECT_EQ(address_expected_.ToString(),
-            resolver_->GetServiceDescription().address.ToString());
-  EXPECT_EQ(metadata_expected_, resolver_->GetServiceDescription().metadata);
-  EXPECT_EQ(ip_address_expected_,
-            resolver_->GetServiceDescription().ip_address);
 };
 
 TEST_F(ServiceResolverTest, JustSrv) {
   EXPECT_CALL(*socket_factory_, OnSendTo(_))
       .Times(4);
 
-  EXPECT_FALSE(resolver_->IsResolving());
-  EXPECT_FALSE(resolver_->HasResolved());
   EXPECT_TRUE(resolver_->StartResolving());
-  EXPECT_TRUE(resolver_->IsResolving());
-  EXPECT_FALSE(resolver_->HasResolved());
 
-  EXPECT_CALL(*this, OnFinishedResolvingInternal(
-      ServiceResolver::STATUS_SUCCESS));
+  EXPECT_CALL(*this,
+              OnFinishedResolvingInternal(ServiceResolver::STATUS_SUCCESS,
+                                          address_expected_.ToString(),
+                                          std::vector<std::string>(),
+                                          ip_address_expected_));
 
   socket_factory_->SimulateReceive(
       kSamplePacketSRVA, sizeof(kSamplePacketSRVA));
@@ -436,27 +406,16 @@ TEST_F(ServiceResolverTest, JustSrv) {
   // TODO(noamsml): When NSEC record support is added, change this to use an
   // NSEC record.
   RunFor(base::TimeDelta::FromSeconds(4));
-
-  EXPECT_EQ(address_expected_.ToString(),
-            resolver_->GetServiceDescription().address.ToString());
-  EXPECT_EQ(std::vector<std::string>() ,
-            resolver_->GetServiceDescription().metadata);
-  EXPECT_EQ(ip_address_expected_,
-            resolver_->GetServiceDescription().ip_address);
 };
 
 TEST_F(ServiceResolverTest, WithNothing) {
   EXPECT_CALL(*socket_factory_, OnSendTo(_))
       .Times(4);
 
-  EXPECT_FALSE(resolver_->IsResolving());
-  EXPECT_FALSE(resolver_->HasResolved());
   EXPECT_TRUE(resolver_->StartResolving());
-  EXPECT_TRUE(resolver_->IsResolving());
-  EXPECT_FALSE(resolver_->HasResolved());
 
   EXPECT_CALL(*this, OnFinishedResolvingInternal(
-      ServiceResolver::STATUS_REQUEST_TIMEOUT));
+                        ServiceResolver::STATUS_REQUEST_TIMEOUT, _, _, _));
 
   // TODO(noamsml): When NSEC record support is added, change this to use an
   // NSEC record.

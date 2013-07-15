@@ -28,7 +28,7 @@ class ServiceDiscoveryClientImpl : public ServiceDiscoveryClient {
   // ServiceDiscoveryClient implementation:
   virtual scoped_ptr<ServiceWatcher> CreateServiceWatcher(
       const std::string& service_type,
-      ServiceWatcher::Delegate* delegate) OVERRIDE;
+      const ServiceWatcher::UpdatedCallback& callback) OVERRIDE;
 
   virtual scoped_ptr<ServiceResolver> CreateServiceResolver(
       const std::string& service_name,
@@ -44,22 +44,17 @@ class ServiceWatcherImpl : public ServiceWatcher,
                            public base::SupportsWeakPtr<ServiceWatcherImpl> {
  public:
   ServiceWatcherImpl(const std::string& service_type,
-                     ServiceWatcher::Delegate* delegate,
+                     const ServiceWatcher::UpdatedCallback& callback,
                      net::MDnsClient* mdns_client);
   // Listening will automatically stop when the destructor is called.
   virtual ~ServiceWatcherImpl();
 
   // ServiceWatcher implementation:
-  virtual bool Start() OVERRIDE;
-
-  virtual void GetAvailableServices(
-      std::vector<std::string>* services) const OVERRIDE;
+  virtual void Start() OVERRIDE;
 
   virtual void DiscoverNewServices(bool force_update) OVERRIDE;
 
   virtual std::string GetServiceType() const OVERRIDE;
-
-  virtual void ReadCachedServices() OVERRIDE;
 
   virtual void OnRecordUpdate(net::MDnsListener::UpdateType update,
                               const net::RecordParsed* record) OVERRIDE;
@@ -95,6 +90,7 @@ class ServiceWatcherImpl : public ServiceWatcher,
   typedef std::map<std::string, linked_ptr<ServiceListeners> >
       ServiceListenersMap;
 
+  void ReadCachedServices();
   void AddService(const std::string& service);
   void RemoveService(const std::string& service);
   bool CreateTransaction(bool active, bool alert_existing_services,
@@ -112,7 +108,7 @@ class ServiceWatcherImpl : public ServiceWatcher,
   scoped_ptr<net::MDnsTransaction> transaction_cache_;
   scoped_ptr<net::MDnsListener> listener_;
 
-  ServiceWatcher::Delegate* delegate_;
+  ServiceWatcher::UpdatedCallback callback_;
   bool started_;
 
   net::MDnsClient* mdns_client_;
@@ -133,13 +129,7 @@ class ServiceResolverImpl
   // ServiceResolver implementation:
   virtual bool StartResolving() OVERRIDE;
 
-  virtual bool IsResolving() const OVERRIDE;
-
-  virtual bool HasResolved() const OVERRIDE;
-
   virtual std::string GetName() const OVERRIDE;
-
-  virtual const ServiceDescription& GetServiceDescription() const OVERRIDE;
 
  private:
   // Respond to transaction finishing for SRV records.
@@ -181,7 +171,6 @@ class ServiceResolverImpl
   std::string service_name_;
   ResolveCompleteCallback callback_;
 
-  bool is_resolving_;
   bool has_resolved_;
 
   bool metadata_resolved_;
@@ -191,8 +180,7 @@ class ServiceResolverImpl
   scoped_ptr<net::MDnsTransaction> srv_transaction_;
   scoped_ptr<net::MDnsTransaction> a_transaction_;
 
-  scoped_ptr<ServiceDescription> service_staging_;
-  scoped_ptr<ServiceDescription> service_final_;
+  ServiceDescription service_staging_;
 
   net::MDnsClient* mdns_client_;
 

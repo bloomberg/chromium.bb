@@ -38,8 +38,7 @@ void ServicePrinter::Changed() {
 }
 
 void ServicePrinter::Removed() {
-  printf("Service Removed: %s\n",
-         service_resolver_->GetServiceDescription().instance_name().c_str());
+  printf("Service Removed: %s\n", service_resolver_->GetName().c_str());
 }
 
 void ServicePrinter::OnServiceResolved(ServiceResolver::RequestStatus status,
@@ -67,14 +66,14 @@ void ServicePrinter::OnServiceResolved(ServiceResolver::RequestStatus status,
 ServiceTypePrinter::ServiceTypePrinter(ServiceDiscoveryClient* client,
                                        const std::string& service_type)
     : client_(client)  {
-  watcher_ = client_->CreateServiceWatcher(service_type, this);
+  watcher_ = client_->CreateServiceWatcher(
+      service_type, base::Bind(&ServiceTypePrinter::OnServiceUpdated,
+                               base::Unretained(this)));
 }
 
-bool ServiceTypePrinter::Start() {
-  if (!watcher_->Start()) return false;
+void ServiceTypePrinter::Start() {
+  watcher_->Start();
   watcher_->DiscoverNewServices(false);
-  watcher_->ReadCachedServices();
-  return true;
 }
 
 ServiceTypePrinter::~ServiceTypePrinter() {
@@ -115,8 +114,7 @@ int main(int argc, char** argv) {
         service_discovery_client.get(),
         std::string(argv[1]) + "._tcp.local");
 
-    if (!print_changes.Start())
-      printf("Could not start the DNS-SD client\n");
+    print_changes.Start();
     message_loop.Run();
   }
 }
