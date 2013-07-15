@@ -58,11 +58,12 @@ void GoogleURLTrackerInfoBarDelegate::Close(bool redo_search) {
     new_search_url = search_url_.ReplaceComponents(replacements);
   }
 
+  content::WebContents* contents = web_contents();
   owner()->RemoveInfoBar(this);
   // WARNING: |this| may be deleted at this point!  Do not access any members!
 
   if (new_search_url.is_valid()) {
-    web_contents()->OpenURL(content::OpenURLParams(
+    contents->OpenURL(content::OpenURLParams(
         new_search_url, content::Referrer(), CURRENT_TAB,
         content::PAGE_TRANSITION_GENERATED, false));
   }
