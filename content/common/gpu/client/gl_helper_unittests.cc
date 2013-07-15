@@ -1112,7 +1112,8 @@ class GLHelperTest : public testing::Test {
   std::deque<GLHelperScaling::ScaleOp> x_ops_, y_ops_;
 };
 
-TEST_F(GLHelperTest, YUVReadbackTest) {
+// Reenable once http://crbug.com/162291 is fixed.
+TEST_F(GLHelperTest, DISABLED_YUVReadbackTest) {
   int sizes[] = { 2, 4, 14 };
   for (int use_mrt = 0; use_mrt <= 1 ; use_mrt++) {
     for (unsigned int x = 0; x < arraysize(sizes); x++) {
