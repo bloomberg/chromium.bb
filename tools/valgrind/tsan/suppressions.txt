@@ -1036,20 +1036,14 @@
 {
   bug_175467
   ThreadSanitizer:Race
-  fun:_getstream
-  fun:_getstream
-  fun:_wfsopen
-  fun:_wfsopen
-  fun:file_util::OpenFile
-  fun:file_util::OpenFile
-  fun:file_util::OpenFile
+  ...
   fun:file_util::OpenFile
   fun:visitedlink::VisitedLinkMaster::InitFromFile
   fun:visitedlink::VisitedLinkMaster::InitFromFile
   fun:visitedlink::VisitedLinkMaster::InitFromFile
   fun:visitedlink::VisitedLinkMaster::Init
-  fun:visitedlink::VisitedLinkEventsTest::SetUp
-  fun:testing::internal::HandleExceptionsInMethodIfSupported
+  fun:visitedlink::VisitedLinkEventsTest::CreateBrowserContext
+  fun:content::RenderViewHostTestHarness::SetUp
 }
 {
    bug_178433a
