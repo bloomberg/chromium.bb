@@ -169,8 +169,8 @@ crbug.com/243782 [ Win7 Debug ] compositing/geometry/video-opacity-overlay.html 
 crbug.com/243782 [ Win7 Debug ] editing/selection/move-by-word-visually-mac.html [ Slow ]
 crbug.com/243782 [ Win7 Debug ] editing/selection/move-by-word-visually-multi-line.html [ Slow ]
 crbug.com/243782 [ Win7 Mac Debug ] editing/selection/move-by-word-visually-single-space-inline-element.html [ Slow ]
-crbug.com/243782 [ Win7 Debug ] storage/indexeddb/objectstore-cursor.html [ Slow ]
-crbug.com/243782 [ Mac Debug ] storage/indexeddb/objectstore-cursor.html [ Slow ]
+crbug.com/243782 [ Mac Win7 Debug ] storage/indexeddb/objectstore-cursor.html [ Slow ]
+crbug.com/243782 [ Mac Win7 Debug ] storage/indexeddb/pending-activity.html [ Slow ]
 crbug.com/244739 [ Win ] compositing/video-frame-size-change.html [ Slow ]
 
 crbug.com/24182 [ Release ] fast/workers/storage/interrupt-database.html [ Slow ]
