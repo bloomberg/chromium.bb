@@ -2,10 +2,10 @@
   'targets': [
     {
       'target_name': 'system_api-protos',
-      'type': 'none',
+      'type': 'static_library',
       'variables': {
         'proto_in_dir': 'dbus',
-        'proto_out_dir': 'include/chromeos/dbus',
+        'proto_out_dir': 'include/system_api/proto_bindings',
       },
       'cflags': [
         '-fvisibility=hidden',
@@ -13,16 +13,16 @@
       'sources': [
         '<(proto_in_dir)/mtp_storage_info.proto',
         '<(proto_in_dir)/mtp_file_entry.proto',
-        '<(proto_in_dir)/video_activity_update.proto',
+        '<(proto_in_dir)/field_trial_list.proto',
       ],
       'includes': ['../common-mk/protoc.gypi'],
     },
     {
       'target_name': 'system_api-power_manager-protos',
-      'type': 'none',
+      'type': 'static_library',
       'variables': {
         'proto_in_dir': 'dbus/power_manager',
-        'proto_out_dir': 'include/chromeos/dbus/power_manager',
+        'proto_out_dir': 'include/power_manager/proto_bindings',
       },
       'cflags': [
         '-fvisibility=hidden',
@@ -30,6 +30,7 @@
       'sources': [
         '<(proto_in_dir)/suspend.proto',
         '<(proto_in_dir)/input_event.proto',
+        '<(proto_in_dir)/peripheral_battery_status.proto',
         '<(proto_in_dir)/policy.proto',
         '<(proto_in_dir)/power_supply_properties.proto',
       ],
