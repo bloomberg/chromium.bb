@@ -1,0 +1,15 @@
+{
+  "description": "Video Stack Perf benchmark",
+  "pages": [
+    {
+      "url": "file:///tough_video_cases/video.html",
+      "media_metrics": [
+        { "action": "play",
+          "selector": "#video_1",
+          "wait_for_playing": true,
+          "wait_for_ended": true
+        }
+      ]
+    }
+  ]
+}
