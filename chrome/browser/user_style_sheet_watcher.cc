@@ -104,7 +104,7 @@ void UserStyleSheetLoader::LoadStyleSheet(
   // We keep the user style sheet in a subdir so we can watch for changes
   // to the file.
   base::FilePath style_sheet_dir = style_sheet_file.DirName();
-  if (!file_util::DirectoryExists(style_sheet_dir)) {
+  if (!base::DirectoryExists(style_sheet_dir)) {
     if (!file_util::CreateDirectory(style_sheet_dir))
       return;
   }

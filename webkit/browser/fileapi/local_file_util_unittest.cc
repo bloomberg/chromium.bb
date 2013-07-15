@@ -75,11 +75,11 @@ class LocalFileUtilTest : public testing::Test {
 
   bool FileExists(const char *file_name) {
     return base::PathExists(LocalPath(file_name)) &&
-        !file_util::DirectoryExists(LocalPath(file_name));
+        !base::DirectoryExists(LocalPath(file_name));
   }
 
   bool DirectoryExists(const char *file_name) {
-    return file_util::DirectoryExists(LocalPath(file_name));
+    return base::DirectoryExists(LocalPath(file_name));
   }
 
   int64 GetSize(const char *file_name) {

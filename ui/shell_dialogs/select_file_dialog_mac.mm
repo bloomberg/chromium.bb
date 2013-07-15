@@ -200,7 +200,7 @@ void SelectFileDialogImpl::SelectFileImpl(
     // The file dialog is going to do a ton of stats anyway. Not much
     // point in eliminating this one.
     base::ThreadRestrictions::ScopedAllowIO allow_io;
-    if (file_util::DirectoryExists(default_path)) {
+    if (base::DirectoryExists(default_path)) {
       default_dir = base::SysUTF8ToNSString(default_path.value());
     } else {
       default_dir = base::SysUTF8ToNSString(default_path.DirName().value());

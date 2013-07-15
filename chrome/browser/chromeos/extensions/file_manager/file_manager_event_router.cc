@@ -99,7 +99,7 @@ void DirectoryExistsOnBlockingPool(const base::FilePath& directory_path,
                                    const base::Closure& failure_callback) {
   DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
 
-  if (file_util::DirectoryExists(directory_path))
+  if (base::DirectoryExists(directory_path))
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, success_callback);
   else
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, failure_callback);

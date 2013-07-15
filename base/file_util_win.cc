@@ -176,7 +176,7 @@ bool CopyDirectory(const FilePath& from_path, const FilePath& to_path,
     return ShellCopy(from_path, to_path, true);
 
   // The following code assumes that from path is a directory.
-  DCHECK(file_util::DirectoryExists(from_path));
+  DCHECK(DirectoryExists(from_path));
 
   // Instead of creating a new directory, we copy the old one to include the
   // security information of the folder as part of the copy.
@@ -198,17 +198,8 @@ bool PathExists(const FilePath& path) {
   return (GetFileAttributes(path.value().c_str()) != INVALID_FILE_ATTRIBUTES);
 }
 
-}  // namespace base
-
-// -----------------------------------------------------------------------------
-
-namespace file_util {
-
-using base::FilePath;
-using base::kFileShareAll;
-
 bool PathIsWritable(const FilePath& path) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  ThreadRestrictions::AssertIOAllowed();
   HANDLE dir =
       CreateFile(path.value().c_str(), FILE_ADD_FILE, kFileShareAll,
                  NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
@@ -221,12 +212,22 @@ bool PathIsWritable(const FilePath& path) {
 }
 
 bool DirectoryExists(const FilePath& path) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  ThreadRestrictions::AssertIOAllowed();
   DWORD fileattr = GetFileAttributes(path.value().c_str());
   if (fileattr != INVALID_FILE_ATTRIBUTES)
     return (fileattr & FILE_ATTRIBUTE_DIRECTORY) != 0;
   return false;
 }
+
+}  // namespace base
+
+// -----------------------------------------------------------------------------
+
+namespace file_util {
+
+using base::DirectoryExists;
+using base::FilePath;
+using base::kFileShareAll;
 
 bool GetTempDir(FilePath* path) {
   base::ThreadRestrictions::AssertIOAllowed();
@@ -710,7 +711,7 @@ bool MoveUnsafe(const FilePath& from_path, const FilePath& to_path) {
   bool ret = false;
   DWORD last_error = ::GetLastError();
 
-  if (file_util::DirectoryExists(from_path)) {
+  if (DirectoryExists(from_path)) {
     // MoveFileEx fails if moving directory across volumes. We will simulate
     // the move by using Copy and Delete. Ideally we could check whether
     // from_path and to_path are indeed in different volumes.

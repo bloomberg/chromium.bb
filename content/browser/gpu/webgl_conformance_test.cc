@@ -40,7 +40,7 @@ class WebGLConformanceTest : public ContentBrowserTest {
         FILE_PATH_LITERAL("third_party"));
     webgl_conformance_path = webgl_conformance_path.Append(
         FILE_PATH_LITERAL("webgl_conformance"));
-    ASSERT_TRUE(file_util::DirectoryExists(webgl_conformance_path))
+    ASSERT_TRUE(base::DirectoryExists(webgl_conformance_path))
         << "Missing conformance tests: " << webgl_conformance_path.value();
 
     PathService::Get(DIR_TEST_DATA, &test_path_);

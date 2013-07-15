@@ -17,32 +17,32 @@ TEST(ScopedTempDir, FullPath) {
                                     &test_path);
 
   // Against an existing dir, it should get destroyed when leaving scope.
-  EXPECT_TRUE(file_util::DirectoryExists(test_path));
+  EXPECT_TRUE(DirectoryExists(test_path));
   {
     ScopedTempDir dir;
     EXPECT_TRUE(dir.Set(test_path));
     EXPECT_TRUE(dir.IsValid());
   }
-  EXPECT_FALSE(file_util::DirectoryExists(test_path));
+  EXPECT_FALSE(DirectoryExists(test_path));
 
   {
     ScopedTempDir dir;
     EXPECT_TRUE(dir.Set(test_path));
     // Now the dir doesn't exist, so ensure that it gets created.
-    EXPECT_TRUE(file_util::DirectoryExists(test_path));
+    EXPECT_TRUE(DirectoryExists(test_path));
     // When we call Release(), it shouldn't get destroyed when leaving scope.
     FilePath path = dir.Take();
     EXPECT_EQ(path.value(), test_path.value());
     EXPECT_FALSE(dir.IsValid());
   }
-  EXPECT_TRUE(file_util::DirectoryExists(test_path));
+  EXPECT_TRUE(DirectoryExists(test_path));
 
   // Clean up.
   {
     ScopedTempDir dir;
     EXPECT_TRUE(dir.Set(test_path));
   }
-  EXPECT_FALSE(file_util::DirectoryExists(test_path));
+  EXPECT_FALSE(DirectoryExists(test_path));
 }
 
 TEST(ScopedTempDir, TempDir) {
@@ -53,12 +53,12 @@ TEST(ScopedTempDir, TempDir) {
     ScopedTempDir dir;
     EXPECT_TRUE(dir.CreateUniqueTempDir());
     test_path = dir.path();
-    EXPECT_TRUE(file_util::DirectoryExists(test_path));
+    EXPECT_TRUE(DirectoryExists(test_path));
     FilePath tmp_dir;
     EXPECT_TRUE(file_util::GetTempDir(&tmp_dir));
     EXPECT_TRUE(test_path.value().find(tmp_dir.value()) != std::string::npos);
   }
-  EXPECT_FALSE(file_util::DirectoryExists(test_path));
+  EXPECT_FALSE(DirectoryExists(test_path));
 }
 
 TEST(ScopedTempDir, UniqueTempDirUnderPath) {
@@ -72,11 +72,11 @@ TEST(ScopedTempDir, UniqueTempDirUnderPath) {
     ScopedTempDir dir;
     EXPECT_TRUE(dir.CreateUniqueTempDirUnderPath(base_path));
     test_path = dir.path();
-    EXPECT_TRUE(file_util::DirectoryExists(test_path));
+    EXPECT_TRUE(DirectoryExists(test_path));
     EXPECT_TRUE(base_path.IsParent(test_path));
     EXPECT_TRUE(test_path.value().find(base_path.value()) != std::string::npos);
   }
-  EXPECT_FALSE(file_util::DirectoryExists(test_path));
+  EXPECT_FALSE(DirectoryExists(test_path));
   base::Delete(base_path, true);
 }
 

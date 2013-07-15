@@ -52,8 +52,7 @@ bool ScopedTempDir::Set(const FilePath& path) {
   if (!path_.empty())
     return false;
 
-  if (!file_util::DirectoryExists(path) &&
-      !file_util::CreateDirectory(path))
+  if (!DirectoryExists(path) && !file_util::CreateDirectory(path))
     return false;
 
   path_ = path;
@@ -80,7 +79,7 @@ FilePath ScopedTempDir::Take() {
 }
 
 bool ScopedTempDir::IsValid() const {
-  return !path_.empty() && file_util::DirectoryExists(path_);
+  return !path_.empty() && DirectoryExists(path_);
 }
 
 }  // namespace base

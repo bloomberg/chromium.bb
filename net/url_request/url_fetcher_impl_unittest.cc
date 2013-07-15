@@ -876,7 +876,7 @@ void URLFetcherFileTest::OnURLFetchComplete(const URLFetcher* source) {
     EXPECT_TRUE(source->GetResponseAsFilePath(
         take_ownership_of_file_, &file_path_));
 
-    EXPECT_TRUE(file_util::ContentsEqual(expected_file_, file_path_));
+    EXPECT_TRUE(base::ContentsEqual(expected_file_, file_path_));
   } else {
     int error_code = OK;
     EXPECT_TRUE(fetcher_->FileErrorOccurred(&error_code));
@@ -1439,7 +1439,7 @@ TEST_F(URLFetcherFileTest, OverwriteExistingFile) {
             file_util::WriteFile(file_path_, data.data(), data.size()));
   ASSERT_TRUE(base::PathExists(file_path_));
   expected_file_ = test_server.GetDocumentRoot().AppendASCII(kFileToFetch);
-  ASSERT_FALSE(file_util::ContentsEqual(file_path_, expected_file_));
+  ASSERT_FALSE(base::ContentsEqual(file_path_, expected_file_));
 
   // Get a small file.
   CreateFetcherForFile(

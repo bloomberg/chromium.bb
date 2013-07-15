@@ -431,9 +431,9 @@ void Firefox3Importer::GetSearchEnginesXMLData(
   DCHECK(!locale_.empty());
   base::FilePath locale_app_path = app_path.AppendASCII(locale_);
   base::FilePath default_locale_app_path = app_path.AppendASCII("en-US");
-  if (file_util::DirectoryExists(locale_app_path))
+  if (base::DirectoryExists(locale_app_path))
     app_path = locale_app_path;
-  else if (file_util::DirectoryExists(default_locale_app_path))
+  else if (base::DirectoryExists(default_locale_app_path))
     app_path = default_locale_app_path;
 #endif
 

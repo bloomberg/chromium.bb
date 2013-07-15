@@ -37,7 +37,7 @@ namespace fileapi {
 namespace {
 
 bool FileExists(const base::FilePath& path) {
-  return base::PathExists(path) && !file_util::DirectoryExists(path);
+  return base::PathExists(path) && !base::DirectoryExists(path);
 }
 
 int64 GetSize(const base::FilePath& path) {

@@ -48,7 +48,7 @@ bool TryRelativeToDir(const base::FilePath& start_dir,
                       const base::FilePath& to_try,
                       base::FilePath* out_dir) {
   base::FilePath dir(start_dir);
-  while (!file_util::DirectoryExists(dir.Append(to_try))) {
+  while (!base::DirectoryExists(dir.Append(to_try))) {
     base::FilePath parent = dir.DirName();
     if (parent == dir) {
       // We hit the root directory.

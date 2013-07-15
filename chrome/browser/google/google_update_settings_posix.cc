@@ -37,7 +37,7 @@ bool GoogleUpdateSettings::GetCollectStatsConsent() {
 bool GoogleUpdateSettings::SetCollectStatsConsent(bool consented) {
   base::FilePath consent_dir;
   PathService::Get(chrome::DIR_USER_DATA, &consent_dir);
-  if (!file_util::DirectoryExists(consent_dir))
+  if (!base::DirectoryExists(consent_dir))
     return false;
 
   base::FilePath consent_file = consent_dir.AppendASCII(kConsentToSendStats);
@@ -60,7 +60,7 @@ bool GoogleUpdateSettings::SetMetricsId(const std::wstring& client_id) {
   // Make sure that user has consented to send crashes.
   base::FilePath consent_dir;
   PathService::Get(chrome::DIR_USER_DATA, &consent_dir);
-  if (!file_util::DirectoryExists(consent_dir) ||
+  if (!base::DirectoryExists(consent_dir) ||
       !GoogleUpdateSettings::GetCollectStatsConsent())
     return false;
 

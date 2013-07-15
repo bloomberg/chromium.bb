@@ -61,7 +61,7 @@ void DeleteDownloadedFile(const base::FilePath& path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   // Make sure we only delete files.
-  if (!file_util::DirectoryExists(path))
+  if (!base::DirectoryExists(path))
     base::Delete(path, false);
 }
 

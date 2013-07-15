@@ -671,7 +671,7 @@ void WallpaperManager::ClearObsoleteWallpaperPrefs() {
 
 void WallpaperManager::DeleteAllExcept(const base::FilePath& path) {
   base::FilePath dir = path.DirName();
-  if (file_util::DirectoryExists(dir)) {
+  if (base::DirectoryExists(dir)) {
     base::FileEnumerator files(dir, false, base::FileEnumerator::FILES);
     for (base::FilePath current = files.Next(); !current.empty();
          current = files.Next()) {

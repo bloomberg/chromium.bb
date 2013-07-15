@@ -180,7 +180,7 @@ void CreateReservation(
   // since been removed, do NOT automatically re-create it. Only automatically
   // create the directory if it is the default Downloads directory or if the
   // caller explicitly requested automatic directory creation.
-  if (!file_util::DirectoryExists(target_dir) &&
+  if (!base::DirectoryExists(target_dir) &&
       (create_directory ||
        (!default_download_path.empty() &&
         (default_download_path == target_dir)))) {
@@ -189,7 +189,7 @@ void CreateReservation(
 
   // Check writability of the suggested path. If we can't write to it, default
   // to the user's "My Documents" directory. We'll prompt them in this case.
-  if (!file_util::PathIsWritable(target_dir)) {
+  if (!base::PathIsWritable(target_dir)) {
     DVLOG(1) << "Unable to write to directory \"" << target_dir.value() << "\"";
     is_path_writeable = false;
     PathService::Get(chrome::DIR_USER_DOCUMENTS, &target_dir);

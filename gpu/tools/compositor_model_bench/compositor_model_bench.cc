@@ -39,7 +39,7 @@
 
 using base::TimeTicks;
 using file_util::CloseFile;
-using file_util::DirectoryExists;
+using base::DirectoryExists;
 using file_util::OpenFile;
 using base::PathExists;
 using std::queue;

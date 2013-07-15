@@ -29,7 +29,7 @@ using ::testing::Invoke;
 using content::RenderViewHost;
 using content::TestBrowserThread;
 using content::WebContentsObserver;
-using file_util::ContentsEqual;
+using base::ContentsEqual;
 using base::PathExists;
 
 namespace {

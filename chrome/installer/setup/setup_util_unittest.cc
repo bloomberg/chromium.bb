@@ -107,7 +107,7 @@ TEST_F(SetupUtilTestWithDir, ApplyDiffPatchTest) {
   base::FilePath dest = work_dir.AppendASCII("archive2.7z");
   EXPECT_EQ(installer::ApplyDiffPatch(src, patch, dest, NULL), 0);
   base::FilePath base = data_dir_.AppendASCII("archive2.7z");
-  EXPECT_TRUE(file_util::ContentsEqual(dest, base));
+  EXPECT_TRUE(base::ContentsEqual(dest, base));
 
   EXPECT_EQ(installer::ApplyDiffPatch(base::FilePath(), base::FilePath(),
                                       base::FilePath(), NULL),

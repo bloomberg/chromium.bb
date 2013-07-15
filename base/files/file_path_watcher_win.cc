@@ -200,7 +200,7 @@ bool FilePathWatcherImpl::SetupWatchHandle(const FilePath& dir,
     // Make sure the handle we got points to an existing directory. It seems
     // that windows sometimes hands out watches to directories that are
     // about to go away, but doesn't sent notifications if that happens.
-    if (!file_util::DirectoryExists(dir)) {
+    if (!DirectoryExists(dir)) {
       FindCloseChangeNotification(*handle);
       *handle = INVALID_HANDLE_VALUE;
     }

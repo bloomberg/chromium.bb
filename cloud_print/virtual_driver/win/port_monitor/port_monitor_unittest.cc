@@ -113,7 +113,7 @@ TEST_F(PortMonitorTest, GetChromeProfilePathTest) {
   base::FilePath temp;
   PathService::Get(base::DIR_TEMP, &temp);
   EXPECT_EQ(data_path, temp);
-  EXPECT_TRUE(file_util::DirectoryExists(data_path));
+  EXPECT_TRUE(base::DirectoryExists(data_path));
   DeleteChromeExeRegistry();
   data_path = cloud_print::GetChromeProfilePath();
   EXPECT_TRUE(data_path.empty());

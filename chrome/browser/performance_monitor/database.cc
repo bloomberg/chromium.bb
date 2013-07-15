@@ -91,7 +91,7 @@ scoped_ptr<Database> Database::Create(base::FilePath path) {
     path = path.AppendASCII(kDbDir);
   }
   scoped_ptr<Database> database;
-  if (!file_util::DirectoryExists(path) && !file_util::CreateDirectory(path))
+  if (!base::DirectoryExists(path) && !file_util::CreateDirectory(path))
     return database.Pass();
   database.reset(new Database(path));
 

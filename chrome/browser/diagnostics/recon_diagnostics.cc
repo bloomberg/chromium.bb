@@ -278,7 +278,7 @@ class PathTest : public DiagnosticsTest {
       RecordSuccess("Path exists");
       return true;
     }
-    if (!file_util::PathIsWritable(dir_or_file)) {
+    if (!base::PathIsWritable(dir_or_file)) {
       RecordFailure(DIAG_RECON_NOT_WRITABLE,
                     "Path is not writable: " +
                         UTF16ToUTF8(dir_or_file.LossyDisplayName()));

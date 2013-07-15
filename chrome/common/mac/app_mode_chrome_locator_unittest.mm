@@ -31,7 +31,7 @@ TEST(ChromeLocatorTest, FindBundle) {
   base::FilePath finder_bundle_path;
   EXPECT_TRUE(
       app_mode::FindBundleById(@"com.apple.finder", &finder_bundle_path));
-  EXPECT_TRUE(file_util::DirectoryExists(finder_bundle_path));
+  EXPECT_TRUE(base::DirectoryExists(finder_bundle_path));
 }
 
 TEST(ChromeLocatorTest, FindNonExistentBundle) {
@@ -55,7 +55,7 @@ TEST(ChromeLocatorTest, GetChromeBundleInfo) {
 
   base::FilePath chrome_bundle_path;
   GetChromeBundlePath(&chrome_bundle_path);
-  ASSERT_TRUE(file_util::DirectoryExists(chrome_bundle_path));
+  ASSERT_TRUE(base::DirectoryExists(chrome_bundle_path));
 
   string16 raw_version;
   base::FilePath version_path;
@@ -63,6 +63,6 @@ TEST(ChromeLocatorTest, GetChromeBundleInfo) {
   EXPECT_TRUE(GetChromeBundleInfo(chrome_bundle_path,
       &raw_version, &version_path, &framework_path));
   EXPECT_GT(raw_version.size(), 0U);
-  EXPECT_TRUE(file_util::DirectoryExists(version_path));
+  EXPECT_TRUE(base::DirectoryExists(version_path));
   EXPECT_TRUE(base::PathExists(framework_path));
 }

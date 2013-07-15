@@ -50,7 +50,7 @@ TEST(SandboxIsolatedOriginDatabaseTest, MigrationTest) {
     EXPECT_FALSE(base::PathExists(old_db_path));
     EXPECT_TRUE(database_old.GetPathForOrigin(kOrigin, &path));
     EXPECT_FALSE(path.empty());
-    EXPECT_TRUE(file_util::DirectoryExists(old_db_path));
+    EXPECT_TRUE(base::DirectoryExists(old_db_path));
 
     // Populate the origin directory with some fake data.
     base::FilePath directory_db_path = dir.path().Append(path);
@@ -74,7 +74,7 @@ TEST(SandboxIsolatedOriginDatabaseTest, MigrationTest) {
   // so we should see the same fake data.
   std::string origin_db_data;
   base::FilePath directory_db_path = dir.path().Append(path);
-  EXPECT_TRUE(file_util::DirectoryExists(directory_db_path));
+  EXPECT_TRUE(base::DirectoryExists(directory_db_path));
   EXPECT_TRUE(base::PathExists(directory_db_path.AppendASCII("dummy")));
   EXPECT_TRUE(file_util::ReadFileToString(
       directory_db_path.AppendASCII("dummy"), &origin_db_data));

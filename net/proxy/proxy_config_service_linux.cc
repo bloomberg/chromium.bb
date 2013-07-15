@@ -883,7 +883,7 @@ class SettingGetterImplKDE : public ProxyConfigServiceLinux::SettingGetter,
         base::FilePath kde4_path = base::FilePath(home).Append(".kde4");
         base::FilePath kde4_config = KDEHomeToConfigPath(kde4_path);
         bool use_kde4 = false;
-        if (file_util::DirectoryExists(kde4_path)) {
+        if (base::DirectoryExists(kde4_path)) {
           base::PlatformFileInfo kde3_info;
           base::PlatformFileInfo kde4_info;
           if (file_util::GetFileInfo(kde4_config, &kde4_info)) {

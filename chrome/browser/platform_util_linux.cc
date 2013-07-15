@@ -56,7 +56,7 @@ void XDGEmail(const std::string& email) {
 // show the folder.
 void ShowItemInFolderOnFileThread(const base::FilePath& full_path) {
   base::FilePath dir = full_path.DirName();
-  if (!file_util::DirectoryExists(dir))
+  if (!base::DirectoryExists(dir))
     return;
 
   XDGOpen(dir.value());

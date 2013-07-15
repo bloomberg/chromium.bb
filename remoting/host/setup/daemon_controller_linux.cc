@@ -255,7 +255,7 @@ void DaemonControllerLinux::DoSetConfigAndStart(
 
   // Ensure the configuration directory exists.
   base::FilePath config_dir = GetConfigPath().DirName();
-  if (!file_util::DirectoryExists(config_dir) &&
+  if (!base::DirectoryExists(config_dir) &&
       !file_util::CreateDirectory(config_dir)) {
     LOG(ERROR) << "Failed to create config directory " << config_dir.value();
     done_callback.Run(RESULT_FAILED);

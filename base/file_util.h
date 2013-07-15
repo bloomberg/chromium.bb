@@ -116,27 +116,27 @@ BASE_EXPORT bool CopyDirectory(const FilePath& from_path,
 // false otherwise.
 BASE_EXPORT bool PathExists(const FilePath& path);
 
+// Returns true if the given path is writable by the user, false otherwise.
+BASE_EXPORT bool PathIsWritable(const FilePath& path);
+
+// Returns true if the given path exists and is a directory, false otherwise.
+BASE_EXPORT bool DirectoryExists(const FilePath& path);
+
+// Returns true if the contents of the two files given are equal, false
+// otherwise.  If either file can't be read, returns false.
+BASE_EXPORT bool ContentsEqual(const FilePath& filename1,
+                               const FilePath& filename2);
+
+// Returns true if the contents of the two text files given are equal, false
+// otherwise.  This routine treats "\r\n" and "\n" as equivalent.
+BASE_EXPORT bool TextContentsEqual(const FilePath& filename1,
+                                   const FilePath& filename2);
+
 }  // namespace base
 
 // -----------------------------------------------------------------------------
 
 namespace file_util {
-
-// Returns true if the given path is writable by the user, false otherwise.
-BASE_EXPORT bool PathIsWritable(const base::FilePath& path);
-
-// Returns true if the given path exists and is a directory, false otherwise.
-BASE_EXPORT bool DirectoryExists(const base::FilePath& path);
-
-// Returns true if the contents of the two files given are equal, false
-// otherwise.  If either file can't be read, returns false.
-BASE_EXPORT bool ContentsEqual(const base::FilePath& filename1,
-                               const base::FilePath& filename2);
-
-// Returns true if the contents of the two text files given are equal, false
-// otherwise.  This routine treats "\r\n" and "\n" as equivalent.
-BASE_EXPORT bool TextContentsEqual(const base::FilePath& filename1,
-                                   const base::FilePath& filename2);
 
 // Read the file at |path| into |contents|, returning true on success.
 // This function fails if the |path| contains path traversal components ('..').

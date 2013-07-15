@@ -775,7 +775,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, MultiDownload) {
   ASSERT_TRUE(VerifyFile(file1, expected_contents, file_size1));
 
   base::FilePath file2(download2->GetTargetFilePath());
-  ASSERT_TRUE(file_util::ContentsEqual(
+  ASSERT_TRUE(base::ContentsEqual(
       file2, GetTestFilePath("download", "download-test.lib")));
 }
 

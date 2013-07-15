@@ -53,7 +53,7 @@ std::set<std::string> MakeFileSet(const char** files) {
   std::set<std::string> file_set;
   for (const char** file = files; *file; ++file) {
     base::FilePath file_path(*file);
-    if (file_util::DirectoryExists(file_path)) {
+    if (base::DirectoryExists(file_path)) {
       base::FileEnumerator file_enumerator(
           file_path, true /* recurse */, base::FileEnumerator::FILES);
       for (base::FilePath child, empty;

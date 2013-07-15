@@ -500,7 +500,7 @@ TEST_F(DownloadPathReservationTrackerTest, CreateDefaultDownloadPath) {
   base::FilePath path(
       GetPathInDownloadsDirectory(FILE_PATH_LITERAL("foo/foo.txt")));
   base::FilePath dir(path.DirName());
-  ASSERT_FALSE(file_util::DirectoryExists(dir));
+  ASSERT_FALSE(base::DirectoryExists(dir));
   DownloadPathReservationTracker::FilenameConflictAction conflict_action =
     DownloadPathReservationTracker::OVERWRITE;
   bool create_directory = false;
@@ -535,7 +535,7 @@ TEST_F(DownloadPathReservationTrackerTest, CreateDefaultDownloadPath) {
         &verified);
     // Verification succeeds because the directory is created.
     EXPECT_TRUE(verified);
-    EXPECT_TRUE(file_util::DirectoryExists(dir));
+    EXPECT_TRUE(base::DirectoryExists(dir));
     item->SetState(DownloadItem::COMPLETE);
   }
 }

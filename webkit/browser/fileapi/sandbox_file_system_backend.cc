@@ -403,7 +403,7 @@ int64 SandboxFileSystemBackend::GetOriginUsageOnFileThread(
 
   base::FilePath base_path =
       GetBaseDirectoryForOriginAndType(origin_url, type, false);
-  if (base_path.empty() || !file_util::DirectoryExists(base_path))
+  if (base_path.empty() || !base::DirectoryExists(base_path))
     return 0;
   base::FilePath usage_file_path =
       base_path.Append(FileSystemUsageCache::kUsageFileName);

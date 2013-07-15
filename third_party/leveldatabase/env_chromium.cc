@@ -709,7 +709,7 @@ Status ChromiumEnv::LockFile(const std::string& fname, FileLock** lock) {
     ::base::FilePath last_parent;
     int num_missing_ancestors = 0;
     do {
-      if (file_util::DirectoryExists(parent))
+      if (base::DirectoryExists(parent))
         break;
       ++num_missing_ancestors;
       last_parent = parent;

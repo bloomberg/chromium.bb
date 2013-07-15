@@ -1177,7 +1177,7 @@ bool GetAppShortcutsFolder(BrowserDistribution* dist,
 
   folder = folder.Append(
       ShellUtil::GetBrowserModelId(dist, level == ShellUtil::CURRENT_USER));
-  if (!file_util::DirectoryExists(folder)) {
+  if (!base::DirectoryExists(folder)) {
     VLOG(1) << "No start screen shortcuts.";
     return false;
   }

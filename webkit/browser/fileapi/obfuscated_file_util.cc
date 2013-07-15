@@ -244,7 +244,7 @@ class ObfuscatedOriginEnumerator
     }
     base::FilePath path =
         base_file_path_.Append(current_.path).Append(type_string);
-    return file_util::DirectoryExists(path);
+    return base::DirectoryExists(path);
   }
 
  private:
@@ -874,7 +874,7 @@ base::FilePath ObfuscatedFileUtil::GetDirectoryForOriginAndType(
   }
   base::FilePath path = origin_dir.Append(type_string);
   base::PlatformFileError error = base::PLATFORM_FILE_OK;
-  if (!file_util::DirectoryExists(path) &&
+  if (!base::DirectoryExists(path) &&
       (!create || !file_util::CreateDirectory(path))) {
     error = create ?
           base::PLATFORM_FILE_ERROR_FAILED :
@@ -922,7 +922,7 @@ bool ObfuscatedFileUtil::DeleteDirectoryForOriginAndType(
   DCHECK(type != kFileSystemTypeSyncableForInternalSync);
 
   for (size_t i = 0; i < other_types.size(); ++i) {
-    if (file_util::DirectoryExists(
+    if (base::DirectoryExists(
             origin_path.Append(GetDirectoryNameForType(other_types[i])))) {
       // Other type's directory exists; just return true here.
       return true;
@@ -995,7 +995,7 @@ int64 ObfuscatedFileUtil::ComputeFilePathCost(const base::FilePath& path) {
 void ObfuscatedFileUtil::MaybePrepopulateDatabase() {
   base::FilePath isolated_origin_dir = file_system_directory_.Append(
       SandboxIsolatedOriginDatabase::kOriginDirectory);
-  if (!file_util::DirectoryExists(isolated_origin_dir))
+  if (!base::DirectoryExists(isolated_origin_dir))
     return;
 
   const FileSystemType kPrepopulateTypes[] = {
@@ -1009,7 +1009,7 @@ void ObfuscatedFileUtil::MaybePrepopulateDatabase() {
     base::FilePath::StringType type_string = GetDirectoryNameForType(type);
     DCHECK(!type_string.empty());
     base::FilePath path = isolated_origin_dir.Append(type_string);
-    if (!file_util::DirectoryExists(path))
+    if (!base::DirectoryExists(path))
       continue;
     scoped_ptr<SandboxDirectoryDatabase> db(new SandboxDirectoryDatabase(path));
     if (db->Init(SandboxDirectoryDatabase::FAIL_ON_CORRUPTION)) {
@@ -1238,7 +1238,7 @@ base::FilePath ObfuscatedFileUtil::GetDirectoryForOrigin(
   }
 
   base::FilePath path = file_system_directory_.Append(directory_name);
-  bool exists_in_fs = file_util::DirectoryExists(path);
+  bool exists_in_fs = base::DirectoryExists(path);
   if (!exists_in_db && exists_in_fs) {
     if (!base::Delete(path, true)) {
       if (error_code)
@@ -1298,7 +1298,7 @@ bool ObfuscatedFileUtil::InitOriginDatabase(bool create) {
   if (origin_database_)
     return true;
 
-  if (!create && !file_util::DirectoryExists(file_system_directory_))
+  if (!create && !base::DirectoryExists(file_system_directory_))
     return false;
   if (!file_util::CreateDirectory(file_system_directory_)) {
     LOG(WARNING) << "Failed to create FileSystem directory: " <<

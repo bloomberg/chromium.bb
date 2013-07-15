@@ -86,7 +86,7 @@ TEST_F(TransientFileUtilTest, TransientFile) {
   // Make sure the file is there.
   ASSERT_TRUE(temp_url.is_valid());
   ASSERT_TRUE(base::PathExists(temp_path));
-  ASSERT_FALSE(file_util::DirectoryExists(temp_path));
+  ASSERT_FALSE(base::DirectoryExists(temp_path));
 
   // Create a snapshot file.
   {

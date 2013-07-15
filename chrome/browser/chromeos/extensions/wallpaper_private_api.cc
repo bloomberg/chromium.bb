@@ -77,7 +77,7 @@ ash::WallpaperLayout GetLayoutEnum(const std::string& layout) {
 bool SaveData(int key, const std::string& file_name, const std::string& data) {
   base::FilePath data_dir;
   CHECK(PathService::Get(key, &data_dir));
-  if (!file_util::DirectoryExists(data_dir) &&
+  if (!base::DirectoryExists(data_dir) &&
       !file_util::CreateDirectory(data_dir)) {
     return false;
   }
@@ -94,7 +94,7 @@ bool SaveData(int key, const std::string& file_name, const std::string& data) {
 // expected that we may try to access file which did not saved yet.
 bool GetData(const base::FilePath& path, std::string* data) {
   base::FilePath data_dir = path.DirName();
-  if (!file_util::DirectoryExists(data_dir) &&
+  if (!base::DirectoryExists(data_dir) &&
       !file_util::CreateDirectory(data_dir))
     return false;
 
@@ -893,7 +893,7 @@ void WallpaperPrivateGetOfflineWallpaperListFunction::GetList(
   if (source == kOnlineSource) {
     base::FilePath wallpaper_dir;
     CHECK(PathService::Get(chrome::DIR_CHROMEOS_WALLPAPERS, &wallpaper_dir));
-    if (file_util::DirectoryExists(wallpaper_dir)) {
+    if (base::DirectoryExists(wallpaper_dir)) {
       base::FileEnumerator files(wallpaper_dir, false,
                                  base::FileEnumerator::FILES);
       for (base::FilePath current = files.Next(); !current.empty();

@@ -35,8 +35,11 @@
 // This macro helps avoid wrapped lines in the test structs.
 #define FPL(x) FILE_PATH_LITERAL(x)
 
+using base::DirectoryExists;
 using base::FileEnumerator;
 using base::FilePath;
+using base::PathIsWritable;
+using base::TextContentsEqual;
 
 namespace {
 
@@ -862,7 +865,7 @@ TEST_F(FileUtilTest, ChangeFilePermissionsAndWrite) {
   int mode = 0;
   EXPECT_TRUE(file_util::GetPosixFilePermissions(file_name, &mode));
   EXPECT_TRUE(mode & file_util::FILE_PERMISSION_WRITE_BY_USER);
-  EXPECT_TRUE(file_util::PathIsWritable(file_name));
+  EXPECT_TRUE(PathIsWritable(file_name));
 
   // Get rid of the write permission.
   EXPECT_TRUE(file_util::SetPosixFilePermissions(file_name, 0u));
@@ -871,7 +874,7 @@ TEST_F(FileUtilTest, ChangeFilePermissionsAndWrite) {
   // Make sure the file can't be write.
   EXPECT_EQ(-1,
             file_util::WriteFile(file_name, kData.data(), kData.length()));
-  EXPECT_FALSE(file_util::PathIsWritable(file_name));
+  EXPECT_FALSE(PathIsWritable(file_name));
 
   // Give read permission.
   EXPECT_TRUE(file_util::SetPosixFilePermissions(
@@ -882,7 +885,7 @@ TEST_F(FileUtilTest, ChangeFilePermissionsAndWrite) {
   // Make sure the file can be write.
   EXPECT_EQ(static_cast<int>(kData.length()),
             file_util::WriteFile(file_name, kData.data(), kData.length()));
-  EXPECT_TRUE(file_util::PathIsWritable(file_name));
+  EXPECT_TRUE(PathIsWritable(file_name));
 
   // Delete the file.
   EXPECT_TRUE(base::Delete(file_name, false));
@@ -1557,20 +1560,19 @@ TEST_F(ReadOnlyFileUtilTest, ContentsEqual) {
   FilePath binary_file_diff =
       data_dir.Append(FILE_PATH_LITERAL("binary_file_diff.bin"));
 
-  EXPECT_TRUE(file_util::ContentsEqual(original_file, original_file));
-  EXPECT_TRUE(file_util::ContentsEqual(original_file, same_file));
-  EXPECT_FALSE(file_util::ContentsEqual(original_file, same_length_file));
-  EXPECT_FALSE(file_util::ContentsEqual(original_file, different_file));
-  EXPECT_FALSE(file_util::ContentsEqual(
-      FilePath(FILE_PATH_LITERAL("bogusname")),
-      FilePath(FILE_PATH_LITERAL("bogusname"))));
-  EXPECT_FALSE(file_util::ContentsEqual(original_file, different_first_file));
-  EXPECT_FALSE(file_util::ContentsEqual(original_file, different_last_file));
-  EXPECT_TRUE(file_util::ContentsEqual(empty1_file, empty2_file));
-  EXPECT_FALSE(file_util::ContentsEqual(original_file, shortened_file));
-  EXPECT_FALSE(file_util::ContentsEqual(shortened_file, original_file));
-  EXPECT_TRUE(file_util::ContentsEqual(binary_file, binary_file_same));
-  EXPECT_FALSE(file_util::ContentsEqual(binary_file, binary_file_diff));
+  EXPECT_TRUE(ContentsEqual(original_file, original_file));
+  EXPECT_TRUE(ContentsEqual(original_file, same_file));
+  EXPECT_FALSE(ContentsEqual(original_file, same_length_file));
+  EXPECT_FALSE(ContentsEqual(original_file, different_file));
+  EXPECT_FALSE(ContentsEqual(FilePath(FILE_PATH_LITERAL("bogusname")),
+                             FilePath(FILE_PATH_LITERAL("bogusname"))));
+  EXPECT_FALSE(ContentsEqual(original_file, different_first_file));
+  EXPECT_FALSE(ContentsEqual(original_file, different_last_file));
+  EXPECT_TRUE(ContentsEqual(empty1_file, empty2_file));
+  EXPECT_FALSE(ContentsEqual(original_file, shortened_file));
+  EXPECT_FALSE(ContentsEqual(shortened_file, original_file));
+  EXPECT_TRUE(ContentsEqual(binary_file, binary_file_same));
+  EXPECT_FALSE(ContentsEqual(binary_file, binary_file_diff));
 }
 
 TEST_F(ReadOnlyFileUtilTest, TextContentsEqual) {
@@ -1606,19 +1608,16 @@ TEST_F(ReadOnlyFileUtilTest, TextContentsEqual) {
   FilePath blank_line_crlf_file =
       data_dir.Append(FILE_PATH_LITERAL("blank_line_crlf.txt"));
 
-  EXPECT_TRUE(file_util::TextContentsEqual(original_file, same_file));
-  EXPECT_TRUE(file_util::TextContentsEqual(original_file, crlf_file));
-  EXPECT_FALSE(file_util::TextContentsEqual(original_file, shortened_file));
-  EXPECT_FALSE(file_util::TextContentsEqual(original_file, different_file));
-  EXPECT_FALSE(file_util::TextContentsEqual(original_file,
-                                            different_first_file));
-  EXPECT_FALSE(file_util::TextContentsEqual(original_file,
-                                            different_last_file));
-  EXPECT_FALSE(file_util::TextContentsEqual(first1_file, first2_file));
-  EXPECT_TRUE(file_util::TextContentsEqual(empty1_file, empty2_file));
-  EXPECT_FALSE(file_util::TextContentsEqual(original_file, empty1_file));
-  EXPECT_TRUE(file_util::TextContentsEqual(blank_line_file,
-                                           blank_line_crlf_file));
+  EXPECT_TRUE(TextContentsEqual(original_file, same_file));
+  EXPECT_TRUE(TextContentsEqual(original_file, crlf_file));
+  EXPECT_FALSE(TextContentsEqual(original_file, shortened_file));
+  EXPECT_FALSE(TextContentsEqual(original_file, different_file));
+  EXPECT_FALSE(TextContentsEqual(original_file, different_first_file));
+  EXPECT_FALSE(TextContentsEqual(original_file, different_last_file));
+  EXPECT_FALSE(TextContentsEqual(first1_file, first2_file));
+  EXPECT_TRUE(TextContentsEqual(empty1_file, empty2_file));
+  EXPECT_FALSE(TextContentsEqual(original_file, empty1_file));
+  EXPECT_TRUE(TextContentsEqual(blank_line_file, blank_line_crlf_file));
 }
 
 // We don't need equivalent functionality outside of Windows.
@@ -1688,7 +1687,7 @@ TEST_F(FileUtilTest, CreateTemporaryFileTest) {
   for (int i = 0; i < 3; i++) {
     ASSERT_TRUE(file_util::CreateTemporaryFile(&(temp_files[i])));
     EXPECT_TRUE(base::PathExists(temp_files[i]));
-    EXPECT_FALSE(file_util::DirectoryExists(temp_files[i]));
+    EXPECT_FALSE(DirectoryExists(temp_files[i]));
   }
   for (int i = 0; i < 3; i++)
     EXPECT_FALSE(temp_files[i] == temp_files[(i+1)%3]);
@@ -1742,7 +1741,7 @@ TEST_F(FileUtilTest, CreateNewTemporaryDirInDirTest) {
 TEST_F(FileUtilTest, GetShmemTempDirTest) {
   FilePath dir;
   EXPECT_TRUE(file_util::GetShmemTempDir(&dir, false));
-  EXPECT_TRUE(file_util::DirectoryExists(dir));
+  EXPECT_TRUE(DirectoryExists(dir));
 }
 
 TEST_F(FileUtilTest, CreateDirectoryTest) {
@@ -1776,13 +1775,12 @@ TEST_F(FileUtilTest, CreateDirectoryTest) {
   // Verify assumptions made by the Windows implementation:
   // 1. The current directory always exists.
   // 2. The root directory always exists.
-  ASSERT_TRUE(file_util::DirectoryExists(
-      FilePath(FilePath::kCurrentDirectory)));
+  ASSERT_TRUE(DirectoryExists(FilePath(FilePath::kCurrentDirectory)));
   FilePath top_level = test_root;
   while (top_level != top_level.DirName()) {
     top_level = top_level.DirName();
   }
-  ASSERT_TRUE(file_util::DirectoryExists(top_level));
+  ASSERT_TRUE(DirectoryExists(top_level));
 
   // Given these assumptions hold, it should be safe to
   // test that "creating" these directories succeeds.
@@ -1807,14 +1805,14 @@ TEST_F(FileUtilTest, DetectDirectoryTest) {
   EXPECT_FALSE(base::PathExists(test_root));
   EXPECT_TRUE(file_util::CreateDirectory(test_root));
   EXPECT_TRUE(base::PathExists(test_root));
-  EXPECT_TRUE(file_util::DirectoryExists(test_root));
+  EXPECT_TRUE(DirectoryExists(test_root));
   // Check a file
   FilePath test_path =
       test_root.Append(FILE_PATH_LITERAL("foobar.txt"));
   EXPECT_FALSE(base::PathExists(test_path));
   CreateTextFile(test_path, L"test file");
   EXPECT_TRUE(base::PathExists(test_path));
-  EXPECT_FALSE(file_util::DirectoryExists(test_path));
+  EXPECT_FALSE(DirectoryExists(test_path));
   EXPECT_TRUE(base::Delete(test_path, false));
 
   EXPECT_TRUE(base::Delete(test_root, true));

@@ -57,7 +57,7 @@ bool AddEntryToZip(zipFile zip_file, const base::FilePath& path,
   ReplaceSubstringsAfterOffset(&str_path, 0u, "\\", "/");
 #endif
 
-  bool is_directory = file_util::DirectoryExists(path);
+  bool is_directory = base::DirectoryExists(path);
   if (is_directory)
     str_path += "/";
 
@@ -127,7 +127,7 @@ bool Unzip(const base::FilePath& src_file, const base::FilePath& dest_dir) {
 bool ZipWithFilterCallback(const base::FilePath& src_dir,
                            const base::FilePath& dest_file,
                            const FilterCallback& filter_cb) {
-  DCHECK(file_util::DirectoryExists(src_dir));
+  DCHECK(base::DirectoryExists(src_dir));
 
   zipFile zip_file = internal::OpenForZipping(dest_file.AsUTF8Unsafe(),
                                               APPEND_STATUS_CREATE);
@@ -175,7 +175,7 @@ bool Zip(const base::FilePath& src_dir, const base::FilePath& dest_file,
 bool ZipFiles(const base::FilePath& src_dir,
               const std::vector<base::FilePath>& src_relative_paths,
               int dest_fd) {
-  DCHECK(file_util::DirectoryExists(src_dir));
+  DCHECK(base::DirectoryExists(src_dir));
   zipFile zip_file = internal::OpenFdForZipping(dest_fd, APPEND_STATUS_CREATE);
 
   if (!zip_file) {

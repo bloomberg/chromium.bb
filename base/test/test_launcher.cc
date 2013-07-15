@@ -162,7 +162,7 @@ ResultsPrinter::ResultsPrinter(const CommandLine& command_line)
   if (path.value().empty())
     path = FilePath(kDefaultOutputFile);
   FilePath dir_name = path.DirName();
-  if (!file_util::DirectoryExists(dir_name)) {
+  if (!DirectoryExists(dir_name)) {
     LOG(WARNING) << "The output directory does not exist. "
                  << "Creating the directory: " << dir_name.value();
     // Create the directory if necessary (because the gtest does the same).

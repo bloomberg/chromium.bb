@@ -36,7 +36,7 @@ base::FilePath FindPicasaDatabaseOnFileThread() {
   path = path.AppendASCII("Google").AppendASCII("Picasa2").AppendASCII("db3");
 
   // Verify actual existence
-  if (!file_util::DirectoryExists(path))
+  if (!base::DirectoryExists(path))
     path.clear();
 
   return path;

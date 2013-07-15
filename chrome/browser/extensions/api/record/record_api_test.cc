@@ -106,13 +106,13 @@ class TestProcessStrategy : public ProcessStrategy {
         if (command_line.HasSwitch(switches::kRecordMode)) {
           base::CopyFile(url_path, url_path_copy);
         } else {
-          if (!file_util::ContentsEqual(url_path, url_path_copy)) {
+          if (!base::ContentsEqual(url_path, url_path_copy)) {
             std::string contents1, contents2;
             file_util::ReadFileToString(url_path, &contents1);
             file_util::ReadFileToString(url_path_copy, &contents2);
             LOG(ERROR) << "FILE MISMATCH" << contents1 << " VS " << contents2;
           }
-          EXPECT_TRUE(file_util::ContentsEqual(url_path, url_path_copy));
+          EXPECT_TRUE(base::ContentsEqual(url_path, url_path_copy));
         }
       }
 

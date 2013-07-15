@@ -63,7 +63,7 @@ bool ScheduleFileSystemEntityForDeletion(const wchar_t* path) {
   }
 
   DWORD flags = MOVEFILE_DELAY_UNTIL_REBOOT;
-  if (!file_util::DirectoryExists(base::FilePath::FromWStringHack(path))) {
+  if (!base::DirectoryExists(base::FilePath::FromWStringHack(path))) {
     // This flag valid only for files
     flags |= MOVEFILE_REPLACE_EXISTING;
   }

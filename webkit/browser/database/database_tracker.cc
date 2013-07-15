@@ -451,7 +451,7 @@ bool DatabaseTracker::LazyInit() {
 
     // If there are left-over directories from failed deletion attempts, clean
     // them up.
-    if (file_util::DirectoryExists(db_dir_)) {
+    if (base::DirectoryExists(db_dir_)) {
       base::FileEnumerator directories(
           db_dir_,
           false,
@@ -467,7 +467,7 @@ bool DatabaseTracker::LazyInit() {
     // have a meta table, delete the database directory.
     const base::FilePath kTrackerDatabaseFullPath =
         db_dir_.Append(base::FilePath(kTrackerDatabaseFileName));
-    if (file_util::DirectoryExists(db_dir_) &&
+    if (base::DirectoryExists(db_dir_) &&
         base::PathExists(kTrackerDatabaseFullPath) &&
         (!db_->Open(kTrackerDatabaseFullPath) ||
          !sql::MetaTable::DoesTableExist(db_.get()))) {
@@ -797,7 +797,7 @@ void DatabaseTracker::DeleteIncognitoDBDirectory() {
 
   base::FilePath incognito_db_dir =
       profile_path_.Append(kIncognitoDatabaseDirectoryName);
-  if (file_util::DirectoryExists(incognito_db_dir))
+  if (base::DirectoryExists(incognito_db_dir))
     base::Delete(incognito_db_dir, true);
 }
 

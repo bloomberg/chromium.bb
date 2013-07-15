@@ -111,7 +111,7 @@ int main(int argc, const char* argv[]) {
     return -1;
   }
 
-  if (!file_util::DirectoryExists(test_server->document_root())) {
+  if (!base::DirectoryExists(test_server->document_root())) {
     printf("Error: invalid doc root: \"%s\" does not exist!\n",
         UTF16ToUTF8(test_server->document_root().LossyDisplayName()).c_str());
     return -1;

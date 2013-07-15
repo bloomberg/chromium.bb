@@ -81,7 +81,7 @@ class SandboxDirectoryDatabaseTest : public testing::Test {
     ASSERT_TRUE(db_->AddFileInfo(info, &file_id));
 
     base::FilePath local_path = path().Append(data_path);
-    if (!file_util::DirectoryExists(local_path.DirName()))
+    if (!base::DirectoryExists(local_path.DirName()))
       ASSERT_TRUE(file_util::CreateDirectory(local_path.DirName()));
 
     bool created = false;

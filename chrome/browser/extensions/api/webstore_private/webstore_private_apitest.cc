@@ -198,7 +198,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, InstallAccepted) {
   ASSERT_TRUE(RunInstallTest("accepted.html", "extension.crx"));
 
   // Cleanup.
-  if (file_util::DirectoryExists(missing_directory))
+  if (base::DirectoryExists(missing_directory))
     EXPECT_TRUE(base::Delete(missing_directory, true));
 }
 

@@ -30,7 +30,7 @@ class NativeFileUtilTest : public testing::Test {
 
   bool FileExists(const base::FilePath& path) {
     return base::PathExists(path) &&
-           !file_util::DirectoryExists(path);
+           !base::DirectoryExists(path);
   }
 
   int64 GetSize(const base::FilePath& path) {
@@ -99,7 +99,7 @@ TEST_F(NativeFileUtilTest, CreateAndDeleteDirectory) {
                                             false /* recursive */));
 
   EXPECT_TRUE(NativeFileUtil::DirectoryExists(dir_name));
-  EXPECT_TRUE(file_util::DirectoryExists(dir_name));
+  EXPECT_TRUE(base::DirectoryExists(dir_name));
 
   ASSERT_EQ(base::PLATFORM_FILE_ERROR_EXISTS,
             NativeFileUtil::CreateDirectory(dir_name,
@@ -108,7 +108,7 @@ TEST_F(NativeFileUtilTest, CreateAndDeleteDirectory) {
 
   ASSERT_EQ(base::PLATFORM_FILE_OK,
             NativeFileUtil::DeleteDirectory(dir_name));
-  EXPECT_FALSE(file_util::DirectoryExists(dir_name));
+  EXPECT_FALSE(base::DirectoryExists(dir_name));
   EXPECT_FALSE(NativeFileUtil::DirectoryExists(dir_name));
 }
 
@@ -240,7 +240,7 @@ TEST_F(NativeFileUtilTest, CopyFile) {
   base::FilePath dir = Path("dir");
   ASSERT_EQ(base::PLATFORM_FILE_OK,
             NativeFileUtil::CreateDirectory(dir, false, false));
-  ASSERT_TRUE(file_util::DirectoryExists(dir));
+  ASSERT_TRUE(base::DirectoryExists(dir));
   base::FilePath to_dir_file = dir.AppendASCII("file");
   ASSERT_EQ(base::PLATFORM_FILE_OK,
             NativeFileUtil::CopyOrMoveFile(from_file, to_dir_file, true));
@@ -299,7 +299,7 @@ TEST_F(NativeFileUtilTest, MoveFile) {
   base::FilePath dir = Path("dir");
   ASSERT_EQ(base::PLATFORM_FILE_OK,
             NativeFileUtil::CreateDirectory(dir, false, false));
-  ASSERT_TRUE(file_util::DirectoryExists(dir));
+  ASSERT_TRUE(base::DirectoryExists(dir));
   base::FilePath to_dir_file = dir.AppendASCII("file");
   ASSERT_EQ(base::PLATFORM_FILE_OK,
             NativeFileUtil::CopyOrMoveFile(from_file, to_dir_file, false));

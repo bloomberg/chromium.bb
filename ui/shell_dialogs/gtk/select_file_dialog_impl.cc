@@ -86,7 +86,7 @@ bool SelectFileDialogImpl::IsRunning(gfx::NativeWindow parent_window) const {
 bool SelectFileDialogImpl::CallDirectoryExistsOnUIThread(
     const base::FilePath& path) {
   base::ThreadRestrictions::ScopedAllowIO allow_io;
-  return file_util::DirectoryExists(path);
+  return base::DirectoryExists(path);
 }
 
 }  // namespace ui

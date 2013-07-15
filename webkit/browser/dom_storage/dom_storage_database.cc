@@ -266,7 +266,7 @@ bool DomStorageDatabase::DeleteFileAndRecreate() {
   tried_to_recreate_ = true;
 
   // If it's not a directory and we can delete the file, try and open it again.
-  if (!file_util::DirectoryExists(file_path_) &&
+  if (!base::DirectoryExists(file_path_) &&
       sql::Connection::Delete(file_path_)) {
     return LazyOpen(true);
   }

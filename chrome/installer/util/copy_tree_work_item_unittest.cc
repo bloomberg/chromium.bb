@@ -103,7 +103,7 @@ TEST_F(CopyTreeWorkItemTest, CopyFile) {
 
   EXPECT_TRUE(base::PathExists(file_name_from));
   EXPECT_TRUE(base::PathExists(file_name_to));
-  EXPECT_TRUE(file_util::ContentsEqual(file_name_from, file_name_to));
+  EXPECT_TRUE(base::ContentsEqual(file_name_from, file_name_to));
 
   // test rollback()
   work_item->Rollback();
@@ -372,7 +372,7 @@ TEST_F(CopyTreeWorkItemTest, CopyFileInUse) {
   EXPECT_EQ(0, ReadTextFile(file_name_to.value()).compare(text_content_1));
   // verify the file in used is moved to backup place.
   EXPECT_TRUE(base::PathExists(backup_file));
-  EXPECT_TRUE(file_util::ContentsEqual(exe_full_path, backup_file));
+  EXPECT_TRUE(base::ContentsEqual(exe_full_path, backup_file));
 
   // test rollback()
   work_item->Rollback();
@@ -380,7 +380,7 @@ TEST_F(CopyTreeWorkItemTest, CopyFileInUse) {
   EXPECT_TRUE(base::PathExists(file_name_from));
   EXPECT_TRUE(base::PathExists(file_name_to));
   EXPECT_EQ(0, ReadTextFile(file_name_from.value()).compare(text_content_1));
-  EXPECT_TRUE(file_util::ContentsEqual(exe_full_path, file_name_to));
+  EXPECT_TRUE(base::ContentsEqual(exe_full_path, file_name_to));
   // the backup file should be gone after rollback
   EXPECT_FALSE(base::PathExists(backup_file));
 
@@ -444,10 +444,10 @@ TEST_F(CopyTreeWorkItemTest, NewNameAndCopyTest) {
   EXPECT_TRUE(base::PathExists(file_name_from));
   EXPECT_TRUE(base::PathExists(file_name_to));
   EXPECT_EQ(0, ReadTextFile(file_name_from.value()).compare(text_content_1));
-  EXPECT_TRUE(file_util::ContentsEqual(exe_full_path, file_name_to));
+  EXPECT_TRUE(base::ContentsEqual(exe_full_path, file_name_to));
   // verify that the backup path does not exist
   EXPECT_TRUE(work_item->backup_path_.path().empty());
-  EXPECT_TRUE(file_util::ContentsEqual(file_name_from, alternate_to));
+  EXPECT_TRUE(base::ContentsEqual(file_name_from, alternate_to));
 
   // test rollback()
   work_item->Rollback();
@@ -455,7 +455,7 @@ TEST_F(CopyTreeWorkItemTest, NewNameAndCopyTest) {
   EXPECT_TRUE(base::PathExists(file_name_from));
   EXPECT_TRUE(base::PathExists(file_name_to));
   EXPECT_EQ(0, ReadTextFile(file_name_from.value()).compare(text_content_1));
-  EXPECT_TRUE(file_util::ContentsEqual(exe_full_path, file_name_to));
+  EXPECT_TRUE(base::ContentsEqual(exe_full_path, file_name_to));
   EXPECT_TRUE(work_item->backup_path_.path().empty());
   // the alternate file should be gone after rollback
   EXPECT_FALSE(base::PathExists(alternate_to));
@@ -485,7 +485,7 @@ TEST_F(CopyTreeWorkItemTest, NewNameAndCopyTest) {
   EXPECT_TRUE(base::PathExists(file_name_from));
   EXPECT_TRUE(base::PathExists(file_name_to));
   EXPECT_EQ(0, ReadTextFile(file_name_from.value()).compare(text_content_1));
-  EXPECT_TRUE(file_util::ContentsEqual(file_name_from, file_name_to));
+  EXPECT_TRUE(base::ContentsEqual(file_name_from, file_name_to));
   // verify that the backup path does exist
   EXPECT_TRUE(base::PathExists(backup_file));
   EXPECT_FALSE(base::PathExists(alternate_to));
@@ -496,7 +496,7 @@ TEST_F(CopyTreeWorkItemTest, NewNameAndCopyTest) {
   EXPECT_TRUE(base::PathExists(file_name_from));
   EXPECT_TRUE(base::PathExists(file_name_to));
   EXPECT_EQ(0, ReadTextFile(file_name_from.value()).compare(text_content_1));
-  EXPECT_TRUE(file_util::ContentsEqual(exe_full_path, file_name_to));
+  EXPECT_TRUE(base::ContentsEqual(exe_full_path, file_name_to));
   // the backup file should be gone after rollback
   EXPECT_FALSE(base::PathExists(backup_file));
   EXPECT_FALSE(base::PathExists(alternate_to));
@@ -547,7 +547,7 @@ TEST_F(CopyTreeWorkItemTest, DISABLED_IfNotPresentTest) {
   EXPECT_TRUE(base::PathExists(file_name_from));
   EXPECT_TRUE(base::PathExists(file_name_to));
   EXPECT_EQ(0, ReadTextFile(file_name_from.value()).compare(text_content_1));
-  EXPECT_TRUE(file_util::ContentsEqual(exe_full_path, file_name_to));
+  EXPECT_TRUE(base::ContentsEqual(exe_full_path, file_name_to));
   EXPECT_FALSE(base::PathExists(backup_file));
 
   // test rollback()
@@ -558,7 +558,7 @@ TEST_F(CopyTreeWorkItemTest, DISABLED_IfNotPresentTest) {
   EXPECT_TRUE(base::PathExists(file_name_from));
   EXPECT_TRUE(base::PathExists(file_name_to));
   EXPECT_EQ(0, ReadTextFile(file_name_from.value()).compare(text_content_1));
-  EXPECT_TRUE(file_util::ContentsEqual(exe_full_path, file_name_to));
+  EXPECT_TRUE(base::ContentsEqual(exe_full_path, file_name_to));
   EXPECT_FALSE(base::PathExists(backup_file));
 
   // Now delete the destination and try copying the file again.
@@ -647,12 +647,12 @@ TEST_F(CopyTreeWorkItemTest, DISABLED_CopyFileInUseAndCleanup) {
     EXPECT_EQ(0, ReadTextFile(file_name_to.value()).compare(text_content_1));
     // verify the file in used is moved to backup place.
     EXPECT_TRUE(base::PathExists(backup_file));
-    EXPECT_TRUE(file_util::ContentsEqual(exe_full_path, backup_file));
+    EXPECT_TRUE(base::ContentsEqual(exe_full_path, backup_file));
   }
 
   // verify the file in used should be still at the backup place.
   EXPECT_TRUE(base::PathExists(backup_file));
-  EXPECT_TRUE(file_util::ContentsEqual(exe_full_path, backup_file));
+  EXPECT_TRUE(base::ContentsEqual(exe_full_path, backup_file));
 
   TerminateProcess(pi.hProcess, 0);
   // make sure the handle is closed.
@@ -711,7 +711,7 @@ TEST_F(CopyTreeWorkItemTest, DISABLED_CopyTree) {
   EXPECT_TRUE(base::PathExists(file_name_to_1));
   VLOG(1) << "compare " << file_name_from_1.value()
           << " and " << file_name_to_1.value();
-  EXPECT_TRUE(file_util::ContentsEqual(file_name_from_1, file_name_to_1));
+  EXPECT_TRUE(base::ContentsEqual(file_name_from_1, file_name_to_1));
 
   base::FilePath file_name_to_2(dir_name_to);
   file_name_to_2 = file_name_to_2.AppendASCII("2");
@@ -719,5 +719,5 @@ TEST_F(CopyTreeWorkItemTest, DISABLED_CopyTree) {
   EXPECT_TRUE(base::PathExists(file_name_to_2));
   VLOG(1) << "compare " << file_name_from_2.value()
           << " and " << file_name_to_2.value();
-  EXPECT_TRUE(file_util::ContentsEqual(file_name_from_2, file_name_to_2));
+  EXPECT_TRUE(base::ContentsEqual(file_name_from_2, file_name_to_2));
 }

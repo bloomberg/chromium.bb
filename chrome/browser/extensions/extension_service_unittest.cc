@@ -4072,7 +4072,7 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
       base::MessageLoop::current()->message_loop_proxy().get());
   base::FilePath idb_path = idb_context->GetFilePathForTesting(origin_id);
   EXPECT_TRUE(file_util::CreateDirectory(idb_path));
-  EXPECT_TRUE(file_util::DirectoryExists(idb_path));
+  EXPECT_TRUE(base::DirectoryExists(idb_path));
 
   // Uninstall the extension.
   service_->UninstallExtension(good_crx, false, NULL);
@@ -4095,7 +4095,7 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
   EXPECT_FALSE(base::PathExists(lso_file_path));
 
   // Check if the indexed db has disappeared too.
-  EXPECT_FALSE(file_util::DirectoryExists(idb_path));
+  EXPECT_FALSE(base::DirectoryExists(idb_path));
 }
 
 // Verifies app state is removed upon uninstall.
@@ -4189,7 +4189,7 @@ TEST_F(ExtensionServiceTest, ClearAppData) {
       base::MessageLoop::current()->message_loop_proxy().get());
   base::FilePath idb_path = idb_context->GetFilePathForTesting(origin_id);
   EXPECT_TRUE(file_util::CreateDirectory(idb_path));
-  EXPECT_TRUE(file_util::DirectoryExists(idb_path));
+  EXPECT_TRUE(base::DirectoryExists(idb_path));
 
   // Uninstall one of them, unlimited storage should still be granted
   // to the origin.
@@ -4229,7 +4229,7 @@ TEST_F(ExtensionServiceTest, ClearAppData) {
   EXPECT_FALSE(base::PathExists(lso_file_path));
 
   // Check if the indexed db has disappeared too.
-  EXPECT_FALSE(file_util::DirectoryExists(idb_path));
+  EXPECT_FALSE(base::DirectoryExists(idb_path));
 }
 
 // Tests loading single extensions (like --load-extension)

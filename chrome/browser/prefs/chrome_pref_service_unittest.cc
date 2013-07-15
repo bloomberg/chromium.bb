@@ -138,7 +138,7 @@ TEST_F(ChromePrefServiceUserFilePrefsTest, PreserveEmptyValue) {
   base::FilePath golden_output_file =
       data_dir_.AppendASCII("write.golden.need_empty_value.json");
   ASSERT_TRUE(base::PathExists(golden_output_file));
-  EXPECT_TRUE(file_util::TextContentsEqual(golden_output_file, pref_file));
+  EXPECT_TRUE(base::TextContentsEqual(golden_output_file, pref_file));
 }
 
 class ChromePrefServiceWebKitPrefs : public ChromeRenderViewHostTestHarness {

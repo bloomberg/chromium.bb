@@ -29,7 +29,7 @@ static void SetExtendedFileAttribute(const char* path, const char* name,
 
 void AddOriginMetadataToFile(const base::FilePath& file, const GURL& source,
                              const GURL& referrer) {
-  DCHECK(file_util::PathIsWritable(file));
+  DCHECK(base::PathIsWritable(file));
   if (source.is_valid()) {
     SetExtendedFileAttribute(file.value().c_str(), kSourceURLAttrName,
         source.spec().c_str(), source.spec().length(), 0);

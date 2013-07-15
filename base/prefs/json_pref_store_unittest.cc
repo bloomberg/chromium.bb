@@ -81,8 +81,7 @@ TEST_F(JsonPrefStoreTest, InvalidFile) {
   EXPECT_FALSE(PathExists(invalid_file));
   base::FilePath moved_aside = temp_dir_.path().AppendASCII("invalid.bad");
   EXPECT_TRUE(PathExists(moved_aside));
-  EXPECT_TRUE(file_util::TextContentsEqual(invalid_file_original,
-                                           moved_aside));
+  EXPECT_TRUE(TextContentsEqual(invalid_file_original, moved_aside));
 }
 
 // This function is used to avoid code duplication while testing synchronous and
@@ -147,7 +146,7 @@ void RunBasicJsonPrefStoreTest(JsonPrefStore* pref_store,
   ASSERT_TRUE(PathExists(golden_output_file));
   pref_store->CommitPendingWrite();
   RunLoop().RunUntilIdle();
-  EXPECT_TRUE(file_util::TextContentsEqual(golden_output_file, output_file));
+  EXPECT_TRUE(TextContentsEqual(golden_output_file, output_file));
   ASSERT_TRUE(base::Delete(output_file, false));
 }
 
@@ -282,7 +281,7 @@ TEST_F(JsonPrefStoreTest, NeedsEmptyValue) {
   base::FilePath golden_output_file =
       data_dir_.AppendASCII("write.golden.need_empty_value.json");
   ASSERT_TRUE(PathExists(golden_output_file));
-  EXPECT_TRUE(file_util::TextContentsEqual(golden_output_file, pref_file));
+  EXPECT_TRUE(TextContentsEqual(golden_output_file, pref_file));
 }
 
 }  // namespace base

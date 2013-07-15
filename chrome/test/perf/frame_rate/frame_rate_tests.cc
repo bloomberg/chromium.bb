@@ -162,7 +162,7 @@ class FrameRateTest
     ASSERT_TRUE(!HasFlag(kUseGpu) || IsGpuAvailable());
 
     base::FilePath test_path = GetDataPath(name);
-    ASSERT_TRUE(file_util::DirectoryExists(test_path))
+    ASSERT_TRUE(base::DirectoryExists(test_path))
         << "Missing test directory: " << test_path.value();
 
     test_path = test_path.Append(FILE_PATH_LITERAL("test.html"));

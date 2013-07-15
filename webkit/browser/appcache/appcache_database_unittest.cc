@@ -67,13 +67,13 @@ TEST(AppCacheDatabaseTest, ReCreate) {
   EXPECT_TRUE(db.LazyOpen(true));
 
   EXPECT_TRUE(base::PathExists(kDbFile));
-  EXPECT_TRUE(file_util::DirectoryExists(kNestedDir));
+  EXPECT_TRUE(base::DirectoryExists(kNestedDir));
   EXPECT_TRUE(base::PathExists(kOtherFile));
 
   EXPECT_TRUE(db.DeleteExistingAndCreateNewDatabase());
 
   EXPECT_TRUE(base::PathExists(kDbFile));
-  EXPECT_FALSE(file_util::DirectoryExists(kNestedDir));
+  EXPECT_FALSE(base::DirectoryExists(kNestedDir));
   EXPECT_FALSE(base::PathExists(kOtherFile));
 }
 

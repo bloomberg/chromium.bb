@@ -56,17 +56,6 @@ bool CopyFile(const FilePath& from_path, const FilePath& to_path) {
   return internal::CopyFileUnsafe(from_path, to_path);
 }
 
-}  // namespace base
-
-// -----------------------------------------------------------------------------
-
-namespace file_util {
-
-using base::FileEnumerator;
-using base::FilePath;
-using base::kExtensionSeparator;
-using base::kMaxUniqueFiles;
-
 bool ContentsEqual(const FilePath& filename1, const FilePath& filename2) {
   // We open the file in binary format even if they are text files because
   // we are just comparing that bytes are exactly same in both files and not
@@ -140,6 +129,17 @@ bool TextContentsEqual(const FilePath& filename1, const FilePath& filename2) {
 
   return true;
 }
+
+}  // namespace base
+
+// -----------------------------------------------------------------------------
+
+namespace file_util {
+
+using base::FileEnumerator;
+using base::FilePath;
+using base::kExtensionSeparator;
+using base::kMaxUniqueFiles;
 
 bool ReadFileToString(const FilePath& path, std::string* contents) {
   if (path.ReferencesParent())

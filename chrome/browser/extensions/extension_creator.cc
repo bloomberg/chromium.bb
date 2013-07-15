@@ -41,7 +41,7 @@ bool ExtensionCreator::InitializeInput(
     int run_flags) {
   // Validate input |extension_dir|.
   if (extension_dir.value().empty() ||
-      !file_util::DirectoryExists(extension_dir)) {
+      !base::DirectoryExists(extension_dir)) {
     error_message_ =
         l10n_util::GetStringUTF8(IDS_EXTENSION_DIRECTORY_NO_EXISTS);
     return false;

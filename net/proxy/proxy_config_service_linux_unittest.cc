@@ -1530,7 +1530,7 @@ TEST_F(ProxyConfigServiceLinuxTest, KDEHomePicker) {
 
   // If .kde4 exists it will mess up the first test. It should not, as
   // we created the directory for $HOME in the test setup.
-  CHECK(!file_util::DirectoryExists(kde4_home_));
+  CHECK(!base::DirectoryExists(kde4_home_));
 
   { SCOPED_TRACE("KDE4, no .kde4 directory, verify fallback");
     MockEnvironment* env = new MockEnvironment;

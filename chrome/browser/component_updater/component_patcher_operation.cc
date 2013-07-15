@@ -72,7 +72,7 @@ ComponentUnpacker::Error DeltaUpdateOp::Run(base::DictionaryValue* command_args,
     return parse_result;
 
   const base::FilePath parent = output_abs_path_.DirName();
-  if (!file_util::DirectoryExists(parent)) {
+  if (!base::DirectoryExists(parent)) {
     if (!file_util::CreateDirectory(parent))
       return ComponentUnpacker::kIoError;
   }

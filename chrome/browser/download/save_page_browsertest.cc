@@ -403,7 +403,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_SaveHTMLOnly) {
   EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
   EXPECT_TRUE(base::PathExists(full_file_name));
   EXPECT_FALSE(base::PathExists(dir));
-  EXPECT_TRUE(file_util::ContentsEqual(test_dir_.Append(base::FilePath(
+  EXPECT_TRUE(base::ContentsEqual(test_dir_.Append(base::FilePath(
       kTestDir)).Append(FILE_PATH_LITERAL("a.htm")), full_file_name));
 }
 
@@ -527,7 +527,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_SaveViewSourceHTMLOnly) {
 
   EXPECT_TRUE(base::PathExists(full_file_name));
   EXPECT_FALSE(base::PathExists(dir));
-  EXPECT_TRUE(file_util::ContentsEqual(
+  EXPECT_TRUE(base::ContentsEqual(
       test_dir_.Append(base::FilePath(kTestDir)).Append(file_name),
       full_file_name));
 }
@@ -562,13 +562,13 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_SaveCompleteHTML) {
 
   EXPECT_TRUE(base::PathExists(full_file_name));
   EXPECT_TRUE(base::PathExists(dir));
-  EXPECT_TRUE(file_util::TextContentsEqual(
+  EXPECT_TRUE(base::TextContentsEqual(
       test_dir_.Append(base::FilePath(kTestDir)).AppendASCII("b.saved1.htm"),
       full_file_name));
-  EXPECT_TRUE(file_util::ContentsEqual(
+  EXPECT_TRUE(base::ContentsEqual(
       test_dir_.Append(base::FilePath(kTestDir)).AppendASCII("1.png"),
       dir.AppendASCII("1.png")));
-  EXPECT_TRUE(file_util::ContentsEqual(
+  EXPECT_TRUE(base::ContentsEqual(
       test_dir_.Append(base::FilePath(kTestDir)).AppendASCII("1.css"),
       dir.AppendASCII("1.css")));
 }
@@ -660,13 +660,13 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_FileNameFromPageTitle) {
 
   EXPECT_TRUE(base::PathExists(full_file_name));
   EXPECT_TRUE(base::PathExists(dir));
-  EXPECT_TRUE(file_util::TextContentsEqual(
+  EXPECT_TRUE(base::TextContentsEqual(
       test_dir_.Append(base::FilePath(kTestDir)).AppendASCII("b.saved2.htm"),
       full_file_name));
-  EXPECT_TRUE(file_util::ContentsEqual(
+  EXPECT_TRUE(base::ContentsEqual(
       test_dir_.Append(base::FilePath(kTestDir)).AppendASCII("1.png"),
       dir.AppendASCII("1.png")));
-  EXPECT_TRUE(file_util::ContentsEqual(
+  EXPECT_TRUE(base::ContentsEqual(
       test_dir_.Append(base::FilePath(kTestDir)).AppendASCII("1.css"),
       dir.AppendASCII("1.css")));
 }
@@ -712,7 +712,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_RemoveFromList) {
 
   EXPECT_TRUE(base::PathExists(full_file_name));
   EXPECT_FALSE(base::PathExists(dir));
-  EXPECT_TRUE(file_util::ContentsEqual(test_dir_.Append(base::FilePath(
+  EXPECT_TRUE(base::ContentsEqual(test_dir_.Append(base::FilePath(
       kTestDir)).Append(FILE_PATH_LITERAL("a.htm")), full_file_name));
 }
 

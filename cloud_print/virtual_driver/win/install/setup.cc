@@ -391,7 +391,7 @@ bool IsOSSupported() {
 HRESULT RegisterVirtualDriver(const base::FilePath& install_path) {
   HRESULT result = S_OK;
 
-  DCHECK(file_util::DirectoryExists(install_path));
+  DCHECK(base::DirectoryExists(install_path));
   if (!IsOSSupported()) {
     LOG(ERROR) << "Requires XP SP3 or later.";
     return HRESULT_FROM_WIN32(ERROR_OLD_WIN_VERSION);
@@ -477,7 +477,7 @@ HRESULT DoRegister(const base::FilePath& install_path) {
 HRESULT DoDelete(const base::FilePath& install_path) {
   if (install_path.value().empty())
     return E_INVALIDARG;
-  if (!file_util::DirectoryExists(install_path))
+  if (!base::DirectoryExists(install_path))
     return S_FALSE;
   Sleep(5000);  // Give parent some time to exit.
   return base::Delete(install_path, true) ? S_OK : E_FAIL;
@@ -492,7 +492,7 @@ HRESULT DoInstall(const base::FilePath& install_path) {
   base::FilePath old_install_path = GetInstallLocation(kUninstallId);
   if (!old_install_path.value().empty() &&
       install_path != old_install_path) {
-    if (file_util::DirectoryExists(old_install_path))
+    if (base::DirectoryExists(old_install_path))
       base::Delete(old_install_path, true);
   }
   CreateUninstallKey(kUninstallId, LoadLocalString(IDS_DRIVER_NAME),
@@ -509,7 +509,7 @@ HRESULT ExecuteCommands() {
 
   base::FilePath exe_path;
   if (FAILED(PathService::Get(base::DIR_EXE, &exe_path)) ||
-      !file_util::DirectoryExists(exe_path)) {
+      !base::DirectoryExists(exe_path)) {
     return HRESULT_FROM_WIN32(ERROR_PATH_NOT_FOUND);
   }
 

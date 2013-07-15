@@ -146,7 +146,7 @@ void TemplateURLFetcherTest::StartDownload(
     ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &osdd_full_path));
     osdd_full_path = osdd_full_path.AppendASCII(osdd_file_name);
     ASSERT_TRUE(base::PathExists(osdd_full_path));
-    ASSERT_FALSE(file_util::DirectoryExists(osdd_full_path));
+    ASSERT_FALSE(base::DirectoryExists(osdd_full_path));
   }
 
   // Start the fetch.

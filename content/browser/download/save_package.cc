@@ -1346,9 +1346,9 @@ void SavePackage::CreateDirectoryOnFileThread(
   base::FilePath save_dir;
   // If the default html/websites save folder doesn't exist...
   // We skip the directory check for gdata directories on ChromeOS.
-  if (!skip_dir_check && !file_util::DirectoryExists(website_save_dir)) {
+  if (!skip_dir_check && !base::DirectoryExists(website_save_dir)) {
     // If the default download dir doesn't exist, create it.
-    if (!file_util::DirectoryExists(download_save_dir)) {
+    if (!base::DirectoryExists(download_save_dir)) {
       bool res = file_util::CreateDirectory(download_save_dir);
       DCHECK(res);
     }

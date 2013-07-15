@@ -280,7 +280,7 @@ TEST_F(ZipReaderTest, ExtractCurrentEntryToFilePath_Directory) {
   ASSERT_TRUE(reader.ExtractCurrentEntryToFilePath(
       test_dir_.AppendASCII("foo")));
   // The directory should be created.
-  ASSERT_TRUE(file_util::DirectoryExists(test_dir_.AppendASCII("foo")));
+  ASSERT_TRUE(base::DirectoryExists(test_dir_.AppendASCII("foo")));
 }
 
 TEST_F(ZipReaderTest, ExtractCurrentEntryIntoDirectory_RegularFile) {
@@ -290,7 +290,7 @@ TEST_F(ZipReaderTest, ExtractCurrentEntryIntoDirectory_RegularFile) {
   ASSERT_TRUE(reader.LocateAndOpenEntry(target_path));
   ASSERT_TRUE(reader.ExtractCurrentEntryIntoDirectory(test_dir_));
   // Sub directories should be created.
-  ASSERT_TRUE(file_util::DirectoryExists(test_dir_.AppendASCII("foo/bar")));
+  ASSERT_TRUE(base::DirectoryExists(test_dir_.AppendASCII("foo/bar")));
   // And the file should be created.
   std::string output;
   ASSERT_TRUE(file_util::ReadFileToString(

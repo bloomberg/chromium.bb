@@ -64,7 +64,7 @@ namespace {
 void DeleteInstallTempDir(const base::FilePath& target_path) {
   base::FilePath temp_path(target_path.DirName().Append(
       installer::kInstallTempDir));
-  if (file_util::DirectoryExists(temp_path)) {
+  if (base::DirectoryExists(temp_path)) {
     installer::SelfCleaningTempDir temp_dir;
     if (!temp_dir.Initialize(target_path.DirName(),
                              installer::kInstallTempDir) ||

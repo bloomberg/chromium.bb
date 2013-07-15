@@ -30,7 +30,7 @@ void SelfCleaningTempDir::GetTopDirToCreate(
       *base_dir = parent_dir;
       parent_dir = parent_dir.DirName();
     } while (parent_dir != *base_dir && !base::PathExists(parent_dir));
-    LOG_IF(WARNING, !file_util::DirectoryExists(parent_dir))
+    LOG_IF(WARNING, !base::DirectoryExists(parent_dir))
         << "A non-directory is at the base of the path leading to a desired "
            "temp directory location: " << parent_dir.value();
   }

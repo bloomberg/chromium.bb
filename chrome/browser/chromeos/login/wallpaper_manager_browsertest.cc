@@ -94,7 +94,7 @@ class WallpaperManagerBrowserTest : public CrosInProcessBrowserTest,
                                         const std::string& id) {
     base::FilePath wallpaper_path =
         WallpaperManager::Get()->GetCustomWallpaperPath(sub_dir, email, id);
-    if (!file_util::DirectoryExists(wallpaper_path.DirName()))
+    if (!base::DirectoryExists(wallpaper_path.DirName()))
       file_util::CreateDirectory(wallpaper_path.DirName());
 
     return wallpaper_path;

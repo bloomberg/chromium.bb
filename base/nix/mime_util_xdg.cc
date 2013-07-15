@@ -168,7 +168,7 @@ IconTheme::IconTheme(const std::string& name)
       &MimeUtilConstants::GetInstance()->icon_dirs_;
   for (iter = icon_dirs->begin(); iter != icon_dirs->end(); ++iter) {
     theme_path = iter->first.Append(name);
-    if (!file_util::DirectoryExists(theme_path))
+    if (!DirectoryExists(theme_path))
       continue;
     FilePath theme_index = theme_path.Append("index.theme");
     if (!index_theme_loaded_ && PathExists(theme_index)) {
@@ -387,7 +387,7 @@ bool IconTheme::SetDirectories(const std::string& dirs) {
 
 bool CheckDirExistsAndGetMtime(const FilePath& dir,
                                base::Time* last_modified) {
-  if (!file_util::DirectoryExists(dir))
+  if (!DirectoryExists(dir))
     return false;
   base::PlatformFileInfo file_info;
   if (!file_util::GetFileInfo(dir, &file_info))
@@ -406,7 +406,7 @@ void TryAddIconDir(const FilePath& dir) {
 
 // For a xdg directory |dir|, add the appropriate icon sub-directories.
 void AddXDGDataDir(const FilePath& dir) {
-  if (!file_util::DirectoryExists(dir))
+  if (!DirectoryExists(dir))
     return;
   TryAddIconDir(dir.Append("icons"));
   TryAddIconDir(dir.Append("pixmaps"));
@@ -418,7 +418,7 @@ void InitIconDir() {
   if (!home.empty()) {
       FilePath legacy_data_dir(home);
       legacy_data_dir = legacy_data_dir.AppendASCII(".icons");
-      if (file_util::DirectoryExists(legacy_data_dir))
+      if (DirectoryExists(legacy_data_dir))
         TryAddIconDir(legacy_data_dir);
   }
   const char* env = getenv("XDG_DATA_HOME");

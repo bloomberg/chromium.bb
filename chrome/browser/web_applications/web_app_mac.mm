@@ -130,7 +130,7 @@ bool AddGfxImageToIconFamily(IconFamilyHandle icon_family,
 base::FilePath GetWritableApplicationsDirectory() {
   base::FilePath path;
   if (base::mac::GetLocalDirectory(NSApplicationDirectory, &path) &&
-      file_util::PathIsWritable(path)) {
+      base::PathIsWritable(path)) {
     return path;
   }
   if (base::mac::GetUserDirectory(NSApplicationDirectory, &path))
@@ -384,7 +384,7 @@ size_t WebAppShortcutCreator::CreateShortcutsIn(
 
 bool WebAppShortcutCreator::CreateShortcuts() {
   base::FilePath dst_path = GetDestinationPath();
-  if (dst_path.empty() || !file_util::DirectoryExists(dst_path.DirName())) {
+  if (dst_path.empty() || !base::DirectoryExists(dst_path.DirName())) {
     LOG(ERROR) << "Couldn't find an Applications directory to copy app to.";
     return false;
   }

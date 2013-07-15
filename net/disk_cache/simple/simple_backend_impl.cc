@@ -33,7 +33,7 @@ using base::MessageLoopProxy;
 using base::SequencedWorkerPool;
 using base::SingleThreadTaskRunner;
 using base::Time;
-using file_util::DirectoryExists;
+using base::DirectoryExists;
 using file_util::CreateDirectory;
 
 namespace {

@@ -154,7 +154,7 @@ bool ResourceCache::VerifyKeyPath(const std::string& key,
     return false;
   *path = cache_dir_.AppendASCII(encoded);
   return allow_create ? file_util::CreateDirectory(*path) :
-                        file_util::DirectoryExists(*path);
+                        base::DirectoryExists(*path);
 }
 
 bool ResourceCache::VerifyKeyPathAndGetSubkeyPath(const std::string& key,

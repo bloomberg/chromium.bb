@@ -180,7 +180,7 @@ DatabaseCheckHelper::DatabaseCheckHelper(
       last_file_id_(-1), last_integer_(-1) {
   DCHECK(dir_db_);
   DCHECK(db_);
-  DCHECK(!path_.empty() && file_util::DirectoryExists(path_));
+  DCHECK(!path_.empty() && base::DirectoryExists(path_));
 }
 
 bool DatabaseCheckHelper::IsDatabaseEmpty() {

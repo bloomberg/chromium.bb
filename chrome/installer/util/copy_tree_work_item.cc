@@ -38,17 +38,17 @@ bool CopyTreeWorkItem::Do() {
   // handle overwrite_option_ = IF_DIFFERENT case.
   if ((dest_exist) &&
       (overwrite_option_ == WorkItem::IF_DIFFERENT) &&  // only for single file
-      (!file_util::DirectoryExists(source_path_)) &&
-      (!file_util::DirectoryExists(dest_path_)) &&
-      (file_util::ContentsEqual(source_path_, dest_path_))) {
+      (!base::DirectoryExists(source_path_)) &&
+      (!base::DirectoryExists(dest_path_)) &&
+      (base::ContentsEqual(source_path_, dest_path_))) {
     VLOG(1) << "Source file " << source_path_.value()
             << " and destination file " << dest_path_.value()
             << " are exactly same. Returning true.";
     return true;
   } else if ((dest_exist) &&
              (overwrite_option_ == WorkItem::NEW_NAME_IF_IN_USE) &&
-             (!file_util::DirectoryExists(source_path_)) &&
-             (!file_util::DirectoryExists(dest_path_)) &&
+             (!base::DirectoryExists(source_path_)) &&
+             (!base::DirectoryExists(dest_path_)) &&
              (IsFileInUse(dest_path_))) {
     // handle overwrite_option_ = NEW_NAME_IF_IN_USE case.
     if (alternative_path_.empty() ||

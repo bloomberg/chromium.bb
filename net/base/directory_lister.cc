@@ -143,7 +143,7 @@ void DirectoryLister::Core::Cancel() {
 
 void DirectoryLister::Core::StartInternal() {
 
-  if (!file_util::DirectoryExists(dir_)) {
+  if (!base::DirectoryExists(dir_)) {
     origin_loop_->PostTask(
         FROM_HERE,
         base::Bind(&DirectoryLister::Core::OnDone, this, ERR_FILE_NOT_FOUND));

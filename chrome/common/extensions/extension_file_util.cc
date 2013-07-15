@@ -329,7 +329,7 @@ void GarbageCollectExtensions(
     const base::FilePath& install_directory,
     const std::multimap<std::string, base::FilePath>& extension_paths) {
   // Nothing to clean up if it doesn't exist.
-  if (!file_util::DirectoryExists(install_directory))
+  if (!base::DirectoryExists(install_directory))
     return;
 
   DVLOG(1) << "Garbage collecting extensions...";
@@ -549,11 +549,11 @@ base::FilePath GetInstallTempDir(const base::FilePath& extensions_dir) {
   // install target.
   base::FilePath temp_path = extensions_dir.Append(kTempDirectoryName);
   if (base::PathExists(temp_path)) {
-    if (!file_util::DirectoryExists(temp_path)) {
+    if (!base::DirectoryExists(temp_path)) {
       DLOG(WARNING) << "Not a directory: " << temp_path.value();
       return base::FilePath();
     }
-    if (!file_util::PathIsWritable(temp_path)) {
+    if (!base::PathIsWritable(temp_path)) {
       DLOG(WARNING) << "Can't write to path: " << temp_path.value();
       return base::FilePath();
     }

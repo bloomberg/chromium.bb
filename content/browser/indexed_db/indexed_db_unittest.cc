@@ -74,8 +74,8 @@ TEST_F(IndexedDBTest, ClearSessionOnlyDatabases) {
   FlushIndexedDBTaskRunner();
   message_loop_.RunUntilIdle();
 
-  EXPECT_TRUE(file_util::DirectoryExists(normal_path));
-  EXPECT_FALSE(file_util::DirectoryExists(session_only_path));
+  EXPECT_TRUE(base::DirectoryExists(normal_path));
+  EXPECT_FALSE(base::DirectoryExists(session_only_path));
 }
 
 TEST_F(IndexedDBTest, SetForceKeepSessionState) {
@@ -108,8 +108,8 @@ TEST_F(IndexedDBTest, SetForceKeepSessionState) {
   message_loop_.RunUntilIdle();
 
   // No data was cleared because of SetForceKeepSessionState.
-  EXPECT_TRUE(file_util::DirectoryExists(normal_path));
-  EXPECT_TRUE(file_util::DirectoryExists(session_only_path));
+  EXPECT_TRUE(base::DirectoryExists(normal_path));
+  EXPECT_TRUE(base::DirectoryExists(session_only_path));
 }
 
 class MockConnection : public IndexedDBConnection {
@@ -187,7 +187,7 @@ TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnDelete) {
   // Make sure we wait until the destructor has run.
   message_loop_.RunUntilIdle();
 
-  EXPECT_FALSE(file_util::DirectoryExists(test_path));
+  EXPECT_FALSE(base::DirectoryExists(test_path));
 }
 
 }  // namespace content

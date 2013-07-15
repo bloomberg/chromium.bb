@@ -133,7 +133,7 @@ class BrowserEncodingTest
     base::FilePath expected_file_name = ui_test_utils::GetTestFilePath(
         base::FilePath(kTestDir), expected);
 
-    EXPECT_TRUE(file_util::ContentsEqual(full_file_name, expected_file_name));
+    EXPECT_TRUE(base::ContentsEqual(full_file_name, expected_file_name));
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {

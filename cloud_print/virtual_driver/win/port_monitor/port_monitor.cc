@@ -310,7 +310,7 @@ base::FilePath GetChromeExePath() {
 
 base::FilePath GetChromeProfilePath() {
   base::FilePath path = ReadPathFromAnyRegistry(kChromeProfilePathRegValue);
-  if (!path.empty() && file_util::DirectoryExists(path))
+  if (!path.empty() && base::DirectoryExists(path))
     return path;
   return base::FilePath();
 }

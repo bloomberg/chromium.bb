@@ -105,7 +105,7 @@ class SandboxFileSystemBackendTest : public testing::Test {
     base::FilePath target = backend_->
         GetBaseDirectoryForOriginAndType(origin, type, true);
     ASSERT_TRUE(!target.empty());
-    ASSERT_TRUE(file_util::DirectoryExists(target));
+    ASSERT_TRUE(base::DirectoryExists(target));
   }
 
   bool GetRootPath(const GURL& origin_url,
@@ -255,7 +255,7 @@ TEST_F(SandboxFileSystemBackendTest, GetRootPathCreateAndExamine) {
     base::FilePath expected = file_system_path().AppendASCII(
         kRootPathTestCases[i].expected_path);
     EXPECT_EQ(expected.value(), root_path.value());
-    EXPECT_TRUE(file_util::DirectoryExists(root_path));
+    EXPECT_TRUE(base::DirectoryExists(root_path));
     ASSERT_TRUE(returned_root_path.size() > i);
     returned_root_path[i] = root_path;
   }
@@ -353,7 +353,7 @@ TEST_F(SandboxFileSystemBackendTest, GetRootPathFileURIWithAllowFlag) {
     base::FilePath expected = file_system_path().AppendASCII(
         kRootPathFileURITestCases[i].expected_path);
     EXPECT_EQ(expected.value(), root_path.value());
-    EXPECT_TRUE(file_util::DirectoryExists(root_path));
+    EXPECT_TRUE(base::DirectoryExists(root_path));
   }
 }
 

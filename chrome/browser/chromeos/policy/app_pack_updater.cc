@@ -240,7 +240,7 @@ void AppPackUpdater::BlockingCheckCacheInternal(
     CacheEntryMap* entries) {
   // Start by verifying that the cache dir exists.
   base::FilePath dir(kAppPackCacheDir);
-  if (!file_util::DirectoryExists(dir)) {
+  if (!base::DirectoryExists(dir)) {
     // Create it now.
     if (!file_util::CreateDirectory(dir))
       LOG(ERROR) << "Failed to create AppPack directory at " << dir.value();
@@ -484,7 +484,7 @@ void AppPackUpdater::BlockingInstallCacheEntry(
     base::Delete(cached_crx_path, true /* recursive */);
   }
 
-  if (!file_util::DirectoryExists(cache_dir)) {
+  if (!base::DirectoryExists(cache_dir)) {
     LOG(ERROR) << "AppPack cache directory does not exist, creating now: "
                << cache_dir.value();
     if (!file_util::CreateDirectory(cache_dir)) {

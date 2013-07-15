@@ -314,6 +314,19 @@ bool PathExists(const FilePath& path) {
   return access(path.value().c_str(), F_OK) == 0;
 }
 
+bool PathIsWritable(const FilePath& path) {
+  ThreadRestrictions::AssertIOAllowed();
+  return access(path.value().c_str(), W_OK) == 0;
+}
+
+bool DirectoryExists(const FilePath& path) {
+  ThreadRestrictions::AssertIOAllowed();
+  stat_wrapper_t file_info;
+  if (CallStat(path.value().c_str(), &file_info) == 0)
+    return S_ISDIR(file_info.st_mode);
+  return false;
+}
+
 }  // namespace base
 
 // -----------------------------------------------------------------------------
@@ -323,24 +336,12 @@ namespace file_util {
 using base::stat_wrapper_t;
 using base::CallStat;
 using base::CallLstat;
+using base::DirectoryExists;
 using base::FileEnumerator;
 using base::FilePath;
 using base::MakeAbsoluteFilePath;
 using base::RealPath;
 using base::VerifySpecificPathControlledByUser;
-
-bool PathIsWritable(const FilePath& path) {
-  base::ThreadRestrictions::AssertIOAllowed();
-  return access(path.value().c_str(), W_OK) == 0;
-}
-
-bool DirectoryExists(const FilePath& path) {
-  base::ThreadRestrictions::AssertIOAllowed();
-  stat_wrapper_t file_info;
-  if (CallStat(path.value().c_str(), &file_info) == 0)
-    return S_ISDIR(file_info.st_mode);
-  return false;
-}
 
 bool ReadFromFD(int fd, char* buffer, size_t bytes) {
   size_t total_read = 0;

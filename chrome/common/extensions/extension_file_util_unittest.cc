@@ -51,10 +51,10 @@ TEST_F(ExtensionFileUtilTest, InstallUninstallGarbageCollect) {
   ASSERT_EQ(version_1.value(),
             all_extensions.AppendASCII(extension_id).AppendASCII("1.0_0")
                 .value());
-  ASSERT_TRUE(file_util::DirectoryExists(version_1));
+  ASSERT_TRUE(base::DirectoryExists(version_1));
 
   // Should have moved the source.
-  ASSERT_FALSE(file_util::DirectoryExists(src));
+  ASSERT_FALSE(base::DirectoryExists(src));
 
   // Install again. Should create a new one with different name.
   ASSERT_TRUE(file_util::CreateDirectory(src));
@@ -66,10 +66,10 @@ TEST_F(ExtensionFileUtilTest, InstallUninstallGarbageCollect) {
   ASSERT_EQ(version_2.value(),
             all_extensions.AppendASCII(extension_id).AppendASCII("1.0_1")
                 .value());
-  ASSERT_TRUE(file_util::DirectoryExists(version_2));
+  ASSERT_TRUE(base::DirectoryExists(version_2));
 
   // Should have moved the source.
-  ASSERT_FALSE(file_util::DirectoryExists(src));
+  ASSERT_FALSE(base::DirectoryExists(src));
 
   // Install yet again. Should create a new one with a different name.
   ASSERT_TRUE(file_util::CreateDirectory(src));
@@ -81,7 +81,7 @@ TEST_F(ExtensionFileUtilTest, InstallUninstallGarbageCollect) {
   ASSERT_EQ(version_3.value(),
             all_extensions.AppendASCII(extension_id).AppendASCII("1.0_2")
                 .value());
-  ASSERT_TRUE(file_util::DirectoryExists(version_3));
+  ASSERT_TRUE(base::DirectoryExists(version_3));
 
   // Collect garbage. Should remove first one.
   std::multimap<std::string, base::FilePath> extension_paths;
@@ -91,15 +91,15 @@ TEST_F(ExtensionFileUtilTest, InstallUninstallGarbageCollect) {
       base::FilePath().AppendASCII(extension_id).Append(version_3.BaseName())));
   extension_file_util::GarbageCollectExtensions(all_extensions,
                                                 extension_paths);
-  ASSERT_FALSE(file_util::DirectoryExists(version_1));
-  ASSERT_TRUE(file_util::DirectoryExists(version_2));
-  ASSERT_TRUE(file_util::DirectoryExists(version_3));
+  ASSERT_FALSE(base::DirectoryExists(version_1));
+  ASSERT_TRUE(base::DirectoryExists(version_2));
+  ASSERT_TRUE(base::DirectoryExists(version_3));
 
   // Uninstall. Should remove entire extension subtree.
   extension_file_util::UninstallExtension(all_extensions, extension_id);
-  ASSERT_FALSE(file_util::DirectoryExists(version_2.DirName()));
-  ASSERT_FALSE(file_util::DirectoryExists(version_3.DirName()));
-  ASSERT_TRUE(file_util::DirectoryExists(all_extensions));
+  ASSERT_FALSE(base::DirectoryExists(version_2.DirName()));
+  ASSERT_FALSE(base::DirectoryExists(version_3.DirName()));
+  ASSERT_TRUE(base::DirectoryExists(all_extensions));
 }
 
 TEST_F(ExtensionFileUtilTest, LoadExtensionWithValidLocales) {

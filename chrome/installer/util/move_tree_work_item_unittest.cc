@@ -308,7 +308,7 @@ TEST_F(MoveTreeWorkItemTest, MoveFileDestInUse) {
   EXPECT_TRUE(base::PathExists(from_dir));
   EXPECT_EQ(0, ReadTextFile(from_file).compare(kTextContent1));
   EXPECT_TRUE(base::PathExists(to_dir));
-  EXPECT_TRUE(file_util::ContentsEqual(exe_full_path, to_file));
+  EXPECT_TRUE(base::ContentsEqual(exe_full_path, to_file));
 
   TerminateProcess(pi.hProcess, 0);
   EXPECT_TRUE(WaitForSingleObject(pi.hProcess, 10000) == WAIT_OBJECT_0);
@@ -363,7 +363,7 @@ TEST_F(MoveTreeWorkItemTest, MoveFileInUse) {
   EXPECT_TRUE(base::PathExists(from_dir));
   EXPECT_FALSE(base::PathExists(from_file));
   EXPECT_TRUE(base::PathExists(to_dir));
-  EXPECT_TRUE(file_util::ContentsEqual(exe_full_path, to_file));
+  EXPECT_TRUE(base::ContentsEqual(exe_full_path, to_file));
 
   // Close the process and make sure all the conditions after Do() are
   // still true.
@@ -375,13 +375,13 @@ TEST_F(MoveTreeWorkItemTest, MoveFileInUse) {
   EXPECT_TRUE(base::PathExists(from_dir));
   EXPECT_FALSE(base::PathExists(from_file));
   EXPECT_TRUE(base::PathExists(to_dir));
-  EXPECT_TRUE(file_util::ContentsEqual(exe_full_path, to_file));
+  EXPECT_TRUE(base::ContentsEqual(exe_full_path, to_file));
 
   // test rollback()
   work_item->Rollback();
 
   EXPECT_TRUE(base::PathExists(from_dir));
-  EXPECT_TRUE(file_util::ContentsEqual(exe_full_path, from_file));
+  EXPECT_TRUE(base::ContentsEqual(exe_full_path, from_file));
   EXPECT_TRUE(base::PathExists(to_dir));
   EXPECT_EQ(0, ReadTextFile(to_file).compare(kTextContent1));
 }

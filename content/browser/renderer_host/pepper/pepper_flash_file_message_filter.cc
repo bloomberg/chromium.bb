@@ -245,7 +245,7 @@ int32_t PepperFlashFileMessageFilter::OnCreateTemporaryFile(
   base::FilePath validated_dir_path = ValidateAndConvertPepperFilePath(
       dir_path, kReadPermissions | kWritePermissions);
   if (validated_dir_path.empty() ||
-      (!file_util::DirectoryExists(validated_dir_path) &&
+      (!base::DirectoryExists(validated_dir_path) &&
        !file_util::CreateDirectory(validated_dir_path))) {
     return ppapi::PlatformFileErrorToPepperError(
         base::PLATFORM_FILE_ERROR_ACCESS_DENIED);

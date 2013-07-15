@@ -197,7 +197,7 @@ PlatformFileError CreateOrOpenAdapter(
     PlatformFile* file_handle, bool* created) {
   DCHECK(file_handle);
   DCHECK(created);
-  if (!file_util::DirectoryExists(file_path.DirName())) {
+  if (!DirectoryExists(file_path.DirName())) {
     // If its parent does not exist, should return NOT_FOUND error.
     return PLATFORM_FILE_ERROR_NOT_FOUND;
   }

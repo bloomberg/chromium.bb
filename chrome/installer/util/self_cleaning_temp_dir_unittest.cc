@@ -74,14 +74,14 @@ TEST_F(SelfCleaningTempDirTest, RemoveUnusedOnDelete) {
   SelfCleaningTempDir temp_dir;
   EXPECT_TRUE(temp_dir.Initialize(parent_temp_dir, L"Three"));
   EXPECT_EQ(parent_temp_dir.Append(L"Three"), temp_dir.path());
-  EXPECT_TRUE(file_util::DirectoryExists(temp_dir.path()));
+  EXPECT_TRUE(base::DirectoryExists(temp_dir.path()));
   EXPECT_TRUE(temp_dir.Delete());
-  EXPECT_FALSE(file_util::DirectoryExists(parent_temp_dir.Append(L"Three")));
-  EXPECT_FALSE(file_util::DirectoryExists(parent_temp_dir));
-  EXPECT_FALSE(file_util::DirectoryExists(parent_temp_dir.DirName()));
-  EXPECT_TRUE(file_util::DirectoryExists(parent_temp_dir.DirName().DirName()));
+  EXPECT_FALSE(base::DirectoryExists(parent_temp_dir.Append(L"Three")));
+  EXPECT_FALSE(base::DirectoryExists(parent_temp_dir));
+  EXPECT_FALSE(base::DirectoryExists(parent_temp_dir.DirName()));
+  EXPECT_TRUE(base::DirectoryExists(parent_temp_dir.DirName().DirName()));
   EXPECT_TRUE(work_dir.Delete());
-  EXPECT_FALSE(file_util::DirectoryExists(parent_temp_dir.DirName().DirName()));
+  EXPECT_FALSE(base::DirectoryExists(parent_temp_dir.DirName().DirName()));
 }
 
 // Test that two clients can work in the same area.
@@ -101,23 +101,23 @@ TEST_F(SelfCleaningTempDirTest, TwoClients) {
   // Both clients are where they are expected.
   EXPECT_EQ(parent_temp_dir.Append(L"Three"), temp_dir1.path());
   EXPECT_EQ(parent_temp_dir.Append(L"Three"), temp_dir2.path());
-  EXPECT_TRUE(file_util::DirectoryExists(temp_dir1.path()));
-  EXPECT_TRUE(file_util::DirectoryExists(temp_dir2.path()));
+  EXPECT_TRUE(base::DirectoryExists(temp_dir1.path()));
+  EXPECT_TRUE(base::DirectoryExists(temp_dir2.path()));
   // Second client goes away.
   EXPECT_TRUE(temp_dir2.Delete());
   // The first is now useless.
-  EXPECT_FALSE(file_util::DirectoryExists(temp_dir1.path()));
+  EXPECT_FALSE(base::DirectoryExists(temp_dir1.path()));
   // But the intermediate dirs are still present
-  EXPECT_TRUE(file_util::DirectoryExists(parent_temp_dir));
+  EXPECT_TRUE(base::DirectoryExists(parent_temp_dir));
   // Now the first goes away.
   EXPECT_TRUE(temp_dir1.Delete());
   // And cleans up after itself.
-  EXPECT_FALSE(file_util::DirectoryExists(parent_temp_dir.Append(L"Three")));
-  EXPECT_FALSE(file_util::DirectoryExists(parent_temp_dir));
-  EXPECT_FALSE(file_util::DirectoryExists(parent_temp_dir.DirName()));
-  EXPECT_TRUE(file_util::DirectoryExists(parent_temp_dir.DirName().DirName()));
+  EXPECT_FALSE(base::DirectoryExists(parent_temp_dir.Append(L"Three")));
+  EXPECT_FALSE(base::DirectoryExists(parent_temp_dir));
+  EXPECT_FALSE(base::DirectoryExists(parent_temp_dir.DirName()));
+  EXPECT_TRUE(base::DirectoryExists(parent_temp_dir.DirName().DirName()));
   EXPECT_TRUE(work_dir.Delete());
-  EXPECT_FALSE(file_util::DirectoryExists(parent_temp_dir.DirName().DirName()));
+  EXPECT_FALSE(base::DirectoryExists(parent_temp_dir.DirName().DirName()));
 }
 
 // Test that all intermediate dirs are cleaned up if they're empty when the
@@ -133,14 +133,14 @@ TEST_F(SelfCleaningTempDirTest, RemoveUnusedOnDestroy) {
     SelfCleaningTempDir temp_dir;
     EXPECT_TRUE(temp_dir.Initialize(parent_temp_dir, L"Three"));
     EXPECT_EQ(parent_temp_dir.Append(L"Three"), temp_dir.path());
-    EXPECT_TRUE(file_util::DirectoryExists(temp_dir.path()));
+    EXPECT_TRUE(base::DirectoryExists(temp_dir.path()));
   }
-  EXPECT_FALSE(file_util::DirectoryExists(parent_temp_dir.Append(L"Three")));
-  EXPECT_FALSE(file_util::DirectoryExists(parent_temp_dir));
-  EXPECT_FALSE(file_util::DirectoryExists(parent_temp_dir.DirName()));
-  EXPECT_TRUE(file_util::DirectoryExists(parent_temp_dir.DirName().DirName()));
+  EXPECT_FALSE(base::DirectoryExists(parent_temp_dir.Append(L"Three")));
+  EXPECT_FALSE(base::DirectoryExists(parent_temp_dir));
+  EXPECT_FALSE(base::DirectoryExists(parent_temp_dir.DirName()));
+  EXPECT_TRUE(base::DirectoryExists(parent_temp_dir.DirName().DirName()));
   EXPECT_TRUE(work_dir.Delete());
-  EXPECT_FALSE(file_util::DirectoryExists(parent_temp_dir.DirName().DirName()));
+  EXPECT_FALSE(base::DirectoryExists(parent_temp_dir.DirName().DirName()));
 }
 
 // Test that intermediate dirs are left behind if they're not empty when the
@@ -158,16 +158,16 @@ TEST_F(SelfCleaningTempDirTest, LeaveUsedOnDestroy) {
     SelfCleaningTempDir temp_dir;
     EXPECT_TRUE(temp_dir.Initialize(parent_temp_dir, L"Three"));
     EXPECT_EQ(parent_temp_dir.Append(L"Three"), temp_dir.path());
-    EXPECT_TRUE(file_util::DirectoryExists(temp_dir.path()));
+    EXPECT_TRUE(base::DirectoryExists(temp_dir.path()));
     // Drop a file somewhere.
     EXPECT_EQ(arraysize(kHiHon) - 1,
               file_util::WriteFile(parent_temp_dir.Append(GetRandomFilename()),
                                    kHiHon, arraysize(kHiHon) - 1));
   }
-  EXPECT_FALSE(file_util::DirectoryExists(parent_temp_dir.Append(L"Three")));
-  EXPECT_TRUE(file_util::DirectoryExists(parent_temp_dir));
+  EXPECT_FALSE(base::DirectoryExists(parent_temp_dir.Append(L"Three")));
+  EXPECT_TRUE(base::DirectoryExists(parent_temp_dir));
   EXPECT_TRUE(work_dir.Delete());
-  EXPECT_FALSE(file_util::DirectoryExists(parent_temp_dir.DirName().DirName()));
+  EXPECT_FALSE(base::DirectoryExists(parent_temp_dir.DirName().DirName()));
 }
 
 }  // namespace installer

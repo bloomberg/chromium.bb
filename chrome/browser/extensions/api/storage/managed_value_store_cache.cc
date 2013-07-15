@@ -235,7 +235,7 @@ void ManagedValueStoreCache::DeleteStorageSoon(
     // (because the extension is unloaded, for example). Open the database to
     // clear it if it exists.
     // TODO(joaodasilva): move this check to a ValueStore method.
-    if (file_util::DirectoryExists(base_path_.AppendASCII(extension_id))) {
+    if (base::DirectoryExists(base_path_.AppendASCII(extension_id))) {
       CreateStoreFor(
           extension_id,
           false,
@@ -383,7 +383,7 @@ void ManagedValueStoreCache::CreateStoreWithInitialPolicy(
     // If the database doesn't exist yet then this is the initial install,
     // and no notifications should be issued in that case.
     // TODO(joaodasilva): move this check to a ValueStore method.
-    if (!file_util::DirectoryExists(base_path_.AppendASCII(extension_id)))
+    if (!base::DirectoryExists(base_path_.AppendASCII(extension_id)))
       notify_if_changed = false;
 
     store = new PolicyValueStore(

@@ -74,7 +74,7 @@ bool WebFileUtilitiesImpl::makeAllDirectories(const WebString& path) {
 }
 
 bool WebFileUtilitiesImpl::isDirectory(const WebString& path) {
-  return file_util::DirectoryExists(base::FilePath::FromUTF16Unsafe(path));
+  return base::DirectoryExists(base::FilePath::FromUTF16Unsafe(path));
 }
 
 WebKit::WebURL WebFileUtilitiesImpl::filePathToURL(const WebString& path) {

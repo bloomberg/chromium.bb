@@ -45,8 +45,7 @@ static NativeLibraryObjCStatus GetObjCStatusForImage(
 NativeLibrary LoadNativeLibrary(const base::FilePath& library_path,
                                 std::string* error) {
   // dlopen() etc. open the file off disk.
-  if (library_path.Extension() == "dylib" ||
-      !file_util::DirectoryExists(library_path)) {
+  if (library_path.Extension() == "dylib" || !DirectoryExists(library_path)) {
     void* dylib = dlopen(library_path.value().c_str(), RTLD_LAZY);
     if (!dylib)
       return NULL;

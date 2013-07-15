@@ -73,7 +73,7 @@ static void DumpDirectoryTree(const std::string& origin_name,
   printf("=== ORIGIN %s %s ===\n",
          origin_name.c_str(), FilePathToString(origin_dir).c_str());
 
-  if (!file_util::DirectoryExists(origin_dir))
+  if (!base::DirectoryExists(origin_dir))
     return;
 
   SandboxDirectoryDatabase directory_db(origin_dir);
@@ -189,7 +189,7 @@ int main(int argc, char* argv[]) {
     ShowUsageAndExit(arg0);
 
   const base::FilePath file_system_dir = fileapi::StringToFilePath(argv[1]);
-  if (!file_util::DirectoryExists(file_system_dir)) {
+  if (!base::DirectoryExists(file_system_dir)) {
     ShowMessageAndExit(fileapi::FilePathToString(file_system_dir) +
                        " is not a filesystem directory");
   }
