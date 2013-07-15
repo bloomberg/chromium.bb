@@ -11,6 +11,20 @@
 
 namespace ppapi {
 
+// For "old" style resources, PP_Resource values differ on the host and plugin
+// side. Implementations of those should be careful to use HostResource to
+// prevent confusion. "New" style resources use the same PP_Resource value on
+// the host and plugin sides, and should not use HostResource.
+//
+// Old style resources match these file specs:
+//   Proxy: ppapi/proxy/ppb_*_proxy.*
+//   Host: webkit/plugins/ppapi/*
+// New style resources match these file specs:
+//   Proxy: ppapi/proxy/*_resource.*
+//   Browser: (content|chrome)/browser/renderer_host/pepper/pepper_*_host.*
+//   Renderer: (content|chrome)/renderer/pepper/pepper_*_host.*
+//
+//
 // Represents a PP_Resource sent over the wire. This just wraps a PP_Resource.
 // The point is to prevent mistakes where the wrong resource value is sent.
 // Resource values are remapped in the plugin so that it can talk to multiple
