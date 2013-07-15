@@ -164,10 +164,6 @@ public:
     void operator delete(void*);
 
     static bool isSupported(const String& feature, const String& version);
-
-    static void startIgnoringLeaks();
-    static void stopIgnoringLeaks();
-
     static void dumpStatistics();
 
     enum StyleChange { NoChange, NoInherit, Inherit, Detach, Force };    
