@@ -139,7 +139,7 @@ LayerImpl* LayerTreeImpl::RootScrollLayer() const {
   return root_scroll_layer_;
 }
 
-LayerImpl* LayerTreeImpl::RootClipLayer() const {
+LayerImpl* LayerTreeImpl::RootContainerLayer() const {
   return root_scroll_layer_ ? root_scroll_layer_->parent() : NULL;
 }
 
@@ -242,9 +242,9 @@ void LayerTreeImpl::UpdateSolidColorScrollbars() {
       gfx::PointAtOffsetFromOrigin(root_scroll->TotalScrollOffset()),
       ScrollableViewportSize());
   float vertical_adjust = 0.0f;
-  if (RootClipLayer())
+  if (RootContainerLayer())
     vertical_adjust = layer_tree_host_impl_->VisibleViewportSize().height() -
-                      RootClipLayer()->bounds().height();
+                      RootContainerLayer()->bounds().height();
   if (ScrollbarLayerImpl* horiz = root_scroll->horizontal_scrollbar_layer()) {
     horiz->set_vertical_adjust(vertical_adjust);
     horiz->set_visible_to_total_length_ratio(
@@ -258,20 +258,13 @@ void LayerTreeImpl::UpdateSolidColorScrollbars() {
 }
 
 void LayerTreeImpl::UpdateDrawProperties() {
-  if (IsActiveTree() && RootScrollLayer() && RootClipLayer())
+  if (IsActiveTree() && RootScrollLayer() && RootContainerLayer())
     UpdateRootScrollLayerSizeDelta();
 
   if (settings().solid_color_scrollbars &&
       IsActiveTree() &&
       RootScrollLayer()) {
     UpdateSolidColorScrollbars();
-
-    // The top controls manager is incompatible with the WebKit-created cliprect
-    // because it can bring into view a larger amount of content when it
-    // hides. It's safe to deactivate the clip rect if no non-overlay scrollbars
-    // are present.
-    if (RootClipLayer() && layer_tree_host_impl_->top_controls_manager())
-      RootClipLayer()->SetMasksToBounds(false);
   }
 
   needs_update_draw_properties_ = false;
@@ -534,16 +527,16 @@ void LayerTreeImpl::SetRootLayerScrollOffsetDelegate(
 
 void LayerTreeImpl::UpdateRootScrollLayerSizeDelta() {
   LayerImpl* root_scroll = RootScrollLayer();
-  LayerImpl* root_clip = RootClipLayer();
+  LayerImpl* root_container = RootContainerLayer();
   DCHECK(root_scroll);
-  DCHECK(root_clip);
+  DCHECK(root_container);
   DCHECK(IsActiveTree());
 
   gfx::Vector2dF scrollable_viewport_size =
       gfx::RectF(ScrollableViewportSize()).bottom_right() - gfx::PointF();
 
   gfx::Vector2dF original_viewport_size =
-      gfx::RectF(root_clip->bounds()).bottom_right() -
+      gfx::RectF(root_container->bounds()).bottom_right() -
       gfx::PointF();
   original_viewport_size.Scale(1 / page_scale_factor());
 
