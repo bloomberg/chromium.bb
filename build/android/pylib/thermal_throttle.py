@@ -51,20 +51,22 @@ class ThermalThrottle(object):
         logging.info(u' Device %s Thermally Thottled at %3.1f%sC',
                      serial_number, temp, degree_symbol)
 
-    # Print temperature of CPU SoC.
-    omap_temp_file = '/sys/devices/platform/omap/omap_temp_sensor.0/temperature'
-    if self._adb.FileExistsOnDevice(omap_temp_file):
-      tempdata = self._adb.GetFileContents(omap_temp_file)
-      temp = float(tempdata[0]) / 1000.0
-      logging.info(u'Current OMAP Temperature of %s = %3.1f%sC',
-                   serial_number, temp, degree_symbol)
+    if logging.getLogger().isEnabledFor(logging.DEBUG):
+      # Print temperature of CPU SoC.
+      omap_temp_file = ('/sys/devices/platform/omap/omap_temp_sensor.0/'
+                        'temperature')
+      if self._adb.FileExistsOnDevice(omap_temp_file):
+        tempdata = self._adb.GetFileContents(omap_temp_file)
+        temp = float(tempdata[0]) / 1000.0
+        logging.debug(u'Current OMAP Temperature of %s = %3.1f%sC',
+                      serial_number, temp, degree_symbol)
 
-    # Print temperature of battery, to give a system temperature
-    dumpsys_log = self._adb.RunShellCommand('dumpsys battery')
-    for line in dumpsys_log:
-      if 'temperature' in line:
-        btemp = float([s for s in line.split() if s.isdigit()][0]) / 10.0
-        logging.info(u'Current battery temperature of %s = %3.1f%sC',
-                     serial_number, btemp, degree_symbol)
+      # Print temperature of battery, to give a system temperature
+      dumpsys_log = self._adb.RunShellCommand('dumpsys battery')
+      for line in dumpsys_log:
+        if 'temperature' in line:
+          btemp = float([s for s in line.split() if s.isdigit()][0]) / 10.0
+          logging.debug(u'Current battery temperature of %s = %3.1f%sC',
+                        serial_number, btemp, degree_symbol)
 
     return has_been_throttled

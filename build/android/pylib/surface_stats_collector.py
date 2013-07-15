@@ -244,7 +244,8 @@ class SurfaceStatsCollector(object):
     # the activity's main window are not updated when the main web content is
     # composited into a SurfaceView.
     results = self._adb.RunShellCommand(
-        'dumpsys SurfaceFlinger --latency SurfaceView', log_result=True)
+        'dumpsys SurfaceFlinger --latency SurfaceView',
+        log_result=logging.getLogger().isEnabledFor(logging.DEBUG))
     if not len(results):
       return (None, None)
 
