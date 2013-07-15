@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "ui/base/ui_export.h"
 #include "ui/gfx/font.h"
 
@@ -57,6 +58,14 @@ class UI_EXPORT FontList {
   // given font |size| in pixels.
   FontList DeriveFontListWithSize(int size) const;
 
+  // Returns the height of this font list, which is max(ascent) + max(descent)
+  // for all the fonts in the font list.
+  int GetHeight() const;
+
+  // Returns the baseline of this font list, which is max(baseline) for all the
+  // fonts in the font list.
+  int GetBaseline() const;
+
   // Returns the |gfx::Font::FontStyle| style flags for this font list.
   int GetFontStyle() const;
 
@@ -69,6 +78,8 @@ class UI_EXPORT FontList {
   const std::vector<Font>& GetFonts() const;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(FontListTest, Fonts_GetHeight_GetBaseline);
+
   // A vector of Font. If FontList is constructed with font description string,
   // |fonts_| is not initialized during construction. Instead, it is computed
   // lazily when user asked to get the font vector.
@@ -81,6 +92,10 @@ class UI_EXPORT FontList {
   // |font_description_string_| is not initialized during construction. Instead,
   // it is computed lazily when user asked to get the font description string.
   mutable std::string font_description_string_;
+
+  // The cached common height and baseline of the fonts in the font list.
+  mutable int common_height_;
+  mutable int common_baseline_;
 };
 
 }  // namespace gfx
