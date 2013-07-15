@@ -45,6 +45,8 @@ class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
 
   void Prerender();
 
+  void CancelContextMenu();
+
   AppListItemModel* model() const { return model_; }
 
   const views::Label* title() const { return title_; }

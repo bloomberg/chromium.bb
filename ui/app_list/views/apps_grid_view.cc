@@ -1050,6 +1050,16 @@ void AppsGridView::MoveItemInModel(views::View* item_view,
     pagination_model_->SelectPage(target.page, false);
 }
 
+void AppsGridView::CancelContextMenusOnCurrentPage() {
+  int start = pagination_model_->selected_page() * tiles_per_page();
+  int end = std::min(view_model_.view_size(), start + tiles_per_page());
+  for (int i = start; i < end; ++i) {
+    AppListItemView* view =
+        static_cast<AppListItemView*>(view_model_.view_at(i));
+    view->CancelContextMenu();
+  }
+}
+
 void AppsGridView::ButtonPressed(views::Button* sender,
                                  const ui::Event& event) {
   if (dragging())
@@ -1118,6 +1128,10 @@ void AppsGridView::SelectedPageChanged(int old_selected, int new_selected) {
     ClearSelectedView(selected_view_);
     Layout();
   }
+}
+
+void AppsGridView::TransitionStarted() {
+  CancelContextMenusOnCurrentPage();
 }
 
 void AppsGridView::TransitionChanged() {

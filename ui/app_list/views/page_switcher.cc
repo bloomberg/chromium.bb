@@ -245,6 +245,9 @@ void PageSwitcher::SelectedPageChanged(int old_selected, int new_selected) {
     GetButtonByIndex(buttons_, new_selected)->SetSelectedRange(1);
 }
 
+void PageSwitcher::TransitionStarted() {
+}
+
 void PageSwitcher::TransitionChanged() {
   const int current_page = model_->selected_page();
   const int target_page = model_->transition().target_page;

@@ -71,6 +71,10 @@ class TestPaginationModelObserver : public PaginationModelObserver {
       base::MessageLoop::current()->Quit();
     }
   }
+
+  virtual void TransitionStarted() OVERRIDE {
+  }
+
   virtual void TransitionChanged() OVERRIDE {
     if (transition_page_ == -1 ||
         model_->transition().target_page == transition_page_) {

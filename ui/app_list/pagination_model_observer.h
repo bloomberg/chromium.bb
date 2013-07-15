@@ -17,6 +17,9 @@ class APP_LIST_EXPORT PaginationModelObserver {
   // Invoked when the selected page index is changed.
   virtual void SelectedPageChanged(int old_selected, int new_selected) = 0;
 
+  // Invoked when a transition starts.
+  virtual void TransitionStarted() = 0;
+
   // Invoked when the transition data is changed.
   virtual void TransitionChanged() = 0;
 

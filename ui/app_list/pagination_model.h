@@ -95,6 +95,7 @@ class APP_LIST_EXPORT PaginationModel : public ui::AnimationDelegate {
 
  private:
   void NotifySelectedPageChanged(int old_selected, int new_selected);
+  void NotifyTransitionStarted();
   void NotifyTransitionChanged();
 
   void clear_transition() {

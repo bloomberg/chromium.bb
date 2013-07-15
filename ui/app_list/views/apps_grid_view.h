@@ -219,6 +219,9 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // Updates |model_| to move item represented by |item_view| to |target| slot.
   void MoveItemInModel(views::View* item_view, const Index& target);
 
+  // Cancels any context menus showing for app items on the current page.
+  void CancelContextMenusOnCurrentPage();
+
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE;
@@ -232,6 +235,7 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // Overridden from PaginationModelObserver:
   virtual void TotalPagesChanged() OVERRIDE;
   virtual void SelectedPageChanged(int old_selected, int new_selected) OVERRIDE;
+  virtual void TransitionStarted() OVERRIDE;
   virtual void TransitionChanged() OVERRIDE;
 
   // Overridden from AppListModelObserver:

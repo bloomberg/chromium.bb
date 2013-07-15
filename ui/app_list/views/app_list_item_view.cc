@@ -171,6 +171,11 @@ void AppListItemView::Prerender() {
   title_->PaintToBackingImage();
 }
 
+void AppListItemView::CancelContextMenu() {
+  if (context_menu_runner_)
+    context_menu_runner_->Cancel();
+}
+
 gfx::ImageSkia AppListItemView::GetDragImage() {
   gfx::Canvas canvas(size(), ui::SCALE_FACTOR_100P, false /* is_opaque */);
   gfx::Rect bounds(size());

@@ -336,6 +336,9 @@ void AppListController::SelectedPageChanged(int old_selected,
                                             int new_selected) {
 }
 
+void AppListController::TransitionStarted() {
+}
+
 void AppListController::TransitionChanged() {
   // |view_| could be NULL when app list is closed with a running transition.
   if (!view_)

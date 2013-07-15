@@ -184,6 +184,10 @@ void PaginationModel::NotifySelectedPageChanged(int old_selected,
                     SelectedPageChanged(old_selected, new_selected));
 }
 
+void PaginationModel::NotifyTransitionStarted() {
+  FOR_EACH_OBSERVER(PaginationModelObserver, observers_, TransitionStarted());
+}
+
 void PaginationModel::NotifyTransitionChanged() {
   FOR_EACH_OBSERVER(PaginationModelObserver, observers_, TransitionChanged());
 }
@@ -214,6 +218,7 @@ int PaginationModel::CalculateTargetPage(int delta) const {
 void PaginationModel::StartTransitionAnimation(const Transition& transition) {
   DCHECK(selected_page_ != transition.target_page);
 
+  NotifyTransitionStarted();
   SetTransition(transition);
 
   transition_animation_.reset(new ui::SlideAnimation(this));

@@ -110,6 +110,7 @@ class AppListController : public ui::EventHandler,
   // app_list::PaginationModelObserver overrides:
   virtual void TotalPagesChanged() OVERRIDE;
   virtual void SelectedPageChanged(int old_selected, int new_selected) OVERRIDE;
+  virtual void TransitionStarted() OVERRIDE;
   virtual void TransitionChanged() OVERRIDE;
 
   scoped_ptr<app_list::PaginationModel> pagination_model_;

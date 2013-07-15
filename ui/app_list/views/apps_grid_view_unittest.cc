@@ -70,6 +70,8 @@ class PageFlipWaiter : public PaginationModelObserver {
     if (wait_)
       ui_loop_->Quit();
   }
+  virtual void TransitionStarted() OVERRIDE {
+  }
   virtual void TransitionChanged() OVERRIDE {
   }
 
