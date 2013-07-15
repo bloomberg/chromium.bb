@@ -125,10 +125,6 @@ WebContents* RenderViewHostTestHarness::CreateTestWebContents() {
   DCHECK(aura_test_helper_ != NULL);
 #endif
 
-  // See comment above browser_context_ decl for why we check for NULL here.
-  if (!browser_context_)
-    browser_context_.reset(new TestBrowserContext());
-
   // This will be deleted when the WebContentsImpl goes away.
   SiteInstance* instance = SiteInstance::Create(browser_context_.get());
 
@@ -166,6 +162,10 @@ void RenderViewHostTestHarness::SetUp() {
       new aura::test::AuraTestHelper(base::MessageLoopForUI::current()));
   aura_test_helper_->SetUp();
 #endif
+
+  DCHECK(!browser_context_);
+  browser_context_.reset(CreateBrowserContext());
+
   SetContents(CreateTestWebContents());
 }
 
@@ -194,6 +194,10 @@ void RenderViewHostTestHarness::TearDown() {
                             FROM_HERE,
                             browser_context_.release());
   thread_bundle_.reset();
+}
+
+BrowserContext* RenderViewHostTestHarness::CreateBrowserContext() {
+  return new TestBrowserContext();
 }
 
 void RenderViewHostTestHarness::SetRenderProcessHostFactory(

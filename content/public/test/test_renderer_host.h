@@ -156,6 +156,12 @@ class RenderViewHostTestHarness : public testing::Test {
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
 
+  // Derived classes should override this method to use a custom BrowserContext.
+  // It is invoked by SetUp after threads were started.
+  // RenderViewHostTestHarness will take ownership of the returned
+  // BrowserContext.
+  virtual BrowserContext* CreateBrowserContext();
+
   // Configures which TestBrowserThreads inside |thread_bundle| are backed by
   // real threads. Must be called before SetUp().
   void SetThreadBundleOptions(int options) {
@@ -172,13 +178,9 @@ class RenderViewHostTestHarness : public testing::Test {
   // Replaces the RPH being used.
   void SetRenderProcessHostFactory(RenderProcessHostFactory* factory);
 
-  // This browser context will be created in SetUp if it has not already been
-  // created.  This allows tests to override the browser context if they so
-  // choose in their own SetUp function before calling the base class's (us)
-  // SetUp().
+ private:
   scoped_ptr<BrowserContext> browser_context_;
 
- private:
   // It is important not to use this directly in the implementation as
   // web_contents() and SetContents() are virtual and may be
   // overridden by subclasses.

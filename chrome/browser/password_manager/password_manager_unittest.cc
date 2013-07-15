@@ -49,12 +49,10 @@ ACTION_P(SaveToScopedPtr, scoped) {
 class PasswordManagerTest : public ChromeRenderViewHostTestHarness {
  protected:
   virtual void SetUp() {
-    testing_profile_ = new TestingProfile;
+    ChromeRenderViewHostTestHarness::SetUp();
     store_ = static_cast<MockPasswordStore*>(
         PasswordStoreFactory::GetInstance()->SetTestingFactoryAndUse(
-            testing_profile_, MockPasswordStore::Build).get());
-    browser_context_.reset(testing_profile_);
-    ChromeRenderViewHostTestHarness::SetUp();
+            profile(), MockPasswordStore::Build).get());
 
     EXPECT_CALL(delegate_, GetProfile()).WillRepeatedly(Return(profile()));
     PasswordManager::CreateForWebContentsAndDelegate(
@@ -89,8 +87,6 @@ class PasswordManagerTest : public ChromeRenderViewHostTestHarness {
 
   scoped_refptr<MockPasswordStore> store_;
   MockPasswordManagerDelegate delegate_;  // Owned by manager_.
-
-  TestingProfile* testing_profile_;
 };
 
 MATCHER_P(FormMatches, form, "") {
@@ -394,8 +390,7 @@ TEST_F(PasswordManagerTest, InitiallyInvisibleForm) {
 TEST_F(PasswordManagerTest, SavingDependsOnManagerEnabledPreference) {
   // Test that saving passwords depends on the password manager enabled
   // preference.
-  TestingPrefServiceSyncable* prefService =
-      testing_profile_->GetTestingPrefService();
+  TestingPrefServiceSyncable* prefService = profile()->GetTestingPrefService();
   prefService->SetUserPref(prefs::kPasswordManagerEnabled,
                            Value::CreateBooleanValue(true));
   EXPECT_TRUE(manager()->IsSavingEnabled());
@@ -410,8 +405,7 @@ TEST_F(PasswordManagerTest, FillPasswordsOnDisabledManager) {
   std::vector<PasswordForm*> result;
   PasswordForm* existing = new PasswordForm(MakeSimpleForm());
   result.push_back(existing);
-  TestingPrefServiceSyncable* prefService =
-      testing_profile_->GetTestingPrefService();
+  TestingPrefServiceSyncable* prefService = profile()->GetTestingPrefService();
   prefService->SetUserPref(prefs::kPasswordManagerEnabled,
                            Value::CreateBooleanValue(false));
   EXPECT_CALL(delegate_, FillPasswordForm(_));

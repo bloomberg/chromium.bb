@@ -734,17 +734,15 @@ class TestAutofillExternalDelegate : public AutofillExternalDelegate {
 class AutofillManagerTest : public ChromeRenderViewHostTestHarness {
  public:
   virtual void SetUp() OVERRIDE {
-    TestingProfile* profile = CreateProfile();
-    profile->CreateRequestContext();
-    browser_context_.reset(profile);
-    autofill::PersonalDataManagerFactory::GetInstance()->SetTestingFactory(
-        profile, TestPersonalDataManager::Build);
-
     ChromeRenderViewHostTestHarness::SetUp();
+
+    autofill::PersonalDataManagerFactory::GetInstance()->SetTestingFactory(
+        profile(), TestPersonalDataManager::Build);
+
 
     autofill::TabAutofillManagerDelegate::CreateForWebContents(web_contents());
 
-    personal_data_.SetBrowserContext(profile);
+    personal_data_.SetBrowserContext(profile());
     autofill_driver_.reset(new MockAutofillDriver(web_contents()));
     autofill_manager_.reset(new TestAutofillManager(
         autofill_driver_.get(),
@@ -772,8 +770,10 @@ class AutofillManagerTest : public ChromeRenderViewHostTestHarness {
     personal_data_.SetBrowserContext(NULL);
   }
 
-  virtual TestingProfile* CreateProfile() {
-    return new TestingProfile();
+  virtual content::BrowserContext* CreateBrowserContext() OVERRIDE {
+    TestingProfile* profile = new TestingProfile();
+    profile->CreateRequestContext();
+    return profile;
   }
 
   void GetAutofillSuggestions(int query_id,

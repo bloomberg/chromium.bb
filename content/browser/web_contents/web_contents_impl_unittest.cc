@@ -562,7 +562,7 @@ TEST_F(WebContentsImplTest, NavigateTwoTabsCrossSite) {
 
   // Open a new contents with the same SiteInstance, navigated to the same site.
   scoped_ptr<TestWebContents> contents2(
-      TestWebContents::Create(browser_context_.get(), instance1));
+      TestWebContents::Create(browser_context(), instance1));
   contents2->transition_cross_site = true;
   contents2->GetController().LoadURL(url, Referrer(),
                                     PAGE_TRANSITION_TYPED,
@@ -742,7 +742,7 @@ TEST_F(WebContentsImplTest, CrossSiteComparesAgainstCurrentPage) {
 
   // Open a related contents to a second site.
   scoped_ptr<TestWebContents> contents2(
-      TestWebContents::Create(browser_context_.get(), instance1));
+      TestWebContents::Create(browser_context(), instance1));
   contents2->transition_cross_site = true;
   const GURL url2("http://www.yahoo.com");
   contents2->GetController().LoadURL(url2, Referrer(),

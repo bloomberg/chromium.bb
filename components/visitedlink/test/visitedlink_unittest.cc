@@ -592,15 +592,19 @@ class VisitedLinkRenderProcessHostFactory
 class VisitedLinkEventsTest : public content::RenderViewHostTestHarness {
  public:
   virtual void SetUp() {
-    browser_context_.reset(new VisitCountingContext());
-    master_.reset(new VisitedLinkMaster(context(), &delegate_, true));
-    master_->Init();
     SetRenderProcessHostFactory(&vc_rph_factory_);
     content::RenderViewHostTestHarness::SetUp();
   }
 
-  VisitCountingContext* context() const {
-    return static_cast<VisitCountingContext*>(browser_context_.get());
+  virtual content::BrowserContext* CreateBrowserContext() OVERRIDE {
+    VisitCountingContext* context = new VisitCountingContext();
+    master_.reset(new VisitedLinkMaster(context, &delegate_, true));
+    master_->Init();
+    return context;
+  }
+
+  VisitCountingContext* context() {
+    return static_cast<VisitCountingContext*>(browser_context());
   }
 
   VisitedLinkMaster* master() const {

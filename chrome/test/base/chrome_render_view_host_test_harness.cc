@@ -28,7 +28,7 @@ ChromeRenderViewHostTestHarness::~ChromeRenderViewHostTestHarness() {
 }
 
 TestingProfile* ChromeRenderViewHostTestHarness::profile() {
-  return static_cast<TestingProfile*>(browser_context_.get());
+  return static_cast<TestingProfile*>(browser_context());
 }
 
 RenderViewHostTester* ChromeRenderViewHostTestHarness::rvh_tester() {
@@ -50,14 +50,9 @@ static BrowserContextKeyedService* BuildSigninManagerFake(
 }
 
 void ChromeRenderViewHostTestHarness::SetUp() {
-  Profile* profile = Profile::FromBrowserContext(browser_context_.get());
-  if (!profile) {
-    profile = new TestingProfile();
-    browser_context_.reset(profile);
-  }
-  SigninManagerFactory::GetInstance()->SetTestingFactory(
-          profile, BuildSigninManagerFake);
   RenderViewHostTestHarness::SetUp();
+  SigninManagerFactory::GetInstance()->SetTestingFactory(
+          profile(), BuildSigninManagerFake);
 }
 
 void ChromeRenderViewHostTestHarness::TearDown() {
@@ -68,4 +63,9 @@ void ChromeRenderViewHostTestHarness::TearDown() {
 #if defined(USE_AURA)
   aura::Env::DeleteInstance();
 #endif
+}
+
+content::BrowserContext*
+ChromeRenderViewHostTestHarness::CreateBrowserContext() {
+  return new TestingProfile();
 }

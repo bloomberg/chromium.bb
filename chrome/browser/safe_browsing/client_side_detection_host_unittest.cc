@@ -180,12 +180,6 @@ class ClientSideDetectionHostTest : public ChromeRenderViewHostTestHarness {
   typedef SafeBrowsingUIManager::UnsafeResource UnsafeResource;
 
   virtual void SetUp() {
-    // Set custom profile object so that we can mock calls to IsOffTheRecord.
-    // This needs to happen before we call the parent SetUp() function.  We use
-    // a nice mock because other parts of the code are calling IsOffTheRecord.
-    mock_profile_ = new NiceMock<MockTestingProfile>();
-    browser_context_.reset(mock_profile_);
-
     ChromeRenderViewHostTestHarness::SetUp();
 
     // Inject service classes.
@@ -219,6 +213,14 @@ class ClientSideDetectionHostTest : public ChromeRenderViewHostTestHarness {
     ui_manager_ = NULL;
     base::RunLoop().RunUntilIdle();
     ChromeRenderViewHostTestHarness::TearDown();
+  }
+
+  virtual content::BrowserContext* CreateBrowserContext() OVERRIDE {
+    // Set custom profile object so that we can mock calls to IsOffTheRecord.
+    // This needs to happen before we call the parent SetUp() function.  We use
+    // a nice mock because other parts of the code are calling IsOffTheRecord.
+    mock_profile_ = new NiceMock<MockTestingProfile>();
+    return mock_profile_;
   }
 
   void OnPhishingDetectionDone(const std::string& verdict_str) {

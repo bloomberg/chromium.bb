@@ -44,9 +44,6 @@ class TestPasswordGenerationManager : public PasswordGenerationManager {
 class PasswordGenerationManagerTest : public ChromeRenderViewHostTestHarness {
  protected:
   virtual void SetUp() OVERRIDE {
-    TestingProfile* profile = CreateProfile();
-    profile->CreateRequestContext();
-    browser_context_.reset(profile);
 
     SetThreadBundleOptions(content::TestBrowserThreadBundle::REAL_IO_THREAD);
     ChromeRenderViewHostTestHarness::SetUp();
@@ -59,8 +56,10 @@ class PasswordGenerationManagerTest : public ChromeRenderViewHostTestHarness {
     ChromeRenderViewHostTestHarness::TearDown();
   }
 
-  virtual TestingProfile* CreateProfile() {
-    return new TestingProfile();
+  virtual content::BrowserContext* CreateBrowserContext() OVERRIDE {
+    TestingProfile* profile = new TestingProfile();
+    profile->CreateRequestContext();
+    return profile;
   }
 
   void UpdateState(bool new_renderer) {
@@ -73,11 +72,12 @@ class PasswordGenerationManagerTest : public ChromeRenderViewHostTestHarness {
 class IncognitoPasswordGenerationManagerTest :
     public PasswordGenerationManagerTest {
  public:
-  virtual TestingProfile* CreateProfile() OVERRIDE {
+  virtual content::BrowserContext* CreateBrowserContext() OVERRIDE {
     // Create an incognito profile.
     TestingProfile::Builder builder;
     scoped_ptr<TestingProfile> profile = builder.Build();
     profile->set_incognito(true);
+    profile->CreateRequestContext();
     return profile.release();
   }
 };
