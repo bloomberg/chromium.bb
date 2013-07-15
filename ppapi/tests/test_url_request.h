@@ -14,6 +14,10 @@
 #include "ppapi/c/ppb_var.h"
 #include "ppapi/tests/test_case.h"
 
+namespace pp {
+class FileRef;
+}
+
 class TestURLRequest : public TestCase {
  public:
   explicit TestURLRequest(TestingInstance* instance);
@@ -27,6 +31,7 @@ class TestURLRequest : public TestCase {
   std::string TestCreateAndIsURLRequestInfo();
   std::string TestSetProperty();
   std::string TestAppendDataToBody();
+  std::string TestAppendFileToBody();
   std::string TestStress();
 
   // Helpers.
