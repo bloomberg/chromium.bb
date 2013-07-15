@@ -13,6 +13,7 @@
     '../third_party/icu/icu.gyp:icuuc',
     '../third_party/libjingle/libjingle.gyp:libjingle',
     '../third_party/npapi/npapi.gyp:npapi',
+    '../third_party/widevine/cdm/widevine_cdm.gyp:widevine_cdm_version_h',
     '../ui/native_theme/native_theme.gyp:native_theme',
     '../ui/surface/surface.gyp:surface',
     '../v8/tools/gyp/v8.gyp:v8',
