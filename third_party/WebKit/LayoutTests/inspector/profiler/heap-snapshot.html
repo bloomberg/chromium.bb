@@ -210,6 +210,35 @@ function test()
             next();
         },
 
+        function heapSnapshotOrphanNodesTest(next)
+        {
+            var snapshotMock = InspectorTest._postprocessHeapSnapshotMock({
+                snapshot: {
+                    meta: {
+                        node_fields: ["type", "name", "id", "edge_count"],
+                        node_types: [["hidden", "object"], "", "", ""],
+                        edge_fields: ["type", "name_or_index", "to_node"],
+                        edge_types: [["element", "hidden", "internal"], "", ""]
+                    },
+                    node_count: 2,
+                    edge_count: 0
+                },
+                nodes: [
+                    /* (root) */    0,  0,  1, 0,
+                    /* Orphan */    1,  1,  2, 0
+                    ],
+                edges: [],
+                strings: ["", "Orphan"]
+            });
+
+            var snapshot = new WebInspector.JSHeapSnapshot(snapshotMock);
+
+            for (var nodes = snapshot._allNodes(); nodes.hasNext(); nodes.next())
+                InspectorTest.assertEquals(false, nodes.item().retainers().hasNext(), "No retainers");
+
+            next();
+        },
+
         function heapSnapshotAggregatesTest(next)
         {
             var snapshot = new WebInspector.JSHeapSnapshot(InspectorTest.createHeapSnapshotMock());
