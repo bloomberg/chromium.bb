@@ -114,10 +114,10 @@ PageScaleConstraints ViewportArguments::resolve(const FloatSize& initialViewport
         ASSERT(resultMaxHeight != ViewportArguments::ValueDeviceHeight);
 
         if (resultMinWidth != ViewportArguments::ValueAuto || resultMaxWidth != ViewportArguments::ValueAuto)
-            resultWidth = compareIgnoringAuto(resultMinWidth, compareIgnoringAuto(resultMaxWidth, deviceSize.width(), min), max);
+            resultWidth = compareIgnoringAuto(resultMinWidth, compareIgnoringAuto(resultMaxWidth, initialViewportSize.width(), min), max);
 
         if (resultMinHeight != ViewportArguments::ValueAuto || resultMaxHeight != ViewportArguments::ValueAuto)
-            resultHeight = compareIgnoringAuto(resultMinHeight, compareIgnoringAuto(resultMaxHeight, deviceSize.height(), min), max);
+            resultHeight = compareIgnoringAuto(resultMinHeight, compareIgnoringAuto(resultMaxHeight, initialViewportSize.height(), min), max);
 
         if (resultMinZoom != ViewportArguments::ValueAuto && resultMaxZoom != ViewportArguments::ValueAuto)
             resultMaxZoom = max(resultMinZoom, resultMaxZoom);
@@ -125,25 +125,20 @@ PageScaleConstraints ViewportArguments::resolve(const FloatSize& initialViewport
         if (resultZoom != ViewportArguments::ValueAuto)
             resultZoom = compareIgnoringAuto(resultMinZoom, compareIgnoringAuto(resultMaxZoom, resultZoom, min), max);
 
-        if (resultWidth == ViewportArguments::ValueAuto && resultZoom == ViewportArguments::ValueAuto)
-            resultWidth = deviceSize.width();
+        if (resultWidth == ViewportArguments::ValueAuto && (resultHeight == ViewportArguments::ValueAuto || !initialViewportSize.height()))
+            resultWidth = initialViewportSize.width();
 
-        if (resultWidth == ViewportArguments::ValueAuto && resultHeight == ViewportArguments::ValueAuto)
-            resultWidth = deviceSize.width() / resultZoom;
-
-        if (resultWidth == ViewportArguments::ValueAuto)
-            resultWidth = resultHeight * deviceSize.width() / deviceSize.height();
-
-        if (resultHeight == ViewportArguments::ValueAuto)
-            resultHeight = resultWidth * deviceSize.height() / deviceSize.width();
-
-        if (resultZoom != ViewportArguments::ValueAuto || resultMaxZoom != ViewportArguments::ValueAuto) {
-            resultWidth = compareIgnoringAuto(resultWidth, deviceSize.width() / compareIgnoringAuto(resultZoom, resultMaxZoom, min), max);
-            resultHeight = compareIgnoringAuto(resultHeight, deviceSize.height() / compareIgnoringAuto(resultZoom, resultMaxZoom, min), max);
+        if (resultWidth == ViewportArguments::ValueAuto) {
+            ASSERT(initialViewportSize.height()); // If height is 0, resultWidth should be resolved above.
+            resultWidth = resultHeight * initialViewportSize.width() / initialViewportSize.height();
         }
 
-        resultWidth = max<float>(1, resultWidth);
-        resultHeight = max<float>(1, resultHeight);
+        if (resultHeight == ViewportArguments::ValueAuto) {
+            if (!initialViewportSize.width())
+                resultHeight = initialViewportSize.height();
+            else
+                resultHeight = resultWidth * initialViewportSize.height() / initialViewportSize.width();
+        }
     }
 
     if (type != ViewportArguments::CSSDeviceAdaptation && type != ViewportArguments::Implicit) {
@@ -175,9 +170,9 @@ PageScaleConstraints ViewportArguments::resolve(const FloatSize& initialViewport
     result.initialScale = resultZoom;
     if (resultZoom == ViewportArguments::ValueAuto) {
         result.initialScale = initialViewportSize.width() / defaultWidth;
-        if (resultWidth != ViewportArguments::ValueAuto)
+        if (resultWidth != ViewportArguments::ValueAuto && resultWidth > 0)
             result.initialScale = initialViewportSize.width() / resultWidth;
-        if (resultHeight != ViewportArguments::ValueAuto) {
+        if (resultHeight != ViewportArguments::ValueAuto && resultHeight > 0) {
             // if 'auto', the initial-scale will be negative here and thus ignored.
             result.initialScale = max<float>(result.initialScale, initialViewportSize.height() / resultHeight);
         }

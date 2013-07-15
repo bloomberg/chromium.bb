@@ -1,3 +1,3 @@
 
-FAIL CSS Test: @viewport constrained - zoom: 200% not affecting width assert_equals: expected 320 but got 160
+PASS CSS Test: @viewport constrained - zoom: 200% not affecting width 
 
