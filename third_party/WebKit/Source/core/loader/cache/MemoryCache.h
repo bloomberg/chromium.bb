@@ -123,10 +123,6 @@ public:
     void evictResources();
 
     void prune();
-    void pruneToPercentage(float targetPercentLive);
-
-    void setDeadDecodedDataDeletionInterval(double interval) { m_deadDecodedDataDeletionInterval = interval; }
-    double deadDecodedDataDeletionInterval() const { return m_deadDecodedDataDeletionInterval; }
 
     // Calls to put the cached resource into and out of LRU lists.
     void insertInLRUList(CachedResource*);
@@ -165,14 +161,10 @@ private:
     unsigned liveCapacity() const;
     unsigned deadCapacity() const;
 
-    // pruneDead*() - Flush decoded and encoded data from resources not referenced by Web pages.
-    // pruneLive*() - Flush decoded data from resources still referenced by Web pages.
+    // pruneDeadResources() - Flush decoded and encoded data from resources not referenced by Web pages.
+    // pruneLiveResources() - Flush decoded data from resources still referenced by Web pages.
     void pruneDeadResources(); // Automatically decide how much to prune.
     void pruneLiveResources();
-    void pruneDeadResourcesToPercentage(float prunePercentage); // Prune to % current size
-    void pruneLiveResourcesToPercentage(float prunePercentage);
-    void pruneDeadResourcesToSize(unsigned targetSize);
-    void pruneLiveResourcesToSize(unsigned targetSize);
 
     void evict(CachedResource*);
 
@@ -183,7 +175,6 @@ private:
     unsigned m_capacity;
     unsigned m_minDeadCapacity;
     unsigned m_maxDeadCapacity;
-    double m_deadDecodedDataDeletionInterval;
 
     unsigned m_liveSize; // The number of bytes currently consumed by "live" resources in the cache.
     unsigned m_deadSize; // The number of bytes currently consumed by "dead" resources in the cache.

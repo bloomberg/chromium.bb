@@ -65,13 +65,6 @@ void WebCache::clear()
         cache->evictResources();
 }
 
-void WebCache::prune()
-{
-    MemoryCache* cache = WebCore::memoryCache();
-    if (cache)
-        cache->prune();
-}
-
 void WebCache::getUsageStats(UsageStats* result)
 {
     ASSERT(result);
