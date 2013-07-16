@@ -49,6 +49,9 @@ public:
 private:
     SVGGlyphRefElement(const QualifiedName&, Document*);
 
+    template<typename CharType>
+    void parseAttributeInternal(const QualifiedName&, const AtomicString&);
+
     virtual bool rendererIsNeeded(const NodeRenderingContext&) { return false; }
 
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGGlyphRefElement)

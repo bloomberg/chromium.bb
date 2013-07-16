@@ -64,25 +64,34 @@ bool SVGGlyphRefElement::hasValidGlyphElement(String& glyphName) const
     return true;
 }
 
-void SVGGlyphRefElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
+template<typename CharType>
+void SVGGlyphRefElement::parseAttributeInternal(const QualifiedName& name, const AtomicString& value)
 {
-    const UChar* startPtr = value.bloatedCharacters();
-    const UChar* endPtr = startPtr + value.length();
+    const CharType* ptr = value.isEmpty() ? 0 : value.string().getCharacters<CharType>();
+    const CharType* end = ptr + value.length();
 
     // FIXME: We need some error handling here.
-    if (name == SVGNames::xAttr)
-        parseNumber(startPtr, endPtr, m_x);
-    else if (name == SVGNames::yAttr)
-        parseNumber(startPtr, endPtr, m_y);
-    else if (name == SVGNames::dxAttr)
-        parseNumber(startPtr, endPtr, m_dx);
-    else if (name == SVGNames::dyAttr)
-        parseNumber(startPtr, endPtr, m_dy);
-    else {
+    if (name == SVGNames::xAttr) {
+        parseNumber(ptr, end, m_x);
+    } else if (name == SVGNames::yAttr) {
+        parseNumber(ptr, end, m_y);
+    } else if (name == SVGNames::dxAttr) {
+        parseNumber(ptr, end, m_dx);
+    } else if (name == SVGNames::dyAttr) {
+        parseNumber(ptr, end, m_dy);
+    } else {
         if (SVGURIReference::parseAttribute(name, value))
             return;
         SVGStyledElement::parseAttribute(name, value);
     }
+}
+
+void SVGGlyphRefElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
+{
+    if (value.isEmpty() || value.is8Bit())
+        parseAttributeInternal<LChar>(name, value);
+    else
+        parseAttributeInternal<UChar>(name, value);
 }
 
 const AtomicString& SVGGlyphRefElement::glyphRef() const
