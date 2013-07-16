@@ -6,6 +6,7 @@
 
 import logging
 import os
+import shutil
 import sys
 
 from pylib import android_commands
@@ -55,7 +56,7 @@ def Dispatch(options):
                                     'apks',
                                     constants.BROWSERTEST_SUITE_NAME + '.apk')
 
-  deps_dir = gtest_dispatch._GenerateDepsDirUsingIsolate(
+  gtest_dispatch._GenerateDepsDirUsingIsolate(
       constants.BROWSERTEST_SUITE_NAME, options.build_type)
 
   # Constructs a new TestRunner with the current options.
@@ -72,8 +73,7 @@ def Dispatch(options):
         options.push_deps,
         constants.BROWSERTEST_TEST_PACKAGE_NAME,
         constants.BROWSERTEST_TEST_ACTIVITY_NAME,
-        constants.BROWSERTEST_COMMAND_LINE_FILE,
-        deps_dir=deps_dir)
+        constants.BROWSERTEST_COMMAND_LINE_FILE)
 
   # Get tests and split them up based on the number of devices.
   all_enabled = gtest_dispatch.GetAllEnabledTests(RunnerFactory,
@@ -98,6 +98,9 @@ def Dispatch(options):
       test_package=constants.BROWSERTEST_SUITE_NAME,
       build_type=options.build_type,
       flakiness_server=options.flakiness_dashboard_server)
+
+  if os.path.isdir(constants.ISOLATE_DEPS_DIR):
+    shutil.rmtree(constants.ISOLATE_DEPS_DIR)
 
   return (test_results, exit_code)
 

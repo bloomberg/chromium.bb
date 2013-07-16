@@ -35,6 +35,7 @@ _ISOLATE_FILE_PATHS = {
     'content_browsertests': 'content/content_browsertests.isolate',
     'content_unittests': 'content/content_unittests.isolate',
     'media_unittests': 'media/media_unittests.isolate',
+    'modules_unittests': 'third_party/webrtc/modules/modules_unittests.isolate',
     'net_unittests': 'net/net_unittests.isolate',
     'ui_unittests': 'ui/ui_unittests.isolate',
     'unit_tests': 'chrome/unit_tests.isolate',
@@ -72,24 +73,22 @@ def _GenerateDepsDirUsingIsolate(test_suite, build_type):
   Args:
     test_suite: The test suite basename (e.g. base_unittests).
     build_type: Release/Debug
-
-  Returns:
-    If an isolate file exists, returns path to dependency dir on the host.
-    Otherwise, returns False.
   """
   product_dir = os.path.join(cmd_helper.OutDirectory.get(), build_type)
   assert os.path.isabs(product_dir)
+
+  if os.path.isdir(constants.ISOLATE_DEPS_DIR):
+    shutil.rmtree(constants.ISOLATE_DEPS_DIR)
+
   isolate_rel_path = _ISOLATE_FILE_PATHS.get(test_suite)
   if not isolate_rel_path:
-    return False
+    logging.info('Did not find an isolate file for the test suite.')
+    return
 
   isolate_abs_path = os.path.join(constants.DIR_SOURCE_ROOT, isolate_rel_path)
   isolated_abs_path = os.path.join(
       product_dir, '%s.isolated' % test_suite)
   assert os.path.exists(isolate_abs_path)
-  deps_dir = os.path.join(product_dir, 'isolate_deps_dir')
-  if os.path.isdir(deps_dir):
-    shutil.rmtree(deps_dir)
   isolate_cmd = [
       'python', _ISOLATE_SCRIPT,
       'remap',
@@ -97,7 +96,7 @@ def _GenerateDepsDirUsingIsolate(test_suite, build_type):
       '--isolated', isolated_abs_path,
       '-V', 'PRODUCT_DIR=%s' % product_dir,
       '-V', 'OS=android',
-      '--outdir', deps_dir,
+      '--outdir', constants.ISOLATE_DEPS_DIR,
   ]
   assert not cmd_helper.RunCmd(isolate_cmd)
 
@@ -105,12 +104,12 @@ def _GenerateDepsDirUsingIsolate(test_suite, build_type):
   # by the remap command (hardlinked). Otherwise, all the data
   # will be pushed to the device once we move to using time diff
   # instead of md5sum. Perform a sanity check here.
-  for root, _, filenames in os.walk(deps_dir):
+  for root, _, filenames in os.walk(constants.ISOLATE_DEPS_DIR):
     if filenames:
       linked_file = os.path.join(root, filenames[0])
       orig_file = os.path.join(
           constants.DIR_SOURCE_ROOT,
-          os.path.relpath(linked_file, deps_dir))
+          os.path.relpath(linked_file, constants.ISOLATE_DEPS_DIR))
       if os.stat(linked_file).st_ino == os.stat(orig_file).st_ino:
         break
       else:
@@ -119,7 +118,7 @@ def _GenerateDepsDirUsingIsolate(test_suite, build_type):
   # Delete excluded files as defined by _DEPS_EXCLUSION_LIST.
   old_cwd = os.getcwd()
   try:
-    os.chdir(deps_dir)
+    os.chdir(constants.ISOLATE_DEPS_DIR)
     excluded_paths = [x for y in _DEPS_EXCLUSION_LIST for x in glob.glob(y)]
     if excluded_paths:
       logging.info('Excluding the following from dependency list: %s',
@@ -133,21 +132,20 @@ def _GenerateDepsDirUsingIsolate(test_suite, build_type):
     os.chdir(old_cwd)
 
   # On Android, all pak files need to be in the top-level 'paks' directory.
-  paks_dir = os.path.join(deps_dir, 'paks')
+  paks_dir = os.path.join(constants.ISOLATE_DEPS_DIR, 'paks')
   os.mkdir(paks_dir)
-  for root, _, filenames in os.walk(os.path.join(deps_dir, 'out')):
+  for root, _, filenames in os.walk(os.path.join(constants.ISOLATE_DEPS_DIR,
+                                                 'out')):
     for filename in fnmatch.filter(filenames, '*.pak'):
       shutil.move(os.path.join(root, filename), paks_dir)
 
   # Move everything in PRODUCT_DIR to top level.
-  deps_product_dir = os.path.join(deps_dir, 'out', build_type)
+  deps_product_dir = os.path.join(constants.ISOLATE_DEPS_DIR, 'out', build_type)
   if os.path.isdir(deps_product_dir):
     for p in os.listdir(deps_product_dir):
-      shutil.move(os.path.join(deps_product_dir, p), deps_dir)
+      shutil.move(os.path.join(deps_product_dir, p), constants.ISOLATE_DEPS_DIR)
     os.rmdir(deps_product_dir)
-    os.rmdir(os.path.join(deps_dir, 'out'))
-
-  return deps_dir
+    os.rmdir(os.path.join(constants.ISOLATE_DEPS_DIR, 'out'))
 
 
 def _FullyQualifiedTestSuites(exe, option_test_suite, build_type):
@@ -277,7 +275,7 @@ def _RunATestSuite(options, suite_name):
   if not ports.ResetTestServerPortAllocation():
     raise Exception('Failed to reset test server port.')
 
-  deps_dir = _GenerateDepsDirUsingIsolate(suite_name, options.build_type)
+  _GenerateDepsDirUsingIsolate(suite_name, options.build_type)
 
   # Constructs a new TestRunner with the current options.
   def RunnerFactory(device, shard_index):
@@ -293,8 +291,7 @@ def _RunATestSuite(options, suite_name):
         options.push_deps,
         constants.GTEST_TEST_PACKAGE_NAME,
         constants.GTEST_TEST_ACTIVITY_NAME,
-        constants.GTEST_COMMAND_LINE_FILE,
-        deps_dir=deps_dir)
+        constants.GTEST_COMMAND_LINE_FILE)
 
   # Get tests and split them up based on the number of devices.
   if options.test_filter:
@@ -316,6 +313,9 @@ def _RunATestSuite(options, suite_name):
       test_package=suite_name,
       build_type=options.build_type,
       flakiness_server=options.flakiness_dashboard_server)
+
+  if os.path.isdir(constants.ISOLATE_DEPS_DIR):
+    shutil.rmtree(constants.ISOLATE_DEPS_DIR)
 
   for buildbot_emulator in buildbot_emulators:
     buildbot_emulator.Shutdown()
