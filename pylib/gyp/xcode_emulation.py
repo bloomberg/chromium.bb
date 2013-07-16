@@ -308,6 +308,11 @@ class XcodeSettings(object):
       else:
         raise NotImplementedError('Unknown debug format %s' % dbg_format)
 
+    if self._Settings().get('GCC_STRICT_ALIASING') == 'YES':
+      cflags.append('-fstrict-aliasing')
+    elif self._Settings().get('GCC_STRICT_ALIASING') == 'NO':
+      cflags.append('-fno-strict-aliasing')
+
     if self._Test('GCC_SYMBOLS_PRIVATE_EXTERN', 'YES', default='NO'):
       cflags.append('-fvisibility=hidden')
 
