@@ -154,14 +154,14 @@ void AdjustTransformForClip(gfx::Transform* transform, gfx::Rect clip) {
 }
 } // namespace
 
-bool SynchronousCompositorOutputSurface::InitializeHwDraw() {
+bool SynchronousCompositorOutputSurface::InitializeHwDraw(
+    scoped_refptr<cc::ContextProvider> offscreen_context) {
   DCHECK(CalledOnValidThread());
   DCHECK(HasClient());
   DCHECK(!context3d_);
 
-  // TODO(boliu): Get a context provider in constructor and pass here.
   return InitializeAndSetContext3D(CreateWebGraphicsContext3D().Pass(),
-                                   scoped_refptr<cc::ContextProvider>());
+                                   offscreen_context);
 }
 
 void SynchronousCompositorOutputSurface::ReleaseHwDraw() {

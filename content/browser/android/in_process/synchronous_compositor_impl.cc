@@ -6,6 +6,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/message_loop.h"
+#include "base/synchronization/lock.h"
 #include "cc/input/input_handler.h"
 #include "cc/input/layer_scroll_offset_delegate.h"
 #include "content/browser/android/in_process/synchronous_input_event_filter.h"
@@ -70,8 +71,15 @@ class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
     return scoped_refptr<cc::ContextProvider>();
   }
 
+  // This is called on both renderer main thread (offscreen context creation
+  // path shared between cross-process and in-process platforms) and renderer
+  // compositor impl thread (InitializeHwDraw) in order to support Android
+  // WebView synchronously enable and disable hardware mode multiple times in
+  // the same task. This is ok because in-process WGC3D creation may happen on
+  // any thread and is lightweight.
   virtual scoped_refptr<cc::ContextProvider>
       GetOffscreenContextProviderForCompositorThread() OVERRIDE {
+    base::AutoLock lock(offscreen_context_for_compositor_thread_creation_lock_);
     if (!offscreen_context_for_compositor_thread_.get() ||
         offscreen_context_for_compositor_thread_->DestroyedOnMainThread()) {
       offscreen_context_for_compositor_thread_ =
@@ -82,6 +90,10 @@ class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
 
  private:
   SynchronousInputEventFilter synchronous_input_event_filter_;
+
+  // Only guards construction of |offscreen_context_for_compositor_thread_|,
+  // not usage.
+  base::Lock offscreen_context_for_compositor_thread_creation_lock_;
   scoped_refptr<cc::ContextProvider> offscreen_context_for_compositor_thread_;
 };
 
@@ -134,7 +146,8 @@ void SynchronousCompositorImpl::SetClient(
 bool SynchronousCompositorImpl::InitializeHwDraw() {
   DCHECK(CalledOnValidThread());
   DCHECK(output_surface_);
-  return output_surface_->InitializeHwDraw();
+  return output_surface_->InitializeHwDraw(
+      g_factory.Get().GetOffscreenContextProviderForCompositorThread());
 }
 
 void SynchronousCompositorImpl::ReleaseHwDraw() {
