@@ -11,8 +11,8 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/nix/mime_util_xdg.h"
-#include "content/public/child/image_decoder_utils.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/size.h"
 
@@ -45,18 +45,19 @@ void IconLoader::ReadIcon() {
   }
 
   base::FilePath filename = base::nix::GetMimeIcon(group_, size_pixels);
-  // We don't support SVG icons; this just spams the terminal so fail quickly
-  // and don't try to read the file from disk first.
-  if (filename.Extension() != ".svg") {
+  // We don't support SVG or XPM icons; this just spams the terminal so fail
+  // quickly and don't try to read the file from disk first.
+  if (filename.Extension() != ".svg" &&
+      filename.Extension() != ".xpm") {
     string icon_data;
     file_util::ReadFileToString(filename, &icon_data);
 
     SkBitmap bitmap;
-    bitmap = content::DecodeImage(
+    bool success = gfx::PNGCodec::Decode(
         reinterpret_cast<const unsigned char*>(icon_data.data()),
-        gfx::Size(),
-        icon_data.length());
-    if (!bitmap.empty()) {
+        icon_data.length(),
+        &bitmap);
+    if (success && !bitmap.empty()) {
       DCHECK_EQ(size_pixels, bitmap.width());
       DCHECK_EQ(size_pixels, bitmap.height());
       gfx::ImageSkia image_skia = gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
