@@ -136,7 +136,7 @@ ScriptDebugServer::~ScriptDebugServer()
 {
 }
 
-String ScriptDebugServer::setBreakpoint(const String& sourceID, const ScriptBreakpoint& scriptBreakpoint, int* actualLineNumber, int* actualColumnNumber)
+String ScriptDebugServer::setBreakpoint(const String& sourceID, const ScriptBreakpoint& scriptBreakpoint, int* actualLineNumber, int* actualColumnNumber, bool interstatementLocation)
 {
     v8::HandleScope scope;
     v8::Local<v8::Context> debuggerContext = v8::Debug::GetDebugContext();
@@ -146,6 +146,7 @@ String ScriptDebugServer::setBreakpoint(const String& sourceID, const ScriptBrea
     args->Set(v8::String::NewSymbol("sourceID"), v8String(sourceID, debuggerContext->GetIsolate()));
     args->Set(v8::String::NewSymbol("lineNumber"), v8::Integer::New(scriptBreakpoint.lineNumber, debuggerContext->GetIsolate()));
     args->Set(v8::String::NewSymbol("columnNumber"), v8::Integer::New(scriptBreakpoint.columnNumber, debuggerContext->GetIsolate()));
+    args->Set(v8::String::NewSymbol("interstatementLocation"), v8Boolean(interstatementLocation, debuggerContext->GetIsolate()));
     args->Set(v8::String::NewSymbol("condition"), v8String(scriptBreakpoint.condition, debuggerContext->GetIsolate()));
 
     v8::Handle<v8::Function> setBreakpointFunction = v8::Local<v8::Function>::Cast(m_debuggerScript.newLocal(m_isolate)->Get(v8::String::NewSymbol("setBreakpoint")));

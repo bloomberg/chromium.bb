@@ -54,7 +54,7 @@ class JavaScriptCallFrame;
 class ScriptDebugServer {
     WTF_MAKE_NONCOPYABLE(ScriptDebugServer);
 public:
-    String setBreakpoint(const String& sourceID, const ScriptBreakpoint&, int* actualLineNumber, int* actualColumnNumber);
+    String setBreakpoint(const String& sourceID, const ScriptBreakpoint&, int* actualLineNumber, int* actualColumnNumber, bool interstatementLocation);
     void removeBreakpoint(const String& breakpointId);
     void clearBreakpoints();
     void setBreakpointsActivated(bool activated);
