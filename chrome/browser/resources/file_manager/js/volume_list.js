@@ -351,7 +351,7 @@ VolumeList.prototype.onSelectionChange_ = function(event) {
  * @private
  */
 VolumeList.prototype.onCurrentDirectoryChanged_ = function(event) {
-  var path = event.newDirEntry.fullPath || dm.getCurrentDirPath();
+  var path = event.newDirEntry.fullPath || this.dataModel.getCurrentDirPath();
   var newRootPath = PathUtil.getRootPath(path);
 
   // Sets |this.currentVolume_| in advance to prevent |onSelectionChange_()|

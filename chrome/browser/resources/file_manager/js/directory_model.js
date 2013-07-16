@@ -1386,7 +1386,7 @@ DirectoryModel.prototype.specialSearch = function(path, opt_query) {
 
     } else {
       // Unknown path.
-      this.changeDirectory(thid.getDefaultDirectory());
+      this.changeDirectory(this.getDefaultDirectory());
       return;
     }
 
