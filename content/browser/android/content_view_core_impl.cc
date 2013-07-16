@@ -448,11 +448,12 @@ void ContentViewCoreImpl::ShowSelectPopupMenu(
         native_selected_array[selected_count++] = i;
     }
 
-    selected_array.Reset(env, env->NewIntArray(selected_count));
+    selected_array = ScopedJavaLocalRef<jintArray>(
+        env, env->NewIntArray(selected_count));
     env->SetIntArrayRegion(selected_array.obj(), 0, selected_count,
                            native_selected_array.get());
   } else {
-    selected_array.Reset(env, env->NewIntArray(1));
+    selected_array = ScopedJavaLocalRef<jintArray>(env, env->NewIntArray(1));
     jint value = selected_item;
     env->SetIntArrayRegion(selected_array.obj(), 0, 1, &value);
   }

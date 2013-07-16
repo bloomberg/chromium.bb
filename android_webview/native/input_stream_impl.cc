@@ -77,7 +77,9 @@ bool InputStreamImpl::Read(net::IOBuffer* dest, int length, int* bytes_read) {
   JNIEnv* env = AttachCurrentThread();
   if (!buffer_.obj()) {
     // Allocate transfer buffer.
-    buffer_.Reset(env, env->NewByteArray(kBufferSize));
+    base::android::ScopedJavaLocalRef<jbyteArray> temp(
+        env, env->NewByteArray(kBufferSize));
+    buffer_.Reset(temp);
     if (ClearException(env))
       return false;
   }
