@@ -9,6 +9,7 @@
 
 #include "base/debug/trace_event.h"
 #include "base/strings/stringprintf.h"
+#include "base/win/windows_version.h"
 #include "content/common/gamepad_hardware_buffer.h"
 #include "content/common/gamepad_messages.h"
 
@@ -211,12 +212,17 @@ BOOL CALLBACK DirectInputEnumDevicesCallback(const DIDEVICEINSTANCE* instance,
 GamepadPlatformDataFetcherWin::GamepadPlatformDataFetcherWin()
     : xinput_dll_(base::FilePath(FILE_PATH_LITERAL("xinput1_3.dll"))),
       xinput_available_(GetXInputDllFunctions()) {
-  directinput_available_ = SUCCEEDED(DirectInput8Create(
-      GetModuleHandle(NULL),
-      DIRECTINPUT_VERSION,
-      IID_IDirectInput8,
-      reinterpret_cast<void**>(&directinput_interface_),
-      NULL));
+  // TODO(teravest): http://crbug.com/260187
+  if (base::win::GetVersion() > base::win::VERSION_XP) {
+    directinput_available_ = SUCCEEDED(DirectInput8Create(
+        GetModuleHandle(NULL),
+        DIRECTINPUT_VERSION,
+        IID_IDirectInput8,
+        reinterpret_cast<void**>(&directinput_interface_),
+        NULL));
+  } else {
+    directinput_available_ = false;
+  }
   for (size_t i = 0; i < WebGamepads::itemsLengthCap; ++i)
     pad_state_[i].status = DISCONNECTED;
 }
