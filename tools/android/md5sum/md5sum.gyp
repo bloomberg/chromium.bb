@@ -31,6 +31,11 @@
       'sources': [
         'md5sum.cc',
       ],
+      'conditions': [
+        [ 'order_profiling!=0 and OS=="android"', {
+            'dependencies': [ '../../../tools/cygprofile/cygprofile.gyp:cygprofile', ],
+        }],
+      ],
     },
     {
       'target_name': 'md5sum_stripped_device_bin',

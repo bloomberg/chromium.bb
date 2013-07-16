@@ -3334,8 +3334,15 @@
                 'cflags': [
                   '-finstrument-functions',
                   # Allow mmx intrinsics to inline, so that the
-                  # compiler can expand the intrinsics.
+                  #0 compiler can expand the intrinsics.
                   '-finstrument-functions-exclude-file-list=mmintrin.h',
+                ],
+              }],
+              ['_toolset=="target" and OS=="android"', {
+                'cflags': [
+                  # Avoids errors with current NDK:
+                  # "third_party/android_tools/ndk/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86_64/bin/../lib/gcc/arm-linux-androideabi/4.6/include/arm_neon.h:3426:3: error: argument must be a constant"
+                  '-finstrument-functions-exclude-file-list=arm_neon.h',
                 ],
               }],
             ],
