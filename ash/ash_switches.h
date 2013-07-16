@@ -70,16 +70,16 @@ ASH_EXPORT extern const char kForceAshToDesktop[];
 #endif
 ASH_EXPORT extern const char kForcedMaximizeMode[];
 
+// Returns true if the alternate shelf layout should be used.
+ASH_EXPORT bool UseAlternateShelfLayout();
+
+#if defined(OS_CHROMEOS)
 // Returns true if new audio handler should be used.
 ASH_EXPORT bool UseNewAudioHandler();
 
 // Returns true if we should show the audio device switching UI.
 ASH_EXPORT bool ShowAudioDeviceMenu();
 
-// Returns true if the alternate shelf layout should be used.
-ASH_EXPORT bool UseAlternateShelfLayout();
-
-#if defined(OS_CHROMEOS)
 // Returns true if a notification should appear when a low-power USB charger
 // is connected.
 ASH_EXPORT bool UseUsbChargerNotification();
