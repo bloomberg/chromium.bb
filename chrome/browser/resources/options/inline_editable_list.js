@@ -110,6 +110,9 @@ cr.define('options', function() {
       if (this.editing == editing)
         return;
 
+      if (this.isExtraFocusableControl(document.activeElement))
+        editing = false;
+
       if (editing)
         this.setAttribute('editing', '');
       else
@@ -348,6 +351,17 @@ cr.define('options', function() {
           return;
         }
       }
+    },
+
+    /**
+     * Check if the specified element is a focusable form control which is in
+     * the list item and not in |editFields_|.
+     * @param {!Element} element An element.
+     * @return {boolean} Returns true if the element is one of focusable
+     *     controls in this list item.
+     */
+    isExtraFocusableControl: function(element) {
+      return false;
     },
   };
 

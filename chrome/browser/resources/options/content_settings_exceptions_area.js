@@ -369,7 +369,12 @@ cr.define('options.contentSettings', function() {
 
       chrome.send('setException',
                   [this.contentType, this.mode, newPattern, newSetting]);
-    }
+    },
+
+    /** @override */
+    isExtraFocusableControl: function(element) {
+      return element === this.select;
+    },
   };
 
   /**
