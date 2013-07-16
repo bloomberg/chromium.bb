@@ -17,15 +17,15 @@
 #include "core/css/Pair.h"
 #include "core/css/resolver/StyleResolver.h"
 
-{%- macro apply_initial(property_id) -%}
+{%- macro declare_initial_function(property_id) -%}
 void StyleBuilderFunctions::applyInitial{{property_id}}(StyleResolver* styleResolver, StyleResolverState& state)
 {%- endmacro %}
 
-{%- macro apply_inherit(property_id) -%}
+{%- macro declare_inherit_function(property_id) -%}
 void StyleBuilderFunctions::applyInherit{{property_id}}(StyleResolver* styleResolver, StyleResolverState& state)
 {%- endmacro %}
 
-{%- macro apply_value(property_id) -%}
+{%- macro declare_value_function(property_id) -%}
 void StyleBuilderFunctions::applyValue{{property_id}}(StyleResolver* styleResolver, StyleResolverState& state, CSSValue* value)
 {%- endmacro %}
 
@@ -36,7 +36,7 @@ void StyleBuilderFunctions::applyValue{{property_id}}(StyleResolver* styleResolv
 namespace WebCore {
 
 {%- macro apply_animation(property_id, attribute, animation) %}
-{{ apply_initial(property_id) }}
+{{ declare_initial_function(property_id) }}
 {
     CSSAnimationDataList* list = state.style()->access{{animation}}();
     if (list->isEmpty())
@@ -49,7 +49,7 @@ namespace WebCore {
         list->animation(i)->clear{{attribute}}();
 }
 
-{{ apply_inherit(property_id) }}
+{{ declare_inherit_function(property_id) }}
 {
     CSSAnimationDataList* list = state.style()->access{{animation}}();
     const CSSAnimationDataList* parentList = state.parentStyle()->{{animation|lower}}();
@@ -66,7 +66,7 @@ namespace WebCore {
         list->animation(i)->clear{{attribute}}();
 }
 
-{{ apply_value(property_id) }}
+{{ declare_value_function(property_id) }}
 {
     CSSAnimationDataList* list = state.style()->access{{animation}}();
     size_t childIndex = 0;
@@ -108,12 +108,12 @@ namespace WebCore {
 {%- set property = properties[property_id] %}
 {%- set auto_getter = auto_getter or "hasAuto" + property.camel_case_name %}
 {%- set auto_setter = auto_setter or "setHasAuto" + property.camel_case_name %}
-{{ apply_initial(property_id) }}
+{{ declare_initial_function(property_id) }}
 {
     state.style()->{{auto_setter}}();
 }
 
-{{ apply_inherit(property_id) }}
+{{ declare_inherit_function(property_id) }}
 {
     if (state.parentStyle()->{{auto_getter}}())
         state.style()->{{auto_setter}}();
@@ -121,7 +121,7 @@ namespace WebCore {
         {{ set_value(property) }}(state.parentStyle()->{{property.getter}}());
 }
 
-{{ apply_value(property_id) }}
+{{ declare_value_function(property_id) }}
 {
     if (!value->isPrimitiveValue())
         return;
@@ -146,7 +146,7 @@ namespace WebCore {
 {{ apply_auto("CSSPropertyZIndex") }}
 
 {%- macro apply_value_border_image(property_id) %}
-{{ apply_value(property_id) }}
+{{ declare_value_function(property_id) }}
 {
     {%- set property = properties[property_id] %}
     NinePieceImage image;
@@ -165,7 +165,7 @@ namespace WebCore {
 {%- set is_mask_box = "MaskBox" in property_id %}
 {%- set getter = "maskBoxImage" if is_mask_box else "borderImage" %}
 {%- set setter = "setMaskBoxImage" if is_mask_box else "setBorderImage" %}
-{{ apply_initial(property_id) }}
+{{ declare_initial_function(property_id) }}
 {
     NinePieceImage image(state.style()->{{getter}}());
     {%- if modifier_type == "Outset" %}
@@ -184,7 +184,7 @@ namespace WebCore {
     state.style()->{{setter}}(image);
 }
 
-{{ apply_inherit(property_id) }}
+{{ declare_inherit_function(property_id) }}
 {
     NinePieceImage image(state.style()->{{getter}}());
     {%- if modifier_type == "Outset" %}
@@ -199,7 +199,7 @@ namespace WebCore {
     state.style()->{{setter}}(image);
 }
 
-{{ apply_value(property_id) }}
+{{ declare_value_function(property_id) }}
 {
     NinePieceImage image(state.style()->{{getter}}());
     {%- if modifier_type == "Outset" %}
@@ -225,7 +225,7 @@ namespace WebCore {
 {{ apply_border_image_modifier("CSSPropertyWebkitMaskBoxImageWidth", "Width") }}
 
 {%- macro apply_value_border_image_source(property_id) %}
-{{ apply_value(property_id) }}
+{{ declare_value_function(property_id) }}
 {
     {%- set property = properties[property_id] %}
     {{ set_value(property) }}(state.styleImage({{property_id}}, value));
@@ -236,7 +236,7 @@ namespace WebCore {
 {{ apply_value_border_image_source("CSSPropertyWebkitMaskBoxImageSource") }}
 
 {%- macro apply_value_border_radius(property_id) %}
-{{ apply_value(property_id) }}
+{{ declare_value_function(property_id) }}
 {
     {%- set property = properties[property_id] %}
     if (!value->isPrimitiveValue())
@@ -247,24 +247,8 @@ namespace WebCore {
     if (!pair || !pair->first() || !pair->second())
         return;
 
-    Length radiusWidth;
-    Length radiusHeight;
-    if (pair->first()->isPercentage())
-        radiusWidth = Length(pair->first()->getDoubleValue(), Percent);
-    else if (pair->first()->isViewportPercentageLength())
-        radiusWidth = pair->first()->viewportPercentageLength();
-    else if (pair->first()->isCalculatedPercentageWithLength())
-        radiusWidth = Length((pair->first()->cssCalcValue()->toCalcValue(state.style(), state.rootElementStyle(), state.style()->effectiveZoom())));
-    else
-        radiusWidth = pair->first()->computeLength<Length>(state.style(), state.rootElementStyle(), state.style()->effectiveZoom());
-    if (pair->second()->isPercentage())
-        radiusHeight = Length(pair->second()->getDoubleValue(), Percent);
-    else if (pair->second()->isViewportPercentageLength())
-        radiusHeight = pair->second()->viewportPercentageLength();
-    else if (pair->second()->isCalculatedPercentageWithLength())
-        radiusHeight = Length((pair->second()->cssCalcValue()->toCalcValue(state.style(), state.rootElementStyle(), state.style()->effectiveZoom())));
-    else
-        radiusHeight = pair->second()->computeLength<Length>(state.style(), state.rootElementStyle(), state.style()->effectiveZoom());
+    Length radiusWidth = pair->first()->convertToLength<FixedIntegerConversion | CalculatedConversion | PercentConversion | ViewportPercentageConversion>(state.style(), state.rootElementStyle(), state.style()->effectiveZoom());
+    Length radiusHeight = pair->second()->convertToLength<FixedIntegerConversion | CalculatedConversion | PercentConversion | ViewportPercentageConversion>(state.style(), state.rootElementStyle(), state.style()->effectiveZoom());
     int width = radiusWidth.value();
     int height = radiusHeight.value();
     if (width < 0 || height < 0)
@@ -287,7 +271,7 @@ namespace WebCore {
 {%- macro apply_color(property_id, default_getter="color", initial_color=none, inherit_color=false) %}
 {%- set property = properties[property_id] %}
 {%- set visited_link_setter = "setVisitedLink" + property.camel_case_name %}
-{{ apply_initial(property_id) }}
+{{ declare_initial_function(property_id) }}
 {
     Color color = {{ initial_color or "Color" -}}();
     if (state.applyPropertyToRegularStyle())
@@ -296,7 +280,7 @@ namespace WebCore {
         state.style()->{{visited_link_setter}}(color);
 }
 
-{{ apply_inherit(property_id) }}
+{{ declare_inherit_function(property_id) }}
 {
     // Visited link style can never explicitly inherit from parent visited link style so no separate getters are needed.
     Color color = state.parentStyle()->{{property.getter}}();
@@ -308,7 +292,7 @@ namespace WebCore {
         state.style()->{{visited_link_setter}}(color);
 }
 
-{{ apply_value(property_id) }}
+{{ declare_value_function(property_id) }}
 {
     if (!value->isPrimitiveValue())
         return;
@@ -343,7 +327,7 @@ namespace WebCore {
 {{ apply_color("CSSPropertyWebkitTextStrokeColor") }}
 
 {%- macro apply_value_compute_length(property_id) %}
-{{ apply_value(property_id) }}
+{{ declare_value_function(property_id) }}
 {
     {%- set property = properties[property_id] %}
     if (!value->isPrimitiveValue())
@@ -362,9 +346,9 @@ namespace WebCore {
 
 {%- macro apply_counter(property_id, action) %}
 {%- set property = properties[property_id] %}
-{{ apply_initial(property_id) }} { }
+{{ declare_initial_function(property_id) }} { }
 
-{{ apply_inherit(property_id) }}
+{{ declare_inherit_function(property_id) }}
 {
     CounterDirectiveMap& map = state.style()->accessCounterDirectives();
     CounterDirectiveMap& parentMap = state.parentStyle()->accessCounterDirectives();
@@ -377,7 +361,7 @@ namespace WebCore {
     }
 }
 
-{{ apply_value(property_id) }}
+{{ declare_value_function(property_id) }}
 {
     if (!value->isValueList())
         return;
@@ -421,7 +405,7 @@ namespace WebCore {
 {%- set fill_layer_type = layer_type + "FillLayer" %}
 {%- set access_layers = "access" + layer_type + "Layers" %}
 {%- set map_fill = "mapFill" + fill_type %}
-{{ apply_initial(property_id) }}
+{{ declare_initial_function(property_id) }}
 {
     FillLayer* currChild = state.style()->{{access_layers}}();
     currChild->set{{fill_type}}(FillLayer::initialFill{{fill_type}}({{fill_layer_type}}));
@@ -429,7 +413,7 @@ namespace WebCore {
         currChild->clear{{fill_type}}();
 }
 
-{{ apply_inherit(property_id) }}
+{{ declare_inherit_function(property_id) }}
 {
     FillLayer* currChild = state.style()->{{access_layers}}();
     FillLayer* prevChild = 0;
@@ -453,7 +437,7 @@ namespace WebCore {
     }
 }
 
-{{ apply_value(property_id) }}
+{{ declare_value_function(property_id) }}
 {
     FillLayer* currChild = state.style()->{{access_layers}}();
     FillLayer* prevChild = 0;
@@ -508,21 +492,21 @@ namespace WebCore {
         and not RenderStyle #}
 {%- set getter = lower_first(name_for_methods) %}
 {%- set setter = "set" + name_for_methods %}
-{{ apply_initial(property_id) }}
+{{ declare_initial_function(property_id) }}
 {
     FontDescription fontDescription = state.fontDescription();
     fontDescription.{{setter}}({{initial}});
     state.setFontDescription(fontDescription);
 }
 
-{{ apply_inherit(property_id) }}
+{{ declare_inherit_function(property_id) }}
 {
     FontDescription fontDescription = state.fontDescription();
     fontDescription.{{setter}}(state.parentFontDescription().{{getter}}());
     state.setFontDescription(fontDescription);
 }
 
-{{ apply_value(property_id) }}
+{{ declare_value_function(property_id) }}
 {
     if (!value->isPrimitiveValue())
         return;
@@ -540,7 +524,7 @@ namespace WebCore {
 {{ apply_font("CSSPropertyWebkitFontSmoothing", "FontSmoothing", "AutoSmoothing", "FontSmoothingMode") }}
 
 {%- macro apply_value_line_width(property_id) %}
-{{ apply_value(property_id) }}
+{{ declare_value_function(property_id) }}
 {
     {%- set property = properties[property_id] %}
     {%- set T = property.type_name %}
@@ -582,7 +566,7 @@ namespace WebCore {
 {{ apply_value_line_width("CSSPropertyWebkitColumnRuleWidth") }}
 
 {%- macro apply_value_number(property_id, id_for_minus_one) %}
-{{ apply_value(property_id) }}
+{{ declare_value_function(property_id) }}
 {
     {%- set property = properties[property_id] %}
     if (!value->isPrimitiveValue())
@@ -602,7 +586,7 @@ namespace WebCore {
 {{ apply_value_number("CSSPropertyWebkitMarqueeRepetition", "CSSValueInfinite") }}
 
 {%- macro apply_value_shape(property_id) %}
-{{ apply_value(property_id) }}
+{{ declare_value_function(property_id) }}
 {
     {%- set property = properties[property_id] %}
     if (value->isPrimitiveValue()) {
@@ -624,7 +608,7 @@ namespace WebCore {
 {{ apply_value_shape("CSSPropertyWebkitShapeOutside") }}
 
 {%- macro apply_value_spacing(property_id) %}
-{{ apply_value(property_id) }}
+{{ declare_value_function(property_id) }}
 {
     {%- set property = properties[property_id] %}
     {%- set T = property.type_name %}
@@ -647,7 +631,7 @@ namespace WebCore {
 {{ apply_value_spacing("CSSPropertyWordSpacing") }}
 
 {%- macro apply_value_string(property_id, id_for_none) %}
-{{ apply_value(property_id) }}
+{{ declare_value_function(property_id) }}
 {
     {%- set property = properties[property_id] %}
     if (!value->isPrimitiveValue())
@@ -665,32 +649,5 @@ namespace WebCore {
 {{ apply_value_string("CSSPropertyWebkitLineGrid", "CSSValueNone") }}
 {{ apply_value_string("CSSPropertyWebkitFlowFrom", "CSSValueNone") }}
 {{ apply_value_string("CSSPropertyWebkitFlowInto", "CSSValueNone") }}
-
-{{ apply_value("CSSPropertyWebkitMarqueeIncrement") }}
-{
-    if (!value->isPrimitiveValue())
-        return;
-
-    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-    if (primitiveValue->getValueID()) {
-        switch (primitiveValue->getValueID()) {
-        case CSSValueSmall:
-            state.style()->setMarqueeIncrement(Length(1, Fixed)); // 1px.
-            break;
-        case CSSValueNormal:
-            state.style()->setMarqueeIncrement(Length(6, Fixed)); // 6px. The WinIE default.
-            break;
-        case CSSValueLarge:
-            state.style()->setMarqueeIncrement(Length(36, Fixed)); // 36px.
-            break;
-        default:
-            break;
-        }
-    } else {
-        Length marqueeLength = primitiveValue ? primitiveValue->convertToLength<FixedIntegerConversion | PercentConversion | CalculatedConversion | FractionConversion | ViewportPercentageConversion>(state.style(), state.rootElementStyle()) : Length(Undefined);
-        if (!marqueeLength.isUndefined())
-            state.style()->setMarqueeIncrement(marqueeLength);
-    }
-}
 
 } // namespace WebCore

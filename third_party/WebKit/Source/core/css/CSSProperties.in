@@ -77,7 +77,7 @@ margin-right apply_type=length, initial=initialMargin, use_auto
 margin-top apply_type=length, initial=initialMargin, use_auto
 max-height apply_type=length, initial=initialMaxSize, use_auto, use_intrinsic, use_none
 max-width apply_type=length, initial=initialMaxSize, use_auto, use_intrinsic, use_none
-min-height apply_type=length, initial=initialMinSize, use_auto, use_intrinsic, use_none
+min-height apply_type=length, initial=initialMinSize, use_auto, use_intrinsic
 min-width apply_type=length, initial=initialMinSize, use_auto, use_intrinsic
 mix-blend-mode type_name=BlendMode, name_for_methods=BlendMode
 opacity type_name=float

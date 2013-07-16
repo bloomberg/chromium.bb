@@ -962,6 +962,33 @@ void StyleBuilderFunctions::applyValueCSSPropertyWebkitFontVariantLigatures(Styl
     state.setFontDescription(fontDescription);
 }
 
+void StyleBuilderFunctions::applyValueCSSPropertyWebkitMarqueeIncrement(StyleResolver*, StyleResolverState& state, CSSValue* value)
+{
+    if (!value->isPrimitiveValue())
+        return;
+
+    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
+    if (primitiveValue->getValueID()) {
+        switch (primitiveValue->getValueID()) {
+        case CSSValueSmall:
+            state.style()->setMarqueeIncrement(Length(1, Fixed)); // 1px.
+            break;
+        case CSSValueNormal:
+            state.style()->setMarqueeIncrement(Length(6, Fixed)); // 6px. The WinIE default.
+            break;
+        case CSSValueLarge:
+            state.style()->setMarqueeIncrement(Length(36, Fixed)); // 36px.
+            break;
+        default:
+            break;
+        }
+    } else {
+        Length marqueeLength = primitiveValue ? primitiveValue->convertToLength<FixedIntegerConversion | PercentConversion | CalculatedConversion | FractionConversion | ViewportPercentageConversion>(state.style(), state.rootElementStyle()) : Length(Undefined);
+        if (!marqueeLength.isUndefined())
+            state.style()->setMarqueeIncrement(marqueeLength);
+    }
+}
+
 void StyleBuilderFunctions::applyValueCSSPropertyWebkitMarqueeSpeed(StyleResolver*, StyleResolverState& state, CSSValue* value)
 {
     if (!value->isPrimitiveValue())

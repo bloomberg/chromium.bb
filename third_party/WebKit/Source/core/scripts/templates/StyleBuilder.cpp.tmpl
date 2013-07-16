@@ -22,45 +22,49 @@ namespace WebCore {
         return;
 
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-{% if property.use_none %}
-    if (primitiveValue->getValueID() == CSSValueNone) {
-        {{ set_value(property) }}(Length(Undefined));
-        return;
-    }
-{% endif %}
+    Length length;
+    switch(primitiveValue->getValueID()) {
 
-{%- if property.use_intrinsic %}
-    if (primitiveValue->getValueID() == CSSValueIntrinsic)
-        {{ set_value(property) }}(Length(Intrinsic));
-    else if (primitiveValue->getValueID() == CSSValueMinIntrinsic)
-        {{ set_value(property) }}(Length(MinIntrinsic));
-    else if (primitiveValue->getValueID() == CSSValueWebkitMinContent)
-        {{ set_value(property) }}(Length(MinContent));
-    else if (primitiveValue->getValueID() == CSSValueWebkitMaxContent)
-        {{ set_value(property) }}(Length(MaxContent));
-    else if (primitiveValue->getValueID() == CSSValueWebkitFillAvailable)
-        {{ set_value(property) }}(Length(FillAvailable));
-    else if (primitiveValue->getValueID() == CSSValueWebkitFitContent)
-        {{ set_value(property) }}(Length(FitContent));
-{% endif %}
-
-{%- if property.use_auto %}
-    if (primitiveValue->getValueID() == CSSValueAuto) {
-        {{ set_value(property) }}(Length());
-        return;
-    }
+{%- if property.use_none %}
+    case CSSValueNone:
+        length = Length(Undefined);
+        break;
 {%- endif %}
 
-    if (primitiveValue->isLength()) {
-        Length length = primitiveValue->computeLength<Length>(state.style(), state.rootElementStyle(), state.style()->effectiveZoom());
+{%- if property.use_intrinsic %}
+    case CSSValueIntrinsic:
+        length = Length(Intrinsic);
+        break;
+    case CSSValueMinIntrinsic:
+        length = Length(MinIntrinsic);
+        break;
+    case CSSValueWebkitMinContent:
+        length = Length(MinContent);
+        break;
+    case CSSValueWebkitMaxContent:
+        length = Length(MaxContent);
+        break;
+    case CSSValueWebkitFillAvailable:
+        length = Length(FillAvailable);
+        break;
+    case CSSValueWebkitFitContent:
+        length = Length(FitContent);
+        break;
+{%- endif %}
+
+{%- if property.use_auto %}
+    case CSSValueAuto:
+        break; // default ctor is auto
+{%- endif %}
+
+    case CSSValueInvalid:
+        length = primitiveValue->convertToLength<FixedIntegerConversion | CalculatedConversion | PercentConversion | ViewportPercentageConversion>(state.style(), state.rootElementStyle(), state.style()->effectiveZoom());
         length.setQuirk(primitiveValue->isQuirkValue());
-        {{ set_value(property) }}(length);
-    } else if (primitiveValue->isPercentage())
-        {{ set_value(property) }}(Length(primitiveValue->getDoubleValue(), Percent));
-    else if (primitiveValue->isCalculatedPercentageWithLength())
-        {{ set_value(property) }}(Length(primitiveValue->cssCalcValue()->toCalcValue(state.style(), state.rootElementStyle(), state.style()->effectiveZoom())));
-    else if (primitiveValue->isViewportPercentageLength())
-        {{ set_value(property) }}(primitiveValue->viewportPercentageLength());
+        break;
+    default:
+        ASSERT_NOT_REACHED();
+    }
+    {{ set_value(property) }}(length);
 {%- endmacro %}
 
 {%- for property_id, property in properties.items() if not property.use_handlers_for %}
