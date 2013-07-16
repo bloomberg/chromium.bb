@@ -1578,12 +1578,6 @@ END
                 AddToImplIncludes("core/svg/properties/SVGStaticPropertyWithParentTearOff.h");
                 $tearOffType =~ s/SVGPropertyTearOff</SVGStaticPropertyWithParentTearOff<$implClassName, /;
 
-                if ($expression =~ /matrix/ and $interfaceName eq "SVGTransform") {
-                    # SVGTransform offers a matrix() method for internal usage that returns an AffineTransform
-                    # and a svgMatrix() method returning a SVGMatrix, used for the bindings.
-                    $expression =~ s/matrix/svgMatrix/;
-                }
-
                 $wrappedValue = "WTF::getPtr(${tearOffType}::create(wrapper, $expression, $updateMethod))";
             } else {
                 AddToImplIncludes("core/svg/properties/SVGStaticPropertyTearOff.h");
