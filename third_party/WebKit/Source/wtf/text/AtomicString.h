@@ -98,6 +98,7 @@ public:
     AtomicStringImpl* impl() const { return static_cast<AtomicStringImpl *>(m_string.impl()); }
 
     bool is8Bit() const { return m_string.is8Bit(); }
+    const UChar* bloatedCharacters() const { return m_string.bloatedCharacters(); }
     const LChar* characters8() const { return m_string.characters8(); }
     const UChar* characters16() const { return m_string.characters16(); }
     unsigned length() const { return m_string.length(); }
