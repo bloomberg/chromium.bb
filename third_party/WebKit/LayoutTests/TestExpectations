@@ -1311,7 +1311,8 @@ crbug.com/14885 [ Debug ] fast/js/JSON-stringify.html [ Failure ]
 crbug.com/14885 [ Mac Release ] fast/js/JSON-stringify.html [ Failure ]
 
 # started failing around the V8 roll in http://crrev.com/206035
-crbug.com/249894 [ Debug ] fast/js/regress/inline-arguments-access.html  [ Pass Failure Crash ]
+# started timing out around r154246..r154251
+crbug.com/260744 crbug.com/249894 [ Debug ] fast/js/regress/inline-arguments-access.html  [ Pass Failure Crash Timeout ]
 
 # Caused by http://trac.webkit.org/changeset/56394.
 crbug.com/143475 [ Win ] http/tests/xmlhttprequest/xmlhttprequest-50ms-download-dispatch.html [ Failure Pass Timeout ]
@@ -1731,3 +1732,7 @@ Bug(cbiesinger) [ Win ] fast/forms/button-default-title.html [ Failure ]
 crbug.com/257325 [ Mac ] media/audio-repaint.html [ Pass ImageOnlyFailure ]
 
 crbug.com/255407 plugins/npruntime/leak-window-scriptable-object.html [ Pass Failure ]
+
+# started timing out around r154246..r154251
+crbug.com/260744 [ Debug ] fast/js/regress/function-dot-apply.html  [ Timeout ]
+crbug.com/260744 [ Debug ] fast/js/regress/inline-arguments-local-escape.html  [ Timeout ]
