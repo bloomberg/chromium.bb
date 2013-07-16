@@ -602,7 +602,7 @@ TEST(KURLTest, DeepCopy)
     EXPECT_TRUE(dest.string() == url); // This really just initializes the cache.
 
     // The pointers should be different for both UTF-8 and UTF-16.
-    EXPECT_NE(dest.string().bloatedCharacters(), src.string().bloatedCharacters());
+    EXPECT_NE(dest.string().impl(), src.string().impl());
 }
 
 TEST(KURLTest, ProtocolIs)

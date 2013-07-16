@@ -113,8 +113,10 @@ TEST_F(UniscribeTest, TooBig)
     // Test a long string without the normal length protection we have. This
     // will cause shaping to fail.
     {
+        Vector<UChar> inputCharacters;
+        input.appendTo(inputCharacters);
         UniscribeHelper uniscribe(
-            input.bloatedCharacters(), static_cast<int>(input.length()),
+            inputCharacters.data(), static_cast<int>(inputCharacters.size()),
             false, hfont, scriptCache, &properties, 0);
         uniscribe.initWithOptionalLengthProtection(false);
 
@@ -146,8 +148,10 @@ TEST_F(UniscribeTest, TooBig)
     // Now test the very large string and make sure it is handled properly by
     // the length protection.
     {
+        Vector<UChar> inputCharacters;
+        input.appendTo(inputCharacters);
         UniscribeHelper uniscribe(
-            input.bloatedCharacters(), static_cast<int>(input.length()),
+            inputCharacters.data(), static_cast<int>(inputCharacters.size()),
             false, hfont, scriptCache, &properties, 0);
         uniscribe.initWithOptionalLengthProtection(true);
 
