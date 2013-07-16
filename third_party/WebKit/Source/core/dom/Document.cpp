@@ -3045,15 +3045,15 @@ void Document::removeFocusedNodeOfSubtree(Node* node, bool amongChildrenOnly)
     if (!m_focusedNode)
         return;
 
-    Node* focusedNode = node->treeScope()->focusedNode();
-    if (!focusedNode)
+    Element* focusedElement = node->treeScope()->adjustedFocusedElement();
+    if (!focusedElement)
         return;
 
     bool nodeInSubtree = false;
     if (amongChildrenOnly)
-        nodeInSubtree = focusedNode->isDescendantOf(node);
+        nodeInSubtree = focusedElement->isDescendantOf(node);
     else
-        nodeInSubtree = (focusedNode == node) || focusedNode->isDescendantOf(node);
+        nodeInSubtree = (focusedElement == node) || focusedElement->isDescendantOf(node);
 
     if (nodeInSubtree)
         setFocusedElement(0);

@@ -127,8 +127,8 @@ private:
 
 inline Element* ShadowRoot::activeElement() const
 {
-    if (Node* node = treeScope()->focusedNode())
-        return node->isElementNode() ? toElement(node) : 0;
+    if (Element* element = treeScope()->adjustedFocusedElement())
+        return element;
     return 0;
 }
 

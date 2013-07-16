@@ -2088,8 +2088,8 @@ void Element::updateFocusAppearance(bool /*restorePreviousSelection*/)
 void Element::blur()
 {
     cancelFocusAppearanceUpdate();
-    Document* doc = document();
-    if (treeScope()->focusedNode() == this) {
+    if (treeScope()->adjustedFocusedElement() == this) {
+        Document* doc = document();
         if (doc->frame())
             doc->frame()->page()->focusController()->setFocusedElement(0, doc->frame());
         else

@@ -348,7 +348,7 @@ static Node* focusedFrameOwnerElement(Frame* focusedFrame, Frame* currentFrame)
     return 0;
 }
 
-Node* TreeScope::focusedNode()
+Element* TreeScope::adjustedFocusedElement()
 {
     Document* document = rootNode()->document();
     Node* node = document->focusedNode();
@@ -364,7 +364,7 @@ Node* TreeScope::focusedNode()
         else if (walker.isVisitingInsertionPointInReprojection())
             targetStack.append(targetStack.last());
         if (node == rootNode())
-            return targetStack.last();
+            return toElement(targetStack.last());
         if (node->isShadowRoot()) {
             ASSERT(!targetStack.isEmpty());
             targetStack.removeLast();
