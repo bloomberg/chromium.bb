@@ -39,7 +39,39 @@ class ServiceMetadata;
 class DriveFileMetadata;
 struct DatabaseContents;
 
-// This class holds a snapshot of the server side metadata.
+// MetadataDatabase instance holds and maintains database and its indexes.  The
+// database holds metadata of the server-side files/folders as
+// DriveFileMetadata instances.
+// The term "file" includes files, folders and other resources on Drive.
+//
+// Files have following state:
+//   - Unknown file
+//     - Is initial state of the files, only file_id and parent_folder_id field
+//       are known.
+//     - Has empty synced_details, must be active and dirty.
+//   - Folder
+//     - Is either one of sync-root folder, app-root folder or a regular folder.
+//     - Sync-root folder holds app-root folders as its direct children, and
+//       holds entire SyncFileSystem files as its descentants.  Its file_id is
+//       stored in ServiceMetadata.
+//     - App-root folder holds all files for an application as its descendants.
+//   - File
+//   - Unsupported file
+//     - Represents unsupported files such as hosted documents. Must be
+//       inactive.
+//
+// Invariants:
+//   - Any file in the database must either:
+//     - be sync-root,
+//     - have an app-root as its parent folder, or
+//     - have an active folder as its parent.
+//   That is, all files must be reachable from sync-root via app-root folders
+//   and active folders.
+//
+//   - Any active folder must either:
+//     - have needs_folder_listing flag and dirty flag, or
+//     - have all children at the stored largest change id.
+//
 class MetadataDatabase {
  private:
   struct FileIDComparator {
@@ -82,7 +114,7 @@ class MetadataDatabase {
   void EnableApp(const std::string& app_id,
                  const SyncStatusCallback& callback);
 
-  // Unregister the folder as the app-root for |app_id|.  If |app_id| does not
+  // Unregisters the folder as the app-root for |app_id|.  If |app_id| does not
   // exist, does nothing.  The folder is left as an inactive normal folder.
   void UnregisterApp(const std::string& app_id,
                      const SyncStatusCallback& callback);
