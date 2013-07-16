@@ -154,9 +154,6 @@ class ExistingUserController : public LoginDisplay::Delegate,
   // Adds first-time login URLs.
   void InitializeStartUrls() const;
 
-  // Shows "Release Notes"/"What's new"/Getting started guide on update.
-  void OptionallyShowReleaseNotes(Profile* profile) const;
-
   // Show error message. |error_id| error message ID in resources.
   // If |details| string is not empty, it specify additional error text
   // provided by authenticator, it is not localized.

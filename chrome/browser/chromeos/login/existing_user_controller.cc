@@ -812,8 +812,6 @@ void ExistingUserController::OnLoginSuccess(
 }
 
 void ExistingUserController::OnProfilePrepared(Profile* profile) {
-  OptionallyShowReleaseNotes(profile);
-
   // Reenable clicking on other windows and status area.
   login_display_->SetUIEnabled(true);
 
@@ -1083,51 +1081,6 @@ void ExistingUserController::InitializeStartUrls() const {
     for (size_t i = 0; i < start_urls.size(); ++i) {
       CommandLine::ForCurrentProcess()->AppendArg(start_urls[i]);
     }
-  }
-}
-
-void ExistingUserController::OptionallyShowReleaseNotes(
-    Profile* profile) const {
-  // TODO(nkostylev): Fix WizardControllerFlowTest case.
-  if (!profile || KioskModeSettings::Get()->IsKioskModeEnabled())
-    return;
-  if (UserManager::Get()->GetCurrentUserFlow()->ShouldSkipPostLoginScreens())
-    return;
-  PrefService* prefs = profile->GetPrefs();
-  chrome::VersionInfo version_info;
-  // New users would get this info with default getting started guide.
-  // In password changed case 2 options are available:
-  // 1. Cryptohome removed, pref is gone, not yet synced, recreate
-  //    with latest version.
-  // 2. Cryptohome migrated, pref is available. To simplify implementation
-  //    update version here too. Unlikely that user signs in first time on
-  //    the machine after update with password changed.
-  if (UserManager::Get()->IsCurrentUserNew() || password_changed_) {
-    prefs->SetString(prefs::kChromeOSReleaseNotesVersion,
-                     version_info.Version());
-    return;
-  }
-
-  std::string prev_version_pref =
-      prefs->GetString(prefs::kChromeOSReleaseNotesVersion);
-  Version prev_version(prev_version_pref);
-  if (!prev_version.IsValid())
-    prev_version = Version("0.0.0.0");
-  Version current_version(version_info.Version());
-
-  if (!current_version.components().size()) {
-    NOTREACHED() << "Incorrect version " << current_version.GetString();
-    return;
-  }
-
-  // No "Release Notes" content yet for upgrade from M19 to later release.
-  if (prev_version.components()[0] >= kReleaseNotesTargetRelease)
-    return;
-
-  // Otherwise, trigger on major version change.
-  if (current_version.components()[0] > prev_version.components()[0]) {
-    prefs->SetString(prefs::kChromeOSReleaseNotesVersion,
-                     current_version.GetString());
   }
 }
 
