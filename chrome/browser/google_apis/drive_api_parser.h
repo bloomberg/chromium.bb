@@ -573,6 +573,9 @@ class FileResource {
   void set_created_date(const base::Time& created_date) {
     created_date_ = created_date;
   }
+  void set_modified_date(const base::Time& modified_date) {
+    modified_date_ = modified_date;
+  }
   void set_modified_by_me_date(const base::Time& modified_by_me_date) {
     modified_by_me_date_ = modified_by_me_date;
   }
