@@ -24,5 +24,4 @@ URLRequestTest.FileTest
 ServerBoundCertServiceTest.*
 
 # Flaky, see http://crbug.com/259781
-EmbeddedTestServerTest.DefaultNotFoundResponse
-EmbeddedTestServerTest.RegisterRequestHandler
+EmbeddedTestServerTest.*
