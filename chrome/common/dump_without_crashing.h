@@ -12,7 +12,7 @@ namespace logging {
 // Handler to silently dump the current process without crashing.
 void DumpWithoutCrashing();
 
-#if defined(USE_LINUX_BREAKPAD) || defined(OS_MACOSX)
+#if defined(OS_POSIX)
 // Sets a function that'll be invoked to dump the current process when
 // DumpWithoutCrashing() is called.
 void SetDumpWithoutCrashingFunction(void (*function)());

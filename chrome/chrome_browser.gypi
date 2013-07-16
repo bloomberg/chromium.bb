@@ -2783,32 +2783,24 @@
           },
         }],
         ['os_posix == 1 and OS != "mac" and OS != "ios"', {
-          'sources': [ 'browser/crash_handler_host_linux.h', ],
-          'conditions': [
-            ['linux_breakpad==1', {
-              'sources': [
-                'app/breakpad_linux.cc',
-                'app/breakpad_linux.h',
-                'app/chrome_breakpad_client.cc',
-                'app/chrome_breakpad_client.h',
-                'browser/crash_handler_host_linux.cc',
-              ],
-              'dependencies': [
-                '../breakpad/breakpad.gyp:breakpad_client',
-                '../components/components.gyp:breakpad_component',
-                # make sure file_version_info_linux.h is generated first.
-                'common',
-              ],
-              'include_dirs': [
-                # breakpad_linux.cc uses generated file_version_info_linux.h.
-                '<(SHARED_INTERMEDIATE_DIR)',
-                '../breakpad/src',
-              ],
-            }, {  # linux_breakpad==0
-              'sources': [
-                'browser/crash_handler_host_linux_stub.cc',
-              ],
-            }],
+          'sources': [
+            'app/breakpad_linux.cc',
+            'app/breakpad_linux.h',
+            'app/chrome_breakpad_client.cc',
+            'app/chrome_breakpad_client.h',
+            'browser/crash_handler_host_linux.cc',
+            'browser/crash_handler_host_linux.h',
+          ],
+          'dependencies': [
+            '../breakpad/breakpad.gyp:breakpad_client',
+            '../components/components.gyp:breakpad_component',
+            # make sure file_version_info_linux.h is generated first.
+            'common',
+          ],
+          'include_dirs': [
+            # breakpad_linux.cc uses generated file_version_info_linux.h.
+            '<(SHARED_INTERMEDIATE_DIR)',
+            '../breakpad/src',
           ],
         }],
         ['use_nss==1', {
@@ -3200,7 +3192,6 @@
           'sources/': [
             ['include', '^app/breakpad_linux\\.cc$'],
             ['include', '^browser/crash_handler_host_linux\\.cc$'],
-            ['include', '^browser/crash_handler_host_linux_stub\\.cc$'],
           ],
         }],
       ],

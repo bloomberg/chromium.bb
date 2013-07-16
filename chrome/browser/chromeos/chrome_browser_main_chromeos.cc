@@ -124,12 +124,9 @@ namespace chromeos {
 
 namespace {
 
-#if defined(USE_LINUX_BREAKPAD)
 void ChromeOSVersionCallback(const std::string& version) {
   base::SetLinuxDistro(std::string("CrOS ") + version);
 }
-
-#endif
 
 class MessageLoopObserver : public base::MessageLoopForUI::Observer {
   virtual base::EventStatus WillProcessEvent(
@@ -559,11 +556,9 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
   // TimezoneSettings and CrosSettings.
   WallpaperManager::Get()->AddObservers();
 
-#if defined(USE_LINUX_BREAKPAD)
   cros_version_loader_.GetVersion(VersionLoader::VERSION_FULL,
                                   base::Bind(&ChromeOSVersionCallback),
                                   &tracker_);
-#endif
 
   storage_monitor_.reset(new StorageMonitorCros());
 

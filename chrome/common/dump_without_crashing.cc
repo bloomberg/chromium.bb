@@ -15,7 +15,7 @@
 
 namespace {
 
-#if defined(USE_LINUX_BREAKPAD) || defined(OS_MACOSX)
+#if defined(OS_POSIX)
 // Pointer to the function that's called by DumpWithoutCrashing() to dump the
 // process's memory.
 void (*dump_without_crashing_function_)() = NULL;
@@ -34,7 +34,7 @@ void DumpWithoutCrashing() {
                        "DumpProcess"));
   if (DumpProcess)
     DumpProcess();
-#elif defined(USE_LINUX_BREAKPAD) || defined(OS_MACOSX)
+#elif defined(OS_POSIX)
   if (dump_without_crashing_function_)
     (*dump_without_crashing_function_)();
 #else
@@ -42,7 +42,7 @@ void DumpWithoutCrashing() {
 #endif
 }
 
-#if defined(USE_LINUX_BREAKPAD) || defined(OS_MACOSX)
+#if defined(OS_POSIX)
 void SetDumpWithoutCrashingFunction(void (*function)()) {
   dump_without_crashing_function_ = function;
 }

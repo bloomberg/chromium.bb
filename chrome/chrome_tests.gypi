@@ -2233,9 +2233,8 @@
     {
       # To run the tests from page_load_test.cc on Linux, we need to:
       #
-      #   a) Build with Breakpad (GYP_DEFINES="linux_chromium_breakpad=1")
-      #   b) Run with CHROME_HEADLESS=1 to generate crash dumps.
-      #   c) Strip the binary if it's a debug build. (binary may be over 2GB)
+      #   a) Run with CHROME_HEADLESS=1 to generate crash dumps.
+      #   b) Strip the binary if it's a debug build. (binary may be over 2GB)
       'target_name': 'reliability_tests',
       'type': 'executable',
       'dependencies': [

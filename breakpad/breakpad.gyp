@@ -339,95 +339,91 @@
             '__ANDROID__',
           ],
         }],
-        # Tools needed for archiving build symbols.
-        ['linux_breakpad==1', {
-          'targets': [
-            {
-              'target_name': 'symupload',
-              'type': 'executable',
-
-              'includes': ['breakpad_tools.gypi'],
-
-              'sources': [
-                'src/tools/linux/symupload/sym_upload.cc',
-                'src/common/linux/http_upload.cc',
-                'src/common/linux/http_upload.h',
-              ],
-              'include_dirs': [
-                'src',
-                'src/third_party',
-              ],
-              'link_settings': {
-                'libraries': [
-                  '-ldl',
-                ],
-              },
-            },
-            {
-              'target_name': 'dump_syms',
-              'type': 'executable',
-              'conditions': [
-                ['OS=="android"', {
-                  'toolsets': [ 'host' ],
-                }],
-              ],
-
-              # dwarf2reader.cc uses dynamic_cast. Because we don't typically
-              # don't support RTTI, we enable it for this single target. Since
-              # dump_syms doesn't share any object files with anything else,
-              # this doesn't end up polluting Chrome itself.
-              'cflags_cc!': ['-fno-rtti'],
-
-              'sources': [
-                'src/common/dwarf/bytereader.cc',
-                'src/common/dwarf_cfi_to_module.cc',
-                'src/common/dwarf_cfi_to_module.h',
-                'src/common/dwarf_cu_to_module.cc',
-                'src/common/dwarf_cu_to_module.h',
-                'src/common/dwarf/dwarf2diehandler.cc',
-                'src/common/dwarf/dwarf2reader.cc',
-                'src/common/dwarf_line_to_module.cc',
-                'src/common/dwarf_line_to_module.h',
-                'src/common/language.cc',
-                'src/common/language.h',
-                'src/common/linux/dump_symbols.cc',
-                'src/common/linux/dump_symbols.h',
-                'src/common/linux/elf_symbols_to_module.cc',
-                'src/common/linux/elf_symbols_to_module.h',
-                'src/common/linux/elfutils.cc',
-                'src/common/linux/elfutils.h',
-                'src/common/linux/file_id.cc',
-                'src/common/linux/file_id.h',
-                'src/common/linux/linux_libc_support.cc',
-                'src/common/linux/linux_libc_support.h',
-                'src/common/linux/memory_mapped_file.cc',
-                'src/common/linux/memory_mapped_file.h',
-                'src/common/linux/guid_creator.h',
-                'src/common/module.cc',
-                'src/common/module.h',
-                'src/common/stabs_reader.cc',
-                'src/common/stabs_reader.h',
-                'src/common/stabs_to_module.cc',
-                'src/common/stabs_to_module.h',
-                'src/tools/linux/dump_syms/dump_syms.cc',
-              ],
-
-              # Breakpad rev 583 introduced this flag.
-              # Using this define, stabs_reader.h will include a.out.h to
-              # build on Linux.
-              'defines': [
-                'HAVE_A_OUT_H',
-              ],
-
-              'include_dirs': [
-                'src',
-                '..',
-              ],
-            },
-          ],
-        }],
       ],
+      # Tools needed for archiving build symbols.
       'targets': [
+        {
+          'target_name': 'symupload',
+          'type': 'executable',
+
+          'includes': ['breakpad_tools.gypi'],
+
+          'sources': [
+            'src/tools/linux/symupload/sym_upload.cc',
+            'src/common/linux/http_upload.cc',
+            'src/common/linux/http_upload.h',
+          ],
+          'include_dirs': [
+            'src',
+            'src/third_party',
+          ],
+          'link_settings': {
+            'libraries': [
+              '-ldl',
+            ],
+          },
+        },
+        {
+          'target_name': 'dump_syms',
+          'type': 'executable',
+          'conditions': [
+            ['OS=="android"', {
+              'toolsets': [ 'host' ],
+            }],
+          ],
+
+          # dwarf2reader.cc uses dynamic_cast. Because we don't typically
+          # don't support RTTI, we enable it for this single target. Since
+          # dump_syms doesn't share any object files with anything else,
+          # this doesn't end up polluting Chrome itself.
+          'cflags_cc!': ['-fno-rtti'],
+
+          'sources': [
+            'src/common/dwarf/bytereader.cc',
+            'src/common/dwarf_cfi_to_module.cc',
+            'src/common/dwarf_cfi_to_module.h',
+            'src/common/dwarf_cu_to_module.cc',
+            'src/common/dwarf_cu_to_module.h',
+            'src/common/dwarf/dwarf2diehandler.cc',
+            'src/common/dwarf/dwarf2reader.cc',
+            'src/common/dwarf_line_to_module.cc',
+            'src/common/dwarf_line_to_module.h',
+            'src/common/language.cc',
+            'src/common/language.h',
+            'src/common/linux/dump_symbols.cc',
+            'src/common/linux/dump_symbols.h',
+            'src/common/linux/elf_symbols_to_module.cc',
+            'src/common/linux/elf_symbols_to_module.h',
+            'src/common/linux/elfutils.cc',
+            'src/common/linux/elfutils.h',
+            'src/common/linux/file_id.cc',
+            'src/common/linux/file_id.h',
+            'src/common/linux/linux_libc_support.cc',
+            'src/common/linux/linux_libc_support.h',
+            'src/common/linux/memory_mapped_file.cc',
+            'src/common/linux/memory_mapped_file.h',
+            'src/common/linux/guid_creator.h',
+            'src/common/module.cc',
+            'src/common/module.h',
+            'src/common/stabs_reader.cc',
+            'src/common/stabs_reader.h',
+            'src/common/stabs_to_module.cc',
+            'src/common/stabs_to_module.h',
+            'src/tools/linux/dump_syms/dump_syms.cc',
+          ],
+
+          # Breakpad rev 583 introduced this flag.
+          # Using this define, stabs_reader.h will include a.out.h to
+          # build on Linux.
+          'defines': [
+            'HAVE_A_OUT_H',
+          ],
+
+          'include_dirs': [
+            'src',
+            '..',
+          ],
+        },
         {
           'target_name': 'breakpad_client',
           'type': 'static_library',

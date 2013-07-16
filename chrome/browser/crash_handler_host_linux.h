@@ -5,22 +5,19 @@
 #ifndef CHROME_BROWSER_CRASH_HANDLER_HOST_LINUX_H_
 #define CHROME_BROWSER_CRASH_HANDLER_HOST_LINUX_H_
 
-#include "base/compiler_specific.h"
-#include "base/message_loop.h"
-
-#if defined(USE_LINUX_BREAKPAD)
 #include <sys/types.h>
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop.h"
 
 struct BreakpadInfo;
 
 namespace base {
 class Thread;
 }
-#endif  // defined(USE_LINUX_BREAKPAD)
 
 template <typename T> struct DefaultSingletonTraits;
 
@@ -50,26 +47,21 @@ class CrashHandlerHostLinux : public base::MessageLoopForIO::Watcher,
   // MessageLoop::DestructionObserver impl:
   virtual void WillDestroyCurrentMessageLoop() OVERRIDE;
 
-#if defined(USE_LINUX_BREAKPAD)
   // Whether we are shutting down or not.
   bool IsShuttingDown() const;
-#endif
 
  protected:
   CrashHandlerHostLinux();
   virtual ~CrashHandlerHostLinux();
 
-#if defined(USE_LINUX_BREAKPAD)
   // Only called in concrete subclasses.
   void InitCrashUploaderThread();
 
   std::string process_type_;
-#endif
 
  private:
   void Init();
 
-#if defined(USE_LINUX_BREAKPAD)
   // This is here on purpose to make CrashHandlerHostLinux abstract.
   virtual void SetProcessType() = 0;
 
@@ -81,16 +73,13 @@ class CrashHandlerHostLinux : public base::MessageLoopForIO::Watcher,
 
   // Continue OnFileCanReadWithoutBlocking()'s work on the IO thread.
   void QueueCrashDumpTask(BreakpadInfo* info, int signal_fd);
-#endif
 
   int process_socket_;
   int browser_socket_;
 
-#if defined(USE_LINUX_BREAKPAD)
   base::MessageLoopForIO::FileDescriptorWatcher file_descriptor_watcher_;
   scoped_ptr<base::Thread> uploader_thread_;
   bool shutting_down_;
-#endif
 
 #if defined(ADDRESS_SANITIZER)
   char* asan_report_str_;
@@ -109,9 +98,7 @@ class ExtensionCrashHandlerHostLinux : public CrashHandlerHostLinux {
   ExtensionCrashHandlerHostLinux();
   virtual ~ExtensionCrashHandlerHostLinux();
 
-#if defined(USE_LINUX_BREAKPAD)
   virtual void SetProcessType() OVERRIDE;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionCrashHandlerHostLinux);
 };
@@ -126,9 +113,7 @@ class GpuCrashHandlerHostLinux : public CrashHandlerHostLinux {
   GpuCrashHandlerHostLinux();
   virtual ~GpuCrashHandlerHostLinux();
 
-#if defined(USE_LINUX_BREAKPAD)
   virtual void SetProcessType() OVERRIDE;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(GpuCrashHandlerHostLinux);
 };
@@ -143,9 +128,7 @@ class PluginCrashHandlerHostLinux : public CrashHandlerHostLinux {
   PluginCrashHandlerHostLinux();
   virtual ~PluginCrashHandlerHostLinux();
 
-#if defined(USE_LINUX_BREAKPAD)
   virtual void SetProcessType() OVERRIDE;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(PluginCrashHandlerHostLinux);
 };
@@ -160,9 +143,7 @@ class PpapiCrashHandlerHostLinux : public CrashHandlerHostLinux {
   PpapiCrashHandlerHostLinux();
   virtual ~PpapiCrashHandlerHostLinux();
 
-#if defined(USE_LINUX_BREAKPAD)
   virtual void SetProcessType() OVERRIDE;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(PpapiCrashHandlerHostLinux);
 };
@@ -177,9 +158,7 @@ class RendererCrashHandlerHostLinux : public CrashHandlerHostLinux {
   RendererCrashHandlerHostLinux();
   virtual ~RendererCrashHandlerHostLinux();
 
-#if defined(USE_LINUX_BREAKPAD)
   virtual void SetProcessType() OVERRIDE;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(RendererCrashHandlerHostLinux);
 };

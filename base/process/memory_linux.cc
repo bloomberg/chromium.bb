@@ -14,16 +14,12 @@
 
 namespace base {
 
-#if defined(USE_LINUX_BREAKPAD)
 size_t g_oom_size = 0U;
-#endif
 
 namespace {
 
 void OnNoMemorySize(size_t size) {
-#if defined(USE_LINUX_BREAKPAD)
   g_oom_size = size;
-#endif
 
   if (size != 0)
     LOG(FATAL) << "Out of memory, size = " << size;

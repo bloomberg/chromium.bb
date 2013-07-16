@@ -2,8 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Public interface for enabling Breakpad on Linux systems. This can be
-// included in files that are not built with linux_breakpad=1.
+// Public interface for enabling Breakpad on Linux systems.
 
 #ifndef CHROME_APP_BREAKPAD_LINUX_H_
 #define CHROME_APP_BREAKPAD_LINUX_H_

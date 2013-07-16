@@ -1293,16 +1293,17 @@ std::string ChromeContentBrowserClient::GetCanonicalEncodingNameByAliasName(
 
 void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
     CommandLine* command_line, int child_process_id) {
-#if defined(USE_LINUX_BREAKPAD)
-  if (IsCrashReporterEnabled()) {
-    command_line->AppendSwitchASCII(switches::kEnableCrashReporter,
-        child_process_logging::GetClientId() + "," + base::GetLinuxDistro());
-  }
-#elif defined(OS_MACOSX)
+#if defined(OS_MACOSX)
   if (IsCrashReporterEnabled()) {
     command_line->AppendSwitchASCII(switches::kEnableCrashReporter,
                                     child_process_logging::GetClientId());
   }
+#elif defined(OS_POSIX)
+  if (IsCrashReporterEnabled()) {
+    command_line->AppendSwitchASCII(switches::kEnableCrashReporter,
+        child_process_logging::GetClientId() + "," + base::GetLinuxDistro());
+  }
+
 #endif  // OS_MACOSX
 
   if (logging::DialogsAreSuppressed())
@@ -2402,7 +2403,6 @@ void ChromeContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
   mappings->push_back(FileDescriptorInfo(kAndroidUIResourcesPakDescriptor,
                                          FileDescriptor(f, true)));
 
-#if defined(USE_LINUX_BREAKPAD)
   if (IsCrashReporterEnabled()) {
     f = CrashDumpManager::GetInstance()->CreateMinidumpFile(child_process_id);
     if (f == base::kInvalidPlatformFileValue) {
@@ -2413,7 +2413,6 @@ void ChromeContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
                                              FileDescriptor(f, true)));
     }
   }
-#endif  // defined(USE_LINUX_BREAKPAD)
 
 #else
   int crash_signal_fd = GetCrashSignalFD(command_line);

@@ -4,21 +4,14 @@
 
 #include "chrome/browser/chrome_browser_main_linux.h"
 
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/metrics/metrics_service.h"
-
-#if !defined(OS_CHROMEOS)
-#include "chrome/browser/storage_monitor/storage_monitor_linux.h"
-#include "content/public/browser/browser_thread.h"
-#endif
-
-#if defined(USE_LINUX_BREAKPAD)
 #include <stdlib.h>
 
 #include "base/command_line.h"
 #include "base/linux_util.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/app/breakpad_linux.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/common/pref_names.h"
@@ -28,13 +21,13 @@
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chromeos/chromeos_switches.h"
+#else
+#include "chrome/browser/storage_monitor/storage_monitor_linux.h"
+#include "content/public/browser/browser_thread.h"
 #endif
-
-#endif  // defined(USE_LINUX_BREAKPAD)
 
 namespace {
 
-#if defined(USE_LINUX_BREAKPAD)
 #if !defined(OS_CHROMEOS)
 void GetLinuxDistroCallback() {
   base::GetLinuxDistro();  // Initialize base::linux_distro if needed.
@@ -102,7 +95,6 @@ bool IsCrashReportingEnabled(const PrefService* local_state) {
 
   return breakpad_enabled;
 }
-#endif  // defined(USE_LINUX_BREAKPAD)
 
 }  // namespace
 
@@ -115,7 +107,6 @@ ChromeBrowserMainPartsLinux::~ChromeBrowserMainPartsLinux() {
 }
 
 void ChromeBrowserMainPartsLinux::PreProfileInit() {
-#if defined(USE_LINUX_BREAKPAD)
 #if !defined(OS_CHROMEOS)
   // Needs to be called after we have chrome::DIR_USER_DATA and
   // g_browser_process.  This happens in PreCreateThreads.
@@ -126,7 +117,6 @@ void ChromeBrowserMainPartsLinux::PreProfileInit() {
 
   if (IsCrashReportingEnabled(local_state()))
     InitCrashReporter();
-#endif
 
 #if !defined(OS_CHROMEOS)
   const base::FilePath kDefaultMtabPath("/etc/mtab");
@@ -139,12 +129,8 @@ void ChromeBrowserMainPartsLinux::PreProfileInit() {
 void ChromeBrowserMainPartsLinux::PostProfileInit() {
   ChromeBrowserMainPartsPosix::PostProfileInit();
 
-#if defined(USE_LINUX_BREAKPAD)
   g_browser_process->metrics_service()->RecordBreakpadRegistration(
       IsCrashReporterEnabled());
-#else
-  g_browser_process->metrics_service()->RecordBreakpadRegistration(false);
-#endif
 }
 
 void ChromeBrowserMainPartsLinux::PostMainMessageLoopRun() {

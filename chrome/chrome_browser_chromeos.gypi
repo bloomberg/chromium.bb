@@ -44,6 +44,7 @@
         'safe_browsing_proto',
         'safe_browsing_report_proto',
         'variations_seed_proto',
+        '../breakpad/breakpad.gyp:breakpad_client',
         '../build/linux/system.gyp:dbus',
         '../chromeos/chromeos.gyp:chromeos',
         '../chromeos/chromeos.gyp:chromeos_memory',
@@ -106,6 +107,11 @@
       },
       'export_dependent_settings': [
         '../sync/sync.gyp:sync',
+      ],
+      'include_dirs': [
+        # breakpad_linux.cc uses generated file_version_info_linux.h.
+        '<(SHARED_INTERMEDIATE_DIR)',
+        '../breakpad/src',
       ],
       'sources': [
         # All .cc, .h, .m, and .mm files under browser/chromeos, except for tests
@@ -921,18 +927,6 @@
         ['ui_compositor_image_transport==1', {
           'dependencies': [
             '../ui/gl/gl.gyp:gl',
-          ],
-        }],
-        ['linux_breakpad==1', {
-          'dependencies': [
-            '../breakpad/breakpad.gyp:breakpad_client',
-            # make sure file_version_info_linux.h is generated first.
-            'common',
-          ],
-          'include_dirs': [
-            # breakpad_linux.cc uses generated file_version_info_linux.h.
-            '<(SHARED_INTERMEDIATE_DIR)',
-            '../breakpad/src',
           ],
         }],
         ['use_aura==1',{

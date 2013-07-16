@@ -643,7 +643,6 @@
 
         ['OS=="linux" and target_arch=="arm" and chromeos==0', {
           # Set some defaults for arm/linux chrome builds
-          'linux_breakpad%': 0,
           'linux_use_tcmalloc%': 0,
           # sysroot needs to be an absolute path otherwise it generates
           # incorrect results when passed to pkg-config
@@ -980,9 +979,6 @@
 
     # Enable strict glibc debug mode.
     'glibcxx_debug%': 0,
-    # Compile in Breakpad support by default so that it can be tested,
-    # even if it not enabled by default at runtime.
-    'linux_breakpad%': 1,
     # And if we want to dump symbols for Breakpad-enabled builds.
     'linux_dump_symbols%': 0,
     # And if we want to strip the binary after dumping symbols.
@@ -1151,7 +1147,6 @@
             'disable_nacl%': 1,
             'nacl_untrusted_build%': 0,
             'linux_use_tcmalloc%': 0,
-            'linux_breakpad%': 0,
           }],
           ['OS=="linux" and target_arch=="mipsel"', {
             'sysroot%': '<(sysroot)',
@@ -3344,9 +3339,6 @@
                 ],
               }],
             ],
-          }],
-          ['linux_breakpad==1', {
-            'defines': ['USE_LINUX_BREAKPAD'],
           }],
           ['linux_dump_symbols==1', {
             'cflags': [ '-g' ],

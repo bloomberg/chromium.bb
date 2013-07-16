@@ -28,7 +28,6 @@ ChromeBrowserMainPartsAndroid::~ChromeBrowserMainPartsAndroid() {
 
 void ChromeBrowserMainPartsAndroid::PreProfileInit() {
   TRACE_EVENT0("startup", "ChromeBrowserMainPartsAndroid::PreProfileInit")
-#if defined(USE_LINUX_BREAKPAD)
 #if defined(GOOGLE_CHROME_BUILD)
   // TODO(jcivelli): we should not initialize the crash-reporter when it was not
   // enabled. Right now if it is disabled we still generate the minidumps but we
@@ -47,7 +46,6 @@ void ChromeBrowserMainPartsAndroid::PreProfileInit() {
     InitCrashReporter();
     crash_dump_manager_.reset(new CrashDumpManager());
   }
-#endif
 
   ChromeBrowserMainParts::PreProfileInit();
 }

@@ -31,10 +31,6 @@ BASE_EXPORT void EnableTerminationOnHeapCorruption();
 // Turns on process termination if memory runs out.
 BASE_EXPORT void EnableTerminationOnOutOfMemory();
 
-#if defined(USE_LINUX_BREAKPAD)
-BASE_EXPORT extern size_t g_oom_size;
-#endif
-
 #if defined(OS_WIN)
 // Returns the module handle to which an address belongs. The reference count
 // of the module is not incremented.
@@ -42,6 +38,8 @@ BASE_EXPORT HMODULE GetModuleFromAddress(void* address);
 #endif
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
+BASE_EXPORT extern size_t g_oom_size;
+
 // The maximum allowed value for the OOM score.
 const int kMaxOomScore = 1000;
 
