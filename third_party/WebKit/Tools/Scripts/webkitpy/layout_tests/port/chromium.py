@@ -73,7 +73,7 @@ class ChromiumPort(Port):
         'mac': ['snowleopard', 'lion', 'mountainlion'],
         'win': ['xp', 'win7'],
         'linux': ['lucid'],
-        'android': ['icecreamsandwich'],
+        # 'android': ['icecreamsandwich'],  # FIXME: see comment above next to 'icecreamsandwich'.
     }
 
     DEFAULT_BUILD_DIRECTORIES = ('out',)
