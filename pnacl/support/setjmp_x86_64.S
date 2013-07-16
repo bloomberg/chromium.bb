@@ -21,16 +21,31 @@ setjmp:
     /* edi has env argument*/
     pop     %rdx                         /* return address */
 
+    /*
+     * We avoid revealing the top 32 bits of rbp and rsp here.
+     *
+     * Also note that we don't do:
+     *   pop %r11
+     *   ...
+     *   movq %r11, %nacl:48(%r15,%rdi)    / * save pc * /
+     * because the latter instruction might be reached via a direct or
+     * indirect jump when r11 contains the sandbox base address in its
+     * top 32 bits, and this would write the sandbox base address into
+     * memory.  We treat r11 as a write-only register to avoid
+     * revealing the sandbox base address to user code.
+     */
     movq    %rbx, %nacl:0(%r15,%rdi)     /* save rbx */
-    movq    %rbp, %nacl:8(%r15,%rdi)     /* save rbp */
-    movq    %rsp, %nacl:16(%r15,%rdi)    /* save rsp */
+    movl    %ebp, %nacl:8(%r15,%rdi)     /* save rbp/ebp */
+    movl    %esp, %nacl:16(%r15,%rdi)    /* save rsp/esp */
     movq    %r12, %nacl:24(%r15,%rdi)    /* save r12 */
     movq    %r13, %nacl:32(%r15,%rdi)    /* save r13 */
     movq    %r14, %nacl:40(%r15,%rdi)    /* save r14 */
     movq    %rdx, %nacl:48(%r15,%rdi)    /* save pc */
 
     xorq    %rax, %rax
-    nacljmp %edx, %r15
+
+    movl    %edx, %r11d
+    nacljmp %r11d, %r15
 
 
     .text
@@ -56,7 +71,7 @@ longjmp:
     movq    %nacl:24(%r15,%rdi), %r12    /* restore r12 */
     movq    %nacl:32(%r15,%rdi), %r13    /* restore r13 */
     movq    %nacl:40(%r15,%rdi), %r14    /* restore r14 */
-    movq    %nacl:48(%r15,%rdi), %rcx
-    nacljmp %ecx, %r15
+    movq    %nacl:48(%r15,%rdi), %r11
+    nacljmp %r11d, %r15
     .p2align NACL_BLOCK_SHIFT
 
