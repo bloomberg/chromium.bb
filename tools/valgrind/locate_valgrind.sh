@@ -67,9 +67,10 @@ fi
 
 if ! test -x $CHROME_VALGRIND/bin/valgrind
 then
-  echo "Could not find valgrind binaries anywhere. Please see" >&2
-  echo "http://dev.chromium.org/developers/how-tos/using-valgrind/building-valgrind" >&2
-  echo "for the instructions on how to get them." >&2
+  echo "Oops, could not find Valgrind binaries in your checkout." >&2
+  echo "Please see" >&2
+  echo "  http://dev.chromium.org/developers/how-tos/using-valgrind/get-valgrind" >&2
+  echo "for the instructions on how to download pre-built binaries." >&2
   exit 1
 fi
 
