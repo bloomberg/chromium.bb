@@ -24,6 +24,7 @@
     'weborigin_test_files': [
       'DatabaseIdentifierTest.cpp',
       'KURLTest.cpp',
+      'SecurityOriginTest.cpp',
     ],
   },
 }
