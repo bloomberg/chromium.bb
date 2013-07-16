@@ -861,12 +861,6 @@ inline v8::Handle<v8::Object> wrap(${nativeType}* impl, v8::Handle<v8::Object> c
 {
     ASSERT(impl);
     ASSERT(DOMDataStore::getWrapper<${v8ClassName}>(impl, isolate).IsEmpty());
-    if (ScriptWrappable::wrapperCanBeStoredInObject(impl)) {
-        const WrapperTypeInfo* actualInfo = ScriptWrappable::getTypeInfoFromObject(impl);
-        // Might be a XXXConstructor::info instead of an XXX::info. These will both have
-        // the same object de-ref functions, though, so use that as the basis of the check.
-        RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(actualInfo->derefObjectFunction == ${v8ClassName}::info.derefObjectFunction);
-    }
     return $createWrapperCall(impl, creationContext, isolate);
 }
 END
@@ -4740,6 +4734,13 @@ v8::Handle<v8::Object> ${v8ClassName}::createWrapper(${createWrapperArgumentType
 {
     ASSERT(impl.get());
     ASSERT(DOMDataStore::getWrapper<${v8ClassName}>(impl.get(), isolate).IsEmpty());
+    if (ScriptWrappable::wrapperCanBeStoredInObject(impl.get())) {
+        const WrapperTypeInfo* actualInfo = ScriptWrappable::getTypeInfoFromObject(impl.get());
+        // Might be a XXXConstructor::info instead of an XXX::info. These will both have
+        // the same object de-ref functions, though, so use that as the basis of the check.
+        RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(actualInfo->derefObjectFunction == info.derefObjectFunction);
+    }
+
 END
 
     $code .= <<END if ($baseType ne $interfaceName);
