@@ -22,3 +22,10 @@ include_rules = [
   # Do not add to the list of temporarily-allowed dependencies above,
   # and please do not introduce more #includes of these files.
 ]
+
+specific_include_rules = {
+  # For unit tests, it's fine to include utility process code.
+  '.*test\.cc': [
+    "+chrome/utility/importer/bookmark_html_reader.h",
+  ],
+}

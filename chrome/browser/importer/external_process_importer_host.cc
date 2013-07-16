@@ -10,8 +10,6 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/importer/external_process_importer_client.h"
 #include "chrome/browser/importer/firefox_profile_lock.h"
-#include "chrome/browser/importer/importer.h"
-#include "chrome/browser/importer/importer_creator.h"
 #include "chrome/browser/importer/importer_lock_dialog.h"
 #include "chrome/browser/importer/importer_progress_observer.h"
 #include "chrome/browser/importer/in_process_importer_bridge.h"

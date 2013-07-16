@@ -532,6 +532,7 @@
         'browser/background/background_mode_manager_unittest.cc',
         'browser/bookmarks/bookmark_codec_unittest.cc',
         'browser/bookmarks/bookmark_expanded_state_tracker_unittest.cc',
+        'browser/bookmarks/bookmark_html_writer_unittest.cc',
         'browser/bookmarks/bookmark_index_unittest.cc',
         'browser/bookmarks/bookmark_model_test_utils.cc',
         'browser/bookmarks/bookmark_model_test_utils.h',
@@ -923,18 +924,9 @@
         'browser/history/visit_database_unittest.cc',
         'browser/history/visit_filter_unittest.cc',
         'browser/history/visit_tracker_unittest.cc',
-        'browser/importer/bookmark_html_reader_unittest.cc',
-        'browser/importer/bookmark_html_writer_unittest.cc',
-        'browser/importer/firefox_importer_unittest.cc',
-        'browser/importer/firefox_importer_unittest_messages_internal.h',
-        'browser/importer/firefox_importer_unittest_utils.h',
-        'browser/importer/firefox_importer_unittest_utils_mac.cc',
-        'browser/importer/firefox_importer_utils_unittest.cc',
         'browser/importer/firefox_profile_lock_unittest.cc',
         'browser/importer/firefox_proxy_settings_unittest.cc',
-        'browser/importer/ie_importer_unittest_win.cc',
         'browser/importer/profile_writer_unittest.cc',
-        'browser/importer/safari_importer_unittest.mm',
         'browser/internal_auth_unittest.cc',
         'browser/invalidation/invalidation_service_android_unittest.cc',
         'browser/invalidation/invalidation_service_test_template.cc',
@@ -1794,6 +1786,10 @@
         'test/logging/win/mof_data_parser_unittest.cc',
         'tools/convert_dict/convert_dict_unittest.cc',
         'utility/extensions/unpacker_unittest.cc',
+        'utility/importer/bookmark_html_reader_unittest.cc',
+        'utility/importer/firefox_importer_unittest.cc',
+        'utility/importer/firefox_importer_utils_unittest.cc',
+        'utility/importer/safari_importer_unittest.mm',
 
         # Duplicate these tests here because PathService has more items in
         # unit_tests than in base_unittests.
@@ -1854,6 +1850,7 @@
         '../components/webdata/common/web_database_migration_unittest.cc',
         '../components/webdata/common/web_data_service_test_util.cc',
         '../components/webdata/common/web_data_service_test_util.h',
+        '../components/webdata/encryptor/ie7_password_unittest_win.cc',
 
         # TODO(joi): Move the google_apis tests to a separate
         # google_apis_unittests executable.
@@ -2375,8 +2372,7 @@
           'sources!': [
             # Bookmark export/import are handled via the BookmarkColumns
             # ContentProvider.
-            'browser/importer/bookmark_html_reader_unittest.cc',
-            'browser/importer/bookmark_html_writer_unittest.cc',
+            'browser/bookmarks/bookmark_html_writer_unittest.cc',
 
             'browser/shell_integration_unittest.cc',
 
@@ -2456,7 +2452,6 @@
             ['exclude', '^browser/chrome_to_mobile'],
             ['exclude', '^browser/diagnostics/'],
             ['exclude', '^browser/first_run/'],
-            ['exclude', '^browser/importer/'],
             ['exclude', '^browser/lifetime/'],
             ['exclude', '^browser/media_galleries/'],
             ['exclude', '^browser/profile_resetter/'],
@@ -2481,6 +2476,7 @@
             ['exclude', '^browser/service/'],
             ['exclude', '^common/service_'],
             ['exclude', '^service/'],
+            ['exclude', '^utility/importer/'],
           ],
           'conditions': [
             ['gtest_target_type == "shared_library"', {

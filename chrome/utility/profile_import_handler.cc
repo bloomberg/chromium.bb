@@ -8,10 +8,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/threading/thread.h"
-#include "chrome/browser/importer/external_process_importer_bridge.h"
-#include "chrome/browser/importer/importer.h"
-#include "chrome/browser/importer/importer_creator.h"
 #include "chrome/common/importer/profile_import_process_messages.h"
+#include "chrome/utility/importer/external_process_importer_bridge.h"
+#include "chrome/utility/importer/importer.h"
+#include "chrome/utility/importer/importer_creator.h"
 #include "content/public/utility/utility_thread.h"
 
 namespace chrome {

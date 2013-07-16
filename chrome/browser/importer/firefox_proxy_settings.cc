@@ -8,7 +8,7 @@
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
-#include "chrome/browser/importer/firefox_importer_utils.h"
+#include "chrome/common/importer/firefox_importer_utils.h"
 #include "net/proxy/proxy_config.h"
 
 namespace {
