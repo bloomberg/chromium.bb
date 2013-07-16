@@ -159,7 +159,7 @@ private:
 
     mutable unsigned m_cachedHash;
 
-    SkShader* m_gradient;
+    RefPtr<SkShader> m_gradient;
 };
 
 } // namespace WebCore

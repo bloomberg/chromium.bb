@@ -47,7 +47,7 @@ public:
     {
         return adoptRef(new Pattern(tileImage, repeatX, repeatY));
     }
-    virtual ~Pattern();
+    ~Pattern();
 
     Image* tileImage() const { return m_tileImage.get(); }
 
@@ -66,7 +66,7 @@ private:
     bool m_repeatX;
     bool m_repeatY;
     AffineTransform m_patternSpaceTransformation;
-    SkShader* m_pattern;
+    RefPtr<SkShader> m_pattern;
     int m_externalMemoryAllocated;
 };
 

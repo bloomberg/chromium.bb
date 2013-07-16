@@ -40,7 +40,6 @@ Pattern::Pattern(PassRefPtr<Image> image, bool repeatX, bool repeatY)
     : m_tileImage(image)
     , m_repeatX(repeatX)
     , m_repeatY(repeatY)
-    , m_pattern(0)
     , m_externalMemoryAllocated(0)
 {
     ASSERT(m_tileImage);
@@ -48,25 +47,21 @@ Pattern::Pattern(PassRefPtr<Image> image, bool repeatX, bool repeatY)
 
 Pattern::~Pattern()
 {
-    SkSafeUnref(m_pattern);
-    m_pattern = 0;
-    if (m_externalMemoryAllocated) {
+    if (m_externalMemoryAllocated)
         v8::V8::AdjustAmountOfExternalAllocatedMemory(-m_externalMemoryAllocated);
-        m_externalMemoryAllocated = 0;
-    }
 }
 
 SkShader* Pattern::shader()
 {
     if (m_pattern)
-        return m_pattern;
+        return m_pattern.get();
 
     RefPtr<NativeImageSkia> image = m_tileImage->nativeImageForCurrentFrame();
     // If we don't have a bitmap, return a transparent shader.
     if (!image)
-        m_pattern = new SkColorShader(SkColorSetARGB(0, 0, 0, 0));
+        m_pattern = adoptRef(new SkColorShader(SK_ColorTRANSPARENT));
     else if (m_repeatX && m_repeatY)
-        m_pattern = SkShader::CreateBitmapShader(image->bitmap(), SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode);
+        m_pattern = adoptRef(SkShader::CreateBitmapShader(image->bitmap(), SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode));
     else {
         // Skia does not have a "draw the tile only once" option. Clamp_TileMode
         // repeats the last line of the image after drawing one tile. To avoid
@@ -88,14 +83,14 @@ SkShader* Pattern::shader()
         SkCanvas canvas(bm2);
         canvas.drawBitmap(image->bitmap(), 0, 0);
         bm2.setImmutable();
-        m_pattern = SkShader::CreateBitmapShader(bm2, tileModeX, tileModeY);
+        m_pattern = adoptRef(SkShader::CreateBitmapShader(bm2, tileModeX, tileModeY));
 
         // Clamp to int, since that's what the adjust function takes.
         m_externalMemoryAllocated = static_cast<int>(std::min(static_cast<size_t>(INT_MAX), bm2.getSafeSize()));
         v8::V8::AdjustAmountOfExternalAllocatedMemory(m_externalMemoryAllocated);
     }
     m_pattern->setLocalMatrix(m_patternSpaceTransformation);
-    return m_pattern;
+    return m_pattern.get();
 }
 
 void Pattern::setPatternSpaceTransform(const AffineTransform& patternSpaceTransformation)

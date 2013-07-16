@@ -53,7 +53,6 @@ Gradient::Gradient(const FloatPoint& p0, const FloatPoint& p1)
     , m_spreadMethod(SpreadMethodPad)
     , m_cachedHash(0)
     , m_drawInPMColorSpace(false)
-    , m_gradient(0)
 {
 }
 
@@ -68,19 +67,11 @@ Gradient::Gradient(const FloatPoint& p0, float r0, const FloatPoint& p1, float r
     , m_spreadMethod(SpreadMethodPad)
     , m_cachedHash(0)
     , m_drawInPMColorSpace(false)
-    , m_gradient(0)
 {
 }
 
 Gradient::~Gradient()
 {
-    destroyShader();
-}
-
-void Gradient::destroyShader()
-{
-    SkSafeUnref(m_gradient);
-    m_gradient = 0;
 }
 
 void Gradient::adjustParametersForTiledDrawing(IntSize& size, FloatRect& srcRect)
@@ -115,7 +106,7 @@ void Gradient::addColorStop(float value, const Color& color)
     m_stops.append(ColorStop(value, r, g, b, a));
 
     m_stopsSorted = false;
-    destroyShader();
+    m_gradient.clear();
 
     invalidateHash();
 }
@@ -125,7 +116,7 @@ void Gradient::addColorStop(const Gradient::ColorStop& stop)
     m_stops.append(stop);
 
     m_stopsSorted = false;
-    destroyShader();
+    m_gradient.clear();
 
     invalidateHash();
 }
@@ -163,7 +154,7 @@ bool Gradient::hasAlpha() const
 void Gradient::setSpreadMethod(GradientSpreadMethod spreadMethod)
 {
     // FIXME: Should it become necessary, allow calls to this method after m_gradient has been set.
-    ASSERT(m_gradient == 0);
+    ASSERT(!m_gradient);
 
     if (m_spreadMethod == spreadMethod)
         return;
@@ -179,9 +170,7 @@ void Gradient::setDrawsInPMColorSpace(bool drawInPMColorSpace)
         return;
 
     m_drawInPMColorSpace = drawInPMColorSpace;
-
-    if (m_gradient)
-        destroyShader();
+    m_gradient.clear();
 
     invalidateHash();
 }
@@ -307,7 +296,7 @@ static void fillStops(const Gradient::ColorStop* stopData,
 SkShader* Gradient::shader()
 {
     if (m_gradient)
-        return m_gradient;
+        return m_gradient.get();
 
     sortStopsIfNecessary();
     ASSERT(m_stopsSorted);
@@ -340,14 +329,14 @@ SkShader* Gradient::shader()
     if (m_radial) {
         // Since the two-point radial gradient is slower than the plain radial,
         // only use it if we have to.
-        if (m_p0 == m_p1 && m_r0 <= 0.0f)
-            m_gradient = SkGradientShader::CreateRadial(m_p1, m_r1, colors, pos, static_cast<int>(countUsed), tile, 0, shouldDrawInPMColorSpace);
-        else {
+        if (m_p0 == m_p1 && m_r0 <= 0.0f) {
+            m_gradient = adoptRef(SkGradientShader::CreateRadial(m_p1, m_r1, colors, pos, static_cast<int>(countUsed), tile, 0, shouldDrawInPMColorSpace));
+        } else {
             // The radii we give to Skia must be positive. If we're given a
             // negative radius, ask for zero instead.
             SkScalar radius0 = m_r0 >= 0.0f ? WebCoreFloatToSkScalar(m_r0) : 0;
             SkScalar radius1 = m_r1 >= 0.0f ? WebCoreFloatToSkScalar(m_r1) : 0;
-            m_gradient = SkGradientShader::CreateTwoPointConical(m_p0, radius0, m_p1, radius1, colors, pos, static_cast<int>(countUsed), tile, 0, shouldDrawInPMColorSpace);
+            m_gradient = adoptRef(SkGradientShader::CreateTwoPointConical(m_p0, radius0, m_p1, radius1, colors, pos, static_cast<int>(countUsed), tile, 0, shouldDrawInPMColorSpace));
         }
 
         if (aspectRatio() != 1) {
@@ -360,15 +349,16 @@ SkShader* Gradient::shader()
         }
     } else {
         SkPoint pts[2] = { m_p0, m_p1 };
-        m_gradient = SkGradientShader::CreateLinear(pts, colors, pos, static_cast<int>(countUsed), tile, 0, shouldDrawInPMColorSpace);
+        m_gradient = adoptRef(SkGradientShader::CreateLinear(pts, colors, pos, static_cast<int>(countUsed), tile, 0, shouldDrawInPMColorSpace));
     }
 
-    if (!m_gradient)
+    if (!m_gradient) {
         // use last color, since our "geometry" was degenerate (e.g. radius==0)
-        m_gradient = new SkColorShader(colors[countUsed - 1]);
-    else
+        m_gradient = adoptRef(new SkColorShader(colors[countUsed - 1]));
+    } else {
         m_gradient->setLocalMatrix(m_gradientSpaceTransformation);
-    return m_gradient;
+    }
+    return m_gradient.get();
 }
 
 } //namespace
