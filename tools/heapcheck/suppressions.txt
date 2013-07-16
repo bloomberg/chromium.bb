@@ -1016,3 +1016,8 @@
    ...
    fun:gpu::*_Test::TestBody
 }
+{
+   bug_260582_REMOVE_ASAP
+   Heapcheck:Leak
+   fun:TestBody
+}

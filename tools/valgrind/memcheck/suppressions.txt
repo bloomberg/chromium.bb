@@ -7342,3 +7342,9 @@
    fun:_ZN7WebCore13TypingCommand28insertTextRunWithoutNewlinesERKN3WTF6StringEb
    fun:_ZNK7WebCore26TypingCommandLineOperationclEmmb
 }
+{
+   bug_260582
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN5views12_GLOBAL__N_143WidgetTest_CaptureWidgetFromMousePress_Test8TestBodyEv
+}
