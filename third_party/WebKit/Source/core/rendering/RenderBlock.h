@@ -516,13 +516,13 @@ protected:
     {
         return adjustLogicalLeftOffsetForLine(logicalLeftFloatOffsetForLine(logicalTop, fixedOffset, heightRemaining, logicalHeight, ShapeOutsideFloatShapeOffset), applyTextIndent);
     }
-    LayoutUnit logicalRightOffsetForLineUsingFloatBoundingBox(LayoutUnit logicalTop, LayoutUnit fixedOffset, bool applyTextIndent, LayoutUnit* heightRemaining = 0, LayoutUnit logicalHeight = 0) const
+    LayoutUnit logicalRightOffsetForLineIgnoringShapeOutside(LayoutUnit logicalTop, LayoutUnit fixedOffset, bool applyTextIndent, LayoutUnit* heightRemaining = 0, LayoutUnit logicalHeight = 0) const
     {
-        return adjustLogicalRightOffsetForLine(logicalRightFloatOffsetForLine(logicalTop, fixedOffset, heightRemaining, logicalHeight, ShapeOutsideFloatBoundingBoxOffset), applyTextIndent);
+        return adjustLogicalRightOffsetForLine(logicalRightFloatOffsetForLine(logicalTop, fixedOffset, heightRemaining, logicalHeight, ShapeOutsideFloatMarginBoxOffset), applyTextIndent);
     }
-    LayoutUnit logicalLeftOffsetForLineUsingFloatBoundingBox(LayoutUnit logicalTop, LayoutUnit fixedOffset, bool applyTextIndent, LayoutUnit* heightRemaining = 0, LayoutUnit logicalHeight = 0) const
+    LayoutUnit logicalLeftOffsetForLineIgnoringShapeOutside(LayoutUnit logicalTop, LayoutUnit fixedOffset, bool applyTextIndent, LayoutUnit* heightRemaining = 0, LayoutUnit logicalHeight = 0) const
     {
-        return adjustLogicalLeftOffsetForLine(logicalLeftFloatOffsetForLine(logicalTop, fixedOffset, heightRemaining, logicalHeight, ShapeOutsideFloatBoundingBoxOffset), applyTextIndent);
+        return adjustLogicalLeftOffsetForLine(logicalLeftFloatOffsetForLine(logicalTop, fixedOffset, heightRemaining, logicalHeight, ShapeOutsideFloatMarginBoxOffset), applyTextIndent);
     }
 
     virtual ETextAlign textAlignmentForLine(bool endsWithSoftBreak) const;
@@ -588,7 +588,7 @@ protected:
     virtual void checkForPaginationLogicalHeightChange(LayoutUnit& pageLogicalHeight, bool& pageLogicalHeightChanged, bool& hasSpecifiedPageLogicalHeight);
 
 private:
-    enum ShapeOutsideFloatOffsetMode { ShapeOutsideFloatShapeOffset, ShapeOutsideFloatBoundingBoxOffset };
+    enum ShapeOutsideFloatOffsetMode { ShapeOutsideFloatShapeOffset, ShapeOutsideFloatMarginBoxOffset };
 
     LayoutUnit logicalRightFloatOffsetForLine(LayoutUnit logicalTop, LayoutUnit fixedOffset, LayoutUnit* heightRemaining, LayoutUnit logicalHeight, ShapeOutsideFloatOffsetMode) const;
     LayoutUnit logicalLeftFloatOffsetForLine(LayoutUnit logicalTop, LayoutUnit fixedOffset, LayoutUnit* heightRemaining, LayoutUnit logicalHeight, ShapeOutsideFloatOffsetMode) const;
@@ -800,10 +800,6 @@ private:
 
     LayoutUnit xPositionForFloatIncludingMargin(const FloatingObject* child) const
     {
-        ShapeOutsideInfo *shapeOutside = child->renderer()->shapeOutsideInfo();
-        if (shapeOutside)
-            return child->x();
-
         if (isHorizontalWritingMode())
             return child->x() + child->renderer()->marginLeft();
         else
@@ -812,10 +808,6 @@ private:
         
     LayoutUnit yPositionForFloatIncludingMargin(const FloatingObject* child) const
     {
-        ShapeOutsideInfo *shapeOutside = child->renderer()->shapeOutsideInfo();
-        if (shapeOutside)
-            return child->y();
-
         if (isHorizontalWritingMode())
             return child->y() + marginBeforeForChild(child->renderer());
         else
@@ -1192,9 +1184,9 @@ protected:
         // When computing the offset caused by the floats on a given line, if
         // the outermost float on that line has a shape-outside, the inline
         // content that butts up against that float must be positioned using
-        // the contours of the shape, not the shape's bounding box. We save the
-        // last float encountered so that the offset can be computed correctly
-        // by the code using this adapter.
+        // the contours of the shape, not the margin box of the float.
+        // We save the last float encountered so that the offset can be
+        // computed correctly by the code using this adapter.
         const FloatingObject* lastFloat() const { return m_last; }
 
     private:

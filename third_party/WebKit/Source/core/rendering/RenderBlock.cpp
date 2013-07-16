@@ -3602,10 +3602,10 @@ GapRects RenderBlock::blockSelectionGaps(RenderBlock* rootBlock, const LayoutPoi
         if (curr->isFloatingOrOutOfFlowPositioned())
             continue; // We must be a normal flow object in order to even be considered.
 
-        if (curr->hasPaintOffset() && curr->hasLayer()) {
+        if (curr->isInFlowPositioned() && curr->hasLayer()) {
             // If the relposition offset is anything other than 0, then treat this just like an absolute positioned element.
             // Just disregard it completely.
-            LayoutSize relOffset = curr->layer()->paintOffset();
+            LayoutSize relOffset = curr->layer()->offsetForInFlowPosition();
             if (relOffset.width() || relOffset.height())
                 continue;
         }
@@ -3997,14 +3997,10 @@ RenderBlock::FloatingObject* RenderBlock::insertFloatingObject(RenderBox* o)
         o->computeAndSetBlockDirectionMargins(this);
     }
 
-    ShapeOutsideInfo* shapeOutside = o->shapeOutsideInfo();
-    if (shapeOutside) {
-        shapeOutside->setShapeSize(o->logicalWidth(), o->logicalHeight());
-        // The CSS Shapes specification says that the margins are ignored
-        // when a float has a shape outside.
-        setLogicalWidthForFloat(newObj, shapeOutside->shapeLogicalWidth());
-    } else
-        setLogicalWidthForFloat(newObj, logicalWidthForChild(o) + marginStartForChild(o) + marginEndForChild(o));
+    setLogicalWidthForFloat(newObj, logicalWidthForChild(o) + marginStartForChild(o) + marginEndForChild(o));
+
+    if (ShapeOutsideInfo* shapeOutside = o->shapeOutsideInfo())
+        shapeOutside->setShapeSize(logicalWidthForChild(o), logicalHeightForChild(o));
 
     newObj->setShouldPaint(!o->hasSelfPaintingLayer()); // If a layer exists, the float will paint itself. Otherwise someone else will.
     newObj->setIsDescendant(true);
@@ -4098,10 +4094,10 @@ LayoutPoint RenderBlock::computeLogicalLocationForFloat(const FloatingObject* fl
     if (childBox->style()->floating() == LeftFloat) {
         LayoutUnit heightRemainingLeft = 1;
         LayoutUnit heightRemainingRight = 1;
-        floatLogicalLeft = logicalLeftOffsetForLineUsingFloatBoundingBox(logicalTopOffset, logicalLeftOffset, false, &heightRemainingLeft);
-        while (logicalRightOffsetForLineUsingFloatBoundingBox(logicalTopOffset, logicalRightOffset, false, &heightRemainingRight) - floatLogicalLeft < floatLogicalWidth) {
+        floatLogicalLeft = logicalLeftOffsetForLineIgnoringShapeOutside(logicalTopOffset, logicalLeftOffset, false, &heightRemainingLeft);
+        while (logicalRightOffsetForLineIgnoringShapeOutside(logicalTopOffset, logicalRightOffset, false, &heightRemainingRight) - floatLogicalLeft < floatLogicalWidth) {
             logicalTopOffset += min(heightRemainingLeft, heightRemainingRight);
-            floatLogicalLeft = logicalLeftOffsetForLineUsingFloatBoundingBox(logicalTopOffset, logicalLeftOffset, false, &heightRemainingLeft);
+            floatLogicalLeft = logicalLeftOffsetForLineIgnoringShapeOutside(logicalTopOffset, logicalLeftOffset, false, &heightRemainingLeft);
             if (insideFlowThread) {
                 // Have to re-evaluate all of our offsets, since they may have changed.
                 logicalRightOffset = logicalRightOffsetForContent(logicalTopOffset); // Constant part of right offset.
@@ -4113,10 +4109,10 @@ LayoutPoint RenderBlock::computeLogicalLocationForFloat(const FloatingObject* fl
     } else {
         LayoutUnit heightRemainingLeft = 1;
         LayoutUnit heightRemainingRight = 1;
-        floatLogicalLeft = logicalRightOffsetForLineUsingFloatBoundingBox(logicalTopOffset, logicalRightOffset, false, &heightRemainingRight);
-        while (floatLogicalLeft - logicalLeftOffsetForLineUsingFloatBoundingBox(logicalTopOffset, logicalLeftOffset, false, &heightRemainingLeft) < floatLogicalWidth) {
+        floatLogicalLeft = logicalRightOffsetForLineIgnoringShapeOutside(logicalTopOffset, logicalRightOffset, false, &heightRemainingRight);
+        while (floatLogicalLeft - logicalLeftOffsetForLineIgnoringShapeOutside(logicalTopOffset, logicalLeftOffset, false, &heightRemainingLeft) < floatLogicalWidth) {
             logicalTopOffset += min(heightRemainingLeft, heightRemainingRight);
-            floatLogicalLeft = logicalRightOffsetForLineUsingFloatBoundingBox(logicalTopOffset, logicalRightOffset, false, &heightRemainingRight);
+            floatLogicalLeft = logicalRightOffsetForLineIgnoringShapeOutside(logicalTopOffset, logicalRightOffset, false, &heightRemainingRight);
             if (insideFlowThread) {
                 // Have to re-evaluate all of our offsets, since they may have changed.
                 logicalRightOffset = logicalRightOffsetForContent(logicalTopOffset); // Constant part of right offset.
@@ -4231,10 +4227,8 @@ bool RenderBlock::positionNewFloats()
         }
 
         setLogicalTopForFloat(floatingObject, floatLogicalLocation.y());
-        if (childBox->shapeOutsideInfo())
-            setLogicalHeightForFloat(floatingObject, childBox->shapeOutsideInfo()->shapeLogicalHeight());
-        else
-            setLogicalHeightForFloat(floatingObject, logicalHeightForChild(childBox) + marginBeforeForChild(childBox) + marginAfterForChild(childBox));
+
+        setLogicalHeightForFloat(floatingObject, logicalHeightForChild(childBox) + marginBeforeForChild(childBox) + marginAfterForChild(childBox));
 
         floats->addPlacedObject(floatingObject);
 
@@ -4416,8 +4410,8 @@ LayoutUnit RenderBlock::logicalLeftFloatOffsetForLine(LayoutUnit logicalTop, Lay
         const FloatingObject* lastFloat = adapter.lastFloat();
         if (offsetMode == ShapeOutsideFloatShapeOffset && lastFloat) {
             if (ShapeOutsideInfo* shapeOutside = lastFloat->renderer()->shapeOutsideInfo()) {
-                shapeOutside->computeSegmentsForLine(logicalTop - logicalTopForFloat(lastFloat) + shapeOutside->shapeLogicalTop(), logicalHeight);
-                left += shapeOutside->rightSegmentShapeBoundingBoxDelta();
+                shapeOutside->computeSegmentsForLine(logicalTop - logicalTopForFloat(lastFloat), logicalHeight);
+                left += shapeOutside->rightSegmentMarginBoxDelta();
             }
         }
     }
@@ -4478,8 +4472,8 @@ LayoutUnit RenderBlock::logicalRightFloatOffsetForLine(LayoutUnit logicalTop, La
         const FloatingObject* lastFloat = adapter.lastFloat();
         if (offsetMode == ShapeOutsideFloatShapeOffset && lastFloat) {
             if (ShapeOutsideInfo* shapeOutside = lastFloat->renderer()->shapeOutsideInfo()) {
-                shapeOutside->computeSegmentsForLine(logicalTop - logicalTopForFloat(lastFloat) + shapeOutside->shapeLogicalTop(), logicalHeight);
-                rightFloatOffset += shapeOutside->leftSegmentShapeBoundingBoxDelta();
+                shapeOutside->computeSegmentsForLine(logicalTop - logicalTopForFloat(lastFloat), logicalHeight);
+                rightFloatOffset += shapeOutside->leftSegmentMarginBoxDelta();
             }
         }
 
@@ -5268,8 +5262,8 @@ static inline bool isEditingBoundary(RenderObject* ancestor, RenderObject* child
 static VisiblePosition positionForPointRespectingEditingBoundaries(RenderBlock* parent, RenderBox* child, const LayoutPoint& pointInParentCoordinates)
 {
     LayoutPoint childLocation = child->location();
-    if (child->hasPaintOffset())
-        childLocation += child->paintOffset();
+    if (child->isInFlowPositioned())
+        childLocation += child->offsetForInFlowPosition();
 
     // FIXME: This is wrong if the child's writing-mode is different from the parent's.
     LayoutPoint pointInChildCoordinates(toLayoutPoint(pointInParentCoordinates - childLocation));
