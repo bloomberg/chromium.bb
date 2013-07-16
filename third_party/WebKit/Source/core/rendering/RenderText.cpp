@@ -913,7 +913,7 @@ static float maxWordFragmentWidth(RenderText* renderer, RenderStyle* style, cons
         fragmentWithHyphen.append(word + suffixStart, fragmentLength);
         fragmentWithHyphen.append(style->hyphenString());
 
-        TextRun run = RenderBlock::constructTextRun(renderer, font, fragmentWithHyphen.bloatedCharacters(), fragmentWithHyphen.length(), style);
+        TextRun run = RenderBlock::constructTextRun(renderer, font, fragmentWithHyphen.toString(), style);
         run.setCharactersLength(fragmentWithHyphen.length());
         run.setCharacterScanForCodePath(!renderer->canUseSimpleFontCodePath());
         float fragmentWidth = font.width(run);

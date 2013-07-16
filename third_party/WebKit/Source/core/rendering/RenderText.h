@@ -73,6 +73,7 @@ public:
     const LChar* characters8() const { return m_text.impl()->characters8(); }
     const UChar* characters16() const { return m_text.impl()->characters16(); }
     const UChar* bloatedCharacters() const { return m_text.bloatedCharacters(); }
+    bool isEmpty() const { return m_text.isEmpty(); }
     UChar characterAt(unsigned) const;
     UChar uncheckedCharacterAt(unsigned) const;
     UChar operator[](unsigned i) const { return uncheckedCharacterAt(i); }
