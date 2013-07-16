@@ -1456,6 +1456,9 @@ const char kEnableTranslate[]               = "enable-translate";
 
 // Uses the tablet specific UI components when available.
 const char kTabletUI[]                      = "tablet-ui";
+
+// Enables the new NTP.
+const char kEnableNewNTP[]                  = "enable-new-ntp";
 #endif
 
 #if defined(USE_ASH)

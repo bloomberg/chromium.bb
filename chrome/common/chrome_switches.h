@@ -396,6 +396,7 @@ extern const char kEnableSpdyProxyAuth[];
 #if defined(OS_ANDROID)
 extern const char kEnableTranslate[];
 extern const char kTabletUI[];
+extern const char kEnableNewNTP[];
 #endif
 
 #if defined(USE_ASH)

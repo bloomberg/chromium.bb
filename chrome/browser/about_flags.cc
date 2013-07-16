@@ -642,6 +642,15 @@ const Experiment kExperiments[] = {
     ENABLE_DISABLE_VALUE_TYPE(switches::kEnableLocalFirstLoadNTP,
                               switches::kDisableLocalFirstLoadNTP)
   },
+#if defined(OS_ANDROID)
+  {
+    "enable-new-ntp",
+    IDS_FLAGS_ENABLE_NEW_NTP,
+    IDS_FLAGS_ENABLE_NEW_NTP_DESCRIPTION,
+    kOsAndroid,
+    SINGLE_VALUE_TYPE(switches::kEnableNewNTP)
+  },
+#endif
   {
     "static-ip-config",
     IDS_FLAGS_STATIC_IP_CONFIG_NAME,
