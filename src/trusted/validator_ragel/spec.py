@@ -655,6 +655,82 @@ _MMX_INSTRUCTIONS = set([
 ])
 
 
+# Instructions from xmm_instructions.def (that is, instructions that work
+# with XMM registers). These instruction names can be prepended with 'v', which
+# results in their AVX counterpart.
+_XMM_AVX_INSTRUCTIONS = set([
+  'addpd',
+  'addps',
+  'addsd',
+  'addss',
+  'addsubpd',
+  'addsubps',
+  'aesdec',
+  'aesdeclast',
+  'aesenc',
+  'aesenclast',
+  'aesimc',
+  'aeskeygenassist',
+  'andnpd',
+  'andnps',
+  'andpd',
+  'andps',
+  'blendpd',
+  'blendps',
+  'blendvpd',
+  'blendvps',
+  'comisd',
+  'comiss',
+  'cvtdq2pd',
+  'cvtdq2ps',
+  'cvtpd2dq',
+  'cvtpd2ps',
+  'cvtps2dq',
+  'cvtps2pd',
+  'cvtsd2si',
+  'cvtsd2ss',
+  'cvtsi2sd',
+  'cvtsi2ss',
+  'cvtss2sd',
+  'cvtss2si',
+  'cvttpd2dq',
+  'cvttps2dq',
+  'cvttsd2si',
+  'cvttss2si',
+  'divpd',
+  'divps',
+  'divsd',
+  'divss',
+  'dppd',
+  'dpps',
+  'extractps',
+  'extrq',
+  'haddpd',
+  'haddps',
+  'hsubpd',
+  'hsubps',
+  'insertps',
+  'insertq',
+  'lddqu',
+  'ldmxcsr',
+])
+
+_XMM_AVX_INSTRUCTIONS.update(['v' + name for name in _XMM_AVX_INSTRUCTIONS])
+
+for cmp_suffix in ['pd', 'ps', 'sd', 'ss']:
+  for cmp_op in ['', 'eq', 'lt', 'le', 'unord', 'neq', 'nlt', 'nle', 'ord']:
+    _XMM_AVX_INSTRUCTIONS.add('cmp%s%s' % (cmp_op, cmp_suffix))
+    _XMM_AVX_INSTRUCTIONS.add('vcmp%s%s' % (cmp_op, cmp_suffix))
+  for cmp_op in [
+      'eq_uq', 'nge', 'ngt', 'false',
+      'neq_oq', 'ge', 'gt', 'true',
+      'eq_os', 'lt_oq', 'le_oq', 'unord_s',
+      'neq_us', 'nlt_uq', 'nle_uq', 'ord_s',
+      'eq_us', 'nge_uq', 'ngt_uq', 'false_os',
+      'neq_os', 'ge_oq', 'gt_oq', 'true_us']:
+    _XMM_AVX_INSTRUCTIONS.add('vcmp%s%s' % (cmp_op, cmp_suffix))
+
+
 def ValidateRegularInstruction(instruction, bitness):
   """Validate regular instruction (not direct jump).
 
@@ -777,7 +853,15 @@ def ValidateRegularInstruction(instruction, bitness):
     elif name in _X87_INSTRUCTIONS:
       return Condition(), Condition()
 
-    elif name in _MMX_INSTRUCTIONS or name == 'maskmovq':
+    elif name in _MMX_INSTRUCTIONS:
+      return Condition(), Condition()
+
+    elif name in _XMM_AVX_INSTRUCTIONS:
+      return Condition(), Condition()
+
+    elif name in ['maskmovq', 'maskmovdqu', 'vmaskmovdqu']:
+      # In 64-bit mode these instructions are processed in
+      # ValidateSuperinstruction64, together with string instructions.
       return Condition(), Condition()
 
     else:
@@ -948,6 +1032,10 @@ def ValidateRegularInstruction(instruction, bitness):
       write_ops = []
 
     elif name in _MMX_INSTRUCTIONS:
+      assert 0 <= len(ops) <= 3
+      write_ops = ops[-1:]
+
+    elif name in _XMM_AVX_INSTRUCTIONS:
       assert 0 <= len(ops) <= 3
       write_ops = ops[-1:]
 
