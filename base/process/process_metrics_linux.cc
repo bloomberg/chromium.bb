@@ -275,10 +275,15 @@ bool ProcessMetrics::GetWorkingSetKBytesTotmaps(WorkingSetKBytes *ws_usage)
   // Shared_Dirty:       4012 kB
   // Private_Clean:         4 kB
   // Private_Dirty:      1096 kB
-  // ...
-  const size_t kPssIndex = 4;
-  const size_t kPrivate_CleanIndex = 13;
-  const size_t kPrivate_DirtyIndex = 16;
+  // Referenced:          XXX kB
+  // Anonymous:           XXX kB
+  // AnonHugePages:       XXX kB
+  // Swap:                XXX kB
+  // Locked:              XXX kB
+  const size_t kPssIndex = (1 * 3) + 1;
+  const size_t kPrivate_CleanIndex = (4 * 3) + 1;
+  const size_t kPrivate_DirtyIndex = (5 * 3) + 1;
+  const size_t kSwapIndex = (9 * 3) + 1;
 
   std::string totmaps_data;
   {
@@ -293,19 +298,27 @@ bool ProcessMetrics::GetWorkingSetKBytesTotmaps(WorkingSetKBytes *ws_usage)
   SplitStringAlongWhitespace(totmaps_data, &totmaps_fields);
 
   DCHECK_EQ("Pss:", totmaps_fields[kPssIndex-1]);
-  DCHECK_EQ("Private_Clean:", totmaps_fields[kPrivate_CleanIndex-1]);
-  DCHECK_EQ("Private_Dirty:", totmaps_fields[kPrivate_DirtyIndex-1]);
+  DCHECK_EQ("Private_Clean:", totmaps_fields[kPrivate_CleanIndex - 1]);
+  DCHECK_EQ("Private_Dirty:", totmaps_fields[kPrivate_DirtyIndex - 1]);
+  DCHECK_EQ("Swap:", totmaps_fields[kSwapIndex-1]);
 
-  int pss, private_clean, private_dirty;
+  int pss = 0;
+  int private_clean = 0;
+  int private_dirty = 0;
+  int swap = 0;
   bool ret = true;
   ret &= StringToInt(totmaps_fields[kPssIndex], &pss);
   ret &= StringToInt(totmaps_fields[kPrivate_CleanIndex], &private_clean);
   ret &= StringToInt(totmaps_fields[kPrivate_DirtyIndex], &private_dirty);
+  ret &= StringToInt(totmaps_fields[kSwapIndex], &swap);
 
-  ws_usage->priv = private_clean + private_dirty;
-  ws_usage->shared = pss;
+  // On ChromeOS swap is to zram. We count this as private / shared, as
+  // increased swap decreases available RAM to user processes, which would
+  // otherwise create surprising results.
+  ws_usage->priv = private_clean + private_dirty + swap;
+  ws_usage->shared = pss + swap;
   ws_usage->shareable = 0;
-
+  ws_usage->swapped = swap;
   return ret;
 }
 #endif
@@ -348,6 +361,11 @@ bool ProcessMetrics::GetWorkingSetKBytesStatm(WorkingSetKBytes* ws_usage)
 
   // Sharable is not calculated, as it does not provide interesting data.
   ws_usage->shareable = 0;
+
+#if defined(OS_CHROMEOS)
+  // Can't get swapped memory from statm.
+  ws_usage->swapped = 0;
+#endif
 
   return ret;
 }

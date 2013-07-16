@@ -4255,8 +4255,282 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Memory.BackingStore">
+  <summary>TBD.</summary>
+</histogram>
+
+<histogram name="Memory.Browser" units="KB">
+  <summary>
+    The private working set used by the browser process.  Recorded once per UMA
+    ping.
+  </summary>
+</histogram>
+
+<histogram name="Memory.CachedFontAndDC">
+  <summary>TBD.</summary>
+</histogram>
+
+<histogram name="Memory.Chrome" units="KB">
+  <summary>
+    The private working set used by each chrome:// renderer process.  Each
+    process provides one sample.  Recorded once per UMA ping.
+  </summary>
+</histogram>
+
+<histogram name="Memory.ChromeProcessCount">
+  <summary>
+    The count of active chrome:// processes.  Recorded once per UMA ping.
+  </summary>
+</histogram>
+
+<histogram name="Memory.Extension" units="KB">
+  <summary>
+    The private working set used by each extension process.  Each process
+    provides one sample.  Recorded once per UMA ping.
+  </summary>
+</histogram>
+
+<histogram name="Memory.GlyphPagesPerLoad">
+  <summary>
+    The number of glyph pages present in the renderer when it commits a load.
+    Since this is per-sub-process, you can get the average number of glyph pages
+    in the system by multiplying this number with the average number of
+    renderers. Note that this typically won't count the glyph pages added as a
+    result of the load that just committed, since layout will happen after the
+    commit. There are 512 bytes per glyph page, but this number also very
+    closely approximates the number of glyph width map pages in the same
+    renderer. The only difference is that if you have font fallback, it will
+    make a new glyph page and no width page, but in most common cases there is
+    no fallback). Width pages are 1K each (256 floats), so you could think of
+    this value as being the number of &quot;1.5K units related to glyphs per
+    renderer per page load&quot;.
+  </summary>
+</histogram>
+
+<histogram name="Memory.Gpu" units="KB">
+  <summary>
+    The private working set used by the GPU process.  Recorded once per UMA
+    ping.
+  </summary>
+</histogram>
+
+<histogram name="Memory.Graphics" units="MB">
+  <summary>
+    System-wide graphics driver memory consumption.  Recorded on Chrome OS for
+    platforms where it is exposed by the kernel (for example, Intel i915 and
+    Exynos Mali).  Recorded once per UMA ping.
+  </summary>
+</histogram>
+
+<histogram name="Memory.NativeClient" units="KB">
+  <summary>
+    The private working set used by each Native Client loader process.  Each
+    process provides one sample.  Recorded once per UMA ping.
+  </summary>
+</histogram>
+
+<histogram name="Memory.NativeClientBroker" units="KB">
+  <summary>
+    The private working set used by each Native Client broker process.  Each
+    process provides one sample.  Recorded once per UMA ping.
+  </summary>
+</histogram>
+
+<histogram name="Memory.OtherProcessCount">
+  <summary>
+    The count of other various utility processes (nacl, gpu, sandbox, zygote,
+    utility).  Recorded once per UMA ping.
+  </summary>
+</histogram>
+
+<histogram name="Memory.PepperPlugin" units="KB">
+  <summary>
+    The private working set used by each Pepper plugin process.  Each plugin
+    process provides one sample.  Recorded once per UMA ping.
+  </summary>
+</histogram>
+
+<histogram name="Memory.PepperPluginBroker" units="KB">
+  <summary>
+    The private working set used by each Pepper plugin broker process.  Each
+    process provides one sample.  Recorded once per UMA ping.
+  </summary>
+</histogram>
+
+<histogram name="Memory.PepperPluginBrokerProcessCount">
+  <summary>
+    The count of Pepper plugin broker processes, recorded once per metrics
+    services (UMA) update.  See MetricsReportingScheduler for details.
+  </summary>
+</histogram>
+
+<histogram name="Memory.PepperPluginProcessCount">
+  <summary>
+    The count of active Pepper plugin processes.  Recorded once per UMA ping.
+  </summary>
+</histogram>
+
+<histogram name="Memory.Plugin" units="KB">
+  <summary>
+    The private working set used by each plugin process.  Each plugin process
+    provides one sample.  Recorded once per UMA ping.
+  </summary>
+</histogram>
+
+<histogram name="Memory.PluginProcessCount">
+  <summary>
+    The count of active plugin processes.  Recorded once per UMA ping.
+  </summary>
+</histogram>
+
+<histogram name="Memory.ProcessCount">
+  <summary>
+    The count of all active processes.  Recorded once per UMA ping.
+  </summary>
+</histogram>
+
 <histogram name="Memory.ProcessLimit">
   <summary>The current process limit.  Recorded once per UMA ping.</summary>
+</histogram>
+
+<histogram name="Memory.Renderer" units="KB">
+  <summary>
+    The private working set used by each renderer process.  Each renderer
+    process provides one sample.  Recorded once per UMA ping.
+  </summary>
+</histogram>
+
+<histogram name="Memory.RendererProcessCount">
+  <summary>
+    The count of active renderer processes.  Recorded once per UMA ping.
+  </summary>
+</histogram>
+
+<histogram name="Memory.SandboxHelper" units="KB">
+  <summary>
+    The private working set used by each sandbox helper process.  Each sandbox
+    helper process provides one sample.  Recorded once per UMA ping.
+  </summary>
+</histogram>
+
+<histogram name="Memory.Swap.Browser" units="KB">
+  <summary>
+    On ChromeOS only.  The swap used by the browser process.  Recorded once per
+    UMA ping.
+  </summary>
+</histogram>
+
+<histogram name="Memory.Swap.Chrome" units="KB">
+  <summary>
+    On ChromeOS only.  The swap used by each chrome:// renderer process.  Each
+    process provides one sample.  Recorded once per UMA ping.
+  </summary>
+</histogram>
+
+<histogram name="Memory.Swap.Extension" units="KB">
+  <summary>
+    On ChromeOS only.  The swap used by each extension process.  Each process
+    provides one sample.  Recorded once per UMA ping.
+  </summary>
+</histogram>
+
+<histogram name="Memory.Swap.Gpu" units="KB">
+  <summary>
+    On ChromeOS only.  The swap used by the GPU process.  Recorded once per UMA
+    ping.
+  </summary>
+</histogram>
+
+<histogram name="Memory.Swap.NativeClient" units="KB">
+  <summary>
+    On ChromeOS only.  The swap used by each Native Client loader process.  Each
+    process provides one sample.  Recorded once per UMA ping.
+  </summary>
+</histogram>
+
+<histogram name="Memory.Swap.NativeClientBroker" units="KB">
+  <summary>
+    On ChromeOS only.  The swap used by each Native Client broker process.  Each
+    process provides one sample.  Recorded once per UMA ping.
+  </summary>
+</histogram>
+
+<histogram name="Memory.Swap.PepperPlugin" units="KB">
+  <summary>
+    On ChromeOS only.  The swap used by each Pepper plugin process.  Each plugin
+    process provides one sample.  Recorded once per UMA ping.
+  </summary>
+</histogram>
+
+<histogram name="Memory.Swap.PepperPluginBroker" units="KB">
+  <summary>
+    On ChromeOS only.  The swap used by each Pepper plugin broker process.  Each
+    process provides one sample.  Recorded once per UMA ping.
+  </summary>
+</histogram>
+
+<histogram name="Memory.Swap.Plugin" units="KB">
+  <summary>
+    On ChromeOS only.  The swap used by each plugin process.  Each plugin
+    process provides one sample.  Recorded once per UMA ping.
+  </summary>
+</histogram>
+
+<histogram name="Memory.Swap.Renderer" units="KB">
+  <summary>
+    On ChromeOS only.  The swap used by each renderer process.  Each renderer
+    process provides one sample.  Recorded once per UMA ping.
+  </summary>
+</histogram>
+
+<histogram name="Memory.Swap.SandboxHelper" units="KB">
+  <summary>
+    On ChromeOS only.  The swap used by each sandbox helper process.  Each
+    sandbox helper process provides one sample.  Recorded once per UMA ping.
+  </summary>
+</histogram>
+
+<histogram name="Memory.Swap.Total" units="MB">
+  <summary>
+    On ChromeOS only.  The sum of all processes' swap.  Recorded once per UMA
+    ping.
+  </summary>
+</histogram>
+
+<histogram name="Memory.Swap.Utility" units="KB">
+  <summary>
+    On ChromeOS only.  The swap used by each utility process.  Each utility
+    process provides one sample.  Recorded once per UMA ping.
+  </summary>
+</histogram>
+
+<histogram name="Memory.Swap.Worker" units="KB">
+  <summary>
+    On ChromeOS only. The swap used by each worker process.  Each worker process
+    provides one sample.  Recorded once per UMA ping.
+  </summary>
+</histogram>
+
+<histogram name="Memory.Total" units="MB">
+  <summary>The sum of all processes.  Recorded once per UMA ping.</summary>
+</histogram>
+
+<histogram name="Memory.Utility" units="KB">
+  <summary>
+    The private working set used by each utility process.  Each utility process
+    provides one sample.  Recorded once per UMA ping.
+  </summary>
+</histogram>
+
+<histogram name="Memory.Worker" units="KB">
+  <summary>
+    The private working set used by each worker process.  Each worker process
+    provides one sample.  Recorded once per UMA ping.
+  </summary>
+</histogram>
+
+<histogram name="Memory.WorkerProcessCount">
+  <summary>TBD.</summary>
 </histogram>
 
 <histogram name="MemoryAndroid.DeviceMemoryClass">

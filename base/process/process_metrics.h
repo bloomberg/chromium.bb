@@ -45,19 +45,29 @@ struct IoCounters {
 //                 other process.
 //
 // On Linux:
-// priv:           Pages mapped only by this process
-// shared:         PSS or 0 if the kernel doesn't support this
+// priv:           Pages mapped only by this process.
+// shared:         PSS or 0 if the kernel doesn't support this.
 // shareable:      0
+
+// On ChromeOS:
+// priv:           Pages mapped only by this process.
+// shared:         PSS or 0 if the kernel doesn't support this.
+// shareable:      0
+// swapped         Pages swapped out to zram.
 //
 // On OS X: TODO(thakis): Revise.
 // priv:           Memory.
 // shared:         0
 // shareable:      0
+//
 struct WorkingSetKBytes {
   WorkingSetKBytes() : priv(0), shareable(0), shared(0) {}
   size_t priv;
   size_t shareable;
   size_t shared;
+#if defined(OS_CHROMEOS)
+  size_t swapped;
+#endif
 };
 
 // Committed (resident + paged) memory usage broken down by

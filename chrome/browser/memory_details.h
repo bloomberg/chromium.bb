@@ -176,6 +176,10 @@ class MemoryDetails : public base::RefCountedThreadSafe<MemoryDetails> {
   // Updates the global histograms for tracking memory usage.
   void UpdateHistograms();
 
+#if defined(OS_CHROMEOS)
+  void UpdateSwapHistograms();
+#endif
+
   // Returns a pointer to the ProcessData structure for Chrome.
   ProcessData* ChromeBrowser();
 

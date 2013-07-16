@@ -385,7 +385,7 @@ void MemoryDetails::UpdateHistograms() {
     switch (browser.processes[index].process_type) {
       case content::PROCESS_TYPE_BROWSER:
         UMA_HISTOGRAM_MEMORY_KB("Memory.Browser", sample);
-        break;
+        continue;
       case content::PROCESS_TYPE_RENDERER: {
         ProcessMemoryInformation::RendererProcessType renderer_type =
             browser.processes[index].renderer_type;
@@ -393,66 +393,65 @@ void MemoryDetails::UpdateHistograms() {
           case ProcessMemoryInformation::RENDERER_EXTENSION:
             UMA_HISTOGRAM_MEMORY_KB("Memory.Extension", sample);
             extension_count++;
-            break;
+            continue;
           case ProcessMemoryInformation::RENDERER_CHROME:
             UMA_HISTOGRAM_MEMORY_KB("Memory.Chrome", sample);
             chrome_count++;
-            break;
+            continue;
           case ProcessMemoryInformation::RENDERER_UNKNOWN:
             NOTREACHED() << "Unknown renderer process type.";
-            break;
+            continue;
           case ProcessMemoryInformation::RENDERER_NORMAL:
           default:
             // TODO(erikkay): Should we bother splitting out the other subtypes?
             UMA_HISTOGRAM_MEMORY_KB("Memory.Renderer", sample);
             renderer_count++;
-            break;
+            continue;
         }
-        break;
       }
       case content::PROCESS_TYPE_PLUGIN:
         UMA_HISTOGRAM_MEMORY_KB("Memory.Plugin", sample);
         plugin_count++;
-        break;
+        continue;
       case content::PROCESS_TYPE_WORKER:
         UMA_HISTOGRAM_MEMORY_KB("Memory.Worker", sample);
         worker_count++;
-        break;
+        continue;
       case content::PROCESS_TYPE_UTILITY:
         UMA_HISTOGRAM_MEMORY_KB("Memory.Utility", sample);
         other_count++;
-        break;
+        continue;
       case content::PROCESS_TYPE_ZYGOTE:
         UMA_HISTOGRAM_MEMORY_KB("Memory.Zygote", sample);
         other_count++;
-        break;
+        continue;
       case content::PROCESS_TYPE_SANDBOX_HELPER:
         UMA_HISTOGRAM_MEMORY_KB("Memory.SandboxHelper", sample);
         other_count++;
-        break;
+        continue;
       case content::PROCESS_TYPE_GPU:
         UMA_HISTOGRAM_MEMORY_KB("Memory.Gpu", sample);
         other_count++;
-        break;
+        continue;
       case content::PROCESS_TYPE_PPAPI_PLUGIN:
         UMA_HISTOGRAM_MEMORY_KB("Memory.PepperPlugin", sample);
         pepper_plugin_count++;
-        break;
+        continue;
       case content::PROCESS_TYPE_PPAPI_BROKER:
         UMA_HISTOGRAM_MEMORY_KB("Memory.PepperPluginBroker", sample);
         pepper_plugin_broker_count++;
-        break;
+        continue;
       case PROCESS_TYPE_NACL_LOADER:
         UMA_HISTOGRAM_MEMORY_KB("Memory.NativeClient", sample);
         other_count++;
-        break;
+        continue;
       case PROCESS_TYPE_NACL_BROKER:
         UMA_HISTOGRAM_MEMORY_KB("Memory.NativeClientBroker", sample);
         other_count++;
-        break;
+        continue;
       default:
         NOTREACHED();
-        break;
+        continue;
     }
   }
   UMA_HISTOGRAM_MEMORY_KB("Memory.BackingStore",
@@ -490,4 +489,80 @@ void MemoryDetails::UpdateHistograms() {
   int non_renderer_count = browser.processes.size() - all_renderer_count;
   SiteDetails::UpdateHistograms(browser.site_data, all_renderer_count,
                                 non_renderer_count);
+#if defined(OS_CHROMEOS)
+  UpdateSwapHistograms();
+#endif
+
 }
+
+#if defined(OS_CHROMEOS)
+void MemoryDetails::UpdateSwapHistograms() {
+  const ProcessData& browser = *ChromeBrowser();
+  size_t aggregate_memory = 0;
+  for (size_t index = 0; index < browser.processes.size(); index++) {
+    int sample = static_cast<int>(browser.processes[index].working_set.swapped);
+    aggregate_memory += sample;
+    switch (browser.processes[index].process_type) {
+      case content::PROCESS_TYPE_BROWSER:
+        UMA_HISTOGRAM_MEMORY_KB("Memory.Swap.Browser", sample);
+        continue;
+      case content::PROCESS_TYPE_RENDERER: {
+        ProcessMemoryInformation::RendererProcessType renderer_type =
+            browser.processes[index].renderer_type;
+        switch (renderer_type) {
+          case ProcessMemoryInformation::RENDERER_EXTENSION:
+            UMA_HISTOGRAM_MEMORY_KB("Memory.Swap.Extension", sample);
+            continue;
+          case ProcessMemoryInformation::RENDERER_CHROME:
+            UMA_HISTOGRAM_MEMORY_KB("Memory.Swap.Chrome", sample);
+            continue;
+          case ProcessMemoryInformation::RENDERER_UNKNOWN:
+            NOTREACHED() << "Unknown renderer process type.";
+            continue;
+          case ProcessMemoryInformation::RENDERER_NORMAL:
+          default:
+            UMA_HISTOGRAM_MEMORY_KB("Memory.Swap.Renderer", sample);
+            continue;
+        }
+      }
+      case content::PROCESS_TYPE_PLUGIN:
+        UMA_HISTOGRAM_MEMORY_KB("Memory.Swap.Plugin", sample);
+        continue;
+      case content::PROCESS_TYPE_WORKER:
+        UMA_HISTOGRAM_MEMORY_KB("Memory.Swap.Worker", sample);
+        continue;
+      case content::PROCESS_TYPE_UTILITY:
+        UMA_HISTOGRAM_MEMORY_KB("Memory.Swap.Utility", sample);
+        continue;
+      case content::PROCESS_TYPE_ZYGOTE:
+        UMA_HISTOGRAM_MEMORY_KB("Memory.Swap.Zygote", sample);
+        continue;
+      case content::PROCESS_TYPE_SANDBOX_HELPER:
+        UMA_HISTOGRAM_MEMORY_KB("Memory.Swap.SandboxHelper", sample);
+        continue;
+      case content::PROCESS_TYPE_GPU:
+        UMA_HISTOGRAM_MEMORY_KB("Memory.Swap.Gpu", sample);
+        continue;
+      case content::PROCESS_TYPE_PPAPI_PLUGIN:
+        UMA_HISTOGRAM_MEMORY_KB("Memory.Swap.PepperPlugin", sample);
+        continue;
+      case content::PROCESS_TYPE_PPAPI_BROKER:
+        UMA_HISTOGRAM_MEMORY_KB("Memory.Swap.PepperPluginBroker", sample);
+        continue;
+      case PROCESS_TYPE_NACL_LOADER:
+        UMA_HISTOGRAM_MEMORY_KB("Memory.Swap.NativeClient", sample);
+        continue;
+      case PROCESS_TYPE_NACL_BROKER:
+        UMA_HISTOGRAM_MEMORY_KB("Memory.Swap.NativeClientBroker", sample);
+        continue;
+      default:
+        NOTREACHED();
+        continue;
+    }
+  }
+
+  int total_sample = static_cast<int>(aggregate_memory / 1000);
+  UMA_HISTOGRAM_MEMORY_MB("Memory.Swap.Total", total_sample);
+}
+
+#endif
