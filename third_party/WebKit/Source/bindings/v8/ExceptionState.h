@@ -31,6 +31,8 @@
 #ifndef ExceptionState_h
 #define ExceptionState_h
 
+#include "bindings/v8/ScopedPersistent.h"
+#include "bindings/v8/V8ThrowException.h"
 #include "wtf/Noncopyable.h"
 #include <v8.h>
 
@@ -43,21 +45,24 @@ class ExceptionState {
 public:
     explicit ExceptionState(v8::Isolate* isolate)
         : m_code(0)
-        , m_exceptionThrown(false)
         , m_isolate(isolate) { }
 
     virtual void throwDOMException(const ExceptionCode&,  const char* message = 0);
     virtual void throwTypeError(const char* message = 0);
 
-    bool hadException() const { return m_exceptionThrown || m_code; }
+    bool hadException() const { return !m_exception.isEmpty() || m_code; }
+    void clearException();
 
     bool throwIfNeeded()
     {
-        if (m_code) {
+        if (m_exception.isEmpty()) {
+            if (!m_code)
+                return false;
             throwDOMException(m_code);
-            return true;
         }
-        return m_exceptionThrown;
+
+        V8ThrowException::throwError(m_exception.get());
+        return true;
     }
 
     // FIXME: Remove the rest of the public methods/operators once the transition is done.
@@ -79,7 +84,9 @@ protected:
     ExceptionCode m_code;
 
 private:
-    bool m_exceptionThrown;
+    void setException(v8::Handle<v8::Value>);
+
+    ScopedPersistent<v8::Value> m_exception;
     v8::Isolate* m_isolate;
 };
 

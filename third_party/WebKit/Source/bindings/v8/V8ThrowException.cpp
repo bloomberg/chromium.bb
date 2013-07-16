@@ -44,14 +44,14 @@ static void domExceptionStackSetter(v8::Local<v8::String> name, v8::Local<v8::Va
     info.Data()->ToObject()->Set(v8::String::NewSymbol("stack"), value);
 }
 
-v8::Handle<v8::Value> V8ThrowException::setDOMException(int ec, const char* message, v8::Isolate* isolate)
+v8::Handle<v8::Value> V8ThrowException::createDOMException(int ec, const char* message, v8::Isolate* isolate)
 {
     if (ec <= 0 || v8::V8::IsExecutionTerminating())
         return v8Undefined();
 
     // FIXME: Handle other WebIDL exception types.
     if (ec == TypeError)
-        return V8ThrowException::throwTypeError(message, isolate);
+        return V8ThrowException::createTypeError(message, isolate);
 
     RefPtr<DOMException> domException = DOMException::create(ec, message);
     v8::Handle<v8::Value> exception = toV8(domException, v8::Handle<v8::Object>(), isolate);
@@ -65,36 +65,60 @@ v8::Handle<v8::Value> V8ThrowException::setDOMException(int ec, const char* mess
     ASSERT(exception->IsObject());
     exception->ToObject()->SetAccessor(v8::String::NewSymbol("stack"), domExceptionStackGetter, domExceptionStackSetter, error);
 
-    return v8::ThrowException(exception);
+    return exception;
 }
 
-v8::Handle<v8::Value> V8ThrowException::throwError(V8ErrorType type, const char* message, v8::Isolate* isolate)
+v8::Handle<v8::Value> V8ThrowException::throwDOMException(int ec, const char* message, v8::Isolate* isolate)
+{
+    v8::Handle<v8::Value> exception = createDOMException(ec, message, isolate);
+    if (exception.IsEmpty())
+        return v8Undefined();
+
+    return V8ThrowException::throwError(exception);
+}
+
+v8::Handle<v8::Value> V8ThrowException::createError(V8ErrorType type, const char* message, v8::Isolate* isolate)
 {
     switch (type) {
     case v8RangeError:
-        return v8::ThrowException(v8::Exception::RangeError(v8String(message, isolate)));
+        return v8::Exception::RangeError(v8String(message, isolate));
     case v8ReferenceError:
-        return v8::ThrowException(v8::Exception::ReferenceError(v8String(message, isolate)));
+        return v8::Exception::ReferenceError(v8String(message, isolate));
     case v8SyntaxError:
-        return v8::ThrowException(v8::Exception::SyntaxError(v8String(message, isolate)));
+        return v8::Exception::SyntaxError(v8String(message, isolate));
     case v8TypeError:
-        return v8::ThrowException(v8::Exception::TypeError(v8String(message, isolate)));
+        return v8::Exception::TypeError(v8String(message, isolate));
     case v8GeneralError:
-        return v8::ThrowException(v8::Exception::Error(v8String(message, isolate)));
+        return v8::Exception::Error(v8String(message, isolate));
     default:
         ASSERT_NOT_REACHED();
         return v8Undefined();
     }
 }
 
+v8::Handle<v8::Value> V8ThrowException::throwError(V8ErrorType type, const char* message, v8::Isolate* isolate)
+{
+    v8::Handle<v8::Value> exception = V8ThrowException::createError(type, message, isolate);
+    if (exception.IsEmpty())
+        return v8Undefined();
+    return V8ThrowException::throwError(exception);
+}
+
+v8::Handle<v8::Value> V8ThrowException::createTypeError(const char* message, v8::Isolate* isolate)
+{
+    return v8::Exception::TypeError(v8String(message ? message : "Type error", isolate));
+}
+
 v8::Handle<v8::Value> V8ThrowException::throwTypeError(const char* message, v8::Isolate* isolate)
 {
-    return V8ThrowException::throwError(v8TypeError, (message ? message : "Type error"), isolate);
+    v8::Handle<v8::Value> exception = V8ThrowException::createTypeError(message, isolate);
+    return V8ThrowException::throwError(exception);
 }
 
 v8::Handle<v8::Value> V8ThrowException::throwNotEnoughArgumentsError(v8::Isolate* isolate)
 {
-    return V8ThrowException::throwError(v8TypeError, "Not enough arguments", isolate);
+    v8::Handle<v8::Value> exception = V8ThrowException::createTypeError("Not enough arguments", isolate);
+    return V8ThrowException::throwError(exception);
 }
 
 v8::Handle<v8::Value> V8ThrowException::throwError(v8::Handle<v8::Value> exception, v8::Isolate* isolate)

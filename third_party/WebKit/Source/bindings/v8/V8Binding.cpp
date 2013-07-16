@@ -69,7 +69,7 @@ namespace WebCore {
 
 v8::Handle<v8::Value> setDOMException(int exceptionCode, v8::Isolate* isolate)
 {
-    return V8ThrowException::setDOMException(exceptionCode, isolate);
+    return V8ThrowException::throwDOMException(exceptionCode, isolate);
 }
 
 v8::Handle<v8::Value> throwError(V8ErrorType errorType, const char* message, v8::Isolate* isolate)

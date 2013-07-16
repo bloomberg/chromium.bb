@@ -39,16 +39,26 @@ enum V8ErrorType {
 
 class V8ThrowException {
 public:
-    static v8::Handle<v8::Value> setDOMException(int ec, v8::Isolate* isolate)
-    {
-        return setDOMException(ec, 0, isolate);
-    }
-    static v8::Handle<v8::Value> setDOMException(int, const char*, v8::Isolate*);
 
+    static v8::Handle<v8::Value> createDOMException(int ec, v8::Isolate* isolate)
+    {
+        return createDOMException(ec, 0, isolate);
+    }
+    static v8::Handle<v8::Value> createDOMException(int, const char*, v8::Isolate*);
+
+    static v8::Handle<v8::Value> throwDOMException(int ec, v8::Isolate* isolate)
+    {
+        return throwDOMException(ec, 0, isolate);
+    }
+    static v8::Handle<v8::Value> throwDOMException(int, const char*, v8::Isolate*);
+
+    static v8::Handle<v8::Value> createError(V8ErrorType, const char*, v8::Isolate* = 0);
     static v8::Handle<v8::Value> throwError(V8ErrorType, const char*, v8::Isolate* = 0);
     static v8::Handle<v8::Value> throwError(v8::Handle<v8::Value>, v8::Isolate* = 0);
 
+    static v8::Handle<v8::Value> createTypeError(const char* = 0, v8::Isolate* = 0);
     static v8::Handle<v8::Value> throwTypeError(const char* = 0, v8::Isolate* = 0);
+
     static v8::Handle<v8::Value> throwNotEnoughArgumentsError(v8::Isolate*);
 };
 

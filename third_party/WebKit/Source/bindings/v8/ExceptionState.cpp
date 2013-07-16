@@ -36,20 +36,33 @@
 
 namespace WebCore {
 
-void ExceptionState::throwDOMException(const ExceptionCode& ec,  const char* message)
+void ExceptionState::clearException()
 {
-    if (m_exceptionThrown)
+    m_code = 0;
+    m_exception.clear();
+}
+
+void ExceptionState::throwDOMException(const ExceptionCode& ec, const char* message)
+{
+    ASSERT(ec);
+    m_code = ec;
+    setException(V8ThrowException::createDOMException(ec, message, m_isolate));
+}
+
+void ExceptionState::setException(v8::Handle<v8::Value> exception)
+{
+    if (exception.IsEmpty()) {
+        clearException();
         return;
-    V8ThrowException::setDOMException(ec, message, m_isolate);
-    m_exceptionThrown = true;
+    }
+
+    m_exception.set(m_isolate, exception);
 }
 
 void ExceptionState::throwTypeError(const char* message)
 {
-    if (m_exceptionThrown)
-        return;
-    V8ThrowException::throwTypeError(message, m_isolate);
-    m_exceptionThrown = true;
+    m_code = TypeError;
+    setException(V8ThrowException::createTypeError(message, m_isolate));
 }
 
 NonThrowExceptionState::NonThrowExceptionState()
