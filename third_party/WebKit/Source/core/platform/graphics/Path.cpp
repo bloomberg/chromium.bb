@@ -330,7 +330,7 @@ void Path::addRoundedRect(const RoundedRect& r)
     addRoundedRect(r.rect(), r.radii().topLeft(), r.radii().topRight(), r.radii().bottomLeft(), r.radii().bottomRight());
 }
 
-void Path::addRoundedRect(const FloatRect& rect, const FloatSize& roundingRadii, RoundedRectStrategy strategy)
+void Path::addRoundedRect(const FloatRect& rect, const FloatSize& roundingRadii)
 {
     if (rect.isEmpty())
         return;
@@ -355,10 +355,10 @@ void Path::addRoundedRect(const FloatRect& rect, const FloatSize& roundingRadii,
     if (radius.height() > halfSize.height())
         radius.setHeight(halfSize.height());
 
-    addPathForRoundedRect(rect, radius, radius, radius, radius, strategy);
+    addPathForRoundedRect(rect, radius, radius, radius, radius);
 }
 
-void Path::addRoundedRect(const FloatRect& rect, const FloatSize& topLeftRadius, const FloatSize& topRightRadius, const FloatSize& bottomLeftRadius, const FloatSize& bottomRightRadius, RoundedRectStrategy strategy)
+void Path::addRoundedRect(const FloatRect& rect, const FloatSize& topLeftRadius, const FloatSize& topRightRadius, const FloatSize& bottomLeftRadius, const FloatSize& bottomRightRadius)
 {
     if (rect.isEmpty())
         return;
@@ -372,10 +372,10 @@ void Path::addRoundedRect(const FloatRect& rect, const FloatSize& topLeftRadius,
         return;
     }
 
-    addPathForRoundedRect(rect, topLeftRadius, topRightRadius, bottomLeftRadius, bottomRightRadius, strategy);
+    addPathForRoundedRect(rect, topLeftRadius, topRightRadius, bottomLeftRadius, bottomRightRadius);
 }
 
-void Path::addPathForRoundedRect(const FloatRect& rect, const FloatSize& topLeftRadius, const FloatSize& topRightRadius, const FloatSize& bottomLeftRadius, const FloatSize& bottomRightRadius, RoundedRectStrategy strategy)
+void Path::addPathForRoundedRect(const FloatRect& rect, const FloatSize& topLeftRadius, const FloatSize& topRightRadius, const FloatSize& bottomLeftRadius, const FloatSize& bottomRightRadius)
 {
     addBeziersForRoundedRect(rect, topLeftRadius, topRightRadius, bottomLeftRadius, bottomRightRadius);
 }

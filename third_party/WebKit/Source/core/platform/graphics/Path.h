@@ -105,13 +105,8 @@ public:
     void addRect(const FloatRect&);
     void addEllipse(const FloatRect&);
 
-    enum RoundedRectStrategy {
-        PreferNativeRoundedRect,
-        PreferBezierRoundedRect
-    };
-
-    void addRoundedRect(const FloatRect&, const FloatSize& roundingRadii, RoundedRectStrategy = PreferNativeRoundedRect);
-    void addRoundedRect(const FloatRect&, const FloatSize& topLeftRadius, const FloatSize& topRightRadius, const FloatSize& bottomLeftRadius, const FloatSize& bottomRightRadius, RoundedRectStrategy = PreferNativeRoundedRect);
+    void addRoundedRect(const FloatRect&, const FloatSize& roundingRadii);
+    void addRoundedRect(const FloatRect&, const FloatSize& topLeftRadius, const FloatSize& topRightRadius, const FloatSize& bottomLeftRadius, const FloatSize& bottomRightRadius);
     void addRoundedRect(const RoundedRect&);
 
     void translate(const FloatSize&);
@@ -121,7 +116,7 @@ public:
     void apply(void* info, PathApplierFunction) const;
     void transform(const AffineTransform&);
 
-    void addPathForRoundedRect(const FloatRect&, const FloatSize& topLeftRadius, const FloatSize& topRightRadius, const FloatSize& bottomLeftRadius, const FloatSize& bottomRightRadius, RoundedRectStrategy = PreferNativeRoundedRect);
+    void addPathForRoundedRect(const FloatRect&, const FloatSize& topLeftRadius, const FloatSize& topRightRadius, const FloatSize& bottomLeftRadius, const FloatSize& bottomRightRadius);
     void addBeziersForRoundedRect(const FloatRect&, const FloatSize& topLeftRadius, const FloatSize& topRightRadius, const FloatSize& bottomLeftRadius, const FloatSize& bottomRightRadius);
 
     // Updates the path to the union (inclusive-or) of itself with the given argument.
