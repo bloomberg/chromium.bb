@@ -1689,12 +1689,6 @@ crbug.com/250970 [ Debug ] fast/events/simulated-key-state.html [ Crash Timeout 
 
 Bug(dpranke) [ Linux ] fast/writing-mode/broken-ideographic-font.html [ Failure ]
 
-# Just in case they fail
-Bug(schenney) fast/text/line-break-after-empty-inline-hebrew.html [ Pass Failure ]
-Bug(schenney) fast/text/line-break-after-inline-latin1.html [ Pass Failure ]
-Bug(schenney) fast/text/line-break-between-text-nodes-cjk.html [ Pass Failure ]
-Bug(schenney) fast/text/line-break-between-text-nodes-latin1.html [ Pass Failure ]
-
 crbug.com/254332 [ Linux Win ] fast/forms/button/button-reset-focus-by-mouse-then-keydown.html [ ImageOnlyFailure Pass ]
 crbug.com/254332 [ Linux Win ] fast/forms/button/button-reset-focus-by-mouse.html [ ImageOnlyFailure Pass ]
 crbug.com/254332 fast/forms/checkbox/checkbox-focus-by-mouse-then-keydown.html [ ImageOnlyFailure Pass ]
