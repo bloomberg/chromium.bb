@@ -373,18 +373,24 @@ void ScriptDebugServer::setScriptPreprocessor(const String& preprocessorBody)
         m_scriptPreprocessor = adoptPtr(new ScriptPreprocessor(preprocessorBody, m_isolate));
 }
 
+PassRefPtr<JavaScriptCallFrame> ScriptDebugServer::wrapCallFrames(v8::Handle<v8::Object> executionState, int maximumLimit)
+{
+    v8::Handle<v8::Value> argv[] = { executionState, v8::Integer::New(maximumLimit) };
+    v8::Handle<v8::Value> currentCallFrameV8 = callDebuggerMethod("currentCallFrame", 2, argv);
+
+    ASSERT(!currentCallFrameV8.IsEmpty());
+    if (!currentCallFrameV8->IsObject())
+        return PassRefPtr<JavaScriptCallFrame>();
+    return JavaScriptCallFrame::create(v8::Debug::GetDebugContext(), v8::Handle<v8::Object>::Cast(currentCallFrameV8));
+}
+
 ScriptValue ScriptDebugServer::currentCallFrame()
 {
     ASSERT(isPaused());
     v8::HandleScope handleScope(m_isolate);
-    v8::Handle<v8::Value> argv[] = { m_executionState.newLocal(m_isolate) };
-    v8::Handle<v8::Value> currentCallFrameV8 = callDebuggerMethod("currentCallFrame", 1, argv);
-
-    ASSERT(!currentCallFrameV8.IsEmpty());
-    if (!currentCallFrameV8->IsObject())
+    RefPtr<JavaScriptCallFrame> currentCallFrame = wrapCallFrames(m_executionState.newLocal(m_isolate), -1);
+    if (!currentCallFrame)
         return ScriptValue(v8::Null());
-
-    RefPtr<JavaScriptCallFrame> currentCallFrame = JavaScriptCallFrame::create(v8::Debug::GetDebugContext(), v8::Handle<v8::Object>::Cast(currentCallFrameV8));
     v8::Context::Scope contextScope(m_pausedContext);
     return ScriptValue(toV8(currentCallFrame.release(), v8::Handle<v8::Object>(), m_pausedContext->GetIsolate()));
 }
@@ -508,6 +514,11 @@ void ScriptDebugServer::handleV8DebugEvent(const v8::Debug::EventDetails& eventD
             // Stack trace is empty in case of syntax error. Silently continue execution in such cases.
             if (!stackTrace->GetFrameCount())
                 return;
+            RefPtr<JavaScriptCallFrame> topFrame = wrapCallFrames(eventDetails.GetExecutionState(), 1);
+            if (topFrame && listener->shouldSkipPause(topFrame)) {
+                // Silently continue on this break.
+                return;
+            }
             v8::Handle<v8::Object> eventData = eventDetails.GetEventData();
             v8::Handle<v8::Value> exceptionGetterValue = eventData->Get(v8::String::NewSymbol("exception"));
             ASSERT(!exceptionGetterValue.IsEmpty() && exceptionGetterValue->IsFunction());

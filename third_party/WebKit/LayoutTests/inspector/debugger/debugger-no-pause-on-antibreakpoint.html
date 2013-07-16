@@ -1,0 +1,86 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/debugger-test.js"></script>
+<script>
+
+function throwAnException()
+{
+    return unknown_var;
+}
+
+function handleClick()
+{
+    throwAnException();
+}
+
+function handleClick2()
+{
+    try {
+        throwAnException();
+    } catch (e) {
+    }
+    (3).changeValueTo(4);
+}
+
+var test = function()
+{
+    var scriptFileName = "debugger-no-pause-on-antibreakpoint.html";
+
+    InspectorTest.startDebuggerTest(step1);
+    
+    function step1()
+    {
+        DebuggerAgent.setPauseOnExceptions(WebInspector.DebuggerModel.PauseOnExceptionsState.PauseOnAllExceptions);
+        InspectorTest.showScriptSource(scriptFileName, step2);
+    }
+
+    function step2()
+    {
+        InspectorTest.addResult("Script source was shown.");
+        InspectorTest.waitUntilPaused(step3);
+        InspectorTest.evaluateInPage("setTimeout(handleClick, 0)");
+    }
+
+    // Now set antibreakpoint and check that we still pause on other spots.
+    function step3(callFrames)
+    {
+        InspectorTest.captureStackTrace(callFrames);
+        
+        var exceptionLocation = callFrames[0].location;
+        DebuggerAgent.setBreakpointByUrl(exceptionLocation.lineNumber, undefined, scriptFileName,
+                                         exceptionLocation.columnNumber, undefined, true, undefined);
+
+        InspectorTest.resumeExecution(step4);
+    }
+
+    function step4()
+    {
+        InspectorTest.addResult("Antibreakpoint must be set by now.");
+        InspectorTest.evaluateInPage("setTimeout(handleClick2, 0)");
+        InspectorTest.waitUntilPaused(step5);
+    }
+    function step5(callFrames)
+    {
+        InspectorTest.captureStackTrace(callFrames);
+        if (callFrames.length != 1)
+            InspectorTest.addResult("Failure: a stack of single frame ('handleClick2') is expected");
+        
+        InspectorTest.resumeExecution(step6);
+    }
+    function step6()
+    {
+        InspectorTest.completeDebuggerTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that anti-breakpoint works.
+</p>
+
+</body>
+</html>

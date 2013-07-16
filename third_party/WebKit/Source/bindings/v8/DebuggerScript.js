@@ -198,13 +198,12 @@ DebuggerScript.setPauseOnExceptionsState = function(newState)
         Debug.clearBreakOnUncaughtException();
 }
 
-DebuggerScript.currentCallFrame = function(execState, args)
+DebuggerScript.currentCallFrame = function(execState, maximumLimit)
 {
     var frameCount = execState.frameCount();
-    if (frameCount === 0)
-        return undefined;
-
-    var topFrame;
+    if (maximumLimit >= 0 && maximumLimit < frameCount)
+        frameCount = maximumLimit;
+    var topFrame = undefined;
     for (var i = frameCount - 1; i >= 0; i--) {
         var frameMirror = execState.frame(i);
         topFrame = DebuggerScript._frameMirrorToJSCallFrame(frameMirror, topFrame);

@@ -49,6 +49,7 @@ class ScriptDebugListener;
 class ScriptObject;
 class ScriptState;
 class ScriptValue;
+class JavaScriptCallFrame;
 
 class ScriptDebugServer {
     WTF_MAKE_NONCOPYABLE(ScriptDebugServer);
@@ -134,6 +135,8 @@ protected:
     v8::Isolate* m_isolate;
     
 private:
+    PassRefPtr<JavaScriptCallFrame> wrapCallFrames(v8::Handle<v8::Object> executionState, int maximumLimit);
+
     class ScriptPreprocessor;
     OwnPtr<ScriptPreprocessor> m_scriptPreprocessor;
     bool m_runningNestedMessageLoop;

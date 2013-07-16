@@ -38,6 +38,7 @@
 
 namespace WebCore {
 class ScriptValue;
+class JavaScriptCallFrame;
 
 class ScriptDebugListener {
 public:
@@ -70,6 +71,8 @@ public:
     virtual void failedToParseSource(const String& url, const String& data, int firstLine, int errorLine, const String& errorMessage) = 0;
     virtual void didPause(ScriptState*, const ScriptValue& callFrames, const ScriptValue& exception, const Vector<String>& hitBreakpoints) = 0;
     virtual void didContinue() = 0;
+
+    virtual bool shouldSkipPause(RefPtr<JavaScriptCallFrame>& topFrame) = 0;
 };
 
 } // namespace WebCore
