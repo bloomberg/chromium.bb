@@ -285,29 +285,6 @@ PassRefPtr<ArrayBuffer> FileReaderLoader::arrayBufferResult() const
     return m_rawData->slice(0, m_bytesLoaded);
 }
 
-#if ENABLE(STREAM)
-PassRefPtr<Blob> FileReaderLoader::blobResult()
-{
-    ASSERT(m_readType == ReadAsBlob);
-
-    // If the loading is not finished or an error occurs, return an empty result.
-    if (!m_rawData || m_errorCode || !isCompleted())
-        return 0;
-
-    if (!m_blobResult) {
-        OwnPtr<BlobData> blobData = BlobData::create();
-        size_t size = 0;
-        RefPtr<RawData> rawData = RawData::create();
-        size = m_rawData->byteLength();
-        rawData->mutableData()->append(static_cast<char*>(m_rawData->data()), size);
-        blobData->appendData(rawData, 0, size);
-        blobData->setContentType(m_dataType);
-        m_blobResult = Blob::create(blobData.release(), size);
-    }
-    return m_blobResult;
-}
-#endif // ENABLE(STREAM)
-
 String FileReaderLoader::stringResult()
 {
     ASSERT(m_readType != ReadAsArrayBuffer && m_readType != ReadAsBlob);
@@ -394,15 +371,5 @@ void FileReaderLoader::setEncoding(const String& encoding)
     if (!encoding.isEmpty())
         m_encoding = WTF::TextEncoding(encoding);
 }
-
-#if ENABLE(STREAM)
-void FileReaderLoader::setRange(unsigned start, unsigned length)
-{
-    ASSERT(length > 0);
-    m_hasRange = true;
-    m_rangeStart = start;
-    m_rangeEnd = start + length - 1;
-}
-#endif // ENABLE(STREAM)
 
 } // namespace WebCore
