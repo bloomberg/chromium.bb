@@ -40,8 +40,7 @@
 namespace WebCore {
 
 class EntryArraySync;
-
-typedef int ExceptionCode;
+class ExceptionState;
 
 class DirectoryReaderSync : public DirectoryReaderBase, public ScriptWrappable {
 public:
@@ -50,7 +49,7 @@ public:
         return adoptRef(new DirectoryReaderSync(fileSystem, fullPath));
     }
 
-    PassRefPtr<EntryArraySync> readEntries(ExceptionCode&);
+    PassRefPtr<EntryArraySync> readEntries(ExceptionState&);
 
 private:
     DirectoryReaderSync(PassRefPtr<DOMFileSystemBase>, const String& fullPath);

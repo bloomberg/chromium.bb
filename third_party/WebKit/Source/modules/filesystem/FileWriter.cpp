@@ -29,9 +29,9 @@
  */
 
 #include "config.h"
-
 #include "modules/filesystem/FileWriter.h"
 
+#include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ProgressEvent.h"
 #include "core/fileapi/Blob.h"
@@ -93,21 +93,21 @@ void FileWriter::stop()
     m_readyState = DONE;
 }
 
-void FileWriter::write(Blob* data, ExceptionCode& ec)
+void FileWriter::write(Blob* data, ExceptionState& es)
 {
     ASSERT(writer());
     ASSERT(data);
     ASSERT(m_truncateLength == -1);
     if (m_readyState == WRITING) {
-        setError(FileError::INVALID_STATE_ERR, ec);
+        setError(FileError::INVALID_STATE_ERR, es);
         return;
     }
     if (!data) {
-        setError(FileError::TYPE_MISMATCH_ERR, ec);
+        setError(FileError::TYPE_MISMATCH_ERR, es);
         return;
     }
     if (m_recursionDepth > kMaxRecursionDepth) {
-        setError(FileError::SECURITY_ERR, ec);
+        setError(FileError::SECURITY_ERR, es);
         return;
     }
 
@@ -126,11 +126,11 @@ void FileWriter::write(Blob* data, ExceptionCode& ec)
     fireEvent(eventNames().writestartEvent);
 }
 
-void FileWriter::seek(long long position, ExceptionCode& ec)
+void FileWriter::seek(long long position, ExceptionState& es)
 {
     ASSERT(writer());
     if (m_readyState == WRITING) {
-        setError(FileError::INVALID_STATE_ERR, ec);
+        setError(FileError::INVALID_STATE_ERR, es);
         return;
     }
 
@@ -139,16 +139,16 @@ void FileWriter::seek(long long position, ExceptionCode& ec)
     seekInternal(position);
 }
 
-void FileWriter::truncate(long long position, ExceptionCode& ec)
+void FileWriter::truncate(long long position, ExceptionState& es)
 {
     ASSERT(writer());
     ASSERT(m_truncateLength == -1);
     if (m_readyState == WRITING || position < 0) {
-        setError(FileError::INVALID_STATE_ERR, ec);
+        setError(FileError::INVALID_STATE_ERR, es);
         return;
     }
     if (m_recursionDepth > kMaxRecursionDepth) {
-        setError(FileError::SECURITY_ERR, ec);
+        setError(FileError::SECURITY_ERR, es);
         return;
     }
 
@@ -166,7 +166,7 @@ void FileWriter::truncate(long long position, ExceptionCode& ec)
     fireEvent(eventNames().writestartEvent);
 }
 
-void FileWriter::abort(ExceptionCode& ec)
+void FileWriter::abort(ExceptionState& es)
 {
     ASSERT(writer());
     if (m_readyState != WRITING)
@@ -318,9 +318,10 @@ void FileWriter::fireEvent(const AtomicString& type)
     ASSERT(m_recursionDepth >= 0);
 }
 
-void FileWriter::setError(FileError::ErrorCode errorCode, ExceptionCode& ec)
+void FileWriter::setError(FileError::ErrorCode errorCode, ExceptionState& es)
 {
-    ec = FileError::ErrorCodeToExceptionCode(errorCode);
+    ASSERT(errorCode);
+    FileError::throwDOMException(es, errorCode);
     m_error = FileError::create(errorCode);
 }
 

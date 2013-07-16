@@ -31,6 +31,7 @@
 #include "config.h"
 #include "modules/filesystem/EntrySync.h"
 
+#include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "modules/filesystem/DOMFilePath.h"
 #include "modules/filesystem/DOMFileSystemSync.h"
@@ -49,48 +50,48 @@ PassRefPtr<EntrySync> EntrySync::create(EntryBase* entry)
     return adoptRef(new DirectoryEntrySync(entry->m_fileSystem, entry->m_fullPath));
 }
 
-PassRefPtr<Metadata> EntrySync::getMetadata(ExceptionCode& ec)
+PassRefPtr<Metadata> EntrySync::getMetadata(ExceptionState& es)
 {
-    ec = 0;
+    es.clearException();
     MetadataSyncCallbackHelper helper(m_fileSystem->asyncFileSystem());
     if (!m_fileSystem->getMetadata(this, helper.successCallback(), helper.errorCallback(), DOMFileSystemBase::Synchronous)) {
-        ec = InvalidModificationError;
+        es.throwDOMException(InvalidModificationError);
         return 0;
     }
-    return helper.getResult(ec);
+    return helper.getResult(es);
 }
 
-PassRefPtr<EntrySync> EntrySync::moveTo(PassRefPtr<DirectoryEntrySync> parent, const String& name, ExceptionCode& ec) const
+PassRefPtr<EntrySync> EntrySync::moveTo(PassRefPtr<DirectoryEntrySync> parent, const String& name, ExceptionState& es) const
 {
-    ec = 0;
+    es.clearException();
     EntrySyncCallbackHelper helper(m_fileSystem->asyncFileSystem());
     if (!m_fileSystem->move(this, parent.get(), name, helper.successCallback(), helper.errorCallback(), DOMFileSystemBase::Synchronous)) {
-        ec = InvalidModificationError;
+        es.throwDOMException(InvalidModificationError);
         return 0;
     }
-    return helper.getResult(ec);
+    return helper.getResult(es);
 }
 
-PassRefPtr<EntrySync> EntrySync::copyTo(PassRefPtr<DirectoryEntrySync> parent, const String& name, ExceptionCode& ec) const
+PassRefPtr<EntrySync> EntrySync::copyTo(PassRefPtr<DirectoryEntrySync> parent, const String& name, ExceptionState& es) const
 {
-    ec = 0;
+    es.clearException();
     EntrySyncCallbackHelper helper(m_fileSystem->asyncFileSystem());
     if (!m_fileSystem->copy(this, parent.get(), name, helper.successCallback(), helper.errorCallback(), DOMFileSystemBase::Synchronous)) {
-        ec = InvalidModificationError;
+        es.throwDOMException(InvalidModificationError);
         return 0;
     }
-    return helper.getResult(ec);
+    return helper.getResult(es);
 }
 
-void EntrySync::remove(ExceptionCode& ec) const
+void EntrySync::remove(ExceptionState& es) const
 {
-    ec = 0;
+    es.clearException();
     VoidSyncCallbackHelper helper(m_fileSystem->asyncFileSystem());
     if (!m_fileSystem->remove(this, helper.successCallback(), helper.errorCallback(), DOMFileSystemBase::Synchronous)) {
-        ec = InvalidModificationError;
+        es.throwDOMException(InvalidModificationError);
         return;
     }
-    helper.getResult(ec);
+    helper.getResult(es);
 }
 
 PassRefPtr<EntrySync> EntrySync::getParent() const

@@ -32,11 +32,12 @@
 #define FileError_h
 
 #include "bindings/v8/ScriptWrappable.h"
-#include "core/dom/ExceptionCode.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
 namespace WebCore {
+
+class ExceptionState;
 
 class FileError : public RefCounted<FileError>, public ScriptWrappable {
 public:
@@ -56,10 +57,23 @@ public:
         PATH_EXISTS_ERR = 12,
     };
 
+    static const char abortErrorMessage[];
+    static const char encodingErrorMessage[];
+    static const char invalidStateErrorMessage[];
+    static const char noModificationAllowedErrorMessage[];
+    static const char notFoundErrorMessage[];
+    static const char notReadableErrorMessage[];
+    static const char pathExistsErrorMessage[];
+    static const char quotaExceededErrorMessage[];
+    static const char securityErrorMessage[];
+    static const char syntaxErrorMessage[];
+    static const char typeMismatchErrorMessage[];
+
     static PassRefPtr<FileError> create(ErrorCode code) { return adoptRef(new FileError(code)); }
 
     ErrorCode code() const { return m_code; }
-    static ExceptionCode ErrorCodeToExceptionCode(ErrorCode);
+
+    static void throwDOMException(ExceptionState&, ErrorCode);
 
 private:
     FileError(ErrorCode code)

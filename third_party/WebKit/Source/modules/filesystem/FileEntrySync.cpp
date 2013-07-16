@@ -31,6 +31,7 @@
 #include "config.h"
 #include "modules/filesystem/FileEntrySync.h"
 
+#include "bindings/v8/ExceptionState.h"
 #include "core/fileapi/File.h"
 #include "modules/filesystem/FileWriterSync.h"
 
@@ -42,14 +43,14 @@ FileEntrySync::FileEntrySync(PassRefPtr<DOMFileSystemBase> fileSystem, const Str
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<File> FileEntrySync::file(ExceptionCode& ec)
+PassRefPtr<File> FileEntrySync::file(ExceptionState& es)
 {
-    return filesystem()->createFile(this, ec);
+    return filesystem()->createFile(this, es);
 }
 
-PassRefPtr<FileWriterSync> FileEntrySync::createWriter(ExceptionCode& ec)
+PassRefPtr<FileWriterSync> FileEntrySync::createWriter(ExceptionState& es)
 {
-    return filesystem()->createWriter(this, ec);
+    return filesystem()->createWriter(this, es);
 }
 
 }

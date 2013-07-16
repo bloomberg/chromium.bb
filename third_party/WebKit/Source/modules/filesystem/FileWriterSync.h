@@ -40,8 +40,7 @@
 namespace WebCore {
 
 class Blob;
-
-typedef int ExceptionCode;
+class ExceptionState;
 
 class FileWriterSync : public ScriptWrappable, public FileWriterBase, public AsyncFileWriterClient {
 public:
@@ -52,9 +51,9 @@ public:
     virtual ~FileWriterSync();
 
     // FileWriterBase
-    void write(Blob*, ExceptionCode&);
-    void seek(long long position, ExceptionCode&);
-    void truncate(long long length, ExceptionCode&);
+    void write(Blob*, ExceptionState&);
+    void seek(long long position, ExceptionState&);
+    void truncate(long long length, ExceptionState&);
 
     // AsyncFileWriterClient, via FileWriterBase
     void didWrite(long long bytes, bool complete);

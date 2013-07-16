@@ -40,8 +40,7 @@ class DirectoryEntrySync;
 class File;
 class FileEntrySync;
 class FileWriterSync;
-
-typedef int ExceptionCode;
+class ExceptionState;
 
 class DOMFileSystemSync : public DOMFileSystemBase, public ScriptWrappable {
 public:
@@ -56,8 +55,8 @@ public:
 
     PassRefPtr<DirectoryEntrySync> root();
 
-    PassRefPtr<File> createFile(const FileEntrySync*, ExceptionCode&);
-    PassRefPtr<FileWriterSync> createWriter(const FileEntrySync*, ExceptionCode&);
+    PassRefPtr<File> createFile(const FileEntrySync*, ExceptionState&);
+    PassRefPtr<FileWriterSync> createWriter(const FileEntrySync*, ExceptionState&);
 
 private:
     DOMFileSystemSync(ScriptExecutionContext*, const String& name, FileSystemType, const KURL& rootURL, PassOwnPtr<AsyncFileSystem>);

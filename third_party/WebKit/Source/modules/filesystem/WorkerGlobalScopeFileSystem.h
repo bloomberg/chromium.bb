@@ -35,6 +35,7 @@ namespace WebCore {
 class EntryCallback;
 class EntrySync;
 class ErrorCallback;
+class ExceptionState;
 class FileSystemCallback;
 class WorkerGlobalScope;
 
@@ -46,9 +47,9 @@ public:
     };
 
     static void webkitRequestFileSystem(WorkerGlobalScope*, int type, long long size, PassRefPtr<FileSystemCallback> successCallback, PassRefPtr<ErrorCallback>);
-    static PassRefPtr<DOMFileSystemSync> webkitRequestFileSystemSync(WorkerGlobalScope*, int type, long long size, ExceptionCode&);
+    static PassRefPtr<DOMFileSystemSync> webkitRequestFileSystemSync(WorkerGlobalScope*, int type, long long size, ExceptionState&);
     static void webkitResolveLocalFileSystemURL(WorkerGlobalScope*, const String& url, PassRefPtr<EntryCallback> successCallback, PassRefPtr<ErrorCallback>);
-    static PassRefPtr<EntrySync> webkitResolveLocalFileSystemSyncURL(WorkerGlobalScope*, const String& url, ExceptionCode&);
+    static PassRefPtr<EntrySync> webkitResolveLocalFileSystemSyncURL(WorkerGlobalScope*, const String& url, ExceptionState&);
 
 private:
     WorkerGlobalScopeFileSystem();

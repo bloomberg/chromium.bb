@@ -32,19 +32,21 @@
 
 #include "modules/filesystem/FileWriterSync.h"
 
+#include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/fileapi/Blob.h"
+#include "core/fileapi/FileError.h"
 #include "modules/filesystem/AsyncFileWriter.h"
 
 namespace WebCore {
 
-void FileWriterSync::write(Blob* data, ExceptionCode& ec)
+void FileWriterSync::write(Blob* data, ExceptionState& es)
 {
     ASSERT(writer());
     ASSERT(m_complete);
-    ec = 0;
+    es.clearException();
     if (!data) {
-        ec = FSTypeMismatchError;
+        es.throwDOMException(TypeMismatchError, FileError::typeMismatchErrorMessage);
         return;
     }
 
@@ -52,38 +54,40 @@ void FileWriterSync::write(Blob* data, ExceptionCode& ec)
     writer()->write(position(), data);
     writer()->waitForOperationToComplete();
     ASSERT(m_complete);
-    ec = FileError::ErrorCodeToExceptionCode(m_error);
-    if (ec)
+    if (m_error) {
+        FileError::throwDOMException(es, m_error);
         return;
+    }
     setPosition(position() + data->size());
     if (position() > length())
         setLength(position());
 }
 
-void FileWriterSync::seek(long long position, ExceptionCode& ec)
+void FileWriterSync::seek(long long position, ExceptionState& es)
 {
     ASSERT(writer());
     ASSERT(m_complete);
-    ec = 0;
+    es.clearException();
     seekInternal(position);
 }
 
-void FileWriterSync::truncate(long long offset, ExceptionCode& ec)
+void FileWriterSync::truncate(long long offset, ExceptionState& es)
 {
     ASSERT(writer());
     ASSERT(m_complete);
-    ec = 0;
+    es.clearException();
     if (offset < 0) {
-        ec = FSInvalidStateError;
+        es.throwDOMException(InvalidStateError, FileError::invalidStateErrorMessage);
         return;
     }
     prepareForWrite();
     writer()->truncate(offset);
     writer()->waitForOperationToComplete();
     ASSERT(m_complete);
-    ec = FileError::ErrorCodeToExceptionCode(m_error);
-    if (ec)
+    if (m_error) {
+        FileError::throwDOMException(es, m_error);
         return;
+    }
     if (offset < position())
         setPosition(offset);
     setLength(offset);

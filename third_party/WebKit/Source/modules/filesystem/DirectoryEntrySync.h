@@ -40,6 +40,7 @@
 namespace WebCore {
 
 class DirectoryReaderSync;
+class ExceptionState;
 class FileEntrySync;
 
 class DirectoryEntrySync : public EntrySync {
@@ -51,9 +52,9 @@ public:
     virtual bool isDirectory() const { return true; }
 
     PassRefPtr<DirectoryReaderSync> createReader();
-    PassRefPtr<FileEntrySync> getFile(const String& path, const Dictionary&, ExceptionCode&);
-    PassRefPtr<DirectoryEntrySync> getDirectory(const String& path, const Dictionary&, ExceptionCode&);
-    void removeRecursively(ExceptionCode&);
+    PassRefPtr<FileEntrySync> getFile(const String& path, const Dictionary&, ExceptionState&);
+    PassRefPtr<DirectoryEntrySync> getDirectory(const String& path, const Dictionary&, ExceptionState&);
+    void removeRecursively(ExceptionState&);
 
 private:
     friend class EntrySync;

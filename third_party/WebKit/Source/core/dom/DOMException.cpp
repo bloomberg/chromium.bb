@@ -70,16 +70,8 @@ static struct CoreException {
     { "VersionError", "An attempt was made to open a database using a lower version than the existing version.", 0 },
 
     // File system
-    { "NotFoundError", "A requested file or directory could not be found at the time an operation was processed.", 8 },
-    { "SecurityError", "It was determined that certain files are unsafe for access within a Web application, or that too many calls are being made on file resources.", 18 },
-    { "AbortError", "An ongoing operation was aborted, typically with a call to abort().", 20 },
     { "NotReadableError", "The requested file could not be read, typically due to permission problems that have occurred after a reference to a file was acquired.", 0 },
     { "EncodingError", "A URI supplied to the API was malformed, or the resulting Data URL has exceeded the URL length limitations for Data URLs.", 0 },
-    { "NoModificationAllowedError", "An attempt was made to write to a file or directory which could not be modified due to the state of the underlying filesystem.", 7 },
-    { "InvalidStateError", "An operation that depends on state cached in an interface object was made but the state had changed since it was read from disk.", 11 },
-    { "SyntaxError", "An invalid or unsupported argument was given, like an invalid line ending specifier.", 12 },
-    { "QuotaExceededError", "The operation failed because it would cause the application to exceed its storage quota.", 22 },
-    { "TypeMismatchError", "The path supplied exists, but was not an entry of requested type.", 17 },
     { "PathExistsError", "An attempt was made to create a file or directory where an element already exists.", 0 },
 
     // SQL

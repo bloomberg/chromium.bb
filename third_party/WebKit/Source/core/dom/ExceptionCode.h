@@ -40,7 +40,6 @@ namespace WebCore {
         NotSupportedError,
         InUseAttributeError, // Historical. Only used in setAttributeNode etc which have been removed from the DOM specs.
 
-        // FIXME: Rename these to use CamelCase matching the exception name.
         // Introduced in DOM Level 2:
         InvalidStateError,
         SyntaxError,
@@ -72,17 +71,8 @@ namespace WebCore {
         VersionError,
 
         // File system
-        // FIXME: Consolidate these once https://crbug.com/252233 is fixed.
-        FSNotFoundError,
-        FSSecurityError,
-        FSAbortError,
-        FSNotReadableError,
+        NotReadableError,
         EncodingError,
-        FSNoModificationAllowedError,
-        FSInvalidStateError,
-        FSSyntaxError,
-        FSQuotaExceededError,
-        FSTypeMismatchError,
         PathExistsError,
 
         // SQL

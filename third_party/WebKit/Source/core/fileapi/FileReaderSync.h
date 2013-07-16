@@ -39,10 +39,9 @@
 namespace WebCore {
 
 class Blob;
+class ExceptionState;
 class FileReaderLoader;
 class ScriptExecutionContext;
-
-typedef int ExceptionCode;
 
 class FileReaderSync : public RefCounted<FileReaderSync>, public ScriptWrappable {
 public:
@@ -53,19 +52,19 @@ public:
 
     virtual ~FileReaderSync() { }
 
-    PassRefPtr<ArrayBuffer> readAsArrayBuffer(ScriptExecutionContext*, Blob*, ExceptionCode&);
-    String readAsBinaryString(ScriptExecutionContext*, Blob*, ExceptionCode&);
-    String readAsText(ScriptExecutionContext* scriptExecutionContext, Blob* blob, ExceptionCode& ec)
+    PassRefPtr<ArrayBuffer> readAsArrayBuffer(ScriptExecutionContext*, Blob*, ExceptionState&);
+    String readAsBinaryString(ScriptExecutionContext*, Blob*, ExceptionState&);
+    String readAsText(ScriptExecutionContext* scriptExecutionContext, Blob* blob, ExceptionState& ec)
     {
         return readAsText(scriptExecutionContext, blob, "", ec);
     }
-    String readAsText(ScriptExecutionContext*, Blob*, const String& encoding, ExceptionCode&);
-    String readAsDataURL(ScriptExecutionContext*, Blob*, ExceptionCode&);
+    String readAsText(ScriptExecutionContext*, Blob*, const String& encoding, ExceptionState&);
+    String readAsDataURL(ScriptExecutionContext*, Blob*, ExceptionState&);
 
 private:
     FileReaderSync();
 
-    void startLoading(ScriptExecutionContext*, FileReaderLoader&, const Blob&, ExceptionCode&);
+    void startLoading(ScriptExecutionContext*, FileReaderLoader&, const Blob&, ExceptionState&);
 };
 
 } // namespace WebCore

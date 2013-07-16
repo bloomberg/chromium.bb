@@ -38,6 +38,7 @@
 
 namespace WebCore {
 
+class ExceptionState;
 class File;
 class FileWriterSync;
 
@@ -50,8 +51,8 @@ public:
 
     virtual bool isFile() const { return true; }
 
-    PassRefPtr<File> file(ExceptionCode&);
-    PassRefPtr<FileWriterSync> createWriter(ExceptionCode&);
+    PassRefPtr<File> file(ExceptionState&);
+    PassRefPtr<FileWriterSync> createWriter(ExceptionState&);
 
 private:
     friend class EntrySync;

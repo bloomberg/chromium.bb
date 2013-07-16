@@ -31,7 +31,7 @@
 #ifndef SyncCallbackHelper_h
 #define SyncCallbackHelper_h
 
-#include "core/dom/ExceptionCode.h"
+#include "bindings/v8/ExceptionState.h"
 #include "core/fileapi/FileError.h"
 #include "core/html/VoidCallback.h"
 #include "modules/filesystem/DirectoryEntry.h"
@@ -53,8 +53,6 @@ class EntryArraySync;
 class EntrySync;
 class FileEntrySync;
 
-typedef int ExceptionCode;
-
 // A helper template for FileSystemSync implementation.
 template <typename SuccessCallback, typename ObserverType, typename CallbackArg, typename ResultType>
 class SyncCallbackHelper {
@@ -65,22 +63,24 @@ public:
         : m_observer(observer)
         , m_successCallback(SuccessCallbackImpl::create(this))
         , m_errorCallback(ErrorCallbackImpl::create(this))
-        , m_exceptionCode(0)
+        , m_errorCode(FileError::OK)
         , m_completed(false)
     {
     }
 
-    PassRefPtr<ResultType> getResult(ExceptionCode& ec)
+    PassRefPtr<ResultType> getResult(ExceptionState& es)
     {
         if (m_observer) {
             while (!m_completed) {
                 if (!m_observer->waitForOperationToComplete()) {
-                    m_exceptionCode = FSAbortError;
+                    m_errorCode = FileError::ABORT_ERR;
                     break;
                 }
             }
         }
-        ec = m_exceptionCode;
+        if (m_errorCode)
+            FileError::throwDOMException(es, m_errorCode);
+
         return m_result.release();
     }
 
@@ -142,7 +142,7 @@ private:
 
     void setError(FileError::ErrorCode code)
     {
-        m_exceptionCode = FileError::ErrorCodeToExceptionCode(code);
+        m_errorCode = code;
         m_completed = true;
     }
 
@@ -156,7 +156,7 @@ private:
     RefPtr<SuccessCallbackImpl> m_successCallback;
     RefPtr<ErrorCallbackImpl> m_errorCallback;
     RefPtr<ResultType> m_result;
-    ExceptionCode m_exceptionCode;
+    FileError::ErrorCode m_errorCode;
     bool m_completed;
 };
 

@@ -42,8 +42,7 @@ namespace WebCore {
 
 class DirectoryEntrySync;
 class Metadata;
-
-typedef int ExceptionCode;
+class ExceptionState;
 
 class EntrySync : public ScriptWrappable, public EntryBase {
 public:
@@ -51,10 +50,10 @@ public:
 
     DOMFileSystemSync* filesystem() const { return static_cast<DOMFileSystemSync*>(m_fileSystem.get()); }
 
-    PassRefPtr<Metadata> getMetadata(ExceptionCode&);
-    PassRefPtr<EntrySync> moveTo(PassRefPtr<DirectoryEntrySync> parent, const String& name, ExceptionCode&) const;
-    PassRefPtr<EntrySync> copyTo(PassRefPtr<DirectoryEntrySync> parent, const String& name, ExceptionCode&) const;
-    void remove(ExceptionCode&) const;
+    PassRefPtr<Metadata> getMetadata(ExceptionState&);
+    PassRefPtr<EntrySync> moveTo(PassRefPtr<DirectoryEntrySync> parent, const String& name, ExceptionState&) const;
+    PassRefPtr<EntrySync> copyTo(PassRefPtr<DirectoryEntrySync> parent, const String& name, ExceptionState&) const;
+    void remove(ExceptionState&) const;
     PassRefPtr<EntrySync> getParent() const;
 
 protected:

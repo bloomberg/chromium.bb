@@ -28,6 +28,7 @@
 #include "config.h"
 #include "modules/filesystem/WorkerGlobalScopeFileSystem.h"
 
+#include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/fileapi/FileError.h"
 #include "core/platform/AsyncFileSystem.h"
@@ -63,18 +64,18 @@ void WorkerGlobalScopeFileSystem::webkitRequestFileSystem(WorkerGlobalScope* wor
     LocalFileSystem::localFileSystem().requestFileSystem(worker, fileSystemType, size, FileSystemCallbacks::create(successCallback, errorCallback, worker, fileSystemType), AsynchronousFileSystem);
 }
 
-PassRefPtr<DOMFileSystemSync> WorkerGlobalScopeFileSystem::webkitRequestFileSystemSync(WorkerGlobalScope* worker, int type, long long size, ExceptionCode& ec)
+PassRefPtr<DOMFileSystemSync> WorkerGlobalScopeFileSystem::webkitRequestFileSystemSync(WorkerGlobalScope* worker, int type, long long size, ExceptionState& es)
 {
-    ec = 0;
+    es.clearException();
     ScriptExecutionContext* secureContext = worker->scriptExecutionContext();
     if (!secureContext->securityOrigin()->canAccessFileSystem()) {
-        ec = FSSecurityError;
+        es.throwDOMException(SecurityError, FileError::securityErrorMessage);
         return 0;
     }
 
     FileSystemType fileSystemType = static_cast<FileSystemType>(type);
     if (!DOMFileSystemBase::isValidType(fileSystemType)) {
-        ec = InvalidModificationError;
+        es.throwDOMException(InvalidModificationError);
         return 0;
     }
 
@@ -83,7 +84,7 @@ PassRefPtr<DOMFileSystemSync> WorkerGlobalScopeFileSystem::webkitRequestFileSyst
     callbacks->setShouldBlockUntilCompletion(true);
 
     LocalFileSystem::localFileSystem().requestFileSystem(worker, fileSystemType, size, callbacks.release(), SynchronousFileSystem);
-    return helper.getResult(ec);
+    return helper.getResult(es);
 }
 
 void WorkerGlobalScopeFileSystem::webkitResolveLocalFileSystemURL(WorkerGlobalScope* worker, const String& url, PassRefPtr<EntryCallback> successCallback, PassRefPtr<ErrorCallback> errorCallback)
@@ -105,32 +106,32 @@ void WorkerGlobalScopeFileSystem::webkitResolveLocalFileSystemURL(WorkerGlobalSc
     LocalFileSystem::localFileSystem().readFileSystem(worker, type, ResolveURICallbacks::create(successCallback, errorCallback, worker, type, filePath));
 }
 
-PassRefPtr<EntrySync> WorkerGlobalScopeFileSystem::webkitResolveLocalFileSystemSyncURL(WorkerGlobalScope* worker, const String& url, ExceptionCode& ec)
+PassRefPtr<EntrySync> WorkerGlobalScopeFileSystem::webkitResolveLocalFileSystemSyncURL(WorkerGlobalScope* worker, const String& url, ExceptionState& es)
 {
-    ec = 0;
+    es.clearException();
     KURL completedURL = worker->completeURL(url);
     ScriptExecutionContext* secureContext = worker->scriptExecutionContext();
     if (!secureContext->securityOrigin()->canAccessFileSystem() || !secureContext->securityOrigin()->canRequest(completedURL)) {
-        ec = FSSecurityError;
+        es.throwDOMException(SecurityError, FileError::securityErrorMessage);
         return 0;
     }
 
     FileSystemType type;
     String filePath;
     if (!completedURL.isValid() || !DOMFileSystemBase::crackFileSystemURL(completedURL, type, filePath)) {
-        ec = EncodingError;
+        es.throwDOMException(EncodingError);
         return 0;
     }
 
     FileSystemSyncCallbackHelper readFileSystemHelper;
     LocalFileSystem::localFileSystem().readFileSystem(worker, type, FileSystemCallbacks::create(readFileSystemHelper.successCallback(), readFileSystemHelper.errorCallback(), worker, type), SynchronousFileSystem);
-    RefPtr<DOMFileSystemSync> fileSystem = readFileSystemHelper.getResult(ec);
+    RefPtr<DOMFileSystemSync> fileSystem = readFileSystemHelper.getResult(es);
     if (!fileSystem)
         return 0;
 
-    RefPtr<EntrySync> entry = fileSystem->root()->getDirectory(filePath, Dictionary(), ec);
-    if (ec == FSTypeMismatchError)
-        return fileSystem->root()->getFile(filePath, Dictionary(), ec);
+    RefPtr<EntrySync> entry = fileSystem->root()->getDirectory(filePath, Dictionary(), es);
+    if (es == TypeMismatchError)
+        return fileSystem->root()->getFile(filePath, Dictionary(), es);
 
     return entry.release();
 }

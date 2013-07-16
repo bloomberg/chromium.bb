@@ -39,8 +39,6 @@ namespace WebCore {
 
 class AsyncFileWriter;
 
-typedef int ExceptionCode;
-
 class FileWriterBase : public RefCounted<FileWriterBase> {
 public:
     virtual ~FileWriterBase();

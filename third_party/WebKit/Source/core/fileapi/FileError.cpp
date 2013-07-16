@@ -31,41 +31,85 @@
 #include "config.h"
 #include "core/fileapi/FileError.h"
 
+#include "bindings/v8/ExceptionState.h"
+#include "core/dom/ExceptionCode.h"
+
 namespace WebCore {
 
-ExceptionCode FileError::ErrorCodeToExceptionCode(ErrorCode code)
+const char FileError::abortErrorMessage[] = "An ongoing operation was aborted, typically with a call to abort().";
+const char FileError::encodingErrorMessage[] = "A URI supplied to the API was malformed, or the resulting Data URL has exceeded the URL length limitations for Data URLs.";
+const char FileError::invalidStateErrorMessage[] = "An operation that depends on state cached in an interface object was made but the state had changed since it was read from disk.";
+const char FileError::noModificationAllowedErrorMessage[] = "An attempt was made to write to a file or directory which could not be modified due to the state of the underlying filesystem.";
+const char FileError::notFoundErrorMessage[] = "A requested file or directory could not be found at the time an operation was processed.";
+const char FileError::notReadableErrorMessage[] = "The requested file could not be read, typically due to permission problems that have occurred after a reference to a file was acquired.";
+const char FileError::pathExistsErrorMessage[] = "An attempt was made to create a file or directory where an element already exists.";
+const char FileError::quotaExceededErrorMessage[] = "The operation failed because it would cause the application to exceed its storage quota.";
+const char FileError::securityErrorMessage[] = "It was determined that certain files are unsafe for access within a Web application, or that too many calls are being made on file resources.";
+const char FileError::syntaxErrorMessage[] = "An invalid or unsupported argument was given, like an invalid line ending specifier.";
+const char FileError::typeMismatchErrorMessage[] = "The path supplied exists, but was not an entry of requested type.";
+
+void FileError::throwDOMException(ExceptionState& es, ErrorCode code)
 {
+    if (code == FileError::OK)
+        return;
+
+    ExceptionCode ec;
+    const char* message = 0;
+
+    // Note that some of these do not set message. If message is 0 then the default message is used.
     switch (code) {
-    case OK:
-        return 0;
-    case NOT_FOUND_ERR:
-        return FSNotFoundError;
-    case SECURITY_ERR:
-        return FSSecurityError;
-    case ABORT_ERR:
-        return FSAbortError;
-    case NOT_READABLE_ERR:
-        return FSNotReadableError;
-    case ENCODING_ERR:
-        return EncodingError;
-    case NO_MODIFICATION_ALLOWED_ERR:
-        return FSNoModificationAllowedError;
-    case INVALID_STATE_ERR:
-        return FSInvalidStateError;
-    case SYNTAX_ERR:
-        return FSSyntaxError;
-    case INVALID_MODIFICATION_ERR:
-        return InvalidModificationError;
-    case QUOTA_EXCEEDED_ERR:
-        return FSQuotaExceededError;
-    case TYPE_MISMATCH_ERR:
-        return FSTypeMismatchError;
-    case PATH_EXISTS_ERR:
-        return PathExistsError;
+    case FileError::NOT_FOUND_ERR:
+        ec = NotFoundError;
+        message = FileError::notFoundErrorMessage;
+        break;
+    case FileError::SECURITY_ERR:
+        ec = SecurityError;
+        message = FileError::securityErrorMessage;
+        break;
+    case FileError::ABORT_ERR:
+        ec = AbortError;
+        message = FileError::abortErrorMessage;
+        break;
+    case FileError::NOT_READABLE_ERR:
+        ec = NotReadableError;
+        message = FileError::notReadableErrorMessage;
+        break;
+    case FileError::ENCODING_ERR:
+        ec = EncodingError;
+        message = FileError::encodingErrorMessage;
+        break;
+    case FileError::NO_MODIFICATION_ALLOWED_ERR:
+        ec = NoModificationAllowedError;
+        message = FileError::noModificationAllowedErrorMessage;
+        break;
+    case FileError::INVALID_STATE_ERR:
+        ec = InvalidStateError;
+        message = FileError::invalidStateErrorMessage;
+        break;
+    case FileError::SYNTAX_ERR:
+        ec = SyntaxError;
+        message = FileError::syntaxErrorMessage;
+        break;
+    case FileError::INVALID_MODIFICATION_ERR:
+        ec = InvalidModificationError;
+        break;
+    case FileError::QUOTA_EXCEEDED_ERR:
+        ec = QuotaExceededError;
+        message = FileError::quotaExceededErrorMessage;
+        break;
+    case FileError::TYPE_MISMATCH_ERR:
+        ec = TypeMismatchError;
+        break;
+    case FileError::PATH_EXISTS_ERR:
+        ec = PathExistsError;
+        message = FileError::pathExistsErrorMessage;
+        break;
     default:
         ASSERT_NOT_REACHED();
-        return 0;
+        return;
     }
+
+    es.throwDOMException(ec, message);
 }
 
 } // namespace WebCore

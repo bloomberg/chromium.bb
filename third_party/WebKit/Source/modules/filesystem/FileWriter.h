@@ -43,6 +43,7 @@
 namespace WebCore {
 
 class Blob;
+class ExceptionState;
 class ScriptExecutionContext;
 
 class FileWriter : public ScriptWrappable, public FileWriterBase, public ActiveDOMObject, public EventTarget, public AsyncFileWriterClient {
@@ -55,10 +56,10 @@ public:
         DONE = 2
     };
 
-    void write(Blob*, ExceptionCode&);
-    void seek(long long position, ExceptionCode&);
-    void truncate(long long length, ExceptionCode&);
-    void abort(ExceptionCode&);
+    void write(Blob*, ExceptionState&);
+    void seek(long long position, ExceptionState&);
+    void truncate(long long length, ExceptionState&);
+    void abort(ExceptionState&);
     ReadyState readyState() const { return m_readyState; }
     FileError* error() const { return m_error.get(); }
 
@@ -111,7 +112,7 @@ private:
 
     void fireEvent(const AtomicString& type);
 
-    void setError(FileError::ErrorCode, ExceptionCode&);
+    void setError(FileError::ErrorCode, ExceptionState&);
 
     RefPtr<FileError> m_error;
     EventTargetData m_eventTargetData;
