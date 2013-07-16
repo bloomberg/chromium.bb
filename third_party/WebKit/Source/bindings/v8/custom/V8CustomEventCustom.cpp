@@ -63,7 +63,7 @@ void V8CustomEvent::detailAttrGetterCustom(v8::Local<v8::String> name, const v8:
         return;
     }
 
-    RefPtr<SerializedScriptValue> serialized = event->serializedScriptValue();
+    SerializedScriptValue* serialized = event->serializedScriptValue();
     if (serialized) {
         result = serialized->deserialize();
         v8SetReturnValue(info, cacheState(info.Holder(), result));

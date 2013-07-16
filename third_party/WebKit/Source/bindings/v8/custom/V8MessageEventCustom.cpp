@@ -57,7 +57,7 @@ void V8MessageEvent::dataAttrGetterCustom(v8::Local<v8::String> name, const v8::
     }
 
     case MessageEvent::DataTypeSerializedScriptValue:
-        if (RefPtr<SerializedScriptValue> serializedValue = event->dataAsSerializedScriptValue()) {
+        if (SerializedScriptValue* serializedValue = event->dataAsSerializedScriptValue()) {
             MessagePortArray ports = event->ports();
             result = serializedValue->deserialize(info.GetIsolate(), &ports);
         } else {

@@ -68,7 +68,7 @@ void V8PopStateEvent::stateAttrGetterCustom(v8::Local<v8::String> name, const v8
     // The current history state object might've changed in the meantime, so we need to take care
     // of using the correct one, and always share the same deserialization with history.state.
 
-    bool isSameState = history->isSameAsCurrentState(event->serializedState().get());
+    bool isSameState = history->isSameAsCurrentState(event->serializedState());
 
     if (isSameState) {
         v8::Handle<v8::Object> v8History = toV8Fast(history, info, event).As<v8::Object>();

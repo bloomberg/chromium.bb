@@ -100,7 +100,7 @@ public:
     void setIsTargetItem(bool);
     
     void setStateObject(PassRefPtr<SerializedScriptValue> object);
-    PassRefPtr<SerializedScriptValue> stateObject() const { return m_stateObject; }
+    SerializedScriptValue* stateObject() const { return m_stateObject.get(); }
 
     void setItemSequenceNumber(long long number) { m_itemSequenceNumber = number; }
     long long itemSequenceNumber() const { return m_itemSequenceNumber; }

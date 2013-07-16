@@ -45,7 +45,7 @@ public:
     static PassRefPtr<History> create(Frame* frame) { return adoptRef(new History(frame)); }
 
     unsigned length() const;
-    PassRefPtr<SerializedScriptValue> state();
+    SerializedScriptValue* state();
     void back();
     void forward();
     void go(int distance);
@@ -68,7 +68,7 @@ private:
 
     KURL urlForState(const String& url);
 
-    PassRefPtr<SerializedScriptValue> stateInternal() const;
+    SerializedScriptValue* stateInternal() const;
 
     RefPtr<SerializedScriptValue> m_lastStateObjectRequested;
 };

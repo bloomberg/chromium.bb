@@ -52,7 +52,7 @@ public:
 
     virtual const AtomicString& interfaceName() const;
 
-    PassRefPtr<SerializedScriptValue> serializedScriptValue() { return m_serializedScriptValue; }
+    SerializedScriptValue* serializedScriptValue() { return m_serializedScriptValue.get(); }
 
 private:
     CustomEvent();

@@ -2490,6 +2490,10 @@ v8::Handle<v8::Value> SerializedScriptValue::deserialize(v8::Isolate* isolate, M
     COMPILE_ASSERT(sizeof(BufferValueType) == 2, BufferValueTypeIsTwoBytes);
     Reader reader(reinterpret_cast<const uint8_t*>(m_data.impl()->bloatedCharacters()), 2 * m_data.length(), isolate);
     Deserializer deserializer(reader, messagePorts, m_arrayBufferContentsArray.get());
+
+    // deserialize() can run arbitrary script (e.g., setters), which could result in |this| being destroyed.
+    // Holding a RefPtr ensures we are alive (along with our internal data) throughout the operation.
+    RefPtr<SerializedScriptValue> protect(this);
     return deserializer.deserialize();
 }
 

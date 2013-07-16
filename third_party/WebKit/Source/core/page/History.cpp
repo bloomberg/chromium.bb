@@ -58,13 +58,13 @@ unsigned History::length() const
     return m_frame->page()->backForward()->count();
 }
 
-PassRefPtr<SerializedScriptValue> History::state()
+SerializedScriptValue* History::state()
 {
     m_lastStateObjectRequested = stateInternal();
-    return m_lastStateObjectRequested;
+    return m_lastStateObjectRequested.get();
 }
 
-PassRefPtr<SerializedScriptValue> History::stateInternal() const
+SerializedScriptValue* History::stateInternal() const
 {
     if (!m_frame)
         return 0;
@@ -82,7 +82,7 @@ bool History::stateChanged() const
 
 bool History::isSameAsCurrentState(SerializedScriptValue* state) const
 {
-    return state == stateInternal().get();
+    return state == stateInternal();
 }
 
 void History::back()

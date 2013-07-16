@@ -43,7 +43,7 @@ public:
     static PassRefPtr<PopStateEvent> create(PassRefPtr<SerializedScriptValue>, PassRefPtr<History>);
     static PassRefPtr<PopStateEvent> create(const AtomicString&, const PopStateEventInit&);
 
-    PassRefPtr<SerializedScriptValue> serializedState() const { return m_serializedState; }
+    SerializedScriptValue* serializedState() const { return m_serializedState.get(); }
     History* history() const { return m_history.get(); }
 
     virtual const AtomicString& interfaceName() const;
