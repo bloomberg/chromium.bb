@@ -157,9 +157,7 @@ class StubLogin : public LoginStatusConsumer,
         g_browser_process->profile_manager()->GetDefaultProfile(),
         UserContext(username,
                     password,
-                    std::string()),  // auth_code
-        std::string(),   // login_token
-        std::string());  // login_captcha
+                    std::string()));  // auth_code
   }
 
   virtual ~StubLogin() {

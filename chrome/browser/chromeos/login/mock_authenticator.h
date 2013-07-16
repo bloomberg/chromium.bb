@@ -30,9 +30,7 @@ class MockAuthenticator : public Authenticator {
                              const UserContext& user_context) OVERRIDE;
 
   virtual void AuthenticateToLogin(Profile* profile,
-                                   const UserContext& user_context,
-                                   const std::string& login_token,
-                                   const std::string& login_captcha) OVERRIDE;
+                                   const UserContext& user_context) OVERRIDE;
 
   virtual void AuthenticateToUnlock(const UserContext& user_context) OVERRIDE;
 
@@ -52,11 +50,6 @@ class MockAuthenticator : public Authenticator {
       const std::string& old_password) OVERRIDE {}
 
   virtual void ResyncEncryptedData() OVERRIDE {}
-
-  virtual void RetryAuth(Profile* profile,
-                         const UserContext& user_context,
-                         const std::string& login_token,
-                         const std::string& login_captcha) OVERRIDE {}
 
   virtual void SetExpectedCredentials(const std::string& expected_username,
                                       const std::string& expected_password);

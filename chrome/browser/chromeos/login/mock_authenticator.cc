@@ -13,9 +13,7 @@ using content::BrowserThread;
 namespace chromeos {
 
 void MockAuthenticator::AuthenticateToLogin(Profile* profile,
-                                            const UserContext& user_context,
-                                            const std::string& login_token,
-                                            const std::string& login_captcha) {
+                                            const UserContext& user_context) {
   if (expected_username_ == user_context.username &&
       expected_password_ == user_context.password) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
@@ -38,8 +36,7 @@ void MockAuthenticator::CompleteLogin(Profile* profile,
 
 void MockAuthenticator::AuthenticateToUnlock(
     const UserContext& user_context) {
-  AuthenticateToLogin(NULL /* not used */, user_context,
-                      std::string(), std::string());
+  AuthenticateToLogin(NULL /* not used */, user_context);
 }
 
 void MockAuthenticator::LoginAsLocallyManagedUser(

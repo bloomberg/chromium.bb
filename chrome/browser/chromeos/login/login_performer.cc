@@ -18,7 +18,6 @@
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/managed/locally_managed_user_login_flow.h"
-#include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -46,29 +45,18 @@ using content::UserMetricsAction;
 
 namespace chromeos {
 
-// Initialize default LoginPerformer.
-// static
-LoginPerformer* LoginPerformer::default_performer_ = NULL;
-
 LoginPerformer::LoginPerformer(Delegate* delegate)
     : online_attempt_host_(this),
       last_login_failure_(LoginFailure::LoginFailureNone()),
       delegate_(delegate),
       password_changed_(false),
       password_changed_callback_count_(0),
-      screen_lock_requested_(false),
-      initial_online_auth_pending_(false),
       auth_mode_(AUTH_MODE_INTERNAL),
       weak_factory_(this) {
-  DCHECK(default_performer_ == NULL)
-      << "LoginPerformer should have only one instance.";
-  default_performer_ = this;
 }
 
 LoginPerformer::~LoginPerformer() {
   DVLOG(1) << "Deleting LoginPerformer";
-  DCHECK(default_performer_ != NULL) << "Default instance should exist.";
-  default_performer_ = NULL;
   if (authenticator_.get())
     authenticator_->SetConsumer(NULL);
 }
@@ -88,33 +76,9 @@ void LoginPerformer::OnLoginFailure(const LoginFailure& failure) {
   if (delegate_) {
     delegate_->OnLoginFailure(failure);
     return;
-  }
-
-  // Consequent online login failure with blocking UI on.
-  // No difference between cases whether screen was locked by the user or
-  // by LoginPerformer except for the very first screen lock while waiting
-  // for online auth. Otherwise it will be SL active > timeout > screen unlock.
-  // Display recoverable error message using ScreenLocker,
-  // force sign out otherwise.
-  if (ScreenLocker::default_screen_locker() && !initial_online_auth_pending_) {
-    ResolveLockLoginFailure();
-    return;
-  }
-  initial_online_auth_pending_ = false;
-
-  // Offline auth - OK, online auth - failed.
-  if (failure.reason() == LoginFailure::NETWORK_AUTH_FAILED) {
-    ResolveInitialNetworkAuthFailure();
-  } else if (failure.reason() == LoginFailure::LOGIN_TIMED_OUT) {
-    VLOG(1) << "Online login timed out. "
-            << "Granting user access based on offline auth only.";
-    // ScreenLock is not active, it's ok to delete itself.
-    base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
   } else {
     // COULD_NOT_MOUNT_CRYPTOHOME, COULD_NOT_MOUNT_TMPFS:
     // happens during offline auth only.
-    // UNLOCK_FAILED is used during normal screen lock case.
-    // TODO(nkostylev) DATA_REMOVAL_FAILED - ?
     NOTREACHED();
   }
 }
@@ -146,13 +110,8 @@ void LoginPerformer::OnLoginSuccess(
   DCHECK(delegate_);
   // After delegate_->OnLoginSuccess(...) is called, delegate_ releases
   // LoginPerformer ownership. LP now manages it's lifetime on its own.
-  // 2 things could make it exist longer:
-  // 1. ScreenLock active (pending correct new password input)
-  // 2. Pending online auth request.
-  if (!pending_requests)
-    base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
-  else
-    initial_online_auth_pending_ = true;
+  DCHECK(!pending_requests);
+  base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 
   delegate_->OnLoginSuccess(user_context,
                             pending_requests,
@@ -175,11 +134,7 @@ void LoginPerformer::OnPasswordChangeDetected() {
   if (delegate_) {
     delegate_->OnPasswordChangeDetected();
   } else {
-    last_login_failure_ =
-        LoginFailure::FromNetworkAuthFailure(GoogleServiceAuthError(
-            GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
-    DVLOG(1) << "Password change detected - locking screen.";
-    RequestScreenLock();
+    NOTREACHED();
   }
 }
 
@@ -195,27 +150,6 @@ void LoginPerformer::OnChecked(const std::string& username, bool success) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// LoginPerformer, content::NotificationObserver implementation:
-//
-
-void LoginPerformer::Observe(int type,
-                             const content::NotificationSource& source,
-                             const content::NotificationDetails& details) {
-  if (type != chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED)
-    return;
-
-  bool is_screen_locked = *content::Details<bool>(details).ptr();
-  if (is_screen_locked) {
-    if (screen_lock_requested_) {
-      screen_lock_requested_ = false;
-      ResolveScreenLocked();
-    }
-  } else {
-    ResolveScreenUnlocked();
-  }
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // LoginPerformer, public:
 
 void LoginPerformer::PerformLogin(const UserContext& user_context,
@@ -225,31 +159,28 @@ void LoginPerformer::PerformLogin(const UserContext& user_context,
 
   CrosSettings* cros_settings = CrosSettings::Get();
 
-  // Whitelist check is always performed during initial login and
-  // should not be performed when ScreenLock is active (pending online auth).
-  if (!ScreenLocker::default_screen_locker()) {
-    CrosSettingsProvider::TrustedStatus status =
-        cros_settings->PrepareTrustedValues(
-            base::Bind(&LoginPerformer::PerformLogin,
-                       weak_factory_.GetWeakPtr(),
-                       user_context_, auth_mode));
-    // Must not proceed without signature verification.
-    if (status == CrosSettingsProvider::PERMANENTLY_UNTRUSTED) {
-      if (delegate_)
-        delegate_->PolicyLoadFailed();
-      else
-        NOTREACHED();
-      return;
-    } else if (status != CrosSettingsProvider::TRUSTED) {
-      // Value of AllowNewUser setting is still not verified.
-      // Another attempt will be invoked after verification completion.
-      return;
-    }
+  // Whitelist check is always performed during initial login.
+  CrosSettingsProvider::TrustedStatus status =
+      cros_settings->PrepareTrustedValues(
+          base::Bind(&LoginPerformer::PerformLogin,
+                     weak_factory_.GetWeakPtr(),
+                     user_context_, auth_mode));
+  // Must not proceed without signature verification.
+  if (status == CrosSettingsProvider::PERMANENTLY_UNTRUSTED) {
+    if (delegate_)
+      delegate_->PolicyLoadFailed();
+    else
+      NOTREACHED();
+    return;
+  } else if (status != CrosSettingsProvider::TRUSTED) {
+    // Value of AllowNewUser setting is still not verified.
+    // Another attempt will be invoked after verification completion.
+    return;
   }
 
   bool is_whitelisted = LoginUtils::IsWhitelisted(
       gaia::CanonicalizeEmail(user_context.username));
-  if (ScreenLocker::default_screen_locker() || is_whitelisted) {
+  if (is_whitelisted) {
     switch (auth_mode_) {
       case AUTH_MODE_EXTENSION:
         StartLoginCompletion();
@@ -333,149 +264,6 @@ void LoginPerformer::ResyncEncryptedData() {
 ////////////////////////////////////////////////////////////////////////////////
 // LoginPerformer, private:
 
-void LoginPerformer::RequestScreenLock() {
-  DVLOG(1) << "Screen lock requested";
-  // Will receive notifications on screen unlock and delete itself.
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
-                 content::NotificationService::AllSources());
-  if (ScreenLocker::default_screen_locker()) {
-    DVLOG(1) << "Screen already locked";
-    ResolveScreenLocked();
-  } else {
-    screen_lock_requested_ = true;
-    // TODO(antrim) : additional logging for crbug/173178
-    LOG(WARNING) << "Requesting screen lock from LoginPerformer";
-    DBusThreadManager::Get()->GetSessionManagerClient()->RequestLockScreen();
-  }
-}
-
-void LoginPerformer::RequestScreenUnlock() {
-  DVLOG(1) << "Screen unlock requested";
-  if (ScreenLocker::default_screen_locker()) {
-    DBusThreadManager::Get()->GetSessionManagerClient()->RequestUnlockScreen();
-    // Will unsubscribe from notifications once unlock is successful.
-  } else {
-    LOG(ERROR) << "Screen is not locked";
-    NOTREACHED();
-  }
-}
-
-void LoginPerformer::ResolveInitialNetworkAuthFailure() {
-  DVLOG(1) << "auth_error: " << last_login_failure_.error().state();
-
-  switch (last_login_failure_.error().state()) {
-    case GoogleServiceAuthError::CONNECTION_FAILED:
-    case GoogleServiceAuthError::SERVICE_UNAVAILABLE:
-    case GoogleServiceAuthError::TWO_FACTOR:
-    case GoogleServiceAuthError::REQUEST_CANCELED:
-      // Offline auth already done. Online auth will be done next time
-      // or once user accesses web property.
-      VLOG(1) << "Granting user access based on offline auth only. "
-              << "Online login failed with "
-              << last_login_failure_.error().state();
-      // Resolving initial online auth failure, no ScreenLock is active.
-      base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
-      return;
-    case GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS:
-      // Offline auth OK, so it might be the case of changed password.
-      password_changed_ = true;
-    case GoogleServiceAuthError::USER_NOT_SIGNED_UP:
-    case GoogleServiceAuthError::ACCOUNT_DELETED:
-    case GoogleServiceAuthError::ACCOUNT_DISABLED:
-      // Access not granted. User has to sign out.
-      // Request screen lock & show error message there.
-    case GoogleServiceAuthError::CAPTCHA_REQUIRED:
-    default:
-      // Unless there's new GoogleServiceAuthErrors state has been added.
-      NOTREACHED();
-      return;
-  }
-}
-
-void LoginPerformer::ResolveLockLoginFailure() {
-  if (last_login_failure_.reason() == LoginFailure::LOGIN_TIMED_OUT) {
-    LOG(WARNING) << "Online login timed out - unlocking screen. "
-                 << "Granting user access based on offline auth only.";
-    RequestScreenUnlock();
-    return;
-  } else if (last_login_failure_.reason() ==
-             LoginFailure::NETWORK_AUTH_FAILED) {
-    ResolveLockNetworkAuthFailure();
-    return;
-  } else if (last_login_failure_.reason() ==
-             LoginFailure::COULD_NOT_MOUNT_CRYPTOHOME ||
-             last_login_failure_.reason() ==
-             LoginFailure::DATA_REMOVAL_FAILED) {
-    LOG(ERROR) << "Cryptohome error, forcing sign out.";
-  } else {
-    // COULD_NOT_MOUNT_TMPFS, UNLOCK_FAILED should not happen here.
-    NOTREACHED();
-  }
-  ScreenLocker::default_screen_locker()->Signout();
-}
-
-void LoginPerformer::ResolveLockNetworkAuthFailure() {
-  DCHECK(ScreenLocker::default_screen_locker())
-      << "ScreenLocker instance doesn't exist.";
-  DCHECK(last_login_failure_.reason() == LoginFailure::NETWORK_AUTH_FAILED);
-
-  int msg_id = IDS_LOGIN_ERROR_AUTHENTICATING;
-  HelpAppLauncher::HelpTopic help_topic =
-      HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT;
-  bool sign_out_only = false;
-
-  DVLOG(1) << "auth_error: " << last_login_failure_.error().state();
-
-  switch (last_login_failure_.error().state()) {
-    case GoogleServiceAuthError::CONNECTION_FAILED:
-    case GoogleServiceAuthError::SERVICE_UNAVAILABLE:
-    case GoogleServiceAuthError::TWO_FACTOR:
-    case GoogleServiceAuthError::REQUEST_CANCELED:
-      // Offline auth already done. Online auth will be done next time
-      // or once user accesses web property.
-      LOG(WARNING) << "Granting user access based on offline auth only. "
-                   << "Online login failed with "
-                   << last_login_failure_.error().state();
-      RequestScreenUnlock();
-      return;
-    case GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS:
-      // Password change detected.
-      msg_id = IDS_LOGIN_ERROR_PASSWORD_CHANGED;
-      break;
-    case GoogleServiceAuthError::USER_NOT_SIGNED_UP:
-    case GoogleServiceAuthError::ACCOUNT_DELETED:
-    case GoogleServiceAuthError::ACCOUNT_DISABLED:
-      // Access not granted. User has to sign out.
-      // Show error message using existing screen lock.
-      msg_id = IDS_LOGIN_ERROR_RESTRICTED;
-      help_topic = HelpAppLauncher::HELP_ACCOUNT_DISABLED;
-      sign_out_only = true;
-      break;
-    case GoogleServiceAuthError::CAPTCHA_REQUIRED:
-    default:
-      // Unless there's new GoogleServiceAuthError state has been added.
-      NOTREACHED();
-      break;
-  }
-
-  ScreenLocker::default_screen_locker()->ShowErrorMessage(msg_id,
-                                                          help_topic,
-                                                          sign_out_only);
-}
-
-void LoginPerformer::ResolveScreenLocked() {
-  DVLOG(1) << "Screen locked";
-  ResolveLockNetworkAuthFailure();
-}
-
-void LoginPerformer::ResolveScreenUnlocked() {
-  DVLOG(1) << "Screen unlocked";
-  registrar_.RemoveAll();
-  // If screen was unlocked that was for a reason, should delete itself now.
-  base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
-}
-
 void LoginPerformer::StartLoginCompletion() {
   DVLOG(1) << "Login completion started";
   BootTimesLoader::Get()->AddLoginTimeMarker("AuthStarted", false);
@@ -502,24 +290,12 @@ void LoginPerformer::StartAuthentication() {
         BrowserThread::UI, FROM_HERE,
         base::Bind(&Authenticator::AuthenticateToLogin, authenticator_.get(),
                    profile,
-                   user_context_,
-                   std::string(),
-                   std::string()));
+                   user_context_));
     // Make unobtrusive online check. It helps to determine password change
     // state in the case when offline login fails.
     online_attempt_host_.Check(profile, user_context_);
   } else {
-    DCHECK(authenticator_.get())
-        << "Authenticator instance doesn't exist for login attempt retry.";
-    // At this point offline auth has been successful,
-    // retry online auth, using existing Authenticator instance.
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&Authenticator::RetryAuth, authenticator_.get(),
-                   profile,
-                   user_context_,
-                   std::string(),
-                   std::string()));
+    NOTREACHED();
   }
   user_context_.password.clear();
   user_context_.auth_code.clear();

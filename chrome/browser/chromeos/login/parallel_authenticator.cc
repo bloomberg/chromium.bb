@@ -36,9 +36,6 @@ namespace chromeos {
 
 namespace {
 
-// Milliseconds until we timeout our attempt to hit ClientLogin.
-const int kClientLoginTimeoutMs = 10000;
-
 // Length of password hashed with SHA-256.
 const int kPasswordHashLength = 32;
 
@@ -164,15 +161,6 @@ void CheckKey(AuthAttemptState* attempt,
       base::Bind(&TriggerResolve, attempt, resolver));
 }
 
-// Returns whether the login failure was connection issue.
-bool WasConnectionIssue(const LoginFailure& online_outcome) {
-  return ((online_outcome.reason() == LoginFailure::LOGIN_TIMED_OUT) ||
-          (online_outcome.error().state() ==
-           GoogleServiceAuthError::CONNECTION_FAILED) ||
-          (online_outcome.error().state() ==
-           GoogleServiceAuthError::REQUEST_CANCELED));
-}
-
 // Returns hash of |password|, salted with the system salt.
 std::string HashPassword(const std::string& password) {
   // Get salt, ascii encode, update sha with that, then update with ascii
@@ -208,9 +196,7 @@ ParallelAuthenticator::ParallelAuthenticator(LoginStatusConsumer* consumer)
 
 void ParallelAuthenticator::AuthenticateToLogin(
     Profile* profile,
-    const UserContext& user_context,
-    const std::string& login_token,
-    const std::string& login_captcha) {
+    const UserContext& user_context) {
   std::string canonicalized = gaia::CanonicalizeEmail(user_context.username);
   authentication_profile_ = profile;
   current_state_.reset(
@@ -219,8 +205,8 @@ void ParallelAuthenticator::AuthenticateToLogin(
                       user_context.password,
                       user_context.auth_code),
           HashPassword(user_context.password),
-          login_token,
-          login_captcha,
+          std::string(), // login_token, not used.
+          std::string(), // login_captcha, not used.
           User::USER_TYPE_REGULAR,
           !UserManager::Get()->IsKnownUser(canonicalized)));
   // Reset the verified flag.
@@ -269,6 +255,7 @@ void ParallelAuthenticator::CompleteLogin(Profile* profile,
     // services not being able to fetch a token, leading to browser crashes.
     // So initiate ClientLogin-based post authentication.
     // TODO(xiyuan): This should not be required.
+    // Context: http://crbug.com/201374
     current_online_.reset(new OnlineAttempt(current_state_.get(),
                                             this));
     current_online_->Initiate(profile);
@@ -426,16 +413,6 @@ void ParallelAuthenticator::OnLoginFailure(const LoginFailure& error) {
     consumer_->OnLoginFailure(error);
 }
 
-void ParallelAuthenticator::RecordOAuthCheckFailure(
-    const std::string& user_name) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(using_oauth_);
-  // Mark this account's OAuth token state as invalid in the local state.
-  UserManager::Get()->SaveUserOAuthStatus(
-      user_name,
-      User::OAUTH2_TOKEN_STATUS_INVALID);
-}
-
 void ParallelAuthenticator::RecoverEncryptedData(
     const std::string& old_password) {
   std::string old_hash = HashPassword(old_password);
@@ -488,30 +465,6 @@ void ParallelAuthenticator::OnOwnershipChecked(
   owner_is_verified_ = true;
   Resolve();
 }
-
-void ParallelAuthenticator::RetryAuth(Profile* profile,
-                                      const UserContext& user_context,
-                                      const std::string& login_token,
-                                      const std::string& login_captcha) {
-  reauth_state_.reset(
-      new AuthAttemptState(
-          UserContext(gaia::CanonicalizeEmail(user_context.username),
-                      user_context.password,
-                      user_context.auth_code),
-          HashPassword(user_context.password),
-          login_token,
-          login_captcha,
-          User::USER_TYPE_REGULAR,
-          false /* not a new user */));
-  // Always use ClientLogin regardless of using_oauth flag. This is because
-  // we are unable to renew oauth token on lock screen currently and will
-  // stuck with lock screen if we use OAuthLogin here.
-  // TODO(xiyuan): Revisit this after we support Gaia in lock screen.
-  current_online_.reset(new OnlineAttempt(reauth_state_.get(),
-                                          this));
-  current_online_->Initiate(profile);
-}
-
 
 void ParallelAuthenticator::Resolve() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -576,57 +529,9 @@ void ParallelAuthenticator::Resolve() {
           base::Bind(&ParallelAuthenticator::OnPasswordChangeDetected, this));
       break;
     case ONLINE_FAILED:
-      // In this case, we know online login was rejected because the account
-      // is disabled or something similarly fatal.  Sending the user through
-      // the same path they get when their password is rejected is cleaner
-      // for now.
-      // TODO(cmasone): optimize this so that we don't send the user through
-      // the 'changed password' path when we know doing so won't succeed.
-    case NEED_NEW_PW: {
-        {
-          base::AutoLock for_this_block(success_lock_);
-          if (!already_reported_success_) {
-            // This allows us to present the same behavior for "online:
-            // fail, offline: ok", regardless of the order in which we
-            // receive the results.  There will be cases in which we get
-            // the online failure some time after the offline success,
-            // so we just force all cases in this category to present like this:
-            // OnLoginSuccess(..., ..., true) -> OnLoginFailure().
-            BrowserThread::PostTask(
-                BrowserThread::UI, FROM_HERE,
-                base::Bind(&ParallelAuthenticator::OnLoginSuccess,
-                           this,
-                           true));
-          }
-        }
-        const LoginFailure& login_failure =
-            reauth_state_.get() ? reauth_state_->online_outcome() :
-                                  current_state_->online_outcome();
-        BrowserThread::PostTask(
-            BrowserThread::UI, FROM_HERE,
-            base::Bind(&ParallelAuthenticator::OnLoginFailure, this,
-                       login_failure));
-        // Check if we couldn't verify OAuth token here.
-        if (using_oauth_ &&
-            login_failure.reason() == LoginFailure::NETWORK_AUTH_FAILED) {
-          BrowserThread::PostTask(
-              BrowserThread::UI, FROM_HERE,
-              base::Bind(&ParallelAuthenticator::RecordOAuthCheckFailure, this,
-                         (reauth_state_.get() ?
-                             reauth_state_->user_context.username :
-                             current_state_->user_context.username)));
-        }
-        break;
-    }
+    case NEED_NEW_PW:
     case HAVE_NEW_PW:
-      migrate_attempted_ = true;
-      BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
-          base::Bind(&Migrate,
-                     reauth_state_.get(),
-                     scoped_refptr<ParallelAuthenticator>(this),
-                     true,
-                     current_state_->ascii_hash));
+      NOTREACHED() << "Using obsolete ClientLogin code path.";
       break;
     case OFFLINE_LOGIN:
       VLOG(2) << "Offline login";
@@ -719,9 +624,7 @@ ParallelAuthenticator::AuthState ParallelAuthenticator::ResolveState() {
     return CONTINUE;
   }
 
-  AuthState state = (reauth_state_.get() ? ResolveReauthState() : CONTINUE);
-  if (state != CONTINUE)
-    return state;
+  AuthState state = CONTINUE;
 
   if (current_state_->cryptohome_outcome())
     state = ResolveCryptohomeSuccessState();
@@ -744,33 +647,10 @@ ParallelAuthenticator::AuthState ParallelAuthenticator::ResolveState() {
       // Online attempt succeeded as well, so combine the results.
       return ResolveOnlineSuccessState(state);
     }
-    // Online login attempt was rejected or failed to occur.
-    return ResolveOnlineFailureState(state);
+    NOTREACHED() << "Using obsolete ClientLogin code path.";
   }
   // if online isn't complete yet, just return the offline result.
   return state;
-}
-
-ParallelAuthenticator::AuthState
-ParallelAuthenticator::ResolveReauthState() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (reauth_state_->cryptohome_complete()) {
-    if (!reauth_state_->cryptohome_outcome()) {
-      // If we've tried to migrate and failed, log the error and just wait
-      // til next time the user logs in to migrate their cryptohome key.
-      LOG(ERROR) << "Failed to migrate cryptohome key: "
-                 << reauth_state_->cryptohome_code();
-    }
-    reauth_state_.reset(NULL);
-    return ONLINE_LOGIN;
-  }
-  // Haven't tried the migrate yet, must be processing the online auth attempt.
-  if (!reauth_state_->online_complete()) {
-    NOTREACHED();  // Shouldn't be here at all, if online reauth isn't done!
-    return CONTINUE;
-  }
-  return (reauth_state_->online_outcome().reason() == LoginFailure::NONE) ?
-      HAVE_NEW_PW : NEED_NEW_PW;
 }
 
 ParallelAuthenticator::AuthState
@@ -837,25 +717,6 @@ ParallelAuthenticator::ResolveCryptohomeSuccessState() {
   if (!VerifyOwner())
     return CONTINUE;
   return user_can_login_ ? OFFLINE_LOGIN : OWNER_REQUIRED;
-}
-
-ParallelAuthenticator::AuthState
-ParallelAuthenticator::ResolveOnlineFailureState(
-    ParallelAuthenticator::AuthState offline_state) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (offline_state == OFFLINE_LOGIN) {
-    if (WasConnectionIssue(current_state_->online_outcome())) {
-      // Couldn't do an online check, so just go with the offline result.
-      return OFFLINE_LOGIN;
-    }
-    // Otherwise, online login was rejected!
-    if (current_state_->online_outcome().error().state() ==
-        GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS) {
-      return NEED_NEW_PW;
-    }
-    return ONLINE_FAILED;
-  }
-  return LOGIN_FAILED;
 }
 
 ParallelAuthenticator::AuthState

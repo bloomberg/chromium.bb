@@ -35,12 +35,9 @@ class Authenticator : public base::RefCountedThreadSafe<Authenticator> {
 
   // Given a user credentials in |user_context|,
   // this method attempts to authenticate to login.
-  // Optionally |login_token| and |login_captcha| could be provided.
   // Must be called on the UI thread.
   virtual void AuthenticateToLogin(Profile* profile,
-                                   const UserContext& user_context,
-                                   const std::string& login_token,
-                                   const std::string& login_captcha) = 0;
+                                   const UserContext& user_context) = 0;
 
   // Given a user credentials in |user_context|, this method attempts to
   // authenticate to unlock the computer.
@@ -86,12 +83,6 @@ class Authenticator : public base::RefCountedThreadSafe<Authenticator> {
   // Call this method to erase the user's encrypted data
   // and create a new cryptohome.
   virtual void ResyncEncryptedData() = 0;
-
-  // Attempt to authenticate online again.
-  virtual void RetryAuth(Profile* profile,
-                         const UserContext& user_context,
-                         const std::string& login_token,
-                         const std::string& login_captcha) = 0;
 
   // Profile (usually off the record ) that was used to perform the last
   // authentication process.

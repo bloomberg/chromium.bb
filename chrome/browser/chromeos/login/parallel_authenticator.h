@@ -27,46 +27,63 @@ namespace chromeos {
 
 class LoginStatusConsumer;
 
-// Authenticates a Chromium OS user against the Google Accounts ClientLogin API.
-//
-// Simultaneously attempts authentication both offline and online.
+// Authenticates a Chromium OS user against cryptohome.
+// Relies on the fact that online authentications has been already performed
+// (i.e. using_oauth_ is true).
 //
 // At a high, level, here's what happens:
-// AuthenticateToLogin() creates an OnlineAttempt and calls a Cryptohome's
-// method to perform online and offline login simultaneously.  When one of
-// these completes, it will store results in a AuthAttemptState owned by
-// ParallelAuthenticator and then call Resolve().  Resolve() will attempt to
+// AuthenticateToLogin() calls a Cryptohome's method to perform offline login.
+// Resultes are stored in a AuthAttemptState owned by ParallelAuthenticator
+// and then call Resolve().  Resolve() will attempt to
 // determine which AuthState we're in, based on the info at hand.
 // It then triggers further action based on the calculated AuthState; this
 // further action might include calling back the passed-in LoginStatusConsumer
 // to signal that login succeeded or failed, waiting for more outstanding
 // operations to complete, or triggering some more Cryptohome method calls.
+//
+// Typical flows
+// -------------
+// Add new user: CONTINUE > CONTINUE > CREATE_NEW > CONTINUE > ONLINE_LOGIN
+// Login as existing user: CONTINUE > OFFLINE_LOGIN
+// Login as existing user (failure): CONTINUE > FAILED_MOUNT
+// Change password detected:
+//   GAIA online ok: CONTINUE > CONTINUE > NEED_OLD_PW
+//     Recreate: CREATE_NEW > CONTINUE > ONLINE_LOGIN
+//     Old password failure: NEED_OLD_PW
+//     Old password ok: RECOVER_MOUNT > CONTINUE > ONLINE_LOGIN
+//
+// TODO(nkostylev): Rename ParallelAuthenticator since it is not doing
+// offline/online login operations in parallel anymore.
 class ParallelAuthenticator : public Authenticator,
                               public AuthAttemptStateResolver {
  public:
   enum AuthState {
-    CONTINUE,        // State indeterminate; try again when more info available.
-    NO_MOUNT,        // Cryptohome doesn't exist yet.
-    FAILED_MOUNT,    // Failed to mount existing cryptohome.
-    FAILED_REMOVE,   // Failed to remove existing cryptohome.
-    FAILED_TMPFS,    // Failed to mount tmpfs for guest user
-    FAILED_TPM,      // Failed to mount/create cryptohome because of TPM error.
-    CREATE_NEW,      // Need to create cryptohome for a new user.
-    RECOVER_MOUNT,   // After RecoverEncryptedData, mount cryptohome.
-    POSSIBLE_PW_CHANGE,  // Offline login failed, user may have changed pw.
-    NEED_NEW_PW,     // User changed pw, and we have the old one.
-    NEED_OLD_PW,     // User changed pw, and we have the new one.
-    HAVE_NEW_PW,     // We have verified new pw, time to migrate key.
-    OFFLINE_LOGIN,   // Login succeeded offline.
-    DEMO_LOGIN,      // Logged in as the demo user.
-    ONLINE_LOGIN,    // Offline and online login succeeded.
-    UNLOCK,          // Screen unlock succeeded.
-    ONLINE_FAILED,   // Online login disallowed, but offline succeeded.
-    GUEST_LOGIN,     // Logged in guest mode.
-    PUBLIC_ACCOUNT_LOGIN,        // Logged into a public account.
-    LOCALLY_MANAGED_USER_LOGIN,  // Logged in as a locally managed user.
-    LOGIN_FAILED,    // Login denied.
-    OWNER_REQUIRED   // Login is restricted to the owner only.
+    CONTINUE = 0,            // State indeterminate; try again with more info.
+    NO_MOUNT = 1,            // Cryptohome doesn't exist yet.
+    FAILED_MOUNT = 2,        // Failed to mount existing cryptohome.
+    FAILED_REMOVE = 3,       // Failed to remove existing cryptohome.
+    FAILED_TMPFS = 4,        // Failed to mount tmpfs for guest user.
+    FAILED_TPM = 5,          // Failed to mount/create cryptohome, TPM error.
+    CREATE_NEW = 6,          // Need to create cryptohome for a new user.
+    RECOVER_MOUNT = 7,       // After RecoverEncryptedData, mount cryptohome.
+    POSSIBLE_PW_CHANGE = 8,  // Offline login failed, user may have changed pw.
+    NEED_NEW_PW = 9,         // Obsolete (ClientLogin): user changed pw,
+                             // we have the old one.
+    NEED_OLD_PW = 10,        // User changed pw, and we have the new one
+                             // (GAIA auth is OK).
+    HAVE_NEW_PW = 11,        // Obsolete (ClientLogin): We have verified new pw,
+                             // time to migrate key.
+    OFFLINE_LOGIN = 12,      // Login succeeded offline.
+    DEMO_LOGIN = 13,         // Logged in as the demo user.
+    ONLINE_LOGIN = 14,       // Offline and online login succeeded.
+    UNLOCK = 15,             // Screen unlock succeeded.
+    ONLINE_FAILED = 16,      // Obsolete (ClientLogin): Online login disallowed,
+                             // but offline succeeded.
+    GUEST_LOGIN = 17,        // Logged in guest mode.
+    PUBLIC_ACCOUNT_LOGIN = 18,        // Logged into a public account.
+    LOCALLY_MANAGED_USER_LOGIN = 19,  // Logged in as a locally managed user.
+    LOGIN_FAILED = 20,       // Login denied.
+    OWNER_REQUIRED = 21      // Login is restricted to the owner only.
   };
 
   explicit ParallelAuthenticator(LoginStatusConsumer* consumer);
@@ -75,35 +92,16 @@ class ParallelAuthenticator : public Authenticator,
   virtual void CompleteLogin(Profile* profile,
                              const UserContext& user_context) OVERRIDE;
 
-  // Given a |username| and |password|, this method attempts to authenticate to
-  // the Google accounts servers and your Chrome OS device simultaneously.
-  // As soon as we have successfully mounted the encrypted home directory for
-  // |username|, we will call consumer_->OnLoginSuccess() with |username| and a
-  // vector of authentication cookies.  If we're still waiting for an online
-  // result at that time, we'll also pass back a flag indicating that more
-  // callbacks are on the way; if not, we pass back false.  When the pending
-  // request completes, either consumer_->OnLoginSuccess() with an indication
-  // that no more requests are outstanding will be called, or
-  // consumer_->OnLoginFailure() if appropriate.
-  //
-  // Upon failure to login (online fails, then offline fails;
-  // offline fails, then online fails) consumer_->OnLoginFailure() is called
+  // Given |user_context|, this method attempts to authenticate to your
+  // Chrome OS device. As soon as we have successfully mounted the encrypted
+  // home directory for the user, we will call consumer_->OnLoginSuccess()
+  // with the username.
+  // Upon failure to login consumer_->OnLoginFailure() is called
   // with an error message.
   //
-  // In the event that we see an online success and then an offline failure,
-  // consumer_->OnPasswordChangeDetected() is called.
-  //
   // Uses |profile| when doing URL fetches.
-  // Optionally could pass CAPTCHA challenge token - |login_token| and
-  // |login_captcha| string that user has entered.
-  //
-  // NOTE: We do not allow HOSTED accounts to log in.  In the event that
-  // we are asked to authenticate valid HOSTED account creds, we will
-  // call OnLoginFailure() with HOSTED_NOT_ALLOWED.
   virtual void AuthenticateToLogin(Profile* profile,
-                                   const UserContext& user_context,
-                                   const std::string& login_token,
-                                   const std::string& login_captcha) OVERRIDE;
+                                   const UserContext& user_context) OVERRIDE;
 
   // Given |user_context|, this method attempts to authenticate to the cached
   // user_context. This will never contact the server even if it's online.
@@ -139,10 +137,7 @@ class ParallelAuthenticator : public Authenticator,
   virtual void RecoverEncryptedData(
       const std::string& old_password) OVERRIDE;
   virtual void ResyncEncryptedData() OVERRIDE;
-  virtual void RetryAuth(Profile* profile,
-                         const UserContext& user_context,
-                         const std::string& login_token,
-                         const std::string& login_captcha) OVERRIDE;
+
   // AuthAttemptStateResolver overrides.
   // Attempts to make a decision and call back |consumer_| based on
   // the state we have gathered at the time of call.  If a decision
@@ -172,12 +167,6 @@ class ParallelAuthenticator : public Authenticator,
   AuthState ResolveState();
 
   // Helper for ResolveState().
-  // Given that we're attempting to auth the user again, with a new password,
-  // determine which state we're in.  Returns CONTINUE if no resolution.
-  // Must be called on the IO thread.
-  AuthState ResolveReauthState();
-
-  // Helper for ResolveState().
   // Given that some cryptohome operation has failed, determine which of the
   // possible failure states we're in.
   // Must be called on the IO thread.
@@ -188,13 +177,6 @@ class ParallelAuthenticator : public Authenticator,
   // the possible states we're in.
   // Must be called on the IO thread.
   AuthState ResolveCryptohomeSuccessState();
-
-  // Helper for ResolveState().
-  // Given that some online auth operation has failed, determine which of the
-  // possible failure states we're in.  Handles both failure to complete and
-  // actual failure responses from the server.
-  // Must be called on the IO thread.
-  AuthState ResolveOnlineFailureState(AuthState offline_state);
 
   // Helper for ResolveState().
   // Given that some online auth operation has succeeded, determine which of
@@ -212,7 +194,7 @@ class ParallelAuthenticator : public Authenticator,
     current_state_.reset(new_state);
   }
 
-  // Sets an online attemp for testing.
+  // Sets an online attempt for testing.
   void set_online_attempt(OnlineAttempt* attempt) {
     current_online_.reset(attempt);
   }
@@ -229,16 +211,9 @@ class ParallelAuthenticator : public Authenticator,
   void OnOwnershipChecked(DeviceSettingsService::OwnershipStatus status,
                           bool is_owner);
 
-  // Records OAuth1 access token verification failure for |user_account|.
-  void RecordOAuthCheckFailure(const std::string& user_account);
-
   // Signal login completion status for cases when a new user is added via
   // an external authentication provider (i.e. GAIA extension).
   void ResolveLoginCompletionStatus();
-
-  // Used when we need to try online authentication again, after successful
-  // mount, but failed online login.
-  scoped_ptr<AuthAttemptState> reauth_state_;
 
   scoped_ptr<AuthAttemptState> current_state_;
   scoped_ptr<OnlineAttempt> current_online_;
