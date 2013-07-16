@@ -74,6 +74,7 @@ public:
     const UChar* characters16() const { return m_text.impl()->characters16(); }
     const UChar* bloatedCharacters() const { return m_text.bloatedCharacters(); }
     bool isEmpty() const { return m_text.isEmpty(); }
+    String substring(unsigned position, unsigned length) const { return m_text.substring(position, length); }
     UChar characterAt(unsigned) const;
     UChar uncheckedCharacterAt(unsigned) const;
     UChar operator[](unsigned i) const { return uncheckedCharacterAt(i); }
