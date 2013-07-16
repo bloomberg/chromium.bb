@@ -555,7 +555,8 @@ void GpuDataManagerImplPrivate::GetGLStrings(std::string* gl_vendor,
 void GpuDataManagerImplPrivate::Initialize() {
   TRACE_EVENT0("startup", "GpuDataManagerImpl::Initialize");
   CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kSkipGpuDataLoading))
+  if (command_line->HasSwitch(switches::kSkipGpuDataLoading) &&
+      !command_line->HasSwitch(switches::kUseGpuInTests))
     return;
 
   gpu::GPUInfo gpu_info;
@@ -572,7 +573,8 @@ void GpuDataManagerImplPrivate::Initialize() {
   std::string gpu_blacklist_string;
   std::string gpu_switching_list_string;
   std::string gpu_driver_bug_list_string;
-  if (!command_line->HasSwitch(switches::kIgnoreGpuBlacklist)) {
+  if (!command_line->HasSwitch(switches::kIgnoreGpuBlacklist) &&
+      !command_line->HasSwitch(switches::kUseGpuInTests)) {
     gpu_blacklist_string = gpu::kSoftwareRenderingListJson;
     gpu_switching_list_string = gpu::kGpuSwitchingListJson;
   }

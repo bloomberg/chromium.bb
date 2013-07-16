@@ -803,6 +803,7 @@
             'browser/download/save_package_browsertest.cc',
             'browser/fileapi/file_system_browsertest.cc',
             'browser/gpu/gpu_crash_browsertest.cc',
+            'browser/gpu/gpu_info_browsertest.cc',
             'browser/gpu/gpu_ipc_browsertests.cc',
             'browser/gpu/gpu_functional_browsertest.cc',
             'browser/gpu/gpu_memory_test.cc',

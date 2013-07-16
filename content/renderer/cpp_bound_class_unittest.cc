@@ -20,6 +20,8 @@ using webkit_glue::CppVariant;
 
 namespace content {
 
+namespace {
+
 class CppBindingExampleSubObject : public CppBindingExample {
  public:
   CppBindingExampleSubObject() {
@@ -66,6 +68,8 @@ class TestObserver : public RenderViewObserver {
  private:
   CppBindingExampleWithOptionalFallback example_bound_class_;
 };
+
+}  // namespace anonymous
 
 class CppBoundClassTest : public RenderViewTest {
  public:
