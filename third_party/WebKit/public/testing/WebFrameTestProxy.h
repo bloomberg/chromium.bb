@@ -42,13 +42,19 @@ class WebFrameTestProxy : public Base {
 public:
     WebFrameTestProxy(P p, R r)
         : Base(p, r)
-        , m_baseProxy(0) { }
+        , m_baseProxy(0)
+        , m_version(0) { }
 
     virtual ~WebFrameTestProxy() { }
 
     void setBaseProxy(WebTestProxyBase* proxy)
     {
         m_baseProxy = proxy;
+    }
+
+    void setVersion(int version)
+    {
+        m_version = version;
     }
 
     // WebFrameClient implementation.
@@ -109,10 +115,14 @@ public:
     }
     virtual void didDisplayInsecureContent(WebKit::WebFrame* frame)
     {
+        if (m_version > 1)
+            m_baseProxy->didDisplayInsecureContent(frame);
         Base::didDisplayInsecureContent(frame);
     }
     virtual void didRunInsecureContent(WebKit::WebFrame* frame, const WebKit::WebSecurityOrigin& origin, const WebKit::WebURL& insecureURL)
     {
+        if (m_version > 1)
+            m_baseProxy->didRunInsecureContent(frame, origin, insecureURL);
         Base::didRunInsecureContent(frame, origin, insecureURL);
     }
     virtual void didDetectXSS(WebKit::WebFrame* frame, const WebKit::WebURL& insecureURL, bool didBlockEntirePage)
@@ -131,7 +141,9 @@ public:
     }
     virtual WebKit::WebURLError cannotHandleRequestError(WebKit::WebFrame* frame, const WebKit::WebURLRequest& request)
     {
-        return Base::cannotHandleRequestError(frame, request);
+        // RenderFrameImpl handles all requests, so this method is not expected
+        // to be called. As such, just call the proxy object without calling Base.
+        return m_baseProxy->cannotHandleRequestError(frame, request);
     }
     virtual void didCreateDataSource(WebKit::WebFrame* frame, WebKit::WebDataSource* ds)
     {
@@ -139,10 +151,14 @@ public:
     }
     virtual void willSendRequest(WebKit::WebFrame* frame, unsigned identifier, WebKit::WebURLRequest& request, const WebKit::WebURLResponse& redirectResponse)
     {
+        if (m_version > 1)
+            m_baseProxy->willSendRequest(frame, identifier, request, redirectResponse);
         Base::willSendRequest(frame, identifier, request, redirectResponse);
     }
     virtual void didReceiveResponse(WebKit::WebFrame* frame, unsigned identifier, const WebKit::WebURLResponse& response)
     {
+        if (m_version > 1)
+            m_baseProxy->didReceiveResponse(frame, identifier, response);
         Base::didReceiveResponse(frame, identifier, response);
     }
     virtual void didChangeResourcePriority(WebKit::WebFrame* frame, unsigned identifier, const WebKit::WebURLRequest::Priority& priority)
@@ -158,10 +174,14 @@ public:
     }
     virtual void didFailResourceLoad(WebKit::WebFrame* frame, unsigned identifier, const WebKit::WebURLError& error)
     {
+        if (m_version > 1)
+            m_baseProxy->didFailResourceLoad(frame, identifier, error);
         Base::didFailResourceLoad(frame, identifier, error);
     }
     virtual void unableToImplementPolicyWithError(WebKit::WebFrame* frame, const WebKit::WebURLError& error)
     {
+        if (m_version > 1)
+            m_baseProxy->unableToImplementPolicyWithError(frame, error);
         Base::unableToImplementPolicyWithError(frame, error);
     }
     virtual WebKit::WebNavigationPolicy decidePolicyForNavigation(WebKit::WebFrame* frame, const WebKit::WebURLRequest& request, WebKit::WebNavigationType type, WebKit::WebNavigationPolicy defaultPolicy, bool isRedirect)
@@ -177,6 +197,11 @@ public:
 
 private:
     WebTestProxyBase* m_baseProxy;
+
+    // This is used to incrementally change code between Blink and Chromium.
+    // It is used instead of a #define and is set by layouttest_support when
+    // creating this object.
+    int m_version;
 };
 
 }
