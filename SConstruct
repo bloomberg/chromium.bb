@@ -3153,7 +3153,6 @@ irt_variant_tests = [
 # that are incompatible with having an IRT loaded.
 nonvariant_tests = [
     #### ALPHABETICALLY SORTED ####
-    'pnacl/driver/tests/nacl.scons',
     'tests/barebones/nacl.scons',
     'tests/chrome_extension/nacl.scons',
     'tests/custom_desc/nacl.scons',

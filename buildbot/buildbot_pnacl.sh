@@ -37,6 +37,7 @@ readonly UP_DOWN_LOAD="buildbot/file_up_down_load.sh"
 # This script is used by toolchain bots (i.e. tc-xxx functions)
 readonly PNACL_BUILD="pnacl/build.sh"
 readonly LLVM_TEST="pnacl/scripts/llvm-test.sh"
+readonly DRIVER_TESTS="pnacl/driver/tests/driver_tests.py"
 readonly ACCEPTABLE_TOOLCHAIN_SIZE_MB=55
 
 setup-goma() {
@@ -530,6 +531,7 @@ tc-tests-all() {
 
   # newlib
   for arch in x86-32 x86-64 arm; do
+    ${DRIVER_TESTS} --platform="$arch"
     scons-stage-noirt "$arch" "${scons_flags}" "${SCONS_TC_TESTS}"
     # Large tests cannot be run in parallel
     scons-stage-noirt "$arch" "${scons_flags} -j1" "large_tests"
@@ -552,6 +554,7 @@ tc-tests-fast() {
   local scons_flags="-j8 -k skip_trusted_tests=1"
 
   llvm-regression
+  ${DRIVER_TESTS} --platform="$arch"
 
   scons-stage-noirt "${arch}" "${scons_flags}" "${SCONS_TC_TESTS}"
   # Large tests cannot be run in parallel
@@ -617,6 +620,9 @@ test-all-newlib() {
   set +o xtrace
 
   llvm-regression
+  ${DRIVER_TESTS} --platform=x86-32
+  ${DRIVER_TESTS} --platform=x86-64
+  ${DRIVER_TESTS} --platform=arm
 
   # At least clobber scons-out before building and running the tests though.
   echo "@@@BUILD_STEP clobber@@@"

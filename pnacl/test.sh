@@ -207,13 +207,12 @@ scons-tests () {
   fi
 }
 
-test-arm()        { scons-tests arm newlib "$@" ; }
-test-x86-32()     { scons-tests x86-32 newlib "$@" ; }
-test-x86-64()     { scons-tests x86-64 newlib "$@" ; }
-
-test-arm-newlib()    { scons-tests arm newlib "$@" ; }
-test-x86-32-newlib() { scons-tests x86-32 newlib "$@" ; }
-test-x86-64-newlib() { scons-tests x86-64 newlib "$@" ; }
+test-driver() {
+  ${NACL_ROOT}/pnacl/driver/tests/driver_tests.py --platform="$1"
+}
+test-arm()        { test-driver arm && scons-tests arm newlib "$@" ; }
+test-x86-32()     { test-driver x86-32 && scons-tests x86-32 newlib "$@" ; }
+test-x86-64()     { test-driver x86-64 && scons-tests x86-64 newlib "$@" ; }
 
 # ARM PIC is tested independently because there is no GlibC for ARM yet.
 # BUG= http://code.google.com/p/nativeclient/issues/detail?id=1081
@@ -222,15 +221,6 @@ test-arm-pic()    { scons-tests arm pic "$@" ; }
 test-arm-sbtc()    { scons-tests arm sbtc "$@" ; }
 test-x86-32-sbtc() { scons-tests x86-32 sbtc "$@" ; }
 test-x86-64-sbtc() { scons-tests x86-64 sbtc "$@" ; }
-
-
-test-arm-glibc()    { scons-tests arm glibc "$@" ; }
-test-x86-32-glibc() { scons-tests x86-32 glibc "$@" ; }
-test-x86-64-glibc() { scons-tests x86-64 glibc "$@" ; }
-
-test-arm-sbtc-glibc()    { scons-tests arm sbtc-glibc "$@" ; }
-test-x86-32-sbtc-glibc() { scons-tests x86-32 sbtc-glibc "$@" ; }
-test-x86-64-sbtc-glibc() { scons-tests x86-64 sbtc-glibc "$@" ; }
 
 #@
 #@ test-all  - Run arm, x86-32, and x86-64 tests. (all should pass)

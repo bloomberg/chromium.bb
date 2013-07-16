@@ -705,6 +705,8 @@ def ArchMerge(filename, must_match):
 def CheckTranslatorPrerequisites():
   """ Assert that the scons artifacts for running the sandboxed translator
       exist: sel_universal, and sel_ldr. """
+  if env.getbool('DRY_RUN'):
+    return
   reqs = ['SEL_UNIVERSAL', 'SEL_LDR']
   # Linux also requires the nacl bootstrap helper.
   if GetBuildOS() == 'linux':
