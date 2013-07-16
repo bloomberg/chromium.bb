@@ -19,6 +19,12 @@
         NACL_RODATA
 
 DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaCl_trampoline_code):
+        /*
+         * Write a value onto the stack which is used to calculate the
+         * syscall number.
+         */
+        movl $0xdeadbeef, -8(%rsp)
+DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaCl_trampoline_tramp_addr):
         mov $0xdeadbeefcafebabe, %rax
 DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaCl_trampoline_call_target):
         /*
@@ -27,6 +33,6 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaCl_trampoline_call_target):
          * location outside the sandbox so as not to defeat ASLR by
          * leaking address space layout to untrusted code.
          */
-        call *(%rax)
+        jmp *(%rax)
         hlt
 DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaCl_trampoline_code_end):

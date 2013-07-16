@@ -96,7 +96,12 @@ int NaClMakeDispatchAddrs(struct NaClApp *nap) {
 void  NaClPatchOneTrampolineCall(uintptr_t  call_target_addr,
                                  uintptr_t  target_addr) {
   struct NaClPatchInfo  patch_info;
+  struct NaClPatch      tramp_addr;
   struct NaClPatch      call_target;
+
+  tramp_addr.target = (((uintptr_t) &NaCl_trampoline_tramp_addr)
+                       - sizeof(uint32_t));
+  tramp_addr.value = (uint32_t) target_addr;
 
   NaClLog(6, "call_target_addr = 0x%"NACL_PRIxPTR"\n", call_target_addr);
   CHECK(0 != call_target_addr);
@@ -109,10 +114,14 @@ void  NaClPatchOneTrampolineCall(uintptr_t  call_target_addr,
   patch_info.abs64 = &call_target;
   patch_info.num_abs64 = 1;
 
+  patch_info.abs32 = &tramp_addr;
+  patch_info.num_abs32 = 1;
+
   patch_info.dst = target_addr;
   patch_info.src = (uintptr_t) &NaCl_trampoline_code;
   patch_info.nbytes = ((uintptr_t) &NaCl_trampoline_code_end
                        - (uintptr_t) &NaCl_trampoline_code);
+  CHECK(patch_info.nbytes <= NACL_INSTR_BLOCK_SIZE);
 
   NaClApplyPatchToMemory(&patch_info);
 }

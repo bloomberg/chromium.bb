@@ -19,6 +19,7 @@
  */
 extern char NaCl_trampoline_code;
 extern char NaCl_trampoline_code_end;
+extern char NaCl_trampoline_tramp_addr;
 extern char NaCl_trampoline_call_target;
 
 extern char NaClDispatchThunk;

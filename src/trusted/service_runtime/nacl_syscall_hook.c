@@ -50,12 +50,12 @@
  *     should be okay for internal errors.)
  */
 static void HandleStackContext(struct NaClAppThread *natp,
-                               uintptr_t            *tramp_ret_out,
+                               uint32_t             *tramp_ret_out,
                                uintptr_t            *sp_user_out) {
   struct NaClApp *nap = natp->nap;
   uintptr_t      sp_user;
   uintptr_t      sp_sys;
-  uintptr_t      tramp_ret;
+  uint32_t       tramp_ret;
   nacl_reg_t     user_ret;
 
   /*
@@ -74,8 +74,7 @@ static void HandleStackContext(struct NaClAppThread *natp,
    * trampoline was called (and hence the syscall number); we never
    * return to the trampoline.
    */
-  tramp_ret = *(volatile uintptr_t *) (sp_sys + NACL_TRAMPRET_FIX);
-  tramp_ret = NaClUserToSysStackAddr(nap, tramp_ret);
+  tramp_ret = *(volatile uint32_t *) (sp_sys + NACL_TRAMPRET_FIX);
   /*
    * Get the user return address (where we return to after the system
    * call).  We must ensure the address is properly sandboxed before
@@ -92,7 +91,7 @@ static void HandleStackContext(struct NaClAppThread *natp,
 NORETURN void NaClSyscallCSegHook(struct NaClThreadContext *ntcp) {
   struct NaClAppThread      *natp = NaClAppThreadFromThreadContext(ntcp);
   struct NaClApp            *nap;
-  uintptr_t                 tramp_ret;
+  uint32_t                  tramp_ret;
   size_t                    sysnum;
   uintptr_t                 sp_user;
   uint32_t                  sysret;
@@ -121,8 +120,7 @@ NORETURN void NaClSyscallCSegHook(struct NaClThreadContext *ntcp) {
    * code.
    */
 
-  sysnum = (tramp_ret - (nap->mem_start + NACL_SYSCALL_START_ADDR))
-      >> NACL_SYSCALL_BLOCK_SHIFT;
+  sysnum = (tramp_ret - NACL_SYSCALL_START_ADDR) >> NACL_SYSCALL_BLOCK_SHIFT;
 
   NaClLog(4, "Entering syscall %"NACL_PRIuS
           ": return address 0x%08"NACL_PRIxNACL_REG"\n",

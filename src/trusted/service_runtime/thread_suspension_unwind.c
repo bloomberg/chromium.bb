@@ -86,7 +86,7 @@ static int Unwind(struct NaClAppThread *natp, struct NaClSignalContext *regs,
       regs->prog_ctr < (uintptr_t) &NaClGetTlsFastPath1End) {
     *unwind_case = NACL_UNWIND_in_tls_fast_path;
     if (regs->prog_ctr < (uintptr_t) &NaClGetTlsFastPath1RspRestored) {
-      regs->stack_ptr += 8 * 2;  /* Pop user + trampoline return addresses */
+      regs->stack_ptr += 8;  /* Pop user return address */
     }
     return 1;
   }
@@ -94,7 +94,7 @@ static int Unwind(struct NaClAppThread *natp, struct NaClSignalContext *regs,
       regs->prog_ctr < (uintptr_t) &NaClGetTlsFastPath2End) {
     *unwind_case = NACL_UNWIND_in_tls_fast_path;
     if (regs->prog_ctr < (uintptr_t) &NaClGetTlsFastPath2RspRestored) {
-      regs->stack_ptr += 8 * 2;  /* Pop user + trampoline return addresses */
+      regs->stack_ptr += 8;  /* Pop user return address */
     }
     return 1;
   }
@@ -104,11 +104,12 @@ static int Unwind(struct NaClAppThread *natp, struct NaClSignalContext *regs,
   if (regs->prog_ctr >= nacl_syscall_seg &&
       regs->prog_ctr < nacl_syscall_seg_regs_saved) {
     *unwind_case = NACL_UNWIND_in_syscallseg;
-    /* Pop user + trampoline return addresses */
     if (NACL_BUILD_SUBARCH == 32) {
+      /* Pop user + trampoline return addresses */
       regs->stack_ptr += 4 + 8;
     } else {
-      regs->stack_ptr += 8 * 2;
+      /* Pop user return address. */
+      regs->stack_ptr += 8;
     }
     return 1;
   }

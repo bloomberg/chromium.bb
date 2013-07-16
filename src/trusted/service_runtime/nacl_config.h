@@ -207,7 +207,7 @@
 /*
  * The untrusted stack looks like this on x86-64:
  *   rsp-0x08: 8 byte return address pushed by untrusted code's call
- *   rsp-0x10: 8 byte return address pushed by the trampoline's call
+ *   rsp-0x10: 4 byte pseudo return address saved by the trampoline
  *   rsp-0x28: 0x18 bytes of syscall arguments saved by NaClSyscallSeg
  */
 #  define NACL_TRAMPRET_FIX       (-0x10)

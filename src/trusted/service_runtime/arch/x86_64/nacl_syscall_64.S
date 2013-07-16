@@ -129,12 +129,12 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallSeg):
         cld
 
         /* Save system call arguments on the untrusted stack. */
-        movl %r9d, -0x04(%rsp)
-        movl %r8d, -0x08(%rsp)
-        movl %ecx, -0x0c(%rsp)
-        movl %edx, -0x10(%rsp)
-        movl %esi, -0x14(%rsp)
-        movl %edi, -0x18(%rsp)
+        movl %r9d, -0x0c(%rsp)
+        movl %r8d, -0x10(%rsp)
+        movl %ecx, -0x14(%rsp)
+        movl %edx, -0x18(%rsp)
+        movl %esi, -0x1c(%rsp)
+        movl %edi, -0x20(%rsp)
 
         /* rax, rdi, rsi, rdx, rcx, r8, r9 are usable for scratch */
 
@@ -152,7 +152,7 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallThreadCaptureFault):
          * Record the value of %rsp that we will restore when
          * returning to untrusted code from the syscall.
          */
-        leaq    0x10(%rsp), %rcx
+        leaq    8(%rsp), %rcx
         movq    %rcx, NACL_THREAD_CONTEXT_OFFSET_RSP(%rdx)
         movq    %r12, NACL_THREAD_CONTEXT_OFFSET_R12(%rdx)
         movq    %r13, NACL_THREAD_CONTEXT_OFFSET_R13(%rdx)
@@ -231,8 +231,7 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(MACROARG1):  /* Entry */
         get_tls
         movl    MACROARG4(%rdx), %eax
         /* sandbox the return, straight off the untrusted stack */
-        movq    0x8(%rsp), %rcx
-        addq    DOLLAR 0x10, %rsp
+        pop     %rcx
 DEFINE_GLOBAL_HIDDEN_IDENTIFIER(MACROARG2):  /* RspRestored */
         addl    DOLLAR 31, %ecx
         andl    DOLLAR 0xffffffe0, %ecx
