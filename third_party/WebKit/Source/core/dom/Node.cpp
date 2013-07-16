@@ -2274,6 +2274,10 @@ void Node::unregisterMutationObserver(MutationObserverRegistration* registration
     if (index == notFound)
         return;
 
+    // Deleting the registration may cause this node to be derefed, so we must make sure the Vector operation completes
+    // before that, in case |this| is destroyed (see MutationObserverRegistration::m_registrationNodeKeepAlive).
+    // FIXME: Simplify the registration/transient registration logic to make this understandable by humans.
+    RefPtr<Node> protect(this);
     registry->remove(index);
 }
 
