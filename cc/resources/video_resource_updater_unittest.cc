@@ -54,7 +54,8 @@ class VideoResourceUpdaterTest : public testing::Test {
   scoped_ptr<ResourceProvider> resource_provider3d_;
 };
 
-TEST_F(VideoResourceUpdaterTest, SoftwareFrame) {
+// TODO(danakj): Fix this test on ASAN: crbug.com/260920
+TEST_F(VideoResourceUpdaterTest, DISABLED_SoftwareFrame) {
   VideoResourceUpdater updater(resource_provider3d_.get());
   scoped_refptr<media::VideoFrame> video_frame = CreateTestYUVVideoFrame();
 
@@ -63,7 +64,8 @@ TEST_F(VideoResourceUpdaterTest, SoftwareFrame) {
   EXPECT_EQ(VideoFrameExternalResources::YUV_RESOURCE, resources.type);
 }
 
-TEST_F(VideoResourceUpdaterTest, LostContextForSoftwareFrame) {
+// TODO(danakj): Fix this test on ASAN: crbug.com/260920
+TEST_F(VideoResourceUpdaterTest, DISABLED_LostContextForSoftwareFrame) {
   VideoResourceUpdater updater(resource_provider3d_.get());
   scoped_refptr<media::VideoFrame> video_frame = CreateTestYUVVideoFrame();
 
