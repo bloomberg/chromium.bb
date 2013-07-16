@@ -92,16 +92,25 @@ def GetCPEFromCPV(category, package, version):
   for line in lines:
     if "ID: cpe" not in line:
       continue
-    cpes.append("%s:%s" % (line.split()[1], version))
+    cpes.append("%s:%s" % (line.split()[1], version.replace("_", "")))
   # Note that we're assuming we can combine the root of the CPE, taken
   # from metadata.xml, and tack on the version number as used by
   # Portage, and come up with a legitimate CPE. This works so long as
   # Portage and CPE agree on the precise formatting of the version
-  # number, which they almost always do. There is one known exception
-  # to this so far. Our code will decide we have
+  # number, which they almost always do. The major exception we've
+  # identified thus far is that our ebuilds have a pattern of inserting
+  # underscores prior to patchlevels, that neither upstream nor CPE
+  # use. For example, our code will decide we have
   # cpe:/a:todd_miller:sudo:1.8.6_p7 yet the advisories use a format
   # like cpe:/a:todd_miller:sudo:1.8.6p7, without the underscore. (CPE
   # is "right" in this example, in that it matches www.sudo.ws.)
+  #
+  # Removing underscores seems to improve our chances of correctly
+  # arriving at the CPE used by NVD. However, at the end of the day,
+  # ebuild version numbers are rev'd by people who don't have "try to
+  # match NVD" as one of their goals, and there is always going to be
+  # some risk of minor formatting disagreements at the version number
+  # level, if not from stray underscores then from something else.
   #
   # This is livable so long as you do some fuzzy version number
   # comparison in your vulnerability monitoring, between what-we-have
