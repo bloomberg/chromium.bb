@@ -396,7 +396,7 @@ void PannerNode::notifyAudioSourcesConnectedToNode(AudioNode* node)
         
     // First check if this node is an AudioBufferSourceNode. If so, let it know about us so that doppler shift pitch can be taken into account.
     if (node->nodeType() == NodeTypeAudioBufferSource) {
-        AudioBufferSourceNode* bufferSourceNode = reinterpret_cast<AudioBufferSourceNode*>(node);
+        AudioBufferSourceNode* bufferSourceNode = static_cast<AudioBufferSourceNode*>(node);
         bufferSourceNode->setPannerNode(this);
     } else {    
         // Go through all inputs to this node.
