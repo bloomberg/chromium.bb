@@ -1799,6 +1799,8 @@
         'browser/ui/views/location_bar/location_bar_view.h',
         'browser/ui/views/location_bar/location_icon_view.cc',
         'browser/ui/views/location_bar/location_icon_view.h',
+        'browser/ui/views/location_bar/mic_search_view.cc',
+        'browser/ui/views/location_bar/mic_search_view.h',
         'browser/ui/views/location_bar/open_pdf_in_reader_view.cc',
         'browser/ui/views/location_bar/open_pdf_in_reader_view.h',
         'browser/ui/views/location_bar/page_action_image_view.cc',
