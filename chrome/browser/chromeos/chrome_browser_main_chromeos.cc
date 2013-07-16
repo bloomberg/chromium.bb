@@ -263,14 +263,6 @@ class DBusServices {
  public:
   explicit DBusServices(const content::MainFunctionParams& parameters)
       : cros_initialized_(false) {
-    // Initialize CrosLibrary only for the browser, unless running tests
-    // (which do their own CrosLibrary setup).
-    if (!parameters.ui_task) {
-      const bool use_stub = !base::chromeos::IsRunningOnChromeOS();
-      CrosLibrary::Initialize(use_stub);
-      cros_initialized_ = true;
-    }
-
     if (!base::chromeos::IsRunningOnChromeOS()) {
       // Override this path on the desktop, so that the user policy key can be
       // stored by the stub SessionManagerClient.
@@ -297,6 +289,15 @@ class DBusServices {
             content::BrowserThread::FILE));
     disks::DiskMountManager::Initialize();
     cryptohome::AsyncMethodCaller::Initialize();
+
+    // Initialize CrosLibrary only for the browser, unless running tests
+    // (which do their own CrosLibrary setup with ScopedStubCrosEnabler in
+    // InProcessBrowserTest).
+    if (!parameters.ui_task) {
+      const bool use_stub = !base::chromeos::IsRunningOnChromeOS();
+      CrosLibrary::Initialize(use_stub);
+      cros_initialized_ = true;
+    }
 
     // Always initialize these handlers which should not conflict with
     // NetworkLibrary.
@@ -335,16 +336,11 @@ class DBusServices {
 
   ~DBusServices() {
     ConnectivityStateHelper::Shutdown();
-    // CrosLibrary is shut down before DBusThreadManager even though it
-    // is initialized first becuase some of its libraries depend on DBus
-    // clients.
-    // TODO(hashimoto): Resolve this situation by removing CrosLibrary.
-    // (crosbug.com/26160)
-    if (cros_initialized_ && CrosLibrary::Get())
-      CrosLibrary::Shutdown();
 
     CertLibrary::Shutdown();
     NetworkHandler::Shutdown();
+    if (cros_initialized_)
+      CrosLibrary::Shutdown();
 
     cryptohome::AsyncMethodCaller::Shutdown();
     disks::DiskMountManager::Shutdown();
