@@ -113,7 +113,7 @@ SVGTextMetrics::SVGTextMetrics(RenderSVGInlineText* text, unsigned position, uns
     m_height = text->scaledFont().fontMetrics().floatHeight() / scalingFactor;
     if (needsContext) {
         m_glyph.isValid = true;
-        m_glyph.unicodeString = text->substring(position, length);
+        m_glyph.unicodeString = String(text->bloatedCharacters() + position, length);
         m_glyph.name = glyphName;
     }
 
