@@ -81,7 +81,7 @@
                         '<(DEPTH)/testing/gmock.gyp:gmock',
                         '<(DEPTH)/testing/gtest.gyp:gtest',
                         '<(DEPTH)/third_party/icu/icu.gyp:*',
-                        '<(DEPTH)/third_party/libjpeg_turbo/libjpeg.gyp:libjpeg',
+                        '<(libjpeg_gyp_path):libjpeg',
                         '<(DEPTH)/third_party/libpng/libpng.gyp:libpng',
                         '<(DEPTH)/third_party/libwebp/libwebp.gyp:libwebp',
                         '<(DEPTH)/third_party/libxml/libxml.gyp:libxml',
