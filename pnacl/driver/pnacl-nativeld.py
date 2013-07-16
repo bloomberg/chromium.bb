@@ -88,9 +88,11 @@ LDPatterns = [
   ( ('-L', '(.*)'),
     "env.append('SEARCH_DIRS_USER', pathtools.normalize($0))"),
 
-  # Note: we do not yet support all the flags such as '-Ttext',
-  # '--section-start .text=', etc because the corner cases of layout in gold may
-  # not all be worked out yet. They can be added (and tested!) as needed.
+  # Note: we do not yet support all the combinations of flags which affect
+  # layout of the various sections and segments because the corner cases in gold
+  # may not all be worked out yet. They can be added (and tested!) as needed.
+  ( ('(-Ttext=.*)'),              PassThrough),
+  ( ('(--section-start)', '(.+)'),PassThrough),
   ( ('(-e)','(.*)'),              PassThrough),
   ( '(--entry=.*)',               PassThrough),
   ( '(-M)',                       PassThrough),

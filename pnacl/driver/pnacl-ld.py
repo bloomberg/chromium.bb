@@ -204,10 +204,6 @@ LDPatterns = [
   ( ('(-rpath-link)=(.*)'),
     "env.append('TRANSLATE_FLAGS', $0+'='+pathtools.normalize($1))"),
 
-  ( ('(-Ttext)','(.*)'),     AddToNativeFlags),
-  ( ('(-Ttext=.*)'),         AddToNativeFlags),
-  ( ('(-Ttext-segment=.*)'), AddToNativeFlags),
-
   # This overrides the builtin linker script.
   ( ('(-T)', '(.*)'),    AddToNativeFlags),
 
@@ -221,9 +217,6 @@ LDPatterns = [
   ( '-Wn,(.*)', "env.append('LD_FLAGS_NATIVE', *($0.split(',')))"),
   # Flags to pass to translate
   ( '-Wt,(.*)', "env.append('TRANSLATE_FLAGS_USER', *($0.split(',')))"),
-
-
-  ( ('(--section-start)','(.*)'), AddToNativeFlags),
 
   # NOTE: -export-dynamic doesn't actually do anything to the bitcode link
   # right now.  This is just in case we do want to record that in metadata
