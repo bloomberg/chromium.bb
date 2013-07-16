@@ -32,7 +32,6 @@
     'variables': {
         'webkit_unittest_files': [
             'tests/ArenaTestHelpers.h',
-            'tests/ChromeClientImplTest.cpp',
             'tests/CustomEventTest.cpp',
             'tests/DragImageTest.cpp',
             'tests/FakeWebPlugin.cpp',

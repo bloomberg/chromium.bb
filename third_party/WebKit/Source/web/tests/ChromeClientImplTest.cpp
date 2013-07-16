@@ -30,14 +30,13 @@
 
 #include "config.h"
 
-#include <gtest/gtest.h>
-
 #include "WebFrameClient.h"
 #include "WebInputEvent.h"
 #include "WebView.h"
 #include "WebViewClient.h"
 #include "WebViewImpl.h"
 #include "core/page/Chrome.h"
+#include <gtest/gtest.h>
 
 using namespace WebKit;
 

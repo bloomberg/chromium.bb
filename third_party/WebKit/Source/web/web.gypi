@@ -294,6 +294,7 @@
     ],
     'web_unittest_files': [
       'tests/AssociatedURLLoaderTest.cpp',
+      'tests/ChromeClientImplTest.cpp',
     ],
   },
 }
