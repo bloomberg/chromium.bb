@@ -7,6 +7,7 @@
 
 import glob
 import logging
+import multiprocessing
 import optparse
 import os
 import stat
@@ -428,9 +429,14 @@ class ChromeTests:
       os.makedirs(out_dir)
     script = os.path.join(self._source_dir, "webkit", "tools", "layout_tests",
                           "run_webkit_tests.py")
+    # http://crbug.com/260627: After the switch to content_shell from DRT, each
+    # test now brings up 3 processes.  Under Valgrind, they become memory bound
+    # and can eventually OOM if we don't reduce the total count.
+    jobs = int(multiprocessing.cpu_count() * 0.5)
     script_cmd = ["python", script, "-v",
                   "--run-singly",  # run a separate DumpRenderTree for each test
                   "--fully-parallel",
+                  "--child-processes=%d" % jobs,
                   "--time-out-ms=200000",
                   "--no-retry-failures",  # retrying takes too much time
                   # http://crbug.com/176908: Don't launch a browser when done.
