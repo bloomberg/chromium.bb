@@ -137,6 +137,15 @@ redraw_handler(struct widget *widget, void *data)
 	cairo_fill(cr);
 
 	wl_list_for_each(s, &nested->surface_list, link) {
+		display_acquire_window_surface(nested->display,
+					       nested->window, NULL);
+
+		glBindTexture(GL_TEXTURE_2D, s->texture);
+		image_target_texture_2d(GL_TEXTURE_2D, s->image);
+
+		display_release_window_surface(nested->display,
+					       nested->window);
+
 		cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
 		cairo_set_source_surface(cr, s->cairo_surface,
 					 allocation.x + 10,
@@ -313,9 +322,6 @@ surface_attach(struct wl_client *client,
 						    CAIRO_CONTENT_COLOR_ALPHA,
 						    surface->texture,
 						    width, height);
-
-	glBindTexture(GL_TEXTURE_2D, surface->texture);
-	image_target_texture_2d(GL_TEXTURE_2D, surface->image);
 
 	window_schedule_redraw(nested->window);
 }
