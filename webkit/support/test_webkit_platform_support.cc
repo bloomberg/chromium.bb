@@ -36,7 +36,6 @@
 #include "webkit/glue/simple_webmimeregistry_impl.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webkitplatformsupport_impl.h"
-#include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/renderer/appcache/web_application_cache_host_impl.h"
 #include "webkit/renderer/compositor_bindings/web_compositor_support_impl.h"
 #include "webkit/support/gc_extension.h"
@@ -357,9 +356,6 @@ void TestWebKitPlatformSupport::setGamepadData(
 
 void TestWebKitPlatformSupport::GetPlugins(
     bool refresh, std::vector<webkit::WebPluginInfo>* plugins) {
-  if (refresh)
-    webkit::npapi::PluginList::Singleton()->RefreshPlugins();
-  webkit::npapi::PluginList::Singleton()->GetPlugins(plugins);
 }
 
 webkit_glue::ResourceLoaderBridge*
