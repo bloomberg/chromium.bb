@@ -98,8 +98,6 @@ public:
     virtual void setCanHaveScrollbars(bool);
     bool canHaveScrollbars() const { return horizontalScrollbarMode() != ScrollbarAlwaysOff || verticalScrollbarMode() != ScrollbarAlwaysOff; }
 
-    virtual void setScrollbarOverlayStyle(ScrollbarOverlayStyle) OVERRIDE;
-
     // By default you only receive paint events for the area that is visible. In the case of using a
     // tiled backing store, this function can be set, so that the view paints the entire contents.
     bool paintsEntireContents() const { return m_paintsEntireContents; }
@@ -344,27 +342,6 @@ private:
     // Called when the scroll position within this view changes.  FrameView overrides this to generate repaint invalidations.
     virtual void repaintFixedElementsAfterScrolling() { }
     virtual void updateFixedElementsAfterScrolling() { }
-
-    void platformInit();
-    void platformDestroy();
-    void platformAddChild(Widget*);
-    void platformRemoveChild(Widget*);
-    void platformSetScrollbarModes();
-    void platformScrollbarModes(ScrollbarMode& horizontal, ScrollbarMode& vertical) const;
-    void platformSetCanBlitOnScroll(bool);
-    bool platformCanBlitOnScroll() const;
-    IntRect platformVisibleContentRect(bool includeScrollbars) const;
-    void platformSetContentsSize();
-    IntRect platformContentsToScreen(const IntRect&) const;
-    IntPoint platformScreenToContents(const IntPoint&) const;
-    void platformSetScrollPosition(const IntPoint&);
-    bool platformScroll(ScrollDirection, ScrollGranularity);
-    void platformSetScrollbarsSuppressed(bool repaintOnUnsuppress);
-    void platformRepaintContentRectangle(const IntRect&);
-    bool platformIsOffscreen() const;
-    void platformSetScrollbarOverlayStyle(ScrollbarOverlayStyle);
-   
-    void platformSetScrollOrigin(const IntPoint&, bool updatePositionAtAll, bool updatePositionSynchronously);
 
     void calculateOverhangAreasForPainting(IntRect& horizontalOverhangRect, IntRect& verticalOverhangRect);
     void updateOverhangAreas();

@@ -54,12 +54,10 @@ ScrollView::ScrollView()
     , m_paintsEntireContents(false)
     , m_clipsRepaints(true)
 {
-    platformInit();
 }
 
 ScrollView::~ScrollView()
 {
-    platformDestroy();
 }
 
 void ScrollView::addChild(PassRefPtr<Widget> prpChild) 
@@ -745,12 +743,6 @@ Scrollbar* ScrollView::scrollbarAtPoint(const IntPoint& windowPoint)
     return 0;
 }
 
-void ScrollView::setScrollbarOverlayStyle(ScrollbarOverlayStyle overlayStyle)
-{
-    ScrollableArea::setScrollbarOverlayStyle(overlayStyle);
-    platformSetScrollbarOverlayStyle(overlayStyle);
-}
-
 void ScrollView::setFrameRect(const IntRect& newRect)
 {
     IntRect oldRect = frameRect();
@@ -1182,82 +1174,5 @@ void ScrollView::setScrollOrigin(const IntPoint& origin, bool updatePositionAtAl
     if (updatePositionAtAll && updatePositionSynchronously)
         updateScrollbars(scrollOffset());
 }
-
-void ScrollView::platformInit()
-{
-}
-
-void ScrollView::platformDestroy()
-{
-}
-
-void ScrollView::platformSetScrollbarsSuppressed(bool)
-{
-}
-
-void ScrollView::platformSetScrollOrigin(const IntPoint&, bool, bool)
-{
-}
-
-void ScrollView::platformSetScrollbarOverlayStyle(ScrollbarOverlayStyle)
-{
-}
-
-void ScrollView::platformSetScrollbarModes()
-{
-}
-
-void ScrollView::platformScrollbarModes(ScrollbarMode& horizontal, ScrollbarMode& vertical) const
-{
-    horizontal = ScrollbarAuto;
-    vertical = ScrollbarAuto;
-}
-
-void ScrollView::platformSetCanBlitOnScroll(bool)
-{
-}
-
-bool ScrollView::platformCanBlitOnScroll() const
-{
-    return false;
-}
-
-IntRect ScrollView::platformVisibleContentRect(bool) const
-{
-    return IntRect();
-}
-
-void ScrollView::platformSetContentsSize()
-{
-}
-
-IntRect ScrollView::platformContentsToScreen(const IntRect& rect) const
-{
-    return rect;
-}
-
-IntPoint ScrollView::platformScreenToContents(const IntPoint& point) const
-{
-    return point;
-}
-
-void ScrollView::platformSetScrollPosition(const IntPoint&)
-{
-}
-
-bool ScrollView::platformScroll(ScrollDirection, ScrollGranularity)
-{
-    return true;
-}
-
-void ScrollView::platformRepaintContentRectangle(const IntRect&)
-{
-}
-
-bool ScrollView::platformIsOffscreen() const
-{
-    return false;
-}
-
 
 }
