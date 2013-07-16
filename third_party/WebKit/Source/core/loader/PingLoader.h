@@ -35,8 +35,8 @@
 #include "core/platform/Timer.h"
 #include "core/platform/network/ResourceHandleClient.h"
 #include "core/platform/network/ResourceHandleTypes.h"
-#include <wtf/Noncopyable.h>
-#include <wtf/RefPtr.h>
+#include "wtf/Noncopyable.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 

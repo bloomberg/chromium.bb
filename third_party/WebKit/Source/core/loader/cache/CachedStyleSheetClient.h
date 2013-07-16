@@ -27,7 +27,7 @@
 #define CachedStyleSheetClient_h
 
 #include "core/loader/cache/CachedResourceClient.h"
-#include <wtf/Forward.h>
+#include "wtf/Forward.h"
 
 namespace WebCore {
 class CachedCSSStyleSheet;

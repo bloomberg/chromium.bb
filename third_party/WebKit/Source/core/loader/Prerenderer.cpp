@@ -40,12 +40,11 @@
 #include "core/platform/PrerenderHandle.h"
 #include "weborigin/ReferrerPolicy.h"
 #include "weborigin/SecurityPolicy.h"
-
-#include <wtf/MemoryInstrumentationVector.h>
-#include <wtf/PassOwnPtr.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefPtr.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/MemoryInstrumentationVector.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefPtr.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

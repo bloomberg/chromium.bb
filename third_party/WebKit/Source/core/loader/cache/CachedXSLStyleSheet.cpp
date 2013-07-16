@@ -32,7 +32,7 @@
 #include "core/loader/cache/CachedResourceClientWalker.h"
 #include "core/loader/cache/CachedStyleSheetClient.h"
 #include "core/platform/SharedBuffer.h"
-#include <wtf/Vector.h>
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

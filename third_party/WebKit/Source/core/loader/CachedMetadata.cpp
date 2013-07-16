@@ -32,7 +32,7 @@
 #include "core/loader/CachedMetadata.h"
 
 #include "core/dom/WebCoreMemoryInstrumentation.h"
-#include <wtf/MemoryInstrumentationVector.h>
+#include "wtf/MemoryInstrumentationVector.h"
 
 namespace WebCore {
 

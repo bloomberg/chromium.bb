@@ -28,12 +28,12 @@
  */
 
 #include "config.h"
+#include "core/loader/cache/CachedShader.h"
 
 #include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/loader/TextResourceDecoder.h"
-#include "core/loader/cache/CachedShader.h"
 #include "core/platform/SharedBuffer.h"
-#include <wtf/text/StringBuilder.h>
+#include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
 
@@ -68,4 +68,3 @@ void CachedShader::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
 }
 
 } // namespace WebCore
-

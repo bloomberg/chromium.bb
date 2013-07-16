@@ -26,8 +26,8 @@
 #define CachedResourceClientWalker_h
 
 #include "core/loader/cache/CachedResourceClient.h"
-#include <wtf/HashCountedSet.h>
-#include <wtf/Vector.h>
+#include "wtf/HashCountedSet.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

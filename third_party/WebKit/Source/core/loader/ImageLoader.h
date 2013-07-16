@@ -26,7 +26,7 @@
 #include "core/loader/cache/CachedImage.h"
 #include "core/loader/cache/CachedImageClient.h"
 #include "core/loader/cache/CachedResourceHandle.h"
-#include <wtf/text/AtomicString.h>
+#include "wtf/text/AtomicString.h"
 
 namespace WebCore {
 

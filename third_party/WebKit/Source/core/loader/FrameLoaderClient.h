@@ -35,8 +35,8 @@
 #include "core/loader/NavigationPolicy.h"
 #include "core/page/LayoutMilestones.h"
 #include "core/platform/network/ResourceLoadPriority.h"
-#include <wtf/Forward.h>
-#include <wtf/Vector.h>
+#include "wtf/Forward.h"
+#include "wtf/Vector.h"
 
 typedef class _jobject* jobject;
 

@@ -26,7 +26,7 @@
 #ifndef DocumentLoadTiming_h
 #define DocumentLoadTiming_h
 
-#include <wtf/CurrentTime.h>
+#include "wtf/CurrentTime.h"
 
 namespace WebCore {
 

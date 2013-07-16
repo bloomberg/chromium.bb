@@ -34,11 +34,11 @@
 #include "core/platform/graphics/BitmapImage.h"
 #include "core/rendering/RenderObject.h"
 #include "core/svg/graphics/SVGImage.h"
-#include <wtf/CurrentTime.h>
-#include <wtf/MemoryInstrumentationHashMap.h>
-#include <wtf/MemoryObjectInfo.h>
-#include <wtf/StdLibExtras.h>
-#include <wtf/Vector.h>
+#include "wtf/CurrentTime.h"
+#include "wtf/MemoryInstrumentationHashMap.h"
+#include "wtf/MemoryObjectInfo.h"
+#include "wtf/StdLibExtras.h"
+#include "wtf/Vector.h"
 
 using std::max;
 

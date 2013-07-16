@@ -32,9 +32,9 @@
 #define MHTMLParser_h
 
 #include "core/platform/SharedBufferChunkReader.h"
-#include <wtf/RefPtr.h>
-#include <wtf/text/WTFString.h>
-#include <wtf/Vector.h>
+#include "wtf/RefPtr.h"
+#include "wtf/Vector.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

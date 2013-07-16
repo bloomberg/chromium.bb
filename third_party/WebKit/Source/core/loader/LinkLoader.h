@@ -37,8 +37,7 @@
 #include "core/loader/cache/CachedResourceHandle.h"
 #include "core/platform/PrerenderClient.h"
 #include "core/platform/Timer.h"
-
-#include <wtf/RefPtr.h>
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 
