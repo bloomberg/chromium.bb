@@ -53,15 +53,15 @@ public:
 
 class ImageFrameGenerator : public ThreadSafeRefCounted<ImageFrameGenerator> {
 public:
-    static PassRefPtr<ImageFrameGenerator> create(const SkISize& fullSize, PassRefPtr<SharedBuffer> data, bool allDataReceived, bool isMultiFrame = false)
+    static PassRefPtr<ImageFrameGenerator> create(const SkISize& fullSize, PassRefPtr<SharedBuffer> data, bool allDataReceived)
     {
-        return adoptRef(new ImageFrameGenerator(fullSize, data, allDataReceived, isMultiFrame));
+        return adoptRef(new ImageFrameGenerator(fullSize, data, allDataReceived));
     }
 
-    ImageFrameGenerator(const SkISize& fullSize, PassRefPtr<SharedBuffer>, bool allDataReceived, bool isMultiFrame);
+    ImageFrameGenerator(const SkISize& fullSize, PassRefPtr<SharedBuffer>, bool allDataReceived);
     ~ImageFrameGenerator();
 
-    const ScaledImageFragment* decodeAndScale(const SkISize& scaledSize, size_t index = 0);
+    const ScaledImageFragment* decodeAndScale(const SkISize& scaledSize);
 
     void setData(PassRefPtr<SharedBuffer>, bool allDataReceived);
 
@@ -70,22 +70,19 @@ public:
 
     SkISize getFullSize() const { return m_fullSize; }
 
-    bool isMultiFrame() const { return m_isMultiFrame; }
-
     void setImageDecoderFactoryForTesting(PassOwnPtr<ImageDecoderFactory> factory) { m_imageDecoderFactory = factory; }
 
-    // FIXME: Return alpha state for each frame.
     bool hasAlpha();
 
 private:
     // These methods are called while m_decodeMutex is locked.
-    const ScaledImageFragment* tryToLockCompleteCache(const SkISize& scaledSize, size_t index);
-    const ScaledImageFragment* tryToScale(const ScaledImageFragment* fullSizeImage, const SkISize& scaledSize, size_t index);
-    const ScaledImageFragment* tryToResumeDecodeAndScale(const SkISize& scaledSize, size_t index);
-    const ScaledImageFragment* tryToDecodeAndScale(const SkISize& scaledSize, size_t index);
+    const ScaledImageFragment* tryToLockCompleteCache(const SkISize& scaledSize);
+    const ScaledImageFragment* tryToScale(const ScaledImageFragment* fullSizeImage, const SkISize& scaledSize);
+    const ScaledImageFragment* tryToResumeDecodeAndScale(const SkISize& scaledSize);
+    const ScaledImageFragment* tryToDecodeAndScale(const SkISize& scaledSize);
 
     // Use the given decoder to decode. If a decoder is not given then try to create one.
-    PassOwnPtr<ScaledImageFragment> decode(size_t index, ImageDecoder**);
+    PassOwnPtr<ScaledImageFragment> decode(ImageDecoder**);
 
     // Return the next generation ID of a new image object. This is used
     // to identify images of the same frame from different stages of
@@ -94,7 +91,6 @@ private:
 
     SkISize m_fullSize;
     ThreadSafeDataTransport m_data;
-    bool m_isMultiFrame;
     bool m_decodeFailedAndEmpty;
     bool m_hasAlpha;
     size_t m_decodeCount;

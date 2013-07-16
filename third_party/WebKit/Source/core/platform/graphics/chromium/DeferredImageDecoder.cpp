@@ -46,7 +46,6 @@ DeferredImageDecoder::DeferredImageDecoder(PassOwnPtr<ImageDecoder> actualDecode
     : m_allDataReceived(false)
     , m_actualDecoder(actualDecoder)
     , m_orientation(DefaultImageOrientation)
-    , m_repetitionCount(cAnimationNone)
 {
 }
 
@@ -85,7 +84,7 @@ SkBitmap DeferredImageDecoder::createResizedLazyDecodingBitmap(const SkBitmap& b
     // FIXME: This code has the potential problem that multiple
     // LazyDecodingPixelRefs are created even though they share the same
     // scaled size and ImageFrameGenerator.
-    resizedBitmap.setPixelRef(new LazyDecodingPixelRef(pixelRef->frameGenerator(), scaledSize, pixelRef->frameIndex(), scaledSubset))->unref();
+    resizedBitmap.setPixelRef(new LazyDecodingPixelRef(pixelRef->frameGenerator(), scaledSize, scaledSubset))->unref();
 
     // See comments in createLazyDecodingBitmap().
     resizedBitmap.setImmutable();
@@ -104,25 +103,45 @@ String DeferredImageDecoder::filenameExtension() const
 
 ImageFrame* DeferredImageDecoder::frameBufferAtIndex(size_t index)
 {
-    prepareLazyDecodedFrames();
-    if (index < m_lazyDecodedFrames.size())
-        return m_lazyDecodedFrames[index].get();
-    if (m_actualDecoder)
-        return m_actualDecoder->frameBufferAtIndex(index);
-    return 0;
+    // Only defer image decoding if this is a single frame image. The reason is
+    // because a multiframe is usually animated GIF. Animation is handled by
+    // BitmapImage which uses some metadata functions that do synchronous image
+    // decoding.
+    if (s_enabled
+        && m_actualDecoder
+        && m_actualDecoder->repetitionCount() == cAnimationNone
+        && m_actualDecoder->isSizeAvailable()
+        && m_actualDecoder->frameCount() == 1) {
+
+        m_size = m_actualDecoder->size();
+        m_filenameExtension = m_actualDecoder->filenameExtension();
+        m_orientation = m_actualDecoder->orientation();
+
+        SkBitmap lazyDecodedSkBitmap = createLazyDecodingBitmap();
+        m_lazyDecodedFrame.setSkBitmap(lazyDecodedSkBitmap);
+
+        // Don't mark the frame as completely decoded until the underlying
+        // decoder has really decoded it. Until then, our data and metadata may
+        // be incorrect, so callers can't rely on them.
+        m_lazyDecodedFrame.setStatus(ImageFrame::FramePartial);
+    }
+
+    return m_actualDecoder ? m_actualDecoder->frameBufferAtIndex(index) : &m_lazyDecodedFrame;
 }
 
 void DeferredImageDecoder::setData(SharedBuffer* data, bool allDataReceived)
 {
     if (m_actualDecoder) {
+        // Keep a reference to data until image decoding is deferred.
+        // When image decoding is deferred then ownership of m_data is
+        // transferred to ImageDecodingStore.
         m_data = data;
         m_allDataReceived = allDataReceived;
         m_actualDecoder->setData(data, allDataReceived);
-        prepareLazyDecodedFrames();
-    }
-
-    if (m_frameGenerator)
+    } else {
+        ASSERT(!m_data);
         m_frameGenerator->setData(data, allDataReceived);
+    }
 }
 
 bool DeferredImageDecoder::isSizeAvailable()
@@ -139,19 +158,17 @@ IntSize DeferredImageDecoder::size() const
 
 IntSize DeferredImageDecoder::frameSizeAtIndex(size_t index) const
 {
-    // FIXME: Frame size is assumed to be uniform. This might not be true for
-    // future supported codecs.
     return m_actualDecoder ? m_actualDecoder->frameSizeAtIndex(index) : m_size;
 }
 
 size_t DeferredImageDecoder::frameCount()
 {
-    return m_actualDecoder ? m_actualDecoder->frameCount() : m_lazyDecodedFrames.size();
+    return m_actualDecoder ? m_actualDecoder->frameCount() : 1;
 }
 
 int DeferredImageDecoder::repetitionCount() const
 {
-    return m_actualDecoder ? m_actualDecoder->repetitionCount() : m_repetitionCount;
+    return m_actualDecoder ? m_actualDecoder->repetitionCount() : cAnimationNone;
 }
 
 size_t DeferredImageDecoder::clearCacheExceptFrame(size_t clearExceptFrame)
@@ -163,37 +180,26 @@ size_t DeferredImageDecoder::clearCacheExceptFrame(size_t clearExceptFrame)
 
 bool DeferredImageDecoder::frameHasAlphaAtIndex(size_t index) const
 {
-    // FIXME: Report this for multi-frame image.
-    if (m_actualDecoder)
-        return m_actualDecoder->frameHasAlphaAtIndex(index);
-    if (!m_frameGenerator->isMultiFrame())
-        return m_frameGenerator->hasAlpha();
-    return true;
+    return m_actualDecoder ? m_actualDecoder->frameHasAlphaAtIndex(index) : m_frameGenerator->hasAlpha();
 }
 
 bool DeferredImageDecoder::frameIsCompleteAtIndex(size_t index) const
 {
-    if (m_actualDecoder)
-        return m_actualDecoder->frameIsCompleteAtIndex(index);
-    if (index < m_lazyDecodedFrames.size())
-        return m_lazyDecodedFrames[index]->status() == ImageFrame::FrameComplete;
-    return false;
+    // TODO: Implement this for deferred decoding.
+    return m_actualDecoder && m_actualDecoder->frameIsCompleteAtIndex(index);
 }
 
 float DeferredImageDecoder::frameDurationAtIndex(size_t index) const
 {
-    if (m_actualDecoder)
-        return m_actualDecoder->frameDurationAtIndex(index);
-    if (index < m_lazyDecodedFrames.size())
-        return m_lazyDecodedFrames[index]->duration();
-    return 0;
+    // TODO: Implement this for deferred decoding.
+    return m_actualDecoder ? m_actualDecoder->frameDurationAtIndex(index) : 0;
 }
 
 unsigned DeferredImageDecoder::frameBytesAtIndex(size_t index) const
 {
     // If frame decoding is deferred then it is not managed by MemoryCache
     // so return 0 here.
-    return m_frameGenerator ? 0 : m_actualDecoder->frameBytesAtIndex(index);
+    return m_actualDecoder ? m_actualDecoder->frameBytesAtIndex(index) : 0;
 }
 
 ImageOrientation DeferredImageDecoder::orientation() const
@@ -201,50 +207,7 @@ ImageOrientation DeferredImageDecoder::orientation() const
     return m_actualDecoder ? m_actualDecoder->orientation() : m_orientation;
 }
 
-void DeferredImageDecoder::activateLazyDecoding()
-{
-    if (m_frameGenerator)
-        return;
-    m_size = m_actualDecoder->size();
-    m_orientation = m_actualDecoder->orientation();
-    m_filenameExtension = m_actualDecoder->filenameExtension();
-    const bool isSingleFrame = m_actualDecoder->repetitionCount() == cAnimationNone || (m_allDataReceived && m_actualDecoder->frameCount() == 1u);
-    m_frameGenerator = ImageFrameGenerator::create(SkISize::Make(m_size.width(), m_size.height()), m_data, m_allDataReceived, !isSingleFrame);
-}
-
-void DeferredImageDecoder::prepareLazyDecodedFrames()
-{
-    if (!s_enabled
-        || !m_actualDecoder
-        || !m_actualDecoder->isSizeAvailable()
-        || m_actualDecoder->filenameExtension() == "ico")
-        return;
-
-    activateLazyDecoding();
-
-    const size_t previousSize = m_lazyDecodedFrames.size();
-    m_lazyDecodedFrames.resize(m_actualDecoder->frameCount());
-    for (size_t i = previousSize; i < m_lazyDecodedFrames.size(); ++i) {
-        OwnPtr<ImageFrame> frame(adoptPtr(new ImageFrame()));
-        frame->setSkBitmap(createLazyDecodingBitmap(i));
-        frame->setDuration(m_actualDecoder->frameDurationAtIndex(i));
-        frame->setStatus(m_actualDecoder->frameIsCompleteAtIndex(i) ? ImageFrame::FrameComplete : ImageFrame::FramePartial);
-        m_lazyDecodedFrames[i] = frame.release();
-    }
-
-    // The last lazy decoded frame created from previous call might be
-    // incomplete so update its state.
-    if (previousSize)
-        m_lazyDecodedFrames[previousSize - 1]->setStatus(m_actualDecoder->frameIsCompleteAtIndex(previousSize - 1) ? ImageFrame::FrameComplete : ImageFrame::FramePartial);
-
-    if (m_allDataReceived) {
-        m_repetitionCount = m_actualDecoder->repetitionCount();
-        m_actualDecoder.clear();
-        m_data = nullptr;
-    }
-}
-
-SkBitmap DeferredImageDecoder::createLazyDecodingBitmap(size_t index)
+SkBitmap DeferredImageDecoder::createLazyDecodingBitmap()
 {
     SkISize fullSize = SkISize::Make(m_actualDecoder->size().width(), m_actualDecoder->size().height());
     ASSERT(!fullSize.isEmpty());
@@ -254,7 +217,11 @@ SkBitmap DeferredImageDecoder::createLazyDecodingBitmap(size_t index)
     // Creates a lazily decoded SkPixelRef that references the entire image without scaling.
     SkBitmap bitmap;
     bitmap.setConfig(SkBitmap::kARGB_8888_Config, fullSize.width(), fullSize.height());
-    bitmap.setPixelRef(new LazyDecodingPixelRef(m_frameGenerator, fullSize, index, fullRect))->unref();
+
+    m_frameGenerator = ImageFrameGenerator::create(fullSize, m_data.release(), m_allDataReceived);
+    m_actualDecoder.clear();
+
+    bitmap.setPixelRef(new LazyDecodingPixelRef(m_frameGenerator, fullSize, fullRect))->unref();
 
     // Use the URI to identify this as a lazily decoded SkPixelRef of type LazyDecodingPixelRef.
     // FIXME: It would be more useful to give the actual image URI.
@@ -273,7 +240,6 @@ SkBitmap DeferredImageDecoder::createLazyDecodingBitmap(size_t index)
 
 bool DeferredImageDecoder::hotSpot(IntPoint& hotSpot) const
 {
-    // TODO: Implement.
     return m_actualDecoder ? m_actualDecoder->hotSpot(hotSpot) : false;
 }
 
