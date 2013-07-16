@@ -87,8 +87,6 @@ class AutoinstallImportHook(object):
             self._install_pylint()
         elif '.coverage' in fullname:
             self._install_coverage()
-        elif '.webpagereplay' in fullname:
-            self._install_webpagereplay()
 
     def _install_irc(self):
         # Since irclib and ircbot are two top-level packages, we need to import
@@ -134,17 +132,6 @@ class AutoinstallImportHook(object):
     def _install_unittest2(self):
         self._ensure_autoinstalled_dir_is_in_sys_path()
         return self._install(url="https://pypi.python.org/packages/source/u/unittest2/unittest2-0.5.1.tar.gz#md5=a0af5cac92bbbfa0c3b0e99571390e0f", url_subpath="unittest2-0.5.1/unittest2")
-
-    def _install_webpagereplay(self):
-        did_install_something = False
-        if not self._fs.exists(self._fs.join(_AUTOINSTALLED_DIR, "webpagereplay")):
-            did_install_something = self._install("http://web-page-replay.googlecode.com/files/webpagereplay-1.1.2.tar.gz", "webpagereplay-1.1.2")
-            self._fs.move(self._fs.join(_AUTOINSTALLED_DIR, "webpagereplay-1.1.2"), self._fs.join(_AUTOINSTALLED_DIR, "webpagereplay"))
-
-        module_init_path = self._fs.join(_AUTOINSTALLED_DIR, "webpagereplay", "__init__.py")
-        if not self._fs.exists(module_init_path):
-            self._fs.write_text_file(module_init_path, "")
-        return did_install_something
 
     def _install(self, url, url_subpath=None, target_name=None):
         installer = AutoInstaller(target_dir=_AUTOINSTALLED_DIR)
