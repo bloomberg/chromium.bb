@@ -74,10 +74,6 @@ void TearDownTestEnvironment();
 // This returns a pointer to a static instance.  Don't delete it.
 WebKit::Platform* GetWebKitPlatformSupport();
 
-// This is used by WebFrameClient::createPlugin().
-WebKit::WebPlugin* CreateWebPlugin(WebKit::WebFrame* frame,
-                                   const WebKit::WebPluginParams& params);
-
 // Returns the root directory of the WebKit code.
 WebKit::WebString GetWebKitRootDir();
 

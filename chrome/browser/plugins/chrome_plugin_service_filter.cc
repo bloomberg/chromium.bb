@@ -15,7 +15,6 @@
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_context.h"
-#include "webkit/plugins/npapi/plugin_list.h"
 
 using content::BrowserThread;
 using content::PluginService;

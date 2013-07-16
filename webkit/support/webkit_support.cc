@@ -55,15 +55,12 @@
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webkitplatformsupport_impl.h"
 #include "webkit/glue/weburlrequest_extradata_impl.h"
-#include "webkit/plugins/npapi/plugin_list.h"
-#include "webkit/plugins/npapi/webplugin_impl.h"
 #include "webkit/plugins/npapi/webplugin_page_delegate.h"
 #include "webkit/plugins/webplugininfo.h"
 #include "webkit/renderer/appcache/web_application_cache_host_impl.h"
 #include "webkit/renderer/compositor_bindings/web_compositor_support_impl.h"
 #include "webkit/support/platform_support.h"
 #include "webkit/support/test_webkit_platform_support.h"
-#include "webkit/support/test_webplugin_page_delegate.h"
 #include "webkit/support/web_layer_tree_view_impl_for_testing.h"
 
 #if defined(OS_ANDROID)
@@ -183,21 +180,6 @@ class TestEnvironment {
 #endif
 };
 
-class WebPluginImplWithPageDelegate
-    : public webkit_support::TestWebPluginPageDelegate,
-      public base::SupportsWeakPtr<WebPluginImplWithPageDelegate>,
-      public webkit::npapi::WebPluginImpl {
- public:
-  WebPluginImplWithPageDelegate(WebFrame* frame,
-                                const WebPluginParams& params,
-                                const base::FilePath& path)
-      : webkit_support::TestWebPluginPageDelegate(),
-        webkit::npapi::WebPluginImpl(frame, params, path, AsWeakPtr()) {}
-  virtual ~WebPluginImplWithPageDelegate() {}
- private:
-  DISALLOW_COPY_AND_ASSIGN(WebPluginImplWithPageDelegate);
-};
-
 base::FilePath GetWebKitRootDirFilePath() {
   base::FilePath basePath;
   PathService::Get(base::DIR_SOURCE_ROOT, &basePath);
@@ -302,23 +284,6 @@ void TearDownTestEnvironment() {
 WebKit::Platform* GetWebKitPlatformSupport() {
   DCHECK(test_environment);
   return test_environment->webkit_platform_support();
-}
-
-WebPlugin* CreateWebPlugin(WebFrame* frame,
-                           const WebPluginParams& params) {
-  const bool kAllowWildcard = true;
-  std::vector<webkit::WebPluginInfo> plugins;
-  std::vector<std::string> mime_types;
-  webkit::npapi::PluginList::Singleton()->GetPluginInfoArray(
-      params.url, params.mimeType.utf8(), kAllowWildcard,
-      NULL, &plugins, &mime_types);
-  if (plugins.empty())
-    return NULL;
-
-  WebPluginParams new_params = params;
-  new_params.mimeType = WebString::fromUTF8(mime_types.front());
-  return new WebPluginImplWithPageDelegate(
-      frame, new_params, plugins.front().path);
 }
 
 WebKit::WebString GetWebKitRootDir() {

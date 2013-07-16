@@ -62,8 +62,6 @@
         'test_webkit_platform_support.h',
         'test_webmessageportchannel.cc',
         'test_webmessageportchannel.h',
-        'test_webplugin_page_delegate.cc',
-        'test_webplugin_page_delegate.h',
         'webkit_support.cc',
         'webkit_support.h',
         'webkit_support_glue.cc',

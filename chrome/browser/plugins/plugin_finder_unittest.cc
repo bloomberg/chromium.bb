@@ -7,11 +7,9 @@
 #include "base/values.h"
 #include "chrome/browser/plugins/plugin_metadata.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/plugins/npapi/plugin_list.h"
 
 using base::DictionaryValue;
 using base::ListValue;
-using webkit::npapi::PluginList;
 
 TEST(PluginFinderTest, JsonSyntax) {
   scoped_ptr<DictionaryValue> plugin_list(

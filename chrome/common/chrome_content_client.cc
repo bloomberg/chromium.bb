@@ -34,7 +34,6 @@
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "webkit/common/user_agent/user_agent_util.h"
-#include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/plugin_constants.h"
 #include "webkit/plugins/plugin_switches.h"
 
@@ -403,10 +402,6 @@ void ChromeContentClient::AddPepperPlugins(
   content::PepperPluginInfo plugin;
   if (GetBundledPepperFlash(&plugin))
     plugins->push_back(plugin);
-}
-
-void ChromeContentClient::AddNPAPIPlugins(
-    webkit::npapi::PluginList* plugin_list) {
 }
 
 void ChromeContentClient::AddAdditionalSchemes(

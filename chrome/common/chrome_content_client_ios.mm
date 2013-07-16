@@ -31,11 +31,6 @@ void ChromeContentClient::AddPepperPlugins(
   NOTREACHED();
 }
 
-void ChromeContentClient::AddNPAPIPlugins(
-    webkit::npapi::PluginList* plugin_list) {
-  NOTREACHED();
-}
-
 void ChromeContentClient::AddAdditionalSchemes(
     std::vector<std::string>* standard_schemes,
     std::vector<std::string>* saveable_shemes) {

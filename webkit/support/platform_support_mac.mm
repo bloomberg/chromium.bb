@@ -19,7 +19,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "grit/webkit_resources.h"
 #include "ui/base/resource/data_pack.h"
-#include "webkit/plugins/npapi/plugin_list.h"
 #import "webkit/support/drt_application_mac.h"
 #import "webkit/support/mac/DumpRenderTreePasteboard.h"
 #include "webkit/support/test_webkit_platform_support.h"

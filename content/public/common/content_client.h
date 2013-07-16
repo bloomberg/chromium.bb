@@ -39,10 +39,6 @@ class TargetPolicy;
 }
 
 namespace webkit {
-namespace npapi {
-class PluginList;
-}
-
 namespace ppapi {
 class HostGlobals;
 }
@@ -109,10 +105,6 @@ class CONTENT_EXPORT ContentClient {
   // Gives the embedder a chance to register its own pepper plugins.
   virtual void AddPepperPlugins(
       std::vector<content::PepperPluginInfo>* plugins) {}
-
-  // Gives the embedder a chance to register its own internal NPAPI plugins.
-  virtual void AddNPAPIPlugins(
-      webkit::npapi::PluginList* plugin_list) {}
 
   // Gives the embedder a chance to register its own standard and saveable
   // url schemes early on in the startup sequence.
