@@ -1,6 +1,14 @@
-<iframe src="about:blank"></iframe><br>
-<iframe src=""></iframe>
 <script>
-if (window.opener)
-  window.opener.postMessage('done', '*');
+    var numFramesLoaded = 0;
+    function loadedFrame() {
+        numFramesLoaded++;
+        if (numFramesLoaded === 2 && window.opener)
+            window.opener.postMessage('done', '*');
+    }
+    window.addEventListener('load', function () {
+        if (window.opener)
+            window.opener.postMessage('done', '*');
+    });
 </script>
+<iframe src="about:blank" onload='loadedFrame();'></iframe><br>
+<iframe src="" onload='loadedFrame();'></iframe>
