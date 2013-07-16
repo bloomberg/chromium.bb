@@ -49,6 +49,7 @@ const QuicTag kINAR = TAG('I', 'N', 'A', 'R');  // Inter arrival
 
 // Proof types (i.e. certificate types)
 const QuicTag kX509 = TAG('X', '5', '0', '9');  // X.509 certificate
+const QuicTag kX59R = TAG('X', '5', '9', 'R');  // X.509  - RSA only
 const QuicTag kCHID = TAG('C', 'H', 'I', 'D');  // Channel ID.
 
 // Client hello tags

@@ -563,7 +563,14 @@ void QuicCryptoClientConfig::FillInchoateClientHello(
   }
 
   if (proof_verifier_.get()) {
+    // TODO(rtenneti): Enable ECDSA proof verification on Windows. Disabled it
+    // because X509Certificate::GetPublicKeyInfo is not returning the correct
+    // type for ECDSA certificates.
+#if defined(OS_WIN)
+    out->SetTaglist(kPDMD, kX59R, 0);
+#else
     out->SetTaglist(kPDMD, kX509, 0);
+#endif
   }
 
   if (common_cert_sets) {
