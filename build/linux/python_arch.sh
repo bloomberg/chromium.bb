@@ -10,12 +10,7 @@
 #  python_arch.sh /path/to/sysroot/usr/lib/libpython2.4.so.1.0
 #
 
-python=$(readlink -f "$1")
-if [ ! -r "$python" ]; then
-  echo unknown
-  exit 0
-fi
-file_out=$(file "$python")
+file_out=$(file --dereference "$1")
 if [ $? -ne 0 ]; then
   echo unknown
   exit 0
