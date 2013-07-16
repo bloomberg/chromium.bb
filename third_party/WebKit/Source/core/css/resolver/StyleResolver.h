@@ -184,7 +184,6 @@ public:
 
     PassRefPtr<RenderStyle> styleForKeyframe(Element*, const RenderStyle*, const StyleKeyframe*, KeyframeValue&);
 
-public:
     // These methods will give back the set of rules that matched for a given element (or a pseudo-element).
     enum CSSRuleFilter {
         UAAndUserCSSRules   = 1 << 1,
@@ -197,7 +196,6 @@ public:
     PassRefPtr<CSSRuleList> styleRulesForElement(Element*, unsigned rulesToInclude = AllButEmptyCSSRules);
     PassRefPtr<CSSRuleList> pseudoStyleRulesForElement(Element*, PseudoId, unsigned rulesToInclude = AllButEmptyCSSRules);
 
-public:
     // |properties| is an array with |count| elements.
     void applyPropertiesToStyle(const CSSPropertyValue* properties, size_t count, RenderStyle*);
 
@@ -205,7 +203,6 @@ public:
     void initializeFontStyle(const Settings*);
     void setFontSize(FontDescription&, float size);
 
-public:
     bool hasSelectorForId(const AtomicString&) const;
     bool hasSelectorForClass(const AtomicString&) const;
     bool hasSelectorForAttribute(const AtomicString&) const;
@@ -228,6 +225,12 @@ public:
     // FIXME: Rename to reflect the purpose, like didChangeFontSize or something.
     void invalidateMatchedPropertiesCache();
 
+    static RenderStyle* styleNotYetAvailable() { return s_styleNotYetAvailable; }
+
+    InspectorCSSOMWrappers& inspectorCSSOMWrappers() { return m_inspectorCSSOMWrappers; }
+
+    void reportMemoryUsage(MemoryObjectInfo*) const;
+
 private:
     void matchUARules(ElementRuleCollector&, RuleSet*);
     void matchAuthorRules(ElementRuleCollector&, bool includeEmptyRules);
@@ -239,7 +242,6 @@ private:
     void matchUserRules(ElementRuleCollector&, bool includeEmptyRules);
     void collectFeatures();
 
-private:
     // This function fixes up the default font size if it detects that the current generic font family has changed. -dwh
     void checkForGenericFamilyChange(RenderStyle*, RenderStyle* parentStyle);
     void checkForZoomChange(RenderStyle*, RenderStyle* parentStyle);
@@ -277,19 +279,10 @@ private:
     typedef HashMap<AtomicStringImpl*, RefPtr<StyleRuleKeyframes> > KeyframesRuleMap;
     KeyframesRuleMap m_keyframesRuleMap;
 
-public:
-    static RenderStyle* styleNotYetAvailable() { return s_styleNotYetAvailable; }
-
-    InspectorCSSOMWrappers& inspectorCSSOMWrappers() { return m_inspectorCSSOMWrappers; }
-
-    void reportMemoryUsage(MemoryObjectInfo*) const;
-
-private:
     static RenderStyle* s_styleNotYetAvailable;
 
     void cacheBorderAndBackground();
 
-private:
     void applyProperty(CSSPropertyID, CSSValue*);
 
     MatchedPropertiesCache m_matchedPropertiesCache;
