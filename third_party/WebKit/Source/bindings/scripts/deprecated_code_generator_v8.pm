@@ -1405,7 +1405,7 @@ END
             # Generate super-compact call for regular attribute getter:
             my ($functionName, @arguments) = GetterExpression($interfaceName, $attribute);
             $code .= "    Element* imp = V8Element::toNative(info.Holder());\n";
-            $code .= "    v8SetReturnValue(info, v8String(imp->${functionName}(" . join(", ", @arguments) . "), info.GetIsolate()));\n";
+            $code .= "    v8SetReturnValueString(info, imp->${functionName}(" . join(", ", @arguments) . "), info.GetIsolate());\n";
             $code .= "    return;\n";
             $code .= "}\n\n";
             $code .= "#endif // ${conditionalString}\n\n" if $conditionalString;
