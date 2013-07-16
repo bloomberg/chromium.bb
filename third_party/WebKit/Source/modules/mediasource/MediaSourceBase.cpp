@@ -202,7 +202,7 @@ void MediaSourceBase::endOfStream(const AtomicString& error, ExceptionCode& ec)
 
     // 2. Change the readyState attribute value to "ended".
     setReadyState(endedKeyword());
-    m_private->endOfStream(eosStatus);
+    m_private->markEndOfStream(eosStatus);
 }
 
 bool MediaSourceBase::isOpen() const
@@ -237,6 +237,7 @@ void MediaSourceBase::openIfInEndedState()
         return;
 
     setReadyState(openKeyword());
+    m_private->unmarkEndOfStream();
 }
 
 bool MediaSourceBase::hasPendingActivity() const

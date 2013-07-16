@@ -58,6 +58,9 @@ public:
     virtual double duration() = 0;
     virtual void setDuration(double) = 0;
     virtual void endOfStream(EndOfStreamStatus) = 0;
+    // FIXME: Remove default implementation once Chromium changes land.
+    virtual void markEndOfStream(EndOfStreamStatus status) { endOfStream(status); }
+    virtual void unmarkEndOfStream() { };
 };
 
 } // namespace WebKit

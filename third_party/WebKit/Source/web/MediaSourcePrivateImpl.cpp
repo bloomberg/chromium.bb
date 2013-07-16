@@ -77,10 +77,16 @@ void MediaSourcePrivateImpl::setDuration(double duration)
         m_client->setDuration(duration);
 }
 
-void MediaSourcePrivateImpl::endOfStream(WebCore::MediaSourcePrivate::EndOfStreamStatus status)
+void MediaSourcePrivateImpl::markEndOfStream(WebCore::MediaSourcePrivate::EndOfStreamStatus status)
 {
     if (m_client)
-        m_client->endOfStream(static_cast<WebMediaSourceClient::EndOfStreamStatus>(status));
+        m_client->markEndOfStream(static_cast<WebMediaSourceClient::EndOfStreamStatus>(status));
+}
+
+void MediaSourcePrivateImpl::unmarkEndOfStream()
+{
+    if (m_client)
+        m_client->unmarkEndOfStream();
 }
 
 }

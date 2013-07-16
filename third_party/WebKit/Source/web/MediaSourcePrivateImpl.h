@@ -45,10 +45,11 @@ public:
 
     // MediaSourcePrivate methods.
     virtual WebCore::MediaSourcePrivate::AddStatus addSourceBuffer(const String& type, const CodecsArray&,
-        OwnPtr<WebCore::SourceBufferPrivate>*);
-    virtual double duration();
-    virtual void setDuration(double);
-    virtual void endOfStream(WebCore::MediaSourcePrivate::EndOfStreamStatus);
+        OwnPtr<WebCore::SourceBufferPrivate>*) OVERRIDE;
+    virtual double duration() OVERRIDE;
+    virtual void setDuration(double) OVERRIDE;
+    virtual void markEndOfStream(WebCore::MediaSourcePrivate::EndOfStreamStatus) OVERRIDE;
+    virtual void unmarkEndOfStream() OVERRIDE;
 
 private:
     OwnPtr<WebKit::WebMediaSourceClient> m_client;
