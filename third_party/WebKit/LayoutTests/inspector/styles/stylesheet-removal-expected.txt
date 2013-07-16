@@ -1,4 +1,5 @@
 Tests that things are cleaned up properly upon stylesheet header removal.
 
+Style file is present
 Style file is not present
 

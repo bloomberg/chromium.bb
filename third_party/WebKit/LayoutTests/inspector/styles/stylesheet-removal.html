@@ -1,11 +1,18 @@
 <html>
 <head>
 <script src="../../http/tests/inspector/inspector-test.js"></script>
-<link id="link" rel="stylesheet" href="resources/stylesheet-removal.css" />
+<link id="link1" rel="stylesheet" href="resources/stylesheet-removal.css" />
+<link id="link2" rel="stylesheet" href="resources/stylesheet-removal.css" />
 <script>
-function removeStyleSheet()
+function removeStyleSheetOne()
 {
-    var link = document.getElementById("link");
+    var link = document.getElementById("link1");
+    link.parentElement.removeChild(link);
+}
+
+function removeStyleSheetTwo()
+{
+    var link = document.getElementById("link2");
     link.parentElement.removeChild(link);
 }
 
@@ -13,15 +20,23 @@ function test()
 {
     var uiSourceCode;
 
-    function headerRemoved(header)
+    function headerOneRemoved(header)
+    {
+        InspectorTest.addResult("Style file is " + (uiSourceCode.styleFile() ? "" : "not ") + "present");
+        WebInspector.cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.StyleSheetRemoved, headerOneRemoved, this);
+        WebInspector.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetRemoved, headerTwoRemoved, this);
+        InspectorTest.evaluateInPage("removeStyleSheetTwo()");
+    }
+
+    function headerTwoRemoved(header)
     {
         InspectorTest.addResult("Style file is " + (uiSourceCode.styleFile() ? "" : "not ") + "present");
         InspectorTest.completeTest();
     }
 
-    var uiSourceCode = WebInspector.workspace.uiSourceCodeForURL(WebInspector.ParsedURL.completeURL(WebInspector.inspectedPageURL, "resources/stylesheet-removal.css"));
-    WebInspector.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetRemoved, headerRemoved, this);
-    InspectorTest.evaluateInPage("removeStyleSheet()");
+    uiSourceCode = WebInspector.workspace.uiSourceCodeForURL(WebInspector.ParsedURL.completeURL(WebInspector.inspectedPageURL, "resources/stylesheet-removal.css"));
+    WebInspector.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetRemoved, headerOneRemoved, this);
+    InspectorTest.evaluateInPage("removeStyleSheetOne()");
 }
 
 </script>
