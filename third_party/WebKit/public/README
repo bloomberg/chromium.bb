@@ -39,6 +39,8 @@ web platform, including the Document Object Model (DOM). The central interface
 in this part of the API is WebView, which is a good starting point for
 exploring the API.
 
+Note that public/platform should not depend on public/web.
+
 The public/testing directory defines an interface for testing Blink. You can
 use this part of the API to load the TestRunner module used in Blink's test
 suite.

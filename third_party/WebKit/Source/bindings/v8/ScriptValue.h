@@ -70,6 +70,8 @@ public:
     {
     }
 
+    static ScriptValue createNull() { return ScriptValue(v8::Null()); }
+
     ScriptValue& operator=(const ScriptValue& value) 
     {
         if (this != &value)

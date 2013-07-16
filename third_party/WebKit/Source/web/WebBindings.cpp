@@ -34,7 +34,6 @@
 #include "V8ArrayBufferView.h"
 #include "V8Element.h"
 #include "V8Range.h"
-#include "WebArrayBuffer.h"
 #include "WebArrayBufferView.h"
 #include "WebElement.h"
 #include "WebRange.h"
@@ -48,6 +47,7 @@
 #include "core/dom/Range.h"
 #include "core/page/DOMWindow.h"
 #include "core/page/Frame.h"
+#include "public/platform/WebArrayBuffer.h"
 #include "wtf/ArrayBufferView.h"
 
 using namespace WebCore;

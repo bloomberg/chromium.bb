@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Google Inc. All rights reserved.
+ * Copyright (C) 2011 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,14 +28,55 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-[
-    NoInterfaceObject,
-] interface CryptoOperation {
-    readonly attribute Algorithm algorithm;
+#ifndef WebArrayBuffer_h
+#define WebArrayBuffer_h
 
-    CryptoOperation process(ArrayBuffer data);
-    CryptoOperation process(ArrayBufferView data);
+#include "WebCommon.h"
+#include "WebPrivatePtr.h"
 
-    any finish();
-    any abort();
+namespace v8 {
+class Value;
+template <class T> class Handle;
+}
+
+namespace WTF { class ArrayBuffer; }
+
+namespace WebKit {
+
+class WebArrayBuffer {
+public:
+    ~WebArrayBuffer() { reset(); }
+
+    WebArrayBuffer() { }
+    WebArrayBuffer(const WebArrayBuffer& b) { assign(b); }
+    WebArrayBuffer& operator=(const WebArrayBuffer& b)
+    {
+        assign(b);
+        return *this;
+    }
+
+    WEBKIT_EXPORT static WebArrayBuffer create(unsigned numElements, unsigned elementByteSize);
+
+    WEBKIT_EXPORT void reset();
+    WEBKIT_EXPORT void assign(const WebArrayBuffer&);
+
+    bool isNull() const { return m_private.isNull(); }
+    WEBKIT_EXPORT void* data() const;
+    WEBKIT_EXPORT unsigned byteLength() const;
+
+    WEBKIT_EXPORT v8::Handle<v8::Value> toV8Value();
+    WEBKIT_EXPORT static WebArrayBuffer* createFromV8Value(v8::Handle<v8::Value>);
+
+#if WEBKIT_IMPLEMENTATION
+    WebArrayBuffer(const WTF::PassRefPtr<WTF::ArrayBuffer>&);
+    WebArrayBuffer& operator=(const PassRefPtr<WTF::ArrayBuffer>&);
+    operator WTF::PassRefPtr<WTF::ArrayBuffer>() const;
+#endif
+
+protected:
+    WebPrivatePtr<WTF::ArrayBuffer> m_private;
 };
+
+} // namespace WebKit
+
+#endif // WebArrayBuffer_h
