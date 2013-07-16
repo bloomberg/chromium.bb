@@ -10,20 +10,19 @@
 
 class CommandUpdater;
 
-class StarView : public views::ImageView,
-                 public TouchableLocationBarView {
+class StarView : public views::ImageView, public TouchableLocationBarView {
  public:
   explicit StarView(CommandUpdater* command_updater);
   virtual ~StarView();
 
+  // TouchableLocationBarView:
+  virtual int GetBuiltInHorizontalPadding() const OVERRIDE;
+
   // Toggles the star on or off.
   void SetToggled(bool on);
 
-  // TouchableLocationBarView.
-  virtual int GetBuiltInHorizontalPadding() const OVERRIDE;
-
  private:
-  // views::ImageView overrides:
+  // views::ImageView:
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
   virtual bool GetTooltipText(const gfx::Point& p,
                               string16* tooltip) const OVERRIDE;
@@ -42,7 +41,7 @@ class StarView : public views::ImageView,
   // prevent the bubble from reshowing.
   bool suppress_mouse_released_action_;
 
-  DISALLOW_IMPLICIT_CONSTRUCTORS(StarView);
+  DISALLOW_COPY_AND_ASSIGN(StarView);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_STAR_VIEW_H_

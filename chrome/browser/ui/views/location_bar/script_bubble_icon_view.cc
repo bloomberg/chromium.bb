@@ -61,7 +61,6 @@ void ScriptBubbleIconView::Layout() {
 }
 
 void ScriptBubbleIconView::GetAccessibleState(ui::AccessibleViewState* state) {
-  state->name = l10n_util::GetStringUTF16(IDS_ACCNAME_STAR);
   state->role = ui::AccessibilityTypes::ROLE_PUSHBUTTON;
 }
 

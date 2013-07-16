@@ -14,6 +14,7 @@
 #include "chrome/browser/search_engines/template_url_service_observer.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_controller.h"
+#include "chrome/browser/ui/search/search_model_observer.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/browser/ui/views/dropdown_bar_host.h"
 #include "chrome/browser/ui/views/dropdown_bar_host_delegate.h"
@@ -22,6 +23,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/rect.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/drag_controller.h"
 
@@ -40,6 +42,7 @@ class GURL;
 class InstantController;
 class KeywordHintView;
 class LocationIconView;
+class MicSearchView;
 class OpenPDFInReaderView;
 class PageActionWithBadgeView;
 class PageActionImageView;
@@ -67,11 +70,13 @@ class Widget;
 class LocationBarView : public LocationBar,
                         public LocationBarTesting,
                         public views::View,
+                        public views::ButtonListener,
                         public views::DragController,
                         public OmniboxEditController,
                         public DropdownBarHostDelegate,
                         public TemplateURLServiceObserver,
-                        public content::NotificationObserver {
+                        public content::NotificationObserver,
+                        public SearchModelObserver {
  public:
   // The location bar view's class name.
   static const char kViewClassName[];
@@ -269,6 +274,10 @@ class LocationBarView : public LocationBar,
   virtual bool HasFocus() const OVERRIDE;
   virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
 
+  // views::ButtonListener:
+  virtual void ButtonPressed(views::Button* sender,
+                             const ui::Event& event) OVERRIDE;
+
   // views::DragController:
   virtual void WriteDragDataForView(View* sender,
                                     const gfx::Point& press_pt,
@@ -314,6 +323,10 @@ class LocationBarView : public LocationBar,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+  // SearchModelObserver:
+  virtual void ModelChanged(const SearchModel::State& old_state,
+                            const SearchModel::State& new_state) OVERRIDE;
 
   // Returns the height of the control without the top and bottom
   // edges(i.e.  the height of the edit control inside).  If
@@ -464,6 +477,9 @@ class LocationBarView : public LocationBar,
 
   // Shown if the selected url has a corresponding keyword.
   KeywordHintView* keyword_hint_view_;
+
+  // The voice search icon.
+  MicSearchView* mic_search_view_;
 
   // The content setting views.
   ContentSettingViews content_setting_views_;

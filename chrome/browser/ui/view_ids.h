@@ -76,7 +76,10 @@ enum ViewID {
   VIEW_ID_ZOOM_BUTTON,
 #endif
 
-  // Used in chrome/browser/ui/gtk/view_id_util_browsertests.cc
+  // The omnibox icon to do voice-based search.
+  VIEW_ID_MIC_SEARCH_BUTTON,
+
+  // Used in chrome/browser/ui/gtk/view_id_util_browsertest.cc
   // If you add new ids, make sure the above test passes.
   VIEW_ID_PREDEFINED_COUNT,
 
