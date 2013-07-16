@@ -10,13 +10,12 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/common/pref_names.h"
-#include "components/user_prefs/user_prefs.h"
 
 BookmarkExpandedStateTracker::BookmarkExpandedStateTracker(
-    content::BrowserContext* browser_context,
-    BookmarkModel* bookmark_model)
-    : browser_context_(browser_context),
-      bookmark_model_(bookmark_model) {
+    BookmarkModel* bookmark_model,
+    PrefService* pref_service)
+    : bookmark_model_(bookmark_model),
+      pref_service_(pref_service) {
   bookmark_model->AddObserver(this);
 }
 
@@ -33,11 +32,11 @@ BookmarkExpandedStateTracker::GetExpandedNodes() {
   if (!bookmark_model_->loaded())
     return nodes;
 
-  PrefService* prefs = user_prefs::UserPrefs::Get(browser_context_);
-  if (!prefs)
+  if (!pref_service_)
     return nodes;
 
-  const ListValue* value = prefs->GetList(prefs::kBookmarkEditorExpandedNodes);
+  const ListValue* value =
+      pref_service_->GetList(prefs::kBookmarkEditorExpandedNodes);
   if (!value)
     return nodes;
 
@@ -95,8 +94,7 @@ void BookmarkExpandedStateTracker::BookmarkAllNodesRemoved(
 }
 
 void BookmarkExpandedStateTracker::UpdatePrefs(const Nodes& nodes) {
-  PrefService* prefs = user_prefs::UserPrefs::Get(browser_context_);
-  if (!prefs)
+  if (!pref_service_)
     return;
 
   ListValue values;
@@ -105,5 +103,5 @@ void BookmarkExpandedStateTracker::UpdatePrefs(const Nodes& nodes) {
                new StringValue(base::Int64ToString((*i)->id())));
   }
 
-  prefs->Set(prefs::kBookmarkEditorExpandedNodes, values);
+  pref_service_->Set(prefs::kBookmarkEditorExpandedNodes, values);
 }

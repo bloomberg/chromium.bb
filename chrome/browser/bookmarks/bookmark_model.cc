@@ -15,7 +15,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "build/build_config.h"
 #include "chrome/browser/bookmarks/bookmark_expanded_state_tracker.h"
 #include "chrome/browser/bookmarks/bookmark_index.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
@@ -262,8 +261,8 @@ void BookmarkModel::Load(
     return;
   }
 
-  expanded_state_tracker_.reset(new BookmarkExpandedStateTracker(
-      profile_, this));
+  expanded_state_tracker_.reset(
+      new BookmarkExpandedStateTracker(this, profile_->GetPrefs()));
 
   // Listen for changes to favicons so that we can update the favicon of the
   // node appropriately.
