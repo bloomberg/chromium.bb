@@ -75,7 +75,7 @@ static IntRect clipBox(RenderBox* renderer);
 static inline bool isAcceleratedCanvas(RenderObject* renderer)
 {
     if (renderer->isCanvas()) {
-        HTMLCanvasElement* canvas = static_cast<HTMLCanvasElement*>(renderer->node());
+        HTMLCanvasElement* canvas = toHTMLCanvasElement(renderer->node());
         if (CanvasRenderingContext* context = canvas->renderingContext())
             return context->isAccelerated();
     }
@@ -407,7 +407,7 @@ bool RenderLayerBacking::updateGraphicsLayerConfiguration()
         HTMLMediaElement* mediaElement = toMediaElement(renderer->node());
         m_graphicsLayer->setContentsToMedia(mediaElement->platformLayer());
     } else if (isAcceleratedCanvas(renderer)) {
-        HTMLCanvasElement* canvas = static_cast<HTMLCanvasElement*>(renderer->node());
+        HTMLCanvasElement* canvas = toHTMLCanvasElement(renderer->node());
         if (CanvasRenderingContext* context = canvas->renderingContext())
             m_graphicsLayer->setContentsToCanvas(context->platformLayer());
         layerConfigChanged = true;

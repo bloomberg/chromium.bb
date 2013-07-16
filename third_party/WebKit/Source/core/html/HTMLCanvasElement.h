@@ -177,6 +177,12 @@ private:
     mutable RefPtr<Image> m_copiedImage; // FIXME: This is temporary for platforms that have to copy the image buffer to render (and for CSSCanvasValue).
 };
 
+inline HTMLCanvasElement* toHTMLCanvasElement(Node* node)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(HTMLNames::canvasTag));
+    return static_cast<HTMLCanvasElement*>(node);
+}
+
 } //namespace
 
 #endif

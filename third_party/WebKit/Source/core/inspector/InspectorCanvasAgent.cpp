@@ -279,8 +279,7 @@ void InspectorCanvasAgent::findFramesWithUninstrumentedCanvases()
             if (frame->page() != m_page)
                 return;
 
-            HTMLCanvasElement* canvas = static_cast<HTMLCanvasElement*>(node);
-            if (canvas->renderingContext())
+            if (toHTMLCanvasElement(node)->renderingContext())
                 m_framesWithUninstrumentedCanvases.set(frame, true);
         }
 

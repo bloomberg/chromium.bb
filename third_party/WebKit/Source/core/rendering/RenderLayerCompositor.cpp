@@ -1789,7 +1789,7 @@ bool RenderLayerCompositor::requiresCompositingForCanvas(RenderObject* renderer)
         return false;
 
     if (renderer->isCanvas()) {
-        HTMLCanvasElement* canvas = static_cast<HTMLCanvasElement*>(renderer->node());
+        HTMLCanvasElement* canvas = toHTMLCanvasElement(renderer->node());
 #if USE(COMPOSITING_FOR_SMALL_CANVASES)
         bool isCanvasLargeEnoughToForceCompositing = true;
 #else
