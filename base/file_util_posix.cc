@@ -160,7 +160,7 @@ FilePath MakeAbsoluteFilePath(const FilePath& input) {
 // which works both with and without the recursive flag.  I'm not sure we need
 // that functionality. If not, remove from file_util_win.cc, otherwise add it
 // here.
-bool Delete(const FilePath& path, bool recursive) {
+bool DeleteFile(const FilePath& path, bool recursive) {
   ThreadRestrictions::AssertIOAllowed();
   const char* path_str = path.value().c_str();
   stat_wrapper_t file_info;
@@ -735,7 +735,7 @@ bool DetermineDevShmExecutable() {
   int fd = CreateAndOpenFdForTemporaryFile(FilePath("/dev/shm"), &path);
   if (fd >= 0) {
     ScopedFD shm_fd_closer(&fd);
-    Delete(path, false);
+    DeleteFile(path, false);
     long sysconf_result = sysconf(_SC_PAGESIZE);
     CHECK_GE(sysconf_result, 0);
     size_t pagesize = static_cast<size_t>(sysconf_result);
@@ -900,7 +900,7 @@ bool MoveUnsafe(const FilePath& from_path, const FilePath& to_path) {
   if (!CopyDirectory(from_path, to_path, true))
     return false;
 
-  Delete(from_path, true);
+  DeleteFile(from_path, true);
   return true;
 }
 

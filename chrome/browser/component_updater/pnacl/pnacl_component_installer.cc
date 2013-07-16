@@ -415,7 +415,7 @@ void StartPnaclUpdateRegistration(PnaclComponentInstaller* pci) {
   // Remove older versions of PNaCl.
   for (std::vector<base::FilePath>::iterator iter = older_dirs.begin();
        iter != older_dirs.end(); ++iter) {
-    base::Delete(*iter, true);
+    base::DeleteFile(*iter, true);
   }
 }
 

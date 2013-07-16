@@ -940,7 +940,7 @@ installer::InstallStatus InstallProductsHelper(
   if (cmd_line.HasSwitch(installer::switches::kInstallerData)) {
     base::FilePath prefs_path(cmd_line.GetSwitchValuePath(
         installer::switches::kInstallerData));
-    if (!base::Delete(prefs_path, true)) {
+    if (!base::DeleteFile(prefs_path, true)) {
       LOG(ERROR) << "Failed deleting master preferences file "
                  << prefs_path.value()
                  << ", scheduling for deletion after reboot.";

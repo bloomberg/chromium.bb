@@ -256,7 +256,7 @@ bool GenerateProfile(GenerateProfileTypes types,
   base::FilePath path = file_iterator.Next();
   while (!path.empty()) {
     base::FilePath dst_file = dst_dir.Append(path.BaseName());
-    base::Delete(dst_file, false);
+    base::DeleteFile(dst_file, false);
     if (!base::CopyFile(path, dst_file)) {
       PLOG(ERROR) << "Copying file failed";
       return false;

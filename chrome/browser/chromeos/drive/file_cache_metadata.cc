@@ -110,7 +110,7 @@ FileCacheMetadata::InitializeResult FileCacheMetadata::Initialize(
     LOG(WARNING) << "Cache db failed to open: " << db_status.ToString();
     uma_status = db_status.IsCorruption() ?
         DB_OPEN_FAILURE_CORRUPTION : DB_OPEN_FAILURE_OTHER;
-    const bool deleted = base::Delete(db_path, true);
+    const bool deleted = base::DeleteFile(db_path, true);
     DCHECK(deleted);
     db_status = leveldb::DB::Open(options, db_path.value(), &level_db);
     if (!db_status.ok()) {

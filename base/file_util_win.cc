@@ -82,7 +82,7 @@ FilePath MakeAbsoluteFilePath(const FilePath& input) {
   return FilePath(file_path);
 }
 
-bool Delete(const FilePath& path, bool recursive) {
+bool DeleteFile(const FilePath& path, bool recursive) {
   ThreadRestrictions::AssertIOAllowed();
 
   if (path.value().length() >= MAX_PATH)
@@ -98,7 +98,7 @@ bool Delete(const FilePath& path, bool recursive) {
     // Otherwise, it's a file, wildcard or non-existant. Try DeleteFile first
     // because it should be faster. If DeleteFile fails, then we fall through
     // to SHFileOperation, which will do the right thing.
-    if (DeleteFile(path.value().c_str()) != 0)
+    if (::DeleteFile(path.value().c_str()) != 0)
       return true;
   }
 
@@ -136,7 +136,7 @@ bool Delete(const FilePath& path, bool recursive) {
   return (err == 0 || err == ERROR_FILE_NOT_FOUND || err == 0x402);
 }
 
-bool DeleteAfterReboot(const FilePath& path) {
+bool DeleteFileAfterReboot(const FilePath& path) {
   ThreadRestrictions::AssertIOAllowed();
 
   if (path.value().length() >= MAX_PATH)
@@ -744,7 +744,7 @@ bool CopyAndDeleteDirectory(const FilePath& from_path,
                             const FilePath& to_path) {
   ThreadRestrictions::AssertIOAllowed();
   if (CopyDirectory(from_path, to_path, true)) {
-    if (Delete(from_path, true))
+    if (DeleteFile(from_path, true))
       return true;
 
     // Like Move, this function is not transactional, so we just

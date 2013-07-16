@@ -134,7 +134,7 @@ bool PmpTestHelper::InitColumnReaderFromBytes(
   bool read_success = reader->ReadFile(platform_file, expected_type);
 
   base::ClosePlatformFile(platform_file);
-  base::Delete(temp_path, false /* recursive */);
+  base::DeleteFile(temp_path, false /* recursive */);
 
   return read_success;
 }

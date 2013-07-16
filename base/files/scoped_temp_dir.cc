@@ -63,7 +63,7 @@ bool ScopedTempDir::Delete() {
   if (path_.empty())
     return false;
 
-  bool ret = base::Delete(path_, true);
+  bool ret = base::DeleteFile(path_, true);
   if (ret) {
     // We only clear the path if deleted the directory.
     path_.clear();

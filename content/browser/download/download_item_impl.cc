@@ -62,7 +62,7 @@ void DeleteDownloadedFile(const base::FilePath& path) {
 
   // Make sure we only delete files.
   if (!base::DirectoryExists(path))
-    base::Delete(path, false);
+    base::DeleteFile(path, false);
 }
 
 // Wrapper around DownloadFile::Detach and DownloadFile::Cancel that

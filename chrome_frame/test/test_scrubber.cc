@@ -115,7 +115,7 @@ void TestScrubber::CleanUpFromTestRun() {
   VLOG_IF(1, base::PathExists(data_directory))
       << __FUNCTION__ << " deleting user data directory "
       << data_directory.value();
-  bool deleted = base::Delete(data_directory, true);
+  bool deleted = base::DeleteFile(data_directory, true);
   LOG_IF(ERROR, !deleted)
       << "Failed to delete user data directory directory "
       << data_directory.value();

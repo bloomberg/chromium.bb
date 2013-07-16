@@ -53,7 +53,7 @@ class PrintingLayoutTest : public PrintingTest<InProcessBrowserTest>,
 
   virtual void TearDown() OVERRIDE {
     InProcessBrowserTest::TearDown();
-    base::Delete(emf_path_, true);
+    base::DeleteFile(emf_path_, true);
   }
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
@@ -221,7 +221,7 @@ class PrintingLayoutTest : public PrintingTest<InProcessBrowserTest>,
               "\" when looking for \"" << verification_name << "\"";
           prn_file = file.value();
           found_prn = true;
-          base::Delete(file, false);
+          base::DeleteFile(file, false);
           continue;
         }
         EXPECT_TRUE(false);

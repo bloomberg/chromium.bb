@@ -161,7 +161,7 @@ class TextDatabaseManagerTest : public testing::Test {
   }
 
   virtual void TearDown() {
-    base::Delete(dir_, true);
+    base::DeleteFile(dir_, true);
   }
 
   base::MessageLoop message_loop_;

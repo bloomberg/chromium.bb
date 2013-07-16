@@ -101,7 +101,7 @@ scoped_ptr<DictionaryFile> OpenDictionaryFile(
         NULL,
         NULL);
   } else {
-    base::Delete(file->path, false);
+    base::DeleteFile(file->path, false);
   }
 
   return file.Pass();
@@ -148,7 +148,7 @@ bool SaveDictionaryData(scoped_ptr<std::string> data,
 #endif
 
     if (!success) {
-      base::Delete(path, false);
+      base::DeleteFile(path, false);
       return false;
     }
   }

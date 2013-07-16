@@ -901,7 +901,7 @@ bool ObfuscatedFileUtil::DeleteDirectoryForOriginAndType(
     // implementation.
     // Information about failure would be useful for debugging.
     DestroyDirectoryDatabase(origin, type);
-    if (!base::Delete(origin_type_path, true /* recursive */))
+    if (!base::DeleteFile(origin_type_path, true /* recursive */))
       return false;
   }
 
@@ -935,7 +935,7 @@ bool ObfuscatedFileUtil::DeleteDirectoryForOriginAndType(
     origin_database_->RemovePathForOrigin(
         webkit_database::GetIdentifierFromOrigin(origin));
   }
-  if (!base::Delete(origin_path, true /* recursive */))
+  if (!base::DeleteFile(origin_path, true /* recursive */))
     return false;
 
   return true;
@@ -1104,7 +1104,7 @@ PlatformFileError ObfuscatedFileUtil::CreateFile(
     created = true;
   } else {
     if (base::PathExists(dest_local_path)) {
-      if (!base::Delete(dest_local_path, true /* recursive */)) {
+      if (!base::DeleteFile(dest_local_path, true /* recursive */)) {
         NOTREACHED();
         return base::PLATFORM_FILE_ERROR_FAILED;
       }
@@ -1129,7 +1129,7 @@ PlatformFileError ObfuscatedFileUtil::CreateFile(
     if (handle) {
       DCHECK_NE(base::kInvalidPlatformFileValue, *handle);
       base::ClosePlatformFile(*handle);
-      base::Delete(dest_local_path, false /* recursive */);
+      base::DeleteFile(dest_local_path, false /* recursive */);
     }
     return base::PLATFORM_FILE_ERROR_FAILED;
   }
@@ -1145,7 +1145,7 @@ PlatformFileError ObfuscatedFileUtil::CreateFile(
       DCHECK_NE(base::kInvalidPlatformFileValue, *handle);
       base::ClosePlatformFile(*handle);
     }
-    base::Delete(dest_local_path, false /* recursive */);
+    base::DeleteFile(dest_local_path, false /* recursive */);
     return base::PLATFORM_FILE_ERROR_FAILED;
   }
   TouchDirectory(db, dest_file_info->parent_id);
@@ -1240,7 +1240,7 @@ base::FilePath ObfuscatedFileUtil::GetDirectoryForOrigin(
   base::FilePath path = file_system_directory_.Append(directory_name);
   bool exists_in_fs = base::DirectoryExists(path);
   if (!exists_in_db && exists_in_fs) {
-    if (!base::Delete(path, true)) {
+    if (!base::DeleteFile(path, true)) {
       if (error_code)
         *error_code = base::PLATFORM_FILE_ERROR_FAILED;
       return base::FilePath();

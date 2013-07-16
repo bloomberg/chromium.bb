@@ -62,7 +62,7 @@ bool ResourceCache::Store(const std::string& key,
   // to protect against such races, especially as the cache is cross-platform
   // and therefore cannot use any POSIX-only tricks.
   return VerifyKeyPathAndGetSubkeyPath(key, true, subkey, &subkey_path) &&
-         base::Delete(subkey_path, false) &&
+         base::DeleteFile(subkey_path, false) &&
          file_util::WriteFile(subkey_path, data.data(), data.size());
 }
 
@@ -109,11 +109,11 @@ void ResourceCache::Delete(const std::string& key, const std::string& subkey) {
   DCHECK(CalledOnValidThread());
   base::FilePath subkey_path;
   if (VerifyKeyPathAndGetSubkeyPath(key, false, subkey, &subkey_path))
-    base::Delete(subkey_path, false);
+    base::DeleteFile(subkey_path, false);
   // Delete() does nothing if the directory given to it is not empty. Hence, the
   // call below deletes the directory representing |key| if its last subkey was
   // just removed and does nothing otherwise.
-  base::Delete(subkey_path.DirName(), false);
+  base::DeleteFile(subkey_path.DirName(), false);
 }
 
 void ResourceCache::PurgeOtherSubkeys(
@@ -138,12 +138,12 @@ void ResourceCache::PurgeOtherSubkeys(
        path = enumerator.Next()) {
     const std::string name(path.BaseName().MaybeAsASCII());
     if (encoded_subkeys_to_keep.find(name) == encoded_subkeys_to_keep.end())
-      base::Delete(path, false);
+      base::DeleteFile(path, false);
   }
   // Delete() does nothing if the directory given to it is not empty. Hence, the
   // call below deletes the directory representing |key| if all of its subkeys
   // were just removed and does nothing otherwise.
-  base::Delete(key_path, false);
+  base::DeleteFile(key_path, false);
 }
 
 bool ResourceCache::VerifyKeyPath(const std::string& key,

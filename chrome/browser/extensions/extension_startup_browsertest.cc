@@ -78,11 +78,11 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
   }
 
   virtual void TearDown() {
-    EXPECT_TRUE(base::Delete(preferences_file_, false));
+    EXPECT_TRUE(base::DeleteFile(preferences_file_, false));
 
     // TODO(phajdan.jr): Check return values of the functions below, carefully.
-    base::Delete(user_scripts_dir_, true);
-    base::Delete(extensions_dir_, true);
+    base::DeleteFile(user_scripts_dir_, true);
+    base::DeleteFile(extensions_dir_, true);
 
     InProcessBrowserTest::TearDown();
   }

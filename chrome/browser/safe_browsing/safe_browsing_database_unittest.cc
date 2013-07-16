@@ -1658,7 +1658,7 @@ TEST_F(SafeBrowsingDatabaseTest, FilterFile) {
       &matching_list, &prefix_hits, &full_hashes, now));
 
   // If there is no filter file, the database cannot find malware urls.
-  base::Delete(filter_file, false);
+  base::DeleteFile(filter_file, false);
   ASSERT_FALSE(base::PathExists(filter_file));
   database_.reset(new SafeBrowsingDatabaseNew);
   database_->Init(database_filename_);

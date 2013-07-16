@@ -239,7 +239,7 @@ class UserCloudPolicyStoreChromeOSTest : public testing::Test {
 
 TEST_F(UserCloudPolicyStoreChromeOSTest, InitialStore) {
   // Start without any public key to trigger the initial key checks.
-  ASSERT_TRUE(base::Delete(user_policy_key_file(), false));
+  ASSERT_TRUE(base::DeleteFile(user_policy_key_file(), false));
   // Make the policy blob contain a new public key.
   policy_.set_new_signing_key(PolicyBuilder::CreateTestNewSigningKey());
   policy_.Build();
@@ -383,7 +383,7 @@ TEST_F(UserCloudPolicyStoreChromeOSTest, LoadValidationError) {
 
 TEST_F(UserCloudPolicyStoreChromeOSTest, LoadNoKey) {
   // The loaded policy can't be verified without the public key.
-  ASSERT_TRUE(base::Delete(user_policy_key_file(), false));
+  ASSERT_TRUE(base::DeleteFile(user_policy_key_file(), false));
   ExpectError(CloudPolicyStore::STATUS_VALIDATION_ERROR);
   ASSERT_NO_FATAL_FAILURE(PerformPolicyLoad(policy_.GetBlob()));
   VerifyStoreHasValidationError();
@@ -480,7 +480,7 @@ TEST_F(UserCloudPolicyStoreChromeOSTest, MigrationNoPolicy) {
 
 TEST_F(UserCloudPolicyStoreChromeOSTest, MigrationAndStoreNew) {
   // Start without an existing public key.
-  ASSERT_TRUE(base::Delete(user_policy_key_file(), false));
+  ASSERT_TRUE(base::DeleteFile(user_policy_key_file(), false));
 
   std::string data;
   em::CachedCloudPolicyResponse cached_policy;

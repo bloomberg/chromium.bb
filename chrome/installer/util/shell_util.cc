@@ -1200,7 +1200,7 @@ bool ShortcutOpUnpin(const base::FilePath& shortcut_path) {
 }
 
 bool ShortcutOpDelete(const base::FilePath& shortcut_path) {
-  bool ret = base::Delete(shortcut_path, false);
+  bool ret = base::DeleteFile(shortcut_path, false);
   LOG_IF(ERROR, !ret) << "Failed to remove " << shortcut_path.value();
   return ret;
 }
@@ -1269,7 +1269,7 @@ bool RemoveShortcutFolder(ShellUtil::ShortcutLocation location,
     LOG(WARNING) << "Cannot find path at location " << location;
     return false;
   }
-  if (!base::Delete(shortcut_folder, true)) {
+  if (!base::DeleteFile(shortcut_folder, true)) {
     LOG(ERROR) << "Cannot remove folder " << shortcut_folder.value();
     return false;
   }

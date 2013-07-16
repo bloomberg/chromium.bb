@@ -91,7 +91,7 @@ bool DeleteTreeWorkItem::Do() {
     // We can safely delete the key files now.
     for (ptrdiff_t i = 0; !abort && i != num_key_files_; ++i) {
       base::FilePath& key_file = key_paths_[i];
-      if (!base::Delete(key_file, true)) {
+      if (!base::DeleteFile(key_file, true)) {
         // This should not really be possible because of the above.
         PLOG(DFATAL) << "Unexpectedly could not delete " << key_file.value();
         abort = true;
@@ -126,7 +126,7 @@ bool DeleteTreeWorkItem::Do() {
         }
       }
     }
-    if (!base::Delete(root_path_, true)) {
+    if (!base::DeleteFile(root_path_, true)) {
       LOG(ERROR) << "can not delete " << root_path_.value();
       return ignore_failure_;
     }

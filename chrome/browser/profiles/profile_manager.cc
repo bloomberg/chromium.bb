@@ -202,8 +202,8 @@ void ProfileManager::NukeDeletedProfilesFromDisk() {
     // Delete both the profile directory and its corresponding cache.
     base::FilePath cache_path;
     chrome::GetUserCacheDirectory(*it, &cache_path);
-    base::Delete(*it, true);
-    base::Delete(cache_path, true);
+    base::DeleteFile(*it, true);
+    base::DeleteFile(cache_path, true);
   }
   ProfilesToDelete().clear();
 }

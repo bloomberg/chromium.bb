@@ -682,7 +682,7 @@ void CreateDialogForFileImpl(content::BrowserContext* browser_context,
                  browser_context, modal_parent, data, print_job_title,
                  print_ticket, file_type));
   if (delete_on_close)
-    base::Delete(path_to_file, false);
+    base::DeleteFile(path_to_file, false);
 }
 
 }  // namespace internal_cloud_print_helpers

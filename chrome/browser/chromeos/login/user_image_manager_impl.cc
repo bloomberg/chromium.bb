@@ -145,7 +145,7 @@ void DeleteImageFile(const std::string& image_path) {
   BrowserThread::PostTask(
       BrowserThread::FILE,
       FROM_HERE,
-      base::Bind(base::IgnoreResult(&base::Delete),
+      base::Bind(base::IgnoreResult(&base::DeleteFile),
                  fp, /* recursive= */  false));
 }
 

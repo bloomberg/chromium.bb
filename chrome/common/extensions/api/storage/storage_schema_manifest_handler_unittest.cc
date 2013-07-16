@@ -44,7 +44,7 @@ class StorageSchemaManifestHandlerTest : public testing::Test {
       return NULL;
     base::FilePath schema_path = temp_dir_.path().AppendASCII("schema.json");
     if (schema.empty()) {
-      base::Delete(schema_path, false);
+      base::DeleteFile(schema_path, false);
     } else {
       if (file_util::WriteFile(schema_path, schema.data(), schema.size()) !=
           static_cast<int>(schema.size())) {

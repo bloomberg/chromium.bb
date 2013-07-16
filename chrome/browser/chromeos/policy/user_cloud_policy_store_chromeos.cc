@@ -409,7 +409,7 @@ void UserCloudPolicyStoreChromeOS::InstallLegacyTokens(
 // static
 void UserCloudPolicyStoreChromeOS::RemoveLegacyCacheDir(
     const base::FilePath& dir) {
-  if (base::PathExists(dir) && !base::Delete(dir, true))
+  if (base::PathExists(dir) && !base::DeleteFile(dir, true))
     LOG(ERROR) << "Failed to remove cache dir " << dir.value();
 }
 

@@ -122,7 +122,7 @@ void UserCloudPolicyStore::LoadImmediately() {
 void UserCloudPolicyStore::Clear() {
   content::BrowserThread::PostTask(
       content::BrowserThread::FILE, FROM_HERE,
-      base::Bind(base::IgnoreResult(&base::Delete),
+      base::Bind(base::IgnoreResult(&base::DeleteFile),
                  backing_file_path_,
                  false));
   policy_.reset();

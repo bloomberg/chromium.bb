@@ -177,10 +177,10 @@ void DownloadFeedbackService::BeginFeedbackOrDeleteFile(
   if (service) {
     service->BeginFeedback(ping_request, ping_response, path);
   } else {
-    base::FileUtilProxy::Delete(file_task_runner.get(),
-                                path,
-                                false,
-                                base::FileUtilProxy::StatusCallback());
+    base::FileUtilProxy::DeleteFile(file_task_runner.get(),
+                                    path,
+                                    false,
+                                    base::FileUtilProxy::StatusCallback());
   }
 }
 

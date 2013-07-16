@@ -200,7 +200,7 @@ void ContactDatabase::InitFromTaskRunner(const base::FilePath& database_dir,
     // Delete the existing database and try again (just once, though).
     if (status.IsCorruption() && delete_and_retry_on_corruption) {
       LOG(WARNING) << "Deleting possibly-corrupt database";
-      base::Delete(database_dir, true);
+      base::DeleteFile(database_dir, true);
       delete_and_retry_on_corruption = false;
       histogram_result = HISTOGRAM_INIT_RESULT_DELETED_CORRUPTED;
     } else {

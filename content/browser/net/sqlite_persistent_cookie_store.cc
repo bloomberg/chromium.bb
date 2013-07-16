@@ -831,7 +831,7 @@ bool SQLitePersistentCookieStore::Backend::EnsureDatabaseVersion() {
 
     meta_table_.Reset();
     db_.reset(new sql::Connection);
-    if (!base::Delete(path_, false) ||
+    if (!base::DeleteFile(path_, false) ||
         !db_->Open(path_) ||
         !meta_table_.Init(
             db_.get(), kCurrentVersionNumber, kCompatibleVersionNumber)) {

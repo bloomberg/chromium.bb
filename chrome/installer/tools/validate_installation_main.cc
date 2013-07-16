@@ -81,7 +81,7 @@ ConsoleLogHelper::~ConsoleLogHelper() {
   // Delete the log file if it wasn't written to (this is expected).
   int64 file_size = 0;
   if (file_util::GetFileSize(log_file_path_, &file_size) && file_size == 0)
-    base::Delete(log_file_path_, false);
+    base::DeleteFile(log_file_path_, false);
 }
 
 // Returns the path to the log file to create.  The file should be empty at

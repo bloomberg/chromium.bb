@@ -298,7 +298,7 @@ class ServiceProcessStateFileManipulationTest : public ::testing::Test {
 };
 
 void DeleteFunc(const base::FilePath& file) {
-  EXPECT_TRUE(base::Delete(file, true));
+  EXPECT_TRUE(base::DeleteFile(file, true));
 }
 
 void MoveFunc(const base::FilePath& from, const base::FilePath& to) {
@@ -401,7 +401,7 @@ TEST_F(ServiceProcessStateFileManipulationTest, TrashBundle) {
   ASSERT_TRUE(mock_launchd()->delete_called());
   std::string path(base::mac::PathFromFSRef(bundle_ref));
   base::FilePath file_path(path);
-  ASSERT_TRUE(base::Delete(file_path, true));
+  ASSERT_TRUE(base::DeleteFile(file_path, true));
 }
 
 TEST_F(ServiceProcessStateFileManipulationTest, ChangeAttr) {

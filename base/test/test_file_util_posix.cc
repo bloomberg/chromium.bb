@@ -77,7 +77,7 @@ bool RestorePermissionInfo(const base::FilePath& path,
 bool DieFileDie(const base::FilePath& file, bool recurse) {
   // There is no need to workaround Windows problems on POSIX.
   // Just pass-through.
-  return base::Delete(file, recurse);
+  return base::DeleteFile(file, recurse);
 }
 
 #if !defined(OS_LINUX) && !defined(OS_MACOSX)

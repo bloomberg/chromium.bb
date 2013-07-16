@@ -69,7 +69,7 @@ BASE_EXPORT int64 ComputeDirectorySize(const FilePath& root_path);
 //
 // WARNING: USING THIS WITH recursive==true IS EQUIVALENT
 //          TO "rm -rf", SO USE WITH CAUTION.
-BASE_EXPORT bool Delete(const FilePath& path, bool recursive);
+BASE_EXPORT bool DeleteFile(const FilePath& path, bool recursive);
 
 #if defined(OS_WIN)
 // Schedules to delete the given path, whether it's a file or a directory, until
@@ -77,7 +77,7 @@ BASE_EXPORT bool Delete(const FilePath& path, bool recursive);
 // Note:
 // 1) The file/directory to be deleted should exist in a temp folder.
 // 2) The directory to be deleted must be empty.
-BASE_EXPORT bool DeleteAfterReboot(const FilePath& path);
+BASE_EXPORT bool DeleteFileAfterReboot(const FilePath& path);
 #endif
 
 // Moves the given path, whether it's a file or a directory.

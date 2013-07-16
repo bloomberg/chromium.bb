@@ -240,7 +240,7 @@ const Extension* ExtensionBrowserTest::LoadExtensionAsComponent(
 base::FilePath ExtensionBrowserTest::PackExtension(
     const base::FilePath& dir_path) {
   base::FilePath crx_path = temp_dir_.path().AppendASCII("temp.crx");
-  if (!base::Delete(crx_path, false)) {
+  if (!base::DeleteFile(crx_path, false)) {
     ADD_FAILURE() << "Failed to delete crx: " << crx_path.value();
     return base::FilePath();
   }
@@ -253,7 +253,7 @@ base::FilePath ExtensionBrowserTest::PackExtension(
   if (!base::PathExists(pem_path)) {
     pem_path = base::FilePath();
     pem_path_out = crx_path.DirName().AppendASCII("temp.pem");
-    if (!base::Delete(pem_path_out, false)) {
+    if (!base::DeleteFile(pem_path_out, false)) {
       ADD_FAILURE() << "Failed to delete pem: " << pem_path_out.value();
       return base::FilePath();
     }

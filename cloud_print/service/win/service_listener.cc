@@ -43,7 +43,7 @@ std::string GetEnvironment(const base::FilePath& user_data_dir) {
       DCHECK(base::PathExists(temp_file));
       environment.SetString(SetupListener::kUserDataDirJsonValueName,
                             user_data_dir.value());
-      base::Delete(temp_file, false);
+      base::DeleteFile(temp_file, false);
     }
   }
 

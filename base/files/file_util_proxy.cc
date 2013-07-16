@@ -219,7 +219,7 @@ PlatformFileError DeleteAdapter(const FilePath& file_path, bool recursive) {
   if (!PathExists(file_path)) {
     return PLATFORM_FILE_ERROR_NOT_FOUND;
   }
-  if (!base::Delete(file_path, recursive)) {
+  if (!base::DeleteFile(file_path, recursive)) {
     if (!recursive && !file_util::IsDirectoryEmpty(file_path)) {
       return PLATFORM_FILE_ERROR_NOT_EMPTY;
     }
@@ -300,24 +300,13 @@ bool FileUtilProxy::GetFileInfoFromPlatformFile(
 
 #if !defined(OS_NACL)
 // static
-bool FileUtilProxy::Delete(TaskRunner* task_runner,
-                           const FilePath& file_path,
-                           bool recursive,
-                           const StatusCallback& callback) {
+bool FileUtilProxy::DeleteFile(TaskRunner* task_runner,
+                               const FilePath& file_path,
+                               bool recursive,
+                               const StatusCallback& callback) {
   return base::PostTaskAndReplyWithResult(
       task_runner, FROM_HERE,
       Bind(&DeleteAdapter, file_path, recursive),
-      callback);
-}
-
-// static
-bool FileUtilProxy::RecursiveDelete(
-    TaskRunner* task_runner,
-    const FilePath& file_path,
-    const StatusCallback& callback) {
-  return base::PostTaskAndReplyWithResult(
-      task_runner, FROM_HERE,
-      Bind(&DeleteAdapter, file_path, true /* recursive */),
       callback);
 }
 #endif  // !defined(OS_NACL)

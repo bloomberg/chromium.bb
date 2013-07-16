@@ -51,7 +51,7 @@ bool GoogleUpdateSettings::SetCollectStatsConsent(bool consented) {
     }
   } else {
     google_update::posix_guid().clear();
-    return base::Delete(consent_file, false);
+    return base::DeleteFile(consent_file, false);
   }
   return true;
 }

@@ -157,7 +157,7 @@ class TraceEventWinTest: public testing::Test {
       EXPECT_HRESULT_SUCCEEDED(controller_.Stop(&prop));
 
     if (!log_file_.value().empty())
-      base::Delete(log_file_, false);
+      base::DeleteFile(log_file_, false);
 
     // We want our singleton torn down after each test.
     TraceLog::DeleteForTesting();

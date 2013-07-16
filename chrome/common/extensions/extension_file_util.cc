@@ -125,7 +125,7 @@ void UninstallExtension(const base::FilePath& extensions_dir,
   // We don't care about the return value. If this fails (and it can, due to
   // plugins that aren't unloaded yet), it will get cleaned up by
   // ExtensionService::GarbageCollectExtensions.
-  base::Delete(extensions_dir.AppendASCII(id), true);  // recursive.
+  base::DeleteFile(extensions_dir.AppendASCII(id), true);  // recursive.
 }
 
 scoped_refptr<Extension> LoadExtension(const base::FilePath& extension_path,
@@ -345,7 +345,7 @@ void GarbageCollectExtensions(
     // Clean up temporary files left if Chrome crashed or quit in the middle
     // of an extension install.
     if (basename.value() == kTempDirectoryName) {
-      base::Delete(extension_path, true);  // Recursive
+      base::DeleteFile(extension_path, true);  // Recursive
       continue;
     }
 
@@ -362,7 +362,7 @@ void GarbageCollectExtensions(
                        "directory: " << basename.value();
       DVLOG(1) << "Deleting invalid extension directory "
                << extension_path.value() << ".";
-      base::Delete(extension_path, true);  // Recursive.
+      base::DeleteFile(extension_path, true);  // Recursive.
       continue;
     }
 
@@ -375,7 +375,7 @@ void GarbageCollectExtensions(
     if (iter_pair.first == iter_pair.second) {
       DVLOG(1) << "Deleting unreferenced install for directory "
                << extension_path.LossyDisplayName() << ".";
-      base::Delete(extension_path, true);  // Recursive.
+      base::DeleteFile(extension_path, true);  // Recursive.
       continue;
     }
 
@@ -396,7 +396,7 @@ void GarbageCollectExtensions(
       if (!knownVersion) {
         DVLOG(1) << "Deleting old version for directory "
                  << version_dir.LossyDisplayName() << ".";
-        base::Delete(version_dir, true);  // Recursive.
+        base::DeleteFile(version_dir, true);  // Recursive.
       }
     }
   }
@@ -570,7 +570,7 @@ base::FilePath GetInstallTempDir(const base::FilePath& extensions_dir) {
 }
 
 void DeleteFile(const base::FilePath& path, bool recursive) {
-  base::Delete(path, recursive);
+  base::DeleteFile(path, recursive);
 }
 
 }  // namespace extension_file_util

@@ -96,17 +96,10 @@ class BASE_EXPORT FileUtilProxy {
   // Deletes a file or a directory.
   // It is an error to delete a non-empty directory with recursive=false.
   // This returns false if task posting to |task_runner| has failed.
-  static bool Delete(TaskRunner* task_runner,
-                     const FilePath& file_path,
-                     bool recursive,
-                     const StatusCallback& callback);
-
-  // Deletes a directory and all of its contents.
-  // This returns false if task posting to |task_runner| has failed.
-  static bool RecursiveDelete(
-      TaskRunner* task_runner,
-      const FilePath& file_path,
-      const StatusCallback& callback);
+  static bool DeleteFile(TaskRunner* task_runner,
+                         const FilePath& file_path,
+                         bool recursive,
+                         const StatusCallback& callback);
 
   // Reads from a file. On success, the file pointer is moved to position
   // |offset + bytes_to_read| in the file. The callback can be null.

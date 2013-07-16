@@ -255,8 +255,8 @@ void WebContentsDragWin::PrepareDragForDownload(
 
   // We cannot know when the target application will be done using the temporary
   // file, so schedule it to be deleted after rebooting.
-  base::DeleteAfterReboot(download_path);
-  base::DeleteAfterReboot(temp_dir_path);
+  base::DeleteFileAfterReboot(download_path);
+  base::DeleteFileAfterReboot(temp_dir_path);
 
   // Provide the data as file (CF_HDROP). A temporary download file with the
   // Zone.Identifier ADS (Alternate Data Stream) attached will be created.

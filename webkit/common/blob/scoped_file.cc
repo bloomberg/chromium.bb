@@ -63,10 +63,10 @@ void ScopedFile::Reset() {
   }
 
   if (scope_out_policy_ == DELETE_ON_SCOPE_OUT) {
-    base::FileUtilProxy::Delete(file_task_runner_.get(),
-                                path_,
-                                false /* recursive */,
-                                base::FileUtilProxy::StatusCallback());
+    base::FileUtilProxy::DeleteFile(file_task_runner_.get(),
+                                    path_,
+                                    false /* recursive */,
+                                    base::FileUtilProxy::StatusCallback());
   }
 
   // Clear all fields.

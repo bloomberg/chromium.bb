@@ -145,7 +145,7 @@ bool VerifyJunctionFreeLocation(base::FilePath* temp_dir) {
     *temp_dir = normalized_temp_file.DirName();
   }
   // Clean up the temp file.
-  base::Delete(temp_file, false);
+  base::DeleteFile(temp_file, false);
 
   return normalized;
 }
@@ -679,7 +679,7 @@ bool SandboxedUnpacker::RewriteImageFiles(SkBitmap* install_icon) {
               ASCIIToUTF16("INVALID_PATH_FOR_BROWSER_IMAGE")));
       return false;
     }
-    if (!base::Delete(extension_root_.Append(path), false)) {
+    if (!base::DeleteFile(extension_root_.Append(path), false)) {
       // Error removing old image file.
       ReportFailure(
           ERROR_REMOVING_OLD_IMAGE_FILE,

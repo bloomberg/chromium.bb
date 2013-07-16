@@ -135,7 +135,7 @@ void NetworkProfileBubble::CheckNetworkProfile(
       } else {
         RecordUmaEvent(METRIC_CHECK_IO_FAILED);
       }
-      base::Delete(temp_file, false);
+      base::DeleteFile(temp_file, false);
     }
     if (profile_on_network) {
       RecordUmaEvent(METRIC_PROFILE_ON_NETWORK);

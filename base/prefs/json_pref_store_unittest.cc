@@ -147,7 +147,7 @@ void RunBasicJsonPrefStoreTest(JsonPrefStore* pref_store,
   pref_store->CommitPendingWrite();
   RunLoop().RunUntilIdle();
   EXPECT_TRUE(TextContentsEqual(golden_output_file, output_file));
-  ASSERT_TRUE(base::Delete(output_file, false));
+  ASSERT_TRUE(base::DeleteFile(output_file, false));
 }
 
 TEST_F(JsonPrefStoreTest, Basic) {

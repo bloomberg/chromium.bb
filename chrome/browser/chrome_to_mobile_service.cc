@@ -205,7 +205,7 @@ void ReadSnapshotFile(scoped_ptr<ChromeToMobileService::JobData> data,
 // Call this as a BlockingPoolSequencedTask [after posting SubmitSnapshotFile].
 void DeleteSnapshotFile(const base::FilePath& snapshot) {
   DCHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  bool success = base::Delete(snapshot, false);
+  bool success = base::DeleteFile(snapshot, false);
   DCHECK(success);
 }
 

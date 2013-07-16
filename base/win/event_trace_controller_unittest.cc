@@ -171,7 +171,7 @@ TEST_F(EtwTraceControllerTest, StartFileSession) {
                                            temp.value().c_str());
   if (hr == E_ACCESSDENIED) {
     VLOG(1) << "You must be an administrator to run this test on Vista";
-    base::Delete(temp, false);
+    base::DeleteFile(temp, false);
     return;
   }
 
@@ -181,7 +181,7 @@ TEST_F(EtwTraceControllerTest, StartFileSession) {
   EXPECT_HRESULT_SUCCEEDED(controller.Stop(NULL));
   EXPECT_EQ(NULL, controller.session());
   EXPECT_STREQ(L"", controller.session_name());
-  base::Delete(temp, false);
+  base::DeleteFile(temp, false);
 }
 
 TEST_F(EtwTraceControllerTest, EnableDisable) {

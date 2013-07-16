@@ -274,7 +274,7 @@ TEST_F(FilePathWatcherTest, DeletedFile) {
   ASSERT_TRUE(SetupWatch(test_file(), &watcher, delegate.get(), false));
 
   // Now make sure we get notified if the file is deleted.
-  base::Delete(test_file(), false);
+  base::DeleteFile(test_file(), false);
   ASSERT_TRUE(WaitForEvents());
   DeleteDelegateOnFileThread(delegate.release());
 }
@@ -363,7 +363,7 @@ TEST_F(FilePathWatcherTest, NonExistentDirectory) {
   VLOG(1) << "Waiting for file change";
   ASSERT_TRUE(WaitForEvents());
 
-  ASSERT_TRUE(base::Delete(file, false));
+  ASSERT_TRUE(base::DeleteFile(file, false));
   VLOG(1) << "Waiting for file deletion";
   ASSERT_TRUE(WaitForEvents());
   DeleteDelegateOnFileThread(delegate.release());
@@ -415,7 +415,7 @@ TEST_F(FilePathWatcherTest, DisappearingDirectory) {
   scoped_ptr<TestDelegate> delegate(new TestDelegate(collector()));
   ASSERT_TRUE(SetupWatch(file, &watcher, delegate.get(), false));
 
-  ASSERT_TRUE(base::Delete(dir, true));
+  ASSERT_TRUE(base::DeleteFile(dir, true));
   ASSERT_TRUE(WaitForEvents());
   DeleteDelegateOnFileThread(delegate.release());
 }
@@ -427,7 +427,7 @@ TEST_F(FilePathWatcherTest, DeleteAndRecreate) {
   scoped_ptr<TestDelegate> delegate(new TestDelegate(collector()));
   ASSERT_TRUE(SetupWatch(test_file(), &watcher, delegate.get(), false));
 
-  ASSERT_TRUE(base::Delete(test_file(), false));
+  ASSERT_TRUE(base::DeleteFile(test_file(), false));
   VLOG(1) << "Waiting for file deletion";
   ASSERT_TRUE(WaitForEvents());
 
@@ -460,7 +460,7 @@ TEST_F(FilePathWatcherTest, WatchDirectory) {
   ASSERT_TRUE(WaitForEvents());
 #endif  // !OS_MACOSX
 
-  ASSERT_TRUE(base::Delete(file1, false));
+  ASSERT_TRUE(base::DeleteFile(file1, false));
   VLOG(1) << "Waiting for file1 deletion";
   ASSERT_TRUE(WaitForEvents());
 
@@ -542,11 +542,11 @@ TEST_F(FilePathWatcherTest, RecursiveWatch) {
   ASSERT_TRUE(WaitForEvents());
 
   // Delete "$dir/subdir/subdir_file1".
-  ASSERT_TRUE(base::Delete(subdir_file1, false));
+  ASSERT_TRUE(base::DeleteFile(subdir_file1, false));
   ASSERT_TRUE(WaitForEvents());
 
   // Delete "$dir/subdir/subdir_child_dir/child_dir_file1".
-  ASSERT_TRUE(base::Delete(child_dir_file1, false));
+  ASSERT_TRUE(base::DeleteFile(child_dir_file1, false));
   ASSERT_TRUE(WaitForEvents());
   DeleteDelegateOnFileThread(delegate.release());
 }
@@ -634,7 +634,7 @@ TEST_F(FilePathWatcherTest, DeleteLink) {
   ASSERT_TRUE(SetupWatch(test_link(), &watcher, delegate.get(), false));
 
   // Now make sure we get notified if the link is deleted.
-  ASSERT_TRUE(base::Delete(test_link(), false));
+  ASSERT_TRUE(base::DeleteFile(test_link(), false));
   ASSERT_TRUE(WaitForEvents());
   DeleteDelegateOnFileThread(delegate.release());
 }
@@ -681,7 +681,7 @@ TEST_F(FilePathWatcherTest, DeleteTargetLinkedFile) {
   ASSERT_TRUE(SetupWatch(test_link(), &watcher, delegate.get(), false));
 
   // Now make sure we get notified if the target file is deleted.
-  ASSERT_TRUE(base::Delete(test_file(), false));
+  ASSERT_TRUE(base::DeleteFile(test_file(), false));
   ASSERT_TRUE(WaitForEvents());
   DeleteDelegateOnFileThread(delegate.release());
 }
@@ -709,7 +709,7 @@ TEST_F(FilePathWatcherTest, LinkedDirectoryPart1) {
   VLOG(1) << "Waiting for file change";
   ASSERT_TRUE(WaitForEvents());
 
-  ASSERT_TRUE(base::Delete(file, false));
+  ASSERT_TRUE(base::DeleteFile(file, false));
   VLOG(1) << "Waiting for file deletion";
   ASSERT_TRUE(WaitForEvents());
   DeleteDelegateOnFileThread(delegate.release());
@@ -739,7 +739,7 @@ TEST_F(FilePathWatcherTest, LinkedDirectoryPart2) {
   VLOG(1) << "Waiting for file change";
   ASSERT_TRUE(WaitForEvents());
 
-  ASSERT_TRUE(base::Delete(file, false));
+  ASSERT_TRUE(base::DeleteFile(file, false));
   VLOG(1) << "Waiting for file deletion";
   ASSERT_TRUE(WaitForEvents());
   DeleteDelegateOnFileThread(delegate.release());
@@ -767,7 +767,7 @@ TEST_F(FilePathWatcherTest, LinkedDirectoryPart3) {
   VLOG(1) << "Waiting for file change";
   ASSERT_TRUE(WaitForEvents());
 
-  ASSERT_TRUE(base::Delete(file, false));
+  ASSERT_TRUE(base::DeleteFile(file, false));
   VLOG(1) << "Waiting for file deletion";
   ASSERT_TRUE(WaitForEvents());
   DeleteDelegateOnFileThread(delegate.release());

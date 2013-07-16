@@ -765,7 +765,7 @@ TEST_F(URLRequestTest, FileTestFullSpecifiedRange) {
     EXPECT_TRUE(partial_buffer_string == d.data_received());
   }
 
-  EXPECT_TRUE(base::Delete(temp_path, false));
+  EXPECT_TRUE(base::DeleteFile(temp_path, false));
 }
 
 TEST_F(URLRequestTest, FileTestHalfSpecifiedRange) {
@@ -808,7 +808,7 @@ TEST_F(URLRequestTest, FileTestHalfSpecifiedRange) {
     EXPECT_TRUE(partial_buffer_string == d.data_received());
   }
 
-  EXPECT_TRUE(base::Delete(temp_path, false));
+  EXPECT_TRUE(base::DeleteFile(temp_path, false));
 }
 
 TEST_F(URLRequestTest, FileTestMultipleRanges) {
@@ -839,7 +839,7 @@ TEST_F(URLRequestTest, FileTestMultipleRanges) {
     EXPECT_TRUE(d.request_failed());
   }
 
-  EXPECT_TRUE(base::Delete(temp_path, false));
+  EXPECT_TRUE(base::DeleteFile(temp_path, false));
 }
 
 TEST_F(URLRequestTest, InvalidUrlTest) {

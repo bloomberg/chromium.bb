@@ -122,7 +122,7 @@ TEST_F(MacSandboxTest, FontLoadingTest) {
   ASSERT_TRUE(RunTestInSandbox(SANDBOX_TYPE_RENDERER,
                   "FontLoadingTestCase", temp_file_path.value().c_str()));
   temp_file_closer.reset();
-  ASSERT_TRUE(base::Delete(temp_file_path, false));
+  ASSERT_TRUE(base::DeleteFile(temp_file_path, false));
 }
 
 }  // namespace content

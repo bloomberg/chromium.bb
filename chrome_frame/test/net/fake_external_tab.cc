@@ -483,7 +483,7 @@ FakeExternalTab::FakeExternalTab() {
   if (base::PathExists(user_data_dir_)) {
     VLOG(1) << __FUNCTION__ << " deleting IE Profile user data directory "
             << user_data_dir_.value();
-    bool deleted = base::Delete(user_data_dir_, true);
+    bool deleted = base::DeleteFile(user_data_dir_, true);
     LOG_IF(ERROR, !deleted) << "Failed to delete user data directory directory "
                             << user_data_dir_.value();
   }
@@ -901,7 +901,7 @@ void CFUrlRequestUnittestRunner::StopFileLogger(bool print) {
     }
   }
 
-  if (!log_file_.empty() && !base::Delete(log_file_, false))
+  if (!log_file_.empty() && !base::DeleteFile(log_file_, false))
     LOG(ERROR) << "Failed to delete log file " << log_file_.value();
 
   log_file_.clear();

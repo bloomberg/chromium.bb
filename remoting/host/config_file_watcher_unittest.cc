@@ -89,7 +89,7 @@ void ConfigFileWatcherTest::SetUp() {
 void ConfigFileWatcherTest::TearDown() {
   // Delete the test file.
   if (!config_file_.empty())
-    base::Delete(config_file_, false);
+    base::DeleteFile(config_file_, false);
 }
 
 // Verifies that the initial notification is delivered.

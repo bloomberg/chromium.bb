@@ -230,7 +230,7 @@ bool FileCache::FreeDiskSpaceIfNeededFor(int64 num_bytes) {
        current = enumerator.Next()) {
     std::string resource_id = GetResourceIdFromPath(current);
     if (!storage_->GetCacheEntry(resource_id, &entry))
-      base::Delete(current, false /* recursive */);
+      base::DeleteFile(current, false /* recursive */);
   }
 
   // Check the disk space again.
@@ -493,7 +493,7 @@ FileError FileCache::Remove(const std::string& resource_id) {
 
   // Delete the file.
   base::FilePath path = GetCacheFilePath(resource_id);
-  if (!base::Delete(path, false /* recursive */))
+  if (!base::DeleteFile(path, false /* recursive */))
     return FILE_ERROR_FAILED;
 
   // Now that all file operations have completed, remove from metadata.
@@ -669,7 +669,7 @@ bool FileCache::ClearAll() {
                                   base::FileEnumerator::FILES);
   for (base::FilePath file = enumerator.Next(); !file.empty();
        file = enumerator.Next())
-    base::Delete(file, false /* recursive */);
+    base::DeleteFile(file, false /* recursive */);
 
   return true;
 }
@@ -710,7 +710,7 @@ bool FileCache::ImportOldDB(const base::FilePath& old_db_path) {
   }
 
   // Delete old DB.
-  base::Delete(old_db_path, true /* recursive */ );
+  base::DeleteFile(old_db_path, true /* recursive */ );
   return imported;
 }
 
@@ -723,7 +723,7 @@ void FileCache::RenameCacheFilesToNewFormat() {
                                     "*.*.*");
     for (base::FilePath current = enumerator.Next(); !current.empty();
          current = enumerator.Next())
-      base::Delete(current, false /* recursive */);
+      base::DeleteFile(current, false /* recursive */);
   }
 
   // Rename files.

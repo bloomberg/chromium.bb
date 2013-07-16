@@ -375,7 +375,7 @@ TEST_F(IPCChannelPosixTest, IsNamedServerInitialized) {
   const std::string& connection_socket_name = GetConnectionSocketName();
   IPCChannelPosixTestListener listener(false);
   IPC::ChannelHandle chan_handle(connection_socket_name);
-  ASSERT_TRUE(base::Delete(base::FilePath(connection_socket_name), false));
+  ASSERT_TRUE(base::DeleteFile(base::FilePath(connection_socket_name), false));
   ASSERT_FALSE(IPC::Channel::IsNamedServerInitialized(
       connection_socket_name));
   IPC::Channel channel(chan_handle, IPC::Channel::MODE_NAMED_SERVER, &listener);

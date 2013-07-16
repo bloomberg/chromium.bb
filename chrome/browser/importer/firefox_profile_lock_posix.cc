@@ -78,7 +78,7 @@ void FirefoxProfileLock::Unlock() {
     return;
   close(lock_fd_);
   lock_fd_ = -1;
-  base::Delete(old_lock_file_, false);
+  base::DeleteFile(old_lock_file_, false);
 }
 
 bool FirefoxProfileLock::HasAcquired() {

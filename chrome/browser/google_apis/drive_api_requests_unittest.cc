@@ -1384,7 +1384,7 @@ TEST_F(DriveApiRequestsTest, DownloadFileRequest) {
 
   std::string contents;
   file_util::ReadFileToString(temp_file, &contents);
-  base::Delete(temp_file, false);
+  base::DeleteFile(temp_file, false);
 
   EXPECT_EQ(HTTP_SUCCESS, result_code);
   EXPECT_EQ(net::test_server::METHOD_GET, http_request_.method);

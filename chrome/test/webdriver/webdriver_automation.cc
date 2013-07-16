@@ -440,7 +440,7 @@ void Automation::Init(
 #elif defined(OS_POSIX)
     base::FilePath temp_file;
     if (!file_util::CreateTemporaryFile(&temp_file) ||
-        !base::Delete(temp_file, false /* recursive */)) {
+        !base::DeleteFile(temp_file, false /* recursive */)) {
       *error = new Error(kUnknownError, "Could not create temporary filename");
       return;
     }

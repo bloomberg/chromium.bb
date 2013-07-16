@@ -135,7 +135,7 @@ class ScopedDirectoryDelete {
  public:
   inline void operator()(base::FilePath* x) const {
     if (x) {
-      base::Delete(*x, true);
+      base::DeleteFile(*x, true);
     }
   }
 };

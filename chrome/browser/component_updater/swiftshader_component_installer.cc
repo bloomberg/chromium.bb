@@ -230,7 +230,7 @@ void RegisterSwiftShaderPath(ComponentUpdateService* cus) {
   // Remove older versions of SwiftShader.
   for (std::vector<base::FilePath>::iterator iter = older_dirs.begin();
        iter != older_dirs.end(); ++iter) {
-    base::Delete(*iter, true);
+    base::DeleteFile(*iter, true);
   }
 }
 

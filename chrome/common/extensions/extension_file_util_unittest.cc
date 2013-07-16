@@ -339,7 +339,7 @@ TEST_F(ExtensionFileUtilTest, ExtensionResourceURLToFilePath) {
       " For the path " << url;
   }
   // Remove temp files.
-  ASSERT_TRUE(base::Delete(root_path, true));
+  ASSERT_TRUE(base::DeleteFile(root_path, true));
 }
 
 static scoped_refptr<Extension> LoadExtensionManifest(

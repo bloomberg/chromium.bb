@@ -219,7 +219,7 @@ TEST_F(FileUtilProxyTest, CreateTemporary) {
   EXPECT_EQ("test", data);
 
   // Make sure we can & do delete the created file to prevent leaks on the bots.
-  EXPECT_TRUE(base::Delete(path_, false));
+  EXPECT_TRUE(base::DeleteFile(path_, false));
 }
 
 TEST_F(FileUtilProxyTest, GetFileInfo_File) {

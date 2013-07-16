@@ -665,7 +665,7 @@ void InstallerState::RemoveOldVersionDirectories(
       LOG(ERROR) << "Deleting old version directory: " << next_version.value();
 
       // Attempt to recursively delete the old version dir.
-      bool delete_succeeded = base::Delete(next_version, true);
+      bool delete_succeeded = base::DeleteFile(next_version, true);
 
       // Note: temporarily log old version deletion at ERROR level to make it
       // more likely we see this in the installer log.

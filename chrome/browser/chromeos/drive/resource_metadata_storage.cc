@@ -217,7 +217,7 @@ bool ResourceMetadataStorage::Initialize() {
 
   // Remove unused child map DB.
   const base::FilePath child_map_path = directory_path_.Append(kChildMapDBName);
-  base::Delete(child_map_path, true /* recursive */);
+  base::DeleteFile(child_map_path, true /* recursive */);
 
   resource_map_.reset();
 
@@ -267,7 +267,7 @@ bool ResourceMetadataStorage::Initialize() {
 
     // Clean up the destination.
     const bool kRecursive = true;
-    base::Delete(resource_map_path, kRecursive);
+    base::DeleteFile(resource_map_path, kRecursive);
 
     // Create DB.
     options.create_if_missing = true;

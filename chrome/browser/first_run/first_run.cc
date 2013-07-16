@@ -502,7 +502,7 @@ bool RemoveSentinel() {
   base::FilePath first_run_sentinel;
   if (!internal::GetFirstRunSentinelFilePath(&first_run_sentinel))
     return false;
-  return base::Delete(first_run_sentinel, false);
+  return base::DeleteFile(first_run_sentinel, false);
 }
 
 bool SetShowFirstRunBubblePref(FirstRunBubbleOptions show_bubble_option) {

@@ -261,7 +261,7 @@ void AppPackUpdater::BlockingCheckCacheInternal(
 
     if (info.IsDirectory() || file_util::IsLink(info.GetName())) {
       LOG(ERROR) << "Erasing bad file in AppPack directory: " << basename;
-      base::Delete(path, true /* recursive */);
+      base::DeleteFile(path, true /* recursive */);
       continue;
     }
 
@@ -294,7 +294,7 @@ void AppPackUpdater::BlockingCheckCacheInternal(
 
     if (id.empty() || version.empty()) {
       LOG(ERROR) << "Invalid file in AppPack cache, erasing: " << basename;
-      base::Delete(path, true /* recursive */);
+      base::DeleteFile(path, true /* recursive */);
       continue;
     }
 
@@ -313,10 +313,10 @@ void AppPackUpdater::BlockingCheckCacheInternal(
       DCHECK(vEntry.IsValid());
       DCHECK(vCurrent.IsValid());
       if (vEntry.CompareTo(vCurrent) < 0) {
-        base::Delete(base::FilePath(entry.path), true /* recursive */);
+        base::DeleteFile(base::FilePath(entry.path), true /* recursive */);
         entry.path = path.value();
       } else {
-        base::Delete(path, true /* recursive */);
+        base::DeleteFile(path, true /* recursive */);
       }
       continue;
     }
@@ -470,7 +470,7 @@ void AppPackUpdater::BlockingInstallCacheEntry(
   if (!version_validator.IsValid()) {
     LOG(ERROR) << "AppPack downloaded extension " << id << " but got bad "
                << "version: " << version;
-    base::Delete(path, true /* recursive */);
+    base::DeleteFile(path, true /* recursive */);
     return;
   }
 
@@ -481,7 +481,7 @@ void AppPackUpdater::BlockingInstallCacheEntry(
   if (base::PathExists(cached_crx_path)) {
     LOG(WARNING) << "AppPack downloaded a crx whose filename will overwrite "
                  << "an existing cached crx.";
-    base::Delete(cached_crx_path, true /* recursive */);
+    base::DeleteFile(cached_crx_path, true /* recursive */);
   }
 
   if (!base::DirectoryExists(cache_dir)) {
@@ -489,7 +489,7 @@ void AppPackUpdater::BlockingInstallCacheEntry(
                << cache_dir.value();
     if (!file_util::CreateDirectory(cache_dir)) {
       LOG(ERROR) << "Failed to create the AppPack cache dir!";
-      base::Delete(path, true /* recursive */);
+      base::DeleteFile(path, true /* recursive */);
       return;
     }
   }
@@ -497,7 +497,7 @@ void AppPackUpdater::BlockingInstallCacheEntry(
   if (!base::Move(path, cached_crx_path)) {
     LOG(ERROR) << "Failed to move AppPack crx from " << path.value()
                << " to " << cached_crx_path.value();
-    base::Delete(path, true /* recursive */);
+    base::DeleteFile(path, true /* recursive */);
     return;
   }
 
@@ -539,7 +539,7 @@ void AppPackUpdater::OnDamagedFileDetected(const base::FilePath& path) {
       // The file will be downloaded again on the next restart.
       BrowserThread::PostTask(
           BrowserThread::FILE, FROM_HERE,
-          base::Bind(base::IgnoreResult(base::Delete), path, true));
+          base::Bind(base::IgnoreResult(base::DeleteFile), path, true));
 
       // Don't try to DownloadMissingExtensions() from here,
       // since it can cause a fail/retry loop.

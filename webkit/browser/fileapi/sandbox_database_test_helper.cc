@@ -90,7 +90,7 @@ void DeleteDatabaseFile(const base::FilePath& db_path,
     EXPECT_TRUE(leveldb::ParseFileName(FilePathToString(file_path.BaseName()),
                                        &number, &file_type));
     if (file_type == type) {
-      base::Delete(file_path, false);
+      base::DeleteFile(file_path, false);
       // We may have multiple files for the same type, so don't break here.
     }
   }

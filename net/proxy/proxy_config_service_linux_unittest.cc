@@ -371,7 +371,7 @@ class ProxyConfigServiceLinuxTest : public PlatformTest {
 
   virtual void TearDown() OVERRIDE {
     // Delete the temporary KDE home directory.
-    base::Delete(user_home_, true);
+    base::DeleteFile(user_home_, true);
     PlatformTest::TearDown();
   }
 

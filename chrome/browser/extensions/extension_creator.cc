@@ -237,7 +237,7 @@ bool ExtensionCreator::WriteCRX(const base::FilePath& zip_path,
                                 const std::vector<uint8>& signature,
                                 const base::FilePath& crx_path) {
   if (base::PathExists(crx_path))
-    base::Delete(crx_path, false);
+    base::DeleteFile(crx_path, false);
   ScopedStdioHandle crx_handle(file_util::OpenFile(crx_path, "wb"));
   if (!crx_handle.get()) {
     error_message_ = l10n_util::GetStringUTF8(IDS_EXTENSION_SHARING_VIOLATION);
@@ -322,7 +322,7 @@ bool ExtensionCreator::Run(const base::FilePath& extension_dir,
     result = true;
   }
 
-  base::Delete(zip_path, false);
+  base::DeleteFile(zip_path, false);
   return result;
 }
 

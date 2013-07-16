@@ -70,7 +70,7 @@ TEST_F(PairingRegistryDelegateLinuxTest, SaveAndLoad) {
 
   run_loop.Run();
 
-  base::Delete(temp_dir, true);
+  base::DeleteFile(temp_dir, true);
 };
 
 }  // namespace remoting

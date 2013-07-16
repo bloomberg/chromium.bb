@@ -50,7 +50,7 @@ bool AutoStart::AddApplication(const std::string& autostart_filename,
   if (file_util::WriteFile(autostart_file, autostart_file_contents.c_str(),
                            content_length) !=
       static_cast<int>(content_length)) {
-    base::Delete(autostart_file, false);
+    base::DeleteFile(autostart_file, false);
     return false;
   }
   return true;
@@ -61,7 +61,7 @@ bool AutoStart::Remove(const std::string& autostart_filename) {
   base::FilePath autostart_directory = GetAutostartDirectory(environment.get());
   base::FilePath autostart_file =
       autostart_directory.Append(autostart_filename);
-  return base::Delete(autostart_file, false);
+  return base::DeleteFile(autostart_file, false);
 }
 
 bool AutoStart::GetAutostartFileContents(

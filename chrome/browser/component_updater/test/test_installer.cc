@@ -19,7 +19,7 @@ void TestInstaller::OnUpdateError(int error) {
 bool TestInstaller::Install(const base::DictionaryValue& manifest,
                             const base::FilePath& unpack_path) {
   ++install_count_;
-  return base::Delete(unpack_path, true);
+  return base::DeleteFile(unpack_path, true);
 }
 
 bool TestInstaller::GetInstalledFile(const std::string& file,
@@ -52,7 +52,7 @@ VersionedTestInstaller::VersionedTestInstaller() {
 }
 
 VersionedTestInstaller::~VersionedTestInstaller() {
-  base::Delete(install_directory_, true);
+  base::DeleteFile(install_directory_, true);
 }
 
 

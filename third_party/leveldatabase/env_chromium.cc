@@ -619,7 +619,7 @@ Status ChromiumEnv::GetChildren(const std::string& dir,
 Status ChromiumEnv::DeleteFile(const std::string& fname) {
   Status result;
   // TODO(jorlow): Should we assert this is a file?
-  if (!::base::Delete(CreateFilePath(fname), false)) {
+  if (!::base::DeleteFile(CreateFilePath(fname), false)) {
     result = MakeIOError(fname, "Could not delete file.", kDeleteFile);
     RecordErrorAt(kDeleteFile);
   }
@@ -642,7 +642,7 @@ Status ChromiumEnv::CreateDir(const std::string& name) {
 Status ChromiumEnv::DeleteDir(const std::string& name) {
   Status result;
   // TODO(jorlow): Should we assert this is a directory?
-  if (!::base::Delete(CreateFilePath(name), false)) {
+  if (!::base::DeleteFile(CreateFilePath(name), false)) {
     result = MakeIOError(name, "Could not delete directory.", kDeleteDir);
     RecordErrorAt(kDeleteDir);
   }

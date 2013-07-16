@@ -171,7 +171,7 @@ bool CreateShortcutOnDesktop(const base::FilePath& shortcut_filename,
 void DeleteShortcutOnDesktop(const base::FilePath& shortcut_filename) {
   base::FilePath desktop_path;
   if (PathService::Get(base::DIR_USER_DESKTOP, &desktop_path))
-    base::Delete(desktop_path.Append(shortcut_filename), false);
+    base::DeleteFile(desktop_path.Append(shortcut_filename), false);
 }
 
 // Creates a shortcut with |shortcut_filename| and |contents| in the system

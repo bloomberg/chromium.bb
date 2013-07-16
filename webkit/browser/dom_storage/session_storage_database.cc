@@ -296,7 +296,7 @@ bool SessionStorageDatabase::LazyOpen(bool create_if_needed) {
     DCHECK(db == NULL);
 
     // Clear the directory and try again.
-    base::Delete(file_path_, true);
+    base::DeleteFile(file_path_, true);
     s = TryToOpen(&db);
     if (!s.ok()) {
       LOG(WARNING) << "Failed to open leveldb in " << file_path_.value()

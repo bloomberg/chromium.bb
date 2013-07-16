@@ -108,10 +108,10 @@ DownloadFeedbackImpl::~DownloadFeedbackImpl() {
     uploader_.reset();
   }
 
-  base::FileUtilProxy::Delete(file_task_runner_.get(),
-                              file_path_,
-                              false,
-                              base::FileUtilProxy::StatusCallback());
+  base::FileUtilProxy::DeleteFile(file_task_runner_.get(),
+                                  file_path_,
+                                  false,
+                                  base::FileUtilProxy::StatusCallback());
 }
 
 void DownloadFeedbackImpl::Start(const base::Closure& finish_callback) {

@@ -222,7 +222,7 @@ void PageCycler::WriteResultsOnBackgroundThread(const std::string& output) {
                            error_.size());
     } else if (base::PathExists(errors_file_)) {
       // If there is an old error file, delete it to avoid confusion.
-      base::Delete(errors_file_, false);
+      base::DeleteFile(errors_file_, false);
     }
   }
   if (aborted_) {

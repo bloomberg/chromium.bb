@@ -231,10 +231,10 @@ void UpdateAppShortcutsSubdirLocalizedName(
 
 void DeletePathAndParentIfEmpty(const base::FilePath& app_path) {
   DCHECK(!app_path.empty());
-  base::Delete(app_path, true);
+  base::DeleteFile(app_path, true);
   base::FilePath apps_folder = app_path.DirName();
   if (file_util::IsDirectoryEmpty(apps_folder))
-    base::Delete(apps_folder, false);
+    base::DeleteFile(apps_folder, false);
 }
 
 bool IsShimForProfile(const base::FilePath& base_name,
@@ -428,7 +428,7 @@ void WebAppShortcutCreator::DeleteShortcuts() {
   // In case the user has moved/renamed/copied the app bundle.
   base::FilePath bundle_path = GetAppBundleById(GetBundleIdentifier());
   if (!bundle_path.empty())
-    base::Delete(bundle_path, true);
+    base::DeleteFile(bundle_path, true);
 
   // Delete the internal one.
   DeletePathAndParentIfEmpty(app_data_path_.Append(GetShortcutName()));
@@ -436,7 +436,7 @@ void WebAppShortcutCreator::DeleteShortcuts() {
 
 bool WebAppShortcutCreator::UpdateShortcuts() {
   std::vector<base::FilePath> paths;
-  base::Delete(app_data_path_.Append(GetShortcutName()), true);
+  base::DeleteFile(app_data_path_.Append(GetShortcutName()), true);
   paths.push_back(app_data_path_);
 
   base::FilePath dst_path = GetDestinationPath();
@@ -448,7 +448,7 @@ bool WebAppShortcutCreator::UpdateShortcuts() {
     app_path = GetAppBundleById(GetBundleIdentifier());
 
   if (!app_path.empty()) {
-    base::Delete(app_path, true);
+    base::DeleteFile(app_path, true);
     paths.push_back(app_path.DirName());
   }
 
