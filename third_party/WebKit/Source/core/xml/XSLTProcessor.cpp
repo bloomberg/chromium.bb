@@ -69,7 +69,7 @@ PassRefPtr<Document> XSLTProcessor::createDocumentFromSource(const String& sourc
 
     RefPtr<Document> result;
     if (sourceMIMEType == "text/plain") {
-        result = Document::create(frame, sourceIsDocument ? ownerDocument->url() : KURL());
+        result = Document::create(DocumentInit(sourceIsDocument ? ownerDocument->url() : KURL(), frame));
         transformTextStringToXHTMLDocumentString(documentSource);
     } else
         result = DOMImplementation::createDocument(sourceMIMEType, frame, sourceIsDocument ? ownerDocument->url() : KURL(), false);

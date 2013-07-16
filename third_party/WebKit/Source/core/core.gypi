@@ -1765,6 +1765,8 @@
             'dom/DocumentFragment.cpp',
             'dom/DocumentFullscreen.cpp',
             'dom/DocumentFullscreen.h',
+            'dom/DocumentInit.cpp',
+            'dom/DocumentInit.h',
             'dom/DocumentLifecycleObserver.cpp',
             'dom/DocumentLifecycleObserver.h',
             'dom/DocumentMarkerController.cpp',

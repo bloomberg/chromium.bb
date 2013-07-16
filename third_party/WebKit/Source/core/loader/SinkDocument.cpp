@@ -47,8 +47,8 @@ private:
     virtual size_t appendBytes(const char*, size_t) OVERRIDE { return 0; }
 };
 
-SinkDocument::SinkDocument(Frame* frame, const KURL& url)
-    : HTMLDocument(frame, url)
+SinkDocument::SinkDocument(const DocumentInit& initializer)
+    : HTMLDocument(initializer)
 {
     setCompatibilityMode(QuirksMode);
     lockCompatibilityMode();

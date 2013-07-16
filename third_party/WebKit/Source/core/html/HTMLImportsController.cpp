@@ -179,8 +179,7 @@ HTMLImportLoader::State HTMLImportLoader::startParsing(const ResourceResponse& r
     if (!controller()->cachedResourceLoader()->canAccess(m_resource.get()))
         return StateError;
 
-    m_importedDocument = HTMLDocument::create(0, response.url());
-    m_importedDocument->setImport(this);
+    m_importedDocument = HTMLDocument::create(DocumentInit(response.url(), 0, this));
     m_writer = DocumentWriter::create(m_importedDocument.get(), response.mimeType(), response.textEncodingName());
 
     return StateLoading;

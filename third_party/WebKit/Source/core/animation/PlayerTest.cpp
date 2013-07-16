@@ -45,7 +45,7 @@ class PlayerTest : public ::testing::Test {
 protected:
     virtual void SetUp()
     {
-        document = Document::create(0, KURL());
+        document = Document::create();
         timeline = DocumentTimeline::create(document.get());
         player = Player::create(timeline.get(), 0);
     }

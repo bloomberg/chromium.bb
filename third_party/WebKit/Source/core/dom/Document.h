@@ -32,6 +32,7 @@
 #include "core/dom/ContainerNode.h"
 #include "core/dom/DOMTimeStamp.h"
 #include "core/dom/DocumentEventQueue.h"
+#include "core/dom/DocumentInit.h"
 #include "core/dom/DocumentTiming.h"
 #include "core/dom/IconURL.h"
 #include "core/dom/MutationObserver.h"
@@ -206,13 +207,13 @@ typedef unsigned char DocumentClassFlags;
 
 class Document : public ContainerNode, public TreeScope, public ScriptExecutionContext {
 public:
-    static PassRefPtr<Document> create(Frame* frame, const KURL& url)
+    static PassRefPtr<Document> create(const DocumentInit& initializer = DocumentInit())
     {
-        return adoptRef(new Document(frame, url));
+        return adoptRef(new Document(initializer));
     }
-    static PassRefPtr<Document> createXHTML(Frame* frame, const KURL& url)
+    static PassRefPtr<Document> createXHTML(const DocumentInit& initializer = DocumentInit())
     {
-        return adoptRef(new Document(frame, url, XHTMLDocumentClass));
+        return adoptRef(new Document(initializer, XHTMLDocumentClass));
     }
     virtual ~Document();
 
@@ -914,6 +915,7 @@ public:
     SVGDocumentExtensions* accessSVGExtensions();
 
     void initSecurityContext();
+    void initSecurityContext(const DocumentInit&);
     void initContentSecurityPolicy();
 
     void updateURLForPushOrReplaceState(const KURL&);
@@ -1047,7 +1049,7 @@ public:
     DocumentLifecycleNotifier* lifecycleNotifier();
 
 protected:
-    Document(Frame*, const KURL&, DocumentClassFlags = DefaultDocumentClass);
+    Document(const DocumentInit&, DocumentClassFlags = DefaultDocumentClass);
 
     virtual void didUpdateSecurityOrigin() OVERRIDE;
 
@@ -1143,6 +1145,7 @@ private:
 
     Frame* m_frame;
     DOMWindow* m_domWindow;
+    HTMLImport* m_import;
 
     RefPtr<CachedResourceLoader> m_cachedResourceLoader;
     RefPtr<DocumentParser> m_parser;
@@ -1332,7 +1335,6 @@ private:
     OwnPtr<TextAutosizer> m_textAutosizer;
 
     RefPtr<CustomElementRegistrationContext> m_registrationContext;
-    HTMLImport* m_import;
 
     bool m_scheduledTasksAreSuspended;
     

@@ -48,7 +48,7 @@ class DocumentTimelineTest : public ::testing::Test {
 protected:
     virtual void SetUp()
     {
-        document = Document::create(0, KURL());
+        document = Document::create();
         element = Element::create(nullQName() , document.get());
         timeline = DocumentTimeline::create(document.get());
     }

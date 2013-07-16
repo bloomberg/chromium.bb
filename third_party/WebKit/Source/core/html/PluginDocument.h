@@ -34,9 +34,9 @@ class Widget;
 
 class PluginDocument FINAL : public HTMLDocument {
 public:
-    static PassRefPtr<PluginDocument> create(Frame* frame, const KURL& url)
+    static PassRefPtr<PluginDocument> create(const DocumentInit& initializer = DocumentInit())
     {
-        return adoptRef(new PluginDocument(frame, url));
+        return adoptRef(new PluginDocument(initializer));
     }
 
     void setPluginNode(Node* pluginNode) { m_pluginNode = pluginNode; }
@@ -51,7 +51,7 @@ public:
     bool shouldLoadPluginManually() { return m_shouldLoadPluginManually; }
 
 private:
-    PluginDocument(Frame*, const KURL&);
+    PluginDocument(const DocumentInit&);
 
     virtual PassRefPtr<DocumentParser> createParser() OVERRIDE;
         

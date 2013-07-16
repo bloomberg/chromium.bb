@@ -31,13 +31,13 @@ namespace WebCore {
 
 class TextDocument FINAL : public HTMLDocument {
 public:
-    static PassRefPtr<TextDocument> create(Frame* frame, const KURL& url)
+    static PassRefPtr<TextDocument> create(const DocumentInit& initializer = DocumentInit())
     {
-        return adoptRef(new TextDocument(frame, url));
+        return adoptRef(new TextDocument(initializer));
     }
 
 private:
-    TextDocument(Frame*, const KURL&);
+    TextDocument(const DocumentInit&);
     
     virtual PassRefPtr<DocumentParser> createParser();
 };

@@ -244,9 +244,9 @@ Document* XMLHttpRequest::responseXML(ExceptionCode& ec)
             m_responseDocument = 0;
         } else {
             if (isHTML)
-                m_responseDocument = HTMLDocument::create(0, m_url);
+                m_responseDocument = HTMLDocument::create(DocumentInit(m_url));
             else
-                m_responseDocument = Document::create(0, m_url);
+                m_responseDocument = Document::create(DocumentInit(m_url));
             // FIXME: Set Last-Modified.
             m_responseDocument->setContent(m_responseText.flattenToString());
             m_responseDocument->setSecurityOrigin(securityOrigin());

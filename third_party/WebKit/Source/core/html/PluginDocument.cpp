@@ -156,8 +156,8 @@ PluginView* PluginDocumentParser::pluginView() const
     return 0;
 }
 
-PluginDocument::PluginDocument(Frame* frame, const KURL& url)
-    : HTMLDocument(frame, url, PluginDocumentClass)
+PluginDocument::PluginDocument(const DocumentInit& initializer)
+    : HTMLDocument(initializer, PluginDocumentClass)
     , m_shouldLoadPluginManually(true)
 {
     setCompatibilityMode(QuirksMode);

@@ -117,8 +117,8 @@ size_t MediaDocumentParser::appendBytes(const char*, size_t)
     return 0;
 }
 
-MediaDocument::MediaDocument(Frame* frame, const KURL& url)
-    : HTMLDocument(frame, url, MediaDocumentClass)
+MediaDocument::MediaDocument(const DocumentInit& initializer)
+    : HTMLDocument(initializer, MediaDocumentClass)
 {
     setCompatibilityMode(QuirksMode);
     lockCompatibilityMode();

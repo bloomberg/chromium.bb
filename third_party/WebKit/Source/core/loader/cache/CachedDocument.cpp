@@ -71,7 +71,7 @@ PassRefPtr<Document> CachedDocument::createDocument(const KURL& url)
 {
     switch (type()) {
     case SVGDocumentResource:
-        return SVGDocument::create(0, url);
+        return SVGDocument::create(DocumentInit(url));
     default:
         // FIXME: We'll add more types to support HTMLImports.
         ASSERT_NOT_REACHED();

@@ -32,13 +32,13 @@ namespace WebCore {
 
 class MediaDocument FINAL : public HTMLDocument {
 public:
-    static PassRefPtr<MediaDocument> create(Frame* frame, const KURL& url)
+    static PassRefPtr<MediaDocument> create(const DocumentInit& initializer = DocumentInit())
     {
-        return adoptRef(new MediaDocument(frame, url));
+        return adoptRef(new MediaDocument(initializer));
     }
 
 private:
-    MediaDocument(Frame*, const KURL&);
+    MediaDocument(const DocumentInit&);
 
     virtual PassRefPtr<DocumentParser> createParser() OVERRIDE;
 

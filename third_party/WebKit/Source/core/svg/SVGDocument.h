@@ -32,9 +32,9 @@ class SVGSVGElement;
 
 class SVGDocument FINAL : public Document {
 public:
-    static PassRefPtr<SVGDocument> create(Frame* frame, const KURL& url)
+    static PassRefPtr<SVGDocument> create(const DocumentInit& initializer = DocumentInit())
     {
-        return adoptRef(new SVGDocument(frame, url));
+        return adoptRef(new SVGDocument(initializer));
     }
 
     SVGSVGElement* rootElement() const;
@@ -48,7 +48,7 @@ public:
     void updatePan(const FloatPoint& pos) const;
 
 private:
-    SVGDocument(Frame*, const KURL&);
+    SVGDocument(const DocumentInit&);
 
     virtual bool childShouldCreateRenderer(const NodeRenderingContext&) const;
 

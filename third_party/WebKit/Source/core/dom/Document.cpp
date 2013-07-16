@@ -368,7 +368,7 @@ private:
     }
 };
 
-Document::Document(Frame* frame, const KURL& url, DocumentClassFlags documentClasses)
+Document::Document(const DocumentInit& initializer, DocumentClassFlags documentClasses)
     : ContainerNode(0, CreateDocument)
     , TreeScope(this)
     , m_styleResolverThrowawayTimer(this, &Document::styleResolverThrowawayTimerFired)
@@ -378,8 +378,9 @@ Document::Document(Frame* frame, const KURL& url, DocumentClassFlags documentCla
     , m_needsNotifyRemoveAllPendingStylesheet(false)
     , m_hasNodesWithPlaceholderStyle(false)
     , m_pendingSheetLayout(NoLayoutWithPendingSheets)
-    , m_frame(frame)
+    , m_frame(initializer.frame())
     , m_domWindow(0)
+    , m_import(initializer.import())
     , m_activeParserCount(0)
     , m_contextFeatures(ContextFeatures::defaultSwitch())
     , m_wellFormed(false)
@@ -442,7 +443,6 @@ Document::Document(Frame* frame, const KURL& url, DocumentClassFlags documentCla
     , m_prerenderer(Prerenderer::create(this))
     , m_textAutosizer(TextAutosizer::create(this))
     , m_pendingTasksTimer(this, &Document::pendingTasksTimerFired)
-    , m_import(0)
     , m_scheduledTasksAreSuspended(false)
     , m_sharedObjectPoolClearTimer(this, &Document::sharedObjectPoolClearTimerFired)
 #ifndef NDEBUG
@@ -470,10 +470,10 @@ Document::Document(Frame* frame, const KURL& url, DocumentClassFlags documentCla
     // See fast/dom/early-frame-url.html
     // and fast/dom/location-new-window-no-crash.html, respectively.
     // FIXME: Can/should we unify this behavior?
-    if ((m_frame && m_frame->ownerElement()) || !url.isEmpty())
-        setURL(url);
+    if (initializer.shouldSetURL())
+        setURL(initializer.url());
 
-    initSecurityContext();
+    initSecurityContext(initializer);
     initDNSPrefetch();
 
     for (unsigned i = 0; i < WTF_ARRAY_LENGTH(m_nodeListCounts); i++)
@@ -4185,12 +4185,17 @@ static bool isEligibleForSeamless(Document* parent, Document* child)
 
 void Document::initSecurityContext()
 {
+    initSecurityContext(DocumentInit(m_url, m_frame, m_import));
+}
+
+void Document::initSecurityContext(const DocumentInit& initializer)
+{
     if (haveInitializedSecurityOrigin()) {
         ASSERT(securityOrigin());
         return;
     }
 
-    if (!m_frame) {
+    if (!initializer.frame()) {
         // No source for a security context.
         // This can occur via document.implementation.createDocument().
         m_cookieURL = KURL(ParsedURLString, emptyString());
@@ -4202,11 +4207,11 @@ void Document::initSecurityContext()
     // In the common case, create the security context from the currently
     // loading URL with a fresh content security policy.
     m_cookieURL = m_url;
-    enforceSandboxFlags(m_frame->loader()->effectiveSandboxFlags());
+    enforceSandboxFlags(initializer.sandboxFlags());
     setSecurityOrigin(isSandboxed(SandboxOrigin) ? SecurityOrigin::createUnique() : SecurityOrigin::create(m_url));
     setContentSecurityPolicy(ContentSecurityPolicy::create(this));
 
-    if (Settings* settings = this->settings()) {
+    if (Settings* settings = initializer.settings()) {
         if (!settings->webSecurityEnabled()) {
             // Web security is turned off. We should let this document access every other document. This is used primary by testing
             // harnesses for web sites.
@@ -4225,7 +4230,7 @@ void Document::initSecurityContext()
     }
 
     Document* parentDocument = ownerElement() ? ownerElement()->document() : 0;
-    if (parentDocument && m_frame->loader()->shouldTreatURLAsSrcdocDocument(url())) {
+    if (parentDocument && initializer.shouldTreatURLAsSrcdocDocument()) {
         m_isSrcdocDocument = true;
         setBaseURLOverride(parentDocument->baseURL());
     }
@@ -4240,10 +4245,7 @@ void Document::initSecurityContext()
     // If we do not obtain a meaningful origin from the URL, then we try to
     // find one via the frame hierarchy.
 
-    Frame* ownerFrame = m_frame->tree()->parent();
-    if (!ownerFrame)
-        ownerFrame = m_frame->loader()->opener();
-
+    Frame* ownerFrame = initializer.ownerFrame();
     if (!ownerFrame) {
         didFailToInitializeSecurityOrigin();
         return;
@@ -5117,9 +5119,9 @@ Document* Document::ensureTemplateDocument()
         return const_cast<Document*>(document);
 
     if (isHTMLDocument())
-        m_templateDocument = HTMLDocument::create(0, blankURL());
+        m_templateDocument = HTMLDocument::create(DocumentInit(blankURL()));
     else
-        m_templateDocument = Document::create(0, blankURL());
+        m_templateDocument = Document::create(DocumentInit(blankURL()));
 
     m_templateDocument->setTemplateDocumentHost(this); // balanced in dtor.
 

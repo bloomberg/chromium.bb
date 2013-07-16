@@ -32,13 +32,13 @@ namespace WebCore {
 
 class SinkDocument FINAL : public HTMLDocument {
 public:
-    static PassRefPtr<SinkDocument> create(Frame* frame, const KURL& url)
+    static PassRefPtr<SinkDocument> create(const DocumentInit& initializer = DocumentInit())
     {
-        return adoptRef(new SinkDocument(frame, url));
+        return adoptRef(new SinkDocument(initializer));
     }
 
 private:
-    SinkDocument(Frame*, const KURL&);
+    SinkDocument(const DocumentInit&);
     
     virtual PassRefPtr<DocumentParser> createParser();
 };
