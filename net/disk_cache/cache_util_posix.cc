@@ -39,26 +39,6 @@ bool MoveCache(const base::FilePath& from_path, const base::FilePath& to_path) {
 #endif
 }
 
-void DeleteCache(const base::FilePath& path, bool remove_folder) {
-  base::FileEnumerator iter(path,
-                            /* recursive */ false,
-                            base::FileEnumerator::FILES);
-  for (base::FilePath file = iter.Next(); !file.value().empty();
-       file = iter.Next()) {
-    if (!base::Delete(file, /* recursive */ false)) {
-      LOG(WARNING) << "Unable to delete cache.";
-      return;
-    }
-  }
-
-  if (remove_folder) {
-    if (!base::Delete(path, /* recursive */ false)) {
-      LOG(WARNING) << "Unable to delete cache folder.";
-      return;
-    }
-  }
-}
-
 bool DeleteCacheFile(const base::FilePath& name) {
   return base::Delete(name, false);
 }
