@@ -60,6 +60,7 @@
       'resources/scoped_resource_unittest.cc',
       'resources/tile_manager_unittest.cc',
       'resources/tile_priority_unittest.cc',
+      'resources/video_resource_updater_unittest.cc',
       'resources/worker_pool_unittest.cc',
       'scheduler/delay_based_time_source_unittest.cc',
       'scheduler/frame_rate_controller_unittest.cc',

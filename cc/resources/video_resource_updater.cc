@@ -197,9 +197,6 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
       DCHECK(mailbox.IsZero());
 
       if (!software_compositor) {
-        ResourceProvider::ScopedWriteLockGL lock(
-            resource_provider_, resource_id);
-
         WebKit::WebGraphicsContext3D* context =
             resource_provider_->GraphicsContext3D();
         DCHECK(context);
@@ -209,6 +206,8 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
           resource_provider_->DeleteResource(resource_id);
           resource_id = 0;
         } else {
+          ResourceProvider::ScopedWriteLockGL lock(
+              resource_provider_, resource_id);
           GLC(context, context->bindTexture(GL_TEXTURE_2D, lock.texture_id()));
           GLC(context, context->produceTextureCHROMIUM(GL_TEXTURE_2D,
                                                        mailbox.name));

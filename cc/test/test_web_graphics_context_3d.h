@@ -158,6 +158,9 @@ class TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
   void set_times_end_query_succeeds(int times) {
     times_end_query_succeeds_ = times;
   }
+  void set_times_gen_mailbox_succeeds(int times) {
+    times_gen_mailbox_succeeds_ = times;
+  }
 
   // When set, mapImageCHROMIUM and mapBufferCHROMIUM will return NULL after
   // this many times.
@@ -222,6 +225,7 @@ class TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
   int times_make_current_succeeds_;
   int times_bind_texture_succeeds_;
   int times_end_query_succeeds_;
+  int times_gen_mailbox_succeeds_;
   bool context_lost_;
   int times_map_image_chromium_succeeds_;
   int times_map_buffer_chromium_succeeds_;

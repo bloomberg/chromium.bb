@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "cc/base/cc_export.h"
 #include "cc/resources/texture_mailbox.h"
 #include "ui/gfx/size.h"
 
@@ -22,7 +23,7 @@ class VideoFrame;
 namespace cc {
 class ResourceProvider;
 
-class VideoFrameExternalResources {
+class CC_EXPORT VideoFrameExternalResources {
  public:
   // Specifies what type of data is contained in the mailboxes, as well as how
   // many mailboxes will be present.
@@ -57,7 +58,7 @@ class VideoFrameExternalResources {
 
 // VideoResourceUpdater is by the video system to produce frame content as
 // resources consumable by the compositor.
-class VideoResourceUpdater
+class CC_EXPORT VideoResourceUpdater
     : public base::SupportsWeakPtr<VideoResourceUpdater> {
  public:
   explicit VideoResourceUpdater(ResourceProvider* resource_provider);
