@@ -816,6 +816,12 @@ class GLHelperTest : public testing::Test {
                          GL_UNSIGNED_BYTE,
                          input_pixels.getPixels());
 
+    gpu::Mailbox mailbox;
+    context_->genMailboxCHROMIUM(mailbox.name);
+    EXPECT_FALSE(mailbox.IsZero());
+    context_->produceTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
+    uint32 sync_point = context_->insertSyncPoint();
+
     std::string message = base::StringPrintf("input size: %dx%d "
                                              "output size: %dx%d "
                                              "margin: %dx%d "
@@ -848,11 +854,6 @@ class GLHelperTest : public testing::Test {
             gfx::Rect(0, 0, output_xsize, output_ysize),
             gfx::Size(output_xsize, output_ysize),
             base::TimeDelta::FromSeconds(0));
-
-    gpu::Mailbox mailbox;
-    context_->genMailboxCHROMIUM(mailbox.name);
-    context_->produceTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
-    uint32 sync_point = context_->insertSyncPoint();
 
     base::RunLoop run_loop;
     yuv_reader->ReadbackYUV(
@@ -1113,7 +1114,7 @@ class GLHelperTest : public testing::Test {
 };
 
 // Reenable once http://crbug.com/162291 is fixed.
-TEST_F(GLHelperTest, DISABLED_YUVReadbackTest) {
+TEST_F(GLHelperTest, YUVReadbackTest) {
   int sizes[] = { 2, 4, 14 };
   for (int use_mrt = 0; use_mrt <= 1 ; use_mrt++) {
     for (unsigned int x = 0; x < arraysize(sizes); x++) {
