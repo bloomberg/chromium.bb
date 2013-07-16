@@ -98,7 +98,7 @@ class WinTool(object):
     and resource name which can be "1" (for executables) or "2" (for DLLs)."""
     manifest_path, resource_path, resource_name = args
     with open(resource_path, 'wb') as output:
-      output.write('#include <winuser.h>\n%s RT_MANIFEST "%s"' % (
+      output.write('#include <windows.h>\n%s RT_MANIFEST "%s"' % (
         resource_name,
         os.path.abspath(manifest_path).replace('\\', '/')))
 
