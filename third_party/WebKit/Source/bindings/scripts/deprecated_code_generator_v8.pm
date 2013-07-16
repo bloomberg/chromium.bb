@@ -5828,10 +5828,6 @@ sub AttributeNameForGetterAndSetter
     # Avoid clash with C++ keyword.
     $attributeName = "_operator" if $attributeName eq "operator";
 
-    # SVGAElement defines a non-virtual "String& target() const" method which clashes with "virtual String target() const" in Element.
-    # To solve this issue the SVGAElement method was renamed to "svgTarget", take care of that when calling this method.
-    $attributeName = "svgTarget" if $attributeName eq "target" and $attributeType eq "SVGAnimatedString";
-
     return $attributeName;
 }
 
