@@ -67,7 +67,8 @@ scoped_ptr<DeviceInfo> SyncedDeviceTracker::ReadLocalDeviceInfo(
 
   const sync_pb::DeviceInfoSpecifics& specifics = node.GetDeviceInfoSpecifics();
   return scoped_ptr<DeviceInfo> (
-      new DeviceInfo(specifics.client_name(),
+      new DeviceInfo(specifics.cache_guid(),
+                     specifics.client_name(),
                      specifics.chrome_version(),
                      specifics.sync_user_agent(),
                      specifics.device_type()));
@@ -85,7 +86,8 @@ scoped_ptr<DeviceInfo> SyncedDeviceTracker::ReadDeviceInfo(
 
   const sync_pb::DeviceInfoSpecifics& specifics = node.GetDeviceInfoSpecifics();
   return scoped_ptr<DeviceInfo> (
-      new DeviceInfo(specifics.client_name(),
+      new DeviceInfo(specifics.cache_guid(),
+                     specifics.client_name(),
                      specifics.chrome_version(),
                      specifics.sync_user_agent(),
                      specifics.device_type()));
@@ -121,7 +123,8 @@ void SyncedDeviceTracker::GetAllSyncedDeviceInfo(
     const sync_pb::DeviceInfoSpecifics& specifics =
         node.GetDeviceInfoSpecifics();
     device_info->push_back(
-        new DeviceInfo(specifics.client_name(),
+        new DeviceInfo(specifics.cache_guid(),
+                       specifics.client_name(),
                        specifics.chrome_version(),
                        specifics.sync_user_agent(),
                        specifics.device_type()));
@@ -131,6 +134,7 @@ void SyncedDeviceTracker::GetAllSyncedDeviceInfo(
 
 void SyncedDeviceTracker::InitLocalDeviceInfo(const base::Closure& callback) {
   DeviceInfo::CreateLocalDeviceInfo(
+      cache_guid_,
       base::Bind(&SyncedDeviceTracker::InitLocalDeviceInfoContinuation,
                  weak_factory_.GetWeakPtr(), callback));
 }
@@ -143,6 +147,7 @@ void SyncedDeviceTracker::InitLocalDeviceInfoContinuation(
 
 void SyncedDeviceTracker::WriteLocalDeviceInfo(const DeviceInfo& info) {
   sync_pb::DeviceInfoSpecifics specifics;
+  DCHECK_EQ(cache_guid_, info.guid());
   specifics.set_cache_guid(cache_guid_);
   specifics.set_client_name(info.client_name());
   specifics.set_chrome_version(info.chrome_version());

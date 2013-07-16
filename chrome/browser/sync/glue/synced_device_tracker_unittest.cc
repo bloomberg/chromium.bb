@@ -24,9 +24,8 @@ namespace {
 
 void ConvertDeviceInfoSpecifics(
     const DeviceInfo& device_info,
-    const std::string& guid,
     sync_pb::DeviceInfoSpecifics* specifics) {
-  specifics->set_cache_guid(guid);
+  specifics->set_cache_guid(device_info.guid());
   specifics->set_client_name(device_info.client_name());
   specifics->set_chrome_version(device_info.chrome_version());
   specifics->set_sync_user_agent(device_info.sync_user_agent());
@@ -69,11 +68,10 @@ class SyncedDeviceTrackerTest : public ::testing::Test {
     synced_device_tracker_->WriteLocalDeviceInfo(info);
   }
 
-  void WriteDeviceInfo(const DeviceInfo& device_info,
-                       const std::string& guid) {
+  void WriteDeviceInfo(const DeviceInfo& device_info) {
     sync_pb::DeviceInfoSpecifics specifics;
-    ConvertDeviceInfoSpecifics(device_info, guid, &specifics);
-    synced_device_tracker_->WriteDeviceInfo(specifics, guid);
+    ConvertDeviceInfoSpecifics(device_info, &specifics);
+    synced_device_tracker_->WriteDeviceInfo(specifics, device_info.guid());
   }
 
   void ResetObservedChangesCounter() {
@@ -112,6 +110,7 @@ TEST_F(SyncedDeviceTrackerTest, CreateNewDeviceInfo) {
   // characters, which client names can include on some platforms (e.g., Mac
   // and iOS).
   DeviceInfo write_device_info(
+      user_share()->directory->cache_guid(),
       "John’s Device", "Chromium 3000", "ChromeSyncAgent 3000",
       sync_pb::SyncEnums_DeviceType_TYPE_LINUX);
   WriteLocalDeviceInfo(write_device_info);
@@ -128,6 +127,7 @@ TEST_F(SyncedDeviceTrackerTest, CreateNewDeviceInfo) {
 TEST_F(SyncedDeviceTrackerTest, DontModifyExistingDeviceInfo) {
   // For writing.
   DeviceInfo device_info(
+      user_share()->directory->cache_guid(),
       "John’s Device", "XYZ v1", "XYZ SyncAgent v1",
       sync_pb::SyncEnums_DeviceType_TYPE_LINUX);
   WriteLocalDeviceInfo(device_info);
@@ -156,6 +156,7 @@ TEST_F(SyncedDeviceTrackerTest, DontModifyExistingDeviceInfo) {
 TEST_F(SyncedDeviceTrackerTest, UpdateExistingDeviceInfo) {
   // Write v1 device info.
   DeviceInfo device_info_v1(
+      user_share()->directory->cache_guid(),
       "John’s Device", "XYZ v1", "XYZ SyncAgent v1",
       sync_pb::SyncEnums_DeviceType_TYPE_LINUX);
   WriteLocalDeviceInfo(device_info_v1);
@@ -164,6 +165,7 @@ TEST_F(SyncedDeviceTrackerTest, UpdateExistingDeviceInfo) {
 
   // Write upgraded device info.
   DeviceInfo device_info_v2(
+      user_share()->directory->cache_guid(),
       "John’s Device", "XYZ v2", "XYZ SyncAgent v2",
       sync_pb::SyncEnums_DeviceType_TYPE_LINUX);
   WriteLocalDeviceInfo(device_info_v2);
@@ -182,19 +184,21 @@ TEST_F(SyncedDeviceTrackerTest, UpdateExistingDeviceInfo) {
 // Test retrieving DeviceInfos for all the syncing devices.
 TEST_F(SyncedDeviceTrackerTest, GetAllDeviceInfo) {
   DeviceInfo device_info1(
+      base::GenerateGUID(),
       "abc Device", "XYZ v1", "XYZ SyncAgent v1",
       sync_pb::SyncEnums_DeviceType_TYPE_LINUX);
 
   std::string guid1 = base::GenerateGUID();
 
   DeviceInfo device_info2(
+      base::GenerateGUID(),
       "def Device", "XYZ v2", "XYZ SyncAgent v2",
       sync_pb::SyncEnums_DeviceType_TYPE_LINUX);
 
   std::string guid2 = base::GenerateGUID();
 
-  WriteDeviceInfo(device_info1, guid1);
-  WriteDeviceInfo(device_info2, guid2);
+  WriteDeviceInfo(device_info1);
+  WriteDeviceInfo(device_info2);
 
   ScopedVector<DeviceInfo> device_info;
   synced_device_tracker_->GetAllSyncedDeviceInfo(&device_info);

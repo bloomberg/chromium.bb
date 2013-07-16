@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/guid.h"
 #include "base/location.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
@@ -91,7 +92,8 @@ class FakeProfileSyncService : public TestProfileSyncService {
   virtual ~FakeProfileSyncService() {}
 
   virtual scoped_ptr<DeviceInfo> GetLocalDeviceInfo() const OVERRIDE {
-    return scoped_ptr<DeviceInfo>(new DeviceInfo("client_name",
+    return scoped_ptr<DeviceInfo>(new DeviceInfo(base::GenerateGUID(),
+                                                 "client_name",
                                                  std::string(),
                                                  std::string(),
                                                  sync_pb::SyncEnums::TYPE_WIN));

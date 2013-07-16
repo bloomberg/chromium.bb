@@ -42,17 +42,23 @@ std::string ChannelToString(chrome::VersionInfo::Channel channel) {
 
 }  // namespace
 
-DeviceInfo::DeviceInfo(const std::string& client_name,
+DeviceInfo::DeviceInfo(const std::string& guid,
+                       const std::string& client_name,
                        const std::string& chrome_version,
                        const std::string& sync_user_agent,
                        const sync_pb::SyncEnums::DeviceType device_type)
-    : client_name_(client_name),
+    : guid_(guid),
+      client_name_(client_name),
       chrome_version_(chrome_version),
       sync_user_agent_(sync_user_agent),
       device_type_(device_type) {
 }
 
 DeviceInfo::~DeviceInfo() { }
+
+const std::string& DeviceInfo::guid() const {
+  return guid_;
+}
 
 const std::string& DeviceInfo::client_name() const {
   return client_name_;
@@ -71,7 +77,8 @@ sync_pb::SyncEnums::DeviceType DeviceInfo::device_type() const {
 }
 
 bool DeviceInfo::Equals(const DeviceInfo& other) const {
-  return this->client_name() == other.client_name()
+  return this->guid() == other.guid()
+      && this->client_name() == other.client_name()
       && this->chrome_version() == other.chrome_version()
       && this->sync_user_agent() == other.sync_user_agent()
       && this->device_type() == other.device_type();
@@ -138,19 +145,38 @@ std::string DeviceInfo::MakeUserAgentForSyncApi(
 
 // static.
 void DeviceInfo::CreateLocalDeviceInfo(
+    const std::string& guid,
     base::Callback<void(const DeviceInfo& local_info)> callback) {
+  GetClientName(
+      base::Bind(&DeviceInfo::CreateLocalDeviceInfoContinuation,
+                 guid,
+                 callback));
+}
+
+// static.
+void DeviceInfo::GetClientName(
+    base::Callback<void(const std::string& client_name)> callback) {
   syncer::GetSessionName(
       content::BrowserThread::GetBlockingPool(),
-      base::Bind(&DeviceInfo::CreateLocalDeviceInfoContinuation, callback));
+      base::Bind(&DeviceInfo::GetClientNameContinuation,
+                 callback));
+}
+
+void DeviceInfo::GetClientNameContinuation(
+    base::Callback<void(const std::string& local_info)> callback,
+    const std::string& session_name) {
+  callback.Run(session_name);
 }
 
 // static.
 void DeviceInfo::CreateLocalDeviceInfoContinuation(
+    const std::string& guid,
     base::Callback<void(const DeviceInfo& local_info)> callback,
     const std::string& session_name) {
   chrome::VersionInfo version_info;
 
   DeviceInfo local_info(
+      guid,
       session_name,
       version_info.CreateVersionString(),
       MakeUserAgentForSyncApi(version_info),

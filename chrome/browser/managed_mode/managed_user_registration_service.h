@@ -118,9 +118,9 @@ class ManagedUserRegistrationService : public BrowserContextKeyedService,
   // Called when the Sync server has acknowledged a newly created managed user.
   void OnManagedUserAcknowledged(const std::string& managed_user_id);
 
-  // Fetches the managed user token when we have the device info.
+  // Fetches the managed user token when we have the device name.
   void FetchToken(const string16& name,
-                  const browser_sync::DeviceInfo& device_info);
+                  const std::string& client_name);
 
   // Called when we have received a token for the managed user.
   void OnReceivedToken(const GoogleServiceAuthError& error,
