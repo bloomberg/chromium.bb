@@ -45,6 +45,7 @@ class UserGestureToken : public RefCounted<UserGestureToken> {
 public:
     virtual ~UserGestureToken() { }
     virtual bool hasGestures() const = 0;
+    virtual void setOutOfProcess() = 0;
 };
 
 class UserGestureIndicatorDisabler {

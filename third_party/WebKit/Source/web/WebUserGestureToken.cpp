@@ -40,6 +40,11 @@ bool WebUserGestureToken::hasGestures() const
     return !m_token.isNull() && m_token->hasGestures();
 }
 
+void WebUserGestureToken::setOutOfProcess()
+{
+    m_token->setOutOfProcess();
+}
+
 WebUserGestureToken::WebUserGestureToken(PassRefPtr<WebCore::UserGestureToken> token)
 {
     m_token = token;

@@ -54,10 +54,7 @@ public:
     ~WebUserGestureToken() { reset(); }
 
     WEBKIT_EXPORT bool hasGestures() const;
-    WEBKIT_EXPORT void setOutOfProcess()
-    {
-        // FIXME: implement and call UserGestureToken::setOutOfProcess().
-    }
+    WEBKIT_EXPORT void setOutOfProcess();
     bool isNull() const { return m_token.isNull(); }
 
 #if WEBKIT_IMPLEMENTATION

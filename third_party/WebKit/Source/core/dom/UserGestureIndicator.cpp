@@ -25,19 +25,36 @@
 
 #include "config.h"
 #include "core/dom/UserGestureIndicator.h"
+#include "wtf/CurrentTime.h"
 
 namespace WebCore {
 
 namespace {
+
+// User gestures timeout in 1 second.
+const double userGestureTimeout = 1.0;
+
+// For out of process tokens we allow a 10 second delay.
+const double userGestureOutOfProcessTimeout = 10.0;
 
 class GestureToken : public UserGestureToken {
 public:
     static PassRefPtr<UserGestureToken> create() { return adoptRef(new GestureToken); }
 
     virtual ~GestureToken() { }
-    virtual bool hasGestures() const OVERRIDE { return m_consumableGestures > 0; }
+    virtual bool hasGestures() const OVERRIDE
+    {
+        if (m_consumableGestures < 1 || WTF::currentTime() - m_timestamp > (m_outOfProcess ? userGestureOutOfProcessTimeout : userGestureTimeout))
+            return false;
+        return true;
+    }
 
-    void addGesture() { m_consumableGestures++; }
+    void addGesture()
+    {
+        m_consumableGestures++;
+        m_timestamp = WTF::currentTime();
+    }
+
     bool consumeGesture()
     {
         if (!m_consumableGestures)
@@ -46,13 +63,25 @@ public:
         return true;
     }
 
+    virtual void setOutOfProcess() OVERRIDE
+    {
+        if (WTF::currentTime() - m_timestamp > userGestureTimeout)
+            return;
+        if (hasGestures())
+            m_outOfProcess = true;
+    }
+
 private:
     GestureToken()
-        : m_consumableGestures(0)
+        : m_consumableGestures(0),
+        m_timestamp(0),
+        m_outOfProcess(false)
     {
     }
 
     size_t m_consumableGestures;
+    double m_timestamp;
+    bool m_outOfProcess;
 };
 
 }
