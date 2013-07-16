@@ -214,9 +214,6 @@ bool InProcessViewRenderer::OnDraw(jobject java_canvas,
 }
 
 void InProcessViewRenderer::DrawGL(AwDrawGLInfo* draw_info) {
-  if (!HardwareEnabled())
-    return;
-
   TRACE_EVENT0("android_webview", "InProcessViewRenderer::DrawGL");
   DCHECK(visible_);
 
@@ -445,8 +442,6 @@ void InProcessViewRenderer::OnAttachedToWindow(int width, int height) {
   attached_to_window_ = true;
   width_ = width;
   height_ = height;
-  if (compositor_ && !hardware_initialized_)
-    client_->RequestDrawGL(NULL);
 }
 
 void InProcessViewRenderer::OnDetachedFromWindow() {
@@ -484,9 +479,6 @@ void InProcessViewRenderer::DidInitializeCompositor(
   compositor_ = compositor;
   hardware_initialized_ = false;
   hardware_failed_ = false;
-
-  if (attached_to_window_)
-    client_->RequestDrawGL(NULL);
 }
 
 void InProcessViewRenderer::DidDestroyCompositor(
