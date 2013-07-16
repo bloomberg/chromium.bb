@@ -201,10 +201,6 @@ void DisplayManager::InitFromCommandLine() {
        iter != parts.end(); ++iter) {
     info_list.push_back(DisplayInfo::CreateFromSpec(*iter));
   }
-  if (info_list.empty()) {
-    info_list.push_back(
-        DisplayInfo::CreateFromSpec(std::string() /* default */));
-  }
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kAshUseFirstDisplayAsInternal))
     gfx::Display::SetInternalDisplayId(info_list[0].id());
@@ -390,16 +386,25 @@ gfx::Insets DisplayManager::GetOverscanInsets(int64 display_id) const {
 void DisplayManager::OnNativeDisplaysChanged(
     const std::vector<DisplayInfo>& updated_displays) {
   if (updated_displays.empty()) {
-    // Don't update the displays when all displays are disconnected.
-    // This happens when:
-    // - the device is idle and powerd requested to turn off all displays.
-    // - the device is suspended. (kernel turns off all displays)
-    // - the internal display's brightness is set to 0 and no external
-    //   display is connected.
-    // - the internal display's brightness is 0 and external display is
-    //   disconnected.
-    // The display will be updated when one of displays is turned on, and the
-    // display list will be updated correctly.
+    // If the device is booted without display, or chrome is started
+    // without --ash-host-window-bounds on linux desktop, use the
+    // default display.
+    if (displays_.empty()) {
+      std::vector<DisplayInfo> init_displays;
+      init_displays.push_back(DisplayInfo::CreateFromSpec(std::string()));
+      OnNativeDisplaysChanged(init_displays);
+    } else {
+      // Otherwise don't update the displays when all displays are disconnected.
+      // This happens when:
+      // - the device is idle and powerd requested to turn off all displays.
+      // - the device is suspended. (kernel turns off all displays)
+      // - the internal display's brightness is set to 0 and no external
+      //   display is connected.
+      // - the internal display's brightness is 0 and external display is
+      //   disconnected.
+      // The display will be updated when one of displays is turned on, and the
+      // display list will be updated correctly.
+    }
     return;
   }
   first_display_id_ = updated_displays[0].id();
