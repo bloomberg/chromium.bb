@@ -19,8 +19,8 @@
 
 <script>
   var shapeElement = document.getElementById("shape");
-  shouldBeEqualToString('window.getComputedStyle(shapeElement).webkitShapeInside', "rectangle(0px, 0px, 0px, 0px)");
-  shouldBeEqualToString('window.getComputedStyle(shapeElement).webkitShapeOutside', "rectangle(0px, 0px, 0px, 0px)");
+  shouldBeEqualToString('window.getComputedStyle(shapeElement).webkitShapeInside', "rectangle(0px, 0px, 0px, 0px, 0px, 0px)");
+  shouldBeEqualToString('window.getComputedStyle(shapeElement).webkitShapeOutside', "rectangle(0px, 0px, 0px, 0px, 0px, 0px)");
 
   // The image URL's port does not match this document's origin. We expect a pair of console warnings.
   shapeElement.style.webkitShapeInside = 'url("http://localhost:8080/security/resources/square100.png")';
