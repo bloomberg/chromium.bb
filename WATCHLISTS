@@ -88,6 +88,9 @@
     },
     'bookmarks': {
       'filepath': 'chrome/browser/bookmarks/' \
+                  '|chrome/browser/extensions/api/bookmark_manager_private/' \
+                  '|chrome/browser/extensions/api/bookmarks/' \
+                  '|chrome/browser/resources/bookmark_manager/' \
                   '|chrome/browser/ui/bookmarks/' \
                   '|chrome/browser/ui/cocoa/bookmarks/' \
                   '|chrome/browser/ui/gtk/bookmarks/' \
