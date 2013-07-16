@@ -9,6 +9,8 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <unistd.h>
+
 #include <string>
 #include <vector>
 
@@ -101,27 +103,32 @@ void TestOpenFilePerms(bool fast_check_in_client) {
   ret = open_broker.Access(kR_WhiteListed, R_OK | X_OK);
   ASSERT_EQ(ret, -EPERM);
 
-  fd = open_broker.Open(kR_WhiteListedButDenied, O_RDONLY);
-  // The broker process will allow this, but the normal permission system
-  // won't.
-  ASSERT_EQ(fd, -EACCES);
-  fd = open_broker.Open(kR_WhiteListedButDenied, O_WRONLY);
-  ASSERT_EQ(fd, -EPERM);
-  fd = open_broker.Open(kR_WhiteListedButDenied, O_RDWR);
-  ASSERT_EQ(fd, -EPERM);
-  ret = open_broker.Access(kR_WhiteListedButDenied, F_OK);
-  // The normal permission system will let us check that the file exist.
-  ASSERT_EQ(ret, 0);
-  ret = open_broker.Access(kR_WhiteListedButDenied, R_OK);
-  ASSERT_EQ(ret, -EACCES);
-  ret = open_broker.Access(kR_WhiteListedButDenied, W_OK);
-  ASSERT_EQ(ret, -EPERM);
-  ret = open_broker.Access(kR_WhiteListedButDenied, R_OK | W_OK);
-  ASSERT_EQ(ret, -EPERM);
-  ret = open_broker.Access(kR_WhiteListedButDenied, X_OK);
-  ASSERT_EQ(ret, -EPERM);
-  ret = open_broker.Access(kR_WhiteListedButDenied, R_OK | X_OK);
-  ASSERT_EQ(ret, -EPERM);
+  // Android sometimes runs tests as root.
+  // This part of the test requires a process that doesn't have
+  // CAP_DAC_OVERRIDE. We check against a root euid as a proxy for that.
+  if (geteuid()) {
+    fd = open_broker.Open(kR_WhiteListedButDenied, O_RDONLY);
+    // The broker process will allow this, but the normal permission system
+    // won't.
+    ASSERT_EQ(fd, -EACCES);
+    fd = open_broker.Open(kR_WhiteListedButDenied, O_WRONLY);
+    ASSERT_EQ(fd, -EPERM);
+    fd = open_broker.Open(kR_WhiteListedButDenied, O_RDWR);
+    ASSERT_EQ(fd, -EPERM);
+    ret = open_broker.Access(kR_WhiteListedButDenied, F_OK);
+    // The normal permission system will let us check that the file exists.
+    ASSERT_EQ(ret, 0);
+    ret = open_broker.Access(kR_WhiteListedButDenied, R_OK);
+    ASSERT_EQ(ret, -EACCES);
+    ret = open_broker.Access(kR_WhiteListedButDenied, W_OK);
+    ASSERT_EQ(ret, -EPERM);
+    ret = open_broker.Access(kR_WhiteListedButDenied, R_OK | W_OK);
+    ASSERT_EQ(ret, -EPERM);
+    ret = open_broker.Access(kR_WhiteListedButDenied, X_OK);
+    ASSERT_EQ(ret, -EPERM);
+    ret = open_broker.Access(kR_WhiteListedButDenied, R_OK | X_OK);
+    ASSERT_EQ(ret, -EPERM);
+  }
 
   fd = open_broker.Open(kW_WhiteListed, O_RDONLY);
   ASSERT_EQ(fd, -EPERM);
