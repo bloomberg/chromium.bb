@@ -154,6 +154,7 @@ public:
 
     void setText(const LChar* c, unsigned len) { m_data.characters8 = c; m_len = len; m_is8Bit = true;}
     void setText(const UChar* c, unsigned len) { m_data.characters16 = c; m_len = len; m_is8Bit = false;}
+    void setText(const String&);
     void setCharactersLength(unsigned charactersLength) { m_charactersLength = charactersLength; }
 
     float horizontalGlyphStretch() const { return m_horizontalGlyphStretch; }

@@ -48,6 +48,21 @@ void TextRun::setAllowsRoundingHacks(bool allowsRoundingHacks)
     s_allowsRoundingHacks = allowsRoundingHacks;
 }
 
+void TextRun::setText(const String& string)
+{
+    m_len = string.length();
+    if (!m_len) {
+        m_data.characters8 = 0;
+        m_is8Bit = true;
+        return;
+    }
+    m_is8Bit = string.is8Bit();
+    if (m_is8Bit)
+        m_data.characters8 = string.characters8();
+    else
+        m_data.characters16 = string.characters16();
+}
+
 bool TextRun::allowsRoundingHacks()
 {
     return s_allowsRoundingHacks;
