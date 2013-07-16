@@ -66,14 +66,16 @@ class TestRunner(base_test_runner.BaseTestRunner):
       -  wait_for_debugger: blocks until the debugger is connected.
       -  disable_assertions: Whether to disable java assertions on the device.
       -  push_deps: If True, push all dependencies to the device.
+      -  cleanup_test_files: Whether or not to cleanup test files on device.
       device: Attached android device.
       shard_index: Shard index.
       test_pkg: A TestPackage object.
       ports_to_forward: A list of port numbers for which to set up forwarders.
                         Can be optionally requested by a test case.
     """
-    super(TestRunner, self).__init__(device, options.tool, options.build_type,
-                                     options.push_deps)
+    super(TestRunner, self).__init__(
+        device, options.tool, options.build_type, options.push_deps,
+        options.cleanup_test_files)
     self._lighttp_port = constants.LIGHTTPD_RANDOM_PORT_FIRST + shard_index
 
     self.build_type = options.build_type

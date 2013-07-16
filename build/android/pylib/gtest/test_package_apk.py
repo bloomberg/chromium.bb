@@ -20,27 +20,26 @@ from test_package import TestPackage
 
 
 class TestPackageApk(TestPackage):
-  """A helper class for running APK-based native tests.
+  """A helper class for running APK-based native tests."""
 
-  Args:
-    adb: ADB interface the tests are using.
-    device: Device to run the tests.
-    test_suite: A specific test suite to run, empty to run all.
-    timeout: Timeout for each test.
-    cleanup_test_files: Whether or not to cleanup test files on device.
-    tool: Name of the Valgrind tool.
-  """
-
-  def __init__(self, adb, device, test_suite, timeout,
-               cleanup_test_files, tool, apk_package_name,
+  def __init__(self, adb, device, test_suite, tool, test_apk_package_name,
                test_activity_name, command_line_file):
-    TestPackage.__init__(self, adb, device, test_suite, timeout,
-                         cleanup_test_files, tool)
-    self._apk_package_name = apk_package_name
+    """
+    Args:
+      adb: ADB interface the tests are using.
+      device: Device to run the tests.
+      test_suite: A specific test suite to run, empty to run all.
+      tool: Name of the Valgrind tool.
+      test_apk_package_name: Apk package name for tests running in APKs.
+      test_activity_name: Test activity to invoke for APK tests.
+      command_line_file: Filename to use to pass arguments to tests.
+    """
+    TestPackage.__init__(self, adb, device, test_suite, tool)
+    self._test_apk_package_name = test_apk_package_name
     self._test_activity_name = test_activity_name
     self._command_line_file = command_line_file
 
-  def _CreateTestRunnerScript(self, options):
+  def _CreateCommandLineFileOnDevice(self, options):
     command_line_file = tempfile.NamedTemporaryFile()
     # GTest expects argv[0] to be the executable path.
     command_line_file.write(self.test_suite_basename + ' ' + options)
@@ -57,7 +56,7 @@ class TestPackageApk(TestPackage):
     # testing/android/java/src/org/chromium/native_test/
     #     ChromeNativeTestActivity.java and
     # testing/android/native_test_launcher.cc
-    return '/data/data/' + self._apk_package_name + '/files/test.fifo'
+    return '/data/data/' + self._test_apk_package_name + '/files/test.fifo'
 
   def _ClearFifo(self):
     self.adb.RunShellCommand('rm -f ' + self._GetFifo())
@@ -75,21 +74,40 @@ class TestPackageApk(TestPackage):
     args += ['shell', 'cat', self._GetFifo()]
     return pexpect.spawn('adb', args, timeout=timeout, logfile=logfile)
 
-  def ClearApplicationState(self):
-    """Clear the application state."""
-    self.adb.ClearApplicationState(self._apk_package_name)
-
   def _StartActivity(self):
     self.adb.StartActivity(
-        self._apk_package_name,
+        self._test_apk_package_name,
         self._test_activity_name,
         wait_for_completion=True,
         action='android.intent.action.MAIN',
         force_stop=True)
 
+  def _NeedsInstall(self):
+    installed_apk_path = self.adb.GetApplicationPath(
+        self._test_apk_package_name)
+    if installed_apk_path:
+      return not self.adb.CheckMd5Sum(
+          self.test_suite_full, installed_apk_path, ignore_paths=True)
+    else:
+      return True
+
+  def _GetTestSuiteBaseName(self):
+    """Returns the  base name of the test suite."""
+    # APK test suite names end with '-debug.apk'
+    return os.path.basename(self.test_suite).rsplit('-debug', 1)[0]
+
+  #override
+  def ClearApplicationState(self):
+    self.adb.ClearApplicationState(self._test_apk_package_name)
+
+  #override
+  def CreateCommandLineFileOnDevice(self, test_filter, test_arguments):
+    self._CreateCommandLineFileOnDevice(
+        '--gtest_filter=%s %s' % (test_filter, test_arguments))
+
+  #override
   def GetAllTests(self):
-    """Returns a list of all tests available in the test suite."""
-    self._CreateTestRunnerScript('--gtest_list_tests')
+    self._CreateCommandLineFileOnDevice('--gtest_list_tests')
     try:
       self.tool.SetupEnvironment()
       # Clear and start monitoring logcat.
@@ -103,14 +121,10 @@ class TestPackageApk(TestPackage):
       self.tool.CleanUpEnvironment()
     # We need to strip the trailing newline.
     content = [line.rstrip() for line in p.before.splitlines()]
-    ret = self._ParseGTestListTests(content)
-    return ret
+    return self._ParseGTestListTests(content)
 
-  def CreateTestRunnerScript(self, test_filter, test_arguments):
-    self._CreateTestRunnerScript('--gtest_filter=%s %s' % (test_filter,
-                                                           test_arguments))
-
-  def RunTestsAndListResults(self):
+  #override
+  def SpawnTestProcess(self):
     try:
       self.tool.SetupEnvironment()
       self._ClearFifo()
@@ -118,25 +132,14 @@ class TestPackageApk(TestPackage):
     finally:
       self.tool.CleanUpEnvironment()
     logfile = android_commands.NewLineNormalizer(sys.stdout)
-    return self._WatchTestOutput(self._WatchFifo(timeout=10, logfile=logfile))
+    return self._WatchFifo(timeout=10, logfile=logfile)
 
-  def _NeedsInstall(self):
-    installed_apk_path = self.adb.GetApplicationPath(self._apk_package_name)
-    if installed_apk_path:
-      return not self.adb.CheckMd5Sum(
-          self.test_suite_full, installed_apk_path, ignore_paths=True)
-    else:
-      return True
-
-  def StripAndCopyExecutable(self):
+  #override
+  def Install(self):
     self.tool.CopyFiles()
     if self._NeedsInstall():
       # Always uninstall the previous one (by activity name); we don't
       # know what was embedded in it.
       self.adb.ManagedInstall(self.test_suite_full, False,
-                              package_name=self._apk_package_name)
+                              package_name=self._test_apk_package_name)
 
-  def _GetTestSuiteBaseName(self):
-    """Returns the  base name of the test suite."""
-    # APK test suite names end with '-debug.apk'
-    return os.path.basename(self.test_suite).rsplit('-debug', 1)[0]

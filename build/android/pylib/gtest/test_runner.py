@@ -4,16 +4,17 @@
 
 import logging
 import os
+import re
 
 from pylib import android_commands
 from pylib import constants
-from pylib.android_commands import errors
+from pylib import pexpect
 from pylib.base import base_test_result
 from pylib.base import base_test_runner
 from pylib.utils import run_tests_helper
 
 import test_package_apk
-import test_package_executable
+import test_package_exe
 
 
 def _TestSuiteRequiresMockTestServer(test_suite_basename):
@@ -26,32 +27,37 @@ def _TestSuiteRequiresMockTestServer(test_suite_basename):
 
 
 class TestRunner(base_test_runner.BaseTestRunner):
-  """Single test suite attached to a single device.
-
-  Args:
-    device: Device to run the tests.
-    test_suite: A specific test suite to run, empty to run all.
-    test_arguments: Additional arguments to pass to the test binary.
-    timeout: Timeout for each test.
-    cleanup_test_files: Whether or not to cleanup test files on device.
-    tool_name: Name of the Valgrind tool.
-    build_type: 'Release' or 'Debug'.
-    in_webkit_checkout: Whether the suite is being run from a WebKit checkout.
-    push_deps: If True, push all dependencies to the device.
-    test_apk_package_name: Apk package name for tests running in APKs.
-    test_activity_name: Test activity to invoke for APK tests.
-    command_line_file: Filename to use to pass arguments to tests.
-  """
-
   def __init__(self, device, test_suite, test_arguments, timeout,
                cleanup_test_files, tool_name, build_type,
                in_webkit_checkout, push_deps, test_apk_package_name=None,
                test_activity_name=None, command_line_file=None):
-    super(TestRunner, self).__init__(device, tool_name, build_type, push_deps)
+    """Single test suite attached to a single device.
+
+    Args:
+      device: Device to run the tests.
+      test_suite: A specific test suite to run, empty to run all.
+      test_arguments: Additional arguments to pass to the test binary.
+      timeout: Timeout for each test.
+      cleanup_test_files: Whether or not to cleanup test files on device.
+      tool_name: Name of the Valgrind tool.
+      build_type: 'Release' or 'Debug'.
+      in_webkit_checkout: Whether the suite is being run from a WebKit checkout.
+      push_deps: If True, push all dependencies to the device.
+      test_apk_package_name: Apk package name for tests running in APKs.
+      test_activity_name: Test activity to invoke for APK tests.
+      command_line_file: Filename to use to pass arguments to tests.
+    """
+    super(TestRunner, self).__init__(device, tool_name, build_type, push_deps,
+                                     cleanup_test_files)
     self._running_on_emulator = self.device.startswith('emulator')
     self._test_arguments = test_arguments
     self.in_webkit_checkout = in_webkit_checkout
-    self._cleanup_test_files = cleanup_test_files
+    if timeout == 0:
+      timeout = 60
+    # On a VM (e.g. chromium buildbots), this timeout is way too small.
+    if os.environ.get('BUILDBOT_SLAVENAME'):
+      timeout = timeout * 2
+    self.timeout = timeout * self.tool.GetTimeoutScale()
 
     logging.warning('Test suite: ' + test_suite)
     if os.path.splitext(test_suite)[1] == '.apk':
@@ -59,8 +65,6 @@ class TestRunner(base_test_runner.BaseTestRunner):
           self.adb,
           device,
           test_suite,
-          timeout,
-          self._cleanup_test_files,
           self.tool,
           test_apk_package_name,
           test_activity_name,
@@ -70,18 +74,16 @@ class TestRunner(base_test_runner.BaseTestRunner):
       # generation.
       symbols_dir = os.path.join(constants.DIR_SOURCE_ROOT, 'out', build_type,
                                  'lib.target')
-      self.test_package = test_package_executable.TestPackageExecutable(
+      self.test_package = test_package_exe.TestPackageExecutable(
           self.adb,
           device,
           test_suite,
-          timeout,
-          self._cleanup_test_files,
           self.tool,
           symbols_dir)
 
   #override
   def InstallTestPackage(self):
-    self.test_package.StripAndCopyExecutable()
+    self.test_package.Install()
 
   #override
   def PushDataDeps(self):
@@ -143,6 +145,85 @@ class TestRunner(base_test_runner.BaseTestRunner):
           gtest_filter_base_path + '_emulator_additional_disabled'))
     return disabled_tests
 
+  def _ParseTestOutput(self, p):
+    """Process the test output.
+
+    Args:
+      p: An instance of pexpect spawn class.
+
+    Returns:
+      A TestRunResults object.
+    """
+    results = base_test_result.TestRunResults()
+
+    # Test case statuses.
+    re_run = re.compile('\[ RUN      \] ?(.*)\r\n')
+    re_fail = re.compile('\[  FAILED  \] ?(.*)\r\n')
+    re_ok = re.compile('\[       OK \] ?(.*?) .*\r\n')
+
+    # Test run statuses.
+    re_passed = re.compile('\[  PASSED  \] ?(.*)\r\n')
+    re_runner_fail = re.compile('\[ RUNNER_FAILED \] ?(.*)\r\n')
+    # Signal handlers are installed before starting tests
+    # to output the CRASHED marker when a crash happens.
+    re_crash = re.compile('\[ CRASHED      \](.*)\r\n')
+
+    log = ''
+    try:
+      while True:
+        full_test_name = None
+        found = p.expect([re_run, re_passed, re_runner_fail],
+                         timeout=self.timeout)
+        if found == 1:  # re_passed
+          break
+        elif found == 2:  # re_runner_fail
+          break
+        else:  # re_run
+          full_test_name = p.match.group(1).replace('\r', '')
+          found = p.expect([re_ok, re_fail, re_crash], timeout=self.timeout)
+          log = p.before.replace('\r', '')
+          if found == 0:  # re_ok
+            if full_test_name == p.match.group(1).replace('\r', ''):
+              results.AddResult(base_test_result.BaseTestResult(
+                  full_test_name, base_test_result.ResultType.PASS,
+                  log=log))
+          elif found == 2:  # re_crash
+            results.AddResult(base_test_result.BaseTestResult(
+                full_test_name, base_test_result.ResultType.CRASH,
+                log=log))
+            break
+          else:  # re_fail
+            results.AddResult(base_test_result.BaseTestResult(
+                full_test_name, base_test_result.ResultType.FAIL, log=log))
+    except pexpect.EOF:
+      logging.error('Test terminated - EOF')
+      # We're here because either the device went offline, or the test harness
+      # crashed without outputting the CRASHED marker (crbug.com/175538).
+      if not self.adb.IsOnline():
+        raise android_commands.errors.DeviceUnresponsiveError(
+            'Device %s went offline.' % self.device)
+      if full_test_name:
+        results.AddResult(base_test_result.BaseTestResult(
+            full_test_name, base_test_result.ResultType.CRASH,
+            log=p.before.replace('\r', '')))
+    except pexpect.TIMEOUT:
+      logging.error('Test terminated after %d second timeout.',
+                    self.timeout)
+      if full_test_name:
+        results.AddResult(base_test_result.BaseTestResult(
+            full_test_name, base_test_result.ResultType.TIMEOUT,
+            log=p.before.replace('\r', '')))
+    finally:
+      p.close()
+
+    ret_code = self.test_package.GetGTestReturnCode()
+    if ret_code:
+      logging.critical(
+          'gtest exit code: %d\npexpect.before: %s\npexpect.after: %s',
+          ret_code, p.before, p.after)
+
+    return results
+
   #override
   def RunTest(self, test):
     test_results = base_test_result.TestRunResults()
@@ -151,8 +232,9 @@ class TestRunner(base_test_runner.BaseTestRunner):
 
     try:
       self.test_package.ClearApplicationState()
-      self.test_package.CreateTestRunnerScript(test, self._test_arguments)
-      test_results = self.test_package.RunTestsAndListResults()
+      self.test_package.CreateCommandLineFileOnDevice(
+          test, self._test_arguments)
+      test_results = self._ParseTestOutput(self.test_package.SpawnTestProcess())
     finally:
       self.CleanupSpawningServerState()
     # Calculate unknown test results.
@@ -177,6 +259,4 @@ class TestRunner(base_test_runner.BaseTestRunner):
   def TearDown(self):
     """Cleans up the test enviroment for the test suite."""
     self.tool.CleanUpEnvironment()
-    if self._cleanup_test_files:
-      self.adb.RemovePushedFiles()
     super(TestRunner, self).TearDown()

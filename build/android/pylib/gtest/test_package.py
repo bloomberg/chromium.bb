@@ -2,16 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+"""Base class representing GTest test packages."""
 
-import logging
 import os
-import re
 
 from pylib import constants
-from pylib import pexpect
-from pylib.android_commands import errors
-from pylib.base import base_test_result
-from pylib.perf_tests_helper import PrintPerfResult
 
 
 class TestPackage(object):
@@ -21,13 +16,10 @@ class TestPackage(object):
     adb: ADB interface the tests are using.
     device: Device to run the tests.
     test_suite: A specific test suite to run, empty to run all.
-    timeout: Timeout for each test.
-    cleanup_test_files: Whether or not to cleanup test files on device.
     tool: Name of the Valgrind tool.
   """
 
-  def __init__(self, adb, device, test_suite, timeout,
-               cleanup_test_files, tool):
+  def __init__(self, adb, device, test_suite, tool):
     self.adb = adb
     self.device = device
     self.test_suite_full = test_suite
@@ -35,17 +27,38 @@ class TestPackage(object):
     self.test_suite_basename = self._GetTestSuiteBaseName()
     self.test_suite_dirname = os.path.dirname(
         self.test_suite.split(self.test_suite_basename)[0])
-    self.cleanup_test_files = cleanup_test_files
     self.tool = tool
-    if timeout == 0:
-      timeout = 60
-    # On a VM (e.g. chromium buildbots), this timeout is way too small.
-    if os.environ.get('BUILDBOT_SLAVENAME'):
-      timeout = timeout * 2
-    self.timeout = timeout * self.tool.GetTimeoutScale()
 
   def ClearApplicationState(self):
     """Clears the application state."""
+    raise NotImplementedError('Method must be overriden.')
+
+  def CreateCommandLineFileOnDevice(self, test_filter, test_arguments):
+    """Creates a test runner script and pushes to the device.
+
+    Args:
+      test_filter: A test_filter flag.
+      test_arguments: Additional arguments to pass to the test binary.
+    """
+    raise NotImplementedError('Method must be overriden.')
+
+  def GetAllTests(self):
+    """Returns a list of all tests available in the test suite."""
+    raise NotImplementedError('Method must be overriden.')
+
+  def GetGTestReturnCode(self):
+    return None
+
+  def SpawnTestProcess(self):
+    """Spawn the test process.
+
+    Returns:
+      An instance of pexpect spawn class.
+    """
+    raise NotImplementedError('Method must be overriden.')
+
+  def Install(self):
+    """Install the test package to the device."""
     raise NotImplementedError('Method must be overriden.')
 
   def GetDisabledPrefixes(self):
@@ -55,7 +68,7 @@ class TestPackage(object):
     """Parses and filters the raw test lists.
 
     Args:
-    all_tests: The raw test listing with the following format:
+      all_tests: The raw test listing with the following format:
 
       IPCChannelTest.
         SendMessageInChannelConnected
@@ -86,82 +99,3 @@ class TestPackage(object):
       if not any([test_name.startswith(x) for x in disabled_prefixes]):
         ret += [current + test_name]
     return ret
-
-  def _WatchTestOutput(self, p):
-    """Watches the test output.
-
-    Args:
-      p: the process generating output as created by pexpect.spawn.
-
-    Returns:
-      A TestRunResults object.
-    """
-    results = base_test_result.TestRunResults()
-
-    # Test case statuses.
-    re_run = re.compile('\[ RUN      \] ?(.*)\r\n')
-    re_fail = re.compile('\[  FAILED  \] ?(.*)\r\n')
-    re_ok = re.compile('\[       OK \] ?(.*?) .*\r\n')
-
-    # Test run statuses.
-    re_passed = re.compile('\[  PASSED  \] ?(.*)\r\n')
-    re_runner_fail = re.compile('\[ RUNNER_FAILED \] ?(.*)\r\n')
-    # Signal handlers are installed before starting tests
-    # to output the CRASHED marker when a crash happens.
-    re_crash = re.compile('\[ CRASHED      \](.*)\r\n')
-
-    log = ''
-    try:
-      while True:
-        full_test_name = None
-        found = p.expect([re_run, re_passed, re_runner_fail],
-                         timeout=self.timeout)
-        if found == 1:  # re_passed
-          break
-        elif found == 2:  # re_runner_fail
-          break
-        else:  # re_run
-          full_test_name = p.match.group(1).replace('\r', '')
-          found = p.expect([re_ok, re_fail, re_crash], timeout=self.timeout)
-          log = p.before.replace('\r', '')
-          if found == 0:  # re_ok
-            if full_test_name == p.match.group(1).replace('\r', ''):
-              results.AddResult(base_test_result.BaseTestResult(
-                  full_test_name, base_test_result.ResultType.PASS,
-                  log=log))
-          elif found == 2:  # re_crash
-            results.AddResult(base_test_result.BaseTestResult(
-                full_test_name, base_test_result.ResultType.CRASH,
-                log=log))
-            break
-          else:  # re_fail
-            results.AddResult(base_test_result.BaseTestResult(
-                full_test_name, base_test_result.ResultType.FAIL, log=log))
-    except pexpect.EOF:
-      logging.error('Test terminated - EOF')
-      # We're here because either the device went offline, or the test harness
-      # crashed without outputting the CRASHED marker (crbug.com/175538).
-      if not self.adb.IsOnline():
-        raise errors.DeviceUnresponsiveError('Device %s went offline.' %
-                                             self.device)
-      if full_test_name:
-        results.AddResult(base_test_result.BaseTestResult(
-            full_test_name, base_test_result.ResultType.CRASH,
-            log=p.before.replace('\r', '')))
-    except pexpect.TIMEOUT:
-      logging.error('Test terminated after %d second timeout.',
-                    self.timeout)
-      if full_test_name:
-        results.AddResult(base_test_result.BaseTestResult(
-            full_test_name, base_test_result.ResultType.TIMEOUT,
-            log=p.before.replace('\r', '')))
-    finally:
-      p.close()
-
-    ret_code = self._GetGTestReturnCode()
-    if ret_code:
-      logging.critical(
-          'gtest exit code: %d\npexpect.before: %s\npexpect.after: %s',
-          ret_code, p.before, p.after)
-
-    return results

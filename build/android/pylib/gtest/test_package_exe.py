@@ -22,23 +22,24 @@ class TestPackageExecutable(TestPackage):
 
   _TEST_RUNNER_RET_VAL_FILE = 'gtest_retval'
 
-  def __init__(self, adb, device, test_suite, timeout,
-               cleanup_test_files, tool, symbols_dir=None):
+  def __init__(self, adb, device, test_suite, tool, symbols_dir=None):
     """
     Args:
       adb: ADB interface the tests are using.
       device: Device to run the tests.
       test_suite: A specific test suite to run, empty to run all.
-      timeout: Timeout for each test.
-      cleanup_test_files: Whether or not to cleanup test files on device.
       tool: Name of the Valgrind tool.
       symbols_dir: Directory to put the stripped binaries.
     """
-    TestPackage.__init__(self, adb, device, test_suite, timeout,
-                         cleanup_test_files, tool)
+    TestPackage.__init__(self, adb, device, test_suite, tool)
     self.symbols_dir = symbols_dir
 
-  def _GetGTestReturnCode(self):
+  def _GetTestSuiteBaseName(self):
+    """Returns the  base name of the test suite."""
+    return os.path.basename(self.test_suite)
+
+  #override
+  def GetGTestReturnCode(self):
     ret = None
     ret_code = 1  # Assume failure if we can't find it
     ret_code_file = tempfile.NamedTemporaryFile()
@@ -77,26 +78,12 @@ class TestPackageExecutable(TestPackage):
     export_string += 'export GCOV_PREFIX_STRIP=%s\n' % depth
     return export_string
 
+  #override
   def ClearApplicationState(self):
-    """Clear the application state."""
     self.adb.KillAllBlocking(self.test_suite_basename, 30)
 
-  def GetAllTests(self):
-    """Returns a list of all tests available in the test suite."""
-    all_tests = self.adb.RunShellCommand(
-        '%s %s/%s --gtest_list_tests' %
-        (self.tool.GetTestWrapper(),
-         constants.TEST_EXECUTABLE_DIR,
-         self.test_suite_basename))
-    return self._ParseGTestListTests(all_tests)
-
-  def CreateTestRunnerScript(self, test_filter, test_arguments):
-    """Creates a test runner script and pushes to the device.
-
-    Args:
-      test_filter: A test_filter flag.
-      test_arguments: Additional arguments to pass to the test binary.
-    """
+  #override
+  def CreateCommandLineFileOnDevice(self, test_filter, test_arguments):
     tool_wrapper = self.tool.GetTestWrapper()
     sh_script_file = tempfile.NamedTemporaryFile()
     # We need to capture the exit status from the script since adb shell won't
@@ -120,20 +107,24 @@ class TestPackageExecutable(TestPackage):
     for line in open(sh_script_file.name).readlines():
       logging.info('  ' + line.rstrip())
 
-  def RunTestsAndListResults(self):
-    """Runs all the tests and checks for failures.
+  #override
+  def GetAllTests(self):
+    all_tests = self.adb.RunShellCommand(
+        '%s %s/%s --gtest_list_tests' %
+        (self.tool.GetTestWrapper(),
+         constants.TEST_EXECUTABLE_DIR,
+         self.test_suite_basename))
+    return self._ParseGTestListTests(all_tests)
 
-    Returns:
-      A TestRunResults object.
-    """
+  #override
+  def SpawnTestProcess(self):
     args = ['adb', '-s', self.device, 'shell', 'sh',
             constants.TEST_EXECUTABLE_DIR + '/chrome_test_runner.sh']
     logging.info(args)
-    p = pexpect.spawn(args[0], args[1:], logfile=sys.stdout)
-    return self._WatchTestOutput(p)
+    return pexpect.spawn(args[0], args[1:], logfile=sys.stdout)
 
-  def StripAndCopyExecutable(self):
-    """Strips and copies the executable to the device."""
+  #override
+  def Install(self):
     if self.tool.NeedsDebugInfo():
       target_name = self.test_suite
     else:
@@ -161,7 +152,3 @@ class TestPackageExecutable(TestPackage):
         cmd_helper.RunCmd([strip, self.test_suite, '-o', target_name])
     test_binary = constants.TEST_EXECUTABLE_DIR + '/' + self.test_suite_basename
     self.adb.PushIfNeeded(target_name, test_binary)
-
-  def _GetTestSuiteBaseName(self):
-    """Returns the  base name of the test suite."""
-    return os.path.basename(self.test_suite)

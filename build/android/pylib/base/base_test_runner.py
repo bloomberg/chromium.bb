@@ -28,19 +28,17 @@ NET_TEST_SERVER_PORT_INFO_FILE = 'net-test-server-ports'
 
 
 class BaseTestRunner(object):
-  """Base class for running tests on a single device.
+  """Base class for running tests on a single device."""
 
-  A subclass should implement RunTests() with no parameter, so that calling
-  the Run() method will set up tests, run them and tear them down.
-  """
-
-  def __init__(self, device, tool, build_type, push_deps):
+  def __init__(self, device, tool, build_type, push_deps=True,
+               cleanup_test_files=False):
     """
       Args:
         device: Tests will run on the device of this ID.
-        shard_index: Index number of the shard on which the test suite will run.
+        tool: Name of the Valgrind tool.
         build_type: 'Release' or 'Debug'.
         push_deps: If True, push all dependencies to the device.
+        cleanup_test_files: Whether or not to cleanup test files on device.
     """
     self.device = device
     self.adb = android_commands.AndroidCommands(device=device)
@@ -61,6 +59,7 @@ class BaseTestRunner(object):
     self.test_server_port = 0
     self.build_type = build_type
     self._push_deps = push_deps
+    self._cleanup_test_files = cleanup_test_files
 
   def _PushTestServerPortInfoToDevice(self):
     """Pushes the latest port information to device."""
@@ -110,6 +109,8 @@ class BaseTestRunner(object):
   def TearDown(self):
     """Run once after all tests are run."""
     self.ShutdownHelperToolsForTestSuite()
+    if self._cleanup_test_files:
+      self.adb.RemovePushedFiles()
 
   def LaunchTestHttpServer(self, document_root, port=None,
                            extra_config_contents=None):

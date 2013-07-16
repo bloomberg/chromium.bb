@@ -200,7 +200,7 @@ def GetTestsFromDevice(runner):
     All non-disabled tests on the device.
   """
   # The executable/apk needs to be copied before we can call GetAllTests.
-  runner.test_package.StripAndCopyExecutable()
+  runner.test_package.Install()
   all_tests = runner.test_package.GetAllTests()
   # Only includes tests that do not have any match in the disabled list.
   disabled_list = runner.GetDisabledTests()
