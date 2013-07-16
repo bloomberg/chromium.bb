@@ -30,10 +30,6 @@ StarView::StarView(CommandUpdater* command_updater)
 StarView::~StarView() {
 }
 
-int StarView::GetBuiltInHorizontalPadding() const {
-  return GetBuiltInHorizontalPaddingImpl();
-}
-
 void StarView::SetToggled(bool on) {
   SetTooltipText(l10n_util::GetStringUTF16(
       on ? IDS_TOOLTIP_STARRED : IDS_TOOLTIP_STAR));
@@ -41,7 +37,12 @@ void StarView::SetToggled(bool on) {
       on ? IDR_STAR_LIT : IDR_STAR));
 }
 
+int StarView::GetBuiltInHorizontalPadding() const {
+  return GetBuiltInHorizontalPaddingImpl();
+}
+
 void StarView::GetAccessibleState(ui::AccessibleViewState* state) {
+  state->name = l10n_util::GetStringUTF16(IDS_ACCNAME_STAR);
   state->role = ui::AccessibilityTypes::ROLE_PUSHBUTTON;
 }
 

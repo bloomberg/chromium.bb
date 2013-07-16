@@ -44,8 +44,7 @@ IN_PROC_BROWSER_TEST_F(ViewIDTest, Basic) {
         i == VIEW_ID_BOOKMARK_BAR_ELEMENT ||
         i == VIEW_ID_TAB ||
         i == VIEW_ID_FEEDBACK_BUTTON ||
-        i == VIEW_ID_SCRIPT_BUBBLE ||
-        i == VIEW_ID_MIC_SEARCH_BUTTON) {
+        i == VIEW_ID_SCRIPT_BUBBLE) {
       continue;
     }
 
