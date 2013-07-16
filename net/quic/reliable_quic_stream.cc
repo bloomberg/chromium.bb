@@ -242,6 +242,9 @@ void ReliableQuicStream::CloseReadSide() {
 
 uint32 ReliableQuicStream::ProcessRawData(const char* data, uint32 data_len) {
   if (id() == kCryptoStreamId) {
+    if (data_len == 0) {
+      return 0;
+    }
     // The crypto stream does not use compression.
     return ProcessData(data, data_len);
   }
@@ -271,7 +274,7 @@ uint32 ReliableQuicStream::ProcessRawData(const char* data, uint32 data_len) {
     if (!decompressed_headers_.empty()) {
       ProcessHeaderData();
     }
-    if (decompressed_headers_.empty()) {
+    if (decompressed_headers_.empty() && data_len > 0) {
       DVLOG(1) << "Delegating procesing to ProcessData";
       total_bytes_consumed += ProcessData(data, data_len);
     }

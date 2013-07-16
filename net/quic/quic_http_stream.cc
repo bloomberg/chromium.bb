@@ -82,8 +82,13 @@ int QuicHttpStream::SendRequest(const HttpRequestHeaders& request_headers,
 
   // Store the request body.
   request_body_stream_ = request_info_->upload_data_stream;
-  if (request_body_stream_ && (request_body_stream_->size() ||
-                               request_body_stream_->is_chunked())) {
+  if (request_body_stream_) {
+    // TODO(rch): Can we be more precise about when to allocate
+    // raw_request_body_buf_. Removed the following check. DoReadRequestBody()
+    // was being called even if we didn't yet allocate raw_request_body_buf_.
+    //   && (request_body_stream_->size() ||
+    //       request_body_stream_->is_chunked()))
+    //
     // Use kMaxPacketSize as the buffer size, since the request
     // body data is written with this size at a time.
     // TODO(rch): use a smarter value since we can't write an entire
