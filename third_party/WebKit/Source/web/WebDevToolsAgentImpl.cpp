@@ -615,6 +615,12 @@ void WebDevToolsAgentImpl::dispatchKeyEvent(const PlatformKeyboardEvent& event)
     m_webViewImpl->handleInputEvent(webEvent);
 }
 
+void WebDevToolsAgentImpl::dispatchMouseEvent(const PlatformMouseEvent& event)
+{
+    WebMouseEvent webEvent = WebMouseEventBuilder(m_webViewImpl->mainFrameImpl()->frameView(), event);
+    m_webViewImpl->handleInputEvent(webEvent);
+}
+
 void WebDevToolsAgentImpl::dispatchOnInspectorBackend(const WebString& message)
 {
     inspectorController()->dispatchMessageFromFrontend(message);

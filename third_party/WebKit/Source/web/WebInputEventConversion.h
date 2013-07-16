@@ -94,14 +94,20 @@ public:
     PlatformTouchEventBuilder(WebCore::Widget*, const WebTouchEvent&);
 };
 
-// Converts a WebCore::MouseEvent to a corresponding WebMouseEvent.
-// NOTE: This is only implemented for mousemove, mouseover, mouseout,
-// mousedown and mouseup.  If the event mapping fails, the event type will
-// be set to Undefined.
 class WebMouseEventBuilder : public WebMouseEvent {
 public:
+    // Converts a WebCore::MouseEvent to a corresponding WebMouseEvent.
+    // NOTE: This is only implemented for mousemove, mouseover, mouseout,
+    // mousedown and mouseup. If the event mapping fails, the event type will
+    // be set to Undefined.
     WebMouseEventBuilder(const WebCore::Widget*, const WebCore::RenderObject*, const WebCore::MouseEvent&);
     WebMouseEventBuilder(const WebCore::Widget*, const WebCore::RenderObject*, const WebCore::TouchEvent&);
+
+    // Converts a WebCore::PlatformMouseEvent to a corresponding WebMouseEvent.
+    // NOTE: This is only implemented for mousepressed, mousereleased, and
+    // mousemoved. If the event mapping fails, the event type will be set to
+    // Undefined.
+    WebMouseEventBuilder(const WebCore::Widget*, const WebCore::PlatformMouseEvent&);
 };
 
 // Converts a WebCore::WheelEvent to a corresponding WebMouseWheelEvent.

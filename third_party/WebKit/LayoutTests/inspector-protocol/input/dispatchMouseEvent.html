@@ -6,6 +6,7 @@
 window.addEventListener("mousedown", logEvent);
 window.addEventListener("mouseup", logEvent);
 window.addEventListener("mousemove", logEvent);
+window.addEventListener("contextmenu", logEvent);
 
 function logEvent(event)
 {
@@ -16,6 +17,7 @@ function logEvent(event)
         log("shiftKey");
     log("x: " + event.x);
     log("y: " + event.y);
+    event.preventDefault();
 }
 
 function test()
@@ -40,6 +42,20 @@ function test()
             "modifiers": 8, // shift
             "x": 50,
             "y": 150
+        },
+        {
+            "type": "mousePressed",
+            "button": "right",
+            "clickCount": 1,
+            "x": 100,
+            "y": 200
+        },
+        {
+            "type": "mouseReleased",
+            "button": "right",
+            "clickCount": 1,
+            "x": 100,
+            "y": 200
         }
     ];
 

@@ -71,7 +71,7 @@ static float widgetScaleFactor(const Widget* widget)
 PlatformMouseEventBuilder::PlatformMouseEventBuilder(Widget* widget, const WebMouseEvent& e)
 {
     float scale = widgetScaleFactor(widget);
-    // FIXME: widget is always toplevel, unless it's a popup.  We may be able
+    // FIXME: Widget is always toplevel, unless it's a popup. We may be able
     // to get rid of this once we abstract popups into a WebKit API.
     m_position = widget->convertFromContainingWindow(IntPoint(e.x / scale, e.y / scale));
     m_globalPosition = IntPoint(e.globalX, e.globalY);
@@ -528,6 +528,52 @@ WebMouseEventBuilder::WebMouseEventBuilder(const Widget* widget, const WebCore::
     IntPoint localPoint = convertAbsoluteLocationForRenderObject(touch->absoluteLocation(), *renderObject);
     x = localPoint.x();
     y = localPoint.y();
+}
+
+WebMouseEventBuilder::WebMouseEventBuilder(const WebCore::Widget* widget, const WebCore::PlatformMouseEvent& event)
+{
+    switch (event.type()) {
+    case PlatformEvent::MouseMoved:
+        type = MouseMove;
+        break;
+    case PlatformEvent::MousePressed:
+        type = MouseDown;
+        break;
+    case PlatformEvent::MouseReleased:
+        type = MouseUp;
+        break;
+    default:
+        ASSERT_NOT_REACHED();
+        type = Undefined;
+        return;
+    }
+
+    modifiers = 0;
+    if (event.modifiers() & PlatformEvent::ShiftKey)
+        modifiers |= ShiftKey;
+    if (event.modifiers() & PlatformEvent::CtrlKey)
+        modifiers |= ControlKey;
+    if (event.modifiers() & PlatformEvent::AltKey)
+        modifiers |= AltKey;
+    if (event.modifiers() & PlatformEvent::MetaKey)
+        modifiers |= MetaKey;
+
+    timeStampSeconds = event.timestamp();
+
+    // FIXME: Widget is always toplevel, unless it's a popup. We may be able
+    // to get rid of this once we abstract popups into a WebKit API.
+    IntPoint position = widget->convertToContainingWindow(event.position());
+    float scale = widgetScaleFactor(widget);
+    position.scale(scale, scale);
+    x = position.x();
+    y = position.y();
+    globalX = event.globalPosition().x();
+    globalY = event.globalPosition().y();
+    movementX = event.movementDelta().x() * scale;
+    movementY = event.movementDelta().y() * scale;
+
+    button = static_cast<Button>(event.button());
+    clickCount = event.clickCount();
 }
 
 WebMouseWheelEventBuilder::WebMouseWheelEventBuilder(const Widget* widget, const WebCore::RenderObject* renderObject, const WheelEvent& event)

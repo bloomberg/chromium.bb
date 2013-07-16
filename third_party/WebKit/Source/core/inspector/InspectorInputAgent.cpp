@@ -33,7 +33,6 @@
 
 #include "core/inspector/InspectorClient.h"
 #include "core/page/Chrome.h"
-#include "core/page/EventHandler.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"
@@ -137,20 +136,7 @@ void InspectorInputAgent::dispatchMouseEvent(ErrorString* error, const String& t
         convertedModifiers & PlatformEvent::MetaKey,
         timestamp ? *timestamp : currentTime());
 
-    EventHandler* handler = m_page->mainFrame()->eventHandler();
-    switch (convertedType) {
-    case PlatformEvent::MousePressed:
-        handler->handleMousePressEvent(event);
-        break;
-    case PlatformEvent::MouseReleased:
-        handler->handleMouseReleaseEvent(event);
-        break;
-    case PlatformEvent::MouseMoved:
-        handler->mouseMoved(event);
-        break;
-    default:
-        *error = "Unhandled type: " + type;
-    }
+    m_client->dispatchMouseEvent(event);
 }
 
 } // namespace WebCore

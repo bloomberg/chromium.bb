@@ -156,6 +156,12 @@ void InspectorClientImpl::dispatchKeyEvent(const PlatformKeyboardEvent& event)
         agent->dispatchKeyEvent(event);
 }
 
+void InspectorClientImpl::dispatchMouseEvent(const PlatformMouseEvent& event)
+{
+    if (WebDevToolsAgentImpl* agent = devToolsAgent())
+        agent->dispatchMouseEvent(event);
+}
+
 void InspectorClientImpl::setTraceEventCallback(TraceEventCallback callback)
 {
     if (WebDevToolsAgentImpl* agent = devToolsAgent())

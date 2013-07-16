@@ -73,6 +73,7 @@ public:
     virtual void dumpUncountedAllocatedObjects(const HashMap<const void*, size_t>&);
 
     virtual void dispatchKeyEvent(const WebCore::PlatformKeyboardEvent&);
+    virtual void dispatchMouseEvent(const WebCore::PlatformMouseEvent&);
 
     virtual void setTraceEventCallback(TraceEventCallback);
 
