@@ -5856,12 +5856,6 @@ sub ContentAttributeName
     return "WebCore::${namespace}::${contentAttributeName}Attr";
 }
 
-sub CanUseFastAttribute
-{
-    my $attribute = shift;
-    return !IsSVGAnimatedType($attribute->type);
-}
-
 sub GetterExpression
 {
     my ($interfaceName, $attribute) = @_;
@@ -5876,11 +5870,7 @@ sub GetterExpression
     if ($attribute->extendedAttributes->{"URL"}) {
         $functionName = "getURLAttribute";
     } elsif ($attribute->type eq "boolean") {
-        if (CanUseFastAttribute($attribute)) {
-            $functionName = "fastHasAttribute";
-        } else {
-            $functionName = "hasAttribute";
-        }
+        $functionName = "fastHasAttribute";
     } elsif ($attribute->type eq "long") {
         $functionName = "getIntegralAttribute";
     } elsif ($attribute->type eq "unsigned long") {
@@ -5895,10 +5885,8 @@ sub GetterExpression
         } elsif ($contentAttributeName eq "WebCore::HTMLNames::classAttr") {
             $functionName = "getClassAttribute";
             $contentAttributeName = "";
-        } elsif (CanUseFastAttribute($attribute)) {
-            $functionName = "fastGetAttribute";
         } else {
-            $functionName = "getAttribute";
+            $functionName = "fastGetAttribute";
         }
     }
 
