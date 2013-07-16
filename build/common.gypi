@@ -3137,15 +3137,9 @@
 
               # Warns when a const char[] is converted to bool.
               '-Wstring-conversion',
-            ],
-            'cflags!': [
-              # Clang doesn't seem to know know this flag.
-              '-mfpmath=sse',
-            ],
-          }],
-          ['clang==1 and OS!="android"', {
-            # Turn on C++11.
-            'cflags': [
+
+              # C++11-related flags:
+
               # This warns on using ints as initializers for floats in
               # initializer lists (e.g. |int a = f(); CGSize s = { a, a };|),
               # which happens in several places in chrome code. Not sure if
@@ -3163,6 +3157,10 @@
               # http://crbug.com/255186
               '-Wno-deprecated-register',
             ],
+            'cflags!': [
+              # Clang doesn't seem to know know this flag.
+              '-mfpmath=sse',
+            ],
             'cflags_cc': [
               # See the comment in the Mac section for what it takes to move
               # this to -std=c++11.
@@ -3170,19 +3168,13 @@
             ],
           }],
           ['clang==1 and OS=="android"', {
-            # Android uses gcc4.4, and clang isn't compatible with gcc4.4's
-            # libstdc++ in C++11 mode. So no C++11 mode for Android yet.
-            # Doesn't work with asan for some reason either: crbug.com/233464
-            'cflags': [
-              # Especially needed for gtest macros using enum values from Mac
-              # system headers.
-              # TODO(pkasting): In C++11 this is legal, so this should be
-              # removed when we change to that.  (This is also why we don't
-              # bother fixing all these cases today.)
-              '-Wno-unnamed-type-template-args',
-              # This (rightfully) complains about 'override', which we use
-              # heavily.
-              '-Wno-c++11-extensions',
+            # Android uses stlport, whose include/new defines
+            # `void  operator delete[](void* ptr) throw();`, which
+            # clang's -Wimplicit-exception-spec-mismatch warns about for some
+            # reason -- http://llvm.org/PR16638. TODO(thakis): Include stlport
+            # via -isystem instead.
+            'cflags_cc': [
+              '-Wno-implicit-exception-spec-mismatch',
             ],
           }],
           ['clang==1 and clang_use_chrome_plugins==1', {
