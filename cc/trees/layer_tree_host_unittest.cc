@@ -1486,40 +1486,38 @@ SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestCompositeAndReadbackCleanup);
 
 class LayerTreeHostTestSurfaceNotAllocatedForLayersOutsideMemoryLimit
     : public LayerTreeHostTest {
- public:
-  LayerTreeHostTestSurfaceNotAllocatedForLayersOutsideMemoryLimit()
-      : root_layer_(FakeContentLayer::Create(&client_)),
-        surface_layer1_(
-            FakeContentLayer::Create(&client_)),
-        replica_layer1_(
-            FakeContentLayer::Create(&client_)),
-        surface_layer2_(
-            FakeContentLayer::Create(&client_)),
-        replica_layer2_(
-            FakeContentLayer::Create(&client_)) {}
-
+ protected:
   virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
     settings->cache_render_pass_contents = true;
   }
 
-  virtual void BeginTest() OVERRIDE {
-    layer_tree_host()->SetViewportSize(gfx::Size(100, 100));
-
+  virtual void SetupTree() OVERRIDE {
+    root_layer_ = FakeContentLayer::Create(&client_);
     root_layer_->SetBounds(gfx::Size(100, 100));
+
+    surface_layer1_ = FakeContentLayer::Create(&client_);
     surface_layer1_->SetBounds(gfx::Size(100, 100));
     surface_layer1_->SetForceRenderSurface(true);
     surface_layer1_->SetOpacity(0.5f);
+    root_layer_->AddChild(surface_layer1_);
+
+    surface_layer2_ = FakeContentLayer::Create(&client_);
     surface_layer2_->SetBounds(gfx::Size(100, 100));
     surface_layer2_->SetForceRenderSurface(true);
     surface_layer2_->SetOpacity(0.5f);
+    surface_layer1_->AddChild(surface_layer2_);
 
+    replica_layer1_ = FakeContentLayer::Create(&client_);
     surface_layer1_->SetReplicaLayer(replica_layer1_.get());
+
+    replica_layer2_ = FakeContentLayer::Create(&client_);
     surface_layer2_->SetReplicaLayer(replica_layer2_.get());
 
-    root_layer_->AddChild(surface_layer1_);
-    surface_layer1_->AddChild(surface_layer2_);
     layer_tree_host()->SetRootLayer(root_layer_);
+    LayerTreeHostTest::SetupTree();
+  }
 
+  virtual void BeginTest() OVERRIDE {
     PostSetNeedsCommitToMainThread();
   }
 
@@ -1555,18 +1553,17 @@ class LayerTreeHostTestSurfaceNotAllocatedForLayersOutsideMemoryLimit
     }
   }
 
-  virtual void DidCommit() OVERRIDE {
+  virtual void DidCommitAndDrawFrame() OVERRIDE {
     if (layer_tree_host()->commit_number() < 2)
       root_layer_->SetNeedsDisplay();
   }
 
   virtual void AfterTest() OVERRIDE {
-    EXPECT_EQ(2u, root_layer_->update_count());
-    EXPECT_EQ(2u, surface_layer1_->update_count());
-    EXPECT_EQ(2u, surface_layer2_->update_count());
+    EXPECT_LE(2u, root_layer_->update_count());
+    EXPECT_LE(2u, surface_layer1_->update_count());
+    EXPECT_LE(2u, surface_layer2_->update_count());
   }
 
- private:
   FakeContentLayerClient client_;
   scoped_refptr<FakeContentLayer> root_layer_;
   scoped_refptr<FakeContentLayer> surface_layer1_;
@@ -1575,7 +1572,7 @@ class LayerTreeHostTestSurfaceNotAllocatedForLayersOutsideMemoryLimit
   scoped_refptr<FakeContentLayer> replica_layer2_;
 };
 
-  // Surfaces don't exist with a delegated renderer.
+// Surfaces don't exist with a delegated renderer.
 SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_TEST_F(
     LayerTreeHostTestSurfaceNotAllocatedForLayersOutsideMemoryLimit);
 
