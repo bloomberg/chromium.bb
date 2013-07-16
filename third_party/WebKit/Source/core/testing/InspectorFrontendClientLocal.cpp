@@ -37,45 +37,62 @@
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
 #include "core/platform/Timer.h"
+#include "public/platform/Platform.h"
+#include "public/platform/WebThread.h"
 #include <wtf/Deque.h>
 #include <wtf/text/WTFString.h>
 
 namespace WebCore {
 
-class InspectorBackendDispatchTask {
+class InspectorBackendMessageQueue : public RefCounted<InspectorBackendMessageQueue> {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    InspectorBackendDispatchTask(InspectorController* inspectorController)
+    explicit InspectorBackendMessageQueue(InspectorController* inspectorController)
         : m_inspectorController(inspectorController)
-        , m_timer(this, &InspectorBackendDispatchTask::onTimer)
     {
     }
 
     void dispatch(const String& message)
     {
+        ASSERT(m_inspectorController);
         m_messages.append(message);
-        if (!m_timer.isActive())
-            m_timer.startOneShot(0);
+        schedule();
     }
 
-    void reset()
+    void stop()
     {
+        m_inspectorController = 0;
         m_messages.clear();
-        m_timer.stop();
     }
 
-    void onTimer(Timer<InspectorBackendDispatchTask>*)
+private:
+    void schedule()
     {
+        class TaskImpl : public WebKit::WebThread::Task {
+        public:
+            RefPtr<InspectorBackendMessageQueue> owner;
+            virtual void run()
+            {
+                owner->deliver();
+            }
+        };
+        TaskImpl* taskImpl = new TaskImpl;
+        taskImpl->owner = this;
+        WebKit::Platform::current()->currentThread()->postTask(taskImpl);
+    }
+
+    void deliver()
+    {
+        if (!m_inspectorController)
+            return;
         if (!m_messages.isEmpty()) {
             // Dispatch can lead to the timer destruction -> schedule the next shot first.
-            m_timer.startOneShot(0);
+            schedule();
             m_inspectorController->dispatchMessageFromFrontend(m_messages.takeFirst());
         }
     }
 
-private:
     InspectorController* m_inspectorController;
-    Timer<InspectorBackendDispatchTask> m_timer;
     Deque<String> m_messages;
 };
 
@@ -84,11 +101,12 @@ InspectorFrontendClientLocal::InspectorFrontendClientLocal(InspectorController* 
     , m_frontendPage(frontendPage)
 {
     m_frontendPage->settings()->setAllowFileAccessFromFileURLs(true);
-    m_dispatchTask = adoptPtr(new InspectorBackendDispatchTask(inspectorController));
+    m_messageQueue = adoptRef(new InspectorBackendMessageQueue(inspectorController));
 }
 
 InspectorFrontendClientLocal::~InspectorFrontendClientLocal()
 {
+    m_messageQueue->stop();
     if (m_frontendHost)
         m_frontendHost->disconnectClient();
     m_frontendPage = 0;
@@ -106,7 +124,7 @@ void InspectorFrontendClientLocal::windowObjectCleared()
 
 void InspectorFrontendClientLocal::sendMessageToBackend(const String& message)
 {
-    m_dispatchTask->dispatch(message);
+    m_messageQueue->dispatch(message);
 }
 
 } // namespace WebCore

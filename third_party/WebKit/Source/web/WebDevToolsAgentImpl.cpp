@@ -363,6 +363,7 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     , m_attached(false)
 {
     ASSERT(m_hostId > 0);
+    ClientMessageLoopAdapter::ensureClientMessageLoopCreated(m_client);
 }
 
 WebDevToolsAgentImpl::~WebDevToolsAgentImpl()
@@ -377,7 +378,6 @@ void WebDevToolsAgentImpl::attach()
     if (m_attached)
         return;
 
-    ClientMessageLoopAdapter::ensureClientMessageLoopCreated(m_client);
     inspectorController()->connectFrontend(this);
     inspectorController()->webViewResized(m_webViewImpl->size());
     WebKit::Platform::current()->currentThread()->addTaskObserver(this);
@@ -389,7 +389,6 @@ void WebDevToolsAgentImpl::reattach(const WebString& savedState)
     if (m_attached)
         return;
 
-    ClientMessageLoopAdapter::ensureClientMessageLoopCreated(m_client);
     inspectorController()->reuseFrontend(this, savedState);
     WebKit::Platform::current()->currentThread()->addTaskObserver(this);
     m_attached = true;

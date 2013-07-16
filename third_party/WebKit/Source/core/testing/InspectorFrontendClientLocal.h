@@ -40,7 +40,7 @@ namespace WebCore {
 
 class Frame;
 class InspectorController;
-class InspectorBackendDispatchTask;
+class InspectorBackendMessageQueue;
 class InspectorFrontendHost;
 class Page;
 
@@ -80,7 +80,7 @@ private:
     Page* m_frontendPage;
     // TODO(yurys): this ref shouldn't be needed.
     RefPtr<InspectorFrontendHost> m_frontendHost;
-    OwnPtr<InspectorBackendDispatchTask> m_dispatchTask;
+    RefPtr<InspectorBackendMessageQueue> m_messageQueue;
 };
 
 } // namespace WebCore

@@ -39,7 +39,7 @@ function test()
             name: "Get the Document",
             command: "DOM.getDocument",
             parameters: {},
-            callback: getInitialLayerTree
+            callback: makeDeferredCallback(getInitialLayerTree)
         });
     };
     
@@ -64,7 +64,7 @@ function test()
             name: "Message the page to add a new composited layer",
             command: "Runtime.evaluate",
             parameters: {"expression": "addCompositedLayer()"},
-            callback: getModifiedLayerTree
+            callback: makeDeferredCallback(getModifiedLayerTree)
         });
     };
 
@@ -77,8 +77,6 @@ function test()
             callback: gotModifiedLayerTree
         });
     };
-
-    var layerCount = 0;
 
     function gotModifiedLayerTree(result)
     {
@@ -174,6 +172,16 @@ function test()
             test.callback(messageObject.result);
         });
     };
+    
+    // Makes next step deferred to let backend do its asynchronous processing and sending us all pending notifications.
+    // Scheduling on timer with no delay is enough deferring.
+    function makeDeferredCallback(callback)
+    {
+        return function(result)
+        {
+            setTimeout(callback.bind(this, result), 0);
+        };
+    }
 
     function assert(name, actual, expected)
     {

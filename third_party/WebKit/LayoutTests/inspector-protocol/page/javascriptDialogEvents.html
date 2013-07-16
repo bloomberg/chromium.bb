@@ -27,9 +27,17 @@ function test()
     }
 
     InspectorTest.sendCommand("Page.navigate", { "url": "nosuchurl" });
-    InspectorTest.sendCommand("Runtime.evaluate", { "expression": "alert('alert')" });
-    InspectorTest.sendCommand("Runtime.evaluate", { "expression": "confirm('confirm')" });
-    InspectorTest.sendCommand("Runtime.evaluate", { "expression": "prompt('prompt')" }, onDone);
+    InspectorTest.sendCommand("Runtime.evaluate", { "expression": "alert('alert')" }, onDoneAlert);
+
+    function onDoneAlert()
+    {
+        InspectorTest.sendCommand("Runtime.evaluate", { "expression": "confirm('confirm')" }, onDoneConfirm);
+    }
+
+    function onDoneConfirm()
+    {
+        InspectorTest.sendCommand("Runtime.evaluate", { "expression": "prompt('prompt')" }, onDone);
+    }
 
     function onDone()
     {
