@@ -2728,13 +2728,34 @@ than via the compiler driver."""
       # test so don't use build id and move .rodata to the desired position.
       args = ['--section-start', '.rodata=' + value]
   if via_compiler:
-    args = ','.join(['-Wl'] + args)
+    if env.Bit('bitcode'):
+      # The -Wn flag passes arguments to PNaCl's native linker (as opposed
+      # to the bitcode linker, which gets the -Wl arguments)
+      args = ','.join(['-Wn'] + args)
+    else:
+      args = ','.join(['-Wl'] + args)
   else:
     args = ' '.join(args)
   return args
 
 nacl_env.AddMethod(RodataSwitch)
 
+def TextSwitch(env, value):
+  """ Return a string of arguments to place the text segment at |value|.
+Assume the string is going to the compiler driver, rather than directly
+to the linker. """
+  # The gold linker does not support -Ttext-segment, but -Ttext does the
+  # same thing that -Ttext-segment does in the bfd linker. However,
+  # -Ttext seems to be broken in gold currently (see bug
+  # https://code.google.com/p/nativeclient/issues/detail?id=3573 )
+  # Using --section-start .text= as a workaround works because PNaCl only uses
+  # one text section (no .init etc)
+  if env.Bit('bitcode'):
+    return '-Wn,--section-start,.text=' + value
+  else:
+    return '-Wl,-Ttext-segment=' + value
+
+nacl_env.AddMethod(TextSwitch)
 
 def AllowNonStableBitcode(env):
   """ This modifies the environment to allow features that aren't part

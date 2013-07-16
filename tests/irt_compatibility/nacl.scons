@@ -13,14 +13,8 @@ if env.Bit('pnacl_generate_pexe'):
   Return()
 
 blob_env = env['NACL_IRT_ENV'].Clone()
-blob_env.Append(LINKFLAGS=blob_env.RodataSwitch('${IRT_BLOB_DATA_START}'))
-# The PNaCl linker (gold) does not implement the "-Ttext-segment"
-# option.  However, with the linker for x86, the "-Ttext" option does
-# not affect the executable's base address.
-if blob_env.Bit('bitcode'):
-  blob_env.Append(LINKFLAGS='-Wl,-Ttext=${IRT_BLOB_CODE_START}')
-else:
-  blob_env.Append(LINKFLAGS='-Wl,-Ttext-segment=${IRT_BLOB_CODE_START}')
+blob_env.Append(LINKFLAGS=[blob_env.RodataSwitch('${IRT_BLOB_DATA_START}'),
+                           blob_env.TextSwitch('${IRT_BLOB_CODE_START}')])
 
 irt_entry_obj = blob_env.ComponentObject(
     '${MAIN_DIR}/src/untrusted/irt/irt_entry.c')

@@ -16,7 +16,7 @@ if env.Bit('nacl_glibc'):
 
 blob_env = env.Clone()
 blob_env.Append(LINKFLAGS=[blob_env.RodataSwitch('${IRT_BLOB_DATA_START}'),
-                           '-Wl,-Ttext-segment=${IRT_BLOB_CODE_START}'])
+                           blob_env.TextSwitch('${IRT_BLOB_CODE_START}')])
 
 irt_support_sources = [
     'irt_malloc.c',
