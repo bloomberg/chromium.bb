@@ -102,7 +102,7 @@ public:
     EInsideLink elementLinkState() const { return m_elementContext.elementLinkState(); }
     bool distributedToInsertionPoint() const { return m_elementContext.distributedToInsertionPoint(); }
 
-    const ElementResolveContext elementContext() const { return m_elementContext; }
+    const ElementResolveContext& elementContext() const { return m_elementContext; }
 
     void setStyle(PassRefPtr<RenderStyle> style) { m_style = style; }
     RenderStyle* style() const { return m_style.get(); }
