@@ -293,7 +293,7 @@ void GraphicsContext::setDrawLooper(const DrawLooper& drawLooper)
     if (paintingDisabled())
         return;
 
-    setDrawLooper(drawLooper.skDrawLooper());
+    m_state->m_looper = drawLooper.skDrawLooper();
 }
 
 void GraphicsContext::clearDrawLooper()
@@ -301,7 +301,7 @@ void GraphicsContext::clearDrawLooper()
     if (paintingDisabled())
         return;
 
-    setDrawLooper(0);
+    m_state->m_looper.clear();
 }
 
 bool GraphicsContext::hasShadow() const
@@ -1724,7 +1724,7 @@ void GraphicsContext::setupPaintCommon(SkPaint* paint) const
 
     paint->setAntiAlias(m_state->m_shouldAntialias);
     paint->setXfermodeMode(m_state->m_xferMode);
-    paint->setLooper(m_state->m_looper);
+    paint->setLooper(m_state->m_looper.get());
 }
 
 void GraphicsContext::drawOuterPath(const SkPath& path, SkPaint& paint, int width)

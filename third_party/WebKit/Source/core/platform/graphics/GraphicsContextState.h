@@ -34,31 +34,23 @@
 #include "core/platform/graphics/Path.h"
 #include "core/platform/graphics/Pattern.h"
 #include "core/platform/graphics/StrokeData.h"
-
 #include "third_party/skia/include/core/SkColorPriv.h"
 #include "third_party/skia/include/core/SkDrawLooper.h"
 #include "third_party/skia/include/effects/SkDashPathEffect.h"
-
 #include "wtf/PassOwnPtr.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 
 // Encapsulates the state information we store for each pushed graphics state.
 // Only GraphicsContext can use this class.
 class GraphicsContextState {
-public:
-    ~GraphicsContextState()
-    {
-        SkSafeUnref(m_looper);
-    }
-
 private:
     friend class GraphicsContext;
 
     GraphicsContextState()
         : m_fillColor(Color::black)
         , m_fillRule(RULE_NONZERO)
-        , m_looper(0)
         , m_textDrawingMode(TextModeFill)
         , m_alpha(1)
         , m_xferMode(SkXfermode::kSrcOver_Mode)
@@ -87,18 +79,11 @@ private:
         , m_xferMode(other.m_xferMode)
         , m_compositeOperator(other.m_compositeOperator)
         , m_blendMode(other.m_blendMode)
-        , m_imageBufferClip(other.m_imageBufferClip)
         , m_clip(other.m_clip)
         , m_interpolationQuality(other.m_interpolationQuality)
         , m_shouldAntialias(other.m_shouldAntialias)
         , m_shouldSmoothFonts(other.m_shouldSmoothFonts)
     {
-        // Up the ref count of these. SkSafeRef does nothing if its argument is 0.
-        SkSafeRef(m_looper);
-
-        // The clip image only needs to be applied once. Reset the image so that we
-        // don't attempt to clip multiple times.
-        m_imageBufferClip.reset();
     }
 
     // Helper function for applying the state's alpha value to the given input
@@ -131,7 +116,7 @@ private:
     RefPtr<Pattern> m_fillPattern;
 
     // Shadow. (This will need tweaking if we use draw loopers for other things.)
-    SkDrawLooper* m_looper;
+    RefPtr<SkDrawLooper> m_looper;
 
     // Text. (See TextModeFill & friends.)
     TextDrawingModeFlags m_textDrawingMode;

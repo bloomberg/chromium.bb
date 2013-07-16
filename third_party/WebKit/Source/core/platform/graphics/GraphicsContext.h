@@ -38,9 +38,10 @@
 #include "core/platform/graphics/ImageBuffer.h"
 #include "core/platform/graphics/ImageOrientation.h"
 #include "core/platform/graphics/skia/OpaqueRegionSkia.h"
-
-#include <wtf/Noncopyable.h>
-#include <wtf/PassOwnPtr.h>
+#include "wtf/FastAllocBase.h"
+#include "wtf/Forward.h"
+#include "wtf/Noncopyable.h"
+#include "wtf/PassOwnPtr.h"
 
 class SkBitmap;
 class SkDevice;
@@ -127,7 +128,7 @@ public:
     void setFillGradient(PassRefPtr<Gradient>);
     Gradient* fillGradient() const { return m_state->m_fillGradient.get(); }
 
-    SkDrawLooper* drawLooper() const { return m_state->m_looper; }
+    SkDrawLooper* drawLooper() const { return m_state->m_looper.get(); }
     SkColor effectiveStrokeColor() const { return m_state->applyAlpha(m_state->m_strokeData.color().rgb()); }
 
     int getNormalizedAlpha() const;
@@ -387,8 +388,6 @@ private:
             value = -value;
         return value;
     }
-
-    void setDrawLooper(SkDrawLooper* looper) { SkRefCnt_SafeAssign(m_state->m_looper, looper); }
 
     // Sets up the common flags on a paint for antialiasing, effects, etc.
     // This is implicitly called by setupPaintFill and setupPaintStroke, but
