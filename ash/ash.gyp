@@ -797,6 +797,11 @@
           # are not referenced in code, but are referenced in nibs.
           'xcode_settings': {'OTHER_LDFLAGS': ['-Wl,-ObjC']},
         }],
+        ['use_x11==1', {
+          'sources': [
+            'display/display_change_observer_x11_unittest.cc'
+          ],
+        }],
         ['chromeos!=1', {
           'sources/': [
             ['exclude', 'display/display_error_observer_unittest.cc'],
