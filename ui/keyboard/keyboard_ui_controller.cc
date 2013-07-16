@@ -18,7 +18,7 @@ content::WebUIDataSource* CreateKeyboardUIDataSource() {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(keyboard::kKeyboardWebUIHost);
 
-  source->SetDefaultResource(IDR_KEYBOARD_INDEX);
+  source->SetDefaultResource(IDR_KEYBOARD_WEBUI_INDEX);
 
   source->AddResourcePath("elements/kb-accent-container.html",
                           IDR_KEYBOARD_ELEMENTS_ACCENT_CONTAINER);

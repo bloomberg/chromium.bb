@@ -5,6 +5,13 @@
   -- found in the LICENSE file.
   -->
 
+<!--
+  -- To avoid unintentionally break webui keyboard when changing extension
+  -- keyboard, creates this file and uses it as index.html for webui keyboard.
+  -- TODO(bshe): remove this file when dynamic layout loading is fixed
+  -- (http://www.crbug.com/260278).
+  -->
+
 <html>
   <head>
     <meta charset="UTF-8">
@@ -21,9 +28,6 @@
     <link rel="import" href="elements/kb-keyboard.html">
     <link rel="import" href="elements/kb-keyset.html">
     <link rel="import" href="elements/kb-row.html">
-    <!-- TODO(kevers|biao): Switch to dynamic loading strategy once supported
-    in Polymer (http://www.crbug.com/260278).-->
-    <link id="dvorak" rel="import" href="layouts/dvorak.html">
     <link id="qwerty" rel="import" href="layouts/qwerty.html">
     <!--TODO(stevet): Import 'Open Sans' font. -->
     <script src="main.js"></script>
