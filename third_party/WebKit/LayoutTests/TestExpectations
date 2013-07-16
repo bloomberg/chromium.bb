@@ -200,7 +200,6 @@ crbug.com/256518 [ Win7 Debug ] pointer-lock/mouse-event-delivery.html [ Crash ]
 crbug.com/239874 http/tests/xmlhttprequest/send-data-view.html [ Failure Pass ]
 
 crbug.com/239465 [ Win ] fast/canvas/webgl/premultiplyalpha-test.html [ Pass Timeout ]
-crbug.com/245596 [ Win7 ] fast/forms/access-key.html [ Crash Pass ]
 
 crbug.com/24182 [ Win Debug ] fast/filesystem/workers/file-writer-events-shared-worker.html [ Slow ]
 crbug.com/24182 [ XP ] fast/filesystem/workers/file-writer-events.html [ Timeout Pass ]
@@ -825,9 +824,6 @@ webkit.org/b/66974 [ Debug ] fast/events/keydown-1.html [ Pass Timeout ]
 # SVG painting in high DPI mode is broken in DRT.
 webkit.org/b/92511 svg/as-image/animated-svg-repaints-completely-in-hidpi.html [ ImageOnlyFailure Pass ]
 
-webkit.org/b/70866 [ Linux Mac Debug ] fast/forms/form-associated-element-crash3.html [ Failure Pass Timeout ]
-webkit.org/b/78620 [ Linux Debug ] fast/forms/formaction-attribute.html [ Failure Pass Slow ]
-
 webkit.org/b/72039 http/tests/download/literal-utf-8.html [ Missing Pass ]
 webkit.org/b/72039 editing/pasteboard/drag-files-to-editable-element.html [ Missing Pass ]
 
@@ -904,8 +900,6 @@ webkit.org/b/78159 virtual/softwarecompositing/iframes/scrolling-iframe.html [ F
 webkit.org/b/80498 [ Linux Win ] fast/workers/worker-multi-startup.html [ Crash Pass ]
 
 webkit.org/b/91946 fast/events/rtl-scrollbar.html [ Failure Pass ]
-
-webkit.org/b/81050 fast/forms/file/recover-file-input-in-unposted-form.html [ Failure Pass ]
 
 crbug.com/249595 animations/cross-fade-webkit-mask-box-image.html [ ImageOnlyFailure Pass ]
 
@@ -1393,9 +1387,6 @@ crbug.com/242511 [ Mac Debug ] svg/custom/uri-reference-handling.svg [ Crash Pas
 # Seems to be flaky on all platforms
 crbug.com/244921 http/tests/navigation/back-twice-without-commit.html [ Failure Pass ]
 
-# Crashes according to crbug.com/245294
-crbug.com/244216 fast/forms/calendar-picker/calendar-picker-appearance-ar.html [ Crash Pass ]
-
 crbug.com/248938 virtual/threaded/animations/animation-direction-reverse-fill-mode.html [ Slow ]
 crbug.com/248938 virtual/threaded/animations/suspend-transform-animation.html [ Slow ]
 crbug.com/248938 [ Linux ] virtual/threaded/animations/animation-direction-reverse-fill-mode-hardware.html [ Slow ]
@@ -1606,7 +1597,6 @@ crbug.com/244341 [ Mac Linux ] css3/filters/composited-during-animation-layertre
 crbug.com/245203 [ Win7 Release ] compositing/culling/clear-fixed-iframe.html [ Pass Timeout ]
 crbug.com/245545 [ Win7 ] compositing/geometry/video-fixed-scrolling.html [ Pass Timeout ]
 crbug.com/245556 [ Win7 Release ] compositing/transitions/transform-on-large-layer.html [ Pass Timeout ]
-crbug.com/245558 [ MountainLion ] fast/forms/ValidityState-patternMismatch.html [ Crash Pass ]
 crbug.com/245566 [ Linux Win Debug ] editing/execCommand/delete-no-scroll.html [ Pass Timeout ]
 crbug.com/245567 http/tests/xmlhttprequest/send-undefined-and-null.html [ Failure Pass ]
 crbug.com/247575 fast/text/international/hindi-spacing.html [ ImageOnlyFailure Pass ]
@@ -1655,7 +1645,6 @@ crbug.com/245630 compositing/overflow/overflow-positioning.html [ ImageOnlyFailu
 crbug.com/245641 [ Win7 XP ] http/tests/loading/text-content-type-with-binary-extension.html [ Failure Pass  ]
 crbug.com/245644 [ Win7 Linux Debug ] virtual/gpu/fast/canvas/2d.text.draw.fill.maxWidth.gradient.html [ Failure Pass ]
 
-crbug.com/245670 fast/forms/access-key-for-all-elements.html [ Crash Pass ]
 crbug.com/169734 [ Win ] inspector-protocol/console-timestamp.html [ Failure Pass ]
 crbug.com/246072 fast/forms/post-popup-no-multiple-windows.html [ Pass Timeout ]
 
