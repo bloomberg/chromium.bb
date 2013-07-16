@@ -100,6 +100,7 @@ FileCacheMetadata::InitializeResult FileCacheMetadata::Initialize(
   leveldb::DB* level_db = NULL;
   leveldb::Options options;
   options.create_if_missing = true;
+  options.max_open_files = 0;  // Use minimum.
   leveldb::Status db_status = leveldb::DB::Open(options, db_path.AsUTF8Unsafe(),
                                                 &level_db);
 

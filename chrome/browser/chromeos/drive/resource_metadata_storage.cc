@@ -227,6 +227,7 @@ bool ResourceMetadataStorage::Initialize() {
   // Try to open the existing DB.
   leveldb::DB* db = NULL;
   leveldb::Options options;
+  options.max_open_files = 0;  // Use minimum.
   options.create_if_missing = false;
 
   DBInitStatus open_existing_result = DB_INIT_NOT_FOUND;
@@ -270,6 +271,7 @@ bool ResourceMetadataStorage::Initialize() {
     base::DeleteFile(resource_map_path, kRecursive);
 
     // Create DB.
+    options.max_open_files = 0;  // Use minimum.
     options.create_if_missing = true;
 
     leveldb::Status status =

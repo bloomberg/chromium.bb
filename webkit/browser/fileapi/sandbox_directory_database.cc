@@ -715,6 +715,7 @@ bool SandboxDirectoryDatabase::Init(RecoveryOption recovery_option) {
       FilePathToString(filesystem_data_directory_.Append(
           kDirectoryDatabaseName));
   leveldb::Options options;
+  options.max_open_files = 0;  // Use minimum.
   options.create_if_missing = true;
   leveldb::DB* db;
   leveldb::Status status = leveldb::DB::Open(options, path, &db);
@@ -761,7 +762,9 @@ bool SandboxDirectoryDatabase::Init(RecoveryOption recovery_option) {
 
 bool SandboxDirectoryDatabase::RepairDatabase(const std::string& db_path) {
   DCHECK(!db_.get());
-  if (!leveldb::RepairDB(db_path, leveldb::Options()).ok())
+  leveldb::Options options;
+  options.max_open_files = 0;  // Use minimum.
+  if (!leveldb::RepairDB(db_path, options).ok())
     return false;
   if (!Init(FAIL_ON_CORRUPTION))
     return false;

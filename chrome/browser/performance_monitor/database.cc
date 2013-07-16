@@ -442,6 +442,7 @@ Database::~Database() {
 bool Database::InitDBs() {
   CHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   leveldb::Options open_options;
+  open_options.max_open_files = 0;  // Use minimum.
   open_options.create_if_missing = true;
 
   // TODO (rdevlin.cronin): This code is ugly. Fix it.

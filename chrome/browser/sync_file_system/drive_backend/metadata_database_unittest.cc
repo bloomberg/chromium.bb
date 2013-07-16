@@ -159,6 +159,7 @@ class MetadataDatabaseTest : public testing::Test {
     leveldb::DB* db = NULL;
     leveldb::Options options;
     options.create_if_missing = true;
+    options.max_open_files = 0;  // Use minimum.
     leveldb::Status status =
         leveldb::DB::Open(options, database_dir_.path().AsUTF8Unsafe(), &db);
     EXPECT_TRUE(status.ok());

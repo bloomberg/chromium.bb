@@ -325,6 +325,7 @@ leveldb::Status SessionStorageDatabase::TryToOpen(leveldb::DB** db) {
   // The directory exists but a valid leveldb database might not exist inside it
   // (e.g., a subset of the needed files might be missing). Handle this
   // situation gracefully by creating the database now.
+  options.max_open_files = 0;  // Use minimum.
   options.create_if_missing = true;
 #if defined(OS_WIN)
   return leveldb::DB::Open(options, WideToUTF8(file_path_.value()), db);
