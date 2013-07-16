@@ -1887,8 +1887,7 @@ OMXResult omxSP_FFTFwd_CToC_SC32_Sfs (
  *          must be aligned on a 32-byte boundary. 
  *   pFFTSpec - pointer to the preallocated and initialized specification 
  *            structure 
- *   scaleFactor - scale factor of the output. Valid value is 0
- *          only.
+ *   scaleFactor - scale factor of the output. Valid range is [0,16].
  *
  * Output Arguments:
  *   order 

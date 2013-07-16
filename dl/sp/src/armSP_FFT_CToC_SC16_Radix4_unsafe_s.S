@@ -154,7 +154,6 @@
         MOV     srcStep,pointStep,LSL #1                    @// srcStep = 2*pointStep
         VLD1     dW2,[pTwiddle :64]                             @//[wi | wr]
         ADD     setStep,srcStep,pointStep                   @// setStep = 3*pointStep
-        SUB     srcStep,srcStep,#16                         @// srcStep = 2*pointStep-16
         VLD1     dW3,[pTwiddle :64]
         @//RSB     setStep,setStep,#16                      @// setStep = - 3*pointStep+16
         RSB     setStep,setStep,#0                          @// setStep = - 3*pointStep
@@ -167,26 +166,23 @@
 
 grpLoop\name:
 
-        VLD2    {dXr0,dXi0},[pSrc :128],pointStep          @//  data[0]
         ADD      stepTwiddle,stepTwiddle,pointStep
-        VLD2    {dXr1,dXi1},[pSrc :128],pointStep          @//  data[1]
         ADD      pTwiddle,pTwiddle,stepTwiddle               @// set pTwiddle to the first point
-        VLD2    {dXr2,dXi2},[pSrc :128],pointStep          @//  data[2]
         MOV      twStep,stepTwiddle,LSL #2
-        VLD2    {dXr3,dXi3},[pSrc :128],setStep            @//  data[3] & reset pSrc
 
         SUB      twStep,stepTwiddle,twStep                   @// twStep = -3*stepTwiddle
 
 
         MOV      setCount,pointStep,LSR #2
-        ADD     pSrc,pSrc,#16                         @// set pSrc to data[0] of the next set
-        ADD     pSrc,pSrc,pointStep                   @// increment to data[1] of the next set
+        ADD      pSrc,pSrc,pointStep                   @// increment to data[1] of the next set
 
         @// Loop on the sets : 4 at a time
 
 setLoop\name:
+        VLD2    {dXr1,dXi1},[pSrc :128],pointStep         @//  data[1]
+        VLD2    {dXr2,dXi2},[pSrc :128],pointStep         @//  data[2]
 
-        SUBS    setCount,setCount,#4                    @// decrement the loop counter
+        SUBS    setCount,setCount,#4                      @// decrement the loop counter
 
         .ifeqs  "\inverse", "TRUE"
             VMULL   qT0,dXr1,dW1[0]
@@ -202,8 +198,6 @@ setLoop\name:
 
         .ENDIF
 
-        VLD2    {dXr1,dXi1},[pSrc :128],pointStep          @//  data[1]
-
         .ifeqs  "\inverse", "TRUE"
             VMULL   qT2,dXr2,dW2[0]
             VMLAL   qT2,dXi2,dW2[1]                       @// real part
@@ -218,11 +212,13 @@ setLoop\name:
 
         .ENDIF
 
+        VLD2    {dXr3,dXi3},[pSrc :128],setStep            @//  data[3] & update pSrc for the next set
+
         VRSHRN  dZr1,qT0,#15
         VRSHRN  dZi1,qT1,#15
 
-
-        VLD2    {dXr2,dXi2},[pSrc :128],pointStep          @//  data[2]
+        VLD2    {dXr0,dXi0},[pSrc :128],pointStep          @//  data[0]
+        ADD     pSrc,pSrc,#16                              @// set pSrc to data[1] of the next set
 
         .ifeqs  "\inverse", "TRUE"
             VMULL   qT0,dXr3,dW3[0]
@@ -244,7 +240,6 @@ setLoop\name:
 
         VRSHRN  dZr3,qT0,#15
         VRSHRN  dZi3,qT1,#15
-        VLD2    {dXr3,dXi3},[pSrc :128],setStep            @//  data[3] & update pSrc for the next set
 
 
         .ifeqs "\scaled", "TRUE"
@@ -253,7 +248,6 @@ setLoop\name:
             VHADD    qY0,qX0,qZ2
             VHSUB    qY2,qX0,qZ2
 
-            VLD2    {dXr0,dXi0},[pSrc :128]!          @//  data[0]
             VHADD    qY1,qZ1,qZ3
             VHSUB    qY3,qZ1,qZ3
 
@@ -303,7 +297,6 @@ setLoop\name:
             VADD    qY0,qX0,qZ2
             VSUB    qY2,qX0,qZ2
 
-            VLD2    {dXr0,dXi0},[pSrc]!          @//  data[0]
             VADD    qY1,qZ1,qZ3
             VSUB    qY3,qZ1,qZ3
 
@@ -351,7 +344,6 @@ setLoop\name:
 
         .ENDIF
 
-        ADD     pSrc,pSrc,pointStep                         @// increment to data[1] of the next set
         BGT     setLoop\name
 
         VLD1     dW1,[pTwiddle :64],stepTwiddle                 @//[wi | wr]

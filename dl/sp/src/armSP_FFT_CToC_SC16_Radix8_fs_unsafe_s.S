@@ -233,12 +233,12 @@
         VLD2    {dXr4,dXi4},[pSrc :128],pointStep          @//  data[4]
         VLD2    {dXr5,dXi5},[pSrc :128],pointStep          @//  data[5]
         VLD2    {dXr6,dXi6},[pSrc :128],pointStep          @//  data[6]
-        VLD2    {dXr7,dXi7},[pSrc :128],setStep            @//  data[7] & update pSrc for the next set
-                                                      @//  setStep = -7*pointStep + 16
         @// grp = 0 a special case since all the twiddle factors are 1
         @// Loop on the sets : 4 sets at a time
 
 grpZeroSetLoop\name:
+        VLD2    {dXr7,dXi7},[pSrc :128],setStep            @//  data[7] & update pSrc for the next set
+                                                           @//  setStep = -7*pointStep + 16
 
         @// Decrement setcount
         SUBS    setCount,setCount,#4                    @// decrement the set loop counter
@@ -348,9 +348,6 @@ grpZeroSetLoop\name:
                 VSUB    dVi7,dVi7,dT1
                 SUB     pDst, pDst, step2                           @// set pDst to y1
 
-                VLD2    {dXr7,dXi7},[pSrc :128],setStep            @//  data[7]
-
-
                 VHSUB    dYr3,dVr3,dVr7
                 VHSUB    dYi3,dVi3,dVi7
                 VST2    {dYr1,dYi1},[pDst :128],step1                    @// store y1
@@ -388,7 +385,6 @@ grpZeroSetLoop\name:
 
                 VSUB    dVr5,dT1,dVi5                               @// a * V5
                 VADD    dVi5,dT1,dVi5
-                VLD2    {dXr7,dXi7},[pSrc :128],setStep            @//  data[7]
 
                 VHSUB    qY5,qV1,qV5
 
@@ -514,9 +510,6 @@ grpZeroSetLoop\name:
                 VSUB    dVi7,dVi7,dT1
                 SUB     pDst, pDst, step2                           @// set pDst to y1
 
-                VLD2    {dXr7,dXi7},[pSrc :128],setStep            @//  data[7]
-
-
                 VSUB    dYr3,dVr3,dVr7
                 VSUB    dYi3,dVi3,dVi7
                 VST2    {dYr1,dYi1},[pDst :128],step1                    @// store y1
@@ -554,7 +547,6 @@ grpZeroSetLoop\name:
 
                 VSUB    dVr5,dT1,dVi5                               @// a * V5
                 VADD    dVi5,dT1,dVi5
-                VLD2    {dXr7,dXi7},[pSrc :128],setStep            @//  data[7]
 
                 VSUB    qY5,qV1,qV5
 

@@ -163,7 +163,6 @@
         @// Define stack arguments
 
         MOV     pw2,pTwiddle
-        VLD4 {dW2r,dW2i,dTmp0,dTmp1},[pw2 :256]!
 
         MOV     pw3,pTwiddle
         MOV     pw1,pTwiddle
@@ -171,42 +170,47 @@
         @// pOut0+outPointStep == increment of 4*outPointStep bytes
         MOV     outPointStep,subFFTSize,LSL #2
 
-        VLD3 {dW3rS32,dTmp1S32,dTmp2S32},[pw3 :64]!
         MOV     subFFTNum,#1                            @//after the last stage
         LSL     grpCount,subFFTSize,#2
 
 
         @// Update grpCount and grpSize rightaway
-        VLD3 {dW3iS32,dTmp2S32,dTmp3S32},[pw3 :64]!
 
         @// update subFFTSize for the next stage
         MOV     subFFTSize,grpCount
         MOV     dstStep,outPointStep,LSL #1
 
-        VLD2 {dW1r,dW1i}, [pw1 :128]!
-
-
         ADD     dstStep,dstStep,outPointStep                @// dstStep = 3*outPointStep
         RSB     dstStep,dstStep,#16                         @// dstStep = - 3*outPointStep+16
-
-        VLD4     {dButterfly1Real02,dButterfly1Imag02,dButterfly1Real13,dButterfly1Imag13},[pSrc :256]! @// AC.r AC.i BD.r BD.i
-        VLD4     {dButterfly2Real02,dButterfly2Imag02,dButterfly2Real13,dButterfly2Imag13},[pSrc :256]! @// AC.r AC.i BD.r BD.i
 
         @// Process 4 groups at a time
 
 grpLoop\name:
+        VLD4     {dButterfly1Real02,dButterfly1Imag02,dButterfly1Real13,dButterfly1Imag13},[pSrc :256]! @// AC.r AC.i BD.r BD.i
+        VLD4     {dButterfly2Real02,dButterfly2Imag02,dButterfly2Real13,dButterfly2Imag13},[pSrc :256]! @// AC.r AC.i BD.r BD.i
 
+        @// Load the second twiddle for 4 groups : w^2
+        @// w^2 twiddle (2i+0,2i+2,2i+4,2i+6)   for group 0,1,2,3
+        VLD4 {dW2r,dW2i,dTmp0,dTmp1},[pw2 :256]!
+
+        VUZP     dButterfly1Real13, dButterfly2Real13        @// B.r D.r
+
+        @// Load the third twiddle for 4 groups : w^3
+        @// w^3 twiddle (3i+0,3i+3,3i+6,3i+9)   for group 0,1,2,3
+        VLD3 {dW3rS32,dTmp1S32,dTmp2S32},[pw3 :64]!
+
+        VUZP     dButterfly1Imag13, dButterfly2Imag13        @// B.i D.i
+        VUZP     dButterfly1Real02, dButterfly2Real02        @// A.r C.r
+
+        VLD3 {dW3iS32,dTmp2S32,dTmp3S32},[pw3 :64]!
+
+        VUZP     dButterfly1Imag02, dButterfly2Imag02        @// A.i C.i
+
+        VLD2 {dW1r,dW1i}, [pw1 :128]!
 
         @// Rearrange the third twiddle
         VUZP    dW3r,dW3i
         SUBS    grpCount,grpCount,#16                    @// grpCount is multiplied by 4
-
-
-        VUZP     dButterfly1Real13, dButterfly2Real13        @// B.r D.r
-        VUZP     dButterfly1Imag13, dButterfly2Imag13        @// B.i D.i
-        VUZP     dButterfly1Real02, dButterfly2Real02        @// A.r C.r
-        VUZP     dButterfly1Imag02, dButterfly2Imag02        @// A.i C.i
-
 
         .ifeqs  "\inverse", "TRUE"
             VMULL   qT0,dXr1,dW1r
@@ -224,8 +228,6 @@ grpLoop\name:
 
         @// Load the first twiddle for 4 groups : w^1
         @// w^1 twiddle (i+0,i+1,i+2,i+3)       for group 0,1,2,3
-
-        VLD2 {dW1r,dW1i}, [pw1 :128]!
 
         .ifeqs  "\inverse", "TRUE"
             VMULL   qT2,dXr2,dW2r
@@ -260,23 +262,11 @@ grpLoop\name:
 
         .ENDIF
 
-        @// Load the second twiddle for 4 groups : w^2
-        @// w^2 twiddle (2i+0,2i+2,2i+4,2i+6)   for group 0,1,2,3
-        VLD4 {dW2r,dW2i,dTmp0,dTmp1},[pw2 :256]!
-
-
         VRSHRN  dZr2,qT2,#15
         VRSHRN  dZi2,qT3,#15
 
-        @// Load the third twiddle for 4 groups : w^3
-        @// w^3 twiddle (3i+0,3i+3,3i+6,3i+9)   for group 0,1,2,3
-
-        VLD3 {dW3rS32,dTmp1S32,dTmp2S32},[pw3 :64]!
-
         VRSHRN  dZr3,qT0,#15
         VRSHRN  dZi3,qT1,#15
-
-        VLD3 {dW3iS32,dTmp2S32,dTmp3S32},[pw3 :64]!
 
         .ifeqs "\scaled", "TRUE"
 
@@ -285,7 +275,6 @@ grpLoop\name:
             VHADD    qY0,qX0,qZ2
             VHSUB    qY2,qX0,qZ2
             VHADD    qY1,qZ1,qZ3
-            VLD4    {dButterfly1Real02,dButterfly1Imag02,dButterfly1Real13,dButterfly1Imag13},[pSrc :256]! @// AC.r AC.i BD.r BD.i
 
             VHSUB    qY3,qZ1,qZ3
 
@@ -293,7 +282,6 @@ grpLoop\name:
 
             VHSUB    qZ0,qY2,qY1
             VHADD    qZ2,qY2,qY1
-            VLD4     {dButterfly2Real02,dButterfly2Imag02,dButterfly2Real13,dButterfly2Imag13},[pSrc :256]! @// AC.r AC.i BD.r BD.i
 
 
             .ifeqs "\inverse", "TRUE"
@@ -329,7 +317,6 @@ grpLoop\name:
             VADD    qY0,qX0,qZ2
             VSUB    qY2,qX0,qZ2
             VADD    qY1,qZ1,qZ3
-            VLD4    {dButterfly1Real02,dButterfly1Imag02,dButterfly1Real13,dButterfly1Imag13},[pSrc :256]! @// AC.r AC.i BD.r BD.i
 
             VSUB    qY3,qZ1,qZ3
 
@@ -337,7 +324,6 @@ grpLoop\name:
 
             VSUB    qZ0,qY2,qY1
             VADD    qZ2,qY2,qY1
-            VLD4     {dButterfly2Real02,dButterfly2Imag02,dButterfly2Real13,dButterfly2Imag13},[pSrc :256]! @// AC.r AC.i BD.r BD.i
 
 
             .ifeqs "\inverse", "TRUE"
@@ -376,7 +362,6 @@ grpLoop\name:
 
         @// Reset and Swap pSrc and pDst for the next stage
         MOV     pTmp,pDst
-        SUB     pSrc,pSrc,#64                       @// Extra increment currently done in the loop
         SUB     pDst,pSrc,outPointStep,LSL #2       @// pDst -= size; pSrc -= 4*size bytes
         SUB     pSrc,pTmp,outPointStep
 

@@ -142,7 +142,6 @@
         RSB     setStep,setStep,#16                   @// setStep = - 3*pointStep+16
 
 
-        VLD2    {dXr3,dXi3},[pSrc :128],setStep            @//  data[3]
         MOV     subFFTSize,#4                         @// subFFTSize = 1 for the first stage
 
 
@@ -158,6 +157,7 @@
 
 grpZeroSetLoop\name:
 
+        VLD2    {dXr3,dXi3},[pSrc :128],setStep            @//  data[3]
 
         .ifeqs "\scaled", "TRUE"
 
@@ -177,9 +177,6 @@ grpZeroSetLoop\name:
 
             VLD2    {dXr1,dXi1},[pSrc :128],step1          @//  data[1]
             VHADD    qZ0,qY0,qY1             @// y0
-
-            VLD2    {dXr3,dXi3},[pSrc :128],setStep
-
 
             .ifeqs  "\inverse", "TRUE"
 
@@ -234,9 +231,6 @@ grpZeroSetLoop\name:
 
             VLD2    {dXr1,dXi1},[pSrc :128],step1          @//  data[1]
             VADD    qZ0,qY0,qY1             @// y0
-
-            VLD2    {dXr3,dXi3},[pSrc :128],setStep
-
 
             .ifeqs  "\inverse", "TRUE"
 
