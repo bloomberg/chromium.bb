@@ -10,8 +10,7 @@
 #include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 
 int nacl_dyncode_create(void *dest, const void *src, size_t size) {
-  int error = NACL_GC_WRAP_SYSCALL(-NACL_SYSCALL(dyncode_create)(dest, src,
-                                                                 size));
+  int error = -NACL_SYSCALL(dyncode_create)(dest, src, size);
   if (error) {
     errno = error;
     return -1;
@@ -20,8 +19,7 @@ int nacl_dyncode_create(void *dest, const void *src, size_t size) {
 }
 
 int nacl_dyncode_modify(void *dest, const void *src, size_t size) {
-  int error = NACL_GC_WRAP_SYSCALL(-NACL_SYSCALL(dyncode_modify)(dest, src,
-                                                                 size));
+  int error = -NACL_SYSCALL(dyncode_modify)(dest, src, size);
   if (error) {
     errno = error;
     return -1;
@@ -30,7 +28,7 @@ int nacl_dyncode_modify(void *dest, const void *src, size_t size) {
 }
 
 int nacl_dyncode_delete(void *dest, size_t size) {
-  int error = NACL_GC_WRAP_SYSCALL(-NACL_SYSCALL(dyncode_delete)(dest, size));
+  int error = -NACL_SYSCALL(dyncode_delete)(dest, size);
   if (error) {
     errno = error;
     return -1;

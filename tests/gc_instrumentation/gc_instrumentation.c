@@ -119,15 +119,15 @@ void test_syscall_wrappers(void) {
 
   CHECK_SYSCALL_PRE();
   nacl_dyncode_create(ptr, ptr, size);
-  CHECK_SYSCALL_WRAPPED();
+  CHECK_SYSCALL_NOT_WRAPPED();
 
   CHECK_SYSCALL_PRE();
   nacl_dyncode_modify(ptr, ptr, size);
-  CHECK_SYSCALL_WRAPPED();
+  CHECK_SYSCALL_NOT_WRAPPED();
 
   CHECK_SYSCALL_PRE();
   nacl_dyncode_delete(ptr, size);
-  CHECK_SYSCALL_WRAPPED();
+  CHECK_SYSCALL_NOT_WRAPPED();
 
   CHECK_SYSCALL_PRE();
   nanosleep(ptr, ptr);
