@@ -1030,6 +1030,20 @@
             'common/gpu/client/gl_helper_benchmark.cc',
           ],
         },
+        {
+          'target_name': 'content_webkit_unit_test_support',
+          'type': 'static_library',
+          'dependencies': [
+            '../webkit/support/webkit_support.gyp:webkit_support',
+          ],
+          'include_dirs': [
+            '..',
+          ],
+          'sources': [
+            'test/webkit_unit_test_support.cc',
+            'test/webkit_unit_test_support.h',
+          ],
+        },
       ],
     }],
     ['chromeos==1 or OS=="win" or OS=="android"', {
