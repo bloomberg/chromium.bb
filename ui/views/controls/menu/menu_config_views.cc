@@ -44,7 +44,7 @@ void MenuConfig::InitAura(const ui::NativeTheme* theme) {
   separator_upper_height = 8;
   font = rb.GetFont(ResourceBundle::BaseFont);
   label_to_arrow_padding = 20;
-  label_to_accelerator_padding = 20;
+  label_to_minor_text_padding = 20;
   always_use_icon_to_label_padding = true;
   align_arrow_and_shortcut = true;
   offset_context_menus = true;

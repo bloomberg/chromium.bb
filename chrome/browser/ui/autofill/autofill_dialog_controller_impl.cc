@@ -2506,10 +2506,11 @@ void AutofillDialogControllerImpl::SuggestionsUpdated() {
           kAddNewItemKey,
           l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_ADD_BILLING_DETAILS));
       if (!wallet_items_->HasRequiredAction(wallet::SETUP_WALLET)) {
-        suggested_cc_billing_.AddKeyedItem(
+        suggested_cc_billing_.AddKeyedItemWithSublabel(
             kManageItemsKey,
             l10n_util::GetStringUTF16(
-                IDS_AUTOFILL_DIALOG_MANAGE_BILLING_DETAILS));
+                IDS_AUTOFILL_DIALOG_MANAGE_BILLING_DETAILS),
+                UTF8ToUTF16(wallet::GetManageInstrumentsUrl().host()));
       }
 
       // Determine which instrument item should be selected.
@@ -2586,11 +2587,15 @@ void AutofillDialogControllerImpl::SuggestionsUpdated() {
   suggested_shipping_.AddKeyedItem(
       kAddNewItemKey,
       l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_ADD_SHIPPING_ADDRESS));
-  if (!IsPayingWithWallet() ||
-      !wallet_items_->HasRequiredAction(wallet::SETUP_WALLET)) {
+  if (!IsPayingWithWallet()) {
     suggested_shipping_.AddKeyedItem(
         kManageItemsKey,
         l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_MANAGE_SHIPPING_ADDRESS));
+  } else if (!wallet_items_->HasRequiredAction(wallet::SETUP_WALLET)) {
+    suggested_shipping_.AddKeyedItemWithSublabel(
+        kManageItemsKey,
+        l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_MANAGE_SHIPPING_ADDRESS),
+        UTF8ToUTF16(wallet::GetManageAddressesUrl().host()));
   }
 
   if (!IsPayingWithWallet()) {

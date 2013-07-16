@@ -118,15 +118,15 @@ class VIEWS_EXPORT MenuItemView : public View {
     MenuItemDimensions()
         : standard_width(0),
           children_width(0),
-          accelerator_width(0),
+          minor_text_width(0),
           height(0) {}
 
     // Width of everything except the accelerator and children views.
     int standard_width;
     // The width of all contained views of the item.
     int children_width;
-    // The amount of space needed to accommodate the accelerator.
-    int accelerator_width;
+    // The amount of space needed to accommodate the subtext.
+    int minor_text_width;
     // The height of the menu item.
     int height;
   };
@@ -163,6 +163,7 @@ class VIEWS_EXPORT MenuItemView : public View {
   MenuItemView* AddMenuItemAt(int index,
                               int item_id,
                               const string16& label,
+                              const string16& sublabel,
                               const gfx::ImageSkia& icon,
                               Type type,
                               ui::MenuSeparatorType separator_style);
@@ -222,6 +223,7 @@ class VIEWS_EXPORT MenuItemView : public View {
   // All the AppendXXX methods funnel into this.
   MenuItemView* AppendMenuItemImpl(int item_id,
                                    const string16& label,
+                                   const string16& sublabel,
                                    const gfx::ImageSkia& icon,
                                    Type type,
                                    ui::MenuSeparatorType separator_style);
@@ -243,6 +245,9 @@ class VIEWS_EXPORT MenuItemView : public View {
   // Sets/Gets the title.
   void SetTitle(const string16& title);
   const string16& title() const { return title_; }
+
+  // Sets the subtitle.
+  void SetSubtitle(const string16& subtitle);
 
   // Returns the type of this menu.
   const Type& GetType() const { return type_; }
@@ -395,15 +400,16 @@ class VIEWS_EXPORT MenuItemView : public View {
   // are not rendered.
   void PaintButton(gfx::Canvas* canvas, PaintButtonMode mode);
 
-  // Paints the accelerator.
-  void PaintAccelerator(gfx::Canvas* canvas, bool render_selection);
+  // Paints the right-side text.
+  void PaintMinorText(gfx::Canvas* canvas, bool render_selection);
 
   // Destroys the window used to display this menu and recursively destroys
   // the windows used to display all descendants.
   void DestroyAllMenuHosts();
 
-  // Returns the accelerator text.
-  string16 GetAcceleratorText();
+  // Returns the text that should be displayed on the end (right) of the menu
+  // item. This will be the accelerator (if one exists), otherwise |subtitle_|.
+  string16 GetMinorText();
 
   // Calculates and returns the MenuItemDimensions.
   MenuItemDimensions CalculateDimensions();
@@ -465,6 +471,9 @@ class VIEWS_EXPORT MenuItemView : public View {
 
   // Title.
   string16 title_;
+
+  // Subtitle/sublabel.
+  string16 subtitle_;
 
   // Does the title have a mnemonic? Only useful on the root menu item.
   bool has_mnemonics_;

@@ -39,7 +39,7 @@ MenuConfig::MenuConfig(const ui::NativeTheme* theme)
       render_gutter(false),
       show_mnemonics(false),
       scroll_arrow_height(3),
-      label_to_accelerator_padding(10),
+      label_to_minor_text_padding(10),
       item_min_height(0),
       show_accelerators(true),
       always_use_icon_to_label_padding(false),

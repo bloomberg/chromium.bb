@@ -38,7 +38,7 @@ SubmenuView::SubmenuView(MenuItemView* parent)
       drop_item_(NULL),
       drop_position_(MenuDelegate::DROP_NONE),
       scroll_view_container_(NULL),
-      max_accelerator_width_(0),
+      max_minor_text_width_(0),
       minimum_preferred_width_(0),
       resize_open_menu_(false),
       scroll_animator_(new ScrollAnimator(this)) {
@@ -121,7 +121,7 @@ gfx::Size SubmenuView::GetPreferredSize() {
   if (!has_children())
     return gfx::Size();
 
-  max_accelerator_width_ = 0;
+  max_minor_text_width_ = 0;
   // The maximum width of items which contain maybe a label and multiple views.
   int max_complex_width = 0;
   // The max. width of items which contain a label and maybe an accelerator.
@@ -137,8 +137,8 @@ gfx::Size SubmenuView::GetPreferredSize() {
           menu->GetDimensions();
       max_simple_width = std::max(
           max_simple_width, dimensions.standard_width);
-      max_accelerator_width_ =
-          std::max(max_accelerator_width_, dimensions.accelerator_width);
+      max_minor_text_width_ =
+          std::max(max_minor_text_width_, dimensions.minor_text_width);
       max_complex_width = std::max(max_complex_width,
           dimensions.standard_width + dimensions.children_width);
       height += dimensions.height;
@@ -149,14 +149,14 @@ gfx::Size SubmenuView::GetPreferredSize() {
       height += child_pref_size.height();
     }
   }
-  if (max_accelerator_width_ > 0) {
-    max_accelerator_width_ +=
-        GetMenuItem()->GetMenuConfig().label_to_accelerator_padding;
+  if (max_minor_text_width_ > 0) {
+    max_minor_text_width_ +=
+        GetMenuItem()->GetMenuConfig().label_to_minor_text_padding;
   }
   gfx::Insets insets = GetInsets();
   return gfx::Size(
       std::max(max_complex_width,
-               std::max(max_simple_width + max_accelerator_width_ +
+               std::max(max_simple_width + max_minor_text_width_ +
                         insets.width(),
                minimum_preferred_width_ - 2 * insets.width())),
       height + insets.height());

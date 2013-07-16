@@ -103,9 +103,9 @@ struct VIEWS_EXPORT MenuConfig {
   // Height of the scroll arrow.
   int scroll_arrow_height;
 
-  // Padding between the label and accelerator. Only used if there is an
-  // accelerator.
-  int label_to_accelerator_padding;
+  // Padding between the label and minor text. Only used if there is an
+  // accelerator or sublabel.
+  int label_to_minor_text_padding;
 
   // Minimum height of menu item.
   int item_min_height;
