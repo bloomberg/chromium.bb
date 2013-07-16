@@ -27,6 +27,10 @@ class NET_EXPORT_PRIVATE SpdyWriteQueue {
   SpdyWriteQueue();
   ~SpdyWriteQueue();
 
+  // Returns whether there is anything in the write queue,
+  // i.e. whether the next call to Dequeue will return true.
+  bool IsEmpty() const;
+
   // Enqueues the given frame producer of the given type at the given
   // priority associated with the given stream, which may be NULL if
   // the frame producer is not associated with a stream. If |stream|
