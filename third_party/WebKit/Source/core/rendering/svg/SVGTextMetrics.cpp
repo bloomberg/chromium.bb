@@ -61,18 +61,25 @@ SVGTextMetrics::SVGTextMetrics(RenderSVGInlineText* textRenderer, const TextRun&
     m_length = static_cast<unsigned>(length);
 }
 
-TextRun SVGTextMetrics::constructTextRun(RenderSVGInlineText* text, const UChar* characters, unsigned position, unsigned length)
+TextRun SVGTextMetrics::constructTextRun(RenderSVGInlineText* text, unsigned position, unsigned length)
 {
     RenderStyle* style = text->style();
     ASSERT(style);
 
-    TextRun run(characters + position
-                , length
-                , 0 /* xPos, only relevant with allowTabs=true */
-                , 0 /* padding, only relevant for justified text, not relevant for SVG */
+    TextRun run(static_cast<const LChar*>(0) // characters, will be set below if non-zero.
+                , 0 // length, will be set below if non-zero.
+                , 0 // xPos, only relevant with allowTabs=true
+                , 0 // padding, only relevant for justified text, not relevant for SVG
                 , TextRun::AllowTrailingExpansion
                 , style->direction()
                 , isOverride(style->unicodeBidi()) /* directionalOverride */);
+
+    if (length) {
+        if (text->is8Bit())
+            run.setText(text->characters8() + position, length);
+        else
+            run.setText(text->characters16() + position, length);
+    }
 
     if (textRunNeedsRenderingContext(style->font()))
         run.setRenderingContext(SVGTextRunRenderingContext::create(text));
@@ -91,7 +98,7 @@ TextRun SVGTextMetrics::constructTextRun(RenderSVGInlineText* text, const UChar*
 SVGTextMetrics SVGTextMetrics::measureCharacterRange(RenderSVGInlineText* text, unsigned position, unsigned length)
 {
     ASSERT(text);
-    return SVGTextMetrics(text, constructTextRun(text, text->bloatedCharacters(), position, length));
+    return SVGTextMetrics(text, constructTextRun(text, position, length));
 }
 
 SVGTextMetrics::SVGTextMetrics(RenderSVGInlineText* text, unsigned position, unsigned length, float width, const String& glyphName)

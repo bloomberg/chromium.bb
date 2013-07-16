@@ -39,7 +39,7 @@ public:
     SVGTextMetrics(RenderSVGInlineText*, unsigned position, unsigned length, float width, const String& glyphName);
 
     static SVGTextMetrics measureCharacterRange(RenderSVGInlineText*, unsigned position, unsigned length);
-    static TextRun constructTextRun(RenderSVGInlineText*, const UChar* characters, unsigned position, unsigned length);
+    static TextRun constructTextRun(RenderSVGInlineText*, unsigned position, unsigned length);
 
     bool isEmpty() const { return !m_width && !m_height && !m_glyph.isValid && m_length == 1; }
 

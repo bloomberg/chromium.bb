@@ -432,13 +432,20 @@ TextRun SVGInlineTextBox::constructTextRun(RenderStyle* style, const SVGTextFrag
     RenderText* text = textRenderer();
     ASSERT(text);
 
-    TextRun run(text->bloatedCharacters() + fragment.characterOffset
-                , fragment.length
-                , 0 /* xPos, only relevant with allowTabs=true */
-                , 0 /* padding, only relevant for justified text, not relevant for SVG */
+    TextRun run(static_cast<const LChar*>(0) // characters, will be set below if non-zero.
+                , 0 // length, will be set below if non-zero.
+                , 0 // xPos, only relevant with allowTabs=true
+                , 0 // padding, only relevant for justified text, not relevant for SVG
                 , TextRun::AllowTrailingExpansion
                 , direction()
                 , dirOverride() || style->rtlOrdering() == VisualOrder /* directionalOverride */);
+
+    if (fragment.length) {
+        if (text->is8Bit())
+            run.setText(text->characters8() + fragment.characterOffset, fragment.length);
+        else
+            run.setText(text->characters16() + fragment.characterOffset, fragment.length);
+    }
 
     if (textRunNeedsRenderingContext(style->font()))
         run.setRenderingContext(SVGTextRunRenderingContext::create(text));

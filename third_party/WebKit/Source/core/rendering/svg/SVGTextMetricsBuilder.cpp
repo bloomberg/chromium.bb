@@ -100,7 +100,7 @@ void SVGTextMetricsBuilder::initializeMeasurementWithTextRenderer(RenderSVGInlin
     m_totalWidth = 0;
 
     const Font& scaledFont = text->scaledFont();
-    m_run = SVGTextMetrics::constructTextRun(text, text->bloatedCharacters(), 0, text->textLength());
+    m_run = SVGTextMetrics::constructTextRun(text, 0, text->textLength());
     m_isComplexText = scaledFont.codePath(m_run) == Font::Complex;
 
     if (m_isComplexText)
@@ -112,6 +112,7 @@ void SVGTextMetricsBuilder::initializeMeasurementWithTextRenderer(RenderSVGInlin
 struct MeasureTextData {
     MeasureTextData(SVGCharacterDataMap* characterDataMap)
         : allCharactersMap(characterDataMap)
+        , hasLastCharacter(false)
         , lastCharacter(0)
         , processRenderer(false)
         , valueListPosition(0)
@@ -120,7 +121,8 @@ struct MeasureTextData {
     }
 
     SVGCharacterDataMap* allCharactersMap;
-    const UChar* lastCharacter;
+    bool hasLastCharacter;
+    UChar lastCharacter;
     bool processRenderer;
     unsigned valueListPosition;
     unsigned skippedCharacters;
@@ -144,8 +146,8 @@ void SVGTextMetricsBuilder::measureTextRenderer(RenderSVGInlineText* text, Measu
     int surrogatePairCharacters = 0;
 
     while (advance()) {
-        const UChar* currentCharacter = m_run.data16(m_textPosition);
-        if (*currentCharacter == ' ' && !preserveWhiteSpace && (!data->lastCharacter || *data->lastCharacter == ' ')) {
+        UChar currentCharacter = m_run[m_textPosition];
+        if (currentCharacter == ' ' && !preserveWhiteSpace && (!data->hasLastCharacter || data->lastCharacter == ' ')) {
             if (data->processRenderer)
                 textMetricsValues->append(SVGTextMetrics(SVGTextMetrics::SkippedSpaceMetrics));
             if (data->allCharactersMap)
@@ -165,6 +167,7 @@ void SVGTextMetricsBuilder::measureTextRenderer(RenderSVGInlineText* text, Measu
         if (data->allCharactersMap && currentCharacterStartsSurrogatePair())
             surrogatePairCharacters++;
 
+        data->hasLastCharacter = true;
         data->lastCharacter = currentCharacter;
     }
 
