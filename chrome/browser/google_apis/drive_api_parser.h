@@ -731,7 +731,7 @@ class ChangeResource {
   bool is_deleted() const { return deleted_; }
 
   // Returns FileResource of the file which the change refers to.
-  const FileResource& file() const { return file_; }
+  const FileResource* file() const { return file_.get(); }
 
   void set_change_id(int64 change_id) {
     change_id_ = change_id;
@@ -742,8 +742,8 @@ class ChangeResource {
   void set_deleted(bool deleted) {
     deleted_ = deleted;
   }
-  void set_file(const FileResource& file) {
-    file_ = file;
+  void set_file(scoped_ptr<FileResource> file) {
+    file_ = file.Pass();
   }
 
  private:
@@ -757,7 +757,7 @@ class ChangeResource {
   int64 change_id_;
   std::string file_id_;
   bool deleted_;
-  FileResource file_;
+  scoped_ptr<FileResource> file_;
 
   DISALLOW_COPY_AND_ASSIGN(ChangeResource);
 };

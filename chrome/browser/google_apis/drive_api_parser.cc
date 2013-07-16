@@ -25,6 +25,12 @@ namespace google_apis {
 
 namespace {
 
+bool CreateFileResourceFromValue(const base::Value* value,
+                                 scoped_ptr<FileResource>* file) {
+  *file = FileResource::CreateFrom(*value);
+  return !!*file;
+}
+
 // Converts |url_string| to |result|.  Always returns true to be used
 // for JSONValueConverter::RegisterCustomField method.
 // TODO(mukai): make it return false in case of invalid |url_string|.
@@ -704,7 +710,8 @@ void ChangeResource::RegisterJSONConverter(
                                         &base::StringToInt64);
   converter->RegisterStringField(kFileId, &ChangeResource::file_id_);
   converter->RegisterBoolField(kDeleted, &ChangeResource::deleted_);
-  converter->RegisterNestedField(kFile, &ChangeResource::file_);
+  converter->RegisterCustomValueField(kFile, &ChangeResource::file_,
+                                      &CreateFileResourceFromValue);
 }
 
 // static

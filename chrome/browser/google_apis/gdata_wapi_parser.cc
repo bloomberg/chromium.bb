@@ -771,7 +771,11 @@ scoped_ptr<ResourceEntry> ResourceEntry::CreateFromFileResource(
 // static
 scoped_ptr<ResourceEntry> ResourceEntry::CreateFromChangeResource(
     const ChangeResource& change) {
-  scoped_ptr<ResourceEntry> entry = CreateFromFileResource(change.file());
+  scoped_ptr<ResourceEntry> entry;
+  if (change.file())
+    entry = CreateFromFileResource(*change.file()).Pass();
+  else
+    entry.reset(new ResourceEntry);
 
   entry->resource_id_ = change.file_id();
   // If |is_deleted()| returns true, the file is removed from Drive.
