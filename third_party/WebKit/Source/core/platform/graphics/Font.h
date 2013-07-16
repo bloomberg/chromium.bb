@@ -120,7 +120,7 @@ public:
     bool isFixedPitch() const;
     bool isPrinterFont() const { return m_fontDescription.usePrinterFont(); }
 
-    TypesettingFeatures typesettingFeatures() const { return m_typesettingFeatures; }
+    TypesettingFeatures typesettingFeatures() const { return static_cast<TypesettingFeatures>(m_typesettingFeatures); }
 
     FontFamily& firstFamily() { return m_fontDescription.firstFamily(); }
     const FontFamily& family() const { return m_fontDescription.family(); }
@@ -291,7 +291,7 @@ private:
     float m_wordSpacing;
     bool m_isPlatformFont;
     bool m_needsTranscoding;
-    mutable TypesettingFeatures m_typesettingFeatures; // Caches values computed from m_fontDescription.
+    mutable unsigned m_typesettingFeatures : 2; // (TypesettingFeatures) Caches values computed from m_fontDescription.
 };
 
 inline Font::~Font()
