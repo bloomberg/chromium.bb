@@ -699,6 +699,8 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
       SpdySettingsIds id, uint8 flags, uint32 value) OVERRIDE;
   virtual void OnWindowUpdate(SpdyStreamId stream_id,
                               uint32 delta_window_size) OVERRIDE;
+  virtual void OnPushPromise(SpdyStreamId stream_id,
+                             SpdyStreamId promised_stream_id) OVERRIDE;
   virtual void OnSynStream(SpdyStreamId stream_id,
                            SpdyStreamId associated_stream_id,
                            SpdyPriority priority,

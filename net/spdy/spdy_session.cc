@@ -2087,6 +2087,11 @@ void SpdySession::OnWindowUpdate(SpdyStreamId stream_id,
   }
 }
 
+void SpdySession::OnPushPromise(SpdyStreamId stream_id,
+                                SpdyStreamId promised_stream_id) {
+  // TODO(akalin): Handle PUSH_PROMISE frames.
+}
+
 void SpdySession::SendStreamWindowUpdate(SpdyStreamId stream_id,
                                          uint32 delta_window_size) {
   CHECK_GE(flow_control_state_, FLOW_CONTROL_STREAM);

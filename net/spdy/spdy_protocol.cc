@@ -67,7 +67,6 @@ SpdyCredentialIR::SpdyCredentialIR(int16 slot) {
 
 SpdyCredentialIR::~SpdyCredentialIR() {}
 
-
 void SpdyCredentialIR::Visit(SpdyFrameVisitor* visitor) const {
   return visitor->VisitCredential(*this);
 }
@@ -76,4 +75,8 @@ void SpdyBlockedIR::Visit(SpdyFrameVisitor* visitor) const {
   return visitor->VisitBlocked(*this);
 }
 
-}  // namespace
+void SpdyPushPromiseIR::Visit(SpdyFrameVisitor* visitor) const {
+  return visitor->VisitPushPromise(*this);
+}
+
+}  // namespace net

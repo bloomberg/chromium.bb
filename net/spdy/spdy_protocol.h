@@ -270,7 +270,8 @@ enum SpdyFrameType {
   WINDOW_UPDATE,
   CREDENTIAL,
   BLOCKED,
-  LAST_CONTROL_TYPE = BLOCKED
+  PUSH_PROMISE,
+  LAST_CONTROL_TYPE = PUSH_PROMISE
 };
 
 // Flags on data packets.
@@ -698,6 +699,22 @@ class NET_EXPORT_PRIVATE SpdyBlockedIR
    DISALLOW_COPY_AND_ASSIGN(SpdyBlockedIR);
 };
 
+class SpdyPushPromiseIR : public SpdyFrameWithNameValueBlockIR {
+ public:
+  SpdyPushPromiseIR(SpdyStreamId stream_id, SpdyStreamId promised_stream_id)
+      : SpdyFrameWithNameValueBlockIR(stream_id),
+        promised_stream_id_(promised_stream_id) {}
+  SpdyStreamId promised_stream_id() const { return promised_stream_id_; }
+  void set_promised_stream_id(SpdyStreamId id) { promised_stream_id_ = id; }
+
+  virtual void Visit(SpdyFrameVisitor* visitor) const OVERRIDE;
+
+ private:
+  SpdyStreamId promised_stream_id_;
+  DISALLOW_COPY_AND_ASSIGN(SpdyPushPromiseIR);
+};
+
+
 // -------------------------------------------------------------------------
 // Wrapper classes for various SPDY frames.
 
@@ -757,6 +774,7 @@ class SpdyFrameVisitor {
   virtual void VisitWindowUpdate(const SpdyWindowUpdateIR& window_update) = 0;
   virtual void VisitCredential(const SpdyCredentialIR& credential) = 0;
   virtual void VisitBlocked(const SpdyBlockedIR& blocked) = 0;
+  virtual void VisitPushPromise(const SpdyPushPromiseIR& push_promise) = 0;
   virtual void VisitData(const SpdyDataIR& data) = 0;
 
  protected:

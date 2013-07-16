@@ -192,6 +192,11 @@ void BufferedSpdyFramer::OnWindowUpdate(SpdyStreamId stream_id,
   visitor_->OnWindowUpdate(stream_id, delta_window_size);
 }
 
+void BufferedSpdyFramer::OnPushPromise(SpdyStreamId stream_id,
+                                       SpdyStreamId promised_stream_id) {
+  visitor_->OnPushPromise(stream_id, promised_stream_id);
+}
+
 int BufferedSpdyFramer::protocol_version() {
   return spdy_framer_.protocol_version();
 }

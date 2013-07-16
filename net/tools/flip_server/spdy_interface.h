@@ -115,6 +115,10 @@ class SpdySM : public BufferedSpdyFramerVisitorInterface,
   virtual void OnWindowUpdate(SpdyStreamId stream_id,
                               uint32 delta_window_size) OVERRIDE {}
 
+  // Called when a PUSH_PROMISE frame has been parsed.
+  virtual void OnPushPromise(SpdyStreamId stream_id,
+                             SpdyStreamId promised_stream_id) OVERRIDE {}
+
  public:
   virtual size_t ProcessReadInput(const char* data, size_t len) OVERRIDE;
   virtual size_t ProcessWriteInput(const char* data, size_t len) OVERRIDE;

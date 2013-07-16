@@ -82,6 +82,10 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramerVisitorInterface {
   virtual void OnWindowUpdate(SpdyStreamId stream_id,
                               uint32 delta_window_size) = 0;
 
+  // Called when a PUSH_PROMISE frame has been parsed.
+  virtual void OnPushPromise(SpdyStreamId stream_id,
+                             SpdyStreamId promised_stream_id) = 0;
+
  protected:
   virtual ~BufferedSpdyFramerVisitorInterface() {}
 
@@ -136,6 +140,8 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
                         SpdyGoAwayStatus status) OVERRIDE;
   virtual void OnWindowUpdate(SpdyStreamId stream_id,
                               uint32 delta_window_size) OVERRIDE;
+  virtual void OnPushPromise(SpdyStreamId stream_id,
+                             SpdyStreamId promised_stream_id) OVERRIDE;
   virtual void OnDataFrameHeader(SpdyStreamId stream_id,
                                  size_t length,
                                  bool fin) OVERRIDE;

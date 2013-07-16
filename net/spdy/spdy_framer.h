@@ -44,8 +44,8 @@ class TestSpdyVisitor;
 
 }  // namespace test
 
-// A datastructure for holding a set of headers from either a
-// SYN_STREAM or SYN_REPLY frame.
+// A datastructure for holding a set of headers from a HEADERS, PUSH_PROMISE,
+// SYN_STREAM, or SYN_REPLY frame.
 typedef std::map<std::string, std::string> SpdyHeaderBlock;
 
 // A datastructure for holding the ID and flag fields for SETTINGS.
@@ -111,10 +111,11 @@ struct NET_EXPORT_PRIVATE SpdySettingsScratch {
 // Implement this interface to receive event callbacks as frames are
 // decoded from the framer.
 //
-// Control frames that contain SPDY header blocks (SYN_STREAM, SYN_REPLY, and
-// HEADER) are processed in fashion that allows the decompressed header block
-// to be delivered in chunks to the visitor. The following steps are followed:
-//   1. OnSynStream, OnSynReply or OnHeaders is called.
+// Control frames that contain SPDY header blocks (SYN_STREAM, SYN_REPLY,
+// HEADER, and PUSH_PROMISE) are processed in fashion that allows the
+// decompressed header block to be delivered in chunks to the visitor.
+// The following steps are followed:
+//   1. OnSynStream, OnSynReply, OnHeaders, or OnPushPromise is called.
 //   2. Repeated: OnControlFrameHeaderData is called with chunks of the
 //      decompressed header block. In each call the len parameter is greater
 //      than zero.
@@ -156,7 +157,7 @@ class NET_EXPORT_PRIVATE SpdyFramerVisitorInterface {
   virtual void OnHeaders(SpdyStreamId stream_id, bool fin) = 0;
 
   // Called when a chunk of header data is available. This is called
-  // after OnSynStream, OnSynReply or OnHeaders().
+  // after OnSynStream, OnPushPromise, OnSynReply, or OnHeaders().
   // |stream_id| The stream receiving the header data.
   // |header_data| A buffer containing the header data chunk received.
   // |len| The length of the header data buffer. A length of zero indicates
@@ -221,6 +222,12 @@ class NET_EXPORT_PRIVATE SpdyFramerVisitorInterface {
 
   // Called when a BLOCKED frame has been parsed.
   virtual void OnBlocked(SpdyStreamId stream_id) {}
+
+  // Called when a PUSH_PROMISE frame is received.
+  // Note that header block data is not included. See
+  // OnControlFrameHeaderData().
+  virtual void OnPushPromise(SpdyStreamId stream_id,
+                             SpdyStreamId promised_stream_id) = 0;
 };
 
 // Optionally, and in addition to SpdyFramerVisitorInterface, a class supporting
@@ -428,6 +435,16 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   // advisory and optional.
   SpdySerializedFrame* SerializeBlocked(const SpdyBlockedIR& blocked) const;
 
+  // Creates and serializes a PUSH_PROMISE frame. The PUSH_PROMISE frame is used
+  // to inform the client that it will be receiving an additional stream
+  // in response to the original request. The frame includes synthesized
+  // headers to explain the upcoming data.
+  SpdyFrame* CreatePushPromise(SpdyStreamId stream_id,
+                               SpdyStreamId promised_stream_id,
+                               const SpdyHeaderBlock* headers);
+  SpdySerializedFrame* SerializePushPromise(
+      const SpdyPushPromiseIR& push_promise);
+
   // Given a CREDENTIAL frame's payload, extract the credential.
   // Returns true on successful parse, false otherwise.
   // TODO(hkhalil): Implement CREDENTIAL frame parsing in SpdyFramer
@@ -491,6 +508,7 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   size_t GetWindowUpdateSize() const;
   size_t GetCredentialMinimumSize() const;
   size_t GetBlockedSize() const;
+  size_t GetPushPromiseMinimumSize() const;
 
   // Returns the minimum size a frame can be (data or control).
   size_t GetFrameMinimumSize() const;

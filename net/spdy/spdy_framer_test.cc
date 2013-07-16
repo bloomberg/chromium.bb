@@ -63,6 +63,8 @@ class MockVisitor : public SpdyFramerVisitorInterface {
   MOCK_METHOD2(OnWindowUpdate, void(SpdyStreamId stream_id,
                                     uint32 delta_window_size));
   MOCK_METHOD1(OnBlocked, void(SpdyStreamId stream_id));
+  MOCK_METHOD2(OnPushPromise, void(SpdyStreamId stream_id,
+                                   SpdyStreamId promised_stream_id));
 };
 
 class MockDebugVisitor : public SpdyFramerDebugVisitorInterface {
@@ -182,7 +184,20 @@ class SpdyFramerTestUtil {
                                &null_headers));
       ResetBuffer();
       memcpy(buffer_.get(), frame->data(), framer.GetHeadersMinimumSize());
-      size_ += framer.GetSynStreamMinimumSize();
+      size_ += framer.GetHeadersMinimumSize();
+    }
+
+    virtual void OnPushPromise(SpdyStreamId stream_id,
+                               SpdyStreamId promised_stream_id) OVERRIDE {
+      SpdyFramer framer(version_);
+      framer.set_enable_compression(false);
+      const SpdyHeaderBlock null_headers;
+      scoped_ptr<SpdyFrame> frame(
+          framer.CreatePushPromise(stream_id, promised_stream_id,
+                                   &null_headers));
+      ResetBuffer();
+      memcpy(buffer_.get(), frame->data(), framer.GetPushPromiseMinimumSize());
+      size_ += framer.GetPushPromiseMinimumSize();
     }
 
     virtual bool OnControlFrameHeaderData(SpdyStreamId stream_id,
@@ -280,6 +295,8 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
       setting_count_(0),
       last_window_update_stream_(0),
       last_window_update_delta_(0),
+      last_push_promise_stream_(0),
+      last_push_promise_promised_stream_(0),
       data_bytes_(0),
       fin_frame_count_(0),
       fin_flag_count_(0),
@@ -346,7 +363,7 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
 
   virtual void OnSynReply(SpdyStreamId stream_id, bool fin) OVERRIDE {
     syn_reply_frame_count_++;
-    InitHeaderStreaming(HEADERS, stream_id);
+    InitHeaderStreaming(SYN_REPLY, stream_id);
     if (fin) {
       fin_flag_count_++;
     }
@@ -354,7 +371,7 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
 
   virtual void OnHeaders(SpdyStreamId stream_id, bool fin) OVERRIDE {
     headers_frame_count_++;
-    InitHeaderStreaming(SYN_REPLY, stream_id);
+    InitHeaderStreaming(HEADERS, stream_id);
     if (fin) {
       fin_flag_count_++;
     }
@@ -384,6 +401,13 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
                               uint32 delta_window_size) OVERRIDE {
     last_window_update_stream_ = stream_id;
     last_window_update_delta_ = delta_window_size;
+  }
+
+  virtual void OnPushPromise(SpdyStreamId stream_id,
+                             SpdyStreamId promised_stream_id) OVERRIDE {
+    InitHeaderStreaming(PUSH_PROMISE, stream_id);
+    last_push_promise_stream_ = stream_id;
+    last_push_promise_promised_stream_ = promised_stream_id;
   }
 
   virtual bool OnControlFrameHeaderData(SpdyStreamId stream_id,
@@ -499,6 +523,8 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
   int setting_count_;
   SpdyStreamId last_window_update_stream_;
   uint32 last_window_update_delta_;
+  SpdyStreamId last_push_promise_stream_;
+  SpdyStreamId last_push_promise_promised_stream_;
   int data_bytes_;
   int fin_frame_count_;  // The count of RST_STREAM type frames received.
   int fin_flag_count_;  // The count of frames with the FIN flag set.
@@ -622,7 +648,7 @@ class SpdyFramerTest : public ::testing::TestWithParam<SpdyMajorVersion> {
   unsigned char spdy_version_ch_;
 };
 
-// All tests are run with two different SPDY versions: SPDY/2 and SPDY/3.
+// All tests are run with 3 different SPDY versions: SPDY/2, SPDY/3, SPDY/4.
 INSTANTIATE_TEST_CASE_P(SpdyFramerTests,
                         SpdyFramerTest,
                         ::testing::Values(SPDY2, SPDY3, SPDY4));
@@ -2923,6 +2949,74 @@ TEST_P(SpdyFramerTest, SerializeBlocked) {
 
 }
 
+TEST_P(SpdyFramerTest, CreatePushPromiseUncompressed) {
+  if (spdy_version_ < SPDY4) {
+    return;
+  }
+
+  SpdyFramer framer(spdy_version_);
+  framer.set_enable_compression(false);
+
+  const char kDescription[] = "PUSH_PROMISE frame";
+  SpdyHeaderBlock headers;
+  headers["bar"] = "foo";
+  headers["foo"] = "bar";
+
+  const unsigned char kFrameData[] = {
+    0x00, 0x2C, 0x0C, 0x00,  // length = 44, type = 12, flags = 0
+    0x00, 0x00, 0x00, 0x2A,  // stream id = 42
+    0x00, 0x00, 0x00, 0x39,  // promised stream id = 57
+    0x00, 0x00, 0x00, 0x02,  // start of uncompressed header block
+    0x00, 0x00, 0x00, 0x03,
+    'b',  'a',  'r',  0x00,
+    0x00, 0x00, 0x03, 'f',
+    'o',  'o',  0x00, 0x00,
+    0x00, 0x03, 'f',  'o',
+    'o',  0x00, 0x00, 0x00,
+    0x03, 'b',  'a',  'r'    // end of uncompressed header block
+  };
+
+  scoped_ptr<SpdySerializedFrame> frame(framer.CreatePushPromise(
+      42, 57, &headers));
+  CompareFrame(kDescription, *frame, kFrameData, arraysize(kFrameData));
+}
+
+TEST_P(SpdyFramerTest, CreatePushPromiseCompressed) {
+  if (spdy_version_ < SPDY4) {
+    return;
+  }
+
+  SpdyFramer framer(spdy_version_);
+  framer.set_enable_compression(true);
+
+  const char kDescription[] = "PUSH_PROMISE frame";
+  SpdyHeaderBlock headers;
+  headers["bar"] = "foo";
+  headers["foo"] = "bar";
+
+  const unsigned char kFrameData[] = {
+    0x00, 0x39, 0x0C, 0x00,  // length = 57, type = 12, flags = 0
+    0x00, 0x00, 0x00, 0x2A,  // stream id = 42
+    0x00, 0x00, 0x00, 0x39,  // promised stream id = 57
+    0x38, 0xea, 0xe3, 0xc6,  // start of compressed header block
+    0xa7, 0xc2, 0x02, 0xe5,
+    0x0e, 0x50, 0xc2, 0x4b,
+    0x4a, 0x04, 0xe5, 0x0b,
+    0x66, 0x80, 0x00, 0x4a,
+    0xcb, 0xcf, 0x07, 0x08,
+    0x20, 0x10, 0x95, 0x96,
+    0x9f, 0x0f, 0xa2, 0x00,
+    0x02, 0x28, 0x29, 0xb1,
+    0x08, 0x20, 0x80, 0x00,
+    0x00, 0x00, 0x00, 0xff,
+    0xff                     // end of compressed header block
+  };
+
+  scoped_ptr<SpdySerializedFrame> frame(framer.CreatePushPromise(
+      42, 57, &headers));
+  CompareFrame(kDescription, *frame, kFrameData, arraysize(kFrameData));
+}
+
 TEST_P(SpdyFramerTest, ReadCompressedSynStreamHeaderBlock) {
   SpdyHeaderBlock headers;
   headers["aa"] = "vv";
@@ -3529,6 +3623,27 @@ TEST_P(SpdyFramerTest, ReadCredentialFrameWithCorruptCertificate) {
   EXPECT_EQ(1, visitor.error_count_);
 }
 
+TEST_P(SpdyFramerTest, ReadCompressedPushPromise) {
+  if (spdy_version_ < 4) {
+    return;
+  }
+
+  SpdyHeaderBlock headers;
+  headers["foo"] = "bar";
+  headers["bar"] = "foofoo";
+  SpdyFramer framer(spdy_version_);
+  scoped_ptr<SpdyFrame> frame(framer.CreatePushPromise(42, 57, &headers));
+  EXPECT_TRUE(frame.get() != NULL);
+  TestSpdyVisitor visitor(spdy_version_);
+  visitor.use_compression_ = true;
+  visitor.SimulateInFramer(
+      reinterpret_cast<unsigned char*>(frame->data()),
+      frame->size());
+  EXPECT_EQ(42u, visitor.last_push_promise_stream_);
+  EXPECT_EQ(57u, visitor.last_push_promise_promised_stream_);
+  EXPECT_TRUE(CompareHeaderBlocks(&headers, &visitor.headers_));
+}
+
 TEST_P(SpdyFramerTest, ReadGarbage) {
   SpdyFramer framer(spdy_version_);
   unsigned char garbage_frame[256];
@@ -3568,6 +3683,7 @@ TEST_P(SpdyFramerTest, SizesTest) {
     EXPECT_EQ(12u, framer.GetWindowUpdateSize());
     EXPECT_EQ(10u, framer.GetCredentialMinimumSize());
     EXPECT_EQ(8u, framer.GetBlockedSize());
+    EXPECT_EQ(12u, framer.GetPushPromiseMinimumSize());
     EXPECT_EQ(8u, framer.GetFrameMinimumSize());
     EXPECT_EQ(65535u, framer.GetFrameMaximumSize());
     EXPECT_EQ(65527u, framer.GetDataFrameMaximumPayload());
@@ -3697,6 +3813,8 @@ TEST_P(SpdyFramerTest, FrameTypeToStringTest) {
                SpdyFramer::FrameTypeToString(HEADERS));
   EXPECT_STREQ("WINDOW_UPDATE",
                SpdyFramer::FrameTypeToString(WINDOW_UPDATE));
+  EXPECT_STREQ("PUSH_PROMISE",
+               SpdyFramer::FrameTypeToString(PUSH_PROMISE));
   EXPECT_STREQ("CREDENTIAL",
                SpdyFramer::FrameTypeToString(CREDENTIAL));
 }
@@ -4018,6 +4136,48 @@ TEST_P(SpdyFramerTest, WindowUpdateFrameFlags) {
       EXPECT_CALL(visitor, OnError(_));
     } else {
       EXPECT_CALL(visitor, OnWindowUpdate(4, 1024));
+    }
+
+    framer.ProcessInput(frame->data(), frame->size());
+    if (flags != 0) {
+      EXPECT_EQ(SpdyFramer::SPDY_ERROR, framer.state());
+      EXPECT_EQ(SpdyFramer::SPDY_INVALID_CONTROL_FRAME_FLAGS,
+                framer.error_code());
+    } else {
+      EXPECT_EQ(SpdyFramer::SPDY_RESET, framer.state());
+      EXPECT_EQ(SpdyFramer::SPDY_NO_ERROR, framer.error_code());
+    }
+  }
+}
+
+TEST_P(SpdyFramerTest, PushPromiseFrameFlags) {
+  if (spdy_version_ < SPDY4) {
+    return;
+  }
+
+  for (int flags = 0; flags < 256; ++flags) {
+    SCOPED_TRACE(testing::Message() << "Flags " << flags);
+
+    testing::StrictMock<net::test::MockVisitor> visitor;
+    testing::StrictMock<net::test::MockDebugVisitor> debug_visitor;
+    SpdyFramer framer(spdy_version_);
+    framer.set_visitor(&visitor);
+    framer.set_debug_visitor(&debug_visitor);
+
+    EXPECT_CALL(debug_visitor, OnSendCompressedFrame(42, PUSH_PROMISE, _, _));
+
+    SpdyHeaderBlock headers;
+    headers["foo"] = "bar";
+    scoped_ptr<SpdyFrame> frame(framer.CreatePushPromise(42, 57, &headers));
+    SetFrameFlags(frame.get(), flags, spdy_version_);
+
+    if (flags != 0) {
+      EXPECT_CALL(visitor, OnError(_));
+    } else {
+      EXPECT_CALL(debug_visitor, OnReceiveCompressedFrame(42, PUSH_PROMISE, _));
+      EXPECT_CALL(visitor, OnPushPromise(42, 57));
+      EXPECT_CALL(visitor, OnControlFrameHeaderData(42, _, _))
+          .WillRepeatedly(testing::Return(true));
     }
 
     framer.ProcessInput(frame->data(), frame->size());
