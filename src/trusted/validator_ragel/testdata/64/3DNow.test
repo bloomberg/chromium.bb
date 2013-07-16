@@ -1,32 +1,12 @@
 @hex:
-  # 3DNow! instructions
-  # pi2fd %mm0,%mm1
   0f 0f c8 0d
-  # pfcmpeq %mm0,%mm1
   0f 0f c8 b0
-  # pfacc %mm0,%mm1
   0f 0f c8 ae
-  # pfrcp %mm0,%mm1
   0f 0f c8 96
-  # pfrcpit2 %mm0,%mm1
   0f 0f c8 b6
-  # pavgusb %mm0,%mm1
   0f 0f c8 bf
-  # pmulhrw %mm0,%mm1
   0f 0f c8 b7
-  # femms
   0f 0e
-  
-  # bundle alignment
-  90
-  90
-  
-  # prefetchw (%rsp)
-  0f 0d 0c 24
-  # pfpnacc %mm0,%mm1
-  0f 0f c8 8e
-  # pswapd %mm0,%mm1
-  0f 0f c8 bb
 @dis:
      0:	0f 0f c8 0d                                  	pi2fd  %mm0,%mm1
      4:	0f 0f c8 b0                                  	pfcmpeq %mm0,%mm1
@@ -36,10 +16,20 @@
     14:	0f 0f c8 bf                                  	pavgusb %mm0,%mm1
     18:	0f 0f c8 b7                                  	pmulhrw %mm0,%mm1
     1c:	0f 0e                                        	femms  
-    1e:	90                                           	nop
-    1f:	90                                           	nop
-    20:	0f 0d 0c 24                                  	prefetchw (%rsp)
-    24:	0f 0f c8 8e                                  	pfpnacc %mm0,%mm1
-    28:	0f 0f c8 bb                                  	pswapd %mm0,%mm1
 @rdfa_output:
   return code: 0
+@spec:
+  SAFE
+----------------------------------------------------------------------
+@hex:
+  0f 0d 0c 24
+  0f 0f c8 8e
+  0f 0f c8 bb
+@dis:
+     0:	0f 0d 0c 24                                  	prefetchw (%rsp)
+     4:	0f 0f c8 8e                                  	pfpnacc %mm0,%mm1
+     8:	0f 0f c8 bb                                  	pswapd %mm0,%mm1
+@rdfa_output:
+  return code: 0
+@spec:
+  SAFE

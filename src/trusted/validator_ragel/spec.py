@@ -537,6 +537,124 @@ _X87_INSTRUCTIONS = set([
 ])
 
 
+# Instructions from mmx_instructions.def (besides MMX, they include SSE2/3
+# and other stuff that works with MMX registers).
+_MMX_INSTRUCTIONS = set([
+  'cvtpd2pi',
+  'cvtpi2pd',
+  'cvtpi2ps',
+  'cvtps2pi',
+  'cvttpd2pi',
+  'cvttps2pi',
+  'emms',
+  'femms',
+  'frstor',
+  'fnsave',
+  'movntq',
+  'movdq2q',
+  'movq2dq',
+  'pabsb',
+  'pabsd',
+  'pabsw',
+  'packssdw',
+  'packsswb',
+  'packuswb',
+  'paddb',
+  'paddd',
+  'paddq',
+  'paddsb',
+  'paddsw',
+  'paddusb',
+  'paddusw',
+  'paddw',
+  'palignr',
+  'pand',
+  'pandn',
+  'pavgb',
+  'pavgusb',
+  'pavgw',
+  'pcmpeqb',
+  'pcmpeqd',
+  'pcmpeqw',
+  'pcmpgtb',
+  'pcmpgtd',
+  'pcmpgtw',
+  'pextrw',
+  'pf2id',
+  'pf2iw',
+  'pfacc',
+  'pfadd',
+  'pfcmpeq',
+  'pfcmpge',
+  'pfcmpgt',
+  'pfmax',
+  'pfmin',
+  'pfmul',
+  'pfnacc',
+  'pfpnacc',
+  'pfrcp',
+  'pfrcpit1',
+  'pfrcpit2',
+  'pfrsqit1',
+  'pfrsqrt',
+  'pfsub',
+  'pfsubr',
+  'phaddd',
+  'phaddsw',
+  'phaddw',
+  'phsubd',
+  'phsubsw',
+  'phsubw',
+  'pi2fd',
+  'pi2fw',
+  'pinsrw',
+  'pmaddubsw',
+  'pmaddwd',
+  'pmaxsw',
+  'pmaxub',
+  'pminsw',
+  'pminub',
+  'pmovmskb',
+  'pmulhrw',
+  'pmulhuw',
+  'pmulhw',
+  'pmulhrsw',
+  'pmullw',
+  'pmuludq',
+  'por',
+  'psadbw',
+  'pshufb',
+  'pshufw',
+  'psignb',
+  'psignd',
+  'psignw',
+  'pslld',
+  'psllq',
+  'psllw',
+  'psrad',
+  'psraw',
+  'psrld',
+  'psrlq',
+  'psrlw',
+  'psubb',
+  'psubd',
+  'psubq',
+  'psubsb',
+  'psubsw',
+  'psubusb',
+  'psubusw',
+  'psubw',
+  'pswapd',
+  'punpckhbw',
+  'punpckhdq',
+  'punpckhwd',
+  'punpcklbw',
+  'punpckldq',
+  'punpcklwd',
+  'pxor',
+])
+
+
 def ValidateRegularInstruction(instruction, bitness):
   """Validate regular instruction (not direct jump).
 
@@ -657,6 +775,9 @@ def ValidateRegularInstruction(instruction, bitness):
       return Condition(), Condition()
 
     elif name in _X87_INSTRUCTIONS:
+      return Condition(), Condition()
+
+    elif name in _MMX_INSTRUCTIONS or name == 'maskmovq':
       return Condition(), Condition()
 
     else:
@@ -825,6 +946,10 @@ def ValidateRegularInstruction(instruction, bitness):
       # and there is even one instruction (fstsw/fnstsw) that writes to ax.
       # But these writes do not matter for sandboxing purposes.
       write_ops = []
+
+    elif name in _MMX_INSTRUCTIONS:
+      assert 0 <= len(ops) <= 3
+      write_ops = ops[-1:]
 
     else:
       raise DoNotMatchError(instruction)
