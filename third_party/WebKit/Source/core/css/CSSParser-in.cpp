@@ -356,14 +356,15 @@ void CSSParser::setupParser(const char* prefix, unsigned prefixLength, const Str
     m_lexFunc = &CSSParser::realLex<UChar>;
 }
 
-void CSSParser::parseSheet(StyleSheetContents* sheet, const String& string, int startLineNumber, SourceDataHandler* sourceDataHandler, bool logErrors)
+void CSSParser::parseSheet(StyleSheetContents* sheet, const String& string, const TextPosition& startPosition, SourceDataHandler* sourceDataHandler, bool logErrors)
 {
     setStyleSheet(sheet);
     m_defaultNamespace = starAtom; // Reset the default namespace.
     m_sourceDataHandler = sourceDataHandler;
     m_logErrors = logErrors && sheet->singleOwnerDocument() && !sheet->baseURL().isEmpty() && sheet->singleOwnerDocument()->page();
     m_ignoreErrors = false;
-    m_lineNumber = startLineNumber;
+    m_lineNumber = 0;
+    m_startPosition = startPosition;
     m_source = &string;
     setupParser("", string, "");
     cssyyparse(this);
@@ -371,6 +372,7 @@ void CSSParser::parseSheet(StyleSheetContents* sheet, const String& string, int 
     m_source = 0;
     m_sourceDataHandler = 0;
     m_rule = 0;
+    m_lineEndings.clear();
     m_ignoreErrors = false;
     m_logErrors = false;
 }
@@ -9411,15 +9413,28 @@ inline UChar* CSSParser::dataStart<UChar>()
     return m_dataStart16.get();
 }
 
-CSSParserLocation CSSParser::currentLocation()
+void CSSParser::ensureLineEndings()
+{
+    if (!m_lineEndings)
+        m_lineEndings = lineEndings(*m_source);
+}
+
+template <typename CharacterType>
+inline CSSParserLocation CSSParser::tokenLocation()
 {
     CSSParserLocation location;
+    location.token.init(tokenStart<CharacterType>(), currentCharacter<CharacterType>() - tokenStart<CharacterType>());
     location.lineNumber = m_tokenStartLineNumber;
-    if (is8BitSource())
-        location.token.init(tokenStart<LChar>(), currentCharacter<LChar>() - tokenStart<LChar>());
-    else
-        location.token.init(tokenStart<UChar>(), currentCharacter<UChar>() - tokenStart<UChar>());
+    location.offset = tokenStart<CharacterType>() - dataStart<CharacterType>();
     return location;
+}
+
+CSSParserLocation CSSParser::currentLocation()
+{
+    if (is8BitSource())
+        return tokenLocation<LChar>();
+    else
+        return tokenLocation<UChar>();
 }
 
 template <typename CharacterType>
@@ -10911,7 +10926,8 @@ void CSSParser::endInvalidRuleHeader()
         return;
 
     CSSParserLocation location;
-    location.lineNumber = m_ruleHeaderStartLineNumber;
+    location.lineNumber = m_lineNumber;
+    location.offset = m_ruleHeaderStartOffset;
     if (is8BitSource())
         location.token.init(m_dataStart8.get() + m_ruleHeaderStartOffset, 0);
     else
@@ -10991,7 +11007,7 @@ void CSSParser::reportError(const CSSParserLocation& location, ErrorType error)
 
     builder.append(content);
 
-    logError(builder.toString(), location.lineNumber);
+    logError(builder.toString(), location);
 }
 
 bool CSSParser::isLoggingErrors()
@@ -10999,10 +11015,20 @@ bool CSSParser::isLoggingErrors()
     return m_logErrors && !m_ignoreErrors;
 }
 
-void CSSParser::logError(const String& message, int lineNumber)
+void CSSParser::logError(const String& message, const CSSParserLocation& location)
 {
+    unsigned lineNumberInStyleSheet;
+    unsigned columnNumber = 0;
     PageConsole* console = m_styleSheet->singleOwnerDocument()->page()->console();
-    console->addMessage(CSSMessageSource, WarningMessageLevel, message, m_styleSheet->baseURL().string(), lineNumber + 1);
+    if (InspectorInstrumentation::hasFrontends()) {
+        ensureLineEndings();
+        TextPosition tokenPosition = TextPosition::fromOffsetAndLineEndings(location.offset, *m_lineEndings);
+        lineNumberInStyleSheet = tokenPosition.m_line.zeroBasedInt();
+        columnNumber = (lineNumberInStyleSheet ? 0 : m_startPosition.m_column.zeroBasedInt()) + tokenPosition.m_column.zeroBasedInt();
+    } else {
+        lineNumberInStyleSheet = location.lineNumber;
+    }
+    console->addMessage(CSSMessageSource, WarningMessageLevel, message, m_styleSheet->baseURL().string(), lineNumberInStyleSheet + m_startPosition.m_line.zeroBasedInt() + 1, columnNumber + 1);
 }
 
 StyleRuleKeyframes* CSSParser::createKeyframesRule(const String& name, PassOwnPtr<Vector<RefPtr<StyleKeyframe> > > popKeyframes)
@@ -11309,7 +11335,7 @@ void CSSParser::invalidBlockHit()
 
 void CSSParser::updateLastSelectorLineAndPosition()
 {
-    m_lastSelectorLineNumber = m_lineNumber;
+    m_lastSelectorLineNumber = m_lineNumber + m_startPosition.m_line.zeroBasedInt();
 }
 
 void CSSParser::startRuleHeader(CSSRuleSourceData::Type ruleType)

@@ -40,6 +40,7 @@
 #include "wtf/OwnArrayPtr.h"
 #include "wtf/Vector.h"
 #include "wtf/text/AtomicString.h"
+#include "wtf/text/TextPosition.h"
 
 namespace WebCore {
 
@@ -67,7 +68,8 @@ class StyleKeyframe;
 class StyleSheetContents;
 
 struct CSSParserLocation {
-    int lineNumber;
+    unsigned offset;
+    unsigned lineNumber;
     CSSParserString token;
 };
 
@@ -95,7 +97,7 @@ public:
 
     ~CSSParser();
 
-    void parseSheet(StyleSheetContents*, const String&, int startLineNumber = 0, SourceDataHandler* = 0, bool = false);
+    void parseSheet(StyleSheetContents*, const String&, const TextPosition& startPosition = TextPosition::minimumPosition(), SourceDataHandler* = 0, bool = false);
     PassRefPtr<StyleRuleBase> parseRule(StyleSheetContents*, const String&);
     PassRefPtr<StyleKeyframe> parseKeyframeRule(StyleSheetContents*, const String&);
     bool parseSupportsCondition(const String&);
@@ -472,6 +474,11 @@ private:
     template <typename CharacterType>
     inline bool isIdentifierStart();
 
+    inline void ensureLineEndings();
+
+    template <typename CharacterType>
+    inline CSSParserLocation tokenLocation();
+
     template <typename CharacterType>
     unsigned parseEscape(CharacterType*&);
     template <typename DestCharacterType>
@@ -581,12 +588,14 @@ private:
     } m_tokenStart;
     unsigned m_length;
     int m_token;
+    TextPosition m_startPosition;
     int m_lineNumber;
     int m_tokenStartLineNumber;
     int m_lastSelectorLineNumber;
     CSSRuleSourceData::Type m_ruleHeaderType;
     unsigned m_ruleHeaderStartOffset;
     int m_ruleHeaderStartLineNumber;
+    OwnPtr<Vector<unsigned> > m_lineEndings;
 
     bool m_allowImportRules;
     bool m_allowNamespaceDeclarations;
@@ -650,7 +659,7 @@ private:
     };
 
     bool isLoggingErrors();
-    void logError(const String& message, int lineNumber);
+    void logError(const String& message, const CSSParserLocation&);
 
     bool validCalculationUnit(CSSParserValue*, Units, ReleaseParsedCalcValueCondition releaseCalc = DoNotReleaseParsedCalcValue);
 

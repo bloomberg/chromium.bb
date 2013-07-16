@@ -145,7 +145,7 @@ void StyleElement::createSheet(Element* e, const String& text)
             m_sheet = CSSStyleSheet::createInline(e, KURL(), startPosition, document->inputEncoding());
             m_sheet->setMediaQueries(mediaQueries.release());
             m_sheet->setTitle(e->title());
-            m_sheet->contents()->parseStringAtLine(text, startPosition.m_line.zeroBasedInt(), m_createdByParser);
+            m_sheet->contents()->parseStringAtPosition(text, startPosition, m_createdByParser);
 
             m_loading = false;
         }

@@ -1576,7 +1576,7 @@ bool InspectorStyleSheet::ensureSourceData()
     RefPtr<StyleSheetContents> newStyleSheet = StyleSheetContents::create();
     OwnPtr<RuleSourceDataList> result = adoptPtr(new RuleSourceDataList());
     StyleSheetHandler handler(m_parsedStyleSheet->text(), m_pageStyleSheet->ownerDocument(), newStyleSheet.get(), result.get());
-    createCSSParser(m_pageStyleSheet->ownerDocument())->parseSheet(newStyleSheet.get(), m_parsedStyleSheet->text(), 0, &handler);
+    createCSSParser(m_pageStyleSheet->ownerDocument())->parseSheet(newStyleSheet.get(), m_parsedStyleSheet->text(), TextPosition::minimumPosition(), &handler);
     m_parsedStyleSheet->setSourceData(result.release());
     return m_parsedStyleSheet->hasSourceData();
 }
