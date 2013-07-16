@@ -1106,6 +1106,11 @@ bool QuicConnection::WritePacket(EncryptionLevel level,
 
   int error;
   QuicTime now = clock_->Now();
+  if (!retransmission) {
+    time_of_last_sent_packet_ = now;
+  }
+  DVLOG(1) << ENDPOINT << "time of last sent packet: "
+           << now.ToDebuggingValue();
   if (WritePacketToWire(sequence_number, level, *encrypted, &error) == -1) {
     if (helper_->IsWriteBlocked(error)) {
       // TODO(satyashekhar): It might be more efficient (fewer system calls), if
@@ -1121,11 +1126,6 @@ bool QuicConnection::WritePacket(EncryptionLevel level,
     CloseConnection(QUIC_PACKET_WRITE_ERROR, false);
     return false;
   }
-  if (!retransmission) {
-    time_of_last_sent_packet_ = now;
-  }
-  DVLOG(1) << ENDPOINT << "time of last sent packet: "
-           << now.ToDebuggingValue();
 
   // Set the retransmit alarm only when we have sent the packet to the client
   // and not when it goes to the pending queue, otherwise we will end up adding
