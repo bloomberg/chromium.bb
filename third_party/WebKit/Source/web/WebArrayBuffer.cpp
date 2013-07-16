@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "public/platform/WebArrayBuffer.h"
+#include "WebArrayBuffer.h"
 
 #include "bindings/v8/custom/V8ArrayBufferCustom.h"
 #include "wtf/ArrayBuffer.h"

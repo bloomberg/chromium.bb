@@ -3667,7 +3667,6 @@
             'platform/chromium/support/Platform.cpp',
             'platform/chromium/support/WebActiveGestureAnimation.cpp',
             'platform/chromium/support/WebActiveGestureAnimation.h',
-            'platform/chromium/support/WebArrayBuffer.cpp',
             'platform/chromium/support/WebAudioBus.cpp',
             'platform/chromium/support/WebCryptoAlgorithm.cpp',
             'platform/chromium/support/WebCryptoKey.cpp',

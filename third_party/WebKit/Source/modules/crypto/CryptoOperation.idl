@@ -32,10 +32,4 @@
     NoInterfaceObject,
 ] interface CryptoOperation {
     readonly attribute Algorithm algorithm;
-
-    CryptoOperation process(ArrayBuffer data);
-    CryptoOperation process(ArrayBufferView data);
-
-    any finish();
-    any abort();
 };

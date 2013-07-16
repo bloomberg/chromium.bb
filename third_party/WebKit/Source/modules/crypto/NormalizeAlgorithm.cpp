@@ -143,7 +143,6 @@ AlgorithmRegistry::AlgorithmRegistry()
         const AlgorithmNameMapping& mapping = algorithmNameMappings[i];
         m_algorithmNameToId.add(mapping.algorithmName, mapping.algorithmId);
         m_algorithms[mapping.algorithmId].algorithmName = mapping.algorithmName;
-        m_algorithms[mapping.algorithmId].algorithmId = mapping.algorithmId;
     }
 
     for (size_t i = 0; i < WTF_ARRAY_LENGTH(operationParamsMappings); ++i) {

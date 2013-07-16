@@ -31,10 +31,8 @@
 #ifndef CryptoOperation_h
 #define CryptoOperation_h
 
-#include "bindings/v8/ScriptObject.h"
 #include "bindings/v8/ScriptWrappable.h"
 #include "modules/crypto/Algorithm.h"
-#include "public/platform/WebCrypto.h"
 #include "public/platform/WebCryptoAlgorithm.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
@@ -42,55 +40,19 @@
 
 namespace WebCore {
 
-class ScriptPromiseResolver;
-
 typedef int ExceptionCode;
 
 class CryptoOperation : public ScriptWrappable, public RefCounted<CryptoOperation> {
 public:
-    ~CryptoOperation();
-    static PassRefPtr<CryptoOperation> create(const WebKit::WebCryptoAlgorithm&, WebKit::WebCryptoOperation*);
-
-    CryptoOperation* process(ArrayBuffer* data);
-    CryptoOperation* process(ArrayBufferView* data);
-
-    ScriptObject finish();
-    ScriptObject abort();
+    static PassRefPtr<CryptoOperation> create(const WebKit::WebCryptoAlgorithm& algorithm) { return adoptRef(new CryptoOperation(algorithm)); }
 
     Algorithm* algorithm();
 
 private:
-    class Result;
-    friend class Result;
-
-    enum State {
-        // Accepting calls to process().
-        Processing,
-
-        // finish() has been called, but the Promise has not been resolved yet.
-        Finishing,
-
-        // The operation either:
-        //  - completed successfully
-        //  - failed
-        //  - was aborted
-        Done,
-    };
-
-    CryptoOperation(const WebKit::WebCryptoAlgorithm&, WebKit::WebCryptoOperation*);
-
-    void process(const unsigned char*, size_t);
-
-    ScriptPromiseResolver* promiseResolver();
+    explicit CryptoOperation(const WebKit::WebCryptoAlgorithm&);
 
     WebKit::WebCryptoAlgorithm m_algorithm;
-    WebKit::WebCryptoOperation* m_impl;
     RefPtr<Algorithm> m_algorithmNode;
-    State m_state;
-
-    RefPtr<ScriptPromiseResolver> m_promiseResolver;
-
-    OwnPtr<Result> m_result;
 };
 
 } // namespace WebCore

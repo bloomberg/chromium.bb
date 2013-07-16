@@ -110,6 +110,7 @@
       'ViewportAnchor.cpp',
       'ViewportAnchor.h',
       'WebAccessibilityObject.cpp',
+      'WebArrayBuffer.cpp',
       'WebArrayBufferView.cpp',
       'WebBindings.cpp',
       'WebBlob.cpp',
