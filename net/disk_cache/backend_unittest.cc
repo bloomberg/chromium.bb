@@ -2886,22 +2886,11 @@ TEST_F(DiskCacheBackendTest, SimpleCacheBasics) {
   BackendBasics();
 }
 
-TEST_F(DiskCacheBackendTest, SimpleCacheAppCacheBasics) {
-  SetCacheType(net::APP_CACHE);
-  SetSimpleCacheMode();
-  BackendBasics();
-}
-
 TEST_F(DiskCacheBackendTest, SimpleCacheKeying) {
   SetSimpleCacheMode();
   BackendKeying();
 }
 
-TEST_F(DiskCacheBackendTest, SimpleCacheAppCacheKeying) {
-  SetSimpleCacheMode();
-  SetCacheType(net::APP_CACHE);
-  BackendKeying();
-}
 
 TEST_F(DiskCacheBackendTest, DISABLED_SimpleCacheSetSize) {
   SetSimpleCacheMode();
@@ -2921,25 +2910,6 @@ TEST_F(DiskCacheBackendTest, MAYBE_SimpleCacheLoad) {
   BackendLoad();
 }
 
-TEST_F(DiskCacheBackendTest, SimpleCacheAppCacheLoad) {
-  SetCacheType(net::APP_CACHE);
-  SetSimpleCacheMode();
-  SetMaxSize(0x100000);
-  BackendLoad();
-}
-
-TEST_F(DiskCacheBackendTest, SimpleCacheAppCacheChain) {
-  SetCacheType(net::APP_CACHE);
-  SetSimpleCacheMode();
-  BackendChain();
-}
-
-TEST_F(DiskCacheBackendTest, SimpleCacheAppCacheEnumerations2) {
-  SetCacheType(net::APP_CACHE);
-  SetSimpleCacheMode();
-  BackendEnumerations2();
-}
-
 TEST_F(DiskCacheBackendTest, SimpleDoomRecent) {
   SetSimpleCacheMode();
   BackendDoomRecent();
@@ -2952,12 +2922,6 @@ TEST_F(DiskCacheBackendTest, SimpleDoomBetween) {
 
 // See http://crbug.com/237450.
 TEST_F(DiskCacheBackendTest, FLAKY_SimpleCacheDoomAll) {
-  SetSimpleCacheMode();
-  BackendDoomAll();
-}
-
-TEST_F(DiskCacheBackendTest, SimpleCacheAppCacheOnlyDoomAll) {
-  SetCacheType(net::APP_CACHE);
   SetSimpleCacheMode();
   BackendDoomAll();
 }
