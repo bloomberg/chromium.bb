@@ -1192,8 +1192,10 @@ TEST_F(WidgetTest, CaptureWidgetFromMousePress) {
   base::MessageLoop::current()->PostTask(FROM_HERE,
       base::Bind(&Widget::OnMouseEvent,
                  base::Unretained(second),
-                 new ui::MouseEvent(ui::ET_MOUSE_RELEASED, location, location,
-                                    ui::EF_LEFT_MOUSE_BUTTON)));
+                 base::Owned(new ui::MouseEvent(ui::ET_MOUSE_RELEASED,
+                                                location,
+                                                location,
+                                                ui::EF_LEFT_MOUSE_BUTTON))));
   ui::MouseEvent press(ui::ET_MOUSE_PRESSED, location, location,
                        ui::EF_LEFT_MOUSE_BUTTON);
   first->OnMouseEvent(&press);
