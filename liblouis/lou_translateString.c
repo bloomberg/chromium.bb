@@ -246,7 +246,7 @@ trace_translate (const char *tableList, const widechar * inbufx,
       *inlen = realInlen;
       *outlen = dest;
       if (inputPositions != NULL)
-	memcpy (inputPositions, srcMapping, destmax * sizeof (int));
+	memcpy (inputPositions, srcMapping, dest * sizeof (int));
       if (outputPos != NULL)
 	{
 	  int lastpos = 0;
