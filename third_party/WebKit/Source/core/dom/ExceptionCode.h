@@ -86,15 +86,7 @@ namespace WebCore {
         PathExistsError,
 
         // SQL
-        // FIXME: Consolidate these once https://crbug.com/252233 is fixed.
-        SQLUnknownError,
-        SQLDatabaseError,
-        SQLVersionError,
-        TooLargeError,
-        SQLQuotaExceededError,
-        SQLSyntaxError,
-        SQLConstraintError,
-        SQLTimeoutError,
+        SQLDatabaseError, // Naming conflict with DatabaseError class.
 
         // WebIDL exception types, handled by the binding layer.
         // FIXME: Add GeneralError, EvalError, etc. when implemented in the bindings.

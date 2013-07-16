@@ -46,20 +46,21 @@ class SQLTransactionClient;
 class SQLTransactionSyncCallback;
 class SQLValue;
 class SQLiteTransaction;
+class ExceptionState;
 
 // Instances of this class should be created and used only on the worker's context thread.
 class SQLTransactionBackendSync : public RefCounted<SQLTransactionBackendSync> {
 public:
     ~SQLTransactionBackendSync();
 
-    PassRefPtr<SQLResultSet> executeSQL(const String& sqlStatement, const Vector<SQLValue>& arguments, ExceptionCode&);
+    PassRefPtr<SQLResultSet> executeSQL(const String& sqlStatement, const Vector<SQLValue>& arguments, ExceptionState&);
 
     DatabaseSync* database() { return m_database.get(); }
     bool isReadOnly() const { return m_readOnly; }
 
-    ExceptionCode begin();
-    ExceptionCode execute();
-    ExceptionCode commit();
+    void begin(ExceptionState&);
+    void execute(ExceptionState&);
+    void commit(ExceptionState&);
     void rollback();
 
 private:

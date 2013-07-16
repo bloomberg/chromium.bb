@@ -45,6 +45,7 @@
 namespace WebCore {
 
 class DatabaseCallback;
+class ExceptionState;
 class SQLTransactionSync;
 class SQLTransactionSyncCallback;
 class SecurityOrigin;
@@ -54,9 +55,9 @@ class DatabaseSync : public DatabaseBase, public DatabaseBackendSync, public Scr
 public:
     virtual ~DatabaseSync();
 
-    void changeVersion(const String& oldVersion, const String& newVersion, PassRefPtr<SQLTransactionSyncCallback>, ExceptionCode&);
-    void transaction(PassRefPtr<SQLTransactionSyncCallback>, ExceptionCode&);
-    void readTransaction(PassRefPtr<SQLTransactionSyncCallback>, ExceptionCode&);
+    void changeVersion(const String& oldVersion, const String& newVersion, PassRefPtr<SQLTransactionSyncCallback>, ExceptionState&);
+    void transaction(PassRefPtr<SQLTransactionSyncCallback>, ExceptionState&);
+    void readTransaction(PassRefPtr<SQLTransactionSyncCallback>, ExceptionState&);
 
     virtual void markAsDeletedAndClose();
     virtual void closeImmediately();
@@ -78,7 +79,8 @@ private:
     PassRefPtr<DatabaseBackendSync> backend();
     static PassRefPtr<DatabaseSync> create(ScriptExecutionContext*, PassRefPtr<DatabaseBackendBase>);
 
-    void runTransaction(PassRefPtr<SQLTransactionSyncCallback>, bool readOnly, ExceptionCode&);
+    void runTransaction(PassRefPtr<SQLTransactionSyncCallback>, bool readOnly, ExceptionState&);
+    void rollbackTransaction(PassRefPtr<SQLTransactionSync>);
 
     String m_lastErrorMessage;
 

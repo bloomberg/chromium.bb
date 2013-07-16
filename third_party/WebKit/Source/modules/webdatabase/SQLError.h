@@ -62,7 +62,10 @@ public:
         TIMEOUT_ERR = 7
     };
 
-    static SQLErrorCode ExceptionCodeToSQLErrorCode(ExceptionCode);
+    static const char quotaExceededErrorMessage[];
+    static const char syntaxErrorMessage[];
+    static const char unknownErrorMessage[];
+    static const char versionErrorMessage[];
 
 private:
     SQLError(unsigned code, const String& message) : m_code(code), m_message(message.isolatedCopy())

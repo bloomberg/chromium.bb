@@ -30,11 +30,13 @@
 #include "config.h"
 #include "modules/webdatabase/SQLStatementSync.h"
 
+#include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/platform/sql/SQLValue.h"
 #include "core/platform/sql/SQLiteDatabase.h"
 #include "core/platform/sql/SQLiteStatement.h"
 #include "modules/webdatabase/DatabaseSync.h"
+#include "modules/webdatabase/SQLError.h"
 #include "modules/webdatabase/SQLResultSet.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
@@ -49,7 +51,7 @@ SQLStatementSync::SQLStatementSync(const String& statement, const Vector<SQLValu
     ASSERT(!m_statement.isEmpty());
 }
 
-PassRefPtr<SQLResultSet> SQLStatementSync::execute(DatabaseSync* db, ExceptionCode& ec)
+PassRefPtr<SQLResultSet> SQLStatementSync::execute(DatabaseSync* db, ExceptionState& es)
 {
     db->setAuthorizerPermissions(m_permissions);
 
@@ -58,13 +60,19 @@ PassRefPtr<SQLResultSet> SQLStatementSync::execute(DatabaseSync* db, ExceptionCo
     SQLiteStatement statement(*database, m_statement);
     int result = statement.prepare();
     if (result != SQLResultOk) {
-        ec = (result == SQLResultInterrupt ? SQLDatabaseError : SQLSyntaxError);
+        if (result == SQLResultInterrupt)
+            es.throwDOMException(SQLDatabaseError);
+        else
+            es.throwDOMException(SyntaxError, SQLError::syntaxErrorMessage);
         db->setLastErrorMessage("could not prepare statement", result, database->lastErrorMsg());
         return 0;
     }
 
     if (statement.bindParameterCount() != m_arguments.size()) {
-        ec = (db->isInterrupted()? SQLDatabaseError : SQLSyntaxError);
+        if (db->isInterrupted())
+            es.throwDOMException(SQLDatabaseError);
+        else
+            es.throwDOMException(SyntaxError, SQLError::syntaxErrorMessage);
         db->setLastErrorMessage("number of '?'s in statement string does not match argument count");
         return 0;
     }
@@ -72,13 +80,13 @@ PassRefPtr<SQLResultSet> SQLStatementSync::execute(DatabaseSync* db, ExceptionCo
     for (unsigned i = 0; i < m_arguments.size(); ++i) {
         result = statement.bindValue(i + 1, m_arguments[i]);
         if (result == SQLResultFull) {
-            ec = SQLQuotaExceededError;
+            es.throwDOMException(QuotaExceededError, SQLError::quotaExceededErrorMessage);
             db->setLastErrorMessage("there was not enough remaining storage space");
             return 0;
         }
 
         if (result != SQLResultOk) {
-            ec = SQLDatabaseError;
+            es.throwDOMException(SQLDatabaseError);
             db->setLastErrorMessage("could not bind value", result, database->lastErrorMsg());
             return 0;
         }
@@ -103,7 +111,7 @@ PassRefPtr<SQLResultSet> SQLStatementSync::execute(DatabaseSync* db, ExceptionCo
         } while (result == SQLResultRow);
 
         if (result != SQLResultDone) {
-            ec = SQLDatabaseError;
+            es.throwDOMException(SQLDatabaseError);
             db->setLastErrorMessage("could not iterate results", result, database->lastErrorMsg());
             return 0;
         }
@@ -113,15 +121,15 @@ PassRefPtr<SQLResultSet> SQLStatementSync::execute(DatabaseSync* db, ExceptionCo
             resultSet->setInsertId(database->lastInsertRowID());
     } else if (result == SQLResultFull) {
         // Quota error, the delegate will be asked for more space and this statement might be re-run.
-        ec = SQLQuotaExceededError;
+        es.throwDOMException(QuotaExceededError, SQLError::quotaExceededErrorMessage);
         db->setLastErrorMessage("there was not enough remaining storage space");
         return 0;
     } else if (result == SQLResultConstraint) {
-        ec = SQLConstraintError;
+        es.throwDOMException(ConstraintError, "A constraint was violated.");
         db->setLastErrorMessage("statement failed due to a constraint failure");
         return 0;
     } else {
-        ec = SQLDatabaseError;
+        es.throwDOMException(SQLDatabaseError);
         db->setLastErrorMessage("could not execute statement", result, database->lastErrorMsg());
         return 0;
     }

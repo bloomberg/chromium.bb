@@ -32,6 +32,7 @@
 #include "config.h"
 #include "modules/webdatabase/SQLTransactionBackendSync.h"
 
+#include "bindings/v8/ExceptionState.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/platform/sql/SQLValue.h"
 #include "core/platform/sql/SQLiteTransaction.h"
@@ -68,7 +69,7 @@ SQLTransactionBackendSync::~SQLTransactionBackendSync()
         rollback();
 }
 
-PassRefPtr<SQLResultSet> SQLTransactionBackendSync::executeSQL(const String& sqlStatement, const Vector<SQLValue>& arguments, ExceptionCode& ec)
+PassRefPtr<SQLResultSet> SQLTransactionBackendSync::executeSQL(const String& sqlStatement, const Vector<SQLValue>& arguments, ExceptionState& es)
 {
     ASSERT(m_database->scriptExecutionContext()->isContextThread());
 
@@ -76,13 +77,13 @@ PassRefPtr<SQLResultSet> SQLTransactionBackendSync::executeSQL(const String& sql
 
     if (!m_database->opened()) {
         m_database->setLastErrorMessage("cannot executeSQL because the database is not open");
-        ec = SQLUnknownError;
+        es.throwDOMException(UnknownError, SQLError::unknownErrorMessage);
         return 0;
     }
 
     if (m_hasVersionMismatch) {
         m_database->setLastErrorMessage("cannot executeSQL because there is a version mismatch");
-        ec = SQLVersionError;
+        es.throwDOMException(VersionError, SQLError::versionErrorMessage);
         return 0;
     }
 
@@ -102,14 +103,14 @@ PassRefPtr<SQLResultSet> SQLTransactionBackendSync::executeSQL(const String& sql
     RefPtr<SQLResultSet> resultSet;
     while (retryStatement) {
         retryStatement = false;
-        resultSet = statement.execute(m_database.get(), ec);
+        resultSet = statement.execute(m_database.get(), es);
         if (!resultSet) {
             if (m_sqliteTransaction->wasRolledBackBySqlite())
                 return 0;
 
-            if (ec == SQLQuotaExceededError) {
+            if (es == QuotaExceededError) {
                 if (m_transactionClient->didExceedQuota(database())) {
-                    ec = 0;
+                    es.clearException();
                     retryStatement = true;
                 } else {
                     m_database->setLastErrorMessage("there was not enough remaining storage space");
@@ -125,13 +126,14 @@ PassRefPtr<SQLResultSet> SQLTransactionBackendSync::executeSQL(const String& sql
     return resultSet.release();
 }
 
-ExceptionCode SQLTransactionBackendSync::begin()
+void SQLTransactionBackendSync::begin(ExceptionState& es)
 {
     ASSERT(m_database->scriptExecutionContext()->isContextThread());
     if (!m_database->opened()) {
-        m_database->reportStartTransactionResult(1, SQLError::ExceptionCodeToSQLErrorCode(SQLUnknownError), 0);
+        m_database->reportStartTransactionResult(1, SQLError::UNKNOWN_ERR, 0);
         m_database->setLastErrorMessage("cannot begin transaction because the database is not open");
-        return SQLUnknownError;
+        es.throwDOMException(UnknownError, SQLError::unknownErrorMessage);
+        return;
     }
 
     ASSERT(!m_database->sqliteDatabase().transactionInProgress());
@@ -151,11 +153,12 @@ ExceptionCode SQLTransactionBackendSync::begin()
     // Check if begin() succeeded.
     if (!m_sqliteTransaction->inProgress()) {
         ASSERT(!m_database->sqliteDatabase().transactionInProgress());
-        m_database->reportStartTransactionResult(2, SQLError::ExceptionCodeToSQLErrorCode(SQLDatabaseError), m_database->sqliteDatabase().lastError());
+        m_database->reportStartTransactionResult(2, SQLError::DATABASE_ERR, m_database->sqliteDatabase().lastError());
         m_database->setLastErrorMessage("unable to begin transaction",
             m_database->sqliteDatabase().lastError(), m_database->sqliteDatabase().lastErrorMsg());
         m_sqliteTransaction.clear();
-        return SQLDatabaseError;
+        es.throwDOMException(SQLDatabaseError);
+        return;
     }
 
     // Note: We intentionally retrieve the actual version even with an empty expected version.
@@ -163,38 +166,39 @@ ExceptionCode SQLTransactionBackendSync::begin()
     // the actual version. In single-process browsers, this is just a map lookup.
     String actualVersion;
     if (!m_database->getActualVersionForTransaction(actualVersion)) {
-        m_database->reportStartTransactionResult(3, SQLError::ExceptionCodeToSQLErrorCode(SQLDatabaseError), m_database->sqliteDatabase().lastError());
+        m_database->reportStartTransactionResult(3, SQLError::DATABASE_ERR, m_database->sqliteDatabase().lastError());
         m_database->setLastErrorMessage("unable to read version",
             m_database->sqliteDatabase().lastError(), m_database->sqliteDatabase().lastErrorMsg());
         rollback();
-        return SQLDatabaseError;
+        es.throwDOMException(SQLDatabaseError);
+        return;
     }
     m_hasVersionMismatch = !m_database->expectedVersion().isEmpty() && (m_database->expectedVersion() != actualVersion);
     m_database->reportStartTransactionResult(0, -1, 0); // OK
-    return 0;
 }
 
-ExceptionCode SQLTransactionBackendSync::execute()
+void SQLTransactionBackendSync::execute(ExceptionState& es)
 {
     ASSERT(m_database->scriptExecutionContext()->isContextThread());
     if (!m_database->opened() || (m_callback && !m_callback->handleEvent(SQLTransactionSync::from(this)))) {
         if (m_database->lastErrorMessage().isEmpty())
             m_database->setLastErrorMessage("failed to execute transaction callback");
         m_callback = 0;
-        return SQLUnknownError;
+        es.throwDOMException(UnknownError, SQLError::unknownErrorMessage);
+        return;
     }
 
     m_callback = 0;
-    return 0;
 }
 
-ExceptionCode SQLTransactionBackendSync::commit()
+void SQLTransactionBackendSync::commit(ExceptionState& es)
 {
     ASSERT(m_database->scriptExecutionContext()->isContextThread());
     if (!m_database->opened()) {
-        m_database->reportCommitTransactionResult(1, SQLError::ExceptionCodeToSQLErrorCode(SQLUnknownError), 0);
+        m_database->reportCommitTransactionResult(1, SQLError::UNKNOWN_ERR, 0);
         m_database->setLastErrorMessage("unable to commit transaction because the database is not open.");
-        return SQLUnknownError;
+        es.throwDOMException(UnknownError, SQLError::unknownErrorMessage);
+        return;
     }
 
     ASSERT(m_sqliteTransaction);
@@ -205,10 +209,11 @@ ExceptionCode SQLTransactionBackendSync::commit()
 
     // If the commit failed, the transaction will still be marked as "in progress"
     if (m_sqliteTransaction->inProgress()) {
-        m_database->reportCommitTransactionResult(2, SQLError::ExceptionCodeToSQLErrorCode(SQLDatabaseError), m_database->sqliteDatabase().lastError());
+        m_database->reportCommitTransactionResult(2, SQLError::DATABASE_ERR, m_database->sqliteDatabase().lastError());
         m_database->setLastErrorMessage("unable to commit transaction",
             m_database->sqliteDatabase().lastError(), m_database->sqliteDatabase().lastErrorMsg());
-        return SQLDatabaseError;
+        es.throwDOMException(SQLDatabaseError);
+        return;
     }
 
     m_sqliteTransaction.clear();
@@ -222,7 +227,6 @@ ExceptionCode SQLTransactionBackendSync::commit()
         m_transactionClient->didCommitWriteTransaction(database());
 
     m_database->reportCommitTransactionResult(0, -1, 0); // OK
-    return 0;
 }
 
 void SQLTransactionBackendSync::rollback()

@@ -83,14 +83,7 @@ static struct CoreException {
     { "PathExistsError", "An attempt was made to create a file or directory where an element already exists.", 0 },
 
     // SQL
-    { "UnknownError", "The operation failed for reasons unrelated to the database.", 0 },
     { "DatabaseError", "The operation failed for some reason related to the database.", 0 },
-    { "VersionError", "The actual database version did not match the expected version.", 0 },
-    { "TooLargeError", "Data returned from the database is too large.", 0 },
-    { "QuotaExceededError", "Quota was exceeded.", 22 },
-    { "SyntaxError", "Invalid or unauthorized statement; or the number of arguments did not match the number of ? placeholders.", 12 },
-    { "ConstraintError", "A constraint was violated.", 0 },
-    { "TimeoutError", "A transaction lock could not be acquired in a reasonable time.", 23 },
 };
 
 static const CoreException* getErrorEntry(ExceptionCode ec)

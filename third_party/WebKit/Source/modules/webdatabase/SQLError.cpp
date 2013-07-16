@@ -33,29 +33,9 @@
 
 namespace WebCore {
 
-SQLError::SQLErrorCode SQLError::ExceptionCodeToSQLErrorCode(ExceptionCode ec)
-{
-    switch (ec) {
-    case SQLUnknownError:
-        return UNKNOWN_ERR;
-    case SQLDatabaseError:
-        return DATABASE_ERR;
-    case SQLVersionError:
-        return VERSION_ERR;
-    case TooLargeError:
-        return TOO_LARGE_ERR;
-    case SQLQuotaExceededError:
-        return QUOTA_ERR;
-    case SQLSyntaxError:
-        return SYNTAX_ERR;
-    case SQLConstraintError:
-        return CONSTRAINT_ERR;
-    case SQLTimeoutError:
-        return TIMEOUT_ERR;
-    default:
-        ASSERT_NOT_REACHED();
-        return UNKNOWN_ERR;
-    }
-}
+const char SQLError::quotaExceededErrorMessage[] = "Quota was exceeded.";
+const char SQLError::syntaxErrorMessage[] = "Invalid or unauthorized statement; or the number of arguments did not match the number of ? placeholders.";
+const char SQLError::unknownErrorMessage[] = "The operation failed for reasons unrelated to the database.";
+const char SQLError::versionErrorMessage[] = "The actual database version did not match the expected version.";
 
 } // namespace WebCore

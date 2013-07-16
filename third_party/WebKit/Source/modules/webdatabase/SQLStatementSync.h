@@ -40,13 +40,14 @@
 namespace WebCore {
 
 class DatabaseSync;
+class ExceptionState;
 class SQLResultSet;
 
 class SQLStatementSync {
 public:
     SQLStatementSync(const String& statement, const Vector<SQLValue>& arguments, int permissions);
 
-    PassRefPtr<SQLResultSet> execute(DatabaseSync*, ExceptionCode&);
+    PassRefPtr<SQLResultSet> execute(DatabaseSync*, ExceptionState&);
 
 private:
     String m_statement;
