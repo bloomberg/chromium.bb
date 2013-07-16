@@ -3952,8 +3952,13 @@ void RenderViewImpl::didFailLoad(WebFrame* frame, const WebURLError& error) {
 void RenderViewImpl::didFinishLoad(WebFrame* frame) {
   WebDataSource* ds = frame->dataSource();
   DocumentState* document_state = DocumentState::FromDataSource(ds);
-  if (document_state->finish_load_time().is_null())
+  if (document_state->finish_load_time().is_null()) {
+    if (!frame->parent()) {
+      TRACE_EVENT_INSTANT0("WebCore", "LoadFinished",
+                           TRACE_EVENT_SCOPE_PROCESS);
+    }
     document_state->set_finish_load_time(Time::Now());
+  }
 
   FOR_EACH_OBSERVER(RenderViewObserver, observers_, DidFinishLoad(frame));
 
