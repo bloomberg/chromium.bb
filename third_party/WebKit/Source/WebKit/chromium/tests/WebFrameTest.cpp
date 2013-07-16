@@ -1442,7 +1442,7 @@ TEST_F(WebFrameTest, DivScrollIntoEditableTest)
     float scale;
     WebCore::IntPoint scroll;
     bool needAnimation;
-    webViewImpl->computeScaleAndScrollForFocusedNode(webViewImpl->focusedWebCoreNode(), scale, scroll, needAnimation);
+    webViewImpl->computeScaleAndScrollForFocusedNode(webViewImpl->focusedElement(), scale, scroll, needAnimation);
     EXPECT_TRUE(needAnimation);
     // The edit box should be left aligned with a margin for possible label.
     int hScroll = editBoxWithText.x - leftBoxRatio * viewportWidth / scale;
@@ -1457,7 +1457,7 @@ TEST_F(WebFrameTest, DivScrollIntoEditableTest)
     m_webView->resize(WebSize(viewportWidth, viewportHeight));
     setScaleAndScrollAndLayout(m_webView, WebPoint(0, 0), 1);
     webViewImpl->selectionBounds(caret, rect);
-    webViewImpl->computeScaleAndScrollForFocusedNode(webViewImpl->focusedWebCoreNode(), scale, scroll, needAnimation);
+    webViewImpl->computeScaleAndScrollForFocusedNode(webViewImpl->focusedElement(), scale, scroll, needAnimation);
     EXPECT_TRUE(needAnimation);
     // The caret should be right aligned since the caret would be offscreen when the edit box is left aligned.
     hScroll = caret.x + caret.width + caretPadding - viewportWidth / scale;
@@ -1468,7 +1468,7 @@ TEST_F(WebFrameTest, DivScrollIntoEditableTest)
     // Move focus to edit box with text.
     m_webView->advanceFocus(false);
     webViewImpl->selectionBounds(caret, rect);
-    webViewImpl->computeScaleAndScrollForFocusedNode(webViewImpl->focusedWebCoreNode(), scale, scroll, needAnimation);
+    webViewImpl->computeScaleAndScrollForFocusedNode(webViewImpl->focusedElement(), scale, scroll, needAnimation);
     EXPECT_TRUE(needAnimation);
     // The edit box should be left aligned.
     hScroll = editBoxWithNoText.x;
@@ -1481,7 +1481,7 @@ TEST_F(WebFrameTest, DivScrollIntoEditableTest)
 
     // Move focus back to the first edit box.
     m_webView->advanceFocus(true);
-    webViewImpl->computeScaleAndScrollForFocusedNode(webViewImpl->focusedWebCoreNode(), scale, scroll, needAnimation);
+    webViewImpl->computeScaleAndScrollForFocusedNode(webViewImpl->focusedElement(), scale, scroll, needAnimation);
     // The position should have stayed the same since this box was already on screen with the right scale.
     EXPECT_FALSE(needAnimation);
 }
@@ -1626,7 +1626,7 @@ TEST_F(WebFrameTest, ClearFocusedNodeTest)
     m_webView->clearFocusedNode();
 
     // Now retrieve the FocusedNode and test it should be null.
-    EXPECT_EQ(0, static_cast<WebViewImpl*>(m_webView)->focusedWebCoreNode());
+    EXPECT_EQ(0, static_cast<WebViewImpl*>(m_webView)->focusedElement());
 }
 
 // Implementation of WebFrameClient that tracks the v8 contexts that are created

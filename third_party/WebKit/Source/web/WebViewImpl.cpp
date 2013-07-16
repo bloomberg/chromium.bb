@@ -950,8 +950,8 @@ bool WebViewImpl::handleKeyEvent(const WebKeyboardEvent& event)
         if (WebInputEvent::RawKeyDown == event.type) {
             // Suppress the next keypress event unless the focused node is a plug-in node.
             // (Flash needs these keypress events to handle non-US keyboards.)
-            Node* node = focusedWebCoreNode();
-            if (!node || !node->renderer() || !node->renderer()->isEmbeddedObject())
+            Element* element = focusedElement();
+            if (!element || !element->renderer() || !element->renderer()->isEmbeddedObject())
                 m_suppressNextKeypressEvent = true;
         }
         return true;
@@ -971,12 +971,11 @@ bool WebViewImpl::autocompleteHandleKeyEvent(const WebKeyboardEvent& event)
     // Pressing delete triggers the removal of the selected suggestion from the DB.
     if (event.windowsKeyCode == VKEY_DELETE
         && m_autofillPopup->selectedIndex() != -1) {
-        Node* node = focusedWebCoreNode();
-        if (!node || (node->nodeType() != Node::ELEMENT_NODE)) {
+        Element* element = focusedElement();
+        if (!element) {
             ASSERT_NOT_REACHED();
             return false;
         }
-        Element* element = toElement(node);
         if (!element->hasTagName(HTMLNames::inputTag)) {
             ASSERT_NOT_REACHED();
             return false;
@@ -2012,22 +2011,19 @@ void WebViewImpl::setFocus(bool enable)
         m_page->focusController()->setActive(true);
         RefPtr<Frame> focusedFrame = m_page->focusController()->focusedFrame();
         if (focusedFrame) {
-            Node* focusedNode = focusedFrame->document()->focusedNode();
-            if (focusedNode && focusedNode->isElementNode()
-                && focusedFrame->selection()->selection().isNone()) {
+            Element* element = toElement(focusedFrame->document()->focusedNode());
+            if (element && focusedFrame->selection()->selection().isNone()) {
                 // If the selection was cleared while the WebView was not
                 // focused, then the focus element shows with a focus ring but
                 // no caret and does respond to keyboard inputs.
-                Element* element = toElement(focusedNode);
-                if (element->isTextFormControl())
+                if (element->isTextFormControl()) {
                     element->updateFocusAppearance(true);
-                else if (focusedNode->isContentEditable()) {
+                } else if (element->isContentEditable()) {
                     // updateFocusAppearance() selects all the text of
                     // contentseditable DIVs. So we set the selection explicitly
                     // instead. Note that this has the side effect of moving the
                     // caret back to the beginning of the text.
-                    Position position(focusedNode, 0,
-                                      Position::PositionIsOffsetInAnchor);
+                    Position position(element, 0, Position::PositionIsOffsetInAnchor);
                     focusedFrame->selection()->setSelection(
                         VisibleSelection(position, SEL_DEFAULT_AFFINITY));
                 }
@@ -2237,12 +2233,12 @@ WebTextInputInfo WebViewImpl::textInputInfo()
 
 WebTextInputType WebViewImpl::textInputType()
 {
-    Node* node = focusedWebCoreNode();
-    if (!node)
+    Element* element = focusedElement();
+    if (!element)
         return WebTextInputTypeNone;
 
-    if (node->hasTagName(HTMLNames::inputTag)) {
-        HTMLInputElement* input = toHTMLInputElement(node);
+    if (element->hasTagName(HTMLNames::inputTag)) {
+        HTMLInputElement* input = toHTMLInputElement(element);
 
         if (input->isDisabledOrReadOnly())
             return WebTextInputTypeNone;
@@ -2275,21 +2271,20 @@ WebTextInputType WebViewImpl::textInputType()
         return WebTextInputTypeNone;
     }
 
-    if (isHTMLTextAreaElement(node)) {
-        if (toHTMLTextAreaElement(node)->isDisabledOrReadOnly())
+    if (isHTMLTextAreaElement(element)) {
+        if (toHTMLTextAreaElement(element)->isDisabledOrReadOnly())
             return WebTextInputTypeNone;
         return WebTextInputTypeTextArea;
     }
 
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
-    if (node->isHTMLElement()) {
-        HTMLElement* element = toHTMLElement(node);
-        if (element->isDateTimeFieldElement())
+    if (element->isHTMLElement()) {
+        if (toHTMLElement(element)->isDateTimeFieldElement())
             return WebTextInputTypeDateTimeField;
     }
 #endif
 
-    if (node->shouldUseInputMethod())
+    if (element->shouldUseInputMethod())
         return WebTextInputTypeContentEditable;
 
     return WebTextInputTypeNone;
@@ -2297,18 +2292,18 @@ WebTextInputType WebViewImpl::textInputType()
 
 WebString WebViewImpl::inputModeOfFocusedElement()
 {
-    Node* node = focusedWebCoreNode();
-    if (!node)
+    Element* element = focusedElement();
+    if (!element)
         return WebString();
 
-    if (node->hasTagName(HTMLNames::inputTag)) {
-        const HTMLInputElement* input = toHTMLInputElement(node);
+    if (element->hasTagName(HTMLNames::inputTag)) {
+        const HTMLInputElement* input = toHTMLInputElement(element);
         if (input->supportsInputModeAttribute())
             return input->fastGetAttribute(HTMLNames::inputmodeAttr).lower();
         return WebString();
     }
-    if (isHTMLTextAreaElement(node)) {
-        const HTMLTextAreaElement* textarea = toHTMLTextAreaElement(node);
+    if (isHTMLTextAreaElement(element)) {
+        const HTMLTextAreaElement* textarea = toHTMLTextAreaElement(element);
         return textarea->fastGetAttribute(HTMLNames::inputmodeAttr).lower();
     }
 
@@ -2685,51 +2680,44 @@ void WebViewImpl::clearFocusedNode()
     if (!document)
         return;
 
-    RefPtr<Node> oldFocusedNode = document->focusedNode();
+    RefPtr<Element> oldFocusedElement = toElement(document->focusedNode());
 
     // Clear the focused node.
     document->setFocusedElement(0);
 
-    if (!oldFocusedNode)
+    if (!oldFocusedElement)
         return;
 
     // If a text field has focus, we need to make sure the selection controller
     // knows to remove selection from it. Otherwise, the text field is still
     // processing keyboard events even though focus has been moved to the page and
     // keystrokes get eaten as a result.
-    if (oldFocusedNode->isContentEditable()
-        || (oldFocusedNode->isElementNode()
-            && toElement(oldFocusedNode.get())->isTextFormControl())) {
+    if (oldFocusedElement->isContentEditable() || oldFocusedElement->isTextFormControl())
         frame->selection()->clear();
-    }
 }
 
 void WebViewImpl::scrollFocusedNodeIntoView()
 {
-    Node* focusedNode = focusedWebCoreNode();
-    if (focusedNode && focusedNode->isElementNode()) {
-        Element* elementNode = toElement(focusedNode);
-        elementNode->scrollIntoViewIfNeeded(true);
-    }
+    if (Element* element = focusedElement())
+        element->scrollIntoViewIfNeeded(true);
 }
 
 void WebViewImpl::scrollFocusedNodeIntoRect(const WebRect& rect)
 {
     Frame* frame = page()->mainFrame();
-    Node* focusedNode = focusedWebCoreNode();
-    if (!frame || !frame->view() || !focusedNode || !focusedNode->isElementNode())
+    Element* element = focusedElement();
+    if (!frame || !frame->view() || !element)
         return;
 
     if (!m_webSettings->autoZoomFocusedNodeToLegibleScale()) {
-        Element* elementNode = toElement(focusedNode);
-        frame->view()->scrollElementToRect(elementNode, IntRect(rect.x, rect.y, rect.width, rect.height));
+        frame->view()->scrollElementToRect(element, IntRect(rect.x, rect.y, rect.width, rect.height));
         return;
     }
 
     float scale;
     IntPoint scroll;
     bool needAnimation;
-    computeScaleAndScrollForFocusedNode(focusedNode, scale, scroll, needAnimation);
+    computeScaleAndScrollForFocusedNode(element, scale, scroll, needAnimation);
     if (needAnimation)
         startPageScaleAnimation(scroll, false, scale, scrollAndScaleAnimationDurationInSeconds);
 }
@@ -3499,17 +3487,16 @@ void WebViewImpl::applyAutofillSuggestions(
         return;
     }
 
-    RefPtr<Node> focusedNode = focusedWebCoreNode();
+    RefPtr<Element> element = focusedElement();
     // If the node for which we queried the Autofill suggestions is not the
     // focused node, then we have nothing to do.  FIXME: also check the
     // caret is at the end and that the text has not changed.
-    if (!focusedNode || focusedNode != PassRefPtr<Node>(node)) {
+    if (!element || element != PassRefPtr<Node>(node)) {
         hideAutofillPopup();
         return;
     }
 
-    ASSERT(focusedNode->hasTagName(HTMLNames::inputTag));
-    HTMLInputElement* inputElem = toHTMLInputElement(focusedNode.get());
+    HTMLInputElement* inputElem = toHTMLInputElement(element.get());
 
     // The first time the Autofill popup is shown we'll create the client and
     // the popup.
@@ -3531,8 +3518,8 @@ void WebViewImpl::applyAutofillSuggestions(
         refreshAutofillPopup();
     } else {
         m_autofillPopupShowing = true;
-        IntRect rect = focusedNode->pixelSnappedBoundingBox();
-        m_autofillPopup->showInRect(FloatQuad(rect), rect.size(), focusedNode->ownerDocument()->view(), 0);
+        IntRect rect = element->pixelSnappedBoundingBox();
+        m_autofillPopup->showInRect(FloatQuad(rect), rect.size(), element->ownerDocument()->view(), 0);
     }
 }
 
@@ -3793,14 +3780,14 @@ void WebViewImpl::refreshAutofillPopup()
         return;
     }
 
-    WebRect newWidgetRect = m_autofillPopup->refresh(focusedWebCoreNode()->pixelSnappedBoundingBox());
+    WebRect newWidgetRect = m_autofillPopup->refresh(focusedElement()->pixelSnappedBoundingBox());
     // Let's resize the backing window if necessary.
     WebPopupMenuImpl* popupMenu = static_cast<WebPopupMenuImpl*>(m_autofillPopup->client());
     if (popupMenu && popupMenu->client()->windowRect() != newWidgetRect)
         popupMenu->client()->setWindowRect(newWidgetRect);
 }
 
-Node* WebViewImpl::focusedWebCoreNode()
+Element* WebViewImpl::focusedElement()
 {
     Frame* frame = m_page->focusController()->focusedFrame();
     if (!frame)
@@ -3810,7 +3797,7 @@ Node* WebViewImpl::focusedWebCoreNode()
     if (!document)
         return 0;
 
-    return document->focusedNode();
+    return toElement(document->focusedNode());
 }
 
 HitTestResult WebViewImpl::hitTestResultForWindowPos(const IntPoint& pos)
