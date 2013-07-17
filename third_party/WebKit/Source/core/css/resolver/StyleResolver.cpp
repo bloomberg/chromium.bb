@@ -612,10 +612,8 @@ static inline void resetDirectionAndWritingModeOnDocument(Document* document)
 PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderStyle* defaultParent, StyleSharingBehavior sharingBehavior,
     RuleMatchingBehavior matchingBehavior, RenderRegion* regionForStyling)
 {
-    // FIXME: We should only ever resolve style on documents which are
-    // in a frame. Unfortunately SVG Animation violates this: crbug.com/260966
-    // ASSERT(document()->frame());
-    // ASSERT(documentSettings());
+    ASSERT(document()->frame());
+    ASSERT(documentSettings());
 
     // Once an element has a renderer, we don't try to destroy it, since otherwise the renderer
     // will vanish if a style recalc happens during loading.
@@ -960,12 +958,6 @@ void StyleResolver::collectViewportRules(RuleSet* rules)
 PassRefPtr<RenderStyle> StyleResolver::defaultStyleForElement()
 {
     m_state.setStyle(RenderStyle::create());
-    // FIXME: This should be removed once SVG Animations are fixed
-    // to not resolve style on documents outside a frame: crbug.com/260966
-    if (!documentSettings()) {
-        m_state.style()->font().update(0);
-        return m_state.takeStyle();
-    }
     m_state.fontBuilder().initForStyleResolve(document(), m_state.style(), m_state.useSVGZoomRules());
     m_state.style()->setLineHeight(RenderStyle::initialLineHeight());
     m_state.setLineHeightValue(0);

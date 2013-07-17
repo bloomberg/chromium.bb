@@ -621,6 +621,9 @@ void Document::dispose()
         m_scriptedAnimationController->clearDocumentPointer();
     m_scriptedAnimationController.clear();
 
+    if (svgExtensions())
+        accessSVGExtensions()->pauseAnimations();
+
     lifecycleNotifier()->notifyDocumentWasDisposed();
 }
 
@@ -1885,6 +1888,9 @@ void Document::detach(const AttachContext& context)
         m_scriptedAnimationController->clearDocumentPointer();
     m_scriptedAnimationController.clear();
 
+    if (svgExtensions())
+        accessSVGExtensions()->pauseAnimations();
+
     RenderObject* render = renderer();
 
     documentWillBecomeInactive();
@@ -1895,7 +1901,6 @@ void Document::detach(const AttachContext& context)
         FrameView* view = m_frame->view();
         if (view)
             view->detachCustomScrollbars();
-
     }
 
     // indicate destruction mode,  i.e. attached() but renderer == 0
