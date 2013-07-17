@@ -20,6 +20,10 @@ const int kSettingsIconSize = 16;
 const size_t kMaxVisibleMessageCenterNotifications = 100;
 const size_t kMaxVisiblePopupNotifications = 3;
 
+// Colors.
+const SkColor kMessageCenterBorderColor = SkColorSetRGB(0xC7, 0xCA, 0xCE);
+const SkColor kMessageCenterShadowColor = SkColorSetARGB(0.5 * 255, 0, 0, 0);
+
 // Within a notification ///////////////////////////////////////////////////////
 
 // Pixel dimensions.

@@ -10,13 +10,11 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/status_icons/status_icon.h"
 #include "chrome/browser/status_icons/status_tray.h"
-#include "chrome/browser/ui/views/message_center/notification_bubble_wrapper.h"
 #include "content/public/browser/user_metrics.h"
 #include "grit/chromium_strings.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_strings.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/models/simple_menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -25,8 +23,6 @@
 #include "ui/gfx/size.h"
 #include "ui/message_center/message_center_tray.h"
 #include "ui/message_center/message_center_tray_delegate.h"
-#include "ui/message_center/views/message_bubble_base.h"
-#include "ui/message_center/views/message_center_bubble.h"
 #include "ui/message_center/views/message_popup_collection.h"
 #include "ui/views/widget/widget.h"
 
@@ -38,45 +34,6 @@ const int kScreenEdgePadding = 2;
 const int kSystemTrayWidth = 16;
 const int kSystemTrayHeight = 16;
 const int kNumberOfSystemTraySprites = 10;
-
-gfx::Rect GetCornerAnchorRect() {
-  // TODO(dewittj): Use the preference to determine which corner to anchor from.
-  gfx::Screen* screen = gfx::Screen::GetNativeScreen();
-  gfx::Rect rect = screen->GetPrimaryDisplay().work_area();
-  rect.Inset(kScreenEdgePadding, kScreenEdgePadding);
-  return gfx::Rect(rect.bottom_right(), gfx::Size());
-}
-
-gfx::Point GetClosestCorner(gfx::Rect rect, gfx::Point query) {
-  gfx::Point center_point = rect.CenterPoint();
-  gfx::Point rv;
-
-  if (query.x() > center_point.x())
-    rv.set_x(rect.right());
-  else
-    rv.set_x(rect.x());
-
-  if (query.y() > center_point.y())
-    rv.set_y(rect.bottom());
-  else
-    rv.set_y(rect.y());
-
-  return rv;
-}
-
-// GetMouseAnchorRect returns a rectangle that has one corner where the mouse
-// clicked, and the opposite corner at the closest corner of the work area
-// (inset by an appropriate margin.)
-gfx::Rect GetMouseAnchorRect(gfx::Point cursor) {
-  // TODO(dewittj): GetNativeScreen could be wrong for Aura.
-  gfx::Screen* screen = gfx::Screen::GetNativeScreen();
-  gfx::Rect work_area = screen->GetPrimaryDisplay().work_area();
-  work_area.Inset(kScreenEdgePadding, kScreenEdgePadding);
-  gfx::Point corner = GetClosestCorner(work_area, cursor);
-
-  gfx::Rect mouse_anchor_rect(gfx::BoundingRect(cursor, corner));
-  return mouse_anchor_rect;
-}
 
 gfx::ImageSkia GetIcon(int unread_count) {
   bool has_unread = unread_count > 0;
@@ -93,12 +50,73 @@ using content::UserMetricsAction;
 
 namespace message_center {
 
+namespace internal {
+
+// Gets the position of the taskbar from the work area bounds. Returns
+// ALIGNMENT_NONE if position cannot be found.
+Alignment GetTaskbarAlignment() {
+  gfx::Screen* screen = gfx::Screen::GetNativeScreen();
+  // TODO(dewittj): It's possible GetPrimaryDisplay is wrong.
+  gfx::Rect screen_bounds = screen->GetPrimaryDisplay().bounds();
+  gfx::Rect work_area = screen->GetPrimaryDisplay().work_area();
+  work_area.Inset(kScreenEdgePadding, kScreenEdgePadding);
+
+  // Comparing the work area to the screen bounds gives us the location of the
+  // taskbar.  If the work area is exactly the same as the screen bounds,
+  // we are unable to locate the taskbar so we say we don't know it's alignment.
+  if (work_area.height() < screen_bounds.height()) {
+    if (work_area.y() > screen_bounds.y())
+      return ALIGNMENT_TOP;
+    return ALIGNMENT_BOTTOM;
+  }
+  if (work_area.width() < screen_bounds.width()) {
+    if (work_area.x() > screen_bounds.x())
+      return ALIGNMENT_LEFT;
+    return ALIGNMENT_RIGHT;
+  }
+
+  return ALIGNMENT_NONE;
+}
+
+gfx::Point GetClosestCorner(const gfx::Rect& rect, const gfx::Point& query) {
+  gfx::Point center_point = rect.CenterPoint();
+  gfx::Point rv;
+
+  if (query.x() > center_point.x())
+    rv.set_x(rect.right());
+  else
+    rv.set_x(rect.x());
+
+  if (query.y() > center_point.y())
+    rv.set_y(rect.bottom());
+  else
+    rv.set_y(rect.y());
+
+  return rv;
+}
+
+// Gets the corner of the screen where the message center should pop up.
+Alignment GetAnchorAlignment(const gfx::Rect& work_area, gfx::Point corner) {
+  gfx::Point center = work_area.CenterPoint();
+
+  Alignment anchor_alignment =
+      center.y() > corner.y() ? ALIGNMENT_TOP : ALIGNMENT_BOTTOM;
+  anchor_alignment =
+      (Alignment)(anchor_alignment |
+                  (center.x() > corner.x() ? ALIGNMENT_LEFT : ALIGNMENT_RIGHT));
+
+  return anchor_alignment;
+}
+
+}  // namespace internal
+
 MessageCenterTrayDelegate* CreateMessageCenterTray() {
   return new WebNotificationTray();
 }
 
 WebNotificationTray::WebNotificationTray()
-    : status_icon_(NULL),
+    : message_center_delegate_(NULL),
+      status_icon_(NULL),
       message_center_visible_(false),
       should_update_tray_content_(true) {
   message_center_tray_.reset(
@@ -128,60 +146,36 @@ void WebNotificationTray::HidePopups() { popup_collection_.reset(); }
 bool WebNotificationTray::ShowMessageCenterInternal(bool show_settings) {
   content::RecordAction(UserMetricsAction("Notifications.ShowMessageCenter"));
 
-  // Using MessageBubbleBase instead of MessageCenterBubble to
-  // remove dependence on implicit type conversion
-  scoped_ptr<message_center::MessageCenterBubble> bubble(
-      new message_center::MessageCenterBubble(message_center(),
-                                              message_center_tray_.get()));
-
-  gfx::Screen* screen = gfx::Screen::GetNativeScreen();
-  gfx::Rect work_area = screen->GetPrimaryDisplay().work_area();
-  views::TrayBubbleView::AnchorAlignment alignment = GetAnchorAlignment();
-
-  int max_height = work_area.height();
-
-  // If the alignment is left- or right-oriented, the bubble can fill up the
-  // entire vertical height of the screen since the bubble is rendered to the
-  // side of the clicked icon.  Otherwise we have to adjust for the arrow's
-  // height.
-  if (alignment == views::TrayBubbleView::ANCHOR_ALIGNMENT_BOTTOM ||
-      alignment == views::TrayBubbleView::ANCHOR_ALIGNMENT_TOP) {
-    max_height -= 2 * kScreenEdgePadding;
-
-    // If the work area contains the click point, then we know that the icon is
-    // not in the taskbar.  Then we need to subtract the distance of the click
-    // point from the edge of the work area so we can see the whole bubble.
-    if (work_area.Contains(mouse_click_point_)) {
-      max_height -= std::min(mouse_click_point_.y() - work_area.y(),
-                             work_area.bottom() - mouse_click_point_.y());
-    }
-  }
-  bubble->SetMaxHeight(max_height);
-  if (show_settings)
-    bubble->SetSettingsVisible();
-
-  message_center_bubble_.reset(new internal::NotificationBubbleWrapper(
+  // Message center delegate will be set to NULL when the message center
+  // widget's Close method is called so we don't need to worry about
+  // use-after-free issues.
+  message_center_delegate_ = new MessageCenterWidgetDelegate(
       this,
-      bubble.PassAs<message_center::MessageBubbleBase>(),
-      internal::NotificationBubbleWrapper::BUBBLE_TYPE_MESSAGE_CENTER));
+      message_center_tray_.get(),
+      show_settings,  // settings initally invisible
+      GetPositionInfo());
+
   return true;
 }
 
 bool WebNotificationTray::ShowMessageCenter() {
-  return ShowMessageCenterInternal(false /* show_settings */);
+  return ShowMessageCenterInternal(/*show_settings =*/false);
 }
 
 void WebNotificationTray::HideMessageCenter() {
-  message_center_bubble_.reset();
+  if (message_center_delegate_) {
+    views::Widget* widget = message_center_delegate_->GetWidget();
+    if (widget)
+      widget->Close();
+  }
 }
 
 bool WebNotificationTray::ShowNotifierSettings() {
-  if (message_center_bubble_) {
-    static_cast<MessageCenterBubble*>(
-        message_center_bubble_->bubble())->SetSettingsVisible();
+  if (message_center_delegate_) {
+    message_center_delegate_->SetSettingsVisible(true);
     return true;
   }
-  return ShowMessageCenterInternal(true /* show_settings */);
+  return ShowMessageCenterInternal(/*show_settings =*/true);
 }
 
 void WebNotificationTray::OnMessageCenterTrayChanged() {
@@ -193,35 +187,12 @@ void WebNotificationTray::OnMessageCenterTrayChanged() {
       base::Bind(&WebNotificationTray::UpdateStatusIcon, AsWeakPtr()));
 }
 
-gfx::Rect WebNotificationTray::GetMessageCenterAnchor() {
-  return GetMouseAnchorRect(mouse_click_point_);
-}
-
-gfx::Rect WebNotificationTray::GetPopupAnchor() {
-  return GetCornerAnchorRect();
-}
-
-views::TrayBubbleView::AnchorAlignment
-WebNotificationTray::GetAnchorAlignment() {
+void WebNotificationTray::OnStatusIconClicked() {
+  // TODO(dewittj): It's possible GetNativeScreen is wrong for win-aura.
   gfx::Screen* screen = gfx::Screen::GetNativeScreen();
-  // TODO(dewittj): It's possible GetPrimaryDisplay is wrong.
-  gfx::Rect screen_bounds = screen->GetPrimaryDisplay().bounds();
-  gfx::Rect work_area = screen->GetPrimaryDisplay().work_area();
-
-  // Comparing the work area to the screen bounds gives us the location of the
-  // taskbar.  If the work area is less tall than the screen, assume the taskbar
-  // is on the bottom, and cause the arrow to be displayed on the bottom of the
-  // bubble.  Otherwise, cause the arrow to be displayed on the side of the
-  // bubble that the taskbar is on.
-  if (work_area.width() < screen_bounds.width()) {
-    if (work_area.x() > screen_bounds.x())
-      return views::TrayBubbleView::ANCHOR_ALIGNMENT_LEFT;
-    return views::TrayBubbleView::ANCHOR_ALIGNMENT_RIGHT;
-  }
-  return views::TrayBubbleView::ANCHOR_ALIGNMENT_BOTTOM;
+  mouse_click_point_ = screen->GetCursorScreenPoint();
+  message_center_tray_->ToggleMessageCenterBubble();
 }
-
-gfx::NativeView WebNotificationTray::GetBubbleWindowContainer() { return NULL; }
 
 void WebNotificationTray::UpdateStatusIcon() {
   if (!should_update_tray_content_)
@@ -252,19 +223,54 @@ void WebNotificationTray::UpdateStatusIcon() {
   }
 }
 
-void WebNotificationTray::OnStatusIconClicked() {
-  // TODO(dewittj): It's possible GetNativeScreen is wrong for win-aura.
-  gfx::Screen* screen = gfx::Screen::GetNativeScreen();
-  mouse_click_point_ = screen->GetCursorScreenPoint();
-  message_center_tray_->ToggleMessageCenterBubble();
+void WebNotificationTray::SendHideMessageCenter() {
+  message_center_tray_->HideMessageCenterBubble();
 }
 
-void WebNotificationTray::HideBubbleWithView(
-    const views::TrayBubbleView* bubble_view) {
-  if (message_center_bubble_.get() &&
-      bubble_view == message_center_bubble_->bubble_view()) {
-    message_center_tray_->HideMessageCenterBubble();
+void WebNotificationTray::MarkMessageCenterHidden() {
+  if (message_center_delegate_) {
+    message_center_tray_->MarkMessageCenterHidden();
+    message_center_delegate_ = NULL;
   }
+}
+
+PositionInfo WebNotificationTray::GetPositionInfo() {
+  PositionInfo pos_info;
+
+  gfx::Screen* screen = gfx::Screen::GetNativeScreen();
+  gfx::Rect work_area = screen->GetPrimaryDisplay().work_area();
+  work_area.Inset(kScreenEdgePadding, kScreenEdgePadding);
+
+  gfx::Point corner = internal::GetClosestCorner(work_area, mouse_click_point_);
+
+  pos_info.taskbar_alignment = internal::GetTaskbarAlignment();
+
+  // We assume the taskbar is either at the top or at the bottom if we are not
+  // able to find it.
+  if (pos_info.taskbar_alignment == ALIGNMENT_NONE) {
+    if (mouse_click_point_.y() > corner.y())
+      pos_info.taskbar_alignment = ALIGNMENT_TOP;
+    else
+      pos_info.taskbar_alignment = ALIGNMENT_BOTTOM;
+  }
+
+  pos_info.message_center_alignment =
+      internal::GetAnchorAlignment(work_area, corner);
+
+  pos_info.inital_anchor_point = corner;
+  pos_info.max_height = work_area.height();
+
+  if (work_area.Contains(mouse_click_point_)) {
+    pos_info.max_height -= std::abs(mouse_click_point_.y() - corner.y());
+
+    // Message center is in the work area. So position it few pixels above the
+    // mouse click point if alignemnt is towards bottom and few pixels below if
+    // alignment is towards top.
+    pos_info.inital_anchor_point
+        .set_y(mouse_click_point_.y() +
+               (pos_info.message_center_alignment & ALIGNMENT_BOTTOM ? -5 : 5));
+  }
+  return pos_info;
 }
 
 StatusIcon* WebNotificationTray::GetStatusIcon() {
@@ -302,12 +308,9 @@ void WebNotificationTray::AddQuietModeMenu(StatusIcon* status_icon) {
   status_icon->SetContextMenu(message_center_tray_->CreateQuietModeMenu());
 }
 
-message_center::MessageCenterBubble*
-WebNotificationTray::GetMessageCenterBubbleForTest() {
-  if (!message_center_bubble_.get())
-    return NULL;
-  return static_cast<message_center::MessageCenterBubble*>(
-      message_center_bubble_->bubble());
+MessageCenterWidgetDelegate*
+WebNotificationTray::GetMessageCenterWidgetDelegateForTest() {
+  return message_center_delegate_;
 }
 
 }  // namespace message_center

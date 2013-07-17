@@ -38,8 +38,13 @@ class MESSAGE_CENTER_EXPORT MessageCenterTray
   // not it was visible before.
   bool ShowMessageCenterBubble();
 
-  // Returns whether the message center was visible before.
+  // Hides the message center if visible and returns whether the message center
+  // was visible before.
   bool HideMessageCenterBubble();
+
+  // Marks the message center as "not visible" (this method will not hide the
+  // message center).
+  void MarkMessageCenterHidden();
 
   void ToggleMessageCenterBubble();
 

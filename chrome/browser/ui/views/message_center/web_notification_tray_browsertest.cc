@@ -173,10 +173,10 @@ IN_PROC_BROWSER_TEST_F(WebNotificationTrayTest,
   bool shown = tray->message_center_tray_->ShowMessageCenterBubble();
   EXPECT_TRUE(shown);
   content::RunAllPendingInMessageLoop();
-  EXPECT_TRUE(tray->message_center_bubble_.get() != NULL);
+  EXPECT_TRUE(tray->message_center_delegate_ != NULL);
   EXPECT_EQ(notifications_to_add, message_center->NotificationCount());
   EXPECT_EQ(kMaxVisibleMessageCenterNotifications,
-            tray->GetMessageCenterBubbleForTest()->NumMessageViewsForTest());
+            tray->message_center_delegate_->NumMessageViewsForTest());
 }
 
 IN_PROC_BROWSER_TEST_F(WebNotificationTrayTest, ManyPopupNotifications) {

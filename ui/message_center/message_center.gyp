@@ -95,6 +95,16 @@
             ['exclude', 'views/'],
           ],
         }],
+        ['use_ash==0', {
+          'sources!': [
+            'views/message_bubble_base.cc',
+            'views/message_bubble_base.h',
+            'views/message_center_bubble.cc',
+            'views/message_center_bubble.h',
+            'views/message_popup_bubble.cc',
+            'views/message_popup_bubble.h',
+          ],
+        }],
         ['OS=="mac"', {
           'dependencies': [
             '../ui.gyp:ui_cocoa_third_party_toolkits',

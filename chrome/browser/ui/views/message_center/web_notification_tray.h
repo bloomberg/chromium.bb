@@ -7,16 +7,17 @@
 
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/status_icons/status_icon_observer.h"
+#include "chrome/browser/ui/views/message_center/message_center_widget_delegate.h"
 #include "ui/base/models/simple_menu_model.h"
+#include "ui/gfx/rect.h"
 #include "ui/message_center/message_center_tray.h"
 #include "ui/message_center/message_center_tray_delegate.h"
-#include "ui/views/bubble/tray_bubble_view.h"
+#include "ui/views/widget/widget_observer.h"
 
 class StatusIcon;
 
 namespace message_center {
 class MessageCenter;
-class MessageCenterBubble;
 class MessagePopupCollection;
 }
 
@@ -26,9 +27,9 @@ class Widget;
 
 namespace message_center {
 
-namespace internal {
-class NotificationBubbleWrapper;
-}
+struct PositionInfo;
+
+class MessageCenterWidgetDelegate;
 
 // A MessageCenterTrayDelegate implementation that exposes the MessageCenterTray
 // via a system tray icon.  The notification popups will be displayed in the
@@ -51,14 +52,6 @@ class WebNotificationTray : public message_center::MessageCenterTrayDelegate,
   virtual void OnMessageCenterTrayChanged() OVERRIDE;
   virtual bool ShowNotifierSettings() OVERRIDE;
 
-  // These are forwarded to WebNotificationTray by
-  // NotificationBubbleWrapper classes since they don't have enough
-  // context to provide the required data for TrayBubbleView::Delegate.
-  gfx::Rect GetMessageCenterAnchor();
-  gfx::Rect GetPopupAnchor();
-  gfx::NativeView GetBubbleWindowContainer();
-  views::TrayBubbleView::AnchorAlignment GetAnchorAlignment();
-
   // StatusIconObserver implementation.
   virtual void OnStatusIconClicked() OVERRIDE;
 #if defined(OS_WIN)
@@ -71,7 +64,11 @@ class WebNotificationTray : public message_center::MessageCenterTrayDelegate,
 
   // Changes the icon and hovertext based on number of unread notifications.
   void UpdateStatusIcon();
-  void HideBubbleWithView(const views::TrayBubbleView* bubble_view);
+  void SendHideMessageCenter();
+  void MarkMessageCenterHidden();
+
+  // Gets the point where the status icon was clicked.
+  gfx::Point mouse_click_point() { return mouse_click_point_; }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(WebNotificationTrayTest, WebNotifications);
@@ -84,12 +81,15 @@ class WebNotificationTray : public message_center::MessageCenterTrayDelegate,
   // if the message center should be initialized with the settings visible.
   // Returns true if the center is successfully created.
   bool ShowMessageCenterInternal(bool show_settings);
+
+  PositionInfo GetPositionInfo();
+
   StatusIcon* GetStatusIcon();
   void DestroyStatusIcon();
   void AddQuietModeMenu(StatusIcon* status_icon);
-  message_center::MessageCenterBubble* GetMessageCenterBubbleForTest();
+  MessageCenterWidgetDelegate* GetMessageCenterWidgetDelegateForTest();
 
-  scoped_ptr<internal::NotificationBubbleWrapper> message_center_bubble_;
+  MessageCenterWidgetDelegate* message_center_delegate_;
   scoped_ptr<message_center::MessagePopupCollection> popup_collection_;
 
   StatusIcon* status_icon_;

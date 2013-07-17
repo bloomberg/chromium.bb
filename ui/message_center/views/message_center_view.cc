@@ -745,9 +745,11 @@ void MessageListView::AnimateClearingOneNotification() {
 MessageCenterView::MessageCenterView(MessageCenter* message_center,
                                      MessageCenterTray* tray,
                                      int max_height,
-                                     bool initially_settings_visible)
+                                     bool initially_settings_visible,
+                                     bool buttons_on_top)
     : message_center_(message_center),
       tray_(tray),
+      buttons_on_top_(buttons_on_top),
       settings_visible_(initially_settings_visible) {
   message_center_->AddObserver(this);
   set_notify_enter_exit_on_child(true);
@@ -872,12 +874,20 @@ void MessageCenterView::Layout() {
   if (settings_transition_animation_ &&
       settings_transition_animation_->is_animating() &&
       settings_transition_animation_->current_part_index() == 0) {
-    button_bar_->SetBounds(0, height() - button_height, width(), button_height);
+    if (!buttons_on_top_)
+      button_bar_->SetBounds(
+          0, height() - button_height, width(), button_height);
     return;
   }
 
-  scroller_->SetBounds(0, 0, width(), height() - button_height);
-  settings_view_->SetBounds(0, 0, width(), height() - button_height);
+  scroller_->SetBounds(0,
+                       buttons_on_top_ ? button_height : 0,
+                       width(),
+                       height() - button_height);
+  settings_view_->SetBounds(0,
+                            buttons_on_top_ ? button_height : 0,
+                            width(),
+                            height() - button_height);
 
   bool is_scrollable = false;
   if (scroller_->visible())
@@ -894,7 +904,10 @@ void MessageCenterView::Layout() {
     button_bar_->SchedulePaint();
   }
 
-  button_bar_->SetBounds(0, height() - button_height, width(), button_height);
+  button_bar_->SetBounds(0,
+                         buttons_on_top_ ? 0 : height() - button_height,
+                         width(),
+                         button_height);
   if (GetWidget())
     GetWidget()->GetRootView()->SchedulePaint();
 }

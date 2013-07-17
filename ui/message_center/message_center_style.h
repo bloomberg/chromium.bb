@@ -25,11 +25,18 @@ MESSAGE_CENTER_EXPORT extern const int kSettingsIconSize;
 MESSAGE_CENTER_EXPORT extern const size_t kMaxVisiblePopupNotifications;
 MESSAGE_CENTER_EXPORT extern const size_t kMaxVisibleMessageCenterNotifications;
 
+// DIP dimension
+MESSAGE_CENTER_EXPORT extern const int kNotificationWidth;  // H size of the
+                                                            // whole card.
+
+// Colors.
+MESSAGE_CENTER_EXPORT extern const SkColor kMessageCenterBorderColor;
+MESSAGE_CENTER_EXPORT extern const SkColor kMessageCenterShadowColor;
+
 // Within a notification ///////////////////////////////////////////////////////
 
 // DIP dimensions (H = horizontal, V = vertical).
 extern const int kControlButtonSize;  // Square size of close & expand buttons.
-extern const int kNotificationWidth;  // H size of the whole card.
 extern const int kIconToTextPadding;  // H space between icon & title/message.
 extern const int kTextTopPadding;     // V space between text elements.
 

@@ -324,6 +324,8 @@
         'repeat_controller.h',
         'round_rect_painter.cc',
         'round_rect_painter.h',
+        'shadow_border.cc',
+        'shadow_border.h',
         'touchui/touch_editing_menu.cc',
         'touchui/touch_editing_menu.h',
         'touchui/touch_selection_controller_impl.cc',
@@ -516,6 +518,12 @@
         ['chromeos==1', {
           'sources/': [
             ['exclude', 'widget/desktop_aura'],
+          ],
+        }],
+        ['use_ash==0', {
+          'sources!': [
+            'bubble/tray_bubble_view.cc',
+            'bubble/tray_bubble_view.h',
           ],
         }],
         ['use_aura==0 and OS=="win"', {

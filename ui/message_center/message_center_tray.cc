@@ -50,6 +50,13 @@ bool MessageCenterTray::HideMessageCenterBubble() {
   if (!message_center_visible_)
     return false;
   delegate_->HideMessageCenter();
+  MarkMessageCenterHidden();
+  return true;
+}
+
+void MessageCenterTray::MarkMessageCenterHidden() {
+  if (!message_center_visible_)
+    return;
   message_center_visible_ = false;
   message_center_->SetMessageCenterVisible(false);
   // Some notifications (like system ones) should appear as popups again
@@ -57,7 +64,6 @@ bool MessageCenterTray::HideMessageCenterBubble() {
   if (message_center_->HasPopupNotifications())
     ShowPopupBubble();
   NotifyMessageCenterTrayChanged();
-  return true;
 }
 
 void MessageCenterTray::ToggleMessageCenterBubble() {
