@@ -1,14 +1,14 @@
-# Copyright (c) 2013 The Chromium Authors. All rights reserved.
+# Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 import os
 import sys
 
-BASE_PATH = os.path.dirname(os.path.abspath(__file__))
-BINTREES_PATH = os.path.join(
-    BASE_PATH, os.pardir, os.pardir, 'third_party', 'bintrees')
-sys.path.insert(0, BINTREES_PATH)
+_BASE_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+_BINTREES_PATH = os.path.join(
+    _BASE_PATH, os.pardir, os.pardir, 'third_party', 'bintrees')
+sys.path.insert(0, _BINTREES_PATH)
 
 from bintrees import FastRBTree  # pylint: disable=F0401
 

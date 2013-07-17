@@ -10,20 +10,16 @@ import sys
 import textwrap
 import unittest
 
-ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, ROOT_DIR)
+BASE_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(BASE_PATH)
 
-try:
-  from collections import OrderedDict  # pylint: disable=E0611
-except ImportError:
-  SIMPLEJSON_PATH = os.path.join(ROOT_DIR, os.pardir, os.pardir, 'third_party')
-  sys.path.insert(0, SIMPLEJSON_PATH)
-  from simplejson import OrderedDict
+from lib.bucket import Bucket
+from lib.ordered_dict import OrderedDict
+from lib.policy import Policy
+from lib.symbol import SymbolMappingCache
+from lib.symbol import FUNCTION_SYMBOLS, SOURCEFILE_SYMBOLS, TYPEINFO_SYMBOLS
 
-import dmprof
-from find_runtime_symbols import FUNCTION_SYMBOLS
-from find_runtime_symbols import SOURCEFILE_SYMBOLS
-from find_runtime_symbols import TYPEINFO_SYMBOLS
+import subcommands
 
 
 class SymbolMappingCacheTest(unittest.TestCase):
@@ -76,7 +72,7 @@ class SymbolMappingCacheTest(unittest.TestCase):
   }
 
   def test_update(self):
-    symbol_mapping_cache = dmprof.SymbolMappingCache()
+    symbol_mapping_cache = SymbolMappingCache()
     cache_f = cStringIO.StringIO()
     cache_f.write(self._TEST_FUNCTION_CACHE)
 
@@ -164,23 +160,23 @@ class PolicyTest(unittest.TestCase):
       """)
 
   def test_load(self):
-    policy = dmprof.Policy.parse(cStringIO.StringIO(self._TEST_POLICY), 'json')
+    policy = Policy.parse(cStringIO.StringIO(self._TEST_POLICY), 'json')
     self.assertTrue(policy)
     self.assertEqual('POLICY_DEEP_3', policy.version)
 
   def test_find(self):
-    policy = dmprof.Policy.parse(cStringIO.StringIO(self._TEST_POLICY), 'json')
+    policy = Policy.parse(cStringIO.StringIO(self._TEST_POLICY), 'json')
     self.assertTrue(policy)
 
     symbol_mapping_cache = self.MockSymbolMappingCache()
     symbol_mapping_cache.add(FUNCTION_SYMBOLS, 0x1212, 'v8::create')
     symbol_mapping_cache.add(FUNCTION_SYMBOLS, 0x1381, 'WebKit::create')
 
-    bucket1 = dmprof.Bucket([0x1212, 0x013], 'malloc', 0x29492, '_Z')
+    bucket1 = Bucket([0x1212, 0x013], 'malloc', 0x29492, '_Z')
     bucket1.symbolize(symbol_mapping_cache)
-    bucket2 = dmprof.Bucket([0x18242, 0x1381], 'malloc', 0x9492, '_Z')
+    bucket2 = Bucket([0x18242, 0x1381], 'malloc', 0x9492, '_Z')
     bucket2.symbolize(symbol_mapping_cache)
-    bucket3 = dmprof.Bucket([0x18242, 0x181], 'malloc', 0x949, '_Z')
+    bucket3 = Bucket([0x18242, 0x181], 'malloc', 0x949, '_Z')
     bucket3.symbolize(symbol_mapping_cache)
 
     self.assertEqual('malloc-v8', policy.find_malloc(bucket1))
@@ -190,27 +186,29 @@ class PolicyTest(unittest.TestCase):
 
 class BucketsCommandTest(unittest.TestCase):
   def test(self):
-    with open(os.path.join(ROOT_DIR, 'tests', 'output', 'buckets')) as output_f:
+    BUCKETS_PATH = os.path.join(BASE_PATH, 'tests', 'output', 'buckets')
+    with open(BUCKETS_PATH) as output_f:
       expected = output_f.read()
 
     out = cStringIO.StringIO()
 
-    command = dmprof.BucketsCommand()
-    returncode = command.do([
-        'buckets',
-        os.path.join(ROOT_DIR, 'tests', 'data', 'heap.01234.0001.heap')], out)
+    HEAP_PATH = os.path.join(BASE_PATH, 'tests', 'data', 'heap.01234.0001.heap')
+    subcommand = subcommands.BucketsCommand()
+    returncode = subcommand.do(['buckets', HEAP_PATH], out)
     self.assertEqual(0, returncode)
     self.assertEqual(expected, out.getvalue())
 
 
 class UploadCommandTest(unittest.TestCase):
   def test(self):
-    command = dmprof.UploadCommand()
-    returncode = command.do([
+    MOCK_GSUTIL_PATH = os.path.join(BASE_PATH, 'tests', 'mock_gsutil.py')
+    HEAP_PATH = os.path.join(BASE_PATH, 'tests', 'data', 'heap.01234.0001.heap')
+    subcommand = subcommands.UploadCommand()
+    returncode = subcommand.do([
         'upload',
          '--gsutil',
-        os.path.join(ROOT_DIR, 'tests', 'mock_gsutil.py'),
-        os.path.join(ROOT_DIR, 'tests', 'data', 'heap.01234.0001.heap'),
+        MOCK_GSUTIL_PATH,
+        HEAP_PATH,
         'gs://test-storage/'])
     self.assertEqual(0, returncode)
 

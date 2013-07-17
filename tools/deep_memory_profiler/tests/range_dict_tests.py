@@ -8,14 +8,14 @@ import os
 import sys
 import unittest
 
-ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, ROOT_DIR)
+BASE_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(BASE_PATH)
 
-import range_dict
+from lib.range_dict import ExclusiveRangeDict
 
 
 class ExclusiveRangeDictTest(unittest.TestCase):
-  class TestAttribute(range_dict.ExclusiveRangeDict.RangeAttribute):
+  class TestAttribute(ExclusiveRangeDict.RangeAttribute):
     def __init__(self):
       super(ExclusiveRangeDictTest.TestAttribute, self).__init__()
       self._value = 0
@@ -38,7 +38,7 @@ class ExclusiveRangeDictTest(unittest.TestCase):
       return new_attr
 
   def test_init(self):
-    ranges = range_dict.ExclusiveRangeDict(self.TestAttribute)
+    ranges = ExclusiveRangeDict(self.TestAttribute)
 
     result = []
     for begin, end, attr in ranges.iter_range(20, 40):
@@ -49,7 +49,7 @@ class ExclusiveRangeDictTest(unittest.TestCase):
     self.assertEqual(expected, result)
 
   def test_norange(self):
-    ranges = range_dict.ExclusiveRangeDict(self.TestAttribute)
+    ranges = ExclusiveRangeDict(self.TestAttribute)
 
     result = []
     for begin, end, attr in ranges.iter_range(20, 20):
@@ -58,7 +58,7 @@ class ExclusiveRangeDictTest(unittest.TestCase):
     self.assertEqual(expected, result)
 
   def test_set(self):
-    ranges = range_dict.ExclusiveRangeDict(self.TestAttribute)
+    ranges = ExclusiveRangeDict(self.TestAttribute)
     for begin, end, attr in ranges.iter_range(20, 30):
       attr.set(12)
     for begin, end, attr in ranges.iter_range(30, 40):
@@ -74,7 +74,7 @@ class ExclusiveRangeDictTest(unittest.TestCase):
     self.assertEqual(expected, result)
 
   def test_split(self):
-    ranges = range_dict.ExclusiveRangeDict(self.TestAttribute)
+    ranges = ExclusiveRangeDict(self.TestAttribute)
     for begin, end, attr in ranges.iter_range(20, 30):
       attr.set(1000)
     for begin, end, attr in ranges.iter_range(30, 40):
@@ -105,7 +105,7 @@ class ExclusiveRangeDictTest(unittest.TestCase):
     self.assertEqual(expected2, result2)
 
   def test_fill(self):
-    ranges = range_dict.ExclusiveRangeDict(self.TestAttribute)
+    ranges = ExclusiveRangeDict(self.TestAttribute)
     for begin, end, attr in ranges.iter_range(30, 35):
       attr.set(12345)
     for begin, end, attr in ranges.iter_range(40, 45):
