@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 #include "base/strings/string_util.h"
-#include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/npapi/plugin_utils.h"
 #include "webkit/plugins/webplugininfo.h"
 
@@ -61,12 +60,15 @@ bool PluginMetadata::HasMimeType(const std::string& mime_type) const {
 }
 
 bool PluginMetadata::MatchesPlugin(const webkit::WebPluginInfo& plugin) {
-  using webkit::npapi::PluginList;
-
   for (size_t i = 0; i < matching_mime_types_.size(); ++i) {
     // To have a match, every one of the |matching_mime_types_|
     // must be handled by the plug-in.
-    if (!PluginList::SupportsType(plugin, matching_mime_types_[i], false))
+    size_t j = 0;
+    for (; j < plugin.mime_types.size(); ++j) {
+      if (plugin.mime_types[j].mime_type == matching_mime_types_[i])
+        break;
+    }
+    if (j == plugin.mime_types.size())
       return false;
   }
 
