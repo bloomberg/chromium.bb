@@ -46,6 +46,9 @@ class ResourceCache : public base::NonThreadSafe {
   // Deletes (key, subkey).
   void Delete(const std::string& key, const std::string& subkey);
 
+  // Deletes all keys not in |keys_to_keep|, along with their subkeys.
+  void PurgeOtherKeys(const std::set<std::string>& keys_to_keep);
+
   // Deletes all the subkeys of |key| not in |subkeys_to_keep|.
   void PurgeOtherSubkeys(const std::string& key,
                          const std::set<std::string>& subkeys_to_keep);

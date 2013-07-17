@@ -25,6 +25,23 @@ bool Base64Encode(const std::string& value, std::string* encoded) {
   return true;
 }
 
+// Decodes all elements of |input| from base64url format and stores the decoded
+// elements in |output|.
+bool Base64Encode(const std::set<std::string>& input,
+                  std::set<std::string>* output) {
+  output->clear();
+  for (std::set<std::string>::const_iterator it = input.begin();
+       it != input.end(); ++it) {
+    std::string encoded;
+    if (!Base64Encode(*it, &encoded)) {
+      output->clear();
+      return false;
+    }
+    output->insert(encoded);
+  }
+  return true;
+}
+
 // Decodes |encoded| from base64url format and verifies that the result is not
 // emtpy.
 bool Base64Decode(const std::string& encoded, std::string* value) {
@@ -116,6 +133,22 @@ void ResourceCache::Delete(const std::string& key, const std::string& subkey) {
   base::DeleteFile(subkey_path.DirName(), false);
 }
 
+void ResourceCache::PurgeOtherKeys(const std::set<std::string>& keys_to_keep) {
+  DCHECK(CalledOnValidThread());
+  std::set<std::string> encoded_keys_to_keep;
+  if (!Base64Encode(keys_to_keep, &encoded_keys_to_keep))
+    return;
+
+  base::FileEnumerator enumerator(
+      cache_dir_, false, base::FileEnumerator::DIRECTORIES);
+  for (base::FilePath path = enumerator.Next(); !path.empty();
+       path = enumerator.Next()) {
+    const std::string name(path.BaseName().MaybeAsASCII());
+    if (encoded_keys_to_keep.find(name) == encoded_keys_to_keep.end())
+      base::DeleteFile(path, true);
+  }
+}
+
 void ResourceCache::PurgeOtherSubkeys(
     const std::string& key,
     const std::set<std::string>& subkeys_to_keep) {
@@ -125,13 +158,8 @@ void ResourceCache::PurgeOtherSubkeys(
     return;
 
   std::set<std::string> encoded_subkeys_to_keep;
-  for (std::set<std::string>::const_iterator it = subkeys_to_keep.begin();
-       it != subkeys_to_keep.end(); ++it) {
-    std::string encoded;
-    if (!Base64Encode(*it, &encoded))
-      return;
-    encoded_subkeys_to_keep.insert(encoded);
-  }
+  if (!Base64Encode(subkeys_to_keep, &encoded_subkeys_to_keep))
+    return;
 
   base::FileEnumerator enumerator(key_path, false, base::FileEnumerator::FILES);
   for (base::FilePath path = enumerator.Next(); !path.empty();
