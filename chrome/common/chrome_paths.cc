@@ -10,6 +10,7 @@
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/sys_info.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/version.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths_internal.h"
@@ -500,6 +501,8 @@ bool PathProvider(int key, base::FilePath* result) {
       return false;
   }
 
+  // TODO(bauerb): http://crbug.com/259796
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   if (create_dir && !base::PathExists(cur) &&
       !file_util::CreateDirectory(cur))
     return false;
