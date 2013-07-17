@@ -770,6 +770,8 @@
               # needed on iOS (mostly for unit tests).
               ['exclude', '^process_util'],
               ['include', '^process_util_ios\\.mm$'],
+              ['exclude', '^process/launch_posix\\.cc$'],
+              ['exclude', '^process/launch_mac\\.cc$'],
               ['exclude', '^process/memory_mac\\.mm$'],
               ['include', '^process/process_handle_posix\\.cc$'],
             ],
