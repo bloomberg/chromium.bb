@@ -33,8 +33,8 @@
 
 #include "bindings/v8/ScriptGCEvent.h"
 #include "bindings/v8/ScriptWrappable.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 

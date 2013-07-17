@@ -30,8 +30,8 @@
 #include "core/dom/DOMStringList.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/page/ContentSecurityPolicy.h"
-#include <wtf/text/TextPosition.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/text/TextPosition.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

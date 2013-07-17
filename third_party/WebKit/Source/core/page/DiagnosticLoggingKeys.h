@@ -26,7 +26,7 @@
 #ifndef DiagnosticLoggingKeys_h
 #define DiagnosticLoggingKeys_h
 
-#include <wtf/text/WTFString.h>
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

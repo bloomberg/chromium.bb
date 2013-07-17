@@ -39,10 +39,10 @@
 #include "core/page/PerformanceEntry.h"
 #include "core/page/PerformanceNavigation.h"
 #include "core/page/PerformanceTiming.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/RefPtr.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/RefPtr.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

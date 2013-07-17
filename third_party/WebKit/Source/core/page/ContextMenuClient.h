@@ -26,10 +26,9 @@
 #ifndef ContextMenuClient_h
 #define ContextMenuClient_h
 
-#include "core/platform/ContextMenu.h"
-#include <wtf/PassOwnPtr.h>
-
 namespace WebCore {
+
+class ContextMenu;
 
 class ContextMenuClient {
 public:

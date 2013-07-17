@@ -26,7 +26,7 @@
 #ifndef UserStyleSheetTypes_h
 #define UserStyleSheetTypes_h
 
-#include <wtf/Vector.h>
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

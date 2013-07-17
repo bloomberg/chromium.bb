@@ -22,8 +22,8 @@
 
 #include "core/platform/graphics/IntPoint.h"
 #include "core/platform/graphics/IntRect.h"
-#include <wtf/Vector.h>
-#include <wtf/RefPtr.h>
+#include "wtf/RefPtr.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

@@ -25,8 +25,8 @@
 #ifndef PointerLockController_h
 #define PointerLockController_h
 
-#include <wtf/RefPtr.h>
-#include <wtf/text/AtomicString.h>
+#include "wtf/RefPtr.h"
+#include "wtf/text/AtomicString.h"
 
 namespace WebCore {
 

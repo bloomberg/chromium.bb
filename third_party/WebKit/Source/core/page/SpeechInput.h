@@ -35,8 +35,8 @@
 
 #include "core/page/Page.h"
 #include "core/page/SpeechInputListener.h"
-#include <wtf/Forward.h>
-#include <wtf/HashMap.h>
+#include "wtf/Forward.h"
+#include "wtf/HashMap.h"
 
 namespace WebCore {
 

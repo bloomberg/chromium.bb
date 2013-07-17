@@ -31,7 +31,7 @@
 #ifndef SpeechInputClient_h
 #define SpeechInputClient_h
 
-#include <wtf/Forward.h>
+#include "wtf/Forward.h"
 
 #if ENABLE(INPUT_SPEECH)
 

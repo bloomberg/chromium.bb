@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/page/PagePopupClient.h"
 
-#include <wtf/text/StringBuilder.h>
+#include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
 

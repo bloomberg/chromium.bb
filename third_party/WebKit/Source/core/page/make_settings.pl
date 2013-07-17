@@ -382,9 +382,9 @@ sub generateInternalSettingsHeaderFile($)
 #define InternalSettingsGenerated_h
 
 #include "core/platform/RefCountedSupplement.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

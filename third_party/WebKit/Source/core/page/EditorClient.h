@@ -32,8 +32,8 @@
 #include "core/editing/UndoStep.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/text/TextChecking.h"
-#include <wtf/Forward.h>
-#include <wtf/Vector.h>
+#include "wtf/Forward.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

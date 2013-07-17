@@ -31,7 +31,7 @@
 #ifndef TouchDisambiguation_h
 #define TouchDisambiguation_h
 
-#include <wtf/Vector.h>
+#include "wtf/Vector.h"
 
 namespace WebCore {
 
