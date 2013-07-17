@@ -489,6 +489,26 @@ void URLRequest::set_method(const std::string& method) {
   method_ = method;
 }
 
+// static
+std::string URLRequest::ComputeMethodForRedirect(
+    const std::string& method,
+    int http_status_code) {
+  // For 303 redirects, all request methods except HEAD are converted to GET,
+  // as per the latest httpbis draft.  The draft also allows POST requests to
+  // be converted to GETs when following 301/302 redirects, for historical
+  // reasons. Most major browsers do this and so shall we.  Both RFC 2616 and
+  // the httpbis draft say to prompt the user to confirm the generation of new
+  // requests, other than GET and HEAD requests, but IE omits these prompts and
+  // so shall we.
+  // See:  https://tools.ietf.org/html/draft-ietf-httpbis-p2-semantics-17#section-7.3
+  if ((http_status_code == 303 && method != "HEAD") ||
+      ((http_status_code == 301 || http_status_code == 302) &&
+       method == "POST")) {
+    return "GET";
+  }
+  return method;
+}
+
 void URLRequest::SetReferrer(const std::string& referrer) {
   DCHECK(!is_pending_);
   referrer_ = referrer;
@@ -843,27 +863,18 @@ int URLRequest::Redirect(const GURL& location, int http_status_code) {
     final_upload_progress_ = job_->GetUploadProgress();
   PrepareToRestart();
 
-  // For 303 redirects, all request methods except HEAD are converted to GET,
-  // as per the latest httpbis draft.  The draft also allows POST requests to
-  // be converted to GETs when following 301/302 redirects, for historical
-  // reasons. Most major browsers do this and so shall we.  Both RFC 2616 and
-  // the httpbis draft say to prompt the user to confirm the generation of new
-  // requests, other than GET and HEAD requests, but IE omits these prompts and
-  // so shall we.
-  // See:  https://tools.ietf.org/html/draft-ietf-httpbis-p2-semantics-17#section-7.3
-  bool was_post = method_ == "POST";
-  if ((http_status_code == 303 && method_ != "HEAD") ||
-      ((http_status_code == 301 || http_status_code == 302) && was_post)) {
-    method_ = "GET";
-    upload_data_stream_.reset();
-    if (was_post) {
-      // If being switched from POST to GET, must remove headers that were
-      // specific to the POST and don't have meaning in GET. For example
-      // the inclusion of a multipart Content-Type header in GET can cause
-      // problems with some servers:
+  std::string new_method(ComputeMethodForRedirect(method_, http_status_code));
+  if (new_method != method_) {
+    if (method_ == "POST") {
+      // If being switched from POST, must remove headers that were specific to
+      // the POST and don't have meaning in other methods. For example the
+      // inclusion of a multipart Content-Type header in GET can cause problems
+      // with some servers:
       // http://code.google.com/p/chromium/issues/detail?id=843
       StripPostSpecificHeaders(&extra_request_headers_);
     }
+    upload_data_stream_.reset();
+    method_.swap(new_method);
   }
 
   // Suppress the referrer if we're redirecting out of https.

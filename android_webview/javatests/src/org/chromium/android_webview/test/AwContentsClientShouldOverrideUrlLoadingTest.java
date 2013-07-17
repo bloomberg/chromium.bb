@@ -619,6 +619,43 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
 
     @SmallTest
     @Feature({"AndroidWebView", "Navigation"})
+    public void testCalledFor302AfterPostNavigations() throws Throwable {
+        // The reason POST requests are excluded is BUG 155250.
+        final TestAwContentsClient contentsClient = new TestAwContentsClient();
+        final AwTestContainerView testContainerView =
+            createAwTestContainerViewOnMainSync(contentsClient);
+        final AwContents awContents = testContainerView.getAwContents();
+        final TestAwContentsClient.ShouldOverrideUrlLoadingHelper shouldOverrideUrlLoadingHelper =
+            contentsClient.getShouldOverrideUrlLoadingHelper();
+
+        final String redirectTargetUrl = createRedirectTargetPage(mWebServer);
+        final String postToGetRedirectUrl = mWebServer.setRedirect("/302.html", redirectTargetUrl);
+        final String postLinkUrl = addPageToTestServer(mWebServer, "/page_with_post_link.html",
+                getHtmlForPageWithSimplePostFormTo(postToGetRedirectUrl));
+
+        loadUrlSync(awContents, contentsClient.getOnPageFinishedHelper(), postLinkUrl);
+
+        final int shouldOverrideUrlLoadingCallCount =
+            shouldOverrideUrlLoadingHelper.getCallCount();
+
+        clickOnLinkUsingJs(awContents, contentsClient);
+
+        shouldOverrideUrlLoadingHelper.waitForCallback(shouldOverrideUrlLoadingCallCount);
+
+        // Wait for the target URL to be fetched from the server.
+        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return mWebServer.getRequestCount(REDIRECT_TARGET_PATH) == 1;
+            }
+        }, WAIT_TIMEOUT_SECONDS * 1000L, CHECK_INTERVAL));
+
+        assertEquals(redirectTargetUrl,
+                shouldOverrideUrlLoadingHelper.getShouldOverrideUrlLoadingUrl());
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView", "Navigation"})
     public void testNotCalledForIframeHttpNavigations() throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =

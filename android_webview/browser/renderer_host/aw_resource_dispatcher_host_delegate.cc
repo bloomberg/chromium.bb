@@ -212,8 +212,6 @@ void AwResourceDispatcherHostDelegate::RequestBeginning(
       child_id, route_id, request));
 
   bool allow_intercepting =
-      // We ignore POST requests because of BUG=155250.
-      request->method() != "POST" &&
       // We allow intercepting navigations within subframes, but only if the
       // scheme other than http or https. This is because the embedder
       // can't distinguish main frame and subframe callbacks (which could lead

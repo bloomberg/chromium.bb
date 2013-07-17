@@ -13,6 +13,7 @@
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/referrer.h"
+#include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
 
 using content::BrowserThread;
@@ -68,17 +69,28 @@ InterceptNavigationResourceThrottle::~InterceptNavigationResourceThrottle() {
 }
 
 void InterceptNavigationResourceThrottle::WillStartRequest(bool* defer) {
-  *defer = CheckIfShouldIgnoreNavigation(request_->url(), false);
+  *defer =
+      CheckIfShouldIgnoreNavigation(request_->url(), request_->method(), false);
 }
 
 void InterceptNavigationResourceThrottle::WillRedirectRequest(
     const GURL& new_url,
     bool* defer) {
-  *defer = CheckIfShouldIgnoreNavigation(new_url, true);
+  *defer =
+      CheckIfShouldIgnoreNavigation(new_url, GetMethodAfterRedirect(), true);
+}
+
+std::string InterceptNavigationResourceThrottle::GetMethodAfterRedirect() {
+  net::HttpResponseHeaders* headers = request_->response_headers();
+  if (!headers)
+    return request_->method();
+  return net::URLRequest::ComputeMethodForRedirect(
+             request_->method(), headers->response_code());
 }
 
 bool InterceptNavigationResourceThrottle::CheckIfShouldIgnoreNavigation(
     const GURL& url,
+    const std::string& method,
     bool is_redirect) {
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request_);
   if (!info)
@@ -92,7 +104,7 @@ bool InterceptNavigationResourceThrottle::CheckIfShouldIgnoreNavigation(
                                      Referrer(GURL(request_->referrer()),
                                               info->GetReferrerPolicy()),
                                      info->HasUserGesture(),
-                                     request_->method() == "POST",
+                                     method == "POST",
                                      info->GetPageTransition(),
                                      is_redirect);
 
