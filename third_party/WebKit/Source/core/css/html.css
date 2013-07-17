@@ -791,6 +791,27 @@ input::-webkit-calendar-picker-indicator {
 input::-webkit-calendar-picker-indicator:hover {
     background-color: #eee;
 }
+
+input[type="date"]:disabled::-webkit-clear-button,
+input[type="date"]:disabled::-webkit-inner-spin-button,
+input[type="datetime-local"]:disabled::-webkit-clear-button,
+input[type="datetime-local"]:disabled::-webkit-inner-spin-button,
+input[type="month"]:disabled::-webkit-clear-button,
+input[type="month"]:disabled::-webkit-inner-spin-button,
+input[type="week"]:disabled::-webkit-clear-button,
+input[type="week"]:disabled::-webkit-inner-spin-button,
+input:disabled::-webkit-calendar-picker-indicator,
+input[type="date"][readonly]::-webkit-clear-button,
+input[type="date"][readonly]::-webkit-inner-spin-button,
+input[type="datetime-local"][readonly]::-webkit-clear-button,
+input[type="datetime-local"][readonly]::-webkit-inner-spin-button,
+input[type="month"][readonly]::-webkit-clear-button,
+input[type="month"][readonly]::-webkit-inner-spin-button,
+input[type="week"][readonly]::-webkit-clear-button,
+input[type="week"][readonly]::-webkit-inner-spin-button,
+input[readonly]::-webkit-calendar-picker-indicator {
+    visibility: hidden;
+}
 #endif // ENABLE_CALENDAR_PICKER
 
 select {

@@ -261,6 +261,11 @@ webkit.org/b/103348 fast/js/string-replacement-outofmemory.html [ Crash ]
 
 webkit.org/b/112923 fast/forms/calendar-picker/calendar-picker-appearance-month-popup.html [ ImageOnlyFailure Pass ]
 
+crbug.com/259361 fast/forms/date/date-appearance-basic.html [ NeedsRebaseline ]
+crbug.com/259361 fast/forms/datetimelocal/datetimelocal-appearance-basic.html [ NeedsRebaseline ]
+crbug.com/259361 fast/forms/month/month-appearance-basic.html [ NeedsRebaseline ]
+crbug.com/259361 fast/forms/week/week-appearance-basic.html [ NeedsRebaseline ]
+
 # Skipped until/unless color-correction is reimplemented.
 crbug.com/28005 fast/css/parsing-color-correction.html [ Skip ]
 
