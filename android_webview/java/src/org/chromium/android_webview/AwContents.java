@@ -1181,6 +1181,23 @@ public class AwContents {
         mContentViewCore.invokeZoomPicker();
     }
 
+    /**
+     * @see ContentViewCore.evaluateJavaScript(String, ContentViewCOre.JavaScriptCallback)
+     */
+    public void evaluateJavaScript(String script, final ValueCallback<String> callback) {
+        ContentViewCore.JavaScriptCallback jsCallback = null;
+        if (callback != null) {
+            jsCallback = new ContentViewCore.JavaScriptCallback() {
+                @Override
+                public void handleJavaScriptResult(String jsonResult) {
+                    callback.onReceiveValue(jsonResult);
+                }
+            };
+        }
+
+        mContentViewCore.evaluateJavaScript(script, jsCallback);
+    }
+
     //--------------------------------------------------------------------------------------------
     //  View and ViewGroup method implementations
     //--------------------------------------------------------------------------------------------
