@@ -514,6 +514,7 @@ scoped_refptr<SpdySession> CreateSpdySessionHelper(
                             ProxyServer::SCHEME_DIRECT,
                             key.host_port_pair(),
                             ssl_config,
+                            key.privacy_mode(),
                             0,
                             false,
                             false));

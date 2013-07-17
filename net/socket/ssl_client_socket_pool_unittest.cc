@@ -152,13 +152,14 @@ class SSLClientSocketPoolTest : public testing::Test {
   scoped_refptr<SSLSocketParams> SSLParams(ProxyServer::Scheme proxy,
                                            bool want_spdy_over_npn) {
     return make_scoped_refptr(new SSLSocketParams(
-        proxy == ProxyServer::SCHEME_DIRECT ?
-            direct_transport_socket_params_ : NULL,
+        proxy == ProxyServer::SCHEME_DIRECT ? direct_transport_socket_params_
+                                            : NULL,
         proxy == ProxyServer::SCHEME_SOCKS5 ? socks_socket_params_ : NULL,
         proxy == ProxyServer::SCHEME_HTTP ? http_proxy_socket_params_ : NULL,
         proxy,
         HostPortPair("host", 443),
         ssl_config_,
+        kPrivacyModeDisabled,
         0,
         false,
         want_spdy_over_npn));

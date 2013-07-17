@@ -76,6 +76,7 @@ class HttpProxyClientSocketPoolTest
                                 ProxyServer::SCHEME_DIRECT,
                                 HostPortPair("www.google.com", 443),
                                 ssl_config_,
+                                kPrivacyModeDisabled,
                                 0,
                                 false,
                                 false)),

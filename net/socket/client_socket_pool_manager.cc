@@ -185,6 +185,7 @@ int InitSocketPoolHelper(const GURL& request_url,
                                          ProxyServer::SCHEME_DIRECT,
                                          *proxy_host_port.get(),
                                          ssl_config_for_proxy,
+                                         kPrivacyModeDisabled,
                                          load_flags,
                                          force_spdy_over_ssl,
                                          want_spdy_over_npn);
@@ -218,6 +219,10 @@ int InitSocketPoolHelper(const GURL& request_url,
     }
   }
 
+  // Change group name if privacy mode is enabled.
+  if (privacy_mode == kPrivacyModeEnabled)
+    connection_group = "pm/" + connection_group;
+
   // Deal with SSL - which layers on top of any given proxy.
   if (using_ssl) {
     scoped_refptr<SSLSocketParams> ssl_params =
@@ -227,13 +232,10 @@ int InitSocketPoolHelper(const GURL& request_url,
                             proxy_info.proxy_server().scheme(),
                             origin_host_port,
                             ssl_config_for_origin,
+                            privacy_mode,
                             load_flags,
                             force_spdy_over_ssl,
                             want_spdy_over_npn);
-    // Change group name if privacy mode is enabled.
-    if (privacy_mode == kPrivacyModeEnabled)
-      connection_group = "pm/" + connection_group;
-
     SSLClientSocketPool* ssl_pool = NULL;
     if (proxy_info.is_direct()) {
       ssl_pool = session->GetSSLSocketPool(socket_pool_type);

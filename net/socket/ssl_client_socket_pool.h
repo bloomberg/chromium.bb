@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
+#include "net/base/privacy_mode.h"
 #include "net/dns/host_resolver.h"
 #include "net/http/http_response_info.h"
 #include "net/proxy/proxy_server.h"
@@ -45,6 +46,7 @@ class NET_EXPORT_PRIVATE SSLSocketParams
                   ProxyServer::Scheme proxy,
                   const HostPortPair& host_and_port,
                   const SSLConfig& ssl_config,
+                  PrivacyMode privacy_mode,
                   int load_flags,
                   bool force_spdy_over_ssl,
                   bool want_spdy_over_npn);
@@ -61,6 +63,7 @@ class NET_EXPORT_PRIVATE SSLSocketParams
   ProxyServer::Scheme proxy() const { return proxy_; }
   const HostPortPair& host_and_port() const { return host_and_port_; }
   const SSLConfig& ssl_config() const { return ssl_config_; }
+  PrivacyMode privacy_mode() const { return privacy_mode_; }
   int load_flags() const { return load_flags_; }
   bool force_spdy_over_ssl() const { return force_spdy_over_ssl_; }
   bool want_spdy_over_npn() const { return want_spdy_over_npn_; }
@@ -76,6 +79,7 @@ class NET_EXPORT_PRIVATE SSLSocketParams
   const ProxyServer::Scheme proxy_;
   const HostPortPair host_and_port_;
   const SSLConfig ssl_config_;
+  const PrivacyMode privacy_mode_;
   const int load_flags_;
   const bool force_spdy_over_ssl_;
   const bool want_spdy_over_npn_;

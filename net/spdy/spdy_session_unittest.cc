@@ -2476,6 +2476,7 @@ TEST_P(SpdySessionTest, SendCredentials) {
 
   scoped_refptr<SpdySession> session =
       CreateSecureSpdySession(http_session_, key, BoundNetLog());
+
   EXPECT_TRUE(session->NeedsCredentials());
 
   // Flush the read completion task.

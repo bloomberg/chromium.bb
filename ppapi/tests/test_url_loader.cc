@@ -95,7 +95,37 @@ bool TestURLLoader::Init() {
   return EnsureRunningOverHTTP();
 }
 
+/*
+ * The test order is important here, as running tests out of order may cause
+ * test timeout.
+ *
+ * Here is the environment:
+ *
+ * 1. TestServer.py only accepts one open connection at the time.
+ * 2. HTTP socket pool keeps sockets open for several seconds after last use
+ * (hoping that there will be another request that could reuse the connection).
+ * 3. HTTP socket pool is separated by host/port and privacy mode (which is
+ * based on cookies set/get permissions). So, connections to 127.0.0.1,
+ * localhost and localhost in privacy mode cannot reuse existing socket and will
+ * try to open another connection.
+ *
+ * Here is the problem:
+ *
+ * Original test order was repeatedly accessing 127.0.0.1, localhost and
+ * localhost in privacy mode, causing new sockets to open and try to connect to
+ * testserver, which they couldn't until previous connection is closed by socket
+ * pool idle socket timeout (10 seconds).
+ *
+ * Because of this the test run was taking around 45 seconds, and test was
+ * reported as 'timed out' by trybot.
+ *
+ * Re-ordering of tests provides more sequential access to 127.0.0.1, localhost
+ * and localhost in privacy mode. It decreases the number of times when socket
+ * pool doesn't have existing connection to host and has to wait, therefore
+ * reducing total test time and ensuring its completion under 30 seconds.
+ */
 void TestURLLoader::RunTests(const std::string& filter) {
+  // These tests connect to 127.0.0.1:
   RUN_CALLBACK_TEST(TestURLLoader, BasicGET, filter);
   RUN_CALLBACK_TEST(TestURLLoader, BasicPOST, filter);
   RUN_CALLBACK_TEST(TestURLLoader, BasicFilePOST, filter);
@@ -106,10 +136,6 @@ void TestURLLoader::RunTests(const std::string& filter) {
   RUN_CALLBACK_TEST(TestURLLoader, CustomRequestHeader, filter);
   RUN_CALLBACK_TEST(TestURLLoader, FailsBogusContentLength, filter);
   RUN_CALLBACK_TEST(TestURLLoader, StreamToFile, filter);
-  RUN_CALLBACK_TEST(TestURLLoader, UntrustedSameOriginRestriction, filter);
-  RUN_CALLBACK_TEST(TestURLLoader, TrustedSameOriginRestriction, filter);
-  RUN_CALLBACK_TEST(TestURLLoader, UntrustedCrossOriginRequest, filter);
-  RUN_CALLBACK_TEST(TestURLLoader, TrustedCrossOriginRequest, filter);
   RUN_CALLBACK_TEST(TestURLLoader, UntrustedJavascriptURLRestriction, filter);
   RUN_CALLBACK_TEST(TestURLLoader, TrustedJavascriptURLRestriction, filter);
   RUN_CALLBACK_TEST(TestURLLoader, UntrustedHttpRequests, filter);
@@ -119,6 +145,12 @@ void TestURLLoader::RunTests(const std::string& filter) {
   RUN_CALLBACK_TEST(TestURLLoader, AbortCalls, filter);
   RUN_CALLBACK_TEST(TestURLLoader, UntendedLoad, filter);
   RUN_CALLBACK_TEST(TestURLLoader, PrefetchBufferThreshold, filter);
+  // These tests connect to localhost with privacy mode enabled:
+  RUN_CALLBACK_TEST(TestURLLoader, UntrustedSameOriginRestriction, filter);
+  RUN_CALLBACK_TEST(TestURLLoader, UntrustedCrossOriginRequest, filter);
+  // These tests connect to localhost with privacy mode disabled:
+  RUN_CALLBACK_TEST(TestURLLoader, TrustedSameOriginRestriction, filter);
+  RUN_CALLBACK_TEST(TestURLLoader, TrustedCrossOriginRequest, filter);
 }
 
 std::string TestURLLoader::ReadEntireFile(pp::FileIO* file_io,
