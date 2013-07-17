@@ -87,7 +87,7 @@ void BrowserPluginManagerImpl::OnAllocateInstanceIDACK(
     return;
   pending_allocate_guest_instance_id_requests_.Remove(
       browser_plugin_instance_id);
-  plugin->Attach(guest_instance_id);
+  plugin->OnInstanceIDAllocated(guest_instance_id);
 }
 
 void BrowserPluginManagerImpl::OnPluginAtPositionRequest(

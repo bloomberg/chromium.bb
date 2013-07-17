@@ -25,4 +25,7 @@ function GuestResponsive(evt) {
   var plugin = document.getElementById('plugin');
   plugin.addEventListener('-internal-unresponsive', GuestUnresponsive);
   plugin.addEventListener('-internal-responsive', GuestResponsive);
+  plugin.addEventListener('-internal-instanceid-allocated', function(e) {
+    plugin['-internal-attach']({});
+  });
 </script>

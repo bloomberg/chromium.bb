@@ -66,8 +66,6 @@ class CONTENT_EXPORT BrowserPlugin :
   std::string GetSrcAttribute() const;
   // Parse the src attribute value of the BrowserPlugin instance.
   bool ParseSrcAttribute(std::string* error_message);
-  // Get the Api attribute value.
-  std::string GetApiAttribute() const;
   // Get the autosize attribute value.
   bool GetAutoSizeAttribute() const;
   // Parses the autosize attribute value.
@@ -134,12 +132,12 @@ class CONTENT_EXPORT BrowserPlugin :
   // Called by browser plugin binding.
   void OnEmbedderDecidedPermission(int request_id, bool allow);
 
-  // Attaches this BrowserPlugin to a guest with the provided |instance_id|.
-  // If the |instance_id| is not yet associated with a guest, a new guest
-  // will be created. If the |instance_id| has not yet been allocated or the
-  // embedder is not permitted access to that particular guest, then the
-  // embedder will be killed.
-  void Attach(int instance_id);
+  // Called when a guest instance ID has been allocated by the browser process.
+  void OnInstanceIDAllocated(int guest_instance_id);
+  // Provided that a guest instance ID has been allocated, this method attaches
+  // this BrowserPlugin instance to that guest. |extra_params| are parameters
+  // passed in by the content embedder to the browser process.
+  void Attach(scoped_ptr<base::DictionaryValue> extra_params);
 
   // Notify the plugin about a compositor commit so that frame ACKs could be
   // sent, if needed.

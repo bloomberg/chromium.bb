@@ -54,7 +54,11 @@ function receiveMessage(event) {
     }
   }
 }
-  var plugin = document.getElementById('plugin');
-  window.addEventListener('message', receiveMessage, false);
-  plugin.addEventListener('-internal-sizechanged', sizeChanged);
+
+var plugin = document.getElementById('plugin');
+window.addEventListener('message', receiveMessage, false);
+plugin.addEventListener('-internal-sizechanged', sizeChanged);
+plugin.addEventListener('-internal-instanceid-allocated', function(e) {
+  plugin['-internal-attach']({});
+});
 </script>

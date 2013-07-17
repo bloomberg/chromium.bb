@@ -43,7 +43,9 @@ void MockBrowserPluginManager::AllocateInstanceID(
 void MockBrowserPluginManager::AllocateInstanceIDACK(
     BrowserPlugin* browser_plugin,
     int guest_instance_id) {
-  browser_plugin->Attach(guest_instance_id);
+  browser_plugin->OnInstanceIDAllocated(guest_instance_id);
+  scoped_ptr<base::DictionaryValue> extra_params(new base::DictionaryValue());
+  browser_plugin->Attach(extra_params.Pass());
 }
 
 bool MockBrowserPluginManager::Send(IPC::Message* msg) {

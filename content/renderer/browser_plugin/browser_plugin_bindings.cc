@@ -14,6 +14,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/common/browser_plugin/browser_plugin_constants.h"
+#include "content/public/renderer/v8_value_converter.h"
 #include "content/renderer/browser_plugin/browser_plugin.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebBindings.h"
@@ -23,6 +24,7 @@
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebNode.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
+#include "third_party/WebKit/public/web/WebView.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "v8/include/v8.h"
 
@@ -224,6 +226,40 @@ class BrowserPluginMethodBinding {
   uint32 arg_count_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginMethodBinding);
+};
+
+class BrowserPluginBindingAttach: public BrowserPluginMethodBinding {
+ public:
+  BrowserPluginBindingAttach()
+      : BrowserPluginMethodBinding(
+          browser_plugin::kMethodInternalAttach, 1) {
+  }
+
+  virtual bool Invoke(BrowserPluginBindings* bindings,
+                      const NPVariant* args,
+                      NPVariant* result) OVERRIDE {
+    if (!bindings->instance()->render_view())
+      return false;
+
+    scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
+    v8::Handle<v8::Value> obj(WebKit::WebBindings::toV8Value(&args[0]));
+    scoped_ptr<base::Value> value(
+        converter->FromV8Value(obj, bindings->instance()->render_view()->
+            GetWebView()->mainFrame()->mainWorldScriptContext()));
+    if (!value)
+      return false;
+
+    if (!value->IsType(Value::TYPE_DICTIONARY))
+      return false;
+
+    scoped_ptr<base::DictionaryValue> extra_params(
+        static_cast<base::DictionaryValue*>(value.release()));
+    bindings->instance()->Attach(extra_params.Pass());
+    return true;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BrowserPluginBindingAttach);
 };
 
 class BrowserPluginBindingAttachWindowTo : public BrowserPluginMethodBinding {
@@ -689,6 +725,7 @@ BrowserPluginBindings::BrowserPluginBindings(BrowserPlugin* instance)
   np_object_ = static_cast<BrowserPluginBindings::BrowserPluginNPObject*>(obj);
   np_object_->message_channel = weak_ptr_factory_.GetWeakPtr();
 
+  method_bindings_.push_back(new BrowserPluginBindingAttach);
   method_bindings_.push_back(new BrowserPluginBindingAttachWindowTo);
   method_bindings_.push_back(new BrowserPluginBindingGetInstanceID);
   method_bindings_.push_back(new BrowserPluginBindingGetGuestInstanceID);

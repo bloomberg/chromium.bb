@@ -127,7 +127,6 @@ function WebView(webviewNode) {
 WebView.prototype.createBrowserPluginNode_ = function() {
   var browserPluginNode = document.createElement('object');
   browserPluginNode.type = 'application/browser-plugin';
-  browserPluginNode.setAttribute('api', 'webview');
   // The <object> node fills in the <webview> container.
   browserPluginNode.style.width = '100%';
   browserPluginNode.style.height = '100%';
@@ -359,13 +358,20 @@ WebView.prototype.handleBrowserPluginAttributeMutation_ = function(mutation) {
  */
 WebView.prototype.setupWebviewNodeEvents_ = function() {
   var self = this;
-  this.browserPluginNode_.addEventListener('-internal-attached', function(e) {
+  var onInstanceIdAllocated = function(e) {
     var detail = e.detail ? JSON.parse(e.detail) : {};
     self.instanceId_ = detail.windowId;
+    var params = {
+      'api': 'webview'
+    };
+    self.browserPluginNode_['-internal-attach'](params);
+
     for (var eventName in WEB_VIEW_EXT_EVENTS) {
       self.setupExtEvent_(eventName, WEB_VIEW_EXT_EVENTS[eventName]);
     }
-  });
+  };
+  this.browserPluginNode_.addEventListener('-internal-instanceid-allocated',
+                                           onInstanceIdAllocated);
 
   for (var eventName in WEB_VIEW_EVENTS) {
     this.setupEvent_(eventName, WEB_VIEW_EVENTS[eventName]);

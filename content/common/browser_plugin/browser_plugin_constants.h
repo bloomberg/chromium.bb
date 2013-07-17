@@ -22,12 +22,13 @@ extern const char kMethodStop[];
 extern const char kMethodTerminate[];
 
 // Internal method bindings.
+extern const char kMethodInternalAttach[];
 extern const char kMethodInternalAttachWindowTo[];
 extern const char kMethodInternalTrackObjectLifetime[];
 extern const char kMethodInternalSetPermission[];
 
 // Internal events
-extern const char kEventInternalAttached[];
+extern const char kEventInternalInstanceIDAllocated[];
 extern const char kEventInternalTrackedObjectGone[];
 
 // Attributes.

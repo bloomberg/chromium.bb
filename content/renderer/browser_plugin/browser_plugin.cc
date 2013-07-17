@@ -208,10 +208,6 @@ std::string BrowserPlugin::GetSrcAttribute() const {
   return GetDOMAttributeValue(browser_plugin::kAttributeSrc);
 }
 
-std::string BrowserPlugin::GetApiAttribute() const {
-  return GetDOMAttributeValue(browser_plugin::kAttributeApi);
-}
-
 bool BrowserPlugin::GetAutoSizeAttribute() const {
   return HasDOMAttribute(browser_plugin::kAttributeAutoSize);
 }
@@ -386,7 +382,7 @@ bool BrowserPlugin::UsesPendingDamageBuffer(
   return damage_buffer_sequence_id_ == params.damage_buffer_sequence_id;
 }
 
-void BrowserPlugin::Attach(int guest_instance_id) {
+void BrowserPlugin::OnInstanceIDAllocated(int guest_instance_id) {
   CHECK(guest_instance_id != browser_plugin::kInstanceIDNone);
   before_first_navigation_ = false;
   guest_instance_id_ = guest_instance_id;
@@ -395,8 +391,10 @@ void BrowserPlugin::Attach(int guest_instance_id) {
   std::map<std::string, base::Value*> props;
   props[browser_plugin::kWindowID] =
       new base::FundamentalValue(guest_instance_id);
-  TriggerEvent(browser_plugin::kEventInternalAttached, &props);
+  TriggerEvent(browser_plugin::kEventInternalInstanceIDAllocated, &props);
+}
 
+void BrowserPlugin::Attach(scoped_ptr<base::DictionaryValue> extra_params) {
   BrowserPluginHostMsg_Attach_Params attach_params;
   attach_params.browser_plugin_instance_id = instance_id_;
   attach_params.focused = ShouldGuestBeFocused();
@@ -408,16 +406,10 @@ void BrowserPlugin::Attach(int guest_instance_id) {
   GetDamageBufferWithSizeParams(&attach_params.auto_size_params,
                                 &attach_params.resize_guest_params);
 
-  // TODO(fsamuel): These params should be populated by a new internal attach
-  // API in the near future. This will permit shims that use BrowserPlugin to
-  // propagate shim-specific data on attachment that will be handled by the
-  // content embedder.
-  base::DictionaryValue extra_params;
-  extra_params.SetString(browser_plugin::kAttributeApi, GetApiAttribute());
   browser_plugin_manager()->Send(
       new BrowserPluginHostMsg_Attach(render_view_routing_id_,
                                       guest_instance_id_, attach_params,
-                                      extra_params));
+                                      *extra_params));
 }
 
 void BrowserPlugin::DidCommitCompositorFrame() {
@@ -762,7 +754,7 @@ bool BrowserPlugin::AttachWindowTo(const WebKit::WebNode& node, int window_id) {
   if (browser_plugin->HasNavigated())
     return false;
 
-  browser_plugin->Attach(window_id);
+  browser_plugin->OnInstanceIDAllocated(window_id);
   return true;
 }
 

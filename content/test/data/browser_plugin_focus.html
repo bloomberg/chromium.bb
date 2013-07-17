@@ -17,5 +17,11 @@
       height="480"
       border="0px"></object>
   <button id="after" tabindex="0">After</button>
+<script type="text/javascript">
+var plugin = document.getElementById('plugin');
+plugin.addEventListener('-internal-instanceid-allocated', function(e) {
+  plugin['-internal-attach']({});
+});
+</script>
 </body>
 </html>

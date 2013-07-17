@@ -21,13 +21,14 @@ const char kMethodStop[] = "stop";
 const char kMethodTerminate[] = "terminate";
 
 // Internal method bindings.
+const char kMethodInternalAttach[] = "-internal-attach";
 const char kMethodInternalAttachWindowTo[] = "-internal-attachWindowTo";
 const char kMethodInternalTrackObjectLifetime[] =
     "-internal-trackObjectLifetime";
 const char kMethodInternalSetPermission[] = "-internal-setPermission";
 
 // Internal events.
-const char kEventInternalAttached[] = "attached";
+const char kEventInternalInstanceIDAllocated[] = "instanceid-allocated";
 const char kEventInternalTrackedObjectGone[] = "trackedobjectgone";
 
 // Attributes.

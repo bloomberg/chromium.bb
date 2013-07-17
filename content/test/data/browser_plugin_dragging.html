@@ -29,6 +29,11 @@ function SetSrc(src) {
   plugin = document.getElementById('plugin');
   plugin.src = src;
 }
+
+var plugin = document.getElementById('plugin');
+plugin.addEventListener('-internal-instanceid-allocated', function(e) {
+  plugin['-internal-attach']({});
+});
 </script>
 
 </body>
