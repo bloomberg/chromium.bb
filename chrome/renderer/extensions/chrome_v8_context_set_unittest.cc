@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/features/feature.h"
 #include "chrome/renderer/extensions/chrome_v8_context.h"

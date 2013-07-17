@@ -4,7 +4,7 @@
 
 #include "chrome/renderer/plugins/webview_plugin.h"
 
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/platform/WebSize.h"

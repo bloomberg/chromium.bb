@@ -9,7 +9,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/format_macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/threading/thread.h"
 #include "chrome/common/safe_browsing/client_model.pb.h"
 #include "chrome/renderer/safe_browsing/features.h"

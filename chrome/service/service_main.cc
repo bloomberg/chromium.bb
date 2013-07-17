@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/debug/debugger.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/service_process_util.h"
 #include "chrome/service/service_process.h"

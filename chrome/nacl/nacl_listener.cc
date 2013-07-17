@@ -14,7 +14,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/rand_util.h"
 #include "chrome/common/nacl_messages.h"
 #include "chrome/nacl/nacl_ipc_adapter.h"

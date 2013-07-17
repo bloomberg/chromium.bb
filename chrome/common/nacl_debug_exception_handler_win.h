@@ -6,7 +6,7 @@
 #define CHROME_COMMON_NACL_DEBUG_EXCEPTION_HANDLER_WIN_H_
 
 #include "base/callback.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/process.h"
 
 void NaClStartDebugExceptionHandlerThread(

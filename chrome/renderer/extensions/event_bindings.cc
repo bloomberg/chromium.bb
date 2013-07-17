@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"

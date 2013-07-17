@@ -5,7 +5,7 @@
 #include "chrome/renderer/extensions/chrome_v8_context_set.h"
 
 #include "base/logging.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/tracked_objects.h"
 #include "base/values.h"
 #include "chrome/common/extensions/extension.h"

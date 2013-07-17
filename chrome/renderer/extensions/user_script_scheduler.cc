@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/permissions/permissions_data.h"

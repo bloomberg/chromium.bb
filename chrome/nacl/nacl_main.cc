@@ -5,7 +5,7 @@
 #include "build/build_config.h"
 
 #include "base/command_line.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/timer/hi_res_timer_manager.h"
 #include "chrome/common/chrome_result_codes.h"

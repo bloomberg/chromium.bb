@@ -8,7 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/chrome_constants.h"

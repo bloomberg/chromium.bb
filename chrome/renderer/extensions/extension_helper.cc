@@ -9,7 +9,7 @@
 #include "base/command_line.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/lazy_instance.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_messages.h"
