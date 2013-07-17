@@ -5,10 +5,10 @@
 // IPC messages for device motion.
 // Multiply-included message file, hence no include guard.
 
+#include "base/memory/shared_memory.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_param_traits.h"
 #include "ipc/ipc_platform_file.h"
-#include "base/shared_memory.h"
 
 #define IPC_MESSAGE_START DeviceMotionMsgStart
 

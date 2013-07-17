@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/shared_memory.h"
+#include "base/memory/shared_memory.h"
 #include "content/common/content_export.h"
 #include "content/common/media/video_capture.h"
 #include "content/public/common/common_param_traits.h"

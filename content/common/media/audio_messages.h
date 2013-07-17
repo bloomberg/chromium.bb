@@ -6,7 +6,7 @@
 // Multiply-included message file, hence no include guard.
 
 #include "base/basictypes.h"
-#include "base/shared_memory.h"
+#include "base/memory/shared_memory.h"
 #include "base/sync_socket.h"
 #include "content/common/content_export.h"
 #include "content/common/media/media_param_traits.h"

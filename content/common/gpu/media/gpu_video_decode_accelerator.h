@@ -9,7 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "base/shared_memory.h"
+#include "base/memory/shared_memory.h"
 #include "content/common/gpu/gpu_command_buffer_stub.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"

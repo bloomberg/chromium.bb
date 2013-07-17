@@ -7,7 +7,7 @@
 
 #include <ApplicationServices/ApplicationServices.h>
 
-#include "base/shared_memory.h"
+#include "base/memory/shared_memory.h"
 #include "content/common/content_export.h"
 
 #ifdef __OBJC__

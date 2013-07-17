@@ -15,9 +15,9 @@
 
 #include "base/logging.h"
 #include "base/memory/linked_ptr.h"
+#include "base/memory/shared_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
-#include "base/shared_memory.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/non_thread_safe.h"

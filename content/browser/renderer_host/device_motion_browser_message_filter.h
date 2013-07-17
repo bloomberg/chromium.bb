@@ -6,7 +6,7 @@
  #define CONTENT_BROWSER_RENDERER_HOST_DEVICE_MOTION_BROWSER_MESSAGE_FILTER_H_
 
  #include "base/compiler_specific.h"
- #include "base/shared_memory.h"
+ #include "base/memory/shared_memory.h"
  #include "content/public/browser/browser_message_filter.h"
 
  namespace content {

@@ -26,8 +26,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/id_map.h"
+#include "base/memory/shared_memory.h"
 #include "base/memory/weak_ptr.h"
-#include "base/shared_memory.h"
 #include "base/values.h"
 #include "content/common/browser_plugin/browser_plugin_message_enums.h"
 #include "content/common/edit_command.h"

@@ -9,7 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
-#include "base/shared_memory.h"
+#include "base/memory/shared_memory.h"
 #include "content/common/content_export.h"
 
 namespace content {

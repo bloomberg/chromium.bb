@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "base/shared_memory.h"
+#include "base/memory/shared_memory.h"
 #include "content/common/content_export.h"
 #include "content/common/gpu/gpu_memory_allocation.h"
 #include "content/common/gpu/gpu_memory_uma_stats.h"

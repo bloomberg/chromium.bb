@@ -12,8 +12,8 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/shared_memory.h"
 #include "base/memory/singleton.h"
-#include "base/shared_memory.h"
 #include "base/strings/string16.h"
 #include "content/public/common/child_process_host.h"
 #include "ipc/ipc_listener.h"

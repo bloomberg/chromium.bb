@@ -6,7 +6,7 @@
 #define CONTENT_BROWSER_DEVICE_ORIENTATION_DEVICE_MOTION_PROVIDER_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "base/shared_memory.h"
+#include "base/memory/shared_memory.h"
 #include "content/common/content_export.h"
 #include "content/common/device_motion_hardware_buffer.h"
 

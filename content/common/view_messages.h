@@ -5,8 +5,8 @@
 // IPC messages for page rendering.
 // Multiply-included message file, hence no include guard.
 
+#include "base/memory/shared_memory.h"
 #include "base/process.h"
-#include "base/shared_memory.h"
 #include "base/strings/string16.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/output/compositor_frame.h"
@@ -38,6 +38,8 @@
 #include "media/audio/audio_parameters.h"
 #include "media/base/channel_layout.h"
 #include "media/base/media_log_event.h"
+#include "third_party/WebKit/public/platform/WebFloatPoint.h"
+#include "third_party/WebKit/public/platform/WebFloatRect.h"
 #include "third_party/WebKit/public/web/WebCompositionUnderline.h"
 #include "third_party/WebKit/public/web/WebFindOptions.h"
 #include "third_party/WebKit/public/web/WebMediaPlayerAction.h"
@@ -45,8 +47,6 @@
 #include "third_party/WebKit/public/web/WebPopupType.h"
 #include "third_party/WebKit/public/web/WebScreenInfo.h"
 #include "third_party/WebKit/public/web/WebTextDirection.h"
-#include "third_party/WebKit/public/platform/WebFloatPoint.h"
-#include "third_party/WebKit/public/platform/WebFloatRect.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"

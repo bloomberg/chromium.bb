@@ -8,8 +8,8 @@
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/shared_memory.h"
 #include "base/memory/singleton.h"
-#include "base/shared_memory.h"
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
 

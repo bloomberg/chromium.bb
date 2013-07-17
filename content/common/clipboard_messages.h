@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-#include "base/shared_memory.h"
+#include "base/memory/shared_memory.h"
 #include "content/public/common/common_param_traits.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_param_traits.h"

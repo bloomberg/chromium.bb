@@ -7,7 +7,7 @@
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/hash.h"
-#include "base/shared_memory.h"
+#include "base/memory/shared_memory.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/common/gpu/gpu_channel.h"

@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "base/shared_memory.h"
+#include "base/memory/shared_memory.h"
 #include "base/tracked_objects.h"
 #include "base/values.h"
 #include "content/common/content_export.h"
