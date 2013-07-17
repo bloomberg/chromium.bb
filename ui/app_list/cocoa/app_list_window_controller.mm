@@ -55,6 +55,7 @@
 }
 
 - (void)windowDidResignMain:(NSNotification*)notification {
+  return;
   if ([appListViewController_ delegate])
     [appListViewController_ delegate]->Dismiss();
 }

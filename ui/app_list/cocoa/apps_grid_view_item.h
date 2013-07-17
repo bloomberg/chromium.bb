@@ -22,22 +22,24 @@ APP_LIST_EXPORT
 @interface AppsGridViewItem : NSCollectionViewItem {
  @private
   scoped_ptr<app_list::ItemModelObserverBridge> observerBridge_;
+  base::scoped_nsobject<NSProgressIndicator> progressIndicator_;
 
   // Used to highlight the background on hover.
   ui::ScopedCrTrackingArea trackingArea_;
 }
 
-@property(retain, nonatomic) NSString* buttonTitle;
+@property(readonly, nonatomic) NSProgressIndicator* progressIndicator;
 
 - (id)initWithSize:(NSSize)tileSize;
-
 - (void)setModel:(app_list::AppListItemModel*)itemModel;
-
 - (app_list::AppListItemModel*)model;
-
 - (NSButton*)button;
-
 - (NSMenu*)contextMenu;
+
+// Take a snapshot of the grid cell with correct layout, then hide the button.
+// If |isRestore| is true, the snapshot includes the label and items hidden for
+// the initial snapshot are restored.
+- (NSBitmapImageRep*)dragRepresentationForRestore:(BOOL)isRestore;
 
 @end
 
