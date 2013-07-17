@@ -5,7 +5,7 @@
 #import <Cocoa/Cocoa.h>
 
 #import "base/mac/scoped_nsobject.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #import "chrome/browser/ui/cocoa/about_ipc_controller.h"
 #include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "content/public/test/test_browser_thread.h"

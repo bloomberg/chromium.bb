@@ -5,7 +5,7 @@
 #import "chrome/browser/ui/cocoa/one_click_signin_dialog_controller.h"
 
 #include "base/bind.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_sheet.h"
 #include "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_window.h"
 #import "chrome/browser/ui/cocoa/one_click_signin_view_controller.h"

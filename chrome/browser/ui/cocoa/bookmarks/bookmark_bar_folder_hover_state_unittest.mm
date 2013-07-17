@@ -4,7 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_folder_hover_state.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"

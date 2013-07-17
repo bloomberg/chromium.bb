@@ -4,7 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/profile_signin_confirmation_dialog_cocoa.h"
 
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"

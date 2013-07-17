@@ -6,7 +6,7 @@
 
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #import "chrome/browser/ui/cocoa/bubble_view.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"

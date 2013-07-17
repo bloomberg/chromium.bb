@@ -9,7 +9,7 @@
 #include "base/debug/crash_logging.h"
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"

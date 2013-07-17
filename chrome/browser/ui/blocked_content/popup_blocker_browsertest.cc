@@ -4,7 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_result.h"

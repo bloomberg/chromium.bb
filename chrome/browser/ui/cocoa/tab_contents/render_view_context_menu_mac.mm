@@ -6,7 +6,7 @@
 
 #include "base/compiler_specific.h"
 #import "base/mac/scoped_sending_event.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "content/public/browser/render_view_host.h"

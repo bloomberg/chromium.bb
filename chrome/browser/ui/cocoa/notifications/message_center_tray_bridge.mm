@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/i18n/number_formatting.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "chrome/browser/browser_process.h"
 #include "grit/chromium_strings.h"
 #include "grit/ui_strings.h"

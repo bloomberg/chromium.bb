@@ -8,7 +8,7 @@
 
 #include "base/mac/bundle_locations.h"
 #import "base/mac/mac_util.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/browsing_data/browsing_data_appcache_helper.h"

@@ -7,7 +7,7 @@
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "chrome/browser/ui/app_list/search/history_data.h"
 #include "chrome/browser/ui/app_list/search/history_data_store.h"

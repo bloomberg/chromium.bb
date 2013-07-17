@@ -6,7 +6,7 @@
 
 #include "apps/app_launch_for_metro_restart_win.h"
 #include "base/bind_helpers.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metro_utils/metro_chrome_win.h"

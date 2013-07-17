@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/mac/scoped_nsobject.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "chrome/browser/importer/importer_lock_dialog.h"
 #include "content/public/browser/user_metrics.h"
 #include "grit/chromium_strings.h"

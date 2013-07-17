@@ -5,7 +5,7 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/platform_thread.h"

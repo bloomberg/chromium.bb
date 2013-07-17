@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 
 #include "base/files/file_path.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string16.h"
 #include "base/values.h"

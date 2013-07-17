@@ -4,7 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/toolbar/wrench_toolbar_button_cell.h"
 
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 
 @interface TestWrenchToolbarButton : NSButton

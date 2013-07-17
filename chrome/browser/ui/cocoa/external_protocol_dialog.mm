@@ -4,7 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/external_protocol_dialog.h"
 
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"

@@ -12,7 +12,7 @@
 #include "base/lazy_instance.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/singleton.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/observer_list.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
