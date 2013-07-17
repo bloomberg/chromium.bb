@@ -28,12 +28,7 @@ int64_t strtoull(const char* nptr, char** endptr, int base) {
 Error MountHtml5Fs::Access(const Path& path, int a_mode) {
   // a_mode is unused, since all files are readable, writable and executable.
   ScopedMountNode node;
-  Error error = Open(path, O_RDONLY, &node);
-  if (error)
-    return error;
-
-  node->Release();
-  return 0;
+  return Open(path, O_RDONLY, &node);
 }
 
 Error MountHtml5Fs::Open(const Path& path,
