@@ -55,6 +55,7 @@ class WebContentDecryptionModule;
 class WebClipboard;
 class WebCompositorSupport;
 class WebCookieJar;
+class WebCrypto;
 class WebDeviceMotionListener;
 class WebDiscardableMemory;
 class WebFallbackThemeEngine;
@@ -291,6 +292,7 @@ public:
     virtual void dumpHeapProfiling(const WebString& /*reason*/) { }
     // A wrapper for tcmalloc's GetHeapProfile()
     virtual WebString getHeapProfile() { return WebString(); }
+
 
     // Message Ports -------------------------------------------------------
 
@@ -531,6 +533,7 @@ public:
     // with |velocity| and already scrolled |cumulativeScroll| pixels.
     virtual WebGestureCurve* createFlingAnimationCurve(int deviceSource, const WebFloatPoint& velocity, const WebSize& cumulativeScroll) { return 0; }
 
+
     // WebRTC ----------------------------------------------------------
 
     // Creates an WebRTCPeerConnectionHandler for RTCPeerConnection.
@@ -545,6 +548,12 @@ public:
 
     virtual void didStartWorkerRunLoop(const WebWorkerRunLoop&) { }
     virtual void didStopWorkerRunLoop(const WebWorkerRunLoop&) { }
+
+
+    // WebCrypto ----------------------------------------------------------
+
+    // May return 0.
+    virtual WebCrypto* crypto() { return 0; }
 
 
     // Device Motion / Orientation ----------------------------------------
