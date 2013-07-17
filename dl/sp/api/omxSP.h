@@ -44,7 +44,6 @@ extern "C" {
  typedef void OMXFFTSpec_C_SC16;
  typedef void OMXFFTSpec_C_SC32;
  typedef void OMXFFTSpec_R_S16S32;
- typedef void OMXFFTSpec_R_S16;
  typedef void OMXFFTSpec_R_S32;
  typedef void OMXFFTSpec_R_F32;
  typedef void OMXFFTSpec_C_FC32;

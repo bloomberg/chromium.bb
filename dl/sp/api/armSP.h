@@ -64,14 +64,6 @@ typedef struct  ARMsFFTSpec_R_SC32_Tag
     OMX_S32     *pBuf;
 }ARMsFFTSpec_R_SC32;
 
-typedef struct  ARMsFFTSpec_R_SC16_Tag 
-{
-    OMX_U32     N;
-    OMX_U16     *pBitRev;    
-    OMX_SC16    *pTwiddle;
-    OMX_S16     *pBuf;
-} ARMsFFTSpec_R_SC16;
-
 typedef struct ARMsFFTSpec_R_FC32_Tag
 {
     OMX_U32 N;
