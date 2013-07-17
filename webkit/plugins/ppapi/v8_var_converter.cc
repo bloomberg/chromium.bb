@@ -15,7 +15,7 @@
 #include "ppapi/shared_impl/dictionary_var.h"
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/shared_impl/var_tracker.h"
-#include "third_party/WebKit/public/web/WebArrayBuffer.h"
+#include "third_party/WebKit/public/platform/WebArrayBuffer.h"
 #include "webkit/plugins/ppapi/host_array_buffer_var.h"
 
 using ppapi::ArrayBufferVar;

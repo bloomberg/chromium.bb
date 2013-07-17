@@ -8,7 +8,7 @@
 #include "cc/base/math_util.h"
 #include "cc/resources/picture.h"
 #include "content/public/renderer/v8_value_converter.h"
-#include "third_party/WebKit/public/web/WebArrayBuffer.h"
+#include "third_party/WebKit/public/platform/WebArrayBuffer.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
