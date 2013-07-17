@@ -74,7 +74,7 @@ public:
     //  - The resolver's resolved flag is not set.
     bool isPending() const;
 
-    ScriptObject promise() { return ScriptObject(ScriptState::current(), m_promise.get()); }
+    ScriptObject promise() { return ScriptObject(ScriptState::current(), m_promise.deprecatedGet()); }
 
     // Fulfill with a C++ object which can be converted to a v8 object by toV8.
     template<typename T>

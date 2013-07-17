@@ -68,8 +68,9 @@ public:
         return handle;
     }
 
-    // FIXME: Remove this function, replace the usages with newLocal().
-    v8::Handle<T> handle()
+    // FIXME: Remove this function, replace the usages with newLocal(). Do not
+    // add code which calls this function.
+    v8::Handle<T> deprecatedHandle()
     {
         v8::Handle<T>* handle = reinterpret_cast<v8::Handle<T>*>(&m_value);
         return *handle;

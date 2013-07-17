@@ -82,7 +82,7 @@ public:
             return reinterpret_cast<const WrapperTypeInfo*>(m_wrapperOrTypeInfo);
 
         if (containsWrapper()) {
-            return toWrapperTypeInfo(unsafePersistent().handle());
+            return toWrapperTypeInfo(unsafePersistent().deprecatedHandle());
         }
 
         return 0;
@@ -181,7 +181,7 @@ private:
 
     static void makeWeakCallback(v8::Isolate* isolate, v8::Persistent<v8::Object>* wrapper, ScriptWrappable* key)
     {
-        ASSERT(key->unsafePersistent().handle() == *wrapper);
+        ASSERT(key->unsafePersistent().deprecatedHandle() == *wrapper);
 
         // Note: |object| might not be equal to |key|, e.g., if ScriptWrappable isn't a left-most base class.
         void* object = toNative(*wrapper);

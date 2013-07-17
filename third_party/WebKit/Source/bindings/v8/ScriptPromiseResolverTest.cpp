@@ -51,8 +51,8 @@ public:
     {
         m_isolate = v8::Isolate::GetCurrent();
         m_context.set(m_isolate, v8::Context::New(m_isolate));
-        m_context.get()->Enter();
-        m_perContextData = V8PerContextData::create(m_context.get());
+        m_context.deprecatedGet()->Enter();
+        m_perContextData = V8PerContextData::create(m_context.deprecatedGet());
         m_perContextData->init();
         m_resolver = ScriptPromiseResolver::create();
         m_promise = m_resolver->promise();
@@ -63,7 +63,7 @@ public:
         m_resolver = 0;
         m_promise.clear();
         m_perContextData.clear();
-        m_context.get()->Exit();
+        m_context.deprecatedGet()->Exit();
     }
 
     V8PromiseCustom::PromiseState state()

@@ -96,7 +96,7 @@ void ScriptPromiseResolver::fulfill(v8::Handle<v8::Value> value, v8::Isolate* is
     ASSERT(isMainThread());
     if (!isPendingInternal())
         return;
-    V8PromiseCustom::fulfillResolver(m_resolver.get(), value, V8PromiseCustom::Asynchronous, isolate);
+    V8PromiseCustom::fulfillResolver(m_resolver.deprecatedGet(), value, V8PromiseCustom::Asynchronous, isolate);
     m_resolver.clear();
 }
 
@@ -105,7 +105,7 @@ void ScriptPromiseResolver::resolve(v8::Handle<v8::Value> value, v8::Isolate* is
     ASSERT(isMainThread());
     if (!isPendingInternal())
         return;
-    V8PromiseCustom::resolveResolver(m_resolver.get(), value, V8PromiseCustom::Asynchronous, isolate);
+    V8PromiseCustom::resolveResolver(m_resolver.deprecatedGet(), value, V8PromiseCustom::Asynchronous, isolate);
     m_resolver.clear();
 }
 
@@ -114,7 +114,7 @@ void ScriptPromiseResolver::reject(v8::Handle<v8::Value> value, v8::Isolate* iso
     ASSERT(isMainThread());
     if (!isPendingInternal())
         return;
-    V8PromiseCustom::rejectResolver(m_resolver.get(), value, V8PromiseCustom::Asynchronous, isolate);
+    V8PromiseCustom::rejectResolver(m_resolver.deprecatedGet(), value, V8PromiseCustom::Asynchronous, isolate);
     m_resolver.clear();
 }
 
@@ -145,9 +145,9 @@ void ScriptPromiseResolver::reject(ScriptValue value)
 bool ScriptPromiseResolver::isPendingInternal() const
 {
     ASSERT(isMainThread());
-    if (m_resolver.isEmpty() || V8PromiseCustom::isInternalDetached(m_resolver.get()))
+    if (m_resolver.isEmpty() || V8PromiseCustom::isInternalDetached(m_resolver.deprecatedGet()))
         return false;
-    v8::Local<v8::Object> internal = V8PromiseCustom::getInternal(m_resolver.get());
+    v8::Local<v8::Object> internal = V8PromiseCustom::getInternal(m_resolver.deprecatedGet());
     V8PromiseCustom::PromiseState state = V8PromiseCustom::getState(internal);
     return state == V8PromiseCustom::Pending;
 }

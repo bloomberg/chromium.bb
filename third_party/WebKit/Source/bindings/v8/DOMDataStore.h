@@ -62,7 +62,7 @@ public:
         // the holder.
         if ((!DOMWrapperWorld::isolatedWorldsExist() && !canExistInWorker(object)) || holderContainsWrapper(callbackInfo, holder)) {
             if (ScriptWrappable::wrapperCanBeStoredInObject(object)) {
-                v8::Handle<v8::Object> result = ScriptWrappable::getUnsafeWrapperFromObject(object).handle();
+                v8::Handle<v8::Object> result = ScriptWrappable::getUnsafeWrapperFromObject(object).deprecatedHandle();
                 // Security: always guard against malicious tampering.
                 RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(result.IsEmpty() || result->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex) == V8T::toInternalPointer(object));
                 return result;
@@ -77,7 +77,7 @@ public:
     {
         if (ScriptWrappable::wrapperCanBeStoredInObject(object) && !canExistInWorker(object)) {
             if (LIKELY(!DOMWrapperWorld::isolatedWorldsExist())) {
-                v8::Handle<v8::Object> result = ScriptWrappable::getUnsafeWrapperFromObject(object).handle();
+                v8::Handle<v8::Object> result = ScriptWrappable::getUnsafeWrapperFromObject(object).deprecatedHandle();
                 // Security: always guard against malicious tampering.
                 RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(result.IsEmpty() || result->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex) == V8T::toInternalPointer(object));
                 return result;
@@ -90,7 +90,7 @@ public:
     static v8::Handle<v8::Object> getWrapperForMainWorld(T* object)
     {
         if (ScriptWrappable::wrapperCanBeStoredInObject(object))
-            return ScriptWrappable::getUnsafeWrapperFromObject(object).handle();
+            return ScriptWrappable::getUnsafeWrapperFromObject(object).deprecatedHandle();
         return mainWorldStore()->template get<V8T>(object);
     }
 
@@ -110,7 +110,7 @@ public:
     inline v8::Handle<v8::Object> get(T* object)
     {
         if (ScriptWrappable::wrapperCanBeStoredInObject(object) && m_type == MainWorld)
-            return ScriptWrappable::getUnsafeWrapperFromObject(object).handle();
+            return ScriptWrappable::getUnsafeWrapperFromObject(object).deprecatedHandle();
         return m_wrapperMap.get(V8T::toInternalPointer(object));
     }
 
@@ -144,8 +144,8 @@ private:
     static bool holderContainsWrapper(const CallbackInfo& callbackInfo, ScriptWrappable* wrappable)
     {
         // Verify our assumptions about the main world.
-        ASSERT(wrappable->unsafePersistent().handle().IsEmpty() || callbackInfo.Holder() != wrappable->unsafePersistent().handle() || current(v8::Isolate::GetCurrent())->m_type == MainWorld);
-        return callbackInfo.Holder() == wrappable->unsafePersistent().handle();
+        ASSERT(wrappable->unsafePersistent().deprecatedHandle().IsEmpty() || callbackInfo.Holder() != wrappable->unsafePersistent().deprecatedHandle() || current(v8::Isolate::GetCurrent())->m_type == MainWorld);
+        return callbackInfo.Holder() == wrappable->unsafePersistent().deprecatedHandle();
     }
 
     WrapperWorldType m_type;

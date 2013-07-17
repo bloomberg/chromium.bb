@@ -53,7 +53,7 @@ public:
 
     v8::Handle<v8::Object> get(KeyType* key)
     {
-        return m_map.get(key).handle();
+        return m_map.get(key).deprecatedHandle();
     }
 
     v8::Handle<v8::Object> getNewLocal(v8::Isolate* isolate, KeyType* key)
@@ -82,7 +82,7 @@ public:
             MapType map;
             map.swap(m_map);
             for (typename MapType::iterator it = map.begin(); it != map.end(); ++it) {
-                toWrapperTypeInfo(it->value.handle())->derefObject(it->key);
+                toWrapperTypeInfo(it->value.deprecatedHandle())->derefObject(it->key);
                 it->value.dispose();
             }
         }
