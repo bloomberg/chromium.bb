@@ -35,6 +35,8 @@ extern const char* const errorDomainWebKitInternal; // Used for errors that won'
 
 class ResourceError {
 public:
+    static ResourceError cancelledError(const String& failingURL);
+
     ResourceError()
         : m_errorCode(0)
         , m_isNull(true)

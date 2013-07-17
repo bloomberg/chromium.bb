@@ -1740,7 +1740,11 @@ void FrameLoader::receivedMainResourceError(const ResourceError& error)
     // FIXME: Don't want to do this if an entirely new load is going, so should check
     // that both data sources on the frame are either this or nil.
     stop();
-    if (m_client->shouldFallBack(error))
+
+    // FIXME: We really ought to be able to just check for isCancellation() here, but there are some
+    // ResourceErrors that setIsCancellation() but aren't created by ResourceError::cancelledError().
+    ResourceError c(ResourceError::cancelledError(KURL()));
+    if (error.errorCode() != c.errorCode() || error.domain() != c.domain())
         handleFallbackContent();
 
     if (m_state == FrameStateProvisional && m_provisionalDocumentLoader) {
@@ -2004,7 +2008,7 @@ void FrameLoader::requestFromDelegate(ResourceRequest& request, unsigned long& i
     notifier()->dispatchWillSendRequest(m_documentLoader.get(), identifier, newRequest, ResourceResponse());
 
     if (newRequest.isNull())
-        error = cancelledError(request);
+        error = ResourceError::cancelledError(request.url());
     else
         error = ResourceError();
 
@@ -2195,13 +2199,6 @@ void FrameLoader::insertDummyHistoryItem()
     RefPtr<HistoryItem> currentItem = HistoryItem::create();
     history()->setCurrentItem(currentItem.get());
     frame()->page()->backForward()->setCurrentItem(currentItem.get());
-}
-
-ResourceError FrameLoader::cancelledError(const ResourceRequest& request) const
-{
-    ResourceError error = m_client->cancelledError(request);
-    error.setIsCancellation(true);
-    return error;
 }
 
 void FrameLoader::setTitle(const StringWithDirection& title)

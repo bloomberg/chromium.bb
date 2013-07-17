@@ -139,12 +139,6 @@ public:
         m_baseProxy->willRequestResource(frame, request);
         Base::willRequestResource(frame, request);
     }
-    virtual WebKit::WebURLError cannotHandleRequestError(WebKit::WebFrame* frame, const WebKit::WebURLRequest& request)
-    {
-        // RenderFrameImpl handles all requests, so this method is not expected
-        // to be called. As such, just call the proxy object without calling Base.
-        return m_baseProxy->cannotHandleRequestError(frame, request);
-    }
     virtual void didCreateDataSource(WebKit::WebFrame* frame, WebKit::WebDataSource* ds)
     {
         Base::didCreateDataSource(frame, ds);
@@ -177,12 +171,6 @@ public:
         if (m_version > 1)
             m_baseProxy->didFailResourceLoad(frame, identifier, error);
         Base::didFailResourceLoad(frame, identifier, error);
-    }
-    virtual void unableToImplementPolicyWithError(WebKit::WebFrame* frame, const WebKit::WebURLError& error)
-    {
-        if (m_version > 1)
-            m_baseProxy->unableToImplementPolicyWithError(frame, error);
-        Base::unableToImplementPolicyWithError(frame, error);
     }
     virtual WebKit::WebNavigationPolicy decidePolicyForNavigation(WebKit::WebFrame* frame, const WebKit::WebURLRequest& request, WebKit::WebNavigationType type, WebKit::WebNavigationPolicy defaultPolicy, bool isRedirect)
     {

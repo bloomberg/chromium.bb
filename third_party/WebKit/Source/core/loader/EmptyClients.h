@@ -212,8 +212,6 @@ public:
 
     virtual NavigationPolicy decidePolicyForNavigation(const ResourceRequest&, NavigationType, NavigationPolicy, bool isRedirect) OVERRIDE;
 
-    virtual void dispatchUnableToImplementPolicy(const ResourceError&) OVERRIDE { }
-
     virtual void dispatchWillSendSubmitEvent(PassRefPtr<FormState>) OVERRIDE;
     virtual void dispatchWillSubmitForm(PassRefPtr<FormState>) OVERRIDE;
 
@@ -225,15 +223,7 @@ public:
 
     virtual void didReceiveDocumentData(const char*, int) OVERRIDE { }
 
-    virtual ResourceError cancelledError(const ResourceRequest&) OVERRIDE { ResourceError error("", 0, "", ""); error.setIsCancellation(true); return error; }
-    virtual ResourceError cannotShowURLError(const ResourceRequest&) OVERRIDE { return ResourceError("", 0, "", ""); }
     virtual ResourceError interruptedForPolicyChangeError(const ResourceRequest&) OVERRIDE { return ResourceError("", 0, "", ""); }
-
-    virtual ResourceError cannotShowMIMETypeError(const ResourceResponse&) OVERRIDE { return ResourceError("", 0, "", ""); }
-    virtual ResourceError fileDoesNotExistError(const ResourceResponse&) OVERRIDE { return ResourceError("", 0, "", ""); }
-    virtual ResourceError pluginWillHandleLoadError(const ResourceResponse&) OVERRIDE { return ResourceError("", 0, "", ""); }
-
-    virtual bool shouldFallBack(const ResourceError&) OVERRIDE { return false; }
 
     virtual bool canShowMIMEType(const String&) const OVERRIDE { return false; }
     virtual String generatedMIMETypeForURLScheme(const String&) const OVERRIDE { return ""; }

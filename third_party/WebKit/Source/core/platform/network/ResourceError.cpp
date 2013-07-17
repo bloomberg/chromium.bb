@@ -27,9 +27,19 @@
 #include "config.h"
 #include "core/platform/network/ResourceError.h"
 
+#include "public/platform/Platform.h"
+#include "public/platform/WebURL.h"
+#include "public/platform/WebURLError.h"
+#include "weborigin/KURL.h"
+
 namespace WebCore {
 
 const char* const errorDomainWebKitInternal = "WebKitInternal";
+
+ResourceError ResourceError::cancelledError(const String& failingURL)
+{
+    return WebKit::Platform::current()->cancelledError(KURL(ParsedURLString, failingURL));
+}
 
 ResourceError ResourceError::copy() const
 {

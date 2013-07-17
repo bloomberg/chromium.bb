@@ -54,15 +54,6 @@ using WebKit::URLTestHelpers::toKURL;
 namespace {
 
 class TestWebFrameClient : public WebFrameClient {
-    // Return a non-null cancellation error so the WebFrame loaders can shut down without asserting.
-    // Make 'reason' non-zero so WebURLError isn't considered null.
-    WebURLError cancelledError(WebFrame*, const WebURLRequest& request)
-    {
-        WebURLError error;
-        error.reason = 1;
-        error.unreachableURL = request.url();
-        return error;
-    }
 };
 
 class AssociatedURLLoaderTest : public testing::Test,

@@ -43,6 +43,7 @@
 #include "WebLocalizedString.h"
 #include "WebSpeechSynthesizer.h"
 #include "WebString.h"
+#include "WebURLError.h"
 #include "WebVector.h"
 
 class GrContext;
@@ -91,7 +92,6 @@ class WebWorkerRunLoop;
 struct WebFloatPoint;
 struct WebLocalizedString;
 struct WebSize;
-struct WebURLError;
 
 class Platform {
 public:
@@ -314,6 +314,8 @@ public:
 
     // Returns the decoded data url if url had a supported mimetype and parsing was successful.
     virtual WebData parseDataURL(const WebURL&, WebString& mimetype, WebString& charset) { return WebData(); }
+
+    virtual WebURLError cancelledError(const WebURL&) const { return WebURLError(); }
 
 
     // Plugins -------------------------------------------------------------

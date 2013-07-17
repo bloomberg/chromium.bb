@@ -211,7 +211,6 @@ namespace WebCore {
 
         bool shouldContinueForResponse() const;
         void stopLoadingForPolicyChange();
-        ResourceError interruptedForPolicyChangeError() const;
 
         typedef Timer<DocumentLoader> DocumentLoaderTimer;
 

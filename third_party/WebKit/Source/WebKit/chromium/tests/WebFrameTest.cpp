@@ -1497,18 +1497,6 @@ public:
         EXPECT_FALSE(isRedirect);
         return WebNavigationPolicyCurrentTab;
     }
-
-    virtual WebURLError cancelledError(WebFrame*, const WebURLRequest& request)
-    {
-        // Return a dummy error so the DocumentLoader doesn't assert when
-        // the reload cancels it.
-        WebURLError webURLError;
-        webURLError.domain = "";
-        webURLError.reason = 1;
-        webURLError.isCancellation = true;
-        webURLError.unreachableURL = WebURL();
-        return webURLError;
-    }
 };
 
 TEST_F(WebFrameTest, ReloadDoesntSetRedirect)
@@ -1565,18 +1553,6 @@ TEST_F(WebFrameTest, ReloadWithOverrideURLPreservesState)
 }
 
 class TestReloadWhileProvisionalFrameClient : public WebFrameClient {
-public:
-    virtual WebURLError cancelledError(WebFrame*, const WebURLRequest& request)
-    {
-        // Return a dummy error so the DocumentLoader doesn't assert when
-        // the reload cancels it.
-        WebURLError webURLError;
-        webURLError.domain = "";
-        webURLError.reason = 1;
-        webURLError.isCancellation = true;
-        webURLError.unreachableURL = WebURL();
-        return webURLError;
-    }
 };
 
 TEST_F(WebFrameTest, ReloadWhileProvisional)
@@ -3404,18 +3380,6 @@ public:
     {
         EXPECT_TRUE(false);
     }
-
-    virtual WebURLError cancelledError(WebFrame*, const WebURLRequest& request)
-    {
-        // Return a dummy error so the DocumentLoader doesn't assert when
-        // the reload cancels it.
-        WebURLError webURLError;
-        webURLError.domain = "";
-        webURLError.reason = 1;
-        webURLError.isCancellation = true;
-        webURLError.unreachableURL = WebURL();
-        return webURLError;
-    }
 };
 
 TEST_F(WebFrameTest, SimulateFragmentAnchorMiddleClick)
@@ -3476,18 +3440,6 @@ public:
     {
         if (static_cast<WebFrameImpl*>(frame)->frame()->loader()->loadType() == WebCore::FrameLoadTypeSame)
             m_frameLoadTypeSameSeen = true;
-    }
-
-    virtual WebURLError cancelledError(WebFrame*, const WebURLRequest& request)
-    {
-        // Return a dummy error so the DocumentLoader doesn't assert when
-        // the reload cancels it.
-        WebURLError webURLError;
-        webURLError.domain = "";
-        webURLError.reason = 1;
-        webURLError.isCancellation = true;
-        webURLError.unreachableURL = WebURL();
-        return webURLError;
     }
 
     bool frameLoadTypeSameSeen() const { return m_frameLoadTypeSameSeen; }

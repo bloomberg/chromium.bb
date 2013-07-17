@@ -61,9 +61,6 @@ public:
     DocumentLoader* documentLoader() const { return m_documentLoader.get(); }
     CachedResource* cachedResource() { return m_resource; }
     const ResourceRequest& originalRequest() const { return m_originalRequest; }
-
-    ResourceError cancelledError();
-    ResourceError cannotShowURLError();
     
     void setDefersLoading(bool);
     bool defersLoading() const { return m_defersLoading; }
