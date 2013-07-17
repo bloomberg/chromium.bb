@@ -90,3 +90,25 @@ env.AddNodeToTestSuite(node,
                         # Valgrind does not support rounding mode changes yet:
                         # https://bugs.kde.org/show_bug.cgi?id=136779
                         is_broken=env.IsRunningUnderValgrind())
+
+# Test that signaling NaNs don't trigger exceptions for PNaCl,
+# since the bit pattern for quiet NaNs == signaling NaNs
+# for some architectures.
+# Some helpers defined in assembly to (a) load the right snan constant
+# for each arch and (b) avoid issues with code getting optimized.
+if env.Bit('target_x86'):
+  helper_files = ['test_snan_no_signal_x86.S']
+elif env.Bit('target_arm'):
+  helper_files = ['test_snan_no_signal_arm.S']
+elif env.Bit('target_mips32'):
+  helper_files = ['test_snan_no_signal_mips.S']
+else:
+  raise Exception('Unknown target')
+
+nexe = asm_env.ComponentProgram('snan_no_signal',
+                                ['snan_no_signal.c'] + helper_files,
+                                EXTRA_LIBS=['m', '${NONIRT_LIBS}'])
+node = env.CommandSelLdrTestNacl('snan_no_signal.out', nexe)
+env.AddNodeToTestSuite(node,
+                       ['small_tests', 'nonpexe_tests'],
+                       'run_snan_no_signal_test')
