@@ -154,7 +154,7 @@ public:
     void didMatchRule(bool);
     void willProcessRule(StyleRule*, StyleResolver*);
     void didProcessRule();
-    PassRefPtr<TypeBuilder::CSS::CSSMedia> buildMediaObject(const MediaList*, MediaListSource, const String&);
+    PassRefPtr<TypeBuilder::CSS::CSSMedia> buildMediaObject(const MediaList*, MediaListSource, const String&, CSSStyleSheet*);
     PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSMedia> > buildMediaListChain(CSSRule*);
 
 private:

@@ -1365,7 +1365,7 @@ void InspectorCSSAgent::getNamedFlowCollection(ErrorString* errorString, int doc
     result = namedFlows.release();
 }
 
-PassRefPtr<TypeBuilder::CSS::CSSMedia> InspectorCSSAgent::buildMediaObject(const MediaList* media, MediaListSource mediaListSource, const String& sourceURL)
+PassRefPtr<TypeBuilder::CSS::CSSMedia> InspectorCSSAgent::buildMediaObject(const MediaList* media, MediaListSource mediaListSource, const String& sourceURL, CSSStyleSheet* parentStyleSheet)
 {
     // Make certain compilers happy by initializing |source| up-front.
     TypeBuilder::CSS::CSSMedia::Source::Enum source = TypeBuilder::CSS::CSSMedia::Source::InlineSheet;
@@ -1388,6 +1388,10 @@ PassRefPtr<TypeBuilder::CSS::CSSMedia> InspectorCSSAgent::buildMediaObject(const
         .setText(media->mediaText())
         .setSource(source);
 
+    if (parentStyleSheet && mediaListSource != MediaListSourceLinkedSheet) {
+        if (InspectorStyleSheet* inspectorStyleSheet = m_cssStyleSheetToInspectorStyleSheet.get(parentStyleSheet))
+            mediaObject->setParentStyleSheetId(inspectorStyleSheet->id());
+    }
     if (!sourceURL.isEmpty()) {
         mediaObject->setSourceURL(sourceURL);
 
@@ -1436,7 +1440,7 @@ PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSMedia> > InspectorCSSAgent::b
         }
 
         if (mediaList && mediaList->length()) {
-            mediaArray->addItem(buildMediaObject(mediaList, isMediaRule ? MediaListSourceMediaRule : MediaListSourceImportRule, sourceURL));
+            mediaArray->addItem(buildMediaObject(mediaList, isMediaRule ? MediaListSourceMediaRule : MediaListSourceImportRule, sourceURL, parentStyleSheet));
             hasItems = true;
         }
 
@@ -1454,7 +1458,7 @@ PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSMedia> > InspectorCSSAgent::b
                         sourceURL = styleSheet->contents()->baseURL();
                     else
                         sourceURL = "";
-                    mediaArray->addItem(buildMediaObject(mediaList, styleSheet->ownerNode() ? MediaListSourceLinkedSheet : MediaListSourceInlineSheet, sourceURL));
+                    mediaArray->addItem(buildMediaObject(mediaList, styleSheet->ownerNode() ? MediaListSourceLinkedSheet : MediaListSourceInlineSheet, sourceURL, styleSheet));
                     hasItems = true;
                 }
                 parentRule = styleSheet->ownerRule();
