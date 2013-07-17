@@ -57,10 +57,6 @@ class PluginTest : public ContentBrowserTest {
                       KEY_WRITE) == ERROR_SUCCESS) {
         regkey.CreateKey(L"BROWSER_TESTS.EXE", KEY_READ);
       }
-    } else if (strcmp(test_info->name(), "MediaPlayerOld") == 0) {
-      // When testing the old WMP plugin, we need to force Chrome to not load
-      // the new plugin.
-      command_line->AppendSwitch(switches::kUseOldWMPPlugin);
     } else if (strcmp(test_info->name(), "FlashSecurity") == 0) {
       command_line->AppendSwitchASCII(switches::kTestSandbox,
                                       "security_tests.dll");
