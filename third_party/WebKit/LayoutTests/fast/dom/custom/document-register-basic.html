@@ -18,19 +18,10 @@ function createRegisterParameters()
     };
 }
 
-// Invalid names
-shouldThrow("document.register('foo', createRegisterParameters())", "'InvalidCharacterError: An invalid or illegal character was specified, such as in an XML name.'");
-shouldThrow("document.register('xfoo', createRegisterParameters())", "'InvalidCharacterError: An invalid or illegal character was specified, such as in an XML name.'");
-shouldThrow("document.register('missing-glyph', createRegisterParameters())", "'InvalidCharacterError: An invalid or illegal character was specified, such as in an XML name.'");
-
 var fooConstructor = document.register("x-foo", createRegisterParameters());
 shouldBe("typeof fooConstructor", "'function'");
 shouldBe("fooConstructor.prototype.__proto__", "HTMLElement.prototype");
 shouldBeTrue("fooConstructor.prototype.thisIsPrototype");
-
-// Name conflicts
-shouldThrow("document.register('x-foo', createRegisterParameters())", "'InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable.'");
-shouldThrow("document.register('X-FOO', createRegisterParameters())", "'InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable.'");
 
 // Bad prototype: prototype is alcreated a built-in interface prototype object
 shouldThrow("document.register('x-bad-a', HTMLElement)", "'NotSupportedError: The implementation did not support the requested type of object or operation.'");
@@ -105,12 +96,6 @@ shouldBe("container.firstChild.constructor", "barConstructor");
 shouldBe("container.firstChild.tagName", "'X-BAR'");
 shouldBe("container.lastChild.constructor", "barConstructor");
 shouldBe("container.lastChild.tagName", "'X-BAR'");
-
-// Strange but valid names
-shouldBe("(new (document.register('y-bar', createRegisterParameters()))()).tagName", "'Y-BAR'");
-shouldBe("(new (document.register('yz-bar', createRegisterParameters()))()).tagName", "'YZ-BAR'");
-shouldBe("(new (document.register('y-z-bar', createRegisterParameters()))()).tagName", "'Y-Z-BAR'");
-shouldBe("(new (document.register('y--bar', createRegisterParameters()))()).tagName", "'Y--BAR'");
 
 // Constructor shouldn't interfere each otehr
 shouldBe("(new fooConstructor).tagName", "'X-FOO'");

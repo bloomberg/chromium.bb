@@ -32,6 +32,7 @@
 #include "core/dom/CustomElementRegistrationContext.h"
 
 #include "HTMLNames.h"
+#include "MathMLNames.h"
 #include "SVGNames.h"
 #include "core/dom/CustomElementCallbackDispatcher.h"
 #include "core/dom/CustomElementDefinition.h"
@@ -247,9 +248,9 @@ bool CustomElementRegistrationContext::isValidTypeName(const AtomicString& name)
     if (notFound == name.find('-'))
         return false;
 
-    // FIXME: Add annotation-xml.
     DEFINE_STATIC_LOCAL(Vector<AtomicString>, reservedNames, ());
     if (reservedNames.isEmpty()) {
+        reservedNames.append(MathMLNames::annotation_xmlTag.localName());
         reservedNames.append(SVGNames::color_profileTag.localName());
         reservedNames.append(SVGNames::font_faceTag.localName());
         reservedNames.append(SVGNames::font_face_srcTag.localName());
