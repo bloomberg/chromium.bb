@@ -25,6 +25,24 @@ using content::WebContents;
 
 namespace {
 
+static std::string TerminationStatusToString(base::TerminationStatus status) {
+  switch (status) {
+    case base::TERMINATION_STATUS_NORMAL_TERMINATION:
+      return "normal";
+    case base::TERMINATION_STATUS_ABNORMAL_TERMINATION:
+    case base::TERMINATION_STATUS_STILL_RUNNING:
+      return "abnormal";
+    case base::TERMINATION_STATUS_PROCESS_WAS_KILLED:
+      return "killed";
+    case base::TERMINATION_STATUS_PROCESS_CRASHED:
+      return "crashed";
+    case base::TERMINATION_STATUS_MAX_ENUM:
+      break;
+  }
+  NOTREACHED() << "Unknown Termination Status.";
+  return "unknown";
+}
+
 void RemoveWebViewEventListenersOnIOThread(
     void* profile,
     const std::string& extension_id,
@@ -99,6 +117,15 @@ void WebViewGuest::AddMessageToConsole(int32 level,
 void WebViewGuest::Close() {
   scoped_ptr<DictionaryValue> args(new DictionaryValue());
   DispatchEvent(new GuestView::Event(webview::kEventClose, args.Pass()));
+}
+
+void WebViewGuest::GuestProcessGone(base::TerminationStatus status) {
+  scoped_ptr<DictionaryValue> args(new DictionaryValue());
+  args->SetInteger(webview::kProcessId,
+                   web_contents()->GetRenderProcessHost()->GetID());
+  args->SetString(webview::kReason, TerminationStatusToString(status));
+  DispatchEvent(
+      new GuestView::Event(webview::kEventExit, args.Pass()));
 }
 
 bool WebViewGuest::HandleKeyboardEvent(

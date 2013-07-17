@@ -43,7 +43,6 @@ const char kAttributePartition[] = "partition";
 const char kAttributeSrc[] = "src";
 
 // Events.
-const char kEventExit[] = "exit";
 const char kEventNewWindow[] = "newwindow";
 const char kEventRequestPermission[] = "permissionrequest";
 const char kEventResponsive[] = "responsive";
@@ -69,7 +68,6 @@ const char kPermissionTypeNewWindow[] = "newwindow";
 const char kPermissionTypePointerLock[] = "pointerLock";
 const char kPersistPrefix[] = "persist:";
 const char kProcessId[] = "processId";
-const char kReason[] = "reason";
 const char kRequestId[] = "requestId";
 const char kRequestMethod[] = "requestMethod";
 const char kTargetURL[] = "targetUrl";

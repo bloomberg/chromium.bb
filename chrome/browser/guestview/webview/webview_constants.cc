@@ -10,6 +10,7 @@ namespace webview {
 const char kEventClose[] = "webview.onClose";
 const char kEventConsoleMessage[] = "webview.onConsoleMessage";
 const char kEventContentLoad[] = "webview.onContentLoad";
+const char kEventExit[] = "webview.onExit";
 const char kEventLoadAbort[] = "webview.onLoadAbort";
 const char kEventLoadCommit[] = "webview.onLoadCommit";
 const char kEventLoadRedirect[] = "webview.onLoadRedirect";
@@ -22,6 +23,8 @@ const char kLine[] = "line";
 const char kMessage[] = "message";
 const char kNewURL[] = "newUrl";
 const char kOldURL[] = "oldUrl";
+const char kProcessId[] = "processId";
+const char kReason[] = "reason";
 const char kSourceId[] = "sourceId";
 
 // Internal parameters/properties on events.

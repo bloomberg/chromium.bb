@@ -240,6 +240,8 @@ class CONTENT_EXPORT BrowserPlugin :
   // Virtual to allow for mocking in tests.
   virtual float GetDeviceScaleFactor() const;
 
+  void ShowSadGraphic();
+
   // Parses the attributes of the browser plugin from the element's attributes
   // and sets them appropriately.
   void ParseAttributes();
@@ -323,7 +325,7 @@ class CONTENT_EXPORT BrowserPlugin :
   void OnCompositorFrameSwapped(const IPC::Message& message);
   void OnGuestContentWindowReady(int instance_id,
                                  int content_window_routing_id);
-  void OnGuestGone(int instance_id, int process_id, int status);
+  void OnGuestGone(int instance_id);
   void OnGuestResponsive(int instance_id, int process_id);
   void OnGuestUnresponsive(int instance_id, int process_id);
   // Requests permission from the embedder.

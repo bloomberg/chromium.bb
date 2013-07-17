@@ -15,7 +15,6 @@ var WEB_VIEW_ATTRIBUTES = ['name', 'src', 'partition', 'autosize', 'minheight',
     'minwidth', 'maxheight', 'maxwidth'];
 
 var WEB_VIEW_EVENTS = {
-  'exit' : ['processId', 'reason'],
   'responsive' : ['processId'],
   'sizechanged': ['oldHeight', 'oldWidth', 'newHeight', 'newWidth'],
   'unresponsive' : ['processId']
@@ -38,6 +37,10 @@ var WEB_VIEW_EXT_EVENTS = {
   'contentload': {
     evt: createEvent('webview.onContentLoad'),
     fields: []
+  },
+  'exit': {
+     evt: createEvent('webview.onExit'),
+     fields: ['processId', 'reason']
   },
   'loadabort': {
     evt: createEvent('webview.onLoadAbort'),

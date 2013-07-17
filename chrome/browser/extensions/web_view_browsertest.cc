@@ -652,6 +652,57 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestGetProcessId) {
              "web_view/shim");
 }
 
+IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestRemoveWebviewOnExit) {
+  ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
+
+  // Launch the app and wait until it's ready to load a test.
+  ExtensionTestMessageListener launched_listener("Launched", false);
+  LoadAndLaunchPlatformApp("web_view/shim");
+  ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
+
+  content::WebContents* embedder_web_contents =
+      GetFirstShellWindowWebContents();
+  ASSERT_TRUE(embedder_web_contents);
+
+  GURL::Replacements replace_host;
+  std::string host_str("localhost");  // Must stay in scope with replace_host.
+  replace_host.SetHostStr(host_str);
+
+  std::string guest_path(
+      "/extensions/platform_apps/web_view/shim/empty_guest.html");
+  GURL guest_url = embedded_test_server()->GetURL(guest_path);
+  guest_url = guest_url.ReplaceComponents(replace_host);
+
+  ui_test_utils::UrlLoadObserver guest_observer(
+      guest_url, content::NotificationService::AllSources());
+
+  // Run the test and wait until the guest WebContents is available and has
+  // finished loading.
+  ExtensionTestMessageListener guest_loaded_listener("guest-loaded", false);
+  EXPECT_TRUE(content::ExecuteScript(
+                  embedder_web_contents,
+                  "runTest('testRemoveWebviewOnExit')"));
+  guest_observer.Wait();
+
+  content::Source<content::NavigationController> source =
+      guest_observer.source();
+  EXPECT_TRUE(source->GetWebContents()->GetRenderProcessHost()->IsGuest());
+
+  ASSERT_TRUE(guest_loaded_listener.WaitUntilSatisfied());
+
+  content::WindowedNotificationObserver observer(
+      content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+      content::Source<content::WebContents>(source->GetWebContents()));
+
+  // Tell the embedder to kill the guest.
+  EXPECT_TRUE(content::ExecuteScript(
+                  embedder_web_contents,
+                  "removeWebviewOnExitDoCrash();"));
+
+  // Wait until the guest WebContents is destroyed.
+  observer.Wait();
+}
+
 IN_PROC_BROWSER_TEST_F(WebViewTest, ShimSrcAttribute) {
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/web_view/src_attribute"))
       << message_;

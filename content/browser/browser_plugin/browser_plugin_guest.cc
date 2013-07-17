@@ -890,9 +890,8 @@ void BrowserPluginGuest::RenderViewReady() {
 }
 
 void BrowserPluginGuest::RenderProcessGone(base::TerminationStatus status) {
-  int process_id = GetWebContents()->GetRenderProcessHost()->GetID();
-  SendMessageToEmbedder(
-      new BrowserPluginMsg_GuestGone(instance_id(), process_id, status));
+
+  SendMessageToEmbedder(new BrowserPluginMsg_GuestGone(instance_id()));
   switch (status) {
     case base::TERMINATION_STATUS_PROCESS_WAS_KILLED:
       RecordAction(UserMetricsAction("BrowserPlugin.Guest.Killed"));
@@ -906,6 +905,8 @@ void BrowserPluginGuest::RenderProcessGone(base::TerminationStatus status) {
     default:
       break;
   }
+  if (delegate_)
+    delegate_->GuestProcessGone(status);
 }
 
 // static

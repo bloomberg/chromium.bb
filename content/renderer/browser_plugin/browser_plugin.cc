@@ -55,24 +55,6 @@ namespace content {
 
 namespace {
 
-static std::string TerminationStatusToString(base::TerminationStatus status) {
-  switch (status) {
-    case base::TERMINATION_STATUS_NORMAL_TERMINATION:
-      return "normal";
-    case base::TERMINATION_STATUS_ABNORMAL_TERMINATION:
-    case base::TERMINATION_STATUS_STILL_RUNNING:
-      return "abnormal";
-    case base::TERMINATION_STATUS_PROCESS_WAS_KILLED:
-      return "killed";
-    case base::TERMINATION_STATUS_PROCESS_CRASHED:
-      return "crashed";
-    case base::TERMINATION_STATUS_MAX_ENUM:
-      break;
-  }
-  NOTREACHED() << "Unknown Termination Status.";
-  return "unknown";
-}
-
 static std::string GetInternalEventName(const char* event_name) {
   return base::StringPrintf("-internal-%s", event_name);
 }
@@ -494,37 +476,17 @@ void BrowserPlugin::OnGuestContentWindowReady(int guest_instance_id,
   content_window_routing_id_ = content_window_routing_id;
 }
 
-void BrowserPlugin::OnGuestGone(int guest_instance_id,
-                                int process_id,
-                                int status) {
-  // Set the BrowserPlugin in a crashed state before firing event listeners so
-  // that operations on the BrowserPlugin within listeners are aware that
-  // BrowserPlugin is in a crashed state.
+void BrowserPlugin::OnGuestGone(int guest_instance_id) {
   guest_crashed_ = true;
 
-  // We fire the event listeners before painting the sad graphic to give the
-  // developer an opportunity to display an alternative overlay image on crash.
-  std::string termination_status = TerminationStatusToString(
-      static_cast<base::TerminationStatus>(status));
-  std::map<std::string, base::Value*> props;
-  props[browser_plugin::kProcessId] = new base::FundamentalValue(process_id);
-  props[browser_plugin::kReason] = new base::StringValue(termination_status);
-
-  // Event listeners may remove the BrowserPlugin from the document. If that
-  // happens, the BrowserPlugin will be scheduled for later deletion (see
-  // BrowserPlugin::destroy()). That will clear the container_ reference,
-  // but leave other member variables valid below.
-  TriggerEvent(browser_plugin::kEventExit, &props);
-
-  // We won't paint the contents of the current backing store again so we might
-  // as well toss it out and save memory.
-  backing_store_.reset();
-  // If the BrowserPlugin is scheduled to be deleted, then container_ will be
-  // NULL so we shouldn't attempt to access it.
-  if (container_)
-    container_->invalidate();
-  // Turn off compositing so we can display the sad graphic.
-  EnableCompositing(false);
+  // Queue up showing the sad graphic to give content embedders an opportunity
+  // to fire their listeners and potentially overlay the webview with custom
+  // behavior. If the BrowserPlugin is destroyed in the meantime, then the
+  // task will not be executed.
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&BrowserPlugin::ShowSadGraphic,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void BrowserPlugin::OnGuestResponsive(int guest_instance_id, int process_id) {
@@ -848,6 +810,18 @@ bool BrowserPlugin::CanRemovePartitionAttribute(std::string* error_message) {
   if (HasGuestInstanceID())
     *error_message = browser_plugin::kErrorCannotRemovePartition;
   return !HasGuestInstanceID();
+}
+
+void BrowserPlugin::ShowSadGraphic() {
+  // We won't paint the contents of the current backing store again so we might
+  // as well toss it out and save memory.
+  backing_store_.reset();
+  // If the BrowserPlugin is scheduled to be deleted, then container_ will be
+  // NULL so we shouldn't attempt to access it.
+  if (container_)
+    container_->invalidate();
+  // Turn off compositing so we can display the sad graphic.
+  EnableCompositing(false);
 }
 
 void BrowserPlugin::ParseAttributes() {

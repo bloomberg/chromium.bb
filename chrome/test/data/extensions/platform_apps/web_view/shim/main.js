@@ -5,6 +5,7 @@
 var util = {};
 var embedder = {};
 embedder.baseGuestURL = '';
+embedder.emptyGuestURL = '';
 embedder.windowOpenGuestURL = '';
 embedder.noReferrerGuestURL = '';
 embedder.redirectGuestURL = '';
@@ -14,6 +15,8 @@ embedder.tests = {};
 
 embedder.setUp_ = function(config) {
   embedder.baseGuestURL = 'http://localhost:' + config.testServer.port;
+  embedder.emptyGuestURL = embedder.baseGuestURL +
+      '/extensions/platform_apps/web_view/shim/empty_guest.html';
   embedder.windowOpenGuestURL = embedder.baseGuestURL +
       '/extensions/platform_apps/web_view/shim/guest.html';
   embedder.noReferrerGuestURL = embedder.baseGuestURL +
@@ -390,7 +393,8 @@ function testBrowserPluginNotAllowed() {
       '</object>';
   var objectElement = document.getElementById('object-plugin');
   // Check that bindings are not registered.
-  embedder.test.assertTrue(objectElement.canGoBack === undefined);
+  embedder.test.assertTrue(
+      objectElement['-internal-setPermission'] === undefined);
   embedder.test.succeed();
 }
 
@@ -609,6 +613,37 @@ function testReload() {
   document.body.appendChild(webview);
 }
 
+// This test verifies that a <webview> is torn down gracefully when removed from
+// the DOM on exit.
+
+window.removeWebviewOnExitDoCrash = null;
+
+function testRemoveWebviewOnExit() {
+  var triggerNavUrl = 'data:text/html,trigger navigation';
+  var webview = document.createElement('webview');
+
+  webview.addEventListener('loadstop', function(e) {
+    chrome.test.sendMessage('guest-loaded');
+  });
+
+  window.removeWebviewOnExitDoCrash = function() {
+    webview.terminate();
+  };
+
+  webview.addEventListener('exit', function(e) {
+    // We expected to be killed.
+    if (e.reason != 'killed') {
+      console.log('EXPECTED TO BE KILLED!');
+      return;
+    }
+    webview.parentNode.removeChild(webview);
+  });
+
+  // Trigger a navigation to create a guest process.
+  webview.setAttribute('src', embedder.emptyGuestURL);
+  document.body.appendChild(webview);
+}
+
 embedder.test.testList = {
   'testSize': testSize,
   'testAPIMethodExistence': testAPIMethodExistence,
@@ -633,7 +668,8 @@ embedder.test.testList = {
   'testLoadAbortEmptyResponse': testLoadAbortEmptyResponse,
   'testLoadAbortIllegalChromeURL': testLoadAbortIllegalChromeURL,
   'testLoadAbortIllegalFileURL': testLoadAbortIllegalFileURL,
-  'testReload': testReload
+  'testReload': testReload,
+  'testRemoveWebviewOnExit': testRemoveWebviewOnExit
 };
 
 onload = function() {

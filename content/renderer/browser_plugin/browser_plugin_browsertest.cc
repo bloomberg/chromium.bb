@@ -376,57 +376,6 @@ TEST_F(BrowserPluginTest, ResizeFlowControl) {
   }
 }
 
-TEST_F(BrowserPluginTest, GuestCrash) {
-  LoadHTML(GetHTMLForBrowserPluginObject().c_str());
-
-  MockBrowserPlugin* browser_plugin = GetCurrentPlugin();
-  ASSERT_TRUE(browser_plugin);
-
-  WebKit::WebCursorInfo cursor_info;
-  // Send an event and verify that the event is deported.
-  browser_plugin->handleInputEvent(WebKit::WebMouseEvent(),
-                                   cursor_info);
-  EXPECT_TRUE(browser_plugin_manager()->sink().GetUniqueMessageMatching(
-      BrowserPluginHostMsg_HandleInputEvent::ID));
-  browser_plugin_manager()->sink().ClearMessages();
-
-  const char* kAddEventListener =
-    "var msg;"
-    "function exitListener(e) {"
-    "  msg = JSON.parse(e.detail).reason;"
-    "}"
-    "document.getElementById('browserplugin')."
-    "    addEventListener('-internal-exit', exitListener);";
-
-  ExecuteJavaScript(kAddEventListener);
-
-  // Pretend that the guest has terminated normally.
-  {
-    BrowserPluginMsg_GuestGone msg(
-        0, 0, base::TERMINATION_STATUS_NORMAL_TERMINATION);
-    browser_plugin->OnMessageReceived(msg);
-  }
-
-  // Verify that our event listener has fired.
-  EXPECT_EQ("normal", ExecuteScriptAndReturnString("msg"));
-
-  // Pretend that the guest has crashed.
-  {
-    BrowserPluginMsg_GuestGone msg(
-        0, 0, base::TERMINATION_STATUS_PROCESS_CRASHED);
-    browser_plugin->OnMessageReceived(msg);
-  }
-
-  // Verify that our event listener has fired.
-  EXPECT_EQ("crashed", ExecuteScriptAndReturnString("msg"));
-
-  // Send an event and verify that events are no longer deported.
-  browser_plugin->handleInputEvent(WebKit::WebMouseEvent(),
-                                   cursor_info);
-  EXPECT_FALSE(browser_plugin_manager()->sink().GetUniqueMessageMatching(
-      BrowserPluginHostMsg_HandleInputEvent::ID));
-}
-
 TEST_F(BrowserPluginTest, RemovePlugin) {
   LoadHTML(GetHTMLForBrowserPluginObject().c_str());
   EXPECT_FALSE(browser_plugin_manager()->sink().GetUniqueMessageMatching(
@@ -589,35 +538,6 @@ TEST_F(BrowserPluginTest, ImmutableAttributesAfterNavigation) {
   partition_value = ExecuteScriptAndReturnString(
       "document.getElementById('browserplugin').partition");
   EXPECT_STREQ("storage", partition_value.c_str());
-}
-
-TEST_F(BrowserPluginTest, RemoveBrowserPluginOnExit) {
-  LoadHTML(GetHTMLForBrowserPluginObject().c_str());
-
-  MockBrowserPlugin* browser_plugin = GetCurrentPlugin();
-  ASSERT_TRUE(browser_plugin);
-  int instance_id = browser_plugin->instance_id();
-
-  const char* kAddEventListener =
-    "function exitListener(e) {"
-    "  if (JSON.parse(e.detail).reason == 'killed') {"
-    "    var bp = document.getElementById('browserplugin');"
-    "    bp.parentNode.removeChild(bp);"
-    "  }"
-    "}"
-    "document.getElementById('browserplugin')."
-    "    addEventListener('-internal-exit', exitListener);";
-
-  ExecuteJavaScript(kAddEventListener);
-
-  // Pretend that the guest has crashed.
-  BrowserPluginMsg_GuestGone msg(
-      instance_id, 0, base::TERMINATION_STATUS_PROCESS_WAS_KILLED);
-  browser_plugin->OnMessageReceived(msg);
-
-  ProcessPendingMessages();
-
-  EXPECT_EQ(NULL, browser_plugin_manager()->GetBrowserPlugin(instance_id));
 }
 
 TEST_F(BrowserPluginTest, AutoSizeAttributes) {

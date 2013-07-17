@@ -43,7 +43,6 @@ extern const char kAttributePartition[];
 extern const char kAttributeSrc[];
 
 // Events.
-extern const char kEventExit[];
 extern const char kEventNewWindow[];
 extern const char kEventRequestPermission[];
 extern const char kEventResponsive[];
@@ -69,7 +68,6 @@ extern const char kPermissionTypeNewWindow[];
 extern const char kPermissionTypePointerLock[];
 extern const char kPersistPrefix[];
 extern const char kProcessId[];
-extern const char kReason[];
 extern const char kRequestId[];
 extern const char kRequestMethod[];
 extern const char kTargetURL[];

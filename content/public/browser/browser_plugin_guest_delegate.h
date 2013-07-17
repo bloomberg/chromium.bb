@@ -5,6 +5,7 @@
 #ifndef CONTENT_PUBLIC_BROWSER_BROWSER_PLUGIN_GUEST_DELEGATE_H_
 #define CONTENT_PUBLIC_BROWSER_BROWSER_PLUGIN_GUEST_DELEGATE_H_
 
+#include "base/process_util.h"
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
 
@@ -27,6 +28,11 @@ class CONTENT_EXPORT BrowserPluginGuestDelegate {
   // Request the delegate to close this guest, and do whatever cleanup it needs
   // to do.
   virtual void Close() {}
+
+  // Informs the delegate that the guest render process is gone. |status|
+  // indicates whether the guest was killed, crashed, or was terminated
+  // gracefully.
+  virtual void GuestProcessGone(base::TerminationStatus status) {}
 
   virtual bool HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
 };

@@ -305,10 +305,8 @@ IPC_MESSAGE_CONTROL2(BrowserPluginMsg_GuestContentWindowReady,
 
 // When the guest crashes, the browser process informs the embedder through this
 // message.
-IPC_MESSAGE_CONTROL3(BrowserPluginMsg_GuestGone,
-                     int /* instance_id */,
-                     int /* process_id */,
-                     int /* This is really base::TerminationStatus */)
+IPC_MESSAGE_CONTROL1(BrowserPluginMsg_GuestGone,
+                     int /* instance_id */)
 
 // When the guest is unresponsive, the browser process informs the embedder
 // through this message.
