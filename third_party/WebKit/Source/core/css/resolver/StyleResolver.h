@@ -201,9 +201,6 @@ public:
 
     // FIXME: This should probably go away, folded into FontBuilder.
     void updateFont();
-    // FIXME: This too should probably go away, folded into FontBuilder.
-    // FIXME: Settings parameter is not necessary.
-    void initializeFontStyle(const Settings*);
 
     bool hasSelectorForId(const AtomicString&) const;
     bool hasSelectorForClass(const AtomicString&) const;

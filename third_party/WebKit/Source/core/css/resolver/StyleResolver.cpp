@@ -612,6 +612,11 @@ static inline void resetDirectionAndWritingModeOnDocument(Document* document)
 PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderStyle* defaultParent, StyleSharingBehavior sharingBehavior,
     RuleMatchingBehavior matchingBehavior, RenderRegion* regionForStyling)
 {
+    // FIXME: We should only ever resolve style on documents which are
+    // in a frame. Unfortunately SVG Animation violates this: crbug.com/260966
+    // ASSERT(document()->frame());
+    // ASSERT(documentSettings());
+
     // Once an element has a renderer, we don't try to destroy it, since otherwise the renderer
     // will vanish if a style recalc happens during loading.
     if (sharingBehavior == AllowStyleSharing && !element->document()->haveStylesheetsLoaded() && !element->renderer()) {
@@ -699,6 +704,9 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
 
 PassRefPtr<RenderStyle> StyleResolver::styleForKeyframe(Element* e, const RenderStyle* elementStyle, const StyleKeyframe* keyframe, KeyframeValue& keyframeValue)
 {
+    ASSERT(document()->frame());
+    ASSERT(documentSettings());
+
     if (e == document()->documentElement())
         resetDirectionAndWritingModeOnDocument(document());
     StyleResolveScope resolveScope(&m_state, document(), e);
@@ -822,6 +830,8 @@ void StyleResolver::keyframeStylesForAnimation(Element* e, const RenderStyle* el
 
 PassRefPtr<RenderStyle> StyleResolver::pseudoStyleForElement(Element* e, const PseudoStyleRequest& pseudoStyleRequest, RenderStyle* parentStyle)
 {
+    ASSERT(document()->frame());
+    ASSERT(documentSettings());
     ASSERT(parentStyle);
     if (!e)
         return 0;
@@ -925,14 +935,17 @@ PassRefPtr<RenderStyle> StyleResolver::styleForPage(int pageIndex)
 PassRefPtr<RenderStyle> StyleResolver::defaultStyleForElement()
 {
     m_state.setStyle(RenderStyle::create());
-    m_state.fontBuilder().initForStyleResolve(document(), m_state.style(), m_state.useSVGZoomRules());
-    // Make sure our fonts are initialized if we don't inherit them from our parent style.
-    if (const Settings* settings = documentSettings()) {
-        initializeFontStyle(settings);
-        m_state.style()->font().update(fontSelector());
-    } else
+    // FIXME: This should be removed once SVG Animations are fixed
+    // to not resolve style on documents outside a frame: crbug.com/260966
+    if (!documentSettings()) {
         m_state.style()->font().update(0);
-
+        return m_state.takeStyle();
+    }
+    m_state.fontBuilder().initForStyleResolve(document(), m_state.style(), m_state.useSVGZoomRules());
+    m_state.style()->setLineHeight(RenderStyle::initialLineHeight());
+    m_state.setLineHeightValue(0);
+    m_state.fontBuilder().setInitial(m_state.style()->effectiveZoom());
+    m_state.style()->font().update(fontSelector());
     return m_state.takeStyle();
 }
 
@@ -1432,13 +1445,6 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
 
     // Fall back to the old switch statement, which is now in StyleBuilderCustom.cpp
     StyleBuilder::oldApplyProperty(id, this, state, value, isInitial, isInherit);
-}
-
-void StyleResolver::initializeFontStyle(const Settings* settings)
-{
-    m_state.style()->setLineHeight(RenderStyle::initialLineHeight());
-    m_state.setLineHeightValue(0);
-    m_state.fontBuilder().setInitial(m_state.style()->effectiveZoom());
 }
 
 void StyleResolver::addViewportDependentMediaQueryResult(const MediaQueryExp* expr, bool result)

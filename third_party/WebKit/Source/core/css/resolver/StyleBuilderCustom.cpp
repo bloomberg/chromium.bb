@@ -1215,18 +1215,14 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolver* styleResolv
         return;
     // Shorthand properties.
     case CSSPropertyFont:
-        if (isInherit) {
-            state.style()->setLineHeight(state.parentStyle()->specifiedLineHeight());
-            state.setLineHeightValue(0);
-            state.fontBuilder().inheritFrom(state.parentFontDescription());
-        } else if (isInitial) {
-            const Settings* settings = state.document()->settings();
-            ASSERT(settings); // If we're doing style resolution, this document should always be in a frame and thus have settings
-            if (!settings)
-                return;
-            // FIXME: Use FontBulder directly.
-            styleResolver->initializeFontStyle(settings);
-        } else if (primitiveValue) {
+        // Short-hand properties are expanded by the parser and normally
+        // do not go through applyProperty() at all. CSSPropertyFont
+        // is special as system font names are sent through here.
+        // FIXME: Unclear why this special casing is handled this way.
+        // See isExpandedShorthand for more comments.
+        ASSERT(!isInitial);
+        ASSERT(!isInherit);
+        if (primitiveValue) {
             state.style()->setLineHeight(RenderStyle::initialLineHeight());
             state.setLineHeightValue(0);
             state.fontBuilder().fromSystemFont(primitiveValue->getValueID(), state.style()->effectiveZoom());
@@ -1250,7 +1246,6 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolver* styleResolv
             styleResolver->applyProperty(CSSPropertyFontFamily, font->family.get());
         }
         return;
-
     case CSSPropertyBackground:
     case CSSPropertyBackgroundPosition:
     case CSSPropertyBackgroundRepeat:
