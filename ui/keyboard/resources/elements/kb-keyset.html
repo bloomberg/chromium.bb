@@ -4,7 +4,7 @@
   -- found in the LICENSE file.
   -->
 
-<element name="kb-keyset" attributes="nextKeyset isDefault"
+<polymer-element name="kb-keyset" attributes="nextKeyset isDefault"
     on-key-up="keyUp" on-key-longpress="keyLongpress">
   <template>
     <style>
@@ -21,7 +21,7 @@
         touch-action="none"></content>
   </template>
   <script>
-    Polymer.register(this, {
+    Polymer('kb-keyset', {
       isDefault: false,
       nextKeyset: null,
       // TODO(bshe): support select keyset on down, long and dbl events.
@@ -50,4 +50,4 @@
       }
     });
   </script>
-</element>
+</polymer-element>

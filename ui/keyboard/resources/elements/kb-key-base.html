@@ -4,7 +4,7 @@
   -- found in the LICENSE file.
   -->
 
-<element name="kb-key-base"
+<polymer-element name="kb-key-base"
     on-pointerdown="down" on-pointerup="up" on-pointerout="out"
     attributes="accents char invert repeat superscript toKeyset toLayout">
   <script>
@@ -65,7 +65,7 @@
      */
     var MINIMUM_NUM_OF_RULE_ELEMENTS = 2;
 
-    Polymer.register(this, {
+    Polymer('kb-key-base', {
       repeat: false,
       invert: false,
       longPressTimer: null,
@@ -118,7 +118,7 @@
           detail.toKeyset = this.keysetRules.down[TO_KEYSET - OFFSET];
           detail.nextKeyset = this.keysetRules.down[NEXT_KEYSET - OFFSET];
         }
-        this.send('key-down', detail);
+        this.fire('key-down', detail);
         this.longPressTimer = this.asyncMethod(function() {
           var detail = {
             char: this.char || this.textContent,
@@ -128,7 +128,7 @@
             detail.toKeyset = this.keysetRules.long[TO_KEYSET - OFFSET];
             detail.nextKeyset = this.keysetRules.long[NEXT_KEYSET - OFFSET];
           }
-          this.send('key-longpress', detail);
+          this.fire('key-longpress', detail);
         }, null, LONGPRESS_DELAY_MSEC);
       },
       out: function(event) {
@@ -144,8 +144,8 @@
           detail.toKeyset = this.keysetRules.up[TO_KEYSET - OFFSET];
           detail.nextKeyset = this.keysetRules.up[NEXT_KEYSET - OFFSET];
         }
-        this.send('key-up', detail);
+        this.fire('key-up', detail);
       }
     });
   </script>
-</element>
+</polymer-element>

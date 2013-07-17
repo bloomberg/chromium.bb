@@ -4,7 +4,7 @@
   -- found in the LICENSE file.
   -->
 
-<element name="kb-key-sequence" attributes="keys superscripts">
+<polymer-element name="kb-key-sequence" attributes="keys superscripts">
   <template>
     <style>
       @host {
@@ -15,7 +15,7 @@
     </style>
   </template>
   <script>
-    Polymer.register(this, {
+    Polymer('kb-key-sequence', {
       /**
        * Generates the DOM structure to replace (expand) this kb-key-sequence.
        */
@@ -43,4 +43,4 @@
       }
     });
   </script>
-</element>
+</polymer-element>

@@ -4,7 +4,7 @@
   -- found in the LICENSE file.
   -->
 
-<element name="kb-key-import" attributes="importId">
+<polymer-element name="kb-key-import" attributes="importId">
   <template>
     <style>
       @host {
@@ -15,7 +15,7 @@
     </style>
   </template>
   <script>
-    Polymer.register(this, {
+    Polymer('kb-key-import', {
       /**
       * The id of the document fragment that will be imported.
        */
@@ -31,4 +31,4 @@
       }
     });
   </script>
-</element>
+</polymer-element>

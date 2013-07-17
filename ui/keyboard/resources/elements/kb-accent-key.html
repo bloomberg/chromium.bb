@@ -4,7 +4,7 @@
   -- found in the LICENSE file.
   -->
 
-<element name="kb-accent-key" attributes="char" on-pointerover="over"
+<polymer-element name="kb-accent-key" attributes="char" on-pointerover="over"
     on-pointerout="out" on-pointerup="up">
   <template>
     <style>
@@ -35,7 +35,7 @@
       return !(node.compareDocumentPosition(event.relatedTarget)
           & Node.DOCUMENT_POSITION_CONTAINED_BY);
     };
-    Polymer.register(this, {
+    Polymer('kb-accent-key', {
       over: function(event) {
         if (isRelevantEvent(this, event)) {
           this.classList.add('active');
@@ -52,4 +52,4 @@
       }
     });
   </script>
-</element>
+</polymer-element>

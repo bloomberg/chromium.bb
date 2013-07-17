@@ -4,7 +4,7 @@
   -- found in the LICENSE file.
   -->
 
-<element name="kb-keyboard" on-key-over="keyOver" on-key-up="keyUp"
+<polymer-element name="kb-keyboard" on-key-over="keyOver" on-key-up="keyUp"
     on-key-down="keyDown" on-key-longpress="keyLongpress"
     attributes="keyset layout rows">
   <template>
@@ -81,7 +81,7 @@
       }
     };
 
-    Polymer.register(this, {
+    Polymer('kb-keyboard', {
       lastPressedKey: null,
       voiceInput_: null,
 
@@ -228,5 +228,5 @@
       }
     });
   </script>
-</element>
+</polymer-element>
 

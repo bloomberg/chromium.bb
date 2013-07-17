@@ -1,7 +1,7 @@
 Name: Polymer
 URL: http://www.polymer-project.org
-Version: 0
-Revision: 434cd0b3e8d81699760c75043ab6f7c5676db006
+Version: 0.0.20130711
+Revision: 983a363af92ef42f02d54999ef284b706655d15d
 License: BSD
 License File: LICENSE
 Security Critical: no
@@ -16,5 +16,6 @@ becomes smaller and better over time.
 2. A next-generation web application framework built upon these core
 technologies called the Polymer.
 
-This is checked out from polymer stable branch. See build.log and README.md for
+This is downloaded from polymer stable release
+(https://github.com/Polymer/polymer/releases). See build.log and README.md for
 how the minified file is generated.

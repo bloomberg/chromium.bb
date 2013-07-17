@@ -4,7 +4,7 @@
   -- found in the LICENSE file.
   -->
 
-<element name="kb-accent-set" attributes="offset">
+<polymer-element name="kb-accent-set" attributes="offset">
   <template>
     <style>
       /* TODO(stevet): Migrate this to main.css using custom pseudo
@@ -56,8 +56,8 @@
     <content select="*"></content>
   </template>
   <script>
-    Polymer.register(this, {
+    Polymer('kb-accent-set', {
       offset: 0
     });
   </script>
-</element>
+</polymer-element>
