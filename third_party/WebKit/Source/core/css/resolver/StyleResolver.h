@@ -230,6 +230,8 @@ public:
 
     void reportMemoryUsage(MemoryObjectInfo*) const;
 
+    void collectViewportRules(RuleSet*);
+
 private:
     void matchUARules(ElementRuleCollector&, RuleSet*);
     void matchAuthorRules(ElementRuleCollector&, bool includeEmptyRules);
@@ -262,6 +264,7 @@ private:
     void resolveVariables(CSSPropertyID, CSSValue*, Vector<std::pair<CSSPropertyID, String> >& knownExpressions);
     void matchPageRules(MatchResult&, RuleSet*, bool isLeftPage, bool isFirstPage, const String& pageName);
     void matchPageRulesForList(Vector<StyleRulePage*>& matchedRules, const Vector<StyleRulePage*>&, bool isLeftPage, bool isFirstPage, const String& pageName);
+    void collectViewportRules();
     Settings* documentSettings() { return m_document->settings(); }
 
     bool isLeftPage(int pageIndex) const;

@@ -204,7 +204,7 @@ void StyleResolver::appendAuthorStyleSheets(unsigned firstNew, const Vector<RefP
         document()->renderer()->style()->font().update(fontSelector());
 
     if (RuntimeEnabledFeatures::cssViewportEnabled())
-        viewportStyleResolver()->resolve();
+        collectViewportRules();
 }
 
 void StyleResolver::resetAuthorStyle()
@@ -930,6 +930,31 @@ PassRefPtr<RenderStyle> StyleResolver::styleForPage(int pageIndex)
 
     // Now return the style.
     return state.takeStyle();
+}
+
+void StyleResolver::collectViewportRules()
+{
+    ASSERT(RuntimeEnabledFeatures::cssViewportEnabled());
+
+    collectViewportRules(CSSDefaultStyleSheets::defaultStyle);
+    if (m_ruleSets.userStyle())
+        collectViewportRules(m_ruleSets.userStyle());
+
+    if (ScopedStyleResolver* scopedResolver = m_styleTree.scopedStyleResolverForDocument())
+        scopedResolver->collectViewportRulesTo(this);
+
+    viewportStyleResolver()->resolve();
+}
+
+void StyleResolver::collectViewportRules(RuleSet* rules)
+{
+    ASSERT(RuntimeEnabledFeatures::cssViewportEnabled());
+
+    rules->compactRulesIfNeeded();
+
+    const Vector<StyleRuleViewport*>& viewportRules = rules->viewportRules();
+    for (size_t i = 0; i < viewportRules.size(); ++i)
+        viewportStyleResolver()->addViewportRule(viewportRules[i]);
 }
 
 PassRefPtr<RenderStyle> StyleResolver::defaultStyleForElement()

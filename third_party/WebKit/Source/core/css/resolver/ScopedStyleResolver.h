@@ -71,6 +71,7 @@ public:
     void collectFeaturesTo(RuleFeatureSet&);
     void resetAuthorStyle();
     void resetAtHostRules(const ShadowRoot*);
+    void collectViewportRulesTo(StyleResolver*) const;
 
     void reportMemoryUsage(MemoryObjectInfo*) const;
 

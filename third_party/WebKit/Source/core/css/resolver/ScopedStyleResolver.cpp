@@ -363,6 +363,12 @@ void ScopedStyleResolver::matchPageRules(PageRuleCollector& collector)
     collector.matchPageRules(m_authorStyle.get());
 }
 
+void ScopedStyleResolver::collectViewportRulesTo(StyleResolver* resolver) const
+{
+    if (m_authorStyle)
+        resolver->collectViewportRules(m_authorStyle.get());
+}
+
 void ScopedStyleResolver::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
 {
     MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CSS);

@@ -241,6 +241,7 @@ void RuleSet::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     info.addMember(m_focusPseudoClassRules, "focusPseudoClassRules");
     info.addMember(m_universalRules, "universalRules");
     info.addMember(m_pageRules, "pageRules");
+    info.addMember(m_viewportRules, "viewportRules");
     info.addMember(m_regionSelectorsAndRuleSets, "regionSelectorsAndRuleSets");
     info.addMember(m_features, "features");
 }
@@ -349,6 +350,12 @@ void RuleSet::addPageRule(StyleRulePage* rule)
     m_pageRules.append(rule);
 }
 
+void RuleSet::addViewportRule(StyleRuleViewport* rule)
+{
+    ensurePendingRules(); // So that m_viewportRules.shrinkToFit() gets called.
+    m_viewportRules.append(rule);
+}
+
 void RuleSet::addRegionRule(StyleRuleRegion* regionRule, bool hasDocumentSecurityOrigin)
 {
     ensurePendingRules(); // So that m_regionSelectorsAndRuleSets.shrinkToFit() gets called.
@@ -421,11 +428,11 @@ void RuleSet::addChildRules(const Vector<RefPtr<StyleRuleBase> >& rules, const M
             resolver->setBuildScopedStyleTreeInDocumentOrder(false);
             resolver->ensureScopedStyleResolver(scope->shadowHost())->addHostRule(static_cast<StyleRuleHost*>(rule), hasDocumentSecurityOrigin, scope);
             resolver->setBuildScopedStyleTreeInDocumentOrder(enabled);
-        } else if (RuntimeEnabledFeatures::cssViewportEnabled() && rule->isViewportRule() && resolver) {
+        } else if (RuntimeEnabledFeatures::cssViewportEnabled() && rule->isViewportRule()) {
             // @viewport should not be scoped.
             if (!isDocumentScope(scope))
                 continue;
-            resolver->viewportStyleResolver()->addViewportRule(static_cast<StyleRuleViewport*>(rule));
+            addViewportRule(static_cast<StyleRuleViewport*>(rule));
         }
         else if (rule->isSupportsRule() && static_cast<StyleRuleSupports*>(rule)->conditionIsSupported())
             addChildRules(static_cast<StyleRuleSupports*>(rule)->childRules(), medium, resolver, scope, hasDocumentSecurityOrigin, addRuleFlags);
@@ -486,6 +493,7 @@ void RuleSet::compactRules()
     m_focusPseudoClassRules.shrinkToFit();
     m_universalRules.shrinkToFit();
     m_pageRules.shrinkToFit();
+    m_viewportRules.shrinkToFit();
 }
 
 } // namespace WebCore
