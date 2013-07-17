@@ -8,7 +8,8 @@
 #include <queue>
 
 #include "base/bind.h"
-#include "base/strings/string_util.h"
+#include "base/i18n/string_search.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/drive/file_cache.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "content/public/browser/browser_thread.h"
@@ -116,10 +117,12 @@ bool IsEligibleEntry(const ResourceEntry& entry,
 
 // Used to implement SearchMetadata.
 // Adds entry to the result when appropriate.
+// In particular, if |query| is non-null, only adds files with the name matching
+// the query.
 void MaybeAddEntryToResult(
     ResourceMetadata* resource_metadata,
     FileCache* cache,
-    const std::string& query,
+    base::i18n::FixedPatternStringSearchIgnoringCaseAndAccents* query,
     int options,
     size_t at_most_num_matches,
     ScopedPriorityQueue<MetadataSearchResult,
@@ -139,7 +142,7 @@ void MaybeAddEntryToResult(
   // contain |query| to match the query.
   std::string highlighted;
   if (!IsEligibleEntry(entry, cache, options) ||
-      !FindAndHighlight(entry.base_name(), query, &highlighted))
+      (query && !FindAndHighlight(entry.base_name(), query, &highlighted)))
     return;
 
   base::FilePath path = resource_metadata->GetFilePath(entry.resource_id());
@@ -156,16 +159,22 @@ void MaybeAddEntryToResult(
 scoped_ptr<MetadataSearchResultVector> SearchMetadataOnBlockingPool(
     ResourceMetadata* resource_metadata,
     FileCache* cache,
-    const std::string& query,
+    const std::string& query_text,
     int options,
     int at_most_num_matches) {
   ScopedPriorityQueue<MetadataSearchResult,
                       MetadataSearchResultComparator> result_candidates;
 
+  // Prepare data structure for searching.
+  base::i18n::FixedPatternStringSearchIgnoringCaseAndAccents query(
+      base::UTF8ToUTF16(query_text));
+
   // Iterate over entries.
   scoped_ptr<ResourceMetadata::Iterator> it = resource_metadata->GetIterator();
   for (; !it->IsAtEnd(); it->Advance()) {
-    MaybeAddEntryToResult(resource_metadata, cache, query, options,
+    MaybeAddEntryToResult(resource_metadata, cache,
+                          query_text.empty() ? NULL : &query,
+                          options,
                           at_most_num_matches, &result_candidates, it->Get());
   }
 
@@ -208,31 +217,28 @@ void SearchMetadata(
                                    base::Bind(callback, FILE_ERROR_OK));
 }
 
-bool FindAndHighlight(const std::string& text,
-                      const std::string& query,
-                      std::string* highlighted_text) {
+bool FindAndHighlight(
+    const std::string& text,
+    base::i18n::FixedPatternStringSearchIgnoringCaseAndAccents* query,
+    std::string* highlighted_text) {
+  DCHECK(query);
   DCHECK(highlighted_text);
   highlighted_text->clear();
 
-  // For empty query, any filename matches with no highlighted text.
-  if (query.empty())
-    return true;
-
-  // TODO(kinaba): Should support non-ASCII characters.
-  std::string lower_text = StringToLowerASCII(text);
-  std::string lower_query = StringToLowerASCII(query);
-  std::string::size_type match_start = lower_text.find(lower_query);
-  if (match_start == std::string::npos)
+  string16 text16 = base::UTF8ToUTF16(text);
+  size_t match_start = 0;
+  size_t match_length = 0;
+  if (!query->Search(text16, &match_start, &match_length))
     return false;
 
-  std::string pre = text.substr(0, match_start);
-  std::string match = text.substr(match_start, query.size());
-  std::string post = text.substr(match_start + query.size());
-  highlighted_text->append(net::EscapeForHTML(pre));
+  string16 pre = text16.substr(0, match_start);
+  string16 match = text16.substr(match_start, match_length);
+  string16 post = text16.substr(match_start + match_length);
+  highlighted_text->append(net::EscapeForHTML(base::UTF16ToUTF8(pre)));
   highlighted_text->append("<b>");
-  highlighted_text->append(net::EscapeForHTML(match));
+  highlighted_text->append(net::EscapeForHTML(base::UTF16ToUTF8(match)));
   highlighted_text->append("</b>");
-  highlighted_text->append(net::EscapeForHTML(post));
+  highlighted_text->append(net::EscapeForHTML(base::UTF16ToUTF8(post)));
   return true;
 }
 

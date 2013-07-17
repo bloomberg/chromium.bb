@@ -9,6 +9,12 @@
 
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 
+namespace base {
+namespace i18n {
+class FixedPatternStringSearchIgnoringCaseAndAccents;
+}  // namespace i18n
+}  // namespace base
+
 namespace drive {
 namespace internal {
 
@@ -38,9 +44,10 @@ void SearchMetadata(
 // text with matched portions highlighted with <b> tag (only the first match
 // is highlighted). Meta characters are escaped like &lt;. The original
 // contents of |highlighted_text| will be lost.
-bool FindAndHighlight(const std::string& text,
-                      const std::string& query,
-                      std::string* highlighted_text);
+bool FindAndHighlight(
+    const std::string& text,
+    base::i18n::FixedPatternStringSearchIgnoringCaseAndAccents* query,
+    std::string* highlighted_text);
 
 }  // namespace internal
 }  // namespace drive
