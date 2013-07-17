@@ -14,6 +14,7 @@ import shutil
 import subprocess
 import sys
 
+
 # This is copied from scripts/common/chromium_utils.py, which we can't import
 # because this script must be a standalone script.
 def RemoveDirectory(*path):
@@ -115,6 +116,11 @@ def main():
   # Clear the temp directory.
   for filename in glob.iglob(os.path.join(tempfile.gettempdir(), '*')):
     delete(filename)
+
+  # Clears up stale run_isolated.py temporary directories.
+  for filename in glob.iglob('run_tha_test*'):
+    delete(filename)
+  return 0
 
 
 if __name__ == '__main__':
