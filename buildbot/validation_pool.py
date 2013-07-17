@@ -1726,7 +1726,7 @@ class ValidationPool(object):
     internal = self._overlays in [constants.PRIVATE_OVERLAYS,
                                   constants.BOTH_OVERLAYS]
     details = []
-    tracebacks = results_lib.Results.GetTracebacks()
+    tracebacks = tuple(results_lib.Results.GetTracebacks())
     for x in tracebacks:
       details.append('The %s stage failed: %s' % (x.failed_stage, x.exception))
     if not details:
