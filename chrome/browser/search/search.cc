@@ -15,7 +15,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_factory.h"
-#include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -348,14 +347,6 @@ GURL GetInstantURL(Profile* profile, int start_margin) {
 }
 
 GURL GetLocalInstantURL(Profile* profile) {
-  const TemplateURL* default_provider =
-      GetDefaultSearchProviderTemplateURL(profile);
-
-  if (default_provider &&
-      (TemplateURLPrepopulateData::GetEngineType(default_provider->url()) ==
-       SEARCH_ENGINE_GOOGLE)) {
-    return GURL(chrome::kChromeSearchLocalGoogleNtpUrl);
-  }
   return GURL(chrome::kChromeSearchLocalNtpUrl);
 }
 

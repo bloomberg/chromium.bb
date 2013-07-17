@@ -40,8 +40,7 @@ bool IsSearchResults(const content::WebContents* contents) {
 // namespace and remove InstantPage::IsLocal().
 bool IsLocal(const content::WebContents* contents) {
   return contents &&
-      (contents->GetURL() == GURL(chrome::kChromeSearchLocalNtpUrl) ||
-       contents->GetURL() == GURL(chrome::kChromeSearchLocalGoogleNtpUrl));
+      contents->GetURL() == GURL(chrome::kChromeSearchLocalNtpUrl);
 }
 
 }  // namespace

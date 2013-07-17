@@ -39,8 +39,7 @@ const std::string& InstantPage::instant_url() const {
 
 bool InstantPage::IsLocal() const {
   return contents() &&
-      (contents()->GetURL() == GURL(chrome::kChromeSearchLocalNtpUrl) ||
-       contents()->GetURL() == GURL(chrome::kChromeSearchLocalGoogleNtpUrl));
+      contents()->GetURL() == GURL(chrome::kChromeSearchLocalNtpUrl);
 }
 
 void InstantPage::InitializeFonts() {

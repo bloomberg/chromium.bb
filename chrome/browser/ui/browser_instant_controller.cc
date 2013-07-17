@@ -261,15 +261,6 @@ void BrowserInstantController::OnDefaultSearchProviderChanged(
     if (!contents)
       continue;
 
-    // A Local NTP always runs in the Instant process, so reloading it is
-    // neither useful nor necessary. However, the Local NTP does not reflect
-    // whether Google is the default search engine or not. This is achieved
-    // through a URL parameter, so reloading the existing URL won't fix that
-    // (i.e., the Local NTP may now show an incorrect search engine logo).
-    // TODO(kmadhusu): Fix.
-    if (contents->GetURL() == GURL(chrome::kChromeSearchLocalNtpUrl))
-      continue;
-
     if (!instant_service->IsInstantProcess(
             contents->GetRenderProcessHost()->GetID()))
       continue;

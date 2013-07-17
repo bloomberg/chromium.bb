@@ -9,10 +9,9 @@
 
 /**
  * Controls rendering the new tab page for InstantExtended.
- * @param {Object} location window.location or a mock.
  * @return {Object} A limited interface for testing the local NTP.
  */
-function LocalNTP(location) {
+function LocalNTP() {
 <include src="../../../../ui/webui/resources/js/assert.js">
 
 
@@ -616,7 +615,7 @@ function createTile(page, position) {
         tileElement, 'div', CLASSES.BLACKLIST_BUTTON);
     var blacklistFunction = generateBlacklistFunction(rid);
     blacklistButton.addEventListener('click', blacklistFunction);
-    blacklistButton.title = templateData.removeThumbnailTooltip;
+    blacklistButton.title = configData.translatedStrings.removeThumbnailTooltip;
 
     // When a tile is focused, have delete also blacklist the page.
     registerKeyHandler(tileElement, KEYCODE.DELETE, blacklistFunction);
@@ -918,16 +917,6 @@ function getEmbeddedSearchApiHandle() {
   return null;
 }
 
-
-/**
- * @return {boolean} True if this is a Google page and not some other search
- *     provider. Used to determine whether to show the logo and fakebox.
- */
-function isGooglePage() {
-  return location.href.indexOf('isGoogle') != -1;
-}
-
-
 /**
  * Extract the desired navigation behavior from a click button.
  * @param {number} button The Event#button property of a click event.
@@ -958,7 +947,7 @@ function init() {
     tilesContainer.appendChild(row);
   }
 
-  if (isGooglePage()) {
+  if (configData.isGooglePage) {
     var logo = document.createElement('div');
     logo.id = IDS.LOGO;
 
@@ -974,7 +963,7 @@ function init() {
     document.body.classList.add(CLASSES.NON_GOOGLE_PAGE);
   }
 
-  var recentTabsText = templateData.recentTabs;
+  var recentTabsText = configData.translatedStrings.recentTabs;
   if (recentTabsText) {
     var recentTabsLink = document.createElement('span');
     recentTabsLink.id = IDS.RECENT_TABS;
@@ -989,16 +978,19 @@ function init() {
   }
 
   var notificationMessage = $(IDS.NOTIFICATION_MESSAGE);
-  notificationMessage.textContent = templateData.thumbnailRemovedNotification;
+  notificationMessage.textContent =
+      configData.translatedStrings.thumbnailRemovedNotification;
   var undoLink = $(IDS.UNDO_LINK);
   undoLink.addEventListener('click', onUndo);
   registerKeyHandler(undoLink, KEYCODE.ENTER, onUndo);
-  undoLink.textContent = templateData.undoThumbnailRemove;
+  undoLink.textContent = configData.translatedStrings.undoThumbnailRemove;
   var restoreAllLink = $(IDS.RESTORE_ALL_LINK);
   restoreAllLink.addEventListener('click', onRestoreAll);
   registerKeyHandler(restoreAllLink, KEYCODE.ENTER, onUndo);
-  restoreAllLink.textContent = templateData.restoreThumbnailsShort;
-  $(IDS.ATTRIBUTION_TEXT).textContent = templateData.attributionIntro;
+  restoreAllLink.textContent =
+      configData.translatedStrings.restoreThumbnailsShort;
+  $(IDS.ATTRIBUTION_TEXT).textContent =
+      configData.translatedStrings.attributionIntro;
 
   var notificationCloseButton = $(IDS.NOTIFICATION_CLOSE_BUTTON);
   notificationCloseButton.addEventListener('click', hideNotification);
@@ -1060,5 +1052,5 @@ return {
 }
 
 if (!window.localNTPUnitTest) {
-  LocalNTP(location).listen();
+  LocalNTP().listen();
 }

@@ -129,8 +129,6 @@ TEST_F(InstantPageTest, IsLocal) {
   EXPECT_TRUE(page->IsLocal());
   NavigateAndCommit(GURL("http://example.com"));
   EXPECT_FALSE(page->IsLocal());
-  NavigateAndCommit(GURL(chrome::kChromeSearchLocalGoogleNtpUrl));
-  EXPECT_TRUE(page->IsLocal());
 }
 
 TEST_F(InstantPageTest, DetermineIfPageSupportsInstant_Local) {

@@ -178,23 +178,19 @@ class SearchTest : public BrowserWithTestWindowTest {
     TemplateURLService* template_url_service =
         TemplateURLServiceFactory::GetForProfile(profile());
     ui_test_utils::WaitForTemplateURLServiceToLoad(template_url_service);
-    SetSearchProvider(false);
+    SetSearchProvider();
   }
 
-  void SetSearchProvider(bool is_google) {
+  void SetSearchProvider() {
     TemplateURLService* template_url_service =
         TemplateURLServiceFactory::GetForProfile(profile());
     TemplateURLData data;
-    if (is_google) {
-      data.SetURL("http://www.google.com/");
-      data.instant_url = "http://www.google.com/";
-    } else {
-      data.SetURL("http://foo.com/url?bar={searchTerms}");
-      data.instant_url = "http://foo.com/instant?"
-          "{google:omniboxStartMarginParameter}foo=foo#foo=foo&strk";
-      data.alternate_urls.push_back("http://foo.com/alt#quux={searchTerms}");
-      data.search_terms_replacement_key = "strk";
-    }
+    data.SetURL("http://foo.com/url?bar={searchTerms}");
+    data.instant_url = "http://foo.com/instant?"
+        "{google:omniboxStartMarginParameter}foo=foo#foo=foo&strk";
+    data.alternate_urls.push_back("http://foo.com/alt#quux={searchTerms}");
+    data.search_terms_replacement_key = "strk";
+
     TemplateURL* template_url = new TemplateURL(profile(), data);
     // Takes ownership of |template_url|.
     template_url_service->Add(template_url);
@@ -271,7 +267,6 @@ TEST_F(SearchTest, ShouldAssignURLToInstantRendererExtendedEnabled) {
 
   const SearchTestCase kTestCases[] = {
     {chrome::kChromeSearchLocalNtpUrl, true,  ""},
-    {chrome::kChromeSearchLocalGoogleNtpUrl, true,  ""},
     {"https://foo.com/instant?strk",   true,  ""},
     {"https://foo.com/instant#strk",   true,  ""},
     {"https://foo.com/instant?strk=0", true,  ""},
@@ -308,7 +303,6 @@ const SearchTestCase kInstantNTPTestCases[] = {
   {"chrome://blank/",                      false, "Chrome scheme"},
   {"chrome-search://foo",                  false, "Chrome-search scheme"},
   {chrome::kChromeSearchLocalNtpUrl,       true,  "Local new tab page"},
-  {chrome::kChromeSearchLocalGoogleNtpUrl, true,  "Local new tab page"},
   {"https://bar.com/instant?strk=1",       false, "Random non-search page"},
 };
 
@@ -318,7 +312,6 @@ TEST_F(SearchTest, InstantNTPExtendedEnabled) {
   for (size_t i = 0; i < arraysize(kInstantNTPTestCases); ++i) {
     const SearchTestCase& test = kInstantNTPTestCases[i];
     NavigateAndCommitActiveTab(GURL(test.url));
-    SetSearchProvider(test.url == chrome::kChromeSearchLocalGoogleNtpUrl);
     const content::WebContents* contents =
         browser()->tab_strip_model()->GetWebContentsAt(0);
     EXPECT_EQ(test.expected_result, IsInstantNTP(contents))
@@ -343,7 +336,6 @@ TEST_F(SearchTest, InstantNTPCustomNavigationEntry) {
   for (size_t i = 0; i < arraysize(kInstantNTPTestCases); ++i) {
     const SearchTestCase& test = kInstantNTPTestCases[i];
     NavigateAndCommitActiveTab(GURL(test.url));
-    SetSearchProvider(test.url == chrome::kChromeSearchLocalGoogleNtpUrl);
     content::WebContents* contents =
         browser()->tab_strip_model()->GetWebContentsAt(0);
     content::NavigationController& controller = contents->GetController();
@@ -408,8 +400,6 @@ TEST_F(SearchTest, StartMarginCGI) {
 TEST_F(SearchTest, CommandLineOverrides) {
   EnableInstantExtendedAPIForTesting();
 
-  // GetLocalInstantURL() should default to the non-Google local NTP.
-  SetSearchProvider(false);
   GURL local_instant_url(GetLocalInstantURL(profile()));
   EXPECT_EQ(GURL(chrome::kChromeSearchLocalNtpUrl), local_instant_url);
 
@@ -444,7 +434,7 @@ TEST_F(SearchTest, CommandLineOverrides) {
   // to get the Google version of the local NTP, even though search provider's
   // URL doesn't contain "google".
   local_instant_url = GetLocalInstantURL(profile());
-  EXPECT_EQ(GURL(chrome::kChromeSearchLocalGoogleNtpUrl), local_instant_url);
+  EXPECT_EQ(GURL(chrome::kChromeSearchLocalNtpUrl), local_instant_url);
 
   // If we specify extra search query params, they should be inserted into the
   // query portion of the instant URL.

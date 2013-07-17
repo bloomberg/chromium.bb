@@ -97,9 +97,8 @@ bool NavEntryIsInstantNTP(const content::WebContents* contents,
 // lead to an infinite recursion.
 GURL GetInstantURL(Profile* profile, int start_margin);
 
-// Returns the Local Instant URL of the default search engine.  In particular,
-// a Google search provider will include a special query parameter, indicating
-// to the JS that Google-specific New Tab Page elements should be rendered.
+// Returns the Local Instant URL of the New Tab Page.
+// TODO(kmadhusu): Remove this function and update the call sites.
 GURL GetLocalInstantURL(Profile* profile);
 
 // Returns true if 'use_remote_ntp_on_startup' flag is enabled in field trials

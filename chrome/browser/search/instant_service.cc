@@ -93,7 +93,7 @@ InstantService::InstantService(Profile* profile)
   content::URLDataSource::Add(profile, new ThumbnailSource(profile));
   content::URLDataSource::Add(profile, new FaviconSource(
       profile, FaviconSource::FAVICON));
-  content::URLDataSource::Add(profile, new LocalNtpSource());
+  content::URLDataSource::Add(profile, new LocalNtpSource(profile));
   content::URLDataSource::Add(profile, new MostVisitedIframeSource());
 }
 

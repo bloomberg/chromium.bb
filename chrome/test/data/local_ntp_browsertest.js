@@ -69,7 +69,8 @@ function runTests() {
  * Tests that Google NTPs show a fakebox and logo.
  */
 function testShowsFakeboxAndLogoIfGoogle() {
-  var localNTP = LocalNTP({href: 'isGoogle'});
+  var localNTP = LocalNTP();
+  configData.isGooglePage = true;
   localNTP.init();
   assert($('fakebox'));
   assert($('logo'));
@@ -80,7 +81,8 @@ function testShowsFakeboxAndLogoIfGoogle() {
  * Tests that non-Google NTPs do not show a fakebox.
  */
 function testDoesNotShowFakeboxIfNotGoogle() {
-  var localNTP = LocalNTP({href: ''});
+  var localNTP = LocalNTP();
+  configData.isGooglePage = false;
   localNTP.init();
   assert(!$('fakebox'));
   assert(!$('logo'));

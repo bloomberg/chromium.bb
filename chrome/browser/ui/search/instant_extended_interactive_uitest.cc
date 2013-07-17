@@ -872,66 +872,6 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, DISABLED_EscapeClearsOmnibox) {
   EXPECT_LT(0, on_esc_key_press_event_calls_);
 }
 
-IN_PROC_BROWSER_TEST_F(InstantExtendedTest, OnDefaultSearchProviderChanged) {
-  InstantService* instant_service =
-      InstantServiceFactory::GetForProfile(browser()->profile());
-  ASSERT_NE(static_cast<InstantService*>(NULL), instant_service);
-
-  // Setup Instant.
-  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
-  FocusOmniboxAndWaitForInstantNTPSupport();
-  EXPECT_EQ(1, instant_service->GetInstantProcessCount());
-
-  // Navigating to the NTP should use the Instant render process.
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(),
-      GURL(chrome::kChromeUINewTabURL),
-      CURRENT_TAB,
-      ui_test_utils::BROWSER_TEST_NONE);
-  content::WebContents* ntp_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_TRUE(chrome::IsInstantNTP(ntp_contents));
-  EXPECT_TRUE(instant_service->IsInstantProcess(
-      ntp_contents->GetRenderProcessHost()->GetID()));
-  GURL ntp_url = ntp_contents->GetURL();
-
-  AddBlankTabAndShow(browser());
-  content::WebContents* active_tab =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_FALSE(chrome::IsInstantNTP(active_tab));
-  EXPECT_FALSE(instant_service->IsInstantProcess(
-      active_tab->GetRenderProcessHost()->GetID()));
-
-  TemplateURLData data;
-  data.short_name = ASCIIToUTF16("t");
-  data.SetURL("http://defaultturl/q={searchTerms}");
-  data.suggestions_url = "http://defaultturl2/q={searchTerms}";
-  data.instant_url = "http://does/not/exist";
-  data.alternate_urls.push_back(data.instant_url + "#q={searchTerms}");
-  data.search_terms_replacement_key = "strk";
-
-  TemplateURL* template_url = new TemplateURL(browser()->profile(), data);
-  TemplateURLService* service =
-      TemplateURLServiceFactory::GetForProfile(browser()->profile());
-  ui_test_utils::WaitForTemplateURLServiceToLoad(service);
-  service->Add(template_url);  // Takes ownership of |template_url|.
-
-  // Change the default search provider.
-  content::WindowedNotificationObserver observer(
-      content::NOTIFICATION_LOAD_STOP,
-      content::Source<content::NavigationController>(
-          &ntp_contents->GetController()));
-  service->SetDefaultSearchProvider(template_url);
-  observer.Wait();
-
-  // |ntp_contents| should not use the Instant render process.
-  EXPECT_FALSE(chrome::IsInstantNTP(ntp_contents));
-  EXPECT_FALSE(instant_service->IsInstantProcess(
-      ntp_contents->GetRenderProcessHost()->GetID()));
-  // Make sure the URL remains the same.
-  EXPECT_EQ(ntp_url, ntp_contents->GetURL());
-}
-
 // Test that renderer initiated navigations to an instant URL from a non
 // Instant page do not end up in an Instant process if they are bounced to the
 // browser.
@@ -1739,4 +1679,117 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
   active_tab = browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_TRUE(UpdateSearchState(active_tab));
   EXPECT_EQ(1, on_most_visited_change_calls_);
+}
+
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest, OnDefaultSearchProviderChanged) {
+  InstantService* instant_service =
+      InstantServiceFactory::GetForProfile(browser()->profile());
+  ASSERT_NE(static_cast<InstantService*>(NULL), instant_service);
+
+  // Setup Instant.
+  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  FocusOmniboxAndWaitForInstantNTPSupport();
+  EXPECT_EQ(1, instant_service->GetInstantProcessCount());
+
+  // Navigating to the NTP should use the Instant render process.
+  content::WindowedNotificationObserver new_tab_observer(
+      content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+      content::NotificationService::AllSources());
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(),
+      GURL(chrome::kChromeUINewTabURL),
+      CURRENT_TAB,
+      ui_test_utils::BROWSER_TEST_NONE);
+  new_tab_observer.Wait();
+
+  content::WebContents* ntp_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(chrome::IsInstantNTP(ntp_contents));
+  EXPECT_TRUE(instant_service->IsInstantProcess(
+      ntp_contents->GetRenderProcessHost()->GetID()));
+  GURL ntp_url = ntp_contents->GetURL();
+
+  AddBlankTabAndShow(browser());
+  content::WebContents* active_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_FALSE(chrome::IsInstantNTP(active_tab));
+  EXPECT_FALSE(instant_service->IsInstantProcess(
+      active_tab->GetRenderProcessHost()->GetID()));
+
+  TemplateURLData data;
+  data.short_name = ASCIIToUTF16("t");
+  data.SetURL("http://defaultturl/q={searchTerms}");
+  data.suggestions_url = "http://defaultturl2/q={searchTerms}";
+  data.instant_url = "http://does/not/exist";
+  data.alternate_urls.push_back(data.instant_url + "#q={searchTerms}");
+  data.search_terms_replacement_key = "strk";
+
+  TemplateURL* template_url = new TemplateURL(browser()->profile(), data);
+  TemplateURLService* service =
+      TemplateURLServiceFactory::GetForProfile(browser()->profile());
+  ui_test_utils::WaitForTemplateURLServiceToLoad(service);
+  service->Add(template_url);  // Takes ownership of |template_url|.
+
+  // Change the default search provider.
+  content::WindowedNotificationObserver observer(
+      content::NOTIFICATION_LOAD_STOP,
+      content::Source<content::NavigationController>(
+          &ntp_contents->GetController()));
+  service->SetDefaultSearchProvider(template_url);
+  observer.Wait();
+
+  // |ntp_contents| should not use the Instant render process.
+  EXPECT_FALSE(chrome::IsInstantNTP(ntp_contents));
+  EXPECT_FALSE(instant_service->IsInstantProcess(
+      ntp_contents->GetRenderProcessHost()->GetID()));
+  // Make sure the URL remains the same.
+  EXPECT_EQ(ntp_url, ntp_contents->GetURL());
+}
+
+IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
+                       ReloadLocalNTPOnSearchProviderChange) {
+  // Setup Instant.
+  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  FocusOmniboxAndWaitForInstantNTPSupport();
+
+  // Navigate to Local NTP.
+  content::WindowedNotificationObserver new_tab_observer(
+      content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+      content::NotificationService::AllSources());
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(),
+      GURL(chrome::kChromeSearchLocalNtpUrl),
+      CURRENT_TAB,
+      ui_test_utils::BROWSER_TEST_NONE);
+  new_tab_observer.Wait();
+
+  content::WebContents* ntp_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  GURL ntp_url = ntp_contents->GetURL();
+
+  TemplateURLData data;
+  data.short_name = ASCIIToUTF16("t");
+  data.SetURL("http://defaultturl/q={searchTerms}");
+  data.suggestions_url = "http://defaultturl2/q={searchTerms}";
+  data.instant_url = "http://does/not/exist";
+  data.alternate_urls.push_back(data.instant_url + "#q={searchTerms}");
+  data.search_terms_replacement_key = "strk";
+
+  TemplateURL* template_url = new TemplateURL(browser()->profile(), data);
+  TemplateURLService* service =
+      TemplateURLServiceFactory::GetForProfile(browser()->profile());
+  ui_test_utils::WaitForTemplateURLServiceToLoad(service);
+  service->Add(template_url);  // Takes ownership of |template_url|.
+
+  // Change the default search provider. This will reload the local NTP and the
+  // page URL will remain the same.
+  content::WindowedNotificationObserver observer(
+      content::NOTIFICATION_LOAD_STOP,
+      content::Source<content::NavigationController>(
+          &ntp_contents->GetController()));
+  service->SetDefaultSearchProvider(template_url);
+  observer.Wait();
+
+  // Make sure the URL remains the same.
+  EXPECT_EQ(ntp_url, ntp_contents->GetURL());
 }
