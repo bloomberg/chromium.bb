@@ -143,19 +143,14 @@ class ChromeDriverTest(ChromeDriverBaseTest):
         chrome_paths.GetTestData())
     if _ANDROID_PACKAGE:
       ChromeDriverTest._adb = android_commands.AndroidCommands()
-      forwarder.Forwarder.KillHost('Debug')
-      ChromeDriverTest._forwarder = forwarder.Forwarder(ChromeDriverTest._adb,
-                                                        'Debug')
-      host_port = ChromeDriverTest._http_server._server.server_port
-      ChromeDriverTest._forwarder.Run(
-          [(host_port, host_port)], valgrind_tools.BaseTool())
+      self._host_port = ChromeDriverTest._http_server._server.server_port
+      forwarder.Forwarder.Map(
+          [(self._host_port, self._host_port)], ChromeDriverTest._adb)
 
   @staticmethod
   def GlobalTearDown():
     if _ANDROID_PACKAGE:
-      forwarder.Forwarder.KillDevice(ChromeDriverTest._adb,
-                                     valgrind_tools.BaseTool())
-      ChromeDriverTest._forwarder.Close()
+      forwarder.Forwarder.UnmapAllDevicePorts(ChromeDriverTest._adb)
     ChromeDriverTest._http_server.Shutdown()
 
   @staticmethod

@@ -9,7 +9,6 @@ import threading
 
 from pylib import android_commands
 from pylib import constants
-from pylib import forwarder
 from pylib.utils import reraiser_thread
 from pylib.utils import watchdog_timer
 
@@ -293,7 +292,6 @@ def ShardAndRunTests(runner_factory, devices, tests, build_type='Debug',
     return (base_test_result.TestRunResults(), constants.ERROR_EXIT_CODE)
 
   logging.info('Will run %d tests: %s', len(tests), str(tests))
-  forwarder.Forwarder.KillHost(build_type)
   runners = _CreateRunners(runner_factory, devices, setup_timeout)
   try:
     return _RunAllTests(runners, tests, num_retries, test_timeout)
@@ -302,5 +300,3 @@ def ShardAndRunTests(runner_factory, devices, tests, build_type='Debug',
       _TearDownRunners(runners, setup_timeout)
     except android_commands.errors.DeviceUnresponsiveError as e:
       logging.warning('Device unresponsive during TearDown: [%s]', e)
-    finally:
-      forwarder.Forwarder.KillHost(build_type)
