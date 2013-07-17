@@ -131,8 +131,10 @@ def yield_results(swarm_base_url, test_keys, timeout, max_threads):
         results_remaining -= 1
         if not result:
           # Failed to retrieve one key.
+          logging.warning('Failed to retrieve the results for a swarm key')
           continue
         shard_index = result['config_instance_index']
+        print 'Retrieved results for shard %d' % shard_index
         if shard_index in shards_remaining:
           shards_remaining.remove(shard_index)
           yield shard_index, result
@@ -140,6 +142,7 @@ def yield_results(swarm_base_url, test_keys, timeout, max_threads):
           logging.warning('Ignoring duplicate shard index %d', shard_index)
           # Pop the last entry, there's no such shard.
           shards_remaining.pop()
+        print 'Remaining shards %s' % shards_remaining
     finally:
       # Done, kill the remaining threads.
       should_stop.set()
