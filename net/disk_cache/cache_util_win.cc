@@ -11,29 +11,6 @@
 #include "base/message_loop.h"
 #include "base/win/scoped_handle.h"
 
-namespace {
-
-// Deletes all the files on path that match search_name pattern.
-void DeleteFiles(const base::FilePath& path, const wchar_t* search_name) {
-  base::FilePath name(path.Append(search_name));
-
-  WIN32_FIND_DATA data;
-  HANDLE handle = FindFirstFile(name.value().c_str(), &data);
-  if (handle == INVALID_HANDLE_VALUE)
-    return;
-
-  do {
-    if (data.dwFileAttributes == FILE_ATTRIBUTE_DIRECTORY ||
-        data.dwFileAttributes == FILE_ATTRIBUTE_REPARSE_POINT)
-      continue;
-    DeleteFile(path.Append(data.cFileName).value().c_str());
-  } while (FindNextFile(handle, &data));
-
-  FindClose(handle);
-}
-
-}  // namespace
-
 namespace disk_cache {
 
 bool MoveCache(const base::FilePath& from_path, const base::FilePath& to_path) {
@@ -44,12 +21,6 @@ bool MoveCache(const base::FilePath& from_path, const base::FilePath& to_path) {
     return false;
   }
   return true;
-}
-
-void DeleteCache(const base::FilePath& path, bool remove_folder) {
-  DeleteFiles(path, L"*");
-  if (remove_folder)
-    RemoveDirectory(path.value().c_str());
 }
 
 bool DeleteCacheFile(const base::FilePath& name) {

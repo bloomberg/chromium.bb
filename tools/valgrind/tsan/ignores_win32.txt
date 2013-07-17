@@ -46,3 +46,8 @@ fun_r:base::HistogramBase::AddTime
 
 # ffmpegsumo.dll appears to read a few bytes beyond the end of the buffer.
 fun:_ff_prefetch_mmxext
+
+# Shows up as a race in SHELL32.dll when deleting a directory while opening an
+# unrelated file in another thread. Revealed by DiskCacheBackendTest.DeleteOld.
+# See: https://code.google.com/p/data-race-test/issues/detail?id=114
+fun_r:SHFileOperationW
