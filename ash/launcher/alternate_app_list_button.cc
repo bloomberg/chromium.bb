@@ -20,6 +20,7 @@
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia_operations.h"
+#include "ui/views/controls/button/image_button.h"
 
 namespace ash {
 namespace internal {
@@ -131,6 +132,27 @@ void AlternateAppListButton::GetAccessibleState(
     ui::AccessibleViewState* state) {
   state->role = ui::AccessibilityTypes::ROLE_PUSHBUTTON;
   state->name = host_->GetAccessibleName(this);
+}
+
+void AlternateAppListButton::OnGestureEvent(ui::GestureEvent* event) {
+  switch (event->type()) {
+    case ui::ET_GESTURE_SCROLL_BEGIN:
+      host_->PointerPressedOnButton(this, LauncherButtonHost::TOUCH, *event);
+      event->SetHandled();
+      return;
+    case ui::ET_GESTURE_SCROLL_UPDATE:
+      host_->PointerDraggedOnButton(this, LauncherButtonHost::TOUCH, *event);
+      event->SetHandled();
+      return;
+    case ui::ET_GESTURE_SCROLL_END:
+    case ui::ET_SCROLL_FLING_START:
+      host_->PointerReleasedOnButton(this, LauncherButtonHost::TOUCH, false);
+      event->SetHandled();
+      return;
+    default:
+      ImageButton::OnGestureEvent(event);
+      return;
+  }
 }
 
 }  // namespace internal
