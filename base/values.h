@@ -3,20 +3,16 @@
 // found in the LICENSE file.
 
 // This file specifies a recursive data storage class called Value intended for
-// storing setting and other persistable data.  It includes the ability to
-// specify (recursive) lists and dictionaries, so it's fairly expressive.
-// However, the API is optimized for the common case, namely storing a
-// hierarchical tree of simple values.  Given a DictionaryValue root, you can
-// easily do things like:
+// storing settings and other persistable data.
 //
-// root->SetString("global.pages.homepage", "http://goateleporter.com");
-// std::string homepage = "http://google.com";  // default/fallback value
-// root->GetString("global.pages.homepage", &homepage);
+// A Value represents something that can be stored in JSON or passed to/from
+// JavaScript. As such, it is NOT a generalized variant type, since only the
+// types supported by JavaScript/JSON are supported.
 //
-// where "global" and "pages" are also DictionaryValues, and "homepage" is a
-// string setting.  If some elements of the path didn't exist yet, the
-// SetString() method would create the missing elements and attach them to root
-// before attaching the homepage value.
+// IN PARTICULAR this means that there is no support for int64 or unsigned
+// numbers. Writing JSON with such types would violate the spec. If you need
+// something like this, either use a double or make a string value containing
+// the number you want.
 
 #ifndef BASE_VALUES_H_
 #define BASE_VALUES_H_
@@ -52,6 +48,8 @@ typedef std::map<std::string, Value*> ValueMap;
 // The Value class is the base class for Values. A Value can be instantiated
 // via the Create*Value() factory methods, or by directly creating instances of
 // the subclasses.
+//
+// See the file-level comment above for more information.
 class BASE_EXPORT Value {
  public:
   enum Type {
@@ -63,6 +61,7 @@ class BASE_EXPORT Value {
     TYPE_BINARY,
     TYPE_DICTIONARY,
     TYPE_LIST
+    // Note: Do not add more types. See the file-level comment above for why.
   };
 
   virtual ~Value();
@@ -86,10 +85,10 @@ class BASE_EXPORT Value {
   // Returns true if the current object represents a given type.
   bool IsType(Type type) const { return type == type_; }
 
-  // These methods allow the convenient retrieval of settings.
-  // If the current setting object can be converted into the given type,
-  // the value is returned through the |out_value| parameter and true is
-  // returned;  otherwise, false is returned and |out_value| is unchanged.
+  // These methods allow the convenient retrieval of the contents of the Value.
+  // If the current object can be converted into the given type, the value is
+  // returned through the |out_value| parameter and true is returned;
+  // otherwise, false is returned and |out_value| is unchanged.
   virtual bool GetAsBoolean(bool* out_value) const;
   virtual bool GetAsInteger(int* out_value) const;
   virtual bool GetAsDouble(double* out_value) const;
@@ -99,6 +98,7 @@ class BASE_EXPORT Value {
   virtual bool GetAsList(const ListValue** out_value) const;
   virtual bool GetAsDictionary(DictionaryValue** out_value);
   virtual bool GetAsDictionary(const DictionaryValue** out_value) const;
+  // Note: Do not add more types. See the file-level comment above for why.
 
   // This creates a deep copy of the entire Value tree, and returns a pointer
   // to the copy.  The caller gets ownership of the copy, of course.
