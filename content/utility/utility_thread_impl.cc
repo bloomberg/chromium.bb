@@ -65,13 +65,11 @@ void UtilityThreadImpl::ReleaseProcessIfNeeded() {
     return;
 
   if (single_process_) {
-    // Just quit the message loop directly so that unit tests don't need to
-    // pump the client message loop again. In normal multi-process mode, need
-    // normal shutdown as the IO thread could still be sending the result IPC.
-    // Also close the IPC channel manually as normally that's done by the child
-    // process exiting, which doesn't happen here.
+    // Close the channel to cause UtilityProcessHostImpl to be deleted. We need
+    // to take a different code path than the multi-process case because that
+    // depends on the child process going away to close the channel, but that
+    // can't happen when we're in single process mode.
     channel()->Close();
-    base::MessageLoop::current()->Quit();
   } else {
     ChildProcess::current()->ReleaseProcess();
   }
