@@ -50,11 +50,16 @@ FileCopyManager.getInstance = function(root) {
  * cancel operation cancels everything in the queue.
  *
  * @param {DirectoryEntry} targetDirEntry Target directory.
+ * @param {boolean} sourceOnDrive True if the source entries are on Drive.
+ * @param {boolean} targetOnDrive True if the target entry is on Drive.
  * @param {DirectoryEntry=} opt_zipBaseDirEntry Base directory dealt as a root
  *     in ZIP archive.
  * @constructor
  */
-FileCopyManager.Task = function(targetDirEntry, opt_zipBaseDirEntry) {
+FileCopyManager.Task = function(targetDirEntry,
+                                sourceOnDrive,
+                                targetOnDrive,
+                                opt_zipBaseDirEntry) {
   this.targetDirEntry = targetDirEntry;
   this.zipBaseDirEntry = opt_zipBaseDirEntry;
   this.originalEntries = null;
@@ -70,8 +75,8 @@ FileCopyManager.Task = function(targetDirEntry, opt_zipBaseDirEntry) {
   this.deleteAfterCopy = false;
   this.move = false;
   this.zip = false;
-  this.sourceOnDrive = false;
-  this.targetOnDrive = false;
+  this.sourceOnDrive = sourceOnDrive;
+  this.targetOnDrive = targetOnDrive;
 
   // If directory already exists, we try to make a copy named 'dir (X)',
   // where X is a number. When we do this, all subsequent copies from
@@ -592,7 +597,8 @@ FileCopyManager.prototype.queueCopy_ = function(targetDirEntry,
                                                 targetOnDrive) {
   var self = this;
   // When copying files, null can be specified as source directory.
-  var copyTask = new FileCopyManager.Task(targetDirEntry);
+  var copyTask = new FileCopyManager.Task(
+      targetDirEntry, sourceOnDrive, targetOnDrive);
   if (deleteAfterCopy) {
     if (this.isMovable(entries[0], targetDirEntry)) {
       copyTask.move = true;
@@ -600,8 +606,6 @@ FileCopyManager.prototype.queueCopy_ = function(targetDirEntry,
       copyTask.deleteAfterCopy = true;
     }
   }
-  copyTask.sourceOnDrive = sourceOnDrive;
-  copyTask.targetOnDrive = targetOnDrive;
   copyTask.setEntries(entries, function() {
     self.copyTasks_.push(copyTask);
     self.maybeScheduleCloseBackgroundPage_();
@@ -1315,10 +1319,9 @@ FileCopyManager.prototype.sendDeleteEvent_ = function(task, reason) {
 FileCopyManager.prototype.zipSelection = function(dirEntry, isOnDrive,
                                                   selectionEntries) {
   var self = this;
-  var zipTask = new FileCopyManager.Task(dirEntry, dirEntry);
+  var zipTask = new FileCopyManager.Task(
+      dirEntry, isOnDrive, isOnDrive, dirEntry);
   zipTask.zip = true;
-  zipTask.sourceOnDrive = isOnDrive;
-  zipTask.targetOnDrive = isOnDrive;
   zipTask.setEntries(selectionEntries, function() {
     // TODO: per-entry zip progress update with accurate byte count.
     // For now just set pendingBytes to zero so that the progress bar is full.
