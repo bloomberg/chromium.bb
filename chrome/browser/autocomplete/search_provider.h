@@ -378,7 +378,7 @@ class SearchProvider : public AutocompleteProvider,
   // See UpdateMatches() for the use and explanation of these constraints.
   bool IsTopMatchNavigationInKeywordMode() const;
   bool IsTopMatchScoreTooLow() const;
-  bool IsTopMatchHighRankSearchForURL() const;
+  bool IsTopMatchSearchWithURLInput() const;
   bool IsTopMatchNotInlinable() const;
 
   // Updates |matches_| from the latest results; applies calculated relevances

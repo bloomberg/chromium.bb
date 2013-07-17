@@ -1063,13 +1063,10 @@ bool SearchProvider::IsTopMatchScoreTooLow() const {
       CalculateRelevanceForVerbatimIgnoringKeywordModeState();
 }
 
-bool SearchProvider::IsTopMatchHighRankSearchForURL() const {
+bool SearchProvider::IsTopMatchSearchWithURLInput() const {
   return input_.type() == AutocompleteInput::URL &&
          matches_.front().relevance > CalculateRelevanceForVerbatim() &&
-         (matches_.front().type == AutocompleteMatchType::SEARCH_SUGGEST ||
-          matches_.front().type ==
-              AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED ||
-          matches_.front().type == AutocompleteMatchType::SEARCH_OTHER_ENGINE);
+         matches_.front().type != AutocompleteMatchType::NAVSUGGEST;
 }
 
 bool SearchProvider::IsTopMatchNotInlinable() const {
@@ -1114,7 +1111,7 @@ void SearchProvider::UpdateMatches() {
       keyword_results_.verbatim_relevance = -1;
       ConvertResultsToAutocompleteMatches();
     }
-    if (IsTopMatchHighRankSearchForURL()) {
+    if (IsTopMatchSearchWithURLInput()) {
       // Disregard the suggested search and verbatim relevances if the input
       // type is URL and the top match is a highly-ranked search suggestion.
       // For example, prevent a search for "foo.com" from outranking another
@@ -1135,7 +1132,7 @@ void SearchProvider::UpdateMatches() {
     }
     DCHECK(!IsTopMatchNavigationInKeywordMode());
     DCHECK(!IsTopMatchScoreTooLow());
-    DCHECK(!IsTopMatchHighRankSearchForURL());
+    DCHECK(!IsTopMatchSearchWithURLInput());
     DCHECK(!IsTopMatchNotInlinable());
   }
 
