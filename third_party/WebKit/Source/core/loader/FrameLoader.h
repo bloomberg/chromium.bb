@@ -231,8 +231,6 @@ public:
     void completed();
     bool allAncestorsAreComplete() const; // including this
 
-    void setOriginalURLForDownloadRequest(ResourceRequest&);
-
     bool suppressOpenerInNewFrame() const { return m_suppressOpenerInNewFrame; }
 
     bool shouldClose();
@@ -255,9 +253,6 @@ private:
     void loadSameDocumentItem(HistoryItem*);
     void loadDifferentDocumentItem(HistoryItem*);
     void insertDummyHistoryItem();
-    
-    void updateFirstPartyForCookies();
-    void setFirstPartyForCookies(const KURL&);
 
     void clearProvisionalLoad();
     void transitionToCommitted();

@@ -90,7 +90,12 @@ public:
     WEBKIT_EXPORT bool isXHTMLDocument() const;
     WEBKIT_EXPORT bool isPluginDocument() const;
     WEBKIT_EXPORT WebURL baseURL() const;
+
+    // The firstPartyForCookies is used to compute whether this document
+    // appears in a "third-party" context for the purpose of third-party
+    // cookie blocking.
     WEBKIT_EXPORT WebURL firstPartyForCookies() const;
+
     WEBKIT_EXPORT WebElement documentElement() const;
     WEBKIT_EXPORT WebElement body() const;
     WEBKIT_EXPORT WebElement head();

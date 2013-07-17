@@ -430,11 +430,7 @@ bool DocumentLoader::shouldContinueForNavigationPolicy(const ResourceRequest& re
         return true;
     if (policy == NavigationPolicyIgnore)
         return false;
-
-    ResourceRequest mutableRequest(request);
-    if (policy == NavigationPolicyDownload)
-        frameLoader()->setOriginalURLForDownloadRequest(mutableRequest);
-    frameLoader()->client()->loadURLExternally(mutableRequest, policy);
+    frameLoader()->client()->loadURLExternally(request, policy);
     return false;
 }
 

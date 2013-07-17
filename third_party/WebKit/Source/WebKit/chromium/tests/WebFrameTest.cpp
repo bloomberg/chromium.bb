@@ -3370,6 +3370,32 @@ TEST_F(WebFrameTest, CompositorScrollIsUserScrollShortPage)
     m_webView = 0;
 }
 
+TEST_F(WebFrameTest, FirstPartyForCookiesForRedirect)
+{
+    WTF::String filePath = Platform::current()->unitTestSupport()->webKitRootDir();
+    filePath.append("/Source/WebKit/chromium/tests/data/first_party.html");
+
+    WebURL testURL(toKURL("http://www.test.com/first_party_redirect.html"));
+    char redirect[] = "http://www.test.com/first_party.html";
+    WebURL redirectURL(toKURL(redirect));
+    WebURLResponse redirectResponse;
+    redirectResponse.initialize();
+    redirectResponse.setMIMEType("text/html");
+    redirectResponse.setHTTPStatusCode(302);
+    redirectResponse.setHTTPHeaderField("Location", redirect);
+    Platform::current()->unitTestSupport()->registerMockedURL(testURL, redirectResponse, filePath);
+
+    WebURLResponse finalResponse;
+    finalResponse.initialize();
+    finalResponse.setMIMEType("text/html");
+    Platform::current()->unitTestSupport()->registerMockedURL(redirectURL, finalResponse, filePath);
+
+    m_webView = FrameTestHelpers::createWebViewAndLoad(m_baseURL + "first_party_redirect.html", true);
+    EXPECT_TRUE(m_webView->mainFrame()->document().firstPartyForCookies() == redirectURL);
+
+    m_webView->close();
+    m_webView = 0;
+}
 
 class TestNavigationPolicyWebFrameClient : public WebFrameClient {
 public:

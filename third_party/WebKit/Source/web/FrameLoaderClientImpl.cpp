@@ -288,13 +288,6 @@ void FrameLoaderClientImpl::dispatchWillSendRequest(
     DocumentLoader* loader, unsigned long identifier, ResourceRequest& request,
     const ResourceResponse& redirectResponse)
 {
-    // FrameLoader::loadEmptyDocumentSynchronously() creates an empty document
-    // with no URL.  We don't like that, so we'll rename it to about:blank.
-    if (request.url().isEmpty())
-        request.setURL(KURL(ParsedURLString, "about:blank"));
-    if (request.firstPartyForCookies().isEmpty())
-        request.setFirstPartyForCookies(KURL(ParsedURLString, "about:blank"));
-
     // Give the WebFrameClient a crack at the request.
     if (m_webFrame->client()) {
         WrappedResourceRequest webreq(request);

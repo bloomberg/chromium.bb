@@ -3632,6 +3632,11 @@ String Document::lastModified() const
     return String::format("%02d/%02d/%04d %02d:%02d:%02d", date.month() + 1, date.monthDay(), date.fullYear(), date.hour(), date.minute(), date.second());
 }
 
+const KURL& Document::firstPartyForCookies() const
+{
+    return topDocument()->url();
+}
+
 static bool isValidNameNonASCII(const LChar* characters, unsigned length)
 {
     if (!isValidNameStart(characters[0]))

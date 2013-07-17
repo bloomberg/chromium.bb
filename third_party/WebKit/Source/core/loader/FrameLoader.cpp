@@ -531,7 +531,6 @@ void FrameLoader::didBeginDocument(bool dispatch)
     if (dispatch)
         dispatchDidClearWindowObjectsInAllWorlds();
 
-    updateFirstPartyForCookies();
     m_frame->document()->initContentSecurityPolicy();
 
     Settings* settings = m_frame->document()->settings();
@@ -789,20 +788,6 @@ void FrameLoader::handleFallbackContent()
 void FrameLoader::resetMultipleFormSubmissionProtection()
 {
     m_submittedFormURL = KURL();
-}
-
-void FrameLoader::updateFirstPartyForCookies()
-{
-    if (m_frame->tree()->parent())
-        setFirstPartyForCookies(m_frame->tree()->parent()->document()->firstPartyForCookies());
-    else
-        setFirstPartyForCookies(m_frame->document()->url());
-}
-
-void FrameLoader::setFirstPartyForCookies(const KURL& url)
-{
-    for (Frame* frame = m_frame; frame; frame = frame->tree()->traverseNext(m_frame))
-        frame->document()->setFirstPartyForCookies(url);
 }
 
 // This does the same kind of work that didOpenURL does, except it relies on the fact
@@ -1524,60 +1509,6 @@ void FrameLoader::checkLoadCompleteForThisFrame()
     ASSERT_NOT_REACHED();
 }
 
-static KURL originatingURLFromBackForwardList(Page* page)
-{
-    // FIXME: Can this logic be replaced with m_frame->document()->firstPartyForCookies()?
-    // It has the same meaning of "page a user thinks is the current one".
-
-    KURL originalURL;
-    int backCount = page->backForward()->backCount();
-    for (int backIndex = 0; backIndex <= backCount; backIndex++) {
-        // FIXME: At one point we had code here to check a "was user gesture" flag.
-        // Do we need to restore that logic?
-        HistoryItem* historyItem = page->backForward()->itemAtIndex(-backIndex);
-        if (!historyItem)
-            continue;
-
-        originalURL = historyItem->originalURL(); 
-        if (!originalURL.isNull()) 
-            return originalURL;
-    }
-
-    return KURL();
-}
-
-void FrameLoader::setOriginalURLForDownloadRequest(ResourceRequest& request)
-{
-    KURL originalURL;
-    
-    // If there is no referrer, assume that the download was initiated directly, so current document is
-    // completely unrelated to it. See <rdar://problem/5294691>.
-    // FIXME: Referrer is not sent in many other cases, so we will often miss this important information.
-    // Find a better way to decide whether the download was unrelated to current document.
-    if (!request.httpReferrer().isNull()) {
-        // find the first item in the history that was originated by the user
-        originalURL = originatingURLFromBackForwardList(m_frame->page());
-    }
-
-    if (originalURL.isNull())
-        originalURL = request.url();
-
-    if (!originalURL.protocol().isEmpty() && !originalURL.host().isEmpty()) {
-        unsigned port = originalURL.port();
-
-        // Original URL is needed to show the user where a file was downloaded from. We should make a URL that won't result in downloading the file again.
-        // FIXME: Using host-only URL is a very heavy-handed approach. We should attempt to provide the actual page where the download was initiated from, as a reminder to the user.
-        String hostOnlyURLString;
-        if (port)
-            hostOnlyURLString = originalURL.protocol() + "://" + originalURL.host() + ":" + String::number(port);
-        else
-            hostOnlyURLString = originalURL.protocol() + "://" + originalURL.host();
-
-        // FIXME: Rename firstPartyForCookies back to mainDocumentURL. It was a mistake to think that it was only used for cookies.
-        request.setFirstPartyForCookies(KURL(KURL(), hostOnlyURLString));
-    }
-}
-
 void FrameLoader::didLayout(LayoutMilestones milestones)
 {
     m_client->dispatchDidLayout(milestones);
@@ -1713,14 +1644,10 @@ void FrameLoader::addExtraFieldsToRequest(ResourceRequest& request)
 {
     bool isMainResource = (request.targetType() == ResourceRequest::TargetIsMainFrame) || (request.targetType() == ResourceRequest::TargetIsSubframe);
 
-    // Don't set the cookie policy URL if it's already been set.
-    // But make sure to set it on all requests regardless of protocol, as it has significance beyond the cookie policy (<rdar://problem/6616664>).
-    if (request.firstPartyForCookies().isEmpty()) {
-        if (isMainResource && isLoadingMainFrame())
-            request.setFirstPartyForCookies(request.url());
-        else if (Document* document = m_frame->document())
-            request.setFirstPartyForCookies(document->firstPartyForCookies());
-    }
+    if (isMainResource && isLoadingMainFrame())
+        request.setFirstPartyForCookies(request.url());
+    else
+        request.setFirstPartyForCookies(m_frame->document()->firstPartyForCookies());
 
     // The remaining modifications are only necessary for HTTP and HTTPS.
     if (!request.url().isEmpty() && !request.url().protocolIsInHTTPFamily())
@@ -1782,9 +1709,6 @@ unsigned long FrameLoader::loadResourceSynchronously(const ResourceRequest& requ
     if (!referrer.isEmpty())
         initialRequest.setHTTPReferrer(referrer);
     addHTTPOriginIfNeeded(initialRequest, outgoingOrigin());
-
-    if (Page* page = m_frame->page())
-        initialRequest.setFirstPartyForCookies(page->mainFrame()->loader()->documentLoader()->request().url());
 
     addExtraFieldsToRequest(initialRequest);
 

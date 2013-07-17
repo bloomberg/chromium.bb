@@ -780,18 +780,7 @@ public:
     const KURL& cookieURL() const { return m_cookieURL; }
     void setCookieURL(const KURL& url) { m_cookieURL = url; }
 
-    // The firstPartyForCookies is used to compute whether this document
-    // appears in a "third-party" context for the purpose of third-party
-    // cookie blocking.  The document is in a third-party context if the
-    // cookieURL and the firstPartyForCookies are from different hosts.
-    //
-    // Note: Some ports (including possibly Apple's) only consider the
-    //       document in a third-party context if the cookieURL and the
-    //       firstPartyForCookies have a different registry-controlled
-    //       domain.
-    //
-    const KURL& firstPartyForCookies() const { return m_firstPartyForCookies; }
-    void setFirstPartyForCookies(const KURL& url) { m_firstPartyForCookies = url; }
+    const KURL& firstPartyForCookies() const;
     
     // The following implements the rule from HTML 4 for what valid names are.
     // To get this right for all the XML cases, we probably have to improve this or move it
@@ -1157,7 +1146,6 @@ private:
     KURL m_baseURLOverride; // An alternative base URL that takes precedence over m_baseURL (but not m_baseElementURL).
     KURL m_baseElementURL; // The URL set by the <base> element.
     KURL m_cookieURL; // The URL to use for cookie access.
-    KURL m_firstPartyForCookies; // The policy URL for third-party cookie blocking.
 
     // Document.documentURI:
     // Although URL-like, Document.documentURI can actually be set to any
