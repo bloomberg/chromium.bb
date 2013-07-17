@@ -40,20 +40,17 @@ using content::MediaStreamDevices;
 
 namespace {
 
-const content::MediaStreamDevice* FindDefaultDeviceWithId(
+// Finds a device in |devices| that has |device_id|, or NULL if not found.
+const content::MediaStreamDevice* FindDeviceWithId(
     const content::MediaStreamDevices& devices,
     const std::string& device_id) {
-  if (devices.empty())
-    return NULL;
-
   content::MediaStreamDevices::const_iterator iter = devices.begin();
   for (; iter != devices.end(); ++iter) {
     if (iter->id == device_id) {
       return &(*iter);
     }
   }
-
-  return &(*devices.begin());
+  return NULL;
 };
 
 // This is a short-term solution to allow testing of the the Screen Capture API
@@ -242,7 +239,6 @@ void MediaCaptureDevicesDispatcher::ProcessMediaAccessRequestFromExtension(
   content::MediaStreamDevices devices;
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  PrefService* prefs = profile->GetPrefs();
 
 #if defined(OS_ANDROID)
   // Tab capture is not supported on Android.
@@ -264,9 +260,7 @@ void MediaCaptureDevicesDispatcher::ProcessMediaAccessRequestFromExtension(
   } else if (request.audio_type == content::MEDIA_DEVICE_AUDIO_CAPTURE &&
              extension->HasAPIPermission(
                  extensions::APIPermission::kAudioCapture)) {
-    std::string default_device =
-        prefs->GetString(prefs::kDefaultAudioCaptureDevice);
-    GetRequestedDevice(default_device, true, false, &devices);
+    GetDefaultDevicesForProfile(profile, true, false, &devices);
   }
 
   if (request.video_type == content::MEDIA_TAB_VIDEO_CAPTURE &&
@@ -277,9 +271,7 @@ void MediaCaptureDevicesDispatcher::ProcessMediaAccessRequestFromExtension(
         content::MEDIA_TAB_VIDEO_CAPTURE, std::string(), std::string()));
   } else if (request.video_type == content::MEDIA_DEVICE_VIDEO_CAPTURE &&
        extension->HasAPIPermission(extensions::APIPermission::kVideoCapture)) {
-    std::string default_device = prefs->GetString(
-        prefs::kDefaultVideoCaptureDevice);
-    GetRequestedDevice(default_device, false, true, &devices);
+    GetDefaultDevicesForProfile(profile, false, true, &devices);
   }
 
   scoped_ptr<content::MediaStreamUI> ui;
@@ -369,37 +361,61 @@ void MediaCaptureDevicesDispatcher::GetDefaultDevicesForProfile(
   std::string default_device;
   if (audio) {
     default_device = prefs->GetString(prefs::kDefaultAudioCaptureDevice);
-    GetRequestedDevice(default_device, true, false, devices);
+    const content::MediaStreamDevice* device =
+        GetRequestedAudioDevice(default_device);
+    if (!device)
+      device = GetFirstAvailableAudioDevice();
+    if (device)
+      devices->push_back(*device);
   }
 
   if (video) {
     default_device = prefs->GetString(prefs::kDefaultVideoCaptureDevice);
-    GetRequestedDevice(default_device, false, true, devices);
+    const content::MediaStreamDevice* device =
+        GetRequestedVideoDevice(default_device);
+    if (!device)
+      device = GetFirstAvailableVideoDevice();
+    if (device)
+      devices->push_back(*device);
   }
 }
 
-void MediaCaptureDevicesDispatcher::GetRequestedDevice(
-    const std::string& requested_device_id,
-    bool audio,
-    bool video,
-    content::MediaStreamDevices* devices) {
+const content::MediaStreamDevice*
+MediaCaptureDevicesDispatcher::GetRequestedAudioDevice(
+    const std::string& requested_audio_device_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(audio || video);
+  const content::MediaStreamDevices& audio_devices = GetAudioCaptureDevices();
+  const content::MediaStreamDevice* const device =
+      FindDeviceWithId(audio_devices, requested_audio_device_id);
+  return device;
+}
 
-  if (audio) {
-    const content::MediaStreamDevices& audio_devices = GetAudioCaptureDevices();
-    const content::MediaStreamDevice* const device =
-        FindDefaultDeviceWithId(audio_devices, requested_device_id);
-    if (device)
-      devices->push_back(*device);
-  }
-  if (video) {
-    const content::MediaStreamDevices& video_devices = GetVideoCaptureDevices();
-    const content::MediaStreamDevice* const device =
-        FindDefaultDeviceWithId(video_devices, requested_device_id);
-    if (device)
-      devices->push_back(*device);
-  }
+const content::MediaStreamDevice*
+MediaCaptureDevicesDispatcher::GetFirstAvailableAudioDevice() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  const content::MediaStreamDevices& audio_devices = GetAudioCaptureDevices();
+  if (audio_devices.empty())
+    return NULL;
+  return &(*audio_devices.begin());
+}
+
+const content::MediaStreamDevice*
+MediaCaptureDevicesDispatcher::GetRequestedVideoDevice(
+    const std::string& requested_video_device_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  const content::MediaStreamDevices& video_devices = GetVideoCaptureDevices();
+  const content::MediaStreamDevice* const device =
+      FindDeviceWithId(video_devices, requested_video_device_id);
+  return device;
+}
+
+const content::MediaStreamDevice*
+MediaCaptureDevicesDispatcher::GetFirstAvailableVideoDevice() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  const content::MediaStreamDevices& video_devices = GetVideoCaptureDevices();
+  if (video_devices.empty())
+    return NULL;
+  return &(*video_devices.begin());
 }
 
 void MediaCaptureDevicesDispatcher::DisableDeviceEnumerationForTesting() {

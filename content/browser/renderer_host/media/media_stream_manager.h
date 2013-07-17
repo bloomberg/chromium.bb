@@ -104,7 +104,7 @@ class CONTENT_EXPORT MediaStreamManager
   void CancelRequest(const std::string& label);
 
   // Closes generated stream.
-  void StopGeneratedStream(const std::string& label);
+  virtual void StopGeneratedStream(const std::string& label);
 
   // Gets a list of devices of |type|, which must be MEDIA_DEVICE_AUDIO_CAPTURE
   // or MEDIA_DEVICE_VIDEO_CAPTURE.
@@ -113,12 +113,12 @@ class CONTENT_EXPORT MediaStreamManager
   // and video devices and also start monitoring device changes, such as
   // plug/unplug. The new device lists will be delivered via media observer to
   // MediaCaptureDevicesDispatcher.
-  std::string EnumerateDevices(MediaStreamRequester* requester,
-                               int render_process_id,
-                               int render_view_id,
-                               int page_request_id,
-                               MediaStreamType type,
-                               const GURL& security_origin);
+  virtual std::string EnumerateDevices(MediaStreamRequester* requester,
+                                       int render_process_id,
+                                       int render_view_id,
+                                       int page_request_id,
+                                       MediaStreamType type,
+                                       const GURL& security_origin);
 
   // Open a device identified by |device_id|.  |type| must be either
   // MEDIA_DEVICE_AUDIO_CAPTURE or MEDIA_DEVICE_VIDEO_CAPTURE.
@@ -162,6 +162,10 @@ class CONTENT_EXPORT MediaStreamManager
   // TestBrowserThreadBundle, because the notification happens too late in that
   // case (see http://crbug.com/247525#c14).
   virtual void WillDestroyCurrentMessageLoop() OVERRIDE;
+
+ protected:
+  // Used for testing.
+  MediaStreamManager();
 
  private:
   // Contains all data needed to keep track of requests.
@@ -212,6 +216,15 @@ class CONTENT_EXPORT MediaStreamManager
   // Helpers to start and stop monitoring devices.
   void StartMonitoring();
   void StopMonitoring();
+
+  // Finds and returns the raw device id corresponding to the given
+  // |device_guid|. Returns true if there was a raw device id that matched the
+  // given |device_guid|, false if nothing matched it.
+  bool TranslateGUIDToRawId(
+      MediaStreamType stream_type,
+      const GURL& security_origin,
+      const std::string& device_guid,
+      std::string* raw_device_id);
 
   // Device thread shared by VideoCaptureManager and AudioInputDeviceManager.
   scoped_ptr<base::Thread> device_thread_;

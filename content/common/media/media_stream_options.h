@@ -16,6 +16,7 @@ namespace content {
 // MediaStreamConstraint keys for constraints that are passed to getUserMedia.
 CONTENT_EXPORT extern const char kMediaStreamSource[];
 CONTENT_EXPORT extern const char kMediaStreamSourceId[];
+CONTENT_EXPORT extern const char kMediaStreamSourceInfoId[];
 CONTENT_EXPORT extern const char kMediaStreamSourceTab[];
 CONTENT_EXPORT extern const char kMediaStreamSourceScreen[];
 

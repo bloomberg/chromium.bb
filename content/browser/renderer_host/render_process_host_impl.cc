@@ -73,6 +73,7 @@
 #include "content/browser/renderer_host/media/audio_input_renderer_host.h"
 #include "content/browser/renderer_host/media/audio_mirroring_manager.h"
 #include "content/browser/renderer_host/media/audio_renderer_host.h"
+#include "content/browser/renderer_host/media/device_request_message_filter.h"
 #include "content/browser/renderer_host/media/media_stream_dispatcher_host.h"
 #include "content/browser/renderer_host/media/midi_host.h"
 #include "content/browser/renderer_host/media/peer_connection_tracker_host.h"
@@ -644,6 +645,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   channel_->AddFilter(peer_connection_tracker_host_.get());
   channel_->AddFilter(new MediaStreamDispatcherHost(
       GetID(), media_stream_manager));
+  channel_->AddFilter(new DeviceRequestMessageFilter(media_stream_manager));
 #endif
 #if defined(ENABLE_PLUGINS)
   // TODO(raymes): PepperMessageFilter should be removed from here.
@@ -887,6 +889,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
 #endif
     switches::kDisableWebAudio,
 #if defined(ENABLE_WEBRTC)
+    switches::kEnableDeviceEnumeration,
     switches::kEnableSCTPDataChannels,
 #endif
     switches::kEnableWebAnimationsCSS,

@@ -224,6 +224,10 @@ const char kEnableWebRtcAecRecordings[]     = "enable-webrtc-aec-recordings";
 
 // Enable WebRTC DataChannels SCTP wire protocol support.
 const char kEnableSCTPDataChannels[]        = "enable-sctp-data-channels";
+
+// Enable WebRTC device enumeration.
+const char kEnableDeviceEnumeration[]        = "enable-device-enumeration";
+
 #endif
 
 // Enable WebRTC to open TCP server sockets.

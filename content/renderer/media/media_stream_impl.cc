@@ -31,13 +31,18 @@
 namespace content {
 namespace {
 
-std::string GetMandatoryStreamConstraint(
-    const WebKit::WebMediaConstraints& constraints, const std::string& key) {
+std::string GetStreamConstraint(
+    const WebKit::WebMediaConstraints& constraints, const std::string& key,
+    bool is_mandatory) {
   if (constraints.isNull())
     return std::string();
 
   WebKit::WebString value;
-  constraints.getMandatoryConstraintValue(UTF8ToUTF16(key), value);
+  if (is_mandatory) {
+    constraints.getMandatoryConstraintValue(UTF8ToUTF16(key), value);
+  } else {
+    constraints.getOptionalConstraintValue(UTF8ToUTF16(key), value);
+  }
   return UTF16ToUTF8(value);
 }
 
@@ -45,24 +50,24 @@ void UpdateRequestOptions(
     const WebKit::WebUserMediaRequest& user_media_request,
     StreamOptions* options) {
   if (options->audio_type != content::MEDIA_NO_SERVICE) {
-    std::string audio_stream_source = GetMandatoryStreamConstraint(
-        user_media_request.audioConstraints(), kMediaStreamSource);
+    std::string audio_stream_source = GetStreamConstraint(
+        user_media_request.audioConstraints(), kMediaStreamSource, true);
     if (audio_stream_source == kMediaStreamSourceTab) {
       options->audio_type = content::MEDIA_TAB_AUDIO_CAPTURE;
-      options->audio_device_id = GetMandatoryStreamConstraint(
+      options->audio_device_id = GetStreamConstraint(
           user_media_request.audioConstraints(),
-          kMediaStreamSourceId);
+          kMediaStreamSourceId, true);
     }
   }
 
   if (options->video_type != content::MEDIA_NO_SERVICE) {
-    std::string video_stream_source = GetMandatoryStreamConstraint(
-        user_media_request.videoConstraints(), kMediaStreamSource);
+    std::string video_stream_source = GetStreamConstraint(
+        user_media_request.videoConstraints(), kMediaStreamSource, true);
     if (video_stream_source == kMediaStreamSourceTab) {
       options->video_type = content::MEDIA_TAB_VIDEO_CAPTURE;
-      options->video_device_id = GetMandatoryStreamConstraint(
+      options->video_device_id = GetStreamConstraint(
           user_media_request.videoConstraints(),
-          kMediaStreamSourceId);
+          kMediaStreamSourceId, true);
     } else if (video_stream_source == kMediaStreamSourceScreen) {
       options->video_type = content::MEDIA_SCREEN_VIDEO_CAPTURE;
     }
@@ -154,10 +159,18 @@ void MediaStreamImpl::requestUserMedia(
     options.audio_type = MEDIA_DEVICE_AUDIO_CAPTURE;
     options.video_type = MEDIA_DEVICE_VIDEO_CAPTURE;
   } else {
-    if (user_media_request.audio())
+    if (user_media_request.audio()) {
       options.audio_type = MEDIA_DEVICE_AUDIO_CAPTURE;
-    if (user_media_request.video())
+      options.audio_device_id = GetStreamConstraint(
+          user_media_request.audioConstraints(),
+          kMediaStreamSourceInfoId, false);
+    }
+    if (user_media_request.video()) {
       options.video_type = MEDIA_DEVICE_VIDEO_CAPTURE;
+      options.video_device_id = GetStreamConstraint(
+          user_media_request.videoConstraints(),
+          kMediaStreamSourceInfoId, false);
+    }
 
     security_origin = GURL(user_media_request.securityOrigin().toString());
     // Get the WebFrame that requested a MediaStream.

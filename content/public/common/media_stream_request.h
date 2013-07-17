@@ -94,14 +94,25 @@ typedef std::vector<MediaStreamDevice> MediaStreamDevices;
 typedef std::map<MediaStreamType, MediaStreamDevices> MediaStreamDeviceMap;
 
 // Represents a request for media streams (audio/video).
+// It looks like the last 4 parameters should use StreamOptions instead, but
+// StreamOption depends on media_stream_request.h because it needs
+// MediaStreamDevice.
+// TODO(vrk): Decouple MediaStreamDevice from this header file so that
+// media_stream_options.h no longer depends on this file.
+// TODO(vrk,justinlin,wjia): Figure out a way to share this code cleanly between
+// vanilla WebRTC, Tab Capture, and Pepper Video Capture. Right now there is
+// Tab-only stuff and Pepper-only stuff being passed around to all clients,
+// which is icky.
 struct CONTENT_EXPORT MediaStreamRequest {
   MediaStreamRequest(
       int render_process_id,
       int render_view_id,
       int page_request_id,
+      const std::string& tab_capture_device_id,
       const GURL& security_origin,
       MediaStreamRequestType request_type,
-      const std::string& requested_device_id,
+      const std::string& requested_audio_device_id,
+      const std::string& requested_video_device_id,
       MediaStreamType audio_type,
       MediaStreamType video_type);
 
@@ -117,6 +128,9 @@ struct CONTENT_EXPORT MediaStreamRequest {
   // identifying this request. This is used for cancelling request.
   int page_request_id;
 
+  // Used by tab capture.
+  std::string tab_capture_device_id;
+
   // The WebKit security origin for the current request (e.g. "html5rocks.com").
   GURL security_origin;
 
@@ -126,10 +140,9 @@ struct CONTENT_EXPORT MediaStreamRequest {
   // Pepper requests are signified by the |MEDIA_OPEN_DEVICE| value.
   MediaStreamRequestType request_type;
 
-  // Stores the requested device id. Used only if the |request_type| filed is
-  // set to |MEDIA_OPEN_DEVICE| to indicate which device the request is for as
-  // in that case the decision is not left to the user but to the media client.
-  std::string requested_device_id;
+  // Stores the requested raw device id for physical audio or video devices.
+  std::string requested_audio_device_id;
+  std::string requested_video_device_id;
 
   // Flag to indicate if the request contains audio.
   MediaStreamType audio_type;

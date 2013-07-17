@@ -50,6 +50,8 @@ IPC_MESSAGE_ROUTED1(MediaStreamMsg_StreamGenerationFailed,
                     int /* request id */)
 
 // The browser has enumerated devices successfully.
+// Used by Pepper.
+// TODO(vrk,wjia): Move this to pepper code.
 IPC_MESSAGE_ROUTED3(MediaStreamMsg_DevicesEnumerated,
                     int /* request id */,
                     std::string /* label */,
@@ -71,6 +73,11 @@ IPC_MESSAGE_ROUTED3(MediaStreamMsg_DeviceOpened,
 IPC_MESSAGE_ROUTED1(MediaStreamMsg_DeviceOpenFailed,
                     int /* request id */)
 
+// Response to enumerate devices request.
+IPC_MESSAGE_CONTROL2(MediaStreamMsg_GetSourcesACK,
+                     int /* request id */,
+                     content::StreamDeviceInfoArray /* device_list */)
+
 // Messages sent from the renderer to the browser.
 
 // Request a new media stream.
@@ -91,6 +98,8 @@ IPC_MESSAGE_CONTROL2(MediaStreamHostMsg_StopGeneratedStream,
                      std::string /* label */)
 
 // Request to enumerate devices.
+// Used by Pepper.
+// TODO(vrk,wjia): Move this to pepper code.
 IPC_MESSAGE_CONTROL4(MediaStreamHostMsg_EnumerateDevices,
                      int /* render view id */,
                      int /* request id */,
@@ -104,3 +113,8 @@ IPC_MESSAGE_CONTROL5(MediaStreamHostMsg_OpenDevice,
                      std::string /* device_id */,
                      content::MediaStreamType /* type */,
                      GURL /* security origin */)
+
+// Request to enumerate devices.
+IPC_MESSAGE_CONTROL2(MediaStreamHostMsg_GetSources,
+                     int /* request id */,
+                     GURL /* origin */)

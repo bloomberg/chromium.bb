@@ -464,6 +464,13 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kEnableSCTPDataChannels)
   },
+  {
+    "enable-device-enumeration",
+    IDS_FLAGS_ENABLE_DEVICE_ENUMERATION_NAME,
+    IDS_FLAGS_ENABLE_DEVICE_ENUMERATION_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableDeviceEnumeration)
+  },
 #endif
 #if defined(OS_ANDROID)
   {

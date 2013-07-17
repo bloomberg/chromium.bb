@@ -10,6 +10,7 @@ namespace content {
 
 const char kMediaStreamSource[] = "chromeMediaSource";
 const char kMediaStreamSourceId[] = "chromeMediaSourceId";
+const char kMediaStreamSourceInfoId[] = "sourceId";
 const char kMediaStreamSourceTab[] = "tab";
 const char kMediaStreamSourceScreen[] = "screen";
 

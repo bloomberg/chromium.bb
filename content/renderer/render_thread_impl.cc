@@ -1207,8 +1207,10 @@ WebKit::WebMediaStreamCenter* RenderThreadImpl::CreateMediaStreamCenter(
     media_stream_center_ = GetContentClient()->renderer()
         ->OverrideCreateWebMediaStreamCenter(client);
     if (!media_stream_center_) {
-      media_stream_center_ = new MediaStreamCenter(
-          client, GetMediaStreamDependencyFactory());
+      scoped_ptr<MediaStreamCenter> media_stream_center(
+          new MediaStreamCenter(client, GetMediaStreamDependencyFactory()));
+      AddObserver(media_stream_center.get());
+      media_stream_center_ = media_stream_center.release();
     }
   }
 #endif

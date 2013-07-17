@@ -82,16 +82,19 @@ MATCHER_P(SameRequest, expected, "") {
   return
     expected.render_process_id == arg.render_process_id &&
     expected.render_view_id == arg.render_view_id &&
+    expected.tab_capture_device_id == arg.tab_capture_device_id &&
     expected.security_origin == arg.security_origin &&
     expected.request_type == arg.request_type &&
-    expected.requested_device_id == arg.requested_device_id &&
+    expected.requested_audio_device_id == arg.requested_audio_device_id &&
+    expected.requested_video_device_id == arg.requested_video_device_id &&
     expected.audio_type == arg.audio_type &&
     expected.video_type == arg.video_type;
 }
 
 TEST_F(MediaStreamUIProxyTest, Deny) {
-  MediaStreamRequest request(0, 0, 0, GURL("http://origin/"),
+  MediaStreamRequest request(0, 0, 0, std::string(), GURL("http://origin/"),
                              MEDIA_GENERATE_STREAM, std::string(),
+                             std::string(),
                              MEDIA_DEVICE_AUDIO_CAPTURE,
                              MEDIA_DEVICE_VIDEO_CAPTURE);
   proxy_->RequestAccess(
@@ -115,8 +118,9 @@ TEST_F(MediaStreamUIProxyTest, Deny) {
 }
 
 TEST_F(MediaStreamUIProxyTest, AcceptAndStart) {
-  MediaStreamRequest request(0, 0, 0, GURL("http://origin/"),
+  MediaStreamRequest request(0, 0, 0, std::string(), GURL("http://origin/"),
                              MEDIA_GENERATE_STREAM, std::string(),
+                             std::string(),
                              MEDIA_DEVICE_AUDIO_CAPTURE,
                              MEDIA_DEVICE_VIDEO_CAPTURE);
   proxy_->RequestAccess(
@@ -148,8 +152,9 @@ TEST_F(MediaStreamUIProxyTest, AcceptAndStart) {
 
 // Verify that the proxy can be deleted before the request is processed.
 TEST_F(MediaStreamUIProxyTest, DeleteBeforeAccepted) {
-  MediaStreamRequest request(0, 0, 0, GURL("http://origin/"),
+  MediaStreamRequest request(0, 0, 0, std::string(), GURL("http://origin/"),
                              MEDIA_GENERATE_STREAM, std::string(),
+                             std::string(),
                              MEDIA_DEVICE_AUDIO_CAPTURE,
                              MEDIA_DEVICE_VIDEO_CAPTURE);
   proxy_->RequestAccess(
@@ -169,8 +174,9 @@ TEST_F(MediaStreamUIProxyTest, DeleteBeforeAccepted) {
 }
 
 TEST_F(MediaStreamUIProxyTest, StopFromUI) {
-  MediaStreamRequest request(0, 0, 0, GURL("http://origin/"),
+  MediaStreamRequest request(0, 0, 0, std::string(), GURL("http://origin/"),
                              MEDIA_GENERATE_STREAM, std::string(),
+                             std::string(),
                              MEDIA_DEVICE_AUDIO_CAPTURE,
                              MEDIA_DEVICE_VIDEO_CAPTURE);
   proxy_->RequestAccess(

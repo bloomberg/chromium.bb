@@ -79,8 +79,9 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver,
       const content::MediaResponseCallback& callback,
       const extensions::Extension* extension);
 
-  // Helper to get the default devices which can be used by the media request,
-  // if the return list is empty, it means there is no available device on the
+  // Helper to get the default devices which can be used by the media request.
+  // Uses the first available devices if the default devices are not available.
+  // If the return list is empty, it means there is no available device on the
   // OS.
   // Called on the UI thread.
   void GetDefaultDevicesForProfile(Profile* profile,
@@ -88,14 +89,17 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver,
                                    bool video,
                                    content::MediaStreamDevices* devices);
 
-  // Helper for picking the device that was requested for an OpenDevice request.
-  // If the device requested is not available it will revert to using the first
-  // available one instead or will return an empty list if no devices of the
-  // requested kind are present.
-  void GetRequestedDevice(const std::string& requested_device_id,
-                          bool audio,
-                          bool video,
-                          content::MediaStreamDevices* devices);
+  // Helpers for picking particular requested devices, identified by raw id.
+  // If the device requested is not available it will return NULL.
+  const content::MediaStreamDevice*
+  GetRequestedAudioDevice(const std::string& requested_audio_device_id);
+  const content::MediaStreamDevice*
+  GetRequestedVideoDevice(const std::string& requested_video_device_id);
+
+  // Returns the first available audio or video device, or NULL if no devices
+  // are available.
+  const content::MediaStreamDevice* GetFirstAvailableAudioDevice();
+  const content::MediaStreamDevice* GetFirstAvailableVideoDevice();
 
   // Unittests that do not require actual device enumeration should call this
   // API on the singleton. It is safe to call this multiple times on the
