@@ -143,8 +143,9 @@ bool IsInDefaultState(HTMLFormControlElement* formElement)
         const HTMLInputElement* inputElement = toHTMLInputElement(formElement);
         if (inputElement->isCheckbox() || inputElement->isRadioButton())
             return inputElement->checked() == inputElement->hasAttribute(checkedAttr);
-    } else if (formElement->hasTagName(HTMLNames::selectTag))
-        return IsSelectInDefaultState(static_cast<HTMLSelectElement*>(formElement));
+    } else if (formElement->hasTagName(HTMLNames::selectTag)) {
+        return IsSelectInDefaultState(toHTMLSelectElement(formElement));
+    }
     return true;
 }
 

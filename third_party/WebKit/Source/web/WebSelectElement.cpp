@@ -74,7 +74,7 @@ WebSelectElement& WebSelectElement::operator=(const PassRefPtr<HTMLSelectElement
 
 WebSelectElement::operator PassRefPtr<HTMLSelectElement>() const
 {
-    return static_cast<HTMLSelectElement*>(m_private.get());
+    return toHTMLSelectElement(m_private.get());
 }
 
 } // namespace WebKit
