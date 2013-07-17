@@ -3208,7 +3208,7 @@ sub GenerateImplementationIndexedPropertyAccessors
         $code .= $indexedSetterFunction ? ", ${implClassName}V8Internal::indexedPropertySetterCallback" : ", 0";
         $code .= ", 0"; # IndexedPropertyQuery -- not being used at the moment.
         $code .= $indexedDeleterFunction ? ", ${implClassName}V8Internal::indexedPropertyDeleterCallback" : ", 0";
-        $code .= ", indexedPropertyEnumerator<${implClassName}>" if $indexedEnumeratorFunction;
+        $code .= $indexedEnumeratorFunction ? ", indexedPropertyEnumerator<${implClassName}>" : ", 0";
         $code .= ");\n";
     }
 
