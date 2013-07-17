@@ -58,7 +58,7 @@ namespace WebCore {
 {%- endif %}
 
     case CSSValueInvalid:
-        length = primitiveValue->convertToLength<FixedIntegerConversion | CalculatedConversion | PercentConversion | ViewportPercentageConversion>(state.style(), state.rootElementStyle(), state.style()->effectiveZoom());
+        length = primitiveValue->convertToLength<FixedIntegerConversion | PercentConversion>(state.style(), state.rootElementStyle(), state.style()->effectiveZoom());
         length.setQuirk(primitiveValue->isQuirkValue());
         break;
     default:

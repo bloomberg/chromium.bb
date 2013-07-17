@@ -113,7 +113,7 @@ PassRefPtr<CSSValue> valueForBasicShape(const BasicShape* basicShape)
 
 static Length convertToLength(const StyleResolverState& state, CSSPrimitiveValue* value)
 {
-    return value->convertToLength<FixedIntegerConversion | FixedFloatConversion | PercentConversion | ViewportPercentageConversion>(state.style(), state.rootElementStyle(), state.style()->effectiveZoom());
+    return value->convertToLength<FixedIntegerConversion | FixedFloatConversion | PercentConversion>(state.style(), state.rootElementStyle(), state.style()->effectiveZoom());
 }
 
 PassRefPtr<BasicShape> basicShapeForValue(const StyleResolverState& state, const CSSBasicShape* basicShapeValue)

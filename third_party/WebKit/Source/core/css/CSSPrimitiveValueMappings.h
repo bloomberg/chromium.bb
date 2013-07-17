@@ -4267,8 +4267,6 @@ enum LengthConversion {
     AutoConversion = 1 << 2,
     PercentConversion = 1 << 3,
     FractionConversion = 1 << 4,
-    CalculatedConversion = 1 << 5,
-    ViewportPercentageConversion = 1 << 6
 };
 
 template<int supported> Length CSSPrimitiveValue::convertToLength(RenderStyle* style, RenderStyle* rootStyle, double multiplier, bool computingFontSize)
@@ -4286,9 +4284,9 @@ template<int supported> Length CSSPrimitiveValue::convertToLength(RenderStyle* s
         return Length(getDoubleValue() * 100.0, Percent);
     if ((supported & AutoConversion) && getValueID() == CSSValueAuto)
         return Length(Auto);
-    if ((supported & CalculatedConversion) && isCalculated())
+    if ((supported & (FixedIntegerConversion | FixedFloatConversion)) && (supported & PercentConversion) && isCalculated())
         return Length(cssCalcValue()->toCalcValue(style, rootStyle, multiplier));
-    if ((supported & ViewportPercentageConversion) && isViewportPercentageLength())
+    if ((supported & (FixedIntegerConversion | FixedFloatConversion)) && isViewportPercentageLength())
         return viewportPercentageLength();
     return Length(Undefined);
 }

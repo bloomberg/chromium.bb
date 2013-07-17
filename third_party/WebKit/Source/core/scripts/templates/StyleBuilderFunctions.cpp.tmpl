@@ -247,8 +247,8 @@ namespace WebCore {
     if (!pair || !pair->first() || !pair->second())
         return;
 
-    Length radiusWidth = pair->first()->convertToLength<FixedIntegerConversion | CalculatedConversion | PercentConversion | ViewportPercentageConversion>(state.style(), state.rootElementStyle(), state.style()->effectiveZoom());
-    Length radiusHeight = pair->second()->convertToLength<FixedIntegerConversion | CalculatedConversion | PercentConversion | ViewportPercentageConversion>(state.style(), state.rootElementStyle(), state.style()->effectiveZoom());
+    Length radiusWidth = pair->first()->convertToLength<FixedIntegerConversion | PercentConversion>(state.style(), state.rootElementStyle(), state.style()->effectiveZoom());
+    Length radiusHeight = pair->second()->convertToLength<FixedIntegerConversion | PercentConversion>(state.style(), state.rootElementStyle(), state.style()->effectiveZoom());
     int width = radiusWidth.value();
     int height = radiusHeight.value();
     if (width < 0 || height < 0)
