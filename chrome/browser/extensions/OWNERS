@@ -10,7 +10,6 @@
 # extensions/OWNERS
 asargent@chromium.org
 benwells@chromium.org
-erikkay@chromium.org
 finnur@chromium.org
 jyasskin@chromium.org
 kalman@chromium.org
@@ -19,5 +18,7 @@ miket@chromium.org
 mpcomplete@chromium.org
 yoz@chromium.org
 
-per-file web_view_browsertest.cc=fsamuel@chromium.org
-per-file web_view_interactive_browsertest.cc=fsamuel@chromium.org
+per-file web_view_*.cc=fsamuel@chromium.org
+per-file web_view_*.cc=lazyboy@chromium.org
+per-file ad_view_*.cc=fsamuel@chromium.org
+per-file ad_view_*.cc=lazyboy@chromium.org

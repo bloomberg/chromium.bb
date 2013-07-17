@@ -1,7 +1,6 @@
 # This should match chrome/browser/extensions/OWNERS
 asargent@chromium.org
 benwells@chromium.org
-erikkay@chromium.org
 finnur@chromium.org
 jyasskin@chromium.org
 kalman@chromium.org
@@ -13,7 +12,7 @@ yoz@chromium.org
 per-file searchbox_api.js=dcblack@chromium.org
 per-file searchbox_api.js=jered@chromium.org
 per-file searchbox_api.js=samarth@chromium.org
-per-file web_view.js=fsamuel@chromium.org
-per-file web_view.js=lazyboy@chromium.org
-per-file web_view_experimental.js=fsamuel@chromium.org
-per-file web_view_experimental.js=lazyboy@chromium.org
+per-file web_view*.js=fsamuel@chromium.org
+per-file web_view*.js=lazyboy@chromium.org
+per-file ad_view*.js=fsamuel@chromium.org
+per-file ad_view*.js=lazyboy@chromium.org
