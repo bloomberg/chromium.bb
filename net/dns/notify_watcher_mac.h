@@ -6,7 +6,7 @@
 #define NET_DNS_NOTIFY_WATCHER_MAC_H_
 
 #include "base/callback.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 
 namespace net {
 

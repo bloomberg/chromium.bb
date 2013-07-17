@@ -6,7 +6,7 @@
 #define NET_COOKIES_COOKIE_STORE_UNITTEST_H_
 
 #include "base/bind.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/threading/thread.h"
 #include "net/cookies/cookie_monster.h"

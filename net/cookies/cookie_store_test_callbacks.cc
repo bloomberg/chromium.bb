@@ -4,7 +4,7 @@
 
 #include "net/cookies/cookie_store_test_callbacks.h"
 
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/threading/thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

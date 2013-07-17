@@ -27,7 +27,7 @@
 #ifndef NET_BASE_FILE_STREAM_CONTEXT_H_
 #define NET_BASE_FILE_STREAM_CONTEXT_H_
 
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/platform_file.h"
 #include "base/task_runner.h"
 #include "net/base/completion_callback.h"

@@ -5,7 +5,7 @@
 #include <queue>
 
 #include "base/memory/ref_counted.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "net/base/rand_callback.h"
 #include "net/base/test_completion_callback.h"
 #include "net/dns/mdns_client_impl.h"

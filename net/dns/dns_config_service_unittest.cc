@@ -8,7 +8,7 @@
 #include "base/bind.h"
 #include "base/cancelable_callback.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/test/test_timeouts.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

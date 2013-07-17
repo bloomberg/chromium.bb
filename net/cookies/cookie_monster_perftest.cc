@@ -5,7 +5,7 @@
 #include <algorithm>
 
 #include "base/bind.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/perftimer.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"

@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/threading/worker_pool.h"
 #include "net/base/completion_callback.h"
 #include "net/base/test_completion_callback.h"

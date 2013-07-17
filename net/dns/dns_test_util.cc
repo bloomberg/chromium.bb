@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/sys_byteorder.h"
 #include "net/base/big_endian.h"
 #include "net/base/dns_util.h"

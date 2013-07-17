@@ -8,7 +8,7 @@
 #include "base/bind.h"
 #include "base/i18n/time_formatting.h"
 #include "base/location.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 

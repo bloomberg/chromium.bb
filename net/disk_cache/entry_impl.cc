@@ -5,7 +5,7 @@
 #include "net/disk_cache/entry_impl.h"
 
 #include "base/hash.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
 #include "net/base/io_buffer.h"

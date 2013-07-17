@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/files/file_path.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/timer/timer.h"
 #include "base/tuple.h"
 #include "build/build_config.h"

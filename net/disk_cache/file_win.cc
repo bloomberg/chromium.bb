@@ -6,7 +6,7 @@
 
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "net/base/net_errors.h"
 #include "net/disk_cache/disk_cache.h"
 

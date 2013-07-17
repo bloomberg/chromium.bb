@@ -5,7 +5,7 @@
 #include "net/cookies/cookie_monster_store_test.h"
 
 #include "base/bind.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "net/cookies/cookie_constants.h"

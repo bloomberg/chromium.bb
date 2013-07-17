@@ -8,7 +8,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "net/android/network_change_notifier_android.h"
 #include "net/android/network_change_notifier_delegate_android.h"
 #include "net/base/network_change_notifier.h"
