@@ -40,6 +40,7 @@
 #include "core/platform/graphics/SourceBufferPrivate.h"
 #include "modules/mediasource/MediaSourceRegistry.h"
 #include "wtf/Uint8Array.h"
+#include "wtf/text/CString.h"
 
 namespace WebCore {
 
