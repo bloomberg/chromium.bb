@@ -44,7 +44,6 @@
 #include "chrome/common/crash_keys.h"
 #include "chrome/common/dump_without_crashing.h"
 #include "chrome/common/env_vars.h"
-#include "chrome/common/logging_chrome.h"
 #include "components/breakpad/breakpad_client.h"
 #include "content/public/common/content_descriptors.h"
 
