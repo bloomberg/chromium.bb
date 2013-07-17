@@ -698,6 +698,7 @@
     'browser/plugin_service_impl.cc',
     'browser/plugin_service_impl.h',
     'browser/power_save_blocker_android.cc',
+    'browser/power_save_blocker_android.h',
     'browser/power_save_blocker_chromeos.cc',
     'browser/power_save_blocker_impl.cc',
     'browser/power_save_blocker_impl.h',

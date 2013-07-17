@@ -63,7 +63,6 @@ namespace content {
 
 class ChildProcessSecurityPolicyImpl;
 class PageState;
-class PowerSaveBlocker;
 class RenderFrameHostImpl;
 class RenderViewHostObserver;
 class RenderWidgetHostDelegate;
@@ -568,10 +567,6 @@ class CONTENT_EXPORT RenderViewHostImpl
       const std::vector<AccessibilityHostMsg_NotificationParams>& params);
   void OnScriptEvalResponse(int id, const base::ListValue& result);
   void OnDidZoomURL(double zoom_level, bool remember, const GURL& url);
-  void OnMediaNotification(int64 player_cookie,
-                           bool has_video,
-                           bool has_audio,
-                           bool is_playing);
   void OnRequestDesktopNotificationPermission(const GURL& origin,
                                               int callback_id);
   void OnShowDesktopNotification(
@@ -594,8 +589,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   // Sets whether this RenderViewHost is swapped out in favor of another,
   // and clears any waiting state that is no longer relevant.
   void SetSwappedOut(bool is_swapped_out);
-
-  void ClearPowerSaveBlockers();
 
   bool CanAccessFilesOfPageState(const PageState& state) const;
 
@@ -700,11 +693,6 @@ class CONTENT_EXPORT RenderViewHostImpl
 
   // The termination status of the last render view that terminated.
   base::TerminationStatus render_view_termination_status_;
-
-  // Holds PowerSaveBlockers for the media players in use. Key is the
-  // player_cookie passed to OnMediaNotification, value is the PowerSaveBlocker.
-  typedef std::map<int64, PowerSaveBlocker*> PowerSaveBlockerMap;
-  PowerSaveBlockerMap power_save_blockers_;
 
   // A list of observers that filter messages.  Weak references.
   ObserverList<RenderViewHostObserver> observers_;
