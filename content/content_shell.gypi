@@ -46,7 +46,7 @@
         '../net/net.gyp:net',
         '../net/net.gyp:net_resources',
         '../skia/skia.gyp:skia',
-        '../third_party/WebKit/public/all.gyp:blink_testing',
+        '../third_party/WebKit/public/blink_test_runner.gyp:blink_test_runner',
         '../ui/gl/gl.gyp:gl',
         '../ui/ui.gyp:ui',
         '../url/url.gyp:url_lib',
