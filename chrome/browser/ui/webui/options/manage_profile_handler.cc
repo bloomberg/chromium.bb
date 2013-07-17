@@ -142,8 +142,8 @@ void ManageProfileHandler::InitializePage() {
 }
 
 void ManageProfileHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback("setProfileNameAndIcon",
-      base::Bind(&ManageProfileHandler::SetProfileNameAndIcon,
+  web_ui()->RegisterMessageCallback("setProfileIconAndName",
+      base::Bind(&ManageProfileHandler::SetProfileIconAndName,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("requestDefaultProfileIcons",
       base::Bind(&ManageProfileHandler::RequestDefaultProfileIcons,
@@ -248,7 +248,7 @@ void ManageProfileHandler::SendProfileNames() {
                                    profile_name_dict);
 }
 
-void ManageProfileHandler::SetProfileNameAndIcon(const ListValue* args) {
+void ManageProfileHandler::SetProfileIconAndName(const ListValue* args) {
   DCHECK(args);
 
   base::FilePath profile_file_path;
@@ -263,47 +263,16 @@ void ManageProfileHandler::SetProfileNameAndIcon(const ListValue* args) {
 
   Profile* profile =
       g_browser_process->profile_manager()->GetProfile(profile_file_path);
-  if (!profile || ManagedUserService::ProfileIsManaged(profile))
+  if (!profile)
     return;
-
-  string16 new_profile_name;
-  if (!args->GetString(1, &new_profile_name))
-    return;
-  if (new_profile_name == cache.GetGAIANameOfProfileAtIndex(profile_index)) {
-    // Set the profile to use the GAIA name as the profile name. Note, this
-    // is a little weird if the user typed their GAIA name manually but
-    // it's not a big deal.
-    cache.SetIsUsingGAIANameOfProfileAtIndex(profile_index, true);
-    // Using the GAIA name as the profile name can invalidate the profile index.
-    profile_index = cache.GetIndexOfProfileWithPath(profile_file_path);
-    if (profile_index == std::string::npos)
-      return;
-  } else {
-    PrefService* pref_service = profile->GetPrefs();
-    // Updating the profile preference will cause the cache to be updated for
-    // this preference.
-    pref_service->SetString(prefs::kProfileName, UTF16ToUTF8(new_profile_name));
-
-    // Changing the profile name can invalidate the profile index.
-    profile_index = cache.GetIndexOfProfileWithPath(profile_file_path);
-    if (profile_index == std::string::npos)
-      return;
-
-    cache.SetIsUsingGAIANameOfProfileAtIndex(profile_index, false);
-    // Unsetting the GAIA name as the profile name can invalidate the profile
-    // index.
-    profile_index = cache.GetIndexOfProfileWithPath(profile_file_path);
-    if (profile_index == std::string::npos)
-      return;
-  }
 
   std::string icon_url;
-  if (!args->GetString(2, &icon_url))
+  if (!args->GetString(1, &icon_url))
     return;
 
   // Metrics logging variable.
   bool previously_using_gaia_icon =
-      cache.IsUsingGAIANameOfProfileAtIndex(profile_index);
+      cache.IsUsingGAIAPictureOfProfileAtIndex(profile_index);
 
   size_t new_icon_index;
   if (icon_url == gaia_picture_url_) {
@@ -323,6 +292,32 @@ void ManageProfileHandler::SetProfileNameAndIcon(const ListValue* args) {
     cache.SetIsUsingGAIAPictureOfProfileAtIndex(profile_index, false);
   }
   ProfileMetrics::LogProfileUpdate(profile_file_path);
+
+  if (ManagedUserService::ProfileIsManaged(profile))
+    return;
+
+  string16 new_profile_name;
+  if (!args->GetString(2, &new_profile_name))
+    return;
+
+  if (new_profile_name == cache.GetGAIANameOfProfileAtIndex(profile_index)) {
+    // Set the profile to use the GAIA name as the profile name. Note, this
+    // is a little weird if the user typed their GAIA name manually but
+    // it's not a big deal.
+    cache.SetIsUsingGAIANameOfProfileAtIndex(profile_index, true);
+  } else {
+    PrefService* pref_service = profile->GetPrefs();
+    // Updating the profile preference will cause the cache to be updated for
+    // this preference.
+    pref_service->SetString(prefs::kProfileName, UTF16ToUTF8(new_profile_name));
+
+    // Changing the profile name can invalidate the profile index.
+    profile_index = cache.GetIndexOfProfileWithPath(profile_file_path);
+    if (profile_index == std::string::npos)
+      return;
+
+    cache.SetIsUsingGAIANameOfProfileAtIndex(profile_index, false);
+  }
 }
 
 #if defined(ENABLE_SETTINGS_APP)

@@ -62,14 +62,14 @@ class ManageProfileHandler : public OptionsPageUIHandler {
   // This is used to detect duplicate profile names.
   void SendProfileNames();
 
-  // Callback for the "setProfileNameAndIcon" message. Sets the name and icon
+  // Callback for the "setProfileIconAndName" message. Sets the name and icon
   // of a given profile.
   // |args| is of the form: [
   //   /*string*/ profileFilePath,
-  //   /*string*/ newProfileName,
   //   /*string*/ newProfileIconURL
+  //   /*string*/ newProfileName,
   // ]
-  void SetProfileNameAndIcon(const base::ListValue* args);
+  void SetProfileIconAndName(const base::ListValue* args);
 
 #if defined(ENABLE_SETTINGS_APP)
   // Callback for the "switchAppListProfile" message. Asks the

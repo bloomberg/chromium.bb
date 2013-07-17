@@ -292,8 +292,8 @@ cr.define('options', function() {
       var name = $('manage-profile-name').value;
       var iconURL = $('manage-profile-icon-grid').selectedItem;
 
-      chrome.send('setProfileNameAndIcon',
-                  [this.profileInfo_.filePath, name, iconURL]);
+      chrome.send('setProfileIconAndName',
+                  [this.profileInfo_.filePath, iconURL, name]);
     },
 
     /**
