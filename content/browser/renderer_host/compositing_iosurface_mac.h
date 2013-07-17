@@ -45,17 +45,9 @@ class RenderWidgetHostViewMac;
 // RenderWidgetHostViewCocoa for blitting the IOSurface.
 class CompositingIOSurfaceMac {
  public:
-  // Passed to Create() to specify the ordering of the surface relative to the
-  // containing window.
-  enum SurfaceOrder {
-    SURFACE_ORDER_ABOVE_WINDOW = 0,
-    SURFACE_ORDER_BELOW_WINDOW = 1,
-  };
-
   // Returns NULL if IOSurface support is missing or GL APIs fail. Specify in
   // |order| the desired ordering relationship of the surface to the containing
   // window.
-  static CompositingIOSurfaceMac* Create(int window_number);
   static CompositingIOSurfaceMac* Create(
       const scoped_refptr<CompositingIOSurfaceContext>& context);
   ~CompositingIOSurfaceMac();
@@ -78,7 +70,6 @@ class CompositingIOSurfaceMac {
                      float window_scale_factor,
                      RenderWidgetHostViewFrameSubscriber* frame_subscriber,
                      bool using_core_animation);
-  bool DrawIOSurface(RenderWidgetHostViewMac* render_widget_host_view);
 
   // Copy the data of the "live" OpenGL texture referring to this IOSurfaceRef
   // into |out|. The copied region is specified with |src_pixel_subrect| and
@@ -103,13 +94,6 @@ class CompositingIOSurfaceMac {
   // process is no longer referencing it, this will delete the IOSurface.
   void UnrefIOSurface();
 
-  // Call when globalFrameDidChange is received on the NSView.
-  void GlobalFrameDidChange();
-
-  // Disassociate the GL context with the NSView and unref the IOSurface. Do
-  // this to switch to software drawing mode.
-  void ClearDrawable();
-
   bool HasIOSurface() { return !!io_surface_.get(); }
 
   const gfx::Size& pixel_io_surface_size() const {
@@ -120,6 +104,9 @@ class CompositingIOSurfaceMac {
   float scale_factor() const { return scale_factor_; }
 
   bool is_vsync_disabled() const;
+
+  void SetContext(
+      const scoped_refptr<CompositingIOSurfaceContext>& new_context);
 
   const scoped_refptr<CompositingIOSurfaceContext>& context() {
     return context_;

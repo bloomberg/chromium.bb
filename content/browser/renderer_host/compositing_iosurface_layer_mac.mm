@@ -35,26 +35,6 @@
   return self;
 }
 
-- (BOOL)ensureContext {
-  if (context_.get())
-    return YES;
-
-  if (!renderWidgetHostView_)
-    return NO;
-
-  if (renderWidgetHostView_->compositing_iosurface_) {
-    context_ = renderWidgetHostView_->compositing_iosurface_->context();
-    [context_->nsgl_context() clearDrawable];
-  }
-
-  if (!context_.get()) {
-    context_ = content::CompositingIOSurfaceContext::Get(
-        renderWidgetHostView_->window_number());
-  }
-
-  return context_.get() ? YES : NO;
-}
-
 - (void)updateScaleFactor {
   if (!renderWidgetHostView_ ||
       ![self respondsToSelector:(@selector(contentsScale))] ||
@@ -84,9 +64,14 @@
 // The remaining methods implement the CAOpenGLLayer interface.
 
 - (CGLContextObj)copyCGLContextForPixelFormat:(CGLPixelFormatObj)pixelFormat {
-  if ([self ensureContext])
-    return context_->cgl_context();
-  return nil;
+  if (!renderWidgetHostView_)
+    return nil;
+
+  context_ = renderWidgetHostView_->compositing_iosurface_context_;
+  if (!context_)
+    return nil;
+
+  return context_->cgl_context();
 }
 
 - (void)releaseCGLContext:(CGLContextObj)glContext {

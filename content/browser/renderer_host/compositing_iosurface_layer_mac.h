@@ -27,11 +27,6 @@ class RenderWidgetHostViewMac;
 
 - (id)initWithRenderWidgetHostViewMac:(content::RenderWidgetHostViewMac*)r;
 
-// The OpenGL context may be destroyed periodically (e.g, when moving across
-// displays). This will re-allocate the context if need be, and returns whether
-// or not the context now exists.
-- (BOOL)ensureContext;
-
 // Update the scale factor of the layer to match the scale factor of the
 // IOSurface.
 - (void)updateScaleFactor;

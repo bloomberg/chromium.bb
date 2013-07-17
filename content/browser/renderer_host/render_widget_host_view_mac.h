@@ -27,6 +27,7 @@
 
 namespace content {
 class CompositingIOSurfaceMac;
+class CompositingIOSurfaceContext;
 class RenderWidgetHostViewMac;
 class RenderWidgetHostViewMacEditCommandHelper;
 }
@@ -331,13 +332,14 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
   const std::string& selected_text() const { return selected_text_; }
 
   // Update the IOSurface to be drawn and call setNeedsDisplay on
-  // |cocoa_view_|. Returns false if an unexpected error cause creation of the
-  // IOSurface or its texture to fail, or if there was an error on the GL
-  // context.
-  bool CompositorSwapBuffers(uint64 surface_handle,
+  // |cocoa_view_|.
+  void CompositorSwapBuffers(uint64 surface_handle,
                              const gfx::Size& size,
                              float scale_factor,
                              const ui::LatencyInfo& latency_info);
+
+  // Draw the IOSurface by making its context current to this view.
+  bool DrawIOSurfaceWithoutCoreAnimation();
 
   // Called when a GPU error is detected. Deletes all compositing state.
   void GotAcceleratedCompositingError();
@@ -403,8 +405,12 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
   bool can_compose_inline_;
 
   base::scoped_nsobject<CALayer> software_layer_;
+
+  // Accelerated compositing structures. These may be dynamically created and
+  // destroyed together in Create/DestroyCompositedIOSurfaceAndLayer.
   base::scoped_nsobject<CompositingIOSurfaceLayer> compositing_iosurface_layer_;
   scoped_ptr<CompositingIOSurfaceMac> compositing_iosurface_;
+  scoped_refptr<CompositingIOSurfaceContext> compositing_iosurface_context_;
 
   // Whether to allow overlapping views.
   bool allow_overlapping_views_;
@@ -457,6 +463,9 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
 
   bool CreateCompositedIOSurfaceAndLayer();
   void DestroyCompositedIOSurfaceAndLayer();
+
+  // Unbind the GL context (if any) that is bound to |cocoa_view_|.
+  void ClearBoundContextDrawable();
 
   // Called when a GPU SwapBuffers is received.
   void GotAcceleratedFrame();
