@@ -32,6 +32,7 @@
 #include "core/dom/SecurityContext.h"
 #include "core/page/ConsoleTypes.h"
 #include "core/page/DOMTimer.h"
+#include "core/platform/LifecycleContext.h"
 #include "core/platform/Supplementable.h"
 #include "weborigin/KURL.h"
 #include "wtf/HashSet.h"
@@ -51,7 +52,7 @@ class PublicURLManager;
 class ScriptCallStack;
 class ScriptState;
 
-class ScriptExecutionContext : public SecurityContext, public Supplementable<ScriptExecutionContext> {
+class ScriptExecutionContext : public LifecycleContext, public SecurityContext, public Supplementable<ScriptExecutionContext> {
 public:
     ScriptExecutionContext();
     virtual ~ScriptExecutionContext();
@@ -59,7 +60,6 @@ public:
     virtual bool isDocument() const { return false; }
     virtual bool isWorkerGlobalScope() const { return false; }
 
-    virtual bool isContextThread() const { return true; }
     virtual bool isJSExecutionForbidden() const = 0;
 
     const KURL& url() const { return virtualURL(); }
@@ -94,10 +94,6 @@ public:
 
     // Called after the construction of an ActiveDOMObject to synchronize suspend state.
     void suspendActiveDOMObjectIfNeeded(ActiveDOMObject*);
-
-    // Called from the constructor and destructors of ContextLifecycleObserver
-    void wasObservedBy(ContextLifecycleObserver*, ContextLifecycleObserver::Type as);
-    void wasUnobservedBy(ContextLifecycleObserver*, ContextLifecycleObserver::Type as);
 
     // MessagePort is conceptually a kind of ActiveDOMObject, but it needs to be tracked separately for message dispatch.
     void processMessagePortMessagesSoon();
@@ -169,7 +165,7 @@ private:
 
     virtual void refScriptExecutionContext() = 0;
     virtual void derefScriptExecutionContext() = 0;
-    virtual PassOwnPtr<ContextLifecycleNotifier> createLifecycleNotifier();
+    virtual PassOwnPtr<LifecycleNotifier> createLifecycleNotifier() OVERRIDE;
 
     // Implementation details for DOMTimer. No other classes should call these functions.
     int installNewTimeout(PassOwnPtr<ScheduledAction>, int timeout, bool singleShot);

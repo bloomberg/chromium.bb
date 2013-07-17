@@ -28,6 +28,7 @@
 #define ContextLifecycleNotifier_h
 
 #include "core/dom/ActiveDOMObject.h"
+#include "core/platform/LifecycleNotifier.h"
 #include "wtf/HashSet.h"
 #include "wtf/PassOwnPtr.h"
 
@@ -37,19 +38,18 @@ class ActiveDOMObject;
 class ContextLifecycleObserver;
 class ScriptExecutionContext;
 
-class ContextLifecycleNotifier {
+class ContextLifecycleNotifier : public LifecycleNotifier {
 public:
     static PassOwnPtr<ContextLifecycleNotifier> create(ScriptExecutionContext*);
 
     virtual ~ContextLifecycleNotifier();
 
-    typedef HashSet<ContextLifecycleObserver*> ContextObserverSet;
     typedef HashSet<ActiveDOMObject*> ActiveDOMObjectSet;
 
     const ActiveDOMObjectSet& activeDOMObjects() const { return m_activeDOMObjects; }
 
-    virtual void addObserver(ContextLifecycleObserver*, ContextLifecycleObserver::Type as);
-    virtual void removeObserver(ContextLifecycleObserver*, ContextLifecycleObserver::Type as);
+    virtual void addObserver(LifecycleObserver*, LifecycleObserver::Type) OVERRIDE;
+    virtual void removeObserver(LifecycleObserver*, LifecycleObserver::Type) OVERRIDE;
 
     void notifyResumingActiveDOMObjects();
     void notifySuspendingActiveDOMObjects(ActiveDOMObject::ReasonForSuspension);
@@ -62,20 +62,8 @@ public:
 protected:
     explicit ContextLifecycleNotifier(ScriptExecutionContext*);
 
-    enum IterationType {
-        IteratingNone,
-        IteratingOverActiveDOMObjects,
-        IteratingOverContextObservers,
-        IteratingOverDocumentObservers
-    };
-
-    IterationType m_iterating;
-
 private:
-    ScriptExecutionContext* m_context;
-    ContextObserverSet m_contextObservers;
     ActiveDOMObjectSet m_activeDOMObjects;
-    bool m_inDestructor;
 };
 
 inline PassOwnPtr<ContextLifecycleNotifier> ContextLifecycleNotifier::create(ScriptExecutionContext* context)
@@ -86,4 +74,3 @@ inline PassOwnPtr<ContextLifecycleNotifier> ContextLifecycleNotifier::create(Scr
 } // namespace WebCore
 
 #endif // ContextLifecycleNotifier_h
-

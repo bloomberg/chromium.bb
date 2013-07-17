@@ -25,6 +25,7 @@
 #include "core/page/LayoutMilestones.h"
 #include "core/page/PageVisibilityState.h"
 #include "core/page/UseCounter.h"
+#include "core/platform/LifecycleContext.h"
 #include "core/platform/Supplementable.h"
 #include "core/platform/graphics/LayoutRect.h"
 #include "core/platform/graphics/Region.h"
@@ -63,6 +64,7 @@ class InspectorController;
 class Node;
 class PageConsole;
 class PageGroup;
+class PageLifecycleNotifier;
 class PlatformMouseEvent;
 class PluginData;
 class PointerLockController;
@@ -92,7 +94,7 @@ struct ArenaSize {
     size_t allocated;
 };
 
-class Page : public Supplementable<Page> {
+class Page : public Supplementable<Page>, public LifecycleContext {
     WTF_MAKE_NONCOPYABLE(Page);
     friend class Settings;
 public:
@@ -262,6 +264,9 @@ public:
     void removeMultisamplingChangedObserver(MultisamplingChangedObserver*);
     void multisamplingChanged();
 
+protected:
+    PageLifecycleNotifier* lifecycleNotifier();
+
 private:
     void initGroup();
 
@@ -272,6 +277,8 @@ private:
 #endif
 
     void setTimerAlignmentInterval(double);
+
+    virtual PassOwnPtr<LifecycleNotifier> createLifecycleNotifier() OVERRIDE;
 
     OwnPtr<AutoscrollController> m_autoscrollController;
     OwnPtr<Chrome> m_chrome;

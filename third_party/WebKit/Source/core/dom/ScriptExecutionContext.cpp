@@ -185,16 +185,6 @@ void ScriptExecutionContext::suspendActiveDOMObjectIfNeeded(ActiveDOMObject* obj
         object->suspend(m_reasonForSuspendingActiveDOMObjects);
 }
 
-void ScriptExecutionContext::wasObservedBy(ContextLifecycleObserver* observer, ContextLifecycleObserver::Type as)
-{
-    lifecycleNotifier()->addObserver(observer, as);
-}
-
-void ScriptExecutionContext::wasUnobservedBy(ContextLifecycleObserver* observer, ContextLifecycleObserver::Type as)
-{
-    lifecycleNotifier()->removeObserver(observer, as);
-}
-
 void ScriptExecutionContext::closeMessagePorts() {
     HashSet<MessagePort*>::iterator messagePortsEnd = m_messagePorts.end();
     for (HashSet<MessagePort*>::iterator iter = m_messagePorts.begin(); iter != messagePortsEnd; ++iter) {
@@ -313,12 +303,10 @@ double ScriptExecutionContext::timerAlignmentInterval() const
 
 ContextLifecycleNotifier* ScriptExecutionContext::lifecycleNotifier()
 {
-    if (!m_lifecycleNotifier)
-        m_lifecycleNotifier = const_cast<ScriptExecutionContext*>(this)->createLifecycleNotifier();
-    return m_lifecycleNotifier.get();
+    return static_cast<ContextLifecycleNotifier*>(LifecycleContext::lifecycleNotifier());
 }
 
-PassOwnPtr<ContextLifecycleNotifier> ScriptExecutionContext::createLifecycleNotifier()
+PassOwnPtr<LifecycleNotifier> ScriptExecutionContext::createLifecycleNotifier()
 {
     return ContextLifecycleNotifier::create(this);
 }

@@ -20,34 +20,38 @@
 #ifndef NavigatorVibration_h
 #define NavigatorVibration_h
 
-#include "core/page/Navigator.h"
+#include "core/page/Page.h"
+#include "core/page/PageLifecycleObserver.h"
 #include "core/platform/Timer.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {
 
-class NavigatorVibration : public Supplement<Navigator> {
+class Navigator;
+
+class NavigatorVibration
+    : public Supplement<Page>
+    , public PageLifecycleObserver {
 public:
     typedef Vector<unsigned> VibrationPattern;
 
-    ~NavigatorVibration();
+    virtual ~NavigatorVibration();
 
     bool vibrate(const VibrationPattern&);
     void cancelVibration();
-    // FIXME : Hook suspendVibration() and resumeVibration() into the page
-    // visibility feature, when the document.hidden attribute is changed.
-    void suspendVibration();
-    void resumeVibration();
     void timerStartFired(Timer<NavigatorVibration>*);
     void timerStopFired(Timer<NavigatorVibration>*);
 
+    // Inherited from PageLifecycleObserver
+    virtual void pageVisibilityChanged() OVERRIDE;
+
     static bool vibrate(Navigator*, unsigned time);
     static bool vibrate(Navigator*, const VibrationPattern&);
-    static NavigatorVibration* from(Navigator*);
+    static NavigatorVibration* from(Page*);
 
 private:
-    NavigatorVibration();
+    explicit NavigatorVibration(Page*);
     static const char* supplementName();
 
     Timer<NavigatorVibration> m_timerStart;

@@ -44,6 +44,7 @@
 #include "core/page/FrameView.h"
 #include "core/page/PageConsole.h"
 #include "core/page/PageGroup.h"
+#include "core/page/PageLifecycleNotifier.h"
 #include "core/page/PointerLockController.h"
 #include "core/page/Settings.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
@@ -625,6 +626,9 @@ void Page::setVisibilityState(PageVisibilityState visibilityState, bool isInitia
     else
         setTimerAlignmentInterval(DOMTimer::visiblePageAlignmentInterval());
 
+    if (!isInitialState)
+        lifecycleNotifier()->notifyPageVisibilityChanged();
+
     if (!isInitialState && m_mainFrame)
         m_mainFrame->dispatchVisibilityStateChangeEvent();
 }
@@ -781,6 +785,16 @@ void Page::multisamplingChanged()
     HashSet<MultisamplingChangedObserver*>::iterator stop = m_multisamplingChangedObservers.end();
     for (HashSet<MultisamplingChangedObserver*>::iterator it = m_multisamplingChangedObservers.begin(); it != stop; ++it)
         (*it)->multisamplingChanged(m_settings->openGLMultisamplingEnabled());
+}
+
+PageLifecycleNotifier* Page::lifecycleNotifier()
+{
+    return static_cast<PageLifecycleNotifier*>(LifecycleContext::lifecycleNotifier());
+}
+
+PassOwnPtr<LifecycleNotifier> Page::createLifecycleNotifier()
+{
+    return PageLifecycleNotifier::create(this);
 }
 
 Page::PageClients::PageClients()

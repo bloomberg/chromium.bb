@@ -27,25 +27,23 @@
 #ifndef ContextLifecycleObserver_h
 #define ContextLifecycleObserver_h
 
+#include "core/platform/LifecycleObserver.h"
+
 namespace WebCore {
 
 class ScriptExecutionContext;
 
-class ContextLifecycleObserver {
+class ContextLifecycleObserver : public LifecycleObserver {
 public:
-    enum Type {
-        ActiveDOMObjectType,
-        DocumentLifecycleObserverType,
-        GenericType
-    };
-
     explicit ContextLifecycleObserver(ScriptExecutionContext*, Type = GenericType);
-    virtual void contextDestroyed();
+
+    virtual void contextDestroyed() OVERRIDE;
 
     ScriptExecutionContext* scriptExecutionContext() const { return m_scriptExecutionContext; }
 
 protected:
     virtual ~ContextLifecycleObserver();
+
     void observeContext(ScriptExecutionContext*, Type);
 
     ScriptExecutionContext* m_scriptExecutionContext;

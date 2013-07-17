@@ -46,24 +46,24 @@ DocumentLifecycleNotifier::DocumentLifecycleNotifier(ScriptExecutionContext* con
 {
 }
 
-void DocumentLifecycleNotifier::addObserver(ContextLifecycleObserver* observer, ContextLifecycleObserver::Type as)
+void DocumentLifecycleNotifier::addObserver(LifecycleObserver* observer, LifecycleObserver::Type type)
 {
-    if (as == ContextLifecycleObserver::DocumentLifecycleObserverType) {
+    if (type == LifecycleObserver::DocumentLifecycleObserverType) {
         RELEASE_ASSERT(m_iterating != IteratingOverDocumentObservers);
         m_documentObservers.add(static_cast<DocumentLifecycleObserver*>(observer));
     }
 
-    ContextLifecycleNotifier::addObserver(observer, as);
+    ContextLifecycleNotifier::addObserver(observer, type);
 }
 
-void DocumentLifecycleNotifier::removeObserver(ContextLifecycleObserver* observer, ContextLifecycleObserver::Type as)
+void DocumentLifecycleNotifier::removeObserver(LifecycleObserver* observer, LifecycleObserver::Type type)
 {
-    if (as == ContextLifecycleObserver::DocumentLifecycleObserverType) {
+    if (type == LifecycleObserver::DocumentLifecycleObserverType) {
         RELEASE_ASSERT(m_iterating != IteratingOverDocumentObservers);
         m_documentObservers.remove(static_cast<DocumentLifecycleObserver*>(observer));
     }
 
-    ContextLifecycleNotifier::removeObserver(observer, as);
+    ContextLifecycleNotifier::removeObserver(observer, type);
 }
 
 } // namespace WebCore

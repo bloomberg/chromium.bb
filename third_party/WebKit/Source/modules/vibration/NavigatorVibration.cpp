@@ -21,7 +21,9 @@
 #include "modules/vibration/NavigatorVibration.h"
 
 #include "core/page/Frame.h"
+#include "core/page/Navigator.h"
 #include "core/page/Page.h"
+#include "core/page/PageVisibilityState.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebVibration.h"
 
@@ -30,8 +32,9 @@ namespace WebCore {
 // Maximum number of entries in a vibration pattern.
 const unsigned kVibrationPatternLengthMax = 99;
 
-NavigatorVibration::NavigatorVibration()
-    : m_timerStart(this, &NavigatorVibration::timerStartFired)
+NavigatorVibration::NavigatorVibration(Page* page)
+    : PageLifecycleObserver(page)
+    , m_timerStart(this, &NavigatorVibration::timerStartFired)
     , m_timerStop(this, &NavigatorVibration::timerStopFired)
     , m_isVibrating(false)
 {
@@ -95,23 +98,6 @@ void NavigatorVibration::cancelVibration()
     }
 }
 
-void NavigatorVibration::suspendVibration()
-{
-    if (!m_isVibrating)
-        return;
-
-    m_pattern.insert(0, m_timerStop.nextFireInterval());
-    m_timerStop.stop();
-    cancelVibration();
-}
-
-void NavigatorVibration::resumeVibration()
-{
-    ASSERT(!m_timerStart.isActive());
-
-    m_timerStart.startOneShot(0);
-}
-
 void NavigatorVibration::timerStartFired(Timer<NavigatorVibration>* timer)
 {
     ASSERT_UNUSED(timer, timer == &m_timerStart);
@@ -136,6 +122,12 @@ void NavigatorVibration::timerStopFired(Timer<NavigatorVibration>* timer)
     }
 }
 
+void NavigatorVibration::pageVisibilityChanged()
+{
+    if (page()->visibilityState() != PageVisibilityStateVisible)
+        cancelVibration();
+}
+
 bool NavigatorVibration::vibrate(Navigator* navigator, unsigned time)
 {
     VibrationPattern pattern;
@@ -145,21 +137,22 @@ bool NavigatorVibration::vibrate(Navigator* navigator, unsigned time)
 
 bool NavigatorVibration::vibrate(Navigator* navigator, const VibrationPattern& pattern)
 {
-    if (!navigator->frame()->page())
+    Page* page = navigator->frame()->page();
+    if (!page)
         return false;
 
-    if (navigator->frame()->page()->visibilityState() != PageVisibilityStateVisible)
+    if (page->visibilityState() != PageVisibilityStateVisible)
         return false;
 
-    return NavigatorVibration::from(navigator)->vibrate(pattern);
+    return NavigatorVibration::from(page)->vibrate(pattern);
 }
 
-NavigatorVibration* NavigatorVibration::from(Navigator* navigator)
+NavigatorVibration* NavigatorVibration::from(Page* page)
 {
-    NavigatorVibration* navigatorVibration = static_cast<NavigatorVibration*>(Supplement<Navigator>::from(navigator, supplementName()));
+    NavigatorVibration* navigatorVibration = static_cast<NavigatorVibration*>(Supplement<Page>::from(page, supplementName()));
     if (!navigatorVibration) {
-        navigatorVibration = new NavigatorVibration();
-        Supplement<Navigator>::provideTo(navigator, supplementName(), adoptPtr(navigatorVibration));
+        navigatorVibration = new NavigatorVibration(page);
+        Supplement<Page>::provideTo(page, supplementName(), adoptPtr(navigatorVibration));
     }
     return navigatorVibration;
 }

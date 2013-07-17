@@ -5067,7 +5067,7 @@ void Document::didAssociateFormControlsTimerFired(Timer<Document>* timer)
     m_associatedFormControls.clear();
 }
 
-PassOwnPtr<ContextLifecycleNotifier> Document::createLifecycleNotifier()
+PassOwnPtr<LifecycleNotifier> Document::createLifecycleNotifier()
 {
     return DocumentLifecycleNotifier::create(this);
 }
