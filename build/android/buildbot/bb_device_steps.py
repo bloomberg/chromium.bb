@@ -260,7 +260,8 @@ def ProvisionDevices(options):
 
 def DeviceStatusCheck(_):
   bb_annotations.PrintNamedStep('device_status_check')
-  RunCmd(['build/android/device_status_check.py'], halt_on_failure=True)
+  RunCmd(['build/android/buildbot/bb_device_status_check.py'],
+         halt_on_failure=True)
 
 
 def GetDeviceSetupStepCmds():

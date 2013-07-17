@@ -8,7 +8,6 @@ import logging
 import os
 import re
 
-from pylib import buildbot_report
 from pylib import constants
 
 import flakiness_dashboard_results_uploader
