@@ -60,7 +60,7 @@ bool ObjectWatcher::StopWatching() {
     return false;
 
   // Make sure ObjectWatcher is used in a single-threaded fashion.
-  DCHECK(origin_loop_ == MessageLoop::current());
+  DCHECK_EQ(origin_loop_, MessageLoop::current());
 
   // Blocking call to cancel the wait. Any callbacks already in progress will
   // finish before we return from this call.
