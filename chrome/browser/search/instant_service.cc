@@ -38,6 +38,22 @@
 
 using content::BrowserThread;
 
+namespace {
+
+const int kSectionBorderAlphaTransparency = 80;
+
+// Converts SkColor to RGBAColor
+RGBAColor SkColorToRGBAColor(const SkColor& sKColor) {
+  RGBAColor color;
+  color.r = SkColorGetR(sKColor);
+  color.g = SkColorGetG(sKColor);
+  color.b = SkColorGetB(sKColor);
+  color.a = SkColorGetA(sKColor);
+  return color;
+}
+
+}  // namespace
+
 InstantService::InstantService(Profile* profile)
     : profile_(profile),
       weak_ptr_factory_(this) {
@@ -231,16 +247,51 @@ void InstantService::OnThemeChanged(ThemeService* theme_service) {
   // Get theme information from theme service.
   theme_info_.reset(new ThemeBackgroundInfo());
 
-  // Set theme background color.
+  // Get if the current theme is the default theme.
+  theme_info_->using_default_theme = theme_service->UsingDefaultTheme();
+
+  // Get theme colors.
   SkColor background_color =
       theme_service->GetColor(ThemeProperties::COLOR_NTP_BACKGROUND);
-  if (gfx::IsInvertedColorScheme())
-    background_color = color_utils::InvertColor(background_color);
+  SkColor text_color =
+      theme_service->GetColor(ThemeProperties::COLOR_NTP_TEXT);
+  SkColor link_color =
+      theme_service->GetColor(ThemeProperties::COLOR_NTP_LINK);
+  SkColor text_color_light =
+      theme_service->GetColor(ThemeProperties::COLOR_NTP_TEXT_LIGHT);
+  SkColor header_color =
+      theme_service->GetColor(ThemeProperties::COLOR_NTP_HEADER);
+  // Generate section border color from the header color.
+  SkColor section_border_color =
+      SkColorSetARGB(kSectionBorderAlphaTransparency,
+                     SkColorGetR(header_color),
+                     SkColorGetG(header_color),
+                     SkColorGetB(header_color));
 
-  theme_info_->color_r = SkColorGetR(background_color);
-  theme_info_->color_g = SkColorGetG(background_color);
-  theme_info_->color_b = SkColorGetB(background_color);
-  theme_info_->color_a = SkColorGetA(background_color);
+  // Invert colors if needed.
+  if (gfx::IsInvertedColorScheme()) {
+    background_color = color_utils::InvertColor(background_color);
+    text_color = color_utils::InvertColor(text_color);
+    link_color = color_utils::InvertColor(link_color);
+    text_color_light = color_utils::InvertColor(text_color_light);
+    header_color = color_utils::InvertColor(header_color);
+    section_border_color = color_utils::InvertColor(section_border_color);
+  }
+
+  // Set colors.
+  theme_info_->background_color = SkColorToRGBAColor(background_color);
+  theme_info_->text_color = SkColorToRGBAColor(text_color);
+  theme_info_->link_color = SkColorToRGBAColor(link_color);
+  theme_info_->text_color_light = SkColorToRGBAColor(text_color_light);
+  theme_info_->header_color = SkColorToRGBAColor(header_color);
+  theme_info_->section_border_color = SkColorToRGBAColor(section_border_color);
+
+  // Set logo for the theme. By default, use alternate logo.
+  theme_info_->logo_alternate = true;
+  int logo_alternate = 0;
+  if (theme_service->GetDisplayProperty(
+      ThemeProperties::NTP_LOGO_ALTERNATE, &logo_alternate))
+    theme_info_->logo_alternate = logo_alternate == 1;
 
   if (theme_service->HasCustomImage(IDR_THEME_NTP_BACKGROUND)) {
     // Set theme id for theme background image url.

@@ -33,30 +33,56 @@ InstantAutocompleteResult::InstantAutocompleteResult()
 InstantAutocompleteResult::~InstantAutocompleteResult() {
 }
 
+RGBAColor::RGBAColor()
+    : r(0),
+      g(0),
+      b(0),
+      a(0) {
+}
+
+RGBAColor::~RGBAColor() {
+}
+
+bool RGBAColor::operator==(const RGBAColor& rhs) const {
+  return r == rhs.r &&
+      g == rhs.g &&
+      b == rhs.b &&
+      a == rhs.a;
+}
+
 ThemeBackgroundInfo::ThemeBackgroundInfo()
-    : color_r(0),
-      color_g(0),
-      color_b(0),
-      color_a(0),
+    : using_default_theme(true),
+      background_color(),
+      text_color(),
+      link_color(),
+      text_color_light(),
+      header_color(),
+      section_border_color(),
       image_horizontal_alignment(THEME_BKGRND_IMAGE_ALIGN_CENTER),
       image_vertical_alignment(THEME_BKGRND_IMAGE_ALIGN_CENTER),
       image_tiling(THEME_BKGRND_IMAGE_NO_REPEAT),
       image_height(0),
-      has_attribution(false) {
+      has_attribution(false),
+      logo_alternate(false) {
 }
 
 ThemeBackgroundInfo::~ThemeBackgroundInfo() {
 }
 
+
 bool ThemeBackgroundInfo::operator==(const ThemeBackgroundInfo& rhs) const {
-  return color_r == rhs.color_r &&
-      color_g == rhs.color_g &&
-      color_b == rhs.color_b &&
-      color_a == rhs.color_a &&
+  return using_default_theme == rhs.using_default_theme &&
+      background_color == rhs.background_color &&
+      text_color == rhs.text_color &&
+      link_color == rhs.link_color &&
+      text_color_light == rhs.text_color_light &&
+      header_color == rhs.header_color &&
+      section_border_color == rhs.section_border_color &&
       theme_id == rhs.theme_id &&
       image_horizontal_alignment == rhs.image_horizontal_alignment &&
       image_vertical_alignment == rhs.image_vertical_alignment &&
       image_tiling == rhs.image_tiling &&
       image_height == rhs.image_height &&
-      has_attribution == rhs.has_attribution;
+      has_attribution == rhs.has_attribution &&
+      logo_alternate == rhs.logo_alternate;
 }

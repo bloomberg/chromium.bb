@@ -13,7 +13,7 @@
 /**
  * Parses query parameters from Location.
  * @param {string} location The URL to generate the CSS url for.
- * @return {object} Dictionary containing name value pairs for URL
+ * @return {Object} Dictionary containing name value pairs for URL.
  */
 function parseQueryParams(location) {
   var params = Object.create(null);
@@ -44,14 +44,12 @@ function parseQueryParams(location) {
  * @return {HTMLAnchorElement} A new link element.
  */
 function createMostVisitedLink(params, href, title, text) {
-  var styles = getMostVisitedStyles(params);
+  var styles = getMostVisitedStyles(params, !!text);
   var link = document.createElement('a');
   link.style.color = styles.color;
   link.style.fontSize = styles.fontSize + 'px';
   if (styles.fontFamily)
     link.style.fontFamily = styles.fontFamily;
-  if (styles.textShadow)
-    link.style.textShadow = styles.textShadow;
   link.href = href;
   if ('pos' in params && isFinite(params.pos))
     link.ping = '/log.html?pos=' + params.pos;
@@ -75,25 +73,28 @@ function createMostVisitedLink(params, href, title, text) {
  * - f: font-family
  * - fs: font-size as a number in pixels.
  * - c: A hexadecimal number interpreted as a hex color code.
- * - ts: Truthy iff text should be drawn with a shadow.
  * @param {Object.<string, string>} params URL parameters specifying style.
+ * @param {boolean} isTitle if the style is for the Most Visited Title.
  * @return {Object} Styles suitable for CSS interpolation.
  */
-function getMostVisitedStyles(params) {
+function getMostVisitedStyles(params, isTitle) {
   var styles = {
     color: '#777',
     fontFamily: '',
-    fontSize: 11,
-    textShadow: ''
+    fontSize: 11
   };
+  var apiHandle = chrome.embeddedSearch.newTabPage;
+  var themeInfo = apiHandle.themeBackgroundInfo;
+  if (isTitle && themeInfo && !themeInfo.usingDefaultTheme) {
+    styles.color = convertArrayToRGBAColor(themeInfo.textColorRgba) ||
+        styles.color;
+  } else if ('c' in params) {
+    styles.color = convertToHexColor(parseInt(params.c, 16)) || styles.color;
+  }
   if ('f' in params && /^[-0-9a-zA-Z ,]+$/.test(params.f))
     styles.fontFamily = params.f;
   if ('fs' in params && isFinite(parseInt(params.fs, 10)))
     styles.fontSize = parseInt(params.fs, 10);
-  if ('c' in params)
-    styles.color = convertColor(parseInt(params.c, 16)) || styles.color;
-  if ('ts' in params && params.ts)
-    styles.textShadow = 'black 0 1px 3px';
   return styles;
 }
 

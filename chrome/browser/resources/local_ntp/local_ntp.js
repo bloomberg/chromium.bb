@@ -23,9 +23,9 @@ function LocalNTP(location) {
  * @const
  */
 var CLASSES = {
+  ALTERNATE_LOGO: 'alternate-logo', // Shows white logo if required by theme
   BLACKLIST: 'mv-blacklist', // triggers tile blacklist animation
   BLACKLIST_BUTTON: 'mv-x',
-  CUSTOM_THEME: 'custom-theme',
   DELAYED_HIDE_NOTIFICATION: 'mv-notice-delayed-hide',
   FAKEBOX_DISABLE: 'fakebox-disable', // Makes fakebox non-interactive
   FAKEBOX_FOCUS: 'fakebox-focused', // Applies focus styles to the fakebox
@@ -54,6 +54,7 @@ var CLASSES = {
 var IDS = {
   ATTRIBUTION: 'attribution',
   ATTRIBUTION_TEXT: 'attribution-text',
+  CUSTOM_THEME_STYLE: 'ct-style',
   FAKEBOX: 'fakebox',
   LOGO: 'logo',
   NOTIFICATION: 'mv-notice',
@@ -212,15 +213,6 @@ var fakeboxInputBehavior = NTP_DISPOSE_STATE.HIDE_FAKEBOX_AND_LOGO;
 
 
 /**
- * Possible background-colors of a non-custom theme. Used to determine whether
- * the homepage should be updated to support custom or non-custom themes.
- * @type {!Array.<string>}
- * @const
- */
-var WHITE = ['rgba(255,255,255,1)', 'rgba(0,0,0,0)'];
-
-
-/**
  * Total tile width. Should be equal to mv-tile's width + 2 * border-width.
  * @private {number}
  * @const
@@ -286,14 +278,6 @@ var MOST_VISITED_COLOR = '777777';
 
 
 /**
- * The hex color for most visited tile titles when using a custom theme.
- * @type {string}
- * @const
- */
-var MOST_VISITED_THEME_TITLE_COLOR = 'ffffff';
-
-
-/**
  * The font family for most visited tile elements.
  * @type {string}
  * @const
@@ -343,15 +327,67 @@ function onThemeChange() {
   var info = ntpApiHandle.themeBackgroundInfo;
   if (!info)
     return;
-  var background = [info.colorRgba,
+
+  var background = [convertToRGBAColor(info.backgroundColorRgba),
                     info.imageUrl,
                     info.imageTiling,
                     info.imageHorizontalAlignment,
                     info.imageVerticalAlignment].join(' ').trim();
   document.body.style.background = background;
-  var isCustom = !!background && WHITE.indexOf(background) == -1;
-  document.body.classList.toggle(CLASSES.CUSTOM_THEME, isCustom);
-  updateAttribution(info.attributionUrl);
+  document.body.classList.toggle(CLASSES.ALTERNATE_LOGO, info.alternateLogo);
+  updateThemeAttribution(info.attributionUrl);
+  setCustomThemeStyle(info);
+  renderTiles();
+}
+
+
+/**
+ * Updates the NTP style according to theme.
+ * @param {Object=} opt_themeInfo The information about the theme. If it is
+ * omitted the style will be reverted to the default.
+ * @private
+ */
+function setCustomThemeStyle(opt_themeInfo) {
+  var customStyleElement = $(IDS.CUSTOM_THEME_STYLE);
+  var head = document.head;
+
+  if (opt_themeInfo && !opt_themeInfo.usingDefaultTheme) {
+    var themeStyle =
+      '#attribution {' +
+      '  color: ' + convertToRGBAColor(opt_themeInfo.textColorLightRgba) + ';' +
+      '}' +
+      '#mv-msg {' +
+      '  color: ' + convertToRGBAColor(opt_themeInfo.textColorRgba) + ';' +
+      '}' +
+      '#mv-notice-links span {' +
+      '  color: ' + convertToRGBAColor(opt_themeInfo.textColorLightRgba) + ';' +
+      '}' +
+      '#mv-notice-x {' +
+      '  -webkit-filter: drop-shadow(0 0 0 ' +
+          convertToRGBAColor(opt_themeInfo.textColorRgba) + ');' +
+      '}' +
+      '.mv-page-ready {' +
+      '  border: 1px solid ' +
+        convertToRGBAColor(opt_themeInfo.sectionBorderColorRgba) + ';' +
+      '}' +
+      '.mv-page-ready:hover, .mv-page-ready:focus {' +
+      '  border-color: ' +
+          convertToRGBAColor(opt_themeInfo.headerColorRgba) + ';' +
+      '}';
+
+    if (customStyleElement) {
+      customStyleElement.textContent = themeStyle;
+    } else {
+      customStyleElement = document.createElement('style');
+      customStyleElement.type = 'text/css';
+      customStyleElement.id = IDS.CUSTOM_THEME_STYLE;
+      customStyleElement.textContent = themeStyle;
+      head.appendChild(customStyleElement);
+    }
+
+  } else if (customStyleElement) {
+    head.removeChild(customStyleElement);
+  }
 }
 
 
@@ -361,7 +397,7 @@ function onThemeChange() {
  * @param {string} url The URL of the attribution image, if any.
  * @private
  */
-function updateAttribution(url) {
+function updateThemeAttribution(url) {
   if (!url) {
     setAttributionVisibility_(false);
     return;
@@ -390,6 +426,18 @@ function setAttributionVisibility_(show) {
   if (attribution) {
     attribution.style.display = show ? '' : 'none';
   }
+}
+
+
+ /**
+ * Converts an Array of color components into RGBA format "rgba(R,G,B,A)".
+ * @param {Array.<number>} color Array of rgba color components.
+ * @return {string} CSS color in RGBA format.
+ * @private
+ */
+function convertToRGBAColor(color) {
+  return 'rgba(' + color[0] + ',' + color[1] + ',' + color[2] + ',' +
+                    color[3] / 255 + ')';
 }
 
 
@@ -469,18 +517,16 @@ function updateMostVisitedVisibility() {
  * @param {string} color The text color for text in the iframe.
  * @param {string} fontFamily The font family for text in the iframe.
  * @param {number} fontSize The font size for text in the iframe.
- * @param {boolean} textShadow True if text should be drawn with a shadow.
  * @param {number} position The position of the iframe in the UI.
  * @return {string} An URL to display the most visited component in an iframe.
  */
 function getMostVisitedIframeUrl(filename, rid, color, fontFamily, fontSize,
-    textShadow, position) {
+    position) {
   return 'chrome-search://most-visited/' + encodeURIComponent(filename) + '?' +
       ['rid=' + encodeURIComponent(rid),
        'c=' + encodeURIComponent(color),
        'f=' + encodeURIComponent(fontFamily),
        'fs=' + encodeURIComponent(fontSize),
-       'ts=' + (textShadow ? '1' : ''),
        'pos=' + encodeURIComponent(position)].join('&');
 }
 
@@ -514,8 +560,6 @@ function createTile(page, position) {
     // The iframe which renders the page title.
     var titleElement = document.createElement('iframe');
     titleElement.tabIndex = '-1';
-    var usingCustomTheme = document.body.classList.contains(
-        CLASSES.CUSTOM_THEME);
 
     // Why iframes have IDs:
     //
@@ -532,10 +576,9 @@ function createTile(page, position) {
     // TODO(jered): Find and fix the root (probably Blink) bug.
 
     titleElement.src = getMostVisitedIframeUrl(
-        MOST_VISITED_TITLE_IFRAME, rid,
-        usingCustomTheme ? MOST_VISITED_THEME_TITLE_COLOR : MOST_VISITED_COLOR,
-        MOST_VISITED_FONT_FAMILY, MOST_VISITED_FONT_SIZE, usingCustomTheme,
-        position);
+        MOST_VISITED_TITLE_IFRAME, rid, MOST_VISITED_COLOR,
+        MOST_VISITED_FONT_FAMILY, MOST_VISITED_FONT_SIZE, position);
+
     // Keep this id here. See comment above.
     titleElement.id = 'title-' + rid;
     titleElement.hidden = true;
@@ -551,7 +594,8 @@ function createTile(page, position) {
     thumbnailElement.tabIndex = '-1';
     thumbnailElement.src = getMostVisitedIframeUrl(
         MOST_VISITED_THUMBNAIL_IFRAME, rid, MOST_VISITED_COLOR,
-        MOST_VISITED_FONT_FAMILY, MOST_VISITED_FONT_SIZE, false, position);
+        MOST_VISITED_FONT_FAMILY, MOST_VISITED_FONT_SIZE, position);
+
     // Keep this id here. See comment above.
     thumbnailElement.id = 'thumb-' + rid;
     thumbnailElement.hidden = true;
@@ -760,15 +804,6 @@ function restoreNtp() {
   setFakeboxActive(true);
   setFakeboxAndLogoVisibility(true);
   onThemeChange();
-}
-
-
-/**
- * Clears the custom theme (if any).
- */
-function clearCustomTheme() {
-  document.body.style.background = '';
-  document.body.classList.remove(CLASSES.CUSTOM_THEME);
 }
 
 

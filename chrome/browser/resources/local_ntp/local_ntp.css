@@ -45,7 +45,7 @@ body.fakebox-disable #fakebox > input {
   width: 275px;
 }
 
-body.custom-theme #logo {
+body.alternate-logo #logo {
   background-image: url(images/2x/white_google_logo.png);
 }
 
@@ -117,17 +117,6 @@ body.fakebox-focused #cursor {
   -webkit-user-select: none;
   margin-top: 51px;
   text-align: -webkit-center;
-}
-
-.custom-theme .mv-title,
-.custom-theme #mv-msg {
-  color: #fff;
-  text-shadow: black 0 1px 3px;
-}
-
-.custom-theme #mv-notice-links span {
-  color: #fff;
-  text-shadow: rgb(17, 85, 204) 0 1px 3px;
 }
 
 #mv-tiles {
@@ -246,19 +235,12 @@ body.fakebox-focused #cursor {
   width: 16px;
 }
 
-body.custom-theme #mv-notice-x {
-  background: transparent url(images/close_2_white.png);
-}
-
 .mv-x:hover,
-body.custom-theme #mv-notice-x:hover,
-#mv-notice-x:focus,
-body.custom-theme #mv-notice-x:focus {
+#mv-notice-x:focus {
   background: transparent url(images/close_2_hover.png);
 }
 
-.mv-x:active,
-body.custom-theme #mv-notice-x:active {
+.mv-x:active {
   background: transparent url(images/close_2_active.png);
 }
 

@@ -162,6 +162,16 @@ GURL GetCurrentURL(content::RenderView* render_view) {
 
 namespace internal {  // for testing.
 
+// Returns an array with the RGBA color components.
+v8::Handle<v8::Value> RGBAColorToArray(const RGBAColor& color) {
+  v8::Handle<v8::Array> color_array = v8::Array::New(4);
+  color_array->Set(0, v8::Int32::New(color.r));
+  color_array->Set(1, v8::Int32::New(color.g));
+  color_array->Set(2, v8::Int32::New(color.b));
+  color_array->Set(3, v8::Int32::New(color.a));
+  return color_array;
+}
+
 // Resolves a possibly relative URL using the current URL.
 GURL ResolveURL(const GURL& current_url,
                 const string16& possibly_relative_url) {
@@ -626,20 +636,61 @@ void SearchBoxExtensionWrapper::GetThemeBackgroundInfo(
       SearchBox::Get(render_view)->GetThemeBackgroundInfo();
   v8::Handle<v8::Object> info = v8::Object::New();
 
+  info->Set(v8::String::New("usingDefaultTheme"),
+            v8::Boolean::New(theme_info.using_default_theme));
+
   // The theme background color is in RGBA format "rgba(R,G,B,A)" where R, G and
   // B are between 0 and 255 inclusive, and A is a double between 0 and 1
   // inclusive.
   // This is the CSS "background-color" format.
   // Value is always valid.
+  // TODO(jfweitz): Remove this field after GWS is modified to use the new
+  // backgroundColorRgba field.
   info->Set(v8::String::New("colorRgba"), UTF8ToV8String(
       // Convert the alpha using DoubleToString because StringPrintf will use
       // locale specific formatters (e.g., use , instead of . in German).
       base::StringPrintf(
           kCSSBackgroundColorFormat,
-          theme_info.color_r,
-          theme_info.color_g,
-          theme_info.color_b,
-          base::DoubleToString(theme_info.color_a / 255.0).c_str())));
+          theme_info.background_color.r,
+          theme_info.background_color.g,
+          theme_info.background_color.b,
+          base::DoubleToString(
+              theme_info.background_color.a / 255.0).c_str())));
+
+  // Theme color for background as an array with the RGBA components in order.
+  // Value is always valid.
+  info->Set(v8::String::New("backgroundColorRgba"),
+            internal::RGBAColorToArray(theme_info.background_color));
+
+  // Theme color for text as an array with the RGBA components in order.
+  // Value is always valid.
+  info->Set(v8::String::New("textColorRgba"),
+            internal::RGBAColorToArray(theme_info.text_color));
+
+  // Theme color for links as an array with the RGBA components in order.
+  // Value is always valid.
+  info->Set(v8::String::New("linkColorRgba"),
+            internal::RGBAColorToArray(theme_info.link_color));
+
+  // Theme color for light text as an array with the RGBA components in order.
+  // Value is always valid.
+  info->Set(v8::String::New("textColorLightRgba"),
+            internal::RGBAColorToArray(theme_info.text_color_light));
+
+  // Theme color for header as an array with the RGBA components in order.
+  // Value is always valid.
+  info->Set(v8::String::New("headerColorRgba"),
+            internal::RGBAColorToArray(theme_info.header_color));
+
+  // Theme color for section border as an array with the RGBA components in
+  // order. Value is always valid.
+  info->Set(v8::String::New("sectionBorderColorRgba"),
+          internal::RGBAColorToArray(theme_info.section_border_color));
+
+  // The theme alternate logo value indicates a white logo when TRUE and a
+  // colorful one when FALSE.
+  info->Set(v8::String::New("alternateLogo"),
+            v8::Boolean::New(theme_info.logo_alternate));
 
   // The theme background image url is of format
   // "-webkit-image-set(url(chrome://theme/IDR_THEME_BACKGROUND?<theme_id>) 1x)"
