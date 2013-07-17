@@ -27,4 +27,4 @@ PlatformFile.TouchGetInfoPlatformFile
 
 # Death test crashes with NULL deref, probably not intended.
 # http://crbug.com/261141
-SequenceCheckerTest.MethodNotAllowedOnDifferentThreadDeathTestInDebug
+SequenceCheckerTest.*DeathTest*
