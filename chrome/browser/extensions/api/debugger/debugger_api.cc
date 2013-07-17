@@ -665,6 +665,9 @@ const char kTargetFaviconUrlField[] = "faviconUrl";
 const char kTargetTypePage[] = "page";
 const char kTargetTypeBackgroundPage[] = "background_page";
 const char kTargetTypeWorker[] = "worker";
+const char kTargetTypeOther[] = "other";
+const char kTargetTabIdField[] = "tabId";
+const char kTargetExtensionIdField[] = "extensionId";
 
 extensions::ExtensionHost*
     GetExtensionBackgroundHost(WebContents* web_contents) {
@@ -699,11 +702,19 @@ base::Value* SerializePageInfo(RenderViewHost* rvh) {
   if (extension_host) {
     // This RenderViewHost belongs to a background page.
     dictionary->SetString(kTargetTypeField, kTargetTypeBackgroundPage);
+    dictionary->SetString(kTargetExtensionIdField,
+                          extension_host->extension()->id());
     dictionary->SetString(kTargetTitleField,
                           extension_host->extension()->name());
   } else {
-    // This RenderViewHost belongs to a regular page.
-    dictionary->SetString(kTargetTypeField, kTargetTypePage);
+    int tab_id = ExtensionTabUtil::GetTabId(web_contents);
+    if (tab_id != -1) {
+      // This RenderViewHost belongs to a regular page.
+      dictionary->SetString(kTargetTypeField, kTargetTypePage);
+      dictionary->SetInteger(kTargetTabIdField, tab_id);
+    } else {
+      dictionary->SetString(kTargetTypeField, kTargetTypeOther);
+    }
     dictionary->SetString(kTargetTitleField, web_contents->GetTitle());
 
     content::NavigationController& controller = web_contents->GetController();

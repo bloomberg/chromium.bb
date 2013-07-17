@@ -43,7 +43,9 @@ chrome.test.runTests([
     chrome.debugger.getTargets(function(targets) {
       var target = targets.filter(
         function(t) {
-          return t.type == 'background_page' && t.title == 'Extension Debugger';
+          return t.type == 'background_page' &&
+                 t.extensionId == debuggee.extensionId &&
+                 t.title == 'Extension Debugger';
         })[0];
       if (target) {
         chrome.debugger.attach({targetId: target.id}, protocolVersion, pass());

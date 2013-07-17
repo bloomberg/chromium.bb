@@ -28,6 +28,8 @@
             "enum" : ["page", "background_page", "worker", "other" ]
           },
           "id": { "type": "string", "description": "Target id." },
+          "tabId": { "type": "integer", "optional": true, "description": "The tab id, defined if type == 'page'." },
+          "extensionId": { "type": "string", "optional": true, "description": "The extension id, defined if type = 'background_page'." },
           "attached": { "type": "boolean", "description": "True if debugger is already attached." },
           "title": { "type": "string", "description": "Target page title." },
           "url": { "type": "string", "description": "Target URL." },

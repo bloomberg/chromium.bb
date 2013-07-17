@@ -130,12 +130,14 @@ chrome.test.runTests([
   },
 
   function createAndDiscoverTab() {
-    function onUpdated() {
+    function onUpdated(tabId) {
       chrome.tabs.onUpdated.removeListener(onUpdated);
       chrome.debugger.getTargets(function(targets) {
         var page = targets.filter(
             function(t) {
-              return t.type == 'page' && t.title == 'Test page';
+              return t.type == 'page' &&
+                     t.tabId == tabId &&
+                     t.title == 'Test page';
             })[0];
         if (page) {
           chrome.debugger.attach(
