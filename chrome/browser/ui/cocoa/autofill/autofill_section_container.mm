@@ -4,6 +4,8 @@
 
 #import "chrome/browser/ui/cocoa/autofill/autofill_section_container.h"
 
+#include <algorithm>
+
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -62,6 +64,11 @@ void BreakSuggestionText(const string16& text,
     *line1 = text.substr(0, position);
     *line2 = text.substr(position + line_return.length());
   }
+}
+
+bool CompareInputRows(const autofill::DetailInput* input1,
+                      const autofill::DetailInput* input2) {
+  return input2->row_id < input1->row_id;
 }
 
 }
@@ -419,6 +426,11 @@ void BreakSuggestionText(const string16& text,
       scoped_ptr<SimpleGridLayout>(new SimpleGridLayout(view))];
   SimpleGridLayout* layout = [view layoutManager];
 
+  // Reverse order of rows, but keep order of fields stable. stable_sort
+  // guarantees that field order within a row is not affected.
+  // Necessary since OSX builds forms from the bottom left.
+  std::stable_sort(
+      detailInputs_.begin(), detailInputs_.end(), CompareInputRows);
   for (size_t i = 0; i < detailInputs_.size(); ++i) {
     const autofill::DetailInput& input = *detailInputs_[i];
     int kColumnSetId = input.row_id;
