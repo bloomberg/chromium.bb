@@ -45,24 +45,25 @@
 MACRO(switcher)
 MACROENTRY
 #if NACL_WINDOWS
-        /* if Windows, 1st param is already in %rcx, not %rdi */
+        /* On Windows, 1st param is in %rcx. */
+        mov     %rcx, %r11
 #elif NACL_LINUX || NACL_OSX
-        /* elif Linux/OSX, 1st param is already in %rdi. */
-        mov     %rdi, %rcx
+        /* On Linux/OSX, 1st param is in %rdi. */
+        mov     %rdi, %r11
 #else
 # error "What OS/compiler is the service runtime being compiled with?"
 #endif
 
-        movq    NACL_THREAD_CONTEXT_OFFSET_RBX(%rcx), %rbx
-        movq    NACL_THREAD_CONTEXT_OFFSET_RBP(%rcx), %rbp
-        movq    NACL_THREAD_CONTEXT_OFFSET_R12(%rcx), %r12
-        movq    NACL_THREAD_CONTEXT_OFFSET_R13(%rcx), %r13
-        movq    NACL_THREAD_CONTEXT_OFFSET_R14(%rcx), %r14
-        movq    NACL_THREAD_CONTEXT_OFFSET_R15(%rcx), %r15
+        movq    NACL_THREAD_CONTEXT_OFFSET_RBX(%r11), %rbx
+        movq    NACL_THREAD_CONTEXT_OFFSET_RBP(%r11), %rbp
+        movq    NACL_THREAD_CONTEXT_OFFSET_R12(%r11), %r12
+        movq    NACL_THREAD_CONTEXT_OFFSET_R13(%r11), %r13
+        movq    NACL_THREAD_CONTEXT_OFFSET_R14(%r11), %r14
+        movq    NACL_THREAD_CONTEXT_OFFSET_R15(%r11), %r15
 
         /* there is no springboard for x86_64 */
-        movq    NACL_THREAD_CONTEXT_OFFSET_RSP(%rcx), %rsp
-        movq    NACL_THREAD_CONTEXT_OFFSET_SYSRET(%rcx), %rax
+        movq    NACL_THREAD_CONTEXT_OFFSET_RSP(%r11), %rsp
+        movq    NACL_THREAD_CONTEXT_OFFSET_SYSRET(%r11), %rax
 
         /*
          * %rdi is the first argument in the user calling convention.
@@ -83,11 +84,11 @@ MACROENTRY
          * values.
          */
         xorl    %edx, %edx
+        movl    %edx, %ecx
         movl    %edx, %esi
         movq    %rdx, %r8
         movq    %rdx, %r9
         movq    %rdx, %r10
-        movq    %rdx, %r11
 
         /*
          * Clear the x87, MMX, and SSE state.
@@ -99,8 +100,8 @@ MACROENTRY
          * seems to be immeasurably small.
          */
         fxrstor fxrstor_default_state(%rip)
-        fldcw   NACL_THREAD_CONTEXT_OFFSET_FCW(%rcx)
-        ldmxcsr NACL_THREAD_CONTEXT_OFFSET_MXCSR(%rcx)
+        fldcw   NACL_THREAD_CONTEXT_OFFSET_FCW(%r11)
+        ldmxcsr NACL_THREAD_CONTEXT_OFFSET_MXCSR(%r11)
 
 .if MACROARG2
         /*
@@ -115,13 +116,13 @@ MACROENTRY
 .endif
 
         /*
-         * Load the return address into %rcx rather than doing
-         * "jmp *XXX(%rcx)" so that we do not leak the address of the
+         * Load the return address into %r11 rather than doing
+         * "jmp *XXX(%r11)" so that we do not leak the address of the
          * struct NaClThreadContext to untrusted code.  Knowing this
          * address would make bugs in the sandbox easier to exploit.
          */
-        movq    NACL_THREAD_CONTEXT_OFFSET_NEW_PROG_CTR(%rcx), %rcx
-        jmp     *%rcx
+        movq    NACL_THREAD_CONTEXT_OFFSET_NEW_PROG_CTR(%r11), %r11
+        jmp     *%r11
 ENDMACRO
 
         switcher NaClSwitchSSE, 0

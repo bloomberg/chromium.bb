@@ -235,7 +235,7 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(MACROARG1):  /* Entry */
 DEFINE_GLOBAL_HIDDEN_IDENTIFIER(MACROARG2):  /* RspRestored */
         addl    DOLLAR 31, %ecx
         andl    DOLLAR 0xffffffe0, %ecx
-        addq    %r15, %rcx
+        leaq    (%r15, %rcx), %r11
         /*
          * Set %rdx to zero so that we do not leak the address of the
          * NaClThreadContext struct.  This also resets flags.
@@ -244,7 +244,7 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(MACROARG2):  /* RspRestored */
          * flags.
          */
         xorl    %edx, %edx
-        jmp     *%rcx
+        jmp     *%r11
 DEFINE_GLOBAL_HIDDEN_IDENTIFIER(MACROARG3):  /* End */
 ENDMACRO
 

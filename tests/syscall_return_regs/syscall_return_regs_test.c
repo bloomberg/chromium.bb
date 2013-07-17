@@ -47,8 +47,12 @@ void SetNaClSwitchExpectations(struct NaClSignalContext *expected_regs) {
   /* The current implementation sets %edx to the return address. */
   expected_regs->edx = expected_regs->prog_ctr;
 #elif defined(__x86_64__)
-  /* The current implementation sets %rcx to the return address. */
-  expected_regs->rcx = expected_regs->prog_ctr;
+  /*
+   * The current implementation sets %r11 to the %r15-extended return
+   * address.  Note that sandbox-base-address-hiding relies on not
+   * leaking this 64-bit address into any other register.
+   */
+  expected_regs->r11 = expected_regs->prog_ctr;
   /* NaCl always sets %rdi (argument 1) as if it is calling _start. */
   expected_regs->rdi = (uintptr_t) expected_regs->stack_ptr + 8;
 #elif defined(__arm__)
@@ -115,7 +119,11 @@ void TestSyscall(uintptr_t syscall_addr) {
       g_expected_regs.r8 = call_regs.r8;
       g_expected_regs.r9 = call_regs.r9;
       g_expected_regs.r10 = call_regs.r10;
-      g_expected_regs.r11 = call_regs.r11;
+      /*
+       * The current implementation clobbers %rcx with the
+       * non-%r15-extended return address.
+       */
+      g_expected_regs.rcx = (uint32_t) g_expected_regs.prog_ctr;
     }
 
     call_regs.rax = syscall_addr;
