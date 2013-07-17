@@ -528,15 +528,14 @@ TEST_F(CertVerifyProcTest, DigiNotarCerts) {
 }
 
 // The certse.pem certificate has been revoked. crbug.com/259723.
-TEST_F(CertVerifyProcTest, DISABLED_TestKnownRoot) {
+TEST_F(CertVerifyProcTest, TestKnownRoot) {
   base::FilePath certs_dir = GetTestCertsDirectory();
   CertificateList certs = CreateCertificateListFromFile(
-      certs_dir, "certse.pem", X509Certificate::FORMAT_AUTO);
-  ASSERT_EQ(3U, certs.size());
+      certs_dir, "satveda.pem", X509Certificate::FORMAT_AUTO);
+  ASSERT_EQ(2U, certs.size());
 
   X509Certificate::OSCertHandles intermediates;
   intermediates.push_back(certs[1]->os_cert_handle());
-  intermediates.push_back(certs[2]->os_cert_handle());
 
   scoped_refptr<X509Certificate> cert_chain =
       X509Certificate::CreateFromHandle(certs[0]->os_cert_handle(),
@@ -544,10 +543,10 @@ TEST_F(CertVerifyProcTest, DISABLED_TestKnownRoot) {
 
   int flags = 0;
   CertVerifyResult verify_result;
-  // This will blow up, June 8th, 2014. Sorry! Please disable and file a bug
+  // This will blow up, May 24th, 2019. Sorry! Please disable and file a bug
   // against agl. See also PublicKeyHashes.
   int error = Verify(cert_chain.get(),
-                     "cert.se",
+                     "satveda.com",
                      flags,
                      NULL,
                      empty_cert_list_,
@@ -558,15 +557,14 @@ TEST_F(CertVerifyProcTest, DISABLED_TestKnownRoot) {
 }
 
 // The certse.pem certificate has been revoked. crbug.com/259723.
-TEST_F(CertVerifyProcTest, DISABLED_PublicKeyHashes) {
+TEST_F(CertVerifyProcTest, PublicKeyHashes) {
   base::FilePath certs_dir = GetTestCertsDirectory();
   CertificateList certs = CreateCertificateListFromFile(
-      certs_dir, "certse.pem", X509Certificate::FORMAT_AUTO);
-  ASSERT_EQ(3U, certs.size());
+      certs_dir, "satveda.pem", X509Certificate::FORMAT_AUTO);
+  ASSERT_EQ(2U, certs.size());
 
   X509Certificate::OSCertHandles intermediates;
   intermediates.push_back(certs[1]->os_cert_handle());
-  intermediates.push_back(certs[2]->os_cert_handle());
 
   scoped_refptr<X509Certificate> cert_chain =
       X509Certificate::CreateFromHandle(certs[0]->os_cert_handle(),
@@ -574,17 +572,17 @@ TEST_F(CertVerifyProcTest, DISABLED_PublicKeyHashes) {
   int flags = 0;
   CertVerifyResult verify_result;
 
-  // This will blow up, June 8th, 2014. Sorry! Please disable and file a bug
+  // This will blow up, May 24th, 2019. Sorry! Please disable and file a bug
   // against agl. See also TestKnownRoot.
   int error = Verify(cert_chain.get(),
-                     "cert.se",
+                     "satveda.com",
                      flags,
                      NULL,
                      empty_cert_list_,
                      &verify_result);
   EXPECT_EQ(OK, error);
   EXPECT_EQ(0U, verify_result.cert_status);
-  ASSERT_LE(3u, verify_result.public_key_hashes.size());
+  ASSERT_LE(2U, verify_result.public_key_hashes.size());
 
   HashValueVector sha1_hashes;
   for (size_t i = 0; i < verify_result.public_key_hashes.size(); ++i) {
@@ -592,10 +590,10 @@ TEST_F(CertVerifyProcTest, DISABLED_PublicKeyHashes) {
       continue;
     sha1_hashes.push_back(verify_result.public_key_hashes[i]);
   }
-  ASSERT_LE(3u, sha1_hashes.size());
+  ASSERT_LE(2u, sha1_hashes.size());
 
-  for (size_t i = 0; i < 3; ++i) {
-    EXPECT_EQ(HexEncode(kCertSESPKIs[i], base::kSHA1Length),
+  for (size_t i = 0; i < 2; ++i) {
+    EXPECT_EQ(HexEncode(kSatvedaSPKIs[i], base::kSHA1Length),
               HexEncode(sha1_hashes[i].data(), base::kSHA1Length));
   }
 
@@ -605,10 +603,10 @@ TEST_F(CertVerifyProcTest, DISABLED_PublicKeyHashes) {
       continue;
     sha256_hashes.push_back(verify_result.public_key_hashes[i]);
   }
-  ASSERT_LE(3u, sha256_hashes.size());
+  ASSERT_LE(2u, sha256_hashes.size());
 
-  for (size_t i = 0; i < 3; ++i) {
-    EXPECT_EQ(HexEncode(kCertSESPKIsSHA256[i], crypto::kSHA256Length),
+  for (size_t i = 0; i < 2; ++i) {
+    EXPECT_EQ(HexEncode(kSatvedaSPKIsSHA256[i], crypto::kSHA256Length),
               HexEncode(sha256_hashes[i].data(), crypto::kSHA256Length));
   }
 }
