@@ -67,17 +67,13 @@ void TimeFFTUsage(const char* prog) {
       "  -v level    Verbose output level (default = 1)\n"
       "  -F          Skip forward FFT tests\n"
       "  -I          Skip inverse FFT tests\n"
-      "  -C          Include float-to-fixed and fixed-to-float cost for"
-      " real\n"
-      "                16-bit FFT (forward and inverse)\n"
-      "  -c count    Number of FFTs to compute for timing.  This is a"
-      " lower\n"
-      "                lower limit; shorter FFTs will do more FFTs such"
-      " that the\n"
-      "                elapsed time is very roughly constant, if -A is"
-      " not given.\n"
-      "  -A          Don't adapt the count given by -c; use specified"
-      " value\n"
+      "  -C          Include float-to-fixed and fixed-to-float cost for\n"
+      "              fixed-point FFTs.\n"
+      "  -c count    Number of FFTs to compute for timing.  This is a\n"
+      "              lower limit; shorter FFTs will do more FFTs such\n"
+      "              that the elapsed time is very roughly constant, if\n"
+      "              -A is not given.\n"
+      "  -A          Don't adapt the count given by -c; use specified value\n"
       "  -m min      Mininum FFT order to test\n"
       "  -M max      Maximum FFT order to test\n"
       "  -T          Run just one FFT timing test\n"
@@ -106,6 +102,7 @@ void TimeFFTUsage(const char* prog) {
   exit(0);
 }
 
+/* TODO(kma/ajm/rtoy): use strings instead of numbers for fft_type. */
 void main(int argc, char* argv[]) {
   int fft_log_size = 4;
   float signal_value = 32767;
@@ -740,7 +737,7 @@ void TimeOneSC16FFT(int count, int fft_log_size, float signal_value,
           }
         }
 
-        factor = ((1 << 18) - 1) / factor;
+        factor = ((1 << 15) - 1) / factor;
         for (n = 0; n < fft_size; ++n) {
           temp16a[n].Re = factor * x[n].Re;
           temp16a[n].Im = factor * x[n].Im;
@@ -783,7 +780,7 @@ void TimeOneSC16FFT(int count, int fft_log_size, float signal_value,
             factor = fabs(x[n].Im);
           }
         }
-        factor = ((1 << 18) - 1) / factor;
+        factor = ((1 << 15) - 1) / factor;
         for (n = 0; n < fft_size; ++n) {
           temp16a[n].Re = factor * x[n].Re;
           temp16a[n].Im = factor * x[n].Im;
@@ -829,7 +826,6 @@ void TimeSC16FFT(int count, float signal_value, int signal_type) {
     printf("SC16 FFT\n");
 
   for (k = min_fft_order; k <= max_order; ++k) {
-  //for (k = 7; k <= 8; ++k) {
     int testCount = ComputeCount(count, k);
     TimeOneSC16FFT(testCount, k, signal_value, signal_type);
   }
