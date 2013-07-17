@@ -567,6 +567,8 @@ int SpdySession::GetPushStream(
 
 int SpdySession::TryCreateStream(SpdyStreamRequest* request,
                                  base::WeakPtr<SpdyStream>* stream) {
+  CHECK(request);
+
   // TODO(akalin): Also refuse to create the stream when
   // |availability_state_| == STATE_GOING_AWAY.
   if (availability_state_ == STATE_CLOSED)
@@ -637,6 +639,8 @@ int SpdySession::CreateStream(const SpdyStreamRequest& request,
 }
 
 void SpdySession::CancelStreamRequest(SpdyStreamRequest* request) {
+  CHECK(request);
+
   if (DCHECK_IS_ON()) {
     // |request| should not be in a queue not matching its priority.
     for (int i = 0; i < NUM_PRIORITIES; ++i) {
@@ -675,6 +679,7 @@ void SpdySession::ProcessPendingStreamRequests() {
       if (!pending_create_stream_queues_[i].empty()) {
         SpdyStreamRequest* pending_request =
             pending_create_stream_queues_[i].front();
+        CHECK(pending_request);
         pending_create_stream_queues_[i].pop_front();
         no_pending_create_streams = false;
         DCHECK(!ContainsKey(pending_stream_request_completions_,
@@ -1312,6 +1317,7 @@ void SpdySession::CloseAllStreamsAfter(SpdyStreamId last_good_stream_id,
     queue.swap(pending_create_stream_queues_[i]);
     for (PendingStreamRequestQueue::const_iterator it = queue.begin();
          it != queue.end(); ++it) {
+      CHECK(*it);
       (*it)->OnRequestCompleteFailure(ERR_ABORTED);
     }
   }
@@ -2467,6 +2473,8 @@ void SpdySession::RecordHistograms() {
 }
 
 void SpdySession::CompleteStreamRequest(SpdyStreamRequest* pending_request) {
+  CHECK(pending_request);
+
   PendingStreamRequestCompletionSet::iterator it =
       pending_stream_request_completions_.find(pending_request);
 
