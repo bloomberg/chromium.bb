@@ -3136,6 +3136,14 @@
             'browser/media/webrtc_logging_handler_host.h',
           ]
         }],
+        ['enable_mdns==1', {
+            'sources' : [
+              'browser/local_discovery/privet_device_lister.h',
+              'browser/local_discovery/privet_device_lister.cc',
+              'browser/local_discovery/privet_device_lister_impl.h',
+              'browser/local_discovery/privet_device_lister_impl.cc',
+            ]
+        }]
       ],
       'target_conditions': [
         # Need 'target_conditions' to override default filename_rules to include

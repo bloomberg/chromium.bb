@@ -21,6 +21,23 @@ extern const char kPrivetActionStart[];
 extern const char kPrivetActionGetClaimToken[];
 extern const char kPrivetActionComplete[];
 
+extern const char kPrivetDefaultDeviceType[];
+extern const char kPrivetSubtypeTemplate[];
+
+const double kPrivetMaximumTimeScaling = 1.2;
+
+extern const char kPrivetTxtKeyName[];
+extern const char kPrivetTxtKeyDescription[];
+extern const char kPrivetTxtKeyURL[];
+extern const char kPrivetTxtKeyType[];
+extern const char kPrivetTxtKeyID[];
+extern const char kPrivetTxtKeyConnectionState[];
+
+extern const char kPrivetConnectionStatusOnline[];
+extern const char kPrivetConnectionStatusOffline[];
+extern const char kPrivetConnectionStatusConnecting[];
+extern const char kPrivetConnectionStatusNotConfigured[];
+
 const int kPrivetDefaultTimeout = 15;
 
 const double kPrivetMaximumTimeRandomAddition = 0.2;

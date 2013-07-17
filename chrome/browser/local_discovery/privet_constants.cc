@@ -20,4 +20,19 @@ const char kPrivetActionStart[] = "start";
 const char kPrivetActionGetClaimToken[] = "getClaimToken";
 const char kPrivetActionComplete[] = "complete";
 
+extern const char kPrivetDefaultDeviceType[] = "_privet._tcp.local";
+extern const char kPrivetSubtypeTemplate[] = "%s._sub._privet._tcp.local";
+
+const char kPrivetTxtKeyName[] = "ty";
+const char kPrivetTxtKeyDescription[] = "note";
+const char kPrivetTxtKeyURL[] = "url";
+const char kPrivetTxtKeyType[] = "type";
+const char kPrivetTxtKeyID[] = "id";
+const char kPrivetTxtKeyConnectionState[] = "cs";
+
+const char kPrivetConnectionStatusOnline[] = "online";
+const char kPrivetConnectionStatusOffline[] = "offline";
+const char kPrivetConnectionStatusConnecting[] = "connecting";
+const char kPrivetConnectionStatusNotConfigured[] = "not-configured";
+
 }  // namespace local_discovery
