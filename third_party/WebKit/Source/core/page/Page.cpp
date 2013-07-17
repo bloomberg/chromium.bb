@@ -119,7 +119,6 @@ Page::Page(PageClients& pageClients)
     , m_userStyleSheetModificationTime(0)
     , m_group(0)
     , m_timerAlignmentInterval(DOMTimer::visiblePageAlignmentInterval())
-    , m_isInWindow(true)
     , m_visibilityState(PageVisibilityStateVisible)
     , m_isCursorVisible(true)
     , m_layoutMilestones(0)
@@ -509,19 +508,6 @@ void Page::setPagination(const Pagination& pagination)
     m_pagination = pagination;
 
     setNeedsRecalcStyleInAllFrames();
-}
-
-void Page::setIsInWindow(bool isInWindow)
-{
-    if (m_isInWindow == isInWindow)
-        return;
-
-    m_isInWindow = isInWindow;
-
-    for (Frame* frame = mainFrame(); frame; frame = frame->tree()->traverseNext()) {
-        if (FrameView* frameView = frame->view())
-            frameView->setIsInWindow(isInWindow);
-    }
 }
 
 void Page::userStyleSheetLocationChanged()

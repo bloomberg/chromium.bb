@@ -126,8 +126,6 @@ public:
     // a faithful representation of the content.
     bool isSoftwareRenderable() const;
 
-    void setIsInWindow(bool);
-
     void resetScrollbars();
     void resetScrollbarsAndClearContentsSize();
     void prepareForDetach();

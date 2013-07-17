@@ -213,10 +213,6 @@ public:
     const Pagination& pagination() const { return m_pagination; }
     void setPagination(const Pagination&);
 
-    // Notification that this Page was moved into or out of a native window.
-    void setIsInWindow(bool);
-    bool isInWindow() const { return m_isInWindow; }
-
     void userStyleSheetLocationChanged();
     const String& userStyleSheet() const;
 
@@ -326,8 +322,6 @@ private:
     OwnPtr<StorageNamespace> m_sessionStorage;
 
     double m_timerAlignmentInterval;
-
-    bool m_isInWindow;
 
     PageVisibilityState m_visibilityState;
 

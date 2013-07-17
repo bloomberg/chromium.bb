@@ -808,12 +808,6 @@ bool FrameView::isSoftwareRenderable() const
     return !renderView || !renderView->compositor()->has3DContent();
 }
 
-void FrameView::setIsInWindow(bool isInWindow)
-{
-    if (RenderView* renderView = this->renderView())
-        renderView->setIsInWindow(isInWindow);
-}
-
 RenderObject* FrameView::layoutRoot(bool onlyDuringLayout) const
 {
     return onlyDuringLayout && layoutPending() ? 0 : m_layoutRoot;
