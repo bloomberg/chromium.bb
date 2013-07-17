@@ -99,12 +99,14 @@ void DocumentThreadableLoader::makeCrossOriginAccessRequest(const ResourceReques
     ASSERT(m_options.crossOriginRequestPolicy == UseAccessControl);
 
     OwnPtr<ResourceRequest> crossOriginRequest = adoptPtr(new ResourceRequest(request));
-    updateRequestForAccessControl(*crossOriginRequest, securityOrigin(), m_options.allowCredentials);
 
-    if ((m_options.preflightPolicy == ConsiderPreflight && isSimpleCrossOriginAccessRequest(crossOriginRequest->httpMethod(), crossOriginRequest->httpHeaderFields())) || m_options.preflightPolicy == PreventPreflight)
+    if ((m_options.preflightPolicy == ConsiderPreflight && isSimpleCrossOriginAccessRequest(crossOriginRequest->httpMethod(), crossOriginRequest->httpHeaderFields())) || m_options.preflightPolicy == PreventPreflight) {
+        updateRequestForAccessControl(*crossOriginRequest, securityOrigin(), m_options.allowCredentials);
         makeSimpleCrossOriginAccessRequest(*crossOriginRequest);
-    else {
+    } else {
         m_simpleRequest = false;
+        // Do not set the Origin header for preflight requests.
+        updateRequestForAccessControl(*crossOriginRequest, 0, m_options.allowCredentials);
         m_actualRequest = crossOriginRequest.release();
 
         if (CrossOriginPreflightResultCache::shared().canSkipPreflight(securityOrigin()->toString(), m_actualRequest->url(), m_options.allowCredentials, m_actualRequest->httpMethod(), m_actualRequest->httpHeaderFields()))

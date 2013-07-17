@@ -101,7 +101,9 @@ void updateRequestForAccessControl(ResourceRequest& request, SecurityOrigin* sec
 {
     request.removeCredentials();
     request.setAllowCookies(allowCredentials == AllowStoredCredentials);
-    request.setHTTPOrigin(securityOrigin->toString());
+
+    if (securityOrigin)
+        request.setHTTPOrigin(securityOrigin->toString());
 }
 
 ResourceRequest createAccessControlPreflightRequest(const ResourceRequest& request, SecurityOrigin* securityOrigin)
