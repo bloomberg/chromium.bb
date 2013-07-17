@@ -4,7 +4,7 @@
 
 #include "chrome/browser/net/net_error_tab_helper.h"
 
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "chrome/common/net/net_error_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/page_transition_types.h"

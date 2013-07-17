@@ -5,7 +5,7 @@
 #include "base/command_line.h"
 #include "base/format_macros.h"
 #include "base/memory/scoped_vector.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "chrome/browser/prerender/prerender_contents.h"

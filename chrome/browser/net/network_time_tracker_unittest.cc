@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "chrome/browser/net/network_time_tracker.h"
 #include "content/public/test/test_browser_thread.h"
 #include "net/base/network_time_notifier.h"
