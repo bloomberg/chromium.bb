@@ -552,7 +552,8 @@ void UniscribeHelper::fillRuns()
                 for (int i = 0; i < numberOfItems; ++i) {
                     // Do not pack with whitespace characters at the head.
                     // Otherwise whole the run is rendered as a whitespace.
-                    if (m_scriptTags[i] == SCRIPT_TAG_UNKNOWN && !Font::treatAsSpace(m_input[m_runs[i].iCharPos])) {
+                    WCHAR ch = m_input[m_runs[i].iCharPos];
+                    if (m_scriptTags[i] == SCRIPT_TAG_UNKNOWN && !Font::treatAsSpace(ch) && !Font::treatAsZeroWidthSpace(ch)) {
                         int j = 1;
                         while (i + j < numberOfItems && m_scriptTags[i + j] == SCRIPT_TAG_UNKNOWN)
                             ++j;
