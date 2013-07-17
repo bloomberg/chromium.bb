@@ -42,10 +42,6 @@ class FileSystemBackendDelegate : public chromeos::FileSystemBackendDelegate {
       const fileapi::FileSystemURL& url,
       int64 offset,
       fileapi::FileSystemContext* context) OVERRIDE;
-  virtual fileapi::FileSystemOperation* CreateFileSystemOperation(
-      const fileapi::FileSystemURL& url,
-      fileapi::FileSystemContext* context,
-      base::PlatformFileError* error_code) OVERRIDE;
 
  private:
   scoped_refptr<fileapi::ExternalMountPoints> mount_points_;

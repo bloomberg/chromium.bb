@@ -10,7 +10,6 @@
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/webkit_file_stream_reader_impl.h"
 #include "chrome/browser/chromeos/drive/webkit_file_stream_writer_impl.h"
-#include "chrome/browser/chromeos/fileapi/remote_file_system_operation.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -79,24 +78,6 @@ FileSystemBackendDelegate::CreateFileStreamWriter(
   return scoped_ptr<fileapi::FileStreamWriter>(
       new internal::WebkitFileStreamWriterImpl(
           proxy, url, offset, context->task_runners()->file_task_runner()));
-}
-
-fileapi::FileSystemOperation*
-FileSystemBackendDelegate::CreateFileSystemOperation(
-    const fileapi::FileSystemURL& url,
-    fileapi::FileSystemContext* context,
-    base::PlatformFileError* error_code) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK_EQ(fileapi::kFileSystemTypeDrive, url.type());
-
-  fileapi::RemoteFileSystemProxyInterface* proxy =
-      mount_points_->GetRemoteFileSystemProxy(url.filesystem_id());
-  if (!proxy) {
-    *error_code = base::PLATFORM_FILE_ERROR_NOT_FOUND;
-    return NULL;
-  }
-
-  return new chromeos::RemoteFileSystemOperation(proxy);
 }
 
 }  // namespace drive

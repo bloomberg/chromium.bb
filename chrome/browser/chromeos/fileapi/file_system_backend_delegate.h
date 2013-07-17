@@ -50,14 +50,6 @@ class FileSystemBackendDelegate {
       const fileapi::FileSystemURL& url,
       int64 offset,
       fileapi::FileSystemContext* context) = 0;
-
-  // Called from FileSystemBackend::CreateFileSystemOperation().
-  // TODO(hidehiko): Get rid of this method when we merge the
-  // {Remote,Local}FileSystemOperation.
-  virtual fileapi::FileSystemOperation* CreateFileSystemOperation(
-      const fileapi::FileSystemURL& url,
-      fileapi::FileSystemContext* context,
-      base::PlatformFileError* error_code) = 0;
 };
 
 }  // namespace chromeos
