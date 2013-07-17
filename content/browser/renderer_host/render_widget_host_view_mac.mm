@@ -31,6 +31,7 @@
 #include "content/browser/renderer_host/compositing_iosurface_layer_mac.h"
 #include "content/browser/renderer_host/compositing_iosurface_mac.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
+#import "content/browser/renderer_host/render_widget_host_view_mac_dictionary_helper.h"
 #import "content/browser/renderer_host/render_widget_host_view_mac_editcommand_helper.h"
 #import "content/browser/renderer_host/text_input_client_mac.h"
 #include "content/common/accessibility_messages.h"
@@ -161,8 +162,6 @@ static float ScaleFactor(NSView* view) {
 - (void)updateSoftwareLayerScaleFactor;
 - (void)checkForPluginImeCancellation;
 - (void)updateTabBackingStoreScaleFactor;
-- (NSRect)firstViewRectForCharacterRange:(NSRange)theRange
-                             actualRange:(NSRangePointer)actualRange;
 @end
 
 // NSEvent subtype for scroll gestures events.
@@ -1728,39 +1727,8 @@ void RenderWidgetHostViewMac::WindowFrameChanged() {
 }
 
 void RenderWidgetHostViewMac::ShowDefinitionForSelection() {
-  // Brings up either Dictionary.app or a light-weight dictionary panel,
-  // depending on system settings.
-  NSRange selection_range = [cocoa_view_ selectedRange];
-  NSAttributedString* attr_string =
-      [cocoa_view_ attributedSubstringForProposedRange:selection_range
-                                           actualRange:nil];
-
-  // The PDF plugin does not support getting the attributed string. Until it
-  // does, use NSPerformService(), which opens Dictionary.app.
-  // http://crbug.com/152438
-  // TODO(asvitkine): This should be removed after the above support is added.
-  if (!attr_string) {
-    if (selected_text_.empty())
-      return;
-    NSString* text = base::SysUTF8ToNSString(selected_text_);
-    NSPasteboard* pasteboard = [NSPasteboard pasteboardWithUniqueName];
-    NSArray* types = [NSArray arrayWithObject:NSStringPboardType];
-    [pasteboard declareTypes:types owner:nil];
-    if ([pasteboard setString:text forType:NSStringPboardType])
-      NSPerformService(@"Look Up in Dictionary", pasteboard);
-    return;
-  }
-
-  NSRect rect = [cocoa_view_ firstViewRectForCharacterRange:selection_range
-                                                actualRange:nil];
-
-  // Set |rect.origin| to the text baseline based on |attr_string|'s font,
-  // since -baselineDeltaForCharacterAtIndex: is currently not implemented.
-  NSDictionary* attrs = [attr_string attributesAtIndex:0 effectiveRange:nil];
-  NSFont* font = [attrs objectForKey:NSFontAttributeName];
-  rect.origin.y += NSHeight(rect) - [font ascender];
-  [cocoa_view_ showDefinitionForAttributedString:attr_string
-                                         atPoint:rect.origin];
+  RenderWidgetHostViewMacDictionaryHelper helper(this);
+  helper.ShowDefinitionForSelection();
 }
 
 void RenderWidgetHostViewMac::SetBackground(const SkBitmap& background) {

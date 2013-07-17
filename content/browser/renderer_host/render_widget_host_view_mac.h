@@ -171,6 +171,8 @@ class RenderWidgetHostViewMacEditCommandHelper;
 // Returns YES if the event was handled.
 - (BOOL)postProcessEventForPluginIme:(NSEvent*)event;
 - (void)updateCursor:(NSCursor*)cursor;
+- (NSRect)firstViewRectForCharacterRange:(NSRange)theRange
+                             actualRange:(NSRangePointer)actualRange;
 @end
 
 namespace content {

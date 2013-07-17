@@ -9,9 +9,6 @@
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_guest.h"
-#if defined(OS_WIN) || defined(USE_AURA)
-#include "content/browser/renderer_host/ui_events_helper.h"
-#endif
 #include "content/common/browser_plugin/browser_plugin_messages.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/view_messages.h"
@@ -19,6 +16,14 @@
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/web/WebScreenInfo.h"
 #include "webkit/plugins/npapi/webplugin.h"
+
+#if defined(OS_MACOSX)
+#import "content/browser/renderer_host/render_widget_host_view_mac_dictionary_helper.h"
+#endif
+
+#if defined(OS_WIN) || defined(USE_AURA)
+#include "content/browser/renderer_host/ui_events_helper.h"
+#endif
 
 namespace content {
 
@@ -299,6 +304,12 @@ void RenderWidgetHostViewGuest::DidUpdateBackingStore(
   NOTREACHED();
 }
 
+void RenderWidgetHostViewGuest::SelectionChanged(const string16& text,
+                                                 size_t offset,
+                                                 const ui::Range& range) {
+  platform_view_->SelectionChanged(text, offset, range);
+}
+
 void RenderWidgetHostViewGuest::SelectionBoundsChanged(
     const ViewHostMsg_SelectionBounds_Params& params) {
   platform_view_->SelectionBoundsChanged(params);
@@ -412,7 +423,21 @@ void RenderWidgetHostViewGuest::WindowFrameChanged() {
 }
 
 void RenderWidgetHostViewGuest::ShowDefinitionForSelection() {
-  platform_view_->ShowDefinitionForSelection();
+  gfx::Point origin;
+  gfx::Rect guest_bounds = GetViewBounds();
+  gfx::Rect embedder_bounds =
+      guest_->GetEmbedderRenderWidgetHostView()->GetViewBounds();
+
+  gfx::Vector2d guest_offset = gfx::Vector2d(
+      // Horizontal offset of guest from embedder.
+      guest_bounds.x() - embedder_bounds.x(),
+      // Vertical offset from guest's top to embedder's bottom edge.
+      embedder_bounds.bottom() - guest_bounds.y());
+
+  RenderWidgetHostViewMacDictionaryHelper helper(platform_view_);
+  helper.SetTargetView(guest_->GetEmbedderRenderWidgetHostView());
+  helper.set_offset(guest_offset);
+  helper.ShowDefinitionForSelection();
 }
 
 bool RenderWidgetHostViewGuest::SupportsSpeech() const {

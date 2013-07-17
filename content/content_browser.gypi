@@ -912,6 +912,8 @@
     'browser/renderer_host/render_widget_host_view_gtk.h',
     'browser/renderer_host/render_widget_host_view_guest.cc',
     'browser/renderer_host/render_widget_host_view_guest.h',
+    'browser/renderer_host/render_widget_host_view_mac_dictionary_helper.h',
+    'browser/renderer_host/render_widget_host_view_mac_dictionary_helper.mm',
     'browser/renderer_host/render_widget_host_view_mac_editcommand_helper.h',
     'browser/renderer_host/render_widget_host_view_mac_editcommand_helper.mm',
     'browser/renderer_host/render_widget_host_view_mac.h',
