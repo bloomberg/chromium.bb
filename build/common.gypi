@@ -3999,9 +3999,9 @@
           'MACOSX_DEPLOYMENT_TARGET': '<(mac_deployment_target)',
           # Keep pch files below xcodebuild/.
           'SHARED_PRECOMPS_DIR': '$(CONFIGURATION_BUILD_DIR)/SharedPrecompiledHeaders',
-          'OTHER_CFLAGS': [
-            '-fno-strict-aliasing',  # See http://crbug.com/32204
-          ],
+
+          # -fno-strict-aliasing, see http://crbug.com/32204
+          'GCC_STRICT_ALIASING': 'NO',
         },
         'target_conditions': [
           ['_type=="executable"', {
