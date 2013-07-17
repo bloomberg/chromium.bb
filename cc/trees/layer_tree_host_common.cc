@@ -522,7 +522,6 @@ void ApplyPositionAdjustment(
 
 gfx::Transform ComputeScrollCompensationForThisLayer(
     LayerImpl* scrolling_layer,
-    float current_page_scale,
     const gfx::Transform& parent_matrix) {
   // For every layer that has non-zero scroll_delta, we have to compute a
   // transform that can undo the scroll_delta translation. In particular, we
@@ -532,12 +531,11 @@ gfx::Transform ComputeScrollCompensationForThisLayer(
   //
   //     Step 1. transform from target surface space to the exact space where
   //           scroll_delta is actually applied.
-  //           -- this is inverse of the matrix in step 3
+  //           -- this is inverse of parent_matrix
   //     Step 2. undo the scroll_delta
   //           -- this is just a translation by scroll_delta.
   //     Step 3. transform back to target surface space.
-  //           -- this transform is the "partial_layer_origin_transform" =
-  //           (parent_matrix * scale(layer->pageScaleDelta()));
+  //           -- this transform is the parent_matrix
   //
   // These steps create a matrix that both start and end in target surface
   // space. So this matrix can pre-multiply any fixed-position layer's
@@ -545,30 +543,23 @@ gfx::Transform ComputeScrollCompensationForThisLayer(
   // layer is fixed onto the same render_target as this scrolling_layer.
   //
 
-  gfx::Transform partial_layer_origin_transform = parent_matrix;
-  partial_layer_origin_transform.Scale(current_page_scale, current_page_scale);
-
-  gfx::Transform scroll_compensation_for_this_layer =
-      partial_layer_origin_transform;        // Step 3
+  gfx::Transform scroll_compensation_for_this_layer = parent_matrix;  // Step 3
   scroll_compensation_for_this_layer.Translate(
       scrolling_layer->ScrollDelta().x(),
       scrolling_layer->ScrollDelta().y());  // Step 2
 
-  gfx::Transform inverse_partial_layer_origin_transform(
-      gfx::Transform::kSkipInitialization);
-  if (!partial_layer_origin_transform.GetInverse(
-          &inverse_partial_layer_origin_transform)) {
+  gfx::Transform inverse_parent_matrix(gfx::Transform::kSkipInitialization);
+  if (!parent_matrix.GetInverse(&inverse_parent_matrix)) {
     // TODO(shawnsingh): Either we need to handle uninvertible transforms
     // here, or DCHECK that the transform is invertible.
   }
   scroll_compensation_for_this_layer.PreconcatTransform(
-      inverse_partial_layer_origin_transform);  // Step 1
+      inverse_parent_matrix);  // Step 1
   return scroll_compensation_for_this_layer;
 }
 
 gfx::Transform ComputeScrollCompensationMatrixForChildren(
     Layer* current_layer,
-    float current_page_scale,
     const gfx::Transform& current_parent_matrix,
     const gfx::Transform& current_scroll_compensation) {
   // The main thread (i.e. Layer) does not need to worry about scroll
@@ -578,7 +569,6 @@ gfx::Transform ComputeScrollCompensationMatrixForChildren(
 
 gfx::Transform ComputeScrollCompensationMatrixForChildren(
     LayerImpl* layer,
-    float current_page_scale,
     const gfx::Transform& parent_matrix,
     const gfx::Transform& current_scroll_compensation_matrix) {
   // "Total scroll compensation" is the transform needed to cancel out all
@@ -623,7 +613,7 @@ gfx::Transform ComputeScrollCompensationMatrixForChildren(
   if (!layer->ScrollDelta().IsZero()) {
     gfx::Transform scroll_compensation_for_this_layer =
         ComputeScrollCompensationForThisLayer(
-            layer, current_page_scale, parent_matrix);
+            layer, parent_matrix);
     next_scroll_compensation_matrix.PreconcatTransform(
         scroll_compensation_for_this_layer);
   }
@@ -1066,24 +1056,6 @@ static void CalculateDrawPropertiesInternal(
     combined_transform.Translate(position.x(), position.y());
   }
 
-  float page_scale_factor_for_transforms = 1.f;
-  if (layer == page_scale_application_layer) {
-    in_subtree_of_page_scale_application_layer = true;
-    page_scale_factor_for_transforms = page_scale_factor;
-  }
-
-  float page_scale_factor_applied_to_layer =
-      in_subtree_of_page_scale_application_layer ? page_scale_factor : 1.f;
-
-  // Note carefully: this is Concat, not Preconcat (page_scale_matrix *
-  // combined_transform).
-  if (page_scale_factor_for_transforms != 1.f) {
-    gfx::Transform page_scale_matrix;
-    page_scale_matrix.Scale(page_scale_factor_for_transforms,
-                            page_scale_factor_for_transforms);
-    combined_transform.ConcatTransform(page_scale_matrix);
-  }
-
   if (!animating_transform_to_target && layer->scrollable() &&
       combined_transform.IsScaleOrTranslation()) {
     // Align the scrollable layer's position to screen space pixels to avoid
@@ -1098,8 +1070,9 @@ static void CalculateDrawPropertiesInternal(
 
   // Compute the 2d scale components of the transform hierarchy up to the target
   // surface. From there, we can decide on a contents scale for the layer.
-  float layer_scale_factors =
-      device_scale_factor * page_scale_factor_applied_to_layer;
+  float layer_scale_factors = device_scale_factor;
+  if (in_subtree_of_page_scale_application_layer)
+    layer_scale_factors *= page_scale_factor;
   gfx::Vector2dF combined_transform_scales =
       MathUtil::ComputeTransform2dScaleComponents(
           combined_transform,
@@ -1115,7 +1088,7 @@ static void CalculateDrawPropertiesInternal(
       subtree_can_adjust_raster_scales,
       ideal_contents_scale,
       device_scale_factor,
-      page_scale_factor_applied_to_layer,
+      in_subtree_of_page_scale_application_layer ? page_scale_factor : 1.f,
       animating_transform_to_screen);
 
   // The draw_transform that gets computed below is effectively the layer's
@@ -1364,6 +1337,11 @@ static void CalculateDrawPropertiesInternal(
     }
   }
 
+  if (layer == page_scale_application_layer) {
+    sublayer_matrix.Scale(page_scale_factor, page_scale_factor);
+    in_subtree_of_page_scale_application_layer = true;
+  }
+
   // Flatten to 2D if the layer doesn't preserve 3D.
   if (!layer->preserves_3d())
     sublayer_matrix.FlattenTo2d();
@@ -1391,7 +1369,6 @@ static void CalculateDrawPropertiesInternal(
   gfx::Transform next_scroll_compensation_matrix =
       ComputeScrollCompensationMatrixForChildren(
           layer,
-          page_scale_factor_for_transforms,
           parent_matrix,
           current_scroll_compensation_matrix);
   LayerType* next_fixed_container =

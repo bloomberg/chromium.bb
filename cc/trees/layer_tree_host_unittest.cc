@@ -675,7 +675,6 @@ class LayerTreeHostTestCommit : public LayerTreeHostTest {
   virtual void BeginTest() OVERRIDE {
     layer_tree_host()->SetViewportSize(gfx::Size(20, 20));
     layer_tree_host()->set_background_color(SK_ColorGRAY);
-    layer_tree_host()->SetPageScaleFactorAndLimits(5.f, 5.f, 5.f);
 
     PostSetNeedsCommitToMainThread();
   }
@@ -683,7 +682,6 @@ class LayerTreeHostTestCommit : public LayerTreeHostTest {
   virtual void DidActivateTreeOnThread(LayerTreeHostImpl* impl) OVERRIDE {
     EXPECT_EQ(gfx::Size(20, 20), impl->device_viewport_size());
     EXPECT_EQ(SK_ColorGRAY, impl->active_tree()->background_color());
-    EXPECT_EQ(5.f, impl->active_tree()->page_scale_factor());
 
     EndTest();
   }

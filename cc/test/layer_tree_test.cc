@@ -430,8 +430,6 @@ void LayerTreeTest::SetupTree() {
     root_layer->SetAnchorPoint(gfx::PointF());
     root_layer->SetBounds(gfx::Size(1, 1));
     root_layer->SetIsDrawable(true);
-    // Need at least one scrollable layer for tests with non-unit page-scales.
-    root_layer->SetScrollable(true);
     layer_tree_host_->SetRootLayer(root_layer);
   }
 

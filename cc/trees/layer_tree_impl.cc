@@ -290,7 +290,7 @@ void LayerTreeImpl::UpdateDrawProperties() {
         layer_tree_host_impl_->DeviceTransform(),
         device_scale_factor(),
         total_page_scale_factor(),
-        root_scroll_layer_,
+        root_scroll_layer_ ? root_scroll_layer_->parent() : NULL,
         MaxTextureSize(),
         settings().can_use_lcd_text,
         settings().layer_transforms_should_scale_layer_contents,

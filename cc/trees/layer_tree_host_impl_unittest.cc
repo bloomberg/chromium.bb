@@ -1700,16 +1700,19 @@ TEST_F(LayerTreeHostImplTest, ScrollBlockedByContentLayer) {
 TEST_F(LayerTreeHostImplTest, ScrollRootAndChangePageScaleOnMainThread) {
   gfx::Size surface_size(10, 10);
   float page_scale = 2.f;
-  scoped_ptr<LayerImpl> root = CreateScrollableLayer(1, surface_size);
+  scoped_ptr<LayerImpl> root = LayerImpl::Create(host_impl_->active_tree(), 1);
+  scoped_ptr<LayerImpl> root_scrolling = CreateScrollableLayer(2, surface_size);
+  root->AddChild(root_scrolling.Pass());
   host_impl_->active_tree()->SetRootLayer(root.Pass());
   host_impl_->active_tree()->DidBecomeActive();
   host_impl_->SetViewportSize(surface_size);
   InitializeRendererAndDrawFrame();
 
+  LayerImpl* root_scroll = host_impl_->active_tree()->RootScrollLayer();
+
   gfx::Vector2d scroll_delta(0, 10);
   gfx::Vector2d expected_scroll_delta = scroll_delta;
-  gfx::Vector2d expected_max_scroll =
-      host_impl_->active_tree()->root_layer()->max_scroll_offset();
+  gfx::Vector2d expected_max_scroll = root_scroll->max_scroll_offset();
   EXPECT_EQ(InputHandler::ScrollStarted,
             host_impl_->ScrollBegin(gfx::Point(5, 5),
                                     InputHandler::Wheel));
@@ -1722,13 +1725,10 @@ TEST_F(LayerTreeHostImplTest, ScrollRootAndChangePageScaleOnMainThread) {
                                                          page_scale);
 
   scoped_ptr<ScrollAndScaleSet> scroll_info = host_impl_->ProcessScrollDeltas();
-  ExpectContains(*scroll_info.get(),
-                 host_impl_->active_tree()->root_layer()->id(),
-                 expected_scroll_delta);
+  ExpectContains(*scroll_info.get(), root_scroll->id(), expected_scroll_delta);
 
   // The scroll range should also have been updated.
-  EXPECT_EQ(expected_max_scroll,
-            host_impl_->active_tree()->root_layer()->max_scroll_offset());
+  EXPECT_EQ(expected_max_scroll, root_scroll->max_scroll_offset());
 
   // The page scale delta remains constant because the impl thread did not
   // scale.
@@ -1738,17 +1738,20 @@ TEST_F(LayerTreeHostImplTest, ScrollRootAndChangePageScaleOnMainThread) {
 TEST_F(LayerTreeHostImplTest, ScrollRootAndChangePageScaleOnImplThread) {
   gfx::Size surface_size(10, 10);
   float page_scale = 2.f;
-  scoped_ptr<LayerImpl> root = CreateScrollableLayer(1, surface_size);
+  scoped_ptr<LayerImpl> root = LayerImpl::Create(host_impl_->active_tree(), 1);
+  scoped_ptr<LayerImpl> root_scrolling = CreateScrollableLayer(2, surface_size);
+  root->AddChild(root_scrolling.Pass());
   host_impl_->active_tree()->SetRootLayer(root.Pass());
   host_impl_->active_tree()->DidBecomeActive();
   host_impl_->SetViewportSize(surface_size);
   host_impl_->active_tree()->SetPageScaleFactorAndLimits(1.f, 1.f, page_scale);
   InitializeRendererAndDrawFrame();
 
+  LayerImpl* root_scroll = host_impl_->active_tree()->RootScrollLayer();
+
   gfx::Vector2d scroll_delta(0, 10);
   gfx::Vector2d expected_scroll_delta = scroll_delta;
-  gfx::Vector2d expected_max_scroll =
-      host_impl_->active_tree()->root_layer()->max_scroll_offset();
+  gfx::Vector2d expected_max_scroll = root_scroll->max_scroll_offset();
   EXPECT_EQ(InputHandler::ScrollStarted,
             host_impl_->ScrollBegin(gfx::Point(5, 5),
                                     InputHandler::Wheel));
@@ -1763,13 +1766,10 @@ TEST_F(LayerTreeHostImplTest, ScrollRootAndChangePageScaleOnImplThread) {
 
   // The scroll delta is not scaled because the main thread did not scale.
   scoped_ptr<ScrollAndScaleSet> scroll_info = host_impl_->ProcessScrollDeltas();
-  ExpectContains(*scroll_info.get(),
-                 host_impl_->active_tree()->root_layer()->id(),
-                 expected_scroll_delta);
+  ExpectContains(*scroll_info.get(), root_scroll->id(), expected_scroll_delta);
 
   // The scroll range should also have been updated.
-  EXPECT_EQ(expected_max_scroll,
-            host_impl_->active_tree()->root_layer()->max_scroll_offset());
+  EXPECT_EQ(expected_max_scroll, root_scroll->max_scroll_offset());
 
   // The page scale delta should match the new scale on the impl side.
   EXPECT_EQ(page_scale, host_impl_->active_tree()->total_page_scale_factor());
@@ -1832,18 +1832,21 @@ TEST_F(LayerTreeHostImplTest, PageScaleDeltaAppliedToRootScrollLayerOnly) {
 TEST_F(LayerTreeHostImplTest, ScrollChildAndChangePageScaleOnMainThread) {
   gfx::Size surface_size(10, 10);
   scoped_ptr<LayerImpl> root = LayerImpl::Create(host_impl_->active_tree(), 1);
-  root->SetBounds(surface_size);
-  root->SetContentBounds(surface_size);
-  // Also mark the root scrollable so it becomes the root scroll layer.
-  root->SetScrollable(true);
-  int scroll_layer_id = 2;
-  root->AddChild(CreateScrollableLayer(scroll_layer_id, surface_size));
+  scoped_ptr<LayerImpl> root_scrolling =
+      LayerImpl::Create(host_impl_->active_tree(), 2);
+  root_scrolling->SetBounds(surface_size);
+  root_scrolling->SetContentBounds(surface_size);
+  root_scrolling->SetScrollable(true);
+  root->AddChild(root_scrolling.Pass());
+  int child_scroll_layer_id = 3;
+  scoped_ptr<LayerImpl> child_scrolling =
+      CreateScrollableLayer(child_scroll_layer_id, surface_size);
+  LayerImpl* child = child_scrolling.get();
+  root->AddChild(child_scrolling.Pass());
   host_impl_->active_tree()->SetRootLayer(root.Pass());
   host_impl_->active_tree()->DidBecomeActive();
   host_impl_->SetViewportSize(surface_size);
   InitializeRendererAndDrawFrame();
-
-  LayerImpl* child = host_impl_->active_tree()->root_layer()->children()[0];
 
   gfx::Vector2d scroll_delta(0, 10);
   gfx::Vector2d expected_scroll_delta(scroll_delta);
@@ -1862,7 +1865,8 @@ TEST_F(LayerTreeHostImplTest, ScrollChildAndChangePageScaleOnMainThread) {
   DrawOneFrame();
 
   scoped_ptr<ScrollAndScaleSet> scroll_info = host_impl_->ProcessScrollDeltas();
-  ExpectContains(*scroll_info.get(), scroll_layer_id, expected_scroll_delta);
+  ExpectContains(
+      *scroll_info.get(), child_scroll_layer_id, expected_scroll_delta);
 
   // The scroll range should not have changed.
   EXPECT_EQ(child->max_scroll_offset(), expected_max_scroll);
@@ -1916,16 +1920,18 @@ TEST_F(LayerTreeHostImplTest, ScrollWithoutBubbling) {
   // Scroll a child layer beyond its maximum scroll range and make sure the
   // the scroll doesn't bubble up to the parent layer.
   gfx::Size surface_size(10, 10);
-  scoped_ptr<LayerImpl> root = CreateScrollableLayer(1, surface_size);
+  scoped_ptr<LayerImpl> root = LayerImpl::Create(host_impl_->active_tree(), 1);
+  scoped_ptr<LayerImpl> root_scrolling = CreateScrollableLayer(2, surface_size);
 
-  scoped_ptr<LayerImpl> grand_child = CreateScrollableLayer(3, surface_size);
+  scoped_ptr<LayerImpl> grand_child = CreateScrollableLayer(4, surface_size);
   grand_child->SetScrollOffset(gfx::Vector2d(0, 2));
 
-  scoped_ptr<LayerImpl> child = CreateScrollableLayer(2, surface_size);
+  scoped_ptr<LayerImpl> child = CreateScrollableLayer(3, surface_size);
   child->SetScrollOffset(gfx::Vector2d(0, 3));
   child->AddChild(grand_child.Pass());
 
-  root->AddChild(child.Pass());
+  root_scrolling->AddChild(child.Pass());
+  root->AddChild(root_scrolling.Pass());
   host_impl_->active_tree()->SetRootLayer(root.Pass());
   host_impl_->active_tree()->DidBecomeActive();
   host_impl_->SetViewportSize(surface_size);
@@ -1942,7 +1948,8 @@ TEST_F(LayerTreeHostImplTest, ScrollWithoutBubbling) {
         host_impl_->ProcessScrollDeltas();
 
     // The grand child should have scrolled up to its limit.
-    LayerImpl* child = host_impl_->active_tree()->root_layer()->children()[0];
+    LayerImpl* child =
+        host_impl_->active_tree()->root_layer()->children()[0]->children()[0];
     LayerImpl* grand_child = child->children()[0];
     ExpectContains(*scroll_info.get(), grand_child->id(), gfx::Vector2d(0, -2));
 

@@ -446,7 +446,7 @@ TEST(LayerTreeHostCommonTest, TransformsAboutScrollOffset) {
   root->AddChild(scroll_layerScopedPtr.Pass());
 
   ExecuteCalculateDrawProperties(
-      root.get(), kDeviceScale, kPageScale, scroll_layer);
+      root.get(), kDeviceScale, kPageScale, scroll_layer->parent());
   gfx::Transform expected_transform = identity_matrix;
   gfx::PointF sub_layer_screen_position = kScrollLayerPosition - kScrollDelta;
   sub_layer_screen_position.Scale(kPageScale * kDeviceScale);
@@ -469,7 +469,7 @@ TEST(LayerTreeHostCommonTest, TransformsAboutScrollOffset) {
                                gfx::Size(10, 20),
                                false);
   ExecuteCalculateDrawProperties(
-      root.get(), kDeviceScale, kPageScale, scroll_layer);
+      root.get(), kDeviceScale, kPageScale, scroll_layer->parent());
   expected_transform.MakeIdentity();
   expected_transform.Translate(
       MathUtil::Round(kTranslateX * kPageScale * kDeviceScale +
@@ -1493,7 +1493,7 @@ TEST(LayerTreeHostCommonTest, TransformAboveRootLayer) {
   const gfx::Transform identity_matrix;
   scoped_refptr<Layer> root = Layer::Create();
   scoped_refptr<Layer> child = Layer::Create();
-
+  child->SetScrollable(true);
   root->AddChild(child);
 
   SetLayerPropertiesForTesting(root.get(),
@@ -1578,6 +1578,45 @@ TEST(LayerTreeHostCommonTest, TransformAboveRootLayer) {
                                                &render_surface_layer_list);
   EXPECT_EQ(composite, root->draw_properties().target_space_transform);
   EXPECT_EQ(composite, child->draw_properties().target_space_transform);
+  EXPECT_EQ(identity_matrix, root->render_surface()->draw_transform());
+
+  // Verify it composes correctly with device scale.
+  float device_scale_factor = 1.5f;
+  LayerTreeHostCommon::CalculateDrawProperties(root.get(),
+                                               root->bounds(),
+                                               translate,
+                                               device_scale_factor,
+                                               1.f,
+                                               NULL,
+                                               dummy_max_texture_size,
+                                               false,
+                                               true,  // can_adjust_raster_scale
+                                               &render_surface_layer_list);
+  gfx::Transform device_scaled_translate = translate;
+  device_scaled_translate.Scale(device_scale_factor, device_scale_factor);
+  EXPECT_EQ(device_scaled_translate,
+            root->draw_properties().target_space_transform);
+  EXPECT_EQ(device_scaled_translate,
+            child->draw_properties().target_space_transform);
+  EXPECT_EQ(identity_matrix, root->render_surface()->draw_transform());
+
+  // Verify it composes correctly with page scale.
+  float page_scale_factor = 2.f;
+  LayerTreeHostCommon::CalculateDrawProperties(root.get(),
+                                               root->bounds(),
+                                               translate,
+                                               1.f,
+                                               page_scale_factor,
+                                               root.get(),
+                                               dummy_max_texture_size,
+                                               false,
+                                               true,  // can_adjust_raster_scale
+                                               &render_surface_layer_list);
+  gfx::Transform page_scaled_translate = translate;
+  page_scaled_translate.Scale(page_scale_factor, page_scale_factor);
+  EXPECT_EQ(translate, root->draw_properties().target_space_transform);
+  EXPECT_EQ(page_scaled_translate,
+            child->draw_properties().target_space_transform);
   EXPECT_EQ(identity_matrix, root->render_surface()->draw_transform());
 
   // Verify that it composes correctly with transforms directly on root layer.
@@ -6283,6 +6322,8 @@ TEST(LayerTreeHostCommonTest, SurfaceLayerTransformsInHighDPI) {
   gfx::Transform scale_small_matrix;
   scale_small_matrix.Scale(1.0 / 10.0, 1.0 / 12.0);
 
+  scoped_refptr<Layer> root = Layer::Create();
+
   scoped_refptr<ContentLayer> parent = CreateDrawableContentLayer(&delegate);
   SetLayerPropertiesForTesting(parent.get(),
                                identity_matrix,
@@ -6317,6 +6358,7 @@ TEST(LayerTreeHostCommonTest, SurfaceLayerTransformsInHighDPI) {
 
   parent->AddChild(perspective_surface);
   parent->AddChild(scale_surface);
+  root->AddChild(parent);
 
   LayerList render_surface_layer_list;
   int dummy_max_texture_size = 512;
@@ -6324,12 +6366,12 @@ TEST(LayerTreeHostCommonTest, SurfaceLayerTransformsInHighDPI) {
   float device_scale_factor = 2.5f;
   float page_scale_factor = 3.f;
 
-  LayerTreeHostCommon::CalculateDrawProperties(parent.get(),
+  LayerTreeHostCommon::CalculateDrawProperties(root.get(),
                                                parent->bounds(),
                                                gfx::Transform(),
                                                device_scale_factor,
                                                page_scale_factor,
-                                               parent.get(),
+                                               root,
                                                dummy_max_texture_size,
                                                false,
                                                true,  // can_adjust_raster_scale
@@ -6570,7 +6612,7 @@ TEST(LayerTreeHostCommonTest, ContentsScale) {
                                                gfx::Transform(),
                                                device_scale_factor,
                                                page_scale_factor,
-                                               parent.get(),
+                                               root.get(),
                                                dummy_max_texture_size,
                                                false,
                                                true,  // can_adjust_raster_scale
@@ -6613,7 +6655,7 @@ TEST(LayerTreeHostCommonTest, ContentsScale) {
                                                gfx::Transform(),
                                                device_scale_factor,
                                                page_scale_factor,
-                                               parent.get(),
+                                               root.get(),
                                                dummy_max_texture_size,
                                                false,
                                                true,  // can_adjust_raster_scale
@@ -6642,7 +6684,7 @@ TEST(LayerTreeHostCommonTest, ContentsScale) {
                                                gfx::Transform(),
                                                device_scale_factor,
                                                page_scale_factor,
-                                               parent.get(),
+                                               root.get(),
                                                dummy_max_texture_size,
                                                false,
                                                true,  // can_adjust_raster_scale
@@ -6668,7 +6710,7 @@ TEST(LayerTreeHostCommonTest, ContentsScale) {
                                                gfx::Transform(),
                                                device_scale_factor,
                                                page_scale_factor,
-                                               parent.get(),
+                                               root.get(),
                                                dummy_max_texture_size,
                                                false,
                                                true,  // can_adjust_raster_scale
@@ -6757,7 +6799,7 @@ TEST(LayerTreeHostCommonTest,
       gfx::Transform(),
       device_scale_factor,
       page_scale_factor,
-      parent.get(),
+      root.get(),
       dummy_max_texture_size,
       false,
       false,  // can_adjust_raster_scale
@@ -6841,7 +6883,7 @@ TEST(LayerTreeHostCommonTest, SmallContentsScale) {
                                                gfx::Transform(),
                                                device_scale_factor,
                                                page_scale_factor,
-                                               parent.get(),
+                                               root.get(),
                                                dummy_max_texture_size,
                                                false,
                                                true,  // can_adjust_raster_scale
@@ -6867,7 +6909,7 @@ TEST(LayerTreeHostCommonTest, SmallContentsScale) {
                                                gfx::Transform(),
                                                device_scale_factor,
                                                page_scale_factor,
-                                               parent.get(),
+                                               root.get(),
                                                dummy_max_texture_size,
                                                false,
                                                true,  // can_adjust_raster_scale
@@ -6989,7 +7031,7 @@ TEST(LayerTreeHostCommonTest, ContentsScaleForSurfaces) {
                                                gfx::Transform(),
                                                device_scale_factor,
                                                page_scale_factor,
-                                               parent.get(),
+                                               root.get(),
                                                dummy_max_texture_size,
                                                false,
                                                true,  // can_adjust_raster_scale
@@ -7205,7 +7247,7 @@ TEST(LayerTreeHostCommonTest,
       gfx::Transform(),
       device_scale_factor,
       page_scale_factor,
-      parent.get(),
+      root.get(),
       dummy_max_texture_size,
       false,
       false,  // can_adjust_raster_scale
