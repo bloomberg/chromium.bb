@@ -18,7 +18,6 @@ const unsigned int URLRequestThrottlerManager::kRequestsBetweenCollecting = 200;
 
 URLRequestThrottlerManager::URLRequestThrottlerManager()
     : requests_since_last_gc_(0),
-      enable_thread_checks_(false),
       logged_for_localhost_disabled_(false),
       registered_from_thread_(base::kInvalidThreadId) {
   url_id_replacements_.ClearPassword();
@@ -50,7 +49,7 @@ URLRequestThrottlerManager::~URLRequestThrottlerManager() {
 
 scoped_refptr<URLRequestThrottlerEntryInterface>
     URLRequestThrottlerManager::RegisterRequestUrl(const GURL &url) {
-  DCHECK(!enable_thread_checks_ || CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
 
   // Normalize the url.
   std::string url_id = GetIdFromUrl(url);
@@ -87,10 +86,11 @@ scoped_refptr<URLRequestThrottlerEntryInterface>
                           NetLog::StringCallback("host", &host));
       }
 
-      // TODO(joi): Once sliding window is separate from back-off throttling,
-      // we can simply return a dummy implementation of
-      // URLRequestThrottlerEntryInterface here that never blocks anything (and
-      // not keep entries in url_entries_ for opted-out sites).
+      // If sliding window was separate from back-off throttling, we
+      // could simply return a dummy implementation of
+      // URLRequestThrottlerEntryInterface here that never blocks
+      // anything (and not keep entries in url_entries_ for opted-out
+      // sites).
       entry->DisableBackoffThrottling();
     }
   }
@@ -129,14 +129,6 @@ void URLRequestThrottlerManager::EraseEntryForTests(const GURL& url) {
   // Normalize the url.
   std::string url_id = GetIdFromUrl(url);
   url_entries_.erase(url_id);
-}
-
-void URLRequestThrottlerManager::set_enable_thread_checks(bool enable) {
-  enable_thread_checks_ = enable;
-}
-
-bool URLRequestThrottlerManager::enable_thread_checks() const {
-  return enable_thread_checks_;
 }
 
 void URLRequestThrottlerManager::set_net_log(NetLog* net_log) {
