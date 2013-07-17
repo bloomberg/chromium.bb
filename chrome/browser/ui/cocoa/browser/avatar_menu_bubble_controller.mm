@@ -51,6 +51,7 @@ namespace {
 //    chrome/browser/ui/views/avatar_menu_bubble_view.cc
 const CGFloat kBubbleMinWidth = 175;
 const CGFloat kBubbleMaxWidth = 800;
+const CGFloat kMaxItemTextWidth = 200;
 
 // Values derived from the XIB.
 const CGFloat kVerticalSpacing = 10.0;
@@ -150,15 +151,25 @@ const CGFloat kManagedUserSpacing = 26.0;
   NSTextField* nameField = itemView.nameField;
   nameField.stringValue = base::SysUTF16ToNSString(item.name);
   NSSize delta = [GTMUILocalizerAndLayoutTweaker sizeToFitView:nameField];
-  if (delta.width > 0)
-    *widthAdjust = std::max(*widthAdjust, delta.width);
+  if (NSWidth([nameField frame]) > kMaxItemTextWidth) {
+    delta.width -= (NSWidth([nameField frame]) - kMaxItemTextWidth);
+    NSRect frame = [nameField frame];
+    frame.size.width = kMaxItemTextWidth;
+    [nameField setFrame:frame];
+  }
+  *widthAdjust = std::max(*widthAdjust, delta.width);
 
   // Repeat for the sync state/email.
   NSTextField* emailField = itemView.emailField;
   emailField.stringValue = base::SysUTF16ToNSString(item.sync_state);
   delta = [GTMUILocalizerAndLayoutTweaker sizeToFitView:emailField];
-  if (delta.width > 0)
-    *widthAdjust = std::max(*widthAdjust, delta.width);
+  if (NSWidth([emailField frame]) > kMaxItemTextWidth) {
+    delta.width -= (NSWidth([emailField frame]) - kMaxItemTextWidth);
+    NSRect frame = [emailField frame];
+    frame.size.width = kMaxItemTextWidth;
+    [emailField setFrame:frame];
+  }
+  *widthAdjust = std::max(*widthAdjust, delta.width);
 
   if (!item.active) {
     // In the inactive case, hide additional UI.
@@ -467,6 +478,10 @@ const CGFloat kManagedUserSpacing = 26.0;
     modelIndex_ = modelIndex;
     controller_ = controller;
     [self loadView];
+    [nameField_ setAutoresizingMask:NSViewNotSizable];
+    [[nameField_ cell] setLineBreakMode:NSLineBreakByTruncatingTail];
+    [emailField_ setAutoresizingMask:NSViewNotSizable];
+    [[emailField_ cell] setLineBreakMode:NSLineBreakByTruncatingTail];
   }
   return self;
 }
