@@ -1169,10 +1169,6 @@ class GLES2DecoderImpl : public GLES2Decoder {
       GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1,
       GLbitfield mask, GLenum filter);
 
-  // Wrapper for glBufferData.
-  void DoBufferData(
-    GLenum target, GLsizeiptr size, const GLvoid * data, GLenum usage);
-
   // Wrapper for glBufferSubData.
   void DoBufferSubData(
     GLenum target, GLintptr offset, GLsizeiptr size, const GLvoid * data);
@@ -1410,16 +1406,6 @@ class GLES2DecoderImpl : public GLES2Decoder {
       const char* function_name,
       bool instanced, GLenum mode, GLsizei count, GLenum type,
       int32 offset, GLsizei primcount);
-
-  // Gets the buffer id for a given target.
-  Buffer* GetBufferInfoForTarget(GLenum target) {
-    DCHECK(target == GL_ARRAY_BUFFER || target == GL_ELEMENT_ARRAY_BUFFER);
-    if (target == GL_ARRAY_BUFFER) {
-      return state_.bound_array_buffer.get();
-    } else {
-      return state_.vertex_attrib_manager->element_array_buffer();
-    }
-  }
 
   // Gets the texture id for a given target.
   TextureRef* GetTextureInfoForTarget(GLenum target) {
@@ -4416,23 +4402,9 @@ void GLES2DecoderImpl::DoGetProgramiv(
 
 void GLES2DecoderImpl::DoGetBufferParameteriv(
     GLenum target, GLenum pname, GLint* params) {
-  Buffer* buffer = GetBufferInfoForTarget(target);
-  if (!buffer) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_OPERATION, "glGetBufferParameteriv",
-        "no buffer bound for target");
-    return;
-  }
-  switch (pname) {
-    case GL_BUFFER_SIZE:
-      *params = buffer->size();
-      break;
-    case GL_BUFFER_USAGE:
-      *params = buffer->usage();
-      break;
-    default:
-      NOTREACHED();
-  }
+  // Just delegate it. Some validation is actually done before this.
+  buffer_manager()->ValidateAndDoGetBufferParameteriv(
+      &state_, target, pname, params);
 }
 
 void GLES2DecoderImpl::DoBindAttribLocation(
@@ -7233,34 +7205,6 @@ error::Error GLES2DecoderImpl::HandleGetString(
   return error::kNoError;
 }
 
-void GLES2DecoderImpl::DoBufferData(
-    GLenum target, GLsizeiptr size, const GLvoid * data, GLenum usage) {
-  if (!validators_->buffer_target.IsValid(target)) {
-    LOCAL_SET_GL_ERROR_INVALID_ENUM("glBufferData", target, "target");
-    return;
-  }
-  if (!validators_->buffer_usage.IsValid(usage)) {
-    LOCAL_SET_GL_ERROR_INVALID_ENUM("glBufferData", usage, "usage");
-    return;
-  }
-  if (size < 0) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glBufferData", "size < 0");
-    return;
-  }
-  Buffer* buffer = GetBufferInfoForTarget(target);
-  if (!buffer) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glBufferData", "unknown buffer");
-    return;
-  }
-
-  if (!EnsureGPUMemoryAvailable(size)) {
-    LOCAL_SET_GL_ERROR(GL_OUT_OF_MEMORY, "glBufferData", "out of memory");
-    return;
-  }
-
-  buffer_manager()->DoBufferData(GetErrorState(), buffer, size, usage, data);
-}
-
 error::Error GLES2DecoderImpl::HandleBufferData(
     uint32 immediate_data_size, const cmds::BufferData& c) {
   GLenum target = static_cast<GLenum>(c.target);
@@ -7275,7 +7219,7 @@ error::Error GLES2DecoderImpl::HandleBufferData(
       return error::kOutOfBounds;
     }
   }
-  DoBufferData(target, size, data, usage);
+  buffer_manager()->ValidateAndDoBufferData(&state_, target, size, data, usage);
   return error::kNoError;
 }
 
@@ -7289,20 +7233,15 @@ error::Error GLES2DecoderImpl::HandleBufferDataImmediate(
     return error::kOutOfBounds;
   }
   GLenum usage = static_cast<GLenum>(c.usage);
-  DoBufferData(target, size, data, usage);
+  buffer_manager()->ValidateAndDoBufferData(&state_, target, size, data, usage);
   return error::kNoError;
 }
 
 void GLES2DecoderImpl::DoBufferSubData(
   GLenum target, GLintptr offset, GLsizeiptr size, const GLvoid * data) {
-  Buffer* buffer = GetBufferInfoForTarget(target);
-  if (!buffer) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glBufferSubData", "unknown buffer");
-    return;
-  }
-
-  buffer_manager()->DoBufferSubData(GetErrorState(), buffer, offset, size,
-                                    data);
+  // Just delegate it. Some validation is actually done before this.
+  buffer_manager()->ValidateAndDoBufferSubData(
+      &state_, target, offset, size, data);
 }
 
 bool GLES2DecoderImpl::ClearLevel(
