@@ -23,7 +23,7 @@
 #include "base/synchronization/cancellation_flag.h"
 #include "base/threading/worker_pool.h"
 #include "content/public/browser/browser_thread.h"
-#include "grit/ash_wallpaper_resources.h"
+#include "grit/ash_resources.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
@@ -240,24 +240,9 @@ bool DesktopBackgroundController::SetDefaultWallpaper(bool is_guest) {
   base::FilePath file_path;
   WallpaperLayout file_layout = use_large ? WALLPAPER_LAYOUT_CENTER_CROPPED :
       WALLPAPER_LAYOUT_CENTER;
-  int resource_id = -1;
-  WallpaperLayout resource_layout = WALLPAPER_LAYOUT_TILE;
-
-#if defined(GOOGLE_CHROME_BUILD)
-  if (use_large) {
-    resource_id = is_guest ? IDR_AURA_WALLPAPERS_2_LANDSCAPE7_LARGE :
-        IDR_AURA_WALLPAPERS_2_LANDSCAPE8_LARGE;
-    resource_layout = WALLPAPER_LAYOUT_CENTER_CROPPED;
-  } else {
-    resource_id = is_guest ? IDR_AURA_WALLPAPERS_2_LANDSCAPE7_SMALL :
-        IDR_AURA_WALLPAPERS_2_LANDSCAPE8_SMALL;
-    resource_layout = WALLPAPER_LAYOUT_CENTER;
-  }
-#else
-  resource_id = use_large ? IDR_AURA_WALLPAPERS_5_GRADIENT5_LARGE :
+  int resource_id = use_large ? IDR_AURA_WALLPAPERS_5_GRADIENT5_LARGE :
       IDR_AURA_WALLPAPERS_5_GRADIENT5_SMALL;
-  resource_layout = WALLPAPER_LAYOUT_TILE;
-#endif
+  WallpaperLayout resource_layout = WALLPAPER_LAYOUT_TILE;
 
   const char* switch_name = is_guest ?
       (use_large ? switches::kAshDefaultGuestWallpaperLarge :

@@ -23,11 +23,6 @@
           '<(grit_out_dir)/extensions_api_resources.pak',
         ],
       }],
-      ['use_ash==1', {
-        'pak_inputs': [
-          '<(SHARED_INTERMEDIATE_DIR)/ash/ash_resources/ash_wallpaper_resources.pak',
-        ],
-      }],
     ],
   },
   'inputs': [

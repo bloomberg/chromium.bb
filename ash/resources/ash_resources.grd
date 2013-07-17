@@ -10,6 +10,11 @@
     <output filename="ash_resources_200_percent.pak" type="data_package" context="default_200_percent" />
   </outputs>
   <release seq="1">
+    <includes>
+      <!-- Fallback wallpaper used by Ash. -->
+      <include name="IDR_AURA_WALLPAPERS_5_GRADIENT5_LARGE" file="wallpapers/large/5-gradient5.jpg" type="BINDATA" />
+      <include name="IDR_AURA_WALLPAPERS_5_GRADIENT5_SMALL" file="wallpapers/small/5-gradient5.jpg" type="BINDATA" />
+    </includes>
     <structures fallback_to_low_resolution="true">
       <!-- KEEP THESE IN ALPHABETICAL ORDER!  DO NOT ADD TO RANDOM PLACES JUST
            BECAUSE YOUR RESOURCES ARE FUNCTIONALLY RELATED OR FALL UNDER THE

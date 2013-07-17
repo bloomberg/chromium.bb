@@ -357,7 +357,6 @@
         ['use_ash==1', {
           'dependencies': [
              '<(DEPTH)/ash/ash.gyp:ash_resources',
-             '<(DEPTH)/ash/ash.gyp:ash_wallpaper_resources',
           ],
         }],
         ['OS != "mac" and OS != "ios"', {

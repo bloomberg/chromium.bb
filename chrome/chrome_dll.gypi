@@ -85,11 +85,6 @@
                 '../ui/compositor/compositor.gyp:compositor',
               ],
             }],
-            ['use_ash==1', {
-              'sources': [
-                '<(SHARED_INTERMEDIATE_DIR)/ash/ash_resources/ash_wallpaper_resources.rc',
-              ],
-            }],
             ['OS=="win" and target_arch=="ia32"', {
               # Add a dependency to custom import library for user32 delay
               # imports only in x86 builds.

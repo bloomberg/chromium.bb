@@ -41,7 +41,6 @@
         '../url/url.gyp:url_lib',
         'ash_strings.gyp:ash_strings',
         'ash_resources',
-        'ash_wallpaper_resources',
       ],
       'defines': [
         'ASH_IMPLEMENTATION',
@@ -759,7 +758,6 @@
         'wm/workspace/workspace_layout_manager_unittest.cc',
         'wm/workspace/workspace_manager_unittest.cc',
         'wm/workspace/workspace_window_resizer_unittest.cc',
-        '<(SHARED_INTERMEDIATE_DIR)/ash/ash_resources/ash_wallpaper_resources.rc',
       ],
       'conditions': [
         ['OS=="win"', {
@@ -874,7 +872,6 @@
         'shell/window_watcher.h',
         '../content/app/startup_helper_win.cc',
         '../ui/views/test/test_views_delegate.cc',
-        '<(SHARED_INTERMEDIATE_DIR)/ash/ash_resources/ash_wallpaper_resources.rc',
       ],
       'conditions': [
         ['OS=="win"', {
