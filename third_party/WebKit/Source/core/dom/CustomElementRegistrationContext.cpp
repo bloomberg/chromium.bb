@@ -102,10 +102,11 @@ public:
     virtual void customElementIsBeingDestroyed(Element*) OVERRIDE;
 
 private:
-    CustomElementDefinition* definitionFor(Element*) const;
-
+    void resolve(Element*);
+    void didResolveElement(CustomElementDefinition*, Element*);
     void didCreateUnresolvedElement(const CustomElementDescriptor&, Element*);
-    void didResolveElement(CustomElementDefinition*, Element*) const;
+
+    CustomElementDefinition* definitionFor(Element*) const;
 
     CustomElementRegistry m_registry;
 
@@ -124,13 +125,6 @@ void ActiveRegistrationContext::registerElement(Document* document, CustomElemen
     const CustomElementUpgradeCandidateMap::ElementSet& upgradeCandidates = m_candidates.takeUpgradeCandidatesFor(definition->descriptor());
     for (CustomElementUpgradeCandidateMap::ElementSet::const_iterator it = upgradeCandidates.begin(); it != upgradeCandidates.end(); ++it)
         didResolveElement(definition, *it);
-}
-
-CustomElementDefinition* ActiveRegistrationContext::definitionFor(Element* element) const
-{
-    ASSERT(element->document()->registrationContext() == this);
-    const CustomElementDescriptor& descriptor = describe(element);
-    return m_registry.find(descriptor);
 }
 
 PassRefPtr<Element> ActiveRegistrationContext::createCustomTagElement(Document* document, const QualifiedName& tagName)
@@ -152,15 +146,30 @@ PassRefPtr<Element> ActiveRegistrationContext::createCustomTagElement(Document* 
     }
 
     element->setIsCustomElement();
+    resolve(element.get());
+    return element.release();
+}
 
-    const CustomElementDescriptor& descriptor = describe(element.get());
+void ActiveRegistrationContext::didGiveTypeExtension(Element* element)
+{
+    resolve(element);
+}
+
+void ActiveRegistrationContext::resolve(Element* element)
+{
+    ASSERT(element->isCustomElement());
+    ASSERT(!element->isUpgradedCustomElement());
+    const CustomElementDescriptor& descriptor = describe(element);
     CustomElementDefinition* definition = m_registry.find(descriptor);
     if (definition)
-        didResolveElement(definition, element.get());
+        didResolveElement(definition, element);
     else
-        didCreateUnresolvedElement(descriptor, element.get());
+        didCreateUnresolvedElement(descriptor, element);
+}
 
-    return element.release();
+void ActiveRegistrationContext::didResolveElement(CustomElementDefinition* definition, Element* element)
+{
+    CustomElementCallbackDispatcher::instance().enqueueCreatedCallback(definition->callbacks(), element);
 }
 
 void ActiveRegistrationContext::didCreateUnresolvedElement(const CustomElementDescriptor& descriptor, Element* element)
@@ -168,19 +177,11 @@ void ActiveRegistrationContext::didCreateUnresolvedElement(const CustomElementDe
     m_candidates.add(descriptor, element);
 }
 
-void ActiveRegistrationContext::didResolveElement(CustomElementDefinition* definition, Element* element) const
+CustomElementDefinition* ActiveRegistrationContext::definitionFor(Element* element) const
 {
-    CustomElementCallbackDispatcher::instance().enqueueCreatedCallback(definition->callbacks(), element);
-}
-
-void ActiveRegistrationContext::didGiveTypeExtension(Element* element)
-{
+    ASSERT(element->document()->registrationContext() == this);
     const CustomElementDescriptor& descriptor = describe(element);
-    CustomElementDefinition* definition = m_registry.find(descriptor);
-    if (definition)
-        didResolveElement(definition, element);
-    else
-        didCreateUnresolvedElement(descriptor, element);
+    return m_registry.find(descriptor);
 }
 
 void ActiveRegistrationContext::customElementAttributeDidChange(Element* element, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue)
