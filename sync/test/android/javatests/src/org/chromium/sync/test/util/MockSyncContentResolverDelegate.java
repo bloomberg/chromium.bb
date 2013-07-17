@@ -66,6 +66,8 @@ public class MockSyncContentResolverDelegate implements SyncContentResolverDeleg
 
     @Override
     public void setMasterSyncAutomatically(boolean sync) {
+        if (mMasterSyncAutomatically == sync) return;
+
         mMasterSyncAutomatically = sync;
         notifyObservers();
     }
@@ -92,6 +94,7 @@ public class MockSyncContentResolverDelegate implements SyncContentResolverDeleg
                         " is not syncable for authority " + authority +
                         ". Can not set sync state to " + sync);
             }
+            if (mSyncAutomaticallyMap.get(key) == sync) return;
             mSyncAutomaticallyMap.put(key, sync);
         }
         notifyObservers();
@@ -99,13 +102,19 @@ public class MockSyncContentResolverDelegate implements SyncContentResolverDeleg
 
     @Override
     public void setIsSyncable(Account account, String authority, int syncable) {
+        String key = createKey(account, authority);
+
         synchronized (mSyncAutomaticallyMap) {
             switch (syncable) {
                 case 0:
-                    mSyncAutomaticallyMap.remove(createKey(account, authority));
+                    if (!mSyncAutomaticallyMap.containsKey(key)) return;
+
+                    mSyncAutomaticallyMap.remove(key);
                     break;
                 case 1:
-                    mSyncAutomaticallyMap.put(createKey(account, authority), true);
+                    if (mSyncAutomaticallyMap.containsKey(key)) return;
+
+                    mSyncAutomaticallyMap.put(key, false);
                     break;
                 default:
                     throw new IllegalArgumentException("Unable to understand syncable argument: " +
