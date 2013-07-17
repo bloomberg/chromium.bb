@@ -97,7 +97,7 @@
   },
   "chromeosInfoPrivate": {
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app"],
+    "extension_types": ["extension", "packaged_app", "platform_app"],
     "whitelist": [
       "8C3741E3AF0B93B6E8E0DDD499BB0B74839EA578",  // http://crbug.com/234235
       "E703483CEF33DEC18B4B6DD84B5C776FB9182BDB"   // http://crbug.com/234235
