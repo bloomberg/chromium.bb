@@ -1,0 +1,54 @@
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_UI_BLOCKED_CONTENT_POPUP_BLOCKER_TAB_HELPER_H_
+#define CHROME_BROWSER_UI_BLOCKED_CONTENT_POPUP_BLOCKER_TAB_HELPER_H_
+
+#include "base/id_map.h"
+#include "content/public/browser/web_contents_observer.h"
+#include "content/public/browser/web_contents_user_data.h"
+
+namespace chrome {
+struct NavigateParams;
+};
+
+// Per-tab class to manage blocked popups.
+class PopupBlockerTabHelper
+    : public content::WebContentsObserver,
+      public content::WebContentsUserData<PopupBlockerTabHelper> {
+ public:
+  virtual ~PopupBlockerTabHelper();
+
+  // Returns true if the popup request defined by |params| should be blocked.
+  // In that case, it is also added to the |blocked_contents_| container.
+  bool MaybeBlockPopup(const chrome::NavigateParams& params);
+
+  // Creates the blocked popup with |popup_id|.
+  void ShowBlockedPopup(int32 popup_id);
+
+  // Returns the number of blocked popups.
+  size_t GetBlockedPopupsCount() const;
+
+  // Returns the mapping from popup IDs to blocked popup requests.
+  const IDMap<chrome::NavigateParams, IDMapOwnPointer>&
+  GetBlockedPopupRequests() const;
+
+  // content::WebContentsObserver overrides:
+  virtual void DidNavigateMainFrame(
+      const content::LoadCommittedDetails& details,
+      const content::FrameNavigateParams& params) OVERRIDE;
+
+ private:
+  explicit PopupBlockerTabHelper(content::WebContents* web_contents);
+  friend class content::WebContentsUserData<PopupBlockerTabHelper>;
+
+  // Called when the blocked popup notification is shown or hidden.
+  void PopupNotificationVisibilityChanged(bool visible);
+
+  IDMap<chrome::NavigateParams, IDMapOwnPointer> blocked_popups_;
+
+  DISALLOW_COPY_AND_ASSIGN(PopupBlockerTabHelper);
+};
+
+#endif  // CHROME_BROWSER_UI_BLOCKED_CONTENT_POPUP_BLOCKER_TAB_HELPER_H_

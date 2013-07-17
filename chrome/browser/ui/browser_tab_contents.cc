@@ -30,6 +30,7 @@
 #include "chrome/browser/ui/alternate_error_tab_observer.h"
 #include "chrome/browser/ui/autofill/tab_autofill_manager_delegate.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
+#include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/hung_plugin_tab_helper.h"
@@ -136,6 +137,10 @@ void BrowserTabContents::AttachTabHelpers(WebContents* web_contents) {
       web_contents, PasswordManagerDelegateImpl::FromWebContents(web_contents));
   PDFTabHelper::CreateForWebContents(web_contents);
   PluginObserver::CreateForWebContents(web_contents);
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBetterPopupBlocking)) {
+    PopupBlockerTabHelper::CreateForWebContents(web_contents);
+  }
   PrefsTabHelper::CreateForWebContents(web_contents);
   prerender::PrerenderTabHelper::CreateForWebContents(web_contents);
   SadTabHelper::CreateForWebContents(web_contents);
