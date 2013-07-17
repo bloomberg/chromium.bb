@@ -5,7 +5,7 @@
 #include "chrome/browser/sync/glue/history_model_worker.h"
 
 #include "base/memory/ref_counted.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "content/public/browser/browser_thread.h"
 

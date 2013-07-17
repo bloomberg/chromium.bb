@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

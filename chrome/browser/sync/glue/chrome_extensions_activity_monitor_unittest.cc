@@ -5,7 +5,7 @@
 #include "chrome/browser/sync/glue/chrome_extensions_activity_monitor.h"
 
 #include "base/files/file_path.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"

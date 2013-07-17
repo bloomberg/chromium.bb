@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/file_util.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/sync_file_system/drive_backend/api_util.h"
 #include "content/public/test/test_browser_thread.h"

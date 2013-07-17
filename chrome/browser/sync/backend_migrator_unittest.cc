@@ -4,7 +4,7 @@
 
 #include "chrome/browser/sync/backend_migrator.h"
 
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/tracked_objects.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/sync/glue/data_type_manager_mock.h"

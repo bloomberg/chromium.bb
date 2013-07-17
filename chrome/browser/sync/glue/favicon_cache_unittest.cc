@@ -4,10 +4,10 @@
 
 #include "chrome/browser/sync/glue/favicon_cache.h"
 
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "base/time/time.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "content/public/browser/notification_service.h"
 #include "sync/api/sync_error_factory_mock.h"
