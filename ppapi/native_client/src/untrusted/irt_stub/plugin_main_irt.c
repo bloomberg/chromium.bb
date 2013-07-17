@@ -4,7 +4,7 @@
  * found in the LICENSE file.
  */
 
-#include "native_client/src/shared/ppapi_proxy/ppruntime.h"
+#include "ppapi/native_client/src/shared/ppapi_proxy/ppruntime.h"
 
 /*
  * An application that doesn't define its own main but links in -lppapi

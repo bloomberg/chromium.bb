@@ -20,7 +20,7 @@
 
 // TODO(bsy): move weak_ref module to the shared directory
 #include "native_client/src/trusted/weak_ref/weak_ref.h"
-#include "native_client/src/trusted/weak_ref/call_on_main_thread.h"
+#include "ppapi/native_client/src/trusted/weak_ref/call_on_main_thread.h"
 
 // The nomenclature used in this file is intended to clarify thinking
 // about the Pepper "main thread".  The "main thread" is really an

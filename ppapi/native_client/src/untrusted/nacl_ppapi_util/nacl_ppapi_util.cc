@@ -4,11 +4,11 @@
  * found in the LICENSE file.
  */
 
-#include "native_client/src/untrusted/nacl_ppapi_util/nacl_ppapi_util.h"
+#include "ppapi/native_client/src/untrusted/nacl_ppapi_util/nacl_ppapi_util.h"
 
 // TODO(bsy): move weak_ref module to the shared directory
 #include "native_client/src/trusted/weak_ref/weak_ref.h"
-#include "native_client/src/trusted/weak_ref/call_on_main_thread.h"
+#include "ppapi/native_client/src/trusted/weak_ref/call_on_main_thread.h"
 
 
 namespace nacl_ppapi {

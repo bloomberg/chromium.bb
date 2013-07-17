@@ -8,12 +8,12 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "native_client/src/include/elf_auxv.h"
 #include "native_client/src/include/elf32.h"
-#include "native_client/src/shared/ppapi_proxy/ppruntime.h"
+#include "native_client/src/include/elf_auxv.h"
 #include "native_client/src/untrusted/irt/irt.h"
 #include "native_client/src/untrusted/irt/irt_ppapi.h"
-#include "native_client/src/untrusted/irt_stub/thread_creator.h"
+#include "ppapi/native_client/src/shared/ppapi_proxy/ppruntime.h"
+#include "ppapi/native_client/src/untrusted/irt_stub/thread_creator.h"
 
 static void fatal_error(const char *message) {
   write(2, message, strlen(message));

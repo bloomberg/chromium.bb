@@ -6,7 +6,7 @@
 
 #include <stdarg.h>
 
-#include "native_client/src/untrusted/nacl_ppapi_util/string_buffer.h"
+#include "ppapi/native_client/src/untrusted/nacl_ppapi_util/string_buffer.h"
 
 namespace nacl {
 

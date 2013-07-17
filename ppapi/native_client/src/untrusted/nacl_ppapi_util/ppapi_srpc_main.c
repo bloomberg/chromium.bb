@@ -5,7 +5,7 @@
  */
 
 #include "native_client/src/shared/srpc/nacl_srpc.h"
-#include "native_client/src/untrusted/nacl_ppapi_util/ppapi_srpc_main.h"
+#include "ppapi/native_client/src/untrusted/nacl_ppapi_util/ppapi_srpc_main.h"
 
 /*
  * Here be dragons.  Beware.

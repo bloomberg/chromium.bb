@@ -4,13 +4,13 @@
  * found in the LICENSE file.
  */
 
-#include "native_client/src/untrusted/pnacl_irt_shim/shim_ppapi.h"
+#include "ppapi/native_client/src/untrusted/pnacl_irt_shim/shim_ppapi.h"
 
 #include <string.h>
-#include "native_client/src/shared/ppapi_proxy/ppruntime.h"
 #include "native_client/src/untrusted/irt/irt.h"
 #include "native_client/src/untrusted/irt/irt_ppapi.h"
 #include "ppapi/generators/pnacl_shim.h"
+#include "ppapi/native_client/src/shared/ppapi_proxy/ppruntime.h"
 
 /* Use local strcmp to avoid dependency on libc. */
 static int mystrcmp(const char* s1, const char *s2) {

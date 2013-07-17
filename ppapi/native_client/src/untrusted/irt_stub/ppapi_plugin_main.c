@@ -4,7 +4,7 @@
  * found in the LICENSE file.
  */
 
-#include "native_client/src/untrusted/irt_stub/ppapi_start.h"
+#include "ppapi/native_client/src/untrusted/irt_stub/ppapi_start.h"
 
 /*
  * These are dangling references to functions that the application must define.

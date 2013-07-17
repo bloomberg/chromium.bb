@@ -4,7 +4,7 @@
  * found in the LICENSE file.
  */
 
-#include "native_client/src/untrusted/irt_stub/thread_creator.h"
+#include "ppapi/native_client/src/untrusted/irt_stub/thread_creator.h"
 
 #include <pthread.h>
 
