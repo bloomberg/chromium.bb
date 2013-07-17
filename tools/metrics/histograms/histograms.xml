@@ -10384,6 +10384,24 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Quickoffice.ErrorTypes" enum="QuickofficeErrorTypes">
+  <summary>
+    Records the various different error types encountered when opening and
+    reading MS Office file formats in the Quickoffice viewer. These range from
+    Nacl crashes and uncaught javascript exceptions to document errors inside
+    Quickoffice Web Toolkit (eg QOWT). The errors are recorded against the file
+    format in which they occurred.
+  </summary>
+</histogram>
+
+<histogram name="Quickoffice.FileFormat" enum="QuickofficeFileFormat">
+  <summary>
+    Records the various different file types supported by Quickoffice (like MS
+    Word, Excel, Powerpoint files) when they opened in the browser to measure
+    which file formats are most popular.
+  </summary>
+</histogram>
+
 <histogram name="Renderer.DrawDuration" units="milliseconds">
   <summary>The time it takes for the compositor to draw a frame.</summary>
 </histogram>
@@ -19002,6 +19020,96 @@ other types of suffix sets.
   <int value="1" label="ENCRYPTION_ESTABLISHED"/>
   <int value="2" label="HANDSHAKE_CONFIRMED"/>
   <int value="3" label="FAILED"/>
+</enum>
+
+<enum name="QuickofficeErrorTypes" type="int">
+  <int value="0" label="doc uncaught js exception"/>
+  <int value="1" label="docx uncaught js exception"/>
+  <int value="2" label="docm uncaught js exception"/>
+  <int value="3" label="xls uncaught js exception"/>
+  <int value="4" label="xlsx uncaught js exception"/>
+  <int value="5" label="xlsm uncaught js exception"/>
+  <int value="6" label="ppt uncaught js exception"/>
+  <int value="7" label="pptx uncaught js exception"/>
+  <int value="8" label="pptm uncaught js exception"/>
+  <int value="9" label="pps uncaught js exception"/>
+  <int value="10" label="ppsx uncaught js exception"/>
+  <int value="11" label="ppsm uncaught js exception"/>
+  <int value="12" label="doc suspected corrupt file"/>
+  <int value="13" label="docx suspected corrupt file"/>
+  <int value="14" label="docm suspected corrupt file"/>
+  <int value="15" label="xls suspected corrupt file"/>
+  <int value="16" label="xlsx suspected corrupt file"/>
+  <int value="17" label="xlsm suspected corrupt file"/>
+  <int value="18" label="ppt suspected corrupt file"/>
+  <int value="19" label="pptx suspected corrupt file"/>
+  <int value="20" label="pptm suspected corrupt file"/>
+  <int value="21" label="pps suspected corrupt file"/>
+  <int value="22" label="ppsx suspected corrupt file"/>
+  <int value="23" label="ppsm suspected corrupt file"/>
+  <int value="24" label="doc qowt ui warning"/>
+  <int value="25" label="docx qowt ui warning"/>
+  <int value="26" label="docm qowt ui warning"/>
+  <int value="27" label="xls qowt ui warning"/>
+  <int value="28" label="xlsx qowt ui warning"/>
+  <int value="29" label="xlsm qowt ui warning"/>
+  <int value="30" label="ppt qowt ui warning"/>
+  <int value="31" label="pptx qowt ui warning"/>
+  <int value="32" label="pptm qowt ui warning"/>
+  <int value="33" label="pps qowt ui warning"/>
+  <int value="34" label="ppsx qowt ui warning"/>
+  <int value="35" label="ppsm qowt ui warning"/>
+  <int value="36" label="doc nacl error"/>
+  <int value="37" label="docx nacl error"/>
+  <int value="38" label="docm nacl error"/>
+  <int value="39" label="xls nacl error"/>
+  <int value="40" label="xlsx nacl error"/>
+  <int value="41" label="xlsm nacl error"/>
+  <int value="42" label="ppt nacl error"/>
+  <int value="43" label="pptx nacl error"/>
+  <int value="44" label="pptm nacl error"/>
+  <int value="45" label="pps nacl error"/>
+  <int value="46" label="ppsx nacl error"/>
+  <int value="47" label="ppsm nacl error"/>
+  <int value="48" label="doc nacl crash"/>
+  <int value="49" label="docx nacl crash"/>
+  <int value="50" label="docm nacl crash"/>
+  <int value="51" label="xls nacl crash"/>
+  <int value="52" label="xlsx nacl crash"/>
+  <int value="53" label="xlsm nacl crash"/>
+  <int value="54" label="ppt nacl crash"/>
+  <int value="55" label="pptx nacl crash"/>
+  <int value="56" label="pptm nacl crash"/>
+  <int value="57" label="pps nacl crash"/>
+  <int value="58" label="ppsx nacl crash"/>
+  <int value="59" label="ppsm nacl crash"/>
+  <int value="60" label="doc invalid file format"/>
+  <int value="61" label="docx invalid file format"/>
+  <int value="62" label="docm invalid file format"/>
+  <int value="63" label="xls invalid file format"/>
+  <int value="64" label="xlsx invalid file format"/>
+  <int value="65" label="xlsm invalid file format"/>
+  <int value="66" label="ppt invalid file format"/>
+  <int value="67" label="pptx invalid file format"/>
+  <int value="68" label="pptm invalid file format"/>
+  <int value="69" label="pps invalid file format"/>
+  <int value="70" label="ppsx invalid file format"/>
+  <int value="71" label="ppsm invalid file format"/>
+</enum>
+
+<enum name="QuickofficeFileFormat" type="int">
+  <int value="0" label="doc"/>
+  <int value="1" label="docx"/>
+  <int value="2" label="docm"/>
+  <int value="3" label="xls"/>
+  <int value="4" label="xlsx"/>
+  <int value="5" label="xlsm"/>
+  <int value="6" label="ppt"/>
+  <int value="7" label="pptx"/>
+  <int value="8" label="pptm"/>
+  <int value="9" label="pps"/>
+  <int value="10" label="ppsx"/>
+  <int value="11" label="ppsm"/>
 </enum>
 
 <enum name="RecentTabsAction" type="int">
