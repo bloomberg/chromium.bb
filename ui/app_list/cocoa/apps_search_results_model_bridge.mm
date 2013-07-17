@@ -9,6 +9,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "ui/app_list/search_result.h"
 #include "ui/app_list/search_result_observer.h"
+#import "ui/base/cocoa/menu_controller.h"
 
 namespace app_list {
 
@@ -26,6 +27,15 @@ class AppsSearchResultsModelBridge::ItemObserver : public SearchResultObserver {
     result_->RemoveObserver(this);
   }
 
+  NSMenu* GetContextMenu() {
+    if (!context_menu_controller_) {
+      context_menu_controller_.reset(
+          [[MenuController alloc] initWithModel:result_->GetContextMenuModel()
+                         useWithPopUpButtonCell:NO]);
+    }
+    return [context_menu_controller_ menu];
+  }
+
   // SearchResultObserver overrides:
   virtual void OnIconChanged() OVERRIDE {
     bridge_->ReloadDataForItems(row_in_view_, 1);
@@ -38,6 +48,7 @@ class AppsSearchResultsModelBridge::ItemObserver : public SearchResultObserver {
   AppsSearchResultsModelBridge* bridge_;  // Weak. Owns us.
   SearchResult* result_;  // Weak. Owned by AppListModel::SearchResults.
   size_t row_in_view_;
+  base::scoped_nsobject<MenuController> context_menu_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(ItemObserver);
 };
@@ -47,11 +58,17 @@ AppsSearchResultsModelBridge::AppsSearchResultsModelBridge(
     NSTableView* results_table_view)
     : results_(results_model),
       table_view_([results_table_view retain]) {
+  UpdateItemObservers();
   results_->AddObserver(this);
 }
 
 AppsSearchResultsModelBridge::~AppsSearchResultsModelBridge() {
   results_->RemoveObserver(this);
+}
+
+NSMenu* AppsSearchResultsModelBridge::MenuForItem(size_t index) {
+  DCHECK_LT(index, item_observers_.size());
+  return item_observers_[index]->GetContextMenu();
 }
 
 void AppsSearchResultsModelBridge::UpdateItemObservers() {

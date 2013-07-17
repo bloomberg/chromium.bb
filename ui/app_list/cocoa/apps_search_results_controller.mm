@@ -38,6 +38,7 @@ const NSBackgroundStyle kBackgroundHovered = NSBackgroundStyleRaised;
 - (app_list::AppListModel::SearchResults*)searchResults;
 - (void)activateSelection;
 - (BOOL)moveSelectionByDelta:(NSInteger)delta;
+- (NSMenu*)contextMenuForRow:(NSInteger)rowIndex;
 
 @end
 
@@ -65,8 +66,12 @@ const NSBackgroundStyle kBackgroundHovered = NSBackgroundStyleRaised;
 @end
 
 // Simple extension to NSTableView that passes mouseDown events to the
-// delegate so that drag events can be detected.
+// delegate so that drag events can be detected, and forwards requests for
+// context menus.
 @interface AppsSearchResultsTableView : NSTableView
+
+- (AppsSearchResultsController*)controller;
+
 @end
 
 @implementation AppsSearchResultsController
@@ -223,6 +228,16 @@ const NSBackgroundStyle kBackgroundHovered = NSBackgroundStyleRaised;
   return YES;
 }
 
+- (NSMenu*)contextMenuForRow:(NSInteger)rowIndex {
+  DCHECK(bridge_);
+  if (rowIndex < 0)
+    return nil;
+
+  [tableView_ selectRowIndexes:[NSIndexSet indexSetWithIndex:rowIndex]
+          byExtendingSelection:NO];
+  return bridge_->MenuForItem(rowIndex);
+}
+
 - (NSInteger)numberOfRowsInTableView:(NSTableView*)aTableView {
   return bridge_ ? [self searchResults]->item_count() : 0;
 }
@@ -377,10 +392,20 @@ const NSBackgroundStyle kBackgroundHovered = NSBackgroundStyleRaised;
 
 @implementation AppsSearchResultsTableView
 
+- (AppsSearchResultsController*)controller {
+  return base::mac::ObjCCastStrict<AppsSearchResultsController>(
+      [self delegate]);
+}
+
 - (void)mouseDown:(NSEvent*)theEvent {
-  [base::mac::ObjCCastStrict<AppsSearchResultsController>([self delegate])
-      mouseDown:theEvent];
+  [[self controller] mouseDown:theEvent];
   [super mouseDown:theEvent];
+}
+
+- (NSMenu*)menuForEvent:(NSEvent*)theEvent {
+  NSPoint pointInView = [self convertPoint:[theEvent locationInWindow]
+                                  fromView:nil];
+  return [[self controller] contextMenuForRow:[self rowAtPoint:pointInView]];
 }
 
 @end

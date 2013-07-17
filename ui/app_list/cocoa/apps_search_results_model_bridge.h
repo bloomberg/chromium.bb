@@ -10,6 +10,7 @@
 #include "ui/app_list/app_list_model.h"
 #include "ui/base/models/list_model_observer.h"
 
+@class NSMenu;
 @class NSTableView;
 
 namespace app_list {
@@ -21,6 +22,10 @@ class AppsSearchResultsModelBridge : public ui::ListModelObserver {
   AppsSearchResultsModelBridge(AppListModel::SearchResults* results_model,
                                NSTableView* results_table_view);
   virtual ~AppsSearchResultsModelBridge();
+
+  // Returns the context menu for the item at |index| in the search results
+  // model. A menu will be generated if it hasn't been previously requested.
+  NSMenu* MenuForItem(size_t index);
 
  private:
   // Lightweight observer to react to icon updates on individual results.

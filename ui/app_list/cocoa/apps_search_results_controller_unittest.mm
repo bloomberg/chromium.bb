@@ -11,8 +11,10 @@
 #import "testing/gtest_mac.h"
 #include "ui/app_list/search_result.h"
 #include "ui/app_list/test/app_list_test_model.h"
+#include "ui/base/models/simple_menu_model.h"
 #import "ui/base/test/ui_cocoa_test_helper.h"
 #include "ui/gfx/image/image_skia_util_mac.h"
+#import "ui/base/test/cocoa_test_event_utils.h"
 
 @interface TestAppsSearchResultsDelegate : NSObject<AppsSearchResultsDelegate> {
  @private
@@ -38,14 +40,30 @@
 
 @end
 
+namespace app_list {
+namespace test {
 namespace {
 
 const int kDefaultResultsCount = 3;
 
-}  // namespace
+class SearchResultWithMenu : public SearchResult {
+ public:
+  SearchResultWithMenu(const std::string& title,
+                       const std::string& details) : menu_model_(NULL) {
+    set_title(ASCIIToUTF16(title));
+    set_details(ASCIIToUTF16(details));
+    menu_model_.AddItem(0, UTF8ToUTF16("Menu For: " + title));
+  }
 
-namespace app_list {
-namespace test {
+  virtual ui::MenuModel* GetContextMenuModel() OVERRIDE {
+    return &menu_model_;
+  }
+
+ private:
+  ui::SimpleMenuModel menu_model_;
+
+  DISALLOW_COPY_AND_ASSIGN(SearchResultWithMenu);
+};
 
 class AppsSearchResultsControllerTest : public ui::CocoaTest {
  public:
@@ -54,9 +72,7 @@ class AppsSearchResultsControllerTest : public ui::CocoaTest {
   void AddTestResultAtIndex(size_t index,
                             const std::string& title,
                             const std::string& details) {
-    scoped_ptr<SearchResult> result(new SearchResult());
-    result->set_title(ASCIIToUTF16(title));
-    result->set_details(ASCIIToUTF16(details));
+    scoped_ptr<SearchResult> result(new SearchResultWithMenu(title, details));
     AppListModel::SearchResults* results = [delegate_ appListModel]->results();
     results->AddAt(index, result.release());
   }
@@ -148,6 +164,16 @@ void AppsSearchResultsControllerTest::TearDown() {
   ui::CocoaTest::TearDown();
 }
 
+NSEvent* MouseEventInRow(NSTableView* table_view, NSInteger row_index) {
+  NSRect row_rect = [table_view rectOfRow:row_index];
+  NSPoint point_in_view = NSMakePoint(NSMidX(row_rect), NSMidY(row_rect));
+  NSPoint point_in_window = [table_view convertPoint:point_in_view
+                                              toView:nil];
+  return cocoa_test_event_utils::LeftMouseDownAtPoint(point_in_window);
+}
+
+}  // namespace
+
 TEST_VIEW(AppsSearchResultsControllerTest,
           [apps_search_results_controller_ view]);
 
@@ -223,6 +249,20 @@ TEST_F(AppsSearchResultsControllerTest, KeyboardSelectAndActivate) {
   EXPECT_TRUE(SimulateKeyAction(@selector(moveDown:)));
   EXPECT_TRUE(SimulateKeyAction(@selector(insertNewline:)));
   EXPECT_EQ(ModelResultAt(1), [delegate_ lastOpenedResult]);
+}
+
+TEST_F(AppsSearchResultsControllerTest, ContextMenus) {
+  NSTableView* table_view = [apps_search_results_controller_ tableView];
+  NSEvent* mouse_in_row_0 = MouseEventInRow(table_view, 0);
+  NSEvent* mouse_in_row_1 = MouseEventInRow(table_view, 1);
+
+  NSMenu* menu = [table_view menuForEvent:mouse_in_row_0];
+  EXPECT_EQ(1, [menu numberOfItems]);
+  EXPECT_NSEQ(@"Menu For: Result 0", [[menu itemAtIndex:0] title]);
+
+  menu = [table_view menuForEvent:mouse_in_row_1];
+  EXPECT_EQ(1, [menu numberOfItems]);
+  EXPECT_NSEQ(@"Menu For: Result 1", [[menu itemAtIndex:0] title]);
 }
 
 }  // namespace test
