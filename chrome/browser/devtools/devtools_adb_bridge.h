@@ -172,6 +172,7 @@ class DevToolsAdbBridge :
  private:
   friend class base::RefCountedThreadSafe<DevToolsAdbBridge>;
   friend class AdbAttachCommand;
+  friend class AdbWebSocket;
   friend class AgentHostDelegate;
 
   virtual ~DevToolsAdbBridge();
