@@ -79,6 +79,7 @@ const char* kAtomsToCache[] = {
   "_NET_WM_STATE_HIDDEN",
   "_NET_WM_STATE_MAXIMIZED_HORZ",
   "_NET_WM_STATE_MAXIMIZED_VERT",
+  "_NET_WM_STATE_SKIP_TASKBAR",
   "_NET_WM_WINDOW_OPACITY",
   "_NET_WM_WINDOW_TYPE",
   "_NET_WM_WINDOW_TYPE_MENU",
@@ -225,6 +226,23 @@ void DesktopRootWindowHostX11::InitX11Window(
                   32,
                   PropModeReplace,
                   reinterpret_cast<unsigned char*>(&window_type), 1);
+
+  // Remove popup windows from taskbar.
+  if (params.type == Widget::InitParams::TYPE_POPUP ||
+      params.type == Widget::InitParams::TYPE_BUBBLE) {
+    Atom atom = atom_cache_.GetAtom("_NET_WM_STATE_SKIP_TASKBAR");
+
+    // Setting _NET_WM_STATE by sending a message to the root_window (with
+    // SetWMSpecState) has no effect here since the window has not yet been
+    // mapped. So we manually change the state.
+    XChangeProperty (xdisplay_,
+                     xwindow_,
+                     atom_cache_.GetAtom("_NET_WM_STATE"),
+                     XA_ATOM,
+                     32,
+                     PropModeAppend,
+                     reinterpret_cast<unsigned char*>(&atom), 1);
+  }
 }
 
 // static
