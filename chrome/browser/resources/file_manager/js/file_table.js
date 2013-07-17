@@ -217,7 +217,7 @@ FileTable.decorate = function(self, metadataCache, fullPage) {
   cr.ui.Table.decorate(self);
   self.__proto__ = FileTable.prototype;
   self.metadataCache_ = metadataCache;
-  self.collator_ = v8Intl.Collator([], {numeric: true, sensitivity: 'base'});
+  self.collator_ = Intl.Collator([], {numeric: true, sensitivity: 'base'});
 
   var columns = [
     new cr.ui.table.TableColumn('name', str('NAME_COLUMN_LABEL'),
@@ -353,11 +353,11 @@ FileTable.decorate = function(self, metadataCache, fullPage) {
  * @param {boolean} use12hourClock True if 12 hours clock, False if 24 hours.
  */
 FileTable.prototype.setDateTimeFormat = function(use12hourClock) {
-  this.timeFormatter_ = v8Intl.DateTimeFormat(
+  this.timeFormatter_ = Intl.DateTimeFormat(
         [] /* default locale */,
         {hour: 'numeric', minute: 'numeric',
          hour12: use12hourClock});
-  this.dateFormatter_ = v8Intl.DateTimeFormat(
+  this.dateFormatter_ = Intl.DateTimeFormat(
         [] /* default locale */,
         {year: 'numeric', month: 'short', day: 'numeric',
          hour: 'numeric', minute: 'numeric',

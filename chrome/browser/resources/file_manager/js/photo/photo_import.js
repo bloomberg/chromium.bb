@@ -165,7 +165,7 @@ PhotoImport.prototype.createDestination_ = function(onSuccess) {
   var onError = this.onError_.bind(
       this, loadTimeData.getString('PHOTO_IMPORT_DESTINATION_ERROR'));
 
-  var dateFormatter = v8Intl.DateTimeFormat(
+  var dateFormatter = Intl.DateTimeFormat(
       [] /* default locale */,
       {year: 'numeric', month: 'short', day: 'numeric'});
 
@@ -247,7 +247,7 @@ PhotoImport.prototype.fillGrid_ = function() {
  * @private
  */
 PhotoImport.prototype.createGroups_ = function(files, filesystem) {
-  var dateFormatter = v8Intl.DateTimeFormat(
+  var dateFormatter = Intl.DateTimeFormat(
       [] /* default locale */,
       {year: 'numeric', month: 'short', day: 'numeric'});
 
