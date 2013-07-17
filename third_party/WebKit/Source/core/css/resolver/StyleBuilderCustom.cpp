@@ -1176,36 +1176,17 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolver* styleResolv
         return;
     // Shorthand properties.
     case CSSPropertyFont:
-        // Short-hand properties are expanded by the parser and normally
-        // do not go through applyProperty() at all. CSSPropertyFont
-        // is special as system font names are sent through here.
-        // FIXME: Unclear why this special casing is handled this way.
-        // See isExpandedShorthand for more comments.
+        // Only System Font identifiers should come through this method
+        // all other values should have been handled when the shorthand
+        // was expanded by the parser.
+        // FIXME: System Font identifiers should not hijack this
+        // short-hand CSSProperty like this.
         ASSERT(!isInitial);
         ASSERT(!isInherit);
-        if (primitiveValue) {
-            state.style()->setLineHeight(RenderStyle::initialLineHeight());
-            state.setLineHeightValue(0);
-            state.fontBuilder().fromSystemFont(primitiveValue->getValueID(), state.style()->effectiveZoom());
-        } else if (value->isFontValue()) {
-            FontValue* font = static_cast<FontValue*>(value);
-            if (!font->style || !font->variant || !font->weight
-                || !font->size || !font->lineHeight || !font->family)
-                return;
-            styleResolver->applyProperty(CSSPropertyFontStyle, font->style.get());
-            styleResolver->applyProperty(CSSPropertyFontVariant, font->variant.get());
-            styleResolver->applyProperty(CSSPropertyFontWeight, font->weight.get());
-            // The previous properties can dirty our font but they don't try to read the font's
-            // properties back, which is safe. However if font-size is using the 'ex' unit, it will
-            // need query the dirtied font's x-height to get the computed size. To be safe in this
-            // case, let's just update the font now.
-            styleResolver->updateFont();
-            styleResolver->applyProperty(CSSPropertyFontSize, font->size.get());
-
-            state.setLineHeightValue(font->lineHeight.get());
-
-            styleResolver->applyProperty(CSSPropertyFontFamily, font->family.get());
-        }
+        ASSERT(primitiveValue);
+        state.style()->setLineHeight(RenderStyle::initialLineHeight());
+        state.setLineHeightValue(0);
+        state.fontBuilder().fromSystemFont(primitiveValue->getValueID(), state.style()->effectiveZoom());
         return;
     case CSSPropertyBackground:
     case CSSPropertyBackgroundPosition:
