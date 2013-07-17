@@ -357,7 +357,7 @@ TEST_P(SpdySessionTest, ServerPing) {
   test::StreamDelegateSendImmediate delegate(spdy_stream1, NULL);
   spdy_stream1->SetDelegate(&delegate);
 
-  // Flush the read completion task.
+  // Flush the SpdySession::OnReadComplete() task.
   base::MessageLoop::current()->RunUntilIdle();
 
   EXPECT_FALSE(HasSpdySession(spdy_session_pool_, key_));
@@ -546,7 +546,7 @@ TEST_P(SpdySessionTest, OnSettings) {
                 stream_releaser.MakeCallback(&request)));
   session = NULL;
 
-  EXPECT_EQ(ERR_CONNECTION_CLOSED, stream_releaser.WaitForResult());
+  EXPECT_EQ(OK, stream_releaser.WaitForResult());
 }
 
 // Start with max concurrent streams set to 1 (that is persisted). Receive a
@@ -610,7 +610,7 @@ TEST_P(SpdySessionTest, ClearSettings) {
                 BoundNetLog(),
                 stream_releaser.MakeCallback(&request)));
 
-  EXPECT_EQ(ERR_CONNECTION_CLOSED, stream_releaser.WaitForResult());
+  EXPECT_EQ(OK, stream_releaser.WaitForResult());
 
   // Make sure that persisted data is cleared.
   EXPECT_EQ(0u, spdy_session_pool_->http_server_properties()->GetSpdySettings(
@@ -823,7 +823,7 @@ TEST_P(SpdySessionTest, Initialize) {
       CreateInsecureSpdySession(http_session_, key_, log.bound());
   EXPECT_TRUE(HasSpdySession(spdy_session_pool_, key_));
 
-  // Flush the read completion task.
+  // Flush the SpdySession::OnReadComplete() task.
   base::MessageLoop::current()->RunUntilIdle();
 
   net::CapturingNetLog::CapturedEntryList entries;
@@ -871,7 +871,7 @@ TEST_P(SpdySessionTest, CloseSessionOnError) {
       CreateInsecureSpdySession(http_session_, key_, log.bound());
   EXPECT_TRUE(HasSpdySession(spdy_session_pool_, key_));
 
-  // Flush the read completion task.
+  // Flush the SpdySession::OnReadComplete() task.
   base::MessageLoop::current()->RunUntilIdle();
 
   EXPECT_FALSE(HasSpdySession(spdy_session_pool_, key_));
@@ -1705,16 +1705,15 @@ TEST_P(SpdySessionTest, NeedsCredentials) {
 
   EXPECT_EQ(spdy_util_.spdy_version() >= SPDY3, session->NeedsCredentials());
 
-  // Flush the read completion task.
+  // Flush the SpdySession::OnReadComplete() task.
   base::MessageLoop::current()->RunUntilIdle();
 
   session->CloseSessionOnError(ERR_ABORTED, std::string());
 }
 
-// Test that SpdySession::DoReadLoop reads data from the socket
-// without yielding.  This test makes 32k - 1 bytes of data available
-// on the socket for reading. It then verifies that it has read all
-// the available data without yielding.
+// Test that SpdySession::DoRead reads data from the socket without yielding.
+// This test makes 32k - 1 bytes of data available on the socket for reading. It
+// then verifies that it has read all the available data without yielding.
 TEST_P(SpdySessionTest, ReadDataWithoutYielding) {
   MockConnect connect_data(SYNCHRONOUS, OK);
   BufferedSpdyFramer framer(spdy_util_.spdy_version(), false);
@@ -1725,11 +1724,10 @@ TEST_P(SpdySessionTest, ReadDataWithoutYielding) {
     CreateMockWrite(*req1, 0),
   };
 
-  // Build buffer of size kMaxReadBytesWithoutYielding / 4
-  // (-spdy_data_frame_size).
-  ASSERT_EQ(32 * 1024, kMaxReadBytesWithoutYielding);
+  // Build buffer of size kMaxReadBytes / 4 (-spdy_data_frame_size).
+  ASSERT_EQ(32 * 1024, kMaxReadBytes);
   const int kPayloadSize =
-      kMaxReadBytesWithoutYielding / 4 - framer.GetControlFrameHeaderSize();
+      kMaxReadBytes / 4 - framer.GetControlFrameHeaderSize();
   TestDataStream test_stream;
   scoped_refptr<net::IOBuffer> payload(new net::IOBuffer(kPayloadSize));
   char* payload_data = payload->data();
@@ -1782,9 +1780,8 @@ TEST_P(SpdySessionTest, ReadDataWithoutYielding) {
   spdy_stream1->SendRequestHeaders(headers1.Pass(), NO_MORE_DATA_TO_SEND);
   EXPECT_TRUE(spdy_stream1->HasUrl());
 
-  // Set up the TaskObserver to verify SpdySession::DoReadLoop doesn't
-  // post a task.
-  SpdySessionTestTaskObserver observer("spdy_session.cc", "DoReadLoop");
+  // Set up the TaskObserver to verify SpdySession::DoRead doesn't post a task.
+  SpdySessionTestTaskObserver observer("spdy_session.cc", "DoRead");
 
   // Run until 1st read.
   EXPECT_EQ(0u, delegate1.stream_id());
@@ -1792,8 +1789,7 @@ TEST_P(SpdySessionTest, ReadDataWithoutYielding) {
   EXPECT_EQ(1u, delegate1.stream_id());
   EXPECT_EQ(0u, observer.executed_count());
 
-  // Read all the data and verify SpdySession::DoReadLoop has not
-  // posted a task.
+  // Read all the data and verify SpdySession::DoRead has not posted a task.
   data.RunFor(4);
   EXPECT_EQ(NULL, spdy_stream1.get());
 
@@ -1804,11 +1800,10 @@ TEST_P(SpdySessionTest, ReadDataWithoutYielding) {
   EXPECT_TRUE(data.at_read_eof());
 }
 
-// Test that SpdySession::DoReadLoop yields while reading the
-// data. This test makes 32k + 1 bytes of data available on the socket
-// for reading. It then verifies that DoRead has yielded even though
-// there is data available for it to read (i.e, socket()->Read didn't
-// return ERR_IO_PENDING during socket reads).
+// Test that SpdySession::DoRead yields while reading the data. This test makes
+// 32k + 1 bytes of data available on the socket for reading. It then verifies
+// that DoRead has yielded even though there is data available for it to read
+// (i.e, socket()->Read didn't return ERR_IO_PENDING during socket reads).
 TEST_P(SpdySessionTest, TestYieldingDuringReadData) {
   MockConnect connect_data(SYNCHRONOUS, OK);
   BufferedSpdyFramer framer(spdy_util_.spdy_version(), false);
@@ -1819,11 +1814,10 @@ TEST_P(SpdySessionTest, TestYieldingDuringReadData) {
     CreateMockWrite(*req1, 0),
   };
 
-  // Build buffer of size kMaxReadBytesWithoutYielding / 4
-  // (-spdy_data_frame_size).
-  ASSERT_EQ(32 * 1024, kMaxReadBytesWithoutYielding);
+  // Build buffer of size kMaxReadBytes / 4 (-spdy_data_frame_size).
+  ASSERT_EQ(32 * 1024, kMaxReadBytes);
   const int kPayloadSize =
-      kMaxReadBytesWithoutYielding / 4 - framer.GetControlFrameHeaderSize();
+      kMaxReadBytes / 4 - framer.GetControlFrameHeaderSize();
   TestDataStream test_stream;
   scoped_refptr<net::IOBuffer> payload(new net::IOBuffer(kPayloadSize));
   char* payload_data = payload->data();
@@ -1876,9 +1870,8 @@ TEST_P(SpdySessionTest, TestYieldingDuringReadData) {
   spdy_stream1->SendRequestHeaders(headers1.Pass(), NO_MORE_DATA_TO_SEND);
   EXPECT_TRUE(spdy_stream1->HasUrl());
 
-  // Set up the TaskObserver to verify SpdySession::DoReadLoop posts a
-  // task.
-  SpdySessionTestTaskObserver observer("spdy_session.cc", "DoReadLoop");
+  // Set up the TaskObserver to verify SpdySession::DoRead posts a task.
+  SpdySessionTestTaskObserver observer("spdy_session.cc", "DoRead");
 
   // Run until 1st read.
   EXPECT_EQ(0u, delegate1.stream_id());
@@ -1886,8 +1879,7 @@ TEST_P(SpdySessionTest, TestYieldingDuringReadData) {
   EXPECT_EQ(1u, delegate1.stream_id());
   EXPECT_EQ(0u, observer.executed_count());
 
-  // Read all the data and verify SpdySession::DoReadLoop has posted a
-  // task.
+  // Read all the data and verify SpdySession::DoRead has posted a task.
   data.RunFor(6);
   EXPECT_EQ(NULL, spdy_stream1.get());
 
@@ -1899,17 +1891,17 @@ TEST_P(SpdySessionTest, TestYieldingDuringReadData) {
   EXPECT_TRUE(data.at_read_eof());
 }
 
-// Test that SpdySession::DoReadLoop() tests interactions of yielding
-// + async, by doing the following MockReads.
+// Test that SpdySession::DoRead() tests interactions of yielding + async,
+// by doing the following MockReads.
 //
 // MockRead of SYNCHRONOUS 8K, SYNCHRONOUS 8K, SYNCHRONOUS 8K, SYNCHRONOUS 2K
 // ASYNC 8K, SYNCHRONOUS 8K, SYNCHRONOUS 8K, SYNCHRONOUS 8K, SYNCHRONOUS 2K.
 //
-// The above reads 26K synchronously. Since that is less that 32K, we
-// will attempt to read again. However, that DoRead() will return
-// ERR_IO_PENDING (because of async read), so DoReadLoop() will
-// yield. When we come back, DoRead() will read the results from the
-// async read, and rest of the data synchronously.
+// The above reads 26K synchronously. Since that is less that 32K, we will
+// attempt to read again. However, that DoRead() will return ERR_IO_PENDING
+// (because of async read), so DoRead() will yield. When we come back, DoRead()
+// will read the results from the async read, and rest of the data
+// synchronously.
 TEST_P(SpdySessionTest, TestYieldingDuringAsyncReadData) {
   MockConnect connect_data(SYNCHRONOUS, OK);
   BufferedSpdyFramer framer(spdy_util_.spdy_version(), false);
@@ -1920,12 +1912,11 @@ TEST_P(SpdySessionTest, TestYieldingDuringAsyncReadData) {
     CreateMockWrite(*req1, 0),
   };
 
-  // Build buffer of size kMaxReadBytesWithoutYielding / 4
-  // (-spdy_data_frame_size).
-  ASSERT_EQ(32 * 1024, kMaxReadBytesWithoutYielding);
+  // Build buffer of size kMaxReadBytes / 4 (-spdy_data_frame_size).
+  ASSERT_EQ(32 * 1024, kMaxReadBytes);
   TestDataStream test_stream;
   const int kEightKPayloadSize =
-      kMaxReadBytesWithoutYielding / 4 - framer.GetControlFrameHeaderSize();
+      kMaxReadBytes / 4 - framer.GetControlFrameHeaderSize();
   scoped_refptr<net::IOBuffer> eightk_payload(
       new net::IOBuffer(kEightKPayloadSize));
   char* eightk_payload_data = eightk_payload->data();
@@ -1992,9 +1983,8 @@ TEST_P(SpdySessionTest, TestYieldingDuringAsyncReadData) {
   spdy_stream1->SendRequestHeaders(headers1.Pass(), NO_MORE_DATA_TO_SEND);
   EXPECT_TRUE(spdy_stream1->HasUrl());
 
-  // Set up the TaskObserver to monitor SpdySession::DoReadLoop
-  // posting of tasks.
-  SpdySessionTestTaskObserver observer("spdy_session.cc", "DoReadLoop");
+  // Set up the TaskObserver to monitor SpdySession::DoRead posting of tasks.
+  SpdySessionTestTaskObserver observer("spdy_session.cc", "DoRead");
 
   // Run until 1st read.
   EXPECT_EQ(0u, delegate1.stream_id());
@@ -2002,8 +1992,7 @@ TEST_P(SpdySessionTest, TestYieldingDuringAsyncReadData) {
   EXPECT_EQ(1u, delegate1.stream_id());
   EXPECT_EQ(0u, observer.executed_count());
 
-  // Read all the data and verify SpdySession::DoReadLoop has posted a
-  // task.
+  // Read all the data and verify SpdySession::DoRead has posted a task.
   data.RunFor(12);
   EXPECT_EQ(NULL, spdy_stream1.get());
 
@@ -2015,12 +2004,11 @@ TEST_P(SpdySessionTest, TestYieldingDuringAsyncReadData) {
   EXPECT_TRUE(data.at_read_eof());
 }
 
-// Send a GoAway frame when SpdySession is in DoReadLoop. If
-// scoped_refptr to <SpdySession> is deleted from
-// SpdySession::DoReadLoop(), we get a crash because GoAway could
-// delete the SpdySession from the SpdySessionPool and the last
+// Send a GoAway frame when SpdySession is in DoLoop. If scoped_refptr to
+// <SpdySession> is deleted from SpdySession::DoLoop(), we get a crash because
+// GoAway could delete the SpdySession from the SpdySessionPool and the last
 // reference to SpdySession.
-TEST_P(SpdySessionTest, GoAwayWhileInDoReadLoop) {
+TEST_P(SpdySessionTest, GoAwayWhileInDoLoop) {
   MockConnect connect_data(SYNCHRONOUS, OK);
   BufferedSpdyFramer framer(spdy_util_.spdy_version(), false);
 
@@ -2076,8 +2064,8 @@ TEST_P(SpdySessionTest, GoAwayWhileInDoReadLoop) {
   data.RunFor(1);
   EXPECT_EQ(1u, spdy_stream1->stream_id());
 
-  // Only references to SpdySession are held by DoReadLoop and
-  // SpdySessionPool. If DoReadLoop doesn't hold the reference, we get a
+  // Only references to SpdySession are held by DoLoop and
+  // SpdySessionPool. If DoLoop doesn't hold the reference, we get a
   // crash if SpdySession is deleted from the SpdySessionPool.
 
   // Run until GoAway.
@@ -2479,7 +2467,7 @@ TEST_P(SpdySessionTest, SendCredentials) {
 
   EXPECT_TRUE(session->NeedsCredentials());
 
-  // Flush the read completion task.
+  // Flush the SpdySession::OnReadComplete() task.
   base::MessageLoop::current()->RunUntilIdle();
 
   session->CloseSessionOnError(ERR_ABORTED, std::string());
