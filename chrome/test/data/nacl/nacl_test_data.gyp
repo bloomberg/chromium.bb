@@ -212,7 +212,11 @@
           '-lppapi_test_lib',
           '-lplatform',
           '-lgio',
-          '-lnacl_dyncode',
+          # The "_private" variant of the library calls the syscalls
+          # directly, which allows us to test the syscalls directly,
+          # even when the dyncode IRT interface is also disabled under
+          # PNaCl.
+          '-lnacl_dyncode_private',
         ],
         'sources': [
           'pnacl_dyncode_syscall_disabled/pnacl_dyncode_syscall_disabled.cc',
@@ -224,7 +228,7 @@
       'dependencies': [
         '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio_lib',
         '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform_lib',
-        '<(DEPTH)/native_client/src/untrusted/nacl/nacl.gyp:nacl_dynacode_lib',
+        '<(DEPTH)/native_client/src/untrusted/nacl/nacl.gyp:nacl_dyncode_private_lib',
         '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
         '<(DEPTH)/ppapi/native_client/native_client.gyp:ppapi_lib',
         '<(DEPTH)/ppapi/ppapi_untrusted.gyp:ppapi_cpp_lib',
