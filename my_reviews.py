@@ -86,7 +86,7 @@ class Stats(object):
     length = len(self.latencies)
     latencies = sorted(self.latencies)
     if (length & 1) == 0:
-      return (latencies[length/2] + latencies[length/2+1]) / 2.
+      return (latencies[length/2] + latencies[length/2-1]) / 2.
     else:
       return latencies[length/2]
 
