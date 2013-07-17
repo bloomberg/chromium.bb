@@ -128,6 +128,18 @@ void ScopedStyleTree::resolveScopedStyles(const Element* element, Vector<ScopedS
         resolvers.append(scopedResolver);
 }
 
+void ScopedStyleTree::resolveScopedKeyframesRules(const Element* element, Vector<ScopedStyleResolver*, 8>& resolvers)
+{
+    Document* document = element->document();
+    TreeScope* treeScope = element->treeScope();
+    bool applyAuthorStyles = treeScope->applyAuthorStyles();
+
+    for (ScopedStyleResolver* scopedResolver = scopedResolverFor(element); scopedResolver; scopedResolver = scopedResolver->parent()) {
+        if (scopedResolver->treeScope() == treeScope || (applyAuthorStyles && scopedResolver->treeScope() == document))
+            resolvers.append(scopedResolver);
+    }
+}
+
 inline ScopedStyleResolver* ScopedStyleTree::enclosingScopedStyleResolverFor(const ContainerNode* scopingNode)
 {
     for (; scopingNode; scopingNode = scopingNode->parentOrShadowHostNode()) {
@@ -279,6 +291,7 @@ void ScopedStyleResolver::collectFeaturesTo(RuleFeatureSet& features)
 void ScopedStyleResolver::resetAuthorStyle()
 {
     m_authorStyle = RuleSet::create();
+    m_keyframesRuleMap.clear();
 }
 
 void ScopedStyleResolver::resetAtHostRules(const ShadowRoot* shadowRoot)
@@ -298,6 +311,26 @@ bool ScopedStyleResolver::checkRegionStyle(Element* regionElement)
             return true;
     }
     return false;
+}
+
+const StyleRuleKeyframes* ScopedStyleResolver::keyframeStylesForAnimation(const AtomicStringImpl* animationName)
+{
+    if (m_keyframesRuleMap.isEmpty())
+        return 0;
+
+    m_keyframesRuleMap.checkConsistency();
+
+    KeyframesRuleMap::iterator it = m_keyframesRuleMap.find(animationName);
+    if (it == m_keyframesRuleMap.end())
+        return 0;
+
+    return it->value.get();
+}
+
+void ScopedStyleResolver::addKeyframeStyle(PassRefPtr<StyleRuleKeyframes> rule)
+{
+    AtomicString s(rule->name());
+    m_keyframesRuleMap.set(s.impl(), rule);
 }
 
 inline RuleSet* ScopedStyleResolver::atHostRuleSetFor(const ShadowRoot* shadowRoot) const

@@ -766,6 +766,23 @@ PassRefPtr<RenderStyle> StyleResolver::styleForKeyframe(Element* e, const Render
     return state.takeStyle();
 }
 
+const StyleRuleKeyframes* StyleResolver::matchScopedKeyframesRule(Element* e, const AtomicStringImpl* animationName)
+{
+    if (m_styleTree.hasOnlyScopedResolverForDocument())
+        return m_styleTree.scopedStyleResolverForDocument()->keyframeStylesForAnimation(animationName);
+
+    Vector<ScopedStyleResolver*, 8> stack;
+    m_styleTree.resolveScopedKeyframesRules(e, stack);
+    if (stack.isEmpty())
+        return 0;
+
+    for (size_t i = 0; i < stack.size(); ++i) {
+        if (const StyleRuleKeyframes* keyframesRule = stack.at(i)->keyframeStylesForAnimation(animationName))
+            return keyframesRule;
+    }
+    return 0;
+}
+
 void StyleResolver::keyframeStylesForAnimation(Element* e, const RenderStyle* elementStyle, KeyframeList& list)
 {
     list.clear();
@@ -774,13 +791,9 @@ void StyleResolver::keyframeStylesForAnimation(Element* e, const RenderStyle* el
     if (!e || list.animationName().isEmpty())
         return;
 
-    m_keyframesRuleMap.checkConsistency();
-
-    KeyframesRuleMap::iterator it = m_keyframesRuleMap.find(list.animationName().impl());
-    if (it == m_keyframesRuleMap.end())
+    const StyleRuleKeyframes* keyframesRule = matchScopedKeyframesRule(e, list.animationName().impl());
+    if (!keyframesRule)
         return;
-
-    const StyleRuleKeyframes* keyframesRule = it->value.get();
 
     // Construct and populate the style for each keyframe
     const Vector<RefPtr<StyleKeyframe> >& keyframes = keyframesRule->keyframes();

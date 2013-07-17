@@ -182,6 +182,7 @@ public:
     // FIXME: Used by SharingStyleFinder, but should be removed.
     bool styleSharingCandidateMatchesRuleSet(const ElementResolveContext&, RuleSet*);
 
+    const StyleRuleKeyframes* matchScopedKeyframesRule(Element*, const AtomicStringImpl* animationName);
     PassRefPtr<RenderStyle> styleForKeyframe(Element*, const RenderStyle*, const StyleKeyframe*, KeyframeValue&);
 
     // These methods will give back the set of rules that matched for a given element (or a pseudo-element).

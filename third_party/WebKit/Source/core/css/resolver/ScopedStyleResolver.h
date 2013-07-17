@@ -27,6 +27,7 @@
 #ifndef ScopedStyleResolver_h
 #define ScopedStyleResolver_h
 
+#include "core/css/CSSKeyframesRule.h"
 #include "core/css/RuleSet.h"
 #include "core/css/SiblingTraversalStrategies.h"
 #include "wtf/Forward.h"
@@ -62,6 +63,8 @@ public:
 
 public:
     bool checkRegionStyle(Element*);
+    const StyleRuleKeyframes* keyframeStylesForAnimation(const AtomicStringImpl* animationName);
+    void addKeyframeStyle(PassRefPtr<StyleRuleKeyframes>);
 
     void matchHostRules(ElementRuleCollector&, bool includeEmptyRules);
     void matchAuthorRules(ElementRuleCollector&, bool includeEmptyRules, bool applyAuthorStyles);
@@ -87,6 +90,9 @@ private:
 
     OwnPtr<RuleSet> m_authorStyle;
     HashMap<const ShadowRoot*, OwnPtr<RuleSet> > m_atHostRules;
+
+    typedef HashMap<const AtomicStringImpl*, RefPtr<StyleRuleKeyframes> > KeyframesRuleMap;
+    KeyframesRuleMap m_keyframesRuleMap;
 };
 
 class ScopedStyleTree {
@@ -104,6 +110,7 @@ public:
     ScopedStyleResolver* scopedStyleResolverForDocument() { return m_scopedResolverForDocument; }
 
     void resolveScopedStyles(const Element*, Vector<ScopedStyleResolver*, 8>&);
+    void resolveScopedKeyframesRules(const Element*, Vector<ScopedStyleResolver*, 8>&);
     ScopedStyleResolver* scopedResolverFor(const Element*);
 
     void remove(const ContainerNode* scopingNode);
