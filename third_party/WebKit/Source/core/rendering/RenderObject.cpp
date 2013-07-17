@@ -2990,34 +2990,6 @@ void RenderObject::imageChanged(CachedImage* image, const IntRect* rect)
     imageChanged(static_cast<WrappedImagePtr>(image), rect);
 }
 
-RenderObject* RenderObject::hoverAncestor() const
-{
-    // When searching for the hover ancestor and encountering a named flow thread,
-    // the search will continue with the DOM ancestor of the top-most element
-    // in the named flow thread.
-    // See https://code.google.com/p/chromium/issues/detail?id=243278
-    RenderObject* hoverAncestor = parent();
-
-    // Skip anonymous blocks. There's no point in treating them as hover ancestors
-    // and it would also prevent us from continuing the search on the DOM tree
-    // when reaching the named flow thread.
-    if (hoverAncestor && hoverAncestor->isAnonymousBlock())
-        hoverAncestor = hoverAncestor->parent();
-
-    if (hoverAncestor && hoverAncestor->isRenderNamedFlowThread()) {
-        hoverAncestor = 0;
-
-        Node* node = this->node();
-        if (node) {
-            Node* domAncestorNode = node->parentNode();
-            if (domAncestorNode)
-                hoverAncestor = domAncestorNode->renderer();
-        }
-    }
-
-    return hoverAncestor;
-}
-
 Element* RenderObject::offsetParent() const
 {
     if (isRoot() || isBody())
