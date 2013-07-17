@@ -521,7 +521,7 @@ void WebViewImpl::handleMouseDown(Frame& mainFrame, const WebMouseEvent& event)
         // Take capture on a mouse down on a plugin so we can send it mouse events.
         if (hitNode && hitNode->renderer() && hitNode->renderer()->isEmbeddedObject()) {
             m_mouseCaptureNode = hitNode;
-            TRACE_EVENT_ASYNC_BEGIN0("webkit", "capturing mouse", this);
+            TRACE_EVENT_ASYNC_BEGIN0("input", "capturing mouse", this);
         }
     }
 
@@ -1936,7 +1936,7 @@ const WebInputEvent* WebViewImpl::m_currentInputEvent = 0;
 
 bool WebViewImpl::handleInputEvent(const WebInputEvent& inputEvent)
 {
-    TRACE_EVENT0("webkit", "WebViewImpl::handleInputEvent");
+    TRACE_EVENT0("input", "WebViewImpl::handleInputEvent");
     // If we've started a drag and drop operation, ignore input events until
     // we're done.
     if (m_doingDragAndDrop)
@@ -1957,7 +1957,7 @@ bool WebViewImpl::handleInputEvent(const WebInputEvent& inputEvent)
     }
 
     if (m_mouseCaptureNode && WebInputEvent::isMouseEventType(inputEvent.type)) {
-        TRACE_EVENT1("webkit", "captured mouse event", "type", inputEvent.type);
+        TRACE_EVENT1("input", "captured mouse event", "type", inputEvent.type);
         // Save m_mouseCaptureNode since mouseCaptureLost() will clear it.
         RefPtr<Node> node = m_mouseCaptureNode;
 
@@ -2000,7 +2000,7 @@ void WebViewImpl::setCursorVisibilityState(bool isVisible)
 
 void WebViewImpl::mouseCaptureLost()
 {
-    TRACE_EVENT_ASYNC_END0("webkit", "capturing mouse", this);
+    TRACE_EVENT_ASYNC_END0("input", "capturing mouse", this);
     m_mouseCaptureNode = 0;
 }
 
