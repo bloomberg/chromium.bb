@@ -188,6 +188,7 @@
     [RaisesException] DOMString repaintRectsAsText(Document document);
 
     [RaisesException] void garbageCollectDocumentResources(Document document);
+    void evictAllCachedResources();
 
     void allowRoundingHacks();
 

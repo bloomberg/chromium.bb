@@ -1643,6 +1643,11 @@ void Internals::garbageCollectDocumentResources(Document* document, ExceptionCod
     cachedResourceLoader->garbageCollectDocumentResources();
 }
 
+void Internals::evictAllCachedResources() const
+{
+    memoryCache()->evictResources();
+}
+
 void Internals::allowRoundingHacks() const
 {
     TextRun::setAllowsRoundingHacks(true);
