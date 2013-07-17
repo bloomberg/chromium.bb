@@ -590,13 +590,6 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   //    i.e. not on Chrome OS device w/o login flow.
   if (parsed_command_line().HasSwitch(switches::kLoginUser) &&
       !parsed_command_line().HasSwitch(switches::kLoginPassword)) {
-    // Make sure we flip every profile to not share proxies if the user hasn't
-    // specified so explicitly.
-    const PrefService::Preference* use_shared_proxies_pref =
-        profile()->GetPrefs()->FindPreference(prefs::kUseSharedProxies);
-    if (use_shared_proxies_pref->IsDefaultValue())
-      profile()->GetPrefs()->SetBoolean(prefs::kUseSharedProxies, false);
-
     // This is done in LoginUtils::OnProfileCreated during normal login.
     LoginUtils::Get()->InitRlzDelayed(profile());
 

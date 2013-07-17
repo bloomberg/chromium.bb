@@ -28,7 +28,13 @@ class UIProxyConfigService {
   UIProxyConfigService();
   ~UIProxyConfigService();
 
-  void SetPrefs(PrefService* prefs);
+  // |signin_screen| indicates whether this object is used for the
+  // signin screen, in which case proxies of (shared) networks are
+  // unconditionally respected. After signin, proxy settings of shared networks
+  // may be ignored, e.g. depending on the kUseSharedProxies flag. After this
+  // call, proxy settings are read from
+  // |prefs|.
+  void SetPrefs(bool signin_screen, PrefService* prefs);
 
   // Called by UI to set the network with service path |current_network| to be
   // displayed or edited.  Subsequent Set*/Get* methods will use this
@@ -58,6 +64,7 @@ class UIProxyConfigService {
   // Proxy configuration of |current_ui_network_|.
   UIProxyConfig current_ui_config_;
 
+  bool signin_screen_;
   PrefService* pref_service_;
 
   DISALLOW_COPY_AND_ASSIGN(UIProxyConfigService);

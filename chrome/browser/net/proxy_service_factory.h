@@ -18,6 +18,12 @@ class ProxyConfigServiceImpl;
 }
 #endif  // defined(OS_CHROMEOS)
 
+#if defined(OS_CHROMEOS)
+typedef chromeos::ProxyConfigServiceImpl PrefProxyConfigTracker;
+#else
+typedef PrefProxyConfigTrackerImpl PrefProxyConfigTracker;
+#endif  // defined(OS_CHROMEOS)
+
 namespace net {
 class NetLog;
 class NetworkDelegate;
@@ -34,13 +40,19 @@ class ProxyServiceFactory {
   // about the proxy configuration by calling its UpdateProxyConfig method.
   static ChromeProxyConfigService* CreateProxyConfigService();
 
-#if defined(OS_CHROMEOS)
-  static chromeos::ProxyConfigServiceImpl* CreatePrefProxyConfigTracker(
-      PrefService* pref_service);
-#else
-  static PrefProxyConfigTrackerImpl* CreatePrefProxyConfigTracker(
-      PrefService* pref_service);
-#endif  // defined(OS_CHROMEOS)
+  // Creates a PrefProxyConfigTracker that tracks preferences of a
+  // profile. On ChromeOS it additionaly tracks local state for shared proxy
+  // settings. This tracker should be used if the profile's preferences should
+  // be respected. On ChromeOS's signin screen this is for example not the case.
+  static PrefProxyConfigTracker* CreatePrefProxyConfigTrackerOfProfile(
+      PrefService* profile_prefs,
+      PrefService* local_state_prefs);
+
+  // Creates a PrefProxyConfigTracker that tracks local state only. This tracker
+  // should be used for the system request context and the signin screen
+  // (ChromeOS only).
+  static PrefProxyConfigTracker* CreatePrefProxyConfigTrackerOfLocalState(
+      PrefService* local_state_prefs);
 
   // Create a proxy service according to the options on command line.
   static net::ProxyService* CreateProxyService(

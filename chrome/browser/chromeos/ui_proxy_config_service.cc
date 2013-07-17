@@ -56,13 +56,17 @@ bool IsNetworkProxySettingsEditable(const NetworkState& network) {
 
 }  // namespace
 
-UIProxyConfigService::UIProxyConfigService() {
+UIProxyConfigService::UIProxyConfigService()
+    : signin_screen_(false),
+      pref_service_(NULL) {
 }
 
 UIProxyConfigService::~UIProxyConfigService() {
 }
 
-void UIProxyConfigService::SetPrefs(PrefService* pref_service) {
+void UIProxyConfigService::SetPrefs(bool signin_screen,
+                                    PrefService* pref_service) {
+  signin_screen_ = signin_screen;
   pref_service_ = pref_service;
 }
 
@@ -157,10 +161,10 @@ void UIProxyConfigService::DetermineEffectiveConfig(
     current_ui_config_.state = ProxyPrefs::CONFIG_POLICY;
     current_ui_config_.user_modifiable = false;
   } else {
-    current_ui_config_.user_modifiable =
-        !ProxyConfigServiceImpl::IgnoreProxy(pref_service_,
-                                             network.profile_path(),
-                                             network.onc_source());
+    current_ui_config_.user_modifiable = !ProxyConfigServiceImpl::IgnoreProxy(
+        signin_screen_ ? NULL : pref_service_,
+        network.profile_path(),
+        network.onc_source());
   }
 }
 

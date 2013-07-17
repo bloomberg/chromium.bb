@@ -117,6 +117,7 @@ class OffTheRecordProfileImpl : public Profile {
 #endif  // defined(OS_ANDROID) || defined(OS_IOS)
 
   void OnZoomLevelChanged(const content::HostZoomMap::ZoomLevelChange& change);
+  PrefProxyConfigTracker* CreateProxyConfigTracker();
 
   // The real underlying profile.
   Profile* profile_;

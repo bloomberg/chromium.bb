@@ -134,11 +134,11 @@
 #include "chrome/browser/chromeos/login/user_image_manager.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wallpaper_manager.h"
+#include "chrome/browser/chromeos/net/proxy_config_handler.h"
 #include "chrome/browser/chromeos/policy/auto_enrollment_client.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_status_collector.h"
 #include "chrome/browser/chromeos/preferences.h"
-#include "chrome/browser/chromeos/proxy_config_service_impl.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service.h"
 #include "chrome/browser/chromeos/settings/device_settings_cache.h"
 #include "chrome/browser/chromeos/status/data_promo_notification.h"
@@ -263,7 +263,6 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   chromeos::KioskAppManager::RegisterPrefs(registry);
   chromeos::LoginUtils::RegisterPrefs(registry);
   chromeos::Preferences::RegisterPrefs(registry);
-  chromeos::ProxyConfigServiceImpl::RegisterPrefs(registry);
   chromeos::RegisterDisplayLocalStatePrefs(registry);
   chromeos::ServicesCustomizationDocument::RegisterPrefs(registry);
   chromeos::system::AutomaticRebootManager::RegisterPrefs(registry);
@@ -373,7 +372,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 #if defined(OS_CHROMEOS)
   chromeos::OAuth2LoginManager::RegisterProfilePrefs(registry);
   chromeos::Preferences::RegisterProfilePrefs(registry);
-  chromeos::ProxyConfigServiceImpl::RegisterProfilePrefs(registry);
+  chromeos::proxy_config::RegisterProfilePrefs(registry);
   extensions::EnterprisePlatformKeysPrivateChallengeUserKeyFunction::
       RegisterProfilePrefs(registry);
   FlagsUI::RegisterProfilePrefs(registry);

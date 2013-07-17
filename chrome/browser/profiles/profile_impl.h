@@ -190,6 +190,8 @@ class ProfileImpl : public Profile {
                           base::FilePath* cache_path,
                           int* max_size);
 
+  PrefProxyConfigTracker* CreateProxyConfigTracker();
+
   content::HostZoomMap::ZoomLevelChangedCallback zoom_callback_;
   PrefChangeRegistrar pref_change_registrar_;
 

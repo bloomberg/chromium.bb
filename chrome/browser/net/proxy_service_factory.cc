@@ -54,20 +54,28 @@ ChromeProxyConfigService* ProxyServiceFactory::CreateProxyConfigService() {
   return new ChromeProxyConfigService(base_service);
 }
 
+// static
+PrefProxyConfigTracker*
+ProxyServiceFactory::CreatePrefProxyConfigTrackerOfProfile(
+    PrefService* profile_prefs,
+    PrefService* local_state_prefs) {
 #if defined(OS_CHROMEOS)
-// static
-chromeos::ProxyConfigServiceImpl*
-    ProxyServiceFactory::CreatePrefProxyConfigTracker(
-        PrefService* pref_service) {
-  return new chromeos::ProxyConfigServiceImpl(pref_service);
-}
+  return new chromeos::ProxyConfigServiceImpl(profile_prefs, local_state_prefs);
 #else
-// static
-PrefProxyConfigTrackerImpl* ProxyServiceFactory::CreatePrefProxyConfigTracker(
-    PrefService* pref_service) {
-  return new PrefProxyConfigTrackerImpl(pref_service);
-}
+  return new PrefProxyConfigTrackerImpl(profile_prefs);
 #endif  // defined(OS_CHROMEOS)
+}
+
+// static
+PrefProxyConfigTracker*
+ProxyServiceFactory::CreatePrefProxyConfigTrackerOfLocalState(
+    PrefService* local_state_prefs) {
+#if defined(OS_CHROMEOS)
+  return new chromeos::ProxyConfigServiceImpl(NULL, local_state_prefs);
+#else
+  return new PrefProxyConfigTrackerImpl(local_state_prefs);
+#endif  // defined(OS_CHROMEOS)
+}
 
 // static
 net::ProxyService* ProxyServiceFactory::CreateProxyService(

@@ -398,7 +398,8 @@ IOThread::IOThread(
       prefs::kAuthNegotiateDelegateWhitelist);
   gssapi_library_name_ = local_state->GetString(prefs::kGSSAPILibraryName);
   pref_proxy_config_tracker_.reset(
-      ProxyServiceFactory::CreatePrefProxyConfigTracker(local_state));
+      ProxyServiceFactory::CreatePrefProxyConfigTrackerOfLocalState(
+          local_state));
   ChromeNetworkDelegate::InitializePrefsOnUIThread(
       &system_enable_referrers_,
       NULL,

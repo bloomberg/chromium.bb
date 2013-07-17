@@ -221,9 +221,11 @@ class ProxyConfigServiceImplTest : public testing::Test {
     SetUpNetwork();
 
     PrefProxyConfigTrackerImpl::RegisterPrefs(pref_service_.registry());
-    ProxyConfigServiceImpl::RegisterPrefs(pref_service_.registry());
     proxy_config_service_.reset(new ChromeProxyConfigService(NULL));
-    config_service_impl_.reset(new ProxyConfigServiceImpl(&pref_service_));
+    // Create a ProxyConfigServiceImpl like for the system request context.
+    config_service_impl_.reset(
+        new ProxyConfigServiceImpl(NULL,  // no profile prefs
+                                   &pref_service_));
     config_service_impl_->SetChromeProxyConfigService(
         proxy_config_service_.get());
     // SetChromeProxyConfigService triggers update of initial prefs proxy

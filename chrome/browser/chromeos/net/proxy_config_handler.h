@@ -9,6 +9,10 @@
 
 class ProxyConfigDictionary;
 
+namespace user_prefs {
+class PrefRegistrySyncable;
+}
+
 namespace chromeos {
 
 class NetworkState;
@@ -20,6 +24,8 @@ scoped_ptr<ProxyConfigDictionary> GetProxyConfigForNetwork(
 
 void SetProxyConfigForNetwork(const ProxyConfigDictionary& proxy_config,
                               const NetworkState& network);
+
+void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
 }  // namespace proxy_config
 

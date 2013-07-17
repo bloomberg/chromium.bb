@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -23,7 +22,6 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/onc/onc_utils.h"
-#include "components/user_prefs/pref_registry_syncable.h"
 
 namespace chromeos {
 
@@ -43,15 +41,19 @@ bool GetProxyConfig(const NetworkState& network,
 
 }  // namespace
 
-ProxyConfigServiceImpl::ProxyConfigServiceImpl(PrefService* pref_service)
-    : PrefProxyConfigTrackerImpl(pref_service),
+ProxyConfigServiceImpl::ProxyConfigServiceImpl(PrefService* profile_prefs,
+                                               PrefService* local_state_prefs)
+    : PrefProxyConfigTrackerImpl(profile_prefs ? profile_prefs
+                                               : local_state_prefs),
       active_config_state_(ProxyPrefs::CONFIG_UNSET),
+      profile_prefs_(profile_prefs),
       pointer_factory_(this) {
-
   // Register for notifications of UseSharedProxies user preference.
-  if (pref_service->FindPreference(prefs::kUseSharedProxies)) {
+  if (profile_prefs) {
+    DCHECK(profile_prefs->FindPreference(prefs::kUseSharedProxies));
     use_shared_proxies_.Init(
-        prefs::kUseSharedProxies, pref_service,
+        prefs::kUseSharedProxies,
+        profile_prefs,
         base::Bind(&ProxyConfigServiceImpl::OnUseSharedProxiesChanged,
                    base::Unretained(this)));
   }
@@ -79,24 +81,8 @@ void ProxyConfigServiceImpl::OnProxyConfigChanged(
   DetermineEffectiveConfigFromDefaultNetwork();
 }
 
-// static
-void ProxyConfigServiceImpl::RegisterPrefs(PrefRegistrySimple* registry) {
-  // Use shared proxies default to off.  GetUseSharedProxies will return the
-  // correct value based on pre-login and login.
-  registry->RegisterBooleanPref(prefs::kUseSharedProxies, true);
-}
-
-// static
-void ProxyConfigServiceImpl::RegisterProfilePrefs(
-    user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterBooleanPref(
-      prefs::kUseSharedProxies,
-      true,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-}
-
 void ProxyConfigServiceImpl::OnUseSharedProxiesChanged() {
-  VLOG(1) << "New use-shared-proxies = " << GetUseSharedProxies(prefs());
+  VLOG(1) << "use-shared-proxies pref changed.";
   DetermineEffectiveConfigFromDefaultNetwork();
 }
 
@@ -119,43 +105,30 @@ void ProxyConfigServiceImpl::DefaultNetworkChanged(
 }
 
 // static
-bool ProxyConfigServiceImpl::GetUseSharedProxies(
-    const PrefService* pref_service) {
-  const PrefService::Preference* use_shared_proxies_pref =
-      pref_service->FindPreference(prefs::kUseSharedProxies);
-  if (!use_shared_proxies_pref || !use_shared_proxies_pref->GetValue()) {
-    if (UserManager::Get()->IsUserLoggedIn()) {
-      VLOG(1) << "use-shared-proxies not set, defaulting to false/IgnoreProxy.";
-      return false;
-    } else {
-      // Make sure that proxies are always enabled at sign in screen.
-      VLOG(1) << "Use proxy on login screen.";
-      return true;
-    }
-  }
-  bool use_shared_proxies = false;
-  use_shared_proxies_pref->GetValue()->GetAsBoolean(&use_shared_proxies);
-  return use_shared_proxies;
-}
-
-// static
-bool ProxyConfigServiceImpl::IgnoreProxy(const PrefService* pref_service,
+bool ProxyConfigServiceImpl::IgnoreProxy(const PrefService* profile_prefs,
                                          const std::string network_profile_path,
                                          onc::ONCSource onc_source) {
+  if (!profile_prefs) {
+    // If the profile preference are not available, this must be the object
+    // associated to local state used for system requests or login-profile. Make
+    // sure that proxies are enabled.
+    VLOG(1) << "Use proxy for system requests and sign-in screen.";
+    return false;
+  }
+
   const NetworkProfile* profile =
       NetworkHandler::Get()->network_profile_handler()->
       GetProfileForPath(network_profile_path);
   if (!profile) {
-    LOG(WARNING) << "Unknown profile_path " << network_profile_path;
+    LOG(WARNING) << "Unknown profile_path '" << network_profile_path
+                 << "'. Ignoring proxy.";
     return true;
   }
   if (profile->type() == NetworkProfile::TYPE_USER) {
     VLOG(1) << "Respect proxy of not-shared networks.";
     return false;
   }
-
-  if (onc_source == onc::ONC_SOURCE_DEVICE_POLICY &&
-      UserManager::Get()->IsUserLoggedIn()) {
+  if (onc_source == onc::ONC_SOURCE_DEVICE_POLICY) {
     policy::BrowserPolicyConnector* connector =
         g_browser_process->browser_policy_connector();
     const User* logged_in_user = UserManager::Get()->GetLoggedInUser();
@@ -167,7 +140,10 @@ bool ProxyConfigServiceImpl::IgnoreProxy(const PrefService* pref_service,
     }
   }
 
-  return !GetUseSharedProxies(pref_service);
+  // This network is shared and not managed by the user's domain.
+  bool use_shared_proxies = profile_prefs->GetBoolean(prefs::kUseSharedProxies);
+  VLOG(1) << "Use proxy of shared network: " << use_shared_proxies;
+  return !use_shared_proxies;
 }
 
 void ProxyConfigServiceImpl::DetermineEffectiveConfigFromDefaultNetwork() {
@@ -184,8 +160,8 @@ void ProxyConfigServiceImpl::DetermineEffectiveConfigFromDefaultNetwork() {
       net::ProxyConfigService::CONFIG_UNSET;
   bool ignore_proxy = true;
   if (network) {
-    ignore_proxy =
-        IgnoreProxy(prefs(), network->profile_path(), network->onc_source());
+    ignore_proxy = IgnoreProxy(
+        profile_prefs_, network->profile_path(), network->onc_source());
     // If network is shared but use-shared-proxies is off, use direct mode.
     if (ignore_proxy) {
       VLOG(1) << "Shared network && !use-shared-proxies, use direct";

@@ -365,13 +365,6 @@ void LoginUtilsImpl::InitProfilePreferences(Profile* user_profile) {
         UserManager::Get()->GetLoggedInUser()->display_email());
   }
 
-  // Make sure we flip every profile to not share proxies if the user hasn't
-  // specified so explicitly.
-  const PrefService::Preference* use_shared_proxies_pref =
-      user_profile->GetPrefs()->FindPreference(prefs::kUseSharedProxies);
-  if (use_shared_proxies_pref->IsDefaultValue())
-    user_profile->GetPrefs()->SetBoolean(prefs::kUseSharedProxies, false);
-
   RespectLocalePreference(user_profile);
 }
 

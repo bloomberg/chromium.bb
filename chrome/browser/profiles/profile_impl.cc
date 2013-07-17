@@ -1070,10 +1070,8 @@ void ProfileImpl::InitChromeOSPreferences() {
 #endif  // defined(OS_CHROMEOS)
 
 PrefProxyConfigTracker* ProfileImpl::GetProxyConfigTracker() {
-  if (!pref_proxy_config_tracker_) {
-    pref_proxy_config_tracker_.reset(
-        ProxyServiceFactory::CreatePrefProxyConfigTracker(GetPrefs()));
-  }
+  if (!pref_proxy_config_tracker_)
+    pref_proxy_config_tracker_.reset(CreateProxyConfigTracker());
   return pref_proxy_config_tracker_.get();
 }
 
@@ -1162,3 +1160,15 @@ void ProfileImpl::GetCacheParameters(bool is_media_context,
   *max_size = is_media_context ? prefs_->GetInteger(prefs::kMediaCacheSize) :
                                  prefs_->GetInteger(prefs::kDiskCacheSize);
 }
+
+PrefProxyConfigTracker* ProfileImpl::CreateProxyConfigTracker() {
+#if defined(OS_CHROMEOS)
+  if (chromeos::ProfileHelper::IsSigninProfile(this)) {
+    return ProxyServiceFactory::CreatePrefProxyConfigTrackerOfLocalState(
+        g_browser_process->local_state());
+  }
+#endif  // defined(OS_CHROMEOS)
+  return ProxyServiceFactory::CreatePrefProxyConfigTrackerOfProfile(
+      GetPrefs(), g_browser_process->local_state());
+}
+

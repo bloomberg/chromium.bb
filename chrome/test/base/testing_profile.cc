@@ -729,8 +729,10 @@ void TestingProfile::set_last_selected_directory(const base::FilePath& path) {
 
 PrefProxyConfigTracker* TestingProfile::GetProxyConfigTracker() {
   if (!pref_proxy_config_tracker_.get()) {
+    // TestingProfile is used in unit tests, where local state is not available.
     pref_proxy_config_tracker_.reset(
-        ProxyServiceFactory::CreatePrefProxyConfigTracker(GetPrefs()));
+        ProxyServiceFactory::CreatePrefProxyConfigTrackerOfProfile(GetPrefs(),
+                                                                   NULL));
   }
   return pref_proxy_config_tracker_.get();
 }

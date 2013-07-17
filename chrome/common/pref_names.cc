@@ -793,7 +793,8 @@ const char kShow3gPromoNotification[] =
 // A string pref that contains version where "What's new" promo was shown.
 const char kChromeOSReleaseNotesVersion[] = "settings.release_notes.version";
 
-// A boolean pref that uses shared proxies.
+// A boolean pref that controls whether proxy settings from shared network
+// settings (accordingly from device policy) are applied or ignored.
 const char kUseSharedProxies[] = "settings.use_shared_proxies";
 
 // Power state of the current displays from the last run.

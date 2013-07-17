@@ -59,6 +59,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/preferences.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/proxy_config_service_impl.h"
 #endif
 
@@ -397,10 +398,8 @@ void OffTheRecordProfileImpl::OnLogin() {
 #endif  // defined(OS_CHROMEOS)
 
 PrefProxyConfigTracker* OffTheRecordProfileImpl::GetProxyConfigTracker() {
-  if (!pref_proxy_config_tracker_) {
-    pref_proxy_config_tracker_.reset(
-        ProxyServiceFactory::CreatePrefProxyConfigTracker(GetPrefs()));
-  }
+  if (!pref_proxy_config_tracker_)
+    pref_proxy_config_tracker_.reset(CreateProxyConfigTracker());
   return pref_proxy_config_tracker_.get();
 }
 
@@ -474,3 +473,15 @@ void OffTheRecordProfileImpl::OnZoomLevelChanged(
        return;
   }
 }
+
+PrefProxyConfigTracker* OffTheRecordProfileImpl::CreateProxyConfigTracker() {
+#if defined(OS_CHROMEOS)
+  if (chromeos::ProfileHelper::IsSigninProfile(this)) {
+    return ProxyServiceFactory::CreatePrefProxyConfigTrackerOfLocalState(
+        g_browser_process->local_state());
+  }
+#endif  // defined(OS_CHROMEOS)
+  return ProxyServiceFactory::CreatePrefProxyConfigTrackerOfProfile(
+      GetPrefs(), g_browser_process->local_state());
+}
+

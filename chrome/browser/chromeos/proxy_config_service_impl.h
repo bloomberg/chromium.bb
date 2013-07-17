@@ -38,14 +38,18 @@ class ProxyConfigServiceImpl : public PrefProxyConfigTrackerImpl,
  public:
   // ProxyConfigServiceImpl is created in ProxyServiceFactory::
   // CreatePrefProxyConfigTrackerImpl via Profile::GetProxyConfigTracker() for
-  // profile or IOThread constructor for local state and is owned by the
+  // profile or via IOThread constructor for local state and is owned by the
   // respective classes.
   //
-  // The new modified proxy config, together with proxy from prefs if available,
-  // are used to determine the effective proxy config, which is then pushed
-  // through PrefProxyConfigTrackerImpl to ChromeProxyConfigService to the
+  // The user's proxy config, proxy policies and proxy from prefs, are used to
+  // determine the effective proxy config, which is then pushed through
+  // PrefProxyConfigTrackerImpl to ChromeProxyConfigService to the
   // network stack.
-  explicit ProxyConfigServiceImpl(PrefService* pref_service);
+  //
+  // |profile_prefs| can be NULL if this object should only track prefs from
+  // local state (e.g., for system request context or sigin-in screen).
+  explicit ProxyConfigServiceImpl(PrefService* profile_prefs,
+                                  PrefService* local_state_prefs);
   virtual ~ProxyConfigServiceImpl();
 
   // PrefProxyConfigTrackerImpl implementation.
@@ -55,21 +59,13 @@ class ProxyConfigServiceImpl : public PrefProxyConfigTrackerImpl,
   // NetworkStateHandlerObserver implementation.
   virtual void DefaultNetworkChanged(const NetworkState* network) OVERRIDE;
 
-  // Register UseShardProxies preference.
-  static void RegisterPrefs(PrefRegistrySimple* registry);
-  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
-
  protected:
   friend class UIProxyConfigService;
 
-  // Returns value of UseSharedProxies preference if it's not default, else
-  // returns false if user is logged in and true otherwise.
-  static bool GetUseSharedProxies(const PrefService* pref_service);
-
-  // Returns true if proxy is to be ignored for this profile and |onc_source|,
-  // e.g. this happens if the network is shared and use-shared-proxies is turned
-  // off.
-  static bool IgnoreProxy(const PrefService* pref_service,
+  // Returns true if proxy is to be ignored for this network profile and
+  // |onc_source|, e.g. this happens if the network is shared and
+  // use-shared-proxies is turned off. |profile_prefs| may be NULL.
+  static bool IgnoreProxy(const PrefService* profile_prefs,
                           const std::string network_profile_path,
                           onc::ONCSource onc_source);
 
@@ -92,6 +88,10 @@ class ProxyConfigServiceImpl : public PrefProxyConfigTrackerImpl,
 
   // Track changes in UseSharedProxies user preference.
   BooleanPrefMember use_shared_proxies_;
+
+  // Not owned. NULL if tracking only local state prefs (e.g. in the system
+  // request context or sign-in screen).
+  PrefService* profile_prefs_;
 
   base::WeakPtrFactory<ProxyConfigServiceImpl> pointer_factory_;
 

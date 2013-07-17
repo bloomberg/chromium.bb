@@ -9,11 +9,13 @@
 #include "base/logging.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/proxy_config_dictionary.h"
+#include "chrome/common/pref_names.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_service_client.h"
 #include "chromeos/network/network_handler_callbacks.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
+#include "components/user_prefs/pref_registry_syncable.h"
 #include "dbus/object_path.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -62,6 +64,14 @@ void SetProxyConfigForNetwork(const ProxyConfigDictionary& proxy_config,
     NetworkHandler::Get()->network_state_handler()->
         RequestUpdateForNetwork(network.path());
   }
+}
+
+void RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterBooleanPref(
+      prefs::kUseSharedProxies,
+      false,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 }  // namespace proxy_config
