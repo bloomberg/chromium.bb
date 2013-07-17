@@ -6,6 +6,7 @@
 
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/run_loop.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
@@ -108,7 +109,7 @@ void WebURLLoaderMockFactory::ServeAsynchronousRequests() {
     // The loader might have already been removed.
     pending_loaders_.erase(loader);
   }
-  webkit_support::RunAllPendingMessages();
+  base::RunLoop().RunUntilIdle();
 }
 
 WebKit::WebURLRequest

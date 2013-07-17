@@ -45,7 +45,6 @@
 #include "webkit/support/web_audio_device_mock.h"
 #include "webkit/support/web_gesture_curve_mock.h"
 #include "webkit/support/web_layer_tree_view_impl_for_testing.h"
-#include "webkit/support/webkit_support.h"
 #include "webkit/support/weburl_loader_mock_factory.h"
 
 #if defined(OS_WIN)
@@ -117,7 +116,8 @@ TestWebKitPlatformSupport::TestWebKitPlatformSupport() {
 
   {
     // Initialize the hyphen library with a sample dictionary.
-    base::FilePath path = webkit_support::GetChromiumRootDirFilePath();
+    base::FilePath path;
+    PathService::Get(base::DIR_SOURCE_ROOT, &path);
     path = path.Append(FILE_PATH_LITERAL("third_party/hyphen/hyph_en_US.dic"));
     base::PlatformFile dict_file = base::CreatePlatformFile(
         path,
@@ -428,15 +428,21 @@ void TestWebKitPlatformSupport::serveAsynchronousMockedRequests() {
 }
 
 WebKit::WebString TestWebKitPlatformSupport::webKitRootDir() {
-  return webkit_support::GetWebKitRootDir();
+  base::FilePath path;
+  PathService::Get(base::DIR_SOURCE_ROOT, &path);
+  path = path.Append(FILE_PATH_LITERAL("third_party/WebKit"));
+  path = base::MakeAbsoluteFilePath(path);
+  CHECK(!path.empty());
+  std::string path_ascii = path.MaybeAsASCII();
+  CHECK(!path_ascii.empty());
+  return WebKit::WebString::fromUTF8(path_ascii.c_str());
 }
 
 
 WebKit::WebLayerTreeView*
     TestWebKitPlatformSupport::createLayerTreeViewForTesting() {
   scoped_ptr<WebLayerTreeViewImplForTesting> view(
-      new WebLayerTreeViewImplForTesting(
-          webkit_support::FAKE_CONTEXT, NULL));
+      new WebLayerTreeViewImplForTesting());
 
   if (!view->Initialize())
     return NULL;

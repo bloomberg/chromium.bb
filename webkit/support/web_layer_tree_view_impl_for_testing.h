@@ -8,7 +8,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "third_party/WebKit/public/platform/WebLayerTreeView.h"
-#include "webkit/support/webkit_support.h"
 
 namespace cc {
 class LayerTreeHost;
@@ -21,9 +20,7 @@ namespace webkit {
 class WebLayerTreeViewImplForTesting : public WebKit::WebLayerTreeView,
                                        public cc::LayerTreeHostClient {
  public:
-  WebLayerTreeViewImplForTesting(
-      webkit_support::LayerTreeViewType type,
-      webkit_support::DRTLayerTreeViewClient* client);
+  WebLayerTreeViewImplForTesting();
   virtual ~WebLayerTreeViewImplForTesting();
 
   bool Initialize();
@@ -79,8 +76,6 @@ class WebLayerTreeViewImplForTesting : public WebKit::WebLayerTreeView,
       OffscreenContextProviderForCompositorThread() OVERRIDE;
 
  private:
-  webkit_support::LayerTreeViewType type_;
-  webkit_support::DRTLayerTreeViewClient* client_;
   scoped_ptr<cc::LayerTreeHost> layer_tree_host_;
 
   DISALLOW_COPY_AND_ASSIGN(WebLayerTreeViewImplForTesting);

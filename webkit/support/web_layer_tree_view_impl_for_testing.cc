@@ -33,11 +33,7 @@ using WebKit::WebSize;
 
 namespace webkit {
 
-WebLayerTreeViewImplForTesting::WebLayerTreeViewImplForTesting(
-    webkit_support::LayerTreeViewType type,
-    webkit_support::DRTLayerTreeViewClient* client)
-    : type_(type),
-      client_(client) {}
+WebLayerTreeViewImplForTesting::WebLayerTreeViewImplForTesting() {}
 
 WebLayerTreeViewImplForTesting::~WebLayerTreeViewImplForTesting() {}
 
@@ -48,10 +44,8 @@ bool WebLayerTreeViewImplForTesting::Initialize() {
   // to keep content always crisp when possible.
   settings.layer_transforms_should_scale_layer_contents = true;
 
-  // Accelerated animations are disabled for layout tests, but enabled for unit
-  // tests.
-  settings.accelerated_animation_enabled =
-      type_ == webkit_support::FAKE_CONTEXT;
+  // Accelerated animations are enabled for unit tests.
+  settings.accelerated_animation_enabled = true;
   layer_tree_host_ = cc::LayerTreeHost::Create(this, settings, NULL);
   if (!layer_tree_host_)
     return false;
@@ -157,8 +151,6 @@ void WebLayerTreeViewImplForTesting::setDeferCommits(bool defer_commits) {
 void WebLayerTreeViewImplForTesting::renderingStats(WebRenderingStats&) const {}
 
 void WebLayerTreeViewImplForTesting::Layout() {
-  if (client_)
-    client_->Layout();
 }
 
 void WebLayerTreeViewImplForTesting::ApplyScrollAndScale(
@@ -168,33 +160,13 @@ void WebLayerTreeViewImplForTesting::ApplyScrollAndScale(
 scoped_ptr<cc::OutputSurface>
 WebLayerTreeViewImplForTesting::CreateOutputSurface() {
   scoped_ptr<cc::OutputSurface> surface;
-  switch (type_) {
-    case webkit_support::FAKE_CONTEXT: {
-      scoped_ptr<WebGraphicsContext3D> context3d(
-          new cc::FakeWebGraphicsContext3D);
-      surface.reset(new cc::OutputSurface(context3d.Pass()));
-      break;
-    }
-    case webkit_support::SOFTWARE_CONTEXT: {
-      scoped_ptr<cc::SoftwareOutputDevice> software_device =
-          make_scoped_ptr(new cc::SoftwareOutputDevice);
-      surface.reset(new cc::OutputSurface(software_device.Pass()));
-      break;
-    }
-    case webkit_support::MESA_CONTEXT: {
-      scoped_ptr<WebGraphicsContext3D> context3d(
-          WebKit::Platform::current()->createOffscreenGraphicsContext3D(
-              WebGraphicsContext3D::Attributes()));
-      surface.reset(new cc::OutputSurface(context3d.Pass()));
-      break;
-    }
-  }
+  scoped_ptr<WebGraphicsContext3D> context3d(
+      new cc::FakeWebGraphicsContext3D);
+  surface.reset(new cc::OutputSurface(context3d.Pass()));
   return surface.Pass();
 }
 
 void WebLayerTreeViewImplForTesting::ScheduleComposite() {
-  if (client_)
-    client_->ScheduleComposite();
 }
 
 scoped_refptr<cc::ContextProvider>
