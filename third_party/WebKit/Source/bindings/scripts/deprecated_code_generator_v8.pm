@@ -5770,6 +5770,7 @@ sub FirstLetterToUpperCase
     $ret =~ s/Xml/XML/ if $ret =~ /^Xml[^a-z]/;
     $ret =~ s/Css/CSS/ if $ret =~ /^Css[^T]/;  # css -> setCSS, except setCssText.
     $ret =~ s/Ime/IME/ if $ret =~ /^Ime/;  # ime -> setIME
+    $ret =~ s/Svg/SVG/ if $ret =~ /^Svg/;  # svg -> setSVG
     return $ret;
 }
 
@@ -5825,9 +5826,6 @@ sub AttributeNameForGetterAndSetter
         $attributeName = $attribute->extendedAttributes->{"ImplementedAs"};
     }
     my $attributeType = $attribute->type;
-
-    # Avoid clash with C++ keyword.
-    $attributeName = "_operator" if $attributeName eq "operator";
 
     return $attributeName;
 }

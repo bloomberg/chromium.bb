@@ -32,7 +32,7 @@ namespace WebCore {
 // Animated property definitions
 DEFINE_ANIMATED_STRING(SVGFECompositeElement, SVGNames::inAttr, In1, in1)
 DEFINE_ANIMATED_STRING(SVGFECompositeElement, SVGNames::in2Attr, In2, in2)
-DEFINE_ANIMATED_ENUMERATION(SVGFECompositeElement, SVGNames::operatorAttr, _operator, _operator, CompositeOperationType)
+DEFINE_ANIMATED_ENUMERATION(SVGFECompositeElement, SVGNames::operatorAttr, SVGOperator, svgOperator, CompositeOperationType)
 DEFINE_ANIMATED_NUMBER(SVGFECompositeElement, SVGNames::k1Attr, K1, k1)
 DEFINE_ANIMATED_NUMBER(SVGFECompositeElement, SVGNames::k2Attr, K2, k2)
 DEFINE_ANIMATED_NUMBER(SVGFECompositeElement, SVGNames::k3Attr, K3, k3)
@@ -41,7 +41,7 @@ DEFINE_ANIMATED_NUMBER(SVGFECompositeElement, SVGNames::k4Attr, K4, k4)
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGFECompositeElement)
     REGISTER_LOCAL_ANIMATED_PROPERTY(in1)
     REGISTER_LOCAL_ANIMATED_PROPERTY(in2)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(_operator)
+    REGISTER_LOCAL_ANIMATED_PROPERTY(svgOperator)
     REGISTER_LOCAL_ANIMATED_PROPERTY(k1)
     REGISTER_LOCAL_ANIMATED_PROPERTY(k2)
     REGISTER_LOCAL_ANIMATED_PROPERTY(k3)
@@ -51,7 +51,7 @@ END_REGISTER_ANIMATED_PROPERTIES
 
 inline SVGFECompositeElement::SVGFECompositeElement(const QualifiedName& tagName, Document* document)
     : SVGFilterPrimitiveStandardAttributes(tagName, document)
-    , m__operator(FECOMPOSITE_OPERATOR_OVER)
+    , m_svgOperator(FECOMPOSITE_OPERATOR_OVER)
 {
     ASSERT(hasTagName(SVGNames::feCompositeTag));
     ScriptWrappable::init(this);
@@ -88,7 +88,7 @@ void SVGFECompositeElement::parseAttribute(const QualifiedName& name, const Atom
     if (name == SVGNames::operatorAttr) {
         CompositeOperationType propertyValue = SVGPropertyTraits<CompositeOperationType>::fromString(value);
         if (propertyValue > 0)
-            set_operatorBaseValue(propertyValue);
+            setSVGOperatorBaseValue(propertyValue);
         return;
     }
 
@@ -129,7 +129,7 @@ bool SVGFECompositeElement::setFilterEffectAttribute(FilterEffect* effect, const
 {
     FEComposite* composite = static_cast<FEComposite*>(effect);
     if (attrName == SVGNames::operatorAttr)
-        return composite->setOperation(_operatorCurrentValue());
+        return composite->setOperation(svgOperatorCurrentValue());
     if (attrName == SVGNames::k1Attr)
         return composite->setK1(k1CurrentValue());
     if (attrName == SVGNames::k2Attr)
@@ -178,7 +178,7 @@ PassRefPtr<FilterEffect> SVGFECompositeElement::build(SVGFilterBuilder* filterBu
     if (!input1 || !input2)
         return 0;
 
-    RefPtr<FilterEffect> effect = FEComposite::create(filter, _operatorCurrentValue(), k1CurrentValue(), k2CurrentValue(), k3CurrentValue(), k4CurrentValue());
+    RefPtr<FilterEffect> effect = FEComposite::create(filter, svgOperatorCurrentValue(), k1CurrentValue(), k2CurrentValue(), k3CurrentValue(), k4CurrentValue());
     FilterEffectVector& inputEffects = effect->inputEffects();
     inputEffects.reserveCapacity(2);
     inputEffects.append(input1);
