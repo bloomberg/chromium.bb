@@ -5,7 +5,7 @@
 #include "chromeos/dbus/fake_cryptohome_client.h"
 
 #include "base/bind.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {

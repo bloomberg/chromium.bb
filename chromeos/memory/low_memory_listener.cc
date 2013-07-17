@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/chromeos/chromeos_version.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chromeos/memory/low_memory_listener_delegate.h"

@@ -5,7 +5,7 @@
 #include "chromeos/dbus/mock_cryptohome_client.h"
 
 #include "base/bind.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 
 using ::testing::Invoke;
 using ::testing::_;

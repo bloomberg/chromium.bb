@@ -9,7 +9,7 @@
 #include <X11/Xatom.h>
 
 #include "base/hash.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
 #include "base/sys_byteorder.h"
 

@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 

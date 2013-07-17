@@ -5,7 +5,7 @@
 #include "chromeos/dbus/ibus/ibus_client.h"
 
 #include "base/bind.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/values.h"
 #include "chromeos/dbus/ibus/ibus_constants.h"
 #include "dbus/message.h"

@@ -5,7 +5,7 @@
 #include "chromeos/dbus/fake_cros_disks_client.h"
 
 #include "base/bind.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 
 namespace chromeos {
 

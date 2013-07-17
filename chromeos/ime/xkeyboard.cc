@@ -13,7 +13,7 @@
 #include "base/chromeos/chromeos_version.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/process_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"

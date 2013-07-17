@@ -12,7 +12,7 @@
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/observer_list.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/platform_thread.h"
