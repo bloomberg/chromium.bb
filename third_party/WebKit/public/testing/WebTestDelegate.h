@@ -146,6 +146,8 @@ public:
     // Invoked when the embedder should close all but the main WebView.
     virtual void closeRemainingWindows() = 0;
 
+    virtual void deleteAllCookies() = 0;
+
     // Returns the length of the back/forward history of the main WebView.
     virtual int navigationEntryCount() = 0;
 

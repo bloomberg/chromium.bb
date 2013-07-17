@@ -379,6 +379,7 @@ void TestRunner::reset()
         m_delegate->setAcceptAllCookies(false);
         m_delegate->setLocale("");
         m_delegate->disableAutoResizeMode(WebSize());
+        m_delegate->deleteAllCookies();
     }
 
     m_dumpEditingCallbacks = false;
