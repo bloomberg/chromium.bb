@@ -560,14 +560,14 @@ class PinDriveFileFunction : public FileBrowserFunction {
   void OnPinStateSet(drive::FileError error);
 };
 
-// Get gdata files for the given list of file URLs. Initiate downloading of
-// gdata files if these are not cached. Return a list of local file names.
+// Get drive files for the given list of file URLs. Initiate downloading of
+// drive files if these are not cached. Return a list of local file names.
 // This function puts empty strings instead of local paths for files could
 // not be obtained. For instance, this can happen if the user specifies a new
-// file name to save a file on gdata. There may be other reasons to fail. The
+// file name to save a file on drive. There may be other reasons to fail. The
 // file manager should check if the local paths returned from getDriveFiles()
 // contain empty paths.
-// TODO(satorux): Should we propagate error types to the JavasScript layer?
+// TODO(satorux): Should we propagate error types to the JavaScript layer?
 class GetDriveFilesFunction : public FileBrowserFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.getDriveFiles",

@@ -47,9 +47,6 @@ class FileManagerNotifications
                                            bool success,
                                            bool is_unsupported);
 
-  void ManageNotificationOnGDataSyncProgress(int count);
-  void ManageNotificationOnGDataSyncFinish(bool success);
-
   // Primary method for showing a notification.
   void ShowNotification(NotificationType type, const std::string& path);
   void ShowNotificationDelayed(NotificationType type,

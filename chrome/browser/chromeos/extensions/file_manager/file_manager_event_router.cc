@@ -390,7 +390,7 @@ void FileManagerEventRouter::OnMountEvent(
           *disk,
           base::FilePath::FromUTF8Unsafe(mount_info.mount_path));
   } else if (mount_info.mount_type == chromeos::MOUNT_TYPE_ARCHIVE) {
-    // Clear the "mounted" state for archive files in gdata cache
+    // Clear the "mounted" state for archive files in drive cache
     // when mounting failed or unmounting succeeded.
     if ((event == DiskMountManager::MOUNTING) !=
         (error_code == chromeos::MOUNT_ERROR_NONE)) {
@@ -573,10 +573,10 @@ void FileManagerEventRouter::OnFileSystemBeingUnmounted() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Raise a mount event to notify the File Manager.
-  const std::string& gdata_path = drive::util::GetDriveMountPointPathAsString();
+  const std::string& drive_path = drive::util::GetDriveMountPointPathAsString();
   DiskMountManager::MountPointInfo mount_info(
-      gdata_path,
-      gdata_path,
+      drive_path,
+      drive_path,
       chromeos::MOUNT_TYPE_GOOGLE_DRIVE,
       chromeos::disks::MOUNT_CONDITION_NONE);
   OnMountEvent(DiskMountManager::UNMOUNTING, chromeos::MOUNT_ERROR_NONE,

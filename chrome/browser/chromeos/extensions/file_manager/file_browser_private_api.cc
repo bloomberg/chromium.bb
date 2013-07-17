@@ -2241,16 +2241,6 @@ bool FileDialogStringsFunction::RunImpl() {
 
   webui::SetFontAndTextDirection(dict);
 
-  drive::DriveIntegrationService* integration_service =
-      drive::DriveIntegrationServiceFactory::GetForProfile(profile_);
-  dict->SetBoolean("ENABLE_GDATA", integration_service != NULL);
-
-#if defined(USE_ASH)
-  dict->SetBoolean("ASH", true);
-#else
-  dict->SetBoolean("ASH", false);
-#endif
-
   std::string board;
   chromeos::system::StatisticsProvider* provider =
       chromeos::system::StatisticsProvider::GetInstance();
@@ -2603,7 +2593,7 @@ bool TransferFileFunction::RunImpl() {
       drive::util::IsUnderDriveMountPoint(destination_file);
 
   if (source_file_under_drive && !destination_file_under_drive) {
-    // Transfer a file from gdata to local file system.
+    // Transfer a file from drive to local file system.
     source_file = drive::util::ExtractDrivePath(source_file);
     integration_service->file_system()->TransferFileFromRemoteToLocal(
         source_file,

@@ -290,10 +290,9 @@ class DriveFileSystemExtensionApiTest : public FileSystemExtensionApiTestBase {
 
   // FileSystemExtensionApiTestBase OVERRIDE.
   virtual void InitTestFileSystem() OVERRIDE {
-    // Set up cache root and documents service to be used when creating gdata
-    // system service. This has to be done early on (before the browser is
-    // created) because the system service instance is initialized very early
-    // by FileManagerEventRouter.
+    // Set up cache root to be used by DriveIntegrationService. This has to be
+    // done before the browser is created because the service instance is
+    // initialized by FileManagerEventRouter.
     ASSERT_TRUE(test_cache_root_.CreateUniqueTempDir());
 
     drive::DriveIntegrationServiceFactory::SetFactoryForTest(
