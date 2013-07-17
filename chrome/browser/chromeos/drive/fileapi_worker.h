@@ -95,6 +95,14 @@ void Move(const base::FilePath& src_file_path,
           const StatusCallback& callback,
           FileSystemInterface* file_system);
 
+
+// Copies a file at |src_foreign_file_path|, which is not managed by Drive File
+// System, to |dest_file_path|.
+void CopyInForeignFile(const base::FilePath& src_foreign_file_path,
+                       const base::FilePath& dest_file_path,
+                       const StatusCallback& callback,
+                       FileSystemInterface* file_system);
+
 // Reads the contents of the directory at |file_path|.
 // Called from FileSystemProxy::ReadDirectory().
 void ReadDirectory(const base::FilePath& file_path,

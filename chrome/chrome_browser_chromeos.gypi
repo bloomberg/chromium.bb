@@ -219,6 +219,8 @@
         'browser/chromeos/device_hierarchy_observer.h',
         'browser/chromeos/device_uma.cc',
         'browser/chromeos/device_uma.h',
+        'browser/chromeos/drive/async_file_util.cc',
+        'browser/chromeos/drive/async_file_util.h',
         'browser/chromeos/drive/change_list_loader.cc',
         'browser/chromeos/drive/change_list_loader.h',
         'browser/chromeos/drive/change_list_loader_observer.h',

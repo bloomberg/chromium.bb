@@ -229,6 +229,16 @@ void Move(const base::FilePath& src_file_path,
                     base::Bind(&RunStatusCallbackByFileError, callback));
 }
 
+void CopyInForeignFile(const base::FilePath& src_foreign_file_path,
+                       const base::FilePath& dest_file_path,
+                       const StatusCallback& callback,
+                       FileSystemInterface* file_system) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  file_system->TransferFileFromLocalToRemote(
+      src_foreign_file_path, dest_file_path,
+      base::Bind(&RunStatusCallbackByFileError, callback));
+}
+
 void ReadDirectory(const base::FilePath& file_path,
                    const ReadDirectoryCallback& callback,
                    FileSystemInterface* file_system) {

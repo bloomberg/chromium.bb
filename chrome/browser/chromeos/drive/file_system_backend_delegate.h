@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend_delegate.h"
 
 namespace content {
@@ -14,6 +15,7 @@ class BrowserContext;
 }  // namespace content
 
 namespace fileapi {
+class AsyncFileUtil;
 class ExternalMountPoints;
 }  // namespace fileapi
 
@@ -50,6 +52,7 @@ class FileSystemBackendDelegate : public chromeos::FileSystemBackendDelegate {
 
   // The profile for processing Drive accesses. Should not be NULL.
   void* profile_id_;
+  scoped_ptr<fileapi::AsyncFileUtil> async_file_util_;
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemBackendDelegate);
 };

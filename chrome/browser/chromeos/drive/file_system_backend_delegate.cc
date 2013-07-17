@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/chromeos/drive/async_file_util.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/webkit_file_stream_reader_impl.h"
 #include "chrome/browser/chromeos/drive/webkit_file_stream_writer_impl.h"
@@ -14,6 +15,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "webkit/browser/blob/file_stream_reader.h"
+#include "webkit/browser/fileapi/async_file_util.h"
 #include "webkit/browser/fileapi/external_mount_points.h"
 #include "webkit/browser/fileapi/file_system_task_runners.h"
 #include "webkit/browser/fileapi/remote_file_system_proxy.h"
@@ -25,7 +27,9 @@ namespace drive {
 FileSystemBackendDelegate::FileSystemBackendDelegate(
     content::BrowserContext* browser_context)
     : mount_points_(content::BrowserContext::GetMountPoints(browser_context)),
-      profile_id_(Profile::FromBrowserContext(browser_context)) {
+      profile_id_(Profile::FromBrowserContext(browser_context)),
+      async_file_util_(new internal::AsyncFileUtil(
+          base::Bind(&util::GetFileSystemByProfileId, profile_id_))) {
   DCHECK(profile_id_);
 }
 
@@ -36,10 +40,7 @@ fileapi::AsyncFileUtil* FileSystemBackendDelegate::GetAsyncFileUtil(
     fileapi::FileSystemType type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK_EQ(fileapi::kFileSystemTypeDrive, type);
-
-  // TODO(hidehiko): Support this method.
-  NOTIMPLEMENTED();
-  return NULL;
+  return async_file_util_.get();
 }
 
 scoped_ptr<webkit_blob::FileStreamReader>
