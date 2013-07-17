@@ -30,7 +30,7 @@ function testMixedHeader(csp, xssProtection) {
 function frameLoaded() {
     var frame = document.querySelector('iframe');
     try {
-      alert('Loaded ' + frame.contentWindow.location + ' into the IFrame.');
+      alert('Loaded ' + frame.contentWindow.location.href + ' into the IFrame.');
     } catch (e) {
       alert('Loaded cross-origin frame.');
     }

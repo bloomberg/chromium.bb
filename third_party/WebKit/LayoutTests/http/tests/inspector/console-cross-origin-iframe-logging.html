@@ -6,10 +6,14 @@
 function accessFrame()
 {
     // Should fail.
-    var host = frames[0].location.host;
+    try {
+        var host = frames[0].location.host;
+    } catch (e) {}
 
     // Should fail.
-    frames[0].location.reload();
+    try {
+        frames[0].location.reload();
+    } catch (e) {}
 
     // Should fail.
     frames[0].postMessage("fail", "http://127.0.0.1:8000");

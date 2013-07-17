@@ -11,8 +11,7 @@
         function checkFrames() {
             shouldBeNull('xssed.contentDocument');
             shouldBe('xssed.contentDocument', 'crossorigin.contentDocument');
-            shouldBeUndefined('xssed.contentWindow.location.href');
-            shouldBe('xssed.contentWindow.location.href', 'crossorigin.contentWindow.location.href');
+            shouldThrow('xssed.contentWindow.location.href');
             finishJSTest();
         }
 

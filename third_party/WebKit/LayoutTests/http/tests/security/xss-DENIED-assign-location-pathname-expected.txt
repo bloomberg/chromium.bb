@@ -1,3 +1,4 @@
 CONSOLE MESSAGE: Blocked a frame with origin "http://localhost:8000" from accessing a frame with origin "http://127.0.0.1:8000". Protocols, domains, and ports must match.
+CONSOLE MESSAGE: line 4: Uncaught SecurityError: An attempt was made to break through the security policy of the user agent.
 
 PASS: cross-site assignment of location.pathname not allowed

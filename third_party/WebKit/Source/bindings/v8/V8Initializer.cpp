@@ -35,6 +35,7 @@
 #include "bindings/v8/V8GCController.h"
 #include "bindings/v8/V8PerContextData.h"
 #include "core/dom/Document.h"
+#include "core/dom/ExceptionCode.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/page/ConsoleTypes.h"
 #include "core/page/ContentSecurityPolicy.h"
@@ -103,6 +104,11 @@ static void failedAccessCheckCallbackInMainThread(v8::Local<v8::Object> host, v8
         return;
     DOMWindow* targetWindow = target->document()->domWindow();
     targetWindow->printErrorMessage(targetWindow->crossDomainAccessErrorMessage(activeDOMWindow()));
+
+    // Throw an exception for failed-access checks against Location objects, otherwise write to the console.
+    WrapperTypeInfo* typeInfo = WrapperTypeInfo::unwrap(data);
+    if (V8Location::info.equals(typeInfo))
+        setDOMException(SecurityError, v8::Isolate::GetCurrent());
 }
 
 static bool codeGenerationCheckCallbackInMainThread(v8::Local<v8::Context> context)

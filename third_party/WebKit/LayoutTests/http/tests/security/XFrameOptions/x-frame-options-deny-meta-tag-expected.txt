@@ -6,7 +6,7 @@ data:, - willSendRequest <NSURLRequest URL data:,, main document URL http://127.
 data:, - didReceiveResponse <NSURLResponse data:,, http status code 0>
 CONSOLE MESSAGE: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a frame with origin "null".  The frame requesting access has a protocol of "http", the frame being accessed has a protocol of "data". Protocols must match.
 
-CONSOLE MESSAGE: line 13: PASS: Could not read contentWindow.location.href
+CONSOLE MESSAGE: line 14: PASS: Access to contentWindow.location.href threw an exception.
 There should be no content in the iframe below
 
 

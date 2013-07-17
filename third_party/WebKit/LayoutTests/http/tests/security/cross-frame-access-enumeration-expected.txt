@@ -12,5 +12,6 @@ PASS: Cross frame access by getting the keys of the window object was denied.
 PASS: Cross frame access by getting the property names of the window object was denied.
 PASS: Cross frame access by enumerating the Location object was denied.
 PASS: Cross frame access by getting the keys of the Location object was denied.
+PASS: Cross frame access by getting the keys of the Location object was denied.
 PASS: Cross frame access by getting the property names of the Location object was denied.
 

@@ -21,8 +21,8 @@
 
             shouldBe("eval('delete targetWindow.existingProperty')", "false");
             shouldBe("eval('delete targetWindow[1]')", "false");
-            shouldBe("eval('delete targetWindow.location.existingProperty')", "false");
-            shouldBe("eval('delete targetWindow.location[1]')", "false");
+            shouldBeTrue("deletionThrowsException('targetWindow.location.existingProperty')");
+            shouldBeTrue("deletionThrowsException('targetWindow.location[1]')", "false");
 
             targetWindow.postMessage("deletingValuesComplete", "*");
         }

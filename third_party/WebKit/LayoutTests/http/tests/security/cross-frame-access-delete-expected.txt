@@ -5,8 +5,8 @@ CONSOLE MESSAGE: Blocked a frame with origin "http://127.0.0.1:8000" from access
 
 PASS: eval('delete targetWindow.existingProperty') should be 'false' and is.
 PASS: eval('delete targetWindow[1]') should be 'false' and is.
-PASS: eval('delete targetWindow.location.existingProperty') should be 'false' and is.
-PASS: eval('delete targetWindow.location[1]') should be 'false' and is.
+PASS: deletionThrowsException('targetWindow.location.existingProperty') should be 'true' and is.
+PASS: deletionThrowsException('targetWindow.location[1]') should be 'true' and is.
 
 
 --------

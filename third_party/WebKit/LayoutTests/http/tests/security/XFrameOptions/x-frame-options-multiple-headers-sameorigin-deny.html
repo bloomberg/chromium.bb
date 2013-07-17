@@ -10,12 +10,13 @@
         }
 
         function checkIfDone() {
-            var url = document.querySelector('iframe').contentWindow.location.href;
-
-            if (!url)
-                console.log("PASS: Could not read contentWindow.location.href");
-            else
+            try {
+                var url = document.querySelector('iframe').contentWindow.location.href;
                 console.log("FAIL: Could read contentWindow.location.href");
+            } catch (e) {
+                console.log("PASS: Access to contentWindow.location.href threw an exception.");
+            }
+
             testRunner.notifyDone();
         }
     </script>

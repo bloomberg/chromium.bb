@@ -14,11 +14,14 @@ function checkLocationObject(l)
         return false;
     }
 
-    if (l.href) {
-        debug('could access top.location.href');
-        return false;
+    try {
+        if (l.href) {
+            debug('could access top.location.href');
+            return false;
+        }
+    } catch (e) {
+        return true;
     }
-    
     return true;
 }
 
@@ -31,41 +34,45 @@ function runTest() {
         numErrors++;
 
     // Try getting childFrame.location.href using NPN_Evaluate
-    var href = document.plugin.testEvaluate('top.location.href');
+    try {
+        var href = document.plugin.testEvaluate('top.location.href');
+    } catch (e) {}
     if (href) {
         debug("could access top.location.href")
         numErrors++;
     }
-    
+
     // Try accessing childFrame.location using NPN_GetProperty
     var l = document.plugin.testGetProperty('top', 'location');
     if (!checkLocationObject(l))
         numErrors++;
-        
-    var href = document.plugin.testGetProperty('top', 'location', 'href');
+
+    try {
+        var href = document.plugin.testGetProperty('top', 'location', 'href');
+    } catch (e) {}
     if (href) {
         debug("could access top.location.href")
         numErrors++;
     }
-    
+
     // Try accessing top.document using NPN_EVALUATE
     var l = document.plugin.testEvaluate('top.document')
     if (l) {
         debug('could access top.document');
         numErrors++;
     }
-    
+
     // Try accessing top.document using NPN_GetProperty
     var l = document.plugin.testGetProperty('top', 'document')
     if (l) {
         debug('could access top.document');
         numErrors++;
     }
-    
+
     if (numErrors == 0)
         document.getElementById('result').innerHTML = 'SUCCESS';
 }
-    
+
 </script>
 </head>
 <body onload="runTest()">

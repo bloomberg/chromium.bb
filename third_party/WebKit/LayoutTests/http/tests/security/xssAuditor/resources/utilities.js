@@ -3,14 +3,16 @@ function checkIfFrameLocationMatchesSrcAndCallDone(frameId)
     if (!window.testRunner)
         return;
 
-    var actualURL = 'unavailable', frame = document.getElementById(frameId); 
+    var actualURL = 'unavailable', frame = document.getElementById(frameId);
     try {
         actualURL = frame.contentWindow.location.href;
-    } 
-    catch (e) {}
-    
+    }
+    catch (e) {
+        actualURL = '[Location object access threw exception]';
+    }
+
     if (actualURL != frame.src)
-        alert('URL mismatch: ' + actualURL + ' vs. ' + frame.src);
+        alert('URL mismatch: \'' + actualURL + '\' vs. \'' + frame.src + '\'');
 
     testRunner.notifyDone();
 }
