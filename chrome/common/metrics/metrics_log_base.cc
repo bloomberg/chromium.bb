@@ -9,20 +9,15 @@
 #include "base/md5.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_samples.h"
-#include "base/perftimer.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_byteorder.h"
 #include "base/sys_info.h"
-#include "base/third_party/nspr/prtime.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/metrics/proto/histogram_event.pb.h"
 #include "chrome/common/metrics/proto/system_profile.pb.h"
 #include "chrome/common/metrics/proto/user_action_event.pb.h"
-#include "libxml/xmlwriter.h"
-
-#define OPEN_ELEMENT_FOR_SCOPE(name) ScopedElement scoped_element(this, name)
 
 using base::Histogram;
 using base::HistogramBase;
@@ -35,11 +30,6 @@ using metrics::SystemProfileProto;
 using metrics::UserActionEventProto;
 
 namespace {
-
-// libxml take xmlChar*, which is unsigned char*
-inline const unsigned char* UnsignedChar(const char* input) {
-  return reinterpret_cast<const unsigned char*>(input);
-}
 
 // Any id less than 16 bytes is considered to be a testing id.
 bool IsTestingID(const std::string& id) {
@@ -99,93 +89,23 @@ SystemProfileProto::Channel AsProtobufChannel(
 
 }  // namespace
 
-class MetricsLogBase::XmlWrapper {
- public:
-  XmlWrapper()
-      : doc_(NULL),
-        buffer_(NULL),
-        writer_(NULL) {
-    buffer_ = xmlBufferCreate();
-    DCHECK(buffer_);
-
-    #if defined(OS_CHROMEOS)
-      writer_ = xmlNewTextWriterDoc(&doc_, /* compression */ 0);
-    #else
-      writer_ = xmlNewTextWriterMemory(buffer_, /* compression */ 0);
-    #endif  // OS_CHROMEOS
-    DCHECK(writer_);
-
-    int result = xmlTextWriterSetIndent(writer_, 2);
-    DCHECK_EQ(0, result);
-  }
-
-  ~XmlWrapper() {
-    FreeDocWriter();
-    if (buffer_) {
-      xmlBufferFree(buffer_);
-      buffer_ = NULL;
-    }
-  }
-
-  void FreeDocWriter() {
-    if (writer_) {
-      xmlFreeTextWriter(writer_);
-      writer_ = NULL;
-    }
-    if (doc_) {
-      xmlFreeDoc(doc_);
-      doc_ = NULL;
-    }
-  }
-
-  xmlDocPtr doc() const { return doc_; }
-  xmlTextWriterPtr writer() const { return writer_; }
-  xmlBufferPtr buffer() const { return buffer_; }
-
- private:
-  xmlDocPtr doc_;
-  xmlBufferPtr buffer_;
-  xmlTextWriterPtr writer_;
-};
-
 MetricsLogBase::MetricsLogBase(const std::string& client_id, int session_id,
                                const std::string& version_string)
     : num_events_(0),
-      start_time_(Time::Now()),
-      client_id_(client_id),
-      session_id_(base::IntToString(session_id)),
-      locked_(false),
-      xml_wrapper_(new XmlWrapper) {
-  int64_t build_time = GetBuildTime();
-
-  // Write the XML version.
-  StartElement("log");
-  WriteAttribute("clientid", client_id_);
-  WriteInt64Attribute("buildtime", build_time);
-  WriteAttribute("appversion", version_string);
-
-  // Write the protobuf version.
-  if (IsTestingID(client_id_)) {
+      locked_(false) {
+  if (IsTestingID(client_id))
     uma_proto_.set_client_id(0);
-  } else {
+  else
     uma_proto_.set_client_id(HashToUInt64(CreateHash(client_id)));
-  }
+
   uma_proto_.set_session_id(session_id);
-  uma_proto_.mutable_system_profile()->set_build_timestamp(build_time);
+  uma_proto_.mutable_system_profile()->set_build_timestamp(GetBuildTime());
   uma_proto_.mutable_system_profile()->set_app_version(version_string);
   uma_proto_.mutable_system_profile()->set_channel(
       AsProtobufChannel(chrome::VersionInfo::GetChannel()));
 }
 
-MetricsLogBase::~MetricsLogBase() {
-  if (!locked_) {
-    locked_ = true;
-    int result = xmlTextWriterEndDocument(xml_wrapper_->writer());
-    DCHECK_GE(result, 0);
-  }
-  delete xml_wrapper_;
-  xml_wrapper_ = NULL;
-}
+MetricsLogBase::~MetricsLogBase() {}
 
 // static
 void MetricsLogBase::CreateHashes(const std::string& string,
@@ -223,65 +143,20 @@ void MetricsLogBase::CloseLog() {
   DCHECK(!locked_);
   locked_ = true;
 
-  int result = xmlTextWriterEndDocument(xml_wrapper_->writer());
-  DCHECK_GE(result, 0);
-
-  result = xmlTextWriterFlush(xml_wrapper_->writer());
-  DCHECK_GE(result, 0);
-
 #if defined(OS_CHROMEOS)
-  // TODO(isherman): Once the XML pipeline is deprecated, there will be no need
+  // TODO(isherman): Now that the XML pipeline is deprecated, there is no need
   // to track the hardware class in a separate member variable and only write it
   // out when the log is closed.
-  xmlNodePtr root = xmlDocGetRootElement(xml_wrapper_->doc());
   if (!hardware_class_.empty()) {
-    // The hardware class is determined after the first ongoing log is
-    // constructed, so this adds the root element's "hardwareclass"
-    // attribute when the log is closed instead.
-    xmlNewProp(root, UnsignedChar("hardwareclass"),
-               UnsignedChar(hardware_class_.c_str()));
-
-    // Write to the protobuf too.
     uma_proto_.mutable_system_profile()->mutable_hardware()->set_hardware_class(
         hardware_class_);
   }
-
-  // Flattens the XML tree into a character buffer.
-  PerfTimer dump_timer;
-  result = xmlNodeDump(xml_wrapper_->buffer(), xml_wrapper_->doc(),
-                       root, /* level */ 0, /* format */ 1);
-  DCHECK_GE(result, 0);
-  UMA_HISTOGRAM_TIMES("UMA.XMLNodeDumpTime", dump_timer.Elapsed());
-
-  PerfTimer free_timer;
-  xml_wrapper_->FreeDocWriter();
-  UMA_HISTOGRAM_TIMES("UMA.XMLWriterDestructionTime", free_timer.Elapsed());
 #endif  // OS_CHROMEOS
 }
 
-int MetricsLogBase::GetEncodedLogSizeXml() {
-  DCHECK(locked_);
-  CHECK(xml_wrapper_);
-  CHECK(xml_wrapper_->buffer());
-  return xml_wrapper_->buffer()->use;
-}
-
-bool MetricsLogBase::GetEncodedLogXml(char* buffer, int buffer_size) {
-  DCHECK(locked_);
-  if (buffer_size < GetEncodedLogSizeXml())
-    return false;
-
-  memcpy(buffer, xml_wrapper_->buffer()->content, GetEncodedLogSizeXml());
-  return true;
-}
-
-void MetricsLogBase::GetEncodedLogProto(std::string* encoded_log) {
+void MetricsLogBase::GetEncodedLog(std::string* encoded_log) {
   DCHECK(locked_);
   uma_proto_.SerializeToString(encoded_log);
-}
-
-int MetricsLogBase::GetElapsedSeconds() {
-  return static_cast<int>((Time::Now() - start_time_).InSeconds());
 }
 
 void MetricsLogBase::RecordUserAction(const char* key) {
@@ -295,163 +170,13 @@ void MetricsLogBase::RecordUserAction(const char* key) {
     return;
   }
 
-  // Write the XML version.
-  OPEN_ELEMENT_FOR_SCOPE("uielement");
-  WriteAttribute("action", "command");
-  WriteAttribute("targetidhash", base64_hash);
-
-  // Write the protobuf version.
   UserActionEventProto* user_action = uma_proto_.add_user_action_event();
   user_action->set_name_hash(numeric_hash);
-  user_action->set_time(MetricsLogBase::GetCurrentTime());
-
-  // TODO(jhughes): Properly track windows.
-  WriteIntAttribute("window", 0);
-  WriteCommonEventAttributes();
+  user_action->set_time(GetCurrentTime());
 
   ++num_events_;
 }
 
-void MetricsLogBase::RecordLoadEvent(int window_id,
-                                     const GURL& url,
-                                     content::PageTransition origin,
-                                     int session_index,
-                                     TimeDelta load_time) {
-  DCHECK(!locked_);
-
-  OPEN_ELEMENT_FOR_SCOPE("document");
-  WriteAttribute("action", "load");
-  WriteIntAttribute("docid", session_index);
-  WriteIntAttribute("window", window_id);
-  WriteAttribute("loadtime", base::Int64ToString(load_time.InMilliseconds()));
-
-  std::string origin_string;
-
-  switch (content::PageTransitionStripQualifier(origin)) {
-    // TODO(jhughes): Some of these mappings aren't right... we need to add
-    // some values to the server's enum.
-    case content::PAGE_TRANSITION_LINK:
-    case content::PAGE_TRANSITION_MANUAL_SUBFRAME:
-      origin_string = "link";
-      break;
-
-    case content::PAGE_TRANSITION_TYPED:
-      origin_string = "typed";
-      break;
-
-    case content::PAGE_TRANSITION_AUTO_BOOKMARK:
-      origin_string = "bookmark";
-      break;
-
-    case content::PAGE_TRANSITION_AUTO_SUBFRAME:
-    case content::PAGE_TRANSITION_RELOAD:
-      origin_string = "refresh";
-      break;
-
-    case content::PAGE_TRANSITION_GENERATED:
-    case content::PAGE_TRANSITION_KEYWORD:
-      origin_string = "global-history";
-      break;
-
-    case content::PAGE_TRANSITION_AUTO_TOPLEVEL:
-      origin_string = "auto-toplevel";
-      break;
-
-    case content::PAGE_TRANSITION_FORM_SUBMIT:
-      origin_string = "form-submit";
-      break;
-
-    default:
-      NOTREACHED() << "Received an unknown page transition type: " <<
-                      content::PageTransitionStripQualifier(origin);
-  }
-  if (!origin_string.empty())
-    WriteAttribute("origin", origin_string);
-
-  WriteCommonEventAttributes();
-
-  ++num_events_;
-}
-
-void MetricsLogBase::RecordWindowEvent(WindowEventType type,
-                                   int window_id,
-                                   int parent_id) {
-  DCHECK(!locked_);
-
-  OPEN_ELEMENT_FOR_SCOPE("window");
-  WriteAttribute("action", WindowEventTypeToString(type));
-  WriteAttribute("windowid", base::IntToString(window_id));
-  if (parent_id >= 0)
-    WriteAttribute("parent", base::IntToString(parent_id));
-  WriteCommonEventAttributes();
-
-  ++num_events_;
-}
-
-std::string MetricsLogBase::GetCurrentTimeString() {
-  return base::Uint64ToString(Time::Now().ToTimeT());
-}
-
-// These are the attributes that are common to every event.
-void MetricsLogBase::WriteCommonEventAttributes() {
-  WriteAttribute("session", session_id_);
-  WriteAttribute("time", GetCurrentTimeString());
-}
-
-void MetricsLogBase::WriteAttribute(const std::string& name,
-                                    const std::string& value) {
-  DCHECK(!locked_);
-  DCHECK(!name.empty());
-
-  int result = xmlTextWriterWriteAttribute(xml_wrapper_->writer(),
-                                           UnsignedChar(name.c_str()),
-                                           UnsignedChar(value.c_str()));
-  DCHECK_GE(result, 0);
-}
-
-void MetricsLogBase::WriteIntAttribute(const std::string& name, int value) {
-  WriteAttribute(name, base::IntToString(value));
-}
-
-void MetricsLogBase::WriteInt64Attribute(const std::string& name, int64 value) {
-  WriteAttribute(name, base::Int64ToString(value));
-}
-
-// static
-const char* MetricsLogBase::WindowEventTypeToString(WindowEventType type) {
-  switch (type) {
-    case WINDOW_CREATE:  return "create";
-    case WINDOW_OPEN:    return "open";
-    case WINDOW_CLOSE:   return "close";
-    case WINDOW_DESTROY: return "destroy";
-
-    default:
-      NOTREACHED();
-      return "unknown";  // Can't return NULL as this is used in a required
-                         // attribute.
-  }
-}
-
-void MetricsLogBase::StartElement(const char* name) {
-  DCHECK(!locked_);
-  DCHECK(name);
-
-  int result = xmlTextWriterStartElement(xml_wrapper_->writer(),
-                                         UnsignedChar(name));
-  DCHECK_GE(result, 0);
-}
-
-void MetricsLogBase::EndElement() {
-  DCHECK(!locked_);
-
-  int result = xmlTextWriterEndElement(xml_wrapper_->writer());
-  DCHECK_GE(result, 0);
-}
-
-// TODO(JAR): A The following should really be part of the histogram class.
-// Internal state is being needlessly exposed, and it would be hard to reuse
-// this code. If we moved this into the Histogram class, then we could use
-// the same infrastructure for logging StatsCounters, RatesCounters, etc.
 void MetricsLogBase::RecordHistogramDelta(const std::string& histogram_name,
                                           const HistogramSamples& snapshot) {
   DCHECK(!locked_);
@@ -459,33 +184,10 @@ void MetricsLogBase::RecordHistogramDelta(const std::string& histogram_name,
 
   // We will ignore the MAX_INT/infinite value in the last element of range[].
 
-  OPEN_ELEMENT_FOR_SCOPE("histogram");
-
   std::string base64_name_hash;
   uint64 numeric_name_hash;
   CreateHashes(histogram_name, &base64_name_hash, &numeric_name_hash);
 
-  // Write the XML version.
-  WriteAttribute("name", base64_name_hash);
-
-  WriteInt64Attribute("sum", snapshot.sum());
-  // TODO(jar): Remove sumsquares when protobuffer accepts this as optional.
-  WriteInt64Attribute("sumsquares", 0);
-
-  for (scoped_ptr<SampleCountIterator> it = snapshot.Iterator();
-       !it->Done();
-       it->Next()) {
-    OPEN_ELEMENT_FOR_SCOPE("histogrambucket");
-    HistogramBase::Sample min;
-    HistogramBase::Sample max;
-    HistogramBase::Count count;
-    it->Get(&min, &max, &count);
-    WriteIntAttribute("min", min);
-    WriteIntAttribute("max", max);
-    WriteIntAttribute("count", count);
-  }
-
-  // Write the protobuf version.
   HistogramEventProto* histogram_proto = uma_proto_.add_histogram_event();
   histogram_proto->set_name_hash(numeric_name_hash);
   histogram_proto->set_sum(snapshot.sum());

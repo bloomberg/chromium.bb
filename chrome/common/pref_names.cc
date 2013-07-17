@@ -1611,9 +1611,6 @@ const char kWasRestarted[] = "was.restarted";
 const char kRestartSwitchMode[] = "restart.switch_mode";
 #endif
 
-// Number of keywords.
-const char kNumKeywords[] = "user_experience_metrics.num_keywords";
-
 // Placeholder preference for disabling voice / video chat if it is ever added.
 // Currently, this does not change any behavior.
 const char kDisableVideoAndChat[] = "disable_video_chat";

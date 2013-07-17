@@ -188,7 +188,6 @@
 #include "chrome/browser/omnibox/omnibox_log.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_otr_state.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
@@ -426,7 +425,6 @@ void MetricsService::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(prefs::kStabilitySystemUncleanShutdownCount, 0);
 #endif  // OS_CHROMEOS
 
-  registry->RegisterIntegerPref(prefs::kNumKeywords, 0);
   registry->RegisterListPref(prefs::kMetricsInitialLogs);
   registry->RegisterListPref(prefs::kMetricsOngoingLogs);
 
@@ -645,8 +643,6 @@ void MetricsService::SetUpNotifications(
                  content::NotificationService::AllSources());
   registrar->Add(observer, content::NOTIFICATION_RENDERER_PROCESS_HANG,
                  content::NotificationService::AllSources());
-  registrar->Add(observer, chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED,
-                 content::NotificationService::AllSources());
   registrar->Add(observer, chrome::NOTIFICATION_OMNIBOX_OPENED_URL,
                  content::NotificationService::AllSources());
 }
@@ -681,29 +677,11 @@ void MetricsService::Observe(int type,
 
   switch (type) {
     case chrome::NOTIFICATION_BROWSER_OPENED:
-    case chrome::NOTIFICATION_BROWSER_CLOSED: {
-      Browser* browser = content::Source<Browser>(source).ptr();
-      LogWindowOrTabChange(type, reinterpret_cast<uintptr_t>(browser));
-      break;
-    }
-
-    case chrome::NOTIFICATION_TAB_PARENTED: {
-      content::WebContents* web_contents =
-          content::Source<content::WebContents>(source).ptr();
-      LogWindowOrTabChange(type, reinterpret_cast<uintptr_t>(web_contents));
-      break;
-    }
-
-    case chrome::NOTIFICATION_TAB_CLOSING: {
-      content::NavigationController* controller =
-          content::Source<content::NavigationController>(source).ptr();
-      content::WebContents* web_contents = controller->GetWebContents();
-      LogWindowOrTabChange(type, reinterpret_cast<uintptr_t>(web_contents));
-      break;
-    }
-
+    case chrome::NOTIFICATION_BROWSER_CLOSED:
+    case chrome::NOTIFICATION_TAB_PARENTED:
+    case chrome::NOTIFICATION_TAB_CLOSING:
     case content::NOTIFICATION_LOAD_STOP:
-      LogLoadComplete(type, source, details);
+      // These notifications are currently used only to break out of idle mode.
       break;
 
     case content::NOTIFICATION_LOAD_START: {
@@ -728,11 +706,6 @@ void MetricsService::Observe(int type,
 
     case content::NOTIFICATION_RENDERER_PROCESS_HANG:
       LogRendererHang();
-      break;
-
-    case chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED:
-      LogKeywordCount(content::Source<TemplateURLService>(
-          source)->GetTemplateURLs().size());
       break;
 
     case chrome::NOTIFICATION_OMNIBOX_OPENED_URL: {
@@ -1519,63 +1492,6 @@ void MetricsService::OnURLFetchComplete(const net::URLFetcher* source) {
   }
 }
 
-void MetricsService::LogWindowOrTabChange(int type, uintptr_t window_or_tab) {
-  int controller_id = -1;
-  MetricsLog::WindowEventType window_type;
-
-  // Note: since we stop all logging when a single OTR session is active, it is
-  // possible that we start getting notifications about a window that we don't
-  // know about.
-  if (window_map_.find(window_or_tab) == window_map_.end()) {
-    controller_id = next_window_id_++;
-    window_map_[window_or_tab] = controller_id;
-  } else {
-    controller_id = window_map_[window_or_tab];
-  }
-  DCHECK_NE(controller_id, -1);
-
-  switch (type) {
-    case chrome::NOTIFICATION_TAB_PARENTED:
-    case chrome::NOTIFICATION_BROWSER_OPENED:
-      window_type = MetricsLog::WINDOW_CREATE;
-      break;
-
-    case chrome::NOTIFICATION_TAB_CLOSING:
-    case chrome::NOTIFICATION_BROWSER_CLOSED:
-      window_map_.erase(window_map_.find(window_or_tab));
-      window_type = MetricsLog::WINDOW_DESTROY;
-      break;
-
-    default:
-      NOTREACHED();
-      return;
-  }
-
-  // TODO(brettw) we should have some kind of ID for the parent.
-  log_manager_.current_log()->RecordWindowEvent(window_type, controller_id, 0);
-}
-
-void MetricsService::LogLoadComplete(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  if (details == content::NotificationService::NoDetails())
-    return;
-
-  // TODO(jar): There is a bug causing this to be called too many times, and
-  // the log overflows.  For now, we won't record these events.
-  UMA_HISTOGRAM_COUNTS("UMA.LogLoadComplete called", 1);
-  return;
-
-  const content::Details<LoadNotificationDetails> load_details(details);
-  int controller_id = window_map_[details.map_key()];
-  log_manager_.current_log()->RecordLoadEvent(controller_id,
-                                              load_details->url,
-                                              load_details->origin,
-                                              load_details->session_index,
-                                              load_details->load_time);
-}
-
 void MetricsService::IncrementPrefValue(const char* path) {
   PrefService* pref = g_browser_process->local_state();
   DCHECK(pref);
@@ -1704,13 +1620,6 @@ MetricsService::ChildProcessStats& MetricsService::GetChildProcessStats(
         ChildProcessStats(data.process_type);
   }
   return child_process_stats_buffer_[child_name];
-}
-
-void MetricsService::LogKeywordCount(size_t keyword_count) {
-  PrefService* pref = g_browser_process->local_state();
-  DCHECK(pref);
-  pref->SetInteger(prefs::kNumKeywords, static_cast<int>(keyword_count));
-  ScheduleNextStateSave();
 }
 
 void MetricsService::RecordPluginChanges(PrefService* pref) {

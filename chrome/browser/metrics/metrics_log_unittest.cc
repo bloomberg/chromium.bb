@@ -89,10 +89,6 @@ class TestMetricsLog : public MetricsLog {
   }
 
  private:
-  virtual std::string GetCurrentTimeString() OVERRIDE {
-    return std::string();
-  }
-
   virtual void GetFieldTrialIds(
       std::vector<chrome_variations::ActiveGroupId>* field_trial_ids) const
       OVERRIDE {

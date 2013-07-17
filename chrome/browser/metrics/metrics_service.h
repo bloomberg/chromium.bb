@@ -349,10 +349,6 @@ class MetricsService
   // completes (either successfully or with failure).
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
-  // Records a window-related notification. |window_or_tab| is either a pointer
-  // to a WebContents (for a tab) or a Browser (for a window).
-  void LogWindowOrTabChange(int type, uintptr_t window_or_tab);
-
   // Reads, increments and then sets the specified integer preference.
   void IncrementPrefValue(const char* path);
 
@@ -375,9 +371,6 @@ class MetricsService
   ChildProcessStats& GetChildProcessStats(
       const content::ChildProcessData& data);
 
-  // Logs the number of keywords.
-  void LogKeywordCount(size_t keyword_count);
-
   // Saves plugin-related updates from the in-object buffer to Local State
   // for retrieval next time we send a Profile log (generally next launch).
   void RecordPluginChanges(PrefService* pref);
@@ -389,11 +382,6 @@ class MetricsService
   // Logs the initiation of a page load and uses |web_contents| to do
   // additional logging of the type of page loaded.
   void LogLoadStarted(content::WebContents* web_contents);
-
-  // Records a page load notification.
-  void LogLoadComplete(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
 
   // Checks whether a notification can be logged.
   bool CanLogNotification();

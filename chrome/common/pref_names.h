@@ -571,8 +571,6 @@ extern const char kWasRestarted[];
 extern const char kRestartSwitchMode[];
 #endif
 
-extern const char kNumKeywords[];
-
 extern const char kDisableVideoAndChat[];
 
 extern const char kDisableExtensions[];

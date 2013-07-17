@@ -167,5 +167,5 @@ void MetricsLogManager::LoadPersistedUnsentLogs() {
 }
 
 void MetricsLogManager::CompressCurrentLog(std::string* compressed_log) {
-  current_log_->GetEncodedLogProto(compressed_log);
+  current_log_->GetEncodedLog(compressed_log);
 }
