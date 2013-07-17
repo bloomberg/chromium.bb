@@ -291,6 +291,7 @@
             'page/SpeechInputResultList.idl',
             'page/WebKitPoint.idl',
             'page/Window.idl',
+            'page/WindowBase64.idl',
             'page/WorkerNavigator.idl',
             'plugins/MimeType.idl',
             'plugins/MimeTypeArray.idl',

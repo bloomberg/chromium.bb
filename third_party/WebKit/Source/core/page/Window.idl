@@ -180,10 +180,6 @@
     [ImplementedAs=cancelAnimationFrame] void webkitCancelAnimationFrame(long id);
     [ImplementedAs=cancelAnimationFrame] void webkitCancelRequestAnimationFrame(long id); // This is a deprecated alias for webkitCancelAnimationFrame(). Remove this when removing vendor prefix.
 
-    // Base64
-    [RaisesException] DOMString atob([TreatNullAs=NullString,Default=Undefined] optional DOMString string);
-    [RaisesException] DOMString btoa([TreatNullAs=NullString,Default=Undefined] optional DOMString string);
-
     [Replaceable] readonly attribute CSS CSS;
 
     // Events
@@ -315,4 +311,4 @@
 };
 
 Window implements WindowTimers;
-
+Window implements WindowBase64;
