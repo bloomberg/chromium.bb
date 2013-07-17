@@ -31,6 +31,9 @@ class ScopedAppGLStateRestore {
     GLvoid* pointer;
   } vertex_attrib_[3];
 
+  GLint vertex_array_buffer_binding_;
+  GLint index_array_buffer_binding_;
+
   GLboolean depth_test_;
   GLboolean cull_face_;
   GLboolean color_mask_[4];

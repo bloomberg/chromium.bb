@@ -45,17 +45,12 @@ void MakeAppContextCurrent() {
 ScopedAppGLStateRestore::ScopedAppGLStateRestore() {
   MakeAppContextCurrent();
 
-#if !defined(NDEBUG)
-  {
-    GLint vertex_array_buffer_binding;
-    glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &vertex_array_buffer_binding);
-    DCHECK_EQ(0, vertex_array_buffer_binding);
+  // TODO(boliu): These should always be 0 in draw case, but not necessarily in
+  // OnDetachFromWindow or other cases. When we have guarantee that we are no
+  // longer making GL calls outside of draw, DCHECK these are 0 in draw case.
+  glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &vertex_array_buffer_binding_);
+  glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, &index_array_buffer_binding_);
 
-    GLint index_array_buffer_binding;
-    glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, &index_array_buffer_binding);
-    DCHECK_EQ(0, index_array_buffer_binding);
-  }
-#endif  // !defined(NDEBUG)
   glGetIntegerv(GL_TEXTURE_BINDING_EXTERNAL_OES,
                 &texture_external_oes_binding_);
   glGetIntegerv(GL_PACK_ALIGNMENT, &pack_alignment_);
@@ -93,6 +88,9 @@ ScopedAppGLStateRestore::ScopedAppGLStateRestore() {
 
 ScopedAppGLStateRestore::~ScopedAppGLStateRestore() {
   MakeAppContextCurrent();
+
+  glBindBuffer(GL_ARRAY_BUFFER, vertex_array_buffer_binding_);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_array_buffer_binding_);
 
   glBindTexture(GL_TEXTURE_EXTERNAL_OES, texture_external_oes_binding_);
   glPixelStorei(GL_PACK_ALIGNMENT, pack_alignment_);
@@ -149,9 +147,6 @@ ScopedAppGLStateRestore::~ScopedAppGLStateRestore() {
       scissor_box_[0], scissor_box_[1], scissor_box_[2], scissor_box_[3]);
 
   glUseProgram(current_program_);
-
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
 }  // namespace android_webview
