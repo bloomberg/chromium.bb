@@ -28,12 +28,11 @@ class SequencedTaskRunner;
 // the right version for your build configuration.
 class SequenceCheckerDoNothing {
  public:
-  bool CalledOnValidSequence() const {
+  bool CalledOnValidSequencedThread() const {
     return true;
   }
 
-  void ChangeSequence(
-      const scoped_refptr<SequencedTaskRunner>& sequenced_task_runner) {}
+  void DetachFromSequence() {}
 };
 
 // SequenceChecker is a helper class used to help verify that some
@@ -44,10 +43,6 @@ class SequenceCheckerDoNothing {
 // Example:
 // class MyClass {
 //  public:
-//   explicit MyClass(
-//       const scoped_refptr<SequencedTaskRunner>& sequenced_task_runner)
-//       : sequence_checker_(sequenced_task_runner) {}
-//
 //   void Foo() {
 //     DCHECK(sequence_checker_.CalledOnValidSequence());
 //     ... (do stuff) ...
@@ -60,16 +55,9 @@ class SequenceCheckerDoNothing {
 // In Release mode, CalledOnValidSequence will always return true.
 #if ENABLE_SEQUENCE_CHECKER
 class SequenceChecker : public SequenceCheckerImpl {
- public:
-  explicit SequenceChecker(
-      const scoped_refptr<SequencedTaskRunner>& sequenced_task_runner)
-      : SequenceCheckerImpl(sequenced_task_runner) {}
 };
 #else
 class SequenceChecker : public SequenceCheckerDoNothing {
- public:
-  explicit SequenceChecker(
-      const scoped_refptr<SequencedTaskRunner>& sequenced_task_runner) {}
 };
 #endif  // ENABLE_SEQUENCE_CHECKER
 

@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_pump_mac.h"
 #include "base/observer_list.h"
+#include "base/threading/thread_checker.h"
 
 namespace base {
 
