@@ -333,6 +333,8 @@
         'browser/chromeos/extensions/file_manager/file_manager_util.h',
         'browser/chromeos/extensions/file_manager/file_watcher_extensions.cc',
         'browser/chromeos/extensions/file_manager/file_watcher_extensions.h',
+        'browser/chromeos/extensions/file_manager/mounted_disk_monitor.cc',
+        'browser/chromeos/extensions/file_manager/mounted_disk_monitor.h',
         'browser/chromeos/extensions/info_private_api.cc',
         'browser/chromeos/extensions/info_private_api.h',
         'browser/chromeos/extensions/input_method_event_router.cc',

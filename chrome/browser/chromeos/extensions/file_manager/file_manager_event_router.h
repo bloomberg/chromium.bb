@@ -19,6 +19,7 @@
 #include "chromeos/disks/disk_mount_manager.h"
 
 class FileManagerNotifications;
+class MountedDiskMonitor;
 class PrefChangeRegistrar;
 class Profile;
 
@@ -156,6 +157,7 @@ class FileManagerEventRouter
   WatcherMap file_watchers_;
   scoped_ptr<FileManagerNotifications> notifications_;
   scoped_ptr<PrefChangeRegistrar> pref_change_registrar_;
+  scoped_ptr<MountedDiskMonitor> mounted_disk_monitor_;
   Profile* profile_;
 
   // Note: This should remain the last member so it'll be destroyed and

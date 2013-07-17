@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_manager_notifications.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_manager_util.h"
+#include "chrome/browser/chromeos/extensions/file_manager/mounted_disk_monitor.h"
 #include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/net/connectivity_state_helper.h"
@@ -117,6 +118,23 @@ void DirectoryExistsOnUIThread(const base::FilePath& directory_path,
                  success_callback,
                  failure_callback));
 };
+
+// Creates a base::FilePathWatcher and starts watching at |watch_path| with
+// |callback|. Returns NULL on failure.
+base::FilePathWatcher* CreateAndStartFilePathWatcher(
+    const base::FilePath& watch_path,
+    const base::FilePathWatcher::Callback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK(!callback.is_null());
+
+  base::FilePathWatcher* watcher(new base::FilePathWatcher);
+  if (!watcher->Watch(watch_path, false /* recursive */, callback)) {
+    delete watcher;
+    return NULL;
+  }
+
+  return watcher;
+}
 
 // Constants for the "transferState" field of onFileTransferUpdated event.
 const char kFileTransferStateStarted[] = "started";
@@ -250,6 +268,8 @@ void FileManagerEventRouter::ObserveFileSystemEvents() {
         AddNetworkManagerObserver(this);
   }
 
+  mounted_disk_monitor_.reset(new MountedDiskMonitor());
+
   pref_change_registrar_->Init(profile_->GetPrefs());
 
   pref_change_registrar_->Add(
@@ -373,9 +393,7 @@ void FileManagerEventRouter::OnMountEvent(
     DiskMountManager* disk_mount_manager = DiskMountManager::GetInstance();
     const DiskMountManager::Disk* disk =
         disk_mount_manager->FindDiskBySourcePath(mount_info.source_path);
-    // TODO(tbarzic): Check if the disk was present before suspend. Blocked on
-    // crbug.com/153338.
-    if (!disk)
+    if (!disk || mounted_disk_monitor_->DiskIsRemounting(*disk))
       return;
 
     notifications_->ManageNotificationsOnMountCompleted(
