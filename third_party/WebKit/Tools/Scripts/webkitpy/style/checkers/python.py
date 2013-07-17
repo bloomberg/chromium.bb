@@ -27,7 +27,7 @@ from StringIO import StringIO
 
 from webkitpy.common.system.filesystem import FileSystem
 from webkitpy.common.webkit_finder import WebKitFinder
-from webkitpy.thirdparty.autoinstalled import pep8
+from webkitpy.thirdparty import pep8
 from webkitpy.thirdparty.autoinstalled.pylint import lint
 from webkitpy.thirdparty.autoinstalled.pylint.reporters.text import ParseableTextReporter
 

@@ -81,8 +81,6 @@ class AutoinstallImportHook(object):
             self._install_irc()
         elif '.mechanize' in fullname:
             self._install_mechanize()
-        elif '.pep8' in fullname:
-            self._install_pep8()
         elif '.pylint' in fullname:
             self._install_pylint()
         elif '.coverage' in fullname:
@@ -103,10 +101,6 @@ class AutoinstallImportHook(object):
     def _install_mechanize(self):
         return self._install("https://pypi.python.org/packages/source/m/mechanize/mechanize-0.2.5.tar.gz",
                              "mechanize-0.2.5/mechanize")
-
-    def _install_pep8(self):
-        return self._install("https://pypi.python.org/packages/source/p/pep8/pep8-0.5.0.tar.gz#md5=512a818af9979290cd619cce8e9c2e2b",
-                             "pep8-0.5.0/pep8.py")
 
     def _install_pylint(self):
         self._ensure_autoinstalled_dir_is_in_sys_path()

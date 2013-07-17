@@ -39,4 +39,3 @@ class ThirdpartyTest(unittest.TestCase):
         import webkitpy.thirdparty.autoinstalled.irc.irclib
         import webkitpy.thirdparty.autoinstalled.mechanize
         import webkitpy.thirdparty.autoinstalled.pylint
-        import webkitpy.thirdparty.autoinstalled.pep8
