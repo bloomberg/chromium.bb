@@ -15,7 +15,7 @@
           '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources_100_percent.pak',
         ],
       }],
-      ['use_aura==1', {
+      ['use_ash==1', {
         'pak_inputs': [
           '<(SHARED_INTERMEDIATE_DIR)/ash/ash_resources/ash_resources_100_percent.pak',
         ],
