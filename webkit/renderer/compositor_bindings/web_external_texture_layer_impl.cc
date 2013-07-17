@@ -35,8 +35,7 @@ WebKit::WebLayer* WebExternalTextureLayerImpl::layer() { return layer_.get(); }
 
 void WebExternalTextureLayerImpl::clearTexture() {
   TextureLayer *layer = static_cast<TextureLayer*>(layer_->layer());
-  layer->WillModifyTexture();
-  layer->SetTextureMailbox(cc::TextureMailbox());
+  layer->ClearTexture();
 }
 
 void WebExternalTextureLayerImpl::setOpaque(bool opaque) {

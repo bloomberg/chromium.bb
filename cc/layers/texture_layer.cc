@@ -33,7 +33,7 @@ TextureLayer::TextureLayer(TextureLayerClient* client, bool uses_mailbox)
       premultiplied_alpha_(true),
       blend_background_color_(false),
       rate_limit_context_(false),
-      content_committed_(false),
+      impl_may_draw_client_data_(false),
       texture_id_(0),
       needs_set_mailbox_(false) {
   vertex_opacity_[0] = 1.0f;
@@ -49,10 +49,21 @@ void TextureLayer::ClearClient() {
   if (rate_limit_context_ && client_ && layer_tree_host())
     layer_tree_host()->StopRateLimiter(client_->Context3d());
   client_ = NULL;
-  if (uses_mailbox_)
+  ClearTexture();
+}
+
+void TextureLayer::ClearTexture() {
+  if (impl_may_draw_client_data_) {
+    DCHECK(layer_tree_host());
+    layer_tree_host()->AcquireLayerTextures();
+    impl_may_draw_client_data_ = false;
+  }
+  if (uses_mailbox_) {
     SetTextureMailbox(TextureMailbox());
-  else
-    SetTextureId(0);
+  } else {
+    texture_id_ = 0;
+    SetNeedsCommit();
+  }
 }
 
 scoped_ptr<LayerImpl> TextureLayer::CreateLayerImpl(LayerTreeImpl* tree_impl) {
@@ -116,16 +127,6 @@ void TextureLayer::SetRateLimitContext(bool rate_limit) {
   rate_limit_context_ = rate_limit;
 }
 
-void TextureLayer::SetTextureId(unsigned id) {
-  DCHECK(!uses_mailbox_);
-  if (texture_id_ == id)
-    return;
-  if (texture_id_ && layer_tree_host())
-    layer_tree_host()->AcquireLayerTextures();
-  texture_id_ = id;
-  SetNeedsCommit();
-}
-
 void TextureLayer::SetTextureMailbox(const TextureMailbox& mailbox) {
   DCHECK(uses_mailbox_);
   DCHECK(!mailbox.IsValid() || !holder_ref_ ||
@@ -137,13 +138,6 @@ void TextureLayer::SetTextureMailbox(const TextureMailbox& mailbox) {
     holder_ref_.reset();
   needs_set_mailbox_ = true;
   SetNeedsCommit();
-}
-
-void TextureLayer::WillModifyTexture() {
-  if (layer_tree_host() && (DrawsContent() || content_committed_)) {
-    layer_tree_host()->AcquireLayerTextures();
-    content_committed_ = false;
-  }
 }
 
 void TextureLayer::SetNeedsDisplayRect(const gfx::RectF& dirty_rect) {
@@ -160,8 +154,10 @@ void TextureLayer::SetLayerTreeHost(LayerTreeHost* host) {
   }
 
   if (layer_tree_host()) {
-    if (texture_id_)
+    if (impl_may_draw_client_data_) {
       layer_tree_host()->AcquireLayerTextures();
+      impl_may_draw_client_data_ = false;
+    }
     if (rate_limit_context_ && client_)
       layer_tree_host()->StopRateLimiter(client_->Context3d());
   }
@@ -175,6 +171,12 @@ void TextureLayer::SetLayerTreeHost(LayerTreeHost* host) {
 
 bool TextureLayer::DrawsContent() const {
   return (client_ || texture_id_ || holder_ref_) && Layer::DrawsContent();
+}
+
+bool TextureLayer::DrawsClientData() const {
+  if (!Layer::DrawsContent() || !client_)
+    return false;
+  return texture_id_ || holder_ref_;
 }
 
 bool TextureLayer::Update(ResourceUpdateQueue* queue,
@@ -229,7 +231,7 @@ void TextureLayer::PushPropertiesTo(LayerImpl* layer) {
   } else {
     texture_layer->set_texture_id(texture_id_);
   }
-  content_committed_ = DrawsContent();
+  impl_may_draw_client_data_ = DrawsClientData();
 }
 
 bool TextureLayer::BlocksPendingCommit() const {
