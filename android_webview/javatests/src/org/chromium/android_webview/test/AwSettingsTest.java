@@ -5,6 +5,7 @@
 package org.chromium.android_webview.test;
 
 import android.content.Context;
+import android.graphics.Point;
 import android.os.Build;
 import android.os.SystemClock;
 import android.test.suitebuilder.annotation.LargeTest;
@@ -12,6 +13,7 @@ import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.util.Pair;
 import android.view.MotionEvent;
+import android.view.WindowManager;
 import android.webkit.WebSettings;
 
 import org.apache.http.Header;
@@ -2346,12 +2348,8 @@ public class AwSettingsTest extends AwTestBase {
                         views.getContents1(), views.getClient1(), true));
     }
 
-    /*
     @SmallTest
     @Feature({"AndroidWebView", "Preferences"})
-    This is triggering a DCHECK on Nexus 7. See crbug.com/230186.
-    */
-    @DisabledTest
     public void testSetInitialScale() throws Throwable {
         final TestAwContentsClient contentClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
@@ -2360,9 +2358,16 @@ public class AwSettingsTest extends AwTestBase {
         final AwSettings awSettings = getAwSettingsOnUiThread(awContents);
         CallbackHelper onPageFinishedHelper = contentClient.getOnPageFinishedHelper();
 
+        WindowManager wm = (WindowManager) getInstrumentation().getTargetContext()
+                .getSystemService(Context.WINDOW_SERVICE);
+        Point screenSize = new Point();
+        wm.getDefaultDisplay().getSize(screenSize);
+        // Make sure after 50% scale, page width still larger than screen.
+        int height = screenSize.y * 2 + 1;
+        int width = screenSize.x * 2 + 1;
         final String page = "<html><body>" +
-                "<p style='height:1000px;width:1000px'>testSetInitialScale</p>" +
-                "</body></html>";
+                "<p style='height:"+ height + "px;width:" + width + "px'>" +
+                "testSetInitialScale</p></body></html>";
         final float defaultScale =
             getInstrumentation().getTargetContext().getResources().getDisplayMetrics().density;
 
