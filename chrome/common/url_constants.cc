@@ -29,6 +29,7 @@ const char kChromeUIConflictsURL[] = "chrome://conflicts/";
 const char kChromeUIConstrainedHTMLTestURL[] = "chrome://constrained-test/";
 const char kChromeUICrashesURL[] = "chrome://crashes/";
 const char kChromeUICreditsURL[] = "chrome://credits/";
+const char kChromeUIDevicesURL[] = "chrome://devices/";
 const char kChromeUIDevToolsURL[] =
     "chrome-devtools://devtools/bundled/devtools.html";
 const char kChromeUIDownloadsURL[] = "chrome://downloads/";
@@ -151,6 +152,7 @@ const char kChromeUICrashesHost[] = "crashes";
 const char kChromeUICrashHost[] = "crash";
 const char kChromeUICreditsHost[] = "credits";
 const char kChromeUIDefaultHost[] = "version";
+const char kChromeUIDevicesHost[] = "devices";
 const char kChromeUIDevToolsHost[] = "devtools";
 const char kChromeUIDevToolsBundledPath[] = "bundled";
 const char kChromeUIDevToolsRemotePath[] = "remote";
