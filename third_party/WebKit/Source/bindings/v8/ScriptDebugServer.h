@@ -45,6 +45,7 @@
 
 namespace WebCore {
 
+class ScriptController;
 class ScriptDebugListener;
 class ScriptObject;
 class ScriptState;
@@ -78,8 +79,6 @@ public:
     bool setScriptSource(const String& sourceID, const String& newContent, bool preview, String* error, RefPtr<TypeBuilder::Debugger::SetScriptSourceError>&, ScriptValue* newCallFrames, ScriptObject* result);
     void updateCallStack(ScriptValue* callFrame);
 
-    void setScriptPreprocessor(const String& preprocessorBody);
-
     class Task {
     public:
         virtual ~Task() { }
@@ -94,16 +93,16 @@ public:
     v8::Local<v8::Value> functionScopes(v8::Handle<v8::Function>);
     v8::Local<v8::Value> getInternalProperties(v8::Handle<v8::Object>&);
     v8::Handle<v8::Value> setFunctionVariableValue(v8::Handle<v8::Value> functionValue, int scopeNumber, const String& variableName, v8::Handle<v8::Value> newValue);
-
+    v8::Local<v8::Value> callDebuggerMethod(const char* functionName, int argc, v8::Handle<v8::Value> argv[]);
 
     virtual void compileScript(ScriptState*, const String& expression, const String& sourceURL, String* scriptId, String* exceptionMessage);
     virtual void clearCompiledScripts();
     virtual void runScript(ScriptState*, const String& scriptId, ScriptValue* result, bool* wasThrown, String* exceptionMessage);
+    virtual ScriptController* scriptController(v8::Handle<v8::Context>);
 
 protected:
     explicit ScriptDebugServer(v8::Isolate*);
     virtual ~ScriptDebugServer();
-    
     ScriptValue currentCallFrame();
 
     virtual ScriptDebugListener* getDebugListenerForContext(v8::Handle<v8::Context>) = 0;
@@ -121,10 +120,6 @@ protected:
 
     void ensureDebuggerScriptCompiled();
 
-    v8::Local<v8::Value> callDebuggerMethod(const char* functionName, int argc, v8::Handle<v8::Value> argv[]);
-
-    String preprocessSourceCode(const String& sourceCode);
-
     PauseOnExceptionsState m_pauseOnExceptionsState;
     ScopedPersistent<v8::Object> m_debuggerScript;
     ScopedPersistent<v8::Object> m_executionState;
@@ -133,12 +128,8 @@ protected:
     ScopedPersistent<v8::FunctionTemplate> m_breakProgramCallbackTemplate;
     HashMap<String, OwnPtr<ScopedPersistent<v8::Script> > > m_compiledScripts;
     v8::Isolate* m_isolate;
-    
 private:
     PassRefPtr<JavaScriptCallFrame> wrapCallFrames(v8::Handle<v8::Object> executionState, int maximumLimit);
-
-    class ScriptPreprocessor;
-    OwnPtr<ScriptPreprocessor> m_scriptPreprocessor;
     bool m_runningNestedMessageLoop;
 };
 

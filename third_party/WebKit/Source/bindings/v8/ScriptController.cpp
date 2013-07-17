@@ -38,6 +38,7 @@
 #include "bindings/v8/BindingSecurity.h"
 #include "bindings/v8/NPV8Object.h"
 #include "bindings/v8/ScriptCallStackFactory.h"
+#include "bindings/v8/ScriptPreprocessor.h"
 #include "bindings/v8/ScriptSourceCode.h"
 #include "bindings/v8/ScriptValue.h"
 #include "bindings/v8/V8Binding.h"
@@ -518,6 +519,7 @@ void ScriptController::clearWindowShell()
     for (IsolatedWorldMap::iterator iter = m_isolatedWorlds.begin(); iter != m_isolatedWorlds.end(); ++iter)
         iter->value->clearForNavigation();
     V8GCController::hintForCollectGarbage();
+    clearScriptPreprocessor();
     HistogramSupport::histogramCustomCounts("WebCore.ScriptController.clearWindowShell", (currentTime() - start) * 1000, 0, 10000, 50);
 }
 
@@ -649,7 +651,7 @@ bool ScriptController::executeScriptIfJavaScriptURL(const KURL& url)
 
     if (!locationChangeBefore && m_frame->navigationScheduler()->locationChangePending())
         return true;
-        
+
     // DocumentWriter::replaceDocument can cause the DocumentLoader to get deref'ed and possible destroyed,
     // so protect it with a RefPtr.
     if (RefPtr<DocumentLoader> loader = m_frame->document()->loader())
@@ -668,9 +670,12 @@ ScriptValue ScriptController::executeScriptInMainWorld(const ScriptSourceCode& s
     if (v8Context.IsEmpty())
         return ScriptValue();
 
+    String processedString = preprocess(sourceCode.source(), sourceURL);
+    ScriptSourceCode processedSourceCode(processedString, sourceCode.url(), sourceCode.startPosition());
+
     v8::Context::Scope scope(v8Context);
     RefPtr<Frame> protect(m_frame);
-    v8::Local<v8::Value> object = compileAndRunScript(sourceCode);
+    v8::Local<v8::Value> object = compileAndRunScript(processedSourceCode);
 
     m_sourceURL = savedSourceURL;
 
@@ -712,6 +717,41 @@ void ScriptController::executeScriptInIsolatedWorld(int worldID, const Vector<Sc
         for (size_t i = 0; i < v8Results->Length(); ++i)
             results->append(ScriptValue(v8Results->Get(i)));
     }
+}
+
+void ScriptController::setScriptPreprocessor(const String& preprocessorBody)
+{
+    // We delay the creation of the preprocess until just before the first JS from the
+    // Web page to ensure that the debugger's console initialization code has completed.
+    m_preprocessorSource = preprocessorBody;
+}
+
+void ScriptController::clearScriptPreprocessor()
+{
+    m_scriptPreprocessor.clear();
+    m_preprocessorSource = String();
+}
+
+// Source to Source processing iff debugger enabled and it has loaded a preprocessor.
+String ScriptController::preprocess(const String& scriptSource, const String& scriptName)
+{
+    if (m_preprocessorSource.isEmpty())
+        return scriptSource;
+
+    if (!m_frame->page())
+        return scriptSource;
+
+    if (!m_scriptPreprocessor)
+        m_scriptPreprocessor = adoptPtr(new ScriptPreprocessor(m_preprocessorSource, this, m_frame->page()->console()));
+
+    return m_scriptPreprocessor->preprocessSourceCode(scriptSource, scriptName);
+}
+
+void ScriptController::preprocessEval(ScriptDebugServer* debugServer, v8::Handle<v8::Object> eventData)
+{
+    if (!m_scriptPreprocessor.get())
+        return;
+    m_scriptPreprocessor->preprocessEval(debugServer, eventData);
 }
 
 } // namespace WebCore

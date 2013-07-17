@@ -51,6 +51,8 @@ class Frame;
 class HTMLDocument;
 class HTMLPlugInElement;
 class KURL;
+class ScriptDebugServer;
+class ScriptPreprocessor;
 class ScriptSourceCode;
 class ScriptState;
 class SecurityOrigin;
@@ -62,10 +64,6 @@ typedef WTF::Vector<v8::Extension*> V8Extensions;
 enum ReasonForCallingCanExecuteScripts {
     AboutToExecuteScript,
     NotAboutToExecuteScript
-};
-
-enum IsolatedWorldConstants {
-    EmbedderWorldIdLimit = (1 << 29)
 };
 
 class ScriptController {
@@ -159,6 +157,12 @@ public:
     static void registerExtensionIfNeeded(v8::Extension*);
     static V8Extensions& registeredExtensions();
 
+    void setScriptPreprocessor(const String& preprocessorSource);
+    void clearScriptPreprocessor();
+    // Source to Source processing iff debugger enabled and it has loaded a preprocessor.
+    String preprocess(const String& scriptSource, const String& scriptName);
+    void preprocessEval(ScriptDebugServer* , v8::Handle<v8::Object> eventData);
+
     bool setContextDebugId(int);
     static int contextDebugId(v8::Handle<v8::Context>);
 
@@ -184,6 +188,11 @@ private:
     PluginObjectMap m_pluginObjects;
 
     NPObject* m_windowScriptNPObject;
+
+    // Set by the PageDebuggerAgent on reload
+    String m_preprocessorSource;
+    // Set on the first JS compilation after m_preprocessorSource is set.
+    OwnPtr<ScriptPreprocessor> m_scriptPreprocessor;
 };
 
 } // namespace WebCore

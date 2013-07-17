@@ -34,6 +34,7 @@
 #include "DebuggerScriptSource.h"
 #include "V8JavaScriptCallFrame.h"
 #include "bindings/v8/ScopedPersistent.h"
+#include "bindings/v8/ScriptController.h"
 #include "bindings/v8/ScriptObject.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8ScriptRunner.h"
@@ -66,64 +67,6 @@ v8::Local<v8::Value> ScriptDebugServer::callDebuggerMethod(const char* functionN
     ASSERT(v8::Context::InContext());
     return V8ScriptRunner::callInternalFunction(function, debuggerScript, argc, argv, m_isolate);
 }
-
-class ScriptDebugServer::ScriptPreprocessor {
-    WTF_MAKE_NONCOPYABLE(ScriptPreprocessor);
-public:
-    ScriptPreprocessor(const String& preprocessorScript, v8::Isolate* isolate)
-        : m_isolate(isolate)
-    {
-        v8::HandleScope scope(m_isolate);
-
-        v8::Local<v8::Context> context = v8::Context::New(m_isolate);
-        if (context.IsEmpty())
-            return;
-        v8::Context::Scope contextScope(context);
-
-        String wrappedScript = "(" + preprocessorScript + ")";
-        v8::Handle<v8::String> preprocessor = v8::String::New(wrappedScript.utf8().data(), wrappedScript.utf8().length());
-
-        v8::Local<v8::Value> preprocessorFunction = V8ScriptRunner::compileAndRunInternalScript(preprocessor, m_isolate);
-        if (preprocessorFunction.IsEmpty() || !preprocessorFunction->IsFunction())
-            return;
-
-        m_utilityContext.set(isolate, context);
-        m_preprocessorFunction.set(isolate, v8::Handle<v8::Function>::Cast(preprocessorFunction));
-    }
-
-    String preprocessSourceCode(const String& sourceCode, const String& sourceName)
-    {
-        v8::HandleScope handleScope(m_isolate);
-
-        if (m_preprocessorFunction.isEmpty())
-            return sourceCode;
-
-        v8::Local<v8::Context> context = m_utilityContext.newLocal(m_isolate);
-        v8::Context::Scope contextScope(context);
-
-        v8::Handle<v8::String> sourceCodeString = v8::String::New(sourceCode.utf8().data(), sourceCode.utf8().length());
-
-        v8::Handle<v8::String> sourceNameString = v8::String::New(sourceName.utf8().data(), sourceName.utf8().length());
-        v8::Handle<v8::Value> argv[] = { sourceCodeString, sourceNameString };
-        v8::Handle<v8::Value> resultValue = V8ScriptRunner::callInternalFunction(m_preprocessorFunction.newLocal(m_isolate), context->Global(), WTF_ARRAY_LENGTH(argv), argv, m_isolate);
-
-        if (!resultValue.IsEmpty() && resultValue->IsString()) {
-            v8::String::Utf8Value utf8Value(resultValue);
-            return String::fromUTF8(*utf8Value, utf8Value.length());
-        }
-        return sourceCode;
-    }
-
-    ~ScriptPreprocessor()
-    {
-    }
-
-private:
-    ScopedPersistent<v8::Context> m_utilityContext;
-    String m_preprocessorBody;
-    ScopedPersistent<v8::Function> m_preprocessorFunction;
-    v8::Isolate* m_isolate;
-};
 
 ScriptDebugServer::ScriptDebugServer(v8::Isolate* isolate)
     : m_pauseOnExceptionsState(DontPauseOnExceptions)
@@ -367,12 +310,9 @@ void ScriptDebugServer::updateCallStack(ScriptValue* callFrame)
         *callFrame = currentCallFrame();
 }
 
-
-void ScriptDebugServer::setScriptPreprocessor(const String& preprocessorBody)
+ScriptController* ScriptDebugServer::scriptController(v8::Handle<v8::Context> context)
 {
-    m_scriptPreprocessor.clear();
-    if (!preprocessorBody.isEmpty())
-        m_scriptPreprocessor = adoptPtr(new ScriptPreprocessor(preprocessorBody, m_isolate));
+    return 0;
 }
 
 PassRefPtr<JavaScriptCallFrame> ScriptDebugServer::wrapCallFrames(v8::Handle<v8::Object> executionState, int maximumLimit)
@@ -416,7 +356,6 @@ static ScriptDebugServer* toScriptDebugServer(v8::Handle<v8::Value> data)
 void ScriptDebugServer::breakProgramCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     ASSERT(2 == args.Length());
-    
     ScriptDebugServer* thisPtr = toScriptDebugServer(args.Data());
     v8::Handle<v8::Value> exception;
     v8::Handle<v8::Array> hitBreakpoints;
@@ -481,28 +420,11 @@ void ScriptDebugServer::handleV8DebugEvent(const v8::Debug::EventDetails& eventD
     ScriptDebugListener* listener = getDebugListenerForContext(eventContext);
     if (listener) {
         v8::HandleScope scope(m_isolate);
-        v8::Local<v8::Context> debugContext = v8::Debug::GetDebugContext();
         v8::Handle<v8::Object> debuggerScript = m_debuggerScript.newLocal(m_isolate);
         if (event == v8::BeforeCompile) {
-
-            if (!m_scriptPreprocessor)
-                return;
-
-            OwnPtr<ScriptPreprocessor> preprocessor(m_scriptPreprocessor.release());
-            v8::Context::Scope contextScope(debugContext);
-            v8::Handle<v8::Function> getScriptSourceFunction = v8::Local<v8::Function>::Cast(debuggerScript->Get(v8::String::New("getScriptSource")));
-            v8::Handle<v8::Value> argv[] = { eventDetails.GetEventData() };
-            v8::Handle<v8::Value> script = V8ScriptRunner::callInternalFunction(getScriptSourceFunction, debuggerScript, WTF_ARRAY_LENGTH(argv), argv, m_isolate);
-
-            v8::Handle<v8::Function> getScriptNameFunction = v8::Local<v8::Function>::Cast(debuggerScript->Get(v8::String::New("getScriptName")));
-            v8::Handle<v8::Value> argv1[] = { eventDetails.GetEventData() };
-            v8::Handle<v8::Value> scriptName = V8ScriptRunner::callInternalFunction(getScriptNameFunction, debuggerScript, WTF_ARRAY_LENGTH(argv1), argv1, m_isolate);
-            v8::Handle<v8::Function> setScriptSourceFunction = v8::Local<v8::Function>::Cast(debuggerScript->Get(v8::String::New("setScriptSource")));
-            String patchedScript = preprocessor->preprocessSourceCode(toWebCoreStringWithUndefinedOrNullCheck(script), toWebCoreStringWithUndefinedOrNullCheck(scriptName));
-
-            v8::Handle<v8::Value> argv2[] = { eventDetails.GetEventData(), v8String(patchedScript, m_isolate) };
-            V8ScriptRunner::callInternalFunction(setScriptSourceFunction, debuggerScript, WTF_ARRAY_LENGTH(argv2), argv2, m_isolate);
-            m_scriptPreprocessor = preprocessor.release();
+            ScriptController* controller = scriptController(eventContext);
+            if (controller)
+                controller->preprocessEval(this, eventDetails.GetEventData());
         } else if (event == v8::AfterCompile) {
             v8::Context::Scope contextScope(v8::Debug::GetDebugContext());
             v8::Handle<v8::Function> getAfterCompileScript = v8::Local<v8::Function>::Cast(debuggerScript->Get(v8::String::NewSymbol("getAfterCompileScript")));

@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2011 Google Inc. All rights reserved.
+ * Copyright (C) 2008, 2009 Google Inc. All rights reserved.
+ * Copyright (C) 2009 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -27,56 +28,36 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#ifndef ScriptPreprocessor_h
+#define ScriptPreprocessor_h
 
-#ifndef PageScriptDebugServer_h
-#define PageScriptDebugServer_h
-
-
-#include "bindings/v8/ScriptDebugServer.h"
-#include "wtf/Forward.h"
+#include "bindings/v8/V8Binding.h"
+#include "wtf/RefCounted.h"
+#include "wtf/text/WTFString.h"
+#include <v8.h>
 
 namespace WebCore {
 
-class Page;
 class ScriptController;
+class ScriptDebugServer;
+class PageConsole;
 
-class PageScriptDebugServer : public ScriptDebugServer {
-    WTF_MAKE_NONCOPYABLE(PageScriptDebugServer);
+class ScriptPreprocessor {
+    WTF_MAKE_NONCOPYABLE(ScriptPreprocessor);
 public:
-    static PageScriptDebugServer& shared();
-
-    void addListener(ScriptDebugListener*, Page*);
-    void removeListener(ScriptDebugListener*, Page*);
-
-    class ClientMessageLoop {
-    public:
-        virtual ~ClientMessageLoop() { }
-        virtual void run(Page*) = 0;
-        virtual void quitNow() = 0;
-    };
-    void setClientMessageLoop(PassOwnPtr<ClientMessageLoop>);
-
-    virtual void compileScript(ScriptState*, const String& expression, const String& sourceURL, String* scriptId, String* exceptionMessage);
-    virtual void clearCompiledScripts();
-    virtual void runScript(ScriptState*, const String& scriptId, ScriptValue* result, bool* wasThrown, String* exceptionMessage);
-    virtual ScriptController* scriptController(v8::Handle<v8::Context>);
+    ScriptPreprocessor(const String& preprocessorScript, ScriptController*, PageConsole*);
+    String preprocessSourceCode(const String& sourceCode, const String& sourceName);
+    void preprocessEval(ScriptDebugServer* , v8::Handle<v8::Object> eventData);
 
 private:
-    PageScriptDebugServer();
-    virtual ~PageScriptDebugServer() { }
-
-    virtual ScriptDebugListener* getDebugListenerForContext(v8::Handle<v8::Context>);
-    virtual void runMessageLoopOnPause(v8::Handle<v8::Context>);
-    virtual void quitMessageLoopOnPause();
-
-    typedef HashMap<Page*, ScriptDebugListener*> ListenersMap;
-    ListenersMap m_listenersMap;
-    OwnPtr<ClientMessageLoop> m_clientMessageLoop;
-    Page* m_pausedPage;
-    HashMap<String, String> m_compiledScriptURLs;
+    String m_preprocessorBody;
+    ScriptController* m_controller;
+    ScopedPersistent<v8::Context> m_context;
+    v8::Isolate* m_isolate;
+    ScopedPersistent<v8::Function> m_preprocessorFunction;
+    bool m_isPreprocessing;
 };
 
 } // namespace WebCore
 
-
-#endif // PageScriptDebugServer_h
+#endif // ScriptPreprocessor_h

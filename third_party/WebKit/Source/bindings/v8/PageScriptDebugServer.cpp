@@ -64,6 +64,14 @@ static Frame* retrieveFrameWithGlobalObjectCheck(v8::Handle<v8::Context> context
     return toFrameIfNotDetached(context);
 }
 
+ScriptController* PageScriptDebugServer::scriptController(v8::Handle<v8::Context> context)
+{
+    Frame* frame = retrieveFrameWithGlobalObjectCheck(context);
+    if (frame)
+        return frame->script();
+    return 0;
+}
+
 PageScriptDebugServer& PageScriptDebugServer::shared()
 {
     DEFINE_STATIC_LOCAL(PageScriptDebugServer, server, ());
@@ -182,7 +190,7 @@ void PageScriptDebugServer::runMessageLoopOnPause(v8::Handle<v8::Context> contex
     // The listener may have been removed in the nested loop.
     if (ScriptDebugListener* listener = m_listenersMap.get(m_pausedPage))
         listener->didContinue();
-     
+
     m_pausedPage = 0;
 }
 

@@ -45,6 +45,11 @@ namespace WebCore {
 class DOMDataStore;
 class ScriptExecutionContext;
 
+enum IsolatedWorldConstants {
+    EmbedderWorldIdLimit = (1 << 29),
+    ScriptPreprocessorIsolatedWorldId
+};
+
 // This class represent a collection of DOM wrappers for a specific world.
 class DOMWrapperWorld : public RefCounted<DOMWrapperWorld> {
 public:
@@ -88,7 +93,7 @@ public:
     bool isolatedWorldHasContentSecurityPolicy();
 
     // Associate a logger with the world identified by worldId (worlId may be 0
-    // identifying the main world).  
+    // identifying the main world).
     static void setActivityLogger(int worldId, PassOwnPtr<V8DOMActivityLogger>);
     static V8DOMActivityLogger* activityLogger(int worldId);
 
