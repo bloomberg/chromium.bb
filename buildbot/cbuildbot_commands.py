@@ -510,7 +510,8 @@ def RunDevModeTest(buildroot, board, image_dir):
   crostestutils = os.path.join(buildroot, 'src', 'platform', 'crostestutils')
   image_path = os.path.join(image_dir, 'chromiumos_test_image.bin')
   test_script = 'devmode-test/devinstall_test.py'
-  cmd = [os.path.join(crostestutils, test_script), board, image_path]
+  cmd = [os.path.join(crostestutils, test_script), '--verbose', board,
+         image_path]
   cros_build_lib.RunCommand(cmd)
 
 
