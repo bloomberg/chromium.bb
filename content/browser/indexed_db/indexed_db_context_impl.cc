@@ -98,8 +98,7 @@ IndexedDBContextImpl::IndexedDBContextImpl(
       task_runner_(task_runner) {
   if (!data_path.empty())
     data_path_ = data_path.Append(kIndexedDBDirectory);
-  if (quota_manager_proxy &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess)) {
+  if (quota_manager_proxy) {
     quota_manager_proxy->RegisterClient(new IndexedDBQuotaClient(this));
   }
 }
