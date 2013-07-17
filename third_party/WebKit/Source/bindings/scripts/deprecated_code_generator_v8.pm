@@ -190,14 +190,6 @@ my %callbackFunctionTypeHash = ();
 
 my %enumTypeHash = ();
 
-my %svgAnimatedTypeHash = ("SVGAnimatedAngle" => 1, "SVGAnimatedBoolean" => 1,
-                           "SVGAnimatedEnumeration" => 1, "SVGAnimatedInteger" => 1,
-                           "SVGAnimatedLength" => 1, "SVGAnimatedLengthList" => 1,
-                           "SVGAnimatedNumber" => 1, "SVGAnimatedNumberList" => 1,
-                           "SVGAnimatedPreserveAspectRatio" => 1,
-                           "SVGAnimatedRect" => 1, "SVGAnimatedString" => 1,
-                           "SVGAnimatedTransformList" => 1);
-
 my %svgAttributesInHTMLHash = ("class" => 1, "id" => 1, "onabort" => 1, "onclick" => 1,
                                "onerror" => 1, "onload" => 1, "onmousedown" => 1,
                                "onmouseenter" => 1, "onmouseleave" => 1,
@@ -5710,8 +5702,7 @@ sub IsSVGAnimatedType
 {
     my $type = shift;
 
-    return 1 if $svgAnimatedTypeHash{$type};
-    return 0;
+    return $type =~ /^SVGAnimated/;
 }
 
 sub GetSequenceType
@@ -5856,7 +5847,8 @@ sub GetterExpression
             $functionName = "getClassAttribute";
             $contentAttributeName = "";
         } else {
-            $functionName = "fastGetAttribute";
+            # We cannot use fast attributes for animated SVG types.
+            $functionName = IsSVGAnimatedType($attribute->type) ? "getAttribute" : "fastGetAttribute";
         }
     }
 
