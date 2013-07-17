@@ -313,6 +313,7 @@ class ChromeLauncherControllerPerApp
 
   // ash::ShelfLayoutManagerObserver overrides:
   virtual void OnAutoHideBehaviorChanged(
+      aura::RootWindow* root_window,
       ash::ShelfAutoHideBehavior new_behavior) OVERRIDE;
 
   // Get the list of all running incarnations of this item.

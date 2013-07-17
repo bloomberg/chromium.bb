@@ -658,15 +658,9 @@ void ChromeLauncherControllerPerBrowser::SetAppImage(
 }
 
 void ChromeLauncherControllerPerBrowser::OnAutoHideBehaviorChanged(
+    aura::RootWindow* root_window,
     ash::ShelfAutoHideBehavior new_behavior) {
-    std::string behavior_string;
-  ash::Shell::RootWindowList root_windows = ash::Shell::GetAllRootWindows();
-
-  for (ash::Shell::RootWindowList::const_iterator iter =
-           root_windows.begin();
-       iter != root_windows.end(); ++iter) {
-    SetShelfAutoHideBehaviorPrefs(new_behavior, *iter);
-  }
+  SetShelfAutoHideBehaviorPrefs(new_behavior, root_window);
 }
 
 void ChromeLauncherControllerPerBrowser::SetLauncherItemImage(

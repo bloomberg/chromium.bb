@@ -213,7 +213,8 @@ void ShelfLayoutManager::SetAutoHideBehavior(ShelfAutoHideBehavior behavior) {
   FOR_EACH_OBSERVER(ShelfLayoutManagerObserver, observers_,
                     OnAutoHideStateChanged(state_.auto_hide_state));
   FOR_EACH_OBSERVER(ShelfLayoutManagerObserver, observers_,
-                    OnAutoHideBehaviorChanged(auto_hide_behavior_));
+                    OnAutoHideBehaviorChanged(root_window_,
+                                              auto_hide_behavior_));
 }
 
 void ShelfLayoutManager::PrepareForShutdown() {

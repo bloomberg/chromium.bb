@@ -8,6 +8,10 @@
 #include "ash/ash_export.h"
 #include "ash/shelf/shelf_types.h"
 
+namespace aura {
+class RootWindow;
+}
+
 namespace ash {
 
 class ASH_EXPORT ShelfLayoutManagerObserver {
@@ -24,7 +28,8 @@ class ASH_EXPORT ShelfLayoutManagerObserver {
   virtual void OnAutoHideStateChanged(ShelfAutoHideState new_state) {}
 
   // Called when the auto hide behavior is changed.
-  virtual void OnAutoHideBehaviorChanged(ShelfAutoHideBehavior new_behavior) {}
+  virtual void OnAutoHideBehaviorChanged(aura::RootWindow* root_window,
+                                         ShelfAutoHideBehavior new_behavior) {}
 };
 
 }  // namespace ash
