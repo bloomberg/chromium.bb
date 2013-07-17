@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/platform_file.h"
 #include "base/process.h"
+#include "content/common/content_export.h"
 #include "ui/base/ime/text_input_type.h"
 
 class TransportDIB;
@@ -44,7 +45,7 @@ class WebPlugin;
 
 namespace content {
 
-class RenderViewPepperHelper {
+class CONTENT_EXPORT RenderViewPepperHelper {
  public:
   RenderViewPepperHelper() {}
   virtual ~RenderViewPepperHelper();

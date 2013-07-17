@@ -2124,16 +2124,15 @@ void RenderWidget::UpdateTextInputType() {
   if (!input_method_is_active_)
     return;
 
-  WebKit::WebTextInputInfo new_info;
-  if (webwidget_)
-    new_info = webwidget_->textInputInfo();
-
-  ui::TextInputType new_type = WebKitToUiTextInputType(new_info.type);
+  ui::TextInputType new_type = GetTextInputType();
   if (IsDateTimeInput(new_type))
     return;  // Not considered as a text input field in WebKit/Chromium.
 
   bool new_can_compose_inline = CanComposeInline();
 
+  WebKit::WebTextInputInfo new_info;
+  if (webwidget_)
+    new_info = webwidget_->textInputInfo();
   const ui::TextInputMode new_mode = ConvertInputMode(new_info.inputMode);
 
   if (text_input_type_ != new_type
