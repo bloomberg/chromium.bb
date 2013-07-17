@@ -5,6 +5,7 @@
 #ifndef SKIA_EXT_ANALYSIS_CANVAS_H_
 #define SKIA_EXT_ANALYSIS_CANVAS_H_
 
+#include "base/compiler_specific.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkDevice.h"
 #include "third_party/skia/include/core/SkPicture.h"

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/debug/trace_event.h"
+#include "base/logging.h"
 #include "skia/ext/analysis_canvas.h"
 #include "third_party/skia/include/core/SkDevice.h"
 #include "third_party/skia/include/core/SkDraw.h"
