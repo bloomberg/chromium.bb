@@ -84,6 +84,26 @@ remoting.HostPlugin.prototype.startDaemon = function(
  *  @return {void} Nothing. */
 remoting.HostPlugin.prototype.stopDaemon = function(callback) {};
 
+/** @param {function(string):void} callback Callback to be called with the
+ *      JSON-encoded list of paired clients.
+ *  @return {void} Nothing.
+ */
+remoting.HostPlugin.prototype.getPairedClients = function(callback) {};
+
+/** @param {function(boolean):void} callback Callback to be called when
+ *      finished.
+ *  @return {void} Nothing.
+ */
+remoting.HostPlugin.prototype.clearPairedClients = function(callback) {};
+
+/** @param {string} client Client id of the pairing to be deleted.
+ *  @param {function(boolean):void} callback Callback to be called when
+ *      finished.
+ *  @return {void} Nothing.
+ */
+remoting.HostPlugin.prototype.deletePairedClient = function(
+    client, callback) {};
+
 /** @type {number} */ remoting.HostPlugin.prototype.state;
 
 /** @type {number} */ remoting.HostPlugin.prototype.STARTING;

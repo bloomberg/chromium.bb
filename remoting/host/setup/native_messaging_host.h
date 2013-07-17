@@ -99,8 +99,8 @@ class NativeMessagingHost {
                                      bool set_by_policy);
   void SendAsyncResult(scoped_ptr<base::DictionaryValue> response,
                        DaemonController::AsyncResult result);
-  void SendAsyncResultFromBoolean(scoped_ptr<base::DictionaryValue> response,
-                                  bool result);
+  void SendBooleanResult(scoped_ptr<base::DictionaryValue> response,
+                         bool result);
 
   // Callbacks may be invoked by e.g. DaemonController during destruction,
   // which use |weak_ptr_|, so it's important that it be the last member to be

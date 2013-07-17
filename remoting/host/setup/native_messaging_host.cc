@@ -151,7 +151,7 @@ bool NativeMessagingHost::ProcessClearPairedClients(
     const base::DictionaryValue& message,
     scoped_ptr<base::DictionaryValue> response) {
   pairing_registry_->ClearAllPairings(
-      base::Bind(&NativeMessagingHost::SendAsyncResultFromBoolean, weak_ptr_,
+      base::Bind(&NativeMessagingHost::SendBooleanResult, weak_ptr_,
                  base::Passed(&response)));
   return true;
 }
@@ -167,8 +167,8 @@ bool NativeMessagingHost::ProcessDeletePairedClient(
   }
 
   pairing_registry_->DeletePairing(
-      client_id, base::Bind(&NativeMessagingHost::SendAsyncResultFromBoolean,
-                            weak_ptr_, base::Passed(&response)));
+      client_id, base::Bind(&NativeMessagingHost::SendBooleanResult, weak_ptr_,
+                            base::Passed(&response)));
   return true;
 }
 
@@ -374,11 +374,10 @@ void NativeMessagingHost::SendAsyncResult(
   SendResponse(response.Pass());
 }
 
-void NativeMessagingHost::SendAsyncResultFromBoolean(
+void NativeMessagingHost::SendBooleanResult(
     scoped_ptr<base::DictionaryValue> response, bool result) {
-  SendAsyncResult(
-      response.Pass(),
-      result ? DaemonController::RESULT_OK : DaemonController::RESULT_FAILED);
+  response->SetBoolean("result", result);
+  SendResponse(response.Pass());
 }
 
 }  // namespace remoting

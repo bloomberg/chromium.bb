@@ -1112,8 +1112,8 @@ bool HostNPScriptObject::ClearPairedClients(const NPVariant* args,
 
   ScopedRefNPObject callback_obj(ObjectFromNPVariant(args[0]));
   pairing_registry_->ClearAllPairings(
-      base::Bind(&HostNPScriptObject::InvokeAsyncResultCallbackFromBoolean,
-                 weak_ptr_, callback_obj));
+      base::Bind(&HostNPScriptObject::InvokeBooleanCallback, weak_ptr_,
+                 callback_obj));
 
   return true;
 }
@@ -1140,7 +1140,7 @@ bool HostNPScriptObject::DeletePairedClient(const NPVariant* args,
   ScopedRefNPObject callback_obj(ObjectFromNPVariant(args[1]));
   pairing_registry_->DeletePairing(
       client_id,
-      base::Bind(&HostNPScriptObject::InvokeAsyncResultCallbackFromBoolean,
+      base::Bind(&HostNPScriptObject::InvokeBooleanCallback,
                  weak_ptr_, callback_obj));
 
   return true;
@@ -1578,12 +1578,20 @@ void HostNPScriptObject::InvokeAsyncResultCallback(
   g_npnetscape_funcs->releasevariantvalue(&result_var);
 }
 
-void HostNPScriptObject::InvokeAsyncResultCallbackFromBoolean(
-    const ScopedRefNPObject& callback,
-    bool success) {
-  InvokeAsyncResultCallback(callback,
-                            success ? DaemonController::RESULT_OK
-                                    : DaemonController::RESULT_FAILED);
+void HostNPScriptObject::InvokeBooleanCallback(
+    const ScopedRefNPObject& callback, bool result) {
+  if (!plugin_task_runner_->BelongsToCurrentThread()) {
+    plugin_task_runner_->PostTask(
+        FROM_HERE, base::Bind(
+            &HostNPScriptObject::InvokeBooleanCallback,
+            weak_ptr_, callback, result));
+    return;
+  }
+
+  NPVariant result_var;
+  BOOLEAN_TO_NPVARIANT(result, result_var);
+  InvokeAndIgnoreResult(callback.get(), &result_var, 1);
+  g_npnetscape_funcs->releasevariantvalue(&result_var);
 }
 
 void HostNPScriptObject::InvokeGetDaemonConfigCallback(

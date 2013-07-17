@@ -5,7 +5,7 @@
 /**
  * @fileoverview
  * This class provides an interface between the HostController and either the
- * NativeMessaging Host or the Host NPAPI plugin, depending on whether
+ * NativeMessaging Host or the Host NPAPI plugin, depending on whether or not
  * NativeMessaging is supported. Since the test for NativeMessaging support is
  * asynchronous, this class stores any requests on a queue, pending the result
  * of the test.
@@ -338,4 +338,96 @@ remoting.HostDispatcher.prototype.getDaemonState = function(callback, onError) {
       }
       break;
   }
-}
+};
+
+/**
+ * @param {function(Array.<remoting.PairedClient>):void} callback
+ * @param {function(remoting.Error):void} onError
+ * @return {void}
+ */
+remoting.HostDispatcher.prototype.getPairedClients = function(callback,
+                                                              onError) {
+  /**
+   * Converts the JSON string from the NPAPI plugin to Array.<PairedClient>, to
+   * pass to |callback|.
+   * @param {string} pairedClientsJson
+   * @return {void}
+   */
+  function callbackForNpapi(pairedClientsJson) {
+    var pairedClients = remoting.PairedClient.convertToPairedClientArray(
+        jsonParseSafe(pairedClientsJson));
+    if (pairedClients != null) {
+      callback(pairedClients);
+    } else {
+      onError(remoting.Error.UNEXPECTED);
+    }
+  }
+
+  switch (this.state_) {
+    case remoting.HostDispatcher.State.UNKNOWN:
+      this.pendingRequests_.push(
+          this.getPairedClients.bind(this, callback, onError));
+      break;
+    case remoting.HostDispatcher.State.NATIVE_MESSAGING:
+      this.nativeMessagingHost_.getPairedClients(callback, onError);
+      break;
+    case remoting.HostDispatcher.State.NPAPI:
+      try {
+        this.npapiHost_.getPairedClients(callbackForNpapi);
+      } catch (err) {
+        onError(remoting.Error.MISSING_PLUGIN);
+      }
+      break;
+  }
+};
+
+/**
+ * @param {function(boolean):void} onDone
+ * @param {function(remoting.Error):void} onError
+ * @return {void}
+ */
+remoting.HostDispatcher.prototype.clearPairedClients =
+    function(onDone, onError) {
+  switch (this.state_) {
+    case remoting.HostDispatcher.State.UNKNOWN:
+      this.pendingRequests_.push(
+        this.clearPairedClients.bind(this, onDone, onError));
+      break;
+    case remoting.HostDispatcher.State.NATIVE_MESSAGING:
+      this.nativeMessagingHost_.clearPairedClients(onDone, onError);
+      break;
+    case remoting.HostDispatcher.State.NPAPI:
+      try {
+        this.npapiHost_.clearPairedClients(onDone);
+      } catch (err) {
+        onError(remoting.Error.MISSING_PLUGIN);
+      }
+      break;
+  }
+};
+
+/**
+ * @param {string} client
+ * @param {function(boolean):void} onDone
+ * @param {function(remoting.Error):void} onError
+ * @return {void}
+ */
+remoting.HostDispatcher.prototype.deletePairedClient =
+    function(client, onDone, onError) {
+  switch (this.state_) {
+    case remoting.HostDispatcher.State.UNKNOWN:
+      this.pendingRequests_.push(
+        this.deletePairedClient.bind(this, client, onDone, onError));
+      break;
+    case remoting.HostDispatcher.State.NATIVE_MESSAGING:
+      this.nativeMessagingHost_.deletePairedClient(client, onDone, onError);
+      break;
+    case remoting.HostDispatcher.State.NPAPI:
+      try {
+        this.npapiHost_.deletePairedClient(client, onDone);
+      } catch (err) {
+        onError(remoting.Error.MISSING_PLUGIN);
+      }
+      break;
+  }
+};

@@ -102,8 +102,8 @@ remoting.HostNativeMessaging.prototype.initialize = function(onDone) {
  */
 function checkType_(name, object, type) {
   if (typeof(object) !== type) {
-    console.error('NativeMessaging: "', name, '" expected to be of type "',
-                  type, '", got: ', object);
+    console.error('NativeMessaging: "' + name + '" expected to be of type "' +
+                  type + '", got: ' + object);
     return false;
   }
   return true;
@@ -305,6 +305,27 @@ remoting.HostNativeMessaging.prototype.onIncomingMessage_ = function(message) {
       }
       break;
 
+    case 'getPairedClientsResponse':
+      var pairedClients = remoting.PairedClient.convertToPairedClientArray(
+          message['pairedClients']);
+      if (pairedClients != null) {
+        callback(pairedClients);
+      } else {
+        onError(remoting.Error.UNEXPECTED);
+      }
+      break;
+
+    case 'clearPairedClientsResponse':
+    case 'deletePairedClientResponse':
+      /** @type {boolean} */
+      var success = message['result'];
+      if (checkType_('success', success, 'boolean')) {
+        callback(success);
+      } else {
+        onError(remoting.Error.UNEXPECTED);
+      }
+      break;
+
     default:
       console.error('Unexpected native message: ', message);
       onError(remoting.Error.UNEXPECTED);
@@ -390,7 +411,7 @@ remoting.HostNativeMessaging.prototype.generateKeyPair = function(callback,
  * @return {void} Nothing.
  */
 remoting.HostNativeMessaging.prototype.updateDaemonConfig =
-  function(config, callback, onError) {
+    function(config, callback, onError) {
   this.postMessage_({
       type: 'updateDaemonConfig',
       config: config
@@ -480,4 +501,45 @@ remoting.HostNativeMessaging.prototype.stopDaemon = function(callback,
 remoting.HostNativeMessaging.prototype.getDaemonState = function(callback,
                                                                  onError) {
   this.postMessage_({type: 'getDaemonState'}, callback, onError);
+}
+
+/**
+ * Retrieves the list of paired clients.
+ *
+ * @param {function(Array.<remoting.PairedClient>):void} onDone Callback to be
+ *     called with the result.
+ * @param {function(remoting.Error):void} onError Callback to be triggered
+ *     on error.
+ */
+remoting.HostNativeMessaging.prototype.getPairedClients =
+    function(onDone, onError) {
+  this.postMessage_({type: 'getPairedClients'}, onDone, onError);
+}
+
+/**
+ * Clears all paired clients from the registry.
+ *
+ * @param {function(boolean):void} onDone Callback to be called when finished.
+ * @param {function(remoting.Error):void} onError Callback to be triggered
+ *     on error.
+ */
+remoting.HostNativeMessaging.prototype.clearPairedClients =
+    function(onDone, onError) {
+  this.postMessage_({type: 'clearPairedClients'}, onDone, onError);
+}
+
+/**
+ * Deletes a paired client referenced by client id.
+ *
+ * @param {string} client Client to delete.
+ * @param {function(boolean):void} onDone Callback to be called when finished.
+ * @param {function(remoting.Error):void} onError Callback to be triggered
+ *     on error.
+ */
+remoting.HostNativeMessaging.prototype.deletePairedClient =
+    function(client, onDone, onError) {
+  this.postMessage_({
+    type: 'deletePairedClient',
+    clientId: client
+  }, onDone, onError);
 }

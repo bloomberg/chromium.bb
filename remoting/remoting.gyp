@@ -170,6 +170,7 @@
       'webapp/menu_button.js',
       'webapp/oauth2.js',
       'webapp/oauth2_callback.js',
+      'webapp/paired_client_manager.js',
       'webapp/plugin_settings.js',
       'webapp/remoting.js',
       'webapp/server_log_entry.js',

@@ -240,8 +240,7 @@ class HostNPScriptObject {
 
   // Callback handler for PairingRegistry methods that return a boolean
   // success status.
-  void InvokeAsyncResultCallbackFromBoolean(const ScopedRefNPObject& callback,
-                                            bool result);
+  void InvokeBooleanCallback(const ScopedRefNPObject& callback, bool result);
 
   // Callback handler for DaemonController::DeletePairedClients().
   void InvokeDeletePairedClientsCallback(const ScopedRefNPObject& callback,
