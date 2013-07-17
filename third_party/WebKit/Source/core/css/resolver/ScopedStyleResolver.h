@@ -29,19 +29,19 @@
 
 #include "core/css/CSSKeyframesRule.h"
 #include "core/css/RuleSet.h"
-#include "core/css/SiblingTraversalStrategies.h"
+#include "core/dom/ContainerNode.h"
+#include "core/dom/Element.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {
 
-class ContainerNode;
 class ElementRuleCollector;
 class MediaQueryEvaluator;
 class PageRuleCollector;
-class ScopedStyleResolver;
 class ShadowRoot;
 class StyleSheetContents;
 

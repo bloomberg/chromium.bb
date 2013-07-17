@@ -26,6 +26,7 @@
 #include "config.h"
 #include "core/dom/NodeRenderingContext.h"
 
+#include "RuntimeEnabledFeatures.h"
 #include "SVGNames.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/ContainerNode.h"

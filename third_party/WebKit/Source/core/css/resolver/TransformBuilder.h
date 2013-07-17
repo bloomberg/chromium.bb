@@ -36,8 +36,8 @@
 
 namespace WebCore {
 
-class RenderStyle;
 class CSSValue;
+class RenderStyle;
 
 class TransformBuilder {
     WTF_MAKE_NONCOPYABLE(TransformBuilder); WTF_MAKE_FAST_ALLOCATED;

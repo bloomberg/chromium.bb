@@ -29,7 +29,6 @@
 #include "config.h"
 #include "core/css/resolver/FilterOperationResolver.h"
 
-
 #include "core/css/CSSFilterValue.h"
 #include "core/css/CSSMixFunctionValue.h"
 #include "core/css/CSSParser.h"

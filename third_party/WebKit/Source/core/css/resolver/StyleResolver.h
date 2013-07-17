@@ -22,9 +22,6 @@
 #ifndef StyleResolver_h
 #define StyleResolver_h
 
-#include "RuntimeEnabledFeatures.h"
-#include "core/css/CSSRuleList.h"
-#include "core/css/CSSToStyleMap.h"
 #include "core/css/DocumentRuleSets.h"
 #include "core/css/InspectorCSSOMWrappers.h"
 #include "core/css/PseudoStyleRequest.h"
@@ -38,8 +35,6 @@
 #include "core/css/resolver/StyleBuilder.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/css/resolver/StyleResourceLoader.h"
-#include "core/css/resolver/ViewportStyleResolver.h"
-#include "core/rendering/style/RenderStyle.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
 #include "wtf/RefPtr.h"
@@ -47,14 +42,7 @@
 
 namespace WebCore {
 
-class CSSCursorImageValue;
 class CSSFontSelector;
-class CSSImageGeneratorValue;
-class CSSImageSetValue;
-class CSSImageValue;
-class CSSPageRule;
-class CSSPrimitiveValue;
-class CSSProperty;
 class CSSRuleList;
 class CSSSelector;
 class CSSStyleSheet;
@@ -63,30 +51,20 @@ class ContainerNode;
 class Document;
 class Element;
 class ElementRuleCollector;
-class Frame;
-class FrameView;
 class KeyframeList;
 class KeyframeValue;
 class MediaQueryEvaluator;
 class MediaQueryExp;
 class MediaQueryResult;
-class Node;
 class RenderRegion;
 class RuleData;
-class RuleSet;
 class Settings;
-class StyleImage;
 class StyleKeyframe;
-class StylePendingImage;
 class StylePropertySet;
 class StyleRule;
-class StyleRuleHost;
 class StyleRuleKeyframes;
 class StyleRulePage;
-class StyleRuleRegion;
-class StyleShader;
-class StyleSheet;
-class StyleSheetList;
+class ViewportStyleResolver;
 
 struct MatchResult;
 

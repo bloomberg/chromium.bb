@@ -29,6 +29,7 @@
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
 #include "HTMLNames.h"
+#include "RuntimeEnabledFeatures.h"
 #include "SVGNames.h"
 #include "XMLNames.h"
 #include "core/accessibility/AXObjectCache.h"

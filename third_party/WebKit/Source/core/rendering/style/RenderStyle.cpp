@@ -25,6 +25,7 @@
 
 #include <algorithm>
 #include "CSSPropertyNames.h"
+#include "RuntimeEnabledFeatures.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/FontSelector.h"

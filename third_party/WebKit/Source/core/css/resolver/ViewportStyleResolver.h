@@ -36,7 +36,6 @@
 
 namespace WebCore {
 
-class CSSPrimitiveValue;
 class Document;
 class MutableStylePropertySet;
 class StyleRuleViewport;

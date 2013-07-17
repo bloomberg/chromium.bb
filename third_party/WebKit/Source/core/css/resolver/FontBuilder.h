@@ -31,9 +31,7 @@
 namespace WebCore {
 
 class CSSValue;
-class FontDescription;
 class FontSelector;
-class FontSize;
 class RenderStyle;
 
 class FontDescriptionChangeScope;

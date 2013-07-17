@@ -25,7 +25,6 @@
 namespace WebCore {
 
 class CachedUAStyle;
-class Document;
 class Element;
 class RenderStyle;
 

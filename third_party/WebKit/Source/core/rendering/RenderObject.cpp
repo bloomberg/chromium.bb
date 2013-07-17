@@ -28,6 +28,7 @@
 #include "core/rendering/RenderObject.h"
 
 #include "HTMLNames.h"
+#include "RuntimeEnabledFeatures.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/editing/EditingBoundary.h"

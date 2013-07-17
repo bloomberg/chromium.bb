@@ -29,11 +29,9 @@
 #include "core/css/resolver/ElementStyleResources.h"
 #include "core/css/resolver/FontBuilder.h"
 #include "core/dom/Element.h"
-#include "core/platform/graphics/Color.h"
 #include "core/rendering/style/CachedUAStyle.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/style/StyleInheritedData.h"
-#include "wtf/HashMap.h"
 
 namespace WebCore {
 

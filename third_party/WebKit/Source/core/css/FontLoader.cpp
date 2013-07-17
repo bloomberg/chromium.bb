@@ -26,6 +26,7 @@
 #include "config.h"
 #include "core/css/FontLoader.h"
 
+#include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/Dictionary.h"
 #include "core/css/CSSFontFaceLoadEvent.h"
 #include "core/css/CSSFontFaceSource.h"
