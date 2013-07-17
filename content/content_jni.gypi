@@ -27,7 +27,6 @@
     'public/android/java/src/org/chromium/content/browser/LoadUrlParams.java',
     'public/android/java/src/org/chromium/content/browser/LocationProvider.java',
     'public/android/java/src/org/chromium/content/browser/MediaResourceGetter.java',
-    'public/android/java/src/org/chromium/content/browser/PowerSaveBlocker.java',
     'public/android/java/src/org/chromium/content/browser/SmoothScroller.java',
     'public/android/java/src/org/chromium/content/browser/SpeechRecognition.java',
     'public/android/java/src/org/chromium/content/browser/TouchPoint.java',

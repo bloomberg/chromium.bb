@@ -50,6 +50,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/power_save_blocker.h"
 #include "content/public/browser/render_view_host_observer.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/bindings_policy.h"
@@ -203,7 +204,9 @@ RenderViewHostImpl::~RenderViewHostImpl() {
   FOR_EACH_OBSERVER(
       RenderViewHostObserver, observers_, RenderViewHostDestruction());
 
-    GetDelegate()->RenderViewDeleted(this);
+  ClearPowerSaveBlockers();
+
+  GetDelegate()->RenderViewDeleted(this);
 
   // Be sure to clean up any leftover state from cross-site requests.
   CrossSiteRequestManager::GetInstance()->SetHasPendingCrossSiteRequest(
@@ -987,6 +990,7 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnSelectionBoundsChanged)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ScriptEvalResponse, OnScriptEvalResponse)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidZoomURL, OnDidZoomURL)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_MediaNotification, OnMediaNotification)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetWindowSnapshot, OnGetWindowSnapshot)
     IPC_MESSAGE_HANDLER(DesktopNotificationHostMsg_RequestPermission,
                         OnRequestDesktopNotificationPermission)
@@ -1126,6 +1130,7 @@ void RenderViewHostImpl::OnRenderProcessGone(int status, int exit_code) {
       static_cast<base::TerminationStatus>(status);
 
   // Reset state.
+  ClearPowerSaveBlockers();
   main_frame_id_ = -1;
 
   // Our base class RenderWidgetHost needs to reset some stuff.
@@ -1611,9 +1616,7 @@ void RenderViewHostImpl::RequestToLockMouse(bool user_gesture,
 }
 
 bool RenderViewHostImpl::IsFullscreen() const {
-  if (delegate_)
-    return delegate_->IsFullscreenForCurrentTab();
-  return false;
+  return delegate_->IsFullscreenForCurrentTab();
 }
 
 void RenderViewHostImpl::OnFocus() {
@@ -1946,6 +1949,33 @@ void RenderViewHostImpl::OnDidZoomURL(double zoom_level,
   }
 }
 
+void RenderViewHostImpl::OnMediaNotification(int64 player_cookie,
+                                             bool has_video,
+                                             bool has_audio,
+                                             bool is_playing) {
+  // Chrome OS does its own detection of audio and video.
+#if !defined(OS_CHROMEOS)
+  if (is_playing) {
+    scoped_ptr<PowerSaveBlocker> blocker;
+    if (has_video) {
+      blocker = PowerSaveBlocker::Create(
+          PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep,
+          "Playing video");
+    } else if (has_audio) {
+      blocker = PowerSaveBlocker::Create(
+          PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
+          "Playing audio");
+    }
+
+    if (blocker)
+      power_save_blockers_[player_cookie] = blocker.release();
+  } else {
+    delete power_save_blockers_[player_cookie];
+    power_save_blockers_.erase(player_cookie);
+  }
+#endif
+}
+
 void RenderViewHostImpl::OnRequestDesktopNotificationPermission(
     const GURL& source_origin, int callback_context) {
   GetContentClient()->browser()->RequestDesktopNotificationPermission(
@@ -2045,6 +2075,10 @@ void RenderViewHostImpl::SetSwappedOut(bool is_swapped_out) {
   is_waiting_for_beforeunload_ack_ = false;
   is_waiting_for_unload_ack_ = false;
   has_timed_out_on_unload_ = false;
+}
+
+void RenderViewHostImpl::ClearPowerSaveBlockers() {
+  STLDeleteValues(&power_save_blockers_);
 }
 
 bool RenderViewHostImpl::CanAccessFilesOfPageState(

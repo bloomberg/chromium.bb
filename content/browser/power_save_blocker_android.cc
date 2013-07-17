@@ -2,27 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/power_save_blocker_android.h"
-
-#include "base/android/jni_android.h"
-#include "base/logging.h"
 #include "content/browser/power_save_blocker_impl.h"
-#include "content/public/browser/browser_thread.h"
-#include "jni/PowerSaveBlocker_jni.h"
-#include "ui/android/window_android.h"
 
-using base::android::AttachCurrentThread;
-using base::android::ScopedJavaLocalRef;
+#include "base/logging.h"
+#include "content/browser/android/content_video_view.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace content {
 
 class PowerSaveBlockerImpl::Delegate
     : public base::RefCountedThreadSafe<PowerSaveBlockerImpl::Delegate> {
  public:
-  explicit Delegate(gfx::NativeWindow native_window) {
-    j_window_android_ = JavaObjectWeakGlobalRef(AttachCurrentThread(),
-        static_cast<ui::WindowAndroid*>(native_window)->GetJavaObject().obj());
-  }
+  explicit Delegate(PowerSaveBlockerType type) : type_(type) {}
 
   // Does the actual work to apply or remove the desired power save block.
   void ApplyBlock();
@@ -32,51 +23,49 @@ class PowerSaveBlockerImpl::Delegate
   friend class base::RefCountedThreadSafe<Delegate>;
   ~Delegate() {}
 
-  JavaObjectWeakGlobalRef j_window_android_;
+  // The counter of requests from clients for type
+  // kPowerSaveBlockPreventDisplaySleep.
+  static int blocker_count_;
+  const PowerSaveBlockerType type_;
 
   DISALLOW_COPY_AND_ASSIGN(Delegate);
 };
 
+int PowerSaveBlockerImpl::Delegate::blocker_count_ = 0;
+
 void PowerSaveBlockerImpl::Delegate::ApplyBlock() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> j_object = j_window_android_.get(env);
-  if (j_object.obj())
-    Java_PowerSaveBlocker_applyBlock(env, j_object.obj());
+  if (type_ != kPowerSaveBlockPreventDisplaySleep)
+    return;
+
+  if (blocker_count_ == 0)
+    ContentVideoView::KeepScreenOn(true);
+  ++blocker_count_;
 }
 
 void PowerSaveBlockerImpl::Delegate::RemoveBlock() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> j_object = j_window_android_.get(env);
-  if (j_object.obj())
-    Java_PowerSaveBlocker_removeBlock(env, j_object.obj());
+  if (type_ != kPowerSaveBlockPreventDisplaySleep)
+    return;
+
+  --blocker_count_;
+  if (blocker_count_ == 0)
+    ContentVideoView::KeepScreenOn(false);
 }
 
 PowerSaveBlockerImpl::PowerSaveBlockerImpl(PowerSaveBlockerType type,
-                                           const std::string& reason) {
-  // Don't support kPowerSaveBlockPreventAppSuspension
-}
-
-PowerSaveBlockerImpl::~PowerSaveBlockerImpl() {
-  if (delegate_) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&Delegate::RemoveBlock, delegate_));
-  }
-}
-
-void PowerSaveBlockerImpl::InitDisplaySleepBlocker(
-    gfx::NativeWindow native_window) {
-  delegate_ = new Delegate(native_window);
+                                           const std::string& reason)
+    : delegate_(new Delegate(type)) {
   // This may be called on any thread.
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&Delegate::ApplyBlock, delegate_));
 }
 
-bool RegisterPowerSaveBlocker(JNIEnv* env) {
-  return RegisterNativesImpl(env);
+PowerSaveBlockerImpl::~PowerSaveBlockerImpl() {
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&Delegate::RemoveBlock, delegate_));
 }
 
 }  // namespace content

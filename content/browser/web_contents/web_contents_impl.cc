@@ -32,7 +32,6 @@
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/host_zoom_map_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
-#include "content/browser/power_save_blocker_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -366,8 +365,6 @@ WebContentsImpl::WebContentsImpl(
 
 WebContentsImpl::~WebContentsImpl() {
   is_being_destroyed_ = true;
-
-  ClearAllPowerSaveBlockers();
 
   for (std::set<RenderWidgetHostImpl*>::iterator iter =
            created_widgets_.begin(); iter != created_widgets_.end(); ++iter) {
@@ -730,7 +727,6 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
 #endif
     IPC_MESSAGE_HANDLER(ViewHostMsg_FrameAttached, OnFrameAttached)
     IPC_MESSAGE_HANDLER(ViewHostMsg_FrameDetached, OnFrameDetached)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_MediaNotification, OnMediaNotification)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
   message_source_ = NULL;
@@ -2593,38 +2589,6 @@ void WebContentsImpl::OnFrameDetached(int64 parent_frame_id, int64 frame_id) {
   parent->RemoveChild(frame_id);
 }
 
-void WebContentsImpl::OnMediaNotification(int64 player_cookie,
-                                          bool has_video,
-                                          bool has_audio,
-                                          bool is_playing) {
-  // Chrome OS does its own detection of audio and video.
-#if !defined(OS_CHROMEOS)
-  if (is_playing) {
-    scoped_ptr<PowerSaveBlocker> blocker;
-    if (has_video) {
-      blocker = PowerSaveBlocker::Create(
-          PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep,
-          "Playing video");
-#if defined(OS_ANDROID)
-      static_cast<PowerSaveBlockerImpl*>(blocker.get())->
-          InitDisplaySleepBlocker(GetView()->GetTopLevelNativeWindow());
-#endif
-    } else if (has_audio) {
-      blocker = PowerSaveBlocker::Create(
-          PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
-          "Playing audio");
-    }
-
-    if (blocker)
-      power_save_blockers_[message_source_][player_cookie] = blocker.release();
-  } else {
-    delete power_save_blockers_[message_source_][player_cookie];
-    power_save_blockers_[message_source_].erase(player_cookie);
-  }
-#endif  // !defined(OS_CHROMEOS)
-}
-
-
 void WebContentsImpl::DidChangeVisibleSSLState() {
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                     DidChangeVisibleSSLState());
@@ -2914,7 +2878,6 @@ void WebContentsImpl::RenderViewTerminated(RenderViewHost* rvh,
     return;
   }
 
-  ClearPowerSaveBlockers(rvh);
   SetIsLoading(false, NULL);
   NotifyDisconnected();
   SetIsCrashed(status, error_code);
@@ -2926,7 +2889,6 @@ void WebContentsImpl::RenderViewTerminated(RenderViewHost* rvh,
 }
 
 void WebContentsImpl::RenderViewDeleted(RenderViewHost* rvh) {
-  ClearPowerSaveBlockers(rvh);
   render_manager_.RenderViewDeleted(rvh);
   FOR_EACH_OBSERVER(WebContentsObserver, observers_, RenderViewDeleted(rvh));
 }
@@ -3731,19 +3693,6 @@ BrowserPluginGuestManager*
   return static_cast<BrowserPluginGuestManager*>(
       GetBrowserContext()->GetUserData(
           browser_plugin::kBrowserPluginGuestManagerKeyName));
-}
-
-void WebContentsImpl::ClearPowerSaveBlockers(
-    RenderViewHost* render_view_host) {
-  if (!power_save_blockers_[render_view_host].empty())
-    STLDeleteValues(&power_save_blockers_[render_view_host]);
-  power_save_blockers_.erase(render_view_host);
-}
-
-void WebContentsImpl::ClearAllPowerSaveBlockers() {
-  for (PowerSaveBlockerMap::iterator i(power_save_blockers_.begin());
-       i != power_save_blockers_.end(); ++i)
-    ClearPowerSaveBlockers(i->first);
 }
 
 }  // namespace content

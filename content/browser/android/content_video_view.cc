@@ -65,6 +65,12 @@ void ContentVideoView::OpenVideo() {
     Java_ContentVideoView_openVideo(env, content_video_view.obj());
 }
 
+// static
+void ContentVideoView::KeepScreenOn(bool screen_on) {
+  Java_ContentVideoView_keepScreenOnContentVideoView(AttachCurrentThread(),
+                                                     screen_on);
+}
+
 void ContentVideoView::OnMediaPlayerError(int error_type) {
   JNIEnv *env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> content_video_view = GetJavaObject(env);

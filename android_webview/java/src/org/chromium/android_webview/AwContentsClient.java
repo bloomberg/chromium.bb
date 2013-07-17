@@ -157,6 +157,10 @@ public abstract class AwContentsClient {
         }
 
         @Override
+        public void keepScreenOn(boolean screenOn) {
+        }
+
+        @Override
         public ContentVideoViewControls createControls() {
             return null;
         }
