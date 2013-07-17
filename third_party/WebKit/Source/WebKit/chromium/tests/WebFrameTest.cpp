@@ -59,7 +59,9 @@
 #include "core/dom/DocumentMarkerController.h"
 #include "core/dom/MouseEvent.h"
 #include "core/dom/Range.h"
+#include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
+#include "core/editing/SpellChecker.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/page/EventHandler.h"
@@ -3157,6 +3159,30 @@ TEST_F(WebFrameTest, SlowSpellcheckMarkerPosition)
     WebVector<uint32_t> documentMarkers;
     m_webView->spellingMarkers(&documentMarkers);
     EXPECT_EQ(0U, documentMarkers.size());
+
+    m_webView->close();
+    m_webView = 0;
+}
+
+// This test verifies that cancelling spelling request does not cause a
+// write-after-free when there's no spellcheck client set.
+TEST_F(WebFrameTest, CancelSpellingRequestCrash)
+{
+    registerMockedHttpURLLoad("spell.html");
+    m_webView = FrameTestHelpers::createWebViewAndLoad(m_baseURL + "spell.html");
+    m_webView->setSpellCheckClient(0);
+
+    WebFrameImpl* frame = static_cast<WebFrameImpl*>(m_webView->mainFrame());
+    Document* document = frame->frame()->document();
+    Element* element = document->getElementById("data");
+
+    m_webView->settings()->setAsynchronousSpellCheckingEnabled(true);
+    m_webView->settings()->setUnifiedTextCheckerEnabled(true);
+    m_webView->settings()->setEditingBehavior(WebSettings::EditingBehaviorWin);
+
+    element->focus();
+    frame->frame()->editor()->replaceSelectionWithText("A", false, false);
+    frame->frame()->editor()->spellChecker()->cancelCheck();
 
     m_webView->close();
     m_webView = 0;

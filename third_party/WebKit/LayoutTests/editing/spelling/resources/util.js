@@ -5,9 +5,9 @@ function log(msg)
 
 function verifySpellTest(nretry)
 {
-    var node = destination;
-    if (destination.childNodes.length > 0)
-        node = destination.childNodes[0];
+    var node = window.destination;
+    if (window.destination.childNodes.length > 0)
+        node = window.destination.childNodes[0];
     if (nretry && !internals.markerCountForNode(node, "spelling")) {
         window.setTimeout(function() { verifySpellTest(nretry - 1); }, 0);
         return;
@@ -29,8 +29,8 @@ function initSpellTest(testElementId, testText, testFunction)
     internals.settings.setSelectTrailingWhitespaceEnabled(false);
     internals.settings.setUnifiedTextCheckerEnabled(true);
     internals.settings.setEditingBehavior("win");
-    var destination = document.getElementById(testElementId);
-    destination.focus();
+    window.destination = document.getElementById(testElementId);
+    window.destination.focus();
     document.execCommand("InsertText", false, testText);
     window.setTimeout(function() { verifySpellTest(10); }, 0);
 }

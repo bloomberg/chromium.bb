@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../../fast/js/resources/js-test-pre.js"></script>
+<script src="resources/util.js"></script>
+</head>
+<body>
+<div id="container">
+  <input id="destination" type="text" name="type" value="">
+</div>
+
+<script>
+
+description("Spell check does not crash after Ctrl-X/Ctrl-V/type text in ASAN. " +
+            "To test manually, type 'A', Ctrl-A, Ctrl-X, Ctrl-V, and start typing again. " +
+            "The test succeeds when there's no crash in the last step.");
+
+initSpellTest("destination", "A", function(textNode) {
+    var behaviors = ["win", "mac"];
+    for (var i = 0; i < behaviors.length; i++) {
+        internals.settings.setEditingBehavior(behaviors[i]);
+        document.execCommand("SelectAll");
+        document.execCommand("Cut");
+        document.execCommand("Paste");
+        document.execCommand("InsertText", false, "A");
+    }
+    log("PASS Did not crash");
+});
+
+</script>
+<script src="../../fast/js/resources/js-test-post.js"></script>
+</body>
+</html>

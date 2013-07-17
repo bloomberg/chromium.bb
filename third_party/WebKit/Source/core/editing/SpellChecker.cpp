@@ -89,16 +89,18 @@ void SpellCheckRequest::didSucceed(const Vector<TextCheckingResult>& results)
 {
     if (!m_checker)
         return;
-    m_checker->didCheckSucceed(m_requestData.sequence(), results);
+    SpellChecker* checker = m_checker;
     m_checker = 0;
+    checker->didCheckSucceed(m_requestData.sequence(), results);
 }
 
 void SpellCheckRequest::didCancel()
 {
     if (!m_checker)
         return;
-    m_checker->didCheckCancel(m_requestData.sequence());
+    SpellChecker* checker = m_checker;
     m_checker = 0;
+    checker->didCheckCancel(m_requestData.sequence());
 }
 
 void SpellCheckRequest::setCheckerAndSequence(SpellChecker* requester, int sequence)
