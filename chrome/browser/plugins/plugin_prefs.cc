@@ -31,17 +31,12 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/plugin_service.h"
-#include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/webplugininfo.h"
 
 using content::BrowserThread;
 using content::PluginService;
 
 namespace {
-
-// How long to wait to save the plugin enabled information, which might need to
-// go to disk.
-const int64 kPluginUpdateDelayMs = 60 * 1000;
 
 bool IsComponentUpdatedPepperFlash(const base::FilePath& plugin) {
   if (plugin.BaseName().value() == chrome::kPepperFlashPluginFilename) {
@@ -104,11 +99,6 @@ scoped_refptr<PluginPrefs> PluginPrefs::GetForTestingProfile(
   return static_cast<PluginPrefs*>(
       PluginPrefsFactory::GetInstance()->SetTestingFactoryAndUse(
           profile, &PluginPrefsFactory::CreateForTestingProfile).get());
-}
-
-void PluginPrefs::SetPluginListForTesting(
-    webkit::npapi::PluginList* plugin_list) {
-  plugin_list_ = plugin_list;
 }
 
 void PluginPrefs::EnablePluginGroup(bool enabled, const string16& group_name) {
@@ -326,24 +316,6 @@ void PluginPrefs::SetPrefs(PrefService* prefs) {
         prefs::kPluginsLastInternalDirectory, cur_internal_dir);
   }
 
-  bool force_enable_nacl = false;
-  string16 nacl_group_name =
-      ASCIIToUTF16(chrome::ChromeContentClient::kNaClPluginName);
-  // Since the NaCl Plugin changed names between Chrome 13 and 14, we need to
-  // check for both because either could be stored as the plugin group name.
-  string16 old_nacl_group_name =
-      ASCIIToUTF16(chrome::ChromeContentClient::kNaClOldPluginName);
-  base::FilePath nacl_path;
-  PathService::Get(chrome::FILE_NACL_PLUGIN, &nacl_path);
-  base::FilePath::StringType nacl_path_str = nacl_path.value();
-  if (!prefs_->GetBoolean(prefs::kPluginsEnabledNaCl)) {
-    // We switched to the nacl plugin being on by default, and so we need to
-    // force it to be enabled.  We only want to do it this once though, i.e.
-    // we don't want to enable it again if the user disables it afterwards.
-    prefs_->SetBoolean(prefs::kPluginsEnabledNaCl, true);
-    force_enable_nacl = true;
-  }
-
   bool migrate_to_pepper_flash = false;
 #if defined(OS_WIN) || defined(OS_MACOSX)
   // If bundled NPAPI Flash is enabled while Pepper Flash is disabled, we
@@ -449,12 +421,7 @@ void PluginPrefs::SetPrefs(PrefService* prefs) {
             }
           }
 
-          if (base::FilePath::CompareIgnoreCase(path, nacl_path_str) == 0) {
-            if (!enabled && force_enable_nacl) {
-              enabled = true;
-              plugin->SetBoolean("enabled", true);
-            }
-          } else if (migrate_to_pepper_flash &&
+          if (migrate_to_pepper_flash &&
                      base::FilePath::CompareEqualIgnoreCase(
                          path, npapi_flash.value())) {
             npapi_flash_enabled = enabled;
@@ -474,12 +441,6 @@ void PluginPrefs::SetPrefs(PrefService* prefs) {
 
           plugin_state_.Set(plugin_path, enabled);
         } else if (!enabled && plugin->GetString("name", &group_name)) {
-          // Don't disable this group if it's for the nacl plugin and we just
-          // forced it on.
-          if (force_enable_nacl && (nacl_group_name == group_name ||
-                                    old_nacl_group_name == group_name))
-            continue;
-
           // Otherwise this is a list of groups.
           plugin_group_state_[group_name] = false;
         }
@@ -498,9 +459,7 @@ void PluginPrefs::SetPrefs(PrefService* prefs) {
     } else {
       // If the saved plugin list is empty, then the call to UpdatePreferences()
       // below failed in an earlier run, possibly because the user closed the
-      // browser too quickly. Try to force enable the internal nacl plugin
-      // again.
-      force_enable_nacl = true;
+      // browser too quickly.
 
       // Only want one PDF plugin enabled at a time. See http://crbug.com/50105
       // for background.
@@ -538,17 +497,6 @@ void PluginPrefs::SetPrefs(PrefService* prefs) {
                             base::Unretained(this),
                             &policy_enabled_plugin_patterns_));
 
-  if (force_enable_nacl) {
-    // We want to save this, but doing so requires loading the list of plugins,
-    // so do it after a minute as to not impact startup performance.  Note that
-    // plugins are loaded after 30s by the metrics service.
-    BrowserThread::PostDelayedTask(
-        BrowserThread::FILE,
-        FROM_HERE,
-        base::Bind(&PluginPrefs::GetPreferencesDataOnFileThread, this),
-        base::TimeDelta::FromMilliseconds(kPluginUpdateDelayMs));
-  }
-
   NotifyPluginStatusChanged();
 }
 
@@ -558,8 +506,7 @@ void PluginPrefs::ShutdownOnUIThread() {
 }
 
 PluginPrefs::PluginPrefs() : profile_(NULL),
-                             prefs_(NULL),
-                             plugin_list_(NULL) {
+                             prefs_(NULL) {
 }
 
 PluginPrefs::~PluginPrefs() {
@@ -572,21 +519,6 @@ void PluginPrefs::SetPolicyEnforcedPluginPatterns(
   policy_disabled_plugin_patterns_ = disabled_patterns;
   policy_disabled_plugin_exception_patterns_ = disabled_exception_patterns;
   policy_enabled_plugin_patterns_ = enabled_patterns;
-}
-
-webkit::npapi::PluginList* PluginPrefs::GetPluginList() const {
-  if (plugin_list_)
-    return plugin_list_;
-  return PluginService::GetInstance()->GetPluginList();
-}
-
-void PluginPrefs::GetPreferencesDataOnFileThread() {
-  std::vector<webkit::WebPluginInfo> plugins;
-  webkit::npapi::PluginList* plugin_list = GetPluginList();
-  plugin_list->GetPluginsNoRefresh(&plugins);
-
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      base::Bind(&PluginPrefs::OnUpdatePreferences, this, plugins));
 }
 
 void PluginPrefs::OnUpdatePreferences(

@@ -75,11 +75,11 @@ void PluginLoaderPosix::GetPluginsToLoad() {
   next_load_index_ = 0;
 
   canonical_list_.clear();
-  PluginServiceImpl::GetInstance()->GetPluginList()->GetPluginPathsToLoad(
+  webkit::npapi::PluginList::Singleton()->GetPluginPathsToLoad(
       &canonical_list_);
 
   internal_plugins_.clear();
-  PluginServiceImpl::GetInstance()->GetPluginList()->GetInternalPlugins(
+  webkit::npapi::PluginList::Singleton()->GetInternalPlugins(
       &internal_plugins_);
 
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
@@ -163,8 +163,7 @@ bool PluginLoaderPosix::MaybeRunPendingCallbacks() {
   if (next_load_index_ < canonical_list_.size())
     return false;
 
-  PluginServiceImpl::GetInstance()->GetPluginList()->SetPlugins(
-      loaded_plugins_);
+  webkit::npapi::PluginList::Singleton()->SetPlugins(loaded_plugins_);
 
   // Only call the first callback with loaded plugins because there may be
   // some extra plugin paths added since the first callback is added.

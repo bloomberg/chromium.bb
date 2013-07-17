@@ -108,7 +108,6 @@ class CONTENT_EXPORT PluginServiceImpl
       const webkit::WebPluginInfo& info, bool add_at_beginning) OVERRIDE;
   virtual void GetInternalPlugins(
       std::vector<webkit::WebPluginInfo>* plugins) OVERRIDE;
-  virtual webkit::npapi::PluginList* GetPluginList() OVERRIDE;
   virtual void SetPluginListForTesting(
       webkit::npapi::PluginList* plugin_list) OVERRIDE;
 #if defined(OS_MACOSX)

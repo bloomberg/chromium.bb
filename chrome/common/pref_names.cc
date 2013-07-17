@@ -990,10 +990,6 @@ const char kPluginsDisabledPluginsExceptions[] =
 // List pref containing names of plugins that are enabled by policy.
 const char kPluginsEnabledPlugins[] = "plugins.plugins_enabled";
 
-// When first shipped, the nacl plugin will be disabled by default.  When we
-// enable it by default, we'll want to do so only once.
-const char kPluginsEnabledNaCl[] = "plugins.enabled_nacl";
-
 // When bundled NPAPI Flash is removed, if at that point it is enabled while
 // Pepper Flash is disabled, we would like to turn on Pepper Flash. And we will
 // want to do so only once.

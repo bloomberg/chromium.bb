@@ -185,7 +185,6 @@ TEST_F(PluginPrefsTest, UnifiedPepperFlashState) {
   webkit::npapi::MockPluginList plugin_list;
   PluginService::GetInstance()->SetPluginListForTesting(&plugin_list);
   PluginService::GetInstance()->Init();
-  plugin_prefs_->SetPluginListForTesting(&plugin_list);
 
   string16 component_updated_plugin_name(
       ASCIIToUTF16("Component-updated Pepper Flash"));
@@ -251,6 +250,5 @@ TEST_F(PluginPrefsTest, UnifiedPepperFlashState) {
   EXPECT_FALSE(plugin_prefs_->IsPluginEnabled(component_updated_plugin_2));
   EXPECT_TRUE(plugin_prefs_->IsPluginEnabled(bundled_plugin));
 
-  plugin_prefs_->SetPluginListForTesting(NULL);
   PluginService::GetInstance()->SetPluginListForTesting(NULL);
 }

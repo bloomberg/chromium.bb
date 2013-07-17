@@ -25,9 +25,6 @@ class ListValue;
 
 namespace webkit {
 struct WebPluginInfo;
-namespace npapi {
-class PluginList;
-}
 }
 
 // This class stores information about whether a plug-in or a plug-in group is
@@ -48,9 +45,6 @@ class PluginPrefs : public RefcountedBrowserContextKeyedService {
   // This method overrides that for a given TestingProfile, returning the newly
   // created PluginPrefs object.
   static scoped_refptr<PluginPrefs> GetForTestingProfile(Profile* profile);
-
-  // Sets the plug-in list for tests.
-  void SetPluginListForTesting(webkit::npapi::PluginList* plugin_list);
 
   // Creates a new instance. This method should only be used for testing.
   PluginPrefs();
@@ -119,9 +113,6 @@ class PluginPrefs : public RefcountedBrowserContextKeyedService {
       const std::set<string16>& disabled_exception_patterns,
       const std::set<string16>& enabled_patterns);
 
-  // Returns the plugin list to use, either the singleton or the override.
-  webkit::npapi::PluginList* GetPluginList() const;
-
   // Callback for after the plugin groups have been loaded.
   void EnablePluginGroupInternal(
       bool enabled,
@@ -133,10 +124,6 @@ class PluginPrefs : public RefcountedBrowserContextKeyedService {
       PluginFinder* plugin_finder,
       const base::Callback<void(bool)>& callback,
       const std::vector<webkit::WebPluginInfo>& plugins);
-
-  // Called on the file thread to get the data necessary to update the saved
-  // preferences.
-  void GetPreferencesDataOnFileThread();
 
   // Called on the UI thread with the plugin data to save the preferences.
   void OnUpdatePreferences(const std::vector<webkit::WebPluginInfo>& plugins);
@@ -166,10 +153,6 @@ class PluginPrefs : public RefcountedBrowserContextKeyedService {
 
   // Weak pointer, owned by the profile.
   PrefService* prefs_;
-
-  // PluginList to use for testing. If this is NULL, defaults to the global
-  // singleton.
-  webkit::npapi::PluginList* plugin_list_;
 
   PrefChangeRegistrar registrar_;
 

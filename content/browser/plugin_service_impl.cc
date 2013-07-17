@@ -793,8 +793,4 @@ void PluginServiceImpl::GetInternalPlugins(
   plugin_list_->GetInternalPlugins(plugins);
 }
 
-webkit::npapi::PluginList* PluginServiceImpl::GetPluginList() {
-  return plugin_list_;
-}
-
 }  // namespace content
