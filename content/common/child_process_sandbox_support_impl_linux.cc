@@ -14,7 +14,7 @@
 #include "base/sys_byteorder.h"
 #include "content/common/sandbox_linux.h"
 #include "third_party/WebKit/public/platform/linux/WebFontFamily.h"
-#include "third_party/WebKit/public/web/linux/WebFontRenderStyle.h"
+#include "third_party/WebKit/public/platform/linux/WebFontRenderStyle.h"
 
 namespace content {
 

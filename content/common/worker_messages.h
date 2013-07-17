@@ -16,7 +16,7 @@
 #include "content/common/content_export.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
-#include "third_party/WebKit/public/web/WebSharedWorker.h"
+#include "third_party/WebKit/public/web/WebContentSecurityPolicy.h"
 #include "url/gurl.h"
 
 // Singly-included section, not converted.

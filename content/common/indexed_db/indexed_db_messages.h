@@ -14,7 +14,6 @@
 #include "ipc/ipc_param_traits.h"
 #include "third_party/WebKit/public/platform/WebIDBCursor.h"
 #include "third_party/WebKit/public/platform/WebIDBDatabase.h"
-#include "third_party/WebKit/public/platform/WebIDBMetadata.h"
 
 #define IPC_MESSAGE_START IndexedDBMsgStart
 
@@ -257,7 +256,6 @@ IPC_STRUCT_BEGIN(IndexedDBMsg_CallbacksSuccessCursorPrefetch_Params)
   IPC_STRUCT_MEMBER(std::vector<std::string>, values)
 IPC_STRUCT_END()
 
-// metadata payload for WebIDBMetadata
 IPC_STRUCT_BEGIN(IndexedDBIndexMetadata)
   IPC_STRUCT_MEMBER(int64, id)
   IPC_STRUCT_MEMBER(string16, name)
