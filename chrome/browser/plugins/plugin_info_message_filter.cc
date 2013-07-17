@@ -23,7 +23,6 @@
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/plugin_service_filter.h"
 #include "url/gurl.h"
-#include "webkit/plugins/npapi/plugin_list.h"
 
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
 

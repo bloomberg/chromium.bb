@@ -184,9 +184,6 @@ bool ReadPlistPluginInfo(const base::FilePath& filename, CFBundleRef bundle,
 
 }  // namespace
 
-void PluginList::PlatformInit() {
-}
-
 bool PluginList::ReadWebPluginInfo(const base::FilePath &filename,
                                    WebPluginInfo* info) {
   // There are three ways to get information about plugin capabilities:

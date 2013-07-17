@@ -436,11 +436,6 @@ IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(MediaPlayerNew)) {
   TestPlugin("wmp_new.html");
 }
 
-// http://crbug.com/4809
-IN_PROC_BROWSER_TEST_F(PluginTest, DISABLED_MediaPlayerOld) {
-  TestPlugin("wmp_old.html");
-}
-
 // Disabled - http://crbug.com/44673
 IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(Real)) {
   TestPlugin("real.html");

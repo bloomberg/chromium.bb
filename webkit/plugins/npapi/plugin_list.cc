@@ -25,12 +25,10 @@
 namespace {
 
 using webkit::npapi::PluginList;
-typedef PluginList::CustomLazyInstanceTraits CustomLazyInstanceTraits;
 
 const char kApplicationOctetStream[] = "application/octet-stream";
 
-base::LazyInstance<PluginList, CustomLazyInstanceTraits> g_singleton =
-    LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<PluginList> g_singleton = LAZY_INSTANCE_INITIALIZER;
 
 bool AllowMimeTypeMismatch(const std::string& orig_mime_type,
                            const std::string& actual_mime_type) {
@@ -57,16 +55,6 @@ bool AllowMimeTypeMismatch(const std::string& orig_mime_type,
 
 namespace webkit {
 namespace npapi {
-
-struct PluginList::CustomLazyInstanceTraits
-    : base::DefaultLazyInstanceTraits<PluginList> {
-  static PluginList* New(void* instance) {
-    PluginList* plugin_list =
-        base::DefaultLazyInstanceTraits<PluginList>::New(instance);
-    plugin_list->PlatformInit();
-    return plugin_list;
-  }
-};
 
 // static
 PluginList* PluginList::Singleton() {
@@ -237,11 +225,7 @@ bool PluginList::ParseMimeTypes(
 }
 
 PluginList::PluginList()
-    :
-#if defined(OS_WIN)
-      dont_load_new_wmp_(false),
-#endif
-      loading_state_(LOADING_STATE_NEEDS_REFRESH),
+    : loading_state_(LOADING_STATE_NEEDS_REFRESH),
       plugins_discovery_disabled_(false) {
 }
 

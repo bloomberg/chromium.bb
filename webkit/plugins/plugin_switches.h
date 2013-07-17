@@ -13,10 +13,6 @@ extern const char kDebugPluginLoading[];
 extern const char kDisablePepper3d[];
 extern const char kPpapiFlashArgs[];
 
-#if defined(OS_WIN)
-extern const char kUseOldWMPPlugin[];
-#endif
-
 }  // namespace switches
 
 #endif  // WEBKIT_PLUGINS_PLUGIN_SWITCHES_H_

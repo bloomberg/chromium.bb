@@ -263,9 +263,6 @@ void UnwrapNSPluginWrapper(void **dl, base::FilePath* unwrapped_path) {
 
 }  // namespace
 
-void PluginList::PlatformInit() {
-}
-
 bool PluginList::ReadWebPluginInfo(const base::FilePath& filename,
                                    WebPluginInfo* info) {
   // The file to reference is:

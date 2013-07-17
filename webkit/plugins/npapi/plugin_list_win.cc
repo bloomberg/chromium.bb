@@ -7,7 +7,6 @@
 #include <set>
 
 #include "base/basictypes.h"
-#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/file_version_info.h"
 #include "base/file_version_info_win.h"
@@ -22,7 +21,6 @@
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
 #include "webkit/plugins/npapi/plugin_constants_win.h"
-#include "webkit/plugins/plugin_switches.h"
 
 namespace {
 
@@ -262,11 +260,6 @@ bool IsNewerVersion(const base::string16& a, const base::string16& b) {
 namespace webkit {
 namespace npapi {
 
-void PluginList::PlatformInit() {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  dont_load_new_wmp_ = command_line.HasSwitch(switches::kUseOldWMPPlugin);
-}
-
 bool PluginList::ReadWebPluginInfo(const base::FilePath& filename,
                                    webkit::WebPluginInfo* info) {
   // On windows, the way we get the mime types for the library is
@@ -445,9 +438,6 @@ bool PluginList::ShouldLoadPluginUsingPluginList(
   // Special WMP handling:
   // If both the new and old WMP plugins exist, only load the new one.
   if (filename == kNewWMPPlugin) {
-    if (dont_load_new_wmp_)
-      return false;
-
     for (size_t j = 0; j < plugins->size(); ++j) {
       if ((*plugins)[j].path.BaseName().value() == kOldWMPPlugin) {
         plugins->erase(plugins->begin() + j);

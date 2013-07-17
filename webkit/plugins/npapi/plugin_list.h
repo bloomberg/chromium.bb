@@ -48,9 +48,6 @@ struct PluginEntryPoints {
 // This object is thread safe.
 class PluginList {
  public:
-  // Custom traits that performs platform-dependent initialization
-  // when the instance is created.
-  struct CustomLazyInstanceTraits;
 
   // Gets the one instance of the PluginList.
   static PluginList* Singleton();
@@ -239,22 +236,11 @@ class PluginList {
   bool SupportsExtension(const webkit::WebPluginInfo& plugin,
                          const std::string& extension,
                          std::string* actual_mime_type);
-
-  //
-  // Platform functions
-  //
-
-  // Do any initialization.
-  void PlatformInit();
-
   //
   // Command-line switches
   //
 
 #if defined(OS_WIN)
-  // true if we shouldn't load the new WMP plugin.
-  bool dont_load_new_wmp_;
-
   // Gets plugin paths registered under HKCU\Software\MozillaPlugins and
   // HKLM\Software\MozillaPlugins.
   void GetPluginPathsFromRegistry(std::vector<base::FilePath>* plugins);
