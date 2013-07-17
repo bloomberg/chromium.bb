@@ -94,14 +94,19 @@ class AndroidTestEnvironment(DesktopTestEnvironment):
     os.putenv('TEST_HTTP_PORT', str(ANDROID_TEST_HTTP_PORT))
     os.putenv('TEST_HTTPS_PORT', str(ANDROID_TEST_HTTPS_PORT))
     self._adb = android_commands.AndroidCommands()
-    forwarder.Forwarder.Map(
+    forwarder.Forwarder.KillHost('Debug')
+    self._forwarder = forwarder.Forwarder(self._adb, 'Debug')
+    self._forwarder.Run(
         [(ANDROID_TEST_HTTP_PORT, ANDROID_TEST_HTTP_PORT),
          (ANDROID_TEST_HTTPS_PORT, ANDROID_TEST_HTTPS_PORT)],
-        self._adb)
+        valgrind_tools.BaseTool())
 
   # override
   def GlobalTearDown(self):
-    forwarder.Forwarder.UnmapAllDevicePorts(self._adb)
+    if self._adb is not None:
+      forwarder.Forwarder.KillDevice(self._adb, valgrind_tools.BaseTool())
+    if self._forwarder is not None:
+      self._forwarder.Close()
 
   # override
   def GetOS(self):
