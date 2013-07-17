@@ -114,7 +114,18 @@ def GetAttachedDevices():
   return devices
 
 
+def GetAttachedOfflineDevices():
+  """Returns a list of attached, offline android devices.
+
+  Returns: List of devices with status 'offline'.
+  """
+  re_device = re.compile('^([a-zA-Z0-9_:.-]+)\toffline$', re.MULTILINE)
+  return re_device.findall(cmd_helper.GetCmdOutput([constants.ADB_PATH,
+                                                    'devices']))
+
+
 def IsDeviceAttached(device):
+  """Return true if the device is attached and online."""
   return device in GetAttachedDevices()
 
 
@@ -330,6 +341,10 @@ class AndroidCommands(object):
     # other external storage) to be ready.
     self.WaitForDevicePm()
     self.WaitForSdCardReady(timeout)
+
+  def Shutdown(self):
+    """Shuts down the device."""
+    self._adb.SendCommand('reboot -p')
 
   def Uninstall(self, package):
     """Uninstalls the specified package from the device.
@@ -920,6 +935,24 @@ class AndroidCommands(object):
     assert build_type
     return build_type
 
+  def GetBuildProduct(self):
+    """Returns the build product of the device (e.g. maguro)."""
+    build_product = self.RunShellCommand('getprop ro.build.product')[0]
+    assert build_product
+    return build_product
+
+  def GetProductName(self):
+    """Returns the product name of the device (e.g. takju)."""
+    name = self.RunShellCommand('getprop ro.product.name')[0]
+    assert name
+    return name
+
+  def GetBuildFingerprint(self):
+    """Returns the build fingerprint of the device."""
+    build_fingerprint = self.RunShellCommand('getprop ro.build.fingerprint')[0]
+    assert build_fingerprint
+    return build_fingerprint
+
   def GetDescription(self):
     """Returns the description of the system.
 
@@ -934,6 +967,30 @@ class AndroidCommands(object):
     model = self.RunShellCommand('getprop ro.product.model')[0]
     assert model
     return model
+
+  def GetWifiIP(self):
+    """Returns the wifi IP on the device."""
+    wifi_ip = self.RunShellCommand('getprop dhcp.wlan0.ipaddress')[0]
+    assert wifi_ip
+    return wifi_ip
+
+  def GetSubscriberInfo(self):
+    """Returns the device subscriber info (e.g. GSM and device ID) as string."""
+    iphone_sub = self.RunShellCommand('dumpsys iphonesubinfo')
+    assert iphone_sub
+    return '\n'.join(iphone_sub)
+
+  def GetBatteryInfo(self):
+    """Returns the device battery info (e.g. status, level, etc) as string."""
+    battery = self.RunShellCommand('dumpsys battery')
+    assert battery
+    return '\n'.join(battery)
+
+  def GetSetupWizardStatus(self):
+    """Returns the status of the device setup wizard (e.g. DISABLED)."""
+    status = self.RunShellCommand('getprop ro.setupwizard.mode')[0]
+    assert status
+    return status
 
   def StartMonitoringLogcat(self, clear=True, logfile=None, filters=None):
     """Starts monitoring the output of logcat, for use with WaitForLogMatch.
