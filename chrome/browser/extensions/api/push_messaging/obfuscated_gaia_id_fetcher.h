@@ -45,6 +45,8 @@ class ObfuscatedGaiaIdFetcher : public OAuth2ApiCallFlow {
                           const std::string& refresh_token);
   virtual ~ObfuscatedGaiaIdFetcher();
 
+  static std::vector<std::string> GetScopes();
+
  protected:
   // OAuth2ApiCallFlow implementation
   virtual GURL CreateApiCallUrl() OVERRIDE;

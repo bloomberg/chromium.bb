@@ -15,6 +15,7 @@
 #include "chrome/browser/extensions/api/push_messaging/obfuscated_gaia_id_fetcher.h"
 #include "chrome/browser/extensions/api/push_messaging/push_messaging_invalidation_handler_delegate.h"
 #include "chrome/browser/extensions/extension_function.h"
+#include "chrome/browser/signin/oauth2_token_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -53,7 +54,8 @@ class PushMessagingEventRouter
 class PushMessagingGetChannelIdFunction
     : public AsyncExtensionFunction,
       public ObfuscatedGaiaIdFetcher::Delegate,
-    public content::NotificationObserver {
+      public OAuth2TokenService::Observer,
+      public OAuth2TokenService::Consumer {
  public:
   PushMessagingGetChannelIdFunction();
 
@@ -73,12 +75,22 @@ class PushMessagingGetChannelIdFunction
                           const std::string& error_message);
 
   // Begin the async fetch of the Gaia ID.
-  bool StartGaiaIdFetch();
+  void StartGaiaIdFetch(const std::string& access_token);
 
-  // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  // Begin the async fetch of the access token for Gaia ID fetcher.
+  void StartAccessTokenFetch();
+
+  // OAuth2TokenService::Observer implementation.
+  virtual void OnRefreshTokenAvailable(const std::string& account_id) OVERRIDE;
+
+  // OAuth2TokenService::Consumer implementation.
+  virtual void OnGetTokenSuccess(
+      const OAuth2TokenService::Request* request,
+      const std::string& access_token,
+      const base::Time& expiration_time) OVERRIDE;
+  virtual void OnGetTokenFailure(
+      const OAuth2TokenService::Request* request,
+      const GoogleServiceAuthError& error) OVERRIDE;
 
   // Check if the user is signed into chrome.
   bool IsUserLoggedIn() const;
@@ -90,9 +102,7 @@ class PushMessagingGetChannelIdFunction
       const GoogleServiceAuthError& error) OVERRIDE;
   scoped_ptr<ObfuscatedGaiaIdFetcher> fetcher_;
   bool interactive_;
-
-  // We use this to register for notifications if the login attempt succeeds.
-  content::NotificationRegistrar registrar_;
+  scoped_ptr<OAuth2TokenService::Request> fetcher_access_token_request_;
 
   DISALLOW_COPY_AND_ASSIGN(PushMessagingGetChannelIdFunction);
 };

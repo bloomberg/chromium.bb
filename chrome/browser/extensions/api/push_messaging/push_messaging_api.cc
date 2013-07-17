@@ -23,8 +23,8 @@
 #include "chrome/browser/invalidation/invalidation_service.h"
 #include "chrome/browser/invalidation/invalidation_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/token_service.h"
-#include "chrome/browser/signin/token_service_factory.h"
+#include "chrome/browser/signin/profile_oauth2_token_service.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/common/extensions/api/push_messaging.h"
 #include "chrome/common/extensions/extension.h"
@@ -41,6 +41,8 @@ using content::BrowserThread;
 namespace {
 const char kChannelIdSeparator[] = "/";
 const char kUserNotSignedIn[] = "The user is not signed in.";
+const char kUserAccessTokenFailure[] =
+    "Cannot obtain access token for the user.";
 const char kTokenServiceNotAvailable[] = "Failed to get token service.";
 const int kObfuscatedGaiaIdTimeoutInDays = 30;
 }
@@ -104,16 +106,9 @@ bool PushMessagingGetChannelIdFunction::RunImpl() {
 
   if (!IsUserLoggedIn()) {
     if (interactive_) {
-      LoginUIService* login_ui_service =
-          LoginUIServiceFactory::GetForProfile(profile());
-      TokenService* token_service = TokenServiceFactory::GetForProfile(
-          profile());
-      // Register for token available so we can tell when the logon is done.
-      // Observe() will be called if token is issued.
-      registrar_.Add(this,
-                     chrome::NOTIFICATION_TOKEN_AVAILABLE,
-                     content::Source<TokenService>(token_service));
-      login_ui_service->ShowLoginPopup();
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile())
+          ->AddObserver(this);
+      LoginUIServiceFactory::GetForProfile(profile())->ShowLoginPopup();
       return true;
     } else {
       error_ = kUserNotSignedIn;
@@ -122,42 +117,55 @@ bool PushMessagingGetChannelIdFunction::RunImpl() {
     }
   }
 
-  return StartGaiaIdFetch();
+  StartAccessTokenFetch();
+  return true;
 }
 
-// If we are in an interactive login and it succeeds, start token fetch.
-void PushMessagingGetChannelIdFunction::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_TOKEN_AVAILABLE, type);
-
-  TokenService::TokenAvailableDetails* token_details =
-      content::Details<TokenService::TokenAvailableDetails>(details).ptr();
-  if (token_details->service() == GaiaConstants::kGaiaOAuth2LoginRefreshToken) {
-    TokenService* token_service = TokenServiceFactory::GetForProfile(profile());
-    registrar_.Remove(this,
-                      chrome::NOTIFICATION_TOKEN_AVAILABLE,
-                      content::Source<TokenService>(token_service));
-    // If we got a token, the logon succeeded, continue fetching Obfuscated
-    // Gaia Id.
-    if (!StartGaiaIdFetch())
-      SendResponse(false);
-  }
+void PushMessagingGetChannelIdFunction::StartAccessTokenFetch() {
+  std::vector<std::string> scope_vector =
+      extensions::ObfuscatedGaiaIdFetcher::GetScopes();
+  OAuth2TokenService::ScopeSet scopes(scope_vector.begin(), scope_vector.end());
+  fetcher_access_token_request_ =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile())
+          ->StartRequest(scopes, this);
 }
 
-bool PushMessagingGetChannelIdFunction::StartGaiaIdFetch() {
+void PushMessagingGetChannelIdFunction::OnRefreshTokenAvailable(
+    const std::string& account_id) {
+  ProfileOAuth2TokenServiceFactory::GetForProfile(profile())
+      ->RemoveObserver(this);
+  StartAccessTokenFetch();
+}
+
+void PushMessagingGetChannelIdFunction::OnGetTokenSuccess(
+    const OAuth2TokenService::Request* request,
+    const std::string& access_token,
+    const base::Time& expiration_time) {
+  DCHECK_EQ(fetcher_access_token_request_.get(), request);
+  fetcher_access_token_request_.reset();
+
+  StartGaiaIdFetch(access_token);
+}
+
+void PushMessagingGetChannelIdFunction::OnGetTokenFailure(
+    const OAuth2TokenService::Request* request,
+    const GoogleServiceAuthError& error) {
+  DCHECK_EQ(fetcher_access_token_request_.get(), request);
+  fetcher_access_token_request_.reset();
+
+  // TODO(fgorski): We are currently ignoring the error passed in upon failure.
+  // It should be revisited when we are working on improving general error
+  // handling for the identity related code.
+  error_ = kUserAccessTokenFailure;
+  ReportResult(std::string(), error_);
+}
+
+void PushMessagingGetChannelIdFunction::StartGaiaIdFetch(
+    const std::string& access_token) {
   // Start the async fetch of the Gaia Id.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   net::URLRequestContextGetter* context = profile()->GetRequestContext();
-  TokenService* token_service = TokenServiceFactory::GetForProfile(profile());
-  if (!token_service) {
-    ReportResult(std::string(), std::string(kTokenServiceNotAvailable));
-    return false;
-  }
-  const std::string& refresh_token =
-      token_service->GetOAuth2LoginRefreshToken();
-  fetcher_.reset(new ObfuscatedGaiaIdFetcher(context, this, refresh_token));
+  fetcher_.reset(new ObfuscatedGaiaIdFetcher(context, this, access_token));
 
   // Get the token cache and see if we have already cached a Gaia Id.
   TokenCacheService* token_cache =
@@ -169,21 +177,16 @@ bool PushMessagingGetChannelIdFunction::StartGaiaIdFetch() {
       token_cache->RetrieveToken(GaiaConstants::kObfuscatedGaiaId);
   if (!gaia_id.empty()) {
     ReportResult(gaia_id, std::string());
-    return true;
+    return;
   }
 
   fetcher_->Start();
-
-  // Will finish asynchronously.
-  return true;
 }
 
 // Check if the user is logged in.
 bool PushMessagingGetChannelIdFunction::IsUserLoggedIn() const {
-  TokenService* token_service = TokenServiceFactory::GetForProfile(profile());
-  if (!token_service)
-    return false;
-  return token_service->HasOAuthLoginToken();
+  return ProfileOAuth2TokenServiceFactory::GetForProfile(profile())
+      ->RefreshTokenIsAvailable();
 }
 
 void PushMessagingGetChannelIdFunction::ReportResult(
