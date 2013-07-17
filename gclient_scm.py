@@ -382,6 +382,7 @@ class GitWrapper(SCMWrapper):
     # See if the url has changed (the unittests use git://foo for the url, let
     # that through).
     current_url = self._Capture(['config', 'remote.origin.url'])
+    return_early = False
     # TODO(maruel): Delete url != 'git://foo' since it's just to make the
     # unit test pass. (and update the comment above)
     # Skip url auto-correction if remote.origin.gclient-auto-fix-url is set.
@@ -398,6 +399,13 @@ class GitWrapper(SCMWrapper):
       # Switch over to the new upstream
       self._Run(['remote', 'set-url', 'origin', url], options)
       self._FetchAndReset(revision, file_list, options)
+      return_early = True
+
+    # Need to do this in the normal path as well as in the post-remote-switch
+    # path.
+    self._PossiblySwitchCache(url, options)
+
+    if return_early:
       return
 
     if not self._IsValidGitRepo():
@@ -735,6 +743,44 @@ class GitWrapper(SCMWrapper):
       url += '.git'
     return url
 
+  def _PossiblySwitchCache(self, url, options):
+    """Handles switching a repo from with-cache to direct, or vice versa.
+
+    When we go from direct to with-cache, the remote url changes from the
+    'real' url to the local file url (in cache_dir). Therefore, this function
+    assumes that |url| points to the correctly-switched-over local file url, if
+    we're in cache_mode.
+
+    When we go from with-cache to direct, assume that the normal url-switching
+    code already flipped the remote over, and we just need to repack and break
+    the dependency to the cache.
+    """
+
+    altfile = os.path.join(
+        self.checkout_path, '.git', 'objects', 'info', 'alternates')
+    if self.cache_dir:
+      if not os.path.exists(altfile):
+        try:
+          with open(altfile, 'wa') as f:
+            f.write(os.path.join(url, 'objects'))
+          # pylint: disable=C0301
+          # This dance is necessary according to emperical evidence, also at:
+          # http://lists-archives.com/git/713652-retrospectively-add-alternates-to-a-repository.html
+          self._Run(['repack', '-ad'], options)
+          self._Run(['repack', '-adl'], options)
+        except Exception:
+          # If something goes wrong, try to remove the altfile so we'll go down
+          # this path again next time.
+          try:
+            os.remove(altfile)
+          except Exception:
+            pass
+          raise
+    else:
+      if os.path.exists(altfile):
+        self._Run(['repack', '-a'], options)
+        os.remove(altfile)
+
   def _CreateOrUpdateCache(self, url, options):
     """Make a new git mirror or update existing mirror for |url|, and return the
     mirror URI to clone from.
@@ -748,6 +794,16 @@ class GitWrapper(SCMWrapper):
     folder = os.path.join(
       self.cache_dir,
       self._NormalizeGitURL(url).replace('-', '--').replace('/', '-'))
+    altfile = os.path.join(folder, 'objects', 'info', 'alternates')
+
+    # If we're bringing an old cache up to date or cloning a new cache, and the
+    # existing repo is currently a direct clone, use its objects to help out
+    # the fetch here.
+    checkout_objects = os.path.join(self.checkout_path, '.git', 'objects')
+    checkout_altfile = os.path.join(checkout_objects, 'info', 'alternates')
+    use_reference = (
+        os.path.exists(checkout_objects) and
+        not os.path.exists(checkout_altfile))
 
     v = ['-v'] if options.verbose else []
     filter_fn = lambda l: '[up to date]' not in l
@@ -755,8 +811,13 @@ class GitWrapper(SCMWrapper):
       gclient_utils.safe_makedirs(self.cache_dir)
       if not os.path.exists(os.path.join(folder, 'config')):
         gclient_utils.rmtree(folder)
-        self._Run(['clone'] + v + ['-c', 'core.deltaBaseCacheLimit=2g',
-                                   '--progress', '--mirror', url, folder],
+        cmd = ['clone'] + v + ['-c', 'core.deltaBaseCacheLimit=2g',
+                               '--progress', '--mirror']
+
+        if use_reference:
+          cmd += ['--reference', os.path.abspath(self.checkout_path)]
+
+        self._Run(cmd + [url, folder],
                   options, git_filter=True, filter_fn=filter_fn,
                   cwd=self.cache_dir)
       else:
@@ -768,10 +829,20 @@ class GitWrapper(SCMWrapper):
                                      cwd=folder)
         assert self._NormalizeGitURL(existing_url) == self._NormalizeGitURL(url)
 
+        if use_reference:
+          with open(altfile, 'w') as f:
+            f.write(os.path.abspath(checkout_objects))
+
         # Would normally use `git remote update`, but it doesn't support
         # --progress, so use fetch instead.
         self._Run(['fetch'] + v + ['--multiple', '--progress', '--all'],
                   options, git_filter=True, filter_fn=filter_fn, cwd=folder)
+
+      # If the clone has an object dependency on the existing repo, break it
+      # with repack and remove the linkage.
+      if os.path.exists(altfile):
+        self._Run(['repack', '-a'], options, cwd=folder)
+        os.remove(altfile)
     return folder
 
   def _Clone(self, revision, url, options):
