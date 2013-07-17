@@ -143,6 +143,7 @@ def yield_results(swarm_base_url, test_keys, timeout, max_threads):
           # Pop the last entry, there's no such shard.
           shards_remaining.pop()
         print 'Remaining shards %s' % shards_remaining
+        print 'Remaining results %d' % results_remaining
     finally:
       # Done, kill the remaining threads.
       should_stop.set()
