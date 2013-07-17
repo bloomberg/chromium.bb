@@ -1894,7 +1894,7 @@ bool RenderText::computeCanUseSimpleFontCodePath() const
 {
     if (isAllASCII() || m_text.is8Bit())
         return true;
-    return Font::characterRangeCodePath(bloatedCharacters(), length()) == Font::Simple;
+    return Font::characterRangeCodePath(characters16(), length()) == Font::Simple;
 }
 
 #ifndef NDEBUG
