@@ -16,6 +16,8 @@
 
 namespace media {
 
+static const int kDefaultDurationInMs = 10000;
+
 // Mock of MediaPlayerManager for testing purpose
 class MockMediaPlayerManager : public MediaPlayerManager {
  public:
@@ -104,6 +106,7 @@ class MediaSourcePlayerTest : public testing::Test {
     params.audio_channels = 2;
     params.audio_sampling_rate = 44100;
     params.is_audio_encrypted = false;
+    params.duration_ms = kDefaultDurationInMs;
     scoped_refptr<DecoderBuffer> buffer = ReadTestDataFile("vorbis-extradata");
     params.audio_extra_data = std::vector<uint8>(
         buffer->GetData(),
@@ -116,6 +119,7 @@ class MediaSourcePlayerTest : public testing::Test {
     params.video_codec = kCodecVP8;
     params.video_size = gfx::Size(320, 240);
     params.is_video_encrypted = false;
+    params.duration_ms = kDefaultDurationInMs;
     Start(params);
   }
 
@@ -186,6 +190,7 @@ TEST_F(MediaSourcePlayerTest, StartAudioDecoderWithInvalidConfig) {
   params.audio_channels = 2;
   params.audio_sampling_rate = 44100;
   params.is_audio_encrypted = false;
+  params.duration_ms = kDefaultDurationInMs;
   uint8 invalid_codec_data[] = { 0x00, 0xff, 0xff, 0xff, 0xff };
   params.audio_extra_data.insert(params.audio_extra_data.begin(),
                                  invalid_codec_data, invalid_codec_data + 4);
@@ -290,6 +295,7 @@ TEST_F(MediaSourcePlayerTest, StartAfterSeekFinish) {
   params.audio_channels = 2;
   params.audio_sampling_rate = 44100;
   params.is_audio_encrypted = false;
+  params.duration_ms = kDefaultDurationInMs;
   player_->DemuxerReady(params);
   EXPECT_EQ(NULL, GetMediaDecoderJob(true));
   EXPECT_EQ(0, manager_->num_requests());
@@ -360,6 +366,7 @@ TEST_F(MediaSourcePlayerTest, DecoderJobsCannotStartWithoutAudio) {
   params.video_codec = kCodecVP8;
   params.video_size = gfx::Size(320, 240);
   params.is_video_encrypted = false;
+  params.duration_ms = kDefaultDurationInMs;
   Start(params);
   EXPECT_EQ(0, manager_->num_requests());
 
