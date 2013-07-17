@@ -5,7 +5,7 @@
 #include "cc/test/fake_output_surface.h"
 
 #include "base/bind.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "cc/output/compositor_frame_ack.h"
 #include "cc/output/output_surface_client.h"
 #include "testing/gtest/include/gtest/gtest.h"

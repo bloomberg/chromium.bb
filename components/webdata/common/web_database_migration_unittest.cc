@@ -7,7 +7,7 @@
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/guid.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"

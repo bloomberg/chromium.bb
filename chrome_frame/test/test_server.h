@@ -41,7 +41,7 @@
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/files/memory_mapped_file.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "net/socket/stream_listen_socket.h"
 
 namespace test_server {

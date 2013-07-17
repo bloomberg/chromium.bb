@@ -7,7 +7,7 @@
 #include <string>
 
 #include "base/command_line.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/threading/thread_id_name_manager.h"
 #include "cc/base/switches.h"
 #include "cc/test/paths.h"

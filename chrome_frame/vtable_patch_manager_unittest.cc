@@ -8,11 +8,11 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/threading/thread.h"
 #include "base/win/scoped_handle.h"
-#include "gtest/gtest.h"
 #include "gmock/gmock.h"
+#include "gtest/gtest.h"
 
 namespace {
 // GMock names we use.

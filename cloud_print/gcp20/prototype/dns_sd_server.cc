@@ -9,7 +9,7 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
 #include "cloud_print/gcp20/prototype/dns_packet_parser.h"
 #include "cloud_print/gcp20/prototype/dns_response_builder.h"

@@ -11,7 +11,7 @@
 #include "base/bind.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "cc/output/compositor_frame.h"

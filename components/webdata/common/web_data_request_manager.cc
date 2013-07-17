@@ -5,7 +5,7 @@
 #include "components/webdata/common/web_data_request_manager.h"
 
 #include "base/bind.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 
 ////////////////////////////////////////////////////////////////////////////////

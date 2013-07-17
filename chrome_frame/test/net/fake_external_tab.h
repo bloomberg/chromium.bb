@@ -9,7 +9,7 @@
 
 #include "base/cancelable_callback.h"
 #include "base/files/file_path.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/process.h"
 #include "base/win/scoped_handle.h"
 #include "chrome/browser/browser_process_impl.h"

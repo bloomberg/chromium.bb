@@ -8,7 +8,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"

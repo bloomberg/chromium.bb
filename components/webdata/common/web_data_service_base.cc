@@ -5,7 +5,7 @@
 #include "components/webdata/common/web_data_service_base.h"
 
 #include "base/bind.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "base/threading/thread.h"
 #include "components/webdata/common/web_database_service.h"

@@ -7,7 +7,7 @@
 #include "base/command_line.h"
 #include "base/format_macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
 #include "components/autofill/content/browser/autocheckout/whitelist_manager.h"
 #include "components/autofill/core/browser/autofill_metrics.h"

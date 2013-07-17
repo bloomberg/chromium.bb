@@ -6,7 +6,7 @@
 #define COMPONENTS_WEBDATA_COMMON_WEB_DATA_SERVICE_TEST_UTIL_H__
 
 #include "base/basictypes.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "chrome/browser/webdata/token_web_data.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"

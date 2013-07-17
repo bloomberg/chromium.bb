@@ -13,7 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "cc/base/cc_export.h"
 #include "cc/base/scoped_ptr_hash_map.h"
 
