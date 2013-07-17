@@ -5,6 +5,7 @@
 #ifndef CC_BASE_MATH_UTIL_H_
 #define CC_BASE_MATH_UTIL_H_
 
+#include <algorithm>
 #include <cmath>
 
 #include "base/logging.h"
@@ -77,6 +78,10 @@ class CC_EXPORT MathUtil {
   }
   static double Round(double d) {
     return (d > 0.0) ? std::floor(d + 0.5) : std::ceil(d - 0.5);
+  }
+
+  template <typename T> static T ClampToRange(T value, T min, T max) {
+    return std::min(std::max(value, min), max);
   }
 
   // Background: Existing transform code does not do the right thing in

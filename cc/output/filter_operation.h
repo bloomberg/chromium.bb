@@ -151,6 +151,16 @@ class CC_EXPORT FilterOperation {
     zoom_inset_ = inset;
   }
 
+  // Given two filters of the same type, returns a filter operation created by
+  // linearly interpolating a |progress| fraction from |from| to |to|. If either
+  // |from| or |to| (but not both) is null, it is treated as a no-op filter of
+  // the same type as the other given filter. If both |from| and |to| are null,
+  // or if |from| and |to| are non-null but of different types, returns a
+  // no-op filter.
+  static FilterOperation Blend(const FilterOperation* from,
+                               const FilterOperation* to,
+                               double progress);
+
  private:
   FilterOperation(FilterType type, float amount);
 

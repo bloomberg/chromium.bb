@@ -112,4 +112,37 @@ bool FilterOperations::HasFilterThatAffectsOpacity() const {
   return false;
 }
 
+FilterOperations FilterOperations::Blend(const FilterOperations& from,
+                                         double progress) const {
+  FilterOperations blended_filters;
+  if (from.size() == 0) {
+    for (size_t i = 0; i < size(); i++)
+      blended_filters.Append(FilterOperation::Blend(NULL, &at(i), progress));
+    return blended_filters;
+  }
+
+  if (size() == 0) {
+    for (size_t i = 0; i < from.size(); i++) {
+      blended_filters.Append(
+          FilterOperation::Blend(&from.at(i), NULL, progress));
+    }
+    return blended_filters;
+  }
+
+  if (from.size() != size())
+    return *this;
+
+  for (size_t i = 0; i < size(); i++) {
+    if (from.at(i).type() != at(i).type())
+      return *this;
+  }
+
+  for (size_t i = 0; i < size(); i++) {
+    blended_filters.Append(
+        FilterOperation::Blend(&from.at(i), &at(i), progress));
+  }
+
+  return blended_filters;
+}
+
 }  // namespace cc

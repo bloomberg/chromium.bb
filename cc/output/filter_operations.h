@@ -44,10 +44,23 @@ class CC_EXPORT FilterOperations {
     return operations_.size();
   }
 
-  FilterOperation at(size_t index) const {
+  const FilterOperation& at(size_t index) const {
     DCHECK_LT(index, size());
     return operations_[index];
   }
+
+  // If |from| is of the same size as this, where in each position, the filter
+  // in |from| is of the same type as the filter in this, returns a
+  // FilterOperations formed by linearly interpolating at each position a
+  // |progress| fraction of the way from the filter in |from|
+  // to the filter in this. If either |from| or this is an empty sequence,
+  // it is treated as a sequence of the same length as the other sequence,
+  // where the filter at each position is a no-op filter of the same type
+  // as the filter in that position in the other sequence. Otherwise, if
+  // both |from| and this are non-empty sequences but are either of different
+  // lengths or if there is a type mismatch at some position, returns a copy
+  // of this.
+  FilterOperations Blend(const FilterOperations& from, double progress) const;
 
  private:
   std::vector<FilterOperation> operations_;
