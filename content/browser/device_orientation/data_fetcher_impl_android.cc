@@ -176,6 +176,9 @@ void DataFetcherImplAndroid::CheckBufferReadyToRead() {
       received_motion_data_[RECEIVED_MOTION_DATA_ACCELERATION_INCL_GRAVITY] +
       received_motion_data_[RECEIVED_MOTION_DATA_ROTATION_RATE] ==
       number_active_device_motion_sensors_) {
+    device_motion_buffer_->seqlock.WriteBegin();
+    device_motion_buffer_->data.interval = kPeriodInMilliseconds;
+    device_motion_buffer_->seqlock.WriteEnd();
     SetBufferReadyStatus(true);
   }
 }

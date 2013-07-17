@@ -14,6 +14,8 @@ namespace content {
 
 namespace {
 
+const int kPeriodInMilliseconds = 100;
+
 class FakeDataFetcherImplAndroid : public DataFetcherImplAndroid {
  public:
   FakeDataFetcherImplAndroid() { }
@@ -63,6 +65,7 @@ TEST_F(AndroidDataFetcherTest, ThreeDeviceMotionSensorsActive) {
 
   fetcher.GotRotationRate(0, 0, 1, 2, 3);
   ASSERT_TRUE(buffer_->data.allAvailableSensorsAreActive);
+  ASSERT_EQ(kPeriodInMilliseconds, buffer_->data.interval);
 
   fetcher.StopFetchingDeviceMotionData();
   ASSERT_FALSE(buffer_->data.allAvailableSensorsAreActive);
@@ -81,6 +84,7 @@ TEST_F(AndroidDataFetcherTest, TwoDeviceMotionSensorsActive) {
 
   fetcher.GotAccelerationIncludingGravity(0, 0, 1, 2, 3);
   ASSERT_TRUE(buffer_->data.allAvailableSensorsAreActive);
+  ASSERT_EQ(kPeriodInMilliseconds, buffer_->data.interval);
 
   fetcher.StopFetchingDeviceMotionData();
   ASSERT_FALSE(buffer_->data.allAvailableSensorsAreActive);
@@ -93,6 +97,7 @@ TEST_F(AndroidDataFetcherTest, ZeroDeviceMotionSensorsActive) {
 
   fetcher.StartFetchingDeviceMotionData(buffer_.get());
   ASSERT_TRUE(buffer_->data.allAvailableSensorsAreActive);
+  ASSERT_EQ(kPeriodInMilliseconds, buffer_->data.interval);
 
   fetcher.StopFetchingDeviceMotionData();
   ASSERT_FALSE(buffer_->data.allAvailableSensorsAreActive);
