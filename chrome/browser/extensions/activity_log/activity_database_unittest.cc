@@ -99,7 +99,6 @@ class ActivityDatabaseTest : public ChromeRenderViewHostTestHarness {
 
 };
 
-
 // Check that the database is initialized properly.
 TEST_F(ActivityDatabaseTest, Init) {
   base::ScopedTempDir temp_dir;

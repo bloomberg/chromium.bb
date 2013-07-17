@@ -75,14 +75,16 @@ void ActivityDatabase::Init(const base::FilePath& db_name) {
   base::mac::SetFileBackupExclusion(db_name);
 #endif
 
-  db_.Preload();
-
   if (!delegate_->OnDatabaseInit(&db_))
     return LogInitFailure();
 
   sql::InitStatus stat = committer.Commit() ? sql::INIT_OK : sql::INIT_FAILURE;
   if (stat != sql::INIT_OK)
     return LogInitFailure();
+
+  // Pre-loads the first <cache-size> pages into the cache.
+  // Doesn't do anything if the database is new.
+  db_.Preload();
 
   valid_db_ = true;
   timer_.Start(FROM_HERE,
@@ -132,13 +134,13 @@ void ActivityDatabase::SetBatchModeForTesting(bool batch_mode) {
   batch_mode_ = batch_mode;
 }
 
-scoped_ptr<std::vector<scoped_refptr<Action> > > ActivityDatabase::GetActions(
+scoped_ptr<ActivityDatabase::ActionVector> ActivityDatabase::GetActions(
     const std::string& extension_id, const int days_ago) {
   if (BrowserThread::IsMessageLoopValid(BrowserThread::DB))
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   DCHECK_GE(days_ago, 0);
-  scoped_ptr<std::vector<scoped_refptr<Action> > >
-      actions(new std::vector<scoped_refptr<Action> >());
+
+  scoped_ptr<ActionVector> actions(new ActionVector());
   if (!valid_db_)
     return actions.Pass();
   // Compute the time bounds for that day.
@@ -169,8 +171,7 @@ scoped_ptr<std::vector<scoped_refptr<Action> > > ActivityDatabase::GetActions(
   dom_statement.BindInt64(1, early_bound);
   dom_statement.BindInt64(2, late_bound);
   while (dom_statement.is_valid() && dom_statement.Step()) {
-    scoped_refptr<DOMAction> action = new DOMAction(dom_statement);
-    actions->push_back(action);
+    actions->push_back(new DOMAction(dom_statement));
   }
   // Get the APIActions.
   std::string api_str = base::StringPrintf("SELECT * FROM %s "
@@ -183,8 +184,7 @@ scoped_ptr<std::vector<scoped_refptr<Action> > > ActivityDatabase::GetActions(
   api_statement.BindInt64(1, early_bound);
   api_statement.BindInt64(2, late_bound);
   while (api_statement.is_valid() && api_statement.Step()) {
-    scoped_refptr<APIAction> action = new APIAction(api_statement);
-    actions->push_back(action);
+    actions->push_back(new APIAction(api_statement));
   }
   // Get the BlockedActions.
   std::string blocked_str = base::StringPrintf("SELECT * FROM %s "
@@ -197,8 +197,7 @@ scoped_ptr<std::vector<scoped_refptr<Action> > > ActivityDatabase::GetActions(
   blocked_statement.BindInt64(1, early_bound);
   blocked_statement.BindInt64(2, late_bound);
   while (blocked_statement.is_valid() && blocked_statement.Step()) {
-    scoped_refptr<BlockedAction> action = new BlockedAction(blocked_statement);
-    actions->push_back(action);
+    actions->push_back(new BlockedAction(blocked_statement));
   }
   // Sort by time (from newest to oldest).
   std::sort(actions->begin(), actions->end(), SortActionsByTime);

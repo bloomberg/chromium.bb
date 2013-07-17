@@ -9,6 +9,7 @@
 #include <vector>
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/synchronization/lock.h"
 #include "base/timer/timer.h"
@@ -84,6 +85,9 @@ class ActivityDatabase {
     virtual void OnDatabaseClose() = 0;
   };
 
+  // Used to simplify the return type of GetActions.
+  typedef std::vector<scoped_refptr<Action> > ActionVector;
+
   // Need to call Init to actually use the ActivityDatabase.  The Delegate
   // provides hooks for an ActivityLogPolicy to control the database schema and
   // reads/writes.
@@ -96,12 +100,10 @@ class ActivityDatabase {
   // The ActivityLog should call this to kill the ActivityDatabase.
   void Close();
 
-  void LogInitFailure();
-
-  // Record a DOMction in the database.
+  // Record a DOMAction in the database.
   void RecordDOMAction(scoped_refptr<DOMAction> action);
 
-  // Record a APIAction in the database.
+  // Record an APIAction in the database.
   void RecordAPIAction(scoped_refptr<APIAction> action);
 
   // Record a BlockedAction in the database.
@@ -110,26 +112,28 @@ class ActivityDatabase {
   // Record an Action in the database.
   void RecordAction(scoped_refptr<Action> action);
 
+  // Turns off batch I/O writing mode. This should only be used in unit tests,
+  // browser tests, or in our special --enable-extension-activity-log-testing
+  // policy state.
+  void SetBatchModeForTesting(bool batch_mode);
+
   // Gets all actions for a given extension for the specified day. 0 = today,
   // 1 = yesterday, etc. Only returns 1 day at a time. Actions are sorted from
   // newest to oldest.
-  scoped_ptr<std::vector<scoped_refptr<Action> > > GetActions(
-      const std::string& extension_id, const int days_ago);
-
-  // Handle errors in database writes.
-  void DatabaseErrorCallback(int error, sql::Statement* stmt);
+  scoped_ptr<ActionVector> GetActions(const std::string& extension_id,
+                                      const int days_ago);
 
   bool is_db_valid() const { return valid_db_; }
-
-  // For unit testing only.
-  void SetBatchModeForTesting(bool batch_mode);
-  void SetClockForTesting(base::Clock* clock);
-  void SetTimerForTesting(int milliseconds);
 
  private:
   // This should never be invoked by another class. Use Close() to order a
   // suicide.
   virtual ~ActivityDatabase();
+
+  // Used by the Init() method as a convenience for handling a failied
+  // database initialization attempt. Prints an error and puts us in the soft
+  // failure state.
+  void LogInitFailure();
 
   sql::InitStatus InitializeTable(const char* table_name,
                                   const char* table_structure);
@@ -137,7 +141,6 @@ class ActivityDatabase {
   // When we're in batched mode (which is on by default), we write to the db
   // every X minutes instead of on every API call. This prevents the annoyance
   // of writing to disk multiple times a second.
-  void StartTimer();
   void RecordBatchedActions();
 
   // If an error is unrecoverable or occurred while we were trying to close
@@ -150,8 +153,15 @@ class ActivityDatabase {
   // or changes to it.
   void SoftFailureClose();
 
+  // Handle errors in database writes. For a serious & permanent error, it
+  // invokes HardFailureClose(); for a less serious/permanent error, it invokes
+  // SoftFailureClose().
+  void DatabaseErrorCallback(int error, sql::Statement* stmt);
+
   // For unit testing only.
   void RecordBatchedActionsWhileTesting();
+  void SetClockForTesting(base::Clock* clock);
+  void SetTimerForTesting(int milliseconds);
 
   // A reference a Delegate for policy-specific database behavior.  See the
   // top-level comment for ActivityDatabase for comments on cleanup.
@@ -166,6 +176,8 @@ class ActivityDatabase {
   bool already_closed_;
   bool did_init_;
 
+  FRIEND_TEST_ALL_PREFIXES(ActivityDatabaseTest, BatchModeOff);
+  FRIEND_TEST_ALL_PREFIXES(ActivityDatabaseTest, BatchModeOn);
   DISALLOW_COPY_AND_ASSIGN(ActivityDatabase);
 };
 
