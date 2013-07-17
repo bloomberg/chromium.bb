@@ -93,7 +93,7 @@ public:
     void advance();
     
     int length() const { return m_textLength; }
-    const UChar* characters() const { return m_textCharacters ? m_textCharacters : m_text.bloatedCharacters() + startOffset(); }
+    const UChar* bloatedCharacters() const { return m_textCharacters ? m_textCharacters : m_text.bloatedCharacters() + startOffset(); }
     UChar characterAt(unsigned index) const;
     void appendTextToStringBuilder(StringBuilder&) const;
     
@@ -208,7 +208,7 @@ public:
     void advance();
     
     int length() const { return m_textLength; }
-    const UChar* characters() const { return m_textCharacters; }
+    const UChar* bloatedCharacters() const { return m_textCharacters; }
     
     PassRefPtr<Range> range() const;
         
@@ -278,7 +278,7 @@ public:
     bool atEnd() const { return m_textIterator.atEnd(); }
     
     int length() const { return m_textIterator.length() - m_runOffset; }
-    const UChar* characters() const { return m_textIterator.characters() + m_runOffset; }
+    const UChar* bloatedCharacters() const { return m_textIterator.bloatedCharacters() + m_runOffset; }
     String string(int numChars);
     
     int characterOffset() const { return m_offset; }
@@ -321,7 +321,7 @@ public:
     void advance();
     
     int length() const;
-    const UChar* characters() const;
+    const UChar* bloatedCharacters() const;
     
     // Range of the text we're currently returning
     PassRefPtr<Range> range() const { return m_range; }

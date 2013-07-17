@@ -436,7 +436,7 @@ void TextIterator::appendTextToStringBuilder(StringBuilder& builder) const
     if (!m_textCharacters)
         builder.append(string(), startOffset(), length());
     else
-        builder.append(characters(), length());
+        builder.append(bloatedCharacters(), length());
 }
 
 bool TextIterator::handleTextNode()
@@ -1409,7 +1409,7 @@ String CharacterIterator::string(int numChars)
     result.reserveInitialCapacity(numChars);
     while (numChars > 0 && !atEnd()) {
         int runSize = min(numChars, length());
-        result.append(characters(), runSize);
+        result.append(bloatedCharacters(), runSize);
         numChars -= runSize;
         advance(runSize);
     }
@@ -1541,18 +1541,18 @@ void WordAwareIterator::advance()
     
     while (1) {
         // If this chunk ends in whitespace we can just use it as our chunk.
-        if (isSpaceOrNewline(m_textIterator.characters()[m_textIterator.length() - 1]))
+        if (isSpaceOrNewline(m_textIterator.bloatedCharacters()[m_textIterator.length() - 1]))
             return;
 
         // If this is the first chunk that failed, save it in previousText before look ahead
         if (m_buffer.isEmpty()) {
-            m_previousText = m_textIterator.characters();
+            m_previousText = m_textIterator.bloatedCharacters();
             m_previousLength = m_textIterator.length();
         }
 
         // Look ahead to next chunk.  If it is whitespace or a break, we can use the previous stuff
         m_textIterator.advance();
-        if (m_textIterator.atEnd() || m_textIterator.length() == 0 || isSpaceOrNewline(m_textIterator.characters()[0])) {
+        if (m_textIterator.atEnd() || m_textIterator.length() == 0 || isSpaceOrNewline(m_textIterator.bloatedCharacters()[0])) {
             m_didLookAhead = true;
             return;
         }
@@ -1562,7 +1562,7 @@ void WordAwareIterator::advance()
             m_buffer.append(m_previousText, m_previousLength);
             m_previousText = 0;
         }
-        m_buffer.append(m_textIterator.characters(), m_textIterator.length());
+        m_buffer.append(m_textIterator.bloatedCharacters(), m_textIterator.length());
         int exception = 0;
         m_range->setEnd(m_textIterator.range()->endContainer(), m_textIterator.range()->endOffset(), exception);
     }
@@ -1577,13 +1577,13 @@ int WordAwareIterator::length() const
     return m_textIterator.length();
 }
 
-const UChar* WordAwareIterator::characters() const
+const UChar* WordAwareIterator::bloatedCharacters() const
 {
     if (!m_buffer.isEmpty())
         return m_buffer.data();
     if (m_previousText)
         return m_previousText;
-    return m_textIterator.characters();
+    return m_textIterator.bloatedCharacters();
 }
 
 // --------
@@ -2380,14 +2380,14 @@ static size_t findPlainText(CharacterIterator& it, const String& target, FindOpt
         RefPtr<Range> beforeStartRange = startRange->ownerDocument()->createRange();
         beforeStartRange->setEnd(startRange->startContainer(), startRange->startOffset(), IGNORE_EXCEPTION);
         for (SimplifiedBackwardsTextIterator backwardsIterator(beforeStartRange.get()); !backwardsIterator.atEnd(); backwardsIterator.advance()) {
-            buffer.prependContext(backwardsIterator.characters(), backwardsIterator.length());
+            buffer.prependContext(backwardsIterator.bloatedCharacters(), backwardsIterator.length());
             if (!buffer.needsMoreContext())
                 break;
         }
     }
 
     while (!it.atEnd()) {
-        it.advance(buffer.append(it.characters(), it.length()));
+        it.advance(buffer.append(it.bloatedCharacters(), it.length()));
 tryAgain:
         size_t matchStartOffset;
         if (size_t newMatchLength = buffer.search(matchStartOffset)) {

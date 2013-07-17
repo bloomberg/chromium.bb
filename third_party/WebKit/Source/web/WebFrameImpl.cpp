@@ -237,7 +237,7 @@ static void frameContentAsPlainText(size_t maxChars, Frame* frame, Vector<UChar>
         // size and also copy the results directly into a wstring, avoiding the
         // string conversion.
         for (TextIterator it(range.get()); !it.atEnd(); it.advance()) {
-            const UChar* chars = it.characters();
+            const UChar* chars = it.bloatedCharacters();
             if (!chars) {
                 if (it.length()) {
                     // It appears from crash reports that an iterator can get into a state

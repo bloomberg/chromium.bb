@@ -237,7 +237,7 @@ String TextCheckingHelper::findFirstMisspelling(int& firstMisspellingOffset, boo
     int currentChunkOffset = 0;
 
     while (!it.atEnd()) {
-        const UChar* chars = it.characters();
+        const UChar* chars = it.bloatedCharacters();
         int len = it.length();
         
         // Skip some work for one-space-char hunks
