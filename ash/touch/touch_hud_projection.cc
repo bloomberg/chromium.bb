@@ -63,7 +63,8 @@ class TouchPointView : public views::View,
                                              this));
       fadeout_->Start();
     } else {
-      SetX(touch.root_location().x() - kPointRadius - 1);
+      SetX(parent()->GetMirroredXInView(touch.root_location().x()) -
+               kPointRadius - 1);
       SetY(touch.root_location().y() - kPointRadius - 1);
     }
   }
