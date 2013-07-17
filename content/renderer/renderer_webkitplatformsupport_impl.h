@@ -38,6 +38,7 @@ class GamepadSharedMemoryReader;
 class RendererClipboardClient;
 class ThreadSafeSender;
 class WebClipboardImpl;
+class WebCryptoImpl;
 class WebFileSystemImpl;
 class WebSharedWorkerRepositoryImpl;
 
@@ -139,6 +140,7 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
       const WebKit::WebString& host, const WebKit::WebString& languages);
   virtual void setDeviceMotionListener(
       WebKit::WebDeviceMotionListener* listener) OVERRIDE;
+  virtual WebKit::WebCrypto* crypto() OVERRIDE;
 
   // Disables the WebSandboxSupport implementation for testing.
   // Tests that do not set up a full sandbox environment should call
@@ -203,6 +205,8 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
   scoped_refptr<cc::ContextProvider> shared_offscreen_context_;
 
   webkit::WebCompositorSupportImpl compositor_support_;
+
+  scoped_ptr<WebCryptoImpl> web_crypto_;
 };
 
 }  // namespace content

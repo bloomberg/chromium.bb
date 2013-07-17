@@ -409,6 +409,8 @@
     'renderer/v8_value_converter_impl.h',
     'renderer/webclipboard_impl.cc',
     'renderer/webclipboard_impl.h',
+    'renderer/webcrypto_impl.cc',
+    'renderer/webcrypto_impl.h',
     'renderer/web_ui_extension.cc',
     'renderer/web_ui_extension.h',
     'renderer/web_ui_extension_data.cc',

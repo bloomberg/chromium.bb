@@ -40,6 +40,7 @@
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/renderer_clipboard_client.h"
 #include "content/renderer/webclipboard_impl.h"
+#include "content/renderer/webcrypto_impl.h"
 #include "content/renderer/websharedworkerrepository_impl.h"
 #include "gpu/config/gpu_info.h"
 #include "ipc/ipc_sync_message_filter.h"
@@ -1087,6 +1088,15 @@ void RendererWebKitPlatformSupportImpl::setDeviceMotionListener(
 void RendererWebKitPlatformSupportImpl::SetMockDeviceMotionDataForTesting(
     const WebKit::WebDeviceMotionData& data) {
   g_test_device_motion_data.Get() = data;
+}
+
+//------------------------------------------------------------------------------
+
+WebKit::WebCrypto* RendererWebKitPlatformSupportImpl::crypto() {
+  if (!web_crypto_)
+    web_crypto_.reset(new WebCryptoImpl());
+  return web_crypto_.get();
+
 }
 
 }  // namespace content
