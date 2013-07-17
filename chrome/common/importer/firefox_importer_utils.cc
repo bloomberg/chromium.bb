@@ -20,54 +20,78 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
+namespace {
+
+// Retrieves the file system path of the profile name.
+base::FilePath GetProfilePath(const DictionaryValue& root,
+                              const std::string& profile_name) {
+  string16 path16;
+  std::string is_relative;
+  if (!root.GetStringASCII(profile_name + ".IsRelative", &is_relative) ||
+      !root.GetString(profile_name + ".Path", &path16))
+    return base::FilePath();
+
+#if defined(OS_WIN)
+  ReplaceSubstringsAfterOffset(
+      &path16, 0, ASCIIToUTF16("/"), ASCIIToUTF16("\\"));
+#endif
+  base::FilePath path = base::FilePath::FromWStringHack(UTF16ToWide(path16));
+
+  // IsRelative=1 means the folder path would be relative to the
+  // path of profiles.ini. IsRelative=0 refers to a custom profile
+  // location.
+  if (is_relative == "1")
+    path = GetProfilesINI().DirName().Append(path);
+
+  return path;
+}
+
+// Checks if the named profile is the default profile.
+bool IsDefaultProfile(const DictionaryValue& root,
+                      const std::string& profile_name) {
+  std::string is_default;
+  root.GetStringASCII(profile_name + ".Default", &is_default);
+  return is_default == "1";
+}
+
+} // namespace
+
 base::FilePath GetFirefoxProfilePath() {
   base::FilePath ini_file = GetProfilesINI();
   std::string content;
   file_util::ReadFileToString(ini_file, &content);
   base::DictionaryValueINIParser ini_parser;
   ini_parser.Parse(content);
-  const DictionaryValue& root = ini_parser.root();
+  return GetFirefoxProfilePathFromDictionary(ini_parser.root());
+}
 
-  base::FilePath source_path;
+base::FilePath GetFirefoxProfilePathFromDictionary(
+    const DictionaryValue& root) {
+  std::vector<std::string> profiles;
   for (int i = 0; ; ++i) {
     std::string current_profile = base::StringPrintf("Profile%d", i);
-    if (!root.HasKey(current_profile)) {
+    if (root.HasKey(current_profile)) {
+      profiles.push_back(current_profile);
+    } else {
       // Profiles are continuously numbered. So we exit when we can't
       // find the i-th one.
       break;
     }
-    std::string is_relative;
-    string16 path16;
-    if (root.GetStringASCII(current_profile + ".IsRelative", &is_relative) &&
-        root.GetString(current_profile + ".Path", &path16)) {
-#if defined(OS_WIN)
-      ReplaceSubstringsAfterOffset(
-          &path16, 0, ASCIIToUTF16("/"), ASCIIToUTF16("\\"));
-#endif
-      base::FilePath path =
-          base::FilePath::FromWStringHack(UTF16ToWide(path16));
-
-      // IsRelative=1 means the folder path would be relative to the
-      // path of profiles.ini. IsRelative=0 refers to a custom profile
-      // location.
-      if (is_relative == "1") {
-        path = ini_file.DirName().Append(path);
-      }
-
-      // We only import the default profile when multiple profiles exist,
-      // since the other profiles are used mostly by developers for testing.
-      // Otherwise, Profile0 will be imported.
-      std::string is_default;
-      if ((root.GetStringASCII(current_profile + ".Default", &is_default) &&
-           is_default == "1") || i == 0) {
-        // We have found the default profile.
-        return path;
-      }
-    }
   }
-  return base::FilePath();
-}
 
+  if (profiles.empty())
+    return base::FilePath();
+
+  // When multiple profiles exist, the path to the default profile is returned,
+  // since the other profiles are used mostly by developers for testing.
+  for (std::vector<std::string>::const_iterator it = profiles.begin();
+       it != profiles.end(); ++it)
+    if (IsDefaultProfile(root, *it))
+      return GetProfilePath(root, *it);
+
+  // If no default profile is found, the path to Profile0 will be returned.
+  return GetProfilePath(root, profiles.front());
+}
 
 bool GetFirefoxVersionAndPathFromProfile(const base::FilePath& profile_path,
                                          int* version,

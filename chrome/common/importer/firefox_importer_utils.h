@@ -43,6 +43,11 @@ base::FilePath GetFirefoxDylibPath();
 // Returns the path to the Firefox profile.
 base::FilePath GetFirefoxProfilePath();
 
+// Returns the path to the Firefox profile, using a custom dictionary.
+// Exposed for testing.
+base::FilePath GetFirefoxProfilePathFromDictionary(
+    const base::DictionaryValue& root);
+
 // Detects version of Firefox and installation path for the given Firefox
 // profile.
 bool GetFirefoxVersionAndPathFromProfile(const base::FilePath& profile_path,

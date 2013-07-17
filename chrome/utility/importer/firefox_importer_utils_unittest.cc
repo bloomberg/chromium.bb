@@ -4,6 +4,7 @@
 
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/values.h"
 #include "chrome/common/importer/firefox_importer_utils.h"
 #include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -115,4 +116,43 @@ TEST(FirefoxImporterUtilsTest, GetFirefoxImporterName) {
           IDS_IMPORT_FROM_FIREFOX),
       GetFirefoxImporterName(base::FilePath(
                                         FILE_PATH_LITERAL("/invalid/path"))));
+}
+
+TEST(FirefoxImporterUtilsTest, GetFirefoxProfilePath) {
+  DictionaryValue no_profiles;
+  EXPECT_EQ("",
+            GetFirefoxProfilePathFromDictionary(no_profiles).MaybeAsASCII());
+
+  DictionaryValue single_profile;
+  single_profile.SetString("Profile0.Path", "first");
+  single_profile.SetString("Profile0.IsRelative", "0");
+  single_profile.SetString("Profile0.Default", "1");
+  EXPECT_EQ("first",
+            GetFirefoxProfilePathFromDictionary(single_profile).MaybeAsASCII());
+
+  DictionaryValue no_default;
+  no_default.SetString("Profile0.Path", "first");
+  no_default.SetString("Profile0.IsRelative", "0");
+  no_default.SetString("Profile1.Path", "second");
+  no_default.SetString("Profile1.IsRelative", "0");
+  EXPECT_EQ("first",
+            GetFirefoxProfilePathFromDictionary(no_default).MaybeAsASCII());
+
+  DictionaryValue default_first;
+  default_first.SetString("Profile0.Path", "first");
+  default_first.SetString("Profile0.IsRelative", "0");
+  default_first.SetString("Profile0.Default", "1");
+  default_first.SetString("Profile1.Path", "second");
+  default_first.SetString("Profile1.IsRelative", "0");
+  EXPECT_EQ("first",
+            GetFirefoxProfilePathFromDictionary(default_first).MaybeAsASCII());
+
+  DictionaryValue default_second;
+  default_second.SetString("Profile0.Path", "first");
+  default_second.SetString("Profile0.IsRelative", "0");
+  default_second.SetString("Profile1.Path", "second");
+  default_second.SetString("Profile1.IsRelative", "0");
+  default_second.SetString("Profile1.Default", "1");
+  EXPECT_EQ("second",
+            GetFirefoxProfilePathFromDictionary(default_second).MaybeAsASCII());
 }
