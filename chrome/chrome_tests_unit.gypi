@@ -1014,6 +1014,7 @@
         'browser/plugins/plugin_prefs_unittest.cc',
         'browser/policy/async_policy_provider_unittest.cc',
         'browser/policy/browser_policy_connector_unittest.cc',
+        'browser/policy/cloud/cloud_external_data_store_unittest.cc',
         'browser/policy/cloud/cloud_policy_client_unittest.cc',
         'browser/policy/cloud/cloud_policy_core_unittest.cc',
         'browser/policy/cloud/cloud_policy_manager_unittest.cc',

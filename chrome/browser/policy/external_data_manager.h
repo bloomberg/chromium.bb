@@ -7,22 +7,19 @@
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "chrome/browser/policy/external_data_fetcher.h"
 
 namespace policy {
 
 // Downloads, verifies, caches and retrieves external data referenced by
 // policies.
-// TODO(bartfab): Implement support for fetching external policy data.
-// http://crbug.com/256635
+// An implementation of this abstract interface should be provided for each
+// policy source (cloud policy, platform policy) that supports external data
+// references.
 class ExternalDataManager {
  public:
-  void Fetch(const std::string& policy,
-             const ExternalDataFetcher::FetchCallback& callback);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ExternalDataManager);
+  virtual void Fetch(const std::string& policy,
+                     const ExternalDataFetcher::FetchCallback& callback) = 0;
 };
 
 }  // namespace policy

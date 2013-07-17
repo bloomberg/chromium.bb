@@ -19,35 +19,28 @@ class ExternalDataManager;
 // data for a policy.
 class ExternalDataFetcher {
  public:
-  enum Status {
-    // This policy does not reference any external data.
-    STATUS_NO_DATA,
-    // This policy references external data. The data has been requested but is
-    // not available yet. Once the data is successfully downloaded and verified,
-    // the PolicyService that this ExternalDataFetcher belongs to will invoke
-    // OnPolicyUpdated() to inform its observers that the data is available.
-    STATUS_DATA_PENDING,
-    // This external data referenced by the policy has been downloaded, verified
-    // and is included in the callback.
-    STATUS_DATA_AVAILABLE
-  };
+  typedef base::Callback<void(scoped_ptr<std::string>)> FetchCallback;
 
-  typedef base::Callback<void(Status, scoped_ptr<std::string>)> FetchCallback;
-
+  // This instance's Fetch() method will instruct the |manager| to retrieve the
+  // external data referenced by the given |policy|.
+  ExternalDataFetcher(base::WeakPtr<ExternalDataManager> manager,
+                      const std::string& policy);
   ExternalDataFetcher(const ExternalDataFetcher& other);
+
   ~ExternalDataFetcher();
 
   static bool Equals(const ExternalDataFetcher* first,
                      const ExternalDataFetcher* second);
 
+  // Retrieves the external data referenced by |policy_| and invokes |callback|
+  // with the result. If |policy_| does not reference any external data, the
+  // |callback| is invoked with a NULL pointer. Otherwise, the |callback| is
+  // invoked with the referenced data once it has been successfully retrieved.
+  // If retrieval is temporarily impossible (e.g. no network connectivity), the
+  // |callback| will be invoked when the temporary hindrance is resolved. If
+  // retrieval is permanently impossible (e.g. |policy_| references data that
+  // does not exist on the server), the |callback| will never be invoked.
   void Fetch(const FetchCallback& callback) const;
-
- protected:
-  friend class PolicyDomainDescriptorTest;
-  friend class PolicyMapTest;
-
-  ExternalDataFetcher(base::WeakPtr<ExternalDataManager> manager,
-                      const std::string& policy);
 
  private:
   base::WeakPtr<ExternalDataManager> manager_;

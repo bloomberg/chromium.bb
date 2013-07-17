@@ -5,14 +5,16 @@
 #include "chrome/browser/policy/external_data_fetcher.h"
 
 #include "base/callback.h"
-
-#if defined(ENABLE_CONFIGURATION_POLICY)
 #include "chrome/browser/policy/external_data_manager.h"
-#else
-#include "chrome/browser/policy/stub_external_data_manager.h"
-#endif
 
 namespace policy {
+
+ExternalDataFetcher::ExternalDataFetcher(
+    base::WeakPtr<ExternalDataManager> manager,
+    const std::string& policy)
+    : manager_(manager),
+      policy_(policy) {
+}
 
 ExternalDataFetcher::ExternalDataFetcher(const ExternalDataFetcher& other)
     : manager_(other.manager_),
@@ -37,14 +39,7 @@ void ExternalDataFetcher::Fetch(const FetchCallback& callback) const {
   if (manager_)
     manager_->Fetch(policy_, callback);
   else
-    callback.Run(STATUS_NO_DATA, make_scoped_ptr(new std::string));
-}
-
-ExternalDataFetcher::ExternalDataFetcher(
-    base::WeakPtr<ExternalDataManager> manager,
-    const std::string& policy)
-    : manager_(manager),
-      policy_(policy) {
+    callback.Run(scoped_ptr<std::string>());
 }
 
 }  // namespace policy
