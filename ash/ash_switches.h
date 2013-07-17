@@ -26,16 +26,11 @@ ASH_EXPORT extern const char kAshDefaultGuestWallpaperLarge[];
 ASH_EXPORT extern const char kAshDefaultGuestWallpaperSmall[];
 ASH_EXPORT extern const char kAshDefaultWallpaperLarge[];
 ASH_EXPORT extern const char kAshDefaultWallpaperSmall[];
-#if defined(OS_CHROMEOS)
-ASH_EXPORT extern const char kAshDisableAudioDeviceMenu[];
-#endif
 ASH_EXPORT extern const char kAshDisableAutoMaximizing[];
 ASH_EXPORT extern const char kAshDisableAutoWindowPlacement[];
 ASH_EXPORT extern const char kAshDisableDisplayChangeLimiter[];
 ASH_EXPORT extern const char kAshDisableImmersiveFullscreen[];
-#if defined(OS_CHROMEOS)
 ASH_EXPORT extern const char kAshDisableNewAudioHandler[];
-#endif
 ASH_EXPORT extern const char kAshDisableNewLockAnimations[];
 ASH_EXPORT extern const char kAshDisablePerAppLauncher[];
 ASH_EXPORT extern const char kAshDisableUIScaling[];
@@ -45,6 +40,7 @@ ASH_EXPORT extern const char kAshDisableDragAndDropAppListToLauncher[];
 ASH_EXPORT extern const char kAshDisableSoftwareMirroring[];
 ASH_EXPORT extern const char kAshDisableUsbChargerNotification[];
 #endif
+ASH_EXPORT extern const char kAshEnableAudioDeviceMenu[];
 ASH_EXPORT extern const char kAshEnableAdvancedGestures[];
 ASH_EXPORT extern const char kAshEnableBrightnessControl[];
 ASH_EXPORT extern const char kAshEnableDockedWindows[];
