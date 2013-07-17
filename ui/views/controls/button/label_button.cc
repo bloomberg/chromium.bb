@@ -156,12 +156,19 @@ void LabelButton::SetStyle(ButtonStyle style) {
 }
 
 gfx::Size LabelButton::GetPreferredSize() {
-  const gfx::Font font = label_->font();
   // Use a temporary label copy for sizing to avoid calculation side-effects.
-  // Use bold text for STYLE_BUTTON to avoid changing size when made default.
-  Label label(label_->text(), style_ == STYLE_BUTTON ?
-      font.DeriveFont(0, font.GetStyle() | gfx::Font::BOLD) : font);
+  gfx::Font font = GetFont();
+  Label label(GetText(), font);
   label.SetMultiLine(GetTextMultiLine());
+
+  if (style() == STYLE_BUTTON) {
+    // Some text appears wider when rendered normally than when rendered bold.
+    // Accommodate the widest, as buttons may show bold and shouldn't resize.
+    const int current_width = label.GetPreferredSize().width();
+    label.SetFont(font.DeriveFont(0, font.GetStyle() ^ gfx::Font::BOLD));
+    if (label.GetPreferredSize().width() < current_width)
+      label.SetFont(font);
+  }
 
   // Resize multi-line labels given the current limited available width.
   const gfx::Size image_size(image_->GetPreferredSize());
