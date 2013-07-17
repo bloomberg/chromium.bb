@@ -149,8 +149,6 @@
     'common/cookie_data.cc',
     'common/cookie_data.h',
     'common/database_messages.h',
-    'common/db_message_filter.cc',
-    'common/db_message_filter.h',
     'common/desktop_notification_messages.h',
     'common/device_motion_messages.h',
     'common/device_orientation_messages.h',

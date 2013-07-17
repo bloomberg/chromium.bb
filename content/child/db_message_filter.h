@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_DB_MESSAGE_FILTER_H_
-#define CONTENT_COMMON_DB_MESSAGE_FILTER_H_
+#ifndef CONTENT_CHILD_DB_MESSAGE_FILTER_H_
+#define CONTENT_CHILD_DB_MESSAGE_FILTER_H_
 
 #include "ipc/ipc_channel_proxy.h"
 
@@ -34,4 +34,4 @@ class DBMessageFilter : public IPC::ChannelProxy::MessageFilter {
 
 }  // namespace content
 
-#endif  // CONTENT_COMMON_DB_MESSAGE_FILTER_H_
+#endif  // CONTENT_CHILD_DB_MESSAGE_FILTER_H_

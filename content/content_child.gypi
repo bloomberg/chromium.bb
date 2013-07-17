@@ -33,6 +33,8 @@
     'child/child_thread.h',
     'child/database_util.cc',
     'child/database_util.h',
+    'child/db_message_filter.cc',
+    'child/db_message_filter.h',
     'child/fileapi/file_system_dispatcher.cc',
     'child/fileapi/file_system_dispatcher.h',
     'child/fileapi/webfilesystem_callback_adapters.cc',

@@ -1,8 +1,8 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/db_message_filter.h"
+#include "content/child/db_message_filter.h"
 
 #include "content/common/database_messages.h"
 #include "third_party/WebKit/public/platform/WebString.h"
