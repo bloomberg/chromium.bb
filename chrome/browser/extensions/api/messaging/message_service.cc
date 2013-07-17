@@ -16,6 +16,7 @@
 #include "chrome/browser/extensions/api/messaging/extension_message_port.h"
 #include "chrome/browser/extensions/api/messaging/native_message_port.h"
 #include "chrome/browser/extensions/extension_host.h"
+#include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -198,6 +199,13 @@ void MessageService::OpenChannelToExtension(
   const Extension* target_extension = ExtensionSystem::Get(profile)->
       extension_service()->extensions()->GetByID(target_extension_id);
   if (!target_extension) {
+    DispatchOnDisconnect(
+        source, receiver_port_id, kReceivingEndDoesntExistError);
+    return;
+  }
+
+  if (profile->IsOffTheRecord() &&
+      !ExtensionPrefs::Get(profile)->IsIncognitoEnabled(target_extension_id)) {
     DispatchOnDisconnect(
         source, receiver_port_id, kReceivingEndDoesntExistError);
     return;
