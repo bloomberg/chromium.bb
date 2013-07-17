@@ -298,7 +298,7 @@ function getRandomValues(
     if (indexName)
       source = source.index(indexName);
     for (var j = 0; j < numReads; ++j) {
-      var rand = Math.floor(Math.random() * numKeys);
+      var rand = Math.floor(random() * numKeys);
       var request = source.get(getKey(rand));
       request.onerror = onError;
       request.onsuccess = verifyResultNonNull;
@@ -315,7 +315,7 @@ function putRandomValues(
   for (var i in objectStoreNames) {
     var os = transaction.objectStore(objectStoreNames[i]);
     for (var j = 0; j < numPuts; ++j) {
-      var rand = Math.floor(Math.random() * numKeys);
+      var rand = Math.floor(random() * numKeys);
       var request = os.put(getValue(rand), getKey(rand));
       request.onerror = onError;
     }
@@ -348,7 +348,7 @@ function getValuesFromCursor(
   assert(2 * numReads < numKeys);
   if (!getKey)
     getKey = getSimpleKey;
-  var rand = Math.floor(Math.random() * (numKeys - 2 * numReads)) + numReads;
+  var rand = Math.floor(random() * (numKeys - 2 * numReads)) + numReads;
   var values = [];
   var queryObject = transaction.objectStore(inputObjectStoreName);
   assert(queryObject);
@@ -376,7 +376,7 @@ function getValuesFromCursor(
         // in case we're writing back to the same store; this way we won't
         // affect the number of keys available to the cursor, since we're always
         // outside its range.
-        oos.put(cursor.value, numKeys + Math.random());
+        oos.put(cursor.value, numKeys + random());
       values.push({key: cursor.key, value: cursor.value});
       cursor.continue();
     } else {
@@ -412,3 +412,30 @@ function runTransactionBatch(db, count, batchFunc, objectStoreNames, mode,
   }
 }
 
+// Use random() instead of Math.random() so runs are repeatable.
+var random = (function(seed) {
+
+  // Implementation of: http://www.burtleburtle.net/bob/rand/smallprng.html
+  function uint32(x) { return x >>> 0; }
+  function rot(x, k) { return (x << k) | (x >> (32 - k)); }
+
+  function SmallPRNG(seed) {
+    seed = uint32(seed);
+    this.a = 0xf1ea5eed;
+    this.b = this.c = this.d = seed;
+    for (var i = 0; i < 20; ++i)
+      this.ranval();
+  }
+
+  SmallPRNG.prototype.ranval = function() {
+    var e = uint32(this.a - rot(this.b, 27));
+    this.a = this.b ^ rot(this.c, 17);
+    this.b = uint32(this.c + this.d);
+    this.c = uint32(this.d + e);
+    this.d = uint32(e + this.a);
+    return this.d;
+  };
+
+  var prng = new SmallPRNG(seed);
+  return function() { return prng.ranval() / 0x100000000; };
+}(0));

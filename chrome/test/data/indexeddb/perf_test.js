@@ -280,7 +280,7 @@ function testReadCache(numTransactions, useIndexForReads, onTestComplete) {
   var keys = [];
 
   for (var i=0; i < numReadsPerTransaction; ++i) {
-    keys.push(getKey(Math.floor(Math.random() * numKeys)));
+    keys.push(getKey(Math.floor(random() * numKeys)));
   }
 
   automation.setStatus("Creating database.");
@@ -570,7 +570,7 @@ function testWalkingMultipleCursors(numCursors, onTestComplete) {
     var requests = [];
     var continueCursorIndex = 0;
     for (var i = 0; i < numCursors; ++i) {
-      var rand = Math.floor(Math.random() * numKeys);
+      var rand = Math.floor(random() * numKeys);
       // Since we have numHitsPerKey copies of each value in the database,
       // IDBKeyRange.only will return numHitsPerKey results, each referring to a
       // different key with the matching value.
