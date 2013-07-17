@@ -924,8 +924,6 @@
         'browser/mac/relauncher.h',
         'browser/mac/security_wrappers.cc',
         'browser/mac/security_wrappers.h',
-        'browser/managed_mode/managed_mode.cc',
-        'browser/managed_mode/managed_mode.h',
         'browser/managed_mode/managed_mode_interstitial.cc',
         'browser/managed_mode/managed_mode_interstitial.h',
         'browser/managed_mode/managed_mode_navigation_observer.cc',

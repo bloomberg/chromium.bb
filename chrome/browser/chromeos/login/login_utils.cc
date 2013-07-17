@@ -48,7 +48,6 @@
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/google/google_util_chromeos.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
-#include "chrome/browser/managed_mode/managed_mode.h"
 #include "chrome/browser/pref_service_flags_storage.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -179,9 +178,6 @@ class LoginUtilsImpl
   // Restores GAIA auth cookies for the created user profile from OAuth2 token.
   void RestoreAuthSession(Profile* user_profile,
                           bool restore_from_auth_cookies);
-
-  // Callback when managed mode preferences have been applied.
-  void EnteredManagedMode(bool success);
 
   // Initializes RLZ. If |disabled| is true, RLZ pings are disabled.
   void InitRlz(Profile* user_profile, bool disabled);
@@ -449,19 +445,7 @@ void LoginUtilsImpl::UserProfileInitialized(Profile* user_profile) {
     return;
   }
 
-  if (UserManager::Get()->IsLoggedInAsLocallyManagedUser()) {
-    // Apply managed mode first.
-    ManagedMode::EnterManagedMode(
-        user_profile,
-        base::Bind(&LoginUtilsImpl::EnteredManagedMode, AsWeakPtr()));
-  } else {
-    FinalizePrepareProfile(user_profile);
-  }
-}
-
-void LoginUtilsImpl::EnteredManagedMode(bool success) {
-  // TODO(nkostylev): What if entering managed mode fails?
-  FinalizePrepareProfile(ProfileManager::GetDefaultProfile());
+  FinalizePrepareProfile(user_profile);
 }
 
 void LoginUtilsImpl::CompleteProfileCreate(Profile* user_profile) {

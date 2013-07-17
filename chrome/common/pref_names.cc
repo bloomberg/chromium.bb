@@ -2448,9 +2448,6 @@ const char kOverscrollVerticalResistThreshold[] =
     "overscroll.vertical_resist_threshold";
 #endif
 
-// Indicates whether the browser is in managed mode.
-const char kInManagedMode[] = "managed_mode";
-
 // Counts how many more times the 'profile on a network share' warning should be
 // shown to the user before the next silence period.
 const char kNetworkProfileWarningsLeft[] = "network_profile.warnings_left";

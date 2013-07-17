@@ -895,9 +895,6 @@ const char kMakeDefaultBrowser[]            = "make-default-browser";
 // this switch also causes Sync to be set up for a managed user.
 const char kManagedUserSyncToken[]          = "managed-user-sync-token";
 
-// Starts the browser in managed mode.
-const char kManaged[]                       = "managed";
-
 // Forces the maximum disk space to be used by the media cache, in bytes.
 const char kMediaCacheSize[]                = "media-cache-size";
 
@@ -962,9 +959,6 @@ const char kNoFirstRun[]                    = "no-first-run";
 // page will result in consistent js-generated data and XHR requests.
 // Pages may still be able to generate inconsistent data from plugins.
 const char kNoJsRandomness[]                = "no-js-randomness";
-
-// Starts the browser outside of managed mode.
-const char kNoManaged[]                     = "no-managed";
 
 // Disables the timeout during registration of a new managed-user profile;
 // useful for debugging.

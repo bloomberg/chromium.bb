@@ -101,7 +101,6 @@
 #endif
 
 #if defined(ENABLE_MANAGED_USERS)
-#include "chrome/browser/managed_mode/managed_mode.h"
 #include "chrome/browser/managed_mode/managed_user_registration_service.h"
 #include "chrome/browser/managed_mode/managed_user_service.h"
 #endif
@@ -216,10 +215,6 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   UpgradeDetector::RegisterPrefs(registry);
   WebCacheManager::RegisterPrefs(registry);
   chrome_variations::VariationsService::RegisterPrefs(registry);
-
-#if defined(ENABLE_MANAGED_USERS)
-  ManagedMode::RegisterPrefs(registry);
-#endif
 
 #if defined(ENABLE_PLUGINS)
   PluginFinder::RegisterPrefs(registry);

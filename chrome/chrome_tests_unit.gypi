@@ -941,7 +941,6 @@
         'browser/local_discovery/privet_http_unittest.cc',
         'browser/local_discovery/privet_url_fetcher_unittest.cc',
         'browser/mac/keystone_glue_unittest.mm',
-        'browser/managed_mode/managed_mode_unittest.cc',
         'browser/managed_mode/managed_mode_url_filter_unittest.cc',
         'browser/managed_mode/managed_user_registration_service_unittest.cc',
         'browser/managed_mode/managed_user_service_unittest.cc',

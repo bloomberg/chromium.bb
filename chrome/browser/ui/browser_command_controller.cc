@@ -172,11 +172,6 @@ BrowserCommandController::BrowserCommandController(
         base::Bind(
             &BrowserCommandController::UpdateCommandsForFileSelectionDialogs,
             base::Unretained(this)));
-    local_pref_registrar_.Add(
-        prefs::kInManagedMode,
-        base::Bind(
-            &BrowserCommandController::UpdateCommandsForMultipleProfiles,
-            base::Unretained(this)));
   }
 
   profile_pref_registrar_.Init(profile()->GetPrefs());

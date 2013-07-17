@@ -44,7 +44,6 @@
 #include "chrome/browser/chromeos/system/timezone_settings.h"
 #include "chrome/browser/chromeos/ui/focus_ring_controller.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
-#include "chrome/browser/managed_mode/managed_mode.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/chrome_constants.h"
@@ -832,13 +831,6 @@ void LoginDisplayHostImpl::OnAuthPrewarmDone() {
 void ShowLoginWizard(const std::string& first_screen_name) {
   if (browser_shutdown::IsTryingToQuit())
     return;
-
-  // Managed mode is defined as a machine-level setting so we have to reset it
-  // each time login screen is shown. See also http://crbug.com/167642
-  // TODO(nkostylev): Remove this call when managed mode scope is
-  // limited to user session.
-  if (ManagedMode::IsInManagedMode())
-    ManagedMode::LeaveManagedMode();
 
   VLOG(1) << "Showing OOBE screen: " << first_screen_name;
 
