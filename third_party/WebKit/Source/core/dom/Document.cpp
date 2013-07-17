@@ -727,8 +727,8 @@ PassRefPtr<Element> Document::createElement(const AtomicString& localName, const
     else
         element = createElement(localName, ec);
 
-    if (!typeExtension.isNull())
-        registrationContext()->setTypeExtension(element.get(), typeExtension);
+    if (!typeExtension.isNull() && !typeExtension.isEmpty())
+        CustomElementRegistrationContext::setIsAttributeAndTypeExtension(element.get(), typeExtension);
 
     return element;
 }
@@ -751,8 +751,8 @@ PassRefPtr<Element> Document::createElementNS(const AtomicString& namespaceURI, 
     else
         element = createElementNS(namespaceURI, qualifiedName, ec);
 
-    if (!typeExtension.isNull())
-        registrationContext()->setTypeExtension(element.get(), typeExtension);
+    if (!typeExtension.isNull() && !typeExtension.isEmpty())
+        CustomElementRegistrationContext::setIsAttributeAndTypeExtension(element.get(), typeExtension);
 
     return element;
 }

@@ -52,17 +52,14 @@ public:
     NullRegistrationContext() { }
     virtual ~NullRegistrationContext() { }
 
-    virtual CustomElementDescriptor describe(Element*) const OVERRIDE { return CustomElementDescriptor(); }
-
     virtual void registerElement(Document*, CustomElementConstructorBuilder*, const AtomicString&, ExceptionCode& ec) OVERRIDE { ec = NotSupportedError; }
 
     virtual PassRefPtr<Element> createCustomTagElement(Document*, const QualifiedName&) OVERRIDE;
-    virtual void didGiveTypeExtension(Element*, const AtomicString&) OVERRIDE { }
+    virtual void didGiveTypeExtension(Element*) OVERRIDE { }
 
     virtual void customElementAttributeDidChange(Element*, const AtomicString&, const AtomicString&, const AtomicString&) OVERRIDE { }
     virtual void customElementDidEnterDocument(Element*) OVERRIDE { }
     virtual void customElementDidLeaveDocument(Element*) OVERRIDE { }
-    virtual void customElementIsBeingDestroyed(Element*) OVERRIDE { }
 };
 
 PassRefPtr<Element> NullRegistrationContext::createCustomTagElement(Document* document, const QualifiedName& tagName)
@@ -94,12 +91,10 @@ public:
     ActiveRegistrationContext() { }
     virtual ~ActiveRegistrationContext() { }
 
-    virtual CustomElementDescriptor describe(Element*) const OVERRIDE;
-
     virtual void registerElement(Document*, CustomElementConstructorBuilder*, const AtomicString& type, ExceptionCode&) OVERRIDE;
 
     virtual PassRefPtr<Element> createCustomTagElement(Document*, const QualifiedName&) OVERRIDE;
-    virtual void didGiveTypeExtension(Element*, const AtomicString&) OVERRIDE;
+    virtual void didGiveTypeExtension(Element*) OVERRIDE;
 
     virtual void customElementAttributeDidChange(Element*, const AtomicString&, const AtomicString&, const AtomicString&) OVERRIDE;
     virtual void customElementDidEnterDocument(Element*) OVERRIDE;
@@ -115,24 +110,8 @@ private:
     CustomElementRegistry m_registry;
 
     // Element creation
-    typedef HashMap<Element*, AtomicString> ElementTypeMap;
-    ElementTypeMap m_elementTypeMap; // Creation-time "is" attribute value.
     CustomElementUpgradeCandidateMap m_candidates;
 };
-
-CustomElementDescriptor ActiveRegistrationContext::describe(Element* element) const
-{
-    ASSERT(element->isCustomElement());
-
-    // If an element has a custom tag name it takes precedence over
-    // the "is" attribute (if any).
-    const AtomicString& type = isCustomTagName(element->localName())
-        ? element->localName()
-        : m_elementTypeMap.get(element);
-
-    ASSERT(!type.isNull()); // Element must be in this registry
-    return CustomElementDescriptor(type, element->namespaceURI(), element->localName());
-}
 
 void ActiveRegistrationContext::registerElement(Document* document, CustomElementConstructorBuilder* constructorBuilder, const AtomicString& type, ExceptionCode& ec)
 {
@@ -194,14 +173,8 @@ void ActiveRegistrationContext::didResolveElement(CustomElementDefinition* defin
     CustomElementCallbackDispatcher::instance().enqueueCreatedCallback(definition->callbacks(), element);
 }
 
-void ActiveRegistrationContext::didGiveTypeExtension(Element* element, const AtomicString& type)
+void ActiveRegistrationContext::didGiveTypeExtension(Element* element)
 {
-    if (!element->isHTMLElement() && !element->isSVGElement())
-        return;
-    if (element->isCustomElement())
-        return; // A custom tag, which takes precedence over type extensions
-    element->setIsCustomElement();
-    m_elementTypeMap.add(element, type);
     const CustomElementDescriptor& descriptor = describe(element);
     CustomElementDefinition* definition = m_registry.find(descriptor);
     if (definition)
@@ -233,9 +206,8 @@ void ActiveRegistrationContext::customElementDidLeaveDocument(Element* element)
 
 void ActiveRegistrationContext::customElementIsBeingDestroyed(Element* element)
 {
-    ASSERT(element->isCustomElement());
+    CustomElementRegistrationContext::customElementIsBeingDestroyed(element);
     m_candidates.remove(element);
-    m_elementTypeMap.remove(element);
 }
 
 PassRefPtr<CustomElementRegistrationContext> CustomElementRegistrationContext::create()
@@ -271,13 +243,58 @@ bool CustomElementRegistrationContext::isCustomTagName(const AtomicString& local
     return isValidTypeName(localName);
 }
 
-void CustomElementRegistrationContext::setTypeExtension(Element* element, const AtomicString& type)
+CustomElementDescriptor CustomElementRegistrationContext::describe(Element* element)
+{
+    ASSERT(element->isCustomElement());
+
+    // If an element has a custom tag name it takes precedence over
+    // the "is" attribute (if any).
+    const AtomicString& type = isCustomTagName(element->localName())
+        ? element->localName()
+        : typeExtension(element);
+
+    return CustomElementDescriptor(type, element->namespaceURI(), element->localName());
+}
+
+void CustomElementRegistrationContext::setIsAttributeAndTypeExtension(Element* element, const AtomicString& type)
 {
     ASSERT(element);
-    if (!type.isEmpty())
-        element->setAttribute(HTMLNames::isAttr, type);
+    ASSERT(!type.isEmpty());
+    element->setAttribute(HTMLNames::isAttr, type);
+    setTypeExtension(element, type);
+}
 
-    didGiveTypeExtension(element, type);
+void CustomElementRegistrationContext::setTypeExtension(Element* element, const AtomicString& type)
+{
+    if (!element->isHTMLElement() && !element->isSVGElement())
+        return;
+
+    if (isCustomTagName(element->localName()))
+        return; // custom tags take precedence over type extensions
+
+    TypeExtensionMap::AddResult result = typeExtensionMap()->add(element, type);
+    ASSERT(result.isNewEntry); // Type extensions should only be set once
+    element->setIsCustomElement();
+    element->document()->registrationContext()->didGiveTypeExtension(element);
+}
+
+void CustomElementRegistrationContext::customElementIsBeingDestroyed(Element* element)
+{
+    ASSERT(element->isCustomElement());
+    typeExtensionMap()->remove(element);
+}
+
+const AtomicString& CustomElementRegistrationContext::typeExtension(Element* element)
+{
+    TypeExtensionMap::const_iterator it = typeExtensionMap()->find(element);
+    ASSERT(it != typeExtensionMap()->end());
+    return it->value;
+}
+
+CustomElementRegistrationContext::TypeExtensionMap* CustomElementRegistrationContext::typeExtensionMap()
+{
+    DEFINE_STATIC_LOCAL(TypeExtensionMap, typeExtensionMap, ());
+    return &typeExtensionMap;
 }
 
 } // namespace WebCore

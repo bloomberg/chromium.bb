@@ -34,9 +34,11 @@
 #include "core/dom/CustomElementDescriptor.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/QualifiedName.h"
+#include "wtf/HashMap.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/AtomicString.h"
+#include "wtf/text/AtomicStringHash.h"
 
 namespace WebCore {
 
@@ -54,24 +56,34 @@ public:
     // Model
     static bool isValidTypeName(const AtomicString& type);
     static bool isCustomTagName(const AtomicString& localName);
-    virtual CustomElementDescriptor describe(Element*) const = 0;
+    static CustomElementDescriptor describe(Element*);
 
     // Definitions
     virtual void registerElement(Document*, CustomElementConstructorBuilder*, const AtomicString& type, ExceptionCode&) = 0;
 
     // Instance creation
     virtual PassRefPtr<Element> createCustomTagElement(Document*, const QualifiedName&) = 0;
-    void setTypeExtension(Element*, const AtomicString& type);
-    virtual void didGiveTypeExtension(Element*, const AtomicString& type) = 0;
+    static void setIsAttributeAndTypeExtension(Element*, const AtomicString& type);
+    static void setTypeExtension(Element*, const AtomicString& type);
 
     // Instance lifecycle
     virtual void customElementAttributeDidChange(Element*, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue) = 0;
     virtual void customElementDidEnterDocument(Element*) = 0;
     virtual void customElementDidLeaveDocument(Element*) = 0;
-    virtual void customElementIsBeingDestroyed(Element*) = 0;
+    virtual void customElementIsBeingDestroyed(Element*);
 
 protected:
     CustomElementRegistrationContext() { }
+
+    // Model
+    static const AtomicString& typeExtension(Element*);
+
+    // Instance creation
+    virtual void didGiveTypeExtension(Element*) = 0;
+
+private:
+    typedef HashMap<Element*, AtomicString> TypeExtensionMap;
+    static TypeExtensionMap* typeExtensionMap();
 };
 
 }

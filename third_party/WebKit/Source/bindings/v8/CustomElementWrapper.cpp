@@ -101,7 +101,7 @@ v8::Handle<v8::Object> CustomElementWrapper<ElementType, WrapperType>::wrap(Pass
     if (!perContextData)
         return v8::Handle<v8::Object>();
 
-    CustomElementDescriptor descriptor = element->document()->registrationContext()->describe(element.get());
+    CustomElementDescriptor descriptor = CustomElementRegistrationContext::describe(element.get());
     CustomElementBinding* binding = perContextData->customElementBinding(descriptor.type());
 
     v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(creationContext, binding->wrapperType(), element.get(), isolate);
