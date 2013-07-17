@@ -54,9 +54,10 @@ class WEBKIT_GLUE_EXPORT WebKitPlatformSupportImpl :
   virtual size_t memoryUsageMB();
   virtual size_t actualMemoryUsageMB();
 #if defined(OS_ANDROID)  // Other OSes just use the default values.
-  virtual size_t lowMemoryUsageMB() OVERRIDE;
-  virtual size_t highMemoryUsageMB() OVERRIDE;
-  virtual size_t highUsageDeltaMB() OVERRIDE;
+  // TODO(jochen): Remove these.
+  virtual size_t lowMemoryUsageMB();
+  virtual size_t highMemoryUsageMB();
+  virtual size_t highUsageDeltaMB();
 #endif
 
   virtual void startHeapProfiling(const WebKit::WebString& /*prefix*/) OVERRIDE;
