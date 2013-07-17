@@ -74,7 +74,11 @@ public:
     //  - The resolver's resolved flag is not set.
     bool isPending() const;
 
-    ScriptObject promise() { return ScriptObject(ScriptState::current(), m_promise.deprecatedGet()); }
+    ScriptObject promise()
+    {
+        v8::HandleScope scope(m_isolate);
+        return ScriptObject(ScriptState::current(), m_promise.newLocal(m_isolate));
+    }
 
     // Fulfill with a C++ object which can be converted to a v8 object by toV8.
     template<typename T>
@@ -92,10 +96,11 @@ public:
 
 private:
     ScriptPromiseResolver(v8::Handle<v8::Object> creationContext, v8::Isolate*);
-    void fulfill(v8::Handle<v8::Value>, v8::Isolate*);
-    void resolve(v8::Handle<v8::Value>, v8::Isolate*);
-    void reject(v8::Handle<v8::Value>, v8::Isolate*);
+    void fulfill(v8::Handle<v8::Value>);
+    void resolve(v8::Handle<v8::Value>);
+    void reject(v8::Handle<v8::Value>);
 
+    v8::Isolate* m_isolate;
     ScopedPersistent<v8::Object> m_promise;
     ScopedPersistent<v8::Object> m_resolver;
     bool isPendingInternal() const;
@@ -105,27 +110,24 @@ template<typename T>
 void ScriptPromiseResolver::fulfill(PassRefPtr<T> value)
 {
     ASSERT(isMainThread());
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    v8::HandleScope scope(isolate);
-    fulfill(toV8(value.get(), v8::Object::New(), isolate), isolate);
+    v8::HandleScope scope(m_isolate);
+    fulfill(toV8(value.get(), v8::Object::New(), m_isolate));
 }
 
 template<typename T>
 void ScriptPromiseResolver::resolve(PassRefPtr<T> value)
 {
     ASSERT(isMainThread());
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    v8::HandleScope scope(isolate);
-    resolve(toV8(value.get(), v8::Object::New(), isolate), isolate);
+    v8::HandleScope scope(m_isolate);
+    resolve(toV8(value.get(), v8::Object::New(), m_isolate));
 }
 
 template<typename T>
 void ScriptPromiseResolver::reject(PassRefPtr<T> value)
 {
     ASSERT(isMainThread());
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    v8::HandleScope scope(isolate);
-    reject(toV8(value.get(), v8::Object::New(), isolate), isolate);
+    v8::HandleScope scope(m_isolate);
+    reject(toV8(value.get(), v8::Object::New(), m_isolate));
 }
 
 } // namespace WebCore
