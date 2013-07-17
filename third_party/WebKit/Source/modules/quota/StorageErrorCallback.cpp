@@ -32,7 +32,7 @@
 
 #include "modules/quota/StorageErrorCallback.h"
 
-#include "core/dom/DOMException.h"
+#include "core/dom/DOMError.h"
 
 namespace WebCore {
 
@@ -46,7 +46,7 @@ void StorageErrorCallback::CallbackTask::performTask(ScriptExecutionContext*)
 {
     if (!m_callback)
         return;
-    m_callback->handleEvent(DOMException::create(m_ec).get());
+    m_callback->handleEvent(DOMError::create(m_ec).get());
 }
 
 } // namespace WebCore
