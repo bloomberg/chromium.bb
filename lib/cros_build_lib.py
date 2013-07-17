@@ -258,7 +258,8 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
                env=None, extra_env=None, ignore_sigint=False,
                combine_stdout_stderr=False, log_stdout_to_file=None,
                chroot_args=None, debug_level=logging.INFO,
-               error_code_ok=False, kill_timeout=1, log_output=False):
+               error_code_ok=False, kill_timeout=1, log_output=False,
+               stdout_to_pipe=False):
   """Runs a command.
 
   Args:
@@ -302,6 +303,7 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
                   process to shutdown from a SIGTERM before we SIGKILL it.
                   Specified in seconds.
     log_output: Log the command and its output automatically.
+    stdout_to_pipe: Redirect stdout to pipe.
   Returns:
     A CommandResult object.
 
@@ -338,6 +340,8 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
   # view of the file.
   if log_stdout_to_file:
     stdout = open(log_stdout_to_file, 'w+')
+  elif stdout_to_pipe:
+    stdout = subprocess.PIPE
   elif redirect_stdout or mute_output or log_output:
     stdout = _get_tempfile()
 
@@ -427,7 +431,7 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
         signal.signal(signal.SIGINT, old_sigint)
         signal.signal(signal.SIGTERM, old_sigterm)
 
-      if stdout and not log_stdout_to_file:
+      if stdout and not log_stdout_to_file and not stdout_to_pipe:
         stdout.seek(0)
         cmd_result.output = stdout.read()
         stdout.close()
