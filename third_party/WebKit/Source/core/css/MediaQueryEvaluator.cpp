@@ -138,6 +138,9 @@ bool MediaQueryEvaluator::eval(const MediaQuerySet* querySet, StyleResolver* sty
             size_t j = 0;
             for (; j < exps->size(); ++j) {
                 bool exprResult = eval(exps->at(j).get());
+                // FIXME: Instead of storing these on StyleResolver, we should store them locally
+                // and then any client of this method can grab at them afterwords.
+                // Alternatively we could use an explicit out-paramemter of this method.
                 if (styleResolver && exps->at(j)->isViewportDependent())
                     styleResolver->addViewportDependentMediaQueryResult(exps->at(j).get(), exprResult);
                 if (!exprResult)

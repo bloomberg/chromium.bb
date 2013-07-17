@@ -90,36 +90,34 @@ const Vector<RefPtr<CSSStyleSheet> >& DocumentStyleSheetCollection::activeAuthor
     return m_collectionForDocument.activeAuthorStyleSheets();
 }
 
-void DocumentStyleSheetCollection::combineCSSFeatureFlags()
+void DocumentStyleSheetCollection::combineCSSFeatureFlags(const RuleFeatureSet& features)
 {
     // Delay resetting the flags until after next style recalc since unapplying the style may not work without these set (this is true at least with before/after).
-    StyleResolver* styleResolver = m_document->styleResolver();
-    m_usesSiblingRules = m_usesSiblingRules || styleResolver->usesSiblingRules();
-    m_usesFirstLineRules = m_usesFirstLineRules || styleResolver->usesFirstLineRules();
-    m_usesBeforeAfterRules = m_usesBeforeAfterRules || styleResolver->usesBeforeAfterRules();
+    m_usesSiblingRules = m_usesSiblingRules || features.usesSiblingRules();
+    m_usesFirstLineRules = m_usesFirstLineRules || features.usesFirstLineRules();
+    m_usesBeforeAfterRules = m_usesBeforeAfterRules || features.usesBeforeAfterRules();
 }
 
-void DocumentStyleSheetCollection::resetCSSFeatureFlags()
+void DocumentStyleSheetCollection::resetCSSFeatureFlags(const RuleFeatureSet& features)
 {
-    StyleResolver* styleResolver = m_document->styleResolver();
-    m_usesSiblingRules = styleResolver->usesSiblingRules();
-    m_usesFirstLineRules = styleResolver->usesFirstLineRules();
-    m_usesBeforeAfterRules = styleResolver->usesBeforeAfterRules();
+    m_usesSiblingRules = features.usesSiblingRules();
+    m_usesFirstLineRules = features.usesFirstLineRules();
+    m_usesBeforeAfterRules = features.usesBeforeAfterRules();
 }
 
 CSSStyleSheet* DocumentStyleSheetCollection::pageUserSheet()
 {
     if (m_pageUserSheet)
         return m_pageUserSheet.get();
-    
+
     Page* owningPage = m_document->page();
     if (!owningPage)
         return 0;
-    
+
     String userSheetText = owningPage->userStyleSheet();
     if (userSheetText.isEmpty())
         return 0;
-    
+
     // Parse the sheet and cache it.
     m_pageUserSheet = CSSStyleSheet::createInline(m_document, m_document->settings()->userStyleSheetLocation());
     m_pageUserSheet->contents()->setIsUserStyleSheet(true);
@@ -268,7 +266,7 @@ bool DocumentStyleSheetCollection::updateActiveStyleSheets(StyleResolverUpdateMo
     m_needsUpdateActiveStylesheetsOnStyleRecalc = false;
 
     if (styleResolverUpdateType != StyleSheetCollection::Reconstruct)
-        resetCSSFeatureFlags();
+        resetCSSFeatureFlags(m_document->styleResolver()->ruleFeatureSet());
 
     InspectorInstrumentation::activeStyleSheetsUpdated(m_document, m_collectionForDocument.styleSheetsForStyleSheetList());
     m_usesRemUnits = styleSheetsUseRemUnits(m_collectionForDocument.activeAuthorStyleSheets());

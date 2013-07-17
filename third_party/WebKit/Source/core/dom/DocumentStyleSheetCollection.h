@@ -41,6 +41,7 @@ namespace WebCore {
 
 class CSSStyleSheet;
 class Node;
+class RuleFeatureSet;
 class StyleSheet;
 class StyleSheetContents;
 class StyleSheetList;
@@ -100,8 +101,8 @@ public:
     bool usesRemUnits() const { return m_usesRemUnits; }
     void setUsesRemUnit(bool b) { m_usesRemUnits = b; }
 
-    void combineCSSFeatureFlags();
-    void resetCSSFeatureFlags();
+    void combineCSSFeatureFlags(const RuleFeatureSet&);
+    void resetCSSFeatureFlags(const RuleFeatureSet&);
 
 private:
     DocumentStyleSheetCollection(Document*);

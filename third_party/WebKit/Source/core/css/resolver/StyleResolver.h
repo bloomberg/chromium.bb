@@ -116,6 +116,9 @@ public:
     StyleResolver(Document*, bool matchAuthorAndUserStyles);
     ~StyleResolver();
 
+    // FIXME: StyleResolver should not be keeping tree-walk state.
+    // These should move to some global tree-walk state, or should be contained in a
+    // TreeWalkContext or similar which is passed in to StyleResolver methods when available.
     // Using these during tree walk will allow style selector to optimize child and descendant selector lookups.
     void pushParentElement(Element*);
     void popParentElement(Element*);
@@ -135,6 +138,8 @@ public:
 
     static PassRefPtr<RenderStyle> styleForDocument(const Document*, CSSFontSelector* = 0);
 
+    // FIXME: This only has 5 callers and should be removed. Callers should be explicit about
+    // their dependency on Document* instead of grabbing one through StyleResolver.
     Document* document() { return m_document; }
 
     // FIXME: It could be better to call m_ruleSets.appendAuthorStyleSheets() directly after we factor StyleRsolver further.
@@ -178,38 +183,39 @@ public:
     // |properties| is an array with |count| elements.
     void applyPropertiesToStyle(const CSSPropertyValue* properties, size_t count, RenderStyle*);
 
-    // FIXME: This should probably go away, folded into FontBuilder.
-    void updateFont();
-
-    bool hasSelectorForId(const AtomicString&) const;
-    bool hasSelectorForClass(const AtomicString&) const;
-    bool hasSelectorForAttribute(const AtomicString&) const;
-
     CSSFontSelector* fontSelector() const { return m_fontSelector.get(); }
     ViewportStyleResolver* viewportStyleResolver() { return m_viewportStyleResolver.get(); }
 
+    // FIXME: This logic belongs in MediaQueryEvaluator.
     void addViewportDependentMediaQueryResult(const MediaQueryExp*, bool result);
     bool hasViewportDependentMediaQueries() const { return !m_viewportDependentMediaQueryResults.isEmpty(); }
     bool affectedByViewportChange() const;
 
+    // FIXME: This likely belongs on RuleSet.
     void addKeyframeStyle(PassRefPtr<StyleRuleKeyframes>);
 
+    // FIXME: Regions should not require special logic in StyleResolver.
     bool checkRegionStyle(Element* regionElement);
-
-    bool usesSiblingRules() const { return !m_features.siblingRules.isEmpty(); }
-    bool usesFirstLineRules() const { return m_features.usesFirstLineRules; }
-    bool usesBeforeAfterRules() const { return m_features.usesBeforeAfterRules; }
 
     // FIXME: Rename to reflect the purpose, like didChangeFontSize or something.
     void invalidateMatchedPropertiesCache();
 
+    // Exposed for RenderStyle::isStyleAvilable().
     static RenderStyle* styleNotYetAvailable() { return s_styleNotYetAvailable; }
 
+    // FIXME: StyleResolver should not have this member or method.
     InspectorCSSOMWrappers& inspectorCSSOMWrappers() { return m_inspectorCSSOMWrappers; }
 
+    // Exposed for ScopedStyleResolver.
+    // FIXME: Likely belongs on viewportStyleResolver.
     void collectViewportRules(RuleSet*);
 
+    const RuleFeatureSet& ruleFeatureSet() const { return m_features; }
+
 private:
+    // FIXME: This should probably go away, folded into FontBuilder.
+    void updateFont();
+
     void matchUARules(ElementRuleCollector&, RuleSet*);
     void matchAuthorRules(ElementRuleCollector&, bool includeEmptyRules);
     void matchShadowDistributedRules(ElementRuleCollector&, bool includeEmptyRules);
@@ -251,6 +257,7 @@ private:
 
     DocumentRuleSets m_ruleSets;
 
+    // FIXME: This likely belongs on RuleSet.
     typedef HashMap<AtomicStringImpl*, RefPtr<StyleRuleKeyframes> > KeyframesRuleMap;
     KeyframesRuleMap m_keyframesRuleMap;
 
@@ -289,24 +296,6 @@ private:
     friend void StyleBuilder::oldApplyProperty(CSSPropertyID, StyleResolver*, StyleResolverState&, CSSValue*, bool isInitial, bool isInherit);
 
 };
-
-inline bool StyleResolver::hasSelectorForAttribute(const AtomicString &attributeName) const
-{
-    ASSERT(!attributeName.isEmpty());
-    return m_features.attrsInRules.contains(attributeName.impl());
-}
-
-inline bool StyleResolver::hasSelectorForClass(const AtomicString& classValue) const
-{
-    ASSERT(!classValue.isEmpty());
-    return m_features.classesInRules.contains(classValue.impl());
-}
-
-inline bool StyleResolver::hasSelectorForId(const AtomicString& idValue) const
-{
-    ASSERT(!idValue.isEmpty());
-    return m_features.idsInRules.contains(idValue.impl());
-}
 
 inline bool checkRegionSelector(const CSSSelector* regionSelector, Element* regionElement)
 {

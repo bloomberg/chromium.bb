@@ -35,18 +35,19 @@ struct RuleFeature {
     RuleFeature(StyleRule* rule, unsigned selectorIndex, bool hasDocumentSecurityOrigin)
         : rule(rule)
         , selectorIndex(selectorIndex)
-        , hasDocumentSecurityOrigin(hasDocumentSecurityOrigin) 
-    { 
+        , hasDocumentSecurityOrigin(hasDocumentSecurityOrigin)
+    {
     }
     StyleRule* rule;
     unsigned selectorIndex;
     bool hasDocumentSecurityOrigin;
 };
 
-struct RuleFeatureSet {
+class RuleFeatureSet {
+public:
     RuleFeatureSet()
-        : usesFirstLineRules(false)
-        , usesBeforeAfterRules(false)
+        : m_usesFirstLineRules(false)
+        , m_usesBeforeAfterRules(false)
     { }
 
     void add(const RuleFeatureSet&);
@@ -54,13 +55,36 @@ struct RuleFeatureSet {
 
     void collectFeaturesFromSelector(const CSSSelector*);
 
+    bool usesSiblingRules() const { return !siblingRules.isEmpty(); }
+    bool usesFirstLineRules() const { return m_usesFirstLineRules; }
+    bool usesBeforeAfterRules() const { return m_usesBeforeAfterRules; }
+
+    inline bool hasSelectorForAttribute(const AtomicString &attributeName) const
+    {
+        ASSERT(!attributeName.isEmpty());
+        return attrsInRules.contains(attributeName.impl());
+    }
+
+    inline bool hasSelectorForClass(const AtomicString& classValue) const
+    {
+        ASSERT(!classValue.isEmpty());
+        return classesInRules.contains(classValue.impl());
+    }
+
+    inline bool hasSelectorForId(const AtomicString& idValue) const
+    {
+        ASSERT(!idValue.isEmpty());
+        return idsInRules.contains(idValue.impl());
+    }
+
     HashSet<AtomicStringImpl*> idsInRules;
     HashSet<AtomicStringImpl*> classesInRules;
     HashSet<AtomicStringImpl*> attrsInRules;
     Vector<RuleFeature> siblingRules;
     Vector<RuleFeature> uncommonAttributeRules;
-    bool usesFirstLineRules;
-    bool usesBeforeAfterRules;
+private:
+    bool m_usesFirstLineRules;
+    bool m_usesBeforeAfterRules;
 };
 
 } // namespace WebCore

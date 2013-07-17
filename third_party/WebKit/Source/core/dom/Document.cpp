@@ -1655,7 +1655,7 @@ void Document::recalcStyle(StyleChange change)
 
         // Pseudo element removal and similar may only work with these flags still set. Reset them after the style recalc.
         if (m_styleResolver)
-            m_styleSheetCollection->resetCSSFeatureFlags();
+            m_styleSheetCollection->resetCSSFeatureFlags(m_styleResolver->ruleFeatureSet());
 
         if (frameView) {
             frameView->resumeScheduledEvents();
@@ -1837,7 +1837,7 @@ void Document::createStyleResolver()
     if (Settings* docSettings = settings())
         matchAuthorAndUserStyles = docSettings->authorAndUserStylesEnabled();
     m_styleResolver = adoptPtr(new StyleResolver(this, matchAuthorAndUserStyles));
-    m_styleSheetCollection->combineCSSFeatureFlags();
+    m_styleSheetCollection->combineCSSFeatureFlags(m_styleResolver->ruleFeatureSet());
 }
 
 void Document::clearStyleResolver()
@@ -2276,7 +2276,7 @@ void Document::implicitClose()
         // The AX cache may have been cleared at this point, but we need to make sure it contains an
         // AX object to send the notification to. getOrCreate will make sure that an valid AX object
         // exists in the cache (we ignore the return value because we don't need it here). This is
-        // only safe to call when a layout is not in progress, so it can not be used in postNotification.    
+        // only safe to call when a layout is not in progress, so it can not be used in postNotification.
         if (AXObjectCache* cache = axObjectCache()) {
             cache->getOrCreate(renderObject);
             if (this == topDocument()) {
