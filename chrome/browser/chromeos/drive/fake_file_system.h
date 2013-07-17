@@ -104,9 +104,6 @@ class FakeFileSystem : public FileSystemInterface {
   virtual void ReadDirectoryByPath(
       const base::FilePath& file_path,
       const ReadDirectoryCallback& callback) OVERRIDE;
-  virtual void RefreshDirectory(
-      const base::FilePath& file_path,
-      const FileOperationCallback& callback) OVERRIDE;
   virtual void Search(const std::string& search_query,
                       const GURL& next_url,
                       const SearchCallback& callback) OVERRIDE;

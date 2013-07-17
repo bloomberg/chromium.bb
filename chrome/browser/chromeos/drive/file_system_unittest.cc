@@ -730,22 +730,6 @@ TEST_F(FileSystemTest, GetAvailableSpace) {
   EXPECT_EQ(GG_LONGLONG(9876543210), bytes_total);
 }
 
-TEST_F(FileSystemTest, RefreshDirectory) {
-  ASSERT_TRUE(LoadFullResourceList());
-
-  FileError error = FILE_ERROR_FAILED;
-  file_system_->RefreshDirectory(
-      util::GetDriveMyDriveRootPath(),
-      google_apis::test_util::CreateCopyResultCallback(&error));
-  test_util::RunBlockingPoolTask();
-  EXPECT_EQ(FILE_ERROR_OK, error);
-
-  // We'll notify the directory change to the observer.
-  ASSERT_EQ(1u, mock_directory_observer_->changed_directories().size());
-  EXPECT_EQ(util::GetDriveMyDriveRootPath(),
-            mock_directory_observer_->changed_directories()[0]);
-}
-
 TEST_F(FileSystemTest, OpenAndCloseFile) {
   ASSERT_TRUE(LoadFullResourceList());
 

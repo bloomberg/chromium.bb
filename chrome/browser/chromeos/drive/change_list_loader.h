@@ -92,20 +92,6 @@ class ChangeListLoader {
   void LoadIfNeeded(const DirectoryFetchInfo& directory_fetch_info,
                     const FileOperationCallback& callback);
 
-  // Initiates the directory contents loading. This function first obtains
-  // the changestamp from the server in order to set the per-directory
-  // changestamp for the directory.
-  //
-  // Upon completion, |callback| is invoked. On success, the changestamp of
-  // the directory is updated. |callback| must not be null.
-  //
-  // Note that This function initiates the loading without comparing the
-  // directory changestamp against the server changestamp. The primary
-  // purpose of this function is to update parts of entries in the directory
-  // which can stale over time, such as thumbnail URLs.
-  void LoadDirectoryFromServer(const std::string& directory_resource_id,
-                               const FileOperationCallback& callback);
-
  private:
   // Starts the resource metadata loading and calls |callback| when it's
   // done. |directory_fetch_info| is used for fast fetch. If there is already
@@ -185,17 +171,6 @@ class ChangeListLoader {
   void LoadChangeListFromServerAfterUpdate();
 
   // ================= Implementation for directory loading =================
-
-  // Part of LoadDirectoryFromServer().
-  // Called after GetAboutResource() for getting remote changestamp is complete.
-  // Note that it directly proceeds to DoLoadDirectoryFromServer() not going
-  // through CheckChangestampAndLoadDirectoryIfNeeded, because the purpose of
-  // LoadDirectoryFromServer is to force reloading regardless of changestamp.
-  void LoadDirectoryFromServerAfterGetAbout(
-      const std::string& directory_resource_id,
-      const FileOperationCallback& callback,
-      google_apis::GDataErrorCode status,
-      scoped_ptr<google_apis::AboutResource> about_resource);
 
   // Compares the directory's changestamp and |last_known_remote_changestamp_|.
   // Starts DoLoadDirectoryFromServer() if the local data is old and runs

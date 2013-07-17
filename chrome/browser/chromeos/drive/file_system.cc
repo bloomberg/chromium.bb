@@ -648,48 +648,6 @@ void FileSystem::ReadDirectoryByPathAfterRead(
   callback.Run(FILE_ERROR_OK, filtered.Pass());
 }
 
-void FileSystem::RefreshDirectory(
-    const base::FilePath& directory_path,
-    const FileOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  // Make sure the destination directory exists.
-  resource_metadata_->GetResourceEntryByPathOnUIThread(
-      directory_path,
-      base::Bind(&FileSystem::RefreshDirectoryAfterGetResourceEntry,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 directory_path,
-                 callback));
-}
-
-void FileSystem::RefreshDirectoryAfterGetResourceEntry(
-    const base::FilePath& directory_path,
-    const FileOperationCallback& callback,
-    FileError error,
-    scoped_ptr<ResourceEntry> entry) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  if (error != FILE_ERROR_OK) {
-    callback.Run(error);
-    return;
-  }
-  if (!entry->file_info().is_directory()) {
-    callback.Run(FILE_ERROR_NOT_A_DIRECTORY);
-    return;
-  }
-  if (util::IsSpecialResourceId(entry->resource_id())) {
-    // Do not load special directories. Just return.
-    callback.Run(FILE_ERROR_OK);
-    return;
-  }
-
-  change_list_loader_->LoadDirectoryFromServer(
-      entry->resource_id(),
-      callback);
-}
-
 void FileSystem::GetAvailableSpace(
     const GetAvailableSpaceCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

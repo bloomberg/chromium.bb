@@ -137,9 +137,6 @@ class FileSystem : public FileSystemInterface,
   virtual void ReadDirectoryByPath(
       const base::FilePath& directory_path,
       const ReadDirectoryCallback& callback) OVERRIDE;
-  virtual void RefreshDirectory(
-      const base::FilePath& directory_path,
-      const FileOperationCallback& callback) OVERRIDE;
   virtual void GetAvailableSpace(
       const GetAvailableSpaceCallback& callback) OVERRIDE;
   virtual void GetMetadata(
@@ -268,14 +265,6 @@ class FileSystem : public FileSystemInterface,
       const ReadDirectoryCallback& callback,
       FileError error,
       scoped_ptr<ResourceEntryVector> entries);
-
-  // Part of RefreshDirectory(). Called after
-  // GetResourceEntryByPath() is complete.
-  void RefreshDirectoryAfterGetResourceEntry(
-      const base::FilePath& directory_path,
-      const FileOperationCallback& callback,
-      FileError error,
-      scoped_ptr<ResourceEntry> entry);
 
   // Part of GetEntryByResourceId and GetEntryByPath. Checks whether there is a
   // local dirty cache for the entry, and if there is, replace the

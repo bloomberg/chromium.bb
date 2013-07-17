@@ -184,12 +184,6 @@ void FakeFileSystem::ReadDirectoryByPath(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-void FakeFileSystem::RefreshDirectory(
-    const base::FilePath& file_path,
-    const FileOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-}
-
 void FakeFileSystem::Search(const std::string& search_query,
                             const GURL& next_url,
                             const SearchCallback& callback) {
