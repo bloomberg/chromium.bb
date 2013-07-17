@@ -153,6 +153,7 @@ TestRunner::TestRunner(TestInterfaces* interfaces)
     , m_testInterfaces(interfaces)
     , m_delegate(0)
     , m_webView(0)
+    , m_pageOverlay(0)
     , m_webPermissions(new WebPermissions)
 #if ENABLE_NOTIFICATIONS
     , m_notificationPresenter(new NotificationPresenter)
@@ -288,6 +289,10 @@ TestRunner::TestRunner(TestInterfaces* interfaces)
     bindMethod("displayInvalidatedRegion", &TestRunner::displayInvalidatedRegion);
     bindMethod("isChooserShown", &TestRunner::isChooserShown);
 
+    // The following modify WebPageOverlays.
+    bindMethod("addWebPageOverlay", &TestRunner::addWebPageOverlay);
+    bindMethod("removeWebPageOverlay", &TestRunner::removeWebPageOverlay);
+
     // Properties.
     bindProperty("globalFlag", &m_globalFlag);
     bindProperty("titleTextDirection", &m_titleTextDirection);
@@ -359,6 +364,12 @@ void TestRunner::reset()
 #endif
         m_webView->removeAllUserContent();
         m_webView->setVisibilityState(WebPageVisibilityStateVisible, true);
+
+        if (m_pageOverlay) {
+            m_webView->removePageOverlay(m_pageOverlay);
+            delete m_pageOverlay;
+            m_pageOverlay = 0;
+        }
     }
 
     m_topLoadingFrame = 0;
@@ -713,6 +724,23 @@ bool TestRunner::isPointerLocked()
 void TestRunner::setToolTipText(const WebKit::WebString& text)
 {
     m_tooltipText.set(text.utf8());
+}
+
+TestRunner::TestPageOverlay::TestPageOverlay(WebKit::WebView* webView) : m_webView(webView)
+{
+}
+
+TestRunner::TestPageOverlay::~TestPageOverlay()
+{
+}
+
+void TestRunner::TestPageOverlay::paintPageOverlay(WebKit::WebCanvas* canvas)
+{
+    SkRect rect = SkRect::MakeWH(m_webView->size().width, m_webView->size().height);
+    SkPaint paint;
+    paint.setColor(SK_ColorCYAN);
+    paint.setStyle(SkPaint::kFill_Style);
+    canvas->drawRect(rect, paint);
 }
 
 void TestRunner::didAcquirePointerLockInternal()
@@ -1821,6 +1849,26 @@ void TestRunner::setMockSpeechRecognitionError(const CppArgumentList& arguments,
 void TestRunner::wasMockSpeechRecognitionAborted(const CppArgumentList&, CppVariant* result)
 {
     result->set(m_proxy->speechRecognizerMock()->wasAborted());
+}
+
+void TestRunner::addWebPageOverlay(const CppArgumentList&, CppVariant* result)
+{
+    if (m_webView && !m_pageOverlay) {
+        m_pageOverlay = new TestPageOverlay(m_webView);
+        m_webView->addPageOverlay(m_pageOverlay, 0);
+    }
+    result->setNull();
+}
+
+void TestRunner::removeWebPageOverlay(const CppArgumentList&, CppVariant* result)
+{
+    if (m_webView && m_pageOverlay) {
+        m_webView->removePageOverlay(m_pageOverlay);
+        delete m_pageOverlay;
+        m_pageOverlay = 0;
+    }
+
+    result->setNull();
 }
 
 void TestRunner::display(const CppArgumentList& arguments, CppVariant* result)

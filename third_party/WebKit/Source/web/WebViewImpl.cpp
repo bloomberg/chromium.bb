@@ -3947,6 +3947,8 @@ void WebViewImpl::setIsAcceleratedCompositingActive(bool active)
     } else if (m_layerTreeView) {
         m_isAcceleratedCompositingActive = true;
         updateLayerTreeViewport();
+        if (m_pageOverlays)
+            m_pageOverlays->update();
 
         m_client->didActivateCompositor(0);
     } else {
