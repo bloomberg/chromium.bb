@@ -202,6 +202,7 @@ XSSAuditor::XSSAuditor()
     , m_didSendValidCSPHeader(false)
     , m_didSendValidXSSProtectionHeader(false)
     , m_state(Uninitialized)
+    , m_scriptTagFoundInRequest(false)
     , m_scriptTagNestingLevel(0)
     , m_encoding(UTF8Encoding())
 {
@@ -381,7 +382,7 @@ void XSSAuditor::filterEndToken(const FilterTokenRequest& request)
 bool XSSAuditor::filterCharacterToken(const FilterTokenRequest& request)
 {
     ASSERT(m_scriptTagNestingLevel);
-    if (isContainedInRequest(m_cachedDecodedSnippet) && isContainedInRequest(decodedSnippetForJavaScript(request))) {
+    if (m_scriptTagFoundInRequest && isContainedInRequest(decodedSnippetForJavaScript(request))) {
         request.token.eraseCharacters();
         request.token.appendToCharacter(' '); // Technically, character tokens can't be empty.
         return true;
@@ -394,14 +395,12 @@ bool XSSAuditor::filterScriptToken(const FilterTokenRequest& request)
     ASSERT(request.token.type() == HTMLToken::StartTag);
     ASSERT(hasName(request.token, scriptTag));
 
-    m_cachedDecodedSnippet = decodedSnippetForName(request);
-
     bool didBlockScript = false;
-    if (isContainedInRequest(decodedSnippetForName(request))) {
+    m_scriptTagFoundInRequest = isContainedInRequest(decodedSnippetForName(request));
+    if (m_scriptTagFoundInRequest) {
         didBlockScript |= eraseAttributeIfInjected(request, srcAttr, blankURL().string(), SrcLikeAttribute);
         didBlockScript |= eraseAttributeIfInjected(request, XLinkNames::hrefAttr, blankURL().string(), SrcLikeAttribute);
     }
-
     return didBlockScript;
 }
 
@@ -721,8 +720,7 @@ bool XSSAuditor::isSafeToSendToAnotherThread() const
 {
     return m_documentURL.isSafeToSendToAnotherThread()
         && m_decodedURL.isSafeToSendToAnotherThread()
-        && m_decodedHTTPBody.isSafeToSendToAnotherThread()
-        && m_cachedDecodedSnippet.isSafeToSendToAnotherThread();
+        && m_decodedHTTPBody.isSafeToSendToAnotherThread();
 }
 
 } // namespace WebCore

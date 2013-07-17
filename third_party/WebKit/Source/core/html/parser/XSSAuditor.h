@@ -116,7 +116,7 @@ private:
     OwnPtr<SuffixTree<ASCIICodebook> > m_decodedHTTPBodySuffixTree;
 
     State m_state;
-    String m_cachedDecodedSnippet;
+    bool m_scriptTagFoundInRequest;
     unsigned m_scriptTagNestingLevel;
     WTF::TextEncoding m_encoding;
 };
