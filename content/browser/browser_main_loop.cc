@@ -701,10 +701,9 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
     //   before the DB thread is stopped)
     //
     // - (Not sure why DB stops last.)
-    scoped_ptr<BrowserProcessSubThread>* thread_to_stop = NULL;
     switch (thread_id) {
       case BrowserThread::DB:
-        thread_to_stop = &db_thread_;
+        db_thread_.reset();
         break;
       case BrowserThread::WEBKIT_DEPRECATED:
         // Special case as WebKitThread is a separate
@@ -713,46 +712,36 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
         // Need to destroy ResourceDispatcherHost before PluginService
         // and since it caches a pointer to it.
         resource_dispatcher_host_.reset();
+#if !defined(OS_IOS)
+        webkit_thread_.reset();
+#endif
         break;
       case BrowserThread::FILE_USER_BLOCKING:
-        thread_to_stop = &file_user_blocking_thread_;
+        file_user_blocking_thread_.reset();
         break;
       case BrowserThread::FILE:
-        thread_to_stop = &file_thread_;
-
 #if !defined(OS_IOS)
         // Clean up state that lives on or uses the file_thread_ before
         // it goes away.
         if (resource_dispatcher_host_)
           resource_dispatcher_host_.get()->save_file_manager()->Shutdown();
 #endif  // !defined(OS_IOS)
+        file_thread_.reset();
         break;
       case BrowserThread::PROCESS_LAUNCHER:
-        thread_to_stop = &process_launcher_thread_;
+        process_launcher_thread_.reset();
         break;
       case BrowserThread::CACHE:
-        thread_to_stop = &cache_thread_;
+        cache_thread_.reset();
         break;
       case BrowserThread::IO:
-        thread_to_stop = &io_thread_;
+        io_thread_.reset();
         break;
       case BrowserThread::UI:
       case BrowserThread::ID_COUNT:
       default:
         NOTREACHED();
         break;
-    }
-
-    BrowserThread::ID id = static_cast<BrowserThread::ID>(thread_id);
-
-    if (id == BrowserThread::WEBKIT_DEPRECATED) {
-#if !defined(OS_IOS)
-      webkit_thread_.reset();
-#endif
-    } else if (thread_to_stop) {
-      thread_to_stop->reset();
-    } else {
-      NOTREACHED();
     }
   }
 
