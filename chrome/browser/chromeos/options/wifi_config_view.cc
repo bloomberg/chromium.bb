@@ -7,7 +7,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/enrollment_dialog_view.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -569,7 +568,7 @@ void WifiConfigView::UpdateErrorLabel() {
     }
   }
   if (error_msg.empty() && !service_path_.empty()) {
-    NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
+    NetworkLibrary* cros = NetworkLibrary::Get();
     const WifiNetwork* wifi = cros->FindWifiNetworkByPath(service_path_);
     if (wifi && wifi->failed()) {
       bool passphrase_empty = wifi->GetPassphrase().empty();
@@ -652,7 +651,7 @@ void WifiConfigView::OnCertificatesLoaded(bool initial_load) {
 }
 
 bool WifiConfigView::Login() {
-  NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
+  NetworkLibrary* cros = NetworkLibrary::Get();
   if (service_path_.empty()) {
     const bool share_default = true;  // share networks by default
     if (!eap_method_combobox_) {
@@ -1247,7 +1246,7 @@ void WifiConfigView::ParseWiFiUIProperty(
     NetworkPropertyUIData* property_ui_data,
     Network* network,
     const std::string& key) {
-  NetworkLibrary* network_library = CrosLibrary::Get()->GetNetworkLibrary();
+  NetworkLibrary* network_library = NetworkLibrary::Get();
   property_ui_data->ParseOncProperty(
       network->ui_data().onc_source(),
       network_library->FindOncForNetwork(network->unique_id()),

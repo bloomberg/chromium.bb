@@ -11,7 +11,6 @@
 #include "base/json/json_writer.h"  // for debug output only.
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversion_utils.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/native_network_constants.h"
 #include "chrome/browser/chromeos/cros/native_network_parser.h"
 #include "chrome/browser/chromeos/cros/network_library_impl_cros.h"
@@ -90,8 +89,9 @@ using content::BrowserThread;
 
 namespace chromeos {
 
-// Local constants.
 namespace {
+
+static NetworkLibrary* g_network_library = NULL;
 
 // Default value of the SIM unlock retries count. It is updated to the real
 // retries count once cellular device with SIM card is initialized.
@@ -512,7 +512,7 @@ void Network::InitIPAddressCallback(
     const NetworkIPConfigVector& ip_configs,
     const std::string& hardware_address) {
   Network* network =
-      CrosLibrary::Get()->GetNetworkLibrary()->FindNetworkByPath(service_path);
+      NetworkLibrary::Get()->FindNetworkByPath(service_path);
   if (!network)
     return;
   for (size_t i = 0; i < ip_configs.size(); ++i) {
@@ -1363,6 +1363,34 @@ NetworkLibrary* NetworkLibrary::GetImpl(bool stub) {
     impl = new NetworkLibraryImplCros();
   impl->Init();
   return impl;
+}
+
+// static
+void NetworkLibrary::Initialize(bool use_stub) {
+  CHECK(!g_network_library)
+      << "NetworkLibrary: Multiple calls to Initialize().";
+  g_network_library = NetworkLibrary::GetImpl(use_stub);
+  VLOG_IF(1, use_stub) << "NetworkLibrary Initialized with Stub Impl.";
+}
+
+// static
+void NetworkLibrary::Shutdown() {
+  VLOG(1) << "NetworkLibrary Shutting down...";
+  delete g_network_library;
+  g_network_library = NULL;
+  VLOG(1) << "  NetworkLibrary Shutdown completed.";
+}
+
+// static
+NetworkLibrary* NetworkLibrary::Get() {
+  return g_network_library;
+}
+
+// static
+void NetworkLibrary::SetForTesting(NetworkLibrary* library) {
+  if (g_network_library)
+    delete g_network_library;
+  g_network_library = library;
 }
 
 }  // namespace chromeos

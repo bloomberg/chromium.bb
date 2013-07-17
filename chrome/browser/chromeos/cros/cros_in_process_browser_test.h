@@ -34,7 +34,7 @@ class CrosInProcessBrowserTest : public InProcessBrowserTest {
   // Once such expectation is used it won't block expectations you've defined.
   void SetStatusAreaMocksExpectations();
 
-  // Destroyed by CrosLibrary class.
+  // Destroyed by NetworkLibrary::Shutdown().
   MockNetworkLibrary* mock_network_library_;
 
   // Stuff used for mock_network_library_.

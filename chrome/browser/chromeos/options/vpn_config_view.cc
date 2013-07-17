@@ -7,7 +7,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/enrollment_dialog_view.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -302,7 +301,7 @@ void VPNConfigView::OnCertificatesLoaded(bool initial_load) {
 }
 
 bool VPNConfigView::Login() {
-  NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
+  NetworkLibrary* cros = NetworkLibrary::Get();
   if (service_path_.empty()) {
     NetworkLibrary::VPNConfigData config_data;
     switch (provider_type_) {
@@ -715,7 +714,7 @@ void VPNConfigView::Init(VirtualNetwork* vpn) {
 }
 
 void VPNConfigView::Refresh() {
-  NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
+  NetworkLibrary* cros = NetworkLibrary::Get();
 
   UpdateControls();
 
@@ -819,7 +818,7 @@ void VPNConfigView::UpdateControls() {
 }
 
 void VPNConfigView::UpdateErrorLabel() {
-  NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
+  NetworkLibrary* cros = NetworkLibrary::Get();
 
   // Error message.
   std::string error_msg;
@@ -901,7 +900,7 @@ void VPNConfigView::ParseVPNUIProperty(NetworkPropertyUIData* property_ui_data,
                                        Network* network,
                                        const std::string& dict_key,
                                        const std::string& key) {
-  NetworkLibrary* network_library = CrosLibrary::Get()->GetNetworkLibrary();
+  NetworkLibrary* network_library = NetworkLibrary::Get();
   const base::DictionaryValue* onc =
       network_library->FindOncForNetwork(network->unique_id());
   VLOG_IF(1, !onc) << "No ONC found for VPN network " << network->unique_id();

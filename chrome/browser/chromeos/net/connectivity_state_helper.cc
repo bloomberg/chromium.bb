@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/net/connectivity_state_helper.h"
 
 #include "base/command_line.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/network/network_state.h"
@@ -202,7 +201,7 @@ void ConnectivityStateHelperImpl::DefaultNetworkChanged(
 //
 
 ConnectivityStateHelperNetworkLibrary::ConnectivityStateHelperNetworkLibrary() {
-  network_library_ = CrosLibrary::Get()->GetNetworkLibrary();
+  network_library_ = NetworkLibrary::Get();
   network_library_->AddNetworkManagerObserver(this);
 }
 

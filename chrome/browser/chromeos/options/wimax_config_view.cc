@@ -7,7 +7,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/enrollment_dialog_view.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
@@ -79,7 +78,7 @@ void WimaxConfigView::UpdateDialogButtons() {
 void WimaxConfigView::UpdateErrorLabel() {
   std::string error_msg;
   if (!service_path_.empty()) {
-    NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
+    NetworkLibrary* cros = NetworkLibrary::Get();
     const WimaxNetwork* wimax = cros->FindWimaxNetworkByPath(service_path_);
     if (wimax && wimax->failed()) {
       bool passphrase_empty = wimax->eap_passphrase().empty();
@@ -138,7 +137,7 @@ void WimaxConfigView::ButtonPressed(views::Button* sender,
 }
 
 bool WimaxConfigView::Login() {
-  NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
+  NetworkLibrary* cros = NetworkLibrary::Get();
   WimaxNetwork* wimax = cros->FindWimaxNetworkByPath(service_path_);
   if (!wimax) {
     // Shill no longer knows about this wimax network (edge case).

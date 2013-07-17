@@ -8,7 +8,6 @@
 #include "base/command_line.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/sms_observer.h"
@@ -109,7 +108,7 @@ void ProfileHelper::ProfileStartup(Profile* profile, bool process_startup) {
   if (process_startup) {
     static chromeos::SmsObserver* sms_observer =
         new chromeos::SmsObserver();
-    chromeos::CrosLibrary::Get()->GetNetworkLibrary()->
+    chromeos::NetworkLibrary::Get()->
         AddNetworkManagerObserver(sms_observer);
 
     profile->SetupChromeOSEnterpriseExtensionObserver();

@@ -7,7 +7,6 @@
 #include "base/values.h"
 #include "chrome/browser/automation/automation_provider.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/login/authentication_notification_details.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen_actor.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
@@ -19,7 +18,6 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "content/public/browser/notification_service.h"
 
-using chromeos::CrosLibrary;
 using chromeos::NetworkLibrary;
 using chromeos::WizardController;
 
@@ -36,11 +34,11 @@ NetworkManagerInitObserver::NetworkManagerInitObserver(
 }
 
 NetworkManagerInitObserver::~NetworkManagerInitObserver() {
-    CrosLibrary::Get()->GetNetworkLibrary()->RemoveNetworkManagerObserver(this);
+  NetworkLibrary::Get()->RemoveNetworkManagerObserver(this);
 }
 
 bool NetworkManagerInitObserver::Init() {
-  if (!CrosLibrary::Get()->GetNetworkLibrary()->IsCros()) {
+  if (!NetworkLibrary::Get()->IsCros()) {
     // If the network library is not the production version, don't wait for
     // the network library to finish initializing, because it'll wait
     // forever.
@@ -48,7 +46,7 @@ bool NetworkManagerInitObserver::Init() {
     return false;
   }
 
-  CrosLibrary::Get()->GetNetworkLibrary()->AddNetworkManagerObserver(this);
+  NetworkLibrary::Get()->AddNetworkManagerObserver(this);
   return true;
 }
 
@@ -217,12 +215,12 @@ void ScreenUnlockObserver::OnLoginFailure(const chromeos::LoginFailure& error) {
 NetworkScanObserver::NetworkScanObserver(AutomationProvider* automation,
                                          IPC::Message* reply_message)
     : automation_(automation->AsWeakPtr()), reply_message_(reply_message) {
-  NetworkLibrary* network_library = CrosLibrary::Get()->GetNetworkLibrary();
+  NetworkLibrary* network_library = NetworkLibrary::Get();
   network_library->AddNetworkManagerObserver(this);
 }
 
 NetworkScanObserver::~NetworkScanObserver() {
-  NetworkLibrary* network_library = CrosLibrary::Get()->GetNetworkLibrary();
+  NetworkLibrary* network_library = NetworkLibrary::Get();
   network_library->RemoveNetworkManagerObserver(this);
 }
 
@@ -242,12 +240,12 @@ ToggleNetworkDeviceObserver::ToggleNetworkDeviceObserver(
     const std::string& device, bool enable)
     : automation_(automation->AsWeakPtr()), reply_message_(reply_message),
       device_(device), enable_(enable) {
-  NetworkLibrary* network_library = CrosLibrary::Get()->GetNetworkLibrary();
+  NetworkLibrary* network_library = NetworkLibrary::Get();
   network_library->AddNetworkManagerObserver(this);
 }
 
 ToggleNetworkDeviceObserver::~ToggleNetworkDeviceObserver() {
-  NetworkLibrary* network_library = CrosLibrary::Get()->GetNetworkLibrary();
+  NetworkLibrary* network_library = NetworkLibrary::Get();
   network_library->RemoveNetworkManagerObserver(this);
 }
 
@@ -266,12 +264,12 @@ void ToggleNetworkDeviceObserver::OnNetworkManagerChanged(NetworkLibrary* obj) {
 NetworkStatusObserver::NetworkStatusObserver(AutomationProvider* automation,
                                                IPC::Message* reply_message)
     : automation_(automation->AsWeakPtr()), reply_message_(reply_message) {
-  NetworkLibrary* network_library = CrosLibrary::Get()->GetNetworkLibrary();
+  NetworkLibrary* network_library = NetworkLibrary::Get();
   network_library->AddNetworkManagerObserver(this);
 }
 
 NetworkStatusObserver::~NetworkStatusObserver() {
-  NetworkLibrary* network_library = CrosLibrary::Get()->GetNetworkLibrary();
+  NetworkLibrary* network_library = NetworkLibrary::Get();
   network_library->RemoveNetworkManagerObserver(this);
 }
 
@@ -374,12 +372,12 @@ VirtualConnectObserver::VirtualConnectObserver(AutomationProvider* automation,
     : automation_(automation->AsWeakPtr()),
       reply_message_(reply_message),
       service_name_(service_name) {
-  NetworkLibrary* network_library = CrosLibrary::Get()->GetNetworkLibrary();
+  NetworkLibrary* network_library = NetworkLibrary::Get();
   network_library->AddNetworkManagerObserver(this);
 }
 
 VirtualConnectObserver::~VirtualConnectObserver() {
-  NetworkLibrary* network_library = CrosLibrary::Get()->GetNetworkLibrary();
+  NetworkLibrary* network_library = NetworkLibrary::Get();
   network_library->RemoveNetworkManagerObserver(this);
 }
 

@@ -13,7 +13,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
@@ -101,7 +100,7 @@ class ChooseMobileNetworkHandler
 
 ChooseMobileNetworkHandler::ChooseMobileNetworkHandler()
     : is_page_ready_(false), has_pending_results_(false) {
-  NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
+  NetworkLibrary* cros = NetworkLibrary::Get();
   if (const NetworkDevice* cellular = cros->FindCellularDevice()) {
     device_path_ = cellular->device_path();
     cros->AddNetworkDeviceObserver(device_path_, this);
@@ -111,7 +110,7 @@ ChooseMobileNetworkHandler::ChooseMobileNetworkHandler()
 
 ChooseMobileNetworkHandler::~ChooseMobileNetworkHandler() {
   if (!device_path_.empty()) {
-    NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
+    NetworkLibrary* cros = NetworkLibrary::Get();
     cros->RemoveNetworkDeviceObserver(device_path_, this);
   }
 }
@@ -174,7 +173,7 @@ void ChooseMobileNetworkHandler::HandleCancel(const ListValue* args) {
   }
 
   // Switch to automatic mode.
-  NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
+  NetworkLibrary* cros = NetworkLibrary::Get();
   cros->RequestCellularRegister(std::string());
 }
 
@@ -187,7 +186,7 @@ void ChooseMobileNetworkHandler::HandleConnect(const ListValue* args) {
     return;
   }
 
-  NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
+  NetworkLibrary* cros = NetworkLibrary::Get();
   cros->RequestCellularRegister(network_id);
 }
 

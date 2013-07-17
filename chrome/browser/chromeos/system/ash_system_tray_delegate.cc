@@ -51,7 +51,6 @@
 #include "chrome/browser/chromeos/audio/audio_handler.h"
 #include "chrome/browser/chromeos/bluetooth/bluetooth_pairing_dialog.h"
 #include "chrome/browser/chromeos/choose_mobile_network_dialog.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/job_list.h"
@@ -300,7 +299,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
     DBusThreadManager::Get()->GetSessionManagerClient()->AddObserver(this);
 
-    NetworkLibrary* crosnet = CrosLibrary::Get()->GetNetworkLibrary();
+    NetworkLibrary* crosnet = NetworkLibrary::Get();
     crosnet->AddNetworkManagerObserver(this);
     OnNetworkManagerChanged(crosnet);
 
@@ -370,7 +369,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     DBusThreadManager::Get()->GetSessionManagerClient()->RemoveObserver(this);
     DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
     DBusThreadManager::Get()->GetSystemClockClient()->RemoveObserver(this);
-    NetworkLibrary* crosnet = CrosLibrary::Get()->GetNetworkLibrary();
+    NetworkLibrary* crosnet = NetworkLibrary::Get();
     if (crosnet)
       crosnet->RemoveNetworkManagerObserver(this);
     input_method::InputMethodManager::Get()->RemoveObserver(this);
@@ -830,7 +829,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
                                       std::string* topup_url,
                                       std::string* setup_url) OVERRIDE {
     bool result = false;
-    NetworkLibrary* crosnet = CrosLibrary::Get()->GetNetworkLibrary();
+    NetworkLibrary* crosnet = NetworkLibrary::Get();
     const NetworkDevice* cellular = crosnet->FindCellularDevice();
     if (!cellular)
       return false;
@@ -1246,7 +1245,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
       size_t link_index) OVERRIDE {
     if (message_type == ash::NetworkObserver::ERROR_OUT_OF_CREDITS) {
       const CellularNetwork* cellular =
-          CrosLibrary::Get()->GetNetworkLibrary()->cellular_network();
+          NetworkLibrary::Get()->cellular_network();
       if (cellular)
         ConnectToNetwork(cellular->service_path());
       ash::Shell::GetInstance()->system_tray_notifier()->
@@ -1269,7 +1268,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         deal_url_to_open = deal_topup_url;
       } else {
         const Network* cellular =
-            CrosLibrary::Get()->GetNetworkLibrary()->cellular_network();
+            NetworkLibrary::Get()->cellular_network();
         if (!cellular)
           return;
         ShowNetworkSettings(cellular->service_path());
@@ -1312,7 +1311,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   void UpdateCellular() {
     const CellularNetworkVector& cellular_networks =
-        CrosLibrary::Get()->GetNetworkLibrary()->cellular_networks();
+        NetworkLibrary::Get()->cellular_networks();
     if (cellular_networks.empty())
       return;
     // We only care about the first cellular network (in practice there will

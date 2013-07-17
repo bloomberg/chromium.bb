@@ -19,7 +19,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/mobile/mobile_activator.h"
 #include "chrome/browser/profiles/profile.h"
@@ -44,7 +43,6 @@
 #include "url/gurl.h"
 
 using chromeos::CellularNetwork;
-using chromeos::CrosLibrary;
 using chromeos::MobileActivator;
 using chromeos::NetworkLibrary;
 using content::BrowserThread;
@@ -228,8 +226,7 @@ void MobileSetupUIHTMLSource::StartDataRequest(
     const content::URLDataSource::GotDataCallback& callback) {
   CellularNetwork* network = NULL;
   if (!path.empty()) {
-    network = CrosLibrary::Get()->GetNetworkLibrary()->
-        FindCellularNetworkByPath(path);
+    network = NetworkLibrary::Get()-> FindCellularNetworkByPath(path);
   }
 
   if (!network || (!network->SupportsActivation() && !network->activated())) {
@@ -302,7 +299,7 @@ MobileSetupHandler::~MobileSetupHandler() {
     MobileActivator::GetInstance()->RemoveObserver(this);
     MobileActivator::GetInstance()->TerminateActivation();
   } else if (type_ == TYPE_PORTAL_LTE) {
-    CrosLibrary::Get()->GetNetworkLibrary()->RemoveNetworkManagerObserver(this);
+    NetworkLibrary::Get()->RemoveNetworkManagerObserver(this);
   }
 }
 
@@ -399,7 +396,7 @@ void MobileSetupHandler::HandleGetDeviceInfo(const ListValue* args) {
   if (path.empty())
     return;
 
-  NetworkLibrary* network_lib = CrosLibrary::Get()->GetNetworkLibrary();
+  NetworkLibrary* network_lib = NetworkLibrary::Get();
   CellularNetwork* network =
       network_lib->FindCellularNetworkByPath(path.substr(1));
   if (!network) {
@@ -477,7 +474,7 @@ void MobileSetupHandler::GetDeviceInfo(CellularNetwork* network,
                                        DictionaryValue* value) {
   DCHECK(network);
   chromeos::NetworkLibrary* cros =
-      chromeos::CrosLibrary::Get()->GetNetworkLibrary();
+      chromeos::NetworkLibrary::Get();
   if (!cros)
     return;
   value->SetBoolean("activate_over_non_cellular_network",

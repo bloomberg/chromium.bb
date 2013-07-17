@@ -49,7 +49,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/policy/app_pack_updater.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
@@ -218,7 +218,7 @@ void BrowserPolicyConnector::Init(
     network_configuration_updater_.reset(
         new NetworkConfigurationUpdaterImplCros(
             GetPolicyService(),
-            chromeos::CrosLibrary::Get()->GetNetworkLibrary(),
+            chromeos::NetworkLibrary::Get(),
             make_scoped_ptr(new chromeos::CertificateHandler)));
   }
 #endif

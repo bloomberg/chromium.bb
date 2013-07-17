@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/dns/dns_config_service_posix.h"
@@ -25,7 +24,7 @@ bool IsOnline(chromeos::ConnectionState state) {
          state == chromeos::STATE_PORTAL;
 }
 
-}
+}  // namespace
 
 namespace chromeos {
 
@@ -68,7 +67,7 @@ NetworkChangeNotifierNetworkLibrary::~NetworkChangeNotifierNetworkLibrary() {
 
 void NetworkChangeNotifierNetworkLibrary::Init() {
   chromeos::NetworkLibrary* network_library =
-      chromeos::CrosLibrary::Get()->GetNetworkLibrary();
+      chromeos::NetworkLibrary::Get();
   network_library->AddNetworkManagerObserver(this);
   DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
 
@@ -84,11 +83,11 @@ void NetworkChangeNotifierNetworkLibrary::Shutdown() {
 
   dns_config_service_.reset();
 
-  if (!chromeos::CrosLibrary::Get())
+  if (!NetworkLibrary::Get())
     return;
 
   chromeos::NetworkLibrary* lib =
-      chromeos::CrosLibrary::Get()->GetNetworkLibrary();
+      chromeos::NetworkLibrary::Get();
   lib->RemoveNetworkManagerObserver(this);
   lib->RemoveObserverForAllNetworks(this);
 
@@ -289,8 +288,7 @@ void NetworkChangeNotifierNetworkLibrary::ReportConnectionChangeOnUIThread() {
 // static
 void NetworkChangeNotifierNetworkLibrary::UpdateInitialState(
     NetworkChangeNotifierNetworkLibrary* self) {
-  chromeos::NetworkLibrary* net =
-      chromeos::CrosLibrary::Get()->GetNetworkLibrary();
+  chromeos::NetworkLibrary* net = chromeos::NetworkLibrary::Get();
   self->UpdateNetworkState(net);
 }
 

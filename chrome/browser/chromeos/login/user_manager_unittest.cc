@@ -12,7 +12,7 @@
 #include "base/run_loop.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/user_manager_impl.h"
@@ -136,7 +136,7 @@ class UserManagerTest : public testing::Test {
   scoped_ptr<TestingPrefServiceSimple> local_state_;
 
   ScopedTestDeviceSettingsService test_device_settings_service_;
-  ScopedStubCrosEnabler stub_cros_enabler_;
+  ScopedStubNetworkLibraryEnabler stub_network_library_enabler_;
   ScopedTestCrosSettings test_cros_settings_;
 
   scoped_ptr<ScopedUserManagerEnabler> user_manager_enabler_;

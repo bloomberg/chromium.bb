@@ -33,7 +33,6 @@
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/contacts/contact_manager.h"
 #include "chrome/browser/chromeos/cros/cert_library.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/dbus/cros_dbus_service.h"
 #include "chrome/browser/chromeos/display/display_configuration_observer.h"
 #include "chrome/browser/chromeos/extensions/default_app_order.h"
@@ -260,7 +259,7 @@ namespace internal {
 class DBusServices {
  public:
   explicit DBusServices(const content::MainFunctionParams& parameters)
-      : cros_initialized_(false) {
+      : network_library_initialized_(false) {
     if (!base::chromeos::IsRunningOnChromeOS()) {
       // Override this path on the desktop, so that the user policy key can be
       // stored by the stub SessionManagerClient.
@@ -288,13 +287,13 @@ class DBusServices {
     disks::DiskMountManager::Initialize();
     cryptohome::AsyncMethodCaller::Initialize();
 
-    // Initialize CrosLibrary only for the browser, unless running tests
-    // (which do their own CrosLibrary setup with ScopedStubCrosEnabler in
-    // InProcessBrowserTest).
+    // Initialize NetworkLibrary only for the browser, unless running tests
+    // (which do their own NetworkLibrary setup with
+    // ScopedStubNetworkLibraryEnabler in InProcessBrowserTest).
     if (!parameters.ui_task) {
       const bool use_stub = !base::chromeos::IsRunningOnChromeOS();
-      CrosLibrary::Initialize(use_stub);
-      cros_initialized_ = true;
+      NetworkLibrary::Initialize(use_stub);
+      network_library_initialized_ = true;
     }
 
     // Always initialize these handlers which should not conflict with
@@ -337,8 +336,8 @@ class DBusServices {
 
     CertLibrary::Shutdown();
     NetworkHandler::Shutdown();
-    if (cros_initialized_)
-      CrosLibrary::Shutdown();
+    if (network_library_initialized_)
+      NetworkLibrary::Shutdown();
 
     cryptohome::AsyncMethodCaller::Shutdown();
     disks::DiskMountManager::Shutdown();
@@ -354,7 +353,7 @@ class DBusServices {
   }
 
  private:
-  bool cros_initialized_;
+  bool network_library_initialized_;
 
   DISALLOW_COPY_AND_ASSIGN(DBusServices);
 };

@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/login/auth_attempt_state.h"
 #include "chrome/browser/chromeos/login/mock_auth_attempt_state_resolver.h"
 #include "chrome/browser/chromeos/login/mock_url_fetchers.h"
@@ -85,8 +85,8 @@ class OnlineAttemptTest : public testing::Test {
   scoped_ptr<MockAuthAttemptStateResolver> resolver_;
   scoped_ptr<OnlineAttempt> attempt_;
 
-  // Initializes / shuts down a stub CrosLibrary.
-  chromeos::ScopedStubCrosEnabler stub_cros_enabler_;
+  // Initializes / shuts down a stub NetworkLibrary.
+  ScopedStubNetworkLibraryEnabler stub_network_library_enabler_;
 };
 
 TEST_F(OnlineAttemptTest, LoginSuccess) {

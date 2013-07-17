@@ -27,7 +27,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/login/mock_user_manager.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -91,7 +91,7 @@ class ActivityDatabaseTest : public ChromeRenderViewHostTestHarness {
 
  private:
 #if defined OS_CHROMEOS
-  chromeos::ScopedStubCrosEnabler stub_cros_enabler_;
+  chromeos::ScopedStubNetworkLibraryEnabler stub_network_library_enabler_;
   chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
   chromeos::ScopedTestCrosSettings test_cros_settings_;
   scoped_ptr<chromeos::ScopedTestUserManager> test_user_manager_;
@@ -452,4 +452,3 @@ TEST_F(ActivityDatabaseTest, InitFailure) {
 }
 
 }  // namespace extensions
-

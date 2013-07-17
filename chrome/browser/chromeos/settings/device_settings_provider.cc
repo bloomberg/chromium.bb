@@ -15,7 +15,6 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -779,9 +778,9 @@ void DeviceSettingsProvider::ApplyMetricsSetting(bool use_file,
 }
 
 void DeviceSettingsProvider::ApplyRoamingSetting(bool new_value) {
-  if (!CrosLibrary::Get())
+  if (!NetworkLibrary::Get())
     return;  // May not be initialized in tests.
-  NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
+  NetworkLibrary* cros = NetworkLibrary::Get();
   const NetworkDevice* cellular = cros->FindCellularDevice();
   if (cellular) {
     bool device_value = cellular->data_roaming_allowed();

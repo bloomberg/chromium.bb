@@ -24,7 +24,6 @@
 #include "base/timer/timer.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
@@ -165,7 +164,7 @@ MobileActivator* MobileActivator::GetInstance() {
 
 void MobileActivator::TerminateActivation() {
   // We're exiting; don't continue with termination.
-  if (!CrosLibrary::Get())
+  if (!NetworkLibrary::Get())
     return;
 
   state_duration_timer_.Stop();
@@ -962,7 +961,7 @@ bool MobileActivator::GotActivationError(
 void MobileActivator::GetDeviceInfo(CellularNetwork* network,
                                     DictionaryValue* value) {
   DCHECK(network);
-  NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
+  NetworkLibrary* cros = NetworkLibrary::Get();
   if (!cros)
     return;
   value->SetString("carrier", network->name());
@@ -984,7 +983,7 @@ std::string MobileActivator::GetErrorMessage(const std::string& code) const {
 }
 
 NetworkLibrary* MobileActivator::GetNetworkLibrary() const {
-  return CrosLibrary::Get()->GetNetworkLibrary();
+  return NetworkLibrary::Get();
 }
 
 }  // namespace chromeos

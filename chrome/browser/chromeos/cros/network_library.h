@@ -1178,7 +1178,7 @@ typedef std::vector<CellTower> CellTowerVector;
 
 // This class handles the interaction with the ChromeOS network library APIs.
 // Classes can add themselves as observers. Users can get an instance of the
-// library like this: chromeos::CrosLibrary::Get()->GetNetworkLibrary()
+// library like this: chromeos::NetworkLibrary::Get()
 class NetworkLibrary {
  public:
   enum HardwareAddressFormat {
@@ -1570,8 +1570,39 @@ class NetworkLibrary {
                                 const std::string& service_path) = 0;
 
   // Factory function, creates a new instance and returns ownership.
-  // For normal usage, access the singleton via CrosLibrary::Get().
+  // For normal usage, access the singleton via NetworkLibrary::Get().
   static NetworkLibrary* GetImpl(bool stub);
+
+  // Initializes the global instance.
+  static void Initialize(bool use_stub);
+
+  // Destroys the global instance. Must be called before AtExitManager is
+  // destroyed to ensure a clean shutdown.
+  static void Shutdown();
+
+  // Gets the global instance. Returns NULL if Initialize() has not been
+  // called (or Shutdown() has been called).
+  static NetworkLibrary* Get();
+
+  // Sets the network library to be returned from Get(). The existing network
+  // library will be deleted.
+  static void SetForTesting(NetworkLibrary* network_library);
+};
+
+// The class is used for enabling the stub libcros, and cleaning it up at
+// the end of the object lifetime. Useful for testing.
+class ScopedStubNetworkLibraryEnabler {
+ public:
+  ScopedStubNetworkLibraryEnabler() {
+    NetworkLibrary::Initialize(true);
+  }
+
+  ~ScopedStubNetworkLibraryEnabler() {
+    NetworkLibrary::Shutdown();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ScopedStubNetworkLibraryEnabler);
 };
 
 }  // namespace chromeos

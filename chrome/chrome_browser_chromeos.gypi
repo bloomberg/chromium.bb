@@ -180,8 +180,6 @@
         'browser/chromeos/contacts/google_contact_store.h',
         'browser/chromeos/cros/cert_library.cc',
         'browser/chromeos/cros/cert_library.h',
-        'browser/chromeos/cros/cros_library.cc',
-        'browser/chromeos/cros/cros_library.h',
         'browser/chromeos/cros/enum_mapper.h',
         'browser/chromeos/cros/native_network_constants.cc',
         'browser/chromeos/cros/native_network_constants.h',

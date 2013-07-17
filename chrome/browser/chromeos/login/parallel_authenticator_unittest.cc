@@ -12,7 +12,7 @@
 #include "base/message_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/login/mock_login_status_consumer.h"
 #include "chrome/browser/chromeos/login/mock_url_fetchers.h"
 #include "chrome/browser/chromeos/login/mock_user_manager.h"
@@ -208,11 +208,10 @@ class ParallelAuthenticatorTest : public testing::Test {
   std::string username_hash_;
   std::string hash_ascii_;
 
-  ScopedStubCrosEnabler stub_cros_enabler_;
+  ScopedStubNetworkLibraryEnabler stub_network_library_enabler_;
   ScopedDeviceSettingsTestHelper device_settings_test_helper_;
   ScopedTestCrosSettings test_cros_settings_;
 
-  // Mocks, destroyed by CrosLibrary class.
   ScopedUserManagerEnabler user_manager_enabler_;
 
   scoped_ptr<MockCryptohomeLibrary> mock_cryptohome_library_;

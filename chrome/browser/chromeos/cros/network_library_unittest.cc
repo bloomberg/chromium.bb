@@ -14,7 +14,6 @@
 #include "base/json/json_reader.h"
 #include "base/lazy_instance.h"
 #include "base/path_service.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/cros/network_library_impl_stub.h"
 #include "chrome/browser/chromeos/login/mock_user_manager.h"
@@ -138,8 +137,7 @@ class NetworkLibraryStubTest : public ::testing::Test {
 
  protected:
   virtual void SetUp() {
-    cros_ = static_cast<NetworkLibraryImplStub*>(
-        CrosLibrary::Get()->GetNetworkLibrary());
+    cros_ = static_cast<NetworkLibraryImplStub*>(NetworkLibrary::Get());
     ASSERT_TRUE(cros_) << "GetNetworkLibrary() Failed!";
   }
 
@@ -197,7 +195,7 @@ class NetworkLibraryStubTest : public ::testing::Test {
     }
   }
 
-  ScopedStubCrosEnabler cros_stub_;
+  ScopedStubNetworkLibraryEnabler cros_stub_;
   NetworkLibraryImplStub* cros_;
 
  protected:

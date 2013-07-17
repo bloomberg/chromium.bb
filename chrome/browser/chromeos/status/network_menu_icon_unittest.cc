@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/status/network_menu_icon.h"
 
-#include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "grit/ash_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -81,7 +81,7 @@ class NetworkMenuIconTest : public testing::Test {
 
   // testing::Test implementation.
   virtual void SetUp() OVERRIDE {
-    cros_ = CrosLibrary::Get()->GetNetworkLibrary();
+    cros_ = NetworkLibrary::Get();
     // Ethernet connected = WIRED icon, no badges.
     ethernet_connected_image_ = NetworkMenuIcon::GenerateImageFromComponents(
         *rb_.GetImageSkiaNamed(IDR_AURA_UBER_TRAY_NETWORK_WIRED),
@@ -198,7 +198,7 @@ class NetworkMenuIconTest : public testing::Test {
   }
 
  protected:
-  ScopedStubCrosEnabler cros_stub_;
+  ScopedStubNetworkLibraryEnabler stub_network_library_enabler_;
   NetworkLibrary* cros_;
   ResourceBundle& rb_;
   gfx::ImageSkia ethernet_connected_image_;

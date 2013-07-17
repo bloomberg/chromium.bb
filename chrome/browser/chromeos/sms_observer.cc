@@ -9,7 +9,6 @@
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chromeos/network/cros_network_functions.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -18,11 +17,11 @@
 namespace chromeos {
 
 SmsObserver::SmsObserver() {
-  UpdateObservers(chromeos::CrosLibrary::Get()->GetNetworkLibrary());
+  UpdateObservers(chromeos::NetworkLibrary::Get());
 }
 
 SmsObserver::~SmsObserver() {
-  NetworkLibrary* library = chromeos::CrosLibrary::Get()->GetNetworkLibrary();
+  NetworkLibrary* library = chromeos::NetworkLibrary::Get();
   library->RemoveNetworkManagerObserver(this);
   DisconnectAll();
 }

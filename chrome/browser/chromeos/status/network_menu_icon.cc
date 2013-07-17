@@ -12,7 +12,6 @@
 #include "ash/system/chromeos/network/network_icon_animation.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "grit/generated_resources.h"
@@ -381,7 +380,7 @@ bool NetworkIcon::SetOrClearVpnConnected(const Network* network) {
   if (network->type() == TYPE_VPN)
     return false;  // Never show the VPN badge for a VPN network.
   chromeos::NetworkLibrary* cros =
-      chromeos::CrosLibrary::Get()->GetNetworkLibrary();
+      chromeos::NetworkLibrary::Get();
   bool vpn_connected = (network->connected() &&
                         cros->virtual_network() &&
                         cros->virtual_network()->connected());
@@ -394,7 +393,7 @@ bool NetworkIcon::SetOrClearVpnConnected(const Network* network) {
 
 void NetworkIcon::Update() {
   chromeos::NetworkLibrary* cros =
-      chromeos::CrosLibrary::Get()->GetNetworkLibrary();
+      chromeos::NetworkLibrary::Get();
   // First look for a visible network.
   const Network* network = cros->FindNetworkByPath(service_path_);
   if (!network) {
@@ -494,7 +493,7 @@ void NetworkIcon::SetIcon(const Network* network) {
 void NetworkIcon::SetBadges(const Network* network) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   chromeos::NetworkLibrary* cros =
-      chromeos::CrosLibrary::Get()->GetNetworkLibrary();
+      chromeos::NetworkLibrary::Get();
 
   bool use_dark_icons = resource_color_theme_ == NetworkMenuIcon::COLOR_DARK;
   switch (network->type()) {
@@ -560,7 +559,7 @@ bool NetworkIcon::ShouldShowInTray() const {
     return true;
   if (!Network::IsConnectedState(state_))
     return true;
-  NetworkLibrary* crosnet = CrosLibrary::Get()->GetNetworkLibrary();
+  NetworkLibrary* crosnet = NetworkLibrary::Get();
   if (crosnet->virtual_network())
     return true;
   return false;
@@ -674,7 +673,7 @@ void NetworkMenuIcon::NetworkIconChanged() {
 // If disconnected: returns any connecting non-ethernet network.
 // Otherwise, only return a network if the conenction was user initiated.
 const Network* NetworkMenuIcon::GetConnectingNetwork() {
-  NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
+  NetworkLibrary* cros = NetworkLibrary::Get();
   const Network* connecting_network = cros->connecting_network();
   if (connecting_network &&
       connecting_network->type() != TYPE_ETHERNET &&
@@ -752,7 +751,7 @@ void NetworkMenuIcon::SetConnectingIconAndText(
 
 // Sets up the icon and badges for GenerateBitmap().
 bool NetworkMenuIcon::SetIconAndText() {
-  NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
+  NetworkLibrary* cros = NetworkLibrary::Get();
   DCHECK(cros);
 
   icon_->ClearIconAndBadges();
@@ -796,7 +795,7 @@ bool NetworkMenuIcon::SetIconAndText() {
 }
 
 bool NetworkMenuIcon::SetVpnIconAndText() {
-  NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
+  NetworkLibrary* cros = NetworkLibrary::Get();
   DCHECK(cros);
 
   icon_->ClearIconAndBadges();
@@ -816,7 +815,7 @@ bool NetworkMenuIcon::SetVpnIconAndText() {
 }
 
 bool NetworkMenuIcon::SetActiveNetworkIconAndText(const Network* network) {
-  NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
+  NetworkLibrary* cros = NetworkLibrary::Get();
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   bool animating = false;
 
@@ -981,4 +980,4 @@ int NetworkMenuIcon::NumImages(ImageType type) {
   return (type == ARCS) ? kNumArcsImages : kNumBarsImages;
 }
 
-}  // chromeos
+}  // namespace chromeos

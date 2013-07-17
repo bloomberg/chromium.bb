@@ -78,7 +78,6 @@
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/system/syslogs_provider.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -1587,7 +1586,7 @@ void NetInternalsMessageHandler::OnImportONCFile(const ListValue* list) {
   }
 
   chromeos::NetworkLibrary* network_library =
-      chromeos::CrosLibrary::Get()->GetNetworkLibrary();
+      chromeos::NetworkLibrary::Get();
   network_library->LoadOncNetworks(network_configs, onc_source);
 
   // Now that we've added the networks, we need to rescan them so they'll be

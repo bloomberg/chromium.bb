@@ -30,7 +30,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/choose_mobile_network_dialog.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/cros/network_property_ui_data.h"
 #include "chrome/browser/chromeos/enrollment_dialog_view.h"
@@ -638,7 +637,7 @@ void PopulateVPNDetails(const NetworkState* vpn,
   dictionary->SetString(kTagUsername, username);
 
   // TODO(stevenjb): Move FindOncFornetwork()
-  const base::DictionaryValue* onc = CrosLibrary::Get()->GetNetworkLibrary()->
+  const base::DictionaryValue* onc = NetworkLibrary::Get()->
       FindOncForNetwork(vpn->guid());
   NetworkPropertyUIData hostname_ui_data;
   hostname_ui_data.ParseOncProperty(
@@ -1423,7 +1422,7 @@ void InternetOptionsHandler::PopulateDictionaryDetailsCallback(
   }
 
   const NetworkPropertyUIData property_ui_data(network->onc_source());
-  const base::DictionaryValue* onc = CrosLibrary::Get()->GetNetworkLibrary()->
+  const base::DictionaryValue* onc = NetworkLibrary::Get()->
       FindOncForNetwork(network->guid());
 
   base::DictionaryValue dictionary;

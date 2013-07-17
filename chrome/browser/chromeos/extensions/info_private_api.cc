@@ -5,13 +5,11 @@
 #include "chrome/browser/chromeos/extensions/info_private_api.h"
 
 #include "base/values.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
 
-using chromeos::CrosLibrary;
 using chromeos::NetworkLibrary;
 
 namespace extensions {
@@ -66,7 +64,7 @@ base::Value* ChromeosInfoPrivateGetFunction::GetValue(
     provider->GetMachineStatistic(chromeos::system::kHardwareClass, &hwid);
     return new base::StringValue(hwid);
   } else if (property_name == kPropertyHomeProvider) {
-    NetworkLibrary* netlib = CrosLibrary::Get()->GetNetworkLibrary();
+    NetworkLibrary* netlib = NetworkLibrary::Get();
     return new base::StringValue(netlib->GetCellularHomeCarrierId());
   } else if (property_name == kPropertyInitialLocale) {
     return new base::StringValue(

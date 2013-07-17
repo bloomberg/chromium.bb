@@ -20,7 +20,6 @@
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/audio/audio_handler.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/login/default_user_images.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen.h"
@@ -53,7 +52,6 @@
 #include "policy/policy_constants.h"
 #include "ui/views/widget/widget.h"
 
-using chromeos::CrosLibrary;
 using chromeos::DBusThreadManager;
 using chromeos::ExistingUserController;
 using chromeos::NetworkLibrary;
@@ -524,7 +522,7 @@ void TestingAutomationProvider::GetBatteryInfo(DictionaryValue* args,
 void TestingAutomationProvider::GetNetworkInfo(DictionaryValue* args,
                                                IPC::Message* reply_message) {
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
-  NetworkLibrary* network_library = CrosLibrary::Get()->GetNetworkLibrary();
+  NetworkLibrary* network_library = NetworkLibrary::Get();
 
   return_value->SetBoolean("offline_mode",
                            net::NetworkChangeNotifier::IsOffline());
@@ -625,7 +623,7 @@ void TestingAutomationProvider::GetNetworkInfo(DictionaryValue* args,
 
 void TestingAutomationProvider::NetworkScan(DictionaryValue* args,
                                             IPC::Message* reply_message) {
-  NetworkLibrary* network_library = CrosLibrary::Get()->GetNetworkLibrary();
+  NetworkLibrary* network_library = NetworkLibrary::Get();
   network_library->RequestNetworkScan();
 
   // Set up an observer (it will delete itself).
@@ -646,7 +644,7 @@ void TestingAutomationProvider::ToggleNetworkDevice(
   // Set up an observer (it will delete itself).
   new ToggleNetworkDeviceObserver(this, reply_message, device, enable);
 
-  NetworkLibrary* network_library = CrosLibrary::Get()->GetNetworkLibrary();
+  NetworkLibrary* network_library = NetworkLibrary::Get();
   if (device == "ethernet") {
     network_library->EnableEthernetNetworkDevice(enable);
   } else if (device == "wifi") {
@@ -715,7 +713,7 @@ void TestingAutomationProvider::ConnectToCellularNetwork(
     return;
   }
 
-  NetworkLibrary* network_library = CrosLibrary::Get()->GetNetworkLibrary();
+  NetworkLibrary* network_library = NetworkLibrary::Get();
   chromeos::CellularNetwork* cellular =
       network_library->FindCellularNetworkByPath(service_path);
   if (!cellular) {
@@ -733,7 +731,7 @@ void TestingAutomationProvider::ConnectToCellularNetwork(
 
 void TestingAutomationProvider::DisconnectFromCellularNetwork(
     DictionaryValue* args, IPC::Message* reply_message) {
-  NetworkLibrary* network_library = CrosLibrary::Get()->GetNetworkLibrary();
+  NetworkLibrary* network_library = NetworkLibrary::Get();
   const chromeos::CellularNetwork* cellular =
         network_library->cellular_network();
   if (!cellular) {
@@ -760,7 +758,7 @@ void TestingAutomationProvider::ConnectToWifiNetwork(
     return;
   }
 
-  NetworkLibrary* network_library = CrosLibrary::Get()->GetNetworkLibrary();
+  NetworkLibrary* network_library = NetworkLibrary::Get();
   chromeos::WifiNetwork* wifi =
       network_library->FindWifiNetworkByPath(service_path);
   if (!wifi) {
@@ -791,7 +789,7 @@ void TestingAutomationProvider::ForgetWifiNetwork(
     return;
   }
 
-  CrosLibrary::Get()->GetNetworkLibrary()->ForgetNetwork(service_path);
+  NetworkLibrary::Get()->ForgetNetwork(service_path);
   AutomationJSONReply(this, reply_message).SendSuccess(NULL);
 }
 
@@ -823,7 +821,7 @@ void TestingAutomationProvider::ConnectToHiddenWifiNetwork(
   chromeos::ConnectionSecurity connection_security =
       connection_security_map[security];
 
-  NetworkLibrary* network_library = CrosLibrary::Get()->GetNetworkLibrary();
+  NetworkLibrary* network_library = NetworkLibrary::Get();
 
   // Set up an observer (it will delete itself).
   new SSIDConnectObserver(this, reply_message, ssid);
@@ -890,7 +888,7 @@ void TestingAutomationProvider::ConnectToHiddenWifiNetwork(
 void TestingAutomationProvider::DisconnectFromWifiNetwork(
     DictionaryValue* args, IPC::Message* reply_message) {
   AutomationJSONReply reply(this, reply_message);
-  NetworkLibrary* network_library = CrosLibrary::Get()->GetNetworkLibrary();
+  NetworkLibrary* network_library = NetworkLibrary::Get();
   const chromeos::WifiNetwork* wifi = network_library->wifi_network();
   if (!wifi) {
     reply.SendError("Not connected to any wifi network.");
@@ -915,7 +913,7 @@ void TestingAutomationProvider::AddPrivateNetwork(
     return;
   }
 
-  NetworkLibrary* network_library = CrosLibrary::Get()->GetNetworkLibrary();
+  NetworkLibrary* network_library = NetworkLibrary::Get();
 
   // Attempt to connect to the VPN based on the provider type.
   if (provider_type == VPNProviderTypeToString(
@@ -987,7 +985,7 @@ void TestingAutomationProvider::ConnectToPrivateNetwork(
 
   // Connect to a remembered VPN by its service_path. Valid service_paths
   // can be found in the dictionary returned by GetPrivateNetworkInfo.
-  NetworkLibrary* network_library = CrosLibrary::Get()->GetNetworkLibrary();
+  NetworkLibrary* network_library = NetworkLibrary::Get();
   chromeos::VirtualNetwork* network =
       network_library->FindVirtualNetworkByPath(service_path);
   if (!network) {
@@ -1008,7 +1006,7 @@ void TestingAutomationProvider::ConnectToPrivateNetwork(
 void TestingAutomationProvider::GetPrivateNetworkInfo(
     DictionaryValue* args, IPC::Message* reply_message) {
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
-  NetworkLibrary* network_library = CrosLibrary::Get()->GetNetworkLibrary();
+  NetworkLibrary* network_library = NetworkLibrary::Get();
   const chromeos::VirtualNetworkVector& virtual_networks =
       network_library->virtual_networks();
 
@@ -1038,7 +1036,7 @@ void TestingAutomationProvider::GetPrivateNetworkInfo(
 void TestingAutomationProvider::DisconnectFromPrivateNetwork(
     DictionaryValue* args, IPC::Message* reply_message) {
   AutomationJSONReply reply(this, reply_message);
-  NetworkLibrary* network_library = CrosLibrary::Get()->GetNetworkLibrary();
+  NetworkLibrary* network_library = NetworkLibrary::Get();
   const chromeos::VirtualNetwork* virt = network_library->virtual_network();
   if (!virt) {
     reply.SendError("Not connected to any virtual network.");

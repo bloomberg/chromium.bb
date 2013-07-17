@@ -15,7 +15,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/network_library.h"
 #endif  // defined(OS_CHROMEOS)
 
 namespace base {
@@ -218,7 +218,7 @@ class InProcessBrowserTest : public content::BrowserTestBase {
   bool multi_desktop_test_;
 
 #if defined(OS_CHROMEOS)
-  chromeos::ScopedStubCrosEnabler stub_cros_enabler_;
+  chromeos::ScopedStubNetworkLibraryEnabler stub_network_library_enabler_;
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_MACOSX)

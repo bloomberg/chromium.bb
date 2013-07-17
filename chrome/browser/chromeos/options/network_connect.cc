@@ -12,7 +12,6 @@
 #include "base/command_line.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/enrollment_dialog_view.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
@@ -34,7 +33,7 @@ namespace network_connect {
 namespace {
 
 void DoConnect(Network* network, gfx::NativeWindow parent_window) {
-  NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
+  NetworkLibrary* cros = NetworkLibrary::Get();
   if (network->type() == TYPE_VPN) {
     VirtualNetwork* vpn = static_cast<VirtualNetwork*>(network);
     if (vpn->NeedMoreInfoToConnect()) {
@@ -80,7 +79,7 @@ void DoConnect(Network* network, gfx::NativeWindow parent_window) {
 
 void ActivateCellular(const std::string& service_path) {
   chromeos::NetworkLibrary* cros =
-      chromeos::CrosLibrary::Get()->GetNetworkLibrary();
+      chromeos::NetworkLibrary::Get();
   if (!cros->CellularDeviceUsesDirectActivation()) {
     // For non direct activation, show the mobile setup dialog which can be
     // used to activate the network.
@@ -97,7 +96,7 @@ void ActivateCellular(const std::string& service_path) {
 }
 
 void ShowMobileSetup(const std::string& service_path) {
-  NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
+  NetworkLibrary* cros = NetworkLibrary::Get();
   const CellularNetwork* cellular =
       cros->FindCellularNetworkByPath(service_path);
   if (cellular && !cellular->activated() &&
@@ -130,7 +129,7 @@ ConnectResult ConnectToNetwork(const std::string& service_path,
     return CONNECT_STARTED;
   }
 
-  NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
+  NetworkLibrary* cros = NetworkLibrary::Get();
   Network* network = cros->FindNetworkByPath(service_path);
   if (!network)
     return NETWORK_NOT_FOUND;
@@ -172,7 +171,7 @@ ConnectResult ConnectToNetwork(const std::string& service_path,
 
 void HandleUnconfiguredNetwork(const std::string& service_path,
                                gfx::NativeWindow parent_window) {
-  NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
+  NetworkLibrary* cros = NetworkLibrary::Get();
   Network* network = cros->FindNetworkByPath(service_path);
   if (!network) {
     LOG(WARNING) << "Unknown network: " << service_path;
