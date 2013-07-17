@@ -56,6 +56,8 @@
     'public/common/main_function_params.h',
     'public/common/media_stream_request.cc',
     'public/common/media_stream_request.h',
+    'public/common/menu_item.cc',
+    'public/common/menu_item.h',
     'public/common/page_state.cc',
     'public/common/page_state.h',
     'public/common/page_transition_types.cc',

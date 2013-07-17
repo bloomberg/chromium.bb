@@ -5,6 +5,7 @@
 #include "content/renderer/external_popup_menu.h"
 
 #include "content/common/view_messages.h"
+#include "content/renderer/menu_item_builder.h"
 #include "content/renderer/render_view_impl.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/web/WebExternalPopupMenuClient.h"
@@ -26,8 +27,10 @@ void ExternalPopupMenu::show(const WebKit::WebRect& bounds) {
   popup_params.item_height = popup_menu_info_.itemHeight;
   popup_params.item_font_size = popup_menu_info_.itemFontSize;
   popup_params.selected_item = popup_menu_info_.selectedIndex;
-  for (size_t i = 0; i < popup_menu_info_.items.size(); ++i)
-    popup_params.popup_items.push_back(WebMenuItem(popup_menu_info_.items[i]));
+  for (size_t i = 0; i < popup_menu_info_.items.size(); ++i) {
+    popup_params.popup_items.push_back(
+        MenuItemBuilder::Build(popup_menu_info_.items[i]));
+  }
   popup_params.right_aligned = popup_menu_info_.rightAligned;
   popup_params.allow_multiple_selection =
       popup_menu_info_.allowMultipleSelection;

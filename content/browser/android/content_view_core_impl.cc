@@ -42,6 +42,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/menu_item.h"
 #include "content/public/common/page_transition_types.h"
 #include "jni/ContentViewCore_jni.h"
 #include "third_party/WebKit/public/web/WebBindings.h"
@@ -54,7 +55,6 @@
 #include "ui/gfx/size_conversions.h"
 #include "ui/gfx/size_f.h"
 #include "webkit/common/user_agent/user_agent_util.h"
-#include "webkit/common/webmenuitem.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF16;
@@ -430,7 +430,7 @@ void ContentViewCoreImpl::OnBackgroundColorChanged(SkColor color) {
 }
 
 void ContentViewCoreImpl::ShowSelectPopupMenu(
-    const std::vector<WebMenuItem>& items, int selected_item, bool multiple) {
+    const std::vector<MenuItem>& items, int selected_item, bool multiple) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
   if (j_obj.is_null())
@@ -465,7 +465,7 @@ void ContentViewCoreImpl::ShowSelectPopupMenu(
   for (size_t i = 0; i < items.size(); ++i) {
     labels.push_back(items[i].label);
     jint enabled =
-        (items[i].type == WebMenuItem::GROUP ? POPUP_ITEM_TYPE_GROUP :
+        (items[i].type == MenuItem::GROUP ? POPUP_ITEM_TYPE_GROUP :
             (items[i].enabled ? POPUP_ITEM_TYPE_ENABLED :
                 POPUP_ITEM_TYPE_DISABLED));
     env->SetIntArrayRegion(enabled_array.obj(), i, 1, &enabled);

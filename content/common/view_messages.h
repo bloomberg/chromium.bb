@@ -25,6 +25,7 @@
 #include "content/public/common/file_chooser_params.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "content/public/common/javascript_message_type.h"
+#include "content/public/common/menu_item.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/referrer.h"
@@ -58,7 +59,6 @@
 #include "ui/gfx/vector2d.h"
 #include "ui/gfx/vector2d_f.h"
 #include "ui/shell_dialogs/selected_file_info.h"
-#include "webkit/common/webmenuitem.h"
 #include "webkit/plugins/npapi/webplugin.h"
 
 #if defined(OS_MACOSX)
@@ -77,11 +77,11 @@ IPC_ENUM_TRAITS(WebKit::WebMediaPlayerAction::Type)
 IPC_ENUM_TRAITS(WebKit::WebPluginAction::Type)
 IPC_ENUM_TRAITS(WebKit::WebPopupType)
 IPC_ENUM_TRAITS(WebKit::WebTextDirection)
-IPC_ENUM_TRAITS(WebMenuItem::Type)
 IPC_ENUM_TRAITS(WindowContainerType)
 IPC_ENUM_TRAITS(content::FaviconURL::IconType)
 IPC_ENUM_TRAITS(content::FileChooserParams::Mode)
 IPC_ENUM_TRAITS(content::JavaScriptMessageType)
+IPC_ENUM_TRAITS(content::MenuItem::Type)
 IPC_ENUM_TRAITS(content::NavigationGesture)
 IPC_ENUM_TRAITS(content::PageZoom)
 IPC_ENUM_TRAITS(content::RendererPreferencesHintingEnum)
@@ -145,9 +145,9 @@ IPC_STRUCT_TRAITS_BEGIN(WebKit::WebScreenInfo)
   IPC_STRUCT_TRAITS_MEMBER(availableRect)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(WebMenuItem)
+IPC_STRUCT_TRAITS_BEGIN(content::MenuItem)
   IPC_STRUCT_TRAITS_MEMBER(label)
-  IPC_STRUCT_TRAITS_MEMBER(toolTip)
+  IPC_STRUCT_TRAITS_MEMBER(tool_tip)
   IPC_STRUCT_TRAITS_MEMBER(type)
   IPC_STRUCT_TRAITS_MEMBER(action)
   IPC_STRUCT_TRAITS_MEMBER(rtl)
@@ -485,7 +485,7 @@ IPC_STRUCT_BEGIN(ViewHostMsg_ShowPopup_Params)
   IPC_STRUCT_MEMBER(int, selected_item)
 
   // The entire list of items in the popup menu.
-  IPC_STRUCT_MEMBER(std::vector<WebMenuItem>, popup_items)
+  IPC_STRUCT_MEMBER(std::vector<content::MenuItem>, popup_items)
 
   // Whether items should be right-aligned.
   IPC_STRUCT_MEMBER(bool, right_aligned)

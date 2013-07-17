@@ -13,7 +13,6 @@
 #include "third_party/WebKit/public/web/WebDragOperation.h"
 
 class SkBitmap;
-struct WebMenuItem;
 
 namespace gfx {
 class ImageSkia;
@@ -22,9 +21,9 @@ class Vector2d;
 }
 
 namespace content {
-
 struct ContextMenuParams;
 struct DropData;
+struct MenuItem;
 
 // This class provides a way for the RenderViewHost to reach out to its
 // delegate's view. It only needs to be implemented by embedders if they don't
@@ -42,7 +41,7 @@ class CONTENT_EXPORT RenderViewHostDelegateView {
                              int item_height,
                              double item_font_size,
                              int selected_item,
-                             const std::vector<WebMenuItem>& items,
+                             const std::vector<MenuItem>& items,
                              bool right_aligned,
                              bool allow_multiple_selection) = 0;
 

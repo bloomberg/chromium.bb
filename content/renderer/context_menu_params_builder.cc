@@ -8,6 +8,7 @@
 #include "content/common/ssl_status_serialization.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/public/renderer/history_item_serialization.h"
+#include "content/renderer/menu_item_builder.h"
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebNode.h"
 
@@ -48,7 +49,7 @@ ContextMenuParams ContextMenuParamsBuilder::Build(
 
   params.custom_context.is_pepper_menu = false;
   for (size_t i = 0; i < data.customItems.size(); ++i)
-    params.custom_items.push_back(WebMenuItem(data.customItems[i]));
+    params.custom_items.push_back(MenuItemBuilder::Build(data.customItems[i]));
 
   if (!data.frameHistoryItem.isNull())
     params.frame_page_state = HistoryItemToPageState(data.frameHistoryItem);

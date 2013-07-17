@@ -24,8 +24,6 @@
 #include "ui/gfx/rect_f.h"
 #include "url/gurl.h"
 
-struct WebMenuItem;
-
 namespace ui {
 class ViewAndroid;
 class WindowAndroid;
@@ -33,6 +31,7 @@ class WindowAndroid;
 
 namespace content {
 class RenderWidgetHostViewAndroid;
+struct MenuItem;
 
 // TODO(jrg): this is a shell.  Upstream the rest.
 class ContentViewCoreImpl : public ContentViewCore,
@@ -231,7 +230,7 @@ class ContentViewCoreImpl : public ContentViewCore,
   // |multiple| defines if it should support multi-select.
   // If not |multiple|, |selected_item| sets the initially selected item.
   // Otherwise, item's "checked" flag selects it.
-  void ShowSelectPopupMenu(const std::vector<WebMenuItem>& items,
+  void ShowSelectPopupMenu(const std::vector<MenuItem>& items,
                            int selected_item,
                            bool multiple);
 

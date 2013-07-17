@@ -14,7 +14,6 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/serialized_flash_menu.h"
 #include "ui/gfx/point.h"
-#include "webkit/common/webmenuitem.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 
 namespace chrome {
@@ -35,11 +34,11 @@ const size_t kMaxMenuIdMapEntries = 501;
 // Converts menu data from one form to another.
 //  - |depth| is the current nested depth (call it starting with 0).
 //  - |menu_id_map| is such that |menu_id_map[output_item.action] ==
-//    input_item.id| (where |action| is what a |WebMenuItem| has, |id| is what a
+//    input_item.id| (where |action| is what a |MenuItem| has, |id| is what a
 //    |PP_Flash_MenuItem| has).
 bool ConvertMenuData(const PP_Flash_Menu* in_menu,
                      size_t depth,
-                     std::vector<WebMenuItem>* out_menu,
+                     std::vector<content::MenuItem>* out_menu,
                      std::vector<int32_t>* menu_id_map) {
   if (depth > kMaxMenuDepth || !in_menu)
     return false;
@@ -53,21 +52,21 @@ bool ConvertMenuData(const PP_Flash_Menu* in_menu,
   if (!in_menu->items || in_menu->count > kMaxMenuEntries)
     return false;
   for (uint32_t i = 0; i < in_menu->count; i++) {
-    WebMenuItem item;
+    content::MenuItem item;
 
     PP_Flash_MenuItem_Type type = in_menu->items[i].type;
     switch (type) {
       case PP_FLASH_MENUITEM_TYPE_NORMAL:
-        item.type = WebMenuItem::OPTION;
+        item.type = content::MenuItem::OPTION;
         break;
       case PP_FLASH_MENUITEM_TYPE_CHECKBOX:
-        item.type = WebMenuItem::CHECKABLE_OPTION;
+        item.type = content::MenuItem::CHECKABLE_OPTION;
         break;
       case PP_FLASH_MENUITEM_TYPE_SEPARATOR:
-        item.type = WebMenuItem::SEPARATOR;
+        item.type = content::MenuItem::SEPARATOR;
         break;
       case PP_FLASH_MENUITEM_TYPE_SUBMENU:
-        item.type = WebMenuItem::SUBMENU;
+        item.type = content::MenuItem::SUBMENU;
         break;
       default:
         return false;

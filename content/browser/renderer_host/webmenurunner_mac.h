@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/mac/scoped_nsobject.h"
-#include "webkit/common/webmenuitem.h"
+#include "content/public/common/menu_item.h"
 
 
 // WebMenuRunner ---------------------------------------------------------------
@@ -39,7 +39,7 @@
 }
 
 // Initializes the MenuDelegate with a list of items sent from WebKit.
-- (id)initWithItems:(const std::vector<WebMenuItem>&)items
+- (id)initWithItems:(const std::vector<content::MenuItem>&)items
            fontSize:(CGFloat)fontSize
        rightAligned:(BOOL)rightAligned;
 

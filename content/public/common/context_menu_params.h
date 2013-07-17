@@ -10,13 +10,13 @@
 #include "base/basictypes.h"
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
+#include "content/public/common/menu_item.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/ssl_status.h"
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
 #include "third_party/WebKit/public/web/WebContextMenuData.h"
 #include "ui/base/ui_base_types.h"
 #include "url/gurl.h"
-#include "webkit/common/webmenuitem.h"
 
 #if defined(OS_ANDROID)
 #include "ui/gfx/point.h"
@@ -144,7 +144,7 @@ struct CONTENT_EXPORT ContextMenuParams {
   WebKit::WebReferrerPolicy referrer_policy;
 
   CustomContextMenuContext custom_context;
-  std::vector<WebMenuItem> custom_items;
+  std::vector<MenuItem> custom_items;
 
   ui::MenuSourceType source_type;
 

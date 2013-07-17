@@ -31,7 +31,6 @@
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
-#include "third_party/WebKit/public/web/WebMenuItemInfo.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
 #include "third_party/WebKit/public/web/WebScriptSource.h"
 #include "third_party/WebKit/public/web/WebView.h"
@@ -50,7 +49,6 @@ using WebKit::WebContextMenuData;
 using WebKit::WebDocument;
 using WebKit::WebElement;
 using WebKit::WebFrame;
-using WebKit::WebMenuItemInfo;
 using WebKit::WebMouseEvent;
 using WebKit::WebNode;
 using WebKit::WebPlugin;
@@ -91,7 +89,7 @@ std::string GetYoutubeVideoId(const WebPluginParams& params) {
   return video_id;
 }
 #endif
-}
+}  // namespace
 
 // static
 PluginPlaceholder* PluginPlaceholder::CreateMissingPlugin(
@@ -494,36 +492,28 @@ void PluginPlaceholder::ShowContextMenu(const WebMouseEvent& event) {
 
   content::ContextMenuParams params;
 
-  WebMenuItemInfo name_item;
+  content::MenuItem name_item;
   name_item.label = title_;
-  name_item.hasTextDirectionOverride = false;
-  name_item.textDirection =  WebKit::WebTextDirectionDefault;
-  params.custom_items.push_back(WebMenuItem(name_item));
+  params.custom_items.push_back(name_item);
 
-  WebMenuItemInfo separator_item;
-  separator_item.type = WebMenuItemInfo::Separator;
-  params.custom_items.push_back(WebMenuItem(separator_item));
+  content::MenuItem separator_item;
+  separator_item.type = content::MenuItem::SEPARATOR;
+  params.custom_items.push_back(separator_item);
 
   if (!plugin_info_.path.value().empty()) {
-    WebMenuItemInfo run_item;
+    content::MenuItem run_item;
     run_item.action = chrome::MENU_COMMAND_PLUGIN_RUN;
     // Disable this menu item if the plugin is blocked by policy.
     run_item.enabled = allow_loading_;
-    run_item.label = WebString::fromUTF8(
-        l10n_util::GetStringUTF8(IDS_CONTENT_CONTEXT_PLUGIN_RUN).c_str());
-    run_item.hasTextDirectionOverride = false;
-    run_item.textDirection =  WebKit::WebTextDirectionDefault;
-    params.custom_items.push_back(WebMenuItem(run_item));
+    run_item.label = l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_PLUGIN_RUN);
+    params.custom_items.push_back(run_item);
   }
 
-  WebMenuItemInfo hide_item;
+  content::MenuItem hide_item;
   hide_item.action = chrome::MENU_COMMAND_PLUGIN_HIDE;
   hide_item.enabled = true;
-  hide_item.label = WebString::fromUTF8(
-      l10n_util::GetStringUTF8(IDS_CONTENT_CONTEXT_PLUGIN_HIDE).c_str());
-  hide_item.hasTextDirectionOverride = false;
-  hide_item.textDirection =  WebKit::WebTextDirectionDefault;
-  params.custom_items.push_back(WebMenuItem(hide_item));
+  hide_item.label = l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_PLUGIN_HIDE);
+  params.custom_items.push_back(hide_item);
 
   params.x = event.windowX;
   params.y = event.windowY;

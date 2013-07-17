@@ -247,6 +247,8 @@
     'renderer/media/websourcebuffer_impl.h',
     'renderer/memory_benchmarking_extension.cc',
     'renderer/memory_benchmarking_extension.h',
+    'renderer/menu_item_builder.cc',
+    'renderer/menu_item_builder.h',
     'renderer/mhtml_generator.cc',
     'renderer/mhtml_generator.h',
     'renderer/mouse_lock_dispatcher.cc',

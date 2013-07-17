@@ -9,7 +9,7 @@
 @interface WebMenuRunner (PrivateAPI)
 
 // Worker function used during initialization.
-- (void)addItem:(const WebMenuItem&)item;
+- (void)addItem:(const content::MenuItem&)item;
 
 // A callback for the menu controller object to call when an item is selected
 // from the menu. This is not called if the menu is dismissed without a
@@ -20,7 +20,7 @@
 
 @implementation WebMenuRunner
 
-- (id)initWithItems:(const std::vector<WebMenuItem>&)items
+- (id)initWithItems:(const std::vector<content::MenuItem>&)items
            fontSize:(CGFloat)fontSize
        rightAligned:(BOOL)rightAligned {
   if ((self = [super init])) {
@@ -35,8 +35,8 @@
   return self;
 }
 
-- (void)addItem:(const WebMenuItem&)item {
-  if (item.type == WebMenuItem::SEPARATOR) {
+- (void)addItem:(const content::MenuItem&)item {
+  if (item.type == content::MenuItem::SEPARATOR) {
     [menu_ addItem:[NSMenuItem separatorItem]];
     return;
   }
@@ -45,11 +45,11 @@
   NSMenuItem* menuItem = [menu_ addItemWithTitle:title
                                           action:@selector(menuItemSelected:)
                                    keyEquivalent:@""];
-  if (!item.toolTip.empty()) {
-    NSString* toolTip = base::SysUTF16ToNSString(item.toolTip);
+  if (!item.tool_tip.empty()) {
+    NSString* toolTip = base::SysUTF16ToNSString(item.tool_tip);
     [menuItem setToolTip:toolTip];
   }
-  [menuItem setEnabled:(item.enabled && item.type != WebMenuItem::GROUP)];
+  [menuItem setEnabled:(item.enabled && item.type != content::MenuItem::GROUP)];
   [menuItem setTarget:self];
 
   // Set various alignment/language attributes. Note that many (if not most) of

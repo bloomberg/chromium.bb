@@ -70,7 +70,7 @@ void ContextMenuHandler::HandleShowContextMenu(
       return;
     }
 
-    WebMenuItem menu_item;
+    content::MenuItem menu_item;
     menu_item.action = id;
     if (!item_list_value->GetString(1, &(menu_item.label))) {
       Value* value = NULL;

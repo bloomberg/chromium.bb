@@ -24,8 +24,6 @@
       ],
       'sources': [
         '../common/webkit_common_export.h',
-        '../common/webmenuitem.cc',
-        '../common/webmenuitem.h',
         '../common/webpreferences.cc',
         '../common/webpreferences.h',
         'multipart_response_delegate.cc',

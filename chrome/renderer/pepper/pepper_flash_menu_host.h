@@ -13,10 +13,9 @@
 #include "ppapi/host/host_message_context.h"
 #include "ppapi/host/resource_host.h"
 
-struct WebMenuItem;
-
 namespace content {
 class RendererPpapiHost;
+struct MenuItem;
 }
 
 namespace ppapi {
@@ -55,9 +54,9 @@ class PepperFlashMenuHost : public ppapi::host::ResourceHost,
   bool showing_context_menu_;
   int context_menu_request_id_;
 
-  std::vector<WebMenuItem> menu_data_;
+  std::vector<content::MenuItem> menu_data_;
 
-  // We send |WebMenuItem|s, which have an |unsigned| "action" field instead of
+  // We send |MenuItem|s, which have an |unsigned| "action" field instead of
   // an |int32_t| ID. (CONTENT also limits the range of valid values for
   // actions.) This maps actions to IDs.
   std::vector<int32_t> menu_id_map_;

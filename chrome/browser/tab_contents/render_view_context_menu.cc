@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -79,6 +79,7 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_restriction.h"
+#include "content/public/common/menu_item.h"
 #include "content/public/common/ssl_status.h"
 #include "content/public/common/url_utils.h"
 #include "extensions/browser/view_type_utils.h"
@@ -91,7 +92,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/text/text_elider.h"
 #include "ui/gfx/favicon_size.h"
-#include "webkit/common/webmenuitem.h"
 
 using WebKit::WebContextMenuData;
 using WebKit::WebMediaPlayerAction;
@@ -258,14 +258,14 @@ WindowOpenDisposition ForceNewTabDispositionFromEventFlags(
   return disposition == CURRENT_TAB ? NEW_FOREGROUND_TAB : disposition;
 }
 
-bool IsCustomItemEnabled(const std::vector<WebMenuItem>& items, int id) {
+bool IsCustomItemEnabled(const std::vector<content::MenuItem>& items, int id) {
   DCHECK(id >= IDC_CONTENT_CONTEXT_CUSTOM_FIRST &&
          id <= IDC_CONTENT_CONTEXT_CUSTOM_LAST);
   for (size_t i = 0; i < items.size(); ++i) {
     int action_id = IDC_CONTENT_CONTEXT_CUSTOM_FIRST + items[i].action;
     if (action_id == id)
       return items[i].enabled;
-    if (items[i].type == WebMenuItem::SUBMENU) {
+    if (items[i].type == content::MenuItem::SUBMENU) {
       if (IsCustomItemEnabled(items[i].submenu, id))
         return true;
     }
@@ -273,14 +273,14 @@ bool IsCustomItemEnabled(const std::vector<WebMenuItem>& items, int id) {
   return false;
 }
 
-bool IsCustomItemChecked(const std::vector<WebMenuItem>& items, int id) {
+bool IsCustomItemChecked(const std::vector<content::MenuItem>& items, int id) {
   DCHECK(id >= IDC_CONTENT_CONTEXT_CUSTOM_FIRST &&
          id <= IDC_CONTENT_CONTEXT_CUSTOM_LAST);
   for (size_t i = 0; i < items.size(); ++i) {
     int action_id = IDC_CONTENT_CONTEXT_CUSTOM_FIRST + items[i].action;
     if (action_id == id)
       return items[i].checked;
-    if (items[i].type == WebMenuItem::SUBMENU) {
+    if (items[i].type == content::MenuItem::SUBMENU) {
       if (IsCustomItemChecked(items[i].submenu, id))
         return true;
     }
@@ -291,7 +291,7 @@ bool IsCustomItemChecked(const std::vector<WebMenuItem>& items, int id) {
 const size_t kMaxCustomMenuDepth = 5;
 const size_t kMaxCustomMenuTotalItems = 1000;
 
-void AddCustomItemsToMenu(const std::vector<WebMenuItem>& items,
+void AddCustomItemsToMenu(const std::vector<content::MenuItem>& items,
                           size_t depth,
                           size_t* total_items,
                           ui::SimpleMenuModel::Delegate* delegate,
@@ -312,24 +312,24 @@ void AddCustomItemsToMenu(const std::vector<WebMenuItem>& items,
     }
     (*total_items)++;
     switch (items[i].type) {
-      case WebMenuItem::OPTION:
+      case content::MenuItem::OPTION:
         menu_model->AddItem(
             items[i].action + IDC_CONTENT_CONTEXT_CUSTOM_FIRST,
             items[i].label);
         break;
-      case WebMenuItem::CHECKABLE_OPTION:
+      case content::MenuItem::CHECKABLE_OPTION:
         menu_model->AddCheckItem(
             items[i].action + IDC_CONTENT_CONTEXT_CUSTOM_FIRST,
             items[i].label);
         break;
-      case WebMenuItem::GROUP:
+      case content::MenuItem::GROUP:
         // TODO(viettrungluu): I don't know what this is supposed to do.
         NOTREACHED();
         break;
-      case WebMenuItem::SEPARATOR:
+      case content::MenuItem::SEPARATOR:
         menu_model->AddSeparator(ui::NORMAL_SEPARATOR);
         break;
-      case WebMenuItem::SUBMENU: {
+      case content::MenuItem::SUBMENU: {
         ui::SimpleMenuModel* submenu = new ui::SimpleMenuModel(delegate);
         AddCustomItemsToMenu(items[i].submenu, depth + 1, total_items, delegate,
                              submenu);

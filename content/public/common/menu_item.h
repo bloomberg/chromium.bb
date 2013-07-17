@@ -2,40 +2,43 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_COMMON_WEBMENUITEM_H_
-#define WEBKIT_COMMON_WEBMENUITEM_H_
+#ifndef CONTENT_PUBLIC_COMMON_MENU_ITEM_H_
+#define CONTENT_PUBLIC_COMMON_MENU_ITEM_H_
 
 #include <vector>
 
 #include "base/strings/string16.h"
+#include "content/common/content_export.h"
 #include "third_party/WebKit/public/web/WebMenuItemInfo.h"
-#include "webkit/common/webkit_common_export.h"
+
+namespace content {
 
 // Container for information about entries in an HTML select popup menu and
 // custom entries of the context menu.
-struct WEBKIT_COMMON_EXPORT WebMenuItem {
+struct CONTENT_EXPORT MenuItem {
   enum Type {
-    OPTION    = WebKit::WebMenuItemInfo::Option,
+    OPTION           = WebKit::WebMenuItemInfo::Option,
     CHECKABLE_OPTION = WebKit::WebMenuItemInfo::CheckableOption,
-    GROUP     = WebKit::WebMenuItemInfo::Group,
-    SEPARATOR = WebKit::WebMenuItemInfo::Separator,
+    GROUP            = WebKit::WebMenuItemInfo::Group,
+    SEPARATOR        = WebKit::WebMenuItemInfo::Separator,
     SUBMENU  // This is currently only used by Pepper, not by WebKit.
   };
 
-  WebMenuItem();
-  WebMenuItem(const WebKit::WebMenuItemInfo& item);
-  WebMenuItem(const WebMenuItem& item);
-  ~WebMenuItem();
+  MenuItem();
+  MenuItem(const MenuItem& item);
+  ~MenuItem();
 
   base::string16 label;
-  base::string16 toolTip;
+  base::string16 tool_tip;
   Type type;
   unsigned action;
   bool rtl;
   bool has_directional_override;
   bool enabled;
   bool checked;
-  std::vector<WebMenuItem> submenu;
+  std::vector<MenuItem> submenu;
 };
 
-#endif  // WEBKIT_COMMON_WEBMENUITEM_H_
+}  // namespace content
+
+#endif  // CONTENT_PUBLIC_COMMON_MENU_ITEM_H_
