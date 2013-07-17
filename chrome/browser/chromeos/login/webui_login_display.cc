@@ -364,7 +364,7 @@ void WebUILoginDisplay::Signout() {
   delegate_->Signout();
 }
 
-void WebUILoginDisplay::OnUserActivity() {
+void WebUILoginDisplay::OnUserActivity(const ui::Event* event) {
   if (!password_clear_timer_.IsRunning())
     StartPasswordClearTimer();
   password_clear_timer_.Reset();

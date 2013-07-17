@@ -28,7 +28,6 @@
 #include "dbus/message.h"
 #include "dbus/object_path.h"
 #include "dbus/object_proxy.h"
-#include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
 
@@ -248,8 +247,18 @@ class PowerManagerClientImpl : public PowerManagerClient {
         dbus::ObjectProxy::EmptyResponseCallback());
   }
 
-  virtual void NotifyUserActivity() OVERRIDE {
-    SimpleMethodCallToPowerManager(power_manager::kHandleUserActivityMethod);
+  virtual void NotifyUserActivity(
+      power_manager::UserActivityType type) OVERRIDE {
+    dbus::MethodCall method_call(
+        power_manager::kPowerManagerInterface,
+        power_manager::kHandleUserActivityMethod);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendInt32(type);
+
+    power_manager_proxy_->CallMethod(
+        &method_call,
+        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        dbus::ObjectProxy::EmptyResponseCallback());
   }
 
   virtual void NotifyVideoActivity(bool is_fullscreen) OVERRIDE {
@@ -735,7 +744,8 @@ class PowerManagerClientStubImpl : public PowerManagerClient {
         base::TimeDelta::FromMilliseconds(threshold));
   }
 
-  virtual void NotifyUserActivity() OVERRIDE {}
+  virtual void NotifyUserActivity(
+      power_manager::UserActivityType type) OVERRIDE {}
   virtual void NotifyVideoActivity(bool is_fullscreen) OVERRIDE {}
   virtual void SetPolicy(
       const power_manager::PowerManagementPolicy& policy) OVERRIDE {}

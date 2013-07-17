@@ -12,6 +12,7 @@
 #include "base/time/time.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace dbus {
 class Bus;
@@ -140,7 +141,7 @@ class CHROMEOS_EXPORT PowerManagerClient {
 
   // Notifies the power manager that the user is active (i.e. generating input
   // events).
-  virtual void NotifyUserActivity() = 0;
+  virtual void NotifyUserActivity(power_manager::UserActivityType type) = 0;
 
   // Notifies the power manager that a video is currently playing. It also
   // includes whether or not the containing window for the video is fullscreen.

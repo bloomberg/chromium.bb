@@ -79,7 +79,7 @@ void RecommendationRestorer::Observe(
   }
 }
 
-void RecommendationRestorer::OnUserActivity() {
+void RecommendationRestorer::OnUserActivity(const ui::Event* event) {
   if (restore_timer_.IsRunning())
     restore_timer_.Reset();
 }

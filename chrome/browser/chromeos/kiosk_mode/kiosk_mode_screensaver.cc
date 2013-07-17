@@ -232,7 +232,7 @@ void KioskModeScreensaver::SetupScreensaver(
   }
 }
 
-void KioskModeScreensaver::OnUserActivity() {
+void KioskModeScreensaver::OnUserActivity(const ui::Event* event) {
   // We don't want to handle further user notifications; we'll either login
   // the user and close out or or at least close the screensaver.
   ash::Shell::GetInstance()->user_activity_detector()->RemoveObserver(this);

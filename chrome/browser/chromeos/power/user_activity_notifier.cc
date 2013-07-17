@@ -8,6 +8,9 @@
 #include "ash/wm/user_activity_detector.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
+#include "ui/base/events/event.h"
+#include "ui/base/events/event_constants.h"
+#include "ui/base/keycodes/keyboard_codes_posix.h"
 
 namespace {
 
@@ -26,13 +29,27 @@ UserActivityNotifier::~UserActivityNotifier() {
   ash::Shell::GetInstance()->user_activity_detector()->RemoveObserver(this);
 }
 
-void UserActivityNotifier::OnUserActivity() {
+void UserActivityNotifier::OnUserActivity(const ui::Event* event) {
   base::TimeTicks now = base::TimeTicks::Now();
   // InSeconds() truncates rather than rounding, so it's fine for this
   // comparison.
   if (last_notify_time_.is_null() ||
       (now - last_notify_time_).InSeconds() >= kNotifyIntervalSec) {
-    DBusThreadManager::Get()->GetPowerManagerClient()->NotifyUserActivity();
+    power_manager::UserActivityType type = power_manager::USER_ACTIVITY_OTHER;
+    if (event && event->type() == ui::ET_KEY_PRESSED) {
+      switch (static_cast<const ui::KeyEvent*>(event)->key_code()) {
+        case ui::VKEY_BRIGHTNESS_UP:
+          type = power_manager::USER_ACTIVITY_BRIGHTNESS_UP_KEY_PRESS;
+          break;
+        case ui::VKEY_BRIGHTNESS_DOWN:
+          type = power_manager::USER_ACTIVITY_BRIGHTNESS_DOWN_KEY_PRESS;
+          break;
+        default:
+          break;
+      }
+    }
+
+    DBusThreadManager::Get()->GetPowerManagerClient()->NotifyUserActivity(type);
     last_notify_time_ = now;
   }
 }

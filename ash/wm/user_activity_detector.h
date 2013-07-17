@@ -54,7 +54,7 @@ class ASH_EXPORT UserActivityDetector : public ui::EventHandler {
   // Updates |last_activity_time_|.  Additionally notifies observers and
   // updates |last_observer_notification_time_| if enough time has passed
   // since the last notification.
-  void HandleActivity();
+  void HandleActivity(const ui::Event* event);
 
   ObserverList<UserActivityObserver> observers_;
 

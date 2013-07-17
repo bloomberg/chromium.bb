@@ -644,7 +644,7 @@ TEST_F(AutomaticRebootManagerBasicTest, UserActivityResetsIdleTimer) {
     FastForwardBy(base::TimeDelta::FromSeconds(50), false);
 
     // Simulate user activity.
-    automatic_reboot_manager_->OnUserActivity();
+    automatic_reboot_manager_->OnUserActivity(NULL);
   }
 
   // Fast forward the uptime by 60 seconds without simulating user activity.
@@ -1381,7 +1381,7 @@ TEST_P(AutomaticRebootManagerTest, PolicyAfterUpdateInGracePeriod) {
   FastForwardBy(base::TimeDelta::FromHours(6), false);
 
   // Simulate user activity.
-  automatic_reboot_manager_->OnUserActivity();
+  automatic_reboot_manager_->OnUserActivity(NULL);
 
   // Enable automatic reboot after an update has been applied. Verify that the
   // device does not reboot immediately.
@@ -1418,7 +1418,7 @@ TEST_P(AutomaticRebootManagerTest, PolicyAfterUpdateAfterGracePeriod) {
                 false);
 
   // Simulate user activity.
-  automatic_reboot_manager_->OnUserActivity();
+  automatic_reboot_manager_->OnUserActivity(NULL);
 
   // Enable automatic rebooting after an update has been applied. Verify that
   // unless a non-kiosk-app session is in progress, the the device immediately

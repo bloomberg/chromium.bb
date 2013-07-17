@@ -151,7 +151,7 @@ void RecommendationRestorerTest::NotifyOfSessionStart() {
 
 void RecommendationRestorerTest::NotifyOfUserActivity() {
   ASSERT_TRUE(restorer_);
-  restorer_->OnUserActivity();
+  restorer_->OnUserActivity(NULL);
 }
 
 void RecommendationRestorerTest::VerifyPrefFollowsUser(

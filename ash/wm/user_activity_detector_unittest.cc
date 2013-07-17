@@ -39,7 +39,9 @@ class TestUserActivityObserver : public UserActivityObserver {
   void reset_stats() { num_invocations_ = 0; }
 
   // UserActivityObserver implementation.
-  virtual void OnUserActivity() OVERRIDE { num_invocations_++; }
+  virtual void OnUserActivity(const ui::Event* event) OVERRIDE {
+    num_invocations_++;
+  }
 
  private:
   // Number of times that OnUserActivity() has been called.

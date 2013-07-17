@@ -24,8 +24,8 @@ class KioskModeScreensaver : public ash::UserActivityObserver {
  private:
   friend class KioskModeScreensaverTest;
 
-  // UserActivityObserver::Observer overrides:
-  virtual void OnUserActivity() OVERRIDE;
+  // UserActivityObserver overrides:
+  virtual void OnUserActivity(const ui::Event* event) OVERRIDE;
 
   // Initialization functions, in order
   // Get the screensaver path once KioskModeHelper is initialized.

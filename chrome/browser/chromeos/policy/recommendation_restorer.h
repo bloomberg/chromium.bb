@@ -41,8 +41,8 @@ class RecommendationRestorer : public BrowserContextKeyedService,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // ash::UserActivityObserver::Observer:
-  virtual void OnUserActivity() OVERRIDE;
+  // ash::UserActivityObserver:
+  virtual void OnUserActivity(const ui::Event* event) OVERRIDE;
 
   // If a recommended value and a user setting exist for |pref_name|, clears the
   // user setting so that the recommended value can take effect. If

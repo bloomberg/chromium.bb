@@ -104,7 +104,7 @@ class AutomaticRebootManager : public PowerManagerClient::Observer,
       const UpdateEngineClient::Status& status) OVERRIDE;
 
   // ash::UserActivityObserver:
-  virtual void OnUserActivity() OVERRIDE;
+  virtual void OnUserActivity(const ui::Event* event) OVERRIDE;
 
   // content::NotificationObserver:
   virtual void Observe(int type,

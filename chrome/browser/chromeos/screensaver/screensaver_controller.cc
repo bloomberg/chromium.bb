@@ -142,7 +142,7 @@ void ScreensaverController::IdleNotify(int64 threshold) {
     ash::Shell::GetInstance()->user_activity_detector()->AddObserver(this);
 }
 
-void ScreensaverController::OnUserActivity() {
+void ScreensaverController::OnUserActivity(const ui::Event* event) {
   // We don't want to handle further user notifications; we'll either login
   // the user and close out or or at least close the screensaver.
   if (ash::Shell::GetInstance()->user_activity_detector()->HasObserver(this))

@@ -178,7 +178,7 @@ AutomaticRebootManager::AutomaticRebootManager(
         content::NotificationService::AllSources());
     login_screen_idle_timer_.reset(
         new base::OneShotTimer<AutomaticRebootManager>);
-    OnUserActivity();
+    OnUserActivity(NULL);
   }
 
   // In a regular browser, base::ThreadTaskRunnerHandle::Get() and
@@ -240,7 +240,7 @@ void AutomaticRebootManager::UpdateStatusChanged(
   Reschedule();
 }
 
-void AutomaticRebootManager::OnUserActivity() {
+void AutomaticRebootManager::OnUserActivity(const ui::Event* event) {
   if (!login_screen_idle_timer_)
     return;
 

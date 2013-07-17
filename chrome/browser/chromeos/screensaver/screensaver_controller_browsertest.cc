@@ -63,7 +63,7 @@ IN_PROC_BROWSER_TEST_F(ScreensaverControllerTest, Basic) {
   EXPECT_TRUE(ash::IsScreensaverShown());
 
   // Trigger active.
-  controller_->OnUserActivity();
+  controller_->OnUserActivity(NULL);
   EXPECT_FALSE(ash::IsScreensaverShown());
 };
 
@@ -77,7 +77,7 @@ IN_PROC_BROWSER_TEST_F(ScreensaverControllerTest, OutOfOrder) {
   base::MessageLoop::current()->RunUntilIdle();
 
   // Trigger active.
-  controller_->OnUserActivity();
+  controller_->OnUserActivity(NULL);
   EXPECT_FALSE(ash::IsScreensaverShown());
 
   // Trigger idle.
@@ -90,7 +90,7 @@ IN_PROC_BROWSER_TEST_F(ScreensaverControllerTest, OutOfOrder) {
   EXPECT_TRUE(ash::IsScreensaverShown());
 
   // Trigger active.
-  controller_->OnUserActivity();
+  controller_->OnUserActivity(NULL);
   EXPECT_FALSE(ash::IsScreensaverShown());
 };
 

@@ -48,8 +48,8 @@ class ScreensaverController : public ash::UserActivityObserver,
   // Overridden from PowerManagerClient::Observer:
   virtual void IdleNotify(int64 threshold) OVERRIDE;
 
-  // UserActivityObserver::Observer overrides:
-  virtual void OnUserActivity() OVERRIDE;
+  // UserActivityObserver overrides:
+  virtual void OnUserActivity(const ui::Event* event) OVERRIDE;
 
   void SetupScreensaver(const std::string& screensaver_extension_id);
   void TeardownScreensaver();

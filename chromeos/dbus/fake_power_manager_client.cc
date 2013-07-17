@@ -72,7 +72,8 @@ void FakePowerManagerClient::SetIsProjecting(bool is_projecting) {
 void FakePowerManagerClient::RemoveObserver(Observer* observer) {
 }
 
-void FakePowerManagerClient::NotifyUserActivity() {
+void FakePowerManagerClient::NotifyUserActivity(
+    power_manager::UserActivityType type) {
 }
 
 } // namespace chromeos

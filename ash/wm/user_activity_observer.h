@@ -8,6 +8,10 @@
 #include "ash/ash_export.h"
 #include "base/basictypes.h"
 
+namespace ui {
+class Event;
+}
+
 namespace ash {
 
 // Interface for classes that want to be notified about user activity.
@@ -15,8 +19,9 @@ namespace ash {
 class ASH_EXPORT UserActivityObserver {
  public:
   // Invoked periodically while the user is active (i.e. generating input
-  // events).
-  virtual void OnUserActivity() = 0;
+  // events). |event| is the event that triggered the notification; it may
+  // be NULL in some cases (e.g. testing or synthetic invocations).
+  virtual void OnUserActivity(const ui::Event* event) = 0;
 
  protected:
   UserActivityObserver() {}

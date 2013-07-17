@@ -33,8 +33,8 @@ class KioskModeIdleLogout : public ash::UserActivityObserver,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // UserActivityObserver::Observer overrides:
-  virtual void OnUserActivity() OVERRIDE;
+  // UserActivityObserver overrides:
+  virtual void OnUserActivity(const ui::Event* event) OVERRIDE;
 
   // Begins listening for user activity and calls ResetTimer().
   void Start();

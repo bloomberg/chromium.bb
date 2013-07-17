@@ -70,7 +70,7 @@ void KioskModeIdleLogout::Observe(
   }
 }
 
-void KioskModeIdleLogout::OnUserActivity() {
+void KioskModeIdleLogout::OnUserActivity(const ui::Event* event) {
   IdleLogoutDialogView::CloseDialog();
   ResetTimer();
 }

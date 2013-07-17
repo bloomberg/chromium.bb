@@ -250,8 +250,8 @@ Shell::~Shell() {
     aura::client::GetFocusClient(active_root_window_)->FocusWindow(NULL);
 
   // Please keep in same order as in Init() because it's easy to miss one.
-  RemovePreTargetHandler(user_activity_detector_.get());
   RemovePreTargetHandler(event_rewriter_filter_.get());
+  RemovePreTargetHandler(user_activity_detector_.get());
   RemovePreTargetHandler(overlay_filter_.get());
   RemovePreTargetHandler(input_method_filter_.get());
   RemovePreTargetHandler(window_modality_controller_.get());
@@ -502,11 +502,13 @@ void Shell::Init() {
 #endif
 
   // The order in which event filters are added is significant.
-  user_activity_detector_.reset(new UserActivityDetector);
-  AddPreTargetHandler(user_activity_detector_.get());
-
   event_rewriter_filter_.reset(new internal::EventRewriterEventFilter);
   AddPreTargetHandler(event_rewriter_filter_.get());
+
+  // UserActivityDetector passes events to observers, so let them get
+  // rewritten first.
+  user_activity_detector_.reset(new UserActivityDetector);
+  AddPreTargetHandler(user_activity_detector_.get());
 
   overlay_filter_.reset(new internal::OverlayEventFilter);
   AddPreTargetHandler(overlay_filter_.get());

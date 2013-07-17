@@ -86,7 +86,7 @@ class WebUILoginDisplay : public LoginDisplay,
   virtual void Signout() OVERRIDE;
 
   // UserActivityDetector implementation:
-  virtual void OnUserActivity() OVERRIDE;
+  virtual void OnUserActivity(const ui::Event* event) OVERRIDE;
 
  private:
   void StartPasswordClearTimer();

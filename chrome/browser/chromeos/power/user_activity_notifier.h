@@ -19,7 +19,7 @@ class UserActivityNotifier : public ash::UserActivityObserver {
   virtual ~UserActivityNotifier();
 
   // ash::UserActivityObserver implementation.
-  virtual void OnUserActivity() OVERRIDE;
+  virtual void OnUserActivity(const ui::Event* event) OVERRIDE;
 
  private:
   // Last time that the power manager was notified.
