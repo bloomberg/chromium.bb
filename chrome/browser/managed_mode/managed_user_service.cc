@@ -312,9 +312,9 @@ void ManagedUserService::OnStateChanged() {
   ProfileSyncService* service =
       ProfileSyncServiceFactory::GetForProfile(profile_);
   if (waiting_for_sync_initialization_ && service->sync_initialized()) {
-    SetupSync();
-    service->RemoveObserver(this);
     waiting_for_sync_initialization_ = false;
+    service->RemoveObserver(this);
+    SetupSync();
     return;
   }
 
