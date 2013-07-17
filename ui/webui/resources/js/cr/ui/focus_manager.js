@@ -187,8 +187,6 @@ cr.define('cr.ui', function() {
    */
   FocusManager.disableMouseFocusOnButtons = function() {
     document.addEventListener('mousedown', function(event) {
-      if (event.button != 0)
-        return;
       var node = event.target;
       var tagName = node.tagName;
       if (tagName != 'BUTTON' && tagName != 'INPUT') {
