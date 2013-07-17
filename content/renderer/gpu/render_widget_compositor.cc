@@ -270,7 +270,10 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
   settings.max_partial_texture_updates = 0;
   settings.use_linear_fade_scrollbar_animator = true;
   settings.solid_color_scrollbars = true;
-  settings.solid_color_scrollbar_color = SkColorSetARGB(128, 128, 128, 128);
+  settings.solid_color_scrollbar_color =
+      cmd->HasSwitch(switches::kHideScrollbars)
+          ? SK_ColorTRANSPARENT
+          : SkColorSetARGB(128, 128, 128, 128);
   settings.solid_color_scrollbar_thickness_dip = 3;
   settings.highp_threshold_min = 2048;
 #endif

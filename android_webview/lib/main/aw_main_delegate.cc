@@ -50,7 +50,8 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   if (!cl->HasSwitch("disable-map-image"))
     cl->AppendSwitch(cc::switches::kUseMapImage);
 
-  // WebView uses the existing Android View edge effect for overscroll glow.
+  // WebView uses the Android system's scrollbars and overscroll glow.
+  cl->AppendSwitch(switches::kHideScrollbars);
   cl->AppendSwitch(switches::kDisableOverscrollEdgeEffect);
 
   return false;

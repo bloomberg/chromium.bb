@@ -538,6 +538,12 @@ const char kGpuStartupDialog[]              = "gpu-startup-dialog";
 // Passes gpu vendor_id from browser process to GPU process.
 const char kGpuVendorID[]                   = "gpu-vendor-id";
 
+#if defined(OS_ANDROID)
+// Don't display any scrollbars. This is useful for Android WebView where
+// the system manages the scrollbars instead.
+const char kHideScrollbars[]                = "hide-scrollbars";
+#endif
+
 // These mappings only apply to the host resolver.
 const char kHostResolverRules[]             = "host-resolver-rules";
 
