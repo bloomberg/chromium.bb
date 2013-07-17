@@ -156,7 +156,7 @@ def InstallApk(options, test, print_step=False):
   RunCmd(['build/android/adb_install_apk.py'] + args, halt_on_failure=True)
 
 
-def RunInstrumentationSuite(options, test):
+def RunInstrumentationSuite(options, test, flunk_on_failure=True):
   """Manages an invocation of test_runner.py for instrumentation tests.
 
   Args:
@@ -184,7 +184,8 @@ def RunInstrumentationSuite(options, test):
   if test.extra_flags:
     args.extend(test.extra_flags)
 
-  RunCmd(['build/android/test_runner.py', 'instrumentation'] + args)
+  RunCmd(['build/android/test_runner.py', 'instrumentation'] + args,
+         flunk_on_failure=flunk_on_failure)
 
 
 def RunWebkitLint(target):
