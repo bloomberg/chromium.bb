@@ -34,7 +34,7 @@ class PicasaDataProvider {
   // will be called when the data is up to date
   // TODO(tommycli): Investigate having the callback return a bool indicating
   // success or failure - and handling it intelligently in PicasaFileUtil.
-  void RefreshData(const base::Closure& ready_callback);
+  virtual void RefreshData(const base::Closure& ready_callback);
 
   scoped_ptr<AlbumMap> GetAlbums();
   scoped_ptr<AlbumMap> GetFolders();
@@ -48,6 +48,7 @@ class PicasaDataProvider {
 
  private:
   friend class PicasaFileUtilTest;
+  friend class TestPicasaDataProvider;
 
   static std::string DateToPathString(const base::Time& time);
   static void UniquifyNames(const std::vector<AlbumInfo>& info_list,
