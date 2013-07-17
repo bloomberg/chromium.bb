@@ -29,9 +29,6 @@ public class AwContentsClientFaviconTest extends AwTestBase {
         "<link rel=\"icon\" href=\""+ FAVICON1_URL + "\" />",
         "Body");
 
-    private static final String TOUCHICON_URL = "apple-touch-icon.png";
-    private static final String TOUCHICON_PRECOMPOSED_URL = "apple-touch-icon-precomposed.png";
-
     private static final String TOUCHICON_REL_LINK = "touch.png";
     private static final String TOUCHICON_REL_LINK_72 = "touch_72.png";
     private static final String TOUCHICON_REL_URL = "/" + TOUCHICON_REL_LINK;
@@ -118,26 +115,6 @@ public class AwContentsClientFaviconTest extends AwTestBase {
         assertNotNull(originalFavicon);
         assertNotNull(mContentsClient.mFaviconHelper.mIcon);
         assertTrue(mContentsClient.mFaviconHelper.mIcon.sameAs(originalFavicon));
-    }
-
-    @SmallTest
-    public void testReceiveBasicTouchIconRoot() throws Throwable {
-        init(new TestAwContentsClientTouchIcon());
-        int callCount = mContentsClient.mFaviconHelper.getCallCount();
-
-        // Use the favicon page url. Since this does not specify a link rel for touch icon,
-        // we should get the default touch icon urls in the callback.
-        final String pageUrl = mWebServer.setResponse(FAVICON1_PAGE_URL, FAVICON1_PAGE_HTML,
-          CommonResources.getTextHtmlHeaders(true));
-
-        loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
-
-        mContentsClient.mFaviconHelper.waitForCallback(callCount, 2);
-
-        HashMap<String, Boolean> touchIcons = mContentsClient.mFaviconHelper.mTouchIcons;
-        assertEquals(2, touchIcons.size());
-        assertFalse(touchIcons.get(mWebServer.getBaseUrl() + TOUCHICON_URL));
-        assertTrue(touchIcons.get(mWebServer.getBaseUrl() + TOUCHICON_PRECOMPOSED_URL));
     }
 
     @SmallTest
