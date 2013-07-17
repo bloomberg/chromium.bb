@@ -355,6 +355,8 @@
         'common/importer/importer_url_row.h',
         'common/importer/profile_import_process_messages.cc',
         'common/importer/profile_import_process_messages.h',
+        'common/importer/safari_importer_utils.h',
+        'common/importer/safari_importer_utils.mm',
         'common/instant_restricted_id_cache.h',
         'common/instant_types.cc',
         'common/instant_types.h',

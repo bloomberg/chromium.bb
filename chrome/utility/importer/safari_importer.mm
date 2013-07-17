@@ -48,27 +48,6 @@ SafariImporter::SafariImporter(const base::FilePath& library_dir)
 SafariImporter::~SafariImporter() {
 }
 
-// static
-bool SafariImporter::CanImport(const base::FilePath& library_dir,
-                               uint16* services_supported) {
-  DCHECK(services_supported);
-  *services_supported = importer::NONE;
-
-  // Import features are toggled by the following:
-  // bookmarks import: existence of ~/Library/Safari/Bookmarks.plist file.
-  // history import: existence of ~/Library/Safari/History.plist file.
-  base::FilePath safari_dir = library_dir.Append("Safari");
-  base::FilePath bookmarks_path = safari_dir.Append("Bookmarks.plist");
-  base::FilePath history_path = safari_dir.Append("History.plist");
-
-  if (base::PathExists(bookmarks_path))
-    *services_supported |= importer::FAVORITES;
-  if (base::PathExists(history_path))
-    *services_supported |= importer::HISTORY;
-
-  return *services_supported != importer::NONE;
-}
-
 void SafariImporter::StartImport(const importer::SourceProfile& source_profile,
                                  uint16 items,
                                  ImporterBridge* bridge) {

@@ -17,6 +17,7 @@
 #include "chrome/common/importer/imported_bookmark_entry.h"
 #include "chrome/common/importer/imported_favicon_usage.h"
 #include "chrome/common/importer/importer_bridge.h"
+#include "chrome/common/importer/safari_importer_utils.h"
 #include "chrome/utility/importer/safari_importer.h"
 #include "sql/connection.h"
 #include "testing/platform_test.h"
@@ -187,7 +188,7 @@ TEST_F(SafariImporterTest, FaviconImport) {
 
 TEST_F(SafariImporterTest, CanImport) {
   uint16 items = importer::NONE;
-  EXPECT_TRUE(SafariImporter::CanImport(GetTestSafariLibraryPath(), &items));
+  EXPECT_TRUE(SafariImporterCanImport(GetTestSafariLibraryPath(), &items));
   EXPECT_EQ(items, importer::HISTORY | importer::FAVORITES);
   EXPECT_EQ(items & importer::COOKIES, importer::NONE);
   EXPECT_EQ(items & importer::PASSWORDS, importer::NONE);
@@ -197,5 +198,5 @@ TEST_F(SafariImporterTest, CanImport) {
   // Check that we don't import anything from a bogus library directory.
   base::ScopedTempDir fake_library_dir;
   ASSERT_TRUE(fake_library_dir.CreateUniqueTempDir());
-  EXPECT_FALSE(SafariImporter::CanImport(fake_library_dir.path(), &items));
+  EXPECT_FALSE(SafariImporterCanImport(fake_library_dir.path(), &items));
 }

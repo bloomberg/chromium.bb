@@ -69,9 +69,6 @@ include_rules = [
   "+chrome/browser/ui/views/chrome_browser_main_extra_parts_views.h",
   "+chrome/browser/ui/views/ash/chrome_browser_main_extra_parts_ash.h",
 
-  # Should not be using utility process code. http://crbug.com/254672
-  "!chrome/utility",
-
   # Other libraries.
   "+chrome/third_party/mozilla_security_manager",
   "+libxml",  # For search engine definition parsing.

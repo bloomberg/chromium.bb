@@ -44,14 +44,6 @@ class SafariImporter : public Importer {
                            uint16 items,
                            ImporterBridge* bridge) OVERRIDE;
 
-  // Does this user account have a Safari Profile and if so, what items
-  // are supported?
-  // in: library_dir - ~/Library or a standin for testing purposes.
-  // out: services_supported - the service supported for import.
-  // Returns true if we can import the Safari profile.
-  static bool CanImport(const base::FilePath& library_dir,
-                        uint16* services_supported);
-
  private:
   FRIEND_TEST_ALL_PREFIXES(SafariImporterTest, BookmarkImport);
   FRIEND_TEST_ALL_PREFIXES(SafariImporterTest, FaviconImport);
