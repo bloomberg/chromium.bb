@@ -1024,7 +1024,8 @@ void RenderWidgetHostImpl::SimulateTouchGestureWithMouse(
 
 void RenderWidgetHostImpl::ForwardMouseEvent(const WebMouseEvent& mouse_event) {
   ForwardMouseEventWithLatencyInfo(
-      MouseEventWithLatencyInfo(mouse_event, NewInputLatencyInfo()));
+      MouseEventWithLatencyInfo(mouse_event,
+                                CreateRWHLatencyInfoIfNotExist(NULL)));
 }
 
 void RenderWidgetHostImpl::ForwardMouseEventWithLatencyInfo(
@@ -1058,7 +1059,8 @@ void RenderWidgetHostImpl::OnPointerEventActivate() {
 
 void RenderWidgetHostImpl::ForwardWheelEvent(
     const WebMouseWheelEvent& wheel_event) {
-  ForwardWheelEventWithLatencyInfo(wheel_event, NewInputLatencyInfo());
+  ForwardWheelEventWithLatencyInfo(wheel_event,
+                                   CreateRWHLatencyInfoIfNotExist(NULL));
 }
 
 void RenderWidgetHostImpl::ForwardWheelEventWithLatencyInfo(
@@ -1132,19 +1134,29 @@ void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
   if (ignore_input_events_ || process_->IgnoreInputEvents())
     return;
 
-  ui::LatencyInfo latency_info;
-  // In Aura, gesture event will carry its original touch event's
-  // INPUT_EVENT_LATENCY_RWH_COMPONENT. For non-aura platform, we add the
-  // INPUT_EVENT_LATENCY_RWH_COMPONENT right here.
-  if (!ui_latency.FindLatency(ui::INPUT_EVENT_LATENCY_RWH_COMPONENT,
-                              GetLatencyComponentId(),
-                              NULL))
-    latency_info = NewInputLatencyInfo();
+  ui::LatencyInfo latency_info = CreateRWHLatencyInfoIfNotExist(&ui_latency);
 
-  latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_INJECTED_RWH_COMPONENT,
-                                GetLatencyComponentId(),
-                                ++last_input_number_);
-  latency_info.MergeWith(ui_latency);
+  if (gesture_event.type == WebKit::WebInputEvent::GestureScrollUpdate) {
+    latency_info.AddLatencyNumber(
+        ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_RWH_COMPONENT,
+        GetLatencyComponentId(),
+        ++last_input_number_);
+
+    // Make a copy of the INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT with a
+    // different name INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT.
+    // So we can track the latency specifically for scroll update events.
+    ui::LatencyInfo::LatencyComponent original_component;
+    if (latency_info.FindLatency(ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT,
+                                 0,
+                                 &original_component)) {
+      latency_info.AddLatencyNumberWithTimestamp(
+          ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT,
+          GetLatencyComponentId(),
+          original_component.sequence_number,
+          original_component.event_time,
+          original_component.event_count);
+    }
+  }
 
   if (!IsInOverscrollGesture() &&
       !gesture_event_filter_->ShouldForward(
@@ -1289,7 +1301,7 @@ void RenderWidgetHostImpl::ForwardKeyboardEvent(
 
     // Only forward the non-native portions of our event.
     ForwardInputEvent(key_event, sizeof(WebKeyboardEvent),
-                      NewInputLatencyInfo(),
+                      CreateRWHLatencyInfoIfNotExist(NULL),
                       is_keyboard_shortcut);
   }
 }
@@ -1307,11 +1319,20 @@ void RenderWidgetHostImpl::DisableResizeAckCheckForTesting() {
   g_check_for_pending_resize_ack = false;
 }
 
-ui::LatencyInfo RenderWidgetHostImpl::NewInputLatencyInfo() {
+ui::LatencyInfo RenderWidgetHostImpl::CreateRWHLatencyInfoIfNotExist(
+    const ui::LatencyInfo* original) {
   ui::LatencyInfo info;
-  info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_RWH_COMPONENT,
+  if (original)
+    info = *original;
+  // In Aura, gesture event will already carry its original touch event's
+  // INPUT_EVENT_LATENCY_RWH_COMPONENT.
+  if (!info.FindLatency(ui::INPUT_EVENT_LATENCY_RWH_COMPONENT,
                         GetLatencyComponentId(),
-                        ++last_input_number_);
+                        NULL)) {
+    info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_RWH_COMPONENT,
+                          GetLatencyComponentId(),
+                          ++last_input_number_);
+  }
   return info;
 }
 
@@ -1416,8 +1437,7 @@ void RenderWidgetHostImpl::ForwardInputEvent(
 void RenderWidgetHostImpl::ForwardTouchEventWithLatencyInfo(
     const WebKit::WebTouchEvent& touch_event,
     const ui::LatencyInfo& ui_latency) {
-  ui::LatencyInfo latency_info = NewInputLatencyInfo();
-  latency_info.MergeWith(ui_latency);
+  ui::LatencyInfo latency_info = CreateRWHLatencyInfoIfNotExist(&ui_latency);
   TouchEventWithLatencyInfo touch_with_latency(touch_event, latency_info);
   touch_event_queue_->QueueEvent(touch_with_latency);
 }
@@ -2649,16 +2669,38 @@ void RenderWidgetHostImpl::ComputeTouchLatency(
 }
 
 void RenderWidgetHostImpl::FrameSwapped(const ui::LatencyInfo& latency_info) {
-  ui::LatencyInfo::LatencyMap::const_iterator l =
-      latency_info.latency_components.find(std::make_pair(
-          ui::INPUT_EVENT_LATENCY_RWH_COMPONENT, GetLatencyComponentId()));
-  if (l == latency_info.latency_components.end())
+  ui::LatencyInfo::LatencyComponent rwh_component;
+  if (!latency_info.FindLatency(ui::INPUT_EVENT_LATENCY_RWH_COMPONENT,
+                                GetLatencyComponentId(),
+                                &rwh_component))
     return;
 
-  rendering_stats_.input_event_count += l->second.event_count;
+  rendering_stats_.input_event_count += rwh_component.event_count;
   rendering_stats_.total_input_latency +=
-      l->second.event_count *
-      (latency_info.swap_timestamp - l->second.event_time);
+      rwh_component.event_count *
+      (latency_info.swap_timestamp - rwh_component.event_time);
+
+  ui::LatencyInfo::LatencyComponent original_component;
+  if (latency_info.FindLatency(
+          ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT,
+          GetLatencyComponentId(),
+          &original_component)) {
+    // This UMA metric tracks the time from when the original touch event is
+    // created (averaged if there are multiple) to when the scroll gesture
+    // results in final frame swap.
+    base::TimeDelta delta =
+        latency_info.swap_timestamp - original_component.event_time;
+    UMA_HISTOGRAM_CUSTOM_COUNTS(
+        "Event.Latency.TouchToScrollUpdateSwap",
+        delta.InMicroseconds(),
+        0,
+        1000000,
+        100);
+    rendering_stats_.scroll_update_count += original_component.event_count;
+    rendering_stats_.total_scroll_update_latency +=
+        original_component.event_count *
+        (latency_info.swap_timestamp - original_component.event_time);
+  }
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableGpuBenchmarking))

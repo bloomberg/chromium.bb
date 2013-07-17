@@ -17,14 +17,15 @@ namespace ui {
 enum LatencyComponentType {
   // Timestamp when the input event is sent from RenderWidgetHost to renderer.
   INPUT_EVENT_LATENCY_RWH_COMPONENT,
-  // Timestamp when the injected event is sent from RenderWidgetHost to
-  // renderer. For example, in Aura, touch event's LatencyInfo is carried over
-  // to the injected gesture event. So gesture event's
-  // INPUT_EVENT_LATENCY_RWH_COMPONENT is the timestamp when its original touch
-  // events is sent from RWH to renderer. In non-aura platform,
-  // INPUT_EVENT_LATENCY_RWH_COMPONENT is the same as
-  // INPUT_EVENT_LATENCY_INJECTED_RWH_COMPONENT.
-  INPUT_EVENT_LATENCY_INJECTED_RWH_COMPONENT,
+  // Timestamp when the scroll update gesture event is sent from RWH to
+  // renderer. In Aura, touch event's LatencyInfo is carried over to the gesture
+  // event. So gesture event's INPUT_EVENT_LATENCY_RWH_COMPONENT is the
+  // timestamp when its original touch events is sent from RWH to renderer.
+  // In non-aura platform, INPUT_EVENT_LATENCY_SCROLL_UPDATE_RWH_COMPONENT
+  // is the same as INPUT_EVENT_LATENCY_RWH_COMPONENT.
+  INPUT_EVENT_LATENCY_SCROLL_UPDATE_RWH_COMPONENT,
+  // The original timestamp of the touch event which converts to scroll update.
+  INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT,
   // Original timestamp for input event (e.g. timestamp from kernel).
   INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT,
   // Timestamp when the UI event is created.

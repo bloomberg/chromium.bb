@@ -309,6 +309,8 @@ IPC_STRUCT_TRAITS_BEGIN(content::BrowserRenderingStats)
   IPC_STRUCT_TRAITS_MEMBER(total_touch_ui_latency)
   IPC_STRUCT_TRAITS_MEMBER(touch_acked_count)
   IPC_STRUCT_TRAITS_MEMBER(total_touch_acked_latency)
+  IPC_STRUCT_TRAITS_MEMBER(scroll_update_count)
+  IPC_STRUCT_TRAITS_MEMBER(total_scroll_update_latency)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_BEGIN(ViewHostMsg_CreateWindow_Params)

@@ -22,6 +22,9 @@ struct CONTENT_EXPORT BrowserRenderingStats {
   base::TimeDelta total_touch_ui_latency;
   uint32 touch_acked_count;
   base::TimeDelta total_touch_acked_latency;
+
+  uint32 scroll_update_count;
+  base::TimeDelta total_scroll_update_latency;
   // Note: when adding new members, please remember to update enumerateFields
   // in browser_rendering_stats.cc.
 

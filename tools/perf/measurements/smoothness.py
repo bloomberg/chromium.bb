@@ -159,6 +159,9 @@ def CalcLatencyResults(rendering_stats_deltas, results):
               'totalTouchAckedLatency',
               'average_touch_acked_latency',
               results)
+  CalcLatency(rendering_stats_deltas, 'scrollUpdateCount',
+              'totalScrollUpdateLatency',
+              'average_scroll_update_latency', results)
 
 class Smoothness(page_measurement.PageMeasurement):
   def __init__(self):
