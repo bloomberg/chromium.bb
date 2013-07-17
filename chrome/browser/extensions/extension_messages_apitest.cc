@@ -10,7 +10,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/test_extension_dir.h"
 #include "chrome/browser/profiles/profile.h"
@@ -143,14 +142,9 @@ class ExternallyConnectableMessagingTest : public ExtensionApiTest {
   };
 
   Result CanConnectAndSendMessages(const std::string& extension_id) {
-    return CanConnectAndSendMessages(browser(), extension_id);
-  }
-
-  Result CanConnectAndSendMessages(Browser* browser,
-                                   const std::string& extension_id) {
     int result;
     CHECK(content::ExecuteScriptAndExtractInt(
-        browser->tab_strip_model()->GetActiveWebContents(),
+        browser()->tab_strip_model()->GetActiveWebContents(),
         "assertions.canConnectAndSendMessages('" + extension_id + "')",
         &result));
     return static_cast<Result>(result);
@@ -214,7 +208,7 @@ class ExternallyConnectableMessagingTest : public ExtensionApiTest {
   }
 
   const Extension* LoadChromiumConnectableExtension() {
-    return LoadExtensionIntoDir(&web_connectable_dir_, base::StringPrintf(
+    web_connectable_dir_.WriteManifest(base::StringPrintf(
         "{"
         "  \"name\": \"chromium_connectable\","
         "  %s,"
@@ -223,15 +217,19 @@ class ExternallyConnectableMessagingTest : public ExtensionApiTest {
         "  }"
         "}",
         common_manifest()));
+    WriteBackgroundHtml(&web_connectable_dir_);
+    return LoadExtension(web_connectable_dir_.unpacked_path());
   }
 
   scoped_refptr<const Extension> LoadNotConnectableExtension() {
-    return LoadExtensionIntoDir(&not_connectable_dir_, base::StringPrintf(
+    not_connectable_dir_.WriteManifest(base::StringPrintf(
         "{"
         "  \"name\": \"not_connectable\","
         "  %s"
         "}",
         common_manifest()));
+    WriteBackgroundHtml(&not_connectable_dir_);
+    return LoadExtension(not_connectable_dir_.unpacked_path());
   }
 
   void InitializeTestServer() {
@@ -244,10 +242,8 @@ class ExternallyConnectableMessagingTest : public ExtensionApiTest {
   }
 
  private:
-  const Extension* LoadExtensionIntoDir(TestExtensionDir* dir,
-                                        const std::string& manifest) {
-    dir->WriteManifest(manifest);
-    dir->WriteFile(FILE_PATH_LITERAL("background.js"),
+  void WriteBackgroundHtml(TestExtensionDir* extension_dir) {
+    extension_dir->WriteFile(FILE_PATH_LITERAL("background.js"),
         "chrome.runtime.onMessageExternal.addListener(\n"
         "    function(message, sender, reply) {\n"
         "  reply({ message: message, sender: sender });\n"
@@ -257,7 +253,6 @@ class ExternallyConnectableMessagingTest : public ExtensionApiTest {
         "    port.postMessage({ message: message, sender: port.sender });\n"
         "  });\n"
         "});\n");
-    return LoadExtension(dir->unpacked_path());
   }
 
   const char* common_manifest() {
@@ -352,31 +347,6 @@ IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest,
   EXPECT_EQ(OK, CanConnectAndSendMessages(chromium_connectable->id()));
   EXPECT_EQ(COULD_NOT_ESTABLISH_CONNECTION_ERROR,
             CanConnectAndSendMessages(not_connectable->id()));
-}
-
-// Tests connection from incognito tabs. Spanning mode only.
-//
-// TODO(kalman): ensure that we exercise split vs spanning incognito logic
-// somewhere. This is a test that should be shared with the content script logic
-// so it's not really our specific concern for web connectable.
-IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest, FromIncognito) {
-  InitializeTestServer();
-
-  const Extension* chromium_connectable = LoadChromiumConnectableExtension();
-  ASSERT_TRUE(chromium_connectable);
-
-  Browser* incognito_browser = ui_test_utils::OpenURLOffTheRecord(
-      profile()->GetOffTheRecordProfile(),
-      chromium_org_url());
-
-  // No connection because incognito enabled hasn't been set.
-  const std::string& id = chromium_connectable->id();
-  EXPECT_EQ(COULD_NOT_ESTABLISH_CONNECTION_ERROR,
-            CanConnectAndSendMessages(incognito_browser, id));
-
-  // Then yes.
-  ExtensionPrefs::Get(profile())->SetIsIncognitoEnabled(id, true);
-  EXPECT_EQ(OK, CanConnectAndSendMessages(incognito_browser, id));
 }
 
 }  // namespace
