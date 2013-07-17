@@ -6,7 +6,7 @@
 
 #include <functional>
 
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/time/time.h"

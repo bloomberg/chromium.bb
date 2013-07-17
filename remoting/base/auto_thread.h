@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/threading/platform_thread.h"
 #include "remoting/base/auto_thread_task_runner.h"
 

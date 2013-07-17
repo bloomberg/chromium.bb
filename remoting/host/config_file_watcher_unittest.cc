@@ -6,7 +6,7 @@
 
 #include "base/file_util.h"
 #include "base/files/file_path.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "remoting/base/auto_thread.h"
 #include "remoting/base/auto_thread_task_runner.h"

@@ -4,7 +4,7 @@
 
 #include "remoting/jingle_glue/chromium_socket_factory.h"
 
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

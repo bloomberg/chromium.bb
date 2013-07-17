@@ -4,7 +4,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

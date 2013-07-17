@@ -5,7 +5,7 @@
 #include "remoting/protocol/connection_to_client.h"
 
 #include "base/bind.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "remoting/base/constants.h"
 #include "remoting/protocol/fake_session.h"

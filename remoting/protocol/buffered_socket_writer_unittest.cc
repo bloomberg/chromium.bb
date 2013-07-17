@@ -7,7 +7,7 @@
 #include <stdlib.h>
 
 #include "base/bind.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "remoting/protocol/fake_session.h"

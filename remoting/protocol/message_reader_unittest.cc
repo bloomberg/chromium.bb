@@ -7,15 +7,15 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "net/base/net_errors.h"
 #include "net/socket/socket.h"
 #include "remoting/protocol/fake_session.h"
 #include "remoting/protocol/message_reader.h"
-#include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libjingle/source/talk/base/byteorder.h"
 
 using testing::_;

@@ -7,7 +7,7 @@
 #include <windows.h>
 
 #include "base/bind.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/process_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"

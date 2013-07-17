@@ -5,7 +5,7 @@
 #include "remoting/host/pairing_registry_delegate_linux.h"
 
 #include "base/file_util.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/task_runner.h"
 #include "base/thread_task_runner_handle.h"

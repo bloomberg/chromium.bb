@@ -7,7 +7,7 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/process.h"
 #include "base/process_util.h"
 #include "base/run_loop.h"

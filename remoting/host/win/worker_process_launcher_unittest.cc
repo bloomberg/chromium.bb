@@ -5,7 +5,7 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/scoped_process_information.h"
 #include "ipc/ipc_channel.h"

@@ -12,7 +12,7 @@
 #include "base/debug/alias.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "remoting/base/auto_thread.h"

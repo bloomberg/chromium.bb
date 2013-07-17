@@ -5,7 +5,7 @@
 #include "remoting/protocol/channel_multiplexer.h"
 
 #include "base/bind.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "net/base/net_errors.h"
 #include "net/socket/socket.h"
 #include "net/socket/stream_socket.h"

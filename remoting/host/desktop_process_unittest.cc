@@ -8,7 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "ipc/ipc_channel.h"

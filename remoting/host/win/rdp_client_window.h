@@ -12,7 +12,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/win/scoped_comptr.h"
 #include "net/base/ip_endpoint.h"
 #include "third_party/skia/include/core/SkSize.h"
