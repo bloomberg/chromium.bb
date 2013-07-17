@@ -70,6 +70,9 @@ class WTF_EXPORT ArrayBufferView : public RefCounted<ArrayBufferView> {
 
     virtual unsigned byteLength() const = 0;
 
+    void setNeuterable(bool flag) { m_isNeuterable = flag; }
+    bool isNeuterable() const { return m_isNeuterable; }
+
     virtual ~ArrayBufferView();
 
   protected:
@@ -128,7 +131,8 @@ class WTF_EXPORT ArrayBufferView : public RefCounted<ArrayBufferView> {
     // This is the address of the ArrayBuffer's storage, plus the byte offset.
     void* m_baseAddress;
 
-    unsigned m_byteOffset;
+    unsigned m_byteOffset : 31;
+    bool m_isNeuterable : 1;
 
   private:
     friend class ArrayBuffer;

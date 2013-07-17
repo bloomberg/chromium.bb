@@ -28,6 +28,7 @@
 #include "wtf/ArrayBufferContents.h"
 
 #include "wtf/ArrayBufferDeallocationObserver.h"
+#include <string.h>
 
 namespace WTF {
 
@@ -95,6 +96,17 @@ void ArrayBufferContents::transfer(ArrayBufferContents& other)
     other.m_data = m_data;
     other.m_sizeInBytes = m_sizeInBytes;
     clear();
+}
+
+void ArrayBufferContents::copyTo(ArrayBufferContents& other)
+{
+    ASSERT(!other.m_sizeInBytes);
+    other.freeMemory(other.m_data);
+    allocateMemory(m_sizeInBytes, DontInitialize, other.m_data);
+    if (!other.m_data)
+        return;
+    memcpy(other.m_data, m_data, m_sizeInBytes);
+    other.m_sizeInBytes = m_sizeInBytes;
 }
 
 bool ArrayBufferContents::allocateMemory(size_t size, InitializationPolicy policy, void*& data)
