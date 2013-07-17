@@ -35,7 +35,7 @@ class MEDIA_EXPORT DecryptingVideoDecoder : public VideoDecoder {
   virtual void Initialize(const VideoDecoderConfig& config,
                           const PipelineStatusCB& status_cb) OVERRIDE;
   virtual void Decode(const scoped_refptr<DecoderBuffer>& buffer,
-                      const ReadCB& read_cb) OVERRIDE;
+                      const DecodeCB& decode_cb) OVERRIDE;
   virtual void Reset(const base::Closure& closure) OVERRIDE;
   virtual void Stop(const base::Closure& closure) OVERRIDE;
 
@@ -85,7 +85,7 @@ class MEDIA_EXPORT DecryptingVideoDecoder : public VideoDecoder {
   State state_;
 
   PipelineStatusCB init_cb_;
-  ReadCB read_cb_;
+  DecodeCB decode_cb_;
   base::Closure reset_cb_;
 
   VideoDecoderConfig config_;

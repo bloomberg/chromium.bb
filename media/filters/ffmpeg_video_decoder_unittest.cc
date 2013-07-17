@@ -47,8 +47,8 @@ class FFmpegVideoDecoderTest : public testing::Test {
  public:
   FFmpegVideoDecoderTest()
       : decoder_(new FFmpegVideoDecoder(message_loop_.message_loop_proxy())),
-        read_cb_(base::Bind(&FFmpegVideoDecoderTest::FrameReady,
-                            base::Unretained(this))) {
+        decode_cb_(base::Bind(&FFmpegVideoDecoderTest::FrameReady,
+                              base::Unretained(this))) {
     FFmpegGlue::InitializeFFmpeg();
 
     // Initialize various test buffers.
@@ -217,7 +217,7 @@ class FFmpegVideoDecoderTest : public testing::Test {
     EXPECT_CALL(*this, FrameReady(_, _))
         .WillOnce(DoAll(SaveArg<0>(status), SaveArg<1>(video_frame)));
 
-    decoder_->Decode(buffer, read_cb_);
+    decoder_->Decode(buffer, decode_cb_);
 
     message_loop_.RunUntilIdle();
   }
@@ -228,7 +228,7 @@ class FFmpegVideoDecoderTest : public testing::Test {
   base::MessageLoop message_loop_;
   scoped_ptr<FFmpegVideoDecoder> decoder_;
 
-  VideoDecoder::ReadCB read_cb_;
+  VideoDecoder::DecodeCB decode_cb_;
 
   // Various buffers for testing.
   scoped_ptr<uint8_t[]> frame_buffer_;

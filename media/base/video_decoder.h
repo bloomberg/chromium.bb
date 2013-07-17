@@ -55,13 +55,12 @@ class MEDIA_EXPORT VideoDecoder {
   // - NULL frame indicates an aborted decode. This can happen if Reset() or
   //   Stop() is called during the decoding process.
   // Otherwise the returned frame must be NULL.
-  //
-  // TODO(xhwang): Rename this to DecodeCB.
-  typedef base::Callback<void(Status, const scoped_refptr<VideoFrame>&)> ReadCB;
+  typedef base::Callback<void(Status,
+                              const scoped_refptr<VideoFrame>&)> DecodeCB;
   virtual void Decode(const scoped_refptr<DecoderBuffer>& buffer,
-                      const ReadCB& read_cb) = 0;
+                      const DecodeCB& decode_cb) = 0;
 
-  // Resets decoder state, fulfilling all pending ReadCB and dropping extra
+  // Resets decoder state, fulfilling all pending DecodeCB and dropping extra
   // queued decoded data. After this call, the decoder is back to an initialized
   // clean state.
   // Note: No VideoDecoder calls should be made before |closure| is executed.

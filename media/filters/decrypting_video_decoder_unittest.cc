@@ -282,7 +282,7 @@ TEST_F(DecryptingVideoDecoderTest, DecryptAndDecode_DecodeError) {
   ReadAndExpectFrameReadyWith(
       encrypted_buffer_, VideoDecoder::kDecodeError, null_video_frame_);
 
-  // After a decode error occurred, all following read returns kDecodeError.
+  // After a decode error occurred, all following decode returns kDecodeError.
   ReadAndExpectFrameReadyWith(
       encrypted_buffer_, VideoDecoder::kDecodeError, null_video_frame_);
 }

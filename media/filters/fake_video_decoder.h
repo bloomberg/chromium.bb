@@ -37,7 +37,7 @@ class FakeVideoDecoder : public VideoDecoder {
   virtual void Initialize(const VideoDecoderConfig& config,
                           const PipelineStatusCB& status_cb) OVERRIDE;
   virtual void Decode(const scoped_refptr<DecoderBuffer>& buffer,
-                      const ReadCB& read_cb) OVERRIDE;
+                      const DecodeCB& decode_cb) OVERRIDE;
   virtual void Reset(const base::Closure& closure) OVERRIDE;
   virtual void Stop(const base::Closure& closure) OVERRIDE;
 
@@ -64,7 +64,7 @@ class FakeVideoDecoder : public VideoDecoder {
 
   // Callback for updating |total_bytes_decoded_|.
   void OnFrameDecoded(int buffer_size,
-                      const ReadCB& read_cb,
+                      const DecodeCB& read_cb,
                       Status status,
                       const scoped_refptr<VideoFrame>& video_frame);
 
@@ -80,7 +80,7 @@ class FakeVideoDecoder : public VideoDecoder {
   State state_;
 
   CallbackHolder<PipelineStatusCB> init_cb_;
-  CallbackHolder<ReadCB> read_cb_;
+  CallbackHolder<DecodeCB> decode_cb_;
   CallbackHolder<base::Closure> reset_cb_;
   CallbackHolder<base::Closure> stop_cb_;
 

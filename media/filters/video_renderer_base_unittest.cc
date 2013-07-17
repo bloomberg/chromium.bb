@@ -314,7 +314,7 @@ class VideoRendererBaseTest : public ::testing::Test {
   }
 
   void FrameRequested(const scoped_refptr<DecoderBuffer>& buffer,
-                      const VideoDecoder::ReadCB& read_cb) {
+                      const VideoDecoder::DecodeCB& read_cb) {
     DCHECK_EQ(&message_loop_, base::MessageLoop::current());
     CHECK(read_cb_.is_null());
     read_cb_ = read_cb;
@@ -359,7 +359,7 @@ class VideoRendererBaseTest : public ::testing::Test {
   scoped_refptr<VideoFrame> current_frame_;
 
   // Used for satisfying reads.
-  VideoDecoder::ReadCB read_cb_;
+  VideoDecoder::DecodeCB read_cb_;
   base::TimeDelta next_frame_timestamp_;
   base::TimeDelta duration_;
 

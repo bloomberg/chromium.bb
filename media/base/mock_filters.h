@@ -74,7 +74,7 @@ class MockVideoDecoder : public VideoDecoder {
   MOCK_METHOD2(Initialize, void(const VideoDecoderConfig& config,
                                 const PipelineStatusCB&));
   MOCK_METHOD2(Decode, void(const scoped_refptr<DecoderBuffer>& buffer,
-                            const ReadCB&));
+                            const DecodeCB&));
   MOCK_METHOD1(Reset, void(const base::Closure&));
   MOCK_METHOD1(Stop, void(const base::Closure&));
   MOCK_CONST_METHOD0(HasAlpha, bool());

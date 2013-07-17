@@ -54,7 +54,7 @@ void VideoFrameStream::Initialize(DemuxerStream* stream,
       stream, base::Bind(&VideoFrameStream::OnDecoderSelected, weak_this_));
 }
 
-void VideoFrameStream::Read(const VideoDecoder::ReadCB& read_cb) {
+void VideoFrameStream::Read(const ReadCB& read_cb) {
   DCHECK(message_loop_->BelongsToCurrentThread());
   DCHECK(state_ == STATE_NORMAL || state_ == STATE_FLUSHING_DECODER ||
          state_ == STATE_ERROR) << state_;
@@ -66,7 +66,7 @@ void VideoFrameStream::Read(const VideoDecoder::ReadCB& read_cb) {
 
   if (state_ == STATE_ERROR) {
     message_loop_->PostTask(FROM_HERE, base::Bind(
-        read_cb, VideoDecoder::kDecodeError, scoped_refptr<VideoFrame>()));
+        read_cb, DECODE_ERROR, scoped_refptr<VideoFrame>()));
     return;
   }
 
@@ -188,14 +188,14 @@ void VideoFrameStream::OnDecoderSelected(
   }
 }
 
-void VideoFrameStream::SatisfyRead(VideoDecoder::Status status,
+void VideoFrameStream::SatisfyRead(Status status,
                                    const scoped_refptr<VideoFrame>& frame) {
   DCHECK(!read_cb_.is_null());
   base::ResetAndReturn(&read_cb_).Run(status, frame);
 }
 
 void VideoFrameStream::AbortRead() {
-  SatisfyRead(VideoDecoder::kOk, NULL);
+  SatisfyRead(ABORTED, NULL);
 }
 
 void VideoFrameStream::Decode(const scoped_refptr<DecoderBuffer>& buffer) {
@@ -220,11 +220,17 @@ void VideoFrameStream::OnFrameReady(int buffer_size,
   DCHECK(state_ == STATE_NORMAL || state_ == STATE_FLUSHING_DECODER) << state_;
   DCHECK(!read_cb_.is_null());
 
-  if (status == VideoDecoder::kDecodeError ||
-      status == VideoDecoder::kDecryptError) {
+  if (status == VideoDecoder::kDecodeError) {
     DCHECK(!frame.get());
     state_ = STATE_ERROR;
-    SatisfyRead(status, NULL);
+    SatisfyRead(DECODE_ERROR, NULL);
+    return;
+  }
+
+  if (status == VideoDecoder::kDecryptError) {
+    DCHECK(!frame.get());
+    state_ = STATE_ERROR;
+    SatisfyRead(DECRYPT_ERROR, NULL);
     return;
   }
 
@@ -258,7 +264,7 @@ void VideoFrameStream::OnFrameReady(int buffer_size,
     return;
   }
 
-  SatisfyRead(status, frame);
+  SatisfyRead(OK, frame);
 }
 
 void VideoFrameStream::ReadFromDemuxerStream() {
@@ -311,7 +317,7 @@ void VideoFrameStream::OnBufferReady(
   }
 
   if (status == DemuxerStream::kAborted) {
-    AbortRead();
+    SatisfyRead(DEMUXER_READ_ABORTED, NULL);
     return;
   }
 
@@ -354,12 +360,12 @@ void VideoFrameStream::OnDecoderReinitialized(PipelineStatus status) {
     return;
 
   if (!stop_cb_.is_null()) {
-    base::ResetAndReturn(&read_cb_).Run(VideoDecoder::kOk, NULL);
+    base::ResetAndReturn(&read_cb_).Run(ABORTED, NULL);
     return;
   }
 
   if (state_ == STATE_ERROR) {
-    SatisfyRead(VideoDecoder::kDecodeError, NULL);
+    SatisfyRead(DECODE_ERROR, NULL);
     return;
   }
 

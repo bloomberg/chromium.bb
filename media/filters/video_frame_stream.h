@@ -33,6 +33,17 @@ class MEDIA_EXPORT VideoFrameStream {
   // Indicates completion of VideoFrameStream initialization.
   typedef base::Callback<void(bool success, bool has_alpha)> InitCB;
 
+  enum Status {
+    OK,  // Everything went as planned.
+    ABORTED,  // Read aborted due to Reset() during pending read.
+    DEMUXER_READ_ABORTED,  // Demuxer returned aborted read.
+    DECODE_ERROR,  // Decoder returned decode error.
+    DECRYPT_ERROR  // Decoder returned decrypt error.
+  };
+
+  // Indicates completion of a VideoFrameStream read.
+  typedef base::Callback<void(Status, const scoped_refptr<VideoFrame>&)> ReadCB;
+
   VideoFrameStream(const scoped_refptr<base::MessageLoopProxy>& message_loop,
                    ScopedVector<VideoDecoder> decoders,
                    const SetDecryptorReadyCB& set_decryptor_ready_cb);
@@ -48,7 +59,7 @@ class MEDIA_EXPORT VideoFrameStream {
   // |read_cb| is always called asynchronously. This method should only be
   // called after initialization has succeeded and must not be called during
   // any pending Reset() and/or Stop().
-  void Read(const VideoDecoder::ReadCB& read_cb);
+  void Read(const ReadCB& read_cb);
 
   // Resets the decoder, flushes all decoded frames and/or internal buffers,
   // fires any existing pending read callback and calls |closure| on completion.
@@ -88,8 +99,7 @@ class MEDIA_EXPORT VideoFrameStream {
       scoped_ptr<DecryptingDemuxerStream> decrypting_demuxer_stream);
 
   // Satisfy pending |read_cb_| with |status| and |frame|.
-  void SatisfyRead(VideoDecoder::Status status,
-                   const scoped_refptr<VideoFrame>& frame);
+  void SatisfyRead(Status status, const scoped_refptr<VideoFrame>& frame);
 
   // Abort pending |read_cb_|.
   void AbortRead();
@@ -133,7 +143,7 @@ class MEDIA_EXPORT VideoFrameStream {
   StatisticsCB statistics_cb_;
   InitCB init_cb_;
 
-  VideoDecoder::ReadCB read_cb_;
+  ReadCB read_cb_;
   base::Closure reset_cb_;
   base::Closure stop_cb_;
 
