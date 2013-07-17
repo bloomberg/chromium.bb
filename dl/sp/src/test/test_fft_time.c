@@ -1090,8 +1090,7 @@ void TimeRFFT16(int count, float signal_value, int signal_type) {
 
   if (verbose == 0)
     printf("RFFT16 (with S16)\n");
-  //for (k = min_fft_order; k <= max_order; ++k) {
-  for (k = 7; k <= max_order; ++k) {
+  for (k = min_fft_order; k <= max_order; ++k) {
     int testCount = ComputeCount(count, k);
     TimeOneRFFT16(testCount, k, signal_value, signal_type, 0);
   }
