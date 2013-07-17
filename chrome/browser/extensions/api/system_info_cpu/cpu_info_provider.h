@@ -26,7 +26,6 @@ class CpuInfoProvider
  private:
   friend class SystemInfoProvider<api::system_info_cpu::CpuInfo>;
   friend class MockCpuInfoProviderImpl;
-  friend class TestCpuInfoProvider;
 
   CpuInfoProvider();
 
