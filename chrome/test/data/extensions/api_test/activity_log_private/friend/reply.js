@@ -324,7 +324,7 @@ function doLocationAccess() {
             {'code': code},
             function() {
               chrome.tabs.remove(tabId);
-              setCompleted('doLoctionAccess');
+              setCompleted('doLocationAccess');
             });
       }
     }
@@ -429,8 +429,9 @@ function doWebStorageAPIAccess1() {
   openTab(defaultUrl);
 }
 
+// Accesses local storage from inside a content script.
 function doWebStorageAPIAccess2() {
-  var code = 'var store = window.sessionStorage; ' +
+  var code = 'var store = window.localStorage; ' +
              'store.setItem("foo", 42); ' +
              'var val = store.getItem("foo"); ' +
              'store.removeItem("foo"); ' +

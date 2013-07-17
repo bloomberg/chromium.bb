@@ -63,6 +63,7 @@ testCases.push({
     'tabs.onUpdated',
     'tabs.onUpdated',
     'tabs.executeScript',
+    'HTMLDocument.write',
     'tabs.remove']
 });
 testCases.push({
@@ -149,6 +150,11 @@ testCases.push({
     'tabs.onUpdated',
     'tabs.onUpdated',
     'tabs.executeScript',
+    'Window.location',
+    'Document.location',
+    'Window.location',
+    'Location.assign',
+    'Location.replace',
     'tabs.remove'
   ]
 });
@@ -161,6 +167,17 @@ testCases.push({
     'tabs.onUpdated',
     'tabs.onUpdated',
     'tabs.executeScript',
+    'Document.createElement',
+    'Document.createElement',
+    'Document.location',
+    'Node.appendChild',
+    'Document.location',
+    'Document.location',
+    'Node.insertBefore',
+    'Document.location',
+    'Document.location',
+    'Node.replaceChild',
+    'Document.location',
     'tabs.remove'
   ]
 });
@@ -173,6 +190,9 @@ testCases.push({
     'tabs.onUpdated',
     'tabs.onUpdated',
     'tabs.executeScript',
+    'HTMLDocument.write',
+    'HTMLDocument.writeln',
+    'HTMLElement.innerHTML',
     'tabs.remove'
   ]
 });
@@ -185,6 +205,8 @@ testCases.push({
     'tabs.onUpdated',
     'tabs.onUpdated',
     'tabs.executeScript',
+    'Window.navigator',
+    'Geolocation.getCurrentPosition',
     'tabs.remove'
   ]
 });
@@ -197,6 +219,11 @@ testCases.push({
     'tabs.onUpdated',
     'tabs.onUpdated',
     'tabs.executeScript',
+    'Window.sessionStorage',
+    'Storage.setItem',
+    'Storage.getItem',
+    'Storage.removeItem',
+    'Storage.clear',
     'tabs.remove'
   ]
 });
@@ -209,6 +236,11 @@ testCases.push({
     'tabs.onUpdated',
     'tabs.onUpdated',
     'tabs.executeScript',
+    'Window.localStorage',
+    'Storage.setItem',
+    'Storage.getItem',
+    'Storage.removeItem',
+    'Storage.clear',
     'tabs.remove'
   ]
 });
@@ -221,6 +253,8 @@ testCases.push({
     'tabs.onUpdated',
     'tabs.onUpdated',
     'tabs.executeScript',
+    'Window.webkitNotifications',
+    'NotificationCenter.createNotification',
     'tabs.remove'
   ]
 });
@@ -234,6 +268,7 @@ testCases.push({
     'tabs.onUpdated',
     'tabs.onUpdated',
     'tabs.executeScript',
+    'Window.applicationCache',
     'tabs.remove'
   ]
 });
@@ -247,6 +282,7 @@ testCases.push({
     'tabs.onUpdated',
     'tabs.onUpdated',
     'tabs.executeScript',
+    'Window.openDatabase',
     'tabs.remove'
   ]
 });
@@ -259,6 +295,8 @@ testCases.push({
     'tabs.onUpdated',
     'tabs.onUpdated',
     'tabs.executeScript',
+    'Document.createElement',
+    'HTMLCanvasElement.getContext',
     'tabs.remove'
   ]
 });
@@ -307,6 +345,9 @@ testCases.push({
     'webRequest.onBeforeSendHeaders/1',
     'webRequestInternal.eventHandled',
     'webRequest.onBeforeSendHeaders',
+    'webRequest.onHeadersReceived/2',
+    'webRequestInternal.eventHandled',
+    'webRequest.onHeadersReceived',
     'tabs.onUpdated',
     'tabs.onUpdated',
     'tabs.remove'
@@ -326,6 +367,9 @@ testCases.push({
     'webRequest.onBeforeSendHeaders/3',
     'webRequestInternal.eventHandled',
     'webRequest.onBeforeSendHeaders',
+    'webRequest.onHeadersReceived/4',
+    'webRequestInternal.eventHandled',
+    'webRequest.onHeadersReceived',
     'tabs.onUpdated',
     'tabs.onUpdated',
     'tabs.remove'
@@ -333,7 +377,7 @@ testCases.push({
 });
 
 testCases.push({
-  func: function triggerBackgroundXHR() {
+  func: function triggerContentScriptXHR() {
     chrome.runtime.sendMessage('pknkgggnfecklokoggaggchhaebkajji',
                                'cs_xhr', function response() { });
   },
@@ -341,6 +385,9 @@ testCases.push({
     'tabs.onUpdated',
     'tabs.onUpdated',
     'tabs.executeScript',
+    'XMLHttpRequest.open',
+    'XMLHttpRequest.setRequestHeader',
+    'HTMLDocument.write',
     'tabs.remove'
   ]
 });
