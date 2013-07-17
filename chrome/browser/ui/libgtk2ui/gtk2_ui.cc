@@ -146,9 +146,10 @@ struct IDRGtkMapping {
 
 // The image resources that will be tinted by the 'button' tint value.
 const int kOtherToolbarButtonIDs[] = {
-  IDR_TOOLS,
-  IDR_TOOLS_H,
-  IDR_TOOLS_P,
+  IDR_TOOLBAR_BEZEL_HOVER,
+  IDR_TOOLBAR_BEZEL_PRESSED,
+  IDR_BROWSER_ACTION_H,
+  IDR_BROWSER_ACTION_P,
   IDR_BROWSER_ACTIONS_OVERFLOW,
   IDR_BROWSER_ACTIONS_OVERFLOW_H,
   IDR_BROWSER_ACTIONS_OVERFLOW_P,
@@ -781,11 +782,14 @@ SkBitmap Gtk2UI::GenerateGtkThemeBitmap(int id) const {
     case IDR_STOP_P: {
       return GenerateGTKIcon(id);
     }
-    case IDR_TOOLS:
-    case IDR_TOOLS_H:
-    case IDR_TOOLS_P: {
-      return GenerateWrenchIcon(id);
-    }
+    case IDR_TOOLBAR_BEZEL_HOVER:
+      return GenerateToolbarBezel(GTK_STATE_PRELIGHT, IDR_TOOLBAR_BEZEL_HOVER);
+    case IDR_TOOLBAR_BEZEL_PRESSED:
+      return GenerateToolbarBezel(GTK_STATE_ACTIVE, IDR_TOOLBAR_BEZEL_PRESSED);
+    case IDR_BROWSER_ACTION_H:
+      return GenerateToolbarBezel(GTK_STATE_PRELIGHT, IDR_BROWSER_ACTION_H);
+    case IDR_BROWSER_ACTION_P:
+      return GenerateToolbarBezel(GTK_STATE_ACTIVE, IDR_BROWSER_ACTION_P);
     default: {
       return GenerateTintedIcon(id, button_tint_);
     }
@@ -914,17 +918,10 @@ SkBitmap Gtk2UI::GenerateGTKIcon(int base_id) const {
   return retval;
 }
 
-SkBitmap Gtk2UI::GenerateWrenchIcon(int base_id) const {
+SkBitmap Gtk2UI::GenerateToolbarBezel(int gtk_state, int sizing_idr) const {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  SkBitmap default_bitmap = rb.GetImageNamed(IDR_TOOLS).AsBitmap();
-
-  // Part 1: Tint the wrench icon according to the button tint.
-  SkBitmap shifted = SkBitmapOperations::CreateHSLShiftedBitmap(
-      default_bitmap, button_tint_);
-
-  // The unhighlighted icon doesn't need to have a border composed onto it.
-  if (base_id == IDR_TOOLS)
-    return shifted;
+  SkBitmap default_bitmap =
+      rb.GetImageNamed(sizing_idr).AsBitmap();
 
   SkBitmap retval;
   retval.setConfig(SkBitmap::kARGB_8888_Config,
@@ -935,11 +932,10 @@ SkBitmap Gtk2UI::GenerateWrenchIcon(int base_id) const {
 
   SkCanvas canvas(retval);
   SkBitmap border = DrawGtkButtonBorder(
-      base_id == IDR_TOOLS_H ? GTK_STATE_PRELIGHT : GTK_STATE_ACTIVE,
+      gtk_state,
       default_bitmap.width(),
       default_bitmap.height());
   canvas.drawBitmap(border, 0, 0);
-  canvas.drawBitmap(shifted, 0, 0);
 
   return retval;
 }

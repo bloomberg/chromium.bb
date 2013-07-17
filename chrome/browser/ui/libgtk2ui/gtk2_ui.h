@@ -106,8 +106,9 @@ class Gtk2UI : public ui::LinuxUI {
   // appropriate.
   SkBitmap GenerateGTKIcon(int base_id) const;
 
-  // Renders a GTK button border around a tinted wrench icon.
-  SkBitmap GenerateWrenchIcon(int base_id) const;
+  // Renders a GTK button border the size of the image |sizing_idr| in
+  // |gtk_state|.
+  SkBitmap GenerateToolbarBezel(int gtk_state, int sizing_idr) const;
 
   // Returns the tint for buttons that contrasts with the normal window
   // background color.

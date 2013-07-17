@@ -22,6 +22,7 @@
 #include "ui/base/events/event.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/theme_provider.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/image/image_skia_source.h"
@@ -51,7 +52,6 @@ BrowserActionView::BrowserActionView(const Extension* extension,
   button_->set_drag_controller(delegate_);
   button_->set_owned_by_client();
   AddChildView(button_);
-  button_->UpdateState();
 }
 
 BrowserActionView::~BrowserActionView() {
@@ -69,6 +69,10 @@ gfx::ImageSkia BrowserActionView::GetIconWithBadge() {
   if (!button_->IsEnabled(tab_id))
     icon = gfx::ImageSkiaOperations::CreateTransparentImage(icon, .25);
   return action->GetIconWithBadge(icon, tab_id, spacing);
+}
+
+void BrowserActionView::UpdateState() {
+  button_->UpdateState();
 }
 
 void BrowserActionView::Layout() {
@@ -225,15 +229,15 @@ void BrowserActionButton::UpdateState() {
     if (!browser_action()->GetIsVisible(tab_id))
       icon = gfx::ImageSkiaOperations::CreateTransparentImage(icon, .25);
 
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+    ui::ThemeProvider* provider = GetThemeProvider();
 
-    gfx::ImageSkia bg = *rb.GetImageSkiaNamed(IDR_BROWSER_ACTION);
+    gfx::ImageSkia bg = *provider->GetImageSkiaNamed(IDR_BROWSER_ACTION);
     SetIcon(gfx::ImageSkiaOperations::CreateSuperimposedImage(bg, icon));
 
-    gfx::ImageSkia bg_h = *rb.GetImageSkiaNamed(IDR_BROWSER_ACTION_H);
+    gfx::ImageSkia bg_h = *provider->GetImageSkiaNamed(IDR_BROWSER_ACTION_H);
     SetHoverIcon(gfx::ImageSkiaOperations::CreateSuperimposedImage(bg_h, icon));
 
-    gfx::ImageSkia bg_p = *rb.GetImageSkiaNamed(IDR_BROWSER_ACTION_P);
+    gfx::ImageSkia bg_p = *provider->GetImageSkiaNamed(IDR_BROWSER_ACTION_P);
     SetPushedIcon(
         gfx::ImageSkiaOperations::CreateSuperimposedImage(bg_p, icon));
   }
