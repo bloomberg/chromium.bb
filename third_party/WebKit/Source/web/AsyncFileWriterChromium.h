@@ -47,9 +47,9 @@ class AsyncFileWriterClient;
 
 class AsyncFileWriterChromium : public AsyncFileWriter, public WebKit::WebFileWriterClient {
 public:
-    AsyncFileWriterChromium(AsyncFileWriterClient* client);
-    ~AsyncFileWriterChromium();
-    
+    static PassOwnPtr<AsyncFileWriterChromium> create(AsyncFileWriterClient*);
+    virtual ~AsyncFileWriterChromium();
+
     void setWebFileWriter(PassOwnPtr<WebKit::WebFileWriter> writer);
 
     // FileWriter
@@ -63,6 +63,8 @@ public:
     virtual void didFail(WebKit::WebFileError);
 
 private:
+    explicit AsyncFileWriterChromium(AsyncFileWriterClient*);
+
     OwnPtr<WebKit::WebFileWriter> m_writer;
     AsyncFileWriterClient* m_client;
 };

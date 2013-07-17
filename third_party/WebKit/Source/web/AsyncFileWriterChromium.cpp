@@ -38,6 +38,11 @@
 
 namespace WebCore {
 
+PassOwnPtr<AsyncFileWriterChromium> AsyncFileWriterChromium::create(AsyncFileWriterClient* client)
+{
+    return adoptPtr(new AsyncFileWriterChromium(client));
+}
+
 AsyncFileWriterChromium::AsyncFileWriterChromium(AsyncFileWriterClient* client)
     : m_client(client)
 {

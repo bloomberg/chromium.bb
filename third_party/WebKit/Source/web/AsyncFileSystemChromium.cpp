@@ -109,72 +109,12 @@ void AsyncFileSystemChromium::readDirectory(const KURL& path, PassOwnPtr<AsyncFi
     m_webFileSystem->readDirectory(path, new WebKit::WebFileSystemCallbacksImpl(callbacks));
 }
 
-class FileWriterHelperCallbacks : public WebKit::WebFileSystemCallbacks {
-public:
-    FileWriterHelperCallbacks(AsyncFileWriterClient* client, const KURL& path, WebKit::WebFileSystem* webFileSystem, PassOwnPtr<WebCore::AsyncFileSystemCallbacks> callbacks)
-        : m_client(client)
-        , m_path(path)
-        , m_webFileSystem(webFileSystem)
-        , m_callbacks(callbacks)
-    {
-    }
-
-    virtual void didSucceed()
-    {
-        ASSERT_NOT_REACHED();
-        delete this;
-    }
-    virtual void didReadMetadata(const WebKit::WebFileInfo& info)
-    {
-        ASSERT(m_callbacks);
-        if (info.type != WebKit::WebFileInfo::TypeFile || info.length < 0)
-            m_callbacks->didFail(WebKit::WebFileErrorInvalidState);
-        else {
-            OwnPtr<AsyncFileWriterChromium> asyncFileWriterChromium = adoptPtr(new AsyncFileWriterChromium(m_client));
-            OwnPtr<WebKit::WebFileWriter> webFileWriter = adoptPtr(m_webFileSystem->createFileWriter(m_path, asyncFileWriterChromium.get()));
-            asyncFileWriterChromium->setWebFileWriter(webFileWriter.release());
-            m_callbacks->didCreateFileWriter(asyncFileWriterChromium.release(), info.length);
-        }
-        delete this;
-    }
-    virtual void didCreateSnapshotFile(const WebKit::WebFileInfo& info)
-    {
-        ASSERT_NOT_REACHED();
-        delete this;
-    }
-    virtual void didReadDirectory(const WebKit::WebVector<WebKit::WebFileSystemEntry>& entries, bool hasMore)
-    {
-        ASSERT_NOT_REACHED();
-        delete this;
-    }
-    virtual void didOpenFileSystem(const WebKit::WebString& name, const WebKit::WebURL& rootURL)
-    {
-        ASSERT_NOT_REACHED();
-        delete this;
-    }
-
-    virtual void didFail(WebKit::WebFileError error)
-    {
-        ASSERT(m_callbacks);
-        m_callbacks->didFail(error);
-        delete this;
-    }
-
-    virtual bool shouldBlockUntilCompletion() const
-    {
-        return m_callbacks->shouldBlockUntilCompletion();
-    }
-
-private:
-    AsyncFileWriterClient* m_client;
-    KURL m_path;
-    WebKit::WebFileSystem* m_webFileSystem;
-    OwnPtr<WebCore::AsyncFileSystemCallbacks> m_callbacks;
-};
-
 void AsyncFileSystemChromium::createWriter(AsyncFileWriterClient* client, const KURL& path, PassOwnPtr<AsyncFileSystemCallbacks> callbacks)
 {
-    m_webFileSystem->readMetadata(path, new FileWriterHelperCallbacks(client, path, m_webFileSystem, callbacks));
+    OwnPtr<AsyncFileWriterChromium> asyncFileWriter = AsyncFileWriterChromium::create(client);
+    WebKit::WebFileWriterClient* writerClient = asyncFileWriter.get();
+
+    m_webFileSystem->createFileWriter(path, writerClient, new WebKit::WebFileSystemCallbacksImpl(callbacks, asyncFileWriter.release()));
 }
 
 void AsyncFileSystemChromium::createSnapshotFileAndReadMetadata(const KURL& path, PassOwnPtr<AsyncFileSystemCallbacks> callbacks)
