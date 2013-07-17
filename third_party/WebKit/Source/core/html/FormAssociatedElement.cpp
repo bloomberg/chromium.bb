@@ -70,7 +70,7 @@ void FormAssociatedElement::didMoveToNewDocument(Document* oldDocument)
 {
     HTMLElement* element = toHTMLElement(this);
     if (oldDocument && element->fastHasAttribute(formAttr))
-        resetFormAttributeTargetObserver();
+        m_formAttributeTargetObserver = nullptr;
 }
 
 void FormAssociatedElement::insertedInto(ContainerNode* insertionPoint)
