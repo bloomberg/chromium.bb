@@ -360,7 +360,14 @@ class SQL_EXPORT Connection {
   // Internal initialize function used by both Init and InitInMemory. The file
   // name is always 8 bits since we want to use the 8-bit version of
   // sqlite3_open. The string can also be sqlite's special ":memory:" string.
-  bool OpenInternal(const std::string& file_name);
+  //
+  // |retry_flag| controls retrying the open if the error callback
+  // addressed errors using RazeAndClose().
+  enum Retry {
+    NO_RETRY = 0,
+    RETRY_ON_POISON
+  };
+  bool OpenInternal(const std::string& file_name, Retry retry_flag);
 
   // Internal close function used by Close() and RazeAndClose().
   // |forced| indicates that orderly-shutdown checks should not apply.

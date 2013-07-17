@@ -491,7 +491,8 @@ TEST_F(SQLConnectionTest, RazeNOTADB2) {
 
 // Test that a callback from Open() can raze the database.  This is
 // essential for cases where the Open() can fail entirely, so the
-// Raze() cannot happen later.
+// Raze() cannot happen later.  Additionally test that when the
+// callback does this during Open(), the open is retried and succeeds.
 //
 // Most corruptions seen in the wild seem to happen when two pages in
 // the database were not written transactionally (the transaction
@@ -499,7 +500,7 @@ TEST_F(SQLConnectionTest, RazeNOTADB2) {
 // A special case of that is when the header indicates that the
 // database contains more pages than are in the file.  This breaks
 // things at a very basic level, verify that Raze() can handle it.
-TEST_F(SQLConnectionTest, RazeOpenCallback) {
+TEST_F(SQLConnectionTest, RazeCallbackReopen) {
   const char* kCreateSql = "CREATE TABLE foo (id INTEGER PRIMARY KEY, value)";
   ASSERT_TRUE(db().Execute(kCreateSql));
   ASSERT_EQ(1, SqliteMasterCount(&db()));
@@ -519,19 +520,27 @@ TEST_F(SQLConnectionTest, RazeOpenCallback) {
     ASSERT_TRUE(file_util::TruncateFile(file.get()));
   }
 
+  // Open() will succeed, even though the PRAGMA calls within will
+  // fail with SQLITE_CORRUPT, as will this PRAGMA.
+  {
+    sql::ScopedErrorIgnorer ignore_errors;
+    ignore_errors.IgnoreError(SQLITE_CORRUPT);
+    ASSERT_TRUE(db().Open(db_path()));
+    ASSERT_FALSE(db().Execute("PRAGMA auto_vacuum"));
+    db().Close();
+    ASSERT_TRUE(ignore_errors.CheckIgnoredErrors());
+  }
+
   db().set_error_callback(base::Bind(&SQLConnectionTest::RazeErrorCallback,
                                      base::Unretained(this),
                                      SQLITE_CORRUPT));
 
-  // Open() will see SQLITE_CORRUPT due to size mismatch when
-  // attempting to run a pragma, and the callback will RazeAndClose().
-  // Later statements will fail, including the final secure_delete,
-  // which will fail the Open() itself.
-  ASSERT_FALSE(db().Open(db_path()));
-  db().Close();
-
-  // Now empty, the open should succeed with an empty database.
-  EXPECT_TRUE(db().Open(db_path()));
+  // When the PRAGMA calls in Open() raise SQLITE_CORRUPT, the error
+  // callback will call RazeAndClose().  Open() will then fail and be
+  // retried.  The second Open() on the empty database will succeed
+  // cleanly.
+  ASSERT_TRUE(db().Open(db_path()));
+  ASSERT_TRUE(db().Execute("PRAGMA auto_vacuum"));
   EXPECT_EQ(0, SqliteMasterCount(&db()));
 }
 

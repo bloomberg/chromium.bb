@@ -194,15 +194,15 @@ bool Connection::Open(const base::FilePath& path) {
   }
 
 #if defined(OS_WIN)
-  return OpenInternal(WideToUTF8(path.value()));
+  return OpenInternal(WideToUTF8(path.value()), RETRY_ON_POISON);
 #elif defined(OS_POSIX)
-  return OpenInternal(path.value());
+  return OpenInternal(path.value(), RETRY_ON_POISON);
 #endif
 }
 
 bool Connection::OpenInMemory() {
   in_memory_ = true;
-  return OpenInternal(":memory:");
+  return OpenInternal(":memory:", NO_RETRY);
 }
 
 void Connection::CloseInternal(bool forced) {
@@ -238,8 +238,8 @@ void Connection::CloseInternal(bool forced) {
     AssertIOAllowed();
     // TODO(shess): Histogram for failure.
     sqlite3_close(db_);
-    db_ = NULL;
   }
+  db_ = NULL;
 }
 
 void Connection::Close() {
@@ -699,7 +699,8 @@ const char* Connection::GetErrorMessage() const {
   return sqlite3_errmsg(db_);
 }
 
-bool Connection::OpenInternal(const std::string& file_name) {
+bool Connection::OpenInternal(const std::string& file_name,
+                              Connection::Retry retry_flag) {
   AssertIOAllowed();
 
   if (db_) {
@@ -723,8 +724,11 @@ bool Connection::OpenInternal(const std::string& file_name) {
     UMA_HISTOGRAM_ENUMERATION("Sqlite.OpenFailure", err & 0xff, 50);
 
     OnSqliteError(err, NULL);
+    bool was_poisoned = poisoned_;
     Close();
-    db_ = NULL;
+
+    if (was_poisoned && retry_flag == RETRY_ON_POISON)
+      return OpenInternal(file_name, NO_RETRY);
     return false;
   }
 
@@ -806,7 +810,10 @@ bool Connection::OpenInternal(const std::string& file_name) {
   }
 
   if (!ExecuteWithTimeout("PRAGMA secure_delete=ON", kBusyTimeout)) {
+    bool was_poisoned = poisoned_;
     Close();
+    if (was_poisoned && retry_flag == RETRY_ON_POISON)
+      return OpenInternal(file_name, NO_RETRY);
     return false;
   }
 
