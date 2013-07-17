@@ -391,6 +391,28 @@ DebuggerScript._frameMirrorToJSCallFrame = function(frameMirror, callerFrame)
         return DebuggerScript._setScopeVariableValue(frameMirror, scopeNumber, variableName, newValue);
     }
 
+    function stepInPositions()
+    {
+        var stepInPositionsV8 = frameMirror.stepInPositions();
+        var stepInPositionsProtocol;
+        if (stepInPositionsV8) {
+            stepInPositionsProtocol = [];
+            var script = frameMirror.func().script();
+            if (script) {
+                var scriptId = String(script.id());
+                for (var i = 0; i < stepInPositionsV8.length; i++) {
+                    var item = {
+                        scriptId: scriptId,
+                        lineNumber: stepInPositionsV8[i].position.line,
+                        columnNumber: stepInPositionsV8[i].position.column
+                    };
+                    stepInPositionsProtocol.push(item);
+                }
+            }
+        }
+        return JSON.stringify(stepInPositionsProtocol);
+    }
+
     return {
         "sourceID": sourceID,
         "line": location ? location.line : 0,
@@ -402,7 +424,8 @@ DebuggerScript._frameMirrorToJSCallFrame = function(frameMirror, callerFrame)
         "evaluate": evaluate,
         "caller": callerFrame,
         "restart": restart,
-        "setVariableValue": setVariableValue
+        "setVariableValue": setVariableValue,
+        "stepInPositions": stepInPositions
     };
 }
 

@@ -112,6 +112,26 @@ void InjectedScript::restartFrame(ErrorString* errorString, const ScriptValue& c
     *errorString = "Internal error";
 }
 
+void InjectedScript::getStepInPositions(ErrorString* errorString, const ScriptValue& callFrames, const String& callFrameId, RefPtr<Array<TypeBuilder::Debugger::Location> >& positions)
+{
+    ScriptFunctionCall function(injectedScriptObject(), "getStepInPositions");
+    function.appendArgument(callFrames);
+    function.appendArgument(callFrameId);
+    RefPtr<JSONValue> resultValue;
+    makeCall(function, &resultValue);
+    if (resultValue) {
+        if (resultValue->type() == JSONValue::TypeString) {
+            resultValue->asString(errorString);
+            return;
+        }
+        if (resultValue->type() == JSONValue::TypeArray) {
+            positions = Array<TypeBuilder::Debugger::Location>::runtimeCast(resultValue);
+            return;
+        }
+    }
+    *errorString = "Internal error";
+}
+
 void InjectedScript::setVariableValue(ErrorString* errorString, const ScriptValue& callFrames, const String* callFrameIdOpt, const String* functionObjectIdOpt, int scopeNumber, const String& variableName, const String& newValueStr)
 {
     ScriptFunctionCall function(injectedScriptObject(), "setVariableValue");

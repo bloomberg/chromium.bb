@@ -365,6 +365,17 @@ void InspectorDebuggerAgent::continueToLocation(ErrorString* errorString, const 
     resume(errorString);
 }
 
+void InspectorDebuggerAgent::getStepInPositions(ErrorString* errorString, const String& callFrameId, RefPtr<Array<TypeBuilder::Debugger::Location> >& positions)
+{
+    InjectedScript injectedScript = m_injectedScriptManager->injectedScriptForObjectId(callFrameId);
+    if (injectedScript.hasNoValue()) {
+        *errorString = "Inspected frame has gone";
+        return;
+    }
+
+    injectedScript.getStepInPositions(errorString, m_currentCallStack, callFrameId, positions);
+}
+
 bool InspectorDebuggerAgent::shouldSkipPause(RefPtr<JavaScriptCallFrame>& topFrame)
 {
     // Prepare top frame parameters;

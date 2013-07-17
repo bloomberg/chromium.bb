@@ -137,6 +137,8 @@ function JavaScriptCallFrame()
     this.column;
     /** @type {*} */
     this.thisObject;
+    /** @type {string} */
+    this.stepInPositions;
 }
 
 /**

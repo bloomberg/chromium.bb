@@ -48,6 +48,7 @@
     [CustomGetter] readonly attribute Array scopeChain;
     [Custom] unsigned short scopeType(long scopeIndex);
     [CustomGetter] readonly attribute Object thisObject;
+    readonly attribute DOMString stepInPositions;
     readonly attribute DOMString functionName;
     [CustomGetter] readonly attribute DOMString type;
 };

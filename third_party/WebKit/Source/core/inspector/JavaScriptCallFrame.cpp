@@ -119,6 +119,14 @@ v8::Handle<v8::Value> JavaScriptCallFrame::thisObject() const
     return m_callFrame.newLocal(m_isolate)->Get(v8::String::NewSymbol("thisObject"));
 }
 
+String JavaScriptCallFrame::stepInPositions() const
+{
+    v8::Handle<v8::Object> callFrame = m_callFrame.newLocal(m_isolate);
+    v8::Handle<v8::Function> stepInPositions = v8::Handle<v8::Function>::Cast(callFrame->Get(v8::String::NewSymbol("stepInPositions")));
+    v8::Handle<v8::Value> result = stepInPositions->Call(callFrame, 0, 0);
+    return toWebCoreStringWithUndefinedOrNullCheck(result);
+}
+
 v8::Handle<v8::Value> JavaScriptCallFrame::evaluate(const String& expression)
 {
     v8::Handle<v8::Object> callFrame = m_callFrame.newLocal(m_isolate);

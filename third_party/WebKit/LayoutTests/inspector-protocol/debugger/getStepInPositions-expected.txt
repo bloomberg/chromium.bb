@@ -1,0 +1,4 @@
+Paused on 'debugger;'
+Paused on the next statement
+PASS
+
