@@ -1075,16 +1075,16 @@ static const V8DOMConfiguration::BatchedAttribute V8TestInterfaceAttrs[] = {
 static const V8DOMConfiguration::BatchedMethod V8TestInterfaceMethods[] = {
 #if ENABLE(Condition22) || ENABLE(Condition23)
     {"implementsMethod1", TestInterfaceV8Internal::implementsMethod1MethodCallback, 0, 0},
-#endif
+#endif // ENABLE(Condition22) || ENABLE(Condition23)
 #if ENABLE(Condition22) || ENABLE(Condition23)
     {"implementsMethod3", TestInterfaceV8Internal::implementsMethod3MethodCallback, 0, 0},
-#endif
+#endif // ENABLE(Condition22) || ENABLE(Condition23)
 #if ENABLE(Condition11) || ENABLE(Condition12)
     {"supplementalMethod1", TestInterfaceV8Internal::supplementalMethod1MethodCallback, 0, 0},
-#endif
+#endif // ENABLE(Condition11) || ENABLE(Condition12)
 #if ENABLE(Condition11) || ENABLE(Condition12)
     {"supplementalMethod3", TestInterfaceV8Internal::supplementalMethod3MethodCallback, 0, 0},
-#endif
+#endif // ENABLE(Condition11) || ENABLE(Condition12)
 };
 
 static const V8DOMConfiguration::BatchedConstant V8TestInterfaceConsts[] = {

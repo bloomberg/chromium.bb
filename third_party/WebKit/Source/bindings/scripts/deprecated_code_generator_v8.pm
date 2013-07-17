@@ -2344,12 +2344,6 @@ sub GenerateParametersCheck
             $parameterCheckString .= $multiLine ? "    }\n" : "\n";
         }
 
-        my $parameterDefaultPolicy = "DefaultIsUndefined";
-        my $default = defined $parameter->extendedAttributes->{"Default"} ? $parameter->extendedAttributes->{"Default"} : "";
-        if ($parameter->isOptional and $default eq "NullString") {
-            $parameterDefaultPolicy = "DefaultIsNullString";
-        }
-
         my $parameterName = $parameter->name;
         AddToImplIncludes("bindings/v8/ExceptionState.h");
         if (IsCallbackInterface($parameter->type)) {
@@ -4090,7 +4084,7 @@ END
         $code .= <<END;
     {"$name", ${implClassName}V8Internal::${name}MethodCallback, ${methodForMainWorld}, ${functionLength}},
 END
-        $code .= "#endif\n" if $conditionalString;
+        $code .= "#endif // ${conditionalString}\n" if $conditionalString;
         $num_callbacks++;
     }
     $code .= "};\n\n"  if $has_callbacks;

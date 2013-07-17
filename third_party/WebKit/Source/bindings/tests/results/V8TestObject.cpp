@@ -5464,13 +5464,13 @@ static const V8DOMConfiguration::BatchedMethod V8TestObjectMethods[] = {
     {"methodWithEnforceRangeUInt64", TestObjV8Internal::methodWithEnforceRangeUInt64MethodCallback, 0, 1},
 #if ENABLE(Condition1)
     {"conditionalMethod1", TestObjV8Internal::conditionalMethod1MethodCallback, 0, 0},
-#endif
+#endif // ENABLE(Condition1)
 #if ENABLE(Condition1) && ENABLE(Condition2)
     {"conditionalMethod2", TestObjV8Internal::conditionalMethod2MethodCallback, 0, 0},
-#endif
+#endif // ENABLE(Condition1) && ENABLE(Condition2)
 #if ENABLE(Condition1) || ENABLE(Condition2)
     {"conditionalMethod3", TestObjV8Internal::conditionalMethod3MethodCallback, 0, 0},
-#endif
+#endif // ENABLE(Condition1) && ENABLE(Condition2)
     {"callbackFunctionReturnValue", TestObjV8Internal::callbackFunctionReturnValueMethodCallback, 0, 0},
     {"callbackFunctionArgument", TestObjV8Internal::callbackFunctionArgumentMethodCallback, 0, 1},
     {"overloadedMethod", TestObjV8Internal::overloadedMethodMethodCallback, 0, 2},
