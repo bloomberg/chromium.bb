@@ -482,6 +482,17 @@ void ProfileSyncServiceAndroid::NudgeSyncer(JNIEnv* env,
                         ConvertJavaStringToUTF8(env, state));
 }
 
+void ProfileSyncServiceAndroid::NudgeSyncerForAllTypes(JNIEnv* env,
+                                                       jobject obj) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  syncer::ObjectIdInvalidationMap object_ids_with_states;
+  content::NotificationService::current()->Notify(
+        chrome::NOTIFICATION_SYNC_REFRESH_REMOTE,
+        content::Source<Profile>(profile_),
+        content::Details<const syncer::ObjectIdInvalidationMap>(
+            &object_ids_with_states));
+}
+
 // static
 ProfileSyncServiceAndroid*
     ProfileSyncServiceAndroid::GetProfileSyncServiceAndroid() {

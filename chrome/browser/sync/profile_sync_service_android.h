@@ -41,6 +41,10 @@ class ProfileSyncServiceAndroid : public ProfileSyncServiceObserver {
                    jlong version,
                    jstring payload);
 
+  // Called from Java when we need to nudge native syncer but have lost state on
+  // which types have changed.
+  void NudgeSyncerForAllTypes(JNIEnv* env, jobject obj);
+
   void TokenAvailable(JNIEnv*, jobject, jstring username, jstring auth_token);
 
   // Called from Java when the user manually enables sync

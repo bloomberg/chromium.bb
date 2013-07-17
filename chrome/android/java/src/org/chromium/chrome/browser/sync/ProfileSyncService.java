@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.sync;
 
-import android.accounts.Account;
 import android.content.Context;
 import android.util.Log;
 
@@ -15,7 +14,6 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGenerator;
 import org.chromium.sync.internal_api.pub.SyncDecryptionPassphraseType;
 import org.chromium.sync.internal_api.pub.base.ModelType;
-import org.chromium.sync.notifier.SyncStatusHelper;
 
 import java.util.HashSet;
 import java.util.List;
@@ -143,13 +141,18 @@ public class ProfileSyncService {
         nativeNudgeSyncer(mNativeProfileSyncServiceAndroid, objectId, version, payload);
     }
 
+    public void requestSyncFromNativeChromeForAllTypes() {
+        ThreadUtils.assertOnUiThread();
+        nativeNudgeSyncerForAllTypes(mNativeProfileSyncServiceAndroid);
+    }
+
     /**
      * Nudge the syncer to start a new sync cycle.
      */
     @VisibleForTesting
     public void requestSyncCycleForTest() {
         ThreadUtils.assertOnUiThread();
-        requestSyncFromNativeChrome("", 0, "");
+        requestSyncFromNativeChromeForAllTypes();
     }
 
     public String querySyncStatus() {
@@ -489,6 +492,7 @@ public class ProfileSyncService {
     // Native methods
     private native void nativeNudgeSyncer(
             int nativeProfileSyncServiceAndroid, String objectId, long version, String payload);
+    private native void nativeNudgeSyncerForAllTypes(int nativeProfileSyncServiceAndroid);
     private native int nativeInit();
     private native void nativeEnableSync(int nativeProfileSyncServiceAndroid);
     private native void nativeDisableSync(int nativeProfileSyncServiceAndroid);
