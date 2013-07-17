@@ -14,11 +14,9 @@ CHROMIUM_DIR := $(call my-dir)
 # WebView build using the Android build system.
 ifneq (,$(wildcard $(CHROMIUM_DIR)/GypAndroid.$(HOST_OS)-$(TARGET_ARCH).mk))
 
-ifeq ($(TARGET_BUILD_VARIANT),eng)
-GYP_CONFIGURATION := Debug
-else
+# We default to release for the Android build system. Developers working on
+# WebView code can build with "make GYP_CONFIGURATION=Debug".
 GYP_CONFIGURATION := Release
-endif
 
 include $(CHROMIUM_DIR)/GypAndroid.$(HOST_OS)-$(TARGET_ARCH).mk
 include $(CHROMIUM_DIR)/android_webview/Android.mk
