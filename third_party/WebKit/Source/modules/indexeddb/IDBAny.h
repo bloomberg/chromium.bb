@@ -46,7 +46,7 @@ class IDBKeyPath;
 class IDBObjectStore;
 class IDBTransaction;
 
-class IDBAny : public RefCounted<IDBAny> {
+class IDBAny : public ScriptWrappable, public RefCounted<IDBAny> {
 public:
     static PassRefPtr<IDBAny> createInvalid();
     static PassRefPtr<IDBAny> createNull();
