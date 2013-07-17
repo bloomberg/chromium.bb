@@ -4,8 +4,8 @@
 
 #include "ppapi/c/dev/ppb_testing_dev.h"
 #include "ppapi/c/pp_errors.h"
-#include "native_client/tests/ppapi_test_lib/get_browser_interface.h"
-#include "native_client/tests/ppapi_test_lib/testable_callback.h"
+#include "ppapi/native_client/tests/ppapi_test_lib/get_browser_interface.h"
+#include "ppapi/native_client/tests/ppapi_test_lib/testable_callback.h"
 
 TestableCallback::TestableCallback(PP_Instance instance, bool force_async)
     : have_result_(false),

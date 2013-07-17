@@ -29,8 +29,8 @@
 #include "ppapi/c/ppb_var.h"
 #include "ppapi/c/ppb_view.h"
 
-#include "native_client/tests/ppapi_test_lib/get_browser_interface.h"
-#include "native_client/tests/ppapi_test_lib/internal_utils.h"
+#include "ppapi/native_client/tests/ppapi_test_lib/get_browser_interface.h"
+#include "ppapi/native_client/tests/ppapi_test_lib/internal_utils.h"
 
 // Use for dev interfaces that might not be present.
 const void* GetBrowserInterface(const char* interface_name) {

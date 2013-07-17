@@ -14,13 +14,13 @@
 #include <string>
 #include <sstream>
 
-#include "native_client/src/shared/ppapi_proxy/ppruntime.h"
 #include "native_client/src/untrusted/irt/irt.h"
 #include "native_client/src/untrusted/nacl/nacl_irt.h"
 
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/var.h"
+#include "ppapi/native_client/src/shared/ppapi_proxy/ppruntime.h"
 
 std::string str;
 

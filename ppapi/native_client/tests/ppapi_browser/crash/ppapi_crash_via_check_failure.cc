@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "native_client/src/shared/platform/nacl_check.h"
-#include "native_client/tests/ppapi_test_lib/test_interface.h"
+#include "ppapi/native_client/tests/ppapi_test_lib/test_interface.h"
 
 namespace {
 

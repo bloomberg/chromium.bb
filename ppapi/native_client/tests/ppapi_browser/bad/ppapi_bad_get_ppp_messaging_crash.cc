@@ -7,7 +7,6 @@
 #include <cstring>
 
 #include "native_client/src/shared/platform/nacl_check.h"
-#include "native_client/tests/ppapi_test_lib/test_interface.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_module.h"
@@ -17,6 +16,8 @@
 #include "ppapi/c/ppp_instance.h"
 #include "ppapi/c/ppp_messaging.h"
 #include "ppapi/c/ppp.h"
+
+#include "ppapi/native_client/tests/ppapi_test_lib/test_interface.h"
 
 PP_EXPORT int32_t PPP_InitializeModule(PP_Module module_id,
                                        PPB_GetInterface get_browser_interface) {

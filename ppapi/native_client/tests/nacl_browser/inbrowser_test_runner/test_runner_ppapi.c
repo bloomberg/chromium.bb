@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "native_client/src/shared/ppapi_proxy/ppruntime.h"
+#include "ppapi/native_client/src/shared/ppapi_proxy/ppruntime.h"
 
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_errors.h"

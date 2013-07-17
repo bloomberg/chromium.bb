@@ -5,8 +5,8 @@
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_core.h"
-#include "native_client/tests/ppapi_test_lib/get_browser_interface.h"
-#include "native_client/tests/ppapi_test_lib/test_interface.h"
+#include "ppapi/native_client/tests/ppapi_test_lib/get_browser_interface.h"
+#include "ppapi/native_client/tests/ppapi_test_lib/test_interface.h"
 
 
 namespace {

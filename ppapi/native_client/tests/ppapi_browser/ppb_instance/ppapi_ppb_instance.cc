@@ -3,13 +3,14 @@
 // found in the LICENSE file.
 
 #include "native_client/src/shared/platform/nacl_check.h"
-#include "native_client/tests/ppapi_test_lib/get_browser_interface.h"
-#include "native_client/tests/ppapi_test_lib/test_interface.h"
 
 #include "ppapi/c/pp_size.h"
 #include "ppapi/c/ppb_image_data.h"
 #include "ppapi/c/ppb_instance.h"
 #include "ppapi/c/ppb_graphics_2d.h"
+
+#include "ppapi/native_client/tests/ppapi_test_lib/get_browser_interface.h"
+#include "ppapi/native_client/tests/ppapi_test_lib/test_interface.h"
 
 namespace {
 

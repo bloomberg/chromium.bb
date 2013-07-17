@@ -6,8 +6,6 @@
 
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/shared/platform/nacl_check.h"
-#include "native_client/tests/ppapi_test_lib/get_browser_interface.h"
-#include "native_client/tests/ppapi_test_lib/test_interface.h"
 
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_errors.h"
@@ -15,6 +13,9 @@
 #include "ppapi/c/ppb_instance.h"
 #include "ppapi/c/ppb_url_loader.h"
 #include "ppapi/c/ppp_instance.h"
+
+#include "ppapi/native_client/tests/ppapi_test_lib/get_browser_interface.h"
+#include "ppapi/native_client/tests/ppapi_test_lib/test_interface.h"
 
 namespace {
 
