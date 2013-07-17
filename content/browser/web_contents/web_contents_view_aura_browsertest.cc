@@ -484,8 +484,15 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
   EXPECT_EQ(NULL, screenshot_manager()->screenshot_taken_for());
 }
 
+// Failing on win7_aura trybot (see crbug.com/260983).
+#if defined(OS_WIN)
+#define MAYBE_ContentWindowReparent \
+        DISABLED_ContentWindowReparent
+#else
+#define MAYBE_ContentWindowReparent ContentWindowReparent
+#endif
 IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
-                       ContentWindowReparent) {
+                       MAYBE_ContentWindowReparent) {
   ASSERT_NO_FATAL_FAILURE(
       StartTestWithPage("files/overscroll_navigation.html"));
 
