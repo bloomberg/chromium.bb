@@ -210,6 +210,8 @@ void NotifierSettingsObserverMac::UpdateIconImage(const NotifierId& notifier_id,
     base::scoped_nsobject<MCSettingsButtonCell> cell(
         [[MCSettingsButtonCell alloc]
             initTextCell:base::SysUTF16ToNSString(notifier->name)]);
+    if (!notifier->icon.IsEmpty())
+      [cell setExtraImage:notifier->icon.AsNSImage()];
     [button setCell:cell];
     [button setButtonType:NSSwitchButton];
 
