@@ -161,6 +161,12 @@ def update_mono_sdk_json(infos):
 def main(args):
   args = args[1:]
 
+  # Delete global configs that would override the mono builders' configuration.
+  if 'AWS_CREDENTIAL_FILE' in os.environ:
+    del os.environ['AWS_CREDENTIAL_FILE']
+  if 'BOTO_CONFIG' in os.environ:
+    del os.environ['BOTO_CONFIG']
+
   buildbot_revision = os.environ.get('BUILDBOT_REVISION', '')
   buildername = os.environ.get('BUILDBOT_BUILDERNAME', '')
 
