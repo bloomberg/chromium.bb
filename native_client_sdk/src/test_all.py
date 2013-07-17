@@ -28,6 +28,7 @@ TEST_MODULES = [
     'sel_ldr_test',
     'update_nacl_manifest_test',
     'verify_filelist_test',
+    'verify_ppapi_test',
 ]
 
 def main():

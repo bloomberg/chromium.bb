@@ -110,6 +110,40 @@ def CheckUnversionedPPB(input_api, output_api):
         long_text='\n'.join(todo))]
   return []
 
+# Verify that changes to ppapi headers/sources are also made to NaCl SDK.
+def CheckUpdatedNaClSDK(input_api, output_api):
+  files = input_api.LocalPaths()
+
+  # PPAPI files the Native Client SDK cares about.
+  nacl_sdk_files = []
+
+  for filename in files:
+    name, ext = os.path.splitext(filename)
+    name_parts = name.split(os.sep)
+
+    if len(name_parts) <= 2:
+      continue
+
+    if name_parts[0] != 'ppapi':
+      continue
+
+    if ((name_parts[1] == 'c' and ext == '.h') or
+        (name_parts[1] in ('cpp', 'utility') and ext in ('.h', '.cc'))):
+      if name_parts[2] in ('documentation', 'trusted'):
+        continue
+      nacl_sdk_files.append(filename)
+
+  if not nacl_sdk_files:
+    return []
+
+  verify_ppapi_py = os.path.join(input_api.change.RepositoryRoot(),
+                                 'native_client_sdk', 'src', 'build_tools',
+                                 'verify_ppapi.py')
+  cmd = [sys.executable, verify_ppapi_py] + nacl_sdk_files
+  return RunCmdAndCheck(cmd,
+                        'PPAPI Interface modified without updating NaCl SDK.',
+                        output_api)
+
 def CheckChange(input_api, output_api):
   results = []
 
@@ -118,6 +152,8 @@ def CheckChange(input_api, output_api):
   results.extend(CheckTODO(input_api, output_api))
 
   results.extend(CheckUnversionedPPB(input_api, output_api))
+
+  results.extend(CheckUpdatedNaClSDK(input_api, output_api))
 
   # Verify all modified *.idl have a matching *.h
   files = input_api.LocalPaths()
