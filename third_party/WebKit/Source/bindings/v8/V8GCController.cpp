@@ -44,7 +44,6 @@
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLImageElement.h"
-#include "core/platform/MemoryUsageSupport.h"
 #include "core/platform/chromium/TraceEvent.h"
 #include <algorithm>
 
@@ -385,14 +384,6 @@ void V8GCController::majorGCPrologue(bool constructRetainedObjectInfos, v8::Isol
     }
 }
 
-static int workingSetEstimateMB = 0;
-
-static Mutex& workingSetEstimateMBMutex()
-{
-    AtomicallyInitializedStatic(Mutex&, mutex = *new Mutex);
-    return mutex;
-}
-
 void V8GCController::gcEpilogue(v8::GCType type, v8::GCCallbackFlags flags)
 {
     // FIXME: It would be nice if the GC callbacks passed the Isolate directly....
@@ -414,42 +405,9 @@ void V8GCController::majorGCEpilogue(v8::Isolate* isolate)
 {
     v8::HandleScope scope;
 
-    // The GC can happen on multiple threads in case of dedicated workers which run in-process.
-    {
-        MutexLocker locker(workingSetEstimateMBMutex());
-        workingSetEstimateMB = MemoryUsageSupport::actualMemoryUsageMB();
-    }
-
     TRACE_EVENT_END0("v8", "majorGC");
     if (isMainThread())
         TRACE_EVENT_SET_NONCONST_SAMPLING_STATE(V8PerIsolateData::from(isolate)->previousSamplingState());
-}
-
-void V8GCController::checkMemoryUsage()
-{
-    const int lowMemoryUsageMB = MemoryUsageSupport::lowMemoryUsageMB();
-    const int highMemoryUsageMB = MemoryUsageSupport::highMemoryUsageMB();
-    const int highUsageDeltaMB = MemoryUsageSupport::highUsageDeltaMB();
-    int memoryUsageMB = MemoryUsageSupport::memoryUsageMB();
-    int workingSetEstimateMBCopy;
-    {
-        MutexLocker locker(workingSetEstimateMBMutex());
-        workingSetEstimateMBCopy = workingSetEstimateMB;
-    }
-    if (memoryUsageMB > lowMemoryUsageMB && memoryUsageMB > 2 * workingSetEstimateMBCopy) {
-        // Memory usage is large and doubled since the last GC.
-        // Check if we need to send low memory notification.
-        v8::HeapStatistics heapStatistics;
-        v8::Isolate::GetCurrent()->GetHeapStatistics(&heapStatistics);
-        int heapSizeMB = heapStatistics.total_heap_size() >> 20;
-        // Do not send low memory notification if V8 heap size is more than 7/8
-        // of total memory usage. Let V8 to schedule GC itself in this case.
-        if (heapSizeMB < memoryUsageMB / 8 * 7)
-            v8::V8::LowMemoryNotification();
-    } else if (memoryUsageMB > highMemoryUsageMB && memoryUsageMB > workingSetEstimateMBCopy + highUsageDeltaMB) {
-        // We are approaching OOM and memory usage increased by highUsageDeltaMB since the last GC.
-        v8::V8::LowMemoryNotification();
-    }
 }
 
 void V8GCController::hintForCollectGarbage()

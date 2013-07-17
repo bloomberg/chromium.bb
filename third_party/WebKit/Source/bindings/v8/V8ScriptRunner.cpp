@@ -81,7 +81,6 @@ v8::Local<v8::Value> V8ScriptRunner::runCompiledScript(v8::Handle<v8::Script> sc
     if (script.IsEmpty())
         return v8::Local<v8::Value>();
 
-    V8GCController::checkMemoryUsage();
     if (V8RecursionScope::recursionLevel() >= kMaxRecursionDepth)
         return handleMaxRecursionDepthExceeded();
 
@@ -123,7 +122,6 @@ v8::Local<v8::Value> V8ScriptRunner::callFunction(v8::Handle<v8::Function> funct
 {
     TRACE_EVENT0("v8", "v8.callFunction");
     TRACE_EVENT_SCOPED_SAMPLING_STATE("V8", "Execution");
-    V8GCController::checkMemoryUsage();
 
     if (V8RecursionScope::recursionLevel() >= kMaxRecursionDepth)
         return handleMaxRecursionDepthExceeded();

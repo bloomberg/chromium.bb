@@ -80,8 +80,6 @@ void V8WorkerGlobalScopeEventListener::handleEvent(ScriptExecutionContext* conte
 
 v8::Local<v8::Value> V8WorkerGlobalScopeEventListener::callListenerFunction(ScriptExecutionContext* context, v8::Handle<v8::Value> jsEvent, Event* event)
 {
-    V8GCController::checkMemoryUsage();
-
     v8::Local<v8::Function> handlerFunction = getListenerFunction(context);
     v8::Local<v8::Object> receiver = getReceiverObject(context, event);
     if (handlerFunction.IsEmpty() || receiver.IsEmpty())

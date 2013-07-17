@@ -247,15 +247,6 @@ public:
     // Same as above, but always returns actual value, without any caches.
     virtual size_t actualMemoryUsageMB() { return 0; }
 
-    // If memory usage is below this threshold, do not bother forcing GC.
-    virtual size_t lowMemoryUsageMB() { return 256; }
-
-    // If memory usage is above this threshold, force GC more aggressively.
-    virtual size_t highMemoryUsageMB() { return 1024; }
-
-    // Delta of memory usage growth (vs. last actualMemoryUsageMB()) to force GC when memory usage is high.
-    virtual size_t highUsageDeltaMB() { return 128; }
-
     // Returns private and shared usage, in bytes. Private bytes is the amount of
     // memory currently allocated to this process that cannot be shared. Returns
     // false on platform specific error conditions.

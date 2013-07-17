@@ -47,21 +47,6 @@ int MemoryUsageSupport::actualMemoryUsageMB()
     return WebKit::Platform::current()->actualMemoryUsageMB();
 }
 
-int MemoryUsageSupport::lowMemoryUsageMB()
-{
-    return WebKit::Platform::current()->lowMemoryUsageMB();
-}
-
-int MemoryUsageSupport::highMemoryUsageMB()
-{
-    return WebKit::Platform::current()->highMemoryUsageMB();
-}
-
-int MemoryUsageSupport::highUsageDeltaMB()
-{
-    return WebKit::Platform::current()->highUsageDeltaMB();
-}
-
 bool MemoryUsageSupport::processMemorySizesInBytes(size_t* privateBytes, size_t* sharedBytes)
 {
     return WebKit::Platform::current()->processMemorySizesInBytes(privateBytes, sharedBytes);

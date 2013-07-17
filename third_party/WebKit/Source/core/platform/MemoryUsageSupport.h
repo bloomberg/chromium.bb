@@ -47,16 +47,6 @@ public:
     // caches.
     static int actualMemoryUsageMB();
 
-    // If memory usage is below this threshold, do not bother forcing GC.
-    static int lowMemoryUsageMB();
-
-    // If memory usage is above this threshold, force GC more aggressively.
-    static int highMemoryUsageMB();
-
-    // Delta of memory usage growth (vs. last actualMemoryUsageMB())
-    // to force GC when memory usage is high.
-    static int highUsageDeltaMB();
-
     // Returns private and shared usage, in bytes. Private bytes is the amount of
     // memory currently allocated to this process that cannot be shared. Returns
     // false on platform specific error conditions.

@@ -135,8 +135,6 @@ bool WorkerScriptController::initializeContextIfNeeded()
 
 ScriptValue WorkerScriptController::evaluate(const String& script, const String& fileName, const TextPosition& scriptStartPosition, WorkerGlobalScopeExecutionState* state)
 {
-    V8GCController::checkMemoryUsage();
-
     v8::HandleScope handleScope(m_isolate);
 
     if (!initializeContextIfNeeded())
