@@ -5,7 +5,7 @@
 #include "chrome/browser/safe_browsing/two_phase_uploader.h"
 
 #include "base/files/file_path.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "chrome/browser/safe_browsing/local_two_phase_testserver.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"

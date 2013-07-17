@@ -7,7 +7,7 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_store_observer_mock.h"
 #include "base/run_loop.h"
 #include "chrome/browser/policy/configuration_policy_handler.h"

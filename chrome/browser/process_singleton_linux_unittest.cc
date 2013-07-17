@@ -16,7 +16,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/process_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"

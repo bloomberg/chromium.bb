@@ -5,7 +5,7 @@
 #include "chrome/browser/policy/async_policy_provider.h"
 
 #include "base/callback.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/values.h"
 #include "chrome/browser/policy/async_policy_loader.h"
 #include "chrome/browser/policy/external_data_fetcher.h"

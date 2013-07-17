@@ -7,7 +7,7 @@
 #include "base/base_paths.h"
 #include "base/file_util.h"
 #include "base/location.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/strings/string16.h"
 #include "base/test/scoped_path_override.h"

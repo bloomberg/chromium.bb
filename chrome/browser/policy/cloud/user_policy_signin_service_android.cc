@@ -8,7 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/logging.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "base/time/time.h"
 #include "chrome/browser/policy/cloud/cloud_policy_client_registration_helper.h"

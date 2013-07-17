@@ -5,7 +5,7 @@
 #include "chrome/browser/policy/cloud/cloud_policy_core.h"
 
 #include "base/basictypes.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/prefs/testing_pref_service.h"
 #include "chrome/browser/policy/cloud/cloud_policy_constants.h"
 #include "chrome/browser/policy/cloud/cloud_policy_refresh_scheduler.h"

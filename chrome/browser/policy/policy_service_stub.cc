@@ -4,7 +4,7 @@
 
 #include "chrome/browser/policy/policy_service_stub.h"
 
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "chrome/browser/policy/policy_domain_descriptor.h"
 
 namespace policy {
