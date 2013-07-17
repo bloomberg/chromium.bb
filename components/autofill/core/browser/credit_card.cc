@@ -151,6 +151,8 @@ base::string16 CreditCard::TypeForDisplay(const std::string& type) {
     return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_JCB);
   if (type == kMasterCard)
     return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_MASTERCARD);
+  if (type == kUnionPay)
+    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_UNION_PAY);
   if (type == kVisaCard)
     return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_VISA);
 
@@ -172,6 +174,8 @@ int CreditCard::IconResourceId(const std::string& type) {
     return IDR_AUTOFILL_CC_JCB;
   if (type == kMasterCard)
     return IDR_AUTOFILL_CC_MASTERCARD;
+  if (type == kUnionPay)
+    return IDR_AUTOFILL_CC_GENERIC;  // Needs resource: http://crbug.com/259211
   if (type == kVisaCard)
     return IDR_AUTOFILL_CC_VISA;
 
@@ -185,8 +189,12 @@ int CreditCard::IconResourceId(const std::string& type) {
 std::string CreditCard::GetCreditCardType(const base::string16& number) {
   // Credit card number specifications taken from:
   // http://en.wikipedia.org/wiki/Credit_card_numbers,
+  // http://en.wikipedia.org/wiki/List_of_Issuer_Identification_Numbers,
   // http://www.discovernetwork.com/merchants/images/Merchant_Marketing_PDF.pdf,
-  // http://www.regular-expressions.info/creditcard.html, and
+  // http://www.regular-expressions.info/creditcard.html,
+  // http://developer.ean.com/general_info/Valid_Credit_Card_Types,
+  // http://www.bincodes.com/,
+  // http://www.fraudpractice.com/FL-binCC.html, and
   // http://www.beachnet.com/~hstiles/cardtype.html
   //
   // The last site is currently unavailable, but a cached version remains at
@@ -200,6 +208,7 @@ std::string CreditCard::GetCreditCardType(const base::string16& number) {
   // Discover Card          6011,644-649,65                 16
   // JCB                    3528-3589                       16
   // MasterCard             51-55                           16
+  // UnionPay               62                              16-19
 
   // Check for prefixes of length 1.
   if (number.empty())
@@ -226,6 +235,9 @@ std::string CreditCard::GetCreditCardType(const base::string16& number) {
 
   if (first_two_digits >= 51 && first_two_digits <= 55)
     return kMasterCard;
+
+  if (first_two_digits == 62)
+    return kUnionPay;
 
   if (first_two_digits == 65)
     return kDiscoverCard;
@@ -692,6 +704,7 @@ const char* const kDiscoverCard = "discoverCC";
 const char* const kGenericCard = "genericCC";
 const char* const kJCBCard = "jcbCC";
 const char* const kMasterCard = "masterCardCC";
+const char* const kUnionPay = "unionPayCC";
 const char* const kVisaCard = "visaCC";
 
 }  // namespace autofill

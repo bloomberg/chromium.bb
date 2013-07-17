@@ -165,6 +165,7 @@ extern const char* const kDiscoverCard;
 extern const char* const kGenericCard;
 extern const char* const kJCBCard;
 extern const char* const kMasterCard;
+extern const char* const kUnionPay;
 extern const char* const kVisaCard;
 
 }  // namespace autofill

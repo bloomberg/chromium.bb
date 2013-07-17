@@ -25,6 +25,9 @@
   <message name="IDS_AUTOFILL_CC_MASTERCARD" desc="MasterCard credit card name.">
     MasterCard
   </message>
+  <message name="IDS_AUTOFILL_CC_UNION_PAY" desc="China UnionPay credit card name.">
+    China UnionPay
+  </message>
   <message name="IDS_AUTOFILL_CC_VISA" desc="Visa credit card name.">
     Visa
   </message>

@@ -34,6 +34,9 @@ const char* const kValidNumbers[] = {
   "4222-2222-2222-2",
   "5019717010103742",
   "6331101999990016",
+
+  // A UnionPay card that doesn't pass the Luhn checksum
+  "6200000000000000",
 };
 const char* const kInvalidNumbers[] = {
   "4111 1111 112", /* too short */
@@ -559,6 +562,9 @@ TEST(CreditCardTest, GetCreditCardType) {
     { "5112345112345114", kMasterCard, true },
     { "5115915115915118", kMasterCard, true },
 
+    // A UnionPay card that doesn't pass the Luhn checksum
+    { "6200000000000000", kUnionPay, true },
+
     // Empty string
     { std::string(), kGenericCard, false },
 
@@ -603,6 +609,7 @@ TEST(CreditCardTest, GetCreditCardType) {
     { "53", kMasterCard, false },
     { "54", kMasterCard, false },
     { "55", kMasterCard, false },
+    { "62", kUnionPay, false },
 
     // Not enough data to determine an IIN uniquely.
     { "3", kGenericCard, false },
@@ -646,7 +653,6 @@ TEST(CreditCardTest, GetCreditCardType) {
     { "608", kGenericCard, false },
     { "609", kGenericCard, false },
     { "61", kGenericCard, false },
-    { "62", kGenericCard, false },
     { "63", kGenericCard, false },
     { "640", kGenericCard, false },
     { "641", kGenericCard, false },
