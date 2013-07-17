@@ -211,6 +211,7 @@ class IOThread : public content::BrowserThreadDelegate {
   // This handles initialization and destruction of state that must
   // live on the IO thread.
   virtual void Init() OVERRIDE;
+  virtual void InitAsync() OVERRIDE;
   virtual void CleanUp() OVERRIDE;
 
   void InitializeNetworkOptions(const CommandLine& parsed_command_line);

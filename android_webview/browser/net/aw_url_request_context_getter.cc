@@ -54,6 +54,22 @@ AwURLRequestContextGetter::~AwURLRequestContextGetter() {
 void AwURLRequestContextGetter::Init() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
+  cookie_store_ = content::CreatePersistentCookieStore(
+      browser_context_->GetPath().Append(FILE_PATH_LITERAL("Cookies")),
+      true,
+      NULL,
+      NULL);
+  cookie_store_->GetCookieMonster()->SetPersistSessionCookies(true);
+
+  // The CookieMonster must be passed here so it happens synchronously to
+  // the main thread initialization (to avoid race condition in another
+  // thread trying to access the CookieManager API).
+  DidCreateCookieMonster(cookie_store_->GetCookieMonster());
+}
+
+void AwURLRequestContextGetter::InitAsync() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
   net::URLRequestContextBuilder builder;
   builder.set_user_agent(content::GetUserAgent(GURL()));
   builder.set_network_delegate(new AwNetworkDelegate());
@@ -84,21 +100,7 @@ void AwURLRequestContextGetter::Init() {
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE)));
   main_http_factory_.reset(main_cache);
   url_request_context_->set_http_transaction_factory(main_cache);
-
-  scoped_refptr<net::CookieStore> cookie_store =
-      content::CreatePersistentCookieStore(
-          browser_context_->GetPath().Append(FILE_PATH_LITERAL("Cookies")),
-          true,
-          NULL,
-          NULL);
-  cookie_store->GetCookieMonster()->SetPersistSessionCookies(true);
-  url_request_context_->set_cookie_store(cookie_store.get());
-
-  // The CookieMonster must be passed here so it happens synchronously to
-  // the main thread initialization (to avoid race condition in another
-  // thread trying to access the CookieManager API).
-  DidCreateCookieMonster(
-      url_request_context_->cookie_store()->GetCookieMonster());
+  url_request_context_->set_cookie_store(cookie_store_.get());
 }
 
 void AwURLRequestContextGetter::PopulateNetworkSessionParams(

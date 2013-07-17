@@ -35,6 +35,7 @@ class AwURLRequestContextGetter : public net::URLRequestContextGetter,
 
   // content::BrowserThreadDelegate implementation.
   virtual void Init() OVERRIDE;
+  virtual void InitAsync() OVERRIDE;
   virtual void CleanUp() OVERRIDE {}
 
   // net::URLRequestContextGetter implementation.
@@ -58,6 +59,7 @@ class AwURLRequestContextGetter : public net::URLRequestContextGetter,
   void PopulateNetworkSessionParams(net::HttpNetworkSession::Params* params);
 
   AwBrowserContext* browser_context_;  // weak
+  scoped_refptr<net::CookieStore> cookie_store_;
   scoped_ptr<net::URLRequestContext> url_request_context_;
   scoped_ptr<net::ProxyConfigService> proxy_config_service_;
   scoped_ptr<net::URLRequestJobFactory> job_factory_;

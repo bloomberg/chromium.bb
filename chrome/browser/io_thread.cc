@@ -465,7 +465,12 @@ net::URLRequestContextGetter* IOThread::system_url_request_context_getter() {
 }
 
 void IOThread::Init() {
-  TRACE_EVENT0("startup", "IOThread::Init");
+  // Prefer to use InitAsync unless you need initialization to block
+  // the UI thread
+}
+
+void IOThread::InitAsync() {
+  TRACE_EVENT0("startup", "IOThread::InitAsync");
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
 #if defined(USE_NSS) || defined(OS_IOS)
@@ -526,10 +531,10 @@ void IOThread::Init() {
   globals_->http_user_agent_settings.reset(
       new BasicHttpUserAgentSettings(std::string()));
   if (command_line.HasSwitch(switches::kHostRules)) {
-    TRACE_EVENT_BEGIN0("startup", "IOThread::Init:SetRulesFromString");
+    TRACE_EVENT_BEGIN0("startup", "IOThread::InitAsync:SetRulesFromString");
     globals_->host_mapping_rules->SetRulesFromString(
         command_line.GetSwitchValueASCII(switches::kHostRules));
-    TRACE_EVENT_END0("startup", "IOThread::Init:SetRulesFromString");
+    TRACE_EVENT_END0("startup", "IOThread::InitAsync:SetRulesFromString");
   }
   if (command_line.HasSwitch(switches::kIgnoreCertificateErrors))
     globals_->ignore_certificate_errors = true;
@@ -565,12 +570,12 @@ void IOThread::Init() {
   session_params.proxy_service =
       globals_->proxy_script_fetcher_proxy_service.get();
 
-  TRACE_EVENT_BEGIN0("startup", "IOThread::Init:HttpNetworkSession");
+  TRACE_EVENT_BEGIN0("startup", "IOThread::InitAsync:HttpNetworkSession");
   scoped_refptr<net::HttpNetworkSession> network_session(
       new net::HttpNetworkSession(session_params));
   globals_->proxy_script_fetcher_http_transaction_factory
       .reset(new net::HttpNetworkLayer(network_session.get()));
-  TRACE_EVENT_END0("startup", "IOThread::Init:HttpNetworkSession");
+  TRACE_EVENT_END0("startup", "IOThread::InitAsync:HttpNetworkSession");
   scoped_ptr<net::URLRequestJobFactoryImpl> job_factory(
       new net::URLRequestJobFactoryImpl());
   job_factory->SetProtocolHandler(chrome::kDataScheme,

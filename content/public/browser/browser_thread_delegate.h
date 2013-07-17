@@ -10,17 +10,20 @@ namespace content {
 // A class with this type may be registered via
 // BrowserThread::SetDelegate.
 //
-// If registered as such, it will receive an Init() call right before
-// the BrowserThread in question starts its message loop (and right
-// after the BrowserThread has done its own initialization), and a
-// CleanUp call right after the message loop ends (and before the
-// BrowserThread has done its own clean-up).
+// If registered as such, it will schedule to run Init() before the
+// message loop begins and the schedule InitAsync() as the first
+// task on its message loop (after the BrowserThread has done its own
+// initialization), and receive a CleanUp call right after the message
+// loop ends (and before the BrowserThread has done its own clean-up).
 class BrowserThreadDelegate {
  public:
   virtual ~BrowserThreadDelegate() {}
 
-  // Called just prior to starting the message loop.
+  // Called prior to starting the message loop
   virtual void Init() = 0;
+
+  // Called as the first task on the thread's message loop.
+  virtual void InitAsync() = 0;
 
   // Called just after the message loop ends.
   virtual void CleanUp() = 0;
