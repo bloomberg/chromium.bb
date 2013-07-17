@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/cpu.h"
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
@@ -16,6 +17,7 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
 #include "chrome/browser/media/webrtc_log_uploader.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/media/webrtc_logging_messages.h"
 #include "chrome/common/partial_circular_buffer.h"
 #include "chrome/common/pref_names.h"
@@ -124,26 +126,28 @@ void WebRtcLoggingHandlerHost::OnOpenLog(const std::string& app_session_id,
 void WebRtcLoggingHandlerHost::OpenLogIfAllowed() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  bool enabled = false;
-
   // If the user permits metrics reporting / crash uploading with the checkbox
   // in the prefs, we allow uploading automatically. We disable uploading
-  // completely for non-official builds.
+  // completely for non-official builds. Allowing can be forced with a flag.
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (!command_line->HasSwitch(switches::kEnableMetricsReportingForTesting)) {
+    bool enabled = false;
 #if defined(GOOGLE_CHROME_BUILD)
 #if defined(OS_CHROMEOS)
-  chromeos::CrosSettings::Get()->GetBoolean(chromeos::kStatsReportingPref,
-                                            &enabled);
+    chromeos::CrosSettings::Get()->GetBoolean(chromeos::kStatsReportingPref,
+                                              &enabled);
 #elif defined(OS_ANDROID)
-  // Android has its own settings for metrics / crash uploading.
-  enabled = g_browser_process->local_state()->GetBoolean(
-      prefs::kCrashReportingEnabled);
+    // Android has its own settings for metrics / crash uploading.
+    enabled = g_browser_process->local_state()->GetBoolean(
+        prefs::kCrashReportingEnabled);
 #else
-  enabled = g_browser_process->local_state()->GetBoolean(
-      prefs::kMetricsReportingEnabled);
+    enabled = g_browser_process->local_state()->GetBoolean(
+        prefs::kMetricsReportingEnabled);
 #endif  // #if defined(OS_CHROMEOS)
 #endif  // defined(GOOGLE_CHROME_BUILD)
-  if (!enabled)
-    return;
+    if (!enabled)
+      return;
+  }
 
   if (!g_browser_process->webrtc_log_uploader()->ApplyForStartLogging())
     return;

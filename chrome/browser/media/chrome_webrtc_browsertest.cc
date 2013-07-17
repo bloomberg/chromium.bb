@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
@@ -352,12 +353,13 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
 //
 // <compressed data (zip)>
 // ------**--yradnuoBgoLtrapitluMklaTelgooG--**------
-
-// Fails on all platforms. http://crbug.com/257606
-// When enabling, it should be prefixed MANUAL_.
 IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
-                       DISABLED_RunsAudioVideoWebRTCCallInTwoTabsWithLogging) {
+                       MANUAL_RunsAudioVideoWebRTCCallInTwoTabsWithLogging) {
   EXPECT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
+  // Add command line switch that forces allowing log uploads.
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  command_line->AppendSwitch(switches::kEnableMetricsReportingForTesting);
 
   // Tell the uploader to save the multipart to a buffer instead of uploading.
   std::string multipart;
