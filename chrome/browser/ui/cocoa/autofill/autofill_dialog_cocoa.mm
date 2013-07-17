@@ -103,7 +103,7 @@ string16 AutofillDialogCocoa::GetCvc() {
 }
 
 bool AutofillDialogCocoa::SaveDetailsLocally() {
-  return false;
+  return [sheet_controller_ saveDetailsLocally];
 }
 
 const content::NavigationController* AutofillDialogCocoa::ShowSignIn() {
@@ -324,6 +324,10 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
 - (void)getInputs:(autofill::DetailOutputMap*)output
        forSection:(autofill::DialogSection)section {
   [[mainContainer_ sectionForId:section] getInputs:output];
+}
+
+- (BOOL)saveDetailsLocally {
+  return [mainContainer_ saveDetailsLocally];
 }
 
 - (void)hideSignIn {

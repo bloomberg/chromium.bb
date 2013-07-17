@@ -123,6 +123,7 @@ class AutofillDialogCocoa : public AutofillDialogView,
 - (void)updateSection:(autofill::DialogSection)section;
 - (void)getInputs:(autofill::DetailOutputMap*)outputs
        forSection:(autofill::DialogSection)section;
+- (BOOL)saveDetailsLocally;
 - (content::NavigationController*)showSignIn;
 - (void)hideSignIn;
 - (void)modelChanged;

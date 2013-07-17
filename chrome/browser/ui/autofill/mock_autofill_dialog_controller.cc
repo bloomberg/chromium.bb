@@ -75,10 +75,6 @@ bool MockAutofillDialogController::ShouldShowSpinner() const {
   return false;
 }
 
-bool MockAutofillDialogController::ShouldOfferToSaveInChrome() const {
-   return false;
-}
-
 gfx::Image MockAutofillDialogController::AccountChooserImage() {
   return gfx::Image();
 }

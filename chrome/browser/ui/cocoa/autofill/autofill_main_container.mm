@@ -50,6 +50,15 @@
 
   [self layoutButtons];
 
+  // Set up "Save in Chrome" checkbox.
+  saveInChromeCheckbox_.reset([[NSButton alloc] initWithFrame:NSZeroRect]);
+  [saveInChromeCheckbox_ setButtonType:NSSwitchButton];
+  [saveInChromeCheckbox_ setTitle:
+      base::SysUTF16ToNSString(controller_->SaveLocallyText())];
+  [saveInChromeCheckbox_ setState:NSOnState];
+  [saveInChromeCheckbox_ sizeToFit];
+  [[self view] addSubview:saveInChromeCheckbox_];
+
   detailsContainer_.reset(
       [[AutofillDetailsContainer alloc] initWithController:controller_]);
   NSSize frameSize = [[detailsContainer_ view] frame].size;
@@ -121,6 +130,10 @@
   NSRect buttonFrame = [buttonContainer_ frame];
   buttonFrame.origin.y = currentY;
   [buttonContainer_ setFrameOrigin:buttonFrame.origin];
+
+  NSRect checkboxFrame = [saveInChromeCheckbox_ frame];
+  checkboxFrame.origin.y = NSMidY(buttonFrame) - NSHeight(checkboxFrame) / 2.0;
+  [saveInChromeCheckbox_ setFrameOrigin:checkboxFrame.origin];
 
   [detailsContainer_ performLayout];
   NSRect containerFrame = [[detailsContainer_ view] frame];
@@ -208,7 +221,12 @@
 }
 
 - (void)modelChanged {
+  [saveInChromeCheckbox_ setHidden:!controller_->ShouldOfferToSaveInChrome()];
   [detailsContainer_ modelChanged];
+}
+
+- (BOOL)saveDetailsLocally {
+  return [saveInChromeCheckbox_ state] == NSOnState;
 }
 
 - (void)updateLegalDocuments {
@@ -251,6 +269,15 @@
 
 - (BOOL)validate {
   return [detailsContainer_ validate];
+}
+
+@end
+
+
+@implementation AutofillMainContainer (Testing)
+
+- (NSButton*)saveInChromeCheckboxForTesting {
+  return saveInChromeCheckbox_.get();
 }
 
 @end

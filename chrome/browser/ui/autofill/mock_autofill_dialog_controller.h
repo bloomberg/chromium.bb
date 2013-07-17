@@ -25,7 +25,7 @@ class MockAutofillDialogController : public AutofillDialogController {
   virtual string16 LegalDocumentsText() OVERRIDE;
   virtual DialogSignedInState SignedInState() const OVERRIDE;
   virtual bool ShouldShowSpinner() const OVERRIDE;
-  virtual bool ShouldOfferToSaveInChrome() const OVERRIDE;
+  MOCK_CONST_METHOD0(ShouldOfferToSaveInChrome, bool());
   MOCK_METHOD0(MenuModelForAccountChooser, ui::MenuModel*());
   virtual gfx::Image AccountChooserImage() OVERRIDE;
   virtual bool ShouldShowProgressBar() const OVERRIDE;
