@@ -16,53 +16,29 @@
     <button name="chromeButton" id="app_bindings">
         Make a chrome.app.* API call</button><br />
     <button name="chromeButton" id="blocked_call">
-        Make a blocked API call</button><br />
-    <button name="chromeButton" id="inject_cs">
-        Inject a content script</button><br />
-    <button name="chromeButton" id="inject_blob">
-        Inject a blob of code</button><br />
-    <button name="chromeButton" id="webrequest">
-        Modify HTTP headers with webRequest</button><br />
-    <button name="chromeButton" id="object_properties">
-        Read and change an object's properties</button><br />
+      Make a blocked API call</button><br />
     <button name="chromeButton" id="object_methods">
         Invoke an object's methods</button><br />
-    <button name="chromeButton" id="message_cs">
-        Send a message to a content script</button><br />
+    <button name="chromeButton" id="webrequest">
+        Modify HTTP headers with webRequest</button><br />
+    <button name="chromeButton" id="connect_other">
+        Connect to another ext</button><br />
     <button name="chromeButton" id="message_self">
         Send a message within the ext</button><br />
     <button name="chromeButton" id="message_other">
         Send a message to another ext</button><br />
-    <button name="chromeButton" id="connect_other">
-        Connect to another ext</button><br />
     <button name="chromeButton" id="tab_ids">
         Tab ID translation</button><br />
+    <button name="chromeButton" id="api_tab_updated">
+        Execute api calls on new tab</button><br />
+
     <br />
     <h1>DOM and HTML5 API calls</h1>
     <button name="domButton" id="background_xhr">
-        Do a XHR from background page</button><br />
-    <button name="domButton" id="cs_xhr">
-        Do a XHR from content script</button><br />
-    <button name="domButton" id="location_access">
-        Acccess Location</button><br />
-    <button name="domButton" id="dom_mutation1">
-        Mutate DOM tree - test1</button><br />
-    <button name="domButton" id="dom_mutation2">
-        Mutate DOM tree - test2</button><br />
-    <button name="domButton" id="navigator_access">
-        Access HTML5 Navigator API</button><br />
-    <button name="domButton" id="web_storage_access1">
-        Access HTML5 WebStorage API - test1</button><br />
-    <button name="domButton" id="web_storage_access2">
-        Access HTML5 WebStorage API - test2</button><br />
-    <button name="domButton" id="notification_access">
-        Access HTML5 Notifcation API</button><br />
-    <button name="domButton" id="application_cache_access">
-        Access HTML5 ApplicationCache API</button><br />
-    <button name="domButton" id="web_database_access">
-        Access HTML5 WebDatabase API</button><br />
-    <button name="domButton" id="canvas_access">
-        Access HTML5 Canvas API</button><br />
+      Do a XHR from background page</button><br />
+
+    <button name="domButton" id="dom_tab_updated">
+        Execute dom calls on tab updated</button><br />
     <br />
     <h1>Status:</h1> <div id="status"></div>
   </body>

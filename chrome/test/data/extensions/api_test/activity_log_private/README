@@ -11,11 +11,23 @@ The tests use two chrome extensions:
 Adding a new test:
 
   In friend/reply.js:
-    (1) Add a function to call the chrome api calls you want to test.
-        NOTE: The function should clean up any changes it made (e.g. listeners
+    (1) Add a function to call the chrome api calls you want to test. If you
+        need to use window.open please consider adding your code to
+        executeApiCallsOnTabUpdated or executeDOMChangesOnTabUpdated. Every
+        extra window.open call will slow down the tests by 3s and may cause
+        timeouts.
+    (2) Add the name of the new function to the function map (fnMap).
+
+    IMPORTANT NOTES for adding tests:
+      - The function should clean up any changes it made (e.g. listeners
         it added) before finishing. If they are not cleaned up then unexpected
         behavior can happen in test cases that run after this function.
-    (2) Add the name of the new function to the function map (fnMap).
+      - Every window.open call can add 3 secs to the test run for debug builds.
+        Making lots of window.open calls will therefore cause the tests to
+        timeout. If your test needs to use window.open please consider adding
+        it to one of the following existing functions:
+          - executeApiCallsOnTabUpdated
+          - executeDOMChangesOnTabUpdated
 
   In friend/options.html:
     (1) Add a button to allow the new function to be called in manual mode.

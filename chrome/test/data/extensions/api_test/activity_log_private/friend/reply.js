@@ -4,7 +4,6 @@
 
 var defaultUrl = 'http://www.google.com';
 
-
 // Utility function to open a URL in a new tab.  If the useIncognito global is
 // true, the URL is opened in a new incognito window, otherwise it is opened in
 // a new tab in the current window.  Alternatively, whether to use incognito
@@ -23,89 +22,62 @@ function openTab(url, incognito) {
 
 // Makes an API call.
 function makeApiCall() {
+  resetStatus();
   chrome.cookies.set({
     'url': 'https://www.cnn.com',
     'name': 'activity_log_test_cookie',
     'value': 'abcdefg'
   });
-  setCompleted('makeApiCall');
+  appendCompleted('makeApiCall');
 }
 
 // Makes an API call that has a custom binding.
 function makeSpecialApiCalls() {
+  resetStatus();
   var url = chrome.extension.getURL('image/cat.jpg');
   var noparam = chrome.extension.getViews();
-  setCompleted('makeSpecialApiCalls');
+  appendCompleted('makeSpecialApiCalls');
 }
 
 // Checks that we don't double-log calls that go through setHandleRequest
 // *and* the ExtensionFunction machinery.
 function checkNoDoubleLogging() {
+  resetStatus();
   chrome.omnibox.setDefaultSuggestion({description: 'hello world'});
-  setCompleted('checkNoDoubleLogging');
+  appendCompleted('checkNoDoubleLogging');
 }
 
 // Check whether we log calls to chrome.app.*;
 function checkAppCalls() {
+  resetStatus();
   var callback = function() {};
   chrome.app.getDetails();
   var b = chrome.app.isInstalled;
   var c = chrome.app.installState(callback);
-  setCompleted('checkAppCalls');
+  appendCompleted('checkAppCalls');
 }
 
 // Makes an API call that the extension doesn't have permission for.
 // Don't add the management permission or this test won't test the code path.
 function makeBlockedApiCall() {
+  resetStatus();
   try {
     var allExtensions = chrome.management.getAll();
   } catch (err) { }
-  setCompleted('makeBlockedApiCall');
+  appendCompleted('makeBlockedApiCall');
 }
 
-// Injects a content script.
-function injectContentScript() {
-  chrome.tabs.onUpdated.addListener(
-    function callback(tabId, changeInfo, tab) {
-      if (changeInfo['status'] === 'complete' &&
-          tab.url.match(/google\.com/g)) {
-        chrome.tabs.onUpdated.removeListener(callback);
-        chrome.tabs.executeScript(
-            tab.id,
-            {'file': 'google_cs.js'},
-            function() {
-              chrome.tabs.remove(tabId);
-              setCompleted('injectContentScript');
-            });
-        }
-      }
-  );
-  openTab(defaultUrl);
-}
-
-// Injects a blob of script into a page.
-function injectScriptBlob() {
-  chrome.tabs.onUpdated.addListener(
-    function callback(tabId, changeInfo, tab) {
-      if (changeInfo['status'] === 'complete' &&
-          tab.url.match(/google\.com/g)) {
-        chrome.tabs.onUpdated.removeListener(callback);
-        chrome.tabs.executeScript(
-            tab.id,
-            {'code': 'document.write("g o o g l e");'},
-            function() {
-              chrome.tabs.remove(tabId);
-              setCompleted('injectScriptBlob');
-            });
-      }
-    }
-  );
-  openTab(defaultUrl);
+function callObjectMethod() {
+  resetStatus();
+  var storageArea = chrome.storage.sync;
+  storageArea.clear();
+  appendCompleted('callObjectMethod');
 }
 
 // Modifies the headers sent and received in an HTTP request using the
 // webRequest API.
 function doWebRequestModifications() {
+  resetStatus();
   // Install a webRequest handler that will add an HTTP header to the outgoing
   // request for the main page.
   function doModifyHeaders(details) {
@@ -149,49 +121,10 @@ function doWebRequestModifications() {
       if (changeInfo['status'] === 'complete' &&
           tab.url.match(/google\.com/g)) {
         chrome.webRequest.onBeforeSendHeaders.removeListener(doModifyHeaders);
-        // TODO(karenlees): you added this line in debugging, make sure it is
-        // really needed.
         chrome.webRequest.onHeadersReceived.removeListener(doModifyHeaders);
         chrome.tabs.onUpdated.removeListener(closeTab);
         chrome.tabs.remove(tabId);
-        setCompleted('doWebRequestModifications');
-      }
-    }
-  );
-  openTab(defaultUrl);
-}
-
-function getSetObjectProperties() {
-  chrome.tabs.onUpdated.addListener(
-    function getTabProperties(tabId, changeInfo, tab) {
-      if (changeInfo['status'] === 'complete' &&
-          tab.url.match(/google\.com/g)) {
-        console.log(tab.id + ' ' + tab.index + ' ' + tab.url);
-        tab.index = 3333333333333333333;
-        chrome.tabs.onUpdated.removeListener(getTabProperties);
-        chrome.tabs.remove(tabId);
-        setCompleted('getSetObjectProperties');
-      }
-    }
-  );
-  openTab(defaultUrl);
-}
-
-function callObjectMethod() {
-  var storageArea = chrome.storage.sync;
-  storageArea.clear();
-  setCompleted('callObjectMethod()');
-}
-
-function sendMessageToCS() {
-  chrome.tabs.onUpdated.addListener(
-    function messageCS(tabId, changeInfo, tab) {
-      if (changeInfo['status'] === 'complete' &&
-          tab.url.match(/google\.com/g)) {
-        chrome.tabs.sendMessage(tabId, 'hellooooo!');
-        chrome.tabs.onUpdated.removeListener(messageCS);
-        chrome.tabs.remove(tabId);
-        setCompleted('sendMessageToCS');
+        appendCompleted('doWebRequestModifications');
       }
     }
   );
@@ -199,37 +132,41 @@ function sendMessageToCS() {
 }
 
 function sendMessageToSelf() {
+  resetStatus();
   try {
     chrome.runtime.sendMessage('hello hello');
-    setCompleted('sendMessageToSelf');
+    appendCompleted('sendMessageToSelf');
   } catch (err) {
     setError(err + ' in function: sendMessageToSelf');
   }
 }
 
 function sendMessageToOther() {
+  resetStatus();
   try {
     chrome.runtime.sendMessage('ocacnieaapoflmkebkeaidpgfngocapl',
         'knock knock',
         function response() {
           console.log("who's there?");
+          appendCompleted('sendMessageToOther');
         });
-    setCompleted('sendMessageToOther');
   } catch (err) {
     setError(err + ' in function: sendMessageToOther');
   }
 }
 
 function connectToOther() {
+  resetStatus();
   try {
     chrome.runtime.connect('ocacnieaapoflmkebkeaidpgfngocapl');
-    setCompleted('connectToOther');
+    appendCompleted('connectToOther');
   } catch (err) {
     setError(err + ' in function:connectToOther');
   }
 }
 
 function tabIdTranslation() {
+  resetStatus();
   var tabIds = [-1, -1];
 
   // Test the case of a single int
@@ -238,7 +175,7 @@ function tabIdTranslation() {
       if (changeInfo['status'] === 'complete' &&
           tab.url.match(/google\.com/g)) {
         chrome.tabs.executeScript(
-             //tab.id,
+            tabId,
             {'file': 'google_cs.js'},
             function() {
               chrome.tabs.onUpdated.removeListener(testSingleInt);
@@ -253,11 +190,11 @@ function tabIdTranslation() {
   chrome.tabs.onUpdated.addListener(
     function testArray(tabId, changeInfo, tab) {
       if (changeInfo['status'] === 'complete' && tab.url.match(/google\.be/g)) {
-        //chrome.tabs.move(tabId, {'index': -1});
+        chrome.tabs.move(tabId, {'index': -1});
         tabIds[1] = tabId;
         chrome.tabs.onUpdated.removeListener(testArray);
         chrome.tabs.remove(tabIds);
-        setCompleted('tabIdTranslation');
+        appendCompleted('tabIdTranslation');
       }
     }
   );
@@ -265,11 +202,48 @@ function tabIdTranslation() {
   openTab(defaultUrl);
 }
 
+function executeApiCallsOnTabUpdated() {
+  resetStatus();
+  chrome.tabs.onUpdated.addListener(
+    function callback(tabId, changeInfo, tab) {
+      if (changeInfo['status'] === 'complete' &&
+          tab.url.match(/google\.com/g)) {
+        chrome.tabs.onUpdated.removeListener(callback);
+
+        // Send a message.
+        chrome.tabs.sendMessage(tabId, 'hellooooo!');
+        appendCompleted('sendMessageToCS');
+
+        // Inject a content script
+        chrome.tabs.executeScript(
+            tab.id,
+            {'file': 'google_cs.js'},
+            function() {
+              appendCompleted('injectContentScript');
+            });
+
+        // Injects a blob of script into a page and cleans up the tab when
+        // finished.
+        chrome.tabs.executeScript(
+            tab.id,
+            {'code': 'document.write("g o o g l e");'},
+            function() {
+              appendCompleted('injectScriptBlob');
+              chrome.tabs.remove(tabId);
+            });
+      }
+    }
+  );
+  openTab(defaultUrl);
+}
+
+
 // DOM API TEST METHODS -- PUT YOUR TESTS BELOW HERE
 ////////////////////////////////////////////////////////////////////////////////
 
 // Does an XHR from this [privileged] context.
 function doBackgroundXHR() {
+  resetStatus();
   var request = new XMLHttpRequest();
   request.open('POST', defaultUrl, false);
   request.setRequestHeader('Content-type', 'text/plain;charset=UTF-8');
@@ -278,266 +252,89 @@ function doBackgroundXHR() {
   } catch (err) {
     // doesn't matter if it works or not; should be recorded either way
   }
-  setCompleted('doBackgroundXHR');
+  appendCompleted('doBackgroundXHR');
 }
 
-// Does an XHR from inside a content script.
-function doContentScriptXHR() {
-  var code = 'var request = new XMLHttpRequest(); ' +
-             'request.open("POST", "http://www.cnn.com", false); ' +
-             'request.setRequestHeader("Content-type", ' +
-             '                         "text/plain;charset=UTF-8"); ' +
-             'request.send(); ' +
-             'document.write("sent an XHR");';
+function executeDOMChangesOnTabUpdated() {
+  resetStatus();
+  code = '';
+
+  // Accesses the Location object from inside a content script.
+  code = 'window.location = "http://www.google.com/#foo"; ' +
+          'document.location = "http://www.google.com/#bar"; ' +
+          'var loc = window.location; ' +
+          'loc.assign("http://www.google.com/#fo"); ' +
+          'loc.replace("http://www.google.com/#bar");';
+
+  // Mutates the DOM tree from inside a content script.
+  code += 'var d1 = document.createElement("div"); ' +
+          'var d2 = document.createElement("div"); ' +
+          'document.body.appendChild(d1); ' +
+          'document.body.insertBefore(d2, d1); ' +
+          'document.body.replaceChild(d1, d2);';
+
+  code += 'document.write("Hello using document.write"); ' +
+          'document.writeln("Hello using document.writeln"); ' +
+          'document.body.innerHTML = "Hello using innerHTML";';
+
+  // Accesses the HTML5 Navigator API from inside a content script.
+  code += 'var geo = navigator.geolocation; ' +
+          'var successCallback = function(x) { }; ' +
+          'var errorCallback = function(x) { }; ' +
+          'geo.getCurrentPosition(successCallback, errorCallback); ' +
+          'var id = geo.watchPosition(successCallback, errorCallback);';
+
+  // Accesses the HTML5 WebStorage API from inside a content script.
+  code += 'var store = window.sessionStorage; ' +
+          'store.setItem("foo", 42); ' +
+          'var val = store.getItem("foo"); ' +
+          'store.removeItem("foo"); ' +
+          'store.clear();';
+
+  // Same but for localStorage.
+  code += 'var store = window.localStorage; ' +
+          'store.setItem("foo", 42); ' +
+          'var val = store.getItem("foo"); ' +
+          'store.removeItem("foo"); ' +
+          'store.clear();';
+
+  // Accesses the HTML5 Notification API from inside a content script.
+  code += 'try {' +
+          '  webkitNotifications.createNotification("myIcon.png", ' +
+          '                                         "myTitle", ' +
+          '                                         "myContent");' +
+          '} catch (e) {}';
+
+  // Accesses the HTML5 ApplicationCache API from inside a content script.
+  code += 'var appCache = window.applicationCache;';
+
+  // Accesses the HTML5 WebDatabase API from inside a content script.
+  code += 'var db = openDatabase("testdb", "1.0", "test database", ' +
+          '                      1024 * 1024);';
+
+  // Accesses the HTML5 Canvas API from inside a content script.
+  code += 'var testCanvas = document.createElement("canvas"); ' +
+          'var testContext = testCanvas.getContext("2d");';
+
+  // Does an XHR from inside a content script.
+  code += 'var request = new XMLHttpRequest(); ' +
+          'request.open("POST", "http://www.cnn.com", false); ' +
+          'request.setRequestHeader("Content-type", ' +
+          '                         "text/plain;charset=UTF-8"); ' +
+          'request.send(); ' +
+          'document.write("sent an XHR");';
+
   chrome.tabs.onUpdated.addListener(
     function callback(tabId, changeInfo, tab) {
       if (changeInfo['status'] === 'complete' &&
           tab.url.match(/google\.com/g)) {
         chrome.tabs.onUpdated.removeListener(callback);
         chrome.tabs.executeScript(
-            tab.id,
-            {'code': code},
-            function() {
-              chrome.tabs.remove(tabId);
-              setCompleted('doContentScriptXHR');
-            });
-      }
-    }
-  );
-  openTab(defaultUrl);
-}
-
-// Accesses the Location object from inside a content script.
-function doLocationAccess() {
-  var code = 'window.location = "http://www.google.com/#foo"; ' +
-             'document.location = "http://www.google.com/#bar"; ' +
-             'var loc = window.location; ' +
-             'loc.assign("http://www.google.com/#fo"); ' +
-             'loc.replace("http://www.google.com/#bar");';
-  chrome.tabs.onUpdated.addListener(
-    function callback(tabId, changeInfo, tab) {
-      if (changeInfo['status'] === 'complete' &&
-          tab.url.match(/google\.com/g)) {
-        chrome.tabs.onUpdated.removeListener(callback);
-        chrome.tabs.executeScript(
-            tab.id,
-            {'code': code},
-            function() {
-              chrome.tabs.remove(tabId);
-              setCompleted('doLocationAccess');
-            });
-      }
-    }
-  );
-  openTab(defaultUrl);
-}
-
-// Mutates the DOM tree from inside a content script.
-function doDOMMutation1() {
-  var code = 'var d1 = document.createElement("div"); ' +
-             'var d2 = document.createElement("div"); ' +
-             'document.body.appendChild(d1); ' +
-             'document.body.insertBefore(d2, d1); ' +
-             'document.body.replaceChild(d1, d2);';
-  chrome.tabs.onUpdated.addListener(
-    function callback(tabId, changeInfo, tab) {
-      if (changeInfo['status'] === 'complete' &&
-          tab.url.match(/google\.com/g)) {
-        chrome.tabs.onUpdated.removeListener(callback);
-        chrome.tabs.executeScript(
-            tab.id,
-            {'code': code},
-            function() {
-              chrome.tabs.remove(tabId);
-              setCompleted('doDOMMutation1');
-            });
-      }
-    }
-  );
-  openTab(defaultUrl);
-}
-
-function doDOMMutation2() {
-  var code = 'document.write("Hello using document.write"); ' +
-             'document.writeln("Hello using document.writeln"); ' +
-             'document.body.innerHTML = "Hello using innerHTML";';
-  chrome.tabs.onUpdated.addListener(
-    function callback(tabId, changeInfo, tab) {
-      if (changeInfo['status'] === 'complete' &&
-          tab.url.match(/google\.com/g)) {
-        chrome.tabs.onUpdated.removeListener(callback);
-        chrome.tabs.executeScript(
-            tab.id,
-            {'code': code},
-            function() {
-              chrome.tabs.remove(tabId);
-              setCompleted('doDOMMutation2');
-            });
-      }
-    }
-  );
-  openTab(defaultUrl);
-}
-
-// Accesses the HTML5 Navigator API from inside a content script.
-function doNavigatorAPIAccess() {
-  var code = 'var geo = navigator.geolocation; ' +
-             'var successCallback = function(x) { }; ' +
-             'var errorCallback = function(x) { }; ' +
-             'geo.getCurrentPosition(successCallback, errorCallback); ';
-             'var id = geo.watchPosition(successCallback, errorCallback);';
-  chrome.tabs.onUpdated.addListener(
-    function callback(tabId, changeInfo, tab) {
-      if (changeInfo['status'] === 'complete' &&
-          tab.url.match(/google\.com/g)) {
-        chrome.tabs.onUpdated.removeListener(callback);
-        chrome.tabs.executeScript(
-            tab.id,
-            {'code': code},
-            function() {
-              chrome.tabs.remove(tabId);
-              setCompleted('doNavigatorAPIAccess');
-            });
-      }
-    }
-  );
-  openTab(defaultUrl);
-}
-
-// Accesses the HTML5 WebStorage API from inside a content script.
-function doWebStorageAPIAccess1() {
-  var code = 'var store = window.sessionStorage; ' +
-             'store.setItem("foo", 42); ' +
-             'var val = store.getItem("foo"); ' +
-             'store.removeItem("foo"); ' +
-             'store.clear();';
-  chrome.tabs.onUpdated.addListener(
-    function callback(tabId, changeInfo, tab) {
-      if (changeInfo['status'] === 'complete' &&
-          tab.url.match(/google\.com/g)) {
-        chrome.tabs.onUpdated.removeListener(callback);
-        chrome.tabs.executeScript(
-            tab.id,
-            {'code': code},
-            function() {
-              chrome.tabs.remove(tabId);
-              setCompleted('doWebStorageAPIAccess1');
-            });
-      }
-    }
-   );
-  openTab(defaultUrl);
-}
-
-// Accesses local storage from inside a content script.
-function doWebStorageAPIAccess2() {
-  var code = 'var store = window.localStorage; ' +
-             'store.setItem("foo", 42); ' +
-             'var val = store.getItem("foo"); ' +
-             'store.removeItem("foo"); ' +
-             'store.clear();';
-  chrome.tabs.onUpdated.addListener(
-    function callback(tabId, changeInfo, tab) {
-      if (changeInfo['status'] === 'complete' &&
-          tab.url.match(/google\.com/g)) {
-        chrome.tabs.onUpdated.removeListener(callback);
-        chrome.tabs.executeScript(
-            tab.id,
-            {'code': code},
-            function() {
-              chrome.tabs.remove(tabId);
-              setCompleted('doWebStorageAPIAccess2');
-            });
-      }
-    }
-  );
-  openTab(defaultUrl);
-}
-
-// Accesses the HTML5 Notification API from inside a content script.
-function doNotificationAPIAccess() {
-  var code = 'try {' +
-             '  webkitNotifications.createNotification("myIcon.png", ' +
-             '                                         "myTitle", ' +
-             '                                         "myContent");' +
-             '} catch (e) {}';
-  chrome.tabs.onUpdated.addListener(
-    function callback(tabId, changeInfo, tab) {
-      if (changeInfo['status'] === 'complete' &&
-          tab.url.match(/google\.com/g)) {
-       chrome.tabs.onUpdated.removeListener(callback);
-       chrome.tabs.executeScript(
-           tab.id,
-           {'code': code},
-            function() {
-              chrome.tabs.remove(tabId);
-              setCompleted('doNotifcationAPIAccess');
-            });
-      }
-    }
-  );
-  openTab(defaultUrl);
-}
-
-// Accesses the HTML5 ApplicationCache API from inside a content script.
-function doApplicationCacheAPIAccess() {
-  var code = 'var appCache = window.applicationCache;';
-  chrome.tabs.onUpdated.addListener(
-    function callback(tabId, changeInfo, tab) {
-      if (changeInfo['status'] === 'complete' &&
-          tab.url.match(/google\.com/g)) {
-        chrome.tabs.onUpdated.removeListener(callback);
-        chrome.tabs.executeScript(
-            tab.id,
-            {'code': code},
-            function() {
-              chrome.tabs.remove(tabId);
-              setCompleted('doApplictionCacheAPIAccess');
-            });
-      }
-    }
-  );
-  openTab(defaultUrl);
-}
-
-// Accesses the HTML5 WebDatabase API from inside a content script.
-function doWebDatabaseAPIAccess() {
-  var code = 'var db = openDatabase("testdb", "1.0", "test database", ' +
-             '                      1024 * 1024);';
-  chrome.tabs.onUpdated.addListener(
-    function callback(tabId, changeInfo, tab) {
-      if (changeInfo['status'] === 'complete' &&
-          tab.url.match(/google\.com/g)) {
-        chrome.tabs.onUpdated.removeListener(callback);
-        chrome.tabs.executeScript(
-            tab.id,
-            {'code': code},
-            function() {
-              chrome.tabs.remove(tabId);
-              setCompleted('doWebDatabaseAPIAccess');
-            });
-      }
-    }
-  );
-  openTab(defaultUrl);
-}
-
-// Accesses the HTML5 Canvas API from inside a content script.
-function doCanvasAPIAccess() {
-  var code = 'var testCanvas = document.createElement("canvas"); ' +
-             'var testContext = testCanvas.getContext("2d");';
-  chrome.tabs.onUpdated.addListener(
-    function callback(tabId, changeInfo, tab) {
-      if (changeInfo['status'] === 'complete' &&
-          tab.url.match(/google\.com/g)) {
-        chrome.tabs.onUpdated.removeListener(callback);
-        chrome.tabs.executeScript(
-            tab.id,
-            {'code': code},
-            function() {
-              chrome.tabs.remove(tabId);
-              setCompleted('doCanvasAPIAccess');
-            });
+             tabId, {'code': code},
+             function() {
+               chrome.tabs.remove(tabId);
+               appendCompleted('executeDOMChangesOnTabUpdated');
+             });
       }
     }
   );
@@ -548,31 +345,18 @@ function doCanvasAPIAccess() {
 var fnMap = {};
 fnMap['api_call'] = makeApiCall;
 fnMap['special_call'] = makeSpecialApiCalls;
-fnMap['blocked_call'] = makeBlockedApiCall;
-fnMap['inject_cs'] = injectContentScript;
-fnMap['inject_blob'] = injectScriptBlob;
-fnMap['webrequest'] = doWebRequestModifications;
 fnMap['double'] = checkNoDoubleLogging;
 fnMap['app_bindings'] = checkAppCalls;
-fnMap['object_properties'] = getSetObjectProperties;
+fnMap['blocked_call'] = makeBlockedApiCall;
 fnMap['object_methods'] = callObjectMethod;
-fnMap['message_cs'] = sendMessageToCS;
 fnMap['message_self'] = sendMessageToSelf;
 fnMap['message_other'] = sendMessageToOther;
 fnMap['connect_other'] = connectToOther;
-fnMap['tab_ids'] = tabIdTranslation;
 fnMap['background_xhr'] = doBackgroundXHR;
-fnMap['cs_xhr'] = doContentScriptXHR;
-fnMap['location_access'] = doLocationAccess;
-fnMap['dom_mutation1'] = doDOMMutation1;
-fnMap['dom_mutation2'] = doDOMMutation2;
-fnMap['navigator_access'] = doNavigatorAPIAccess;
-fnMap['web_storage_access1'] = doWebStorageAPIAccess1;
-fnMap['web_storage_access2'] = doWebStorageAPIAccess2;
-fnMap['notification_access'] = doNotificationAPIAccess;
-fnMap['application_cache_access'] = doApplicationCacheAPIAccess;
-fnMap['web_database_access'] = doWebDatabaseAPIAccess;
-fnMap['canvas_access'] = doCanvasAPIAccess;
+fnMap['webrequest'] = doWebRequestModifications;
+fnMap['tab_ids'] = tabIdTranslation;
+fnMap['dom_tab_updated'] = executeDOMChangesOnTabUpdated;
+fnMap['api_tab_updated'] = executeApiCallsOnTabUpdated;
 
 // Setup function mapping for the automated tests.
 try {
@@ -602,16 +386,29 @@ function $(o) {
 }
 
 var completed = 0;
-function setCompleted(str) {
-  completed++;
+function resetStatus(str) {
+  completed = 0;
   if ($('status') != null) {
-    $('status').innerText = 'Completed ' + str;
+    $('status').innerText = '';
   }
-  console.log('[SUCCESS] ' + str);
 }
 
-function setError(str) {
-  $('status').innerText = 'Error: ' + str;
+function appendCompleted(str) {
+  if ($('status') != null) {
+    if (completed > 0) {
+      $('status').innerText += ', ' + str;
+    } else {
+      $('status').innerText = 'Completed: ' + str;
+    }
+  }
+  completed += 1;
+  console.log('Completed ' + str);
+}
+
+function appendError(str) {
+  if ($('status') != null) {
+    $('status').innerText += 'Error: ' + str;
+  }
 }
 
 // Set up the event listeners for use in manual run mode.
@@ -621,10 +418,12 @@ function setupEvents() {
       $(key).addEventListener('click', fnMap[key]);
     }
   }
-  $('incognito_checkbox').addEventListener(
-      'click',
-      function() { useIncognito = $('incognito_checkbox').checked; });
-  setCompleted('setup events');
+  if ($('incognito_checkbox') != null) {
+    $('incognito_checkbox').addEventListener(
+        'click',
+        function() { useIncognito = $('incognito_checkbox').checked; });
+  }
   completed = 0;
+  appendCompleted('setup events');
 }
 document.addEventListener('DOMContentLoaded', setupEvents);

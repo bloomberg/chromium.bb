@@ -22,51 +22,6 @@ testCases.push({
   ]
 });
 testCases.push({
-  func: function triggerBlockedCall() {
-    chrome.runtime.sendMessage('pknkgggnfecklokoggaggchhaebkajji',
-                               'blocked_call', function response() { });
-   },
-   expected_activity: []
-});
-testCases.push({
-  func: function triggerInjectCS() {
-    chrome.runtime.sendMessage('pknkgggnfecklokoggaggchhaebkajji',
-                               'inject_cs', function response() { });
-  },
-  expected_activity: [
-    'tabs.onUpdated',
-    'tabs.onUpdated',
-    'tabs.executeScript',
-    'tabs.remove'
-  ]
-});
-testCases.push({
-  func: function triggerInjectCSIncognito() {
-    chrome.runtime.sendMessage('pknkgggnfecklokoggaggchhaebkajji',
-                               'inject_cs_incognito', function response() { });
-  },
-  is_incognito: true,
-  expected_activity: [
-    'windows.create',
-    'tabs.onUpdated',
-    'tabs.onUpdated',
-    'tabs.executeScript',
-    'tabs.remove'
-  ]
-});
-testCases.push({
-  func: function triggerInsertBlob() {
-    chrome.runtime.sendMessage('pknkgggnfecklokoggaggchhaebkajji',
-                               'inject_blob', function response() { });
-  },
-  expected_activity: [
-    'tabs.onUpdated',
-    'tabs.onUpdated',
-    'tabs.executeScript',
-    'HTMLDocument.write',
-    'tabs.remove']
-});
-testCases.push({
   func: function triggerDouble() {
     chrome.runtime.sendMessage('pknkgggnfecklokoggaggchhaebkajji',
                                'double', function response() {});
@@ -85,14 +40,14 @@ testCases.push({
   ]
 });
 testCases.push({
-  func: function triggerObjectProperties() {
+  func: function triggerBlockedCall() {
     chrome.runtime.sendMessage('pknkgggnfecklokoggaggchhaebkajji',
-                               'object_properties', function response() { });
-  },
-  expected_activity: [
-    'tabs.onUpdated',
-    'tabs.onUpdated',
-    'tabs.remove']
+                               'blocked_call', function response() { });
+   },
+   // Blocked api calls only log the api module name and not the
+   // function, so this is intentionally 'management' rather than
+   // 'management.getAll'.
+   expected_activity: ['management']
 });
 testCases.push({
   func: function triggerObjectMethods() {
@@ -100,19 +55,6 @@ testCases.push({
                                'object_methods', function response() { });
   },
   expected_activity: ['storage.clear']
-});
-testCases.push({
-  func: function triggerMessageCS() {
-    chrome.runtime.sendMessage('pknkgggnfecklokoggaggchhaebkajji',
-                               'message_cs', function response() { });
-  },
-  expected_activity: [
-    'tabs.onUpdated',
-    'tabs.onUpdated',
-    'tabs.connect',
-    'tabs.sendMessage',
-    'tabs.remove'
-  ]
 });
 testCases.push({
   func: function triggerMessageSelf() {
@@ -142,166 +84,16 @@ testCases.push({
   expected_activity: ['runtime.connect']
 });
 testCases.push({
-  func: function triggerLocationAccess() {
+  func: function triggerBackgroundXHR() {
     chrome.runtime.sendMessage('pknkgggnfecklokoggaggchhaebkajji',
-                               'location_access', function response() { });
+                               'background_xhr', function response() { });
   },
   expected_activity: [
-    'tabs.onUpdated',
-    'tabs.onUpdated',
-    'tabs.executeScript',
-    'Window.location',
-    'Document.location',
-    'Window.location',
-    'Location.assign',
-    'Location.replace',
-    'tabs.remove'
+    'XMLHttpRequest.open',
+    'XMLHttpRequest.setRequestHeader'
   ]
 });
 testCases.push({
-  func: function triggerDomMutation1() {
-    chrome.runtime.sendMessage('pknkgggnfecklokoggaggchhaebkajji',
-                               'dom_mutation1', function response() { });
-  },
-  expected_activity: [
-    'tabs.onUpdated',
-    'tabs.onUpdated',
-    'tabs.executeScript',
-    'Document.createElement',
-    'Document.createElement',
-    'Document.location',
-    'Node.appendChild',
-    'Document.location',
-    'Document.location',
-    'Node.insertBefore',
-    'Document.location',
-    'Document.location',
-    'Node.replaceChild',
-    'Document.location',
-    'tabs.remove'
-  ]
-});
-testCases.push({
-  func: function triggerDomMutation2() {
-    chrome.runtime.sendMessage('pknkgggnfecklokoggaggchhaebkajji',
-                               'dom_mutation2', function response() { });
-  },
-  expected_activity: [
-    'tabs.onUpdated',
-    'tabs.onUpdated',
-    'tabs.executeScript',
-    'HTMLDocument.write',
-    'HTMLDocument.writeln',
-    'HTMLElement.innerHTML',
-    'tabs.remove'
-  ]
-});
-testCases.push({
-  func: function triggerNavigatorAccess() {
-    chrome.runtime.sendMessage('pknkgggnfecklokoggaggchhaebkajji',
-                               'navigator_access', function response() { });
-  },
-  expected_activity: [
-    'tabs.onUpdated',
-    'tabs.onUpdated',
-    'tabs.executeScript',
-    'Window.navigator',
-    'Geolocation.getCurrentPosition',
-    'tabs.remove'
-  ]
-});
-testCases.push({
-  func: function triggerWebStorageAccess1() {
-    chrome.runtime.sendMessage('pknkgggnfecklokoggaggchhaebkajji',
-                               'web_storage_access1', function response() { });
-  },
-  expected_activity: [
-    'tabs.onUpdated',
-    'tabs.onUpdated',
-    'tabs.executeScript',
-    'Window.sessionStorage',
-    'Storage.setItem',
-    'Storage.getItem',
-    'Storage.removeItem',
-    'Storage.clear',
-    'tabs.remove'
-  ]
-});
-testCases.push({
-  func: function triggerWebStorageAccess2() {
-    chrome.runtime.sendMessage('pknkgggnfecklokoggaggchhaebkajji',
-                               'web_storage_access2', function response() { });
-  },
-  expected_activity: [
-    'tabs.onUpdated',
-    'tabs.onUpdated',
-    'tabs.executeScript',
-    'Window.localStorage',
-    'Storage.setItem',
-    'Storage.getItem',
-    'Storage.removeItem',
-    'Storage.clear',
-    'tabs.remove'
-  ]
-});
-testCases.push({
-  func: function triggerNotificationAccess() {
-    chrome.runtime.sendMessage('pknkgggnfecklokoggaggchhaebkajji',
-                               'notification_access', function response() { });
-  },
-  expected_activity: [
-    'tabs.onUpdated',
-    'tabs.onUpdated',
-    'tabs.executeScript',
-    'Window.webkitNotifications',
-    'NotificationCenter.createNotification',
-    'tabs.remove'
-  ]
-});
-testCases.push({
-  func: function triggerApplicationCacheAccess() {
-    chrome.runtime.sendMessage('pknkgggnfecklokoggaggchhaebkajji',
-                               'application_cache_access',
-                               function response() { });
-  },
-  expected_activity: [
-    'tabs.onUpdated',
-    'tabs.onUpdated',
-    'tabs.executeScript',
-    'Window.applicationCache',
-    'tabs.remove'
-  ]
-});
-testCases.push({
-  func: function triggerWebDatabaseAccess() {
-    chrome.runtime.sendMessage('pknkgggnfecklokoggaggchhaebkajji',
-                               'web_database_access',
-                               function response() { });
-  },
-  expected_activity: [
-    'tabs.onUpdated',
-    'tabs.onUpdated',
-    'tabs.executeScript',
-    'Window.openDatabase',
-    'tabs.remove'
-  ]
-});
-testCases.push({
-  func: function triggerCanvasAccess() {
-    chrome.runtime.sendMessage('pknkgggnfecklokoggaggchhaebkajji',
-                               'canvas_access', function response() { });
-  },
-  expected_activity: [
-    'tabs.onUpdated',
-    'tabs.onUpdated',
-    'tabs.executeScript',
-    'Document.createElement',
-    'HTMLCanvasElement.getContext',
-    'tabs.remove'
-  ]
-});
-testCases.push({
-  name: 'tab_ids',
   func: function triggerTabIds() {
     chrome.runtime.sendMessage('pknkgggnfecklokoggaggchhaebkajji',
                                'tab_ids', function response() { });
@@ -312,11 +104,11 @@ testCases.push({
     'tabs.executeScript',
     'tabs.onUpdated',
     'tabs.onUpdated',
+    'tabs.move',
     'tabs.remove'
   ]
 });
 testCases.push({
-  name: 'tab_ids_incognito',
   func: function triggerTabIdsIncognito() {
     chrome.runtime.sendMessage('pknkgggnfecklokoggaggchhaebkajji',
                                'tab_ids_incognito', function response() { });
@@ -330,10 +122,10 @@ testCases.push({
     'windows.create',
     'tabs.onUpdated',
     'tabs.onUpdated',
+    'tabs.move',
     'tabs.remove'
   ]
 });
-
 testCases.push({
   func: function triggerWebRequest() {
     chrome.runtime.sendMessage('pknkgggnfecklokoggaggchhaebkajji',
@@ -353,7 +145,6 @@ testCases.push({
     'tabs.remove'
   ]
 });
-
 testCases.push({
   func: function triggerWebRequestIncognito() {
     chrome.runtime.sendMessage('pknkgggnfecklokoggaggchhaebkajji',
@@ -377,29 +168,174 @@ testCases.push({
 });
 
 testCases.push({
-  func: function triggerContentScriptXHR() {
+  func: function triggerApiCallsOnTabsUpdated() {
     chrome.runtime.sendMessage('pknkgggnfecklokoggaggchhaebkajji',
-                               'cs_xhr', function response() { });
+                               'api_tab_updated', function response() { });
+  },
+  expected_activity: [
+    'tabs.onUpdated',
+    'tabs.onUpdated',
+    'tabs.connect',
+    'tabs.sendMessage',
+    'tabs.executeScript',
+    'tabs.executeScript',
+    'HTMLDocument.write',
+    'tabs.remove'
+  ]
+});
+testCases.push({
+  func: function triggerApiCallsOnTabsUpdatedIncognito() {
+    chrome.runtime.sendMessage('pknkgggnfecklokoggaggchhaebkajji',
+                               'api_tab_updated_incognito',
+                               function response() { });
+  },
+  // TODO(mvrable): set this back to true to test the URL values when incognito
+  // cleaning is working correctly for HTMLDocument.write (crbug.com/253368).
+  is_incognito: false,
+  expected_activity: [
+    'windows.create',
+    'tabs.onUpdated',
+    'tabs.onUpdated',
+    'tabs.connect',
+    'tabs.sendMessage',
+    'tabs.executeScript',
+    'tabs.executeScript',
+    'HTMLDocument.write',
+    'tabs.remove'
+  ]
+});
+testCases.push({
+  func: function triggerDOMChangesOnTabsUpdated() {
+    chrome.runtime.sendMessage('pknkgggnfecklokoggaggchhaebkajji',
+                               'dom_tab_updated', function response() { });
   },
   expected_activity: [
     'tabs.onUpdated',
     'tabs.onUpdated',
     'tabs.executeScript',
+     // Location access
+    'Window.location',
+    'Document.location',
+    'Window.location',
+    'Location.assign',
+    'Location.replace',
+     // Dom mutations
+    'Document.createElement',
+    'Document.createElement',
+    'Document.location',
+    'Node.appendChild',
+    'Document.location',
+    'Document.location',
+    'Node.insertBefore',
+    'Document.location',
+    'Document.location',
+    'Node.replaceChild',
+    //'Document.location',
+    'HTMLDocument.write',
+    'HTMLDocument.writeln',
+    'HTMLElement.innerHTML',
+    // Navigator access
+    'Window.navigator',
+    'Geolocation.getCurrentPosition',
+    'Geolocation.watchPosition',
+    // Web store access - session storage
+    'Window.sessionStorage',
+    'Storage.setItem',
+    'Storage.getItem',
+    'Storage.removeItem',
+    'Storage.clear',
+    // Web store access - local storage
+    'Window.localStorage',
+    'Storage.setItem',
+    'Storage.getItem',
+    'Storage.removeItem',
+    'Storage.clear',
+    // Notification access
+    'Window.webkitNotifications',
+    'NotificationCenter.createNotification',
+    // Cache access
+    'Window.applicationCache',
+    // Web database access
+    'Window.openDatabase',
+    // Canvas access
+    'Document.createElement',
+    'HTMLCanvasElement.getContext',
+    // XHR from content script.
     'XMLHttpRequest.open',
     'XMLHttpRequest.setRequestHeader',
     'HTMLDocument.write',
+    // Close the tab.
     'tabs.remove'
   ]
 });
 
 testCases.push({
-  func: function triggerBackgroundXHR() {
+  func: function triggerDOMChangesOnTabsUpdated() {
     chrome.runtime.sendMessage('pknkgggnfecklokoggaggchhaebkajji',
-                               'background_xhr', function response() { });
+                               'dom_tab_updated_incognito',
+                               function response() { });
   },
+  // TODO(mvrable): set this back to true to test the URL values when incognito
+  // cleaning is working correctly for DOM logging (crbug.com/253368).
+  is_incognito: false,
   expected_activity: [
+    'windows.create',
+    'tabs.onUpdated',
+    'tabs.onUpdated',
+    'tabs.executeScript',
+     // Location access
+    'Window.location',
+    'Document.location',
+    'Window.location',
+    'Location.assign',
+    'Location.replace',
+     // Dom mutations
+    'Document.createElement',
+    'Document.createElement',
+    'Document.location',
+    'Node.appendChild',
+    'Document.location',
+    'Document.location',
+    'Node.insertBefore',
+    'Document.location',
+    'Document.location',
+    'Node.replaceChild',
+    //'Document.location',
+    'HTMLDocument.write',
+    'HTMLDocument.writeln',
+    'HTMLElement.innerHTML',
+    // Navigator access
+    'Window.navigator',
+    'Geolocation.getCurrentPosition',
+    'Geolocation.watchPosition',
+    // Web store access - session storage
+    'Window.sessionStorage',
+    'Storage.setItem',
+    'Storage.getItem',
+    'Storage.removeItem',
+    'Storage.clear',
+    // Web store access - local storage
+    'Window.localStorage',
+    'Storage.setItem',
+    'Storage.getItem',
+    'Storage.removeItem',
+    'Storage.clear',
+    // Notification access
+    'Window.webkitNotifications',
+    'NotificationCenter.createNotification',
+    // Cache access
+    'Window.applicationCache',
+    // Web database access
+    'Window.openDatabase',
+    // Canvas access
+    'Document.createElement',
+    'HTMLCanvasElement.getContext',
+    // XHR from content script.
     'XMLHttpRequest.open',
-    'XMLHttpRequest.setRequestHeader'
+    'XMLHttpRequest.setRequestHeader',
+    'HTMLDocument.write',
+    // Close the tab.
+    'tabs.remove'
   ]
 });
 
@@ -411,11 +347,14 @@ chrome.activityLogPrivate.onExtensionActivity.addListener(
       var activityId = activity['extensionId'];
       chrome.test.assertEq('pknkgggnfecklokoggaggchhaebkajji', activityId);
 
-      // Get the api call info from either the chrome activity or dom activity.
+      // Get the api call info from the chrome activity, dom activity or blocked
+      // chrome activity detail depending on what type of activity this is.
       var activityType = activity['activityType'];
       var activityDetailName = 'chromeActivityDetail';
       if (activity['activityType'] == 'dom') {
         activityDetailName = 'domActivityDetail';
+      } else if (activity['activityType'] == 'blocked_chrome') {
+        activityDetailName = 'blockedChromeActivityDetail';
       }
 
       // Check the api call is the one we expected next.
@@ -432,7 +371,9 @@ chrome.activityLogPrivate.onExtensionActivity.addListener(
         var url = activity[activityDetailName]['url'];
         if (url) {
           if (testCases[testCaseIndx].is_incognito) {
-            chrome.test.assertEq('http://incognito/', url);
+            chrome.test.assertEq('http://incognito/', url,
+                                 'URL was not anonymized for apiCall:' +
+                                 activity[activityDetailName]['apiCall']);
           } else {
             chrome.test.assertTrue(url != 'http://incognito/',
                                    'Non-incognito URL was anonymized');
