@@ -5,6 +5,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #include "base/basictypes.h"
+#include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
@@ -567,3 +568,16 @@ TEST_F(LoginDatabaseTest, VectorSerialization) {
   output = DeserializeVector(temp);
   EXPECT_THAT(output, Eq(vec));
 }
+
+#if defined(OS_POSIX)
+// Only the current user has permission to read the database.
+//
+// Only POSIX because GetPosixFilePermissions() only exists on POSIX.
+// This tests that sql::Connection::set_restrict_to_user() was called,
+// and that function is a noop on non-POSIX platforms in any case.
+TEST_F(LoginDatabaseTest, FilePermissions) {
+  int mode = file_util::FILE_PERMISSION_MASK;
+  EXPECT_TRUE(file_util::GetPosixFilePermissions(file_, &mode));
+  EXPECT_EQ((mode & file_util::FILE_PERMISSION_USER_MASK), mode);
+}
+#endif  // defined(OS_POSIX)

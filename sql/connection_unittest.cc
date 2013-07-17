@@ -71,6 +71,21 @@ void ErrorCallbackResetHelper(sql::Connection* db,
   EXPECT_GT(*counter, 0u);
 }
 
+#if defined(OS_POSIX)
+// Set a umask and restore the old mask on destruction.  Cribbed from
+// shared_memory_unittest.cc.  Used by POSIX-only UserPermission test.
+class ScopedUmaskSetter {
+ public:
+  explicit ScopedUmaskSetter(mode_t target_mask) {
+    old_umask_ = umask(target_mask);
+  }
+  ~ScopedUmaskSetter() { umask(old_umask_); }
+ private:
+  mode_t old_umask_;
+  DISALLOW_IMPLICIT_CONSTRUCTORS(ScopedUmaskSetter);
+};
+#endif
+
 class SQLConnectionTest : public testing::Test {
  public:
   SQLConnectionTest() {}
@@ -224,9 +239,6 @@ TEST_F(SQLConnectionTest, ErrorCallback) {
   {
     sql::ScopedErrorCallback sec(
         &db(), base::Bind(&sql::CaptureErrorCallback, &error));
-
-    // Inserting something other than a number into the primary key
-    // should result in the callback seeing SQLITE_MISMATCH.
     EXPECT_FALSE(db().Execute("INSERT INTO foo (id) VALUES (12)"));
     EXPECT_EQ(SQLITE_CONSTRAINT, error);
   }
@@ -242,9 +254,9 @@ TEST_F(SQLConnectionTest, ErrorCallback) {
   }
 
   // base::Bind() can curry arguments to be passed by const reference
-  // to the callback function.  If the callback function causes
-  // re/set_error_callback() to be called, the storage for those
-  // arguments can be deleted.
+  // to the callback function.  If the callback function calls
+  // re/set_error_callback(), the storage for those arguments can be
+  // deleted while the callback function is still executing.
   //
   // RefCounter() counts how many objects are live using an external
   // count.  The same counter is passed to the callback, so that it
@@ -670,5 +682,71 @@ TEST_F(SQLConnectionTest, Delete) {
   EXPECT_FALSE(base::PathExists(db_path()));
   EXPECT_FALSE(base::PathExists(journal));
 }
+
+#if defined(OS_POSIX)
+// Test that set_restrict_to_user() trims database permissions so that
+// only the owner (and root) can read.
+TEST_F(SQLConnectionTest, UserPermission) {
+  // If the bots all had a restrictive umask setting such that
+  // databases are always created with only the owner able to read
+  // them, then the code could break without breaking the tests.
+  // Temporarily provide a more permissive umask.
+  db().Close();
+  sql::Connection::Delete(db_path());
+  ASSERT_FALSE(base::PathExists(db_path()));
+  ScopedUmaskSetter permissive_umask(S_IWGRP | S_IWOTH);
+  ASSERT_TRUE(db().Open(db_path()));
+
+  // Cause the journal file to be created.  If the default
+  // journal_mode is changed back to DELETE, then parts of this test
+  // will need to be updated.
+  EXPECT_TRUE(db().Execute("CREATE TABLE x (x)"));
+
+  base::FilePath journal(db_path().value() + FILE_PATH_LITERAL("-journal"));
+  int mode;
+
+  // Given a permissive umask, the database is created with permissive
+  // read access for the database and journal.
+  ASSERT_TRUE(base::PathExists(db_path()));
+  ASSERT_TRUE(base::PathExists(journal));
+  mode = file_util::FILE_PERMISSION_MASK;
+  EXPECT_TRUE(file_util::GetPosixFilePermissions(db_path(), &mode));
+  ASSERT_NE((mode & file_util::FILE_PERMISSION_USER_MASK), mode);
+  mode = file_util::FILE_PERMISSION_MASK;
+  EXPECT_TRUE(file_util::GetPosixFilePermissions(journal, &mode));
+  ASSERT_NE((mode & file_util::FILE_PERMISSION_USER_MASK), mode);
+
+  // Re-open with restricted permissions and verify that the modes
+  // changed for both the main database and the journal.
+  db().Close();
+  db().set_restrict_to_user();
+  ASSERT_TRUE(db().Open(db_path()));
+  ASSERT_TRUE(base::PathExists(db_path()));
+  ASSERT_TRUE(base::PathExists(journal));
+  mode = file_util::FILE_PERMISSION_MASK;
+  EXPECT_TRUE(file_util::GetPosixFilePermissions(db_path(), &mode));
+  ASSERT_EQ((mode & file_util::FILE_PERMISSION_USER_MASK), mode);
+  mode = file_util::FILE_PERMISSION_MASK;
+  EXPECT_TRUE(file_util::GetPosixFilePermissions(journal, &mode));
+  ASSERT_EQ((mode & file_util::FILE_PERMISSION_USER_MASK), mode);
+
+  // Delete and re-create the database, the restriction should still apply.
+  db().Close();
+  sql::Connection::Delete(db_path());
+  ASSERT_TRUE(db().Open(db_path()));
+  ASSERT_TRUE(base::PathExists(db_path()));
+  ASSERT_FALSE(base::PathExists(journal));
+  mode = file_util::FILE_PERMISSION_MASK;
+  EXPECT_TRUE(file_util::GetPosixFilePermissions(db_path(), &mode));
+  ASSERT_EQ((mode & file_util::FILE_PERMISSION_USER_MASK), mode);
+
+  // Verify that journal creation inherits the restriction.
+  EXPECT_TRUE(db().Execute("CREATE TABLE x (x)"));
+  ASSERT_TRUE(base::PathExists(journal));
+  mode = file_util::FILE_PERMISSION_MASK;
+  EXPECT_TRUE(file_util::GetPosixFilePermissions(journal, &mode));
+  ASSERT_EQ((mode & file_util::FILE_PERMISSION_USER_MASK), mode);
+}
+#endif  // defined(OS_POSIX)
 
 }  // namespace

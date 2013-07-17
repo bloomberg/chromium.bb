@@ -168,6 +168,7 @@ Connection::Connection()
       page_size_(0),
       cache_size_(0),
       exclusive_locking_(false),
+      restrict_to_user_(false),
       transaction_nesting_(0),
       needs_rollback_(false),
       in_memory_(false),
@@ -731,6 +732,30 @@ bool Connection::OpenInternal(const std::string& file_name,
       return OpenInternal(file_name, NO_RETRY);
     return false;
   }
+
+  // TODO(shess): OS_WIN support?
+#if defined(OS_POSIX)
+  if (restrict_to_user_) {
+    DCHECK_NE(file_name, std::string(":memory"));
+    base::FilePath file_path(file_name);
+    int mode = 0;
+    // TODO(shess): Arguably, failure to retrieve and change
+    // permissions should be fatal if the file exists.
+    if (file_util::GetPosixFilePermissions(file_path, &mode)) {
+      mode &= file_util::FILE_PERMISSION_USER_MASK;
+      file_util::SetPosixFilePermissions(file_path, mode);
+
+      // SQLite sets the permissions on these files from the main
+      // database on create.  Set them here in case they already exist
+      // at this point.  Failure to set these permissions should not
+      // be fatal unless the file doesn't exist.
+      base::FilePath journal_path(file_name + FILE_PATH_LITERAL("-journal"));
+      base::FilePath wal_path(file_name + FILE_PATH_LITERAL("-wal"));
+      file_util::SetPosixFilePermissions(journal_path, mode);
+      file_util::SetPosixFilePermissions(wal_path, mode);
+    }
+  }
+#endif  // defined(OS_POSIX)
 
   // SQLite uses a lookaside buffer to improve performance of small mallocs.
   // Chromium already depends on small mallocs being efficient, so we disable

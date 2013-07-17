@@ -96,6 +96,7 @@ bool LoginDatabase::Init(const base::FilePath& db_path) {
   db_.set_page_size(2048);
   db_.set_cache_size(32);
   db_.set_exclusive_locking();
+  db_.set_restrict_to_user();
 
   if (!db_.Open(db_path)) {
     LOG(WARNING) << "Unable to open the password store database.";

@@ -116,6 +116,12 @@ class SQL_EXPORT Connection {
   // This must be called before Open() to have an effect.
   void set_exclusive_locking() { exclusive_locking_ = true; }
 
+  // Call to cause Open() to restrict access permissions of the
+  // database file to only the owner.
+  // TODO(shess): Currently only supported on OS_POSIX, is a noop on
+  // other platforms.
+  void set_restrict_to_user() { restrict_to_user_ = true; }
+
   // Set an error-handling callback.  On errors, the error number (and
   // statement, if available) will be passed to the callback.
   //
@@ -488,6 +494,7 @@ class SQL_EXPORT Connection {
   int page_size_;
   int cache_size_;
   bool exclusive_locking_;
+  bool restrict_to_user_;
 
   // All cached statements. Keeping a reference to these statements means that
   // they'll remain active.
