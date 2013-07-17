@@ -1,6 +1,5 @@
 include_rules = [
   "+native_client/src/include",
-  "+third_party/angle",
   "+third_party/angle_dx11",
   "+third_party/amd",
   "+third_party/re2",

@@ -29,13 +29,7 @@
 #include "gpu/config/gpu_feature_type.h"
 #include "gpu/config/gpu_info.h"
 #include "grit/content_resources.h"
-
-
-#if defined(ANGLE_DX11)
 #include "third_party/angle_dx11/src/common/version.h"
-#else
-#include "third_party/angle/src/common/version.h"
-#endif
 
 namespace content {
 namespace {

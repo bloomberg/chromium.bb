@@ -1383,8 +1383,8 @@
             }],
             ['OS=="win"', {
               'dependencies': [
-                '<(angle_path)/src/build_angle.gyp:libEGL',
-                '<(angle_path)/src/build_angle.gyp:libGLESv2',
+                '../third_party/angle_dx11/src/build_angle.gyp:libEGL',
+                '../third_party/angle_dx11/src/build_angle.gyp:libGLESv2',
               ],
               'sources': [
                 'tools/shader_bench/window_win.cc',

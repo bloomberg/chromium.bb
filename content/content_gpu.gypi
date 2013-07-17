@@ -24,12 +24,12 @@
     ['OS=="win"', {
       'include_dirs': [
         '<(DEPTH)/third_party/khronos',
-        '<(angle_path)/src',
+        '<(DEPTH)/third_party/angle_dx11/src',
         '<(DEPTH)/third_party/wtl/include',
       ],
       'dependencies': [
-        '<(angle_path)/src/build_angle.gyp:libEGL',
-        '<(angle_path)/src/build_angle.gyp:libGLESv2',
+        '../third_party/angle_dx11/src/build_angle.gyp:libEGL',
+        '../third_party/angle_dx11/src/build_angle.gyp:libGLESv2',
       ],
       'link_settings': {
         'libraries': [

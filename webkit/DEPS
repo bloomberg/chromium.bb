@@ -11,7 +11,6 @@ include_rules = [
   "+cc",
   "+grit",  # For generated headers
   "+skia",
-  "+third_party/angle",
   "+third_party/angle_dx11",
   "+third_party/hyphen",
   "+third_party/leveldatabase",
