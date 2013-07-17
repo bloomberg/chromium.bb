@@ -21,6 +21,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/mac/dock.h"
 #include "chrome/browser/ui/web_applications/web_app_ui.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_constants.h"
@@ -39,6 +40,9 @@
 #include "ui/gfx/image/image_family.h"
 
 namespace {
+
+// Launch Services Key to run as an agent app, which doesn't launch in the dock.
+NSString* const kLSUIElement = @"LSUIElement";
 
 class ScopedCarbonHandle {
  public:
@@ -414,6 +418,12 @@ bool WebAppShortcutCreator::CreateShortcuts() {
   if (success_count != paths.size())
     return false;
 
+  if (info_.extension_id == app_mode::kAppListModeId) {
+    NSString* internal_app_list_app_path = base::SysUTF8ToNSString(
+        app_data_path_.Append(GetShortcutName()).AsUTF8Unsafe());
+    dock::AddIcon(internal_app_list_app_path, nil);
+  }
+
   RevealAppShimInFinder();
   return true;
 }
@@ -517,6 +527,11 @@ bool WebAppShortcutCreator::UpdatePlist(const base::FilePath& app_path) const {
             forKey:app_mode::kCrAppModeProfileNameKey];
   [plist setObject:[NSNumber numberWithBool:YES]
             forKey:app_mode::kLSHasLocalizedDisplayNameKey];
+  if (info_.extension_id == app_mode::kAppListModeId) {
+    // Prevent the app list from bouncing in the dock, and getting a run light.
+    [plist setObject:[NSNumber numberWithBool:YES]
+              forKey:kLSUIElement];
+  }
 
   base::FilePath app_name = app_path.BaseName().RemoveExtension();
   [plist setObject:base::mac::FilePathToNSString(app_name)
