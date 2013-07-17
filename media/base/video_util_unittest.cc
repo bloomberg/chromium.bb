@@ -344,6 +344,8 @@ TEST_F(VideoUtilTest, ComputeLetterboxRegion) {
   EXPECT_EQ(gfx::Rect(0, 250000000, 2000000000, 1500000000),
             ComputeLetterboxRegion(gfx::Rect(0, 0, 2000000000, 2000000000),
                                    gfx::Size(40000, 30000)));
+  EXPECT_TRUE(ComputeLetterboxRegion(gfx::Rect(0, 0, 2000000000, 2000000000),
+                                     gfx::Size(0, 0)).IsEmpty());
 }
 
 TEST_F(VideoUtilTest, LetterboxYUV) {

@@ -72,7 +72,8 @@ MEDIA_EXPORT void RotatePlaneByPixels(
     bool flip_horiz);
 
 // Return the largest centered rectangle with the same aspect ratio of |content|
-// that fits entirely inside of |bounds|.
+// that fits entirely inside of |bounds|.  If |content| is empty, its aspect
+// ratio would be undefined; and in this case an empty Rect would be returned.
 MEDIA_EXPORT gfx::Rect ComputeLetterboxRegion(const gfx::Rect& bounds,
                                               const gfx::Size& content);
 

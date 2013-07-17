@@ -646,7 +646,6 @@ base::Closure CompositingIOSurfaceMac::CopyToVideoFrameWithinContext(
                               region_in_frame.y() & ~1,
                               region_in_frame.width() & ~1,
                               region_in_frame.height() & ~1);
-  DCHECK(!region_in_frame.IsEmpty());
   DCHECK_LE(region_in_frame.right(), target->coded_size().width());
   DCHECK_LE(region_in_frame.bottom(), target->coded_size().height());
 
@@ -830,6 +829,10 @@ base::Closure CompositingIOSurfaceMac::CopyToSelectedOutputWithinContext(
       "output", bitmap_output ? "SkBitmap (ARGB)" : "VideoFrame (YV12)",
       "async_readback", async_copy);
 
+  const gfx::Rect src_rect = IntersectWithIOSurface(src_pixel_subrect);
+  if (src_rect.IsEmpty() || dst_pixel_rect.IsEmpty())
+    return base::Bind(done_callback, false);
+
   CopyContext* copy_context;
   if (copy_context_pool_.empty()) {
     // Limit the maximum number of simultaneous copies to two.  Rationale:
@@ -851,7 +854,6 @@ base::Closure CompositingIOSurfaceMac::CopyToSelectedOutputWithinContext(
     return base::Bind(done_callback, false);
 
   // Send transform commands to the GPU.
-  const gfx::Rect src_rect = IntersectWithIOSurface(src_pixel_subrect);
   copy_context->num_outputs = 0;
   if (bitmap_output) {
     if (copy_context->transformer->ResizeBilinear(

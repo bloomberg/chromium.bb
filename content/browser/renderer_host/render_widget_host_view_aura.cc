@@ -1807,6 +1807,22 @@ void RenderWidgetHostViewAura::CopyFromCompositingSurfaceHasResultForVideo(
   if (result->size().IsEmpty())
     return;
 
+  // Compute the dest size we want after the letterboxing resize. Make the
+  // coordinates and sizes even because we letterbox in YUV space
+  // (see CopyRGBToVideoFrame). They need to be even for the UV samples to
+  // line up correctly.
+  // The video frame's coded_size() and the result's size() are both physical
+  // pixels.
+  gfx::Rect region_in_frame =
+      media::ComputeLetterboxRegion(gfx::Rect(video_frame->coded_size()),
+                                    result->size());
+  region_in_frame = gfx::Rect(region_in_frame.x() & ~1,
+                              region_in_frame.y() & ~1,
+                              region_in_frame.width() & ~1,
+                              region_in_frame.height() & ~1);
+  if (region_in_frame.IsEmpty())
+    return;
+
   // We only handle texture readbacks for now. If the compositor is in software
   // mode, we could produce a software-backed VideoFrame here as well.
   if (!result->HasTexture())
@@ -1821,20 +1837,6 @@ void RenderWidgetHostViewAura::CopyFromCompositingSurfaceHasResultForVideo(
   DCHECK(texture_mailbox->IsTexture());
   if (!texture_mailbox->IsTexture())
     return;
-
-  // Compute the dest size we want after the letterboxing resize. Make the
-  // coordinates and sizes even because we letterbox in YUV space
-  // (see CopyRGBToVideoFrame). They need to be even for the UV samples to
-  // line up correctly.
-  // The video frame's coded_size() and the result's size() are both physical
-  // pixels.
-  gfx::Rect region_in_frame =
-      media::ComputeLetterboxRegion(gfx::Rect(video_frame->coded_size()),
-                                    result->size());
-  region_in_frame = gfx::Rect(region_in_frame.x() & ~1,
-                              region_in_frame.y() & ~1,
-                              region_in_frame.width() & ~1,
-                              region_in_frame.height() & ~1);
 
   gfx::Rect result_rect(result->size());
 

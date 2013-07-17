@@ -578,6 +578,8 @@ bool AcceleratedPresenter::DoCopyToYUV(
   // the requested src subset. Clip to the actual back buffer.
   gfx::Rect src_subrect = requested_src_subrect;
   src_subrect.Intersect(gfx::Rect(back_buffer_size));
+  if (src_subrect.IsEmpty())
+    return false;
 
   base::win::ScopedComPtr<IDirect3DSurface9> resized;
   base::win::ScopedComPtr<IDirect3DTexture9> resized_as_texture;

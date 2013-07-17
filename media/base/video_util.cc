@@ -256,6 +256,11 @@ void RotatePlaneByPixels(
 
 gfx::Rect ComputeLetterboxRegion(const gfx::Rect& bounds,
                                  const gfx::Size& content) {
+  // If |content| has an undefined aspect ratio, let's not try to divide by
+  // zero.
+  if (content.IsEmpty())
+    return gfx::Rect();
+
   int64 x = static_cast<int64>(content.width()) * bounds.height();
   int64 y = static_cast<int64>(content.height()) * bounds.width();
 
