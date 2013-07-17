@@ -82,7 +82,8 @@ void InstallTracker::Observe(int type,
   switch (type) {
     case chrome::NOTIFICATION_EXTENSION_INSTALLED: {
       const Extension* extension =
-          content::Details<const Extension>(details).ptr();
+          content::Details<const InstalledExtensionInfo>(details).ptr()->
+              extension;
       FOR_EACH_OBSERVER(InstallObserver, observers_,
                         OnExtensionInstalled(extension));
       break;
