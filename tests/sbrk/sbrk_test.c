@@ -22,7 +22,7 @@
  * rather than testing any libc wrappers for it.
  */
 
-static struct nacl_irt_memory irt_memory;
+static struct nacl_irt_memory_v0_2 irt_memory;
 
 static void *get_break(void) {
   void *addr = NULL;

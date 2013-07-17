@@ -111,13 +111,22 @@ void __libnacl_irt_init(Elf32_auxv_t *auxv) {
   DO_QUERY(NACL_IRT_BASIC_v0_1, basic);
   DO_QUERY(NACL_IRT_FDIO_v0_1, fdio);
   DO_QUERY(NACL_IRT_FILENAME_v0_1, filename);
-  if (!__libnacl_irt_query(NACL_IRT_MEMORY_v0_2,
+  if (!__libnacl_irt_query(NACL_IRT_MEMORY_v0_3,
                            &__libnacl_irt_memory,
                            sizeof(__libnacl_irt_memory))) {
-    __libnacl_mandatory_irt_query(NACL_IRT_MEMORY_v0_1,
-                                  &__libnacl_irt_memory,
-                                  sizeof(struct nacl_irt_memory_v0_1));
-    __libnacl_irt_memory.mprotect = __libnacl_irt_mprotect;
+    /* Fall back to trying the old version, before sysbrk() was removed. */
+    struct nacl_irt_memory_v0_2 old_irt_memory;
+    if (!__libnacl_irt_query(NACL_IRT_MEMORY_v0_2,
+                             &old_irt_memory,
+                             sizeof(old_irt_memory))) {
+      /* Fall back to trying an older version, before mprotect() was added. */
+      __libnacl_mandatory_irt_query(NACL_IRT_MEMORY_v0_1,
+                                    &old_irt_memory,
+                                    sizeof(struct nacl_irt_memory_v0_1));
+      __libnacl_irt_memory.mprotect = __libnacl_irt_mprotect;
+    }
+    __libnacl_irt_memory.mmap = old_irt_memory.mmap;
+    __libnacl_irt_memory.munmap = old_irt_memory.munmap;
   }
   DO_QUERY(NACL_IRT_TLS_v0_1, tls);
 }

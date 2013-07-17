@@ -23,12 +23,19 @@ const int kAnonymousFiledesc = -1;
  */
 void test_memory_interface_prefix(void) {
   struct nacl_irt_memory_v0_1 m1;
-  struct nacl_irt_memory m2;
+  struct nacl_irt_memory_v0_2 m2;
+  struct nacl_irt_memory m3;
   void *addr;
   int rc;
 
   rc = nacl_interface_query(NACL_IRT_MEMORY_v0_1, &m1, sizeof m1);
   assert(rc == sizeof m1);
+
+  rc = nacl_interface_query(NACL_IRT_MEMORY_v0_2, &m2, sizeof m2);
+  assert(rc == sizeof m2);
+
+  rc = nacl_interface_query(NACL_IRT_MEMORY_v0_3, &m3, sizeof m3);
+  assert(rc == sizeof m3);
 
   /* Verify that v0.1 mmap ignores PROT_EXEC  */
   addr = 0;
@@ -41,8 +48,6 @@ void test_memory_interface_prefix(void) {
   /* Return value is actually new address and not a negative return code.  */
   assert(0xffff0000u > (uint32_t)rc);
 
-  rc = nacl_interface_query(NACL_IRT_MEMORY_v0_2, &m2, sizeof m2);
-  assert(rc == sizeof m2);
 
   /* Verify that v0.2 mmap does not ignore PROT_EXEC  */
   addr = 0;
@@ -55,9 +60,13 @@ void test_memory_interface_prefix(void) {
   assert(rc = -EINVAL);
 
   /* mmap is different, everything else should be the same.  */
-  m2.mmap = m1.mmap;
-
+  m1.mmap = m2.mmap;
   assert(memcmp(&m1, &m2, sizeof m1) == 0);
+
+  /* v0.3 is the same as v0.2, but with the deprecated sysbrk() removed. */
+  assert(m3.mmap == m2.mmap);
+  assert(m3.munmap == m2.munmap);
+  assert(m3.mprotect == m2.mprotect);
 }
 
 int main(void) {

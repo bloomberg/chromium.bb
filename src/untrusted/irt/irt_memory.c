@@ -66,8 +66,14 @@ const struct nacl_irt_memory_v0_1 nacl_irt_memory_v0_1 = {
   nacl_irt_munmap,
 };
 
-const struct nacl_irt_memory nacl_irt_memory = {
+const struct nacl_irt_memory_v0_2 nacl_irt_memory_v0_2 = {
   nacl_irt_sysbrk,
+  nacl_irt_mmap,
+  nacl_irt_munmap,
+  nacl_irt_mprotect,
+};
+
+const struct nacl_irt_memory nacl_irt_memory = {
   nacl_irt_mmap,
   nacl_irt_munmap,
   nacl_irt_mprotect,
