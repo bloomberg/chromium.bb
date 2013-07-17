@@ -117,19 +117,27 @@ TEST(GaloisHash, TestCases) {
   }
 }
 
-TEST(GaloisHash, TestCasesByteAtATime) {
+TEST(GaloisHash, VaryLengths) {
   uint8 out[16];
 
-  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
-    const TestCase& test = kTestCases[i];
+  for (size_t chunk_size = 1; chunk_size < 16; chunk_size++) {
+    for (size_t i = 0; i < arraysize(kTestCases); ++i) {
+      const TestCase& test = kTestCases[i];
 
-    GaloisHash hash(test.key);
-    for (size_t i = 0; i < test.additional_length; ++i)
-      hash.UpdateAdditional(test.additional + i, 1);
-    for (size_t i = 0; i < test.ciphertext_length; ++i)
-      hash.UpdateCiphertext(test.ciphertext + i, 1);
-    hash.Finish(out, sizeof(out));
-    EXPECT_TRUE(0 == memcmp(out, test.expected, 16));
+      GaloisHash hash(test.key);
+      for (size_t i = 0; i < test.additional_length;) {
+        size_t n = std::min(test.additional_length - i, chunk_size);
+        hash.UpdateAdditional(test.additional + i, n);
+        i += n;
+      }
+      for (size_t i = 0; i < test.ciphertext_length;) {
+        size_t n = std::min(test.ciphertext_length - i, chunk_size);
+        hash.UpdateCiphertext(test.ciphertext + i, n);
+        i += n;
+      }
+      hash.Finish(out, sizeof(out));
+      EXPECT_TRUE(0 == memcmp(out, test.expected, 16));
+    }
   }
 }
 

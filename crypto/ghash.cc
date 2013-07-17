@@ -229,7 +229,7 @@ void GaloisHash::UpdateBlocks(const uint8* bytes, size_t num_blocks) {
 
 void GaloisHash::Update(const uint8* data, size_t length) {
   if (buf_used_ > 0) {
-    const size_t n = std::min(length, buf_used_);
+    const size_t n = std::min(length, sizeof(buf_) - buf_used_);
     memcpy(&buf_[buf_used_], data, n);
     buf_used_ += n;
     length -= n;
