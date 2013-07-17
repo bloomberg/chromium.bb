@@ -69,7 +69,6 @@
 #include "third_party/WebKit/public/platform/WebCString.h"
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
 #include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/web/WebSecurityPolicy.h"
 #include "ui/base/events/event_utils.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/menu_model.h"
@@ -96,7 +95,6 @@ using content::SSLStatus;
 using content::WebContents;
 using WebKit::WebCString;
 using WebKit::WebReferrerPolicy;
-using WebKit::WebSecurityPolicy;
 using WebKit::WebString;
 
 namespace {
@@ -157,6 +155,43 @@ ContextMenuModel* ConvertMenuModel(const ui::MenuModel* ui_model) {
 
   return new_model;
 }
+
+// Generates a referrer header used by the AutomationProvider on navigation.
+// Based on code from
+// http://src.chromium.org/viewvc/blink/trunk/Source/weborigin/SecurityPolicy.cpp?revision=151498
+bool ShouldHideReferrer(const GURL& url, const GURL& referrer) {
+  bool referrer_is_secure = referrer.SchemeIsSecure();
+  bool referrer_is_web_url = referrer_is_secure || referrer.SchemeIs("http");
+
+  if (!referrer_is_web_url)
+    return true;
+
+  if (!referrer_is_secure)
+    return false;
+
+  return !url.SchemeIsSecure();
+}
+
+GURL GenerateReferrer(WebKit::WebReferrerPolicy policy,
+                      const GURL& url,
+                      const GURL& referrer) {
+  if (referrer.is_empty())
+    return GURL();
+
+  switch (policy) {
+    case WebKit::WebReferrerPolicyNever:
+      return GURL();
+    case WebKit::WebReferrerPolicyAlways:
+      return referrer;
+    case WebKit::WebReferrerPolicyOrigin:
+      return referrer.GetOrigin();
+    default:
+      break;
+  }
+
+  return ShouldHideReferrer(url, referrer) ? GURL() : referrer;
+}
+
 
 }  // namespace
 
@@ -605,10 +640,9 @@ WebContents* ExternalTabContainerWin::OpenURLFromTab(
     case NEW_WINDOW:
     case SAVE_TO_DISK:
       if (automation_) {
-        GURL referrer = GURL(WebSecurityPolicy::generateReferrerHeader(
-            params.referrer.policy,
-            params.url,
-            WebString::fromUTF8(params.referrer.url.spec())).utf8());
+        GURL referrer = GenerateReferrer(params.referrer.policy,
+                                         params.url,
+                                         params.referrer.url);
         automation_->Send(new AutomationMsg_OpenURL(tab_handle_,
                                                     params.url,
                                                     referrer,

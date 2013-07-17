@@ -113,6 +113,5 @@ include_rules = [
   # These should be burned down. http://crbug.com/237267
   "!third_party/WebKit/public/web/WebKit.h",
   "!third_party/WebKit/public/web/WebSecurityOrigin.h",
-  "!third_party/WebKit/public/web/WebSecurityPolicy.h",
   "!third_party/WebKit/public/web/WebView.h",
 ]
