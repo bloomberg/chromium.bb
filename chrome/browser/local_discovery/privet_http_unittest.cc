@@ -138,7 +138,8 @@ class MockRegisterDelegate : public PrivetRegisterOperation::Delegate {
   ~MockRegisterDelegate() {
   }
 
-  MOCK_METHOD1(OnPrivetRegisterClaimURL, void(const GURL& url));
+  MOCK_METHOD2(OnPrivetRegisterClaimToken, void(const std::string& token,
+                                                const GURL& url));
 
   virtual void OnPrivetRegisterError(
       const std::string& action,
@@ -311,7 +312,8 @@ TEST_F(PrivetRegisterTest, RegisterSuccessSimple) {
            "action=start&user=example@google.com"),
       kSampleRegisterStartResponse));
 
-  EXPECT_CALL(register_delegate_, OnPrivetRegisterClaimURL(
+  EXPECT_CALL(register_delegate_, OnPrivetRegisterClaimToken(
+      "MySampleToken",
       GURL("https://domain.com/SoMeUrL")));
 
   EXPECT_TRUE(SuccessfulResponseToURL(
@@ -364,8 +366,8 @@ TEST_F(PrivetRegisterTest, RegisterXSRFFailure) {
       GURL("http://10.0.0.8:6006/privet/info"),
       kSampleInfoResponse));
 
-  EXPECT_CALL(register_delegate_, OnPrivetRegisterClaimURL(
-      GURL("https://domain.com/SoMeUrL")));
+  EXPECT_CALL(register_delegate_, OnPrivetRegisterClaimToken(
+      "MySampleToken", GURL("https://domain.com/SoMeUrL")));
 
   EXPECT_TRUE(SuccessfulResponseToURL(
       GURL("http://10.0.0.8:6006/privet/register?"

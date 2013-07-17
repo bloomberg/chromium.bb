@@ -51,7 +51,8 @@ class PrivetRegisterOperation {
     ~Delegate() {}
 
     // Called when a user needs to claim the printer by visiting the given URL.
-    virtual void OnPrivetRegisterClaimURL(const GURL& url) = 0;
+    virtual void OnPrivetRegisterClaimToken(const std::string& token,
+                                            const GURL& url) = 0;
 
     // Called in case of an error while registering.  |action| is the
     // registration action taken during the error. |reason| is the reason for

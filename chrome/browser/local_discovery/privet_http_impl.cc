@@ -191,8 +191,11 @@ void PrivetRegisterOperationImpl::StartResponse(
 void PrivetRegisterOperationImpl::GetClaimTokenResponse(
     const base::DictionaryValue& value) {
   std::string claimUrl;
-  if (value.GetString(kPrivetKeyClaimURL, &claimUrl)) {
-    delegate_->OnPrivetRegisterClaimURL(GURL(claimUrl));
+  std::string claimToken;
+  bool got_url = value.GetString(kPrivetKeyClaimURL, &claimUrl);
+  bool got_token = value.GetString(kPrivetKeyClaimToken, &claimToken);
+  if (got_url || got_token) {
+    delegate_->OnPrivetRegisterClaimToken(claimToken, GURL(claimUrl));
   } else {
     delegate_->OnPrivetRegisterError(current_action_,
                                      FAILURE_MALFORMED_RESPONSE,

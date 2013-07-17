@@ -11,6 +11,7 @@ extern const char kPrivetKeyError[];
 extern const char kPrivetInfoKeyToken[];
 extern const char kPrivetKeyDeviceID[];
 extern const char kPrivetKeyClaimURL[];
+extern const char kPrivetKeyClaimToken[];
 extern const char kPrivetKeyTimeout[];
 
 extern const char kPrivetErrorDeviceBusy[];

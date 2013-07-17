@@ -10,6 +10,7 @@ const char kPrivetKeyError[] = "error";
 const char kPrivetInfoKeyToken[] = "x-privet-token";
 const char kPrivetKeyDeviceID[] = "device_id";
 const char kPrivetKeyClaimURL[] = "claim_url";
+const char kPrivetKeyClaimToken[] = "token";
 const char kPrivetKeyTimeout[] = "timeout";
 
 const char kPrivetErrorDeviceBusy[] = "device_busy";
