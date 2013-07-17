@@ -16,6 +16,32 @@
 
 namespace policy {
 
+namespace {
+
+const char kLoginScreenPowerManagementPolicy[] =
+    "{"
+    "  \"AC\": {"
+    "    \"Delays\": {"
+    "      \"ScreenDim\": 5000,"
+    "      \"ScreenOff\": 7000,"
+    "      \"Idle\": 9000"
+    "    },"
+    "    \"IdleAction\": \"DoNothing\""
+    "  },"
+    "  \"Battery\": {"
+    "    \"Delays\": {"
+    "      \"ScreenDim\": 1000,"
+    "      \"ScreenOff\": 3000,"
+    "      \"Idle\": 4000"
+    "    },"
+    "    \"IdleAction\": \"DoNothing\""
+    "  },"
+    "  \"LidCloseAction\": \"DoNothing\","
+    "  \"UserActivityScreenDimDelayScale\": 300"
+    "}";
+
+}  // namespace
+
 TEST(NetworkConfigurationPolicyHandlerTest, Empty) {
   PolicyMap policy_map;
   scoped_ptr<NetworkConfigurationPolicyHandler> handler(
@@ -140,6 +166,56 @@ TEST(PinnedLauncherAppsPolicyHandler, PrefTranslation) {
   handler.ApplyPolicySettings(policy_map, &prefs);
   EXPECT_TRUE(prefs.GetValue(prefs::kPinnedLauncherApps, &value));
   EXPECT_TRUE(base::Value::Equals(&expected_pinned_apps, value));
+}
+
+TEST(LoginScreenPowerManagementPolicyHandlerTest, Empty) {
+  PolicyMap policy_map;
+  LoginScreenPowerManagementPolicyHandler handler;
+  PolicyErrorMap errors;
+  EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
+  EXPECT_TRUE(errors.GetErrors(key::kDeviceLoginScreenPowerManagement).empty());
+}
+
+TEST(LoginScreenPowerManagementPolicyHandlerTest, ValidPolicy) {
+  PolicyMap policy_map;
+  policy_map.Set(key::kDeviceLoginScreenPowerManagement,
+                 POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER,
+                 Value::CreateStringValue(kLoginScreenPowerManagementPolicy),
+                 NULL);
+  LoginScreenPowerManagementPolicyHandler handler;
+  PolicyErrorMap errors;
+  EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
+  EXPECT_TRUE(errors.GetErrors(key::kDeviceLoginScreenPowerManagement).empty());
+}
+
+TEST(LoginScreenPowerManagementPolicyHandlerTest, WrongType) {
+  PolicyMap policy_map;
+  policy_map.Set(key::kDeviceLoginScreenPowerManagement,
+                 POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER,
+                 Value::CreateBooleanValue(false),
+                 NULL);
+  LoginScreenPowerManagementPolicyHandler handler;
+  PolicyErrorMap errors;
+  EXPECT_FALSE(handler.CheckPolicySettings(policy_map, &errors));
+  EXPECT_FALSE(
+      errors.GetErrors(key::kDeviceLoginScreenPowerManagement).empty());
+}
+
+TEST(LoginScreenPowerManagementPolicyHandlerTest, JSONParseError) {
+  const std::string policy("I'm not proper JSON!");
+  PolicyMap policy_map;
+  policy_map.Set(key::kDeviceLoginScreenPowerManagement,
+                 POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER,
+                 Value::CreateStringValue(policy),
+                 NULL);
+  LoginScreenPowerManagementPolicyHandler handler;
+  PolicyErrorMap errors;
+  EXPECT_FALSE(handler.CheckPolicySettings(policy_map, &errors));
+  EXPECT_FALSE(
+      errors.GetErrors(key::kDeviceLoginScreenPowerManagement).empty());
 }
 
 }  // namespace policy

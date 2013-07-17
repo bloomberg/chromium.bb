@@ -138,6 +138,7 @@
 #include "chrome/browser/chromeos/policy/auto_enrollment_client.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_status_collector.h"
+#include "chrome/browser/chromeos/power/power_prefs.h"
 #include "chrome/browser/chromeos/preferences.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service.h"
 #include "chrome/browser/chromeos/settings/device_settings_cache.h"
@@ -396,11 +397,17 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 
 void RegisterUserProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   RegisterProfilePrefs(registry);
+
+#if defined(OS_CHROMEOS)
+  chromeos::PowerPrefs::RegisterUserProfilePrefs(registry);
+#endif
 }
 
 #if defined(OS_CHROMEOS)
 void RegisterLoginProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   RegisterProfilePrefs(registry);
+
+  chromeos::PowerPrefs::RegisterLoginProfilePrefs(registry);
 }
 #endif
 

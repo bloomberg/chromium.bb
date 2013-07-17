@@ -78,6 +78,25 @@ class ScreenMagnifierPolicyHandler : public IntRangePolicyHandlerBase {
   DISALLOW_COPY_AND_ASSIGN(ScreenMagnifierPolicyHandler);
 };
 
+// ConfigurationPolicyHandler for login screen power management settings. This
+// does not actually set any prefs, it just checks whether the settings are
+// valid and generates errors if appropriate.
+class LoginScreenPowerManagementPolicyHandler
+    : public TypeCheckingPolicyHandler {
+ public:
+  LoginScreenPowerManagementPolicyHandler();
+  virtual ~LoginScreenPowerManagementPolicyHandler();
+
+  // TypeCheckingPolicyHandler:
+  virtual bool CheckPolicySettings(const PolicyMap& policies,
+                                   PolicyErrorMap* errors) OVERRIDE;
+  virtual void ApplyPolicySettings(const PolicyMap& policies,
+                                   PrefValueMap* prefs) OVERRIDE;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(LoginScreenPowerManagementPolicyHandler);
+};
+
 }  // namespace policy
 
 #endif  // CHROME_BROWSER_CHROMEOS_POLICY_CONFIGURATION_POLICY_HANDLER_CHROMEOS_H_

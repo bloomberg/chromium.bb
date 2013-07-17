@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
@@ -65,6 +66,7 @@ class TestingProfileManager {
   void SetLoggedIn(bool logged_in);
 
   // Helper accessors.
+  const base::FilePath& profiles_dir();
   ProfileManager* profile_manager();
   ProfileInfoCache* profile_info_cache();
 

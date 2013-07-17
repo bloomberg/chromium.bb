@@ -60,6 +60,7 @@
 #include "chrome/browser/chromeos/power/idle_action_warning_observer.h"
 #include "chrome/browser/chromeos/power/peripheral_battery_observer.h"
 #include "chrome/browser/chromeos/power/power_button_observer.h"
+#include "chrome/browser/chromeos/power/power_prefs.h"
 #include "chrome/browser/chromeos/power/resume_observer.h"
 #include "chrome/browser/chromeos/power/screen_lock_observer.h"
 #include "chrome/browser/chromeos/power/suspend_observer.h"
@@ -97,6 +98,7 @@
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/cryptohome/cryptohome_library.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/power_policy_controller.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "chromeos/ime/input_method_manager.h"
@@ -563,6 +565,9 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
     WizardController::SetZeroDelays();
   }
 
+  power_prefs_.reset(new PowerPrefs(
+      DBusThreadManager::Get()->GetPowerPolicyController()));
+
   // In Aura builds this will initialize ash::Shell.
   ChromeBrowserMainPartsLinux::PreProfileInit();
 
@@ -764,6 +769,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   brightness_observer_.reset();
   retail_mode_power_save_blocker_.reset();
   peripheral_battery_observer_.reset();
+  power_prefs_.reset();
 
   // The XInput2 event listener needs to be shut down earlier than when
   // Singletons are finally destroyed in AtExitManager.

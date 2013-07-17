@@ -4,7 +4,6 @@
 
 #include "chrome/test/base/testing_profile_manager.h"
 
-#include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
@@ -102,6 +101,11 @@ void TestingProfileManager::DeleteProfileInfoCache() {
 
 void TestingProfileManager::SetLoggedIn(bool logged_in) {
   profile_manager_->logged_in_ = logged_in;
+}
+
+const base::FilePath& TestingProfileManager::profiles_dir() {
+  DCHECK(called_set_up_);
+  return profiles_dir_.path();
 }
 
 ProfileManager* TestingProfileManager::profile_manager() {

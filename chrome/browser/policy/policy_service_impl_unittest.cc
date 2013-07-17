@@ -14,6 +14,7 @@
 #include "base/values.h"
 #include "chrome/browser/policy/external_data_fetcher.h"
 #include "chrome/browser/policy/mock_configuration_policy_provider.h"
+#include "chrome/browser/policy/mock_policy_service.h"
 #include "chrome/browser/policy/policy_domain_descriptor.h"
 #include "chrome/common/policy/policy_schema.h"
 #include "content/public/browser/browser_thread.h"
@@ -33,15 +34,6 @@ namespace {
 const char kExtension[] = "extension-id";
 const char kSameLevelPolicy[] = "policy-same-level-and-scope";
 const char kDiffLevelPolicy[] = "chrome-diff-level-and-scope";
-
-class MockPolicyServiceObserver : public PolicyService::Observer {
- public:
-  virtual ~MockPolicyServiceObserver() {}
-  MOCK_METHOD3(OnPolicyUpdated, void(const PolicyNamespace&,
-                                     const PolicyMap& previous,
-                                     const PolicyMap& current));
-  MOCK_METHOD1(OnPolicyServiceInitialized, void(PolicyDomain));
-};
 
 // Helper to compare the arguments to an EXPECT_CALL of OnPolicyUpdated() with
 // their expected values.

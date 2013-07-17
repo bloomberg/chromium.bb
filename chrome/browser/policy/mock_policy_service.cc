@@ -6,6 +6,12 @@
 
 namespace policy {
 
+MockPolicyServiceObserver::MockPolicyServiceObserver() {
+}
+
+MockPolicyServiceObserver::~MockPolicyServiceObserver() {
+}
+
 MockPolicyService::MockPolicyService() {
 }
 

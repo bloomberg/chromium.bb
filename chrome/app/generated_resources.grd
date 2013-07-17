@@ -6120,6 +6120,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_POLICY_NETWORK_CONFIG_IMPORT_FAILED" desc="The text displayed in the status column when the corresponding network configuration policy is invalid.">
         The network configuration is invalid and couldn't be imported.
       </message>
+      <message name="IDS_POLICY_JSON_PARSE_ERROR" desc="The text displayed in the status column when a policy that should have been specified in JSON format could not be parsed.">
+        Failed to parse JSON format: <ph name="JSON_PARSE_ERROR">$1<ex>Unexpected token.</ex></ph>
+      </message>
       <message name="IDS_POLICY_OK" desc="Text displayed in the status column when a valid value is set for a policy.">
         OK
       </message>

@@ -16,7 +16,7 @@ namespace policy {
 // Policy provider for the login profile. Since the login profile is not
 // associated with any user, it does not receive regular user policy. However,
 // several device policies that control features on the login screen surface as
-// recommended user policies in the login profile.
+// user policies in the login profile.
 class LoginProfilePolicyProvider : public ConfigurationPolicyProvider,
                                    public PolicyService::Observer {
  public:

@@ -112,7 +112,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 224
+#   For your editing convenience: highest ID currently used: 225
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -4507,6 +4507,106 @@
           The scale factor must be 100% or more.''',
         },
       ],
+    },
+    {
+      # TODO(bartfab): Change the policy type to 'dict' once this is fully
+      # supported. http://crbug.com/258339
+      'name': 'DeviceLoginScreenPowerManagement',
+      'type': 'string',
+      'schema': { 'type': 'string' },
+      'supported_on': ['chrome_os:30-'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+      },
+      'example_value': '{ "AC": { "IdleAction": "DoNothing" }, "Battery": { "IdleAction": "DoNothing" } }',
+      'id': 225,
+      'caption': '''Power mangement on the login screen''',
+      'desc': '''Configure power management on the login screen in <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph>.
+
+      This policy lets you configure how <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> behaves when there is no user activity for some amount of time while the login screen is being shown. The policy controls multiple settings. For their individual semantics and value ranges, see the corresponding policies that control power management within a session. The only deviations from these policies are:
+      * The actions to take on idle or lid close cannot be to end the session.
+      * The default action taken on idle when running on AC power is to shut down.
+
+      The policy should be specified as a string that expresses the individual settings in JSON format, conforming to the following schema:
+      {
+        "type": "object",
+        "properties": {
+          "AC": {
+            "description": "Power management settings applicable only when running on AC power",
+            "type": "object",
+            "properties": {
+              "Delays": {
+                "type": "object",
+                "properties": {
+                  "ScreenDim": {
+                    "description": "The length of time without user input after which the screen is dimmed, in milliseconds",
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "ScreenOff": {
+                    "description": "The length of time without user input after which the screen is turned off, in milliseconds",
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "Idle": {
+                    "description": "The length of time without user input after which the idle action is taken, in milliseconds",
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                }
+              },
+              "IdleAction": {
+                "description": "Action to take when the idle delay is reached",
+                "enum": [ "Suspend", "Shutdown", "DoNothing" ]
+              }
+            }
+          },
+          "Battery": {
+            "description": "Power management settings applicable only when running on battery power",
+            "type": "object",
+            "properties": {
+              "Delays": {
+                "type": "object",
+                "properties": {
+                  "ScreenDim": {
+                    "description": "The length of time without user input after which the screen is dimmed, in milliseconds",
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "ScreenOff": {
+                    "description": "The length of time without user input after which the screen is turned off, in milliseconds",
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "Idle": {
+                    "description": "The length of time without user input after which the idle action is taken, in milliseconds",
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                }
+              },
+              "IdleAction": {
+                "description": "Action to take when the idle delay is reached",
+                "enum": [ "Suspend", "Shutdown", "DoNothing" ]
+              }
+            }
+          },
+          "LidCloseAction": {
+            "description": "Action to take when the lid is closed",
+            "enum": [ "Suspend", "Shutdown", "DoNothing" ]
+          },
+          "UserActivityScreenDimDelayScale": {
+            "description": "Percentage by which the screen dim delay is scaled when user activity is observed while the screen is dimmed or soon after the screen has been turned off",
+            "type": "integer",
+            "minimum": 100
+          }
+        }
+      }
+
+      If a setting is left unspecified, a default value is used.
+
+      If this policy is unset, defaults are used for all settings.''',
     },
     {
       'name': 'DeviceAllowRedeemChromeOsRegistrationOffers',

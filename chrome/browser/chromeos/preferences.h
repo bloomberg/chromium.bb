@@ -170,29 +170,7 @@ class Preferences : public PrefServiceSyncableObserver,
   IntegerPrefMember xkb_auto_repeat_delay_pref_;
   IntegerPrefMember xkb_auto_repeat_interval_pref_;
 
-  BooleanPrefMember enable_screen_lock_;
-
   BooleanPrefMember enable_drm_;
-
-  // Power-management-related preferences.
-  IntegerPrefMember power_ac_screen_dim_delay_ms_;
-  IntegerPrefMember power_ac_screen_off_delay_ms_;
-  IntegerPrefMember power_ac_screen_lock_delay_ms_;
-  IntegerPrefMember power_ac_idle_warning_delay_ms_;
-  IntegerPrefMember power_ac_idle_delay_ms_;
-  IntegerPrefMember power_battery_screen_dim_delay_ms_;
-  IntegerPrefMember power_battery_screen_off_delay_ms_;
-  IntegerPrefMember power_battery_screen_lock_delay_ms_;
-  IntegerPrefMember power_battery_idle_warning_delay_ms_;
-  IntegerPrefMember power_battery_idle_delay_ms_;
-  IntegerPrefMember power_ac_idle_action_;
-  IntegerPrefMember power_battery_idle_action_;
-  IntegerPrefMember power_lid_closed_action_;
-  BooleanPrefMember power_use_audio_activity_;
-  BooleanPrefMember power_use_video_activity_;
-  BooleanPrefMember power_allow_screen_wake_locks_;
-  DoublePrefMember power_presentation_screen_dim_delay_factor_;
-  DoublePrefMember power_user_activity_screen_dim_delay_factor_;
 
   DISALLOW_COPY_AND_ASSIGN(Preferences);
 };

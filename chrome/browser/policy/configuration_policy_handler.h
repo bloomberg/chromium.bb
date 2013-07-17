@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_POLICY_CONFIGURATION_POLICY_HANDLER_H_
 #define CHROME_BROWSER_POLICY_CONFIGURATION_POLICY_HANDLER_H_
 
+#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -24,6 +25,8 @@ class PolicyMap;
 // their corresponding preferences, and to check whether the policies are valid.
 class ConfigurationPolicyHandler {
  public:
+  static std::string ValueTypeToString(Value::Type type);
+
   ConfigurationPolicyHandler();
   virtual ~ConfigurationPolicyHandler();
 

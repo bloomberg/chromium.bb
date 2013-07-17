@@ -20,6 +20,7 @@
 #if defined(OS_CHROMEOS)
 #include "ash/magnifier/magnifier_constants.h"
 #include "chrome/browser/chromeos/policy/configuration_policy_handler_chromeos.h"
+#include "chromeos/dbus/power_policy_controller.h"
 #endif  // defined(OS_CHROMEOS)
 
 namespace policy {
@@ -477,6 +478,7 @@ ConfigurationPolicyHandlerList::ConfigurationPolicyHandlerList() {
   handlers_.push_back(NetworkConfigurationPolicyHandler::CreateForUserPolicy());
   handlers_.push_back(new PinnedLauncherAppsPolicyHandler());
   handlers_.push_back(new ScreenMagnifierPolicyHandler());
+  handlers_.push_back(new LoginScreenPowerManagementPolicyHandler);
 
   handlers_.push_back(
       new IntRangePolicyHandler(
@@ -532,17 +534,23 @@ ConfigurationPolicyHandlerList::ConfigurationPolicyHandlerList() {
       new IntRangePolicyHandler(
           key::kIdleActionAC,
           prefs::kPowerAcIdleAction,
-          0, 3, false));
+          chromeos::PowerPolicyController::ACTION_SUSPEND,
+          chromeos::PowerPolicyController::ACTION_DO_NOTHING,
+          false));
   handlers_.push_back(
       new IntRangePolicyHandler(
           key::kIdleActionBattery,
           prefs::kPowerBatteryIdleAction,
-          0, 3, false));
+          chromeos::PowerPolicyController::ACTION_SUSPEND,
+          chromeos::PowerPolicyController::ACTION_DO_NOTHING,
+          false));
   handlers_.push_back(
       new IntRangePolicyHandler(
           key::kLidCloseAction,
           prefs::kPowerLidClosedAction,
-          0, 3, false));
+          chromeos::PowerPolicyController::ACTION_SUSPEND,
+          chromeos::PowerPolicyController::ACTION_DO_NOTHING,
+          false));
   handlers_.push_back(
       new IntPercentageToDoublePolicyHandler(
           key::kPresentationScreenDimDelayScale,

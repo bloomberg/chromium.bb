@@ -14,6 +14,7 @@
 #include "base/prefs/pref_value_map.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/policy/login_screen_power_management_policy.h"
 #include "chrome/browser/policy/external_data_fetcher.h"
 #include "chrome/browser/policy/policy_error_map.h"
 #include "chrome/browser/policy/policy_map.h"
@@ -190,6 +191,36 @@ void ScreenMagnifierPolicyHandler::ApplyPolicySettings(
     prefs->SetValue(prefs::kScreenMagnifierType,
                     base::Value::CreateIntegerValue(value_in_range));
   }
+}
+
+LoginScreenPowerManagementPolicyHandler::
+    LoginScreenPowerManagementPolicyHandler()
+    : TypeCheckingPolicyHandler(key::kDeviceLoginScreenPowerManagement,
+                                base::Value::TYPE_STRING) {
+}
+
+LoginScreenPowerManagementPolicyHandler::
+    ~LoginScreenPowerManagementPolicyHandler() {
+}
+
+bool LoginScreenPowerManagementPolicyHandler::CheckPolicySettings(
+    const PolicyMap& policies,
+    PolicyErrorMap* errors) {
+  const base::Value* value;
+  if (!CheckAndGetValue(policies, errors, &value))
+    return false;
+
+  if (!value)
+    return true;
+
+  std::string json;
+  value->GetAsString(&json);
+  return LoginScreenPowerManagementPolicy().Init(json, errors);
+}
+
+void LoginScreenPowerManagementPolicyHandler::ApplyPolicySettings(
+    const PolicyMap& policies,
+    PrefValueMap* prefs) {
 }
 
 }  // namespace policy

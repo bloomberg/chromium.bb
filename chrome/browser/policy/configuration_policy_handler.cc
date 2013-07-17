@@ -5,7 +5,6 @@
 #include "chrome/browser/policy/configuration_policy_handler.h"
 
 #include <algorithm>
-#include <string>
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
@@ -119,22 +118,7 @@ const ProxyModeValidationEntry kProxyModeValidationMap[] = {
 };
 
 
-// Helper functions ------------------------------------------------------------
-
-std::string ValueTypeToString(Value::Type type) {
-  static const char* strings[] = {
-    "null",
-    "boolean",
-    "integer",
-    "double",
-    "string",
-    "binary",
-    "dictionary",
-    "list"
-  };
-  CHECK(static_cast<size_t>(type) < arraysize(strings));
-  return std::string(strings[type]);
-}
+// Helper function -------------------------------------------------------------
 
 // Utility function that returns a JSON representation of the given |dict| as
 // a StringValue. The caller owns the returned object.
@@ -153,6 +137,22 @@ base::StringValue* DictionaryToJSONString(const base::DictionaryValue* dict) {
 
 
 // ConfigurationPolicyHandler implementation -----------------------------------
+
+// static
+std::string ConfigurationPolicyHandler::ValueTypeToString(Value::Type type) {
+  static const char* strings[] = {
+    "null",
+    "boolean",
+    "integer",
+    "double",
+    "string",
+    "binary",
+    "dictionary",
+    "list"
+  };
+  CHECK(static_cast<size_t>(type) < arraysize(strings));
+  return std::string(strings[type]);
+}
 
 ConfigurationPolicyHandler::ConfigurationPolicyHandler() {
 }

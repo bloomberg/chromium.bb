@@ -1938,6 +1938,9 @@
   "DeviceLocalAccountAutoLoginBailoutEnabled": {
   },
 
+  "DeviceLoginScreenPowerManagement": {
+  },
+
   "DeviceAllowRedeemChromeOsRegistrationOffers": {
   },
 

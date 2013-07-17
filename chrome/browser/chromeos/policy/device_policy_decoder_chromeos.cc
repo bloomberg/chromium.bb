@@ -630,6 +630,19 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
                     NULL);
     }
   }
+
+  if (policy.has_login_screen_power_management()) {
+    const em::LoginScreenPowerManagementProto& container(
+        policy.login_screen_power_management());
+    if (container.has_login_screen_power_management()) {
+      policies->Set(key::kDeviceLoginScreenPowerManagement,
+                    POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_MACHINE,
+                    Value::CreateStringValue(
+                        container.login_screen_power_management()),
+                    NULL);
+    }
+  }
 }
 
 }  // namespace

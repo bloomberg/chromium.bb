@@ -1474,6 +1474,8 @@
         'browser/policy/cloud/device_management_service_browsertest.cc',
         'browser/policy/cloud/test_request_interceptor.cc',
         'browser/policy/cloud/test_request_interceptor.h',
+        'browser/policy/mock_policy_service.cc',
+        'browser/policy/mock_policy_service.h',
         'browser/policy/policy_browsertest.cc',
         'browser/policy/policy_prefs_browsertest.cc',
         'browser/policy/test_utils.cc',

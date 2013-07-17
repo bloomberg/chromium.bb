@@ -414,6 +414,101 @@ message SupervisedUsersSettingsProto {
   optional bool supervised_users_enabled = 1;
 }
 
+message LoginScreenPowerManagementProto {
+  // Configures power management on the login screen. The policy should be
+  // specified as a string that expresses the individual settings in JSON
+  // format, conforming to the following schema:
+  // {
+  //   "type": "object",
+  //   "properties": {
+  //     "AC": {
+  //       "description": "Power management settings applicable only when
+  //                       running on AC power",
+  //       "type": "object",
+  //       "properties": {
+  //         "Delays": {
+  //           "type": "object",
+  //           "properties": {
+  //             "ScreenDim": {
+  //               "description": "The length of time without user input after
+  //                               which the screen is dimmed, in milliseconds",
+  //               "type": "integer",
+  //               "minimum": 0
+  //             },
+  //             "ScreenOff": {
+  //               "description": "The length of time without user input after
+  //                               which the screen is turned off, in
+  //                               milliseconds",
+  //               "type": "integer",
+  //               "minimum": 0
+  //             },
+  //             "Idle": {
+  //               "description": "The length of time without user input after
+  //                               which the idle action is taken, in
+  //                               milliseconds",
+  //               "type": "integer",
+  //               "minimum": 0
+  //             }
+  //           }
+  //         },
+  //         "IdleAction": {
+  //           "description": "Action to take when the idle delay is reached",
+  //           "enum": [ "Suspend", "Shutdown", "DoNothing" ]
+  //         }
+  //       }
+  //     },
+  //     "Battery": {
+  //       "description": "Power management settings applicable only when
+  //                       running on battery power",
+  //       "type": "object",
+  //       "properties": {
+  //         "Delays": {
+  //           "type": "object",
+  //           "properties": {
+  //             "ScreenDim": {
+  //               "description": "The length of time without user input after
+  //                               which the screen is dimmed, in milliseconds",
+  //               "type": "integer",
+  //               "minimum": 0
+  //             },
+  //             "ScreenOff": {
+  //               "description": "The length of time without user input after
+  //                               which the screen is turned off, in
+  //                               milliseconds",
+  //               "type": "integer",
+  //               "minimum": 0
+  //             },
+  //             "Idle": {
+  //               "description": "The length of time without user input after
+  //                               which the idle action is taken, in
+  //                               milliseconds",
+  //               "type": "integer",
+  //               "minimum": 0
+  //             }
+  //           }
+  //         },
+  //         "IdleAction": {
+  //           "description": "Action to take when the idle delay is reached",
+  //           "enum": [ "Suspend", "Shutdown", "DoNothing" ]
+  //         }
+  //       }
+  //     },
+  //     "LidCloseAction": {
+  //       "description": "Action to take when the lid is closed",
+  //       "enum": [ "Suspend", "Shutdown", "DoNothing" ]
+  //     },
+  //     "UserActivityScreenDimDelayScale": {
+  //       "description": "Percentage by which the screen dim delay is scaled
+  //                       when user activity is observed while the screen is
+  //                       dimmed or soon after the screen has been turned off",
+  //       "type": "integer",
+  //       "minimum": 0
+  //     }
+  //   }
+  // }
+  optional string login_screen_power_management = 1;
+}
+
 message ChromeDeviceSettingsProto {
   optional DevicePolicyRefreshRateProto device_policy_refresh_rate = 1;
   optional UserWhitelistProto user_whitelist = 2;
@@ -443,4 +538,5 @@ message ChromeDeviceSettingsProto {
   optional AttestationSettingsProto attestation_settings = 26;
   optional AccessibilitySettingsProto accessibility_settings = 27;
   optional SupervisedUsersSettingsProto supervised_users_settings = 28;
+  optional LoginScreenPowerManagementProto login_screen_power_management = 29;
 }

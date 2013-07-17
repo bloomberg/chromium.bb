@@ -30,8 +30,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/power_policy_controller.h"
 #include "chromeos/ime/input_method_manager.h"
 #include "chromeos/ime/xkeyboard.h"
 #include "components/user_prefs/pref_registry_syncable.h"
@@ -312,12 +310,6 @@ void Preferences::RegisterProfilePrefs(
       language_prefs::kXkbAutoRepeatIntervalInMs,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 
-  // Screen lock default to off.
-  registry->RegisterBooleanPref(
-      prefs::kEnableScreenLock,
-      false,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-
   // Mobile plan notifications default to on.
   registry->RegisterBooleanPref(
       prefs::kShowPlanNotifications,
@@ -339,79 +331,6 @@ void Preferences::RegisterProfilePrefs(
   registry->RegisterBooleanPref(
       prefs::kExternalStorageDisabled,
       false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-
-  registry->RegisterIntegerPref(
-      prefs::kPowerAcScreenDimDelayMs,
-      420000,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterIntegerPref(
-      prefs::kPowerAcScreenOffDelayMs,
-      480000,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterIntegerPref(
-      prefs::kPowerAcScreenLockDelayMs,
-      0,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterIntegerPref(
-      prefs::kPowerAcIdleWarningDelayMs,
-      0,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterIntegerPref(
-      prefs::kPowerAcIdleDelayMs,
-      1800000,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterIntegerPref(
-      prefs::kPowerBatteryScreenDimDelayMs,
-      300000,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterIntegerPref(
-      prefs::kPowerBatteryScreenOffDelayMs,
-      360000,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterIntegerPref(
-      prefs::kPowerBatteryScreenLockDelayMs,
-      0,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterIntegerPref(
-      prefs::kPowerBatteryIdleWarningDelayMs,
-      0,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterIntegerPref(
-      prefs::kPowerBatteryIdleDelayMs,
-      600000,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterIntegerPref(
-      prefs::kPowerAcIdleAction,
-      PowerPolicyController::ACTION_SUSPEND,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterIntegerPref(
-      prefs::kPowerBatteryIdleAction,
-      PowerPolicyController::ACTION_SUSPEND,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterIntegerPref(
-      prefs::kPowerLidClosedAction,
-      PowerPolicyController::ACTION_SUSPEND,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kPowerUseAudioActivity,
-      true,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kPowerUseVideoActivity,
-      true,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kPowerAllowScreenWakeLocks,
-      true,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterDoublePref(
-      prefs::kPowerPresentationScreenDimDelayFactor,
-      2.0,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterDoublePref(
-      prefs::kPowerUserActivityScreenDimDelayFactor,
-      2.0,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 
   registry->RegisterStringPref(
@@ -526,42 +445,6 @@ void Preferences::InitUserPrefs(PrefServiceSyncable* prefs) {
       prefs::kLanguageXkbAutoRepeatDelay, prefs, callback);
   xkb_auto_repeat_interval_pref_.Init(
       prefs::kLanguageXkbAutoRepeatInterval, prefs, callback);
-
-  enable_screen_lock_.Init(prefs::kEnableScreenLock, prefs, callback);
-
-  power_ac_screen_dim_delay_ms_.Init(
-      prefs::kPowerAcScreenDimDelayMs, prefs, callback);
-  power_ac_screen_off_delay_ms_.Init(
-      prefs::kPowerAcScreenOffDelayMs, prefs, callback);
-  power_ac_screen_lock_delay_ms_.Init(
-      prefs::kPowerAcScreenLockDelayMs, prefs, callback);
-  power_ac_idle_warning_delay_ms_.Init(
-      prefs::kPowerAcIdleWarningDelayMs, prefs, callback);
-  power_ac_idle_delay_ms_.Init(prefs::kPowerAcIdleDelayMs, prefs, callback);
-  power_battery_screen_dim_delay_ms_.Init(
-      prefs::kPowerBatteryScreenDimDelayMs, prefs, callback);
-  power_battery_screen_off_delay_ms_.Init(
-      prefs::kPowerBatteryScreenOffDelayMs, prefs, callback);
-  power_battery_screen_lock_delay_ms_.Init(
-      prefs::kPowerBatteryScreenLockDelayMs, prefs, callback);
-  power_battery_idle_warning_delay_ms_.Init(
-      prefs::kPowerBatteryIdleWarningDelayMs, prefs, callback);
-  power_battery_idle_delay_ms_.Init(
-      prefs::kPowerBatteryIdleDelayMs, prefs, callback);
-  power_ac_idle_action_.Init(prefs::kPowerAcIdleAction, prefs, callback);
-  power_battery_idle_action_.Init(
-      prefs::kPowerBatteryIdleAction, prefs, callback);
-  power_lid_closed_action_.Init(prefs::kPowerLidClosedAction, prefs, callback);
-  power_use_audio_activity_.Init(
-      prefs::kPowerUseAudioActivity, prefs, callback);
-  power_use_video_activity_.Init(
-      prefs::kPowerUseVideoActivity, prefs, callback);
-  power_allow_screen_wake_locks_.Init(
-      prefs::kPowerAllowScreenWakeLocks, prefs, callback);
-  power_presentation_screen_dim_delay_factor_.Init(
-      prefs::kPowerPresentationScreenDimDelayFactor, prefs, callback);
-  power_user_activity_screen_dim_delay_factor_.Init(
-      prefs::kPowerUserActivityScreenDimDelayFactor, prefs, callback);
 
   // TODO(achuith): Remove deprecated pref in M31. crbug.com/223480.
   prefs->ClearPref(kEnableTouchpadThreeFingerSwipe);
@@ -875,60 +758,6 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
                             download_util::GetDefaultDownloadDirectory());
       }
     }
-  }
-
-  if (!pref_name ||
-      *pref_name == prefs::kPowerAcScreenDimDelayMs ||
-      *pref_name == prefs::kPowerAcScreenOffDelayMs ||
-      *pref_name == prefs::kPowerAcScreenLockDelayMs ||
-      *pref_name == prefs::kPowerAcIdleWarningDelayMs ||
-      *pref_name == prefs::kPowerAcIdleDelayMs ||
-      *pref_name == prefs::kPowerBatteryScreenDimDelayMs ||
-      *pref_name == prefs::kPowerBatteryScreenOffDelayMs ||
-      *pref_name == prefs::kPowerBatteryScreenLockDelayMs ||
-      *pref_name == prefs::kPowerBatteryIdleWarningDelayMs ||
-      *pref_name == prefs::kPowerBatteryIdleDelayMs ||
-      *pref_name == prefs::kPowerAcIdleAction ||
-      *pref_name == prefs::kPowerBatteryIdleAction ||
-      *pref_name == prefs::kPowerLidClosedAction ||
-      *pref_name == prefs::kPowerUseAudioActivity ||
-      *pref_name == prefs::kPowerUseVideoActivity ||
-      *pref_name == prefs::kPowerAllowScreenWakeLocks ||
-      *pref_name == prefs::kPowerPresentationScreenDimDelayFactor ||
-      *pref_name == prefs::kPowerUserActivityScreenDimDelayFactor ||
-      *pref_name == prefs::kEnableScreenLock) {
-    PowerPolicyController::PrefValues values;
-    values.ac_screen_dim_delay_ms = power_ac_screen_dim_delay_ms_.GetValue();
-    values.ac_screen_off_delay_ms = power_ac_screen_off_delay_ms_.GetValue();
-    values.ac_screen_lock_delay_ms = power_ac_screen_lock_delay_ms_.GetValue();
-    values.ac_idle_warning_delay_ms =
-        power_ac_idle_warning_delay_ms_.GetValue();
-    values.ac_idle_delay_ms = power_ac_idle_delay_ms_.GetValue();
-    values.battery_screen_dim_delay_ms =
-        power_battery_screen_dim_delay_ms_.GetValue();
-    values.battery_screen_off_delay_ms =
-        power_battery_screen_off_delay_ms_.GetValue();
-    values.battery_screen_lock_delay_ms =
-        power_battery_screen_lock_delay_ms_.GetValue();
-    values.battery_idle_warning_delay_ms =
-        power_battery_idle_warning_delay_ms_.GetValue();
-    values.battery_idle_delay_ms = power_battery_idle_delay_ms_.GetValue();
-    values.ac_idle_action = static_cast<PowerPolicyController::Action>(
-        power_ac_idle_action_.GetValue());
-    values.battery_idle_action = static_cast<PowerPolicyController::Action>(
-        power_battery_idle_action_.GetValue());
-    values.lid_closed_action = static_cast<PowerPolicyController::Action>(
-        power_lid_closed_action_.GetValue());
-    values.use_audio_activity = power_use_audio_activity_.GetValue();
-    values.use_video_activity = power_use_video_activity_.GetValue();
-    values.allow_screen_wake_locks = power_allow_screen_wake_locks_.GetValue();
-    values.enable_screen_lock = enable_screen_lock_.GetValue();
-    values.presentation_screen_dim_delay_factor =
-        power_presentation_screen_dim_delay_factor_.GetValue();
-    values.user_activity_screen_dim_delay_factor =
-        power_user_activity_screen_dim_delay_factor_.GetValue();
-
-    DBusThreadManager::Get()->GetPowerPolicyController()->ApplyPrefs(values);
   }
 }
 

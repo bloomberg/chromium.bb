@@ -157,8 +157,9 @@ void PowerPolicyController::ApplyPrefs(const PrefValues& values) {
   int64 lock_ms = delays->screen_off_ms() + kScreenLockAfterOffDelayMs;
   if (values.enable_screen_lock && delays->screen_off_ms() > 0 &&
       (delays->screen_lock_ms() <= 0 || lock_ms < delays->screen_lock_ms()) &&
-      lock_ms < delays->idle_ms())
+      lock_ms < delays->idle_ms()) {
     delays->set_screen_lock_ms(lock_ms);
+  }
 
   delays = prefs_policy_.mutable_battery_delays();
   delays->set_screen_dim_ms(values.battery_screen_dim_delay_ms);
@@ -170,8 +171,9 @@ void PowerPolicyController::ApplyPrefs(const PrefValues& values) {
   lock_ms = delays->screen_off_ms() + kScreenLockAfterOffDelayMs;
   if (values.enable_screen_lock && delays->screen_off_ms() > 0 &&
       (delays->screen_lock_ms() <= 0 || lock_ms < delays->screen_lock_ms()) &&
-      lock_ms < delays->idle_ms())
+      lock_ms < delays->idle_ms()) {
     delays->set_screen_lock_ms(lock_ms);
+  }
 
   prefs_policy_.set_ac_idle_action(GetProtoAction(values.ac_idle_action));
   prefs_policy_.set_battery_idle_action(
@@ -187,6 +189,13 @@ void PowerPolicyController::ApplyPrefs(const PrefValues& values) {
   honor_screen_wake_locks_ = values.allow_screen_wake_locks;
 
   prefs_were_set_ = true;
+  SendCurrentPolicy();
+}
+
+void PowerPolicyController::ClearPrefs() {
+  prefs_policy_.Clear();
+  honor_screen_wake_locks_ = true;
+  prefs_were_set_ = false;
   SendCurrentPolicy();
 }
 
