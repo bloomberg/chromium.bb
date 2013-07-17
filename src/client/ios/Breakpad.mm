@@ -330,7 +330,7 @@ bool Breakpad::ExtractParameters(NSDictionary *parameters) {
   // We check both parameters and the environment variable here.
   char *envVarDumpSubdirectory = getenv(BREAKPAD_DUMP_DIRECTORY);
   NSString *dumpSubdirectory = envVarDumpSubdirectory ?
-      [[NSString alloc] initWithUTF8String:envVarDumpSubdirectory] :
+      [NSString stringWithUTF8String:envVarDumpSubdirectory] :
           [parameters objectForKey:@BREAKPAD_DUMP_DIRECTORY];
 
   NSDictionary *serverParameters =
