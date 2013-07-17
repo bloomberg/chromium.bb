@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
+#include "net/base/net_log.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/disk_cache/simple/simple_entry_format.h"
 
@@ -38,7 +39,8 @@ class SimpleEntryImpl : public Entry, public base::RefCounted<SimpleEntryImpl>,
  public:
   SimpleEntryImpl(SimpleBackendImpl* backend,
                   const base::FilePath& path,
-                  uint64 entry_hash);
+                  uint64 entry_hash,
+                  net::NetLog* net_log);
 
   // Adds another reader/writer to this entry, if possible, returning |this| to
   // |entry|.
@@ -257,6 +259,8 @@ class SimpleEntryImpl : public Entry, public base::RefCounted<SimpleEntryImpl>,
   SimpleSynchronousEntry* synchronous_entry_;
 
   std::queue<base::Closure> pending_operations_;
+
+  net::BoundNetLog net_log_;
 };
 
 }  // namespace disk_cache

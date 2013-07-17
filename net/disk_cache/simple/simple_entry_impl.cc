@@ -19,8 +19,10 @@
 #include "base/time/time.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
+#include "net/disk_cache/net_log_parameters.h"
 #include "net/disk_cache/simple/simple_backend_impl.h"
 #include "net/disk_cache/simple/simple_index.h"
+#include "net/disk_cache/simple/simple_net_log_parameters.h"
 #include "net/disk_cache/simple/simple_synchronous_entry.h"
 #include "net/disk_cache/simple/simple_util.h"
 #include "third_party/zlib/zlib.h"
@@ -94,7 +96,8 @@ class SimpleEntryImpl::ScopedOperationRunner {
 
 SimpleEntryImpl::SimpleEntryImpl(SimpleBackendImpl* backend,
                                  const FilePath& path,
-                                 const uint64 entry_hash)
+                                 const uint64 entry_hash,
+                                 net::NetLog* net_log)
     : backend_(backend->AsWeakPtr()),
       worker_pool_(backend->worker_pool()),
       path_(path),
@@ -103,7 +106,9 @@ SimpleEntryImpl::SimpleEntryImpl(SimpleBackendImpl* backend,
       last_modified_(last_used_),
       open_count_(0),
       state_(STATE_UNINITIALIZED),
-      synchronous_entry_(NULL) {
+      synchronous_entry_(NULL),
+      net_log_(net::BoundNetLog::Make(
+          net_log, net::NetLog::SOURCE_DISK_CACHE_ENTRY)) {
   COMPILE_ASSERT(arraysize(data_size_) == arraysize(crc32s_end_offset_),
                  arrays_should_be_same_size);
   COMPILE_ASSERT(arraysize(data_size_) == arraysize(crc32s_),
@@ -113,6 +118,9 @@ SimpleEntryImpl::SimpleEntryImpl(SimpleBackendImpl* backend,
   COMPILE_ASSERT(arraysize(data_size_) == arraysize(crc_check_state_),
                  arrays_should_be_same_size);
   MakeUninitialized();
+  net_log_.BeginEvent(
+      net::NetLog::TYPE_DISK_CACHE_ENTRY_IMPL,
+      CreateNetLogSimpleEntryCreationCallback(this));
 }
 
 int SimpleEntryImpl::OpenEntry(Entry** out_entry,
@@ -367,6 +375,7 @@ SimpleEntryImpl::~SimpleEntryImpl() {
   DCHECK(state_ == STATE_UNINITIALIZED || state_ == STATE_FAILURE);
   DCHECK(!synchronous_entry_);
   RemoveSelfFromBackend();
+  net_log_.EndEvent(net::NetLog::TYPE_DISK_CACHE_ENTRY_IMPL);
 }
 
 void SimpleEntryImpl::MakeUninitialized() {
@@ -393,6 +402,7 @@ void SimpleEntryImpl::RemoveSelfFromBackend() {
 }
 
 void SimpleEntryImpl::MarkAsDoomed() {
+  net_log_.AddEvent(net::NetLog::TYPE_ENTRY_DOOM);
   if (!backend_.get())
     return;
   backend_->index()->Remove(key_);
@@ -485,6 +495,8 @@ void SimpleEntryImpl::CloseInternal() {
   scoped_ptr<std::vector<CRCRecord> >
       crc32s_to_write(new std::vector<CRCRecord>());
 
+  net_log_.BeginEvent(net::NetLog::TYPE_ENTRY_CLOSE);
+
   if (state_ == STATE_READY) {
     DCHECK(synchronous_entry_);
     state_ = STATE_IO_PENDING;
@@ -548,6 +560,14 @@ void SimpleEntryImpl::ReadDataInternal(int stream_index,
           callback, 0));
     return;
   }
+
+  if (net_log_.IsLoggingAllEvents()) {
+    net_log_.BeginEvent(
+        net::NetLog::TYPE_ENTRY_READ_DATA,
+        CreateNetLogReadWriteDataCallback(
+            stream_index, offset, buf_len, false));
+  }
+
   buf_len = std::min(buf_len, GetDataSize(stream_index) - offset);
 
   state_ = STATE_IO_PENDING;
@@ -585,6 +605,14 @@ void SimpleEntryImpl::WriteDataInternal(int stream_index,
     // |this| may be destroyed after return here.
     return;
   }
+
+  if (net_log_.IsLoggingAllEvents()) {
+    net_log_.BeginEvent(
+        net::NetLog::TYPE_ENTRY_WRITE_DATA,
+        CreateNetLogReadWriteDataCallback(
+            stream_index, offset, buf_len, truncate));
+  }
+
   DCHECK_EQ(STATE_READY, state_);
   state_ = STATE_IO_PENDING;
   if (backend_.get())
@@ -742,6 +770,13 @@ void SimpleEntryImpl::ReadOperationComplete(
       return;
     }
   }
+
+  if (net_log_.IsLoggingAllEvents()) {
+    net_log_.EndEvent(
+        net::NetLog::TYPE_ENTRY_READ_DATA,
+        CreateNetLogReadWriteCompleteCallback(*result));
+  }
+
   if (*result < 0) {
     RecordReadResult(READ_RESULT_SYNC_READ_FAILURE);
   } else {
@@ -758,6 +793,12 @@ void SimpleEntryImpl::WriteOperationComplete(
     int stream_index,
     const CompletionCallback& completion_callback,
     scoped_ptr<int> result) {
+  if (net_log_.IsLoggingAllEvents()) {
+    net_log_.EndEvent(
+        net::NetLog::TYPE_ENTRY_WRITE_DATA,
+        CreateNetLogReadWriteCompleteCallback(*result));
+  }
+
   if (*result >= 0)
     RecordWriteResult(WRITE_RESULT_SUCCESS);
   else
@@ -774,6 +815,13 @@ void SimpleEntryImpl::ChecksumOperationComplete(
   DCHECK(synchronous_entry_);
   DCHECK_EQ(STATE_IO_PENDING, state_);
   DCHECK(result);
+
+  if (net_log_.IsLoggingAllEvents()) {
+    net_log_.EndEvent(
+        net::NetLog::TYPE_ENTRY_READ_DATA,
+        CreateNetLogReadWriteCompleteCallback(*result));
+  }
+
   if (*result == net::OK) {
     *result = orig_result;
     if (orig_result >= 0)
@@ -791,6 +839,7 @@ void SimpleEntryImpl::CloseOperationComplete() {
   DCHECK_EQ(0, open_count_);
   DCHECK(STATE_IO_PENDING == state_ || STATE_FAILURE == state_ ||
          STATE_UNINITIALIZED == state_);
+  net_log_.EndEvent(net::NetLog::TYPE_ENTRY_CLOSE);
   MakeUninitialized();
   RunNextOperationIfNeeded();
 }

@@ -169,6 +169,8 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
   // TODO(gavinp): Store the entry_hash in SimpleEntryImpl, and index this map
   // by hash. This will save memory, and make IndexReadyForDoom easier.
   EntryMap active_entries_;
+
+  net::NetLog* net_log_;
 };
 
 }  // namespace disk_cache

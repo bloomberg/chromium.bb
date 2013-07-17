@@ -176,7 +176,8 @@ SimpleBackendImpl::SimpleBackendImpl(const FilePath& path,
                                      net::NetLog* net_log)
     : path_(path),
       cache_thread_(cache_thread),
-      orig_max_size_(max_bytes) {
+      orig_max_size_(max_bytes),
+      net_log_(net_log) {
 }
 
 SimpleBackendImpl::~SimpleBackendImpl() {
@@ -391,7 +392,8 @@ scoped_refptr<SimpleEntryImpl> SimpleBackendImpl::CreateOrFindActiveEntry(
   if (insert_result.second)
     DCHECK(!it->second.get());
   if (!it->second.get()) {
-    SimpleEntryImpl* entry = new SimpleEntryImpl(this, path_, entry_hash);
+    SimpleEntryImpl* entry =
+        new SimpleEntryImpl(this, path_, entry_hash, net_log_);
     entry->set_key(key);
     it->second = entry->AsWeakPtr();
   }
@@ -414,8 +416,8 @@ int SimpleBackendImpl::OpenEntryFromHash(uint64 hash,
   if (has_active != active_entries_.end())
     return OpenEntry(has_active->second->key(), entry, callback);
 
-  scoped_refptr<SimpleEntryImpl> simple_entry = new SimpleEntryImpl(this, path_,
-                                                                    hash);
+  scoped_refptr<SimpleEntryImpl> simple_entry =
+      new SimpleEntryImpl(this, path_, hash, net_log_);
   CompletionCallback backend_callback =
       base::Bind(&SimpleBackendImpl::OnEntryOpenedFromHash,
                  AsWeakPtr(),
