@@ -2244,7 +2244,7 @@ void RenderLayer::scrollRectToVisible(const LayoutRect& rect, const ScrollAlignm
                 HTMLFrameElement* frameElement = 0;
 
                 if (ownerElement->hasTagName(frameTag) || ownerElement->hasTagName(iframeTag))
-                    frameElement = static_cast<HTMLFrameElement*>(ownerElement);
+                    frameElement = toHTMLFrameElement(ownerElement);
 
                 if (frameElementAndViewPermitScroll(frameElement, frameView)) {
                     LayoutRect viewRect = frameView->visibleContentRect();
