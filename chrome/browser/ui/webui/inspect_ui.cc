@@ -371,6 +371,7 @@ InspectUI::InspectUI(content::WebUI* web_ui)
   observer_->Init(this);
   Profile* profile = Profile::FromWebUI(web_ui);
   adb_bridge_ = DevToolsAdbBridge::Factory::GetForProfile(profile);
+  adb_bridge_->AddListener(this);
   web_ui->AddMessageHandler(new InspectMessageHandler(adb_bridge_));
   content::WebUIDataSource::Add(profile, CreateInspectUIHTMLSource());
 
@@ -416,6 +417,7 @@ void InspectUI::StopListeningNotifications()
 {
   if (!observer_.get())
     return;
+  adb_bridge_->RemoveListener(this);
   adb_bridge_ = NULL;
   observer_->InspectUIDestroyed();
   observer_ = NULL;
@@ -438,30 +440,13 @@ bool InspectUI::HandleRequestCallback(
     const content::WebUIDataSource::GotDataCallback& callback) {
   if (path == kDataFile)
     return HandleDataRequestCallback(path, callback);
-  if (path.find(kAdbPages) == 0)
-    return HandleAdbPagesCallback(path, callback);
   return false;
 }
 
-bool InspectUI::HandleAdbPagesCallback(
-    const std::string& path,
-    const content::WebUIDataSource::GotDataCallback& callback) {
-  adb_bridge_->Pages(base::Bind(&InspectUI::OnAdbPages,
-                                weak_factory_.GetWeakPtr(),
-                                callback));
-  return true;
-}
-
-void InspectUI::OnAdbPages(
-    const content::WebUIDataSource::GotDataCallback& callback,
-    int result,
-    DevToolsAdbBridge::RemotePages* pages) {
-  if (result != net::OK)
-    return;
+void InspectUI::RemotePagesChanged(DevToolsAdbBridge::RemotePages* pages) {
   ListValue targets;
-  scoped_ptr<DevToolsAdbBridge::RemotePages> my_pages(pages);
-  for (DevToolsAdbBridge::RemotePages::iterator it = my_pages->begin();
-       it != my_pages->end(); ++it) {
+  for (DevToolsAdbBridge::RemotePages::iterator it = pages->begin();
+       it != pages->end(); ++it) {
     DevToolsAdbBridge::RemotePage* page = it->get();
     DictionaryValue* target_data = BuildTargetDescriptor(kAdbTargetType,
         false, GURL(page->url()), page->title(), GURL(page->favicon_url()), 0,
@@ -474,8 +459,5 @@ void InspectUI::OnAdbPages(
     target_data->SetString(kAdbFrontendUrlField, page->frontend_url());
     targets.Append(target_data);
   }
-
-  std::string json_string;
-  base::JSONWriter::Write(&targets, &json_string);
-  callback.Run(base::RefCountedString::TakeString(&json_string));
+  web_ui()->CallJavascriptFunction("populateDeviceLists", targets);
 }

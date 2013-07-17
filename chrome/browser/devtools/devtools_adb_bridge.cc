@@ -63,6 +63,7 @@ static const char kWebSocketUpgradeRequest[] = "GET %s HTTP/1.1\r\n"
     "\r\n";
 const int kAdbPort = 5037;
 const int kBufferSize = 16 * 1024;
+const int kAdbPollingIntervalMs = 1000;
 
 typedef DevToolsAdbBridge::Callback Callback;
 typedef DevToolsAdbBridge::PagesCallback PagesCallback;
@@ -881,17 +882,6 @@ void DevToolsAdbBridge::Query(
       base::Bind(&AdbQueryCommand::Run, command));
 }
 
-void DevToolsAdbBridge::Pages(const PagesCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!has_message_loop_)
-    return;
-
-  scoped_refptr<AdbPagesCommand> command(
-      new AdbPagesCommand(this, callback));
-  adb_thread_->message_loop()->PostTask(FROM_HERE,
-      base::Bind(&AdbPagesCommand::Run, command));
-}
-
 void DevToolsAdbBridge::Attach(const std::string& serial,
                                const std::string& socket,
                                const std::string& debug_url,
@@ -908,7 +898,21 @@ void DevToolsAdbBridge::Attach(const std::string& serial,
       base::Bind(&AdbAttachCommand::Run, command));
 }
 
+void DevToolsAdbBridge::AddListener(Listener* listener) {
+  if (listeners_.empty())
+    RequestPages();
+  listeners_.push_back(listener);
+}
+
+void DevToolsAdbBridge::RemoveListener(Listener* listener) {
+  Listeners::iterator it =
+      std::find(listeners_.begin(), listeners_.end(), listener);
+  DCHECK(it != listeners_.end());
+  listeners_.erase(it);
+}
+
 DevToolsAdbBridge::~DevToolsAdbBridge() {
+  DCHECK(listeners_.empty());
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
@@ -943,4 +947,36 @@ void DevToolsAdbBridge::ReceivedDevices(const AndroidDevicesCallback& callback,
     devices.push_back(new AdbDeviceImpl(tokens[0]));
   }
   callback.Run(devices);
+}
+
+void DevToolsAdbBridge::RequestPages() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (!has_message_loop_)
+    return;
+
+  scoped_refptr<AdbPagesCommand> command(
+      new AdbPagesCommand(this,
+                          base::Bind(&DevToolsAdbBridge::ReceivedPages, this)));
+  adb_thread_->message_loop()->PostTask(FROM_HERE,
+      base::Bind(&AdbPagesCommand::Run, command));
+}
+
+void DevToolsAdbBridge::ReceivedPages(int result, RemotePages* pages_ptr) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  scoped_ptr<RemotePages> pages(pages_ptr);
+
+  if (result == net::OK) {
+    Listeners copy(listeners_);
+    for (Listeners::iterator it = copy.begin(); it != copy.end(); ++it)
+      (*it)->RemotePagesChanged(pages.get());
+  }
+
+  if (listeners_.empty())
+    return;
+
+  BrowserThread::PostDelayedTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&DevToolsAdbBridge::RequestPages, this),
+      base::TimeDelta::FromMilliseconds(kAdbPollingIntervalMs));
 }

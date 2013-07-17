@@ -2,20 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-function adbPages() {
-  var xhr = new XMLHttpRequest();
-  xhr.open('GET', 'adb-pages', false);
-  xhr.send(null);
-  if (xhr.status !== 200)
-    return null;
-
-  try {
-    return JSON.parse(xhr.responseText);
-  } catch (e) {
-  }
-  return null;
-}
-
 function requestData() {
   var xhr = new XMLHttpRequest();
   xhr.open('GET', 'targets-data.json', false);
@@ -40,7 +26,6 @@ function removeChildren(element_id) {
 
 function onload() {
   populateLists();
-  populateDeviceLists();
 }
 
 function populateLists() {
@@ -63,13 +48,11 @@ function populateLists() {
   }
 }
 
-function populateDeviceLists() {
-  var pages = adbPages();
+function populateDeviceLists(pages) {
   var pagesDigest = JSON.stringify(pages);
-  if (!pages || pagesDigest == window.pagesDigest) {
-    setTimeout(populateDeviceLists, 1000);
+  if (!pages || pagesDigest == window.pagesDigest)
     return;
-  }
+
   window.pagesDigest = pagesDigest;
 
   // Clear existing entries
@@ -112,8 +95,6 @@ function populateDeviceLists() {
 
     addTargetToList(page, packageId, ['faviconUrl', 'name', 'url']);
   }
-
-  setTimeout(populateDeviceLists, 1000);
 }
 
 function addToPagesList(data) {

@@ -16,7 +16,8 @@
 #include "content/public/browser/web_ui_data_source.h"
 
 class InspectUI : public content::WebUIController,
-                  public content::NotificationObserver {
+                  public content::NotificationObserver,
+                  public DevToolsAdbBridge::Listener {
  public:
   explicit InspectUI(content::WebUI* web_ui);
   virtual ~InspectUI();
@@ -44,13 +45,9 @@ class InspectUI : public content::WebUIController,
       const std::string& path,
       const content::WebUIDataSource::GotDataCallback& callback);
 
-  bool HandleAdbPagesCallback(
-      const std::string& path,
-      const content::WebUIDataSource::GotDataCallback& callback);
-
-  void OnAdbPages(const content::WebUIDataSource::GotDataCallback& callback,
-                  int result,
-                  DevToolsAdbBridge::RemotePages* pages);
+  // DevToolsAdbBridge::Listener overrides.
+  virtual void RemotePagesChanged(
+      DevToolsAdbBridge::RemotePages* pages) OVERRIDE;
 
   scoped_refptr<WorkerCreationDestructionListener> observer_;
 

@@ -39,15 +39,15 @@ extern const char kDevToolsChannelNameFormat[];
 typedef base::Callback<void(int, const std::string&)> CommandCallback;
 typedef base::Callback<void(int result, net::StreamSocket*)> SocketCallback;
 
-class DevToolsAdbBridge :
-    public base::RefCountedThreadSafe<DevToolsAdbBridge> {
+class DevToolsAdbBridge
+    : public base::RefCountedThreadSafe<DevToolsAdbBridge> {
  public:
   typedef base::Callback<void(int result,
                               const std::string& response)> Callback;
 
   class Wrapper : public BrowserContextKeyedService {
    public:
-    Wrapper(Profile* profile);
+    explicit Wrapper(Profile* profile);
     virtual ~Wrapper();
 
     DevToolsAdbBridge* Get();
@@ -163,11 +163,20 @@ class DevToolsAdbBridge :
 
   void EnumerateDevices(const AndroidDevicesCallback& callback);
   void Query(const std::string query, const Callback& callback);
-  void Pages(const PagesCallback& callback);
   void Attach(const std::string& serial,
               const std::string& socket,
               const std::string& debug_url,
               const std::string& frontend_url);
+
+  class Listener {
+   public:
+    virtual void RemotePagesChanged(RemotePages* pages) = 0;
+   protected:
+    virtual ~Listener() {}
+  };
+
+  void AddListener(Listener* listener);
+  void RemoveListener(Listener* listener);
 
  private:
   friend class base::RefCountedThreadSafe<DevToolsAdbBridge>;
@@ -196,10 +205,15 @@ class DevToolsAdbBridge :
                        int result,
                        const std::string& response);
 
+  void RequestPages();
+  void ReceivedPages(int result, RemotePages* pages);
+
   Profile* profile_;
   scoped_refptr<RefCountedAdbThread> adb_thread_;
   bool has_message_loop_;
   scoped_ptr<crypto::RSAPrivateKey> rsa_key_;
+  typedef std::vector<Listener*> Listeners;
+  Listeners listeners_;
   DISALLOW_COPY_AND_ASSIGN(DevToolsAdbBridge);
 };
 
