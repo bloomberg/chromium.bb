@@ -9,11 +9,14 @@ else
   rundir=$(mktemp -d)
 fi
 
+this_dir=$(dirname $0)
+gerrit_exe="$this_dir/gerrit.war"
+
 account_id=101
 full_name='Test Account'
 maximum_page_size='25'
 password='test-password'
-preferred_email="${username}@test.org"
+preferred_email="test-username@test.org"
 registered_on=$(date '+%Y-%m-%d %H:%M:%S.000%:::z')
 username='test-username'
 
@@ -69,31 +72,32 @@ for x in items:
 EOF
 ) | xargs | while read name md5; do
   # Download the latest gerrit version if necessary, and verify the md5sum.
+  target="$this_dir/$name"
   net_sum=$(echo -n $md5 | base64 -d | od -tx1 | head -1 | cut -d ' ' -f 2- |
             sed 's/ //g')
-  if [ -f "./$name" ]; then
-    file_sum=$(md5sum "./$name" | awk '{print $1}' | xargs)
+  if [ -f "$target" ]; then
+    file_sum=$(md5sum "$target" | awk '{print $1}' | xargs)
     if [ "$file_sum" = "$net_sum" ]; then
-      ln -sf "./$name" gerrit.war
+      ln -sf "$name" "$gerrit_exe"
       break
     else
-      rm -rf "./$name"
+      rm -rf "$target"
     fi
   fi
-  curl --ssl-reqd -s -o "./$name" \
+  curl --ssl-reqd -s -o "$target" \
       "https://gerrit-releases.storage.googleapis.com/$name"
-  file_sum=$(md5sum "./$name" | awk '{print $1}' | xargs)
+  file_sum=$(md5sum "$target" | awk '{print $1}' | xargs)
   if [ "$file_sum" != "$net_sum" ]; then
     echo "ERROR: md5sum mismatch when downloading $name" 1>&2
-    rm -rf "./$name"
+    rm -rf "$target"
     exit 1
   else
-    ln -sf "./$name" gerrit.war
+    ln -sf "$name" "$gerrit_exe"
   fi
 done
 
-if [ ! -e "./gerrit.war" ]; then
-  echo "ERROR: No gerrit.war file or link present, and unable " 1>&2
+if [ ! -e "$gerrit_exe" ]; then
+  echo "ERROR: No $gerrit_exe file or link present, and unable " 1>&2
   echo "       to download the latest version." 1>&2
   exit 1
 fi
@@ -108,10 +112,10 @@ cat <<EOF > "${rundir}/etc/gerrit.config"
 EOF
 
 # Initialize the gerrit instance.
-java -jar "./gerrit.war" init --no-auto-start --batch -d "${rundir}"
+java -jar "$gerrit_exe" init --no-auto-start --batch -d "${rundir}"
 
 # Set up the first user, with admin priveleges.
-cat <<EOF | java -jar "./gerrit.war" gsql -d "${rundir}" > /dev/null
+cat <<EOF | java -jar "$gerrit_exe" gsql -d "${rundir}" > /dev/null
 INSERT INTO ACCOUNTS (FULL_NAME, MAXIMUM_PAGE_SIZE, PREFERRED_EMAIL, REGISTERED_ON, ACCOUNT_ID) VALUES ('${full_name}', ${maximum_page_size}, '${preferred_email}', '${registered_on}', ${account_id});
 INSERT INTO ACCOUNT_EXTERNAL_IDS (ACCOUNT_ID, EXTERNAL_ID) VALUES (${account_id}, 'gerrit:${username}');
 INSERT INTO ACCOUNT_EXTERNAL_IDS (ACCOUNT_ID, EXTERNAL_ID) VALUES (${account_id}, 'username:${username}');
