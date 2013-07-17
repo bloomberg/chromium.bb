@@ -40,6 +40,9 @@
   'variables': {
     'enable_wexit_time_destructors': 1,
 
+    # TODO: temporary variable until we've switched from v8-i18n to v8's i18n support.
+    'v8_enable_i18n_support%': 0,
+
     'webcore_include_dirs': [
       '../..',
       '..',
@@ -228,7 +231,6 @@
         '<(DEPTH)/third_party/npapi/npapi.gyp:npapi',
         '<(DEPTH)/third_party/qcms/qcms.gyp:qcms',
         '<(DEPTH)/third_party/sqlite/sqlite.gyp:sqlite',
-        '<(DEPTH)/third_party/v8-i18n/build/all.gyp:v8-i18n',
         '<(DEPTH)/url/url.gyp:url_lib',
         '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
         '<(libjpeg_gyp_path):libjpeg',
@@ -318,6 +320,14 @@
         '<(SHARED_INTERMEDIATE_DIR)/webkit/StyleBuilderFunctions.cpp',
       ],
       'conditions': [
+        ['v8_enable_i18n_support==0', {
+          'dependencies': [
+            '<(DEPTH)/third_party/v8-i18n/build/all.gyp:v8-i18n',
+          ],
+          'defines': [
+            'USE_I18N_EXTENSION',
+          ],
+        }],
         ['OS=="win" and component=="shared_library"', {
           'defines': [
             'USING_V8_SHARED',
@@ -969,7 +979,6 @@
       'target_name': 'webcore_remaining',
       'type': 'static_library',
       'dependencies': [
-        '<(DEPTH)/third_party/v8-i18n/build/all.gyp:v8-i18n',
         'webcore_prerequisites',
       ],
       'sources': [
@@ -983,6 +992,11 @@
         ['exclude', '(?<!Chromium)(CF|CG|Mac|OpenType|Win)\\.(cpp|mm?)$'],
       ],
       'conditions': [
+        ['v8_enable_i18n_support==0', {
+          'dependencies': [
+            '<(DEPTH)/third_party/v8-i18n/build/all.gyp:v8-i18n',
+          ],
+        }],
         # Shard this taret into parts to work around linker limitations.
         # on link time code generation builds.
         ['OS=="win" and buildtype=="Official"', {

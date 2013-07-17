@@ -29,6 +29,10 @@
 #
 
 {
+  'variables': {
+    # TODO: temporary variable until we've switched from v8-i18n to v8's i18n support.
+    'v8_enable_i18n_support%': 0,
+  },
   'includes': [
     '../WebKit/chromium/WinPrecompile.gypi',
     'bindings.gypi',
@@ -55,7 +59,6 @@
         '<(DEPTH)/third_party/npapi/npapi.gyp:npapi',
         '<(DEPTH)/third_party/qcms/qcms.gyp:qcms',
         '<(DEPTH)/third_party/sqlite/sqlite.gyp:sqlite',
-        '<(DEPTH)/third_party/v8-i18n/build/all.gyp:v8-i18n',
         '<(DEPTH)/url/url.gyp:url_lib',
         '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
         '<(libjpeg_gyp_path):libjpeg',
@@ -81,6 +84,14 @@
         '<@(bindings_files)',
       ],
       'conditions': [
+        ['v8_enable_i18n_support==0', {
+          'dependencies': [
+            '<(DEPTH)/third_party/v8-i18n/build/all.gyp:v8-i18n',
+          ],
+          'defines': [
+            'USE_I18N_EXTENSION',
+          ],
+        }],
         ['OS=="win"', {
           # In generated bindings code: 'switch contains default but no case'.
           # Disable c4267 warnings until we fix size_t to int truncations.
