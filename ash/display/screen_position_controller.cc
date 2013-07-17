@@ -208,6 +208,8 @@ void ScreenPositionController::SetBounds(aura::Window* window,
       // Restore focused/active window.
       if (tracker.Contains(focused)) {
         aura::client::GetFocusClient(window)->FocusWindow(focused);
+        ash::Shell::GetInstance()->set_active_root_window(
+            focused->GetRootWindow());
       } else if (tracker.Contains(active)) {
         activation_client->ActivateWindow(active);
       }
