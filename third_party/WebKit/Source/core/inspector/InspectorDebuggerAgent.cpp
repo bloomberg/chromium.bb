@@ -253,7 +253,16 @@ void InspectorDebuggerAgent::setBreakpointByUrl(ErrorString* errorString, int li
     bool isAntiBreakpointValue = isAntiBreakpoint && *isAntiBreakpoint;
 
     String url = optionalURL ? *optionalURL : *optionalURLRegex;
-    int columnNumber = optionalColumnNumber ? *optionalColumnNumber : 0;
+    int columnNumber;
+    if (optionalColumnNumber) {
+        columnNumber = *optionalColumnNumber;
+        if (columnNumber < 0) {
+            *errorString = "Incorrect column number";
+            return;
+        }
+    } else {
+        columnNumber = isAntiBreakpointValue ? -1 : 0;
+    }
     String condition = optionalCondition ? *optionalCondition : "";
     bool isRegex = optionalURLRegex;
 
@@ -406,7 +415,10 @@ bool InspectorDebuggerAgent::shouldSkipPause(RefPtr<JavaScriptCallFrame>& topFra
         int breakColumnNumber;
         breakpointObject->getNumber(DebuggerAgentState::columnNumber, &breakColumnNumber);
 
-        if (breakLineNumber != topFrameLineNumber || breakColumnNumber != topFrameColumnNumber)
+        if (breakLineNumber != topFrameLineNumber)
+            continue;
+
+        if (breakColumnNumber != -1 && breakColumnNumber != topFrameColumnNumber)
             continue;
 
         bool isRegex;
