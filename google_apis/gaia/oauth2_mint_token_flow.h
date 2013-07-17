@@ -74,14 +74,14 @@ class OAuth2MintTokenFlow : public OAuth2ApiCallFlow {
   struct Parameters {
    public:
     Parameters();
-    Parameters(const std::string& rt,
+    Parameters(const std::string& at,
                const std::string& eid,
                const std::string& cid,
                const std::vector<std::string>& scopes_arg,
                Mode mode_arg);
     ~Parameters();
 
-    std::string login_refresh_token;
+    std::string access_token;
     std::string extension_id;
     std::string client_id;
     std::vector<std::string> scopes;

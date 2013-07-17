@@ -108,7 +108,7 @@ class IdentityGetAuthTokenFunction : public AsyncExtensionFunction,
       const IssueAdviceInfo& issue_advice) OVERRIDE;
 
   // IdentitySigninFlow::Delegate implementation:
-  virtual void SigninSuccess(const std::string& token) OVERRIDE;
+  virtual void SigninSuccess() OVERRIDE;
   virtual void SigninFailed() OVERRIDE;
 
   // GaiaWebAuthFlow::Delegate implementation:
@@ -125,15 +125,18 @@ class IdentityGetAuthTokenFunction : public AsyncExtensionFunction,
   virtual void OnGetTokenFailure(const OAuth2TokenService::Request* request,
                                  const GoogleServiceAuthError& error) OVERRIDE;
 
+  // Starts a login access token request.
+  virtual void StartLoginAccessTokenRequest();
+
   // Starts a mint token request to GAIA.
-  void StartGaiaRequest(OAuth2MintTokenFlow::Mode mode);
+  void StartGaiaRequest(const std::string& login_access_token);
 
   // Methods for invoking UI. Overridable for testing.
   virtual void ShowLoginPopup();
   virtual void ShowOAuthApprovalDialog(const IssueAdviceInfo& issue_advice);
   // Caller owns the returned instance.
   virtual OAuth2MintTokenFlow* CreateMintTokenFlow(
-      OAuth2MintTokenFlow::Mode mode);
+      const std::string& login_access_token);
 
   // Checks if there is a master login token to mint tokens for the extension.
   virtual bool HasLoginToken() const;
@@ -147,7 +150,7 @@ class IdentityGetAuthTokenFunction : public AsyncExtensionFunction,
   bool should_prompt_for_scopes_;
   IdentityMintRequestQueue::MintType mint_token_flow_type_;
   scoped_ptr<OAuth2MintTokenFlow> mint_token_flow_;
-  std::string refresh_token_;
+  OAuth2MintTokenFlow::Mode gaia_mint_token_mode_;
   bool should_prompt_for_signin_;
 
   std::string oauth2_client_id_;
@@ -157,6 +160,7 @@ class IdentityGetAuthTokenFunction : public AsyncExtensionFunction,
   scoped_ptr<GaiaWebAuthFlow> gaia_web_auth_flow_;
   scoped_ptr<IdentitySigninFlow> signin_flow_;
   scoped_ptr<OAuth2TokenService::Request> device_token_request_;
+  scoped_ptr<OAuth2TokenService::Request> login_token_request_;
 };
 
 class IdentityRemoveCachedAuthTokenFunction : public SyncExtensionFunction {
@@ -231,7 +235,7 @@ class IdentityTokenCacheValue {
 
 class IdentityAPI : public ProfileKeyedAPI,
                     public SigninGlobalError::AuthStatusProvider,
-                    public content::NotificationObserver {
+                    public OAuth2TokenService::Observer {
  public:
   struct TokenCacheKey {
     TokenCacheKey(const std::string& extension_id,
@@ -272,10 +276,8 @@ class IdentityAPI : public ProfileKeyedAPI,
   // AuthStatusProvider implementation.
   virtual GoogleServiceAuthError GetAuthStatus() const OVERRIDE;
 
-  // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  // OAuth2TokenService::Observer implementation:
+  virtual void OnRefreshTokenAvailable(const std::string& account_id) OVERRIDE;
 
  private:
   friend class ProfileKeyedAPIFactory<IdentityAPI>;
@@ -289,8 +291,6 @@ class IdentityAPI : public ProfileKeyedAPI,
   Profile* profile_;
   GoogleServiceAuthError error_;
   bool initialized_;
-  // Used to listen to notifications from the TokenService.
-  content::NotificationRegistrar registrar_;
   IdentityMintRequestQueue mint_queue_;
   CachedTokens token_cache_;
 };

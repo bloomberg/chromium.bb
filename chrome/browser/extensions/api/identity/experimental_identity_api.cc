@@ -14,10 +14,10 @@
 #include "chrome/browser/extensions/api/identity/identity_api.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/profile_oauth2_token_service.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/signin/token_service.h"
-#include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/extensions/api/experimental_identity.h"
 #include "chrome/common/extensions/api/identity.h"
@@ -94,8 +94,6 @@ bool ExperimentalIdentityGetAuthTokenFunction::RunImpl() {
     // Display a login prompt.
     StartSigninFlow();
   } else {
-    TokenService* token_service = TokenServiceFactory::GetForProfile(profile());
-    refresh_token_ = token_service->GetOAuth2LoginRefreshToken();
     StartMintTokenFlow(IdentityMintRequestQueue::MINT_TYPE_NONINTERACTIVE);
   }
 
@@ -136,7 +134,8 @@ void ExperimentalIdentityGetAuthTokenFunction::StartMintTokenFlow(
   }
 
   if (type == IdentityMintRequestQueue::MINT_TYPE_NONINTERACTIVE) {
-    StartGaiaRequest(OAuth2MintTokenFlow::MODE_MINT_TOKEN_NO_FORCE);
+    gaia_mint_token_mode_ = OAuth2MintTokenFlow::MODE_MINT_TOKEN_NO_FORCE;
+    StartLoginAccessTokenRequest();
   } else {
     DCHECK(type == IdentityMintRequestQueue::MINT_TYPE_INTERACTIVE);
 
@@ -188,9 +187,7 @@ void ExperimentalIdentityGetAuthTokenFunction::OnIssueAdviceSuccess(
   StartMintTokenFlow(IdentityMintRequestQueue::MINT_TYPE_INTERACTIVE);
 }
 
-void ExperimentalIdentityGetAuthTokenFunction::SigninSuccess(
-    const std::string& token) {
-  refresh_token_ = token;
+void ExperimentalIdentityGetAuthTokenFunction::SigninSuccess() {
   StartMintTokenFlow(IdentityMintRequestQueue::MINT_TYPE_NONINTERACTIVE);
 }
 
@@ -201,7 +198,8 @@ void ExperimentalIdentityGetAuthTokenFunction::SigninFailed() {
 void ExperimentalIdentityGetAuthTokenFunction::InstallUIProceed() {
   // The user has accepted the scopes, so we may now force (recording a grant
   // and receiving a token).
-  StartGaiaRequest(OAuth2MintTokenFlow::MODE_MINT_TOKEN_FORCE);
+  gaia_mint_token_mode_ = OAuth2MintTokenFlow::MODE_MINT_TOKEN_FORCE;
+  StartLoginAccessTokenRequest();
 }
 
 void ExperimentalIdentityGetAuthTokenFunction::InstallUIAbort(
@@ -209,9 +207,35 @@ void ExperimentalIdentityGetAuthTokenFunction::InstallUIAbort(
   CompleteFunctionWithError(identity_constants::kUserRejected);
 }
 
+void ExperimentalIdentityGetAuthTokenFunction::OnGetTokenSuccess(
+      const OAuth2TokenService::Request* request,
+      const std::string& access_token,
+      const base::Time& expiration_time) {
+  DCHECK_EQ(login_token_request_.get(), request);
+  login_token_request_.reset();
+  StartGaiaRequest(access_token);
+}
+
+void ExperimentalIdentityGetAuthTokenFunction::OnGetTokenFailure(
+      const OAuth2TokenService::Request* request,
+      const GoogleServiceAuthError& error) {
+  DCHECK_EQ(login_token_request_.get(), request);
+  login_token_request_.reset();
+
+  CompleteFunctionWithError(
+      std::string(identity_constants::kAuthFailure) + error.ToString());
+}
+
+void ExperimentalIdentityGetAuthTokenFunction::StartLoginAccessTokenRequest() {
+  login_token_request_ =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile())->
+          StartRequest(OAuth2TokenService::ScopeSet(), this);
+}
+
 void ExperimentalIdentityGetAuthTokenFunction::StartGaiaRequest(
-    OAuth2MintTokenFlow::Mode mode) {
-  mint_token_flow_.reset(CreateMintTokenFlow(mode));
+    const std::string& login_access_token) {
+  DCHECK(!login_access_token.empty());
+  mint_token_flow_.reset(CreateMintTokenFlow(login_access_token));
   mint_token_flow_->Start();
 }
 
@@ -227,11 +251,11 @@ void ExperimentalIdentityGetAuthTokenFunction::ShowOAuthApprovalDialog(
 
 OAuth2MintTokenFlow*
 ExperimentalIdentityGetAuthTokenFunction::CreateMintTokenFlow(
-    OAuth2MintTokenFlow::Mode mode) {
+    const std::string& login_access_token) {
 #if defined(OS_CHROMEOS)
   // Always force minting token for ChromeOS kiosk app.
   if (chrome::IsRunningInForcedAppMode())
-    mode = OAuth2MintTokenFlow::MODE_MINT_TOKEN_FORCE;
+    gaia_mint_token_mode_ = OAuth2MintTokenFlow::MODE_MINT_TOKEN_FORCE;
 #endif
 
   const OAuth2Info& oauth2_info = OAuth2Info::GetOAuth2Info(GetExtension());
@@ -240,11 +264,11 @@ ExperimentalIdentityGetAuthTokenFunction::CreateMintTokenFlow(
           profile()->GetRequestContext(),
           this,
           OAuth2MintTokenFlow::Parameters(
-              refresh_token_,
+              login_access_token,
               GetExtension()->id(),
               oauth2_info.client_id,
               oauth2_info.scopes,
-              mode));
+              gaia_mint_token_mode_));
 #if defined(OS_CHROMEOS)
   if (chrome::IsRunningInForcedAppMode()) {
     std::string chrome_client_id;
@@ -260,8 +284,8 @@ ExperimentalIdentityGetAuthTokenFunction::CreateMintTokenFlow(
 }
 
 bool ExperimentalIdentityGetAuthTokenFunction::HasLoginToken() const {
-  TokenService* token_service = TokenServiceFactory::GetForProfile(profile());
-  return token_service->HasOAuthLoginToken();
+  return ProfileOAuth2TokenServiceFactory::GetForProfile(profile())->
+      RefreshTokenIsAvailable();
 }
 
 ExperimentalIdentityLaunchWebAuthFlowFunction::

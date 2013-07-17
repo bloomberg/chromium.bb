@@ -238,10 +238,15 @@ class WaitForGURLAndCloseWindow : public content::WindowedNotificationObserver {
 
 class MockGetAuthTokenFunction : public IdentityGetAuthTokenFunction {
  public:
-  MockGetAuthTokenFunction() : login_ui_result_(true),
+  MockGetAuthTokenFunction() : login_access_token_result_(true),
+                               login_ui_result_(true),
                                scope_ui_result_(true),
                                login_ui_shown_(false),
                                scope_ui_shown_(false) {
+  }
+
+  void set_login_access_token_result(bool result) {
+    login_access_token_result_ = result;
   }
 
   void set_login_ui_result(bool result) {
@@ -267,11 +272,22 @@ class MockGetAuthTokenFunction : public IdentityGetAuthTokenFunction {
     return scope_ui_shown_;
   }
 
+  virtual void StartLoginAccessTokenRequest() OVERRIDE {
+    if (login_access_token_result_) {
+      OnGetTokenSuccess(login_token_request_.get(), "access_token",
+          base::Time::Now() + base::TimeDelta::FromHours(1LL));
+    } else {
+      GoogleServiceAuthError error(
+          GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
+      OnGetTokenFailure(login_token_request_.get(), error);
+    }
+  }
+
   virtual void ShowLoginPopup() OVERRIDE {
     EXPECT_FALSE(login_ui_shown_);
     login_ui_shown_ = true;
     if (login_ui_result_)
-      SigninSuccess("fake_refresh_token");
+      SigninSuccess();
     else
       SigninFailed();
   }
@@ -293,10 +309,11 @@ class MockGetAuthTokenFunction : public IdentityGetAuthTokenFunction {
 
   MOCK_CONST_METHOD0(HasLoginToken, bool());
   MOCK_METHOD1(CreateMintTokenFlow,
-               OAuth2MintTokenFlow* (OAuth2MintTokenFlow::Mode mode));
+               OAuth2MintTokenFlow* (const std::string& login_access_token));
 
  private:
   ~MockGetAuthTokenFunction() {}
+  bool login_access_token_result_;
   bool login_ui_result_;
   bool scope_ui_result_;
   GaiaWebAuthFlow::Failure scope_ui_failure_;
@@ -398,6 +415,18 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   EXPECT_TRUE(StartsWithASCII(error, errors::kAuthFailure, false));
   EXPECT_FALSE(func->login_ui_shown());
   EXPECT_FALSE(func->scope_ui_shown());
+}
+
+IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
+                       NonInteractiveLoginAccessTokenFailure) {
+  scoped_refptr<MockGetAuthTokenFunction> func(new MockGetAuthTokenFunction());
+  func->set_extension(CreateExtension(CLIENT_ID | SCOPES));
+  EXPECT_CALL(*func.get(), HasLoginToken())
+      .WillOnce(Return(true));
+  func->set_login_access_token_result(false);
+  std::string error = utils::RunFunctionAndReturnError(
+      func.get(), "[{}]", browser());
+  EXPECT_TRUE(StartsWithASCII(error, errors::kAuthFailure, false));
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
@@ -512,6 +541,20 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   TestOAuth2MintTokenFlow* flow = new TestOAuth2MintTokenFlow(
       TestOAuth2MintTokenFlow::MINT_TOKEN_FAILURE, func.get());
   EXPECT_CALL(*func.get(), CreateMintTokenFlow(_)).WillOnce(Return(flow));
+  std::string error = utils::RunFunctionAndReturnError(
+      func.get(), "[{\"interactive\": true}]", browser());
+  EXPECT_TRUE(StartsWithASCII(error, errors::kAuthFailure, false));
+  EXPECT_TRUE(func->login_ui_shown());
+  EXPECT_FALSE(func->scope_ui_shown());
+}
+
+IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
+                       InteractiveLoginSuccessLoginAccessTokenFailure) {
+  scoped_refptr<MockGetAuthTokenFunction> func(new MockGetAuthTokenFunction());
+  func->set_extension(CreateExtension(CLIENT_ID | SCOPES));
+  EXPECT_CALL(*func.get(), HasLoginToken()).WillOnce(Return(false));
+  func->set_login_ui_result(true);
+  func->set_login_access_token_result(false);
   std::string error = utils::RunFunctionAndReturnError(
       func.get(), "[{\"interactive\": true}]", browser());
   EXPECT_TRUE(StartsWithASCII(error, errors::kAuthFailure, false));

@@ -15,6 +15,7 @@
 #include "chrome/browser/extensions/api/identity/identity_signin_flow.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
+#include "chrome/browser/signin/oauth2_token_service.h"
 #include "google_apis/gaia/oauth2_mint_token_flow.h"
 
 namespace extensions {
@@ -44,7 +45,8 @@ class ExperimentalIdentityGetAuthTokenFunction
     : public AsyncExtensionFunction,
       public ExtensionInstallPrompt::Delegate,
       public OAuth2MintTokenFlow::Delegate,
-      public IdentitySigninFlow::Delegate {
+      public IdentitySigninFlow::Delegate,
+      public OAuth2TokenService::Consumer {
  public:
   DECLARE_EXTENSION_FUNCTION("experimental.identity.getAuthToken",
                              EXPERIMENTAL_IDENTITY_GETAUTHTOKEN);
@@ -76,29 +78,41 @@ class ExperimentalIdentityGetAuthTokenFunction
       const IssueAdviceInfo& issue_advice) OVERRIDE;
 
   // IdentitySigninFlow::Delegate implementation:
-  virtual void SigninSuccess(const std::string& token) OVERRIDE;
+  virtual void SigninSuccess() OVERRIDE;
   virtual void SigninFailed() OVERRIDE;
 
   // ExtensionInstallPrompt::Delegate implementation:
   virtual void InstallUIProceed() OVERRIDE;
   virtual void InstallUIAbort(bool user_initiated) OVERRIDE;
 
+  // OAuth2TokenService::Consumer implementation:
+  virtual void OnGetTokenSuccess(
+      const OAuth2TokenService::Request* request,
+      const std::string& access_token,
+      const base::Time& expiration_time) OVERRIDE;
+  virtual void OnGetTokenFailure(
+      const OAuth2TokenService::Request* request,
+      const GoogleServiceAuthError& error) OVERRIDE;
+
+  // Starts a login access token request.
+  virtual void StartLoginAccessTokenRequest();
+
   // Starts a mint token request to GAIA.
-  void StartGaiaRequest(OAuth2MintTokenFlow::Mode mode);
+  void StartGaiaRequest(const std::string& login_access_token);
 
   // Methods for invoking UI. Overridable for testing.
   virtual void ShowLoginPopup();
   virtual void ShowOAuthApprovalDialog(const IssueAdviceInfo& issue_advice);
   // Caller owns the returned instance.
   virtual OAuth2MintTokenFlow* CreateMintTokenFlow(
-      OAuth2MintTokenFlow::Mode mode);
+      const std::string& login_access_token);
 
   // Checks if there is a master login token to mint tokens for the extension.
   virtual bool HasLoginToken() const;
 
   bool should_prompt_for_scopes_;
   scoped_ptr<OAuth2MintTokenFlow> mint_token_flow_;
-  std::string refresh_token_;
+  OAuth2MintTokenFlow::Mode gaia_mint_token_mode_;
   bool should_prompt_for_signin_;
 
   // When launched in interactive mode, and if there is no existing grant,
@@ -106,6 +120,7 @@ class ExperimentalIdentityGetAuthTokenFunction
   IssueAdviceInfo issue_advice_;
   scoped_ptr<ExtensionInstallPrompt> install_ui_;
   scoped_ptr<IdentitySigninFlow> signin_flow_;
+  scoped_ptr<OAuth2TokenService::Request> login_token_request_;
 };
 
 class ExperimentalIdentityLaunchWebAuthFlowFunction

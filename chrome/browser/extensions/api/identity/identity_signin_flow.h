@@ -8,8 +8,7 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
+#include "chrome/browser/signin/oauth2_token_service.h"
 
 class Profile;
 
@@ -19,14 +18,14 @@ namespace extensions {
 // interactive Identity API call. The UI is launched through the LoginUIService.
 // When the flow completes, the delegate is notified, and on success will
 // be given an OAuth2 login refresh token.
-class IdentitySigninFlow : public content::NotificationObserver {
+class IdentitySigninFlow : public OAuth2TokenService::Observer {
  public:
   class Delegate {
    public:
     Delegate() {}
     virtual ~Delegate() {}
     // Called when the flow has completed successfully.
-    virtual void SigninSuccess(const std::string& token) = 0;
+    virtual void SigninSuccess() = 0;
     // Called when the flow has failed.
     virtual void SigninFailed() = 0;
 
@@ -40,16 +39,12 @@ class IdentitySigninFlow : public content::NotificationObserver {
   // Starts the flow. Should only be called once.
   void Start();
 
-  // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  // OAuth2TokenService::Observer implementation:
+  virtual void OnRefreshTokenAvailable(const std::string& account_id) OVERRIDE;
 
  private:
   Delegate* delegate_;
   Profile* profile_;
-  // Used to listen to notifications from the TokenService.
-  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(IdentitySigninFlow);
 };

@@ -17,8 +17,8 @@
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/image_loader.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/token_service.h"
-#include "chrome/browser/signin/token_service_factory.h"
+#include "chrome/browser/signin/profile_oauth2_token_service.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_switches.h"
@@ -704,24 +704,46 @@ void ExtensionInstallPrompt::FetchOAuthIssueAdviceIfNeeded() {
     return;
   }
 
-  Profile* profile = install_ui_->profile();
-  // The token service can be NULL for incognito profiles.
-  TokenService* token_service = TokenServiceFactory::GetForProfile(profile);
-  if (!token_service) {
+  ProfileOAuth2TokenService* token_service =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(install_ui_->profile());
+  if (!token_service || !token_service->RefreshTokenIsAvailable()) {
     ShowConfirmation();
     return;
   }
 
+  // Get an access token from the token service.
+  login_token_request_ = token_service->StartRequest(
+      OAuth2TokenService::ScopeSet(), this);
+}
+
+void ExtensionInstallPrompt::OnGetTokenSuccess(
+    const OAuth2TokenService::Request* request,
+    const std::string& access_token,
+    const base::Time& expiration_time) {
+  DCHECK_EQ(login_token_request_.get(), request);
+  login_token_request_.reset();
+
+  const extensions::OAuth2Info& oauth2_info =
+      extensions::OAuth2Info::GetOAuth2Info(extension_);
+
   token_flow_.reset(new OAuth2MintTokenFlow(
-      profile->GetRequestContext(),
+      install_ui_->profile()->GetRequestContext(),
       this,
       OAuth2MintTokenFlow::Parameters(
-          token_service->GetOAuth2LoginRefreshToken(),
+          access_token,
           extension_->id(),
           oauth2_info.client_id,
           oauth2_info.scopes,
           OAuth2MintTokenFlow::MODE_ISSUE_ADVICE)));
   token_flow_->Start();
+}
+
+void ExtensionInstallPrompt::OnGetTokenFailure(
+    const OAuth2TokenService::Request* request,
+    const GoogleServiceAuthError& error) {
+  DCHECK_EQ(login_token_request_.get(), request);
+  login_token_request_.reset();
+  ShowConfirmation();
 }
 
 void ExtensionInstallPrompt::OnIssueAdviceSuccess(

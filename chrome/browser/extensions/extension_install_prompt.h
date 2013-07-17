@@ -14,6 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/extensions/crx_installer_error.h"
+#include "chrome/browser/signin/oauth2_token_service.h"
 #include "extensions/common/url_pattern.h"
 #include "google_apis/gaia/oauth2_mint_token_flow.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -47,6 +48,7 @@ class PermissionSet;
 // Displays all the UI around extension installation.
 class ExtensionInstallPrompt
     : public OAuth2MintTokenFlow::Delegate,
+      public OAuth2TokenService::Consumer,
       public base::SupportsWeakPtr<ExtensionInstallPrompt> {
  public:
   enum PromptType {
@@ -353,6 +355,13 @@ class ExtensionInstallPrompt
   // Starts fetching warnings for OAuth2 scopes, if there are any.
   void FetchOAuthIssueAdviceIfNeeded();
 
+  // OAuth2TokenService::Consumer implementation:
+  virtual void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
+                                 const std::string& access_token,
+                                 const base::Time& expiration_time) OVERRIDE;
+  virtual void OnGetTokenFailure(const OAuth2TokenService::Request* request,
+                                 const GoogleServiceAuthError& error) OVERRIDE;
+
   // OAuth2MintTokenFlow::Delegate implementation:
   virtual void OnIssueAdviceSuccess(
       const IssueAdviceInfo& issue_advice) OVERRIDE;
@@ -389,6 +398,7 @@ class ExtensionInstallPrompt
   // A pre-filled prompt.
   Prompt prompt_;
 
+  scoped_ptr<OAuth2TokenService::Request> login_token_request_;
   scoped_ptr<OAuth2MintTokenFlow> token_flow_;
 
   // Used to show the confirm dialog.

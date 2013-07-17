@@ -5,14 +5,10 @@
 #include "chrome/browser/extensions/api/identity/identity_signin_flow.h"
 
 #include "chrome/browser/app_mode/app_mode_utils.h"
-#include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/signin/token_service.h"
-#include "chrome/browser/signin/token_service_factory.h"
+#include "chrome/browser/signin/profile_oauth2_token_service.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_source.h"
-#include "google_apis/gaia/gaia_constants.h"
 
 namespace extensions {
 
@@ -22,6 +18,8 @@ IdentitySigninFlow::IdentitySigninFlow(Delegate* delegate, Profile* profile)
 }
 
 IdentitySigninFlow::~IdentitySigninFlow() {
+  ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)->
+      RemoveObserver(this);
 }
 
 void IdentitySigninFlow::Start() {
@@ -36,24 +34,16 @@ void IdentitySigninFlow::Start() {
   }
 #endif
 
-  TokenService* token_service = TokenServiceFactory::GetForProfile(profile_);
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_TOKEN_AVAILABLE,
-                 content::Source<TokenService>(token_service));
+  ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)->AddObserver(this);
 
   LoginUIService* login_ui_service =
       LoginUIServiceFactory::GetForProfile(profile_);
   login_ui_service->ShowLoginPopup();
 }
 
-void IdentitySigninFlow::Observe(int type,
-                                 const content::NotificationSource& source,
-                                 const content::NotificationDetails& details) {
-  CHECK(type == chrome::NOTIFICATION_TOKEN_AVAILABLE);
-  TokenService::TokenAvailableDetails* token_details =
-      content::Details<TokenService::TokenAvailableDetails>(details).ptr();
-  if (token_details->service() == GaiaConstants::kGaiaOAuth2LoginRefreshToken)
-    delegate_->SigninSuccess(token_details->token());
+void IdentitySigninFlow::OnRefreshTokenAvailable(
+    const std::string& account_id) {
+  delegate_->SigninSuccess();
 }
 
 }  // namespace extensions
