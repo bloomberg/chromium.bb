@@ -8,7 +8,6 @@
 #include "base/message_loop.h"
 #include "chrome/browser/captive_portal/captive_portal_detector.h"
 #include "chrome/browser/captive_portal/testing_utils.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_impl.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/dbus_thread_manager.h"

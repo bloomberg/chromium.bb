@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "base/strings/string_util.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/net/connectivity_state_helper.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/gaia_constants.h"

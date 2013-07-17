@@ -21,8 +21,6 @@
 #include "base/sys_info.h"
 #elif defined(OS_WIN)
 #include "base/win/windows_version.h"
-#elif defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/cros/cros_library.h"
 #endif
 
 class Profile;

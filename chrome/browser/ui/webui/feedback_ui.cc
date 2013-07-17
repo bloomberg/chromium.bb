@@ -60,7 +60,6 @@
 #include "ash/shell_delegate.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"

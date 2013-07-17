@@ -10,7 +10,6 @@
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/native_network_constants.h"
 #include "chrome/browser/chromeos/cros/native_network_parser.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"

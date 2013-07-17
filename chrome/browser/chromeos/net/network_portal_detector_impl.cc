@@ -10,7 +10,6 @@
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"

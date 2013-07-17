@@ -18,7 +18,6 @@
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/system_logs/system_logs_fetcher.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_paths.h"
