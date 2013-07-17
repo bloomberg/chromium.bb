@@ -101,7 +101,7 @@ onload = function() {
     indicator.innerText = "";
   }
   webview.addEventListener("loadstart", loadstart);
-  webview.addEvevntListener("loadstop", loadstop);
+  webview.addEventListener("loadstop", loadstop);
 }
 </pre>
 
@@ -394,8 +394,8 @@ onload = function() {
   <div class="description">
     <p>
     Fired when all loads in the tag (including all subframes) have completed.
-    Fires in addition to any <a href="#event-loadcommit">loadCommit</a>
-    or <a href="#event-loadabort">loadAbort</a> events,
+    Fires in addition to any <a href="#event-loadcommit">loadcommit</a>
+    or <a href="#event-loadabort">loadabort</a> events,
     which occur per-frame.
     </p>
   </div>
