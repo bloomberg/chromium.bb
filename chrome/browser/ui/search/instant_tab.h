@@ -20,6 +20,12 @@ class InstantTab : public InstantPage {
   // the page supports the Instant API.
   void Init(content::WebContents* contents);
 
+  // Used to log each time the user mouses over NTP tiles or titles.
+  static void CountMouseover(content::WebContents* contents);
+
+  // Used to log in UMA the total number of mouseovers over NTP tiles/titles.
+  static void EmitMouseoverCount(content::WebContents* contents);
+
  private:
   // Overridden from InstantPage:
   virtual bool ShouldProcessAboutToNavigateMainFrame() OVERRIDE;

@@ -2171,6 +2171,8 @@
         'browser/ui/webui/ntp/ntp_resource_cache_factory.cc',
         'browser/ui/webui/ntp/ntp_resource_cache_factory.h',
         'browser/ui/webui/ntp/ntp_stats.h',
+        'browser/ui/webui/ntp/ntp_user_data_logger.cc',
+        'browser/ui/webui/ntp/ntp_user_data_logger.h',
         'browser/ui/webui/ntp/recently_closed_tabs_handler.cc',
         'browser/ui/webui/ntp/recently_closed_tabs_handler.h',
         'browser/ui/webui/ntp/suggestions_combiner.cc',

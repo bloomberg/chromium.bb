@@ -46,6 +46,9 @@ class MetricsHandler : public content::WebUIMessageHandler {
   // Callback for the "metricsHandler:logEventTime" message.
   void HandleLogEventTime(const base::ListValue* args);
 
+  // Used to log when a user mouses over a tile or title on the NTP.
+  void HandleLogMouseover(const base::ListValue* args);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(MetricsHandler);
 };

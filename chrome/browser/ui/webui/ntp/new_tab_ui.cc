@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/webui/ntp/most_visited_handler.h"
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache.h"
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache_factory.h"
+#include "chrome/browser/ui/webui/ntp/ntp_user_data_logger.h"
 #include "chrome/browser/ui/webui/ntp/recently_closed_tabs_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -83,6 +84,16 @@ NewTabUI::NewTabUI(content::WebUI* web_ui)
       showing_sync_bubble_(false) {
   g_live_new_tabs.Pointer()->insert(this);
   web_ui->OverrideTitle(l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE));
+
+  content::WebContents* web_contents = web_ui->GetWebContents();
+  NTPUserDataLogger::CreateForWebContents(web_contents);
+  NTPUserDataLogger::FromWebContents(web_contents)->set_ntp_url(
+      GURL(chrome::kChromeUINewTabURL));
+
+  registrar_.Add(
+      this,
+      content::NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED,
+      content::Source<content::WebContents>(web_contents));
 
   // We count all link clicks as AUTO_BOOKMARK, so that site can be ranked more
   // highly. Note this means we're including clicks on not only most visited
@@ -215,9 +226,22 @@ void NewTabUI::Observe(int type,
       last_paint_ = base::TimeTicks::Now();
       break;
     }
+    case content::NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED: {
+      if (!*content::Details<bool>(details).ptr()) {
+        EmitMouseoverCount(
+            content::Source<content::WebContents>(source).ptr());
+      }
+      break;
+    }
     default:
       CHECK(false) << "Unexpected notification: " << type;
   }
+}
+
+void NewTabUI::EmitMouseoverCount(content::WebContents* web_contents) {
+  NTPUserDataLogger* data = NTPUserDataLogger::FromWebContents(web_contents);
+  if (data->ntp_url() == GURL(chrome::kChromeUINewTabURL))
+    data->EmitMouseoverCount();
 }
 
 void NewTabUI::OnShowBookmarkBarChanged() {

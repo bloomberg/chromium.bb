@@ -13,6 +13,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/metrics/metric_event_duration_details.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
+#include "chrome/browser/ui/webui/ntp/ntp_user_data_logger.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
@@ -36,6 +37,9 @@ void MetricsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "metricsHandler:logEventTime",
       base::Bind(&MetricsHandler::HandleLogEventTime, base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "metricsHandler:logMouseover",
+      base::Bind(&MetricsHandler::HandleLogMouseover, base::Unretained(this)));
 }
 
 void MetricsHandler::HandleRecordAction(const ListValue* args) {
@@ -108,4 +112,11 @@ void MetricsHandler::HandleLogEventTime(const ListValue* args) {
       chrome::NOTIFICATION_METRIC_EVENT_DURATION,
       content::Source<WebContents>(tab),
       content::Details<MetricEventDurationDetails>(&details));
+}
+
+void MetricsHandler::HandleLogMouseover(const ListValue* args) {
+  NTPUserDataLogger* data = NTPUserDataLogger::FromWebContents(
+      web_ui()->GetWebContents());
+  if (data)
+    data->increment_number_of_mouseovers();
 }

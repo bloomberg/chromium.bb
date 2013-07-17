@@ -33,6 +33,7 @@ cr.define('ntp', function() {
 
       this.addEventListener('click', this.handleClick_);
       this.addEventListener('keydown', this.handleKeyDown_);
+      this.addEventListener('mouseover', this.handleMouseOver_);
     },
 
     get index() {
@@ -158,6 +159,22 @@ cr.define('ntp', function() {
           cr.isMac && e.metaKey && e.keyCode == 8) { // Cmd + Backspace
         this.blacklist_();
       }
+    },
+
+    /**
+     * The mouse has entered a Most Visited tile div. Only log the first
+     * mouseover event. By doing this we solve the issue with the mouseover
+     * event listener that bubbles up to the parent, which would cause it to
+     * fire multiple times even if the mouse stays within one tile.
+     */
+    handleMouseOver_: function(e) {
+      var self = this;
+      var ancestor = findAncestor(e.relatedTarget, function(node) {
+        return node == self;
+      });
+      // If ancestor is null, mouse is entering the parent element.
+      if (ancestor == null)
+        chrome.send('metricsHandler:logMouseover');
     },
 
     /**

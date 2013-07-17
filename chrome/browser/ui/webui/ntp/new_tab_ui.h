@@ -14,6 +14,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/url_data_source.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_controller.h"
 
 class GURL;
@@ -104,6 +105,10 @@ class NewTabUI : public content::WebUIController,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+  // If |web_contents| has an NTP URL, emits the number of NTP mouseovers
+  // associated with |web_contents|, to be logged in UMA histogram.
+  void EmitMouseoverCount(content::WebContents* web_contents);
 
   void OnShowBookmarkBarChanged();
 
