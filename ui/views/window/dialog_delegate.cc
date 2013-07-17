@@ -122,14 +122,6 @@ bool DialogDelegate::IsDialogButtonEnabled(ui::DialogButton button) const {
   return true;
 }
 
-bool DialogDelegate::OnDialogButtonActivated(ui::DialogButton button) {
-  if (button == ui::DIALOG_BUTTON_OK)
-    return Accept();
-  if (button == ui::DIALOG_BUTTON_CANCEL)
-    return Cancel();
-  return true;
-}
-
 View* DialogDelegate::GetInitiallyFocusedView() {
   // Focus the default button if any.
   const DialogClientView* dcv = GetDialogClientView();

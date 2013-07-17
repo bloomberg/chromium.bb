@@ -78,7 +78,6 @@ class VIEWS_EXPORT DialogDelegate : public ui::DialogModel,
   virtual base::string16 GetDialogButtonLabel(
       ui::DialogButton button) const OVERRIDE;
   virtual bool IsDialogButtonEnabled(ui::DialogButton button) const OVERRIDE;
-  virtual bool OnDialogButtonActivated(ui::DialogButton button) OVERRIDE;
 
   // Overridden from WidgetDelegate:
   virtual View* GetInitiallyFocusedView() OVERRIDE;

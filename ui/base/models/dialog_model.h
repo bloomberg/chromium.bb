@@ -41,9 +41,6 @@ class UI_EXPORT DialogModel {
 
   // Returns whether the specified dialog button is enabled.
   virtual bool IsDialogButtonEnabled(DialogButton button) const = 0;
-
-  // Returns true if the dialog should be closed. Returns false otherwise.
-  virtual bool OnDialogButtonActivated(DialogButton button) = 0;
 };
 
 }  // namespace ui
