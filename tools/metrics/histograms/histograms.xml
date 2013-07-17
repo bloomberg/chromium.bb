@@ -12059,6 +12059,14 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="SimpleCache.ReadIsParallelizable"
+    enum="SimpleCacheReadParallelizable">
+  <summary>
+    For each Read operation, whether it could have been issued in parallel of a
+    previous Read operation.
+  </summary>
+</histogram>
+
 <histogram name="SimpleCache.ReadResult" enum="SimpleCacheReadResult">
   <summary>The outcome of Entry::ReadData in the simple cache.</summary>
 </histogram>
@@ -19423,6 +19431,11 @@ other types of suffix sets.
   <int value="0" label="No index"/>
   <int value="1" label="Hit"/>
   <int value="2" label="Miss"/>
+</enum>
+
+<enum name="SimpleCacheReadParallelizable" type="int">
+  <int value="0" label="Standalone Read"/>
+  <int value="1" label="Read in a sequence"/>
 </enum>
 
 <enum name="SimpleCacheReadResult" type="int">

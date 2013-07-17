@@ -108,7 +108,8 @@ SimpleEntryImpl::SimpleEntryImpl(SimpleBackendImpl* backend,
       state_(STATE_UNINITIALIZED),
       synchronous_entry_(NULL),
       net_log_(net::BoundNetLog::Make(
-          net_log, net::NetLog::SOURCE_DISK_CACHE_ENTRY)) {
+          net_log, net::NetLog::SOURCE_DISK_CACHE_ENTRY)),
+      last_queued_op_is_read_(false) {
   COMPILE_ASSERT(arraysize(data_size_) == arraysize(crc32s_end_offset_),
                  arrays_should_be_same_size);
   COMPILE_ASSERT(arraysize(data_size_) == arraysize(crc32s_),
@@ -147,8 +148,10 @@ int SimpleEntryImpl::OpenEntry(Entry** out_entry,
   if (open_entry_index_enum == INDEX_MISS)
     return net::ERR_FAILED;
 
-  pending_operations_.push(base::Bind(&SimpleEntryImpl::OpenEntryInternal,
-                                      this, callback, out_entry));
+  EnqueueOperation(base::Bind(&SimpleEntryImpl::OpenEntryInternal,
+                              this,
+                              callback,
+                              out_entry));
   RunNextOperationIfNeeded();
   return net::ERR_IO_PENDING;
 }
@@ -162,16 +165,16 @@ int SimpleEntryImpl::CreateEntry(Entry** out_entry,
       pending_operations_.size() == 0) {
     ReturnEntryToCaller(out_entry);
     // We can do optimistic Create.
-    pending_operations_.push(base::Bind(&SimpleEntryImpl::CreateEntryInternal,
-                                        this,
-                                        CompletionCallback(),
-                                        static_cast<Entry**>(NULL)));
+    EnqueueOperation(base::Bind(&SimpleEntryImpl::CreateEntryInternal,
+                                this,
+                                CompletionCallback(),
+                                static_cast<Entry**>(NULL)));
     ret_value = net::OK;
   } else {
-    pending_operations_.push(base::Bind(&SimpleEntryImpl::CreateEntryInternal,
-                                        this,
-                                        callback,
-                                        out_entry));
+    EnqueueOperation(base::Bind(&SimpleEntryImpl::CreateEntryInternal,
+                                this,
+                                callback,
+                                out_entry));
     ret_value = net::ERR_IO_PENDING;
   }
 
@@ -212,7 +215,7 @@ void SimpleEntryImpl::Close() {
     return;
   }
 
-  pending_operations_.push(base::Bind(&SimpleEntryImpl::CloseInternal, this));
+  EnqueueOperation(base::Bind(&SimpleEntryImpl::CloseInternal, this));
   DCHECK(!HasOneRef());
   Release();  // Balanced in ReturnEntryToCaller().
   RunNextOperationIfNeeded();
@@ -258,14 +261,13 @@ int SimpleEntryImpl::ReadData(int stream_index,
 
   // TODO(felipeg): Optimization: Add support for truly parallel read
   // operations.
-  pending_operations_.push(
-      base::Bind(&SimpleEntryImpl::ReadDataInternal,
-                 this,
-                 stream_index,
-                 offset,
-                 make_scoped_refptr(buf),
-                 buf_len,
-                 callback));
+  EnqueueReadOperation(base::Bind(&SimpleEntryImpl::ReadDataInternal,
+                                  this,
+                                  stream_index,
+                                  offset,
+                                  make_scoped_refptr(buf),
+                                  buf_len,
+                                  callback));
   RunNextOperationIfNeeded();
   return net::ERR_IO_PENDING;
 }
@@ -303,16 +305,24 @@ int SimpleEntryImpl::WriteData(int stream_index,
       buf_copy = new IOBuffer(buf_len);
       memcpy(buf_copy->data(), buf->data(), buf_len);
     }
-    pending_operations_.push(
-        base::Bind(&SimpleEntryImpl::WriteDataInternal, this, stream_index,
-                   offset, make_scoped_refptr(buf_copy), buf_len,
-                   CompletionCallback(), truncate));
+    EnqueueOperation(base::Bind(&SimpleEntryImpl::WriteDataInternal,
+                                this,
+                                stream_index,
+                                offset,
+                                make_scoped_refptr(buf_copy),
+                                buf_len,
+                                CompletionCallback(),
+                                truncate));
     ret_value = buf_len;
   } else {
-    pending_operations_.push(
-        base::Bind(&SimpleEntryImpl::WriteDataInternal, this, stream_index,
-                   offset, make_scoped_refptr(buf), buf_len, callback,
-                   truncate));
+    EnqueueOperation(base::Bind(&SimpleEntryImpl::WriteDataInternal,
+                                this,
+                                stream_index,
+                                offset,
+                                make_scoped_refptr(buf),
+                                buf_len,
+                                callback,
+                                truncate));
     ret_value = net::ERR_IO_PENDING;
   }
 
@@ -419,6 +429,20 @@ void SimpleEntryImpl::RunNextOperationIfNeeded() {
     operation.Run();
     // |this| may have been deleted.
   }
+}
+
+void SimpleEntryImpl::EnqueueOperation(const base::Closure& operation) {
+  last_queued_op_is_read_ = false;
+  pending_operations_.push(operation);
+}
+
+void SimpleEntryImpl::EnqueueReadOperation(const base::Closure& operation) {
+  bool parallelizable_read = last_queued_op_is_read_ &&
+      (!pending_operations_.empty() || state_ == STATE_IO_PENDING);
+  UMA_HISTOGRAM_BOOLEAN("SimpleCache.ReadIsParallelizable",
+                        parallelizable_read);
+  last_queued_op_is_read_ = true;
+  pending_operations_.push(operation);
 }
 
 void SimpleEntryImpl::OpenEntryInternal(const CompletionCallback& callback,

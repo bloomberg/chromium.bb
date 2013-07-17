@@ -144,6 +144,12 @@ class SimpleEntryImpl : public Entry, public base::RefCounted<SimpleEntryImpl>,
   // the last reference.
   void RunNextOperationIfNeeded();
 
+  // Adds a non read operation to the queue of operations.
+  void EnqueueOperation(const base::Closure& operation);
+
+  // Adds a read operation to the queue of operations.
+  void EnqueueReadOperation(const base::Closure& operation);
+
   void OpenEntryInternal(const CompletionCallback& callback, Entry** out_entry);
 
   void CreateEntryInternal(const CompletionCallback& callback,
@@ -261,6 +267,9 @@ class SimpleEntryImpl : public Entry, public base::RefCounted<SimpleEntryImpl>,
   std::queue<base::Closure> pending_operations_;
 
   net::BoundNetLog net_log_;
+
+  // Used for SimpleCache.ReadIsParallelizable histogram.
+  bool last_queued_op_is_read_;
 };
 
 }  // namespace disk_cache
