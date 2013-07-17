@@ -72,15 +72,17 @@ class CopyOrMoveOperationTestHelper {
     // Prepare the origin's root directory.
     FileSystemBackend* mount_point_provider =
         file_system_context_->GetFileSystemBackend(src_type_);
-    mount_point_provider->OpenFileSystem(
+    mount_point_provider->InitializeFileSystem(
         origin_, src_type_,
         OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
+        NULL /* context */,
         base::Bind(&ExpectOk));
     mount_point_provider =
         file_system_context_->GetFileSystemBackend(dest_type_);
-    mount_point_provider->OpenFileSystem(
+    mount_point_provider->InitializeFileSystem(
         origin_, dest_type_,
         OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
+        NULL /* context */,
         base::Bind(&ExpectOk));
     base::MessageLoop::current()->RunUntilIdle();
 

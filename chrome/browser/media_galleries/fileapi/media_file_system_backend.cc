@@ -103,11 +103,12 @@ bool MediaFileSystemBackend::CanHandleType(
   }
 }
 
-void MediaFileSystemBackend::OpenFileSystem(
+void MediaFileSystemBackend::InitializeFileSystem(
     const GURL& origin_url,
     fileapi::FileSystemType type,
     fileapi::OpenFileSystemMode mode,
-    const OpenFileSystemCallback& callback) {
+    fileapi::FileSystemContext* context,
+    const InitializeFileSystemCallback& callback) {
   // We never allow opening a new isolated FileSystem via usual OpenFileSystem.
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,

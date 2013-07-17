@@ -73,11 +73,12 @@ class WEBKIT_STORAGE_BROWSER_EXPORT SandboxFileSystemBackend
 
   // FileSystemBackend overrides.
   virtual bool CanHandleType(FileSystemType type) const OVERRIDE;
-  virtual void OpenFileSystem(
+  virtual void InitializeFileSystem(
       const GURL& origin_url,
       FileSystemType type,
       OpenFileSystemMode mode,
-      const OpenFileSystemCallback& callback) OVERRIDE;
+      FileSystemContext* context,
+      const InitializeFileSystemCallback& callback) OVERRIDE;
   virtual FileSystemFileUtil* GetFileUtil(FileSystemType type) OVERRIDE;
   virtual AsyncFileUtil* GetAsyncFileUtil(FileSystemType type) OVERRIDE;
   virtual CopyOrMoveFileValidatorFactory* GetCopyOrMoveFileValidatorFactory(

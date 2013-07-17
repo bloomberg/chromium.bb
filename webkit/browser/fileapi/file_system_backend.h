@@ -42,11 +42,11 @@ class RemoteFileSystemProxyInterface;
 //
 class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemBackend {
  public:
-  // Callback for OpenFileSystem.
+  // Callback for InitializeFileSystem.
   typedef base::Callback<void(const GURL& root_url,
                               const std::string& name,
                               base::PlatformFileError error)>
-      OpenFileSystemCallback;
+      InitializeFileSystemCallback;
   virtual ~FileSystemBackend() {}
 
   // Returns true if this mount point provider can handle |type|.
@@ -59,11 +59,12 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemBackend {
   // If |mode| is CREATE_IF_NONEXISTENT calling this may also create
   // the root directory (and/or related database entries etc) for
   // the filesystem if it doesn't exist.
-  virtual void OpenFileSystem(
+  virtual void InitializeFileSystem(
       const GURL& origin_url,
       FileSystemType type,
       OpenFileSystemMode mode,
-      const OpenFileSystemCallback& callback) = 0;
+      FileSystemContext* context,
+      const InitializeFileSystemCallback& callback) = 0;
 
   // Returns the specialized FileSystemFileUtil for this mount point.
   // It is ok to return NULL if the filesystem doesn't support synchronous

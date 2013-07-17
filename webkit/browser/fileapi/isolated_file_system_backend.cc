@@ -56,11 +56,12 @@ bool IsolatedFileSystemBackend::CanHandleType(FileSystemType type) const {
   }
 }
 
-void IsolatedFileSystemBackend::OpenFileSystem(
+void IsolatedFileSystemBackend::InitializeFileSystem(
     const GURL& origin_url,
     FileSystemType type,
     OpenFileSystemMode mode,
-    const OpenFileSystemCallback& callback) {
+    FileSystemContext* context,
+    const InitializeFileSystemCallback& callback) {
   // We never allow opening a new isolated FileSystem via usual OpenFileSystem.
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,

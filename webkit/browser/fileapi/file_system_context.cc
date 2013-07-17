@@ -269,8 +269,8 @@ void FileSystemContext::OpenFileSystem(
     return;
   }
 
-  backend->OpenFileSystem(origin_url, type, mode,
-                          base::Bind(&DidOpenFileSystem, callback));
+  backend->InitializeFileSystem(origin_url, type, mode, this,
+                                base::Bind(&DidOpenFileSystem, callback));
 }
 
 void FileSystemContext::DeleteFileSystem(

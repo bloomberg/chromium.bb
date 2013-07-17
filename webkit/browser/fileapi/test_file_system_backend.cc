@@ -148,11 +148,12 @@ bool TestFileSystemBackend::CanHandleType(FileSystemType type) const {
   return (type == kFileSystemTypeTest);
 }
 
-void TestFileSystemBackend::OpenFileSystem(
+void TestFileSystemBackend::InitializeFileSystem(
     const GURL& origin_url,
     FileSystemType type,
     OpenFileSystemMode mode,
-    const OpenFileSystemCallback& callback) {
+    FileSystemContext* context,
+    const InitializeFileSystemCallback& callback) {
   callback.Run(GetFileSystemRootURI(origin_url, type),
                GetFileSystemName(origin_url, type),
                base::PLATFORM_FILE_OK);

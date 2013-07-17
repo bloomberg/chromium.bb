@@ -66,7 +66,7 @@ class FileAccessPermissions;
 //
 class FileSystemBackend : public fileapi::ExternalFileSystemBackend {
  public:
-  using fileapi::FileSystemBackend::OpenFileSystemCallback;
+  using fileapi::FileSystemBackend::InitializeFileSystemCallback;
 
   // FileSystemBackend will take an ownership of a |mount_points|
   // reference. On the other hand, |system_mount_points| will be kept as a raw
@@ -90,11 +90,12 @@ class FileSystemBackend : public fileapi::ExternalFileSystemBackend {
 
   // fileapi::FileSystemBackend overrides.
   virtual bool CanHandleType(fileapi::FileSystemType type) const OVERRIDE;
-  virtual void OpenFileSystem(
+  virtual void InitializeFileSystem(
       const GURL& origin_url,
       fileapi::FileSystemType type,
       fileapi::OpenFileSystemMode mode,
-      const OpenFileSystemCallback& callback) OVERRIDE;
+      fileapi::FileSystemContext* context,
+      const InitializeFileSystemCallback& callback) OVERRIDE;
   virtual fileapi::FileSystemFileUtil* GetFileUtil(
       fileapi::FileSystemType type) OVERRIDE;
   virtual fileapi::AsyncFileUtil* GetAsyncFileUtil(

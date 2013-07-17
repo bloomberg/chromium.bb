@@ -63,9 +63,10 @@ class CopyOrMoveFileValidatorTestHelper {
     // Sets up source.
     FileSystemBackend* src_file_system_backend =
         file_system_context_->GetFileSystemBackend(src_type_);
-    src_file_system_backend->OpenFileSystem(
+    src_file_system_backend->InitializeFileSystem(
         origin_, src_type_,
         OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
+        NULL /* context */,
         base::Bind(&ExpectOk));
     base::MessageLoop::current()->RunUntilIdle();
     ASSERT_EQ(base::PLATFORM_FILE_OK, CreateDirectory(SourceURL("")));

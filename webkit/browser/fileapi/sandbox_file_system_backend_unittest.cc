@@ -113,8 +113,8 @@ class SandboxFileSystemBackendTest : public testing::Test {
                    OpenFileSystemMode mode,
                    base::FilePath* root_path) {
     base::PlatformFileError error = base::PLATFORM_FILE_OK;
-    backend_->OpenFileSystem(
-        origin_url, type, mode,
+    backend_->InitializeFileSystem(
+        origin_url, type, mode, NULL /* context */,
         base::Bind(&DidOpenFileSystem, &error));
     base::MessageLoop::current()->RunUntilIdle();
     if (error != base::PLATFORM_FILE_OK)

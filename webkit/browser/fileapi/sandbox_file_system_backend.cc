@@ -173,11 +173,12 @@ bool SandboxFileSystemBackend::CanHandleType(FileSystemType type) const {
          type == kFileSystemTypeSyncableForInternalSync;
 }
 
-void SandboxFileSystemBackend::OpenFileSystem(
+void SandboxFileSystemBackend::InitializeFileSystem(
     const GURL& origin_url,
     fileapi::FileSystemType type,
     OpenFileSystemMode mode,
-    const OpenFileSystemCallback& callback) {
+    FileSystemContext* context,
+    const InitializeFileSystemCallback& callback) {
   if (file_system_options_.is_incognito() &&
       !(type == kFileSystemTypeTemporary &&
         enable_temporary_file_system_in_incognito_)) {
