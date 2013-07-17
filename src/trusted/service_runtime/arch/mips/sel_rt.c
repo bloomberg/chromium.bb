@@ -84,5 +84,6 @@ void NaClThreadContextToSignalContext(const struct NaClThreadContext *th_ctx,
   sig_ctx->global_ptr  = 0;
   sig_ctx->stack_ptr   = th_ctx->stack_ptr;
   sig_ctx->frame_ptr   = th_ctx->frame_ptr;
-  sig_ctx->return_addr = th_ctx->prog_ctr;
+  sig_ctx->prog_ctr    = th_ctx->new_prog_ctr;
+  sig_ctx->return_addr = 0;
 }
