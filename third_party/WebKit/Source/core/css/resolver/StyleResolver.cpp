@@ -484,42 +484,43 @@ bool StyleResolver::styleSharingCandidateMatchesRuleSet(const ElementResolveCont
     return collector.hasAnyMatchingRules(ruleSet);
 }
 
-static void getFontAndGlyphOrientation(const RenderStyle* style, FontOrientation& fontOrientation, NonCJKGlyphOrientation& glyphOrientation)
+static void setStylesForPaginationMode(Pagination::Mode paginationMode, RenderStyle* style)
 {
-    if (style->isHorizontalWritingMode()) {
-        fontOrientation = Horizontal;
-        glyphOrientation = NonCJKGlyphOrientationVerticalRight;
+    if (paginationMode == Pagination::Unpaginated)
         return;
-    }
 
-    switch (style->textOrientation()) {
-    case TextOrientationVerticalRight:
-        fontOrientation = Vertical;
-        glyphOrientation = NonCJKGlyphOrientationVerticalRight;
-        return;
-    case TextOrientationUpright:
-        fontOrientation = Vertical;
-        glyphOrientation = NonCJKGlyphOrientationUpright;
-        return;
-    case TextOrientationSideways:
-        if (style->writingMode() == LeftToRightWritingMode) {
-            // FIXME: This should map to sideways-left, which is not supported yet.
-            fontOrientation = Vertical;
-            glyphOrientation = NonCJKGlyphOrientationVerticalRight;
-            return;
-        }
-        fontOrientation = Horizontal;
-        glyphOrientation = NonCJKGlyphOrientationVerticalRight;
-        return;
-    case TextOrientationSidewaysRight:
-        fontOrientation = Horizontal;
-        glyphOrientation = NonCJKGlyphOrientationVerticalRight;
-        return;
-    default:
+    switch (paginationMode) {
+    case Pagination::LeftToRightPaginated:
+        style->setColumnAxis(HorizontalColumnAxis);
+        if (style->isHorizontalWritingMode())
+            style->setColumnProgression(style->isLeftToRightDirection() ? NormalColumnProgression : ReverseColumnProgression);
+        else
+            style->setColumnProgression(style->isFlippedBlocksWritingMode() ? ReverseColumnProgression : NormalColumnProgression);
+        break;
+    case Pagination::RightToLeftPaginated:
+        style->setColumnAxis(HorizontalColumnAxis);
+        if (style->isHorizontalWritingMode())
+            style->setColumnProgression(style->isLeftToRightDirection() ? ReverseColumnProgression : NormalColumnProgression);
+        else
+            style->setColumnProgression(style->isFlippedBlocksWritingMode() ? NormalColumnProgression : ReverseColumnProgression);
+        break;
+    case Pagination::TopToBottomPaginated:
+        style->setColumnAxis(VerticalColumnAxis);
+        if (style->isHorizontalWritingMode())
+            style->setColumnProgression(style->isFlippedBlocksWritingMode() ? ReverseColumnProgression : NormalColumnProgression);
+        else
+            style->setColumnProgression(style->isLeftToRightDirection() ? NormalColumnProgression : ReverseColumnProgression);
+        break;
+    case Pagination::BottomToTopPaginated:
+        style->setColumnAxis(VerticalColumnAxis);
+        if (style->isHorizontalWritingMode())
+            style->setColumnProgression(style->isFlippedBlocksWritingMode() ? NormalColumnProgression : ReverseColumnProgression);
+        else
+            style->setColumnProgression(style->isLeftToRightDirection() ? ReverseColumnProgression : NormalColumnProgression);
+        break;
+    case Pagination::Unpaginated:
         ASSERT_NOT_REACHED();
-        fontOrientation = Horizontal;
-        glyphOrientation = NonCJKGlyphOrientationVerticalRight;
-        return;
+        break;
     }
 }
 
@@ -584,32 +585,9 @@ PassRefPtr<RenderStyle> StyleResolver::styleForDocument(const Document* document
     if (seamlessWithParent)
         return documentStyle.release();
 
-    FontDescription fontDescription;
-    fontDescription.setScript(localeToScriptCodeForFontSelection(documentStyle->locale()));
-    if (Settings* settings = document->settings()) {
-        fontDescription.setUsePrinterFont(document->printing());
-        const AtomicString& standardFont = settings->standardFontFamily(fontDescription.script());
-        if (!standardFont.isEmpty()) {
-            fontDescription.setGenericFamily(FontDescription::StandardFamily);
-            fontDescription.firstFamily().setFamily(standardFont);
-            fontDescription.firstFamily().appendFamily(0);
-        }
-        fontDescription.setKeywordSize(CSSValueMedium - CSSValueXxSmall + 1);
-        int size = FontSize::fontSizeForKeyword(document, CSSValueMedium, false);
-        fontDescription.setSpecifiedSize(size);
-        bool useSVGZoomRules = document->isSVGDocument();
-        fontDescription.setComputedSize(getComputedSizeFromSpecifiedSize(document, documentStyle.get(), fontDescription.isAbsoluteSize(), size, useSVGZoomRules));
-    } else
-        fontDescription.setUsePrinterFont(document->printing());
-
-    FontOrientation fontOrientation;
-    NonCJKGlyphOrientation glyphOrientation;
-    getFontAndGlyphOrientation(documentStyle.get(), fontOrientation, glyphOrientation);
-    fontDescription.setOrientation(fontOrientation);
-    fontDescription.setNonCJKGlyphOrientation(glyphOrientation);
-
-    documentStyle->setFontDescription(fontDescription);
-    documentStyle->font().update(fontSelector);
+    FontBuilder fontBuilder;
+    fontBuilder.initForStyleResolve(document, documentStyle.get(), document->isSVGDocument());
+    fontBuilder.createFontForDocument(fontSelector, documentStyle.get());
 
     return documentStyle.release();
 }
@@ -674,6 +652,8 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
         }
     }
 
+    state.fontBuilder().initForStyleResolve(state.document(), state.style(), state.useSVGZoomRules());
+
     if (element->isLink()) {
         state.style()->setIsLink(true);
         EInsideLink linkState = state.elementLinkState();
@@ -733,6 +713,8 @@ PassRefPtr<RenderStyle> StyleResolver::styleForKeyframe(Element* e, const Render
     // Create the style
     state.setStyle(RenderStyle::clone(elementStyle));
     state.setLineHeightValue(0);
+
+    state.fontBuilder().initForStyleResolve(state.document(), state.style(), state.useSVGZoomRules());
 
     // We don't need to bother with !important. Since there is only ever one
     // decl, there's nothing to override. So just add the first properties.
@@ -857,6 +839,8 @@ PassRefPtr<RenderStyle> StyleResolver::pseudoStyleForElement(Element* e, const P
         state.setParentStyle(RenderStyle::clone(state.style()));
     }
 
+    state.fontBuilder().initForStyleResolve(state.document(), state.style(), state.useSVGZoomRules());
+
     // Since we don't use pseudo-elements in any of our quirk/print
     // user agent rules, don't waste time walking those rules.
 
@@ -903,6 +887,8 @@ PassRefPtr<RenderStyle> StyleResolver::styleForPage(int pageIndex)
     state.setStyle(RenderStyle::create());
     state.style()->inheritFrom(state.rootElementStyle());
 
+    state.fontBuilder().initForStyleResolve(state.document(), state.style(), state.useSVGZoomRules());
+
     PageRuleCollector collector(state.elementContext(), pageIndex);
 
     collector.matchPageRules(CSSDefaultStyleSheets::defaultPrintStyle);
@@ -939,6 +925,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForPage(int pageIndex)
 PassRefPtr<RenderStyle> StyleResolver::defaultStyleForElement()
 {
     m_state.setStyle(RenderStyle::create());
+    m_state.fontBuilder().initForStyleResolve(document(), m_state.style(), m_state.useSVGZoomRules());
     // Make sure our fonts are initialized if we don't inherit them from our parent style.
     if (const Settings* settings = documentSettings()) {
         initializeFontStyle(settings);
@@ -980,33 +967,9 @@ bool StyleResolver::checkRegionStyle(Element* regionElement)
     return false;
 }
 
-static void checkForOrientationChange(RenderStyle* style)
-{
-    FontOrientation fontOrientation;
-    NonCJKGlyphOrientation glyphOrientation;
-    getFontAndGlyphOrientation(style, fontOrientation, glyphOrientation);
-
-    const FontDescription& fontDescription = style->fontDescription();
-    if (fontDescription.orientation() == fontOrientation && fontDescription.nonCJKGlyphOrientation() == glyphOrientation)
-        return;
-
-    FontDescription newFontDescription(fontDescription);
-    newFontDescription.setNonCJKGlyphOrientation(glyphOrientation);
-    newFontDescription.setOrientation(fontOrientation);
-    style->setFontDescription(newFontDescription);
-}
-
 void StyleResolver::updateFont()
 {
-    if (!m_state.fontDirty())
-        return;
-
-    RenderStyle* style = m_state.style();
-    checkForGenericFamilyChange(style, m_state.parentStyle());
-    checkForZoomChange(style, m_state.parentStyle());
-    checkForOrientationChange(style);
-    style->font().update(m_fontSelector);
-    m_state.setFontDirty(false);
+    m_state.fontBuilder().createFont(m_fontSelector, m_state.parentStyle(), m_state.style());
 }
 
 PassRefPtr<CSSRuleList> StyleResolver::styleRulesForElement(Element* e, unsigned rulesToInclude)
@@ -1306,7 +1269,7 @@ void StyleResolver::applyMatchedProperties(const MatchResult& matchResult, const
     applyMatchedProperties<HighPriorityProperties>(matchResult, true, matchResult.ranges.firstUARule, matchResult.ranges.lastUARule, applyInheritedOnly);
 
     if (cachedMatchedProperties && cachedMatchedProperties->renderStyle->effectiveZoom() != state.style()->effectiveZoom()) {
-        state.setFontDirty(true);
+        state.fontBuilder().setFontDirty(true);
         applyInheritedOnly = false;
     }
 
@@ -1338,7 +1301,7 @@ void StyleResolver::applyMatchedProperties(const MatchResult& matchResult, const
     // Start loading resources referenced by this style.
     m_styleResourceLoader.loadPendingResources(state.style(), state.elementStyleResources());
 
-    ASSERT(!state.fontDirty());
+    ASSERT(!state.fontBuilder().fontDirty());
 
     if (cachedMatchedProperties || !cacheHash)
         return;
@@ -1355,6 +1318,9 @@ void StyleResolver::applyPropertiesToStyle(const CSSPropertyValue* properties, s
 {
     StyleResolveScope resolveScope(&m_state, document(), 0, style);
     m_state.setStyle(style);
+
+    m_state.fontBuilder().initForStyleResolve(document(), style, m_state.useSVGZoomRules());
+
     for (size_t i = 0; i < count; ++i) {
         if (properties[i].value) {
             // As described in BUG66291, setting font-size and line-height on a font may entail a CSSPrimitiveValue::computeLengthDouble call,
@@ -1468,76 +1434,11 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
     StyleBuilder::oldApplyProperty(id, this, state, value, isInitial, isInherit);
 }
 
-void StyleResolver::checkForZoomChange(RenderStyle* style, RenderStyle* parentStyle)
-{
-    if (style->effectiveZoom() == parentStyle->effectiveZoom())
-        return;
-
-    const FontDescription& childFont = style->fontDescription();
-    FontDescription newFontDescription(childFont);
-    setFontSize(newFontDescription, childFont.specifiedSize());
-    style->setFontDescription(newFontDescription);
-}
-
-void StyleResolver::checkForGenericFamilyChange(RenderStyle* style, RenderStyle* parentStyle)
-{
-    const FontDescription& childFont = style->fontDescription();
-
-    if (childFont.isAbsoluteSize() || !parentStyle)
-        return;
-
-    const FontDescription& parentFont = parentStyle->fontDescription();
-    if (childFont.useFixedDefaultSize() == parentFont.useFixedDefaultSize())
-        return;
-
-    // For now, lump all families but monospace together.
-    if (childFont.genericFamily() != FontDescription::MonospaceFamily
-        && parentFont.genericFamily() != FontDescription::MonospaceFamily)
-        return;
-
-    // We know the parent is monospace or the child is monospace, and that font
-    // size was unspecified. We want to scale our font size as appropriate.
-    // If the font uses a keyword size, then we refetch from the table rather than
-    // multiplying by our scale factor.
-    float size;
-    if (childFont.keywordSize())
-        size = FontSize::fontSizeForKeyword(document(), CSSValueXxSmall + childFont.keywordSize() - 1, childFont.useFixedDefaultSize());
-    else {
-        Settings* settings = documentSettings();
-        float fixedScaleFactor = (settings && settings->defaultFixedFontSize() && settings->defaultFontSize())
-            ? static_cast<float>(settings->defaultFixedFontSize()) / settings->defaultFontSize()
-            : 1;
-        size = parentFont.useFixedDefaultSize() ?
-            childFont.specifiedSize() / fixedScaleFactor :
-            childFont.specifiedSize() * fixedScaleFactor;
-    }
-
-    FontDescription newFontDescription(childFont);
-    setFontSize(newFontDescription, size);
-    style->setFontDescription(newFontDescription);
-}
-
 void StyleResolver::initializeFontStyle(const Settings* settings)
 {
-    FontDescription fontDescription;
-    fontDescription.setGenericFamily(FontDescription::StandardFamily);
-    fontDescription.setUsePrinterFont(document()->printing());
-    const AtomicString& standardFontFamily = documentSettings()->standardFontFamily();
-    if (!standardFontFamily.isEmpty()) {
-        fontDescription.firstFamily().setFamily(standardFontFamily);
-        fontDescription.firstFamily().appendFamily(0);
-    }
-    fontDescription.setKeywordSize(CSSValueMedium - CSSValueXxSmall + 1);
-    setFontSize(fontDescription, FontSize::fontSizeForKeyword(document(), CSSValueMedium, false));
     m_state.style()->setLineHeight(RenderStyle::initialLineHeight());
     m_state.setLineHeightValue(0);
-    m_state.setFontDescription(fontDescription);
-}
-
-void StyleResolver::setFontSize(FontDescription& fontDescription, float size)
-{
-    fontDescription.setSpecifiedSize(size);
-    fontDescription.setComputedSize(getComputedSizeFromSpecifiedSize(document(), m_state.style(), fontDescription.isAbsoluteSize(), size, m_state.useSVGZoomRules()));
+    m_state.fontBuilder().setInitial(m_state.style()->effectiveZoom());
 }
 
 void StyleResolver::addViewportDependentMediaQueryResult(const MediaQueryExp* expr, bool result)

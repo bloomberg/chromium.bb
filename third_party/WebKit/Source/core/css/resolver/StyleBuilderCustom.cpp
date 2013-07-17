@@ -239,238 +239,44 @@ void StyleBuilderFunctions::applyValueCSSPropertyDisplay(StyleResolver*, StyleRe
     state.style()->setDisplay(display);
 }
 
-void StyleBuilderFunctions::applyInitialCSSPropertyFontFamily(StyleResolver* styleResolver, StyleResolverState& state)
+void StyleBuilderFunctions::applyInitialCSSPropertyFontFamily(StyleResolver*, StyleResolverState& state)
 {
-    FontDescription fontDescription = state.style()->fontDescription();
-    FontDescription initialDesc = FontDescription();
-
-    // We need to adjust the size to account for the generic family change from monospace to non-monospace.
-    if (fontDescription.keywordSize() && fontDescription.useFixedDefaultSize())
-        styleResolver->setFontSize(fontDescription, FontSize::fontSizeForKeyword(styleResolver->document(), CSSValueXxSmall + fontDescription.keywordSize() - 1, false));
-    fontDescription.setGenericFamily(initialDesc.genericFamily());
-    if (!initialDesc.firstFamily().familyIsEmpty())
-        fontDescription.setFamily(initialDesc.firstFamily());
-
-    state.setFontDescription(fontDescription);
-    return;
+    state.fontBuilder().setFontFamilyInitial(state.style()->effectiveZoom());
 }
 
 void StyleBuilderFunctions::applyInheritCSSPropertyFontFamily(StyleResolver*, StyleResolverState& state)
 {
-    FontDescription fontDescription = state.style()->fontDescription();
-    FontDescription parentFontDescription = state.parentStyle()->fontDescription();
-
-    fontDescription.setGenericFamily(parentFontDescription.genericFamily());
-    fontDescription.setFamily(parentFontDescription.firstFamily());
-    fontDescription.setIsSpecifiedFont(parentFontDescription.isSpecifiedFont());
-    state.setFontDescription(fontDescription);
-    return;
+    state.fontBuilder().setFontFamilyInherit(state.parentFontDescription());
 }
 
-void StyleBuilderFunctions::applyValueCSSPropertyFontFamily(StyleResolver* styleResolver, StyleResolverState& state, CSSValue* value)
+void StyleBuilderFunctions::applyValueCSSPropertyFontFamily(StyleResolver*, StyleResolverState& state, CSSValue* value)
 {
-    if (!value->isValueList())
-        return;
-
-    FontDescription fontDescription = state.style()->fontDescription();
-    FontFamily& firstFamily = fontDescription.firstFamily();
-    FontFamily* currFamily = 0;
-
-    // Before mapping in a new font-family property, we should reset the generic family.
-    bool oldFamilyUsedFixedDefaultSize = fontDescription.useFixedDefaultSize();
-    fontDescription.setGenericFamily(FontDescription::NoFamily);
-
-    for (CSSValueListIterator i = value; i.hasMore(); i.advance()) {
-        CSSValue* item = i.value();
-        if (!item->isPrimitiveValue())
-            continue;
-        CSSPrimitiveValue* contentValue = toCSSPrimitiveValue(item);
-        AtomicString face;
-        Settings* settings = styleResolver->document()->settings();
-        if (contentValue->isString()) {
-            face = contentValue->getStringValue();
-        } else if (settings) {
-            switch (contentValue->getValueID()) {
-            case CSSValueWebkitBody:
-                face = settings->standardFontFamily();
-                break;
-            case CSSValueSerif:
-                face = serifFamily;
-                fontDescription.setGenericFamily(FontDescription::SerifFamily);
-                break;
-            case CSSValueSansSerif:
-                face = sansSerifFamily;
-                fontDescription.setGenericFamily(FontDescription::SansSerifFamily);
-                break;
-            case CSSValueCursive:
-                face = cursiveFamily;
-                fontDescription.setGenericFamily(FontDescription::CursiveFamily);
-                break;
-            case CSSValueFantasy:
-                face = fantasyFamily;
-                fontDescription.setGenericFamily(FontDescription::FantasyFamily);
-                break;
-            case CSSValueMonospace:
-                face = monospaceFamily;
-                fontDescription.setGenericFamily(FontDescription::MonospaceFamily);
-                break;
-            case CSSValueWebkitPictograph:
-                face = pictographFamily;
-                fontDescription.setGenericFamily(FontDescription::PictographFamily);
-                break;
-            default:
-                break;
-            }
-        }
-
-        if (!face.isEmpty()) {
-            if (!currFamily) {
-                // Filling in the first family.
-                firstFamily.setFamily(face);
-                firstFamily.appendFamily(0); // Remove any inherited family-fallback list.
-                currFamily = &firstFamily;
-                fontDescription.setIsSpecifiedFont(fontDescription.genericFamily() == FontDescription::NoFamily);
-            } else {
-                RefPtr<SharedFontFamily> newFamily = SharedFontFamily::create();
-                newFamily->setFamily(face);
-                currFamily->appendFamily(newFamily);
-                currFamily = newFamily.get();
-            }
-        }
-    }
-
-    // We can't call useFixedDefaultSize() until all new font families have been added
-    // If currFamily is non-zero then we set at least one family on this description.
-    if (currFamily) {
-        if (fontDescription.keywordSize() && fontDescription.useFixedDefaultSize() != oldFamilyUsedFixedDefaultSize)
-            styleResolver->setFontSize(fontDescription, FontSize::fontSizeForKeyword(styleResolver->document(), CSSValueXxSmall + fontDescription.keywordSize() - 1, !oldFamilyUsedFixedDefaultSize));
-
-        state.setFontDescription(fontDescription);
-    }
-    return;
+    state.fontBuilder().setFontFamilyValue(value, state.style()->effectiveZoom());
 }
 
-// FIXME: Figure out where we fall in the size ranges (xx-small to xxx-large)
-// and scale down/up to the next size level.
-static float largerFontSize(float size)
+void StyleBuilderFunctions::applyInitialCSSPropertyFontSize(StyleResolver*, StyleResolverState& state)
 {
-    return size * 1.2f;
+    state.fontBuilder().setFontSizeInitial(state.style()->effectiveZoom());
 }
 
-static float smallerFontSize(float size)
+void StyleBuilderFunctions::applyInheritCSSPropertyFontSize(StyleResolver*, StyleResolverState& state)
 {
-    return size / 1.2f;
+    state.fontBuilder().setFontSizeInherit(state.parentFontDescription(), state.style()->effectiveZoom());
 }
 
-void StyleBuilderFunctions::applyInitialCSSPropertyFontSize(StyleResolver* styleResolver, StyleResolverState& state)
+void StyleBuilderFunctions::applyValueCSSPropertyFontSize(StyleResolver*, StyleResolverState& state, CSSValue* value)
 {
-    FontDescription fontDescription = state.style()->fontDescription();
-    float size = FontSize::fontSizeForKeyword(styleResolver->document(), CSSValueMedium, fontDescription.useFixedDefaultSize());
-
-    if (size < 0)
-        return;
-
-    fontDescription.setKeywordSize(CSSValueMedium - CSSValueXxSmall + 1);
-    styleResolver->setFontSize(fontDescription, size);
-    state.setFontDescription(fontDescription);
-    return;
-}
-
-void StyleBuilderFunctions::applyInheritCSSPropertyFontSize(StyleResolver* styleResolver, StyleResolverState& state)
-{
-    float size = state.parentStyle()->fontDescription().specifiedSize();
-
-    if (size < 0)
-        return;
-
-    FontDescription fontDescription = state.style()->fontDescription();
-    fontDescription.setKeywordSize(state.parentStyle()->fontDescription().keywordSize());
-    styleResolver->setFontSize(fontDescription, size);
-    state.setFontDescription(fontDescription);
-    return;
-}
-
-void StyleBuilderFunctions::applyValueCSSPropertyFontSize(StyleResolver* styleResolver, StyleResolverState& state, CSSValue* value)
-{
-    if (!value->isPrimitiveValue())
-        return;
-
-    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-
-    FontDescription fontDescription = state.style()->fontDescription();
-    fontDescription.setKeywordSize(0);
-    float parentSize = 0;
-    bool parentIsAbsoluteSize = false;
-    float size = 0;
-
-    if (state.parentStyle()) {
-        parentSize = state.parentStyle()->fontDescription().specifiedSize();
-        parentIsAbsoluteSize = state.parentStyle()->fontDescription().isAbsoluteSize();
-    }
-
-    if (CSSValueID valueID = primitiveValue->getValueID()) {
-        // Keywords are being used.
-        switch (valueID) {
-        case CSSValueXxSmall:
-        case CSSValueXSmall:
-        case CSSValueSmall:
-        case CSSValueMedium:
-        case CSSValueLarge:
-        case CSSValueXLarge:
-        case CSSValueXxLarge:
-        case CSSValueWebkitXxxLarge:
-            size = FontSize::fontSizeForKeyword(styleResolver->document(), valueID, fontDescription.useFixedDefaultSize());
-            fontDescription.setKeywordSize(valueID - CSSValueXxSmall + 1);
-            break;
-        case CSSValueLarger:
-            size = largerFontSize(parentSize);
-            break;
-        case CSSValueSmaller:
-            size = smallerFontSize(parentSize);
-            break;
-        default:
-            return;
-        }
-
-        fontDescription.setIsAbsoluteSize(parentIsAbsoluteSize && (valueID == CSSValueLarger || valueID == CSSValueSmaller));
-    } else {
-        fontDescription.setIsAbsoluteSize(parentIsAbsoluteSize || !(primitiveValue->isPercentage() || primitiveValue->isFontRelativeLength()));
-        if (primitiveValue->isLength())
-            size = primitiveValue->computeLength<float>(state.parentStyle(), state.rootElementStyle(), 1.0, true);
-        else if (primitiveValue->isPercentage())
-            size = (primitiveValue->getFloatValue() * parentSize) / 100.0f;
-        else if (primitiveValue->isCalculatedPercentageWithLength())
-            size = primitiveValue->cssCalcValue()->toCalcValue(state.parentStyle(), state.rootElementStyle())->evaluate(parentSize);
-        else if (primitiveValue->isViewportPercentageLength())
-            size = valueForLength(primitiveValue->viewportPercentageLength(), 0, styleResolver->document()->renderView());
-        else
-            return;
-    }
-
-    if (size < 0)
-        return;
-
-    // Overly large font sizes will cause crashes on some platforms (such as Windows).
-    // Cap font size here to make sure that doesn't happen.
-    size = std::min(maximumAllowedFontSize, size);
-
-    styleResolver->setFontSize(fontDescription, size);
-    state.setFontDescription(fontDescription);
-    return;
+    state.fontBuilder().setFontSizeValue(value, state.parentStyle(), state.rootElementStyle(), state.style()->effectiveZoom());
 }
 
 void StyleBuilderFunctions::applyInitialCSSPropertyFontWeight(StyleResolver*, StyleResolverState& state)
 {
-    FontDescription fontDescription = state.fontDescription();
-    fontDescription.setWeight(FontWeightNormal);
-    state.setFontDescription(fontDescription);
+    state.fontBuilder().setWeight(FontWeightNormal);
 }
 
 void StyleBuilderFunctions::applyInheritCSSPropertyFontWeight(StyleResolver*, StyleResolverState& state)
 {
-    FontDescription fontDescription = state.fontDescription();
-    fontDescription.setWeight(state.parentFontDescription().weight());
-    state.setFontDescription(fontDescription);
+    state.fontBuilder().setWeight(state.parentFontDescription().weight());
 }
 
 void StyleBuilderFunctions::applyValueCSSPropertyFontWeight(StyleResolver*, StyleResolverState& state, CSSValue* value)
@@ -478,21 +284,19 @@ void StyleBuilderFunctions::applyValueCSSPropertyFontWeight(StyleResolver*, Styl
     if (!value->isPrimitiveValue())
         return;
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-    FontDescription fontDescription = state.fontDescription();
     switch (primitiveValue->getValueID()) {
     case CSSValueInvalid:
         ASSERT_NOT_REACHED();
         break;
     case CSSValueBolder:
-        fontDescription.setWeight(fontDescription.bolderWeight());
+        state.fontBuilder().setWeightBolder();
         break;
     case CSSValueLighter:
-        fontDescription.setWeight(fontDescription.lighterWeight());
+        state.fontBuilder().setWeightLighter();
         break;
     default:
-        fontDescription.setWeight(*primitiveValue);
+        state.fontBuilder().setWeight(*primitiveValue);
     }
-    state.setFontDescription(fontDescription);
 }
 
 void StyleBuilderFunctions::applyValueCSSPropertyLineHeight(StyleResolver* styleResolver, StyleResolverState& state, CSSValue* value)
@@ -888,78 +692,17 @@ void StyleBuilderFunctions::applyValueCSSPropertyWebkitClipPath(StyleResolver* s
 
 void StyleBuilderFunctions::applyInitialCSSPropertyWebkitFontVariantLigatures(StyleResolver*, StyleResolverState& state)
 {
-    FontDescription fontDescription = state.fontDescription();
-
-    fontDescription.setCommonLigaturesState(FontDescription::NormalLigaturesState);
-    fontDescription.setDiscretionaryLigaturesState(FontDescription::NormalLigaturesState);
-    fontDescription.setHistoricalLigaturesState(FontDescription::NormalLigaturesState);
-
-    state.setFontDescription(fontDescription);
+    state.fontBuilder().setFontVariantLigaturesInitial();
 }
 
 void StyleBuilderFunctions::applyInheritCSSPropertyWebkitFontVariantLigatures(StyleResolver*, StyleResolverState& state)
 {
-    const FontDescription& parentFontDescription = state.parentFontDescription();
-    FontDescription fontDescription = state.fontDescription();
-
-    fontDescription.setCommonLigaturesState(parentFontDescription.commonLigaturesState());
-    fontDescription.setDiscretionaryLigaturesState(parentFontDescription.discretionaryLigaturesState());
-    fontDescription.setHistoricalLigaturesState(parentFontDescription.historicalLigaturesState());
-
-    state.setFontDescription(fontDescription);
+    state.fontBuilder().setFontVariantLigaturesInherit(state.parentFontDescription());
 }
 
 void StyleBuilderFunctions::applyValueCSSPropertyWebkitFontVariantLigatures(StyleResolver*, StyleResolverState& state, CSSValue* value)
 {
-    FontDescription::LigaturesState commonLigaturesState = FontDescription::NormalLigaturesState;
-    FontDescription::LigaturesState discretionaryLigaturesState = FontDescription::NormalLigaturesState;
-    FontDescription::LigaturesState historicalLigaturesState = FontDescription::NormalLigaturesState;
-
-    if (value->isValueList()) {
-        CSSValueList* valueList = toCSSValueList(value);
-        for (size_t i = 0; i < valueList->length(); ++i) {
-            CSSValue* item = valueList->itemWithoutBoundsCheck(i);
-            ASSERT(item->isPrimitiveValue());
-            if (item->isPrimitiveValue()) {
-                CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(item);
-                switch (primitiveValue->getValueID()) {
-                case CSSValueNoCommonLigatures:
-                    commonLigaturesState = FontDescription::DisabledLigaturesState;
-                    break;
-                case CSSValueCommonLigatures:
-                    commonLigaturesState = FontDescription::EnabledLigaturesState;
-                    break;
-                case CSSValueNoDiscretionaryLigatures:
-                    discretionaryLigaturesState = FontDescription::DisabledLigaturesState;
-                    break;
-                case CSSValueDiscretionaryLigatures:
-                    discretionaryLigaturesState = FontDescription::EnabledLigaturesState;
-                    break;
-                case CSSValueNoHistoricalLigatures:
-                    historicalLigaturesState = FontDescription::DisabledLigaturesState;
-                    break;
-                case CSSValueHistoricalLigatures:
-                    historicalLigaturesState = FontDescription::EnabledLigaturesState;
-                    break;
-                default:
-                    ASSERT_NOT_REACHED();
-                    break;
-                }
-            }
-        }
-    }
-#if !ASSERT_DISABLED
-    else {
-        ASSERT_WITH_SECURITY_IMPLICATION(value->isPrimitiveValue());
-        ASSERT(toCSSPrimitiveValue(value)->getValueID() == CSSValueNormal);
-    }
-#endif
-
-    FontDescription fontDescription = state.fontDescription();
-    fontDescription.setCommonLigaturesState(commonLigaturesState);
-    fontDescription.setDiscretionaryLigaturesState(discretionaryLigaturesState);
-    fontDescription.setHistoricalLigaturesState(historicalLigaturesState);
-    state.setFontDescription(fontDescription);
+    state.fontBuilder().setFontVariantLigaturesValue(value);
 }
 
 void StyleBuilderFunctions::applyValueCSSPropertyWebkitMarqueeIncrement(StyleResolver*, StyleResolverState& state, CSSValue* value)
@@ -1141,18 +884,6 @@ HANDLE_SVG_INHERIT(prop, Prop) \
 if (isInitial) { \
     state.style()->accessSVGStyle()->set##Prop(SVGRenderStyle::initial##Prop()); \
     return; \
-}
-
-float getComputedSizeFromSpecifiedSize(const Document* document, const RenderStyle* style, bool isAbsoluteSize, float specifiedSize, bool useSVGZoomRules)
-{
-    float zoomFactor = 1.0f;
-    if (!useSVGZoomRules) {
-        zoomFactor = style->effectiveZoom();
-        if (Frame* frame = document->frame())
-            zoomFactor *= frame->textZoomFactor();
-    }
-
-    return FontSize::getComputedSizeFromSpecifiedSize(document, zoomFactor, isAbsoluteSize, specifiedSize);
 }
 
 static bool createGridTrackBreadth(CSSPrimitiveValue* primitiveValue, const StyleResolverState& state, GridLength& workingLength)
@@ -1485,37 +1216,20 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolver* styleResolv
     // Shorthand properties.
     case CSSPropertyFont:
         if (isInherit) {
-            FontDescription fontDescription = state.parentStyle()->fontDescription();
             state.style()->setLineHeight(state.parentStyle()->specifiedLineHeight());
             state.setLineHeightValue(0);
-            state.setFontDescription(fontDescription);
+            state.fontBuilder().inheritFrom(state.parentFontDescription());
         } else if (isInitial) {
             const Settings* settings = state.document()->settings();
             ASSERT(settings); // If we're doing style resolution, this document should always be in a frame and thus have settings
             if (!settings)
                 return;
+            // FIXME: Use FontBulder directly.
             styleResolver->initializeFontStyle(settings);
         } else if (primitiveValue) {
             state.style()->setLineHeight(RenderStyle::initialLineHeight());
             state.setLineHeightValue(0);
-
-            FontDescription fontDescription;
-            RenderTheme::defaultTheme()->systemFont(primitiveValue->getValueID(), fontDescription);
-
-            // Double-check and see if the theme did anything. If not, don't bother updating the font.
-            if (fontDescription.isAbsoluteSize()) {
-                // Make sure the rendering mode and printer font settings are updated.
-                const Document* document = state.document();
-                const Settings* settings = document->settings();
-                ASSERT(settings); // If we're doing style resolution, this document should always be in a frame and thus have settings
-                if (!settings)
-                    return;
-                fontDescription.setUsePrinterFont(document->printing());
-
-                // Handle the zoom factor.
-                fontDescription.setComputedSize(getComputedSizeFromSpecifiedSize(document, state.style(), fontDescription.isAbsoluteSize(), fontDescription.specifiedSize(), state.useSVGZoomRules()));
-                state.setFontDescription(fontDescription);
-            }
+            state.fontBuilder().fromSystemFont(primitiveValue->getValueID(), state.style()->effectiveZoom());
         } else if (value->isFontValue()) {
             FontValue* font = static_cast<FontValue*>(value);
             if (!font->style || !font->variant || !font->weight
@@ -1659,9 +1373,7 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolver* styleResolv
             state.style()->setLocale(nullAtom);
         else
             state.style()->setLocale(primitiveValue->getStringValue());
-        FontDescription fontDescription = state.style()->fontDescription();
-        fontDescription.setScript(localeToScriptCodeForFontSelection(state.style()->locale()));
-        state.setFontDescription(fontDescription);
+        state.fontBuilder().setScript(state.style()->locale());
         return;
     }
     case CSSPropertyWebkitAppRegion: {
@@ -1830,26 +1542,14 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolver* styleResolv
     // CSS Fonts Module Level 3
     case CSSPropertyWebkitFontFeatureSettings: {
         if (primitiveValue && primitiveValue->getValueID() == CSSValueNormal) {
-            state.setFontDescription(state.style()->fontDescription().makeNormalFeatureSettings());
+            state.fontBuilder().setFeatureSettingsNormal();
             return;
         }
 
         if (!value->isValueList())
             return;
 
-        FontDescription fontDescription = state.style()->fontDescription();
-        CSSValueList* list = toCSSValueList(value);
-        RefPtr<FontFeatureSettings> settings = FontFeatureSettings::create();
-        int len = list->length();
-        for (int i = 0; i < len; ++i) {
-            CSSValue* item = list->itemWithoutBoundsCheck(i);
-            if (!item->isFontFeatureValue())
-                continue;
-            FontFeatureValue* feature = static_cast<FontFeatureValue*>(item);
-            settings->append(FontFeature(feature->tag(), feature->value()));
-        }
-        fontDescription.setFeatureSettings(settings.release());
-        state.setFontDescription(fontDescription);
+        state.fontBuilder().setFeatureSettingsValue(value);
         return;
     }
 

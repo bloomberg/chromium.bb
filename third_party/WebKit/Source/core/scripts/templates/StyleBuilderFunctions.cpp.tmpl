@@ -494,16 +494,12 @@ namespace WebCore {
 {%- set setter = "set" + name_for_methods %}
 {{ declare_initial_function(property_id) }}
 {
-    FontDescription fontDescription = state.fontDescription();
-    fontDescription.{{setter}}({{initial}});
-    state.setFontDescription(fontDescription);
+    state.fontBuilder().{{setter}}({{initial}});
 }
 
 {{ declare_inherit_function(property_id) }}
 {
-    FontDescription fontDescription = state.fontDescription();
-    fontDescription.{{setter}}(state.parentFontDescription().{{getter}}());
-    state.setFontDescription(fontDescription);
+    state.fontBuilder().{{setter}}(state.parentFontDescription().{{getter}}());
 }
 
 {{ declare_value_function(property_id) }}
@@ -511,9 +507,7 @@ namespace WebCore {
     if (!value->isPrimitiveValue())
         return;
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-    FontDescription fontDescription = state.fontDescription();
-    fontDescription.{{setter}}(static_cast<{{type_name}}>(*primitiveValue));
-    state.setFontDescription(fontDescription);
+    state.fontBuilder().{{setter}}(static_cast<{{type_name}}>(*primitiveValue));
 }
 {%- endmacro %}
 

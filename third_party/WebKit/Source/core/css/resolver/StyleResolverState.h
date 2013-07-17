@@ -27,6 +27,7 @@
 #include "core/css/CSSSVGDocumentValue.h"
 #include "core/css/CSSToStyleMap.h"
 #include "core/css/resolver/ElementStyleResources.h"
+#include "core/css/resolver/FontBuilder.h"
 #include "core/dom/Element.h"
 #include "core/platform/graphics/Color.h"
 #include "core/rendering/style/CachedUAStyle.h"
@@ -90,7 +91,6 @@ public:
     , m_applyPropertyToRegularStyle(true)
     , m_applyPropertyToVisitedLinkStyle(false)
     , m_lineHeightValue(0)
-    , m_fontDirty(false)
     , m_styleMap(*this, m_elementStyleResources)
     { }
 
@@ -141,20 +141,17 @@ public:
         return m_elementStyleResources.styleImage(document()->textLinkColors(), style()->visitedDependentColor(CSSPropertyColor), propertyId, value);
     }
 
+    FontBuilder& fontBuilder() { return m_fontBuilder; }
     // FIXME: These exist as a primitive way to track mutations to font-related properties
     // on a RenderStyle. As designed, these are very error-prone, as some callers
     // set these directly on the RenderStyle w/o telling us. Presumably we'll
     // want to design a better wrapper around RenderStyle for tracking these mutations
     // and separate it from StyleResolverState.
-    const FontDescription& fontDescription() { return m_style->fontDescription(); }
     const FontDescription& parentFontDescription() { return m_parentStyle->fontDescription(); }
-    void setFontDescription(const FontDescription& fontDescription) { m_fontDirty |= m_style->setFontDescription(fontDescription); }
-    void setZoom(float f) { m_fontDirty |= m_style->setZoom(f); }
-    void setEffectiveZoom(float f) { m_fontDirty |= m_style->setEffectiveZoom(f); }
-    void setWritingMode(WritingMode writingMode) { m_fontDirty |= m_style->setWritingMode(writingMode); }
-    void setTextOrientation(TextOrientation textOrientation) { m_fontDirty |= m_style->setTextOrientation(textOrientation); }
-    void setFontDirty(bool isDirty) { m_fontDirty = isDirty; }
-    bool fontDirty() const { return m_fontDirty; }
+    void setZoom(float f) { m_fontBuilder.didChangeFontParameters(m_style->setZoom(f)); }
+    void setEffectiveZoom(float f) { m_fontBuilder.didChangeFontParameters(m_style->setEffectiveZoom(f)); }
+    void setWritingMode(WritingMode writingMode) { m_fontBuilder.didChangeFontParameters(m_style->setWritingMode(writingMode)); }
+    void setTextOrientation(TextOrientation textOrientation) { m_fontBuilder.didChangeFontParameters(m_style->setTextOrientation(textOrientation)); }
 
     // SVG handles zooming in a different way compared to CSS. The whole document is scaled instead
     // of each individual length value in the render style / tree. CSSPrimitiveValue::computeLength*()
@@ -193,12 +190,7 @@ private:
 
     CSSValue* m_lineHeightValue;
 
-    // StyleResolver is responsbile for creating the Font()
-    // object on RenderStyle from various other font-related
-    // properties on RenderStyle. Whenever one of those
-    // is changed, StyleResolver tracks the need to update
-    // style->font() with this bool.
-    bool m_fontDirty;
+    FontBuilder m_fontBuilder;
 
     CachedUAStyle m_cachedUAStyle;
 

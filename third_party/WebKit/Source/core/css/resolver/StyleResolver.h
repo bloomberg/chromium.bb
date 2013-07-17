@@ -199,9 +199,11 @@ public:
     // |properties| is an array with |count| elements.
     void applyPropertiesToStyle(const CSSPropertyValue* properties, size_t count, RenderStyle*);
 
+    // FIXME: This should probably go away, folded into FontBuilder.
     void updateFont();
+    // FIXME: This too should probably go away, folded into FontBuilder.
+    // FIXME: Settings parameter is not necessary.
     void initializeFontStyle(const Settings*);
-    void setFontSize(FontDescription&, float size);
 
     bool hasSelectorForId(const AtomicString&) const;
     bool hasSelectorForClass(const AtomicString&) const;
@@ -241,10 +243,6 @@ private:
     void matchUARules(ElementRuleCollector&);
     void matchUserRules(ElementRuleCollector&, bool includeEmptyRules);
     void collectFeatures();
-
-    // This function fixes up the default font size if it detects that the current generic font family has changed. -dwh
-    void checkForGenericFamilyChange(RenderStyle*, RenderStyle* parentStyle);
-    void checkForZoomChange(RenderStyle*, RenderStyle* parentStyle);
 
     bool fastRejectSelector(const RuleData&) const;
 

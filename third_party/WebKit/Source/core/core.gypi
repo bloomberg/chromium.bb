@@ -747,6 +747,8 @@
             'css/resolver/ElementStyleResources.h',
             'css/resolver/FilterOperationResolver.cpp',
             'css/resolver/FilterOperationResolver.h',
+            'css/resolver/FontBuilder.cpp',
+            'css/resolver/FontBuilder.h',
             'css/resolver/MatchedPropertiesCache.cpp',
             'css/resolver/MatchedPropertiesCache.h',
             'css/resolver/MatchResult.cpp',

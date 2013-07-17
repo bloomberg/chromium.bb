@@ -65,6 +65,7 @@ void StyleResolverState::clear()
     m_parentStyle = 0;
     m_regionForStyling = 0;
     m_elementStyleResources.clear();
+    m_fontBuilder.clear();
 }
 
 void StyleResolverState::initForStyleResolve(const Document* newDocument, Element* newElement, RenderStyle* parentStyle, RenderRegion* regionForStyling)
@@ -88,7 +89,7 @@ void StyleResolverState::initForStyleResolve(const Document* newDocument, Elemen
 
     m_style = 0;
     m_elementStyleResources.clear();
-    m_fontDirty = false;
+    m_fontBuilder.clear();
 
     // FIXME: StyleResolverState is never passed between documents
     // so we should be able to do this initialization at StyleResolverState
