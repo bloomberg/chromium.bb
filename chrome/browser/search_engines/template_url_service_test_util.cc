@@ -5,7 +5,7 @@
 #include "chrome/browser/search_engines/template_url_service_test_util.h"
 
 #include "base/bind.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"

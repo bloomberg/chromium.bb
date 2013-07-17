@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/process_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/task_manager/resource_provider.h"

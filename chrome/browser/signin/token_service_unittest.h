@@ -7,7 +7,7 @@
 #ifndef CHROME_BROWSER_SIGNIN_TOKEN_SERVICE_UNITTEST_H_
 #define CHROME_BROWSER_SIGNIN_TOKEN_SERVICE_UNITTEST_H_
 
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/test/base/testing_profile.h"

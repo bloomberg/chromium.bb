@@ -5,7 +5,7 @@
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 
 #include "base/bind.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/chrome_notification_types.h"

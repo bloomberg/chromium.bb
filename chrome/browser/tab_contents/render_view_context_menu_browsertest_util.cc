@@ -4,8 +4,8 @@
 
 #include "chrome/browser/tab_contents/render_view_context_menu_browsertest_util.h"
 
-#include "base/message_loop.h"
 #include "base/bind.h"
+#include "base/message_loop/message_loop.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
 #include "content/public/browser/notification_service.h"
