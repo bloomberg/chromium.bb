@@ -237,18 +237,10 @@ void SVGAnimateMotionElement::buildTransformForProgress(AffineTransform* transfo
 
     bool ok = false;
     float positionOnPath = m_animationPath.length() * percentage;
-    FloatPoint position;
-    float angle;
-    ok = m_animationPath.pointAndNormalAtLength(positionOnPath, position, angle);
+    FloatPoint position = m_animationPath.pointAtLength(positionOnPath, ok);
     if (!ok)
         return;
     transform->translate(position.x(), position.y());
-    RotateMode rotateMode = this->rotateMode();
-    if (rotateMode != RotateAuto && rotateMode != RotateAutoReverse)
-        return;
-    if (rotateMode == RotateAutoReverse)
-        angle += 180;
-    transform->rotate(angle);
 }
 
 void SVGAnimateMotionElement::calculateAnimatedValue(float percentage, unsigned repeatCount, SVGSMILElement*)
@@ -288,6 +280,18 @@ void SVGAnimateMotionElement::calculateAnimatedValue(float percentage, unsigned 
         for (unsigned i = 0; i < repeatCount; ++i)
             buildTransformForProgress(transform, 1);
     }
+
+    bool ok = false;
+    float positionOnPath = m_animationPath.length() * percentage;
+    float angle = m_animationPath.normalAngleAtLength(positionOnPath, ok);
+    if (!ok)
+        return;
+    RotateMode rotateMode = this->rotateMode();
+    if (rotateMode != RotateAuto && rotateMode != RotateAutoReverse)
+        return;
+    if (rotateMode == RotateAutoReverse)
+        angle += 180;
+    transform->rotate(angle);
 }
 
 void SVGAnimateMotionElement::applyResultsToTarget()
