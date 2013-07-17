@@ -27,11 +27,11 @@
 #define WidthCache_h
 
 #include "core/platform/graphics/TextRun.h"
-#include <wtf/Forward.h>
-#include <wtf/HashFunctions.h>
-#include <wtf/HashSet.h>
-#include <wtf/RefPtr.h>
-#include <wtf/StringHasher.h>
+#include "wtf/Forward.h"
+#include "wtf/HashFunctions.h"
+#include "wtf/HashSet.h"
+#include "wtf/HashTableDeletedValueType.h"
+#include "wtf/StringHasher.h"
 
 namespace WebCore {
 

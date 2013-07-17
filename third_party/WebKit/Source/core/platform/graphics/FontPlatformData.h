@@ -46,11 +46,12 @@ typedef const struct __CTFont* CTFontRef;
 #include <objc/objc-auto.h>
 #endif
 
-#include <wtf/Forward.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/RetainPtr.h>
-#include <wtf/text/StringImpl.h>
+#include "wtf/Forward.h"
+#include "wtf/HashTableDeletedValueType.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/RetainPtr.h"
+#include "wtf/text/StringImpl.h"
 
 #if OS(DARWIN)
 #include "core/platform/graphics/chromium/CrossProcessFontLoading.h"

@@ -21,6 +21,7 @@
 #ifndef RetainPtr_h
 #define RetainPtr_h
 
+#include "wtf/HashTableDeletedValueType.h"
 #include "wtf/HashTraits.h"
 #include "wtf/NullPtr.h"
 #include "wtf/TypeTraits.h"

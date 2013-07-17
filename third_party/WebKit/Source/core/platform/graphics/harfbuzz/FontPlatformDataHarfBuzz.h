@@ -36,10 +36,11 @@
 #include "core/platform/graphics/FontOrientation.h"
 #include "core/platform/graphics/chromium/FontRenderStyle.h"
 #include "core/platform/graphics/opentype/OpenTypeVerticalData.h"
-#include <wtf/Forward.h>
-#include <wtf/RefPtr.h>
-#include <wtf/text/CString.h>
-#include <wtf/text/StringImpl.h>
+#include "wtf/Forward.h"
+#include "wtf/HashTableDeletedValueType.h"
+#include "wtf/RefPtr.h"
+#include "wtf/text/CString.h"
+#include "wtf/text/StringImpl.h"
 
 class SkTypeface;
 typedef uint32_t SkFontID;

@@ -34,6 +34,7 @@
 #include "wtf/Assertions.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
+#include "wtf/HashTableDeletedValueType.h"
 
 using namespace WebCore;
 

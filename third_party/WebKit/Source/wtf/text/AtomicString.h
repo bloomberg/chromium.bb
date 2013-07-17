@@ -21,6 +21,7 @@
 #ifndef AtomicString_h
 #define AtomicString_h
 
+#include "wtf/HashTableDeletedValueType.h"
 #include "wtf/WTFExport.h"
 #include "wtf/text/AtomicStringImpl.h"
 #include "wtf/text/WTFString.h"

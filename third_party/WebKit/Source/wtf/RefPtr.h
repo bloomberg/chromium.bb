@@ -25,13 +25,12 @@
 
 #include <algorithm>
 #include "wtf/FastAllocBase.h"
+#include "wtf/HashTableDeletedValueType.h"
 #include "wtf/PassRefPtr.h"
 
 namespace WTF {
 
     template<typename T> class PassRefPtr;
-
-    enum HashTableDeletedValueType { HashTableDeletedValue };
 
     template<typename T> class RefPtr {
         WTF_MAKE_FAST_ALLOCATED;

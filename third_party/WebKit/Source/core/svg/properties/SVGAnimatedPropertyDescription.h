@@ -22,8 +22,9 @@
 #ifndef SVGAnimatedPropertyDescription_h
 #define SVGAnimatedPropertyDescription_h
 
-#include <wtf/HashMap.h>
-#include <wtf/text/AtomicString.h>
+#include "wtf/HashMap.h"
+#include "wtf/HashTableDeletedValueType.h"
+#include "wtf/text/AtomicString.h"
 
 namespace WebCore {
 

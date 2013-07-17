@@ -36,11 +36,12 @@
 #include "core/platform/graphics/FontPlatformData.h"
 #include "core/platform/graphics/FontSelector.h"
 #include "core/platform/graphics/opentype/OpenTypeVerticalData.h"
-#include <wtf/HashMap.h>
-#include <wtf/ListHashSet.h>
-#include <wtf/StdLibExtras.h>
-#include <wtf/text/AtomicStringHash.h>
-#include <wtf/text/StringHash.h>
+#include "wtf/HashMap.h"
+#include "wtf/HashTableDeletedValueType.h"
+#include "wtf/ListHashSet.h"
+#include "wtf/StdLibExtras.h"
+#include "wtf/text/AtomicStringHash.h"
+#include "wtf/text/StringHash.h"
 
 using namespace WTF;
 

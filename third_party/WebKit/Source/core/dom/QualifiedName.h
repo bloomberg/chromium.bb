@@ -22,6 +22,7 @@
 #define QualifiedName_h
 
 #include "wtf/Forward.h"
+#include "wtf/HashTableDeletedValueType.h"
 #include "wtf/HashTraits.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/AtomicString.h"

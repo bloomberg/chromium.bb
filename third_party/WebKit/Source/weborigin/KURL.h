@@ -29,6 +29,7 @@
 #include "weborigin/WebOriginExport.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
+#include "wtf/HashTableDeletedValueType.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/TextEncoding.h"

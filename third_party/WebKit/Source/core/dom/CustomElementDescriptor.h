@@ -31,7 +31,7 @@
 #ifndef CustomElementDescriptor_h
 #define CustomElementDescriptor_h
 
-#include "wtf/RefPtr.h" // for HashTableDeletedValueType
+#include "wtf/HashTableDeletedValueType.h"
 #include "wtf/text/AtomicString.h"
 
 namespace WebCore {

@@ -57,6 +57,7 @@
             'HashSet.h',
             'HashTable.cpp',
             'HashTable.h',
+            'HashTableDeletedValueType.h',
             'HashTraits.h',
             'HexNumber.h',
             'Int16Array.h',
