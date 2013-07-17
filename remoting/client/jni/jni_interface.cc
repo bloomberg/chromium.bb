@@ -5,8 +5,8 @@
 // This file defines functions that implement the static methods declared in a
 // closely-related Java class in the platform-specific user interface
 // implementation.  In effect, it is the entry point for all JNI calls *into*
-// the C++ codebase from Java.  The separate ChromotingJNIInstance class serves
-// as the corresponding exit point, and is responsible for making all JNI calls
+// the C++ codebase from Java.  The separate ChromotingJni class serves as the
+// corresponding exit point, and is responsible for making all JNI calls
 // *out of* the C++ codebase into Java.
 
 #include <jni.h>
@@ -15,6 +15,7 @@
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
 #include "google_apis/google_api_keys.h"
+#include "remoting/client/jni/chromoting_jni.h"
 #include "remoting/client/jni/chromoting_jni_instance.h"
 
 // Class and package name of the Java class that declares this file's functions.
@@ -41,7 +42,7 @@ JNIEXPORT void JNICALL JNI_IMPLEMENTATION(loadNative)(JNIEnv* env,
   CommandLine::Init(0, NULL);
 
   // Create the singleton now so that the Chromoting threads will be set up.
-  remoting::ChromotingJNIInstance::GetInstance();
+  remoting::ChromotingJni::GetInstance();
 }
 
 JNIEXPORT jstring JNICALL JNI_IMPLEMENTATION(getApiKey)(JNIEnv* env,
@@ -75,7 +76,7 @@ JNIEXPORT void JNICALL JNI_IMPLEMENTATION(connectNative)(
   const char* host_id_cstr = env->GetStringUTFChars(host_id_jstr, NULL);
   const char* host_pubkey_cstr = env->GetStringUTFChars(host_pubkey_jstr, NULL);
 
-  remoting::ChromotingJNIInstance::GetInstance()->ConnectToHost(
+  remoting::ChromotingJni::GetInstance()->ConnectToHost(
       username_cstr,
       auth_token_cstr,
       host_jid_cstr,
@@ -91,7 +92,7 @@ JNIEXPORT void JNICALL JNI_IMPLEMENTATION(connectNative)(
 
 JNIEXPORT void JNICALL JNI_IMPLEMENTATION(disconnectNative)(JNIEnv* env,
                                                             jobject that) {
-  remoting::ChromotingJNIInstance::GetInstance()->DisconnectFromHost();
+  remoting::ChromotingJni::GetInstance()->DisconnectFromHost();
 }
 
 JNIEXPORT void JNICALL JNI_IMPLEMENTATION(authenticationResponse)(
@@ -100,7 +101,8 @@ JNIEXPORT void JNICALL JNI_IMPLEMENTATION(authenticationResponse)(
     jstring pin_jstr) {
   const char* pin_cstr = env->GetStringUTFChars(pin_jstr, NULL);
 
-  remoting::ChromotingJNIInstance::GetInstance()->ProvideSecret(pin_cstr);
+  remoting::ChromotingJni::GetInstance()->
+      session()->ProvideSecret(pin_cstr);
 
   env->ReleaseStringUTFChars(pin_jstr, pin_cstr);
 }
