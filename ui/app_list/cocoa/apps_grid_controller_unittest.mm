@@ -407,7 +407,6 @@ TEST_F(AppsGridControllerTest, EnsureHighlightedVisible) {
   EXPECT_EQ(2u, [apps_grid_controller_ visiblePage]);
 }
 
-
 // Test runtime updates: adding items, removing items, and moving items (e.g. in
 // response to app install, uninstall, and chrome sync changes. Also test
 // changing titles and icons.
@@ -429,18 +428,20 @@ TEST_F(AppsGridControllerTest, ModelUpdates) {
   EXPECT_NSEQ(@"UpdatedItem", [button title]);
   EXPECT_EQ(std::string("|Item 0,Item 1,UpdatedItem|"), GetViewContent());
 
-  // Update the icon, test by changing size.
+  // Test icon updates through the model observer by ensuring the icon changes.
   NSSize icon_size = [[button image] size];
   EXPECT_EQ(0, icon_size.width);
   EXPECT_EQ(0, icon_size.height);
 
   SkBitmap bitmap;
   const int kTestImageSize = 10;
+  const int kTargetImageSize = 48;
   bitmap.setConfig(SkBitmap::kARGB_8888_Config, kTestImageSize, kTestImageSize);
   item_model->SetIcon(gfx::ImageSkia::CreateFrom1xBitmap(bitmap), false);
   icon_size = [[button image] size];
-  EXPECT_EQ(kTestImageSize, icon_size.width);
-  EXPECT_EQ(kTestImageSize, icon_size.height);
+  // Icon should always be resized to 48x48.
+  EXPECT_EQ(kTargetImageSize, icon_size.width);
+  EXPECT_EQ(kTargetImageSize, icon_size.height);
 
   // Test removing an item at the end.
   model()->apps()->DeleteAt(2);
@@ -476,6 +477,76 @@ TEST_F(AppsGridControllerTest, ModelUpdates) {
   model()->apps()->DeleteAt(kItemsPerPage);
   EXPECT_EQ(kItemsPerPage, [apps_grid_controller_ itemCount]);
   EXPECT_EQ(1u, [apps_grid_controller_ pageCount]);
+}
+
+// Test install progress bars, and install flow with item highlighting.
+TEST_F(AppsGridControllerTest, ItemInstallProgress) {
+  ReplaceTestModel(kItemsPerPage + 1);
+  EXPECT_EQ(2u, [apps_grid_controller_ pageCount]);
+  EXPECT_EQ(0u, [apps_grid_controller_ visiblePage]);
+  app_list::AppListItemModel* item_model =
+      model()->apps()->GetItemAt(kItemsPerPage);
+
+  // Highlighting an item should activate the page it is on.
+  item_model->SetHighlighted(true);
+  EXPECT_EQ(1u, [apps_grid_controller_ visiblePage]);
+
+  // Clearing a highlight stays on the current page.
+  [apps_grid_controller_ scrollToPage:0];
+  EXPECT_EQ(0u, [apps_grid_controller_ visiblePage]);
+  item_model->SetHighlighted(false);
+  EXPECT_EQ(0u, [apps_grid_controller_ visiblePage]);
+
+  // Starting install should add a progress bar, and temporarily clear the
+  // button title.
+  NSButton* button = GetItemViewAt(kItemsPerPage);
+  NSView* containerView = [button superview];
+  EXPECT_EQ(1u, [[containerView subviews] count]);
+  EXPECT_NSEQ(@"Item 16", [button title]);
+  item_model->SetHighlighted(true);
+  item_model->SetIsInstalling(true);
+  EXPECT_EQ(1u, [apps_grid_controller_ visiblePage]);
+
+  EXPECT_EQ(2u, [[containerView subviews] count]);
+  EXPECT_NSEQ(@"", [button title]);
+  NSProgressIndicator* progressIndicator =
+      [[containerView subviews] objectAtIndex:1];
+  EXPECT_FALSE([progressIndicator isIndeterminate]);
+  EXPECT_EQ(0.0, [progressIndicator doubleValue]);
+
+  // Updating the progress in the model should update the progress bar.
+  item_model->SetPercentDownloaded(50);
+  EXPECT_EQ(50.0, [progressIndicator doubleValue]);
+
+  // Two things can be installing simultaneously. When one starts or completes
+  // the model builder will ask for the item to be highlighted.
+  app_list::AppListItemModel* alternate_item_model =
+      model()->apps()->GetItemAt(0);
+  item_model->SetHighlighted(false);
+  alternate_item_model->SetHighlighted(true);
+  EXPECT_EQ(0u, [apps_grid_controller_ visiblePage]);
+
+  // Update the first item (page doesn't change on updates).
+  item_model->SetPercentDownloaded(100);
+  EXPECT_EQ(100.0, [progressIndicator doubleValue]);
+  EXPECT_EQ(0u, [apps_grid_controller_ visiblePage]);
+
+  // A percent of -1 indicates the download is complete and the unpack/install
+  // process has started.
+  item_model->SetPercentDownloaded(-1);
+  EXPECT_TRUE([progressIndicator isIndeterminate]);
+
+  // Completing install removes the progress bar, and restores the title.
+  // AppsModelBuilder will reload the ExtensionAppItem, which also highlights.
+  // Do the same here.
+  alternate_item_model->SetHighlighted(false);
+  item_model->SetHighlighted(true);
+  item_model->SetIsInstalling(false);
+  EXPECT_EQ(1u, [[containerView subviews] count]);
+  EXPECT_NSEQ(@"Item 16", [button title]);
+  EXPECT_EQ(1u, [apps_grid_controller_ visiblePage]);
+
+  // Things should cleanup OK with |alternate_item_model| left installing.
 }
 
 // Test mouseover selection.
