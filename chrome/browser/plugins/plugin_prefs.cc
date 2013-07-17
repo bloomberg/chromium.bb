@@ -268,7 +268,7 @@ bool PluginPrefs::IsPluginEnabled(const webkit::WebPluginInfo& plugin) const {
 
   // Check user preferences for the plug-in group.
   std::map<string16, bool>::const_iterator group_it(
-      plugin_group_state_.find(plugin.name));
+      plugin_group_state_.find(group_name));
   if (group_it != plugin_group_state_.end())
     return group_it->second;
 
@@ -324,21 +324,6 @@ void PluginPrefs::SetPrefs(PrefService* prefs) {
     update_internal_dir = true;
     prefs_->SetFilePath(
         prefs::kPluginsLastInternalDirectory, cur_internal_dir);
-  }
-
-  bool force_enable_internal_pdf = false;
-  bool internal_pdf_enabled = false;
-  string16 pdf_group_name =
-      ASCIIToUTF16(chrome::ChromeContentClient::kPDFPluginName);
-  base::FilePath pdf_path;
-  PathService::Get(chrome::FILE_PDF_PLUGIN, &pdf_path);
-  base::FilePath::StringType pdf_path_str = pdf_path.value();
-  if (!prefs_->GetBoolean(prefs::kPluginsEnabledInternalPDF)) {
-    // We switched to the internal pdf plugin being on by default, and so we
-    // need to force it to be enabled.  We only want to do it this once though,
-    // i.e. we don't want to enable it again if the user disables it afterwards.
-    prefs_->SetBoolean(prefs::kPluginsEnabledInternalPDF, true);
-    force_enable_internal_pdf = true;
   }
 
   bool force_enable_nacl = false;
@@ -464,15 +449,7 @@ void PluginPrefs::SetPrefs(PrefService* prefs) {
             }
           }
 
-          if (base::FilePath::CompareIgnoreCase(path, pdf_path_str) == 0) {
-            if (!enabled && force_enable_internal_pdf) {
-              enabled = true;
-              plugin->SetBoolean("enabled", true);
-            }
-
-            internal_pdf_enabled = enabled;
-          } else if (
-              base::FilePath::CompareIgnoreCase(path, nacl_path_str) == 0) {
+          if (base::FilePath::CompareIgnoreCase(path, nacl_path_str) == 0) {
             if (!enabled && force_enable_nacl) {
               enabled = true;
               plugin->SetBoolean("enabled", true);
@@ -497,10 +474,8 @@ void PluginPrefs::SetPrefs(PrefService* prefs) {
 
           plugin_state_.Set(plugin_path, enabled);
         } else if (!enabled && plugin->GetString("name", &group_name)) {
-          // Don't disable this group if it's for the pdf or nacl plugins and
-          // we just forced it on.
-          if (force_enable_internal_pdf && pdf_group_name == group_name)
-            continue;
+          // Don't disable this group if it's for the nacl plugin and we just
+          // forced it on.
           if (force_enable_nacl && (nacl_group_name == group_name ||
                                     old_nacl_group_name == group_name))
             continue;
@@ -523,10 +498,14 @@ void PluginPrefs::SetPrefs(PrefService* prefs) {
     } else {
       // If the saved plugin list is empty, then the call to UpdatePreferences()
       // below failed in an earlier run, possibly because the user closed the
-      // browser too quickly. Try to force enable the internal PDF and nacl
-      // plugins again.
-      force_enable_internal_pdf = true;
+      // browser too quickly. Try to force enable the internal nacl plugin
+      // again.
       force_enable_nacl = true;
+
+      // Only want one PDF plugin enabled at a time. See http://crbug.com/50105
+      // for background.
+      plugin_group_state_[ASCIIToUTF16(
+          PluginMetadata::kAdobeReaderGroupName)] = false;
     }
   }  // Scoped update of prefs::kPluginsPluginsList.
 
@@ -559,13 +538,7 @@ void PluginPrefs::SetPrefs(PrefService* prefs) {
                             base::Unretained(this),
                             &policy_enabled_plugin_patterns_));
 
-  if (force_enable_internal_pdf || internal_pdf_enabled) {
-    // See http://crbug.com/50105 for background.
-    plugin_group_state_[ASCIIToUTF16(
-        PluginMetadata::kAdobeReaderGroupName)] = false;
-  }
-
-  if (force_enable_internal_pdf || force_enable_nacl) {
+  if (force_enable_nacl) {
     // We want to save this, but doing so requires loading the list of plugins,
     // so do it after a minute as to not impact startup performance.  Note that
     // plugins are loaded after 30s by the metrics service.

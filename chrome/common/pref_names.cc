@@ -990,10 +990,6 @@ const char kPluginsDisabledPluginsExceptions[] =
 // List pref containing names of plugins that are enabled by policy.
 const char kPluginsEnabledPlugins[] = "plugins.plugins_enabled";
 
-// When first shipped, the pdf plugin will be disabled by default.  When we
-// enable it by default, we'll want to do so only once.
-const char kPluginsEnabledInternalPDF[] = "plugins.enabled_internal_pdf3";
-
 // When first shipped, the nacl plugin will be disabled by default.  When we
 // enable it by default, we'll want to do so only once.
 const char kPluginsEnabledNaCl[] = "plugins.enabled_nacl";

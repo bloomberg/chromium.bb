@@ -60,10 +60,6 @@ void PluginPrefsFactory::RegisterProfilePrefs(
       internal_dir,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterBooleanPref(
-      prefs::kPluginsEnabledInternalPDF,
-      false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(
       prefs::kPluginsEnabledNaCl,
       false,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
