@@ -119,3 +119,29 @@
   return code: 0
 @spec:
   SAFE
+----------------------------------------------------------------------
+@hex:
+  # FMA4
+  # It's not supported by validator currently, but there are plans,
+  # see https://code.google.com/p/nativeclient/issues/detail?id=1972
+  c4 e3 e1 6b d8 10
+@dis:
+     0:	c4 e3 e1 6b d8 10                            	vfmaddsd %xmm0,%xmm3,%xmm1,%xmm3
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1
+@spec:
+  SAFE
+----------------------------------------------------------------------
+@hex:
+  # FMA
+  # It's not supported by validator currently, but there are plans,
+  # see https://code.google.com/p/nativeclient/issues/detail?id=1972
+  c4 e2 71 99 d0
+@dis:
+     0:	c4 e2 71 99 d0                               	vfmadd132ss %xmm0,%xmm1,%xmm2
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1
+@spec:
+  SAFE

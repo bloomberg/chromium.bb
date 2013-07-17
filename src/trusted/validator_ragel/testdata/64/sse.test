@@ -213,6 +213,8 @@
 ----------------------------------------------------------------------
 @hex:
   # AVX FMA
+  # It's not supported by validator currently, but there are plans,
+  # see https://code.google.com/p/nativeclient/issues/detail?id=1972
   c4 e3 f1 69 d8 20
 @dis:
      0:	c4 e3 f1 69 d8 20                            	vfmaddpd %xmm0,%xmm1,%xmm2,%xmm3
@@ -220,7 +222,7 @@
   0: [0] unrecognized instruction
   return code: 1
 @spec:
-  0: unrecognized instruction 'vfmaddpd %xmm0,%xmm1,%xmm2,%xmm3'
+  SAFE
 ----------------------------------------------------------------------
 @hex:
   # AES

@@ -983,10 +983,31 @@ _XMM_AVX_INSTRUCTIONS.update([
   'vzeroupper',
 ])
 
-# TODO(shcherbina): add VFMADDPD/VFMADD132PD/VFMADD213PD/VFMADD231PD and
-# all instructions that follow this pattern. They are from FMA/FMA4 familty,
-# so it's not urgent (although necessary for
-# https://code.google.com/p/nativeclient/issues/detail?id=1972)
+# Add instructions like VFMADDPD/VFMADD132PD/VFMADD213PD/VFMADD231PD.
+for fma_name in [
+    'vfmadd%spd',
+    'vfmadd%sps',
+    'vfmadd%ssd',
+    'vfmadd%sss',
+    'vfnmadd%spd',
+    'vfnmadd%sps',
+    'vfnmadd%ssd',
+    'vfnmadd%sss',
+    'vfmsub%spd',
+    'vfmsub%sps',
+    'vfmsub%ssd',
+    'vfmsub%sss',
+    'vfnmsub%spd',
+    'vfnmsub%sps',
+    'vfnmsub%ssd',
+    'vfnmsub%sss',
+    'vfmaddsub%spd',
+    'vfmaddsub%sps',
+    'vfmsubadd%spd',
+    'vfmsubadd%sps',
+    ]:
+  for operand_order_suffix in ['', '132', '213', '231']:
+    _XMM_AVX_INSTRUCTIONS.add(fma_name % operand_order_suffix)
 
 for cmp_suffix in ['pd', 'ps', 'sd', 'ss']:
   for cmp_op in ['', 'eq', 'lt', 'le', 'unord', 'neq', 'nlt', 'nle', 'ord']:
