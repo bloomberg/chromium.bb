@@ -36,6 +36,7 @@
 #include "modules/notifications/Notification.h"
 
 #include "bindings/v8/Dictionary.h"
+#include "bindings/v8/ExceptionState.h"
 #include "core/dom/Document.h"
 #include "core/dom/ErrorEvent.h"
 #include "core/dom/EventNames.h"
@@ -60,7 +61,7 @@ Notification::Notification()
 }
 
 #if ENABLE(LEGACY_NOTIFICATIONS)
-Notification::Notification(const KURL& url, ScriptExecutionContext* context, ExceptionCode& ec, PassRefPtr<NotificationCenter> provider)
+Notification::Notification(const KURL& url, ScriptExecutionContext* context, ExceptionState& es, PassRefPtr<NotificationCenter> provider)
     : ActiveDOMObject(context)
     , m_isHTML(true)
     , m_state(Idle)
@@ -68,12 +69,12 @@ Notification::Notification(const KURL& url, ScriptExecutionContext* context, Exc
 {
     ScriptWrappable::init(this);
     if (m_notificationCenter->checkPermission() != NotificationClient::PermissionAllowed) {
-        ec = SecurityError;
+        es.throwDOMException(SecurityError);
         return;
     }
 
     if (url.isEmpty() || !url.isValid()) {
-        ec = SyntaxError;
+        es.throwDOMException(SyntaxError);
         return;
     }
 
@@ -82,7 +83,7 @@ Notification::Notification(const KURL& url, ScriptExecutionContext* context, Exc
 #endif
 
 #if ENABLE(LEGACY_NOTIFICATIONS)
-Notification::Notification(const String& title, const String& body, const String& iconURI, ScriptExecutionContext* context, ExceptionCode& ec, PassRefPtr<NotificationCenter> provider)
+Notification::Notification(const String& title, const String& body, const String& iconURI, ScriptExecutionContext* context, ExceptionState& es, PassRefPtr<NotificationCenter> provider)
     : ActiveDOMObject(context)
     , m_isHTML(false)
     , m_title(title)
@@ -92,13 +93,13 @@ Notification::Notification(const String& title, const String& body, const String
 {
     ScriptWrappable::init(this);
     if (m_notificationCenter->checkPermission() != NotificationClient::PermissionAllowed) {
-        ec = SecurityError;
+        es.throwDOMException(SecurityError);
         return;
     }
 
     m_icon = iconURI.isEmpty() ? KURL() : scriptExecutionContext()->completeURL(iconURI);
     if (!m_icon.isEmpty() && !m_icon.isValid()) {
-        ec = SyntaxError;
+        es.throwDOMException(SyntaxError);
         return;
     }
 }
@@ -125,16 +126,16 @@ Notification::~Notification()
 }
 
 #if ENABLE(LEGACY_NOTIFICATIONS)
-PassRefPtr<Notification> Notification::create(const KURL& url, ScriptExecutionContext* context, ExceptionCode& ec, PassRefPtr<NotificationCenter> provider) 
+PassRefPtr<Notification> Notification::create(const KURL& url, ScriptExecutionContext* context, ExceptionState& es, PassRefPtr<NotificationCenter> provider)
 { 
-    RefPtr<Notification> notification(adoptRef(new Notification(url, context, ec, provider)));
+    RefPtr<Notification> notification(adoptRef(new Notification(url, context, es, provider)));
     notification->suspendIfNeeded();
     return notification.release();
 }
 
-PassRefPtr<Notification> Notification::create(const String& title, const String& body, const String& iconURI, ScriptExecutionContext* context, ExceptionCode& ec, PassRefPtr<NotificationCenter> provider) 
+PassRefPtr<Notification> Notification::create(const String& title, const String& body, const String& iconURI, ScriptExecutionContext* context, ExceptionState& es, PassRefPtr<NotificationCenter> provider)
 { 
-    RefPtr<Notification> notification(adoptRef(new Notification(title, body, iconURI, context, ec, provider)));
+    RefPtr<Notification> notification(adoptRef(new Notification(title, body, iconURI, context, es, provider)));
     notification->suspendIfNeeded();
     return notification.release();
 }

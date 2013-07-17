@@ -28,6 +28,7 @@
 
 #include "modules/webaudio/AudioNode.h"
 
+#include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "modules/webaudio/AudioContext.h"
 #include "modules/webaudio/AudioNodeInput.h"
@@ -123,29 +124,29 @@ AudioNodeOutput* AudioNode::output(unsigned i)
     return 0;
 }
 
-void AudioNode::connect(AudioNode* destination, unsigned outputIndex, unsigned inputIndex, ExceptionCode& ec)
+void AudioNode::connect(AudioNode* destination, unsigned outputIndex, unsigned inputIndex, ExceptionState& es)
 {
     ASSERT(isMainThread()); 
     AudioContext::AutoLocker locker(context());
 
     if (!destination) {
-        ec = SyntaxError;
+        es.throwDOMException(SyntaxError);
         return;
     }
 
     // Sanity check input and output indices.
     if (outputIndex >= numberOfOutputs()) {
-        ec = IndexSizeError;
+        es.throwDOMException(IndexSizeError);
         return;
     }
 
     if (destination && inputIndex >= destination->numberOfInputs()) {
-        ec = IndexSizeError;
+        es.throwDOMException(IndexSizeError);
         return;
     }
 
     if (context() != destination->context()) {
-        ec = SyntaxError;
+        es.throwDOMException(SyntaxError);
         return;
     }
 
@@ -157,23 +158,23 @@ void AudioNode::connect(AudioNode* destination, unsigned outputIndex, unsigned i
     context()->incrementConnectionCount();
 }
 
-void AudioNode::connect(AudioParam* param, unsigned outputIndex, ExceptionCode& ec)
+void AudioNode::connect(AudioParam* param, unsigned outputIndex, ExceptionState& es)
 {
     ASSERT(isMainThread());
     AudioContext::AutoLocker locker(context());
 
     if (!param) {
-        ec = SyntaxError;
+        es.throwDOMException(SyntaxError);
         return;
     }
 
     if (outputIndex >= numberOfOutputs()) {
-        ec = IndexSizeError;
+        es.throwDOMException(IndexSizeError);
         return;
     }
 
     if (context() != param->context()) {
-        ec = SyntaxError;
+        es.throwDOMException(SyntaxError);
         return;
     }
 
@@ -181,14 +182,14 @@ void AudioNode::connect(AudioParam* param, unsigned outputIndex, ExceptionCode& 
     param->connect(output);
 }
 
-void AudioNode::disconnect(unsigned outputIndex, ExceptionCode& ec)
+void AudioNode::disconnect(unsigned outputIndex, ExceptionState& es)
 {
     ASSERT(isMainThread());
     AudioContext::AutoLocker locker(context());
 
     // Sanity check input and output indices.
     if (outputIndex >= numberOfOutputs()) {
-        ec = IndexSizeError;
+        es.throwDOMException(IndexSizeError);
         return;
     }
 
@@ -201,7 +202,7 @@ unsigned long AudioNode::channelCount()
     return m_channelCount;
 }
 
-void AudioNode::setChannelCount(unsigned long channelCount, ExceptionCode& ec)
+void AudioNode::setChannelCount(unsigned long channelCount, ExceptionState& es)
 {
     ASSERT(isMainThread());
     AudioContext::AutoLocker locker(context());
@@ -213,7 +214,7 @@ void AudioNode::setChannelCount(unsigned long channelCount, ExceptionCode& ec)
                 updateChannelsForInputs();
         }
     } else {
-        ec = InvalidStateError;
+        es.throwDOMException(InvalidStateError);
     }
 }
 
@@ -231,7 +232,7 @@ String AudioNode::channelCountMode()
     return "";
 }
 
-void AudioNode::setChannelCountMode(const String& mode, ExceptionCode& ec)
+void AudioNode::setChannelCountMode(const String& mode, ExceptionState& es)
 {
     ASSERT(isMainThread());
     AudioContext::AutoLocker locker(context());
@@ -245,7 +246,7 @@ void AudioNode::setChannelCountMode(const String& mode, ExceptionCode& ec)
     else if (mode == "explicit")
         m_channelCountMode = Explicit;
     else
-        ec = InvalidStateError;
+        es.throwDOMException(InvalidStateError);
 
     if (m_channelCountMode != oldMode)
         updateChannelsForInputs();
@@ -263,7 +264,7 @@ String AudioNode::channelInterpretation()
     return "";
 }
 
-void AudioNode::setChannelInterpretation(const String& interpretation, ExceptionCode& ec)
+void AudioNode::setChannelInterpretation(const String& interpretation, ExceptionState& es)
 {
     ASSERT(isMainThread());
     AudioContext::AutoLocker locker(context());
@@ -273,7 +274,7 @@ void AudioNode::setChannelInterpretation(const String& interpretation, Exception
     else if (interpretation == "discrete")
         m_channelInterpretation = AudioBus::Discrete;
     else
-        ec = InvalidStateError;
+        es.throwDOMException(InvalidStateError);
 }
 
 void AudioNode::updateChannelsForInputs()

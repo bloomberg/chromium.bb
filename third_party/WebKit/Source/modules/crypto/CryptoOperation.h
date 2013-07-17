@@ -44,8 +44,6 @@ namespace WebCore {
 
 class ScriptPromiseResolver;
 
-typedef int ExceptionCode;
-
 class CryptoOperation : public ScriptWrappable, public RefCounted<CryptoOperation> {
 public:
     ~CryptoOperation();

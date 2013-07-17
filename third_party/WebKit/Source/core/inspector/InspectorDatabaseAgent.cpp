@@ -30,7 +30,7 @@
 #include "core/inspector/InspectorDatabaseAgent.h"
 
 #include "InspectorFrontend.h"
-#include "core/dom/ExceptionCodePlaceholder.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/html/VoidCallback.h"
 #include "core/inspector/InspectorDatabaseResource.h"
 #include "core/inspector/InspectorState.h"
@@ -145,7 +145,7 @@ public:
         Vector<SQLValue> sqlValues;
         RefPtr<SQLStatementCallback> callback(StatementCallback::create(m_requestCallback.get()));
         RefPtr<SQLStatementErrorCallback> errorCallback(StatementErrorCallback::create(m_requestCallback.get()));
-        transaction->executeSQL(m_sqlStatement, sqlValues, callback.release(), errorCallback.release(), IGNORE_EXCEPTION);
+        transaction->executeSQL(m_sqlStatement, sqlValues, callback.release(), errorCallback.release(), IGNORE_EXCEPTION_STATE);
         return true;
     }
 private:

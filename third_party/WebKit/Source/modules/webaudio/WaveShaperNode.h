@@ -31,7 +31,9 @@
 #include "wtf/Forward.h"
 
 namespace WebCore {
-    
+
+class ExceptionState;
+
 class WaveShaperNode : public AudioBasicProcessorNode {
 public:
     static PassRefPtr<WaveShaperNode> create(AudioContext* context)
@@ -43,7 +45,7 @@ public:
     void setCurve(Float32Array*);
     Float32Array* curve();
 
-    void setOversample(const String& , ExceptionCode&);
+    void setOversample(const String& , ExceptionState&);
     String oversample() const;
 
     double latency() const { return latencyTime(); }

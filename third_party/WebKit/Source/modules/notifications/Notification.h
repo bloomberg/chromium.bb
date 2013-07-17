@@ -55,6 +55,7 @@
 namespace WebCore {
 
 class Dictionary;
+class ExceptionState;
 class NotificationCenter;
 class NotificationPermissionCallback;
 class ResourceError;
@@ -62,15 +63,13 @@ class ResourceResponse;
 class ScriptExecutionContext;
 class ThreadableLoader;
 
-typedef int ExceptionCode;
-
 class Notification : public RefCounted<Notification>, public ScriptWrappable, public ActiveDOMObject, public EventTarget {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     Notification();
 #if ENABLE(LEGACY_NOTIFICATIONS)
-    static PassRefPtr<Notification> create(const KURL&, ScriptExecutionContext*, ExceptionCode&, PassRefPtr<NotificationCenter> provider);
-    static PassRefPtr<Notification> create(const String& title, const String& body, const String& iconURI, ScriptExecutionContext*, ExceptionCode&, PassRefPtr<NotificationCenter> provider);
+    static PassRefPtr<Notification> create(const KURL&, ScriptExecutionContext*, ExceptionState&, PassRefPtr<NotificationCenter> provider);
+    static PassRefPtr<Notification> create(const String& title, const String& body, const String& iconURI, ScriptExecutionContext*, ExceptionState&, PassRefPtr<NotificationCenter> provider);
 #endif
 #if ENABLE(NOTIFICATIONS)
     static PassRefPtr<Notification> create(ScriptExecutionContext*, const String& title, const Dictionary& options);
@@ -152,8 +151,8 @@ public:
 
 private:
 #if ENABLE(LEGACY_NOTIFICATIONS)
-    Notification(const KURL&, ScriptExecutionContext*, ExceptionCode&, PassRefPtr<NotificationCenter>);
-    Notification(const String& title, const String& body, const String& iconURI, ScriptExecutionContext*, ExceptionCode&, PassRefPtr<NotificationCenter>);
+    Notification(const KURL&, ScriptExecutionContext*, ExceptionState&, PassRefPtr<NotificationCenter>);
+    Notification(const String& title, const String& body, const String& iconURI, ScriptExecutionContext*, ExceptionState&, PassRefPtr<NotificationCenter>);
 #endif
 #if ENABLE(NOTIFICATIONS)
     Notification(ScriptExecutionContext*, const String& title);

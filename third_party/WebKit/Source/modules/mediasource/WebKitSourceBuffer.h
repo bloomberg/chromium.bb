@@ -32,15 +32,16 @@
 #define WebKitSourceBuffer_h
 
 #include "bindings/v8/ScriptWrappable.h"
-#include "core/dom/ExceptionCode.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
-class WebKitMediaSource;
+
+class ExceptionState;
 class SourceBufferPrivate;
 class TimeRanges;
+class WebKitMediaSource;
 
 class WebKitSourceBuffer : public RefCounted<WebKitSourceBuffer>, public ScriptWrappable {
 public:
@@ -49,11 +50,11 @@ public:
     virtual ~WebKitSourceBuffer();
 
     // WebKitSourceBuffer.idl methods
-    PassRefPtr<TimeRanges> buffered(ExceptionCode&) const;
+    PassRefPtr<TimeRanges> buffered(ExceptionState&) const;
     double timestampOffset() const;
-    void setTimestampOffset(double, ExceptionCode&);
-    void append(PassRefPtr<Uint8Array> data, ExceptionCode&);
-    void abort(ExceptionCode&);
+    void setTimestampOffset(double, ExceptionState&);
+    void append(PassRefPtr<Uint8Array> data, ExceptionState&);
+    void abort(ExceptionState&);
 
     void removedFromMediaSource();
 

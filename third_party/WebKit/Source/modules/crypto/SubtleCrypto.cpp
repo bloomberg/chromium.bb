@@ -29,7 +29,7 @@
 #include "config.h"
 #include "modules/crypto/SubtleCrypto.h"
 
-#include "core/dom/ExceptionCode.h"
+#include "bindings/v8/ExceptionState.h"
 #include "modules/crypto/CryptoOperation.h"
 #include "modules/crypto/NormalizeAlgorithm.h"
 #include "public/platform/WebArrayBuffer.h" // FIXME: temporary
@@ -95,42 +95,42 @@ SubtleCrypto::SubtleCrypto()
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<CryptoOperation> SubtleCrypto::encrypt(const Dictionary& rawAlgorithm, ExceptionCode& ec)
+PassRefPtr<CryptoOperation> SubtleCrypto::encrypt(const Dictionary& rawAlgorithm, ExceptionState& es)
 {
     WebKit::WebCryptoAlgorithm algorithm;
-    if (!normalizeAlgorithm(rawAlgorithm, Encrypt, algorithm, ec))
+    if (!normalizeAlgorithm(rawAlgorithm, Encrypt, algorithm, es))
         return 0;
     return CryptoOperation::create(algorithm, new DummyOperation);
 }
 
-PassRefPtr<CryptoOperation> SubtleCrypto::decrypt(const Dictionary& rawAlgorithm, ExceptionCode& ec)
+PassRefPtr<CryptoOperation> SubtleCrypto::decrypt(const Dictionary& rawAlgorithm, ExceptionState& es)
 {
     WebKit::WebCryptoAlgorithm algorithm;
-    if (!normalizeAlgorithm(rawAlgorithm, Decrypt, algorithm, ec))
+    if (!normalizeAlgorithm(rawAlgorithm, Decrypt, algorithm, es))
         return 0;
     return CryptoOperation::create(algorithm, new DummyOperation);
 }
 
-PassRefPtr<CryptoOperation> SubtleCrypto::sign(const Dictionary& rawAlgorithm, ExceptionCode& ec)
+PassRefPtr<CryptoOperation> SubtleCrypto::sign(const Dictionary& rawAlgorithm, ExceptionState& es)
 {
     WebKit::WebCryptoAlgorithm algorithm;
-    if (!normalizeAlgorithm(rawAlgorithm, Sign, algorithm, ec))
+    if (!normalizeAlgorithm(rawAlgorithm, Sign, algorithm, es))
         return 0;
     return CryptoOperation::create(algorithm, new DummyOperation);
 }
 
-PassRefPtr<CryptoOperation> SubtleCrypto::verifySignature(const Dictionary& rawAlgorithm, ExceptionCode& ec)
+PassRefPtr<CryptoOperation> SubtleCrypto::verifySignature(const Dictionary& rawAlgorithm, ExceptionState& es)
 {
     WebKit::WebCryptoAlgorithm algorithm;
-    if (!normalizeAlgorithm(rawAlgorithm, Verify, algorithm, ec))
+    if (!normalizeAlgorithm(rawAlgorithm, Verify, algorithm, es))
         return 0;
     return CryptoOperation::create(algorithm, new DummyOperation);
 }
 
-PassRefPtr<CryptoOperation> SubtleCrypto::digest(const Dictionary& rawAlgorithm, ExceptionCode& ec)
+PassRefPtr<CryptoOperation> SubtleCrypto::digest(const Dictionary& rawAlgorithm, ExceptionState& es)
 {
     WebKit::WebCryptoAlgorithm algorithm;
-    if (!normalizeAlgorithm(rawAlgorithm, Digest, algorithm, ec))
+    if (!normalizeAlgorithm(rawAlgorithm, Digest, algorithm, es))
         return 0;
 
     // FIXME: Create the WebCryptoImplementation by calling out to

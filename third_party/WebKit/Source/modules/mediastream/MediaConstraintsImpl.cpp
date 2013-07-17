@@ -34,16 +34,17 @@
 
 #include "bindings/v8/ArrayValue.h"
 #include "bindings/v8/Dictionary.h"
+#include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "wtf/HashMap.h"
 
 namespace WebCore {
 
-PassRefPtr<MediaConstraintsImpl> MediaConstraintsImpl::create(const Dictionary& constraints, ExceptionCode& ec)
+PassRefPtr<MediaConstraintsImpl> MediaConstraintsImpl::create(const Dictionary& constraints, ExceptionState& es)
 {
     RefPtr<MediaConstraintsImpl> object = adoptRef(new MediaConstraintsImpl());
     if (!object->initialize(constraints)) {
-        ec = TypeMismatchError;
+        es.throwDOMException(TypeMismatchError);
         return 0;
     }
     return object.release();

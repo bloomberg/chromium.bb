@@ -31,9 +31,10 @@
 #include "config.h"
 #include "modules/mediasource/MediaSourceBase.h"
 
+#include "bindings/v8/ExceptionState.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/Event.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/dom/GenericEventQueue.h"
 #include "core/platform/Logging.h"
 #include "core/platform/graphics/SourceBufferPrivate.h"
@@ -112,7 +113,7 @@ PassRefPtr<TimeRanges> MediaSourceBase::buffered() const
     for (size_t i = 0; i < ranges.size(); ++i) {
         unsigned length = ranges[i]->length();
         if (length)
-            highestEndTime = std::max(highestEndTime, ranges[i]->end(length - 1, ASSERT_NO_EXCEPTION));
+            highestEndTime = std::max(highestEndTime, ranges[i]->end(length - 1, ASSERT_NO_EXCEPTION_STATE));
     }
 
     // Return an empty range if all ranges are empty.
@@ -130,7 +131,7 @@ PassRefPtr<TimeRanges> MediaSourceBase::buffered() const
 
         // 5.2 If readyState is "ended", then set the end time on the last range in source ranges to highest end time.
         if (ended && sourceRanges->length())
-            sourceRanges->add(sourceRanges->start(sourceRanges->length() - 1, ASSERT_NO_EXCEPTION), highestEndTime);
+            sourceRanges->add(sourceRanges->start(sourceRanges->length() - 1, ASSERT_NO_EXCEPTION_STATE), highestEndTime);
 
         // 5.3 Let new intersection ranges equal the the intersection between the intersection ranges and the source ranges.
         // 5.4 Replace the ranges in intersection ranges with the new intersection ranges.
@@ -140,14 +141,14 @@ PassRefPtr<TimeRanges> MediaSourceBase::buffered() const
     return intersectionRanges.release();
 }
 
-void MediaSourceBase::setDuration(double duration, ExceptionCode& ec)
+void MediaSourceBase::setDuration(double duration, ExceptionState& es)
 {
     if (duration < 0.0 || std::isnan(duration)) {
-        ec = InvalidAccessError;
+        es.throwDOMException(InvalidAccessError);
         return;
     }
     if (!isOpen()) {
-        ec = InvalidStateError;
+        es.throwDOMException(InvalidStateError);
         return;
     }
     m_private->setDuration(duration);
@@ -174,7 +175,7 @@ void MediaSourceBase::setReadyState(const AtomicString& state)
     onReadyStateChange(oldState, state);
 }
 
-void MediaSourceBase::endOfStream(const AtomicString& error, ExceptionCode& ec)
+void MediaSourceBase::endOfStream(const AtomicString& error, ExceptionState& es)
 {
     DEFINE_STATIC_LOCAL(const AtomicString, network, ("network", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(const AtomicString, decode, ("decode", AtomicString::ConstructFromLiteral));
@@ -183,7 +184,7 @@ void MediaSourceBase::endOfStream(const AtomicString& error, ExceptionCode& ec)
     // 1. If the readyState attribute is not in the "open" state then throw an
     // InvalidStateError exception and abort these steps.
     if (!isOpen()) {
-        ec = InvalidStateError;
+        es.throwDOMException(InvalidStateError);
         return;
     }
 
@@ -196,7 +197,7 @@ void MediaSourceBase::endOfStream(const AtomicString& error, ExceptionCode& ec)
     } else if (error == decode) {
         eosStatus = MediaSourcePrivate::EosDecodeError;
     } else {
-        ec = InvalidAccessError;
+        es.throwDOMException(InvalidAccessError);
         return;
     }
 
@@ -254,7 +255,7 @@ void MediaSourceBase::stop()
     m_private.clear();
 }
 
-PassOwnPtr<SourceBufferPrivate> MediaSourceBase::createSourceBufferPrivate(const String& type, const MediaSourcePrivate::CodecsArray& codecs, ExceptionCode& ec)
+PassOwnPtr<SourceBufferPrivate> MediaSourceBase::createSourceBufferPrivate(const String& type, const MediaSourcePrivate::CodecsArray& codecs, ExceptionState& es)
 {
     OwnPtr<SourceBufferPrivate> sourceBufferPrivate;
     switch (m_private->addSourceBuffer(type, codecs, &sourceBufferPrivate)) {
@@ -266,13 +267,13 @@ PassOwnPtr<SourceBufferPrivate> MediaSourceBase::createSourceBufferPrivate(const
         // Step 2: If type contains a MIME type ... that is not supported with the types
         // specified for the other SourceBuffer objects in sourceBuffers, then throw
         // a NotSupportedError exception and abort these steps.
-        ec = NotSupportedError;
+        es.throwDOMException(NotSupportedError);
         return nullptr;
     case MediaSourcePrivate::ReachedIdLimit:
         // 2.2 https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#widl-MediaSource-addSourceBuffer-SourceBuffer-DOMString-type
         // Step 3: If the user agent can't handle any more SourceBuffer objects then throw
         // a QuotaExceededError exception and abort these steps.
-        ec = QuotaExceededError;
+        es.throwDOMException(QuotaExceededError);
         return nullptr;
     }
 

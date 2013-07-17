@@ -28,6 +28,7 @@
 
 #include "modules/webaudio/WaveShaperNode.h"
 
+#include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "wtf/MainThread.h"
 
@@ -54,7 +55,7 @@ Float32Array* WaveShaperNode::curve()
     return waveShaperProcessor()->curve();
 }
 
-void WaveShaperNode::setOversample(const String& type, ExceptionCode& ec)
+void WaveShaperNode::setOversample(const String& type, ExceptionState& es)
 {
     ASSERT(isMainThread());
 
@@ -70,7 +71,7 @@ void WaveShaperNode::setOversample(const String& type, ExceptionCode& ec)
     else if (type == "4x")
         waveShaperProcessor()->setOversample(WaveShaperProcessor::OverSample4x);
     else
-        ec = InvalidStateError;
+        es.throwDOMException(InvalidStateError);
 }
 
 String WaveShaperNode::oversample() const

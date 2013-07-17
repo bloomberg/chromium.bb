@@ -36,8 +36,6 @@
 
 namespace WebCore {
 
-typedef int ExceptionCode;
-
 class AesCbcParams : public Algorithm {
 public:
     static PassRefPtr<AesCbcParams> create(const WebKit::WebCryptoAlgorithm& algorithm) { return adoptRef(new AesCbcParams(algorithm)); }

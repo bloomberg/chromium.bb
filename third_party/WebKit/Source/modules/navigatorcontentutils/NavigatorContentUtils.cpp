@@ -29,6 +29,7 @@
 
 #if ENABLE(NAVIGATOR_CONTENT_UTILS)
 
+#include "bindings/v8/ExceptionState.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/page/Frame.h"
@@ -65,14 +66,14 @@ static void initProtocolHandlerWhitelist()
         protocolWhitelist->add(protocols[i]);
 }
 
-static bool verifyCustomHandlerURL(const String& baseURL, const String& url, ExceptionCode& ec)
+static bool verifyCustomHandlerURL(const String& baseURL, const String& url, ExceptionState& es)
 {
     // The specification requires that it is a SyntaxError if the "%s" token is
     // not present.
     static const char token[] = "%s";
     int index = url.find(token);
     if (-1 == index) {
-        ec = SyntaxError;
+        es.throwDOMException(SyntaxError);
         return false;
     }
 
@@ -85,7 +86,7 @@ static bool verifyCustomHandlerURL(const String& baseURL, const String& url, Exc
     KURL kurl(base, newURL);
 
     if (kurl.isEmpty() || !kurl.isValid()) {
-        ec = SyntaxError;
+        es.throwDOMException(SyntaxError);
         return false;
     }
 
@@ -99,18 +100,18 @@ static bool isProtocolWhitelisted(const String& scheme)
     return protocolWhitelist->contains(scheme);
 }
 
-static bool verifyProtocolHandlerScheme(const String& scheme, ExceptionCode& ec)
+static bool verifyProtocolHandlerScheme(const String& scheme, ExceptionState& es)
 {
     if (scheme.startsWith("web+")) {
         if (isValidProtocol(scheme))
             return true;
-        ec = SecurityError;
+        es.throwDOMException(SecurityError);
         return false;
     }
 
     if (isProtocolWhitelisted(scheme))
         return true;
-    ec = SecurityError;
+    es.throwDOMException(SecurityError);
     return false;
 }
 
@@ -128,7 +129,7 @@ PassRefPtr<NavigatorContentUtils> NavigatorContentUtils::create(NavigatorContent
     return adoptRef(new NavigatorContentUtils(client));
 }
 
-void NavigatorContentUtils::registerProtocolHandler(Navigator* navigator, const String& scheme, const String& url, const String& title, ExceptionCode& ec)
+void NavigatorContentUtils::registerProtocolHandler(Navigator* navigator, const String& scheme, const String& url, const String& title, ExceptionState& es)
 {
     if (!navigator->frame())
         return;
@@ -139,10 +140,10 @@ void NavigatorContentUtils::registerProtocolHandler(Navigator* navigator, const 
 
     String baseURL = document->baseURL().baseAsString();
 
-    if (!verifyCustomHandlerURL(baseURL, url, ec))
+    if (!verifyCustomHandlerURL(baseURL, url, es))
         return;
 
-    if (!verifyProtocolHandlerScheme(scheme, ec))
+    if (!verifyProtocolHandlerScheme(scheme, es))
         return;
 
     NavigatorContentUtils::from(navigator->frame()->page())->client()->registerProtocolHandler(scheme, baseURL, url, navigator->frame()->displayStringModifiedByEncoding(title));
@@ -168,7 +169,7 @@ static String customHandlersStateString(const NavigatorContentUtilsClient::Custo
     return String();
 }
 
-String NavigatorContentUtils::isProtocolHandlerRegistered(Navigator* navigator, const String& scheme, const String& url, ExceptionCode& ec)
+String NavigatorContentUtils::isProtocolHandlerRegistered(Navigator* navigator, const String& scheme, const String& url, ExceptionState& es)
 {
     DEFINE_STATIC_LOCAL(const String, declined, ("declined"));
 
@@ -178,16 +179,16 @@ String NavigatorContentUtils::isProtocolHandlerRegistered(Navigator* navigator, 
     Document* document = navigator->frame()->document();
     String baseURL = document->baseURL().baseAsString();
 
-    if (!verifyCustomHandlerURL(baseURL, url, ec))
+    if (!verifyCustomHandlerURL(baseURL, url, es))
         return declined;
 
-    if (!verifyProtocolHandlerScheme(scheme, ec))
+    if (!verifyProtocolHandlerScheme(scheme, es))
         return declined;
 
     return customHandlersStateString(NavigatorContentUtils::from(navigator->frame()->page())->client()->isProtocolHandlerRegistered(scheme, baseURL, url));
 }
 
-void NavigatorContentUtils::unregisterProtocolHandler(Navigator* navigator, const String& scheme, const String& url, ExceptionCode& ec)
+void NavigatorContentUtils::unregisterProtocolHandler(Navigator* navigator, const String& scheme, const String& url, ExceptionState& es)
 {
     if (!navigator->frame())
         return;
@@ -195,10 +196,10 @@ void NavigatorContentUtils::unregisterProtocolHandler(Navigator* navigator, cons
     Document* document = navigator->frame()->document();
     String baseURL = document->baseURL().baseAsString();
 
-    if (!verifyCustomHandlerURL(baseURL, url, ec))
+    if (!verifyCustomHandlerURL(baseURL, url, es))
         return;
 
-    if (!verifyProtocolHandlerScheme(scheme, ec))
+    if (!verifyProtocolHandlerScheme(scheme, es))
         return;
 
     NavigatorContentUtils::from(navigator->frame()->page())->client()->unregisterProtocolHandler(scheme, baseURL, url);

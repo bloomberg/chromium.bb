@@ -32,6 +32,7 @@
 
 #include "modules/websockets/WebSocket.h"
 
+#include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ScriptController.h"
 #include "core/dom/Document.h"
 #include "core/dom/Event.h"
@@ -154,50 +155,50 @@ PassRefPtr<WebSocket> WebSocket::create(ScriptExecutionContext* context)
     return webSocket.release();
 }
 
-PassRefPtr<WebSocket> WebSocket::create(ScriptExecutionContext* context, const String& url, ExceptionCode& ec)
+PassRefPtr<WebSocket> WebSocket::create(ScriptExecutionContext* context, const String& url, ExceptionState& es)
 {
     Vector<String> protocols;
-    return WebSocket::create(context, url, protocols, ec);
+    return WebSocket::create(context, url, protocols, es);
 }
 
-PassRefPtr<WebSocket> WebSocket::create(ScriptExecutionContext* context, const String& url, const Vector<String>& protocols, ExceptionCode& ec)
+PassRefPtr<WebSocket> WebSocket::create(ScriptExecutionContext* context, const String& url, const Vector<String>& protocols, ExceptionState& es)
 {
     if (url.isNull()) {
-        ec = SyntaxError;
+        es.throwDOMException(SyntaxError);
         return 0;
     }
 
     RefPtr<WebSocket> webSocket(adoptRef(new WebSocket(context)));
     webSocket->suspendIfNeeded();
 
-    webSocket->connect(context->completeURL(url), protocols, ec);
-    if (ec)
+    webSocket->connect(context->completeURL(url), protocols, es);
+    if (es.hadException())
         return 0;
 
     return webSocket.release();
 }
 
-PassRefPtr<WebSocket> WebSocket::create(ScriptExecutionContext* context, const String& url, const String& protocol, ExceptionCode& ec)
+PassRefPtr<WebSocket> WebSocket::create(ScriptExecutionContext* context, const String& url, const String& protocol, ExceptionState& es)
 {
     Vector<String> protocols;
     protocols.append(protocol);
-    return WebSocket::create(context, url, protocols, ec);
+    return WebSocket::create(context, url, protocols, es);
 }
 
-void WebSocket::connect(const String& url, ExceptionCode& ec)
+void WebSocket::connect(const String& url, ExceptionState& es)
 {
     Vector<String> protocols;
-    connect(url, protocols, ec);
+    connect(url, protocols, es);
 }
 
-void WebSocket::connect(const String& url, const String& protocol, ExceptionCode& ec)
+void WebSocket::connect(const String& url, const String& protocol, ExceptionState& es)
 {
     Vector<String> protocols;
     protocols.append(protocol);
-    connect(url, protocols, ec);
+    connect(url, protocols, es);
 }
 
-void WebSocket::connect(const String& url, const Vector<String>& protocols, ExceptionCode& ec)
+void WebSocket::connect(const String& url, const Vector<String>& protocols, ExceptionState& es)
 {
     LOG(Network, "WebSocket %p connect() url='%s'", this, url.utf8().data());
     m_url = KURL(KURL(), url);
@@ -205,26 +206,26 @@ void WebSocket::connect(const String& url, const Vector<String>& protocols, Exce
     if (!m_url.isValid()) {
         scriptExecutionContext()->addConsoleMessage(JSMessageSource, ErrorMessageLevel, "Invalid url for WebSocket " + m_url.elidedString());
         m_state = CLOSED;
-        ec = SyntaxError;
+        es.throwDOMException(SyntaxError);
         return;
     }
 
     if (!m_url.protocolIs("ws") && !m_url.protocolIs("wss")) {
         scriptExecutionContext()->addConsoleMessage(JSMessageSource, ErrorMessageLevel, "Wrong url scheme for WebSocket " + m_url.elidedString());
         m_state = CLOSED;
-        ec = SyntaxError;
+        es.throwDOMException(SyntaxError);
         return;
     }
     if (m_url.hasFragmentIdentifier()) {
         scriptExecutionContext()->addConsoleMessage(JSMessageSource, ErrorMessageLevel, "URL has fragment component " + m_url.elidedString());
         m_state = CLOSED;
-        ec = SyntaxError;
+        es.throwDOMException(SyntaxError);
         return;
     }
     if (!portAllowed(m_url)) {
         scriptExecutionContext()->addConsoleMessage(JSMessageSource, ErrorMessageLevel, "WebSocket port " + String::number(m_url.port()) + " blocked");
         m_state = CLOSED;
-        ec = SecurityError;
+        es.throwDOMException(SecurityError);
         return;
     }
 
@@ -238,7 +239,7 @@ void WebSocket::connect(const String& url, const Vector<String>& protocols, Exce
         m_state = CLOSED;
 
         // FIXME: Should this be throwing an exception?
-        ec = SecurityError;
+        es.throwDOMException(SecurityError);
         return;
     }
 
@@ -255,7 +256,7 @@ void WebSocket::connect(const String& url, const Vector<String>& protocols, Exce
         if (!isValidProtocolString(protocols[i])) {
             scriptExecutionContext()->addConsoleMessage(JSMessageSource, ErrorMessageLevel, "Wrong protocol for WebSocket '" + encodeProtocolString(protocols[i]) + "'");
             m_state = CLOSED;
-            ec = SyntaxError;
+            es.throwDOMException(SyntaxError);
             return;
         }
     }
@@ -264,7 +265,7 @@ void WebSocket::connect(const String& url, const Vector<String>& protocols, Exce
         if (!visited.add(protocols[i]).isNewEntry) {
             scriptExecutionContext()->addConsoleMessage(JSMessageSource, ErrorMessageLevel, "WebSocket protocols contain duplicates: '" + encodeProtocolString(protocols[i]) + "'");
             m_state = CLOSED;
-            ec = SyntaxError;
+            es.throwDOMException(SyntaxError);
             return;
         }
     }
@@ -277,12 +278,12 @@ void WebSocket::connect(const String& url, const Vector<String>& protocols, Exce
     ActiveDOMObject::setPendingActivity(this);
 }
 
-void WebSocket::handleSendResult(WebSocketChannel::SendResult result, ExceptionCode& ec)
+void WebSocket::handleSendResult(WebSocketChannel::SendResult result, ExceptionState& es)
 {
     switch (result) {
     case WebSocketChannel::InvalidMessage:
         scriptExecutionContext()->addConsoleMessage(JSMessageSource, ErrorMessageLevel, "WebSocket message contains invalid character(s).");
-        ec = SyntaxError;
+        es.throwDOMException(SyntaxError);
         return;
     case WebSocketChannel::SendFail:
         scriptExecutionContext()->addConsoleMessage(JSMessageSource, ErrorMessageLevel, "WebSocket send() failed.");
@@ -301,11 +302,11 @@ void WebSocket::updateBufferedAmountAfterClose(unsigned long payloadSize)
     scriptExecutionContext()->addConsoleMessage(JSMessageSource, ErrorMessageLevel, "WebSocket is already in CLOSING or CLOSED state.");
 }
 
-void WebSocket::send(const String& message, ExceptionCode& ec)
+void WebSocket::send(const String& message, ExceptionState& es)
 {
     LOG(Network, "WebSocket %p send() Sending String '%s'", this, message.utf8().data());
     if (m_state == CONNECTING) {
-        ec = InvalidStateError;
+        es.throwDOMException(InvalidStateError);
         return;
     }
     // No exception is raised if the connection was once established but has subsequently been closed.
@@ -314,15 +315,15 @@ void WebSocket::send(const String& message, ExceptionCode& ec)
         return;
     }
     ASSERT(m_channel);
-    handleSendResult(m_channel->send(message), ec);
+    handleSendResult(m_channel->send(message), es);
 }
 
-void WebSocket::send(ArrayBuffer* binaryData, ExceptionCode& ec)
+void WebSocket::send(ArrayBuffer* binaryData, ExceptionState& es)
 {
     LOG(Network, "WebSocket %p send() Sending ArrayBuffer %p", this, binaryData);
     ASSERT(binaryData);
     if (m_state == CONNECTING) {
-        ec = InvalidStateError;
+        es.throwDOMException(InvalidStateError);
         return;
     }
     if (m_state == CLOSING || m_state == CLOSED) {
@@ -330,15 +331,15 @@ void WebSocket::send(ArrayBuffer* binaryData, ExceptionCode& ec)
         return;
     }
     ASSERT(m_channel);
-    handleSendResult(m_channel->send(*binaryData, 0, binaryData->byteLength()), ec);
+    handleSendResult(m_channel->send(*binaryData, 0, binaryData->byteLength()), es);
 }
 
-void WebSocket::send(ArrayBufferView* arrayBufferView, ExceptionCode& ec)
+void WebSocket::send(ArrayBufferView* arrayBufferView, ExceptionState& es)
 {
     LOG(Network, "WebSocket %p send() Sending ArrayBufferView %p", this, arrayBufferView);
     ASSERT(arrayBufferView);
     if (m_state == CONNECTING) {
-        ec = InvalidStateError;
+        es.throwDOMException(InvalidStateError);
         return;
     }
     if (m_state == CLOSING || m_state == CLOSED) {
@@ -347,15 +348,15 @@ void WebSocket::send(ArrayBufferView* arrayBufferView, ExceptionCode& ec)
     }
     ASSERT(m_channel);
     RefPtr<ArrayBuffer> arrayBuffer(arrayBufferView->buffer());
-    handleSendResult(m_channel->send(*arrayBuffer, arrayBufferView->byteOffset(), arrayBufferView->byteLength()), ec);
+    handleSendResult(m_channel->send(*arrayBuffer, arrayBufferView->byteOffset(), arrayBufferView->byteLength()), es);
 }
 
-void WebSocket::send(Blob* binaryData, ExceptionCode& ec)
+void WebSocket::send(Blob* binaryData, ExceptionState& es)
 {
     LOG(Network, "WebSocket %p send() Sending Blob '%s'", this, binaryData->url().elidedString().utf8().data());
     ASSERT(binaryData);
     if (m_state == CONNECTING) {
-        ec = InvalidStateError;
+        es.throwDOMException(InvalidStateError);
         return;
     }
     if (m_state == CLOSING || m_state == CLOSED) {
@@ -363,38 +364,38 @@ void WebSocket::send(Blob* binaryData, ExceptionCode& ec)
         return;
     }
     ASSERT(m_channel);
-    handleSendResult(m_channel->send(*binaryData), ec);
+    handleSendResult(m_channel->send(*binaryData), es);
 }
 
-void WebSocket::close(unsigned short code, const String& reason, ExceptionCode& ec)
+void WebSocket::close(unsigned short code, const String& reason, ExceptionState& es)
 {
-    closeInternal(code, reason, ec);
+    closeInternal(code, reason, es);
 }
 
-void WebSocket::close(ExceptionCode& ec)
+void WebSocket::close(ExceptionState& es)
 {
-    closeInternal(WebSocketChannel::CloseEventCodeNotSpecified, String(), ec);
+    closeInternal(WebSocketChannel::CloseEventCodeNotSpecified, String(), es);
 }
 
-void WebSocket::close(unsigned short code, ExceptionCode& ec)
+void WebSocket::close(unsigned short code, ExceptionState& es)
 {
-    closeInternal(code, String(), ec);
+    closeInternal(code, String(), es);
 }
 
-void WebSocket::closeInternal(int code, const String& reason, ExceptionCode& ec)
+void WebSocket::closeInternal(int code, const String& reason, ExceptionState& es)
 {
     if (code == WebSocketChannel::CloseEventCodeNotSpecified)
         LOG(Network, "WebSocket %p close() without code and reason", this);
     else {
         LOG(Network, "WebSocket %p close() code=%d reason='%s'", this, code, reason.utf8().data());
         if (!(code == WebSocketChannel::CloseEventCodeNormalClosure || (WebSocketChannel::CloseEventCodeMinimumUserDefined <= code && code <= WebSocketChannel::CloseEventCodeMaximumUserDefined))) {
-            ec = InvalidAccessError;
+            es.throwDOMException(InvalidAccessError);
             return;
         }
         CString utf8 = reason.utf8(String::StrictConversionReplacingUnpairedSurrogatesWithFFFD);
         if (utf8.length() > maxReasonSizeInBytes) {
             scriptExecutionContext()->addConsoleMessage(JSMessageSource, ErrorMessageLevel, "WebSocket close message is too long.");
-            ec = SyntaxError;
+            es.throwDOMException(SyntaxError);
             return;
         }
     }

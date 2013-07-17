@@ -36,8 +36,6 @@
 
 namespace WebCore {
 
-typedef int ExceptionCode;
-
 class AesKeyGenParams : public Algorithm {
 public:
     static PassRefPtr<AesKeyGenParams> create(const WebKit::WebCryptoAlgorithm& algorithm) { return adoptRef(new AesKeyGenParams(algorithm)); }

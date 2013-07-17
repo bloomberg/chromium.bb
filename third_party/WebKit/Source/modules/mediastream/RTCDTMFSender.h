@@ -35,13 +35,14 @@
 
 namespace WebCore {
 
+class ExceptionState;
 class MediaStreamTrack;
-class RTCPeerConnectionHandler;
 class RTCDTMFSenderHandler;
+class RTCPeerConnectionHandler;
 
 class RTCDTMFSender : public RefCounted<RTCDTMFSender>, public ScriptWrappable, public EventTarget, public RTCDTMFSenderHandlerClient, public ActiveDOMObject {
 public:
-    static PassRefPtr<RTCDTMFSender> create(ScriptExecutionContext*, RTCPeerConnectionHandler*, PassRefPtr<MediaStreamTrack>, ExceptionCode&);
+    static PassRefPtr<RTCDTMFSender> create(ScriptExecutionContext*, RTCPeerConnectionHandler*, PassRefPtr<MediaStreamTrack>, ExceptionState&);
     ~RTCDTMFSender();
 
     bool canInsertDTMF() const;
@@ -50,9 +51,9 @@ public:
     long duration() const { return m_duration; }
     long interToneGap() const { return m_interToneGap; }
 
-    void insertDTMF(const String& tones, ExceptionCode&);
-    void insertDTMF(const String& tones, long duration, ExceptionCode&);
-    void insertDTMF(const String& tones, long duration, long interToneGap, ExceptionCode&);
+    void insertDTMF(const String& tones, ExceptionState&);
+    void insertDTMF(const String& tones, long duration, ExceptionState&);
+    void insertDTMF(const String& tones, long duration, long interToneGap, ExceptionState&);
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(tonechange);
 
