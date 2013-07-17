@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/i18n/rtl.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/breakpad_linux.h"
 #include "chrome/browser/first_run/first_run_dialog.h"

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/tabs/tab_audio_indicator.h"
 
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "grit/theme_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/animation/linear_animation.h"

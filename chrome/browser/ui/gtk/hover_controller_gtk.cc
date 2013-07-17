@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/gtk/hover_controller_gtk.h"
 
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_button.h"
 #include "ui/base/gtk/gtk_compat.h"
 

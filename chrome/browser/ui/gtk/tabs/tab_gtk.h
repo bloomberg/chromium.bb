@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "chrome/browser/ui/gtk/tabs/tab_renderer_gtk.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "ui/base/gtk/gtk_signal.h"

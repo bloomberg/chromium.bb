@@ -6,7 +6,7 @@
 
 #include <gtk/gtk.h>
 
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "grit/chromium_strings.h"
 #include "ui/base/l10n/l10n_util.h"

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/toolbar/wrench_icon_painter.h"
 
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/test/base/testing_profile.h"

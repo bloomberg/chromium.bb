@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/simple_message_box.h"
 
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 

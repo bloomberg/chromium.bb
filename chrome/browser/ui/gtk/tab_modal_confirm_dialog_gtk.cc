@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/gtk/tab_modal_confirm_dialog_gtk.h"
 
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"

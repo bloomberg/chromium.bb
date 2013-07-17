@@ -7,7 +7,7 @@
 #include <gtk/gtk.h>
 
 #include "base/bind.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "chrome/browser/importer/importer_lock_dialog.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "content/public/browser/user_metrics.h"
