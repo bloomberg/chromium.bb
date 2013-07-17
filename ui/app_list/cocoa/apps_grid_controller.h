@@ -26,8 +26,7 @@ class AppsGridDelegateBridge;
 // Controls a grid of views, representing AppListModel::Apps sub models.
 APP_LIST_EXPORT
 @interface AppsGridController : NSViewController<GestureScrollDelegate,
-                                                 AppListPagerDelegate,
-                                                 NSCollectionViewDelegate> {
+                                                 AppListPagerDelegate> {
  @private
   scoped_ptr<app_list::AppListModel> model_;
   app_list::AppListViewDelegate* delegate_;  // Weak. Owned by view controller.

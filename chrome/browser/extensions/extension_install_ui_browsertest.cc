@@ -4,10 +4,8 @@
 
 #include "base/strings/string_util.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_sorting.h"
 #include "chrome/browser/extensions/theme_installed_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -18,11 +16,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
-#include "chrome/common/url_constants.h"
-#include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/test/browser_test_utils.h"
-#include "extensions/common/id_util.h"
 
 using content::WebContents;
 using extensions::Extension;
@@ -166,60 +160,4 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
   } else {
     // TODO(xiyuan): Figure out how to test extension installed bubble?
   }
-}
-
-class NewTabUISortingBrowserTest : public ExtensionInstallUIBrowserTest {
- public:
-  NewTabUISortingBrowserTest() {}
-
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE {
-    if (type != chrome::NOTIFICATION_EXTENSION_LAUNCHER_REORDERED) {
-      ExtensionInstallUIBrowserTest::Observe(type, source, details);
-      return;
-    }
-    const std::string* id = content::Details<const std::string>(details).ptr();
-    EXPECT_TRUE(id);
-    last_reordered_extension_id_ = *id;
-  }
-
- protected:
-  std::string last_reordered_extension_id_;
-  content::NotificationRegistrar registrar_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(NewTabUISortingBrowserTest);
-};
-
-IN_PROC_BROWSER_TEST_F(NewTabUISortingBrowserTest, ReorderDuringInstall) {
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
-  ExtensionService* service = extensions::ExtensionSystem::Get(
-      browser()->profile())->extension_service();
-  base::FilePath app_dir = test_data_dir_.AppendASCII("app");
-  const std::string app_id = extensions::id_util::GenerateIdForPath(app_dir);
-
-  const extensions::Extension* webstore_extension =
-      service->GetInstalledExtension(extension_misc::kWebStoreAppId);
-  EXPECT_TRUE(webstore_extension);
-  ExtensionSorting* sorting = service->extension_prefs()->extension_sorting();
-
-  // Register for notifications in the same way as AppLauncherHandler.
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LAUNCHER_REORDERED,
-      content::Source<ExtensionSorting>(sorting));
-  // ExtensionAppItem calls this when an app install starts.
-  sorting->EnsureValidOrdinals(app_id, syncer::StringOrdinal());
-  // Vefify the app is not actually installed yet.
-  EXPECT_FALSE(service->GetInstalledExtension(app_id));
-  // Move the test app from the end to be before the web store.
-  service->OnExtensionMoved(app_id,
-                            std::string(),
-                            extension_misc::kWebStoreAppId);
-  EXPECT_EQ(app_id, last_reordered_extension_id_);
-
-  // Now install the app.
-  const extensions::Extension* test_app = LoadExtension(app_dir);
-  ASSERT_TRUE(test_app);
-  EXPECT_TRUE(service->GetInstalledExtension(app_id));
-  EXPECT_EQ(app_id, test_app->id());
 }

@@ -56,13 +56,26 @@ NSString* const kGrowAnimationKey = @"growAnimation";
       currentLocation:(NSPoint)currentLocation
             timestamp:(NSTimeInterval)eventTimestamp {
   [self clearAnimations];
+  [item setSelected:NO];
   NSView* itemView = [item view];
   NSPoint pointInGridCell = [itemView convertPoint:mouseDownLocation
                                           fromView:nil];
   mouseOffset_ = NSMakePoint(pointInGridCell.x - NSMidX([itemView bounds]),
                              NSMidY([itemView bounds]) - pointInGridCell.y);
 
-  NSBitmapImageRep* imageRep = [item dragRepresentationForRestore:NO];
+  // Take a snapshot of the grid cell without the text label and hide the cell.
+  // Also remove the cell highlight on the image, added when it was clicked.
+  NSButton* button = [item button];
+  base::scoped_nsobject<NSString> oldTitle([[item buttonTitle] retain]);
+  [item setButtonTitle:[NSString string]];
+  [[button cell] setHighlighted:NO];
+  NSBitmapImageRep* imageRep =
+      [itemView bitmapImageRepForCachingDisplayInRect:[itemView visibleRect]];
+  [itemView cacheDisplayInRect:[itemView visibleRect]
+              toBitmapImageRep:imageRep];
+  [button setHidden:YES];
+  [item setButtonTitle:oldTitle];
+
   [dragLayer_ setContents:reinterpret_cast<id>([imageRep CGImage])];
   [dragLayer_ setTransform:CATransform3DIdentity];
 
@@ -103,7 +116,15 @@ NSString* const kGrowAnimationKey = @"growAnimation";
   [self clearAnimations];
 
   NSView* itemView = [item view];
-  NSBitmapImageRep* imageRep = [item dragRepresentationForRestore:YES];
+
+  // Take another snapshot of the grid cell, after restoring the label.
+  NSButton* button = [item button];
+  [button setHidden:NO];
+  NSBitmapImageRep* imageRep =
+      [itemView bitmapImageRepForCachingDisplayInRect:[itemView visibleRect]];
+  [itemView cacheDisplayInRect:[itemView visibleRect]
+              toBitmapImageRep:imageRep];
+  [button setHidden:YES];
 
   [dragLayer_ setContents:reinterpret_cast<id>([imageRep CGImage])];
   [dragLayer_ setTransform:CATransform3DScale(CATransform3DIdentity,
@@ -115,7 +136,7 @@ NSString* const kGrowAnimationKey = @"growAnimation";
   // that the |item| and corresponding button can differ from the |item| passed
   // to initiate(), if it moved to a new page during the drag. At this point the
   // destination page is known, so retain the button.
-  buttonToRestore_.reset([[item button] retain]);
+  buttonToRestore_.reset([button retain]);
 
   // Add the shrink animation for the layer.
   [self animateTransformFrom:CATransform3DIdentity

@@ -69,7 +69,6 @@ const CGFloat kDragThreshold = 5;
   [itemCollectionView setFocusRingType:NSFocusRingTypeNone];
   [itemCollectionView setBackgroundColors:
       [NSArray arrayWithObject:[NSColor clearColor]]];
-  [itemCollectionView setDelegate:gridController_];
 
   base::scoped_nsobject<AppsGridViewItem> itemPrototype(
       [[AppsGridViewItem alloc] initWithSize:cellSize_]);

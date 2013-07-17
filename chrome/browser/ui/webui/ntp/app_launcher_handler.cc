@@ -301,11 +301,7 @@ void AppLauncherHandler::Observe(int type,
       if (id) {
         const Extension* extension =
             extension_service_->GetInstalledExtension(*id);
-        if (!extension) {
-          // Extension could still be downloading or installing.
-          return;
-        }
-
+        DCHECK(extension) << "Could not find extension with id " << *id;
         DictionaryValue app_info;
         CreateAppInfo(extension,
                       extension_service_,
