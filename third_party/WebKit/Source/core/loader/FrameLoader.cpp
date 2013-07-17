@@ -526,7 +526,7 @@ void FrameLoader::didBeginDocument(bool dispatch)
     m_didCallImplicitClose = false;
     m_frame->document()->setReadyState(Document::Loading);
 
-    if (history()->currentItem())
+    if (history()->currentItem() && m_loadType == FrameLoadTypeBackForward)
         m_frame->document()->statePopped(history()->currentItem()->stateObject());
 
     if (dispatch)
