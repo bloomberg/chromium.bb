@@ -17,8 +17,7 @@ websocket_handshake_handler_spdy2_unittest.cc
 websocket_handshake_handler_spdy3_unittest.cc
 websocket_job.cc
 websocket_job.h
-websocket_job_spdy2_unittest.cc
-websocket_job_spdy3_unittest.cc
+websocket_job_unittest.cc
 websocket_net_log_params.cc
 websocket_net_log_params.h
 websocket_net_log_params_unittest.cc
@@ -31,15 +30,22 @@ performs framing and implements protocol semantics in the browser process, and
 presents a high-level interface to the renderer process similar to a
 multiplexing proxy. This is not yet used in any stable Chromium version.
 
+websocket_channel.cc
+websocket_channel.h
+websocket_channel_test.cc
 websocket_errors.cc
 websocket_errors.h
 websocket_errors_unittest.cc
+websocket_event_interface.h
 websocket_frame.cc
 websocket_frame.h
 websocket_frame_parser.cc
 websocket_frame_parser.h
 websocket_frame_parser_unittest.cc
 websocket_frame_unittest.cc
+websocket_mux.h
+websocket_stream_base.h
+websocket_stream.cc
 websocket_stream.h
 
 A pre-submit check helps us keep this README file up-to-date:
