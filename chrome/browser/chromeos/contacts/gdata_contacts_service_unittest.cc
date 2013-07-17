@@ -11,13 +11,11 @@
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/contacts/contact.pb.h"
 #include "chrome/browser/chromeos/contacts/contact_test_util.h"
-#include "chrome/browser/google_apis/auth_service.h"
+#include "chrome/browser/google_apis/dummy_auth_service.h"
 #include "chrome/browser/google_apis/test_util.h"
 #include "chrome/browser/google_apis/time_util.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_utils.h"
@@ -78,7 +76,6 @@ class GDataContactsServiceTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     io_thread_.StartIOThread();
-    profile_.reset(new TestingProfile);
     request_context_getter_ = new net::TestURLRequestContextGetter(
         content::BrowserThread::GetMessageLoopProxyForThread(
             content::BrowserThread::IO));
@@ -92,10 +89,7 @@ class GDataContactsServiceTest : public testing::Test {
         base::Bind(&GDataContactsServiceTest::HandleDownloadRequest,
                    base::Unretained(this)));
     service_.reset(new GDataContactsService(request_context_getter_.get(),
-                                            profile_.get()));
-    service_->Initialize();
-    service_->auth_service_for_testing()->set_access_token_for_testing(
-        kTestGDataAuthToken);
+                                            new google_apis::DummyAuthService));
     service_->set_rewrite_photo_url_callback_for_testing(
         base::Bind(&GDataContactsServiceTest::RewritePhotoUrl,
                    base::Unretained(this)));
@@ -176,7 +170,6 @@ class GDataContactsServiceTest : public testing::Test {
   base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread io_thread_;
-  scoped_ptr<TestingProfile> profile_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
 
   // Was the last download successful?  Used to pass the result back from

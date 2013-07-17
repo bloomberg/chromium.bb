@@ -146,9 +146,6 @@ const char kLinkETagField[] = "gd$etag";
 const char kLinkRelPhotoValue[] =
     "http://schemas.google.com/contacts/2008/rel#photo";
 
-// OAuth2 scope for the Contacts API.
-const char kContactsScope[] = "https://www.google.com/m8/feeds/";
-
 // Returns a string containing a pretty-printed JSON representation of |value|.
 std::string PrettyPrintValue(const base::Value& value) {
   std::string out;
@@ -851,17 +848,14 @@ class GDataContactsService::DownloadContactsRequest {
 
 GDataContactsService::GDataContactsService(
     net::URLRequestContextGetter* url_request_context_getter,
-    Profile* profile)
+    google_apis::AuthServiceInterface* auth_service)
     : max_photo_downloads_per_second_(kMaxPhotoDownloadsPerSecond),
       photo_download_timer_interval_(base::TimeDelta::FromSeconds(1)) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  std::vector<std::string> scopes;
-  scopes.push_back(kContactsScope);
   sender_.reset(new google_apis::RequestSender(
-      profile,
+      auth_service,
       url_request_context_getter,
       content::BrowserThread::GetBlockingPool(),
-      scopes,
       "" /* custom_user_agent */));
 }
 
@@ -869,15 +863,6 @@ GDataContactsService::~GDataContactsService() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   STLDeleteContainerPointers(requests_.begin(), requests_.end());
   requests_.clear();
-}
-
-google_apis::AuthService* GDataContactsService::auth_service_for_testing() {
-  return sender_->auth_service();
-}
-
-void GDataContactsService::Initialize() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  sender_->Initialize();
 }
 
 void GDataContactsService::DownloadContacts(SuccessCallback success_callback,

@@ -10,13 +10,12 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/google_apis/auth_service.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/drive_api_requests.h"
 #include "chrome/browser/google_apis/drive_api_url_generator.h"
+#include "chrome/browser/google_apis/dummy_auth_service.h"
 #include "chrome/browser/google_apis/request_sender.h"
 #include "chrome/browser/google_apis/test_util.h"
-#include "chrome/test/base/testing_profile.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -27,7 +26,6 @@ namespace google_apis {
 
 namespace {
 
-const char kTestDriveApiAuthToken[] = "testtoken";
 const char kTestETag[] = "test_etag";
 const char kTestUserAgent[] = "test-user-agent";
 
@@ -52,18 +50,13 @@ class DriveApiRequestsTest : public testing::Test {
   }
 
   virtual void SetUp() OVERRIDE {
-    profile_.reset(new TestingProfile);
-
     request_context_getter_ = new net::TestURLRequestContextGetter(
         message_loop_.message_loop_proxy());
 
-    request_sender_.reset(new RequestSender(profile_.get(),
+    request_sender_.reset(new RequestSender(new DummyAuthService,
                                             request_context_getter_.get(),
                                             message_loop_.message_loop_proxy(),
-                                            std::vector<std::string>(),
                                             kTestUserAgent));
-    request_sender_->auth_service()->set_access_token_for_testing(
-        kTestDriveApiAuthToken);
 
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
@@ -99,7 +92,6 @@ class DriveApiRequestsTest : public testing::Test {
 
   base::MessageLoopForIO message_loop_;  // Test server needs IO thread.
   net::test_server::EmbeddedTestServer test_server_;
-  scoped_ptr<TestingProfile> profile_;
   scoped_ptr<RequestSender> request_sender_;
   scoped_ptr<DriveApiUrlGenerator> url_generator_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;

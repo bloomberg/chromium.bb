@@ -26,7 +26,6 @@ class TaskRunner;
 }
 
 namespace google_apis {
-class AuthService;
 class RequestSender;
 }
 
@@ -55,8 +54,6 @@ class GDataWapiService : public DriveServiceInterface,
                    const GURL& base_download_url,
                    const std::string& custom_user_agent);
   virtual ~GDataWapiService();
-
-  google_apis::AuthService* auth_service_for_testing();
 
   // DriveServiceInterface Overrides
   virtual void Initialize(Profile* profile) OVERRIDE;

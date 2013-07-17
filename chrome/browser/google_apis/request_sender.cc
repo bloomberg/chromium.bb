@@ -12,15 +12,13 @@
 namespace google_apis {
 
 RequestSender::RequestSender(
-    Profile* profile,
+    AuthServiceInterface* auth_service,
     net::URLRequestContextGetter* url_request_context_getter,
     base::TaskRunner* blocking_task_runner,
-    const std::vector<std::string>& scopes,
     const std::string& custom_user_agent)
-    : profile_(profile),
+    : auth_service_(auth_service),
       url_request_context_getter_(url_request_context_getter),
       blocking_task_runner_(blocking_task_runner),
-      auth_service_(new AuthService(url_request_context_getter, scopes)),
       custom_user_agent_(custom_user_agent),
       weak_ptr_factory_(this) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -30,11 +28,6 @@ RequestSender::~RequestSender() {
   DCHECK(thread_checker_.CalledOnValidThread());
   STLDeleteContainerPointers(in_flight_requests_.begin(),
                              in_flight_requests_.end());
-}
-
-void RequestSender::Initialize() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  auth_service_->Initialize(profile_);
 }
 
 base::Closure RequestSender::StartRequestWithRetry(

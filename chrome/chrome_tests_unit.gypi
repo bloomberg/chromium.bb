@@ -130,6 +130,8 @@
         'browser/extensions/test_extension_system.h',
         'browser/extensions/test_management_policy.cc',
         'browser/extensions/test_management_policy.h',
+        'browser/google_apis/dummy_auth_service.cc',
+        'browser/google_apis/dummy_auth_service.h',
         'browser/google_apis/test_util.cc',
         'browser/google_apis/test_util.h',
         'browser/media_galleries/media_galleries_test_util.cc',

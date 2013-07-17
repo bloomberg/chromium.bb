@@ -37,14 +37,14 @@ class AuthService : public AuthServiceInterface,
   // URLFetcher.
   //
   // |scopes| specifies OAuth2 scopes.
-  AuthService(net::URLRequestContextGetter* url_request_context_getter,
+  AuthService(Profile* profile,
+              net::URLRequestContextGetter* url_request_context_getter,
               const std::vector<std::string>& scopes);
   virtual ~AuthService();
 
   // Overriden from AuthServiceInterface:
   virtual void AddObserver(AuthServiceObserver* observer) OVERRIDE;
   virtual void RemoveObserver(AuthServiceObserver* observer) OVERRIDE;
-  virtual void Initialize(Profile* profile) OVERRIDE;
   virtual void StartAuthentication(const AuthStatusCallback& callback) OVERRIDE;
   virtual bool HasAccessToken() const OVERRIDE;
   virtual bool HasRefreshToken() const OVERRIDE;

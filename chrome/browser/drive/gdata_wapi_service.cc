@@ -148,10 +148,6 @@ GDataWapiService::~GDataWapiService() {
     sender_->auth_service()->RemoveObserver(this);
 }
 
-AuthService* GDataWapiService::auth_service_for_testing() {
-  return sender_->auth_service();
-}
-
 void GDataWapiService::Initialize(Profile* profile) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -161,12 +157,11 @@ void GDataWapiService::Initialize(Profile* profile) {
   scopes.push_back(kUserContentScope);
   // Drive App scope is required for even WAPI v3 apps access.
   scopes.push_back(kDriveAppsScope);
-  sender_.reset(new RequestSender(profile,
-                                  url_request_context_getter_,
-                                  blocking_task_runner_.get(),
-                                  scopes,
-                                  custom_user_agent_));
-  sender_->Initialize();
+  sender_.reset(new RequestSender(
+      new AuthService(profile, url_request_context_getter_, scopes),
+      url_request_context_getter_,
+      blocking_task_runner_.get(),
+      custom_user_agent_));
 
   sender_->auth_service()->AddObserver(this);
 }

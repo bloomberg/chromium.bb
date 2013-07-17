@@ -50,6 +50,9 @@ const int kUpdateFailureInitialRetrySec = 5;
 // Amount by which |update_delay_on_next_failure_| is multiplied on failure.
 const int kUpdateFailureBackoffFactor = 2;
 
+// OAuth2 scope for the Contacts API.
+const char kContactsScope[] = "https://www.google.com/m8/feeds/";
+
 }  // namespace
 
 GoogleContactStore::TestAPI::TestAPI(GoogleContactStore* store)
@@ -120,9 +123,13 @@ void GoogleContactStore::Init() {
 
   // Create a GData service if one hasn't already been assigned for testing.
   if (!gdata_service_.get()) {
+    std::vector<std::string> scopes;
+    scopes.push_back(kContactsScope);
+
     gdata_service_.reset(new GDataContactsService(
-        url_request_context_getter_, profile_));
-    gdata_service_->Initialize();
+        url_request_context_getter_,
+        new google_apis::AuthService(
+            profile_, url_request_context_getter_, scopes)));
   }
 
   base::FilePath db_path = profile_->GetPath().Append(kDatabaseDirectoryName);

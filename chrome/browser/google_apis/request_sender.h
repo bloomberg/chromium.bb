@@ -30,12 +30,15 @@ class URLRequestContextGetter;
 namespace google_apis {
 
 class AuthenticatedRequestInterface;
-class AuthService;
+class AuthServiceInterface;
 
 // Helper class that sends requests implementing
 // AuthenticatedRequestInterface and handles retries and authentication.
 class RequestSender {
  public:
+  // |auth_service| is used for fetching OAuth tokens. It'll be owned by
+  // this RequestSender.
+  //
   // |url_request_context_getter| is the context used to perform network
   // requests from this RequestSender.
   //
@@ -46,14 +49,13 @@ class RequestSender {
   //
   // |custom_user_agent| will be used for the User-Agent header in HTTP
   // requests issued through the request sender if the value is not empty.
-  RequestSender(Profile* profile,
+  RequestSender(AuthServiceInterface* auth_service,
                 net::URLRequestContextGetter* url_request_context_getter,
                 base::TaskRunner* blocking_task_runner,
-                const std::vector<std::string>& scopes,
                 const std::string& custom_user_agent);
-  virtual ~RequestSender();
+  ~RequestSender();
 
-  AuthService* auth_service() { return auth_service_.get(); }
+  AuthServiceInterface* auth_service() { return auth_service_.get(); }
 
   net::URLRequestContextGetter* url_request_context_getter() const {
     return url_request_context_getter_;
@@ -62,9 +64,6 @@ class RequestSender {
   base::TaskRunner* blocking_task_runner() const {
     return blocking_task_runner_.get();
   }
-
-  // Prepares the object for use.
-  virtual void Initialize();
 
   // Starts a request implementing the AuthenticatedRequestInterface
   // interface, and makes the request retry upon authentication failures by
@@ -96,11 +95,10 @@ class RequestSender {
   void CancelRequest(
       const base::WeakPtr<AuthenticatedRequestInterface>& request);
 
-  Profile* profile_;  // Not owned.
+  scoped_ptr<AuthServiceInterface> auth_service_;
   net::URLRequestContextGetter* url_request_context_getter_;  // Not owned.
   scoped_refptr<base::TaskRunner> blocking_task_runner_;
 
-  scoped_ptr<AuthService> auth_service_;
   std::set<AuthenticatedRequestInterface*> in_flight_requests_;
   const std::string custom_user_agent_;
 

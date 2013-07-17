@@ -6,14 +6,14 @@
 
 #include "base/bind.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "chrome/browser/google_apis/auth_service.h"
+#include "chrome/browser/google_apis/dummy_auth_service.h"
 #include "chrome/browser/google_apis/request_sender.h"
 #include "chrome/browser/google_apis/task_util.h"
 #include "chrome/browser/google_apis/test_util.h"
-#include "chrome/test/base/testing_profile.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -24,7 +24,6 @@ namespace google_apis {
 
 namespace {
 
-const char kTestAuthToken[] = "testtoken";
 const char kTestUserAgent[] = "test-user-agent";
 
 }  // namespace
@@ -36,18 +35,16 @@ class BaseRequestsServerTest : public testing::Test {
   }
 
   virtual void SetUp() OVERRIDE {
-    profile_.reset(new TestingProfile);
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     request_context_getter_ = new net::TestURLRequestContextGetter(
         message_loop_.message_loop_proxy());
 
-    request_sender_.reset(new RequestSender(profile_.get(),
-                                            request_context_getter_.get(),
-                                            message_loop_.message_loop_proxy(),
-                                            std::vector<std::string>(),
-                                            kTestUserAgent));
-    request_sender_->auth_service()->set_access_token_for_testing(
-        kTestAuthToken);
+    request_sender_.reset(new RequestSender(
+        new DummyAuthService,
+        request_context_getter_.get(),
+        message_loop_.message_loop_proxy(),
+        kTestUserAgent));
 
     ASSERT_TRUE(test_server_.InitializeAndWaitUntilReady());
     test_server_.RegisterRequestHandler(
@@ -58,14 +55,14 @@ class BaseRequestsServerTest : public testing::Test {
 
   // Returns a temporary file path suitable for storing the cache file.
   base::FilePath GetTestCachedFilePath(const base::FilePath& file_name) {
-    return profile_->GetPath().Append(file_name);
+    return temp_dir_.path().Append(file_name);
   }
 
   base::MessageLoopForIO message_loop_;  // Test server needs IO thread.
   net::test_server::EmbeddedTestServer test_server_;
-  scoped_ptr<TestingProfile> profile_;
   scoped_ptr<RequestSender> request_sender_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
+  base::ScopedTempDir temp_dir_;
 
   // The incoming HTTP request is saved so tests can verify the request
   // parameters like HTTP method (ex. some requests should use DELETE

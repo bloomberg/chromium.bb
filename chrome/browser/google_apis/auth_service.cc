@@ -137,8 +137,16 @@ void AuthRequest::OnGetTokenFailure(const GoogleServiceAuthError& error) {
   delete this;
 }
 
-void AuthService::Initialize(Profile* profile) {
-  profile_ = profile;
+AuthService::AuthService(
+    Profile* profile,
+    net::URLRequestContextGetter* url_request_context_getter,
+    const std::vector<std::string>& scopes)
+    : profile_(profile),
+      url_request_context_getter_(url_request_context_getter),
+      scopes_(scopes),
+      weak_ptr_factory_(this) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   // Get OAuth2 refresh token (if we have any) and register for its updates.
   TokenService* service = TokenServiceFactory::GetForProfile(profile_);
   refresh_token_ = service->GetOAuth2LoginRefreshToken();
@@ -148,21 +156,6 @@ void AuthService::Initialize(Profile* profile) {
   registrar_.Add(this,
                  chrome::NOTIFICATION_TOKEN_REQUEST_FAILED,
                  content::Source<TokenService>(service));
-
-  if (!refresh_token_.empty())
-    FOR_EACH_OBSERVER(AuthServiceObserver,
-                      observers_,
-                      OnOAuth2RefreshTokenChanged());
-}
-
-AuthService::AuthService(
-    net::URLRequestContextGetter* url_request_context_getter,
-    const std::vector<std::string>& scopes)
-    : profile_(NULL),
-      url_request_context_getter_(url_request_context_getter),
-      scopes_(scopes),
-      weak_ptr_factory_(this) {
-  DCHECK(thread_checker_.CalledOnValidThread());
 }
 
 AuthService::~AuthService() {

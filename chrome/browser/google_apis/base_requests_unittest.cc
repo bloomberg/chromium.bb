@@ -9,9 +9,9 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/values.h"
+#include "chrome/browser/google_apis/dummy_auth_service.h"
 #include "chrome/browser/google_apis/request_sender.h"
 #include "chrome/browser/google_apis/test_util.h"
-#include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace google_apis {
@@ -43,17 +43,13 @@ class FakeGetDataRequest : public GetDataRequest {
 class BaseRequestsTest : public testing::Test {
  public:
   virtual void SetUp() OVERRIDE {
-    profile_.reset(new TestingProfile);
-    sender_.reset(new RequestSender(profile_.get(),
+    sender_.reset(new RequestSender(new DummyAuthService,
                                     NULL /* url_request_context_getter */,
                                     message_loop_.message_loop_proxy(),
-                                    std::vector<std::string>() /* scopes */,
                                     std::string() /* custom user agent */));
-    sender_->Initialize();
   }
 
   base::MessageLoop message_loop_;
-  scoped_ptr<TestingProfile> profile_;
   scoped_ptr<RequestSender> sender_;
 };
 

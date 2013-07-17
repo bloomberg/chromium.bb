@@ -31,9 +31,6 @@ void GDataContactsServiceStub::SetContacts(
   expected_min_update_time_ = expected_min_update_time;
 }
 
-void GDataContactsServiceStub::Initialize() {
-}
-
 void GDataContactsServiceStub::DownloadContacts(
     SuccessCallback success_callback,
     FailureCallback failure_callback,

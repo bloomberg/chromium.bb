@@ -287,13 +287,12 @@ void DriveAPIService::Initialize(Profile* profile) {
   std::vector<std::string> scopes;
   scopes.push_back(kDriveScope);
   scopes.push_back(kDriveAppsReadonlyScope);
-  sender_.reset(new RequestSender(profile,
-                                  url_request_context_getter_,
-                                  blocking_task_runner_.get(),
-                                  scopes,
-                                  custom_user_agent_));
-  sender_->Initialize();
-
+  sender_.reset(new RequestSender(
+     new google_apis::AuthService(
+         profile, url_request_context_getter_, scopes),
+     url_request_context_getter_,
+     blocking_task_runner_.get(),
+     custom_user_agent_));
   sender_->auth_service()->AddObserver(this);
 }
 
