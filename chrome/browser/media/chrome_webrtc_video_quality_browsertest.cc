@@ -14,7 +14,6 @@
 #include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/media/media_stream_infobar_delegate.h"
-#include "chrome/browser/media/webrtc_browsertest_common.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
@@ -170,6 +169,30 @@ class WebrtcVideoQualityBrowserTest : public InProcessBrowserTest {
         << "Failed to shut down pywebsocket server!";
   }
 
+  // TODO(phoglund): This ugly poll method is only here while we transition
+  // the test javascript to just post events when things happen. Right now they
+  // don't because the webrtc_call.py and other tests use this polling way of
+  // communicating when we are waiting from an asynchronous event in the
+  // javascript. This method is meant to emulate WaitUntil in the PyAuto
+  // framework.
+  bool UglyPollingWaitUntil(const std::string& javascript,
+                            const std::string& evaluates_to,
+                            content::WebContents* tab_contents) {
+    base::Time start_time = base::Time::Now();
+    base::TimeDelta timeout = TestTimeouts::action_max_timeout();
+    std::string result;
+
+    while (base::Time::Now() - start_time < timeout) {
+      result = ExecuteJavascript(javascript, tab_contents);
+      if (evaluates_to == result)
+        return true;
+    }
+    LOG(ERROR) << "Timed out while waiting for " << javascript
+               << " to evaluate to " << evaluates_to << "; last result was '"
+               << result << "'";
+    return false;
+  }
+
   // Convenience method which executes the provided javascript in the context
   // of the provided web contents and returns what it evaluated to.
   std::string ExecuteJavascript(const std::string& javascript,
@@ -198,7 +221,7 @@ class WebrtcVideoQualityBrowserTest : public InProcessBrowserTest {
     media_infobar->Accept();
 
     // Wait for WebRTC to call the success callback.
-    EXPECT_TRUE(PollingWaitUntil(
+    EXPECT_TRUE(UglyPollingWaitUntil(
         "obtainGetUserMediaResult();", "ok-got-stream", tab_contents));
   }
 
@@ -228,9 +251,9 @@ class WebrtcVideoQualityBrowserTest : public InProcessBrowserTest {
     EXPECT_EQ("ok-negotiating", ExecuteJavascript("negotiateCall()", from_tab));
 
     // Ensure the call gets up on both sides.
-    EXPECT_TRUE(PollingWaitUntil(
+    EXPECT_TRUE(UglyPollingWaitUntil(
         "getPeerConnectionReadyState()", "active", from_tab));
-    EXPECT_TRUE(PollingWaitUntil(
+    EXPECT_TRUE(UglyPollingWaitUntil(
         "getPeerConnectionReadyState()", "active", to_tab));
   }
 
@@ -239,7 +262,7 @@ class WebrtcVideoQualityBrowserTest : public InProcessBrowserTest {
   }
 
   void WaitUntilHangupVerified(content::WebContents* tab_contents) {
-    EXPECT_TRUE(PollingWaitUntil(
+    EXPECT_TRUE(UglyPollingWaitUntil(
         "getPeerConnectionReadyState()", "no-peer-connection", tab_contents));
   }
 
@@ -475,14 +498,9 @@ IN_PROC_BROWSER_TEST_F(WebrtcVideoQualityBrowserTest,
   AssertNoAsynchronousErrors(left_tab);
   AssertNoAsynchronousErrors(right_tab);
 
-  // Poll slower here to avoid flooding the log with messages: capturing and
-  // sending frames take quite a bit of time.
-  int polling_interval_msec = 1000;
-
   // TODO(phoglund): (de-dupe later) different from original flow.
-  EXPECT_TRUE(PollingWaitUntil(
-      "doneFrameCapturing()", "done-capturing", right_tab,
-      polling_interval_msec));
+  EXPECT_TRUE(UglyPollingWaitUntil(
+      "doneFrameCapturing()", "done-capturing", right_tab));
 
   HangUp(left_tab);
   WaitUntilHangupVerified(left_tab);
@@ -492,9 +510,8 @@ IN_PROC_BROWSER_TEST_F(WebrtcVideoQualityBrowserTest,
   AssertNoAsynchronousErrors(right_tab);
 
   // TODO(phoglund): (de-dupe later) different from original flow.
-  EXPECT_TRUE(PollingWaitUntil(
-      "haveMoreFramesToSend()", "no-more-frames", right_tab,
-      polling_interval_msec));
+  EXPECT_TRUE(UglyPollingWaitUntil(
+      "haveMoreFramesToSend()", "no-more-frames", right_tab));
 
   RunARGBtoI420Converter(
       kVgaWidth, kVgaHeight, GetWorkingDir().Append(kCapturedYuvFileName));
