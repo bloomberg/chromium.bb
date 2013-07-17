@@ -9,7 +9,7 @@
 #include "ash/shell.h"
 #include "ash/wm/coordinate_conversion.h"
 #include "base/bind.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/drag_drop_delegate.h"

@@ -6,7 +6,7 @@
 #define ASH_ACCELERATORS_ACCELERATOR_DISPATCHER_H_
 
 #include "ash/ash_export.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 

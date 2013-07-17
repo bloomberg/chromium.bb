@@ -16,7 +16,7 @@
 #include "ash/shell/toplevel_window.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/window_util.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "ui/aura/window.h"
 #include "ui/keyboard/keyboard_controller_proxy.h"
 #include "ui/views/corewm/input_method_event_filter.h"

@@ -16,7 +16,7 @@
 #include "ash/shell_window_ids.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/window_animations.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/resource/resource_bundle.h"

@@ -5,7 +5,7 @@
 #include "android_webview/browser/find_helper.h"
 
 #include "android_webview/browser/scoped_allow_wait_for_legacy_web_view_api.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/stop_find_action.h"

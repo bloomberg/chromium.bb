@@ -9,7 +9,7 @@
 #include "ash/test/ash_test_base.h"
 #include "base/bind.h"
 #include "base/event_types.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "ui/aura/client/dispatcher_client.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/test_windows.h"
