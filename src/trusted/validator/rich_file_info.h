@@ -15,17 +15,17 @@ EXTERN_C_BEGIN
 
 struct NaClDesc;
 
-struct RichFileInfo {
+struct NaClRichFileInfo {
   uint8_t known_file;
   const char *file_path;
   uint32_t file_path_length;
 };
 
-void RichFileInfoCtor(struct RichFileInfo *info);
-void RichFileInfoDtor(struct RichFileInfo *info);
+void NaClRichFileInfoCtor(struct NaClRichFileInfo *info);
+void NaClRichFileInfoDtor(struct NaClRichFileInfo *info);
 
-int SetFileOriginInfo(struct NaClDesc *desc, struct RichFileInfo *info);
-int GetFileOriginInfo(struct NaClDesc *desc, struct RichFileInfo *info);
+int NaClSetFileOriginInfo(struct NaClDesc *desc, struct NaClRichFileInfo *info);
+int NaClGetFileOriginInfo(struct NaClDesc *desc, struct NaClRichFileInfo *info);
 
 EXTERN_C_END
 

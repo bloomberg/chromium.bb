@@ -63,15 +63,16 @@ struct NaClValidationCache {
                           uint32_t *file_path_length);
 };
 
-extern int CachingIsInexpensive(struct NaClValidationCache *cache,
-                                const struct NaClValidationMetadata *metadata);
+extern int NaClCachingIsInexpensive(struct NaClValidationCache *cache,
+                                    const struct
+                                    NaClValidationMetadata *metadata);
 
 /* Helper function for identifying the code being validated. */
-extern void AddCodeIdentity(uint8_t *data,
-                            size_t size,
-                            const struct NaClValidationMetadata *metadata,
-                            struct NaClValidationCache *cache,
-                            void *query);
+extern void NaClAddCodeIdentity(uint8_t *data,
+                                size_t size,
+                                const struct NaClValidationMetadata *metadata,
+                                struct NaClValidationCache *cache,
+                                void *query);
 
 EXTERN_C_END
 

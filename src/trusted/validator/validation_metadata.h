@@ -44,15 +44,16 @@ struct NaClValidationMetadata {
 };
 
 /* Note: copies file_name.  This copy is deallocated by DestroyMetadata. */
-extern void MetadataFromFDCtor(struct NaClValidationMetadata *metadata,
-                               int file_desc,
-                               const char* file_name,
-                               size_t file_name_length);
+extern void NaClMetadataFromFDCtor(struct NaClValidationMetadata *metadata,
+                                   int file_desc,
+                                   const char* file_name,
+                                   size_t file_name_length);
 
-extern void MetadataFromNaClDescCtor(struct NaClValidationMetadata *metadata,
-                                     struct NaClDesc *desc);
+extern
+void NaClMetadataFromNaClDescCtor(struct NaClValidationMetadata *metadata,
+                                  struct NaClDesc *desc);
 
-extern void MetadataDtor(struct NaClValidationMetadata *metadata);
+extern void NaClMetadataDtor(struct NaClValidationMetadata *metadata);
 
 EXTERN_C_END
 

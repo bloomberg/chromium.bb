@@ -1553,7 +1553,7 @@ int32_t NaClSysMmapIntern(struct NaClApp        *nap,
       }
 
       /* Ask validator / validation cache */
-      MetadataFromNaClDescCtor(&metadata, ndp);
+      NaClMetadataFromNaClDescCtor(&metadata, ndp);
       validator_status = NACL_FI("MMAP_FORCE_MMAP_VALIDATION_FAIL",
                                  (*nap->validator->
                                   Validate)(usraddr,
@@ -1567,7 +1567,7 @@ int32_t NaClSysMmapIntern(struct NaClApp        *nap,
                                  NaClValidationFailed);
       NaClLog(3, "NaClSysMmap: prot_exec, validator_status %d\n",
               validator_status);
-      MetadataDtor(&metadata);
+      NaClMetadataDtor(&metadata);
 
       if (NaClValidationSucceeded == validator_status) {
         /*

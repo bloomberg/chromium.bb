@@ -169,7 +169,7 @@ static void NaClManifestNameServiceLookupRpc(
                                            &new_fd,
                                            &file_path,
                                            &file_path_length)) {
-      struct RichFileInfo info;
+      struct NaClRichFileInfo info;
       uint32_t flags;
       /*
        * We don't entirely trust the render process, so swap the handle with one
@@ -184,12 +184,12 @@ static void NaClManifestNameServiceLookupRpc(
       NaClDescSetFlags(desc, flags | NACL_DESC_FLAGS_MMAP_EXEC_OK);
 
       /* Provide metadata for validation. */
-      RichFileInfoCtor(&info);
+      NaClRichFileInfoCtor(&info);
       info.known_file = 1;
       info.file_path = file_path; /* Takes ownership. */
       info.file_path_length = file_path_length;
-      SetFileOriginInfo(desc, &info);
-      RichFileInfoDtor(&info);
+      NaClSetFileOriginInfo(desc, &info);
+      NaClRichFileInfoDtor(&info);
     }
 
     out_args[0]->u.ival = status;

@@ -71,7 +71,7 @@ static NaClValidationStatus ApplyValidator_x86_64(
     const char validator_id[] = "x86-64";
     cache->AddData(query, (uint8_t *) validator_id, sizeof(validator_id));
     cache->AddData(query, (uint8_t *) cpu_features, sizeof(*cpu_features));
-    AddCodeIdentity(data, size, metadata, cache, query);
+    NaClAddCodeIdentity(data, size, metadata, cache, query);
     if (cache->QueryKnownToValidate(query)) {
       cache->DestroyQuery(query);
       return NaClValidationSucceeded;

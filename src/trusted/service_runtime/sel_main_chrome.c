@@ -102,7 +102,8 @@ static void NaClLoadIrt(struct NaClApp *nap, int irt_fd) {
    * the end of the name.
    */
   /* TODO(ncbray) plumb the real filename in from Chrome. */
-  MetadataFromFDCtor(&metadata, file_desc, kFakeIrtName, sizeof(kFakeIrtName));
+  NaClMetadataFromFDCtor(&metadata, file_desc,
+                         kFakeIrtName, sizeof(kFakeIrtName));
 
   nd = NaClDescIoDescFromDescAllocCtor(file_desc, NACL_ABI_O_RDONLY);
   if (NULL == nd) {
@@ -118,7 +119,7 @@ static void NaClLoadIrt(struct NaClApp *nap, int irt_fd) {
             NaClErrorString(errcode));
   }
 
-  MetadataDtor(&metadata);
+  NaClMetadataDtor(&metadata);
   NaClDescUnref(nd);
 }
 
