@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,52 +9,9 @@
 #include "base/message_loop.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/skia/include/core/SkBitmap.h"
-#include "third_party/skia/include/core/SkColorPriv.h"
 #include "webkit/glue/webkitplatformsupport_impl.h"
 
 namespace {
-
-TEST(WebkitGlueTest, DecodeImageFail) {
-  std::string data("not an image");
-  SkBitmap image;
-  EXPECT_FALSE(webkit_glue::DecodeImage(data, &image));
-  EXPECT_TRUE(image.isNull());
-}
-
-TEST(WebkitGlueTest, DecodeImage) {
-  std::string data("GIF87a\x02\x00\x02\x00\xa1\x04\x00\x00\x00\x00\x00\x00\xff"
-                   "\xff\x00\x00\x00\xff\x00,\x00\x00\x00\x00\x02\x00\x02\x00"
-                   "\x00\x02\x03\x84\x16\x05\x00;", 42);
-  EXPECT_EQ(42u, data.size());
-  SkBitmap image;
-  EXPECT_TRUE(webkit_glue::DecodeImage(data, &image));
-  EXPECT_FALSE(image.isNull());
-  EXPECT_EQ(2, image.width());
-  EXPECT_EQ(2, image.height());
-  EXPECT_EQ(SkBitmap::kARGB_8888_Config, image.config());
-  image.lockPixels();
-  uint32_t pixel = *image.getAddr32(0, 0); // Black
-  EXPECT_EQ(0x00U, SkGetPackedR32(pixel));
-  EXPECT_EQ(0x00U, SkGetPackedG32(pixel));
-  EXPECT_EQ(0x00U, SkGetPackedB32(pixel));
-
-  pixel = *image.getAddr32(1, 0); // Red
-  EXPECT_EQ(0xffU, SkGetPackedR32(pixel));
-  EXPECT_EQ(0x00U, SkGetPackedG32(pixel));
-  EXPECT_EQ(0x00U, SkGetPackedB32(pixel));
-
-  pixel = *image.getAddr32(0, 1); // Green
-  EXPECT_EQ(0x00U, SkGetPackedR32(pixel));
-  EXPECT_EQ(0xffU, SkGetPackedG32(pixel));
-  EXPECT_EQ(0x00U, SkGetPackedB32(pixel));
-
-  pixel = *image.getAddr32(1, 1); // Blue
-  EXPECT_EQ(0x00U, SkGetPackedR32(pixel));
-  EXPECT_EQ(0x00U, SkGetPackedG32(pixel));
-  EXPECT_EQ(0xffU, SkGetPackedB32(pixel));
-  image.unlockPixels();
-}
 
 // Derives WebKitPlatformSupportImpl for testing shared timers.
 class TestWebKitPlatformSupport

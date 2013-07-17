@@ -1,82 +1,31 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "webkit/glue/webkit_glue.h"
 
-#if defined(OS_WIN)
-#include <mlang.h>
-#include <objidl.h>
-#elif defined(OS_POSIX) && !defined(OS_MACOSX)
-#include <sys/utsname.h>
-#endif
-
 #if defined(OS_LINUX)
 #include <malloc.h>
 #endif
 
-#include <limits>
-
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/path_service.h"
 #include "base/process_util.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/strings/utf_string_conversions.h"
-#include "base/sys_info.h"
 #include "net/base/escape.h"
 #include "skia/ext/platform_canvas.h"
-#if defined(OS_MACOSX)
-#include "skia/ext/skia_utils_mac.h"
-#endif
-#include "third_party/WebKit/public/platform/WebData.h"
 #include "third_party/WebKit/public/platform/WebFileInfo.h"
-#include "third_party/WebKit/public/platform/WebImage.h"
-#include "third_party/WebKit/public/platform/WebRect.h"
-#include "third_party/WebKit/public/platform/WebSize.h"
-#include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/platform/WebVector.h"
-#include "third_party/WebKit/public/web/WebDevToolsAgent.h"
-#include "third_party/WebKit/public/web/WebDocument.h"
-#include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebGlyphCache.h"
-#include "third_party/WebKit/public/web/WebHistoryItem.h"
 #include "third_party/WebKit/public/web/WebKit.h"
-#include "third_party/WebKit/public/web/WebPrintParams.h"
-#include "third_party/WebKit/public/web/WebView.h"
-#if defined(OS_WIN)
-#include "third_party/WebKit/public/web/win/WebInputEventFactory.h"
-#endif
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "v8/include/v8.h"
 
 using WebKit::WebCanvas;
-using WebKit::WebData;
-using WebKit::WebDevToolsAgent;
-using WebKit::WebElement;
 using WebKit::WebFrame;
 using WebKit::WebGlyphCache;
-using WebKit::WebHistoryItem;
-using WebKit::WebImage;
-using WebKit::WebPrintParams;
-using WebKit::WebRect;
-using WebKit::WebSize;
-using WebKit::WebString;
-using WebKit::WebVector;
-using WebKit::WebView;
-
-static const char kLayoutTestsPattern[] = "/LayoutTests/";
-static const std::string::size_type kLayoutTestsPatternSize =
-    arraysize(kLayoutTestsPattern) - 1;
-static const char kFileUrlPattern[] = "file:/";
-static const char kDataUrlPattern[] = "data:";
-static const std::string::size_type kDataUrlPatternSize =
-    arraysize(kDataUrlPattern) - 1;
-static const char kFileTestPrefix[] = "(file test):";
 
 //------------------------------------------------------------------------------
 // webkit_glue impl:
@@ -96,22 +45,6 @@ void EnableWebCoreLogChannels(const std::string& channels) {
   }
 }
 
-int NumberOfPages(WebFrame* web_frame,
-                  float page_width_in_pixels,
-                  float page_height_in_pixels) {
-  WebSize size(static_cast<int>(page_width_in_pixels),
-               static_cast<int>(page_height_in_pixels));
-
-  WebPrintParams print_params;
-  print_params.paperSize = size;
-  print_params.printContentArea = WebRect(0, 0, size.width, size.height);
-  print_params.printableArea = WebRect(0, 0, size.width, size.height);
-
-  int number_of_pages = web_frame->printBegin(print_params);
-  web_frame->printEnd();
-  return number_of_pages;
-}
-
 #ifndef NDEBUG
 // The log macro was having problems due to collisions with WTF, so we just
 // code here what that would have inlined.
@@ -128,16 +61,6 @@ void CheckForLeaks() {
   if (count)
     DumpLeakedObject(__FILE__, __LINE__, "WebFrame", count);
 #endif
-}
-
-bool DecodeImage(const std::string& image_data, SkBitmap* image) {
-  WebData web_data(image_data.data(), image_data.length());
-  WebImage web_image(WebImage::fromData(web_data, WebSize()));
-  if (web_image.isNull())
-    return false;
-
-  *image = web_image.getSkBitmap();
-  return true;
 }
 
 void PlatformFileInfoToWebFileInfo(
@@ -200,9 +123,5 @@ size_t MemoryUsageKB() {
   return process_metrics->GetPagefileUsage() >> 10;
 }
 #endif
-
-double ZoomFactorToZoomLevel(double factor) {
-  return WebView::zoomFactorToZoomLevel(factor);
-}
 
 } // namespace webkit_glue

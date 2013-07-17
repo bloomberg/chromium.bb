@@ -7,7 +7,6 @@
 #include "base/basictypes.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebSettings.h"
 #include "third_party/icu/public/common/unicode/uchar.h"
 

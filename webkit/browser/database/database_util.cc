@@ -6,7 +6,6 @@
 
 #include "base/basictypes.h"
 #include "base/strings/utf_string_conversions.h"
-#include "third_party/WebKit/public/platform/WebString.h"
 #include "webkit/browser/database/database_tracker.h"
 #include "webkit/browser/database/vfs_backend.h"
 
