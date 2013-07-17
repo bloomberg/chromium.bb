@@ -82,6 +82,7 @@ input[type='radio'] {
 }
 
 /* TODO(estade): add more types here? */
+input[type='number'],
 input[type='password'],
 input[type='search'],
 input[type='text'],
@@ -222,6 +223,7 @@ input:disabled:-webkit-any([type='password'],
 :enabled:focus:-webkit-any(
     select,
     input[type='checkbox'],
+    input[type='number'],
     input[type='password'],
     input[type='radio'],
     input[type='search'],

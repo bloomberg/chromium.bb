@@ -52,6 +52,7 @@ GeneralConfig.prototype = {
       var label = row.querySelector('.row-label');
       var input = row.querySelector('.input');
       var units = row.querySelector('.row-units');
+      var reset = row.querySelector('.row-reset');
 
       label.setAttribute('for', field.key);
       label.innerHTML = field.label;
@@ -66,13 +67,16 @@ GeneralConfig.prototype = {
       if (field.units)
         units.innerHTML = field.units;
 
+      reset.id = field.key + '-reset';
+      gesture_config.updateResetButton(reset, true);
+
       section.querySelector('.section-properties').appendChild(row);
     }
     $('gesture-form').appendChild(section);
   },
 
   /**
-   * Initializes the form by adding 'onChange' listeners to all fields.
+   * Initializes the form by adding appropriate event listeners to elements.
    */
   initForm: function() {
     for (var i = 0; i < this.fields.length; i++) {
@@ -80,6 +84,10 @@ GeneralConfig.prototype = {
       var config = this;
       $(field.key).onchange = (function(key) {
         config.setPreferenceValue(key, $(key).value);
+        gesture_config.updateResetButton($(key + '-reset'), false);
+      }).bind(null, field.key);
+      $(field.key + '-reset').onclick = (function(key) {
+        config.resetPreferenceValue(key);
       }).bind(null, field.key);
     }
   },
@@ -93,9 +101,9 @@ GeneralConfig.prototype = {
   },
 
   /**
-   * Handles processing of "Reset" button.
+   * Handles processing of "Reset All" button.
    * Causes all form values to be updated based on current preference values.
-   * @return {bool} Returns false.
+   * @return {boolean} Returns false.
    */
   onReset: function() {
     for (var i = 0; i < this.fields.length; i++) {
@@ -515,7 +523,7 @@ window.gesture_config = {
     var c = WorkspaceCyclerConfig();
     c.buildAll();
 
-    $('reset-button').onclick = function() {
+    $('reset-all-button').onclick = function() {
       g.onReset();
       o.onReset();
       f.onReset();
@@ -524,14 +532,31 @@ window.gesture_config = {
     };
   },
 
+/**
+ * Updates the status and label of a preference reset button.
+ * @param {HTMLInputElement} resetButton Reset button for the preference.
+ * @param {boolean} isDefault Whether the preference is set to the default
+ *     value.
+ */
+  updateResetButton: function(resetButton, isDefault) {
+    /** @const */ var TITLE_DEFAULT = 'Default';
+
+    /** @const */ var TITLE_NOT_DEFAULT = 'Reset';
+
+    resetButton.innerHTML = isDefault ? TITLE_DEFAULT : TITLE_NOT_DEFAULT;
+    resetButton.disabled = isDefault;
+  },
+
   /**
    * Handle callback from call to updatePreferenceValue.
    * @param {string} prefName The name of the requested preference value.
    * @param {value} value The current value associated with prefName.
+   * @param {boolean} isDefault Whether the value is the default value.
    */
-  updatePreferenceValueResult: function(prefName, value) {
+  updatePreferenceValueResult: function(prefName, value, isDefault) {
     prefName = prefName.substring(prefName.indexOf('.') + 1);
     $(prefName).value = value;
+    this.updateResetButton($(prefName + '-reset'), isDefault);
   },
 };
 

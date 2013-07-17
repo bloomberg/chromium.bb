@@ -7,69 +7,73 @@ body {
   font-size: 12px;
 }
 
-button {
-  background-image: -webkit-linear-gradient(#e7e7e7, #e7e7e7 38%, #d7d7d7);
-  border: 1px solid rgba(0, 0, 0, 0.25);
-  border-radius: 2px;
-  color: #444;
-  float: right;
-  margin-top: 15px;
-  min-height: 2em;
-  min-width: 7em;
-  padding-left: 10px;
-  padding-right: 10px;
+form {
+  width: 700px;
+}
+
+h2 {
+  border-bottom: 1px solid rgb(238, 238, 238);
+  color: rgb(48, 57, 66);
 }
 
 .buttons-pane {
   width: 90%;
 }
 
-form {
-  width: 610px;
+#reset-all-button {
+  float: right;
 }
 
-h2 {
-  border-bottom: 1px solid #eee;
-  color: rgb(48, 57, 66);
-  font-size: 1.3em;
-  font-weight: normal;
+html[dir=rtl] #reset-all-button {
+  float: left;
 }
 
-input {
-  border: solid 1px rgb(170, 207, 228);
-  margin: 2px 0 8px 10px;
-  padding: 4px 2px;
+.input {
   text-align: right;
   width: 110px;
+}
+
+html[dir=rtl] .input {
+  text-align: left;
 }
 
 .row {
   display: table-row;
 }
 
-.row-input {
-  display: table-cell;
-}
-
 .row-label {
-  color: black;
   display: table-cell;
   font-size: 16px;
-  font-weight: normal;
-  padding-top: 4px;
   text-align: right;
   width: 370px;
 }
 
+html[dir=rtl] .row-label {
+  text-align: left;
+}
+
+.row-input {
+  display: table-cell;
+}
+
 .row-units {
   display: table-cell;
-  padding-left: 7px;
-  padding-top: 7px;
   text-align: left;
   width: 100px;
 }
 
+html[dir=rtl] .row-units {
+  text-align: right;
+}
+
+.row-reset {
+  display: table-cell;
+  font-size: 12px;
+  width: 100%;
+}
+
 .section-properties {
+  border-spacing: 8px;
   display: table;
 }
 

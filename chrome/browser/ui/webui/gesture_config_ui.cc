@@ -57,14 +57,18 @@ void GestureConfigUI::UpdatePreferenceValue(const base::ListValue* args) {
   if (!args->GetString(0, &pref_name)) return;
 
   PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
+  const PrefService::Preference* pref =
+      prefs->FindPreference(pref_name.c_str());
 
   base::StringValue js_pref_name(pref_name);
   base::FundamentalValue js_pref_value(prefs->GetDouble(pref_name.c_str()));
+  base::FundamentalValue js_pref_default(pref->IsDefaultValue());
 
   web_ui()->CallJavascriptFunction(
       "gesture_config.updatePreferenceValueResult",
       js_pref_name,
-      js_pref_value);
+      js_pref_value,
+      js_pref_default);
 }
 
 void GestureConfigUI::ResetPreferenceValue(const base::ListValue* args) {
