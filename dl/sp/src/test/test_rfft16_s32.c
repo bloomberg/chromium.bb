@@ -33,8 +33,8 @@ void main(int argc, char* argv[]) {
 
   SetDefaultOptions(&options, 1, MAX_FFT_ORDER);
 
-  ProcessCommandLine(&options, argc, argv,
-                     "Test forward and inverse real 16-bit fixed-point FFT\n");
+  ProcessCommandLine(&options, argc, argv, "Test forward and inverse real 16 \
+                     -bit fixed-point FFT, with 32-bit complex FFT routines\n");
 
   verbose = options.verbose_;
   signal_value = options.signal_value_;
@@ -54,7 +54,6 @@ void main(int argc, char* argv[]) {
     info.known_failures_ = 0;
     info.forward_threshold_ = 90.12;
     info.inverse_threshold_ = 89.28;
-    signal_value = 32767;
     RunAllTests(&info);
   } else {
     TestFFT(options.fft_log_size_,
@@ -82,8 +81,8 @@ void GenerateSignal(OMX_S16* x, OMX_SC32* fft, int size, int signal_type) {
   }
 
   for (k = 0; k < size / 2 + 1; ++k) {
-    fft[k].Re = true_fft[k].Re;
-    fft[k].Im = true_fft[k].Im;
+    fft[k].Re = true_fft[k].Re + 0.5;
+    fft[k].Im = true_fft[k].Im + 0.5;
   }
 
   free(test_signal);

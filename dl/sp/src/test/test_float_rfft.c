@@ -36,8 +36,6 @@ void main(int argc, char* argv[]) {
 
   SetDefaultOptions(&options, 1, MAX_FFT_ORDER);
 
-  options.signal_value_ = 1024;
-
   ProcessCommandLine(&options, argc, argv,
                      "Test forward and inverse real floating-point FFT\n");
 
