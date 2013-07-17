@@ -76,6 +76,48 @@ TEST(DnsHostsTest, HostsParser_OnlyWhitespace) {
   EXPECT_EQ(0u, hosts.size());
 }
 
+TEST(DnsHostsTest, HostsParser_EndsWithNothing) {
+  DnsHosts hosts;
+  ParseHosts("127.0.0.1 localhost", &hosts);
+  EXPECT_EQ(1u, hosts.size());
+}
+
+TEST(DnsHostsTest, HostsParser_EndsWithWhitespace) {
+  DnsHosts hosts;
+  ParseHosts("127.0.0.1 localhost ", &hosts);
+  EXPECT_EQ(1u, hosts.size());
+}
+
+TEST(DnsHostsTest, HostsParser_EndsWithComment) {
+  DnsHosts hosts;
+  ParseHosts("127.0.0.1 localhost # comment", &hosts);
+  EXPECT_EQ(1u, hosts.size());
+}
+
+TEST(DnsHostsTest, HostsParser_EndsWithNewline) {
+  DnsHosts hosts;
+  ParseHosts("127.0.0.1 localhost\n", &hosts);
+  EXPECT_EQ(1u, hosts.size());
+}
+
+TEST(DnsHostsTest, HostsParser_EndsWithTwoNewlines) {
+  DnsHosts hosts;
+  ParseHosts("127.0.0.1 localhost\n\n", &hosts);
+  EXPECT_EQ(1u, hosts.size());
+}
+
+TEST(DnsHostsTest, HostsParser_EndsWithNewlineAndWhitespace) {
+  DnsHosts hosts;
+  ParseHosts("127.0.0.1 localhost\n ", &hosts);
+  EXPECT_EQ(1u, hosts.size());
+}
+
+TEST(DnsHostsTest, HostsParser_EndsWithNewlineAndToken) {
+  DnsHosts hosts;
+  ParseHosts("127.0.0.1 localhost\ntoken", &hosts);
+  EXPECT_EQ(1u, hosts.size());
+}
+
 }  // namespace
 
 }  // namespace net
