@@ -91,12 +91,18 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
     }
 
     static class MockMotionEventDelegate implements MotionEventDelegate {
+        private ContentViewGestureHandler mSynchronousConfirmTarget;
+        private int mSynchronousConfirmAckResult;
+
         public int mLastTouchAction;
         public int mLastGestureType;
 
         @Override
         public boolean sendTouchEvent(long timeMs, int action, TouchPoint[] pts) {
             mLastTouchAction = action;
+            if (mSynchronousConfirmTarget != null) {
+                mSynchronousConfirmTarget.confirmTouchEvent(mSynchronousConfirmAckResult);
+            }
             return true;
         }
 
@@ -122,6 +128,16 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
         @Override
         public boolean hasFixedPageScale() {
             return false;
+        }
+
+        public void enableSynchronousConfirmTouchEvent(
+                ContentViewGestureHandler handler, int ackResult) {
+            mSynchronousConfirmTarget = handler;
+            mSynchronousConfirmAckResult = ackResult;
+        }
+
+        public void disableSynchronousConfirmTouchEvent() {
+            mSynchronousConfirmTarget = null;
         }
     }
 
@@ -1451,5 +1467,55 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
         assertTrue(mGestureHandler.onTouchEvent(event));
         assertEquals("Move events should not be coalesced with other events",
                 4, mGestureHandler.getNumberOfPendingMotionEventsForTesting());
+    }
+
+    /**
+     * Verify that synchronous confirmTouchEvent() calls made from the MotionEventDelegate behave
+     * properly.
+     * @throws Exception
+     */
+    @SmallTest
+    @Feature({"Gestures"})
+    public void testSynchronousConfirmTouchEvent() throws Exception {
+        final long downTime = SystemClock.uptimeMillis();
+        final long eventTime = SystemClock.uptimeMillis();
+
+        mGestureHandler.hasTouchEventHandlers(true);
+
+        mMockMotionEventDelegate.disableSynchronousConfirmTouchEvent();
+
+        // Queue an asynchronously handled event; this should schedule a touch timeout.
+        MotionEvent event = motionEvent(MotionEvent.ACTION_DOWN, downTime, downTime);
+        assertTrue(mGestureHandler.onTouchEvent(event));
+        assertEquals(1, mGestureHandler.getNumberOfPendingMotionEventsForTesting());
+        assertTrue(mGestureHandler.hasScheduledTouchTimeoutEventForTesting());
+
+        // Queue another event; this will remain in the queue until the first event is confirmed.
+        event = MotionEvent.obtain(
+                downTime, eventTime + 5, MotionEvent.ACTION_MOVE,
+                FAKE_COORD_X * 10, FAKE_COORD_Y * 10, 0);
+        assertTrue(mGestureHandler.onTouchEvent(event));
+        assertEquals(2, mGestureHandler.getNumberOfPendingMotionEventsForTesting());
+
+        // Enable synchronous event confirmation upon dispatch.
+        mMockMotionEventDelegate.enableSynchronousConfirmTouchEvent(
+                mGestureHandler, ContentViewGestureHandler.INPUT_EVENT_ACK_STATE_CONSUMED);
+
+        // Confirm the original event; this should dispatch the second event and confirm it
+        // synchronously, without scheduling a touch timeout.
+        mGestureHandler.confirmTouchEvent(
+                ContentViewGestureHandler.INPUT_EVENT_ACK_STATE_CONSUMED);
+        assertTrue(mGestureHandler.onTouchEvent(event));
+        assertEquals(0, mGestureHandler.getNumberOfPendingMotionEventsForTesting());
+        assertFalse(mGestureHandler.hasScheduledTouchTimeoutEventForTesting());
+        assertEquals(TouchPoint.TOUCH_EVENT_TYPE_MOVE, mMockMotionEventDelegate.mLastTouchAction);
+
+        // Adding events to any empty queue will trigger synchronous dispatch and confirmation.
+        event = MotionEvent.obtain(
+                downTime, eventTime + 10, MotionEvent.ACTION_MOVE,
+                FAKE_COORD_X * 5, FAKE_COORD_Y * 5, 0);
+        assertTrue(mGestureHandler.onTouchEvent(event));
+        assertEquals(0, mGestureHandler.getNumberOfPendingMotionEventsForTesting());
+        assertFalse(mGestureHandler.hasScheduledTouchTimeoutEventForTesting());
    }
 }

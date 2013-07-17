@@ -166,7 +166,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
     static final int INPUT_EVENT_ACK_STATE_NOT_CONSUMED = 2;
     static final int INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS = 3;
 
-    // Return values of sendTouchEventToNative();
+    // Return values of sendPendingEventToNative();
     static final int EVENT_FORWARDED_TO_NATIVE = 0;
     static final int EVENT_CONVERTED_TO_CANCEL = 1;
     static final int EVENT_NOT_FORWARDED = 2;
@@ -249,6 +249,14 @@ class ContentViewGestureHandler implements LongPressDelegate {
             assert !hasTimeoutEvent();
             mHandler.removeCallbacks(this);
             run();
+        }
+
+        /**
+         * This is for testing only.
+         * @return Whether a timeout event has been scheduled but not yet run.
+         */
+        public boolean hasScheduledTimeoutEventForTesting() {
+            return mTouchPoints != null && mPendingAckState == PENDING_ACK_NONE;
         }
     }
 
@@ -857,14 +865,14 @@ class ContentViewGestureHandler implements LongPressDelegate {
             }
         }
         if (mPendingMotionEvents.isEmpty()) {
-            // Add the event to the pending queue prior to calling sendTouchEventToNative.
+            // Add the event to the pending queue prior to calling sendPendingEventToNative.
             // When sending an event to native, the callback to confirmTouchEvent can be
             // synchronous or asynchronous and confirmTouchEvent expects the event to be
             // in the queue when it is called.
             MotionEvent clone = MotionEvent.obtain(event);
             mPendingMotionEvents.add(clone);
 
-            int forward = sendTouchEventToNative(clone);
+            int forward = sendPendingEventToNative();
             if (forward == EVENT_NOT_FORWARDED) mPendingMotionEvents.remove(clone);
             return forward != EVENT_NOT_FORWARDED;
         } else {
@@ -877,7 +885,13 @@ class ContentViewGestureHandler implements LongPressDelegate {
         }
     }
 
-    private int sendTouchEventToNative(MotionEvent event) {
+    private int sendPendingEventToNative() {
+        MotionEvent event = mPendingMotionEvents.peekFirst();
+        if (event == null) {
+            assert false : "Cannot send from an empty pending event queue";
+            return EVENT_NOT_FORWARDED;
+        }
+
         if (mTouchEventTimeoutHandler.hasTimeoutEvent()) return EVENT_NOT_FORWARDED;
 
         TouchPoint[] pts = new TouchPoint[event.getPointerCount()];
@@ -889,7 +903,11 @@ class ContentViewGestureHandler implements LongPressDelegate {
             mTouchCancelEventSent = false;
 
             if (mMotionEventDelegate.sendTouchEvent(event.getEventTime(), type, pts)) {
-                if (event.getAction() != MotionEvent.ACTION_UP
+                // If confirmTouchEvent() is called synchronously with respect to sendTouchEvent(),
+                // then |event| will have been recycled. Only start the timer if the sent event has
+                // not yet been confirmed.
+                if (event == mPendingMotionEvents.peekFirst()
+                        && event.getAction() != MotionEvent.ACTION_UP
                         && event.getAction() != MotionEvent.ACTION_CANCEL) {
                     mTouchEventTimeoutHandler.start(event.getEventTime(), pts);
                 }
@@ -981,11 +999,11 @@ class ContentViewGestureHandler implements LongPressDelegate {
             case INPUT_EVENT_ACK_STATE_CONSUMED:
                 mJavaScriptIsConsumingGesture = true;
                 mZoomManager.passTouchEventThrough(ackedEvent);
-                trySendNextEventToNative();
+                trySendPendingEventsToNative();
                 break;
             case INPUT_EVENT_ACK_STATE_NOT_CONSUMED:
                 if (!mJavaScriptIsConsumingGesture) processTouchEvent(ackedEvent);
-                trySendNextEventToNative();
+                trySendPendingEventsToNative();
                 break;
             case INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS:
                 mNoTouchHandlerForGesture = true;
@@ -1002,18 +1020,17 @@ class ContentViewGestureHandler implements LongPressDelegate {
         TraceEvent.end("confirmTouchEvent");
     }
 
-    private void trySendNextEventToNative() {
+    private void trySendPendingEventsToNative() {
         while (!mPendingMotionEvents.isEmpty()) {
-            MotionEvent nextEvent = mPendingMotionEvents.peekFirst();
-            int forward = sendTouchEventToNative(nextEvent);
+            int forward = sendPendingEventToNative();
             if (forward != EVENT_NOT_FORWARDED) break;
 
             // Even though we missed sending one event to native, as long as we haven't
             // received INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS, we should keep sending
             // events on the queue to native.
-            if (!mJavaScriptIsConsumingGesture) processTouchEvent(nextEvent);
-            mPendingMotionEvents.removeFirst();
-            recycleEvent(nextEvent);
+            MotionEvent event = mPendingMotionEvents.removeFirst();
+            if (!mJavaScriptIsConsumingGesture) processTouchEvent(event);
+            recycleEvent(event);
         }
     }
 
@@ -1030,7 +1047,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
         if (nextEvent == null) return;
 
         mNoTouchHandlerForGesture = false;
-        trySendNextEventToNative();
+        trySendPendingEventsToNative();
     }
 
     private void recycleEvent(MotionEvent event) {
@@ -1120,5 +1137,13 @@ class ContentViewGestureHandler implements LongPressDelegate {
     void sendShowPressedStateGestureForTesting() {
         if (mCurrentDownEvent == null) return;
         mListener.onShowPress(mCurrentDownEvent);
+    }
+
+    /**
+     * This is for testing only.
+     * @return Whether a touch timeout event has been scheduled.
+     */
+    boolean hasScheduledTouchTimeoutEventForTesting() {
+        return mTouchEventTimeoutHandler.hasScheduledTimeoutEventForTesting();
     }
 }
