@@ -9,9 +9,11 @@
 
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/stl_util.h"
+#include "base/synchronization/lock.h"
 #include "cc/base/scoped_ptr_hash_map.h"
 #include "cc/debug/fake_web_graphics_context_3d.h"
 #include "third_party/khronos/GLES2/gl2.h"
@@ -171,8 +173,8 @@ class TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
     times_map_buffer_chromium_succeeds_ = times;
   }
 
-  size_t NumTextures() const { return textures_.size(); }
-  WebKit::WebGLId TextureAt(int i) const { return textures_[i]; }
+  size_t NumTextures() const;
+  WebKit::WebGLId TextureAt(int i) const;
 
   size_t NumUsedTextures() const { return used_textures_.size(); }
   bool UsedTexture(int texture) const {
@@ -207,17 +209,54 @@ class TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
   void SetMemoryAllocation(WebKit::WebGraphicsMemoryAllocation allocation);
 
  protected:
+  struct Buffer {
+    Buffer();
+    ~Buffer();
+
+    WebKit::WGC3Denum target;
+    scoped_ptr<uint8[]> pixels;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(Buffer);
+  };
+
+  struct Image {
+    Image();
+    ~Image();
+
+    scoped_ptr<uint8[]> pixels;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(Image);
+  };
+
+  struct Namespace : public base::RefCountedThreadSafe<Namespace> {
+    Namespace();
+
+    // Protects all fields.
+    base::Lock lock;
+    unsigned next_buffer_id;
+    unsigned next_image_id;
+    unsigned next_texture_id;
+    std::vector<WebKit::WebGLId> textures;
+    ScopedPtrHashMap<unsigned, Buffer> buffers;
+    ScopedPtrHashMap<unsigned, Image> images;
+
+   private:
+    friend class base::RefCountedThreadSafe<Namespace>;
+    ~Namespace();
+    DISALLOW_COPY_AND_ASSIGN(Namespace);
+  };
+
   TestWebGraphicsContext3D();
   TestWebGraphicsContext3D(
       const WebKit::WebGraphicsContext3D::Attributes& attributes);
 
   void CallAllSyncPointCallbacks();
   void SwapBuffersComplete();
+  void CreateNamespace();
 
   unsigned context_id_;
-  unsigned next_buffer_id_;
-  unsigned next_image_id_;
-  unsigned next_texture_id_;
   Attributes attributes_;
   bool support_swapbuffers_complete_callback_;
   bool have_extension_io_surface_;
@@ -234,35 +273,17 @@ class TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
   WebGraphicsMemoryAllocationChangedCallbackCHROMIUM*
       memory_allocation_changed_callback_;
   std::vector<WebGraphicsSyncPointCallback*> sync_point_callbacks_;
-  std::vector<WebKit::WebGLId> textures_;
   base::hash_set<WebKit::WebGLId> used_textures_;
   std::vector<WebKit::WebGraphicsContext3D*> shared_contexts_;
   int max_texture_size_;
   int width_;
   int height_;
 
-  struct Buffer {
-    Buffer();
-    ~Buffer();
-
-    WebKit::WGC3Denum target;
-    scoped_ptr<uint8[]> pixels;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(Buffer);
-  };
-  ScopedPtrHashMap<unsigned, Buffer> buffers_;
   unsigned bound_buffer_;
-  struct Image {
-    Image();
-    ~Image();
 
-    scoped_ptr<uint8[]> pixels;
+  scoped_refptr<Namespace> namespace_;
+  static Namespace* shared_namespace_;
 
-   private:
-    DISALLOW_COPY_AND_ASSIGN(Image);
-  };
-  ScopedPtrHashMap<unsigned, Image> images_;
   base::WeakPtrFactory<TestWebGraphicsContext3D> weak_ptr_factory_;
 };
 

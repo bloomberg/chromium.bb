@@ -26,8 +26,7 @@ class FakeOutputSurface : public OutputSurface {
 
   static scoped_ptr<FakeOutputSurface> Create3d() {
     scoped_ptr<WebKit::WebGraphicsContext3D> context3d =
-        TestWebGraphicsContext3D::Create(
-            WebKit::WebGraphicsContext3D::Attributes())
+        TestWebGraphicsContext3D::Create()
         .PassAs<WebKit::WebGraphicsContext3D>();
     return make_scoped_ptr(new FakeOutputSurface(context3d.Pass(), false));
   }
@@ -45,8 +44,7 @@ class FakeOutputSurface : public OutputSurface {
 
   static scoped_ptr<FakeOutputSurface> CreateDelegating3d() {
     scoped_ptr<WebKit::WebGraphicsContext3D> context3d =
-        TestWebGraphicsContext3D::Create(
-            WebKit::WebGraphicsContext3D::Attributes())
+        TestWebGraphicsContext3D::Create()
         .PassAs<WebKit::WebGraphicsContext3D>();
     return make_scoped_ptr(new FakeOutputSurface(context3d.Pass(), true));
   }
@@ -109,10 +107,7 @@ class FakeOutputSurface : public OutputSurface {
 };
 
 static inline scoped_ptr<cc::OutputSurface> CreateFakeOutputSurface() {
-  return FakeOutputSurface::Create3d(
-      TestWebGraphicsContext3D::Create(
-          WebKit::WebGraphicsContext3D::Attributes())
-          .PassAs<WebKit::WebGraphicsContext3D>()).PassAs<cc::OutputSurface>();
+  return FakeOutputSurface::Create3d().PassAs<cc::OutputSurface>();
 }
 
 }  // namespace cc

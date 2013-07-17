@@ -882,10 +882,7 @@ class TextureLayerLostContextTest
   virtual scoped_ptr<OutputSurface> CreateOutputSurface() OVERRIDE {
     texture_context_ = TestWebGraphicsContext3D::Create();
     texture_ = texture_context_->createTexture();
-    scoped_ptr<TestWebGraphicsContext3D> context(
-        TestWebGraphicsContext3D::Create());
-    return FakeOutputSurface::Create3d(
-        context.PassAs<WebKit::WebGraphicsContext3D>()).PassAs<OutputSurface>();
+    return CreateFakeOutputSurface();
   }
 
   virtual unsigned PrepareTexture() OVERRIDE {
