@@ -1401,6 +1401,18 @@ def main(argv):
     _BackupPreviousLog(log_file)
 
   with cros_build_lib.ContextManagerStack() as stack:
+    # TODO(ferringb): update this once https://gerrit.chromium.org/gerrit/25359
+    # is landed- it's sensitive to the manifest-versions cache path.
+    options.preserve_paths = set(['manifest-versions', '.cache',
+                                  'manifest-versions-internal'])
+    if log_file is not None:
+      # We don't want the critical section to try to clean up the tee process,
+      # so we run Tee (forked off) outside of it. This prevents a deadlock
+      # because the Tee process only exits when its pipe is closed, and the
+      # critical section accidentally holds on to that file handle.
+      stack.Add(tee.Tee, log_file)
+      options.preserve_paths.add(_DEFAULT_LOG_DIR)
+
     critical_section = stack.Add(cleanup.EnforcedCleanupSection)
     stack.Add(sudo.SudoKeepAlive)
 
@@ -1409,14 +1421,6 @@ def main(argv):
       # nesting another layer.
       stack.Add(osutils.TempDir, prefix='cbuildbot-tmp', set_global=True)
       logging.debug("Cbuildbot tempdir is %r.", os.environ.get('TMP'))
-
-    # TODO(ferringb): update this once https://gerrit.chromium.org/gerrit/25359
-    # is landed- it's sensitive to the manifest-versions cache path.
-    options.preserve_paths = set(['manifest-versions', '.cache',
-                                  'manifest-versions-internal'])
-    if log_file is not None:
-      stack.Add(tee.Tee, log_file)
-      options.preserve_paths.add(_DEFAULT_LOG_DIR)
 
     if options.cgroups:
       stack.Add(cgroups.SimpleContainChildren, 'cbuildbot')
