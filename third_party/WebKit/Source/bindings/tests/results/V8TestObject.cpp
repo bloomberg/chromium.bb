@@ -5470,7 +5470,7 @@ static const V8DOMConfiguration::BatchedMethod V8TestObjectMethods[] = {
 #endif // ENABLE(Condition1) && ENABLE(Condition2)
 #if ENABLE(Condition1) || ENABLE(Condition2)
     {"conditionalMethod3", TestObjV8Internal::conditionalMethod3MethodCallback, 0, 0},
-#endif // ENABLE(Condition1) && ENABLE(Condition2)
+#endif // ENABLE(Condition1) || ENABLE(Condition2)
     {"callbackFunctionReturnValue", TestObjV8Internal::callbackFunctionReturnValueMethodCallback, 0, 0},
     {"callbackFunctionArgument", TestObjV8Internal::callbackFunctionArgumentMethodCallback, 0, 1},
     {"overloadedMethod", TestObjV8Internal::overloadedMethodMethodCallback, 0, 2},
@@ -5717,6 +5717,13 @@ v8::Handle<v8::Object> V8TestObject::createWrapper(PassRefPtr<TestObj> impl, v8:
 {
     ASSERT(impl.get());
     ASSERT(DOMDataStore::getWrapper<V8TestObject>(impl.get(), isolate).IsEmpty());
+    if (ScriptWrappable::wrapperCanBeStoredInObject(impl.get())) {
+        const WrapperTypeInfo* actualInfo = ScriptWrappable::getTypeInfoFromObject(impl.get());
+        // Might be a XXXConstructor::info instead of an XXX::info. These will both have
+        // the same object de-ref functions, though, so use that as the basis of the check.
+        RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(actualInfo->derefObjectFunction == info.derefObjectFunction);
+    }
+
 
     v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(creationContext, &info, toInternalPointer(impl.get()), isolate);
     if (UNLIKELY(wrapper.IsEmpty()))

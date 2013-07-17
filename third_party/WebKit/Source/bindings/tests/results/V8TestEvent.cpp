@@ -110,6 +110,13 @@ v8::Handle<v8::Object> V8TestEvent::createWrapper(PassRefPtr<TestEvent> impl, v8
 {
     ASSERT(impl.get());
     ASSERT(DOMDataStore::getWrapper<V8TestEvent>(impl.get(), isolate).IsEmpty());
+    if (ScriptWrappable::wrapperCanBeStoredInObject(impl.get())) {
+        const WrapperTypeInfo* actualInfo = ScriptWrappable::getTypeInfoFromObject(impl.get());
+        // Might be a XXXConstructor::info instead of an XXX::info. These will both have
+        // the same object de-ref functions, though, so use that as the basis of the check.
+        RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(actualInfo->derefObjectFunction == info.derefObjectFunction);
+    }
+
 
     v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(creationContext, &info, toInternalPointer(impl.get()), isolate);
     if (UNLIKELY(wrapper.IsEmpty()))

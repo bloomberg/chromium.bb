@@ -73,12 +73,6 @@ inline v8::Handle<v8::Object> wrap(TestObj* impl, v8::Handle<v8::Object> creatio
 {
     ASSERT(impl);
     ASSERT(DOMDataStore::getWrapper<V8TestObject>(impl, isolate).IsEmpty());
-    if (ScriptWrappable::wrapperCanBeStoredInObject(impl)) {
-        const WrapperTypeInfo* actualInfo = ScriptWrappable::getTypeInfoFromObject(impl);
-        // Might be a XXXConstructor::info instead of an XXX::info. These will both have
-        // the same object de-ref functions, though, so use that as the basis of the check.
-        RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(actualInfo->derefObjectFunction == V8TestObject::info.derefObjectFunction);
-    }
     return V8TestObject::createWrapper(impl, creationContext, isolate);
 }
 
