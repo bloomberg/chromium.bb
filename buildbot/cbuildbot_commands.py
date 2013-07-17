@@ -1210,7 +1210,7 @@ def UploadSymbols(buildroot, board, official, cnt):
   try:
     _RunBuildScript(buildroot, cmd, chromite_cmd=True, capture_output=False,
                     enter_chroot=True)
-  except cros_build_lib.RunCommandError:
+  except results_lib.BuildScriptFailure:
     # TODO(davidjames): Convert this to a fatal error.
     # See http://crbug.com/212437
     cros_build_lib.PrintBuildbotStepWarnings()
