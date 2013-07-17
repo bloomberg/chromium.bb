@@ -231,18 +231,6 @@ bool SVGAnimateMotionElement::calculateFromAndByValues(const String& fromString,
     return true;
 }
 
-void SVGAnimateMotionElement::buildTransformForProgress(AffineTransform* transform, float percentage)
-{
-    ASSERT(!m_animationPath.isEmpty());
-
-    bool ok = false;
-    float positionOnPath = m_animationPath.length() * percentage;
-    FloatPoint position = m_animationPath.pointAtLength(positionOnPath, ok);
-    if (!ok)
-        return;
-    transform->translate(position.x(), position.y());
-}
-
 void SVGAnimateMotionElement::calculateAnimatedValue(float percentage, unsigned repeatCount, SVGSMILElement*)
 {
     SVGElement* targetElement = this->targetElement();
@@ -273,19 +261,24 @@ void SVGAnimateMotionElement::calculateAnimatedValue(float percentage, unsigned 
         return;
     }
 
-    buildTransformForProgress(transform, percentage);
-
-    // Handle accumulate="sum".
-    if (isAccumulated() && repeatCount) {
-        for (unsigned i = 0; i < repeatCount; ++i)
-            buildTransformForProgress(transform, 1);
-    }
+    ASSERT(!m_animationPath.isEmpty());
 
     bool ok = false;
     float positionOnPath = m_animationPath.length() * percentage;
-    float angle = m_animationPath.normalAngleAtLength(positionOnPath, ok);
+    FloatPoint position;
+    float angle;
+    ok = m_animationPath.pointAndNormalAtLength(positionOnPath, position, angle);
     if (!ok)
         return;
+
+    // Handle accumulate="sum".
+    if (isAccumulated() && repeatCount) {
+        FloatPoint positionAtEndOfDuration = m_animationPath.pointAtLength(m_animationPath.length(), ok);
+        if (ok)
+            position.move(positionAtEndOfDuration.x() * repeatCount, positionAtEndOfDuration.y() * repeatCount);
+    }
+
+    transform->translate(position.x(), position.y());
     RotateMode rotateMode = this->rotateMode();
     if (rotateMode != RotateAuto && rotateMode != RotateAutoReverse)
         return;
