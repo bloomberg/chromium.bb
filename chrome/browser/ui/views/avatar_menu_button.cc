@@ -8,15 +8,14 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/command_updater.h"
 #include "chrome/browser/profiles/avatar_menu_model.h"
 #include "chrome/browser/profiles/profile_info_util.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/avatar_menu_bubble_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/profile_chooser_view.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
 #include "ui/gfx/canvas.h"
@@ -97,8 +96,7 @@ void AvatarMenuButton::ShowAvatarBubble() {
   gfx::Point origin;
   views::View::ConvertPointToScreen(this, &origin);
   gfx::Rect bounds(origin, size());
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kNewProfileManagement)) {
+  if (ProfileManager::IsNewProfileManagementEnabled()) {
     ProfileChooserView::ShowBubble(
         this, views::BubbleBorder::TOP_LEFT,
         views::BubbleBorder::ALIGN_ARROW_TO_MID_ANCHOR, bounds, browser_);

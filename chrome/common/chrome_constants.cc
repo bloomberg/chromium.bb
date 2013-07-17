@@ -142,6 +142,7 @@ const wchar_t kCrashReportLog[] = L"Reported Crashes.txt";
 const wchar_t kTestingInterfaceDLL[] = L"testing_interface.dll";
 const char    kInitialProfile[] = "Default";
 const char    kMultiProfileDirPrefix[] = "Profile ";
+const base::FilePath::CharType kGuestProfileDir[] = FPL("Guest Profile");
 const wchar_t kBrowserResourcesDll[] = L"chrome.dll";
 const base::FilePath::CharType kExtensionFileExtension[] = FPL(".crx");
 const base::FilePath::CharType kExtensionKeyFileExtension[] = FPL(".pem");

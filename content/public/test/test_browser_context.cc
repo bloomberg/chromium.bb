@@ -57,7 +57,7 @@ void TestBrowserContext::SetSpecialStoragePolicy(
   special_storage_policy_ = policy;
 }
 
-base::FilePath TestBrowserContext::GetPath() {
+base::FilePath TestBrowserContext::GetPath() const {
   return browser_context_dir_.path();
 }
 

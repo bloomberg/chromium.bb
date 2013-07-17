@@ -10,6 +10,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/first_run/first_run.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/sync_prefs.h"
@@ -168,7 +169,7 @@ bool Profile::IsGuestSession() const {
       chromeos::switches::kGuestSession);
   return is_guest_session;
 #else
-  return false;
+  return GetPath() == ProfileManager::GetGuestProfilePath();
 #endif
 }
 

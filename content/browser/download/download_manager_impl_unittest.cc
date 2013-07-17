@@ -385,7 +385,7 @@ class MockBrowserContext : public BrowserContext {
   MockBrowserContext() {}
   ~MockBrowserContext() {}
 
-  MOCK_METHOD0(GetPath, base::FilePath());
+  MOCK_CONST_METHOD0(GetPath, base::FilePath());
   MOCK_CONST_METHOD0(IsOffTheRecord, bool());
   MOCK_METHOD0(GetRequestContext, net::URLRequestContextGetter*());
   MOCK_METHOD1(GetRequestContextForRenderProcess,

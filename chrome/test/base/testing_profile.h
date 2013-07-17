@@ -169,7 +169,7 @@ class TestingProfile : public Profile {
   TestingPrefServiceSyncable* GetTestingPrefService();
 
   // content::BrowserContext
-  virtual base::FilePath GetPath() OVERRIDE;
+  virtual base::FilePath GetPath() const OVERRIDE;
   virtual scoped_refptr<base::SequencedTaskRunner> GetIOTaskRunner() OVERRIDE;
   virtual bool IsOffTheRecord() const OVERRIDE;
   virtual content::DownloadManagerDelegate*
@@ -258,6 +258,7 @@ class TestingProfile : public Profile {
   virtual base::FilePath last_selected_directory() OVERRIDE;
   virtual void set_last_selected_directory(const base::FilePath& path) OVERRIDE;
   virtual bool WasCreatedByVersionOrLater(const std::string& version) OVERRIDE;
+  virtual bool IsGuestSession() const OVERRIDE;
   virtual void SetExitType(ExitType exit_type) OVERRIDE {}
   virtual ExitType GetLastSessionExitType() OVERRIDE;
 #if defined(OS_CHROMEOS)

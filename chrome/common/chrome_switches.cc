@@ -523,9 +523,6 @@ const char kEnableComponentCloudPolicy[]    = "enable-component-cloud-policy";
 // Chrome OS apps list.
 const char kEnableContacts[]                = "enable-contacts";
 
-// Enables desktop guest mode.
-const char kEnableDesktopGuestMode[]        = "enable-desktop-guest-mode";
-
 // Enables device discovery.
 const char kEnableDeviceDiscovery[]        = "enable-device-discovery";
 

@@ -302,6 +302,13 @@ TEST_F(ProfileManagerTest, CreateProfilesAsync) {
   message_loop_.RunUntilIdle();
 }
 
+TEST_F(ProfileManagerTest, GetGuestProfilePath) {
+  base::FilePath guest_path = ProfileManager::GetGuestProfilePath();
+  base::FilePath expected_path = temp_dir_.path();
+  expected_path = expected_path.Append(chrome::kGuestProfileDir);
+  EXPECT_EQ(expected_path, guest_path);
+}
+
 TEST_F(ProfileManagerTest, AutoloadProfilesWithBackgroundApps) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();

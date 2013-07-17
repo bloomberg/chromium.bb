@@ -27,7 +27,7 @@ class TestBrowserContext : public BrowserContext {
 
   void SetSpecialStoragePolicy(quota::SpecialStoragePolicy* policy);
 
-  virtual base::FilePath GetPath() OVERRIDE;
+  virtual base::FilePath GetPath() const OVERRIDE;
   virtual bool IsOffTheRecord() const OVERRIDE;
   virtual DownloadManagerDelegate* GetDownloadManagerDelegate() OVERRIDE;
   virtual net::URLRequestContextGetter* GetRequestContext() OVERRIDE;

@@ -157,7 +157,7 @@ void AwBrowserContext::CreateUserPrefServiceIfNecessary() {
                              pref_service_builder.Create(pref_registry));
 }
 
-base::FilePath AwBrowserContext::GetPath() {
+base::FilePath AwBrowserContext::GetPath() const {
   return context_storage_path_;
 }
 

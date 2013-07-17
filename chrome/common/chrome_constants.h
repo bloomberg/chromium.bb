@@ -44,6 +44,7 @@ extern const wchar_t kCrashReportLog[];
 extern const wchar_t kTestingInterfaceDLL[];
 extern const char    kInitialProfile[];
 extern const char    kMultiProfileDirPrefix[];
+extern const base::FilePath::CharType kGuestProfileDir[];
 extern const wchar_t kBrowserResourcesDll[];
 extern const base::FilePath::CharType kExtensionFileExtension[];
 extern const base::FilePath::CharType kExtensionKeyFileExtension[];

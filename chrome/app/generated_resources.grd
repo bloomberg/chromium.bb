@@ -11963,6 +11963,9 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       <message name="IDS_PROFILES_PROFILE_USERS_BUTTON" desc="Button in the avatar menu bubble view for switching users.">
         Users
       </message>
+      <message name="IDS_PROFILES_GUEST_PROFILE_NAME" desc="Name of the guest profile.">
+	Guest
+      </message>
       <message name="IDS_PROFILES_PROFILE_GUEST_BUTTON" desc="Button in the avatar menu bubble view for guest browsing.">
         Guest browsing
       </message>

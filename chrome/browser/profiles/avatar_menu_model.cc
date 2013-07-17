@@ -192,6 +192,18 @@ base::FilePath AvatarMenuModel::GetProfilePath(size_t index) {
   return profile_info_->GetPathOfProfileAtIndex(item.model_index);
 }
 
+// static
+void AvatarMenuModel::SwitchToGuestProfileWindow(Browser* browser) {
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  profile_manager->CreateProfileAsync(ProfileManager::GetGuestProfilePath(),
+                                      base::Bind(&OnProfileCreated,
+                                                 false,
+                                                 browser->host_desktop_type()),
+                                      string16(),
+                                      string16(),
+                                      false);
+}
+
 size_t AvatarMenuModel::GetNumberOfItems() {
   return items_.size();
 }
@@ -272,9 +284,12 @@ bool AvatarMenuModel::ShouldShowAvatarMenu() {
     DCHECK(ProfileManager::IsMultipleProfilesEnabled());
     return true;
   }
-  return ProfileManager::IsMultipleProfilesEnabled() &&
-      g_browser_process->profile_manager() &&
-      g_browser_process->profile_manager()->GetNumberOfProfiles() > 1;
+  if (ProfileManager::IsMultipleProfilesEnabled()) {
+    return ProfileManager::IsNewProfileManagementEnabled() ||
+           (g_browser_process->profile_manager() &&
+            g_browser_process->profile_manager()->GetNumberOfProfiles() > 1);
+  }
+  return false;
 }
 
 void AvatarMenuModel::RebuildMenu() {

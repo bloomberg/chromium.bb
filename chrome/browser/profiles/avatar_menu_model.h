@@ -74,6 +74,8 @@ class AvatarMenuModel : public content::NotificationObserver {
   void EditProfile(size_t index);
   // Creates a new profile.
   void AddNewProfile(ProfileMetrics::ProfileAdd type);
+  // Creates a new guest user window.
+  static void SwitchToGuestProfileWindow(Browser* browser);
 
   // Gets the path associated with the profile at |index|.
   base::FilePath GetProfilePath(size_t index);

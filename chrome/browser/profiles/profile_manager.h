@@ -202,6 +202,9 @@ class ProfileManager : public base::NonThreadSafe,
       const CreateCallback& callback,
       bool is_managed);
 
+  // Returns the full path to be used for guest profiles.
+  static base::FilePath GetGuestProfilePath();
+
   // Register multi-profile related preferences in Local State.
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
@@ -221,6 +224,9 @@ class ProfileManager : public base::NonThreadSafe,
 
   // Checks if multiple profiles is enabled.
   static bool IsMultipleProfilesEnabled();
+
+  // Checks if new profile management is enabled.
+  static bool IsNewProfileManagementEnabled();
 
   // Autoloads profiles if they are running background apps.
   void AutoloadProfiles();

@@ -929,6 +929,16 @@ base::FilePath ProfileManager::CreateMultiProfileAsync(
 }
 
 // static
+base::FilePath ProfileManager::GetGuestProfilePath() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+
+  base::FilePath guest_path = profile_manager->user_data_dir();
+  return guest_path.Append(chrome::kGuestProfileDir);
+}
+
+// static
 void ProfileManager::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kProfileLastUsed, std::string());
   registry->RegisterIntegerPref(prefs::kProfilesNumCreated, 1);
@@ -965,6 +975,8 @@ ProfileShortcutManager* ProfileManager::profile_shortcut_manager() {
 }
 
 void ProfileManager::AddProfileToCache(Profile* profile) {
+  if (profile->IsGuestSession())
+    return;
   ProfileInfoCache& cache = GetProfileInfoCache();
   if (profile->GetPath().DirName() != cache.GetUserDataDir())
     return;
@@ -998,25 +1010,30 @@ void ProfileManager::InitProfileUserPrefs(Profile* profile) {
   if (profile->GetPath().DirName() != cache.GetUserDataDir())
     return;
 
+  bool is_managed = false;
   size_t avatar_index;
   std::string profile_name;
-  bool is_managed = false;
-  size_t profile_cache_index =
-      cache.GetIndexOfProfileWithPath(profile->GetPath());
-  // If the cache has an entry for this profile, use the cache data.
-  if (profile_cache_index != std::string::npos) {
-    avatar_index =
-        cache.GetAvatarIconIndexOfProfileAtIndex(profile_cache_index);
-    profile_name =
-        UTF16ToUTF8(cache.GetNameOfProfileAtIndex(profile_cache_index));
-    is_managed = cache.ProfileIsManagedAtIndex(profile_cache_index);
-  } else if (profile->GetPath() ==
-             GetDefaultProfileDir(cache.GetUserDataDir())) {
+  if (profile->IsGuestSession()) {
+    profile_name = l10n_util::GetStringUTF8(IDS_PROFILES_GUEST_PROFILE_NAME);
     avatar_index = 0;
-    profile_name = l10n_util::GetStringUTF8(IDS_DEFAULT_PROFILE_NAME);
   } else {
-    avatar_index = cache.ChooseAvatarIconIndexForNewProfile();
-    profile_name = UTF16ToUTF8(cache.ChooseNameForNewProfile(avatar_index));
+    size_t profile_cache_index =
+        cache.GetIndexOfProfileWithPath(profile->GetPath());
+    // If the cache has an entry for this profile, use the cache data.
+    if (profile_cache_index != std::string::npos) {
+      avatar_index =
+          cache.GetAvatarIconIndexOfProfileAtIndex(profile_cache_index);
+      profile_name =
+          UTF16ToUTF8(cache.GetNameOfProfileAtIndex(profile_cache_index));
+      is_managed = cache.ProfileIsManagedAtIndex(profile_cache_index);
+    } else if (profile->GetPath() ==
+               GetDefaultProfileDir(cache.GetUserDataDir())) {
+      avatar_index = 0;
+      profile_name = l10n_util::GetStringUTF8(IDS_DEFAULT_PROFILE_NAME);
+    } else {
+      avatar_index = cache.ChooseAvatarIconIndexForNewProfile();
+      profile_name = UTF16ToUTF8(cache.ChooseNameForNewProfile(avatar_index));
+    }
   }
 
   if (!profile->GetPrefs()->HasPrefPath(prefs::kProfileAvatarIndex))
@@ -1162,6 +1179,12 @@ bool ProfileManager::IsMultipleProfilesEnabled() {
 #endif
 
   return true;
+}
+
+// static
+bool ProfileManager::IsNewProfileManagementEnabled() {
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kNewProfileManagement);
 }
 
 void ProfileManager::AutoloadProfiles() {

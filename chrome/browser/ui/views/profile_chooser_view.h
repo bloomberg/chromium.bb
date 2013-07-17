@@ -77,8 +77,8 @@ class ProfileChooserView : public views::BubbleDelegateView,
   scoped_ptr<AvatarMenuModel> avatar_menu_model_;
   Browser* browser_;
   views::View* current_profile_view_;
+  views::View* guest_button_view_;
   ViewIndexes open_other_profile_indexes_map_;
-  views::View* option_buttons_view_;
   views::View* other_profiles_view_;
   views::View* signout_current_profile_view_;
 

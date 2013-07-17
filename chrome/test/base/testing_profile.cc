@@ -482,7 +482,7 @@ void TestingProfile::BlockUntilTopSitesLoaded() {
   top_sites_loaded_observer.Wait();
 }
 
-base::FilePath TestingProfile::GetPath() {
+base::FilePath TestingProfile::GetPath() const {
   return profile_path_;
 }
 
@@ -774,6 +774,9 @@ bool TestingProfile::WasCreatedByVersionOrLater(const std::string& version) {
   return true;
 }
 
+bool TestingProfile::IsGuestSession() const {
+  return false;
+}
 Profile::ExitType TestingProfile::GetLastSessionExitType() {
   return last_session_exited_cleanly_ ? EXIT_NORMAL : EXIT_CRASHED;
 }

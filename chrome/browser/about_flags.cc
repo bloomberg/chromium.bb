@@ -1035,13 +1035,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(chromeos::switches::kEnableTouchpadThreeFingerClick)
   },
 #endif
-  {
-    "enable-desktop-guest-mode",
-    IDS_FLAGS_DESKTOP_GUEST_MODE_NAME,
-    IDS_FLAGS_DESKTOP_GUEST_MODE_DESCRIPTION,
-    kOsMac | kOsWin | kOsLinux,
-    SINGLE_VALUE_TYPE(switches::kEnableDesktopGuestMode)
-  },
 #if defined(USE_ASH)
   {
     "show-launcher-alignment-menu",

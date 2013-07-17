@@ -189,7 +189,7 @@ std::string OffTheRecordProfileImpl::GetProfileName() {
   return std::string();
 }
 
-base::FilePath OffTheRecordProfileImpl::GetPath() {
+base::FilePath OffTheRecordProfileImpl::GetPath() const {
   return profile_->GetPath();
 }
 

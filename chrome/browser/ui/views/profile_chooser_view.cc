@@ -66,7 +66,7 @@ ProfileChooserView::ProfileChooserView(
     : BubbleDelegateView(anchor_view, arrow),
       browser_(browser),
       current_profile_view_(NULL),
-      option_buttons_view_(NULL),
+      guest_button_view_(NULL),
       other_profiles_view_(NULL),
       signout_current_profile_view_(NULL) {
   avatar_menu_model_.reset(new AvatarMenuModel(
@@ -105,13 +105,18 @@ void ProfileChooserView::OnMouseReleased(const ui::MouseEvent& event) {
 
 void ProfileChooserView::ButtonPressed(views::Button* sender,
                                        const ui::Event& event) {
-  DCHECK(sender == signout_current_profile_view_);
   // Disable button after clicking so that it doesn't get clicked twice and
-  // start a second sign-out procedure... which will crash Chrome.  But don't
-  // disable if it has no parent (like in tests) because that will also
-  // crash.
+  // start a second action... which can crash Chrome.  But don't disable if it
+  // has no parent (like in tests) because that will also crash.
   if (sender->parent())
     sender->SetEnabled(false);
+
+  if (sender == guest_button_view_) {
+    avatar_menu_model_->SwitchToGuestProfileWindow(browser_);
+    return;
+  }
+
+  DCHECK_EQ(sender, signout_current_profile_view_);
   avatar_menu_model_->BeginSignOut();
 }
 
@@ -120,8 +125,8 @@ void ProfileChooserView::OnAvatarMenuModelChanged(
   // Unset all our child view references and call RemoveAllChildViews() which
   // will actually delete them.
   current_profile_view_ = NULL;
+  guest_button_view_ = NULL;
   open_other_profile_indexes_map_.clear();
-  option_buttons_view_ = NULL;
   other_profiles_view_ = NULL;
   signout_current_profile_view_ = NULL;
   RemoveAllChildViews(true);
@@ -160,10 +165,10 @@ void ProfileChooserView::OnAvatarMenuModelChanged(
   layout->StartRow(0, 0);
   layout->AddView(new views::Separator(views::Separator::HORIZONTAL));
 
-  option_buttons_view_ = CreateOptionsView();
-  option_buttons_view_->SetSize(current_profile_view_->GetPreferredSize());
+  views::View* option_buttons_view = CreateOptionsView();
+  option_buttons_view->SetSize(current_profile_view_->GetPreferredSize());
   layout->StartRow(0, 0);
-  layout->AddView(option_buttons_view_);
+  layout->AddView(option_buttons_view);
 
   layout->StartRow(0, 0);
   layout->AddView(new views::Separator(views::Separator::HORIZONTAL));
@@ -300,6 +305,9 @@ views::View* ProfileChooserView::CreateOptionsView() {
       l10n_util::GetStringUTF16(IDS_PROFILES_PROFILE_GUEST_BUTTON));
   guest_button->SetHorizontalAlignment(gfx::ALIGN_CENTER);
   guest_button->set_tag(IDS_PROFILES_PROFILE_GUEST_BUTTON);
+
+  DCHECK(!guest_button_view_);
+  guest_button_view_ = guest_button;
 
   views::GridLayout* layout = new views::GridLayout(view);
   view->SetLayoutManager(layout);
