@@ -101,7 +101,7 @@ NSAttributedString* WebSubstringUtil::attributedSubstringInRange(WebFrame* webFr
             [attrs removeObjectForKey:NSBackgroundColorAttributeName];
 
         NSString* substring =
-            [[[NSString alloc] initWithCharactersNoCopy:const_cast<UChar*>(it.characters())
+            [[[NSString alloc] initWithCharactersNoCopy:const_cast<UChar*>(it.bloatedCharacters())
                                                  length:it.length()
                                            freeWhenDone:NO] autorelease];
         [string replaceCharactersInRange:NSMakeRange(position, 0)
