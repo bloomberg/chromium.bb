@@ -449,23 +449,6 @@ void FileSystem::GetFileByPath(const base::FilePath& file_path,
       callback);
 }
 
-void FileSystem::GetFileByResourceId(
-    const std::string& resource_id,
-    const ClientContext& context,
-    const GetFileCallback& get_file_callback,
-    const google_apis::GetContentCallback& get_content_callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!resource_id.empty());
-  DCHECK(!get_file_callback.is_null());
-
-  download_operation_->EnsureFileDownloadedByResourceId(
-      resource_id,
-      context,
-      GetFileContentInitializedCallback(),
-      get_content_callback,
-      get_file_callback);
-}
-
 void FileSystem::GetFileContentByPath(
     const base::FilePath& file_path,
     const GetFileContentInitializedCallback& initialized_callback,

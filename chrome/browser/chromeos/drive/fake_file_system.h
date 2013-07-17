@@ -93,11 +93,6 @@ class FakeFileSystem : public FileSystemInterface {
                      const FileOperationCallback& callback) OVERRIDE;
   virtual void GetFileByPath(const base::FilePath& file_path,
                              const GetFileCallback& callback) OVERRIDE;
-  virtual void GetFileByResourceId(
-      const std::string& resource_id,
-      const ClientContext& context,
-      const GetFileCallback& get_file_callback,
-      const google_apis::GetContentCallback& get_content_callback) OVERRIDE;
   virtual void GetFileContentByPath(
       const base::FilePath& file_path,
       const GetFileContentInitializedCallback& initialized_callback,

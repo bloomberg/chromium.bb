@@ -320,17 +320,6 @@ class FileSystemInterface {
   virtual void GetFileByPath(const base::FilePath& file_path,
                              const GetFileCallback& callback) = 0;
 
-  // Gets a file by the given |resource_id| from the Drive server. Used for
-  // fetching pinned-but-not-fetched files.
-  //
-  // |get_file_callback| must not be null.
-  // |get_content_callback| may be null.
-  virtual void GetFileByResourceId(
-      const std::string& resource_id,
-      const ClientContext& context,
-      const GetFileCallback& get_file_callback,
-      const google_apis::GetContentCallback& get_content_callback) = 0;
-
   // Gets a file by the given |file_path|.
   // Calls |initialized_callback| when either:
   //   1) The cached file (or JSON file for hosted file) is found, or
