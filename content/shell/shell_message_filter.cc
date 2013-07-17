@@ -24,10 +24,12 @@ namespace content {
 ShellMessageFilter::ShellMessageFilter(
     int render_process_id,
     webkit_database::DatabaseTracker* database_tracker,
-    quota::QuotaManager* quota_manager)
+    quota::QuotaManager* quota_manager,
+    net::URLRequestContextGetter* request_context_getter)
     : render_process_id_(render_process_id),
       database_tracker_(database_tracker),
-      quota_manager_(quota_manager) {
+      quota_manager_(quota_manager),
+      request_context_getter_(request_context_getter) {
 }
 
 ShellMessageFilter::~ShellMessageFilter() {
@@ -95,12 +97,9 @@ void ShellMessageFilter::OnAcceptAllCookies(bool accept) {
 }
 
 void ShellMessageFilter::OnDeleteAllCookies() {
-  ShellBrowserContext* browser_context =
-      ShellContentBrowserClient::Get()->browser_context();
-  net::URLRequestContext* context =
-      browser_context->GetRequestContext()->GetURLRequestContext();
-  context->cookie_store()->GetCookieMonster()->DeleteAllAsync(
-    net::CookieMonster::DeleteCallback());
+  request_context_getter_->GetURLRequestContext()->cookie_store()
+      ->GetCookieMonster()
+      ->DeleteAllAsync(net::CookieMonster::DeleteCallback());
 }
 
 }  // namespace content

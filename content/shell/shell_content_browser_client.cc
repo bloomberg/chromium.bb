@@ -28,6 +28,7 @@
 #include "content/shell/shell_resource_dispatcher_host_delegate.h"
 #include "content/shell/shell_web_contents_view_delegate_creator.h"
 #include "content/shell/webkit_test_controller.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
 #include "webkit/common/webpreferences.h"
 
@@ -87,7 +88,9 @@ void ShellContentBrowserClient::RenderProcessHostCreated(
       BrowserContext::GetDefaultStoragePartition(browser_context())
           ->GetDatabaseTracker(),
       BrowserContext::GetDefaultStoragePartition(browser_context())
-          ->GetQuotaManager()));
+          ->GetQuotaManager(),
+      BrowserContext::GetDefaultStoragePartition(browser_context())
+          ->GetURLRequestContext()));
   host->Send(new ShellViewMsg_SetWebKitSourceDir(webkit_source_dir_));
   registrar_.Add(this,
                  NOTIFICATION_RENDERER_PROCESS_CREATED,
