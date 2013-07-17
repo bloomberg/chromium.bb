@@ -5,7 +5,7 @@
 // IPC messages for WebRTC logging.
 // Multiply-included message file, hence no include guard.
 
-#include "base/shared_memory.h"
+#include "base/memory/shared_memory.h"
 #include "ipc/ipc_message_macros.h"
 
 #define IPC_MESSAGE_START WebRtcLoggingMsgStart

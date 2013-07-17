@@ -58,7 +58,7 @@
 #endif
 
 #if defined(OS_POSIX)
-#include "base/shared_memory.h"
+#include "base/memory/shared_memory.h"
 #endif
 
 namespace {

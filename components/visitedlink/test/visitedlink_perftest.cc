@@ -8,8 +8,8 @@
 
 #include "base/file_util.h"
 #include "base/files/file_path.h"
+#include "base/memory/shared_memory.h"
 #include "base/perftimer.h"
-#include "base/shared_memory.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/test_file_util.h"
 #include "components/visitedlink/browser/visitedlink_master.h"

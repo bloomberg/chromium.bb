@@ -4,7 +4,7 @@
 
 #include "components/visitedlink/browser/visitedlink_event_listener.h"
 
-#include "base/shared_memory.h"
+#include "base/memory/shared_memory.h"
 #include "components/visitedlink/browser/visitedlink_delegate.h"
 #include "components/visitedlink/common/visitedlink_messages.h"
 #include "content/public/browser/notification_service.h"

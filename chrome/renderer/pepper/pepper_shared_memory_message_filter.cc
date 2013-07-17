@@ -5,8 +5,8 @@
 #include "chrome/renderer/pepper/pepper_shared_memory_message_filter.h"
 
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/shared_memory.h"
 #include "base/process_util.h"
-#include "base/shared_memory.h"
 #include "content/public/common/content_client.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/renderer_ppapi_host.h"

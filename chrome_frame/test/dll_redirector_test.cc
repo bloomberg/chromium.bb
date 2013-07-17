@@ -4,7 +4,7 @@
 
 #include "chrome_frame/dll_redirector.h"
 
-#include "base/shared_memory.h"
+#include "base/memory/shared_memory.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/version.h"
 #include "base/win/scoped_handle.h"

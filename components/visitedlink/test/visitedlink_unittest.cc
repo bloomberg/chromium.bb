@@ -7,11 +7,11 @@
 #include <vector>
 
 #include "base/file_util.h"
+#include "base/memory/shared_memory.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/run_loop.h"
-#include "base/shared_memory.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "components/visitedlink/browser/visitedlink_delegate.h"

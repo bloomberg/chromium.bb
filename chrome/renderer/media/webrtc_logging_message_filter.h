@@ -5,7 +5,7 @@
 #ifndef CHROME_RENDERER_MEDIA_WEBRTC_LOGGING_MESSAGE_FILTER_H_
 #define CHROME_RENDERER_MEDIA_WEBRTC_LOGGING_MESSAGE_FILTER_H_
 
-#include "base/shared_memory.h"
+#include "base/memory/shared_memory.h"
 #include "ipc/ipc_channel_proxy.h"
 
 namespace base {

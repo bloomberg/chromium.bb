@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-#include "base/shared_memory.h"
+#include "base/memory/shared_memory.h"
 #include "base/timer/timer.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/extensions/features/feature.h"

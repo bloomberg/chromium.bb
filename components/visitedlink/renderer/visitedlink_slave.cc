@@ -5,7 +5,7 @@
 #include "components/visitedlink/renderer/visitedlink_slave.h"
 
 #include "base/logging.h"
-#include "base/shared_memory.h"
+#include "base/memory/shared_memory.h"
 #include "components/visitedlink/common/visitedlink_messages.h"
 #include "third_party/WebKit/public/web/WebView.h"
 

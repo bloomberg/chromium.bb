@@ -15,7 +15,7 @@
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
-#include "base/shared_memory.h"
+#include "base/memory/shared_memory.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "components/visitedlink/common/visitedlink_common.h"
 

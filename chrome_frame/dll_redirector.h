@@ -11,8 +11,8 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/shared_memory.h"
 #include "base/memory/singleton.h"
-#include "base/shared_memory.h"
 
 // Forward
 namespace ATL {

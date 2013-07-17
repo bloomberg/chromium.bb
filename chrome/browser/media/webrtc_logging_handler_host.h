@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_MEDIA_WEBRTC_LOGGING_HANDLER_HOST_H_
 
 #include "base/basictypes.h"
-#include "base/shared_memory.h"
+#include "base/memory/shared_memory.h"
 #include "content/public/browser/browser_message_filter.h"
 
 namespace net {

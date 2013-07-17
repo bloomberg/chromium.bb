@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/shared_memory.h"
+#include "base/memory/shared_memory.h"
 #include "content/public/renderer/webrtc_log_message_delegate.h"
 #include "ipc/ipc_channel_proxy.h"
 
