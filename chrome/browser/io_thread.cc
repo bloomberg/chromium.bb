@@ -595,6 +595,8 @@ void IOThread::InitAsync() {
 
   globals_->throttler_manager.reset(new net::URLRequestThrottlerManager());
   globals_->throttler_manager->set_net_log(net_log_);
+  // Always done in production, disabled only for unit tests.
+  globals_->throttler_manager->set_enable_thread_checks(true);
 
   globals_->proxy_script_fetcher_context.reset(
       ConstructProxyScriptFetcherContext(globals_, net_log_));

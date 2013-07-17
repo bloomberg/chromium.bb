@@ -20,6 +20,9 @@ BackoffEntry::BackoffEntry(const BackoffEntry::Policy* const policy)
 }
 
 BackoffEntry::~BackoffEntry() {
+  // TODO(joi): Remove this once our clients (e.g. URLRequestThrottlerManager)
+  // always destroy from the I/O thread.
+  DetachFromThread();
 }
 
 void BackoffEntry::InformOfRequest(bool succeeded) {
