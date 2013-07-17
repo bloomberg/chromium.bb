@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/common/chrome_utility_messages.h"
 #include "chrome/common/extensions/chrome_manifest_handlers.h"
 #include "chrome/common/extensions/extension.h"
@@ -68,7 +69,7 @@ void ReleaseProcessIfNeeded() {
 
 ChromeContentUtilityClient::ChromeContentUtilityClient() {
 #if !defined(OS_ANDROID)
-  import_handler_.reset(new ProfileImportHandler());
+  handlers_.push_back(new ProfileImportHandler());
 #endif
 }
 
@@ -134,10 +135,10 @@ bool ChromeContentUtilityClient::OnMessageReceived(
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
-#if !defined(OS_ANDROID)
-  if (!handled)
-    handled = import_handler_->OnMessageReceived(message);
-#endif
+  for (Handlers::iterator it = handlers_.begin();
+       !handled && it != handlers_.end(); ++it) {
+    handled = (*it)->OnMessageReceived(message);
+  }
 
   return handled;
 }
@@ -475,7 +476,7 @@ void ChromeContentUtilityClient::OnGetPrinterCapsAndDefaults(
   if (print_backend->GetPrinterCapsAndDefaults(printer_name, &printer_info)) {
     Send(new ChromeUtilityHostMsg_GetPrinterCapsAndDefaults_Succeeded(
         printer_name, printer_info));
-  } else
+  } else  // NOLINT
 #endif
   {
     Send(new ChromeUtilityHostMsg_GetPrinterCapsAndDefaults_Failed(

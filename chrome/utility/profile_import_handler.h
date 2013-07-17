@@ -9,7 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "ipc/ipc_listener.h"
+#include "chrome/utility/utility_message_handler.h"
 
 class ExternalProcessImporterBridge;
 class Importer;
@@ -26,7 +26,7 @@ struct SourceProfile;
 namespace chrome {
 
 // Dispatches IPCs for out of process profile import.
-class ProfileImportHandler : public IPC::Listener {
+class ProfileImportHandler : public UtilityMessageHandler {
  public:
   ProfileImportHandler();
   virtual ~ProfileImportHandler();
