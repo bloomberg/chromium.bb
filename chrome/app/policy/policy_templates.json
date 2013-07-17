@@ -363,7 +363,7 @@
       'name': 'IncognitoEnabled',
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:11-', 'chrome_os:0.11-'],
+      'supported_on': ['chrome.*:11-', 'chrome_os:0.11-', 'android:30-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -405,7 +405,7 @@
           'caption': '''Incognito mode forced''',
         },
       ],
-      'supported_on': ['chrome.*:14-', 'chrome_os:0.14-'],
+      'supported_on': ['chrome.*:14-', 'chrome_os:0.14-', 'android:30-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,

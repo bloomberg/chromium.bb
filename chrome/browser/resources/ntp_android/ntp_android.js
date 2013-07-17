@@ -195,6 +195,12 @@ cr.define('ntp', function() {
   var isIncognito = false;
 
   /**
+   * Whether incognito mode is enabled. (It can be blocked e.g. with a policy.)
+   * @type {boolean}
+   */
+  var isIncognitoEnabled = true;
+
+  /**
    * Whether the initial history state has been replaced.  The state will be
    * replaced once the bookmark data has loaded to ensure the proper folder
    * id is persisted.
@@ -378,7 +384,12 @@ cr.define('ntp', function() {
       chrome.send('getRecentlyClosedTabs');
       chrome.send('getForeignSessions');
       chrome.send('getPromotions');
+      chrome.send('getIncognitoDisabled');
     }
+  }
+
+  function setIncognitoEnabled(item) {
+    isIncognitoEnabled = item.incognitoEnabled;
   }
 
   /**
@@ -2431,12 +2442,14 @@ cr.define('ntp', function() {
         [
           ContextMenuItemIds.BOOKMARK_OPEN_IN_NEW_TAB,
           templateData.elementopeninnewtab
-        ],
-        [
-          ContextMenuItemIds.BOOKMARK_OPEN_IN_INCOGNITO_TAB,
-          templateData.elementopeninincognitotab
         ]
       ];
+      if (isIncognitoEnabled) {
+        menuOptions.push([
+          ContextMenuItemIds.BOOKMARK_OPEN_IN_INCOGNITO_TAB,
+          templateData.elementopeninincognitotab
+        ]);
+      }
       if (contextMenuItem.editable) {
         menuOptions.push(
             [ContextMenuItemIds.BOOKMARK_EDIT, templateData.bookmarkedit],
@@ -2472,27 +2485,30 @@ cr.define('ntp', function() {
           ContextMenuItemIds.MOST_VISITED_OPEN_IN_NEW_TAB,
           templateData.elementopeninnewtab
         ],
-        [
+      ];
+      if (isIncognitoEnabled) {
+        menuOptions.push([
           ContextMenuItemIds.MOST_VISITED_OPEN_IN_INCOGNITO_TAB,
           templateData.elementopeninincognitotab
-        ],
-        [ContextMenuItemIds.MOST_VISITED_REMOVE, templateData.elementremove]
-      ];
+        ]);
+      }
+      menuOptions.push(
+        [ContextMenuItemIds.MOST_VISITED_REMOVE, templateData.elementremove]);
     } else if (section == SectionType.RECENTLY_CLOSED) {
       menuOptions = [
         [
           ContextMenuItemIds.RECENTLY_CLOSED_OPEN_IN_NEW_TAB,
           templateData.elementopeninnewtab
         ],
-        [
+      ];
+      if (isIncognitoEnabled) {
+        menuOptions.push([
           ContextMenuItemIds.RECENTLY_CLOSED_OPEN_IN_INCOGNITO_TAB,
           templateData.elementopeninincognitotab
-        ],
-        [
-          ContextMenuItemIds.RECENTLY_CLOSED_REMOVE,
-          templateData.removeall
-        ]
-      ];
+        ]);
+      }
+      menuOptions.push(
+        [ContextMenuItemIds.RECENTLY_CLOSED_REMOVE, templateData.removeall]);
     } else if (section == SectionType.FOREIGN_SESSION_HEADER) {
       menuOptions = [
         [
@@ -2521,6 +2537,7 @@ cr.define('ntp', function() {
     bookmarkChanged: bookmarkChanged,
     clearPromotions: clearPromotions,
     init: init,
+    setIncognitoEnabled: setIncognitoEnabled,
     onCustomMenuSelected: onCustomMenuSelected,
     openSection: openSection,
     setFaviconDominantColor: setFaviconDominantColor,

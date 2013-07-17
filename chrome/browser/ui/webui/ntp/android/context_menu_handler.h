@@ -27,6 +27,9 @@ class ContextMenuHandler : public content::WebUIMessageHandler {
   // Invoked (by on_item_selected_callback_) when an item has been selected.
   void OnItemSelected(int item_id);
 
+  // Callback for setting whether incognito mode is disabled.
+  void GetIncognitoDisabled(const base::ListValue* args);
+
   // Callback for the "showContextMenu" message.
   void HandleShowContextMenu(const base::ListValue* args);
 
