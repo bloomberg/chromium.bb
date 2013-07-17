@@ -81,6 +81,7 @@ class WebKitTestRunner : public RenderViewObserver,
   virtual void setLocale(const std::string& locale);
   virtual void testFinished();
   virtual void closeRemainingWindows();
+  virtual void deleteAllCookies();
   virtual int navigationEntryCount();
   virtual void goToOffset(int offset);
   virtual void reload();

@@ -97,6 +97,7 @@ IPC_MESSAGE_ROUTED1(ShellViewHostMsg_SetDatabaseQuota,
                     int /* quota */)
 IPC_MESSAGE_ROUTED1(ShellViewHostMsg_AcceptAllCookies,
                     bool /* accept */)
+IPC_MESSAGE_ROUTED0(ShellViewHostMsg_DeleteAllCookies)
 IPC_MESSAGE_ROUTED1(ShellViewHostMsg_SetDeviceScaleFactor,
                     float /* factor */)
 IPC_MESSAGE_ROUTED0(ShellViewHostMsg_CaptureSessionHistory)

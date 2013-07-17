@@ -457,6 +457,10 @@ void WebKitTestRunner::closeRemainingWindows() {
   Send(new ShellViewHostMsg_CloseRemainingWindows(routing_id()));
 }
 
+void WebKitTestRunner::deleteAllCookies() {
+  Send(new ShellViewHostMsg_DeleteAllCookies(routing_id()));
+}
+
 int WebKitTestRunner::navigationEntryCount() {
   return GetLocalSessionHistoryLength(render_view());
 }

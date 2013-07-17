@@ -45,6 +45,7 @@ class ShellMessageFilter : public BrowserMessageFilter {
   void OnClearAllDatabases();
   void OnSetDatabaseQuota(int quota);
   void OnAcceptAllCookies(bool accept);
+  void OnDeleteAllCookies();
 
   int render_process_id_;
 
