@@ -594,9 +594,6 @@ bool WindowsCreateFunction::RunImpl() {
       shell_window->Init(urls[0], ash_panel_contents, create_params);
       SetResult(ash_panel_contents->GetExtensionWindowController()->
                 CreateWindowValueWithTabs(GetExtension()));
-      // Add the panel to the shell window registry so that it shows up in
-      // the launcher and as an active render process.
-      ShellWindowRegistry::Get(window_profile)->AddShellWindow(shell_window);
       return true;
     }
 #else

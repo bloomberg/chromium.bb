@@ -47,6 +47,8 @@
         'app_shim/chrome_main_app_mode_mac.mm',
         'app_shim/extension_app_shim_handler_mac.cc',
         'app_shim/extension_app_shim_handler_mac.h',
+        'app_window_contents.cc',
+        'app_window_contents.h',
         'field_trial_names.cc',
         'field_trial_names.h',
         'metrics_names.h',

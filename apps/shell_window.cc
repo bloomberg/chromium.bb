@@ -9,7 +9,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/app_window_contents.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/image_loader.h"
@@ -67,18 +66,6 @@ ShellWindow::CreateParams::CreateParams()
 ShellWindow::CreateParams::~CreateParams() {}
 
 ShellWindow::Delegate::~Delegate() {}
-
-ShellWindow* ShellWindow::Create(Profile* profile,
-                                 Delegate* delegate,
-                                 const extensions::Extension* extension,
-                                 const GURL& url,
-                                 const CreateParams& params) {
-  // This object will delete itself when the window is closed.
-  ShellWindow* window = new ShellWindow(profile, delegate, extension);
-  window->Init(url, new AppWindowContents(window), params);
-  extensions::ShellWindowRegistry::Get(profile)->AddShellWindow(window);
-  return window;
-}
 
 ShellWindow::ShellWindow(Profile* profile,
                          Delegate* delegate,
@@ -211,6 +198,8 @@ void ShellWindow::Init(const GURL& url,
   chrome::StartKeepAlive();
 
   UpdateExtensionAppIcon();
+
+  extensions::ShellWindowRegistry::Get(profile_)->AddShellWindow(this);
 }
 
 ShellWindow::~ShellWindow() {

@@ -9,6 +9,8 @@
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/platform_util.h"
+#include "chrome/browser/printing/print_preview_message_handler.h"
+#include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -56,6 +58,11 @@ void ChromeShellWindowDelegate::DisableExternalOpenForTesting() {
 void ChromeShellWindowDelegate::InitWebContents(
     content::WebContents* web_contents) {
   FaviconTabHelper::CreateForWebContents(web_contents);
+
+#if defined(ENABLE_PRINTING)
+  printing::PrintPreviewMessageHandler::CreateForWebContents(web_contents);
+  printing::PrintViewManager::CreateForWebContents(web_contents);
+#endif
 }
 
 content::WebContents* ChromeShellWindowDelegate::OpenURLFromTab(

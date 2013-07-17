@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/platform_app_browsertest_util.h"
 
+#include "apps/app_window_contents.h"
 #include "base/command_line.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/api/tabs/tabs_api.h"
@@ -146,17 +147,19 @@ void PlatformAppBrowserTest::SetCommandLineArg(const std::string& test_file) {
 
 ShellWindow* PlatformAppBrowserTest::CreateShellWindow(
     const Extension* extension) {
-  ShellWindow::CreateParams params;
-  return ShellWindow::Create(
-      browser()->profile(), new chrome::ChromeShellWindowDelegate(),
-      extension, GURL(std::string()), params);
+  return CreateShellWindowFromParams(extension, ShellWindow::CreateParams());
 }
 
 ShellWindow* PlatformAppBrowserTest::CreateShellWindowFromParams(
     const Extension* extension, const ShellWindow::CreateParams& params) {
-  return ShellWindow::Create(
-      browser()->profile(), new chrome::ChromeShellWindowDelegate(),
-      extension, GURL(std::string()), params);
+  ShellWindow* window = new ShellWindow(
+      browser()->profile(),
+      new chrome::ChromeShellWindowDelegate(),
+      extension);
+  window->Init(GURL(std::string()),
+               new apps::AppWindowContents(window),
+               params);
+  return window;
 }
 
 void PlatformAppBrowserTest::CloseShellWindow(ShellWindow* window) {

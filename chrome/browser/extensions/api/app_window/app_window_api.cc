@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/api/app_window/app_window_api.h"
 
+#include "apps/app_window_contents.h"
 #include "apps/shell_window.h"
 #include "base/command_line.h"
 #include "base/time/time.h"
@@ -292,12 +293,13 @@ bool AppWindowCreateFunction::RunImpl() {
   if (force_maximize)
     create_params.state = ui::SHOW_STATE_MAXIMIZED;
 
-  ShellWindow* shell_window = ShellWindow::Create(
+  ShellWindow* shell_window = new ShellWindow(
       profile(),
       new chrome::ChromeShellWindowDelegate(),
-      GetExtension(),
-      url,
-      create_params);
+      GetExtension());
+  shell_window->Init(url,
+                     new apps::AppWindowContents(shell_window),
+                     create_params);
 
   if (chrome::IsRunningInForcedAppMode())
     shell_window->Fullscreen();

@@ -521,8 +521,6 @@
         'browser/extensions/app_sync_bundle.h',
         'browser/extensions/app_sync_data.cc',
         'browser/extensions/app_sync_data.h',
-        'browser/extensions/app_window_contents.cc',
-        'browser/extensions/app_window_contents.h',
         'browser/extensions/blacklist.cc',
         'browser/extensions/blacklist.h',
         'browser/extensions/browser_action_test_util.h',

@@ -2,11 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/app_window_contents.h"
+#include "apps/app_window_contents.h"
 
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/printing/print_preview_message_handler.h"
-#include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/extensions/native_app_window.h"
 #include "chrome/common/extensions/api/app_window.h"
@@ -21,7 +19,7 @@
 
 namespace app_window = extensions::api::app_window;
 
-using apps::ShellWindow;
+namespace apps {
 
 AppWindowContents::AppWindowContents(ShellWindow* host)
     : host_(host) {
@@ -44,12 +42,6 @@ void AppWindowContents::Initialize(Profile* profile, const GURL& url) {
   web_contents_->GetMutableRendererPrefs()->
       browser_handles_all_top_level_requests = true;
   web_contents_->GetRenderViewHost()->SyncRendererPrefs();
-
-#if defined(ENABLE_PRINTING)
-  printing::PrintPreviewMessageHandler::CreateForWebContents(
-      web_contents_.get());
-  printing::PrintViewManager::CreateForWebContents(web_contents_.get());
-#endif
 }
 
 void AppWindowContents::LoadContents(int32 creator_process_id) {
@@ -181,3 +173,5 @@ void AppWindowContents::SuspendRenderViewHost(
                  base::Unretained(content::ResourceDispatcherHost::Get()),
                  rvh->GetProcess()->GetID(), rvh->GetRoutingID()));
 }
+
+}  // namespace apps

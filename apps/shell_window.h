@@ -160,14 +160,6 @@ class ShellWindow : public content::NotificationObserver,
     virtual bool IsWebContentsVisible(content::WebContents* web_contents) = 0;
   };
 
-  // Helper function for creating and intiailizing a v2 app window.
-  // The created shell window will take ownership of |delegate|.
-  static ShellWindow* Create(Profile* profile,
-                             Delegate* delegate,
-                             const extensions::Extension* extension,
-                             const GURL& url,
-                             const CreateParams& params);
-
   // Convert draggable regions in raw format to SkRegion format. Caller is
   // responsible for deleting the returned SkRegion instance.
   static SkRegion* RawDraggableRegionsToSkRegion(

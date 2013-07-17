@@ -24,18 +24,20 @@ namespace extensions {
 struct DraggableRegion;
 }
 
-// apps::ShellWindowContents class specific to app windows. It maintains a
+namespace apps {
+
+// ShellWindowContents class specific to app windows. It maintains a
 // WebContents instance and observes it for the purpose of passing
 // messages to the extensions system.
-class AppWindowContents : public apps::ShellWindowContents,
+class AppWindowContents : public ShellWindowContents,
                           public content::NotificationObserver,
                           public content::WebContentsObserver,
                           public ExtensionFunctionDispatcher::Delegate {
  public:
-  explicit AppWindowContents(apps::ShellWindow* host);
+  explicit AppWindowContents(ShellWindow* host);
   virtual ~AppWindowContents();
 
-  // apps::ShellWindowContents
+  // ShellWindowContents
   virtual void Initialize(Profile* profile, const GURL& url) OVERRIDE;
   virtual void LoadContents(int32 creator_process_id) OVERRIDE;
   virtual void NativeWindowChanged(NativeAppWindow* native_app_window) OVERRIDE;
@@ -61,7 +63,7 @@ class AppWindowContents : public apps::ShellWindowContents,
       const std::vector<extensions::DraggableRegion>& regions);
   void SuspendRenderViewHost(content::RenderViewHost* rvh);
 
-  apps::ShellWindow* host_;  // This class is owned by |host_|
+  ShellWindow* host_;  // This class is owned by |host_|
   GURL url_;
   content::NotificationRegistrar registrar_;
   scoped_ptr<content::WebContents> web_contents_;
@@ -69,5 +71,7 @@ class AppWindowContents : public apps::ShellWindowContents,
 
   DISALLOW_COPY_AND_ASSIGN(AppWindowContents);
 };
+
+}  // namespace apps
 
 #endif  // CHROME_BROWSER_EXTENSIONS_APP_WINDOW_CONTENTS_H_
