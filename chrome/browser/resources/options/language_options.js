@@ -695,8 +695,8 @@ cr.define('options', function() {
       }
 
       var dontTranslate = div.querySelector('div');
-      var cannnotTranslate = $('cannot-translate-in-this-language');
-      var nodes = [dontTranslate, cannnotTranslate];
+      var cannotTranslate = $('cannot-translate-in-this-language');
+      var nodes = [dontTranslate, cannotTranslate];
 
       var convertedLangCode = this.convertLangCodeForTranslation_(languageCode);
       if (this.translateSupportedLanguages_.indexOf(convertedLangCode) != -1) {
@@ -1224,7 +1224,6 @@ cr.define('options', function() {
     convertLangCodeForTranslation_: function(languageCode) {
       var tokens = languageCode.split('-');
       var main = tokens[0];
-      var dialect = tokens[1];
 
       // See also: chrome/renderer/translate/translate_helper.cc.
       var synonyms = {
@@ -1237,8 +1236,8 @@ cr.define('options', function() {
       if (main in synonyms) {
         return synonyms[main];
       } else if (main == 'zh') {
-        // In Translation, general Chinese is not used.
-        assert(dialect);
+        // In Translation, general Chinese is not used, and the sub code is
+        // necessary as a language code for Translate server.
         return languageCode;
       }
 
