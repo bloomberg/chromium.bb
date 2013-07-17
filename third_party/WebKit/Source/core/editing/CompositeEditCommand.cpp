@@ -1050,14 +1050,20 @@ void CompositeEditCommand::cleanupAfterDeletion(VisiblePosition destination)
         // Note: We want the rightmost candidate.
         Position position = caretAfterDelete.deepEquivalent().downstream();
         Node* node = position.deprecatedNode();
+
+        // Bail if we'd remove an ancestor of our destination.
+        if (destinationNode->isDescendantOf(node))
+            return;
+
         // Normally deletion will leave a br as a placeholder.
-        if (node->hasTagName(brTag))
+        if (node->hasTagName(brTag)) {
             removeNodeAndPruneAncestors(node, destinationNode);
-        // If the selection to move was empty and in an empty block that 
-        // doesn't require a placeholder to prop itself open (like a bordered
-        // div or an li), remove it during the move (the list removal code
-        // expects this behavior).
-        else if (isBlock(node)) {
+
+            // If the selection to move was empty and in an empty block that
+            // doesn't require a placeholder to prop itself open (like a bordered
+            // div or an li), remove it during the move (the list removal code
+            // expects this behavior).
+        } else if (isBlock(node)) {
             // If caret position after deletion and destination position coincides,
             // node should not be removed.
             if (!position.rendersInDifferentPosition(destination.deepEquivalent())) {

@@ -1304,6 +1304,21 @@ crbug.com/237250 [ Lion Debug ] media/video-zoom-controls.html [ Crash Pass ]
 crbug.com/237270 [ Win7 ] transforms/2d/transform-2d.html [ Pass Timeout ]
 crbug.com/237270 [ Debug ] fast/dom/SelectorAPI/resig-SelectorsAPI-test.xhtml [ Pass Timeout ]
 # was: webkit.org/b/110873 - Flaky on most platforms
+
+crbug.com/222806 editing/deleting/5272440.html [ NeedsRebaseline ]
+crbug.com/222806 editing/deleting/delete-block-contents-001.html [ NeedsRebaseline ]
+crbug.com/222806 editing/deleting/delete-block-contents-002.html [ NeedsRebaseline ]
+crbug.com/222806 editing/deleting/delete-block-contents-003.html [ NeedsRebaseline ]
+crbug.com/222806 editing/deleting/delete-3775172-fix.html [ NeedsRebaseline ]
+crbug.com/222806 editing/deleting/delete-all-text-in-text-field-assertion.html [ NeedsRebaseline ]
+crbug.com/222806 editing/deleting/delete-image-004.html [ NeedsRebaseline ]
+crbug.com/222806 editing/inserting/insert-3775316-fix.html [ NeedsRebaseline ]
+crbug.com/222806 editing/inserting/insert-after-delete-001.html [ NeedsRebaseline ]
+crbug.com/222806 editing/pasteboard/4076267-3.html [ NeedsRebaseline ]
+crbug.com/222806 editing/pasteboard/smart-paste-in-text-control.html [ NeedsRebaseline ]
+crbug.com/222806 fast/forms/input-placeholder-visibility-3.html [ NeedsRebaseline ]
+crbug.com/222806 fast/forms/textarea-placeholder-visibility-1.html [ NeedsRebaseline ]
+
 crbug.com/237270 [ Debug ] fast/sub-pixel/transformed-iframe-copy-on-scroll.html [ Pass Timeout ]
 crbug.com/251129 [ Linux Win Debug ] http/tests/history/redirect-js-form-submit-0-seconds.html [ Failure Pass ]
 

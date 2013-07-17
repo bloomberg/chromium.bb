@@ -2,5 +2,4 @@ Matching other execCommand identifiers, execCommand("ForwardDelete") should not 
 
 This test only works in WebKit, as other engines do not implement this command.
 
-
 SUCCESS

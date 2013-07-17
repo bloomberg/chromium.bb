@@ -51,7 +51,7 @@ var target2 = setupForFiringTest('<p id="target2" contentEditable>This text shou
 document.execCommand("insertText", false, target2Text);
 
 // An "delete" command should dispatch an input event.
-var target3 = setupForFiringTest('<p id="target3" contentEditable>This text shouldn be deleted.</p>', "<br>");
+var target3 = setupForFiringTest('<p id="target3" contentEditable>This text shouldn be deleted.</p>', '');
 document.execCommand("delete", false);
 
 // A command other than text-editing should dispatch an input event.
@@ -88,7 +88,7 @@ var target7 = setupForFiringTest('<p id="target7" contentEditable>Replaced</p>',
 sel.selectAllChildren(target7);
 eventSender.keyDown('X');
 
-var target8 = setupForFiringTest('<p id="target8" contentEditable>Deleted</p>', '<br>');
+var target8 = setupForFiringTest('<p id="target8" contentEditable>Deleted</p>', '');
 sel.selectAllChildren(target8);
 eventSender.keyDown('delete');
 
