@@ -1597,7 +1597,6 @@ crbug.com/244123 [ Win ] fast/forms/suggestion-picker/month-suggestion-picker-ke
 crbug.com/244123 [ Win ] fast/forms/suggestion-picker/week-suggestion-picker-key-operations.html [ Failure Pass Slow ]
 crbug.com/244341 [ Win ] css3/filters/composited-during-animation.html [ Failure Pass Timeout ]
 crbug.com/244341 [ Mac Linux ] css3/filters/composited-during-animation-layertree.html [ Failure Pass ]
-crbug.com/245203 [ Win7 Release ] compositing/culling/clear-fixed-iframe.html [ Pass Timeout ]
 crbug.com/245556 [ Win7 Release ] compositing/transitions/transform-on-large-layer.html [ Pass Timeout ]
 crbug.com/245566 [ Linux Win Debug ] editing/execCommand/delete-no-scroll.html [ Pass Timeout ]
 crbug.com/245567 http/tests/xmlhttprequest/send-undefined-and-null.html [ Failure Pass ]
