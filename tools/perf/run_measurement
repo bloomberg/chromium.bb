@@ -60,15 +60,22 @@ def main():
   page_set_filenames = page_sets.GetAllPageSetFilenames()
 
   old_benchmark_names = {
-    "cheapness_predictor_benchmark": "cheapness_predictor_measurement",
-    "image_decoding_benchmark": "image_decoding_measurement",
-    "loading_benchmark": "loading_measurement",
-    "memory_benchmark": "memory_measurement",
-    "rasterize_and_record_benchmark": "rasterize_and_record_benchmark",
+    "image_decoding_benchmark": "image_decoding",
+    "image_decoding_measurement": "image_decoding",
+    "loading_benchmark": "loading",
+    "loading_measurement": "loading",
+    "media_measurement": "media",
+    "memory_benchmark": "memory",
+    "memory_measurement": "memory",
+    "rasterize_and_record_benchmark": "rasterize_and_record",
+    "rasterize_and_record_measurement": "rasterize_and_record",
+    "robohornetpro": "robohornet_pro",
     "scrolling_benchmark": "smoothness",
     "smoothness_benchmark": "smoothness",
     "smoothness_measurement": "smoothness",
-    "startup_benchmark": "startup_measurement"
+    "startup_benchmark": "startup_warm",
+    "startup_measurement": "startup_warm",
+    "tab_switching_measurement": "tab_switching",
   }
 
   # There are bots that are hard-coded to run some specific named tests.

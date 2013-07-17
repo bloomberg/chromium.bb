@@ -4,18 +4,21 @@
 from perf_tools import histogram_metric
 from telemetry.page import page_measurement
 
+
 MEMORY_HISTOGRAMS = [
     {'name': 'V8.MemoryExternalFragmentationTotal', 'units': 'percent'},
     {'name': 'V8.MemoryHeapSampleTotalCommitted', 'units': 'kb'},
     {'name': 'V8.MemoryHeapSampleTotalUsed', 'units': 'kb'},
     {'name': 'Memory.RendererUsed', 'units': 'kb'}]
 
+
 BROWSER_MEMORY_HISTOGRAMS =  [
     {'name': 'Memory.BrowserUsed', 'units': 'kb'}]
 
-class MemoryMeasurement(page_measurement.PageMeasurement):
+
+class Memory(page_measurement.PageMeasurement):
   def __init__(self):
-    super(MemoryMeasurement, self).__init__('stress_memory')
+    super(Memory, self).__init__('stress_memory')
     self.histograms = (
         [histogram_metric.HistogramMetric(
             h, histogram_metric.RENDERER_HISTOGRAM)

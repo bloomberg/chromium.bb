@@ -4,25 +4,13 @@
 
 import os
 
+from telemetry import test
 from telemetry.core import util
 from telemetry.page import page_measurement
 from telemetry.page import page_set
 
-class Pica(page_measurement.PageMeasurement):
-  def CreatePageSet(self, _, options):
-    return page_set.PageSet.FromDict({
-        'archive_data_file': '../data/pica.json',
-        # Pica requires non-deterministic Date and Math.random calls
-        # See http://crbug.com/255641
-        'make_javascript_deterministic': False,
-        'pages': [
-          {
-            'url': 'http://www.polymer-project.org/' +
-                   'polymer-all/projects/pica/index.html'
-          }
-        ]
-      }, os.path.abspath(__file__))
 
+class PicaMeasurement(page_measurement.PageMeasurement):
   def WillNavigateToPage(self, page, tab):
     page.script_to_evaluate_on_commit = """
       document.addEventListener('WebComponentsReady', function() {
@@ -38,3 +26,21 @@ class Pica(page_measurement.PageMeasurement):
 
     result = int(tab.EvaluateJavaScript('__pica_load_time'))
     results.Add('Total', 'ms', result)
+
+
+class Pica(test.Test):
+  test = PicaMeasurement
+
+  def CreatePageSet(self, options):
+    return page_set.PageSet.FromDict({
+        'archive_data_file': '../data/pica.json',
+        # Pica requires non-deterministic Date and Math.random calls
+        # See http://crbug.com/255641
+        'make_javascript_deterministic': False,
+        'pages': [
+          {
+            'url': 'http://www.polymer-project.org/'
+                   'polymer-all/projects/pica/index.html'
+          }
+        ]
+      }, os.path.abspath(__file__))

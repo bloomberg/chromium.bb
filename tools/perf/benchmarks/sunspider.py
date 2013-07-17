@@ -38,7 +38,7 @@ class SunspiderMeasurement(page_measurement.PageMeasurement):
 
 
 class Sunspider(test.Test):
-  """Performance on Apple's SunSpider JavaScript benchmark"""
+  """Apple's SunSpider JavaScript benchmark."""
   test = SunspiderMeasurement
 
   def CreatePageSet(self, options):

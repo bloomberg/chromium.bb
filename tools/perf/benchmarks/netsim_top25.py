@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 from telemetry import test
 
-from perf_tools import page_cycler
+from measurements import page_cycler
 
 
 class NetsimTop25(test.Test):

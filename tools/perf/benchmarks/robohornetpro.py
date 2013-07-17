@@ -6,22 +6,13 @@
 
 import os
 
+from telemetry import test
 from telemetry.core import util
 from telemetry.page import page_measurement
 from telemetry.page import page_set
 
-class RobohornetPro(page_measurement.PageMeasurement):
-  def CreatePageSet(self, _, options):
-    return page_set.PageSet.FromDict({
-        'archive_data_file': '../data/robohornetpro.json',
-        # Measurement require use of real Date.now() for measurement.
-        'make_javascript_deterministic': False,
-        'pages': [
-          { 'url':
-            'http://ie.microsoft.com/testdrive/performance/robohornetpro/' }
-          ]
-        }, os.path.abspath(__file__))
 
+class RobohornetProMeasurement(page_measurement.PageMeasurement):
   def MeasurePage(self, _, tab, results):
     tab.ExecuteJavaScript('ToggleRoboHornet()')
 
@@ -32,3 +23,18 @@ class RobohornetPro(page_measurement.PageMeasurement):
 
     result = int(tab.EvaluateJavaScript('stopTime - startTime'))
     results.Add('Total', 'ms', result)
+
+
+class RobohornetPro(test.Test):
+  test = RobohornetProMeasurement
+
+  def CreatePageSet(self, options):
+    return page_set.PageSet.FromDict({
+        'archive_data_file': '../data/robohornetpro.json',
+        # Measurement require use of real Date.now() for measurement.
+        'make_javascript_deterministic': False,
+        'pages': [
+          { 'url':
+            'http://ie.microsoft.com/testdrive/performance/robohornetpro/' }
+          ]
+        }, os.path.abspath(__file__))

@@ -6,8 +6,9 @@ import json
 
 from telemetry.page import page_measurement
 
-# Test how long Chrome takes to load when warm.
-class PerfWarm(page_measurement.PageMeasurement):
+
+class StartupWarm(page_measurement.PageMeasurement):
+  """Test how long Chrome takes to load when warm."""
   HISTOGRAMS_TO_RECORD = {
     'messageloop_start_time' :
         'Startup.BrowserMessageLoopStartTimeFromMainEntry',
@@ -15,8 +16,8 @@ class PerfWarm(page_measurement.PageMeasurement):
     'open_tabs_time' : 'Startup.BrowserOpenTabs'}
 
   def __init__(self):
-    super(PerfWarm, self).__init__(needs_browser_restart_after_each_run=True,
-                                   discard_first_result=True)
+    super(StartupWarm, self).__init__(needs_browser_restart_after_each_run=True,
+                                      discard_first_result=True)
 
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArg('--enable-stats-collection-bindings')

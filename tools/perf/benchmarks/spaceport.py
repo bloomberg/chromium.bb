@@ -7,19 +7,13 @@
 import logging
 import os
 
+from telemetry import test
 from telemetry.core import util
 from telemetry.page import page_measurement
 from telemetry.page import page_set
 
-class SpaceportMeasurement(page_measurement.PageMeasurement):
-  def CreatePageSet(self, _, options):
-    return page_set.PageSet.FromDict({
-        'pages': [
-          {'url':
-           'file:///../../../chrome/test/data/third_party/spaceport/index.html'}
-          ]
-        }, os.path.abspath(__file__))
 
+class SpaceportMeasurement(page_measurement.PageMeasurement):
   def CustomizeBrowserOptions(self, options):
     options.extra_browser_args.extend(['--disable-gpu-vsync'])
 
@@ -58,3 +52,15 @@ class SpaceportMeasurement(page_measurement.PageMeasurement):
                   chart_name=chart, data_type='unimportant')
     results.Add('Score', 'objects (bigger is better)',
                 [float(x) for x in result_dict.values()])
+
+
+class Spaceport(test.Test):
+  """spaceport.io's PerfMarks benchmark."""
+  test = SpaceportMeasurement
+
+  def CreatePageSet(self, options):
+    spaceport_dir = os.path.join(util.GetChromiumSrcDir(), 'chrome', 'test',
+        'data', 'third_party', 'spaceport')
+    return page_set.PageSet.FromDict(
+        {'pages': [{'url': 'file:///index.html'}]},
+        spaceport_dir)

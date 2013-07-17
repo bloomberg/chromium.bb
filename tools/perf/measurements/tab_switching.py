@@ -16,7 +16,7 @@ from telemetry.page import page_runner
 
 # TODO: Revisit this test once multitab support is finalized.
 
-class TabSwitchingMeasurement(page_measurement.PageMeasurement):
+class TabSwitching(page_measurement.PageMeasurement):
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArg('--enable-stats-collection-bindings')
 

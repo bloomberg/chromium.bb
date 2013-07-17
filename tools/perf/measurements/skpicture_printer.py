@@ -5,9 +5,11 @@ import os
 
 from telemetry.page import page_measurement
 
+
 _JS = 'chrome.gpuBenchmarking.printToSkPicture("{0}");'
 
-class SkPicturePrinter(page_measurement.PageMeasurement):
+
+class SkpicturePrinter(page_measurement.PageMeasurement):
   def AddCommandLineOptions(self, parser):
     parser.add_option('-s', '--skp-outdir',
                       help='Output directory for the SKP files')

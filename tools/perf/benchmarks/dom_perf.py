@@ -6,6 +6,7 @@ import json
 import math
 import os
 
+from telemetry import test
 from telemetry.core import util
 from telemetry.page import page_measurement
 from telemetry.page import page_set
@@ -34,24 +35,7 @@ SCORE_UNIT = 'score (bigger is better)'
 SCORE_TRACE_NAME = 'score'
 
 
-class DomPerf(page_measurement.PageMeasurement):
-  def CreatePageSet(self, _, options):
-    BASE_PAGE = 'file:///../../../data/dom_perf/run.html?reportInJS=1&run='
-    return page_set.PageSet.FromDict({
-        'pages': [
-          { 'url': BASE_PAGE + 'Accessors' },
-          { 'url': BASE_PAGE + 'CloneNodes' },
-          { 'url': BASE_PAGE + 'CreateNodes' },
-          { 'url': BASE_PAGE + 'DOMDivWalk' },
-          { 'url': BASE_PAGE + 'DOMTable' },
-          { 'url': BASE_PAGE + 'DOMWalk' },
-          { 'url': BASE_PAGE + 'Events' },
-          { 'url': BASE_PAGE + 'Get+Elements' },
-          { 'url': BASE_PAGE + 'GridSort' },
-          { 'url': BASE_PAGE + 'Template' }
-          ]
-        }, os.path.abspath(__file__))
-
+class DomPerfMeasurement(page_measurement.PageMeasurement):
   @property
   def results_are_the_same_on_every_page(self):
     return False
@@ -78,3 +62,30 @@ class DomPerf(page_measurement.PageMeasurement):
       scores.append(result[SCORE_TRACE_NAME].output_value)
     total = _GeometricMean(scores)
     results.AddSummary(SCORE_TRACE_NAME, SCORE_UNIT, total, 'Total')
+
+
+class DomPerf(test.Test):
+  """A suite of JavaScript benchmarks for exercising the browser's DOM.
+
+  The final score is computed as the geometric mean of the individual results.
+  Scores are not comparable across benchmark suite versions and higher scores
+  means better performance: Bigger is better!"""
+  test = DomPerfMeasurement
+
+  def CreatePageSet(self, options):
+    dom_perf_dir = os.path.join(util.GetChromiumSrcDir(), 'data', 'dom_perf')
+    base_page = 'file:///run.html?reportInJS=1&run='
+    return page_set.PageSet.FromDict({
+        'pages': [
+          { 'url': base_page + 'Accessors' },
+          { 'url': base_page + 'CloneNodes' },
+          { 'url': base_page + 'CreateNodes' },
+          { 'url': base_page + 'DOMDivWalk' },
+          { 'url': base_page + 'DOMTable' },
+          { 'url': base_page + 'DOMWalk' },
+          { 'url': base_page + 'Events' },
+          { 'url': base_page + 'Get+Elements' },
+          { 'url': base_page + 'GridSort' },
+          { 'url': base_page + 'Template' }
+          ]
+        }, dom_perf_dir)

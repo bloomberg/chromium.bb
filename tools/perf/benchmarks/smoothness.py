@@ -7,7 +7,9 @@ from measurements import smoothness
 
 
 class SmoothnessTop25(test.Test):
-  """Measures rendering statistics while scrolling down the top 25 web pages"""
+  """Measures rendering statistics while scrolling down the top 25 web pages.
+
+  http://www.chromium.org/developers/design-documents/rendering-benchmarks"""
   test = smoothness.Smoothness
   page_set = 'page_sets/top_25.json'
   options = {'report_all_results': False}

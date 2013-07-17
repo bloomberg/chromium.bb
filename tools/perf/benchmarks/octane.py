@@ -4,19 +4,13 @@
 
 import os
 
+from telemetry import test
 from telemetry.core import util
 from telemetry.page import page_measurement
 from telemetry.page import page_set
 
-class Octane(page_measurement.PageMeasurement):
-  def CreatePageSet(self, _, options):
-    return page_set.PageSet.FromDict({
-        'pages': [
-          { 'url': 'file:///../../../chrome/test/data/perf/third_party/octane/'
-                   'index.html?auto=1' }
-          ]
-        }, os.path.abspath(__file__))
 
+class OctaneMeasurement(page_measurement.PageMeasurement):
   def MeasurePage(self, _, tab, results):
     js_is_done = """
 completed && !document.getElementById("progress-bar-container")"""
@@ -45,3 +39,17 @@ JSON.stringify(results);
       if key == 'score':
         data_type = 'default'
       results.Add(key, 'score (bigger is better)', value, data_type=data_type)
+
+
+class Octane(test.Test):
+  """Google's Octane JavaScript benchmark."""
+  test = OctaneMeasurement
+
+  def CreatePageSet(self, options):
+    octane_dir = os.path.join(util.GetChromiumSrcDir(), 'chrome', 'test',
+                              'data', 'perf', 'third_party', 'octane')
+    return page_set.PageSet.FromDict({
+        'pages': [
+          { 'url': 'file:///index.html?auto=1' }
+          ]
+        }, octane_dir)

@@ -11,6 +11,7 @@ from telemetry.core import util
 from telemetry.page import page_measurement
 from telemetry.page import page_set
 
+
 class BlinkPerf(page_measurement.PageMeasurement):
   def __init__(self):
     super(BlinkPerf, self).__init__('')

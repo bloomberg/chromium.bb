@@ -83,9 +83,9 @@ def DivideIfPossibleOrZero(numerator, denominator):
     return 0
   return numerator / denominator
 
-class RasterizeAndPaintMeasurement(page_measurement.PageMeasurement):
+class RasterizeAndRecord(page_measurement.PageMeasurement):
   def __init__(self):
-    super(RasterizeAndPaintMeasurement, self).__init__('', True)
+    super(RasterizeAndRecord, self).__init__('', True)
     self._metrics = None
 
   def AddCommandLineOptions(self, parser):

@@ -12,11 +12,11 @@ from perf_tools import  media_metrics
 from telemetry.page import page_measurement
 
 
-class MediaMeasurement(page_measurement.PageMeasurement):
+class Media(page_measurement.PageMeasurement):
   """Provide general video and audio metrics."""
 
   def __init__(self):
-    super(MediaMeasurement, self).__init__('media_metrics')
+    super(Media, self).__init__('media_metrics')
     self.metrics = None
 
   def results_are_the_same_on_every_page(self):

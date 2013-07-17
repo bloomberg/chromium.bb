@@ -6,22 +6,17 @@
 
 import os
 
+from telemetry import test
 from telemetry.core import util
 from telemetry.page import page_measurement
 from telemetry.page import page_set
 
+
 def _Mean(l):
   return float(sum(l)) / len(l) if len(l) > 0 else 0.0
 
-class Kraken(page_measurement.PageMeasurement):
-  def CreatePageSet(self, _, options):
-    return page_set.PageSet.FromDict({
-        'archive_data_file': '../data/kraken.json',
-        'pages': [
-          { 'url': 'http://krakenbenchmark.mozilla.org/kraken-1.1/driver.html' }
-          ]
-        }, os.path.abspath(__file__))
 
+class KrakenMeasurement(page_measurement.PageMeasurement):
   def MeasurePage(self, _, tab, results):
     js_is_done = """
 document.title.indexOf("Results") != -1 && document.readyState == "complete"
@@ -42,3 +37,16 @@ decodeURIComponent(formElement.value.split("?")[1]);
       results.Add(key, 'ms', result_dict[key], data_type='unimportant')
       total += _Mean(result_dict[key])
     results.Add('Total', 'ms', total)
+
+
+class Kraken(test.Test):
+  """Mozilla's Kraken JavaScript benchmark."""
+  test = KrakenMeasurement
+
+  def CreatePageSet(self, options):
+    return page_set.PageSet.FromDict({
+        'archive_data_file': '../data/kraken.json',
+        'pages': [
+          { 'url': 'http://krakenbenchmark.mozilla.org/kraken-1.1/driver.html' }
+          ]
+        }, os.path.abspath(__file__))

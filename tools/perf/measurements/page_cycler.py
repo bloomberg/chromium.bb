@@ -23,10 +23,12 @@ from perf_tools import memory_metrics
 from telemetry.core import util
 from telemetry.page import page_measurement
 
+
 MEMORY_HISTOGRAMS = [
     {'name': 'V8.MemoryExternalFragmentationTotal', 'units': 'percent'},
     {'name': 'V8.MemoryHeapSampleTotalCommitted', 'units': 'kb'},
     {'name': 'V8.MemoryHeapSampleTotalUsed', 'units': 'kb'}]
+
 
 class PageCycler(page_measurement.PageMeasurement):
   def __init__(self, *args, **kwargs):
