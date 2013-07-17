@@ -31,15 +31,6 @@
 #include "config.h"
 #include "core/loader/CachedMetadata.h"
 
-#include "core/dom/WebCoreMemoryInstrumentation.h"
-#include "wtf/MemoryInstrumentationVector.h"
-
 namespace WebCore {
-
-void CachedMetadata::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this);
-    info.addMember(m_serializedData, "serializedData");
-}
 
 } // namespace WebCore

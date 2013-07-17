@@ -47,7 +47,6 @@ template<typename CharacterType> struct HashAndCharactersTranslator;
 struct HashAndUTF8CharactersTranslator;
 struct LCharBufferTranslator;
 struct CharBufferFromLiteralDataTranslator;
-class MemoryObjectInfo;
 struct SubstringTranslator;
 struct UCharBufferTranslator;
 template<typename> class RetainPtr;

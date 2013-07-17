@@ -137,8 +137,6 @@ public:
 
     virtual ScriptDebugServer& scriptDebugServer() = 0;
 
-    virtual void reportMemoryUsage(MemoryObjectInfo*) const;
-
     void setBreakpoint(const String& scriptId, int lineNumber, int columnNumber, BreakpointSource, const String& condition = String());
     void removeBreakpoint(const String& scriptId, int lineNumber, int columnNumber, BreakpointSource);
 

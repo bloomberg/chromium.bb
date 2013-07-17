@@ -27,7 +27,6 @@
 #include "config.h"
 #include "core/loader/cache/CachedScript.h"
 
-#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/loader/TextResourceDecoder.h"
 #include "core/platform/MIMETypeRegistry.h"
 #include "core/platform/SharedBuffer.h"
@@ -87,14 +86,6 @@ const String& CachedScript::script()
 bool CachedScript::mimeTypeAllowedByNosniff() const
 {
     return parseContentTypeOptionsHeader(m_response.httpHeaderField("X-Content-Type-Options")) != ContentTypeOptionsNosniff || MIMETypeRegistry::isSupportedJavaScriptMIMEType(mimeType());
-}
-
-void CachedScript::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CachedResourceScript);
-    CachedResource::reportMemoryUsage(memoryObjectInfo);
-    info.addMember(m_script, "script");
-    info.addMember(m_decoder, "decoder");
 }
 
 } // namespace WebCore

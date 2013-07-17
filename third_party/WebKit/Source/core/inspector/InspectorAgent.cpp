@@ -45,6 +45,7 @@
 #include "core/page/Page.h"
 #include "core/platform/JSONValues.h"
 #include "weborigin/SecurityOrigin.h"
+#include "wtf/text/StringBuilder.h"
 
 using namespace std;
 

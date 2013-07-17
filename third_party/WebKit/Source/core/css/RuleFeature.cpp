@@ -30,9 +30,6 @@
 #include "core/css/RuleFeature.h"
 
 #include "core/css/CSSSelector.h"
-#include "core/dom/WebCoreMemoryInstrumentation.h"
-#include "wtf/MemoryInstrumentationHashSet.h"
-#include "wtf/MemoryInstrumentationVector.h"
 
 namespace WebCore {
 
@@ -83,16 +80,6 @@ void RuleFeatureSet::clear()
     uncommonAttributeRules.clear();
     usesFirstLineRules = false;
     usesBeforeAfterRules = false;
-}
-
-void RuleFeatureSet::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CSS);
-    info.addMember(idsInRules, "idsInRules");
-    info.addMember(classesInRules, "classesInRules");
-    info.addMember(attrsInRules, "attrsInRules");
-    info.addMember(siblingRules, "siblingRules");
-    info.addMember(uncommonAttributeRules, "uncommonAttributeRules");
 }
 
 } // namespace WebCore

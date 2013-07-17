@@ -46,8 +46,6 @@ public:
     bool loadRequested() const { return m_loadRequested; }
     bool equals(const CSSSVGDocumentValue&) const;
 
-    void reportDescendantMemoryUsage(MemoryObjectInfo*) const;
-
 private:
     CSSSVGDocumentValue(const String& url);
 

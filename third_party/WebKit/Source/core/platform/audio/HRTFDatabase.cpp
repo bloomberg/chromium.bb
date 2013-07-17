@@ -32,9 +32,7 @@
 
 #include "core/platform/audio/HRTFDatabase.h"
 
-#include "core/platform/PlatformMemoryInstrumentation.h"
 #include "core/platform/audio/HRTFElevation.h"
-#include <wtf/MemoryInstrumentationVector.h>
 
 using namespace std;
 
@@ -119,12 +117,6 @@ unsigned HRTFDatabase::indexFromElevationAngle(double elevationAngle)
 
     unsigned elevationIndex = static_cast<int>(InterpolationFactor * (elevationAngle - MinElevation) / RawElevationAngleSpacing);    
     return elevationIndex;
-}
-
-void HRTFDatabase::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, PlatformMemoryTypes::AudioSharedData);
-    info.addMember(m_elevations, "elevations");
 }
 
 } // namespace WebCore

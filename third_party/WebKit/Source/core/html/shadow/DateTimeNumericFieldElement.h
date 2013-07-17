@@ -29,6 +29,9 @@
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 #include "core/html/shadow/DateTimeFieldElement.h"
 
+#include "wtf/text/StringBuilder.h"
+#include "wtf/text/WTFString.h"
+
 namespace WebCore {
 
 // DateTimeNumericFieldElement represents numeric field of date time format,

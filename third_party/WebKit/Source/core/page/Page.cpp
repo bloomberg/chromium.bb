@@ -26,7 +26,6 @@
 #include "core/dom/Event.h"
 #include "core/dom/EventNames.h"
 #include "core/dom/VisitedLinkState.h"
-#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/editing/Editor.h"
 #include "core/history/BackForwardController.h"
 #include "core/history/HistoryItem.h"
@@ -55,7 +54,6 @@
 #include "core/rendering/RenderView.h"
 #include "core/storage/StorageNamespace.h"
 #include "wtf/HashMap.h"
-#include "wtf/MemoryInstrumentationHashSet.h"
 #include "wtf/RefCountedLeakCounter.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/Base64.h"
@@ -766,38 +764,6 @@ void Page::addRelevantUnpaintedObject(RenderObject* object, const LayoutRect& ob
 
     m_relevantUnpaintedRenderObjects.add(object);
     m_relevantUnpaintedRegion.unite(pixelSnappedIntRect(objectPaintRect));
-}
-
-void Page::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::Page);
-    info.addMember(m_chrome, "chrome");
-    info.addMember(m_dragCaretController, "dragCaretController");
-
-    info.addMember(m_dragController, "dragController");
-    info.addMember(m_focusController, "focusController");
-    info.addMember(m_contextMenuController, "contextMenuController");
-    info.addMember(m_inspectorController, "inspectorController");
-    info.addMember(m_pointerLockController, "pointerLockController");
-    info.addMember(m_scrollingCoordinator, "scrollingCoordinator");
-    info.addMember(m_settings, "settings");
-    info.addMember(m_progress, "progress");
-    info.addMember(m_backForwardController, "backForwardController");
-    info.addMember(m_mainFrame, "mainFrame");
-    info.addMember(m_pluginData, "pluginData");
-    info.addMember(m_theme, "theme");
-    info.addMember(m_UseCounter, "UseCounter");
-    info.addMember(m_pagination, "pagination");
-    info.addMember(m_userStyleSheet, "userStyleSheet");
-    info.addMember(m_group, "group");
-    info.addMember(m_sessionStorage, "sessionStorage");
-    info.addMember(m_relevantUnpaintedRenderObjects, "relevantUnpaintedRenderObjects");
-    info.addMember(m_topRelevantPaintedRegion, "relevantPaintedRegion");
-    info.addMember(m_bottomRelevantPaintedRegion, "relevantPaintedRegion");
-    info.addMember(m_relevantUnpaintedRegion, "relevantUnpaintedRegion");
-
-    info.ignoreMember(m_editorClient);
-    info.ignoreMember(m_validationMessageClient);
 }
 
 void Page::addMultisamplingChangedObserver(MultisamplingChangedObserver* observer)

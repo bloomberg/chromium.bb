@@ -142,8 +142,6 @@ public:
 
     Node* highlightedNode() const;
 
-    void reportMemoryUsage(MemoryObjectInfo*) const;
-
     void freePage();
 
     InspectorOverlayHost* overlayHost() const { return m_overlayHost.get(); }

@@ -29,8 +29,6 @@
 #include "weborigin/KURL.h"
 
 #include "wtf/HashMap.h"
-#include "wtf/MemoryInstrumentation.h"
-#include "wtf/MemoryInstrumentationString.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/StringHash.h"
@@ -837,14 +835,6 @@ void KURL::replaceComponents(const url_canon::Replacements<CHAR>& replacements)
 
     m_parsed = newParsed;
     m_string = AtomicString::fromUTF8(output.data(), output.length());
-}
-
-void KURL::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    WTF::MemoryClassInfo info(memoryObjectInfo, this);
-    info.addMember(m_string, "string");
-    info.addMember(m_innerURL, "innerURL");
-    info.addMember(m_parsed, "parsed");
 }
 
 bool KURL::isSafeToSendToAnotherThread() const

@@ -23,7 +23,6 @@
 
 #include "core/css/CSSValueList.h"
 #include "core/css/StylePropertyShorthand.h"
-#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/rendering/style/RenderStyleConstants.h"
 
 namespace WebCore {
@@ -674,13 +673,6 @@ bool CSSProperty::isInheritedProperty(CSSPropertyID propertyID)
     }
     ASSERT_NOT_REACHED();
     return false;
-}
-
-void CSSProperty::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CSS);
-    info.addMember(m_value, "value");
-    info.ignoreMember(m_metadata);
 }
 
 } // namespace WebCore

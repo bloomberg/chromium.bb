@@ -30,6 +30,7 @@
 #include "core/platform/ScrollTypes.h"
 #include "core/platform/graphics/IntRect.h"
 #include "core/rendering/RenderObject.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebKit {
 class WebLayer;

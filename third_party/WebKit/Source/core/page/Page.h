@@ -251,8 +251,6 @@ public:
 
     PageConsole* console() { return m_console.get(); }
 
-    void reportMemoryUsage(MemoryObjectInfo*) const;
-
     double timerAlignmentInterval() const;
 
     class MultisamplingChangedObserver {

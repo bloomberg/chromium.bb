@@ -51,7 +51,6 @@
 #include "core/css/PseudoStyleRequest.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentEventQueue.h"
-#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/FrameSelection.h"
 #include "core/html/HTMLFrameElement.h"
@@ -104,7 +103,6 @@
 #include "core/rendering/RenderView.h"
 #include "core/rendering/svg/ReferenceFilterBuilder.h"
 #include "core/rendering/svg/RenderSVGResourceClipper.h"
-#include <wtf/MemoryInstrumentationVector.h>
 #include <wtf/StdLibExtras.h>
 #include <wtf/text/CString.h>
 #include <wtf/UnusedParam.h>
@@ -6352,30 +6350,6 @@ void RenderLayer::filterNeedsRepaint()
     toElement(renderer()->node())->scheduleLayerUpdate();
     if (renderer()->view())
         renderer()->repaint();
-}
-
-void RenderLayer::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::Rendering);
-    ScrollableArea::reportMemoryUsage(memoryObjectInfo);
-    info.addWeakPointer(m_renderer);
-    info.addWeakPointer(m_parent);
-    info.addWeakPointer(m_previous);
-    info.addWeakPointer(m_next);
-    info.addWeakPointer(m_first);
-    info.addWeakPointer(m_last);
-    info.addMember(m_hBar, "hBar");
-    info.addMember(m_vBar, "vBar");
-    info.addMember(m_posZOrderList, "posZOrderList");
-    info.addMember(m_negZOrderList, "negZOrderList");
-    info.addMember(m_normalFlowList, "normalFlowList");
-    info.addMember(m_clipRectsCache, "clipRectsCache");
-    info.addMember(m_transform, "transform");
-    info.addWeakPointer(m_reflection);
-    info.addWeakPointer(m_scrollCorner);
-    info.addWeakPointer(m_resizer);
-    info.addMember(m_backing, "backing");
-    info.setCustomAllocation(true);
 }
 
 } // namespace WebCore

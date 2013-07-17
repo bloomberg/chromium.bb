@@ -76,8 +76,6 @@ public:
     void resetAtHostRules(const ShadowRoot*);
     void collectViewportRulesTo(StyleResolver*) const;
 
-    void reportMemoryUsage(MemoryObjectInfo*) const;
-
 private:
     ScopedStyleResolver() : m_scopingNode(0), m_parent(0) { }
     ScopedStyleResolver(const ContainerNode* scopingNode) : m_scopingNode(scopingNode), m_parent(0) { }
@@ -122,7 +120,6 @@ public:
     void setBuildInDocumentOrder(bool enabled) { m_buildInDocumentOrder = enabled; }
     bool buildInDocumentOrder() const { return m_buildInDocumentOrder; }
 
-    void reportMemoryUsage(MemoryObjectInfo*) const;
 private:
     void setupScopedStylesTree(ScopedStyleResolver* target);
 

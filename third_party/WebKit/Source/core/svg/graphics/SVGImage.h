@@ -58,8 +58,6 @@ public:
     virtual void stopAnimation() OVERRIDE;
     virtual void resetAnimation() OVERRIDE;
 
-    virtual void reportMemoryUsage(MemoryObjectInfo*) const OVERRIDE;
-
     virtual PassRefPtr<NativeImageSkia> nativeImageForCurrentFrame() OVERRIDE;
 
 private:

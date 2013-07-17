@@ -104,8 +104,6 @@ namespace WebCore {
 
         void dispatchVisibilityStateChangeEvent();
 
-        void reportMemoryUsage(MemoryObjectInfo*) const;
-
     // ======== All public functions below this point are candidates to move out of Frame into another class. ========
 
         bool inScope(TreeScope*) const;

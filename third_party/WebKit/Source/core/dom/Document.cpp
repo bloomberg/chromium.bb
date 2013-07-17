@@ -91,7 +91,6 @@
 #include "core/dom/TreeWalker.h"
 #include "core/dom/UserActionElementSet.h"
 #include "core/dom/VisitedLinkState.h"
-#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/Editor.h"
@@ -168,10 +167,6 @@
 #include "wtf/CurrentTime.h"
 #include "wtf/HashFunctions.h"
 #include "wtf/MainThread.h"
-#include "wtf/MemoryInstrumentationHashCountedSet.h"
-#include "wtf/MemoryInstrumentationHashMap.h"
-#include "wtf/MemoryInstrumentationHashSet.h"
-#include "wtf/MemoryInstrumentationVector.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/UnusedParam.h"
@@ -5010,86 +5005,6 @@ void Document::updateHoverActiveState(const HitTestRequest& request, Element* in
     }
 
     updateStyleIfNeeded();
-}
-
-void Document::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::DOM);
-    ContainerNode::reportMemoryUsage(memoryObjectInfo);
-    TreeScope::reportMemoryUsage(memoryObjectInfo);
-    ScriptExecutionContext::reportMemoryUsage(memoryObjectInfo);
-    info.addMember(m_styleResolver, "styleResolver");
-    info.addMember(m_url, "url");
-    info.addMember(m_baseURL, "baseURL");
-    info.addMember(m_baseURLOverride, "baseURLOverride");
-    info.addMember(m_baseElementURL, "baseElementURL");
-    info.addMember(m_cookieURL, "cookieURL");
-    info.addMember(m_firstPartyForCookies, "firstPartyForCookies");
-    info.addMember(m_documentURI, "documentURI");
-    info.addMember(m_baseTarget, "baseTarget");
-    info.addMember(m_docType, "docType");
-    info.addMember(m_implementation, "implementation");
-    info.addMember(m_elemSheet, "elemSheet");
-    info.addMember(m_frame, "frame");
-    info.addMember(m_cachedResourceLoader, "cachedResourceLoader");
-    info.addMember(m_styleSheetCollection, "styleSheetCollection");
-    info.addMember(m_styleSheetList, "styleSheetList");
-    info.addMember(m_formController, "formController");
-    info.addMember(m_nodeIterators, "nodeIterators");
-    info.addMember(m_ranges, "ranges");
-    info.addMember(m_title.string(), "title.string()");
-    info.addMember(m_rawTitle.string(), "rawTitle.string()");
-    info.addMember(m_xmlEncoding, "xmlEncoding");
-    info.addMember(m_xmlVersion, "xmlVersion");
-    info.addMember(m_contentLanguage, "contentLanguage");
-    info.addMember(m_annotatedRegions, "annotatedRegions");
-    info.addMember(m_cssCanvasElements, "cssCanvasElements");
-    info.addMember(m_iconURLs, "iconURLs");
-    info.addMember(m_eventQueue, "eventQueue");
-    info.addMember(m_pendingTasks, "pendingTasks");
-    info.addMember(m_prerenderer, "prerenderer");
-    info.addMember(m_listsInvalidatedAtDocument, "listsInvalidatedAtDocument");
-    info.addMember(m_styleResolverThrowawayTimer, "styleResolverThrowawayTimer");
-    info.addMember(m_parser, "parser");
-    info.addMember(m_contextFeatures, "contextFeatures");
-    info.addMember(m_focusedNode, "focusedNode");
-    info.addMember(m_hoverNode, "hoverNode");
-    info.addMember(m_documentElement, "documentElement");
-    info.addMember(m_visitedLinkState, "visitedLinkState");
-    info.addMember(m_styleRecalcTimer, "styleRecalcTimer");
-    info.addMember(m_titleElement, "titleElement");
-    info.ignoreMember(m_renderArena);
-    info.addMember(m_axObjectCache, "axObjectCache");
-    info.addMember(m_markers, "markers");
-    info.addMember(m_cssTarget, "cssTarget");
-    info.addMember(m_updateFocusAppearanceTimer, "updateFocusAppearanceTimer");
-    info.addMember(m_pendingStateObject, "pendingStateObject");
-    info.addMember(m_scriptRunner, "scriptRunner");
-    info.addMember(m_transformSource, "transformSource");
-    info.addMember(m_transformSourceDocument, "transformSourceDocument");
-    info.addMember(m_decoder, "decoder");
-    info.addMember(m_svgExtensions, "svgExtensions");
-    info.addMember(m_selectorQueryCache, "selectorQueryCache");
-    info.addMember(m_renderer, "renderer");
-    info.addMember(m_weakFactory, "weakFactory");
-    info.addMember(m_idAttributeName, "idAttributeName");
-    info.addMember(m_topLayerElements, "topLayerElements");
-    info.addMember(m_loadEventDelayTimer, "loadEventDelayTimer");
-    info.addMember(m_viewportArguments, "viewportArguments");
-    info.addMember(m_documentTiming, "documentTiming");
-    info.addMember(m_mediaQueryMatcher, "mediaQueryMatcher");
-    info.addMember(m_touchEventTargets, "touchEventTargets");
-    info.addMember(m_scriptedAnimationController, "scriptedAnimationController");
-    info.addMember(m_pendingTasksTimer, "pendingTasksTimer");
-    info.addMember(m_textAutosizer, "textAutosizer");
-    info.addMember(m_namedFlows, "namedFlows");
-    info.addMember(m_domSecurityPolicy, "domSecurityPolicy");
-    info.addMember(m_sharedObjectPoolClearTimer, "sharedObjectPoolClearTimer");
-    info.addMember(m_sharedObjectPool, "sharedObjectPool");
-    info.addMember(m_localeCache, "localeCache");
-    info.addMember(m_templateDocument, "templateDocument");
-    info.addMember(m_templateDocumentHost, "templateDocumentHost");
-    info.addMember(m_activeElement, "activeElement");
 }
 
 bool Document::haveStylesheetsLoaded() const

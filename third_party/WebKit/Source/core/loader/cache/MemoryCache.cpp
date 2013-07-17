@@ -26,7 +26,6 @@
 #include <stdio.h>
 #include "core/dom/CrossThreadTask.h"
 #include "core/dom/Document.h"
-#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/loader/cache/CachedResource.h"
 #include "core/loader/cache/CachedResourceHandle.h"
 #include "core/page/FrameView.h"
@@ -39,9 +38,6 @@
 #include "wtf/Assertions.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/MathExtras.h"
-#include "wtf/MemoryInstrumentationHashMap.h"
-#include "wtf/MemoryInstrumentationVector.h"
-#include "wtf/MemoryObjectInfo.h"
 #include "wtf/TemporaryChange.h"
 #include "wtf/text/CString.h"
 
@@ -540,17 +536,6 @@ MemoryCache::Statistics MemoryCache::getStatistics()
         }
     }
     return stats;
-}
-
-void MemoryCache::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::MemoryCacheStructures);
-    memoryObjectInfo->setClassName("MemoryCache");
-    info.addMember(m_resources, "resources");
-    info.addMember(m_allResources, "allResources");
-    info.addMember(m_liveDecodedResources, "liveDecodedResources");
-    for (CachedResourceMap::const_iterator i = m_resources.begin(); i != m_resources.end(); ++i)
-        info.addMember(i->value, "cachedResourceItem", WTF::RetainingPointer);
 }
 
 void MemoryCache::evictResources()

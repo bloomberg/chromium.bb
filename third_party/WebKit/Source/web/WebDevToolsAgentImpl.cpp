@@ -656,16 +656,6 @@ void WebDevToolsAgentImpl::paintPageOverlay(WebCanvas* canvas)
     }
 }
 
-WebVector<WebMemoryUsageInfo> WebDevToolsAgentImpl::processMemoryDistribution() const
-{
-    HashMap<String, size_t> memoryInfo = m_webViewImpl->page()->inspectorController()->processMemoryDistribution();
-    WebVector<WebMemoryUsageInfo> memoryInfoVector((size_t)memoryInfo.size());
-    size_t i = 0;
-    for (HashMap<String, size_t>::const_iterator it = memoryInfo.begin(); it != memoryInfo.end(); ++it)
-        memoryInfoVector[i++] = WebMemoryUsageInfo(it->key, it->value);
-    return memoryInfoVector;
-}
-
 void WebDevToolsAgentImpl::highlight()
 {
     m_webViewImpl->addPageOverlay(this, OverlayZOrders::highlight);

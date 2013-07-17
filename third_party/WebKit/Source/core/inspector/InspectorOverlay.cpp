@@ -35,7 +35,6 @@
 #include "bindings/v8/ScriptSourceCode.h"
 #include "core/dom/Element.h"
 #include "core/dom/Node.h"
-#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/inspector/InspectorClient.h"
 #include "core/inspector/InspectorOverlayHost.h"
 #include "core/loader/DocumentLoader.h"
@@ -657,20 +656,6 @@ void InspectorOverlay::onTimer(Timer<InspectorOverlay>*)
 {
     m_drawViewSize = false;
     update();
-}
-
-void InspectorOverlay::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::InspectorOverlay);
-    info.addMember(m_page, "page");
-    info.addWeakPointer(m_client);
-    info.addMember(m_pausedInDebuggerMessage, "pausedInDebuggerMessage");
-    info.addMember(m_highlightNode, "highlightNode");
-    info.addMember(m_nodeHighlightConfig, "nodeHighlightConfig");
-    info.addMember(m_highlightQuad, "highlightQuad");
-    info.addMember(m_overlayPage, "overlayPage");
-    info.addMember(m_quadHighlightConfig, "quadHighlightConfig");
-    info.addMember(m_size, "size");
 }
 
 void InspectorOverlay::freePage()

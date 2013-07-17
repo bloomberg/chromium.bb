@@ -21,7 +21,6 @@
 #include "config.h"
 #include "core/platform/image-decoders/ImageDecoder.h"
 
-#include "core/platform/PlatformMemoryInstrumentation.h"
 #include "core/platform/SharedBuffer.h"
 #include "core/platform/image-decoders/bmp/BMPImageDecoder.h"
 #include "core/platform/image-decoders/gif/GIFImageDecoder.h"
@@ -29,8 +28,7 @@
 #include "core/platform/image-decoders/jpeg/JPEGImageDecoder.h"
 #include "core/platform/image-decoders/png/PNGImageDecoder.h"
 #include "core/platform/image-decoders/webp/WEBPImageDecoder.h"
-
-#include <wtf/MemoryInstrumentationVector.h>
+#include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
 
@@ -131,13 +129,6 @@ unsigned ImageDecoder::frameBytesAtIndex(size_t index) const
         return 0;
     // FIXME: Use the dimension of the requested frame.
     return m_size.area() * sizeof(ImageFrame::PixelData);
-}
-
-void ImageDecoder::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, PlatformMemoryTypes::Image);
-    info.addMember(m_data, "data");
-    info.addMember(m_frameBufferCache, "frameBufferCache");
 }
 
 size_t ImageDecoder::clearCacheExceptFrame(size_t clearExceptFrame)

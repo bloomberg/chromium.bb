@@ -27,7 +27,6 @@
 
 #include "HTMLNames.h"
 #include "core/dom/Document.h"
-#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/loader/cache/CachedImage.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/PaintInfo.h"
@@ -279,13 +278,6 @@ RenderTableRow* RenderTableRow::createAnonymousWithParentRenderer(const RenderOb
     RefPtr<RenderStyle> newStyle = RenderStyle::createAnonymousStyleWithDisplay(parent->style(), TABLE_ROW);
     newRow->setStyle(newStyle.release());
     return newRow;
-}
-
-void RenderTableRow::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, PlatformMemoryTypes::Rendering);
-    RenderBox::reportMemoryUsage(memoryObjectInfo);
-    info.addMember(m_children, "children");
 }
 
 } // namespace WebCore

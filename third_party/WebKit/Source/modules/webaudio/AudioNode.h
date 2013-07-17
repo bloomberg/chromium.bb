@@ -168,8 +168,6 @@ public:
     void enableOutputsIfNecessary();
     void disableOutputsIfNecessary();
 
-    void reportMemoryUsage(MemoryObjectInfo*) const;
-
     unsigned long channelCount();
     virtual void setChannelCount(unsigned long, ExceptionCode&);
 

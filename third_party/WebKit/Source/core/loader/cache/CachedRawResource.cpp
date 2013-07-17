@@ -26,7 +26,6 @@
 #include "config.h"
 #include "core/loader/cache/CachedRawResource.h"
 
-#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/loader/ResourceLoader.h"
 #include "core/loader/cache/CachedResourceClient.h"
 #include "core/loader/cache/CachedResourceClientWalker.h"
@@ -193,12 +192,5 @@ void CachedRawResource::clear()
     m_data.clear();
     setEncodedSize(0);
 }
-
-void CachedRawResource::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CachedResourceRaw);
-    CachedResource::reportMemoryUsage(memoryObjectInfo);
-}
-
 
 } // namespace WebCore

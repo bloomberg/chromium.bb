@@ -123,8 +123,6 @@ public:
     // decoded then return 0.
     unsigned frameBytesAtIndex(size_t) const;
 
-    void reportMemoryUsage(MemoryObjectInfo*) const;
-
 private:
     OwnPtr<DeferredImageDecoder> m_decoder;
 

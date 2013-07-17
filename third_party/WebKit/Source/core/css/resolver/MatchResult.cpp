@@ -31,9 +31,6 @@
 
 #include "core/css/StylePropertySet.h"
 #include "core/css/StyleRule.h"
-#include "core/dom/WebCoreMemoryInstrumentation.h"
-#include "wtf/MemoryInstrumentationHashMap.h"
-#include "wtf/MemoryInstrumentationVector.h"
 
 namespace WebCore {
 
@@ -44,12 +41,6 @@ MatchedProperties::MatchedProperties()
 
 MatchedProperties::~MatchedProperties()
 {
-}
-
-void MatchedProperties::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CSS);
-    info.addMember(properties, "properties");
 }
 
 void MatchResult::addMatchedProperties(const StylePropertySet* properties, StyleRule* rule, unsigned linkMatchType, PropertyWhitelistType propertyWhitelistType)

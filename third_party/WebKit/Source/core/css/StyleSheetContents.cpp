@@ -28,12 +28,9 @@
 #include "core/css/StyleRule.h"
 #include "core/css/StyleRuleImport.h"
 #include "core/dom/Node.h"
-#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/loader/cache/CachedCSSStyleSheet.h"
 #include "weborigin/SecurityOrigin.h"
 #include "wtf/Deque.h"
-#include "wtf/MemoryInstrumentationHashMap.h"
-#include "wtf/MemoryInstrumentationVector.h"
 
 namespace WebCore {
 
@@ -507,19 +504,6 @@ void StyleSheetContents::shrinkToFit()
 {
     m_importRules.shrinkToFit();
     m_childRules.shrinkToFit();
-}
-
-void StyleSheetContents::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CSS);
-    info.addMember(m_ownerRule, "ownerRule");
-    info.addMember(m_originalURL, "originalURL");
-    info.addMember(m_encodingFromCharsetRule, "encodingFromCharsetRule");
-    info.addMember(m_importRules, "importRules");
-    info.addMember(m_childRules, "childRules");
-    info.addMember(m_namespaces, "namespaces");
-    info.addMember(m_parserContext, "parserContext");
-    info.addMember(m_clients, "clients");
 }
 
 }

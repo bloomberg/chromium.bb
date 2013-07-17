@@ -48,8 +48,6 @@ public:
 
     bool equals(const CSSArrayFunctionValue&) const;
 
-    void reportDescendantMemoryUsage(MemoryObjectInfo*) const;
-
 private:
     CSSArrayFunctionValue();
     CSSArrayFunctionValue(const CSSArrayFunctionValue& cloneFrom);

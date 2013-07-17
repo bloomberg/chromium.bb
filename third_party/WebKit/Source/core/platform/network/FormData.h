@@ -44,8 +44,6 @@ public:
     explicit FormDataElement(const KURL& blobURL) : m_type(encodedBlob), m_url(blobURL) { }
     FormDataElement(const KURL& url, long long start, long long length, double expectedFileModificationTime) : m_type(encodedURL), m_url(url), m_fileStart(start), m_fileLength(length), m_expectedFileModificationTime(expectedFileModificationTime) { }
 
-    void reportMemoryUsage(MemoryObjectInfo*) const;
-
     enum Type {
         data,
         encodedFile
@@ -126,8 +124,6 @@ public:
 
     bool containsPasswordData() const { return m_containsPasswordData; }
     void setContainsPasswordData(bool containsPasswordData) { m_containsPasswordData = containsPasswordData; }
-
-    void reportMemoryUsage(MemoryObjectInfo*) const;
 
     static EncodingType parseEncodingType(const String& type)
     {

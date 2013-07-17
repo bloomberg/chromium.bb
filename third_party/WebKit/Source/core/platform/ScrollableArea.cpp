@@ -32,7 +32,6 @@
 #include "config.h"
 #include "core/platform/ScrollableArea.h"
 
-#include "core/platform/PlatformMemoryInstrumentation.h"
 #include "core/platform/ScrollAnimator.h"
 #include "core/platform/ScrollbarTheme.h"
 #include "core/platform/graphics/FloatPoint.h"
@@ -402,12 +401,6 @@ IntRect ScrollableArea::visibleContentRect(VisibleContentRectIncludesScrollbars 
 IntPoint ScrollableArea::clampScrollPosition(const IntPoint& scrollPosition) const
 {
     return scrollPosition.shrunkTo(maximumScrollPosition()).expandedTo(minimumScrollPosition());
-}
-
-void ScrollableArea::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this);
-    info.addMember(m_scrollAnimator, "scrollAnimator");
 }
 
 } // namespace WebCore

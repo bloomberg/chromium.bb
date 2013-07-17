@@ -23,8 +23,8 @@
 #ifndef CSSRule_h
 #define CSSRule_h
 
-#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "wtf/RefCounted.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
@@ -60,7 +60,6 @@ public:
     virtual Type type() const = 0;
     virtual String cssText() const = 0;
     virtual void reattach(StyleRuleBase*) = 0;
-    virtual void reportMemoryUsage(MemoryObjectInfo*) const;
 
     void setParentStyleSheet(CSSStyleSheet* styleSheet)
     {

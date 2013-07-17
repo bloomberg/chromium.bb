@@ -42,7 +42,6 @@
 #include "core/rendering/RenderLazyBlock.h"
 #include "core/rendering/RenderSelectionInfo.h"
 #include "core/rendering/RenderWidget.h"
-#include "wtf/MemoryInstrumentationHashSet.h"
 
 namespace WebCore {
 
@@ -1093,22 +1092,6 @@ bool RenderView::backgroundIsKnownToBeOpaqueInRect(const LayoutRect&) const
         return false;
 
     return m_frameView->hasOpaqueBackground();
-}
-
-void RenderView::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, PlatformMemoryTypes::Rendering);
-    RenderBlock::reportMemoryUsage(memoryObjectInfo);
-    info.addWeakPointer(m_frameView);
-    info.addWeakPointer(m_selectionStart);
-    info.addWeakPointer(m_selectionEnd);
-    info.addMember(m_widgets, "widgets");
-    info.addMember(m_layoutState, "layoutState");
-    info.addMember(m_compositor, "compositor");
-    info.addMember(m_customFilterGlobalContext, "customFilterGlobalContext");
-    info.addMember(m_flowThreadController, "flowThreadController");
-    info.addMember(m_intervalArena, "intervalArena");
-    info.addWeakPointer(m_renderQuoteHead);
 }
 
 FragmentationDisabler::FragmentationDisabler(RenderObject* root)

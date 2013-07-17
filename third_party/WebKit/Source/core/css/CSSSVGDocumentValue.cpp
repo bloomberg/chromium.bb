@@ -29,7 +29,6 @@
 #include "CachedResourceInitiatorTypeNames.h"
 #include "core/css/CSSParser.h"
 #include "core/dom/Document.h"
-#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/loader/cache/CachedDocument.h"
 #include "core/loader/cache/CachedResourceLoader.h"
 #include "core/loader/cache/CachedResourceRequest.h"
@@ -69,13 +68,6 @@ String CSSSVGDocumentValue::customCssText() const
 bool CSSSVGDocumentValue::equals(const CSSSVGDocumentValue& other) const
 {
     return m_url == other.m_url;
-}
-
-void CSSSVGDocumentValue::reportDescendantMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CSS);
-    info.addMember(m_url, "url");
-    // FIXME: add m_document when cached resources are instrumented.
 }
 
 } // namespace WebCore

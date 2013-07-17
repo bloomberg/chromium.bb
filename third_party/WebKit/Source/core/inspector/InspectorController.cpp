@@ -34,7 +34,6 @@
 #include "InspectorBackendDispatcher.h"
 #include "InspectorFrontend.h"
 #include "bindings/v8/DOMWrapperWorld.h"
-#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InjectedScriptHost.h"
 #include "core/inspector/InjectedScriptManager.h"
@@ -70,7 +69,6 @@
 #include "core/inspector/PageRuntimeAgent.h"
 #include "core/page/Page.h"
 #include "core/platform/PlatformMouseEvent.h"
-#include "wtf/MemoryInstrumentationVector.h"
 
 namespace WebCore {
 
@@ -364,22 +362,6 @@ void InspectorController::setResourcesDataSizeLimitsFromInternals(int maximumRes
         resourceAgent->setResourcesDataSizeLimitsFromInternals(maximumResourcesContentSize, maximumSingleResourceContentSize);
 }
 
-void InspectorController::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::InspectorController);
-    info.addMember(m_instrumentingAgents, "instrumentingAgents");
-    info.addMember(m_injectedScriptManager, "injectedScriptManager");
-    info.addMember(m_state, "state");
-    info.addMember(m_overlay, "overlay");
-
-    info.addMember(m_inspectorBackendDispatcher, "inspectorBackendDispatcher");
-    info.addMember(m_inspectorFrontendClient, "inspectorFrontendClient");
-    info.addMember(m_inspectorFrontend, "inspectorFrontend");
-    info.addMember(m_page, "page");
-    info.addWeakPointer(m_inspectorClient);
-    info.addMember(m_agents, "agents");
-}
-
 void InspectorController::willProcessTask()
 {
     if (InspectorTimelineAgent* timelineAgent = m_instrumentingAgents->inspectorTimelineAgent())
@@ -422,13 +404,6 @@ void InspectorController::didComposite()
 {
     if (InspectorTimelineAgent* timelineAgent = m_instrumentingAgents->inspectorTimelineAgent())
         timelineAgent->didComposite();
-}
-
-HashMap<String, size_t> InspectorController::processMemoryDistribution() const
-{
-    HashMap<String, size_t> memoryInfo;
-    m_memoryAgent->getProcessMemoryDistributionMap(&memoryInfo);
-    return memoryInfo;
 }
 
 } // namespace WebCore

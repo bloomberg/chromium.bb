@@ -43,11 +43,8 @@
 #include "core/css/StyleRuleImport.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/css/resolver/StyleResolver.h"
-#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/html/track/TextTrackCue.h"
 #include "weborigin/SecurityOrigin.h"
-#include "wtf/MemoryInstrumentationHashMap.h"
-#include "wtf/MemoryInstrumentationVector.h"
 
 namespace WebCore {
 
@@ -221,36 +218,6 @@ RuleData::RuleData(StyleRule* rule, unsigned selectorIndex, unsigned position, A
 {
     ASSERT(m_position == position);
     ASSERT(m_selectorIndex == selectorIndex);
-}
-
-void RuleData::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CSS);
-    info.addMember(m_rule, "rule");
-}
-
-void RuleSet::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CSS);
-    info.addMember(m_idRules, "idRules");
-    info.addMember(m_classRules, "classRules");
-    info.addMember(m_tagRules, "tagRules");
-    info.addMember(m_shadowPseudoElementRules, "shadowPseudoElementRules");
-    info.addMember(m_linkPseudoClassRules, "linkPseudoClassRules");
-    info.addMember(m_cuePseudoRules, "cuePseudoRules");
-    info.addMember(m_focusPseudoClassRules, "focusPseudoClassRules");
-    info.addMember(m_universalRules, "universalRules");
-    info.addMember(m_pageRules, "pageRules");
-    info.addMember(m_viewportRules, "viewportRules");
-    info.addMember(m_regionSelectorsAndRuleSets, "regionSelectorsAndRuleSets");
-    info.addMember(m_features, "features");
-}
-
-void RuleSet::RuleSetSelectorPair::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CSS);
-    info.addMember(ruleSet, "ruleSet");
-    info.addMember(selector, "selector");
 }
 
 static void collectFeaturesFromRuleData(RuleFeatureSet& features, const RuleData& ruleData)

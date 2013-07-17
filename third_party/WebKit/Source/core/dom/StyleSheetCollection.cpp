@@ -38,7 +38,6 @@
 #include "core/dom/DocumentStyleSheetCollection.h"
 #include "core/dom/Element.h"
 #include "core/dom/ProcessingInstruction.h"
-#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/html/HTMLLinkElement.h"
 #include "core/html/HTMLStyleElement.h"
@@ -47,8 +46,6 @@
 #include "core/page/Settings.h"
 #include "core/page/UserContentURLPattern.h"
 #include "core/svg/SVGStyleElement.h"
-#include "wtf/MemoryInstrumentationListHashSet.h"
-#include "wtf/MemoryInstrumentationVector.h"
 
 namespace WebCore {
 
@@ -279,15 +276,6 @@ bool StyleSheetCollection::updateActiveStyleSheets(DocumentStyleSheetCollection*
     m_styleSheetsForStyleSheetList.swap(styleSheets);
 
     return requiresFullStyleRecalc;
-}
-
-void StyleSheetCollection::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::DOM);
-    info.addMember(m_activeAuthorStyleSheets, "activeAuthorStyleSheets");
-    info.addMember(m_styleSheetsForStyleSheetList, "styleSheetsForStyleSheetList");
-    info.addMember(m_styleSheetCandidateNodes, "styleSheetCandidateNodes");
-    info.addMember(m_treeScope, "treeScope");
 }
 
 }

@@ -29,7 +29,6 @@
 #include "core/dom/MutationObserverInterestGroup.h"
 #include "core/dom/MutationRecord.h"
 #include "core/dom/Text.h"
-#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/editing/FrameSelection.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/platform/text/TextBreakIterator.h"
@@ -105,13 +104,6 @@ unsigned CharacterData::parserAppendData(const String& string, unsigned offset, 
         parentNode()->childrenChanged();
 
     return characterLengthLimit;
-}
-
-void CharacterData::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::DOM);
-    Node::reportMemoryUsage(memoryObjectInfo);
-    info.addMember(m_data, "data");
 }
 
 void CharacterData::appendData(const String& data)

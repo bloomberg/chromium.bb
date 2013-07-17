@@ -24,7 +24,6 @@
 #include "core/css/CSSMediaRule.h"
 
 #include "core/css/StyleRule.h"
-#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
@@ -73,13 +72,6 @@ void CSSMediaRule::reattach(StyleRuleBase* rule)
     CSSGroupingRule::reattach(rule);
     if (m_mediaCSSOMWrapper && mediaQueries())
         m_mediaCSSOMWrapper->reattach(mediaQueries());
-}
-
-void CSSMediaRule::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CSS);
-    CSSGroupingRule::reportMemoryUsage(memoryObjectInfo);
-    info.addMember(m_mediaCSSOMWrapper, "mediaCSSOMWrapper");
 }
 
 } // namespace WebCore

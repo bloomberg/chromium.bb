@@ -121,8 +121,6 @@ public:
     // WebPageOverlay
     virtual void paintPageOverlay(WebCanvas*);
 
-    virtual WebVector<WebMemoryUsageInfo> processMemoryDistribution() const;
-
 private:
     // WebThread::TaskObserver
     virtual void willProcessTask();

@@ -32,7 +32,6 @@
 #include "core/dom/ErrorEvent.h"
 #include "core/dom/EventTarget.h"
 #include "core/dom/MessagePort.h"
-#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/html/PublicURLManager.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/ScriptCallStack.h"
@@ -42,17 +41,7 @@
 #include "core/workers/WorkerThread.h"
 #include "modules/webdatabase/DatabaseContext.h"
 #include "wtf/MainThread.h"
-#include "wtf/MemoryInstrumentationHashMap.h"
-#include "wtf/MemoryInstrumentationHashSet.h"
-#include "wtf/MemoryInstrumentationVector.h"
 
-namespace WTF {
-
-template<> struct SequenceMemoryInstrumentationTraits<WebCore::ContextLifecycleObserver*> {
-    template <typename I> static void reportMemoryUsage(I, I, MemoryClassInfo&) { }
-};
-
-}
 namespace WebCore {
 
 class ProcessMessagesSoonTask : public ScriptExecutionContext::Task {
@@ -332,17 +321,6 @@ ContextLifecycleNotifier* ScriptExecutionContext::lifecycleNotifier()
 PassOwnPtr<ContextLifecycleNotifier> ScriptExecutionContext::createLifecycleNotifier()
 {
     return ContextLifecycleNotifier::create(this);
-}
-
-void ScriptExecutionContext::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::DOM);
-    SecurityContext::reportMemoryUsage(memoryObjectInfo);
-    info.addMember(m_messagePorts, "messagePorts");
-    info.addMember(m_lifecycleNotifier, "lifecycleObserver");
-    info.addMember(m_timeouts, "timeouts");
-    info.addMember(m_pendingExceptions, "pendingExceptions");
-    info.addMember(m_publicURLManager, "publicURLManager");
 }
 
 ScriptExecutionContext::Task::~Task()

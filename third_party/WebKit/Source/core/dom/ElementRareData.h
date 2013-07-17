@@ -95,9 +95,6 @@ public:
     unsigned childIndex() const { return m_childIndex; }
     void setChildIndex(unsigned index) { m_childIndex = index; }
 
-    // Manually called by Node::reportMemoryUsage.
-    void reportMemoryUsage(MemoryObjectInfo*) const;
-
     void clearShadow() { m_shadow = nullptr; }
     ElementShadow* shadow() const { return m_shadow.get(); }
     ElementShadow* ensureShadow()

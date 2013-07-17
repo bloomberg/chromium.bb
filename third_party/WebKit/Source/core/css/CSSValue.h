@@ -109,8 +109,6 @@ public:
 
     bool hasFailedOrCanceledSubresources() const;
 
-    void reportMemoryUsage(MemoryObjectInfo*) const;
-
     bool equals(const CSSValue&) const;
 
 protected:

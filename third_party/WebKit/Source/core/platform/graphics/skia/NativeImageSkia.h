@@ -102,8 +102,6 @@ public:
     // Rectangle of the subset in the scaled image.
     SkBitmap resizedBitmap(const SkISize& scaledImageSize, const SkIRect& scaledImageSubset) const;
 
-    void reportMemoryUsage(MemoryObjectInfo*) const;
-
 private:
     NativeImageSkia();
 

@@ -26,6 +26,7 @@
 #include "config.h"
 #include "core/storage/Storage.h"
 
+#include "wtf/PassOwnPtr.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/text/WTFString.h>
 

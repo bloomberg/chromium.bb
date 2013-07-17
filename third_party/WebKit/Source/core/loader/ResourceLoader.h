@@ -91,8 +91,6 @@ public:
 
     const ResourceRequest& request() const { return m_request; }
 
-    void reportMemoryUsage(MemoryObjectInfo*) const;
-
 private:
     ResourceLoader(DocumentLoader*, CachedResource*, ResourceLoaderOptions);
 

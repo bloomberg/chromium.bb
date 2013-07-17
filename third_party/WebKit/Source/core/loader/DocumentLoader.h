@@ -159,7 +159,6 @@ namespace WebCore {
 
         ApplicationCacheHost* applicationCacheHost() const { return m_applicationCacheHost.get(); }
 
-        virtual void reportMemoryUsage(MemoryObjectInfo*) const;
         void checkLoadComplete();
 
         bool isRedirect() const { return m_redirectChain.size() > 1; }

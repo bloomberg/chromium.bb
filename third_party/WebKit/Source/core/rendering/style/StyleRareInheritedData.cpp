@@ -22,14 +22,12 @@
 #include "config.h"
 #include "core/rendering/style/StyleRareInheritedData.h"
 
-#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/rendering/style/CursorList.h"
 #include "core/rendering/style/QuotesData.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/style/RenderStyleConstants.h"
 #include "core/rendering/style/ShadowData.h"
 #include "core/rendering/style/StyleImage.h"
-#include <wtf/MemoryObjectInfo.h>
 
 namespace WebCore {
 
@@ -233,22 +231,6 @@ bool StyleRareInheritedData::shadowDataEquivalent(const StyleRareInheritedData& 
     if (textShadow && o.textShadow && (*textShadow != *o.textShadow))
         return false;
     return true;
-}
-
-void StyleRareInheritedData::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CSS);
-    info.addMember(listStyleImage, "listStyleImage");
-    info.addMember(indent, "indent");
-    info.addMember(textShadow, "textShadow");
-    info.addMember(highlight, "highlight");
-    info.addMember(cursorData, "cursorData");
-    info.addMember(hyphenationString, "hyphenationString");
-    info.addMember(locale, "locale");
-    info.addMember(textEmphasisCustomMark, "textEmphasisCustomMark");
-    info.addMember(quotes, "quotes");
-    info.addMember(m_lineGrid, "lineGrid");
-    info.addMember(m_variables, "variables");
 }
 
 } // namespace WebCore

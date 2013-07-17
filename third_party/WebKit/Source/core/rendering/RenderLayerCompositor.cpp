@@ -30,7 +30,6 @@
 #include "CSSPropertyNames.h"
 #include "HTMLNames.h"
 #include "core/dom/NodeList.h"
-#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
@@ -61,8 +60,6 @@
 #include "core/rendering/RenderReplica.h"
 #include "core/rendering/RenderVideo.h"
 #include "core/rendering/RenderView.h"
-#include "wtf/MemoryInstrumentationHashMap.h"
-#include "wtf/MemoryInstrumentationHashSet.h"
 #include "wtf/TemporaryChange.h"
 
 #if !LOG_DISABLED
@@ -2722,26 +2719,6 @@ Page* RenderLayerCompositor::page() const
         return frame->page();
     
     return 0;
-}
-
-void RenderLayerCompositor::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, PlatformMemoryTypes::Rendering);
-    info.addWeakPointer(m_renderView);
-    info.addMember(m_rootContentLayer, "rootContentLayer");
-    info.addMember(m_containerLayer, "containerLayer");
-    info.addMember(m_scrollLayer, "scrollLayer");
-    info.addMember(m_viewportConstrainedLayers, "viewportConstrainedLayers");
-    info.addMember(m_overflowControlsHostLayer, "overflowControlsHostLayer");
-    info.addMember(m_layerForHorizontalScrollbar, "layerForHorizontalScrollbar");
-    info.addMember(m_layerForVerticalScrollbar, "layerForVerticalScrollbar");
-    info.addMember(m_layerForScrollCorner, "layerForScrollCorner");
-#if ENABLE(RUBBER_BANDING)
-    info.addMember(m_layerForOverhangAreas, "layerForOverhangAreas");
-    info.addMember(m_contentShadowLayer, "contentShadowLayer");
-    info.addMember(m_layerForTopOverhangArea, "layerForTopOverhangArea");
-    info.addMember(m_layerForBottomOverhangArea, "layerForBottomOverhangArea");
-#endif
 }
 
 } // namespace WebCore

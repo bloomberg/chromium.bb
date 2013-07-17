@@ -22,8 +22,6 @@
 #include "core/css/CSSValueList.h"
 
 #include "core/css/CSSParserValues.h"
-#include "core/dom/WebCoreMemoryInstrumentation.h"
-#include "wtf/MemoryInstrumentationVector.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
@@ -197,12 +195,6 @@ CSSValueList::CSSValueList(const CSSValueList& cloneFrom)
 PassRefPtr<CSSValueList> CSSValueList::cloneForCSSOM() const
 {
     return adoptRef(new CSSValueList(*this));
-}
-
-void CSSValueList::reportDescendantMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CSS);
-    info.addMember(m_values, "values");
 }
 
 } // namespace WebCore

@@ -70,8 +70,6 @@ public:
     
     PassRefPtr<CSSValueList> cloneForCSSOM() const;
 
-    void reportDescendantMemoryUsage(MemoryObjectInfo*) const;
-
 protected:
     CSSValueList(ClassType, ValueListSeparator);
     CSSValueList(const CSSValueList& cloneFrom);

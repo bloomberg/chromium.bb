@@ -28,7 +28,6 @@
 #include "config.h"
 #include "core/dom/ContextLifecycleNotifier.h"
 
-#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "wtf/TemporaryChange.h"
 
 namespace WebCore {
@@ -129,14 +128,6 @@ bool ContextLifecycleNotifier::hasPendingActivity() const
     }
 
     return false;
-}
-
-void ContextLifecycleNotifier::reportMemoryUsage(WTF::MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::DOM);
-    ActiveDOMObjectSet::iterator activeObjectsEnd = m_activeDOMObjects.end();
-    for (ActiveDOMObjectSet::iterator iter = m_activeDOMObjects.begin(); iter != activeObjectsEnd; ++iter)
-        info.addMember(*iter, "activeDOMObject", WTF::RetainingPointer);
 }
 
 } // namespace WebCore

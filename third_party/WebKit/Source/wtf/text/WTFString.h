@@ -36,7 +36,6 @@
 namespace WTF {
 
 class CString;
-class MemoryObjectInfo;
 struct StringHash;
 
 // Declarations of string operations

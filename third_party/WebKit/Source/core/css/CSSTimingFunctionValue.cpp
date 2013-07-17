@@ -26,7 +26,6 @@
 #include "config.h"
 #include "core/css/CSSTimingFunctionValue.h"
 
-#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
@@ -34,11 +33,6 @@ namespace WebCore {
 String CSSLinearTimingFunctionValue::customCssText() const
 {
     return "linear";
-}
-
-void CSSLinearTimingFunctionValue::reportDescendantMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CSS);
 }
 
 String CSSCubicBezierTimingFunctionValue::customCssText() const
@@ -55,12 +49,6 @@ bool CSSCubicBezierTimingFunctionValue::equals(const CSSCubicBezierTimingFunctio
     return m_x1 == other.m_x1 && m_x2 == other.m_x2 && m_y1 == other.m_y1 && m_y2 == other.m_y2;
 }
 
-
-void CSSCubicBezierTimingFunctionValue::reportDescendantMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CSS);
-}
-
 String CSSStepsTimingFunctionValue::customCssText() const
 {
     return "steps(" + String::number(m_steps) + ", " + (m_stepAtStart ? "start" : "end") + ')';
@@ -69,12 +57,6 @@ String CSSStepsTimingFunctionValue::customCssText() const
 bool CSSStepsTimingFunctionValue::equals(const CSSStepsTimingFunctionValue& other) const
 {
     return m_steps == other.m_steps && m_stepAtStart == other.m_stepAtStart;
-}
-
-
-void CSSStepsTimingFunctionValue::reportDescendantMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CSS);
 }
 
 } // namespace WebCore

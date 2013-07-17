@@ -1449,8 +1449,6 @@ public:
     void setHasCurrentColor() { noninherited_flags.currentColor = true; }
     bool hasCurrentColor() const { return noninherited_flags.currentColor; }
 
-    void reportMemoryUsage(MemoryObjectInfo*) const;
-    
     // Initial values for all the properties
     static EBorderCollapse initialBorderCollapse() { return BSEPARATE; }
     static EBorderStyle initialBorderStyle() { return BNONE; }

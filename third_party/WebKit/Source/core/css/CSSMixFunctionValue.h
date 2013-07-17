@@ -48,8 +48,6 @@ public:
 
     bool equals(const CSSMixFunctionValue&) const;
 
-    void reportDescendantMemoryUsage(MemoryObjectInfo*) const;
-
 private:
     CSSMixFunctionValue();
     CSSMixFunctionValue(const CSSMixFunctionValue& cloneFrom);

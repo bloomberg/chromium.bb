@@ -419,8 +419,6 @@ public:
     // Exposed for tests. FIXME - name is too similar to contentLayer(), very error prone.
     WebKit::WebLayer* contentsLayer() const { return m_contentsLayer; }
 
-    void reportMemoryUsage(MemoryObjectInfo*) const;
-
     static void registerContentsLayer(WebKit::WebLayer*);
     static void unregisterContentsLayer(WebKit::WebLayer*);
 

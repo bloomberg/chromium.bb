@@ -27,7 +27,6 @@
 #include "core/css/CSSFilterValue.h"
 
 #include "core/css/CSSValueList.h"
-#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/WTFString.h"
 
@@ -105,12 +104,6 @@ PassRefPtr<CSSFilterValue> CSSFilterValue::cloneForCSSOM() const
 bool CSSFilterValue::equals(const CSSFilterValue& other) const
 {
     return m_type == other.m_type && CSSValueList::equals(other);
-}
-
-void CSSFilterValue::reportDescendantMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CSS);
-    CSSValueList::reportDescendantMemoryUsage(memoryObjectInfo);
 }
 
 }

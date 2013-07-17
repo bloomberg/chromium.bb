@@ -50,8 +50,6 @@ public:
         m_cacheTimer.stop();
     }
 
-    virtual void reportMemoryUsage(MemoryObjectInfo*) const OVERRIDE;
-
 protected:
     virtual void draw(GraphicsContext*, const FloatRect&, const FloatRect&,
         CompositeOperator, BlendMode) OVERRIDE;

@@ -30,7 +30,6 @@
 #include "core/css/StylePropertyShorthand.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/page/RuntimeCSSEnabled.h"
-#include "wtf/MemoryInstrumentationVector.h"
 #include "wtf/text/StringBuilder.h"
 
 #ifndef NDEBUG
@@ -537,18 +536,6 @@ unsigned StylePropertySet::averageSizeInBytes()
 {
     // Please update this if the storage scheme changes so that this longer reflects the actual size.
     return sizeForImmutableStylePropertySetWithPropertyCount(4);
-}
-
-void StylePropertySet::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    size_t actualSize = m_isMutable ? sizeof(StylePropertySet) : sizeForImmutableStylePropertySetWithPropertyCount(m_arraySize);
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CSS, actualSize);
-    if (m_isMutable)
-        info.addMember(static_cast<const MutableStylePropertySet*>(this)->m_propertyVector, "m_propertyVector");
-    else {
-        for (unsigned i = 0; i < propertyCount(); ++i)
-            info.addMember(propertyAt(i).value(), "value");
-    }
 }
 
 // See the function above if you need to update this.

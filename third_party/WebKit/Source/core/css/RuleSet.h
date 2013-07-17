@@ -72,8 +72,6 @@ public:
     bool hasDocumentSecurityOrigin() const { return m_hasDocumentSecurityOrigin; }
     PropertyWhitelistType propertyWhitelistType(bool isMatchingUARules = false) const { return isMatchingUARules ? PropertyWhitelistNone : static_cast<PropertyWhitelistType>(m_propertyWhitelistType); }
 
-    void reportMemoryUsage(MemoryObjectInfo*) const;
-
 private:
     StyleRule* m_rule;
     unsigned m_selectorIndex : 12;
@@ -130,12 +128,9 @@ public:
         compactRules();
     }
 
-    void reportMemoryUsage(MemoryObjectInfo*) const;
-
     struct RuleSetSelectorPair {
         RuleSetSelectorPair(const CSSSelector* selector, PassOwnPtr<RuleSet> ruleSet) : selector(selector), ruleSet(ruleSet) { }
         RuleSetSelectorPair(const RuleSetSelectorPair& rs) : selector(rs.selector), ruleSet(const_cast<RuleSetSelectorPair*>(&rs)->ruleSet.release()) { }
-        void reportMemoryUsage(MemoryObjectInfo*) const;
 
         const CSSSelector* selector;
         OwnPtr<RuleSet> ruleSet;

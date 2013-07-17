@@ -68,8 +68,6 @@ public:
     };
     bool updateActiveStyleSheets(DocumentStyleSheetCollection*, StyleResolverUpdateMode, StyleResolverUpdateType&);
 
-    void reportMemoryUsage(MemoryObjectInfo*) const;
-
 private:
     Document* document() { return m_treeScope->documentScope(); }
 

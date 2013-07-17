@@ -31,10 +31,6 @@
 #include "wtf/HashSet.h"
 #include "wtf/PassOwnPtr.h"
 
-namespace WTF {
-class MemoryObjectInfo;
-}
-
 namespace WebCore {
 
 class ActiveDOMObject;
@@ -62,8 +58,6 @@ public:
     bool contains(ActiveDOMObject* object) const { return m_activeDOMObjects.contains(object); }
     bool canSuspendActiveDOMObjects();
     bool hasPendingActivity() const;
-
-    void reportMemoryUsage(WTF::MemoryObjectInfo*) const;
 
 protected:
     explicit ContextLifecycleNotifier(ScriptExecutionContext*);

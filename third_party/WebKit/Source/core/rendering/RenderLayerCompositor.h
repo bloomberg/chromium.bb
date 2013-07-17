@@ -200,7 +200,6 @@ public:
     void resetTrackedRepaintRects();
     void setTracksRepaints(bool);
 
-    void reportMemoryUsage(MemoryObjectInfo*) const;
     void setShouldReevaluateCompositingAfterLayout() { m_reevaluateCompositingAfterLayout = true; }
 
     // Returns all reasons (direct, indirectly due to subtree, and indirectly due to overlap) that a layer should be composited.

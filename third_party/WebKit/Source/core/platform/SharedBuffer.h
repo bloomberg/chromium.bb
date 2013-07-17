@@ -89,8 +89,6 @@ public:
     //      }
     unsigned getSomeData(const char*& data, unsigned position = 0) const;
 
-    void reportMemoryUsage(MemoryObjectInfo*) const;
-
     void createPurgeableBuffer() const;
 
     // Creates an ArrayBuffer and copies this SharedBuffer's contents to that

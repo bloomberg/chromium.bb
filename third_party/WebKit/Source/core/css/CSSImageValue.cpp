@@ -24,7 +24,6 @@
 #include "CachedResourceInitiatorTypeNames.h"
 #include "core/css/CSSParser.h"
 #include "core/dom/Document.h"
-#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/loader/cache/CachedImage.h"
 #include "core/loader/cache/CachedResourceLoader.h"
 #include "core/loader/cache/CachedResourceRequest.h"
@@ -101,13 +100,6 @@ PassRefPtr<CSSValue> CSSImageValue::cloneForCSSOM() const
     RefPtr<CSSPrimitiveValue> uriValue = CSSPrimitiveValue::create(m_url, CSSPrimitiveValue::CSS_URI);
     uriValue->setCSSOMSafe();
     return uriValue.release();
-}
-
-void CSSImageValue::reportDescendantMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CSS);
-    info.addMember(m_url, "url");
-    // FIXME: report m_image. It has never been allocated from any of our rendering custom heaps.
 }
 
 bool CSSImageValue::knownToBeOpaque(const RenderObject* renderer) const

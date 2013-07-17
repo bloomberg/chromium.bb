@@ -34,7 +34,6 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InstrumentingAgents.h"
@@ -47,7 +46,6 @@
 #include "core/storage/StorageArea.h"
 #include "core/storage/StorageNamespace.h"
 #include "weborigin/SecurityOrigin.h"
-#include "wtf/MemoryInstrumentationHashMap.h"
 
 namespace WebCore {
 
@@ -228,13 +226,6 @@ PassOwnPtr<StorageArea> InspectorDOMStorageAgent::findStorageArea(ErrorString* e
     if (isLocalStorage)
         return StorageNamespace::localStorageArea(frame->document()->securityOrigin());
     return m_pageAgent->page()->sessionStorage()->storageArea(frame->document()->securityOrigin());
-}
-
-void InspectorDOMStorageAgent::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::InspectorDOMStorageAgent);
-    InspectorBaseAgent<InspectorDOMStorageAgent>::reportMemoryUsage(memoryObjectInfo);
-    info.addWeakPointer(m_frontend);
 }
 
 } // namespace WebCore

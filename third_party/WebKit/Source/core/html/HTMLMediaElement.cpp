@@ -39,7 +39,6 @@
 #include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/dom/FullscreenController.h"
 #include "core/dom/NodeRenderingContext.h"
-#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLMediaSource.h"
 #include "core/html/HTMLSourceElement.h"
@@ -73,7 +72,6 @@
 #include "weborigin/SecurityOrigin.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/MathExtras.h"
-#include "wtf/MemoryInstrumentationVector.h"
 #include "wtf/NonCopyingSort.h"
 #include "wtf/Uint8Array.h"
 #include "wtf/text/CString.h"
@@ -3956,35 +3954,6 @@ void HTMLMediaElement::removeBehaviorsRestrictionsAfterFirstUserGesture()
 void HTMLMediaElement::mediaPlayerScheduleLayerUpdate()
 {
     scheduleLayerUpdate();
-}
-
-void HTMLMediaElement::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::DOM);
-    HTMLElement::reportMemoryUsage(memoryObjectInfo);
-    ActiveDOMObject::reportMemoryUsage(memoryObjectInfo);
-    info.addMember(m_loadTimer, "loadTimer");
-    info.addMember(m_progressEventTimer, "progressEventTimer");
-    info.addMember(m_playbackProgressTimer, "playbackProgressTimer");
-    info.addMember(m_playedTimeRanges, "playedTimeRanges");
-    info.addMember(m_asyncEventQueue, "asyncEventQueue");
-    info.addMember(m_currentSrc, "currentSrc");
-    info.addMember(m_error, "error");
-    info.addMember(m_currentSourceNode, "currentSourceNode");
-    info.addMember(m_nextChildNodeToConsider, "nextChildNodeToConsider");
-    info.addMember(m_player, "player");
-    info.addMember(m_mediaSource, "mediaSource");
-    info.addMember(m_textTracks, "textTracks");
-    info.addMember(m_textTracksWhenResourceSelectionBegan, "textTracksWhenResourceSelectionBegan");
-    info.addMember(m_cueTree, "cueTree");
-    info.addMember(m_currentlyActiveCues, "currentlyActiveCues");
-    info.addMember(m_mediaGroup, "mediaGroup");
-    info.addMember(m_mediaController, "mediaController");
-
-#if ENABLE(WEB_AUDIO)
-    info.addMember(m_audioSourceNode, "audioSourceNode");
-#endif
-
 }
 
 }

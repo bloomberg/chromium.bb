@@ -76,8 +76,6 @@ public:
 
     bool equals(const SVGColor&) const;
 
-    void reportDescendantMemoryUsage(MemoryObjectInfo*) const;
-
 protected:
     friend class CSSComputedStyleDeclaration;
 

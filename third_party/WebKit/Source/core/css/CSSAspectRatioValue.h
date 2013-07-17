@@ -47,8 +47,6 @@ public:
 
     bool equals(const CSSAspectRatioValue&) const;
 
-    void reportDescendantMemoryUsage(MemoryObjectInfo*) const;
-
 private:
     CSSAspectRatioValue(float numeratorValue, float denominatorValue)
         : CSSValue(AspectRatioClass)

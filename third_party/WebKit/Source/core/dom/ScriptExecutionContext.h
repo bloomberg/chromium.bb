@@ -130,8 +130,6 @@ public:
 
     virtual EventQueue* eventQueue() const = 0;
 
-    virtual void reportMemoryUsage(MemoryObjectInfo*) const OVERRIDE;
-
     void setDatabaseContext(DatabaseContext*);
 
 protected:

@@ -289,7 +289,6 @@ public:
     HTMLImageLoader* imageLoader();
 
     bool setupDateTimeChooserParameters(DateTimeChooserParameters&);
-    virtual void reportMemoryUsage(MemoryObjectInfo*) const OVERRIDE;
 
     bool supportsInputModeAttribute() const;
 

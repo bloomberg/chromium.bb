@@ -87,8 +87,6 @@ public:
     // URLRegistrable interface
     virtual URLRegistry& registry() const OVERRIDE;
 
-    virtual void reportMemoryUsage(MemoryObjectInfo*) const OVERRIDE;
-
     using RefCounted<MediaSourceBase>::ref;
     using RefCounted<MediaSourceBase>::deref;
 

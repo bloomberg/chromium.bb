@@ -48,8 +48,6 @@ public:
     // Returns how much could be added before length limit was met.
     unsigned parserAppendData(const String& string, unsigned offset, unsigned lengthLimit);
 
-    virtual void reportMemoryUsage(MemoryObjectInfo*) const;
-
 protected:
     CharacterData(TreeScope* treeScope, const String& text, ConstructionType type)
         : Node(treeScope, type)

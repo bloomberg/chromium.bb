@@ -43,8 +43,6 @@ public:
     virtual String encoding() const;
     virtual void checkNotify() OVERRIDE;
 
-    virtual void reportMemoryUsage(MemoryObjectInfo*) const OVERRIDE;
-
 private:
     PassRefPtr<Document> createDocument(const KURL&);
 

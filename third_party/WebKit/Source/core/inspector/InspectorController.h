@@ -106,8 +106,6 @@ public:
 
     InspectorClient* inspectorClient() const { return m_inspectorClient; }
 
-    void reportMemoryUsage(MemoryObjectInfo*) const;
-
     void willProcessTask();
     void didProcessTask();
 
@@ -115,8 +113,6 @@ public:
     void didCancelFrame();
     void willComposite();
     void didComposite();
-
-    HashMap<String, size_t> processMemoryDistribution() const;
 
 private:
     InspectorController(Page*, InspectorClient*);

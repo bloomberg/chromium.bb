@@ -65,8 +65,6 @@ public:
 
     bool equals(const CSSFilterValue&) const;
 
-    void reportDescendantMemoryUsage(MemoryObjectInfo*) const;
-
 private:
     CSSFilterValue(FilterOperationType);
     CSSFilterValue(const CSSFilterValue& cloneFrom);

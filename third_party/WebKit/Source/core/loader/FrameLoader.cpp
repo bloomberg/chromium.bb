@@ -46,7 +46,6 @@
 #include "core/dom/Event.h"
 #include "core/dom/EventNames.h"
 #include "core/dom/PageTransitionEvent.h"
-#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/editing/Editor.h"
 #include "core/history/BackForwardController.h"
 #include "core/history/HistoryItem.h"
@@ -88,7 +87,6 @@
 #include "modules/webdatabase/DatabaseManager.h"
 #include "weborigin/SecurityOrigin.h"
 #include "weborigin/SecurityPolicy.h"
-#include "wtf/MemoryInstrumentationHashSet.h"
 #include "wtf/TemporaryChange.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
@@ -2356,23 +2354,6 @@ void FrameLoader::dispatchDidCommitLoad()
     if (m_frame->page()->mainFrame() == m_frame)
         m_frame->page()->useCounter()->didCommitLoad();
 
-}
-
-void FrameLoader::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::Loader);
-    info.addMember(m_frame, "frame");
-    info.ignoreMember(m_client);
-    info.addMember(m_progressTracker, "progressTracker");
-    info.addMember(m_documentLoader, "documentLoader");
-    info.addMember(m_provisionalDocumentLoader, "provisionalDocumentLoader");
-    info.addMember(m_policyDocumentLoader, "policyDocumentLoader");
-    info.addMember(m_submittedFormURL, "submittedFormURL");
-    info.addMember(m_checkTimer, "checkTimer");
-    info.addMember(m_opener, "opener");
-    info.addMember(m_openedFrames, "openedFrames");
-    info.addMember(m_outgoingReferrer, "outgoingReferrer");
-    info.addMember(m_requestedHistoryItem, "requestedHistoryItem");
 }
 
 } // namespace WebCore

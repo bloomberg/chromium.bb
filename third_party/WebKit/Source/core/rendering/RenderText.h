@@ -143,8 +143,6 @@ public:
 
     void removeAndDestroyTextBoxes();
 
-    virtual void reportMemoryUsage(MemoryObjectInfo*) const OVERRIDE FINAL;
-
 protected:
     virtual void computePreferredLogicalWidths(float leadWidth);
     virtual void willBeDestroyed();

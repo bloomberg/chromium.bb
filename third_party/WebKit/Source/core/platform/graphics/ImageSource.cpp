@@ -28,10 +28,10 @@
 #include "config.h"
 #include "core/platform/graphics/ImageSource.h"
 
-#include "core/platform/PlatformMemoryInstrumentation.h"
 #include "core/platform/graphics/ImageOrientation.h"
 #include "core/platform/graphics/chromium/DeferredImageDecoder.h"
 #include "core/platform/image-decoders/ImageDecoder.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 
 namespace WebCore {
@@ -170,12 +170,6 @@ unsigned ImageSource::frameBytesAtIndex(size_t index) const
     if (!m_decoder)
         return 0;
     return m_decoder->frameBytesAtIndex(index);
-}
-
-void ImageSource::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, PlatformMemoryTypes::Image);
-    info.addMember(m_decoder, "decoder");
 }
 
 }

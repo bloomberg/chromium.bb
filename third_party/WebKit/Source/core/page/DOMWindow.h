@@ -384,8 +384,6 @@ namespace WebCore {
         DEFINE_ATTRIBUTE_EVENT_LISTENER(touchend);
         DEFINE_ATTRIBUTE_EVENT_LISTENER(touchcancel);
 
-        void reportMemoryUsage(MemoryObjectInfo*) const;
-
         Performance* performance() const;
 
         // FIXME: When this DOMWindow is no longer the active DOMWindow (i.e.,

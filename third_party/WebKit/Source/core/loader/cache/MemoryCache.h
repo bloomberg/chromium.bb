@@ -148,8 +148,6 @@ public:
     unsigned liveSize() const { return m_liveSize; }
     unsigned deadSize() const { return m_deadSize; }
 
-    void reportMemoryUsage(MemoryObjectInfo*) const;
-
 private:
     LRUList* lruListFor(CachedResource*);
 

@@ -122,8 +122,6 @@ public:
 
     GCEventData* gcEventData() { return m_gcEventData.get(); }
 
-    void reportMemoryUsage(MemoryObjectInfo*) const;
-
     // Gives the system a hint that we should request garbage collection
     // upon the next close or navigation event, because some expensive
     // objects have been allocated that we want to take every opportunity

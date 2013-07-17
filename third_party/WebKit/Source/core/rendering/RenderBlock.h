@@ -460,9 +460,6 @@ public:
     ShapeInsideInfo* layoutShapeInsideInfo() const;
     bool allowsShapeInsideInfoSharing() const { return !isInline() && !isFloating(); }
 
-    virtual void reportMemoryUsage(MemoryObjectInfo*) const OVERRIDE;
-    static void reportStaticMembersMemoryUsage(MemoryInstrumentation*);
-
 protected:
     virtual void willBeDestroyed();
 

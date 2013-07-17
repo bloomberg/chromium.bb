@@ -27,12 +27,10 @@
 #include "config.h"
 #include "core/platform/network/ResourceResponse.h"
 
-#include "core/platform/PlatformMemoryInstrumentation.h"
 #include "core/platform/network/HTTPParsers.h"
 #include "core/platform/network/ResourceResponse.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/MathExtras.h>
-#include <wtf/MemoryInstrumentationHashMap.h>
 #include <wtf/StdLibExtras.h>
 
 namespace WebCore {
@@ -537,19 +535,6 @@ PassRefPtr<ResourceLoadInfo> ResourceResponse::resourceLoadInfo() const
 void ResourceResponse::setResourceLoadInfo(PassRefPtr<ResourceLoadInfo> loadInfo)
 {
     m_resourceLoadInfo = loadInfo;
-}
-
-void ResourceResponse::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, PlatformMemoryTypes::Loader);
-    info.addMember(m_url, "url");
-    info.addMember(m_mimeType, "mimeType");
-    info.addMember(m_textEncodingName, "textEncodingName");
-    info.addMember(m_suggestedFilename, "suggestedFilename");
-    info.addMember(m_httpStatusText, "httpStatusText");
-    info.addMember(m_httpHeaderFields, "httpHeaderFields");
-    info.addMember(m_resourceLoadTiming, "resourceLoadTiming");
-    info.addMember(m_resourceLoadInfo, "resourceLoadInfo");
 }
 
 bool ResourceResponse::compare(const ResourceResponse& a, const ResourceResponse& b)

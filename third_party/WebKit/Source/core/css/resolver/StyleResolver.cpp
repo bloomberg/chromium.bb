@@ -77,7 +77,6 @@
 #include "core/dom/NodeRenderStyle.h"
 #include "core/dom/NodeRenderingContext.h"
 #include "core/dom/Text.h"
-#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLHtmlElement.h"
 #include "core/html/HTMLIFrameElement.h"
@@ -96,20 +95,10 @@
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGFontFaceElement.h"
-#include "wtf/MemoryInstrumentationHashMap.h"
-#include "wtf/MemoryInstrumentationVector.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/Vector.h"
 
 using namespace std;
-
-namespace WTF {
-
-template<> struct SequenceMemoryInstrumentationTraits<const WebCore::RuleData*> {
-    template <typename I> static void reportMemoryUsage(I, I, MemoryClassInfo&) { }
-};
-
-}
 
 namespace WebCore {
 
@@ -1490,30 +1479,6 @@ bool StyleResolver::affectedByViewportChange() const
             return true;
     }
     return false;
-}
-
-void StyleResolver::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CSS);
-    info.addMember(m_ruleSets, "ruleSets");
-    info.addMember(m_matchedPropertiesCache, "matchedPropertiesCache");
-
-    info.addMember(m_medium, "medium");
-    info.addMember(m_rootDefaultStyle, "rootDefaultStyle");
-    info.addMember(m_document, "document");
-
-    info.addMember(m_fontSelector, "fontSelector");
-    info.addMember(m_viewportDependentMediaQueryResults, "viewportDependentMediaQueryResults");
-    info.addMember(m_inspectorCSSOMWrappers);
-
-    info.addMember(m_styleTree, "scopedStyleTree");
-    info.addMember(m_state, "state");
-
-    // FIXME: move this to a place where it would be called only once?
-    info.addMember(CSSDefaultStyleSheets::defaultStyle, "defaultStyle");
-    info.addMember(CSSDefaultStyleSheets::defaultQuirksStyle, "defaultQuirksStyle");
-    info.addMember(CSSDefaultStyleSheets::defaultPrintStyle, "defaultPrintStyle");
-    info.addMember(CSSDefaultStyleSheets::defaultViewSourceStyle, "defaultViewSourceStyle");
 }
 
 } // namespace WebCore

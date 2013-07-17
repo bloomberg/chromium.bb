@@ -27,7 +27,6 @@
 #include "config.h"
 #include "core/platform/graphics/BitmapImage.h"
 
-#include "core/platform/PlatformMemoryInstrumentation.h"
 #include "core/platform/Timer.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
@@ -35,8 +34,6 @@
 #include "core/platform/graphics/skia/NativeImageSkia.h"
 #include "core/platform/graphics/skia/SkiaUtils.h"
 #include "wtf/CurrentTime.h"
-#include "wtf/MemoryInstrumentationVector.h"
-#include "wtf/MemoryObjectInfo.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
@@ -658,23 +655,6 @@ bool BitmapImage::mayFillWithSolidColor()
 Color BitmapImage::solidColor() const
 {
     return m_solidColor;
-}
-
-void BitmapImage::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, PlatformMemoryTypes::Image);
-    memoryObjectInfo->setClassName("BitmapImage");
-    Image::reportMemoryUsage(memoryObjectInfo);
-    info.addMember(m_source, "source");
-    info.addMember(m_frameTimer, "frameTimer");
-    info.addMember(m_frames, "frames");
-}
-
-void FrameData::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, PlatformMemoryTypes::Image);
-    memoryObjectInfo->setClassName("FrameData");
-    info.addMember(m_frame, "frame");
 }
 
 }

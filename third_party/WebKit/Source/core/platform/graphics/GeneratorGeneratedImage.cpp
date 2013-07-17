@@ -26,7 +26,6 @@
 #include "config.h"
 #include "core/platform/graphics/GeneratorGeneratedImage.h"
 
-#include "core/platform/PlatformMemoryInstrumentation.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
 
@@ -148,15 +147,6 @@ void GeneratorGeneratedImage::invalidateCacheTimerFired(DeferrableOneShotTimer<G
 {
     m_cachedImageBuffer.clear();
     m_cachedAdjustedSize = IntSize();
-}
-
-void GeneratorGeneratedImage::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, PlatformMemoryTypes::Image);
-    GeneratedImage::reportMemoryUsage(memoryObjectInfo);
-    info.addMember(m_gradient, "gradient");
-    info.addMember(m_cachedImageBuffer, "cachedImageBuffer");
-    info.addMember(m_cacheTimer, "cacheTimer");
 }
 
 }

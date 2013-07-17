@@ -80,8 +80,6 @@ public:
 
     void toggleRecordButton(bool isProfiling);
 
-    virtual void reportMemoryUsage(MemoryObjectInfo*) const OVERRIDE;
-
     void willProcessTask();
     void didProcessTask();
 

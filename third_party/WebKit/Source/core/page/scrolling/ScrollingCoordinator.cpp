@@ -49,6 +49,7 @@
 #include "public/platform/WebScrollbarLayer.h"
 #include "public/platform/WebScrollbarThemeGeometry.h"
 #include "public/platform/WebScrollbarThemePainter.h"
+#include "wtf/text/StringBuilder.h"
 
 using WebKit::WebLayer;
 using WebKit::WebLayerPositionConstraint;

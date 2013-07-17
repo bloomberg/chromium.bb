@@ -31,7 +31,6 @@
 #include "XMLNSNames.h"
 #include "XMLNames.h"
 #include "core/dom/QualifiedName.h"
-#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "wtf/Assertions.h"
 #include "wtf/HashSet.h"
 #include "wtf/StaticConstructors.h"
@@ -130,22 +129,6 @@ const AtomicString& QualifiedName::localNameUpper() const
     if (!m_impl->m_localNameUpper)
         m_impl->m_localNameUpper = m_impl->m_localName.upper();
     return m_impl->m_localNameUpper;
-}
-
-void QualifiedName::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::DOM);
-    info.addMember(m_impl, "impl");
-}
-
-
-void QualifiedName::QualifiedNameImpl::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::DOM);
-    info.addMember(m_prefix, "prefix");
-    info.addMember(m_localName, "localName");
-    info.addMember(m_namespace, "namespace");
-    info.addMember(m_localNameUpper, "localNameUpper");
 }
 
 unsigned QualifiedName::QualifiedNameImpl::computeHash() const

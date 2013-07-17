@@ -24,7 +24,6 @@
 #include "core/rendering/RenderInline.h"
 
 #include "core/dom/FullscreenController.h"
-#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/page/Chrome.h"
 #include "core/page/Frame.h"
@@ -1560,14 +1559,6 @@ void RenderInline::addAnnotatedRegions(Vector<AnnotatedRegionValue>& regions)
     region.bounds.setY(absPos.y() + region.bounds.y());
     
     regions.append(region);
-}
-
-void RenderInline::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, PlatformMemoryTypes::Rendering);
-    RenderBoxModelObject::reportMemoryUsage(memoryObjectInfo);
-    info.addMember(m_children, "children");
-    info.addMember(m_lineBoxes, "lineBoxes");
 }
 
 } // namespace WebCore

@@ -368,13 +368,5 @@ String SVGImage::filenameExtension() const
     return "svg";
 }
 
-void SVGImage::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CachedResourceImage);
-    Image::reportMemoryUsage(memoryObjectInfo);
-    info.addMember(m_chromeClient, "chromeClient");
-    info.addMember(m_page, "page");
-}
-
 }
 

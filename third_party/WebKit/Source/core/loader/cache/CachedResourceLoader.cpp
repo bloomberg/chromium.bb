@@ -57,9 +57,6 @@
 #include "public/platform/WebURL.h"
 #include "weborigin/SecurityOrigin.h"
 #include "weborigin/SecurityPolicy.h"
-#include "wtf/MemoryInstrumentationHashMap.h"
-#include "wtf/MemoryInstrumentationHashSet.h"
-#include "wtf/MemoryInstrumentationListHashSet.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
 
@@ -1128,18 +1125,6 @@ void CachedResourceLoader::printPreloadStats()
         printf("IMAGES:  %d (%d hits, hit rate %d%%)\n", images, images - imageMisses, (images - imageMisses) * 100 / images);
 }
 #endif
-
-void CachedResourceLoader::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::Loader);
-    info.addMember(m_documentResources, "documentResources");
-    info.addMember(m_document, "document");
-    info.addMember(m_documentLoader, "documentLoader");
-    info.addMember(m_validatedURLs, "validatedURLs");
-    info.addMember(m_preloads, "preloads");
-    info.addMember(m_pendingPreloads, "pendingPreloads");
-    info.addMember(m_garbageCollectDocumentResourcesTimer, "garbageCollectDocumentResourcesTimer");
-}
 
 const ResourceLoaderOptions& CachedResourceLoader::defaultCachedResourceOptions()
 {

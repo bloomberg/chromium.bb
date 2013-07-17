@@ -119,8 +119,6 @@ public:
     virtual bool notSolidColor() { return true; }
 #endif
 
-    virtual void reportMemoryUsage(MemoryObjectInfo*) const;
-
 protected:
     Image(ImageObserver* = 0);
 

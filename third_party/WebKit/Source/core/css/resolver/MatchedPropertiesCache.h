@@ -36,7 +36,6 @@ class RenderStyle;
 class StyleResolverState;
 
 struct CachedMatchedProperties {
-    void reportMemoryUsage(MemoryObjectInfo*) const;
     Vector<MatchedProperties> matchedProperties;
     MatchRanges ranges;
     RefPtr<RenderStyle> renderStyle;

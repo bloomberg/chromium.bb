@@ -412,19 +412,4 @@ void ResourceLoader::didFail(ResourceHandle*, const ResourceError& error)
     releaseResources();
 }
 
-void ResourceLoader::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::Loader);
-    info.addMember(m_handle, "handle");
-    info.addMember(m_frame, "frame");
-    info.addMember(m_documentLoader, "documentLoader");
-    info.addMember(m_request, "request");
-    info.addMember(m_originalRequest, "originalRequest");
-    info.addMember(m_deferredRequest, "deferredRequest");
-    info.addMember(m_options, "options");
-    info.addMember(m_resource, "resource");
-    info.addMember(m_documentLoader, "documentLoader");
-    info.addMember(m_requestCountTracker, "requestCountTracker");
-}
-
 }

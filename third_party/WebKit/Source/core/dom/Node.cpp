@@ -67,7 +67,6 @@
 #include "core/dom/TreeScopeAdopter.h"
 #include "core/dom/UIEvent.h"
 #include "core/dom/UserActionElementSet.h"
-#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/dom/WheelEvent.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/ShadowRoot.h"
@@ -2571,23 +2570,6 @@ void Node::removedLastRef()
     m_deletionHasBegun = true;
 #endif
     delete this;
-}
-
-void Node::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::DOM);
-    ScriptWrappable::reportMemoryUsage(memoryObjectInfo);
-    info.addMember(m_parentOrShadowHostNode, "parentOrShadowHostNode");
-    info.addMember(m_treeScope, "treeScope");
-    info.ignoreMember(m_next);
-    info.ignoreMember(m_previous);
-    info.addMember(this->renderer(), "renderer");
-    if (hasRareData()) {
-        if (isElementNode())
-            info.addMember(static_cast<ElementRareData*>(rareData()), "elementRareData");
-        else
-            info.addMember(rareData(), "rareData");
-    }
 }
 
 void Node::textRects(Vector<IntRect>& rects) const

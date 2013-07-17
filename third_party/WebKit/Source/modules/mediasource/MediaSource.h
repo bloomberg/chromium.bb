@@ -57,8 +57,6 @@ public:
     using RefCounted<MediaSourceBase>::ref;
     using RefCounted<MediaSourceBase>::deref;
 
-    virtual void reportMemoryUsage(MemoryObjectInfo*) const OVERRIDE;
-
 private:
     explicit MediaSource(ScriptExecutionContext*);
 

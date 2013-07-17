@@ -47,7 +47,6 @@ public:
     void clear() { m_shadowDistributedRuleSetMap.clear(); }
     void reset(const ContainerNode* scopingNode);
     bool isEmpty() const { return m_shadowDistributedRuleSetMap.isEmpty(); }
-    void reportMemoryUsage(MemoryObjectInfo*) const;
     void collectFeaturesTo(RuleFeatureSet&);
 
 private:
@@ -65,7 +64,6 @@ public:
     void resetAuthorStyle();
     void collectFeaturesTo(RuleFeatureSet&, bool isViewSource);
 
-    void reportMemoryUsage(MemoryObjectInfo*) const;
     ShadowDistributedRules& shadowDistributedRules() { return m_shadowDistributedRules; }
 
 private:

@@ -29,7 +29,6 @@
 
 #include "SkImageFilter.h"
 #include "SkMatrix44.h"
-#include "core/platform/PlatformMemoryInstrumentation.h"
 #include "core/platform/ScrollableArea.h"
 #include "core/platform/graphics/FloatPoint.h"
 #include "core/platform/graphics/FloatRect.h"
@@ -46,8 +45,6 @@
 #include "wtf/CurrentTime.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
-#include "wtf/MemoryInstrumentationHashMap.h"
-#include "wtf/MemoryInstrumentationVector.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/StringHash.h"
@@ -893,26 +890,6 @@ String GraphicsLayer::layerTreeAsText(LayerTreeFlags flags) const
 
     dumpLayer(ts, 0, flags);
     return ts.release();
-}
-
-void GraphicsLayer::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, PlatformMemoryTypes::Layers);
-    info.addMember(m_children, "children");
-    info.addMember(m_parent, "parent");
-    info.addMember(m_maskLayer, "maskLayer");
-    info.addMember(m_replicaLayer, "replicaLayer");
-    info.addMember(m_replicatedLayer, "replicatedLayer");
-    info.ignoreMember(m_client);
-    info.addMember(m_name, "name");
-    info.addMember(m_nameBase, "nameBase");
-    info.addMember(m_layer, "layer");
-    info.addMember(m_imageLayer, "imageLayer");
-    info.addMember(m_contentsLayer, "contentsLayer");
-    info.addMember(m_linkHighlight, "linkHighlight");
-    info.addMember(m_opaqueRectTrackingContentLayerDelegate, "opaqueRectTrackingContentLayerDelegate");
-    info.addMember(m_animationIdMap, "animationIdMap");
-    info.addMember(m_scrollableArea, "scrollableArea");
 }
 
 void GraphicsLayer::setName(const String& name)

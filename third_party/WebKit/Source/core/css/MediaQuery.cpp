@@ -30,8 +30,6 @@
 #include "core/css/MediaQuery.h"
 
 #include "core/css/MediaQueryExp.h"
-#include "core/dom/WebCoreMemoryInstrumentation.h"
-#include "wtf/MemoryInstrumentationVector.h"
 #include "wtf/NonCopyingSort.h"
 #include "wtf/text/StringBuilder.h"
 
@@ -126,14 +124,6 @@ String MediaQuery::cssText() const
         const_cast<MediaQuery*>(this)->m_serializationCache = serialize();
 
     return m_serializationCache;
-}
-
-void MediaQuery::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CSS);
-    info.addMember(m_mediaType, "mediaType");
-    info.addMember(m_expressions, "expressions");
-    info.addMember(m_serializationCache, "serializationCache");
 }
 
 }

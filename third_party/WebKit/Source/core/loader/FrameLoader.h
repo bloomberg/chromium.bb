@@ -247,8 +247,6 @@ public:
     };
     PageDismissalType pageDismissalEventBeingDispatched() const { return m_pageDismissalEventBeingDispatched; }
 
-    void reportMemoryUsage(MemoryObjectInfo*) const;
-
 private:
     bool allChildrenAreComplete() const; // immediate children, not all descendants
 

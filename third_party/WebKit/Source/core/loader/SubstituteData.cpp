@@ -31,18 +31,6 @@
 #include "config.h"
 #include "core/loader/SubstituteData.h"
 
-#include "core/dom/WebCoreMemoryInstrumentation.h"
-
 namespace WebCore {
-
-void SubstituteData::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::Loader);
-    info.addMember(m_content, "content");
-    info.addMember(m_mimeType, "mimeType");
-    info.addMember(m_textEncoding, "textEncoding");
-    info.addMember(m_failingURL, "failingURL");
-    info.addMember(m_responseURL, "responseURL");
-}
 
 }

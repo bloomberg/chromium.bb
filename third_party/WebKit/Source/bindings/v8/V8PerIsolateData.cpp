@@ -33,18 +33,6 @@
 #include "bindings/v8/V8HiddenPropertyName.h"
 #include "bindings/v8/V8ObjectConstructor.h"
 #include "bindings/v8/V8ScriptRunner.h"
-#include "core/dom/WebCoreMemoryInstrumentation.h"
-#include "wtf/MemoryInstrumentationHashMap.h"
-#include "wtf/MemoryInstrumentationVector.h"
-
-namespace WTF {
-
-// WrapperTypeInfo are statically allocated, don't count them.
-template<> struct SequenceMemoryInstrumentationTraits<WebCore::WrapperTypeInfo*> {
-    template <typename I> static void reportMemoryUsage(I, I, MemoryClassInfo&) { }
-};
-
-}
 
 namespace WebCore {
 
@@ -102,27 +90,6 @@ v8::Handle<v8::FunctionTemplate> V8PerIsolateData::toStringTemplate()
     if (m_toStringTemplate.isEmpty())
         m_toStringTemplate.set(m_isolate, v8::FunctionTemplate::New(constructorOfToString));
     return m_toStringTemplate.newLocal(m_isolate);
-}
-
-void V8PerIsolateData::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::Binding);
-    info.addMember(m_rawTemplatesForMainWorld, "rawTemplatesForMainWorld");
-    info.addMember(m_rawTemplatesForNonMainWorld, "rawTemplatesForNonMainWorld");
-    info.addMember(m_templatesForMainWorld, "templatesForMainWorld");
-    info.addMember(m_templatesForNonMainWorld, "templatesForNonMainWorld");
-    info.addMember(m_stringCache, "stringCache");
-    info.addMember(m_domDataList, "domDataList");
-    info.addMember(m_workerDomDataStore, "workerDomDataStore");
-    info.addMember(m_hiddenPropertyName, "hiddenPropertyName");
-    info.addMember(m_gcEventData, "gcEventData");
-
-    info.addPrivateBuffer(ScriptProfiler::profilerSnapshotsSize(), WebCoreMemoryTypes::InspectorProfilerAgent, "HeapSnapshots", "snapshots");
-
-    info.ignoreMember(m_toStringTemplate);
-    info.ignoreMember(m_lazyEventListenerToStringTemplate);
-    info.ignoreMember(m_liveRoot);
-    info.ignoreMember(m_regexContext);
 }
 
 v8::Handle<v8::FunctionTemplate> V8PerIsolateData::privateTemplate(WrapperWorldType currentWorldType, void* privatePointer, v8::FunctionCallback callback, v8::Handle<v8::Value> data, v8::Handle<v8::Signature> signature, int length)

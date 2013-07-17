@@ -26,7 +26,6 @@
 #include <algorithm>
 #include "CSSPropertyNames.h"
 #include "core/css/resolver/StyleResolver.h"
-#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/FontSelector.h"
 #include "core/rendering/RenderTheme.h"
@@ -38,8 +37,6 @@
 #include "core/rendering/style/StyleImage.h"
 #include "core/rendering/style/StyleInheritedData.h"
 #include <wtf/MathExtras.h>
-#include <wtf/MemoryInstrumentationVector.h>
-#include <wtf/MemoryObjectInfo.h>
 #include <wtf/StdLibExtras.h>
 
 using namespace std;
@@ -1558,25 +1555,6 @@ ShapeValue* RenderStyle::initialShapeInside()
 {
     DEFINE_STATIC_LOCAL(RefPtr<ShapeValue>, sOutsideValue, (ShapeValue::createOutsideValue()));
     return sOutsideValue.get();
-}
-
-void RenderStyle::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CSS);
-    info.addMember(m_box, "box");
-    info.addMember(visual, "visual");
-    // FIXME: m_background contains RefPtr<StyleImage> that might need to be instrumented.
-    info.addMember(m_background, "background");
-    // FIXME: surrond contains some fields e.g. BorderData that might need to be instrumented.
-    info.addMember(surround, "surround");
-    info.addMember(rareNonInheritedData, "rareNonInheritedData");
-    info.addMember(rareInheritedData, "rareInheritedData");
-    // FIXME: inherited contains StyleImage and Font fields that might need to be instrumented.
-    info.addMember(inherited, "inherited");
-    info.addMember(m_cachedPseudoStyles, "cachedPseudoStyles");
-    info.addMember(m_svgStyle, "svgStyle");
-    info.addMember(inherited_flags, "inherited_flags");
-    info.addMember(noninherited_flags, "noninherited_flags");
 }
 
 } // namespace WebCore

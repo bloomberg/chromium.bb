@@ -26,7 +26,6 @@
 #include "config.h"
 #include "core/platform/graphics/CrossfadeGeneratedImage.h"
 
-#include "core/platform/PlatformMemoryInstrumentation.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/platform/graphics/ImageBuffer.h"
@@ -106,14 +105,6 @@ void CrossfadeGeneratedImage::drawPattern(GraphicsContext* context, const FloatR
 
     // Tile the image buffer into the context.
     imageBuffer->drawPattern(context, srcRect, scale, phase, compositeOp, dstRect);
-}
-
-void CrossfadeGeneratedImage::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, PlatformMemoryTypes::Image);
-    GeneratedImage::reportMemoryUsage(memoryObjectInfo);
-    info.addMember(m_fromImage, "fromImage");
-    info.addMember(m_toImage, "toImage");
 }
 
 }

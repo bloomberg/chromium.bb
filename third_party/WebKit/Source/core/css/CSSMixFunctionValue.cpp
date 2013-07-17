@@ -30,8 +30,6 @@
 #include "config.h"
 #include "core/css/CSSMixFunctionValue.h"
 
-#include "core/dom/WebCoreMemoryInstrumentation.h"
-
 namespace WebCore {
 
 CSSMixFunctionValue::CSSMixFunctionValue()
@@ -57,12 +55,6 @@ PassRefPtr<CSSMixFunctionValue> CSSMixFunctionValue::cloneForCSSOM() const
 bool CSSMixFunctionValue::equals(const CSSMixFunctionValue& other) const
 {
     return CSSValueList::equals(other);
-}
-
-void CSSMixFunctionValue::reportDescendantMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CSS);
-    CSSValueList::reportDescendantMemoryUsage(memoryObjectInfo);
 }
 
 } // namespace WebCore

@@ -57,8 +57,6 @@ public:
     }
     bool shadowDataEquivalent(const StyleRareInheritedData&) const;
 
-    void reportMemoryUsage(MemoryObjectInfo*) const;
-
     RefPtr<StyleImage> listStyleImage;
 
     Color textStrokeColor;

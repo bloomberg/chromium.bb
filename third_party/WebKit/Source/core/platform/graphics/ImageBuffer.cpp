@@ -35,7 +35,6 @@
 
 #include "core/html/ImageData.h"
 #include "core/platform/MIMETypeRegistry.h"
-#include "core/platform/PlatformMemoryInstrumentation.h"
 #include "core/platform/graphics/BitmapImage.h"
 #include "core/platform/graphics/Extensions3D.h"
 #include "core/platform/graphics/GraphicsContext.h"
@@ -43,7 +42,6 @@
 #include "core/platform/graphics/IntRect.h"
 #include "core/platform/graphics/chromium/Canvas2DLayerBridge.h"
 #include "core/platform/graphics/gpu/SharedGraphicsContext3D.h"
-#include "core/platform/graphics/skia/MemoryInstrumentationSkia.h"
 #include "core/platform/graphics/skia/NativeImageSkia.h"
 #include "core/platform/graphics/skia/SkiaUtils.h"
 #include "core/platform/image-encoders/skia/JPEGImageEncoder.h"
@@ -485,14 +483,6 @@ String ImageDataToDataURL(const ImageData& imageData, const String& mimeType, co
     base64Encode(encodedImage, base64Data);
 
     return "data:" + mimeType + ";base64," + base64Data;
-}
-
-void ImageBuffer::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, PlatformMemoryTypes::Image);
-    info.addMember(m_canvas, "canvas");
-    info.addMember(m_context, "context");
-    info.addMember(m_layerBridge, "layerBridge");
 }
 
 } // namespace WebCore

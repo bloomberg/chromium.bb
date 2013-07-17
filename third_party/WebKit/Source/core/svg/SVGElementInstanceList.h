@@ -22,6 +22,7 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "wtf/RefCounted.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 

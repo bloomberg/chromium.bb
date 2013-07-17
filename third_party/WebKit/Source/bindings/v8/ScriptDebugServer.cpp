@@ -42,6 +42,7 @@
 #include "wtf/StdLibExtras.h"
 #include "wtf/Vector.h"
 #include "wtf/dtoa/utils.h"
+#include "wtf/text/CString.h"
 
 namespace WebCore {
 

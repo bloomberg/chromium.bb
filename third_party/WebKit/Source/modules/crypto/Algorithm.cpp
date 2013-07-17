@@ -33,6 +33,7 @@
 
 #include "modules/crypto/AesCbcParams.h"
 #include "modules/crypto/AesKeyGenParams.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

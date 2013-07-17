@@ -29,7 +29,6 @@
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/OverflowEvent.h"
-#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
@@ -64,9 +63,6 @@
 #include "core/rendering/shapes/ShapeOutsideInfo.h"
 #include "core/rendering/svg/SVGTextRunRenderingContext.h"
 #include <wtf/StdLibExtras.h>
-#include <wtf/MemoryInstrumentationHashMap.h>
-#include <wtf/MemoryInstrumentationHashSet.h>
-#include <wtf/MemoryInstrumentationListHashSet.h>
 #include <wtf/TemporaryChange.h>
 
 using namespace std;
@@ -8250,26 +8246,5 @@ String ValueToString<RenderBlock::FloatingObject*>::string(const RenderBlock::Fl
 }
 
 #endif
-
-void RenderBlock::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, PlatformMemoryTypes::Rendering);
-    RenderBox::reportMemoryUsage(memoryObjectInfo);
-    info.addMember(m_rareData, "rareData");
-    info.addMember(m_children, "children");
-    info.addMember(m_lineBoxes, "lineBoxes");
-}
-
-void RenderBlock::reportStaticMembersMemoryUsage(MemoryInstrumentation* memoryInstrumentation)
-{
-    memoryInstrumentation->addRootObject(gColumnInfoMap, WebCoreMemoryTypes::RenderingStructures);
-    memoryInstrumentation->addRootObject(gPositionedDescendantsMap, WebCoreMemoryTypes::RenderingStructures);
-    memoryInstrumentation->addRootObject(gPercentHeightDescendantsMap, WebCoreMemoryTypes::RenderingStructures);
-    memoryInstrumentation->addRootObject(gPositionedContainerMap, WebCoreMemoryTypes::RenderingStructures);
-    memoryInstrumentation->addRootObject(gPercentHeightContainerMap, WebCoreMemoryTypes::RenderingStructures);
-    memoryInstrumentation->addRootObject(gFloatingObjectContainerMap, WebCoreMemoryTypes::RenderingStructures);
-    memoryInstrumentation->addRootObject(gFloatingObjectMap, WebCoreMemoryTypes::RenderingStructures);
-    memoryInstrumentation->addRootObject(gDelayedUpdateScrollInfoSet, WebCoreMemoryTypes::RenderingStructures);
-}
 
 } // namespace WebCore

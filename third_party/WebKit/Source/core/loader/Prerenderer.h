@@ -56,8 +56,6 @@ public:
 
     static PassOwnPtr<Prerenderer> create(Document*);
 
-    virtual void reportMemoryUsage(MemoryObjectInfo*) const;
-
     // From ActiveDOMObject:
     virtual bool canSuspend() const OVERRIDE { return true; }
     virtual void stop() OVERRIDE;

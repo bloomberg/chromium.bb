@@ -83,8 +83,6 @@ public:
     PassRefPtr<CSSRule> createCSSOMWrapper(CSSStyleSheet* parentSheet = 0) const;
     PassRefPtr<CSSRule> createCSSOMWrapper(CSSRule* parentRule) const;
 
-    void reportMemoryUsage(MemoryObjectInfo*) const;
-
 protected:
     StyleRuleBase(Type type, signed sourceLine = 0) : m_type(type), m_sourceLine(sourceLine) { }
     StyleRuleBase(const StyleRuleBase& o) : WTF::RefCountedBase(), m_type(o.m_type), m_sourceLine(o.m_sourceLine) { }
@@ -118,7 +116,6 @@ public:
     PassRefPtr<StyleRule> copy() const { return adoptRef(new StyleRule(*this)); }
 
     static unsigned averageSizeInBytes();
-    void reportDescendantMemoryUsage(MemoryObjectInfo*) const;
 
 private:
     StyleRule(int sourceLine);
@@ -147,8 +144,6 @@ public:
 
     PassRefPtr<StyleRuleFontFace> copy() const { return adoptRef(new StyleRuleFontFace(*this)); }
 
-    void reportDescendantMemoryUsage(MemoryObjectInfo*) const;
-
 private:
     StyleRuleFontFace();
     StyleRuleFontFace(const StyleRuleFontFace&);
@@ -172,8 +167,6 @@ public:
 
     PassRefPtr<StyleRulePage> copy() const { return adoptRef(new StyleRulePage(*this)); }
 
-    void reportDescendantMemoryUsage(MemoryObjectInfo*) const;
-
 private:
     StyleRulePage();
     StyleRulePage(const StyleRulePage&);
@@ -189,8 +182,6 @@ public:
     void wrapperInsertRule(unsigned, PassRefPtr<StyleRuleBase>);
     void wrapperRemoveRule(unsigned);
 
-    void reportDescendantMemoryUsage(MemoryObjectInfo*) const;
-    
 protected:
     StyleRuleGroup(Type, Vector<RefPtr<StyleRuleBase> >& adoptRule);
     StyleRuleGroup(const StyleRuleGroup&);
@@ -209,8 +200,6 @@ public:
     MediaQuerySet* mediaQueries() const { return m_mediaQueries.get(); }
 
     PassRefPtr<StyleRuleMedia> copy() const { return adoptRef(new StyleRuleMedia(*this)); }
-
-    void reportDescendantMemoryUsage(MemoryObjectInfo*) const;
 
 private:
     StyleRuleMedia(PassRefPtr<MediaQuerySet>, Vector<RefPtr<StyleRuleBase> >& adoptRules);
@@ -249,8 +238,6 @@ public:
 
     PassRefPtr<StyleRuleRegion> copy() const { return adoptRef(new StyleRuleRegion(*this)); }
 
-    void reportDescendantMemoryUsage(MemoryObjectInfo*) const;
-
 private:
     StyleRuleRegion(Vector<OwnPtr<CSSParserSelector> >*, Vector<RefPtr<StyleRuleBase> >& adoptRules);
     StyleRuleRegion(const StyleRuleRegion&);
@@ -284,8 +271,6 @@ public:
     void setProperties(PassRefPtr<StylePropertySet>);
 
     PassRefPtr<StyleRuleViewport> copy() const { return adoptRef(new StyleRuleViewport(*this)); }
-
-    void reportDescendantMemoryUsage(MemoryObjectInfo*) const;
 
 private:
     StyleRuleViewport();
@@ -326,8 +311,6 @@ public:
     void setProperties(PassRefPtr<StylePropertySet>);
 
     PassRefPtr<StyleRuleFilter> copy() const { return adoptRef(new StyleRuleFilter(*this)); }
-
-    void reportDescendantMemoryUsage(MemoryObjectInfo*) const;
 
 private:
     StyleRuleFilter(const String&);

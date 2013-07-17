@@ -25,7 +25,6 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
-#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/html/HTMLCollection.h"
 
 namespace WebCore {
@@ -67,14 +66,6 @@ void LiveNodeListBase::invalidateIdNameCacheMaps() const
     const HTMLCollection* cacheBase = static_cast<const HTMLCollection*>(this);
     cacheBase->m_idCache.clear();
     cacheBase->m_nameCache.clear();
-}
-
-void LiveNodeListBase::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::DOM);
-    NodeList::reportMemoryUsage(memoryObjectInfo);
-    info.addMember(m_ownerNode, "ownerNode");
-    info.addWeakPointer(m_cachedItem);
 }
 
 Node* LiveNodeList::namedItem(const AtomicString& elementId) const

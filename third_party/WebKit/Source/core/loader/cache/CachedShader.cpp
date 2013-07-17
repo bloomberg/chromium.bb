@@ -30,7 +30,6 @@
 #include "config.h"
 #include "core/loader/cache/CachedShader.h"
 
-#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/loader/TextResourceDecoder.h"
 #include "core/platform/SharedBuffer.h"
 #include "wtf/text/StringBuilder.h"
@@ -57,14 +56,6 @@ const String& CachedShader::shaderString()
     }
 
     return m_shaderString;
-}
-
-void CachedShader::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CachedResourceShader);
-    CachedResource::reportMemoryUsage(memoryObjectInfo);
-    info.addMember(m_decoder, "decoder");
-    info.addMember(m_shaderString, "shaderString");
 }
 
 } // namespace WebCore

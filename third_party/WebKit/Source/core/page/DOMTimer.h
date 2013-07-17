@@ -52,8 +52,6 @@ public:
     virtual void contextDestroyed() OVERRIDE;
     virtual void stop() OVERRIDE;
 
-    virtual void reportMemoryUsage(MemoryObjectInfo*) const OVERRIDE;
-
     // The following are essentially constants. All intervals are in seconds.
     static double hiddenPageAlignmentInterval();
     static double visiblePageAlignmentInterval();

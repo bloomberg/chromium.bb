@@ -72,8 +72,6 @@ public:
 
     PassRefPtr<CSSTransformValue> cloneForCSSOM() const;
 
-    void reportDescendantMemoryUsage(MemoryObjectInfo*) const;
-
 private:
     CSSTransformValue(TransformOperationType);
     CSSTransformValue(const CSSTransformValue& cloneFrom);

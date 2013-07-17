@@ -50,8 +50,6 @@ public:
 
     virtual IntSize size() const { return m_crossfadeSize; }
 
-    void reportMemoryUsage(MemoryObjectInfo*) const OVERRIDE;
-
 protected:
     virtual void draw(GraphicsContext*, const FloatRect&, const FloatRect&,
         CompositeOperator, BlendMode) OVERRIDE;

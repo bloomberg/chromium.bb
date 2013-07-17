@@ -27,7 +27,6 @@
 #include "core/dom/Element.h"
 #include "core/dom/Event.h"
 #include "core/dom/EventSender.h"
-#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/html/HTMLObjectElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/loader/CrossOriginAccessControl.h"
@@ -447,15 +446,6 @@ void ImageLoader::elementDidMoveToNewDocument()
 inline void ImageLoader::clearFailedLoadURL()
 {
     m_failedLoadURL = AtomicString();
-}
-
-void ImageLoader::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::Image);
-    info.addMember(m_element, "element");
-    info.addMember(m_image.get(), "image", WTF::RetainingPointer);
-    info.addMember(m_derefElementTimer, "derefElementTimer");
-    info.addMember(m_failedLoadURL, "failedLoadURL");
 }
 
 }

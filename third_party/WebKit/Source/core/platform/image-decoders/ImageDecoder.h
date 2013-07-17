@@ -117,7 +117,6 @@ namespace WebCore {
         bool premultiplyAlpha() const { return m_premultiplyAlpha; }
         SkBitmap::Allocator* allocator() const { return m_allocator; }
         const SkBitmap& getSkBitmap() const { return m_bitmap->bitmap(); }
-        void reportMemoryUsage(MemoryObjectInfo*) const;
 
         size_t requiredPreviousFrameIndex() const
         {
@@ -377,8 +376,6 @@ namespace WebCore {
         // If the image has a cursor hot-spot, stores it in the argument
         // and returns true. Otherwise returns false.
         virtual bool hotSpot(IntPoint&) const { return false; }
-
-        virtual void reportMemoryUsage(MemoryObjectInfo*) const;
 
         virtual void setMemoryAllocator(SkBitmap::Allocator* allocator)
         {

@@ -799,8 +799,6 @@ public:
     bool isInTopLayer() const;
     bool isInTopLayerSubtree() const;
 
-    virtual void reportMemoryUsage(MemoryObjectInfo*) const OVERRIDE;
-
     enum ViewportConstrainedNotCompositedReason {
         NoNotCompositedReason,
         NotCompositedForBoundsOutOfView,

@@ -229,8 +229,6 @@ public:
 
     InspectorCSSOMWrappers& inspectorCSSOMWrappers() { return m_inspectorCSSOMWrappers; }
 
-    void reportMemoryUsage(MemoryObjectInfo*) const;
-
     void collectViewportRules(RuleSet*);
 
 private:

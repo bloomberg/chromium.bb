@@ -57,8 +57,6 @@ public:
 
     PassRefPtr<MediaQuerySet> copy() const { return adoptRef(new MediaQuerySet(*this)); }
 
-    void reportMemoryUsage(MemoryObjectInfo*) const;
-
 private:
     MediaQuerySet();
     MediaQuerySet(const MediaQuerySet&);
@@ -95,8 +93,6 @@ public:
     const MediaQuerySet* queries() const { return m_mediaQueries.get(); }
 
     void reattach(MediaQuerySet*);
-
-    void reportMemoryUsage(MemoryObjectInfo*) const;
 
 private:
     MediaList();

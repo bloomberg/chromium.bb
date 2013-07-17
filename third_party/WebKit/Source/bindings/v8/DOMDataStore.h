@@ -114,8 +114,6 @@ public:
         return m_wrapperMap.get(V8T::toInternalPointer(object));
     }
 
-    void reportMemoryUsage(MemoryObjectInfo*) const;
-
 private:
     template<typename V8T, typename T>
     inline void set(T* object, v8::Handle<v8::Object> wrapper, v8::Isolate* isolate, const WrapperConfiguration& configuration)

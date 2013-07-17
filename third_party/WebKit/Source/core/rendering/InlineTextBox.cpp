@@ -27,7 +27,6 @@
 #include "core/dom/DocumentMarkerController.h"
 #include "core/dom/RenderedDocumentMarker.h"
 #include "core/dom/Text.h"
-#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/editing/Editor.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
@@ -1559,13 +1558,5 @@ void InlineTextBox::showBox(int printedCharacters) const
 }
 
 #endif
-
-void InlineTextBox::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::Rendering);
-    InlineBox::reportMemoryUsage(memoryObjectInfo);
-    info.addMember(m_prevTextBox, "prevTextBox");
-    info.addMember(m_nextTextBox, "nextTextBox");
-}
 
 } // namespace WebCore

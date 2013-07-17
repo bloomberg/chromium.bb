@@ -64,8 +64,6 @@ public:
     // Called in asynchronous loading thread.
     void load();
 
-    void reportMemoryUsage(MemoryObjectInfo*) const;
-
 private:
     // Both constructor and destructor must be called from the main thread.
     explicit HRTFDatabaseLoader(float sampleRate);

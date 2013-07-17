@@ -34,10 +34,8 @@
 #include "bindings/v8/UnsafePersistent.h"
 #include "bindings/v8/V8Utilities.h"
 #include "bindings/v8/WrapperTypeInfo.h"
-#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include <v8.h>
 #include "wtf/HashMap.h"
-#include "wtf/MemoryInstrumentationHashMap.h"
 
 namespace WebCore {
 
@@ -86,12 +84,6 @@ public:
                 it->value.dispose();
             }
         }
-    }
-
-    void reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-    {
-        MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::Binding);
-        info.addMember(m_map, "map");
     }
 
     void removeAndDispose(KeyType* key)

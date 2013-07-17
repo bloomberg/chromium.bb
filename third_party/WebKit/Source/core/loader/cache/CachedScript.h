@@ -46,8 +46,6 @@ namespace WebCore {
 
         bool mimeTypeAllowedByNosniff() const;
 
-        virtual void reportMemoryUsage(MemoryObjectInfo*) const OVERRIDE;
-
     private:
         String m_script;
         RefPtr<TextResourceDecoder> m_decoder;

@@ -26,7 +26,6 @@
 #include "config.h"
 #include "core/css/CSSLineBoxContainValue.h"
 
-#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
 
@@ -71,11 +70,6 @@ String CSSLineBoxContainValue::customCssText() const
     }
 
     return text.toString();
-}
-
-void CSSLineBoxContainValue::reportDescendantMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CSS);
 }
 
 }

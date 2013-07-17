@@ -26,7 +26,6 @@
 #include "core/rendering/RenderListMarker.h"
 
 #include "core/dom/Document.h"
-#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/loader/cache/CachedImage.h"
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
@@ -1846,15 +1845,6 @@ LayoutRect RenderListMarker::selectionRectForRepaint(const RenderLayerModelObjec
         rect = localToContainerQuad(FloatRect(rect), repaintContainer).enclosingBoundingBox();
     
     return rect;
-}
-
-void RenderListMarker::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, PlatformMemoryTypes::Rendering);
-    RenderBox::reportMemoryUsage(memoryObjectInfo);
-    info.addMember(m_text, "text");
-    info.addMember(m_image, "image");
-    info.addMember(m_listItem, "listItem");
 }
 
 } // namespace WebCore

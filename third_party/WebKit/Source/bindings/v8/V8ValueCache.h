@@ -63,7 +63,6 @@ public:
     }
 
     void remove(StringImpl*);
-    void reportMemoryUsage(MemoryObjectInfo*) const;
 
 private:
     static v8::Local<v8::String> makeExternalString(const String&);

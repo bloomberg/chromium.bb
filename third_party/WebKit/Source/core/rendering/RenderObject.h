@@ -135,7 +135,7 @@ const int showTreeCharacterOffset = 39;
 #endif
 
 // Base class for all rendering tree objects.
-class RenderObject : public CachedImageClient, public MemoryReporterTag {
+class RenderObject : public CachedImageClient {
     friend class RenderBlock;
     friend class RenderLayer;
     friend class RenderObjectChildList;
@@ -254,8 +254,6 @@ public:
     virtual void removeChild(RenderObject*);
     virtual bool createsAnonymousWrapper() const { return false; }
     //////////////////////////////////////////
-
-    virtual void reportMemoryUsage(MemoryObjectInfo*) const;
 
 protected:
     //////////////////////////////////////////
@@ -1001,8 +999,8 @@ private:
     static RenderObjectAncestorLineboxDirtySet* s_ancestorLineboxDirtySet;
 
 #ifndef NDEBUG
-    bool m_hasAXObject             : 1;
-    bool m_setNeedsLayoutForbidden : 1;
+    unsigned m_hasAXObject             : 1;
+    unsigned m_setNeedsLayoutForbidden : 1;
 #endif
 
 #define ADD_BOOLEAN_BITFIELD(name, Name) \

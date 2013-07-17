@@ -36,7 +36,6 @@ public:
         , m_result(result)
     {
     }
-    void reportMemoryUsage(MemoryObjectInfo*) const;
 
     MediaQueryExp m_expression;
     bool m_result;

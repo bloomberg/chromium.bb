@@ -310,14 +310,4 @@ URLRegistry& MediaSourceBase::registry() const
     return MediaSourceRegistry::registry();
 }
 
-void MediaSourceBase::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::DOM);
-    ActiveDOMObject::reportMemoryUsage(memoryObjectInfo);
-    info.addMember(m_eventTargetData, "eventTargetData");
-    info.addMember(m_readyState, "readyState");
-    info.addMember(m_private, "private");
-    info.addMember(m_asyncEventQueue, "asyncEventQueue");
-}
-
 }

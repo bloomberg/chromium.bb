@@ -36,12 +36,10 @@
 #include "core/css/StyleRule.h"
 #include "core/css/resolver/StyleResolver.h" // For MatchRequest.
 #include "core/dom/Document.h"
-#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/dom/shadow/ContentDistributor.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLStyleElement.h"
-#include "wtf/MemoryInstrumentationHashMap.h"
 
 namespace WebCore {
 
@@ -210,12 +208,6 @@ void ScopedStyleTree::remove(const ContainerNode* scopingNode)
         m_cache.clear();
 
     m_authorStyles.remove(scopingNode);
-}
-
-void ScopedStyleTree::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CSS);
-    info.addMember(m_authorStyles, "authorStyles");
 }
 
 const ContainerNode* ScopedStyleResolver::scopingNodeFor(const CSSStyleSheet* sheet)
@@ -400,13 +392,6 @@ void ScopedStyleResolver::collectViewportRulesTo(StyleResolver* resolver) const
 {
     if (m_authorStyle)
         resolver->collectViewportRules(m_authorStyle.get());
-}
-
-void ScopedStyleResolver::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CSS);
-    info.addMember(m_authorStyle, "authorStyle");
-    info.addMember(m_atHostRules, "atHostRules");
 }
 
 } // namespace WebCore

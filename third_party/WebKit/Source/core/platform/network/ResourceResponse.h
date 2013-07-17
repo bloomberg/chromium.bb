@@ -186,8 +186,6 @@ public:
         return 1280;
     }
 
-    void reportMemoryUsage(MemoryObjectInfo*) const;
-
     static bool compare(const ResourceResponse&, const ResourceResponse&);
 
 private:

@@ -27,7 +27,6 @@
 #include "config.h"
 #include "core/loader/cache/CachedXSLStyleSheet.h"
 
-#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/loader/TextResourceDecoder.h"
 #include "core/loader/cache/CachedResourceClientWalker.h"
 #include "core/loader/cache/CachedStyleSheetClient.h"
@@ -74,14 +73,6 @@ void CachedXSLStyleSheet::checkNotify()
     CachedResourceClientWalker<CachedStyleSheetClient> w(m_clients);
     while (CachedStyleSheetClient* c = w.next())
         c->setXSLStyleSheet(m_resourceRequest.url(), m_response.url(), m_sheet);
-}
-
-void CachedXSLStyleSheet::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CachedResourceXSLT);
-    CachedResource::reportMemoryUsage(memoryObjectInfo);
-    info.addMember(m_sheet, "sheet");
-    info.addMember(m_decoder, "decoder");
 }
 
 } // namespace WebCore

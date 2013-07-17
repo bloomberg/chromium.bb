@@ -33,7 +33,6 @@
 #include "bindings/v8/ScriptController.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/html/ImageData.h"
 #include "core/html/canvas/Canvas2DContextAttributes.h"
 #include "core/html/canvas/CanvasRenderingContext2D.h"
@@ -44,7 +43,6 @@
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/platform/graphics/ImageBuffer.h"
 #include "core/rendering/RenderHTMLCanvas.h"
-#include "wtf/MemoryInstrumentationHashSet.h"
 
 #include "core/html/canvas/WebGLContextAttributes.h"
 #include "core/html/canvas/WebGLRenderingContext.h"
@@ -565,18 +563,6 @@ AffineTransform HTMLCanvasElement::baseTransform() const
     if (size.width() && size.height())
         transform.scaleNonUniform(size.width() / unscaledSize.width(), size.height() / unscaledSize.height());
     return m_imageBuffer->baseTransform() * transform;
-}
-
-void HTMLCanvasElement::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::DOM);
-    HTMLElement::reportMemoryUsage(memoryObjectInfo);
-    info.addMember(m_observers, "observers");
-    info.addMember(m_context, "context");
-    info.addMember(m_imageBuffer, "imageBuffer");
-    info.addMember(m_contextStateSaver, "contextStateSaver");
-    info.addMember(m_presentedImage, "presentedImage");
-    info.addMember(m_copiedImage, "copiedImage");
 }
 
 }

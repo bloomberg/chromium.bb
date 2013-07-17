@@ -30,7 +30,6 @@
 #include <math.h>
 #include "core/platform/Length.h"
 #include "core/platform/MIMETypeRegistry.h"
-#include "core/platform/PlatformMemoryInstrumentation.h"
 #include "core/platform/SharedBuffer.h"
 #include "core/platform/graphics/BitmapImage.h"
 #include "core/platform/graphics/GraphicsContext.h"
@@ -38,7 +37,6 @@
 #include "core/platform/graphics/GraphicsTypes.h"
 #include "core/platform/graphics/IntRect.h"
 #include "wtf/MainThread.h"
-#include "wtf/MemoryObjectInfo.h"
 #include "wtf/StdLibExtras.h"
 
 namespace WebCore {
@@ -212,14 +210,6 @@ void Image::computeIntrinsicDimensions(Length& intrinsicWidth, Length& intrinsic
     intrinsicRatio = size();
     intrinsicWidth = Length(intrinsicRatio.width(), Fixed);
     intrinsicHeight = Length(intrinsicRatio.height(), Fixed);
-}
-
-void Image::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, PlatformMemoryTypes::Image);
-    memoryObjectInfo->setClassName("Image");
-    info.addMember(m_encodedImageData, "encodedImageData");
-    info.addWeakPointer(m_imageObserver);
 }
 
 }

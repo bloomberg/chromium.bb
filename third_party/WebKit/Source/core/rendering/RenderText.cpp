@@ -1927,13 +1927,4 @@ void RenderText::momentarilyRevealLastTypedCharacter(unsigned lastTypedCharacter
     secureTextTimer->restartWithNewText(lastTypedCharacterOffset);
 }
 
-void RenderText::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, PlatformMemoryTypes::Rendering);
-    RenderObject::reportMemoryUsage(memoryObjectInfo);
-    info.addMember(m_text, "text");
-    info.addMember(m_firstTextBox, "firstTextBox");
-    info.addMember(m_lastTextBox, "lastTextBox");
-}
-
 } // namespace WebCore

@@ -34,7 +34,6 @@
 #include "core/css/CSSAspectRatioValue.h"
 #include "core/css/CSSParser.h"
 #include "core/css/CSSPrimitiveValue.h"
-#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
@@ -288,13 +287,6 @@ String MediaQueryExp::serialize() const
     result.append(")");
 
     return result.toString();
-}
-
-void MediaQueryExp::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CSS);
-    info.addMember(m_mediaFeature, "mediaFeature");
-    info.addMember(m_value, "value");
 }
 
 } // namespace

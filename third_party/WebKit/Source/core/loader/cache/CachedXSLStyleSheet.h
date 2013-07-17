@@ -44,8 +44,6 @@ namespace WebCore {
         virtual void setEncoding(const String&);
         virtual String encoding() const;
         
-        virtual void reportMemoryUsage(MemoryObjectInfo*) const OVERRIDE;
-
     protected:
         virtual void checkNotify();
 

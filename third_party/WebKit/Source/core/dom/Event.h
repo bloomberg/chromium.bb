@@ -164,8 +164,6 @@ public:
 
     bool isBeingDispatched() const { return eventPhase(); }
 
-    virtual void reportMemoryUsage(MemoryObjectInfo*) const;
-
 protected:
     Event();
     Event(const AtomicString& type, bool canBubble, bool cancelable);

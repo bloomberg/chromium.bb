@@ -28,7 +28,6 @@
 
 #include "core/css/CSSParserValues.h"
 #include "core/css/CSSValueList.h"
-#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
@@ -61,13 +60,6 @@ String CSSFunctionValue::customCssText() const
 bool CSSFunctionValue::equals(const CSSFunctionValue& other) const
 {
     return m_name == other.m_name && compareCSSValuePtr(m_args, other.m_args);
-}
-
-void CSSFunctionValue::reportDescendantMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CSS);
-    info.addMember(m_name, "name");
-    info.addMember(m_args, "args");
 }
 
 }

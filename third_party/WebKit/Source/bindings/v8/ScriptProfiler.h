@@ -80,7 +80,6 @@ public:
     static void visitNodeWrappers(WrappedNodeVisitor*);
     static void visitExternalStrings(ExternalStringVisitor*);
     static void visitExternalArrays(ExternalArrayVisitor*);
-    static void collectBindingMemoryInfo(MemoryInstrumentation*);
     static size_t profilerSnapshotsSize();
     static HashMap<String, double>* currentProfileNameIdleTimeMap();
 };

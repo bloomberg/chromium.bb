@@ -28,7 +28,6 @@
 #include "core/loader/cache/CachedCSSStyleSheet.h"
 
 #include "core/css/StyleSheetContents.h"
-#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/loader/TextResourceDecoder.h"
 #include "core/loader/cache/CachedResourceClientWalker.h"
 #include "core/loader/cache/CachedStyleSheetClient.h"
@@ -179,15 +178,6 @@ void CachedCSSStyleSheet::saveParsedStyleSheet(PassRefPtr<StyleSheetContents> sh
     m_parsedStyleSheetCache->addedToMemoryCache();
 
     setDecodedSize(m_parsedStyleSheetCache->estimatedSizeInBytes());
-}
-
-void CachedCSSStyleSheet::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CachedResourceCSS);
-    CachedResource::reportMemoryUsage(memoryObjectInfo);
-    info.addMember(m_decoder, "decoder");
-    info.addMember(m_parsedStyleSheetCache, "parsedStyleSheetCache");
-    info.addMember(m_decodedSheetText, "decodedSheetText");
 }
 
 }

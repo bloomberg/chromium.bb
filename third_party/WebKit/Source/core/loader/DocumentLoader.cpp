@@ -35,7 +35,6 @@
 #include "core/dom/Document.h"
 #include "core/dom/DocumentParser.h"
 #include "core/dom/Event.h"
-#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/DocumentWriter.h"
@@ -59,9 +58,6 @@
 #include "weborigin/SchemeRegistry.h"
 #include "weborigin/SecurityPolicy.h"
 #include "wtf/Assertions.h"
-#include "wtf/MemoryInstrumentationHashMap.h"
-#include "wtf/MemoryInstrumentationHashSet.h"
-#include "wtf/MemoryInstrumentationVector.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
@@ -649,26 +645,6 @@ void DocumentLoader::commitData(const char* bytes, size_t length)
     ensureWriter();
     ASSERT(m_frame->document()->parsing());
     m_writer->addData(bytes, length);
-}
-
-void DocumentLoader::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::Loader);
-    info.addMember(m_frame, "frame");
-    info.addMember(m_cachedResourceLoader, "cachedResourceLoader");
-    info.addMember(m_mainResource, "mainResource");
-    info.addMember(m_resourceLoaders, "resourceLoaders");
-    info.addMember(m_multipartResourceLoaders, "multipartResourceLoaders");
-    info.addMember(m_substituteData, "substituteData");
-    info.addMember(m_pageTitle.string(), "pageTitle.string()");
-    info.addMember(m_overrideEncoding, "overrideEncoding");
-    info.addMember(m_originalRequest, "originalRequest");
-    info.addMember(m_originalRequestCopy, "originalRequestCopy");
-    info.addMember(m_request, "request");
-    info.addMember(m_response, "response");
-    info.addMember(m_archiveResourceCollection, "archiveResourceCollection");
-    info.addMember(m_archive, "archive");
-    info.addMember(m_applicationCacheHost, "applicationCacheHost");
 }
 
 void DocumentLoader::dataReceived(CachedResource* resource, const char* data, int length)

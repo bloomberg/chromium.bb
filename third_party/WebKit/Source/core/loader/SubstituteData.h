@@ -54,8 +54,6 @@ namespace WebCore {
         const KURL& failingURL() const { return m_failingURL; }
         const KURL& responseURL() const { return m_responseURL; }
 
-        void reportMemoryUsage(MemoryObjectInfo*) const;
-        
     private:
         RefPtr<SharedBuffer> m_content;
         String m_mimeType;

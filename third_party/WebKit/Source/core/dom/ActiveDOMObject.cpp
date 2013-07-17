@@ -28,7 +28,6 @@
 #include "core/dom/ActiveDOMObject.h"
 
 #include "core/dom/ScriptExecutionContext.h"
-#include "core/dom/WebCoreMemoryInstrumentation.h"
 
 namespace WebCore {
 
@@ -94,11 +93,5 @@ void ActiveDOMObject::resume()
 void ActiveDOMObject::stop()
 {
 }
-
-void ActiveDOMObject::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::DOM);
-}
-
 
 } // namespace WebCore

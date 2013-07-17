@@ -44,8 +44,6 @@ public:
     void collectFromStyleSheetIfNeeded(CSSStyleSheet*);
     void reset();
 
-    void reportMemoryUsage(MemoryObjectInfo*) const;
-
 private:
     template <class ListType>
     void collect(ListType*);

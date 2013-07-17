@@ -61,8 +61,6 @@ public:
         int endLine;
         int endColumn;
         bool isContentScript;
-
-        void reportMemoryUsage(MemoryObjectInfo*) const;
     };
 
     virtual ~ScriptDebugListener() { }

@@ -25,7 +25,6 @@
 
 #include "core/css/RuleSet.h"
 #include "core/css/SelectorChecker.h"
-#include "wtf/MemoryObjectInfo.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
@@ -56,7 +55,6 @@ struct MatchRanges {
 struct MatchedProperties {
     MatchedProperties();
     ~MatchedProperties();
-    void reportMemoryUsage(WTF::MemoryObjectInfo*) const;
 
     RefPtr<StylePropertySet> properties;
     union {

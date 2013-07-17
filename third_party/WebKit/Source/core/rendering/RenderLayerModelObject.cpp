@@ -182,12 +182,5 @@ void RenderLayerModelObject::styleDidChange(StyleDifference diff, const RenderSt
     }
 }
 
-void RenderLayerModelObject::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, PlatformMemoryTypes::Rendering);
-    RenderObject::reportMemoryUsage(memoryObjectInfo);
-    info.addWeakPointer(m_layer);
-}
-
 } // namespace WebCore
 

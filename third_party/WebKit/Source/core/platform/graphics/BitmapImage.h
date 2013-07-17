@@ -77,8 +77,6 @@ public:
     // Returns whether there was cached image data to clear.
     bool clear(bool clearMetadata);
 
-    void reportMemoryUsage(MemoryObjectInfo*) const;
-
     RefPtr<NativeImageSkia> m_frame;
     ImageOrientation m_orientation;
     float m_duration;
@@ -136,8 +134,6 @@ public:
 #if !ASSERT_DISABLED
     virtual bool notSolidColor() OVERRIDE;
 #endif
-
-    void reportMemoryUsage(MemoryObjectInfo*) const OVERRIDE;
 
 private:
     void updateSize() const;

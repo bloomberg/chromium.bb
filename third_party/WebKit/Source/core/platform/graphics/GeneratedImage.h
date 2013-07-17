@@ -48,8 +48,6 @@ public:
     virtual void destroyDecodedData() OVERRIDE { }
     virtual unsigned decodedSize() const OVERRIDE { return 0; }
 
-    virtual void reportMemoryUsage(MemoryObjectInfo*) const OVERRIDE;
-
 protected:
     virtual void drawPattern(GraphicsContext*, const FloatRect&,
         const FloatSize&, const FloatPoint&, CompositeOperator,

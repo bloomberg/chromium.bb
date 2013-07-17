@@ -54,7 +54,6 @@
 #include "core/dom/PageTransitionEvent.h"
 #include "core/dom/RequestAnimationFrameCallback.h"
 #include "core/dom/ScriptExecutionContext.h"
-#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/editing/Editor.h"
 #include "core/history/BackForwardController.h"
 #include "core/html/HTMLCanvasElement.h"
@@ -618,12 +617,6 @@ Navigator* DOMWindow::navigator() const
     if (!m_navigator)
         m_navigator = Navigator::create(m_frame);
     return m_navigator.get();
-}
-
-void DOMWindow::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::DOM);
-    info.addMember(m_document, "document");
 }
 
 Performance* DOMWindow::performance() const

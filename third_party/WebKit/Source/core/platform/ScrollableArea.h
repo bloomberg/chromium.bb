@@ -173,8 +173,6 @@ public:
     virtual bool usesCompositedScrolling() const { return false; }
     virtual void updateNeedsCompositedScrolling() { }
 
-    virtual void reportMemoryUsage(MemoryObjectInfo*) const;
-
     // Convenience functions
     int scrollPosition(ScrollbarOrientation orientation) { return orientation == HorizontalScrollbar ? scrollPosition().x() : scrollPosition().y(); }
     int minimumScrollPosition(ScrollbarOrientation orientation) { return orientation == HorizontalScrollbar ? minimumScrollPosition().x() : minimumScrollPosition().y(); }

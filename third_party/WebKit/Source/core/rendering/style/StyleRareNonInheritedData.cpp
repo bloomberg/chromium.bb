@@ -22,15 +22,11 @@
 #include "config.h"
 #include "core/rendering/style/StyleRareNonInheritedData.h"
 
-#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/rendering/style/ContentData.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/style/ShadowData.h"
 #include "core/rendering/style/StyleFilterData.h"
 #include "core/rendering/style/StyleTransformData.h"
-#include <wtf/MemoryInstrumentationHashMap.h>
-#include <wtf/MemoryInstrumentationVector.h>
-#include <wtf/MemoryObjectInfo.h>
 
 namespace WebCore {
 
@@ -287,36 +283,6 @@ bool StyleRareNonInheritedData::transitionDataEquivalent(const StyleRareNonInher
     if (m_transitions && o.m_transitions && (*m_transitions != *o.m_transitions))
         return false;
     return true;
-}
-
-void StyleRareNonInheritedData::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CSS);
-    info.addMember(m_deprecatedFlexibleBox, "deprecatedFlexibleBox");
-    info.addMember(m_flexibleBox, "flexibleBox");
-    info.addMember(m_marquee, "marquee");
-    info.addMember(m_multiCol, "multiCol");
-    info.addMember(m_transform, "transform");
-    info.addMember(m_filter, "filter");
-    info.addMember(m_grid, "grid");
-    info.addMember(m_gridItem, "gridItem");
-    info.addMember(m_content, "content");
-    info.addMember(m_counterDirectives, "counterDirectives");
-    info.addMember(m_boxShadow, "boxShadow");
-    info.addMember(m_boxReflect, "boxReflect");
-    info.addMember(m_animations, "animations");
-    info.addMember(m_transitions, "transitions");
-    info.addMember(m_shapeInside, "shapeInside");
-    info.addMember(m_shapeOutside, "shapeOutside");
-    info.addMember(m_clipPath, "clipPath");
-    info.addMember(m_flowThread, "flowThread");
-    info.addMember(m_regionThread, "regionThread");
-
-    info.ignoreMember(m_perspectiveOriginX);
-    info.ignoreMember(m_perspectiveOriginY);
-    info.ignoreMember(m_pageSize);
-    info.ignoreMember(m_shapeMargin);
-    info.ignoreMember(m_shapePadding);
 }
 
 } // namespace WebCore

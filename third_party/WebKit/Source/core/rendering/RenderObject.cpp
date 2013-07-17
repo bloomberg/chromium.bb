@@ -3152,18 +3152,6 @@ bool RenderObject::canBeReplacedWithInlineRunIn() const
     return true;
 }
 
-void RenderObject::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, PlatformMemoryTypes::Rendering);
-    info.addMember(m_style, "style");
-    info.addWeakPointer(m_node);
-    info.addWeakPointer(m_parent);
-    info.addWeakPointer(m_previous);
-    info.addWeakPointer(m_next);
-
-    info.setCustomAllocation(true);
-}
-
 RenderSVGResourceContainer* RenderObject::toRenderSVGResourceContainer()
 {
     ASSERT_NOT_REACHED();

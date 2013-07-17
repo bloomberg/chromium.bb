@@ -200,13 +200,4 @@ const AtomicString& WebKitMediaSource::interfaceName() const
     return eventNames().interfaceForWebKitMediaSource;
 }
 
-void WebKitMediaSource::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::DOM);
-    ScriptWrappable::reportMemoryUsage(memoryObjectInfo);
-    MediaSourceBase::reportMemoryUsage(memoryObjectInfo);
-    info.addMember(m_sourceBuffers, "sourceBuffers");
-    info.addMember(m_activeSourceBuffers, "activeSourceBuffers");
-}
-
 } // namespace WebCore

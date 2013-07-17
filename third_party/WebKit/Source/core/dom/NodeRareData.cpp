@@ -31,9 +31,6 @@
 #include "config.h"
 #include "core/dom/NodeRareData.h"
 
-#include "core/dom/WebCoreMemoryInstrumentation.h"
-#include "wtf/MemoryInstrumentationHashMap.h"
-
 namespace WebCore {
 
 struct SameSizeAsNodeRareData {
@@ -42,21 +39,5 @@ struct SameSizeAsNodeRareData {
 };
 
 COMPILE_ASSERT(sizeof(NodeRareData) == sizeof(SameSizeAsNodeRareData), NodeRareDataShouldStaySmall);
-
-void NodeListsNodeData::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::DOM);
-    info.addMember(m_childNodeList, "childNodeList");
-    info.addMember(m_atomicNameCaches, "atomicNameCaches");
-    info.addMember(m_nameCaches, "nameCaches");
-    info.addMember(m_tagNodeListCacheNS, "tagNodeListCacheNS");
-}
-
-void NodeRareData::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::DOM);
-    info.addMember(m_nodeLists, "nodeLists");
-    info.addMember(m_mutationObserverData, "mutationObserverData");
-}
 
 } // namespace WebCore

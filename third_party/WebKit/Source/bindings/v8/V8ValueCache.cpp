@@ -28,18 +28,7 @@
 
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8Utilities.h"
-#include "core/dom/WebCoreMemoryInstrumentation.h"
-#include "wtf/MemoryInstrumentationHashMap.h"
-#include "wtf/MemoryInstrumentationSequence.h"
 #include "wtf/text/StringHash.h"
-
-namespace WTF {
-
-template<> struct SequenceMemoryInstrumentationTraits<v8::String*> {
-    template <typename I> static void reportMemoryUsage(I, I, MemoryClassInfo&) { }
-};
-
-}
 
 namespace WebCore {
 
@@ -108,14 +97,6 @@ v8::Local<v8::String> StringCache::createStringAndInsertIntoCache(StringImpl* st
 
     m_lastStringImpl = stringImpl;
     return newString;
-}
-
-void StringCache::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::Binding);
-    info.addMember(m_stringCache, "stringCache");
-    info.ignoreMember(m_lastV8String);
-    info.addMember(m_lastStringImpl, "lastStringImpl");
 }
 
 } // namespace WebCore

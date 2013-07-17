@@ -55,8 +55,6 @@ public:
 
     bool equals(const CSSShaderValue&) const;
 
-    void reportDescendantMemoryUsage(MemoryObjectInfo*) const;
-
 private:
     CSSShaderValue(const String& url);
 

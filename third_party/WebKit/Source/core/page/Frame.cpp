@@ -345,17 +345,6 @@ void Frame::dispatchVisibilityStateChangeEvent()
         childFrames[i]->dispatchVisibilityStateChangeEvent();
 }
 
-void Frame::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::DOM);
-    info.addMember(m_domWindow, "domWindow");
-    info.ignoreMember(m_view);
-    info.addMember(m_ownerElement, "ownerElement");
-    info.addMember(m_page, "page");
-    info.addMember(m_loader, "loader");
-    info.ignoreMember(m_destructionObservers);
-}
-
 void Frame::willDetachPage()
 {
     if (Frame* parent = tree()->parent())

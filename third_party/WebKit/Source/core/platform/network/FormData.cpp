@@ -25,10 +25,8 @@
 #include "core/fileapi/File.h"
 #include "core/html/FormDataList.h"
 #include "core/platform/FileSystem.h"
-#include "core/platform/PlatformMemoryInstrumentation.h"
 #include "core/platform/network/BlobData.h"
 #include "core/platform/network/FormDataBuilder.h"
-#include "wtf/MemoryInstrumentationVector.h"
 #include "wtf/text/TextEncoding.h"
 
 namespace WebCore {
@@ -260,21 +258,6 @@ String FormData::flattenToString() const
     Vector<char> bytes;
     flatten(bytes);
     return Latin1Encoding().decode(reinterpret_cast<const char*>(bytes.data()), bytes.size());
-}
-
-void FormData::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, PlatformMemoryTypes::Loader);
-    info.addMember(m_boundary, "boundary");
-    info.addMember(m_elements, "elements");
-}
-
-void FormDataElement::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, PlatformMemoryTypes::Loader);
-    info.addMember(m_data, "data");
-    info.addMember(m_filename, "filename");
-    info.addMember(m_url, "url");
 }
 
 } // namespace WebCore

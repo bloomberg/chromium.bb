@@ -33,8 +33,6 @@
 #include "skia/ext/image_operations.h"
 
 #include "core/platform/PlatformInstrumentation.h"
-#include "core/platform/PlatformMemoryInstrumentation.h"
-#include "core/platform/graphics/skia/MemoryInstrumentationSkia.h"
 #include "core/platform/graphics/skia/NativeImageSkia.h"
 
 #include "core/platform/graphics/chromium/DeferredImageDecoder.h"
@@ -174,14 +172,6 @@ SkIRect NativeImageSkia::CachedImageInfo::rectInSubset(const SkIRect& otherScale
     SkIRect subsetRect = otherScaledImageSubset;
     subsetRect.offset(-scaledImageSubset.x(), -scaledImageSubset.y());
     return subsetRect;
-}
-
-void NativeImageSkia::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this);
-    info.addMember(m_image, "image");
-    info.addMember(m_resizedImage, "resizedImage");
-    info.addMember(m_cachedImageInfo, "cachedImageInfo");
 }
 
 } // namespace WebCore

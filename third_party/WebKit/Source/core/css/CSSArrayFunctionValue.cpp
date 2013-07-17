@@ -30,8 +30,6 @@
 #include "config.h"
 #include "core/css/CSSArrayFunctionValue.h"
 
-#include "core/dom/WebCoreMemoryInstrumentation.h"
-
 namespace WebCore {
 
 CSSArrayFunctionValue::CSSArrayFunctionValue()
@@ -57,12 +55,6 @@ PassRefPtr<CSSArrayFunctionValue> CSSArrayFunctionValue::cloneForCSSOM() const
 bool CSSArrayFunctionValue::equals(const CSSArrayFunctionValue& other) const
 {
     return CSSValueList::equals(other);
-}
-
-void CSSArrayFunctionValue::reportDescendantMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CSS);
-    CSSValueList::reportDescendantMemoryUsage(memoryObjectInfo);
 }
 
 } // namespace WebCore

@@ -321,8 +321,6 @@ public:
 
     bool equals(const CSSPrimitiveValue&) const;
 
-    void reportDescendantMemoryUsage(MemoryObjectInfo*) const;
-
     static UnitTypes canonicalUnitTypeForCategory(UnitCategory);
     static double conversionToCanonicalUnitsScaleFactor(unsigned short unitType);
 

@@ -34,11 +34,11 @@
 #include "CachedResourceInitiatorTypeNames.h"
 #include "core/css/CSSParser.h"
 #include "core/dom/Document.h"
-#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/loader/cache/CachedResourceLoader.h"
 #include "core/loader/cache/CachedResourceRequest.h"
 #include "core/rendering/style/StyleCachedShader.h"
 #include "core/rendering/style/StylePendingShader.h"
+#include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
 
@@ -98,13 +98,6 @@ String CSSShaderValue::customCssText() const
 bool CSSShaderValue::equals(const CSSShaderValue& other) const
 {
     return m_url == other.m_url;
-}
-
-void CSSShaderValue::reportDescendantMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CSS);
-    info.addMember(m_url, "url");
-    info.addMember(m_format, "format");
 }
 
 } // namespace WebCore

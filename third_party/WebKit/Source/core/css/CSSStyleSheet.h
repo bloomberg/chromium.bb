@@ -106,8 +106,6 @@ public:
     bool isInline() const { return m_isInlineStylesheet; }
     TextPosition startPositionInSource() const { return m_startPosition; }
 
-    void reportMemoryUsage(MemoryObjectInfo*) const;
-
 private:
     CSSStyleSheet(PassRefPtr<StyleSheetContents>, CSSImportRule* ownerRule);
     CSSStyleSheet(PassRefPtr<StyleSheetContents>, Node* ownerNode, bool isInlineStylesheet, const TextPosition& startPosition);

@@ -30,7 +30,6 @@
 #include <algorithm>
 #include "HTMLNames.h"
 #include "core/dom/Document.h"
-#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/editing/htmlediting.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLFrameOwnerElement.h"
@@ -56,15 +55,8 @@
 #include "core/rendering/RenderTableCell.h"
 #include "core/rendering/RenderTheme.h"
 #include "core/rendering/RenderView.h"
-#include <wtf/MemoryInstrumentationHashMap.h>
 
 using namespace std;
-
-namespace WTF {
-template<> struct SequenceMemoryInstrumentationTraits<WebCore::LayoutUnit> {
-    template <typename I> static void reportMemoryUsage(I, I, MemoryClassInfo&) { }
-};
-}
 
 namespace WebCore {
 
@@ -4640,22 +4632,6 @@ RenderObject* RenderBox::splitAnonymousBoxesAroundChild(RenderObject* beforeChil
 
     ASSERT(beforeChild->parent() == this);
     return beforeChild;
-}
-
-void RenderBox::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, PlatformMemoryTypes::Rendering);
-    RenderBoxModelObject::reportMemoryUsage(memoryObjectInfo);
-    info.addWeakPointer(m_inlineBoxWrapper);
-    info.addMember(m_overflow, "overflow");
-}
-
-void RenderBox::reportStaticMembersMemoryUsage(MemoryInstrumentation* memoryInstrumentation)
-{
-    memoryInstrumentation->addRootObject(gOverrideHeightMap, WebCoreMemoryTypes::RenderingStructures);
-    memoryInstrumentation->addRootObject(gOverrideWidthMap, WebCoreMemoryTypes::RenderingStructures);
-    memoryInstrumentation->addRootObject(gOverrideContainingBlockLogicalHeightMap, WebCoreMemoryTypes::RenderingStructures);
-    memoryInstrumentation->addRootObject(gOverrideContainingBlockLogicalWidthMap, WebCoreMemoryTypes::RenderingStructures);
 }
 
 } // namespace WebCore

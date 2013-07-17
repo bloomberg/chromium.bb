@@ -55,7 +55,6 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/PseudoElement.h"
-#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/page/RuntimeCSSEnabled.h"
 #include "core/page/animation/AnimationController.h"
 #include "core/platform/graphics/FontFeatureSettings.h"
@@ -2938,12 +2937,6 @@ PassRefPtr<MutableStylePropertySet> CSSComputedStyleDeclaration::copyPropertiesI
             list.append(CSSProperty(properties[i], value.release(), false));
     }
     return MutableStylePropertySet::create(list.data(), list.size());
-}
-
-void CSSComputedStyleDeclaration::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CSS);
-    info.addMember(m_node, "node");
 }
 
 CSSRule* CSSComputedStyleDeclaration::parentRule() const

@@ -56,6 +56,7 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebFallbackThemeEngine.h"
 #include "public/platform/WebRect.h"
+#include "wtf/text/StringBuilder.h"
 
 #if ENABLE(INPUT_SPEECH)
 #include "core/rendering/RenderInputSpeech.h"

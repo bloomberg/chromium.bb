@@ -26,8 +26,6 @@
 #include "config.h"
 #include "core/loader/cache/CachedResourceHandle.h"
 
-#include "core/dom/WebCoreMemoryInstrumentation.h"
-
 namespace WebCore {
 
 void CachedResourceHandleBase::setResource(CachedResource* resource) 
@@ -40,12 +38,5 @@ void CachedResourceHandleBase::setResource(CachedResource* resource)
     if (m_resource)
         m_resource->registerHandle(this);
 }
-
-void CachedResourceHandleBase::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::MemoryCacheStructures);
-    info.addMember(m_resource, "resource");
-}
-
 
 }

@@ -162,7 +162,6 @@ public:
     double backingStoreMemoryEstimate() const;
 
     void setBlendMode(BlendMode);
-    void reportMemoryUsage(MemoryObjectInfo*) const;
 
 private:
     void createPrimaryGraphicsLayer();

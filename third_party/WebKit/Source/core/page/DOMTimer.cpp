@@ -29,7 +29,6 @@
 
 #include "bindings/v8/ScheduledAction.h"
 #include "core/dom/ScriptExecutionContext.h"
-#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "wtf/CurrentTime.h"
 
@@ -176,14 +175,6 @@ double DOMTimer::alignedFireTime(double fireTime) const
     }
 
     return fireTime;
-}
-
-void DOMTimer::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::DOM);
-    SuspendableTimer::reportMemoryUsage(memoryObjectInfo);
-    info.addMember(m_action, "action");
-    info.addMember(m_userGestureToken, "userGestureToken");
 }
 
 } // namespace WebCore

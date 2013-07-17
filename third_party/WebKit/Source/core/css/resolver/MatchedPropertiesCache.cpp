@@ -32,8 +32,6 @@
 #include "core/css/StylePropertySet.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/rendering/style/RenderStyle.h"
-#include "wtf/MemoryInstrumentationHashMap.h"
-#include "wtf/MemoryInstrumentationVector.h"
 
 namespace WebCore {
 
@@ -133,15 +131,6 @@ bool MatchedPropertiesCache::isCacheable(const Element* element, const RenderSty
     if (parentStyle->hasExplicitlyInheritedProperties())
         return false;
     return true;
-}
-
-void CachedMatchedProperties::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CSS);
-    info.addMember(matchedProperties, "matchedProperties");
-    info.addMember(ranges, "ranges");
-    info.addMember(renderStyle, "renderStyle");
-    info.addMember(parentRenderStyle, "parentRenderStyle");
 }
 
 }

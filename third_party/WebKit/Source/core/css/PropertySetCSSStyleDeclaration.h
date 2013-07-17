@@ -28,6 +28,7 @@
 
 #include "core/css/CSSStyleDeclaration.h"
 #include "wtf/HashMap.h"
+#include "wtf/OwnPtr.h"
 
 namespace WebCore {
 
@@ -48,8 +49,6 @@ public:
     
     virtual void ref() OVERRIDE;
     virtual void deref() OVERRIDE;
-
-    virtual void reportMemoryUsage(MemoryObjectInfo*) const OVERRIDE;
 
 private:
     virtual CSSRule* parentRule() const OVERRIDE { return 0; };
@@ -97,8 +96,6 @@ public:
 
     void reattach(MutableStylePropertySet*);
 
-    virtual void reportMemoryUsage(MemoryObjectInfo*) const OVERRIDE;
-
 private:
     StyleRuleCSSStyleDeclaration(MutableStylePropertySet*, CSSRule*);
     virtual ~StyleRuleCSSStyleDeclaration();
@@ -123,8 +120,6 @@ public:
     {
     }
 
-    virtual void reportMemoryUsage(MemoryObjectInfo*) const OVERRIDE;
-    
 private:
     virtual CSSStyleSheet* parentStyleSheet() const OVERRIDE;
     virtual Element* parentElement() const OVERRIDE { return m_parentElement; }

@@ -79,8 +79,6 @@ public:
         return m_serializedData.size() - dataStart;
     }
 
-    void reportMemoryUsage(MemoryObjectInfo*) const;
-
 private:
     // Reads an unsigned value at position. Returns 0 on error.
     unsigned readUnsigned(size_t position) const

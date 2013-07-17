@@ -35,8 +35,6 @@
 #include "core/rendering/RenderObject.h"
 #include "core/svg/graphics/SVGImage.h"
 #include "wtf/CurrentTime.h"
-#include "wtf/MemoryInstrumentationHashMap.h"
-#include "wtf/MemoryObjectInfo.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/Vector.h"
 
@@ -438,16 +436,6 @@ void CachedImage::changedInRect(const Image* image, const IntRect& rect)
     if (!image || image != m_image)
         return;
     notifyObservers(&rect);
-}
-
-void CachedImage::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CachedResourceImage);
-    memoryObjectInfo->setClassName("CachedImage");
-    CachedResource::reportMemoryUsage(memoryObjectInfo);
-    info.addMember(m_pendingContainerSizeRequests, "pendingContainerSizeRequests");
-    info.addMember(m_image, "m_image");
-    info.addMember(m_svgImageCache, "svgImageCache");
 }
 
 bool CachedImage::currentFrameKnownToBeOpaque(const RenderObject* renderer)

@@ -27,7 +27,6 @@
 #include "config.h"
 #include "core/loader/cache/CachedFont.h"
 
-#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/loader/TextResourceDecoder.h"
 #include "core/loader/cache/CachedResourceClient.h"
 #include "core/loader/cache/CachedResourceClientWalker.h"
@@ -161,16 +160,6 @@ void CachedFont::checkNotify()
     CachedResourceClientWalker<CachedFontClient> w(m_clients);
     while (CachedFontClient* c = w.next())
          c->fontLoaded(this);
-}
-
-void CachedFont::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CachedResourceFont);
-    CachedResource::reportMemoryUsage(memoryObjectInfo);
-#if ENABLE(SVG_FONTS)
-    info.addMember(m_externalSVGDocument, "externalSVGDocument");
-#endif
-    info.addMember(m_fontData, "fontData");
 }
 
 }

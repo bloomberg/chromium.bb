@@ -56,8 +56,6 @@ public:
 
     String name() { return m_name; }
 
-    virtual void reportMemoryUsage(MemoryObjectInfo*) const;
-
 protected:
     InstrumentingAgents* m_instrumentingAgents;
     InspectorState* m_state;
@@ -75,8 +73,6 @@ public:
     void restore();
     void registerInDispatcher(InspectorBackendDispatcher*);
     void discardAgents();
-
-    virtual void reportMemoryUsage(MemoryObjectInfo*) const;
 
 private:
     Vector<OwnPtr<InspectorBaseAgentInterface> > m_agents;

@@ -133,8 +133,6 @@ public:
 
     float deviceScaleFactor() const { return m_deviceScaleFactor; }
 
-    virtual void reportMemoryUsage(MemoryObjectInfo*) const OVERRIDE;
-
 private:
     HTMLCanvasElement(const QualifiedName&, Document*);
 

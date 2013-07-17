@@ -32,10 +32,8 @@
 
 #include "core/platform/audio/HRTFDatabaseLoader.h"
 
-#include "core/platform/PlatformMemoryInstrumentation.h"
 #include "core/platform/audio/HRTFDatabase.h"
 #include "wtf/MainThread.h"
-#include "wtf/MemoryInstrumentationHashMap.h"
 
 namespace WebCore {
 
@@ -126,13 +124,6 @@ void HRTFDatabaseLoader::waitForLoaderThreadCompletion()
     if (m_databaseLoaderThread)
         waitForThreadCompletion(m_databaseLoaderThread);
     m_databaseLoaderThread = 0;
-}
-
-void HRTFDatabaseLoader::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, PlatformMemoryTypes::AudioSharedData);
-    info.addMember(m_hrtfDatabase, "hrtfDatabase");
-    info.addMember(s_loaderMap, "loaderMap", WTF::RetainingPointer);
 }
 
 } // namespace WebCore

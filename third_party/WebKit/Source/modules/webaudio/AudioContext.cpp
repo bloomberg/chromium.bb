@@ -30,7 +30,6 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/platform/audio/FFTFrame.h"
@@ -63,8 +62,6 @@
 #include "modules/webaudio/PeriodicWave.h"
 #include "modules/webaudio/ScriptProcessorNode.h"
 #include "modules/webaudio/WaveShaperNode.h"
-#include "wtf/MemoryInstrumentationHashSet.h"
-#include "wtf/MemoryInstrumentationVector.h"
 
 #if DEBUG_AUDIONODE_REFERENCES
 #include <stdio.h>
@@ -957,30 +954,6 @@ void AudioContext::incrementActiveSourceCount()
 void AudioContext::decrementActiveSourceCount()
 {
     atomicDecrement(&m_activeSourceCount);
-}
-
-void AudioContext::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    AutoLocker locker(const_cast<AudioContext*>(this));
-
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::Audio);
-    ActiveDOMObject::reportMemoryUsage(memoryObjectInfo);
-    info.addMember(m_destinationNode, "destinationNode");
-    info.addMember(m_listener, "listener");
-    info.addMember(m_finishedNodes, "finishedNodes");
-    info.addMember(m_referencedNodes, "referencedNodes");
-    info.addMember(m_nodesMarkedForDeletion, "nodesMarkedForDeletion");
-    info.addMember(m_nodesToDelete, "nodesToDelete");
-    info.addMember(m_dirtySummingJunctions, "dirtySummingJunctions");
-    info.addMember(m_dirtyAudioNodeOutputs, "dirtyAudioNodeOutputs");
-    info.addMember(m_automaticPullNodes, "automaticPullNodes");
-    info.addMember(m_renderingAutomaticPullNodes, "renderingAutomaticPullNodes");
-    info.addMember(m_contextGraphMutex, "contextGraphMutex");
-    info.addMember(m_deferredFinishDerefList, "deferredFinishDerefList");
-    info.addMember(m_hrtfDatabaseLoader, "hrtfDatabaseLoader");
-    info.addMember(m_eventTargetData, "eventTargetData");
-    info.addMember(m_renderTarget, "renderTarget");
-    info.addMember(m_audioDecoder, "audioDecoder");
 }
 
 } // namespace WebCore

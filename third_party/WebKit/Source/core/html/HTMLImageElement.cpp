@@ -357,12 +357,4 @@ bool HTMLImageElement::isServerMap() const
     return document()->completeURL(stripLeadingAndTrailingHTMLSpaces(usemap)).isEmpty();
 }
 
-void HTMLImageElement::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::DOM);
-    HTMLElement::reportMemoryUsage(memoryObjectInfo);
-    info.addMember(m_imageLoader, "imageLoader");
-    info.addMember(m_form, "form");
-}
-
 }

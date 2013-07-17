@@ -96,8 +96,6 @@ public:
 
     bool equals(const SVGPaint&) const;
 
-    void reportDescendantMemoryUsage(MemoryObjectInfo*) const;
-
 private:
     friend class CSSComputedStyleDeclaration;
 

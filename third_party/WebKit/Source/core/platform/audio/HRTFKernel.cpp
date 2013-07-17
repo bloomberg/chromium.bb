@@ -33,7 +33,6 @@
 #include "core/platform/audio/HRTFKernel.h"
 
 #include "core/platform/FloatConversion.h"
-#include "core/platform/PlatformMemoryInstrumentation.h"
 #include "core/platform/audio/AudioChannel.h"
 #include "core/platform/audio/FFTFrame.h"
 #include <wtf/MathExtras.h>
@@ -130,12 +129,6 @@ PassRefPtr<HRTFKernel> HRTFKernel::createInterpolatedKernel(HRTFKernel* kernel1,
     
     OwnPtr<FFTFrame> interpolatedFrame = FFTFrame::createInterpolatedFrame(*kernel1->fftFrame(), *kernel2->fftFrame(), x);
     return HRTFKernel::create(interpolatedFrame.release(), frameDelay, sampleRate1);
-}
-
-void HRTFKernel::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, PlatformMemoryTypes::AudioSharedData);
-    info.addMember(m_fftFrame, "fftFrame");
 }
 
 } // namespace WebCore

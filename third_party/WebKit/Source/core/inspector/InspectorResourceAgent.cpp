@@ -66,7 +66,6 @@
 #include "modules/websockets/WebSocketHandshakeResponse.h"
 #include "weborigin/KURL.h"
 #include "wtf/CurrentTime.h"
-#include "wtf/MemoryInstrumentationHashMap.h"
 #include "wtf/RefPtr.h"
 
 typedef WebCore::InspectorBackendDispatcher::NetworkCommandHandler::LoadResourceForFrontendCallback LoadResourceForFrontendCallback;
@@ -763,19 +762,6 @@ void InspectorResourceAgent::didCommitLoad(Frame* frame, DocumentLoader* loader)
         memoryCache()->evictResources();
 
     m_resourcesData->clear(m_pageAgent->loaderId(loader));
-}
-
-void InspectorResourceAgent::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::InspectorResourceAgent);
-    InspectorBaseAgent<InspectorResourceAgent>::reportMemoryUsage(memoryObjectInfo);
-    info.addWeakPointer(m_pageAgent);
-    info.addWeakPointer(m_client);
-    info.addWeakPointer(m_frontend);
-    info.addMember(m_userAgentOverride, "userAgentOverride");
-    info.addMember(m_resourcesData, "resourcesData");
-    info.addMember(m_pendingXHRReplayData, "pendingXHRReplayData");
-    info.addMember(m_styleRecalculationInitiator, "styleRecalculationInitiator");
 }
 
 InspectorResourceAgent::InspectorResourceAgent(InstrumentingAgents* instrumentingAgents, InspectorPageAgent* pageAgent, InspectorClient* client, InspectorCompositeState* state, InspectorOverlay* overlay)

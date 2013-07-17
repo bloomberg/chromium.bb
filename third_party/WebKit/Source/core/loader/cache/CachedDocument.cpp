@@ -79,12 +79,4 @@ PassRefPtr<Document> CachedDocument::createDocument(const KURL& url)
     }
 }
 
-void CachedDocument::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CachedResourceSVG);
-    CachedResource::reportMemoryUsage(memoryObjectInfo);
-    info.addMember(m_document, "document");
-    info.addMember(m_decoder, "decoder");
-}
-
 }

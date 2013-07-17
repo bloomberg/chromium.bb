@@ -41,8 +41,6 @@ namespace WebCore {
         typedef CachedResource* CachedResourceHandleBase::*UnspecifiedBoolType;
         operator UnspecifiedBoolType() const { return m_resource ? &CachedResourceHandleBase::m_resource : 0; }
 
-        void reportMemoryUsage(MemoryObjectInfo*) const;
-
     protected:
         CachedResourceHandleBase() : m_resource(0) {}
         CachedResourceHandleBase(CachedResource* res) { m_resource = res; if (m_resource) m_resource->registerHandle(this); }

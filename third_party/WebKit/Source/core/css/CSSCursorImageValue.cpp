@@ -25,7 +25,6 @@
 #include "SVGNames.h"
 #include "core/css/CSSImageSetValue.h"
 #include "core/css/CSSImageValue.h"
-#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/loader/cache/CachedImage.h"
 #include "core/loader/cache/CachedResourceLoader.h"
 #include "core/rendering/style/StyleCachedImage.h"
@@ -36,7 +35,6 @@
 #include "core/svg/SVGLengthContext.h"
 #include "core/svg/SVGURIReference.h"
 #include "wtf/MathExtras.h"
-#include "wtf/MemoryInstrumentationHashSet.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
@@ -197,14 +195,6 @@ bool CSSCursorImageValue::equals(const CSSCursorImageValue& other) const
 {
     return m_hasHotSpot ? other.m_hasHotSpot && m_hotSpot == other.m_hotSpot : !other.m_hasHotSpot
         && compareCSSValuePtr(m_imageValue, other.m_imageValue);
-}
-
-void CSSCursorImageValue::reportDescendantMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CSS);
-    m_imageValue->reportMemoryUsage(memoryObjectInfo);
-    // FIXME: report m_image. It has never been allocated from any of our rendering custom heaps.
-    info.addMember(m_referencedElements, "referencedElements");
 }
 
 } // namespace WebCore

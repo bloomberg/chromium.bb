@@ -35,6 +35,7 @@
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/PaintPhase.h"
 #include "core/rendering/RenderObject.h"
+#include "wtf/text/StringBuilder.h"
 
 namespace {
 

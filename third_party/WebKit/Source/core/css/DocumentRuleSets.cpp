@@ -34,8 +34,6 @@
 #include "core/css/StyleSheetContents.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/DocumentStyleSheetCollection.h"
-#include "core/dom/WebCoreMemoryInstrumentation.h"
-#include "wtf/MemoryInstrumentationHashMap.h"
 
 namespace WebCore {
 
@@ -59,12 +57,6 @@ void ShadowDistributedRules::collectMatchRequests(bool includeEmptyRules, Vector
 void ShadowDistributedRules::reset(const ContainerNode* scopingNode)
 {
     m_shadowDistributedRuleSetMap.remove(scopingNode);
-}
-
-void ShadowDistributedRules::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CSS);
-    info.addMember(m_shadowDistributedRuleSetMap, "shadowDistributedRuleSetMap");
 }
 
 void ShadowDistributedRules::collectFeaturesTo(RuleFeatureSet& features)
@@ -120,13 +112,6 @@ void DocumentRuleSets::collectFeaturesTo(RuleFeatureSet& features, bool isViewSo
         features.add(m_userStyle->features());
 
     m_shadowDistributedRules.collectFeaturesTo(features);
-}
-
-void DocumentRuleSets::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CSS);
-    info.addMember(m_userStyle, "userStyle");
-    info.addMember(m_shadowDistributedRules, "shadowDistributedRules");
 }
 
 } // namespace WebCore

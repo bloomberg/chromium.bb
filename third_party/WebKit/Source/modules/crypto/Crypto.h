@@ -32,8 +32,8 @@
 #include "bindings/v8/ScriptWrappable.h"
 #include "modules/crypto/SubtleCrypto.h"
 #include "wtf/Forward.h"
-#include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 

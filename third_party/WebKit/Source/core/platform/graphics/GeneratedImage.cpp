@@ -31,7 +31,6 @@
 #include "config.h"
 #include "core/platform/graphics/GeneratedImage.h"
 
-#include "core/platform/PlatformMemoryInstrumentation.h"
 #include "core/platform/graphics/FloatSize.h"
 
 
@@ -41,12 +40,6 @@ void GeneratedImage::computeIntrinsicDimensions(Length& intrinsicWidth, Length& 
 {
     Image::computeIntrinsicDimensions(intrinsicWidth, intrinsicHeight, intrinsicRatio);
     intrinsicRatio = FloatSize();
-}
-
-void GeneratedImage::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, PlatformMemoryTypes::Image);
-    Image::reportMemoryUsage(memoryObjectInfo);
 }
 
 }

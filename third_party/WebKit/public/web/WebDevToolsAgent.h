@@ -77,8 +77,6 @@ public:
     // Exposed for TestRunner.
     virtual void evaluateInWebInspector(long callId, const WebString& script) = 0;
 
-    virtual WebVector<WebMemoryUsageInfo> processMemoryDistribution() const = 0;
-
     class MessageDescriptor {
     public:
         virtual ~MessageDescriptor() { }

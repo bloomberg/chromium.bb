@@ -32,7 +32,6 @@
 
 #include "InspectorFrontend.h"
 #include "bindings/v8/ScriptProfiler.h"
-#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/inspector/ConsoleAPITypes.h"
 #include "core/inspector/InjectedScript.h"
 #include "core/inspector/InjectedScriptHost.h"
@@ -43,7 +42,6 @@
 #include "core/inspector/ScriptProfile.h"
 #include "core/page/ConsoleTypes.h"
 #include "wtf/CurrentTime.h"
-#include "wtf/MemoryInstrumentationHashMap.h"
 #include "wtf/text/StringConcatenate.h"
 
 namespace WebCore {
@@ -264,17 +262,6 @@ void InspectorProfilerAgent::toggleRecordButton(bool isProfiling)
 {
     if (m_frontend)
         m_frontend->setRecordingProfile(isProfiling);
-}
-
-void InspectorProfilerAgent::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
-{
-    MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::InspectorProfilerAgent);
-    InspectorBaseAgent<InspectorProfilerAgent>::reportMemoryUsage(memoryObjectInfo);
-    info.addMember(m_consoleAgent, "consoleAgent");
-    info.addMember(m_injectedScriptManager, "injectedScriptManager");
-    info.addWeakPointer(m_frontend);
-    info.addMember(m_profiles, "profiles");
-        info.addMember(m_profileNameIdleTimeMap, "profileNameIdleTimeMap");
 }
 
 void InspectorProfilerAgent::willProcessTask()

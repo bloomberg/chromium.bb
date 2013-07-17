@@ -645,7 +645,6 @@ void InspectorTimelineAgent::innerAddRecordToTimeline(PassRefPtr<JSONObject> prp
     RefPtr<TypeBuilder::Timeline::TimelineEvent> record = TypeBuilder::Timeline::TimelineEvent::runtimeCast(prpRecord);
 
     if (m_recordStack.isEmpty()) {
-        setNativeHeapStatistics(record.get());
         sendEvent(record.release());
     } else {
         setDOMCounters(record.get());
@@ -679,24 +678,6 @@ void InspectorTimelineAgent::setDOMCounters(TypeBuilder::Timeline::TimelineEvent
             .setJsEventListeners(listenerCount);
         record->setCounters(counters.release());
     }
-}
-
-void InspectorTimelineAgent::setNativeHeapStatistics(TypeBuilder::Timeline::TimelineEvent* record)
-{
-    if (!m_memoryAgent)
-        return;
-    if (!m_state->getBoolean(TimelineAgentState::includeNativeMemoryStatistics))
-        return;
-    HashMap<String, size_t> map;
-    m_memoryAgent->getProcessMemoryDistributionMap(&map);
-    RefPtr<JSONObject> stats = JSONObject::create();
-    for (HashMap<String, size_t>::iterator it = map.begin(); it != map.end(); ++it)
-        stats->setNumber(it->key, it->value);
-    size_t privateBytes = 0;
-    size_t sharedBytes = 0;
-    MemoryUsageSupport::processMemorySizesInBytes(&privateBytes, &sharedBytes);
-    stats->setNumber("PrivateBytes", privateBytes);
-    record->setNativeHeapStatistics(stats.release());
 }
 
 void InspectorTimelineAgent::setFrameIdentifier(JSONObject* record, Frame* frame)
