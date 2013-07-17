@@ -229,7 +229,7 @@
       'inputs': [
         '<(DEPTH)/build/android/gyp/util/build_utils.py',
         '<(DEPTH)/build/android/gyp/javac.py',
-        '>!@(find >(java_in_dir) >(additional_src_dirs) -name "*.java")',
+        '>!@(find >(java_in_dir)/src >(additional_src_dirs) -name "*.java")',
         '>@(input_jars_paths)',
         '>@(additional_input_paths)',
       ],
