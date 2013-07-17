@@ -82,16 +82,16 @@ static v8::Local<v8::Object> wrapInShadowTemplate(v8::Local<v8::Object> wrapper,
     // This is only for getting a unique pointer which we can pass to privateTemplate.
     static const char* shadowTemplateUniqueKey = "wrapInShadowTemplate";
     WrapperWorldType currentWorldType = worldType(isolate);
-    v8::Handle<v8::FunctionTemplate> shadowTemplate;
-    if (!V8PerIsolateData::from(isolate)->hasPrivateTemplate(currentWorldType, &shadowTemplateUniqueKey)) {
+    V8PerIsolateData* data = V8PerIsolateData::from(isolate);
+    v8::Handle<v8::FunctionTemplate> shadowTemplate = data->privateTemplateIfExists(currentWorldType, &shadowTemplateUniqueKey);
+    if (shadowTemplate.IsEmpty()) {
         shadowTemplate = v8::FunctionTemplate::New();
         if (shadowTemplate.IsEmpty())
             return v8::Local<v8::Object>();
         shadowTemplate->SetClassName(v8::String::NewSymbol("HTMLDocument"));
         shadowTemplate->Inherit(V8HTMLDocument::GetTemplate(isolate, currentWorldType));
         shadowTemplate->InstanceTemplate()->SetInternalFieldCount(V8HTMLDocument::internalFieldCount);
-    } else {
-        shadowTemplate = V8PerIsolateData::from(isolate)->privateTemplate(currentWorldType, &shadowTemplateUniqueKey, 0, v8::Handle<v8::Value>(), v8::Handle<v8::Signature>());
+        data->setPrivateTemplate(currentWorldType, &shadowTemplateUniqueKey, shadowTemplate);
     }
 
     v8::Local<v8::Function> shadowConstructor = shadowTemplate->GetFunction();
