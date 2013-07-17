@@ -87,26 +87,29 @@ public class VideoCapture implements PreviewCallback, OnFrameAvailableListener {
 
             // Calculate fps.
             List<int[]> listFpsRange = parameters.getSupportedPreviewFpsRange();
+            if (listFpsRange.size() == 0) {
+                Log.e(TAG, "allocate: no fps range found");
+                return false;
+            }
             int frameRateInMs = frameRate * 1000;
-            boolean fpsIsSupported = false;
-            int fpsMin = 0;
-            int fpsMax = 0;
             Iterator itFpsRange = listFpsRange.iterator();
+            int[] fpsRange = (int[])itFpsRange.next();
+            // Use the first range as default.
+            int fpsMin = fpsRange[0];
+            int fpsMax = fpsRange[1];
+            int newFrameRate = (fpsMin + 999) / 1000;
             while (itFpsRange.hasNext()) {
-                int[] fpsRange = (int[])itFpsRange.next();
+                fpsRange = (int[])itFpsRange.next();
                 if (fpsRange[0] <= frameRateInMs &&
                     frameRateInMs <= fpsRange[1]) {
-                    fpsIsSupported = true;
                     fpsMin = fpsRange[0];
                     fpsMax = fpsRange[1];
+                    newFrameRate = frameRate;
                     break;
                 }
             }
-
-            if (!fpsIsSupported) {
-                Log.e(TAG, "allocate: fps " + frameRate + " is not supported");
-                return false;
-            }
+            frameRate = newFrameRate;
+            Log.d(TAG, "allocate: fps set to " + frameRate);
 
             mCurrentCapability = new CaptureCapability();
             mCurrentCapability.mDesiredFps = frameRate;
