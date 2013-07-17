@@ -37,22 +37,15 @@ class Options(object):
 
 
 def GenerateExpectedJSON(options):
-  platform_mapping =  {
-    'cygwin': u'Windows',
-    'darwin': u'Mac',
-    'linux2': u'Linux',
-    'win32': u'Windows'
-  }
-
   retrieval_url = options.data_server + '/content/retrieve/'
 
   expected = {
     u'cleanup': u'root',
     u'configurations': [
       {
-        u'config_name': platform_mapping[options.os_image],
+        u'config_name': swarm_trigger_step.PLATFORM_MAPPING[options.os_image],
         u'dimensions': {
-          u'os': platform_mapping[options.os_image],
+          u'os': swarm_trigger_step.PLATFORM_MAPPING[options.os_image],
           u'vlan': u'm4',
         },
         u'min_instances': options.shards,

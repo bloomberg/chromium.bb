@@ -35,6 +35,14 @@ RUN_TEST_NAME = 'run_isolated.py'
 RUN_TEST_PATH = os.path.join(ROOT_DIR, RUN_TEST_NAME)
 
 
+PLATFORM_MAPPING = {
+  'cygwin': 'Windows',
+  'darwin': 'Mac',
+  'linux2': 'Linux',
+  'win32': 'Windows',
+}
+
+
 class Failure(Exception):
   pass
 
@@ -49,12 +57,6 @@ class Manifest(object):
         test_filter - The gtest filter to apply when running the test.
         switches - An object with properties to apply to the test request.
     """
-    platform_mapping =  {
-      'darwin': 'Mac',
-      'cygwin': 'Windows',
-      'linux2': 'Linux',
-      'win32': 'Windows'
-      }
 
     self.manifest_hash = manifest_hash
     self.test_filter = test_filter
@@ -63,7 +65,7 @@ class Manifest(object):
     self.profile = bool(switches.profile)
 
     self.tasks = []
-    self.target_platform = platform_mapping[switches.os_image]
+    self.target_platform = PLATFORM_MAPPING[switches.os_image]
     self.working_dir = switches.working_dir
     self.test_name = test_name
     self.base_url = switches.data_server.rstrip('/')
