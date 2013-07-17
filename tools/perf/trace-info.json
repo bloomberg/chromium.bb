@@ -1,141 +1,32 @@
 {
   "_description" : "This file contains info about our performance test traces, used by the perf dashboard (http://chromeperf.appspot.com). Links in test descriptions should be in markdown format. SUITE as the description means the same description as the test suite.",
 
-  "dom": {
-    "description": ""
-  },
-  "dom_attr": {
-    "description": ""
-  },
-  "dom_attr_element_expando": {
-    "description": ""
-  },
-  "dom_attr_element_expando___value": {
-    "description": ""
-  },
-  "dom_attr_element_property": {
-    "description": ""
-  },
-  "dom_attr_element_property___value": {
-    "description": ""
-  },
-  "dom_attr_getAttribute": {
-    "description": ""
-  },
-  "dom_attr_setAttribute": {
-    "description": ""
-  },
-  "dom_modify": {
-    "description": ""
-  },
-  "dom_modify_appendChild": {
-    "description": ""
-  },
-  "dom_modify_coneNode": {
-    "description": ""
-  },
-  "dom_modify_createElement": {
-    "description": ""
-  },
-  "dom_modify_createTextNode": {
-    "description": ""
-  },
-  "dom_modify_innerHTML": {
-    "description": ""
-  },
-  "dom_modify_insertBefore": {
-    "description": ""
-  },
-  "dom_query": {
-    "description": ""
-  },
-  "dom_query_getElementById": {
-    "description": ""
-  },
-  "dom_query_getElementById__not_in_document_": {
-    "description": ""
-  },
-  "dom_query_getElementsByName": {
-    "description": ""
-  },
-  "dom_query_getElementsByName__not_in_document": {
-    "description": ""
-  },
-  "dom_query_getElementsByTagName___": {
-    "description": ""
-  },
-  "dom_query_getElementsByTagName_p_": {
-    "description": ""
-  },
-  "dom_traverse": {
-    "description": ""
-  },
-  "dom_traverse_childNodes": {
-    "description": ""
-  },
-  "dom_traverse_firstChild": {
-    "description": ""
-  },
-  "dom_traverse_lastChild": {
-    "description": ""
-  },
-  "dom_traverse_nextSibling": {
-    "description": ""
-  },
-  "dom_traverse_previousSibling": {
-    "description": ""
-  },
-
-  "jslib": {
-    "description": ""
-  },
-  "jslib_attr_jquery": {
-    "description": ""
-  },
-  "jslib_attr_jquery_jQuery___addClass": {
-    "description": ""
-  },
-  "jslib_attr_jquery_jQuery___attr_class__x100": {
-    "description": ""
-  },
-  "jslib_attr_jquery_jQuery___attr_class_test_": {
-    "description": ""
-  },
-  "jslib_attr_jquery_jQuery___hasClassx10": {
-    "description": ""
-  },
-  "jslib_attr_jquery_jQuery___removeAttribute": {
-    "description": ""
-  },
-  "jslib_attr_jquery_jQuery___removeClass": {
-    "description": ""
-  },
-  "jslib_attr_prototype": {
-    "description": ""
-  },
-
-  "gif": {
-    "description": "Time to decode a 3.1 MB gif image.  File found at chrome/test/data/image_decoding/droids.gif"
-  },
-  "png": {
-    "description": "Time to decode a 4.6 MB png image.  File found at chrome/test/data/image_decoding/droids.png"
-  },
-  "jpg": {
-    "description": "Time to decode a 810 KB jpg image.  File found at chrome/test/data/image_decoding/droids.jpg"
-  },
-  "webp": {
-    "description": "Time to decode a 65 KB webp image.  File found at chrome/test/data/image_decoding/droids.webp"
-  },
-  "ImageDecoding_avg": {
-    "description": "Average decode time of 4 images formats: gif, png, jpg, and webp."
-  },
-
   "score": {
+    "description": "SUITE"
+  },
+
+  "Score": {
     "description": "SUITE"
   },
 
   "Total": {
     "description": "SUITE"
+  },
+
+  "ImageDecoding_avg": {
+    "description": "Average decode time of 4 images formats: gif, png, jpg, and webp."
+  },
+  "image_decoding.html?gif": {
+    "description": "Time to decode a 3.1 MB, 2560x1920 gif image.  File found at chrome/test/data/image_decoding/droids.gif"
+  },
+  "image_decoding.html?jpg": {
+    "description": "Time to decode a 810 KB, 2560x1920 jpg image.  File found at chrome/test/data/image_decoding/droids.jpg"
+  },
+  "image_decoding.html?png": {
+    "description": "Time to decode a 4.6 MB, 2560x1920 png image.  File found at chrome/test/data/image_decoding/droids.png"
+  },
+  "image_decoding.html?webp": {
+    "description": "Time to decode a 65 KB, 2560x1920 webp image.  File found at chrome/test/data/image_decoding/droids.webp"
   },
   "ai-astar": {
     "description": "This benchmark uses the [A* search algorithm](http://en.wikipedia.org/wiki/A*_search_algorithm) to automatically plot an efficient path between two points, in the presence of obstacles. Adapted from code by [Brian Gringstead](http://www.briangrinstead.com/blog/astar-search-algorithm-in-javascript)."
@@ -166,34 +57,6 @@
   },
   "json-stringify-tinderbox": {
     "description": "This benchmark serializes [Tinderbox](http://tests.themasta.com/tinderboxpushlog/?tree=Firefox) build data to [JSON](http://www.json.org)."
-  },
-  "stanford-crypto-aes": {
-    "description": ""
-  },
-  "stanford-crypto-ccm": {
-    "description": ""
-  },
-  "stanford-crypto-pbkdf2": {
-    "description": ""
-  },
-  "stanford-crypto-sha256-iterative": {
-    "description": ""
-  },
-
-  "Memory_RendererUsed": {
-    "description": ""
-  },
-  "Memory_BrowserUsed": {
-    "description": ""
-  },
-  "V8-MemoryExternalFragmentationTotal": {
-    "description": ""
-  },
-  "V8_MemoryHeapSampleTotalCommitted": {
-    "description": ""
-  },
-  "V8_MemoryHeapSampleTotalUsed": {
-    "description": ""
   },
 
   "CodeLoad": {
@@ -233,218 +96,146 @@
     "description": "Data manipulation benchmark that deals with splay trees and exercises the automatic memory management subsystem (394 lines).."
   },
 
-  "t": {
-    "description": "Average page load time."
-  },
-  "total_byte_b": {
-    "description": "Total number of bytes of browser process IO"
-  },
-  "total_byte_r": {
-    "description": "Total number of bytes of renderer process IO"
-  },
-  "total_op_b": {
-    "description": "Total number of IO operations by browser process"
-  },
-  "total_op_r": {
-    "description": "Total number of IO operations by renderer process"
-  },
-  "vm_peak_b": {
-    "description": "The peak Virtual Memory Size (address space allocated) usage achieved by the browser process."
-  },
-  "vm_peak_r": {
-    "description": "The peak Virtual Memory Size (address space allocated) usage achieved by the renderer process."
-  },
-  "vm_rss_final_b": {
-    "description": "Resident Set Size (physically resident memory) of browser process"
-  },
-  "vm_rss_final_r": {
-    "description": "Resident Set Size (physically resident memory) of renderer process"
-  },
-  "vm_ws_final_b": {
-    "description": "Working Set size of browser process"
-  },
-  "vm_ws_final_r": {
-    "description": "Working Set size of renderer process"
-  },
-  "vm_size_final_b": {
-    "description": "Virtual Memory Size (address space allocated) of browser process"
-  },
-  "vm_size_final_r": {
-    "description": "Virtual Memory Size (address space allocated) of renderer process"
-  },
-  "vm_size_final_t": {
-    "description": "Virtual Memory Size (address space allocated) of all processes"
-  },
-  "rss_peak_b": {
-    "description": "The peak Resident Set Size (physically resident memory) usage achieved by the browser process."
-  },
-  "rss_peak_r": {
-    "description": "The peak Resident Set Size (physically resident memory) usage achieved by the renderer process."
-  },
-  "ws_peak_b": {
-    "description": "The peak Working Set Size usage achieved by the browser process."
-  },
-  "ws_peak_r": {
-    "description": "The peak Working Set Size usage achieved by the renderer process."
-  },
   "commit_charge": {
     "description": "System commit charge (commited memory pages)"
+  },
+  "page_load_time": {
+    "description": "Average page load time. Measured from navigationStart until the completion time of a layout after the window.load event."
   },
   "processes": {
     "description": "Number of processes used by chrome"
   },
-  "read_byte_b": {
+  "read_bytes_browser": {
     "description": "Number of IO bytes read by the browser process"
   },
-  "read_byte_r": {
+  "read_bytes_renderer": {
     "description": "Number of IO bytes read by the renderer process"
   },
-  "read_op_b": {
+  "read_operations_browser": {
     "description": "Number of IO read operations by the browser process"
   },
-  "read_op_r": {
+  "read_operations_renderer": {
     "description": "Number of IO read operations by the renderer process"
   },
-  "write_byte_b": {
-    "description": "Number of IO bytes written by the browser process"
+  "resident_set_size_peak_size_browser": {
+    "description": "The peak Resident Set Size (physically resident memory) usage achieved by the browser process."
   },
-  "write_byte_r": {
-    "description": "Number of IO bytes written by the renderer process"
-  },
-  "write_op_b": {
-    "description": "Number of write IO operations by browser process"
-  },
-  "write_op_r": {
-    "description": "Number of write IO operations by renderer process"
+  "resident_set_size_peak_size_renderer": {
+    "description": "The peak Resident Set Size (physically resident memory) usage achieved by the renderer process."
   },
   "V8.MemoryExternalFragmentationTotal": {
     "description": "Total external memory fragmentation after each GC in percent."
   },
-  "V8.MemoryExternalFragmentationTotal_.1": {
-    "description": ""
-  },
-  "V8.MemoryExternalFragmentationTotal_.25": {
-    "description": ""
-  },
-  "V8.MemoryExternalFragmentationTotal_.5": {
-    "description": ""
-  },
-  "V8.MemoryExternalFragmentationTotal_.75": {
-    "description": ""
-  },
-  "V8.MemoryExternalFragmentationTotal_.9": {
-    "description": ""
-  },
-  "V8.MemoryExternalFragmentationTotal_.95": {
-    "description": ""
-  },
-  "V8.MemoryExternalFragmentationTotal_.99": {
-    "description": ""
-  },
   "V8.MemoryHeapSampleTotalCommitted": {
     "description": "The total size of committed memory used by V8 after each GC in KB."
-  },
-  "V8.MemoryHeapSampleTotalCommitted_.1": {
-    "description": ""
-  },
-  "V8.MemoryHeapSampleTotalCommitted_.25": {
-    "description": ""
-  },
-  "V8.MemoryHeapSampleTotalCommitted_.5": {
-    "description": ""
-  },
-  "V8.MemoryHeapSampleTotalCommitted_.75": {
-    "description": ""
-  },
-  "V8.MemoryHeapSampleTotalCommitted_.9": {
-    "description": ""
-  },
-  "V8.MemoryHeapSampleTotalCommitted_.95": {
-    "description": ""
-  },
-  "V8.MemoryHeapSampleTotalCommitted_.99": {
-    "description": ""
   },
   "V8.MemoryHeapSampleTotalUsed": {
     "description": "The total size of live memory used by V8 after each GC in KB."
   },
-  "V8.MemoryHeapSampleTotalUsed_.1": {
-    "description": ""
+  "vm_final_size_browser": {
+    "description": "Virtual Memory Size (address space allocated) of browser process"
   },
-  "V8.MemoryHeapSampleTotalUsed_.25": {
-    "description": ""
+  "vm_final_size_gpu": {
+    "description": "Virtual Memory Size (address space allocated) of renderer process"
   },
-  "V8.MemoryHeapSampleTotalUsed_.5": {
-    "description": ""
+  "vm_final_size_renderer": {
+    "description": "Virtual Memory Size (address space allocated) of renderer process"
   },
-  "V8.MemoryHeapSampleTotalUsed_.75": {
-    "description": ""
+  "vm_final_size_total": {
+    "description": "Virtual Memory Size (address space allocated) of GPU process"
   },
-  "V8.MemoryHeapSampleTotalUsed_.9": {
-    "description": ""
+  "vm_peak_size_browser": {
+    "description": "The peak Virtual Memory Size (address space allocated) usage achieved by the browser process."
   },
-  "V8.MemoryHeapSampleTotalUsed_.95": {
-    "description": ""
+  "vm_peak_size_renderer": {
+    "description": "The peak Virtual Memory Size (address space allocated) usage achieved by the renderer process."
   },
-  "V8.MemoryHeapSampleTotalUsed_.99": {
-    "description": ""
+  "vm_private_dirty_final_browser": {
+    "description": "Private Dirty is basically the amount of RAM inside the process that can not be paged to disk (it is not backed by the same data on disk), and is not shared with any other processes. Another way to look at this is the RAM that will become available to the system when that process goes away (and probably quickly subsumed into caches and other uses of it)."
+  },
+  "vm_private_dirty_final_renderer": {
+    "description": "Private Dirty is basically the amount of RAM inside the process that can not be paged to disk (it is not backed by the same data on disk), and is not shared with any other processes. Another way to look at this is the RAM that will become available to the system when that process goes away (and probably quickly subsumed into caches and other uses of it)."
+  },
+  "vm_private_dirty_final_total": {
+    "description": "Private Dirty is basically the amount of RAM inside the process that can not be paged to disk (it is not backed by the same data on disk), and is not shared with any other processes. Another way to look at this is the RAM that will become available to the system when that process goes away (and probably quickly subsumed into caches and other uses of it)."
+  },
+  "vm_proportional_set_size_final_browser": {
+    "description": "The PSS number is a metric the kernel computes that takes into account memory sharing -- basically each page of RAM in a process is scaled by a ratio of the number of other processes also using that page. This way you can (in theory) add up the pss across all processes to see the total RAM they are using, and compare pss between processes to get a rough idea of their relative weight."
+  },
+  "vm_proportional_set_size_final_renderer": {
+    "description": "The PSS number is a metric the kernel computes that takes into account memory sharing -- basically each page of RAM in a process is scaled by a ratio of the number of other processes also using that page. This way you can (in theory) add up the pss across all processes to see the total RAM they are using, and compare pss between processes to get a rough idea of their relative weight."
+  },
+  "vm_proportional_set_size_final_total": {
+    "description": "The PSS number is a metric the kernel computes that takes into account memory sharing -- basically each page of RAM in a process is scaled by a ratio of the number of other processes also using that page. This way you can (in theory) add up the pss across all processes to see the total RAM they are using, and compare pss between processes to get a rough idea of their relative weight."
+  },
+  "vm_resident_set_size_final_size_browser": {
+    "description": "Resident Set Size (physically resident memory) of browser process"
+  },
+  "vm_resident_set_size_final_size_gpu": {
+    "description": "Resident Set Size (physically resident memory) of GPU process"
+  },
+  "vm_resident_set_size_final_size_renderer": {
+    "description": "Resident Set Size (physically resident memory) of renderer process"
+  },
+  "vm_resident_set_size_final_size_total": {
+    "description": "Resident Set Size (physically resident memory) of all processes"
+  },
+  "vm_working_set_final_size_browser": {
+    "description": "Working Set size of browser process"
+  },
+  "vm_working_set_final_size_renderer": {
+    "description": "Working Set size of renderer process"
+  },
+  "vm_working_set_final_size_total": {
+    "description": "Working Set size of all processes"
+  },
+  "working_set_peak_size_browser": {
+    "description": "The peak Working Set Size usage achieved by the browser process."
+  },
+  "working_set_peak_size_renderer": {
+    "description": "The peak Working Set Size usage achieved by the renderer process."
+  },
+  "write_bytes_browser": {
+    "description": "Number of IO bytes written by the browser process"
+  },
+  "write_bytes_renderer": {
+    "description": "Number of IO bytes written by the renderer process"
+  },
+  "write_operations_browser": {
+    "description": "Number of write IO operations by browser process"
+  },
+  "write_operations_renderer": {
+    "description": "Number of write IO operations by renderer process"
   },
 
-  "avg_surface_fps": {
-    "description": "Average frames per second as measured by the platform's SurfaceFlinger."
-  },
-  "mean_frame_time": {
-    "description": "The frame rate, but reported as an interval."
-  },
-  "texture_upload_count": {
-    "description": "The number of textures uploaded to the GPU."
-  },
   "average_commit_time": {
     "description": "Time spent pushing the layer tree from the main thread to the compositor thread.  Is zero if software rendering."
-  },
-  "average_image_gathering_time": {
-    "description": ""
-  },
-  "average_num_layers_drawn": {
-    "description": "Number of layers in the tree at draw time.  Is zero in software mode."
-  },
-  "average_num_missing_tiles": {
-    "description": ""
-  },
-  "dropped_percent": {
-    "description": "Number of frames that missed vsync.  The metric is slightly different in each rendering mode but roughly approximates how janky the page was."
-  },
-  "percent_impl_scrolled": {
-    "description": "The percent of input events that caused fast scrolling on the impl thread.  If you see numbers between 0 and 100, it's probably because the page changed halfway through and became slow scrolling, or vice versa."
-  },
-  "total_deferred_image_decode_count": {
-    "description": ""
-  },
-  "total_deferred_image_decode_time": {
-    "description": ""
-  },
-  "total_image_cache_hit_count": {
-    "description": ""
-  },
-  "dom_content_loaded_time": {
-    "description": ""
-  },
-  "load_time": {
-    "description": ""
-  },
-  "total_texture_upload_time": {
-    "description": "The time spent in texture upload on the GPU process."
-  },
-  "load_time_by_url": {
-    "description": ""
   },
   "average_latency": {
     "description": "The average latency between input event and corresponding swap to screen."
   },
-
-  "Score": {
-    "description": "SUITE"
+  "average_num_layers_drawn": {
+    "description": "Number of layers in the tree at draw time.  Is zero in software mode."
   },
+  "avg_surface_fps": {
+    "description": "Average frames per second as measured by the platform's SurfaceFlinger."
+  },
+  "dropped_percent": {
+    "description": "Number of frames that missed vsync.  The metric is slightly different in each rendering mode but roughly approximates how janky the page was."
+  },
+  "mean_frame_time": {
+    "description": "The frame rate, but reported as an interval."
+  },
+  "percent_impl_scrolled": {
+    "description": "The percent of input events that caused fast scrolling on the impl thread.  If you see numbers between 0 and 100, it's probably because the page changed halfway through and became slow scrolling, or vice versa."
+  },
+  "texture_upload_count": {
+    "description": "The number of textures uploaded to the GPU."
+  },
+  "total_texture_upload_time": {
+    "description": "The time spent in texture upload on the GPU process."
+  },
+
   "canvasDrawImageFullClear": {
     "description": "Using a canvas element to render.  Bitmaps are blitted to the canvas using the 'drawImage' function and the canvas is fully cleared at the beginning of each frame."
   },
