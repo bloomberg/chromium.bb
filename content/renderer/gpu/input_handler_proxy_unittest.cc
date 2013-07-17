@@ -125,8 +125,7 @@ class MockInputHandlerProxyClient
     return new FakeWebGestureCurve(velocity, cumulative_scroll);
   }
 
-  virtual void DidOverscroll(gfx::Vector2dF overscroll,
-                             gfx::Vector2dF fling_velocity) {}
+  virtual void DidOverscroll(const cc::DidOverscrollParams& params) {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockInputHandlerProxyClient);
@@ -991,9 +990,10 @@ TEST_F(InputHandlerProxyTest, GestureFlingStopsAtContentEdge) {
   testing::Mock::VerifyAndClearExpectations(&mock_input_handler_);
 
   // Simulate hitting the bottom content edge.
-  gfx::Vector2dF overscroll_amount(0, 100);
-  gfx::Vector2dF overscroll_velocity(0, 10);
-  input_handler_->DidOverscroll(overscroll_amount, overscroll_velocity);
+  cc::DidOverscrollParams overscroll_params;
+  overscroll_params.accumulated_overscroll = gfx::Vector2dF(0, 100);
+  overscroll_params.current_fling_velocity = gfx::Vector2dF(0, 10);
+  input_handler_->DidOverscroll(overscroll_params);
 
   // The next call to animate will no longer scroll vertically.
   EXPECT_CALL(mock_input_handler_, ScheduleAnimation());

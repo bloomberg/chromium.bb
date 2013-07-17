@@ -16,6 +16,7 @@
 
 namespace cc {
 class InputHandler;
+struct DidOverscrollParams;
 }
 
 namespace WebKit {
@@ -70,8 +71,7 @@ class SynchronousCompositorImpl
   virtual gfx::Vector2dF GetTotalScrollOffset() OVERRIDE;
 
   void SetInputHandler(cc::InputHandler* input_handler);
-  void DidOverscroll(gfx::Vector2dF accumulated_overscroll,
-                     gfx::Vector2dF current_fling_velocity);
+  void DidOverscroll(const cc::DidOverscrollParams& params);
 
  private:
   explicit SynchronousCompositorImpl(WebContents* contents);

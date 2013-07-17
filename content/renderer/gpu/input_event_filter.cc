@@ -7,6 +7,7 @@
 #include "base/debug/trace_event.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "cc/input/input_handler.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/content_switches.h"
@@ -48,8 +49,7 @@ void InputEventFilter::DidRemoveInputHandler(int routing_id) {
 }
 
 void InputEventFilter::DidOverscroll(int routing_id,
-                                     gfx::Vector2dF accumulated_overscroll,
-                                     gfx::Vector2dF current_fling_velocity) {
+                                     const cc::DidOverscrollParams& params) {
   DCHECK(target_loop_->BelongsToCurrentThread());
 
   if (!overscroll_notifications_enabled_)
@@ -59,8 +59,8 @@ void InputEventFilter::DidOverscroll(int routing_id,
       FROM_HERE,
       base::Bind(&InputEventFilter::SendMessageOnIOThread, this,
                  ViewHostMsg_DidOverscroll(routing_id,
-                                           accumulated_overscroll,
-                                           current_fling_velocity)));
+                                           params.accumulated_overscroll,
+                                           params.current_fling_velocity)));
 }
 
 void InputEventFilter::OnFilterAdded(IPC::Channel* channel) {

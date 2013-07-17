@@ -48,8 +48,7 @@ class CONTENT_EXPORT InputEventFilter
                                   cc::InputHandler* input_handler) OVERRIDE;
   virtual void DidRemoveInputHandler(int routing_id) OVERRIDE;
   virtual void DidOverscroll(int routing_id,
-                             gfx::Vector2dF accumulated_overscroll,
-                             gfx::Vector2dF current_fling_velocity) OVERRIDE;
+                             const cc::DidOverscrollParams& params) OVERRIDE;
 
   // IPC::ChannelProxy::MessageFilter methods:
   virtual void OnFilterAdded(IPC::Channel* channel) OVERRIDE;

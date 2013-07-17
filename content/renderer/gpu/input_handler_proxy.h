@@ -46,8 +46,7 @@ class CONTENT_EXPORT InputHandlerProxy
   virtual void WillShutdown() OVERRIDE;
   virtual void Animate(base::TimeTicks time) OVERRIDE;
   virtual void MainThreadHasStoppedFlinging() OVERRIDE;
-  virtual void DidOverscroll(gfx::Vector2dF accumulated_overscroll,
-                             gfx::Vector2dF current_fling_velocity) OVERRIDE;
+  virtual void DidOverscroll(const cc::DidOverscrollParams& params) OVERRIDE;
 
   // WebKit::WebGestureCurveTarget implementation.
   virtual void scrollBy(const WebKit::WebFloatSize& offset);

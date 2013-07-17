@@ -63,7 +63,7 @@ class InProcessViewRenderer : public BrowserViewRenderer,
   virtual void SetTotalRootLayerScrollOffset(
       gfx::Vector2dF new_value_css) OVERRIDE;
   virtual gfx::Vector2dF GetTotalRootLayerScrollOffset() OVERRIDE;
-  virtual void DidOverscroll(gfx::Vector2dF accumulated_overscroll,
+  virtual void DidOverscroll(gfx::Vector2dF latest_overscroll_delta,
                              gfx::Vector2dF current_fling_velocity) OVERRIDE;
 
   void WebContentsGone();
@@ -114,9 +114,10 @@ class InProcessViewRenderer : public BrowserViewRenderer,
   // Current scroll offset in CSS pixels.
   gfx::Vector2dF scroll_offset_css_;
 
-  // Used to convert accumulated-based overscroll updates into delta-based
-  // updates.
-  gfx::Vector2dF previous_accumulated_overscroll_;
+  // Used to prevent rounding errors from accumulating enough to generate
+  // visible skew (especially noticeable when scrolling up and down in the same
+  // spot over a period of time).
+  gfx::Vector2dF overscroll_rounding_error_;
 
   DISALLOW_COPY_AND_ASSIGN(InProcessViewRenderer);
 };

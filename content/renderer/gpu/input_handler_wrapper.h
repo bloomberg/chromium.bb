@@ -35,8 +35,7 @@ class InputHandlerWrapper
       int deviceSource,
       const WebKit::WebFloatPoint& velocity,
       const WebKit::WebSize& cumulativeScroll) OVERRIDE;
-  virtual void DidOverscroll(gfx::Vector2dF accumulated_overscroll,
-                             gfx::Vector2dF current_fling_velocity) OVERRIDE;
+  virtual void DidOverscroll(const cc::DidOverscrollParams& params) OVERRIDE;
 
  private:
   friend class base::RefCountedThreadSafe<InputHandlerWrapper>;

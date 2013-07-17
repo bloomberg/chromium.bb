@@ -322,18 +322,19 @@ void InputHandlerProxy::MainThreadHasStoppedFlinging() {
   fling_may_be_active_on_main_thread_ = false;
 }
 
-void InputHandlerProxy::DidOverscroll(gfx::Vector2dF accumulated_overscroll,
-                                      gfx::Vector2dF current_fling_velocity) {
+void InputHandlerProxy::DidOverscroll(const cc::DidOverscrollParams& params) {
   DCHECK(client_);
   if (fling_curve_) {
     static const int kFlingOverscrollThreshold = 1;
     fling_overscrolled_horizontally_ |=
-        std::abs(accumulated_overscroll.x()) >= kFlingOverscrollThreshold;
+        std::abs(params.accumulated_overscroll.x()) >=
+        kFlingOverscrollThreshold;
     fling_overscrolled_vertically_ |=
-        std::abs(accumulated_overscroll.y()) >= kFlingOverscrollThreshold;
+        std::abs(params.accumulated_overscroll.y()) >=
+        kFlingOverscrollThreshold;
   }
 
-  client_->DidOverscroll(accumulated_overscroll, current_fling_velocity);
+  client_->DidOverscroll(params);
 }
 
 bool InputHandlerProxy::CancelCurrentFling() {

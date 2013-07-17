@@ -5,6 +5,7 @@
 #include "content/browser/android/in_process/synchronous_input_event_filter.h"
 
 #include "base/callback.h"
+#include "cc/input/input_handler.h"
 #include "content/browser/android/in_process/synchronous_compositor_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/latency_info.h"
@@ -66,14 +67,13 @@ void SynchronousInputEventFilter::DidRemoveInputHandler(int routing_id) {
 
 void SynchronousInputEventFilter::DidOverscroll(
     int routing_id,
-    gfx::Vector2dF accumulated_overscroll,
-    gfx::Vector2dF current_fling_velocity) {
+    const cc::DidOverscrollParams& params) {
   // The SynchronusCompositorImpl can be NULL if the WebContents that it's
   // bound to has already been deleted.
   SynchronousCompositorImpl* compositor =
       SynchronousCompositorImpl::FromRoutingID(routing_id);
   if (compositor)
-    compositor->DidOverscroll(accumulated_overscroll, current_fling_velocity);
+    compositor->DidOverscroll(params);
 }
 
 }  // namespace content

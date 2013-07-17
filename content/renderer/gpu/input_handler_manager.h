@@ -18,6 +18,7 @@ class MessageLoopProxy;
 
 namespace cc {
 class InputHandler;
+struct DidOverscrollParams;
 }
 
 namespace WebKit {
@@ -55,9 +56,7 @@ class InputHandlerManager {
                                       const ui::LatencyInfo& latency_info);
 
   // Called from the compositor's thread.
-  void DidOverscroll(int routing_id,
-                     gfx::Vector2dF accumulated_overscroll,
-                     gfx::Vector2dF current_fling_velocity);
+  void DidOverscroll(int routing_id, const cc::DidOverscrollParams& params);
 
  private:
   // Called from the compositor's thread.

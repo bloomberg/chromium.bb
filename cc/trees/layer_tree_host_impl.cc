@@ -1974,8 +1974,11 @@ bool LayerTreeHostImpl::ScrollBy(gfx::Point viewport_point,
   accumulated_root_overscroll_ += unused_root_delta;
   bool did_overscroll = !gfx::ToRoundedVector2d(unused_root_delta).IsZero();
   if (did_overscroll && input_handler_client_) {
-    input_handler_client_->DidOverscroll(accumulated_root_overscroll_,
-                                         current_fling_velocity_);
+    DidOverscrollParams params;
+    params.accumulated_overscroll = accumulated_root_overscroll_;
+    params.latest_overscroll_delta = unused_root_delta;
+    params.current_fling_velocity = current_fling_velocity_;
+    input_handler_client_->DidOverscroll(params);
   }
 
   return did_scroll;
