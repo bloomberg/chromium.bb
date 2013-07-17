@@ -15,7 +15,7 @@ extern "C" {
 #include <unistd.h>
 
 #include "base/file_descriptor_posix.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/pickle.h"
 #include "base/posix/eintr_wrapper.h"
 #include "ipc/ipc_message_utils.h"

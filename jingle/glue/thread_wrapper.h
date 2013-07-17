@@ -9,7 +9,7 @@
 #include <map>
 
 #include "base/compiler_specific.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "third_party/libjingle/source/talk/base/thread.h"

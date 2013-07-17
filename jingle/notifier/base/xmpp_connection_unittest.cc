@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "jingle/glue/mock_task.h"
 #include "jingle/glue/task_pump.h"
 #include "jingle/notifier/base/weak_xmpp_client.h"

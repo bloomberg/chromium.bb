@@ -6,7 +6,7 @@
 #include "base/bind_helpers.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "content/public/test/test_browser_thread.h"
 #include "extensions/browser/file_reader.h"

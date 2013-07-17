@@ -6,7 +6,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/string_piece.h"
 #include "jingle/glue/chrome_async_socket.h"
 #include "jingle/glue/task_pump.h"

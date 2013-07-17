@@ -10,7 +10,7 @@
 
 #include <string>
 
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/pickle.h"
 #include "base/threading/thread.h"
 #include "ipc/ipc_message.h"

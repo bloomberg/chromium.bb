@@ -6,9 +6,9 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/message_loop.h"
-#include "net/base/ip_endpoint.h"
+#include "base/message_loop/message_loop.h"
 #include "jingle/glue/utils.h"
+#include "net/base/ip_endpoint.h"
 #include "third_party/libjingle/source/talk/base/socketaddress.h"
 
 namespace jingle_glue {

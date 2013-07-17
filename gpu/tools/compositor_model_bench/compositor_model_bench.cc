@@ -29,7 +29,7 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
 
 #include "gpu/tools/compositor_model_bench/render_model_utils.h"

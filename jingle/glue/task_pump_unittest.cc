@@ -4,7 +4,7 @@
 
 #include "jingle/glue/task_pump.h"
 
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "jingle/glue/mock_task.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

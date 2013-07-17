@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/at_exit.h"
-#include "base/message_loop.h"
 #include "base/command_line.h"
+#include "base/message_loop/message_loop.h"
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
 #endif

@@ -5,7 +5,7 @@
 #include "jingle/glue/fake_socket_factory.h"
 
 #include "base/bind.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "jingle/glue/utils.h"
 #include "third_party/libjingle/source/talk/base/asyncsocket.h"
 

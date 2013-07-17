@@ -6,7 +6,7 @@
 #define IPC_IPC_CHANNEL_FACTORY_H_
 
 #include "base/files/file_path.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_export.h"
 
