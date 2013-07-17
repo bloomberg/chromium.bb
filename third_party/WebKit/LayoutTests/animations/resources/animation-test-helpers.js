@@ -516,7 +516,10 @@ function comparePropertyValue(property, computedValue, expectedValue, tolerance)
             }
         }
     } else {
-        result = isCloseEnough(computedValue, expectedValue, tolerance);
+        if (typeof expectedValue == "string")
+            result = (computedValue == expectedValue);
+        else
+            result = isCloseEnough(computedValue, expectedValue, tolerance);
     }
     return result;
 }
