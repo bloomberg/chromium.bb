@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "chrome/browser/chromeos/dbus/cros_dbus_service.h"
 #include "dbus/mock_exported_object.h"
 #include "dbus/mock_object_proxy.h"

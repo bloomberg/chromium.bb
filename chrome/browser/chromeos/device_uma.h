@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/event_types.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 
 template <typename T> struct DefaultSingletonTraits;
 

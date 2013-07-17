@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/extensions/file_manager/file_manager_notifications.h"
 
 #include "base/bind.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_manager_util.h"

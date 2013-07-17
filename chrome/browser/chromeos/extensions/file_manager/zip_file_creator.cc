@@ -8,7 +8,7 @@
 #include "base/command_line.h"
 #include "base/files/file_util_proxy.h"
 #include "base/memory/scoped_handle.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/common/chrome_paths.h"

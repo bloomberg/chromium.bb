@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
 
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"

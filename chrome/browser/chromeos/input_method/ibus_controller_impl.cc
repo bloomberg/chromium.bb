@@ -17,7 +17,7 @@
 #include "base/environment.h"
 #include "base/files/file_path_watcher.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/rand_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
