@@ -44,6 +44,7 @@ class SelectionFormatMap;
 }
 
 namespace views {
+class DesktopNativeCursorManager;
 class DesktopRootWindowHostX11;
 
 // Implements drag and drop on X11 for aura. On one side, this class takes raw
@@ -57,6 +58,7 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
   DesktopDragDropClientAuraX11(
       views::DesktopRootWindowHostX11* root_window_host,
       aura::RootWindow* root_window,
+      views::DesktopNativeCursorManager* cursor_manager,
       Display* xdisplay,
       ::Window xwindow);
   virtual ~DesktopDragDropClientAuraX11();
@@ -215,6 +217,11 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
   // put an XdndLeave in the queue at roughly the same time that the other
   // window responds to an XdndStatus.
   std::map< ::Window, ::Atom> negotiated_operation_;
+
+  // We use these cursors while dragging.
+  gfx::NativeCursor grab_cursor_;
+  gfx::NativeCursor copy_grab_cursor_;
+  gfx::NativeCursor move_grab_cursor_;
 
   static std::map< ::Window, DesktopDragDropClientAuraX11*> g_live_client_map;
 

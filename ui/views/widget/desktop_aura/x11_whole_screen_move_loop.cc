@@ -59,7 +59,8 @@ bool X11WholeScreenMoveLoop::Dispatch(const base::NativeEvent& event) {
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopRootWindowHostLinux, aura::client::WindowMoveClient implementation:
 
-bool X11WholeScreenMoveLoop::RunMoveLoop(aura::Window* source) {
+bool X11WholeScreenMoveLoop::RunMoveLoop(aura::Window* source,
+                                         gfx::NativeCursor cursor) {
   DCHECK(!in_move_loop_);  // Can only handle one nested loop at a time.
   in_move_loop_ = true;
 
@@ -90,24 +91,8 @@ bool X11WholeScreenMoveLoop::RunMoveLoop(aura::Window* source) {
   base::MessagePumpAuraX11::Current()->BlockUntilWindowMapped(
       grab_input_window_);
 
-  XGrabServer(display);
-  XUngrabPointer(display, CurrentTime);
-  int ret = XGrabPointer(
-      display,
-      grab_input_window_,
-      False,
-      ButtonPressMask | ButtonReleaseMask | PointerMotionMask,
-      GrabModeAsync,
-      GrabModeAsync,
-      None,
-      None,
-      CurrentTime);
-  XUngrabServer(display);
-  if (ret != GrabSuccess) {
-    DLOG(ERROR) << "Grabbing new tab for dragging failed: "
-                << ui::GetX11ErrorString(display, ret);
+  if (!GrabPointerWithCursor(cursor))
     return false;
-  }
 
   base::MessageLoopForUI* loop = base::MessageLoopForUI::current();
   base::MessageLoop::ScopedNestableTaskAllower allow_nested(loop);
@@ -115,6 +100,11 @@ bool X11WholeScreenMoveLoop::RunMoveLoop(aura::Window* source) {
   quit_closure_ = run_loop.QuitClosure();
   run_loop.Run();
   return true;
+}
+
+void X11WholeScreenMoveLoop::UpdateCursor(gfx::NativeCursor cursor) {
+  DCHECK(in_move_loop_);
+  GrabPointerWithCursor(cursor);
 }
 
 void X11WholeScreenMoveLoop::EndMoveLoop() {
@@ -136,6 +126,30 @@ void X11WholeScreenMoveLoop::EndMoveLoop() {
 
   in_move_loop_ = false;
   quit_closure_.Run();
+}
+
+bool X11WholeScreenMoveLoop::GrabPointerWithCursor(gfx::NativeCursor cursor) {
+  Display* display = base::MessagePumpAuraX11::GetDefaultXDisplay();
+  XGrabServer(display);
+  XUngrabPointer(display, CurrentTime);
+  int ret = XGrabPointer(
+      display,
+      grab_input_window_,
+      False,
+      ButtonPressMask | ButtonReleaseMask | PointerMotionMask,
+      GrabModeAsync,
+      GrabModeAsync,
+      None,
+      cursor.platform(),
+      CurrentTime);
+  XUngrabServer(display);
+  if (ret != GrabSuccess) {
+    DLOG(ERROR) << "Grabbing new tab for dragging failed: "
+                << ui::GetX11ErrorString(display, ret);
+    return false;
+  }
+
+  return true;
 }
 
 }  // namespace views

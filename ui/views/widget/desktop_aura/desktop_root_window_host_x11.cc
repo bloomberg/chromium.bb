@@ -311,13 +311,15 @@ aura::RootWindow* DesktopRootWindowHostX11::InitRootWindow(
   aura::client::SetDispatcherClient(root_window_,
                                     dispatcher_client_.get());
 
+  views::DesktopNativeCursorManager* desktop_native_cursor_manager =
+      new views::DesktopNativeCursorManager(
+          root_window_,
+          scoped_ptr<DesktopCursorLoaderUpdater>(
+              new DesktopCursorLoaderUpdaterAuraX11));
   cursor_client_.reset(
       new views::corewm::CursorManager(
           scoped_ptr<corewm::NativeCursorManager>(
-              new views::DesktopNativeCursorManager(
-                  root_window_,
-                  scoped_ptr<DesktopCursorLoaderUpdater>(
-                      new DesktopCursorLoaderUpdaterAuraX11)))));
+              desktop_native_cursor_manager)));
   aura::client::SetCursorClient(root_window_,
                                 cursor_client_.get());
 
@@ -328,7 +330,7 @@ aura::RootWindow* DesktopRootWindowHostX11::InitRootWindow(
   desktop_native_widget_aura_->InstallInputMethodEventFilter(root_window_);
 
   drag_drop_client_.reset(new DesktopDragDropClientAuraX11(
-      this, root_window_, xdisplay_, xwindow_));
+      this, root_window_, desktop_native_cursor_manager, xdisplay_, xwindow_));
   aura::client::SetDragDropClient(root_window_, drag_drop_client_.get());
 
   // TODO(erg): Unify this code once the other consumer goes away.

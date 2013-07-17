@@ -7,6 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/views/widget/desktop_aura/x11_whole_screen_move_loop_delegate.h"
 
 namespace aura {
@@ -25,14 +26,22 @@ class X11WholeScreenMoveLoop : public base::MessageLoop::Dispatcher {
   // Overridden from base::MessageLoop::Dispatcher:
   virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE;
 
-  // Runs the nested message loop. Returns true if there we were able to grab
-  // the pointer and run the move loop.
-  bool RunMoveLoop(aura::Window* window);
+  // Runs the nested message loop. While the mouse is grabbed, use |cursor| as
+  // the mouse cursor. Returns true if there we were able to grab the pointer
+  // and run the move loop.
+  bool RunMoveLoop(aura::Window* window, gfx::NativeCursor cursor);
+
+  // Updates the cursor while the move loop is running.
+  void UpdateCursor(gfx::NativeCursor cursor);
 
   // Ends the RunMoveLoop() that's currently in progress.
   void EndMoveLoop();
 
  private:
+  // Grabs the pointer, setting the mouse cursor to |cursor|. Returns true if
+  // the grab was successful.
+  bool GrabPointerWithCursor(gfx::NativeCursor cursor);
+
   X11WholeScreenMoveLoopDelegate* delegate_;
 
   // Are we running a nested message loop from RunMoveLoop()?

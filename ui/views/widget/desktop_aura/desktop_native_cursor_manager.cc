@@ -23,6 +23,12 @@ DesktopNativeCursorManager::DesktopNativeCursorManager(
 DesktopNativeCursorManager::~DesktopNativeCursorManager() {
 }
 
+gfx::NativeCursor DesktopNativeCursorManager::GetInitializedCursor(int type) {
+  gfx::NativeCursor cursor(type);
+  cursor_loader_->SetPlatformCursor(&cursor);
+  return cursor;
+}
+
 void DesktopNativeCursorManager::SetDisplay(
     const gfx::Display& display,
     views::corewm::NativeCursorManagerDelegate* delegate) {

@@ -35,6 +35,9 @@ class VIEWS_EXPORT DesktopNativeCursorManager
       scoped_ptr<DesktopCursorLoaderUpdater> cursor_loader_updater);
   virtual ~DesktopNativeCursorManager();
 
+  // Builds a cursor and sets the internal platform representation.
+  gfx::NativeCursor GetInitializedCursor(int type);
+
  private:
   // Overridden from views::corewm::NativeCursorManager:
   virtual void SetDisplay(
