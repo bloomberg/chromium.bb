@@ -186,6 +186,22 @@ void EmitDebugLogForCloseFile(const base::FilePath& local_path,
 
 }  // namespace
 
+void RunFileSystemCallback(
+    const FileSystemGetter& file_system_getter,
+    const base::Callback<void(FileSystemInterface*)>& callback,
+    const base::Closure& on_error_callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  FileSystemInterface* file_system = file_system_getter.Run();
+
+  if (!file_system) {
+    if (!on_error_callback.is_null())
+      on_error_callback.Run();
+    return;
+  }
+
+  callback.Run(file_system);
+}
+
 void GetFileInfo(const base::FilePath& file_path,
                  const GetFileInfoCallback& callback,
                  FileSystemInterface* file_system) {

@@ -42,6 +42,8 @@ class FileSystemInterface;
 
 namespace fileapi_internal {
 
+typedef base::Callback<FileSystemInterface*()> FileSystemGetter;
+
 typedef base::Callback<
     void(base::PlatformFileError result)> StatusCallback;
 typedef base::Callback<
@@ -60,6 +62,18 @@ typedef base::Callback<
 typedef base::Callback<
     void(base::PlatformFileError result,
          base::PlatformFile platform_file)> OpenFileCallback;
+
+// Runs |file_system_getter| to obtain the instance of FileSystemInstance,
+// and then runs |callback| with it.
+// If |file_system_getter| returns NULL, runs |on_error_callback| instead.
+// This function must be called on UI thread.
+// |file_system_getter| and |callback| must not be null, but
+// |on_error_callback| can be null (if no operation is necessary for error
+// case).
+void RunFileSystemCallback(
+    const FileSystemGetter& file_system_getter,
+    const base::Callback<void(FileSystemInterface*)>& callback,
+    const base::Closure& on_error_callback);
 
 // Returns the metadata info of the file at |file_path|.
 // Called from FileSystemProxy::GetFileInfo().

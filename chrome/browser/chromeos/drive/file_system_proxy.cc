@@ -400,17 +400,9 @@ void FileSystemProxy::CallFileApiInternalFunctionOnUIThread(
       BrowserThread::UI,
       FROM_HERE,
       base::Bind(
-          &FileSystemProxy::CallFileApiInternalFunctionOnUIThreadInternal,
-          this,
-          function));
-}
-
-void FileSystemProxy::CallFileApiInternalFunctionOnUIThreadInternal(
-    const base::Callback<void(FileSystemInterface*)>& function) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  // If |file_system_| is NULL, it means the file system has already shut down.
-  if (file_system_)
-    function.Run(file_system_);
+          &fileapi_internal::RunFileSystemCallback,
+          base::Bind(&FileSystemProxy::GetFileSystemOnUIThread, this),
+          function, base::Closure()));
 }
 
 void FileSystemProxy::OnCreateWritableSnapshotFile(
@@ -443,6 +435,11 @@ void FileSystemProxy::CloseWritableSnapshotFile(
 
   CallFileApiInternalFunctionOnUIThread(
       base::Bind(&fileapi_internal::CloseFile, virtual_path));
+}
+
+FileSystemInterface* FileSystemProxy::GetFileSystemOnUIThread() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  return file_system_;
 }
 
 }  // namespace drive

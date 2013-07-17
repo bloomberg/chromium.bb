@@ -122,10 +122,6 @@ class FileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
   void CallFileApiInternalFunctionOnUIThread(
       const base::Callback<void(FileSystemInterface*)>& function);
 
-  // Used to implement CallFileApiFunctionOnUIThread.
-  void CallFileApiInternalFunctionOnUIThreadInternal(
-      const base::Callback<void(FileSystemInterface*)>& function);
-
   // Helper callback for relaying reply for CreateWritableSnapshotFile() to
   // the calling thread.
   void OnCreateWritableSnapshotFile(
@@ -140,6 +136,9 @@ class FileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
   void CloseWritableSnapshotFile(
       const base::FilePath& virtual_path,
       const base::FilePath& local_path);
+
+  // Returns |file_system_| on UI thread.
+  FileSystemInterface* GetFileSystemOnUIThread();
 
   FileSystemInterface* file_system_;
 };
