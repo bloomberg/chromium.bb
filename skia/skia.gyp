@@ -116,7 +116,9 @@
         '../third_party/skia/src/ports/SkOSFile_win.cpp', 
         #'../third_party/skia/src/ports/SkThread_none.cpp',
         '../third_party/skia/src/ports/SkThread_pthread.cpp',
+        '../third_party/skia/src/ports/SkTLS_pthread.cpp',
         '../third_party/skia/src/ports/SkThread_win.cpp',
+        '../third_party/skia/src/ports/SkTLS_win.cpp',
         '../third_party/skia/src/ports/SkTime_Unix.cpp',
         #'../third_party/skia/src/ports/SkXMLParser_empty.cpp',
         #'../third_party/skia/src/ports/SkXMLParser_expat.cpp',
@@ -519,6 +521,7 @@
           'sources!': [
             '../third_party/skia/src/ports/SkOSFile_posix.cpp',
             '../third_party/skia/src/ports/SkThread_pthread.cpp',
+            '../third_party/skia/src/ports/SkTLS_pthread.cpp',
             '../third_party/skia/src/ports/SkTime_Unix.cpp',
             'ext/SkThread_chrome.cc',
           ],
