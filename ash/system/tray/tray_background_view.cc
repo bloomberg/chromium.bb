@@ -279,14 +279,14 @@ void TrayBackgroundView::TrayContainer::UpdateLayout() {
     int vertical_padding = kTrayContainerVerticalPaddingBottomAlignment;
     int horizontal_padding = kTrayContainerHorizontalPaddingBottomAlignment;
     if (ash::switches::UseAlternateShelfLayout()) {
-      vertical_padding += kPaddingFromEdgeOfShelf;
-      horizontal_padding += kPaddingFromEdgeOfShelf;
+      vertical_padding = kPaddingFromEdgeOfShelf;
+      horizontal_padding = kPaddingFromEdgeOfShelf;
     }
     set_border(views::Border::CreateEmptyBorder(
-          vertical_padding,
-          horizontal_padding,
-          horizontal_padding,
-          vertical_padding));
+        vertical_padding,
+        horizontal_padding,
+        horizontal_padding,
+        vertical_padding));
 
     views::BoxLayout* layout =
         new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0);
@@ -296,8 +296,8 @@ void TrayBackgroundView::TrayContainer::UpdateLayout() {
     int vertical_padding = kTrayContainerVerticalPaddingVerticalAlignment;
     int horizontal_padding = kTrayContainerHorizontalPaddingVerticalAlignment;
     if (ash::switches::UseAlternateShelfLayout()) {
-      vertical_padding += kPaddingFromEdgeOfShelf;
-      horizontal_padding += kPaddingFromEdgeOfShelf;
+      vertical_padding = kPaddingFromEdgeOfShelf;
+      horizontal_padding = kPaddingFromEdgeOfShelf;
     }
     set_border(views::Border::CreateEmptyBorder(
         vertical_padding,

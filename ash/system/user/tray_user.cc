@@ -8,6 +8,7 @@
 #include <climits>
 #include <vector>
 
+#include "ash/ash_switches.h"
 #include "ash/popup_message.h"
 #include "ash/session_state_delegate.h"
 #include "ash/shell.h"
@@ -69,6 +70,8 @@ const int kUserCardVerticalPadding = 10;
 const int kInactiveUserCardVerticalPadding = 4;
 const int kProfileRoundedCornerRadius = 2;
 const int kUserIconSize = 27;
+const int kUserIconLargeSize = 32;
+const int kUserIconLargeCornerRadius = 2;
 const int kUserLabelToIconPadding = 5;
 
 // When a hover border is used, it is starting this many pixels before the icon
@@ -129,6 +132,12 @@ class RoundedImageView : public views::View {
   // receiver's image.
   void SetImage(const gfx::ImageSkia& img, const gfx::Size& size);
 
+  // Set the radii of the corners independantly.
+  void SetCornerRadii(int top_left,
+                      int top_right,
+                      int bottom_right,
+                      int bottom_left);
+
  private:
   // Overridden from views::View.
   virtual gfx::Size GetPreferredSize() OVERRIDE;
@@ -137,7 +146,7 @@ class RoundedImageView : public views::View {
   gfx::ImageSkia image_;
   gfx::ImageSkia resized_;
   gfx::Size image_size_;
-  int corner_radius_;
+  int corner_radius_[4];
 
   // True if the given user is the active user and the icon should get
   // painted as active.
@@ -334,8 +343,10 @@ class AddUserView : public views::CustomButton,
 };
 
 RoundedImageView::RoundedImageView(int corner_radius, bool active_user)
-    : corner_radius_(corner_radius),
-      active_user_(active_user) {}
+    : active_user_(active_user) {
+  for (int i = 0; i < 4; ++i)
+    corner_radius_[i] = corner_radius;
+}
 
 RoundedImageView::~RoundedImageView() {}
 
@@ -353,6 +364,16 @@ void RoundedImageView::SetImage(const gfx::ImageSkia& img,
   }
 }
 
+void RoundedImageView::SetCornerRadii(int top_left,
+                                      int top_right,
+                                      int bottom_right,
+                                      int bottom_left) {
+  corner_radius_[0] = top_left;
+  corner_radius_[1] = top_right;
+  corner_radius_[2] = bottom_right;
+  corner_radius_[3] = bottom_left;
+}
+
 gfx::Size RoundedImageView::GetPreferredSize() {
   return gfx::Size(image_size_.width() + GetInsets().width(),
                    image_size_.height() + GetInsets().height());
@@ -363,9 +384,18 @@ void RoundedImageView::OnPaint(gfx::Canvas* canvas) {
   gfx::Rect image_bounds(size());
   image_bounds.ClampToCenteredSize(GetPreferredSize());
   image_bounds.Inset(GetInsets());
-  const SkScalar kRadius = SkIntToScalar(corner_radius_);
+  const SkScalar kRadius[8] = {
+    SkIntToScalar(corner_radius_[0]),
+    SkIntToScalar(corner_radius_[0]),
+    SkIntToScalar(corner_radius_[1]),
+    SkIntToScalar(corner_radius_[1]),
+    SkIntToScalar(corner_radius_[2]),
+    SkIntToScalar(corner_radius_[2]),
+    SkIntToScalar(corner_radius_[3]),
+    SkIntToScalar(corner_radius_[3])
+  };
   SkPath path;
-  path.addRoundRect(gfx::RectToSkRect(image_bounds), kRadius, kRadius);
+  path.addRoundRect(gfx::RectToSkRect(image_bounds), kRadius);
   SkPaint paint;
   paint.setAntiAlias(true);
   paint.setXfermodeMode(active_user_ ? SkXfermode::kSrcOver_Mode :
@@ -1172,16 +1202,28 @@ void TrayUser::UpdateAfterLoginStatusChange(user::LoginStatus status) {
         bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_LOCALLY_MANAGED_LABEL));
   }
 
+  int icon_size = kUserIconSize;
+  if (avatar_ && ash::switches::UseAlternateShelfLayout()) {
+    icon_size = kUserIconLargeSize;
+    avatar_->SetCornerRadii(0,
+                            kUserIconLargeCornerRadius,
+                            kUserIconLargeCornerRadius,
+                            0);
+    avatar_->set_border(NULL);
+  }
   if (avatar_) {
     if (status == user::LOGGED_IN_GUEST) {
-        avatar_->SetImage(*ui::ResourceBundle::GetSharedInstance().
-            GetImageNamed(IDR_AURA_UBER_TRAY_GUEST_ICON).ToImageSkia(),
-            gfx::Size(kUserIconSize, kUserIconSize));
+      int image_name = ash::switches::UseAlternateShelfLayout() ?
+          IDR_AURA_UBER_TRAY_GUEST_ICON_LARGE :
+          IDR_AURA_UBER_TRAY_GUEST_ICON;
+      avatar_->SetImage(*ui::ResourceBundle::GetSharedInstance().
+          GetImageNamed(image_name).ToImageSkia(),
+          gfx::Size(icon_size, icon_size));
     } else {
       avatar_->SetImage(
           ash::Shell::GetInstance()->session_state_delegate()->GetUserImage(
               multiprofile_index_),
-          gfx::Size(kUserIconSize, kUserIconSize));
+          gfx::Size(icon_size, icon_size));
     }
   }
 }
@@ -1193,10 +1235,17 @@ void TrayUser::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
   if (alignment == SHELF_ALIGNMENT_BOTTOM ||
       alignment == SHELF_ALIGNMENT_TOP) {
     if (avatar_) {
-      avatar_->set_border(views::Border::CreateEmptyBorder(
-          0, kTrayImageItemHorizontalPaddingBottomAlignment + 2,
-          0, kTrayImageItemHorizontalPaddingBottomAlignment));
-
+      if (ash::switches::UseAlternateShelfLayout()) {
+        avatar_->set_border(NULL);
+        avatar_->SetCornerRadii(0,
+                                kUserIconLargeCornerRadius,
+                                kUserIconLargeCornerRadius,
+                                0);
+      } else {
+        avatar_->set_border(views::Border::CreateEmptyBorder(
+            0, kTrayImageItemHorizontalPaddingBottomAlignment + 2,
+            0, kTrayImageItemHorizontalPaddingBottomAlignment));
+      }
     }
     if (label_) {
       label_->set_border(views::Border::CreateEmptyBorder(
@@ -1207,8 +1256,17 @@ void TrayUser::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
         new views::BoxLayout(views::BoxLayout::kHorizontal,
                              0, 0, kUserLabelToIconPadding));
   } else {
-    if (avatar_)
-      SetTrayImageItemBorder(avatar_, alignment);
+    if (avatar_) {
+      if (ash::switches::UseAlternateShelfLayout()) {
+        avatar_->set_border(NULL);
+        avatar_->SetCornerRadii(0,
+                                0,
+                                kUserIconLargeCornerRadius,
+                                kUserIconLargeCornerRadius);
+      } else {
+        SetTrayImageItemBorder(avatar_, alignment);
+      }
+    }
     if (label_) {
       label_->set_border(views::Border::CreateEmptyBorder(
           kTrayLabelItemVerticalPaddingVeriticalAlignment,
@@ -1225,10 +1283,12 @@ void TrayUser::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
 void TrayUser::OnUserUpdate() {
   // Check for null to avoid crbug.com/150944.
   if (avatar_) {
+    int icon_size = ash::switches::UseAlternateShelfLayout() ?
+        kUserIconLargeSize : kUserIconSize;
     avatar_->SetImage(
         ash::Shell::GetInstance()->session_state_delegate()->GetUserImage(
             multiprofile_index_),
-        gfx::Size(kUserIconSize, kUserIconSize));
+        gfx::Size(icon_size, icon_size));
   }
 }
 

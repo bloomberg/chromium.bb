@@ -285,6 +285,11 @@ void SystemTray::UpdateAfterLoginStatusChange(user::LoginStatus login_status) {
     (*it)->UpdateAfterLoginStatusChange(login_status);
   }
 
+  // Items default to SHELF_ALIGNMENT_BOTTOM. Update them if the initial
+  // position of the shelf differs.
+  if (shelf_alignment() != SHELF_ALIGNMENT_BOTTOM)
+    UpdateAfterShelfAlignmentChange(shelf_alignment());
+
   SetVisible(true);
   PreferredSizeChanged();
 }
