@@ -9,11 +9,16 @@ function AdjustHeight(frameWin) {
   frameWin.frameElement.style.height = height;
 }
 
-function DidExecuteTests() {
+// Called when the tests are completed. |result| should be "PASS" if the test(s)
+// passed, or information about the failure if the test(s) did not pass.
+function DidExecuteTests(result) {
   var plugin = document.getElementById("plugin");
-  plugin.parentNode.removeChild(plugin);
-  plugin = undefined;
-  CheckPostConditions();
+  if (plugin.removePlugin) {
+    plugin.parentNode.removeChild(plugin);
+    plugin = undefined;
+  }
+  if (CheckPostConditions())
+    sendAutomationMessage(result);
 
   if (window == top)
     return;
@@ -89,12 +94,13 @@ function ExtractSearchParameter(name) {
 //
 // Otherwise, returns an array containing 2 items. The 0th element is the
 // message_type, one of:
-//  - ClearContents
-//  - DidExecuteTests
-//  - LogHTML
-//  - SetCookie
-//  - EvalScript
 //  - AddPostCondition
+//  - ClearConsole
+//  - DidExecuteTests
+//  - EvalScript
+//  - LogHTML
+//  - RemovePluginWhenFinished
+//  - ReportProgress
 // The second item is the verbatim message_contents.
 function ParseTestingMessage(message_data) {
   if (typeof(message_data) != "string")
@@ -120,6 +126,10 @@ function LogHTML(html) {
   window.document.getElementById("console").innerHTML += html;
 }
 
+function RemovePluginWhenFinished() {
+  window.document.getElementById("plugin").removePlugin = true;
+}
+
 function sendAutomationMessage(msg) {
   if (window.domAutomationController) {
     window.domAutomationController.setAutomationId(0);
@@ -134,10 +144,6 @@ function sendAutomationMessage(msg) {
 function InternalError(msg) {
   LogHTML("<p>" + msg);
   sendAutomationMessage(msg);
-}
-
-function SetCookie(key_value_string) {
-  window.document.cookie = key_value_string + "; path=/";
 }
 
 function EvalScript(script) {
@@ -158,33 +164,26 @@ function AddPostCondition(script) {
 // doesn't count this as a pass.
 function ConditionFailed(error) {
   error_string = "Post condition check failed: " + error;
-  var i = 0;
-  // If the plugin thinks the test passed but a post-condition failed, we want
-  // to clear the PASS cookie so that ui_tests doesn't count it is a passed
-  // test.
-  if (window.document.cookie.indexOf("PASS") != -1) {
-    while (window.document.cookie.indexOf("PPAPI_PROGRESS_" + i) != -1) {
-      window.document.cookie = "PPAPI_PROGRESS_" + i + "=; max-age=0";
-      ++i;
-    }
-    window.document.cookie = "PPAPI_PROGRESS_0=" + error_string
-  }
-  LogHTML("<p>" + error_string);
+  InternalError(error_string);
 }
 // Iterate through the post conditions defined in |conditions| and check that
 // they all pass.
 function CheckPostConditions() {
+  var success = true;
   for (var i = 0; i < conditions.length; ++i) {
     var script = conditions[i];
     try {
       if (!eval(script)) {
         ConditionFailed("\"" + script + "\"");
+        success = false;
       }
     } catch (ex) {
       ConditionFailed("\"" + script + "\"" + " failed with exception: " +
                       "\"" + ex.toString() + "\"");
+      success = false;
     }
   }
+  return success;
 }
 
 function IsTestingMessage(message_data) {
@@ -196,18 +195,20 @@ function handleTestingMessage(message_event) {
   if (type_contents_tuple) {
     var type = type_contents_tuple[0];
     var contents = type_contents_tuple[1];
-    if (type === "ClearConsole")
+    if (type === "AddPostCondition")
+      AddPostCondition(contents);
+    else if (type === "ClearConsole")
       ClearConsole();
     else if (type === "DidExecuteTests")
-      DidExecuteTests();
-    else if (type === "LogHTML")
-      LogHTML(contents);
-    else if (type === "SetCookie")
-      SetCookie(contents);
+      DidExecuteTests(contents);
     else if (type === "EvalScript")
       EvalScript(contents);
-    else if (type == "AddPostCondition")
-      AddPostCondition(contents);
+    else if (type === "LogHTML")
+      LogHTML(contents);
+    else if (type === "RemovePluginWhenFinished")
+      RemovePluginWhenFinished();
+    else if (type === "ReportProgress")
+      sendAutomationMessage(contents);
   }
 }
 

@@ -13,6 +13,7 @@
 class TestInstance : public TestCase {
  public:
   TestInstance(TestingInstance* instance);
+  virtual ~TestInstance();
 
   // TestCase implementation.
   virtual bool Init();

@@ -217,12 +217,14 @@ void TestingInstance::ExecuteTests(int32_t unused) {
     }
   }
 
-  // Declare we're done by setting a cookie to either "PASS" or the errors.
-  ReportProgress(errors_.empty() ? "PASS" : errors_);
   if (remove_plugin_)
-    SendTestCommand("DidExecuteTests");
-  // Note, DidExecuteTests unloads the plugin. We can't really do anthing after
-  // this point.
+    SendTestCommand("RemovePluginWhenFinished");
+  std::string result(errors_);
+  if (result.empty())
+    result = "PASS";
+  SendTestCommand("DidExecuteTests", result);
+  // Note, DidExecuteTests may unload the plugin. We can't really do anything
+  // after this point.
 }
 
 TestCase* TestingInstance::CaseForTestName(const std::string& name) {
@@ -288,11 +290,7 @@ void TestingInstance::LogHTML(const std::string& html) {
 }
 
 void TestingInstance::ReportProgress(const std::string& progress_value) {
-  // Use streams since nacl doesn't compile base yet (for StringPrintf).
-  std::ostringstream script;
-  script << "window.domAutomationController.setAutomationId(0);" <<
-            "window.domAutomationController.send(\"" << progress_value << "\")";
-  EvalScript(script.str());
+  SendTestCommand("ReportProgress", progress_value);
 }
 
 void TestingInstance::AddPostCondition(const std::string& script) {
