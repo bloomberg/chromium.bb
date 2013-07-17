@@ -85,8 +85,8 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient {
   // Overriden from RasterWorkerPoolClient:
   virtual bool ShouldForceTasksRequiredForActivationToComplete() const
       OVERRIDE;
-  virtual void DidFinishedRunningTasks() OVERRIDE;
-  virtual void DidFinishedRunningTasksRequiredForActivation() OVERRIDE;
+  virtual void DidFinishRunningTasks() OVERRIDE;
+  virtual void DidFinishRunningTasksRequiredForActivation() OVERRIDE;
 
   typedef std::vector<Tile*> TileVector;
   typedef std::vector<scoped_refptr<Tile> > TileRefVector;

@@ -139,8 +139,8 @@ bool TileManager::ShouldForceTasksRequiredForActivationToComplete() const {
   return GlobalState().tree_priority != SMOOTHNESS_TAKES_PRIORITY;
 }
 
-void TileManager::DidFinishedRunningTasks() {
-  TRACE_EVENT0("cc", "TileManager::DidFinishedRunningTasks");
+void TileManager::DidFinishRunningTasks() {
+  TRACE_EVENT0("cc", "TileManager::DidFinishRunningTasks");
 
   // When OOM, keep re-assigning memory until we reach a steady state
   // where top-priority tiles are initialized.
@@ -176,7 +176,7 @@ void TileManager::DidFinishedRunningTasks() {
   client_->NotifyReadyToActivate();
 }
 
-void TileManager::DidFinishedRunningTasksRequiredForActivation() {
+void TileManager::DidFinishRunningTasksRequiredForActivation() {
   // This is only a true indication that all tiles required for
   // activation are initialized when no tiles are OOM. We need to
   // wait for DidFinishRunningTasks() to be called, try to re-assign

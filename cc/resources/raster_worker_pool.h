@@ -81,8 +81,8 @@ namespace cc {
 class CC_EXPORT RasterWorkerPoolClient {
  public:
   virtual bool ShouldForceTasksRequiredForActivationToComplete() const = 0;
-  virtual void DidFinishedRunningTasks() = 0;
-  virtual void DidFinishedRunningTasksRequiredForActivation() = 0;
+  virtual void DidFinishRunningTasks() = 0;
+  virtual void DidFinishRunningTasksRequiredForActivation() = 0;
 
  protected:
   virtual ~RasterWorkerPoolClient() {}

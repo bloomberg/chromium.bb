@@ -427,12 +427,12 @@ void PixelBufferRasterWorkerPool::CheckForCompletedRasterTasks() {
                         raster_tasks_required_for_activation().end(),
                         WasCanceled) ==
           raster_tasks_required_for_activation().end());
-    client()->DidFinishedRunningTasksRequiredForActivation();
+    client()->DidFinishRunningTasksRequiredForActivation();
   }
   if (will_notify_client_that_no_tasks_are_pending) {
     TRACE_EVENT_ASYNC_END0("cc", "ScheduledTasks", this);
     DCHECK(!HasPendingTasksRequiredForActivation());
-    client()->DidFinishedRunningTasks();
+    client()->DidFinishRunningTasks();
   }
 }
 

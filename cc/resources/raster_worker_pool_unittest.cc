@@ -79,8 +79,8 @@ class RasterWorkerPoolTest : public testing::Test,
       OVERRIDE {
     return false;
   }
-  virtual void DidFinishedRunningTasks() OVERRIDE {}
-  virtual void DidFinishedRunningTasksRequiredForActivation() OVERRIDE {}
+  virtual void DidFinishRunningTasks() OVERRIDE {}
+  virtual void DidFinishRunningTasksRequiredForActivation() OVERRIDE {}
 
   virtual void BeginTest() = 0;
   virtual void AfterTest() = 0;
