@@ -70,12 +70,17 @@ bool WebIDBKeyPath::isValid() const
     return m_private->isValid();
 }
 
+WebIDBKeyPathType WebIDBKeyPath::keyPathType() const
+{
+    ASSERT(m_private.get());
+    return static_cast<WebIDBKeyPathType>(m_private->type());
+}
+
 WebIDBKeyPath::Type WebIDBKeyPath::type() const
 {
     ASSERT(m_private.get());
-    return Type(m_private->type());
+    return static_cast<WebIDBKeyPath::Type>(m_private->type());
 }
-
 
 WebVector<WebString> WebIDBKeyPath::array() const
 {

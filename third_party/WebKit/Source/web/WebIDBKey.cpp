@@ -86,24 +86,24 @@ static PassRefPtr<IDBKey> convertFromWebIDBKeyArray(const WebVector<WebIDBKey>& 
     IDBKey::KeyArray keys;
     keys.reserveCapacity(array.size());
     for (size_t i = 0; i < array.size(); ++i) {
-        switch (array[i].type()) {
-        case WebIDBKey::ArrayType:
+        switch (array[i].keyType()) {
+        case WebIDBKeyTypeArray:
             keys.append(convertFromWebIDBKeyArray(array[i].array()));
             break;
-        case WebIDBKey::StringType:
+        case WebIDBKeyTypeString:
             keys.append(IDBKey::createString(array[i].string()));
             break;
-        case WebIDBKey::DateType:
+        case WebIDBKeyTypeDate:
             keys.append(IDBKey::createDate(array[i].date()));
             break;
-        case WebIDBKey::NumberType:
+        case WebIDBKeyTypeNumber:
             keys.append(IDBKey::createNumber(array[i].number()));
             break;
-        case WebIDBKey::InvalidType:
+        case WebIDBKeyTypeInvalid:
             keys.append(IDBKey::createInvalid());
             break;
-        case WebIDBKey::NullType:
-        case WebIDBKey::MinType:
+        case WebIDBKeyTypeNull:
+        case WebIDBKeyTypeMin:
             ASSERT_NOT_REACHED();
             break;
         }
@@ -177,11 +177,18 @@ void WebIDBKey::reset()
     m_private.reset();
 }
 
+WebIDBKeyType WebIDBKey::keyType() const
+{
+    if (!m_private.get())
+        return WebIDBKeyTypeNull;
+    return static_cast<WebIDBKeyType>(m_private->type());
+}
+
 WebIDBKey::Type WebIDBKey::type() const
 {
     if (!m_private.get())
-        return NullType;
-    return Type(m_private->type());
+        return WebIDBKey::NullType;
+    return static_cast<WebIDBKey::Type>(m_private->type());
 }
 
 bool WebIDBKey::isValid() const

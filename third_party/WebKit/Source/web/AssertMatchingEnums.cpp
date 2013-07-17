@@ -489,17 +489,15 @@ COMPILE_ASSERT_MATCHING_ENUM(WebIDBDatabaseExceptionVersionError, VersionError);
 COMPILE_ASSERT_MATCHING_ENUM(WebIDBDatabaseExceptionAbortError, AbortError);
 COMPILE_ASSERT_MATCHING_ENUM(WebIDBDatabaseExceptionQuotaError, QuotaExceededError);
 
-COMPILE_ASSERT_MATCHING_ENUM(WebIDBKey::InvalidType, IDBKey::InvalidType);
-COMPILE_ASSERT_MATCHING_ENUM(WebIDBKey::ArrayType, IDBKey::ArrayType);
-COMPILE_ASSERT_MATCHING_ENUM(WebIDBKey::StringType, IDBKey::StringType);
-COMPILE_ASSERT_MATCHING_ENUM(WebIDBKey::DateType, IDBKey::DateType);
-COMPILE_ASSERT_MATCHING_ENUM(WebIDBKey::NumberType, IDBKey::NumberType);
-// MinType is specific to the backing store, and is not plumbed through the Platform API, so this match is not required, and thus is purposefully absent.
-// COMPILE_ASSERT_MATCHING_ENUM(WebIDBKey::MinType, IDBKey::MinType);
+COMPILE_ASSERT_MATCHING_ENUM(WebIDBKeyTypeInvalid, IDBKey::InvalidType);
+COMPILE_ASSERT_MATCHING_ENUM(WebIDBKeyTypeArray, IDBKey::ArrayType);
+COMPILE_ASSERT_MATCHING_ENUM(WebIDBKeyTypeString, IDBKey::StringType);
+COMPILE_ASSERT_MATCHING_ENUM(WebIDBKeyTypeDate, IDBKey::DateType);
+COMPILE_ASSERT_MATCHING_ENUM(WebIDBKeyTypeNumber, IDBKey::NumberType);
 
-COMPILE_ASSERT_MATCHING_ENUM(WebIDBKeyPath::NullType, IDBKeyPath::NullType);
-COMPILE_ASSERT_MATCHING_ENUM(WebIDBKeyPath::StringType, IDBKeyPath::StringType);
-COMPILE_ASSERT_MATCHING_ENUM(WebIDBKeyPath::ArrayType, IDBKeyPath::ArrayType);
+COMPILE_ASSERT_MATCHING_ENUM(WebIDBKeyPathTypeNull, IDBKeyPath::NullType);
+COMPILE_ASSERT_MATCHING_ENUM(WebIDBKeyPathTypeString, IDBKeyPath::StringType);
+COMPILE_ASSERT_MATCHING_ENUM(WebIDBKeyPathTypeArray, IDBKeyPath::ArrayType);
 
 COMPILE_ASSERT_MATCHING_ENUM(WebIDBMetadata::NoIntVersion, IDBDatabaseMetadata::NoIntVersion);
 
