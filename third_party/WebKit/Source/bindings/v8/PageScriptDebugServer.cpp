@@ -120,7 +120,7 @@ void PageScriptDebugServer::removeListener(ScriptDebugListener* listener, Page* 
     m_listenersMap.remove(page);
 
     if (m_listenersMap.isEmpty())
-        v8::Debug::SetDebugEventListener(0);
+        v8::Debug::SetDebugEventListener2(0);
     // FIXME: Remove all breakpoints set by the agent.
 }
 
