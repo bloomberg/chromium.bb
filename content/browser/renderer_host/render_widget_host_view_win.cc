@@ -629,7 +629,7 @@ bool RenderWidgetHostViewWin::HasFocus() const {
 
 bool RenderWidgetHostViewWin::IsSurfaceAvailableForCopy() const {
   return !!render_widget_host_->GetBackingStore(false) ||
-      !!accelerated_surface_.get();
+      (accelerated_surface_.get() && accelerated_surface_->IsReadyForCopy());
 }
 
 void RenderWidgetHostViewWin::Show() {

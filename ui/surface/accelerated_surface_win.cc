@@ -682,6 +682,12 @@ void AcceleratedPresenter::SetNewTargetWindow(gfx::PluginWindowHandle window) {
 AcceleratedPresenter::~AcceleratedPresenter() {
 }
 
+bool AcceleratedPresenter::IsSwapChainInitialized() const {
+  base::AutoLock locked(*present_thread_->lock());
+
+  return !!swap_chain_;
+}
+
 void AcceleratedPresenter::DoPresentAndAcknowledge(
     const gfx::Size& size,
     int64 surface_handle,
@@ -1074,6 +1080,11 @@ AcceleratedSurface::~AcceleratedSurface() {
 void AcceleratedSurface::Present(HDC dc) {
   presenter_->Present(dc);
 }
+
+bool AcceleratedSurface::IsReadyForCopy() const {
+  return !!presenter_ && presenter_->IsSwapChainInitialized();
+}
+
 
 void AcceleratedSurface::AsyncCopyTo(
     const gfx::Rect& src_subrect,

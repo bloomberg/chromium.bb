@@ -57,6 +57,10 @@ class SURFACE_EXPORT AcceleratedPresenter
       const ui::LatencyInfo& latency_info,
       const CompletionTask& completion_task);
 
+  // Returns true if the swap chain has been created and initialized.  This can
+  // be called on any thread.
+  bool IsSwapChainInitialized() const;
+
   // Schedule the presenter to free all its resources. This can be called on any
   // thread.
   void Suspend();
@@ -187,6 +191,10 @@ class SURFACE_EXPORT AcceleratedSurface {
 
   // Synchronously present a frame with no acknowledgement.
   void Present(HDC dc);
+
+  // Returns true if the surface is fully initialized and has been presented to
+  // at least once.
+  bool IsReadyForCopy() const;
 
   // Transfer the contents of the surface to an SkBitmap, and invoke a callback
   // with the result.
