@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/process_util.h"
+#include "base/process/launch.h"
 
 #include <fcntl.h>
 #include <io.h>
@@ -20,6 +20,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "base/process/kill.h"
 #include "base/sys_info.h"
 #include "base/win/object_watcher.h"
 #include "base/win/scoped_handle.h"

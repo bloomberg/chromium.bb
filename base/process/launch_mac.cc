@@ -2,41 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/process_util.h"
+#include "base/process/launch.h"
 
-#import <Cocoa/Cocoa.h>
-#include <crt_externs.h>
-#include <errno.h>
 #include <mach/mach.h>
-#include <mach/mach_init.h>
-#include <mach/mach_vm.h>
-#include <mach/shared_region.h>
-#include <mach/task.h>
-#include <malloc/malloc.h>
-#import <objc/runtime.h>
-#include <signal.h>
-#include <spawn.h>
-#include <sys/event.h>
-#include <sys/sysctl.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-
-#include <new>
-#include <string>
-
-#include "base/containers/hash_tables.h"
-#include "base/debug/debugger.h"
-#include "base/file_util.h"
-#include "base/lazy_instance.h"
-#include "base/logging.h"
-#include "base/mac/mac_util.h"
-#include "base/mac/scoped_mach_port.h"
-#include "base/posix/eintr_wrapper.h"
-#include "base/scoped_clear_errno.h"
-#include "base/strings/string_util.h"
-#include "base/sys_info.h"
-#include "third_party/apple_apsl/CFBase.h"
-#include "third_party/apple_apsl/malloc.h"
 
 namespace base {
 

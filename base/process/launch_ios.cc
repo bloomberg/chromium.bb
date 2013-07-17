@@ -2,16 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/process_util.h"
-
-#import <Foundation/Foundation.h>
-#include <stdio.h>
-#include <sys/resource.h>
-
-#include "base/logging.h"
-
-// This is just enough of a shim to let the support needed by test_support
-// link.  In general, process_util isn't valid on iOS.
+#include "base/process/launch.h"
 
 namespace base {
 
