@@ -331,7 +331,7 @@ static void printNavigationErrorMessage(Frame* frame, const KURL& activeURL, con
     String message = "Unsafe JavaScript attempt to initiate navigation for frame with URL '" + frame->document()->url().string() + "' from frame with URL '" + activeURL.string() + "'. " + reason + "\n";
 
     // FIXME: should we print to the console of the document performing the navigation instead?
-    frame->document()->domWindow()->printErrorMessage(message);
+    frame->domWindow()->printErrorMessage(message);
 }
 
 uint64_t Document::s_globalTreeVersion = 0;

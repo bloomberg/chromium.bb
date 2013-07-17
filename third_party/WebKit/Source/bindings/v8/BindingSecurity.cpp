@@ -56,7 +56,7 @@ static bool canAccessDocument(Document* targetDocument, SecurityReportingOption 
 
     if (reportingOption == ReportSecurityError) {
         if (Frame* frame = targetDocument->frame())
-            frame->document()->domWindow()->printErrorMessage(targetDocument->domWindow()->crossDomainAccessErrorMessage(active));
+            frame->domWindow()->printErrorMessage(targetDocument->domWindow()->crossDomainAccessErrorMessage(active));
     }
 
     return false;

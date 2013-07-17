@@ -308,7 +308,7 @@ void V8WindowShell::createContext()
 bool V8WindowShell::installDOMWindow()
 {
     DOMWrapperWorld::setInitializingWindow(true);
-    DOMWindow* window = m_frame->document()->domWindow();
+    DOMWindow* window = m_frame->domWindow();
     v8::Local<v8::Object> windowWrapper = V8ObjectConstructor::newInstance(V8PerContextData::from(m_context.newLocal(m_isolate))->constructorForType(&V8Window::info));
     if (windowWrapper.IsEmpty())
         return false;
@@ -445,7 +445,7 @@ static v8::Handle<v8::Value> getNamedProperty(HTMLDocument* htmlDocument, const 
         Node* node = items->item(0);
         Frame* frame = 0;
         if (node->hasTagName(HTMLNames::iframeTag) && (frame = toHTMLIFrameElement(node)->contentFrame()))
-            return toV8(frame->document()->domWindow(), creationContext, isolate);
+            return toV8(frame->domWindow(), creationContext, isolate);
         return toV8(node, creationContext, isolate);
     }
     return toV8(items.release(), creationContext, isolate);

@@ -390,7 +390,7 @@ void V8Window::namedPropertyGetterCustom(v8::Local<v8::String> name, const v8::P
     AtomicString propName = toWebCoreAtomicString(name);
     Frame* child = frame->tree()->scopedChild(propName);
     if (child) {
-        v8SetReturnValue(info, toV8Fast(child->document()->domWindow(), info, window));
+        v8SetReturnValue(info, toV8Fast(child->domWindow(), info, window));
         return;
     }
 

@@ -295,7 +295,7 @@ void FrameLoader::stopLoading(UnloadEventPolicy unloadEventPolicy)
                 if (m_pageDismissalEventBeingDispatched == NoDismissal) {
                     if (unloadEventPolicy == UnloadEventPolicyUnloadAndPageHide) {
                         m_pageDismissalEventBeingDispatched = PageHideDismissal;
-                        m_frame->document()->domWindow()->dispatchEvent(PageTransitionEvent::create(eventNames().pagehideEvent, false), m_frame->document());
+                        m_frame->domWindow()->dispatchEvent(PageTransitionEvent::create(eventNames().pagehideEvent, false), m_frame->document());
                     }
                     RefPtr<Event> unloadEvent(Event::create(eventNames().unloadEvent, false, false));
                     // The DocumentLoader (and thus its DocumentLoadTiming) might get destroyed
@@ -307,10 +307,11 @@ void FrameLoader::stopLoading(UnloadEventPolicy unloadEventPolicy)
                         DocumentLoadTiming* timing = documentLoader->timing();
                         ASSERT(timing->navigationStart());
                         timing->markUnloadEventStart();
-                        m_frame->document()->domWindow()->dispatchEvent(unloadEvent, m_frame->document());
+                        m_frame->domWindow()->dispatchEvent(unloadEvent, m_frame->document());
                         timing->markUnloadEventEnd();
-                    } else
-                        m_frame->document()->domWindow()->dispatchEvent(unloadEvent, m_frame->document());
+                    } else {
+                        m_frame->domWindow()->dispatchEvent(unloadEvent, m_frame->document());
+                    }
                 }
                 m_pageDismissalEventBeingDispatched = NoDismissal;
                 if (m_frame->document())
@@ -393,7 +394,7 @@ bool FrameLoader::didOpenURL()
     // its frame is not in a consistent state for rendering, so avoid setJSStatusBarText
     // since it may cause clients to attempt to render the frame.
     if (!m_stateMachine.creatingInitialEmptyDocument()) {
-        DOMWindow* window = m_frame->document()->domWindow();
+        DOMWindow* window = m_frame->domWindow();
         window->setStatus(String());
         window->setDefaultStatus(String());
     }
@@ -1916,7 +1917,7 @@ bool FrameLoader::shouldClose()
 
 bool FrameLoader::fireBeforeUnloadEvent(Chrome& chrome)
 {
-    DOMWindow* domWindow = m_frame->document()->domWindow();
+    DOMWindow* domWindow = m_frame->domWindow();
     if (!domWindow)
         return true;
 

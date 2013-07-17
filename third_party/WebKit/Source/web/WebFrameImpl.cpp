@@ -761,7 +761,7 @@ WebPerformance WebFrameImpl::performance() const
 {
     if (!frame())
         return WebPerformance();
-    return WebPerformance(frame()->document()->domWindow()->performance());
+    return WebPerformance(frame()->domWindow()->performance());
 }
 
 NPObject* WebFrameImpl::windowObject() const
@@ -1104,7 +1104,7 @@ WebURLLoader* WebFrameImpl::createAssociatedURLLoader(const WebURLLoaderOptions&
 
 unsigned WebFrameImpl::unloadListenerCount() const
 {
-    return frame()->document()->domWindow()->pendingUnloadEventListeners();
+    return frame()->domWindow()->pendingUnloadEventListeners();
 }
 
 bool WebFrameImpl::willSuppressOpenerInNewFrame() const
@@ -1859,7 +1859,7 @@ void WebFrameImpl::sendOrientationChangeEvent(int orientation)
 void WebFrameImpl::dispatchMessageEventWithOriginCheck(const WebSecurityOrigin& intendedTargetOrigin, const WebDOMEvent& event)
 {
     ASSERT(!event.isNull());
-    frame()->document()->domWindow()->dispatchMessageEventWithOriginCheck(intendedTargetOrigin.get(), event, 0);
+    frame()->domWindow()->dispatchMessageEventWithOriginCheck(intendedTargetOrigin.get(), event, 0);
 }
 
 int WebFrameImpl::findMatchMarkersVersion() const

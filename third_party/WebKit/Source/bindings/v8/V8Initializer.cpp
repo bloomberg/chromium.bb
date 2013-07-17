@@ -102,7 +102,7 @@ static void failedAccessCheckCallbackInMainThread(v8::Local<v8::Object> host, v8
     Frame* target = findFrame(host, data, v8::Isolate::GetCurrent());
     if (!target)
         return;
-    DOMWindow* targetWindow = target->document()->domWindow();
+    DOMWindow* targetWindow = target->domWindow();
     targetWindow->printErrorMessage(targetWindow->crossDomainAccessErrorMessage(activeDOMWindow()));
 
     // Throw an exception for failed-access checks against Location objects, otherwise write to the console.

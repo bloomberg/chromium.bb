@@ -687,7 +687,7 @@ void DocumentLoader::checkLoadComplete()
     // FIXME: This ASSERT is always triggered.
     // See https://bugs.webkit.org/show_bug.cgi?id=110937
     // ASSERT(this == frameLoader()->activeDocumentLoader())
-    m_frame->document()->domWindow()->finishedLoading();
+    m_frame->domWindow()->finishedLoading();
 }
 
 void DocumentLoader::clearRedirectChain()

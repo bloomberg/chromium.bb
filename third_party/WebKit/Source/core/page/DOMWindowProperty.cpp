@@ -41,7 +41,7 @@ DOMWindowProperty::DOMWindowProperty(Frame* frame)
     // See fast/dom/navigator-detached-no-crash.html for the recipe.
     // We should fix that.  <rdar://problem/11567132>
     if (m_frame) {
-        m_associatedDOMWindow = m_frame->document()->domWindow();
+        m_associatedDOMWindow = m_frame->domWindow();
         m_associatedDOMWindow->registerProperty(this);
     }
 }

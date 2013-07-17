@@ -212,7 +212,7 @@ bool WebPagePopupImpl::initializePage()
     frame->view()->resize(m_popupClient->contentSize());
     frame->view()->setTransparent(false);
 
-    DOMWindowPagePopup::install(frame->document()->domWindow(), m_popupClient);
+    DOMWindowPagePopup::install(frame->domWindow(), m_popupClient);
 
     DocumentWriter* writer = frame->loader()->activeDocumentLoader()->beginWriting("text/html", "UTF-8");
     m_popupClient->writeDocument(*writer);
@@ -321,7 +321,7 @@ void WebPagePopupImpl::closePopup()
         m_page->clearPageGroup();
         m_page->mainFrame()->loader()->stopAllLoaders();
         m_page->mainFrame()->loader()->stopLoading(UnloadEventPolicyNone);
-        DOMWindowPagePopup::uninstall(m_page->mainFrame()->document()->domWindow());
+        DOMWindowPagePopup::uninstall(m_page->mainFrame()->domWindow());
     }
     m_closing = true;
 

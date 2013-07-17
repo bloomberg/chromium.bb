@@ -154,11 +154,11 @@ Frame* createWindow(const String& urlString, const AtomicString& frameName, cons
     newFrame->loader()->setOpener(openerFrame);
     newFrame->page()->setOpenedByDOM();
 
-    if (newFrame->document()->domWindow()->isInsecureScriptAccess(activeWindow, completedURL))
+    if (newFrame->domWindow()->isInsecureScriptAccess(activeWindow, completedURL))
         return newFrame;
 
     if (function)
-        function(newFrame->document()->domWindow(), functionContext);
+        function(newFrame->domWindow(), functionContext);
 
     if (created) {
         FrameLoadRequest request(activeWindow->document()->securityOrigin(), ResourceRequest(completedURL, referrer));
