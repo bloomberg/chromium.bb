@@ -9711,6 +9711,11 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>
         won't use insecure connections in order to protect your privacy.
       </message>
+      <message name="IDS_ERRORPAGES_SUMMARY_DNS_PROBE_RUNNING" desc="Summary in the error page when DNS resolution failed and we are running a probe to figure out why.">
+        Unable to look up
+        <ph name="HOST_NAME">&lt;strong jscontent="hostName"&gt;&lt;/strong&gt;<ex>www.whatever.com</ex></ph>.
+        Trying to diagnose the problem...
+      </message>
 
       <message name="IDS_ERRORPAGES_ERROR_CODE" desc="At the bottom of error pages, a non-internationalized string or numeric code is displayed for debugging purposes">
         Error code: <ph name="ERROR_NAME">$1<ex>ERR_FILE_NOT_FOUND</ex></ph>
@@ -9781,6 +9786,9 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_ERRORPAGES_DETAILS_RESPONSE_HEADERS_MULTIPLE_LOCATION" desc="The error message displayed when we received multiple 'Location' header fields in an http response.">
         Multiple distinct Location headers received.  This is disallowed to protect
         against HTTP response splitting attacks.
+      </message>
+      <message name="IDS_ERRORPAGES_DETAILS_DNS_PROBE_RUNNING" desc="The error message displayed when we are waiting to see whether we will run a DNS probe.">
+        Waiting for DNS probe.
       </message>
       <message name="IDS_ERRORPAGES_DETAILS_UNKNOWN" desc="The default error message displayed if we don't have a more specific error message.">
         Unknown error.

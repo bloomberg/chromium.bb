@@ -307,6 +307,12 @@ function toggleHelpBox() {
 if (window.top.location != window.location)
   document.documentElement.setAttribute('subframe', '');
 
+function updateForDnsProbe(strings) {
+  var context = new JsEvalContext(strings);
+  jstProcess(context, document.getElementById('help-box-outer'));
+  jstProcess(context, document.getElementById('details'));
+}
+
 </script>
 
 <body id="t">

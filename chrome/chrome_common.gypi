@@ -729,8 +729,8 @@
       'target_name': 'common_net',
       'type': 'static_library',
       'sources': [
-        'common/net/net_error_tracker.cc',
-        'common/net/net_error_tracker.h',
+        'common/net/net_error_info.cc',
+        'common/net/net_error_info.h',
         'common/net/net_resource_provider.cc',
         'common/net/net_resource_provider.h',
         'common/net/predictor_common.h',

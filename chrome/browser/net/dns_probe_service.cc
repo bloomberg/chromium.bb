@@ -7,8 +7,6 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
-#include "chrome/browser/net/dns_probe_job.h"
-#include "chrome/common/net/net_error_info.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_util.h"
 #include "net/dns/dns_client.h"
@@ -17,7 +15,7 @@
 
 using base::FieldTrialList;
 using base::StringToInt;
-using chrome_common_net::DnsProbeResult;
+using chrome_common_net::DnsProbeStatus;
 using net::DnsClient;
 using net::DnsConfig;
 using net::IPAddressNumber;
@@ -36,8 +34,8 @@ const int kMaxResultAgeMs = 5000;
 
 // The public DNS servers used by the DnsProbeService to verify internet
 // connectivity.
-const char kPublicDnsPrimary[]   = "8.8.8.8";
-const char kPublicDnsSecondary[] = "8.8.4.4";
+const char kGooglePublicDns1[] = "8.8.8.8";
+const char kGooglePublicDns2[] = "8.8.4.4";
 
 IPEndPoint MakeDnsEndPoint(const std::string& dns_ip_literal) {
   IPAddressNumber dns_ip_number;
@@ -46,299 +44,217 @@ IPEndPoint MakeDnsEndPoint(const std::string& dns_ip_literal) {
   return IPEndPoint(dns_ip_number, net::dns_protocol::kDefaultPort);
 }
 
-const int kAttemptsUseDefault = -1;
-
-const char kAttemptsFieldTrialName[] = "DnsProbe-Attempts";
-
-int GetAttemptsFromFieldTrial() {
-  std::string group = FieldTrialList::FindFullName(kAttemptsFieldTrialName);
-  if (group == "" || group == "default")
-    return kAttemptsUseDefault;
-
-  int attempts;
-  if (!StringToInt(group, &attempts))
-   return kAttemptsUseDefault;
-
-  return attempts;
-}
-
-bool IsLocalhost(const IPAddressNumber& ip) {
-  return (ip.size() == net::kIPv4AddressSize)
-         && (ip[0] == 127) && (ip[1] == 0) && (ip[2] == 0) && (ip[3] == 1);
-}
-
-// The maximum number of nameservers counted in histograms.
-const int kNameserverCountMax = 10;
-
-}  // namespace
-
-DnsProbeService::DnsProbeService()
-    : system_result_(DnsProbeJob::SERVERS_UNKNOWN),
-      public_result_(DnsProbeJob::SERVERS_UNKNOWN),
-      state_(STATE_NO_RESULTS),
-      result_(chrome_common_net::DNS_PROBE_UNKNOWN),
-      dns_attempts_(GetAttemptsFromFieldTrial()) {
-  NetworkChangeNotifier::AddIPAddressObserver(this);
-}
-
-DnsProbeService::~DnsProbeService() {
-  NetworkChangeNotifier::RemoveIPAddressObserver(this);
-}
-
-void DnsProbeService::ProbeDns(const DnsProbeService::CallbackType& callback) {
-  callbacks_.push_back(callback);
-
-  if (state_ == STATE_RESULTS_CACHED && ResultsExpired())
-    ExpireResults();
-
-  switch (state_) {
-  case STATE_NO_RESULTS:
-    StartProbes();
-    break;
-  case STATE_RESULTS_CACHED:
-    CallCallbacks();
-    break;
-  case STATE_PROBE_RUNNING:
-    // do nothing; probe is already running, and will call the callback
-    break;
-  }
-}
-
-scoped_ptr<DnsProbeJob> DnsProbeService::CreateSystemProbeJob(
-    const DnsProbeJob::CallbackType& job_callback) {
-  DnsConfig system_config;
-  GetSystemDnsConfig(&system_config);
-  return CreateProbeJob(system_config, job_callback);
-}
-
-scoped_ptr<DnsProbeJob> DnsProbeService::CreatePublicProbeJob(
-    const DnsProbeJob::CallbackType& job_callback) {
-  DnsConfig public_config;
-  GetPublicDnsConfig(&public_config);
-  return CreateProbeJob(public_config, job_callback);
-}
-
-void DnsProbeService::OnIPAddressChanged() {
-  if (state_ == STATE_RESULTS_CACHED)
-    ExpireResults();
-}
-
-void DnsProbeService::ExpireResults() {
-  DCHECK_EQ(STATE_RESULTS_CACHED, state_);
-
-  state_ = STATE_NO_RESULTS;
-  result_ = chrome_common_net::DNS_PROBE_UNKNOWN;
-}
-
-void DnsProbeService::StartProbes() {
-  DCHECK_NE(STATE_PROBE_RUNNING, state_);
-  DCHECK(!system_job_.get());
-  DCHECK(!public_job_.get());
-
-  DnsProbeJob::CallbackType job_callback =
-      base::Bind(&DnsProbeService::OnProbeJobComplete,
-                 base::Unretained(this));
-
-  // TODO(ttuttle): Do we want to keep explicit flags for "job done"?
-  //                Or maybe DnsProbeJob should have a "finished" flag?
-  system_result_ = DnsProbeJob::SERVERS_UNKNOWN;
-  public_result_ = DnsProbeJob::SERVERS_UNKNOWN;
-
-  system_job_ = CreateSystemProbeJob(job_callback);
-  public_job_ = CreatePublicProbeJob(job_callback);
-
-  // If we can't create one or both jobs, fail the probe immediately.
-  if (!system_job_.get() || !public_job_.get()) {
-    system_job_.reset();
-    public_job_.reset();
-    state_ = STATE_RESULTS_CACHED;
-    // TODO(ttuttle): Should this be BAD_CONFIG?  Currently I think it only
-    // happens when the system DnsConfig has no servers.
-    result_ = chrome_common_net::DNS_PROBE_UNKNOWN;
-    CallCallbacks();
-    return;
-  }
-
-  state_ = STATE_PROBE_RUNNING;
-  probe_start_time_ = base::Time::Now();
-}
-
-void DnsProbeService::OnProbesComplete() {
-  DCHECK_EQ(STATE_PROBE_RUNNING, state_);
-
-  state_ = STATE_RESULTS_CACHED;
-  result_ = EvaluateResults();
-
-  HistogramProbes();
-
-  CallCallbacks();
-}
-
-void DnsProbeService::HistogramProbes() const {
-  const DnsProbeResult kMaxResult = chrome_common_net::DNS_PROBE_MAX;
-
-  DCHECK_EQ(STATE_RESULTS_CACHED, state_);
-  DCHECK_NE(kMaxResult, result_);
-
-  base::TimeDelta elapsed = base::Time::Now() - probe_start_time_;
-
-  UMA_HISTOGRAM_ENUMERATION("DnsProbe.Probe.Result", result_, kMaxResult);
-  UMA_HISTOGRAM_MEDIUM_TIMES("DnsProbe.Probe.Elapsed", elapsed);
-
-  if (NetworkChangeNotifier::IsOffline()) {
-    UMA_HISTOGRAM_ENUMERATION("DnsProbe.Probe.NcnOffline.Result",
-                              result_, kMaxResult);
-    UMA_HISTOGRAM_MEDIUM_TIMES("DnsProbe.Probe.NcnOffline.Elapsed", elapsed);
-  } else {
-    UMA_HISTOGRAM_ENUMERATION("DnsProbe.Probe.NcnOnline.Result",
-                              result_, kMaxResult);
-    UMA_HISTOGRAM_MEDIUM_TIMES("DnsProbe.Probe.NcnOnline.Elapsed", elapsed);
-  }
-
-  switch (result_) {
-  case chrome_common_net::DNS_PROBE_UNKNOWN:
-    UMA_HISTOGRAM_MEDIUM_TIMES("DnsProbe.Probe.ResultUnknown.Elapsed",
-                               elapsed);
-    break;
-  case chrome_common_net::DNS_PROBE_NO_INTERNET:
-    UMA_HISTOGRAM_MEDIUM_TIMES("DnsProbe.Probe.ResultNoInternet.Elapsed",
-                               elapsed);
-    break;
-  case chrome_common_net::DNS_PROBE_BAD_CONFIG:
-    UMA_HISTOGRAM_MEDIUM_TIMES("DnsProbe.Probe.ResultBadConfig.Elapsed",
-                               elapsed);
-
-    // Histogram some extra data to see why BAD_CONFIG is happening.
-    UMA_HISTOGRAM_ENUMERATION(
-        "DnsProbe.Probe.ResultBadConfig.SystemJobResult",
-        system_result_,
-        DnsProbeJob::MAX_RESULT);
-    UMA_HISTOGRAM_CUSTOM_COUNTS(
-        "DnsProbe.Probe.ResultBadConfig.SystemNameserverCount",
-        system_nameserver_count_,
-        0, kNameserverCountMax, kNameserverCountMax + 1);
-    UMA_HISTOGRAM_BOOLEAN(
-        "DnsProbe.Probe.ResultBadConfig.SystemIsLocalhost",
-        system_is_localhost_);
-    break;
-  case chrome_common_net::DNS_PROBE_NXDOMAIN:
-    UMA_HISTOGRAM_MEDIUM_TIMES("DnsProbe.Probe.ResultNxdomain.Elapsed",
-                               elapsed);
-    break;
-  case chrome_common_net::DNS_PROBE_MAX:
-    NOTREACHED();
-    break;
-  }
-}
-
-DnsProbeResult DnsProbeService::EvaluateResults() const {
-  DCHECK_NE(DnsProbeJob::SERVERS_UNKNOWN, system_result_);
-  DCHECK_NE(DnsProbeJob::SERVERS_UNKNOWN, public_result_);
-
+DnsProbeStatus EvaluateResults(DnsProbeRunner::Result system_result,
+                               DnsProbeRunner::Result public_result) {
   // If the system DNS is working, assume the domain doesn't exist.
-  if (system_result_ == DnsProbeJob::SERVERS_CORRECT)
-    return chrome_common_net::DNS_PROBE_NXDOMAIN;
+  if (system_result == DnsProbeRunner::CORRECT)
+    return chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN;
 
   // If the system DNS is not working but another public server is, assume the
   // DNS config is bad (or perhaps the DNS servers are down or broken).
-  if (public_result_ == DnsProbeJob::SERVERS_CORRECT)
-    return chrome_common_net::DNS_PROBE_BAD_CONFIG;
+  if (public_result == DnsProbeRunner::CORRECT)
+    return chrome_common_net::DNS_PROBE_FINISHED_BAD_CONFIG;
 
   // If the system DNS is not working and another public server is unreachable,
   // assume the internet connection is down (note that system DNS may be a
   // router on the LAN, so it may be reachable but returning errors.)
-  if (public_result_ == DnsProbeJob::SERVERS_UNREACHABLE)
-    return chrome_common_net::DNS_PROBE_NO_INTERNET;
+  if (public_result == DnsProbeRunner::UNREACHABLE)
+    return chrome_common_net::DNS_PROBE_FINISHED_NO_INTERNET;
 
   // Otherwise: the system DNS is not working and another public server is
   // responding but with errors or incorrect results.  This is an awkward case;
   // an invasive captive portal or a restrictive firewall may be intercepting
   // or rewriting DNS traffic, or the public server may itself be failing or
   // down.
-  return chrome_common_net::DNS_PROBE_UNKNOWN;
+  return chrome_common_net::DNS_PROBE_FINISHED_INCONCLUSIVE;
+}
+
+void HistogramProbe(DnsProbeStatus status, base::TimeDelta elapsed) {
+  DCHECK(chrome_common_net::DnsProbeStatusIsFinished(status));
+
+  int result = status - chrome_common_net::DNS_PROBE_FINISHED_INCONCLUSIVE;
+
+  const int kMaxResult = chrome_common_net::DNS_PROBE_MAX -
+                         chrome_common_net::DNS_PROBE_FINISHED_INCONCLUSIVE;
+
+  UMA_HISTOGRAM_ENUMERATION("DnsProbe.Status", result, kMaxResult);
+  UMA_HISTOGRAM_MEDIUM_TIMES("DnsProbe.Elapsed", elapsed);
+
+  if (NetworkChangeNotifier::IsOffline()) {
+    UMA_HISTOGRAM_ENUMERATION("DnsProbe.Status_NcnOffline",
+                              result, kMaxResult);
+    UMA_HISTOGRAM_MEDIUM_TIMES("DnsProbe.Elapsed_NcnOffline", elapsed);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION("DnsProbe.Status_NcnOnline",
+                              result, kMaxResult);
+    UMA_HISTOGRAM_MEDIUM_TIMES("DnsProbe.Elapsed_NcnOnline", elapsed);
+  }
+
+  switch (status) {
+    case chrome_common_net::DNS_PROBE_FINISHED_INCONCLUSIVE:
+      UMA_HISTOGRAM_MEDIUM_TIMES("DnsProbe.Elapsed_Unknown",
+                                 elapsed);
+      break;
+    case chrome_common_net::DNS_PROBE_FINISHED_NO_INTERNET:
+      UMA_HISTOGRAM_MEDIUM_TIMES("DnsProbe.Elapsed_NoInternet",
+                                 elapsed);
+      break;
+    case chrome_common_net::DNS_PROBE_FINISHED_BAD_CONFIG:
+      UMA_HISTOGRAM_MEDIUM_TIMES("DnsProbe.Elapsed_BadConfig",
+                                 elapsed);
+      break;
+    case chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN:
+      UMA_HISTOGRAM_MEDIUM_TIMES("DnsProbe.Elapsed_Nxdomain",
+                                 elapsed);
+      break;
+
+    // These aren't actually results.
+    case chrome_common_net::DNS_PROBE_POSSIBLE:
+    case chrome_common_net::DNS_PROBE_NOT_RUN:
+    case chrome_common_net::DNS_PROBE_STARTED:
+    case chrome_common_net::DNS_PROBE_MAX:
+      NOTREACHED();
+      break;
+  }
+}
+
+}  // namespace
+
+DnsProbeService::DnsProbeService()
+    : state_(STATE_NO_RESULT) {
+  NetworkChangeNotifier::AddDNSObserver(this);
+  SetSystemClientToCurrentConfig();
+  SetPublicClientToGooglePublicDns();
+}
+
+DnsProbeService::~DnsProbeService() {
+  NetworkChangeNotifier::RemoveDNSObserver(this);
+}
+
+void DnsProbeService::ProbeDns(const DnsProbeService::ProbeCallback& callback) {
+  pending_callbacks_.push_back(callback);
+
+  if (CachedResultIsExpired())
+    ClearCachedResult();
+
+  switch (state_) {
+    case STATE_NO_RESULT:
+      StartProbes();
+      break;
+    case STATE_RESULT_CACHED:
+      CallCallbacks();
+      break;
+    case STATE_PROBE_RUNNING:
+      // Do nothing; probe is already running, and will call the callback.
+      break;
+  }
+}
+
+void DnsProbeService::OnDNSChanged() {
+  ClearCachedResult();
+  SetSystemClientToCurrentConfig();
+}
+
+void DnsProbeService::SetSystemClientForTesting(
+    scoped_ptr<DnsClient> system_client) {
+  system_runner_.SetClient(system_client.Pass());
+}
+
+void DnsProbeService::SetPublicClientForTesting(
+    scoped_ptr<DnsClient> public_client) {
+  public_runner_.SetClient(public_client.Pass());
+}
+
+void DnsProbeService::ClearCachedResultForTesting() {
+  ClearCachedResult();
+}
+
+void DnsProbeService::SetSystemClientToCurrentConfig() {
+  DnsConfig system_config;
+  NetworkChangeNotifier::GetDnsConfig(&system_config);
+  system_config.search.clear();
+  system_config.attempts = 1;
+  system_config.randomize_ports = false;
+
+  scoped_ptr<DnsClient> system_client(DnsClient::CreateClient(NULL));
+  system_client->SetConfig(system_config);
+
+  system_runner_.SetClient(system_client.Pass());
+}
+
+void DnsProbeService::SetPublicClientToGooglePublicDns() {
+  DnsConfig public_config;
+  public_config.nameservers.push_back(MakeDnsEndPoint(kGooglePublicDns1));
+  public_config.nameservers.push_back(MakeDnsEndPoint(kGooglePublicDns2));
+  public_config.attempts = 1;
+  public_config.randomize_ports = false;
+
+  scoped_ptr<DnsClient> public_client(DnsClient::CreateClient(NULL));
+  public_client->SetConfig(public_config);
+
+  public_runner_.SetClient(public_client.Pass());
+}
+
+void DnsProbeService::StartProbes() {
+  DCHECK_EQ(STATE_NO_RESULT, state_);
+
+  DCHECK(!system_runner_.IsRunning());
+  DCHECK(!public_runner_.IsRunning());
+
+  const base::Closure callback = base::Bind(&DnsProbeService::OnProbeComplete,
+                                            base::Unretained(this));
+  system_runner_.RunProbe(callback);
+  public_runner_.RunProbe(callback);
+  probe_start_time_ = base::Time::Now();
+  state_ = STATE_PROBE_RUNNING;
+
+  DCHECK(system_runner_.IsRunning());
+  DCHECK(public_runner_.IsRunning());
+}
+
+void DnsProbeService::OnProbeComplete() {
+  DCHECK_EQ(STATE_PROBE_RUNNING, state_);
+
+  if (system_runner_.IsRunning() || public_runner_.IsRunning())
+    return;
+
+  cached_result_ = EvaluateResults(system_runner_.result(),
+                                   public_runner_.result());
+  state_ = STATE_RESULT_CACHED;
+
+  HistogramProbe(cached_result_, base::Time::Now() - probe_start_time_);
+
+  CallCallbacks();
 }
 
 void DnsProbeService::CallCallbacks() {
-  DCHECK_EQ(STATE_RESULTS_CACHED, state_);
-  DCHECK(!callbacks_.empty());
+  DCHECK_EQ(STATE_RESULT_CACHED, state_);
+  DCHECK(chrome_common_net::DnsProbeStatusIsFinished(cached_result_));
+  DCHECK(!pending_callbacks_.empty());
 
-  std::vector<CallbackType> callbacks = callbacks_;
-  callbacks_.clear();
+  std::vector<ProbeCallback> callbacks;
+  callbacks.swap(pending_callbacks_);
 
-  for (std::vector<CallbackType>::const_iterator i = callbacks.begin();
+  for (std::vector<ProbeCallback>::const_iterator i = callbacks.begin();
        i != callbacks.end(); ++i) {
-    i->Run(result_);
+    i->Run(cached_result_);
   }
 }
 
-scoped_ptr<DnsProbeJob> DnsProbeService::CreateProbeJob(
-    const DnsConfig& dns_config,
-    const DnsProbeJob::CallbackType& job_callback) {
-  if (!dns_config.IsValid())
-    return scoped_ptr<DnsProbeJob>();
-
-  scoped_ptr<DnsClient> dns_client(DnsClient::CreateClient(NULL));
-  dns_client->SetConfig(dns_config);
-  return DnsProbeJob::CreateJob(dns_client.Pass(), job_callback, NULL);
-}
-
-void DnsProbeService::OnProbeJobComplete(DnsProbeJob* job,
-                                         DnsProbeJob::Result result) {
-  DCHECK_EQ(STATE_PROBE_RUNNING, state_);
-
-  if (job == system_job_.get()) {
-    system_result_ = result;
-    system_job_.reset();
-  } else if (job == public_job_.get()) {
-    public_result_ = result;
-    public_job_.reset();
-  } else {
-    NOTREACHED();
-    return;
-  }
-
-  if (system_result_ != DnsProbeJob::SERVERS_UNKNOWN &&
-      public_result_ != DnsProbeJob::SERVERS_UNKNOWN) {
-    OnProbesComplete();
+void DnsProbeService::ClearCachedResult() {
+  if (state_ == STATE_RESULT_CACHED) {
+    state_ = STATE_NO_RESULT;
+    cached_result_ = chrome_common_net::DNS_PROBE_MAX;
   }
 }
 
-void DnsProbeService::GetSystemDnsConfig(DnsConfig* config) {
-  NetworkChangeNotifier::GetDnsConfig(config);
+bool DnsProbeService::CachedResultIsExpired() const {
+  if (state_ != STATE_RESULT_CACHED)
+    return false;
 
-  // DNS probes don't need or want the suffix search list populated
-  config->search.clear();
-
-  if (dns_attempts_ != kAttemptsUseDefault)
-    config->attempts = dns_attempts_;
-
-  // Take notes in case the config turns out to be bad, so we can histogram
-  // some useful data.
-  system_nameserver_count_ = config->nameservers.size();
-  system_is_localhost_ = (system_nameserver_count_ == 1)
-                         && IsLocalhost(config->nameservers[0].address());
-
-  // Disable port randomization.
-  config->randomize_ports = false;
-}
-
-void DnsProbeService::GetPublicDnsConfig(DnsConfig* config) {
-  *config = DnsConfig();
-
-  config->nameservers.push_back(MakeDnsEndPoint(kPublicDnsPrimary));
-  config->nameservers.push_back(MakeDnsEndPoint(kPublicDnsSecondary));
-
-  if (dns_attempts_ != kAttemptsUseDefault)
-    config->attempts = dns_attempts_;
-
-  // Disable port randomization.
-  config->randomize_ports = false;
-}
-
-bool DnsProbeService::ResultsExpired() {
   const base::TimeDelta kMaxResultAge =
       base::TimeDelta::FromMilliseconds(kMaxResultAgeMs);
   return base::Time::Now() - probe_start_time_ > kMaxResultAge;
 }
 
-} // namespace chrome_browser_net
+}  // namespace chrome_browser_net

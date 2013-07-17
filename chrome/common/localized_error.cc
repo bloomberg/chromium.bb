@@ -15,6 +15,7 @@
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/extensions/manifest_handlers/icons_handler.h"
+#include "chrome/common/net/net_error_info.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
@@ -369,6 +370,53 @@ const LocalizedErrorMap http_error_options[] = {
   },
 };
 
+const LocalizedErrorMap dns_probe_error_options[] = {
+  {chrome_common_net::DNS_PROBE_POSSIBLE,
+   IDS_ERRORPAGES_TITLE_NOT_AVAILABLE,
+   IDS_ERRORPAGES_HEADING_NOT_AVAILABLE,
+   IDS_ERRORPAGES_SUMMARY_DNS_PROBE_RUNNING,
+   IDS_ERRORPAGES_DETAILS_DNS_PROBE_RUNNING,
+   SUGGEST_RELOAD,
+  },
+
+  // DNS_PROBE_NOT_RUN is not here; NetErrorHelper will restore the original
+  // error, which might be one of several DNS-related errors.
+
+  {chrome_common_net::DNS_PROBE_STARTED,
+   IDS_ERRORPAGES_TITLE_NOT_AVAILABLE,
+   IDS_ERRORPAGES_HEADING_NOT_AVAILABLE,
+   IDS_ERRORPAGES_SUMMARY_DNS_PROBE_RUNNING,
+   IDS_ERRORPAGES_DETAILS_DNS_PROBE_RUNNING,
+   // Include SUGGEST_RELOAD so the More button doesn't jump when we update.
+   SUGGEST_RELOAD,
+  },
+
+  // DNS_PROBE_FINISHED_UNKNOWN is not here; NetErrorHelper will restore the
+  // original error, which might be one of several DNS-related errors.
+
+  {chrome_common_net::DNS_PROBE_FINISHED_NO_INTERNET,
+   IDS_ERRORPAGES_TITLE_NOT_AVAILABLE,
+   IDS_ERRORPAGES_HEADING_NOT_AVAILABLE,
+   IDS_ERRORPAGES_SUMMARY_INTERNET_DISCONNECTED,
+   IDS_ERRORPAGES_DETAILS_INTERNET_DISCONNECTED,
+   SUGGEST_RELOAD | SUGGEST_CHECK_CONNECTION | SUGGEST_FIREWALL_CONFIG,
+  },
+  {chrome_common_net::DNS_PROBE_FINISHED_BAD_CONFIG,
+   IDS_ERRORPAGES_TITLE_NOT_AVAILABLE,
+   IDS_ERRORPAGES_HEADING_NOT_AVAILABLE,
+   IDS_ERRORPAGES_SUMMARY_NAME_NOT_RESOLVED,
+   IDS_ERRORPAGES_DETAILS_NAME_NOT_RESOLVED,
+   SUGGEST_RELOAD | SUGGEST_DNS_CONFIG | SUGGEST_FIREWALL_CONFIG,
+  },
+  {chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN,
+   IDS_ERRORPAGES_TITLE_NOT_AVAILABLE,
+   IDS_ERRORPAGES_HEADING_NOT_AVAILABLE,
+   IDS_ERRORPAGES_SUMMARY_NAME_NOT_RESOLVED,
+   IDS_ERRORPAGES_DETAILS_NAME_NOT_RESOLVED,
+   SUGGEST_RELOAD,
+  },
+};
+
 const LocalizedErrorMap* FindErrorMapInArray(const LocalizedErrorMap* maps,
                                                    size_t num_maps,
                                                    int error_code) {
@@ -393,6 +441,13 @@ const LocalizedErrorMap* LookupErrorMap(const std::string& error_domain,
     return FindErrorMapInArray(http_error_options,
                                arraysize(http_error_options),
                                error_code);
+  } else if (error_domain == chrome_common_net::kDnsProbeErrorDomain) {
+    const LocalizedErrorMap* map =
+        FindErrorMapInArray(dns_probe_error_options,
+                            arraysize(dns_probe_error_options),
+                            error_code);
+    DCHECK(map);
+    return map;
   } else {
     NOTREACHED();
     return NULL;
@@ -501,6 +556,10 @@ void LocalizedError::GetStrings(const WebKit::WebURLError& error,
     std::string ascii_error_string = net::ErrorToString(error_code);
     // Remove the leading "net::" from the returned string.
     RemoveChars(ascii_error_string, "net:", &ascii_error_string);
+    error_string = ASCIIToUTF16(ascii_error_string);
+  } else if (error_domain == chrome_common_net::kDnsProbeErrorDomain) {
+    std::string ascii_error_string =
+        chrome_common_net::DnsProbeStatusToString(error_code);
     error_string = ASCIIToUTF16(ascii_error_string);
   } else {
     DCHECK_EQ(LocalizedError::kHttpErrorDomain, error_domain);

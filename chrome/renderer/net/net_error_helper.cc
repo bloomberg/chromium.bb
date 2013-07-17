@@ -4,6 +4,10 @@
 
 #include "chrome/renderer/net/net_error_helper.h"
 
+#include <string>
+
+#include "base/json/json_writer.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/localized_error.h"
 #include "chrome/common/net/net_error_info.h"
@@ -17,13 +21,16 @@
 #include "ipc/ipc_message_macros.h"
 #include "net/base/net_errors.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
-#include "third_party/WebKit/public/platform/WebURLError.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "url/gurl.h"
 
-using chrome_common_net::DnsProbeResult;
+using base::JSONWriter;
+using chrome_common_net::DnsProbeStatus;
+using chrome_common_net::DnsProbeStatusIsFinished;
+using chrome_common_net::DnsProbeStatusToString;
+using chrome_common_net::DnsProbesEnabledByFieldTrial;
 using content::RenderThread;
 using content::RenderView;
 using content::RenderViewObserver;
@@ -31,75 +38,31 @@ using content::kUnreachableWebDataURL;
 
 namespace {
 
-GURL GetProvisionallyLoadingURLFromWebFrame(WebKit::WebFrame* frame) {
-  return frame->provisionalDataSource()->request().url();
+bool IsLoadingErrorPage(WebKit::WebFrame* frame) {
+  GURL url = frame->provisionalDataSource()->request().url();
+  return url.spec() == kUnreachableWebDataURL;
 }
 
-bool IsErrorPage(const GURL& url) {
-  return (url.spec() == kUnreachableWebDataURL);
+bool IsMainFrame(const WebKit::WebFrame* frame) {
+  return !frame->parent();
 }
 
 // Returns whether |net_error| is a DNS-related error (and therefore whether
 // the tab helper should start a DNS probe after receiving it.)
-bool IsDnsError(int net_error) {
-  return net_error == net::ERR_NAME_NOT_RESOLVED ||
-         net_error == net::ERR_NAME_RESOLUTION_FAILED;
-}
-
-NetErrorTracker::FrameType GetFrameType(WebKit::WebFrame* frame) {
-  return frame->parent() ? NetErrorTracker::FRAME_SUB
-                         : NetErrorTracker::FRAME_MAIN;
-}
-
-NetErrorTracker::PageType GetPageType(WebKit::WebFrame* frame) {
-  bool error_page = IsErrorPage(GetProvisionallyLoadingURLFromWebFrame(frame));
-  return error_page ? NetErrorTracker::PAGE_ERROR
-                    : NetErrorTracker::PAGE_NORMAL;
-}
-
-NetErrorTracker::ErrorType GetErrorType(const WebKit::WebURLError& error) {
-  return IsDnsError(error.reason) ? NetErrorTracker::ERROR_DNS
-                                  : NetErrorTracker::ERROR_OTHER;
-}
-
-// Converts a DNS probe result into a net error.  Returns OK if the error page
-// should not be changed from the original DNS error.
-int DnsProbeResultToNetError(DnsProbeResult result) {
-  switch (result) {
-  case chrome_common_net::DNS_PROBE_UNKNOWN:
-    return net::OK;
-  case chrome_common_net::DNS_PROBE_NO_INTERNET:
-    // TODO(ttuttle): This is not the same error as when NCN returns this;
-    // ideally we should have two separate error codes for "no network" and
-    // "network with no internet".
-    return net::ERR_INTERNET_DISCONNECTED;
-  case chrome_common_net::DNS_PROBE_BAD_CONFIG:
-    // This is unspecific enough that we should still show the full DNS error
-    // page.
-    return net::OK;
-  case chrome_common_net::DNS_PROBE_NXDOMAIN:
-    return net::ERR_NAME_NOT_RESOLVED;
-  default:
-    NOTREACHED();
-    return net::OK;
-  }
-}
-
-WebKit::WebURLError NetErrorToWebURLError(int net_error) {
-  WebKit::WebURLError error;
-  error.domain = WebKit::WebString::fromUTF8(net::kErrorDomain);
-  error.reason = net_error;
-  return error;
+bool IsDnsError(const WebKit::WebURLError& error) {
+  return std::string(error.domain.utf8()) == net::kErrorDomain &&
+         (error.reason == net::ERR_NAME_NOT_RESOLVED ||
+          error.reason == net::ERR_NAME_RESOLUTION_FAILED);
 }
 
 }  // namespace
 
 NetErrorHelper::NetErrorHelper(RenderView* render_view)
     : RenderViewObserver(render_view),
-      tracker_(base::Bind(&NetErrorHelper::TrackerCallback,
-                          base::Unretained(this))),
-      dns_error_page_state_(NetErrorTracker::DNS_ERROR_PAGE_NONE),
-      updated_error_page_(false),
+      last_probe_status_(chrome_common_net::DNS_PROBE_POSSIBLE),
+      last_start_was_error_page_(false),
+      last_fail_was_dns_error_(false),
+      forwarding_probe_results_(false),
       is_failed_post_(false) {
 }
 
@@ -107,24 +70,89 @@ NetErrorHelper::~NetErrorHelper() {
 }
 
 void NetErrorHelper::DidStartProvisionalLoad(WebKit::WebFrame* frame) {
-  tracker_.OnStartProvisionalLoad(GetFrameType(frame), GetPageType(frame));
+  OnStartLoad(IsMainFrame(frame), IsLoadingErrorPage(frame));
 }
 
 void NetErrorHelper::DidFailProvisionalLoad(WebKit::WebFrame* frame,
                                             const WebKit::WebURLError& error) {
-  WebKit::WebDataSource* data_source = frame->provisionalDataSource();
-  const WebKit::WebURLRequest& failed_request = data_source->request();
-  is_failed_post_ = EqualsASCII(failed_request.httpMethod(), "POST");
-  tracker_.OnFailProvisionalLoad(GetFrameType(frame), GetErrorType(error));
+  const bool main_frame = IsMainFrame(frame);
+  const bool dns_error = IsDnsError(error);
+
+  OnFailLoad(main_frame, dns_error);
+
+  if (main_frame && dns_error) {
+    last_error_ = error;
+
+    WebKit::WebDataSource* data_source = frame->provisionalDataSource();
+    const WebKit::WebURLRequest& failed_request = data_source->request();
+    is_failed_post_ = EqualsASCII(failed_request.httpMethod(), "POST");
+  }
 }
 
 void NetErrorHelper::DidCommitProvisionalLoad(WebKit::WebFrame* frame,
                                               bool is_new_navigation) {
-  tracker_.OnCommitProvisionalLoad(GetFrameType(frame));
+  OnCommitLoad(IsMainFrame(frame));
 }
 
 void NetErrorHelper::DidFinishLoad(WebKit::WebFrame* frame) {
-  tracker_.OnFinishLoad(GetFrameType(frame));
+  OnFinishLoad(IsMainFrame(frame));
+}
+
+void NetErrorHelper::OnStartLoad(bool is_main_frame, bool is_error_page) {
+  DVLOG(1) << "OnStartLoad(is_main_frame=" << is_main_frame
+           << ", is_error_page=" << is_error_page << ")";
+  if (!is_main_frame)
+    return;
+
+  last_start_was_error_page_ = is_error_page;
+}
+
+void NetErrorHelper::OnFailLoad(bool is_main_frame, bool is_dns_error) {
+  DVLOG(1) << "OnFailLoad(is_main_frame=" << is_main_frame
+           << ", is_dns_error=" << is_dns_error << ")";
+
+  if (!is_main_frame)
+    return;
+
+  last_fail_was_dns_error_ = is_dns_error;
+
+  if (is_dns_error) {
+    last_probe_status_ = chrome_common_net::DNS_PROBE_POSSIBLE;
+    // If the helper was forwarding probe results and another DNS error has
+    // occurred, stop forwarding probe results until the corresponding (new)
+    // error page loads.
+    forwarding_probe_results_ = false;
+  }
+}
+
+void NetErrorHelper::OnCommitLoad(bool is_main_frame) {
+  DVLOG(1) << "OnCommitLoad(is_main_frame=" << is_main_frame << ")";
+
+  if (!is_main_frame)
+    return;
+
+  // Stop forwarding results.  If the page is a DNS error page, forwarding
+  // will resume once the page is loaded; if not, it should stay stopped until
+  // the next DNS error page.
+  forwarding_probe_results_ = false;
+}
+
+void NetErrorHelper::OnFinishLoad(bool is_main_frame) {
+  DVLOG(1) << "OnFinishLoad(is_main_frame=" << is_main_frame << ")";
+
+  if (!is_main_frame)
+    return;
+
+  // If a DNS error page just finished loading, start forwarding probe results
+  // to it.
+  forwarding_probe_results_ =
+      last_fail_was_dns_error_ && last_start_was_error_page_;
+
+  if (forwarding_probe_results_ &&
+      last_probe_status_ != chrome_common_net::DNS_PROBE_POSSIBLE) {
+    DVLOG(1) << "Error page finished loading; sending saved status.";
+    UpdateErrorPage();
+  }
 }
 
 bool NetErrorHelper::OnMessageReceived(const IPC::Message& message) {
@@ -138,53 +166,89 @@ bool NetErrorHelper::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void NetErrorHelper::OnNetErrorInfo(int dns_probe_result) {
-  DVLOG(1) << "Received DNS probe result " << dns_probe_result;
+bool NetErrorHelper::GetErrorStringsForDnsProbe(
+    WebKit::WebFrame* frame,
+    const WebKit::WebURLError& error,
+    bool is_failed_post,
+    const std::string& locale,
+    base::DictionaryValue* error_strings) {
+  if (!IsMainFrame(frame))
+    return false;
 
-  if (dns_probe_result < 0 ||
-      dns_probe_result >= chrome_common_net::DNS_PROBE_MAX) {
-    DLOG(WARNING) << "Ignoring DNS probe result: invalid result "
-                  << dns_probe_result;
-    NOTREACHED();
-    return;
-  }
+  if (!IsDnsError(error))
+    return false;
 
-  if (dns_error_page_state_ != NetErrorTracker::DNS_ERROR_PAGE_LOADED) {
-    DVLOG(1) << "Ignoring DNS probe result: not on DNS error page.";
-    return;
-  }
-
-  if (updated_error_page_) {
-    DVLOG(1) << "Ignoring DNS probe result: already updated error page.";
-    return;
-  }
-
-  UpdateErrorPage(static_cast<DnsProbeResult>(dns_probe_result));
-  updated_error_page_ = true;
+  // Get the strings for a fake "DNS probe possible" error.
+  WebKit::WebURLError fake_error;
+  fake_error.domain = WebKit::WebString::fromUTF8(
+      chrome_common_net::kDnsProbeErrorDomain);
+  fake_error.reason = chrome_common_net::DNS_PROBE_POSSIBLE;
+  fake_error.unreachableURL = error.unreachableURL;
+  LocalizedError::GetStrings(
+      fake_error, is_failed_post, locale, error_strings);
+  return true;
 }
 
-void NetErrorHelper::TrackerCallback(
-    NetErrorTracker::DnsErrorPageState state) {
-  dns_error_page_state_ = state;
+void NetErrorHelper::OnNetErrorInfo(int status_num) {
+  DCHECK(status_num >= 0 && status_num < chrome_common_net::DNS_PROBE_MAX);
 
-  if (state == NetErrorTracker::DNS_ERROR_PAGE_LOADED)
-    updated_error_page_ = false;
+  DVLOG(1) << "Received status " << DnsProbeStatusToString(status_num);
+
+  DnsProbeStatus status = static_cast<DnsProbeStatus>(status_num);
+  DCHECK_NE(chrome_common_net::DNS_PROBE_POSSIBLE, status);
+
+  if (!(last_fail_was_dns_error_ || forwarding_probe_results_)) {
+    DVLOG(1) << "Ignoring NetErrorInfo: no DNS error";
+    return;
+  }
+
+  last_probe_status_ = status;
+
+  if (forwarding_probe_results_)
+    UpdateErrorPage();
 }
 
-void NetErrorHelper::UpdateErrorPage(DnsProbeResult dns_probe_result) {
-  DVLOG(1) << "Updating error page with result " << dns_probe_result;
-
-  int net_error = DnsProbeResultToNetError(dns_probe_result);
-  if (net_error == net::OK)
-    return;
-
-  DVLOG(1) << "net error code is " << net_error;
+void NetErrorHelper::UpdateErrorPage() {
+  DCHECK(forwarding_probe_results_);
 
   base::DictionaryValue error_strings;
-  LocalizedError::GetStrings(NetErrorToWebURLError(net_error),
+  LocalizedError::GetStrings(GetUpdatedError(),
                              is_failed_post_,
                              RenderThread::Get()->GetLocale(),
                              &error_strings);
 
-  // TODO(ttuttle): Update error page with error_strings.
+  std::string json;
+  JSONWriter::Write(&error_strings, &json);
+
+  std::string js = "if (window.updateForDnsProbe) "
+                   "updateForDnsProbe(" + json + ");";
+  string16 js16;
+  if (!UTF8ToUTF16(js.c_str(), js.length(), &js16)) {
+    NOTREACHED();
+    return;
+  }
+
+  DVLOG(1) << "Updating error page with status "
+           << chrome_common_net::DnsProbeStatusToString(last_probe_status_);
+  DVLOG(2) << "New strings: " << js;
+
+  string16 frame_xpath;
+  render_view()->EvaluateScript(frame_xpath, js16, 0, false);
+}
+
+WebKit::WebURLError NetErrorHelper::GetUpdatedError() const {
+  // If a probe didn't run or wasn't conclusive, restore the original error.
+  if (last_probe_status_ == chrome_common_net::DNS_PROBE_NOT_RUN ||
+      last_probe_status_ ==
+          chrome_common_net::DNS_PROBE_FINISHED_INCONCLUSIVE) {
+    return last_error_;
+  }
+
+  WebKit::WebURLError error;
+  error.domain = WebKit::WebString::fromUTF8(
+      chrome_common_net::kDnsProbeErrorDomain);
+  error.reason = last_probe_status_;
+  error.unreachableURL = last_error_.unreachableURL;
+
+  return error;
 }

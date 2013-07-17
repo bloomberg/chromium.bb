@@ -381,7 +381,7 @@ IPC_MESSAGE_ROUTED0(ChromeViewMsg_SetAsInterstitial)
 // NetErrorHelper will receive this mesage and replace or update the error
 // page with more specific troubleshooting suggestions.
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_NetErrorInfo,
-                    int /* DNS probe result */)
+                    int /* DNS probe status */)
 
 //-----------------------------------------------------------------------------
 // Misc messages

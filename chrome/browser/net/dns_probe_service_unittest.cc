@@ -9,111 +9,28 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "base/run_loop.h"
-#include "chrome/browser/net/dns_probe_job.h"
+#include "chrome/browser/net/dns_probe_runner.h"
+#include "chrome/browser/net/dns_probe_test_util.h"
 #include "chrome/common/net/net_error_info.h"
+#include "content/public/test/test_browser_thread_bundle.h"
+#include "net/dns/dns_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using chrome_common_net::DnsProbeResult;
+using base::MessageLoopForIO;
+using base::RunLoop;
+using chrome_common_net::DnsProbeStatus;
+using content::TestBrowserThreadBundle;
+using net::MockDnsClientRule;
 
 namespace chrome_browser_net {
 
 namespace {
 
-class MockDnsProbeJob : public DnsProbeJob {
- public:
-  MockDnsProbeJob(const CallbackType& callback,
-                  DnsProbeJob::Result result)
-      : weak_factory_(this) {
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&MockDnsProbeJob::CallCallback,
-                   weak_factory_.GetWeakPtr(),
-                   callback,
-                   result));
-  }
-
-  virtual ~MockDnsProbeJob() { }
-
- private:
-  void CallCallback(const CallbackType& callback, Result result) {
-    callback.Run(this, result);
-  }
-
-  base::WeakPtrFactory<MockDnsProbeJob> weak_factory_;
-};
-
-class TestDnsProbeService : public DnsProbeService {
- public:
-  TestDnsProbeService()
-      : DnsProbeService(),
-        system_job_created_(false),
-        public_job_created_(false),
-        mock_system_result_(DnsProbeJob::SERVERS_UNKNOWN),
-        mock_public_result_(DnsProbeJob::SERVERS_UNKNOWN),
-        mock_system_fail_(false) {
-  }
-
-  virtual ~TestDnsProbeService() { }
-
-  void set_mock_results(
-      DnsProbeJob::Result mock_system_result,
-      DnsProbeJob::Result mock_public_result) {
-    mock_system_result_ = mock_system_result;
-    mock_public_result_ = mock_public_result;
-  }
-
-  void set_mock_system_fail(bool mock_system_fail) {
-    mock_system_fail_ = mock_system_fail;
-  }
-
-  bool jobs_created(void) {
-    return system_job_created_ && public_job_created_;
-  }
-
-  void ResetJobsCreated() {
-    system_job_created_ = false;
-    public_job_created_ = false;
-  }
-
-  void MockExpireResults() {
-    ExpireResults();
-  }
-
-  bool system_job_created_;
-  bool public_job_created_;
-
- private:
-  // Override methods in DnsProbeService to return mock jobs:
-
-  virtual scoped_ptr<DnsProbeJob> CreateSystemProbeJob(
-      const DnsProbeJob::CallbackType& job_callback) OVERRIDE {
-    if (mock_system_fail_)
-      return scoped_ptr<DnsProbeJob>();
-
-    system_job_created_ = true;
-    return scoped_ptr<DnsProbeJob>(
-        new MockDnsProbeJob(job_callback,
-                            mock_system_result_));
-  }
-
-  virtual scoped_ptr<DnsProbeJob> CreatePublicProbeJob(
-      const DnsProbeJob::CallbackType& job_callback) OVERRIDE {
-    public_job_created_ = true;
-    return scoped_ptr<DnsProbeJob>(
-        new MockDnsProbeJob(job_callback,
-                            mock_public_result_));
-  }
-
-  DnsProbeJob::Result mock_system_result_;
-  DnsProbeJob::Result mock_public_result_;
-  bool mock_system_fail_;
-};
-
 class DnsProbeServiceTest : public testing::Test {
  public:
   DnsProbeServiceTest()
       : callback_called_(false),
-        callback_result_(chrome_common_net::DNS_PROBE_UNKNOWN) {
+        callback_result_(chrome_common_net::DNS_PROBE_MAX) {
   }
 
   void Probe() {
@@ -121,98 +38,94 @@ class DnsProbeServiceTest : public testing::Test {
                                  base::Unretained(this)));
   }
 
-  void RunUntilIdle() {
-    base::RunLoop run_loop;
-    run_loop.RunUntilIdle();
-  }
-
   void Reset() {
-    service_.ResetJobsCreated();
     callback_called_ = false;
   }
 
-  base::MessageLoopForIO message_loop_;
-  TestDnsProbeService service_;
-  bool callback_called_;
-  DnsProbeResult callback_result_;
+ protected:
+  void SetRules(MockDnsClientRule::Result system_query_result,
+                MockDnsClientRule::Result public_query_result) {
+    service_.SetSystemClientForTesting(
+        CreateMockDnsClientForProbes(system_query_result));
+    service_.SetPublicClientForTesting(
+        CreateMockDnsClientForProbes(public_query_result));
+  }
+
+  void RunTest(MockDnsClientRule::Result system_query_result,
+               MockDnsClientRule::Result public_query_result,
+               DnsProbeStatus expected_result) {
+    Reset();
+    SetRules(system_query_result, public_query_result);
+
+    Probe();
+    RunLoop().RunUntilIdle();
+    EXPECT_TRUE(callback_called_);
+    EXPECT_EQ(expected_result, callback_result_);
+  }
+
+  void ClearCachedResult() {
+    service_.ClearCachedResultForTesting();
+  }
 
  private:
-  void ProbeCallback(DnsProbeResult result) {
+  void ProbeCallback(DnsProbeStatus result) {
+    EXPECT_FALSE(callback_called_);
     callback_called_ = true;
     callback_result_ = result;
   }
+
+  DnsProbeService service_;
+  bool callback_called_;
+  DnsProbeStatus callback_result_;
+  TestBrowserThreadBundle bundle_;
 };
 
-TEST_F(DnsProbeServiceTest, Null) {
+TEST_F(DnsProbeServiceTest, Probe_OK_OK) {
+  RunTest(MockDnsClientRule::OK, MockDnsClientRule::OK,
+          chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
 }
 
-TEST_F(DnsProbeServiceTest, Probe) {
-  service_.set_mock_results(DnsProbeJob::SERVERS_CORRECT,
-                            DnsProbeJob::SERVERS_CORRECT);
+TEST_F(DnsProbeServiceTest, Probe_TIMEOUT_OK) {
+  RunTest(MockDnsClientRule::TIMEOUT, MockDnsClientRule::OK,
+          chrome_common_net::DNS_PROBE_FINISHED_BAD_CONFIG);
+}
 
-  Probe();
-  EXPECT_TRUE(service_.jobs_created());
-  EXPECT_FALSE(callback_called_);
+TEST_F(DnsProbeServiceTest, Probe_TIMEOUT_TIMEOUT) {
+  RunTest(MockDnsClientRule::TIMEOUT, MockDnsClientRule::TIMEOUT,
+          chrome_common_net::DNS_PROBE_FINISHED_NO_INTERNET);
+}
 
-  RunUntilIdle();
-  EXPECT_TRUE(callback_called_);
-  EXPECT_EQ(chrome_common_net::DNS_PROBE_NXDOMAIN, callback_result_);
+TEST_F(DnsProbeServiceTest, Probe_OK_FAIL_SYNC) {
+  RunTest(MockDnsClientRule::OK, MockDnsClientRule::FAIL_SYNC,
+          chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
+}
+
+TEST_F(DnsProbeServiceTest, Probe_FAIL_SYNC_OK) {
+  RunTest(MockDnsClientRule::FAIL_SYNC, MockDnsClientRule::OK,
+          chrome_common_net::DNS_PROBE_FINISHED_BAD_CONFIG);
+}
+
+TEST_F(DnsProbeServiceTest, Probe_FAIL_SYNC_FAIL_SYNC) {
+  RunTest(MockDnsClientRule::FAIL_SYNC, MockDnsClientRule::FAIL_SYNC,
+          chrome_common_net::DNS_PROBE_FINISHED_INCONCLUSIVE);
 }
 
 TEST_F(DnsProbeServiceTest, Cache) {
-  service_.set_mock_results(DnsProbeJob::SERVERS_CORRECT,
-                            DnsProbeJob::SERVERS_CORRECT);
-
-  Probe();
-  RunUntilIdle();
-  Reset();
-
-  // Cached NXDOMAIN result should persist.
-
-  Probe();
-  EXPECT_FALSE(service_.jobs_created());
-
-  RunUntilIdle();
-  EXPECT_TRUE(callback_called_);
-  EXPECT_EQ(chrome_common_net::DNS_PROBE_NXDOMAIN, callback_result_);
+  RunTest(MockDnsClientRule::OK, MockDnsClientRule::OK,
+          chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
+  // Cached NXDOMAIN result should persist, not the result from the new rules.
+  RunTest(MockDnsClientRule::TIMEOUT, MockDnsClientRule::TIMEOUT,
+          chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
 }
 
-TEST_F(DnsProbeServiceTest, Expired) {
-  service_.set_mock_results(DnsProbeJob::SERVERS_CORRECT,
-                            DnsProbeJob::SERVERS_CORRECT);
-
-  Probe();
-  EXPECT_TRUE(service_.jobs_created());
-
-  RunUntilIdle();
-  EXPECT_TRUE(callback_called_);
-  EXPECT_EQ(chrome_common_net::DNS_PROBE_NXDOMAIN, callback_result_);
-
-  Reset();
-
-  service_.MockExpireResults();
-
-  Probe();
-  EXPECT_TRUE(service_.jobs_created());
-
-  RunUntilIdle();
-  EXPECT_TRUE(callback_called_);
-  EXPECT_EQ(chrome_common_net::DNS_PROBE_NXDOMAIN, callback_result_);
-}
-
-TEST_F(DnsProbeServiceTest, SystemFail) {
-  service_.set_mock_results(DnsProbeJob::SERVERS_CORRECT,
-                            DnsProbeJob::SERVERS_CORRECT);
-  service_.set_mock_system_fail(true);
-
-  Probe();
-  EXPECT_TRUE(callback_called_);
-  EXPECT_EQ(chrome_common_net::DNS_PROBE_UNKNOWN, callback_result_);
-
-  Reset();
-
-  RunUntilIdle();
-  EXPECT_FALSE(callback_called_);
+TEST_F(DnsProbeServiceTest, Expire) {
+  RunTest(MockDnsClientRule::OK, MockDnsClientRule::OK,
+          chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
+  // Pretend cache expires.
+  ClearCachedResult();
+  // New rules should apply, since a new probe should be run.
+  RunTest(MockDnsClientRule::TIMEOUT, MockDnsClientRule::TIMEOUT,
+          chrome_common_net::DNS_PROBE_FINISHED_NO_INTERNET);
 }
 
 }  // namespace
