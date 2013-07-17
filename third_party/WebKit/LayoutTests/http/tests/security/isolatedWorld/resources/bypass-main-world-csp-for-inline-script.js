@@ -12,27 +12,27 @@ window.addEventListener("message", function(message) {
 function test() {
     function injectInlineScript(isolated) {
         var script = document.createElement('script');
-        script.innerText = "alert('EXECUTED in " + (isolated ? "isolated world" : "main world") + ".');";
+        script.innerText = "console.log('EXECUTED in " + (isolated ? "isolated world" : "main world") + ".');";
         document.body.appendChild(script);
         window.postMessage("next", "*");
     }
 
     switch (tests) {
         case 4:
-            alert("Injecting in main world: this should fail.");
+            console.log("Injecting in main world: this should fail.");
             injectInlineScript(false);
             break;
         case 3:
-            alert("Injecting into isolated world without bypass: this should fail.");
+            console.log("Injecting into isolated world without bypass: this should fail.");
             testRunner.evaluateScriptInIsolatedWorld(1, String(eval("injectInlineScript")) + "\ninjectInlineScript(true);");
             break;
         case 2:
-            alert("Starting to bypass main world's CSP: this should pass!");
+            console.log("Starting to bypass main world's CSP: this should pass!");
             testRunner.setIsolatedWorldContentSecurityPolicy(1, 'script-src \'unsafe-inline\' *');
             testRunner.evaluateScriptInIsolatedWorld(1, String(eval("injectInlineScript")) + "\ninjectInlineScript(true);");
             break;
         case 1:
-            alert("Injecting into main world again: this should fail.");
+            console.log("Injecting into main world again: this should fail.");
             injectInlineScript(false);
             break;
         case 0:
@@ -43,5 +43,3 @@ function test() {
 }
 
 document.addEventListener('DOMContentLoaded', test);
-
-setTimeout(testRunner.notifyDone.bind(testRunner), 2000);
