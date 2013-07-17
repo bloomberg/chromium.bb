@@ -172,7 +172,7 @@ static inline void updateCharacterData(unsigned i, float& lastRotation, SVGChara
     if (dyList)
         data.dy = dyList->at(i).value(lengthContext);
     if (rotateList) {
-        data.rotate = rotateList->at(i);
+        data.rotate = rotateList->at(i).value();
         lastRotation = data.rotate;
     }
 }

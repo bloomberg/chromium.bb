@@ -21,17 +21,27 @@
 #ifndef SVGNumberList_h
 #define SVGNumberList_h
 
+#include "core/svg/SVGNumber.h"
 #include "core/svg/properties/SVGPropertyTraits.h"
 #include <wtf/Vector.h>
 
 namespace WebCore {
 
-class SVGNumberList : public Vector<float> {
+class SVGNumberList : public Vector<SVGNumber> {
 public:
     SVGNumberList() { }
 
     void parse(const String&);
     String valueAsString() const;
+
+    Vector<float> toFloatVector() const
+    {
+        Vector<float> result;
+        result.reserveInitialCapacity(size());
+        for (size_t i = 0; i < size(); ++i)
+            result.uncheckedAppend(at(i).value());
+        return result;
+    }
 
 private:
     template<typename CharType>
@@ -40,7 +50,7 @@ private:
 
 template<>
 struct SVGPropertyTraits<SVGNumberList> {
-    typedef float ListItemType;
+    typedef SVGNumber ListItemType;
 
     static SVGNumberList initialValue() { return SVGNumberList(); }
     static String toString(const SVGNumberList& type) { return type.valueAsString(); }

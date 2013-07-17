@@ -210,7 +210,7 @@ my %svgTypeNeedingTearOff = (
     "SVGLength" => "SVGPropertyTearOff<SVGLength>",
     "SVGLengthList" => "SVGListPropertyTearOff<SVGLengthList>",
     "SVGMatrix" => "SVGPropertyTearOff<SVGMatrix>",
-    "SVGNumber" => "SVGPropertyTearOff<float>",
+    "SVGNumber" => "SVGPropertyTearOff<SVGNumber>",
     "SVGNumberList" => "SVGListPropertyTearOff<SVGNumberList>",
     "SVGPathSegList" => "SVGPathSegListPropertyTearOff",
     "SVGPoint" => "SVGPropertyTearOff<SVGPoint>",
@@ -418,9 +418,6 @@ sub SkipIncludeHeader
     return 1 if IsEnumType($type);
     return 1 if IsCallbackFunctionType($type);
     return 1 if $type eq "DOMString";
-
-    # Special case: SVGNumber.h does not exist.
-    return 1 if $type eq "SVGNumber";
     return 0;
 }
 
@@ -518,7 +515,7 @@ sub GetSVGPropertyTypes
     my $svgWrappedNativeType = GetSVGWrappedTypeNeedingTearOff($implType);
     if ($svgNativeType =~ /SVGPropertyTearOff/) {
         $svgPropertyType = $svgWrappedNativeType;
-        AddToImplIncludes("core/svg/properties/SVGAnimatedPropertyTearOff.h");
+        AddToHeaderIncludes("core/svg/properties/SVGAnimatedPropertyTearOff.h");
     } elsif ($svgNativeType =~ /SVGListPropertyTearOff/ or $svgNativeType =~ /SVGStaticListPropertyTearOff/ or $svgNativeType =~ /SVGTransformListPropertyTearOff/) {
         $svgListPropertyType = $svgWrappedNativeType;
         AddToHeaderIncludes("core/svg/properties/SVGAnimatedListPropertyTearOff.h");
@@ -1348,7 +1345,6 @@ sub GenerateNormalAttrGetter
     }
 
     AssertNotSequenceType($attrType);
-    my $getterStringUsesImp = $interfaceName ne "SVGNumber";
     my $nativeType = GetNativeType($attribute->type, $attribute->extendedAttributes, "");
     my $svgNativeType = GetSVGTypeNeedingTearOff($interfaceName);
 
@@ -1369,12 +1365,8 @@ END
             $code .= <<END;
     $svgNativeType* wrapper = ${v8ClassName}::toNative(info.Holder());
     $svgWrappedNativeType& impInstance = wrapper->propertyReference();
-END
-            if ($getterStringUsesImp) {
-                $code .= <<END;
     $svgWrappedNativeType* imp = &impInstance;
 END
-            }
         }
     } elsif ($attrExt->{"OnProto"} || $attrExt->{"Unforgeable"}) {
         if ($interfaceName eq "Window") {
@@ -1395,7 +1387,7 @@ END
     } else {
         my $reflect = $attribute->extendedAttributes->{"Reflect"};
         my $url = $attribute->extendedAttributes->{"URL"};
-        if ($getterStringUsesImp && $reflect && !$url && InheritsInterface($interface, "Node") && $attrType eq "DOMString") {
+        if ($reflect && !$url && InheritsInterface($interface, "Node") && $attrType eq "DOMString") {
             # Generate super-compact call for regular attribute getter:
             my ($functionName, @arguments) = GetterExpression($interfaceName, $attribute);
             $code .= "    Element* imp = V8Element::toNative(info.Holder());\n";
@@ -1447,28 +1439,24 @@ END
     my $returnType = $attribute->type;
     my $getterString;
 
-    if ($getterStringUsesImp) {
-        my ($functionName, @arguments) = GetterExpression($interfaceName, $attribute);
-        push(@arguments, "isNull") if $isNullable;
-        push(@arguments, "es") if $useExceptions;
-        if ($attribute->extendedAttributes->{"ImplementedBy"}) {
-            my $implementedBy = $attribute->extendedAttributes->{"ImplementedBy"};
-            my $implementedByImplName = GetImplNameFromImplementedBy($implementedBy);
-            AddToImplIncludes(HeaderFilesForInterface($implementedBy, $implementedByImplName));
-            unshift(@arguments, "imp") if !$attribute->isStatic;
-            $functionName = "${implementedByImplName}::${functionName}";
-        } elsif ($attribute->isStatic) {
-            $functionName = "${implClassName}::${functionName}";
-        } else {
-            $functionName = "imp->${functionName}";
-        }
-        my ($arg, $subCode) = GenerateCallWith($attribute->extendedAttributes->{"CallWith"}, "    ", 0);
-        $code .= $subCode;
-        unshift(@arguments, @$arg);
-        $getterString = "${functionName}(" . join(", ", @arguments) . ")";
+    my ($functionName, @arguments) = GetterExpression($interfaceName, $attribute);
+    push(@arguments, "isNull") if $isNullable;
+    push(@arguments, "es") if $useExceptions;
+    if ($attribute->extendedAttributes->{"ImplementedBy"}) {
+        my $implementedBy = $attribute->extendedAttributes->{"ImplementedBy"};
+        my $implementedByImplName = GetImplNameFromImplementedBy($implementedBy);
+        AddToImplIncludes(HeaderFilesForInterface($implementedBy, $implementedByImplName));
+        unshift(@arguments, "imp") if !$attribute->isStatic;
+        $functionName = "${implementedByImplName}::${functionName}";
+    } elsif ($attribute->isStatic) {
+        $functionName = "${implClassName}::${functionName}";
     } else {
-        $getterString = "impInstance";
+        $functionName = "imp->${functionName}";
     }
+    my ($arg, $subCode) = GenerateCallWith($attribute->extendedAttributes->{"CallWith"}, "    ", 0);
+    $code .= $subCode;
+    unshift(@arguments, @$arg);
+    $getterString = "${functionName}(" . join(", ", @arguments) . ")";
 
     my $expression;
     if ($attribute->type eq "EventListener" && $interface->name eq "Window") {
@@ -1870,43 +1858,39 @@ END
         $code .= "    ExceptionState es(info.GetIsolate());\n";
     }
 
-    if ($interfaceName eq "SVGNumber") {
-        $code .= "    *imp = $expression;\n";
-    } else {
-        if ($attribute->type eq "EventListener") {
-            my $implSetterFunctionName = FirstLetterToUpperCase($attrName);
-            AddToImplIncludes("bindings/v8/V8AbstractEventListener.h");
-            if (!InheritsInterface($interface, "Node")) {
-                my $attrImplName = GetImplName($attribute);
-                $code .= "    transferHiddenDependency(info.Holder(), imp->${attrImplName}(isolatedWorldForIsolate(info.GetIsolate())), value, ${v8ClassName}::eventListenerCacheIndex, info.GetIsolate());\n";
-            }
-            AddToImplIncludes("bindings/v8/V8EventListenerList.h");
-            if (($interfaceName eq "Window" or $interfaceName eq "WorkerGlobalScope") and $attribute->name eq "onerror") {
-                AddToImplIncludes("bindings/v8/V8ErrorHandler.h");
-                $code .= "    imp->set$implSetterFunctionName(V8EventListenerList::findOrCreateWrapper<V8ErrorHandler>(value, true), isolatedWorldForIsolate(info.GetIsolate()));\n";
-            } else {
-                $code .= "    imp->set$implSetterFunctionName(V8EventListenerList::getEventListener(value, true, ListenerFindOrCreate), isolatedWorldForIsolate(info.GetIsolate()));\n";
-            }
-        } else {
-            my ($functionName, @arguments) = SetterExpression($interfaceName, $attribute);
-            push(@arguments, $expression);
-            push(@arguments, "es") if $useExceptions;
-            if ($attribute->extendedAttributes->{"ImplementedBy"}) {
-                my $implementedBy = $attribute->extendedAttributes->{"ImplementedBy"};
-                my $implementedByImplName = GetImplNameFromImplementedBy($implementedBy);
-                AddToImplIncludes(HeaderFilesForInterface($implementedBy, $implementedByImplName));
-                unshift(@arguments, "imp") if !$attribute->isStatic;
-                $functionName = "${implementedByImplName}::${functionName}";
-            } elsif ($attribute->isStatic) {
-                $functionName = "${implClassName}::${functionName}";
-            } else {
-                $functionName = "imp->${functionName}";
-            }
-            my ($arg, $subCode) = GenerateCallWith($attribute->extendedAttributes->{"SetterCallWith"} || $attribute->extendedAttributes->{"CallWith"}, "    ", 1);
-            $code .= $subCode;
-            unshift(@arguments, @$arg);
-            $code .= "    ${functionName}(" . join(", ", @arguments) . ");\n";
+    if ($attribute->type eq "EventListener") {
+        my $implSetterFunctionName = FirstLetterToUpperCase($attrName);
+        AddToImplIncludes("bindings/v8/V8AbstractEventListener.h");
+        if (!InheritsInterface($interface, "Node")) {
+            my $attrImplName = GetImplName($attribute);
+            $code .= "    transferHiddenDependency(info.Holder(), imp->${attrImplName}(isolatedWorldForIsolate(info.GetIsolate())), value, ${v8ClassName}::eventListenerCacheIndex, info.GetIsolate());\n";
         }
+        AddToImplIncludes("bindings/v8/V8EventListenerList.h");
+        if (($interfaceName eq "Window" or $interfaceName eq "WorkerGlobalScope") and $attribute->name eq "onerror") {
+            AddToImplIncludes("bindings/v8/V8ErrorHandler.h");
+            $code .= "    imp->set$implSetterFunctionName(V8EventListenerList::findOrCreateWrapper<V8ErrorHandler>(value, true), isolatedWorldForIsolate(info.GetIsolate()));\n";
+        } else {
+            $code .= "    imp->set$implSetterFunctionName(V8EventListenerList::getEventListener(value, true, ListenerFindOrCreate), isolatedWorldForIsolate(info.GetIsolate()));\n";
+        }
+    } else {
+        my ($functionName, @arguments) = SetterExpression($interfaceName, $attribute);
+        push(@arguments, $expression);
+        push(@arguments, "es") if $useExceptions;
+        if ($attribute->extendedAttributes->{"ImplementedBy"}) {
+            my $implementedBy = $attribute->extendedAttributes->{"ImplementedBy"};
+            my $implementedByImplName = GetImplNameFromImplementedBy($implementedBy);
+            AddToImplIncludes(HeaderFilesForInterface($implementedBy, $implementedByImplName));
+            unshift(@arguments, "imp") if !$attribute->isStatic;
+            $functionName = "${implementedByImplName}::${functionName}";
+        } elsif ($attribute->isStatic) {
+            $functionName = "${implClassName}::${functionName}";
+        } else {
+            $functionName = "imp->${functionName}";
+        }
+        my ($arg, $subCode) = GenerateCallWith($attribute->extendedAttributes->{"SetterCallWith"} || $attribute->extendedAttributes->{"CallWith"}, "    ", 1);
+        $code .= $subCode;
+        unshift(@arguments, @$arg);
+        $code .= "    ${functionName}(" . join(", ", @arguments) . ");\n";
     }
 
     if ($useExceptions) {

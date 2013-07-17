@@ -102,7 +102,7 @@ bool SVGFEColorMatrixElement::setFilterEffectAttribute(FilterEffect* effect, con
     if (attrName == SVGNames::typeAttr)
         return colorMatrix->setType(typeCurrentValue());
     if (attrName == SVGNames::valuesAttr)
-        return colorMatrix->setValues(valuesCurrentValue());
+        return colorMatrix->setValues(valuesCurrentValue().toFloatVector());
 
     ASSERT_NOT_REACHED();
     return false;
@@ -157,13 +157,15 @@ PassRefPtr<FilterEffect> SVGFEColorMatrixElement::build(SVGFilterBuilder* filter
             break;
         }
     } else {
-        filterValues = valuesCurrentValue();
-        unsigned size = filterValues.size();
+        SVGNumberList& values = valuesCurrentValue();
+        unsigned size = values.size();
 
         if ((filterType == FECOLORMATRIX_TYPE_MATRIX && size != 20)
             || (filterType == FECOLORMATRIX_TYPE_HUEROTATE && size != 1)
             || (filterType == FECOLORMATRIX_TYPE_SATURATE && size != 1))
             return 0;
+
+        filterValues = values.toFloatVector();
     }
 
     RefPtr<FilterEffect> effect = FEColorMatrix::create(filter, filterType, filterValues);

@@ -330,7 +330,7 @@ PassRefPtr<FilterEffect> SVGFEConvolveMatrixElement::build(SVGFilterBuilder* fil
         return 0;
     if (!hasAttribute(SVGNames::divisorAttr)) {
         for (int i = 0; i < kernelMatrixSize; ++i)
-            divisorValue += kernelMatrix.at(i);
+            divisorValue += kernelMatrix.at(i).value();
         if (!divisorValue)
             divisorValue = 1;
     }
@@ -338,7 +338,7 @@ PassRefPtr<FilterEffect> SVGFEConvolveMatrixElement::build(SVGFilterBuilder* fil
     RefPtr<FilterEffect> effect = FEConvolveMatrix::create(filter,
                     IntSize(orderXValue, orderYValue), divisorValue,
                     biasCurrentValue(), IntPoint(targetXValue, targetYValue), edgeModeCurrentValue(),
-                    FloatPoint(kernelUnitLengthXValue, kernelUnitLengthYValue), preserveAlphaCurrentValue(), kernelMatrix);
+                    FloatPoint(kernelUnitLengthXValue, kernelUnitLengthYValue), preserveAlphaCurrentValue(), kernelMatrix.toFloatVector());
     effect->inputEffects().append(input1);
     return effect.release();
 }

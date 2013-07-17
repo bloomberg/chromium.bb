@@ -146,7 +146,7 @@ ComponentTransferFunction SVGComponentTransferFunctionElement::transferFunction(
     func.amplitude = amplitudeCurrentValue();
     func.exponent = exponentCurrentValue();
     func.offset = offsetCurrentValue();
-    func.tableValues = tableValuesCurrentValue();
+    func.tableValues = tableValuesCurrentValue().toFloatVector();
     return func;
 }
 
