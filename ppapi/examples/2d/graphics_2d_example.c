@@ -138,6 +138,7 @@ void Instance_DidDestroy(PP_Instance instance) {
       return;
     }
     prev_ptr = &cur->next;
+    cur = cur->next;
   }
 }
 
