@@ -8,7 +8,7 @@
 #include "webkit/plugins/npapi/test/plugin_thread_async_call_test.h"
 
 #include "base/bind.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread.h"
 #include "webkit/plugins/npapi/test/plugin_client.h"

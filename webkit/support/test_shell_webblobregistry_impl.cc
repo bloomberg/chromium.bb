@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "third_party/WebKit/public/platform/WebBlobData.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "url/gurl.h"

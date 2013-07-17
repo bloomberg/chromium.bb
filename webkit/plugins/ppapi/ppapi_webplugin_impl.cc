@@ -7,7 +7,7 @@
 #include <cmath>
 
 #include "base/debug/crash_logging.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/var_tracker.h"
 #include "third_party/WebKit/public/platform/WebPoint.h"

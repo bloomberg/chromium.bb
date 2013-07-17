@@ -4,7 +4,7 @@
 
 #include "webkit/plugins/ppapi/ppapi_unittest.h"
 
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/ppp_instance.h"
 #include "ppapi/shared_impl/ppapi_globals.h"

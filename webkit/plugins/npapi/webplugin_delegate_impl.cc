@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/process_util.h"
 #include "base/strings/string_util.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"

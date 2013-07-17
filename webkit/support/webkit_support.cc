@@ -8,7 +8,7 @@
 #include "base/debug/debugger.h"
 #include "base/debug/stack_trace.h"
 #include "base/logging.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/run_loop.h"

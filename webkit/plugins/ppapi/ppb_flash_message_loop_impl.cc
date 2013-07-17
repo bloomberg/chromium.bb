@@ -5,7 +5,7 @@
 #include "webkit/plugins/ppapi/ppb_flash_message_loop_impl.h"
 
 #include "base/callback.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "ppapi/c/pp_errors.h"
 
 using ppapi::thunk::PPB_Flash_MessageLoop_API;
