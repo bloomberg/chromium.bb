@@ -970,6 +970,8 @@ void FrameLoader::load(const FrameLoadRequest& passedRequest)
         loadType = FrameLoadTypeReload;
     else if (request.lockBackForwardList())
         loadType = FrameLoadTypeRedirectWithLockedBackForwardList;
+    else if (!request.requester() && shouldTreatURLAsSameAsCurrent(resourceRequest.url()))
+        loadType = FrameLoadTypeSame;
     else if (shouldTreatURLAsSameAsCurrent(request.substituteData().failingURL()) && m_loadType == FrameLoadTypeReload)
         loadType = FrameLoadTypeReload;
     else
@@ -989,8 +991,6 @@ void FrameLoader::loadURL(const ResourceRequest& request, const String& frameNam
         return;
 
     bool isFormSubmission = formState;
-
-    ASSERT(newLoadType != FrameLoadTypeSame);
 
     // The search for a target frame is done earlier in the case of form submission.
     Frame* targetFrame = isFormSubmission ? 0 : findFrameForNavigation(frameName);
@@ -1857,6 +1857,7 @@ bool FrameLoader::shouldPerformFragmentNavigation(bool isFormSubmission, const S
     return (!isFormSubmission || equalIgnoringCase(httpMethod, "GET"))
         && loadType != FrameLoadTypeReload
         && loadType != FrameLoadTypeReloadFromOrigin
+        && loadType != FrameLoadTypeSame
         && !shouldReload(m_frame->document()->url(), url)
         // We don't want to just scroll if a link from within a
         // frameset is trying to reload the frameset into _top.

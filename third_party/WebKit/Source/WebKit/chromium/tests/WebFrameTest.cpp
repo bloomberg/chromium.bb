@@ -3413,5 +3413,53 @@ TEST_F(WebFrameTest, BackToReload)
     m_webView = 0;
 }
 
+class TestSameDocumentWebFrameClient : public WebFrameClient {
+public:
+    TestSameDocumentWebFrameClient()
+        : m_frameLoadTypeSameSeen(false)
+    {
+    }
+
+    virtual void willSendRequest(WebFrame* frame, unsigned, WebURLRequest&, const WebURLResponse&)
+    {
+        if (static_cast<WebFrameImpl*>(frame)->frame()->loader()->loadType() == WebCore::FrameLoadTypeSame)
+            m_frameLoadTypeSameSeen = true;
+    }
+
+    virtual WebURLError cancelledError(WebFrame*, const WebURLRequest& request)
+    {
+        // Return a dummy error so the DocumentLoader doesn't assert when
+        // the reload cancels it.
+        WebURLError webURLError;
+        webURLError.domain = "";
+        webURLError.reason = 1;
+        webURLError.isCancellation = true;
+        webURLError.unreachableURL = WebURL();
+        return webURLError;
+    }
+
+    bool frameLoadTypeSameSeen() const { return m_frameLoadTypeSameSeen; }
+
+private:
+    bool m_frameLoadTypeSameSeen;
+};
+
+TEST_F(WebFrameTest, NavigateToSame)
+{
+    registerMockedHttpURLLoad("navigate_to_same.html");
+    TestSameDocumentWebFrameClient client;
+    m_webView = FrameTestHelpers::createWebViewAndLoad(m_baseURL + "navigate_to_same.html", true, &client);
+    EXPECT_FALSE(client.frameLoadTypeSameSeen());
+
+    WebViewImpl* webViewImpl = static_cast<WebViewImpl*>(m_webView);
+    WebCore::FrameLoadRequest frameRequest(0, WebCore::ResourceRequest(static_cast<WebViewImpl*>(m_webView)->page()->mainFrame()->document()->url()));
+    webViewImpl->page()->mainFrame()->loader()->load(frameRequest);
+    Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
+
+    EXPECT_TRUE(client.frameLoadTypeSameSeen());
+    m_webView->close();
+    m_webView = 0;
+}
+
 
 } // namespace
