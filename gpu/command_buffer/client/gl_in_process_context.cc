@@ -28,6 +28,7 @@
 #include "gpu/command_buffer/client/image_factory.h"
 #include "gpu/command_buffer/client/transfer_buffer.h"
 #include "gpu/command_buffer/common/constants.h"
+#include "gpu/command_buffer/common/id_allocator.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gl_context_virtual.h"
@@ -62,7 +63,6 @@ static base::LazyInstance<base::Lock> g_decoder_lock =
     LAZY_INSTANCE_INITIALIZER;
 
 class GLInProcessContextImpl;
-class ImageFactoryInProcess;
 
 static base::LazyInstance<
     std::set<GLInProcessContextImpl*> >
@@ -92,6 +92,7 @@ class AutoLockAndDecoderDetachThread {
 
 class GLInProcessContextImpl
     : public GLInProcessContext,
+      public gles2::ImageFactory,
       public base::SupportsWeakPtr<GLInProcessContextImpl> {
  public:
   explicit GLInProcessContextImpl(bool share_resources);
@@ -111,6 +112,12 @@ class GLInProcessContextImpl
   virtual void SignalQuery(unsigned query, const base::Closure& callback)
       OVERRIDE;
   virtual gles2::GLES2Implementation* GetImplementation() OVERRIDE;
+
+  // ImageFactory implementation:
+  virtual scoped_ptr<GpuMemoryBuffer> CreateGpuMemoryBuffer(
+      int width, int height, GLenum internalformat,
+      unsigned* image_id) OVERRIDE;
+  virtual void DeleteGpuMemoryBuffer(unsigned image_id) OVERRIDE;
 
   // Other methods:
   gles2::GLES2Decoder* GetDecoder();
@@ -138,13 +145,13 @@ class GLInProcessContextImpl
   scoped_ptr<gles2::GLES2CmdHelper> gles2_helper_;
   scoped_ptr<TransferBuffer> transfer_buffer_;
   scoped_ptr<gles2::GLES2Implementation> gles2_implementation_;
-  scoped_refptr<ImageFactoryInProcess> image_factory_;
-  base::Closure signal_sync_point_callback_;
   bool share_resources_;
   bool context_lost_;
 
   typedef std::pair<unsigned, base::Closure> QueryCallback;
   std::vector<QueryCallback> query_callbacks_;
+
+  std::vector<base::Closure> signal_sync_point_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(GLInProcessContextImpl);
 };
@@ -167,41 +174,10 @@ AutoLockAndDecoderDetachThread::~AutoLockAndDecoderDetachThread() {
                 &DetachThread);
 }
 
-class ImageFactoryInProcess
-     : public gles2::ImageFactory,
-       public base::RefCountedThreadSafe<ImageFactoryInProcess> {
- public:
-  explicit ImageFactoryInProcess(ImageManager* image_manager);
-
-  // methods from ImageFactory
-  virtual scoped_ptr<GpuMemoryBuffer> CreateGpuMemoryBuffer(
-      int width, int height, GLenum internalformat,
-      unsigned* image_id) OVERRIDE;
-  virtual void DeleteGpuMemoryBuffer(unsigned image_id) OVERRIDE;
- private:
-  friend class base::RefCountedThreadSafe<ImageFactoryInProcess>;
-  virtual ~ImageFactoryInProcess();
-
-  // ImageManager is referred by the ContextGroup and the
-  // ContextGroup outlives the client.
-  ImageManager* image_manager_;
-  unsigned next_id_;
-
-  DISALLOW_COPY_AND_ASSIGN(ImageFactoryInProcess);
-};
-
-ImageFactoryInProcess::ImageFactoryInProcess(
-    ImageManager* image_manager) : image_manager_(image_manager),
-                                   next_id_(0) {
-}
-
-ImageFactoryInProcess::~ImageFactoryInProcess() {
-}
-
-scoped_ptr<GpuMemoryBuffer> ImageFactoryInProcess::CreateGpuMemoryBuffer(
+scoped_ptr<GpuMemoryBuffer> GLInProcessContextImpl::CreateGpuMemoryBuffer(
     int width, int height, GLenum internalformat, unsigned int* image_id) {
   // We're taking the lock here because we're accessing the ContextGroup's
-  // shared ImageManager and next_id_.
+  // shared IdManager.
   AutoLockAndDecoderDetachThread lock(g_decoder_lock.Get(),
                                       g_all_shared_contexts.Get());
   // For Android WebView we assume the |internalformat| will always be
@@ -216,17 +192,20 @@ scoped_ptr<GpuMemoryBuffer> ImageFactoryInProcess::CreateGpuMemoryBuffer(
   scoped_refptr<gfx::GLImage> gl_image =
       gfx::GLImage::CreateGLImageForGpuMemoryBuffer(buffer->GetNativeBuffer(),
                                                     gfx::Size(width, height));
-  *image_id = ++next_id_;  // Valid image_ids start from 1.
-  image_manager_->AddImage(gl_image.get(), *image_id);
+  *image_id = decoder_->GetContextGroup()
+      ->GetIdAllocator(gles2::id_namespaces::kImages)->AllocateID();
+  GetImageManager()->AddImage(gl_image.get(), *image_id);
   return buffer.Pass();
 }
 
-void ImageFactoryInProcess::DeleteGpuMemoryBuffer(unsigned int image_id) {
+void GLInProcessContextImpl::DeleteGpuMemoryBuffer(unsigned int image_id) {
   // We're taking the lock here because we're accessing the ContextGroup's
   // shared ImageManager.
   AutoLockAndDecoderDetachThread lock(g_decoder_lock.Get(),
                                       g_all_shared_contexts.Get());
-  image_manager_->RemoveImage(image_id);
+  GetImageManager()->RemoveImage(image_id);
+  decoder_->GetContextGroup()->GetIdAllocator(gles2::id_namespaces::kImages)
+      ->FreeID(image_id);
 }
 
 GLInProcessContextImpl::GLInProcessContextImpl(bool share_resources)
@@ -259,11 +238,13 @@ void GLInProcessContextImpl::PumpCommands() {
            (error::IsError(state.error) && context_lost_));
   }
 
-  if (!context_lost_ && !signal_sync_point_callback_.is_null()) {
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE, signal_sync_point_callback_);
-    signal_sync_point_callback_.Reset();
+  if (!context_lost_ && signal_sync_point_callbacks_.size()) {
+    for (size_t n = 0; n < signal_sync_point_callbacks_.size(); n++) {
+      base::MessageLoop::current()->PostTask(FROM_HERE,
+                                             signal_sync_point_callbacks_[n]);
+    }
   }
+  signal_sync_point_callbacks_.clear();
 }
 
 bool GLInProcessContextImpl::GetBufferChanged(int32 transfer_buffer_id) {
@@ -272,7 +253,8 @@ bool GLInProcessContextImpl::GetBufferChanged(int32 transfer_buffer_id) {
 
 void GLInProcessContextImpl::SignalSyncPoint(unsigned sync_point,
                                              const base::Closure& callback) {
-  signal_sync_point_callback_ = callback;
+  DCHECK(!callback.is_null());
+  signal_sync_point_callbacks_.push_back(callback);
 }
 
 bool GLInProcessContextImpl::IsCommandBufferContextLost() {
@@ -470,23 +452,6 @@ bool GLInProcessContextImpl::Initialize(
   // Create a transfer buffer.
   transfer_buffer_.reset(new TransferBuffer(gles2_helper_.get()));
 
-  if (share_resources_) {
-    AutoLockAndDecoderDetachThread lock(g_decoder_lock.Get(),
-                                        g_all_shared_contexts.Get());
-    if (g_all_shared_contexts.Get().empty()) {
-      // Create the image factory for the first context.
-      image_factory_ = new ImageFactoryInProcess(GetImageManager());
-    }  else {
-      // Share the image factory created by the first context.
-      GLInProcessContextImpl* first_context =
-          *g_all_shared_contexts.Get().begin();
-      image_factory_ = first_context->image_factory_;
-    }
-  } else {
-    // Create the image factory, this object retains its ownership.
-    image_factory_ = new ImageFactoryInProcess(GetImageManager());
-  }
-
   // Create the object exposing the OpenGL API.
   gles2_implementation_.reset(new gles2::GLES2Implementation(
       gles2_helper_.get(),
@@ -494,7 +459,7 @@ bool GLInProcessContextImpl::Initialize(
       transfer_buffer_.get(),
       true,
       false,
-      image_factory_.get()));
+      this));
 
   if (!gles2_implementation_->Initialize(
       kStartTransferBufferSize,

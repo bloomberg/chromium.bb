@@ -56,6 +56,7 @@ enum IdNamespaces {
   kTextures,
   kQueries,
   kVertexArrays,
+  kImages,
   kNumIdNamespaces
 };
 
