@@ -191,15 +191,15 @@ TEST_F(AutofillCreditCardBubbleControllerTest, BubbleTextRanges) {
   base::string16 text = controller()->BubbleText();
   std::vector<ui::Range> ranges = controller()->BubbleTextRanges();
 
-  EXPECT_EQ(ranges.size(), 3U);
-  EXPECT_EQ(BackingCard(), RangeOfString(text, ranges[1]));
-  EXPECT_EQ(FrontingCard(), RangeOfString(text, ranges[2]));
+  ASSERT_EQ(ranges.size(), 2U);
+  EXPECT_EQ(BackingCard(), RangeOfString(text, ranges[0]));
+  EXPECT_EQ(FrontingCard(), RangeOfString(text, ranges[1]));
 
   ShowNewCardSavedBubble();
   text = controller()->BubbleText();
   ranges = controller()->BubbleTextRanges();
 
-  EXPECT_EQ(ranges.size(), 1U);
+  ASSERT_EQ(ranges.size(), 1U);
   EXPECT_EQ(NewCard(), RangeOfString(text, ranges[0]));
 }
 

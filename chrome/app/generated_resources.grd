@@ -10837,13 +10837,13 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
 
       <!-- Autofill dialog: title bar -->
       <message name="IDS_AUTOFILL_DIALOG_TITLE" desc="Title for autofill dialog which asks user to input address + payment info.">
-        Submit Payment Details
+        Pay
       </message>
       <message name="IDS_AUTOFILL_DIALOG_PAY_WITHOUT_WALLET" desc="This text is shown in a payment method chooser when a user is forced to pay without Google Wallet because the service is unavailable.">
-        Pay without Google Wallet
+        Chrome Autofill
       </message>
       <message name="IDS_AUTOFILL_DIALOG_SIGN_IN" desc="This link text is shown when the user is not signed into a GAIA account.">
-        Sign in to use Google Wallet
+        Sign in to pay with Google Wallet
       </message>
       <message name="IDS_AUTOFILL_DIALOG_GOOGLE_WALLET" desc="The menu item that allows a user to select Google Wallet as their payment backend.">
         Google Wallet
@@ -10854,10 +10854,10 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         The following details are saved in your Google Wallet.
       </message>
       <message name="IDS_AUTOFILL_DIALOG_SIGN_IN_AND_SAVE_DETAILS" desc="Text promoting signing in to Google Wallet so a user can save details in Wallet.">
-        Sign in and save these details in your Google Wallet.
+        Sign in to use Google Wallet for faster checkout.
       </message>
       <message name="IDS_AUTOFILL_DIALOG_SAVE_DETAILS_IN_WALLET" desc="Text that shows on the top of the autofill dialog promoting saving info in Google Wallet.">
-        Save these details in your Google Wallet.
+        Save and protect my details with Google Wallet.
       </message>
       <message name="IDS_AUTOFILL_DIALOG_COMPLETE_WITHOUT_WALLET" desc="An error notification shown to users when Google Wallet is found to be unavailable.">
         Oops, <ph name="WALLET_ERROR">$1<ex>Google Wallet is unavailable at this time.</ex></ph> You can complete this transaction without Google Wallet.
@@ -10880,6 +10880,12 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       <message name="IDS_AUTOFILL_DIALOG_NOT_PROD_WARNING" desc="Text warning the user that they're not using the Online Wallet production server, so their purchases probably wont succeed.">
         Warning: You are not connected to production Wallet servers. Issued cards are probably invalid.
       </message>
+      <message name="IDS_AUTOFILL_DIALOG_FAILED_TO_SAVE_WALLET_DATA" desc="Text advising the user that there was an unrecoverable validation error on the wallet server.">
+        Could not save data to Wallet.
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_CHOOSE_DIFFERENT_WALLET_INSTRUMENT" desc="Text asking the user to choose a different payment method or address when using wallet.">
+        We need more information to complete your purchase.
+      </message>
 
       <!--- Autofill dialog: Wallet interstitials -->
       <message name="IDS_AUTOFILL_DIALOG_CARD_GENERATION_IN_PROGRESS" desc="Text the user sees while waiting for the wallet servers to respond with a generated card number.">
@@ -10889,7 +10895,7 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         Your card has been protected by Google Wallet.
       </message>
       <message name="IDS_AUTOFILL_DIALOG_CARD_GENERATION_EXPLANATION" desc="More detailed text the user sees after the wallet servers respond with a generated card number.">
-        Google Wallet generates a new credit card number for each transaction, so the merchant never sees your personal card number.
+        Wallet never shares your credit information with merchants. Shop with confidence knowing that you credit card number is protected online.
       </message>
       <message name="IDS_AUTOFILL_DIALOG_CARD_GENERATION_OK_BUTTON" desc="Text for the button users have to press to proceed past the wallet card generation text.">
         OK, got it
@@ -10967,19 +10973,16 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         Email address
       </message>
       <message name="IDS_AUTOFILL_DIALOG_SECTION_CC" desc="Label for the credit card section of the autofill dialog.">
-        Credit card
+        Card information
       </message>
-      <message name="IDS_AUTOFILL_DIALOG_SECTION_BILLING" desc="Label for the billing address section of the imperative autofill dialog.">
-        Billing address
-      </message>
-      <message name="IDS_AUTOFILL_DIALOG_SECTION_CC_BILLING" desc="Label for the billing details (credit card + address) section of the autofill dialog.">
+      <message name="IDS_AUTOFILL_DIALOG_SECTION_BILLING" desc="Label for the billing details (credit card + address) section of the autofill dialog.">
         Billing details
       </message>
       <message name="IDS_AUTOFILL_DIALOG_SECTION_SHIPPING" desc="Label for the shipping details section of the autofill dialog.">
-        Shipping details
+        Shipping address
       </message>
       <message name="IDS_AUTOFILL_DIALOG_USING_BILLING_FOR_SHIPPING" desc="Text that is shown when the billing info will also be used for shipping.">
-        Same as billing
+        Same as billing address
       </message>
       <message name="IDS_AUTOFILL_DIALOG_CONTINUE_BUTTON" desc="Button text for confirmation of successful completion of an Autocheckout flow.">
         Continue
@@ -11065,6 +11068,9 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       <message name="IDS_AUTOFILL_DIALOG_VALIDATION_INVALID_ZIP_CODE" desc="Message displayed to user when ZIP code (postal code) validation fails.">
         Not a valid ZIP code
       </message>
+      <message name="IDS_AUTOFILL_DIALOG_VALIDATION_INVALID_REGION" desc="Message displayed to user when the region (US state) validation fails.">
+        Not a valid state
+      </message>
       <message name="IDS_AUTOFILL_DIALOG_VALIDATION_INVALID_PHONE_NUMBER" desc="Message displayed to user when phone number validation fails.">
         Not a valid phone number
       </message>
@@ -11088,10 +11094,10 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
 
       <!-- Autofill dialog post-submit bubble -->
       <message name="IDS_AUTOFILL_CREDIT_CARD_BUBBLE_GENERATED_TITLE" desc="Title of a bubble shown directly after a new card has been generated via Online Wallet using the Autofill dialog.">
-        Online card generated
+        Google Wallet is protecting your card
       </message>
       <message name="IDS_AUTOFILL_CREDIT_CARD_BUBBLE_GENERATED_TEXT" desc="Text in the bubble explaining that a temporary card has been generated for the user's security by Google Wallet.">
-        |Don't worry|, this purchase will still be charged to your |$1|. Your card has been protected with the Google Wallet Virtual Online Card (|$2|), this number will appear on your receipt.
+        Don't worry, this purchase will still be charged to your |$1|. Your card has been protected with the Google Wallet Virtual Online Card (|$2|), this number will appear on your receipt.
       </message>
       <message name="IDS_AUTOFILL_CREDIT_CARD_BUBBLE_MANAGE_CARDS" desc="The text of a link at the bottom of the autofill dialog bubble that sends users to a Google Wallet billing/card management page.">
         Manage Saved Cards

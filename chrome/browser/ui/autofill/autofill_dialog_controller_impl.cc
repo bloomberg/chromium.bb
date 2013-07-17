@@ -1226,9 +1226,8 @@ string16 AutofillDialogControllerImpl::LabelForSection(DialogSection section)
     case SECTION_CC:
       return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_SECTION_CC);
     case SECTION_BILLING:
-      return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_SECTION_BILLING);
     case SECTION_CC_BILLING:
-      return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_SECTION_CC_BILLING);
+      return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_SECTION_BILLING);
     case SECTION_SHIPPING:
       return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_SECTION_SHIPPING);
     default:
@@ -1548,8 +1547,10 @@ string16 AutofillDialogControllerImpl::InputValidityMessage(
       break;
 
     case ADDRESS_HOME_STATE:
-      if (!value.empty() && !autofill::IsValidState(value))
-        return ASCIIToUTF16("Are you sure this is right?");
+      if (!value.empty() && !autofill::IsValidState(value)) {
+        return l10n_util::GetStringUTF16(
+            IDS_AUTOFILL_DIALOG_VALIDATION_INVALID_REGION);
+      }
       break;
 
     case ADDRESS_HOME_ZIP:
@@ -1814,16 +1815,17 @@ std::vector<DialogNotification> AutofillDialogControllerImpl::
   }
 
   if (!wallet_server_validation_recoverable_) {
-    // TODO(ahutter): L10n and UI.
     notifications.push_back(DialogNotification(
         DialogNotification::REQUIRED_ACTION,
-        ASCIIToUTF16("Could not save Wallet data")));
+        l10n_util::GetStringUTF16(
+            IDS_AUTOFILL_DIALOG_FAILED_TO_SAVE_WALLET_DATA)));
   }
 
   if (choose_another_instrument_or_address_) {
     notifications.push_back(DialogNotification(
         DialogNotification::REQUIRED_ACTION,
-        ASCIIToUTF16("We need more information to complete your purchase.")));
+        l10n_util::GetStringUTF16(
+            IDS_AUTOFILL_DIALOG_CHOOSE_DIFFERENT_WALLET_INSTRUMENT)));
   }
 
   if (should_show_wallet_promo_ && ShouldShowDetailArea() &&
