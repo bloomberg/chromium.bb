@@ -710,20 +710,6 @@
               'sources': [
                 'host/plugin/host_plugin.def',
               ],
-              'msvs_settings': {
-                'VCManifestTool': {
-                  'EmbedManifest': 'true',
-                },
-                'VCLinkerTool': {
-                  'AdditionalOptions': [
-                    "\"/manifestdependency:type='win32' "
-                        "name='Microsoft.Windows.Common-Controls' "
-                        "version='6.0.0.0' "
-                        "processorArchitecture='*' "
-                        "publicKeyToken='6595b64144ccf1df' language='*'\"",
-                  ],
-                },
-              },
             }],
           ],
         },  # end of target 'remoting_host_plugin'
@@ -1350,10 +1336,6 @@
             'host/win/entry_point.cc',
           ],
           'msvs_settings': {
-            'VCManifestTool': {
-              'AdditionalManifestFiles': 'host/win/dpi_aware.manifest',
-              'EmbedManifest': 'true',
-            },
             'VCLinkerTool': {
               'EntryPointSymbol': 'HostEntryPoint',
               'IgnoreAllDefaultLibraries': 'true',
@@ -1361,6 +1343,39 @@
             },
           },
         },  # end of target 'remoting_console'
+        {
+          'target_name': 'remoting_console_manifest',
+          'type': 'none',
+          'dependencies': [
+            'remoting_console',
+          ],
+          'hard_dependency': '1',
+          'msvs_cygwin_shell': 0,
+          'actions': [
+            {
+              'action_name': 'Embedding manifest into remoting_console.exe',
+              'binary': '<(PRODUCT_DIR)/remoting_console.exe',
+              'manifests': [
+                'host/win/dpi_aware.manifest',
+              ],
+              'inputs': [
+                '<(_binary)',
+                '<@(_manifests)',
+              ],
+              'outputs': [
+                '<(_binary).embedded.manifest',
+              ],
+              'action': [
+                'mt',
+                '-nologo',
+                '-manifest',
+                '<@(_manifests)',
+                '-outputresource:<(_binary);#1',
+                '-out:<(_binary).embedded.manifest',
+              ],
+            },
+          ],  # actions
+        },  # end of target 'remoting_console_manifest'
         {
           'target_name': 'remoting_core',
           'type': 'shared_library',
@@ -1453,9 +1468,6 @@
             'host/worker_process_ipc_delegate.h',
           ],
           'msvs_settings': {
-            'VCManifestTool': {
-              'EmbedManifest': 'true',
-            },
             'VCLinkerTool': {
               'AdditionalDependencies': [
                 'comctl32.lib',
@@ -1464,16 +1476,10 @@
                 'uuid.lib',
                 'wtsapi32.lib',
               ],
+              # Export the proxy/stub entry points. Note that the generated
+              # routines have 'Ps' prefix to avoid conflicts with our own
+              # DllMain().
               'AdditionalOptions': [
-                "\"/manifestdependency:type='win32' "
-                    "name='Microsoft.Windows.Common-Controls' "
-                    "version='6.0.0.0' "
-                    "processorArchitecture='*' "
-                    "publicKeyToken='6595b64144ccf1df' language='*'\"",
-
-                # Export the proxy/stub entry points. Note that the generated
-                # routines have 'Ps' prefix to avoid conflicts with our own
-                # DllMain().
                 '/EXPORT:DllGetClassObject=PsDllGetClassObject,PRIVATE',
                 '/EXPORT:DllCanUnloadNow=PsDllCanUnloadNow,PRIVATE',
                 '/EXPORT:DllRegisterServer=PsDllRegisterServer,PRIVATE',
@@ -1482,6 +1488,39 @@
             },
           },
         },  # end of target 'remoting_core'
+        {
+          'target_name': 'remoting_core_manifest',
+          'type': 'none',
+          'dependencies': [
+            'remoting_core',
+          ],
+          'hard_dependency': '1',
+          'msvs_cygwin_shell': 0,
+          'actions': [
+            {
+              'action_name': 'Embedding manifest into remoting_core.dll',
+              'binary': '<(PRODUCT_DIR)/remoting_core.dll',
+              'manifests': [
+                'host/win/comctl32_v6.manifest',
+              ],
+              'inputs': [
+                '<(_binary)',
+                '<@(_manifests)',
+              ],
+              'outputs': [
+                '<(_binary).embedded.manifest',
+              ],
+              'action': [
+                'mt',
+                '-nologo',
+                '-manifest',
+                '<@(_manifests)',
+                '-outputresource:<(_binary);#2',
+                '-out:<(_binary).embedded.manifest',
+              ],
+            },
+          ],  # actions
+        },  # end of target 'remoting_core_manifest'
         {
           'target_name': 'remoting_core_resources',
           'type': 'none',
@@ -1532,27 +1571,56 @@
             'host/win/entry_point.cc',
           ],
           'msvs_settings': {
-            'VCManifestTool': {
-              'AdditionalManifestFiles': 'host/win/dpi_aware.manifest',
-              'EmbedManifest': 'true',
-            },
             'VCLinkerTool': {
-              'EnableUAC': 'true',
-              # Add 'level="requireAdministrator" uiAccess="true"' to
-              # the manifest only for the official builds because it requires
-              # the binary to be signed to work.
-              'conditions': [
-                ['buildtype == "Official"', {
-                  'UACExecutionLevel': 2,
-                  'UACUIAccess': 'true',
-                }],
-              ],
               'EntryPointSymbol': 'HostEntryPoint',
               'IgnoreAllDefaultLibraries': 'true',
               'SubSystem': '2', # /SUBSYSTEM:WINDOWS
             },
           },
         },  # end of target 'remoting_desktop'
+        {
+          'target_name': 'remoting_desktop_manifest',
+          'type': 'none',
+          'dependencies': [
+            'remoting_desktop',
+          ],
+          'hard_dependency': '1',
+          'msvs_cygwin_shell': 0,
+          'actions': [
+            {
+              'action_name': 'Embedding manifest into remoting_desktop.exe',
+              'binary': '<(PRODUCT_DIR)/remoting_desktop.exe',
+              'manifests': [
+                'host/win/dpi_aware.manifest',
+              ],
+              # Add 'level="requireAdministrator" uiAccess="true"' to
+              # the manifest only for the official builds because it requires
+              # the binary to be signed to work.
+              'conditions': [
+                ['buildtype == "Official"', {
+                  'manifests': [
+                    'host/win/require_administrator.manifest',
+                  ],
+                }],
+              ],
+              'inputs': [
+                '<(_binary)',
+                '<@(_manifests)',
+              ],
+              'outputs': [
+                '<(_binary).embedded.manifest',
+              ],
+              'action': [
+                'mt',
+                '-nologo',
+                '-manifest',
+                '<@(_manifests)',
+                '-outputresource:<(_binary);#1',
+                '-out:<(_binary).embedded.manifest',
+              ],
+            },
+          ],  # actions
+        },  # end of target 'remoting_desktop_manifest'
         {
           'target_name': 'remoting_host_exe',
           'product_name': 'remoting_host',
@@ -1570,10 +1638,6 @@
             'host/win/entry_point.cc',
           ],
           'msvs_settings': {
-            'VCManifestTool': {
-              'AdditionalManifestFiles': 'host/win/dpi_aware.manifest',
-              'EmbedManifest': 'true',
-            },
             'VCLinkerTool': {
               'EntryPointSymbol': 'HostEntryPoint',
               'IgnoreAllDefaultLibraries': 'true',
@@ -1583,6 +1647,39 @@
             },
           },
         },  # end of target 'remoting_host_exe'
+        {
+          'target_name': 'remoting_host_manifest',
+          'type': 'none',
+          'dependencies': [
+            'remoting_host_exe',
+          ],
+          'hard_dependency': '1',
+          'msvs_cygwin_shell': 0,
+          'actions': [
+            {
+              'action_name': 'Embedding manifest into remoting_host.exe',
+              'binary': '<(PRODUCT_DIR)/remoting_host.exe',
+              'manifests': [
+                'host/win/dpi_aware.manifest',
+              ],
+              'inputs': [
+                '<(_binary)',
+                '<@(_manifests)',
+              ],
+              'outputs': [
+                '<(_binary).embedded.manifest',
+              ],
+              'action': [
+                'mt',
+                '-nologo',
+                '-manifest',
+                '<@(_manifests)',
+                '-outputresource:<(_binary);#1',
+                '-out:<(_binary).embedded.manifest',
+              ],
+            },
+          ],  # actions
+        },  # end of target 'remoting_host_manifest'
         {
           'target_name': 'remoting_host_messages',
           'type': 'none',
@@ -1617,6 +1714,39 @@
             },
           ],
         },  # end of target 'remoting_host_messages'
+        {
+          'target_name': 'remoting_host_plugin_manifest',
+          'type': 'none',
+          'dependencies': [
+            'remoting_host_plugin',
+          ],
+          'hard_dependency': '1',
+          'msvs_cygwin_shell': 0,
+          'actions': [
+            {
+              'action_name': 'Embedding manifest into remoting_host_plugin.dll',
+              'binary': '<(PRODUCT_DIR)/remoting_host_plugin.dll',
+              'manifests': [
+                'host/win/comctl32_v6.manifest',
+              ],
+              'inputs': [
+                '<(_binary)',
+                '<@(_manifests)',
+              ],
+              'outputs': [
+                '<(_binary).embedded.manifest',
+              ],
+              'action': [
+                'mt',
+                '-nologo',
+                '-manifest',
+                '<@(_manifests)',
+                '-outputresource:<(_binary);#2',
+                '-out:<(_binary).embedded.manifest',
+              ],
+            },
+          ],  # actions
+        },  # end of target 'remoting_host_plugin_manifest'
 
         # Generates localized the version information resources for the Windows
         # binaries. 
@@ -1744,9 +1874,9 @@
           'target_name': 'remoting_me2me_host_archive',
           'type': 'none',
           'dependencies': [
-            'remoting_core',
-            'remoting_desktop',
-            'remoting_host',
+            'remoting_core_manifest',
+            'remoting_desktop_manifest',
+            'remoting_host_manifest',
           ],
           'compiled_inputs': [
             '<(PRODUCT_DIR)/remoting_core.dll',
@@ -1996,6 +2126,11 @@
           },
           'dependencies!': [
             'remoting_host_plugin',
+          ],
+        }],
+        ['OS=="win"', {
+          'dependencies': [
+            'remoting_host_plugin_manifest',
           ],
         }],
       ],
