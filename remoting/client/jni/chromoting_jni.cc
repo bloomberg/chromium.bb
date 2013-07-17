@@ -7,14 +7,12 @@
 #include "base/android/base_jni_registrar.h"
 #include "base/android/jni_android.h"
 #include "base/memory/singleton.h"
+#include "media/base/yuv_convert.h"
 #include "net/android/net_jni_registrar.h"
 #include "remoting/base/url_request_context.h"
-#include "remoting/client/jni/chromoting_jni_instance.h"
 
-namespace {
 // Class and package name of the Java class supporting the methods we call.
-const char* const JAVA_CLASS = "org/chromium/chromoting/jni/JNIInterface";
-}  // namespace
+const char* const JAVA_CLASS = "org/chromium/chromoting/jni/JniInterface";
 
 namespace remoting {
 
@@ -53,6 +51,9 @@ ChromotingJni::ChromotingJni() {
 
   url_requester_ = new URLRequestContextGetter(ui_task_runner_,
                                                network_task_runner_);
+
+  // Allows later decoding of video frames.
+  media::InitializeCPUSpecificYUVConversions();
 
   class_ = static_cast<jclass>(env->NewGlobalRef(env->FindClass(JAVA_CLASS)));
 }
@@ -112,6 +113,33 @@ void ChromotingJni::DisplayAuthenticationPrompt() {
   env->CallStaticVoidMethod(
       class_,
       env->GetStaticMethodID(class_, "displayAuthenticationPrompt", "()V"));
+}
+
+void ChromotingJni::UpdateImageBuffer(int width, int height, jobject buffer) {
+  DCHECK(display_task_runner_->BelongsToCurrentThread());
+
+  JNIEnv* env = base::android::AttachCurrentThread();
+  env->SetStaticIntField(
+      class_,
+      env->GetStaticFieldID(class_, "sWidth", "I"),
+      width);
+  env->SetStaticIntField(
+      class_,
+      env->GetStaticFieldID(class_, "sHeight", "I"),
+      height);
+  env->SetStaticObjectField(
+      class_,
+      env->GetStaticFieldID(class_, "sBuffer", "Ljava/nio/ByteBuffer;"),
+      buffer);
+}
+
+void ChromotingJni::RedrawCanvas() {
+  DCHECK(display_task_runner_->BelongsToCurrentThread());
+
+  JNIEnv* env = base::android::AttachCurrentThread();
+  env->CallStaticVoidMethod(
+      class_,
+      env->GetStaticMethodID(class_, "redrawGraphicsInternal", "()V"));
 }
 
 }  // namespace remoting

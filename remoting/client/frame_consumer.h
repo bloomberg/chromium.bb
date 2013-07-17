@@ -5,6 +5,7 @@
 #ifndef REMOTING_CLIENT_FRAME_CONSUMER_H_
 #define REMOTING_CLIENT_FRAME_CONSUMER_H_
 
+#include "base/basictypes.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "third_party/skia/include/core/SkSize.h"

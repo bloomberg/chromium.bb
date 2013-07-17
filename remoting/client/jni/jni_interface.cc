@@ -20,7 +20,7 @@
 
 // Class and package name of the Java class that declares this file's functions.
 #define JNI_IMPLEMENTATION(method) \
-        Java_org_chromium_chromoting_jni_JNIInterface_##method
+        Java_org_chromium_chromoting_jni_JniInterface_##method
 
 extern "C" {
 
@@ -105,6 +105,12 @@ JNIEXPORT void JNICALL JNI_IMPLEMENTATION(authenticationResponse)(
       session()->ProvideSecret(pin_cstr);
 
   env->ReleaseStringUTFChars(pin_jstr, pin_cstr);
+}
+
+JNIEXPORT void JNICALL JNI_IMPLEMENTATION(scheduleRedrawNative)(
+    JNIEnv* env,
+    jobject that) {
+  remoting::ChromotingJni::GetInstance()->session()->RedrawDesktop();
 }
 
 }  // extern "C"

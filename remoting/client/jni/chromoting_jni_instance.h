@@ -9,18 +9,19 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "remoting/client/chromoting_client.h"
 #include "remoting/client/client_config.h"
 #include "remoting/client/client_context.h"
 #include "remoting/client/client_user_interface.h"
 #include "remoting/client/frame_consumer_proxy.h"
+#include "remoting/client/jni/jni_frame_consumer.h"
 #include "remoting/jingle_glue/network_settings.h"
 #include "remoting/jingle_glue/xmpp_signal_strategy.h"
 #include "remoting/protocol/connection_to_host.h"
 
 namespace remoting {
-class ChromotingJni;
 
 // ClientUserInterface that indirectly makes and receives JNI calls.
 class ChromotingJniInstance
@@ -44,6 +45,9 @@ class ChromotingJniInstance
   // but only after the UI has been asked to provide a PIN (via FetchSecret()).
   void ProvideSecret(const char* pin);
 
+  // Schedules a redraw on the display thread. May be called from any thread.
+  void RedrawDesktop();
+
   // ClientUserInterface implementation.
   virtual void OnConnectionState(
       protocol::ConnectionToHost::State state,
@@ -63,13 +67,18 @@ class ChromotingJniInstance
 
   void ConnectToHostOnDisplayThread();
   void ConnectToHostOnNetworkThread();
+  void DisconnectFromHostOnNetworkThread();
 
   // Notifies the user interface that the user needs to enter a PIN. The
   // current authentication attempt is put on hold until |callback| is invoked.
+  // May be called on any thread.
   void FetchSecret(bool pairable,
                    const protocol::SecretFetchedCallback& callback);
 
+  // This group of variables is to be used on the display thread.
   scoped_refptr<FrameConsumerProxy> frame_consumer_;
+  scoped_ptr<JniFrameConsumer> view_;
+  scoped_ptr<base::WeakPtrFactory<JniFrameConsumer> > view_weak_factory_;
 
   // This group of variables is to be used on the network thread.
   scoped_ptr<ClientConfig> client_config_;

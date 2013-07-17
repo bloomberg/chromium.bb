@@ -10,17 +10,17 @@
 #include "base/at_exit.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "remoting/base/auto_thread.h"
+#include "remoting/client/jni/chromoting_jni_instance.h"
 #include "remoting/protocol/connection_to_host.h"
 
 template<typename T> struct DefaultSingletonTraits;
 
 namespace remoting {
-class ChromotingJniInstance;
 
 // Houses the global resources on which the Chromoting components run
 // (e.g. message loops and task runners). Proxies outgoing JNI calls from its
 // ChromotingJniInstance member to Java. All its methods should be invoked
-// exclusively from the UI thread.
+// exclusively from the UI thread unless otherwise noted.
 class ChromotingJni {
  public:
   // This class is instantiated at process initialization and persists until
@@ -43,9 +43,9 @@ class ChromotingJni {
     return url_requester_;
   }
 
-  // Initiates a connection with the specified host. Must only be called when
-  // |session_| is null (i.e. before any other call to Connect() or following
-  // a call to Disconnect()).
+  // Initiates a connection with the specified host. Only call when a host
+  // connection is active (i.e. between a call to Connect() and the
+  // corresponding call to Disconnect()).
   void ConnectToHost(const char* username,
                      const char* auth_token,
                      const char* host_jid,
@@ -69,6 +69,12 @@ class ChromotingJni {
 
   // Pops up a dialog box asking the user to enter a PIN.
   void DisplayAuthenticationPrompt();
+
+  // Updates image dimensions and canvas memory space. Call on display thread.
+  void UpdateImageBuffer(int width, int height, jobject buffer);
+
+  // Draws the latest image buffer onto the canvas. Call on the display thread.
+  void RedrawCanvas();
 
  private:
   ChromotingJni();

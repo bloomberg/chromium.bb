@@ -10,21 +10,18 @@
 #include "remoting/client/jni/chromoting_jni.h"
 #include "remoting/protocol/libjingle_transport_factory.h"
 
-namespace {
 // TODO(solb) Move into location shared with client plugin.
 const char* const CHAT_SERVER = "talk.google.com";
 const int CHAT_PORT = 5222;
 const bool CHAT_USE_TLS = true;
-const char* const CHAT_AUTH_METHOD = "oauth2";
-}  // namespace
 
 namespace remoting {
 
 ChromotingJniInstance::ChromotingJniInstance(const char* username,
-                                                  const char* auth_token,
-                                                  const char* host_jid,
-                                                  const char* host_id,
-                                                  const char* host_pubkey) {
+                                             const char* auth_token,
+                                             const char* host_jid,
+                                             const char* host_id,
+                                             const char* host_pubkey) {
   DCHECK(ChromotingJni::GetInstance()->
       ui_task_runner()->BelongsToCurrentThread());
 
@@ -44,28 +41,22 @@ ChromotingJniInstance::~ChromotingJniInstance() {}
 
 void ChromotingJniInstance::Cleanup() {
   if (!ChromotingJni::GetInstance()->
-      network_task_runner()->BelongsToCurrentThread()) {
-    ChromotingJni::GetInstance()->network_task_runner()->PostTask(
+      display_task_runner()->BelongsToCurrentThread()) {
+    ChromotingJni::GetInstance()->display_task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&ChromotingJniInstance::Cleanup, this));
     return;
   }
 
-  username_ = "";
-  auth_token_ = "";
-  host_jid_ = "";
-  host_id_ = "";
-  host_pubkey_ = "";
+  // This must be destroyed on the display thread before the producer is gone.
+  view_.reset();
 
-  // |client_| must be torn down before |signaling_|.
-  pin_callback_.Reset();
-  client_.reset();
-  connection_.reset();
-  client_context_.reset();
-  client_config_.reset();
-  signaling_.reset();
-  signaling_config_.reset();
-  network_settings_.reset();
+  // The weak pointers must be invalidated on the same thread they were used.
+  view_weak_factory_->InvalidateWeakPtrs();
+
+  ChromotingJni::GetInstance()->network_task_runner()->PostTask(FROM_HERE,
+      base::Bind(&ChromotingJniInstance::DisconnectFromHostOnNetworkThread,
+                 this));
 }
 
 void ChromotingJniInstance::ProvideSecret(const char* pin) {
@@ -77,6 +68,19 @@ void ChromotingJniInstance::ProvideSecret(const char* pin) {
   // asynchronous run, since Java might want it back as soon as we return.
   ChromotingJni::GetInstance()->network_task_runner()->PostTask(FROM_HERE,
                                  base::Bind(pin_callback_, pin));
+}
+
+void ChromotingJniInstance::RedrawDesktop() {
+  if (!ChromotingJni::GetInstance()->
+      display_task_runner()->BelongsToCurrentThread()) {
+    ChromotingJni::GetInstance()->display_task_runner()->PostTask(
+        FROM_HERE,
+        base::Bind(&ChromotingJniInstance::RedrawDesktop,
+                   this));
+    return;
+  }
+
+  ChromotingJni::GetInstance()->RedrawCanvas();
 }
 
 void ChromotingJniInstance::OnConnectionState(
@@ -128,11 +132,12 @@ void ChromotingJniInstance::ConnectToHostOnDisplayThread() {
   DCHECK(ChromotingJni::GetInstance()->
       display_task_runner()->BelongsToCurrentThread());
 
-  if (!frame_consumer_.get()) {
-    frame_consumer_ = new FrameConsumerProxy(
-        ChromotingJni::GetInstance()->display_task_runner());
-    // TODO(solb) Instantiate some FrameConsumer implementation and attach it.
-  }
+  frame_consumer_ = new FrameConsumerProxy(
+      ChromotingJni::GetInstance()->display_task_runner());
+  view_.reset(new JniFrameConsumer());
+  view_weak_factory_.reset(new base::WeakPtrFactory<JniFrameConsumer>(
+      view_.get()));
+  frame_consumer_->Attach(view_weak_factory_->GetWeakPtr());
 
   ChromotingJni::GetInstance()->network_task_runner()->PostTask(
       FROM_HERE,
@@ -153,7 +158,6 @@ void ChromotingJniInstance::ConnectToHostOnNetworkThread() {
       this);
   client_config_->authentication_tag = host_id_;
 
-  // TODO(solb) Move these hardcoded values elsewhere:
   client_config_->authentication_methods.push_back(
       protocol::AuthenticationMethod::FromString("spake2_hmac"));
   client_config_->authentication_methods.push_back(
@@ -172,6 +176,8 @@ void ChromotingJniInstance::ConnectToHostOnNetworkThread() {
                                      frame_consumer_,
                                      scoped_ptr<AudioPlayer>()));
 
+  view_->set_frame_producer(client_->GetFrameProducer());
+
   signaling_config_.reset(new XmppSignalStrategy::XmppServerConfig());
   signaling_config_->host = CHAT_SERVER;
   signaling_config_->port = CHAT_PORT;
@@ -181,7 +187,7 @@ void ChromotingJniInstance::ConnectToHostOnNetworkThread() {
       ChromotingJni::GetInstance()->url_requester(),
       username_,
       auth_token_,
-      CHAT_AUTH_METHOD,
+      "oauth2",
       *signaling_config_));
 
   network_settings_.reset(new NetworkSettings(
@@ -192,6 +198,21 @@ void ChromotingJniInstance::ConnectToHostOnNetworkThread() {
           ChromotingJni::GetInstance()->url_requester()));
 
   client_->Start(signaling_.get(), fact.Pass());
+}
+
+void ChromotingJniInstance::DisconnectFromHostOnNetworkThread() {
+  DCHECK(ChromotingJni::GetInstance()->
+      network_task_runner()->BelongsToCurrentThread());
+
+  username_ = "";
+  auth_token_ = "";
+  host_jid_ = "";
+  host_id_ = "";
+  host_pubkey_ = "";
+
+  // |client_| must be torn down before |signaling_|.
+  connection_.reset();
+  client_.reset();
 }
 
 void ChromotingJniInstance::FetchSecret(
