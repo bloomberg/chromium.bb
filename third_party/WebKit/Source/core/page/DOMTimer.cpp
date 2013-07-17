@@ -48,7 +48,7 @@ static const double oneMillisecond = 0.001;
 static const double minimumInterval = 0.004;
 
 static int timerNestingLevel = 0;
-    
+
 static inline bool shouldForwardUserGesture(int interval, int nestingLevel)
 {
     return UserGestureIndicator::processingUserGesture()
@@ -69,18 +69,28 @@ double DOMTimer::visiblePageAlignmentInterval()
     return 0;
 }
 
-DOMTimer::DOMTimer(ScriptExecutionContext* context, PassOwnPtr<ScheduledAction> action, int interval, bool singleShot)
+int DOMTimer::install(ScriptExecutionContext* context, PassOwnPtr<ScheduledAction> action, int timeout, bool singleShot)
+{
+    int timeoutID = context->installNewTimeout(action, timeout, singleShot);
+    InspectorInstrumentation::didInstallTimer(context, timeoutID, timeout, singleShot);
+    return timeoutID;
+}
+
+void DOMTimer::removeByID(ScriptExecutionContext* context, int timeoutID)
+{
+    context->removeTimeoutByID(timeoutID);
+    InspectorInstrumentation::didRemoveTimer(context, timeoutID);
+}
+
+DOMTimer::DOMTimer(ScriptExecutionContext* context, PassOwnPtr<ScheduledAction> action, int interval, bool singleShot, int timeoutID)
     : SuspendableTimer(context)
+    , m_timeoutID(timeoutID)
     , m_nestingLevel(timerNestingLevel + 1)
     , m_action(action)
 {
+    ASSERT(timeoutID > 0);
     if (shouldForwardUserGesture(interval, m_nestingLevel))
         m_userGestureToken = UserGestureIndicator::currentToken();
-
-    // Keep asking for the next id until we're given one that we don't already have.
-    do {
-        m_timeoutId = context->circularSequentialID();
-    } while (!context->addTimeout(m_timeoutId, this));
 
     double intervalMilliseconds = max(oneMillisecond, interval * oneMillisecond);
     if (intervalMilliseconds < minimumInterval && m_nestingLevel >= maxTimerNestingLevel)
@@ -93,34 +103,11 @@ DOMTimer::DOMTimer(ScriptExecutionContext* context, PassOwnPtr<ScheduledAction> 
 
 DOMTimer::~DOMTimer()
 {
-    if (scriptExecutionContext())
-        scriptExecutionContext()->removeTimeout(m_timeoutId);
 }
 
-int DOMTimer::install(ScriptExecutionContext* context, PassOwnPtr<ScheduledAction> action, int timeout, bool singleShot)
+int DOMTimer::timeoutID() const
 {
-    // DOMTimer constructor links the new timer into a list of ActiveDOMObjects held by the 'context'.
-    // The timer is deleted when context is deleted (DOMTimer::contextDestroyed) or explicitly via DOMTimer::removeById(),
-    // or if it is a one-time timer and it has fired (DOMTimer::fired).
-    DOMTimer* timer = new DOMTimer(context, action, timeout, singleShot);
-
-    timer->suspendIfNeeded();
-    InspectorInstrumentation::didInstallTimer(context, timer->m_timeoutId, timeout, singleShot);
-
-    return timer->m_timeoutId;
-}
-
-void DOMTimer::removeById(ScriptExecutionContext* context, int timeoutId)
-{
-    // timeout IDs have to be positive, and 0 and -1 are unsafe to
-    // even look up since they are the empty and deleted value
-    // respectively
-    if (timeoutId <= 0)
-        return;
-
-    InspectorInstrumentation::didRemoveTimer(context, timeoutId);
-
-    delete context->findTimeout(timeoutId);
+    return m_timeoutID;
 }
 
 void DOMTimer::fired()
@@ -131,7 +118,7 @@ void DOMTimer::fired()
     // Only the first execution of a multi-shot timer should get an affirmative user gesture indicator.
     UserGestureIndicator gestureIndicator(m_userGestureToken.release());
 
-    InspectorInstrumentationCookie cookie = InspectorInstrumentation::willFireTimer(context, m_timeoutId);
+    InspectorInstrumentationCookie cookie = InspectorInstrumentation::willFireTimer(context, m_timeoutID);
 
     // Simple case for non-one-shot timers.
     if (isActive()) {
@@ -152,8 +139,8 @@ void DOMTimer::fired()
     // Delete timer before executing the action for one-shot timers.
     OwnPtr<ScheduledAction> action = m_action.release();
 
-    // No access to member variables after this point.
-    delete this;
+    // This timer is being deleted; no access to member variables allowed after this point.
+    context->removeTimeoutByID(m_timeoutID);
 
     action->execute(context);
 
@@ -165,7 +152,6 @@ void DOMTimer::fired()
 void DOMTimer::contextDestroyed()
 {
     SuspendableTimer::contextDestroyed();
-    delete this;
 }
 
 void DOMTimer::stop()

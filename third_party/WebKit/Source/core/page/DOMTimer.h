@@ -27,47 +27,58 @@
 #ifndef DOMTimer_h
 #define DOMTimer_h
 
+#include "bindings/v8/ScheduledAction.h"
 #include "core/dom/UserGestureIndicator.h"
 #include "core/page/SuspendableTimer.h"
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
+#include "wtf/Compiler.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
 
-    class ScheduledAction;
+class ScriptExecutionContext;
 
-    class DOMTimer : public SuspendableTimer {
-    public:
-        virtual ~DOMTimer();
-        // Creates a new timer owned by specified ScriptExecutionContext, starts it
-        // and returns its Id.
-        static int install(ScriptExecutionContext*, PassOwnPtr<ScheduledAction>, int timeout, bool singleShot);
-        static void removeById(ScriptExecutionContext*, int timeoutId);
+class DOMTimer : public SuspendableTimer {
+public:
+    // Creates a new timer owned by the ScriptExecutionContext, starts it and returns its ID.
+    static int install(ScriptExecutionContext*, PassOwnPtr<ScheduledAction>, int timeout, bool singleShot);
+    static void removeByID(ScriptExecutionContext*, int timeoutID);
 
-        // ActiveDOMObject
-        virtual void contextDestroyed();
-        virtual void stop();
+    virtual ~DOMTimer();
 
-        virtual void reportMemoryUsage(MemoryObjectInfo*) const OVERRIDE;
+    int timeoutID() const;
 
-        // The following are essentially constants. All intervals are in seconds.
-        static double hiddenPageAlignmentInterval();
-        static double visiblePageAlignmentInterval();
+    // ActiveDOMObject
+    virtual void contextDestroyed() OVERRIDE;
+    virtual void stop() OVERRIDE;
 
-    private:
-        DOMTimer(ScriptExecutionContext*, PassOwnPtr<ScheduledAction>, int interval, bool singleShot);
-        virtual void fired();
+    virtual void reportMemoryUsage(MemoryObjectInfo*) const OVERRIDE;
 
-        // Retuns timer fire time rounded to the next multiple of timer alignment interval.
-        virtual double alignedFireTime(double) const;
+    // The following are essentially constants. All intervals are in seconds.
+    static double hiddenPageAlignmentInterval();
+    static double visiblePageAlignmentInterval();
 
-        int m_timeoutId;
-        int m_nestingLevel;
-        OwnPtr<ScheduledAction> m_action;
-        RefPtr<UserGestureToken> m_userGestureToken;
-    };
+private:
+    friend class ScriptExecutionContext; // For create().
+
+    // Should only be used by ScriptExecutionContext.
+    static PassOwnPtr<DOMTimer> create(ScriptExecutionContext* context, PassOwnPtr<ScheduledAction> action, int timeout, bool singleShot, int timeoutID)
+    {
+        return adoptPtr(new DOMTimer(context, action, timeout, singleShot, timeoutID));
+    }
+
+    DOMTimer(ScriptExecutionContext*, PassOwnPtr<ScheduledAction>, int interval, bool singleShot, int timeoutID);
+    virtual void fired();
+
+    // Retuns timer fire time rounded to the next multiple of timer alignment interval.
+    virtual double alignedFireTime(double) const;
+
+    int m_timeoutID;
+    int m_nestingLevel;
+    OwnPtr<ScheduledAction> m_action;
+    RefPtr<UserGestureToken> m_userGestureToken;
+};
 
 } // namespace WebCore
 
 #endif // DOMTimer_h
-

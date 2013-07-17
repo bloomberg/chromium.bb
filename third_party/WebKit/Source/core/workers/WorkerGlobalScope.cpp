@@ -184,9 +184,9 @@ int WorkerGlobalScope::setTimeout(PassOwnPtr<ScheduledAction> action, int timeou
     return DOMTimer::install(scriptExecutionContext(), action, timeout, true);
 }
 
-void WorkerGlobalScope::clearTimeout(int timeoutId)
+void WorkerGlobalScope::clearTimeout(int timeoutID)
 {
-    DOMTimer::removeById(scriptExecutionContext(), timeoutId);
+    DOMTimer::removeByID(scriptExecutionContext(), timeoutID);
 }
 
 void WorkerGlobalScope::clearInspector()
@@ -199,9 +199,9 @@ int WorkerGlobalScope::setInterval(PassOwnPtr<ScheduledAction> action, int timeo
     return DOMTimer::install(scriptExecutionContext(), action, timeout, false);
 }
 
-void WorkerGlobalScope::clearInterval(int timeoutId)
+void WorkerGlobalScope::clearInterval(int timeoutID)
 {
-    DOMTimer::removeById(scriptExecutionContext(), timeoutId);
+    DOMTimer::removeByID(scriptExecutionContext(), timeoutID);
 }
 
 void WorkerGlobalScope::importScripts(const Vector<String>& urls, ExceptionCode& ec)

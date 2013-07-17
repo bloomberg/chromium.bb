@@ -1397,20 +1397,16 @@ void DOMWindow::resizeTo(float width, float height) const
     page->chrome().setWindowRect(adjustWindowRect(page, update));
 }
 
-void DOMWindow::clearTimeout(int timeoutId)
+void DOMWindow::clearTimeout(int timeoutID)
 {
-    ScriptExecutionContext* context = scriptExecutionContext();
-    if (!context)
-        return;
-    DOMTimer::removeById(context, timeoutId);
+    if (ScriptExecutionContext* context = scriptExecutionContext())
+        DOMTimer::removeByID(context, timeoutID);
 }
 
-void DOMWindow::clearInterval(int timeoutId)
+void DOMWindow::clearInterval(int timeoutID)
 {
-    ScriptExecutionContext* context = scriptExecutionContext();
-    if (!context)
-        return;
-    DOMTimer::removeById(context, timeoutId);
+    if (ScriptExecutionContext* context = scriptExecutionContext())
+        DOMTimer::removeByID(context, timeoutID);
 }
 
 static LayoutSize size(HTMLImageElement* image)

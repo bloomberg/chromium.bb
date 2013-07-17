@@ -34,6 +34,7 @@
 #include "core/dom/MessagePort.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/html/PublicURLManager.h"
+#include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/loader/cache/CachedScript.h"
 #include "core/page/DOMTimer.h"
@@ -279,6 +280,30 @@ int ScriptExecutionContext::circularSequentialID()
     return m_circularSequentialID;
 }
 
+int ScriptExecutionContext::installNewTimeout(PassOwnPtr<ScheduledAction> action, int timeout, bool singleShot)
+{
+    int timeoutID;
+    while (true) {
+        timeoutID = circularSequentialID();
+        if (!m_timeouts.contains(timeoutID))
+            break;
+    }
+    TimeoutMap::AddResult result = m_timeouts.add(timeoutID, DOMTimer::create(this, action, timeout, singleShot, timeoutID));
+    ASSERT(result.isNewEntry);
+    DOMTimer* timer = result.iterator->value.get();
+
+    timer->suspendIfNeeded();
+
+    return timer->timeoutID();
+}
+
+void ScriptExecutionContext::removeTimeoutByID(int timeoutID)
+{
+    if (timeoutID <= 0)
+        return;
+    m_timeouts.remove(timeoutID);
+}
+
 PublicURLManager& ScriptExecutionContext::publicURLManager()
 {
     if (!m_publicURLManager)
@@ -288,10 +313,8 @@ PublicURLManager& ScriptExecutionContext::publicURLManager()
 
 void ScriptExecutionContext::didChangeTimerAlignmentInterval()
 {
-    for (TimeoutMap::iterator iter = m_timeouts.begin(); iter != m_timeouts.end(); ++iter) {
-        DOMTimer* timer = iter->value;
-        timer->didChangeAlignmentInterval();
-    }
+    for (TimeoutMap::iterator iter = m_timeouts.begin(); iter != m_timeouts.end(); ++iter)
+        iter->value->didChangeAlignmentInterval();
 }
 
 double ScriptExecutionContext::timerAlignmentInterval() const

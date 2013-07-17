@@ -31,16 +31,18 @@
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/SecurityContext.h"
 #include "core/page/ConsoleTypes.h"
+#include "core/page/DOMTimer.h"
 #include "core/platform/Supplementable.h"
 #include "weborigin/KURL.h"
 #include "wtf/HashSet.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
 
 class CachedScript;
 class ContextLifecycleNotifier;
 class DatabaseContext;
-class DOMTimer;
 class EventListener;
 class EventQueue;
 class EventTarget;
@@ -123,10 +125,6 @@ public:
     // Gets the next id in a circular sequence from 1 to 2^31-1.
     int circularSequentialID();
 
-    bool addTimeout(int timeoutId, DOMTimer* timer) { return m_timeouts.add(timeoutId, timer).isNewEntry; }
-    void removeTimeout(int timeoutId) { m_timeouts.remove(timeoutId); }
-    DOMTimer* findTimeout(int timeoutId) { return m_timeouts.get(timeoutId); }
-
     void didChangeTimerAlignmentInterval();
     virtual double timerAlignmentInterval() const;
 
@@ -159,6 +157,8 @@ protected:
     ContextLifecycleNotifier* lifecycleNotifier();
 
 private:
+    friend class DOMTimer; // For installNewTimeout() and removeTimeoutByID() below.
+
     virtual const KURL& virtualURL() const = 0;
     virtual KURL virtualCompleteURL(const String&) const = 0;
 
@@ -173,11 +173,14 @@ private:
     virtual void derefScriptExecutionContext() = 0;
     virtual PassOwnPtr<ContextLifecycleNotifier> createLifecycleNotifier();
 
-    OwnPtr<ContextLifecycleNotifier> m_lifecycleNotifier;
+    // Implementation details for DOMTimer. No other classes should call these functions.
+    int installNewTimeout(PassOwnPtr<ScheduledAction>, int timeout, bool singleShot);
+    void removeTimeoutByID(int timeoutID); // This makes underlying DOMTimer instance destructed.
+
     HashSet<MessagePort*> m_messagePorts;
 
     int m_circularSequentialID;
-    typedef HashMap<int, DOMTimer*> TimeoutMap;
+    typedef HashMap<int, OwnPtr<DOMTimer> > TimeoutMap;
     TimeoutMap m_timeouts;
 
     bool m_inDispatchErrorEvent;
@@ -191,6 +194,11 @@ private:
     OwnPtr<PublicURLManager> m_publicURLManager;
 
     RefPtr<DatabaseContext> m_databaseContext;
+
+    // The location of this member is important; to make sure contextDestroyed() notification on
+    // ScriptExecutionContext's members (notably m_timeouts) is called before they are destructed,
+    // m_lifecycleNotifer should be placed *after* such members.
+    OwnPtr<ContextLifecycleNotifier> m_lifecycleNotifier;
 };
 
 } // namespace WebCore
