@@ -31,6 +31,24 @@
           "contextID": {"type": "integer", "description": "This is used to specify targets of text field operations.  This ID becomes invalid as soon as onBlur is called."},
           "type": {"type": "string", "description": "Type of value this text field edits, (Text, Number, Password, etc)", "enum": ["text", "number", "password"]}
         }
+      },
+      {
+        "id": "MenuItem",
+        "type": "object",
+        "description": "A menu item used by an input method to interact with the user from the language menu.",
+        "properties": {
+          "id": {"type": "string", "description": "String that will be passed to callbacks referencing this MenuItem."},
+          "label": {"type": "string", "optional": true, "description": "Text displayed in the menu for this item."},
+          "style": {
+            "type": "string",
+            "optional": true,
+            "description": "Enum representing if this item is: check, radio, or a separator.  Radio buttons between separators are considered grouped.",
+            "enum": ["check", "radio", "separator"]
+          },
+          "visible": {"type": "boolean", "optional": true, "description": "Indicates this item is visible."},
+          "checked": {"type": "boolean", "optional": true, "description": "Indicates this item should be drawn with a check."},
+          "enabled": {"type": "boolean", "optional": true, "description": "Indicates this item is enabled."}
+        }
       }
     ],
     "functions": [
@@ -338,21 +356,7 @@
                 "description": "MenuItems to add. They will be added in the order they exist in the array.",
                 "type": "array",
                 "items": {
-                  "type": "object",
-                  "description": "A menu item used by an input method to interact with the user from the language menu.",
-                  "properties": {
-                    "id": {"type": "string", "description": "String that will be passed to callbacks referencing this MenuItem."},
-                    "label": {"type": "string", "optional": true, "description": "Text displayed in the menu for this item."},
-                    "style": {
-                      "type": "string",
-                      "optional": true,
-                      "description": "Enum representing if this item is: none, check, radio, or a separator.  Radio buttons between separators are considered grouped.",
-                      "enum": ["check", "radio", "separator"]
-                    },
-                    "visible": {"type": "boolean", "optional": true, "description": "Indicates this item is visible."},
-                    "checked": {"type": "boolean", "optional": true, "description": "Indicates this item should be drawn with a check."},
-                    "enabled": {"type": "boolean", "optional": true, "description": "Indicates this item is enabled."}
-                  }
+                  "$ref": "MenuItem"
                 }
               }
             }
@@ -383,21 +387,7 @@
                 "description": "Array of MenuItems to update",
                 "type": "array",
                 "items": {
-                  "type": "object",
-                  "description": "A menu item used by an input method to interact with the user from the language menu.",
-                  "properties": {
-                    "id": {"type": "string", "description": "String that will be passed to callbacks referencing this MenuItem."},
-                    "label": {"type": "string", "optional": true, "description": "Text displayed in the menu for this item."},
-                    "style": {
-                      "type": "string",
-                      "optional": true,
-                      "description": "Enum representing if this item is: none, check, radio, or a separator.  Radio buttons between separators are considered grouped.",
-                      "enum": ["check", "radio", "separator"]
-                    },
-                    "visible": {"type": "boolean", "optional": true, "description": "Indicates this item is visible."},
-                    "checked": {"type": "boolean", "optional": true, "description": "Indicates this item should be drawn with a check."},
-                    "enabled": {"type": "boolean", "optional": true, "description": "Indicates this item is enabled."}
-                  }
+                  "$ref": "MenuItem"
                 }
               }
             }

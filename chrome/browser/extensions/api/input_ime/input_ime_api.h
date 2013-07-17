@@ -126,11 +126,6 @@ class InputImeSetCandidatesFunction : public SyncExtensionFunction {
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
-
- private:
-  bool ReadCandidates(
-      base::ListValue* candidates,
-      std::vector<chromeos::InputMethodEngine::Candidate>* output);
 };
 
 class InputImeSetCursorPositionFunction : public SyncExtensionFunction {

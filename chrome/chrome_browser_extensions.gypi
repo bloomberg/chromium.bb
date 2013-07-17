@@ -597,8 +597,6 @@
         'browser/extensions/extension_info_map.h',
         'browser/extensions/extension_infobar_delegate.cc',
         'browser/extensions/extension_infobar_delegate.h',
-        'browser/extensions/extension_input_module_constants.cc',
-        'browser/extensions/extension_input_module_constants.h',
         'browser/extensions/extension_install_prompt.cc',
         'browser/extensions/extension_install_prompt.h',
         'browser/extensions/extension_install_ui.cc',
