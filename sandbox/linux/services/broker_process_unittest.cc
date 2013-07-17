@@ -14,15 +14,49 @@
 #include <string>
 #include <vector>
 
-#if defined(OS_ANDROID)
-#include "base/android/path_utils.h"
-#endif
-#include "base/files/file_path.h"
+#include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/posix/eintr_wrapper.h"
 #include "sandbox/linux/tests/unit_tests.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace sandbox {
+
+namespace {
+
+// Creates and open a temporary file on creation and closes
+// and removes it on destruction.
+// Unlike base/ helpers, this does not require JNI on Android.
+class ScopedTemporaryFile {
+ public:
+  ScopedTemporaryFile()
+      : fd_(-1) {
+#if defined(OS_ANDROID)
+    static const char file_template[] = "/data/local/tmp/ScopedTempFileXXXXXX";
+#else
+    static const char file_template[] = "/tmp/ScopedTempFileXXXXXX";
+#endif  // defined(OS_ANDROID)
+    COMPILE_ASSERT(sizeof(full_file_name_) >= sizeof(file_template),
+                   full_file_name_is_large_enough);
+    memcpy(full_file_name_, file_template, sizeof(file_template));
+    fd_ = mkstemp(full_file_name_);
+    CHECK_LE(0, fd_);
+  }
+  ~ScopedTemporaryFile() {
+    CHECK_EQ(0, unlink(full_file_name_));
+    CHECK_EQ(0, HANDLE_EINTR(close(fd_)));
+  }
+
+  int fd() const { return fd_; }
+  const char* full_file_name() const { return full_file_name_; }
+
+ private:
+  int fd_;
+  char full_file_name_[128];
+  DISALLOW_COPY_AND_ASSIGN(ScopedTemporaryFile);
+};
+
+}  // namespace
 
 #if defined(OS_ANDROID)
   #define DISABLE_ON_ANDROID(function) DISABLED_##function
@@ -288,18 +322,8 @@ TEST(BrokerProcess, OpenCpuinfoNoClientCheck) {
 }
 
 TEST(BrokerProcess, OpenFileRW) {
-  const char basename[] = "BrokerProcessXXXXXX";
-  char template_name[2048];
-  // On Android, this file will end up in
-  // /data/local/tmp/BrokerProcessXXXXXX, which is OK.
-  strncpy(template_name, basename, sizeof(basename) - 1);
-  template_name[sizeof(basename) - 1] = '\0';
-  int tempfile = mkstemp(template_name);
-  ASSERT_GE(tempfile, 0);
-  char tempfile_name[2048];
-  int written = snprintf(tempfile_name, sizeof(tempfile_name),
-                         "/proc/self/fd/%d", tempfile);
-  ASSERT_LT(written, static_cast<int>(sizeof(tempfile_name)));
+  ScopedTemporaryFile tempfile;
+  const char* tempfile_name = tempfile.full_file_name();
 
   std::vector<std::string> whitelist;
   whitelist.push_back(tempfile_name);
@@ -323,23 +347,11 @@ TEST(BrokerProcess, OpenFileRW) {
   // Read back from the original file descriptor what we wrote through
   // the descriptor provided by the broker.
   char buf[1024];
-  len = read(tempfile, buf, sizeof(buf));
+  len = read(tempfile.fd(), buf, sizeof(buf));
 
   ASSERT_EQ(len, static_cast<ssize_t>(sizeof(test_text)));
   ASSERT_EQ(memcmp(test_text, buf, sizeof(test_text)), 0);
 
-  // Cleanup the temporary file.
-  char tempfile_full_path[2048];
-  // Make sure tempfile_full_path will terminate with a 0.
-  memset(tempfile_full_path, 0, sizeof(tempfile_full_path));
-  ssize_t ret = readlink(tempfile_name, tempfile_full_path,
-                         sizeof(tempfile_full_path));
-  ASSERT_GT(ret, 0);
-  // Make sure we still have a trailing zero in tempfile_full_path.
-  ASSERT_LT(ret, static_cast<ssize_t>(sizeof(tempfile_full_path)));
-  ASSERT_EQ(unlink(tempfile_full_path), 0);
-
-  ASSERT_EQ(close(tempfile), 0);
   ASSERT_EQ(close(tempfile2), 0);
 }
 
