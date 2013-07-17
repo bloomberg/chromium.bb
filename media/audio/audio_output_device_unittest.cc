@@ -5,9 +5,9 @@
 #include <vector>
 
 #include "base/at_exit.h"
+#include "base/memory/shared_memory.h"
 #include "base/message_loop.h"
 #include "base/process_util.h"
-#include "base/shared_memory.h"
 #include "base/sync_socket.h"
 #include "base/test/test_timeouts.h"
 #include "media/audio/audio_output_device.h"

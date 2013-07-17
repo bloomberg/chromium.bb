@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "base/basictypes.h"
-#include "base/shared_memory.h"
+#include "base/memory/shared_memory.h"
 #include "base/sync_socket.h"
 #include "ipc/ipc_platform_file.h"
 #include "ppapi/c/pp_instance.h"

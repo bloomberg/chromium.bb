@@ -8,12 +8,12 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/shared_memory.h"
+#include "base/memory/shared_memory.h"
 #include "base/sync_socket.h"
 #include "base/synchronization/lock.h"
-#include "media/base/media_export.h"
 #include "media/audio/audio_parameters.h"
 #include "media/audio/shared_memory_util.h"
+#include "media/base/media_export.h"
 
 namespace base {
 class MessageLoop;

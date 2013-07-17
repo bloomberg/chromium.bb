@@ -8,9 +8,9 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/shared_memory.h"
-#include "ppapi/thunk/ppb_buffer_api.h"
+#include "base/memory/shared_memory.h"
 #include "ppapi/shared_impl/resource.h"
+#include "ppapi/thunk/ppb_buffer_api.h"
 #include "webkit/plugins/webkit_plugins_export.h"
 
 namespace webkit {

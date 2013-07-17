@@ -6,7 +6,7 @@
 #define MEDIA_AUDIO_SHARED_MEMORY_UTIL_H_
 
 #include "base/basictypes.h"
-#include "base/shared_memory.h"
+#include "base/memory/shared_memory.h"
 #include "media/base/media_export.h"
 
 namespace media {

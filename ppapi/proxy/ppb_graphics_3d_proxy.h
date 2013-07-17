@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "base/shared_memory.h"
+#include "base/memory/shared_memory.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "ppapi/c/pp_graphics_3d.h"
 #include "ppapi/c/pp_instance.h"

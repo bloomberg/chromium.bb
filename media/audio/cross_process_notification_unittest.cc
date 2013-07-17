@@ -4,7 +4,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
-#include "base/shared_memory.h"
+#include "base/memory/shared_memory.h"
 #include "base/stl_util.h"
 #include "base/test/multiprocess_test.h"
 #include "base/threading/platform_thread.h"

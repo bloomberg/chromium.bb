@@ -5,7 +5,7 @@
 #ifndef PPAPI_WEBKIT_PLUGINS_PPAPI_HOST_ARRAY_BUFFER_VAR_H_
 #define PPAPI_WEBKIT_PLUGINS_PPAPI_HOST_ARRAY_BUFFER_VAR_H_
 
-#include "base/shared_memory.h"
+#include "base/memory/shared_memory.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/shared_impl/host_resource.h"
 #include "ppapi/shared_impl/var.h"

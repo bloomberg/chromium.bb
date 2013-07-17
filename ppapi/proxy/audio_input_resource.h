@@ -9,7 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/shared_memory.h"
+#include "base/memory/shared_memory.h"
 #include "base/sync_socket.h"
 #include "base/threading/simple_thread.h"
 #include "ppapi/proxy/device_enumeration_resource_helper.h"

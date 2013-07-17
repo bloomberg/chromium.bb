@@ -6,7 +6,7 @@
 #define PPAPI_SHARED_IMPL_PPB_AUDIO_SHARED_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "base/shared_memory.h"
+#include "base/memory/shared_memory.h"
 #include "base/sync_socket.h"
 #include "base/threading/simple_thread.h"
 #include "media/base/audio_bus.h"

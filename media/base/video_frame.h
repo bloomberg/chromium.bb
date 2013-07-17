@@ -7,7 +7,7 @@
 
 #include "base/callback.h"
 #include "base/md5.h"
-#include "base/shared_memory.h"
+#include "base/memory/shared_memory.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "media/base/buffers.h"
 #include "ui/gfx/rect.h"

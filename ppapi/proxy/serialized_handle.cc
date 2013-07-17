@@ -4,9 +4,9 @@
 
 #include "ppapi/proxy/serialized_handle.h"
 
+#include "base/memory/shared_memory.h"
 #include "base/pickle.h"
 #include "base/platform_file.h"
-#include "base/shared_memory.h"
 #include "build/build_config.h"
 #include "ipc/ipc_platform_file.h"
 

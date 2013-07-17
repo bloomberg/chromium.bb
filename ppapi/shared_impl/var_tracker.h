@@ -11,7 +11,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/shared_memory.h"
+#include "base/memory/shared_memory.h"
 #include "base/threading/thread_checker.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_module.h"

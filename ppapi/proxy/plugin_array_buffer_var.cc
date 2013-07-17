@@ -8,8 +8,8 @@
 
 #include <limits>
 
+#include "base/memory/shared_memory.h"
 #include "base/process_util.h"
-#include "base/shared_memory.h"
 #include "ppapi/c/dev/ppb_buffer_dev.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_globals.h"

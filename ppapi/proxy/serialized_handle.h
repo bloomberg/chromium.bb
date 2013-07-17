@@ -10,7 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
-#include "base/shared_memory.h"
+#include "base/memory/shared_memory.h"
 #include "build/build_config.h"
 #include "ipc/ipc_platform_file.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"

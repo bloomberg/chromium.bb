@@ -6,7 +6,7 @@
 #define PPAPI_PPB_IMAGE_DATA_PROXY_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "base/shared_memory.h"
+#include "base/memory/shared_memory.h"
 #include "build/build_config.h"
 #include "ipc/ipc_platform_file.h"
 #include "ppapi/c/pp_bool.h"

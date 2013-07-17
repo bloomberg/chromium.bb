@@ -61,14 +61,14 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/shared_memory.h"
 #include "base/message_loop.h"
-#include "base/shared_memory.h"
-#include "media/base/media_export.h"
 #include "media/audio/audio_device_thread.h"
 #include "media/audio/audio_output_ipc.h"
 #include "media/audio/audio_parameters.h"
 #include "media/audio/scoped_loop_observer.h"
 #include "media/base/audio_renderer_sink.h"
+#include "media/base/media_export.h"
 
 namespace media {
 

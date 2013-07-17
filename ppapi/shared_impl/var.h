@@ -9,8 +9,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/shared_memory.h"
 #include "base/platform_file.h"
-#include "base/shared_memory.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/shared_impl/host_resource.h"
 #include "ppapi/shared_impl/ppapi_shared_export.h"

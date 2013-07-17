@@ -5,7 +5,7 @@
 #ifndef PPAPI_PROXY_PPB_BUFFER_PROXY_H_
 #define PPAPI_PROXY_PPB_BUFFER_PROXY_H_
 
-#include "base/shared_memory.h"
+#include "base/memory/shared_memory.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/proxy/interface_proxy.h"
 #include "ppapi/shared_impl/resource.h"

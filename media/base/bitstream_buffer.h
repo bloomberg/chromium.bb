@@ -6,7 +6,7 @@
 #define MEDIA_BASE_BITSTREAM_BUFFER_H_
 
 #include "base/basictypes.h"
-#include "base/shared_memory.h"
+#include "base/memory/shared_memory.h"
 
 namespace media {
 
