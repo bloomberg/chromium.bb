@@ -476,7 +476,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest,
 
 // Tests that renderer process native memory is feasible.
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
-                       TestRendererProcessNativeMemorySize) {
+                       DISABLED_TestRendererProcessNativeMemorySize) {
   RunTest("testRendererProcessNativeMemorySize", std::string());
 }
 
