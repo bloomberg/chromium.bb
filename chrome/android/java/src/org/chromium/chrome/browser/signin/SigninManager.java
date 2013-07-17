@@ -6,12 +6,16 @@ package org.chromium.chrome.browser.signin;
 
 import android.accounts.Account;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.res.Resources;
 import android.util.Log;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
+import org.chromium.chrome.R;
 import org.chromium.sync.internal_api.pub.base.ModelType;
 import org.chromium.sync.notifier.InvalidationController;
 import org.chromium.sync.notifier.SyncStatusHelper;
@@ -38,9 +42,28 @@ public class SigninManager {
     private final Context mContext;
     private final int mNativeSigninManagerAndroid;
 
-    private Runnable mSignInCallback;
+    private Activity mSignInActivity;
     private Account mSignInAccount;
-    private String mSyncToken;
+    private Observer mSignInObserver;
+    private boolean mPassive = false;
+
+    /**
+     * The Observer of startSignIn() will be notified when sign-in completes.
+     */
+    public static interface Observer {
+        /**
+         * Invoked after sign-in completed successfully.
+         */
+        public void onSigninComplete();
+
+        /**
+         * Invoked when the sign-in process was cancelled by the user.
+         *
+         * The user should have the option of going back and starting the process again,
+         * if possible.
+         */
+        public void onSigninCancelled();
+    }
 
     /**
      * A helper method for retrieving the application-wide SigninManager.
@@ -73,14 +96,18 @@ public class SigninManager {
      *
      * @param activity The context to use for the operation.
      * @param account The account to sign in to.
-     * @param callback The {@link Runnable#run()} method is called once the operation completes.
-     * The callback may be null, and is never invoked if the user cancels sign-in.
+     * @param passive If passive is true then this operation should not interact with the user.
+     * @param callback The Observer to notify when the sign-in process is finished.
      */
-    public void startSignIn(Activity activity, final Account account, final Runnable callback) {
-        assert mSignInCallback == null;
+    public void startSignIn(
+            Activity activity, final Account account, boolean passive, final Observer observer) {
+        assert mSignInActivity == null;
         assert mSignInAccount == null;
-        mSignInCallback = callback;
+        assert mSignInObserver == null;
+        mSignInActivity = activity;
         mSignInAccount = account;
+        mSignInObserver = observer;
+        mPassive = passive;
 
         if (!nativeShouldLoadPolicyForUser(account.name)) {
             // Proceed with the sign-in flow without checking for policy if it can be determined
@@ -95,19 +122,46 @@ public class SigninManager {
     }
 
     @CalledByNative
-    private void onPolicyCheckedBeforeSignIn(boolean hasPolicyManagement) {
-        if (hasPolicyManagement) {
-            Log.d(TAG, "Account has policy management");
-            // TODO(joaodasilva): ask for confirmation before applying policy. The sign-in process
-            // should be aborted if the user cancels at this step.
-            // See FirstRunUtil.showToSDialog for an example.
-
-            // This will call back to onPolicyFetchedBeforeSignIn.
-            nativeFetchPolicyBeforeSignIn(mNativeSigninManagerAndroid);
-        } else {
+    private void onPolicyCheckedBeforeSignIn(String managementDomain) {
+        if (managementDomain == null) {
             Log.d(TAG, "Account doesn't have policy");
             doSignIn();
+            return;
         }
+
+        if (mPassive) {
+            // The account has policy management, but the user should be asked before signing-in
+            // to an account with management enabled. Don't show the policy dialog since this is a
+            // passive interaction (e.g. auto signing-in), and just don't auto-signin in this case.
+            cancelSignIn();
+            return;
+        }
+
+        Log.d(TAG, "Account has policy management");
+        AlertDialog.Builder builder = new AlertDialog.Builder(mSignInActivity);
+        builder.setTitle(R.string.policy_dialog_title);
+        builder.setMessage(mContext.getResources().getString(R.string.policy_dialog_message,
+                                                             managementDomain));
+        builder.setPositiveButton(
+                R.string.policy_dialog_proceed,
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int id) {
+                        Log.d(TAG, "Accepted policy management, proceeding with sign-in");
+                        // This will call back to onPolicyFetchedBeforeSignIn.
+                        nativeFetchPolicyBeforeSignIn(mNativeSigninManagerAndroid);
+                    }
+                });
+        builder.setNegativeButton(
+                R.string.policy_dialog_cancel,
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int id) {
+                        Log.d(TAG, "Cancelled sign-in");
+                        cancelSignIn();
+                    }
+                });
+        builder.create().show();
     }
 
     @CalledByNative
@@ -140,13 +194,14 @@ public class SigninManager {
             profileSyncService.syncSignIn();
         }
 
-        if (mSignInCallback != null)
-            mSignInCallback.run();
+        if (mSignInObserver != null)
+            mSignInObserver.onSigninComplete();
 
         // All done, cleanup.
         Log.d(TAG, "Signin done");
-        mSignInCallback = null;
+        mSignInActivity = null;
         mSignInAccount = null;
+        mSignInObserver = null;
     }
 
     /**
@@ -160,6 +215,14 @@ public class SigninManager {
         ChromeSigninController.get(mContext).clearSignedInUser();
         ProfileSyncService.get(mContext).signOut();
         nativeSignOut(mNativeSigninManagerAndroid);
+    }
+
+    private void cancelSignIn() {
+        if (mSignInObserver != null)
+            mSignInObserver.onSigninCancelled();
+        mSignInActivity = null;
+        mSignInObserver = null;
+        mSignInAccount = null;
     }
 
     // Native methods.

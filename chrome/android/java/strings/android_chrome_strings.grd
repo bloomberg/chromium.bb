@@ -63,6 +63,20 @@
       <message desc="Message to show on autofill dialog while fetching data from native. [CHAR-LIMIT=None]" name="IDS_AUTOFILL_FETCH_MESSAGE">
         Fetching payment details
       </message>
+      <message desc="Title to show on a dialog during sign-in, indicating that the account used has policy management enabled." name="IDS_POLICY_DIALOG_TITLE">
+        Confirm sign in
+      </message>
+      <message desc="Message to show on a dialog during sign-in, indicating that the account used has policy management enabled." name="IDS_POLICY_DIALOG_MESSAGE">
+        Your account is managed by <ph name="DOMAIN_NAME">%1$s<ex>google.com</ex></ph>.
+
+Signing in to this account will apply restrictions configured by your domain administrator.
+      </message>
+      <message desc="Label on the button to accept the policy dialog during sign-in. [CHAR-LIMIT=20]" name="IDS_POLICY_DIALOG_PROCEED">
+        Continue
+      </message>
+      <message desc="Label on the button to reject the policy dialog during sign-in. [CHAR-LIMIT=20]" name="IDS_POLICY_DIALOG_CANCEL">
+        Go back
+      </message>
     </messages>
   </release>
   <translations>

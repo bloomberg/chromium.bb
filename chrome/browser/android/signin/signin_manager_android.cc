@@ -6,6 +6,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
+#include "base/android/scoped_java_ref.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "chrome/browser/browser_process.h"
@@ -20,9 +21,8 @@
 #include "chrome/browser/policy/cloud/cloud_policy_client.h"
 #include "chrome/browser/policy/cloud/user_policy_signin_service_android.h"
 #include "chrome/browser/policy/cloud/user_policy_signin_service_factory.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 #endif
-
-using base::android::ConvertJavaStringToUTF8;
 
 SigninManagerAndroid::SigninManagerAndroid(JNIEnv* env, jobject obj)
     : profile_(NULL) {
@@ -39,19 +39,20 @@ void SigninManagerAndroid::CheckPolicyBeforeSignIn(JNIEnv* env,
                                                    jobject obj,
                                                    jstring username) {
 #if defined(ENABLE_CONFIGURATION_POLICY)
+  username_ = base::android::ConvertJavaStringToUTF8(env, username);
   policy::UserPolicySigninService* service =
       policy::UserPolicySigninServiceFactory::GetForProfile(profile_);
   service->RegisterPolicyClient(
-      ConvertJavaStringToUTF8(env, username),
+      base::android::ConvertJavaStringToUTF8(env, username),
       base::Bind(&SigninManagerAndroid::OnPolicyRegisterDone,
                  base::Unretained(this)));
 #else
   // This shouldn't be called when ShouldLoadPolicyForUser() is false.
   NOTREACHED();
-  const jboolean has_policy_management = false;
+  ScopedJavaLocalRef<jstring> domain;
   Java_SigninManager_onPolicyCheckedBeforeSignIn(env,
                                                  java_signin_manager_.obj(),
-                                                 has_policy_management);
+                                                 domain.obj());
 #endif
 }
 
@@ -78,7 +79,7 @@ void SigninManagerAndroid::OnSignInCompleted(JNIEnv* env,
                                              jobject obj,
                                              jstring username) {
   SigninManagerFactory::GetForProfile(profile_)->OnExternalSigninCompleted(
-      ConvertJavaStringToUTF8(env, username));
+      base::android::ConvertJavaStringToUTF8(env, username));
 }
 
 void SigninManagerAndroid::SignOut(JNIEnv* env, jobject obj) {
@@ -92,16 +93,25 @@ void SigninManagerAndroid::OnPolicyRegisterDone(
   cloud_policy_client_ = client.Pass();
 
   JNIEnv* env = base::android::AttachCurrentThread();
-  const jboolean has_policy_management = !!cloud_policy_client_;
+  ScopedJavaLocalRef<jstring> domain;
+  if (cloud_policy_client_) {
+    DCHECK(!username_.empty());
+    domain.Reset(
+        base::android::ConvertUTF8ToJavaString(
+            env, gaia::ExtractDomainName(username_)));
+  } else {
+    username_.clear();
+  }
+
   Java_SigninManager_onPolicyCheckedBeforeSignIn(env,
                                                  java_signin_manager_.obj(),
-                                                 has_policy_management);
+                                                 domain.obj());
 }
 
 void SigninManagerAndroid::OnPolicyFetchDone(bool success) {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  Java_SigninManager_onPolicyFetchedBeforeSignIn(env,
-                                                 java_signin_manager_.obj());
+  Java_SigninManager_onPolicyFetchedBeforeSignIn(
+      base::android::AttachCurrentThread(),
+      java_signin_manager_.obj());
 }
 
 #endif
@@ -116,7 +126,8 @@ static jboolean ShouldLoadPolicyForUser(JNIEnv* env,
                                         jobject obj,
                                         jstring j_username) {
 #if defined(ENABLE_CONFIGURATION_POLICY)
-  std::string username = ConvertJavaStringToUTF8(env, j_username);
+  std::string username =
+      base::android::ConvertJavaStringToUTF8(env, j_username);
   return !policy::BrowserPolicyConnector::IsNonEnterpriseUser(username);
 #else
   return false;

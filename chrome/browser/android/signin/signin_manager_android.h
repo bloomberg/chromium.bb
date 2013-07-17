@@ -7,6 +7,8 @@
 
 #include <jni.h>
 
+#include <string>
+
 #include "base/android/scoped_java_ref.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
@@ -57,6 +59,10 @@ class SigninManagerAndroid {
   // CloudPolicyClient stored during a pending sign-in, awaiting user
   // confirmation before starting to fetch policies.
   scoped_ptr<policy::CloudPolicyClient> cloud_policy_client_;
+
+  // Username that is pending sign-in. This is used to extract the domain name
+  // for the policy dialog, when |username_| corresponds to a managed account.
+  std::string username_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(SigninManagerAndroid);
