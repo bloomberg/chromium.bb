@@ -435,6 +435,10 @@ void DOMWindow::frameDestroyed()
 void DOMWindow::willDetachPage()
 {
     InspectorInstrumentation::frameWindowDiscarded(m_frame, this);
+    // FIXME: Once DeviceOrientationController is a ScriptExecutionContext
+    // Supplement, this will no longer be needed.
+    if (DeviceOrientationController* controller = DeviceOrientationController::from(page()))
+        controller->removeAllDeviceEventListeners(this);
 }
 
 void DOMWindow::willDestroyDocumentInFrame()
