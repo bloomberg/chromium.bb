@@ -331,7 +331,7 @@ void VideoRendererBase::DropNextReadyFrame_Locked() {
       &VideoRendererBase::AttemptRead, weak_this_));
 }
 
-void VideoRendererBase::FrameReady(VideoFrameStream::Status status,
+void VideoRendererBase::FrameReady(VideoDecoder::Status status,
                                    const scoped_refptr<VideoFrame>& frame) {
   base::AutoLock auto_lock(lock_);
   DCHECK_NE(state_, kUninitialized);
@@ -340,25 +340,11 @@ void VideoRendererBase::FrameReady(VideoFrameStream::Status status,
   CHECK(pending_read_);
   pending_read_ = false;
 
-  if (status != VideoFrameStream::OK &&
-      status != VideoFrameStream::DEMUXER_READ_ABORTED) {
+  if (status != VideoDecoder::kOk) {
     DCHECK(!frame.get());
-    PipelineStatus error = PIPELINE_OK;
-    switch (status) {
-      case VideoFrameStream::ABORTED:
-        error = PIPELINE_ERROR_ABORT;
-        break;
-      case VideoFrameStream::DECODE_ERROR:
-        error = PIPELINE_ERROR_DECODE;
-        break;
-      case VideoFrameStream::DECRYPT_ERROR:
-        error = PIPELINE_ERROR_DECRYPT;
-        break;
-      case VideoFrameStream::OK:
-      case VideoFrameStream::DEMUXER_READ_ABORTED:
-        NOTREACHED();
-        return;
-    }
+    PipelineStatus error = PIPELINE_ERROR_DECODE;
+    if (status == VideoDecoder::kDecryptError)
+      error = PIPELINE_ERROR_DECRYPT;
 
     if (!preroll_cb_.is_null()) {
       base::ResetAndReturn(&preroll_cb_).Run(error);
