@@ -8,6 +8,7 @@
 #include "base/callback_forward.h"
 
 namespace WebKit {
+class WebDeviceMotionData;
 class WebGamepads;
 struct WebSize;
 }
@@ -38,6 +39,10 @@ void EnableWebTestProxyCreation(const base::Callback<
 // Sets the WebGamepads that should be returned by
 // WebKitPlatformSupport::sampleGamepads().
 void SetMockGamepads(const WebKit::WebGamepads& pads);
+
+// Sets WebDeviceMotionData that should be used when registering
+// a listener through WebKitPlatformSupport::setDeviceMotionListener().
+void SetMockDeviceMotionData(const WebKit::WebDeviceMotionData& data);
 
 // Returns the length of the local session history of a render view.
 int GetLocalSessionHistoryLength(RenderView* render_view);

@@ -12,6 +12,7 @@
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/renderer_webkitplatformsupport_impl.h"
 #include "content/test/test_media_stream_client.h"
+#include "third_party/WebKit/public/platform/WebDeviceMotionData.h"
 #include "third_party/WebKit/public/platform/WebGamepads.h"
 #include "third_party/WebKit/public/testing/WebFrameTestProxy.h"
 #include "third_party/WebKit/public/testing/WebTestProxy.h"
@@ -24,6 +25,7 @@
 #include "content/browser/renderer_host/popup_menu_helper_mac.h"
 #endif
 
+using WebKit::WebDeviceMotionData;
 using WebKit::WebGamepads;
 using WebKit::WebRect;
 using WebKit::WebSize;
@@ -75,6 +77,10 @@ void EnableWebTestProxyCreation(
 
 void SetMockGamepads(const WebGamepads& pads) {
   RendererWebKitPlatformSupportImpl::SetMockGamepadsForTesting(pads);
+}
+
+void SetMockDeviceMotionData(const WebDeviceMotionData& data) {
+  RendererWebKitPlatformSupportImpl::SetMockDeviceMotionDataForTesting(data);
 }
 
 void EnableRendererLayoutTestMode() {

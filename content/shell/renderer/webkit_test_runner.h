@@ -20,6 +20,7 @@
 class SkCanvas;
 
 namespace WebKit {
+class WebDeviceMotionData;
 struct WebRect;
 }
 
@@ -51,6 +52,7 @@ class WebKitTestRunner : public RenderViewObserver,
   virtual void setEditCommand(const std::string& name,
                               const std::string& value);
   virtual void setGamepadData(const WebKit::WebGamepads& gamepads);
+  virtual void setDeviceMotionData(const WebKit::WebDeviceMotionData& data);
   virtual void printMessage(const std::string& message);
   virtual void postTask(::WebTestRunner::WebTask* task);
   virtual void postDelayedTask(::WebTestRunner::WebTask* task,

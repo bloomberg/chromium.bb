@@ -28,6 +28,7 @@ class SyncMessageFilter;
 }
 
 namespace WebKit {
+class WebDeviceMotionData;
 class WebGraphicsContext3DProvider;
 }
 
@@ -150,6 +151,9 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
 
   // Set WebGamepads to return when sampleGamepads() is invoked.
   static void SetMockGamepadsForTesting(const WebKit::WebGamepads& pads);
+  // Set WebDeviceMotionData to return when setDeviceMotionListener is invoked.
+  static void SetMockDeviceMotionDataForTesting(
+      const WebKit::WebDeviceMotionData& data);
 
  private:
   bool CheckPreparsedJsCachingEnabled() const;
