@@ -1597,8 +1597,12 @@ public class AwSettingsTest extends AwTestBase {
         helper.ensureSettingHasInitialValue();
     }
 
-    @SmallTest
-    @Feature({"AndroidWebView", "Preferences"})
+    /**
+     * @SmallTest
+     * @Feature({"AndroidWebView", "Preferences"})
+     * crbug.com/261421
+     */
+    @DisabledTest
     public void testDatabaseEnabled() throws Throwable {
         TestAwContentsClient client = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
@@ -1621,8 +1625,12 @@ public class AwSettingsTest extends AwTestBase {
         helper.ensureSettingHasInitialValue();
     }
 
-    @SmallTest
-    @Feature({"AndroidWebView", "Preferences"})
+    /**
+     * @SmallTest
+     * @Feature({"AndroidWebView", "Preferences"})
+     * crbug.com/261409
+     */
+    @DisabledTest
     public void testUniversalAccessFromFilesWithTwoViews() throws Throwable {
         ViewPair views = createViews();
         runPerViewSettingsTest(
@@ -1651,8 +1659,12 @@ public class AwSettingsTest extends AwTestBase {
         assertEquals(imageHeight, getTitleOnUiThread(awContents));
     }
 
-    @SmallTest
-    @Feature({"AndroidWebView", "Preferences"})
+    /**
+     * @SmallTest
+     * @Feature({"AndroidWebView", "Preferences"})
+     * crbug.com/261409
+     */
+    @DisabledTest
     public void testFileAccessFromFilesIframeWithTwoViews() throws Throwable {
         ViewPair views = createViews();
         runPerViewSettingsTest(

@@ -153,8 +153,12 @@ public class LoadDataWithBaseUrlTest extends AwTestBase {
         }
     }
 
-    @SmallTest
-    @Feature({"AndroidWebView"})
+    /**
+     * @SmallTest
+     * @Feature({"AndroidWebView"})
+     * crbug.com/261409
+     */
+    @DisabledTest
     public void testCrossOrigin() throws Throwable {
         TestWebServer webServer = null;
         try {
