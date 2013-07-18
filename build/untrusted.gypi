@@ -98,7 +98,7 @@
           'lib_dirs_newlib64': [],
           'lib_dirs_glibc32': [],
           'lib_dirs_glibc64': [],
-          'include_dirs': ['<(DEPTH)', '<(DEPTH)/ppapi'],
+          'include_dirs': ['<(DEPTH)'],
           'defines': [
             '<@(nacl_default_defines)',
             'NACL_BUILD_ARCH=x86',
@@ -141,7 +141,7 @@
           'extra_deps_newlib_arm': [],
           'native_sources': [],
           'lib_dirs_newlib_arm': [],
-          'include_dirs': ['<(DEPTH)', '<(DEPTH)/ppapi'],
+          'include_dirs': ['<(DEPTH)'],
           'defines': [
             '<@(nacl_default_defines)',
             'NACL_BUILD_ARCH=arm',
