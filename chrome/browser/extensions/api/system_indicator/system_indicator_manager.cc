@@ -167,7 +167,8 @@ void SystemIndicatorManager::CreateOrUpdateIndicator(
     return;
   }
 
-  StatusIcon* indicator_icon = status_tray_->CreateStatusIcon();
+  StatusIcon* indicator_icon =
+      status_tray_->CreateStatusIcon(StatusTray::OTHER_ICON);
   if (indicator_icon != NULL) {
     ExtensionIndicatorIcon* status_icon = new ExtensionIndicatorIcon(
         extension,

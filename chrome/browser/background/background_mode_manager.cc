@@ -665,7 +665,8 @@ void BackgroundModeManager::CreateStatusTrayIcon() {
   if (!status_tray_ || status_icon_)
     return;
 
-  status_icon_ = status_tray_->CreateStatusIcon();
+  status_icon_ =
+      status_tray_->CreateStatusIcon(StatusTray::BACKGROUND_MODE_ICON);
   if (!status_icon_)
     return;
 

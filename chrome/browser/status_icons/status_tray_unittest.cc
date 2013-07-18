@@ -24,25 +24,28 @@ class MockStatusIcon : public StatusIcon {
 
 class TestStatusTray : public StatusTray {
  public:
-  MOCK_METHOD0(CreatePlatformStatusIcon, StatusIcon*());
+  MOCK_METHOD1(CreatePlatformStatusIcon,
+               StatusIcon*(StatusTray::StatusIconType type));
   MOCK_METHOD1(UpdatePlatformContextMenu, void(ui::MenuModel*));
+
+  const StatusIcons& GetStatusIconsForTest() const { return status_icons(); }
 };
 
 TEST(StatusTrayTest, Create) {
   // Check for creation and leaks.
   TestStatusTray tray;
-  EXPECT_CALL(tray,
-      CreatePlatformStatusIcon()).WillOnce(Return(new MockStatusIcon()));
-  tray.CreateStatusIcon();
+  EXPECT_CALL(tray, CreatePlatformStatusIcon(StatusTray::OTHER_ICON)).WillOnce(
+      Return(new MockStatusIcon()));
+  tray.CreateStatusIcon(StatusTray::OTHER_ICON);
 }
 
 // Make sure that removing an icon removes it from the list.
 TEST(StatusTrayTest, CreateRemove) {
   TestStatusTray tray;
-  EXPECT_CALL(tray,
-      CreatePlatformStatusIcon()).WillOnce(Return(new MockStatusIcon()));
-  StatusIcon* icon = tray.CreateStatusIcon();
-  EXPECT_EQ(1U, tray.status_icons_.size());
+  EXPECT_CALL(tray, CreatePlatformStatusIcon(StatusTray::OTHER_ICON)).WillOnce(
+      Return(new MockStatusIcon()));
+  StatusIcon* icon = tray.CreateStatusIcon(StatusTray::OTHER_ICON);
+  EXPECT_EQ(1U, tray.GetStatusIconsForTest().size());
   tray.RemoveStatusIcon(icon);
-  EXPECT_EQ(0U, tray.status_icons_.size());
+  EXPECT_EQ(0U, tray.GetStatusIconsForTest().size());
 }

@@ -281,7 +281,8 @@ StatusIcon* WebNotificationTray::GetStatusIcon() {
   if (!status_tray)
     return NULL;
 
-  StatusIcon* status_icon = status_tray->CreateStatusIcon();
+  StatusIcon* status_icon =
+      status_tray->CreateStatusIcon(StatusTray::NOTIFICATION_TRAY_ICON);
   if (!status_icon)
     return NULL;
 

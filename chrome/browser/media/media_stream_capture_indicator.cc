@@ -379,7 +379,8 @@ void MediaStreamCaptureIndicator::MaybeCreateStatusTrayIcon() {
   if (!status_tray)
     return;
 
-  status_icon_ = status_tray->CreateStatusIcon();
+  status_icon_ =
+      status_tray->CreateStatusIcon(StatusTray::MEDIA_STREAM_CAPTURE_ICON);
 
   EnsureStatusTrayIconResources();
 }

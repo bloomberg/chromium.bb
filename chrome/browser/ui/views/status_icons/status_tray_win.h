@@ -20,9 +20,10 @@ class StatusTrayWin : public StatusTray {
                            UINT message,
                            WPARAM wparam,
                            LPARAM lparam);
+
  protected:
   // Overriden from StatusTray:
-  virtual StatusIcon* CreatePlatformStatusIcon() OVERRIDE;
+  virtual StatusIcon* CreatePlatformStatusIcon(StatusIconType type) OVERRIDE;
 
  private:
   // Static callback invoked when a message comes in to our messaging window.
@@ -30,6 +31,8 @@ class StatusTrayWin : public StatusTray {
                                         UINT message,
                                         WPARAM wparam,
                                         LPARAM lparam);
+
+  UINT NextIconId();
 
   // The unique icon ID we will assign to the next icon.
   UINT next_icon_id_;

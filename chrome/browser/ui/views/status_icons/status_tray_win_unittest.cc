@@ -43,7 +43,7 @@ TEST(StatusTrayWinTest, CreateIconAndMenu) {
   // Create an icon, set the images, tooltip, and context menu, then shut it
   // down.
   StatusTrayWin tray;
-  StatusIcon* icon = tray.CreateStatusIcon();
+  StatusIcon* icon = tray.CreateStatusIcon(StatusTray::OTHER_ICON);
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   gfx::ImageSkia* image = rb.GetImageSkiaNamed(IDR_STATUS_TRAY_ICON);
   icon->SetImage(*image);
@@ -58,7 +58,8 @@ TEST(StatusTrayWinTest, CreateIconAndMenu) {
 TEST(StatusTrayWinTest, ClickOnIcon) {
   // Create an icon, send a fake click event, make sure observer is called.
   StatusTrayWin tray;
-  StatusIconWin* icon = static_cast<StatusIconWin*>(tray.CreateStatusIcon());
+  StatusIconWin* icon = static_cast<StatusIconWin*>(
+      tray.CreateStatusIcon(StatusTray::OTHER_ICON));
   FakeStatusIconObserver observer;
   icon->AddObserver(&observer);
   // Mimic a click.
@@ -72,7 +73,8 @@ TEST(StatusTrayWinTest, ClickOnIcon) {
 TEST(StatusTrayWinTest, ClickOnBalloon) {
   // Create an icon, send a fake click event, make sure observer is called.
   StatusTrayWin tray;
-  StatusIconWin* icon = static_cast<StatusIconWin*>(tray.CreateStatusIcon());
+  StatusIconWin* icon = static_cast<StatusIconWin*>(
+      tray.CreateStatusIcon(StatusTray::OTHER_ICON));
   FakeStatusIconObserver observer;
   icon->AddObserver(&observer);
   // Mimic a click.

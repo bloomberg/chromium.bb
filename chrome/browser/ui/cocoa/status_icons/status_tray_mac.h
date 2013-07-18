@@ -14,7 +14,7 @@ class StatusTrayMac : public StatusTray {
 
  protected:
   // Factory method for creating a status icon.
-  virtual StatusIcon* CreatePlatformStatusIcon() OVERRIDE;
+  virtual StatusIcon* CreatePlatformStatusIcon(StatusIconType type) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(StatusTrayMac);

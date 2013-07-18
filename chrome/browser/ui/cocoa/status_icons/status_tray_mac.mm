@@ -13,6 +13,6 @@ StatusTray* StatusTray::Create() {
 StatusTrayMac::StatusTrayMac() {
 }
 
-StatusIcon* StatusTrayMac::CreatePlatformStatusIcon() {
+StatusIcon* StatusTrayMac::CreatePlatformStatusIcon(StatusIconType type) {
   return new StatusIconMac();
 }
