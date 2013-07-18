@@ -84,7 +84,7 @@ class ExtensionDevToolsClientHost : public DevToolsClientHost,
       const std::string& extension_id,
       const std::string& extension_name,
       const Debuggee& debuggee,
-      ExtensionDevToolsInfoBarDelegate* infobar_delegate);
+      ExtensionDevToolsInfoBarDelegate* infobar);
 
   virtual ~ExtensionDevToolsClientHost();
 
@@ -119,7 +119,7 @@ class ExtensionDevToolsClientHost : public DevToolsClientHost,
   typedef std::map<int, scoped_refptr<DebuggerSendCommandFunction> >
       PendingRequests;
   PendingRequests pending_requests_;
-  ExtensionDevToolsInfoBarDelegate* infobar_delegate_;
+  ExtensionDevToolsInfoBarDelegate* infobar_;
   OnDetach::Reason detach_reason_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionDevToolsClientHost);
@@ -305,12 +305,12 @@ ExtensionDevToolsClientHost::ExtensionDevToolsClientHost(
     const std::string& extension_id,
     const std::string& extension_name,
     const Debuggee& debuggee,
-    ExtensionDevToolsInfoBarDelegate* infobar_delegate)
+    ExtensionDevToolsInfoBarDelegate* infobar)
     : profile_(profile),
       agent_host_(agent_host),
       extension_id_(extension_id),
       last_request_id_(0),
-      infobar_delegate_(infobar_delegate),
+      infobar_(infobar),
       detach_reason_(OnDetach::REASON_TARGET_CLOSED) {
   CopyDebuggee(&debuggee_, debuggee);
 
@@ -330,8 +330,8 @@ ExtensionDevToolsClientHost::ExtensionDevToolsClientHost(
   DevToolsManager::GetInstance()->RegisterDevToolsClientHostFor(
       agent_host_.get(), this);
 
-  if (infobar_delegate_) {
-    infobar_delegate_->set_client_host(this);
+  if (infobar_) {
+    infobar_->set_client_host(this);
     registrar_.Add(
         this, chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
         content::Source<InfoBarService>(InfoBarService::FromWebContents(
@@ -345,10 +345,10 @@ ExtensionDevToolsClientHost::~ExtensionDevToolsClientHost() {
   // Close() us.
   registrar_.RemoveAll();
 
-  if (infobar_delegate_) {
-    infobar_delegate_->set_client_host(NULL);
+  if (infobar_) {
+    infobar_->set_client_host(NULL);
     InfoBarService::FromWebContents(WebContents::FromRenderViewHost(
-        agent_host_->GetRenderViewHost()))->RemoveInfoBar(infobar_delegate_);
+        agent_host_->GetRenderViewHost()))->RemoveInfoBar(infobar_);
   }
   AttachedClientHosts::GetInstance()->Remove(this);
 }
@@ -416,9 +416,8 @@ void ExtensionDevToolsClientHost::Observe(
     Close();
   } else {
     DCHECK_EQ(chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED, type);
-    if (content::Details<InfoBarRemovedDetails>(details)->first ==
-        infobar_delegate_) {
-      infobar_delegate_ = NULL;
+    if (content::Details<InfoBarRemovedDetails>(details)->first == infobar_) {
+      infobar_ = NULL;
       SendDetachedEvent();
       Close();
     }
