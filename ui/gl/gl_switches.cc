@@ -18,9 +18,6 @@ const char kGLImplementationMockName[]        = "mock";
 
 namespace switches {
 
-// Enables use of D3D11 if it would otherwise be disabled by the blacklist.
-const char kEnableD3D11[]                   = "enable-d3d11";
-
 // Disables use of D3D11.
 const char kDisableD3D11[]                  = "disable-d3d11";
 
@@ -74,7 +71,6 @@ const char kTestGLLib[]                     = "test-gl-lib";
 const char* kGLSwitchesCopiedFromGpuProcessHost[] = {
   kDisableGpuVsync,
   kDisableD3D11,
-  kEnableD3D11,
   kEnableGPUServiceLogging,
   kEnableGPUServiceTracing,
   kGpuNoContextLost,
