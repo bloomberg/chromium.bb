@@ -798,7 +798,7 @@ TEST_F(ProfileSyncServiceSessionTest, TabNodePoolNonEmpty) {
     model_associator_->tab_pool_.AddTabNode(i + 1, session_id, i);
   }
 
-  model_associator_->tab_pool_.FreeUnusedTabNodes(std::set<int64>());
+  model_associator_->tab_pool_.FreeUnassociatedTabNodes();
   std::vector<int64> node_ids;
   ASSERT_EQ(num_starting_nodes, model_associator_->tab_pool_.Capacity());
   ASSERT_FALSE(model_associator_->tab_pool_.Empty());

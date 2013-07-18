@@ -176,7 +176,6 @@ bool SessionModelAssociator::AssociateWindows(bool reload_tabs,
   synced_session_tracker_.ResetSessionTracking(local_tag);
   std::set<SyncedWindowDelegate*> windows =
       SyncedWindowDelegate::GetSyncedWindowDelegates();
-  std::set<int64> used_sync_ids;
   for (std::set<SyncedWindowDelegate*>::const_iterator i =
            windows.begin(); i != windows.end(); ++i) {
     // Make sure the window has tabs and a viewable window. The viewable window
@@ -223,7 +222,6 @@ bool SessionModelAssociator::AssociateWindows(bool reload_tabs,
               tab_id > TabNodePool::kInvalidTabID) {
             UpdateTabIdIfNecessary(synced_tab->GetSyncId(), tab_id);
             found_tabs = true;
-            used_sync_ids.insert(synced_tab->GetSyncId());
             window_s.add_tab(tab_id);
           }
           continue;
@@ -269,14 +267,8 @@ bool SessionModelAssociator::AssociateWindows(bool reload_tabs,
     }
   }
 
-  // Sync nodes tracked by tab_map_ are used.
-  for (TabLinksMap::const_iterator tab_iter = tab_map_.begin();
-       tab_iter != tab_map_.end(); ++tab_iter) {
-    used_sync_ids.insert(tab_iter->second->sync_id());
-  }
-
   // Free old sync nodes.
-  tab_pool_.FreeUnusedTabNodes(used_sync_ids);
+  tab_pool_.FreeUnassociatedTabNodes();
   // Free memory for closed windows and tabs.
   synced_session_tracker_.CleanupSession(local_tag);
 
@@ -345,7 +337,7 @@ bool SessionModelAssociator::AssociateTab(SyncedTabDelegate* const tab,
   if (tab_map_iter == tab_map_.end()) {
     sync_id = tab->GetSyncId();
     // if there is an old sync node for the tab, reuse it.
-    if (!tab_pool_.ReassociateTabNode(sync_id, tab_id)) {
+    if (!tab_pool_.IsUnassociatedTabNode(sync_id)) {
       // This is a new tab, get a sync node for it.
       sync_id = tab_pool_.GetFreeTabNode();
       if (sync_id == syncer::kInvalidId) {
@@ -357,9 +349,9 @@ bool SessionModelAssociator::AssociateTab(SyncedTabDelegate* const tab,
         }
         return false;
       }
-      tab_pool_.AssociateTabNode(sync_id, tab_id);
       tab->SetSyncId(sync_id);
     }
+    tab_pool_.AssociateTabNode(sync_id, tab_id);
     tab_link = new TabLink(sync_id, tab);
     tab_map_[tab_id] = make_linked_ptr<TabLink>(tab_link);
   } else {

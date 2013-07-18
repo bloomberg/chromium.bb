@@ -40,17 +40,24 @@ void TabNodePool::AddTabNode(int64 sync_id,
   DCHECK_GT(sync_id, syncer::kInvalidId);
   DCHECK_GT(tab_id.id(), kInvalidTabID);
   DCHECK(syncid_tabid_map_.find(sync_id) == syncid_tabid_map_.end());
-  syncid_tabid_map_[sync_id] = tab_id.id();
+  unassociated_nodes_.insert(sync_id);
   if (max_used_tab_node_id_ < tab_node_id)
     max_used_tab_node_id_ = tab_node_id;
 }
 
 void TabNodePool::AssociateTabNode(int64 sync_id, SessionID::id_type tab_id) {
   DCHECK_GT(sync_id, 0);
-  // Remove node from free node pool and associate it with tab.
-  std::set<int64>::iterator it = free_nodes_pool_.find(sync_id);
-  DCHECK(it != free_nodes_pool_.end());
-  free_nodes_pool_.erase(it);
+  // Remove sync node if it is in unassociated nodes pool.
+  std::set<int64>::iterator u_it = unassociated_nodes_.find(sync_id);
+  if (u_it != unassociated_nodes_.end()) {
+    unassociated_nodes_.erase(u_it);
+  } else {
+    // This is a new node association, the sync node should be free.
+    // Remove node from free node pool and then associate it with the tab.
+    std::set<int64>::iterator it = free_nodes_pool_.find(sync_id);
+    DCHECK(it != free_nodes_pool_.end());
+    free_nodes_pool_.erase(it);
+  }
   DCHECK(syncid_tabid_map_.find(sync_id) == syncid_tabid_map_.end());
   syncid_tabid_map_[sync_id] = tab_id;
 }
@@ -99,6 +106,10 @@ void TabNodePool::FreeTabNode(int64 sync_id) {
   SyncIDToTabIDMap::iterator it = syncid_tabid_map_.find(sync_id);
   DCHECK(it != syncid_tabid_map_.end());
   syncid_tabid_map_.erase(it);
+  FreeTabNodeInternal(sync_id);
+}
+
+void TabNodePool::FreeTabNodeInternal(int64 sync_id) {
   DCHECK(free_nodes_pool_.find(sync_id) == free_nodes_pool_.end());
 
   // If number of free nodes exceed number of maximum allowed free nodes,
@@ -116,13 +127,20 @@ void TabNodePool::FreeTabNode(int64 sync_id) {
   }
 }
 
-bool TabNodePool::ReassociateTabNode(int64 sync_id, SessionID::id_type tab_id) {
-  SyncIDToTabIDMap::iterator it = syncid_tabid_map_.find(sync_id);
-  if (it != syncid_tabid_map_.end()) {
-    syncid_tabid_map_[sync_id] = tab_id;
-    return true;
+bool TabNodePool::IsUnassociatedTabNode(int64 sync_id) {
+  return unassociated_nodes_.find(sync_id) != unassociated_nodes_.end();
+}
+
+void TabNodePool::ReassociateTabNode(int64 sync_id, SessionID::id_type tab_id) {
+  // Remove from list of unassociated sync_nodes if present.
+  std::set<int64>::iterator it = unassociated_nodes_.find(sync_id);
+  if (it != unassociated_nodes_.end()) {
+    unassociated_nodes_.erase(it);
+  } else {
+    // sync_id must be an already associated node.
+    DCHECK(syncid_tabid_map_.find(sync_id) != syncid_tabid_map_.end());
   }
-  return false;
+  syncid_tabid_map_[sync_id] = tab_id;
 }
 
 SessionID::id_type TabNodePool::GetTabIdFromSyncId(int64 sync_id) const {
@@ -133,29 +151,26 @@ SessionID::id_type TabNodePool::GetTabIdFromSyncId(int64 sync_id) const {
   return kInvalidTabID;
 }
 
-void TabNodePool::FreeUnusedTabNodes(const std::set<int64>& used_sync_ids) {
-  for (SyncIDToTabIDMap::iterator it = syncid_tabid_map_.begin();
-       it != syncid_tabid_map_.end();) {
-    if (used_sync_ids.find(it->first) == used_sync_ids.end()) {
-      // This sync node is not used, return it to free node pool.
-      int64 sync_id = it->first;
-      ++it;
-      FreeTabNode(sync_id);
-    } else {
-      ++it;
-    }
+void TabNodePool::FreeUnassociatedTabNodes() {
+  for (std::set<int64>::iterator it = unassociated_nodes_.begin();
+       it != unassociated_nodes_.end();) {
+    FreeTabNodeInternal(*it);
+    unassociated_nodes_.erase(it++);
   }
+  DCHECK(unassociated_nodes_.empty());
 }
 
 // Clear tab pool.
 void TabNodePool::Clear() {
+  unassociated_nodes_.clear();
   free_nodes_pool_.clear();
   syncid_tabid_map_.clear();
   max_used_tab_node_id_ = 0;
 }
 
 size_t TabNodePool::Capacity() const {
-  return syncid_tabid_map_.size() + free_nodes_pool_.size();
+  return syncid_tabid_map_.size() + unassociated_nodes_.size() +
+         free_nodes_pool_.size();
 }
 
 bool TabNodePool::Empty() const { return free_nodes_pool_.empty(); }

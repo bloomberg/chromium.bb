@@ -33,8 +33,8 @@ TEST_F(SyncTabNodePoolTest, TabNodeIdIncreases) {
   EXPECT_EQ(1000u, GetMaxUsedTabNodeId());
   pool_.ReassociateTabNode(6, 500);
   // Freeing a tab node does not change max_used_tab_node_id_.
-  pool_.FreeTabNode(4);
-  pool_.FreeUnusedTabNodes(std::set<int64>());
+  pool_.FreeTabNode(6);
+  pool_.FreeUnassociatedTabNodes();
   EXPECT_EQ(1000u, GetMaxUsedTabNodeId());
   for (int i = 0; i < 3; ++i) {
     pool_.AssociateTabNode(pool_.GetFreeTabNode(), i + 1);
@@ -55,20 +55,16 @@ TEST_F(SyncTabNodePoolTest, OldTabNodesAddAndRemove) {
   pool_.AddTabNode(5, session_id, 2);
   EXPECT_EQ(2u, pool_.Capacity());
   EXPECT_TRUE(pool_.Empty());
-  EXPECT_TRUE(pool_.ReassociateTabNode(4, 2));
-  EXPECT_TRUE(pool_.ReassociateTabNode(5, 1));
+  EXPECT_TRUE(pool_.IsUnassociatedTabNode(4));
+  pool_.ReassociateTabNode(4, 2);
   EXPECT_TRUE(pool_.Empty());
-  // Check free unused tab nodes returns the node to free node pool_.
-  std::set<int64> used_sync_ids;
-  used_sync_ids.insert(5);
-  pool_.FreeUnusedTabNodes(used_sync_ids);
-  // 4 should be returned to free node pool_.
+  // Check FreeUnassociatedTabNodes returns the node to free node pool_.
+  pool_.FreeUnassociatedTabNodes();
+  // 5 should be returned to free node pool_.
   EXPECT_EQ(2u, pool_.Capacity());
+  // Should be able to free 4.
+  pool_.FreeTabNode(4);
   EXPECT_FALSE(pool_.Empty());
-  // 5 should still be in the associated nodes.
-  EXPECT_FALSE(pool_.Full());
-  pool_.FreeTabNode(5);
-  // 5 should be returned to free nodes pool and pool should be full.
   EXPECT_TRUE(pool_.Full());
   EXPECT_EQ(4, pool_.GetFreeTabNode());
   pool_.AssociateTabNode(4, 1);
@@ -87,24 +83,24 @@ TEST_F(SyncTabNodePoolTest, OldTabNodesReassociation) {
   // sync_id = 5, tab_node_id = 2, tab_id = 2
   session_id.set_id(2);
   pool_.AddTabNode(5, session_id, 2);
-  // sync_id = 5, tab_node_id = 3, tab_id =3
+  // sync_id = 6, tab_node_id = 3, tab_id =3
   session_id.set_id(3);
   pool_.AddTabNode(6, session_id, 3);
   EXPECT_EQ(3u, pool_.Capacity());
   EXPECT_TRUE(pool_.Empty());
+  EXPECT_TRUE(pool_.IsUnassociatedTabNode(4));
+  pool_.ReassociateTabNode(4, 5);
   // Free 5 and 6.
-  pool_.FreeTabNode(5);
-  pool_.FreeTabNode(6);
-  // 5 and 6 nodes should not get reassociated.
-  EXPECT_TRUE(pool_.ReassociateTabNode(4, 5));
-  EXPECT_FALSE(pool_.ReassociateTabNode(5, 6));
-  EXPECT_FALSE(pool_.ReassociateTabNode(6, 7));
+  pool_.FreeUnassociatedTabNodes();
+  // 5 and 6 nodes should not be unassociated.
+  EXPECT_FALSE(pool_.IsUnassociatedTabNode(5));
+  EXPECT_FALSE(pool_.IsUnassociatedTabNode(6));
   // Free node pool should have 5 and 6.
   EXPECT_FALSE(pool_.Empty());
   EXPECT_EQ(3u, pool_.Capacity());
 
   // Free all nodes
-  pool_.FreeUnusedTabNodes(std::set<int64>());
+  pool_.FreeTabNode(4);
   EXPECT_TRUE(pool_.Full());
   std::set<int64> free_sync_ids;
   for (int i = 0; i < 3; ++i) {
@@ -132,7 +128,7 @@ TEST_F(SyncTabNodePoolTest, AddGet) {
   pool_.AddTabNode(5, session_id, 1);
   session_id.set_id(2);
   pool_.AddTabNode(10, session_id, 2);
-  pool_.FreeUnusedTabNodes(std::set<int64>());
+  pool_.FreeUnassociatedTabNodes();
   EXPECT_FALSE(pool_.Empty());
   EXPECT_TRUE(pool_.Full());
 
@@ -156,7 +152,7 @@ TEST_F(SyncTabNodePoolTest, All) {
   session_id.set_id(2);
   pool_.AddTabNode(10, session_id, 2);
   // Free added nodes.
-  pool_.FreeUnusedTabNodes(std::set<int64>());
+  pool_.FreeUnassociatedTabNodes();
   EXPECT_FALSE(pool_.Empty());
   EXPECT_TRUE(pool_.Full());
   EXPECT_EQ(2U, pool_.Capacity());
