@@ -81,8 +81,6 @@ class AutoinstallImportHook(object):
             self._install_irc()
         elif '.mechanize' in fullname:
             self._install_mechanize()
-        elif '.pylint' in fullname:
-            self._install_pylint()
         elif '.coverage' in fullname:
             self._install_coverage()
 
@@ -101,21 +99,6 @@ class AutoinstallImportHook(object):
     def _install_mechanize(self):
         return self._install("https://pypi.python.org/packages/source/m/mechanize/mechanize-0.2.5.tar.gz",
                              "mechanize-0.2.5/mechanize")
-
-    def _install_pylint(self):
-        self._ensure_autoinstalled_dir_is_in_sys_path()
-        did_install_something = False
-        if (not self._fs.exists(self._fs.join(_AUTOINSTALLED_DIR, "pylint")) or
-            not self._fs.exists(self._fs.join(_AUTOINSTALLED_DIR, "logilab/astng")) or
-            not self._fs.exists(self._fs.join(_AUTOINSTALLED_DIR, "logilab/common"))):
-            installer = AutoInstaller(target_dir=_AUTOINSTALLED_DIR)
-            files_to_remove = []
-            if sys.platform == 'win32':
-                files_to_remove = ['test/data/write_protected_file.txt']
-            did_install_something = installer.install("https://pypi.python.org/packages/source/l/logilab-common/logilab-common-0.58.1.tar.gz#md5=77298ab2d8bb8b4af9219791e7cee8ce", url_subpath="logilab-common-0.58.1", target_name="logilab/common", files_to_remove=files_to_remove)
-            did_install_something |= installer.install("https://pypi.python.org/packages/source/l/logilab-astng/logilab-astng-0.24.1.tar.gz#md5=ddaf66e4d85714d9c47a46d4bed406de", url_subpath="logilab-astng-0.24.1", target_name="logilab/astng")
-            did_install_something |= installer.install('https://pypi.python.org/packages/source/p/pylint/pylint-0.25.1.tar.gz#md5=728bbc2b339bc3749af013709a7f87a5', url_subpath="pylint-0.25.1", target_name="pylint")
-        return did_install_something
 
     # autoinstalled.buildbot is used by BuildSlaveSupport/build.webkit.org-config/mastercfg_unittest.py
     # and should ideally match the version of BuildBot used at build.webkit.org.

@@ -23,13 +23,14 @@
 """Supports checking WebKit style in Python files."""
 
 import re
+import sys
+
 from StringIO import StringIO
 
 from webkitpy.common.system.filesystem import FileSystem
+from webkitpy.common.system.executive import Executive
 from webkitpy.common.webkit_finder import WebKitFinder
 from webkitpy.thirdparty import pep8
-from webkitpy.thirdparty.autoinstalled.pylint import lint
-from webkitpy.thirdparty.autoinstalled.pylint.reporters.text import ParseableTextReporter
 
 
 class PythonChecker(object):
@@ -64,16 +65,44 @@ class PythonChecker(object):
         pep8_errors = pep8_checker.check_all()
 
     def _check_pylint(self, lines):
-        pylinter = Pylinter()
+        output = self._run_pylint(self._file_path)
+        errors = self._parse_pylint_output(output)
+        for line_number, category, message in errors:
+            self._handle_style_error(line_number, category, 5, message)
 
-        # FIXME: for now, we only report pylint errors, but we should be catching and
-        # filtering warnings using the rules in style/checker.py instead.
-        output = pylinter.run(['-E', self._file_path])
+    def _run_pylint(self, path):
+        wkf = WebKitFinder(FileSystem())
+        executive = Executive()
+        return executive.run_command([sys.executable, wkf.path_from_depot_tools_base('pylint.py'),
+                                      '--output-format=parseable',
+                                      '--errors-only',
+                                      '--rcfile=' + wkf.path_from_webkit_base('Tools', 'Scripts', 'webkitpy', 'pylintrc'),
+                                      path],
+                                      error_handler=executive.ignore_error)
+
+    def _parse_pylint_output(self, output):
+        # We filter out these messages because they are bugs in pylint that produce false positives.
+        # FIXME: Does it make sense to combine these rules with the rules in style/checker.py somehow?
+        FALSE_POSITIVES = [
+            # possibly http://www.logilab.org/ticket/98613 ?
+            "Instance of 'Popen' has no 'poll' member",
+            "Instance of 'Popen' has no 'returncode' member",
+            "Instance of 'Popen' has no 'stdin' member",
+            "Instance of 'Popen' has no 'stdout' member",
+            "Instance of 'Popen' has no 'stderr' member",
+            "Instance of 'Popen' has no 'wait' member",
+        ]
 
         lint_regex = re.compile('([^:]+):([^:]+): \[([^]]+)\] (.*)')
-        for error in output.getvalue().splitlines():
-            match_obj = lint_regex.match(error)
-            assert(match_obj)
+        errors = []
+        for line in output.splitlines():
+            if any(msg in line for msg in FALSE_POSITIVES):
+                continue
+
+            match_obj = lint_regex.match(line)
+            if not match_obj:
+                continue
+
             line_number = int(match_obj.group(2))
             category_and_method = match_obj.group(3).split(', ')
             category = 'pylint/' + (category_and_method[0])
@@ -81,48 +110,5 @@ class PythonChecker(object):
                 message = '[%s] %s' % (category_and_method[1], match_obj.group(4))
             else:
                 message = match_obj.group(4)
-            self._handle_style_error(line_number, category, 5, message)
-
-
-class Pylinter(object):
-    # We filter out these messages because they are bugs in pylint that produce false positives.
-    # FIXME: Does it make sense to combine these rules with the rules in style/checker.py somehow?
-    FALSE_POSITIVES = [
-        # possibly http://www.logilab.org/ticket/98613 ?
-        "Instance of 'Popen' has no 'poll' member",
-        "Instance of 'Popen' has no 'returncode' member",
-        "Instance of 'Popen' has no 'stdin' member",
-        "Instance of 'Popen' has no 'stdout' member",
-        "Instance of 'Popen' has no 'stderr' member",
-        "Instance of 'Popen' has no 'wait' member",
-    ]
-
-    def __init__(self):
-        self._pylintrc = WebKitFinder(FileSystem()).path_from_webkit_base('Tools', 'Scripts', 'webkitpy', 'pylintrc')
-
-    def run(self, argv):
-        output = _FilteredStringIO(self.FALSE_POSITIVES)
-        lint.Run(['--rcfile', self._pylintrc] + argv, reporter=ParseableTextReporter(output=output), exit=False)
-        return output
-
-
-class _FilteredStringIO(StringIO):
-    def __init__(self, bad_messages):
-        StringIO.__init__(self)
-        self.dropped_last_msg = False
-        self.bad_messages = bad_messages
-
-    def write(self, msg=''):
-        if not self._filter(msg):
-            StringIO.write(self, msg)
-
-    def _filter(self, msg):
-        if any(bad_message in msg for bad_message in self.bad_messages):
-            self.dropped_last_msg = True
-            return True
-        if self.dropped_last_msg:
-            # We drop the newline after a dropped message as well.
-            self.dropped_last_msg = False
-            if msg == '\n':
-                return True
-        return False
+            errors.append((line_number, category, message))
+        return errors
