@@ -3739,14 +3739,6 @@ void RenderViewImpl::didFailProvisionalLoad(WebFrame* frame,
   LoadNavigationErrorPage(frame, failed_request, error, std::string(), replace);
 }
 
-void RenderViewImpl::didReceiveDocumentData(
-    WebFrame* frame, const char* data, size_t data_len,
-    bool& prevent_default) {
-  InternalDocumentStateData* internal_data =
-      InternalDocumentStateData::FromDataSource(frame->dataSource());
-  internal_data->set_use_error_page(false);
-}
-
 void RenderViewImpl::didCommitProvisionalLoad(WebFrame* frame,
                                               bool is_new_navigation) {
   DocumentState* document_state =
@@ -3762,6 +3754,7 @@ void RenderViewImpl::didCommitProvisionalLoad(WebFrame* frame,
     webview()->resetScrollAndScaleState();
     internal_data->set_must_reset_scroll_and_scale_state(false);
   }
+  internal_data->set_use_error_page(false);
 
   if (is_new_navigation) {
     // When we perform a new navigation, we need to update the last committed

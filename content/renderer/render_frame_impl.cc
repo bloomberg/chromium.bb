@@ -202,13 +202,6 @@ void RenderFrameImpl::didFailProvisionalLoad(
   render_view_->didFailProvisionalLoad(frame, error);
 }
 
-void RenderFrameImpl::didReceiveDocumentData(WebKit::WebFrame* frame,
-                                             const char* data,
-                                             size_t length,
-                                             bool& prevent_default) {
-  render_view_->didReceiveDocumentData(frame, data, length, prevent_default);
-}
-
 void RenderFrameImpl::didCommitProvisionalLoad(WebKit::WebFrame* frame,
                                                bool is_new_navigation) {
   render_view_->didCommitProvisionalLoad(frame, is_new_navigation);

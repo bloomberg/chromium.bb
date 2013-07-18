@@ -596,9 +596,6 @@ class CONTENT_EXPORT RenderViewImpl
       WebKit::WebFrame* frame);
   virtual void didFailProvisionalLoad(WebKit::WebFrame* frame,
                                       const WebKit::WebURLError& error);
-  virtual void didReceiveDocumentData(WebKit::WebFrame* frame,
-                                      const char* data, size_t length,
-                                      bool& prevent_default);
   virtual void didCommitProvisionalLoad(WebKit::WebFrame* frame,
                                         bool is_new_navigation);
   virtual void didClearWindowObject(WebKit::WebFrame* frame);
