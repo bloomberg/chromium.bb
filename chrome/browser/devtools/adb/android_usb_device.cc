@@ -331,12 +331,16 @@ void AndroidUsbDevice::Queue(scoped_refptr<AdbMessage> message) {
     if (append_zero)
       body_buffer->data()[body_length - 1] = 0;
     outgoing_queue_.push(std::make_pair(body_buffer, body_length));
+    if (zero_mask_ && (body_length & zero_mask_) == 0) {
+      // Send a zero length packet.
+      outgoing_queue_.push(std::make_pair(body_buffer, 0));
+    }
   }
   ProcessOutgoing();
 }
 
 void AndroidUsbDevice::ProcessOutgoing() {
-  if (outgoing_queue_.empty())
+  if (outgoing_queue_.empty() || terminated_)
     return;
 
   BulkMessage message = outgoing_queue_.front();
@@ -358,6 +362,8 @@ void AndroidUsbDevice::OutgoingMessageSent(UsbTransferStatus status,
 }
 
 void AndroidUsbDevice::ReadHeader(bool initial) {
+  if (terminated_)
+    return;
   if (!initial && HasOneRef())
     return;  // Stop polling.
   scoped_refptr<net::IOBuffer> buffer = new net::IOBuffer(kHeaderSize);

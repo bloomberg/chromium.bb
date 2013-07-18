@@ -159,7 +159,7 @@ int AndroidUsbSocket::Connect(const net::CompletionCallback& callback) {
 
 void AndroidUsbSocket::Disconnect() {
   is_connected_ = false;
-  device_->Send(AdbMessage::kCommandCLSE, local_id_, 0, "");
+  device_->Send(AdbMessage::kCommandCLSE, local_id_, remote_id_, "");
   RespondToReaders(true);
 }
 

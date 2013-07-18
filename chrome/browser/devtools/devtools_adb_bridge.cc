@@ -629,8 +629,9 @@ class AdbWebSocket : public base::RefCountedThreadSafe<AdbWebSocket> {
   void DisconnectOnHandlerThread(bool closed_by_device) {
     if (!socket_)
       return;
-    socket_->Disconnect();
-    socket_.reset();
+    // Wipe out socket_ first since Disconnect can re-enter this method.
+    scoped_ptr<net::StreamSocket> socket(socket_.release());
+    socket->Disconnect();
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
         base::Bind(&AdbWebSocket::OnSocketClosed, this, closed_by_device));
   }
