@@ -150,7 +150,7 @@ PickerIndicatorElement* BaseMultipleFieldsDateAndTimeInputType::pickerIndicatorE
 
 inline bool BaseMultipleFieldsDateAndTimeInputType::containsFocusedShadowElement() const
 {
-    return element()->userAgentShadowRoot()->contains(element()->document()->focusedNode());
+    return element()->userAgentShadowRoot()->contains(element()->document()->focusedElement());
 }
 
 void BaseMultipleFieldsDateAndTimeInputType::didBlurFromControl()

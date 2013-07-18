@@ -1064,12 +1064,12 @@ void Editor::didEndEditing()
 
 void Editor::setBaseWritingDirection(WritingDirection direction)
 {
-    Node* focusedNode = frame()->document()->focusedNode();
-    if (focusedNode && isHTMLTextFormControlElement(focusedNode)) {
+    Node* focusedElement = frame()->document()->focusedElement();
+    if (focusedElement && isHTMLTextFormControlElement(focusedElement)) {
         if (direction == NaturalWritingDirection)
             return;
-        toHTMLElement(focusedNode)->setAttribute(dirAttr, direction == LeftToRightWritingDirection ? "ltr" : "rtl");
-        focusedNode->dispatchInputEvent();
+        toHTMLElement(focusedElement)->setAttribute(dirAttr, direction == LeftToRightWritingDirection ? "ltr" : "rtl");
+        focusedElement->dispatchInputEvent();
         frame()->document()->updateStyleIfNeeded();
         return;
     }
@@ -1183,8 +1183,7 @@ void Editor::finishComposition(const String& text, FinishCompositionMode mode)
     // Dispatch a compositionend event to the focused node.
     // We should send this event before sending a TextEvent as written in Section 6.2.2 and 6.2.3 of
     // the DOM Event specification.
-    Node* target = m_frame->document()->focusedNode();
-    if (target) {
+    if (Element* target = m_frame->document()->focusedElement()) {
         RefPtr<CompositionEvent> event = CompositionEvent::create(eventNames().compositionendEvent, m_frame->domWindow(), text);
         target->dispatchEvent(event, IGNORE_EXCEPTION);
     }
@@ -1225,8 +1224,7 @@ void Editor::setComposition(const String& text, const Vector<CompositionUnderlin
         return;
     }
 
-    Node* target = m_frame->document()->focusedNode();
-    if (target) {
+    if (Element* target = m_frame->document()->focusedElement()) {
         // Dispatch an appropriate composition event to the focused node.
         // We check the composition status and choose an appropriate composition event since this
         // function is used for three purposes:

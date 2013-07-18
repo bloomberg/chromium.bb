@@ -289,9 +289,9 @@ void FrameLoader::stopLoading(UnloadEventPolicy unloadEventPolicy)
     if (unloadEventPolicy != UnloadEventPolicyNone) {
         if (m_frame->document()) {
             if (m_didCallImplicitClose && !m_wasUnloadEventEmitted) {
-                Node* currentFocusedNode = m_frame->document()->focusedNode();
-                if (currentFocusedNode && currentFocusedNode->hasTagName(inputTag))
-                    toHTMLInputElement(currentFocusedNode)->endEditing();
+                Element* currentFocusedElement = m_frame->document()->focusedElement();
+                if (currentFocusedElement && currentFocusedElement->hasTagName(inputTag))
+                    toHTMLInputElement(currentFocusedElement)->endEditing();
                 if (m_pageDismissalEventBeingDispatched == NoDismissal) {
                     if (unloadEventPolicy == UnloadEventPolicyUnloadAndPageHide) {
                         m_pageDismissalEventBeingDispatched = PageHideDismissal;

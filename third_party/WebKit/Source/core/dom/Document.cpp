@@ -352,13 +352,14 @@ private:
         ASSERT(context->isDocument());
         Document* document = toDocument(context);
         document->didRunCheckFocusedNodeTask();
-        if (!document->focusedNode())
+        Element* element = document->focusedElement();
+        if (!element)
             return;
         if (document->childNeedsStyleRecalc())
             return;
-        if (document->focusedNode()->renderer() && document->focusedNode()->renderer()->needsLayout())
+        if (element->renderer() && element->renderer()->needsLayout())
             return;
-        if (!document->focusedNode()->isFocusable())
+        if (!element->isFocusable())
             document->setFocusedElement(0);
     }
 };
@@ -3108,7 +3109,7 @@ void Document::setAnnotatedRegions(const Vector<AnnotatedRegionValue>& regions)
 
 bool Document::setFocusedElement(PassRefPtr<Element> prpNewFocusedNode, FocusDirection direction)
 {
-    RefPtr<Node> newFocusedNode = prpNewFocusedNode;
+    RefPtr<Element> newFocusedNode = prpNewFocusedNode;
 
     // Make sure newFocusedNode is actually in this document
     if (newFocusedNode && (newFocusedNode->document() != this))
@@ -3118,7 +3119,7 @@ bool Document::setFocusedElement(PassRefPtr<Element> prpNewFocusedNode, FocusDir
         return true;
 
     bool focusChangeBlocked = false;
-    RefPtr<Node> oldFocusedNode = m_focusedNode;
+    RefPtr<Element> oldFocusedNode = m_focusedNode;
     m_focusedNode = 0;
 
     // Remove focus from the existing focus node (if any)
@@ -3131,11 +3132,8 @@ bool Document::setFocusedElement(PassRefPtr<Element> prpNewFocusedNode, FocusDir
         oldFocusedNode->setFocus(false);
 
         // Dispatch a change event for text fields or textareas that have been edited
-        if (oldFocusedNode->isElementNode()) {
-            Element* element = toElement(oldFocusedNode.get());
-            if (element->wasChangedSinceLastFormControlChangeEvent())
-                element->dispatchFormControlChangeEvent();
-        }
+        if (oldFocusedNode->wasChangedSinceLastFormControlChangeEvent())
+            oldFocusedNode->dispatchFormControlChangeEvent();
 
         // Dispatch the blur event and let the node do any other blur related activities (important for text fields)
         oldFocusedNode->dispatchBlurEvent(newFocusedNode);
@@ -3156,8 +3154,6 @@ bool Document::setFocusedElement(PassRefPtr<Element> prpNewFocusedNode, FocusDir
             focusChangeBlocked = true;
             newFocusedNode = 0;
         }
-        if (oldFocusedNode == this && oldFocusedNode->hasOneRef())
-            return true;
 
         if (oldFocusedNode->isRootEditableElement())
             frame()->editor()->didEndEditing();
@@ -4322,15 +4318,10 @@ void Document::cancelFocusAppearanceUpdate()
 
 void Document::updateFocusAppearanceTimerFired(Timer<Document>*)
 {
-    Node* node = focusedNode();
-    if (!node)
+    Element* element = focusedElement();
+    if (!element)
         return;
-    if (!node->isElementNode())
-        return;
-
     updateLayout();
-
-    Element* element = toElement(node);
     if (element->isFocusable())
         element->updateFocusAppearance(m_updateFocusAppearanceRestoresSelection);
 }
@@ -4796,7 +4787,7 @@ Node* eventTargetNodeForDocument(Document* doc)
 {
     if (!doc)
         return 0;
-    Node* node = doc->focusedNode();
+    Node* node = doc->focusedElement();
     if (!node && doc->isPluginDocument()) {
         PluginDocument* pluginDocument = toPluginDocument(doc);
         node =  pluginDocument->pluginNode();

@@ -112,16 +112,16 @@ bool EditorClientImpl::shouldSpellcheckByDefault()
     const Document* document = frame->document();
     if (!document)
         return false;
-    const Node* node = document->focusedNode();
-    // If |node| is null, we default to allowing spellchecking. This is done in
-    // order to mitigate the issue when the user clicks outside the textbox, as a
-    // result of which |node| becomes null, resulting in all the spell check
-    // markers being deleted. Also, the Frame will decide not to do spellchecking
-    // if the user can't edit - so returning true here will not cause any problems
-    // to the Frame's behavior.
-    if (!node)
+    const Element* element = document->focusedElement();
+    // If |element| is null, we default to allowing spellchecking. This is done
+    // in order to mitigate the issue when the user clicks outside the textbox,
+    // as a result of which |element| becomes null, resulting in all the spell
+    // check markers being deleted. Also, the Frame will decide not to do
+    // spellchecking if the user can't edit - so returning true here will not
+    // cause any problems to the Frame's behavior.
+    if (!element)
         return true;
-    const RenderObject* renderer = node->renderer();
+    const RenderObject* renderer = element->renderer();
     if (!renderer)
         return false;
 

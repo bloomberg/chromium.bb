@@ -571,13 +571,13 @@ bool AccessibilityRenderObject::isFocused() const
     if (!document)
         return false;
 
-    Node* focusedNode = document->focusedNode();
-    if (!focusedNode)
+    Element* focusedElement = document->focusedElement();
+    if (!focusedElement)
         return false;
 
     // A web area is represented by the Document node in the DOM tree, which isn't focusable.
     // Check instead if the frame's selection controller is focused
-    if (focusedNode == m_renderer->node()
+    if (focusedElement == m_renderer->node()
         || (roleValue() == WebAreaRole && document->frame()->selection()->isFocusedAndActive()))
         return true;
 
@@ -1743,7 +1743,7 @@ void AccessibilityRenderObject::setFocused(bool on)
             // If this node is already the currently focused node, then calling focus() won't do anything.
             // That is a problem when focus is removed from the webpage to chrome, and then returns.
             // In these cases, we need to do what keyboard and mouse focus do, which is reset focus first.
-            if (document->focusedNode() == node)
+            if (document->focusedElement() == node)
                 document->setFocusedElement(0);
 
             toElement(node)->focus();
@@ -1813,7 +1813,7 @@ void AccessibilityRenderObject::handleActiveDescendantChanged()
     if (!element)
         return;
     Document* doc = renderer()->document();
-    if (!doc->frame()->selection()->isFocusedAndActive() || doc->focusedNode() != element)
+    if (!doc->frame()->selection()->isFocusedAndActive() || doc->focusedElement() != element)
         return;
     AccessibilityRenderObject* activedescendant = static_cast<AccessibilityRenderObject*>(activeDescendant());
 

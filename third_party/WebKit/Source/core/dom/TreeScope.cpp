@@ -339,7 +339,7 @@ void TreeScope::adoptIfNeeded(Node* node)
         adopter.execute();
 }
 
-static Node* focusedFrameOwnerElement(Frame* focusedFrame, Frame* currentFrame)
+static Element* focusedFrameOwnerElement(Frame* focusedFrame, Frame* currentFrame)
 {
     for (; focusedFrame; focusedFrame = focusedFrame->tree()->parent()) {
         if (focusedFrame->tree()->parent() == currentFrame)
@@ -351,20 +351,26 @@ static Node* focusedFrameOwnerElement(Frame* focusedFrame, Frame* currentFrame)
 Element* TreeScope::adjustedFocusedElement()
 {
     Document* document = rootNode()->document();
-    Node* node = document->focusedNode();
-    if (!node && document->page())
-        node = focusedFrameOwnerElement(document->page()->focusController()->focusedFrame(), document->frame());
-    if (!node)
+    Element* element = document->focusedElement();
+    if (!element && document->page())
+        element = focusedFrameOwnerElement(document->page()->focusController()->focusedFrame(), document->frame());
+    if (!element)
         return 0;
     Vector<Node*> targetStack;
-    for (EventPathWalker walker(node); walker.node(); walker.moveToParent()) {
+    for (EventPathWalker walker(element); walker.node(); walker.moveToParent()) {
         Node* node = walker.node();
         if (targetStack.isEmpty())
             targetStack.append(node);
         else if (walker.isVisitingInsertionPointInReprojection())
             targetStack.append(targetStack.last());
-        if (node == rootNode())
+        if (node == rootNode()) {
+            // targetStack.last() is one of the followings:
+            // - InsertionPoint
+            // - shadow host
+            // - Document::focusedElement()
+            // So, it's safe to do toElement().
             return toElement(targetStack.last());
+        }
         if (node->isShadowRoot()) {
             ASSERT(!targetStack.isEmpty());
             targetStack.removeLast();

@@ -2011,7 +2011,7 @@ void WebViewImpl::setFocus(bool enable)
         m_page->focusController()->setActive(true);
         RefPtr<Frame> focusedFrame = m_page->focusController()->focusedFrame();
         if (focusedFrame) {
-            Element* element = toElement(focusedFrame->document()->focusedNode());
+            Element* element = focusedFrame->document()->focusedElement();
             if (element && focusedFrame->selection()->selection().isNone()) {
                 // If the selection was cleared while the WebView was not
                 // focused, then the focus element shows with a focus ring but
@@ -2680,7 +2680,7 @@ void WebViewImpl::clearFocusedNode()
     if (!document)
         return;
 
-    RefPtr<Element> oldFocusedElement = toElement(document->focusedNode());
+    RefPtr<Element> oldFocusedElement = document->focusedElement();
 
     // Clear the focused node.
     document->setFocusedElement(0);
@@ -3797,7 +3797,7 @@ Element* WebViewImpl::focusedElement()
     if (!document)
         return 0;
 
-    return toElement(document->focusedNode());
+    return document->focusedElement();
 }
 
 HitTestResult WebViewImpl::hitTestResultForWindowPos(const IntPoint& pos)

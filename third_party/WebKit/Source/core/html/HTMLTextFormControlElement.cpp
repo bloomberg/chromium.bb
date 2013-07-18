@@ -148,7 +148,7 @@ bool HTMLTextFormControlElement::placeholderShouldBeVisible() const
         && isEmptyValue()
         && isEmptySuggestedValue()
         && !isPlaceholderEmpty()
-        && (document()->focusedNode() != this || (renderer() && renderer()->theme()->shouldShowPlaceholderWhenFocused()))
+        && (document()->focusedElement() != this || (renderer() && renderer()->theme()->shouldShowPlaceholderWhenFocused()))
         && (!renderer() || renderer()->style()->visibility() == VISIBLE);
 }
 
@@ -359,7 +359,7 @@ int HTMLTextFormControlElement::selectionStart() const
 {
     if (!isTextFormControl())
         return 0;
-    if (document()->focusedNode() != this && hasCachedSelection())
+    if (document()->focusedElement() != this && hasCachedSelection())
         return m_cachedSelectionStart;
 
     return computeSelectionStart();
@@ -379,7 +379,7 @@ int HTMLTextFormControlElement::selectionEnd() const
 {
     if (!isTextFormControl())
         return 0;
-    if (document()->focusedNode() != this && hasCachedSelection())
+    if (document()->focusedElement() != this && hasCachedSelection())
         return m_cachedSelectionEnd;
     return computeSelectionEnd();
 }
@@ -417,7 +417,7 @@ const AtomicString& HTMLTextFormControlElement::selectionDirection() const
 {
     if (!isTextFormControl())
         return directionString(SelectionHasNoDirection);
-    if (document()->focusedNode() != this && hasCachedSelection())
+    if (document()->focusedElement() != this && hasCachedSelection())
         return directionString(m_cachedSelectionDirection);
 
     return directionString(computeSelectionDirection());

@@ -156,7 +156,7 @@ AccessibilityObject* AXObjectCache::focusedUIElementForPage(const Page* page)
 
     // get the focused node in the page
     Document* focusedDocument = page->focusController()->focusedOrMainFrame()->document();
-    Node* focusedNode = focusedDocument->focusedNode();
+    Node* focusedNode = focusedDocument->focusedElement();
     if (!focusedNode)
         focusedNode = focusedDocument;
 
@@ -960,12 +960,12 @@ void AXObjectCache::postPlatformNotification(AccessibilityObject* obj, AXNotific
 
     switch (notification) {
     case AXActiveDescendantChanged:
-        if (!obj->document()->focusedNode() || (obj->node() != obj->document()->focusedNode()))
+        if (!obj->document()->focusedElement() || (obj->node() != obj->document()->focusedElement()))
             break;
 
         // Calling handleFocusedUIElementChanged will focus the new active
         // descendant and send the AXFocusedUIElementChanged notification.
-        handleFocusedUIElementChanged(0, obj->document()->focusedNode());
+        handleFocusedUIElementChanged(0, obj->document()->focusedElement());
         break;
     case AXAriaAttributeChanged:
     case AXAutocorrectionOccured:

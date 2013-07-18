@@ -210,7 +210,8 @@ IntRect PopupContainer::layoutAndCalculateWidgetRect(int targetControlHeight, co
 void PopupContainer::showPopup(FrameView* view)
 {
     m_frameView = view;
-    listBox()->m_focusedNode = m_frameView->frame()->document()->focusedNode();
+    // FIXME: PopupListBox::m_focusedNode should be m_focusedElement.
+    listBox()->m_focusedNode = m_frameView->frame()->document()->focusedElement();
 
     if (ChromeClient* client = chromeClient()) {
         IntSize transformOffset(m_controlPosition.p4().x() - m_controlPosition.p1().x(), m_controlPosition.p4().y() - m_controlPosition.p1().y() - m_controlSize.height());

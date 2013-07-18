@@ -572,9 +572,9 @@ DateTimeFieldElement* DateTimeEditElement::focusedField() const
 
 size_t DateTimeEditElement::focusedFieldIndex() const
 {
-    Node* const focusedFieldNode = document()->focusedNode();
+    Element* const focusedFieldElement = document()->focusedElement();
     for (size_t fieldIndex = 0; fieldIndex < m_fields.size(); ++fieldIndex) {
-        if (m_fields[fieldIndex] == focusedFieldNode)
+        if (m_fields[fieldIndex] == focusedFieldElement)
             return fieldIndex;
     }
     return invalidFieldIndex;

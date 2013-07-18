@@ -126,9 +126,9 @@ bool RadioInputType::isKeyboardFocusable(KeyboardEvent* event) const
 
     // Never allow keyboard tabbing to leave you in the same radio group.  Always
     // skip any other elements in the group.
-    Node* currentFocusedNode = element()->document()->focusedNode();
-    if (currentFocusedNode && currentFocusedNode->hasTagName(inputTag)) {
-        HTMLInputElement* focusedInput = toHTMLInputElement(currentFocusedNode);
+    Element* currentFocusedElement = element()->document()->focusedElement();
+    if (currentFocusedElement && currentFocusedElement->hasTagName(inputTag)) {
+        HTMLInputElement* focusedInput = toHTMLInputElement(currentFocusedElement);
         if (focusedInput->isRadioButton() && focusedInput->form() == element()->form() && focusedInput->name() == element()->name())
             return false;
     }

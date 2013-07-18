@@ -27,6 +27,7 @@
 #include "core/dom/UserTypingGestureIndicator.h"
 
 #include "core/dom/Document.h"
+#include "core/dom/Element.h"
 #include "core/dom/Node.h"
 #include "core/page/Frame.h"
 #include "wtf/StdLibExtras.h"
@@ -55,7 +56,9 @@ UserTypingGestureIndicator::UserTypingGestureIndicator(Frame* frame)
     , m_previousFocusedNode(focusedNode())
 {
     s_processingUserTypingGesture = true;
-    focusedNode() = frame->document() ? frame->document()->focusedNode() : 0;
+    Node* node = frame->document() ? frame->document()->focusedElement() : 0;
+    // FIXME: focusedNode() should be RefPtr<Element>.
+    focusedNode() = node;
 }
 
 UserTypingGestureIndicator::~UserTypingGestureIndicator()

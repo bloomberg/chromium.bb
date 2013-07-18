@@ -1364,7 +1364,7 @@ void Element::attach(const AttachContext& context)
     if (hasRareData()) {
         ElementRareData* data = elementRareData();
         if (data->needsFocusAppearanceUpdateSoonAfterAttach()) {
-            if (isFocusable() && document()->focusedNode() == this)
+            if (isFocusable() && document()->focusedElement() == this)
                 document()->updateFocusAppearanceSoon(false /* don't restore selection */);
             data->setNeedsFocusAppearanceUpdateSoonAfterAttach(false);
         }
@@ -2025,7 +2025,7 @@ void Element::focus(bool restorePreviousSelection, FocusDirection direction)
         return;
 
     Document* doc = document();
-    if (doc->focusedNode() == this)
+    if (doc->focusedElement() == this)
         return;
 
     // If the stylesheets have already been loaded we can reliably check isFocusable.
@@ -2408,7 +2408,7 @@ void Element::cancelFocusAppearanceUpdate()
 {
     if (hasRareData())
         elementRareData()->setNeedsFocusAppearanceUpdateSoonAfterAttach(false);
-    if (document()->focusedNode() == this)
+    if (document()->focusedElement() == this)
         document()->cancelFocusAppearanceUpdate();
 }
 

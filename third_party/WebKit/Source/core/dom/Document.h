@@ -629,7 +629,7 @@ public:
     void setSelectedStylesheetSet(const String&);
 
     bool setFocusedElement(PassRefPtr<Element>, FocusDirection = FocusDirectionNone);
-    Node* focusedNode() const { return m_focusedNode.get(); }
+    Element* focusedElement() const { return m_focusedNode.get(); }
     UserActionElementSet& userActionElements()  { return m_userActionElements; }
     const UserActionElementSet& userActionElements() const { return m_userActionElements; }
     void didRunCheckFocusedNodeTask() { m_didPostCheckFocusedNodeTask = false; }
@@ -1170,7 +1170,8 @@ private:
     bool m_compatibilityModeLocked; // This is cheaper than making setCompatibilityMode virtual.
 
     bool m_didPostCheckFocusedNodeTask;
-    RefPtr<Node> m_focusedNode;
+    // FIXME: Rename m_focusedNode to m_focusedElement.
+    RefPtr<Element> m_focusedNode;
     RefPtr<Node> m_hoverNode;
     RefPtr<Element> m_activeElement;
     RefPtr<Element> m_documentElement;

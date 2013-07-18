@@ -498,7 +498,7 @@ void HTMLInputElement::updateType()
 
     if (wasAttached) {
         lazyAttach();
-        if (document()->focusedNode() == this)
+        if (document()->focusedElement() == this)
             document()->updateFocusAppearanceSoon(true /* restore selection */);
     }
 
@@ -821,7 +821,7 @@ void HTMLInputElement::attach(const AttachContext& context)
 
     m_inputType->attach();
 
-    if (document()->focusedNode() == this)
+    if (document()->focusedElement() == this)
         document()->updateFocusAppearanceSoon(true /* restore selection */);
 }
 

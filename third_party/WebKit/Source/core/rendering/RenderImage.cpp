@@ -396,11 +396,11 @@ void RenderImage::paintAreaElementFocusRing(PaintInfo& paintInfo)
     if (paintInfo.context->paintingDisabled() && !paintInfo.context->updatingControlTints())
         return;
 
-    Node* focusedNode = document->focusedNode();
-    if (!focusedNode || !isHTMLAreaElement(focusedNode))
+    Element* focusedElement = document->focusedElement();
+    if (!focusedElement || !isHTMLAreaElement(focusedElement))
         return;
 
-    HTMLAreaElement* areaElement = toHTMLAreaElement(focusedNode);
+    HTMLAreaElement* areaElement = toHTMLAreaElement(focusedElement);
     if (areaElement->imageElement() != node())
         return;
 

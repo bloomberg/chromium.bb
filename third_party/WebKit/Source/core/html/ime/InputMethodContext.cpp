@@ -91,8 +91,8 @@ void InputMethodContext::confirmComposition()
     if (!editor->hasComposition())
         return;
 
-    const Node* node = frame->document()->focusedNode();
-    if (!node || !node->isHTMLElement() || m_element != toHTMLElement(node))
+    const Element* element = frame->document()->focusedElement();
+    if (!element || !element->isHTMLElement() || m_element != toHTMLElement(element))
         return;
 
     // We should verify the parent node of this IME composition node are

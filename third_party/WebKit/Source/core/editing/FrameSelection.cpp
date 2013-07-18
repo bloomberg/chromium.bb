@@ -1616,8 +1616,8 @@ void FrameSelection::selectAll()
 {
     Document* document = m_frame->document();
 
-    if (document->focusedNode() && document->focusedNode()->hasTagName(selectTag)) {
-        HTMLSelectElement* selectElement = toHTMLSelectElement(document->focusedNode());
+    if (document->focusedElement() && document->focusedElement()->hasTagName(selectTag)) {
+        HTMLSelectElement* selectElement = toHTMLSelectElement(document->focusedElement());
         if (selectElement->canSelectAll()) {
             selectElement->selectAll();
             return;
@@ -1713,11 +1713,12 @@ void FrameSelection::focusedOrActiveStateChanged()
     // Because StyleResolver::checkOneSelector() and
     // RenderTheme::isFocused() check if the frame is active, we have to
     // update style and theme state that depended on those.
-    if (Node* node = m_frame->document()->focusedNode()) {
-        node->setNeedsStyleRecalc();
-        if (RenderObject* renderer = node->renderer())
+    if (Element* element = m_frame->document()->focusedElement()) {
+        element->setNeedsStyleRecalc();
+        if (RenderObject* renderer = element->renderer()) {
             if (renderer && renderer->style()->hasAppearance())
                 renderer->theme()->stateChanged(renderer, FocusState);
+        }
     }
 
     // Secure keyboard entry is set by the active frame.
@@ -1860,11 +1861,11 @@ bool FrameSelection::shouldBlinkCaret() const
     if (!root)
         return false;
 
-    Node* focusedNode = root->document()->focusedNode();
-    if (!focusedNode)
+    Element* focusedElement = root->document()->focusedElement();
+    if (!focusedElement)
         return false;
 
-    return focusedNode->containsIncludingShadowDOM(m_selection.start().anchorNode());
+    return focusedElement->containsIncludingShadowDOM(m_selection.start().anchorNode());
 }
 
 void FrameSelection::caretBlinkTimerFired(Timer<FrameSelection>*)
@@ -2003,7 +2004,7 @@ static HTMLFormElement* scanForForm(Node* start)
 HTMLFormElement* FrameSelection::currentForm() const
 {
     // Start looking either at the active (first responder) node, or where the selection is.
-    Node* start = m_frame->document()->focusedNode();
+    Node* start = m_frame->document()->focusedElement();
     if (!start)
         start = this->start().deprecatedNode();
 
