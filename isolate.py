@@ -1680,7 +1680,7 @@ class CompleteState(object):
       touched = [touch for touch in touched if os.path.exists(touch)]
 
       if len(touched) != original_touched_count:
-        logging.info('warning: removed %d invalid touched entries',
+        logging.info('Removed %d invalid touched entries',
                      len(touched) - original_touched_count)
 
     # Finally, update the new data to be able to generate the foo.isolated file,
