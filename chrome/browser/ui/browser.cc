@@ -679,9 +679,6 @@ Browser::DownloadClosePreventionType Browser::OkToCloseWithInProgressDownloads(
   DCHECK(num_downloads_blocking);
   *num_downloads_blocking = 0;
 
-  if (IsAttemptingToCloseBrowser())
-    return DOWNLOAD_CLOSE_OK;
-
   // If we're not running a full browser process with a profile manager
   // (testing), it's ok to close the browser.
   if (!g_browser_process->profile_manager())
@@ -720,7 +717,8 @@ Browser::DownloadClosePreventionType Browser::OkToCloseWithInProgressDownloads(
   // those downloads would be cancelled by our window (-> profile) close.
   DownloadService* download_service =
       DownloadServiceFactory::GetForProfile(profile());
-  if (profile_window_count == 0 && download_service->DownloadCount() > 0 &&
+  if ((profile_window_count == 0) &&
+      (download_service->DownloadCount() > 0) &&
       profile()->IsOffTheRecord()) {
     *num_downloads_blocking = download_service->DownloadCount();
     return DOWNLOAD_CLOSE_LAST_WINDOW_IN_INCOGNITO_PROFILE;
