@@ -85,9 +85,11 @@ const char* GetAsString(KeyEventType type) {
 }  // namespace
 
 WebViewImpl::WebViewImpl(const std::string& id,
+                         int build_no,
                          scoped_ptr<DevToolsClient> client,
                          Log* log)
     : id_(id),
+      build_no_(build_no),
       dom_tracker_(new DomTracker(client.get())),
       frame_tracker_(new FrameTracker(client.get())),
       navigation_tracker_(new NavigationTracker(client.get())),
@@ -196,7 +198,8 @@ Status WebViewImpl::GetFrameByFunction(const std::string& frame,
   return dom_tracker_->GetFrameIdForNode(node_id, out_frame);
 }
 
-Status WebViewImpl::DispatchMouseEvents(const std::list<MouseEvent>& events) {
+Status WebViewImpl::DispatchMouseEvents(const std::list<MouseEvent>& events,
+                                        const std::string& frame) {
   for (std::list<MouseEvent>::const_iterator it = events.begin();
        it != events.end(); ++it) {
     base::DictionaryValue params;
@@ -209,6 +212,18 @@ Status WebViewImpl::DispatchMouseEvents(const std::list<MouseEvent>& events) {
     Status status = client_->SendCommand("Input.dispatchMouseEvent", params);
     if (status.IsError())
       return status;
+    if (build_no_ < 1569 && it->button == kRightMouseButton &&
+        it->type == kReleasedMouseEventType) {
+      base::ListValue args;
+      args.AppendInteger(it->x);
+      args.AppendInteger(it->y);
+      args.AppendInteger(it->modifiers);
+      scoped_ptr<base::Value> result;
+      status = CallFunction(
+          frame, kDispatchContextMenuEventScript, args, &result);
+      if (status.IsError())
+        return status;
+    }
   }
   return Status(kOk);
 }

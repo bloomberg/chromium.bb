@@ -416,7 +416,8 @@ Status ExecuteMouseMoveTo(
   events.push_back(
       MouseEvent(kMovedMouseEventType, kNoneMouseButton,
                  location.x, location.y, session->sticky_modifiers, 0));
-  Status status = web_view->DispatchMouseEvents(events);
+  Status status =
+      web_view->DispatchMouseEvents(events, session->GetCurrentFrameId());
   if (status.IsOk())
     session->mouse_position = location;
   return status;
@@ -440,7 +441,7 @@ Status ExecuteMouseClick(
       MouseEvent(kReleasedMouseEventType, button,
                  session->mouse_position.x, session->mouse_position.y,
                  session->sticky_modifiers, 1));
-  return web_view->DispatchMouseEvents(events);
+  return web_view->DispatchMouseEvents(events, session->GetCurrentFrameId());
 }
 
 Status ExecuteMouseButtonDown(
@@ -457,7 +458,7 @@ Status ExecuteMouseButtonDown(
       MouseEvent(kPressedMouseEventType, button,
                  session->mouse_position.x, session->mouse_position.y,
                  session->sticky_modifiers, 1));
-  return web_view->DispatchMouseEvents(events);
+  return web_view->DispatchMouseEvents(events, session->GetCurrentFrameId());
 }
 
 Status ExecuteMouseButtonUp(
@@ -474,7 +475,7 @@ Status ExecuteMouseButtonUp(
       MouseEvent(kReleasedMouseEventType, button,
                  session->mouse_position.x, session->mouse_position.y,
                  session->sticky_modifiers, 1));
-  return web_view->DispatchMouseEvents(events);
+  return web_view->DispatchMouseEvents(events, session->GetCurrentFrameId());
 }
 
 Status ExecuteMouseDoubleClick(
@@ -495,7 +496,7 @@ Status ExecuteMouseDoubleClick(
       MouseEvent(kReleasedMouseEventType, button,
                  session->mouse_position.x, session->mouse_position.y,
                  session->sticky_modifiers, 2));
-  return web_view->DispatchMouseEvents(events);
+  return web_view->DispatchMouseEvents(events, session->GetCurrentFrameId());
 }
 
 Status ExecuteGetActiveElement(

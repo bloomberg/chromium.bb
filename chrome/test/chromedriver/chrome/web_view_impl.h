@@ -32,6 +32,7 @@ class Status;
 class WebViewImpl : public WebView {
  public:
   WebViewImpl(const std::string& id,
+              int build_no,
               scoped_ptr<DevToolsClient> client,
               Log* log);
   virtual ~WebViewImpl();
@@ -65,7 +66,7 @@ class WebViewImpl : public WebView {
                                     const base::ListValue& args,
                                     std::string* out_frame) OVERRIDE;
   virtual Status DispatchMouseEvents(
-      const std::list<MouseEvent>& events) OVERRIDE;
+      const std::list<MouseEvent>& events, const std::string& frame) OVERRIDE;
   virtual Status DispatchKeyEvents(const std::list<KeyEvent>& events) OVERRIDE;
   virtual Status GetCookies(scoped_ptr<base::ListValue>* cookies) OVERRIDE;
   virtual Status DeleteCookie(const std::string& name,
@@ -92,6 +93,7 @@ class WebViewImpl : public WebView {
   Status IsNotPendingNavigation(const std::string& frame_id,
                                 bool* is_not_pending);
   std::string id_;
+  int build_no_;
   scoped_ptr<DomTracker> dom_tracker_;
   scoped_ptr<FrameTracker> frame_tracker_;
   scoped_ptr<NavigationTracker> navigation_tracker_;

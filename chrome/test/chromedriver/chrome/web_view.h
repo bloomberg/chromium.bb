@@ -91,7 +91,8 @@ class WebView {
                                     std::string* out_frame) = 0;
 
   // Dispatch a sequence of mouse events.
-  virtual Status DispatchMouseEvents(const std::list<MouseEvent>& events) = 0;
+  virtual Status DispatchMouseEvents(const std::list<MouseEvent>& events,
+                                     const std::string& frame) = 0;
 
   // Dispatch a sequence of key events.
   virtual Status DispatchKeyEvents(const std::list<KeyEvent>& events) = 0;

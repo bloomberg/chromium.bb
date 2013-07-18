@@ -7,6 +7,8 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/json/json_reader.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
@@ -76,13 +78,44 @@ DevToolsHttpClient::DevToolsHttpClient(
 
 DevToolsHttpClient::~DevToolsHttpClient() {}
 
-Status DevToolsHttpClient::GetVersion(std::string* version) {
-  std::string data;
-  if (!FetchUrlAndLog(
-          server_url_ + "/json/version", context_getter_.get(), &data))
-    return Status(kChromeNotReachable);
+Status DevToolsHttpClient::Init(const base::TimeDelta& timeout) {
+  base::Time deadline = base::Time::Now() + timeout;
+  std::string devtools_version;
+  while (true) {
+    Status status = GetVersion(&devtools_version);
+    if (status.IsOk())
+      break;
+    if (status.code() != kChromeNotReachable || base::Time::Now() > deadline)
+      return status;
+    base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(50));
+  }
 
-  return internal::ParseVersionInfo(data, version);
+  if (devtools_version.empty()) {
+    // Content Shell has an empty product version and a fake user agent.
+    // There's no way to detect the actual version, so assume it is tip of tree.
+    version_ = "content shell";
+    build_no_ = 9999;
+    return Status(kOk);
+  }
+  std::string prefix = "Chrome/";
+  if (devtools_version.find(prefix) != 0u) {
+    return Status(kUnknownError,
+                  "unrecognized Chrome version: " + devtools_version);
+  }
+
+  std::string stripped_version = devtools_version.substr(prefix.length());
+  int temp_build_no;
+  std::vector<std::string> version_parts;
+  base::SplitString(stripped_version, '.', &version_parts);
+  if (version_parts.size() != 4 ||
+      !base::StringToInt(version_parts[2], &temp_build_no)) {
+    return Status(kUnknownError,
+                  "unrecognized Chrome version: " + devtools_version);
+  }
+
+  version_ = stripped_version;
+  build_no_ = temp_build_no;
+  return Status(kOk);
 }
 
 Status DevToolsHttpClient::GetWebViewsInfo(WebViewsInfo* views_info) {
@@ -127,6 +160,23 @@ Status DevToolsHttpClient::CloseWebView(const std::string& id) {
   return Status(kUnknownError, "failed to close window in 20 seconds");
 }
 
+const std::string& DevToolsHttpClient::version() const {
+  return version_;
+}
+
+int DevToolsHttpClient::build_no() const {
+  return build_no_;
+}
+
+Status DevToolsHttpClient::GetVersion(std::string* version) {
+  std::string data;
+  if (!FetchUrlAndLog(
+          server_url_ + "/json/version", context_getter_.get(), &data))
+    return Status(kChromeNotReachable);
+
+  return internal::ParseVersionInfo(data, version);
+}
+
 Status DevToolsHttpClient::CloseFrontends(const std::string& for_client_id) {
   WebViewsInfo views_info;
   Status status = GetWebViewsInfo(&views_info);
@@ -169,7 +219,8 @@ Status DevToolsHttpClient::CloseFrontends(const std::string& for_client_id) {
         *it,
         base::Bind(&FakeCloseFrontends),
         log_));
-    scoped_ptr<WebViewImpl> web_view(new WebViewImpl(*it, client.Pass(), log_));
+    scoped_ptr<WebViewImpl> web_view(
+        new WebViewImpl(*it, build_no_, client.Pass(), log_));
 
     status = web_view->ConnectIfNecessary();
     // Ignore disconnected error, because the debugger might have closed when

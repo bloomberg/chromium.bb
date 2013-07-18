@@ -12,6 +12,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/test/chromedriver/net/sync_websocket_factory.h"
 
+namespace base {
+class TimeDelta;
+}
+
 class DevToolsClient;
 class Log;
 class Status;
@@ -60,7 +64,7 @@ class DevToolsHttpClient {
       Log* log);
   ~DevToolsHttpClient();
 
-  Status GetVersion(std::string* version);
+  Status Init(const base::TimeDelta& timeout);
 
   Status GetWebViewsInfo(WebViewsInfo* views_info);
 
@@ -68,7 +72,11 @@ class DevToolsHttpClient {
 
   Status CloseWebView(const std::string& id);
 
+  const std::string& version() const;
+  int build_no() const;
+
  private:
+  Status GetVersion(std::string* version);
   Status CloseFrontends(const std::string& for_client_id);
   bool FetchUrlAndLog(const std::string& url,
                       URLRequestContextGetter* getter,
@@ -79,6 +87,8 @@ class DevToolsHttpClient {
   Log* log_;
   std::string server_url_;
   std::string web_socket_url_prefix_;
+  std::string version_;
+  int build_no_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsHttpClient);
 };

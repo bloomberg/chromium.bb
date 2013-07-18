@@ -14,11 +14,11 @@
 ChromeImpl::~ChromeImpl() {}
 
 std::string ChromeImpl::GetVersion() {
-  return version_;
+  return devtools_http_client_->version();
 }
 
 int ChromeImpl::GetBuildNo() {
-  return build_no_;
+  return devtools_http_client_->build_no();
 }
 
 Status ChromeImpl::GetWebViewIds(std::list<std::string>* web_view_ids) {
@@ -61,7 +61,7 @@ Status ChromeImpl::GetWebViewIds(std::list<std::string>* web_view_ids) {
         // OnConnected will fire when DevToolsClient connects later.
       }
       web_views_.push_back(make_linked_ptr(new WebViewImpl(
-          view.id, client.Pass(), log_)));
+          view.id, GetBuildNo(), client.Pass(), log_)));
     }
   }
 
@@ -105,13 +105,9 @@ Status ChromeImpl::GetAutomationExtension(AutomationExtension** extension) {
 
 ChromeImpl::ChromeImpl(
     scoped_ptr<DevToolsHttpClient> client,
-    const std::string& version,
-    int build_no,
     ScopedVector<DevToolsEventListener>& devtools_event_listeners,
     Log* log)
     : devtools_http_client_(client.Pass()),
-      log_(log),
-      version_(version),
-      build_no_(build_no) {
+      log_(log) {
   devtools_event_listeners_.swap(devtools_event_listeners);
 }

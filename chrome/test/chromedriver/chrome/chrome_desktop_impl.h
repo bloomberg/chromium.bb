@@ -20,8 +20,6 @@ class ChromeDesktopImpl : public ChromeImpl {
  public:
   ChromeDesktopImpl(
       scoped_ptr<DevToolsHttpClient> client,
-      const std::string& version,
-      int build_no,
       ScopedVector<DevToolsEventListener>& devtools_event_listeners,
       Log* log,
       base::ProcessHandle process,

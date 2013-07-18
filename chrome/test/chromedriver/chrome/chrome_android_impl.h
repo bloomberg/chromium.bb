@@ -18,8 +18,6 @@ class ChromeAndroidImpl : public ChromeImpl {
  public:
   ChromeAndroidImpl(
       scoped_ptr<DevToolsHttpClient> client,
-      const std::string& version,
-      int build_no,
       ScopedVector<DevToolsEventListener>& devtools_event_listeners,
       scoped_ptr<Device> device,
       Log* log);

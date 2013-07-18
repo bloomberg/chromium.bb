@@ -116,7 +116,7 @@ Status ExecuteHoverOverElement(
       session->sticky_modifiers, 0);
   std::list<MouseEvent> events;
   events.push_back(move_event);
-  status = web_view->DispatchMouseEvents(events);
+  status = web_view->DispatchMouseEvents(events, session->GetCurrentFrameId());
   if (status.IsOk())
     session->mouse_position = location;
   return status;
@@ -159,7 +159,8 @@ Status ExecuteClickElement(
     events.push_back(
         MouseEvent(kReleasedMouseEventType, kLeftMouseButton,
                    location.x, location.y, session->sticky_modifiers, 1));
-    status = web_view->DispatchMouseEvents(events);
+    status =
+        web_view->DispatchMouseEvents(events, session->GetCurrentFrameId());
     if (status.IsOk())
       session->mouse_position = location;
     return status;

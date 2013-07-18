@@ -568,6 +568,12 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     self.assertEquals([100, 200], self._driver.GetWindowPosition())
     self.assertEquals([600, 400], self._driver.GetWindowSize())
 
+  def testContextMenuEventFired(self):
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/context_menu.html'))
+    self._driver.MouseMoveTo(self._driver.FindElement('tagName', 'div'))
+    self._driver.MouseClick(2)
+    self.assertTrue(self._driver.ExecuteScript('return success'))
+
 
 class ChromeSwitchesCapabilityTest(ChromeDriverBaseTest):
   """Tests that chromedriver properly processes chromeOptions.args capabilities.

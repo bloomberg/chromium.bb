@@ -40,8 +40,6 @@ class ChromeImpl : public Chrome {
  protected:
   ChromeImpl(
       scoped_ptr<DevToolsHttpClient> client,
-      const std::string& version,
-      int build_no,
       ScopedVector<DevToolsEventListener>& devtools_event_listeners,
       Log* log);
 
@@ -50,9 +48,6 @@ class ChromeImpl : public Chrome {
 
  private:
   typedef std::list<linked_ptr<WebViewImpl> > WebViewList;
-
-  std::string version_;
-  int build_no_;
 
   // Web views in this list are in the same order as they are opened.
   WebViewList web_views_;

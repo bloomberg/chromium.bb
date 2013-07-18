@@ -19,7 +19,6 @@
 #include "base/process.h"
 #include "base/process_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -112,68 +111,22 @@ Status PrepareCommandLine(int port,
   return Status(kOk);
 }
 
-Status ParseAndCheckVersion(const std::string& devtools_version,
-                            std::string* version,
-                            int* build_no) {
-  if (devtools_version.empty()) {
-    // Content Shell has an empty product version and a fake user agent.
-    // There's no way to detect the actual version, so assume it is tip of tree.
-    *version = "content shell";
-    *build_no = 9999;
-    return Status(kOk);
-  }
-  std::string prefix = "Chrome/";
-  if (devtools_version.find(prefix) != 0u) {
-    return Status(kUnknownError,
-                  "unrecognized Chrome version: " + devtools_version);
-  }
-
-  std::string stripped_version = devtools_version.substr(prefix.length());
-  int temp_build_no;
-  std::vector<std::string> version_parts;
-  base::SplitString(stripped_version, '.', &version_parts);
-  if (version_parts.size() != 4 ||
-      !base::StringToInt(version_parts[2], &temp_build_no)) {
-    return Status(kUnknownError,
-                  "unrecognized Chrome version: " + devtools_version);
-  }
-
-  if (temp_build_no < kMinimumSupportedChromeBuildNo) {
-    return Status(kUnknownError, "Chrome version must be >= " +
-        GetMinimumSupportedChromeVersion());
-  }
-  *version = stripped_version;
-  *build_no = temp_build_no;
-  return Status(kOk);
-}
-
 Status WaitForDevToolsAndCheckVersion(
     int port,
     URLRequestContextGetter* context_getter,
     const SyncWebSocketFactory& socket_factory,
     Log* log,
-    scoped_ptr<DevToolsHttpClient>* user_client,
-    std::string* version,
-    int* build_no) {
+    scoped_ptr<DevToolsHttpClient>* user_client) {
   scoped_ptr<DevToolsHttpClient> client(new DevToolsHttpClient(
       port, context_getter, socket_factory, log));
-
   base::Time deadline = base::Time::Now() + base::TimeDelta::FromSeconds(20);
-  std::string devtools_version;
-  Status status(kOk);
-  while (base::Time::Now() < deadline) {
-    status = client->GetVersion(&devtools_version);
-    if (status.IsOk())
-      break;
-    if (status.code() != kChromeNotReachable)
-      return status;
-    base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(50));
+  Status status = client->Init(deadline - base::Time::Now());
+  if (status.IsError())
+    return status;
+  if (client->build_no() < kMinimumSupportedChromeBuildNo) {
+    return Status(kUnknownError, "Chrome version must be >= " +
+        GetMinimumSupportedChromeVersion());
   }
-  if (status.IsError())
-    return status;
-  status = ParseAndCheckVersion(devtools_version, version, build_no);
-  if (status.IsError())
-    return status;
 
   while (base::Time::Now() < deadline) {
     WebViewsInfo views_info;
@@ -230,11 +183,8 @@ Status LaunchDesktopChrome(
     return Status(kUnknownError, "chrome failed to start");
 
   scoped_ptr<DevToolsHttpClient> devtools_client;
-  std::string version;
-  int build_no;
   status = WaitForDevToolsAndCheckVersion(
-      port, context_getter, socket_factory, log, &devtools_client, &version,
-      &build_no);
+      port, context_getter, socket_factory, log, &devtools_client);
 
   if (status.IsError()) {
     int exit_code;
@@ -271,8 +221,6 @@ Status LaunchDesktopChrome(
     return status;
   }
   chrome->reset(new ChromeDesktopImpl(devtools_client.Pass(),
-                                      version,
-                                      build_no,
                                       devtools_event_listeners,
                                       log,
                                       process,
@@ -311,21 +259,16 @@ Status LaunchAndroidChrome(
     return status;
 
   scoped_ptr<DevToolsHttpClient> devtools_client;
-  std::string version;
-  int build_no;
   status = WaitForDevToolsAndCheckVersion(port,
                                           context_getter,
                                           socket_factory,
                                           log,
-                                          &devtools_client,
-                                          &version,
-                                          &build_no);
+                                          &devtools_client);
   if (status.IsError())
     return status;
 
   chrome->reset(new ChromeAndroidImpl(
-      devtools_client.Pass(), version, build_no, devtools_event_listeners,
-      device.Pass(), log));
+      devtools_client.Pass(), devtools_event_listeners, device.Pass(), log));
   return Status(kOk);
 }
 

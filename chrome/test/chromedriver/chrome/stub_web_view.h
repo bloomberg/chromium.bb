@@ -46,7 +46,7 @@ class StubWebView : public WebView {
                                     const base::ListValue& args,
                                     std::string* out_frame) OVERRIDE;
   virtual Status DispatchMouseEvents(
-      const std::list<MouseEvent>& events) OVERRIDE;
+      const std::list<MouseEvent>& events, const std::string& frame) OVERRIDE;
   virtual Status DispatchKeyEvents(const std::list<KeyEvent>& events) OVERRIDE;
   virtual Status GetCookies(scoped_ptr<base::ListValue>* cookies) OVERRIDE;
   virtual Status DeleteCookie(const std::string& name,

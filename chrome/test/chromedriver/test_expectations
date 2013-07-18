@@ -21,7 +21,6 @@ _REVISION_NEGATIVE_FILTER['HEAD'] = [
     'AlertsTest.testSwitchingToMissingAlertInAClosedWindowThrows',
     'AuthenticatedPageLoadingTest.*',
     'AvailableLogsTest.driverLogShouldBeEnabledByDefault',
-    'BasicMouseInterfaceTest.testContextClick',
     'BasicMouseInterfaceTest.testMousePositionIsNotPreservedInActionsChain',
     'BasicMouseInterfaceTest.testMovingIntoAnImageEnclosedInALink',
     'BasicMouseInterfaceTest.testMovingMouseBackAndForthPastViewPort',
