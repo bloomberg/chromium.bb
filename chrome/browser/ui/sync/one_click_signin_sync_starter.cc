@@ -17,6 +17,7 @@
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -274,7 +275,7 @@ void OneClickSigninSyncStarter::CompleteInitForNewProfile(
       LoadPolicyWithCachedClient();
 
       // Open the profile's first window, after all initialization.
-      ProfileManager::FindOrCreateNewWindowForProfile(
+      profiles::FindOrCreateNewWindowForProfile(
         new_profile,
         chrome::startup::IS_PROCESS_STARTUP,
         chrome::startup::IS_FIRST_RUN,

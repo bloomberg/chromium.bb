@@ -14,7 +14,6 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/metrics/histogram.h"
-#include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -30,6 +29,7 @@
 #include "chrome/browser/profiles/profile_destroyer.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_metrics.h"
+#include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/profiles/startup_task_runner_service.h"
 #include "chrome/browser/profiles/startup_task_runner_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -61,10 +61,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/sessions/session_service_factory.h"
-#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/startup/startup_browser_creator.h"
 #endif  // !defined (OS_IOS)
 
 #if defined(OS_WIN)
@@ -311,21 +308,6 @@ ProfileManager::ProfileManager(const base::FilePath& user_data_dir)
 ProfileManager::~ProfileManager() {
 }
 
-base::FilePath ProfileManager::GetDefaultProfileDir(
-    const base::FilePath& user_data_dir) {
-  base::FilePath default_profile_dir(user_data_dir);
-  default_profile_dir =
-      default_profile_dir.AppendASCII(chrome::kInitialProfile);
-  return default_profile_dir;
-}
-
-base::FilePath ProfileManager::GetProfilePrefsPath(
-    const base::FilePath &profile_dir) {
-  base::FilePath default_prefs_path(profile_dir);
-  default_prefs_path = default_prefs_path.Append(chrome::kPreferencesFilename);
-  return default_prefs_path;
-}
-
 base::FilePath ProfileManager::GetInitialProfileDir() {
   base::FilePath relative_profile_dir;
 #if defined(OS_CHROMEOS)
@@ -420,7 +402,7 @@ Profile* ProfileManager::GetDefaultProfile(
   if (logged_in_) {
     default_profile_dir = default_profile_dir.Append(GetInitialProfileDir());
   } else {
-    default_profile_dir = GetDefaultProfileDir(user_data_dir);
+    default_profile_dir = profiles::GetDefaultProfileDir(user_data_dir);
   }
 #else
   base::FilePath default_profile_dir(user_data_dir);
@@ -443,7 +425,7 @@ Profile* ProfileManager::GetDefaultProfile(
   // Fallback to default off-the-record profile, if user profile has not fully
   // loaded yet.
   if (profile_info && !profile_info->created)
-    default_profile_dir = GetDefaultProfileDir(user_data_dir);
+    default_profile_dir = profiles::GetDefaultProfileDir(user_data_dir);
 #endif
   return GetProfile(default_profile_dir);
 }
@@ -597,35 +579,6 @@ ProfileManager::ProfileInfo* ProfileManager::GetProfileInfoByPath(
 Profile* ProfileManager::GetProfileByPath(const base::FilePath& path) const {
   ProfileInfo* profile_info = GetProfileInfoByPath(path);
   return profile_info ? profile_info->profile.get() : NULL;
-}
-
-// static
-void ProfileManager::FindOrCreateNewWindowForProfile(
-    Profile* profile,
-    chrome::startup::IsProcessStartup process_startup,
-    chrome::startup::IsFirstRun is_first_run,
-    chrome::HostDesktopType desktop_type,
-    bool always_create) {
-#if defined(OS_IOS)
-  NOTREACHED();
-#else
-  DCHECK(profile);
-
-  if (!always_create) {
-    Browser* browser = chrome::FindTabbedBrowser(profile, false, desktop_type);
-    if (browser) {
-      browser->window()->Activate();
-      return;
-    }
-  }
-
-  content::RecordAction(UserMetricsAction("NewWindow"));
-  CommandLine command_line(CommandLine::NO_PROGRAM);
-  int return_code;
-  StartupBrowserCreator browser_creator;
-  browser_creator.LaunchBrowser(command_line, profile, base::FilePath(),
-                                process_startup, is_first_run, &return_code);
-#endif  // defined(OS_IOS)
 }
 
 void ProfileManager::Observe(
@@ -892,7 +845,7 @@ base::FilePath ProfileManager::GenerateNextProfileDirectoryPath() {
   PrefService* local_state = g_browser_process->local_state();
   DCHECK(local_state);
 
-  DCHECK(IsMultipleProfilesEnabled());
+  DCHECK(profiles::IsMultipleProfilesEnabled());
 
   // Create the next profile in the next available directory slot.
   int next_directory = local_state->GetInteger(prefs::kProfilesNumCreated);
@@ -936,13 +889,6 @@ base::FilePath ProfileManager::GetGuestProfilePath() {
 
   base::FilePath guest_path = profile_manager->user_data_dir();
   return guest_path.Append(chrome::kGuestProfileDir);
-}
-
-// static
-void ProfileManager::RegisterPrefs(PrefRegistrySimple* registry) {
-  registry->RegisterStringPref(prefs::kProfileLastUsed, std::string());
-  registry->RegisterIntegerPref(prefs::kProfilesNumCreated, 1);
-  registry->RegisterListPref(prefs::kProfilesLastActive);
 }
 
 size_t ProfileManager::GetNumberOfProfiles() {
@@ -1027,7 +973,7 @@ void ProfileManager::InitProfileUserPrefs(Profile* profile) {
           UTF16ToUTF8(cache.GetNameOfProfileAtIndex(profile_cache_index));
       is_managed = cache.ProfileIsManagedAtIndex(profile_cache_index);
     } else if (profile->GetPath() ==
-               GetDefaultProfileDir(cache.GetUserDataDir())) {
+               profiles::GetDefaultProfileDir(cache.GetUserDataDir())) {
       avatar_index = 0;
       profile_name = l10n_util::GetStringUTF8(IDS_DEFAULT_PROFILE_NAME);
     } else {
@@ -1062,7 +1008,7 @@ bool ProfileManager::ShouldGoOffTheRecord(Profile* profile) {
 void ProfileManager::ScheduleProfileForDeletion(
     const base::FilePath& profile_dir,
     const CreateCallback& callback) {
-  DCHECK(IsMultipleProfilesEnabled());
+  DCHECK(profiles::IsMultipleProfilesEnabled());
   PrefService* local_state = g_browser_process->local_state();
   ProfileInfoCache& cache = GetProfileInfoCache();
 
@@ -1166,25 +1112,6 @@ void ProfileManager::FinishDeletingProfile(const base::FilePath& profile_dir) {
 
   QueueProfileDirectoryForDeletion(profile_dir);
   cache.DeleteProfileFromCache(profile_dir);
-}
-
-// static
-bool ProfileManager::IsMultipleProfilesEnabled() {
-#if defined(OS_ANDROID)
-  return false;
-#endif
-#if defined(OS_CHROMEOS)
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kMultiProfiles))
-    return false;
-#endif
-
-  return true;
-}
-
-// static
-bool ProfileManager::IsNewProfileManagementEnabled() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kNewProfileManagement);
 }
 
 void ProfileManager::AutoloadProfiles() {

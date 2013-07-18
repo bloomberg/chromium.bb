@@ -58,7 +58,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_impl.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
-#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/renderer_host/pepper/device_id_fetcher.h"
 #include "chrome/browser/renderer_host/web_cache_manager.h"
 #include "chrome/browser/search/search.h"
@@ -206,7 +206,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   metrics::CachingPermutedEntropyProvider::RegisterPrefs(registry);
   PrefProxyConfigTrackerImpl::RegisterPrefs(registry);
   ProfileInfoCache::RegisterPrefs(registry);
-  ProfileManager::RegisterPrefs(registry);
+  profiles::RegisterPrefs(registry);
   PromoResourceService::RegisterPrefs(registry);
   RegisterPrefsForRecoveryComponent(registry);
   SigninManagerFactory::RegisterPrefs(registry);

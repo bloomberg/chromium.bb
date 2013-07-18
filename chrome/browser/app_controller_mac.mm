@@ -31,6 +31,7 @@
 #include "chrome/browser/printing/print_dialog_cloud.h"
 #include "chrome/browser/profiles/profile_info_cache_observer.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/service/service_process_control.h"
 #include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/sessions/session_service.h"
@@ -1125,7 +1126,7 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
   NSMenu* mainMenu = [NSApp mainMenu];
   NSMenuItem* profileMenu = [mainMenu itemWithTag:IDC_PROFILE_MAIN_MENU];
 
-  if (!ProfileManager::IsMultipleProfilesEnabled()) {
+  if (!profiles::IsMultipleProfilesEnabled()) {
     [mainMenu removeItem:profileMenu];
     return;
   }

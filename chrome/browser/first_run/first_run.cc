@@ -11,6 +11,7 @@
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
+#include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_service.h"
@@ -28,7 +29,7 @@
 #include "chrome/browser/importer/importer_progress_observer.h"
 #include "chrome/browser/importer/importer_uma.h"
 #include "chrome/browser/importer/profile_writer.h"
-#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/shell_integration.h"
@@ -167,14 +168,14 @@ void DoDelayedInstallExtensionsIfNeeded(
 base::FilePath GetDefaultPrefFilePath(bool create_profile_dir,
                                       const base::FilePath& user_data_dir) {
   base::FilePath default_pref_dir =
-      ProfileManager::GetDefaultProfileDir(user_data_dir);
+      profiles::GetDefaultProfileDir(user_data_dir);
   if (create_profile_dir) {
     if (!base::PathExists(default_pref_dir)) {
       if (!file_util::CreateDirectory(default_pref_dir))
         return base::FilePath();
     }
   }
-  return ProfileManager::GetProfilePrefsPath(default_pref_dir);
+  return profiles::GetProfilePrefsPath(default_pref_dir);
 }
 
 // Sets the |items| bitfield according to whether the import data specified by

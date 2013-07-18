@@ -23,6 +23,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_iterator.h"
@@ -151,7 +152,7 @@ GdkPixbuf* GetAvatarIcon(Profile* profile) {
   const ProfileInfoCache& cache =
       g_browser_process->profile_manager()->GetProfileInfoCache();
 
-  if (!ProfileManager::IsMultipleProfilesEnabled() ||
+  if (!profiles::IsMultipleProfilesEnabled() ||
       cache.GetNumberOfProfiles() < 2)
     return NULL;
 

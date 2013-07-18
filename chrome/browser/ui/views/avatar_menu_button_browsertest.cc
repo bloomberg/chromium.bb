@@ -10,6 +10,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/avatar_menu_model.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/avatar_menu_bubble_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -102,7 +103,7 @@ void AvatarMenuButtonTest::StartAvatarMenu() {
 
 
 IN_PROC_BROWSER_TEST_P(AvatarMenuButtonTest, HideOnSecondClick) {
-  if (!ProfileManager::IsMultipleProfilesEnabled() ||
+  if (!profiles::IsMultipleProfilesEnabled() ||
       UsingNewProfileChooser()) {
     return;
   }
@@ -124,7 +125,7 @@ IN_PROC_BROWSER_TEST_P(AvatarMenuButtonTest, HideOnSecondClick) {
 
 
 IN_PROC_BROWSER_TEST_P(AvatarMenuButtonTest, NewSignOut) {
-  if (!ProfileManager::IsMultipleProfilesEnabled() ||
+  if (!profiles::IsMultipleProfilesEnabled() ||
       !UsingNewProfileChooser()) {
     return;
   }

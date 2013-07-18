@@ -11,6 +11,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_base.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -79,7 +80,7 @@ void ManagedUserCreateConfirmHandler::SwitchToProfile(
   if (browser)
     desktop_type = browser->host_desktop_type();
 
-  ProfileManager::FindOrCreateNewWindowForProfile(
+  profiles::FindOrCreateNewWindowForProfile(
       profile,
       chrome::startup::IS_PROCESS_STARTUP,
       chrome::startup::IS_FIRST_RUN,

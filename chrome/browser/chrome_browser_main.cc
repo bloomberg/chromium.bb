@@ -87,6 +87,7 @@
 #include "chrome/browser/process_singleton.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/renderer_host/chrome_render_view_host_observer.h"
 #include "chrome/browser/search_engines/search_engine_type.h"
 #include "chrome/browser/service/service_process_control.h"
@@ -328,7 +329,7 @@ Profile* CreateProfile(const content::MainFunctionParams& parameters,
                        const base::FilePath& user_data_dir,
                        const CommandLine& parsed_command_line) {
   TRACE_EVENT0("startup", "ChromeBrowserMainParts::CreateProfile")
-  if (ProfileManager::IsMultipleProfilesEnabled() &&
+  if (profiles::IsMultipleProfilesEnabled() &&
       parsed_command_line.HasSwitch(switches::kProfileDirectory)) {
     g_browser_process->local_state()->SetString(prefs::kProfileLastUsed,
         parsed_command_line.GetSwitchValueASCII(switches::kProfileDirectory));

@@ -18,6 +18,8 @@
 #include "chrome/browser/profiles/profile_info_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
+#include "chrome/browser/profiles/profile_window.h"
+#include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -51,7 +53,7 @@ void OnProfileCreated(bool always_create,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (status == Profile::CREATE_STATUS_INITIALIZED) {
-    ProfileManager::FindOrCreateNewWindowForProfile(
+    profiles::FindOrCreateNewWindowForProfile(
         profile,
         chrome::startup::IS_NOT_PROCESS_STARTUP,
         chrome::startup::IS_NOT_FIRST_RUN,
@@ -140,7 +142,7 @@ AvatarMenuModel::Item::~Item() {
 }
 
 void AvatarMenuModel::SwitchToProfile(size_t index, bool always_create) {
-  DCHECK(ProfileManager::IsMultipleProfilesEnabled() ||
+  DCHECK(profiles::IsMultipleProfilesEnabled() ||
          index == GetActiveProfileIndex());
   const Item& item = GetItemAt(index);
   base::FilePath path =
@@ -281,11 +283,11 @@ bool AvatarMenuModel::ShouldShowAvatarMenu() {
   if (base::FieldTrialList::FindFullName(kShowProfileSwitcherFieldTrialName) ==
       kAlwaysShowSwitcherGroupName) {
     // We should only be in this group when multi-profiles is enabled.
-    DCHECK(ProfileManager::IsMultipleProfilesEnabled());
+    DCHECK(profiles::IsMultipleProfilesEnabled());
     return true;
   }
-  if (ProfileManager::IsMultipleProfilesEnabled()) {
-    return ProfileManager::IsNewProfileManagementEnabled() ||
+  if (profiles::IsMultipleProfilesEnabled()) {
+    return profiles::IsNewProfileManagementEnabled() ||
            (g_browser_process->profile_manager() &&
             g_browser_process->profile_manager()->GetNumberOfProfiles() > 1);
   }

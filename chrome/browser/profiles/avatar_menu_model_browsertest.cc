@@ -7,6 +7,7 @@
 #include "base/path_service.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_paths.h"
@@ -19,7 +20,7 @@ namespace {
 typedef InProcessBrowserTest AvatarMenuModelTest;
 
 IN_PROC_BROWSER_TEST_F(AvatarMenuModelTest, SignOut) {
-  if (!ProfileManager::IsMultipleProfilesEnabled())
+  if (!profiles::IsMultipleProfilesEnabled())
     return;
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();

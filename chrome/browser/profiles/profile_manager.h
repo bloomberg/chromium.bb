@@ -21,8 +21,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_shortcut_manager.h"
 #include "chrome/browser/ui/browser_list_observer.h"
-#include "chrome/browser/ui/host_desktop.h"
-#include "chrome/browser/ui/startup/startup_types.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -150,33 +148,10 @@ class ProfileManager : public base::NonThreadSafe,
   // Indicate that the import process for |profile| has completed.
   void OnImportFinished(Profile* profile);
 
-  // ------------------ static utility functions -------------------
-
-  // Returns the path to the default profile directory, based on the given
-  // user data directory.
-  static base::FilePath GetDefaultProfileDir(
-      const base::FilePath& user_data_dir);
-
-  // Returns the path to the preferences file given the user profile directory.
-  static base::FilePath GetProfilePrefsPath(const base::FilePath& profile_dir);
-
   // If a profile with the given path is currently managed by this object,
   // return a pointer to the corresponding Profile object;
   // otherwise return NULL.
   Profile* GetProfileByPath(const base::FilePath& path) const;
-
-  // Activates a window for |profile| on the desktop specified by
-  // |desktop_type|. If no such window yet exists, or if |always_create| is
-  // true, this first creates a new window, then activates
-  // that. If activating an exiting window and multiple windows exists then the
-  // window that was most recently active is activated. This is used for
-  // creation of a window from the multi-profile dropdown menu.
-  static void FindOrCreateNewWindowForProfile(
-      Profile* profile,
-      chrome::startup::IsProcessStartup process_startup,
-      chrome::startup::IsFirstRun is_first_run,
-      chrome::HostDesktopType desktop_type,
-      bool always_create);
 
   // Profile::Delegate implementation:
   virtual void OnProfileCreated(Profile* profile,
@@ -205,9 +180,6 @@ class ProfileManager : public base::NonThreadSafe,
   // Returns the full path to be used for guest profiles.
   static base::FilePath GetGuestProfilePath();
 
-  // Register multi-profile related preferences in Local State.
-  static void RegisterPrefs(PrefRegistrySimple* registry);
-
   // Returns a ProfileInfoCache object which can be used to get information
   // about profiles without having to load them from disk.
   ProfileInfoCache& GetProfileInfoCache();
@@ -221,12 +193,6 @@ class ProfileManager : public base::NonThreadSafe,
   // that case the callback will be called when profile creation is complete.
   void ScheduleProfileForDeletion(const base::FilePath& profile_dir,
                                   const CreateCallback& callback);
-
-  // Checks if multiple profiles is enabled.
-  static bool IsMultipleProfilesEnabled();
-
-  // Checks if new profile management is enabled.
-  static bool IsNewProfileManagementEnabled();
 
   // Autoloads profiles if they are running background apps.
   void AutoloadProfiles();

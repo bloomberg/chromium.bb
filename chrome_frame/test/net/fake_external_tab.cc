@@ -39,6 +39,7 @@
 #include "chrome/browser/process_singleton.h"
 #include "chrome/browser/profiles/chrome_browser_main_extra_parts_profiles.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/renderer_host/web_cache_manager.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_content_client.h"
@@ -549,7 +550,7 @@ void FakeExternalTab::InitializePostThreadsCreated() {
                                  views::CreateDesktopScreen());
 #endif
   base::FilePath profile_path(
-      ProfileManager::GetDefaultProfileDir(user_data()));
+      profiles::GetDefaultProfileDir(user_data()));
   Profile* profile =
       g_browser_process->profile_manager()->GetProfile(profile_path);
 }

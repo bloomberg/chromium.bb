@@ -17,6 +17,7 @@
 #include "chrome/browser/search_engines/template_url_service_observer.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "ui/base/models/table_model_observer.h"
 #include "ui/shell_dialogs/select_file_dialog.h"

@@ -22,6 +22,8 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/profiles/profile_shortcut_manager.h"
+#include "chrome/browser/profiles/profile_window.h"
+#include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -66,7 +68,7 @@ void OnNewDefaultProfileCreated(
     Profile* profile,
     Profile::CreateStatus status) {
   if (status == Profile::CREATE_STATUS_INITIALIZED) {
-    ProfileManager::FindOrCreateNewWindowForProfile(
+    profiles::FindOrCreateNewWindowForProfile(
       profile,
       chrome::startup::IS_PROCESS_STARTUP,
       chrome::startup::IS_FIRST_RUN,
@@ -323,7 +325,7 @@ void ManageProfileHandler::SetProfileIconAndName(const ListValue* args) {
 #if defined(ENABLE_SETTINGS_APP)
 void ManageProfileHandler::SwitchAppListProfile(const ListValue* args) {
   DCHECK(args);
-  DCHECK(ProfileManager::IsMultipleProfilesEnabled());
+  DCHECK(profiles::IsMultipleProfilesEnabled());
 
   const Value* file_path_value;
   base::FilePath profile_file_path;

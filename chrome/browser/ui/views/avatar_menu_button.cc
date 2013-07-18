@@ -10,8 +10,8 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/avatar_menu_model.h"
 #include "chrome/browser/profiles/profile_info_util.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
+#include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/avatar_menu_bubble_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -96,7 +96,7 @@ void AvatarMenuButton::ShowAvatarBubble() {
   gfx::Point origin;
   views::View::ConvertPointToScreen(this, &origin);
   gfx::Rect bounds(origin, size());
-  if (ProfileManager::IsNewProfileManagementEnabled()) {
+  if (profiles::IsNewProfileManagementEnabled()) {
     ProfileChooserView::ShowBubble(
         this, views::BubbleBorder::TOP_LEFT,
         views::BubbleBorder::ALIGN_ARROW_TO_MID_ANCHOR, bounds, browser_);

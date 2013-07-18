@@ -78,6 +78,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profile_window.h"
+#include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -1057,8 +1059,7 @@ void TestingAutomationProvider::GetMultiProfileInfo(
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   const ProfileInfoCache& profile_info_cache =
       profile_manager->GetProfileInfoCache();
-  return_value->SetBoolean("enabled",
-      profile_manager->IsMultipleProfilesEnabled());
+  return_value->SetBoolean("enabled", profiles::IsMultipleProfilesEnabled());
 
   ListValue* profiles = new ListValue;
   for (size_t index = 0; index < profile_info_cache.GetNumberOfProfiles();
@@ -1152,7 +1153,7 @@ void TestingAutomationProvider::OpenProfileWindow(
   }
   new BrowserOpenedWithExistingProfileNotificationObserver(
       this, reply_message, num_loads);
-  ProfileManager::FindOrCreateNewWindowForProfile(
+  profiles::FindOrCreateNewWindowForProfile(
       profile,
       chrome::startup::IS_NOT_PROCESS_STARTUP,
       chrome::startup::IS_NOT_FIRST_RUN,

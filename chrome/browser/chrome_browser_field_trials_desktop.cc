@@ -17,7 +17,7 @@
 #include "chrome/browser/gpu/chrome_gpu_util.h"
 #include "chrome/browser/omnibox/omnibox_field_trial.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
-#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/safe_browsing/safe_browsing_blocking_page.h"
 #include "chrome/browser/ui/sync/one_click_signin_helper.h"
 #include "chrome/common/chrome_switches.h"
@@ -78,7 +78,7 @@ void DisableShowProfileSwitcherTrialIfNecessary() {
   avatar_menu_always_hidden = true;
 #endif
   base::FieldTrial* trial = base::FieldTrialList::Find("ShowProfileSwitcher");
-  if (trial && (!ProfileManager::IsMultipleProfilesEnabled() ||
+  if (trial && (!profiles::IsMultipleProfilesEnabled() ||
                 avatar_menu_always_hidden)) {
     trial->Disable();
   }
