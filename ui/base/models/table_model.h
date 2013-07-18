@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/strings/string16.h"
-#include "third_party/icu/public/i18n/unicode/coll.h"
+#include "third_party/icu/source/i18n/unicode/coll.h"
 #include "ui/base/ui_export.h"
 
 namespace gfx {

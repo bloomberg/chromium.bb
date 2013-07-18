@@ -1,6 +1,7 @@
 include_rules = [
   "+skia/ext",
-  "+third_party/icu",
+  "+third_party/icu/source/common/unicode",
+  "+third_party/icu/source/i18n/unicode",
   "+third_party/skia",
   "+ui/aura",
   "+ui/base/text",

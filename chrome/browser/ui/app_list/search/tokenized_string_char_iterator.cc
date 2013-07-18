@@ -6,7 +6,7 @@
 
 #include "base/i18n/char_iterator.h"
 #include "base/logging.h"
-#include "third_party/icu/public/common/unicode/utf16.h"
+#include "third_party/icu/source/common/unicode/utf16.h"
 
 namespace app_list {
 

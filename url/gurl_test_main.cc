@@ -11,8 +11,8 @@
 #include <string>
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/icu/public/common/unicode/putil.h"
-#include "third_party/icu/public/common/unicode/udata.h"
+#include "third_party/icu/source/common/unicode/putil.h"
+#include "third_party/icu/source/common/unicode/udata.h"
 
 #define ICU_UTIL_DATA_SHARED 1
 #define ICU_UTIL_DATA_STATIC 2

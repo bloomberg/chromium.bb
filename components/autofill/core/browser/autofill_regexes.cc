@@ -12,7 +12,7 @@
 #include "base/memory/singleton.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
-#include "third_party/icu/public/i18n/unicode/regex.h"
+#include "third_party/icu/source/i18n/unicode/regex.h"
 
 namespace {
 

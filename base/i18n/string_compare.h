@@ -11,7 +11,7 @@
 
 #include "base/i18n/base_i18n_export.h"
 #include "base/strings/string16.h"
-#include "third_party/icu/public/i18n/unicode/coll.h"
+#include "third_party/icu/source/i18n/unicode/coll.h"
 
 namespace base {
 namespace i18n {

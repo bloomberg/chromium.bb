@@ -14,10 +14,10 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/renderer/spellchecker/spellcheck.h"
-#include "third_party/icu/public/common/unicode/normlzr.h"
-#include "third_party/icu/public/common/unicode/schriter.h"
-#include "third_party/icu/public/common/unicode/uscript.h"
-#include "third_party/icu/public/i18n/unicode/ulocdata.h"
+#include "third_party/icu/source/common/unicode/normlzr.h"
+#include "third_party/icu/source/common/unicode/schriter.h"
+#include "third_party/icu/source/common/unicode/uscript.h"
+#include "third_party/icu/source/i18n/unicode/ulocdata.h"
 
 // SpellcheckCharAttribute implementation:
 

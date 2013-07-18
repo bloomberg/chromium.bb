@@ -38,7 +38,7 @@
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/escape.h"
 #include "net/url_request/url_request_context.h"
-#include "third_party/icu/public/i18n/unicode/regex.h"
+#include "third_party/icu/source/i18n/unicode/regex.h"
 
 using namespace signin_internals_util;
 

@@ -27,7 +27,7 @@
 #include "content/public/browser/notification_service.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/icu/public/i18n/unicode/smpdtfmt.h"
+#include "third_party/icu/source/i18n/unicode/smpdtfmt.h"
 
 namespace {
 

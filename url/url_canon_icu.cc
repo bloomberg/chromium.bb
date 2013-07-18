@@ -8,9 +8,9 @@
 #include <string.h>
 
 #include "base/logging.h"
-#include "third_party/icu/public/common/unicode/ucnv.h"
-#include "third_party/icu/public/common/unicode/ucnv_cb.h"
-#include "third_party/icu/public/common/unicode/uidna.h"
+#include "third_party/icu/source/common/unicode/ucnv.h"
+#include "third_party/icu/source/common/unicode/ucnv_cb.h"
+#include "third_party/icu/source/common/unicode/uidna.h"
 #include "url/url_canon_icu.h"
 #include "url/url_canon_internal.h"  // for _itoa_s
 

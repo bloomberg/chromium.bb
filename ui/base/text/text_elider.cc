@@ -24,8 +24,8 @@
 #include "net/base/escape.h"
 #include "net/base/net_util.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
-#include "third_party/icu/public/common/unicode/rbbi.h"
-#include "third_party/icu/public/common/unicode/uloc.h"
+#include "third_party/icu/source/common/unicode/rbbi.h"
+#include "third_party/icu/source/common/unicode/uloc.h"
 #include "ui/gfx/font.h"
 #include "url/gurl.h"
 

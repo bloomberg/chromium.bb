@@ -16,8 +16,8 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "third_party/icu/public/common/unicode/uniset.h"
-#include "third_party/icu/public/i18n/unicode/coll.h"
+#include "third_party/icu/source/common/unicode/uniset.h"
+#include "third_party/icu/source/i18n/unicode/coll.h"
 
 namespace {
 

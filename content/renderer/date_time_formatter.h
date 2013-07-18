@@ -9,8 +9,8 @@
 
 #include "base/basictypes.h"
 #include "content/common/content_export.h"
-#include "third_party/icu/public/common/unicode/unistr.h"
-#include "third_party/icu/public/i18n/unicode/gregocal.h"
+#include "third_party/icu/source/common/unicode/unistr.h"
+#include "third_party/icu/source/i18n/unicode/gregocal.h"
 #include "ui/base/ime/text_input_type.h"
 
 namespace WebKit {

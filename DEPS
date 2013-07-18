@@ -77,7 +77,7 @@ deps = {
     Var("webkit_trunk") + "@" + Var("webkit_revision"),
 
   "src/third_party/icu":
-    "/trunk/deps/third_party/icu46@210659",
+    "/trunk/deps/third_party/icu46@211851",
 
   "src/third_party/libexif/sources":
     "/trunk/deps/third_party/libexif/sources@146817",
@@ -512,7 +512,8 @@ include_rules = [
   "+library_loaders",
 
   "+testing",
-  "+third_party/icu/public",
+  "+third_party/icu/source/common/unicode",
+  "+third_party/icu/source/i18n/unicode",
   "+url",
   # TODO(tfarina): Temporary, until we finish the migration to url. Remove this!
   "!googleurl",

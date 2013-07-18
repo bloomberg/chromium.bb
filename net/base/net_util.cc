@@ -68,13 +68,13 @@
 #include "net/base/winsock_init.h"
 #endif
 #include "net/http/http_content_disposition.h"
-#include "third_party/icu/public/common/unicode/uidna.h"
-#include "third_party/icu/public/common/unicode/uniset.h"
-#include "third_party/icu/public/common/unicode/uscript.h"
-#include "third_party/icu/public/common/unicode/uset.h"
-#include "third_party/icu/public/i18n/unicode/datefmt.h"
-#include "third_party/icu/public/i18n/unicode/regex.h"
-#include "third_party/icu/public/i18n/unicode/ulocdata.h"
+#include "third_party/icu/source/common/unicode/uidna.h"
+#include "third_party/icu/source/common/unicode/uniset.h"
+#include "third_party/icu/source/common/unicode/uscript.h"
+#include "third_party/icu/source/common/unicode/uset.h"
+#include "third_party/icu/source/i18n/unicode/datefmt.h"
+#include "third_party/icu/source/i18n/unicode/regex.h"
+#include "third_party/icu/source/i18n/unicode/ulocdata.h"
 
 using base::Time;
 

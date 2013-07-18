@@ -8,7 +8,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/icu/public/common/unicode/uversion.h"
+#include "third_party/icu/source/common/unicode/uversion.h"
 
 namespace base {
 namespace {

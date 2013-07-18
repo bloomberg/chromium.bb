@@ -5,7 +5,7 @@
 #include "base/i18n/string_search.h"
 #include "base/logging.h"
 
-#include "third_party/icu/public/i18n/unicode/usearch.h"
+#include "third_party/icu/source/i18n/unicode/usearch.h"
 
 namespace base {
 namespace i18n {

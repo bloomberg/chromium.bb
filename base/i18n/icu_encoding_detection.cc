@@ -7,7 +7,7 @@
 #include <set>
 
 #include "base/strings/string_util.h"
-#include "third_party/icu/public/i18n/unicode/ucsdet.h"
+#include "third_party/icu/source/i18n/unicode/ucsdet.h"
 
 namespace base {
 

@@ -15,7 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "grit/app_locale_settings.h"
 #include "grit/ui_strings.h"
-#include "third_party/icu/public/common/unicode/uchar.h"
+#include "third_party/icu/source/common/unicode/uchar.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/dragdrop/drag_drop_types.h"

@@ -11,9 +11,9 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "third_party/icu/public/common/unicode/brkiter.h"
-#include "third_party/icu/public/common/unicode/utext.h"
-#include "third_party/icu/public/common/unicode/utf8.h"
+#include "third_party/icu/source/common/unicode/brkiter.h"
+#include "third_party/icu/source/common/unicode/utext.h"
+#include "third_party/icu/source/common/unicode/utf8.h"
 
 namespace {
 

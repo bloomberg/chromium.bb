@@ -5,7 +5,7 @@
 #include <errno.h>
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/icu/public/common/unicode/ucnv.h"
+#include "third_party/icu/source/common/unicode/ucnv.h"
 #include "url/url_canon.h"
 #include "url/url_canon_icu.h"
 #include "url/url_canon_internal.h"

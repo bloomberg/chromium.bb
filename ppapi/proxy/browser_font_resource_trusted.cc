@@ -20,7 +20,7 @@
 #include "third_party/WebKit/public/web/WebFont.h"
 #include "third_party/WebKit/public/web/WebFontDescription.h"
 #include "third_party/WebKit/public/web/WebTextRun.h"
-#include "third_party/icu/public/common/unicode/ubidi.h"
+#include "third_party/icu/source/common/unicode/ubidi.h"
 #include "third_party/skia/include/core/SkRect.h"
 
 using ppapi::StringVar;

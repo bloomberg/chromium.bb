@@ -11,7 +11,7 @@
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "jni/LocalizationUtils_jni.h"
-#include "third_party/icu/public/common/unicode/uloc.h"
+#include "third_party/icu/source/common/unicode/uloc.h"
 
 namespace l10n_util {
 

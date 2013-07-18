@@ -26,8 +26,8 @@
 #include "components/autofill/core/common/form_field_data.h"
 #include "grit/component_strings.h"
 #include "grit/webkit_resources.h"
-#include "third_party/icu/public/common/unicode/uloc.h"
-#include "third_party/icu/public/i18n/unicode/dtfmtsym.h"
+#include "third_party/icu/source/common/unicode/uloc.h"
+#include "third_party/icu/source/i18n/unicode/dtfmtsym.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace autofill {

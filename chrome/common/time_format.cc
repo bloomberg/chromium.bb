@@ -15,11 +15,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "grit/generated_resources.h"
-#include "third_party/icu/public/common/unicode/locid.h"
-#include "third_party/icu/public/i18n/unicode/datefmt.h"
-#include "third_party/icu/public/i18n/unicode/plurfmt.h"
-#include "third_party/icu/public/i18n/unicode/plurrule.h"
-#include "third_party/icu/public/i18n/unicode/smpdtfmt.h"
+#include "third_party/icu/source/common/unicode/locid.h"
+#include "third_party/icu/source/i18n/unicode/datefmt.h"
+#include "third_party/icu/source/i18n/unicode/plurfmt.h"
+#include "third_party/icu/source/i18n/unicode/plurrule.h"
+#include "third_party/icu/source/i18n/unicode/smpdtfmt.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using base::Time;

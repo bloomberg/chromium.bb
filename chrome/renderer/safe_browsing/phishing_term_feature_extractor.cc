@@ -19,7 +19,7 @@
 #include "chrome/renderer/safe_browsing/features.h"
 #include "chrome/renderer/safe_browsing/murmurhash3_util.h"
 #include "crypto/sha2.h"
-#include "third_party/icu/public/common/unicode/ubrk.h"
+#include "third_party/icu/source/common/unicode/ubrk.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace safe_browsing {

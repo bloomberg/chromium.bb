@@ -15,7 +15,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/generated_resources.h"
-#include "third_party/icu/public/common/unicode/ucnv.h"
+#include "third_party/icu/source/common/unicode/ucnv.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_collator.h"
 

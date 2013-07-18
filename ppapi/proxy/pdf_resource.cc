@@ -14,7 +14,7 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppb_image_data_proxy.h"
 #include "ppapi/shared_impl/var.h"
-#include "third_party/icu/public/i18n/unicode/usearch.h"
+#include "third_party/icu/source/i18n/unicode/usearch.h"
 
 namespace ppapi {
 namespace proxy {

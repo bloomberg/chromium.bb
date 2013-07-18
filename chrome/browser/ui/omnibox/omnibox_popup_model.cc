@@ -16,7 +16,7 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model_observer.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_view.h"
-#include "third_party/icu/public/common/unicode/ubidi.h"
+#include "third_party/icu/source/common/unicode/ubidi.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/rect.h"
 

@@ -77,7 +77,8 @@ include_rules = [
   "+third_party/cld",
   "+third_party/expat",
   "+third_party/iaccessible2",
-  "+third_party/icu",
+  "+third_party/icu/source/common/unicode",
+  "+third_party/icu/source/i18n/unicode",
   "+third_party/isimpledom",
   "+third_party/leveldatabase",
   "+third_party/libevent",  # For the remote V8 debugging server

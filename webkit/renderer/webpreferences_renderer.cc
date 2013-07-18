@@ -12,8 +12,8 @@
 #include "third_party/WebKit/public/web/WebView.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
-#include "third_party/icu/public/common/unicode/uchar.h"
-#include "third_party/icu/public/common/unicode/uscript.h"
+#include "third_party/icu/source/common/unicode/uchar.h"
+#include "third_party/icu/source/common/unicode/uscript.h"
 #include "webkit/common/webpreferences.h"
 
 using WebKit::WebNetworkStateNotifier;

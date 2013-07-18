@@ -18,8 +18,8 @@
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
-#include "third_party/icu/public/common/unicode/putil.h"
-#include "third_party/icu/public/common/unicode/udata.h"
+#include "third_party/icu/source/common/unicode/putil.h"
+#include "third_party/icu/source/common/unicode/udata.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/foundation_util.h"
