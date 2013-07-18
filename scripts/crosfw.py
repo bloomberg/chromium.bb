@@ -59,14 +59,14 @@ For an incremental build (faster), run with -i
 To get faster clean builds, install ccache, and create ~/.crosfwrc with
 this line:
 
- use_ccache = True
+ USE_CCACHE = True
 
 (make sure ~/.ccache is not on NFS, or set CCACHE_DIR)
 
 Other options are the default board to build, and verbosity (0-4), e.g.:
 
- default_board = 'daisy'
- verbose = 1
+ DEFAULT_BOARD = 'daisy'
+ VERBOSE = 1
 
 It is possible to use multiple servo boards, each on its own port. Add
 these lines to your ~/.crosfwrc to set the servo port to use for each
