@@ -265,7 +265,6 @@ class WebPluginDelegateProxy
   gfx::Rect clip_rect_;
 
   NPObject* npobject_;
-  base::WeakPtr<NPObjectStub> window_script_object_;
 
   // Dummy NPP used to uniquely identify this plugin.
   scoped_ptr<NPP_t> npp_;
