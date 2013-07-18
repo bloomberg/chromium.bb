@@ -1,9 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_UTILITY_IMPORTER_FIREFOX3_IMPORTER_H_
-#define CHROME_UTILITY_IMPORTER_FIREFOX3_IMPORTER_H_
+#ifndef CHROME_UTILITY_IMPORTER_FIREFOX_IMPORTER_H_
+#define CHROME_UTILITY_IMPORTER_FIREFOX_IMPORTER_H_
 
 #include <map>
 #include <set>
@@ -23,11 +23,11 @@ class Connection;
 }
 
 // Importer for Mozilla Firefox 3 and later.
-// Firefox 3 stores its persistent information in a new system called places.
+// Firefox stores its persistent information in a system called places.
 // http://wiki.mozilla.org/Places
-class Firefox3Importer : public Importer {
+class FirefoxImporter : public Importer {
  public:
-  Firefox3Importer();
+  FirefoxImporter();
 
   // Importer:
   virtual void StartImport(const importer::SourceProfile& source_profile,
@@ -37,7 +37,7 @@ class Firefox3Importer : public Importer {
  private:
   typedef std::map<int64, std::set<GURL> > FaviconMap;
 
-  virtual ~Firefox3Importer();
+  virtual ~FirefoxImporter();
 
   void ImportBookmarks();
   void ImportPasswords();
@@ -83,7 +83,7 @@ class Firefox3Importer : public Importer {
   std::string locale_;
 #endif
 
-  DISALLOW_COPY_AND_ASSIGN(Firefox3Importer);
+  DISALLOW_COPY_AND_ASSIGN(FirefoxImporter);
 };
 
-#endif  // CHROME_UTILITY_IMPORTER_FIREFOX3_IMPORTER_H_
+#endif  // CHROME_UTILITY_IMPORTER_FIREFOX_IMPORTER_H_

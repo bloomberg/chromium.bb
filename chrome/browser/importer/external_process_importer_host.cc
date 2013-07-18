@@ -171,7 +171,7 @@ void ExternalProcessImporterHost::OnImportLockDialogEnd(bool is_continue) {
 
 bool ExternalProcessImporterHost::CheckForFirefoxLock(
     const importer::SourceProfile& source_profile) {
-  if (source_profile.importer_type != importer::TYPE_FIREFOX3)
+  if (source_profile.importer_type != importer::TYPE_FIREFOX)
     return true;
 
   DCHECK(!firefox_lock_.get());

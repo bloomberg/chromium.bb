@@ -55,7 +55,7 @@ void DetectSafariProfiles(std::vector<importer::SourceProfile*>* profiles) {
 #endif  // defined(OS_MACOSX)
 
 // |locale|: The application locale used for lookups in Firefox's
-// locale-specific search engines feature (see firefox3_importer.cc for
+// locale-specific search engines feature (see firefox_importer.cc for
 // details).
 void DetectFirefoxProfiles(const std::string locale,
                            std::vector<importer::SourceProfile*>* profiles) {
@@ -74,7 +74,7 @@ void DetectFirefoxProfiles(const std::string locale,
     GetFirefoxVersionAndPathFromProfile(profile_path, &version, &app_path);
 
   if (version >= 3) {
-    firefox_type = importer::TYPE_FIREFOX3;
+    firefox_type = importer::TYPE_FIREFOX;
   } else {
     // Ignores old versions of firefox.
     return;

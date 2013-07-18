@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "chrome/utility/importer/bookmarks_file_importer.h"
-#include "chrome/utility/importer/firefox3_importer.h"
+#include "chrome/utility/importer/firefox_importer.h"
 
 #if defined(OS_WIN)
 #include "chrome/utility/importer/ie_importer_win.h"
@@ -29,8 +29,8 @@ Importer* CreateImporterByType(ImporterType type) {
 #endif
     case TYPE_BOOKMARKS_FILE:
       return new BookmarksFileImporter();
-    case TYPE_FIREFOX3:
-      return new Firefox3Importer();
+    case TYPE_FIREFOX:
+      return new FirefoxImporter();
 #if defined(OS_MACOSX)
     case TYPE_SAFARI:
       return new SafariImporter(base::mac::GetUserLibraryPath());

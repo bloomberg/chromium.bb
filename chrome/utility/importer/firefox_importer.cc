@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/utility/importer/firefox3_importer.h"
+#include "chrome/utility/importer/firefox_importer.h"
 
 #include <set>
 
@@ -61,7 +61,7 @@ void LoadDefaultBookmarks(const base::FilePath& app_path,
 
 }  // namespace
 
-struct Firefox3Importer::BookmarkItem {
+struct FirefoxImporter::BookmarkItem {
   int parent;
   int id;
   GURL url;
@@ -73,13 +73,13 @@ struct Firefox3Importer::BookmarkItem {
   bool empty_folder;
 };
 
-Firefox3Importer::Firefox3Importer() {
+FirefoxImporter::FirefoxImporter() {
 }
 
-Firefox3Importer::~Firefox3Importer() {
+FirefoxImporter::~FirefoxImporter() {
 }
 
-void Firefox3Importer::StartImport(
+void FirefoxImporter::StartImport(
     const importer::SourceProfile& source_profile,
     uint16 items,
     ImporterBridge* bridge) {
@@ -126,7 +126,7 @@ void Firefox3Importer::StartImport(
   bridge_->NotifyEnded();
 }
 
-void Firefox3Importer::ImportHistory() {
+void FirefoxImporter::ImportHistory() {
   base::FilePath file = source_path_.AppendASCII("places.sqlite");
   if (!base::PathExists(file))
     return;
@@ -170,7 +170,7 @@ void Firefox3Importer::ImportHistory() {
     bridge_->SetHistoryItems(rows, importer::VISIT_SOURCE_FIREFOX_IMPORTED);
 }
 
-void Firefox3Importer::ImportBookmarks() {
+void FirefoxImporter::ImportBookmarks() {
   base::FilePath file = source_path_.AppendASCII("places.sqlite");
   if (!base::PathExists(file))
     return;
@@ -319,7 +319,7 @@ void Firefox3Importer::ImportBookmarks() {
   }
 }
 
-void Firefox3Importer::ImportPasswords() {
+void FirefoxImporter::ImportPasswords() {
   // Initializes NSS3.
   NSSDecryptor decryptor;
   if (!decryptor.Init(source_path_, source_path_) &&
@@ -351,21 +351,21 @@ void Firefox3Importer::ImportPasswords() {
   }
 }
 
-void Firefox3Importer::ImportSearchEngines() {
+void FirefoxImporter::ImportSearchEngines() {
   std::vector<std::string> search_engine_data;
   GetSearchEnginesXMLData(&search_engine_data);
 
   bridge_->SetFirefoxSearchEnginesXMLData(search_engine_data);
 }
 
-void Firefox3Importer::ImportHomepage() {
+void FirefoxImporter::ImportHomepage() {
   GURL home_page = GetHomepage(source_path_);
   if (home_page.is_valid() && !IsDefaultHomepage(home_page, app_path_)) {
     bridge_->AddHomePage(home_page);
   }
 }
 
-void Firefox3Importer::GetSearchEnginesXMLData(
+void FirefoxImporter::GetSearchEnginesXMLData(
     std::vector<std::string>* search_engine_data) {
   base::FilePath file = source_path_.AppendASCII("search.sqlite");
   if (!base::PathExists(file))
@@ -420,7 +420,7 @@ void Firefox3Importer::GetSearchEnginesXMLData(
   }
 
 #if defined(OS_POSIX)
-  // Ubuntu-flavored Firefox3 supports locale-specific search engines via
+  // Ubuntu-flavored Firefox supports locale-specific search engines via
   // locale-named subdirectories. They fall back to en-US.
   // See http://crbug.com/53899
   // TODO(jshin): we need to make sure our locale code matches that of
@@ -444,7 +444,7 @@ void Firefox3Importer::GetSearchEnginesXMLData(
   }
 }
 
-void Firefox3Importer::LoadRootNodeID(sql::Connection* db,
+void FirefoxImporter::LoadRootNodeID(sql::Connection* db,
                                       int* toolbar_folder_id,
                                       int* menu_folder_id,
                                       int* unsorted_folder_id) {
@@ -467,7 +467,7 @@ void Firefox3Importer::LoadRootNodeID(sql::Connection* db,
   }
 }
 
-void Firefox3Importer::LoadLivemarkIDs(sql::Connection* db,
+void FirefoxImporter::LoadLivemarkIDs(sql::Connection* db,
                                        std::set<int>* livemark) {
   static const char* kFeedAnnotation = "livemark/feedURI";
   livemark->clear();
@@ -483,7 +483,7 @@ void Firefox3Importer::LoadLivemarkIDs(sql::Connection* db,
     livemark->insert(s.ColumnInt(0));
 }
 
-void Firefox3Importer::GetTopBookmarkFolder(sql::Connection* db,
+void FirefoxImporter::GetTopBookmarkFolder(sql::Connection* db,
                                             int folder_id,
                                             BookmarkList* list) {
   const char* query = "SELECT b.title "
@@ -505,7 +505,7 @@ void Firefox3Importer::GetTopBookmarkFolder(sql::Connection* db,
   }
 }
 
-void Firefox3Importer::GetWholeBookmarkFolder(sql::Connection* db,
+void FirefoxImporter::GetWholeBookmarkFolder(sql::Connection* db,
                                               BookmarkList* list,
                                               size_t position,
                                               bool* empty_folder) {
@@ -552,7 +552,7 @@ void Firefox3Importer::GetWholeBookmarkFolder(sql::Connection* db,
   }
 }
 
-void Firefox3Importer::LoadFavicons(
+void FirefoxImporter::LoadFavicons(
     sql::Connection* db,
     const FaviconMap& favicon_map,
     std::vector<ImportedFaviconUsage>* favicons) {

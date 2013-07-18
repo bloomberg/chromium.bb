@@ -50,7 +50,7 @@ struct KeywordInfo {
   const char* url;
 };
 
-const BookmarkInfo kFirefox3Bookmarks[] = {
+const BookmarkInfo kFirefoxBookmarks[] = {
   {true, 1, {L"Bookmarks Toolbar"},
     L"Toolbar",
     "http://site/"},
@@ -59,14 +59,14 @@ const BookmarkInfo kFirefox3Bookmarks[] = {
     "http://www.google.com/"},
 };
 
-const PasswordInfo kFirefox3Passwords[] = {
+const PasswordInfo kFirefoxPasswords[] = {
   {"http://localhost:8080/", "http://localhost:8080/", "http://localhost:8080/",
     L"loginuser", L"abc", L"loginpass", L"123", false},
   {"http://localhost:8080/", "", "http://localhost:8080/localhost",
     L"", L"http", L"", L"Http1+1abcdefg", false},
 };
 
-const KeywordInfo kFirefox3Keywords[] = {
+const KeywordInfo kFirefoxKeywords[] = {
   { L"amazon.com",
     "http://www.amazon.com/exec/obidos/external-search/?field-keywords="
     "{searchTerms}&mode=blended" },
@@ -94,17 +94,17 @@ const KeywordInfo kFirefox3Keywords[] = {
   { L"\x4E2D\x6587", "http://www.google.com/" },
 };
 
-const int kDefaultFirefox3KeywordIndex = 8;
+const int kDefaultFirefoxKeywordIndex = 8;
 
-class Firefox3Observer : public ProfileWriter,
-                         public importer::ImporterProgressObserver {
+class FirefoxObserver : public ProfileWriter,
+                        public importer::ImporterProgressObserver {
  public:
-  Firefox3Observer()
+  FirefoxObserver()
       : ProfileWriter(NULL), bookmark_count_(0), history_count_(0),
         password_count_(0), keyword_count_(0), import_search_engines_(true) {
   }
 
-  explicit Firefox3Observer(bool import_search_engines)
+  explicit FirefoxObserver(bool import_search_engines)
       : ProfileWriter(NULL), bookmark_count_(0), history_count_(0),
         password_count_(0), keyword_count_(0),
         import_search_engines_(import_search_engines) {
@@ -116,11 +116,11 @@ class Firefox3Observer : public ProfileWriter,
   virtual void ImportItemEnded(importer::ImportItem item) OVERRIDE {}
   virtual void ImportEnded() OVERRIDE {
     base::MessageLoop::current()->Quit();
-    EXPECT_EQ(arraysize(kFirefox3Bookmarks), bookmark_count_);
+    EXPECT_EQ(arraysize(kFirefoxBookmarks), bookmark_count_);
     EXPECT_EQ(1U, history_count_);
-    EXPECT_EQ(arraysize(kFirefox3Passwords), password_count_);
+    EXPECT_EQ(arraysize(kFirefoxPasswords), password_count_);
     if (import_search_engines_)
-      EXPECT_EQ(arraysize(kFirefox3Keywords), keyword_count_);
+      EXPECT_EQ(arraysize(kFirefoxKeywords), keyword_count_);
   }
 
   virtual bool BookmarkModelIsLoaded() const OVERRIDE {
@@ -133,7 +133,7 @@ class Firefox3Observer : public ProfileWriter,
   }
 
   virtual void AddPasswordForm(const content::PasswordForm& form) OVERRIDE {
-    PasswordInfo p = kFirefox3Passwords[password_count_];
+    PasswordInfo p = kFirefoxPasswords[password_count_];
     EXPECT_EQ(p.origin, form.origin.spec());
     EXPECT_EQ(p.realm, form.signon_realm);
     EXPECT_EQ(p.action, form.action.spec());
@@ -161,14 +161,13 @@ class Firefox3Observer : public ProfileWriter,
 
   virtual void AddBookmarks(const std::vector<ImportedBookmarkEntry>& bookmarks,
                             const string16& top_level_folder_name) OVERRIDE {
-    ASSERT_LE(bookmark_count_ + bookmarks.size(),
-              arraysize(kFirefox3Bookmarks));
+    ASSERT_LE(bookmark_count_ + bookmarks.size(), arraysize(kFirefoxBookmarks));
     // Importer should import the FF favorites the same as the list, in the same
     // order.
     for (size_t i = 0; i < bookmarks.size(); ++i) {
       EXPECT_NO_FATAL_FAILURE(
           TestEqualBookmarkEntry(bookmarks[i],
-                                 kFirefox3Bookmarks[bookmark_count_])) << i;
+                                 kFirefoxBookmarks[bookmark_count_])) << i;
       ++bookmark_count_;
     }
   }
@@ -180,10 +179,10 @@ class Firefox3Observer : public ProfileWriter,
       // that template URL.
       bool found = false;
       string16 keyword = template_urls[i]->keyword();
-      for (size_t j = 0; j < arraysize(kFirefox3Keywords); ++j) {
+      for (size_t j = 0; j < arraysize(kFirefoxKeywords); ++j) {
         if (template_urls[i]->keyword() ==
-            WideToUTF16Hack(kFirefox3Keywords[j].keyword)) {
-          EXPECT_EQ(kFirefox3Keywords[j].url, template_urls[i]->url());
+                WideToUTF16Hack(kFirefoxKeywords[j].keyword)) {
+          EXPECT_EQ(kFirefoxKeywords[j].url, template_urls[i]->url());
           found = true;
           break;
         }
@@ -198,7 +197,7 @@ class Firefox3Observer : public ProfileWriter,
   }
 
  private:
-  virtual ~Firefox3Observer() {}
+  virtual ~FirefoxObserver() {}
 
   size_t bookmark_count_;
   size_t history_count_;
@@ -256,7 +255,7 @@ class FirefoxProfileImporterBrowserTest : public InProcessBrowserTest {
     }
 
     importer::SourceProfile source_profile;
-    source_profile.importer_type = importer::TYPE_FIREFOX3;
+    source_profile.importer_type = importer::TYPE_FIREFOX;
     source_profile.app_path = app_path_;
     source_profile.source_path = profile_path_;
     source_profile.locale = "en-US";
@@ -282,7 +281,7 @@ class FirefoxProfileImporterBrowserTest : public InProcessBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(FirefoxProfileImporterBrowserTest,
                        MAYBE_IMPORTER(Firefox30Importer)) {
-  scoped_refptr<Firefox3Observer> observer(new Firefox3Observer());
+  scoped_refptr<FirefoxObserver> observer(new FirefoxObserver());
   Firefox3xImporterBrowserTest("firefox3_profile", observer.get(),
                                observer.get(), true);
 }
@@ -290,8 +289,8 @@ IN_PROC_BROWSER_TEST_F(FirefoxProfileImporterBrowserTest,
 IN_PROC_BROWSER_TEST_F(FirefoxProfileImporterBrowserTest,
                        MAYBE_IMPORTER(Firefox35Importer)) {
   bool import_search_engines = false;
-  scoped_refptr<Firefox3Observer> observer(
-      new Firefox3Observer(import_search_engines));
+  scoped_refptr<FirefoxObserver> observer(
+      new FirefoxObserver(import_search_engines));
   Firefox3xImporterBrowserTest("firefox35_profile", observer.get(),
                                observer.get(), import_search_engines);
 }

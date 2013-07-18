@@ -42,7 +42,7 @@ void LogImporterUseToMetrics(const std::string& metric_postfix,
       metrics_type = IMPORTER_METRICS_IE;
       break;
 #endif
-    case TYPE_FIREFOX3:
+    case TYPE_FIREFOX:
       metrics_type = IMPORTER_METRICS_FIREFOX3;
       break;
 #if defined(OS_MACOSX)
