@@ -25,9 +25,6 @@ class DirectSettingFunctionBase : public SyncExtensionFunction {
   // Returns true if the caller is a component extension.
   bool IsCalledFromComponentExtension();
 
-  // Returns true if the preference is on the whitelist.
-  bool IsPreferenceOnWhitelist(const std::string& pref_key);
-
  private:
   DISALLOW_COPY_AND_ASSIGN(DirectSettingFunctionBase);
 };

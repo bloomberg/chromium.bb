@@ -5,38 +5,15 @@
 #include "chrome/browser/extensions/api/preference/chrome_direct_setting.h"
 
 #include "base/containers/hash_tables.h"
+#include "base/lazy_instance.h"
 #include "base/prefs/pref_service.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/api/preference/chrome_direct_setting_api.h"
 #include "chrome/browser/extensions/api/preference/preference_api_constants.h"
 #include "chrome/browser/profiles/profile.h"
 
 namespace extensions {
 namespace chromedirectsetting {
-
-namespace {
-
-class PreferenceWhitelist {
- public:
-  PreferenceWhitelist() {
-    whitelist_.insert("googlegeolocationaccess.enabled");
-  }
-
-  ~PreferenceWhitelist() {}
-
-  bool IsPreferenceOnWhitelist(const std::string& pref_key){
-    return whitelist_.find(pref_key) != whitelist_.end();
-  }
-
- private:
-  base::hash_set<std::string> whitelist_;
-
-  DISALLOW_COPY_AND_ASSIGN(PreferenceWhitelist);
-};
-
-static base::LazyInstance<PreferenceWhitelist> preference_whitelist_ =
-    LAZY_INSTANCE_INITIALIZER;
-
-}  // namespace
 
 DirectSettingFunctionBase::DirectSettingFunctionBase() {}
 
@@ -50,11 +27,6 @@ bool DirectSettingFunctionBase::IsCalledFromComponentExtension() {
   return GetExtension()->location() == Manifest::COMPONENT;
 }
 
-bool DirectSettingFunctionBase::IsPreferenceOnWhitelist(
-    const std::string& pref_key) {
-  return preference_whitelist_.Get().IsPreferenceOnWhitelist(pref_key);
-}
-
 GetDirectSettingFunction::GetDirectSettingFunction() {}
 
 bool GetDirectSettingFunction::RunImpl() {
@@ -62,7 +34,8 @@ bool GetDirectSettingFunction::RunImpl() {
 
   std::string pref_key;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &pref_key));
-  EXTENSION_FUNCTION_VALIDATE(IsPreferenceOnWhitelist(pref_key));
+  EXTENSION_FUNCTION_VALIDATE(
+    ChromeDirectSettingAPI::Get(profile())->IsPreferenceOnWhitelist(pref_key));
 
   const PrefService::Preference* preference =
       GetPrefService()->FindPreference(pref_key.c_str());
@@ -85,7 +58,8 @@ bool SetDirectSettingFunction::RunImpl() {
 
   std::string pref_key;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &pref_key));
-  EXTENSION_FUNCTION_VALIDATE(IsPreferenceOnWhitelist(pref_key));
+  EXTENSION_FUNCTION_VALIDATE(
+    ChromeDirectSettingAPI::Get(profile())->IsPreferenceOnWhitelist(pref_key));
 
   DictionaryValue* details = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(1, &details));
@@ -115,7 +89,8 @@ bool ClearDirectSettingFunction::RunImpl() {
 
   std::string pref_key;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &pref_key));
-  EXTENSION_FUNCTION_VALIDATE(IsPreferenceOnWhitelist(pref_key));
+  EXTENSION_FUNCTION_VALIDATE(
+    ChromeDirectSettingAPI::Get(profile())->IsPreferenceOnWhitelist(pref_key));
   GetPrefService()->ClearPref(pref_key.c_str());
 
   return true;
