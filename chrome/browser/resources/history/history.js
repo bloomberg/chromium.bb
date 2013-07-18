@@ -162,6 +162,7 @@ Visit.prototype.getResultDOM = function(propertyBag) {
     // Clicking anywhere in the entryBox will check/uncheck the checkbox.
     entryBox.setAttribute('for', checkbox.id);
     entryBox.addEventListener('mousedown', entryBoxMousedown);
+    entryBox.addEventListener('click', entryBoxClick);
   }
 
   // Keep track of the drop down that triggered the menu, so we know
@@ -1693,11 +1694,20 @@ function removeItems() {
  * @param {Event} e The click event.
  */
 function checkboxClicked(e) {
-  var checkbox = e.currentTarget;
+  handleCheckboxStateChange(e.currentTarget, e.shiftKey);
+}
+
+/**
+ * Post-process of checkbox state change. This handles range selection and
+ * updates internal state.
+ * @param {!HTMLInputElement} checkbox Clicked checkbox.
+ * @param {boolean} shiftKey true if shift key is pressed.
+ */
+function handleCheckboxStateChange(checkbox, shiftKey) {
   updateParentCheckbox(checkbox);
   var id = Number(checkbox.id.slice('checkbox-'.length));
   // Handle multi-select if shift was pressed.
-  if (event.shiftKey && (selectionAnchor != -1)) {
+  if (shiftKey && (selectionAnchor != -1)) {
     var checked = checkbox.checked;
     // Set all checkboxes from the anchor up to the clicked checkbox to the
     // state of the clicked one.
@@ -1756,6 +1766,21 @@ function entryBoxMousedown(event) {
   if (event.shiftKey) {
     event.preventDefault();
   }
+}
+
+/**
+ * Handle click event for entryBox labels.
+ * @param {!MouseEvent} event A click event.
+ */
+function entryBoxClick(event) {
+  var tagName = event.target.tagName;
+  if (tagName == 'BUTTON' || tagName == 'INPUT' || tagName == 'A')
+    return;
+  var checkbox = event.currentTarget.control;
+  checkbox.checked = !checkbox.checked;
+  handleCheckboxStateChange(checkbox, event.shiftKey);
+  // We don't want to focus on the checkbox.
+  event.preventDefault();
 }
 
 // This is pulled out so we can wait for it in tests.
