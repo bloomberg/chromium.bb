@@ -95,7 +95,7 @@ public:
     int length() const { return m_textLength; }
     const UChar* bloatedCharacters() const { return m_textCharacters ? m_textCharacters : m_text.bloatedCharacters() + startOffset(); }
     UChar characterAt(unsigned index) const;
-    void appendTextToStringBuilder(StringBuilder&) const;
+    void appendTextToStringBuilder(StringBuilder&, unsigned maxLength = UINT_MAX) const;
     
     PassRefPtr<Range> range() const;
     Node* node() const;

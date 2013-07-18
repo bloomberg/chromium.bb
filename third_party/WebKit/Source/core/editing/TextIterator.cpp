@@ -431,12 +431,13 @@ UChar TextIterator::characterAt(unsigned index) const
     return m_textCharacters[index];
 }
 
-void TextIterator::appendTextToStringBuilder(StringBuilder& builder) const
+void TextIterator::appendTextToStringBuilder(StringBuilder& builder, unsigned maxLenth) const
 {
+    unsigned lengthToAppend = std::min(static_cast<unsigned>(length()), maxLenth);
     if (!m_textCharacters)
-        builder.append(string(), startOffset(), length());
+        builder.append(string(), startOffset(), lengthToAppend);
     else
-        builder.append(bloatedCharacters(), length());
+        builder.append(bloatedCharacters(), lengthToAppend);
 }
 
 bool TextIterator::handleTextNode()
