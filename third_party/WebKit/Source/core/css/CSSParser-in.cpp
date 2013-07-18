@@ -9973,9 +9973,6 @@ inline void CSSParser::detectDashToken(int length)
         CASE("webkit-max") {
             m_token = MAXFUNCTION;
         }
-        CASE("webkit-var") {
-            m_token = VARFUNCTION;
-        }
         CASE("webkit-calc") {
             m_token = CALCFUNCTION;
         }
