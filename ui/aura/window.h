@@ -245,6 +245,10 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
     hit_test_bounds_override_outer_touch_ = touch_insets;
   }
 
+  gfx::Insets hit_test_bounds_override_outer_touch() const {
+    return hit_test_bounds_override_outer_touch_;
+  }
+
   gfx::Insets hit_test_bounds_override_outer_mouse() const {
     return hit_test_bounds_override_outer_mouse_;
   }

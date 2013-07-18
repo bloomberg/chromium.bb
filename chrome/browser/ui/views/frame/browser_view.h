@@ -435,6 +435,7 @@ class BrowserView : public BrowserWindow,
   virtual FullscreenController* GetFullscreenController() OVERRIDE;
   virtual void FullscreenStateChanged() OVERRIDE;
   virtual void SetImmersiveStyle(bool immersive) OVERRIDE;
+  virtual content::WebContents* GetWebContents() OVERRIDE;
 
   // InfoBarContainer::Delegate overrides
   virtual SkColor GetInfoBarSeparatorColor() const OVERRIDE;

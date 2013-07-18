@@ -223,6 +223,13 @@ class ImmersiveModeControllerAsh : public ImmersiveModeController,
   // child of |top_container_|.
   void RecreateBubbleManager();
 
+  // Shrinks or expands the touch hit test by updating insets for the render
+  // window depending on if top_inset is positive or negative respectively.
+  // Used to ensure that touch events at the top of the screen go to the top
+  // container so a slide gesture can be generated when the content window is
+  // consuming all touch events sent to it.
+  void SetRenderWindowTopInsetsForTouch(int top_inset);
+
   // Injected dependencies. Not owned.
   Delegate* delegate_;
   views::Widget* widget_;

@@ -1867,6 +1867,10 @@ void BrowserView::SetImmersiveStyle(bool immersive) {
     tabstrip_->SetImmersiveStyle(immersive);
 }
 
+WebContents* BrowserView::GetWebContents() {
+  return GetActiveWebContents();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserView, InfoBarContainer::Delegate overrides:
 

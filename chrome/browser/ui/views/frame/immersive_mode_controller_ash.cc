@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/frame/immersive_mode_controller_ash.h"
 
 #include <set>
+#include <vector>
 
 #include "ash/ash_switches.h"
 #include "ash/shell.h"
@@ -16,6 +17,8 @@
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/capture_client.h"
@@ -48,7 +51,7 @@ const int kRevealFastAnimationDurationMs = 200;
 // How many pixels a gesture can start away from |top_container_| when in
 // closed state and still be considered near it. This is needed to overcome
 // issues with poor location values near the edge of the display.
-const int kNearTopContainerDistance = 5;
+const int kNearTopContainerDistance = 8;
 
 // Used to multiply x value of an update in check to determine if gesture is
 // vertical. This is used to make sure that gesture is close to vertical instead
@@ -347,6 +350,7 @@ void ImmersiveModeControllerAsh::SetEnabled(bool enabled) {
     reveal_state_ = CLOSED;
     EnablePaintToLayer(false);
     delegate_->SetImmersiveStyle(false);
+    SetRenderWindowTopInsetsForTouch(0);
 
     // Relayout the root view because disabling immersive fullscreen may have
     // changed the result of NonClientFrameView::GetBoundsForClientView().
@@ -940,6 +944,7 @@ void ImmersiveModeControllerAsh::MaybeStartReveal(Animate animate) {
     // top-of-window views to their initial offscreen position for the
     // animation.
     delegate_->SetImmersiveStyle(false);
+    SetRenderWindowTopInsetsForTouch(0);
     LayoutBrowserRootView();
 
     // Do not do any more processing if LayoutBrowserView() changed
@@ -959,7 +964,7 @@ void ImmersiveModeControllerAsh::MaybeStartReveal(Animate animate) {
     animation_->Show();
   }
 
-   if (previous_reveal_state == CLOSED)
+  if (previous_reveal_state == CLOSED)
      FOR_EACH_OBSERVER(Observer, observers_, OnImmersiveRevealStarted());
 }
 
@@ -1037,6 +1042,7 @@ void ImmersiveModeControllerAsh::OnSlideClosedAnimationCompleted() {
   EnablePaintToLayer(false);
   // Update tabstrip for closed state.
   delegate_->SetImmersiveStyle(true);
+  SetRenderWindowTopInsetsForTouch(kNearTopContainerDistance);
   LayoutBrowserRootView();
 }
 
@@ -1081,6 +1087,18 @@ bool ImmersiveModeControllerAsh::ShouldHandleGestureEvent(
       ((location.y() < near_bounds.y()) &&
        (location.x() >= near_bounds.x()) &&
        (location.x() < near_bounds.right()));
+}
+
+void ImmersiveModeControllerAsh::SetRenderWindowTopInsetsForTouch(
+    int top_inset) {
+  content::WebContents* contents = delegate_->GetWebContents();
+  if (contents) {
+    aura::Window* window = contents->GetView()->GetContentNativeView();
+    gfx::Insets inset(top_inset, 0, 0, 0);
+    window->SetHitTestBoundsOverrideOuter(
+        window->hit_test_bounds_override_outer_mouse(),
+        inset);
+  }
 }
 
 void ImmersiveModeControllerAsh::RecreateBubbleManager() {

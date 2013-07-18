@@ -23,6 +23,8 @@
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "content/public/test/test_utils.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
@@ -420,6 +422,38 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshTest,
   ASSERT_FALSE(controller()->IsEnabled());
   EXPECT_EQ(ash::SHELF_VISIBLE, shelf->visibility_state());
   EXPECT_TRUE(controller()->ShouldHideTabIndicators());
+}
+
+// Validate top container touch insets are being updated at the correct time in
+// immersive mode.
+IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshTest,
+                       ImmersiveTopContainerInsets) {
+  content::WebContents* contents = browser_view()->GetActiveWebContents();
+  aura::Window* window = contents->GetView()->GetContentNativeView();
+
+  // Turning immersive mode on sets positive top touch insets on the render view
+  // window.
+  chrome::ToggleFullscreenMode(browser());
+  ASSERT_TRUE(browser_view()->IsFullscreen());
+  ASSERT_TRUE(controller()->IsEnabled());
+  EXPECT_TRUE(window->hit_test_bounds_override_outer_touch().top() > 0);
+
+  // Trigger a reveal resets insets as now the touch target for the top
+  // container is large enough.
+  controller()->StartRevealForTest(true);
+  EXPECT_TRUE(window->hit_test_bounds_override_outer_touch().top() == 0);
+
+  // End reveal by moving the mouse off the top-of-window views. We
+  // should see the top insets being positive again to allow a bigger touch
+  // target.
+  controller()->SetMouseHoveredForTest(false);
+  EXPECT_TRUE(window->hit_test_bounds_override_outer_touch().top() > 0);
+
+  // Disabling immersive mode resets the top touch insets to 0.
+  chrome::ToggleFullscreenMode(browser());
+  ASSERT_FALSE(browser_view()->IsFullscreen());
+  ASSERT_FALSE(controller()->IsEnabled());
+  EXPECT_TRUE(window->hit_test_bounds_override_outer_touch().top() == 0);
 }
 
 #endif  // defined(OS_CHROMEOS)

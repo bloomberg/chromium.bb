@@ -11,6 +11,10 @@
 class BookmarkBarView;
 class FullscreenController;
 
+namespace content {
+class WebContents;
+}
+
 namespace gfx {
 class Rect;
 class Size;
@@ -60,6 +64,10 @@ class ImmersiveModeController {
 
     // Returns the browser's FullscreenController.
     virtual FullscreenController* GetFullscreenController() = 0;
+
+    // Returns the browser's active web contents for the active tab, or NULL if
+    // such does not exist.
+    virtual content::WebContents* GetWebContents() = 0;
 
     // Notifies the delegate that fullscreen has been entered or exited.
     virtual void FullscreenStateChanged() = 0;

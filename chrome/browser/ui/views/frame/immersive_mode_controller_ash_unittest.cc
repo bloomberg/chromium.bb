@@ -34,6 +34,9 @@ class MockImmersiveModeControllerDelegate
   virtual void SetImmersiveStyle(bool immersive) OVERRIDE {
     immersive_style_ = immersive;
   }
+  virtual content::WebContents* GetWebContents() OVERRIDE {
+    return NULL;
+  }
 
  private:
   bool immersive_style_;
