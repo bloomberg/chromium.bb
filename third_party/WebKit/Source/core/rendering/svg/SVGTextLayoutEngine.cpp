@@ -441,7 +441,6 @@ void SVGTextLayoutEngine::layoutTextOnLineOrPath(SVGInlineTextBox* textBox, Rend
     Vector<SVGTextMetrics>& visualMetricsValues = text->layoutAttributes()->textMetricsValues();
     ASSERT(!visualMetricsValues.isEmpty());
 
-    const UChar* characters = text->bloatedCharacters();
     const Font& font = style->font();
 
     SVGTextLayoutEngineSpacing spacingLayout(font);
@@ -492,8 +491,8 @@ void SVGTextLayoutEngine::layoutTextOnLineOrPath(SVGInlineTextBox* textBox, Rend
         float angle = data.rotate == SVGTextLayoutAttributes::emptyValue() ? 0 : data.rotate;
 
         // Calculate glyph orientation angle.
-        const UChar* currentCharacter = characters + m_visualCharacterOffset;
-        float orientationAngle = baselineLayout.calculateGlyphOrientationAngle(m_isVerticalText, svgStyle, *currentCharacter);
+        UChar currentCharacter = text->characterAt(m_visualCharacterOffset);
+        float orientationAngle = baselineLayout.calculateGlyphOrientationAngle(m_isVerticalText, svgStyle, currentCharacter);
 
         // Calculate glyph advance & x/y orientation shifts.
         float xOrientationShift = 0;

@@ -35,11 +35,11 @@ public:
     SVGTextLayoutEngineSpacing(const Font&);
 
     float calculateSVGKerning(bool isVerticalText, const SVGTextMetrics::Glyph& currentGlyph);
-    float calculateCSSKerningAndSpacing(const SVGRenderStyle*, SVGElement* lengthContext, const UChar* currentCharacter);
+    float calculateCSSKerningAndSpacing(const SVGRenderStyle*, SVGElement* lengthContext, UChar currentCharacter);
 
 private:
     const Font& m_font;
-    const UChar* m_lastCharacter;
+    UChar m_lastCharacter;
 
 #if ENABLE(SVG_FONTS)
     SVGTextMetrics::Glyph m_lastGlyph;

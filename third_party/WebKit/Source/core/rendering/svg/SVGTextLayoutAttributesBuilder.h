@@ -66,7 +66,7 @@ private:
     };
 
     void buildCharacterDataMap(RenderSVGText*);
-    void collectTextPositioningElements(RenderObject*, const UChar*& lastCharacter);
+    void collectTextPositioningElements(RenderObject*, UChar& lastCharacter);
     void fillCharacterDataMap(const TextPosition&);
 
 private:

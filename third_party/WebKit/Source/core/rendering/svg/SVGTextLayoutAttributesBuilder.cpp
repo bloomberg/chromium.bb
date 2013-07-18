@@ -44,7 +44,7 @@ void SVGTextLayoutAttributesBuilder::buildLayoutAttributesForTextRenderer(Render
         m_characterDataMap.clear();
 
         m_textLength = 0;
-        const UChar* lastCharacter = 0;
+        UChar lastCharacter = ' ';
         collectTextPositioningElements(textRoot, lastCharacter);
 
         if (!m_textLength)
@@ -64,7 +64,7 @@ bool SVGTextLayoutAttributesBuilder::buildLayoutAttributesForForSubtree(RenderSV
 
     if (m_textPositions.isEmpty()) {
         m_textLength = 0;
-        const UChar* lastCharacter = 0;
+        UChar lastCharacter = ' ';
         collectTextPositioningElements(textRoot, lastCharacter);
     }
 
@@ -82,18 +82,17 @@ void SVGTextLayoutAttributesBuilder::rebuildMetricsForTextRenderer(RenderSVGInli
     m_metricsBuilder.measureTextRenderer(text);
 }
 
-static inline void processRenderSVGInlineText(RenderSVGInlineText* text, unsigned& atCharacter, const UChar*& lastCharacter)
+static inline void processRenderSVGInlineText(RenderSVGInlineText* text, unsigned& atCharacter, UChar& lastCharacter)
 {
     if (text->style()->whiteSpace() == PRE) {
         atCharacter += text->textLength();
         return;
     }
 
-    const UChar* characters = text->bloatedCharacters();
     unsigned textLength = text->textLength();    
     for (unsigned textPosition = 0; textPosition < textLength; ++textPosition) {
-        const UChar* currentCharacter = characters + textPosition;
-        if (*currentCharacter == ' ' && (!lastCharacter || *lastCharacter == ' '))
+        UChar currentCharacter = text->characterAt(textPosition);
+        if (currentCharacter == ' ' && lastCharacter == ' ')
             continue;
 
         lastCharacter = currentCharacter;
@@ -101,7 +100,7 @@ static inline void processRenderSVGInlineText(RenderSVGInlineText* text, unsigne
     }
 }
 
-void SVGTextLayoutAttributesBuilder::collectTextPositioningElements(RenderObject* start, const UChar*& lastCharacter)
+void SVGTextLayoutAttributesBuilder::collectTextPositioningElements(RenderObject* start, UChar& lastCharacter)
 {
     ASSERT(!start->isSVGText() || m_textPositions.isEmpty());
 

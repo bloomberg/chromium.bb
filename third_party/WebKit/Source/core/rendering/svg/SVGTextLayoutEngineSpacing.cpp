@@ -82,7 +82,7 @@ float SVGTextLayoutEngineSpacing::calculateSVGKerning(bool isVerticalText, const
 #endif
 }
 
-float SVGTextLayoutEngineSpacing::calculateCSSKerningAndSpacing(const SVGRenderStyle* style, SVGElement* contextElement, const UChar* currentCharacter)
+float SVGTextLayoutEngineSpacing::calculateCSSKerningAndSpacing(const SVGRenderStyle* style, SVGElement* contextElement, UChar currentCharacter)
 {
     float kerning = 0;
     SVGLength kerningLength = style->kerning();
@@ -93,7 +93,7 @@ float SVGTextLayoutEngineSpacing::calculateCSSKerningAndSpacing(const SVGRenderS
         kerning = kerningLength.value(lengthContext);
     }
 
-    const UChar* lastCharacter = m_lastCharacter;
+    UChar lastCharacter = m_lastCharacter;
     m_lastCharacter = currentCharacter;
 
     if (!kerning && !m_font.letterSpacing() && !m_font.wordSpacing())
@@ -101,7 +101,7 @@ float SVGTextLayoutEngineSpacing::calculateCSSKerningAndSpacing(const SVGRenderS
 
     float spacing = m_font.letterSpacing() + kerning;
     if (currentCharacter && lastCharacter && m_font.wordSpacing()) {
-        if (Font::treatAsSpace(*currentCharacter) && !Font::treatAsSpace(*lastCharacter))
+        if (Font::treatAsSpace(currentCharacter) && !Font::treatAsSpace(lastCharacter))
             spacing += m_font.wordSpacing();
     }
 
