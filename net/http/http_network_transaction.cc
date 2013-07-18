@@ -66,10 +66,11 @@ namespace net {
 
 namespace {
 
-void ProcessAlternateProtocol(HttpStreamFactory* factory,
-                              HttpServerProperties* http_server_properties,
-                              const HttpResponseHeaders& headers,
-                              const HostPortPair& http_host_port_pair) {
+void ProcessAlternateProtocol(
+    HttpStreamFactory* factory,
+    const base::WeakPtr<HttpServerProperties>& http_server_properties,
+    const HttpResponseHeaders& headers,
+    const HostPortPair& http_host_port_pair) {
   std::string alternate_protocol_str;
 
   if (!headers.EnumerateHeader(NULL, kAlternateProtocolHeader,

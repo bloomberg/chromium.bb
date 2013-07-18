@@ -291,7 +291,8 @@ void ProfileImplIOData::Handle::LazyInitialize() const {
   io_data_->http_server_properties_manager_ =
       new chrome_browser_net::HttpServerPropertiesManager(pref_service);
   io_data_->set_http_server_properties(
-      io_data_->http_server_properties_manager_);
+      scoped_ptr<net::HttpServerProperties>(
+          io_data_->http_server_properties_manager_));
   io_data_->session_startup_pref()->Init(
       prefs::kRestoreOnStartup, pref_service);
   io_data_->session_startup_pref()->MoveToThread(

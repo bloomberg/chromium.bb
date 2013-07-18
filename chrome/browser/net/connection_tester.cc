@@ -113,7 +113,9 @@ class ExperimentURLRequestContext : public net::URLRequestContext {
     storage_.set_ssl_config_service(new net::SSLConfigServiceDefaults);
     storage_.set_http_auth_handler_factory(
         net::HttpAuthHandlerFactory::CreateDefault(host_resolver()));
-    storage_.set_http_server_properties(new net::HttpServerPropertiesImpl);
+    storage_.set_http_server_properties(
+        scoped_ptr<net::HttpServerProperties>(
+            new net::HttpServerPropertiesImpl()));
 
     net::HttpNetworkSession::Params session_params;
     session_params.host_resolver = host_resolver();

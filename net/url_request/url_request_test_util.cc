@@ -83,7 +83,7 @@ void TestURLRequestContext::Init() {
   }
   if (!http_server_properties()) {
     context_storage_.set_http_server_properties(
-        new HttpServerPropertiesImpl);
+        scoped_ptr<HttpServerProperties>(new HttpServerPropertiesImpl()));
   }
   if (!transport_security_state()) {
     context_storage_.set_transport_security_state(

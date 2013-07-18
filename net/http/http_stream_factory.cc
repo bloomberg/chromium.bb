@@ -49,7 +49,7 @@ void HttpStreamFactory::ResetStaticSettingsToInit() {
 }
 
 void HttpStreamFactory::ProcessAlternateProtocol(
-    HttpServerProperties* http_server_properties,
+    const base::WeakPtr<HttpServerProperties>& http_server_properties,
     const std::string& alternate_protocol_str,
     const HostPortPair& http_host_port_pair) {
   std::vector<std::string> port_protocol_vector;

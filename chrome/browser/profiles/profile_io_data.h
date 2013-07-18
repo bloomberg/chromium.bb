@@ -319,10 +319,10 @@ class ProfileIOData {
     return proxy_service_.get();
   }
 
-  net::HttpServerProperties* http_server_properties() const;
+  base::WeakPtr<net::HttpServerProperties> http_server_properties() const;
 
   void set_http_server_properties(
-      net::HttpServerProperties* http_server_properties) const;
+      scoped_ptr<net::HttpServerProperties> http_server_properties) const;
 
   ChromeURLRequestContext* main_request_context() const {
     return main_request_context_.get();

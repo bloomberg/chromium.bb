@@ -81,6 +81,9 @@ class HttpServerPropertiesManager
   // net::HttpServerProperties methods:
   // ----------------------------------
 
+  // Gets a weak pointer for this object.
+  virtual base::WeakPtr<net::HttpServerProperties> GetWeakPtr() OVERRIDE;
+
   // Deletes all data. Works asynchronously.
   virtual void Clear() OVERRIDE;
 
@@ -228,6 +231,10 @@ class HttpServerPropertiesManager
   // ---------
   // IO thread
   // ---------
+
+  // Used to get |weak_ptr_| to self on the IO thread.
+  scoped_ptr<base::WeakPtrFactory<HttpServerPropertiesManager> >
+      io_weak_ptr_factory_;
 
   // Used to post |prefs::kHttpServerProperties| pref update tasks.
   scoped_ptr<base::OneShotTimer<HttpServerPropertiesManager> >

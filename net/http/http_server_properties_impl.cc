@@ -18,7 +18,8 @@ namespace net {
 static const int kDefaultNumHostsToRemember = 200;
 
 HttpServerPropertiesImpl::HttpServerPropertiesImpl()
-    : pipeline_capability_map_(
+    : weak_ptr_factory_(this),
+      pipeline_capability_map_(
         new CachedPipelineCapabilityMap(kDefaultNumHostsToRemember)) {
 }
 
@@ -110,6 +111,10 @@ void HttpServerPropertiesImpl::ForceAlternateProtocol(
 void HttpServerPropertiesImpl::DisableForcedAlternateProtocol() {
   delete g_forced_alternate_protocol;
   g_forced_alternate_protocol = NULL;
+}
+
+base::WeakPtr<HttpServerProperties> HttpServerPropertiesImpl::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
 }
 
 void HttpServerPropertiesImpl::Clear() {

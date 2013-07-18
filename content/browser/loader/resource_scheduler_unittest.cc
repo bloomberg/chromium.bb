@@ -126,7 +126,7 @@ class ResourceSchedulerTest : public testing::Test {
         ui_thread_(BrowserThread::UI, &message_loop_),
         io_thread_(BrowserThread::IO, &message_loop_) {
     scheduler_.OnClientCreated(kChildId, kRouteId);
-    context_.set_http_server_properties(&http_server_properties_);
+    context_.set_http_server_properties(http_server_properties_.GetWeakPtr());
   }
 
   virtual ~ResourceSchedulerTest() {

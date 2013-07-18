@@ -74,7 +74,8 @@ class HttpNetworkTransactionSSLTest : public testing::Test {
 
     session_params_.client_socket_factory = &mock_socket_factory_;
     session_params_.host_resolver = &mock_resolver_;
-    session_params_.http_server_properties = &http_server_properties_;
+    session_params_.http_server_properties =
+        http_server_properties_.GetWeakPtr();
     session_params_.transport_security_state = &transport_security_state_;
   }
 

@@ -30,7 +30,7 @@ enum SpdySessionGetTypes {
 SpdySessionPool::SpdySessionPool(
     HostResolver* resolver,
     SSLConfigService* ssl_config_service,
-    HttpServerProperties* http_server_properties,
+    const base::WeakPtr<HttpServerProperties>& http_server_properties,
     bool force_single_domain,
     bool enable_ip_pooling,
     bool enable_credential_frames,

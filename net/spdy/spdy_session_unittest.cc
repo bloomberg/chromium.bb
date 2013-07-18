@@ -842,7 +842,7 @@ TEST_P(SpdySessionTest, SendSettingsOnNewSession) {
 TEST_P(SpdySessionTest, ClearSettingsStorageOnIPAddressChanged) {
   CreateNetworkSession();
 
-  HttpServerProperties* test_http_server_properties =
+  base::WeakPtr<HttpServerProperties> test_http_server_properties =
       spdy_session_pool_->http_server_properties();
   SettingsFlagsAndValue flags_and_value1(SETTINGS_FLAG_PLEASE_PERSIST, 2);
   test_http_server_properties->SetSpdySetting(

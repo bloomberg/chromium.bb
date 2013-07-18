@@ -88,7 +88,7 @@ void AddDummyHttpPipelineFeedbackOnIOThread(
   net::URLRequestContext* context = context_getter->GetURLRequestContext();
   net::HttpNetworkSession* http_network_session =
       context->http_transaction_factory()->GetSession();
-  net::HttpServerProperties* http_server_properties =
+  base::WeakPtr<net::HttpServerProperties> http_server_properties =
       http_network_session->http_server_properties();
   net::HostPortPair origin(hostname, port);
   http_server_properties->SetPipelineCapability(origin, capability);

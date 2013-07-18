@@ -202,7 +202,7 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
   // |session| is the HttpNetworkSession.  |net_log| is the NetLog that we log
   // network events to.
   SpdySession(const SpdySessionKey& spdy_session_key,
-              HttpServerProperties* http_server_properties,
+              const base::WeakPtr<HttpServerProperties>& http_server_properties,
               bool verify_domain_authentication,
               bool enable_sending_initial_settings,
               bool enable_credential_frames,
@@ -843,7 +843,7 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
   // |spdy_session_pool_| owns us, therefore its lifetime must exceed ours.  We
   // set this to NULL after we are removed from the pool.
   SpdySessionPool* spdy_session_pool_;
-  HttpServerProperties* const http_server_properties_;
+  const base::WeakPtr<HttpServerProperties> http_server_properties_;
 
   // The socket handle for this session.
   scoped_ptr<ClientSocketHandle> connection_;

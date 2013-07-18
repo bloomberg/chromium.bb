@@ -141,7 +141,7 @@ int HttpStreamFactoryImpl::Job::Preconnect(int num_streams) {
   HostPortPair origin_server =
       HostPortPair(request_info_.url.HostNoBrackets(),
                    request_info_.url.EffectiveIntPort());
-  HttpServerProperties* http_server_properties =
+  base::WeakPtr<HttpServerProperties> http_server_properties =
       session_->http_server_properties();
   if (http_server_properties &&
       http_server_properties->SupportsSpdy(origin_server)) {
@@ -1118,7 +1118,7 @@ int HttpStreamFactoryImpl::Job::DoCreateStream() {
       if (error != OK)
         return error;
       const HostPortPair& host_port_pair = spdy_session_key.host_port_pair();
-      HttpServerProperties* http_server_properties =
+      base::WeakPtr<HttpServerProperties> http_server_properties =
           session_->http_server_properties();
       if (http_server_properties)
         http_server_properties->SetSupportsSpdy(host_port_pair, true);

@@ -7011,7 +7011,7 @@ scoped_refptr<HttpNetworkSession> SetupSessionForGroupNameTests(
     SpdySessionDependencies* session_deps_) {
   scoped_refptr<HttpNetworkSession> session(CreateSession(session_deps_));
 
-  HttpServerProperties* http_server_properties =
+  base::WeakPtr<HttpServerProperties> http_server_properties =
       session->http_server_properties();
   http_server_properties->SetAlternateProtocol(
       HostPortPair("host.with.alternate", 80), 443,
@@ -8005,7 +8005,7 @@ TEST_P(HttpNetworkTransactionTest,
 
   scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
-  HttpServerProperties* http_server_properties =
+  base::WeakPtr<HttpServerProperties> http_server_properties =
       session->http_server_properties();
   // Port must be < 1024, or the header will be ignored (since initial port was
   // port 80 (another restricted port).
@@ -8068,7 +8068,7 @@ TEST_P(HttpNetworkTransactionTest,
 
   scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
-  HttpServerProperties* http_server_properties =
+  base::WeakPtr<HttpServerProperties> http_server_properties =
       session->http_server_properties();
   const int kUnrestrictedAlternatePort = 1024;
   http_server_properties->SetAlternateProtocol(
@@ -8119,7 +8119,7 @@ TEST_P(HttpNetworkTransactionTest,
 
   scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
-  HttpServerProperties* http_server_properties =
+  base::WeakPtr<HttpServerProperties> http_server_properties =
       session->http_server_properties();
   const int kUnrestrictedAlternatePort = 1024;
   http_server_properties->SetAlternateProtocol(
@@ -8167,7 +8167,7 @@ TEST_P(HttpNetworkTransactionTest,
 
   scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
-  HttpServerProperties* http_server_properties =
+  base::WeakPtr<HttpServerProperties> http_server_properties =
       session->http_server_properties();
   const int kRestrictedAlternatePort = 80;
   http_server_properties->SetAlternateProtocol(
@@ -8216,7 +8216,7 @@ TEST_P(HttpNetworkTransactionTest,
 
   scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
-  HttpServerProperties* http_server_properties =
+  base::WeakPtr<HttpServerProperties> http_server_properties =
       session->http_server_properties();
   const int kRestrictedAlternatePort = 80;
   http_server_properties->SetAlternateProtocol(
@@ -8264,7 +8264,7 @@ TEST_P(HttpNetworkTransactionTest,
 
   scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
-  HttpServerProperties* http_server_properties =
+  base::WeakPtr<HttpServerProperties> http_server_properties =
       session->http_server_properties();
   const int kUnrestrictedAlternatePort = 1024;
   http_server_properties->SetAlternateProtocol(
@@ -8308,7 +8308,7 @@ TEST_P(HttpNetworkTransactionTest,
 
   scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
-  HttpServerProperties* http_server_properties =
+  base::WeakPtr<HttpServerProperties> http_server_properties =
       session->http_server_properties();
   const int kUnsafePort = 7;
   http_server_properties->SetAlternateProtocol(

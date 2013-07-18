@@ -62,7 +62,6 @@ HttpNetworkSession::Params::Params()
       ssl_config_service(NULL),
       http_auth_handler_factory(NULL),
       network_delegate(NULL),
-      http_server_properties(NULL),
       net_log(NULL),
       host_mapping_rules(NULL),
       force_http_pipelining(false),
@@ -87,6 +86,8 @@ HttpNetworkSession::Params::Params()
       enable_user_alternate_protocol_ports(false),
       quic_crypto_client_stream_factory(NULL) {
 }
+
+HttpNetworkSession::Params::~Params() {}
 
 // TODO(mbelshe): Move the socket factories into HttpStreamFactory.
 HttpNetworkSession::HttpNetworkSession(const Params& params)

@@ -33,7 +33,7 @@ class HttpPipelinedHostImplFactory : public HttpPipelinedHost::Factory {
 HttpPipelinedHostPool::HttpPipelinedHostPool(
     Delegate* delegate,
     HttpPipelinedHost::Factory* factory,
-    HttpServerProperties* http_server_properties,
+    const base::WeakPtr<HttpServerProperties>& http_server_properties,
     bool force_pipelining)
     : delegate_(delegate),
       factory_(factory),

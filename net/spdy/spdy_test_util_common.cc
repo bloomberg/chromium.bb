@@ -431,7 +431,8 @@ net::HttpNetworkSession::Params SpdySessionDependencies::CreateSessionParams(
   params.ssl_config_service = session_deps->ssl_config_service.get();
   params.http_auth_handler_factory =
       session_deps->http_auth_handler_factory.get();
-  params.http_server_properties = &session_deps->http_server_properties;
+  params.http_server_properties =
+      session_deps->http_server_properties.GetWeakPtr();
   params.enable_spdy_compression = session_deps->enable_compression;
   params.enable_spdy_ping_based_connection_checking = session_deps->enable_ping;
   params.enable_user_alternate_protocol_ports =
@@ -456,7 +457,8 @@ SpdyURLRequestContext::SpdyURLRequestContext(NextProto protocol)
   storage_.set_ssl_config_service(new SSLConfigServiceDefaults);
   storage_.set_http_auth_handler_factory(HttpAuthHandlerFactory::CreateDefault(
       host_resolver()));
-  storage_.set_http_server_properties(new HttpServerPropertiesImpl);
+  storage_.set_http_server_properties(
+      scoped_ptr<HttpServerProperties>(new HttpServerPropertiesImpl()));
   net::HttpNetworkSession::Params params;
   params.client_socket_factory = &socket_factory_;
   params.host_resolver = host_resolver();

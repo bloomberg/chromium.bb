@@ -92,7 +92,7 @@ void TestShellRequestContext::Init(
   storage_.set_http_auth_handler_factory(
       net::HttpAuthHandlerFactory::CreateDefault(host_resolver()));
   storage_.set_http_server_properties(
-      new net::HttpServerPropertiesImpl);
+      new net::HttpServerPropertiesImpl());
 
   net::HttpCache::DefaultBackend* backend = new net::HttpCache::DefaultBackend(
       cache_path.empty() ? net::MEMORY_CACHE : net::DISK_CACHE,

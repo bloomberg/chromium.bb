@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "net/http/http_pipelined_host.h"
 #include "net/http/http_pipelined_host_capability.h"
 
@@ -37,10 +38,11 @@ class NET_EXPORT_PRIVATE HttpPipelinedHostPool
         HttpPipelinedHost* host) = 0;
   };
 
-  HttpPipelinedHostPool(Delegate* delegate,
-                        HttpPipelinedHost::Factory* factory,
-                        HttpServerProperties* http_server_properties_,
-                        bool force_pipelining);
+  HttpPipelinedHostPool(
+      Delegate* delegate,
+      HttpPipelinedHost::Factory* factory,
+      const base::WeakPtr<HttpServerProperties>& http_server_properties,
+      bool force_pipelining);
   virtual ~HttpPipelinedHostPool();
 
   // Returns true if pipelining might work for |key|. Generally, this returns
@@ -89,7 +91,7 @@ class NET_EXPORT_PRIVATE HttpPipelinedHostPool
   Delegate* delegate_;
   scoped_ptr<HttpPipelinedHost::Factory> factory_;
   HostMap host_map_;
-  HttpServerProperties* http_server_properties_;
+  const base::WeakPtr<HttpServerProperties> http_server_properties_;
   bool force_pipelining_;
 
   DISALLOW_COPY_AND_ASSIGN(HttpPipelinedHostPool);

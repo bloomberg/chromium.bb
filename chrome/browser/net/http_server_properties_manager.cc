@@ -67,10 +67,14 @@ HttpServerPropertiesManager::HttpServerPropertiesManager(
 }
 
 HttpServerPropertiesManager::~HttpServerPropertiesManager() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  io_weak_ptr_factory_.reset();
 }
 
 void HttpServerPropertiesManager::InitializeOnIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  io_weak_ptr_factory_.reset(
+      new base::WeakPtrFactory<HttpServerPropertiesManager>(this));
   http_server_properties_impl_.reset(new net::HttpServerPropertiesImpl());
 
   io_prefs_update_timer_.reset(
@@ -111,6 +115,12 @@ void HttpServerPropertiesManager::SetVersion(
 }
 
 // This is required for conformance with the HttpServerProperties interface.
+base::WeakPtr<net::HttpServerProperties>
+    HttpServerPropertiesManager::GetWeakPtr() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  return io_weak_ptr_factory_->GetWeakPtr();
+}
+
 void HttpServerPropertiesManager::Clear() {
   Clear(base::Closure());
 }

@@ -87,7 +87,8 @@ class HttpPipelinedNetworkTransactionTest : public testing::Test {
     session_params.host_resolver = &mock_resolver_;
     session_params.ssl_config_service = ssl_config_.get();
     session_params.http_auth_handler_factory = auth_handler_factory_.get();
-    session_params.http_server_properties = &http_server_properties_;
+    session_params.http_server_properties =
+        http_server_properties_.GetWeakPtr();
     session_params.force_http_pipelining = force_http_pipelining;
     session_params.http_pipelining_enabled = true;
     session_ = new HttpNetworkSession(session_params);

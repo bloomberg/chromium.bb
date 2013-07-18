@@ -138,7 +138,8 @@ class ConnectionTesterTest : public PlatformTest {
     session_params.http_auth_handler_factory = &http_auth_handler_factory_;
     session_params.ssl_config_service = ssl_config_service_.get();
     session_params.proxy_service = proxy_service_.get();
-    session_params.http_server_properties = &http_server_properties_impl_;
+    session_params.http_server_properties =
+        http_server_properties_impl_.GetWeakPtr();
     scoped_refptr<net::HttpNetworkSession> network_session(
         new net::HttpNetworkSession(session_params));
     http_transaction_factory_.reset(

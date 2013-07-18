@@ -73,6 +73,9 @@ class NET_EXPORT HttpServerPropertiesImpl
   // HttpServerProperties methods:
   // -----------------------------
 
+  // Gets a weak pointer for this object.
+  virtual base::WeakPtr<HttpServerProperties> GetWeakPtr() OVERRIDE;
+
   // Deletes all data.
   virtual void Clear() OVERRIDE;
 
@@ -141,6 +144,9 @@ class NET_EXPORT HttpServerPropertiesImpl
   // |spdy_servers_table_| has flattened representation of servers (host/port
   // pair) that either support or not support SPDY protocol.
   typedef base::hash_map<std::string, bool> SpdyServerHostPortTable;
+
+  base::WeakPtrFactory<HttpServerPropertiesImpl> weak_ptr_factory_;
+
   SpdyServerHostPortTable spdy_servers_table_;
 
   AlternateProtocolMap alternate_protocol_map_;

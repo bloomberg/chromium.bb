@@ -596,13 +596,14 @@ bool ProfileIOData::GetMetricsEnabledStateOnIOThread() const {
 #endif  // defined(OS_CHROMEOS)
 }
 
-net::HttpServerProperties* ProfileIOData::http_server_properties() const {
-  return http_server_properties_.get();
+base::WeakPtr<net::HttpServerProperties>
+ProfileIOData::http_server_properties() const {
+  return http_server_properties_->GetWeakPtr();
 }
 
 void ProfileIOData::set_http_server_properties(
-    net::HttpServerProperties* http_server_properties) const {
-  http_server_properties_.reset(http_server_properties);
+    scoped_ptr<net::HttpServerProperties> http_server_properties) const {
+  http_server_properties_ = http_server_properties.Pass();
 }
 
 ProfileIOData::ResourceContext::ResourceContext(ProfileIOData* io_data)

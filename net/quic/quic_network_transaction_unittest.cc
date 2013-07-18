@@ -229,7 +229,7 @@ class QuicNetworkTransactionTest : public PlatformTest {
     params_.proxy_service = proxy_service_.get();
     params_.ssl_config_service = ssl_config_service_.get();
     params_.http_auth_handler_factory = auth_handler_factory_.get();
-    params_.http_server_properties = &http_server_properties;
+    params_.http_server_properties = http_server_properties.GetWeakPtr();
 
     session_ = new HttpNetworkSession(params_);
   }

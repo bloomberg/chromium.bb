@@ -8,6 +8,7 @@
 #include <map>
 #include <string>
 #include "base/basictypes.h"
+#include "base/memory/weak_ptr.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_export.h"
 #include "net/http/http_pipelined_host_capability.h"
@@ -61,6 +62,9 @@ class NET_EXPORT HttpServerProperties {
  public:
   HttpServerProperties() {}
   virtual ~HttpServerProperties() {}
+
+  // Gets a weak pointer for this object.
+  virtual base::WeakPtr<HttpServerProperties> GetWeakPtr() = 0;
 
   // Deletes all data.
   virtual void Clear() = 0;

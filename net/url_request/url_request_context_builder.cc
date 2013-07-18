@@ -237,7 +237,9 @@ URLRequestContext* URLRequestContextBuilder::Build() {
           context->host_resolver()));
   storage->set_cookie_store(new CookieMonster(NULL, NULL));
   storage->set_transport_security_state(new net::TransportSecurityState());
-  storage->set_http_server_properties(new net::HttpServerPropertiesImpl);
+  storage->set_http_server_properties(
+      scoped_ptr<net::HttpServerProperties>(
+          new net::HttpServerPropertiesImpl()));
   storage->set_cert_verifier(CertVerifier::CreateDefault());
 
   net::HttpNetworkSession::Params network_session_params;

@@ -137,10 +137,10 @@ class NET_EXPORT URLRequestContext
   NetworkDelegate* network_delegate() const { return network_delegate_; }
 
   void set_http_server_properties(
-      HttpServerProperties* http_server_properties) {
+      const base::WeakPtr<HttpServerProperties>& http_server_properties) {
     http_server_properties_ = http_server_properties;
   }
-  HttpServerProperties* http_server_properties() const {
+  base::WeakPtr<HttpServerProperties> http_server_properties() const {
     return http_server_properties_;
   }
 
@@ -216,7 +216,7 @@ class NET_EXPORT URLRequestContext
   ProxyService* proxy_service_;
   scoped_refptr<SSLConfigService> ssl_config_service_;
   NetworkDelegate* network_delegate_;
-  HttpServerProperties* http_server_properties_;
+  base::WeakPtr<HttpServerProperties> http_server_properties_;
   HttpUserAgentSettings* http_user_agent_settings_;
   scoped_refptr<CookieStore> cookie_store_;
   TransportSecurityState* transport_security_state_;

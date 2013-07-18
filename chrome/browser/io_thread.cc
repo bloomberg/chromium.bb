@@ -514,7 +514,7 @@ void IOThread::InitAsync() {
   }
   globals_->http_auth_handler_factory.reset(CreateDefaultAuthHandlerFactory(
       globals_->host_resolver.get()));
-  globals_->http_server_properties.reset(new net::HttpServerPropertiesImpl);
+  globals_->http_server_properties.reset(new net::HttpServerPropertiesImpl());
   // For the ProxyScriptFetcher, we use a direct ProxyService.
   globals_->proxy_script_fetcher_proxy_service.reset(
       net::ProxyService::CreateDirectWithNetLog(net_log_));
@@ -862,7 +862,8 @@ void IOThread::InitializeNetworkSessionParams(
   params->transport_security_state = globals_->transport_security_state.get();
   params->ssl_config_service = globals_->ssl_config_service.get();
   params->http_auth_handler_factory = globals_->http_auth_handler_factory.get();
-  params->http_server_properties = globals_->http_server_properties.get();
+  params->http_server_properties =
+      globals_->http_server_properties->GetWeakPtr();
   params->network_delegate = globals_->system_network_delegate.get();
   params->host_mapping_rules = globals_->host_mapping_rules.get();
   params->ignore_certificate_errors = globals_->ignore_certificate_errors;

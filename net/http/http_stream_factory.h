@@ -176,7 +176,7 @@ class NET_EXPORT HttpStreamFactory {
   virtual ~HttpStreamFactory();
 
   void ProcessAlternateProtocol(
-      HttpServerProperties* http_server_properties,
+      const base::WeakPtr<HttpServerProperties>& http_server_properties,
       const std::string& alternate_protocol_str,
       const HostPortPair& http_host_port_pair);
 

@@ -56,7 +56,8 @@ class RequestContext : public URLRequestContext {
     storage_.set_transport_security_state(new TransportSecurityState);
     storage_.set_proxy_service(ProxyService::CreateFixed(no_proxy));
     storage_.set_ssl_config_service(new SSLConfigServiceDefaults);
-    storage_.set_http_server_properties(new HttpServerPropertiesImpl);
+    storage_.set_http_server_properties(
+        scoped_ptr<HttpServerProperties>(new HttpServerPropertiesImpl()));
 
     HttpNetworkSession::Params params;
     params.host_resolver = host_resolver();

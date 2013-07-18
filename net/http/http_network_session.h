@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_export.h"
@@ -54,6 +55,7 @@ class NET_EXPORT HttpNetworkSession
  public:
   struct NET_EXPORT Params {
     Params();
+    ~Params();
 
     ClientSocketFactory* client_socket_factory;
     HostResolver* host_resolver;
@@ -65,7 +67,7 @@ class NET_EXPORT HttpNetworkSession
     SSLConfigService* ssl_config_service;
     HttpAuthHandlerFactory* http_auth_handler_factory;
     NetworkDelegate* network_delegate;
-    HttpServerProperties* http_server_properties;
+    base::WeakPtr<HttpServerProperties> http_server_properties;
     NetLog* net_log;
     HostMappingRules* host_mapping_rules;
     bool force_http_pipelining;
@@ -133,7 +135,7 @@ class NET_EXPORT HttpNetworkSession
   NetworkDelegate* network_delegate() {
     return network_delegate_;
   }
-  HttpServerProperties* http_server_properties() {
+  base::WeakPtr<HttpServerProperties> http_server_properties() {
     return http_server_properties_;
   }
   HttpStreamFactory* http_stream_factory() {
@@ -180,7 +182,7 @@ class NET_EXPORT HttpNetworkSession
 
   NetLog* const net_log_;
   NetworkDelegate* const network_delegate_;
-  HttpServerProperties* const http_server_properties_;
+  const base::WeakPtr<HttpServerProperties> http_server_properties_;
   CertVerifier* const cert_verifier_;
   HttpAuthHandlerFactory* const http_auth_handler_factory_;
   bool force_http_pipelining_;

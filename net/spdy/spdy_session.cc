@@ -333,20 +333,21 @@ SpdySession::PushedStreamInfo::PushedStreamInfo(
 
 SpdySession::PushedStreamInfo::~PushedStreamInfo() {}
 
-SpdySession::SpdySession(const SpdySessionKey& spdy_session_key,
-                         HttpServerProperties* http_server_properties,
-                         bool verify_domain_authentication,
-                         bool enable_sending_initial_settings,
-                         bool enable_credential_frames,
-                         bool enable_compression,
-                         bool enable_ping_based_connection_checking,
-                         NextProto default_protocol,
-                         size_t stream_initial_recv_window_size,
-                         size_t initial_max_concurrent_streams,
-                         size_t max_concurrent_streams_limit,
-                         TimeFunc time_func,
-                         const HostPortPair& trusted_spdy_proxy,
-                         NetLog* net_log)
+SpdySession::SpdySession(
+    const SpdySessionKey& spdy_session_key,
+    const base::WeakPtr<HttpServerProperties>& http_server_properties,
+    bool verify_domain_authentication,
+    bool enable_sending_initial_settings,
+    bool enable_credential_frames,
+    bool enable_compression,
+    bool enable_ping_based_connection_checking,
+    NextProto default_protocol,
+    size_t stream_initial_recv_window_size,
+    size_t initial_max_concurrent_streams,
+    size_t max_concurrent_streams_limit,
+    TimeFunc time_func,
+    const HostPortPair& trusted_spdy_proxy,
+    NetLog* net_log)
     : weak_factory_(this),
       spdy_session_key_(spdy_session_key),
       spdy_session_pool_(NULL),

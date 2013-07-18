@@ -12,6 +12,7 @@
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
@@ -41,20 +42,21 @@ class NET_EXPORT SpdySessionPool
  public:
   typedef base::TimeTicks (*TimeFunc)(void);
 
-  SpdySessionPool(HostResolver* host_resolver,
-                  SSLConfigService* ssl_config_service,
-                  HttpServerProperties* http_server_properties,
-                  bool force_single_domain,
-                  bool enable_ip_pooling,
-                  bool enable_credential_frames,
-                  bool enable_compression,
-                  bool enable_ping_based_connection_checking,
-                  NextProto default_protocol,
-                  size_t stream_initial_recv_window_size,
-                  size_t initial_max_concurrent_streams,
-                  size_t max_concurrent_streams_limit,
-                  SpdySessionPool::TimeFunc time_func,
-                  const std::string& trusted_spdy_proxy);
+  SpdySessionPool(
+      HostResolver* host_resolver,
+      SSLConfigService* ssl_config_service,
+      const base::WeakPtr<HttpServerProperties>& http_server_properties,
+      bool force_single_domain,
+      bool enable_ip_pooling,
+      bool enable_credential_frames,
+      bool enable_compression,
+      bool enable_ping_based_connection_checking,
+      NextProto default_protocol,
+      size_t stream_initial_recv_window_size,
+      size_t initial_max_concurrent_streams,
+      size_t max_concurrent_streams_limit,
+      SpdySessionPool::TimeFunc time_func,
+      const std::string& trusted_spdy_proxy);
   virtual ~SpdySessionPool();
 
   // In the functions below, a session is "available" if this pool has
@@ -118,7 +120,7 @@ class NET_EXPORT SpdySessionPool
   // responsible for deleting the returned value.
   base::Value* SpdySessionPoolInfoToValue() const;
 
-  HttpServerProperties* http_server_properties() {
+  base::WeakPtr<HttpServerProperties> http_server_properties() {
     return http_server_properties_;
   }
 
@@ -177,7 +179,7 @@ class NET_EXPORT SpdySessionPool
       const std::string& description,
       bool idle_only);
 
-  HttpServerProperties* const http_server_properties_;
+  const base::WeakPtr<HttpServerProperties> http_server_properties_;
 
   // The set of all sessions. This is a superset of the sessions in
   // |available_sessions_|.

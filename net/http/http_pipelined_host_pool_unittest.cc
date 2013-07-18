@@ -73,9 +73,10 @@ class HttpPipelinedHostPoolTest : public testing::Test {
       : key_(HostPortPair("host", 123)),
         factory_(new MockHostFactory),  // Owned by pool_.
         host_(new MockHost(key_)),  // Owned by pool_.
-        http_server_properties_(new HttpServerPropertiesImpl),
-        pool_(new HttpPipelinedHostPool(&delegate_, factory_,
-                                        http_server_properties_.get(), false)),
+        http_server_properties_(new HttpServerPropertiesImpl()),
+        pool_(new HttpPipelinedHostPool(
+            &delegate_, factory_,
+            http_server_properties_->GetWeakPtr(), false)),
         was_npn_negotiated_(false),
         protocol_negotiated_(kProtoUnknown) {
   }

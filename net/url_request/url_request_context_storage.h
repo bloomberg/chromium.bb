@@ -56,7 +56,8 @@ class NET_EXPORT URLRequestContextStorage {
   void set_proxy_service(ProxyService* proxy_service);
   void set_ssl_config_service(SSLConfigService* ssl_config_service);
   void set_network_delegate(NetworkDelegate* network_delegate);
-  void set_http_server_properties(HttpServerProperties* http_server_properties);
+  void set_http_server_properties(
+      scoped_ptr<HttpServerProperties> http_server_properties);
   void set_cookie_store(CookieStore* cookie_store);
   void set_transport_security_state(
       TransportSecurityState* transport_security_state);
