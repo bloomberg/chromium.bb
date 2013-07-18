@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/bookmarks/bookmark_drag_drop_views.h"
 
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"

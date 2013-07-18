@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/webui/bookmarks_ui.h"
 
 #include "base/memory/ref_counted_memory.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/url_data_source.h"

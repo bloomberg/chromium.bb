@@ -7,7 +7,7 @@
 // on the Mac, and it's not yet implemented on Linux.
 
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/chrome_notification_types.h"

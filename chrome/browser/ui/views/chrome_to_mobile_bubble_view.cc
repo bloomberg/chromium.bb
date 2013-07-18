@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/views/chrome_to_mobile_bubble_view.h"
 
 #include "base/bind.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
