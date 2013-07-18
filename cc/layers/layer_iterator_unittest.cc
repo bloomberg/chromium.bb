@@ -50,20 +50,20 @@ class TestLayer : public Layer {
   EXPECT_EQ(itself, layer->count_representing_itself_);
 
 typedef LayerIterator<Layer,
-                      LayerList,
+                      RenderSurfaceLayerList,
                       RenderSurface,
                       LayerIteratorActions::FrontToBack> FrontToBack;
 typedef LayerIterator<Layer,
-                      LayerList,
+                      RenderSurfaceLayerList,
                       RenderSurface,
                       LayerIteratorActions::BackToFront> BackToFront;
 
-void ResetCounts(LayerList* render_surface_layerList) {
+void ResetCounts(RenderSurfaceLayerList* render_surface_layer_list) {
   for (unsigned surface_index = 0;
-       surface_index < render_surface_layerList->size();
+       surface_index < render_surface_layer_list->size();
        ++surface_index) {
     TestLayer* render_surface_layer = static_cast<TestLayer*>(
-        (*render_surface_layerList)[surface_index].get());
+        render_surface_layer_list->at(surface_index));
     RenderSurface* render_surface = render_surface_layer->render_surface();
 
     render_surface_layer->count_representing_target_surface_ = -1;
@@ -74,7 +74,7 @@ void ResetCounts(LayerList* render_surface_layerList) {
          layer_index < render_surface->layer_list().size();
          ++layer_index) {
       TestLayer* layer = static_cast<TestLayer*>(
-          render_surface->layer_list()[layer_index].get());
+          render_surface->layer_list().at(layer_index));
 
       layer->count_representing_target_surface_ = -1;
       layer->count_representing_contributing_surface_ = -1;
@@ -84,11 +84,11 @@ void ResetCounts(LayerList* render_surface_layerList) {
 }
 
 void IterateFrontToBack(
-    LayerList* render_surface_layerList) {
-  ResetCounts(render_surface_layerList);
+    RenderSurfaceLayerList* render_surface_layer_list) {
+  ResetCounts(render_surface_layer_list);
   int count = 0;
-  for (FrontToBack it = FrontToBack::Begin(render_surface_layerList);
-       it != FrontToBack::End(render_surface_layerList);
+  for (FrontToBack it = FrontToBack::Begin(render_surface_layer_list);
+       it != FrontToBack::End(render_surface_layer_list);
        ++it, ++count) {
     TestLayer* layer = static_cast<TestLayer*>(*it);
     if (it.represents_target_render_surface())
@@ -101,11 +101,11 @@ void IterateFrontToBack(
 }
 
 void IterateBackToFront(
-    LayerList* render_surface_layerList) {
-  ResetCounts(render_surface_layerList);
+    RenderSurfaceLayerList* render_surface_layer_list) {
+  ResetCounts(render_surface_layer_list);
   int count = 0;
-  for (BackToFront it = BackToFront::Begin(render_surface_layerList);
-       it != BackToFront::End(render_surface_layerList);
+  for (BackToFront it = BackToFront::Begin(render_surface_layer_list);
+       it != BackToFront::End(render_surface_layer_list);
        ++it, ++count) {
     TestLayer* layer = static_cast<TestLayer*>(*it);
     if (it.represents_target_render_surface())
@@ -118,10 +118,10 @@ void IterateBackToFront(
 }
 
 TEST(LayerIteratorTest, EmptyTree) {
-  LayerList render_surface_layerList;
+  RenderSurfaceLayerList render_surface_layer_list;
 
-  IterateBackToFront(&render_surface_layerList);
-  IterateFrontToBack(&render_surface_layerList);
+  IterateBackToFront(&render_surface_layer_list);
+  IterateFrontToBack(&render_surface_layer_list);
 }
 
 TEST(LayerIteratorTest, SimpleTree) {
@@ -131,14 +131,12 @@ TEST(LayerIteratorTest, SimpleTree) {
   scoped_refptr<TestLayer> third = TestLayer::Create();
   scoped_refptr<TestLayer> fourth = TestLayer::Create();
 
-  root_layer->CreateRenderSurface();
-
   root_layer->AddChild(first);
   root_layer->AddChild(second);
   root_layer->AddChild(third);
   root_layer->AddChild(fourth);
 
-  LayerList render_surface_layerList;
+  RenderSurfaceLayerList render_surface_layer_list;
   LayerTreeHostCommon::CalculateDrawProperties(root_layer.get(),
                                                root_layer->bounds(),
                                                gfx::Transform(),
@@ -148,16 +146,16 @@ TEST(LayerIteratorTest, SimpleTree) {
                                                256,
                                                false,
                                                false,
-                                               &render_surface_layerList);
+                                               &render_surface_layer_list);
 
-  IterateBackToFront(&render_surface_layerList);
+  IterateBackToFront(&render_surface_layer_list);
   EXPECT_COUNT(root_layer, 0, -1, 1);
   EXPECT_COUNT(first, -1, -1, 2);
   EXPECT_COUNT(second, -1, -1, 3);
   EXPECT_COUNT(third, -1, -1, 4);
   EXPECT_COUNT(fourth, -1, -1, 5);
 
-  IterateFrontToBack(&render_surface_layerList);
+  IterateFrontToBack(&render_surface_layer_list);
   EXPECT_COUNT(root_layer, 5, -1, 4);
   EXPECT_COUNT(first, -1, -1, 3);
   EXPECT_COUNT(second, -1, -1, 2);
@@ -176,8 +174,6 @@ TEST(LayerIteratorTest, ComplexTree) {
   scoped_refptr<TestLayer> root221 = TestLayer::Create();
   scoped_refptr<TestLayer> root231 = TestLayer::Create();
 
-  root_layer->CreateRenderSurface();
-
   root_layer->AddChild(root1);
   root_layer->AddChild(root2);
   root_layer->AddChild(root3);
@@ -187,7 +183,7 @@ TEST(LayerIteratorTest, ComplexTree) {
   root22->AddChild(root221);
   root23->AddChild(root231);
 
-  LayerList render_surface_layerList;
+  RenderSurfaceLayerList render_surface_layer_list;
   LayerTreeHostCommon::CalculateDrawProperties(root_layer.get(),
                                                root_layer->bounds(),
                                                gfx::Transform(),
@@ -197,9 +193,9 @@ TEST(LayerIteratorTest, ComplexTree) {
                                                256,
                                                false,
                                                false,
-                                               &render_surface_layerList);
+                                               &render_surface_layer_list);
 
-  IterateBackToFront(&render_surface_layerList);
+  IterateBackToFront(&render_surface_layer_list);
   EXPECT_COUNT(root_layer, 0, -1, 1);
   EXPECT_COUNT(root1, -1, -1, 2);
   EXPECT_COUNT(root2, -1, -1, 3);
@@ -210,7 +206,7 @@ TEST(LayerIteratorTest, ComplexTree) {
   EXPECT_COUNT(root231, -1, -1, 8);
   EXPECT_COUNT(root3, -1, -1, 9);
 
-  IterateFrontToBack(&render_surface_layerList);
+  IterateFrontToBack(&render_surface_layer_list);
   EXPECT_COUNT(root_layer, 9, -1, 8);
   EXPECT_COUNT(root1, -1, -1, 7);
   EXPECT_COUNT(root2, -1, -1, 6);
@@ -233,10 +229,6 @@ TEST(LayerIteratorTest, ComplexTreeMultiSurface) {
   scoped_refptr<TestLayer> root221 = TestLayer::Create();
   scoped_refptr<TestLayer> root231 = TestLayer::Create();
 
-  root_layer->CreateRenderSurface();
-  root_layer->render_surface()->
-      SetContentRect(gfx::Rect(root_layer->bounds()));
-
   root_layer->AddChild(root1);
   root_layer->AddChild(root2);
   root_layer->AddChild(root3);
@@ -251,7 +243,7 @@ TEST(LayerIteratorTest, ComplexTreeMultiSurface) {
   root23->SetOpacity(0.5f);
   root23->AddChild(root231);
 
-  LayerList render_surface_layerList;
+  RenderSurfaceLayerList render_surface_layer_list;
   LayerTreeHostCommon::CalculateDrawProperties(root_layer.get(),
                                                root_layer->bounds(),
                                                gfx::Transform(),
@@ -261,9 +253,9 @@ TEST(LayerIteratorTest, ComplexTreeMultiSurface) {
                                                256,
                                                false,
                                                false,
-                                               &render_surface_layerList);
+                                               &render_surface_layer_list);
 
-  IterateBackToFront(&render_surface_layerList);
+  IterateBackToFront(&render_surface_layer_list);
   EXPECT_COUNT(root_layer, 0, -1, 1);
   EXPECT_COUNT(root1, -1, -1, 2);
   EXPECT_COUNT(root2, 4, 3, -1);
@@ -274,7 +266,7 @@ TEST(LayerIteratorTest, ComplexTreeMultiSurface) {
   EXPECT_COUNT(root231, -1, -1, 13);
   EXPECT_COUNT(root3, -1, -1, 14);
 
-  IterateFrontToBack(&render_surface_layerList);
+  IterateFrontToBack(&render_surface_layer_list);
   EXPECT_COUNT(root_layer, 14, -1, 13);
   EXPECT_COUNT(root1, -1, -1, 12);
   EXPECT_COUNT(root2, 10, 11, -1);

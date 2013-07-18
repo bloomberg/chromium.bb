@@ -696,7 +696,7 @@ bool LayerTreeHost::UpdateLayers(Layer* root_layer,
                benchmark_instrumentation::kCommitNumber,
                commit_number());
 
-  LayerList update_list;
+  RenderSurfaceLayerList update_list;
   {
     UpdateHudLayer();
 
@@ -756,9 +756,6 @@ bool LayerTreeHost::UpdateLayers(Layer* root_layer,
         FROM_HERE, prepaint_callback_.callback(), prepaint_delay);
   }
 
-  for (size_t i = 0; i < update_list.size(); ++i)
-    update_list[i]->ClearRenderSurface();
-
   return did_paint_content;
 }
 
@@ -794,10 +791,11 @@ void LayerTreeHost::SetPrioritiesForSurfaces(size_t surface_memory_bytes) {
       surface_memory_bytes);
 }
 
-void LayerTreeHost::SetPrioritiesForLayers(const LayerList& update_list) {
+void LayerTreeHost::SetPrioritiesForLayers(
+    const RenderSurfaceLayerList& update_list) {
   // Use BackToFront since it's cheap and this isn't order-dependent.
   typedef LayerIterator<Layer,
-                        LayerList,
+                        RenderSurfaceLayerList,
                         RenderSurface,
                         LayerIteratorActions::BackToFront> LayerIteratorType;
 
@@ -818,7 +816,8 @@ void LayerTreeHost::SetPrioritiesForLayers(const LayerList& update_list) {
 }
 
 void LayerTreeHost::PrioritizeTextures(
-    const LayerList& render_surface_layer_list, OverdrawMetrics* metrics) {
+    const RenderSurfaceLayerList& render_surface_layer_list,
+    OverdrawMetrics* metrics) {
   if (!contents_texture_manager_)
     return;
 
@@ -839,7 +838,7 @@ void LayerTreeHost::PrioritizeTextures(
 }
 
 size_t LayerTreeHost::CalculateMemoryForRenderSurfaces(
-    const LayerList& update_list) {
+    const RenderSurfaceLayerList& update_list) {
   size_t readback_bytes = 0;
   size_t max_background_texture_bytes = 0;
   size_t contents_texture_bytes = 0;
@@ -847,7 +846,7 @@ size_t LayerTreeHost::CalculateMemoryForRenderSurfaces(
   // Start iteration at 1 to skip the root surface as it does not have a texture
   // cost.
   for (size_t i = 1; i < update_list.size(); ++i) {
-    Layer* render_surface_layer = update_list[i].get();
+    Layer* render_surface_layer = update_list.at(i);
     RenderSurface* render_surface = render_surface_layer->render_surface();
 
     size_t bytes =
@@ -893,14 +892,14 @@ void LayerTreeHost::PaintMasksForRenderSurface(Layer* render_surface_layer,
 }
 
 void LayerTreeHost::PaintLayerContents(
-    const LayerList& render_surface_layer_list,
+    const RenderSurfaceLayerList& render_surface_layer_list,
     ResourceUpdateQueue* queue,
     bool* did_paint_content,
     bool* need_more_updates) {
   // Use FrontToBack to allow for testing occlusion and performing culling
   // during the tree walk.
   typedef LayerIterator<Layer,
-                        LayerList,
+                        RenderSurfaceLayerList,
                         RenderSurface,
                         LayerIteratorActions::FrontToBack> LayerIteratorType;
 

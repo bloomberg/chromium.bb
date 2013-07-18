@@ -455,6 +455,8 @@ class ScrollbarLayerTestResourceCreation : public testing::Test {
     EXPECT_EQ(expected_resources, queue.PartialUploadSize());
 
     testing::Mock::VerifyAndClearExpectations(layer_tree_host_.get());
+
+    scrollbar_layer->ClearRenderSurface();
   }
 
  protected:
@@ -548,6 +550,8 @@ class ScaledScrollbarLayerTestResourceCreation : public testing::Test {
     }
 
     testing::Mock::VerifyAndClearExpectations(layer_tree_host_.get());
+
+    scrollbar_layer->ClearRenderSurface();
   }
 
  protected:

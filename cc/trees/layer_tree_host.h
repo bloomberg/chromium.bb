@@ -262,10 +262,11 @@ class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
  private:
   bool InitializeProxy(scoped_ptr<Proxy> proxy);
 
-  void PaintLayerContents(const LayerList& render_surface_layer_list,
-                          ResourceUpdateQueue* queue,
-                          bool* did_paint_content,
-                          bool* need_more_updates);
+  void PaintLayerContents(
+      const RenderSurfaceLayerList& render_surface_layer_list,
+      ResourceUpdateQueue* queue,
+      bool* did_paint_content,
+      bool* need_more_updates);
   void PaintMasksForRenderSurface(Layer* render_surface_layer,
                                   ResourceUpdateQueue* queue,
                                   bool* did_paint_content,
@@ -276,11 +277,13 @@ class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
 
   void ReduceMemoryUsage();
 
-  void PrioritizeTextures(const LayerList& render_surface_layer_list,
-                          OverdrawMetrics* metrics);
+  void PrioritizeTextures(
+      const RenderSurfaceLayerList& render_surface_layer_list,
+      OverdrawMetrics* metrics);
   void SetPrioritiesForSurfaces(size_t surface_memory_bytes);
-  void SetPrioritiesForLayers(const LayerList& update_list);
-  size_t CalculateMemoryForRenderSurfaces(const LayerList& update_list);
+  void SetPrioritiesForLayers(const RenderSurfaceLayerList& update_list);
+  size_t CalculateMemoryForRenderSurfaces(
+      const RenderSurfaceLayerList& update_list);
 
   bool AnimateLayersRecursive(Layer* current, base::TimeTicks time);
 

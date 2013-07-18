@@ -20,7 +20,16 @@ RenderSurface::RenderSurface(Layer* owning_layer)
       contributes_to_drawn_surface_(false),
       nearest_ancestor_that_moves_pixels_(NULL) {}
 
-RenderSurface::~RenderSurface() {}
+RenderSurface::~RenderSurface() {
+  for (size_t i = 0; i < layer_list_.size(); ++i) {
+    DCHECK(!layer_list_.at(i)->render_surface()) <<
+        "RenderSurfaces should be cleared from the contributing layers " <<
+        "before destroying this surface to avoid leaking a circular " <<
+        "reference on the contributing layer. Probably the " <<
+        "RenderSurfaceLayerList should just be destroyed before destroying " <<
+        "any RenderSurfaces on layers.";
+  }
+}
 
 gfx::RectF RenderSurface::DrawableContentRect() const {
   gfx::RectF drawable_content_rect =

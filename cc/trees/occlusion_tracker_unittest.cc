@@ -136,7 +136,7 @@ struct OcclusionTrackerTestMainThreadTypes {
   typedef scoped_refptr<Layer> LayerPtrType;
   typedef scoped_refptr<ContentLayerType> ContentLayerPtrType;
   typedef LayerIterator<Layer,
-                        LayerList,
+                        RenderSurfaceLayerList,
                         RenderSurface,
                         LayerIteratorActions::FrontToBack> TestLayerIterator;
   typedef OcclusionTracker OcclusionTrackerType;
@@ -204,7 +204,7 @@ template <typename Types> class OcclusionTrackerTest : public testing::Test {
 
   virtual void TearDown() {
     Types::DestroyLayer(&root_);
-    render_surface_layer_list_.clear();
+    render_surface_layer_list_.reset();
     render_surface_layer_list_impl_.clear();
     replica_layers_.clear();
     mask_layers_.clear();
@@ -335,6 +335,7 @@ template <typename Types> class OcclusionTrackerTest : public testing::Test {
 
     DCHECK(!root->render_surface());
 
+    render_surface_layer_list_.reset(new RenderSurfaceLayerList);
     LayerTreeHostCommon::CalculateDrawProperties(
         root,
         root->bounds(),
@@ -345,10 +346,10 @@ template <typename Types> class OcclusionTrackerTest : public testing::Test {
         dummy_max_texture_size,
         false,  // can_use_lcd_text
         true,  // can_adjust_raster_scales
-        &render_surface_layer_list_);
+        render_surface_layer_list_.get());
 
     layer_iterator_ = layer_iterator_begin_ =
-        Types::TestLayerIterator::Begin(&render_surface_layer_list_);
+        Types::TestLayerIterator::Begin(render_surface_layer_list_.get());
   }
 
   void EnterLayer(typename Types::LayerType* layer,
@@ -457,7 +458,7 @@ template <typename Types> class OcclusionTrackerTest : public testing::Test {
   bool opaque_layers_;
   // These hold ownership of the layers for the duration of the test.
   typename Types::LayerPtrType root_;
-  LayerList render_surface_layer_list_;
+  scoped_ptr<RenderSurfaceLayerList> render_surface_layer_list_;
   LayerImplList render_surface_layer_list_impl_;
   typename Types::TestLayerIterator layer_iterator_begin_;
   typename Types::TestLayerIterator layer_iterator_;

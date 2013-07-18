@@ -177,11 +177,14 @@ void LayerIteratorActions::FrontToBack::GoToHighestInSubtree(
 // Declare each of the above functions for Layer and LayerImpl classes
 // so that they are linked.
 template CC_EXPORT void LayerIteratorActions::BackToFront::Begin(
-    LayerIterator<Layer, LayerList, RenderSurface, BackToFront>* it);
+    LayerIterator<Layer, RenderSurfaceLayerList, RenderSurface, BackToFront>*
+        it);
 template CC_EXPORT void LayerIteratorActions::BackToFront::End(
-    LayerIterator<Layer, LayerList, RenderSurface, BackToFront>* it);
+    LayerIterator<Layer, RenderSurfaceLayerList, RenderSurface, BackToFront>*
+        it);
 template CC_EXPORT void LayerIteratorActions::BackToFront::Next(
-    LayerIterator<Layer, LayerList, RenderSurface, BackToFront>* it);
+    LayerIterator<Layer, RenderSurfaceLayerList, RenderSurface, BackToFront>*
+        it);
 
 template CC_EXPORT void LayerIteratorActions::BackToFront::Begin(
     LayerIterator<LayerImpl, LayerImplList, RenderSurfaceImpl, BackToFront>*
@@ -194,13 +197,17 @@ template CC_EXPORT void LayerIteratorActions::BackToFront::Next(
         it);
 
 template CC_EXPORT void LayerIteratorActions::FrontToBack::Next(
-    LayerIterator<Layer, LayerList, RenderSurface, FrontToBack>* it);
+    LayerIterator<Layer, RenderSurfaceLayerList, RenderSurface, FrontToBack>*
+        it);
 template CC_EXPORT void LayerIteratorActions::FrontToBack::End(
-    LayerIterator<Layer, LayerList, RenderSurface, FrontToBack>* it);
+    LayerIterator<Layer, RenderSurfaceLayerList, RenderSurface, FrontToBack>*
+        it);
 template CC_EXPORT void LayerIteratorActions::FrontToBack::Begin(
-    LayerIterator<Layer, LayerList, RenderSurface, FrontToBack>* it);
+    LayerIterator<Layer, RenderSurfaceLayerList, RenderSurface, FrontToBack>*
+        it);
 template CC_EXPORT void LayerIteratorActions::FrontToBack::GoToHighestInSubtree(
-    LayerIterator<Layer, LayerList, RenderSurface, FrontToBack>* it);
+    LayerIterator<Layer, RenderSurfaceLayerList, RenderSurface, FrontToBack>*
+        it);
 
 template CC_EXPORT void LayerIteratorActions::FrontToBack::Next(
     LayerIterator<LayerImpl, LayerImplList, RenderSurfaceImpl, FrontToBack>*

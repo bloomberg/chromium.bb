@@ -738,6 +738,25 @@ static inline void UpdateLayerContentsScale(
                          animating_transform_to_screen);
 }
 
+static inline RenderSurface* CreateOrReuseRenderSurface(Layer* layer) {
+  // The render surface should always be new on the main thread, as the
+  // RenderSurfaceLayerList should be a new empty list when given to
+  // CalculateDrawProperties.
+  DCHECK(!layer->render_surface());
+  layer->CreateRenderSurface();
+  return layer->render_surface();
+}
+
+static inline RenderSurfaceImpl* CreateOrReuseRenderSurface(LayerImpl* layer) {
+  if (!layer->render_surface()) {
+    layer->CreateRenderSurface();
+    return layer->render_surface();
+  }
+
+  layer->render_surface()->ClearLayerLists();
+  return layer->render_surface();
+}
+
 template <typename LayerType, typename LayerList>
 static inline void RemoveSurfaceForEarlyExit(
     LayerType* layer_to_remove,
@@ -834,7 +853,9 @@ static void RoundTranslationComponents(gfx::Transform* transform) {
 
 // Recursively walks the layer tree starting at the given node and computes all
 // the necessary transformations, clip rects, render surfaces, etc.
-template <typename LayerType, typename LayerList, typename RenderSurfaceType>
+template <typename LayerType,
+          typename LayerListType,
+          typename RenderSurfaceType>
 static void CalculateDrawPropertiesInternal(
     LayerType* layer,
     const gfx::Transform& parent_matrix,
@@ -845,8 +866,8 @@ static void CalculateDrawPropertiesInternal(
     gfx::Rect clip_rect_from_ancestor_in_descendant_space,
     bool ancestor_clips_subtree,
     RenderSurfaceType* nearest_ancestor_that_moves_pixels,
-    LayerList* render_surface_layer_list,
-    LayerList* layer_list,
+    LayerListType* render_surface_layer_list,
+    LayerListType* layer_list,
     LayerSorter* layer_sorter,
     int max_texture_size,
     float device_scale_factor,
@@ -1143,11 +1164,7 @@ static void CalculateDrawPropertiesInternal(
         IsSurfaceBackFaceVisible(layer, combined_transform))
       return;
 
-    if (!layer->render_surface())
-      layer->CreateRenderSurface();
-
-    RenderSurfaceType* render_surface = layer->render_surface();
-    render_surface->ClearLayerLists();
+    RenderSurfaceType* render_surface = CreateOrReuseRenderSurface(layer);
 
     if (IsRootLayer(layer)) {
       // The root layer's render surface size is predetermined and so the root
@@ -1355,7 +1372,7 @@ static void CalculateDrawPropertiesInternal(
                               -layer->anchor_point().y() * bounds.height());
   }
 
-  LayerList& descendants =
+  LayerListType& descendants =
       (layer->render_surface() ? layer->render_surface()->layer_list()
                                : *layer_list);
 
@@ -1381,7 +1398,9 @@ static void CalculateDrawPropertiesInternal(
         LayerTreeHostCommon::get_child_as_raw_ptr(layer->children(), i);
     gfx::Rect drawable_content_rect_of_child_subtree;
     gfx::Transform identity_matrix;
-    CalculateDrawPropertiesInternal<LayerType, LayerList, RenderSurfaceType>(
+    CalculateDrawPropertiesInternal<LayerType,
+                                    LayerListType,
+                                    RenderSurfaceType>(
         child,
         sublayer_matrix,
         next_hierarchy_matrix,
@@ -1485,7 +1504,6 @@ static void CalculateDrawPropertiesInternal(
         std::min(clipped_content_rect.height(), max_texture_size));
 
     if (clipped_content_rect.IsEmpty()) {
-      render_surface->ClearLayerLists();
       RemoveSurfaceForEarlyExit(layer, render_surface_layer_list);
       return;
     }
@@ -1577,12 +1595,12 @@ void LayerTreeHostCommon::CalculateDrawProperties(
     int max_texture_size,
     bool can_use_lcd_text,
     bool can_adjust_raster_scales,
-    LayerList* render_surface_layer_list) {
+    RenderSurfaceLayerList* render_surface_layer_list) {
   gfx::Rect total_drawable_content_rect;
   gfx::Transform identity_matrix;
   gfx::Transform scaled_device_transform = device_transform;
   scaled_device_transform.Scale(device_scale_factor, device_scale_factor);
-  LayerList dummy_layer_list;
+  RenderSurfaceLayerList dummy_layer_list;
 
   // The root layer's render_surface should receive the device viewport as the
   // initial clip rect.
@@ -1597,7 +1615,7 @@ void LayerTreeHostCommon::CalculateDrawProperties(
   PreCalculateMetaInformationRecursiveData recursive_data;
   PreCalculateMetaInformation(root_layer, &recursive_data);
 
-  CalculateDrawPropertiesInternal<Layer, LayerList, RenderSurface>(
+  CalculateDrawPropertiesInternal<Layer, RenderSurfaceLayerList, RenderSurface>(
       root_layer,
       scaled_device_transform,
       identity_matrix,

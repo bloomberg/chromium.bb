@@ -105,6 +105,7 @@
       'layers/layer_impl.h',
       'layers/layer_iterator.cc',
       'layers/layer_iterator.h',
+      'layers/layer_lists.cc',
       'layers/layer_lists.h',
       'layers/layer_position_constraint.cc',
       'layers/layer_position_constraint.h',

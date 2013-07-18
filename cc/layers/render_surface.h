@@ -97,11 +97,10 @@ class CC_EXPORT RenderSurface {
     contributes_to_drawn_surface_ = contributes_to_drawn_surface;
   }
 
-  LayerList& layer_list() { return layer_list_; }
+  RenderSurfaceLayerList& layer_list() { return layer_list_; }
   // A no-op since DelegatedRendererLayers on the main thread don't have any
   // RenderPasses so they can't contribute to a surface.
   void AddContributingDelegatedRenderPassLayer(Layer* layer) {}
-  void ClearLayerLists() { layer_list_.clear(); }
 
   void SetNearestAncestorThatMovesPixels(RenderSurface* surface) {
     nearest_ancestor_that_moves_pixels_ = surface;
@@ -133,7 +132,7 @@ class CC_EXPORT RenderSurface {
   // Uses the space of the surface's target surface.
   gfx::Rect clip_rect_;
 
-  LayerList layer_list_;
+  RenderSurfaceLayerList layer_list_;
 
   // The nearest ancestor target surface that will contain the contents of this
   // surface, and that is going to move pixels within the surface (such as with

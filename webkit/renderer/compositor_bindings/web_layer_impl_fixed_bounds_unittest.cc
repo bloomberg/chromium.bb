@@ -127,41 +127,47 @@ void CompareFixedBoundsLayerAndNormalLayer(
   normal_layer->setPosition(position);
   root_layer->addChild(normal_layer);
 
-  std::vector<scoped_refptr<cc::Layer> > render_surface_layer_list;
-  cc::LayerTreeHostCommon::CalculateDrawProperties(
-      root_layer->layer(),
-      kDeviceViewportSize,
-      gfx::Transform(),
-      kDeviceScaleFactor,
-      kPageScaleFactor,
-      root_layer->layer(),
-      kMaxTextureSize,
-      false,  // can_use_lcd_text
-      false,  // can_adjust_raster_scales
-      &render_surface_layer_list);
-  ExpectEqualLayerRectsInTarget(normal_layer->layer(),
-                                fixed_bounds_layer->layer());
-  ExpectEqualLayerRectsInTarget(sublayer_under_normal_layer->layer(),
-                                sublayer_under_fixed_bounds_layer->layer());
+  {
+    cc::RenderSurfaceLayerList render_surface_layer_list;
+    cc::LayerTreeHostCommon::CalculateDrawProperties(
+        root_layer->layer(),
+        kDeviceViewportSize,
+        gfx::Transform(),
+        kDeviceScaleFactor,
+        kPageScaleFactor,
+        root_layer->layer(),
+        kMaxTextureSize,
+        false,  // can_use_lcd_text
+        false,  // can_adjust_raster_scales
+        &render_surface_layer_list);
+    ExpectEqualLayerRectsInTarget(normal_layer->layer(),
+                                  fixed_bounds_layer->layer());
+    ExpectEqualLayerRectsInTarget(sublayer_under_normal_layer->layer(),
+                                  sublayer_under_fixed_bounds_layer->layer());
+  }
 
   // Change of fixed bounds should not affect the target geometries.
   fixed_bounds_layer->SetFixedBounds(gfx::Size(fixed_bounds.width() / 2,
                                                fixed_bounds.height() * 2));
-  cc::LayerTreeHostCommon::CalculateDrawProperties(
-      root_layer->layer(),
-      kDeviceViewportSize,
-      gfx::Transform(),
-      kDeviceScaleFactor,
-      kPageScaleFactor,
-      root_layer->layer(),
-      kMaxTextureSize,
-      false,  // can_use_lcd_text
-      false,  // can_adjust_raster_scales
-      &render_surface_layer_list);
-  ExpectEqualLayerRectsInTarget(normal_layer->layer(),
-                                fixed_bounds_layer->layer());
-  ExpectEqualLayerRectsInTarget(sublayer_under_normal_layer->layer(),
-                                sublayer_under_fixed_bounds_layer->layer());
+
+  {
+    cc::RenderSurfaceLayerList render_surface_layer_list;
+    cc::LayerTreeHostCommon::CalculateDrawProperties(
+        root_layer->layer(),
+        kDeviceViewportSize,
+        gfx::Transform(),
+        kDeviceScaleFactor,
+        kPageScaleFactor,
+        root_layer->layer(),
+        kMaxTextureSize,
+        false,  // can_use_lcd_text
+        false,  // can_adjust_raster_scales
+        &render_surface_layer_list);
+    ExpectEqualLayerRectsInTarget(normal_layer->layer(),
+                                  fixed_bounds_layer->layer());
+    ExpectEqualLayerRectsInTarget(sublayer_under_normal_layer->layer(),
+                                  sublayer_under_fixed_bounds_layer->layer());
+  }
 }
 
 // A black box test that ensures WebLayerImplFixedBounds won't change target

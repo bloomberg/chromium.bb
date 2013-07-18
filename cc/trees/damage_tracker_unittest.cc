@@ -1301,9 +1301,10 @@ TEST_F(DamageTrackerTest, VerifyDamageForEmptyLayerList) {
 
   ASSERT_TRUE(root == root->render_target());
   RenderSurfaceImpl* target_surface = root->render_surface();
-  target_surface->ClearLayerLists();
+
+  LayerImplList empty_list;
   target_surface->damage_tracker()->UpdateDamageTrackingState(
-      target_surface->layer_list(),
+      empty_list,
       target_surface->OwningLayerId(),
       false,
       gfx::Rect(),

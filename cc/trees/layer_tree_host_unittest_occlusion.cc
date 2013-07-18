@@ -439,12 +439,11 @@ class LayerTreeHostOcclusionTestManySurfaces
 
     for (int i = 0; i < num_surfaces; ++i) {
       layers.push_back(TestLayer::Create());
-      if (!i) {
+      if (i == 0) {
         SetLayerPropertiesForTesting(
             layers.back().get(), NULL, identity_matrix_,
             gfx::PointF(0.f, 0.f),
             gfx::Size(root_width, root_height), true);
-        layers.back()->CreateRenderSurface();
       } else {
         SetLayerPropertiesForTesting(
             layers.back().get(), layers[layers.size() - 2].get(),

@@ -37,7 +37,7 @@ class MockContentsScalingLayer : public ContentsScalingLayer {
 };
 
 void CalcDrawProps(Layer* root, float device_scale) {
-  LayerList render_surface_layer_list;
+  RenderSurfaceLayerList render_surface_layer_list;
   LayerTreeHostCommon::CalculateDrawProperties(
       root,
       gfx::Size(500, 500),

@@ -37,7 +37,7 @@ class CC_EXPORT LayerTreeHostCommon {
       int max_texture_size,
       bool can_use_lcd_text,
       bool can_adjust_raster_scales,
-      LayerList* render_surface_layer_list);
+      RenderSurfaceLayerList* render_surface_layer_list);
   static void CalculateDrawProperties(
       LayerImpl* root_layer,
       gfx::Size device_viewport_size,
