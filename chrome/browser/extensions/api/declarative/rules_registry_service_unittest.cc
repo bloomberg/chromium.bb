@@ -5,7 +5,7 @@
 #include "chrome/browser/extensions/api/declarative/rules_registry_service.h"
 
 #include "base/bind.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "chrome/browser/extensions/api/declarative/test_rules_registry.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "chrome/common/extensions/api/extension_api.h"
 #include "extensions/common/error_utils.h"

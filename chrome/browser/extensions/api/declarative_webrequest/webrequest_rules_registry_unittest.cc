@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "base/json/json_reader.h"
 #include "base/memory/linked_ptr.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "base/test/values_test_util.h"
 #include "base/values.h"

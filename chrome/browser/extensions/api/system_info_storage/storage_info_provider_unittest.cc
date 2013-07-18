@@ -4,7 +4,7 @@
 
 // StorageInfoProvider unit tests.
 
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "chrome/browser/extensions/api/system_info_storage/storage_info_provider.h"
 #include "chrome/browser/extensions/api/system_info_storage/test_storage_info_provider.h"

@@ -7,7 +7,7 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/test/test_timeouts.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "net/base/io_buffer.h"

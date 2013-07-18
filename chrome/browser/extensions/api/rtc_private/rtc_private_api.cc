@@ -5,7 +5,7 @@
 #include "chrome/browser/extensions/api/rtc_private/rtc_private_api.h"
 
 #include "base/json/json_writer.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"

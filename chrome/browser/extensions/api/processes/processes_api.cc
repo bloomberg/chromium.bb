@@ -7,7 +7,7 @@
 #include "base/callback.h"
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"

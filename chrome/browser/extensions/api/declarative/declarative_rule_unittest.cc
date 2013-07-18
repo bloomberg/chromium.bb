@@ -5,7 +5,7 @@
 #include "chrome/browser/extensions/api/declarative/declarative_rule.h"
 
 #include "base/bind.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/test/values_test_util.h"
 #include "base/values.h"
 #include "extensions/common/matcher/url_matcher_constants.h"

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/extensions/api/web_request/web_request_permissions.h"
 
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"

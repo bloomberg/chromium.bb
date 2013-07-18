@@ -9,7 +9,7 @@
 // RulesRegistryWithCache.
 
 #include "base/command_line.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "chrome/browser/extensions/api/declarative/test_rules_registry.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/test_extension_system.h"

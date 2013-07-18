@@ -6,7 +6,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "chrome/browser/extensions/api/bluetooth/bluetooth_event_router.h"
 #include "chrome/browser/extensions/event_names.h"

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/memory/ref_counted.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "chrome/browser/extensions/api/dial/dial_device_data.h"
 #include "chrome/browser/extensions/api/dial/dial_service.h"
 #include "net/base/capturing_net_log.h"
