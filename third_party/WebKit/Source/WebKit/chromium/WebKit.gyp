@@ -31,11 +31,10 @@
 {
     'includes': [
         'WinPrecompile.gypi',
-        '../../wtf/wtf.gypi',
         '../../core/core.gypi',
-        '../../web/web.gypi',
-        'WebKit.gypi',
         '../../core/features.gypi',
+        '../../web/web.gypi',
+        '../../wtf/wtf.gypi',
     ],
     'targets': [
         {
@@ -105,9 +104,8 @@
                     'sources': [
                         '<@(core_unittest_files)',
                         '<@(web_unittest_files)',
-                        '<@(webkit_unittest_files)',
                         '../../web/WebTestingSupport.cpp',
-                        'tests/WebUnitTests.cpp',   # Components test runner support.
+                        '../../web/tests/WebUnitTests.cpp',   # Components test runner support.
                     ],
                     'conditions': [
                         ['OS=="win" or OS=="mac"', {

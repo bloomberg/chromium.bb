@@ -292,8 +292,103 @@
       'win/WebInputEventFactory.cpp',
     ],
     'web_unittest_files': [
+      'tests/ArenaTestHelpers.h',
       'tests/AssociatedURLLoaderTest.cpp',
       'tests/ChromeClientImplTest.cpp',
+      'tests/CustomEventTest.cpp',
+      'tests/DragImageTest.cpp',
+      'tests/FakeWebPlugin.cpp',
+      'tests/FakeWebPlugin.h',
+      'tests/FilterOperationsTest.cpp',
+      'tests/FrameLoaderClientImplTest.cpp',
+      'tests/FrameTestHelpers.cpp',
+      'tests/FrameTestHelpers.h',
+      'tests/GraphicsContextTest.cpp',
+      'tests/GraphicsLayerTest.cpp',
+      'tests/IDBBindingUtilitiesTest.cpp',
+      'tests/IDBKeyPathTest.cpp',
+      'tests/IDBRequestTest.cpp',
+      'tests/IDBTransactionTest.cpp',
+      'tests/ImageFilterBuilderTest.cpp',
+      'tests/ImageLayerChromiumTest.cpp',
+      'tests/KeyboardTest.cpp',
+      'tests/LinkHighlightTest.cpp',
+      'tests/ListenerLeakTest.cpp',
+      'tests/MemoryInfo.cpp',
+      'tests/OpaqueRectTrackingContentLayerDelegateTest.cpp',
+      'tests/OpenTypeVerticalDataTest.cpp',
+      'tests/PODArenaTest.cpp',
+      'tests/PODIntervalTreeTest.cpp',
+      'tests/PODRedBlackTreeTest.cpp',
+      'tests/PaintAggregatorTest.cpp',
+      'tests/PopupContainerTest.cpp',
+      'tests/PrerenderingTest.cpp',
+      'tests/ProgrammaticScrollTest.cpp',
+      'tests/RegionTest.cpp',
+      'tests/RenderLayerBackingTest.cpp',
+      'tests/RenderTableCellTest.cpp',
+      'tests/RenderTableRowTest.cpp',
+      'tests/ScrollingCoordinatorChromiumTest.cpp',
+      'tests/TreeTestHelpers.cpp',
+      'tests/TreeTestHelpers.h',
+      'tests/URLTestHelpers.cpp',
+      'tests/URLTestHelpers.h',
+      'tests/WebFrameTest.cpp',
+      'tests/WebImageTest.cpp',
+      'tests/WebInputEventConversionTest.cpp',
+      'tests/WebInputEventFactoryTestMac.mm',
+      'tests/WebPageNewSerializerTest.cpp',
+      'tests/WebPageSerializerTest.cpp',
+      'tests/WebPluginContainerTest.cpp',
+      'tests/WebURLRequestTest.cpp',
+      'tests/WebURLResponseTest.cpp',
+      'tests/WebUserGestureTokenTest.cpp',
+      'tests/WebViewTest.cpp',
+    ],
+    'conditions': [
+      ['OS=="win"',
+        {
+          'web_unittest_files': [
+            'tests/LocaleWinTest.cpp',
+            # FIXME: Port PopupMenuTest to Linux and Mac.
+            'tests/PopupMenuTest.cpp',
+            'tests/TransparencyWinTest.cpp',
+            'tests/UniscribeHelperTest.cpp',
+            'tests/WebPageNewSerializerTest.cpp',
+            'tests/WebPageSerializerTest.cpp',
+          ],
+        }
+      ],
+      ['OS=="mac"',
+        {
+          'web_unittest_files': [
+            'tests/LocaleMacTest.cpp',
+          ],
+        }
+      ],
+      ['OS!="mac"',
+        {
+          'web_unittest_files': [
+            # Mac uses ScrollAnimatorMac instead of ScrollAnimatorNone.
+            'tests/ScrollAnimatorNoneTest.cpp',
+          ],
+        }
+      ],
+      ['os_posix==1 and OS!="mac"',
+        {
+          'web_unittest_files': [
+            'tests/LocaleICUTest.cpp',
+          ],
+        }
+      ],
+      ['toolkit_uses_gtk == 1',
+        {
+          'web_unittest_files': [
+            'tests/KeyCodeConversionTestGtk.cpp',
+            'tests/WebInputEventFactoryTestGtk.cpp',
+          ],
+        }
+      ],
     ],
   },
 }

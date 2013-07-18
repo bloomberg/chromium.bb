@@ -30,9 +30,9 @@
 
 #include "config.h"
 
+#include "URLTestHelpers.h"
 #include "WebFrame.h"
 #include "WebFrameClient.h"
-#include "WebKit/chromium/tests/URLTestHelpers.h"
 #include "WebURLLoaderOptions.h"
 #include "WebView.h"
 #include "public/platform/Platform.h"

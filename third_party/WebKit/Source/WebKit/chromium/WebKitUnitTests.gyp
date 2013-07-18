@@ -34,9 +34,8 @@
         '../../core/core.gypi',
         '../../core/features.gypi',
         '../../modules/modules.gypi',
-        '../../wtf/wtf.gypi',
         '../../web/web.gypi',
-        'WebKit.gypi',
+        '../../wtf/wtf.gypi',
     ],
     'targets': [
         {
@@ -59,7 +58,7 @@
                 '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_support',
             ],
             'sources': [
-                'tests/RunAllTests.cpp',
+                '../../web/tests/RunAllTests.cpp',
             ],
             'include_dirs': [
                 '../../../public/web',
@@ -84,7 +83,6 @@
                         '<@(core_unittest_files)',
                         '<@(modules_unittest_files)',
                         '<@(web_unittest_files)',
-                        '<@(webkit_unittest_files)',
                     ],
                     'conditions': [
                         ['toolkit_uses_gtk == 1', {
