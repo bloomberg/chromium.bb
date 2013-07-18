@@ -459,12 +459,6 @@ class SigninScreenHandler
   // NOTIFICATION_AUTH_CANCELLED.
   bool has_pending_auth_ui_;
 
-  // Whether to ignore the next net::ERR_ABORTED frame error. ERR_ABORTED could
-  // be triggered when reloading gaia frame's src with a pending load.
-  // ReloadGaiaExtension() sets this flag to true to ignore potential
-  // ERR_ABORTED triggered from its reload request. See http://crbug.com/242527.
-  bool ignore_next_user_abort_frame_error_;
-
   DISALLOW_COPY_AND_ASSIGN(SigninScreenHandler);
 };
 

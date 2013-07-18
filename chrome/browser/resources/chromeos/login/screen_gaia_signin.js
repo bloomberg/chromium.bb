@@ -431,7 +431,6 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      * @param {number} error Error code.
      */
     onFrameError: function(error) {
-      console.error('Gaia frame error = ' + error);
       this.error_ = error;
       chrome.send('frameLoadingCompleted', [this.error_]);
     },
