@@ -15,7 +15,6 @@
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/cursor/cursor_loader_win.h"
-#include "ui/base/events/event.h"
 #include "ui/base/events/event_utils.h"
 #include "ui/base/keycodes/keyboard_code_conversion_win.h"
 #include "ui/base/view_prop.h"
@@ -407,14 +406,28 @@ void RemoteRootWindowHostWin::OnMouseMoved(int32 x, int32 y, int32 flags) {
 void RemoteRootWindowHostWin::OnMouseButton(
     int32 x, int32 y, int32 extra, ui::EventType type, ui::EventFlags flags) {
   gfx::Point location(x, y);
-  ui::MouseEvent mouse_event(type, location, location, 0);
-  mouse_event.set_flags(flags);
+  ui::MouseEvent mouse_event(type, location, location, flags);
 
   if (type == ui::ET_MOUSEWHEEL) {
     ui::MouseWheelEvent wheel_event(mouse_event, 0, extra);
     delegate_->OnHostMouseEvent(&wheel_event);
+  } else if (type == ui::ET_MOUSE_PRESSED) {
+    // TODO(shrikant): Ideally modify code in event.cc by adding automatic
+    // tracking of double clicks in synthetic MouseEvent constructor code.
+    // Non-synthetic MouseEvent constructor code does automatically track
+    // this. Need to use some caution while modifying synthetic constructor
+    // as many tests and other code paths depend on it and apparently
+    // specifically depend on non implicit tracking of previous mouse event.
+    if (last_mouse_click_event_ &&
+        ui::MouseEvent::IsRepeatedClickEvent(mouse_event,
+                                             *last_mouse_click_event_)) {
+      mouse_event.SetClickCount(2);
+    } else {
+      mouse_event.SetClickCount(1);
+    }
+    last_mouse_click_event_ .reset(new ui::MouseEvent(mouse_event));
+    delegate_->OnHostMouseEvent(&mouse_event);
   } else {
-    mouse_event.SetClickCount(1);
     delegate_->OnHostMouseEvent(&mouse_event);
   }
 }

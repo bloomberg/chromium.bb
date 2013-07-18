@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/strings/string16.h"
 #include "ui/aura/root_window_host.h"
+#include "ui/base/events/event.h"
 #include "ui/base/events/event_constants.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -217,6 +218,9 @@ class AURA_EXPORT RemoteRootWindowHostWin : public RootWindowHost {
   // Set to true if we need to ignore mouse messages until the SetCursorPos
   // operation is acked by the viewer.
   bool ignore_mouse_moves_until_set_cursor_ack_;
+
+  // Tracking last click event for synthetically generated mouse events.
+  scoped_ptr<ui::MouseEvent> last_mouse_click_event_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoteRootWindowHostWin);
 };
