@@ -705,7 +705,9 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
             print_stdout = True
             filter_fn = None
 
-          if os.path.isdir(cwd):
+          if parsed_url is None:
+            print >> sys.stderr, 'Skipped omitted dependency %s' % cwd
+          elif os.path.isdir(cwd):
             try:
               gclient_utils.CheckCallAndFilter(
                   args, cwd=cwd, env=env, print_stdout=print_stdout,
