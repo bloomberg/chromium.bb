@@ -178,7 +178,64 @@ function test()
             for (var i = 0, len = testArrays.length; i < len; ++i)
                 testArray(testArrays[i]);
             next();
+        },
+
+        function naturalOrderComparatorTest(next)
+        {
+            var testArray = [
+                "dup",
+                "a1",
+                "a4222",
+                "a91",
+                "a07",
+                "dup",
+                "a7",
+                "a007",
+                "abc00",
+                "abc0",
+                "abc",
+                "abcd",
+                "abc000",
+                "x10y20z30",
+                "x9y19z29",
+                "dup",
+                "x09y19z29",
+                "x10y22z23",
+                "x10y19z43",
+                "1",
+                "10",
+                "11",
+                "dup",
+                "2", "2", "2",
+                "555555",
+                "5",
+                "5555",
+                "dup",
+            ];
+
+            for (var i = 0, n = testArray.length; i < n; ++i)
+                InspectorTest.assertEquals(0, String.naturalOrderComparator(testArray[i], testArray[i]), "comparing equal strings");
+
+            testArray.sort(String.naturalOrderComparator);
+            InspectorTest.addResult("Sorted in natural order: [" + testArray.join(", ") + "]");
+
+            // Check comparator's transitivity.
+            for (var i = 0, n = testArray.length; i < n; ++i) {
+                for (var j = 0; j < n; ++j) {
+                    var a = testArray[i];
+                    var b = testArray[j];
+                    var diff = String.naturalOrderComparator(a, b);
+                    if (diff === 0)
+                        InspectorTest.assertEquals(a, b, "zero diff");
+                    else if (diff < 0)
+                        InspectorTest.assertTrue(i < j);
+                    else
+                        InspectorTest.assertTrue(i > j);
+                }
+            }
+            next();
         }
+
     ]);
 }
 
