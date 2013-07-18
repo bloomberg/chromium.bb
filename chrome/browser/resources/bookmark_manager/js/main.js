@@ -849,9 +849,7 @@ function deleteBookmarks() {
   lastDeletedNodes = [];
 
   function performDelete() {
-    selectedIds.forEach(function(id) {
-      chrome.bookmarks.removeTree(id);
-    });
+    chrome.bookmarkManagerPrivate.removeTrees(selectedIds);
     $('undo-delete-command').canExecuteChange();
     performGlobalUndo = undoDelete;
   }

@@ -222,6 +222,22 @@
         ]
       },
       {
+        "name": "removeTrees",
+        "type": "function",
+        "description": "Recursively removes list of bookmarks nodes.",
+        "nodoc": "true",
+        "parameters": [
+          {
+            "name": "idList",
+            "description": "An array of string-valued ids",
+            "type": "array",
+            "items": {"type": "string"},
+            "minItems": 1
+          },
+          {"type": "function", "name": "callback", "optional": true, "parameters": []}
+        ]
+      },
+      {
         "name": "recordLaunch",
         "type": "function",
         "description": "",

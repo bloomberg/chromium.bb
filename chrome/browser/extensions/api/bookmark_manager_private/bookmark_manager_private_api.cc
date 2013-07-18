@@ -49,6 +49,7 @@ namespace Drop = api::bookmark_manager_private::Drop;
 namespace GetSubtree = api::bookmark_manager_private::GetSubtree;
 namespace manager_keys = bookmark_manager_api_constants;
 namespace Paste = api::bookmark_manager_private::Paste;
+namespace RemoveTrees = api::bookmark_manager_private::RemoveTrees;
 namespace SortChildren = api::bookmark_manager_private::SortChildren;
 namespace StartDrag = api::bookmark_manager_private::StartDrag;
 
@@ -531,6 +532,24 @@ bool BookmarkManagerPrivateCanOpenNewWindowsFunction::RunImpl() {
 #endif  // OS_WIN
 
   SetResult(new base::FundamentalValue(can_open_new_windows));
+  return true;
+}
+
+bool BookmarkManagerPrivateRemoveTreesFunction::RunImpl() {
+  scoped_ptr<RemoveTrees::Params> params(RemoveTrees::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
+  int64 id;
+  for (size_t i = 0; i < params->id_list.size(); ++i) {
+    if (!base::StringToInt64(params->id_list[i], &id)) {
+      error_ = bookmark_api_constants::kInvalidIdError;
+      return false;
+    }
+    if (!bookmark_api_helpers::RemoveNode(model, id, true, &error_))
+      return false;
+  }
+
   return true;
 }
 

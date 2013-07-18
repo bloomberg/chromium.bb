@@ -217,6 +217,19 @@ class BookmarkManagerPrivateCanOpenNewWindowsFunction
   virtual bool RunImpl() OVERRIDE;
 };
 
+class BookmarkManagerPrivateRemoveTreesFunction
+    : public extensions::BookmarksFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("bookmarkManagerPrivate.removeTrees",
+                             BOOKMARKMANAGERPRIVATE_REMOVETREES)
+
+ protected:
+  virtual ~BookmarkManagerPrivateRemoveTreesFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
+};
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_BOOKMARK_MANAGER_PRIVATE_BOOKMARK_MANAGER_PRIVATE_API_H_
