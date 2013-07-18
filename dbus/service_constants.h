@@ -1253,6 +1253,7 @@ const char kGetNetworkStatus[] = "GetNetworkStatus";
 const char kGetPerfData[] = "GetPerfData";
 const char kGetRichPerfData[] = "GetRichPerfData";
 const char kGetRoutes[] = "GetRoutes";
+const char kGetWiMaxStatus[] = "GetWiMaxStatus";
 const char kSetDebugMode[] = "SetDebugMode";
 const char kSystraceStart[] = "SystraceStart";
 const char kSystraceStop[] = "SystraceStop";
