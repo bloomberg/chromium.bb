@@ -13,7 +13,7 @@
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/threading/platform_thread.h"
 #include "content/browser/renderer_host/compositing_iosurface_context_mac.h"
 #include "content/browser/renderer_host/compositing_iosurface_shader_programs_mac.h"
@@ -27,9 +27,9 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
-#include "ui/gl/io_surface_support_mac.h"
-#include "ui/gl/gl_context.h"
 #include "ui/gfx/size_conversions.h"
+#include "ui/gl/gl_context.h"
+#include "ui/gl/io_surface_support_mac.h"
 
 #ifdef NDEBUG
 #define CHECK_GL_ERROR()

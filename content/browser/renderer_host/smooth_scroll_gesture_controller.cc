@@ -5,7 +5,7 @@
 #include "content/browser/renderer_host/smooth_scroll_gesture_controller.h"
 
 #include "base/debug/trace_event.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "content/common/view_messages.h"
 #include "content/port/browser/render_widget_host_view_port.h"
 #include "content/port/browser/smooth_scroll_gesture.h"

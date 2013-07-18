@@ -8,7 +8,7 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/browser_thread_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"

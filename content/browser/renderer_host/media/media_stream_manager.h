@@ -27,13 +27,13 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop.h"
 #include "base/system_monitor/system_monitor.h"
 #include "content/browser/renderer_host/media/media_stream_provider.h"
-#include "content/common/media/media_stream_options.h"
 #include "content/common/content_export.h"
+#include "content/common/media/media_stream_options.h"
 
 namespace base {
 class Thread;

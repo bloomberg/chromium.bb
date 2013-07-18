@@ -4,7 +4,7 @@
 
 #include "content/browser/renderer_host/media/media_stream_ui_proxy.h"
 
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/test/test_browser_thread.h"

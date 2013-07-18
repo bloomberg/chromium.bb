@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/values.h"
 #include "content/browser/media/webrtc_internals.h"
 #include "content/browser/media/webrtc_internals_ui_observer.h"

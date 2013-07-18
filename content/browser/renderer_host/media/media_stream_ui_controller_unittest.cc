@@ -5,10 +5,10 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "content/browser/browser_thread_impl.h"
-#include "content/browser/renderer_host/media/media_stream_ui_controller.h"
 #include "content/browser/renderer_host/media/media_stream_settings_requester.h"
+#include "content/browser/renderer_host/media/media_stream_ui_controller.h"
 #include "content/common/media/media_stream_options.h"
 #include "content/public/common/media_stream_request.h"
 #include "testing/gmock/include/gmock/gmock.h"

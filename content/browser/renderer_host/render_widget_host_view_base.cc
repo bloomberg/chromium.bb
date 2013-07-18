@@ -19,7 +19,7 @@
 
 #if defined(OS_WIN)
 #include "base/command_line.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/win/wrapped_window_proc.h"
 #include "content/browser/plugin_process_host.h"
 #include "content/public/browser/browser_thread.h"
