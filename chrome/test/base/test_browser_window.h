@@ -126,7 +126,6 @@ class TestBrowserWindow : public BrowserWindow {
   virtual bool IsFullscreenWithoutChrome() OVERRIDE;
 #endif
 
-  virtual gfx::Rect GetInstantBounds() OVERRIDE;
   virtual WindowOpenDisposition GetDispositionForPopupBounds(
       const gfx::Rect& bounds) OVERRIDE;
   virtual FindBar* CreateFindBar() OVERRIDE;

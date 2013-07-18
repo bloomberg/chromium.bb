@@ -1143,10 +1143,6 @@ void BrowserWindowGtk::Paste() {
       window_, browser_->tab_strip_model()->GetActiveWebContents());
 }
 
-gfx::Rect BrowserWindowGtk::GetInstantBounds() {
-  return ui::GetWidgetScreenBounds(contents_container_->widget());
-}
-
 WindowOpenDisposition BrowserWindowGtk::GetDispositionForPopupBounds(
     const gfx::Rect& bounds) {
   return NEW_POPUP;

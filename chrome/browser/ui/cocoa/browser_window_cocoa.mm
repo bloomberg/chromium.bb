@@ -640,16 +640,6 @@ bool BrowserWindowCocoa::IsFullscreenWithoutChrome() {
   return IsFullscreen() && [controller_ inPresentationMode];
 }
 
-gfx::Rect BrowserWindowCocoa::GetInstantBounds() {
-  // Flip coordinates based on the primary screen.
-  NSScreen* screen = [[NSScreen screens] objectAtIndex:0];
-  NSRect monitorFrame = [screen frame];
-  NSRect frame = [controller_ instantFrame];
-  gfx::Rect bounds(NSRectToCGRect(frame));
-  bounds.set_y(NSHeight(monitorFrame) - bounds.y() - bounds.height());
-  return bounds;
-}
-
 WindowOpenDisposition BrowserWindowCocoa::GetDispositionForPopupBounds(
     const gfx::Rect& bounds) {
   // In Lion fullscreen mode, convert popups into tabs.

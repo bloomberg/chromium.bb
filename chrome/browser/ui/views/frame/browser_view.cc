@@ -1341,10 +1341,6 @@ void BrowserView::Paste() {
                  IDS_APP_PASTE);
 }
 
-gfx::Rect BrowserView::GetInstantBounds() {
-  return overlay_container_->GetOverlayBounds();
-}
-
 WindowOpenDisposition BrowserView::GetDispositionForPopupBounds(
     const gfx::Rect& bounds) {
 #if defined(OS_WIN)

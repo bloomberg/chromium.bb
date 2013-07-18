@@ -131,7 +131,6 @@ class BrowserWindowCocoa :
   virtual void EnterFullscreenWithChrome() OVERRIDE;
   virtual bool IsFullscreenWithChrome() OVERRIDE;
   virtual bool IsFullscreenWithoutChrome() OVERRIDE;
-  virtual gfx::Rect GetInstantBounds() OVERRIDE;
   virtual WindowOpenDisposition GetDispositionForPopupBounds(
       const gfx::Rect& bounds) OVERRIDE;
   virtual FindBar* CreateFindBar() OVERRIDE;

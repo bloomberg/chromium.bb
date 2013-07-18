@@ -124,10 +124,6 @@ bool TestBrowserWindow::IsFullscreenWithoutChrome() {
 }
 #endif
 
-gfx::Rect TestBrowserWindow::GetInstantBounds() {
-  return gfx::Rect();
-}
-
 WindowOpenDisposition TestBrowserWindow::GetDispositionForPopupBounds(
     const gfx::Rect& bounds) {
   return NEW_POPUP;

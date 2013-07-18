@@ -314,11 +314,6 @@ class BrowserWindow : public ui::BaseWindow {
   virtual bool IsFullscreenWithoutChrome() = 0;
 #endif
 
-  // Returns the desired bounds for Instant in screen coordinates. Note that if
-  // Instant isn't currently visible this returns the bounds Instant would be
-  // placed at.
-  virtual gfx::Rect GetInstantBounds() = 0;
-
   // Return the correct disposition for a popup window based on |bounds|.
   virtual WindowOpenDisposition GetDispositionForPopupBounds(
       const gfx::Rect& bounds) = 0;
