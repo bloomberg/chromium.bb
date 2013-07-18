@@ -234,7 +234,7 @@ void WorkerScriptController::disableEval(const String& errorMessage)
 
 void WorkerScriptController::setException(const ScriptValue& exception)
 {
-    throwError(exception.v8Value(), m_isolate);
+    throwError(exception.v8Value());
 }
 
 WorkerScriptController* WorkerScriptController::controllerForContext()

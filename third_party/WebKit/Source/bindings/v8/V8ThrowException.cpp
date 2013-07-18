@@ -121,7 +121,7 @@ v8::Handle<v8::Value> V8ThrowException::throwNotEnoughArgumentsError(v8::Isolate
     return V8ThrowException::throwError(exception);
 }
 
-v8::Handle<v8::Value> V8ThrowException::throwError(v8::Handle<v8::Value> exception, v8::Isolate* isolate)
+v8::Handle<v8::Value> V8ThrowException::throwError(v8::Handle<v8::Value> exception)
 {
     if (!v8::V8::IsExecutionTerminating())
         v8::ThrowException(exception);

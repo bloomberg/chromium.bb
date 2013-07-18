@@ -52,12 +52,12 @@ public:
     }
     static v8::Handle<v8::Value> throwDOMException(int, const char*, v8::Isolate*);
 
-    static v8::Handle<v8::Value> createError(V8ErrorType, const char*, v8::Isolate* = 0);
-    static v8::Handle<v8::Value> throwError(V8ErrorType, const char*, v8::Isolate* = 0);
-    static v8::Handle<v8::Value> throwError(v8::Handle<v8::Value>, v8::Isolate* = 0);
+    static v8::Handle<v8::Value> createError(V8ErrorType, const char*, v8::Isolate*);
+    static v8::Handle<v8::Value> throwError(V8ErrorType, const char*, v8::Isolate*);
+    static v8::Handle<v8::Value> throwError(v8::Handle<v8::Value>);
 
-    static v8::Handle<v8::Value> createTypeError(const char* = 0, v8::Isolate* = 0);
-    static v8::Handle<v8::Value> throwTypeError(const char* = 0, v8::Isolate* = 0);
+    static v8::Handle<v8::Value> createTypeError(const char*, v8::Isolate*);
+    static v8::Handle<v8::Value> throwTypeError(const char*, v8::Isolate*);
 
     static v8::Handle<v8::Value> throwNotEnoughArgumentsError(v8::Isolate*);
 };
