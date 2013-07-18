@@ -110,7 +110,9 @@ const int kScreenEdgeInsetForTouchResize = 32;
 // Returns true if the window should stick to the edge.
 bool ShouldStickToEdge(int distance_from_edge, int sticky_size) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshEnableStickyEdges)) {
+          switches::kAshEnableStickyEdges) ||
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAshEnableDockedWindows)) {
     return distance_from_edge < 0 &&
            distance_from_edge > -sticky_size;
   }
@@ -352,7 +354,9 @@ void WorkspaceWindowResizer::Drag(const gfx::Point& location_in_parent,
   if (event_flags & ui::EF_CONTROL_DOWN) {
     sticky_size = 0;
   } else if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kAshEnableStickyEdges)) {
+      switches::kAshEnableStickyEdges) ||
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAshEnableDockedWindows)) {
     sticky_size = kStickyDistancePixels;
   } else if ((details_.bounds_change & kBoundsChange_Resizes) &&
       details_.source == aura::client::WINDOW_MOVE_SOURCE_TOUCH) {
