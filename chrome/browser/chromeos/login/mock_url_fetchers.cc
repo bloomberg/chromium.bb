@@ -7,7 +7,7 @@
 #include <errno.h>
 
 #include "base/bind.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"

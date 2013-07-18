@@ -9,7 +9,7 @@
 #include "base/format_macros.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"

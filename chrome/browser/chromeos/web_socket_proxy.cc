@@ -31,7 +31,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/sha1.h"
 #include "base/stl_util.h"

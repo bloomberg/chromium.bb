@@ -10,7 +10,7 @@
 #include <X11/XKBlib.h>
 #undef Status
 
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "chromeos/ime/input_method_manager.h"
 #include "chromeos/ime/xkeyboard.h"
 #include "ui/base/x/x11_util.h"
