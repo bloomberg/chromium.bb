@@ -108,7 +108,7 @@ static void irt_start_thread(void) {
   while (1) *(volatile int *) 0 = 0;  /* Crash.  */
 }
 
-static int nacl_irt_thread_create(void *start_user_address, void *stack,
+static int nacl_irt_thread_create(void (*start_func)(void), void *stack,
                                   void *thread_ptr) {
   struct nc_combined_tdb *tdb;
 
@@ -135,7 +135,7 @@ static int nacl_irt_thread_create(void *start_user_address, void *stack,
    * We overload the libpthread start_func field to store a function
    * of a different type.
    */
-  tdb->tdb.start_func = (void *(*)(void *)) (uintptr_t) start_user_address;
+  tdb->tdb.start_func = (void *(*)(void *)) start_func;
 
   int error = -NACL_SYSCALL(thread_create)(
       (void *) (uintptr_t) &irt_start_thread, stack, thread_ptr, irt_tp);

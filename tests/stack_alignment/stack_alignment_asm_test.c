@@ -101,8 +101,7 @@ int main(void) {
     g_stack_ptr = NULL;
     g_stack_in_use = 1;
     void *dummy_tls = &dummy_tls;
-    int rc = irt_thread.thread_create((void *) (uintptr_t) ThreadStartWrapper,
-                                      stack_top, dummy_tls);
+    int rc = irt_thread.thread_create(ThreadStartWrapper, stack_top, dummy_tls);
     assert(rc == 0);
     /* Spin until the thread exits. */
     while (g_stack_in_use) {

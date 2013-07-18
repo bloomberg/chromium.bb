@@ -131,8 +131,8 @@ void test_user_thread(void) {
 
   g_thread_flag = 1;
   void *dummy_tls = &dummy_tls;
-  int rc = nacl_irt_thread.thread_create(
-      (void *) (uintptr_t) user_thread_func, allocate_stack(), dummy_tls);
+  int rc = nacl_irt_thread.thread_create(user_thread_func, allocate_stack(),
+                                         dummy_tls);
   assert(rc == 0);
   wait_for_thread_exit();
   /* The assignment should not have affected our copy of tls_var. */
@@ -181,9 +181,8 @@ static void initial_thread_exit_helper(void) {
 void test_exiting_initial_thread(void) {
   g_thread_flag = 1;
   void *dummy_tls = &dummy_tls;
-  int rc = nacl_irt_thread.thread_create(
-      (void *) (uintptr_t) initial_thread_exit_helper,
-      allocate_stack(), dummy_tls);
+  int rc = nacl_irt_thread.thread_create(initial_thread_exit_helper,
+                                         allocate_stack(), dummy_tls);
   assert(rc == 0);
   nacl_irt_thread.thread_exit(&g_thread_flag);
   /* Should not reach here. */

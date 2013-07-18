@@ -139,7 +139,7 @@ struct nacl_irt_dyncode {
 
 #define NACL_IRT_THREAD_v0_1   "nacl-irt-thread-0.1"
 struct nacl_irt_thread {
-  int (*thread_create)(void *start_user_address, void *stack, void *thread_ptr);
+  int (*thread_create)(void (*start_func)(void), void *stack, void *thread_ptr);
   void (*thread_exit)(int32_t *stack_flag);
   int (*thread_nice)(const int nice);
 };
