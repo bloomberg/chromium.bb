@@ -3618,6 +3618,9 @@ void RenderLayer::paintLayerContents(GraphicsContext* context, const LayerPainti
         || (!isPaintingScrollingContent && isPaintingCompositedForeground));
     bool shouldPaintContent = m_hasVisibleContent && isSelfPaintingLayer && !isPaintingOverlayScrollbars;
 
+    float deviceScaleFactor = WebCore::deviceScaleFactor(renderer()->frame());
+    context->setUseHighResMarkers(deviceScaleFactor > 1.5f);
+
     GraphicsContext* transparencyLayerContext = context;
     
     if (localPaintFlags & PaintLayerPaintingRootBackgroundOnly && !renderer()->isRenderView() && !renderer()->isRoot())
