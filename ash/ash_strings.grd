@@ -336,6 +336,9 @@ Press Ctrl+Alt+Z to disable.
       <message name="IDS_ASH_STATUS_TRAY_UNKNOWN_DISPLAY_NAME" desc="Label shown in tray for a display whose name is unknown.">
         Unknown Display
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_DISPLAY_ANNOTATED_NAME" desc="Label used to show a display name with annotation (like screen resolution or overscan info).">
+	<ph name="DISPLAY_NAME">$1</ph> (<ph name="ANNOTATION">$2</ph>)
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_DISPLAY_ANNOTATION" desc="Label used to annotate the display's status like resolution or overscan flag.">
         <ph name="RESOLUTION">$1</ph>, <ph name="OVERSCAN">$2</ph>
       </message>
