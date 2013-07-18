@@ -34,7 +34,6 @@
 #include "skia/ext/lazy_pixel_ref.h"
 
 #include <wtf/RefPtr.h>
-#include <wtf/ThreadingPrimitives.h>
 
 using skia::LazyPixelRef;
 
@@ -47,12 +46,13 @@ class ScaledImageFragment;
 
 class LazyDecodingPixelRef : public LazyPixelRef {
 public:
-    LazyDecodingPixelRef(PassRefPtr<ImageFrameGenerator>, const SkISize& scaledSize, const SkIRect& scaledSubset);
+    LazyDecodingPixelRef(PassRefPtr<ImageFrameGenerator>, const SkISize& scaledSize, size_t index, const SkIRect& scaledSubset);
     virtual ~LazyDecodingPixelRef();
 
     SK_DECLARE_UNFLATTENABLE_OBJECT()
 
     PassRefPtr<ImageFrameGenerator> frameGenerator() const { return m_frameGenerator; }
+    size_t frameIndex() const { return m_frameIndex; }
     bool isScaled(const SkISize& fullSize) const;
     bool isClipped() const;
 
@@ -72,11 +72,11 @@ protected:
 
 private:
     RefPtr<ImageFrameGenerator> m_frameGenerator;
+    size_t m_frameIndex;
     SkISize m_scaledSize;
     SkIRect m_scaledSubset;
 
     const ScaledImageFragment* m_lockedCachedImage;
-    Mutex m_mutex;
 };
 
 } // namespace WebCore
