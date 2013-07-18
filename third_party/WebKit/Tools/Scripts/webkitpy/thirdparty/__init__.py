@@ -81,8 +81,6 @@ class AutoinstallImportHook(object):
             self._install_irc()
         elif '.mechanize' in fullname:
             self._install_mechanize()
-        elif '.coverage' in fullname:
-            self._install_coverage()
 
     def _install_irc(self):
         # Since irclib and ircbot are two top-level packages, we need to import
@@ -99,12 +97,6 @@ class AutoinstallImportHook(object):
     def _install_mechanize(self):
         return self._install("https://pypi.python.org/packages/source/m/mechanize/mechanize-0.2.5.tar.gz",
                              "mechanize-0.2.5/mechanize")
-
-    # autoinstalled.buildbot is used by BuildSlaveSupport/build.webkit.org-config/mastercfg_unittest.py
-    # and should ideally match the version of BuildBot used at build.webkit.org.
-    def _install_coverage(self):
-        self._ensure_autoinstalled_dir_is_in_sys_path()
-        return self._install(url="https://pypi.python.org/packages/source/c/coverage/coverage-3.5.1.tar.gz#md5=410d4c8155a4dab222f2bc51212d4a24", url_subpath="coverage-3.5.1/coverage")
 
     def _install_unittest2(self):
         self._ensure_autoinstalled_dir_is_in_sys_path()

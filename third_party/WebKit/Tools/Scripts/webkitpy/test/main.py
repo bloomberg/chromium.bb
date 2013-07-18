@@ -33,6 +33,7 @@ import time
 import traceback
 import unittest
 
+from webkitpy.common.webkit_finder import WebKitFinder
 from webkitpy.common.system.filesystem import FileSystem
 from webkitpy.test.finder import Finder
 from webkitpy.test.printer import Printer
@@ -71,7 +72,8 @@ def main():
 
 class Tester(object):
     def __init__(self, filesystem=None):
-        self.finder = Finder(filesystem or FileSystem())
+        self.filesystem = filesystem or FileSystem()
+        self.finder = Finder(self.filesystem)
         self.printer = Printer(sys.stderr)
         self._options = None
 
@@ -86,7 +88,7 @@ class Tester(object):
         parser.add_option('-a', '--all', action='store_true', default=False,
                           help='run all the tests')
         parser.add_option('-c', '--coverage', action='store_true', default=False,
-                          help='generate code coverage info (requires http://pypi.python.org/pypi/coverage)')
+                          help='generate code coverage info')
         parser.add_option('-i', '--integration-tests', action='store_true', default=False,
                           help='run integration tests as well as unit tests'),
         parser.add_option('-j', '--child-processes', action='store', type='int', default=(1 if sys.platform == 'win32' else multiprocessing.cpu_count()),
@@ -138,8 +140,13 @@ class Tester(object):
             _log.warning("Checking code coverage, so running things serially")
             self._options.child_processes = 1
 
-            import webkitpy.thirdparty.autoinstalled.coverage as coverage
-            cov = coverage.coverage(omit=["/usr/*", "*/webkitpy/thirdparty/autoinstalled/*", "*/webkitpy/thirdparty/BeautifulSoup.py"])
+            # FIXME: coverage needs to be in sys.path for its internal imports to work ... sigh.
+            thirdparty_path = WebKitFinder(self.filesystem).path_from_webkit_base('Tools', 'Scripts', 'webkitpy', 'thirdparty')
+            if not thirdparty_path in sys.path:
+                sys.path.append(thirdparty_path)
+            import coverage
+
+            cov = coverage.coverage(omit=["/usr/*", "*/webkitpy/thirdparty/*"])
             cov.start()
 
         self.printer.write_update("Checking imports ...")

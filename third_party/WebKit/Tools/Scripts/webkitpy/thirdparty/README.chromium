@@ -16,6 +16,16 @@ Security Critical: no
 Description: Used during the w3c import, other places
 Local Modifications: None
 
+Name: coverage - code coverage metrics for python
+Short Name: coverage
+URL: http://pypi.python.org/packages/source/c/coverage/coverage-3.5.1.tar.gz#md5=410d4c8155a4dab222f2bc51212d4a24
+Version: 3.5.1
+License: BSD
+License File: NOT_SHIPPED
+Security Critical: no
+Description: code coverage metrics gathering for test-webkitpy.
+Local Modifications: None
+
 Name: mock.py
 Short Name: mock
 URL: http://www.voidspace.org.uk/python/mock/
