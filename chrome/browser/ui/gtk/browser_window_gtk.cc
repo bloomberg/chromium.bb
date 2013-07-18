@@ -978,10 +978,6 @@ void BrowserWindowGtk::ShowBookmarkBubble(const GURL& url,
   toolbar_->GetLocationBarView()->ShowStarBubble(url, !already_bookmarked);
 }
 
-void BrowserWindowGtk::ShowChromeToMobileBubble() {
-  toolbar_->GetLocationBarView()->ShowChromeToMobileBubble();
-}
-
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
 void BrowserWindowGtk::ShowOneClickSigninBubble(
     OneClickSigninBubbleType type,

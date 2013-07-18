@@ -42,11 +42,6 @@ void ShowBookmarkBubbleView(views::View* anchor_view,
 void HideBookmarkBubbleView();
 bool IsBookmarkBubbleViewShowing();
 
-// Shows or hides the Chrome To Mobile bubble anchored to the supplied view.
-void ShowChromeToMobileBubbleView(views::View* anchor_view, Browser* browser);
-void HideChromeToMobileBubbleView();
-bool IsChromeToMobileBubbleViewShowing();
-
 // Creates and returns a find bar for the given browser window. See FindBarWin.
 FindBar* CreateFindBar(BrowserView* browser_view);
 

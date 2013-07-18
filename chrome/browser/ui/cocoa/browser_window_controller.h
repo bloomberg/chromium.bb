@@ -29,7 +29,6 @@
 class Browser;
 class BrowserWindow;
 class BrowserWindowCocoa;
-@class ChromeToMobileBubbleController;
 @class DevToolsController;
 @class DownloadShelfController;
 class ExtensionKeybindingRegistryCocoa;
@@ -84,8 +83,6 @@ class WebContents;
   BookmarkBubbleController* bookmarkBubbleController_;  // Weak.
   BOOL initializing_;  // YES while we are currently in initWithBrowser:
   BOOL ownsBrowser_;  // Only ever NO when testing
-
-  ChromeToMobileBubbleController* chromeToMobileBubbleController_;  // Weak.
 
   // The total amount by which we've grown the window up or down (to display a
   // bookmark bar and/or download shelf), respectively; reset to 0 when moved
@@ -304,13 +301,6 @@ class WebContents;
 // Show the bookmark bubble (e.g. user just clicked on the STAR)
 - (void)showBookmarkBubbleForURL:(const GURL&)url
                alreadyBookmarked:(BOOL)alreadyBookmarked;
-
-// Show the Chrome To Mobile bubble (e.g. user just clicked on the icon)
-- (void)showChromeToMobileBubble;
-
-// Nil out the weak Chrome To Mobile bubble controller reference.
-// This should be called by the ChromeToMobileBubbleController on close.
-- (void)chromeToMobileBubbleWindowWillClose;
 
 // Shows or hides the docked web inspector depending on |contents|'s state.
 - (void)updateDevToolsForContents:(content::WebContents*)contents;

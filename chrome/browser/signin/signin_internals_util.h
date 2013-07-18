@@ -18,7 +18,6 @@ extern const char kSigninPrefPrefix[];
 extern const char kTokenPrefPrefix[];
 
 // The following tokens are not under the purview of TokenService.
-extern const char kChromeToMobileToken[];
 extern const char kOperationsBaseToken[];
 extern const char kUserPolicySigninServiceToken[];
 extern const char kProfileDownloaderToken[];
@@ -142,6 +141,6 @@ class SigninDiagnosticsObserver {
 
 };
 
-} // namespace
+} // namespace signin_internals_util
 
 #endif  // CHROME_BROWSER_SIGNIN_SIGNIN_INTERNALS_UTIL_H_

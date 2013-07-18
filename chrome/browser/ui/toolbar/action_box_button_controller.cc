@@ -9,7 +9,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chrome_to_mobile_service.h"
 #include "chrome/browser/extensions/api/page_launcher/page_launcher_api.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -70,15 +69,6 @@ scoped_ptr<ActionBoxMenuModel> ActionBoxButtonController::CreateMenuModel() {
   menu_model->SetIcon(
       menu_model->GetIndexOfCommandId(IDC_BOOKMARK_PAGE_FROM_STAR),
       rb.GetNativeImageNamed(starred ? IDR_STAR_LIT : IDR_STAR));
-
-  // TODO(msw): Show the item as disabled for chrome: and file: scheme pages?
-  if (ChromeToMobileService::UpdateAndGetCommandState(browser_)) {
-    menu_model->AddItemWithStringId(IDC_CHROME_TO_MOBILE_PAGE,
-                                    IDS_CHROME_TO_MOBILE_BUBBLE_TOOLTIP);
-    menu_model->SetIcon(
-        menu_model->GetIndexOfCommandId(IDC_CHROME_TO_MOBILE_PAGE),
-        rb.GetNativeImageNamed(IDR_MOBILE));
-  }
 
   ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(browser_->profile())->

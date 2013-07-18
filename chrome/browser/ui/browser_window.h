@@ -214,9 +214,6 @@ class BrowserWindow : public ui::BaseWindow {
   // TODO(yosin): Make ShowBookmarkPrompt pure virtual.
   virtual void ShowBookmarkPrompt() {}
 
-  // Shows the Chrome To Mobile bubble.
-  virtual void ShowChromeToMobileBubble() = 0;
-
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
   enum OneClickSigninBubbleType {
     ONE_CLICK_SIGNIN_BUBBLE_TYPE_BUBBLE,

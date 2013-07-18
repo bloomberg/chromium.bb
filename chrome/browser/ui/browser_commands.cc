@@ -710,13 +710,6 @@ void ShowWebsiteSettings(Browser* browser,
       web_contents, url, ssl);
 }
 
-void ShowChromeToMobileBubble(Browser* browser) {
-  // Only show the bubble if the window is active, otherwise we may get into
-  // weird situations where the bubble is deleted as soon as it is shown.
-  if (browser->window()->IsActive())
-    browser->window()->ShowChromeToMobileBubble();
-}
-
 void Print(Browser* browser) {
   printing::PrintViewManager* print_view_manager =
       printing::PrintViewManager::FromWebContents(

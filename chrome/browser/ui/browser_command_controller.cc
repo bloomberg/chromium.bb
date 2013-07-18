@@ -497,9 +497,6 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
     case IDC_PRINT_TO_DESTINATION:
       PrintToDestination(browser_);
       break;
-    case IDC_CHROME_TO_MOBILE_PAGE:
-      ShowChromeToMobileBubble(browser_);
-      break;
     case IDC_ENCODING_AUTO_DETECT:
       browser_->ToggleEncodingAutoDetect();
       break;

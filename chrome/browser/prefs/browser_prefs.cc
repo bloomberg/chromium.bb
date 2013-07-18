@@ -152,10 +152,6 @@
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
 #endif
 
-#if !defined(OS_ANDROID)
-#include "chrome/browser/chrome_to_mobile_service.h"
-#endif
-
 #if defined(OS_ANDROID)
 #include "chrome/browser/ui/webui/ntp/android/promo_handler.h"
 #endif
@@ -179,6 +175,9 @@ enum MigratedPreferences {
 // registered. We keep it here for now to clear out those old prefs in
 // MigrateUserPrefs.
 const char kBackupPref[] = "backup";
+
+// Chrome To Mobile has been removed; this pref will be cleared from user data.
+const char kChromeToMobilePref[] = "chrome_to_mobile.device_list";
 
 }  // namespace
 
@@ -346,7 +345,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 
 #if !defined(OS_ANDROID)
   extensions::TabsCaptureVisibleTabFunction::RegisterProfilePrefs(registry);
-  ChromeToMobileService::RegisterProfilePrefs(registry);
   DeviceIDFetcher::RegisterProfilePrefs(registry);
   DevToolsWindow::RegisterProfilePrefs(registry);
   extensions::CommandService::RegisterProfilePrefs(registry);
@@ -388,6 +386,9 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
       kBackupPref,
       new DictionaryValue(),
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterListPref(
+      kChromeToMobilePref,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 void RegisterUserProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
@@ -411,6 +412,9 @@ void MigrateUserPrefs(Profile* profile) {
 
   // Cleanup prefs from now-removed protector feature.
   prefs->ClearPref(kBackupPref);
+
+  // Cleanup prefs from now-removed Chrome To Mobile feature.
+  prefs->ClearPref(kChromeToMobilePref);
 
   PrefsTabHelper::MigrateUserPrefs(prefs);
   PromoResourceService::MigrateUserPrefs(prefs);

@@ -490,9 +490,6 @@ const char kSyncEncryptionHelpURL[] =
 const char kSyncErrorsHelpURL[] =
     "https://support.google.com/chrome/?p=settings_sync_error";
 
-const char kChromeToMobileLearnMoreURL[] =
-    "https://support.google.com/chrome/?p=ib_chrome_to_mobile";
-
 const char kSideloadWipeoutHelpURL[] =
     "https://support.google.com/chrome/?p=ui_remove_non_cws_extensions";
 

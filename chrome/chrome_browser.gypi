@@ -372,10 +372,6 @@
         'browser/chrome_process_singleton.h',
         'browser/chrome_quota_permission_context.cc',
         'browser/chrome_quota_permission_context.h',
-        'browser/chrome_to_mobile_service.cc',
-        'browser/chrome_to_mobile_service.h',
-        'browser/chrome_to_mobile_service_factory.cc',
-        'browser/chrome_to_mobile_service_factory.h',
         'browser/command_observer.h',
         'browser/command_updater.cc',
         'browser/command_updater.h',
@@ -2968,7 +2964,6 @@
           ],
           'sources/': [
             ['exclude', '^browser/captive_portal/'],
-            ['exclude', '^browser/chrome_to_mobile'],
             ['exclude', '^browser/diagnostics/'],
             ['exclude', '^browser/first_run/'],
             ['include', '^browser/first_run/first_run.cc'], # For ctor/dtor of a struct.

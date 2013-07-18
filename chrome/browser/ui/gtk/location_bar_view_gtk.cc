@@ -51,7 +51,6 @@
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_bubble_gtk.h"
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_utils_gtk.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
-#include "chrome/browser/ui/gtk/chrome_to_mobile_bubble_gtk.h"
 #include "chrome/browser/ui/gtk/content_setting_bubble_gtk.h"
 #include "chrome/browser/ui/gtk/extensions/extension_popup_gtk.h"
 #include "chrome/browser/ui/gtk/first_run_bubble.h"
@@ -1553,10 +1552,6 @@ void LocationBarViewGtk::ShowStarBubble(const GURL& url,
                                 star_.get(), browser_->profile(),
                                 url, newly_bookmarked);
   }
-}
-
-void LocationBarViewGtk::ShowChromeToMobileBubble() {
-  ChromeToMobileBubbleGtk::Show(action_box_button_->widget(), browser_);
 }
 
 void LocationBarViewGtk::SetStarred(bool starred) {

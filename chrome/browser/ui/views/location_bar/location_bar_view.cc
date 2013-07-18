@@ -628,11 +628,6 @@ void LocationBarView::RefreshZoomView() {
   zoom_view_->Update(zoom_controller);
 }
 
-void LocationBarView::ShowChromeToMobileBubble() {
-  chrome::ShowChromeToMobileBubbleView(action_box_button_view_,
-                                       GetBrowserFromDelegate(delegate_));
-}
-
 gfx::Point LocationBarView::GetLocationEntryOrigin() const {
   gfx::Point origin(location_entry_view_->bounds().origin());
   // If the UI layout is RTL, the coordinate system is not transformed and

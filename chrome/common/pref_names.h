@@ -717,10 +717,6 @@ extern const char kCloudPrintPrinters[];
 extern const char kCloudPrintSubmitEnabled[];
 extern const char kCloudPrintUserSettings[];
 
-#if !defined(OS_ANDROID)
-extern const char kChromeToMobileDeviceList[];
-#endif
-
 extern const char kProxy[];
 extern const char kMaxConnectionsPerProxy[];
 

@@ -189,9 +189,6 @@ class LocationBarView : public LocationBar,
   // Shows the bookmark prompt.
   void ShowBookmarkPrompt();
 
-  // Shows the Chrome To Mobile bubble.
-  void ShowChromeToMobileBubble();
-
   // Returns the screen coordinates of the location entry (where the URL text
   // appears, not where the icons are shown).
   gfx::Point GetLocationEntryOrigin() const;

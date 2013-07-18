@@ -403,9 +403,6 @@ extern const char kSyncEncryptionHelpURL[];
 // The URL for the "Learn more" link when there is a sync error.
 extern const char kSyncErrorsHelpURL[];
 
-// The URL for the "Learn more" link in the Chrome To Mobile bubble.
-extern const char kChromeToMobileLearnMoreURL[];
-
 // The URL for the help article explaining sideload wipeout in more details.
 extern const char kSideloadWipeoutHelpURL[];
 

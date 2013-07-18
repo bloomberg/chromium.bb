@@ -1124,10 +1124,6 @@ void BrowserView::ShowBookmarkPrompt() {
   GetLocationBarView()->ShowBookmarkPrompt();
 }
 
-void BrowserView::ShowChromeToMobileBubble() {
-  GetLocationBarView()->ShowChromeToMobileBubble();
-}
-
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
 void BrowserView::ShowOneClickSigninBubble(
     OneClickSigninBubbleType type,

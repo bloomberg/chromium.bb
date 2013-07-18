@@ -1401,7 +1401,6 @@
         'browser/ui/cocoa/bubble_view_unittest.mm',
         'browser/ui/cocoa/chrome_browser_window_unittest.mm',
         'browser/ui/cocoa/chrome_event_processing_window_unittest.mm',
-        'browser/ui/cocoa/chrome_to_mobile_bubble_controller_unittest.mm',
         'browser/ui/cocoa/clickhold_button_cell_unittest.mm',
         'browser/ui/cocoa/cocoa_profile_test.h',
         'browser/ui/cocoa/cocoa_profile_test.mm',
@@ -1613,7 +1612,6 @@
         'browser/ui/zoom/zoom_controller_unittest.cc',
         'browser/upload_list_unittest.cc',
         'browser/chrome_content_browser_client_unittest.cc',
-        'browser/chrome_to_mobile_service_unittest.cc',
         'browser/undo/undo_manager_test.cc',
         'browser/user_style_sheet_watcher_unittest.cc',
         'browser/value_store/leveldb_value_store_unittest.cc',
@@ -2455,7 +2453,6 @@
           ],
           'sources/': [
             ['exclude', '^browser/captive_portal/'],
-            ['exclude', '^browser/chrome_to_mobile'],
             ['exclude', '^browser/diagnostics/'],
             ['exclude', '^browser/first_run/'],
             ['exclude', '^browser/lifetime/'],

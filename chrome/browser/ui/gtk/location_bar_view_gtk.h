@@ -99,9 +99,6 @@ class LocationBarViewGtk : public OmniboxEditController,
   // Show the bookmark bubble.
   void ShowStarBubble(const GURL& url, bool newly_boomkarked);
 
-  // Shows the Chrome To Mobile bubble.
-  void ShowChromeToMobileBubble();
-
   // Happens when the zoom changes for the active tab. |can_show_bubble| will be
   // true if it was a user action and a bubble could be shown.
   void ZoomChangedForActiveTab(bool can_show_bubble);

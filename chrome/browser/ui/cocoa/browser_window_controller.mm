@@ -38,7 +38,6 @@
 #import "chrome/browser/ui/cocoa/browser_window_cocoa.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller_private.h"
 #import "chrome/browser/ui/cocoa/browser_window_utils.h"
-#import "chrome/browser/ui/cocoa/chrome_to_mobile_bubble_controller.h"
 #import "chrome/browser/ui/cocoa/dev_tools_controller.h"
 #import "chrome/browser/ui/cocoa/download/download_shelf_controller.h"
 #include "chrome/browser/ui/cocoa/extensions/extension_keybinding_registry_cocoa.h"
@@ -1701,24 +1700,6 @@ enum {
                     name:NSWindowWillCloseNotification
                   object:[bookmarkBubbleController_ window]];
   bookmarkBubbleController_ = nil;
-}
-
-// Show the Chrome To Mobile bubble (e.g. user just clicked on the icon).
-- (void)showChromeToMobileBubble {
-  // Do nothing if the bubble is already showing.
-  if (chromeToMobileBubbleController_)
-    return;
-
-  chromeToMobileBubbleController_ =
-      [[ChromeToMobileBubbleController alloc]
-          initWithParentWindow:[self window]
-                       browser:browser_.get()];
-  [chromeToMobileBubbleController_ showWindow:self];
-}
-
-// Nil out the weak Chrome To Mobile bubble controller reference.
-- (void)chromeToMobileBubbleWindowWillClose {
-  chromeToMobileBubbleController_ = nil;
 }
 
 // Handle the editBookmarkNode: action sent from bookmark bubble controllers.
