@@ -184,7 +184,7 @@ void CSSDefaultStyleSheets::ensureDefaultStyleSheetsForElement(Element* element,
         changedDefaultStyle = true;
     }
 
-    ASSERT(defaultStyle->features().idsInRules.isEmpty());
+    ASSERT(!defaultStyle->features().usesIdSelectors());
     ASSERT(mathMLStyleSheet || defaultStyle->features().siblingRules.isEmpty());
 }
 

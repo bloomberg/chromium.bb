@@ -44,6 +44,7 @@ public:
     void clear();
     void collectFeaturesFromSelector(const CSSSelector*);
 
+    // FIXME: We should just expose the RuleFeatureSet instead of wrapping it.
     bool hasSelectorForId(const AtomicString&) const;
     bool hasSelectorForClass(const AtomicString&) const;
     bool hasSelectorForAttribute(const AtomicString&) const;
@@ -67,20 +68,17 @@ private:
 
 inline bool SelectRuleFeatureSet::hasSelectorForId(const AtomicString& idValue) const
 {
-    ASSERT(!idValue.isEmpty());
-    return m_cssRuleFeatureSet.idsInRules.contains(idValue.impl());
+    return m_cssRuleFeatureSet.hasSelectorForId(idValue.impl());
 }
 
 inline bool SelectRuleFeatureSet::hasSelectorForClass(const AtomicString& classValue) const
 {
-    ASSERT(!classValue.isEmpty());
-    return m_cssRuleFeatureSet.classesInRules.contains(classValue.impl());
+    return m_cssRuleFeatureSet.hasSelectorForClass(classValue.impl());
 }
 
 inline bool SelectRuleFeatureSet::hasSelectorForAttribute(const AtomicString& attributeName) const
 {
-    ASSERT(!attributeName.isEmpty());
-    return m_cssRuleFeatureSet.attrsInRules.contains(attributeName.impl());
+    return m_cssRuleFeatureSet.hasSelectorForAttribute(attributeName.impl());
 }
 
 }

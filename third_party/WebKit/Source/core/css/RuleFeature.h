@@ -55,9 +55,11 @@ public:
 
     void collectFeaturesFromSelector(const CSSSelector*);
 
-    bool usesSiblingRules() const { return !siblingRules.isEmpty(); }
+    // FIXME: Aren't these all selectors or pseudos instead of rules?
     bool usesFirstLineRules() const { return m_usesFirstLineRules; }
     bool usesBeforeAfterRules() const { return m_usesBeforeAfterRules; }
+    bool usesSiblingRules() const { return !siblingRules.isEmpty(); }
+    bool usesIdSelectors() const { return !m_idsInRules.isEmpty(); }
 
     inline bool hasSelectorForAttribute(const AtomicString &attributeName) const
     {
@@ -68,21 +70,24 @@ public:
     inline bool hasSelectorForClass(const AtomicString& classValue) const
     {
         ASSERT(!classValue.isEmpty());
-        return classesInRules.contains(classValue.impl());
+        return m_classesInRules.contains(classValue.impl());
     }
+
 
     inline bool hasSelectorForId(const AtomicString& idValue) const
     {
         ASSERT(!idValue.isEmpty());
-        return idsInRules.contains(idValue.impl());
+        return m_idsInRules.contains(idValue.impl());
     }
 
-    HashSet<AtomicStringImpl*> idsInRules;
-    HashSet<AtomicStringImpl*> classesInRules;
+    // FIXME: Code which accesses these should be brought into this class.
     HashSet<AtomicStringImpl*> attrsInRules;
     Vector<RuleFeature> siblingRules;
     Vector<RuleFeature> uncommonAttributeRules;
 private:
+    HashSet<AtomicStringImpl*> m_idsInRules;
+    HashSet<AtomicStringImpl*> m_classesInRules;
+
     bool m_usesFirstLineRules;
     bool m_usesBeforeAfterRules;
 };

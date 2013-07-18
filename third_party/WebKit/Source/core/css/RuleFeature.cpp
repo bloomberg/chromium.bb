@@ -36,9 +36,9 @@ namespace WebCore {
 void RuleFeatureSet::collectFeaturesFromSelector(const CSSSelector* selector)
 {
     if (selector->m_match == CSSSelector::Id)
-        idsInRules.add(selector->value().impl());
+        m_idsInRules.add(selector->value().impl());
     else if (selector->m_match == CSSSelector::Class)
-        classesInRules.add(selector->value().impl());
+        m_classesInRules.add(selector->value().impl());
     else if (selector->isAttributeSelector())
         attrsInRules.add(selector->attribute().localName().impl());
     switch (selector->pseudoType()) {
@@ -56,12 +56,12 @@ void RuleFeatureSet::collectFeaturesFromSelector(const CSSSelector* selector)
 
 void RuleFeatureSet::add(const RuleFeatureSet& other)
 {
-    HashSet<AtomicStringImpl*>::const_iterator end = other.idsInRules.end();
-    for (HashSet<AtomicStringImpl*>::const_iterator it = other.idsInRules.begin(); it != end; ++it)
-        idsInRules.add(*it);
-    end = other.classesInRules.end();
-    for (HashSet<AtomicStringImpl*>::const_iterator it = other.classesInRules.begin(); it != end; ++it)
-        classesInRules.add(*it);
+    HashSet<AtomicStringImpl*>::const_iterator end = other.m_idsInRules.end();
+    for (HashSet<AtomicStringImpl*>::const_iterator it = other.m_idsInRules.begin(); it != end; ++it)
+        m_idsInRules.add(*it);
+    end = other.m_classesInRules.end();
+    for (HashSet<AtomicStringImpl*>::const_iterator it = other.m_classesInRules.begin(); it != end; ++it)
+        m_classesInRules.add(*it);
     end = other.attrsInRules.end();
     for (HashSet<AtomicStringImpl*>::const_iterator it = other.attrsInRules.begin(); it != end; ++it)
         attrsInRules.add(*it);
@@ -73,8 +73,8 @@ void RuleFeatureSet::add(const RuleFeatureSet& other)
 
 void RuleFeatureSet::clear()
 {
-    idsInRules.clear();
-    classesInRules.clear();
+    m_idsInRules.clear();
+    m_classesInRules.clear();
     attrsInRules.clear();
     siblingRules.clear();
     uncommonAttributeRules.clear();
