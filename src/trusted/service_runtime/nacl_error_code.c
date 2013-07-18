@@ -146,6 +146,9 @@ char const  *NaClErrorString(NaClErrorCode errcode) {
       return "Insufficient memory to allocate dynamic text region";
     case LOAD_NO_MEMORY_FOR_ADDRESS_SPACE:
       return "Insufficient memory to allocate untrusted address space";
+    case LOAD_CODE_SEGMENT_TOO_LARGE:
+      return "ELF executable's code segment is larger than the "
+             "arbitrary size limit imposed to mitigate spraying attacks";
     case NACL_ERROR_CODE_MAX:
       /* A bad error code, but part of the enum so we need to list it here. */
       break;

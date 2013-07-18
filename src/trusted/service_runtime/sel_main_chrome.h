@@ -8,6 +8,7 @@
 #define NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_SEL_MAIN_CHROME_H_ 1
 
 #include "native_client/src/include/nacl_base.h"
+#include "native_client/src/include/portability.h"
 #include "native_client/src/shared/imc/nacl_imc_c.h"
 
 EXTERN_C_BEGIN
@@ -55,6 +56,19 @@ struct NaClChromeMainArgs {
 
   /* Whether to enable NaCl's dynamic code system calls.  Boolean. */
   int enable_dyncode_syscalls;
+
+  /*
+   * Maximum size of the initially loaded nexe's code segment, in
+   * bytes.  0 for no limit, which is the default.
+   *
+   * This is intended for security hardening.  It reduces the
+   * proportion of address space that can contain attacker-controlled
+   * executable code.  It reduces the chance of a spraying attack
+   * succeeding if there is a vulnerability that allows jumping into
+   * the middle of an instruction.  Note that setting a limit here is
+   * only useful if enable_dyncode_syscalls is false.
+   */
+  uint32_t initial_nexe_max_code_bytes;
 
 #if NACL_LINUX || NACL_OSX
   /*

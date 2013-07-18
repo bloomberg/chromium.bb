@@ -91,6 +91,7 @@ int NaClAppWithSyscallTableCtor(struct NaClApp               *nap,
   nap->addr_bits = NACL_MAX_ADDR_BITS;
 
   nap->stack_size = NACL_DEFAULT_STACK_MAX;
+  nap->initial_nexe_max_code_bytes = 0;
 
   nap->aux_info = NULL;
 

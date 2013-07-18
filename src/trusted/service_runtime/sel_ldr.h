@@ -112,6 +112,7 @@ struct NaClApp {
    */
   uint8_t                   addr_bits;
   uintptr_t                 stack_size;
+  uint32_t                  initial_nexe_max_code_bytes;
   /*
    * stack_size is the maximum size of the (main) stack.  The stack
    * memory is eager allocated (mapped in w/o MAP_NORESERVE) so

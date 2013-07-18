@@ -227,6 +227,18 @@ NaClErrorCode NaClAppLoadFileAslr(struct NaClDesc *ndp,
     goto done;
   }
 
+  if (nap->initial_nexe_max_code_bytes != 0) {
+    size_t code_segment_size = info.static_text_end - NACL_TRAMPOLINE_END;
+    if (code_segment_size > nap->initial_nexe_max_code_bytes) {
+      NaClLog(LOG_ERROR, "NaClAppLoadFileAslr: "
+              "Code segment size (%"NACL_PRIdS" bytes) exceeds limit (%"
+              NACL_PRId32" bytes)\n",
+              code_segment_size, nap->initial_nexe_max_code_bytes);
+      ret = LOAD_CODE_SEGMENT_TOO_LARGE;
+      goto done;
+    }
+  }
+
   nap->static_text_end = info.static_text_end;
   nap->rodata_start = info.rodata_start;
   rodata_end = info.rodata_end;
