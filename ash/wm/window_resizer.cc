@@ -6,6 +6,8 @@
 
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
+#include "ash/shell_window_ids.h"
+#include "ash/wm/dock/docked_window_layout_manager.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/client/aura_constants.h"
@@ -178,8 +180,13 @@ gfx::Rect WindowResizer::CalculateBoundsForDrag(
     return details.initial_bounds_in_parent;
 
   gfx::Point location = passed_location;
-  gfx::Rect work_area =
-      ScreenAsh::GetDisplayWorkAreaBoundsInParent(details.window);
+  aura::Window* dock_container = Shell::GetContainer(
+      details.window->GetRootWindow(),
+      internal::kShellWindowId_DockedContainer);
+  DCHECK_EQ(dock_container->id(), internal::kShellWindowId_DockedContainer);
+  internal::DockedWindowLayoutManager* dock_layout =
+      static_cast<internal::DockedWindowLayoutManager*>(
+          dock_container->layout_manager());
 
   int delta_x = location.x() - details.initial_location_in_parent.x();
   int delta_y = location.y() - details.initial_location_in_parent.y();
@@ -197,6 +204,11 @@ gfx::Rect WindowResizer::CalculateBoundsForDrag(
   // has to come first since it might have an impact on the origin as well as
   // on the size.
   if (details.bounds_change & kBoundsChange_Resizes) {
+    gfx::Rect work_area =
+        Shell::GetScreen()->GetDisplayNearestWindow(details.window).work_area();
+    work_area.Union(dock_layout->docked_bounds());
+    work_area = ScreenAsh::ConvertRectFromScreen(details.window->parent(),
+                                                 work_area);
     if (details.size_change_direction & kBoundsChangeDirection_Horizontal) {
       if (IsRightEdge(details.window_component) &&
           new_bounds.right() < work_area.x() + kMinimumOnScreenArea) {
@@ -254,6 +266,7 @@ gfx::Rect WindowResizer::CalculateBoundsForDrag(
     const gfx::Display& display =
         Shell::GetScreen()->GetDisplayMatching(new_bounds_in_screen);
     gfx::Rect screen_work_area = display.work_area();
+    screen_work_area.Union(dock_layout->docked_bounds());
     screen_work_area.Inset(kMinimumOnScreenArea, 0);
     if (!screen_work_area.Intersects(new_bounds_in_screen)) {
       // Make sure that the x origin does not leave the current display.

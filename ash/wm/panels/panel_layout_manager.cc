@@ -268,18 +268,13 @@ PanelLayoutManager::PanelLayoutManager(aura::Window* panel_container)
 }
 
 PanelLayoutManager::~PanelLayoutManager() {
-  if (launcher_)
-    launcher_->RemoveIconObserver(this);
-  if (shelf_layout_manager_)
-    shelf_layout_manager_->RemoveObserver(this);
   Shutdown();
-  aura::client::GetActivationClient(Shell::GetPrimaryRootWindow())->
-      RemoveObserver(this);
-  Shell::GetInstance()->display_controller()->RemoveObserver(this);
-  Shell::GetInstance()->RemoveShellObserver(this);
 }
 
 void PanelLayoutManager::Shutdown() {
+  if (shelf_layout_manager_)
+    shelf_layout_manager_->RemoveObserver(this);
+  shelf_layout_manager_ = NULL;
   for (PanelList::iterator iter = panel_windows_.begin();
        iter != panel_windows_.end(); ++iter) {
     delete iter->callout_widget;
@@ -288,6 +283,10 @@ void PanelLayoutManager::Shutdown() {
   if (launcher_)
     launcher_->RemoveIconObserver(this);
   launcher_ = NULL;
+  aura::client::GetActivationClient(Shell::GetPrimaryRootWindow())->
+      RemoveObserver(this);
+  Shell::GetInstance()->display_controller()->RemoveObserver(this);
+  Shell::GetInstance()->RemoveShellObserver(this);
 }
 
 void PanelLayoutManager::StartDragging(aura::Window* panel) {

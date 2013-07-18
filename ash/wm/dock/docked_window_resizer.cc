@@ -32,12 +32,18 @@ namespace ash {
 
 namespace {
 
-// How far we have to drag to undock a window.
+// Distance in pixels that the cursor must move past an edge for a window
+// to move beyond that edge.
+const int kStickyDistance = 64;
+
+// How far in pixels we have to drag to undock a window.
 const int kSnapToDockDistance = 32;
 
 }  // namespace
 
 DockedWindowResizer::~DockedWindowResizer() {
+  if (destroyed_)
+    *destroyed_ = true;
 }
 
 // static
@@ -55,26 +61,64 @@ DockedWindowResizer::Create(WindowResizer* next_window_resizer,
 void DockedWindowResizer::Drag(const gfx::Point& location, int event_flags) {
   last_location_ = location;
   wm::ConvertPointToScreen(GetTarget()->parent(), &last_location_);
+  bool destroyed = false;
   if (!did_move_or_resize_) {
     did_move_or_resize_ = true;
     StartedDragging();
   }
   gfx::Point offset;
   gfx::Rect bounds(CalculateBoundsForDrag(details_, location));
-  MaybeSnapToEdge(bounds, &offset);
+  bool set_tracked_by_workspace = MaybeSnapToEdge(bounds, &offset);
+
+  // Temporarily clear kWindowTrackedByWorkspaceKey for windows that are snapped
+  // to screen edges e.g. when they are docked. This prevents the windows from
+  // getting snapped to other nearby windows during the drag.
+  bool tracked_by_workspace = GetTrackedByWorkspace(GetTarget());
+  if (set_tracked_by_workspace)
+    SetTrackedByWorkspace(GetTarget(), false);
   gfx::Point modified_location(location.x() + offset.x(),
                                location.y() + offset.y());
+  destroyed_ = &destroyed;
   next_window_resizer_->Drag(modified_location, event_flags);
+
+  // TODO(varkha): Refactor the way WindowResizer calls into other window
+  // resizers to avoid the awkward pattern here for checking if
+  // next_window_resizer_ destroys the resizer object.
+  if (destroyed)
+    return;
+  destroyed_ = NULL;
+  if (set_tracked_by_workspace)
+    SetTrackedByWorkspace(GetTarget(), tracked_by_workspace);
 }
 
 void DockedWindowResizer::CompleteDrag(int event_flags) {
+  // Temporarily clear kWindowTrackedByWorkspaceKey for panels so that they
+  // don't get forced into the workspace that may be shrunken because of docked
+  // windows.
+  bool tracked_by_workspace = GetTrackedByWorkspace(GetTarget());
+  bool set_tracked_by_workspace =
+      (was_docked_ && GetTarget()->type() == aura::client::WINDOW_TYPE_PANEL);
+  if (set_tracked_by_workspace)
+    SetTrackedByWorkspace(GetTarget(), false);
   // The root window can change when dragging into a different screen.
   next_window_resizer_->CompleteDrag(event_flags);
+  if (set_tracked_by_workspace)
+    SetTrackedByWorkspace(GetTarget(), tracked_by_workspace);
   FinishDragging();
 }
 
 void DockedWindowResizer::RevertDrag() {
+  // Temporarily clear kWindowTrackedByWorkspaceKey for panels so that they
+  // don't get forced into the workspace that may be shrunken because of docked
+  // windows.
+  bool tracked_by_workspace = GetTrackedByWorkspace(GetTarget());
+  bool set_tracked_by_workspace =
+      (was_docked_ && GetTarget()->type() == aura::client::WINDOW_TYPE_PANEL);
+  if (set_tracked_by_workspace)
+    SetTrackedByWorkspace(GetTarget(), false);
   next_window_resizer_->RevertDrag();
+  if (set_tracked_by_workspace)
+    SetTrackedByWorkspace(GetTarget(), tracked_by_workspace);
   FinishDragging();
 }
 
@@ -91,7 +135,9 @@ DockedWindowResizer::DockedWindowResizer(WindowResizer* next_window_resizer,
     : details_(details),
       next_window_resizer_(next_window_resizer),
       dock_layout_(NULL),
-      did_move_or_resize_(false) {
+      did_move_or_resize_(false),
+      was_docked_(false),
+      destroyed_(NULL) {
   DCHECK(details_.is_resizable);
   aura::Window* dock_container = Shell::GetContainer(
       details.window->GetRootWindow(),
@@ -99,9 +145,10 @@ DockedWindowResizer::DockedWindowResizer(WindowResizer* next_window_resizer,
   DCHECK(dock_container->id() == internal::kShellWindowId_DockedContainer);
   dock_layout_ = static_cast<internal::DockedWindowLayoutManager*>(
       dock_container->layout_manager());
+  was_docked_ = details.window->parent() == dock_container;
 }
 
-void DockedWindowResizer::MaybeSnapToEdge(const gfx::Rect& bounds,
+bool DockedWindowResizer::MaybeSnapToEdge(const gfx::Rect& bounds,
                                           gfx::Point* offset) {
   aura::Window* dock_container = Shell::GetContainer(
       wm::GetRootWindowAt(last_location_),
@@ -110,36 +157,36 @@ void DockedWindowResizer::MaybeSnapToEdge(const gfx::Rect& bounds,
   internal::DockedWindowLayoutManager* dock_layout =
       static_cast<internal::DockedWindowLayoutManager*>(
           dock_container->layout_manager());
-
-  internal::DockedAlignment dock_alignment = dock_layout->alignment();
-  if (dock_alignment == internal::DOCKED_ALIGNMENT_NONE) {
-    if (GetTarget() != dock_layout_->dragged_window())
-      return;
-    dock_alignment = internal::DOCKED_ALIGNMENT_ANY;
-  }
-
+  internal::DockedAlignment dock_alignment = dock_layout->CalculateAlignment();
   gfx::Rect dock_bounds = ScreenAsh::ConvertRectFromScreen(
       GetTarget()->parent(), dock_container->GetBoundsInScreen());
+  // Windows only snap magnetically when they are close to the edge of the
+  // screen and when the cursor is over other docked windows.
+  // When a window being dragged is the last window that was previously
+  // docked it is still allowed to magnetically snap to either side.
+  bool can_snap = was_docked_ ||
+      internal::DockedWindowLayoutManager::ShouldWindowDock(GetTarget(),
+                                                            last_location_);
+  if (!can_snap)
+    return false;
 
-  switch (dock_alignment) {
-    case internal::DOCKED_ALIGNMENT_LEFT:
-      if (abs(bounds.x() - dock_bounds.x()) < kSnapToDockDistance)
-        offset->set_x(dock_bounds.x() - bounds.x());
-      break;
-    case internal::DOCKED_ALIGNMENT_RIGHT:
-      if (abs(bounds.right() - dock_bounds.right()) < kSnapToDockDistance)
-        offset->set_x(dock_bounds.right() - bounds.right());
-      break;
-    case internal::DOCKED_ALIGNMENT_ANY:
-      if (abs(bounds.x() - dock_bounds.x()) < kSnapToDockDistance)
-        offset->set_x(dock_bounds.x() - bounds.x());
-      if (abs(bounds.right() - dock_bounds.right()) < kSnapToDockDistance)
-        offset->set_x(dock_bounds.right() - bounds.right());
-      break;
-    case internal::DOCKED_ALIGNMENT_NONE:
-      NOTREACHED() << "Nothing to do when no windows are docked";
-      break;
+  if (dock_alignment == internal::DOCKED_ALIGNMENT_LEFT ||
+      (dock_alignment == internal::DOCKED_ALIGNMENT_NONE && was_docked_)) {
+    const int distance = bounds.x() - dock_bounds.x();
+    if (distance < kSnapToDockDistance && distance > -kStickyDistance) {
+      offset->set_x(dock_bounds.x() - bounds.x());
+      return true;
+    }
   }
+  if (dock_alignment == internal::DOCKED_ALIGNMENT_RIGHT ||
+      (dock_alignment == internal::DOCKED_ALIGNMENT_NONE && was_docked_)) {
+    const int distance = dock_bounds.right() - bounds.right();
+    if (distance < kSnapToDockDistance && distance > -kStickyDistance) {
+      offset->set_x(dock_bounds.right() - bounds.right());
+      return true;
+    }
+  }
+  return false;
 }
 
 void DockedWindowResizer::StartedDragging() {
@@ -152,8 +199,9 @@ void DockedWindowResizer::FinishDragging() {
     return;
 
   aura::Window* window = GetTarget();
-  bool should_dock = false;
+  bool should_dock = was_docked_;
   if ((details_.bounds_change & WindowResizer::kBoundsChange_Repositions) &&
+      !(details_.bounds_change & WindowResizer::kBoundsChange_Resizes) &&
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kAshEnableDockedWindows)) {
     should_dock = internal::DockedWindowLayoutManager::ShouldWindowDock(

@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/coordinate_conversion.h"
+#include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
 #include "base/auto_reset.h"
 #include "ui/aura/client/activation_client.h"
@@ -24,6 +25,11 @@
 namespace ash {
 namespace internal {
 
+// Minimum, maximum width of the dock area and a width of the gap
+const int DockedWindowLayoutManager::kMinDockWidth = 200;
+const int DockedWindowLayoutManager::kMaxDockWidth = 450;
+const int DockedWindowLayoutManager::kMinDockGap = 2;
+
 namespace {
 
 DockedWindowLayoutManager* GetDockLayoutManager(aura::Window* window,
@@ -34,6 +40,13 @@ DockedWindowLayoutManager* GetDockLayoutManager(aura::Window* window,
       kShellWindowId_DockedContainer);
   return static_cast<internal::DockedWindowLayoutManager*>(
       dock->layout_manager());
+}
+
+// Certain windows (minimized, hidden or popups) do not matter to docking.
+bool IsUsedByLayout(aura::Window* window) {
+  return (window->IsVisible() &&
+          !wm::IsWindowMinimized(window) &&
+          window->type() != aura::client::WINDOW_TYPE_POPUP);
 }
 
 }  // namespace
@@ -48,6 +61,7 @@ DockedWindowLayoutManager::DockedWindowLayoutManager(
       launcher_(NULL),
       shelf_layout_manager_(NULL),
       shelf_hidden_(false),
+      docked_width_(0),
       alignment_(DOCKED_ALIGNMENT_NONE) {
   DCHECK(dock_container);
   aura::client::GetActivationClient(Shell::GetPrimaryRootWindow())->
@@ -56,14 +70,30 @@ DockedWindowLayoutManager::DockedWindowLayoutManager(
 }
 
 DockedWindowLayoutManager::~DockedWindowLayoutManager() {
+  Shutdown();
+}
+
+void DockedWindowLayoutManager::Shutdown() {
+  if (shelf_layout_manager_) {
+    shelf_layout_manager_->RemoveObserver(this);
+  }
+  shelf_layout_manager_ = NULL;
   launcher_ = NULL;
   for (size_t i = 0; i < dock_container_->children().size(); ++i)
     dock_container_->children()[i]->RemoveObserver(this);
-  if (shelf_layout_manager_)
-    shelf_layout_manager_->RemoveObserver(this);
   aura::client::GetActivationClient(Shell::GetPrimaryRootWindow())->
       RemoveObserver(this);
   Shell::GetInstance()->RemoveShellObserver(this);
+}
+
+void DockedWindowLayoutManager::AddObserver(
+    DockedWindowLayoutManagerObserver* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void DockedWindowLayoutManager::RemoveObserver(
+    DockedWindowLayoutManagerObserver* observer) {
+  observer_list_.RemoveObserver(observer);
 }
 
 void DockedWindowLayoutManager::StartDragging(aura::Window* window) {
@@ -75,8 +105,32 @@ void DockedWindowLayoutManager::StartDragging(aura::Window* window) {
 }
 
 void DockedWindowLayoutManager::FinishDragging() {
+  if (!dragged_window_)
+    return;
+
+  // If this is the first window getting docked - update alignment.
+  if (alignment_ == DOCKED_ALIGNMENT_NONE) {
+    alignment_ = AlignmentOfWindow(dragged_window_);
+  } else {
+    // There were some docked windows before. Check if the |dragged_window_|
+    // was the only one remaining and if so possibly switch alignment to
+    // opposite side. Ignore popups.
+    bool found_docked_window = false;
+    for (size_t i = 0; i < dock_container_->children().size(); ++i) {
+      aura::Window* window(dock_container_->children()[i]);
+      if (window != dragged_window_ &&
+          window->type() != aura::client::WINDOW_TYPE_POPUP) {
+        found_docked_window = true;
+        break;
+      }
+    }
+    if (!found_docked_window)
+      alignment_ = AlignmentOfWindow(dragged_window_);
+  }
   dragged_window_ = NULL;
+
   Relayout();
+  UpdateDockBounds();
 }
 
 // static
@@ -84,34 +138,47 @@ bool DockedWindowLayoutManager::ShouldWindowDock(aura::Window* window,
                                                  const gfx::Point& location) {
   DockedWindowLayoutManager* layout_manager = GetDockLayoutManager(window,
                                                                    location);
+  const DockedAlignment alignment = layout_manager->CalculateAlignment();
   const gfx::Rect& bounds(window->GetBoundsInScreen());
-  gfx::Rect dock_bounds = layout_manager->dock_container_->GetBoundsInScreen();
-  // Possible sides of the screen that a window can be touching.
-  enum DockedEdge {
-    DOCKED_EDGE_NONE,
-    DOCKED_EDGE_LEFT,
-    DOCKED_EDGE_RIGHT,
-  } dock_edge = DOCKED_EDGE_NONE;
-  if (bounds.x() == dock_bounds.x() &&
-      layout_manager->alignment_ != DOCKED_ALIGNMENT_RIGHT) {
-    dock_edge = DOCKED_EDGE_LEFT;
-  } else if (bounds.right() == dock_bounds.right() &&
-             layout_manager->alignment_ != DOCKED_ALIGNMENT_LEFT) {
-    dock_edge = DOCKED_EDGE_RIGHT;
+  const gfx::Rect docked_bounds = (alignment == DOCKED_ALIGNMENT_NONE) ?
+      layout_manager->dock_container_->GetBoundsInScreen() :
+      layout_manager->docked_bounds_;
+  DockedAlignment dock_edge = DOCKED_ALIGNMENT_NONE;
+  if (alignment == DOCKED_ALIGNMENT_NONE) {
+    // Check if the window is touching the edge - it may need to get docked.
+    dock_edge = layout_manager->AlignmentOfWindow(window);
+  } else if ((docked_bounds.Intersects(bounds) &&
+              docked_bounds.Contains(location)) ||
+             alignment == layout_manager->AlignmentOfWindow(window)) {
+    // A window is being added to other docked windows (on the same side).
+    // Both bounds and pointer location are checked because some drags involve
+    // sticky edges and so the |location| may be outside of the |bounds|.
+    // It is also possible that all the docked windows are minimized or hidden
+    // in which case the dragged window needs to be exactly touching the same
+    // edge that those docked windows were aligned before they got minimized.
+    dock_edge = alignment;
   }
 
-  // do not allow dock on the same side as launcher shelf
+  // Do not allow docking on the same side as launcher shelf.
   if (layout_manager->launcher_ && layout_manager->launcher_->shelf_widget()) {
     ShelfAlignment shelf_alignment =
         layout_manager->launcher_->shelf_widget()->GetAlignment();
     if ((shelf_alignment == SHELF_ALIGNMENT_LEFT &&
-         dock_edge == DOCKED_EDGE_LEFT) ||
+         dock_edge == DOCKED_ALIGNMENT_LEFT) ||
         (shelf_alignment == SHELF_ALIGNMENT_RIGHT &&
-         dock_edge == DOCKED_EDGE_RIGHT)) {
-      dock_edge = DOCKED_EDGE_NONE;
+         dock_edge == DOCKED_ALIGNMENT_RIGHT)) {
+      dock_edge = DOCKED_ALIGNMENT_NONE;
     }
   }
-  return dock_edge != DOCKED_EDGE_NONE;
+
+  // Do not allow docking if a window is vertically maximized (as is the case
+  // when it is snapped).
+  const gfx::Rect work_area =
+      Shell::GetScreen()->GetDisplayNearestWindow(window).work_area();
+  if (bounds.y() == work_area.y() && bounds.height() == work_area.height())
+    dock_edge = DOCKED_ALIGNMENT_NONE;
+
+  return dock_edge != DOCKED_ALIGNMENT_NONE;
 }
 
 void DockedWindowLayoutManager::SetLauncher(ash::Launcher* launcher) {
@@ -126,32 +193,81 @@ void DockedWindowLayoutManager::SetLauncher(ash::Launcher* launcher) {
   }
 }
 
+DockedAlignment DockedWindowLayoutManager::CalculateAlignment() const {
+  // Find a child that is not being dragged and is not a popup.
+  // If such exists the current alignment is returned - even if some of the
+  // children are hidden or minimized (so they can be restored without losing
+  // the docked state).
+  for (size_t i = 0; i < dock_container_->children().size(); ++i) {
+    aura::Window* window(dock_container_->children()[i]);
+    if (window != dragged_window_ &&
+        window->type() != aura::client::WINDOW_TYPE_POPUP) {
+      return alignment_;
+    }
+  }
+  // No docked windows remain other than possibly the window being dragged.
+  // Return |NONE| to indicate that windows may get docked on either side.
+  return DOCKED_ALIGNMENT_NONE;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // DockLayoutManager, aura::LayoutManager implementation:
 void DockedWindowLayoutManager::OnWindowResized() {
   Relayout();
+  // When screen resizes we need to update the insets even when dock width or
+  // alignment does not change.
+  UpdateDockBounds();
 }
 
 void DockedWindowLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
+  if (child->type() == aura::client::WINDOW_TYPE_POPUP)
+    return;
+
+  // If this is the first window getting docked - update alignment.
+  if (alignment_ == DOCKED_ALIGNMENT_NONE)
+    alignment_ = AlignmentOfWindow(child);
   child->AddObserver(this);
   Relayout();
-}
-
-void DockedWindowLayoutManager::OnWillRemoveWindowFromLayout(
-    aura::Window* child) {
+  UpdateDockBounds();
 }
 
 void DockedWindowLayoutManager::OnWindowRemovedFromLayout(aura::Window* child) {
+  if (child->type() == aura::client::WINDOW_TYPE_POPUP)
+    return;
+
+  // Try to find a child that is not a popup and is not being dragged.
+  bool found_docked_window = false;
+  for (size_t i = 0; i < dock_container_->children().size(); ++i) {
+    aura::Window* window(dock_container_->children()[i]);
+    if (window != dragged_window_ &&
+        window->type() != aura::client::WINDOW_TYPE_POPUP) {
+      found_docked_window = true;
+      break;
+    }
+  }
+  if (!found_docked_window)
+    alignment_ = DOCKED_ALIGNMENT_NONE;
+
   child->RemoveObserver(this);
+  // Close the dock and expand workspace work area.
   Relayout();
+
+  // When a panel is removed from this layout manager it may still be dragged.
+  // Delay updating dock and workspace bounds until the drag is completed. This
+  // preserves the docked area width until the panel drag is finished.
+  if (child->type() != aura::client::WINDOW_TYPE_PANEL)
+    UpdateDockBounds();
 }
 
 void DockedWindowLayoutManager::OnChildWindowVisibilityChanged(
     aura::Window* child,
     bool visible) {
+  if (child->type() == aura::client::WINDOW_TYPE_POPUP)
+    return;
   if (visible)
     child->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
   Relayout();
+  UpdateDockBounds();
 }
 
 void DockedWindowLayoutManager::SetChildBounds(
@@ -159,6 +275,8 @@ void DockedWindowLayoutManager::SetChildBounds(
     const gfx::Rect& requested_bounds) {
   // Whenever one of our windows is moved or resized we need to enforce layout.
   SetChildBoundsDirect(child, requested_bounds);
+  if (child->type() == aura::client::WINDOW_TYPE_POPUP)
+    return;
   Relayout();
 }
 
@@ -176,32 +294,18 @@ void DockedWindowLayoutManager::OnShelfAlignmentChanged(
   if (alignment_ == DOCKED_ALIGNMENT_NONE)
     return;
 
-  // It should not be possible to have empty children() while alignment is set
-  // to anything other than DOCKED_ALIGNMENT_NONE - see Relayout.
-  if (dock_container_->children().empty()) {
-    LOG(ERROR) << "No children and alignment set to " << alignment_;
-    return;
-  }
-  aura::Window* window = dock_container_->children()[0];
-  const gfx::Rect& dock_bounds = dock_container_->bounds();
-  gfx::Rect bounds = window->bounds();
-
   // Do not allow launcher and dock on the same side. Switch side that
   // the dock is attached to and move all dock windows to that new side.
-  // We actually only need to move the first window and the rest will follow
-  // in Relayout
-  ShelfAlignment shelf_alignment =
-      launcher_->shelf_widget()->GetAlignment();
+  ShelfAlignment shelf_alignment = launcher_->shelf_widget()->GetAlignment();
   if (alignment_ == DOCKED_ALIGNMENT_LEFT &&
       shelf_alignment == SHELF_ALIGNMENT_LEFT) {
-    bounds.set_x(dock_bounds.right() - bounds.width());
-    SetChildBoundsDirect(window, bounds);
+    alignment_ = DOCKED_ALIGNMENT_RIGHT;
   } else if (alignment_ == DOCKED_ALIGNMENT_RIGHT &&
              shelf_alignment == SHELF_ALIGNMENT_RIGHT) {
-    bounds.set_x(0);
-    SetChildBoundsDirect(window, bounds);
+    alignment_ = DOCKED_ALIGNMENT_LEFT;
   }
   Relayout();
+  UpdateDockBounds();
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -270,6 +374,7 @@ void DockedWindowLayoutManager::WillChangeVisibilityState(
     }
   }
   Relayout();
+  UpdateDockBounds();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -285,24 +390,29 @@ void DockedWindowLayoutManager::RestoreWindow(aura::Window* window) {
   window->Show();
 }
 
+DockedAlignment DockedWindowLayoutManager::AlignmentOfWindow(
+    const aura::Window* window) const {
+  const gfx::Rect& bounds(window->GetBoundsInScreen());
+  const gfx::Rect docked_bounds = dock_container_->GetBoundsInScreen();
+  if (bounds.x() == docked_bounds.x())
+    return DOCKED_ALIGNMENT_LEFT;
+  if (bounds.right() == docked_bounds.right())
+    return DOCKED_ALIGNMENT_RIGHT;
+  return DOCKED_ALIGNMENT_NONE;
+}
+
 void DockedWindowLayoutManager::Relayout() {
-  if (in_layout_)
+  if (in_layout_ || alignment_ == DOCKED_ALIGNMENT_NONE)
     return;
   base::AutoReset<bool> auto_reset_in_layout(&in_layout_, true);
 
-  if (dock_container_->children().empty()) {
-    alignment_ = DOCKED_ALIGNMENT_NONE;
-    return;
-  }
-
   gfx::Rect dock_bounds = dock_container_->bounds();
   aura::Window* active_window = NULL;
-  std::vector<aura::Window*> visible_windows;
-  alignment_ = DOCKED_ALIGNMENT_ANY;
+  docked_width_ = 0;
   for (size_t i = 0; i < dock_container_->children().size(); ++i) {
     aura::Window* window(dock_container_->children()[i]);
 
-    if (!window->IsVisible() || wm::IsWindowMinimized(window))
+    if (!IsUsedByLayout(window))
       continue;
 
     // If the shelf is currently hidden (full-screen mode), hide window until
@@ -314,14 +424,6 @@ void DockedWindowLayoutManager::Relayout() {
       continue;
     }
 
-    gfx::Rect bounds = window->GetTargetBounds();
-    if (window != dragged_window_ && alignment_ == DOCKED_ALIGNMENT_ANY) {
-      if (bounds.x() == 0)
-        alignment_ = DOCKED_ALIGNMENT_LEFT;
-      else if (bounds.right() == dock_bounds.right())
-        alignment_ = DOCKED_ALIGNMENT_RIGHT;
-    }
-
     if (window->HasFocus() ||
         window->Contains(
             aura::client::GetFocusClient(window)->GetFocusedWindow())) {
@@ -329,25 +431,47 @@ void DockedWindowLayoutManager::Relayout() {
       active_window = window;
     }
 
-    // all docked windows remain stuck to the screen edge
+    // all docked windows other than the one currently dragged remain stuck
+    // to the screen edge
+    gfx::Rect bounds = window->GetTargetBounds();
     if (window != dragged_window_) {
       switch (alignment_) {
         case DOCKED_ALIGNMENT_LEFT:
           bounds.set_x(0);
           break;
         case DOCKED_ALIGNMENT_RIGHT:
-        case DOCKED_ALIGNMENT_ANY:
           bounds.set_x(dock_bounds.right() - bounds.width());
           break;
         case DOCKED_ALIGNMENT_NONE:
           NOTREACHED() << "Relayout called when dock alignment is 'NONE'";
           break;
       }
+      // Keep the dock at least kMinDockWidth when all windows in it overhang.
+      docked_width_ = std::min(kMaxDockWidth,
+                               std::max(docked_width_,
+                                        bounds.width() > kMaxDockWidth ?
+                                            kMinDockWidth : bounds.width()));
     }
     SetChildBoundsDirect(window, bounds);
   }
-
   UpdateStacking(active_window);
+}
+
+void DockedWindowLayoutManager::UpdateDockBounds() {
+  int dock_inset = docked_width_ + (docked_width_ > 0 ? kMinDockGap : 0);
+  gfx::Rect bounds = gfx::Rect(
+      alignment_ == DOCKED_ALIGNMENT_RIGHT ?
+          dock_container_->bounds().right() - dock_inset:
+          dock_container_->bounds().x(),
+      dock_container_->bounds().y(),
+      dock_inset,
+      dock_container_->bounds().height());
+  docked_bounds_ = bounds +
+      dock_container_->GetBoundsInScreen().OffsetFromOrigin();
+  FOR_EACH_OBSERVER(
+      DockedWindowLayoutManagerObserver,
+      observer_list_,
+      OnDockBoundsChanging(bounds));
 }
 
 void DockedWindowLayoutManager::UpdateStacking(aura::Window* active_window) {
@@ -362,7 +486,7 @@ void DockedWindowLayoutManager::OnKeyboardBoundsChanging(
     const gfx::Rect& keyboard_bounds) {
   // This bounds change will have caused a change to the Shelf which does not
   // propagate automatically to this class, so manually recalculate bounds.
-  OnWindowResized();
+  UpdateDockBounds();
 }
 
 }  // namespace internal
