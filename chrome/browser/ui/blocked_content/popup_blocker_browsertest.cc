@@ -210,10 +210,22 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
   EXPECT_EQ(ASCIIToUTF16(search_string), model->CurrentMatch(NULL).contents);
 }
 
-IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, BlockWebContentsCreation) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableBetterPopupBlocking);
+class BetterPopupBlockerBrowserTest : public PopupBlockerBrowserTest {
+ public:
+  BetterPopupBlockerBrowserTest() {}
+  virtual ~BetterPopupBlockerBrowserTest() {}
 
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    PopupBlockerBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kEnableBetterPopupBlocking);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BetterPopupBlockerBrowserTest);
+};
+
+IN_PROC_BROWSER_TEST_F(BetterPopupBlockerBrowserTest,
+                       BlockWebContentsCreation) {
   CountRenderViewHosts counter;
 
   ui_test_utils::NavigateToURL(browser(), GetTestURL());
@@ -230,11 +242,8 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, BlockWebContentsCreation) {
   EXPECT_EQ(0, counter.GetRenderViewHostCreatedCount());
 }
 
-IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
+IN_PROC_BROWSER_TEST_F(BetterPopupBlockerBrowserTest,
                        PopupBlockedFakeClickOnAnchorNoTarget) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableBetterPopupBlocking);
-
   GURL url(ui_test_utils::GetTestUrl(
       base::FilePath(kTestDir),
       base::FilePath(FILE_PATH_LITERAL("popup-fake-click-on-anchor2.html"))));

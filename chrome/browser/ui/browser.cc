@@ -89,6 +89,7 @@
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/app_modal_dialogs/javascript_dialog_manager.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
+#include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -1272,26 +1273,21 @@ WebContents* Browser::OpenURLFromTab(WebContents* source,
   nav_params.window_action = chrome::NavigateParams::SHOW_WINDOW;
   nav_params.user_gesture = params.user_gesture;
 
-  BlockedContentTabHelper* blocked_content_helper = NULL;
+  PopupBlockerTabHelper* popup_blocker_helper = NULL;
   if (source)
-    blocked_content_helper = BlockedContentTabHelper::FromWebContents(source);
+    popup_blocker_helper = PopupBlockerTabHelper::FromWebContents(source);
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableBetterPopupBlocking) &&
-      blocked_content_helper) {
-
-    if (blocked_content_helper->all_contents_blocked()) {
-      // TODO(jochen): store information about the blocked pop-up in the
-      // helper.
-      return NULL;
-    }
+      popup_blocker_helper) {
 
     if ((params.disposition == NEW_POPUP ||
          params.disposition == NEW_FOREGROUND_TAB ||
          params.disposition == NEW_BACKGROUND_TAB) &&
         !params.user_gesture && !CommandLine::ForCurrentProcess()->HasSwitch(
                                     switches::kDisablePopupBlocking)) {
-      return NULL;
+      if (popup_blocker_helper->MaybeBlockPopup(nav_params))
+        return NULL;
     }
   }
 
@@ -1501,21 +1497,25 @@ bool Browser::ShouldCreateWebContents(
     return true;
   }
 
-  BlockedContentTabHelper* blocked_content_helper =
-      BlockedContentTabHelper::FromWebContents(web_contents);
-  if (!blocked_content_helper)
+  PopupBlockerTabHelper* popup_blocker_helper =
+      PopupBlockerTabHelper::FromWebContents(web_contents);
+  if (!popup_blocker_helper)
     return true;
-
-  if (blocked_content_helper->all_contents_blocked()) {
-    // TODO(jochen): store information about the blocked pop-up in the helper.
-    return false;
-  }
 
   if ((disposition == NEW_POPUP || disposition == NEW_FOREGROUND_TAB ||
        disposition == NEW_BACKGROUND_TAB) && !user_gesture &&
       !CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisablePopupBlocking)) {
-    return false;
+    chrome::NavigateParams nav_params(
+        this, target_url, content::PAGE_TRANSITION_LINK);
+    // TODO(jochen): route missing information to here:
+    //   referrer, extra_headers, override_encoding
+    nav_params.source_contents = web_contents;
+    nav_params.tabstrip_add_types = TabStripModel::ADD_NONE;
+    nav_params.window_action = chrome::NavigateParams::SHOW_WINDOW;
+    nav_params.user_gesture = user_gesture;
+
+    return !popup_blocker_helper->MaybeBlockPopup(nav_params);
   }
 
   return true;
