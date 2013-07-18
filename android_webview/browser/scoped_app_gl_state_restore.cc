@@ -42,14 +42,30 @@ void MakeAppContextCurrent() {
 
 }  // namespace
 
-ScopedAppGLStateRestore::ScopedAppGLStateRestore() {
+ScopedAppGLStateRestore::ScopedAppGLStateRestore(CallMode mode) {
   MakeAppContextCurrent();
 
-  // TODO(boliu): These should always be 0 in draw case, but not necessarily in
-  // OnDetachFromWindow or other cases. When we have guarantee that we are no
-  // longer making GL calls outside of draw, DCHECK these are 0 in draw case.
   glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &vertex_array_buffer_binding_);
   glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, &index_array_buffer_binding_);
+
+  switch(mode) {
+    case MODE_DRAW:
+      // TODO(boliu): These should always be 0 in draw case. When we have
+      // guarantee that we are no longer making GL calls outside of draw, DCHECK
+      // these are 0 here.
+      LOG_IF(ERROR, vertex_array_buffer_binding_)
+          << "GL_ARRAY_BUFFER_BINDING not zero in draw: "
+          << vertex_array_buffer_binding_;
+      LOG_IF(ERROR, index_array_buffer_binding_)
+          << "GL_ELEMENT_ARRAY_BUFFER_BINDING not zero in draw: "
+          << index_array_buffer_binding_;
+
+      vertex_array_buffer_binding_ = 0;
+      index_array_buffer_binding_ = 0;
+      break;
+    case MODE_DETACH_FROM_WINDOW:
+      break;
+  }
 
   glGetIntegerv(GL_TEXTURE_BINDING_EXTERNAL_OES,
                 &texture_external_oes_binding_);

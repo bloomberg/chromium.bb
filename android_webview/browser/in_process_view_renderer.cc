@@ -224,7 +224,7 @@ void InProcessViewRenderer::DrawGL(AwDrawGLInfo* draw_info) {
     return;
   }
 
-  ScopedAppGLStateRestore state_restore;
+  ScopedAppGLStateRestore state_restore(ScopedAppGLStateRestore::MODE_DRAW);
 
   if (attached_to_window_ && compositor_ && !hardware_initialized_) {
     TRACE_EVENT0("android_webview", "InitializeHwDraw");
@@ -449,7 +449,8 @@ void InProcessViewRenderer::OnDetachedFromWindow() {
   if (hardware_initialized_) {
     DCHECK(compositor_);
 
-    ScopedAppGLStateRestore state_restore;
+    ScopedAppGLStateRestore state_restore(
+        ScopedAppGLStateRestore::MODE_DETACH_FROM_WINDOW);
     compositor_->ReleaseHwDraw();
     hardware_initialized_ = false;
   }

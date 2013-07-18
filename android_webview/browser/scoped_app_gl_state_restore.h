@@ -14,7 +14,12 @@ namespace android_webview {
 // This class is not thread safe and should only be used on the UI thread.
 class ScopedAppGLStateRestore {
  public:
-  ScopedAppGLStateRestore();
+  enum CallMode {
+    MODE_DRAW,
+    MODE_DETACH_FROM_WINDOW
+  };
+
+  ScopedAppGLStateRestore(CallMode mode);
   ~ScopedAppGLStateRestore();
 
  private:
