@@ -2125,24 +2125,25 @@ void TestingAutomationProvider::PerformActionOnInfobar(
                                        infobar_index));
     return;
   }
-  InfoBarDelegate* infobar = infobar_service->infobar_at(infobar_index);
+  InfoBarDelegate* infobar_delegate =
+      infobar_service->infobar_at(infobar_index);
 
   if (action == "dismiss") {
-    infobar->InfoBarDismissed();
-    infobar_service->RemoveInfoBar(infobar);
+    infobar_delegate->InfoBarDismissed();
+    infobar_service->RemoveInfoBar(infobar_delegate);
     reply.SendSuccess(NULL);
     return;
   }
   if ((action == "accept") || (action == "cancel")) {
-    ConfirmInfoBarDelegate* delegate = infobar->AsConfirmInfoBarDelegate();
-    if (!delegate) {
+    ConfirmInfoBarDelegate* confirm_infobar_delegate =
+        infobar_delegate->AsConfirmInfoBarDelegate();
+    if (!confirm_infobar_delegate) {
       reply.SendError("Not a confirm infobar");
       return;
     }
-    bool remove_infobar = (action == "accept") ?
-        delegate->Accept() : delegate->Cancel();
-    if (remove_infobar)
-      infobar_service->RemoveInfoBar(infobar);
+    if ((action == "accept") ?
+        confirm_infobar_delegate->Accept() : confirm_infobar_delegate->Cancel())
+      infobar_service->RemoveInfoBar(infobar_delegate);
     reply.SendSuccess(NULL);
     return;
   }
