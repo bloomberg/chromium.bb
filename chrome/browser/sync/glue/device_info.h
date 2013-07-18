@@ -11,6 +11,10 @@
 #include "base/bind.h"
 #include "sync/protocol/sync.pb.h"
 
+namespace base {
+class DictionaryValue;
+}
+
 namespace chrome {
 class VersionInfo;
 }
@@ -50,6 +54,16 @@ class DeviceInfo {
   // Compares this object's fields with another's.
   bool Equals(const DeviceInfo& other) const;
 
+  // Apps can set ids for a device that is meaningful to them but
+  // not unique enough so the user can be tracked. Exposing |guid|
+  // would lead to a stable unique id for a device which can potentially
+  // be used for tracking.
+  void SetPublicId(std::string id);
+
+  // Converts the |DeviceInfo| values to a JS friendly DictionaryValue,
+  // which extension APIs can expose to third party apps.
+  base::DictionaryValue* ToValue();
+
   static sync_pb::SyncEnums::DeviceType GetLocalDeviceType();
 
   // Creates a |DeviceInfo| object representing the local device and passes
@@ -87,6 +101,8 @@ class DeviceInfo {
   const std::string sync_user_agent_;
 
   const sync_pb::SyncEnums::DeviceType device_type_;
+
+  std::string public_id_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceInfo);
 };

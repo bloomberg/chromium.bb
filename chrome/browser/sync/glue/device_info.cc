@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "base/values.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
@@ -38,6 +39,28 @@ std::string ChannelToString(chrome::VersionInfo::Channel channel) {
       NOTREACHED();
       return "unknown";
   };
+}
+
+std::string DeviceTypeToString(sync_pb::SyncEnums::DeviceType device_type) {
+  switch (device_type) {
+    case sync_pb::SyncEnums_DeviceType_TYPE_WIN:
+      return "WIN";
+    case sync_pb::SyncEnums_DeviceType_TYPE_MAC:
+      return "MAC";
+    case sync_pb::SyncEnums_DeviceType_TYPE_LINUX:
+      return "LINUX";
+    case sync_pb::SyncEnums_DeviceType_TYPE_CROS:
+      return "CHROME OS";
+    case sync_pb::SyncEnums_DeviceType_TYPE_OTHER:
+      return "OTHER";
+    case sync_pb::SyncEnums_DeviceType_TYPE_PHONE:
+      return "PHONE";
+    case sync_pb::SyncEnums_DeviceType_TYPE_TABLET:
+      return "TABLET";
+    default:
+      NOTREACHED();
+      return "UNKNOWN";
+  }
 }
 
 }  // namespace
@@ -141,6 +164,20 @@ std::string DeviceInfo::MakeUserAgentForSyncApi(
   }
 
   return user_agent;
+}
+
+base::DictionaryValue* DeviceInfo::ToValue() {
+  base::DictionaryValue* value = new base::DictionaryValue();
+  value->SetString("Id", public_id_);
+  value->SetString("Client Name", client_name_);
+  value->SetString("Chrome Version", chrome_version_);
+  value->SetString("Sync User Agent", sync_user_agent_);
+  value->SetString("Device Type", DeviceTypeToString(device_type_));
+  return value;
+}
+
+void DeviceInfo::SetPublicId(std::string id) {
+  public_id_ = id;
 }
 
 // static.
