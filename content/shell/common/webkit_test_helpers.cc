@@ -35,7 +35,6 @@ void ExportLayoutTestSpecificPreferences(
   to->application_cache_enabled = from.offlineWebApplicationCacheEnabled;
   to->tabs_to_links = from.tabsToLinks;
   to->experimental_webgl_enabled = from.experimentalWebGLEnabled;
-  to->css_grid_layout_enabled = from.experimentalCSSGridLayoutEnabled;
   // experimentalCSSRegionsEnabled is deprecated and ignored.
   to->hyperlink_auditing_enabled = from.hyperlinkAuditingEnabled;
   to->caret_browsing_enabled = from.caretBrowsingEnabled;

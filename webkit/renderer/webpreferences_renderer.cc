@@ -286,7 +286,6 @@ void ApplyWebPreferences(const WebPreferences& prefs, WebView* web_view) {
 
   settings->setCSSStickyPositionEnabled(prefs.css_sticky_position_enabled);
   settings->setExperimentalCSSCustomFilterEnabled(prefs.css_shaders_enabled);
-  settings->setExperimentalCSSGridLayoutEnabled(prefs.css_grid_layout_enabled);
   settings->setRegionBasedColumnsEnabled(prefs.region_based_columns_enabled);
 
   WebRuntimeFeatures::enableLazyLayout(prefs.lazy_layout_enabled);

@@ -133,7 +133,6 @@ struct WEBKIT_COMMON_EXPORT WebPreferences {
   bool css_sticky_position_enabled;
   bool css_shaders_enabled;
   bool css_variables_enabled;
-  bool css_grid_layout_enabled;
   bool lazy_layout_enabled;
   bool region_based_columns_enabled;
   bool touch_enabled;
