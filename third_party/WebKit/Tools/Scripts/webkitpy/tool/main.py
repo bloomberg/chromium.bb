@@ -44,6 +44,7 @@ class WebKitPatch(MultiCommandTool, Host):
         make_option("-v", "--verbose", action="store_true", dest="verbose", default=False, help="enable all logging"),
         make_option("-d", "--directory", action="append", dest="patch_directories", default=[], help="Directory to look at for changed files"),
         make_option("--seconds-to-sleep", action="store", default=120, type="int", help="Number of seconds to sleep in the task queue."),
+        make_option("--port", action="store", dest="port", default=None, help="Specify a port (e.g., mac, qt, gtk, ...)."),
     ]
 
     def __init__(self, path):
