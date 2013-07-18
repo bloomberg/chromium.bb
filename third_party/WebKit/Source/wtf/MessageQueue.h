@@ -54,7 +54,8 @@ namespace WTF {
         MessageQueue() : m_killed(false) { }
         ~MessageQueue();
 
-        void append(PassOwnPtr<DataType>);
+        // Returns true if the queue is still alive, false if the queue has been killed.
+        bool append(PassOwnPtr<DataType>);
         void appendAndKill(PassOwnPtr<DataType>);
         bool appendAndCheckEmpty(PassOwnPtr<DataType>);
         void prepend(PassOwnPtr<DataType>);
@@ -92,11 +93,12 @@ namespace WTF {
     }
 
     template<typename DataType>
-    inline void MessageQueue<DataType>::append(PassOwnPtr<DataType> message)
+    inline bool MessageQueue<DataType>::append(PassOwnPtr<DataType> message)
     {
         MutexLocker lock(m_mutex);
         m_queue.append(message.leakPtr());
         m_condition.signal();
+        return !m_killed;
     }
 
     template<typename DataType>

@@ -58,9 +58,11 @@ namespace WebCore {
         void terminate();
         bool terminated() const { return m_messageQueue.killed(); }
 
-        void postTask(PassOwnPtr<ScriptExecutionContext::Task>);
+        // Returns true if the loop is still alive, false if it has been terminated.
+        bool postTask(PassOwnPtr<ScriptExecutionContext::Task>);
         void postTaskAndTerminate(PassOwnPtr<ScriptExecutionContext::Task>);
-        void postTaskForMode(PassOwnPtr<ScriptExecutionContext::Task>, const String& mode);
+        // Returns true if the loop is still alive, false if it has been terminated.
+        bool postTaskForMode(PassOwnPtr<ScriptExecutionContext::Task>, const String& mode);
 
         unsigned long createUniqueId() { return ++m_uniqueId; }
 

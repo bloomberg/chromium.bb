@@ -40,7 +40,9 @@ public:
         virtual ~Task() { }
         virtual void Run() = 0;
     };
-    WEBKIT_EXPORT void postTask(Task*);
+
+    // Returns true if the task was posted to a non-terminated loop.
+    WEBKIT_EXPORT bool postTask(Task*);
     WEBKIT_EXPORT bool equals(const WebWorkerRunLoop&) const;
     WEBKIT_EXPORT bool lessThan(const WebWorkerRunLoop&) const;
 

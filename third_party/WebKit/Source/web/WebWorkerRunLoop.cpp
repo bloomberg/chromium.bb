@@ -61,9 +61,9 @@ WebWorkerRunLoop::WebWorkerRunLoop(WorkerRunLoop* workerRunLoop)
 {
 }
 
-void WebWorkerRunLoop::postTask(Task* task)
+bool WebWorkerRunLoop::postTask(Task* task)
 {
-    m_workerRunLoop->postTask(TaskForwarder::create(adoptPtr(task)));
+    return m_workerRunLoop->postTask(TaskForwarder::create(adoptPtr(task)));
 }
 
 bool WebWorkerRunLoop::equals(const WebWorkerRunLoop& o) const

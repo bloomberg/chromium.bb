@@ -194,9 +194,9 @@ void WorkerRunLoop::terminate()
     m_messageQueue.kill();
 }
 
-void WorkerRunLoop::postTask(PassOwnPtr<ScriptExecutionContext::Task> task)
+bool WorkerRunLoop::postTask(PassOwnPtr<ScriptExecutionContext::Task> task)
 {
-    postTaskForMode(task, defaultMode());
+    return postTaskForMode(task, defaultMode());
 }
 
 void WorkerRunLoop::postTaskAndTerminate(PassOwnPtr<ScriptExecutionContext::Task> task)
@@ -204,9 +204,9 @@ void WorkerRunLoop::postTaskAndTerminate(PassOwnPtr<ScriptExecutionContext::Task
     m_messageQueue.appendAndKill(Task::create(task, defaultMode().isolatedCopy()));
 }
 
-void WorkerRunLoop::postTaskForMode(PassOwnPtr<ScriptExecutionContext::Task> task, const String& mode)
+bool WorkerRunLoop::postTaskForMode(PassOwnPtr<ScriptExecutionContext::Task> task, const String& mode)
 {
-    m_messageQueue.append(Task::create(task, mode.isolatedCopy()));
+    return m_messageQueue.append(Task::create(task, mode.isolatedCopy()));
 }
 
 PassOwnPtr<WorkerRunLoop::Task> WorkerRunLoop::Task::create(PassOwnPtr<ScriptExecutionContext::Task> task, const String& mode)
