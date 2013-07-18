@@ -33,10 +33,8 @@ TEST(MetricsLogBaseTest, EmptyRecord) {
   expected.mutable_system_profile()->set_app_version("bogus version");
   expected.mutable_system_profile()->set_channel(
       parsed.system_profile().channel());
-#if defined(OS_CHROMEOS)
   expected.mutable_system_profile()->mutable_hardware()->set_hardware_class(
       "sample-class");
-#endif  // OS_CHROMEOS
 
   EXPECT_EQ(expected.SerializeAsString(), encoded);
 }

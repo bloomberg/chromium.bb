@@ -66,7 +66,8 @@ class MetricsLogBase {
   int num_events() { return num_events_; }
 
   void set_hardware_class(const std::string& hardware_class) {
-    hardware_class_ = hardware_class;
+    uma_proto_.mutable_system_profile()->mutable_hardware()->set_hardware_class(
+        hardware_class);
   }
 
  protected:
@@ -81,8 +82,6 @@ class MetricsLogBase {
   int num_events_;  // the number of events recorded in this log
 
  private:
-  std::string hardware_class_;
-
   // locked_ is true when record has been packed up for sending, and should
   // no longer be written to.  It is only used for sanity checking and is
   // not a real lock.

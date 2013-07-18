@@ -127,16 +127,6 @@ int64 MetricsLogBase::GetCurrentTime() {
 void MetricsLogBase::CloseLog() {
   DCHECK(!locked_);
   locked_ = true;
-
-#if defined(OS_CHROMEOS)
-  // TODO(isherman): Now that the XML pipeline is deprecated, there is no need
-  // to track the hardware class in a separate member variable and only write it
-  // out when the log is closed.
-  if (!hardware_class_.empty()) {
-    uma_proto_.mutable_system_profile()->mutable_hardware()->set_hardware_class(
-        hardware_class_);
-  }
-#endif  // OS_CHROMEOS
 }
 
 void MetricsLogBase::GetEncodedLog(std::string* encoded_log) {
