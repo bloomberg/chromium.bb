@@ -118,24 +118,35 @@ bsr Eq Gq, data16 rexw 0x0f 0xbd, amd64 nacl-forbidden
 # reference.
 bswap ry, 0x0f 0xc8
 ######## BT ####################################################################
+#   bt <register>, <memory>
+# is unsafe in 64-bit mode, because <register> could be
+# 64-bit.
+#   bt <immediate>, <whatever>
+# only uses few least significant bits of <immediate>, so it's safe.
+# Moreover, it's necessary to test higher bits of 64-bit operands
+# (which can't be done with test instruction), so it's the only form that is
+# allowed.
 bt Gv =Ev, 0x0f 0xa3, nacl-forbidden
 bt Ib =Ev, 0x0f 0xba /4, nacl-ia32-forbidden
 ######## BTC ###################################################################
 # "btc" is not marked as nacl-amd64-zero-extends out of caution.  We assume that
 # this instruction is used for bit manipulation rather than computing viable
 # addresses.
+# Also, see comment for bt.
 btc Gv Ev, 0x0f 0xbb, lock nacl-forbidden
 btc Ib Ev, 0x0f 0xba /7, lock nacl-ia32-forbidden
 ######## BTR ###################################################################
 # "btr" is not marked as nacl-amd64-zero-extends out of caution.  We assume that
 # this instruction is used for bit manipulation rather than computing viable
 # addresses.
+# Also, see comment for bt.
 btr Gv Ev, 0x0f 0xb3, lock nacl-forbidden
 btr Ib Ev, 0x0f 0xba /6, lock nacl-ia32-forbidden
 ######## BTS ###################################################################
 # "bts" is not marked as nacl-amd64-zero-extends out of caution.  We assume that
 # this instruction is used for bit manipulation rather than computing viable
 # addresses.
+# Also, see comment for bt.
 bts Gv Ev, 0x0f 0xab, lock nacl-forbidden
 bts Ib Ev, 0x0f 0xba /5, lock nacl-ia32-forbidden
 ######## CALL (Near) ###########################################################
