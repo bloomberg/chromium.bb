@@ -61,6 +61,8 @@ class CONTENT_EXPORT BrowserAccessibilityManager {
 
   virtual ~BrowserAccessibilityManager();
 
+  static AccessibilityNodeData GetEmptyDocument();
+
   // Type is enum AccessibilityNotification.
   // We pass it as int so that we don't include the message declaration
   // header here.

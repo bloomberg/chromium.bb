@@ -51,6 +51,14 @@ BrowserAccessibilityManager::~BrowserAccessibilityManager() {
     root_->Destroy();
 }
 
+// static
+AccessibilityNodeData BrowserAccessibilityManager::GetEmptyDocument() {
+  AccessibilityNodeData empty_document;
+  empty_document.id = 0;
+  empty_document.role = AccessibilityNodeData::ROLE_ROOT_WEB_AREA;
+  return empty_document;
+}
+
 BrowserAccessibility* BrowserAccessibilityManager::GetRoot() {
   return root_;
 }

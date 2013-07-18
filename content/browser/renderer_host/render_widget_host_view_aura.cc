@@ -867,7 +867,8 @@ RenderWidgetHostViewAura::GetOrCreateBrowserAccessibilityManager() {
       hwnd, accessible_parent,
       BrowserAccessibilityManagerWin::GetEmptyDocument(), this);
 #else
-  manager = BrowserAccessibilityManager::Create(AccessibilityNodeData(), this);
+  manager = BrowserAccessibilityManager::Create(
+      BrowserAccessibilityManager::GetEmptyDocument(), this);
 #endif
 
   SetBrowserAccessibilityManager(manager);
