@@ -31,8 +31,6 @@
 #include "config.h"
 #include "WebSettingsImpl.h"
 
-// FIXME: Needed temporarily for Grid (see http://crbug.com/241619)
-#include "RuntimeEnabledFeatures.h"
 #include "core/page/Settings.h"
 #include "core/platform/graphics/chromium/DeferredImageDecoder.h"
 #include "wtf/UnusedParam.h"
@@ -355,12 +353,6 @@ void WebSettingsImpl::setExperimentalWebSocketEnabled(bool enabled)
 void WebSettingsImpl::setCSSStickyPositionEnabled(bool enabled)
 {
     m_settings->setCSSStickyPositionEnabled(enabled);
-}
-
-void WebSettingsImpl::setExperimentalCSSGridLayoutEnabled(bool enabled)
-{
-    // FIXME: Remove once chromium doesn't call it anymore (see http://crbug.com/241619)
-    RuntimeEnabledFeatures::setCSSGridLayoutEnabled(enabled);
 }
 
 void WebSettingsImpl::setRegionBasedColumnsEnabled(bool enabled)
