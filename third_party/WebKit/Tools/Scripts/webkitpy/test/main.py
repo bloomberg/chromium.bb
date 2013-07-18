@@ -137,7 +137,7 @@ class Tester(object):
             self._options.child_processes = 1
 
             import coverage
-            cov = coverage.coverage(omit=["/usr/*", "*/webkitpy/thirdparty/*"])
+            cov = coverage.coverage(omit=["/usr/*", "*/webkitpy/thirdparty/*", "/Library/*"])
             cov.start()
 
         self.printer.write_update("Checking imports ...")
