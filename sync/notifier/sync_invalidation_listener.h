@@ -151,10 +151,12 @@ class SYNC_EXPORT_PRIVATE SyncInvalidationListener
   void EmitStateChange();
 
   void PrepareInvalidation(const ObjectIdSet& ids,
+                           int64 version,
                            const std::string& payload,
                            invalidation::InvalidationClient* client,
                            const invalidation::AckHandle& ack_handle);
   void EmitInvalidation(const ObjectIdSet& ids,
+                        int64 version,
                         const std::string& payload,
                         invalidation::InvalidationClient* client,
                         const invalidation::AckHandle& ack_handle,

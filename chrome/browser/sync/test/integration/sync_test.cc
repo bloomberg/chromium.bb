@@ -671,7 +671,9 @@ void SyncTest::TriggerNotification(syncer::ModelTypeSet changed_types) {
           "from_server",
           syncer::NOTIFY_ALL,
           syncer::ObjectIdSetToInvalidationMap(
-              syncer::ModelTypeSetToObjectIdSet(changed_types), std::string())
+              syncer::ModelTypeSetToObjectIdSet(changed_types),
+              syncer::Invalidation::kUnknownVersion,
+              std::string())
           ).ToString();
   const std::string& path =
       std::string("chromiumsync/sendnotification?channel=") +

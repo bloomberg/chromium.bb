@@ -173,7 +173,9 @@ void P2PInvalidator::UpdateRegisteredIds(InvalidationHandler* handler,
   const P2PNotificationData notification_data(
       invalidator_client_id_,
       NOTIFY_SELF,
-      ObjectIdSetToInvalidationMap(new_ids, std::string()));
+      ObjectIdSetToInvalidationMap(new_ids,
+                                   Invalidation::kUnknownVersion,
+                                   std::string()));
   SendNotificationData(notification_data);
 }
 
@@ -228,6 +230,7 @@ void P2PInvalidator::OnNotificationsEnabled() {
         invalidator_client_id_,
         NOTIFY_SELF,
         ObjectIdSetToInvalidationMap(registrar_.GetAllRegisteredIds(),
+                                     Invalidation::kUnknownVersion,
                                      std::string()));
     SendNotificationData(notification_data);
   }
@@ -263,6 +266,7 @@ void P2PInvalidator::OnIncomingNotification(
         invalidator_client_id_,
         NOTIFY_ALL,
         ObjectIdSetToInvalidationMap(registrar_.GetAllRegisteredIds(),
+                                     Invalidation::kUnknownVersion,
                                      std::string()));
   }
   if (!notification_data.IsTargeted(invalidator_client_id_)) {

@@ -47,10 +47,12 @@ std::string FakeInvalidationService::GetInvalidatorClientId() const {
 
 void FakeInvalidationService::EmitInvalidationForTest(
       const invalidation::ObjectId& object_id,
+      int64 version,
       const std::string& payload) {
   syncer::ObjectIdInvalidationMap invalidation_map;
 
   syncer::Invalidation inv;
+  inv.version = version;
   inv.payload = payload;
   inv.ack_handle = syncer::AckHandle::CreateUnique();
 

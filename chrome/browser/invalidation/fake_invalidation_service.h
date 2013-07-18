@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_INVALIDATION_FAKE_INVALIDATION_SERVICE_H_
 #define CHROME_BROWSER_INVALIDATION_FAKE_INVALIDATION_SERVICE_H_
 
+#include "base/basictypes.h"
 #include "chrome/browser/invalidation/invalidation_service.h"
 #include "sync/notifier/invalidator_registrar.h"
 
@@ -34,6 +35,7 @@ class FakeInvalidationService : public InvalidationService {
 
   void EmitInvalidationForTest(
       const invalidation::ObjectId& object_id,
+      int64 version,
       const std::string& payload);
 
  private:

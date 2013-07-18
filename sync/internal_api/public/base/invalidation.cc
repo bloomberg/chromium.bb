@@ -64,19 +64,23 @@ AckHandle::AckHandle(const std::string& state, base::Time timestamp)
 AckHandle::~AckHandle() {
 }
 
+const int64 Invalidation::kUnknownVersion = -1;
+
 Invalidation::Invalidation()
-    : ack_handle(AckHandle::InvalidAckHandle()) {
+    : version(kUnknownVersion), ack_handle(AckHandle::InvalidAckHandle()) {
 }
 
 Invalidation::~Invalidation() {
 }
 
 bool Invalidation::Equals(const Invalidation& other) const {
-  return (payload == other.payload) && ack_handle.Equals(other.ack_handle);
+  return (version == other.version) && (payload == other.payload) &&
+      ack_handle.Equals(other.ack_handle);
 }
 
 scoped_ptr<base::DictionaryValue> Invalidation::ToValue() const {
   scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
+  value->SetString("version", base::Int64ToString(version));
   value->SetString("payload", payload);
   value->Set("ackHandle", ack_handle.ToValue().release());
   return value.Pass();
@@ -84,6 +88,13 @@ scoped_ptr<base::DictionaryValue> Invalidation::ToValue() const {
 
 bool Invalidation::ResetFromValue(const base::DictionaryValue& value) {
   const base::DictionaryValue* ack_handle_value = NULL;
+  std::string version_as_string;
+  if (value.GetString("version", &version_as_string)) {
+    if (!base::StringToInt64(version_as_string, &version))
+      return false;
+  } else {
+    version = kUnknownVersion;
+  }
   return
       value.GetString("payload", &payload) &&
       value.GetDictionary("ackHandle", &ack_handle_value) &&

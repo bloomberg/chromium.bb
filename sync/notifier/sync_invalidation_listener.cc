@@ -205,7 +205,7 @@ void SyncInvalidationListener::Invalidate(
 
   ObjectIdSet ids;
   ids.insert(id);
-  PrepareInvalidation(ids, payload, client, ack_handle);
+  PrepareInvalidation(ids, invalidation.version(), payload, client, ack_handle);
 }
 
 void SyncInvalidationListener::InvalidateUnknownVersion(
@@ -218,7 +218,12 @@ void SyncInvalidationListener::InvalidateUnknownVersion(
 
   ObjectIdSet ids;
   ids.insert(object_id);
-  PrepareInvalidation(ids, std::string(), client, ack_handle);
+  PrepareInvalidation(
+      ids,
+      Invalidation::kUnknownVersion,
+      std::string(),
+      client,
+      ack_handle);
 }
 
 // This should behave as if we got an invalidation with version
@@ -230,11 +235,17 @@ void SyncInvalidationListener::InvalidateAll(
   DCHECK_EQ(client, invalidation_client_.get());
   DVLOG(1) << "InvalidateAll";
 
-  PrepareInvalidation(registered_ids_, std::string(), client, ack_handle);
+  PrepareInvalidation(
+      registered_ids_,
+      Invalidation::kUnknownVersion,
+      std::string(),
+      client,
+      ack_handle);
 }
 
 void SyncInvalidationListener::PrepareInvalidation(
     const ObjectIdSet& ids,
+    int64 version,
     const std::string& payload,
     invalidation::InvalidationClient* client,
     const invalidation::AckHandle& ack_handle) {
@@ -250,6 +261,7 @@ void SyncInvalidationListener::PrepareInvalidation(
       base::Bind(&SyncInvalidationListener::EmitInvalidation,
                  weak_ptr_factory_.GetWeakPtr(),
                  ids,
+                 version,
                  payload,
                  client,
                  ack_handle));
@@ -257,13 +269,14 @@ void SyncInvalidationListener::PrepareInvalidation(
 
 void SyncInvalidationListener::EmitInvalidation(
     const ObjectIdSet& ids,
+    int64 version,
     const std::string& payload,
     invalidation::InvalidationClient* client,
     const invalidation::AckHandle& ack_handle,
     const AckHandleMap& local_ack_handles) {
   DCHECK(CalledOnValidThread());
   ObjectIdInvalidationMap invalidation_map =
-      ObjectIdSetToInvalidationMap(ids, payload);
+      ObjectIdSetToInvalidationMap(ids, version, payload);
   for (AckHandleMap::const_iterator it = local_ack_handles.begin();
        it != local_ack_handles.end(); ++it) {
     // Update in-memory copy of the invalidation state.
@@ -280,6 +293,7 @@ void SyncInvalidationListener::OnTimeout(const ObjectIdSet& ids) {
   for (ObjectIdSet::const_iterator it = ids.begin(); it != ids.end(); ++it) {
     Invalidation invalidation;
     invalidation.ack_handle = invalidation_state_map_[*it].expected;
+    invalidation.version = invalidation_state_map_[*it].version;
     invalidation.payload = invalidation_state_map_[*it].payload;
     invalidation_map.insert(std::make_pair(*it, invalidation));
   }

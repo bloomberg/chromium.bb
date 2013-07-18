@@ -81,7 +81,10 @@ class PushMessagingApiTest : public ExtensionApiTest {
   void EmitInvalidation(
       const invalidation::ObjectId& object_id,
       const std::string& payload) {
-    fake_invalidation_service_->EmitInvalidationForTest(object_id, payload);
+    fake_invalidation_service_->EmitInvalidationForTest(
+        object_id,
+        syncer::Invalidation::kUnknownVersion,
+        payload);
   }
 
   PushMessagingAPI* GetAPI() {

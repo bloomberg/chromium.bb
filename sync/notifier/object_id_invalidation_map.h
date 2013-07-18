@@ -8,6 +8,7 @@
 #include <map>
 #include <string>
 
+#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "google/cacheinvalidation/include/types.h"
 #include "sync/base/sync_export.h"
@@ -29,7 +30,7 @@ typedef std::map<invalidation::ObjectId,
 ObjectIdSet ObjectIdInvalidationMapToSet(
     const ObjectIdInvalidationMap& invalidation_map);
 SYNC_EXPORT ObjectIdInvalidationMap ObjectIdSetToInvalidationMap(
-    const ObjectIdSet& ids, const std::string& payload);
+    const ObjectIdSet& ids, int64 version, const std::string& payload);
 
 SYNC_EXPORT bool ObjectIdInvalidationMapEquals(
     const ObjectIdInvalidationMap& invalidation_map1,
@@ -51,4 +52,4 @@ SYNC_EXPORT ObjectIdInvalidationMap
 
 }  // namespace syncer
 
-#endif  // HOME_DCHENG_SRC_CHROMIUM_SRC_SYNC_NOTIFIER_OBJECT_ID_STATE_MAP_H_
+#endif  // SYNC_NOTIFIER_OBJECT_ID_INVALIDATION_MAP_H_

@@ -43,11 +43,14 @@ class SYNC_EXPORT AckHandle {
 };
 
 // Represents a local invalidation, and is roughly analogous to
-// invalidation::Invalidation. It contains a payload (which may be empty) and an
+// invalidation::Invalidation. It contains a version (which may be
+// kUnknownVersion), a payload (which may be empty) and an
 // associated ack handle that an InvalidationHandler implementation can use to
 // acknowledge receipt of the invalidation. It does not embed the object ID,
 // since it is typically associated with it through ObjectIdInvalidationMap.
 struct SYNC_EXPORT Invalidation {
+  static const int64 kUnknownVersion;
+
   Invalidation();
   ~Invalidation();
 
@@ -56,6 +59,7 @@ struct SYNC_EXPORT Invalidation {
   scoped_ptr<base::DictionaryValue> ToValue() const;
   bool ResetFromValue(const base::DictionaryValue& value);
 
+  int64 version;
   std::string payload;
   AckHandle ack_handle;
 };

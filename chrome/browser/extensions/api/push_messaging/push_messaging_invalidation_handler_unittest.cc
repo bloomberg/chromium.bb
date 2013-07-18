@@ -121,7 +121,10 @@ TEST_F(PushMessagingInvalidationHandlerTest, Dispatch) {
         *it, syncer::AckHandle::InvalidAckHandle()));
   }
   handler_->OnIncomingInvalidation(
-      ObjectIdSetToInvalidationMap(ids, "payload"));
+      ObjectIdSetToInvalidationMap(
+          ids,
+          syncer::Invalidation::kUnknownVersion,
+          "payload"));
 }
 
 // Tests that malformed object IDs don't trigger spurious callbacks.
@@ -158,7 +161,10 @@ TEST_F(PushMessagingInvalidationHandlerTest, DispatchInvalidObjectIds) {
         *it, syncer::AckHandle::InvalidAckHandle()));
   }
   handler_->OnIncomingInvalidation(
-      ObjectIdSetToInvalidationMap(ids, "payload"));
+      ObjectIdSetToInvalidationMap(
+          ids,
+          syncer::Invalidation::kUnknownVersion,
+          "payload"));
 }
 
 }  // namespace extensions

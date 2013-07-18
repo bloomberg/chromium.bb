@@ -22,10 +22,11 @@ ObjectIdSet ObjectIdInvalidationMapToSet(
 }
 
 ObjectIdInvalidationMap ObjectIdSetToInvalidationMap(
-    const ObjectIdSet& ids, const std::string& payload) {
+    const ObjectIdSet& ids, int64 version, const std::string& payload) {
   ObjectIdInvalidationMap invalidation_map;
   for (ObjectIdSet::const_iterator it = ids.begin(); it != ids.end(); ++it) {
     // TODO(dcheng): Do we need to provide a way to set AckHandle?
+    invalidation_map[*it].version = version;
     invalidation_map[*it].payload = payload;
   }
   return invalidation_map;

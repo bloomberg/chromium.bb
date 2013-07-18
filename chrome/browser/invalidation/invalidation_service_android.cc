@@ -72,7 +72,9 @@ void InvalidationServiceAndroid::Observe(
   const syncer::ObjectIdInvalidationMap& effective_invalidation_map =
       object_invalidation_map.empty() ?
       ObjectIdSetToInvalidationMap(
-          invalidator_registrar_.GetAllRegisteredIds(), std::string()) :
+          invalidator_registrar_.GetAllRegisteredIds(),
+          syncer::Invalidation::kUnknownVersion,
+          std::string()) :
       object_invalidation_map;
 
   invalidator_registrar_.DispatchInvalidationsToHandlers(

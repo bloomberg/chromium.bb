@@ -180,6 +180,7 @@ TEST_F(P2PInvalidatorTest, P2PNotificationDataNonDefault) {
   const ObjectIdInvalidationMap& invalidation_map =
       ObjectIdSetToInvalidationMap(
           ModelTypeSetToObjectIdSet(ModelTypeSet(BOOKMARKS, THEMES)),
+          Invalidation::kUnknownVersion,
           std::string());
   const P2PNotificationData notification_data(
       "sender", NOTIFY_ALL, invalidation_map);
@@ -193,10 +194,10 @@ TEST_F(P2PInvalidatorTest, P2PNotificationDataNonDefault) {
       "{\"idInvalidationMap\":["
       "{\"objectId\":{\"name\":\"BOOKMARK\",\"source\":1004},"
       "\"state\":{\"ackHandle\":{\"state\":\"\",\"timestamp\":\"0\"},"
-      "\"payload\":\"\"}},"
+      "\"payload\":\"\",\"version\":\"-1\"}},"
       "{\"objectId\":{\"name\":\"THEME\",\"source\":1004},"
       "\"state\":{\"ackHandle\":{\"state\":\"\",\"timestamp\":\"0\"},"
-      "\"payload\":\"\"}}"
+      "\"payload\":\"\",\"version\":\"-1\"}}"
       "],\"notificationType\":\"notifyAll\","
       "\"senderId\":\"sender\"}", notification_data_str);
 
@@ -249,6 +250,7 @@ TEST_F(P2PInvalidatorTest, NotificationsBasic) {
     const ObjectIdInvalidationMap& invalidation_map =
         ObjectIdSetToInvalidationMap(
             ModelTypeSetToObjectIdSet(ModelTypeSet(THEMES, APPS)),
+            Invalidation::kUnknownVersion,
             std::string());
     invalidator->SendInvalidation(invalidation_map);
   }
@@ -267,6 +269,7 @@ TEST_F(P2PInvalidatorTest, SendNotificationData) {
 
   const ObjectIdInvalidationMap& invalidation_map =
       ObjectIdSetToInvalidationMap(ModelTypeSetToObjectIdSet(changed_types),
+                                   Invalidation::kUnknownVersion,
                                    std::string());
 
   P2PInvalidator* const invalidator = delegate_.GetInvalidator();

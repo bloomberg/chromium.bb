@@ -119,7 +119,7 @@ void ProfileSyncServiceAndroid::SendNudgeNotification(
   syncer::ObjectIdSet object_ids;
   object_ids.insert(object_id);
   syncer::ObjectIdInvalidationMap object_ids_with_states =
-      syncer::ObjectIdSetToInvalidationMap(object_ids, state);
+      syncer::ObjectIdSetToInvalidationMap(object_ids, version, state);
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_SYNC_REFRESH_REMOTE,
