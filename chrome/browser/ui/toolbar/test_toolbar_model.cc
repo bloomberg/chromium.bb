@@ -29,11 +29,13 @@ GURL TestToolbarModel::GetURL() const {
   return url_;
 }
 
-bool TestToolbarModel::WouldReplaceSearchURLWithSearchTerms() const {
+bool TestToolbarModel::WouldReplaceSearchURLWithSearchTerms(
+    bool ignore_editing) const {
   return should_replace_url_;
 }
 
-ToolbarModel::SecurityLevel TestToolbarModel::GetSecurityLevel() const {
+ToolbarModel::SecurityLevel TestToolbarModel::GetSecurityLevel(
+    bool ignore_editing) const {
   return security_level_;
 }
 

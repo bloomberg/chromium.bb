@@ -1216,7 +1216,7 @@ void LocationBarViewGtk::UpdateSiteTypeArea() {
       GTK_IMAGE(location_icon_image_),
       theme_service_->GetImageNamed(resource_id).ToGdkPixbuf());
 
-  if (toolbar_model_->GetSecurityLevel() == ToolbarModel::EV_SECURE) {
+  if (toolbar_model_->GetSecurityLevel(false) == ToolbarModel::EV_SECURE) {
     if (!gtk_util::IsActingAsRoundedWindow(site_type_event_box_)) {
       // Fun fact: If wee try to make |site_type_event_box_| act as a
       // rounded window while it doesn't have a visible window, GTK interprets

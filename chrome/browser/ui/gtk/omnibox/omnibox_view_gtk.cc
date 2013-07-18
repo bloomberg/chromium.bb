@@ -457,7 +457,7 @@ void OmniboxViewGtk::Update(const WebContents* contents) {
       model()->UpdatePermanentText(toolbar_model()->GetText(true));
 
   ToolbarModel::SecurityLevel security_level =
-        toolbar_model()->GetSecurityLevel();
+        toolbar_model()->GetSecurityLevel(false);
   bool changed_security_level = (security_level != security_level_);
   security_level_ = security_level;
 
@@ -1261,7 +1261,7 @@ void OmniboxViewGtk::HandlePopulatePopup(GtkWidget* sender, GtkMenu* menu) {
                      G_CALLBACK(HandleCopyURLClipboardThunk), this);
     gtk_widget_set_sensitive(
         copy_url_menuitem,
-        toolbar_model()->WouldReplaceSearchURLWithSearchTerms() &&
+        toolbar_model()->WouldReplaceSearchURLWithSearchTerms(false) &&
             !model()->user_input_in_progress());
     gtk_widget_show(copy_url_menuitem);
   }

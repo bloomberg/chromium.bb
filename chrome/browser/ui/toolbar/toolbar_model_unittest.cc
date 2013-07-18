@@ -235,7 +235,7 @@ void ToolbarModelTest::NavigateAndCheckTextImpl(const GURL& url,
   EXPECT_EQ(should_display, toolbar_model->ShouldDisplayURL());
   EXPECT_EQ(expected_text, toolbar_model->GetText(can_replace));
   EXPECT_EQ(would_replace,
-            toolbar_model->WouldReplaceSearchURLWithSearchTerms());
+            toolbar_model->WouldReplaceSearchURLWithSearchTerms(false));
 
   // Check after commit.
   CommitPendingLoad(controller);
@@ -248,7 +248,17 @@ void ToolbarModelTest::NavigateAndCheckTextImpl(const GURL& url,
   EXPECT_EQ(should_display, toolbar_model->ShouldDisplayURL());
   EXPECT_EQ(expected_text, toolbar_model->GetText(can_replace));
   EXPECT_EQ(would_replace,
-            toolbar_model->WouldReplaceSearchURLWithSearchTerms());
+            toolbar_model->WouldReplaceSearchURLWithSearchTerms(false));
+
+  // Now pretend the user started modifying the omnibox.
+  toolbar_model->SetInputInProgress(true);
+  EXPECT_FALSE(toolbar_model->WouldReplaceSearchURLWithSearchTerms(false));
+  EXPECT_EQ(would_replace,
+            toolbar_model->WouldReplaceSearchURLWithSearchTerms(true));
+
+  // Tell the ToolbarModel that the user has stopped editing.  This prevents
+  // this function from having side effects.
+  toolbar_model->SetInputInProgress(false);
 }
 
 
@@ -275,7 +285,8 @@ TEST_F(ToolbarModelTest, ShouldDisplayURLQueryExtractionEnabled) {
     const TestItem& test_item = test_items[i];
     NavigateAndCheckText(test_item.url, test_item.expected_text,
                          test_item.expected_replace_text_active,
-                         test_item.would_replace, test_item.should_display);
+                         test_item.would_replace,
+                         test_item.should_display);
   }
 }
 
@@ -294,14 +305,14 @@ TEST_F(ToolbarModelTest, SearchTermsWhileLoading) {
   ToolbarModel* toolbar_model = browser()->toolbar_model();
   controller->GetVisibleEntry()->GetSSL().security_style =
       content::SECURITY_STYLE_UNKNOWN;
-  EXPECT_TRUE(toolbar_model->WouldReplaceSearchURLWithSearchTerms());
+  EXPECT_TRUE(toolbar_model->WouldReplaceSearchURLWithSearchTerms(false));
 
   // When done loading, we shouldn't extract search terms if we didn't get an
   // authenticated connection.
   CommitPendingLoad(controller);
   controller->GetVisibleEntry()->GetSSL().security_style =
       content::SECURITY_STYLE_UNKNOWN;
-  EXPECT_FALSE(toolbar_model->WouldReplaceSearchURLWithSearchTerms());
+  EXPECT_FALSE(toolbar_model->WouldReplaceSearchURLWithSearchTerms(false));
 }
 
 // When the Google base URL is overridden on the command line, we should extract

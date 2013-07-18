@@ -465,7 +465,7 @@ void OmniboxViewMac::ApplyTextAttributes(const string16& display_text,
   // [Could it be to not change if no change?  If so, I'm guessing
   // AppKit may already handle that.]
   const ToolbarModel::SecurityLevel security_level =
-      toolbar_model()->GetSecurityLevel();
+      toolbar_model()->GetSecurityLevel(false);
 
   // Emphasize the scheme for security UI display purposes (if necessary).
   if (!model()->user_input_in_progress() && model()->CurrentTextIsURL() &&
@@ -867,7 +867,7 @@ void OmniboxViewMac::OnPaste() {
 // this method could call the OmniboxView version.
 bool OmniboxViewMac::ShouldEnableCopyURL() {
   return !model()->user_input_in_progress() &&
-      toolbar_model()->WouldReplaceSearchURLWithSearchTerms();
+      toolbar_model()->WouldReplaceSearchURLWithSearchTerms(false);
 }
 
 bool OmniboxViewMac::CanPasteAndGo() {

@@ -723,7 +723,7 @@ void LocationBarView::Layout() {
         selected_keyword_view_->set_is_extension_icon(false);
       }
     }
-  } else if (model_->GetSecurityLevel() == ToolbarModel::EV_SECURE) {
+  } else if (model_->GetSecurityLevel(false) == ToolbarModel::EV_SECURE) {
     ev_bubble_view_->SetLabel(model_->GetEVCertName());
     // The largest fraction of the omnibox that can be taken by the EV bubble.
     const double kMaxBubbleFraction = 0.5;
@@ -1252,7 +1252,8 @@ void LocationBarView::PaintPageActionBackgrounds(gfx::Canvas* canvas) {
     return;
 
   const int32 tab_id = SessionID::IdForTab(web_contents);
-  const ToolbarModel::SecurityLevel security_level = model_->GetSecurityLevel();
+  const ToolbarModel::SecurityLevel security_level =
+      model_->GetSecurityLevel(false);
   const SkColor text_color = GetColor(security_level, TEXT);
   const SkColor background_color = GetColor(security_level, BACKGROUND);
 

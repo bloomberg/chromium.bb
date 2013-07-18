@@ -602,7 +602,7 @@ void OmniboxViewWin::Update(const WebContents* tab_for_state_restoring) {
       model()->UpdatePermanentText(toolbar_model()->GetText(true));
 
   const ToolbarModel::SecurityLevel security_level =
-      toolbar_model()->GetSecurityLevel();
+      toolbar_model()->GetSecurityLevel(false);
   const bool changed_security_level = (security_level != security_level_);
 
   // Bail early when no visible state will actually change (prevents an
@@ -1177,7 +1177,7 @@ bool OmniboxViewWin::IsCommandIdEnabled(int command_id) const {
     case IDC_COPY_URL:
       return !!CanCopy() &&
           !model()->user_input_in_progress() &&
-          toolbar_model()->WouldReplaceSearchURLWithSearchTerms();
+          toolbar_model()->WouldReplaceSearchURLWithSearchTerms(false);
     case IDC_PASTE:
       return !!CanPaste();
     case IDS_PASTE_AND_GO:

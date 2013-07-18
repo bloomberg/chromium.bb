@@ -41,8 +41,9 @@ class ToolbarModelImpl : public ToolbarModel {
       bool display_search_urls_as_search_terms) const OVERRIDE;
   virtual string16 GetCorpusNameForMobile() const OVERRIDE;
   virtual GURL GetURL() const OVERRIDE;
-  virtual bool WouldReplaceSearchURLWithSearchTerms() const OVERRIDE;
-  virtual SecurityLevel GetSecurityLevel() const OVERRIDE;
+  virtual bool WouldReplaceSearchURLWithSearchTerms(
+      bool ignore_editing) const OVERRIDE;
+  virtual SecurityLevel GetSecurityLevel(bool ignore_editing) const OVERRIDE;
   virtual int GetIcon() const OVERRIDE;
   virtual string16 GetEVCertName() const OVERRIDE;
   virtual bool ShouldDisplayURL() const OVERRIDE;
@@ -62,8 +63,10 @@ class ToolbarModelImpl : public ToolbarModel {
   Profile* GetProfile() const;
 
   // Returns search terms as in chrome::GetSearchTerms() unless the page is
-  // insufficiently secure.
-  string16 GetSearchTerms() const;
+  // insufficiently secure.  If |ignore_editing| is true, the result reflects
+  // the underlying state of the page without regard to any user edits that
+  // may be in progress in the omnibox.
+  string16 GetSearchTerms(bool ignore_editing) const;
 
   ToolbarModelDelegate* delegate_;
 

@@ -347,7 +347,7 @@ void OmniboxEditModel::GetDataForURLExport(GURL* url,
 }
 
 bool OmniboxEditModel::CurrentTextIsURL() const {
-  if (view_->toolbar_model()->WouldReplaceSearchURLWithSearchTerms())
+  if (view_->toolbar_model()->WouldReplaceSearchURLWithSearchTerms(false))
     return false;
 
   // If current text is not composed of replaced search terms and
@@ -375,7 +375,7 @@ void OmniboxEditModel::AdjustTextForCopy(int sel_min,
   // Do not adjust if selection did not start at the beginning of the field, or
   // if the URL was replaced by search terms.
   if ((sel_min != 0) ||
-      view_->toolbar_model()->WouldReplaceSearchURLWithSearchTerms())
+      view_->toolbar_model()->WouldReplaceSearchURLWithSearchTerms(false))
     return;
 
   if (!user_input_in_progress_ && is_all_selected) {
@@ -717,7 +717,7 @@ void OmniboxEditModel::OpenMatch(const AutocompleteMatch& match,
 
     RecordPercentageMatchHistogram(
         permanent_text_, match.contents,
-        view_->toolbar_model()->WouldReplaceSearchURLWithSearchTerms(),
+        view_->toolbar_model()->WouldReplaceSearchURLWithSearchTerms(false),
         match.transition);
 
     // Track whether the destination URL sends us to a search results page
@@ -1163,7 +1163,7 @@ void OmniboxEditModel::GetInfoForCurrentText(AutocompleteMatch* match,
   DCHECK(match != NULL);
 
   if (!user_input_in_progress_ &&
-      view_->toolbar_model()->WouldReplaceSearchURLWithSearchTerms()) {
+      view_->toolbar_model()->WouldReplaceSearchURLWithSearchTerms(false)) {
     // Any time the user hits enter on the unchanged omnibox, we should reload.
     // When we're not extracting search terms, AcceptInput() will take care of
     // this (see code referring to PAGE_TRANSITION_RELOAD there), but when we're

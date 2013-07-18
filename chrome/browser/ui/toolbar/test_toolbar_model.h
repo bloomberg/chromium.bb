@@ -20,8 +20,9 @@ class TestToolbarModel : public ToolbarModel {
       bool display_search_urls_as_search_terms) const OVERRIDE;
   virtual string16 GetCorpusNameForMobile() const OVERRIDE;
   virtual GURL GetURL() const OVERRIDE;
-  virtual bool WouldReplaceSearchURLWithSearchTerms() const OVERRIDE;
-  virtual SecurityLevel GetSecurityLevel() const OVERRIDE;
+  virtual bool WouldReplaceSearchURLWithSearchTerms(
+      bool ignore_editing) const OVERRIDE;
+  virtual SecurityLevel GetSecurityLevel(bool ignore_editing) const OVERRIDE;
   virtual int GetIcon() const OVERRIDE;
   virtual string16 GetEVCertName() const OVERRIDE;
   virtual bool ShouldDisplayURL() const OVERRIDE;

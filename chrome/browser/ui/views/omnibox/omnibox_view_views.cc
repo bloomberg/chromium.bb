@@ -360,7 +360,7 @@ void OmniboxViewViews::Update(const content::WebContents* contents) {
   bool visibly_changed_permanent_text =
       model()->UpdatePermanentText(toolbar_model()->GetText(true));
   ToolbarModel::SecurityLevel security_level =
-        toolbar_model()->GetSecurityLevel();
+        toolbar_model()->GetSecurityLevel(false);
   bool changed_security_level = (security_level != security_level_);
   security_level_ = security_level;
 
@@ -779,7 +779,7 @@ bool OmniboxViewViews::IsCommandIdEnabled(int command_id) const {
   if (command_id == IDS_PASTE_AND_GO)
     return model()->CanPasteAndGo(GetClipboardText());
   if (command_id == IDC_COPY_URL) {
-    return toolbar_model()->WouldReplaceSearchURLWithSearchTerms() &&
+    return toolbar_model()->WouldReplaceSearchURLWithSearchTerms(false) &&
       !model()->user_input_in_progress();
   }
   return command_updater()->IsCommandEnabled(command_id);

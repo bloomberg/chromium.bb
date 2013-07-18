@@ -51,11 +51,17 @@ class ToolbarModel {
   virtual GURL GetURL() const = 0;
 
   // Returns true if a call to GetText(true) would successfully replace the URL
-  // with search terms.
-  virtual bool WouldReplaceSearchURLWithSearchTerms() const = 0;
+  // with search terms.  If |ignore_editing| is true, the result reflects the
+  // underlying state of the page without regard to any user edits that may be
+  // in progress in the omnibox.
+  virtual bool WouldReplaceSearchURLWithSearchTerms(bool ignore_editing)
+      const = 0;
 
-  // Returns the security level that the toolbar should display.
-  virtual SecurityLevel GetSecurityLevel() const = 0;
+  // Returns the security level that the toolbar should display.  If
+  // |ignore_editing| is true, the result reflects the underlying state of the
+  // page without regard to any user edits that may be in progress in the
+  // omnibox.
+  virtual SecurityLevel GetSecurityLevel(bool ignore_editing) const = 0;
 
   // Returns the resource_id of the icon to show to the left of the address,
   // based on the current URL.  This doesn't cover specialized icons while the
