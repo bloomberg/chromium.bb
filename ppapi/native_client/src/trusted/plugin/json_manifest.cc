@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "native_client/src/trusted/plugin/json_manifest.h"
+#include "ppapi/native_client/src/trusted/plugin/json_manifest.h"
 
 #include <stdlib.h>
 
@@ -15,11 +15,11 @@
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/platform/nacl_check.h"
-#include "native_client/src/trusted/plugin/plugin_error.h"
-#include "native_client/src/trusted/plugin/pnacl_options.h"
-#include "native_client/src/trusted/plugin/utility.h"
 #include "ppapi/cpp/dev/url_util_dev.h"
 #include "ppapi/cpp/var.h"
+#include "ppapi/native_client/src/trusted/plugin/plugin_error.h"
+#include "ppapi/native_client/src/trusted/plugin/pnacl_options.h"
+#include "ppapi/native_client/src/trusted/plugin/utility.h"
 #include "third_party/jsoncpp/source/include/json/reader.h"
 
 namespace plugin {

@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "native_client/src/trusted/plugin/pnacl_translate_thread.h"
+#include "ppapi/native_client/src/trusted/plugin/pnacl_translate_thread.h"
 
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
-#include "native_client/src/trusted/plugin/plugin.h"
-#include "native_client/src/trusted/plugin/plugin_error.h"
-#include "native_client/src/trusted/plugin/pnacl_resources.h"
-#include "native_client/src/trusted/plugin/srpc_params.h"
-#include "native_client/src/trusted/plugin/temporary_file.h"
-#include "native_client/src/trusted/plugin/utility.h"
+#include "ppapi/native_client/src/trusted/plugin/plugin.h"
+#include "ppapi/native_client/src/trusted/plugin/plugin_error.h"
+#include "ppapi/native_client/src/trusted/plugin/pnacl_resources.h"
+#include "ppapi/native_client/src/trusted/plugin/srpc_params.h"
+#include "ppapi/native_client/src/trusted/plugin/temporary_file.h"
+#include "ppapi/native_client/src/trusted/plugin/utility.h"
 
 namespace plugin {
 

@@ -12,17 +12,8 @@
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/shared/platform/nacl_sync_raii.h"
-
 #include "native_client/src/shared/srpc/nacl_srpc.h"
-
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
-#include "native_client/src/trusted/plugin/callback_source.h"
-#include "native_client/src/trusted/plugin/file_downloader.h"
-#include "native_client/src/trusted/plugin/local_temp_file.h"
-#include "native_client/src/trusted/plugin/nacl_subprocess.h"
-#include "native_client/src/trusted/plugin/plugin_error.h"
-#include "native_client/src/trusted/plugin/pnacl_options.h"
-#include "native_client/src/trusted/plugin/pnacl_resources.h"
 
 #include "ppapi/c/pp_file_info.h"
 #include "ppapi/c/trusted/ppb_file_io_trusted.h"
@@ -30,6 +21,14 @@
 #include "ppapi/cpp/file_io.h"
 #include "ppapi/cpp/file_ref.h"
 #include "ppapi/cpp/file_system.h"
+
+#include "ppapi/native_client/src/trusted/plugin/callback_source.h"
+#include "ppapi/native_client/src/trusted/plugin/file_downloader.h"
+#include "ppapi/native_client/src/trusted/plugin/local_temp_file.h"
+#include "ppapi/native_client/src/trusted/plugin/nacl_subprocess.h"
+#include "ppapi/native_client/src/trusted/plugin/plugin_error.h"
+#include "ppapi/native_client/src/trusted/plugin/pnacl_options.h"
+#include "ppapi/native_client/src/trusted/plugin/pnacl_resources.h"
 
 
 namespace plugin {

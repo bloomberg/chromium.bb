@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "native_client/src/trusted/plugin/pnacl_coordinator.h"
+#include "ppapi/native_client/src/trusted/plugin/pnacl_coordinator.h"
 
 #include <utility>
 #include <vector>
@@ -10,14 +10,6 @@
 #include "native_client/src/include/checked_cast.h"
 #include "native_client/src/include/portability_io.h"
 #include "native_client/src/shared/platform/nacl_check.h"
-#include "native_client/src/trusted/plugin/local_temp_file.h"
-#include "native_client/src/trusted/plugin/manifest.h"
-#include "native_client/src/trusted/plugin/nacl_http_response_headers.h"
-#include "native_client/src/trusted/plugin/plugin.h"
-#include "native_client/src/trusted/plugin/plugin_error.h"
-#include "native_client/src/trusted/plugin/pnacl_translate_thread.h"
-#include "native_client/src/trusted/plugin/service_runtime.h"
-#include "native_client/src/trusted/plugin/temporary_file.h"
 #include "native_client/src/trusted/service_runtime/include/sys/stat.h"
 
 #include "ppapi/c/pp_bool.h"
@@ -25,6 +17,15 @@
 #include "ppapi/c/ppb_file_io.h"
 #include "ppapi/c/private/ppb_uma_private.h"
 #include "ppapi/cpp/file_io.h"
+
+#include "ppapi/native_client/src/trusted/plugin/local_temp_file.h"
+#include "ppapi/native_client/src/trusted/plugin/manifest.h"
+#include "ppapi/native_client/src/trusted/plugin/nacl_http_response_headers.h"
+#include "ppapi/native_client/src/trusted/plugin/plugin.h"
+#include "ppapi/native_client/src/trusted/plugin/plugin_error.h"
+#include "ppapi/native_client/src/trusted/plugin/pnacl_translate_thread.h"
+#include "ppapi/native_client/src/trusted/plugin/service_runtime.h"
+#include "ppapi/native_client/src/trusted/plugin/temporary_file.h"
 
 namespace {
 const char kPnaclTempDir[] = "/.pnacl";

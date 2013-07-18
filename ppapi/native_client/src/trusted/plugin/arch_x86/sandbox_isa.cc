@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "native_client/src/trusted/plugin/nexe_arch.h"
 #include "native_client/src/trusted/platform_qualify/nacl_os_qualify.h"
+#include "ppapi/native_client/src/trusted/plugin/nexe_arch.h"
 
 namespace {
 // The list of supported ISA strings for x86.  See issue:

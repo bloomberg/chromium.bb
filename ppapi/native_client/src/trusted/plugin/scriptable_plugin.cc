@@ -4,7 +4,7 @@
 
 // Scriptable plugin implementation.
 
-#include "native_client/src/trusted/plugin/scriptable_plugin.h"
+#include "ppapi/native_client/src/trusted/plugin/scriptable_plugin.h"
 
 #include <string.h>
 
@@ -17,8 +17,8 @@
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
-#include "native_client/src/trusted/plugin/plugin.h"
-#include "native_client/src/trusted/plugin/utility.h"
+#include "ppapi/native_client/src/trusted/plugin/plugin.h"
+#include "ppapi/native_client/src/trusted/plugin/utility.h"
 
 
 namespace plugin {

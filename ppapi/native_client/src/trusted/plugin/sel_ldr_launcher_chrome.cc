@@ -3,9 +3,8 @@
 // found in the LICENSE file.
 
 #include "native_client/src/include/nacl_macros.h"
-#include "native_client/src/trusted/plugin/sel_ldr_launcher_chrome.h"
-
-#include "native_client/src/trusted/plugin/nacl_entry_points.h"
+#include "ppapi/native_client/src/trusted/plugin/nacl_entry_points.h"
+#include "ppapi/native_client/src/trusted/plugin/sel_ldr_launcher_chrome.h"
 
 LaunchNaClProcessFunc launch_nacl_process = NULL;
 

@@ -13,8 +13,8 @@
 #include <map>
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_string.h"
-#include "native_client/src/trusted/plugin/utility.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
+#include "ppapi/native_client/src/trusted/plugin/utility.h"
 
 namespace nacl {
 class DescWrapper;

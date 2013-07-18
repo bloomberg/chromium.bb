@@ -9,7 +9,6 @@
 
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_string.h"
-#include "native_client/src/trusted/plugin/callback_source.h"
 #include "native_client/src/trusted/validator/nacl_file_info.h"
 #include "ppapi/c/private/pp_file_handle.h"
 #include "ppapi/c/trusted/ppb_file_io_trusted.h"
@@ -18,6 +17,7 @@
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/url_loader.h"
 #include "ppapi/cpp/url_response_info.h"
+#include "ppapi/native_client/src/trusted/plugin/callback_source.h"
 #include "ppapi/utility/completion_callback_factory.h"
 
 namespace plugin {

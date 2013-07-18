@@ -17,8 +17,8 @@
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/include/portability.h"
 
-#include "native_client/src/trusted/plugin/service_runtime.h"
-#include "native_client/src/trusted/plugin/srpc_client.h"
+#include "ppapi/native_client/src/trusted/plugin/service_runtime.h"
+#include "ppapi/native_client/src/trusted/plugin/srpc_client.h"
 
 namespace plugin {
 

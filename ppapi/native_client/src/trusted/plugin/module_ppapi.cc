@@ -7,11 +7,12 @@
 #include "native_client/src/shared/imc/nacl_imc_c.h"
 #include "native_client/src/shared/platform/nacl_time.h"
 #include "native_client/src/trusted/desc/nrd_all_modules.h"
-#include "native_client/src/trusted/plugin/nacl_entry_points.h"
-#include "native_client/src/trusted/plugin/plugin.h"
 
 #include "ppapi/c/private/ppb_nacl_private.h"
 #include "ppapi/cpp/module.h"
+
+#include "ppapi/native_client/src/trusted/plugin/nacl_entry_points.h"
+#include "ppapi/native_client/src/trusted/plugin/plugin.h"
 
 namespace plugin {
 

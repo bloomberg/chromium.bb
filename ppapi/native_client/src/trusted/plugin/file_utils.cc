@@ -4,7 +4,7 @@
 
 // Some common file utilities for plugin code.
 
-#include "native_client/src/trusted/plugin/file_utils.h"
+#include "ppapi/native_client/src/trusted/plugin/file_utils.h"
 
 #include <fcntl.h>
 #include <stdio.h>

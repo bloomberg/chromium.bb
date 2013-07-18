@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "native_client/src/trusted/plugin/utility.h"
+#include "ppapi/native_client/src/trusted/plugin/utility.h"
 
 namespace plugin {
 

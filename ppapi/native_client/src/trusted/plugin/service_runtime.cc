@@ -6,7 +6,7 @@
 
 #define NACL_LOG_MODULE_NAME "Plugin::ServiceRuntime"
 
-#include "native_client/src/trusted/plugin/service_runtime.h"
+#include "ppapi/native_client/src/trusted/plugin/service_runtime.h"
 
 #include <string.h>
 #include <set>
@@ -32,7 +32,6 @@
 #include "native_client/src/trusted/desc/nacl_desc_io.h"
 #include "native_client/src/trusted/desc/nrd_xfer.h"
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
-#include "native_client/src/trusted/plugin/manifest.h"
 
 // This is here due to a Windows API collision; plugin.h through
 // file_downloader.h transitively includes Instance.h which defines a
@@ -41,21 +40,23 @@
 #undef PostMessage
 #endif
 #include "native_client/src/public/imc_types.h"
-#include "native_client/src/trusted/plugin/plugin.h"
-#include "native_client/src/trusted/plugin/plugin_error.h"
-#include "native_client/src/trusted/plugin/pnacl_coordinator.h"
-#include "native_client/src/trusted/plugin/pnacl_resources.h"
-#include "native_client/src/trusted/plugin/sel_ldr_launcher_chrome.h"
-#include "native_client/src/trusted/plugin/srpc_client.h"
 #include "native_client/src/trusted/service_runtime/nacl_error_code.h"
 #include "native_client/src/trusted/validator/nacl_file_info.h"
-#include "native_client/src/trusted/weak_ref/call_on_main_thread.h"
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/trusted/ppb_file_io_trusted.h"
 #include "ppapi/cpp/core.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/file_io.h"
+
+#include "ppapi/native_client/src/trusted/plugin/manifest.h"
+#include "ppapi/native_client/src/trusted/plugin/plugin.h"
+#include "ppapi/native_client/src/trusted/plugin/plugin_error.h"
+#include "ppapi/native_client/src/trusted/plugin/pnacl_coordinator.h"
+#include "ppapi/native_client/src/trusted/plugin/pnacl_resources.h"
+#include "ppapi/native_client/src/trusted/plugin/sel_ldr_launcher_chrome.h"
+#include "ppapi/native_client/src/trusted/plugin/srpc_client.h"
+#include "ppapi/native_client/src/trusted/weak_ref/call_on_main_thread.h"
 
 namespace {
 

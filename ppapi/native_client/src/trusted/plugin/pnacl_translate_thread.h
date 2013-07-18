@@ -13,10 +13,11 @@
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/shared/platform/nacl_threads.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
-#include "native_client/src/trusted/plugin/plugin_error.h"
-#include "native_client/src/trusted/plugin/service_runtime.h"
 
 #include "ppapi/cpp/completion_callback.h"
+
+#include "ppapi/native_client/src/trusted/plugin/plugin_error.h"
+#include "ppapi/native_client/src/trusted/plugin/service_runtime.h"
 
 namespace nacl {
 class DescWrapper;

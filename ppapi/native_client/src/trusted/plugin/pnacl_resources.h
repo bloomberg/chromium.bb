@@ -11,11 +11,12 @@
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
-#include "native_client/src/trusted/plugin/nexe_arch.h"
-#include "native_client/src/trusted/plugin/plugin_error.h"
 
 #include "ppapi/c/private/pp_file_handle.h"
 #include "ppapi/cpp/completion_callback.h"
+
+#include "ppapi/native_client/src/trusted/plugin/nexe_arch.h"
+#include "ppapi/native_client/src/trusted/plugin/plugin_error.h"
 
 namespace plugin {
 

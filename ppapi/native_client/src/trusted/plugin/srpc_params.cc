@@ -5,7 +5,7 @@
  */
 
 
-#include "native_client/src/trusted/plugin/srpc_params.h"
+#include "ppapi/native_client/src/trusted/plugin/srpc_params.h"
 
 #include <stdlib.h>
 
