@@ -69,8 +69,7 @@ VisitRow::VisitRow()
       url_id(0),
       referring_visit(0),
       transition(content::PAGE_TRANSITION_LINK),
-      segment_id(0),
-      is_indexed(false) {
+      segment_id(0) {
 }
 
 VisitRow::VisitRow(URLID arg_url_id,
@@ -83,8 +82,7 @@ VisitRow::VisitRow(URLID arg_url_id,
       visit_time(arg_visit_time),
       referring_visit(arg_referring_visit),
       transition(arg_transition),
-      segment_id(arg_segment_id),
-      is_indexed(false) {
+      segment_id(arg_segment_id) {
 }
 
 VisitRow::~VisitRow() {
@@ -246,7 +244,6 @@ void QueryResults::AdjustResultMap(size_t begin, size_t end, ptrdiff_t delta) {
 
 QueryOptions::QueryOptions()
     : max_count(0),
-      body_only(false),
       duplicate_policy(QueryOptions::REMOVE_ALL_DUPLICATES) {
 }
 

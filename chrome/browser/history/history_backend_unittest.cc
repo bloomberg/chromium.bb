@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <set>
 #include <vector>
+#include <fstream>
 
 #include "base/basictypes.h"
 #include "base/bind.h"
@@ -15,6 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
+#include "base/platform_file.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -504,12 +506,10 @@ TEST_F(HistoryBackendTest, DeleteAll) {
   VisitVector visits;
   backend_->db_->GetVisitsForURL(row1_id, &visits);
   ASSERT_EQ(1U, visits.size());
-  VisitID visit1_id = visits[0].visit_id;
 
   visits.clear();
   backend_->db_->GetVisitsForURL(row2_id, &visits);
   ASSERT_EQ(1U, visits.size());
-  VisitID visit2_id = visits[0].visit_id;
 
   // The in-memory backend should have been set and it should have gotten the
   // typed URL.
@@ -538,16 +538,6 @@ TEST_F(HistoryBackendTest, DeleteAll) {
   // Star row1.
   bookmark_model_.AddURL(
       bookmark_model_.bookmark_bar_node(), 0, string16(), row1.url());
-
-  // Set full text index for each one.
-  backend_->text_database_->AddPageData(row1.url(), row1_id, visit1_id,
-                                        row1.last_visit(),
-                                        UTF8ToUTF16("Title 1"),
-                                        UTF8ToUTF16("Body 1"));
-  backend_->text_database_->AddPageData(row2.url(), row2_id, visit2_id,
-                                        row2.last_visit(),
-                                        UTF8ToUTF16("Title 2"),
-                                        UTF8ToUTF16("Body 2"));
 
   // Now finally clear all history.
   backend_->DeleteAllHistory();
@@ -615,15 +605,6 @@ TEST_F(HistoryBackendTest, DeleteAll) {
 
   // The first URL should still be bookmarked.
   EXPECT_TRUE(bookmark_model_.IsBookmarked(row1.url()));
-
-  // The full text database should have no data.
-  std::vector<TextDatabase::Match> text_matches;
-  Time first_time_searched;
-  backend_->text_database_->GetTextMatches(UTF8ToUTF16("Body"),
-                                           QueryOptions(),
-                                           &text_matches,
-                                           &first_time_searched);
-  EXPECT_EQ(0U, text_matches.size());
 }
 
 // Checks that adding a visit, then calling DeleteAll, and then trying to add
@@ -659,9 +640,8 @@ TEST_F(HistoryBackendTest, DeleteAllThenAddData) {
   backend_->db_->GetAllVisitsInRange(Time(), Time(), 0, &all_visits);
   ASSERT_EQ(0U, all_visits.size());
 
-  // Try and set the full text index.
+  // Try and set the title.
   backend_->SetPageTitle(url, UTF8ToUTF16("Title"));
-  backend_->SetPageContents(url, UTF8ToUTF16("Body"));
 
   // The row should still be deleted.
   EXPECT_FALSE(backend_->db_->GetRowForURL(url, &outrow));
@@ -669,15 +649,6 @@ TEST_F(HistoryBackendTest, DeleteAllThenAddData) {
   // The visit should still be deleted.
   backend_->db_->GetAllVisitsInRange(Time(), Time(), 0, &all_visits);
   ASSERT_EQ(0U, all_visits.size());
-
-  // The full text database should have no data.
-  std::vector<TextDatabase::Match> text_matches;
-  Time first_time_searched;
-  backend_->text_database_->GetTextMatches(UTF8ToUTF16("Body"),
-                                           QueryOptions(),
-                                           &text_matches,
-                                           &first_time_searched);
-  EXPECT_EQ(0U, text_matches.size());
 }
 
 TEST_F(HistoryBackendTest, URLsNoLongerBookmarked) {
@@ -2810,6 +2781,44 @@ TEST_F(HistoryBackendTest, RemoveNotification) {
   // This won't actually delete the URL, rather it'll empty out the visits.
   // This triggers blocking on the BookmarkModel.
   service->DeleteURL(url);
+}
+
+// Simple function to create a new dummy file.
+void CreateDummyFile(const base::FilePath& filename) {
+  std::wofstream file;
+  file.open(filename.value().c_str());
+  ASSERT_TRUE(file.is_open());
+  file << L"Dummy";
+  file.close();
+}
+
+// Test DeleteFTSIndexDatabases deletes expected files.
+TEST_F(HistoryBackendTest, DeleteFTSIndexDatabases) {
+  ASSERT_TRUE(backend_.get());
+
+  base::FilePath history_path(getTestDir());
+  base::FilePath db1(history_path.AppendASCII("History Index 2013-05"));
+  base::FilePath db1_journal(db1.InsertBeforeExtensionASCII("-journal"));
+  base::FilePath db1_wal(db1.InsertBeforeExtensionASCII("-wal"));
+  base::FilePath db2_symlink(history_path.AppendASCII("History Index 2013-06"));
+  base::FilePath db2_actual(history_path.AppendASCII("Underlying DB"));
+
+  // Setup dummy index database files.
+  CreateDummyFile(db1);
+  CreateDummyFile(db1_journal);
+  CreateDummyFile(db1_wal);
+  CreateDummyFile(db2_actual);
+#if defined(OS_POSIX)
+  EXPECT_TRUE(file_util::CreateSymbolicLink(db2_actual, db2_symlink));
+#endif
+
+  // Delete all DTS index databases.
+  backend_->DeleteFTSIndexDatabases();
+  EXPECT_FALSE(base::PathExists(db1));
+  EXPECT_FALSE(base::PathExists(db1_wal));
+  EXPECT_FALSE(base::PathExists(db1_journal));
+  EXPECT_FALSE(base::PathExists(db2_symlink));
+  EXPECT_TRUE(base::PathExists(db2_actual));  // Symlinks shouldn't be followed.
 }
 
 }  // namespace history

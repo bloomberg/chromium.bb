@@ -741,13 +741,6 @@ void ChromeRenderViewObserver::CapturePageInfo(int page_id,
 
   TRACE_EVENT0("renderer", "ChromeRenderViewObserver::CapturePageInfo");
 
-  if (contents.size()) {
-    // Send the text to the browser for indexing (the browser might decide not
-    // to index, if the URL is HTTPS for instance).
-    Send(new ChromeViewHostMsg_PageContents(routing_id(), url, page_id,
-                                            contents));
-  }
-
 #if defined(FULL_SAFE_BROWSING)
   // Will swap out the string.
   if (phishing_classifier_)

@@ -23,7 +23,6 @@
 #include "chrome/browser/history/expire_history_backend.h"
 #include "chrome/browser/history/history_database.h"
 #include "chrome/browser/history/history_notifications.h"
-#include "chrome/browser/history/text_database_manager.h"
 #include "chrome/browser/history/thumbnail_database.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/common/thumbnail_score.h"
@@ -77,10 +76,6 @@ class ExpireHistoryTest : public testing::Test,
   chrome::FaviconID GetFavicon(const GURL& page_url,
                                chrome::IconType icon_type);
 
-  // Returns the number of text matches for the given URL in the example data
-  // added by AddExampleData.
-  int CountTextMatchesForURL(const GURL& url);
-
   // EXPECTs that each URL-specific history thing (basically, everything but
   // favicons) is gone.
   void EnsureURLInfoGone(const URLRow& row);
@@ -114,7 +109,6 @@ class ExpireHistoryTest : public testing::Test,
   scoped_ptr<HistoryDatabase> main_db_;
   scoped_ptr<ArchivedDatabase> archived_db_;
   scoped_ptr<ThumbnailDatabase> thumb_db_;
-  scoped_ptr<TextDatabaseManager> text_db_;
   TestingProfile profile_;
   scoped_refptr<TopSites> top_sites_;
 
@@ -147,13 +141,7 @@ class ExpireHistoryTest : public testing::Test,
     if (thumb_db_->Init(thumb_name, NULL, main_db_.get()) != sql::INIT_OK)
       thumb_db_.reset();
 
-    text_db_.reset(new TextDatabaseManager(path(),
-                                           main_db_.get(), main_db_.get()));
-    if (!text_db_->Init(NULL))
-      text_db_.reset();
-
-    expirer_.SetDatabases(main_db_.get(), archived_db_.get(), thumb_db_.get(),
-                          text_db_.get());
+    expirer_.SetDatabases(main_db_.get(), archived_db_.get(), thumb_db_.get());
     profile_.CreateTopSites();
     profile_.BlockUntilTopSitesLoaded();
     top_sites_ = profile_.GetTopSites();
@@ -164,12 +152,11 @@ class ExpireHistoryTest : public testing::Test,
 
     ClearLastNotifications();
 
-    expirer_.SetDatabases(NULL, NULL, NULL, NULL);
+    expirer_.SetDatabases(NULL, NULL, NULL);
 
     main_db_.reset();
     archived_db_.reset();
     thumb_db_.reset();
-    text_db_.reset();
   }
 
   // BroadcastNotificationDelegate implementation.
@@ -199,7 +186,7 @@ class ExpireHistoryTest : public testing::Test,
 // The IDs of the added URLs, and the times of the four added visits will be
 // added to the given arrays.
 void ExpireHistoryTest::AddExampleData(URLID url_ids[3], Time visit_times[4]) {
-  if (!main_db_.get() || !text_db_)
+  if (!main_db_.get())
     return;
 
   // Four times for each visit.
@@ -251,45 +238,23 @@ void ExpireHistoryTest::AddExampleData(URLID url_ids[3], Time visit_times[4]) {
   VisitRow visit_row1;
   visit_row1.url_id = url_ids[0];
   visit_row1.visit_time = visit_times[0];
-  visit_row1.is_indexed = true;
   main_db_->AddVisit(&visit_row1, SOURCE_BROWSED);
 
   VisitRow visit_row2;
   visit_row2.url_id = url_ids[1];
   visit_row2.visit_time = visit_times[1];
-  visit_row2.is_indexed = true;
   main_db_->AddVisit(&visit_row2, SOURCE_BROWSED);
 
   VisitRow visit_row3;
   visit_row3.url_id = url_ids[1];
   visit_row3.visit_time = visit_times[2];
-  visit_row3.is_indexed = true;
   visit_row3.transition = content::PAGE_TRANSITION_TYPED;
   main_db_->AddVisit(&visit_row3, SOURCE_BROWSED);
 
   VisitRow visit_row4;
   visit_row4.url_id = url_ids[2];
   visit_row4.visit_time = visit_times[3];
-  visit_row4.is_indexed = true;
   main_db_->AddVisit(&visit_row4, SOURCE_BROWSED);
-
-  // Full text index for each visit.
-  text_db_->AddPageData(url_row1.url(), visit_row1.url_id, visit_row1.visit_id,
-                        visit_row1.visit_time, UTF8ToUTF16("title"),
-                        UTF8ToUTF16("body"));
-
-  text_db_->AddPageData(url_row2.url(), visit_row2.url_id, visit_row2.visit_id,
-                        visit_row2.visit_time, UTF8ToUTF16("title"),
-                        UTF8ToUTF16("body"));
-  text_db_->AddPageData(url_row2.url(), visit_row3.url_id, visit_row3.visit_id,
-                        visit_row3.visit_time, UTF8ToUTF16("title"),
-                        UTF8ToUTF16("body"));
-
-  // Note the special text in this URL. We'll search the file for this string
-  // to make sure it doesn't hang around after the delete.
-  text_db_->AddPageData(url_row3.url(), visit_row4.url_id, visit_row4.visit_id,
-                        visit_row4.visit_time, UTF8ToUTF16("title"),
-                        UTF8ToUTF16("goats body"));
 }
 
 void ExpireHistoryTest::AddExampleSourceData(const GURL& url, URLID* id) {
@@ -349,32 +314,10 @@ bool ExpireHistoryTest::HasThumbnail(URLID url_id) {
   return top_sites_->GetPageThumbnail(url, &data);
 }
 
-int ExpireHistoryTest::CountTextMatchesForURL(const GURL& url) {
-  if (!text_db_)
-    return 0;
-
-  // "body" should match all pages in the example data.
-  std::vector<TextDatabase::Match> results;
-  QueryOptions options;
-  Time first_time;
-  text_db_->GetTextMatches(UTF8ToUTF16("body"), options,
-                           &results, &first_time);
-
-  int count = 0;
-  for (size_t i = 0; i < results.size(); i++) {
-    if (results[i].url == url)
-      count++;
-  }
-  return count;
-}
-
 void ExpireHistoryTest::EnsureURLInfoGone(const URLRow& row) {
   // Verify the URL no longer exists.
   URLRow temp_row;
   EXPECT_FALSE(main_db_->GetURLRow(row.id(), &temp_row));
-
-  // The indexed data should be gone.
-  EXPECT_EQ(0, CountTextMatchesForURL(row.url()));
 
   // There should be no visits.
   VisitVector visits;
@@ -471,45 +414,9 @@ TEST_F(ExpireHistoryTest, DISABLED_DeleteURLAndFavicon) {
   VisitVector visits;
   main_db_->GetVisitsForURL(url_ids[2], &visits);
   ASSERT_EQ(1U, visits.size());
-  EXPECT_EQ(1, CountTextMatchesForURL(last_row.url()));
-
-  // In this test we also make sure that any pending entries in the text
-  // database manager are removed.
-  text_db_->AddPageURL(last_row.url(), last_row.id(), visits[0].visit_id,
-                       visits[0].visit_time);
-
-  // Compute the text DB filename.
-  base::FilePath fts_filename = path().Append(
-      TextDatabase::IDToFileName(text_db_->TimeToID(visit_times[3])));
-
-  // When checking the file, the database must be closed. We then re-initialize
-  // it just like the test set-up did.
-  text_db_.reset();
-  EXPECT_TRUE(IsStringInFile(fts_filename, "goats"));
-  text_db_.reset(new TextDatabaseManager(path(),
-                                         main_db_.get(), main_db_.get()));
-  ASSERT_TRUE(text_db_->Init(NULL));
-  expirer_.SetDatabases(main_db_.get(), archived_db_.get(), thumb_db_.get(),
-                        text_db_.get());
 
   // Delete the URL and its dependencies.
   expirer_.DeleteURL(last_row.url());
-
-  // The string should be removed from the file. FTS can mark it as gone but
-  // doesn't remove it from the file, we want to be sure we're doing the latter.
-  text_db_.reset();
-  EXPECT_FALSE(IsStringInFile(fts_filename, "goats"));
-  text_db_.reset(new TextDatabaseManager(path(),
-                                         main_db_.get(), main_db_.get()));
-  ASSERT_TRUE(text_db_->Init(NULL));
-  expirer_.SetDatabases(main_db_.get(), archived_db_.get(), thumb_db_.get(),
-                        text_db_.get());
-
-  // Run the text database expirer. This will flush any pending entries so we
-  // can check that nothing was committed. We use a time far in the future so
-  // that anything added recently will get flushed.
-  TimeTicks expiration_time = TimeTicks::Now() + TimeDelta::FromDays(1);
-  text_db_->FlushOldChangesForTime(expiration_time);
 
   // All the normal data + the favicon should be gone.
   EnsureURLInfoGone(last_row);
@@ -535,7 +442,6 @@ TEST_F(ExpireHistoryTest, DeleteURLWithoutFavicon) {
   VisitVector visits;
   main_db_->GetVisitsForURL(url_ids[1], &visits);
   EXPECT_EQ(2U, visits.size());
-  EXPECT_EQ(1, CountTextMatchesForURL(last_row.url()));
 
   // Delete the URL and its dependencies.
   expirer_.DeleteURL(last_row.url());
@@ -567,9 +473,6 @@ TEST_F(ExpireHistoryTest, DontDeleteStarredURL) {
   // And the favicon should exist.
   chrome::FaviconID favicon_id = GetFavicon(url_row.url(), chrome::FAVICON);
   EXPECT_TRUE(HasFavicon(favicon_id));
-
-  // But there should be no fts.
-  ASSERT_EQ(0, CountTextMatchesForURL(url_row.url()));
 
   // And no visits.
   VisitVector visits;
@@ -637,29 +540,18 @@ TEST_F(ExpireHistoryTest, FlushRecentURLsUnstarred) {
   ASSERT_TRUE(main_db_->GetURLRow(url_ids[1], &url_row1));
   ASSERT_TRUE(main_db_->GetURLRow(url_ids[2], &url_row2));
 
-  // In this test we also make sure that any pending entries in the text
-  // database manager are removed.
   VisitVector visits;
   main_db_->GetVisitsForURL(url_ids[2], &visits);
   ASSERT_EQ(1U, visits.size());
-  text_db_->AddPageURL(url_row2.url(), url_row2.id(), visits[0].visit_id,
-                       visits[0].visit_time);
 
   // This should delete the last two visits.
   std::set<GURL> restrict_urls;
   expirer_.ExpireHistoryBetween(restrict_urls, visit_times[2], Time());
 
-  // Run the text database expirer. This will flush any pending entries so we
-  // can check that nothing was committed. We use a time far in the future so
-  // that anything added recently will get flushed.
-  TimeTicks expiration_time = TimeTicks::Now() + TimeDelta::FromDays(1);
-  text_db_->FlushOldChangesForTime(expiration_time);
-
   // Verify that the middle URL had its last visit deleted only.
   visits.clear();
   main_db_->GetVisitsForURL(url_ids[1], &visits);
   EXPECT_EQ(1U, visits.size());
-  EXPECT_EQ(0, CountTextMatchesForURL(url_row1.url()));
 
   // Verify that the middle URL visit time and visit counts were updated.
   URLRow temp_row;
@@ -693,13 +585,9 @@ TEST_F(ExpireHistoryTest, FlushURLsForTimes) {
   ASSERT_TRUE(main_db_->GetURLRow(url_ids[1], &url_row1));
   ASSERT_TRUE(main_db_->GetURLRow(url_ids[2], &url_row2));
 
-  // In this test we also make sure that any pending entries in the text
-  // database manager are removed.
   VisitVector visits;
   main_db_->GetVisitsForURL(url_ids[2], &visits);
   ASSERT_EQ(1U, visits.size());
-  text_db_->AddPageURL(url_row2.url(), url_row2.id(), visits[0].visit_id,
-                       visits[0].visit_time);
 
   // This should delete the last two visits.
   std::vector<base::Time> times;
@@ -707,17 +595,10 @@ TEST_F(ExpireHistoryTest, FlushURLsForTimes) {
   times.push_back(visit_times[2]);
   expirer_.ExpireHistoryForTimes(times);
 
-  // Run the text database expirer. This will flush any pending entries so we
-  // can check that nothing was committed. We use a time far in the future so
-  // that anything added recently will get flushed.
-  TimeTicks expiration_time = TimeTicks::Now() + TimeDelta::FromDays(1);
-  text_db_->FlushOldChangesForTime(expiration_time);
-
   // Verify that the middle URL had its last visit deleted only.
   visits.clear();
   main_db_->GetVisitsForURL(url_ids[1], &visits);
   EXPECT_EQ(1U, visits.size());
-  EXPECT_EQ(0, CountTextMatchesForURL(url_row1.url()));
 
   // Verify that the middle URL visit time and visit counts were updated.
   URLRow temp_row;
@@ -753,30 +634,19 @@ TEST_F(ExpireHistoryTest, FlushRecentURLsUnstarredRestricted) {
   ASSERT_TRUE(main_db_->GetURLRow(url_ids[1], &url_row1));
   ASSERT_TRUE(main_db_->GetURLRow(url_ids[2], &url_row2));
 
-  // In this test we also make sure that any pending entries in the text
-  // database manager are removed.
   VisitVector visits;
   main_db_->GetVisitsForURL(url_ids[2], &visits);
   ASSERT_EQ(1U, visits.size());
-  text_db_->AddPageURL(url_row2.url(), url_row2.id(), visits[0].visit_id,
-                       visits[0].visit_time);
 
   // This should delete the last two visits.
   std::set<GURL> restrict_urls;
   restrict_urls.insert(url_row1.url());
   expirer_.ExpireHistoryBetween(restrict_urls, visit_times[2], Time());
 
-  // Run the text database expirer. This will flush any pending entries so we
-  // can check that nothing was committed. We use a time far in the future so
-  // that anything added recently will get flushed.
-  TimeTicks expiration_time = TimeTicks::Now() + TimeDelta::FromDays(1);
-  text_db_->FlushOldChangesForTime(expiration_time);
-
   // Verify that the middle URL had its last visit deleted only.
   visits.clear();
   main_db_->GetVisitsForURL(url_ids[1], &visits);
   EXPECT_EQ(1U, visits.size());
-  EXPECT_EQ(0, CountTextMatchesForURL(url_row1.url()));
 
   // Verify that the middle URL visit time and visit counts were updated.
   URLRow temp_row;
