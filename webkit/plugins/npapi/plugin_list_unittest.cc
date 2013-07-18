@@ -32,8 +32,8 @@ bool Contains(const std::vector<WebPluginInfo>& list,
 
 }  // namespace
 
-// Linux Aura doesn't support NPAPI.
-#if !(defined(OS_LINUX) && defined(USE_AURA))
+// Linux Aura and Android don't support NPAPI.
+#if defined(OS_WIN) || defined(OS_MACOSX) || (defined(OS_LINUX) && !defined(USE_AURA))
 
 base::FilePath::CharType kFooPath[] = FILE_PATH_LITERAL("/plugins/foo.plugin");
 base::FilePath::CharType kBarPath[] = FILE_PATH_LITERAL("/plugins/bar.plugin");
