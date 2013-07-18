@@ -15,6 +15,12 @@ void ExpectTranslateX(double translate_x, const gfx::Transform& transform) {
   EXPECT_FLOAT_EQ(translate_x, transform.matrix().getDouble(0, 3));
 }
 
+void ExpectBrightness(double brightness, const FilterOperations& filter) {
+  EXPECT_EQ(1u, filter.size());
+  EXPECT_EQ(FilterOperation::BRIGHTNESS, filter.at(0).type());
+  EXPECT_FLOAT_EQ(brightness, filter.at(0).amount());
+}
+
 // Tests that a float animation with one keyframe works as expected.
 TEST(KeyframedAnimationCurveTest, OneFloatKeyframe) {
   scoped_ptr<KeyframedFloatAnimationCurve> curve(
@@ -184,6 +190,106 @@ TEST(KeyframedAnimationCurveTest, RepeatedTransformKeyTimes) {
   ExpectTranslateX(6.f, curve->GetValue(1.5f));
   ExpectTranslateX(6.f, curve->GetValue(2.f));
   ExpectTranslateX(6.f, curve->GetValue(3.f));
+}
+
+// Tests that a filter animation with one keyframe works as expected.
+TEST(KeyframedAnimationCurveTest, OneFilterKeyframe) {
+  scoped_ptr<KeyframedFilterAnimationCurve> curve(
+      KeyframedFilterAnimationCurve::Create());
+  FilterOperations operations;
+  operations.Append(FilterOperation::CreateBrightnessFilter(2.f));
+  curve->AddKeyframe(
+      FilterKeyframe::Create(0.f, operations, scoped_ptr<TimingFunction>()));
+
+  ExpectBrightness(2.f, curve->GetValue(-1.f));
+  ExpectBrightness(2.f, curve->GetValue(0.f));
+  ExpectBrightness(2.f, curve->GetValue(0.5f));
+  ExpectBrightness(2.f, curve->GetValue(1.f));
+  ExpectBrightness(2.f, curve->GetValue(2.f));
+}
+
+// Tests that a filter animation with two keyframes works as expected.
+TEST(KeyframedAnimationCurveTest, TwoFilterKeyframe) {
+  scoped_ptr<KeyframedFilterAnimationCurve> curve(
+      KeyframedFilterAnimationCurve::Create());
+  FilterOperations operations1;
+  operations1.Append(FilterOperation::CreateBrightnessFilter(2.f));
+  FilterOperations operations2;
+  operations2.Append(FilterOperation::CreateBrightnessFilter(4.f));
+
+  curve->AddKeyframe(FilterKeyframe::Create(
+      0.f, operations1, scoped_ptr<TimingFunction>()));
+  curve->AddKeyframe(FilterKeyframe::Create(
+      1.f, operations2, scoped_ptr<TimingFunction>()));
+  ExpectBrightness(2.f, curve->GetValue(-1.f));
+  ExpectBrightness(2.f, curve->GetValue(0.f));
+  ExpectBrightness(3.f, curve->GetValue(0.5f));
+  ExpectBrightness(4.f, curve->GetValue(1.f));
+  ExpectBrightness(4.f, curve->GetValue(2.f));
+}
+
+// Tests that a filter animation with three keyframes works as expected.
+TEST(KeyframedAnimationCurveTest, ThreeFilterKeyframe) {
+  scoped_ptr<KeyframedFilterAnimationCurve> curve(
+      KeyframedFilterAnimationCurve::Create());
+  FilterOperations operations1;
+  operations1.Append(FilterOperation::CreateBrightnessFilter(2.f));
+  FilterOperations operations2;
+  operations2.Append(FilterOperation::CreateBrightnessFilter(4.f));
+  FilterOperations operations3;
+  operations3.Append(FilterOperation::CreateBrightnessFilter(8.f));
+  curve->AddKeyframe(FilterKeyframe::Create(
+      0.f, operations1, scoped_ptr<TimingFunction>()));
+  curve->AddKeyframe(FilterKeyframe::Create(
+      1.f, operations2, scoped_ptr<TimingFunction>()));
+  curve->AddKeyframe(FilterKeyframe::Create(
+      2.f, operations3, scoped_ptr<TimingFunction>()));
+  ExpectBrightness(2.f, curve->GetValue(-1.f));
+  ExpectBrightness(2.f, curve->GetValue(0.f));
+  ExpectBrightness(3.f, curve->GetValue(0.5f));
+  ExpectBrightness(4.f, curve->GetValue(1.f));
+  ExpectBrightness(6.f, curve->GetValue(1.5f));
+  ExpectBrightness(8.f, curve->GetValue(2.f));
+  ExpectBrightness(8.f, curve->GetValue(3.f));
+}
+
+// Tests that a filter animation with multiple keys at a given time works
+// sanely.
+TEST(KeyframedAnimationCurveTest, RepeatedFilterKeyTimes) {
+  scoped_ptr<KeyframedFilterAnimationCurve> curve(
+      KeyframedFilterAnimationCurve::Create());
+  // A step function.
+  FilterOperations operations1;
+  operations1.Append(FilterOperation::CreateBrightnessFilter(4.f));
+  FilterOperations operations2;
+  operations2.Append(FilterOperation::CreateBrightnessFilter(4.f));
+  FilterOperations operations3;
+  operations3.Append(FilterOperation::CreateBrightnessFilter(6.f));
+  FilterOperations operations4;
+  operations4.Append(FilterOperation::CreateBrightnessFilter(6.f));
+  curve->AddKeyframe(FilterKeyframe::Create(
+      0.f, operations1, scoped_ptr<TimingFunction>()));
+  curve->AddKeyframe(FilterKeyframe::Create(
+      1.f, operations2, scoped_ptr<TimingFunction>()));
+  curve->AddKeyframe(FilterKeyframe::Create(
+      1.f, operations3, scoped_ptr<TimingFunction>()));
+  curve->AddKeyframe(FilterKeyframe::Create(
+      2.f, operations4, scoped_ptr<TimingFunction>()));
+
+  ExpectBrightness(4.f, curve->GetValue(-1.f));
+  ExpectBrightness(4.f, curve->GetValue(0.f));
+  ExpectBrightness(4.f, curve->GetValue(0.5f));
+
+  // There is a discontinuity at 1. Any value between 4 and 6 is valid.
+  FilterOperations value = curve->GetValue(1.f);
+  EXPECT_EQ(1u, value.size());
+  EXPECT_EQ(FilterOperation::BRIGHTNESS, value.at(0).type());
+  EXPECT_GE(value.at(0).amount(), 4);
+  EXPECT_LE(value.at(0).amount(), 6);
+
+  ExpectBrightness(6.f, curve->GetValue(1.5f));
+  ExpectBrightness(6.f, curve->GetValue(2.f));
+  ExpectBrightness(6.f, curve->GetValue(3.f));
 }
 
 // Tests that the keyframes may be added out of order.

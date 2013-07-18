@@ -72,6 +72,27 @@ class CC_EXPORT TransformKeyframe : public Keyframe {
   TransformOperations value_;
 };
 
+class CC_EXPORT FilterKeyframe : public Keyframe {
+ public:
+  static scoped_ptr<FilterKeyframe> Create(
+      double time,
+      const FilterOperations& value,
+      scoped_ptr<TimingFunction> timing_function);
+  virtual ~FilterKeyframe();
+
+  const FilterOperations& Value() const;
+
+  scoped_ptr<FilterKeyframe> Clone() const;
+
+ private:
+  FilterKeyframe(
+      double time,
+      const FilterOperations& value,
+      scoped_ptr<TimingFunction> timing_function);
+
+  FilterOperations value_;
+};
+
 class CC_EXPORT KeyframedFloatAnimationCurve : public FloatAnimationCurve {
  public:
   // It is required that the keyframes be sorted by time.
@@ -123,6 +144,33 @@ class CC_EXPORT KeyframedTransformAnimationCurve
   ScopedPtrVector<TransformKeyframe> keyframes_;
 
   DISALLOW_COPY_AND_ASSIGN(KeyframedTransformAnimationCurve);
+};
+
+class CC_EXPORT KeyframedFilterAnimationCurve
+    : public FilterAnimationCurve {
+ public:
+  // It is required that the keyframes be sorted by time.
+  static scoped_ptr<KeyframedFilterAnimationCurve> Create();
+
+  virtual ~KeyframedFilterAnimationCurve();
+
+  void AddKeyframe(scoped_ptr<FilterKeyframe> keyframe);
+
+  // AnimationCurve implementation
+  virtual double Duration() const OVERRIDE;
+  virtual scoped_ptr<AnimationCurve> Clone() const OVERRIDE;
+
+  // FilterAnimationCurve implementation
+  virtual FilterOperations GetValue(double t) const OVERRIDE;
+
+ private:
+  KeyframedFilterAnimationCurve();
+
+  // Always sorted in order of increasing time. No two keyframes have the
+  // same time.
+  ScopedPtrVector<FilterKeyframe> keyframes_;
+
+  DISALLOW_COPY_AND_ASSIGN(KeyframedFilterAnimationCurve);
 };
 
 }  // namespace cc

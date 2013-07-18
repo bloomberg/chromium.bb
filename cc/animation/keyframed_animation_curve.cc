@@ -99,6 +99,33 @@ scoped_ptr<TransformKeyframe> TransformKeyframe::Clone() const {
   return TransformKeyframe::Create(Time(), Value(), func.Pass());
 }
 
+scoped_ptr<FilterKeyframe> FilterKeyframe::Create(
+    double time,
+    const FilterOperations& value,
+    scoped_ptr<TimingFunction> timing_function) {
+  return make_scoped_ptr(
+      new FilterKeyframe(time, value, timing_function.Pass()));
+}
+
+FilterKeyframe::FilterKeyframe(double time,
+                               const FilterOperations& value,
+                               scoped_ptr<TimingFunction> timing_function)
+    : Keyframe(time, timing_function.Pass()),
+      value_(value) {}
+
+FilterKeyframe::~FilterKeyframe() {}
+
+const FilterOperations& FilterKeyframe::Value() const {
+  return value_;
+}
+
+scoped_ptr<FilterKeyframe> FilterKeyframe::Clone() const {
+  scoped_ptr<TimingFunction> func;
+  if (timing_function())
+    func = CloneTimingFunction(timing_function());
+  return FilterKeyframe::Create(Time(), Value(), func.Pass());
+}
+
 scoped_ptr<KeyframedFloatAnimationCurve> KeyframedFloatAnimationCurve::
     Create() {
   return make_scoped_ptr(new KeyframedFloatAnimationCurve);
@@ -175,6 +202,25 @@ scoped_ptr<AnimationCurve> KeyframedTransformAnimationCurve::Clone() const {
   return to_return.PassAs<AnimationCurve>();
 }
 
+// Assumes that (*keyframes).front()->Time() < t < (*keyframes).back()-Time().
+template<typename ValueType, typename KeyframeType>
+static ValueType GetCurveValue(const ScopedPtrVector<KeyframeType>* keyframes,
+                               double t) {
+  size_t i = 0;
+  for (; i < keyframes->size() - 1; ++i) {
+    if (t < (*keyframes)[i+1]->Time())
+      break;
+  }
+
+  double progress = (t - (*keyframes)[i]->Time()) /
+                    ((*keyframes)[i+1]->Time() - (*keyframes)[i]->Time());
+
+  if ((*keyframes)[i]->timing_function())
+    progress = (*keyframes)[i]->timing_function()->GetValue(progress);
+
+  return (*keyframes)[i+1]->Value().Blend((*keyframes)[i]->Value(), progress);
+}
+
 gfx::Transform KeyframedTransformAnimationCurve::GetValue(double t) const {
   if (t <= keyframes_.front()->Time())
     return keyframes_.front()->Value().Apply();
@@ -182,19 +228,43 @@ gfx::Transform KeyframedTransformAnimationCurve::GetValue(double t) const {
   if (t >= keyframes_.back()->Time())
     return keyframes_.back()->Value().Apply();
 
-  size_t i = 0;
-  for (; i < keyframes_.size() - 1; ++i) {
-    if (t < keyframes_[i+1]->Time())
-      break;
-  }
+  return GetCurveValue<gfx::Transform, TransformKeyframe>(&keyframes_, t);
+}
 
-  double progress = (t - keyframes_[i]->Time()) /
-                    (keyframes_[i+1]->Time() - keyframes_[i]->Time());
+scoped_ptr<KeyframedFilterAnimationCurve> KeyframedFilterAnimationCurve::
+    Create() {
+  return make_scoped_ptr(new KeyframedFilterAnimationCurve);
+}
 
-  if (keyframes_[i]->timing_function())
-    progress = keyframes_[i]->timing_function()->GetValue(progress);
+KeyframedFilterAnimationCurve::KeyframedFilterAnimationCurve() {}
 
-  return keyframes_[i+1]->Value().Blend(keyframes_[i]->Value(), progress);
+KeyframedFilterAnimationCurve::~KeyframedFilterAnimationCurve() {}
+
+void KeyframedFilterAnimationCurve::AddKeyframe(
+    scoped_ptr<FilterKeyframe> keyframe) {
+  InsertKeyframe(keyframe.Pass(), keyframes_);
+}
+
+double KeyframedFilterAnimationCurve::Duration() const {
+  return keyframes_.back()->Time() - keyframes_.front()->Time();
+}
+
+scoped_ptr<AnimationCurve> KeyframedFilterAnimationCurve::Clone() const {
+  scoped_ptr<KeyframedFilterAnimationCurve> to_return(
+      KeyframedFilterAnimationCurve::Create());
+  for (size_t i = 0; i < keyframes_.size(); ++i)
+    to_return->AddKeyframe(keyframes_[i]->Clone());
+  return to_return.PassAs<AnimationCurve>();
+}
+
+FilterOperations KeyframedFilterAnimationCurve::GetValue(double t) const {
+  if (t <= keyframes_.front()->Time())
+    return keyframes_.front()->Value();
+
+  if (t >= keyframes_.back()->Time())
+    return keyframes_.back()->Value();
+
+  return GetCurveValue<FilterOperations, FilterKeyframe>(&keyframes_, t);
 }
 
 }  // namespace cc

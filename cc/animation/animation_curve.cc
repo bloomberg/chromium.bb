@@ -27,4 +27,13 @@ AnimationCurve::CurveType TransformAnimationCurve::Type() const {
   return Transform;
 }
 
+const FilterAnimationCurve* AnimationCurve::ToFilterAnimationCurve() const {
+  DCHECK(Type() == AnimationCurve::Filter);
+  return static_cast<const FilterAnimationCurve*>(this);
+}
+
+AnimationCurve::CurveType FilterAnimationCurve::Type() const {
+  return Filter;
+}
+
 }  // namespace cc

@@ -7,19 +7,20 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
+#include "cc/output/filter_operations.h"
 #include "ui/gfx/transform.h"
 
 namespace cc {
 
+class FilterAnimationCurve;
 class FloatAnimationCurve;
 class TransformAnimationCurve;
 class TransformOperations;
 
 // An animation curve is a function that returns a value given a time.
-// There are currently only two types of curve, float and transform.
 class CC_EXPORT AnimationCurve {
  public:
-  enum CurveType { Float, Transform };
+  enum CurveType { Float, Transform, Filter };
 
   virtual ~AnimationCurve() {}
 
@@ -29,6 +30,7 @@ class CC_EXPORT AnimationCurve {
 
   const FloatAnimationCurve* ToFloatAnimationCurve() const;
   const TransformAnimationCurve* ToTransformAnimationCurve() const;
+  const FilterAnimationCurve* ToFilterAnimationCurve() const;
 };
 
 class CC_EXPORT FloatAnimationCurve : public AnimationCurve {
@@ -46,6 +48,16 @@ class CC_EXPORT TransformAnimationCurve : public AnimationCurve {
   virtual ~TransformAnimationCurve() {}
 
   virtual gfx::Transform GetValue(double t) const = 0;
+
+  // Partial Animation implementation.
+  virtual CurveType Type() const OVERRIDE;
+};
+
+class CC_EXPORT FilterAnimationCurve : public AnimationCurve {
+ public:
+  virtual ~FilterAnimationCurve() {}
+
+  virtual FilterOperations GetValue(double t) const = 0;
 
   // Partial Animation implementation.
   virtual CurveType Type() const OVERRIDE;
