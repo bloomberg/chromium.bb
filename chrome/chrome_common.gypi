@@ -268,6 +268,8 @@
         'common/extensions/manifest_handlers/icons_handler.h',
         'common/extensions/manifest_handlers/kiosk_enabled_info.cc',
         'common/extensions/manifest_handlers/kiosk_enabled_info.h',
+        'common/extensions/manifest_handlers/minimum_chrome_version_checker.cc',
+        'common/extensions/manifest_handlers/minimum_chrome_version_checker.h',
         'common/extensions/manifest_handlers/nacl_modules_handler.cc',
         'common/extensions/manifest_handlers/nacl_modules_handler.h',
         'common/extensions/manifest_handlers/offline_enabled_info.cc',

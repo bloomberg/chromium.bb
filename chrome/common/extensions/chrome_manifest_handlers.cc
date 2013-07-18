@@ -33,6 +33,7 @@
 #include "chrome/common/extensions/manifest_handlers/externally_connectable.h"
 #include "chrome/common/extensions/manifest_handlers/icons_handler.h"
 #include "chrome/common/extensions/manifest_handlers/kiosk_enabled_info.h"
+#include "chrome/common/extensions/manifest_handlers/minimum_chrome_version_checker.h"
 #include "chrome/common/extensions/manifest_handlers/nacl_modules_handler.h"
 #include "chrome/common/extensions/manifest_handlers/offline_enabled_info.h"
 #include "chrome/common/extensions/manifest_handlers/requirements_handler.h"
@@ -73,6 +74,7 @@ void RegisterChromeManifestHandlers() {
   (new ManagedModeHandler)->Register();
   (new MediaGalleriesHandlerParser)->Register();
   (new MimeTypesHandlerParser)->Register();
+  (new MinimumChromeVersionChecker)->Register();
   (new NaClModulesHandler)->Register();
   (new OAuth2ManifestHandler)->Register();
   (new OfflineEnabledHandler)->Register();

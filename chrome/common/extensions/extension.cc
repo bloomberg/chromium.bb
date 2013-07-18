@@ -22,7 +22,6 @@
 #include "base/version.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/manifest_handler.h"
@@ -38,7 +37,6 @@
 #include "grit/chromium_strings.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "url/url_util.h"
 
 #if defined(OS_WIN)
@@ -567,11 +565,6 @@ bool Extension::InitFromValue(int flags, string16* error) {
   if (!LoadManifestVersion(error))
     return false;
 
-  // Validate minimum Chrome version. We don't need to store this, since the
-  // extension is not valid if it is incorrect
-  if (!CheckMinimumChromeVersion(error))
-    return false;
-
   if (!LoadRequiredFeatures(error))
     return false;
 
@@ -775,44 +768,6 @@ bool Extension::LoadManifestVersion(string16* error) {
     return false;
   }
 
-  return true;
-}
-
-bool Extension::CheckMinimumChromeVersion(string16* error) const {
-  if (!manifest_->HasKey(keys::kMinimumChromeVersion))
-    return true;
-  std::string minimum_version_string;
-  if (!manifest_->GetString(keys::kMinimumChromeVersion,
-                            &minimum_version_string)) {
-    *error = ASCIIToUTF16(errors::kInvalidMinimumChromeVersion);
-    return false;
-  }
-
-  Version minimum_version(minimum_version_string);
-  if (!minimum_version.IsValid()) {
-    *error = ASCIIToUTF16(errors::kInvalidMinimumChromeVersion);
-    return false;
-  }
-
-  chrome::VersionInfo current_version_info;
-  if (!current_version_info.is_valid()) {
-    NOTREACHED();
-    return false;
-  }
-
-  Version current_version(current_version_info.Version());
-  if (!current_version.IsValid()) {
-    DCHECK(false);
-    return false;
-  }
-
-  if (current_version.CompareTo(minimum_version) < 0) {
-    *error = ErrorUtils::FormatErrorMessageUTF16(
-        errors::kChromeVersionTooLow,
-        l10n_util::GetStringUTF8(IDS_PRODUCT_NAME),
-        minimum_version_string);
-    return false;
-  }
   return true;
 }
 
