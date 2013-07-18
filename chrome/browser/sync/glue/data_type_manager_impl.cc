@@ -77,10 +77,7 @@ DataTypeManagerImpl::~DataTypeManagerImpl() {}
 
 void DataTypeManagerImpl::Configure(syncer::ModelTypeSet desired_types,
                                     syncer::ConfigureReason reason) {
-  desired_types.PutAll(syncer::ControlTypes());
-  // The list of managed users created by this profile is always synced,
-  // but they are not a control type.
-  desired_types.Put(syncer::MANAGED_USERS);
+  desired_types.PutAll(syncer::CoreTypes());
   ConfigureImpl(desired_types, reason);
 }
 
@@ -242,7 +239,7 @@ void DataTypeManagerImpl::Restart(syncer::ConfigureReason reason) {
 
 syncer::ModelTypeSet DataTypeManagerImpl::GetPriorityTypes() const {
   syncer::ModelTypeSet high_priority_types;
-  high_priority_types.PutAll(syncer::ControlTypes());
+  high_priority_types.PutAll(syncer::PriorityCoreTypes());
   high_priority_types.PutAll(syncer::PriorityUserTypes());
   return high_priority_types;
 }

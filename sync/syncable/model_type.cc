@@ -367,7 +367,7 @@ ModelTypeSet EncryptableUserTypes() {
   encryptable_user_types.Remove(SYNCED_NOTIFICATIONS);
   // Priority preferences are not encrypted because they might be synced before
   // encryption is ready.
-  encryptable_user_types.RemoveAll(PriorityUserTypes());
+  encryptable_user_types.Remove(PRIORITY_PREFERENCES);
   // Managed user settings are not encrypted since they are set server-side.
   encryptable_user_types.Remove(MANAGED_USER_SETTINGS);
   // Managed users are not encrypted since they are managed server-side.
@@ -380,7 +380,7 @@ ModelTypeSet EncryptableUserTypes() {
 }
 
 ModelTypeSet PriorityUserTypes() {
-  return ModelTypeSet(PRIORITY_PREFERENCES, MANAGED_USERS);
+  return ModelTypeSet(PRIORITY_PREFERENCES);
 }
 
 ModelTypeSet ControlTypes() {
@@ -403,6 +403,26 @@ ModelTypeSet ProxyTypes() {
 
 bool IsControlType(ModelType model_type) {
   return ControlTypes().Has(model_type);
+}
+
+ModelTypeSet CoreTypes() {
+  syncer::ModelTypeSet result;
+  result.PutAll(PriorityCoreTypes());
+
+  // The following are low priority core types.
+  result.Put(SYNCED_NOTIFICATIONS);
+
+  return result;
+}
+
+ModelTypeSet PriorityCoreTypes() {
+  syncer::ModelTypeSet result;
+  result.PutAll(ControlTypes());
+
+  // The following are non-control core types.
+  result.Put(MANAGED_USERS);
+
+  return result;
 }
 
 const char* ModelTypeToString(ModelType model_type) {

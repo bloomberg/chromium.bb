@@ -207,6 +207,14 @@ SYNC_EXPORT ModelTypeSet ControlTypes();
 // See comment above for more information on what makes these types special.
 SYNC_EXPORT bool IsControlType(ModelType model_type);
 
+// Core types are those data types used by sync's core functionality (i.e. not
+// user data types). These types are always enabled, and include ControlTypes().
+//
+// The set of all core types.
+SYNC_EXPORT ModelTypeSet CoreTypes();
+// Those core types that have high priority (includes ControlTypes()).
+SYNC_EXPORT ModelTypeSet PriorityCoreTypes();
+
 // Determine a model type from the field number of its associated
 // EntitySpecifics field.  Returns UNSPECIFIED if the field number is
 // not recognized.
