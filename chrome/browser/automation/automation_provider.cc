@@ -15,7 +15,7 @@
 #include "base/json/json_string_value_serializer.h"
 #include "base/json/json_writer.h"
 #include "base/json/string_escape.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_service.h"
 #include "base/process_util.h"

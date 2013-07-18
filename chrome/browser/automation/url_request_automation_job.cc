@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
 #include "chrome/browser/automation/automation_resource_message_filter.h"
 #include "chrome/common/automation_messages.h"

@@ -5,7 +5,7 @@
 #include "components/autofill/content/browser/risk/fingerprint.h"
 
 #include "base/bind.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/port.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/test/base/in_process_browser_test.h"

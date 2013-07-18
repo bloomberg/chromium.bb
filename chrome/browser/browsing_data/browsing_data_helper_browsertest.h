@@ -11,7 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 
 // This template can be used for the StartFetching methods of the browsing data
 // helper classes. It is supposed to be instantiated with the respective

@@ -5,7 +5,7 @@
 #include "chrome/browser/captive_portal/captive_portal_tab_reloader.h"
 
 #include "base/callback.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "chrome/browser/captive_portal/captive_portal_service.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/public/browser/browser_thread.h"

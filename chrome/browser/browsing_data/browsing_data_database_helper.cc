@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/file_util.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/profiles/profile.h"

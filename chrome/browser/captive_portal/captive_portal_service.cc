@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/chrome_notification_types.h"

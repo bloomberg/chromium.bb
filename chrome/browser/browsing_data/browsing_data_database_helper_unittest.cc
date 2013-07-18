@@ -4,7 +4,7 @@
 
 #include "chrome/browser/browsing_data/browsing_data_database_helper.h"
 
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"

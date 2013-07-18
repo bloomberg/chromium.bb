@@ -5,7 +5,7 @@
 #include "chrome/browser/browsing_data/browsing_data_local_storage_helper.h"
 
 #include "base/bind.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"

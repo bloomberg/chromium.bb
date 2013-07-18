@@ -7,7 +7,7 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "base/test/test_timeouts.h"
 #include "chrome/browser/captive_portal/testing_utils.h"

@@ -12,7 +12,7 @@
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/icu_string_conversions.h"
 #include "base/json/json_string_value_serializer.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string16.h"

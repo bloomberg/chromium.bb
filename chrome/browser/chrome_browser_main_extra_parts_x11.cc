@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/debug/debugger.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/common/chrome_result_codes.h"

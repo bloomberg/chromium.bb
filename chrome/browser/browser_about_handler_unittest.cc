@@ -4,7 +4,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "chrome/browser/browser_about_handler.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/testing_profile.h"
