@@ -4,7 +4,6 @@
 
 #include "content/browser/renderer_host/render_widget_host_view_win.h"
 
-#include <dwmapi.h>
 #include <InputScope.h>
 #include <wtsapi32.h>
 #pragma comment(lib, "wtsapi32.lib")
@@ -330,22 +329,6 @@ void GetScreenInfoForWindow(gfx::NativeViewId id,
   screen_info.availableRect = gfx::Rect(monitor_info.rcWork);
 
   *results = screen_info;
-}
-
-void SetDwmPresentParameters(HWND window) {
-  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
-    BOOL is_composited;
-    HRESULT result = DwmIsCompositionEnabled(&is_composited);
-    if (SUCCEEDED(result) && is_composited) {
-      DWM_PRESENT_PARAMETERS present_parameters = {0};
-      present_parameters.cbSize = sizeof(present_parameters);
-      present_parameters.cBuffer = 2;
-
-      result = DwmSetPresentParameters(window, &present_parameters);
-      if (FAILED(result))
-        DLOG(ERROR) << "Unable to set present parameters: 0x%08X", result;
-    }
-  }
 }
 
 }  // namespace
@@ -1244,7 +1227,6 @@ LRESULT RenderWidgetHostViewWin::OnCreate(CREATESTRUCT* create_struct) {
   props_.push_back(ui::SetWindowSupportsRerouteMouseWheel(m_hWnd));
 
   WTSRegisterSessionNotification(m_hWnd, NOTIFY_FOR_THIS_SESSION);
-  SetDwmPresentParameters(m_hWnd);
 
   UpdateDesiredTouchMode();
   UpdateIMEState();
@@ -2582,19 +2564,16 @@ gfx::GLSurfaceHandle RenderWidgetHostViewWin::GetCompositingSurface() {
       static_cast<int>(currentRect.bottom - currentRect.top));
 
   compositor_host_window_ = CreateWindowEx(
-    WS_EX_LEFT | WS_EX_LTRREADING | WS_EX_RIGHTSCROLLBAR,
-    MAKEINTATOM(atom), 0,
-    WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_DISABLED,
-    0, 0, width, height, m_hWnd, 0, instance, 0);
+      WS_EX_LEFT | WS_EX_LTRREADING | WS_EX_RIGHTSCROLLBAR,
+      MAKEINTATOM(atom), 0,
+      WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_DISABLED,
+      0, 0, width, height, m_hWnd, 0, instance, 0);
   ui::CheckWindowCreated(compositor_host_window_);
 
   ui::SetWindowUserData(compositor_host_window_, this);
 
-  SetDwmPresentParameters(compositor_host_window_);
-
   gfx::GLSurfaceHandle surface_handle(compositor_host_window_,
                                       gfx::NATIVE_TRANSPORT);
-
   return surface_handle;
 }
 
