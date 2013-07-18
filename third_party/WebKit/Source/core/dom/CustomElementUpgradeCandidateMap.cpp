@@ -45,13 +45,14 @@ void CustomElementUpgradeCandidateMap::add(const CustomElementDescriptor& descri
 
 void CustomElementUpgradeCandidateMap::remove(Element* element)
 {
-    UpgradeCandidateMap::iterator it = m_upgradeCandidates.find(element);
-    if (it == m_upgradeCandidates.end())
+    UpgradeCandidateMap::iterator candidate = m_upgradeCandidates.find(element);
+    if (candidate == m_upgradeCandidates.end())
         return;
 
-    const CustomElementDescriptor& descriptor = it->value;
-    m_unresolvedDefinitions.get(descriptor).remove(element);
-    m_upgradeCandidates.remove(it);
+    UnresolvedDefinitionMap::iterator elements = m_unresolvedDefinitions.find(candidate->value);
+    ASSERT(elements != m_unresolvedDefinitions.end());
+    elements->value.remove(element);
+    m_upgradeCandidates.remove(candidate);
 }
 
 ListHashSet<Element*> CustomElementUpgradeCandidateMap::takeUpgradeCandidatesFor(const CustomElementDescriptor& descriptor)

@@ -207,8 +207,8 @@ void ActiveRegistrationContext::customElementDidLeaveDocument(Element* element)
 
 void ActiveRegistrationContext::customElementIsBeingDestroyed(Element* element)
 {
-    CustomElementRegistrationContext::customElementIsBeingDestroyed(element);
     m_candidates.remove(element);
+    CustomElementRegistrationContext::customElementIsBeingDestroyed(element);
 }
 
 PassRefPtr<CustomElementRegistrationContext> CustomElementRegistrationContext::create()
