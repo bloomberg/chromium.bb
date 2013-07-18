@@ -25,7 +25,8 @@
  */
 
 [
-    NoInterfaceObject
+    NoInterfaceObject,
+    LegacyImplementedInBaseClass
 ] interface SVGTests {
     readonly attribute SVGStringList requiredFeatures;
     readonly attribute SVGStringList requiredExtensions;

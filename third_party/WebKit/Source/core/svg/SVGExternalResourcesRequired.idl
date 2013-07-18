@@ -25,7 +25,8 @@
  */
 
 [
-    NoInterfaceObject
+    NoInterfaceObject,
+    LegacyImplementedInBaseClass
 ] interface SVGExternalResourcesRequired { 
     readonly attribute SVGAnimatedBoolean externalResourcesRequired;
 };

@@ -1110,6 +1110,7 @@ sub GetImplNameFromImplementedBy
     my $implementedBy = shift;
 
     my $interface = ParseInterface($implementedBy);
+
     return $interface->extendedAttributes->{"ImplementedAs"} || $implementedBy;
 }
 

@@ -20,8 +20,10 @@
  * Boston, MA 02110-1301, USA.
  */
 
-[NoInterfaceObject]
-interface ChildNode {
+[
+    NoInterfaceObject,
+    LegacyImplementedInBaseClass
+] interface ChildNode {
     [PerWorldBindings] readonly attribute Element previousElementSibling;
     [PerWorldBindings] readonly attribute Element nextElementSibling;
     [RaisesException, DeliverCustomElementCallbacks] void remove();

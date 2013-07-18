@@ -1,6 +1,7 @@
 /*
- * Copyright (C) 2009 Google Inc. All rights reserved.
- * Copyright (C) 2011 Apple Inc. All rights reserved.
+ * Copyright (C) 2006, 2007, 2008, 2010 Apple Inc. All rights reserved.
+ * Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies)
+ * Copyright (C) 2013 Samsung Electronics. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -29,10 +30,47 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-[
-    NoInterfaceObject,
-    LegacyImplementedInBaseClass
-] interface AbstractWorker {
-    attribute EventListener onerror;
-};
+#include "config.h"
+#include "core/page/DOMWindowBase64.h"
 
+#include "wtf/text/Base64.h"
+
+namespace WebCore {
+
+namespace DOMWindowBase64 {
+
+String btoa(void*, const String& stringToEncode, ExceptionCode& ec)
+{
+    if (stringToEncode.isNull())
+        return String();
+
+    if (!stringToEncode.containsOnlyLatin1()) {
+        ec = InvalidCharacterError;
+        return String();
+    }
+
+    return base64Encode(stringToEncode.latin1());
+}
+
+String atob(void*, const String& encodedString, ExceptionCode& ec)
+{
+    if (encodedString.isNull())
+        return String();
+
+    if (!encodedString.containsOnlyLatin1()) {
+        ec = InvalidCharacterError;
+        return String();
+    }
+
+    Vector<char> out;
+    if (!base64Decode(encodedString, out, Base64FailOnInvalidCharacter)) {
+        ec = InvalidCharacterError;
+        return String();
+    }
+
+    return String(out.data(), out.size());
+}
+
+} // namespace DOMWindowBase64
+
+} // namespace WebCore

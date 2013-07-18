@@ -1,6 +1,7 @@
 /*
- * Copyright (C) 2009 Google Inc. All rights reserved.
- * Copyright (C) 2011 Apple Inc. All rights reserved.
+ * Copyright (C) 2006, 2007, 2008, 2010 Apple Inc. All rights reserved.
+ * Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies)
+ * Copyright (C) 2013 Samsung Electronics. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -29,10 +30,19 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-[
-    NoInterfaceObject,
-    LegacyImplementedInBaseClass
-] interface AbstractWorker {
-    attribute EventListener onerror;
-};
+#ifndef DOMWindowBase64_h
+#define DOMWindowBase64_h
 
+#include "core/dom/ExceptionCode.h"
+#include "wtf/text/WTFString.h"
+
+namespace WebCore {
+
+namespace DOMWindowBase64 {
+String btoa(void*, const String& stringToEncode, ExceptionCode&);
+String atob(void*, const String& encodedString, ExceptionCode&);
+}
+
+} // namespace WebCore
+
+#endif // DOMWindowBase64_h

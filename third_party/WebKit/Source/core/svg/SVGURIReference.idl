@@ -25,7 +25,8 @@
  */
 
 [
-    NoInterfaceObject
+    NoInterfaceObject,
+    LegacyImplementedInBaseClass
 ] interface SVGURIReference {
     readonly attribute SVGAnimatedString href;
 };

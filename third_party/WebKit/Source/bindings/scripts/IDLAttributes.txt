@@ -61,6 +61,8 @@ Immutable
 ImplementedAs=*
 InitializedByEventConstructor
 IsIndex
+# FIXME: We should remove this extended attribute once the needed refactoring is complete.
+LegacyImplementedInBaseClass
 MasqueradesAsUndefined
 MeasureAs=*
 NamedConstructor=*

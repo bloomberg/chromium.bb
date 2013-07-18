@@ -1,5 +1,6 @@
 [
-    NoInterfaceObject
+    NoInterfaceObject,
+    LegacyImplementedInBaseClass
 ] interface ParentNode {
     [PerWorldBindings] readonly attribute HTMLCollection children;
     [PerWorldBindings] readonly attribute Element firstElementChild;
