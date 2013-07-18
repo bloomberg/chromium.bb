@@ -2670,12 +2670,20 @@ void Document::processHttpEquivRefresh(const String& content)
             refreshUrl = m_url.string();
         else
             refreshUrl = completeURL(refreshUrl).string();
-        if (!protocolIsJavaScript(refreshUrl)) {
-            frame->navigationScheduler()->scheduleRedirect(delay, refreshUrl);
-        } else {
+
+        if (protocolIsJavaScript(refreshUrl)) {
             String message = "Refused to refresh " + m_url.elidedString() + " to a javascript: URL";
             addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, message);
+            return;
         }
+
+        if (isSandboxed(SandboxAutomaticFeatures)) {
+            String message = "Refused to execute the redirect specified via '<meta http-equiv='refresh' content='...'>'. The document is sandboxed, and the 'allow-scripts' keyword is not set.";
+            addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, message);
+            return;
+        }
+
+        frame->navigationScheduler()->scheduleRedirect(delay, refreshUrl);
     }
 }
 
