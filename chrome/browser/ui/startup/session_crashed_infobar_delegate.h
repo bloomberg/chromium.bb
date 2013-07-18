@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_STARTUP_SESSION_CRASHED_PROMPT_H_
-#define CHROME_BROWSER_UI_STARTUP_SESSION_CRASHED_PROMPT_H_
+#ifndef CHROME_BROWSER_UI_STARTUP_SESSION_CRASHED_INFOBAR_DELEGATE_H_
+#define CHROME_BROWSER_UI_STARTUP_SESSION_CRASHED_INFOBAR_DELEGATE_H_
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
@@ -53,4 +53,4 @@ class SessionCrashedInfoBarDelegate : public ConfirmInfoBarDelegate,
   DISALLOW_COPY_AND_ASSIGN(SessionCrashedInfoBarDelegate);
 };
 
-#endif  // CHROME_BROWSER_UI_STARTUP_SESSION_CRASHED_PROMPT_H_
+#endif  // CHROME_BROWSER_UI_STARTUP_SESSION_CRASHED_INFOBAR_DELEGATE_H_
