@@ -61,7 +61,7 @@ public:
             throwDOMException(m_code);
         }
 
-        V8ThrowException::throwError(m_exception.deprecatedGet());
+        V8ThrowException::throwError(m_exception.newLocal(m_isolate));
         return true;
     }
 
