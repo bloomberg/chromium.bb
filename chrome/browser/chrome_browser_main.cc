@@ -1019,6 +1019,8 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
             prefs::kBrowserSuppressDefaultBrowserPrompt,
             master_prefs_->suppress_default_browser_prompt_for_version);
       }
+
+      AppListService::Get()->HandleFirstRun();
     }
 
     if (do_first_run_tasks_ ||

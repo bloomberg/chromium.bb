@@ -306,6 +306,7 @@ class AppListController : public AppListServiceImpl {
   app_list::AppListView* GetView() { return current_view_; }
 
   // AppListService overrides:
+  virtual void HandleFirstRun() OVERRIDE;
   virtual void Init(Profile* initial_profile) OVERRIDE;
   virtual void ShowAppList(Profile* requested_profile) OVERRIDE;
   virtual void DismissAppList() OVERRIDE;
@@ -387,6 +388,8 @@ class AppListController : public AppListServiceImpl {
   // when this happens it is kept visible if the taskbar is seen briefly without
   // the right mouse button down, but not if this happens twice in a row.
   bool preserving_focus_for_taskbar_menu_;
+
+  bool enable_app_list_on_next_init_;
 
   base::WeakPtrFactory<AppListController> weak_factory_;
 
@@ -480,6 +483,7 @@ AppListController::AppListController()
       can_close_app_list_(true),
       regain_first_lost_focus_(false),
       preserving_focus_for_taskbar_menu_(false),
+      enable_app_list_on_next_init_(false),
       weak_factory_(this) {}
 
 AppListController::~AppListController() {
@@ -851,11 +855,27 @@ void AppListController::OnLoadProfileForWarmup(Profile* initial_profile) {
   current_view_->Prerender();
 }
 
+void AppListController::HandleFirstRun() {
+  PrefService* local_state = g_browser_process->local_state();
+  // If the app list is already enabled during first run, then the user had
+  // opted in to the app launcher before uninstalling, so we re-enable to
+  // restore shortcuts to the app list.
+  // Note we can't directly create the shortcuts here because the IO thread
+  // hasn't been created yet.
+  enable_app_list_on_next_init_ = local_state->GetBoolean(
+      apps::prefs::kAppLauncherHasBeenEnabled);
+}
+
 void AppListController::Init(Profile* initial_profile) {
   // In non-Ash metro mode, we can not show the app list for this process, so do
   // not bother performing Init tasks.
   if (win8::IsSingleWindowMetroMode())
     return;
+
+  if (enable_app_list_on_next_init_) {
+    enable_app_list_on_next_init_ = false;
+    EnableAppList(initial_profile);
+  }
 
   PrefService* prefs = g_browser_process->local_state();
   if (prefs->HasPrefPath(prefs::kRestartWithAppList) &&

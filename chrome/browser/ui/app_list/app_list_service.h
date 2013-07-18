@@ -34,6 +34,10 @@ class AppListService {
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
+  // Perform Chrome first run logic. This is executed before Chrome's threads
+  // have been created.
+  virtual void HandleFirstRun() = 0;
+
   virtual base::FilePath GetProfilePath(
       const base::FilePath& user_data_dir) = 0;
 

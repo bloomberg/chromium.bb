@@ -53,6 +53,7 @@ class AppListServiceImpl : public AppListService,
   virtual void OnSigninStatusChanged();
 
   // AppListService overrides:
+  virtual void HandleFirstRun() OVERRIDE;
   virtual void Init(Profile* initial_profile) OVERRIDE;
   virtual base::FilePath GetProfilePath(
       const base::FilePath& user_data_dir) OVERRIDE;

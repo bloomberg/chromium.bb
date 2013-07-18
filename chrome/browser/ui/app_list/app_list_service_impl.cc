@@ -107,6 +107,8 @@ AppListServiceImpl::AppListServiceImpl()
 
 AppListServiceImpl::~AppListServiceImpl() {}
 
+void AppListServiceImpl::HandleFirstRun() {}
+
 void AppListServiceImpl::Init(Profile* initial_profile) {}
 
 base::FilePath AppListServiceImpl::GetProfilePath(

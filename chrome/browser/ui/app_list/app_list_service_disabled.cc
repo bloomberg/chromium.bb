@@ -21,6 +21,7 @@ class AppListServiceDisabled : public AppListService {
   AppListServiceDisabled() {}
 
   // AppListService overrides:
+  virtual void HandleFirstRun() OVERRIDE {}
   virtual void Init(Profile* initial_profile) OVERRIDE {}
 
   virtual base::FilePath GetProfilePath(
