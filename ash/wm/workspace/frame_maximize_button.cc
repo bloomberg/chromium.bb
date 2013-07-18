@@ -12,6 +12,7 @@
 #include "ash/touch/touch_uma.h"
 #include "ash/wm/maximize_bubble_controller.h"
 #include "ash/wm/property_util.h"
+#include "ash/wm/window_animations.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/phantom_window_controller.h"
@@ -490,19 +491,13 @@ gfx::Rect FrameMaximizeButton::ScreenBoundsForType(
           window->parent(),
           ScreenAsh::GetMaximizedWindowBoundsInParent(window));
     case SNAP_MINIMIZE: {
-      Launcher* launcher = Launcher::ForWindow(window);
-      // Launcher is created lazily and can be NULL.
-      if (!launcher)
-        return gfx::Rect();
-      gfx::Rect item_rect(launcher->GetScreenBoundsOfItemIconForWindow(
-          window));
-      if (!item_rect.IsEmpty()) {
+      gfx::Rect rect = GetMinimizeAnimationTargetBoundsInScreen(window);
+      if (!rect.IsEmpty()) {
         // PhantomWindowController insets slightly, outset it so the phantom
         // doesn't appear inset.
-        item_rect.Inset(-8, -8);
-        return item_rect;
+        rect.Inset(-8, -8);
       }
-      return launcher->shelf_widget()->GetWindowBoundsInScreen();
+      return rect;
     }
     case SNAP_RESTORE: {
       const gfx::Rect* restore = GetRestoreBoundsInScreen(window);

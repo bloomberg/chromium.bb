@@ -9,6 +9,7 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/wm/property_util.h"
+#include "ash/wm/window_animations.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/snap_sizer.h"
 #include "ui/aura/window.h"
@@ -129,11 +130,8 @@ gfx::Rect SystemPinchHandler::GetPhantomWindowScreenBounds(
       return window->bounds();
     }
 
-    Launcher* launcher = Launcher::ForWindow(window);
-    gfx::Rect rect = launcher->GetScreenBoundsOfItemIconForWindow(target_);
-    if (rect.IsEmpty())
-      rect = launcher->shelf_widget()->GetWindowBoundsInScreen();
-    else
+    gfx::Rect rect = GetMinimizeAnimationTargetBoundsInScreen(target_);
+    if (!rect.IsEmpty())
       rect.Inset(-8, -8);
     phantom_state_ = PHANTOM_WINDOW_MINIMIZED;
     return rect;

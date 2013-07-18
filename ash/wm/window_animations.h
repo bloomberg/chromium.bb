@@ -69,7 +69,12 @@ ASH_EXPORT void SetTransformForScaleAnimation(
     ui::Layer* layer,
     LayerScaleAnimationDirection type);
 
-}  // namespace ash
+// Returns the approximate bounds to which |window| will be animated when it
+// is minimized. The bounds are approximate because the minimize animation
+// involves rotation.
+ASH_EXPORT gfx::Rect GetMinimizeAnimationTargetBoundsInScreen(
+    aura::Window* window);
 
+}  // namespace ash
 
 #endif  // ASH_WM_WINDOW_ANIMATIONS_H_
