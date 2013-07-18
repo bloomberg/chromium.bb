@@ -300,7 +300,7 @@ String CSSValue::cssText() const
     case CSSShaderClass:
         return static_cast<const CSSShaderValue*>(this)->customCssText();
     case VariableClass:
-        return static_cast<const CSSVariableValue*>(this)->value();
+        return toCSSVariableValue(this)->value();
     case SVGColorClass:
         return static_cast<const SVGColor*>(this)->customCssText();
     case SVGPaintClass:
@@ -429,7 +429,7 @@ void CSSValue::destroy()
         delete static_cast<CSSShaderValue*>(this);
         return;
     case VariableClass:
-        delete static_cast<CSSVariableValue*>(this);
+        delete toCSSVariableValue(this);
         return;
     case SVGColorClass:
         delete static_cast<SVGColor*>(this);

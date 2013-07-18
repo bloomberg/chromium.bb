@@ -1,0 +1,34 @@
+<!doctype html>
+
+<style>
+    div {
+        background-color: var(color);
+        border-style: var(border);
+        text-decoration: var(decoration);
+    }
+</style>
+
+<div style="var-color: green; var-border: solid">
+    This div should be green with a solid border and no strikethrough.
+    <div id="innerA" style="var-color: darkred; var-border: dashed">
+        This div should be green with a solid border and no strikethrough.
+        <div id="innerB" style="var-decoration: line-through">This div should be green with a solid border and no strikethrough.</div>
+    </div>
+</div>
+<pre id="output"></pre>
+
+<script>
+var innerA = document.querySelector("#innerA");
+var innerB = document.querySelector("#innerB");
+var output = document.querySelector("#output");
+
+innerA.style.var.delete("color");
+innerA.style.var.set("border", "");
+innerB.style.var.clear();
+
+output.innerText += "Test access after removal:\n";
+output.innerText += "    delete border: " + (innerA.style.var.get("border") ? "fail" : "pass") + "\n";
+output.innerText += "    set empty color: " + (innerA.style.var.get("color") ? "fail" : "pass") + "\n";
+output.innerText += "    clear decoration: " + (innerB.style.var.get("decoration") ? "fail" : "pass") + "\n";
+output.innerText += "Variable counts after removal: " + innerA.style.var.size + " " + innerB.style.var.size;
+</script>

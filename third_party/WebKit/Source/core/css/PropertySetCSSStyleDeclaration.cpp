@@ -23,6 +23,7 @@
 #include "core/css/PropertySetCSSStyleDeclaration.h"
 
 #include "HTMLNames.h"
+#include "RuntimeEnabledFeatures.h"
 #include "core/css/CSSParser.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/StylePropertySet.h"
@@ -267,6 +268,52 @@ void PropertySetCSSStyleDeclaration::setPropertyInternal(CSSPropertyID propertyI
 
     didMutate(changed ? PropertyChanged : NoChanges);
 
+    if (changed)
+        mutationScope.enqueueMutationRecord();
+}
+
+unsigned PropertySetCSSStyleDeclaration::variableCount() const
+{
+    ASSERT(RuntimeEnabledFeatures::cssVariablesEnabled());
+    return m_propertySet->variableCount();
+}
+
+String PropertySetCSSStyleDeclaration::variableValue(const AtomicString& name) const
+{
+    ASSERT(RuntimeEnabledFeatures::cssVariablesEnabled());
+    return m_propertySet->variableValue(name);
+}
+
+void PropertySetCSSStyleDeclaration::setVariableValue(const AtomicString& name, const String& value, ExceptionCode&)
+{
+    ASSERT(RuntimeEnabledFeatures::cssVariablesEnabled());
+    StyleAttributeMutationScope mutationScope(this);
+    willMutate();
+    bool changed = m_propertySet->setVariableValue(name, value);
+    didMutate(changed ? PropertyChanged : NoChanges);
+    if (changed)
+        mutationScope.enqueueMutationRecord();
+}
+
+bool PropertySetCSSStyleDeclaration::removeVariable(const AtomicString& name)
+{
+    ASSERT(RuntimeEnabledFeatures::cssVariablesEnabled());
+    StyleAttributeMutationScope mutationScope(this);
+    willMutate();
+    bool changed = m_propertySet->removeVariable(name);
+    didMutate(changed ? PropertyChanged : NoChanges);
+    if (changed)
+        mutationScope.enqueueMutationRecord();
+    return changed;
+}
+
+void PropertySetCSSStyleDeclaration::clearVariables(ExceptionCode&)
+{
+    ASSERT(RuntimeEnabledFeatures::cssVariablesEnabled());
+    StyleAttributeMutationScope mutationScope(this);
+    willMutate();
+    bool changed = m_propertySet->clearVariables();
+    didMutate(changed ? PropertyChanged : NoChanges);
     if (changed)
         mutationScope.enqueueMutationRecord();
 }

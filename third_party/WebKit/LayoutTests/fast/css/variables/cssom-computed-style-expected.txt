@@ -1,0 +1,13 @@
+Computed variables declaration: [object CSSVariablesMap]
+Create variable: NoModificationAllowedError: An attempt was made to modify an object where modifications are not allowed.
+Count variables: 3
+Count empty variables: 0
+Read stylesheet variable: pass
+Read inherited variable: pass
+Read inline variable: pass
+Read non-existent variable: pass
+Update variable: NoModificationAllowedError: An attempt was made to modify an object where modifications are not allowed.
+Delete variable: Not deleted
+Clear variables: NoModificationAllowedError: An attempt was made to modify an object where modifications are not allowed.
+Read deleted variable: pass
+

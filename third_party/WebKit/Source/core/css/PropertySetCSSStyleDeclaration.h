@@ -66,7 +66,13 @@ private:
     virtual PassRefPtr<CSSValue> getPropertyCSSValueInternal(CSSPropertyID) OVERRIDE;
     virtual String getPropertyValueInternal(CSSPropertyID) OVERRIDE;
     virtual void setPropertyInternal(CSSPropertyID, const String& value, bool important, ExceptionCode&) OVERRIDE;
-    
+
+    virtual unsigned variableCount() const OVERRIDE;
+    virtual String variableValue(const AtomicString& name) const OVERRIDE;
+    virtual void setVariableValue(const AtomicString& name, const String& value, ExceptionCode&) OVERRIDE;
+    virtual bool removeVariable(const AtomicString& name) OVERRIDE;
+    virtual void clearVariables(ExceptionCode&) OVERRIDE;
+
     virtual bool cssPropertyMatches(CSSPropertyID, const CSSValue*) const OVERRIDE;
     virtual PassRefPtr<MutableStylePropertySet> copyProperties() const OVERRIDE;
 

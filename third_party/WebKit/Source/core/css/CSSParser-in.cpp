@@ -1356,7 +1356,7 @@ static inline void filterProperties(bool important, const CSSParser::ParsedPrope
         if (property.isImportant() != important)
             continue;
         if (property.id() == CSSPropertyVariable) {
-            const AtomicString& name = static_cast<CSSVariableValue*>(property.value())->name();
+            const AtomicString& name = toCSSVariableValue(property.value())->name();
             if (!seenVariables.add(name).isNewEntry)
                 continue;
             output[--unusedEntries] = property;

@@ -23,6 +23,7 @@
 
 #include "CSSPropertyNames.h"
 #include "bindings/v8/ScriptWrappable.h"
+#include "core/css/CSSVariablesMap.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
 
@@ -33,14 +34,14 @@ class CSSRule;
 class CSSStyleSheet;
 class CSSValue;
 class MutableStylePropertySet;
-class StylePropertySet;
+class VariablesIterator;
 
 typedef int ExceptionCode;
 
 class CSSStyleDeclaration : public ScriptWrappable {
     WTF_MAKE_NONCOPYABLE(CSSStyleDeclaration); WTF_MAKE_FAST_ALLOCATED;
 public:
-    virtual ~CSSStyleDeclaration() { }
+    virtual ~CSSStyleDeclaration();
 
     virtual void ref() = 0;
     virtual void deref() = 0;
@@ -57,6 +58,13 @@ public:
     virtual bool isPropertyImplicit(const String& propertyName) = 0;
     virtual void setProperty(const String& propertyName, const String& value, const String& priority, ExceptionCode&) = 0;
     virtual String removeProperty(const String& propertyName, ExceptionCode&) = 0;
+
+    PassRefPtr<CSSVariablesMap> var();
+    virtual unsigned variableCount() const = 0;
+    virtual String variableValue(const AtomicString& name) const = 0;
+    virtual void setVariableValue(const AtomicString& name, const String& value, ExceptionCode&) = 0;
+    virtual bool removeVariable(const AtomicString& name) = 0;
+    virtual void clearVariables(ExceptionCode&) = 0;
 
     // CSSPropertyID versions of the CSSOM functions to support bindings and editing.
     // Use the non-virtual methods in the concrete subclasses when possible.
@@ -75,6 +83,7 @@ protected:
     {
         ScriptWrappable::init(this);
     }
+    RefPtr<CSSVariablesMap> m_variablesMap;
 };
 
 } // namespace WebCore

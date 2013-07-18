@@ -1,0 +1,20 @@
+<!doctype html>
+
+<pre id="inline">Persistent JS object for element.style.var: </pre>
+<pre id="computed">Persistent JS object for getComputedStyle(element).var: </pre>
+
+<script>
+if (window.testRunner) {
+    window.testRunner.dumpAsText();
+}
+
+var pre = document.querySelector("#inline");
+pre.style.var.testAddingKey = "pass";
+pre.innerText += pre.style.var.testAddingKey;
+
+pre = document.querySelector("#computed");
+var style = getComputedStyle(pre)
+style.var.testAddingKey = "pass";
+pre.innerText += style.var.testAddingKey;
+
+</script>

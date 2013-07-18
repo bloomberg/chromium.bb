@@ -1,0 +1,61 @@
+<script>
+if (window.testRunner)
+    testRunner.dumpAsText();
+</script>
+
+<style>
+pre {
+    var-stylesheet: pass;
+}
+</style>
+
+<body>
+
+<pre style="var-inherited: pass"><pre id="pre" style="var-inline: pass"></pre></pre>
+
+</body>
+
+<script>
+var pre = document.querySelector("#pre");
+var preStyle = getComputedStyle(pre);
+var bodyStyle = getComputedStyle(document.querySelector("body"));
+pre.innerText += "Computed variables declaration: " + preStyle.var + "\n";
+
+pre.innerText += "Create variable: ";
+try {
+    preStyle.var.set("create", "test");
+    pre.innerText += "No exception thrown.\n";
+}
+catch (exception) {
+    pre.innerText += exception + "\n";
+}
+
+pre.innerText += "Count variables: " + preStyle.var.size + "\n";
+pre.innerText += "Count empty variables: " + bodyStyle.var.size + "\n";
+pre.innerText += "Read stylesheet variable: " + preStyle.var.get("stylesheet") + "\n";
+pre.innerText += "Read inherited variable: " + preStyle.var.get("inherited") + "\n";
+pre.innerText += "Read inline variable: " + preStyle.var.get("inline") + "\n";
+pre.innerText += "Read non-existent variable: " + (bodyStyle.var.get("test") ? "fail" : "pass") + "\n";
+
+pre.innerText += "Update variable: ";
+try {
+    preStyle.var.set("inline", "test");
+    pre.innerText += "No exception thrown (fail).\n";
+}
+catch (exception) {
+    pre.innerText += exception + "\n";
+}
+
+pre.innerText += "Delete variable: " + (preStyle.var.delete("inline") ? "Deleted" : "Not deleted") + "\n";
+
+pre.innerText += "Clear variables: ";
+try {
+    preStyle.var.clear();
+    pre.innerText += "No exception thrown (fail).\n";
+}
+catch (exception) {
+    pre.innerText += exception + "\n";
+}
+
+pre.innerText += "Read deleted variable: " + preStyle.var.get("inline") + "\n";
+</script>

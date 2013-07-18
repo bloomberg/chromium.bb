@@ -1,0 +1,21 @@
+<!doctype html>
+
+<style>
+    div {
+        background-color: var(color);
+        border-style: var(border);
+    }
+</style>
+
+<div id="outer" style="var-color: darkred; var-border: dashed">
+    This div should be green with a solid border.
+    <div>This div should also be green with a solid border.</div>
+</div>
+
+<script>
+var outer = document.querySelector("#outer");
+
+outer.style.var.set("color", "green");
+outer.style.var.set("border", "solid");
+
+</script>

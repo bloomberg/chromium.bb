@@ -1,0 +1,20 @@
+<!doctype html>
+
+<style>
+    div {
+        var-color: darkred;
+        background-color: darkred;
+        background-color: var(color);
+    }
+</style>
+
+<div id="div1" style="background-color: white;">This line should end with a stringified CSSVariablesMap: </div>
+<div id="div2">Testing set method. This div should be green.</div>
+
+<script>
+var div1 = document.querySelector("#div1");
+var div2 = document.querySelector("#div2");
+
+div1.innerText += div1.style.var;
+div2.style.var.set("color", "green");
+</script>

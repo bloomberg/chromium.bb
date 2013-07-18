@@ -3003,6 +3003,57 @@ void CSSComputedStyleDeclaration::setPropertyInternal(CSSPropertyID, const Strin
     ec = NoModificationAllowedError;
 }
 
+const HashMap<AtomicString, String>* CSSComputedStyleDeclaration::variableMap() const
+{
+    ASSERT(RuntimeEnabledFeatures::cssVariablesEnabled());
+    Node* styledNode = this->styledNode();
+    if (!styledNode)
+        return 0;
+    RefPtr<RenderStyle> style = styledNode->computedStyle(styledNode->isPseudoElement() ? NOPSEUDO : m_pseudoElementSpecifier);
+    if (!style)
+        return 0;
+    return style->variables();
+}
+
+unsigned CSSComputedStyleDeclaration::variableCount() const
+{
+    ASSERT(RuntimeEnabledFeatures::cssVariablesEnabled());
+    const HashMap<AtomicString, String>* variables = variableMap();
+    if (!variables)
+        return 0;
+    return variables->size();
+}
+
+String CSSComputedStyleDeclaration::variableValue(const AtomicString& name) const
+{
+    ASSERT(RuntimeEnabledFeatures::cssVariablesEnabled());
+    const HashMap<AtomicString, String>* variables = variableMap();
+    if (!variables)
+        return emptyString();
+    HashMap<AtomicString, String>::const_iterator it = variables->find(name);
+    if (it == variables->end())
+        return emptyString();
+    return it->value;
+}
+
+void CSSComputedStyleDeclaration::setVariableValue(const AtomicString&, const String&, ExceptionCode& ec)
+{
+    ASSERT(RuntimeEnabledFeatures::cssVariablesEnabled());
+    ec = NoModificationAllowedError;
+}
+
+bool CSSComputedStyleDeclaration::removeVariable(const AtomicString&)
+{
+    ASSERT(RuntimeEnabledFeatures::cssVariablesEnabled());
+    return false;
+}
+
+void CSSComputedStyleDeclaration::clearVariables(ExceptionCode& ec)
+{
+    ASSERT(RuntimeEnabledFeatures::cssVariablesEnabled());
+    ec = NoModificationAllowedError;
+}
+
 PassRefPtr<CSSValueList> CSSComputedStyleDeclaration::getBackgroundShorthandValue() const
 {
     static const CSSPropertyID propertiesBeforeSlashSeperator[5] = { CSSPropertyBackgroundColor, CSSPropertyBackgroundImage,

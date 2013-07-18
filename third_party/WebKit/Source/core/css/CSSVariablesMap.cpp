@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -26,51 +26,51 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CSSVariableValue_h
-#define CSSVariableValue_h
+#include "config.h"
+#include "core/css/CSSVariablesMap.h"
 
-#include "CSSPropertyNames.h"
-#include "core/css/CSSParserValues.h"
-#include "core/css/CSSValue.h"
+#include "core/css/CSSStyleDeclaration.h"
 
 namespace WebCore {
 
-class CSSVariableValue : public CSSValue {
-public:
-    static PassRefPtr<CSSVariableValue> create(const AtomicString& name, const String& value)
-    {
-        return adoptRef(new CSSVariableValue(name, value));
-    }
-
-    const AtomicString& name() const { return m_name; }
-    const String& value() const { return m_value; }
-
-    bool equals(const CSSVariableValue& other) const { return m_name == other.m_name && m_value == other.m_value; }
-
-private:
-    CSSVariableValue(const AtomicString& name, const String& value)
-        : CSSValue(VariableClass)
-        , m_name(name)
-        , m_value(value)
-    {
-    }
-
-    const AtomicString m_name;
-    const String m_value;
-};
-
-inline CSSVariableValue* toCSSVariableValue(CSSValue* value)
+unsigned CSSVariablesMap::size() const
 {
-    ASSERT_WITH_SECURITY_IMPLICATION(!value || value->isVariableValue());
-    return static_cast<CSSVariableValue*>(value);
+    if (m_styleDeclaration)
+        return m_styleDeclaration->variableCount();
+    return 0;
 }
 
-inline const CSSVariableValue* toCSSVariableValue(const CSSValue* value)
+String CSSVariablesMap::get(const AtomicString& name) const
 {
-    ASSERT_WITH_SECURITY_IMPLICATION(!value || value->isVariableValue());
-    return static_cast<const CSSVariableValue*>(value);
+    if (m_styleDeclaration)
+        return m_styleDeclaration->variableValue(name);
+    return String();
 }
 
+bool CSSVariablesMap::has(const AtomicString& name) const
+{
+    if (m_styleDeclaration)
+        return !get(name).isEmpty();
+    return false;
 }
 
-#endif /* CSSVariableValue_h */
+void CSSVariablesMap::set(const AtomicString& name, const String& value, ExceptionCode& ec) const
+{
+    if (m_styleDeclaration)
+        m_styleDeclaration->setVariableValue(name, value, ec);
+}
+
+bool CSSVariablesMap::remove(const AtomicString& name) const
+{
+    if (m_styleDeclaration)
+        return m_styleDeclaration->removeVariable(name);
+    return false;
+}
+
+void CSSVariablesMap::clear(ExceptionCode& ec) const
+{
+    if (m_styleDeclaration)
+        return m_styleDeclaration->clearVariables(ec);
+}
+
+} // namespace WebCore

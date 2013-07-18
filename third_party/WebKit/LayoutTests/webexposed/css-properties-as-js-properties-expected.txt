@@ -220,6 +220,7 @@ transitionTimingFunction
 unicodeBidi
 unicodeRange
 userZoom
+var
 vectorEffect
 verticalAlign
 visibility

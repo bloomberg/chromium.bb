@@ -23,7 +23,10 @@
 
 #include "core/css/CSSStyleDeclaration.h"
 #include "core/rendering/style/RenderStyleConstants.h"
+#include "wtf/HashMap.h"
 #include "wtf/RefPtr.h"
+#include "wtf/text/AtomicString.h"
+#include "wtf/text/AtomicStringHash.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
@@ -96,6 +99,13 @@ private:
     virtual PassRefPtr<CSSValue> getPropertyCSSValueInternal(CSSPropertyID);
     virtual String getPropertyValueInternal(CSSPropertyID);
     virtual void setPropertyInternal(CSSPropertyID, const String& value, bool important, ExceptionCode&);
+
+    const HashMap<AtomicString, String>* variableMap() const;
+    virtual unsigned variableCount() const OVERRIDE;
+    virtual String variableValue(const AtomicString& name) const OVERRIDE;
+    virtual void setVariableValue(const AtomicString& name, const String& value, ExceptionCode&) OVERRIDE;
+    virtual bool removeVariable(const AtomicString& name) OVERRIDE;
+    virtual void clearVariables(ExceptionCode&) OVERRIDE;
 
     virtual bool cssPropertyMatches(CSSPropertyID, const CSSValue*) const OVERRIDE;
 

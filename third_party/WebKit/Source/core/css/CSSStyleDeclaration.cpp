@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -26,51 +26,24 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CSSVariableValue_h
-#define CSSVariableValue_h
+#include "config.h"
+#include "core/css/CSSStyleDeclaration.h"
 
-#include "CSSPropertyNames.h"
-#include "core/css/CSSParserValues.h"
-#include "core/css/CSSValue.h"
+#include "core/css/CSSVariablesMap.h"
 
 namespace WebCore {
 
-class CSSVariableValue : public CSSValue {
-public:
-    static PassRefPtr<CSSVariableValue> create(const AtomicString& name, const String& value)
-    {
-        return adoptRef(new CSSVariableValue(name, value));
-    }
-
-    const AtomicString& name() const { return m_name; }
-    const String& value() const { return m_value; }
-
-    bool equals(const CSSVariableValue& other) const { return m_name == other.m_name && m_value == other.m_value; }
-
-private:
-    CSSVariableValue(const AtomicString& name, const String& value)
-        : CSSValue(VariableClass)
-        , m_name(name)
-        , m_value(value)
-    {
-    }
-
-    const AtomicString m_name;
-    const String m_value;
-};
-
-inline CSSVariableValue* toCSSVariableValue(CSSValue* value)
+PassRefPtr<CSSVariablesMap> CSSStyleDeclaration::var()
 {
-    ASSERT_WITH_SECURITY_IMPLICATION(!value || value->isVariableValue());
-    return static_cast<CSSVariableValue*>(value);
+    if (!m_variablesMap)
+        m_variablesMap = CSSVariablesMap::create(this);
+    return m_variablesMap;
 }
 
-inline const CSSVariableValue* toCSSVariableValue(const CSSValue* value)
+CSSStyleDeclaration::~CSSStyleDeclaration()
 {
-    ASSERT_WITH_SECURITY_IMPLICATION(!value || value->isVariableValue());
-    return static_cast<const CSSVariableValue*>(value);
+    if (m_variablesMap)
+        m_variablesMap->clearStyleDeclaration();
 }
 
-}
-
-#endif /* CSSVariableValue_h */
+} // namespace WebCore

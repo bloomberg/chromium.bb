@@ -1351,10 +1351,13 @@ void StyleResolver::resolveVariables(CSSPropertyID id, CSSValue* value, Vector<s
 
     for (unsigned i = 0; i < resultSet->propertyCount(); i++) {
         StylePropertySet::PropertyReference property = resultSet->propertyAt(i);
-        if (property.id() != CSSPropertyVariable && hasVariableReference(property.value()))
+        if (property.id() != CSSPropertyVariable && hasVariableReference(property.value())) {
             resolveVariables(property.id(), property.value(), knownExpressions);
-        else
+        } else {
             applyProperty(property.id(), property.value());
+            // All properties become dependent on their parent style when they use variables.
+            m_state.style()->setHasExplicitlyInheritedProperties();
+        }
     }
 }
 
@@ -1390,7 +1393,7 @@ void StyleResolver::applyProperty(CSSPropertyID id, CSSValue* value)
 
     if (id == CSSPropertyVariable) {
         ASSERT_WITH_SECURITY_IMPLICATION(value->isVariableValue());
-        CSSVariableValue* variable = static_cast<CSSVariableValue*>(value);
+        CSSVariableValue* variable = toCSSVariableValue(value);
         ASSERT(!variable->name().isEmpty());
         ASSERT(!variable->value().isEmpty());
         state.style()->setVariable(variable->name(), variable->value());

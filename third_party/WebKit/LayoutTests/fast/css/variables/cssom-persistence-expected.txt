@@ -1,0 +1,2 @@
+Persistent JS object for element.style.var: pass
+Persistent JS object for getComputedStyle(element).var: pass

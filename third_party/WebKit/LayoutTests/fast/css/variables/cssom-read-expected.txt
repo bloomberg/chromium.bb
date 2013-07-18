@@ -1,0 +1,19 @@
+Count vars: 2
+
+Access vars directly:
+a: apple
+b: banana
+
+Access non existent var:
+z: 
+
+Setting c to carrot and d to dog...
+
+Count vars: 4
+
+Access vars directly:
+a: apple
+b: banana
+c: carrot
+d: dog
+

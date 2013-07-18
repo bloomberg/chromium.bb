@@ -37,6 +37,7 @@ CSSStyleRule
 CSSStyleSheet
 CSSValue
 CSSValueList
+CSSVariablesMap
 CSSViewportRule
 CanvasGradient
 CanvasPattern
