@@ -17,12 +17,14 @@ class CONTENT_EXPORT IndexedDBInfo {
   IndexedDBInfo(const GURL& origin,
                 int64 size,
                 const base::Time& last_modified,
-                const base::FilePath& path);
+                const base::FilePath& path,
+                size_t connection_count_);
 
   GURL origin_;
   int64 size_;
   base::Time last_modified_;
   base::FilePath path_;
+  size_t connection_count_;
 };
 
 }  // namespace content

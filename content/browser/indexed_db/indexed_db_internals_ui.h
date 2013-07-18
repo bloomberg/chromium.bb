@@ -30,15 +30,13 @@ class IndexedDBInternalsUI : public WebUIController {
   virtual ~IndexedDBInternalsUI();
 
  private:
-  typedef std::vector<scoped_refptr<IndexedDBContext> > ContextList;
   void GetAllOrigins(const base::ListValue* args);
-  void GetAllOriginsOnIndexedDBThread(
-      scoped_refptr<IndexedDBContext> context,
-      const base::FilePath& context_path);
+  void GetAllOriginsOnIndexedDBThread(scoped_refptr<IndexedDBContext> context,
+                                      const base::FilePath& context_path);
   void OnOriginsReady(scoped_ptr<std::vector<IndexedDBInfo> > origins,
                       const base::FilePath& path);
 
- void AddContextFromStoragePartition(StoragePartition* partition);
+  void AddContextFromStoragePartition(StoragePartition* partition);
 
   void DownloadOriginData(const base::ListValue* args);
   void DownloadOriginDataOnIndexedDBThread(
@@ -48,12 +46,30 @@ class IndexedDBInternalsUI : public WebUIController {
   void OnDownloadDataReady(const base::FilePath& partition_path,
                            const GURL& origin_url,
                            const base::FilePath temp_path,
-                           const base::FilePath zip_path);
+                           const base::FilePath zip_path,
+                           size_t connection_count);
   void OnDownloadStarted(const base::FilePath& partition_path,
                          const GURL& origin_url,
                          const base::FilePath& temp_path,
+                         size_t connection_count,
                          content::DownloadItem* item,
                          net::Error error);
+
+  void ForceCloseOrigin(const base::ListValue* args);
+  void ForceCloseOriginOnIndexedDBThread(
+      const base::FilePath& partition_path,
+      const scoped_refptr<IndexedDBContextImpl> context,
+      const GURL& origin_url);
+  void OnForcedClose(const base::FilePath& partition_path,
+                     const GURL& origin_url,
+                     size_t connection_count);
+  bool GetOriginContext(const base::FilePath& path,
+                        const GURL& origin_url,
+                        scoped_refptr<IndexedDBContextImpl>* context);
+  bool GetOriginData(const base::ListValue* args,
+                     base::FilePath* path,
+                     GURL* origin_url,
+                     scoped_refptr<IndexedDBContextImpl>* context);
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBInternalsUI);
 };

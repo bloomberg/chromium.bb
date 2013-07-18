@@ -21,17 +21,42 @@ cr.define('indexeddb', function() {
     return false;
   }
 
-  // Fired from the backend after the data has been zipped up, and the
-  // download manager has begun downloading the file.
-  function onOriginDownloadReady(partition_path, origin_url) {
-    var downloadLinks = document.querySelectorAll('a.download');
-    for (var i = 0; i < downloadLinks.length; ++i) {
-      var link = downloadLinks[i];
+  function forceClose(event) {
+    var link = event.target;
+    progressNodeFor(link).style.display = 'inline';
+    chrome.send('forceClose', [link.idb_partition_path,
+                               link.idb_origin_url]);
+    return false;
+  }
+
+  function withNode(selector, partition_path, origin_url, callback) {
+    var links = document.querySelectorAll(selector);
+    for (var i = 0; i < links.length; ++i) {
+      var link = links[i];
       if (partition_path == link.idb_partition_path &&
           origin_url == link.idb_origin_url) {
-        progressNodeFor(link).style.display = 'none';
+        callback(link);
       }
     }
+  }
+  // Fired from the backend after the data has been zipped up, and the
+  // download manager has begun downloading the file.
+  function onOriginDownloadReady(partition_path, origin_url, connection_count) {
+    withNode('a.download', partition_path, origin_url, function(link) {
+      progressNodeFor(link).style.display = 'none';
+    });
+    withNode('.connection-count', partition_path, origin_url, function(span) {
+      span.innerText = connection_count;
+    });
+  }
+
+  function onForcedClose(partition_path, origin_url, connection_count) {
+    withNode('a.force-close', partition_path, origin_url, function(link) {
+      progressNodeFor(link).style.display = 'none';
+    });
+    withNode('.connection-count', partition_path, origin_url, function(span) {
+      span.innerText = connection_count;
+    });
   }
 
   // Fired from the backend with a single partition's worth of
@@ -47,10 +72,15 @@ cr.define('indexeddb', function() {
     for (var i = 0; i < downloadLinks.length; ++i) {
       downloadLinks[i].addEventListener('click', downloadOriginData, false);
     }
+    var forceCloseLinks = container.querySelectorAll('a.force-close');
+    for (i = 0; i < forceCloseLinks.length; ++i) {
+      forceCloseLinks[i].addEventListener('click', forceClose, false);
+    }
   }
 
   return {
     initialize: initialize,
+    onForcedClose: onForcedClose,
     onOriginDownloadReady: onOriginDownloadReady,
     onOriginsReady: onOriginsReady,
   };

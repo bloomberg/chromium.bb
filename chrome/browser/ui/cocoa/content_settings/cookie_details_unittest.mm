@@ -142,7 +142,8 @@ TEST_F(CookiesDetailsTest, CreateForTreeIndexedDB) {
   content::IndexedDBInfo info(origin,
                               size,
                               last_modified,
-                              file_path);
+                              file_path,
+                              0);
 
   details.reset([[CocoaCookieDetails alloc] initWithIndexedDBInfo:&info]);
 

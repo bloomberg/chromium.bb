@@ -28,11 +28,19 @@
                     <span>Last modified:</span>
                     <span jscontent="new Date(last_modified)"></span>
                 </div>
+                <div>
+                    <span>Open connections:</span>
+                    <span class="connection-count"
+                          jsvalues=".idb_origin_url:url;.idb_partition_path:$partition_path"
+                          jscontent="connection_count">
+                </div>
                 <div class="indexeddb-last-modified">
                     <span>Path:</span>
                     <span jscontent="path"></span>
                 </div>
                 <div class="controls">
+                    <a href="#" class="force-close"
+                       jsvalues=".idb_origin_url:url;.idb_partition_path:$partition_path">Force close</a>
                     <a href="#" class="download"
                        jsvalues=".idb_origin_url:url;.idb_partition_path:$partition_path">Download</a>
                     <span class="download-status" style="display: none">Loading...</span>

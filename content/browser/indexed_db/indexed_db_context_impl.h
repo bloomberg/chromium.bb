@@ -61,8 +61,8 @@ class CONTENT_EXPORT IndexedDBContextImpl
   virtual void DeleteForOrigin(const GURL& origin_url) OVERRIDE;
   virtual base::FilePath GetFilePathForTesting(
       const std::string& origin_id) const OVERRIDE;
-  virtual void SetTaskRunnerForTesting(
-      base::SequencedTaskRunner* task_runner) OVERRIDE;
+  virtual void SetTaskRunnerForTesting(base::SequencedTaskRunner* task_runner)
+      OVERRIDE;
 
   // Methods called by IndexedDBDispatcherHost for quota support.
   void ConnectionOpened(const GURL& origin_url, IndexedDBConnection* db);
@@ -80,6 +80,7 @@ class CONTENT_EXPORT IndexedDBContextImpl
     std::set<GURL>* set = GetOriginSet();
     return set->find(origin_url) != set->end();
   }
+  size_t GetConnectionCount(const GURL& origin_url);
 
   // For unit tests allow to override the |data_path_|.
   void set_data_path_for_testing(const base::FilePath& data_path) {

@@ -136,10 +136,12 @@ std::vector<IndexedDBInfo> IndexedDBContextImpl::GetAllOriginsInfo() {
     const GURL& origin_url = *iter;
 
     base::FilePath idb_directory = GetFilePath(origin_url);
+    size_t connection_count = GetConnectionCount(origin_url);
     result.push_back(IndexedDBInfo(origin_url,
                                    GetOriginDiskUsage(origin_url),
                                    GetOriginLastModified(origin_url),
-                                   idb_directory));
+                                   idb_directory,
+                                   connection_count));
   }
   return result;
 }
@@ -199,6 +201,17 @@ void IndexedDBContextImpl::ForceClose(const GURL& origin_url) {
     DCHECK_EQ(connections_[origin_url].size(), 0UL);
     connections_.erase(origin_url);
   }
+}
+
+size_t IndexedDBContextImpl::GetConnectionCount(const GURL& origin_url) {
+  DCHECK(TaskRunner()->RunsTasksOnCurrentThread());
+  if (data_path_.empty() || !IsInOriginSet(origin_url))
+    return 0;
+
+  if (connections_.find(origin_url) == connections_.end())
+    return 0;
+
+  return connections_[origin_url].size();
 }
 
 base::FilePath IndexedDBContextImpl::GetFilePath(const GURL& origin_url) {

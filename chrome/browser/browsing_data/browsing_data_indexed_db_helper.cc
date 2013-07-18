@@ -224,7 +224,8 @@ void CannedBrowsingDataIndexedDBHelper::ConvertPendingInfo() {
   for (std::set<PendingIndexedDBInfo>::const_iterator
        pending_info = pending_indexed_db_info_.begin();
        pending_info != pending_indexed_db_info_.end(); ++pending_info) {
-    IndexedDBInfo info(pending_info->origin, 0, base::Time(), base::FilePath());
+    IndexedDBInfo info(
+        pending_info->origin, 0, base::Time(), base::FilePath(), 0);
     indexed_db_info_.push_back(info);
   }
 
