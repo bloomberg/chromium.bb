@@ -19,6 +19,7 @@ cr.define('extensions', function() {
     initialize: function() {
       var overlay = $('kiosk-disable-bailout-confirm-overlay');
       cr.ui.overlay.setupOverlay(overlay);
+      cr.ui.overlay.globalInitialization();
       overlay.addEventListener('cancelOverlay', this.handleCancel);
 
       var el = $('kiosk-disable-bailout-shortcut');

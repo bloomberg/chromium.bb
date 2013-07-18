@@ -112,12 +112,11 @@ cr.define('help', function() {
       }
 
       if (cr.isChromeOS) {
-        cr.ui.overlay.globalInitialization();
         cr.ui.overlay.setupOverlay($('overlay-container'));
+        cr.ui.overlay.globalInitialization();
         $('overlay-container').addEventListener('cancelOverlay', function() {
           self.showOverlay_(null);
         });
-
         $('change-channel').onclick = function() {
           self.showOverlay_($('channel-change-page'));
         };

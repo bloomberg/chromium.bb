@@ -141,6 +141,7 @@ cr.define('extensions', function() {
       }
 
       cr.ui.overlay.setupOverlay($('dropTargetOverlay'));
+      cr.ui.overlay.globalInitialization();
 
       extensions.ExtensionFocusManager.getInstance().initialize();
 

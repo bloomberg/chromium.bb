@@ -27,6 +27,7 @@ cr.define('apps_dev_tool', function() {
     initializePage: function() {
       var overlay = $('overlay');
       cr.ui.overlay.setupOverlay(overlay);
+      cr.ui.overlay.globalInitialization();
       overlay.addEventListener('cancelOverlay', hideOverlay.bind(this));
 
       $('pack-item-dismiss').addEventListener('click',

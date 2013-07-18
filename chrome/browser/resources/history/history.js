@@ -1482,8 +1482,10 @@ function load() {
   var offset = parseInt(hashData.offset, 10) || historyView.getOffset();
   historyView.setPageState(hashData.q, page, range, offset);
 
-  if ($('overlay'))
+  if ($('overlay')) {
     cr.ui.overlay.setupOverlay($('overlay'));
+    cr.ui.overlay.globalInitialization();
+  }
 
   var doSearch = function(e) {
     recordUmaAction('HistoryPage_Search');

@@ -28,6 +28,7 @@ cr.define('extensions', function() {
 
       var overlay = $('kiosk-apps-page');
       cr.ui.overlay.setupOverlay(overlay);
+      cr.ui.overlay.globalInitialization();
       overlay.addEventListener('cancelOverlay', this.handleDismiss_.bind(this));
 
       $('kiosk-options-overlay-confirm').onclick =

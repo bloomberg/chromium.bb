@@ -644,6 +644,8 @@ cr.define('options', function() {
       overlay.addEventListener('cancelOverlay',
                                OptionsPage.cancelOverlay.bind(OptionsPage));
     }
+
+    cr.ui.overlay.globalInitialization();
   };
 
   /**
