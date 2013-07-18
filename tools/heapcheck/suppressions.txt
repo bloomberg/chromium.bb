@@ -933,7 +933,7 @@
    Heapcheck:Leak
    fun:XGetWindowProperty
    fun:GetXWindowName
-   fun:ash::test::DisplayControllerTest_XWidowNameForRootWindow_Test::TestBody
+   fun:ash::DisplayControllerTest_XWidowNameForRootWindow_Test::TestBody
 }
 {
    bug_258113

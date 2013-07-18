@@ -7118,8 +7118,8 @@
    fun:malloc
    fun:XGetWindowProperty
    fun:XFetchName
-   fun:_ZN3ash4test12_GLOBAL__N_114GetXWindowNameEPN4aura10RootWindowE
-   fun:_ZN3ash4test50DisplayControllerTest_XWidowNameForRootWindow_Test8TestBodyEv
+   fun:_ZN3ash12_GLOBAL__N_114GetXWindowNameEPN4aura10RootWindowE
+   fun:_ZN3ash50DisplayControllerTest_XWidowNameForRootWindow_Test8TestBodyEv
 }
 {
    bug_252641
