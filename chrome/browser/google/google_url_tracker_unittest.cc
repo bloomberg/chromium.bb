@@ -7,7 +7,7 @@
 #include <set>
 #include <string>
 
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/google/google_url_tracker_factory.h"

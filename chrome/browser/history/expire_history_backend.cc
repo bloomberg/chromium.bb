@@ -13,7 +13,7 @@
 #include "base/file_util.h"
 #include "base/files/file_enumerator.h"
 #include "base/logging.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "chrome/browser/bookmarks/bookmark_service.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/history/archived_database.h"

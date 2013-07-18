@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/values.h"
 #include "chrome/browser/drive/drive_api_util.h"
 #include "chrome/browser/google_apis/auth_service.h"

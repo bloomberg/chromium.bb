@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_started_animation.h"
 #include "chrome/browser/platform_util.h"

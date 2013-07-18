@@ -6,7 +6,7 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/observer_list.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/test_file_util.h"

@@ -17,7 +17,7 @@
 #include "base/linux_util.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/rand_util.h"

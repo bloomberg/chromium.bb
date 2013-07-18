@@ -7,7 +7,7 @@
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/prefs/default_pref_store.h"
 #include "base/prefs/overlay_user_pref_store.h"
 #include "base/prefs/pref_change_registrar.h"

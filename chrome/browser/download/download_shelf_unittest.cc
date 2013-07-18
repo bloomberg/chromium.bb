@@ -4,7 +4,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/test_download_shelf.h"

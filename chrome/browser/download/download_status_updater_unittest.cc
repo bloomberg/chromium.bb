@@ -4,7 +4,7 @@
 
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "chrome/browser/download/download_status_updater.h"
 #include "content/public/test/mock_download_item.h"
