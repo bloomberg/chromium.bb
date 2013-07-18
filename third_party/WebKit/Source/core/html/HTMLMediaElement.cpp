@@ -1588,11 +1588,13 @@ void HTMLMediaElement::setReadyState(MediaPlayer::ReadyState state)
         return;
 
     if (m_seeking) {
-        // 4.8.10.9, step 11
+        // 4.8.10.9, step 9 note: If the media element was potentially playing immediately before
+        // it started seeking, but seeking caused its readyState attribute to change to a value
+        // lower than HAVE_FUTURE_DATA, then a waiting will be fired at the element.
         if (wasPotentiallyPlaying && m_readyState < HAVE_FUTURE_DATA)
             scheduleEvent(eventNames().waitingEvent);
 
-        // 4.8.10.10 step 14 & 15.
+        // 4.8.10.9 steps 12-14
         if (m_readyState >= HAVE_CURRENT_DATA)
             finishSeek();
     } else {
@@ -1834,7 +1836,7 @@ void HTMLMediaElement::seek(double time, ExceptionCode& ec)
 {
     LOG(Media, "HTMLMediaElement::seek(%f)", time);
 
-    // 4.8.9.9 Seeking
+    // 4.8.10.9 Seeking
 
     // 1 - If the media element's readyState is HAVE_NOTHING, then raise an InvalidStateError exception.
     if (m_readyState == HAVE_NOTHING || !m_player) {
@@ -1912,26 +1914,28 @@ void HTMLMediaElement::seek(double time, ExceptionCode& ec)
     m_lastSeekTime = time;
     m_sentEndEvent = false;
 
-    // 8 - Set the current playback position to the given new playback position
-    m_player->seek(time);
-
-    // 9 - Queue a task to fire a simple event named seeking at the element.
+    // 8 - Queue a task to fire a simple event named seeking at the element.
     scheduleEvent(eventNames().seekingEvent);
 
-    // 10 - Queue a task to fire a simple event named timeupdate at the element.
-    scheduleTimeupdateEvent(false);
+    // 9 - Set the current playback position to the given new playback position
+    m_player->seek(time);
 
-    // 11-15 are handled, if necessary, when the engine signals a readystate change.
+    // 10-14 are handled, if necessary, when the engine signals a readystate change or otherwise
+    // satisfies seek completion and signals a time change.
 }
 
 void HTMLMediaElement::finishSeek()
 {
     LOG(Media, "HTMLMediaElement::finishSeek");
 
-    // 4.8.10.9 Seeking step 14
+    // 4.8.10.9 Seeking completion
+    // 12 - Set the seeking IDL attribute to false.
     m_seeking = false;
 
-    // 4.8.10.9 Seeking step 15
+    // 13 - Queue a task to fire a simple event named timeupdate at the element.
+    scheduleTimeupdateEvent(false);
+
+    // 14 - Queue a task to fire a simple event named seeked at the element.
     scheduleEvent(eventNames().seekedEvent);
 
     setDisplayMode(Video);
@@ -3079,7 +3083,7 @@ void HTMLMediaElement::mediaPlayerTimeChanged()
 
     invalidateCachedTime();
 
-    // 4.8.10.9 step 14 & 15.  Needed if no ReadyState change is associated with the seek.
+    // 4.8.10.9 steps 12-14. Needed if no ReadyState change is associated with the seek.
     if (m_seeking && m_readyState >= HAVE_CURRENT_DATA && !m_player->seeking())
         finishSeek();
 

@@ -1,0 +1,34 @@
+Test event dispatches and attribute changes for seek to middle
+
+RUN(video.play())
+EVENT(durationchange)
+EVENT(loadedmetadata)
+EVENT(loadeddata)
+EXPECTED (video.currentTime < video.duration == 'true') OK
+EXPECTED (video.ended == 'false') OK
+EXPECTED (video.seeking == 'false') OK
+EXPECTED (video.paused == 'false') OK
+Starting seek to middle by setting video.currentTime to video.duration / 2
+EXPECTED (video.seeking == 'true') OK
+EXPECTED (video.ended == 'false') OK
+EXPECTED (video.currentTime == (video.duration / 2) == 'true') OK
+EXPECTED (video.paused == 'false') OK
+EXPECTED (video.currentTime < video.duration == 'true') OK
+EXPECTED (video.currentTime > 0 == 'true') OK
+EVENT(seeking)
+EXPECTED (video.seeking == 'true') OK
+EXPECTED (video.ended == 'false') OK
+EXPECTED (video.currentTime == (video.duration / 2) == 'true') OK
+EXPECTED (video.paused == 'false') OK
+EVENT(timeupdate)
+EXPECTED (video.seeking == 'false') OK
+EXPECTED (video.ended == 'false') OK
+EXPECTED (video.currentTime == (video.duration / 2) == 'true') OK
+EXPECTED (video.paused == 'false') OK
+EVENT(seeked)
+EXPECTED (video.seeking == 'false') OK
+EXPECTED (video.ended == 'false') OK
+EXPECTED (video.currentTime == (video.duration / 2) == 'true') OK
+EXPECTED (video.paused == 'false') OK
+END OF TEST
+
