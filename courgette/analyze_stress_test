@@ -43,6 +43,7 @@ EOF
   cat <<EOF
 $(count_result "PASS_COURGETTE") successful courgette patches
 $(count_result "FAIL_COURGETTE") failed courgette patches
+$(count_result "FAIL_DISASSEMBLE") failed to disassemble/assemble
 $(count_result "PASS_BSDIFF") succesful bsdiff patches
 $(count_result "FAIL_BSDIFF") failed bsdiff patches
 $(count_result "BEST_COURGETTE") patch(es) where courgette is smaller

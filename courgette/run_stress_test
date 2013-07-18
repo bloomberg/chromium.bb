@@ -15,7 +15,9 @@ outdir_prefix="stress_test_"
 if [ $# -lt 2 ]; then
   cat <<EOF
 
-USAGE: $(basename ${0}) dir1 dir2 [outdir]
+USAGE: $(basename ${0}) [-s] dir1 dir2 [outdir]
+
+  -s only test files supported by courgette
 
 Stress test courgette by generating and applying patches for two given
 directories, dir1 and dir2.  The test will use files with the same
@@ -27,6 +29,13 @@ the current date and time.
 
 EOF
   exit 1
+fi
+
+if [ "${1}" == "-s" ]; then
+  test_supported_only=true
+  shift
+else
+  test_supported_only=
 fi
 
 dir1="${1}"
@@ -51,6 +60,7 @@ mkdir -p "${out_dir}" || exit 1
 
 patches_dir="${out_dir}/patches"
 applied_dir="${out_dir}/applied"
+dis_dir="${out_dir}/dis"
 bsdiff="${out_dir}/bsdiff"
 log="${out_dir}/log"
 results="${out_dir}/results"
@@ -64,6 +74,20 @@ run_test() {
     local file2="${2}"
     local patch="${patches_dir}/${file1}.patch"
     local apply="${applied_dir}/${file2}.applied"
+    local dis="${dis_dir}/${file1}.dis"
+    local asm="${dis_dir}/${file1}.asm"
+    mkdir -p "$(dirname "${dis}")"
+    if [ ! $test_supported_only ]; then
+      courgette -supported "${file1}" >/dev/null
+      if [ "${?}" -eq 0 ]; then
+        courgette -dis "${file1}" "${dis}"
+        courgette -asm "${dis}" "${asm}"
+        cmp -s "${file1}" "${asm}"
+        if [ "${?}" -ne 0 ]; then
+          echo "FAIL_DISASSEMBLE ${file1}"
+        fi
+      fi
+    fi
     mkdir -p "$(dirname "${patch}")"
     mkdir -p "$(dirname "${apply}")"
     courgette -gen "${file1}" "${file2}" "${patch}"
@@ -107,6 +131,12 @@ time diff -qr "${dir1}" "${dir2}" 2>/dev/null \
   # contain spaces.
   file1="$(echo "${file}" | awk '{print $1}')"
   file2="$(echo "${file}" | awk '{print $2}')"
+  if [ $test_supported_only ]; then
+    courgette -supported "${file1}" >/dev/null
+    if [ "${?}" -ne 0 ]; then
+      continue;
+    fi
+  fi
   run_test "${file1}" "${file2}"
 done 2>&1 | tee -a "${log}"
 
@@ -124,6 +154,8 @@ cat <<EOF | tee -a "${log}"
 $(count_result "PASS_COURGETTE") successful courgette patches
 $(count_result "FAIL_COURGETTE") failed courgette patches (search log for \
 "^FAIL_COURGETTE")
+$(count_result "FAIL_DISASSEMBLE") failed to disassemble/assemble (search log \
+for "^FAIL_DISASSEMBLE")
 $(count_result "PASS_BSDIFF") succesful bsdiff patches
 $(count_result "FAIL_BSDIFF") failed bsdiff patches
 $(count_result "BEST_COURGETTE") patch(es) where courgette is smaller
