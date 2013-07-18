@@ -115,9 +115,12 @@ Status AdbImpl::ForwardPort(
 Status AdbImpl::SetChromeArgs(const std::string& device_serial,
                               const std::string& args) {
   std::string response;
+  if (args.find("'") != std::string::npos)
+    return Status(kUnknownError,
+        "Chrome command line arguments must not contain single quotes");
   Status status = ExecuteHostShellCommand(
       device_serial,
-      "echo chrome " + args + "> /data/local/chrome-command-line; echo $?",
+      "echo 'chrome " + args + "'> /data/local/chrome-command-line; echo $?",
       &response);
   if (!status.IsOk())
     return status;
