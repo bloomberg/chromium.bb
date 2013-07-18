@@ -151,6 +151,8 @@ TEST_F(DownloadShelfTest, AddDelayedCompletedDownload) {
 
   EXPECT_CALL(*download_item(), GetState())
       .WillRepeatedly(Return(DownloadItem::COMPLETE));
+  EXPECT_CALL(*download_item(), GetAutoOpened())
+      .WillRepeatedly(Return(true));
 
   base::RunLoop run_loop;
   run_loop.RunUntilIdle();

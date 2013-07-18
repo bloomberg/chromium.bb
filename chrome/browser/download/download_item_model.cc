@@ -402,28 +402,39 @@ bool DownloadItemModel::ShouldAllowDownloadFeedback() const {
 }
 
 bool DownloadItemModel::ShouldRemoveFromShelfWhenComplete() const {
-  // If the download was already opened automatically, it should be removed.
-  if (download_->GetAutoOpened())
-    return true;
+  switch (download_->GetState()) {
+    case DownloadItem::IN_PROGRESS:
+      // If the download is dangerous or malicious, we should display a warning
+      // on the shelf until the user accepts the download.
+      if (IsDangerous())
+        return false;
 
-  // If the download is interrupted or cancelled, it should not be removed.
-  DownloadItem::DownloadState state = download_->GetState();
-  if (state == DownloadItem::INTERRUPTED || state == DownloadItem::CANCELLED)
-    return false;
+      // If the download is an extension, temporary, or will be opened
+      // automatically, then it should be removed from the shelf on completion.
+      // TODO(asanka): The logic for deciding opening behavior should be in a
+      //               central location. http://crbug.com/167702
+      return (download_crx_util::IsExtensionDownload(*download_) ||
+              download_->IsTemporary() ||
+              download_->GetOpenWhenComplete() ||
+              download_->ShouldOpenFileBasedOnExtension());
 
-  // If the download is dangerous or malicious, we should display a warning on
-  // the shelf until the user accepts the download.
-  if (IsDangerous())
-    return false;
+    case DownloadItem::COMPLETE:
+      // If the download completed, then rely on GetAutoOpened() to check for
+      // opening behavior. This should accurately reflect whether the download
+      // was successfully opened.  Extensions, for example, may fail to open.
+      return download_->GetAutoOpened() || download_->IsTemporary();
 
-  // If the download is an extension, temporary, or will be opened
-  // automatically, then it should be removed from the shelf on completion.
-  // TODO(asanka): The logic for deciding opening behavior should be in a
-  //               central location. http://crbug.com/167702
-  return (download_crx_util::IsExtensionDownload(*download_) ||
-          download_->IsTemporary() ||
-          download_->GetOpenWhenComplete() ||
-          download_->ShouldOpenFileBasedOnExtension());
+    case DownloadItem::CANCELLED:
+    case DownloadItem::INTERRUPTED:
+      // Interrupted or cancelled downloads should remain on the shelf.
+      return false;
+
+    case DownloadItem::MAX_DOWNLOAD_STATE:
+      NOTREACHED();
+  }
+
+  NOTREACHED();
+  return false;
 }
 
 bool DownloadItemModel::ShouldShowDownloadStartedAnimation() const {
