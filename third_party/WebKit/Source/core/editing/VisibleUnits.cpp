@@ -591,7 +591,7 @@ static VisiblePosition nextBoundary(const VisiblePosition& c, BoundarySearchFunc
         RefPtr<Range> characterRange = charIt.range();
         pos = characterRange->endPosition();
 
-        if (*charIt.bloatedCharacters() == '\n') {
+        if (charIt.characterAt(0) == '\n') {
             // FIXME: workaround for collapsed range (where only start position is correct) emitted for some emitted newlines (see rdar://5192593)
             VisiblePosition visPos = VisiblePosition(pos);
             if (visPos == VisiblePosition(characterRange->startPosition())) {

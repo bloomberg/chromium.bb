@@ -279,6 +279,7 @@ public:
     
     int length() const { return m_textIterator.length() - m_runOffset; }
     const UChar* bloatedCharacters() const { return m_textIterator.bloatedCharacters() + m_runOffset; }
+    UChar characterAt(unsigned index) const { return m_textIterator.characterAt(m_runOffset + index); }
     String string(int numChars);
     
     int characterOffset() const { return m_offset; }
