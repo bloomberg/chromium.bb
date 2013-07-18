@@ -16,6 +16,8 @@
         'src/libusb/io.c',
         'src/libusb/sync.c',
         'src/libusb/version.h',
+        'src/libusb/interrupt.c',
+        'src/libusb/interrupt.h',
       ],
       'include_dirs': [
         'src',

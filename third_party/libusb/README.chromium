@@ -11,4 +11,6 @@ Windows, and Linux systems.
 
 Local Modifications:
 - config.h (empty) has been created to satisfy includes within the tree.
+- Exposing an API (libusb_interrupt_handle_event) to explicitly interrupt 
+  libusb_handle_event.
 - windows-build.patch has been applied.
