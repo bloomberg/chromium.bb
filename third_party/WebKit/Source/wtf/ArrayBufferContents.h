@@ -60,7 +60,6 @@ public:
     void setDeallocationObserver(ArrayBufferDeallocationObserver* observer) { m_deallocationObserver = observer; }
 
     void transfer(ArrayBufferContents& other);
-    void copyTo(ArrayBufferContents& other);
 
     static bool allocateMemory(size_t, InitializationPolicy, void*& data);
     static void freeMemory(void* data);

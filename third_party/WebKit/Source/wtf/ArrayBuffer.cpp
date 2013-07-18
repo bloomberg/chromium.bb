@@ -43,25 +43,12 @@ bool ArrayBuffer::transfer(ArrayBufferContents& result, Vector<RefPtr<ArrayBuffe
         return false;
     }
 
-    bool allViewsAreNeuterable = true;
-    for (ArrayBufferView* i = m_firstView; i; i = i->m_nextView) {
-        if (!i->isNeuterable())
-            allViewsAreNeuterable = false;
-    }
-
-    if (allViewsAreNeuterable) {
-        m_contents.transfer(result);
-    } else {
-        m_contents.copyTo(result);
-        if (!result.data())
-            return false;
-    }
+    m_contents.transfer(result);
 
     while (m_firstView) {
         ArrayBufferView* current = m_firstView;
         removeView(current);
-        if (allViewsAreNeuterable || current->isNeuterable())
-            current->neuter();
+        current->neuter();
         neuteredViews.append(current);
     }
 
