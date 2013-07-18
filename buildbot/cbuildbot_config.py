@@ -1164,7 +1164,7 @@ internal_paladin.add_config('mario-paladin',
 internal_paladin.add_config('alex-paladin',
   boards=['x86-alex'],
   paladin_builder_name='alex paladin',
-  hw_tests=HWTestConfig.DefaultListCQ(timeout=60 * 60),
+  hw_tests=HWTestConfig.DefaultListCQ(timeout=60 * 60, num=8),
   upload_hw_test_artifacts=True,
 )
 
