@@ -33,8 +33,8 @@
 
 
 #include "InspectorFrontend.h"
-#include "core/dom/DeviceOrientationData.h"
 #include "core/inspector/InspectorBaseAgent.h"
+#include "modules/device_orientation/DeviceOrientationData.h"
 #include "modules/geolocation/GeolocationPosition.h"
 #include "wtf/HashMap.h"
 #include "wtf/text/WTFString.h"

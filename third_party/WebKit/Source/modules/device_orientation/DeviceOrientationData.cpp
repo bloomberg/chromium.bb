@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "core/dom/DeviceOrientationData.h"
+#include "modules/device_orientation/DeviceOrientationData.h"
 
 namespace WebCore {
 

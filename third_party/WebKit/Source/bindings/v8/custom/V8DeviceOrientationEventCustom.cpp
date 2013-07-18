@@ -27,7 +27,7 @@
 #include "V8DeviceOrientationEvent.h"
 
 #include "bindings/v8/V8Binding.h"
-#include "core/dom/DeviceOrientationData.h"
+#include "modules/device_orientation/DeviceOrientationData.h"
 
 #include <v8.h>
 
