@@ -98,13 +98,16 @@ cr.define('options', function() {
 
     /**
      * Don't let the list have a crack at the event. We don't want clicking the
-     * close button to change the selection of the list.
+     * close button to change the selection of the list or to focus on the close
+     * button.
      * @param {Event} e The mouse down/up event object.
      * @private
      */
     handleMouseDownUpOnClose_: function(e) {
-      if (!e.target.disabled)
-        e.stopPropagation();
+      if (e.target.disabled)
+        return;
+      e.stopPropagation();
+      e.preventDefault();
     },
   };
 
