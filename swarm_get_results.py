@@ -32,8 +32,10 @@ class Failure(Exception):
   pass
 
 
-def get_test_keys(swarm_base_url, test_name):
+def get_test_keys(swarm_base_url, test_name, _=None):
   """Returns the Swarm test key for each shards of test_name."""
+  # TODO(maruel): Remove the parameter '_' once the
+  # build/scripts/slave/get_swarm_results.py stops passing it.
   key_data = urllib.urlencode([('name', test_name)])
   url = '%s/get_matching_test_cases?%s' % (swarm_base_url, key_data)
 
