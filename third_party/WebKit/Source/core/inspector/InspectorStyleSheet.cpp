@@ -1009,6 +1009,9 @@ String InspectorStyleSheet::finalURL() const
 
 void InspectorStyleSheet::reparseStyleSheet(const String& text)
 {
+    if (m_listener)
+        m_listener->willReparseStyleSheet();
+
     {
         // Have a separate scope for clearRules() (bug 95324).
         CSSStyleSheet::RuleMutationScope mutationScope(m_pageStyleSheet.get());
@@ -1019,9 +1022,13 @@ void InspectorStyleSheet::reparseStyleSheet(const String& text)
         m_isReparsing = true;
         CSSStyleSheet::RuleMutationScope mutationScope(m_pageStyleSheet.get());
         m_pageStyleSheet->contents()->parseString(text);
-        fireStyleSheetChanged();
         m_isReparsing = false;
     }
+
+    if (m_listener)
+        m_listener->didReparseStyleSheet();
+    fireStyleSheetChanged();
+    m_pageStyleSheet->ownerDocument()->styleResolverChanged(RecalcStyleImmediately, FullStyleUpdate);
 }
 
 bool InspectorStyleSheet::setText(const String& text, ExceptionCode& ec)

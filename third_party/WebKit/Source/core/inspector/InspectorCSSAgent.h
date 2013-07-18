@@ -63,8 +63,10 @@ class StyleResolver;
 class StyleRule;
 class StyleSheetVisitor;
 class UpdateRegionLayoutTask;
+class UpdateActiveStylesheetsTask;
 
 typedef HashMap<CSSStyleSheet*, RefPtr<InspectorStyleSheet> > CSSStyleSheetToInspectorStyleSheet;
+typedef Vector<RefPtr<StyleSheet> > StyleSheetVector;
 
 class InspectorCSSAgent
     : public InspectorBaseAgent<InspectorCSSAgent>
@@ -127,7 +129,7 @@ public:
     void didUpdateRegionLayout(Document*, NamedFlow*);
     void didChangeRegionOverset(Document*, NamedFlow*);
 
-    void activeStyleSheetsUpdated(Document*, const Vector<RefPtr<StyleSheet> >& newSheets);
+    void activeStyleSheetsUpdated(Document*, const StyleSheetVector& newSheets);
     void frameDetachedFromParent(Frame*);
 
     virtual void getComputedStyleForNode(ErrorString*, int nodeId, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSComputedStyleProperty> >&);
@@ -199,7 +201,9 @@ private:
     virtual void didModifyDOMAttr(Element*);
 
     // InspectorCSSAgent::Listener implementation
-    virtual void styleSheetChanged(InspectorStyleSheet*);
+    virtual void styleSheetChanged(InspectorStyleSheet*) OVERRIDE;
+    virtual void willReparseStyleSheet() OVERRIDE;
+    virtual void didReparseStyleSheet() OVERRIDE;
 
     void resetPseudoStates();
 
@@ -218,6 +222,7 @@ private:
 
     int m_lastStyleSheetId;
     bool m_creatingViaInspectorStyleSheet;
+    bool m_isSettingStyleSheetText;
 
     OwnPtr<SelectorProfile> m_currentSelectorProfile;
 

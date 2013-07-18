@@ -168,6 +168,8 @@ public:
         Listener() { }
         virtual ~Listener() { }
         virtual void styleSheetChanged(InspectorStyleSheet*) = 0;
+        virtual void willReparseStyleSheet() = 0;
+        virtual void didReparseStyleSheet() = 0;
     };
 
     typedef HashMap<CSSStyleDeclaration*, RefPtr<InspectorStyle> > InspectorStyleMap;

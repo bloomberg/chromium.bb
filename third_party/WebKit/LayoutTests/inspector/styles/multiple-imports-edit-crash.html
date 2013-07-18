@@ -1,0 +1,87 @@
+<html>
+<head>
+<style>
+@import url(resources/multiple-imports-edit-crash-1.css);
+@import url(resources/multiple-imports-edit-crash-2.css);
+@import url(resources/multiple-imports-edit-crash-1.css);
+#inspected {
+    color: green;
+}
+</style>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/elements-test.js"></script>
+<script>
+
+function test()
+{
+    WebInspector.showPanel("elements");
+    WebInspector.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetAdded, styleSheetAdded, this);
+    WebInspector.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetRemoved, styleSheetRemoved, this);
+    InspectorTest.nodeWithId("inspected", nodeFound);
+
+    function nodeFound(node)
+    {
+        WebInspector.cssModel.getMatchedStylesAsync(node.id, true, false, matchedStylesCallback);
+    }
+
+    var styleSheetId;
+
+    function matchedStylesCallback(styles)
+    {
+        styleSheetId = styles.matchedCSSRules[1].id.styleSheetId;
+        CSSAgent.setStyleSheetText(styleSheetId,
+            "@import url(resources/multiple-imports-edit-crash-1.css);\n@import url(resources/multiple-imports-edit-crash-2.css);\n#inspected { color: black }\n");
+    }
+
+    function modifiedCallback()
+    {
+        WebInspector.cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.StyleSheetAdded, styleSheetAdded, this);
+        WebInspector.cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.StyleSheetRemoved, styleSheetRemoved, this);
+        InspectorTest.completeTest();
+    }
+
+    var addsExpected = 2;
+    var removesExpected = 3;
+    var added = [];
+    var removed = [];
+
+    function styleSheetAdded(event)
+    {
+        added.push(resourceName(event.data.sourceURL));
+
+        if (!(--addsExpected)) {
+            added.sort();
+            InspectorTest.addResult("Added:");
+            InspectorTest.addResult(added.join("\n"));
+        }
+    }
+
+    function styleSheetRemoved(event)
+    {
+        removed.push(resourceName(event.data.sourceURL));
+
+        if (!(--removesExpected)) {
+            removed.sort();
+            InspectorTest.addResult("Removed:");
+            InspectorTest.addResult(removed.join("\n"));
+            InspectorTest.completeTest();
+        }
+    }
+
+    function resourceName(url)
+    {
+        return url.substring(url.lastIndexOf("/") + 1);
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that modifying stylesheet text with multiple @import at-rules does not crash.
+</p>
+
+<div id="inspected">Text</div>
+</body>
+</html>
