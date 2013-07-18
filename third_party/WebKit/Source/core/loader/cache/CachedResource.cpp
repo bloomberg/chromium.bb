@@ -181,7 +181,7 @@ void CachedResource::load(CachedResourceLoader* cachedResourceLoader, const Reso
         m_fragmentIdentifierForRequest = String();
     }
 
-    m_loader = ResourceLoader::create(cachedResourceLoader, this, request, options);
+    m_loader = ResourceLoader::create(cachedResourceLoader->documentLoader(), this, request, options);
     if (!m_loader) {
         failBeforeStarting();
         return;
