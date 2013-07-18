@@ -5,7 +5,7 @@
 #include <map>
 #include <queue>
 
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/synchronization/lock.h"
 #include "content/browser/device_orientation/data_fetcher.h"
 #include "content/browser/device_orientation/device_data.h"

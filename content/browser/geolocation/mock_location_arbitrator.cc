@@ -4,7 +4,7 @@
 
 #include "content/browser/geolocation/mock_location_arbitrator.h"
 
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "content/public/common/geoposition.h"
 
 namespace content {

@@ -6,7 +6,7 @@
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/public/browser/resource_context.h"

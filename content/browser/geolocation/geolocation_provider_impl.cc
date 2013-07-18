@@ -10,7 +10,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "content/browser/geolocation/location_arbitrator_impl.h"
 #include "content/public/browser/browser_thread.h"
 

@@ -6,7 +6,7 @@
 #include "base/bind_helpers.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "content/browser/geolocation/geolocation_provider_impl.h"

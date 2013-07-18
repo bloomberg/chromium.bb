@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "cc/layers/layer.h"
 #include "content/browser/android/content_view_core_impl.h"
 #include "content/public/browser/android/compositor.h"

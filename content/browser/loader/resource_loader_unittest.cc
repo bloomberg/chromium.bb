@@ -4,7 +4,7 @@
 
 #include "content/browser/loader/resource_loader.h"
 
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/loader/resource_loader_delegate.h"
 #include "content/public/browser/resource_request_info.h"

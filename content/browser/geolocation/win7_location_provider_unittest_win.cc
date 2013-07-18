@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
-#include "base/message_loop.h"
-#include "content/browser/geolocation/win7_location_provider_win.h"
+#include "base/message_loop/message_loop.h"
 #include "content/browser/geolocation/win7_location_api_win.h"
+#include "content/browser/geolocation/win7_location_provider_win.h"
 #include "content/public/common/geoposition.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -5,7 +5,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "content/browser/browser_thread_impl.h"

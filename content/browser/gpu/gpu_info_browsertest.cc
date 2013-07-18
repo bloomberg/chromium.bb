@@ -4,7 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"

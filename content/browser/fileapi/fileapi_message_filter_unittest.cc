@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "content/browser/fileapi/chrome_blob_storage_context.h"
 #include "content/common/fileapi/webblob_messages.h"
 #include "content/public/browser/browser_thread.h"

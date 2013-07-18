@@ -27,7 +27,7 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/threading/non_thread_safe.h"

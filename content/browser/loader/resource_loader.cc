@@ -5,7 +5,7 @@
 #include "content/browser/loader/resource_loader.h"
 
 #include "base/command_line.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/loader/doomed_resource_handler.h"

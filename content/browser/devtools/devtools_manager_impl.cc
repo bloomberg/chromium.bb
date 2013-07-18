@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "content/browser/devtools/devtools_netlog_observer.h"
 #include "content/browser/devtools/render_view_devtools_agent_host.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"

@@ -6,7 +6,7 @@
 #define CONTENT_BROWSER_GAMEPAD_GAMEPAD_TEST_HELPERS_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "content/browser/gamepad/gamepad_data_fetcher.h"

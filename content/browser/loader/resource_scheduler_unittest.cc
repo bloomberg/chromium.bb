@@ -5,7 +5,7 @@
 #include "content/browser/loader/resource_scheduler.h"
 
 #include "base/memory/scoped_vector.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
