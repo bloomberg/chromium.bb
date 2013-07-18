@@ -66,7 +66,11 @@ class RenderServlet(Servlet):
     content_type = None
 
     try:
-      if fnmatch(path, 'extensions/examples/*.zip'):
+      # At this point, any valid paths ending with '/' have been redirected.
+      # Therefore, the response should be a 404 Not Found.
+      if path.endswith('/'):
+        pass
+      elif fnmatch(path, 'extensions/examples/*.zip'):
         content = server_instance.example_zipper.Create(
             path[len('extensions/'):-len('.zip')])
         content_type = 'application/zip'
