@@ -39,7 +39,8 @@ TabModalConfirmDialog* TabModalConfirmDialog::Create(
 TabModalConfirmDialogViews::TabModalConfirmDialogViews(
     TabModalConfirmDialogDelegate* delegate,
     content::WebContents* web_contents)
-    : delegate_(delegate),
+    : web_contents_(web_contents),
+      delegate_(delegate),
       dialog_(NULL),
       browser_context_(web_contents->GetBrowserContext()) {
   views::MessageBoxView::InitParams init_params(delegate->GetMessage());
@@ -59,7 +60,7 @@ TabModalConfirmDialogViews::TabModalConfirmDialogViews(
       web_contents_modal_dialog_manager->delegate()->
           GetWebContentsModalDialogHost());
   web_contents_modal_dialog_manager->ShowDialog(dialog_->GetNativeView());
-  delegate_->set_close_delegate(this);
+  delegate_->set_operations_delegate(this);
 }
 
 TabModalConfirmDialogViews::~TabModalConfirmDialogViews() {
@@ -75,6 +76,13 @@ void TabModalConfirmDialogViews::CancelTabModalDialog() {
 
 void TabModalConfirmDialogViews::CloseDialog() {
   dialog_->Close();
+}
+
+void TabModalConfirmDialogViews::SetPreventCloseOnLoadStart(bool prevent) {
+  WebContentsModalDialogManager* web_contents_modal_dialog_manager =
+      WebContentsModalDialogManager::FromWebContents(web_contents_);
+  web_contents_modal_dialog_manager->SetPreventCloseOnLoadStart(
+      dialog_->GetNativeView(), prevent);
 }
 
 //////////////////////////////////////////////////////////////////////////////

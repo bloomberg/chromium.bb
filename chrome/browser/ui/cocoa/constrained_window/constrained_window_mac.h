@@ -41,6 +41,8 @@ class ConstrainedWindowMac {
   void PulseWebContentsModalDialog();
   web_modal::NativeWebContentsModalDialog GetNativeDialog();
 
+  void SetPreventCloseOnLoadStart(bool prevent);
+
  private:
   // Gets the parent window of the dialog.
   NSWindow* GetParentWindow() const;

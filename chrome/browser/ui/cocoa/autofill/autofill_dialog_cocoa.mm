@@ -54,6 +54,7 @@ void AutofillDialogCocoa::Show() {
           initWithCustomWindow:[sheet_controller_ window]]);
   constrained_window_.reset(
       new ConstrainedWindowMac(this, controller_->web_contents(), sheet));
+  constrained_window_->SetPreventCloseOnLoadStart(true);
 }
 
 void AutofillDialogCocoa::Hide() {

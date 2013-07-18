@@ -59,6 +59,9 @@ class TabModalConfirmDialogWebUI : public TabModalConfirmDialog,
 
   // TabModalConfirmDialogCloseDelegate:
   virtual void CloseDialog() OVERRIDE;
+  virtual void SetPreventCloseOnLoadStart(bool prevent) OVERRIDE;
+
+  content::WebContents* web_contents_;
 
   scoped_ptr<TabModalConfirmDialogDelegate> delegate_;
 

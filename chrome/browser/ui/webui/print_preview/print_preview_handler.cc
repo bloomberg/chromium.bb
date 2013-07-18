@@ -92,8 +92,8 @@ enum UserActionBuckets {
   FALLBACK_TO_ADVANCED_SETTINGS_DIALOG,
   PREVIEW_FAILED,
   PREVIEW_STARTED,
-  INITIATOR_TAB_CRASHED,  // UNUSED
-  INITIATOR_TAB_CLOSED,
+  INITIATOR_CRASHED,  // UNUSED
+  INITIATOR_CLOSED,
   PRINT_WITH_CLOUD_PRINT,
   USERACTION_BUCKET_BOUNDARY
 };
@@ -157,8 +157,8 @@ void ReportGcpPromoHistogram(enum GcpPromoBuckets event) {
 
 // Name of a dictionary field holding cloud print related data;
 const char kAppState[] = "appState";
-// Name of a dictionary field holding the initiator tab title.
-const char kInitiatorTabTitle[] = "initiatorTabTitle";
+// Name of a dictionary field holding the initiator title.
+const char kInitiatorTitle[] = "initiatorTitle";
 // Name of a dictionary field holding the measurement system according to the
 // locale.
 const char kMeasurementSystem[] = "measurementSystem";
@@ -445,9 +445,9 @@ void PrintPreviewHandler::HandleGetPreview(const ListValue* args) {
   // Increment request count.
   ++regenerate_preview_request_count_;
 
-  WebContents* initiator_tab = GetInitiatorTab();
-  if (!initiator_tab) {
-    ReportUserActionHistogram(INITIATOR_TAB_CLOSED);
+  WebContents* initiator = GetInitiator();
+  if (!initiator) {
+    ReportUserActionHistogram(INITIATOR_CLOSED);
     print_preview_ui->OnClosePrintPreviewDialog();
     return;
   }
@@ -461,9 +461,9 @@ void PrintPreviewHandler::HandleGetPreview(const ListValue* args) {
   }
   if (display_header_footer) {
     settings->SetString(printing::kSettingHeaderFooterTitle,
-                        initiator_tab->GetTitle());
+                        initiator->GetTitle());
     std::string url;
-    NavigationEntry* entry = initiator_tab->GetController().GetActiveEntry();
+    NavigationEntry* entry = initiator->GetController().GetActiveEntry();
     if (entry)
       url = entry->GetVirtualURL().spec();
     settings->SetString(printing::kSettingHeaderFooterURL, url);
@@ -491,7 +491,7 @@ void PrintPreviewHandler::HandleGetPreview(const ListValue* args) {
   }
 
   VLOG(1) << "Print preview request start";
-  RenderViewHost* rvh = initiator_tab->GetRenderViewHost();
+  RenderViewHost* rvh = initiator->GetRenderViewHost();
   rvh->Send(new PrintMsg_PrintPreview(rvh->GetRoutingID(), *settings));
 }
 
@@ -503,9 +503,9 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
   UMA_HISTOGRAM_COUNTS("PrintPreview.RegeneratePreviewRequest.BeforePrint",
                        regenerate_preview_request_count_);
 
-  WebContents* initiator_tab = GetInitiatorTab();
-  if (initiator_tab) {
-    RenderViewHost* rvh = initiator_tab->GetRenderViewHost();
+  WebContents* initiator = GetInitiator();
+  if (initiator) {
+    RenderViewHost* rvh = initiator->GetRenderViewHost();
     rvh->Send(new PrintMsg_ResetScriptedPrintCount(rvh->GetRoutingID()));
   }
 
@@ -556,15 +556,15 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
     ReportUserActionHistogram(PRINT_TO_PRINTER);
     ReportPrintSettingsStats(*settings);
 
-    // This tries to activate the initiator tab as well, so do not clear the
-    // association with the initiator tab yet.
+    // This tries to activate the initiator as well, so do not clear the
+    // association with the initiator yet.
     PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
         web_ui()->GetController());
     print_preview_ui->OnHidePreviewDialog();
 
-    // Do this so the initiator tab can open a new print preview dialog, while
-    // the current print preview dialog is still handling its print job.
-    ClearInitiatorTabDetails();
+    // Do this so the initiator can open a new print preview dialog, while the
+    // current print preview dialog is still handling its print job.
+    ClearInitiatorDetails();
 
     // The PDF being printed contains only the pages that the user selected,
     // so ignore the page range and print all pages.
@@ -583,9 +583,9 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
     // printing has finished. Then the dialog closes and PrintPreviewDone() gets
     // called. In the case below, since the preview dialog will be hidden and
     // not closed, we need to make this call.
-    if (initiator_tab) {
+    if (initiator) {
       printing::PrintViewManager* print_view_manager =
-          printing::PrintViewManager::FromWebContents(initiator_tab);
+          printing::PrintViewManager::FromWebContents(initiator);
       print_view_manager->PrintPreviewDone();
     }
   }
@@ -601,7 +601,7 @@ void PrintPreviewHandler::PrintToPdf() {
     PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
         web_ui()->GetController());
     // Pre-populating select file dialog with print job title.
-    string16 print_job_title_utf16 = print_preview_ui->initiator_tab_title();
+    string16 print_job_title_utf16 = print_preview_ui->initiator_title();
 
 #if defined(OS_WIN)
     base::FilePath::StringType print_job_title(print_job_title_utf16);
@@ -627,11 +627,11 @@ void PrintPreviewHandler::HandleHidePreview(const ListValue* /*args*/) {
 
 void PrintPreviewHandler::HandleCancelPendingPrintRequest(
     const ListValue* /*args*/) {
-  WebContents* initiator_tab = GetInitiatorTab();
-  if (initiator_tab)
-    ClearInitiatorTabDetails();
-  gfx::NativeWindow parent = initiator_tab ?
-      initiator_tab->GetView()->GetTopLevelNativeWindow() :
+  WebContents* initiator = GetInitiator();
+  if (initiator)
+    ClearInitiatorDetails();
+  gfx::NativeWindow parent = initiator ?
+      initiator->GetView()->GetTopLevelNativeWindow() :
       NULL;
   chrome::ShowPrintErrorDialog(parent);
 }
@@ -737,12 +737,12 @@ void PrintPreviewHandler::HandleShowSystemDialog(const ListValue* /*args*/) {
   ReportStats();
   ReportUserActionHistogram(FALLBACK_TO_ADVANCED_SETTINGS_DIALOG);
 
-  WebContents* initiator_tab = GetInitiatorTab();
-  if (!initiator_tab)
+  WebContents* initiator = GetInitiator();
+  if (!initiator)
     return;
 
   printing::PrintViewManager* print_view_manager =
-      printing::PrintViewManager::FromWebContents(initiator_tab);
+      printing::PrintViewManager::FromWebContents(initiator);
   print_view_manager->set_observer(this);
   print_view_manager->PrintForSystemDialogNow();
 
@@ -848,7 +848,7 @@ void PrintPreviewHandler::HandleForceOpenNewTab(const ListValue* args) {
   std::string url;
   if (!args->GetString(0, &url))
     return;
-  Browser* browser = chrome::FindBrowserWithWebContents(GetInitiatorTab());
+  Browser* browser = chrome::FindBrowserWithWebContents(GetInitiator());
   if (!browser)
     return;
   chrome::AddSelectedTabWithURL(browser,
@@ -863,8 +863,8 @@ void PrintPreviewHandler::SendInitialSettings(
       web_ui()->GetController());
 
   base::DictionaryValue initial_settings;
-  initial_settings.SetString(kInitiatorTabTitle,
-                             print_preview_ui->initiator_tab_title());
+  initial_settings.SetString(kInitiatorTitle,
+                             print_preview_ui->initiator_title());
   initial_settings.SetBoolean(printing::kSettingPreviewModifiable,
                               print_preview_ui->source_is_modifiable());
   initial_settings.SetString(printing::kSettingPrinterName, default_printer);
@@ -944,12 +944,12 @@ void PrintPreviewHandler::SendCloudPrintJob(const base::RefCountedBytes* data) {
   web_ui()->CallJavascriptFunction("printToCloud", data_value);
 }
 
-WebContents* PrintPreviewHandler::GetInitiatorTab() const {
+WebContents* PrintPreviewHandler::GetInitiator() const {
   printing::PrintPreviewDialogController* dialog_controller =
       printing::PrintPreviewDialogController::GetInstance();
   if (!dialog_controller)
     return NULL;
-  return dialog_controller->GetInitiatorTab(preview_web_contents());
+  return dialog_controller->GetInitiator(preview_web_contents());
 }
 
 void PrintPreviewHandler::OnPrintDialogShown() {
@@ -991,12 +991,12 @@ void PrintPreviewHandler::SelectFile(const base::FilePath& default_filename) {
 }
 
 void PrintPreviewHandler::OnPrintPreviewDialogDestroyed() {
-  WebContents* initiator_tab = GetInitiatorTab();
-  if (!initiator_tab)
+  WebContents* initiator = GetInitiator();
+  if (!initiator)
     return;
 
   printing::PrintViewManager* print_view_manager =
-      printing::PrintViewManager::FromWebContents(initiator_tab);
+      printing::PrintViewManager::FromWebContents(initiator);
   print_view_manager->set_observer(NULL);
 }
 
@@ -1055,18 +1055,18 @@ void PrintPreviewHandler::FileSelectionCanceled(void* params) {
   print_preview_ui->OnFileSelectionCancelled();
 }
 
-void PrintPreviewHandler::ClearInitiatorTabDetails() {
-  WebContents* initiator_tab = GetInitiatorTab();
-  if (!initiator_tab)
+void PrintPreviewHandler::ClearInitiatorDetails() {
+  WebContents* initiator = GetInitiator();
+  if (!initiator)
     return;
 
-  // We no longer require the initiator tab details. Remove those details
-  // associated with the preview dialog to allow the initiator tab to create
-  // another preview dialog.
+  // We no longer require the initiator details. Remove those details associated
+  // with the preview dialog to allow the initiator to create another preview
+  // dialog.
   printing::PrintPreviewDialogController* dialog_controller =
       printing::PrintPreviewDialogController::GetInstance();
   if (dialog_controller)
-    dialog_controller->EraseInitiatorTabInfo(preview_web_contents());
+    dialog_controller->EraseInitiatorInfo(preview_web_contents());
 }
 
 bool PrintPreviewHandler::GetPreviewDataAndTitle(
@@ -1085,7 +1085,7 @@ bool PrintPreviewHandler::GetPreviewDataAndTitle(
   DCHECK(tmp_data->size() && tmp_data->front());
 
   *data = tmp_data;
-  *title = print_preview_ui->initiator_tab_title();
+  *title = print_preview_ui->initiator_title();
   return true;
 }
 

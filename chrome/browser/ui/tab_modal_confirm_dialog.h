@@ -12,7 +12,7 @@ class WebContents;
 }
 
 // Base class for the tab modal confirm dialog.
-class TabModalConfirmDialog : public TabModalConfirmDialogCloseDelegate {
+class TabModalConfirmDialog : public TabModalConfirmDialogOperationsDelegate {
  public:
   // Platform specific factory function. This function will automatically show
   // the dialog.
@@ -24,9 +24,11 @@ class TabModalConfirmDialog : public TabModalConfirmDialogCloseDelegate {
   // Cancels the dialog.
   virtual void CancelTabModalDialog() = 0;
 
-  // TabModalConfirmDialogCloseDelegate:
+  // TabModalConfirmDialogOperationsDelegate:
   // Closes the dialog.
   virtual void CloseDialog() = 0;
+  // Prevents the dialog from closing on WebContents load start.
+  virtual void SetPreventCloseOnLoadStart(bool prevent) = 0;
 
  protected:
   virtual ~TabModalConfirmDialog() {}
