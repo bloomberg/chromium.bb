@@ -224,12 +224,16 @@ GURL SyncPromoUI::GetSyncPromoURL(Source source, bool auto_close) {
   // The continue URL includes a source parameter that can be extracted using
   // the function GetSourceForSyncPromoURL() below.  This is used to know
   // which of the chrome sign in access points was used to sign the user in.
+  // It is also parsed for the |auto_close| flag, which indicates that the tab
+  // must be closed after sync setup is successful.
   // See OneClickSigninHelper for details.
   url_string = GaiaUrls::GetInstance()->service_login_url();
   url_string.append("?service=chromiumsync&sarp=1");
 
   std::string continue_url = GetSyncLandingURL(
       kSyncPromoQueryKeySource, static_cast<int>(source));
+  if (auto_close)
+    base::StringAppendF(&continue_url, "&%s=1", kSyncPromoQueryKeyAutoClose);
 
   base::StringAppendF(&url_string, "&%s=%s", kSyncPromoQueryKeyContinue,
                       net::EscapeQueryParamValue(
@@ -258,6 +262,17 @@ SyncPromoUI::Source SyncPromoUI::GetSourceForSyncPromoURL(const GURL& url) {
     }
   }
   return SOURCE_UNKNOWN;
+}
+
+// static
+bool SyncPromoUI::IsAutoCloseEnabledInURL(const GURL& url) {
+  std::string value;
+  if (net::GetValueForKeyInQuery(url, kSyncPromoQueryKeyAutoClose, &value)) {
+    int enabled = 0;
+    if (base::StringToInt(value, &enabled) && enabled == 1)
+      return true;
+  }
+  return false;
 }
 
 // static

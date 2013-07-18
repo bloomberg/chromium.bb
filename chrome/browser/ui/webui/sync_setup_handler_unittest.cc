@@ -286,7 +286,6 @@ class TestingSyncSetupHandler : public SyncSetupHandler {
   virtual Profile* GetProfile() const OVERRIDE { return profile_; }
 
   using SyncSetupHandler::is_configuring_sync;
-  using SyncSetupHandler::have_signin_tracker;
 
  private:
 #if !defined(OS_CHROMEOS)
@@ -430,12 +429,13 @@ TEST_F(SyncSetupHandlerTest, DisplayBasicLogin) {
   EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
       .WillRepeatedly(Return(false));
   handler_->HandleStartSignin(NULL);
-  EXPECT_EQ(handler_.get(),
+
+  // Sync setup hands off control to the gaia login tab.
+  EXPECT_EQ(NULL,
             LoginUIServiceFactory::GetForProfile(
                 profile_.get())->current_login_ui());
 
   ASSERT_FALSE(handler_->is_configuring_sync());
-  ASSERT_TRUE(handler_->have_signin_tracker());
 
   handler_->CloseSyncSetup();
   EXPECT_EQ(NULL,
@@ -567,7 +567,6 @@ TEST_F(SyncSetupHandlerTest,
       .WillRepeatedly(Return(true));
   SetDefaultExpectationsForConfigPage();
   handler_->OpenSyncSetup();
-  handler_->SigninSuccess();
 
   // It's important to tell sync the user cancelled the setup flow before we
   // tell it we're through with the setup progress.
@@ -638,7 +637,6 @@ TEST_F(SyncSetupHandlerNonCrosTest, HandleGaiaAuthFailure) {
   handler_->OpenSyncSetup();
 
   ASSERT_FALSE(handler_->is_configuring_sync());
-  ASSERT_TRUE(handler_->have_signin_tracker());
 }
 
 // TODO(kochi): We need equivalent tests for ChromeOS.
@@ -653,7 +651,6 @@ TEST_F(SyncSetupHandlerNonCrosTest, UnrecoverableErrorInitializingSync) {
   handler_->OpenSyncSetup();
 
   ASSERT_FALSE(handler_->is_configuring_sync());
-  ASSERT_TRUE(handler_->have_signin_tracker());
 }
 
 TEST_F(SyncSetupHandlerNonCrosTest, GaiaErrorInitializingSync) {
@@ -667,7 +664,6 @@ TEST_F(SyncSetupHandlerNonCrosTest, GaiaErrorInitializingSync) {
   handler_->OpenSyncSetup();
 
   ASSERT_FALSE(handler_->is_configuring_sync());
-  ASSERT_TRUE(handler_->have_signin_tracker());
 }
 
 #endif  // #if !defined(OS_CHROMEOS)
@@ -931,12 +927,12 @@ TEST_F(SyncSetupHandlerTest, ShowSigninOnAuthError) {
   // sync backend, and on desktop this displays the login dialog.
   handler_->OpenSyncSetup();
 
-  EXPECT_EQ(handler_.get(),
+  // Sync setup is closed when re-auth is in progress.
+  EXPECT_EQ(NULL,
             LoginUIServiceFactory::GetForProfile(
                 profile_.get())->current_login_ui());
 
   ASSERT_FALSE(handler_->is_configuring_sync());
-  ASSERT_TRUE(handler_->have_signin_tracker());
 #endif
 }
 

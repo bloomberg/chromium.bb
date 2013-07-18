@@ -33,6 +33,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/signin/chrome_signin_manager_delegate.h"
+#include "chrome/browser/signin/signin_global_error.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_delegate.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -49,6 +50,7 @@
 #include "chrome/browser/ui/sync/signin_histogram.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog_delegate.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/net/url_util.h"
@@ -501,6 +503,20 @@ void CurrentHistoryCleaner::DidStopLoading(
 void CurrentHistoryCleaner::WebContentsDestroyed(
     content::WebContents* contents) {
   delete this;  // Failure.
+}
+
+void CloseTab(content::WebContents* tab) {
+  Browser* browser = chrome::FindBrowserWithWebContents(tab);
+  if (browser) {
+    TabStripModel* tab_strip_model = browser->tab_strip_model();
+    if (tab_strip_model) {
+      int index = tab_strip_model->GetIndexOfWebContents(tab);
+      if (index != TabStripModel::kNoTab) {
+        tab_strip_model->ExecuteContextMenuCommand(
+            index, TabStripModel::CommandCloseTab);
+      }
+    }
+  }
 }
 
 }  // namespace
@@ -1120,6 +1136,11 @@ void OneClickSigninHelper::DidStopLoading(
       return;
     }
 
+    // Initialize |original_source_| if this is the first time the page has
+    // finished loading.
+    if (original_source_ == SyncPromoUI::SOURCE_UNKNOWN)
+      original_source_ = source_;
+
     // In explicit sign ins, the user may have changed the box
     // "Let me choose what to sync".  This is reflected as a change in the
     // source of the continue URL.  Make one last check of the current URL
@@ -1184,9 +1205,18 @@ void OneClickSigninHelper::DidStopLoading(
         LogHistogramValue(source_, one_click_signin::HISTOGRAM_ACCEPTED);
         LogHistogramValue(source_, one_click_signin::HISTOGRAM_WITH_DEFAULTS);
       }
+
+      // - If sign in was initiated from the NTP or the hotdog menu, sync with
+      //   default settings.
+      // - If sign in was initiated from the settings page for first time sync
+      //   set up, show the advanced sync settings dialog.
+      // - If sign in was initiated from the settings page due to a re-auth,
+      //   simply navigate back to the settings page.
       OneClickSigninSyncStarter::StartSyncMode start_mode =
           source_ == SyncPromoUI::SOURCE_SETTINGS ?
-              OneClickSigninSyncStarter::CONFIGURE_SYNC_FIRST :
+              SigninGlobalError::GetForProfile(profile)->HasMenuItem() ?
+                  OneClickSigninSyncStarter::SHOW_SETTINGS_WITHOUT_CONFIGURE :
+                  OneClickSigninSyncStarter::CONFIGURE_SYNC_FIRST :
               OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS;
 
       std::string last_email =
@@ -1219,17 +1249,21 @@ void OneClickSigninHelper::DidStopLoading(
 
         // If this explicit sign in is not from settings page/webstore, show
         // the NTP/Apps page after sign in completes. In the case of the
-        // settings page, it will get closed by SyncSetupHandler. In the case
+        // settings page, it will get auto-closed after sync setup. In the case
         // of webstore, it will redirect back to webstore.
         RedirectToNtpOrAppsPageIfNecessary(web_contents(), source_);
       }
 
-      if (source_ == SyncPromoUI::SOURCE_SETTINGS &&
-          SyncPromoUI::GetSourceForSyncPromoURL(continue_url_) ==
-          SyncPromoUI::SOURCE_WEBSTORE_INSTALL) {
+      // Observe the sync service if the Webstore tab or the settings tab
+      // requested a gaia sign in, so that when sign in and sync setup are
+      // successful, we can redirect to the correct URL, or auto-close the gaia
+      // sign in tab.
+      if (original_source_ == SyncPromoUI::SOURCE_SETTINGS ||
+          (original_source_ == SyncPromoUI::SOURCE_WEBSTORE_INSTALL &&
+           source_ == SyncPromoUI::SOURCE_SETTINGS)) {
         redirect_url_ = continue_url_;
         ProfileSyncService* sync_service =
-          ProfileSyncServiceFactory::GetForProfile(profile);
+            ProfileSyncServiceFactory::GetForProfile(profile);
         if (sync_service)
           sync_service->AddObserver(this);
       }
@@ -1259,15 +1293,27 @@ void OneClickSigninHelper::OnStateChanged() {
   ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile);
 
-  // Sync setup not completed yet.
-  if (sync_service->FirstSetupInProgress())
-    return;
+  // At this point, the sign in process is complete, and control has been handed
+  // back to the sync engine. Close the gaia sign in tab if |redirect_url_|
+  // contains the |auto_close| parameter. Otherwise, wait for sync setup to
+  // complete and then navigate to |redirect_url_|.
+  if (SyncPromoUI::IsAutoCloseEnabledInURL(redirect_url_)) {
+    // Close the gaia sign in tab via a task to make sure we aren't in the
+    // middle of any webui handler code.
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&CloseTab, base::Unretained(contents)));
+  } else {
+    // Sync setup not completed yet.
+    if (sync_service->FirstSetupInProgress())
+      return;
 
-  if (sync_service->sync_initialized()) {
-    contents->GetController().LoadURL(redirect_url_,
-                                      content::Referrer(),
-                                      content::PAGE_TRANSITION_AUTO_TOPLEVEL,
-                                      std::string());
+    if (sync_service->sync_initialized()) {
+      contents->GetController().LoadURL(redirect_url_,
+                                        content::Referrer(),
+                                        content::PAGE_TRANSITION_AUTO_TOPLEVEL,
+                                        std::string());
+    }
   }
 
   // Clear the redirect URL.

@@ -357,9 +357,23 @@ void OneClickSigninSyncStarter::SigninFailed(
 }
 
 void OneClickSigninSyncStarter::SigninSuccess() {
+  // Before handing control back to sync setup, update the auth error state of
+  // ProfileSyncService if needed. This is necessary because ProfileSyncService
+  // will normally update its auth error state only after attempting a sync
+  // cycle, and we do not want old auth errors to remain visible on the menu or
+  // the settings page.
+  // TODO(rsimha): We shouldn't have to do this here. PSS must update its auth
+  // state after the backend is inititialized if it waiting_for_auth() is true.
+  ProfileSyncService* profile_sync_service = GetProfileSyncService();
+  if (profile_sync_service &&
+      profile_sync_service->GetAuthError().state() !=
+          GoogleServiceAuthError::NONE) {
+    profile_sync_service->UpdateAuthErrorState(
+        GoogleServiceAuthError::AuthErrorNone());
+  }
+
   switch (start_mode_) {
     case SYNC_WITH_DEFAULT_SETTINGS: {
-      ProfileSyncService* profile_sync_service = GetProfileSyncService();
       // Just kick off the sync machine, no need to configure it first.
       if (profile_sync_service)
         profile_sync_service->SetSyncSetupCompleted();
@@ -376,7 +390,10 @@ void OneClickSigninSyncStarter::SigninSuccess() {
       break;
     }
     case CONFIGURE_SYNC_FIRST:
-      ConfigureSync();
+      ShowSettingsPageInNewTab(true);  // Show sync config UI.
+      break;
+    case SHOW_SETTINGS_WITHOUT_CONFIGURE:
+      ShowSettingsPageInNewTab(false);  // Don't show sync config UI.
       break;
     default:
       NOTREACHED();
@@ -410,7 +427,7 @@ void OneClickSigninSyncStarter::EnsureBrowser() {
   }
 }
 
-void OneClickSigninSyncStarter::ConfigureSync() {
+void OneClickSigninSyncStarter::ShowSettingsPageInNewTab(bool configure_sync) {
   // Give the user a chance to configure things. We don't clear the
   // ProfileSyncService::setup_in_progress flag because we don't want sync
   // to start up until after the configure UI is displayed (the configure UI
@@ -426,7 +443,15 @@ void OneClickSigninSyncStarter::ConfigureSync() {
       if (force_same_tab_navigation_) {
         ShowSyncSettingsPageOnSameTab();
       } else {
-        chrome::ShowSettingsSubPage(browser_, chrome::kSyncSetupSubPage);
+        // If the user is setting up sync for the first time, let them configure
+        // advanced sync settings. However, in the case of re-authentication,
+        // return the user to the settings page without showing any config UI.
+        if (configure_sync) {
+          chrome::ShowSettingsSubPage(browser_, chrome::kSyncSetupSubPage);
+        } else {
+          FinishProfileSyncServiceSetup();
+          chrome::ShowSettings(browser_);
+        }
       }
     } else {
       // Sync is disabled - just display the settings page.

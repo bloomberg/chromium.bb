@@ -38,6 +38,11 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
     // to configure which data types to sync before sync is enabled.
     CONFIGURE_SYNC_FIRST,
 
+    // Starts the process of re-authenticating the user via SigninManager,
+    // and once completed, redirects the user to the settings page, but doesn't
+    // display the configure sync UI.
+    SHOW_SETTINGS_WITHOUT_CONFIGURE,
+
     // The process should be aborted because the undo button has been pressed.
     UNDO_SYNC
   };
@@ -147,8 +152,11 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
 
   void FinishProfileSyncServiceSetup();
 
-  // Displays the sync configuration UI.
-  void ConfigureSync();
+  // Displays the settings UI in a new tab. Brings up the advanced sync settings
+  // dialog if |configure_sync| is true.
+  void ShowSettingsPageInNewTab(bool configure_sync);
+
+  // Displays the sync configuration UI in the same tab.
   void ShowSyncSettingsPageOnSameTab();
 
   // Shows the post-signin confirmation bubble. If |custom_message| is empty,
