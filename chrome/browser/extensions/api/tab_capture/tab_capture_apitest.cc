@@ -43,7 +43,13 @@ class TabCaptureApiTest : public ExtensionApiTest {
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, ApiTests) {
+// http://crbug.com/261493
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#define MAYBE_ApiTests DISABLED_ApiTests
+#else
+#define MAYBE_ApiTests ApiTests
+#endif
+IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_ApiTests) {
   extensions::FeatureSwitch::ScopedOverride tab_capture(
       extensions::FeatureSwitch::tab_capture(), true);
 
