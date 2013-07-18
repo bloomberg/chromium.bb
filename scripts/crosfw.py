@@ -76,9 +76,14 @@ board:
  SERVO_PORT['daisy'] = 9999
  SERVO_PORT['peach_pit'] = 7777
 
-All builds appear in the b/<board> subdirectory and images are written
-to b/<uboard>/out, where <uboard> is the U-Boot name for the board (in the
-U-Boot boards.cfg file)
+All builds appear in the <outdir>/<board> subdirectory and images are written
+to <outdir>/<uboard>/out, where <uboard> is the U-Boot name for the board (in
+the U-Boot boards.cfg file)
+
+The value for <outdir> defaults to /tmp/crosfw but can be configured in your
+~/.crosfwrc file, e.g.:"
+
+ OUT_DIR = '/tmp/u-boot'
 
 For the -a option here are some useful options:
 
@@ -164,6 +169,8 @@ DEFAULT_DTS = {
     'daisy_spring': 'spring',
     'peach_pit': 'peach-pit',
 }
+
+OUT_DIR = '/tmp/crosfw'
 
 rc_file = os.path.expanduser('~/.crosfwrc')
 if os.path.exists(rc_file):
@@ -358,7 +365,7 @@ def SetupBuild(options):
 
   cpus = multiprocessing.cpu_count()
 
-  outdir = 'b/%s' % uboard
+  outdir = os.path.join(OUT_DIR, uboard)
   base = [
       'make',
       '-j%d' % cpus,
