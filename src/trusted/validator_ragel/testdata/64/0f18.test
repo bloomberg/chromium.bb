@@ -11,3 +11,6 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  0: ('objdump failed to decode', Instruction(0x0: 0f 18  (bad)))
+  2: ("memory access only is allowed with base from ['%r15', '%rbp', '%rsp', '%rip']", Instruction(0x2: 21 0f  and %ecx,(%rdi)))
