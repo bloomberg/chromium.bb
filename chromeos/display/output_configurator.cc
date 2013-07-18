@@ -267,6 +267,13 @@ bool OutputConfigurator::SetDisplayMode(OutputState new_state) {
   std::vector<OutputSnapshot> outputs = delegate_->GetOutputs();
   bool success = EnterStateOrFallBackToSoftwareMirroring(
       new_state, power_state_, outputs);
+  // Force turning on DPMS when switching to mirror mode.
+  // crbug.com/259432
+  // TODO(oshima): Revert this change once the root problem is fixed.
+  if (success && power_state_ != DISPLAY_POWER_ALL_OFF &&
+      output_state_ == STATE_DUAL_MIRROR) {
+    delegate_->ForceDPMSOn();
+  }
   delegate_->UngrabServer();
 
   if (success) {

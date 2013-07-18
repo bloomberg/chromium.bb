@@ -367,6 +367,7 @@ TEST_F(OutputConfiguratorTest, ConnectSecondOutput) {
                             outputs_[0].output).c_str(),
                         GetCrtcAction(outputs_[1].crtc, 0, 0, kSmallModeId,
                             outputs_[1].output).c_str(),
+                        kForceDPMS,
                         kUngrab, NULL),
             delegate_->GetActionsAndClear());
   EXPECT_FALSE(mirroring_controller_.software_mirroring_enabled());
