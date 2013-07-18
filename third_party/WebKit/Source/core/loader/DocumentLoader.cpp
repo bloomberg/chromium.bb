@@ -302,6 +302,9 @@ void DocumentLoader::notifyFinished(CachedResource* resource)
 {
     ASSERT_UNUSED(resource, m_mainResource == resource);
     ASSERT(m_mainResource);
+
+    RefPtr<DocumentLoader> protect(this);
+
     if (!m_mainResource->errorOccurred() && !m_mainResource->wasCanceled()) {
         finishedLoading(m_mainResource->loadFinishTime());
         return;
@@ -870,7 +873,7 @@ void DocumentLoader::setDefersLoading(bool defers)
     // Multiple frames may be loading the same main resource simultaneously. If deferral state changes,
     // each frame's DocumentLoader will try to send a setDefersLoading() to the same underlying ResourceLoader. Ensure only
     // the "owning" DocumentLoader does so, as setDefersLoading() is not resilient to setting the same value repeatedly.
-    if (mainResourceLoader() && mainResourceLoader()->documentLoader() == this)
+    if (mainResourceLoader() && mainResourceLoader()->isLoadedBy(m_cachedResourceLoader.get()))
         mainResourceLoader()->setDefersLoading(defers);
 
     setAllDefersLoading(m_resourceLoaders, defers);

@@ -31,11 +31,13 @@
 #include "core/dom/Document.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLFrameOwnerElement.h"
+#include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/PingLoader.h"
 #include "core/loader/UniqueIdentifier.h"
+#include "core/loader/appcache/ApplicationCacheHost.h"
 #include "core/loader/cache/CachedCSSStyleSheet.h"
 #include "core/loader/cache/CachedDocument.h"
 #include "core/loader/cache/CachedFont.h"
@@ -500,7 +502,7 @@ CachedResourceHandle<CachedResource> CachedResourceLoader::requestResource(Cache
         if (!frame())
             return 0;
 
-        FrameLoader* frameLoader = frame()->loader();
+        FrameLoader* frameLoader = this->frameLoader();
         if (request.options().securityCheck == DoSecurityCheck && (frameLoader->state() == FrameStateProvisional || !frameLoader->activeDocumentLoader() || frameLoader->activeDocumentLoader()->isStopping()))
             return 0;
 
@@ -893,7 +895,7 @@ CachePolicy CachedResourceLoader::cachePolicy(CachedResource::Type type) const
     return CachePolicyVerify;
 }
 
-void CachedResourceLoader::loadDone(CachedResource* resource)
+void CachedResourceLoader::didLoadResource(CachedResource* resource)
 {
     RefPtr<DocumentLoader> protectDocumentLoader(m_documentLoader);
     RefPtr<Document> protectDocument(m_document);
@@ -1075,6 +1077,120 @@ void CachedResourceLoader::clearPreloads()
 void CachedResourceLoader::clearPendingPreloads()
 {
     m_pendingPreloads.clear();
+}
+
+inline FrameLoader* CachedResourceLoader::frameLoader()
+{
+    return frame() ? frame()->loader() : 0;
+}
+
+void CachedResourceLoader::didFinishLoading(const CachedResource* resource, double finishTime, const ResourceLoaderOptions& options)
+{
+    if (options.sendLoadCallbacks != SendCallbacks)
+        return;
+    if (FrameLoader* loader = frameLoader())
+        loader->notifier()->dispatchDidFinishLoading(m_documentLoader, resource->identifier(), finishTime);
+}
+
+void CachedResourceLoader::didChangeLoadingPriority(const CachedResource* resource, ResourceLoadPriority loadPriority)
+{
+    if (FrameLoader* loader = frameLoader())
+        loader->client()->dispatchDidChangeResourcePriority(resource->identifier(), loadPriority);
+}
+
+void CachedResourceLoader::didFailLoading(const CachedResource* resource, const ResourceError& error, const ResourceLoaderOptions& options)
+{
+    if (options.sendLoadCallbacks != SendCallbacks)
+        return;
+    if (FrameLoader* loader = frameLoader())
+        loader->notifier()->dispatchDidFail(m_documentLoader, resource->identifier(), error);
+}
+
+void CachedResourceLoader::willSendRequest(const CachedResource* resource, ResourceRequest& request, const ResourceResponse& redirectResponse, const ResourceLoaderOptions& options)
+{
+    if (options.sendLoadCallbacks == SendCallbacks) {
+        if (FrameLoader* loader = frameLoader())
+            loader->notifier()->dispatchWillSendRequest(m_documentLoader, resource->identifier(), request, redirectResponse, options.initiatorInfo);
+    } else {
+        InspectorInstrumentation::willSendRequest(frame(), resource->identifier(), m_documentLoader, request, redirectResponse, options.initiatorInfo);
+    }
+}
+
+void CachedResourceLoader::didReceiveResponse(const CachedResource* resource, const ResourceResponse& response, const ResourceLoaderOptions& options)
+{
+    if (options.sendLoadCallbacks != SendCallbacks)
+        return;
+    if (FrameLoader* loader = frameLoader())
+        loader->notifier()->dispatchDidReceiveResponse(m_documentLoader, resource->identifier(), response);
+}
+
+void CachedResourceLoader::didReceiveData(const CachedResource* resource, const char* data, int dataLength, int encodedDataLength, const ResourceLoaderOptions& options)
+{
+    if (options.sendLoadCallbacks != SendCallbacks)
+        return;
+    if (FrameLoader* loader = frameLoader())
+        loader->notifier()->dispatchDidReceiveData(m_documentLoader, resource->identifier(), data, dataLength, encodedDataLength);
+}
+
+void CachedResourceLoader::subresourceLoaderFinishedLoadingOnePart(ResourceLoader* loader)
+{
+    if (m_documentLoader)
+        m_documentLoader->subresourceLoaderFinishedLoadingOnePart(loader);
+}
+
+void CachedResourceLoader::didInitializeResourceLoader(ResourceLoader* loader)
+{
+    if (m_documentLoader)
+        m_documentLoader->addResourceLoader(loader);
+}
+
+void CachedResourceLoader::willTerminateResourceLoader(ResourceLoader* loader)
+{
+    if (m_documentLoader)
+        m_documentLoader->removeResourceLoader(loader);
+}
+
+void CachedResourceLoader::willStartLoadingResource(ResourceRequest& request)
+{
+    if (m_documentLoader)
+        m_documentLoader->applicationCacheHost()->willStartLoadingResource(request);
+}
+
+bool CachedResourceLoader::defersLoading() const
+{
+    if (Frame* frame = this->frame())
+        return frame->page()->defersLoading();
+    return false;
+}
+
+bool CachedResourceLoader::isLoadedBy(ResourceLoaderHost* possibleOwner) const
+{
+    return this == possibleOwner;
+}
+
+bool CachedResourceLoader::shouldRequest(CachedResource* resource, const ResourceRequest& request, const ResourceLoaderOptions& options)
+{
+    if (!canRequest(resource->type(), request.url(), options))
+        return false;
+    if (resource->type() == CachedResource::ImageResource && shouldDeferImageLoad(request.url()))
+        return false;
+    return true;
+}
+
+Frame* CachedResourceLoader::inspectedFrame() const
+{
+    // FIXME: return frame of master document for imported documents.
+    return m_documentLoader ? m_documentLoader->frame() : 0;
+}
+
+void CachedResourceLoader::refResourceLoaderHost()
+{
+    ref();
+}
+
+void CachedResourceLoader::derefResourceLoaderHost()
+{
+    deref();
 }
 
 #if PRELOAD_DEBUG

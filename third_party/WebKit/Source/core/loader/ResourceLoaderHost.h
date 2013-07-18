@@ -1,0 +1,83 @@
+/*
+ * Copyright (C) 2013 Google Inc. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ *     * Redistributions of source code must retain the above copyright
+ * notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above
+ * copyright notice, this list of conditions and the following disclaimer
+ * in the documentation and/or other materials provided with the
+ * distribution.
+ *     * Neither the name of Google Inc. nor the names of its
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+#ifndef ResourceLoaderHost_h
+#define ResourceLoaderHost_h
+
+#include "core/platform/network/ResourceError.h"
+#include "core/platform/network/ResourceLoadPriority.h"
+
+namespace WebCore {
+
+class CachedResource;
+class CachedResourceLoader;
+class Frame;
+class ResourceLoader;
+class ResourceRequest;
+class ResourceResponse;
+
+struct CachedResourceInitiatorInfo;
+struct ResourceLoaderOptions;
+
+class ResourceLoaderHost {
+public:
+    void ref() { refResourceLoaderHost(); }
+    void deref() { derefResourceLoaderHost(); }
+
+    virtual void incrementRequestCount(const CachedResource*) = 0;
+    virtual void decrementRequestCount(const CachedResource*) = 0;
+    virtual void didLoadResource(CachedResource*) = 0;
+
+    virtual void didFinishLoading(const CachedResource*, double finishTime, const ResourceLoaderOptions&) = 0;
+    virtual void didChangeLoadingPriority(const CachedResource*, ResourceLoadPriority) = 0;
+    virtual void didFailLoading(const CachedResource*, const ResourceError&, const ResourceLoaderOptions&) = 0;
+
+    virtual void willSendRequest(const CachedResource*, ResourceRequest&, const ResourceResponse& redirectResponse, const ResourceLoaderOptions&) = 0;
+    virtual void didReceiveResponse(const CachedResource*, const ResourceResponse&, const ResourceLoaderOptions&) = 0;
+    virtual void didReceiveData(const CachedResource*, const char* data, int dataLength, int encodedDataLength, const ResourceLoaderOptions&) = 0;
+
+    virtual void subresourceLoaderFinishedLoadingOnePart(ResourceLoader*) = 0;
+    virtual void didInitializeResourceLoader(ResourceLoader*) = 0;
+    virtual void willTerminateResourceLoader(ResourceLoader*) = 0;
+    virtual void willStartLoadingResource(ResourceRequest&) = 0;
+
+    virtual bool shouldRequest(CachedResource*, const ResourceRequest&, const ResourceLoaderOptions&) = 0;
+    virtual bool defersLoading() const = 0;
+    virtual bool isLoadedBy(ResourceLoaderHost*) const = 0;
+
+    virtual void refResourceLoaderHost() = 0;
+    virtual void derefResourceLoaderHost() = 0;
+
+    virtual Frame* inspectedFrame() const = 0;
+};
+
+}
+
+#endif // ResourceLoaderHost_h

@@ -31,12 +31,7 @@
 #include "core/loader/ResourceLoader.h"
 
 #include "core/inspector/InspectorInstrumentation.h"
-#include "core/loader/DocumentLoader.h"
-#include "core/loader/FrameLoader.h"
-#include "core/loader/FrameLoaderClient.h"
-#include "core/loader/appcache/ApplicationCacheHost.h"
-#include "core/loader/cache/CachedResourceLoader.h"
-#include "core/page/Frame.h"
+#include "core/loader/ResourceLoaderHost.h"
 #include "core/page/Page.h"
 #include "core/platform/Logging.h"
 #include "core/platform/network/ResourceError.h"
@@ -44,37 +39,36 @@
 
 namespace WebCore {
 
-ResourceLoader::RequestCountTracker::RequestCountTracker(CachedResourceLoader* cachedResourceLoader, CachedResource* resource)
-    : m_cachedResourceLoader(cachedResourceLoader)
+ResourceLoader::RequestCountTracker::RequestCountTracker(ResourceLoaderHost* host, CachedResource* resource)
+    : m_host(host)
     , m_resource(resource)
 {
-    m_cachedResourceLoader->incrementRequestCount(m_resource);
+    m_host->incrementRequestCount(m_resource);
 }
 
 ResourceLoader::RequestCountTracker::~RequestCountTracker()
 {
-    m_cachedResourceLoader->decrementRequestCount(m_resource);
+    m_host->decrementRequestCount(m_resource);
 }
 
-PassRefPtr<ResourceLoader> ResourceLoader::create(DocumentLoader* documentLoader, CachedResource* resource, const ResourceRequest& request, const ResourceLoaderOptions& options)
+PassRefPtr<ResourceLoader> ResourceLoader::create(ResourceLoaderHost* host, CachedResource* resource, const ResourceRequest& request, const ResourceLoaderOptions& options)
 {
-    RefPtr<ResourceLoader> loader(adoptRef(new ResourceLoader(documentLoader, resource, options)));
+    RefPtr<ResourceLoader> loader(adoptRef(new ResourceLoader(host, resource, options)));
     if (!loader->init(request))
         return 0;
     loader->start();
     return loader.release();
 }
 
-ResourceLoader::ResourceLoader(DocumentLoader* documentLoader, CachedResource* resource, ResourceLoaderOptions options)
-    : m_frame(documentLoader->frame())
-    , m_documentLoader(documentLoader)
+ResourceLoader::ResourceLoader(ResourceLoaderHost* host, CachedResource* resource, const ResourceLoaderOptions& options)
+    : m_host(host)
     , m_loadingMultipartContent(false)
     , m_notifiedLoadComplete(false)
-    , m_defersLoading(m_frame->page()->defersLoading())
+    , m_defersLoading(host->defersLoading())
     , m_options(options)
     , m_resource(resource)
     , m_state(Uninitialized)
-    , m_requestCountTracker(adoptPtr(new RequestCountTracker(documentLoader->cachedResourceLoader(), resource)))
+    , m_requestCountTracker(adoptPtr(new RequestCountTracker(host, resource)))
 {
 }
 
@@ -88,11 +82,11 @@ void ResourceLoader::releaseResources()
     ASSERT(m_state != Terminated);
     if (m_state != Uninitialized) {
         m_requestCountTracker.clear();
-        m_documentLoader->cachedResourceLoader()->loadDone(m_resource);
+        m_host->didLoadResource(m_resource);
         if (m_state == Terminated)
             return;
         m_resource->clearLoader();
-        m_documentLoader->removeResourceLoader(this);
+        m_host->willTerminateResourceLoader(this);
     }
 
     ASSERT(m_state != Terminated);
@@ -103,9 +97,7 @@ void ResourceLoader::releaseResources()
     // has been deallocated and also to avoid reentering this method.
     RefPtr<ResourceLoader> protector(this);
 
-    m_frame = 0;
-    m_documentLoader = 0;
-
+    m_host.clear();
     m_state = Terminated;
 
     if (m_handle) {
@@ -136,7 +128,7 @@ bool ResourceLoader::init(const ResourceRequest& r)
 
     m_originalRequest = m_request = clientRequest;
     m_state = Initialized;
-    m_documentLoader->addResourceLoader(this);
+    m_host->didInitializeResourceLoader(this);
     return true;
 }
 
@@ -146,7 +138,7 @@ void ResourceLoader::start()
     ASSERT(!m_request.isNull());
     ASSERT(m_deferredRequest.isNull());
 
-    m_documentLoader->applicationCacheHost()->willStartLoadingResource(m_request);
+    m_host->willStartLoadingResource(m_request);
 
     if (m_defersLoading) {
         m_deferredRequest = m_request;
@@ -169,13 +161,6 @@ void ResourceLoader::setDefersLoading(bool defers)
     }
 }
 
-FrameLoader* ResourceLoader::frameLoader() const
-{
-    if (!m_frame)
-        return 0;
-    return m_frame->loader();
-}
-
 void ResourceLoader::didDownloadData(ResourceHandle*, int length)
 {
     RefPtr<ResourceLoader> protect(this);
@@ -192,14 +177,13 @@ void ResourceLoader::didFinishLoadingOnePart(double finishTime)
     if (m_notifiedLoadComplete)
         return;
     m_notifiedLoadComplete = true;
-    if (m_options.sendLoadCallbacks == SendCallbacks)
-        frameLoader()->notifier()->dispatchDidFinishLoading(m_documentLoader.get(), m_resource->identifier(), finishTime);
+    m_host->didFinishLoading(m_resource, finishTime, m_options);
 }
 
 void ResourceLoader::didChangePriority(ResourceLoadPriority loadPriority)
 {
     if (handle()) {
-        frameLoader()->client()->dispatchDidChangeResourcePriority(m_resource->identifier(), loadPriority);
+        m_host->didChangeLoadingPriority(m_resource, loadPriority);
         handle()->didChangePriority(loadPriority);
     }
 }
@@ -242,8 +226,7 @@ void ResourceLoader::cancel(const ResourceError& error)
         m_handle = 0;
     }
 
-    if (m_options.sendLoadCallbacks == SendCallbacks && !m_notifiedLoadComplete)
-        frameLoader()->notifier()->dispatchDidFail(m_documentLoader.get(), m_resource->identifier(), nonNullError);
+    m_host->didFailLoading(m_resource, nonNullError, m_options);
 
     if (m_state == Finishing)
         m_resource->error(CachedResource::LoadError);
@@ -259,25 +242,18 @@ void ResourceLoader::willSendRequest(ResourceHandle*, ResourceRequest& request, 
 
     ASSERT(!request.isNull());
     if (!redirectResponse.isNull()) {
-        if (!m_documentLoader->cachedResourceLoader()->canRequest(m_resource->type(), request.url(), m_options)) {
+        if (!m_host->shouldRequest(m_resource, request, m_options)) {
             cancel();
             return;
         }
-        if (m_resource->type() == CachedResource::ImageResource && m_documentLoader->cachedResourceLoader()->shouldDeferImageLoad(request.url())) {
-            cancel();
-            return;
-        }
+
         m_resource->willSendRequest(request, redirectResponse);
     }
 
     if (request.isNull() || m_state == Terminated)
         return;
 
-    if (m_options.sendLoadCallbacks == SendCallbacks)
-        frameLoader()->notifier()->dispatchWillSendRequest(m_documentLoader.get(), m_resource->identifier(), request, redirectResponse, m_options.initiatorInfo);
-    else
-        InspectorInstrumentation::willSendRequest(m_frame.get(), m_resource->identifier(), m_documentLoader.get(), request, redirectResponse, m_options.initiatorInfo);
-
+    m_host->willSendRequest(m_resource, request, redirectResponse, m_options);
     m_request = request;
 
     if (request.isNull())
@@ -309,8 +285,7 @@ void ResourceLoader::didReceiveResponse(ResourceHandle*, const ResourceResponse&
     if (m_state == Terminated)
         return;
 
-    if (m_options.sendLoadCallbacks == SendCallbacks)
-        frameLoader()->notifier()->dispatchDidReceiveResponse(m_documentLoader.get(), m_resource->identifier(), response);
+    m_host->didReceiveResponse(m_resource, response, m_options);
 
     if (response.isMultipart()) {
         m_loadingMultipartContent = true;
@@ -324,7 +299,7 @@ void ResourceLoader::didReceiveResponse(ResourceHandle*, const ResourceResponse&
     } else if (m_loadingMultipartContent) {
         // Since a subresource loader does not load multipart sections progressively, data was delivered to the loader all at once.
         // After the first multipart section is complete, signal to delegates that this load is "finished"
-        m_documentLoader->subresourceLoaderFinishedLoadingOnePart(this);
+        m_host->subresourceLoaderFinishedLoadingOnePart(this);
         didFinishLoadingOnePart(0);
     }
 
@@ -341,7 +316,7 @@ void ResourceLoader::didReceiveData(ResourceHandle*, const char* data, int lengt
     // loop. When this occurs, ignoring the data is the correct action.
     if (m_resource->response().httpStatusCode() >= 400 && !m_resource->shouldIgnoreHTTPStatusCodeErrors())
         return;
-    InspectorInstrumentationCookie cookie = InspectorInstrumentation::willReceiveResourceData(m_frame.get(), m_resource->identifier(), encodedDataLength);
+    InspectorInstrumentationCookie cookie = InspectorInstrumentation::willReceiveResourceData(m_host->inspectedFrame(), m_resource->identifier(), encodedDataLength);
     ASSERT(m_state == Initialized);
 
     // Reference the object in this method since the additional processing can do
@@ -351,9 +326,7 @@ void ResourceLoader::didReceiveData(ResourceHandle*, const char* data, int lengt
     // FIXME: If we get a resource with more than 2B bytes, this code won't do the right thing.
     // However, with today's computers and networking speeds, this won't happen in practice.
     // Could be an issue with a giant local file.
-    if (m_options.sendLoadCallbacks == SendCallbacks && m_frame)
-        frameLoader()->notifier()->dispatchDidReceiveData(m_documentLoader.get(), m_resource->identifier(), data, length, static_cast<int>(encodedDataLength));
-
+    m_host->didReceiveData(m_resource, data, length, encodedDataLength, m_options);
     m_resource->appendData(data, length);
 
     InspectorInstrumentation::didReceiveResourceData(cookie);
@@ -385,6 +358,7 @@ void ResourceLoader::didFail(ResourceHandle*, const ResourceError& error)
     LOG(ResourceLoading, "Failed to load '%s'.\n", m_resource->url().string().latin1().data());
 
     RefPtr<ResourceLoader> protect(this);
+    RefPtr<ResourceLoaderHost> protectHost(m_host);
     CachedResourceHandle<CachedResource> protectResource(m_resource);
     m_state = Finishing;
     m_resource->setResourceError(error);
@@ -395,11 +369,15 @@ void ResourceLoader::didFail(ResourceHandle*, const ResourceError& error)
 
     if (!m_notifiedLoadComplete) {
         m_notifiedLoadComplete = true;
-        if (m_options.sendLoadCallbacks == SendCallbacks)
-            frameLoader()->notifier()->dispatchDidFail(m_documentLoader.get(), m_resource->identifier(), error);
+        m_host->didFailLoading(m_resource, error, m_options);
     }
 
     releaseResources();
+}
+
+bool ResourceLoader::isLoadedBy(ResourceLoaderHost* loader) const
+{
+    return m_host->isLoadedBy(loader);
 }
 
 }

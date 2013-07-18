@@ -26,6 +26,7 @@
 #ifndef CachedResourceLoader_h
 #define CachedResourceLoader_h
 
+#include "core/loader/ResourceLoaderHost.h"
 #include "core/loader/cache/CachePolicy.h"
 #include "core/loader/cache/CachedResource.h"
 #include "core/loader/cache/CachedResourceHandle.h"
@@ -52,6 +53,7 @@ class CachedXSLStyleSheet;
 class Document;
 class DocumentLoader;
 class Frame;
+class FrameLoader;
 class ImageLoader;
 class KURL;
 
@@ -63,14 +65,17 @@ class KURL;
 // RefPtr<CachedResourceLoader> for their lifetime (and will create one if they
 // are initialized without a Frame), so a Document can keep a CachedResourceLoader
 // alive past detach if scripts still reference the Document.
-class CachedResourceLoader : public RefCounted<CachedResourceLoader> {
+class CachedResourceLoader : public RefCounted<CachedResourceLoader>, public ResourceLoaderHost {
     WTF_MAKE_NONCOPYABLE(CachedResourceLoader); WTF_MAKE_FAST_ALLOCATED;
 friend class ImageLoader;
 friend class ResourceCacheValidationSuppressor;
 
 public:
     static PassRefPtr<CachedResourceLoader> create(DocumentLoader* documentLoader) { return adoptRef(new CachedResourceLoader(documentLoader)); }
-    ~CachedResourceLoader();
+    virtual ~CachedResourceLoader();
+
+    using RefCounted<CachedResourceLoader>::ref;
+    using RefCounted<CachedResourceLoader>::deref;
 
     CachedResourceHandle<CachedImage> requestImage(CachedResourceRequest&);
     CachedResourceHandle<CachedCSSStyleSheet> requestCSSStyleSheet(CachedResourceRequest&);
@@ -110,11 +115,8 @@ public:
     DocumentLoader* documentLoader() const { return m_documentLoader; }
     void clearDocumentLoader() { m_documentLoader = 0; }
 
-    void loadDone(CachedResource*);
     void garbageCollectDocumentResources();
     
-    void incrementRequestCount(const CachedResource*);
-    void decrementRequestCount(const CachedResource*);
     int requestCount() const { return m_requestCount; }
 
     bool isPreloaded(const String& urlString) const;
@@ -126,10 +128,33 @@ public:
     bool canRequest(CachedResource::Type, const KURL&, const ResourceLoaderOptions&, bool forPreload = false);
     bool canAccess(CachedResource*);
 
-    static const ResourceLoaderOptions& defaultCachedResourceOptions();
+    // ResourceLoaderHost
+    virtual void incrementRequestCount(const CachedResource*) OVERRIDE;
+    virtual void decrementRequestCount(const CachedResource*) OVERRIDE;
+    virtual void didLoadResource(CachedResource*) OVERRIDE;
+    virtual void didFinishLoading(const CachedResource*, double finishTime, const ResourceLoaderOptions&) OVERRIDE;
+    virtual void didChangeLoadingPriority(const CachedResource*, ResourceLoadPriority) OVERRIDE;
+    virtual void didFailLoading(const CachedResource*, const ResourceError&, const ResourceLoaderOptions&) OVERRIDE;
+    virtual void willSendRequest(const CachedResource*, ResourceRequest&, const ResourceResponse& redirectResponse, const ResourceLoaderOptions&) OVERRIDE;
+    virtual void didReceiveResponse(const CachedResource*, const ResourceResponse&, const ResourceLoaderOptions&) OVERRIDE;
+    virtual void didReceiveData(const CachedResource*, const char* data, int dataLength, int encodedDataLength, const ResourceLoaderOptions&) OVERRIDE;
+    virtual void subresourceLoaderFinishedLoadingOnePart(ResourceLoader*) OVERRIDE;
+    virtual void didInitializeResourceLoader(ResourceLoader*) OVERRIDE;
+    virtual void willTerminateResourceLoader(ResourceLoader*) OVERRIDE;
+    virtual void willStartLoadingResource(ResourceRequest&) OVERRIDE;
+    virtual bool defersLoading() const OVERRIDE;
+    virtual bool isLoadedBy(ResourceLoaderHost*) const OVERRIDE;
+    virtual bool shouldRequest(CachedResource*, const ResourceRequest&, const ResourceLoaderOptions&) OVERRIDE;
+    virtual void refResourceLoaderHost() OVERRIDE;
+    virtual void derefResourceLoaderHost() OVERRIDE;
+    virtual Frame* inspectedFrame() const OVERRIDE;
 
+    static const ResourceLoaderOptions& defaultCachedResourceOptions();
 private:
+
     explicit CachedResourceLoader(DocumentLoader*);
+
+    FrameLoader* frameLoader();
 
     CachedResourceHandle<CachedResource> requestResource(CachedResource::Type, CachedResourceRequest&);
     CachedResourceHandle<CachedResource> revalidateResource(const CachedResourceRequest&, CachedResource*);
