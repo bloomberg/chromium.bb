@@ -17,8 +17,6 @@ class DevToolsTracingHandler
     : public TraceSubscriber,
       public DevToolsProtocol::Handler {
  public:
-  static const char kDomain[];
-
   DevToolsTracingHandler();
   virtual ~DevToolsTracingHandler();
 

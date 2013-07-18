@@ -42,9 +42,32 @@ namespace captureScreenshot {
 
 namespace Worker {
 namespace disconnectedFromWorker {
-  extern const char kName[] = "Worker.disconnectedFromWorker";
+  const char kName[] = "Worker.disconnectedFromWorker";
 }  // disconnectedFromWorker
 }  // Worker
+
+namespace Tracing {
+  const char kName[] = "Tracing";
+
+namespace start {
+  const char kName[] = "Tracing.start";
+  const char kCategories[] = "categories";
+  const char kTraceOptions[] = "trace-options";
+}  // start
+
+namespace end {
+  const char kName[] = "Tracing.end";
+}
+
+namespace tracingComplete {
+  const char kName[] = "Tracing.tracingComplete";
+}
+
+namespace dataCollected {
+  const char kName[] = "Tracing.dataCollected";
+  const char kValue[] = "value";
+}
+}  // Tracing
 
 }  // devtools
 }  // content

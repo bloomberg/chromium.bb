@@ -375,7 +375,7 @@ void DevToolsHttpHandlerImpl::OnWebSocketRequest(
     browser_target_ = new DevToolsBrowserTarget(
         thread_->message_loop_proxy().get(), server_.get(), connection_id);
     browser_target_->RegisterDomainHandler(
-        DevToolsTracingHandler::kDomain, new DevToolsTracingHandler(), true);
+        devtools::Tracing::kName, new DevToolsTracingHandler(), true);
 
     server_->AcceptWebSocket(connection_id, request);
     return;
