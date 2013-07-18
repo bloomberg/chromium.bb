@@ -25,10 +25,11 @@ class PolicyMap;
 // This implementation pushes policies to the
 // ManagedNetworkConfigurationHandler. User policies are only pushed after
 // OnUserPolicyInitialized() was called.
-class NetworkConfigurationUpdaterImpl : public NetworkConfigurationUpdater {
+class NetworkConfigurationUpdaterImpl : public NetworkConfigurationUpdater,
+                                        public PolicyService::Observer {
  public:
   NetworkConfigurationUpdaterImpl(
-      PolicyService* policy_service,
+      PolicyService* device_policy_service,
       scoped_ptr<chromeos::CertificateHandler> certificate_handler);
   virtual ~NetworkConfigurationUpdaterImpl();
 
@@ -40,27 +41,38 @@ class NetworkConfigurationUpdaterImpl : public NetworkConfigurationUpdater {
 
   virtual void UnsetUserPolicyService() OVERRIDE;
 
- private:
-  // Callback that's called by |policy_service_| if the respective ONC policy
-  // changed.
-  void OnPolicyChanged(chromeos::onc::ONCSource onc_source,
-                       const base::Value* previous,
-                       const base::Value* current);
+  // PolicyService::Observer overrides for both device and user policies.
+  virtual void OnPolicyUpdated(const PolicyNamespace& ns,
+                               const PolicyMap& previous,
+                               const PolicyMap& current) OVERRIDE;
+  virtual void OnPolicyServiceInitialized(PolicyDomain domain) OVERRIDE;
 
-  void ApplyNetworkConfiguration(chromeos::onc::ONCSource onc_source);
+  private:
+   // Called if the ONC policy from |onc_source| changed.
+   void OnPolicyChanged(chromeos::onc::ONCSource onc_source,
+                        const base::Value* previous,
+                        const base::Value* current);
 
-  // Wraps the policy service we read network configuration from.
-  PolicyChangeRegistrar policy_change_registrar_;
+   void ApplyNetworkConfiguration(chromeos::onc::ONCSource onc_source);
 
-  // The policy service storing the ONC policies.
-  PolicyService* policy_service_;
+   // Used to register for notifications from the |user_policy_service_|.
+   scoped_ptr<PolicyChangeRegistrar> user_policy_change_registrar_;
 
-  // User hash of the user that the user policy applies to.
-  std::string hashed_username_;
+   // Used to register for notifications from the |device_policy_service_|.
+   PolicyChangeRegistrar device_policy_change_registrar_;
 
-  scoped_ptr<chromeos::CertificateHandler> certificate_handler_;
+   // Used to retrieve user policies.
+   PolicyService* user_policy_service_;
 
-  DISALLOW_COPY_AND_ASSIGN(NetworkConfigurationUpdaterImpl);
+   // Used to retrieve device policies.
+   PolicyService* device_policy_service_;
+
+   // User hash of the user that the user policy applies to.
+   std::string hashed_username_;
+
+   scoped_ptr<chromeos::CertificateHandler> certificate_handler_;
+
+   DISALLOW_COPY_AND_ASSIGN(NetworkConfigurationUpdaterImpl);
 };
 
 }  // namespace policy

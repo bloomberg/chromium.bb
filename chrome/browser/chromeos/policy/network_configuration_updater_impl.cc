@@ -20,43 +20,96 @@
 namespace policy {
 
 NetworkConfigurationUpdaterImpl::NetworkConfigurationUpdaterImpl(
-    PolicyService* policy_service,
+    PolicyService* device_policy_service,
     scoped_ptr<chromeos::CertificateHandler> certificate_handler)
-    : policy_change_registrar_(
-          policy_service, PolicyNamespace(POLICY_DOMAIN_CHROME, std::string())),
-      policy_service_(policy_service),
+    : device_policy_change_registrar_(device_policy_service,
+                                      PolicyNamespace(POLICY_DOMAIN_CHROME,
+                                                      std::string())),
+      user_policy_service_(NULL),
+      device_policy_service_(device_policy_service),
       certificate_handler_(certificate_handler.Pass()) {
-  policy_change_registrar_.Observe(
+  device_policy_change_registrar_.Observe(
       key::kDeviceOpenNetworkConfiguration,
       base::Bind(&NetworkConfigurationUpdaterImpl::OnPolicyChanged,
                  base::Unretained(this),
                  chromeos::onc::ONC_SOURCE_DEVICE_POLICY));
-  policy_change_registrar_.Observe(
-      key::kOpenNetworkConfiguration,
-      base::Bind(&NetworkConfigurationUpdaterImpl::OnPolicyChanged,
-                 base::Unretained(this),
-                 chromeos::onc::ONC_SOURCE_USER_POLICY));
 
-  // Apply the current device policies immediately.
-  ApplyNetworkConfiguration(chromeos::onc::ONC_SOURCE_DEVICE_POLICY);
+  if (device_policy_service_->IsInitializationComplete(POLICY_DOMAIN_CHROME)) {
+    // Apply the current device policies immediately.
+    VLOG(1) << "Device policy service is already initialized.";
+    ApplyNetworkConfiguration(chromeos::onc::ONC_SOURCE_DEVICE_POLICY);
+  } else {
+    device_policy_service_->AddObserver(POLICY_DOMAIN_CHROME, this);
+  }
 }
 
 NetworkConfigurationUpdaterImpl::~NetworkConfigurationUpdaterImpl() {
+  DCHECK(!user_policy_service_);
+  DCHECK(!user_policy_change_registrar_);
+  device_policy_service_->RemoveObserver(POLICY_DOMAIN_CHROME, this);
 }
 
 void NetworkConfigurationUpdaterImpl::SetUserPolicyService(
     bool allow_trusted_certs_from_policy,
     const std::string& hashed_username,
     PolicyService* user_policy_service) {
-  // TODO(pneubeck): observe user_policy_service for the actual initialization.
-  VLOG(1) << "User policy initialized.";
+  VLOG(1) << "Got user policy service.";
+  user_policy_service_ = user_policy_service;
   hashed_username_ = hashed_username;
   if (allow_trusted_certs_from_policy)
     SetAllowTrustedCertsFromPolicy();
-  ApplyNetworkConfiguration(chromeos::onc::ONC_SOURCE_USER_POLICY);
+
+  user_policy_change_registrar_.reset(new PolicyChangeRegistrar(
+      user_policy_service_,
+      PolicyNamespace(POLICY_DOMAIN_CHROME, std::string())));
+  user_policy_change_registrar_->Observe(
+      key::kOpenNetworkConfiguration,
+      base::Bind(&NetworkConfigurationUpdaterImpl::OnPolicyChanged,
+                 base::Unretained(this),
+                 chromeos::onc::ONC_SOURCE_USER_POLICY));
+
+  if (user_policy_service_->IsInitializationComplete(POLICY_DOMAIN_CHROME)) {
+    VLOG(1) << "User policy service is already initialized.";
+    ApplyNetworkConfiguration(chromeos::onc::ONC_SOURCE_USER_POLICY);
+  } else {
+    user_policy_service_->AddObserver(POLICY_DOMAIN_CHROME, this);
+  }
 }
 
 void NetworkConfigurationUpdaterImpl::UnsetUserPolicyService() {
+  if (!user_policy_service_)
+    return;
+
+  user_policy_change_registrar_.reset();
+  user_policy_service_->RemoveObserver(POLICY_DOMAIN_CHROME, this);
+  user_policy_service_ = NULL;
+}
+
+void NetworkConfigurationUpdaterImpl::OnPolicyUpdated(
+    const PolicyNamespace& ns,
+    const PolicyMap& previous,
+    const PolicyMap& current) {
+  // Ignore this call. Policy changes are already observed by the registrar.
+}
+
+void NetworkConfigurationUpdaterImpl::OnPolicyServiceInitialized(
+    PolicyDomain domain) {
+  if (domain != POLICY_DOMAIN_CHROME)
+    return;
+
+  // We don't know which policy service called this function, thus check
+  // both. Multiple removes are handled gracefully.
+  if (device_policy_service_->IsInitializationComplete(POLICY_DOMAIN_CHROME)) {
+    VLOG(1) << "Device policy service initialized.";
+    device_policy_service_->RemoveObserver(POLICY_DOMAIN_CHROME, this);
+    ApplyNetworkConfiguration(chromeos::onc::ONC_SOURCE_DEVICE_POLICY);
+  }
+  if (user_policy_service_ &&
+      user_policy_service_->IsInitializationComplete(POLICY_DOMAIN_CHROME)) {
+    VLOG(1) << "User policy service initialized.";
+    user_policy_service_->RemoveObserver(POLICY_DOMAIN_CHROME, this);
+    ApplyNetworkConfiguration(chromeos::onc::ONC_SOURCE_USER_POLICY);
+  }
 }
 
 void NetworkConfigurationUpdaterImpl::OnPolicyChanged(
@@ -74,12 +127,16 @@ void NetworkConfigurationUpdaterImpl::ApplyNetworkConfiguration(
           << chromeos::onc::GetSourceAsString(onc_source);
 
   std::string policy_key;
-  if (onc_source == chromeos::onc::ONC_SOURCE_USER_POLICY)
+  PolicyService* policy_service;
+  if (onc_source == chromeos::onc::ONC_SOURCE_USER_POLICY) {
     policy_key = key::kOpenNetworkConfiguration;
-  else
+    policy_service = user_policy_service_;
+  } else {
     policy_key = key::kDeviceOpenNetworkConfiguration;
+    policy_service = device_policy_service_;
+  }
 
-  const PolicyMap& policies = policy_service_->GetPolicies(
+  const PolicyMap& policies = policy_service->GetPolicies(
       PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()));
   const base::Value* policy_value = policies.GetValue(policy_key);
 
