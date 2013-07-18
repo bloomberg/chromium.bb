@@ -9,7 +9,15 @@
 
         <style>
 
-        video::cue { color: purple; background-color: lime; }
+        video::cue {
+            color: purple;
+            background-color: lime;
+            /* FIXME: 'text-decoration' shorthand to be handled when available.
+             * See https://chromiumcodereview.appspot.com/19516002 for details. */
+            text-decoration-line: underline;
+            text-decoration-style: dashed;
+            text-decoration-color: cyan;
+        }
 
         </style>
 
@@ -19,6 +27,9 @@
         {
             testExpected("getComputedStyle(textTrackDisplayElement(video, 'cue')).color", "rgb(128, 0, 128)");
             testExpected("getComputedStyle(textTrackDisplayElement(video, 'cue')).backgroundColor", "rgb(0, 255, 0)");
+            testExpected("getComputedStyle(textTrackDisplayElement(video, 'cue')).textDecorationLine", "underline");
+            testExpected("getComputedStyle(textTrackDisplayElement(video, 'cue')).textDecorationStyle", "dashed");
+            testExpected("getComputedStyle(textTrackDisplayElement(video, 'cue')).textDecorationColor", "rgb(0, 255, 255)");
             endTest();
         }
 

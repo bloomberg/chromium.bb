@@ -1080,10 +1080,16 @@ static inline bool isValidCueStyleProperty(CSSPropertyID id)
     case CSSPropertyOutlineWidth:
     case CSSPropertyVisibility:
     case CSSPropertyWhiteSpace:
+    // FIXME: 'text-decoration' shorthand to be handled when available.
+    // See https://chromiumcodereview.appspot.com/19516002 for details.
     case CSSPropertyTextDecoration:
     case CSSPropertyTextShadow:
     case CSSPropertyBorderStyle:
         return true;
+    case CSSPropertyTextDecorationLine:
+    case CSSPropertyTextDecorationStyle:
+    case CSSPropertyTextDecorationColor:
+        return RuntimeEnabledFeatures::css3TextDecorationsEnabled();
     default:
         break;
     }
