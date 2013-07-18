@@ -4,6 +4,8 @@
 
 #include "net/quic/quic_crypto_server_stream.h"
 
+#include "base/base64.h"
+#include "crypto/secure_hash.h"
 #include "net/quic/crypto/crypto_protocol.h"
 #include "net/quic/crypto/crypto_server_config.h"
 #include "net/quic/crypto/crypto_utils.h"
@@ -89,6 +91,25 @@ void QuicCryptoServerStream::OnHandshakeMessage(
   encryption_established_ = true;
   handshake_confirmed_ = true;
   session()->OnCryptoHandshakeEvent(QuicSession::HANDSHAKE_CONFIRMED);
+}
+
+bool QuicCryptoServerStream::GetBase64SHA256ClientChannelID(
+    string* output) const {
+  if (!encryption_established_ ||
+      crypto_negotiated_params_.channel_id.empty()) {
+    return false;
+  }
+
+  const string& channel_id(crypto_negotiated_params_.channel_id);
+  scoped_ptr<crypto::SecureHash> hash(
+      crypto::SecureHash::Create(crypto::SecureHash::SHA256));
+  hash->Update(channel_id.data(), channel_id.size());
+  uint8 digest[32];
+  hash->Finish(digest, sizeof(digest));
+
+  base::Base64Encode(string(
+      reinterpret_cast<const char*>(digest), sizeof(digest)), output);
+  return true;
 }
 
 QuicErrorCode QuicCryptoServerStream::ProcessClientHello(

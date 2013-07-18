@@ -32,6 +32,11 @@ class NET_EXPORT_PRIVATE QuicCryptoServerStream : public QuicCryptoStream {
   virtual void OnHandshakeMessage(
       const CryptoHandshakeMessage& message) OVERRIDE;
 
+  // GetBase64SHA256ClientChannelID sets |*output| to the base64 encoded,
+  // SHA-256 hash of the client's ChannelID key and returns true, if the client
+  // presented a ChannelID. Otherwise it returns false.
+  bool GetBase64SHA256ClientChannelID(string* output) const;
+
  protected:
   virtual QuicErrorCode ProcessClientHello(
       const CryptoHandshakeMessage& message,
