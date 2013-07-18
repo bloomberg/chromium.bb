@@ -71,11 +71,6 @@ REGISTER_NAMES = {
 REGISTER_BY_NAME = dict(map(reversed, REGISTER_NAMES.items()))
 
 
-def SubtractPointers_(p1, p2):
-  return (ctypes.cast(p1, ctypes.c_void_p).value -
-          ctypes.cast(p2, ctypes.c_void_p).value)
-
-
 CALLBACK_TYPE = ctypes.CFUNCTYPE(
     ctypes.c_uint32,  # Bool result
     ctypes.POINTER(ctypes.c_uint8),  # begin
@@ -174,10 +169,12 @@ def ValidateChunk(
     True if the chunk is valid, False if invalid.
   """
 
+  data_addr = ctypes.cast(data, ctypes.c_void_p).value
+
   def LowLevelCallback(begin, end, info, callback_data):
     if callback is not None:
-      begin_index = SubtractPointers_(begin, data)
-      end_index = SubtractPointers_(end, data)
+      begin_index = ctypes.cast(begin, ctypes.c_void_p).value - data_addr
+      end_index = ctypes.cast(end, ctypes.c_void_p).value - data_addr
       callback(begin_index, end_index, info)
 
     # See validator.h for details
@@ -211,8 +208,7 @@ def ValidateChunk(
 
 
 class DisassemblerError(Exception):
-  def __init__(self, offset=None):
-    self.offset = offset
+  pass
 
 
 def DisassembleChunk(data, bitness):
@@ -225,7 +221,7 @@ def DisassembleChunk(data, bitness):
     m = re.match(r'rejected at ([\da-f]+)', line)
     if m is not None:
       offset = int(m.group(1), 16)
-      raise DisassemblerError(offset)
+      raise DisassemblerError(offset, ' '.join('%02x' % ord(c) for c in data))
     insn = objdump_parser.ParseLine(line)
     insn = objdump_parser.CanonicalizeInstruction(insn)
     instructions.append(insn)

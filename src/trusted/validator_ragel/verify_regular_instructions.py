@@ -192,16 +192,17 @@ def ValidateInstruction(instruction):
       spec.ValidateDirectJumpOrRegularInstruction(dis, bitness=32)
       if not result:
         print 'warning: validator rejected', dis
+      return True
     except spec.SandboxingError as e:
       if result:
         print 'validator accepted instruction disallowed by specification'
         raise
     except spec.DoNotMatchError:
-      # TODO(shcherbina): When text-based specification is complete,
-      # it should raise.
-      pass
+      if result:
+        print 'validator accepted instruction not recognized by specification'
+        raise
 
-    return result
+    return False
 
   else:
     try:
@@ -212,10 +213,11 @@ def ValidateInstruction(instruction):
       return True
     except spec.SandboxingError as e:
       CheckInvalid64bitInstruction(instruction, dis, sandboxing_error=e)
-    except spec.DoNotMatchError:
-      # TODO(shcherbina): When text-based specification is complete,
-      # it should raise.
-      pass
+    except spec.DoNotMatchError as e:
+      CheckInvalid64bitInstruction(
+          instruction, dis, sandboxing_error=spec.SandboxingError(
+              'unrecognized instruction %s' % e))
+
     return False
 
 
