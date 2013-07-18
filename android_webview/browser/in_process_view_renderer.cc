@@ -239,6 +239,10 @@ void InProcessViewRenderer::DrawGL(AwDrawGLInfo* draw_info) {
   if (draw_info->mode == AwDrawGLInfo::kModeProcess)
     return;
 
+  // DrawGL may be called without OnDraw, so cancel |fallback_tick_| here as
+  // well just to be safe.
+  fallback_tick_.Cancel();
+
   if (last_egl_context_ != current_context) {
     // TODO(boliu): Handle context lost
     TRACE_EVENT_INSTANT0(
@@ -251,7 +255,6 @@ void InProcessViewRenderer::DrawGL(AwDrawGLInfo* draw_info) {
         "android_webview", "EarlyOut_NoCompositor", TRACE_EVENT_SCOPE_THREAD);
     return;
   }
-
 
   gfx::Transform transform;
   transform.matrix().setColMajorf(draw_info->transform);
@@ -605,6 +608,10 @@ void InProcessViewRenderer::FallbackTickFired() {
                "InProcessViewRenderer::FallbackTickFired",
                "continuous_invalidate_",
                continuous_invalidate_);
+
+  // This should only be called if OnDraw or DrawGL did not come in time, which
+  // means block_invalidates_ must still be true.
+  DCHECK(block_invalidates_);
   if (continuous_invalidate_ && compositor_) {
     SkDevice device(SkBitmap::kARGB_8888_Config, 1, 1);
     SkCanvas canvas(&device);
