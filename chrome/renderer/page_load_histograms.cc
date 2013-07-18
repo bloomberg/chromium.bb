@@ -94,10 +94,8 @@ bool DataReductionProxyWasUsed(WebFrame* frame) {
 
   DocumentState* document_state =
       DocumentState::FromDataSource(frame->dataSource());
-  if (!document_state->was_fetched_via_proxy() ||
-      !document_state->was_fetched_via_spdy()) {
+  if (!document_state->was_fetched_via_proxy())
     return false;
-  }
 
   std::string via_header(UTF16ToUTF8(
       frame->dataSource()->response().httpHeaderField(kViaHeaderName)));
