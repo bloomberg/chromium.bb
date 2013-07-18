@@ -14,12 +14,19 @@
 #include "content/common/socket_stream_messages.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/global_request_id.h"
+#include "net/base/net_errors.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/websockets/websocket_job.h"
 #include "net/websockets/websocket_throttle.h"
 
 namespace content {
+
+namespace {
+
+const size_t kMaxSocketStreamHosts = 16 * 1024;
+
+}  // namespace
 
 SocketStreamDispatcherHost::SocketStreamDispatcherHost(
     int render_process_id,
@@ -197,6 +204,18 @@ void SocketStreamDispatcherHost::OnConnect(int render_view_id,
            << " url=" << url
            << " socket_id=" << socket_id;
   DCHECK_NE(kNoSocketId, socket_id);
+
+  if (hosts_.size() >= kMaxSocketStreamHosts) {
+    if (!Send(new SocketStreamMsg_Failed(socket_id,
+                                         net::ERR_TOO_MANY_SOCKET_STREAMS))) {
+      DVLOG(1) << "SocketStreamMsg_Failed failed.";
+    }
+    if (!Send(new SocketStreamMsg_Closed(socket_id))) {
+      DVLOG(1) << "SocketStreamMsg_Closed failed.";
+    }
+    return;
+  }
+
   if (hosts_.Lookup(socket_id)) {
     DVLOG(1) << "socket_id=" << socket_id << " already registered.";
     return;

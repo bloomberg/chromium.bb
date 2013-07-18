@@ -292,6 +292,14 @@ NET_ERROR(ORIGIN_BOUND_CERT_GENERATION_TYPE_MISMATCH, -152)
 // ServerKeyExchange) or validate a Finished message.
 NET_ERROR(SSL_DECRYPT_ERROR_ALERT, -153)
 
+// There are too many pending WebSocketJob instances, so the new job was not
+// pushed to the queue.
+NET_ERROR(WS_THROTTLE_QUEUE_TOO_LARGE, -154)
+
+// There are too many active SocketStream instances, so the new connect request
+// was rejected.
+NET_ERROR(TOO_MANY_SOCKET_STREAMS, -155)
+
 // Certificate error codes
 //
 // The values of certificate error codes must be consecutive.

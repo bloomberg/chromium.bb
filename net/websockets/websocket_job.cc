@@ -148,7 +148,6 @@ void WebSocketJob::RestartWithAuth(const AuthCredentials& credentials) {
 void WebSocketJob::DetachDelegate() {
   state_ = CLOSED;
   WebSocketThrottle::GetInstance()->RemoveFromQueue(this);
-  WebSocketThrottle::GetInstance()->WakeupSocketIfNecessary();
 
   scoped_refptr<WebSocketJob> protect(this);
   weak_ptr_factory_.InvalidateWeakPtrs();
@@ -169,8 +168,12 @@ int WebSocketJob::OnStartOpenConnection(
     SocketStream* socket, const CompletionCallback& callback) {
   DCHECK(callback_.is_null());
   state_ = CONNECTING;
+
   addresses_ = socket->address_list();
-  WebSocketThrottle::GetInstance()->PutInQueue(this);
+  if (!WebSocketThrottle::GetInstance()->PutInQueue(this)) {
+    return ERR_WS_THROTTLE_QUEUE_TOO_LARGE;
+  }
+
   if (delegate_) {
     int result = delegate_->OnStartOpenConnection(socket, callback);
     DCHECK_EQ(OK, result);
@@ -246,7 +249,6 @@ void WebSocketJob::OnReceivedData(
 void WebSocketJob::OnClose(SocketStream* socket) {
   state_ = CLOSED;
   WebSocketThrottle::GetInstance()->RemoveFromQueue(this);
-  WebSocketThrottle::GetInstance()->WakeupSocketIfNecessary();
 
   scoped_refptr<WebSocketJob> protect(this);
   weak_ptr_factory_.InvalidateWeakPtrs();
@@ -497,7 +499,6 @@ void WebSocketJob::NotifyHeadersComplete() {
         socket_.get(), &received_data.front(), received_data.size());
 
   WebSocketThrottle::GetInstance()->RemoveFromQueue(this);
-  WebSocketThrottle::GetInstance()->WakeupSocketIfNecessary();
 }
 
 void WebSocketJob::SaveNextCookie() {

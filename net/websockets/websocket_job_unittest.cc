@@ -392,7 +392,7 @@ class WebSocketJobTest : public PlatformTest,
   }
   void SkipToConnecting() {
     websocket_->state_ = WebSocketJob::CONNECTING;
-    WebSocketThrottle::GetInstance()->PutInQueue(websocket_.get());
+    ASSERT_TRUE(WebSocketThrottle::GetInstance()->PutInQueue(websocket_.get()));
   }
   WebSocketJob::State GetWebSocketJobState() {
     return websocket_->state_;
@@ -432,6 +432,7 @@ class WebSocketJobTest : public PlatformTest,
   void TestInvalidSendData();
   void TestConnectByWebSocket(ThrottlingOption throttling);
   void TestConnectBySpdy(SpdyOption spdy, ThrottlingOption throttling);
+  void TestThrottlingLimit();
 
   SpdyWebSocketTestUtil spdy_util_;
   StreamType stream_type_;
@@ -821,7 +822,8 @@ void WebSocketJobTest::TestConnectByWebSocket(
     // Create former WebSocket object which obstructs the latter one.
     block_websocket = new WebSocketJob(NULL);
     block_websocket->addresses_ = AddressList(websocket_->address_list());
-    WebSocketThrottle::GetInstance()->PutInQueue(block_websocket.get());
+    ASSERT_TRUE(
+        WebSocketThrottle::GetInstance()->PutInQueue(block_websocket.get()));
   }
 
   websocket_->Connect();
@@ -832,10 +834,9 @@ void WebSocketJobTest::TestConnectByWebSocket(
 
     // Remove the former WebSocket object from throttling queue to unblock the
     // latter.
-    WebSocketThrottle::GetInstance()->RemoveFromQueue(block_websocket.get());
     block_websocket->state_ = WebSocketJob::CLOSED;
+    WebSocketThrottle::GetInstance()->RemoveFromQueue(block_websocket.get());
     block_websocket = NULL;
-    WebSocketThrottle::GetInstance()->WakeupSocketIfNecessary();
   }
 
   EXPECT_EQ(OK, WaitForResult());
@@ -950,7 +951,8 @@ void WebSocketJobTest::TestConnectBySpdy(
     // Create former WebSocket object which obstructs the latter one.
     block_websocket = new WebSocketJob(NULL);
     block_websocket->addresses_ = AddressList(websocket_->address_list());
-    WebSocketThrottle::GetInstance()->PutInQueue(block_websocket.get());
+    ASSERT_TRUE(
+        WebSocketThrottle::GetInstance()->PutInQueue(block_websocket.get()));
   }
 
   websocket_->Connect();
@@ -961,16 +963,42 @@ void WebSocketJobTest::TestConnectBySpdy(
 
     // Remove the former WebSocket object from throttling queue to unblock the
     // latter.
-    WebSocketThrottle::GetInstance()->RemoveFromQueue(block_websocket.get());
     block_websocket->state_ = WebSocketJob::CLOSED;
+    WebSocketThrottle::GetInstance()->RemoveFromQueue(block_websocket.get());
     block_websocket = NULL;
-    WebSocketThrottle::GetInstance()->WakeupSocketIfNecessary();
   }
 
   EXPECT_EQ(OK, WaitForResult());
   EXPECT_TRUE(data_->at_read_eof());
   EXPECT_TRUE(data_->at_write_eof());
   EXPECT_EQ(WebSocketJob::CLOSED, GetWebSocketJobState());
+}
+
+void WebSocketJobTest::TestThrottlingLimit() {
+  std::vector<scoped_refptr<WebSocketJob> > jobs;
+  const int kMaxWebSocketJobsThrottled = 1024;
+  IPAddressNumber ip;
+  ParseIPLiteralToNumber("127.0.0.1", &ip);
+  for (int i = 0; i < kMaxWebSocketJobsThrottled + 1; ++i) {
+    scoped_refptr<WebSocketJob> job = new WebSocketJob(NULL);
+    job->addresses_ = AddressList(AddressList::CreateFromIPAddress(ip, 80));
+    if (i >= kMaxWebSocketJobsThrottled)
+      EXPECT_FALSE(WebSocketThrottle::GetInstance()->PutInQueue(job));
+    else
+      EXPECT_TRUE(WebSocketThrottle::GetInstance()->PutInQueue(job));
+    jobs.push_back(job);
+  }
+
+  // Close the jobs in reverse order. Otherwise, We need to make them prepared
+  // for Wakeup call.
+  for (std::vector<scoped_refptr<WebSocketJob> >::reverse_iterator iter =
+           jobs.rbegin();
+       iter != jobs.rend();
+       ++iter) {
+    WebSocketJob* job = (*iter).get();
+    job->state_ = WebSocketJob::CLOSED;
+    WebSocketThrottle::GetInstance()->RemoveFromQueue(job);
+  }
 }
 
 // Execute tests in both spdy-disabled mode and spdy-enabled mode.
@@ -1057,6 +1085,10 @@ TEST_P(WebSocketJobTest, ConnectBySpdySpdyEnabled) {
 TEST_P(WebSocketJobTest, ThrottlingWebSocket) {
   WebSocketJob::set_websocket_over_spdy_enabled(false);
   TestConnectByWebSocket(THROTTLING_ON);
+}
+
+TEST_P(WebSocketJobTest, ThrottlingMaxNumberOfThrottledJobLimit) {
+  TestThrottlingLimit();
 }
 
 TEST_P(WebSocketJobTest, ThrottlingWebSocketSpdyEnabled) {
