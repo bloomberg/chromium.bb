@@ -29,7 +29,7 @@
 import optparse
 import StringIO
 import time
-import unittest2 as unittest
+import webkitpy.thirdparty.unittest2 as unittest
 import sys
 
 from webkitpy.common.system import executive_mock

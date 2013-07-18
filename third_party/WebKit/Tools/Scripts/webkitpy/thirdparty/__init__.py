@@ -75,15 +75,6 @@ class AutoinstallImportHook(object):
         if '.autoinstalled' not in fullname:
             return
 
-        # Note: all of the methods must follow the "_install_XXX" convention in
-        # order for autoinstall_everything(), below, to work properly.
-        if '.unittest2' in fullname:
-            self._install_unittest2()
-
-    def _install_unittest2(self):
-        self._ensure_autoinstalled_dir_is_in_sys_path()
-        return self._install(url="https://pypi.python.org/packages/source/u/unittest2/unittest2-0.5.1.tar.gz#md5=a0af5cac92bbbfa0c3b0e99571390e0f", url_subpath="unittest2-0.5.1/unittest2")
-
     def _install(self, url, url_subpath=None, target_name=None):
         installer = AutoInstaller(target_dir=_AUTOINSTALLED_DIR)
         return installer.install(url=url, url_subpath=url_subpath, target_name=target_name)

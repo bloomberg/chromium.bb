@@ -22,7 +22,7 @@
 
 import logging
 import sys
-import unittest2 as unittest
+import webkitpy.thirdparty.unittest2 as unittest
 import StringIO
 
 from webkitpy.common.system.filesystem import FileSystem

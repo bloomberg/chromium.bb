@@ -30,7 +30,7 @@
 import optparse
 import shutil
 import tempfile
-import unittest2 as unittest
+import webkitpy.thirdparty.unittest2 as unittest
 
 from webkitpy.common.host_mock import MockHost
 from webkitpy.common.system.filesystem_mock import MockFileSystem

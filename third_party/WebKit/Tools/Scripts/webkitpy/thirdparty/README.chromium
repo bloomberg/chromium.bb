@@ -78,3 +78,13 @@ Description: Used during presubmit checks and via lint-webkitpy. There is
     overlap between pep8 and pylint, but pep8 catches a bunch of stylistic
 	issues that pylint doesn't (e.g., warning about blank lines, various whitespace issues, etc.).
 Local Modifications: None
+
+Name: unittest2 - A backport of python 2.7 unittest module for Python 2.6.
+Short Name: unittest2
+URL: http://pypi.python.org/packages/source/u/unittest2/unittest2-0.5.1.tar.gz#md5=a0af5cac92bbbfa0c3b0e99571390e0f
+Version: 0.5.1
+License: ASL
+License File: NOT_SHIPPED
+Security Critical: no
+Description: Used for all of the unit tests for webkitpy.
+Local Modifications: Deleted unittest2/test/ to save space.

@@ -42,13 +42,15 @@ from webkitpy.test.runner import Runner, unit_test_name
 _log = logging.getLogger(__name__)
 
 
-def main():
-    up = os.path.dirname
-    webkit_root = up(up(up(up(up(os.path.abspath(__file__))))))
+up = os.path.dirname
+webkit_root = up(up(up(up(up(os.path.abspath(__file__))))))
 
-    tester = Tester()
-    tester.add_tree(os.path.join(webkit_root, 'Tools', 'Scripts'), 'webkitpy')
-    tester.add_tree(os.path.join(webkit_root, 'Source', 'WebKit2', 'Scripts'), 'webkit2')
+
+def main():
+    filesystem = FileSystem()
+    wkf = WebKitFinder(filesystem)
+    tester = Tester(filesystem, wkf)
+    tester.add_tree(wkf.path_from_webkit_base('Tools', 'Scripts'), 'webkitpy')
 
     tester.skip(('webkitpy.common.checkout.scm.scm_unittest',), 'are really, really, slow', 31818)
     if sys.platform == 'win32':
@@ -63,7 +65,7 @@ def main():
         from google.appengine.dist import use_library
         use_library('django', '1.2')
         dev_appserver.fix_sys_path()
-        tester.add_tree(os.path.join(webkit_root, 'Tools', 'TestResultServer'))
+        tester.add_tree(wkf.path_from_webkit_base('Tools', 'TestResultServer'))
     else:
         _log.info('Skipping TestResultServer tests; the Google AppEngine Python SDK is not installed.')
 
@@ -71,10 +73,11 @@ def main():
 
 
 class Tester(object):
-    def __init__(self, filesystem=None):
+    def __init__(self, filesystem=None, webkit_finder=None):
         self.filesystem = filesystem or FileSystem()
         self.finder = Finder(self.filesystem)
         self.printer = Printer(sys.stderr)
+        self.webkit_finder = webkit_finder or WebKitFinder(self.filesystem)
         self._options = None
 
     def add_tree(self, top_directory, starting_subdirectory=None):
@@ -124,6 +127,11 @@ class Tester(object):
         # Make sure PYTHONPATH is set up properly.
         sys.path = self.finder.additional_paths(sys.path) + sys.path
 
+        # FIXME: unittest2 and coverage need to be in sys.path for their internal imports to work.
+        thirdparty_path = self.webkit_finder.path_from_webkit_base('Tools', 'Scripts', 'webkitpy', 'thirdparty')
+        if not thirdparty_path in sys.path:
+            sys.path.append(thirdparty_path)
+
         # We autoinstall everything up so that we can run tests concurrently
         # and not have to worry about autoinstalling packages concurrently.
         self.printer.write_update("Checking autoinstalled packages ...")
@@ -140,12 +148,7 @@ class Tester(object):
             _log.warning("Checking code coverage, so running things serially")
             self._options.child_processes = 1
 
-            # FIXME: coverage needs to be in sys.path for its internal imports to work ... sigh.
-            thirdparty_path = WebKitFinder(self.filesystem).path_from_webkit_base('Tools', 'Scripts', 'webkitpy', 'thirdparty')
-            if not thirdparty_path in sys.path:
-                sys.path.append(thirdparty_path)
             import coverage
-
             cov = coverage.coverage(omit=["/usr/*", "*/webkitpy/thirdparty/*"])
             cov.start()
 
@@ -160,7 +163,7 @@ class Tester(object):
         self.printer.write_update("Running the tests ...")
         self.printer.num_tests = len(parallel_tests) + len(serial_tests)
         start = time.time()
-        test_runner = Runner(self.printer, loader)
+        test_runner = Runner(self.printer, loader, self.webkit_finder)
         test_runner.run(parallel_tests, self._options.child_processes)
         test_runner.run(serial_tests, 1)
 

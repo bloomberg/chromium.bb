@@ -29,7 +29,7 @@
 
 import os
 import re
-import unittest2 as unittest
+import webkitpy.thirdparty.unittest2 as unittest
 
 from webkitpy.common.system.outputcapture import OutputCapture
 from webkitpy.thirdparty.BeautifulSoup import BeautifulSoup

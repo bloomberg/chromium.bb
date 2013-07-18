@@ -22,7 +22,7 @@
 
 """Unit test for xml.py."""
 
-import unittest2 as unittest
+import webkitpy.thirdparty.unittest2 as unittest
 
 import xml
 

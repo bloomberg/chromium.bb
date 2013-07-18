@@ -40,7 +40,7 @@ import sys
 import subprocess
 import tempfile
 import time
-import unittest2 as unittest
+import webkitpy.thirdparty.unittest2 as unittest
 import urllib
 import shutil
 

@@ -28,7 +28,7 @@
 
 import hashlib
 import sys
-import unittest2 as unittest
+import webkitpy.thirdparty.unittest2 as unittest
 
 from webkitpy.common.checkout.baselineoptimizer import BaselineOptimizer
 from webkitpy.common.system.filesystem_mock import MockFileSystem

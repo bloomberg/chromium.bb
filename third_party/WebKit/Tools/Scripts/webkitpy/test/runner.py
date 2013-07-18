@@ -23,6 +23,7 @@
 """code to actually run a list of python tests."""
 
 import re
+import sys
 import time
 import unittest
 
@@ -37,13 +38,14 @@ def unit_test_name(test):
 
 
 class Runner(object):
-    def __init__(self, printer, loader):
+    def __init__(self, printer, loader, webkit_finder):
         self.printer = printer
         self.loader = loader
+        self.webkit_finder = webkit_finder
         self.tests_run = 0
         self.errors = []
         self.failures = []
-        self.worker_factory = lambda caller: _Worker(caller, self.loader)
+        self.worker_factory = lambda caller: _Worker(caller, self.loader, self.webkit_finder)
 
     def run(self, test_names, num_workers):
         if not test_names:
@@ -66,9 +68,15 @@ class Runner(object):
 
 
 class _Worker(object):
-    def __init__(self, caller, loader):
+    def __init__(self, caller, loader, webkit_finder):
         self._caller = caller
         self._loader = loader
+
+        # FIXME: unittest2 and coverage need to be in sys.path for their internal imports to work.
+        thirdparty_path = webkit_finder.path_from_webkit_base('Tools', 'Scripts', 'webkitpy', 'thirdparty')
+        if not thirdparty_path in sys.path:
+            sys.path.append(thirdparty_path)
+
 
     def handle(self, message_name, source, test_name):
         assert message_name == 'test'

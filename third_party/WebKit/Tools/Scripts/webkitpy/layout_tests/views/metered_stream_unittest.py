@@ -29,7 +29,7 @@
 import logging
 import re
 import StringIO
-import unittest2 as unittest
+import webkitpy.thirdparty.unittest2 as unittest
 
 from webkitpy.layout_tests.views.metered_stream import MeteredStream
 

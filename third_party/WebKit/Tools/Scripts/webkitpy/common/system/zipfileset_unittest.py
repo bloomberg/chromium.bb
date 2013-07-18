@@ -23,7 +23,7 @@
 
 import shutil
 import tempfile
-import unittest2 as unittest
+import webkitpy.thirdparty.unittest2 as unittest
 import zipfile
 
 from webkitpy.common.system.filesystem_mock import MockFileSystem

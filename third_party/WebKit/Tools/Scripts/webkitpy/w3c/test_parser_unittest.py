@@ -28,7 +28,7 @@
 # SUCH DAMAGE.
 
 import os
-import unittest2 as unittest
+import webkitpy.thirdparty.unittest2 as unittest
 
 from webkitpy.common.system.outputcapture import OutputCapture
 from webkitpy.w3c.test_parser import TestParser

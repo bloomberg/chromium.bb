@@ -23,7 +23,10 @@
 import logging
 import re
 import StringIO
-import unittest2 as unittest
+import webkitpy.thirdparty.unittest2 as unittest
+
+from webkitpy.common.system.filesystem import FileSystem
+from webkitpy.common.webkit_finder import WebKitFinder
 
 from webkitpy.tool.mocktool import MockOptions
 from webkitpy.test.printer import Printer
@@ -90,7 +93,7 @@ class RunnerTest(unittest.TestCase):
         loader = FakeLoader(('test1 (Foo)', '.', ''),
                             ('test2 (Foo)', 'F', 'test2\nfailed'),
                             ('test3 (Foo)', 'E', 'test3\nerred'))
-        runner = Runner(Printer(stream, options), loader)
+        runner = Runner(Printer(stream, options), loader, WebKitFinder(FileSystem()))
         runner.run(['Foo.test1', 'Foo.test2', 'Foo.test3'], 1)
         self.assertEqual(runner.tests_run, 3)
         self.assertEqual(len(runner.failures), 1)

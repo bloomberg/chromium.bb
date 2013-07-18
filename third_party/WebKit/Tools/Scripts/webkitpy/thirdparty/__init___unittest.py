@@ -27,11 +27,11 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import sys
-import unittest2 as unittest
+
+import webkitpy.thirdparty.unittest2 as unittest
 
 
 class ThirdpartyTest(unittest.TestCase):
     def test_imports(self):
         # This method tests that we can actually import everything.
-        # unused-variable, import failures - pylint: disable-msg=W0612,E0611,F0401
-        import webkitpy.thirdparty.autoinstalled.unittest2
+        pass

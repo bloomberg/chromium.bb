@@ -30,7 +30,7 @@ import codecs
 import os
 import shutil
 import tempfile
-import unittest2 as unittest
+import webkitpy.thirdparty.unittest2 as unittest
 
 from .checkout import Checkout
 from .scm import SCMDetector
