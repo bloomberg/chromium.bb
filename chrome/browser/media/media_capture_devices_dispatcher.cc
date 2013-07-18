@@ -64,7 +64,8 @@ bool IsOriginWhitelistedForScreenCapture(const GURL& origin) {
       origin.spec() == "https://plus.google.com/" ||
       origin.spec() == "chrome-extension://pkedcjkdefgpdelpbcmbmeomcjbeemfm/" ||
       origin.spec() == "chrome-extension://fmfcbgogabcbclcofgocippekhfcmgfj/" ||
-      origin.spec() == "chrome-extension://hfaagokkkhdbgiakmmlclaapfelnkoah/") {
+      origin.spec() == "chrome-extension://hfaagokkkhdbgiakmmlclaapfelnkoah/" ||
+      origin.spec() == "chrome-extension://gfdkimpbcpahaombhbimeihdjnejgicl/") {
     return true;
   }
   // Check against hashed origins.
@@ -175,7 +176,9 @@ void MediaCaptureDevicesDispatcher::ProcessMediaAccessRequest(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (request.video_type == content::MEDIA_SCREEN_VIDEO_CAPTURE) {
-    ProcessScreenCaptureAccessRequest(web_contents, request, callback);
+    ProcessScreenCaptureAccessRequest(
+        web_contents, request, callback,
+        extension && extension->location() == extensions::Manifest::COMPONENT);
   } else if (extension) {
     // For extensions access is approved based on extension permissions.
     ProcessMediaAccessRequestFromExtension(
@@ -188,7 +191,8 @@ void MediaCaptureDevicesDispatcher::ProcessMediaAccessRequest(
 void MediaCaptureDevicesDispatcher::ProcessScreenCaptureAccessRequest(
     content::WebContents* web_contents,
     const content::MediaStreamRequest& request,
-    const content::MediaResponseCallback& callback) {
+    const content::MediaResponseCallback& callback,
+    bool component_extension) {
   content::MediaStreamDevices devices;
 
   bool screen_capture_enabled =
@@ -209,22 +213,30 @@ void MediaCaptureDevicesDispatcher::ProcessScreenCaptureAccessRequest(
   //  3. Audio capture was not requested (it's not supported yet).
   if (screen_capture_enabled && origin_is_secure &&
       request.audio_type == content::MEDIA_NO_SERVICE) {
-    string16 application_name = UTF8ToUTF16(request.security_origin.spec());
-    chrome::MessageBoxResult result = chrome::ShowMessageBox(
-        NULL,
-        l10n_util::GetStringFUTF16(IDS_MEDIA_SCREEN_CAPTURE_CONFIRMATION_TITLE,
-                                   application_name),
-        l10n_util::GetStringFUTF16(IDS_MEDIA_SCREEN_CAPTURE_CONFIRMATION_TEXT,
-                                   application_name),
-        chrome::MESSAGE_BOX_TYPE_QUESTION);
-    if (result == chrome::MESSAGE_BOX_RESULT_YES) {
+    // For component extensions, bypass message box.
+    bool user_approved = false;
+    if (!component_extension) {
+      string16 application_name = UTF8ToUTF16(request.security_origin.spec());
+      chrome::MessageBoxResult result = chrome::ShowMessageBox(
+          NULL,
+          l10n_util::GetStringFUTF16(
+              IDS_MEDIA_SCREEN_CAPTURE_CONFIRMATION_TITLE, application_name),
+          l10n_util::GetStringFUTF16(
+              IDS_MEDIA_SCREEN_CAPTURE_CONFIRMATION_TEXT, application_name),
+          chrome::MESSAGE_BOX_TYPE_QUESTION);
+      user_approved = (result == chrome::MESSAGE_BOX_RESULT_YES);
+    }
+
+    if (user_approved || component_extension) {
       devices.push_back(content::MediaStreamDevice(
           content::MEDIA_SCREEN_VIDEO_CAPTURE, std::string(), "Screen"));
     }
   }
 
   scoped_ptr<content::MediaStreamUI> ui;
-  if (!devices.empty()) {
+  // Unless we're being invoked from a component extension, register to display
+  // the notification for stream capture.
+  if (!devices.empty() && !component_extension) {
     ui = media_stream_capture_indicator_->RegisterMediaStream(
         web_contents, devices);
   }
