@@ -91,7 +91,7 @@ IN_PROC_BROWSER_TEST_F(ActivityLogPrerenderTest, TestScriptInjected) {
   scoped_ptr<prerender::PrerenderHandle> prerender_handle(
       prerender_manager->AddPrerenderFromLocalPredictor(
           url,
-          web_contents->GetController().GetDefaultSessionStorageNamespace(),
+          web_contents->GetController().GetSessionStorageNamespace(),
           kSize));
 
   page_observer.Wait();

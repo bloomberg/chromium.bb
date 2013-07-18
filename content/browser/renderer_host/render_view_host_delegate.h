@@ -414,6 +414,10 @@ class CONTENT_EXPORT RenderViewHostDelegate {
       const MediaStreamRequest& request,
       const MediaResponseCallback& callback) {}
 
+  // Returns the SessionStorageNamespace the render view should use. Might
+  // create the SessionStorageNamespace on the fly.
+  virtual SessionStorageNamespace* GetSessionStorageNamespace();
+
  protected:
   virtual ~RenderViewHostDelegate() {}
 };

@@ -32,8 +32,7 @@ RenderViewHost* TestRenderViewHostFactory::CreateRenderViewHost(
     RenderWidgetHostDelegate* widget_delegate,
     int routing_id,
     int main_frame_routing_id,
-    bool swapped_out,
-    SessionStorageNamespace* session_storage) {
+    bool swapped_out) {
   return new TestRenderViewHost(
       instance, delegate, widget_delegate, routing_id, main_frame_routing_id,
       swapped_out);

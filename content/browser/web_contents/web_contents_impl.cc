@@ -271,18 +271,11 @@ WebContents* WebContents::Create(const WebContents::CreateParams& params) {
 
 WebContents* WebContents::CreateWithSessionStorage(
     const WebContents::CreateParams& params,
-    const SessionStorageNamespaceMap& session_storage_namespace_map) {
+    SessionStorageNamespace* session_storage_namespace) {
   WebContentsImpl* new_contents = new WebContentsImpl(
       params.browser_context, NULL);
-
-  for (SessionStorageNamespaceMap::const_iterator it =
-           session_storage_namespace_map.begin();
-       it != session_storage_namespace_map.end();
-       ++it) {
-    new_contents->GetController()
-        .SetSessionStorageNamespace(it->first, it->second.get());
-  }
-
+  new_contents->GetController()
+      .SetSessionStorageNamespace(session_storage_namespace);
   new_contents->Init(params);
   return new_contents;
 }
@@ -1463,10 +1456,6 @@ void WebContentsImpl::CreateNewWindow(
   // We must assign the SessionStorageNamespace before calling Init().
   //
   // http://crbug.com/142685
-  const std::string& partition_id =
-      GetContentClient()->browser()->
-          GetStoragePartitionIdForSite(GetBrowserContext(),
-                                       site_instance->GetSiteURL());
   StoragePartition* partition = BrowserContext::GetStoragePartition(
       GetBrowserContext(), site_instance.get());
   DOMStorageContextImpl* dom_storage_context =
@@ -1475,7 +1464,6 @@ void WebContentsImpl::CreateNewWindow(
       static_cast<SessionStorageNamespaceImpl*>(session_storage_namespace);
   CHECK(session_storage_namespace_impl->IsFromContext(dom_storage_context));
   new_contents->GetController().SetSessionStorageNamespace(
-      partition_id,
       session_storage_namespace);
   CreateParams create_params(GetBrowserContext(), site_instance.get());
   create_params.routing_id = route_id;
@@ -1693,6 +1681,10 @@ void WebContentsImpl::RequestMediaAccessPermission(
     delegate_->RequestMediaAccessPermission(this, request, callback);
   else
     callback.Run(MediaStreamDevices(), scoped_ptr<MediaStreamUI>());
+}
+
+SessionStorageNamespace* WebContentsImpl::GetSessionStorageNamespace() {
+  return controller_.GetSessionStorageNamespace();
 }
 
 void WebContentsImpl::DidSendScreenRects(RenderWidgetHostImpl* rwh) {

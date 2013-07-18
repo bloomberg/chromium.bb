@@ -88,6 +88,6 @@ void OmniboxCurrentPageDelegateImpl::DoPrerender(
   predictors::AutocompleteActionPredictorFactory::GetForProfile(profile_)->
       StartPrerendering(
           match.destination_url,
-          web_contents->GetController().GetSessionStorageNamespaceMap(),
+          web_contents->GetController().GetSessionStorageNamespace(),
           container_bounds.size());
 }

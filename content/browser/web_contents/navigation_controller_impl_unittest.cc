@@ -198,6 +198,9 @@ class NavigationControllerTest
     WebContents* web_contents = RenderViewHostImplTestHarness::web_contents();
     ASSERT_TRUE(web_contents);  // The WebContents should be created by now.
     WebContentsObserver::Observe(web_contents);
+    // Ensure that SessionStorageNamespace gets created in the test, too. In
+    // production code, it's created on demand when a RenderView is created.
+    controller().GetSessionStorageNamespace();
   }
 
   // WebContentsObserver:
@@ -2921,26 +2924,6 @@ TEST_F(NavigationControllerTest, CopyStateFrom) {
   SiteInstance* instance1 =
       GetSiteInstanceFromEntry(other_controller.GetEntryAtIndex(0));
   EXPECT_EQ(0, other_contents->GetMaxPageIDForSiteInstance(instance1));
-
-  // Ensure the SessionStorageNamespaceMaps are the same size and have
-  // the same partitons loaded.
-  //
-  // TODO(ajwong): We should load a url from a different partition earlier
-  // to make sure this map has more than one entry.
-  const SessionStorageNamespaceMap& session_storage_namespace_map =
-      controller.GetSessionStorageNamespaceMap();
-  const SessionStorageNamespaceMap& other_session_storage_namespace_map =
-      other_controller.GetSessionStorageNamespaceMap();
-  EXPECT_EQ(session_storage_namespace_map.size(),
-            other_session_storage_namespace_map.size());
-  for (SessionStorageNamespaceMap::const_iterator it =
-           session_storage_namespace_map.begin();
-       it != session_storage_namespace_map.end();
-       ++it) {
-    SessionStorageNamespaceMap::const_iterator other =
-        other_session_storage_namespace_map.find(it->first);
-    EXPECT_TRUE(other != other_session_storage_namespace_map.end());
-  }
 }
 
 // Tests CopyStateFromAndPrune with 2 urls in source, 1 in dest.

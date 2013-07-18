@@ -323,10 +323,8 @@ PrerenderHandle* PrerenderManager::AddPrerenderFromLinkRelPrerender(
       return NULL;
     if (source_web_contents->GetURL().host() == url.host())
       origin = ORIGIN_LINK_REL_PRERENDER_SAMEDOMAIN;
-    // TODO(ajwong): This does not correctly handle storage for isolated apps.
     session_storage_namespace =
-        source_web_contents->GetController()
-            .GetDefaultSessionStorageNamespace();
+        source_web_contents->GetController().GetSessionStorageNamespace();
   }
 
   // If the prerender request comes from a recently cancelled prerender that
@@ -408,10 +406,8 @@ bool PrerenderManager::MaybeUsePrerenderedPage(WebContents* web_contents,
 
   DeleteOldEntries();
   to_delete_prerenders_.clear();
-  // TODO(ajwong): This doesn't handle isolated apps correctly.
   PrerenderData* prerender_data = FindPrerenderData(
-          url,
-          web_contents->GetController().GetDefaultSessionStorageNamespace());
+      url, web_contents->GetController().GetSessionStorageNamespace());
   if (!prerender_data)
     return false;
   DCHECK(prerender_data->contents());

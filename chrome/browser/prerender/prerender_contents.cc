@@ -180,9 +180,8 @@ void PrerenderContents::PrepareForUse() {
 
   SessionStorageNamespace* session_storage_namespace = NULL;
   if (prerender_contents_) {
-    // TODO(ajwong): This does not correctly handle storage for isolated apps.
     session_storage_namespace = prerender_contents_->
-        GetController().GetDefaultSessionStorageNamespace();
+        GetController().GetSessionStorageNamespace();
   }
   prerender_manager_->StartPendingPrerenders(
       child_id_, &pending_prerenders_, session_storage_namespace);
@@ -474,12 +473,8 @@ size_t PrerenderContents::pending_prerender_count() const {
 
 WebContents* PrerenderContents::CreateWebContents(
     SessionStorageNamespace* session_storage_namespace) {
-  // TODO(ajwong): Remove the temporary map once prerendering is aware of
-  // multiple session storage namespaces per tab.
-  content::SessionStorageNamespaceMap session_storage_namespace_map;
-  session_storage_namespace_map[std::string()] = session_storage_namespace;
   return WebContents::CreateWithSessionStorage(
-      WebContents::CreateParams(profile_), session_storage_namespace_map);
+      WebContents::CreateParams(profile_), session_storage_namespace);
 }
 
 void PrerenderContents::NotifyPrerenderStart() {

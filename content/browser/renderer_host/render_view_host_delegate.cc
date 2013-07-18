@@ -45,4 +45,8 @@ bool RenderViewHostDelegate::IsFullscreenForCurrentTab() const {
   return false;
 }
 
+SessionStorageNamespace* RenderViewHostDelegate::GetSessionStorageNamespace() {
+  return NULL;
+}
+
 }  // namespace content

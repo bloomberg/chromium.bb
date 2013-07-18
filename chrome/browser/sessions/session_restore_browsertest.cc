@@ -1073,18 +1073,18 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, SessionStorage) {
   ui_test_utils::NavigateToURL(browser(), url1_);
   content::NavigationController* controller =
       &browser()->tab_strip_model()->GetActiveWebContents()->GetController();
-  ASSERT_TRUE(controller->GetDefaultSessionStorageNamespace());
+  ASSERT_TRUE(controller->GetSessionStorageNamespace());
   std::string session_storage_persistent_id =
-      controller->GetDefaultSessionStorageNamespace()->persistent_id();
+      controller->GetSessionStorageNamespace()->persistent_id();
   Browser* new_browser = QuitBrowserAndRestore(browser(), 1);
   ASSERT_EQ(1u, active_browser_list_->size());
   ASSERT_EQ(url1_,
             new_browser->tab_strip_model()->GetActiveWebContents()->GetURL());
   content::NavigationController* new_controller =
       &new_browser->tab_strip_model()->GetActiveWebContents()->GetController();
-  ASSERT_TRUE(new_controller->GetDefaultSessionStorageNamespace());
+  ASSERT_TRUE(new_controller->GetSessionStorageNamespace());
   std::string restored_session_storage_persistent_id =
-      new_controller->GetDefaultSessionStorageNamespace()->persistent_id();
+      new_controller->GetSessionStorageNamespace()->persistent_id();
   EXPECT_EQ(session_storage_persistent_id,
             restored_session_storage_persistent_id);
 }
@@ -1095,15 +1095,12 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, SessionStorageAfterTabReplace) {
   {
     content::NavigationController* controller =
         &browser()->tab_strip_model()->GetActiveWebContents()->GetController();
-    ASSERT_TRUE(controller->GetDefaultSessionStorageNamespace());
+    ASSERT_TRUE(controller->GetSessionStorageNamespace());
 
-    content::SessionStorageNamespaceMap session_storage_namespace_map;
-    session_storage_namespace_map[std::string()] =
-        controller->GetDefaultSessionStorageNamespace();
     scoped_ptr<content::WebContents> web_contents(
         content::WebContents::CreateWithSessionStorage(
             content::WebContents::CreateParams(browser()->profile()),
-            session_storage_namespace_map));
+            controller->GetSessionStorageNamespace()));
 
     TabStripModel* tab_strip_model = browser()->tab_strip_model();
     scoped_ptr<content::WebContents> old_web_contents(
@@ -1118,7 +1115,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, SessionStorageAfterTabReplace) {
   content::NavigationController* controller =
       &browser()->tab_strip_model()->GetActiveWebContents()->GetController();
   EXPECT_TRUE(
-      controller->GetDefaultSessionStorageNamespace()->should_persist());
+      controller->GetSessionStorageNamespace()->should_persist());
 
   // Quit and restore. Check that no extra tabs were created.
   Browser* new_browser = QuitBrowserAndRestore(browser(), 1);

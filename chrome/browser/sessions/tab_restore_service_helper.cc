@@ -419,9 +419,7 @@ void TabRestoreServiceHelper::PopulateTab(
   tab->user_agent_override =
       controller->GetWebContents()->GetUserAgentOverride();
 
-  // TODO(ajwong): This does not correctly handle storage for isolated apps.
-  tab->session_storage_namespace =
-      controller->GetDefaultSessionStorageNamespace();
+  tab->session_storage_namespace = controller->GetSessionStorageNamespace();
 
   // Delegate may be NULL during unit tests.
   if (delegate) {
