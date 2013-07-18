@@ -122,6 +122,8 @@ struct wl_event_queue;
 void wl_event_queue_destroy(struct wl_event_queue *queue);
 
 void wl_proxy_marshal(struct wl_proxy *p, uint32_t opcode, ...);
+void wl_proxy_marshal_array(struct wl_proxy *p, uint32_t opcode,
+			    union wl_argument *args);
 struct wl_proxy *wl_proxy_create(struct wl_proxy *factory,
 				 const struct wl_interface *interface);
 
@@ -129,6 +131,9 @@ void wl_proxy_destroy(struct wl_proxy *proxy);
 int wl_proxy_add_listener(struct wl_proxy *proxy,
 			  void (**implementation)(void), void *data);
 const void *wl_proxy_get_listener(struct wl_proxy *proxy);
+int wl_proxy_add_dispatcher(struct wl_proxy *proxy,
+			    wl_dispatcher_func_t dispatcher_func,
+			    const void * dispatcher_data, void *data);
 void wl_proxy_set_user_data(struct wl_proxy *proxy, void *user_data);
 void *wl_proxy_get_user_data(struct wl_proxy *proxy);
 uint32_t wl_proxy_get_id(struct wl_proxy *proxy);
