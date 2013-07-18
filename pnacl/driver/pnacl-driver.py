@@ -41,6 +41,7 @@ EXTRA_ENV = {
   # Command-line options
   'GCC_MODE'    : '',     # '' (default), '-E', '-c', or '-S'
   'STDINC'      : '1',    # Include standard headers (-nostdinc sets to 0)
+  'STDINCCXX'   : '1',    # Include standard cxx headers (-nostdinc++ sets to 0)
   'STDLIB'      : '1',    # Include standard libraries (-nostdlib sets to 0)
   'DEFAULTLIBS' : '1',    # Link with default libraries
   'DIAGNOSTIC'  : '0',    # Diagnostic flag detected
@@ -96,7 +97,8 @@ EXTRA_ENV = {
 
   'ISYSTEM_CLANG'  : '${BASE_LLVM}/lib/clang/3.3/include',
 
-  'ISYSTEM_CXX' : '${INCLUDE_CXX_HEADERS ? ${ISYSTEM_CXX_%LIBMODE%}}',
+  'ISYSTEM_CXX' :
+    '${INCLUDE_CXX_HEADERS && STDINCCXX ? ${ISYSTEM_CXX_%LIBMODE%}}',
 
   # TODO(pdox): This difference will go away as soon as we compile
   #             libstdc++.so ourselves.
@@ -251,6 +253,7 @@ GCCPatterns = [
   ( '-allow-asm',       "env.set('NO_ASM', '0')"),
 
   ( '-nostdinc',       "env.set('STDINC', '0')"),
+  ( '-nostdinc\+\+',   "env.set('STDINCCXX', '0')"),
   ( '-nostdlib',       "env.set('STDLIB', '0')"),
   ( '-nodefaultlibs',  "env.set('DEFAULTLIBS', '0')"),
 
@@ -330,6 +333,12 @@ GCCPatterns = [
 
   ( '(-Wp,.*)', AddCCFlag),
   ( '(-Xpreprocessor .*)', AddCCFlag),
+  ( ('(-Xclang)', '(.*)'), AddCCFlag),
+
+  # Accept and ignore default flags
+  ( '-m32',                      ""),
+  ( ('-target', 'le32-.*-nacl'), ""),
+  ( '-emit-llvm',                ""),
 
   ( '(-MG)',          AddCCFlag),
   ( '(-MMD)',         AddCCFlag),
