@@ -94,7 +94,7 @@ const AffineTransform& RenderSVGResourceMarker::localToParentTransform() const
 
 FloatPoint RenderSVGResourceMarker::referencePoint() const
 {
-    SVGMarkerElement* marker = static_cast<SVGMarkerElement*>(node());
+    SVGMarkerElement* marker = toSVGMarkerElement(node());
     ASSERT(marker);
 
     SVGLengthContext lengthContext(marker);
@@ -103,7 +103,7 @@ FloatPoint RenderSVGResourceMarker::referencePoint() const
 
 float RenderSVGResourceMarker::angle() const
 {
-    SVGMarkerElement* marker = static_cast<SVGMarkerElement*>(node());
+    SVGMarkerElement* marker = toSVGMarkerElement(node());
     ASSERT(marker);
 
     float angle = -1;
@@ -115,7 +115,7 @@ float RenderSVGResourceMarker::angle() const
 
 AffineTransform RenderSVGResourceMarker::markerTransformation(const FloatPoint& origin, float autoAngle, float strokeWidth) const
 {
-    SVGMarkerElement* marker = static_cast<SVGMarkerElement*>(node());
+    SVGMarkerElement* marker = toSVGMarkerElement(node());
     ASSERT(marker);
 
     float markerAngle = angle();
@@ -157,7 +157,7 @@ AffineTransform RenderSVGResourceMarker::markerContentTransformation(const Affin
 
 AffineTransform RenderSVGResourceMarker::viewportTransform() const
 {
-    SVGMarkerElement* marker = static_cast<SVGMarkerElement*>(node());
+    SVGMarkerElement* marker = toSVGMarkerElement(node());
     ASSERT(marker);
 
     return marker->viewBoxToViewTransform(m_viewport.width(), m_viewport.height());
@@ -168,7 +168,7 @@ void RenderSVGResourceMarker::calcViewport()
     if (!selfNeedsLayout())
         return;
 
-    SVGMarkerElement* marker = static_cast<SVGMarkerElement*>(node());
+    SVGMarkerElement* marker = toSVGMarkerElement(node());
     ASSERT(marker);
     
     SVGLengthContext lengthContext(marker);
