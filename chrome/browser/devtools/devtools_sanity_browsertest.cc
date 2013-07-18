@@ -474,12 +474,6 @@ IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest,
   RunTest("testContentScriptIsPresent", kPageWithContentScript);
 }
 
-// Tests that renderer process native memory is feasible.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
-                       DISABLED_TestRendererProcessNativeMemorySize) {
-  RunTest("testRendererProcessNativeMemorySize", std::string());
-}
-
 // Tests that scripts are not duplicated after Scripts Panel switch.
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
                        TestNoScriptDuplicatesOnPanelSwitch) {
