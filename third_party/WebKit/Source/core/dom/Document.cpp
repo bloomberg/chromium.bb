@@ -1104,8 +1104,11 @@ void Document::setReadyState(ReadyState readyState)
 
 String Document::encoding() const
 {
+    // TextEncoding::domName() returns a char*, no need to allocate a new
+    // String for it each time.
+    // FIXME: We should fix TextEncoding to speak AtomicString anyway.
     if (TextResourceDecoder* d = decoder())
-        return d->encoding().domName();
+        return AtomicString(d->encoding().domName());
     return String();
 }
 
