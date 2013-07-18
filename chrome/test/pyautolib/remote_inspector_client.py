@@ -905,18 +905,12 @@ class RemoteInspectorClient(object):
                                      # Only if |include_summary| is True.
       }
     """
-    # TODO(eustas): Remove this hack after M27 is released.
-    if self._IsContentVersionNotOlderThan(537, 27):
-      get_heap_snapshot_method = '.getHeapSnapshot'
-    else:
-      get_heap_snapshot_method = '.getProfile'
-
     HEAP_SNAPSHOT_MESSAGES = [
       ('Page.getResourceTree', {}),
       ('Debugger.enable', {}),
       (self._agent_name + '.clearProfiles', {}),
       (self._agent_name + '.takeHeapSnapshot', {}),
-      (self._agent_name + get_heap_snapshot_method, {}),
+      (self._agent_name + '.getHeapSnapshot', {}),
     ]
 
     self._current_heap_snapshot = []
@@ -1033,67 +1027,6 @@ class RemoteInspectorClient(object):
     return self._result
 
   def GetMemoryObjectCounts(self):
-    """Retrieves memory object count information.
-
-    Returns:
-      A dictionary containing the memory object count information:
-      {
-        'DOMNodeCount': integer,  # Total number of DOM nodes.
-        'EventListenerCount': integer,  # Total number of event listeners.
-      }
-    """
-    # TODO(yurys): Remove this hack after M27 is released.
-    if self._IsContentVersionNotOlderThan(537, 31):
-      return self._GetMemoryObjectCountsNew()
-
-    MEMORY_COUNT_MESSAGES = [
-      ('Memory.getDOMNodeCount', {})
-    ]
-
-    self._event_listener_count = None
-    self._dom_node_count = None
-
-    done_condition = threading.Condition()
-    def HandleReply(reply_dict):
-      """Processes a reply message received from the remote Chrome instance.
-
-      Args:
-        reply_dict: A dictionary object representing the reply message received
-                    from the remote Chrome instance.
-      """
-      if 'result' in reply_dict and 'domGroups' in reply_dict['result']:
-        event_listener_count = 0
-        dom_node_count = 0
-        dom_group_list = reply_dict['result']['domGroups']
-        for dom_group in dom_group_list:
-          listener_array = dom_group['listenerCount']
-          for listener in listener_array:
-            event_listener_count += listener['count']
-          dom_node_array = dom_group['nodeCount']
-          for dom_element in dom_node_array:
-            dom_node_count += dom_element['count']
-        self._event_listener_count = event_listener_count
-        self._dom_node_count = dom_node_count
-
-        done_condition.acquire()
-        done_condition.notify()
-        done_condition.release()
-
-    # Tell the remote inspector to collect memory count info, then wait until
-    # that information is available to return.
-    self._remote_inspector_thread.PerformAction(MEMORY_COUNT_MESSAGES,
-                                                HandleReply)
-
-    done_condition.acquire()
-    done_condition.wait()
-    done_condition.release()
-
-    return {
-      'DOMNodeCount': self._dom_node_count,
-      'EventListenerCount': self._event_listener_count,
-    }
-
-  def _GetMemoryObjectCountsNew(self):
     """Retrieves memory object count information.
 
     Returns:
