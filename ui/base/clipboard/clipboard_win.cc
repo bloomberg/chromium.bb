@@ -15,7 +15,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/shared_memory.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/safe_numerics.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"

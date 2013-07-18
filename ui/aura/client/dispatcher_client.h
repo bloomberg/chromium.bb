@@ -5,9 +5,9 @@
 #ifndef UI_AURA_CLIENT_DISPATCHER_CLIENT_H_
 #define UI_AURA_CLIENT_DISPATCHER_CLIENT_H_
 
+#include "base/message_loop/message_loop.h"
 #include "ui/aura/aura_export.h"
 #include "ui/aura/window.h"
-#include "base/message_loop.h"
 
 namespace aura {
 class RootWindow;

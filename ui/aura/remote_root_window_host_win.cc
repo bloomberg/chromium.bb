@@ -8,7 +8,7 @@
 
 #include <algorithm>
 
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_sender.h"
 #include "ui/aura/client/capture_client.h"

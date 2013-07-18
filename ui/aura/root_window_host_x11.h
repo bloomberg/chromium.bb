@@ -13,7 +13,7 @@
 #undef RootWindow
 
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "ui/aura/aura_export.h"
 #include "ui/aura/env_observer.h"
 #include "ui/aura/root_window_host.h"

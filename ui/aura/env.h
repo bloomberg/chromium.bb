@@ -6,7 +6,7 @@
 #define UI_AURA_ENV_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/observer_list.h"
 #include "ui/aura/aura_export.h"
 #include "ui/base/events/event_handler.h"

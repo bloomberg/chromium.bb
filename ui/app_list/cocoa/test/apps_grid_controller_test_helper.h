@@ -6,7 +6,7 @@
 #define UI_APP_LIST_COCOA_TEST_APPS_GRID_CONTROLLER_TEST_HELPER_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #import "ui/base/test/ui_cocoa_test_helper.h"
 
 @class AppsGridController;

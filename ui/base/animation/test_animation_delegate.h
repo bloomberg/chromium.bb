@@ -5,7 +5,7 @@
 #ifndef UI_BASE_ANIMATION_TEST_ANIMATION_DELEGATE_H_
 #define UI_BASE_ANIMATION_TEST_ANIMATION_DELEGATE_H_
 
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "ui/base/animation/animation_delegate.h"
 
 namespace ui {

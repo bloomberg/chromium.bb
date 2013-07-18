@@ -13,7 +13,7 @@ extern "C" {
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/process_util.h"
 #include "base/synchronization/cancellation_flag.h"
 #include "base/synchronization/lock.h"

@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/threading/thread_local_storage.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/scoped_variant.h"

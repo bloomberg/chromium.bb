@@ -8,7 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/pickle.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -25,10 +25,6 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
-#endif
-
-#if defined(OS_WIN) || defined(USE_AURA)
-#include "base/message_loop.h"
 #endif
 
 namespace ui {

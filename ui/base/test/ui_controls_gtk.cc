@@ -9,7 +9,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "ui/base/gtk/event_synthesis_gtk.h"
 #include "ui/base/gtk/gtk_screen_util.h"
 #include "ui/gfx/rect.h"

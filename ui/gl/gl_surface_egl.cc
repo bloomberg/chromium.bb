@@ -15,7 +15,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "build/build_config.h"
 #include "ui/gl/egl_util.h"
 #include "ui/gl/gl_context.h"

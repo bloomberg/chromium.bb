@@ -5,7 +5,7 @@
 #include "ui/compositor/test/test_suite.h"
 
 #include "base/command_line.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_switches.h"

@@ -5,7 +5,7 @@
 #include "ui/base/win/singleton_hwnd.h"
 
 #include "base/memory/singleton.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 
 namespace ui {
 
