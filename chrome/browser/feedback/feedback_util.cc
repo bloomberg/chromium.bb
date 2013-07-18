@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/file_util.h"
 #include "base/file_version_info.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop/message_loop.h"
@@ -40,7 +41,15 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
+#if defined(OS_CHROMEOS)
+#include "third_party/zlib/google/zip.h"
+#endif
+
 using content::WebContents;
+
+namespace {
+const char kLogsFilename[] = "system_logs.txt";
+}
 
 namespace chrome {
 const char kAppLauncherCategoryTag[] = "AppLauncher";
@@ -424,3 +433,31 @@ void FeedbackUtil::SetScreenshotSize(const gfx::Rect& rect) {
   gfx::Rect& screen_size = GetScreenshotSize();
   screen_size = rect;
 }
+
+#if defined(OS_CHROMEOS)
+// static
+bool FeedbackUtil::ZipString(const std::string& logs,
+                             std::string* compressed_logs) {
+  base::FilePath temp_path;
+  base::FilePath zip_file;
+
+  // Create a temporary directory, put the logs into a file in it. Create
+  // another temporary file to receive the zip file in.
+  if (!file_util::CreateNewTempDirectory("", &temp_path))
+    return false;
+  if (file_util::WriteFile(
+      temp_path.Append(kLogsFilename), logs.c_str(), logs.size()) == -1)
+    return false;
+  if (!file_util::CreateTemporaryFile(&zip_file))
+    return false;
+
+  if (!zip::Zip(temp_path, zip_file, false))
+    return false;
+
+  if (!file_util::ReadFileToString(zip_file, compressed_logs))
+    return false;
+
+  return true;
+}
+#endif // OS_CHROMEOS
+

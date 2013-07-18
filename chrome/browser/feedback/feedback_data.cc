@@ -19,16 +19,10 @@
 #include "ash/shell_delegate.h"
 #endif
 
-#if defined(OS_CHROMEOS)
-#include "third_party/zlib/google/zip.h"
-#endif
-
 using content::BrowserThread;
 
 #if defined(OS_CHROMEOS)
 namespace {
-
-const char kLogsFilename[] = "system_logs.txt";
 
 const char kMultilineIndicatorString[] = "<multiline>\n";
 const char kMultilineStartString[] = "---------- START ----------\n";
@@ -57,35 +51,11 @@ std::string LogsToString(chromeos::SystemLogsResponse* sys_info) {
   return syslogs_string;
 }
 
-bool ZipString(const std::string& logs,
-               std::string* compressed_logs) {
-  base::FilePath temp_path;
-  base::FilePath zip_file;
-
-  // Create a temporary directory, put the logs into a file in it. Create
-  // another temporary file to receive the zip file in.
-  if (!file_util::CreateNewTempDirectory("", &temp_path))
-    return false;
-  if (file_util::WriteFile(
-      temp_path.Append(kLogsFilename), logs.c_str(), logs.size()) == -1)
-    return false;
-  if (!file_util::CreateTemporaryFile(&zip_file))
-    return false;
-
-  if (!zip::Zip(temp_path, zip_file, false))
-    return false;
-
-  if (!file_util::ReadFileToString(zip_file, compressed_logs))
-    return false;
-
-  return true;
-}
-
 void ZipLogs(chromeos::SystemLogsResponse* sys_info,
              std::string* compressed_logs) {
   DCHECK(compressed_logs);
   std::string logs_string = LogsToString(sys_info);
-  if (!ZipString(logs_string, compressed_logs)) {
+  if (!FeedbackUtil::ZipString(logs_string, compressed_logs)) {
     compressed_logs->clear();
   }
 }
