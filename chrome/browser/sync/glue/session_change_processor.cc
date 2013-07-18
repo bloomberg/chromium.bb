@@ -277,8 +277,13 @@ void SessionChangeProcessor::ApplyChangesFromSyncModel(
         LOG(WARNING) << "Local session data deleted. Ignoring until next local "
                      << "navigation event.";
       } else {
-        session_model_associator_->DisassociateForeignSession(
-            specifics.session_tag());
+        if (specifics.has_header()) {
+          // Disassociate only when header node is deleted. For tab node
+          // deletions, the header node will be updated and foreign tab will
+          // get deleted.
+          session_model_associator_->DisassociateForeignSession(
+              specifics.session_tag());
+        }
       }
       continue;
     }

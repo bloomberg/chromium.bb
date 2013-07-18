@@ -47,6 +47,14 @@ class TabNodePool {
   enum InvalidTab {
     kInvalidTabID = -1
   };
+
+  // If free nodes > kFreeNodesHighWatermark, delete all free nodes until
+  // free nodes <= kFreeNodesLowWatermark.
+  static const size_t kFreeNodesLowWatermark;
+
+  // Maximum limit of FreeNodes allowed on the client.
+  static const size_t kFreeNodesHighWatermark;
+
   // Build a sync tag from tab_node_id.
   static std::string TabIdToTag(const std::string machine_tag,
                                 size_t tab_node_id);

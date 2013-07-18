@@ -20,7 +20,8 @@ static const char kNoSessionsFolderError[] =
     "Server did not create the top-level sessions node. We "
     "might be running against an out-of-date server.";
 
-static const size_t kMaxNumberOfFreeNodes = 25;
+const size_t TabNodePool::kFreeNodesLowWatermark = 25;
+const size_t TabNodePool::kFreeNodesHighWatermark = 100;
 
 TabNodePool::TabNodePool(ProfileSyncService* sync_service)
     : max_used_tab_node_id_(0), sync_service_(sync_service) {}
@@ -111,19 +112,27 @@ void TabNodePool::FreeTabNode(int64 sync_id) {
 
 void TabNodePool::FreeTabNodeInternal(int64 sync_id) {
   DCHECK(free_nodes_pool_.find(sync_id) == free_nodes_pool_.end());
+  free_nodes_pool_.insert(sync_id);
 
-  // If number of free nodes exceed number of maximum allowed free nodes,
-  // delete the sync node.
-  if (free_nodes_pool_.size() < kMaxNumberOfFreeNodes) {
-    free_nodes_pool_.insert(sync_id);
-  } else {
+  // If number of free nodes exceed kFreeNodesHighWatermark,
+  // delete sync nodes till number reaches kFreeNodesLowWatermark.
+  // Note: This logic is to mitigate temporary disassociation issues with old
+  // clients: http://crbug.com/259918. Newer versions do not need this.
+  if (free_nodes_pool_.size() > kFreeNodesHighWatermark) {
     syncer::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
-    syncer::WriteNode tab_node(&trans);
-    if (tab_node.InitByIdLookup(sync_id) != syncer::BaseNode::INIT_OK) {
-      LOG(ERROR) << "Could not find sync node with id: " << sync_id;
-      return;
+    for (std::set<int64>::iterator free_it = free_nodes_pool_.begin();
+         free_it != free_nodes_pool_.end();) {
+      syncer::WriteNode tab_node(&trans);
+      if (tab_node.InitByIdLookup(*free_it) != syncer::BaseNode::INIT_OK) {
+        LOG(ERROR) << "Could not find sync node with id: " << *free_it;
+        return;
+      }
+      free_nodes_pool_.erase(free_it++);
+      tab_node.Tombstone();
+      if (free_nodes_pool_.size() <= kFreeNodesLowWatermark) {
+        return;
+      }
     }
-    tab_node.Tombstone();
   }
 }
 
