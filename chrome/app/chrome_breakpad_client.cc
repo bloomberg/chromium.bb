@@ -18,6 +18,10 @@
 #include "base/file_version_info.h"
 #endif
 
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_IOS)
+#include "chrome/common/chrome_version_info_posix.h"
+#endif
+
 #if defined(OS_POSIX)
 #include "chrome/common/dump_without_crashing.h"
 #endif
@@ -74,6 +78,27 @@ void ChromeBreakpadClient::GetProductNameAndVersion(
     *product_name = base::ASCIIToUTF16("Chrome");
     *version = base::ASCIIToUTF16("0.0.0.0-devel");
   }
+}
+#endif
+
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_IOS)
+void ChromeBreakpadClient::GetProductNameAndVersion(std::string* product_name,
+                                                    std::string* version) {
+  DCHECK(product_name);
+  DCHECK(version);
+#if defined(OS_ANDROID)
+  *product_name = "Chrome_Android";
+#elif defined(OS_CHROMEOS)
+  *product_name = "Chrome_ChromeOS";
+#else  // OS_LINUX
+#if !defined(ADDRESS_SANITIZER)
+  *product_name = "Chrome_Linux";
+#else
+  *product_name = "Chrome_Linux_ASan";
+#endif
+#endif
+
+  *version = PRODUCT_VERSION;
 }
 #endif
 

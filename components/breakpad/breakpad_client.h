@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_BREAKPAD_BREAKPAD_CLIENT_H_
 #define COMPONENTS_BREAKPAD_BREAKPAD_CLIENT_H_
 
+#include <string>
+
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 
@@ -40,6 +42,13 @@ class BreakpadClient {
                                         base::string16* product_name,
                                         base::string16* version,
                                         base::string16* special_build);
+#endif
+
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_IOS)
+  // Returns a textual description of the product type and version to include
+  // in the crash report.
+  virtual void GetProductNameAndVersion(std::string* product_name,
+                                        std::string* version);
 #endif
 
   // The location where minidump files should be written. Returns true if

@@ -40,7 +40,6 @@
 #include "chrome/app/breakpad_linux_impl.h"
 #include "chrome/browser/crash_upload_list.h"
 #include "chrome/common/child_process_logging.h"
-#include "chrome/common/chrome_version_info_posix.h"
 #include "chrome/common/crash_keys.h"
 #include "chrome/common/env_vars.h"
 #include "components/breakpad/breakpad_client.h"
@@ -1241,24 +1240,16 @@ void HandleCrashDump(const BreakpadInfo& info) {
   MimeWriter writer(temp_file_fd, mime_boundary);
 #endif
   {
-#if defined(OS_ANDROID)
-    static const char chrome_product_msg[] = "Chrome_Android";
-#elif defined(OS_CHROMEOS)
-    static const char chrome_product_msg[] = "Chrome_ChromeOS";
-#else  // OS_LINUX
-#if !defined(ADDRESS_SANITIZER)
-    static const char chrome_product_msg[] = "Chrome_Linux";
-#else
-    static const char chrome_product_msg[] = "Chrome_Linux_ASan";
-#endif
-#endif
+    std::string product_name;
+    std::string version;
 
-    static const char version_msg[] = PRODUCT_VERSION;
+    breakpad::GetBreakpadClient()->GetProductNameAndVersion(&product_name,
+                                                            &version);
 
     writer.AddBoundary();
-    writer.AddPairString("prod", chrome_product_msg);
+    writer.AddPairString("prod", product_name.c_str());
     writer.AddBoundary();
-    writer.AddPairString("ver", version_msg);
+    writer.AddPairString("ver", version.c_str());
     writer.AddBoundary();
     writer.AddPairString("guid", info.guid);
     writer.AddBoundary();

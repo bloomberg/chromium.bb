@@ -39,6 +39,12 @@ void BreakpadClient::GetProductNameAndVersion(const base::FilePath& exe_path,
 }
 #endif
 
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_IOS)
+void BreakpadClient::GetProductNameAndVersion(std::string* product_name,
+                                              std::string* version) {
+}
+#endif
+
 bool BreakpadClient::GetCrashDumpLocation(base::FilePath* crash_dir) {
   return false;
 }
