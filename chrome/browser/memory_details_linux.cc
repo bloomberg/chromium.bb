@@ -184,6 +184,7 @@ static void GetSwapData(SwapData* swap_data) {
     swap_data->num_writes = 0;
     swap_data->compr_data_size = 0;
     swap_data->mem_used_total = 0;
+    return;
   }
   swap_data->orig_data_size = orig_data_size;
   swap_data->num_reads = ReadFileToUint64(zram_path.Append("num_reads"));
