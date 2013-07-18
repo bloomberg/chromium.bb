@@ -19,6 +19,7 @@
 #include "base/threading/non_thread_safe.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/predictors/logged_in_predictor_table.h"
 #include "chrome/browser/prerender/prerender_config.h"
 #include "chrome/browser/prerender/prerender_contents.h"
@@ -78,7 +79,8 @@ class PrerenderTracker;
 class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
                          public base::NonThreadSafe,
                          public content::NotificationObserver,
-                         public BrowserContextKeyedService {
+                         public BrowserContextKeyedService,
+                         public MediaCaptureDevicesDispatcher::Observer {
  public:
   // NOTE: New values need to be appended, since they are used in histograms.
   enum PrerenderManagerMode {
@@ -273,6 +275,10 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+  // MediaCaptureDevicesDispatcher::Observer
+  virtual void OnCreatingAudioStream(int render_process_id,
+                                     int render_view_id) OVERRIDE;
 
   const Config& config() const { return config_; }
   Config& mutable_config() { return config_; }

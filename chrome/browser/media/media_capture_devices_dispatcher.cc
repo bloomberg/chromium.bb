@@ -475,6 +475,17 @@ void MediaCaptureDevicesDispatcher::OnAudioStreamPlayingChanged(
                                                    is_playing_and_audible);
 }
 
+void MediaCaptureDevicesDispatcher::OnCreatingAudioStream(
+    int render_process_id,
+    int render_view_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(
+          &MediaCaptureDevicesDispatcher::OnCreatingAudioStreamOnUIThread,
+          base::Unretained(this), render_process_id, render_view_id));
+}
+
 void MediaCaptureDevicesDispatcher::UpdateAudioDevicesOnUIThread(
     const content::MediaStreamDevices& devices) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -525,4 +536,12 @@ void MediaCaptureDevicesDispatcher::UpdateMediaRequestStateOnUIThread(
                                     render_view_id,
                                     device,
                                     state));
+}
+
+void MediaCaptureDevicesDispatcher::OnCreatingAudioStreamOnUIThread(
+    int render_process_id,
+    int render_view_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  FOR_EACH_OBSERVER(Observer, observers_,
+                    OnCreatingAudioStream(render_process_id, render_view_id));
 }

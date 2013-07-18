@@ -38,6 +38,10 @@ class MediaObserver {
       int stream_id,
       bool is_playing_and_audible) = 0;
 
+  // Called when the audio stream is being created.
+  virtual void OnCreatingAudioStream(int render_process_id,
+                                     int render_view_id) = 0;
+
  protected:
   virtual ~MediaObserver() {}
 };

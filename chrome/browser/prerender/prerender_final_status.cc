@@ -54,12 +54,13 @@ const char* kFinalStatusNames[] = {
   "OpenURL",
   "WouldHaveBeenUsed",
   "Register Protocol Handler",
+  "Creating Audio Stream",
   "Max",
 };
 COMPILE_ASSERT(arraysize(kFinalStatusNames) == FINAL_STATUS_MAX + 1,
                PrerenderFinalStatus_name_count_mismatch);
 
-}
+}  // namespace
 
 const char* NameFromFinalStatus(FinalStatus final_status) {
   DCHECK_LT(static_cast<unsigned int>(final_status),

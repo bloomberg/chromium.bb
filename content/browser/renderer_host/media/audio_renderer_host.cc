@@ -333,6 +333,11 @@ void AudioRendererHost::OnCreateStream(
     return;
   }
 
+  MediaObserver* const media_observer =
+      GetContentClient()->browser()->GetMediaObserver();
+  if (media_observer)
+    media_observer->OnCreatingAudioStream(render_process_id_, render_view_id);
+
   scoped_ptr<AudioEntry> entry(new AudioEntry(
       this, stream_id, render_view_id, params, input_device_id,
       shared_memory.Pass(),

@@ -39,6 +39,7 @@
 #include "chrome/browser/prerender/prerender_tracker.h"
 #include "chrome/browser/prerender/prerender_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper_delegate.h"
 #include "chrome/common/chrome_switches.h"
@@ -275,9 +276,13 @@ PrerenderManager::PrerenderManager(Profile* profile,
   notification_registrar_.Add(
       this, chrome::NOTIFICATION_COOKIE_CHANGED,
       content::NotificationService::AllBrowserContextsAndSources());
+
+  MediaCaptureDevicesDispatcher::GetInstance()->AddObserver(this);
 }
 
 PrerenderManager::~PrerenderManager() {
+  MediaCaptureDevicesDispatcher::GetInstance()->RemoveObserver(this);
+
   // The earlier call to BrowserContextKeyedService::Shutdown() should have
   // emptied these vectors already.
   DCHECK(active_prerenders_.empty());
@@ -1430,6 +1435,21 @@ void PrerenderManager::Observe(int type,
   }
   DCHECK(type == chrome::NOTIFICATION_COOKIE_CHANGED);
   CookieChanged(content::Details<ChromeCookieDetails>(details).ptr());
+}
+
+void PrerenderManager::OnCreatingAudioStream(int render_process_id,
+                                             int render_view_id) {
+  WebContents* tab = tab_util::GetWebContentsByID(
+      render_process_id, render_view_id);
+  if (!tab)
+    return;
+
+  if (!IsWebContentsPrerendering(tab, NULL))
+    return;
+
+  prerender_tracker()->TryCancel(
+      render_process_id, render_view_id,
+      prerender::FINAL_STATUS_CREATING_AUDIO_STREAM);
 }
 
 void PrerenderManager::RecordLikelyLoginOnURL(const GURL& url) {
