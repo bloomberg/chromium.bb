@@ -2180,10 +2180,10 @@ void RenderLayer::setScrollOffset(const IntPoint& newScrollOffset)
     InspectorInstrumentation::didScrollLayer(frame);
 }
 
-static inline bool frameElementAndViewPermitScroll(HTMLFrameElement* frameElement, FrameView* frameView) 
+static inline bool frameElementAndViewPermitScroll(HTMLFrameElementBase* frameElementBase, FrameView* frameView)
 {
     // If scrollbars aren't explicitly forbidden, permit scrolling.
-    if (frameElement && frameElement->scrollingMode() != ScrollbarAlwaysOff)
+    if (frameElementBase && frameElementBase->scrollingMode() != ScrollbarAlwaysOff)
         return true;
 
     // If scrollbars are forbidden, user initiated scrolls should obviously be ignored.
@@ -2239,12 +2239,12 @@ void RenderLayer::scrollRectToVisible(const LayoutRect& rect, const ScrollAlignm
                 ownerElement = renderer()->document()->ownerElement();
 
             if (ownerElement && ownerElement->renderer()) {
-                HTMLFrameElement* frameElement = 0;
+                HTMLFrameElementBase* frameElementBase = 0;
 
                 if (ownerElement->hasTagName(frameTag) || ownerElement->hasTagName(iframeTag))
-                    frameElement = static_cast<HTMLFrameElement*>(ownerElement);
+                    frameElementBase = static_cast<HTMLFrameElementBase*>(ownerElement);
 
-                if (frameElementAndViewPermitScroll(frameElement, frameView)) {
+                if (frameElementAndViewPermitScroll(frameElementBase, frameView)) {
                     LayoutRect viewRect = frameView->visibleContentRect();
                     LayoutRect exposeRect = getRectToExpose(viewRect, rect, alignX, alignY);
 
