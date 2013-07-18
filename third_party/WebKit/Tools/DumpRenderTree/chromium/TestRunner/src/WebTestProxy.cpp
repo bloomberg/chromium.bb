@@ -1264,18 +1264,6 @@ void WebTestProxyBase::didChangeLocationWithinPage(WebFrame* frame)
     }
 }
 
-void WebTestProxyBase::didDisplayInsecureContent(WebFrame*)
-{
-    if (m_testInterfaces->testRunner()->shouldDumpFrameLoadCallbacks())
-        m_delegate->printMessage("didDisplayInsecureContent\n");
-}
-
-void WebTestProxyBase::didRunInsecureContent(WebFrame*, const WebSecurityOrigin&, const WebURL&)
-{
-    if (m_testInterfaces->testRunner()->shouldDumpFrameLoadCallbacks())
-        m_delegate->printMessage("didRunInsecureContent\n");
-}
-
 void WebTestProxyBase::didDetectXSS(WebFrame*, const WebURL&, bool)
 {
     if (m_testInterfaces->testRunner()->shouldDumpFrameLoadCallbacks())

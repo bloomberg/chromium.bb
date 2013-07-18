@@ -1,10 +1,8 @@
 <html>
 <body>
 <script>
-if (window.testRunner) {
+if (window.testRunner)
     testRunner.dumpAsText();
-    testRunner.dumpFrameLoadCallbacks();
-}
 </script>
 <p>This test loads a secure iframe that loads an insecure image.  We should
 *not* get a mixed content callback becase the main frame is HTTP and the image

@@ -1243,9 +1243,7 @@ webkit.org/b/113487 [ Debug ] plugins/npruntime/npruntime-calls-with-null-npp.ht
 
 webkit.org/b/113555 fast/forms/state-restore-per-form.html [ Pass Timeout ]
 
-# These mixedContent tests are flakey. Some are more flakey than others.
 crbug.com/239811 crbug.com/229113 http/tests/history/redirect-js-location-assign-0-seconds.html [ Failure Pass ]
-crbug.com/239811 webkit.org/b/112980 [ Win Mac ] http/tests/security/mixedContent/data-url-iframe-in-main-frame.html [ Failure Pass ]
 
 crbug.com/230554 [ Linux Mac Debug ] plugins/drag-events.html [ Crash Pass ]
 

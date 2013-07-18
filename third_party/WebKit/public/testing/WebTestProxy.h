@@ -200,8 +200,6 @@ protected:
     void didFailLoad(WebKit::WebFrame*, const WebKit::WebURLError&);
     void didFinishLoad(WebKit::WebFrame*);
     void didChangeLocationWithinPage(WebKit::WebFrame*);
-    void didDisplayInsecureContent(WebKit::WebFrame*);
-    void didRunInsecureContent(WebKit::WebFrame*, const WebKit::WebSecurityOrigin&, const WebKit::WebURL& insecureURL);
     void didDetectXSS(WebKit::WebFrame*, const WebKit::WebURL& insecureURL, bool didBlockEntirePage);
     void willRequestResource(WebKit::WebFrame*, const WebKit::WebCachedURLRequest&);
     void didCreateDataSource(WebKit::WebFrame*, WebKit::WebDataSource*);
@@ -513,16 +511,6 @@ public:
     {
         WebTestProxyBase::didChangeLocationWithinPage(frame);
         Base::didChangeLocationWithinPage(frame);
-    }
-    virtual void didDisplayInsecureContent(WebKit::WebFrame* frame)
-    {
-        WebTestProxyBase::didDisplayInsecureContent(frame);
-        Base::didDisplayInsecureContent(frame);
-    }
-    virtual void didRunInsecureContent(WebKit::WebFrame* frame, const WebKit::WebSecurityOrigin& origin, const WebKit::WebURL& insecureURL)
-    {
-        WebTestProxyBase::didRunInsecureContent(frame, origin, insecureURL);
-        Base::didRunInsecureContent(frame, origin, insecureURL);
     }
     virtual void didDetectXSS(WebKit::WebFrame* frame, const WebKit::WebURL& insecureURL, bool didBlockEntirePage)
     {

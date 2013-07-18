@@ -1,10 +1,8 @@
 <html>
 <body>
 <script>
-if (window.testRunner) {
+if (window.testRunner)
     testRunner.dumpAsText();
-    testRunner.dumpFrameLoadCallbacks();
-}
 </script>
 <p>This test loads a secure iframe that loads an insecure script (but with a
 tricky redirect).  We should trigger a mixed content callback because an active
