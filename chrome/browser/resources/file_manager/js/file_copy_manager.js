@@ -765,30 +765,7 @@ FileCopyManager.prototype.serviceNextTaskEntry_ = function(
 
   var targetDirEntry = task.targetDirEntry;
   var originalPath = sourceEntry.fullPath.substr(sourcePath.length + 1);
-
   originalPath = task.applyRenames(originalPath);
-
-  var targetRelativePrefix = originalPath;
-  var targetExt = '';
-  var index = targetRelativePrefix.lastIndexOf('.');
-  if (index != -1) {
-    targetExt = targetRelativePrefix.substr(index);
-    targetRelativePrefix = targetRelativePrefix.substr(0, index);
-  }
-
-  // If file already exists, we try to make a copy named 'file (1).ext'.
-  // If file is already named 'file (X).ext', we go with 'file (X+1).ext'.
-  // If new name is still occupied, we increase the number up to 10 times.
-  var copyNumber = 0;
-  var match = /^(.*?)(?: \((\d+)\))?$/.exec(targetRelativePrefix);
-  if (match && match[2]) {
-    copyNumber = parseInt(match[2], 10);
-    targetRelativePrefix = match[1];
-  }
-
-  var targetRelativePath = '';
-  var renameTries = 0;
-  var firstExistingEntry = null;
 
   var onCopyCompleteBase = function(entry, size) {
     task.markEntryComplete(entry, size);
@@ -826,18 +803,6 @@ FileCopyManager.prototype.serviceNextTaskEntry_ = function(
 
   var onFilesystemError = function(err) {
     onError('FILESYSTEM_ERROR', err);
-  };
-
-  var onTargetExists = function(existingEntry) {
-    if (!firstExistingEntry)
-      firstExistingEntry = existingEntry;
-    renameTries++;
-    if (renameTries < 10) {
-      copyNumber++;
-      tryNextCopy();
-    } else {
-      onError('TARGET_EXISTS', firstExistingEntry);
-    }
   };
 
   /**
@@ -886,13 +851,7 @@ FileCopyManager.prototype.serviceNextTaskEntry_ = function(
     }
   };
 
-  var onTargetNotResolved = function(err) {
-    // We expect to be unable to resolve the target file, since we're going
-    // to create it during the copy.  However, if the resolve fails with
-    // anything other than NOT_FOUND, that's trouble.
-    if (err.code != FileError.NOT_FOUND_ERR)
-      return onError('FILESYSTEM_ERROR', err);
-
+  var onDeduplicated = function(targetRelativePath) {
     if (task.move) {
       resolveDirAndBaseName(
           targetDirEntry, targetRelativePath,
@@ -1046,20 +1005,8 @@ FileCopyManager.prototype.serviceNextTaskEntry_ = function(
     }
   };
 
-  var tryNextCopy = function() {
-    targetRelativePath = targetRelativePrefix;
-    if (copyNumber > 0) {
-      targetRelativePath += ' (' + copyNumber + ')';
-    }
-    targetRelativePath += targetExt;
-
-    // Check to see if the target exists.  This kicks off the rest of the copy
-    // if the target is not found, or raises an error if it does.
-    util.resolvePath(targetDirEntry, targetRelativePath, onTargetExists,
-                     onTargetNotResolved);
-  };
-
-  tryNextCopy();
+  util.deduplicatePath(targetDirEntry, originalPath,
+                       onDeduplicated, onError);
 };
 
 /**
@@ -1089,27 +1036,12 @@ FileCopyManager.prototype.serviceZipTask_ = function(task, completeCallback,
     destName = ((i < 0) ? basename : basename.substr(0, i));
   }
 
-  var copyNumber = 0;
-  var firstExistingEntry = null;
-  var destPath = destName + '.zip';
-
   var onError = function(reason, data) {
     self.log_('serviceZipTask error: ' + reason + ':', data);
     errorCallback(new FileCopyManager.Error(reason, data));
   };
 
-  var onTargetExists = function(existingEntry) {
-    if (copyNumber < 10) {
-      if (!firstExistingEntry)
-        firstExistingEntry = existingEntry;
-      copyNumber++;
-      tryZipSelection();
-    } else {
-      onError('TARGET_EXISTS', firstExistingEntry);
-    }
-  };
-
-  var onTargetNotResolved = function() {
+  var onDeduplicated = function(destPath) {
     var onZipSelectionComplete = function(success) {
       if (success) {
         self.sendProgressEvent_('SUCCESS');
@@ -1125,17 +1057,8 @@ FileCopyManager.prototype.serviceZipTask_ = function(task, completeCallback,
         onZipSelectionComplete);
   };
 
-  var tryZipSelection = function() {
-    if (copyNumber > 0)
-      destPath = destName + ' (' + copyNumber + ').zip';
-
-    // Check if the target exists. This kicks off the rest of the zip file
-    // creation if the target is not found, or raises an error if it does.
-    util.resolvePath(task.targetDirEntry, destPath, onTargetExists,
-                     onTargetNotResolved);
-  };
-
-  tryZipSelection();
+  util.deduplicatePath(
+      task.targetDirEntry, destName + '.zip', onDeduplicated, onError);
 };
 
 /**
