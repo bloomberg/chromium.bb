@@ -476,7 +476,8 @@ def RunBuild(options, base, target, queue):
   if spl:
     files += spl
   if options.size:
-    cros_build_lib.RunCommand([CompilerTool('size')] + files, **kwargs)
+    result = cros_build_lib.RunCommand([CompilerTool('size')] + files,
+                                       **kwargs)
     if result.returncode:
       sys.exit()
 
