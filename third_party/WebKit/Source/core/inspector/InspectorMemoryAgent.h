@@ -34,15 +34,10 @@
 #include "InspectorFrontend.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "wtf/PassOwnPtr.h"
-#include "wtf/RefPtr.h"
 
 namespace WebCore {
 
-class InspectorClient;
-class InspectorDOMStorageAgent;
-class InspectorState;
 class InstrumentingAgents;
-class Page;
 
 typedef String ErrorString;
 
@@ -51,26 +46,22 @@ class InspectorMemoryAgent : public InspectorBaseAgent<InspectorMemoryAgent>, pu
 public:
     typedef Vector<OwnPtr<InspectorBaseAgentInterface> > InspectorAgents;
 
-    static PassOwnPtr<InspectorMemoryAgent> create(InstrumentingAgents* instrumentingAgents, InspectorClient* client, InspectorCompositeState* state, Page* page)
+    static PassOwnPtr<InspectorMemoryAgent> create(InstrumentingAgents* instrumentingAgents, InspectorCompositeState* state)
     {
-        return adoptPtr(new InspectorMemoryAgent(instrumentingAgents, client, state, page));
+        return adoptPtr(new InspectorMemoryAgent(instrumentingAgents, state));
     }
     virtual ~InspectorMemoryAgent();
 
     virtual void getDOMCounters(ErrorString*, int* documents, int* nodes, int* jsEventListeners);
 
-    void getProcessMemoryDistributionMap(HashMap<String, size_t>* memoryInfo);
-
     virtual void setFrontend(InspectorFrontend*);
     virtual void clearFrontend();
 
 private:
-    InspectorMemoryAgent(InstrumentingAgents*, InspectorClient*, InspectorCompositeState*, Page*);
+    InspectorMemoryAgent(InstrumentingAgents*, InspectorCompositeState*);
 
     PassRefPtr<JSONObject> getProcessMemoryDistributionImpl(bool reportGraph, HashMap<String, size_t>* memoryInfo);
 
-    InspectorClient* m_inspectorClient;
-    Page* m_page;
     InspectorFrontend::Memory* m_frontend;
 };
 

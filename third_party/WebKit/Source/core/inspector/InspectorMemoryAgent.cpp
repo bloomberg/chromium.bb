@@ -32,24 +32,9 @@
 #include "core/inspector/InspectorMemoryAgent.h"
 
 #include "InspectorFrontend.h"
-#include "bindings/v8/ScriptGCEvent.h"
-#include "bindings/v8/ScriptProfiler.h"
-#include "core/dom/Document.h"
-#include "core/dom/Node.h"
-#include "core/inspector/BindingVisitors.h"
-#include "core/inspector/InspectorClient.h"
-#include "core/inspector/InspectorDOMStorageAgent.h"
-#include "core/loader/cache/MemoryCache.h"
-#include "core/page/Frame.h"
-#include "core/page/Page.h"
-#include "core/platform/JSONValues.h"
-#include "wtf/ArrayBufferView.h"
-#include "wtf/NonCopyingSort.h"
+#include "core/inspector/InspectorCounters.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
-#include "wtf/Vector.h"
-#include "wtf/text/StringImpl.h"
-#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
@@ -64,10 +49,8 @@ void InspectorMemoryAgent::getDOMCounters(ErrorString*, int* documents, int* nod
     *jsEventListeners = ThreadLocalInspectorCounters::current().counterValue(ThreadLocalInspectorCounters::JSEventListenerCounter);
 }
 
-InspectorMemoryAgent::InspectorMemoryAgent(InstrumentingAgents* instrumentingAgents, InspectorClient* client, InspectorCompositeState* state, Page* page)
+InspectorMemoryAgent::InspectorMemoryAgent(InstrumentingAgents* instrumentingAgents, InspectorCompositeState* state)
     : InspectorBaseAgent<InspectorMemoryAgent>("Memory", instrumentingAgents, state)
-    , m_inspectorClient(client)
-    , m_page(page)
     , m_frontend(0)
 {
 }
