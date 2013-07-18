@@ -13,6 +13,7 @@
 namespace content {
 
 class DevToolsAgentHost;
+class DevToolsTracingHandler;
 
 // Overrides Inspector commands before they are sent to the renderer.
 // May override the implementation completely, ignore it, or handle
