@@ -99,6 +99,7 @@ DocumentLoader::DocumentLoader(const ResourceRequest& req, const SubstituteData&
     , m_committed(false)
     , m_isStopping(false)
     , m_isClientRedirect(false)
+    , m_replacesCurrentHistoryItem(false)
     , m_wasOnloadHandled(false)
     , m_loadingMainResource(false)
     , m_timeOfLastDataReceived(0.0)

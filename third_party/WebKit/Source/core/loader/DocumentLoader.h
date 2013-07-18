@@ -117,6 +117,8 @@ namespace WebCore {
         const ResourceError& mainDocumentError() const { return m_mainDocumentError; }
         bool isClientRedirect() const { return m_isClientRedirect; }
         void setIsClientRedirect(bool isClientRedirect) { m_isClientRedirect = isClientRedirect; }
+        bool replacesCurrentHistoryItem() const { return m_replacesCurrentHistoryItem; }
+        void setReplacesCurrentHistoryItem(bool replacesCurrentHistoryItem) { m_replacesCurrentHistoryItem = replacesCurrentHistoryItem; }
         void handledOnloadEvents();
         bool wasOnloadHandled() { return m_wasOnloadHandled; }
         bool isLoadingInAPISense() const;
@@ -251,6 +253,7 @@ namespace WebCore {
         bool m_committed;
         bool m_isStopping;
         bool m_isClientRedirect;
+        bool m_replacesCurrentHistoryItem;
 
         // FIXME: Document::m_processingLoadEvent and DocumentLoader::m_wasOnloadHandled are roughly the same
         // and should be merged.

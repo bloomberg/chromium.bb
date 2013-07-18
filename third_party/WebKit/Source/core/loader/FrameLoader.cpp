@@ -850,7 +850,9 @@ void FrameLoader::loadInSameDocument(const KURL& url, PassRefPtr<SerializedScrip
         m_client->postProgressStartedNotification();
 
     m_documentLoader->clearRedirectChain();
-    if ((m_startingClientRedirect && !isNewNavigation) || !UserGestureIndicator::processingUserGesture()) {
+    m_documentLoader->setIsClientRedirect((m_startingClientRedirect && !isNewNavigation) || !UserGestureIndicator::processingUserGesture());
+    m_documentLoader->setReplacesCurrentHistoryItem(!isNewNavigation);
+    if (m_documentLoader->isClientRedirect()) {
         m_client->dispatchDidCompleteClientRedirect(oldURL);
         m_documentLoader->appendRedirect(oldURL);
     }
@@ -1025,8 +1027,8 @@ void FrameLoader::loadWithNavigationAction(const ResourceRequest& request, const
     else if (m_documentLoader)
         loader->setOverrideEncoding(m_documentLoader->overrideEncoding());
 
-    if (type == FrameLoadTypeRedirectWithLockedBackForwardList)
-        loader->setIsClientRedirect(true);
+    loader->setReplacesCurrentHistoryItem(type == FrameLoadTypeRedirectWithLockedBackForwardList);
+    loader->setIsClientRedirect(m_startingClientRedirect);
 
     bool isFormSubmission = formState;
 
@@ -1932,11 +1934,11 @@ void FrameLoader::checkNavigationPolicyAndContinueLoad(PassRefPtr<FormState> for
         m_client->dispatchWillSubmitForm(formState);
 
     m_progressTracker->progressStarted();
-    if (m_startingClientRedirect)
+    if (m_provisionalDocumentLoader->isClientRedirect())
         m_provisionalDocumentLoader->appendRedirect(m_frame->document()->url());
     m_provisionalDocumentLoader->appendRedirect(m_provisionalDocumentLoader->request().url());
     m_client->dispatchDidStartProvisionalLoad();
-    if (m_startingClientRedirect)
+    if (m_provisionalDocumentLoader->isClientRedirect())
         m_client->dispatchDidCompleteClientRedirect(m_frame->document()->url());
     ASSERT(m_provisionalDocumentLoader);
 

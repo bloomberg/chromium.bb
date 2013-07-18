@@ -77,8 +77,12 @@ public:
     virtual void redirectChain(WebVector<WebURL>&) const = 0;
 
     // Returns whether the navigation associated with this datasource is a
-    // client redirect that should replace the current history item.
+    // client redirect.
     virtual bool isClientRedirect() const = 0;
+
+    // Returns whether the navigation associated with this datasource should
+    // replace the current history item.
+    virtual bool replacesCurrentHistoryItem() const = 0;
 
     // Returns the title for the current page.
     virtual WebString pageTitle() const = 0;
