@@ -44,6 +44,13 @@ const char kAshDefaultGuestWallpaperSmall[] =
 const char kAshDefaultWallpaperLarge[] = "ash-default-wallpaper-large";
 const char kAshDefaultWallpaperSmall[] = "ash-default-wallpaper-small";
 
+#if defined(OS_CHROMEOS)
+// Disable the status tray volume menu for allowing the user to choose an audio
+// input and output device.
+const char kAshDisableAudioDeviceMenu[] =
+    "ash-disable-audio-device-menu";
+#endif
+
 // Disable auto window maximization logic.
 const char kAshDisableAutoMaximizing[] = "ash-disable-auto-maximizing";
 
@@ -56,8 +63,10 @@ const char kAshDisableAutoWindowPlacement[] =
 const char kAshDisableDisplayChangeLimiter[] =
     "ash-disable-display-change-limiter";
 
+#if defined(OS_CHROMEOS)
 // Disable the new cras audio handler.
 const char kAshDisableNewAudioHandler[] = "ash-disable-new-audio-handler";
+#endif
 
 // If present new lock animations are enabled.
 const char kAshDisableNewLockAnimations[] = "ash-disable-new-lock-animations";
@@ -83,11 +92,6 @@ const char kAshDisableSoftwareMirroring[] = "ash-disable-software-mirroring";
 const char kAshDisableUsbChargerNotification[] =
     "ash-disable-usb-charger-notification";
 #endif
-
-// Extend the status tray volume item to allow the user to choose an audio
-// input and output device.
-const char kAshEnableAudioDeviceMenu[] =
-    "ash-enable-audio-device-menu";
 
 // Enable advanced gestures (e.g. for window management).
 const char kAshEnableAdvancedGestures[] = "ash-enable-advanced-gestures";
@@ -181,6 +185,12 @@ const char kAshDisableDragAndDropAppListToLauncher[] =
 // in maximized mode.
 const char kForcedMaximizeMode[] = "forced-maximize-mode";
 
+bool UseAlternateShelfLayout() {
+  return CommandLine::ForCurrentProcess()->
+        HasSwitch(ash::switches::kAshUseAlternateShelfLayout);
+}
+
+#if defined(OS_CHROMEOS)
 bool UseNewAudioHandler() {
   return !CommandLine::ForCurrentProcess()->
       HasSwitch(ash::switches::kAshDisableNewAudioHandler);
@@ -188,16 +198,10 @@ bool UseNewAudioHandler() {
 
 bool ShowAudioDeviceMenu() {
   return ash::switches::UseNewAudioHandler() &&
-      CommandLine::ForCurrentProcess()->
-          HasSwitch(ash::switches::kAshEnableAudioDeviceMenu);
+      !CommandLine::ForCurrentProcess()->
+          HasSwitch(ash::switches::kAshDisableAudioDeviceMenu);
 }
 
-bool UseAlternateShelfLayout() {
-  return CommandLine::ForCurrentProcess()->
-        HasSwitch(ash::switches::kAshUseAlternateShelfLayout);
-}
-
-#if defined(OS_CHROMEOS)
 bool UseUsbChargerNotification() {
   return !CommandLine::ForCurrentProcess()->
         HasSwitch(ash::switches::kAshDisableUsbChargerNotification);

@@ -1227,7 +1227,7 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_ASH_AUDIO_DEVICE_MENU_NAME,
     IDS_FLAGS_ASH_AUDIO_DEVICE_MENU_DESCRIPTION,
     kOsCrOS,
-    SINGLE_VALUE_TYPE(ash::switches::kAshEnableAudioDeviceMenu)
+    ENABLE_DISABLE_VALUE_TYPE("", ash::switches::kAshDisableAudioDeviceMenu)
   },
   {
     "enable-carrier-switching",

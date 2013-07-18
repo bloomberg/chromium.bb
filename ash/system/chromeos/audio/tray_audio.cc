@@ -259,7 +259,8 @@ class VolumeView : public ActionableView,
 
     // Show output device icon if necessary.
     chromeos::AudioDevice device;
-    audio_handler->GetActiveOutputDevice(&device);
+    if (!audio_handler->GetActiveOutputDevice(&device))
+      return;
     int device_icon = GetAudioDeviceIconId(device.type);
     if (device_icon != kNoAudioDeviceIcon) {
       device_type_->SetVisible(true);

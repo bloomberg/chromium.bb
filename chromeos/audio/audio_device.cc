@@ -82,6 +82,8 @@ namespace chromeos {
 AudioDevice::AudioDevice()
     : is_input(false),
       id(0),
+      display_name(""),
+      type(AUDIO_TYPE_OTHER),
       priority(0),
       active(false),
       plugged_time(0) {
