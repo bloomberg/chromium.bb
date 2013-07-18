@@ -38,6 +38,8 @@
 #include "TypeConversions.h"
 #include "bindings/v8/SerializedScriptValue.h"
 #include "core/css/StyleSheetContents.h"
+#include "core/css/resolver/StyleResolver.h"
+#include "core/css/resolver/ViewportStyleResolver.h"
 #include "core/dom/ClientRect.h"
 #include "core/dom/ClientRectList.h"
 #include "core/dom/DOMStringList.h"
@@ -909,7 +911,7 @@ void Internals::setPagination(Document* document, const String& mode, int gap, i
     page->setPagination(pagination);
 }
 
-String Internals::configurationForViewport(Document* document, float devicePixelRatio, int deviceWidth, int deviceHeight, int availableWidth, int availableHeight, ExceptionCode& ec)
+String Internals::configurationForViewport(Document* document, float, int deviceWidth, int deviceHeight, int availableWidth, int availableHeight, ExceptionCode& ec)
 {
     if (!document || !document->page()) {
         ec = InvalidAccessError;
@@ -917,16 +919,34 @@ String Internals::configurationForViewport(Document* document, float devicePixel
     }
     Page* page = document->page();
 
-    const int defaultLayoutWidthForNonMobilePages = 980;
-
-    // FIXME(aelias): Remove this argument from all the fast/viewport tests.
-    ASSERT(devicePixelRatio == 1);
+    // Update initial viewport size.
+    IntSize initialViewportSize(availableWidth, availableHeight);
+    document->page()->mainFrame()->view()->setFrameRect(IntRect(IntPoint::zero(), initialViewportSize));
+    document->styleResolver()->viewportStyleResolver()->resolve();
 
     ViewportArguments arguments = page->viewportArguments();
-    PageScaleConstraints constraints = arguments.resolve(IntSize(availableWidth, availableHeight), FloatSize(deviceWidth, deviceHeight), defaultLayoutWidthForNonMobilePages);
+    PageScaleConstraints constraints = arguments.resolve(initialViewportSize, FloatSize(deviceWidth, deviceHeight), 980 /* defaultLayoutWidthForNonMobilePages */);
+
     constraints.fitToContentsWidth(constraints.layoutSize.width(), availableWidth);
 
-    return "viewport size " + String::number(constraints.layoutSize.width()) + "x" + String::number(constraints.layoutSize.height()) + " scale " + String::number(constraints.initialScale) + " with limits [" + String::number(constraints.minimumScale) + ", " + String::number(constraints.maximumScale) + "] and userScalable " + (arguments.userZoom ? "true" : "false");
+    StringBuilder builder;
+
+    builder.appendLiteral("viewport size ");
+    builder.append(String::number(constraints.layoutSize.width()));
+    builder.append('x');
+    builder.append(String::number(constraints.layoutSize.height()));
+
+    builder.appendLiteral(" scale ");
+    builder.append(String::number(constraints.initialScale));
+    builder.appendLiteral(" with limits [");
+    builder.append(String::number(constraints.minimumScale));
+    builder.appendLiteral(", ");
+    builder.append(String::number(constraints.maximumScale));
+
+    builder.appendLiteral("] and userScalable ");
+    builder.append(arguments.userZoom ? "true" : "false");
+
+    return builder.toString();
 }
 
 bool Internals::wasLastChangeUserEdit(Element* textField, ExceptionCode& ec)
