@@ -587,7 +587,7 @@ TEST_F(AutocheckoutManagerTest, OnClickFailedTestMissingAdvance) {
       LogAutocheckoutBuyFlowMetric(
           AutofillMetrics::AUTOCHECKOUT_BUY_FLOW_MISSING_ADVANCE_ELEMENT))
       .Times(1);
-  autocheckout_manager_->OnClickFailed(MISSING_ADVANCE);
+  autocheckout_manager_->OnAutocheckoutPageCompleted(MISSING_ADVANCE);
   EXPECT_FALSE(autocheckout_manager_->in_autocheckout_flow());
   EXPECT_TRUE(
       autofill_manager_delegate_->request_autocomplete_dialog_open());
@@ -605,7 +605,7 @@ TEST_F(AutocheckoutManagerTest, OnClickFailedTestMissingClickBeforeFilling) {
       LogAutocheckoutBuyFlowMetric(AutofillMetrics::
           AUTOCHECKOUT_BUY_FLOW_MISSING_CLICK_ELEMENT_BEFORE_FORM_FILLING))
       .Times(1);
-  autocheckout_manager_->OnClickFailed(
+  autocheckout_manager_->OnAutocheckoutPageCompleted(
       MISSING_CLICK_ELEMENT_BEFORE_FORM_FILLING);
   EXPECT_FALSE(autocheckout_manager_->in_autocheckout_flow());
   EXPECT_TRUE(
@@ -621,7 +621,7 @@ TEST_F(AutocheckoutManagerTest, OnClickFailedTestMissingClickAfterFilling) {
       LogAutocheckoutBuyFlowMetric(AutofillMetrics::
           AUTOCHECKOUT_BUY_FLOW_MISSING_CLICK_ELEMENT_AFTER_FORM_FILLING))
       .Times(1);
-  autocheckout_manager_->OnClickFailed(
+  autocheckout_manager_->OnAutocheckoutPageCompleted(
       MISSING_CLICK_ELEMENT_AFTER_FORM_FILLING);
   EXPECT_FALSE(autocheckout_manager_->in_autocheckout_flow());
   EXPECT_TRUE(
@@ -682,6 +682,7 @@ TEST_F(AutocheckoutManagerTest, OnLoadedPageMetaDataRepeatedStartPage) {
   EXPECT_EQ(0U, process()->sink().message_count());
   EXPECT_TRUE(
       autofill_manager_delegate_->request_autocomplete_dialog_open());
+
   EXPECT_TRUE(autofill_manager_delegate_
       ->AutocheckoutStepExistsWithStatus(AUTOCHECKOUT_STEP_SHIPPING,
                                          AUTOCHECKOUT_STEP_FAILED));
@@ -750,31 +751,42 @@ TEST_F(AutocheckoutManagerTest, FullAutocheckoutFlow) {
   EXPECT_TRUE(autofill_manager_delegate_
       ->AutocheckoutStepExistsWithStatus(AUTOCHECKOUT_STEP_SHIPPING,
                                          AUTOCHECKOUT_STEP_STARTED));
-  // Go to second page.
-  EXPECT_CALL(*autofill_manager_delegate_, OnAutocheckoutSuccess()).Times(1);
-  autocheckout_manager_->OnLoadedPageMetaData(CreateInFlowMetaData());
-  EXPECT_TRUE(autocheckout_manager_->in_autocheckout_flow());
+  // Complete the first page.
+  autocheckout_manager_->OnAutocheckoutPageCompleted(SUCCESS);
   EXPECT_TRUE(autofill_manager_delegate_
       ->AutocheckoutStepExistsWithStatus(AUTOCHECKOUT_STEP_SHIPPING,
                                          AUTOCHECKOUT_STEP_COMPLETED));
+
+  // Go to the second page.
+  EXPECT_CALL(*autofill_manager_delegate_, OnAutocheckoutSuccess()).Times(1);
+  autocheckout_manager_->OnLoadedPageMetaData(CreateInFlowMetaData());
+  EXPECT_TRUE(autocheckout_manager_->in_autocheckout_flow());
   CheckFillFormsAndClickIpc();
   EXPECT_TRUE(autofill_manager_delegate_
       ->AutocheckoutStepExistsWithStatus(AUTOCHECKOUT_STEP_DELIVERY,
                                          AUTOCHECKOUT_STEP_STARTED));
-  // Go to third page.
+  autocheckout_manager_->OnAutocheckoutPageCompleted(SUCCESS);
+  EXPECT_TRUE(autofill_manager_delegate_
+      ->AutocheckoutStepExistsWithStatus(AUTOCHECKOUT_STEP_DELIVERY,
+                                         AUTOCHECKOUT_STEP_COMPLETED));
+
+  // Go to the third page.
   EXPECT_CALL(autocheckout_manager_->metric_logger(),
               LogAutocheckoutBuyFlowMetric(
                   AutofillMetrics::AUTOCHECKOUT_BUY_FLOW_SUCCESS)).Times(1);
   autocheckout_manager_->OnLoadedPageMetaData(CreateEndOfFlowMetaData());
   CheckFillFormsAndClickIpc();
+  EXPECT_TRUE(autocheckout_manager_->in_autocheckout_flow());
   EXPECT_TRUE(autofill_manager_delegate_
-      ->AutocheckoutStepExistsWithStatus(AUTOCHECKOUT_STEP_DELIVERY,
-                                         AUTOCHECKOUT_STEP_COMPLETED));
+      ->AutocheckoutStepExistsWithStatus(AUTOCHECKOUT_STEP_BILLING,
+                                         AUTOCHECKOUT_STEP_STARTED));
+  autocheckout_manager_->OnAutocheckoutPageCompleted(SUCCESS);
   EXPECT_FALSE(autocheckout_manager_->in_autocheckout_flow());
-  EXPECT_TRUE(autofill_manager_delegate_->request_autocomplete_dialog_open());
   EXPECT_TRUE(autofill_manager_delegate_
       ->AutocheckoutStepExistsWithStatus(AUTOCHECKOUT_STEP_BILLING,
                                          AUTOCHECKOUT_STEP_COMPLETED));
+
+  EXPECT_TRUE(autofill_manager_delegate_->request_autocomplete_dialog_open());
 }
 
 TEST_F(AutocheckoutManagerTest, CancelledAutocheckoutFlow) {
@@ -819,6 +831,7 @@ TEST_F(AutocheckoutManagerTest, SinglePageFlow) {
   autocheckout_manager_->MaybeShowAutocheckoutDialog(
       frame_url,
       AUTOCHECKOUT_BUBBLE_ACCEPTED);
+  autocheckout_manager_->OnAutocheckoutPageCompleted(SUCCESS);
   CheckFillFormsAndClickIpc();
   EXPECT_FALSE(autocheckout_manager_->in_autocheckout_flow());
   EXPECT_TRUE(autofill_manager_delegate_->request_autocomplete_dialog_open());

@@ -191,8 +191,9 @@ bool AutofillDriverImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_FORWARD(AutofillHostMsg_RequestAutocomplete,
                         autofill_manager_.get(),
                         AutofillManager::OnRequestAutocomplete)
-    IPC_MESSAGE_FORWARD(AutofillHostMsg_ClickFailed, autofill_manager_.get(),
-                        AutofillManager::OnClickFailed)
+    IPC_MESSAGE_FORWARD(AutofillHostMsg_AutocheckoutPageCompleted,
+                        autofill_manager_.get(),
+                        AutofillManager::OnAutocheckoutPageCompleted)
     IPC_MESSAGE_FORWARD(AutofillHostMsg_MaybeShowAutocheckoutBubble,
                         autofill_manager_.get(),
                         AutofillManager::OnMaybeShowAutocheckoutBubble)

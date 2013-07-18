@@ -268,10 +268,9 @@ IPC_MESSAGE_ROUTED0(AutofillHostMsg_DidEndTextFieldEditing)
 // Instructs the browser to hide the Autofill UI.
 IPC_MESSAGE_ROUTED0(AutofillHostMsg_HideAutofillUi)
 
-// Sent when the renderer attempts to click an element in an Autocheckout flow
-// and either the element could not be found or the click did not have the
-// desired effect.
-IPC_MESSAGE_ROUTED1(AutofillHostMsg_ClickFailed,
+// Sent when the renderer filled an Autocheckout page and clicked the proceed
+// button or if there was an error.
+IPC_MESSAGE_ROUTED1(AutofillHostMsg_AutocheckoutPageCompleted,
                     autofill::AutocheckoutStatus /* status */)
 
 // Instructs the browser to show the password generation bubble at the

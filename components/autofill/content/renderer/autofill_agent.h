@@ -15,6 +15,7 @@
 #include "base/timer/timer.h"
 #include "components/autofill/content/renderer/form_cache.h"
 #include "components/autofill/content/renderer/page_click_listener.h"
+#include "components/autofill/core/common/autocheckout_status.h"
 #include "components/autofill/core/common/forms_seen_state.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "third_party/WebKit/public/web/WebAutofillClient.h"
@@ -142,6 +143,9 @@ class AutofillAgent : public content::RenderViewObserver,
 
   // Called when |topmost_frame_| is supported for Autocheckout.
   void OnAutocheckoutSupported();
+
+  // Called when an Autocheckout page is completed by the renderer.
+  void CompleteAutocheckoutPage(autofill::AutocheckoutStatus status);
 
   // Called when clicking an Autocheckout proceed element fails to do anything.
   void ClickFailed();

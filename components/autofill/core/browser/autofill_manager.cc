@@ -776,8 +776,9 @@ void AutofillManager::OnDidEndTextFieldEditing() {
   external_delegate_->DidEndTextFieldEditing();
 }
 
-void AutofillManager::OnClickFailed(autofill::AutocheckoutStatus status) {
-  autocheckout_manager_.OnClickFailed(status);
+void AutofillManager::OnAutocheckoutPageCompleted(
+    autofill::AutocheckoutStatus status) {
+  autocheckout_manager_.OnAutocheckoutPageCompleted(status);
 }
 
 std::string AutofillManager::GetAutocheckoutURLPrefix() const {

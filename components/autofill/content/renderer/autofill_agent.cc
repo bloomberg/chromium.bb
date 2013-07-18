@@ -14,7 +14,6 @@
 #include "components/autofill/content/renderer/form_autofill_util.h"
 #include "components/autofill/content/renderer/page_click_tracker.h"
 #include "components/autofill/content/renderer/password_autofill_agent.h"
-#include "components/autofill/core/common/autocheckout_status.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_messages.h"
 #include "components/autofill/core/common/autofill_switches.h"
@@ -248,8 +247,10 @@ void AutofillAgent::DidFailProvisionalLoad(WebFrame* frame,
 void AutofillAgent::DidCommitProvisionalLoad(WebFrame* frame,
                                              bool is_new_navigation) {
   in_flight_request_form_.reset();
-  if (!frame->parent())
+  if (!frame->parent() && autocheckout_click_in_progress_) {
     autocheckout_click_in_progress_ = false;
+    CompleteAutocheckoutPage(SUCCESS);
+  }
 }
 
 void AutofillAgent::FrameDetached(WebFrame* frame) {
@@ -685,8 +686,7 @@ void AutofillAgent::OnFillFormsAndClick(
   for (size_t i = 0; i < click_elements_before_form_fill.size(); ++i) {
     if (!ClickElement(topmost_frame_->document(),
                       click_elements_before_form_fill[i])) {
-      Send(new AutofillHostMsg_ClickFailed(routing_id(),
-           MISSING_CLICK_ELEMENT_BEFORE_FORM_FILLING));
+      CompleteAutocheckoutPage(MISSING_CLICK_ELEMENT_BEFORE_FORM_FILLING);
       return;
     }
   }
@@ -699,15 +699,16 @@ void AutofillAgent::OnFillFormsAndClick(
   for (size_t i = 0; i < click_elements_after_form_fill.size(); ++i) {
     if (!ClickElement(topmost_frame_->document(),
                       click_elements_after_form_fill[i])) {
-      Send(new AutofillHostMsg_ClickFailed(routing_id(),
-           MISSING_CLICK_ELEMENT_AFTER_FORM_FILLING));
+      CompleteAutocheckoutPage(MISSING_CLICK_ELEMENT_AFTER_FORM_FILLING);
       return;
     }
   }
 
   // Exit early if there is nothing to click.
-  if (click_element_descriptor.retrieval_method == WebElementDescriptor::NONE)
+  if (click_element_descriptor.retrieval_method == WebElementDescriptor::NONE) {
+    CompleteAutocheckoutPage(SUCCESS);
     return;
+  }
 
   // It's possible that clicking the element to proceed in an Autocheckout
   // flow will not actually proceed to the next step in the flow, e.g. there
@@ -721,9 +722,7 @@ void AutofillAgent::OnFillFormsAndClick(
                      &AutofillAgent::ClickFailed);
   if (!ClickElement(topmost_frame_->document(),
                     click_element_descriptor)) {
-    click_timer_.Stop();
-    Send(new AutofillHostMsg_ClickFailed(routing_id(),
-                                         MISSING_ADVANCE));
+    CompleteAutocheckoutPage(MISSING_ADVANCE);
   }
 }
 
@@ -734,9 +733,14 @@ void AutofillAgent::OnAutocheckoutSupported() {
   MaybeShowAutocheckoutBubble();
 }
 
+void AutofillAgent::CompleteAutocheckoutPage(
+    autofill::AutocheckoutStatus status) {
+  click_timer_.Stop();
+  Send(new AutofillHostMsg_AutocheckoutPageCompleted(routing_id(), status));
+}
+
 void AutofillAgent::ClickFailed() {
-  Send(new AutofillHostMsg_ClickFailed(routing_id(),
-                                       CANNOT_PROCEED));
+  CompleteAutocheckoutPage(CANNOT_PROCEED);
 }
 
 void AutofillAgent::ShowSuggestions(const WebInputElement& element,

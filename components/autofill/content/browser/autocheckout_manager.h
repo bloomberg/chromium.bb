@@ -49,9 +49,10 @@ class AutocheckoutManager {
   // gathered from the requestAutocomplete dialog.
   void FillForms();
 
-  // Called when clicking a proceed element in an Autocheckout flow fails.
-  // |status| is the reason for the failure.
-  void OnClickFailed(AutocheckoutStatus status);
+  // Called to signal that the renderer has completed processing a page in the
+  // Autocheckout flow. |status| is the reason for the failure, or |SUCCESS| if
+  // there were no errors.
+  void OnAutocheckoutPageCompleted(AutocheckoutStatus status);
 
   // Sets |page_meta_data_| with the meta data for the current page.
   void OnLoadedPageMetaData(
@@ -127,6 +128,10 @@ class AutocheckoutManager {
   // Account time spent between now and |last_step_completion_timestamp_|
   // towards |page_number|.
   void RecordTimeTaken(int page_number);
+
+  // Terminate the Autocheckout flow and send Autocheckout status to Wallet
+  // server.
+  void EndAutocheckout(AutocheckoutStatus status);
 
   AutofillManager* autofill_manager_;  // WEAK; owns us
 

@@ -169,9 +169,8 @@ class AutofillManager : public AutofillDownloadManager::Observer {
   void OnRequestAutocomplete(const FormData& form,
                              const GURL& frame_url);
 
-  // Called to signal clicking an element failed in some way during an
-  // Autocheckout flow.
-  void OnClickFailed(autofill::AutocheckoutStatus status);
+  // Called to signal a page is completed in renderer in the Autocheckout flow.
+  void OnAutocheckoutPageCompleted(autofill::AutocheckoutStatus status);
 
   // Shows the Autocheckout bubble if conditions are right. See comments for
   // AutocheckoutManager::MaybeShowAutocheckoutBubble. Input element requesting
