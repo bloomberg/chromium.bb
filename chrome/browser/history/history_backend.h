@@ -20,6 +20,7 @@
 #include "chrome/browser/history/history_database.h"
 #include "chrome/browser/history/history_marshaling.h"
 #include "chrome/browser/history/history_types.h"
+#include "chrome/browser/history/text_database_manager.h"
 #include "chrome/browser/history/thumbnail_database.h"
 #include "chrome/browser/history/visit_tracker.h"
 #include "chrome/browser/search_engines/template_url_id.h"
@@ -160,6 +161,11 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
                              int32 page_id,
                              const GURL& url,
                              base::Time end_ts);
+
+
+  // Indexing ------------------------------------------------------------------
+
+  void SetPageContents(const GURL& url, const string16& contents);
 
   // Querying ------------------------------------------------------------------
 
@@ -558,7 +564,6 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, QueryFilteredURLs);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, UpdateVisitDuration);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, ExpireHistoryForTimes);
-  FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, DeleteFTSIndexDatabases);
 
   friend class ::TestingProfile;
 
@@ -653,6 +658,9 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
                         const string16& text_query,
                         const QueryOptions& options,
                         QueryResults* result);
+  void QueryHistoryFTS(const string16& text_query,
+                       const QueryOptions& options,
+                       QueryResults* result);
 
   // Committing ----------------------------------------------------------------
 
@@ -835,9 +843,6 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // The IDs of the URLs may change.
   bool ClearAllMainHistory(const URLRows& kept_urls);
 
-  // Deletes the FTS index database files, which are no longer used.
-  void DeleteFTSIndexDatabases();
-
   // Returns the BookmarkService, blocking until it is loaded. This may return
   // NULL during testing.
   BookmarkService* GetBookmarkService();
@@ -869,6 +874,10 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   // Stores old history in a larger, slower database.
   scoped_ptr<ArchivedDatabase> archived_db_;
+
+  // Full text database manager, possibly NULL if the database could not be
+  // created.
+  scoped_ptr<TextDatabaseManager> text_database_;
 
   // Manages expiration between the various databases.
   ExpireHistoryBackend expirer_;

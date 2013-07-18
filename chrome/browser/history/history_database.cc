@@ -441,13 +441,15 @@ sql::InitStatus HistoryDatabase::EnsureCurrentVersion() {
 #if !defined(OS_WIN)
 void HistoryDatabase::MigrateTimeEpoch() {
   // Update all the times in the URLs and visits table in the main database.
+  // For visits, clear the indexed flag since we'll delete the FTS databases in
+  // the next step.
   ignore_result(db_.Execute(
       "UPDATE urls "
       "SET last_visit_time = last_visit_time + 11644473600000000 "
       "WHERE id IN (SELECT id FROM urls WHERE last_visit_time > 0);"));
   ignore_result(db_.Execute(
       "UPDATE visits "
-      "SET visit_time = visit_time + 11644473600000000 "
+      "SET visit_time = visit_time + 11644473600000000, is_indexed = 0 "
       "WHERE id IN (SELECT id FROM visits WHERE visit_time > 0);"));
   ignore_result(db_.Execute(
       "UPDATE segment_usage "

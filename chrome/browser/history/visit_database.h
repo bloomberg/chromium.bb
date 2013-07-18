@@ -58,6 +58,11 @@ class VisitDatabase {
   // may still be no matches).
   bool GetVisitsForURL(URLID url_id, VisitVector* visits);
 
+  // Fills in the given vector with all of the visits for the given page ID that
+  // have the |is_indexed| field set to true, in no particular order.
+  // Returns true on success (although there may still be no matches).
+  bool GetIndexedVisitsForURL(URLID url_id, VisitVector* visits);
+
   // Fills in the given vector with the visits for the given page ID which
   // match the set of options passed, sorted in ascending order of date.
   //
@@ -225,7 +230,8 @@ class VisitDatabase {
 
 // Rows, in order, of the visit table.
 #define HISTORY_VISIT_ROW_FIELDS \
-    " id,url,visit_time,from_visit,transition,segment_id,visit_duration "
+    " id,url,visit_time,from_visit,transition,segment_id,is_indexed," \
+    "visit_duration "
 
 }  // namespace history
 

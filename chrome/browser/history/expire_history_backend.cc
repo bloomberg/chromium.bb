@@ -19,6 +19,8 @@
 #include "chrome/browser/history/archived_database.h"
 #include "chrome/browser/history/history_database.h"
 #include "chrome/browser/history/history_notifications.h"
+#include "chrome/browser/history/text_database.h"
+#include "chrome/browser/history/text_database_manager.h"
 #include "chrome/browser/history/thumbnail_database.h"
 
 using base::Time;
@@ -170,6 +172,10 @@ struct ExpireHistoryBackend::DeleteDependencies {
   // The list of all favicon urls that were actually deleted from the thumbnail
   // db.
   std::set<GURL> expired_favicons;
+
+  // Tracks the set of databases that have changed so we can optimize when
+  // when we're done.
+  TextDatabaseManager::ChangeSet text_db_changes;
 };
 
 ExpireHistoryBackend::ExpireHistoryBackend(
@@ -179,6 +185,7 @@ ExpireHistoryBackend::ExpireHistoryBackend(
       main_db_(NULL),
       archived_db_(NULL),
       thumb_db_(NULL),
+      text_db_(NULL),
       weak_factory_(this),
       bookmark_service_(bookmark_service) {
 }
@@ -188,10 +195,12 @@ ExpireHistoryBackend::~ExpireHistoryBackend() {
 
 void ExpireHistoryBackend::SetDatabases(HistoryDatabase* main_db,
                                         ArchivedDatabase* archived_db,
-                                        ThumbnailDatabase* thumb_db) {
+                                        ThumbnailDatabase* thumb_db,
+                                        TextDatabaseManager* text_db) {
   main_db_ = main_db;
   archived_db_ = archived_db;
   thumb_db_ = thumb_db;
+  text_db_ = text_db;
 }
 
 void ExpireHistoryBackend::DeleteURL(const GURL& url) {
@@ -233,6 +242,9 @@ void ExpireHistoryBackend::DeleteURLs(const std::vector<GURL>& urls) {
   DeleteFaviconsIfPossible(dependencies.affected_favicons,
                            &dependencies.expired_favicons);
 
+  if (text_db_)
+    text_db_->OptimizeChangedDatabases(dependencies.text_db_changes);
+
   BroadcastDeleteNotifications(&dependencies, DELETION_USER_INITIATED);
 }
 
@@ -240,6 +252,10 @@ void ExpireHistoryBackend::ExpireHistoryBetween(
     const std::set<GURL>& restrict_urls, Time begin_time, Time end_time) {
   if (!main_db_)
     return;
+
+  // There may be stuff in the text database manager's temporary cache.
+  if (text_db_)
+    text_db_->DeleteFromUncommitted(restrict_urls, begin_time, end_time);
 
   // Find the affected visits and delete them.
   // TODO(brettw): bug 1171164: We should query the archived database here, too.
@@ -273,6 +289,10 @@ void ExpireHistoryBackend::ExpireHistoryForTimes(
 
   if (!main_db_)
     return;
+
+  // There may be stuff in the text database manager's temporary cache.
+  if (text_db_)
+    text_db_->DeleteFromUncommittedForTimes(times);
 
   // Find the affected visits and delete them.
   // TODO(brettw): bug 1171164: We should query the archived database here, too.
@@ -348,6 +368,7 @@ void ExpireHistoryBackend::StartArchivingOldStuff(
   // Initialize the queue with all tasks for the first set of iterations.
   InitWorkQueue();
   ScheduleArchive();
+  ScheduleExpireHistoryIndexFiles();
 }
 
 void ExpireHistoryBackend::DeleteFaviconsIfPossible(
@@ -401,11 +422,21 @@ void ExpireHistoryBackend::DeleteVisitRelatedInfo(
     // Add the URL row to the affected URL list.
     std::map<URLID, URLRow>::const_iterator found =
         dependencies->affected_urls.find(visits[i].url_id);
+    const URLRow* cur_row = NULL;
     if (found == dependencies->affected_urls.end()) {
       URLRow row;
       if (!main_db_->GetURLRow(visits[i].url_id, &row))
         continue;
       dependencies->affected_urls[visits[i].url_id] = row;
+      cur_row = &dependencies->affected_urls[visits[i].url_id];
+    } else {
+      cur_row = &found->second;
+    }
+
+    // Delete any associated full-text indexed data.
+    if (visits[i].is_indexed && text_db_) {
+      text_db_->DeletePageData(visits[i].visit_time, cur_row->url(),
+                               &dependencies->text_db_changes);
     }
   }
 }
@@ -415,6 +446,13 @@ void ExpireHistoryBackend::DeleteOneURL(
     bool is_bookmarked,
     DeleteDependencies* dependencies) {
   main_db_->DeleteSegmentForURL(url_row.id());
+
+  // The URL may be in the text database manager's temporary cache.
+  if (text_db_) {
+    std::set<GURL> restrict_urls;
+    restrict_urls.insert(url_row.url());
+    text_db_->DeleteFromUncommitted(restrict_urls, base::Time(), base::Time());
+  }
 
   if (!is_bookmarked) {
     dependencies->deleted_urls.push_back(url_row);
@@ -682,6 +720,48 @@ bool ExpireHistoryBackend::ArchiveSomeOldHistory(
 
 void ExpireHistoryBackend::ParanoidExpireHistory() {
   // TODO(brettw): Bug 1067331: write this to clean up any errors.
+}
+
+void ExpireHistoryBackend::ScheduleExpireHistoryIndexFiles() {
+  if (!text_db_) {
+    // Can't expire old history index files because we
+    // don't know where they're located.
+    return;
+  }
+
+  TimeDelta delay = TimeDelta::FromMinutes(kIndexExpirationDelayMin);
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&ExpireHistoryBackend::DoExpireHistoryIndexFiles,
+                 weak_factory_.GetWeakPtr()),
+      delay);
+}
+
+void ExpireHistoryBackend::DoExpireHistoryIndexFiles() {
+  if (!text_db_) {
+    // The text database may have been closed since the task was scheduled.
+    return;
+  }
+
+  Time::Exploded exploded;
+  Time::Now().LocalExplode(&exploded);
+  int cutoff_month =
+      exploded.year * 12 + exploded.month - kStoreHistoryIndexesForMonths;
+  TextDatabase::DBIdent cutoff_id =
+      (cutoff_month / 12) * 100 + (cutoff_month % 12);
+
+  base::FilePath::StringType history_index_files_pattern =
+      TextDatabase::file_base();
+  history_index_files_pattern.append(FILE_PATH_LITERAL("*"));
+  base::FileEnumerator file_enumerator(
+      text_db_->GetDir(), false, base::FileEnumerator::FILES,
+      history_index_files_pattern);
+  for (base::FilePath file = file_enumerator.Next(); !file.empty();
+       file = file_enumerator.Next()) {
+    TextDatabase::DBIdent file_id = TextDatabase::FileNameToID(file);
+    if (file_id < cutoff_id)
+      sql::Connection::Delete(file);
+  }
 }
 
 BookmarkService* ExpireHistoryBackend::GetBookmarkService() {

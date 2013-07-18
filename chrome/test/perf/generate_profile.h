@@ -14,7 +14,8 @@ class FilePath;
 // Addition types data can be generated for. By default only urls/visits are
 // added.
 enum GenerateProfileTypes {
-  TOP_SITES = 1 << 0
+  TOP_SITES = 1 << 0,
+  FULL_TEXT = 1 << 1
 };
 
 // Generates a user profile and history by psuedo-randomly generating data and
