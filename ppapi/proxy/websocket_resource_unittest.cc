@@ -3,14 +3,14 @@
 // found in the LICENSE file.
 
 #include "base/memory/ref_counted.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "ppapi/c/pp_errors.h"
-#include "ppapi/c/ppb_websocket.h"
 #include "ppapi/c/ppb_var.h"
+#include "ppapi/c/ppb_websocket.h"
 #include "ppapi/proxy/locking_resource_releaser.h"
-#include "ppapi/proxy/websocket_resource.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppapi_proxy_test.h"
+#include "ppapi/proxy/websocket_resource.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/ppb_var_shared.h"
 #include "ppapi/shared_impl/proxy_lock.h"

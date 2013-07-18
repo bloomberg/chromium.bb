@@ -7,7 +7,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"

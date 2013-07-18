@@ -4,7 +4,7 @@
 
 #include "ppapi/proxy/ppb_testing_proxy.h"
 
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "ppapi/c/dev/ppb_testing_dev.h"
 #include "ppapi/proxy/enter_proxy.h"
 #include "ppapi/proxy/plugin_dispatcher.h"

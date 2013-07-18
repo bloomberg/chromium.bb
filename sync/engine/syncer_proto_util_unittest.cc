@@ -8,7 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
 #include "sync/internal_api/public/base/model_type_test_util.h"
 #include "sync/protocol/bookmark_specifics.pb.h"

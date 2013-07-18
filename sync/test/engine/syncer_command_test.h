@@ -11,7 +11,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "sync/engine/model_changing_syncer_command.h"
 #include "sync/engine/traffic_recorder.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"

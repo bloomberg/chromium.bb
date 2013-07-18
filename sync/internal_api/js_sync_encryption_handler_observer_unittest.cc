@@ -6,16 +6,16 @@
 
 #include "base/basictypes.h"
 #include "base/location.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/values.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/util/sync_string_conversions.h"
 #include "sync/internal_api/public/util/weak_handle.h"
 #include "sync/js/js_event_details.h"
 #include "sync/js/js_test_util.h"
+#include "sync/test/fake_encryptor.h"
 #include "sync/util/cryptographer.h"
 #include "sync/util/time.h"
-#include "sync/test/fake_encryptor.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {

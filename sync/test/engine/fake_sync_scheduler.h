@@ -9,7 +9,7 @@
 #ifndef SYNC_TEST_ENGINE_FAKE_SYNC_SCHEDULER_H_
 #define SYNC_TEST_ENGINE_FAKE_SYNC_SCHEDULER_H_
 
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "sync/engine/sync_scheduler.h"
 
 namespace syncer {

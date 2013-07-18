@@ -4,13 +4,13 @@
 
 #include <cstring>
 
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "ppapi/c/dev/ppb_printing_dev.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/proxy/locking_resource_releaser.h"
-#include "ppapi/proxy/printing_resource.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppapi_proxy_test.h"
+#include "ppapi/proxy/printing_resource.h"
 #include "ppapi/thunk/thunk.h"
 
 namespace ppapi {

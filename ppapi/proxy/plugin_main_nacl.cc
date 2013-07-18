@@ -12,7 +12,7 @@
 // ViewMsgLog et al. functions.
 
 #include "base/command_line.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "components/tracing/child_trace_message_filter.h"

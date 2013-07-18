@@ -5,7 +5,7 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "sync/util/get_session_name.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
