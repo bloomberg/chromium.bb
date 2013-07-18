@@ -7,34 +7,87 @@
 body {
   color: rgb(48, 57, 66);
   font-family: Arial, sans-serif;
-  font-size: 12px;
-  margin: 20px;
+  font-size: 13px;
+  margin: 0;
   min-width: 47em;
-  padding-bottom: 65px;
+  padding: 20px 20px 65px 0;
 }
 
 img {
   float: left;
   height: 16px;
+  padding-left: 2px;
   padding-right: 5px;
   width: 16px;
 }
 
-.section {
+#container {
+  -webkit-flex-direction: row;
+  display: -webkit-flex;
+}
+
+#navigation {
+  width: 150px;
+}
+
+#content {
+  -webkit-flex: 1;
+}
+
+#caption {
+  color: rgb(92, 97, 102);
+  font-size: 150%;
+  padding-bottom: 10px;
+  padding-left: 20px;
+}
+
+.tab-header {
+  -webkit-border-start: 6px solid transparent;
+  padding-left: 15px;
+}
+
+.tab-header.selected {
+  -webkit-border-start-color: rgb(78, 87, 100);
+}
+
+.tab-header > button {
+  background-color: white;
+  border: 0;
+  cursor: pointer;
+  font: inherit;
+  line-height: 17px;
+  margin: 6px 0;
+  padding: 0 2px;
+}
+
+.tab-header:not(.selected) > button {
+  color: #999;
+}
+
+#content > div:not(.selected) {
+  display: none;
+}
+
+.content-header {
   border-bottom: 1px solid #eee;
-  font-size: 1.5em;
+  font-size: 150%;
+  padding-bottom: 4px;
+}
+
+.section {
+  font-size: 150%;
   margin: 10px 0 0;
-  padding: 2px 2px;
+  padding: 2px 0;
 }
 
 .small-section {
   font-weight: bold;
   margin: 5px 0 0;
-  padding: 2px 2px;
+  padding: 2px 0;
 }
 
 .row {
-  padding: 5px;
+  padding: 5px 0;
 }
 
 .url {

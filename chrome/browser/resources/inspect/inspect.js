@@ -25,7 +25,37 @@ function removeChildren(element_id) {
 }
 
 function onload() {
+  var tabContents = document.querySelectorAll('#content > div');
+  for (var i = 0; i != tabContents.length; i++) {
+    var tabContent = tabContents[i];
+    var tabName = tabContent.querySelector('.content-header').textContent;
+
+    var tabHeader = document.createElement('div');
+    tabHeader.className = 'tab-header';
+    var button = document.createElement('button');
+    button.textContent = tabName;
+    tabHeader.appendChild(button);
+    tabHeader.addEventListener('click', selectTab.bind(null, tabContent.id));
+    $('navigation').appendChild(tabHeader);
+  }
+  selectTab('devices-tab');
   populateLists();
+}
+
+function selectTab(id) {
+  var tabContents = document.querySelectorAll('#content > div');
+  var tabHeaders = $('navigation').querySelectorAll('.tab-header');
+  for (var i = 0; i != tabContents.length; i++) {
+    var tabContent = tabContents[i];
+    var tabHeader = tabHeaders[i];
+    if (tabContent.id == id) {
+      tabContent.classList.add('selected');
+      tabHeader.classList.add('selected');
+    } else {
+      tabContent.classList.remove('selected');
+      tabHeader.classList.remove('selected');
+    }
+  }
 }
 
 function populateLists() {
