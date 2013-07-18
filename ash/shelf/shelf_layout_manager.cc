@@ -745,22 +745,13 @@ void ShelfLayoutManager::CalculateTargetBounds(
       gfx::Insets(0, 0, 0, GetWorkAreaSize(state, shelf_width)),
       gfx::Insets(GetWorkAreaSize(state, shelf_height), 0, 0, 0));
 
-  // TODO(varkha): The functionality of managing insets for display areas
-  // should probably be pushed to a separate component. This would simplify or
-  // remove entirely the dependency on keyboard and dock.
-
   // Also push in the work area inset for the keyboard if it is visible.
   if (!keyboard_bounds_.IsEmpty()) {
-    gfx::Insets keyboard_insets(0, 0, keyboard_bounds_.height(), 0);
-    target_bounds->work_area_insets += keyboard_insets;
-  }
-
-  // Also push in the work area inset for the dock if it is visible.
-  if (!dock_bounds_.IsEmpty()) {
-    gfx::Insets dock_insets(
-        0, (dock_bounds_.x() > 0 ? 0 : dock_bounds_.width()),
-        0, (dock_bounds_.x() > 0 ? dock_bounds_.width() : 0));
-    target_bounds->work_area_insets += dock_insets;
+    target_bounds->work_area_insets.Set(
+        target_bounds->work_area_insets.top(),
+        target_bounds->work_area_insets.left(),
+        target_bounds->work_area_insets.bottom() + keyboard_bounds_.height(),
+        target_bounds->work_area_insets.right());
   }
 
   target_bounds->opacity =
@@ -997,14 +988,6 @@ void ShelfLayoutManager::OnKeyboardBoundsChanging(
     const gfx::Rect& keyboard_bounds) {
   keyboard_bounds_ = keyboard_bounds;
   OnWindowResized();
-}
-
-void ShelfLayoutManager::OnDockBoundsChanging(
-    const gfx::Rect& dock_bounds) {
-  if (dock_bounds_ != dock_bounds) {
-    dock_bounds_ = dock_bounds;
-    OnWindowResized();
-  }
 }
 
 gfx::Insets ShelfLayoutManager::GetInsetsForAlignment(int distance) const {

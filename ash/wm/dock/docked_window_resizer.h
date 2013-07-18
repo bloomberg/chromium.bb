@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -54,7 +54,7 @@ class ASH_EXPORT DockedWindowResizer : public WindowResizer {
 
   // Checks if the provided window bounds should snap to the side of a screen.
   // If so the offset returned gives the necessary adjustment to snap.
-  bool MaybeSnapToEdge(const gfx::Rect& bounds, gfx::Point* offset);
+  void MaybeSnapToEdge(const gfx::Rect& bounds, gfx::Point* offset);
 
   // Tracks the window's initial position and attachment at the start of a drag
   // and informs the DockLayoutManager that a drag has started if necessary.
@@ -76,13 +76,6 @@ class ASH_EXPORT DockedWindowResizer : public WindowResizer {
 
   // Set to true once Drag() is invoked and the bounds of the window change.
   bool did_move_or_resize_;
-
-  // Set to true if the window that is being dragged was docked before drag.
-  bool was_docked_;
-
-  // If non-NULL the destructor sets this to true. Used to determine if this has
-  // been deleted.
-  bool* destroyed_;
 
   DISALLOW_COPY_AND_ASSIGN(DockedWindowResizer);
 };

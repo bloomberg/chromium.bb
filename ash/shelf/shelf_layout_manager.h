@@ -13,7 +13,6 @@
 #include "ash/shelf/shelf_types.h"
 #include "ash/shell_observer.h"
 #include "ash/system/status_area_widget.h"
-#include "ash/wm/dock/docked_window_layout_manager_observer.h"
 #include "ash/wm/workspace/workspace_types.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -57,7 +56,6 @@ class ASH_EXPORT ShelfLayoutManager :
     public aura::LayoutManager,
     public ash::ShellObserver,
     public aura::client::ActivationChangeObserver,
-    public DockedWindowLayoutManagerObserver,
     public keyboard::KeyboardControllerObserver {
  public:
 
@@ -294,9 +292,6 @@ class ASH_EXPORT ShelfLayoutManager :
   virtual void OnKeyboardBoundsChanging(
       const gfx::Rect& keyboard_bounds) OVERRIDE;
 
-  // Overridden from dock::DockObserver:
-  virtual void OnDockBoundsChanging(const gfx::Rect& dock_bounds) OVERRIDE;
-
   // Generates insets for inward edge based on the current shelf alignment.
   gfx::Insets GetInsetsForAlignment(int distance) const;
 
@@ -358,9 +353,6 @@ class ASH_EXPORT ShelfLayoutManager :
 
   // The bounds of the keyboard.
   gfx::Rect keyboard_bounds_;
-
-  // The bounds of the dock.
-  gfx::Rect dock_bounds_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfLayoutManager);
 };

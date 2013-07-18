@@ -302,11 +302,8 @@ void RootWindowController::ShowLauncher() {
 void RootWindowController::OnLauncherCreated() {
   if (panel_layout_manager_)
     panel_layout_manager_->SetLauncher(shelf_->launcher());
-  if (docked_layout_manager_) {
+  if (docked_layout_manager_)
     docked_layout_manager_->SetLauncher(shelf_->launcher());
-    if (shelf_->shelf_layout_manager())
-      docked_layout_manager_->AddObserver(shelf_->shelf_layout_manager());
-  }
 }
 
 void RootWindowController::UpdateAfterLoginStatusChange(
@@ -355,13 +352,6 @@ void RootWindowController::CloseChildWindows() {
   if (panel_layout_manager_) {
     panel_layout_manager_->Shutdown();
     panel_layout_manager_ = NULL;
-  }
-  // docked_layout_manager_ needs to be shut down before windows are destroyed.
-  if (docked_layout_manager_) {
-    if (shelf_->shelf_layout_manager())
-      docked_layout_manager_->RemoveObserver(shelf_->shelf_layout_manager());
-    docked_layout_manager_->Shutdown();
-    docked_layout_manager_ = NULL;
   }
 
   // TODO(harrym): Remove when Status Area Widget is a child view.

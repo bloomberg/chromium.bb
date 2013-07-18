@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,6 @@
 #include "ash/launcher/launcher.h"
 #include "ash/launcher/launcher_model.h"
 #include "ash/root_window_controller.h"
-#include "ash/screen_ash.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_types.h"
 #include "ash/shelf/shelf_widget.h"
@@ -22,11 +21,9 @@
 #include "ash/wm/drag_window_resizer.h"
 #include "ash/wm/panels/panel_layout_manager.h"
 #include "ash/wm/window_properties.h"
-#include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
-#include "ui/aura/test/test_window_delegate.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/views/widget/widget.h"
@@ -70,7 +67,7 @@ class DockedWindowResizerTest
 
   aura::Window* CreateTestWindow(const gfx::Rect& bounds) {
     aura::Window* window = CreateTestWindowInShellWithDelegateAndType(
-        &delegate_,
+        NULL,
         window_type_,
         0,
         bounds);
@@ -118,18 +115,6 @@ class DockedWindowResizerTest
     ASSERT_TRUE(resizer_.get());
   }
 
-  void ResizeStartAtOffsetFromwindowOrigin(aura::Window* window,
-                                           int dx,
-                                           int dy,
-                                           int window_component) {
-    initial_location_in_parent_ =
-        window->bounds().origin() + gfx::Vector2d(dx, dy);
-    resizer_.reset(CreateSomeWindowResizer(window,
-                                           initial_location_in_parent_,
-                                           window_component));
-    ASSERT_TRUE(resizer_.get());
-  }
-
   void DragMove(int dx, int dy) {
     resizer_->Drag(initial_location_in_parent_ + gfx::Vector2d(dx, dy), 0);
   }
@@ -167,18 +152,11 @@ class DockedWindowResizerTest
         window_type_ == aura::client::WINDOW_TYPE_PANEL ? -100 : 20);
   }
 
-  void DragToVerticalPositionAndToEdge(DockedEdge edge,
-                                       aura::Window* window,
-                                       int y) {
-    DragToVerticalPositionRelativeToEdge(edge, window, 0, y);
-  }
-
-  void DragToVerticalPositionRelativeToEdge(DockedEdge edge,
-                                            aura::Window* window,
-                                            int dx,
-                                            int y) {
+  void DragToVerticalOffsetAndToEdge(DockedEdge edge,
+                                     aura::Window* window,
+                                     int y) {
     gfx::Rect initial_bounds = window->GetBoundsInScreen();
-    DragVerticallyAndRelativeToEdge(edge, window, dx, y - initial_bounds.y());
+    DragVerticallyAndRelativeToEdge(edge, window, 0, y - initial_bounds.y());
   }
 
   // Detach if our window is a panel, then drag it vertically by |dy| and
@@ -211,7 +189,7 @@ class DockedWindowResizerTest
     }
 
     // avoid snap by clicking away from the border
-    ASSERT_NO_FATAL_FAILURE(DragStartAtOffsetFromwindowOrigin(window, 25, 5));
+    ASSERT_NO_FATAL_FAILURE(DragStartAtOffsetFromwindowOrigin(window, 5, 5));
 
     // Drag the window left or right to the edge (or almost to it).
     if (edge == DOCKED_EDGE_LEFT)
@@ -236,7 +214,6 @@ class DockedWindowResizerTest
   scoped_ptr<WindowResizer> resizer_;
   LauncherModel* model_;
   aura::client::WindowType window_type_;
-  aura::test::TestWindowDelegate delegate_;
 
   // Location at start of the drag in |window->parent()|'s coordinates.
   gfx::Point initial_location_in_parent_;
@@ -435,15 +412,18 @@ TEST_P(DockedWindowResizerTest, AttachMinimizeRestore) {
 }
 
 // Dock two windows, undock one, check that the other one is still docked.
+#if defined(OS_WIN)
+// TODO(varkha): Positioning of the panel seems to be off on Windows Aura when
+// attached to the right (http://crbug.com/180892).
+TEST_P(DockedWindowResizerTest, DISABLED_AttachTwoWindows)
+#else
 TEST_P(DockedWindowResizerTest, AttachTwoWindows)
+#endif
 {
-  if (!SupportsHostWindowResize())
-    return;
-
   scoped_ptr<aura::Window> w1(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
   scoped_ptr<aura::Window> w2(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
-  DragToVerticalPositionAndToEdge(DOCKED_EDGE_RIGHT, w1.get(), 20);
-  DragToVerticalPositionAndToEdge(DOCKED_EDGE_RIGHT, w2.get(), 50);
+  DragToVerticalOffsetAndToEdge(DOCKED_EDGE_RIGHT, w1.get(), 20);
+  DragToVerticalOffsetAndToEdge(DOCKED_EDGE_RIGHT, w2.get(), 50);
 
   // Both windows should be attached and snapped to the right edge.
   EXPECT_EQ(w1->GetRootWindow()->bounds().right(),
@@ -474,15 +454,18 @@ TEST_P(DockedWindowResizerTest, AttachTwoWindows)
 
 // Dock one window, try to dock another window on the opposite side (should not
 // dock).
+#if defined(OS_WIN)
+// TODO(varkha): Positioning of the panel seems to be off on Windows Aura when
+// attached to the right (http://crbug.com/180892).
+TEST_P(DockedWindowResizerTest, DISABLED_AttachOnTwoSides)
+#else
 TEST_P(DockedWindowResizerTest, AttachOnTwoSides)
+#endif
 {
-  if (!SupportsHostWindowResize())
-    return;
-
   scoped_ptr<aura::Window> w1(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
   scoped_ptr<aura::Window> w2(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
-  DragToVerticalPositionAndToEdge(DOCKED_EDGE_RIGHT, w1.get(), 20);
-  DragToVerticalPositionAndToEdge(DOCKED_EDGE_LEFT, w2.get(), 50);
+  DragToVerticalOffsetAndToEdge(DOCKED_EDGE_RIGHT, w1.get(), 20);
+  DragToVerticalOffsetAndToEdge(DOCKED_EDGE_LEFT, w2.get(), 50);
 
   // The first window should be attached and snapped to the right edge.
   EXPECT_EQ(w1->GetRootWindow()->bounds().right(),
@@ -592,461 +575,6 @@ TEST_P(DockedWindowResizerTest, DragAcrossDisplays) {
             window->GetBoundsInScreen().x());
   EXPECT_EQ(internal::kShellWindowId_DockedContainer, window->parent()->id());
   EXPECT_EQ(root_windows[1], window->GetRootWindow());
-}
-
-// Dock two windows, undock one.
-// Test the docked windows area size and workspace resizing.
-TEST_P(DockedWindowResizerTest, AttachTwoWindowsDetachOne)
-{
-  if (!SupportsHostWindowResize())
-    return;
-
-  scoped_ptr<aura::Window> w1(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
-  scoped_ptr<aura::Window> w2(CreateTestWindow(gfx::Rect(0, 0, 210, 201)));
-  // Work area should cover the whole screen.
-  EXPECT_EQ(ScreenAsh::GetDisplayBoundsInParent(w2.get()).width(),
-            ScreenAsh::GetDisplayWorkAreaBoundsInParent(w2.get()).width());
-
-  DragToVerticalPositionAndToEdge(DOCKED_EDGE_RIGHT, w1.get(), 20);
-  // A window should be attached and snapped to the right edge.
-  EXPECT_EQ(w1->GetRootWindow()->bounds().right(),
-            w1->GetBoundsInScreen().right());
-  EXPECT_EQ(internal::kShellWindowId_DockedContainer, w1->parent()->id());
-  DockedWindowLayoutManager* manager =
-      static_cast<DockedWindowLayoutManager*>(w1->parent()->layout_manager());
-  EXPECT_EQ(DOCKED_ALIGNMENT_RIGHT, manager->alignment_);
-  EXPECT_EQ(w1->bounds().width(), manager->docked_width_);
-
-  DragToVerticalPositionRelativeToEdge(DOCKED_EDGE_RIGHT, w2.get(), 0, 50);
-  // Both windows should now be attached and snapped to the right edge.
-  EXPECT_EQ(w2->GetRootWindow()->bounds().right(),
-            w2->GetBoundsInScreen().right());
-  EXPECT_EQ(internal::kShellWindowId_DockedContainer, w2->parent()->id());
-  // Dock width should be set to a wider window.
-  EXPECT_EQ(DOCKED_ALIGNMENT_RIGHT, manager->alignment_);
-  EXPECT_EQ(std::max(w1->bounds().width(), w2->bounds().width()),
-            manager->docked_width_);
-
-  // Try to detach by dragging left a bit (should not get undocked).
-  // This would normally detach a single docked window but since we have another
-  // window and the mouse pointer does not leave the dock area the window
-  // should stay docked.
-  ASSERT_NO_FATAL_FAILURE(DragStartAtOffsetFromwindowOrigin(w2.get(), 60, 0));
-  DragMove(-40, -10);
-  // Release the mouse and the window should be still attached to the edge.
-  DragEnd();
-
-  // The first window should be still docked.
-  EXPECT_EQ(w1->GetRootWindow()->bounds().right(),
-            w1->GetBoundsInScreen().right());
-  EXPECT_EQ(internal::kShellWindowId_DockedContainer, w1->parent()->id());
-
-  // The second window should be still docked.
-  EXPECT_EQ(w2->GetRootWindow()->bounds().right(),
-            w2->GetBoundsInScreen().right());
-  EXPECT_EQ(internal::kShellWindowId_DockedContainer, w2->parent()->id());
-
-  // Detach by dragging left more (should get undocked).
-  ASSERT_NO_FATAL_FAILURE(DragStartAtOffsetFromwindowOrigin(
-      w2.get(),
-      w2->bounds().width()/2 + 10,
-      0));
-  DragMove(-(w2->bounds().width()/2 + 20), 10);
-  // Release the mouse and the window should be no longer attached to the edge.
-  DragEnd();
-
-  // The second window should be floating on a workspace again.
-  EXPECT_EQ(w2->GetRootWindow()->bounds().right() -
-            (w2->bounds().width()/2 + 20),
-            w2->GetBoundsInScreen().right());
-  EXPECT_EQ(internal::kShellWindowId_WorkspaceContainer, w2->parent()->id());
-  // Dock width should be set to remaining single docked window.
-  EXPECT_EQ(internal::kShellWindowId_DockedContainer, w1->parent()->id());
-  EXPECT_EQ(DOCKED_ALIGNMENT_RIGHT, manager->alignment_);
-  EXPECT_EQ(w1->bounds().width(), manager->docked_width_);
-}
-
-// Dock one windows. Maximize other testing workspace resizing.
-TEST_P(DockedWindowResizerTest, AttachWindowMaximizeOther)
-{
-  if (!SupportsHostWindowResize())
-    return;
-
-  scoped_ptr<aura::Window> w1(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
-  scoped_ptr<aura::Window> w2(CreateTestWindow(gfx::Rect(0, 0, 210, 201)));
-  // Work area should cover the whole screen.
-  EXPECT_EQ(ScreenAsh::GetDisplayBoundsInParent(w2.get()).width(),
-            ScreenAsh::GetDisplayWorkAreaBoundsInParent(w2.get()).width());
-
-  DragToVerticalPositionAndToEdge(DOCKED_EDGE_RIGHT, w1.get(), 20);
-  // A window should be attached and snapped to the right edge.
-  EXPECT_EQ(w1->GetRootWindow()->bounds().right(),
-            w1->GetBoundsInScreen().right());
-  EXPECT_EQ(internal::kShellWindowId_DockedContainer, w1->parent()->id());
-  DockedWindowLayoutManager* manager =
-      static_cast<DockedWindowLayoutManager*>(w1->parent()->layout_manager());
-  EXPECT_EQ(DOCKED_ALIGNMENT_RIGHT, manager->alignment_);
-  EXPECT_EQ(w1->bounds().width(), manager->docked_width_);
-
-  DragToVerticalPositionRelativeToEdge(DOCKED_EDGE_RIGHT,
-                                       w2.get(),
-                                       -(w2->bounds().width()/2 + 20),
-                                       50);
-  // The first window should be still docked.
-  EXPECT_EQ(w1->GetRootWindow()->bounds().right(),
-            w1->GetBoundsInScreen().right());
-  EXPECT_EQ(internal::kShellWindowId_DockedContainer, w1->parent()->id());
-
-  // The second window should be floating on a workspace.
-  EXPECT_EQ(w2->GetRootWindow()->bounds().right() -
-            (w2->bounds().width()/2 + 20),
-            w2->GetBoundsInScreen().right());
-  EXPECT_EQ(internal::kShellWindowId_WorkspaceContainer, w2->parent()->id());
-  // Dock width should be set to remaining single docked window.
-  EXPECT_EQ(internal::kShellWindowId_DockedContainer, w1->parent()->id());
-  EXPECT_EQ(DOCKED_ALIGNMENT_RIGHT, manager->alignment_);
-  EXPECT_EQ(w1->bounds().width(), manager->docked_width_);
-  // Workspace work area should now shrink.
-  EXPECT_EQ(ScreenAsh::GetDisplayBoundsInParent(w2.get()).width() -
-            manager->docked_width_ - DockedWindowLayoutManager::kMinDockGap,
-            ScreenAsh::GetDisplayWorkAreaBoundsInParent(w2.get()).width());
-
-  // Maximize the second window - Maximized area should be shrunk.
-  const gfx::Rect restored_bounds = w2->bounds();
-  wm::MaximizeWindow(w2.get());
-  EXPECT_EQ(ScreenAsh::GetDisplayBoundsInParent(w2.get()).width() -
-            manager->docked_width_ - DockedWindowLayoutManager::kMinDockGap,
-            w2->bounds().width());
-
-  // Detach the first window (this should require very little drag).
-  ASSERT_NO_FATAL_FAILURE(DragStart(w1.get()));
-  EXPECT_EQ(DOCKED_ALIGNMENT_RIGHT, manager->alignment_);
-  DragMove(-35, 10);
-  // For NORMAL windows alignment is set to "RIGHT" until the drag is completed.
-  // For PANEL windows alignment is set to "NONE" when drag starts.
-  EXPECT_EQ(test_panels() ? DOCKED_ALIGNMENT_NONE : DOCKED_ALIGNMENT_RIGHT,
-            manager->alignment_);
-  // Release the mouse and the window should be no longer attached to the edge.
-  DragEnd();
-  // Dock should get shrunk and workspace should get expanded.
-  EXPECT_EQ(internal::kShellWindowId_WorkspaceContainer, w1->parent()->id());
-  EXPECT_EQ(internal::kShellWindowId_WorkspaceContainer, w2->parent()->id());
-  EXPECT_EQ(DOCKED_ALIGNMENT_NONE, manager->alignment_);
-  EXPECT_EQ(0, manager->docked_width_);
-  // The second window should now get resized and take up the whole screen.
-  EXPECT_EQ(ScreenAsh::GetDisplayBoundsInParent(w2.get()).width(),
-            w2->bounds().width());
-
-  // Dock the first window to the left edge.
-  // Click at an offset from origin to prevent snapping.
-  ASSERT_NO_FATAL_FAILURE(DragStartAtOffsetFromwindowOrigin(w1.get(), 10, 0));
-  DragMove(-w1->bounds().x(), 0);
-  // Alignment set to "NONE" during the drag of the window when none are docked.
-  EXPECT_EQ(DOCKED_ALIGNMENT_NONE, manager->alignment_);
-  // Release the mouse and the window should be now attached to the edge.
-  DragEnd();
-  // Dock should get expanded and workspace should get shrunk.
-  EXPECT_EQ(internal::kShellWindowId_DockedContainer, w1->parent()->id());
-  EXPECT_EQ(DOCKED_ALIGNMENT_LEFT, manager->alignment_);
-  EXPECT_EQ(w1->bounds().width(), manager->docked_width_);
-  // Second window should still be in a workspace.
-  EXPECT_EQ(internal::kShellWindowId_WorkspaceContainer, w2->parent()->id());
-  // Maximized window should be shrunk.
-  EXPECT_EQ(ScreenAsh::GetDisplayBoundsInParent(w2.get()).width() -
-            manager->docked_width_ - DockedWindowLayoutManager::kMinDockGap,
-            w2->bounds().width());
-
-  // Unmaximize the second window.
-  wm::RestoreWindow(w2.get());
-  // Its bounds should get restored.
-  EXPECT_EQ(restored_bounds, w2->bounds());
-}
-
-// Dock one window. Test the sticky behavior near screen or workspace edge.
-TEST_P(DockedWindowResizerTest, AttachOneTestSticky)
-{
-  if (!SupportsHostWindowResize())
-    return;
-
-  scoped_ptr<aura::Window> w1(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
-  scoped_ptr<aura::Window> w2(CreateTestWindow(gfx::Rect(0, 0, 210, 201)));
-  // Work area should cover the whole screen.
-  EXPECT_EQ(ScreenAsh::GetDisplayBoundsInParent(w2.get()).width(),
-            ScreenAsh::GetDisplayWorkAreaBoundsInParent(w2.get()).width());
-
-  DragToVerticalPositionAndToEdge(DOCKED_EDGE_LEFT, w1.get(), 20);
-  // A window should be attached and snapped to the left edge.
-  EXPECT_EQ(w1->GetRootWindow()->bounds().x(),
-            w1->GetBoundsInScreen().x());
-  EXPECT_EQ(internal::kShellWindowId_DockedContainer, w1->parent()->id());
-  DockedWindowLayoutManager* manager =
-      static_cast<DockedWindowLayoutManager*>(w1->parent()->layout_manager());
-  // The first window should be docked.
-  EXPECT_EQ(w1->GetRootWindow()->bounds().x(),
-            w1->GetBoundsInScreen().x());
-  // Dock width should be set to that of a single docked window.
-  EXPECT_EQ(internal::kShellWindowId_DockedContainer, w1->parent()->id());
-  EXPECT_EQ(DOCKED_ALIGNMENT_LEFT, manager->alignment_);
-  EXPECT_EQ(w1->bounds().width(), manager->docked_width_);
-
-  // Position second window in the workspace just to the right of the docked w1.
-  DragToVerticalPositionRelativeToEdge(DOCKED_EDGE_LEFT,
-                                       w2.get(),
-                                       w1->bounds().right() + 20,
-                                       50);
-  // The second window should be floating on a workspace.
-  EXPECT_EQ(w2->GetRootWindow()->bounds().x() + (w1->bounds().right() + 20),
-            w2->GetBoundsInScreen().x());
-  EXPECT_EQ(internal::kShellWindowId_WorkspaceContainer, w2->parent()->id());
-  // Dock width should be set to that of a single docked window.
-  EXPECT_EQ(internal::kShellWindowId_DockedContainer, w1->parent()->id());
-  EXPECT_EQ(DOCKED_ALIGNMENT_LEFT, manager->alignment_);
-  EXPECT_EQ(w1->bounds().width(), manager->docked_width_);
-
-  // Drag w2 almost to the dock, the mouse pointer not quite reaching the dock.
-  ASSERT_NO_FATAL_FAILURE(DragStartAtOffsetFromwindowOrigin(w2.get(), 10, 0));
-  DragMove(1 + manager->docked_width_ - w2->bounds().x(), 0);
-  // Alignment set to "LEFT" during the drag because dock has a window in it.
-  EXPECT_EQ(DOCKED_ALIGNMENT_LEFT, manager->alignment_);
-  // Release the mouse and the window should not be attached to the edge.
-  DragEnd();
-  // Dock should still have only one window in it.
-  EXPECT_EQ(DOCKED_ALIGNMENT_LEFT, manager->alignment_);
-  EXPECT_EQ(w1->bounds().width(), manager->docked_width_);
-  // The second window should still be in the workspace.
-  EXPECT_EQ(internal::kShellWindowId_DockedContainer, w1->parent()->id());
-  EXPECT_EQ(internal::kShellWindowId_WorkspaceContainer, w2->parent()->id());
-
-  // Drag w2 by a bit more - it should resist the drag (stuck edges)
-  int start_x = w2->bounds().x();
-  ASSERT_NO_FATAL_FAILURE(DragStart(w2.get()));
-  DragMove(-2, 0);
-  // Window should not actually move.
-  EXPECT_EQ(start_x, w2->bounds().x());
-  // Alignment set to "LEFT" during the drag because dock has a window in it.
-  EXPECT_EQ(DOCKED_ALIGNMENT_LEFT, manager->alignment_);
-  // Release the mouse and the window should not be attached to the edge.
-  DragEnd();
-  // Window should be still where it was before the last drag started.
-  EXPECT_EQ(start_x, w2->bounds().x());
-  // Dock should still have only one window in it
-  EXPECT_EQ(DOCKED_ALIGNMENT_LEFT, manager->alignment_);
-  EXPECT_EQ(w1->bounds().width(), manager->docked_width_);
-  // The second window should still be in the workspace
-  EXPECT_EQ(internal::kShellWindowId_DockedContainer, w1->parent()->id());
-  EXPECT_EQ(internal::kShellWindowId_WorkspaceContainer, w2->parent()->id());
-
-  // Drag w2 by more than the stuck threshold and drop it into the dock.
-  ASSERT_NO_FATAL_FAILURE(DragStart(w2.get()));
-  DragMove(-100, 0);
-  // Window should actually move.
-  EXPECT_NE(start_x, w2->bounds().x());
-  // Alignment set to "LEFT" during the drag because dock has a window in it.
-  EXPECT_EQ(DOCKED_ALIGNMENT_LEFT, manager->alignment_);
-  // Release the mouse and the window should be attached to the edge.
-  DragEnd();
-  // Both windows are docked now.
-  EXPECT_EQ(internal::kShellWindowId_DockedContainer, w1->parent()->id());
-  EXPECT_EQ(internal::kShellWindowId_DockedContainer, w2->parent()->id());
-  // Dock should get expanded and workspace should get shrunk.
-  EXPECT_EQ(DOCKED_ALIGNMENT_LEFT, manager->alignment_);
-  EXPECT_EQ(std::max(w1->bounds().width(), w2->bounds().width()),
-            manager->docked_width_);
-  // Workspace work area should now shrink by dock width.
-  EXPECT_EQ(ScreenAsh::GetDisplayBoundsInParent(w2.get()).width() -
-            manager->docked_width_ - DockedWindowLayoutManager::kMinDockGap,
-            ScreenAsh::GetDisplayWorkAreaBoundsInParent(w2.get()).width());
-}
-
-// Dock two windows, resize one or both.
-// Test the docked windows area size and remaining workspace resizing.
-TEST_P(DockedWindowResizerTest, ResizeTwoWindows)
-{
-  if (!SupportsHostWindowResize())
-    return;
-
-  // Wider display to start since panels are limited to half the display width.
-  UpdateDisplay("1000x400");
-  scoped_ptr<aura::Window> w1(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
-  scoped_ptr<aura::Window> w2(CreateTestWindow(gfx::Rect(0, 0, 210, 201)));
-  // Work area should cover the whole screen.
-  EXPECT_EQ(ScreenAsh::GetDisplayBoundsInParent(w2.get()).width(),
-            ScreenAsh::GetDisplayWorkAreaBoundsInParent(w2.get()).width());
-
-  DragToVerticalPositionAndToEdge(DOCKED_EDGE_RIGHT, w1.get(), 20);
-  // A window should be attached and snapped to the right edge.
-  EXPECT_EQ(w1->GetRootWindow()->bounds().right(),
-            w1->GetBoundsInScreen().right());
-  EXPECT_EQ(internal::kShellWindowId_DockedContainer, w1->parent()->id());
-  DockedWindowLayoutManager* manager =
-      static_cast<DockedWindowLayoutManager*>(w1->parent()->layout_manager());
-  EXPECT_EQ(DOCKED_ALIGNMENT_RIGHT, manager->alignment_);
-  EXPECT_EQ(w1->bounds().width(), manager->docked_width_);
-
-  DragToVerticalPositionRelativeToEdge(DOCKED_EDGE_RIGHT, w2.get(), 0, 50);
-  // Both windows should now be attached and snapped to the right edge.
-  EXPECT_EQ(w2->GetRootWindow()->bounds().right(),
-            w2->GetBoundsInScreen().right());
-  EXPECT_EQ(internal::kShellWindowId_DockedContainer, w2->parent()->id());
-  // Dock width should be set to a wider window.
-  EXPECT_EQ(DOCKED_ALIGNMENT_RIGHT, manager->alignment_);
-  EXPECT_EQ(std::max(w1->bounds().width(), w2->bounds().width()),
-            manager->docked_width_);
-
-  // Resize the first window left by a bit and test that the dock expands.
-  int previous_width = w1->bounds().width();
-  const int kResizeSpan1 = 30;
-  ASSERT_NO_FATAL_FAILURE(ResizeStartAtOffsetFromwindowOrigin(w1.get(),
-                                                              0,
-                                                              20,
-                                                              HTLEFT));
-  DragMove(-kResizeSpan1, 0);
-  // Alignment set to "RIGHT" during the drag because dock has a window in it.
-  EXPECT_EQ(DOCKED_ALIGNMENT_RIGHT, manager->alignment_);
-  // Release the mouse and the window should be attached to the edge.
-  DragEnd();
-  // Dock should still have both windows in it.
-  EXPECT_EQ(internal::kShellWindowId_DockedContainer, w1->parent()->id());
-  EXPECT_EQ(internal::kShellWindowId_DockedContainer, w2->parent()->id());
-  EXPECT_EQ(DOCKED_ALIGNMENT_RIGHT, manager->alignment_);
-  // w1 is now wider than w2 and the dock should expand and be as wide as w1.
-  EXPECT_EQ(previous_width + kResizeSpan1, w1->bounds().width());
-  EXPECT_GT(w1->bounds().width(), w2->bounds().width());
-  EXPECT_EQ(w1->bounds().width(), manager->docked_width_);
-  // Workspace work area should shrink.
-  EXPECT_EQ(ScreenAsh::GetDisplayBoundsInParent(w2.get()).width() -
-            manager->docked_width_ - DockedWindowLayoutManager::kMinDockGap,
-            ScreenAsh::GetDisplayWorkAreaBoundsInParent(w2.get()).width());
-
-  // Resize the first window left by more than the dock maximum width.
-  // This should cause the window to overhang and the dock to shrink to w2.
-  previous_width = w1->bounds().width();
-  const int kResizeSpan2 = 250;
-  ASSERT_NO_FATAL_FAILURE(ResizeStartAtOffsetFromwindowOrigin(w1.get(),
-                                                              0,
-                                                              20,
-                                                              HTLEFT));
-  DragMove(-kResizeSpan2, 0);
-  // Alignment set to "RIGHT" during the drag because dock has a window in it.
-  EXPECT_EQ(DOCKED_ALIGNMENT_RIGHT, manager->alignment_);
-  // Release the mouse and the window should be attached to the edge.
-  DragEnd();
-  // Dock should still have both windows in it.
-  EXPECT_EQ(internal::kShellWindowId_DockedContainer, w1->parent()->id());
-  EXPECT_EQ(internal::kShellWindowId_DockedContainer, w2->parent()->id());
-  EXPECT_EQ(DOCKED_ALIGNMENT_RIGHT, manager->alignment_);
-  // w1 is now wider than the maximum dock width and the dock should shrink to
-  // the next widest window (w2).
-  EXPECT_EQ(previous_width + kResizeSpan2, w1->bounds().width());
-  EXPECT_GT(w1->bounds().width(), w2->bounds().width());
-  EXPECT_EQ(w2->bounds().width(), manager->docked_width_);
-  // Workspace work area should shrink.
-  EXPECT_EQ(ScreenAsh::GetDisplayBoundsInParent(w2.get()).width() -
-            manager->docked_width_ - DockedWindowLayoutManager::kMinDockGap,
-            ScreenAsh::GetDisplayWorkAreaBoundsInParent(w2.get()).width());
-
-  // Resize the first window right to get it completely inside the docked area.
-  previous_width = w1->bounds().width();
-  const int kResizeSpan3 = 100;
-  ASSERT_NO_FATAL_FAILURE(ResizeStartAtOffsetFromwindowOrigin(w1.get(),
-                                                              0,
-                                                              20,
-                                                              HTLEFT));
-  DragMove(kResizeSpan3, 0);
-  // Alignment set to "RIGHT" during the drag because dock has a window in it.
-  EXPECT_EQ(DOCKED_ALIGNMENT_RIGHT, manager->alignment_);
-  // Release the mouse and the window should be attached to the edge.
-  DragEnd();
-  // Dock should still have both windows in it.
-  EXPECT_EQ(internal::kShellWindowId_DockedContainer, w1->parent()->id());
-  EXPECT_EQ(internal::kShellWindowId_DockedContainer, w2->parent()->id());
-  EXPECT_EQ(DOCKED_ALIGNMENT_RIGHT, manager->alignment_);
-  // w1 is still wider than w2 so the dock should expand and be as wide as w1.
-  EXPECT_EQ(previous_width - kResizeSpan3, w1->bounds().width());
-  EXPECT_GT(w1->bounds().width(), w2->bounds().width());
-  EXPECT_EQ(w1->bounds().width(), manager->docked_width_);
-  // Workspace work area should shrink.
-  EXPECT_EQ(ScreenAsh::GetDisplayBoundsInParent(w2.get()).width() -
-            manager->docked_width_ - DockedWindowLayoutManager::kMinDockGap,
-            ScreenAsh::GetDisplayWorkAreaBoundsInParent(w2.get()).width());
-
-  // Resize the first window left to be overhang again.
-  previous_width = w1->bounds().width();
-  ASSERT_NO_FATAL_FAILURE(ResizeStartAtOffsetFromwindowOrigin(w1.get(),
-                                                              0,
-                                                              20,
-                                                              HTLEFT));
-  DragMove(-kResizeSpan3, 0);
-  DragEnd();
-  EXPECT_EQ(previous_width + kResizeSpan3, w1->bounds().width());
-  EXPECT_EQ(internal::kShellWindowId_DockedContainer, w1->parent()->id());
-  // Docked area should be as wide as the second window - the first is too wide.
-  EXPECT_EQ(w2->bounds().width(), manager->docked_width_);
-
-  // Undock the second window. Docked area should shrink to its minimum size.
-  ASSERT_NO_FATAL_FAILURE(DragStart(w2.get()));
-  DragMove(-40, 10);
-  // Alignment set to "RIGHT" since we have another window docked.
-  EXPECT_EQ(DOCKED_ALIGNMENT_RIGHT, manager->alignment_);
-  // Release the mouse and the window should be no longer attached to the edge.
-  DragEnd();
-  EXPECT_EQ(internal::kShellWindowId_WorkspaceContainer, w2->parent()->id());
-  // Dock should get shrunk to minimum size.
-  EXPECT_EQ(DOCKED_ALIGNMENT_RIGHT, manager->alignment_);
-  EXPECT_EQ(manager->kMinDockWidth, manager->docked_width_);
-  // The first window should be still docked.
-  EXPECT_EQ(internal::kShellWindowId_DockedContainer, w1->parent()->id());
-  // Workspace work area should be inset.
-  EXPECT_EQ(ScreenAsh::GetDisplayBoundsInParent(w2.get()).width() -
-            manager->docked_width_ - DockedWindowLayoutManager::kMinDockGap,
-            ScreenAsh::GetDisplayWorkAreaBoundsInParent(w2.get()).width());
-}
-
-TEST_P(DockedWindowResizerTest, DragToShelf)
-{
-  if (!SupportsHostWindowResize())
-    return;
-
-  scoped_ptr<aura::Window> w1(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
-  // Work area should cover the whole screen.
-  EXPECT_EQ(ScreenAsh::GetDisplayBoundsInParent(w1.get()).width(),
-            ScreenAsh::GetDisplayWorkAreaBoundsInParent(w1.get()).width());
-
-  DragToVerticalPositionAndToEdge(DOCKED_EDGE_RIGHT, w1.get(), 20);
-  // A window should be attached and snapped to the right edge.
-  EXPECT_EQ(w1->GetRootWindow()->bounds().right(),
-            w1->GetBoundsInScreen().right());
-  EXPECT_EQ(internal::kShellWindowId_DockedContainer, w1->parent()->id());
-  DockedWindowLayoutManager* manager =
-      static_cast<DockedWindowLayoutManager*>(w1->parent()->layout_manager());
-  EXPECT_EQ(DOCKED_ALIGNMENT_RIGHT, manager->alignment_);
-  EXPECT_EQ(w1->bounds().width(), manager->docked_width_);
-
-  // Detach and drag down to shelf.
-  ASSERT_NO_FATAL_FAILURE(DragStart(w1.get()));
-  DragMove(-40, 0);
-  // For NORMAL windows alignment is set to "RIGHT" until the drag is completed.
-  // For PANEL windows alignment is set to "NONE" when drag starts.
-  EXPECT_EQ(test_panels() ? DOCKED_ALIGNMENT_NONE : DOCKED_ALIGNMENT_RIGHT,
-            manager->alignment_);
-  // Release the mouse and the window should be no longer attached to the edge.
-  DragEnd();
-
-  // Drag down almost to shelf. A panel will snap, a regular window won't.
-  ShelfWidget* shelf = Launcher::ForPrimaryDisplay()->shelf_widget();
-  const int shelf_y = shelf->GetWindowBoundsInScreen().y();
-  const int kDistanceFromShelf = 10;
-  ASSERT_NO_FATAL_FAILURE(DragStart(w1.get()));
-  DragMove(0, -kDistanceFromShelf + shelf_y - w1->bounds().bottom());
-  DragEnd();
-  if (test_panels()) {
-    // The panel should be touching the shelf and attached.
-    EXPECT_EQ(shelf_y, w1->bounds().bottom());
-    EXPECT_TRUE(w1->GetProperty(kPanelAttachedKey));
-  } else {
-    // The window should not be touching the shelf.
-    EXPECT_EQ(shelf_y - kDistanceFromShelf, w1->bounds().bottom());
-  }
 }
 
 // Tests run twice - on both panels and normal windows

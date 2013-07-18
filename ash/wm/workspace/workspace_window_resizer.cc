@@ -690,9 +690,8 @@ bool WorkspaceWindowResizer::UpdateMagnetismWindow(const gfx::Rect& bounds,
     magnetism_window_ = NULL;
   }
 
-  // Avoid magnetically snapping to popups, menus, tooltips, controls and
-  // windows that are not tracked by workspace.
-  if (!wm::CanResizeWindow(window()) || !GetTrackedByWorkspace(window()))
+  // Avoid magnetically snapping to popups, menus, tooltips, controls and such.
+  if (!wm::CanResizeWindow(window()))
     return false;
 
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
