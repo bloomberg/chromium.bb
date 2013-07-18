@@ -196,10 +196,61 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Ash.ActiveTouchPoints">
+  <summary>
+    Number of active touch-points when a new touch-point is added.
+  </summary>
+</histogram>
+
+<histogram name="Ash.GestureCreated" enum="UIEventType">
+  <summary>
+    The gesture-events recognized and dispatched by the browser gesture
+    recognizer.
+  </summary>
+</histogram>
+
 <histogram name="Ash.GestureTarget" enum="GestureActionType">
   <summary>
     The gesture-events recognized and dispatched by the browser gesture
     recognizer for various UI components.
+  </summary>
+</histogram>
+
+<histogram name="Ash.TouchDuration" units="milliseconds">
+  <summary>The duration of a touch-sequence.</summary>
+</histogram>
+
+<histogram name="Ash.TouchMoveInterval" units="milliseconds">
+  <summary>The interval between touch-move events.</summary>
+</histogram>
+
+<histogram name="Ash.TouchMoveSteps" units="pixels">
+  <summary>The distance between touch-move events.</summary>
+</histogram>
+
+<histogram name="Ash.TouchPositionX" units="pixels">
+  <summary>The position of the touch-events along the X axis.</summary>
+</histogram>
+
+<histogram name="Ash.TouchPositionY" units="pixels">
+  <summary>The position of the touch-events along the Y axis.</summary>
+</histogram>
+
+<histogram name="Ash.TouchRadius" units="pixels">
+  <summary>The radius of a touch event.</summary>
+</histogram>
+
+<histogram name="Ash.TouchStartAfterEnd" units="milliseconds">
+  <summary>
+    The interval between the end of a touch-sequence and the start of the next
+    touch-sequence.
+  </summary>
+</histogram>
+
+<histogram name="Ash.TouchStartBurst">
+  <summary>
+    The number of rapid touch-starts that happened within a short interval.
+    Logged once for each such burst group.
   </summary>
 </histogram>
 
@@ -2345,6 +2396,471 @@ other types of suffix sets.
   <summary>
     Load status from the policy loaders which pull policy settings from the
     underlying platform, such as Windows Group Policy.
+  </summary>
+</histogram>
+
+<histogram name="Event.CoalescedCount.Mouse">
+  <summary>Number of Mouse events coalesced.</summary>
+</histogram>
+
+<histogram name="Event.CoalescedCount.Touch">
+  <summary>Number of Touch events coalesced.</summary>
+</histogram>
+
+<histogram name="Event.CoalescedLatency.Mouse" units="milliseconds">
+  <summary>
+    Time between the first and last events in a coalesced mouse events group.
+  </summary>
+</histogram>
+
+<histogram name="Event.CoalescedLatency.Touch" units="milliseconds">
+  <summary>
+    Time between the first and last events in a coalesced touch events group.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.Browser" units="microseconds">
+  <summary>
+    Time between initiation of all input events and browser processing.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.Browser.ET_DROP_TARGET_EVENT"
+    units="microseconds">
+  <summary>
+    Time between initiation of input event and browser processing.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.Browser.ET_GESTURE_BEGIN" units="microseconds">
+  <summary>
+    Time between initiation of input event and browser processing.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.Browser.ET_GESTURE_DOUBLE_TAP"
+    units="microseconds">
+  <summary>
+    Time between initiation of input event and browser processing.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.Browser.ET_GESTURE_END" units="microseconds">
+  <summary>
+    Time between initiation of input event and browser processing.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.Browser.ET_GESTURE_LONG_PRESS"
+    units="microseconds">
+  <summary>
+    Time between initiation of input event and browser processing.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.Browser.ET_GESTURE_LONG_TAP"
+    units="microseconds">
+  <summary>
+    Time between initiation of input event and browser processing.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.Browser.ET_GESTURE_MULTIFINGER_SWIPE"
+    units="microseconds">
+  <summary>
+    Time between initiation of input event and browser processing.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.Browser.ET_GESTURE_PINCH_BEGIN"
+    units="microseconds">
+  <summary>
+    Time between initiation of input event and browser processing.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.Browser.ET_GESTURE_PINCH_END"
+    units="microseconds">
+  <summary>
+    Time between initiation of input event and browser processing.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.Browser.ET_GESTURE_PINCH_UPDATE"
+    units="microseconds">
+  <summary>
+    Time between initiation of input event and browser processing.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.Browser.ET_GESTURE_SCROLL_BEGIN"
+    units="microseconds">
+  <summary>
+    Time between initiation of input event and browser processing.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.Browser.ET_GESTURE_SCROLL_END"
+    units="microseconds">
+  <summary>
+    Time between initiation of input event and browser processing.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.Browser.ET_GESTURE_SCROLL_UPDATE"
+    units="microseconds">
+  <summary>
+    Time between initiation of input event and browser processing.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.Browser.ET_GESTURE_TAP" units="microseconds">
+  <summary>
+    Time between initiation of input event and browser processing.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.Browser.ET_GESTURE_TAP_CANCEL"
+    units="microseconds">
+  <summary>
+    Time between initiation of input event and browser processing.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.Browser.ET_GESTURE_TAP_DOWN"
+    units="microseconds">
+  <summary>
+    Time between initiation of input event and browser processing.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.Browser.ET_GESTURE_TWO_FINGER_TAP"
+    units="microseconds">
+  <summary>
+    Time between initiation of input event and browser processing.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.Browser.ET_KEY_PRESSED" units="microseconds">
+  <summary>
+    Time between initiation of input event and browser processing.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.Browser.ET_KEY_RELEASED" units="microseconds">
+  <summary>
+    Time between initiation of input event and browser processing.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.Browser.ET_MOUSE_CAPTURE_CHANGED"
+    units="microseconds">
+  <summary>
+    Time between initiation of input event and browser processing.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.Browser.ET_MOUSE_DRAGGED" units="microseconds">
+  <summary>
+    Time between initiation of input event and browser processing.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.Browser.ET_MOUSE_ENTERED" units="microseconds">
+  <summary>
+    Time between initiation of input event and browser processing.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.Browser.ET_MOUSE_EXITED" units="microseconds">
+  <summary>
+    Time between initiation of input event and browser processing.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.Browser.ET_MOUSE_MOVED" units="microseconds">
+  <summary>
+    Time between initiation of input event and browser processing.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.Browser.ET_MOUSE_RELEASED" units="microseconds">
+  <summary>
+    Time between initiation of input event and browser processing.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.Browser.ET_MOUSEWHEEL" units="microseconds">
+  <summary>
+    Time between initiation of input event and browser processing.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.Browser.ET_SCROLL" units="microseconds">
+  <summary>
+    Time between initiation of input event and browser processing.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.Browser.ET_SCROLL_FLING_CANCEL"
+    units="microseconds">
+  <summary>
+    Time between initiation of input event and browser processing.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.Browser.ET_SCROLL_FLING_START"
+    units="microseconds">
+  <summary>
+    Time between initiation of input event and browser processing.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.Browser.ET_TOUCH_CANCELLED" units="microseconds">
+  <summary>
+    Time between initiation of input event and browser processing.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.Browser.ET_TOUCH_MOVED" units="microseconds">
+  <summary>
+    Time between initiation of input event and browser processing.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.Browser.ET_TOUCH_PRESSED" units="microseconds">
+  <summary>
+    Time between initiation of input event and browser processing.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.Browser.ET_TOUCH_RELEASED" units="microseconds">
+  <summary>
+    Time between initiation of input event and browser processing.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.Browser.ET_TOUCH_STATIONARY"
+    units="microseconds">
+  <summary>
+    Time between initiation of input event and browser processing.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.Browser.ET_TRANSLATED_KEY_PRESS"
+    units="microseconds">
+  <summary>
+    Time between initiation of input event and browser processing.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.Browser.ET_TRANSLATED_KEY_RELEASE"
+    units="microseconds">
+  <summary>
+    Time between initiation of input event and browser processing.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.Browser.ET_UNKNOWN" units="microseconds">
+  <summary>
+    Time between initiation of input event and browser processing.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.Renderer" units="microseconds">
+  <summary>
+    Time between initiation of all input events and renderer processing.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.Renderer.Char" units="microseconds">
+  <summary>
+    Time between initiation of input event and browser processing.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.Renderer.ContextMenu" units="microseconds">
+  <summary>
+    Time between initiation of input event and browser processing.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.Renderer.GestureDoubleTap" units="microseconds">
+  <summary>
+    Time between initiation of input event and browser processing.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.Renderer.GestureFlingCancel"
+    units="microseconds">
+  <summary>
+    Time between initiation of input event and browser processing.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.Renderer.GestureFlingStart" units="microseconds">
+  <summary>
+    Time between initiation of input event and browser processing.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.Renderer.GestureLongPress" units="microseconds">
+  <summary>
+    Time between initiation of input event and browser processing.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.Renderer.GestureLongTap" units="microseconds">
+  <summary>
+    Time between initiation of input event and browser processing.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.Renderer.GesturePinchBegin" units="microseconds">
+  <summary>
+    Time between initiation of input event and browser processing.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.Renderer.GesturePinchEnd" units="microseconds">
+  <summary>
+    Time between initiation of input event and browser processing.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.Renderer.GesturePinchUpdate"
+    units="microseconds">
+  <summary>
+    Time between initiation of input event and browser processing.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.Renderer.GestureScrollBegin"
+    units="microseconds">
+  <summary>
+    Time between initiation of input event and browser processing.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.Renderer.GestureScrollEnd" units="microseconds">
+  <summary>
+    Time between initiation of input event and browser processing.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.Renderer.GestureScrollUpdate"
+    units="microseconds">
+  <summary>
+    Time between initiation of input event and browser processing.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.Renderer.GestureTap" units="microseconds">
+  <summary>
+    Time between initiation of input event and browser processing.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.Renderer.GestureTapCancel" units="microseconds">
+  <summary>
+    Time between initiation of input event and browser processing.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.Renderer.GestureTapDown" units="microseconds">
+  <summary>
+    Time between initiation of input event and browser processing.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.Renderer.GestureTwoFingerTap"
+    units="microseconds">
+  <summary>
+    Time between initiation of input event and browser processing.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.Renderer.KeyDown" units="microseconds">
+  <summary>
+    Time between initiation of input event and browser processing.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.Renderer.KeyUp" units="microseconds">
+  <summary>
+    Time between initiation of input event and browser processing.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.Renderer.MouseDown" units="microseconds">
+  <summary>
+    Time between initiation of input event and browser processing.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.Renderer.MouseEnter" units="microseconds">
+  <summary>
+    Time between initiation of input event and browser processing.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.Renderer.MouseLeave" units="microseconds">
+  <summary>
+    Time between initiation of input event and browser processing.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.Renderer.MouseMove" units="microseconds">
+  <summary>
+    Time between initiation of input event and browser processing.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.Renderer.MouseUp" units="microseconds">
+  <summary>
+    Time between initiation of input event and browser processing.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.Renderer.MouseWheel" units="microseconds">
+  <summary>
+    Time between initiation of input event and browser processing.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.Renderer.RawKeyDown" units="microseconds">
+  <summary>
+    Time between initiation of input event and browser processing.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.Renderer.TouchCancel" units="microseconds">
+  <summary>
+    Time between initiation of input event and browser processing.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.Renderer.TouchEnd" units="microseconds">
+  <summary>
+    Time between initiation of input event and browser processing.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.Renderer.TouchMove" units="microseconds">
+  <summary>
+    Time between initiation of input event and browser processing.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.Renderer.TouchStart" units="microseconds">
+  <summary>
+    Time between initiation of input event and browser processing.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.Renderer.Undefined" units="microseconds">
+  <summary>
+    Time between initiation of input event and browser processing.
   </summary>
 </histogram>
 
@@ -20223,6 +20739,39 @@ other types of suffix sets.
   <int value="0" label="http"/>
   <int value="1" label="https"/>
   <int value="2" label="unexpected other schemes"/>
+</enum>
+
+<enum name="UIEventType" type="int">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Touch released"/>
+  <int value="2" label="Touch pressed"/>
+  <int value="3" label="Touch moved"/>
+  <int value="4" label="Touch stationary"/>
+  <int value="5" label="Touch cancelled"/>
+  <int value="6" label="Gesture scroll begin"/>
+  <int value="7" label="Gesture scroll end"/>
+  <int value="8" label="Gesture scroll update"/>
+  <int value="9" label="Gesture tap"/>
+  <int value="10" label="Gesture tap down"/>
+  <int value="11" label="Gesture finger down"/>
+  <int value="12" label="Gesture finger up"/>
+  <int value="13" label="Gesture double tap"/>
+  <int value="14" label="Gesture two-finger tap"/>
+  <int value="15" label="Gesture pinch begin"/>
+  <int value="16" label="Gesture pinch end"/>
+  <int value="17" label="Gesture pinch update (2 fingers)"/>
+  <int value="18" label="Long press"/>
+  <int value="19" label="Multi-finger swipe (2 fingers)"/>
+  <int value="20" label="Scroll"/>
+  <int value="21" label="Scroll fling start"/>
+  <int value="22" label="Scroll fling cancel"/>
+  <int value="23" label="Multi-finger swipe (3 fingers)"/>
+  <int value="24" label="Multi-finger swipe (4+ fingers)"/>
+  <int value="25" label="Gesture scroll update (2 fingers)"/>
+  <int value="26" label="Gesture scroll update (3 fingers)"/>
+  <int value="27" label="Gesture scroll update (4+ fingers)"/>
+  <int value="28" label="Gesture pinch update (3 fingers)"/>
+  <int value="29" label="Gesture pinch update (4+ fingers)"/>
 </enum>
 
 <enum name="UmaUploadResponseStatus" type="int">
