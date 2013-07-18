@@ -18,7 +18,6 @@
 #include "base/task_runner.h"
 #include "net/base/cache_type.h"
 #include "net/disk_cache/disk_cache.h"
-#include "net/disk_cache/simple/simple_entry_impl.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -166,13 +165,12 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
   scoped_refptr<base::TaskRunner> worker_pool_;
 
   int orig_max_size_;
-  const SimpleEntryImpl::OperationsMode entry_operations_mode_;
 
   // TODO(gavinp): Store the entry_hash in SimpleEntryImpl, and index this map
   // by hash. This will save memory, and make IndexReadyForDoom easier.
   EntryMap active_entries_;
 
-  net::NetLog* const net_log_;
+  net::NetLog* net_log_;
 };
 
 }  // namespace disk_cache
