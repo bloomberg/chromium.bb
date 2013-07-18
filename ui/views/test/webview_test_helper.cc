@@ -4,7 +4,7 @@
 
 #include "ui/views/test/webview_test_helper.h"
 
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_content_client_initializer.h"
 #include "ui/views/controls/webview/webview.h"

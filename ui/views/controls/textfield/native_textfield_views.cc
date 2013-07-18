@@ -11,7 +11,7 @@
 #include "base/debug/trace_event.h"
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "grit/app_locale_settings.h"
 #include "grit/ui_strings.h"

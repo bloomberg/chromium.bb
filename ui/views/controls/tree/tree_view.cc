@@ -7,7 +7,7 @@
 #include <algorithm>
 
 #include "base/i18n/rtl.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "grit/ui_resources.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/events/event.h"

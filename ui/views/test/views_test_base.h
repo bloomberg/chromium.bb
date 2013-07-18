@@ -6,7 +6,7 @@
 #define UI_VIEWS_TEST_VIEWS_TEST_BASE_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/test/test_views_delegate.h"
 

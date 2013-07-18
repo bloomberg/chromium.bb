@@ -10,7 +10,7 @@
 #undef RootWindow
 
 #include "base/compiler_specific.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "ui/base/events/event_handler.h"
 #include "ui/base/x/x11_atom_cache.h"
 #include "ui/views/views_export.h"

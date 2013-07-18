@@ -9,10 +9,10 @@
 #include <shlobj.h>
 
 #include "base/bind.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "ui/base/l10n/l10n_util_win.h"
-#include "ui/base/win/hwnd_util.h"
 #include "ui/base/win/dpi.h"
+#include "ui/base/win/hwnd_util.h"
 #include "ui/gfx/point.h"
 
 namespace views {

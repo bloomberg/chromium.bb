@@ -8,7 +8,7 @@
 #include <map>
 
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "grit/ui_resources.h"
 #include "grit/ui_strings.h"

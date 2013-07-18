@@ -6,7 +6,7 @@
 #define UI_VIEWS_WIDGET_DESKTOP_AURA_X11_WHOLE_SCREEN_MOVE_LOOP_H_
 
 #include "base/compiler_specific.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/widget/desktop_aura/x11_whole_screen_move_loop_delegate.h"
 

@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "ui/views/views_export.h"
 
 namespace views {

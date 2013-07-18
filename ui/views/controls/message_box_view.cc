@@ -5,7 +5,7 @@
 #include "ui/views/controls/message_box_view.h"
 
 #include "base/i18n/rtl.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/accessibility/accessible_view_state.h"

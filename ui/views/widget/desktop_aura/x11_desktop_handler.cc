@@ -4,7 +4,7 @@
 
 #include "ui/views/widget/desktop_aura/x11_desktop_handler.h"
 
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "ui/aura/env.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"

@@ -7,7 +7,7 @@
 #include <X11/Xatom.h>
 
 #include "base/event_types.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/client/drag_drop_delegate.h"
 #include "ui/aura/root_window.h"

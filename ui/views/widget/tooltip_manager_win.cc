@@ -11,7 +11,7 @@
 #include "base/bind.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
 #include "base/win/scoped_hdc.h"
 #include "base/win/scoped_select_object.h"

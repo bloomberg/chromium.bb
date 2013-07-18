@@ -5,7 +5,7 @@
 #import "ui/message_center/cocoa/tray_view_controller.h"
 
 #include "base/mac/scoped_nsobject.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #import "ui/base/test/ui_cocoa_test_helper.h"

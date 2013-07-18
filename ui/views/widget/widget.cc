@@ -6,7 +6,7 @@
 
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/default_theme_provider.h"
 #include "ui/base/events/event.h"

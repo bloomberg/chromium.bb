@@ -9,7 +9,7 @@
 // Get rid of a macro from Xlib.h that conflicts with Aura's RootWindow class.
 #undef RootWindow
 
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "ui/aura/env_observer.h"
 #include "ui/base/x/x11_atom_cache.h"
 #include "ui/views/views_export.h"
