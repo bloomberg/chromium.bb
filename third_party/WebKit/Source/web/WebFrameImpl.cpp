@@ -2169,7 +2169,17 @@ PassRefPtr<Frame> WebFrameImpl::createChildFrame(const FrameLoadRequest& request
     if (!childFrame->tree()->parent())
         return 0;
 
-    frame()->loader()->loadURLIntoChildFrame(request.resourceRequest(), childFrame.get());
+    HistoryItem* parentItem = frame()->loader()->history()->currentItem();
+    HistoryItem* childItem = 0;
+    // If we're moving in the back/forward list, we might want to replace the content
+    // of this child frame with whatever was there at that point.
+    if (parentItem && parentItem->children().size() && isBackForwardLoadType(frame()->loader()->loadType()) && !frame()->document()->loadEventFinished())
+        childItem = parentItem->childItemWithTarget(childFrame->tree()->uniqueName());
+
+    if (childItem)
+        childFrame->loader()->loadItem(childItem);
+    else
+        childFrame->loader()->load(FrameLoadRequest(0, request.resourceRequest(), "_self"));
 
     // A synchronous navigation (about:blank) would have already processed
     // onload, so it is possible for the frame to have already been destroyed by

@@ -92,17 +92,15 @@ public:
 
     void prepareForHistoryNavigation();
 
-    // FIXME: These are all functions which start loads. We have too many.
-    void loadURLIntoChildFrame(const ResourceRequest&, Frame*);
-    void load(const FrameLoadRequest&);
+    // These functions start a load. All eventually call into loadWithNavigationAction() or loadInSameDocument().
+    void load(const FrameLoadRequest&); // The entry point for non-reload, non-history loads.
+    void reload(bool endToEndReload = false, const KURL& overrideURL = KURL(), const String& overrideEncoding = String());
+    void loadItem(HistoryItem*); // The entry point for all back/forward loads
+    void submitForm(PassRefPtr<FormSubmission>); // Schedules a form submission, which will eventually call load() in the target frame.
 
+    // FIXME: This doesn't really belong here, since we don't load Frames synchronously.
     unsigned long loadResourceSynchronously(const ResourceRequest&, StoredCredentials, ResourceError&, ResourceResponse&, Vector<char>& data);
 
-    void submitForm(PassRefPtr<FormSubmission>);
-
-    void reload(bool endToEndReload = false, const KURL& overrideURL = KURL(), const String& overrideEncoding = String());
-
-    void loadItem(HistoryItem*);
     HistoryItem* requestedHistoryItem() const { return m_requestedHistoryItem.get(); }
 
     static void reportLocalLoadFailed(Frame*, const String& url);
@@ -252,6 +250,10 @@ private:
     void loadDifferentDocumentItem(HistoryItem*);
     void insertDummyHistoryItem();
 
+    bool prepareRequestForThisFrame(FrameLoadRequest&);
+    void setReferrerForFrameRequest(ResourceRequest&, ShouldSendReferrer);
+    FrameLoadType determineFrameLoadType(const FrameLoadRequest&);
+
     void clearProvisionalLoad();
     void transitionToCommitted();
     void frameLoadCompleted();
@@ -283,8 +285,6 @@ private:
     void loadWithNavigationAction(const ResourceRequest&, const NavigationAction&,
         FrameLoadType, PassRefPtr<FormState>, const SubstituteData&, const String& overrideEncoding = String());
 
-    // Called by load, calls loadWithNavigationAction or checkNewWindowPolicyAndContinue
-    void loadURL(const ResourceRequest&, const String& frameName, FrameLoadType, PassRefPtr<Event>, PassRefPtr<FormState>, const SubstituteData&);
 
     bool shouldReload(const KURL& currentURL, const KURL& destinationURL);
 
