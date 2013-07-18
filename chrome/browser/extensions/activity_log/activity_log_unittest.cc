@@ -84,11 +84,15 @@ class ActivityLogTest : public ChromeRenderViewHostTestHarness {
     scoped_refptr<Action> last = i->front();
     if (CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kEnableExtensionActivityLogTesting))
-      args = "Injected scripts () onto "
-              "http://www.google.com/foo?bar extra";
+      args =
+          "ID=abc CATEGORY=content_script API=document.write ARGS=[\"\"] "
+          "PAGE_URL=http://www.google.com/foo?bar "
+          "OTHER={\"dom_verb\":3,\"extra\":\"extra\",\"page_title\":\"\"}";
     else
-      args = "Injected scripts () onto "
-              "http://www.google.com/foo extra";
+      args =
+          "ID=abc CATEGORY=content_script API=document.write ARGS=[\"\"] "
+          "PAGE_URL=http://www.google.com/foo "
+          "OTHER={\"dom_verb\":3,\"extra\":\"extra\",\"page_title\":\"\"}";
     ASSERT_EQ(args, last->PrintForDebug());
   }
 
@@ -96,8 +100,8 @@ class ActivityLogTest : public ChromeRenderViewHostTestHarness {
       scoped_ptr<std::vector<scoped_refptr<Action> > > i) {
     scoped_refptr<Action> last = i->front();
     std::string id(kExtensionId);
-    std::string noargs = "ID: " + id + ", CATEGORY: "
-        "call, API: tabs.testMethod, ARGS: ";
+    std::string noargs =
+        "ID=" + id + " CATEGORY=api_call API=tabs.testMethod ARGS=[] OTHER={}";
     ASSERT_EQ(noargs, last->PrintForDebug());
   }
 
@@ -105,8 +109,9 @@ class ActivityLogTest : public ChromeRenderViewHostTestHarness {
       scoped_ptr<std::vector<scoped_refptr<Action> > > i) {
     scoped_refptr<Action> last = i->front();
     std::string id(kExtensionId);
-    std::string args = "ID: " + id + ", CATEGORY: "
-        "call, API: extension.connect, ARGS: \"hello\", \"world\"";
+    std::string args = "ID=" + id +
+                       " CATEGORY=api_call API=extension.connect "
+                       "ARGS=[\"hello\",\"world\"] OTHER={}";
     ASSERT_EQ(args, last->PrintForDebug());
   }
 
@@ -122,8 +127,10 @@ class ActivityLogTest : public ChromeRenderViewHostTestHarness {
       scoped_ptr<std::vector<scoped_refptr<Action> > > i) {
     ASSERT_EQ(1U, i->size());
     scoped_refptr<Action> last = i->front();
-    std::string args = "Injected scripts (\"script \") "
-        "onto http://www.google.com/ (prerender)";
+    std::string args =
+        "ID=odlameecjipmbmbejkplpemijjgpljce CATEGORY=content_script API= "
+        "ARGS=[\"\\\"script \\\"\"] PAGE_URL=http://www.google.com/ "
+        "OTHER={\"dom_verb\":3,\"extra\":\"(prerender)\",\"page_title\":\"\"}";
     ASSERT_EQ(args, last->PrintForDebug());
   }
 

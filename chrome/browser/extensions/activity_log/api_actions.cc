@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/json/json_string_value_serializer.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/activity_log/api_actions.h"
 #include "chrome/browser/extensions/activity_log/api_name_constants.h"
+#include "chrome/browser/extensions/activity_log/fullstream_ui_policy.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "content/public/browser/browser_thread.h"
@@ -100,6 +102,13 @@ class APINameMap {
   std::map<std::string, std::string> nums_to_names_;  // <number label, name>
 };
 
+std::string Serialize(const base::Value& value) {
+  std::string value_as_text;
+  JSONStringValueSerializer serializer(&value_as_text);
+  serializer.SerializeAndOmitBinaryValues(value);
+  return value_as_text;
+}
+
 }  // namespace
 
 namespace extensions {
@@ -108,12 +117,6 @@ using api::activity_log_private::ExtensionActivity;
 using api::activity_log_private::DomActivityDetail;
 using api::activity_log_private::ChromeActivityDetail;
 using api::activity_log_private::BlockedChromeActivityDetail;
-
-const char* APIAction::kTableName = "activitylog_apis";
-const char* APIAction::kTableContentFields[] =
-    {"api_type", "api_call", "args", "extra"};
-const char* APIAction::kTableFieldTypes[] =
-    {"INTEGER", "LONGVARCHAR", "LONGVARCHAR", "LONGVARCHAR"};
 
 // We should log the arguments to these API calls, even if argument logging is
 // disabled by default.
@@ -133,21 +136,14 @@ APIAction::APIAction(const std::string& extension_id,
                      const Type type,
                      const std::string& api_call,
                      const std::string& args,
+                     const base::ListValue& args_list,
                      const std::string& extra)
     : Action(extension_id, time, ExtensionActivity::ACTIVITY_TYPE_CHROME),
       type_(type),
       api_call_(api_call),
       args_(args),
+      args_list_(args_list.DeepCopy()),
       extra_(extra) { }
-
-APIAction::APIAction(const sql::Statement& s)
-    : Action(s.ColumnString(0),
-             base::Time::FromInternalValue(s.ColumnInt64(1)),
-             ExtensionActivity::ACTIVITY_TYPE_CHROME),
-      type_(static_cast<Type>(s.ColumnInt(2))),
-      api_call_(APINameMap::GetInstance()->ShortnameToApi(s.ColumnString(3))),
-      args_(s.ColumnString(4)),
-      extra_(s.ColumnString(5)) { }
 
 APIAction::~APIAction() {
 }
@@ -169,49 +165,28 @@ scoped_ptr<ExtensionActivity> APIAction::ConvertToExtensionActivity() {
   return formatted_activity.Pass();
 }
 
-// static
-bool APIAction::InitializeTable(sql::Connection* db) {
-  // The original table schema was different than the existing one.
-  // We no longer want the api_action_type or target_type columns.
-  // Sqlite doesn't let you delete or modify existing columns, so we drop it.
-  // Any data loss incurred here doesn't matter since these fields existed
-  // before we started using the AL for anything.
-  if (db->DoesColumnExist(kTableName, "api_action_type")) {
-    std::string drop_table = base::StringPrintf("DROP TABLE %s", kTableName);
-    if (!db->Execute(drop_table.c_str()))
-      return false;
-  }
-  // We also now use INTEGER instead of VARCHAR for api_type.
-  if (db->DoesColumnExist(kTableName, "api_type")) {
-    std::string select = base::StringPrintf(
-        "SELECT api_type FROM %s ORDER BY rowid LIMIT 1", kTableName);
-    sql::Statement statement(db->GetUniqueStatement(select.c_str()));
-    if (statement.DeclaredColumnType(0) != sql::COLUMN_TYPE_INTEGER) {
-      std::string drop_table = base::StringPrintf("DROP TABLE %s", kTableName);
-      if (!db->Execute(drop_table.c_str()))
-        return false;
-    }
-  }
-  // Now initialize the table.
-  return InitializeTableInternal(db,
-                                 kTableName,
-                                 kTableContentFields,
-                                 kTableFieldTypes,
-                                 arraysize(kTableContentFields));
-}
-
 bool APIAction::Record(sql::Connection* db) {
-  std::string sql_str = "INSERT INTO " + std::string(kTableName)
-      + " (extension_id, time, api_type, api_call, args, extra) VALUES"
-      " (?,?,?,?,?,?)";
+  std::string sql_str =
+      "INSERT INTO " + std::string(FullStreamUIPolicy::kTableName) +
+      " (extension_id, time, action_type, api_name, args) VALUES"
+      " (?,?,?,?,?)";
   sql::Statement statement(db->GetCachedStatement(
       sql::StatementID(SQL_FROM_HERE), sql_str.c_str()));
   statement.BindString(0, extension_id());
   statement.BindInt64(1, time().ToInternalValue());
-  statement.BindInt(2, static_cast<int>(type_));
-  statement.BindString(3, APINameMap::GetInstance()->ApiToShortname(api_call_));
-  statement.BindString(4, args_);
-  statement.BindString(5, extra_);
+  switch (type_) {
+    case CALL:
+      statement.BindInt(2, static_cast<int>(Action::ACTION_API_CALL));
+      break;
+    case EVENT_CALLBACK:
+      statement.BindInt(2, static_cast<int>(Action::ACTION_API_EVENT));
+      break;
+    default:
+      LOG(ERROR) << "Invalid action type: " << type_;
+      return false;
+  }
+  statement.BindString(3, api_call_);
+  statement.BindString(4, Serialize(*args_list_));
   if (!statement.Run()) {
     LOG(ERROR) << "Activity log database I/O failed: " << sql_str;
     statement.Clear();

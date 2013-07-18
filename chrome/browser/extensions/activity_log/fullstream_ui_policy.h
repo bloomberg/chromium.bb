@@ -45,6 +45,12 @@ class FullStreamUIPolicy : public ActivityLogPolicy,
 
   virtual void Close() OVERRIDE;
 
+  // Database table schema.
+  static const char* kTableName;
+  static const char* kTableContentFields[];
+  static const char* kTableFieldTypes[];
+  static const int kTableFieldCount;
+
  protected:
   // Only ever run by OnDatabaseClose() below; see the comments on the
   // ActivityDatabase class for an overall discussion of how cleanup works.
@@ -55,10 +61,16 @@ class FullStreamUIPolicy : public ActivityLogPolicy,
   virtual bool OnDatabaseInit(sql::Connection* db) OVERRIDE;
   virtual void OnDatabaseClose() OVERRIDE;
 
-  // Concatenates arguments
-  virtual std::string ProcessArguments(ActionType action_type,
-                                       const std::string& name,
-                                       const base::ListValue* args) const;
+  // Strips arguments if needed by policy.
+  virtual scoped_ptr<base::ListValue> ProcessArguments(
+      ActionType action_type,
+      const std::string& name,
+      const base::ListValue* args) const;
+
+  // Concatenates arguments.
+  virtual std::string JoinArguments(ActionType action_type,
+                                    const std::string& name,
+                                    const base::ListValue* args) const;
 
   virtual void ProcessWebRequestModifications(
       base::DictionaryValue& details,

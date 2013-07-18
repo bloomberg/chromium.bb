@@ -4,6 +4,7 @@
 
 #include <string>
 #include "base/command_line.h"
+#include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -12,6 +13,7 @@
 #include "base/time/clock.h"
 #include "base/time/time.h"
 #include "chrome/browser/extensions/activity_log/activity_database.h"
+#include "chrome/browser/extensions/activity_log/fullstream_ui_policy.h"
 #include "chrome/common/chrome_switches.h"
 #include "sql/error_delegate_util.h"
 #include "sql/transaction.h"
@@ -160,44 +162,45 @@ scoped_ptr<ActivityDatabase::ActionVector> ActivityDatabase::GetActions(
       early_bound = early_time.ToInternalValue();
       late_bound = late_time.ToInternalValue();
   }
-  // Get the DOMActions.
-  std::string dom_str = base::StringPrintf("SELECT * FROM %s "
-                                           "WHERE extension_id=? AND "
-                                           "time>? AND time<=?",
-                                           DOMAction::kTableName);
-  sql::Statement dom_statement(db_.GetCachedStatement(SQL_FROM_HERE,
-                                                      dom_str.c_str()));
-  dom_statement.BindString(0, extension_id);
-  dom_statement.BindInt64(1, early_bound);
-  dom_statement.BindInt64(2, late_bound);
-  while (dom_statement.is_valid() && dom_statement.Step()) {
-    actions->push_back(new DOMAction(dom_statement));
-  }
-  // Get the APIActions.
-  std::string api_str = base::StringPrintf("SELECT * FROM %s "
-                                           "WHERE extension_id=? AND "
-                                           "time>? AND time<=?",
-                                            APIAction::kTableName);
-  sql::Statement api_statement(db_.GetCachedStatement(SQL_FROM_HERE,
-                                                      api_str.c_str()));
-  api_statement.BindString(0, extension_id);
-  api_statement.BindInt64(1, early_bound);
-  api_statement.BindInt64(2, late_bound);
-  while (api_statement.is_valid() && api_statement.Step()) {
-    actions->push_back(new APIAction(api_statement));
-  }
-  // Get the BlockedActions.
-  std::string blocked_str = base::StringPrintf("SELECT * FROM %s "
-                                               "WHERE extension_id=? AND "
-                                               "time>? AND time<=?",
-                                               BlockedAction::kTableName);
-  sql::Statement blocked_statement(db_.GetCachedStatement(SQL_FROM_HERE,
-                                                          blocked_str.c_str()));
-  blocked_statement.BindString(0, extension_id);
-  blocked_statement.BindInt64(1, early_bound);
-  blocked_statement.BindInt64(2, late_bound);
-  while (blocked_statement.is_valid() && blocked_statement.Step()) {
-    actions->push_back(new BlockedAction(blocked_statement));
+  std::string query_str = base::StringPrintf(
+      "SELECT time, action_type, api_name, args, page_url, arg_url, other "
+      "FROM %s WHERE extension_id=? AND time>? AND time<=?",
+      FullStreamUIPolicy::kTableName);
+  sql::Statement query(db_.GetCachedStatement(SQL_FROM_HERE,
+                                              query_str.c_str()));
+  query.BindString(0, extension_id);
+  query.BindInt64(1, early_bound);
+  query.BindInt64(2, late_bound);
+  while (query.is_valid() && query.Step()) {
+    scoped_ptr<Value> raw_value(base::JSONReader::Read(query.ColumnString(3)));
+    scoped_ptr<ListValue> args;
+    if (raw_value && raw_value->IsType(Value::TYPE_LIST)) {
+      args.reset(static_cast<ListValue*>(raw_value.release()));
+    } else {
+      args.reset(new ListValue());
+    }
+
+    GURL page_url(query.ColumnString(4));
+    GURL arg_url(query.ColumnString(5));
+
+    raw_value.reset(base::JSONReader::Read(query.ColumnString(6)));
+    scoped_ptr<DictionaryValue> other;
+    if (raw_value && raw_value->IsType(Value::TYPE_DICTIONARY)) {
+      other.reset(static_cast<DictionaryValue*>(raw_value.release()));
+    } else {
+      other.reset(new DictionaryValue());
+    }
+
+    scoped_refptr<WatchdogAction> action =
+        new WatchdogAction(extension_id,
+                           base::Time::FromInternalValue(query.ColumnInt64(0)),
+                           static_cast<Action::ActionType>(query.ColumnInt(1)),
+                           query.ColumnString(2),
+                           args.Pass(),
+                           page_url,
+                           arg_url,
+                           other.Pass());
+    actions->push_back(action);
   }
   // Sort by time (from newest to oldest).
   std::sort(actions->begin(), actions->end(), SortActionsByTime);
@@ -258,6 +261,42 @@ void ActivityDatabase::SetTimerForTesting(int ms) {
                base::TimeDelta::FromMilliseconds(ms),
                this,
                &ActivityDatabase::RecordBatchedActionsWhileTesting);
+}
+
+// static
+bool ActivityDatabase::InitializeTable(sql::Connection* db,
+                                       const char* table_name,
+                                       const char* content_fields[],
+                                       const char* field_types[],
+                                       const int num_content_fields) {
+  if (!db->DoesTableExist(table_name)) {
+    std::string table_creator =
+        base::StringPrintf("CREATE TABLE %s (", table_name);
+    for (int i = 0; i < num_content_fields; i++) {
+      table_creator += base::StringPrintf("%s%s %s",
+                                          i == 0 ? "" : ", ",
+                                          content_fields[i],
+                                          field_types[i]);
+    }
+    table_creator += ")";
+    if (!db->Execute(table_creator.c_str()))
+      return false;
+  } else {
+    // In case we ever want to add new fields, this initializes them to be
+    // empty strings.
+    for (int i = 0; i < num_content_fields; i++) {
+      if (!db->DoesColumnExist(table_name, content_fields[i])) {
+        std::string table_updater = base::StringPrintf(
+            "ALTER TABLE %s ADD COLUMN %s %s; ",
+             table_name,
+             content_fields[i],
+             field_types[i]);
+        if (!db->Execute(table_updater.c_str()))
+          return false;
+      }
+    }
+  }
+  return true;
 }
 
 }  // namespace extensions

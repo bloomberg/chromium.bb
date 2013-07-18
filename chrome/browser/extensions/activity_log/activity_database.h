@@ -97,17 +97,8 @@ class ActivityDatabase {
   // update the database schema if needed.
   void Init(const base::FilePath& db_name);
 
-  // The ActivityLog should call this to kill the ActivityDatabase.
+  // An ActivityLogPolicy should call this to kill the ActivityDatabase.
   void Close();
-
-  // Record a DOMAction in the database.
-  void RecordDOMAction(scoped_refptr<DOMAction> action);
-
-  // Record an APIAction in the database.
-  void RecordAPIAction(scoped_refptr<APIAction> action);
-
-  // Record a BlockedAction in the database.
-  void RecordBlockedAction(scoped_refptr<BlockedAction> action);
 
   // Record an Action in the database.
   void RecordAction(scoped_refptr<Action> action);
@@ -125,18 +116,26 @@ class ActivityDatabase {
 
   bool is_db_valid() const { return valid_db_; }
 
+  // A helper method for initializing or upgrading a database table.  The
+  // content_fields array should list the names of all of the columns in the
+  // database. The field_types should specify the types of the corresponding
+  // columns (e.g., INTEGER or LONGVARCHAR). There should be the same number of
+  // field_types as content_fields, since the two arrays should correspond.
+  static bool InitializeTable(sql::Connection* db,
+                              const char* table_name,
+                              const char* content_fields[],
+                              const char* field_types[],
+                              const int num_content_fields);
+
  private:
   // This should never be invoked by another class. Use Close() to order a
   // suicide.
   virtual ~ActivityDatabase();
 
-  // Used by the Init() method as a convenience for handling a failied
-  // database initialization attempt. Prints an error and puts us in the soft
-  // failure state.
+  // Used by the Init() method as a convenience for handling a failed database
+  // initialization attempt. Prints an error and puts us in the soft failure
+  // state.
   void LogInitFailure();
-
-  sql::InitStatus InitializeTable(const char* table_name,
-                                  const char* table_structure);
 
   // When we're in batched mode (which is on by default), we write to the db
   // every X minutes instead of on every API call. This prevents the annoyance

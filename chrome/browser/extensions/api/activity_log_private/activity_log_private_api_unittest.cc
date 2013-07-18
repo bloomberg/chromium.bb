@@ -58,6 +58,7 @@ TEST_F(ActivityLogApiUnitTest, ConvertChromeApiAction) {
                   APIAction::CALL,
                   kApiCall,
                   kArgs,
+                  base::ListValue(),
                   kExtra));
   scoped_ptr<ExtensionActivity> result =
       action->ConvertToExtensionActivity();

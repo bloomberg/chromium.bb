@@ -34,7 +34,9 @@ class ActivityLogPrerenderTest : public ExtensionApiTest {
                                     switches::kPrerenderModeSwitchValueEnabled);
   }
 
-  static void Prerender_Arguments(int port,
+  static void Prerender_Arguments(
+      const std::string& extension_id,
+      int port,
       scoped_ptr<std::vector<scoped_refptr<Action> > > i) {
     // This is to exit RunLoop (base::MessageLoop::current()->Run()) below
     base::MessageLoop::current()->PostTask(
@@ -44,9 +46,11 @@ class ActivityLogPrerenderTest : public ExtensionApiTest {
     scoped_refptr<Action> last = i->front();
 
     std::string args = base::StringPrintf(
-        "Injected scripts (\"/google_cs.js \") "
-        "onto http://www.google.com.bo:%d/test.html (prerender)",
-        port);
+        "ID=%s CATEGORY=content_script API= ARGS=[\"\\\"/google_cs.js \\\"\"] "
+        "PAGE_URL=http://www.google.com.bo:%d/test.html "
+        "OTHER={\"dom_verb\":3,\"extra\":\"(prerender)\",\"page_title\":\"www."
+        "google.com.bo:%d/test.html\"}",
+        extension_id.c_str(), port, port);
     // TODO: Replace PrintForDebug with field testing
     // when this feature will be available
     ASSERT_EQ(args, last->PrintForDebug());
@@ -98,7 +102,7 @@ IN_PROC_BROWSER_TEST_F(ActivityLogPrerenderTest, TestScriptInjected) {
 
   activity_log->GetActions(
       ext->id(), 0, base::Bind(
-          ActivityLogPrerenderTest::Prerender_Arguments, port));
+          ActivityLogPrerenderTest::Prerender_Arguments, ext->id(), port));
 
   // Allow invocation of Prerender_Arguments
   base::MessageLoop::current()->Run();

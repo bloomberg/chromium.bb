@@ -66,8 +66,9 @@ class StreamWithoutArgsUIPolicyTest : public testing::Test {
   static void Arguments_Missing(
       scoped_ptr<std::vector<scoped_refptr<Action> > > i) {
     scoped_refptr<Action> last = i->front();
-    std::string noargs = "ID: odlameecjipmbmbejkplpemijjgpljce, CATEGORY: "
-      "call, API: tabs.testMethod, ARGS: ";
+    std::string noargs =
+        "ID=odlameecjipmbmbejkplpemijjgpljce CATEGORY=api_call "
+        "API=tabs.testMethod ARGS=[] OTHER={}";
     ASSERT_EQ(noargs, last->PrintForDebug());
   }
 

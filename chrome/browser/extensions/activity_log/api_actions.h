@@ -22,17 +22,10 @@ class APIAction : public Action {
     UNKNOWN_TYPE = 2,
   };
 
-  static const char* kTableName;
-  static const char* kTableContentFields[];
-  static const char* kTableFieldTypes[];
   static const char* kAlwaysLog[];
   static const int kSizeAlwaysLog;
 
   static const char* kIncognitoUrl;
-
-  // Create the database table for storing APIActions, or update the schema if
-  // it is out of date.  Any existing data is preserved.
-  static bool InitializeTable(sql::Connection* db);
 
   // Create a new APIAction to describe a successful API call.  All
   // parameters are required.
@@ -41,10 +34,8 @@ class APIAction : public Action {
             const Type type,              // e.g. "CALL"
             const std::string& api_call,  // full method name
             const std::string& args,      // the argument list
+            const base::ListValue& args_list,  // same as above, as a list
             const std::string& extra);    // any extra logging info
-
-  // Create a new APIAction from a database row.
-  explicit APIAction(const sql::Statement& s);
 
   // Record the action in the database.
   virtual bool Record(sql::Connection* db) OVERRIDE;
@@ -76,6 +67,7 @@ class APIAction : public Action {
   Type type_;
   std::string api_call_;
   std::string args_;
+  scoped_ptr<base::ListValue> args_list_;
   std::string extra_;
 
   DISALLOW_COPY_AND_ASSIGN(APIAction);

@@ -66,8 +66,9 @@ class FullStreamUIPolicyTest : public testing::Test {
   static void Arguments_Present(
       scoped_ptr<std::vector<scoped_refptr<Action> > > i) {
     scoped_refptr<Action> last = i->front();
-    std::string args = "ID: odlameecjipmbmbejkplpemijjgpljce, CATEGORY: "
-      "call, API: extension.connect, ARGS: \"hello\", \"world\"";
+    std::string args =
+        "ID=odlameecjipmbmbejkplpemijjgpljce CATEGORY=api_call "
+        "API=extension.connect ARGS=[\"hello\",\"world\"] OTHER={}";
     ASSERT_EQ(args, last->PrintForDebug());
   }
 

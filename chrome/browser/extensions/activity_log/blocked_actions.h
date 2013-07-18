@@ -21,14 +21,6 @@ class BlockedAction : public Action {
       QUOTA_EXCEEDED = 2,
   };
 
-  static const char* kTableName;
-  static const char* kTableContentFields[];
-  static const char* kTableFieldTypes[];
-
-  // Create a new database table for storing BlockedActions, or update the
-  // schema if it is out of date. Any existing data is preserved.
-  static bool InitializeTable(sql::Connection* db);
-
   // You must supply the id, time, api_call, and reason.
   BlockedAction(const std::string& extension_id,
                 const base::Time& time,
@@ -36,9 +28,6 @@ class BlockedAction : public Action {
                 const std::string& args,              // the arguments
                 const Reason reason,                  // the reason it's blocked
                 const std::string& extra);            // any extra logging info
-
-  // Create a new BlockedAction from a database row.
-  explicit BlockedAction(const sql::Statement& s);
 
   // Record the action in the database.
   virtual bool Record(sql::Connection* db) OVERRIDE;

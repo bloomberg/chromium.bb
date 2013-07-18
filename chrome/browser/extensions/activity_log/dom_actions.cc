@@ -3,10 +3,12 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/json/json_string_value_serializer.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/activity_log/dom_actions.h"
+#include "chrome/browser/extensions/activity_log/fullstream_ui_policy.h"
 #include "chrome/browser/history/url_database.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
@@ -19,14 +21,6 @@ using api::activity_log_private::ExtensionActivity;
 using api::activity_log_private::DomActivityDetail;
 using api::activity_log_private::ChromeActivityDetail;
 using api::activity_log_private::BlockedChromeActivityDetail;
-
-const char* DOMAction::kTableName = "activitylog_urls";
-const char* DOMAction::kTableContentFields[] =
-    {"url_action_type", "url_tld", "url_path", "url_title", "api_call",
-     "args", "extra"};
-const char* DOMAction::kTableFieldTypes[] =
-    {"INTEGER", "LONGVARCHAR", "LONGVARCHAR", "LONGVARCHAR", "LONGVARCHAR",
-     "LONGVARCHAR", "LONGVARCHAR"};
 
 DOMAction::DOMAction(const std::string& extension_id,
                      const base::Time& time,
@@ -43,17 +37,6 @@ DOMAction::DOMAction(const std::string& extension_id,
       api_call_(api_call),
       args_(args),
       extra_(extra) { }
-
-DOMAction::DOMAction(const sql::Statement& s)
-    : Action(s.ColumnString(0),
-             base::Time::FromInternalValue(s.ColumnInt64(1)),
-             ExtensionActivity::ACTIVITY_TYPE_DOM),
-      verb_(static_cast<DomActionType::Type>(s.ColumnInt(2))),
-      url_(GURL(s.ColumnString(3)+ s.ColumnString(4))),
-      url_title_(s.ColumnString16(5)),
-      api_call_(s.ColumnString(6)),
-      args_(s.ColumnString(7)),
-      extra_(s.ColumnString(8)) { }
 
 DOMAction::~DOMAction() {
 }
@@ -77,73 +60,55 @@ scoped_ptr<ExtensionActivity> DOMAction::ConvertToExtensionActivity() {
   return formatted_activity.Pass();
 }
 
-// static
-bool DOMAction::InitializeTable(sql::Connection* db) {
-  // The original table schema was different than the existing one.
-  // Sqlite doesn't let you delete or modify existing columns, so we drop it.
-  // The old version can be identified because it had a field named
-  // tech_message. Any data loss incurred here doesn't matter since these
-  // fields existed before we started using the AL for anything.
-  if (db->DoesColumnExist(kTableName, "tech_message")) {
-    std::string drop_table = base::StringPrintf("DROP TABLE %s", kTableName);
-    if (!db->Execute(drop_table.c_str()))
-      return false;
-  }
-  // The url field is now broken into two parts - url_tld and url_path.
-  // ulr_tld contains the scheme, host, and port of the url and
-  // url_path contains the path.
-  if (db->DoesColumnExist(kTableName, "url")) {
-    std::string drop_table = base::StringPrintf("DROP TABLE %s", kTableName);
-    if (!db->Execute(drop_table.c_str()))
-      return false;
-  }
-  // We also now use INTEGER instead of VARCHAR for url_action_type.
-  if (db->DoesColumnExist(kTableName, "url_action_type")) {
-    std::string select = base::StringPrintf(
-        "SELECT url_action_type FROM %s ORDER BY rowid LIMIT 1", kTableName);
-    sql::Statement statement(db->GetUniqueStatement(select.c_str()));
-    if (statement.DeclaredColumnType(0) != sql::COLUMN_TYPE_INTEGER) {
-      std::string drop_table = base::StringPrintf("DROP TABLE %s", kTableName);
-      if (!db->Execute(drop_table.c_str()))
-        return false;
-    }
-  }
-  // Now initialize the table.
-  bool initialized = InitializeTableInternal(db,
-                                             kTableName,
-                                             kTableContentFields,
-                                             kTableFieldTypes,
-                                             arraysize(kTableContentFields));
-  return initialized;
-}
-
 bool DOMAction::Record(sql::Connection* db) {
-  std::string sql_str = "INSERT INTO " + std::string(kTableName) +
-      " (extension_id, time, url_action_type, url_tld, url_path, url_title,"
-      "  api_call, args, extra) VALUES (?,?,?,?,?,?,?,?,?)";
+  std::string sql_str = "INSERT INTO " +
+                        std::string(FullStreamUIPolicy::kTableName) +
+                        " (extension_id, time, action_type, api_name, args, "
+                        "page_url, arg_url, other) VALUES (?,?,?,?,?,?,?,?)";
   sql::Statement statement(db->GetCachedStatement(
       sql::StatementID(SQL_FROM_HERE), sql_str.c_str()));
-  std::string url_tld;
-  std::string url_path;
   statement.BindString(0, extension_id());
   statement.BindInt64(1, time().ToInternalValue());
-  statement.BindInt(2, static_cast<int>(verb_));
-  url_tld = url_.GetOrigin().spec();
-  // delete the extra "/"
-  if ((url_tld.size() > 0) && (url_tld[url_tld.size()-1] == '/'))
-    url_tld.erase(url_tld.size()-1);
-  statement.BindString(3, url_tld);
-  // If running in activity testing mode, store the parameters as well.
-  if ((CommandLine::ForCurrentProcess()->HasSwitch(
-       switches::kEnableExtensionActivityLogTesting)) && (url_.has_query()))
-    url_path = url_.path()+"?"+url_.query();
+  if (verb_ == DomActionType::INSERTED)
+    statement.BindInt(2, static_cast<int>(Action::ACTION_CONTENT_SCRIPT));
   else
-    url_path = url_.path();
-  statement.BindString(4, url_path);
-  statement.BindString16(5, url_title_);
-  statement.BindString(6, api_call_);
-  statement.BindString(7, args_);
-  statement.BindString(8, extra_);
+    statement.BindInt(2, static_cast<int>(Action::ACTION_DOM_ACCESS));
+  statement.BindString(3, api_call_);
+
+  ListValue args_list;
+  args_list.AppendString(args_);
+  std::string args_as_text;
+  JSONStringValueSerializer serializer(&args_as_text);
+  serializer.SerializeAndOmitBinaryValues(args_list);
+  statement.BindString(4, args_as_text);
+
+  // If running in activity testing mode, store the URL parameters as well.
+  GURL database_url;
+  if ((CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableExtensionActivityLogTesting))) {
+    database_url = url_;
+  } else {
+    url_canon::Replacements<char> sanitize;
+    sanitize.ClearQuery();
+    sanitize.ClearRef();
+    database_url = url_.ReplaceComponents(sanitize);
+  }
+  statement.BindString(5, database_url.spec());
+
+  if (verb_ == DomActionType::INSERTED)
+    statement.BindString(6, args_);
+  else
+    statement.BindNull(6);
+
+  DictionaryValue other;
+  other.SetString("extra", extra_);
+  other.SetString("page_title", url_title_);
+  other.SetInteger("dom_verb", static_cast<int>(verb_));
+  std::string other_string;
+  JSONStringValueSerializer other_serializer(&other_string);
+  other_serializer.SerializeAndOmitBinaryValues(other);
+  statement.BindString(7, other_string);
+
   if (!statement.Run()) {
     LOG(ERROR) << "Activity log database I/O failed: " << sql_str;
     statement.Clear();

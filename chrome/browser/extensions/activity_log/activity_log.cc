@@ -289,6 +289,7 @@ void ActivityLog::LogAPIActionInternal(const std::string& extension_id,
         type,
         api_call,
         MakeArgList(args),
+        *args,
         extra);
 
     observers_->Notify(&Observer::OnExtensionActivity, action);

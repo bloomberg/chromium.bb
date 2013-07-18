@@ -6,6 +6,7 @@
 #include "base/json/json_string_value_serializer.h"
 #include "base/logging.h"
 #include "base/strings/string16.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/activity_log/activity_database.h"
 #include "chrome/browser/extensions/activity_log/api_actions.h"
 #include "chrome/browser/extensions/activity_log/blocked_actions.h"
@@ -32,14 +33,25 @@ const char kKeyDomainAction[] =   "fsuip.domact";
 const char kKeyURLTitle[] =       "fsuip.urltitle";
 const char kKeyDetailsString[] =  "fsuip.details";
 
+// Obsolete database tables: these should be dropped from the database if
+// found.
+const char* kObsoleteTables[] = {"activitylog_apis", "activitylog_blocked",
+                                 "activitylog_urls"};
+
 }  // namespace
 
 namespace extensions {
 
-// TODO(dbabic) This would be a fine error handler for all sql-based policies,
-// so it would make sense to introduce another class in the hierarchy,
-// SQLiteBasedPolicy as a super class of FullStreamUIPolicy and move this
-// error handler (as well as other SQLite-related functionality) there.
+const char* FullStreamUIPolicy::kTableName = "activitylog_full";
+const char* FullStreamUIPolicy::kTableContentFields[] = {
+  "extension_id", "time", "action_type", "api_name", "args", "page_url",
+  "arg_url", "other"
+};
+const char* FullStreamUIPolicy::kTableFieldTypes[] = {
+  "LONGVARCHAR NOT NULL", "INTEGER", "INTEGER", "LONGVARCHAR", "LONGVARCHAR",
+  "LONGVARCHAR", "LONGVARCHAR", "LONGVARCHAR"
+};
+const int FullStreamUIPolicy::kTableFieldCount = arraysize(kTableContentFields);
 
 FullStreamUIPolicy::FullStreamUIPolicy(Profile* profile)
     : ActivityLogPolicy(profile) {
@@ -50,14 +62,24 @@ FullStreamUIPolicy::FullStreamUIPolicy(Profile* profile)
 }
 
 bool FullStreamUIPolicy::OnDatabaseInit(sql::Connection* db) {
-  if (!DOMAction::InitializeTable(db))
-    return false;
-  if (!APIAction::InitializeTable(db))
-    return false;
-  if (!BlockedAction::InitializeTable(db))
-    return false;
+  // Drop old database tables.
+  for (size_t i = 0; i < arraysize(kObsoleteTables); i++) {
+    const char* table_name = kObsoleteTables[i];
+    if (db->DoesTableExist(table_name)) {
+      std::string drop_statement =
+          base::StringPrintf("DROP TABLE %s", table_name);
+      if (!db->Execute(drop_statement.c_str())) {
+        return false;
+      }
+    }
+  }
 
-  return true;
+  // Create the unified activity log entry table.
+  return ActivityDatabase::InitializeTable(db,
+                                           kTableName,
+                                           kTableContentFields,
+                                           kTableFieldTypes,
+                                           arraysize(kTableContentFields));
 }
 
 void FullStreamUIPolicy::OnDatabaseClose() {
@@ -101,7 +123,17 @@ std::string FullStreamUIPolicy::GetKey(ActivityLogPolicy::KeyType key_ty) const
   }
 }
 
-std::string FullStreamUIPolicy::ProcessArguments(
+scoped_ptr<base::ListValue> FullStreamUIPolicy::ProcessArguments(
+    ActionType action_type,
+    const std::string& name,
+    const base::ListValue* args) const {
+  if (args)
+    return make_scoped_ptr(args->DeepCopy());
+  else
+    return scoped_ptr<base::ListValue>();
+}
+
+std::string FullStreamUIPolicy::JoinArguments(
     ActionType action_type,
     const std::string& name,
     const base::ListValue* args) const {
@@ -136,9 +168,11 @@ void FullStreamUIPolicy::ProcessAction(
     const std::string& extension_id,
     const std::string& name,
     const GURL& url_param,
-    const base::ListValue* args,
+    const base::ListValue* args_in,
     const DictionaryValue* details) {
-  std::string concatenated_args = ProcessArguments(action_type, name, args);
+  scoped_ptr<base::ListValue> args =
+      ProcessArguments(action_type, name, args_in);
+  std::string concatenated_args = JoinArguments(action_type, name, args.get());
   const Time now = Time::Now();
   scoped_refptr<Action> action;
   std::string extra;
@@ -154,6 +188,7 @@ void FullStreamUIPolicy::ProcessAction(
           APIAction::CALL,
           name,
           concatenated_args,
+          *args,
           extra);
       break;
     }
@@ -164,6 +199,7 @@ void FullStreamUIPolicy::ProcessAction(
           APIAction::EVENT_CALLBACK,
           name,
           concatenated_args,
+          *args,
           extra);
       break;
     }

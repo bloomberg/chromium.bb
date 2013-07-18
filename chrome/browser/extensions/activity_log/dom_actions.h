@@ -16,14 +16,6 @@ namespace extensions {
 // content script insertions.
 class DOMAction : public Action {
  public:
-  static const char* kTableName;
-  static const char* kTableContentFields[];
-  static const char* kTableFieldTypes[];
-
-  // Create a new database table for storing DOMActions, or update the schema if
-  // it is out of date. Any existing data is preserved.
-  static bool InitializeTable(sql::Connection* db);
-
   // Create a new DOMAction to describe a new DOM API call.
   // If the DOMAction is on a background page, the url & url_title may be null.
   // If the DOMAction refers to a content script insertion, api_call may be null
@@ -37,9 +29,6 @@ class DOMAction : public Action {
             const std::string& api_call,        // the DOM API call
             const std::string& args,            // the args
             const std::string& extra);          // any extra logging info
-
-  // Create a new DOMAction from a database row.
-  explicit DOMAction(const sql::Statement& s);
 
   virtual scoped_ptr<api::activity_log_private::ExtensionActivity>
       ConvertToExtensionActivity() OVERRIDE;

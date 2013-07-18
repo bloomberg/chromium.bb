@@ -14,6 +14,7 @@
 #include "chrome/browser/extensions/activity_log/api_actions.h"
 #include "chrome/browser/extensions/activity_log/blocked_actions.h"
 #include "chrome/browser/extensions/activity_log/dom_actions.h"
+#include "chrome/browser/extensions/activity_log/fullstream_ui_policy.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/common/chrome_constants.h"
@@ -47,10 +48,12 @@ class ActivityDatabaseTestPolicy : public ActivityDatabase::Delegate {
 
  protected:
   virtual bool OnDatabaseInit(sql::Connection* db) OVERRIDE {
-    if (!DOMAction::InitializeTable(db)) return false;
-    if (!APIAction::InitializeTable(db)) return false;
-    if (!BlockedAction::InitializeTable(db)) return false;
-    return true;
+    return ActivityDatabase::InitializeTable(
+        db,
+        FullStreamUIPolicy::kTableName,
+        FullStreamUIPolicy::kTableContentFields,
+        FullStreamUIPolicy::kTableFieldTypes,
+        FullStreamUIPolicy::kTableFieldCount);
   }
 
   // Called by ActivityDatabase just before the ActivityDatabase object is
@@ -112,9 +115,7 @@ TEST_F(ActivityDatabaseTest, Init) {
 
   sql::Connection db;
   ASSERT_TRUE(db.Open(db_file));
-  ASSERT_TRUE(db.DoesTableExist(DOMAction::kTableName));
-  ASSERT_TRUE(db.DoesTableExist(APIAction::kTableName));
-  ASSERT_TRUE(db.DoesTableExist(BlockedAction::kTableName));
+  ASSERT_TRUE(db.DoesTableExist(FullStreamUIPolicy::kTableName));
   db.Close();
 }
 
@@ -128,12 +129,15 @@ TEST_F(ActivityDatabaseTest, RecordAPIAction) {
 
   ActivityDatabase* activity_db = OpenDatabase(db_file);
   activity_db->SetBatchModeForTesting(false);
+  base::ListValue args_list;
+  args_list.AppendString("woof");
   scoped_refptr<APIAction> action = new APIAction(
       "punky",
       base::Time::Now(),
       APIAction::CALL,
       "brewster",
       "woof",
+      args_list,
       "extra");
   activity_db->RecordAction(action);
   activity_db->Close();
@@ -141,15 +145,15 @@ TEST_F(ActivityDatabaseTest, RecordAPIAction) {
   sql::Connection db;
   ASSERT_TRUE(db.Open(db_file));
 
-  ASSERT_TRUE(db.DoesTableExist(APIAction::kTableName));
+  ASSERT_TRUE(db.DoesTableExist(FullStreamUIPolicy::kTableName));
   std::string sql_str = "SELECT * FROM " +
-      std::string(APIAction::kTableName);
+      std::string(FullStreamUIPolicy::kTableName);
   sql::Statement statement(db.GetUniqueStatement(sql_str.c_str()));
   ASSERT_TRUE(statement.Step());
   ASSERT_EQ("punky", statement.ColumnString(0));
-  ASSERT_EQ(0, statement.ColumnInt(2));
+  ASSERT_EQ(static_cast<int>(Action::ACTION_API_CALL), statement.ColumnInt(2));
   ASSERT_EQ("brewster", statement.ColumnString(3));
-  ASSERT_EQ("woof", statement.ColumnString(4));
+  ASSERT_EQ("[\"woof\"]", statement.ColumnString(4));
 }
 
 // Check that DOM actions are recorded in the db.
@@ -177,22 +181,26 @@ TEST_F(ActivityDatabaseTest, RecordDOMAction) {
   sql::Connection db;
   ASSERT_TRUE(db.Open(db_file));
 
-  ASSERT_TRUE(db.DoesTableExist(APIAction::kTableName));
+  ASSERT_TRUE(db.DoesTableExist(FullStreamUIPolicy::kTableName));
   std::string sql_str = "SELECT * FROM " +
-      std::string(DOMAction::kTableName);
+      std::string(FullStreamUIPolicy::kTableName);
   sql::Statement statement(db.GetUniqueStatement(sql_str.c_str()));
   ASSERT_TRUE(statement.Step());
   ASSERT_EQ("punky", statement.ColumnString(0));
-  ASSERT_EQ(DomActionType::MODIFIED, statement.ColumnInt(2));
-  ASSERT_EQ("http://www.google.com", statement.ColumnString(3));
+  ASSERT_EQ(static_cast<int>(Action::ACTION_DOM_ACCESS),
+            statement.ColumnInt(2));
+  // TODO(mvrable): This test doesn't work properly, due to crbug.com/260784
+  // This will be fixed when URL sanitization is moved into the activity log
+  // policies in some upcoming code refactoring.
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableExtensionActivityLogTesting))
-    ASSERT_EQ("/foo?bar", statement.ColumnString(4));
+    ASSERT_EQ("http://www.google.com/foo?bar", statement.ColumnString(5));
   else
-    ASSERT_EQ("/foo", statement.ColumnString(4));
-  ASSERT_EQ("lets", statement.ColumnString(6));
-  ASSERT_EQ("vamoose", statement.ColumnString(7));
-  ASSERT_EQ("extra", statement.ColumnString(8));
+    ASSERT_EQ("http://www.google.com/foo", statement.ColumnString(5));
+  ASSERT_EQ("lets", statement.ColumnString(3));
+  ASSERT_EQ("[\"vamoose\"]", statement.ColumnString(4));
+  ASSERT_EQ("{\"dom_verb\":6,\"extra\":\"extra\",\"page_title\":\"\"}",
+            statement.ColumnString(7));
 }
 
 // Check that blocked actions are recorded in the db.
@@ -217,16 +225,17 @@ TEST_F(ActivityDatabaseTest, RecordBlockedAction) {
   sql::Connection db;
   ASSERT_TRUE(db.Open(db_file));
 
-  ASSERT_TRUE(db.DoesTableExist(BlockedAction::kTableName));
+  ASSERT_TRUE(db.DoesTableExist(FullStreamUIPolicy::kTableName));
   std::string sql_str = "SELECT * FROM " +
-      std::string(BlockedAction::kTableName);
+      std::string(FullStreamUIPolicy::kTableName);
   sql::Statement statement(db.GetUniqueStatement(sql_str.c_str()));
   ASSERT_TRUE(statement.Step());
   ASSERT_EQ("punky", statement.ColumnString(0));
-  ASSERT_EQ("do.evilThings", statement.ColumnString(2));
-  ASSERT_EQ("1, 2", statement.ColumnString(3));
-  ASSERT_EQ(1, statement.ColumnInt(4));
-  ASSERT_EQ("extra", statement.ColumnString(5));
+  ASSERT_EQ(static_cast<int>(Action::ACTION_API_BLOCKED),
+            statement.ColumnInt(2));
+  ASSERT_EQ("do.evilThings", statement.ColumnString(3));
+  ASSERT_EQ("1, 2", statement.ColumnString(4));
+  ASSERT_EQ("{\"reason\":1}", statement.ColumnString(7));
 }
 
 // Check that we can read back recent actions in the db.
@@ -245,12 +254,15 @@ TEST_F(ActivityDatabaseTest, GetTodaysActions) {
 
   // Record some actions
   ActivityDatabase* activity_db = OpenDatabase(db_file);
+  base::ListValue args_list;
+  args_list.AppendString("woof");
   scoped_refptr<APIAction> api_action = new APIAction(
       "punky",
       mock_clock.Now() - base::TimeDelta::FromMinutes(40),
       APIAction::CALL,
       "brewster",
       "woof",
+      args_list,
       "extra");
   scoped_refptr<DOMAction> dom_action = new DOMAction(
       "punky",
@@ -275,9 +287,12 @@ TEST_F(ActivityDatabaseTest, GetTodaysActions) {
   activity_db->RecordAction(extra_dom_action);
 
   // Read them back
-  std::string api_print = "ID: punky, CATEGORY: call, "
-      "API: brewster, ARGS: woof";
-  std::string dom_print = "DOM API CALL: lets, ARGS: vamoose, VERB: modified";
+  std::string api_print =
+      "ID=punky CATEGORY=api_call API=brewster ARGS=[\"woof\"] OTHER={}";
+  std::string dom_print =
+      "ID=punky CATEGORY=dom_access API=lets ARGS=[\"vamoose\"] "
+      "PAGE_URL=http://www.google.com/ "
+      "OTHER={\"dom_verb\":6,\"extra\":\"extra\",\"page_title\":\"\"}";
   scoped_ptr<std::vector<scoped_refptr<Action> > > actions =
       activity_db->GetActions("punky", 0);
   ASSERT_EQ(2, static_cast<int>(actions->size()));
@@ -303,6 +318,8 @@ TEST_F(ActivityDatabaseTest, GetOlderActions) {
 
   // Record some actions
   ActivityDatabase* activity_db = OpenDatabase(db_file);
+  base::ListValue args_list;
+  args_list.AppendString("woof");
   scoped_refptr<APIAction> api_action = new APIAction(
       "punky",
       mock_clock.Now() - base::TimeDelta::FromDays(3)
@@ -310,6 +327,7 @@ TEST_F(ActivityDatabaseTest, GetOlderActions) {
       APIAction::CALL,
       "brewster",
       "woof",
+      args_list,
       "extra");
   scoped_refptr<DOMAction> dom_action = new DOMAction(
       "punky",
@@ -344,9 +362,12 @@ TEST_F(ActivityDatabaseTest, GetOlderActions) {
   activity_db->RecordAction(tooold_dom_action);
 
   // Read them back
-  std::string api_print = "ID: punky, CATEGORY: call, "
-      "API: brewster, ARGS: woof";
-  std::string dom_print = "DOM API CALL: lets, ARGS: vamoose, VERB: modified";
+  std::string api_print =
+      "ID=punky CATEGORY=api_call API=brewster ARGS=[\"woof\"] OTHER={}";
+  std::string dom_print =
+      "ID=punky CATEGORY=dom_access API=lets ARGS=[\"vamoose\"] "
+      "PAGE_URL=http://www.google.com/ "
+      "OTHER={\"dom_verb\":6,\"extra\":\"extra\",\"page_title\":\"\"}";
   scoped_ptr<std::vector<scoped_refptr<Action> > > actions =
       activity_db->GetActions("punky", 3);
   ASSERT_EQ(2, static_cast<int>(actions->size()));
@@ -373,12 +394,15 @@ TEST_F(ActivityDatabaseTest, BatchModeOff) {
   ActivityDatabase* activity_db = OpenDatabase(db_file);
   activity_db->SetBatchModeForTesting(false);
   activity_db->SetClockForTesting(&mock_clock);
+  base::ListValue args_list;
+  args_list.AppendString("woof");
   scoped_refptr<APIAction> api_action = new APIAction(
       "punky",
       mock_clock.Now() - base::TimeDelta::FromMinutes(40),
       APIAction::CALL,
       "brewster",
       "woof",
+      args_list,
       "extra");
   activity_db->RecordAction(api_action);
 
@@ -405,12 +429,15 @@ TEST_F(ActivityDatabaseTest, BatchModeOn) {
   ActivityDatabase* activity_db = OpenDatabase(db_file);
   activity_db->SetBatchModeForTesting(true);
   activity_db->SetClockForTesting(&mock_clock);
+  base::ListValue args_list;
+  args_list.AppendString("woof");
   scoped_refptr<APIAction> api_action = new APIAction(
       "punky",
       mock_clock.Now() - base::TimeDelta::FromMinutes(40),
       APIAction::CALL,
       "brewster",
       "woof",
+      args_list,
       "extra");
   activity_db->RecordAction(api_action);
 
@@ -439,12 +466,15 @@ TEST_F(ActivityDatabaseTest, InitFailure) {
 
   ActivityDatabase* activity_db =
       new ActivityDatabase(new ActivityDatabaseTestPolicy());
+  base::ListValue args_list;
+  args_list.AppendString("woof");
   scoped_refptr<APIAction> action = new APIAction(
       "punky",
       base::Time::Now(),
       APIAction::CALL,
       "brewster",
       "woooof",
+      args_list,
       "extra");
   activity_db->RecordAction(action);
   activity_db->Close();

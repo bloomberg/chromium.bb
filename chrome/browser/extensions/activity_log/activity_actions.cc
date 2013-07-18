@@ -3,17 +3,29 @@
 // found in the LICENSE file.
 
 #include <string>
+#include "base/json/json_string_value_serializer.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/activity_log/activity_actions.h"
 
+namespace {
+
+std::string Serialize(const base::Value* value) {
+  std::string value_as_text;
+  if (!value) {
+    value_as_text = "null";
+  } else {
+    JSONStringValueSerializer serializer(&value_as_text);
+    serializer.SerializeAndOmitBinaryValues(*value);
+  }
+  return value_as_text;
+}
+
+}  // namespace
+
 namespace extensions {
 
 using api::activity_log_private::ExtensionActivity;
-
-const char* Action::kTableBasicFields =
-    "extension_id LONGVARCHAR NOT NULL, "
-    "time INTEGER NOT NULL";
 
 Action::Action(const std::string& extension_id,
                const base::Time& time,
@@ -22,40 +34,83 @@ Action::Action(const std::string& extension_id,
       time_(time),
       activity_type_(activity_type) {}
 
-// static
-bool Action::InitializeTableInternal(sql::Connection* db,
-                                     const char* table_name,
-                                     const char* content_fields[],
-                                     const char* field_types[],
-                                     const int num_content_fields) {
-  if (!db->DoesTableExist(table_name)) {
-    std::string table_creator = base::StringPrintf(
-        "CREATE TABLE %s (%s", table_name, kTableBasicFields);
-    for (int i = 0; i < num_content_fields; i++) {
-      table_creator += base::StringPrintf(", %s %s",
-                                          content_fields[i],
-                                          field_types[i]);
-    }
-    table_creator += ")";
-    if (!db->Execute(table_creator.c_str()))
-      return false;
-  } else {
-    // In case we ever want to add new fields, this initializes them to be
-    // empty strings.
-    for (int i = 0; i < num_content_fields; i++) {
-      if (!db->DoesColumnExist(table_name, content_fields[i])) {
-        std::string table_updater = base::StringPrintf(
-            "ALTER TABLE %s ADD COLUMN %s %s; ",
-             table_name,
-             content_fields[i],
-             field_types[i]);
-        if (!db->Execute(table_updater.c_str()))
-          return false;
-      }
-    }
-  }
+WatchdogAction::WatchdogAction(const std::string& extension_id,
+                               const base::Time& time,
+                               const ActionType action_type,
+                               const std::string& api_name,
+                               scoped_ptr<ListValue> args,
+                               const GURL& page_url,
+                               const GURL& arg_url,
+                               scoped_ptr<DictionaryValue> other)
+    : Action(extension_id, time, ExtensionActivity::ACTIVITY_TYPE_CHROME),
+      action_type_(action_type),
+      api_name_(api_name),
+      args_(args.Pass()),
+      page_url_(page_url),
+      arg_url_(arg_url),
+      other_(other.Pass()) {}
+
+WatchdogAction::~WatchdogAction() {}
+
+bool WatchdogAction::Record(sql::Connection* db) {
+  // This methods isn't used and will go away entirely soon once database
+  // writing moves to the policy objects.
+  NOTREACHED();
   return true;
 }
 
-}  // namespace extensions
+scoped_ptr<api::activity_log_private::ExtensionActivity>
+WatchdogAction::ConvertToExtensionActivity() {
+  scoped_ptr<api::activity_log_private::ExtensionActivity> result;
+  return result.Pass();
+}
 
+std::string WatchdogAction::PrintForDebug() {
+  std::string result = "ID=" + extension_id() + " CATEGORY=";
+  switch (action_type_) {
+    case ACTION_API_CALL:
+      result += "api_call";
+      break;
+    case ACTION_API_EVENT:
+      result += "api_event_callback";
+      break;
+    case ACTION_WEB_REQUEST:
+      result += "webrequest";
+      break;
+    case ACTION_CONTENT_SCRIPT:
+      result += "content_script";
+      break;
+    case ACTION_API_BLOCKED:
+      result += "api_blocked";
+      break;
+    case ACTION_DOM_EVENT:
+      result += "dom_event";
+      break;
+    case ACTION_DOM_XHR:
+      result += "dom_xhr";
+      break;
+    case ACTION_DOM_ACCESS:
+      result += "dom_access";
+      break;
+    default:
+      result += base::StringPrintf("type%d", static_cast<int>(action_type_));
+  }
+
+  result += " API=" + api_name_;
+  if (args_.get()) {
+    result += " ARGS=" + Serialize(args_.get());
+  }
+  if (page_url_.is_valid()) {
+    result += " PAGE_URL=" + page_url_.spec();
+  }
+  if (arg_url_.is_valid()) {
+    result += " ARG_URL=" + arg_url_.spec();
+  }
+  if (other_.get()) {
+    result += " OTHER=" + Serialize(other_.get());
+  }
+
+  return result;
+}
+
+}  // namespace extensions
