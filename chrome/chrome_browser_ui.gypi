@@ -1877,9 +1877,12 @@
         'browser/ui/views/ssl_client_certificate_selector.h',
         'browser/ui/views/status_bubble_views.cc',
         'browser/ui/views/status_bubble_views.h',
+        'browser/ui/views/status_icons/status_icon_linux_wrapper.cc',
+        'browser/ui/views/status_icons/status_icon_linux_wrapper.h',
         'browser/ui/views/status_icons/status_icon_win.cc',
         'browser/ui/views/status_icons/status_icon_win.h',
         'browser/ui/views/status_icons/status_tray_linux.cc',
+        'browser/ui/views/status_icons/status_tray_linux.h',
         'browser/ui/views/status_icons/status_tray_win.cc',
         'browser/ui/views/status_icons/status_tray_win.h',
         'browser/ui/views/stubs_aura.cc',
@@ -2621,6 +2624,12 @@
             # world.
             'browser/ui/libgtk2ui/libgtk2ui.gyp:gtk2ui',
             '../ui/linux_ui/linux_ui.gyp:linux_ui',
+          ],
+        }],
+        ['use_aura==0 or chromeos==1 or OS!="linux"', {
+          'sources!': [
+            'browser/ui/views/status_icons/status_icon_linux_wrapper.cc',
+            'browser/ui/views/status_icons/status_icon_linux_wrapper.h',
           ],
         }],
         ['use_aura==1', {

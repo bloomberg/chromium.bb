@@ -8,6 +8,9 @@
 #include "third_party/skia/include/core/SkColor.h"
 
 typedef struct _GdkColor GdkColor;
+typedef struct _GdkPixbuf GdkPixbuf;
+
+class SkBitmap;
 
 namespace libgtk2ui {
 
@@ -16,6 +19,13 @@ SkColor GdkColorToSkColor(GdkColor color);
 
 // Converts ARGB to GdkColor.
 GdkColor SkColorToGdkColor(SkColor color);
+
+const SkBitmap GdkPixbufToImageSkia(GdkPixbuf* pixbuf);
+
+// Convert and copy a SkBitmap to a GdkPixbuf. NOTE: this uses BGRAToRGBA, so
+// it is an expensive operation.  The returned GdkPixbuf will have a refcount of
+// 1, and the caller is responsible for unrefing it when done.
+GdkPixbuf* GdkPixbufFromSkBitmap(const SkBitmap& bitmap);
 
 }  // namespace libgtk2ui
 

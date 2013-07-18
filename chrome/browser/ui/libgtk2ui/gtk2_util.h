@@ -5,15 +5,18 @@
 #ifndef CHROME_BROWSER_UI_LIBGTK2UI_GTK2_UTIL_H_
 #define CHROME_BROWSER_UI_LIBGTK2UI_GTK2_UTIL_H_
 
+#include <gtk/gtk.h>
 #include <string>
-
-typedef struct _GdkPixbuf GdkPixbuf;
 
 class CommandLine;
 class SkBitmap;
 
 namespace base {
 class Environment;
+}
+
+namespace ui {
+class Accelerator;
 }
 
 namespace libgtk2ui {
@@ -23,7 +26,22 @@ void GtkInitFromCommandLine(const CommandLine& command_line);
 // Returns the name of the ".desktop" file associated with our running process.
 std::string GetDesktopName(base::Environment* env);
 
-const SkBitmap GdkPixbufToImageSkia(GdkPixbuf* pixbuf);
+// Show the image for the given menu item, even if the user's default is to not
+// show images. Only to be used for favicons or other menus where the image is
+// crucial to its functionality.
+void SetAlwaysShowImage(GtkWidget* image_menu_item);
+
+// Change windows accelerator style to GTK style. (GTK uses _ for
+// accelerators.  Windows uses & with && as an escape for &.)
+std::string ConvertAcceleratorsFromWindowsStyle(const std::string& label);
+
+guint GetGdkKeyCodeForAccelerator(const ui::Accelerator& accelerator);
+
+GdkModifierType GetGdkModifierForAccelerator(
+    const ui::Accelerator& accelerator);
+
+// Translates event flags into plaform independent event flags.
+int EventFlagsFromGdkState(guint state);
 
 }  // namespace libgtk2ui
 

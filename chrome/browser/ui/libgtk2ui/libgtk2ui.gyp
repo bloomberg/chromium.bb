@@ -33,6 +33,8 @@
       # the normal, global gtk exclusion rules, as we are otherwise using gtk
       # in a non-gtk build.
       'sources': [
+        'app_indicator_icon.cc',
+        'app_indicator_icon.h',
         'chrome_gtk_frame.cc',
         'chrome_gtk_frame.h',
         'gtk2_ui.cc',
@@ -40,6 +42,8 @@
         'gtk2_util.cc',
         'gtk2_util.h',
         'libgtk2ui_export.h',
+        'menu_util.cc',
+        'menu_util.h',
         'native_theme_gtk2.cc',
         'native_theme_gtk2.h',
         'owned_widget_gtk2.cc',

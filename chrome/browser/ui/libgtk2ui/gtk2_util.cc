@@ -8,11 +8,10 @@
 
 #include "base/command_line.h"
 #include "base/environment.h"
-#include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "skia/ext/platform_canvas.h"
-#include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/gfx/canvas.h"
+#include "ui/base/accelerators/accelerator.h"
+#include "ui/base/events/event_constants.h"
+#include "ui/base/keycodes/keyboard_code_conversion_x.cc"
 #include "ui/gfx/size.h"
 
 namespace {
@@ -34,6 +33,33 @@ void CommonInitFromCommandLine(const CommandLine& command_line,
   for (size_t i = 0; i < args.size(); ++i) {
     free(argv[i]);
   }
+}
+
+// Replaces all ampersands (as used in our grd files to indicate mnemonics)
+// to |target|, except ampersands appearing in pairs which are replaced by
+// a single ampersand. Any underscores get replaced with two underscores as
+// is needed by GTK.
+std::string ConvertAmpersandsTo(const std::string& label,
+                                const std::string& target) {
+  std::string ret;
+  ret.reserve(label.length() * 2);
+  for (size_t i = 0; i < label.length(); ++i) {
+    if ('_' == label[i]) {
+      ret.push_back('_');
+      ret.push_back('_');
+    } else if ('&' == label[i]) {
+      if (i + 1 < label.length() && '&' == label[i + 1]) {
+        ret.push_back('&');
+        ++i;
+      } else {
+        ret.append(target);
+      }
+    } else {
+      ret.push_back(label[i]);
+    }
+  }
+
+  return ret;
 }
 
 }  // namespace
@@ -61,60 +87,45 @@ std::string GetDesktopName(base::Environment* env) {
 #endif
 }
 
-const SkBitmap GdkPixbufToImageSkia(GdkPixbuf* pixbuf) {
-  // TODO(erg): What do we do in the case where the pixbuf fails these dchecks?
-  // I would prefer to use our gtk based canvas, but that would require
-  // recompiling half of our skia extensions with gtk support, which we can't
-  // do in this build.
-  DCHECK_EQ(GDK_COLORSPACE_RGB, gdk_pixbuf_get_colorspace(pixbuf));
+void SetAlwaysShowImage(GtkWidget* image_menu_item) {
+  gtk_image_menu_item_set_always_show_image(
+      GTK_IMAGE_MENU_ITEM(image_menu_item), TRUE);
+}
 
-  int n_channels = gdk_pixbuf_get_n_channels(pixbuf);
-  int w = gdk_pixbuf_get_width(pixbuf);
-  int h = gdk_pixbuf_get_height(pixbuf);
+std::string ConvertAcceleratorsFromWindowsStyle(const std::string& label) {
+  return ConvertAmpersandsTo(label, "_");
+}
 
-  SkBitmap ret;
-  ret.setConfig(SkBitmap::kARGB_8888_Config, w, h);
-  ret.allocPixels();
-  ret.eraseColor(0);
+guint GetGdkKeyCodeForAccelerator(const ui::Accelerator& accelerator) {
+  // The second parameter is false because accelerator keys are expressed in
+  // terms of the non-shift-modified key.
+  return XKeysymForWindowsKeyCode(accelerator.key_code(), false);
+}
 
-  uint32_t* skia_data = static_cast<uint32_t*>(ret.getAddr(0, 0));
+GdkModifierType GetGdkModifierForAccelerator(
+    const ui::Accelerator& accelerator) {
+  int event_flag = accelerator.modifiers();
+  int modifier = 0;
+  if (event_flag & ui::EF_SHIFT_DOWN)
+    modifier |= GDK_SHIFT_MASK;
+  if (event_flag & ui::EF_CONTROL_DOWN)
+    modifier |= GDK_CONTROL_MASK;
+  if (event_flag & ui::EF_ALT_DOWN)
+    modifier |= GDK_MOD1_MASK;
+  return static_cast<GdkModifierType>(modifier);
+}
 
-  if (n_channels == 4) {
-    int total_length = w * h;
-    guchar* gdk_pixels = gdk_pixbuf_get_pixels(pixbuf);
-
-    // Now here's the trick: we need to convert the gdk data (which is RGBA and
-    // isn't premultiplied) to skia (which can be anything and premultiplied).
-    for (int i = 0; i < total_length; ++i, gdk_pixels += 4) {
-      const unsigned char& red = gdk_pixels[0];
-      const unsigned char& green = gdk_pixels[1];
-      const unsigned char& blue = gdk_pixels[2];
-      const unsigned char& alpha = gdk_pixels[3];
-
-      skia_data[i] = SkPreMultiplyARGB(alpha, red, green, blue);
-    }
-  } else if (n_channels == 3) {
-    // Because GDK makes rowstrides word aligned, we need to do something a bit
-    // more complex when a pixel isn't perfectly a word of memory.
-    int rowstride = gdk_pixbuf_get_rowstride(pixbuf);
-    guchar* gdk_pixels = gdk_pixbuf_get_pixels(pixbuf);
-    for (int y = 0; y < h; ++y) {
-      int row = y * rowstride;
-
-      for (int x = 0; x < w; ++x) {
-        guchar* pixel = gdk_pixels + row + (x * 3);
-        const unsigned char& red = pixel[0];
-        const unsigned char& green = pixel[1];
-        const unsigned char& blue = pixel[2];
-
-        skia_data[y * w + x] = SkPreMultiplyARGB(255, red, green, blue);
-      }
-    }
-  } else {
-    NOTREACHED();
-  }
-
-  return ret;
+int EventFlagsFromGdkState(guint state) {
+  int flags = ui::EF_NONE;
+  flags |= (state & GDK_LOCK_MASK) ? ui::EF_CAPS_LOCK_DOWN : ui::EF_NONE;
+  flags |= (state & GDK_CONTROL_MASK) ? ui::EF_CONTROL_DOWN : ui::EF_NONE;
+  flags |= (state & GDK_SHIFT_MASK) ? ui::EF_SHIFT_DOWN : ui::EF_NONE;
+  flags |= (state & GDK_MOD1_MASK) ? ui::EF_ALT_DOWN : ui::EF_NONE;
+  flags |= (state & GDK_BUTTON1_MASK) ? ui::EF_LEFT_MOUSE_BUTTON : ui::EF_NONE;
+  flags |=
+      (state & GDK_BUTTON2_MASK) ? ui::EF_MIDDLE_MOUSE_BUTTON : ui::EF_NONE;
+  flags |= (state & GDK_BUTTON3_MASK) ? ui::EF_RIGHT_MOUSE_BUTTON : ui::EF_NONE;
+  return flags;
 }
 
 }  // namespace libgtk2ui

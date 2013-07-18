@@ -12,7 +12,9 @@
 #include "base/logging.h"
 #include "base/nix/mime_util_xdg.h"
 #include "base/stl_util.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/themes/theme_properties.h"
+#include "chrome/browser/ui/libgtk2ui/app_indicator_icon.h"
 #include "chrome/browser/ui/libgtk2ui/chrome_gtk_frame.h"
 #include "chrome/browser/ui/libgtk2ui/gtk2_util.h"
 #include "chrome/browser/ui/libgtk2ui/native_theme_gtk2.h"
@@ -48,6 +50,12 @@
 // - Everything else that we're not doing.
 
 namespace {
+
+// Prefix for app indicator ids
+const char kAppIndicatorIdPrefix[] = "chrome_app_indicator_";
+
+// Number of app indicators used (used as part of app-indicator id).
+int indicators_count;
 
 // The size of the rendered toolbar image.
 const int kToolbarImageWidth = 64;
@@ -304,6 +312,8 @@ Gtk2UI::Gtk2UI() {
   // style-set signal handler.
   LoadGtkValues();
   SetXDGIconTheme();
+
+  indicators_count = 0;
 }
 
 Gtk2UI::~Gtk2UI() {
@@ -379,6 +389,20 @@ void Gtk2UI::SetDownloadCount(int count) const {
 void Gtk2UI::SetProgressFraction(float percentage) const {
   if (unity::IsRunning())
     unity::SetProgressFraction(percentage);
+}
+
+bool Gtk2UI::IsStatusIconSupported() const {
+  return AppIndicatorIcon::CouldOpen();
+}
+
+scoped_ptr<StatusIconLinux> Gtk2UI::CreateLinuxStatusIcon() const {
+  if (AppIndicatorIcon::CouldOpen()) {
+    ++indicators_count;
+    return scoped_ptr<StatusIconLinux>(new AppIndicatorIcon(
+        base::StringPrintf("%s%d", kAppIndicatorIdPrefix, indicators_count)));
+  } else {
+    return scoped_ptr<StatusIconLinux>();
+  }
 }
 
 ui::SelectFileDialog* Gtk2UI::CreateSelectFileDialog(

@@ -34,6 +34,12 @@ class StatusIcon {
   // Sets the hover text for this status icon.
   virtual void SetToolTip(const string16& tool_tip) = 0;
 
+  // Sets the label for the menu item which is created as a replacement for the
+  // status icon click action on platforms that do not support custom click
+  // actions for the status icon (e.g. Ubuntu Unity). Since only a few platforms
+  // would need this, the default action is to ignore the call.
+  virtual void SetClickActionLabel(const string16& label);
+
   // Displays a notification balloon with the specified contents.
   // Depending on the platform it might not appear by the icon tray.
   virtual void DisplayBalloon(const gfx::ImageSkia& icon,

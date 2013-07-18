@@ -25,6 +25,8 @@
         'linux_ui.cc',
         'linux_ui.h',
         'linux_ui_export.h',
+        'status_icon_linux.cc',
+        'status_icon_linux.h',
       ],
     },
   ],

@@ -47,6 +47,8 @@ class Gtk2UI : public ui::LinuxUI {
   virtual bool GetDefaultUsesSystemTheme() const OVERRIDE;
   virtual void SetDownloadCount(int count) const OVERRIDE;
   virtual void SetProgressFraction(float percentage) const OVERRIDE;
+  virtual bool IsStatusIconSupported() const OVERRIDE;
+  virtual scoped_ptr<StatusIconLinux> CreateLinuxStatusIcon() const OVERRIDE;
 
  private:
   typedef std::map<int, SkColor> ColorMap;

@@ -7,6 +7,7 @@
 
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/linux_ui/linux_ui_export.h"
+#include "ui/linux_ui/status_icon_linux.h"
 #include "ui/shell_dialogs/linux_shell_dialog.h"
 
 // The main entrypoint into Linux toolkit specific code. GTK code should only
@@ -61,6 +62,12 @@ class LINUX_UI_EXPORT LinuxUI : public LinuxShellDialog {
   // progress, if available.
   virtual void SetDownloadCount(int count) const = 0;
   virtual void SetProgressFraction(float percentage) const = 0;
+
+  // Checks for platform support for status icons.
+  virtual bool IsStatusIconSupported() const = 0;
+
+  // Create a native status icon.
+  virtual scoped_ptr<StatusIconLinux> CreateLinuxStatusIcon() const = 0;
 };
 
 }  // namespace ui
