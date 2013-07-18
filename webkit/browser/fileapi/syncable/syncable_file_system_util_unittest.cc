@@ -5,7 +5,7 @@
 #include "webkit/browser/fileapi/syncable/syncable_file_system_util.h"
 
 #include "base/logging.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/fileapi/external_mount_points.h"

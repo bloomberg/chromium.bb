@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/pickle.h"
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"

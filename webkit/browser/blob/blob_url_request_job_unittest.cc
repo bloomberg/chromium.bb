@@ -8,7 +8,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
 #include "net/base/io_buffer.h"
 #include "net/http/http_request_headers.h"

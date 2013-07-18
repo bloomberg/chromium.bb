@@ -5,7 +5,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "net/url_request/url_request.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/appcache/appcache.h"

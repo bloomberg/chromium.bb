@@ -10,7 +10,7 @@
 
 #include "base/callback_forward.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/observer_list_threadsafe.h"
 #include "base/platform_file.h"
 #include "webkit/browser/fileapi/file_system_operation.h"

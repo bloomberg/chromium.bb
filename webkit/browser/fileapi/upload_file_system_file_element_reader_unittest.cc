@@ -5,7 +5,7 @@
 #include "webkit/browser/fileapi/upload_file_system_file_element_reader.h"
 
 #include "base/files/scoped_temp_dir.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "net/base/io_buffer.h"
 #include "net/base/test_completion_callback.h"
 #include "testing/gtest/include/gtest/gtest.h"

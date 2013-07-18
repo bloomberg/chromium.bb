@@ -8,7 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/pickle.h"
 #include "base/strings/string_util.h"
 #include "net/base/completion_callback.h"

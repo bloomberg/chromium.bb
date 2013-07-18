@@ -5,7 +5,7 @@
 #include "webkit/browser/fileapi/sandbox_file_system_test_helper.h"
 
 #include "base/file_util.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "url/gurl.h"
 #include "webkit/browser/fileapi/file_system_context.h"
