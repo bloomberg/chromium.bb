@@ -27,6 +27,10 @@ PrivetURLFetcher::PrivetURLFetcher(
   url_fetcher_->SetRequestContext(request_context);
   url_fetcher_->AddExtraRequestHeader(std::string(kXPrivetTokenHeaderPrefix) +
                                       token);
+
+  // URLFetcher requires us to set upload data for POST requests.
+  if (request_type == net::URLFetcher::POST)
+      url_fetcher_->SetUploadData(std::string(), std::string());
 }
 
 PrivetURLFetcher::~PrivetURLFetcher() {
