@@ -54,6 +54,7 @@ class RootWindowHostOzone : public RootWindowHost,
   virtual void PrepareForShutdown() OVERRIDE;
 
   RootWindowHostDelegate* delegate_;
+  gfx::AcceleratedWidget widget_;
   gfx::Rect bounds_;
 
   // EventFactoryEvdev reads from /dev/input/* file descriptors and creates

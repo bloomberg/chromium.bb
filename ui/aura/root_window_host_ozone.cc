@@ -5,12 +5,22 @@
 #include "ui/aura/root_window_host_ozone.h"
 
 #include "ui/aura/root_window.h"
+#include "ui/base/ozone/surface_factory_ozone.h"
 
 namespace aura {
 
 RootWindowHostOzone::RootWindowHostOzone(const gfx::Rect& bounds)
-    : delegate_(NULL), bounds_(bounds), factory_(new ui::EventFactoryOzone()) {
+    : delegate_(NULL),
+      widget_(0),
+      bounds_(bounds),
+      factory_(new ui::EventFactoryOzone()) {
   factory_->CreateEvdevWatchers();
+  ui::SurfaceFactoryOzone* surface_factory =
+      ui::SurfaceFactoryOzone::GetInstance();
+  widget_ = surface_factory->GetAcceleratedWidget();
+
+  surface_factory->AttemptToResizeAcceleratedWidget(widget_, bounds_);
+
   base::MessagePumpOzone::Current()->AddDispatcherForRootWindow(this);
 }
 
@@ -39,9 +49,7 @@ RootWindow* RootWindowHostOzone::GetRootWindow() {
 }
 
 gfx::AcceleratedWidget RootWindowHostOzone::GetAcceleratedWidget() {
-  // TODO(rjkroege): Support more than one screen. Screen ids start at 1 and
-  // increase for each screen.
-  return (gfx::AcceleratedWidget)1;
+  return widget_;
 }
 
 void RootWindowHostOzone::Show() { NOTIMPLEMENTED(); }
