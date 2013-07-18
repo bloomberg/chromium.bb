@@ -251,9 +251,8 @@ IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_SetName,
 // permission, since a security check in the embedder might follow. For example
 // for media access permission, the guest will be granted permission only if its
 // embedder also has access.
-IPC_MESSAGE_ROUTED4(BrowserPluginHostMsg_RespondPermission,
+IPC_MESSAGE_ROUTED3(BrowserPluginHostMsg_RespondPermission,
                     int /* instance_id */,
-                    BrowserPluginPermissionType /* permission_type */,
                     int /* request_id */,
                     bool /* allow */)
 

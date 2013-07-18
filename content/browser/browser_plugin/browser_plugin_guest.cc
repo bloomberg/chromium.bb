@@ -63,6 +63,7 @@ class BrowserPluginGuest::PermissionRequest {
  public:
   virtual void Respond(bool should_allow) = 0;
   virtual ~PermissionRequest() {}
+  virtual BrowserPluginPermissionType GetType() const = 0;
  protected:
   PermissionRequest() {
     RecordAction(UserMetricsAction("BrowserPlugin.Guest.PermissionRequest"));
@@ -78,6 +79,9 @@ class BrowserPluginGuest::DownloadRequest : public PermissionRequest {
   }
   virtual void Respond(bool should_allow) OVERRIDE {
     callback_.Run(should_allow);
+  }
+  virtual BrowserPluginPermissionType GetType() const OVERRIDE {
+    return BrowserPluginPermissionTypeDownload;
   }
   virtual ~DownloadRequest() {}
  private:
@@ -129,6 +133,9 @@ class BrowserPluginGuest::GeolocationRequest : public PermissionRequest {
     }
     guest_->SetGeolocationPermission(callback_, bridge_id_, false);
   }
+  virtual BrowserPluginPermissionType GetType() const OVERRIDE {
+    return BrowserPluginPermissionTypeGeolocation;
+  }
   virtual ~GeolocationRequest() {}
  private:
   base::Callback<void(bool)> callback_;
@@ -159,7 +166,9 @@ class BrowserPluginGuest::MediaRequest : public PermissionRequest {
       // Deny the request.
       callback_.Run(MediaStreamDevices(), scoped_ptr<MediaStreamUI>());
     }
-
+  }
+  virtual BrowserPluginPermissionType GetType() const OVERRIDE {
+    return BrowserPluginPermissionTypeMedia;
   }
   virtual ~MediaRequest() {}
  private:
@@ -191,6 +200,9 @@ class BrowserPluginGuest::NewWindowRequest : public PermissionRequest {
     // If we do not destroy the guest then we allow the new window.
     if (!should_allow)
       guest->Destroy();
+  }
+  virtual BrowserPluginPermissionType GetType() const OVERRIDE {
+    return BrowserPluginPermissionTypeNewWindow;
   }
   virtual ~NewWindowRequest() {}
  private:
@@ -1290,7 +1302,6 @@ void BrowserPluginGuest::OnSetVisibility(int instance_id, bool visible) {
 
 void BrowserPluginGuest::OnRespondPermission(
     int instance_id,
-    BrowserPluginPermissionType permission_type,
     int request_id,
     bool should_allow) {
   RequestMap::iterator request_itr = permission_request_map_.find(request_id);
@@ -1298,6 +1309,7 @@ void BrowserPluginGuest::OnRespondPermission(
     LOG(INFO) << "Not a valid request ID.";
     return;
   }
+  BrowserPluginPermissionType permission_type = request_itr->second->GetType();
   request_itr->second->Respond(should_allow);
 
   // Geolocation requests have to hang around for a while, so we don't delete
@@ -1485,8 +1497,7 @@ void BrowserPluginGuest::DidRetrieveDownloadURLFromRequestId(
     int permission_request_id,
     const std::string& url) {
   if (url.empty()) {
-    OnRespondPermission(instance_id(), BrowserPluginPermissionTypeDownload,
-                        permission_request_id, false);
+    OnRespondPermission(instance_id(), permission_request_id, false);
     return;
   }
 

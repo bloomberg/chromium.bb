@@ -304,7 +304,6 @@ class CONTENT_EXPORT BrowserPluginGuest
   // Allows or denies a permission request access, after the embedder has had a
   // chance to decide.
   void OnRespondPermission(int instance_id,
-                           BrowserPluginPermissionType permission_type,
                            int request_id,
                            bool should_allow);
   // Handles drag events from the embedder.

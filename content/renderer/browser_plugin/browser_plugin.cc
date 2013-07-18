@@ -969,8 +969,7 @@ void BrowserPlugin::RespondPermission(
   else
     browser_plugin_manager()->Send(
         new BrowserPluginHostMsg_RespondPermission(
-            render_view_routing_id_, guest_instance_id_, permission_type,
-            request_id, allow));
+            render_view_routing_id_, guest_instance_id_, request_id, allow));
 }
 
 void BrowserPlugin::RespondPermissionPointerLock(bool allow) {
