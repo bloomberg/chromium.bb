@@ -118,7 +118,6 @@ class MainTest(unittest.TestCase):
         self.assertEqual(options.time_out_ms, 600 * 1000)
         self.assertTrue(options.generate_results)
         self.assertTrue(options.show_results)
-        self.assertFalse(options.replay)
         self.assertTrue(options.use_skipped_list)
         self.assertEqual(options.repeat, 1)
         self.assertEqual(options.test_runner_count, DEFAULT_TEST_RUNNER_COUNT)
