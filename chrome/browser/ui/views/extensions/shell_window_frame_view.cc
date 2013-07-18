@@ -194,21 +194,19 @@ int ShellWindowFrameView::NonClientHitTest(const gfx::Point& point) {
   bool can_ever_resize = frame_->widget_delegate() ?
       frame_->widget_delegate()->CanResize() :
       false;
-  if (can_ever_resize) {
-    // Don't allow overlapping resize handles when the window is maximized or
-    // fullscreen, as it can't be resized in those states.
-    int resize_border =
-        frame_->IsMaximized() || frame_->IsFullscreen() ? 0 :
-        resize_inside_bounds_size;
-    int frame_component = GetHTComponentForFrame(point,
-                                                 resize_border,
-                                                 resize_border,
-                                                 resize_area_corner_size,
-                                                 resize_area_corner_size,
-                                                 can_ever_resize);
-    if (frame_component != HTNOWHERE)
-      return frame_component;
-  }
+  // Don't allow overlapping resize handles when the window is maximized or
+  // fullscreen, as it can't be resized in those states.
+  int resize_border =
+      (frame_->IsMaximized() || frame_->IsFullscreen()) ? 0 :
+      resize_inside_bounds_size;
+  int frame_component = GetHTComponentForFrame(point,
+                                               resize_border,
+                                               resize_border,
+                                               resize_area_corner_size,
+                                               resize_area_corner_size,
+                                               can_ever_resize);
+  if (frame_component != HTNOWHERE)
+    return frame_component;
 
   // Check for possible draggable region in the client area for the frameless
   // window.
