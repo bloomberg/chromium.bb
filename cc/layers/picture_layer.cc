@@ -99,6 +99,11 @@ bool PictureLayer::Update(ResourceUpdateQueue*,
 
   gfx::Rect visible_layer_rect = gfx::ScaleToEnclosingRect(
       visible_content_rect(), 1.f / contents_scale_x());
+  if (layer_tree_host()->settings().using_synchronous_renderer_compositor) {
+    // Workaround for http://crbug.com/235910 - to retain backwards compat
+    // the full page content must always be provided in the picture layer.
+    visible_layer_rect = gfx::Rect(bounds());
+  }
   devtools_instrumentation::ScopedLayerTask paint_layer(
       devtools_instrumentation::kPaintLayer, id());
   bool updated = pile_->Update(client_,
