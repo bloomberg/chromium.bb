@@ -4,8 +4,7 @@
 
 #include "ui/base/ozone/surface_factory_ozone.h"
 
-#include "base/lazy_instance.h"
-#include "base/memory/scoped_ptr.h"
+#include <stdlib.h>
 
 namespace ui {
 
