@@ -50,6 +50,7 @@ namespace WebCore {
     class Frame;
     class NodeFilter;
     class ScriptExecutionContext;
+    class ScriptWrappable;
     class XPathNSResolver;
 
     const int kMaxRecursionDepth = 22;
@@ -584,6 +585,8 @@ namespace WebCore {
     {
         return v8::FunctionTemplate::New(function, environment)->GetFunction();
     }
+
+    v8::Local<v8::Value> getHiddenValueFromMainWorldWrapper(v8::Isolate*, ScriptWrappable*, v8::Handle<v8::String> key);
 
 } // namespace WebCore
 

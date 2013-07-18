@@ -98,10 +98,16 @@ public:
         DataTypeArrayBuffer
     };
     DataType dataType() const { return m_dataType; }
-    SerializedScriptValue* dataAsSerializedScriptValue() const { ASSERT(m_dataType == DataTypeSerializedScriptValue); return m_dataAsSerializedScriptValue.get(); }
+    SerializedScriptValue* dataAsSerializedScriptValue() const { ASSERT(m_dataType == DataTypeScriptValue || m_dataType == DataTypeSerializedScriptValue); return m_dataAsSerializedScriptValue.get(); }
     String dataAsString() const { ASSERT(m_dataType == DataTypeString); return m_dataAsString; }
     Blob* dataAsBlob() const { ASSERT(m_dataType == DataTypeBlob); return m_dataAsBlob.get(); }
     ArrayBuffer* dataAsArrayBuffer() const { ASSERT(m_dataType == DataTypeArrayBuffer); return m_dataAsArrayBuffer.get(); }
+
+    void setSerializedData(PassRefPtr<SerializedScriptValue> data)
+    {
+        ASSERT(!m_dataAsSerializedScriptValue);
+        m_dataAsSerializedScriptValue = data;
+    }
 
 private:
     MessageEvent();

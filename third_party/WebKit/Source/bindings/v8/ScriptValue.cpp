@@ -47,13 +47,13 @@ ScriptValue::~ScriptValue()
 PassRefPtr<SerializedScriptValue> ScriptValue::serialize(ScriptState* scriptState)
 {
     ScriptScope scope(scriptState);
-    return SerializedScriptValue::create(v8Value());
+    return SerializedScriptValue::create(v8Value(), scriptState->isolate());
 }
 
 PassRefPtr<SerializedScriptValue> ScriptValue::serialize(ScriptState* scriptState, MessagePortArray* messagePorts, ArrayBufferArray* arrayBuffers, bool& didThrow)
 {
     ScriptScope scope(scriptState);
-    return SerializedScriptValue::create(v8Value(), messagePorts, arrayBuffers, didThrow);
+    return SerializedScriptValue::create(v8Value(), messagePorts, arrayBuffers, didThrow, scriptState->isolate());
 }
 
 ScriptValue ScriptValue::deserialize(ScriptState* scriptState, SerializedScriptValue* value)

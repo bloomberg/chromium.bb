@@ -43,7 +43,6 @@ PopStateEvent::PopStateEvent()
 
 PopStateEvent::PopStateEvent(const AtomicString& type, const PopStateEventInit& initializer)
     : Event(type, initializer)
-    , m_serializedState(0)
     , m_history(0)
 {
     ScriptWrappable::init(this);

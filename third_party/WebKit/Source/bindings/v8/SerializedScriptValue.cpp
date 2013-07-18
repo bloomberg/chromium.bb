@@ -2223,25 +2223,21 @@ private:
 
 } // namespace
 
-PassRefPtr<SerializedScriptValue> SerializedScriptValue::create(v8::Handle<v8::Value> value, MessagePortArray* messagePorts, ArrayBufferArray* arrayBuffers, bool& didThrow)
-{
-    return create(value, messagePorts, arrayBuffers, didThrow, v8::Isolate::GetCurrent());
-}
-
 PassRefPtr<SerializedScriptValue> SerializedScriptValue::create(v8::Handle<v8::Value> value, MessagePortArray* messagePorts, ArrayBufferArray* arrayBuffers, bool& didThrow, v8::Isolate* isolate)
 {
     return adoptRef(new SerializedScriptValue(value, messagePorts, arrayBuffers, didThrow, isolate));
-}
-
-PassRefPtr<SerializedScriptValue> SerializedScriptValue::create(v8::Handle<v8::Value> value)
-{
-    return create(value, v8::Isolate::GetCurrent());
 }
 
 PassRefPtr<SerializedScriptValue> SerializedScriptValue::create(v8::Handle<v8::Value> value, v8::Isolate* isolate)
 {
     bool didThrow;
     return adoptRef(new SerializedScriptValue(value, 0, 0, didThrow, isolate));
+}
+
+PassRefPtr<SerializedScriptValue> SerializedScriptValue::createAndSwallowExceptions(v8::Handle<v8::Value> value, v8::Isolate* isolate)
+{
+    bool didThrow;
+    return adoptRef(new SerializedScriptValue(value, 0, 0, didThrow, isolate, DoNotThrowExceptions));
 }
 
 PassRefPtr<SerializedScriptValue> SerializedScriptValue::createFromWire(const String& data)
@@ -2425,7 +2421,7 @@ PassOwnPtr<SerializedScriptValue::ArrayBufferContentsArray> SerializedScriptValu
     return contents.release();
 }
 
-SerializedScriptValue::SerializedScriptValue(v8::Handle<v8::Value> value, MessagePortArray* messagePorts, ArrayBufferArray* arrayBuffers, bool& didThrow, v8::Isolate* isolate)
+SerializedScriptValue::SerializedScriptValue(v8::Handle<v8::Value> value, MessagePortArray* messagePorts, ArrayBufferArray* arrayBuffers, bool& didThrow, v8::Isolate* isolate, ExceptionPolicy policy)
     : m_externallyAllocatedMemory(0)
 {
     didThrow = false;
@@ -2436,9 +2432,10 @@ SerializedScriptValue::SerializedScriptValue(v8::Handle<v8::Value> value, Messag
         Serializer serializer(writer, messagePorts, arrayBuffers, m_blobURLs, tryCatch, isolate);
         status = serializer.serialize(value);
         if (status == Serializer::JSException) {
-            // If there was a JS exception thrown, re-throw it.
             didThrow = true;
-            tryCatch.ReThrow();
+            // If there was a JS exception thrown, re-throw it.
+            if (policy == ThrowExceptions)
+                tryCatch.ReThrow();
             return;
         }
     }
@@ -2448,11 +2445,13 @@ SerializedScriptValue::SerializedScriptValue(v8::Handle<v8::Value> value, Messag
         // If there was an input error, throw a new exception outside
         // of the TryCatch scope.
         didThrow = true;
-        setDOMException(DataCloneError, isolate);
+        if (policy == ThrowExceptions)
+            setDOMException(DataCloneError, isolate);
         return;
     case Serializer::InvalidStateError:
         didThrow = true;
-        setDOMException(InvalidStateError, isolate);
+        if (policy == ThrowExceptions)
+            setDOMException(InvalidStateError, isolate);
         return;
     case Serializer::JSFailure:
         // If there was a JS failure (but no exception), there's not

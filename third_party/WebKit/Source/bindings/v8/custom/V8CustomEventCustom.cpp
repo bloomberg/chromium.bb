@@ -34,7 +34,7 @@
 #include "V8Event.h"
 #include "bindings/v8/Dictionary.h"
 #include "bindings/v8/ScriptState.h"
-#include "bindings/v8/ScriptValue.h"
+#include "bindings/v8/SerializedScriptValue.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMWrapper.h"
 #include "bindings/v8/V8HiddenPropertyName.h"
@@ -63,9 +63,16 @@ void V8CustomEvent::detailAttrGetterCustom(v8::Local<v8::String> name, const v8:
         return;
     }
 
-    SerializedScriptValue* serialized = event->serializedScriptValue();
-    if (serialized) {
-        result = serialized->deserialize();
+    if (!event->serializedScriptValue()) {
+        // If we're in an isolated world and the event was created in the main world,
+        // we need to find the 'detail' property on the main world wrapper and clone it.
+        v8::Local<v8::Value> mainWorldDetail = getHiddenValueFromMainWorldWrapper(info.GetIsolate(), event, V8HiddenPropertyName::detail());
+        if (!mainWorldDetail.IsEmpty())
+            event->setSerializedDetail(SerializedScriptValue::createAndSwallowExceptions(mainWorldDetail, info.GetIsolate()));
+    }
+
+    if (event->serializedScriptValue()) {
+        result = event->serializedScriptValue()->deserialize();
         v8SetReturnValue(info, cacheState(info.Holder(), result));
         return;
     }
@@ -83,8 +90,13 @@ void V8CustomEvent::initCustomEventMethodCustom(const v8::FunctionCallbackInfo<v
     V8TRYCATCH_VOID(bool, cancelableArg, args[2]->BooleanValue());
     v8::Handle<v8::Value> detailsArg = args[3];
 
-    args.Holder()->SetHiddenValue(V8HiddenPropertyName::detail(), detailsArg);
     event->initEvent(typeArg, canBubbleArg, cancelableArg);
+
+    if (!detailsArg.IsEmpty()) {
+        args.Holder()->SetHiddenValue(V8HiddenPropertyName::detail(), detailsArg);
+        if (isolatedWorldForIsolate(args.GetIsolate()))
+            event->setSerializedDetail(SerializedScriptValue::createAndSwallowExceptions(detailsArg, args.GetIsolate()));
+    }
 }
 
 } // namespace WebCore

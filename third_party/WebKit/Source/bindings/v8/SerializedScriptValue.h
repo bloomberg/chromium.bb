@@ -58,15 +58,16 @@ public:
     // be thrown using v8::ThrowException(), and sets |didThrow|. In this case
     // the caller must not invoke any V8 operations until control returns to
     // V8. When serialization is successful, |didThrow| is false.
-    static PassRefPtr<SerializedScriptValue> create(v8::Handle<v8::Value>, MessagePortArray*, ArrayBufferArray*, bool&);
-    static PassRefPtr<SerializedScriptValue> create(v8::Handle<v8::Value>, MessagePortArray*, ArrayBufferArray*, bool&, v8::Isolate*);
-    static PassRefPtr<SerializedScriptValue> create(v8::Handle<v8::Value>);
+    static PassRefPtr<SerializedScriptValue> create(v8::Handle<v8::Value>, MessagePortArray*, ArrayBufferArray*, bool& didThrow, v8::Isolate*);
     static PassRefPtr<SerializedScriptValue> create(v8::Handle<v8::Value>, v8::Isolate*);
     static PassRefPtr<SerializedScriptValue> createFromWire(const String&);
     static PassRefPtr<SerializedScriptValue> createFromWireBytes(const Vector<uint8_t>&);
     static PassRefPtr<SerializedScriptValue> create(const String&);
     static PassRefPtr<SerializedScriptValue> create(const String&, v8::Isolate*);
     static PassRefPtr<SerializedScriptValue> create();
+
+    // Never throws exceptions.
+    static PassRefPtr<SerializedScriptValue> createAndSwallowExceptions(v8::Handle<v8::Value>, v8::Isolate*);
 
     static PassRefPtr<SerializedScriptValue> nullValue();
     static PassRefPtr<SerializedScriptValue> nullValue(v8::Isolate*);
@@ -104,10 +105,14 @@ private:
         StringValue,
         WireData
     };
+    enum ExceptionPolicy {
+        ThrowExceptions,
+        DoNotThrowExceptions
+    };
     typedef Vector<WTF::ArrayBufferContents, 1> ArrayBufferContentsArray;
 
     SerializedScriptValue();
-    SerializedScriptValue(v8::Handle<v8::Value>, MessagePortArray*, ArrayBufferArray*, bool& didThrow, v8::Isolate*);
+    SerializedScriptValue(v8::Handle<v8::Value>, MessagePortArray*, ArrayBufferArray*, bool& didThrow, v8::Isolate*, ExceptionPolicy = ThrowExceptions);
     explicit SerializedScriptValue(const String& wireData);
 
     static PassOwnPtr<ArrayBufferContentsArray> transferArrayBuffers(ArrayBufferArray&, bool& didThrow, v8::Isolate*);

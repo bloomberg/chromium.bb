@@ -26,11 +26,11 @@
 #ifndef CustomEvent_h
 #define CustomEvent_h
 
-#include "bindings/v8/ScriptValue.h"
-#include "bindings/v8/SerializedScriptValue.h"
 #include "core/dom/Event.h"
 
 namespace WebCore {
+
+class SerializedScriptValue;
 
 typedef EventInit CustomEventInit;
 
@@ -53,6 +53,12 @@ public:
     virtual const AtomicString& interfaceName() const;
 
     SerializedScriptValue* serializedScriptValue() { return m_serializedScriptValue.get(); }
+
+    void setSerializedDetail(PassRefPtr<SerializedScriptValue> detail)
+    {
+        ASSERT(!m_serializedScriptValue);
+        m_serializedScriptValue = detail;
+    }
 
 private:
     CustomEvent();

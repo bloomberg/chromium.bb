@@ -75,6 +75,11 @@ public:
         ASSERT(containsWrapper());
     }
 
+    v8::Local<v8::Object> newLocalWrapper(v8::Isolate* isolate) const
+    {
+        return unsafePersistent().newLocal(isolate);
+    }
+
     const WrapperTypeInfo* typeInfo()
     {
         if (containsTypeInfo())

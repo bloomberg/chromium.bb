@@ -51,8 +51,19 @@ void V8MessageEvent::dataAttrGetterCustom(v8::Local<v8::String> name, const v8::
     switch (event->dataType()) {
     case MessageEvent::DataTypeScriptValue: {
         result = info.Holder()->GetHiddenValue(V8HiddenPropertyName::data());
-        if (result.IsEmpty())
-            result = v8::Null(info.GetIsolate());
+        if (result.IsEmpty()) {
+            if (!event->dataAsSerializedScriptValue()) {
+                // If we're in an isolated world and the event was created in the main world,
+                // we need to find the 'data' property on the main world wrapper and clone it.
+                v8::Local<v8::Value> mainWorldData = getHiddenValueFromMainWorldWrapper(info.GetIsolate(), event, V8HiddenPropertyName::data());
+                if (!mainWorldData.IsEmpty())
+                    event->setSerializedData(SerializedScriptValue::createAndSwallowExceptions(mainWorldData, info.GetIsolate()));
+            }
+            if (event->dataAsSerializedScriptValue())
+                result = event->dataAsSerializedScriptValue()->deserialize(info.GetIsolate());
+            else
+                result = v8::Null(info.GetIsolate());
+        }
         break;
     }
 
@@ -111,8 +122,13 @@ void V8MessageEvent::initMessageEventMethodCustom(const v8::FunctionCallbackInfo
         if (!getMessagePortArray(args[7], *portArray, args.GetIsolate()))
             return;
     }
-    args.Holder()->SetHiddenValue(V8HiddenPropertyName::data(), dataArg);
     event->initMessageEvent(typeArg, canBubbleArg, cancelableArg, originArg, lastEventIdArg, sourceArg, portArray.release());
+
+    if (!dataArg.IsEmpty()) {
+        args.Holder()->SetHiddenValue(V8HiddenPropertyName::data(), dataArg);
+        if (isolatedWorldForIsolate(args.GetIsolate()))
+            event->setSerializedData(SerializedScriptValue::createAndSwallowExceptions(dataArg, args.GetIsolate()));
+    }
 }
 
 void V8MessageEvent::webkitInitMessageEventMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)

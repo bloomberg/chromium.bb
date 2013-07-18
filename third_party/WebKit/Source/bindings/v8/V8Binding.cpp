@@ -538,8 +538,14 @@ DOMWrapperWorld* isolatedWorldForIsolate(v8::Isolate* isolate)
         return 0;
     if (!DOMWrapperWorld::isolatedWorldsExist())
         return 0;
-    ASSERT(!v8::Context::GetEntered().IsEmpty());
-    return DOMWrapperWorld::isolatedWorld(v8::Context::GetEntered());
+    ASSERT(v8::Context::InContext());
+    return DOMWrapperWorld::isolatedWorld(v8::Context::GetCurrent());
+}
+
+v8::Local<v8::Value> getHiddenValueFromMainWorldWrapper(v8::Isolate* isolate, ScriptWrappable* wrappable, v8::Handle<v8::String> key)
+{
+    v8::Local<v8::Object> wrapper = wrappable->newLocalWrapper(isolate);
+    return wrapper.IsEmpty() ? v8::Local<v8::Value>() : wrapper->GetHiddenValue(key);
 }
 
 } // namespace WebCore

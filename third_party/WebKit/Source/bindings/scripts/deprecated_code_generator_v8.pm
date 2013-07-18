@@ -2621,6 +2621,13 @@ sub GenerateEventConstructor
     my $implClassName = GetImplName($interface);
     my $v8ClassName = GetV8ClassName($interface);
 
+    my @anyAttributeNames;
+    foreach my $attribute (@{$interface->attributes}) {
+        if ($attribute->type eq "any") {
+            push(@anyAttributeNames, $attribute->name);
+        }
+    }
+
     AddToImplIncludes("bindings/v8/Dictionary.h");
     $implementation{nameSpaceInternal}->add(<<END);
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -2631,29 +2638,51 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& args)
     }
 
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, type, args[0]);
+END
+
+    foreach my $attrName (@anyAttributeNames) {
+        $implementation{nameSpaceInternal}->add("    v8::Local<v8::Value> ${attrName};\n");
+    }
+
+    $implementation{nameSpaceInternal}->add(<<END);
     ${implClassName}Init eventInit;
     if (args.Length() >= 2) {
         V8TRYCATCH_VOID(Dictionary, options, Dictionary(args[1], args.GetIsolate()));
         if (!fill${implClassName}Init(eventInit, options))
             return;
 END
-        for (my $index = 0; $index < @{$interface->attributes}; $index++) {
-            my $attribute = @{$interface->attributes}[$index];
-            if ($attribute->type eq "any") {
-                my $attributeName = $attribute->name;
-                $implementation{nameSpaceInternal}->add(<<END);
-        v8::Local<v8::Value> ${attributeName};
-        options.get("${attributeName}", ${attributeName});
-        if (!${attributeName}.IsEmpty())
-            args.Holder()->SetHiddenValue(V8HiddenPropertyName::${attributeName}(), ${attributeName});
-END
-            }
-        }
+
+    # Store 'any'-typed properties on the wrapper to avoid leaking them between isolated worlds.
+    foreach my $attrName (@anyAttributeNames) {
         $implementation{nameSpaceInternal}->add(<<END);
+        options.get("${attrName}", ${attrName});
+        if (!${attrName}.IsEmpty())
+            args.Holder()->SetHiddenValue(V8HiddenPropertyName::${attrName}(), ${attrName});
+END
+    }
+
+    $implementation{nameSpaceInternal}->add(<<END);
     }
 
     RefPtr<${implClassName}> event = ${implClassName}::create(type, eventInit);
+END
 
+    if (@anyAttributeNames) {
+        # If we're in an isolated world, create a SerializedScriptValue and store it in the event for
+        # later cloning if the property is accessed from another world.
+        # The main world case is handled lazily (in Custom code).
+        $implementation{nameSpaceInternal}->add("    if (isolatedWorldForIsolate(args.GetIsolate())) {\n");
+        foreach my $attrName (@anyAttributeNames) {
+            my $setter = "setSerialized" . FirstLetterToUpperCase($attrName);
+            $implementation{nameSpaceInternal}->add(<<END);
+        if (!${attrName}.IsEmpty())
+            event->${setter}(SerializedScriptValue::createAndSwallowExceptions(${attrName}, args.GetIsolate()));
+END
+        }
+        $implementation{nameSpaceInternal}->add("    }\n\n");
+    }
+
+    $implementation{nameSpaceInternal}->add(<<END);
     v8::Handle<v8::Object> wrapper = args.Holder();
     V8DOMWrapper::associateObjectWithWrapper<${v8ClassName}>(event.release(), &${v8ClassName}::info, wrapper, args.GetIsolate(), WrapperConfiguration::Dependent);
     v8SetReturnValue(args, wrapper);
@@ -2675,12 +2704,10 @@ END
 END
     }
 
-    for (my $index = 0; $index < @{$interface->attributes}; $index++) {
-        my $attribute = @{$interface->attributes}[$index];
+    foreach my $attribute (@{$interface->attributes}) {
         if ($attribute->extendedAttributes->{"InitializedByEventConstructor"}) {
-            my $attributeName = $attribute->name;
-            my $attributeType = $attribute->type;
-            if (not ($attribute->type eq "any")) {
+            if ($attribute->type ne "any") {
+                my $attributeName = $attribute->name;
                 $code .= "    options.get(\"$attributeName\", eventInit.$attributeName);\n";
             }
         }
