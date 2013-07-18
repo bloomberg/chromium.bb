@@ -17,6 +17,8 @@
 
 namespace itunes {
 
+class TestITunesDataProvider;
+
 // This class is the holder for iTunes parsed data. Given a path to the iTunes
 // library XML file it will read it in, parse the data, and provide convenient
 // methods to access it.  When the file changes, it will update the data.
@@ -30,7 +32,7 @@ class ITunesDataProvider {
   typedef base::Callback<void(bool)> ReadyCallback;
 
   explicit ITunesDataProvider(const base::FilePath& library_path);
-  ~ITunesDataProvider();
+  virtual ~ITunesDataProvider();
 
   // Ask the data provider to refresh the data if necessary. |ready_callback|
   // will be called with the result; false if unable to parse the XML file.
@@ -61,6 +63,8 @@ class ITunesDataProvider {
   Album GetAlbum(const ArtistName& artist, const AlbumName& album) const;
 
  private:
+  friend class TestITunesDataProvider;
+
   typedef std::map<AlbumName, Album> Artist;
   typedef std::map<ArtistName, Artist> Library;
 
@@ -79,8 +83,8 @@ class ITunesDataProvider {
   // watch.
   void OnLibraryWatchStarted(scoped_ptr<base::FilePathWatcher> library_watcher);
 
-  // Called when |library_path_| has changed.
-  void OnLibraryChanged(const base::FilePath& path, bool error);
+  // Called when |library_path_| has changed. Virtual for testing.
+  virtual void OnLibraryChanged(const base::FilePath& path, bool error);
 
   // Called when the utility process finishes parsing the library XML file.
   void OnLibraryParsed(const ReadyCallback& ready_callback,
