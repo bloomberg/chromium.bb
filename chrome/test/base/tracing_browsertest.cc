@@ -5,7 +5,7 @@
 #include "chrome/test/base/tracing.h"
 
 #include "base/debug/trace_event.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"

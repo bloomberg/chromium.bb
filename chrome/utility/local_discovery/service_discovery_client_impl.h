@@ -13,7 +13,7 @@
 #include "base/cancelable_callback.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "chrome/common/local_discovery/service_discovery_client.h"
 #include "net/dns/mdns_client.h"
 

@@ -9,7 +9,7 @@
 #define CHROME_TEST_PYAUTOLIB_PYAUTOLIB_H_
 
 #include "base/compiler_specific.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/test/test_timeouts.h"
 #include "base/time/time.h"
 #include "chrome/test/ui/ui_test.h"

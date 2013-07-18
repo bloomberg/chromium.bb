@@ -6,7 +6,7 @@
 
 #include "base/debug/trace_event.h"
 #include "base/memory/singleton.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/trace_controller.h"
 #include "content/public/browser/trace_subscriber.h"
