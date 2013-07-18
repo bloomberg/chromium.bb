@@ -195,6 +195,18 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   // Returns the ranges representing the buffered data in the demuxer.
   Ranges<base::TimeDelta> GetBufferedRanges() const;
 
+  // Start returning data on all DemuxerStreams.
+  void StartReturningData();
+
+  // Aborts pending reads on all DemuxerStreams.
+  void AbortPendingReads();
+
+  // Completes any pending reads if it is possible to do so.
+  void CompletePendingReadsIfPossible();
+
+  // Seeks all SourceBufferStreams to |seek_time|.
+  void SeekAllSources(base::TimeDelta seek_time);
+
   mutable base::Lock lock_;
   State state_;
   bool cancel_next_seek_;
