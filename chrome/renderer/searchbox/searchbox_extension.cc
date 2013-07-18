@@ -829,10 +829,21 @@ void SearchBoxExtensionWrapper::NavigateContentWindow(
 
   GURL destination_url;
   content::PageTransition transition = content::PAGE_TRANSITION_AUTO_BOOKMARK;
-  // Resolve the URL
-  const string16& possibly_relative_url = V8ValueToUTF16(args[0]);
-  GURL current_url = GetCurrentURL(render_view);
-  destination_url = internal::ResolveURL(current_url, possibly_relative_url);
+
+  // Check if the url is a rid
+  if (args[0]->IsNumber()) {
+    InstantMostVisitedItem item;
+    if (SearchBox::Get(render_view)->GetMostVisitedItemWithID(
+        args[0]->IntegerValue(), &item)) {
+      destination_url = item.url;
+    }
+  } else {
+    // Resolve the URL
+    const string16& possibly_relative_url = V8ValueToUTF16(args[0]);
+    GURL current_url = GetCurrentURL(render_view);
+    destination_url = internal::ResolveURL(current_url, possibly_relative_url);
+  }
+
   DVLOG(1) << render_view << " NavigateContentWindow: " << destination_url;
 
   // Navigate the main frame.
