@@ -6,7 +6,7 @@
 #define CONTENT_RENDERER_DEVICE_MOTION_EVENT_PUMP_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "base/shared_memory.h"
+#include "base/memory/shared_memory.h"
 #include "base/timer/timer.h"
 #include "content/public/renderer/render_process_observer.h"
 #include "content/renderer/shared_memory_seqlock_reader.h"

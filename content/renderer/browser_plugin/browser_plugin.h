@@ -12,7 +12,7 @@
 #include "base/process_util.h"
 #include "base/sequenced_task_runner_helpers.h"
 #if defined(OS_WIN)
-#include "base/shared_memory.h"
+#include "base/memory/shared_memory.h"
 #endif
 #include "base/values.h"
 #include "content/common/browser_plugin/browser_plugin_message_enums.h"

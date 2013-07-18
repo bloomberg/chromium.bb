@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_handle.h"
-#include "base/shared_memory.h"
+#include "base/memory/shared_memory.h"
 #include "build/build_config.h"
 #include "content/child/npobject_proxy.h"
 #include "content/child/npobject_util.h"

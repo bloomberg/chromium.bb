@@ -6,7 +6,7 @@
 #define GPU_COMMAND_BUFFER_SERVICE_COMMAND_BUFFER_SERVICE_H_
 
 #include "base/callback.h"
-#include "base/shared_memory.h"
+#include "base/memory/shared_memory.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/command_buffer/common/command_buffer_shared.h"
 

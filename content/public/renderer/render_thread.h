@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "base/shared_memory.h"
+#include "base/memory/shared_memory.h"
 #include "content/common/content_export.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_sender.h"

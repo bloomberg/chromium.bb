@@ -7,7 +7,7 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/shared_memory.h"
+#include "base/memory/shared_memory.h"
 #include "content/common/shared_memory_seqlock_buffer.h"
 
 namespace internal {
