@@ -7,10 +7,15 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram.h"
 #include "base/metrics/histogram_samples.h"
+#include "base/metrics/statistics_recorder.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/histogram_recorder.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using base::HistogramBase;
+using base::HistogramSamples;
+using base::StatisticsRecorder;
 
 class SpellcheckHostMetricsTest : public testing::Test {
  public:
@@ -18,19 +23,12 @@ class SpellcheckHostMetricsTest : public testing::Test {
   }
 
   virtual void SetUp() OVERRIDE {
-    ResetHistogramRecorder();
+    base::StatisticsRecorder::Initialize();
     metrics_.reset(new SpellCheckHostMetrics);
-  }
-
-  void ResetHistogramRecorder() {
-    histogram_recorder_.reset(new base::HistogramRecorder());
   }
 
   SpellCheckHostMetrics* metrics() { return metrics_.get(); }
   void RecordWordCountsForTesting() { metrics_->RecordWordCounts(); }
-
- protected:
-  scoped_ptr<base::HistogramRecorder> histogram_recorder_;
 
  private:
   base::MessageLoop loop_;
@@ -38,21 +36,32 @@ class SpellcheckHostMetricsTest : public testing::Test {
 };
 
 TEST_F(SpellcheckHostMetricsTest, RecordEnabledStats) {
-  const char kMetricName[] = "SpellCheck.Enabled";
+  scoped_ptr<HistogramSamples> baseline;
+  HistogramBase* histogram =
+      StatisticsRecorder::FindHistogram("SpellCheck.Enabled");
+  if (histogram)
+    baseline = histogram->SnapshotSamples();
 
   metrics()->RecordEnabledStats(false);
 
-  scoped_ptr<base::HistogramSamples> samples(
-      histogram_recorder_->GetHistogramSamplesSinceCreation(kMetricName));
+  histogram =
+      StatisticsRecorder::FindHistogram("SpellCheck.Enabled");
+  ASSERT_TRUE(histogram != NULL);
+  scoped_ptr<HistogramSamples> samples(histogram->SnapshotSamples());
+  if (baseline.get())
+    samples->Subtract(*baseline);
   EXPECT_EQ(1, samples->GetCount(0));
   EXPECT_EQ(0, samples->GetCount(1));
 
-  ResetHistogramRecorder();
+  baseline.reset(samples.release());
 
   metrics()->RecordEnabledStats(true);
 
-  samples =
-      histogram_recorder_->GetHistogramSamplesSinceCreation(kMetricName);
+  histogram =
+      StatisticsRecorder::FindHistogram("SpellCheck.Enabled");
+  ASSERT_TRUE(histogram != NULL);
+  samples = histogram->SnapshotSamples();
+  samples->Subtract(*baseline);
   EXPECT_EQ(0, samples->GetCount(0));
   EXPECT_EQ(1, samples->GetCount(1));
 }
@@ -60,14 +69,19 @@ TEST_F(SpellcheckHostMetricsTest, RecordEnabledStats) {
 TEST_F(SpellcheckHostMetricsTest, CustomWordStats) {
   SpellCheckHostMetrics::RecordCustomWordCountStats(123);
 
-  ResetHistogramRecorder();
+  HistogramBase* histogram =
+      StatisticsRecorder::FindHistogram("SpellCheck.CustomWords");
+  ASSERT_TRUE(histogram != NULL);
+  scoped_ptr<HistogramSamples> baseline = histogram->SnapshotSamples();
 
   SpellCheckHostMetrics::RecordCustomWordCountStats(23);
+  histogram =
+      StatisticsRecorder::FindHistogram("SpellCheck.CustomWords");
+  ASSERT_TRUE(histogram != NULL);
+  scoped_ptr<HistogramSamples> samples = histogram->SnapshotSamples();
 
-  scoped_ptr<base::HistogramSamples> samples(
-      histogram_recorder_->GetHistogramSamplesSinceCreation(
-          "SpellCheck.CustomWords"));
-  EXPECT_EQ(23, samples->sum());
+  samples->Subtract(*baseline);
+  EXPECT_EQ(23,samples->sum());
 }
 
 TEST_F(SpellcheckHostMetricsTest, RecordWordCountsDiscardsDuplicates) {
@@ -85,37 +99,59 @@ TEST_F(SpellcheckHostMetricsTest, RecordWordCountsDiscardsDuplicates) {
   metrics()->RecordCheckedWordStats(string16(ASCIIToUTF16("test")), false);
   RecordWordCountsForTesting();
 
-  // Restart the recorder.
-  ResetHistogramRecorder();
+  // Get baselines for all affected histograms.
+  scoped_ptr<HistogramSamples> baselines[arraysize(histogramName)];
+  for (size_t i = 0; i < arraysize(histogramName); ++i) {
+    HistogramBase* histogram =
+        StatisticsRecorder::FindHistogram(histogramName[i]);
+    if (histogram)
+      baselines[i] = histogram->SnapshotSamples();
+  }
 
   // Nothing changed, so this invocation should not affect any histograms.
   RecordWordCountsForTesting();
 
   // Get samples for all affected histograms.
-  scoped_ptr<base::HistogramSamples> samples;
+  scoped_ptr<HistogramSamples> samples[arraysize(histogramName)];
   for (size_t i = 0; i < arraysize(histogramName); ++i) {
-    samples = histogram_recorder_->GetHistogramSamplesSinceCreation(
-        histogramName[i]);
-    EXPECT_EQ(0, samples->TotalCount());
+    HistogramBase* histogram =
+        StatisticsRecorder::FindHistogram(histogramName[i]);
+    ASSERT_TRUE(histogram != NULL);
+    samples[i] = histogram->SnapshotSamples();
+    if (baselines[i].get())
+      samples[i]->Subtract(*baselines[i]);
+
+    EXPECT_EQ(0, samples[i]->TotalCount());
   }
 }
 
 TEST_F(SpellcheckHostMetricsTest, RecordSpellingServiceStats) {
   const char kMetricName[] = "SpellCheck.SpellingService.Enabled";
+  scoped_ptr<HistogramSamples> baseline;
+  HistogramBase* histogram = StatisticsRecorder::FindHistogram(kMetricName);
+  if (histogram)
+    baseline = histogram->SnapshotSamples();
 
   metrics()->RecordSpellingServiceStats(false);
 
-  scoped_ptr<base::HistogramSamples> samples(
-      histogram_recorder_->GetHistogramSamplesSinceCreation(kMetricName));
+  histogram =
+      StatisticsRecorder::FindHistogram(kMetricName);
+  ASSERT_TRUE(histogram != NULL);
+  scoped_ptr<HistogramSamples> samples(histogram->SnapshotSamples());
+  if (baseline.get())
+    samples->Subtract(*baseline);
   EXPECT_EQ(1, samples->GetCount(0));
   EXPECT_EQ(0, samples->GetCount(1));
 
-  ResetHistogramRecorder();
+  baseline.reset(samples.release());
 
   metrics()->RecordSpellingServiceStats(true);
 
-  samples =
-      histogram_recorder_->GetHistogramSamplesSinceCreation(kMetricName);
+  histogram =
+      StatisticsRecorder::FindHistogram(kMetricName);
+  ASSERT_TRUE(histogram != NULL);
+  samples = histogram->SnapshotSamples();
+  samples->Subtract(*baseline);
   EXPECT_EQ(0, samples->GetCount(0));
   EXPECT_EQ(1, samples->GetCount(1));
 }
