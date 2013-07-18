@@ -60,7 +60,7 @@ void ThreadPool::Setup(int counter, WorkFunction work, void *data) {
 // Return decremented task counter.  This function
 // can be called from multiple threads at any given time.
 int ThreadPool::DecCounter() {
-  return AtomicAddFetch(&counter_, 1);
+  return AtomicAddFetch(&counter_, -1);
 }
 
 // Set exit flag, post and join all the threads in the pool.  This function is
