@@ -590,28 +590,38 @@ def BuildStepBuildToolchains(pepperdir, toolchains):
         cwd=NACL_DIR,
         shell=shell)
 
+    # NOTE: For ia32, gyp builds both x86-32 and x86-64 by default.
     for arch in ('ia32', 'arm'):
       # Fill in the latest native pnacl shim library from the chrome build.
       build_dir = GYPBUILD_DIR + '-pnacl-' + arch
       GypNinjaBuild_Pnacl(build_dir, arch)
-      pnacl_libdir_map = {'ia32': 'x86-64', 'arm': 'arm'}
-      release_build_dir = os.path.join(OUT_DIR, build_dir, 'Release',
-                                       'gen', 'tc_pnacl_translate',
-                                       'lib-' + pnacl_libdir_map[arch])
+      if arch == 'ia32':
+        nacl_arches = ['x86-32', 'x86-64']
+      elif arch == 'arm':
+        nacl_arches = ['arm']
+      else:
+        buildbot_common.ErrorExit('Unknown architecture: %s' % arch)
+      for nacl_arch in nacl_arches:
+        release_build_dir = os.path.join(OUT_DIR, build_dir, 'Release',
+                                         'gen', 'tc_pnacl_translate',
+                                         'lib-' + nacl_arch)
 
-      buildbot_common.CopyFile(
-          os.path.join(release_build_dir, 'libpnacl_irt_shim.a'),
-          GetPNaClNativeLib(pnacldir, pnacl_libdir_map[arch]))
+        buildbot_common.CopyFile(
+            os.path.join(release_build_dir, 'libpnacl_irt_shim.a'),
+            GetPNaClNativeLib(pnacldir, nacl_arch))
 
-      release_build_dir = os.path.join(OUT_DIR, build_dir, 'Release',
-                                       'gen', 'tc_pnacl_newlib', 'lib')
-      buildbot_common.CopyFile(
-          os.path.join(release_build_dir, 'libminidump_generator.a'),
-          GetPNaClNativeLib(pnacldir, pnacl_libdir_map[arch]))
+        # TODO: should these next couple of bitcode libraries really be
+        # installed to the native library directory instead of bitcode
+        # library directory?
+        release_build_dir = os.path.join(OUT_DIR, build_dir, 'Release',
+                                         'gen', 'tc_pnacl_newlib', 'lib')
+        buildbot_common.CopyFile(
+            os.path.join(release_build_dir, 'libminidump_generator.a'),
+            GetPNaClNativeLib(pnacldir, nacl_arch))
 
-      buildbot_common.CopyFile(
-          os.path.join(release_build_dir, 'libnacl_exception.a'),
-          GetPNaClNativeLib(pnacldir, pnacl_libdir_map[arch]))
+        buildbot_common.CopyFile(
+            os.path.join(release_build_dir, 'libnacl_exception.a'),
+            GetPNaClNativeLib(pnacldir, nacl_arch))
 
     InstallNaClHeaders(GetToolchainNaClInclude('pnacl', pnacldir, 'x86'),
                        'newlib')
