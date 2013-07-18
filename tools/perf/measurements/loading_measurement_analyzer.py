@@ -31,14 +31,17 @@ class LoadingMeasurementAnalyzer(object):
     self.avgs = collections.defaultdict(list)
     self.num_rows_parsed = 0
     self.num_slowest_urls = options.num_slowest_urls
-    self._ParseInputFile(input_file, options)
     if options.rank_csv_file:
       self._ParseRankCsvFile(os.path.expanduser(options.rank_csv_file))
+    self._ParseInputFile(input_file, options)
 
   def _ParseInputFile(self, input_file, options):
     with open(input_file, 'r') as csvfile:
       row_dict = csv.DictReader(csvfile)
       for row in row_dict:
+        if (options.rank_limit and
+            self._GetRank(row['url']) > options.rank_limit):
+          continue
         for key, value in row.iteritems():
           if key in ('url', 'dom_content_loaded_time (ms)', 'load_time (ms)'):
             continue
@@ -103,10 +106,15 @@ def main(argv):
   parser.add_option('--num-slowest-urls', type='int',
                     help='Output this many slowest URLs for each category')
   parser.add_option('--rank-csv-file', help='A CSV file of <rank,url>')
+  parser.add_option('--rank-limit', type='int',
+                    help='Only process pages higher than this rank')
 
   options, args = parser.parse_args(argv[1:])
 
   assert len(args) == 1, 'Must pass exactly one CSV file to analyze'
+  if options.rank_limit and not options.rank_csv_file:
+    print 'Must pass --rank-csv-file with --rank-limit'
+    return 1
 
   LoadingMeasurementAnalyzer(args[0], options).PrintSummary()
 
