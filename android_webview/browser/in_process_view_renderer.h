@@ -5,8 +5,9 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_IN_PROCESS_IN_PROCESS_VIEW_RENDERER_H_
 #define ANDROID_WEBVIEW_BROWSER_IN_PROCESS_IN_PROCESS_VIEW_RENDERER_H_
 
-#include "android_webview/browser/browser_view_renderer.h"
+#include <string>
 
+#include "android_webview/browser/browser_view_renderer.h"
 #include "base/cancelable_callback.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/android/synchronous_compositor_client.h"
@@ -77,6 +78,10 @@ class InProcessViewRenderer : public BrowserViewRenderer,
   // If we call up view invalidate and OnDraw is not called before a deadline,
   // then we keep ticking the SynchronousCompositor so it can make progress.
   void FallbackTickFired();
+
+  // For debug tracing or logging. Return the string representation of this
+  // view renderer's state and the |draw_info| if provided.
+  std::string ToString(AwDrawGLInfo* draw_info) const;
 
   BrowserViewRenderer::Client* client_;
   BrowserViewRenderer::JavaHelper* java_helper_;

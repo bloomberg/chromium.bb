@@ -13,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
+#include "base/strings/stringprintf.h"
 #include "content/public/browser/android/synchronous_compositor.h"
 #include "content/public/browser/web_contents.h"
 #include "skia/ext/refptr.h"
@@ -625,6 +626,42 @@ void InProcessViewRenderer::FallbackTickFired() {
 bool InProcessViewRenderer::CompositeSW(SkCanvas* canvas) {
   DCHECK(compositor_);
   return compositor_->DemandDrawSw(canvas);
+}
+
+std::string InProcessViewRenderer::ToString(AwDrawGLInfo* draw_info) const {
+  std::string str;
+  base::StringAppendF(&str, "visible: %d ", visible_);
+  base::StringAppendF(&str, "dip_scale: %f ", dip_scale_);
+  base::StringAppendF(&str, "page_scale_factor: %f ", page_scale_factor_);
+  base::StringAppendF(
+      &str, "continuous_invalidate: %d ", continuous_invalidate_);
+  base::StringAppendF(&str, "block_invalidates: %d ", block_invalidates_);
+  base::StringAppendF(&str, "view width height: [%d %d] ", width_, height_);
+  base::StringAppendF(&str, "attached_to_window: %d ", attached_to_window_);
+  base::StringAppendF(&str, "hardware_initialized: %d ", hardware_initialized_);
+  base::StringAppendF(&str, "hardware_failed: %d ", hardware_failed_);
+  base::StringAppendF(&str,
+                      "scroll_at_start_of_frame: %s ",
+                      scroll_at_start_of_frame_.ToString().c_str());
+  base::StringAppendF(
+      &str, "scroll_offset_css: %s ", scroll_offset_css_.ToString().c_str());
+  base::StringAppendF(&str,
+                      "overscroll_rounding_error_: %s ",
+                      overscroll_rounding_error_.ToString().c_str());
+  if (draw_info) {
+    base::StringAppendF(&str,
+                        "clip left top right bottom: [%d %d %d %d] ",
+                        draw_info->clip_left,
+                        draw_info->clip_top,
+                        draw_info->clip_right,
+                        draw_info->clip_bottom);
+    base::StringAppendF(&str,
+                        "surface width height: [%d %d] ",
+                        draw_info->width,
+                        draw_info->height);
+    base::StringAppendF(&str, "is_layer: %d ", draw_info->is_layer);
+  }
+  return str;
 }
 
 }  // namespace android_webview
