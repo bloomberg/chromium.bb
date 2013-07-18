@@ -22,13 +22,13 @@ set -o errexit
 
 # This hopefully needs to be updated rarely, it contains pexe from
 # the sandboxed llc/gold builds
-ARCHIVED_PEXE_TRANSLATOR_REV=11698
+ARCHIVED_PEXE_TRANSLATOR_REV=11755
 
 # The frontend from this rev will generate pexes for the archived frontend
 # test. The toolchain downloader expects this information in a specially
 # formatted file. We generate that file in this script from this information,
 # to keep all our versions in one place
-ARCHIVED_TOOLCHAIN_REV=11698
+ARCHIVED_TOOLCHAIN_REV=11755
 
 readonly PNACL_BUILD="pnacl/build.sh"
 readonly UP_DOWN_LOAD="buildbot/file_up_down_load.sh"
@@ -233,29 +233,45 @@ archived-frontend-test() {
   # different toolchain, SCons will attempt to rebuild the IRT.
   ln -s archived_tc/${PNACL_TOOLCHAIN_LABEL} toolchain/${PNACL_TOOLCHAIN_LABEL}
 
-  # Build the pexes with the old frontend
+  # Build the pexes with the old frontend.
   ${SCONS_COMMON} ${SCONS_PICK_TC} \
     do_not_run_tests=1 ${flags} ${targets} || handle-error
-  # The pexes for fast translation tests are identical but scons uses a
-  # different directory.
-  cp -a scons-out/nacl-${arch}-pnacl-pexe-clang \
-    scons-out/nacl-${arch}-pnacl-fast-pexe-clang
 
   # Put the current toolchain back in place.
   rm toolchain/${PNACL_TOOLCHAIN_LABEL}
   mv toolchain/current_tc/${PNACL_TOOLCHAIN_LABEL} \
     toolchain/${PNACL_TOOLCHAIN_LABEL}
 
-  # Translate them with the new translator, and run the tests
+  # Translate them with the new translator, and run the tests.
+  # Use the sandboxed translator, which runs the newer ABI verifier
+  # (building w/ the old frontend only runs the old ABI verifier).
+  flags="${flags} use_sandboxed_translator=1"
+  # The pexes for sandboxed and fast translation tests are identical but scons
+  # uses a different directory.
+  local pexe_dir="scons-out/nacl-${arch}-pnacl-pexe-clang"
+  cp -a ${pexe_dir} "scons-out/nacl-${arch}-pnacl-sbtc-pexe-clang"
+  cp -a ${pexe_dir} "scons-out/nacl-${arch}-pnacl-fast-sbtc-pexe-clang"
+
   echo "@@@BUILD_STEP archived_frontend [${arch}]\
         rev ${ARCHIVED_TOOLCHAIN_REV} RUN@@@"
-  ${SCONS_COMMON} ${SCONS_PICK_TC} \
-    ${flags} ${targets} built_elsewhere=1 || handle-error
-  # Also test the fast-translation option
-  echo "@@@BUILD_STEP archived_frontend [${arch} translate-fast]\
+  # For QEMU limit parallelism to avoid flake.
+  if [[ ${arch} = arm ]] ; then
+    ${SCONS_COMMON_SLOW} ${SCONS_PICK_TC} \
+      ${flags} ${targets} built_elsewhere=1 || handle-error
+    # Also test the fast-translation option
+    echo "@@@BUILD_STEP archived_frontend [${arch} translate-fast]\
         rev ${ARCHIVED_TOOLCHAIN_REV} RUN@@@"
-  ${SCONS_COMMON} ${SCONS_PICK_TC} ${flags} translate_fast=1 built_elsewhere=1 \
-    ${targets} || handle-error
+    ${SCONS_COMMON_SLOW} ${SCONS_PICK_TC} ${flags} translate_fast=1 \
+      built_elsewhere=1 ${targets} || handle-error
+  else
+    ${SCONS_COMMON} ${SCONS_PICK_TC} \
+      ${flags} ${targets} built_elsewhere=1 || handle-error
+    # Also test the fast-translation option
+    echo "@@@BUILD_STEP archived_frontend [${arch} translate-fast]\
+        rev ${ARCHIVED_TOOLCHAIN_REV} RUN@@@"
+    ${SCONS_COMMON} ${SCONS_PICK_TC} ${flags} translate_fast=1 \
+      built_elsewhere=1 ${targets} || handle-error
+  fi
 }
 
 archived-pexe-translator-test() {
