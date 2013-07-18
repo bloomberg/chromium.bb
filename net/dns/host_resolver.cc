@@ -109,9 +109,6 @@ AddressFamily HostResolver::GetDefaultAddressFamily() const {
   return ADDRESS_FAMILY_UNSPECIFIED;
 }
 
-void HostResolver::ProbeIPv6Support() {
-}
-
 void HostResolver::SetDnsClientEnabled(bool enabled) {
 }
 

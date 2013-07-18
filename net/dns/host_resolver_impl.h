@@ -141,7 +141,6 @@ class NET_EXPORT HostResolverImpl
   virtual void CancelRequest(RequestHandle req) OVERRIDE;
   virtual void SetDefaultAddressFamily(AddressFamily address_family) OVERRIDE;
   virtual AddressFamily GetDefaultAddressFamily() const OVERRIDE;
-  virtual void ProbeIPv6Support() OVERRIDE;
   virtual void SetDnsClientEnabled(bool enabled) OVERRIDE;
   virtual HostCache* GetHostCache() OVERRIDE;
   virtual base::Value* GetDnsConfigAsValue() const OVERRIDE;
@@ -150,7 +149,6 @@ class NET_EXPORT HostResolverImpl
   friend class HostResolverImplTest;
   class Job;
   class ProcTask;
-  class IPv6ProbeJob;
   class LoopbackProbeJob;
   class DnsTask;
   class Request;
@@ -187,9 +185,6 @@ class NET_EXPORT HostResolverImpl
   bool ServeFromHosts(const Key& key,
                       const RequestInfo& info,
                       AddressList* addresses);
-
-  // Callback from IPv6 probe activity.
-  void IPv6ProbeSetDefaultAddressFamily(AddressFamily address_family);
 
   // Callback from HaveOnlyLoopbackAddresses probe.
   void SetHaveOnlyLoopbackAddresses(bool result);
@@ -267,10 +262,9 @@ class NET_EXPORT HostResolverImpl
   // Number of consecutive failures of DnsTask, counted when fallback succeeds.
   unsigned num_dns_failures_;
 
-  // Indicate if probing is done after each network change event to set address
-  // family. When false, explicit setting of address family is used and results
-  // of the IPv6 probe job are ignored.
-  bool ipv6_probe_monitoring_;
+  // True if probing is done for each Request to set address family. When false,
+  // explicit setting in |default_address_family_| is used.
+  bool probe_ipv6_support_;
 
   // True iff ProcTask has successfully resolved a hostname known to have IPv6
   // addresses using ADDRESS_FAMILY_UNSPECIFIED. Reset on IP address change.

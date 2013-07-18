@@ -162,12 +162,12 @@ scoped_ptr<net::HostResolver> CreateGlobalHostResolver(net::NetLog* net_log) {
       net::HostResolver::CreateSystemResolver(options, net_log));
 
   // Determine if we should disable IPv6 support.
-  if (!command_line.HasSwitch(switches::kEnableIPv6)) {
-    if (command_line.HasSwitch(switches::kDisableIPv6)) {
-      global_host_resolver->SetDefaultAddressFamily(net::ADDRESS_FAMILY_IPV4);
-    } else {
-      global_host_resolver->ProbeIPv6Support();
-    }
+  if (command_line.HasSwitch(switches::kEnableIPv6)) {
+    // Disable IPv6 probing.
+    global_host_resolver->SetDefaultAddressFamily(
+        net::ADDRESS_FAMILY_UNSPECIFIED);
+  } else if (command_line.HasSwitch(switches::kDisableIPv6)) {
+    global_host_resolver->SetDefaultAddressFamily(net::ADDRESS_FAMILY_IPV4);
   }
 
   // If hostname remappings were specified on the command-line, layer these

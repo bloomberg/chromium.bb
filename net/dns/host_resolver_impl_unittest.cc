@@ -1277,6 +1277,8 @@ class HostResolverImplDnsTest : public HostResolverImplTest {
                                          DefaultLimits(),
                                          DefaultParams(proc_.get()),
                                          NULL));
+    // Disable IPv6 support probing.
+    resolver_->SetDefaultAddressFamily(ADDRESS_FAMILY_UNSPECIFIED);
     resolver_->SetDnsClient(CreateMockDnsClient(DnsConfig(), dns_rules_));
   }
 

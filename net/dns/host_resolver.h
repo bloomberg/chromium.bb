@@ -170,10 +170,6 @@ class NET_EXPORT HostResolver {
   virtual void SetDefaultAddressFamily(AddressFamily address_family) {}
   virtual AddressFamily GetDefaultAddressFamily() const;
 
-  // Continuously observe whether IPv6 is supported, and set the allowable
-  // address family to IPv4 iff IPv6 is not supported.
-  virtual void ProbeIPv6Support();
-
   // Enable or disable the built-in asynchronous DnsClient.
   virtual void SetDnsClientEnabled(bool enabled);
 

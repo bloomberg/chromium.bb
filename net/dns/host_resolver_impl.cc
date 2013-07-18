@@ -922,54 +922,6 @@ class HostResolverImpl::ProcTask
 
 //-----------------------------------------------------------------------------
 
-// Wraps a call to TestIPv6Support to be executed on the WorkerPool as it takes
-// 40-100ms.
-// TODO(szym): Remove altogether, if IPv6ActiveProbe works.
-class HostResolverImpl::IPv6ProbeJob {
- public:
-  IPv6ProbeJob(const base::WeakPtr<HostResolverImpl>& resolver, NetLog* net_log)
-      : resolver_(resolver),
-        net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_IPV6_PROBE_JOB)),
-        result_(false, IPV6_SUPPORT_MAX, OK) {
-    DCHECK(resolver.get());
-    net_log_.BeginEvent(NetLog::TYPE_IPV6_PROBE_RUNNING);
-    const bool kIsSlow = true;
-    base::WorkerPool::PostTaskAndReply(
-        FROM_HERE,
-        base::Bind(&IPv6ProbeJob::DoProbe, base::Unretained(this)),
-        base::Bind(&IPv6ProbeJob::OnProbeComplete, base::Owned(this)),
-        kIsSlow);
-  }
-
-  virtual ~IPv6ProbeJob() {}
-
- private:
-  // Runs on worker thread.
-  void DoProbe() {
-    result_ = TestIPv6Support();
-  }
-
-  void OnProbeComplete() {
-    net_log_.EndEvent(NetLog::TYPE_IPV6_PROBE_RUNNING,
-                      base::Bind(&IPv6SupportResult::ToNetLogValue,
-                                 base::Unretained(&result_)));
-    if (!resolver_.get())
-      return;
-    resolver_->IPv6ProbeSetDefaultAddressFamily(
-        result_.ipv6_supported ? ADDRESS_FAMILY_UNSPECIFIED
-                                      : ADDRESS_FAMILY_IPV4);
-  }
-
-  // Used/set only on origin thread.
-  base::WeakPtr<HostResolverImpl> resolver_;
-
-  BoundNetLog net_log_;
-
-  IPv6SupportResult result_;
-
-  DISALLOW_COPY_AND_ASSIGN(IPv6ProbeJob);
-};
-
 // Wraps a call to HaveOnlyLoopbackAddresses to be executed on the WorkerPool as
 // it takes 40-100ms and should not block initialization.
 class HostResolverImpl::LoopbackProbeJob {
@@ -1747,7 +1699,7 @@ HostResolverImpl::HostResolverImpl(
       probe_weak_ptr_factory_(this),
       received_dns_config_(false),
       num_dns_failures_(0),
-      ipv6_probe_monitoring_(false),
+      probe_ipv6_support_(true),
       resolved_known_ipv6_hostname_(false),
       additional_resolver_flags_(0),
       fallback_to_proctask_(true) {
@@ -1927,19 +1879,11 @@ void HostResolverImpl::CancelRequest(RequestHandle req_handle) {
 void HostResolverImpl::SetDefaultAddressFamily(AddressFamily address_family) {
   DCHECK(CalledOnValidThread());
   default_address_family_ = address_family;
-  ipv6_probe_monitoring_ = false;
+  probe_ipv6_support_ = false;
 }
 
 AddressFamily HostResolverImpl::GetDefaultAddressFamily() const {
   return default_address_family_;
-}
-
-// TODO(szym): Remove this API altogether if IPv6ActiveProbe works.
-void HostResolverImpl::ProbeIPv6Support() {
-  DCHECK(CalledOnValidThread());
-  DCHECK(!ipv6_probe_monitoring_);
-  ipv6_probe_monitoring_ = true;
-  OnIPAddressChanged();
 }
 
 void HostResolverImpl::SetDnsClientEnabled(bool enabled) {
@@ -1986,7 +1930,7 @@ bool HostResolverImpl::ResolveAsIP(const Key& key,
         HOST_RESOLVER_DEFAULT_FAMILY_SET_DUE_TO_NO_IPV6),
             0) << " Unhandled flag";
   bool ipv6_disabled = (default_address_family_ == ADDRESS_FAMILY_IPV4) &&
-      !ipv6_probe_monitoring_;
+      !probe_ipv6_support_;
   *net_error = OK;
   if ((ip_number.size() == kIPv6AddressSize) && ipv6_disabled) {
     *net_error = ERR_NAME_NOT_RESOLVED;
@@ -2083,20 +2027,6 @@ void HostResolverImpl::RemoveJob(Job* job) {
     jobs_.erase(it);
 }
 
-void HostResolverImpl::IPv6ProbeSetDefaultAddressFamily(
-    AddressFamily address_family) {
-  DCHECK(address_family == ADDRESS_FAMILY_UNSPECIFIED ||
-         address_family == ADDRESS_FAMILY_IPV4);
-  if (!ipv6_probe_monitoring_)
-    return;
-  if (default_address_family_ != address_family) {
-    VLOG(1) << "IPv6Probe forced AddressFamily setting to "
-            << ((address_family == ADDRESS_FAMILY_UNSPECIFIED) ?
-                "ADDRESS_FAMILY_UNSPECIFIED" : "ADDRESS_FAMILY_IPV4");
-  }
-  default_address_family_ = address_family;
-}
-
 void HostResolverImpl::SetHaveOnlyLoopbackAddresses(bool result) {
   if (result) {
     additional_resolver_flags_ |= HOST_RESOLVER_LOOPBACK_ONLY;
@@ -2112,7 +2042,7 @@ HostResolverImpl::Key HostResolverImpl::GetEffectiveKeyForRequest(
   AddressFamily effective_address_family = info.address_family();
 
   if (info.address_family() == ADDRESS_FAMILY_UNSPECIFIED) {
-    if (ipv6_probe_monitoring_) {
+    if (probe_ipv6_support_) {
       base::TimeTicks start_time = base::TimeTicks::Now();
       // Google DNS address.
       const uint8 kIPv6Address[] =
@@ -2194,8 +2124,6 @@ void HostResolverImpl::OnIPAddressChanged() {
   probe_weak_ptr_factory_.InvalidateWeakPtrs();
   if (cache_.get())
     cache_->clear();
-  if (ipv6_probe_monitoring_)
-    new IPv6ProbeJob(probe_weak_ptr_factory_.GetWeakPtr(), net_log_);
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   new LoopbackProbeJob(probe_weak_ptr_factory_.GetWeakPtr());
 #endif

@@ -46,10 +46,6 @@ void MappedHostResolver::CancelRequest(RequestHandle req) {
   impl_->CancelRequest(req);
 }
 
-void MappedHostResolver::ProbeIPv6Support() {
-  impl_->ProbeIPv6Support();
-}
-
 HostCache* MappedHostResolver::GetHostCache() {
   return impl_->GetHostCache();
 }
