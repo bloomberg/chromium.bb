@@ -142,6 +142,9 @@ void FullscreenController::ToggleFullscreenModeForTab(WebContents* web_contents,
         if (state_prior_to_tab_fullscreen_ ==
             STATE_BROWSER_FULLSCREEN_WITH_CHROME) {
           EnterFullscreenModeInternal(BROWSER_WITH_CHROME);
+        } else {
+          // Clear the bubble URL, which forces the Mac UI to redraw.
+          UpdateFullscreenExitBubbleContent();
         }
 #endif
         // If currently there is a tab in "tab fullscreen" mode and fullscreen
@@ -191,6 +194,9 @@ void FullscreenController::SetMetroSnapMode(bool enable) {
 
 #if defined(OS_MACOSX)
 void FullscreenController::ToggleFullscreenWithChrome() {
+  // This method cannot be called if simplified fullscreen is enabled.
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  DCHECK(!command_line->HasSwitch(switches::kEnableSimplifiedFullscreen));
   ToggleFullscreenModeInternal(BROWSER_WITH_CHROME);
 }
 #endif

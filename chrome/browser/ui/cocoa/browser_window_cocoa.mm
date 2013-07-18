@@ -49,6 +49,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/web_app_ui.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/crash_keys.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/native_web_keyboard_event.h"
@@ -370,6 +371,14 @@ void BrowserWindowCocoa::Restore() {
 
 void BrowserWindowCocoa::EnterFullscreen(
       const GURL& url, FullscreenExitBubbleType bubble_type) {
+  // When simplified fullscreen is enabled, always enter normal fullscreen.
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kEnableSimplifiedFullscreen)) {
+    [controller_ enterFullscreen];
+    [controller_ updateFullscreenExitBubbleURL:url bubbleType:bubble_type];
+    return;
+  }
+
   [controller_ enterPresentationModeForURL:url
                                 bubbleType:bubble_type];
 }
@@ -621,6 +630,10 @@ void BrowserWindowCocoa::OpenTabpose() {
 }
 
 void BrowserWindowCocoa::EnterFullscreenWithChrome() {
+  // This method cannot be called if simplified fullscreen is enabled.
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  DCHECK(!command_line->HasSwitch(switches::kEnableSimplifiedFullscreen));
+
   CHECK(chrome::mac::SupportsSystemFullscreen());
   if ([controller_ inPresentationMode])
     [controller_ exitPresentationMode];
@@ -629,10 +642,20 @@ void BrowserWindowCocoa::EnterFullscreenWithChrome() {
 }
 
 bool BrowserWindowCocoa::IsFullscreenWithChrome() {
+  // The WithChrome mode does not exist when simplified fullscreen is enabled.
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kEnableSimplifiedFullscreen))
+    return false;
   return IsFullscreen() && ![controller_ inPresentationMode];
 }
 
 bool BrowserWindowCocoa::IsFullscreenWithoutChrome() {
+  // Presentation mode does not exist if simplified fullscreen is enabled.  The
+  // WithoutChrome mode simply maps to whether or not the window is fullscreen.
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kEnableSimplifiedFullscreen))
+    return IsFullscreen();
+
   return IsFullscreen() && [controller_ inPresentationMode];
 }
 
