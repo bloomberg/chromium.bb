@@ -107,6 +107,7 @@ extern const char kDisableIPPooling[];
 extern const char kDisableLocalFirstLoadNTP[];
 extern const char kDisableMinimizeOnSecondLauncherItemClick[];
 extern const char kDisableNTPOtherSessionsMenu[];
+extern const char kDisablePasswordAutofillPublicSuffixDomainMatching[];
 extern const char kDisablePopupBlocking[];
 extern const char kDisablePreconnect[];
 extern const char kDisablePrerenderLocalPredictor[];

@@ -360,6 +360,11 @@ const char kDisableMinimizeOnSecondLauncherItemClick[] =
 // Disables the menu on the NTP for accessing sessions from other devices.
 const char kDisableNTPOtherSessionsMenu[]   = "disable-ntp-other-sessions-menu";
 
+// Disable using a public suffix based domain matching for autofill of
+// passwords.
+const char kDisablePasswordAutofillPublicSuffixDomainMatching[] =
+    "disable-password-autofill-public-suffix-domain-matching";
+
 // Disable pop-up blocking.
 const char kDisablePopupBlocking[]          = "disable-popup-blocking";
 

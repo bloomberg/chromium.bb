@@ -152,7 +152,7 @@ TEST_F(PasswordStoreTest, IgnoreOldWwwGoogleLogins) {
       true, true, cutoff - 1 },
     // A form on https://www.google.com/ older than the cutoff. Will be ignored.
     { PasswordForm::SCHEME_HTML,
-      "https://www.google.com/",
+      "https://www.google.com",
       "https://www.google.com/origin",
       "https://www.google.com/action",
       L"submit_element",

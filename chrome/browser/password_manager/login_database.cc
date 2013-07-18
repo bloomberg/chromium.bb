@@ -83,6 +83,22 @@ bool PortMatches(const scoped_ptr<PasswordForm>& found,
   return found_port == form_port;
 }
 
+bool IsPublicSuffixDomainMatchingEnabled() {
+#if defined(OS_ANDROID)
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnablePasswordAutofillPublicSuffixDomainMatching)) {
+    return true;
+  }
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisablePasswordAutofillPublicSuffixDomainMatching)) {
+    return false;
+  }
+  return true;
+#else
+  return false;
+#endif
+}
+
 }  // namespace
 
 LoginDatabase::LoginDatabase() : public_suffix_domain_matching_(false) {
@@ -140,8 +156,7 @@ bool LoginDatabase::Init(const base::FilePath& db_path) {
     return false;
   }
 
-  public_suffix_domain_matching_ = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnablePasswordAutofillPublicSuffixDomainMatching);
+  public_suffix_domain_matching_ = IsPublicSuffixDomainMatchingEnabled();
 
   return true;
 }
