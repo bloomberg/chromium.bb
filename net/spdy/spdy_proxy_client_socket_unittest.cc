@@ -1176,7 +1176,7 @@ TEST_P(SpdyProxyClientSocketTest, WritePendingOnClose) {
   scoped_ptr<SpdyFrame> conn(ConstructConnectRequestFrame());
   MockWrite writes[] = {
     CreateMockWrite(*conn, 0, SYNCHRONOUS),
-    MockWrite(ASYNC, ERR_IO_PENDING, 2),
+    MockWrite(ASYNC, ERR_ABORTED, 2),
   };
 
   scoped_ptr<SpdyFrame> resp(ConstructConnectReplyFrame());
@@ -1267,7 +1267,7 @@ TEST_P(SpdyProxyClientSocketTest, RstWithReadAndWritePending) {
   scoped_ptr<SpdyFrame> conn(ConstructConnectRequestFrame());
   MockWrite writes[] = {
     CreateMockWrite(*conn, 0, SYNCHRONOUS),
-    MockWrite(ASYNC, ERR_IO_PENDING, 2),
+    MockWrite(ASYNC, ERR_ABORTED, 2),
   };
 
   scoped_ptr<SpdyFrame> resp(ConstructConnectReplyFrame());
@@ -1390,7 +1390,7 @@ TEST_P(SpdyProxyClientSocketTest, RstWithReadAndWritePendingDelete) {
   scoped_ptr<SpdyFrame> conn(ConstructConnectRequestFrame());
   MockWrite writes[] = {
     CreateMockWrite(*conn, 0, SYNCHRONOUS),
-    MockWrite(ASYNC, ERR_IO_PENDING, 2),
+    MockWrite(ASYNC, ERR_ABORTED, 2),
   };
 
   scoped_ptr<SpdyFrame> resp(ConstructConnectReplyFrame());

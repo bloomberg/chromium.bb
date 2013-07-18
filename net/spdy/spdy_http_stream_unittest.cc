@@ -254,14 +254,6 @@ TEST_P(SpdyHttpStreamTest, LoadTimingTwoRequests) {
   scoped_ptr<SpdyHttpStream> http_stream1(
       new SpdyHttpStream(session_.get(), true));
 
-  ASSERT_EQ(OK,
-            http_stream1->InitializeStream(&request1, DEFAULT_PRIORITY,
-                                           BoundNetLog(),
-                                           CompletionCallback()));
-  EXPECT_EQ(ERR_IO_PENDING, http_stream1->SendRequest(headers1, &response1,
-                                                      callback1.callback()));
-  EXPECT_TRUE(HasSpdySession(http_session_->spdy_session_pool(), key));
-
   HttpRequestInfo request2;
   request2.method = "GET";
   request2.url = GURL("http://www.google.com/");
@@ -271,15 +263,15 @@ TEST_P(SpdyHttpStreamTest, LoadTimingTwoRequests) {
   scoped_ptr<SpdyHttpStream> http_stream2(
       new SpdyHttpStream(session_.get(), true));
 
+  // First write.
   ASSERT_EQ(OK,
-            http_stream2->InitializeStream(&request2, DEFAULT_PRIORITY,
+            http_stream1->InitializeStream(&request1, DEFAULT_PRIORITY,
                                            BoundNetLog(),
                                            CompletionCallback()));
-  EXPECT_EQ(ERR_IO_PENDING, http_stream2->SendRequest(headers2, &response2,
-                                                      callback2.callback()));
+  EXPECT_EQ(ERR_IO_PENDING, http_stream1->SendRequest(headers1, &response1,
+                                                      callback1.callback()));
   EXPECT_TRUE(HasSpdySession(http_session_->spdy_session_pool(), key));
 
-  // First write.
   deterministic_data()->RunFor(1);
   EXPECT_LE(0, callback1.WaitForResult());
 
@@ -290,6 +282,14 @@ TEST_P(SpdyHttpStreamTest, LoadTimingTwoRequests) {
   EXPECT_FALSE(http_stream2->GetLoadTimingInfo(&load_timing_info2));
 
   // Second write.
+  ASSERT_EQ(OK,
+            http_stream2->InitializeStream(&request2, DEFAULT_PRIORITY,
+                                           BoundNetLog(),
+                                           CompletionCallback()));
+  EXPECT_EQ(ERR_IO_PENDING, http_stream2->SendRequest(headers2, &response2,
+                                                      callback2.callback()));
+  EXPECT_TRUE(HasSpdySession(http_session_->spdy_session_pool(), key));
+
   deterministic_data()->RunFor(1);
   EXPECT_LE(0, callback2.WaitForResult());
   TestLoadTimingReused(*http_stream2);

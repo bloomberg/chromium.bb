@@ -54,8 +54,6 @@ int SpdyHttpStream::InitializeStream(const HttpRequestInfo* request_info,
                                      const BoundNetLog& stream_net_log,
                                      const CompletionCallback& callback) {
   DCHECK(!stream_.get());
-  if (spdy_session_->IsClosed())
-   return ERR_CONNECTION_CLOSED;
 
   request_info_ = request_info;
   if (request_info_->method == "GET") {
