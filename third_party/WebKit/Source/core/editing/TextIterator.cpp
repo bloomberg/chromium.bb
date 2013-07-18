@@ -71,7 +71,10 @@ public:
     ~SearchBuffer();
 
     // Returns number of characters appended; guaranteed to be in the range [1, length].
-    size_t append(const UChar*, size_t length);
+    template<typename CharType>
+    void append(const CharType*, size_t length);
+    size_t numberOfCharactersJustAppended() const { return m_numberOfCharactersJustAppended; }
+
     bool needsMoreContext() const;
     void prependContext(const UChar*, size_t length);
     void reachedBreak();
@@ -91,6 +94,7 @@ private:
     Vector<UChar> m_buffer;
     size_t m_overlap;
     size_t m_prefixLength;
+    size_t m_numberOfCharactersJustAppended;
     bool m_atBreak;
     bool m_needsMoreContext;
 
@@ -230,7 +234,6 @@ TextIterator::TextIterator(const Range* r, TextIteratorBehavior behavior)
     , m_endContainer(0)
     , m_endOffset(0)
     , m_positionNode(0)
-    , m_textCharacters(0)
     , m_textLength(0)
     , m_remainingTextBox(0)
     , m_firstLetterText(0)
@@ -425,19 +428,40 @@ UChar TextIterator::characterAt(unsigned index) const
     if (!(index < static_cast<unsigned>(length())))
         return 0;
 
-    if (!m_textCharacters)
-        return string()[startOffset() + index];
+    if (m_singleCharacterBuffer) {
+        ASSERT(!index);
+        ASSERT(length() == 1);
+        return m_singleCharacterBuffer;
+    }
 
-    return m_textCharacters[index];
+    return string()[startOffset() + index];
 }
 
-void TextIterator::appendTextToStringBuilder(StringBuilder& builder, unsigned maxLenth) const
+String TextIterator::substring(unsigned position, unsigned length) const
 {
-    unsigned lengthToAppend = std::min(static_cast<unsigned>(length()), maxLenth);
-    if (!m_textCharacters)
-        builder.append(string(), startOffset(), lengthToAppend);
-    else
-        builder.append(bloatedCharacters(), lengthToAppend);
+    ASSERT_WITH_SECURITY_IMPLICATION(position < static_cast<unsigned>(this->length()));
+    ASSERT_WITH_SECURITY_IMPLICATION(position + length <= static_cast<unsigned>(this->length()));
+    if (!length)
+        return emptyString();
+    if (m_singleCharacterBuffer) {
+        ASSERT(!position);
+        ASSERT(length == 1);
+        return String(&m_singleCharacterBuffer, 1);
+    }
+    return string().substring(startOffset() + position, length);
+}
+
+void TextIterator::appendTextToStringBuilder(StringBuilder& builder, unsigned position, unsigned maxLength) const
+{
+    unsigned lengthToAppend = std::min(static_cast<unsigned>(length()) - position, maxLength);
+    if (!lengthToAppend)
+        return;
+    if (m_singleCharacterBuffer) {
+        ASSERT(!position);
+        builder.append(m_singleCharacterBuffer);
+    } else {
+        builder.append(string(), startOffset() + position, lengthToAppend);
+    }
 }
 
 bool TextIterator::handleTextNode()
@@ -668,7 +692,7 @@ bool TextIterator::handleReplacedElement()
     m_positionOffsetBaseNode = m_node;
     m_positionStartOffset = 0;
     m_positionEndOffset = 1;
-    m_textCharacters = 0;
+    m_singleCharacterBuffer = 0;
 
     if (m_emitsImageAltText && renderer->isImage() && renderer->isRenderImage()) {
         m_text = toRenderImage(renderer)->altText();
@@ -981,7 +1005,7 @@ void TextIterator::emitCharacter(UChar c, Node* textNode, Node* offsetBaseNode, 
  
     // remember information with which to construct the TextIterator::characters() and length()
     m_singleCharacterBuffer = c;
-    m_textCharacters = &m_singleCharacterBuffer;
+    ASSERT(m_singleCharacterBuffer);
     m_textLength = 1;
 
     // remember some iteration state
@@ -1002,7 +1026,7 @@ void TextIterator::emitText(Node* textNode, RenderObject* renderObject, int text
     m_positionOffsetBaseNode = 0;
     m_positionStartOffset = textStartOffset;
     m_positionEndOffset = textEndOffset;
-    m_textCharacters = 0;
+    m_singleCharacterBuffer = 0;
     m_textLength = textEndOffset - textStartOffset;
     m_lastCharacter = m_text[textEndOffset - 1];
 
@@ -1406,15 +1430,15 @@ void CharacterIterator::advance(int count)
 
 String CharacterIterator::string(int numChars)
 {
-    Vector<UChar> result;
-    result.reserveInitialCapacity(numChars);
+    StringBuilder result;
+    result.reserveCapacity(numChars);
     while (numChars > 0 && !atEnd()) {
         int runSize = min(numChars, length());
-        result.append(bloatedCharacters(), runSize);
+        m_textIterator.appendTextToStringBuilder(result, m_runOffset, runSize);
         numChars -= runSize;
         advance(runSize);
     }
-    return String::adopt(result);
+    return result.toString();
 }
 
 static PassRefPtr<Range> characterSubrange(CharacterIterator& it, int offset, int length)
@@ -1499,31 +1523,22 @@ void BackwardsCharacterIterator::advance(int count)
 
 // --------
 
-WordAwareIterator::WordAwareIterator(const Range* r)
-    : m_previousText(0)
-    , m_didLookAhead(true) // so we consider the first chunk from the text iterator
-    , m_textIterator(r)
+WordAwareIterator::WordAwareIterator(const Range* range)
+    : m_didLookAhead(true) // So we consider the first chunk from the text iterator.
+    , m_textIterator(range)
 {
-    advance(); // get in position over the first chunk of text
+    advance(); // Get in position over the first chunk of text.
 }
 
 WordAwareIterator::~WordAwareIterator()
 {
 }
 
-// We're always in one of these modes:
-// - The current chunk in the text iterator is our current chunk
-//      (typically its a piece of whitespace, or text that ended with whitespace)
-// - The previous chunk in the text iterator is our current chunk
-//      (we looked ahead to the next chunk and found a word boundary)
-// - We built up our own chunk of text from many chunks from the text iterator
-
 // FIXME: Performance could be bad for huge spans next to each other that don't fall on word boundaries.
 
 void WordAwareIterator::advance()
 {
-    m_previousText = 0;
-    m_buffer.clear();      // toss any old buffer we built up
+    m_buffer.clear();
 
     // If last time we did a look-ahead, start with that looked-ahead chunk now
     if (!m_didLookAhead) {
@@ -1532,9 +1547,10 @@ void WordAwareIterator::advance()
     }
     m_didLookAhead = false;
 
-    // Go to next non-empty chunk 
+    // Go to next non-empty chunk.
     while (!m_textIterator.atEnd() && m_textIterator.length() == 0)
         m_textIterator.advance();
+
     m_range = m_textIterator.range();
 
     if (m_textIterator.atEnd())
@@ -1542,28 +1558,22 @@ void WordAwareIterator::advance()
     
     while (1) {
         // If this chunk ends in whitespace we can just use it as our chunk.
-        if (isSpaceOrNewline(m_textIterator.bloatedCharacters()[m_textIterator.length() - 1]))
+        if (isSpaceOrNewline(m_textIterator.characterAt(m_textIterator.length() - 1)))
             return;
 
-        // If this is the first chunk that failed, save it in previousText before look ahead
-        if (m_buffer.isEmpty()) {
-            m_previousText = m_textIterator.bloatedCharacters();
-            m_previousLength = m_textIterator.length();
-        }
+        // If this is the first chunk that failed, save it in m_buffer before look ahead.
+        if (m_buffer.isEmpty())
+            m_textIterator.appendTextTo(m_buffer);
 
-        // Look ahead to next chunk.  If it is whitespace or a break, we can use the previous stuff
+        // Look ahead to next chunk. If it is whitespace or a break, we can use the previous stuff
         m_textIterator.advance();
-        if (m_textIterator.atEnd() || m_textIterator.length() == 0 || isSpaceOrNewline(m_textIterator.bloatedCharacters()[0])) {
+        if (m_textIterator.atEnd() || !m_textIterator.length() || isSpaceOrNewline(m_textIterator.characterAt(0))) {
             m_didLookAhead = true;
             return;
         }
 
-        if (m_buffer.isEmpty()) {
-            // Start gobbling chunks until we get to a suitable stopping point
-            m_buffer.append(m_previousText, m_previousLength);
-            m_previousText = 0;
-        }
-        m_buffer.append(m_textIterator.bloatedCharacters(), m_textIterator.length());
+        // Start gobbling chunks until we get to a suitable stopping point
+        m_textIterator.appendTextTo(m_buffer);
         int exception = 0;
         m_range->setEnd(m_textIterator.range()->endContainer(), m_textIterator.range()->endOffset(), exception);
     }
@@ -1573,18 +1583,21 @@ int WordAwareIterator::length() const
 {
     if (!m_buffer.isEmpty())
         return m_buffer.size();
-    if (m_previousText)
-        return m_previousLength;
     return m_textIterator.length();
 }
 
-const UChar* WordAwareIterator::bloatedCharacters() const
+String WordAwareIterator::substring(unsigned position, unsigned length) const
 {
     if (!m_buffer.isEmpty())
-        return m_buffer.data();
-    if (m_previousText)
-        return m_previousText;
-    return m_textIterator.bloatedCharacters();
+        return String(m_buffer.data() + position, length);
+    return m_textIterator.substring(position, length);
+}
+
+UChar WordAwareIterator::characterAt(unsigned index) const
+{
+    if (!m_buffer.isEmpty())
+        return m_buffer[index];
+    return m_textIterator.characterAt(index);
 }
 
 // --------
@@ -1893,6 +1906,7 @@ static inline bool isSeparator(UChar32 character)
 inline SearchBuffer::SearchBuffer(const String& target, FindOptions options)
     : m_options(options)
     , m_prefixLength(0)
+    , m_numberOfCharactersJustAppended(0)
     , m_atBreak(true)
     , m_needsMoreContext(options & AtWordStarts)
     , m_targetRequiresKanaWorkaround(containsKanaLetters(target))
@@ -1953,7 +1967,8 @@ inline SearchBuffer::~SearchBuffer()
     unlockSearcher();
 }
 
-inline size_t SearchBuffer::append(const UChar* characters, size_t length)
+template<typename CharType>
+inline void SearchBuffer::append(const CharType* characters, size_t length)
 {
     ASSERT(length);
 
@@ -1970,9 +1985,11 @@ inline size_t SearchBuffer::append(const UChar* characters, size_t length)
     size_t oldLength = m_buffer.size();
     size_t usableLength = min(m_buffer.capacity() - oldLength, length);
     ASSERT(usableLength);
-    m_buffer.append(characters, usableLength);
-    foldQuoteMarksAndSoftHyphens(m_buffer.data() + oldLength, usableLength);
-    return usableLength;
+    m_buffer.resize(oldLength + usableLength);
+    UChar* destination = m_buffer.data() + oldLength;
+    StringImpl::copyChars(destination, characters, usableLength);
+    foldQuoteMarksAndSoftHyphens(destination, usableLength);
+    m_numberOfCharactersJustAppended = usableLength;
 }
 
 inline bool SearchBuffer::needsMoreContext() const
@@ -2388,7 +2405,8 @@ static size_t findPlainText(CharacterIterator& it, const String& target, FindOpt
     }
 
     while (!it.atEnd()) {
-        it.advance(buffer.append(it.bloatedCharacters(), it.length()));
+        it.appendTextTo(buffer);
+        it.advance(buffer.numberOfCharactersJustAppended());
 tryAgain:
         size_t matchStartOffset;
         if (size_t newMatchLength = buffer.search(matchStartOffset)) {

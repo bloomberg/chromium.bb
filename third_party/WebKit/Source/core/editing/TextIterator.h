@@ -93,10 +93,26 @@ public:
     void advance();
     
     int length() const { return m_textLength; }
-    const UChar* bloatedCharacters() const { return m_textCharacters ? m_textCharacters : m_text.bloatedCharacters() + startOffset(); }
     UChar characterAt(unsigned index) const;
-    void appendTextToStringBuilder(StringBuilder&, unsigned maxLength = UINT_MAX) const;
-    
+    String substring(unsigned position, unsigned length) const;
+    void appendTextToStringBuilder(StringBuilder&, unsigned position = 0, unsigned maxLength = UINT_MAX) const;
+
+    template<typename BufferType>
+    void appendTextTo(BufferType& output, unsigned position = 0)
+    {
+        ASSERT_WITH_SECURITY_IMPLICATION(position <= static_cast<unsigned>(length()));
+        unsigned lengthToAppend = length() - position;
+        if (!lengthToAppend)
+            return;
+        if (m_singleCharacterBuffer) {
+            ASSERT(!position);
+            ASSERT(length() == 1);
+            output.append(&m_singleCharacterBuffer, 1);
+        } else {
+            string().appendTo(output, startOffset() + position, lengthToAppend);
+        }
+    }
+
     PassRefPtr<Range> range() const;
     Node* node() const;
      
@@ -142,9 +158,7 @@ private:
     mutable Node* m_positionOffsetBaseNode;
     mutable int m_positionStartOffset;
     mutable int m_positionEndOffset;
-    const UChar* m_textCharacters; // If null, then use m_text for character data.
     int m_textLength;
-    // Hold string m_textCharacters points to so we ensure it won't be deleted.
     String m_text;
 
     // Used when there is still some pending text from the current node; when these
@@ -161,8 +175,9 @@ private:
     Node* m_lastTextNode;    
     bool m_lastTextNodeEndedWithCollapsedSpace;
     UChar m_lastCharacter;
-    
+
     // Used for whitespace characters that aren't in the DOM, so we can point at them.
+    // If non-zero, overrides m_text.
     UChar m_singleCharacterBuffer;
     
     // Used when text boxes are out of order (Hebrew/Arabic w/ embeded LTR text)
@@ -278,13 +293,16 @@ public:
     bool atEnd() const { return m_textIterator.atEnd(); }
     
     int length() const { return m_textIterator.length() - m_runOffset; }
-    const UChar* bloatedCharacters() const { return m_textIterator.bloatedCharacters() + m_runOffset; }
     UChar characterAt(unsigned index) const { return m_textIterator.characterAt(m_runOffset + index); }
+
+    template<typename BufferType>
+    void appendTextTo(BufferType& output) { m_textIterator.appendTextTo(output, m_runOffset); }
+
     String string(int numChars);
     
     int characterOffset() const { return m_offset; }
     PassRefPtr<Range> range() const;
-        
+
 private:
     int m_offset;
     int m_runOffset;
@@ -321,25 +339,18 @@ public:
     bool atEnd() const { return !m_didLookAhead && m_textIterator.atEnd(); }
     void advance();
     
+    String substring(unsigned position, unsigned length) const;
+    UChar characterAt(unsigned index) const;
     int length() const;
-    const UChar* bloatedCharacters() const;
-    
+
     // Range of the text we're currently returning
     PassRefPtr<Range> range() const { return m_range; }
 
 private:
-    // text from the previous chunk from the textIterator
-    const UChar* m_previousText;
-    int m_previousLength;
-
-    // many chunks from textIterator concatenated
     Vector<UChar> m_buffer;
-    
     // Did we have to look ahead in the textIterator to confirm the current chunk?
     bool m_didLookAhead;
-
     RefPtr<Range> m_range;
-
     TextIterator m_textIterator;
 };
 

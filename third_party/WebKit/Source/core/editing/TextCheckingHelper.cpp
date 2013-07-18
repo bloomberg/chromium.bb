@@ -237,15 +237,14 @@ String TextCheckingHelper::findFirstMisspelling(int& firstMisspellingOffset, boo
     int currentChunkOffset = 0;
 
     while (!it.atEnd()) {
-        const UChar* chars = it.bloatedCharacters();
-        int len = it.length();
+        int length = it.length();
         
         // Skip some work for one-space-char hunks
-        if (!(len == 1 && chars[0] == ' ')) {
+        if (!(length == 1 && it.characterAt(0) == ' ')) {
             
             int misspellingLocation = -1;
             int misspellingLength = 0;
-            m_client->textChecker()->checkSpellingOfString(String(chars, len), &misspellingLocation, &misspellingLength);
+            m_client->textChecker()->checkSpellingOfString(it.substring(0, length), &misspellingLocation, &misspellingLength);
 
             // 5490627 shows that there was some code path here where the String constructor below crashes.
             // We don't know exactly what combination of bad input caused this, so we're making this much
@@ -253,11 +252,11 @@ String TextCheckingHelper::findFirstMisspelling(int& firstMisspellingOffset, boo
             ASSERT(misspellingLength >= 0);
             ASSERT(misspellingLocation >= -1);
             ASSERT(!misspellingLength || misspellingLocation >= 0);
-            ASSERT(misspellingLocation < len);
-            ASSERT(misspellingLength <= len);
-            ASSERT(misspellingLocation + misspellingLength <= len);
+            ASSERT(misspellingLocation < length);
+            ASSERT(misspellingLength <= length);
+            ASSERT(misspellingLocation + misspellingLength <= length);
             
-            if (misspellingLocation >= 0 && misspellingLength > 0 && misspellingLocation < len && misspellingLength <= len && misspellingLocation + misspellingLength <= len) {
+            if (misspellingLocation >= 0 && misspellingLength > 0 && misspellingLocation < length && misspellingLength <= length && misspellingLocation + misspellingLength <= length) {
                 
                 // Compute range of misspelled word
                 RefPtr<Range> misspellingRange = TextIterator::subrange(m_range.get(), currentChunkOffset + misspellingLocation, misspellingLength);
@@ -265,7 +264,7 @@ String TextCheckingHelper::findFirstMisspelling(int& firstMisspellingOffset, boo
                 // Remember first-encountered misspelling and its offset.
                 if (!firstMisspelling) {
                     firstMisspellingOffset = currentChunkOffset + misspellingLocation;
-                    firstMisspelling = String(chars + misspellingLocation, misspellingLength);
+                    firstMisspelling = it.substring(misspellingLocation, misspellingLength);
                     firstMisspellingRange = misspellingRange;
                 }
 
@@ -277,8 +276,8 @@ String TextCheckingHelper::findFirstMisspelling(int& firstMisspellingOffset, boo
                     break;
             }
         }
-        
-        currentChunkOffset += len;
+
+        currentChunkOffset += length;
         it.advance();
     }
     

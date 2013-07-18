@@ -54,7 +54,6 @@ using namespace WebCore;
 
 namespace WebKit {
 
-// This function is copied from /WebKit/mac/Misc/WebNSAttributedStringExtras.mm.
 NSAttributedString* WebSubstringUtil::attributedSubstringInRange(WebFrame* webFrame, size_t location, size_t length)
 {
     Frame* frame = static_cast<WebFrameImpl*>(webFrame)->frame();
@@ -100,10 +99,11 @@ NSAttributedString* WebSubstringUtil::attributedSubstringInRange(WebFrame* webFr
         else
             [attrs removeObjectForKey:NSBackgroundColorAttributeName];
 
+        Vector<UChar> characters;
+        it.appendTextTo(characters);
         NSString* substring =
-            [[[NSString alloc] initWithCharactersNoCopy:const_cast<UChar*>(it.bloatedCharacters())
-                                                 length:it.length()
-                                           freeWhenDone:NO] autorelease];
+            [[[NSString alloc] initWithCharacters:characters.data()
+                                           length:characters.size()] autorelease];
         [string replaceCharactersInRange:NSMakeRange(position, 0)
                               withString:substring];
         [string setAttributes:attrs range:NSMakeRange(position, numCharacters)];

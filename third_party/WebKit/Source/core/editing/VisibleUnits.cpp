@@ -464,12 +464,12 @@ static VisiblePosition previousBoundary(const VisiblePosition& c, BoundarySearch
         forwardsScanRange->setStart(end.deprecatedNode(), end.deprecatedEditingOffset(), ec);
         TextIterator forwardsIterator(forwardsScanRange.get());
         while (!forwardsIterator.atEnd()) {
-            const UChar* characters = forwardsIterator.bloatedCharacters();
-            int length = forwardsIterator.length();
-            int i = endOfFirstWordBoundaryContext(characters, length);
-            string.append(characters, i);
+            Vector<UChar, 1024> characters;
+            forwardsIterator.appendTextTo(characters);
+            int i = endOfFirstWordBoundaryContext(characters.data(), characters.size());
+            string.append(characters.data(), i);
             suffixLength += i;
-            if (i < length)
+            if (static_cast<unsigned>(i) < characters.size())
                 break;
             forwardsIterator.advance();
         }
@@ -563,12 +563,12 @@ static VisiblePosition nextBoundary(const VisiblePosition& c, BoundarySearchFunc
         // Keep asking the iterator for chunks until the search function
         // returns an end value not equal to the length of the string passed to it.
         if (!inTextSecurityMode)
-            string.append(it.bloatedCharacters(), it.length());
+            it.appendTextTo(string);
         else {
             // Treat bullets used in the text security mode as regular characters when looking for boundaries
-            String iteratorString(it.bloatedCharacters(), it.length());
-            iteratorString.fill('x');
-            iteratorString.appendTo(string);
+            Vector<UChar, 1024> iteratorString;
+            iteratorString.fill('x', it.length());
+            string.append(iteratorString.data(), iteratorString.size());
         }
         next = searchFunction(string.data(), string.size(), prefixLength, MayHaveMoreContext, needMoreContext);
         if (next != string.size())

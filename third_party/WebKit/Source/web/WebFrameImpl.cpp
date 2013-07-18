@@ -230,7 +230,7 @@ static void frameContentAsPlainText(size_t maxChars, Frame* frame, StringBuilder
         // size and also copy the results directly into a wstring, avoiding the
         // string conversion.
         for (TextIterator it(range.get()); !it.atEnd(); it.advance()) {
-            it.appendTextToStringBuilder(output, maxChars - output.length());
+            it.appendTextToStringBuilder(output, 0, maxChars - output.length());
             if (output.length() >= maxChars)
                 return; // Filled up the buffer.
         }
