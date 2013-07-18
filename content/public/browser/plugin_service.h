@@ -20,9 +20,6 @@ class FilePath;
 
 namespace webkit {
 struct WebPluginInfo;
-namespace npapi {
-class PluginList;
-}
 }
 
 namespace content {
@@ -118,23 +115,37 @@ class PluginService {
   // crashed more than a set number of times in a set time period.
   virtual bool IsPluginUnstable(const base::FilePath& plugin_path) = 0;
 
-  // The following functions are wrappers around webkit::npapi::PluginList.
-  // These must be used instead of those in order to ensure that we have a
-  // single global list in the component build and so that we don't
-  // accidentally load plugins in the wrong process or thread. Refer to
-  // PluginList for further documentation of these functions.
+  // Cause the plugin list to refresh next time they are accessed, regardless
+  // of whether they are already loaded.
   virtual void RefreshPlugins() = 0;
+
+  // Add/Remove an extra plugin to load when we actually do the loading.  Must
+  // be called before the plugins have been loaded.
   virtual void AddExtraPluginPath(const base::FilePath& path) = 0;
-  virtual void AddExtraPluginDir(const base::FilePath& path) = 0;
   virtual void RemoveExtraPluginPath(const base::FilePath& path) = 0;
-  virtual void UnregisterInternalPlugin(const base::FilePath& path) = 0;
+
+  // Same as above, but specifies a directory in which to search for plugins.
+  virtual void AddExtraPluginDir(const base::FilePath& path) = 0;
+
+  // Register an internal plugin with the specified plugin information.
+  // An internal plugin must be registered before it can
+  // be loaded using PluginList::LoadPlugin().
+  // If |add_at_beginning| is true the plugin will be added earlier in
+  // the list so that it can override the MIME types of older registrations.
   virtual void RegisterInternalPlugin(const webkit::WebPluginInfo& info,
                                       bool add_at_beginning) = 0;
+
+  // Removes a specified internal plugin from the list. The search will match
+  // on the path from the version info previously registered.
+  virtual void UnregisterInternalPlugin(const base::FilePath& path) = 0;
+
+  // Gets a list of all the registered internal plugins.
   virtual void GetInternalPlugins(
       std::vector<webkit::WebPluginInfo>* plugins) = 0;
 
-  virtual void SetPluginListForTesting(
-      webkit::npapi::PluginList* plugin_list) = 0;
+  // This is equivalent to specifying kDisablePluginsDiscovery, but is useful
+  // for unittests.
+  virtual void DisablePluginsDiscoveryForTesting() = 0;
 
 #if defined(OS_MACOSX)
   // Called when the application is made active so that modal plugin windows can

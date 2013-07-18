@@ -71,20 +71,6 @@
         }],
       ],
     },
-    {
-      'target_name': 'test_mock_plugin_list',
-      'type': 'static_library',
-      'dependencies': [
-        'plugins_common'
-      ],
-      'include_dirs': [
-        '../..',
-      ],
-      'sources': [
-        'npapi/mock_plugin_list.cc',
-        'npapi/mock_plugin_list.h',
-      ]
-    },
   ],
   'conditions': [
     ['OS!="android" and OS!="ios"', {

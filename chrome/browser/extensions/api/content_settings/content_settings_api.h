@@ -68,10 +68,6 @@ class ContentSettingsContentSettingGetResourceIdentifiersFunction
   // Callback method that gets executed when |plugins|
   // are asynchronously fetched.
   void OnGotPlugins(const std::vector<webkit::WebPluginInfo>& plugins);
-
-  // Used to override the global plugin list in tests.
-  static void SetPluginsForTesting(
-      const std::vector<webkit::WebPluginInfo>* plugins);
 };
 
 }  // namespace extensions

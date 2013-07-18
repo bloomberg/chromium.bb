@@ -99,8 +99,6 @@ class PluginList {
 
   // Removes a specified internal plugin from the list. The search will match
   // on the path from the version info previously registered.
-  //
-  // This is generally only necessary for tests.
   void UnregisterInternalPlugin(const base::FilePath& path);
 
   // Gets a list of all the registered internal plugins.
@@ -130,7 +128,7 @@ class PluginList {
 
   // Copies the list of plug-ins into |plugins| without loading them.
   // Returns true if the list of plugins is up-to-date.
-  virtual bool GetPluginsNoRefresh(
+  bool GetPluginsNoRefresh(
       std::vector<webkit::WebPluginInfo>* plugins);
 
   // Returns a list in |info| containing plugins that are found for
@@ -189,11 +187,6 @@ class PluginList {
                                    webkit::WebPluginInfo* info);
 #endif
 
- protected:
-  // Constructors are private for singletons but we expose this one
-  // for subclasses for test purposes.
-  PluginList();
-
  private:
   enum LoadingState {
     LOADING_STATE_NEEDS_REFRESH,
@@ -208,6 +201,8 @@ class PluginList {
 
   friend class PluginListTest;
   friend struct base::DefaultLazyInstanceTraits<PluginList>;
+
+  PluginList();
 
   // Implements all IO dependent operations of the LoadPlugins method so that
   // test classes can mock these out.

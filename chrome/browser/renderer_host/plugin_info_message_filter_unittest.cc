@@ -13,10 +13,13 @@
 #include "chrome/common/render_messages.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/plugin_service_filter.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/plugins/npapi/mock_plugin_list.h"
+
+// Linux Aura doesn't support NPAPI.
+#if !(defined(OS_LINUX) && defined(USE_AURA))
 
 using content::PluginService;
 
@@ -83,7 +86,8 @@ class PluginInfoMessageFilterTest : public ::testing::Test {
     webkit::WebPluginMimeType mimeType;
     mimeType.mime_type = "foo/bar";
     foo_plugin.mime_types.push_back(mimeType);
-    plugin_list_.AddPluginToLoad(foo_plugin);
+    PluginService::GetInstance()->Init();
+    PluginService::GetInstance()->RegisterInternalPlugin(foo_plugin, false);
 
     webkit::WebPluginInfo bar_plugin(ASCIIToUTF16("Bar Plug-in"),
                                      bar_plugin_path_,
@@ -91,16 +95,22 @@ class PluginInfoMessageFilterTest : public ::testing::Test {
                                      ASCIIToUTF16("The Bar plug-in."));
     mimeType.mime_type = "foo/bar";
     bar_plugin.mime_types.push_back(mimeType);
-    plugin_list_.AddPluginToLoad(bar_plugin);
+    PluginService::GetInstance()->RegisterInternalPlugin(bar_plugin, false);
 
-    PluginService::GetInstance()->SetPluginListForTesting(&plugin_list_);
     PluginService::GetInstance()->SetFilter(&filter_);
 
+#if !defined(OS_WIN)
+    // Can't go out of process in unit tests.
+    content::RenderProcessHost::SetRunRendererInProcess(true);
+#endif
     PluginService::GetInstance()->GetPlugins(
         base::Bind(&PluginInfoMessageFilterTest::PluginsLoaded,
                    base::Unretained(this)));
     base::RunLoop run_loop;
     run_loop.Run();
+#if !defined(OS_WIN)
+    content::RenderProcessHost::SetRunRendererInProcess(false);
+#endif
   }
 
  protected:
@@ -119,7 +129,6 @@ class PluginInfoMessageFilterTest : public ::testing::Test {
   // a MockPluginList.
   content::TestBrowserThread file_thread_;
   base::ShadowingAtExitManager at_exit_manager_;  // Destroys the PluginService.
-  webkit::npapi::MockPluginList plugin_list_;
 };
 
 TEST_F(PluginInfoMessageFilterTest, FindEnabledPlugin) {
@@ -172,3 +181,5 @@ TEST_F(PluginInfoMessageFilterTest, FindEnabledPlugin) {
     EXPECT_EQ(FILE_PATH_LITERAL(""), plugin.path.value());
   }
 }
+
+#endif

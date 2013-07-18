@@ -40,8 +40,6 @@ namespace pref_keys = extensions::preference_api_constants;
 
 namespace {
 
-const std::vector<webkit::WebPluginInfo>* g_testing_plugins_;
-
 bool RemoveContentType(base::ListValue* args,
                        ContentSettingsType* content_type) {
   std::string content_type_str;
@@ -260,14 +258,10 @@ bool ContentSettingsContentSettingGetResourceIdentifiersFunction::RunImpl() {
     return true;
   }
 
-  if (!g_testing_plugins_) {
-    PluginService::GetInstance()->GetPlugins(
-        base::Bind(&ContentSettingsContentSettingGetResourceIdentifiersFunction::
-                   OnGotPlugins,
-                   this));
-  } else {
-    OnGotPlugins(*g_testing_plugins_);
-  }
+  PluginService::GetInstance()->GetPlugins(
+      base::Bind(&ContentSettingsContentSettingGetResourceIdentifiersFunction::
+                 OnGotPlugins,
+                 this));
   return true;
 }
 
@@ -296,12 +290,6 @@ void ContentSettingsContentSettingGetResourceIdentifiersFunction::OnGotPlugins(
           SendResponse,
           this,
           true));
-}
-
-// static
-void ContentSettingsContentSettingGetResourceIdentifiersFunction::
-    SetPluginsForTesting(const std::vector<webkit::WebPluginInfo>* plugins) {
-  g_testing_plugins_ = plugins;
 }
 
 }  // namespace extensions

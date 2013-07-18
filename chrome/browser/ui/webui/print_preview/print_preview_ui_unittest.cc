@@ -20,7 +20,6 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "printing/print_job_constants.h"
-#include "webkit/plugins/npapi/mock_plugin_list.h"
 
 using content::WebContents;
 using web_modal::WebContentsModalDialogManager;

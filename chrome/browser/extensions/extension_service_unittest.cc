@@ -110,7 +110,6 @@
 #include "webkit/browser/database/database_tracker.h"
 #include "webkit/browser/quota/quota_manager.h"
 #include "webkit/common/database/database_identifier.h"
-#include "webkit/plugins/npapi/mock_plugin_list.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/extensions/install_limiter.h"
@@ -4844,6 +4843,10 @@ class ExtensionsReadyRecorder : public content::NotificationObserver {
 TEST(ExtensionServiceTestSimple, Enabledness) {
   // Make sure the PluginService singleton is destroyed at the end of the test.
   base::ShadowingAtExitManager at_exit_manager;
+#if defined(ENABLE_PLUGINS)
+  content::PluginService::GetInstance()->Init();
+  content::PluginService::GetInstance()->DisablePluginsDiscoveryForTesting();
+#endif
 
   ExtensionErrorReporter::Init(false);  // no noisy errors
   ExtensionsReadyRecorder recorder;
@@ -4860,11 +4863,6 @@ TEST(ExtensionServiceTestSimple, Enabledness) {
   scoped_ptr<CommandLine> command_line;
   base::FilePath install_dir = profile->GetPath()
       .AppendASCII(extensions::kInstallDirectoryName);
-
-#if defined(ENABLE_PLUGINS)
-  webkit::npapi::MockPluginList plugin_list;
-  PluginService::GetInstance()->SetPluginListForTesting(&plugin_list);
-#endif
 
   // By default, we are enabled.
   command_line.reset(new CommandLine(CommandLine::NO_PROGRAM));
@@ -4931,13 +4929,6 @@ TEST(ExtensionServiceTestSimple, Enabledness) {
   service = NULL;
   // Execute any pending deletion tasks.
   loop.RunUntilIdle();
-
-#if defined(ENABLE_PLUGINS)
-  // Ensure that even if the PluginService is re-used for a later test, it
-  // won't still hold a reference to the stack position of our MockPluginList.
-  // See crbug.com/159754.
-  PluginService::GetInstance()->SetPluginListForTesting(NULL);
-#endif
 }
 
 // Test loading extensions that require limited and unlimited storage quotas.

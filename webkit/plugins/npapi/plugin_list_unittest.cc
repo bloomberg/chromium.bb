@@ -7,7 +7,6 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/plugins/npapi/mock_plugin_list.h"
 
 namespace webkit {
 namespace npapi {
@@ -31,11 +30,14 @@ bool Contains(const std::vector<WebPluginInfo>& list,
   return false;
 }
 
+}  // namespace
+
+// Linux Aura doesn't support NPAPI.
+#if !(defined(OS_LINUX) && defined(USE_AURA))
+
 base::FilePath::CharType kFooPath[] = FILE_PATH_LITERAL("/plugins/foo.plugin");
 base::FilePath::CharType kBarPath[] = FILE_PATH_LITERAL("/plugins/bar.plugin");
 const char* kFooName = "Foo Plugin";
-
-}  // namespace
 
 class PluginListTest : public testing::Test {
  public:
@@ -51,12 +53,13 @@ class PluginListTest : public testing::Test {
   }
 
   virtual void SetUp() {
-    plugin_list_.AddPluginToLoad(bar_plugin_);
-    plugin_list_.AddPluginToLoad(foo_plugin_);
+    plugin_list_.DisablePluginsDiscovery();
+    plugin_list_.RegisterInternalPlugin(bar_plugin_, false);
+    plugin_list_.RegisterInternalPlugin(foo_plugin_, false);
   }
 
  protected:
-  MockPluginList plugin_list_;
+  PluginList plugin_list_;
   WebPluginInfo foo_plugin_;
   WebPluginInfo bar_plugin_;
 };
@@ -74,14 +77,15 @@ TEST_F(PluginListTest, BadPluginDescription) {
       base::string16(), base::FilePath(FILE_PATH_LITERAL("/myplugin.3.0.43")),
       base::string16(), base::string16());
   // Simulate loading of the plugins.
-  plugin_list_.ClearPluginsToLoad();
-  plugin_list_.AddPluginToLoad(plugin_3043);
+  plugin_list_.RegisterInternalPlugin(plugin_3043, false);
   // Now we should have them in the state we specified above.
   plugin_list_.RefreshPlugins();
   std::vector<WebPluginInfo> plugins;
   plugin_list_.GetPlugins(&plugins);
   ASSERT_TRUE(Contains(plugins, plugin_3043));
 }
+
+#endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 

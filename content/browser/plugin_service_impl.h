@@ -101,15 +101,14 @@ class CONTENT_EXPORT PluginServiceImpl
   virtual bool IsPluginUnstable(const base::FilePath& plugin_path) OVERRIDE;
   virtual void RefreshPlugins() OVERRIDE;
   virtual void AddExtraPluginPath(const base::FilePath& path) OVERRIDE;
-  virtual void AddExtraPluginDir(const base::FilePath& path) OVERRIDE;
   virtual void RemoveExtraPluginPath(const base::FilePath& path) OVERRIDE;
-  virtual void UnregisterInternalPlugin(const base::FilePath& path) OVERRIDE;
+  virtual void AddExtraPluginDir(const base::FilePath& path) OVERRIDE;
   virtual void RegisterInternalPlugin(
       const webkit::WebPluginInfo& info, bool add_at_beginning) OVERRIDE;
+  virtual void UnregisterInternalPlugin(const base::FilePath& path) OVERRIDE;
   virtual void GetInternalPlugins(
       std::vector<webkit::WebPluginInfo>* plugins) OVERRIDE;
-  virtual void SetPluginListForTesting(
-      webkit::npapi::PluginList* plugin_list) OVERRIDE;
+  virtual void DisablePluginsDiscoveryForTesting() OVERRIDE;
 #if defined(OS_MACOSX)
   virtual void AppActivated() OVERRIDE;
 #endif
@@ -206,9 +205,6 @@ class CONTENT_EXPORT PluginServiceImpl
   static void RegisterFilePathWatcher(base::FilePathWatcher* watcher,
                                       const base::FilePath& path);
 #endif
-
-  // The plugin list instance.
-  webkit::npapi::PluginList* plugin_list_;
 
 #if defined(OS_WIN)
   // Registry keys for getting notifications when new plugins are installed.

@@ -12,7 +12,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "webkit/plugins/npapi/mock_plugin_list.h"
+#include "content/public/browser/plugin_service.h"
+#include "webkit/plugins/webplugininfo.h"
 
 namespace extensions {
 
@@ -94,12 +95,18 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContentSettings) {
                 url, url, CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string()));
 }
 
-// Flaky on the trybots. See http://crbug.com/96725.
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
-                       DISABLED_ContentSettingsGetResourceIdentifiers) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalExtensionApis);
+class ContentSettingsGetResourceIdentifiersTest : public ExtensionApiTest {
+ public:
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    ExtensionApiTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kDisablePluginsDiscovery);
+    command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
+  }
+};
 
+// Flaky on the trybots. See http://crbug.com/96725.
+IN_PROC_BROWSER_TEST_F(ContentSettingsGetResourceIdentifiersTest,
+                       DISABLED_Test) {
   base::FilePath::CharType kFooPath[] =
       FILE_PATH_LITERAL("/plugins/foo.plugin");
   base::FilePath::CharType kBarPath[] =
@@ -107,29 +114,21 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
   const char* kFooName = "Foo Plugin";
   const char* kBarName = "Bar Plugin";
 
-  webkit::npapi::MockPluginList plugin_list;
-  plugin_list.AddPluginToLoad(
+  content::PluginService::GetInstance()->RegisterInternalPlugin(
       webkit::WebPluginInfo(ASCIIToUTF16(kFooName),
                             base::FilePath(kFooPath),
                             ASCIIToUTF16("1.2.3"),
-                            ASCIIToUTF16("foo")));
-  plugin_list.AddPluginToLoad(
-      webkit::WebPluginInfo(ASCIIToUTF16(kBarName),
+                            ASCIIToUTF16("foo")),
+      false);
+  content::PluginService::GetInstance()->RegisterInternalPlugin(
+    webkit::WebPluginInfo(ASCIIToUTF16(kBarName),
                             base::FilePath(kBarPath),
                             ASCIIToUTF16("2.3.4"),
-                            ASCIIToUTF16("bar")));
-
-  std::vector<webkit::WebPluginInfo> plugins;
-  plugin_list.GetPlugins(&plugins);
-
-  ContentSettingsContentSettingGetResourceIdentifiersFunction::
-      SetPluginsForTesting(&plugins);
+                            ASCIIToUTF16("bar")),
+      false);
 
   EXPECT_TRUE(RunExtensionTest("content_settings/getresourceidentifiers"))
       << message_;
-
-  ContentSettingsContentSettingGetResourceIdentifiersFunction::
-      SetPluginsForTesting(NULL);
 }
 
 }  // namespace extensions

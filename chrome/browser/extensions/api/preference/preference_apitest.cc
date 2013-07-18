@@ -11,7 +11,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "webkit/plugins/npapi/mock_plugin_list.h"
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, PreferenceApi) {
   PrefService* pref_service = browser()->profile()->GetPrefs();

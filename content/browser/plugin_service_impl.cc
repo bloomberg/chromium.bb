@@ -138,7 +138,7 @@ PluginServiceImpl* PluginServiceImpl::GetInstance() {
 }
 
 PluginServiceImpl::PluginServiceImpl()
-    : plugin_list_(NULL), filter_(NULL) {
+    : filter_(NULL) {
   // Collect the total number of browser processes (which create
   // PluginServiceImpl objects, to be precise). The number is used to normalize
   // the number of processes which start at least one NPAPI/PPAPI Flash process.
@@ -165,11 +165,8 @@ PluginServiceImpl::~PluginServiceImpl() {
 }
 
 void PluginServiceImpl::Init() {
-  if (!plugin_list_)
-    plugin_list_ = webkit::npapi::PluginList::Singleton();
-
   plugin_list_token_ = BrowserThread::GetBlockingPool()->GetSequenceToken();
-  plugin_list_->set_will_load_plugins_callback(
+  webkit::npapi::PluginList::Singleton()->set_will_load_plugins_callback(
       base::Bind(&WillLoadPluginsCallback, plugin_list_token_));
 
   RegisterPepperPlugins();
@@ -199,10 +196,10 @@ void PluginServiceImpl::Init() {
     AddExtraPluginPath(path);
   path = command_line->GetSwitchValuePath(switches::kExtraPluginDir);
   if (!path.empty())
-    plugin_list_->AddExtraPluginDir(path);
+    webkit::npapi::PluginList::Singleton()->AddExtraPluginDir(path);
 
   if (command_line->HasSwitch(switches::kDisablePluginsDiscovery))
-    plugin_list_->DisablePluginsDiscovery();
+    webkit::npapi::PluginList::Singleton()->DisablePluginsDiscovery();
 }
 
 void PluginServiceImpl::StartWatchingPlugins() {
@@ -240,7 +237,7 @@ void PluginServiceImpl::StartWatchingPlugins() {
   // Get the list of all paths for registering the FilePathWatchers
   // that will track and if needed reload the list of plugins on runtime.
   std::vector<base::FilePath> plugin_dirs;
-  plugin_list_->GetPluginDirectories(&plugin_dirs);
+  webkit::npapi::PluginList::Singleton()->GetPluginDirectories(&plugin_dirs);
 
   for (size_t i = 0; i < plugin_dirs.size(); ++i) {
     // FilePathWatcher can not handle non-absolute paths under windows.
@@ -513,8 +510,8 @@ bool PluginServiceImpl::GetPluginInfoArray(
     std::vector<webkit::WebPluginInfo>* plugins,
     std::vector<std::string>* actual_mime_types) {
   bool use_stale = false;
-  plugin_list_->GetPluginInfoArray(url, mime_type, allow_wildcard,
-                                   &use_stale, plugins, actual_mime_types);
+  webkit::npapi::PluginList::Singleton()->GetPluginInfoArray(
+      url, mime_type, allow_wildcard, &use_stale, plugins, actual_mime_types);
   return use_stale;
 }
 
@@ -554,7 +551,7 @@ bool PluginServiceImpl::GetPluginInfo(int render_process_id,
 bool PluginServiceImpl::GetPluginInfoByPath(const base::FilePath& plugin_path,
                                             webkit::WebPluginInfo* info) {
   std::vector<webkit::WebPluginInfo> plugins;
-  plugin_list_->GetPluginsNoRefresh(&plugins);
+  webkit::npapi::PluginList::Singleton()->GetPluginsNoRefresh(&plugins);
 
   for (std::vector<webkit::WebPluginInfo>::iterator it = plugins.begin();
        it != plugins.end();
@@ -603,7 +600,8 @@ void PluginServiceImpl::GetPlugins(const GetPluginsCallback& callback) {
   }
 #if defined(OS_POSIX)
   std::vector<webkit::WebPluginInfo> cached_plugins;
-  if (plugin_list_->GetPluginsNoRefresh(&cached_plugins)) {
+  if (webkit::npapi::PluginList::Singleton()->GetPluginsNoRefresh(
+          &cached_plugins)) {
     // Can't assume the caller is reentrant.
     target_loop->PostTask(FROM_HERE,
         base::Bind(callback, cached_plugins));
@@ -628,7 +626,7 @@ void PluginServiceImpl::GetPluginsInternal(
       plugin_list_token_));
 
   std::vector<webkit::WebPluginInfo> plugins;
-  plugin_list_->GetPlugins(&plugins);
+  webkit::npapi::PluginList::Singleton()->GetPlugins(&plugins);
 
   target_loop->PostTask(FROM_HERE,
       base::Bind(callback, plugins));
@@ -643,7 +641,7 @@ void PluginServiceImpl::OnWaitableEventSignaled(
     hklm_key_.StartWatching();
   }
 
-  plugin_list_->RefreshPlugins();
+  webkit::npapi::PluginList::Singleton()->RefreshPlugins();
   PurgePluginListCache(NULL, false);
 #else
   // This event should only get signaled on a Windows machine.
@@ -751,28 +749,39 @@ bool PluginServiceImpl::IsPluginUnstable(const base::FilePath& path) {
 }
 
 void PluginServiceImpl::RefreshPlugins() {
-  plugin_list_->RefreshPlugins();
+  webkit::npapi::PluginList::Singleton()->RefreshPlugins();
 }
 
 void PluginServiceImpl::AddExtraPluginPath(const base::FilePath& path) {
-  plugin_list_->AddExtraPluginPath(path);
-}
-
-void PluginServiceImpl::AddExtraPluginDir(const base::FilePath& path) {
-  plugin_list_->AddExtraPluginDir(path);
+  webkit::npapi::PluginList::Singleton()->AddExtraPluginPath(path);
 }
 
 void PluginServiceImpl::RemoveExtraPluginPath(const base::FilePath& path) {
-  plugin_list_->RemoveExtraPluginPath(path);
+  webkit::npapi::PluginList::Singleton()->RemoveExtraPluginPath(path);
+}
+
+void PluginServiceImpl::AddExtraPluginDir(const base::FilePath& path) {
+  webkit::npapi::PluginList::Singleton()->AddExtraPluginDir(path);
+}
+
+void PluginServiceImpl::RegisterInternalPlugin(
+    const webkit::WebPluginInfo& info,
+    bool add_at_beginning) {
+  webkit::npapi::PluginList::Singleton()->RegisterInternalPlugin(
+      info, add_at_beginning);
 }
 
 void PluginServiceImpl::UnregisterInternalPlugin(const base::FilePath& path) {
-  plugin_list_->UnregisterInternalPlugin(path);
+  webkit::npapi::PluginList::Singleton()->UnregisterInternalPlugin(path);
 }
 
-void PluginServiceImpl::SetPluginListForTesting(
-    webkit::npapi::PluginList* plugin_list) {
-  plugin_list_ = plugin_list;
+void PluginServiceImpl::GetInternalPlugins(
+    std::vector<webkit::WebPluginInfo>* plugins) {
+  webkit::npapi::PluginList::Singleton()->GetInternalPlugins(plugins);
+}
+
+void PluginServiceImpl::DisablePluginsDiscoveryForTesting() {
+  webkit::npapi::PluginList::Singleton()->DisablePluginsDiscovery();
 }
 
 #if defined(OS_MACOSX)
@@ -781,16 +790,5 @@ void PluginServiceImpl::AppActivated() {
                           base::Bind(&NotifyPluginsOfActivation));
 }
 #endif
-
-void PluginServiceImpl::RegisterInternalPlugin(
-    const webkit::WebPluginInfo& info,
-    bool add_at_beginning) {
-  plugin_list_->RegisterInternalPlugin(info, add_at_beginning);
-}
-
-void PluginServiceImpl::GetInternalPlugins(
-    std::vector<webkit::WebPluginInfo>* plugins) {
-  plugin_list_->GetInternalPlugins(plugins);
-}
 
 }  // namespace content
