@@ -983,3 +983,8 @@ span
 // (scan:) media feature
 progressive
 interlace
+
+//
+// CSS3 viewport-length keywords
+//
+-internal-extend-to-zoom

@@ -40,6 +40,7 @@ enum LengthType {
     MinContent, MaxContent, FillAvailable, FitContent,
     Calculated,
     ViewportPercentageWidth, ViewportPercentageHeight, ViewportPercentageMin, ViewportPercentageMax,
+    ExtendToZoom,
     Undefined
 };
 

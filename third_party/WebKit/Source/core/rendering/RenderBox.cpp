@@ -2744,7 +2744,7 @@ LayoutUnit RenderBox::computeReplacedLogicalWidthUsing(Length logicalWidth) cons
             return adjustContentBoxLogicalWidthForBoxSizing(valueForLength(logicalWidth, 0, view()));
         case FitContent:
         case FillAvailable:
-        case Percent: 
+        case Percent:
         case Calculated: {
             // FIXME: containingBlockLogicalWidthForContent() is wrong if the replaced element's block-flow is perpendicular to the
             // containing block's block-flow.
@@ -2763,6 +2763,7 @@ LayoutUnit RenderBox::computeReplacedLogicalWidthUsing(Length logicalWidth) cons
         case MinIntrinsic:
         case Auto:
         case Relative:
+        case ExtendToZoom:
         case Undefined:
             return intrinsicLogicalWidth();
     }

@@ -8,6 +8,9 @@
 }
 </style>
 <script>
+  if (window.testRunner)
+    testRunner.addUserStyleSheet("@viewport { width: extend-to-zoom 980px; min-zoom: 0.25; max-zoom: 5; height: auto; zoom: auto; user-zoom: zoom; orientation: auto }", true);
+
   function test() {
     if (window.testRunner) {
       testRunner.dumpAsText();

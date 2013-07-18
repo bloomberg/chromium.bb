@@ -11432,11 +11432,11 @@ bool CSSParser::parseViewportProperty(CSSPropertyID propId, bool important)
     bool validPrimitive = false;
 
     switch (propId) {
-    case CSSPropertyMinWidth: // auto | <length> | <percentage>
+    case CSSPropertyMinWidth: // auto | extend-to-zoom | <length> | <percentage>
     case CSSPropertyMaxWidth:
     case CSSPropertyMinHeight:
     case CSSPropertyMaxHeight:
-        if (id == CSSValueAuto)
+        if (id == CSSValueAuto || id == CSSValueInternalExtendToZoom)
             validPrimitive = true;
         else
             validPrimitive = (!id && validUnit(value, FLength | FPercent | FNonNeg));

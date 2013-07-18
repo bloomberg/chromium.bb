@@ -310,6 +310,10 @@ CSSPrimitiveValue::CSSPrimitiveValue(const Length& length)
             m_primitiveUnitType = CSS_VALUE_ID;
             m_value.valueID = CSSValueWebkitFitContent;
             break;
+        case ExtendToZoom:
+            m_primitiveUnitType = CSS_VALUE_ID;
+            m_value.valueID = CSSValueInternalExtendToZoom;
+            break;
         case Percent:
             m_primitiveUnitType = CSS_PERCENTAGE;
             ASSERT(std::isfinite(length.percent()));

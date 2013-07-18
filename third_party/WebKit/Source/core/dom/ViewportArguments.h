@@ -6,7 +6,7 @@
  * Copyright (C) 2004, 2005, 2006, 2007, 2008 Apple Inc. All rights reserved.
  * Copyright (C) 2008 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/)
  * Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies)
- * Copyright (C) 2012 Intel Corporation. All rights reserved.
+ * Copyright (C) 2012-2013 Intel Corporation. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -65,7 +65,8 @@ struct ViewportArguments {
         ValueDeviceDPI = -6,
         ValueLowDPI = -7,
         ValueMediumDPI = -8,
-        ValueHighDPI = -9
+        ValueHighDPI = -9,
+        ValueExtendToZoom = -10
     };
 
     ViewportArguments(Type type = Implicit)

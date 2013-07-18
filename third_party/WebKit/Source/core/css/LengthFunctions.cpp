@@ -81,6 +81,7 @@ LayoutUnit minimumValueForLength(const Length& length, LayoutUnit maximumValue, 
     case MinContent:
     case MaxContent:
     case FitContent:
+    case ExtendToZoom:
     case Undefined:
         ASSERT_NOT_REACHED();
         return 0;
@@ -109,6 +110,7 @@ LayoutUnit valueForLength(const Length& length, LayoutUnit maximumValue, RenderV
     case MinContent:
     case MaxContent:
     case FitContent:
+    case ExtendToZoom:
     case Undefined:
         ASSERT_NOT_REACHED();
         return 0;
@@ -155,6 +157,7 @@ float floatValueForLength(const Length& length, float maximumValue, RenderView* 
     case MinContent:
     case MaxContent:
     case FitContent:
+    case ExtendToZoom:
     case Undefined:
         ASSERT_NOT_REACHED();
         return 0;
