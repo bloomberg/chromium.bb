@@ -1667,7 +1667,8 @@ public:
     }
 };
 
-TEST_F(WebFrameTest, ContextNotificationsLoadUnload)
+// TODO(aa): Deflake this test.
+TEST_F(WebFrameTest, FLAKY_ContextNotificationsLoadUnload)
 {
     v8::HandleScope handleScope;
 
