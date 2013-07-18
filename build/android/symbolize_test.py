@@ -26,8 +26,8 @@ LIB_B_PATH = '/build/android/tests/symbolize/libb.so'
 
 def RunSymbolizer(text):
   output = StringIO.StringIO()
-  s = symbolize.Symbolizer(StringIO.StringIO(text), output)
-  s.ProcessInput()
+  s = symbolize.Symbolizer(output)
+  s.write(text)
   return output.getvalue()
 
 

@@ -28,17 +28,15 @@ TRACE_LINE = re.compile('(?P<frame>\#[0-9]+ 0x[0-9a-f]{8,8}) '
                         '(?P<lib>[^+]+)\+0x(?P<addr>[0-9a-f]{8,8})')
 
 class Symbolizer(object):
-  def __init__(self, file_in, file_out):
-    self.file_in = file_in
-    self.file_out = file_out
+  def __init__(self, output):
+    self._output = output
 
-  def ProcessInput(self):
-    for line in self.file_in:
-      match = re.search(TRACE_LINE, line)
+  def write(self, data):
+    while True:
+      match = re.search(TRACE_LINE, data)
       if not match:
-        self.file_out.write(line)
-        self.file_out.flush()
-        continue
+        self._output.write(data)
+        break
 
       frame = match.group('frame')
       lib = match.group('lib')
@@ -60,24 +58,30 @@ class Symbolizer(object):
       sym = symbol.SymbolInformation(lib, addr, False)[0][0]
 
       if not sym:
-        self.file_out.write(line)
-        self.file_out.flush()
+        post = match.end('addr')
+        self._output.write(data[:post])
+        data = data[post:]
         continue
 
-      pre = line[0:match.start('frame')]
-      post = line[match.end('addr'):]
+      pre = match.start('frame')
+      post = match.end('addr')
 
-      self.file_out.write(pre)
-      self.file_out.write(frame)
-      self.file_out.write(' ')
-      self.file_out.write(sym)
-      self.file_out.write(post)
-      self.file_out.flush()
+      self._output.write(data[:pre])
+      self._output.write(frame)
+      self._output.write(' ')
+      self._output.write(sym)
+
+      data = data[post:]
+
+  def flush(self):
+    self._output.flush()
 
 
 def main():
-  symbolizer = Symbolizer(sys.stdin, sys.stdout)
-  symbolizer.ProcessInput()
+  symbolizer = Symbolizer(sys.stdout)
+  for line in sys.stdin:
+    symbolizer.write(line)
+  symbolizer.flush()
 
 
 if __name__ == '__main__':
