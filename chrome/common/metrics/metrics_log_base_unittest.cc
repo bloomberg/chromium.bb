@@ -42,7 +42,7 @@ TEST(MetricsLogBaseTest, EmptyRecord) {
 }
 
 // Make sure our ID hashes are the same as what we see on the server side.
-TEST(MetricsLogBaseTest, CreateHashes) {
+TEST(MetricsLogBaseTest, Hashes) {
   static const struct {
     std::string input;
     std::string output;
@@ -52,33 +52,9 @@ TEST(MetricsLogBaseTest, CreateHashes) {
     {"NewTab", "0x290eb683f96572f1"},
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); i++) {
-    std::string hash_string;
-    uint64 hash_numeric;
-    MetricsLogBase::CreateHashes(cases[i].input, &hash_string, &hash_numeric);
-
-    // Verify the numeric representation.
-    {
-      std::string hash_numeric_hex =
-          base::StringPrintf("0x%016" PRIx64, hash_numeric);
-      EXPECT_EQ(cases[i].output, hash_numeric_hex);
-    }
-
-    // Verify the string representation.
-    {
-      std::string hash_string_decoded;
-      ASSERT_TRUE(base::Base64Decode(hash_string, &hash_string_decoded));
-
-      // Convert to hex string
-      // We're only checking the first 8 bytes, because that's what
-      // the metrics server uses.
-      std::string hash_string_hex = "0x";
-      ASSERT_GE(hash_string_decoded.size(), 8U);
-      for (size_t j = 0; j < 8; j++) {
-        base::StringAppendF(&hash_string_hex, "%02x",
-                            static_cast<uint8>(hash_string_decoded.data()[j]));
-      }
-      EXPECT_EQ(cases[i].output, hash_string_hex);
-    }
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+    uint64 hash = MetricsLogBase::Hash(cases[i].input);
+    std::string hash_hex = base::StringPrintf("0x%016" PRIx64, hash);
+    EXPECT_EQ(cases[i].output, hash_hex);
   }
 };

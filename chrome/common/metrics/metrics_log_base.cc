@@ -9,8 +9,6 @@
 #include "base/md5.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_samples.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/sys_byteorder.h"
 #include "base/sys_info.h"
 #include "chrome/common/chrome_version_info.h"
@@ -44,30 +42,6 @@ inline uint64 HashToUInt64(const std::string& hash) {
   return base::HostToNet64(value);
 }
 
-// Creates an MD5 hash of the given value, and returns hash as a byte buffer
-// encoded as an std::string.
-std::string CreateHash(const std::string& value) {
-  base::MD5Context context;
-  base::MD5Init(&context);
-  base::MD5Update(&context, value);
-
-  base::MD5Digest digest;
-  base::MD5Final(&digest, &context);
-
-  std::string hash(reinterpret_cast<char*>(digest.a), arraysize(digest.a));
-
-  // The following log is VERY helpful when folks add some named histogram into
-  // the code, but forgot to update the descriptive list of histograms.  When
-  // that happens, all we get to see (server side) is a hash of the histogram
-  // name.  We can then use this logging to find out what histogram name was
-  // being hashed to a given MD5 value by just running the version of Chromium
-  // in question with --enable-logging.
-  DVLOG(1) << "Metrics: Hash numeric [" << value << "]=[" << HashToUInt64(hash)
-           << "]";
-
-  return hash;
-}
-
 SystemProfileProto::Channel AsProtobufChannel(
     chrome::VersionInfo::Channel channel) {
   switch (channel) {
@@ -96,7 +70,7 @@ MetricsLogBase::MetricsLogBase(const std::string& client_id, int session_id,
   if (IsTestingID(client_id))
     uma_proto_.set_client_id(0);
   else
-    uma_proto_.set_client_id(HashToUInt64(CreateHash(client_id)));
+    uma_proto_.set_client_id(Hash(client_id));
 
   uma_proto_.set_session_id(session_id);
   uma_proto_.mutable_system_profile()->set_build_timestamp(GetBuildTime());
@@ -108,17 +82,28 @@ MetricsLogBase::MetricsLogBase(const std::string& client_id, int session_id,
 MetricsLogBase::~MetricsLogBase() {}
 
 // static
-void MetricsLogBase::CreateHashes(const std::string& string,
-                                  std::string* base64_encoded_hash,
-                                  uint64* numeric_hash) {
-  std::string hash = CreateHash(string);
+uint64 MetricsLogBase::Hash(const std::string& value) {
+  // Create an MD5 hash of the given |value|, represented as a byte buffer
+  // encoded as an std::string.
+  base::MD5Context context;
+  base::MD5Init(&context);
+  base::MD5Update(&context, value);
 
-  std::string encoded_digest;
-  if (base::Base64Encode(hash, &encoded_digest))
-    DVLOG(1) << "Metrics: Hash [" << encoded_digest << "]=[" << string << "]";
+  base::MD5Digest digest;
+  base::MD5Final(&digest, &context);
 
-  *base64_encoded_hash = encoded_digest;
-  *numeric_hash = HashToUInt64(hash);
+  std::string hash_str(reinterpret_cast<char*>(digest.a), arraysize(digest.a));
+  uint64 hash = HashToUInt64(hash_str);
+
+  // The following log is VERY helpful when folks add some named histogram into
+  // the code, but forgot to update the descriptive list of histograms.  When
+  // that happens, all we get to see (server side) is a hash of the histogram
+  // name.  We can then use this logging to find out what histogram name was
+  // being hashed to a given MD5 value by just running the version of Chromium
+  // in question with --enable-logging.
+  DVLOG(1) << "Metrics: Hash numeric [" << value << "]=[" << hash << "]";
+
+  return hash;
 }
 
 // static
@@ -162,16 +147,8 @@ void MetricsLogBase::GetEncodedLog(std::string* encoded_log) {
 void MetricsLogBase::RecordUserAction(const char* key) {
   DCHECK(!locked_);
 
-  std::string base64_hash;
-  uint64 numeric_hash;
-  CreateHashes(key, &base64_hash, &numeric_hash);
-  if (base64_hash.empty()) {
-    NOTREACHED() << "Unable generate encoded hash of command: " << key;
-    return;
-  }
-
   UserActionEventProto* user_action = uma_proto_.add_user_action_event();
-  user_action->set_name_hash(numeric_hash);
+  user_action->set_name_hash(Hash(key));
   user_action->set_time(GetCurrentTime());
 
   ++num_events_;
@@ -184,12 +161,8 @@ void MetricsLogBase::RecordHistogramDelta(const std::string& histogram_name,
 
   // We will ignore the MAX_INT/infinite value in the last element of range[].
 
-  std::string base64_name_hash;
-  uint64 numeric_name_hash;
-  CreateHashes(histogram_name, &base64_name_hash, &numeric_name_hash);
-
   HistogramEventProto* histogram_proto = uma_proto_.add_histogram_event();
-  histogram_proto->set_name_hash(numeric_name_hash);
+  histogram_proto->set_name_hash(Hash(histogram_name));
   histogram_proto->set_sum(snapshot.sum());
 
   for (scoped_ptr<SampleCountIterator> it = snapshot.Iterator();

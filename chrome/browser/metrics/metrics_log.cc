@@ -219,27 +219,17 @@ void WriteProfilerData(const ProcessDataSnapshot& profiler_data,
   for (std::vector<tracked_objects::TaskSnapshot>::const_iterator it =
            profiler_data.tasks.begin();
        it != profiler_data.tasks.end(); ++it) {
-    std::string ignored;
-    uint64 birth_thread_name_hash;
-    uint64 exec_thread_name_hash;
-    uint64 source_file_name_hash;
-    uint64 source_function_name_hash;
-    MetricsLogBase::CreateHashes(it->birth.thread_name,
-                                 &ignored, &birth_thread_name_hash);
-    MetricsLogBase::CreateHashes(it->death_thread_name,
-                                 &ignored, &exec_thread_name_hash);
-    MetricsLogBase::CreateHashes(it->birth.location.file_name,
-                                 &ignored, &source_file_name_hash);
-    MetricsLogBase::CreateHashes(it->birth.location.function_name,
-                                 &ignored, &source_function_name_hash);
-
     const tracked_objects::DeathDataSnapshot& death_data = it->death_data;
     ProfilerEventProto::TrackedObject* tracked_object =
         performance_profile->add_tracked_object();
-    tracked_object->set_birth_thread_name_hash(birth_thread_name_hash);
-    tracked_object->set_exec_thread_name_hash(exec_thread_name_hash);
-    tracked_object->set_source_file_name_hash(source_file_name_hash);
-    tracked_object->set_source_function_name_hash(source_function_name_hash);
+    tracked_object->set_birth_thread_name_hash(
+        MetricsLogBase::Hash(it->birth.thread_name));
+    tracked_object->set_exec_thread_name_hash(
+        MetricsLogBase::Hash(it->death_thread_name));
+    tracked_object->set_source_file_name_hash(
+        MetricsLogBase::Hash(it->birth.location.file_name));
+    tracked_object->set_source_function_name_hash(
+        MetricsLogBase::Hash(it->birth.location.function_name));
     tracked_object->set_source_line_number(it->birth.location.line_number);
     tracked_object->set_exec_count(death_data.count);
     tracked_object->set_exec_time_total(death_data.run_duration_sum);
