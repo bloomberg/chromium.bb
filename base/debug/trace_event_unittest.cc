@@ -1677,6 +1677,8 @@ TEST_F(TraceEventTestFixture, TraceOptionsParsing) {
                 "record-continuously,enable-sampling"));
 }
 
+// Not supported in split dll build. http://crbug.com/256965
+#if !defined(CHROME_SPLIT_DLL)
 TEST_F(TraceEventTestFixture, TraceSampling) {
   event_watch_notification_ = 0;
   TraceLog::GetInstance()->SetEnabled(
@@ -1736,6 +1738,7 @@ TEST_F(TraceEventTestFixture, TraceSamplingScope) {
 
   EndTraceAndFlush();
 }
+#endif  // !CHROME_SPLIT_DLL
 
 class MyData : public base::debug::ConvertableToTraceFormat {
  public:

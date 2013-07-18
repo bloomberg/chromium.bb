@@ -52,7 +52,7 @@
             'content_common',
           ],
           'conditions': [
-            ['OS != "ios"', {
+            ['OS != "ios" and chrome_split_dll != 1', {
               'dependencies': [
                 'content_gpu',
                 'content_plugin',
@@ -74,31 +74,6 @@
           'dependencies': [
             'content_common',
           ],
-          'conditions': [
-            ['chrome_multiple_dll', {
-              'defines': [
-                'CHROME_MULTIPLE_DLL_BROWSER',
-              ],
-            }],
-          ],
-        },
-        {
-          'target_name': 'content_app_child',
-          'type': 'static_library',
-          'variables': { 'enable_wexit_time_destructors': 1, },
-          'includes': [
-            'content_app.gypi',
-          ],
-          'dependencies': [
-            'content_common',
-          ],
-          'conditions': [
-            ['chrome_multiple_dll', {
-              'defines': [
-                'CHROME_MULTIPLE_DLL_CHILD',
-              ],
-            }],
-          ],
         },
         {
           'target_name': 'content_browser',
@@ -112,10 +87,16 @@
             'content_resources.gyp:content_resources',
           ],
           'conditions': [
-            ['OS != "ios"', {
+            ['OS != "ios" and chrome_split_dll != 1', {
               'dependencies': [
                 'content_gpu',
+                'content_renderer',
                 'content_utility',
+              ],
+            }],
+            ['chrome_split_dll', {
+              'dependencies': [
+                'content_gpu',
               ],
             }],
             ['java_bridge==1', {
@@ -291,11 +272,6 @@
           'target_name': 'content_app',
           'type': 'none',
           'dependencies': ['content', 'content_browser'],
-        },
-        {
-          'target_name': 'content_app_child',
-          'type': 'none',
-          'dependencies': ['content', 'content_child'],
         },
         {
           'target_name': 'content_browser',

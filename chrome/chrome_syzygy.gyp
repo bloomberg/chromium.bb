@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 {
   'conditions': [
-    ['OS=="win" and fastbuild==0 and chrome_multiple_dll==0', {
+    ['OS=="win" and fastbuild==0 and chrome_split_dll==0', {
       # Reorder or instrument the initial chrome DLL executable, placing the
       # optimized output and corresponding PDB file into the "syzygy"
       # subdirectory.

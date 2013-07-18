@@ -788,12 +788,16 @@
 // Defines visibility for classes in trace_event.h
 #define TRACE_EVENT_API_CLASS_EXPORT BASE_EXPORT
 
+// Not supported in split-dll build. http://crbug.com/256965
+#if !defined(CHROME_SPLIT_DLL)
 // The thread buckets for the sampling profiler.
 TRACE_EVENT_API_CLASS_EXPORT extern \
     TRACE_EVENT_API_ATOMIC_WORD g_trace_state[3];
 
 #define TRACE_EVENT_API_THREAD_BUCKET(thread_bucket)                           \
     g_trace_state[thread_bucket]
+
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1485,15 +1489,23 @@ class TraceEventSamplingStateScope {
   }
 
   static inline const char* Current() {
+// Not supported in split-dll build. http://crbug.com/256965
+#if !defined(CHROME_SPLIT_DLL)
     return reinterpret_cast<const char*>(TRACE_EVENT_API_ATOMIC_LOAD(
       g_trace_state[BucketNumber]));
+#else
+    return NULL;
+#endif
   }
 
   static inline void Set(const char* category_and_name) {
+// Not supported in split-dll build. http://crbug.com/256965
+#if !defined(CHROME_SPLIT_DLL)
     TRACE_EVENT_API_ATOMIC_STORE(
       g_trace_state[BucketNumber],
       reinterpret_cast<TRACE_EVENT_API_ATOMIC_WORD>(
         const_cast<char*>(category_and_name)));
+#endif
   }
 
  private:

@@ -165,8 +165,6 @@ void RemoveShaderInfo(int32 id) {
 
 }  // namespace
 
-#if !defined(CHROME_MULTIPLE_DLL)
-
 // This class creates the IO thread for the renderer when running in
 // single-process mode.  It's not used in multi-process mode.
 class RendererMainThread : public base::Thread {
@@ -209,8 +207,6 @@ class RendererMainThread : public base::Thread {
 
   DISALLOW_COPY_AND_ASSIGN(RendererMainThread);
 };
-
-#endif
 
 namespace {
 
@@ -505,8 +501,8 @@ bool RenderProcessHostImpl::Init() {
 
   CreateMessageFilters();
 
-  // Single-process mode not supported in multiple-dll mode currently.
-#if !defined(CHROME_MULTIPLE_DLL)
+  // Single-process mode not supported in split-dll mode.
+#if !defined(CHROME_SPLIT_DLL)
   if (run_renderer_in_process()) {
     // Crank up a thread and run the initialization there.  With the way that
     // messages flow between the browser and renderer, this thread is required
@@ -529,7 +525,7 @@ bool RenderProcessHostImpl::Init() {
 
     OnProcessLaunched();  // Fake a callback that the process is ready.
   } else
-#endif  // !CHROME_MULTIPLE_DLL
+#endif  // !CHROME_SPLIT_DLL
   {
     // Build command line for renderer.  We call AppendRendererCommandLine()
     // first so the process type argument will appear first.

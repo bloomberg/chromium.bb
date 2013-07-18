@@ -165,8 +165,7 @@ namespace content {
 
 base::LazyInstance<ContentBrowserClient>
     g_empty_content_browser_client = LAZY_INSTANCE_INITIALIZER;
-#if !defined(OS_IOS) && \
-    (!defined(CHROME_MULTIPLE_DLL) || defined(CHROME_MULTIPLE_DLL_CHILD))
+#if !defined(OS_IOS)
 base::LazyInstance<ContentPluginClient>
     g_empty_content_plugin_client = LAZY_INSTANCE_INITIALIZER;
 base::LazyInstance<ContentRendererClient>
@@ -293,8 +292,7 @@ class ContentClientInitializer {
         content_client->browser_ = &g_empty_content_browser_client.Get();
     }
 
-#if !defined(OS_IOS) && \
-    (!defined(CHROME_MULTIPLE_DLL) || defined(CHROME_MULTIPLE_DLL_CHILD))
+#if !defined(OS_IOS)
     if (process_type == switches::kPluginProcess ||
         process_type == switches::kPpapiPluginProcess) {
       if (delegate)
@@ -408,20 +406,16 @@ int RunNamedProcessTypeMain(
     const MainFunctionParams& main_function_params,
     ContentMainDelegate* delegate) {
   static const MainFunction kMainFunctions[] = {
-#if !defined(CHROME_MULTIPLE_DLL) || defined(CHROME_MULTIPLE_DLL_BROWSER)
     { "",                            BrowserMain },
-#endif
-#if !defined(CHROME_MULTIPLE_DLL) || defined(CHROME_MULTIPLE_DLL_CHILD)
 #if defined(ENABLE_PLUGINS)
     { switches::kPluginProcess,      PluginMain },
     { switches::kWorkerProcess,      WorkerMain },
     { switches::kPpapiPluginProcess, PpapiPluginMain },
     { switches::kPpapiBrokerProcess, PpapiBrokerMain },
-#endif  // ENABLE_PLUGINS
+#endif
     { switches::kUtilityProcess,     UtilityMain },
     { switches::kRendererProcess,    RendererMain },
     { switches::kGpuProcess,         GpuMain },
-#endif  // !CHROME_MULTIPLE_DLL || CHROME_MULTIPLE_DLL_CHILD
   };
 
   for (size_t i = 0; i < arraysize(kMainFunctions); ++i) {

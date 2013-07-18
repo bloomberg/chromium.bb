@@ -938,9 +938,9 @@
     # to get incremental linking to be faster in debug builds.
     'incremental_chrome_dll%': '0',
 
-    # Experimental setting to break chrome.dll into multiple pieces based on
-    # process type.
-    'chrome_multiple_dll%': '0',
+    # Experimental setting to break chrome.dll in to multiple parts (currently
+    # two, split primarily along browser/render lines).
+    'chrome_split_dll%': '0',
 
     # The default settings for third party code for treating
     # warnings-as-errors. Ideally, this would not be required, however there
@@ -1868,8 +1868,11 @@
           '<(DEPTH)/base/allocator/allocator.gyp:type_profiler',
         ],
       }],
-      ['chrome_multiple_dll', {
-        'defines': ['CHROME_MULTIPLE_DLL'],
+      ['chrome_split_dll', {
+        'variables': {
+          'chrome_split_dll': '<!(python <(DEPTH)/tools/win/split_link/check_installed.py)',
+        },
+        'defines': ['CHROME_SPLIT_DLL'],
       }],
       ['OS=="linux" and clang==1 and host_arch=="ia32"', {
         # TODO(dmikurube): Remove -Wno-sentinel when Clang/LLVM is fixed.

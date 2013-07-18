@@ -77,7 +77,7 @@
       'dependencies': [
         '../../base/base.gyp:base',
         '../../base/base.gyp:test_support_base',
-        '../../content/content.gyp:content',
+        '../../content/content.gyp:content_browser',
         '../../skia/skia.gyp:skia',
         '../../testing/gtest.gyp:gtest',
         '../aura/aura.gyp:aura',

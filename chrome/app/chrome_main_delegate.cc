@@ -93,17 +93,14 @@
 #include "chrome/app/breakpad_linux.h"
 #endif
 
-#if !defined(CHROME_MULTIPLE_DLL) || defined(CHROME_MULTIPLE_DLL_CHILD)
+base::LazyInstance<chrome::ChromeContentBrowserClient>
+    g_chrome_content_browser_client = LAZY_INSTANCE_INITIALIZER;
 base::LazyInstance<chrome::ChromeContentRendererClient>
     g_chrome_content_renderer_client = LAZY_INSTANCE_INITIALIZER;
 base::LazyInstance<chrome::ChromeContentUtilityClient>
     g_chrome_content_utility_client = LAZY_INSTANCE_INITIALIZER;
 base::LazyInstance<chrome::ChromeContentPluginClient>
     g_chrome_content_plugin_client = LAZY_INSTANCE_INITIALIZER;
-#else  // In browser in multiple DLL mode.
-base::LazyInstance<chrome::ChromeContentBrowserClient>
-    g_chrome_content_browser_client = LAZY_INSTANCE_INITIALIZER;
-#endif
 
 #if defined(OS_POSIX)
 base::LazyInstance<chrome::ChromeBreakpadClient>::Leaky
@@ -391,7 +388,7 @@ bool ChromeMainDelegate::BasicStartupComplete(int* exit_code) {
 // not though: it still uses string16. As there is no easily accessible command
 // line on Android, I'm not sure this is a big deal, at least for purposes of
 // troubleshooting with a customer.
-#if !defined(OS_ANDROID) && !defined(CHROME_MULTIPLE_DLL_CHILD)
+#if !defined(OS_ANDROID)
   // If we are in diagnostics mode this is the end of the line: after the
   // diagnostics are run the process will invariably exit.
   if (command_line.HasSwitch(switches::kDiagnostics)) {
@@ -676,17 +673,15 @@ int ChromeMainDelegate::RunProcess(
     const content::MainFunctionParams& main_function_params) {
   // ANDROID doesn't support "service", so no ServiceProcessMain, and arraysize
   // doesn't support empty array. So we comment out the block for Android.
-#if !defined(OS_ANDROID) && \
-    (!defined(CHROME_MULTIPLE_DLL) || defined(CHROME_MULTIPLE_DLL_BROWSER))
+#if !defined(OS_ANDROID)
   static const MainFunction kMainFunctions[] = {
     { switches::kServiceProcess,     ServiceProcessMain },
 #if defined(OS_MACOSX)
     { switches::kRelauncherProcess,
       mac_relauncher::internal::RelauncherMain },
 #endif
-
-#if !defined(DISABLE_NACL) && \
-    (!defined(CHROME_MULTIPLE_DLL) || defined(CHROME_MULTIPLE_DLL_CHILD))
+    // TODO(scottmg): http://crbug.com/237249 NaCl -> child.
+#if !defined(DISABLE_NACL)
     { switches::kNaClLoaderProcess, NaClMain },
 #endif  // DISABLE_NACL
   };
@@ -754,46 +749,23 @@ void ChromeMainDelegate::ZygoteForked() {
 
 #endif  // OS_MACOSX
 
-#if !defined(CHROME_MULTIPLE_DLL) || defined(CHROME_MULTIPLE_DLL_CHILD)
-
-content::ContentPluginClient* ChromeMainDelegate::CreateContentPluginClient() {
-  return &g_chrome_content_plugin_client.Get();
-}
-
-content::ContentRendererClient*
-ChromeMainDelegate::CreateContentRendererClient() {
-  return &g_chrome_content_renderer_client.Get();
-}
-
-content::ContentUtilityClient*
-ChromeMainDelegate::CreateContentUtilityClient() {
-  return &g_chrome_content_utility_client.Get();
-}
-
-content::ContentBrowserClient*
-ChromeMainDelegate::CreateContentBrowserClient() {
-  return NULL;
-}
-
-#else  // In browser in multiple DLL mode.
-
 content::ContentBrowserClient*
     ChromeMainDelegate::CreateContentBrowserClient() {
   return &g_chrome_content_browser_client.Get();
 }
 
 content::ContentPluginClient* ChromeMainDelegate::CreateContentPluginClient() {
-  return NULL;
+  // TODO(scottmg): http://crbug.com/237249 This will have to be split out into
+  // browser and child parts.
+  return &g_chrome_content_plugin_client.Get();
 }
 
 content::ContentRendererClient*
-ChromeMainDelegate::CreateContentRendererClient() {
-  return NULL;
+    ChromeMainDelegate::CreateContentRendererClient() {
+  return &g_chrome_content_renderer_client.Get();
 }
 
 content::ContentUtilityClient*
-ChromeMainDelegate::CreateContentUtilityClient() {
-  return NULL;
+    ChromeMainDelegate::CreateContentUtilityClient() {
+  return &g_chrome_content_utility_client.Get();
 }
-
-#endif
