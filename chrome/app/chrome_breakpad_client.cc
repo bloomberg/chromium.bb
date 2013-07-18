@@ -10,6 +10,10 @@
 #include "base/path_service.h"
 #include "chrome/common/chrome_paths.h"
 
+#if defined(OS_POSIX)
+#include "chrome/common/dump_without_crashing.h"
+#endif
+
 namespace chrome {
 
 ChromeBreakpadClient::ChromeBreakpadClient() {}
@@ -45,5 +49,11 @@ bool ChromeBreakpadClient::GetCrashDumpLocation(base::FilePath* crash_dir) {
 
   return PathService::Get(chrome::DIR_CRASH_DUMPS, crash_dir);
 }
+
+#if defined(OS_POSIX)
+void ChromeBreakpadClient::SetDumpWithoutCrashingFunction(void (*function)()) {
+  logging::SetDumpWithoutCrashingFunction(function);
+}
+#endif
 
 }  // namespace chrome

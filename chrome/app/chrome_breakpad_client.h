@@ -24,6 +24,10 @@ class ChromeBreakpadClient : public breakpad::BreakpadClient {
 
   virtual bool GetCrashDumpLocation(base::FilePath* crash_dir) OVERRIDE;
 
+#if defined(OS_POSIX)
+  virtual void SetDumpWithoutCrashingFunction(void (*function)()) OVERRIDE;
+#endif
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeBreakpadClient);
 };

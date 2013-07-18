@@ -37,6 +37,12 @@ class BreakpadClient {
   // The location where minidump files should be written. Returns true if
   // |crash_dir| was set.
   virtual bool GetCrashDumpLocation(base::FilePath* crash_dir);
+
+#if defined(OS_POSIX)
+  // Sets a function that'll be invoked to dump the current process when
+  // without crashing.
+  virtual void SetDumpWithoutCrashingFunction(void (*function)());
+#endif
 };
 
 }  // namespace breakpad

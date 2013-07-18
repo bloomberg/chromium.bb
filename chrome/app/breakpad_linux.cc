@@ -42,7 +42,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info_posix.h"
 #include "chrome/common/crash_keys.h"
-#include "chrome/common/dump_without_crashing.h"
 #include "chrome/common/env_vars.h"
 #include "components/breakpad/breakpad_client.h"
 #include "content/public/common/content_descriptors.h"
@@ -1692,7 +1691,7 @@ void InitCrashReporter() {
 
   SetProcessStartTime();
 
-  logging::SetDumpWithoutCrashingFunction(&DumpProcess);
+  breakpad::GetBreakpadClient()->SetDumpWithoutCrashingFunction(&DumpProcess);
 #if defined(ADDRESS_SANITIZER)
   // Register the callback for AddressSanitizer error reporting.
   __asan_set_error_report_callback(AsanLinuxBreakpadCallback);
