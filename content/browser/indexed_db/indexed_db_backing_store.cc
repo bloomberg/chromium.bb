@@ -20,8 +20,7 @@
 #include "content/common/indexed_db/indexed_db_key.h"
 #include "content/common/indexed_db/indexed_db_key_path.h"
 #include "content/common/indexed_db/indexed_db_key_range.h"
-#include "third_party/WebKit/public/platform/WebIDBKey.h"
-#include "third_party/WebKit/public/platform/WebIDBKeyPath.h"
+#include "third_party/WebKit/public/platform/WebIDBTypes.h"
 
 using base::StringPiece;
 
@@ -987,7 +986,7 @@ bool IndexedDBBackingStore::GetObjectStores(
       // (2) Later, null vs. string vs. array was stored in the key_path itself.
       // So this check is only relevant for string-type key_paths.
       if (!has_key_path &&
-          (key_path.type() == WebKit::WebIDBKeyPath::StringType &&
+          (key_path.type() == WebKit::WebIDBKeyPathTypeString &&
            !key_path.string().empty())) {
         INTERNAL_CONSISTENCY_ERROR(GET_OBJECT_STORES);
         break;
@@ -1355,7 +1354,7 @@ bool IndexedDBBackingStore::GetKeyGeneratorCurrentNumber(
     DCHECK(p);
 
     scoped_ptr<IndexedDBKey> user_key = data_key.user_key();
-    if (user_key->type() == WebKit::WebIDBKey::NumberType) {
+    if (user_key->type() == WebKit::WebIDBKeyTypeNumber) {
       int64 n = static_cast<int64>(user_key->number());
       if (n > max_numeric_key)
         max_numeric_key = n;

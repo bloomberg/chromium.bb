@@ -5,15 +5,15 @@
 #include "content/common/indexed_db/indexed_db_key_range.h"
 
 #include "base/logging.h"
+#include "third_party/WebKit/public/platform/WebIDBKey.h"
 
 namespace content {
 
 using WebKit::WebIDBKeyRange;
-using WebKit::WebIDBKey;
 
 IndexedDBKeyRange::IndexedDBKeyRange()
-    : lower_(WebIDBKey::NullType),
-      upper_(WebIDBKey::NullType),
+    : lower_(WebKit::WebIDBKeyTypeNull),
+      upper_(WebKit::WebIDBKeyTypeNull),
       lower_open_(false),
       upper_open_(false) {}
 

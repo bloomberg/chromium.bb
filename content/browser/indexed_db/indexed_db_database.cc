@@ -25,7 +25,7 @@
 #include "third_party/WebKit/public/platform/WebIDBDatabaseException.h"
 
 using base::Int64ToString16;
-using WebKit::WebIDBKey;
+using WebKit::WebIDBKeyTypeNumber;
 
 namespace content {
 
@@ -982,7 +982,7 @@ static scoped_ptr<IndexedDBKey> GenerateKey(
     return make_scoped_ptr(new IndexedDBKey());
 
   return make_scoped_ptr(
-      new IndexedDBKey(current_number, WebIDBKey::NumberType));
+      new IndexedDBKey(current_number, WebIDBKeyTypeNumber));
 }
 
 static bool UpdateKeyGenerator(
@@ -993,7 +993,7 @@ static bool UpdateKeyGenerator(
     const IndexedDBKey* key,
     bool check_current) {
   DCHECK(key);
-  DCHECK_EQ(WebIDBKey::NumberType, key->type());
+  DCHECK_EQ(WebIDBKeyTypeNumber, key->type());
   return backing_store->MaybeUpdateKeyGeneratorCurrentNumber(
       transaction->BackingStoreTransaction(),
       database_id,
@@ -1136,7 +1136,7 @@ void PutOperation::Perform(IndexedDBTransaction* transaction) {
 
   if (object_store_.auto_increment &&
       put_mode_ != IndexedDBDatabase::CURSOR_UPDATE &&
-      key->type() == WebIDBKey::NumberType) {
+      key->type() == WebIDBKeyTypeNumber) {
     bool ok = UpdateKeyGenerator(backing_store_,
                                  transaction,
                                  database_id_,

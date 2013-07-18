@@ -18,8 +18,7 @@ include_rules = [
   "+third_party/WebKit/public/platform/WebIDBCallbacks.h",
   "+third_party/WebKit/public/platform/WebIDBCursor.h",
   "+third_party/WebKit/public/platform/WebIDBDatabase.h",
-  "+third_party/WebKit/public/platform/WebIDBKeyPath.h",
-  "+third_party/WebKit/public/platform/WebIDBKeyType.h",
+  "+third_party/WebKit/public/platform/WebIDBTypes.h",
   "+third_party/WebKit/public/platform/WebReferrerPolicy.h",
   "+third_party/WebKit/public/platform/WebScreenInfo.h",
   "+third_party/WebKit/public/platform/WebStorageArea.h",
@@ -41,6 +40,7 @@ include_rules = [
   # These should be burned down. http://crbug.com/237267
   "!third_party/WebKit/public/platform/WebIDBDatabaseError.h",
   "!third_party/WebKit/public/platform/WebIDBKey.h",
+  "!third_party/WebKit/public/platform/WebIDBKeyPath.h",
   "!third_party/WebKit/public/platform/WebIDBKeyRange.h",
   "!third_party/WebKit/public/platform/WebVector.h",
   "!third_party/WebKit/public/platform/WebHTTPBody.h",

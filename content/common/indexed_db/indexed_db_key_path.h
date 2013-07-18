@@ -16,23 +16,23 @@ namespace content {
 
 class CONTENT_EXPORT IndexedDBKeyPath {
  public:
-  IndexedDBKeyPath();  // Defaults to WebKit::WebIDBKeyPath::NullType.
+  IndexedDBKeyPath();  // Defaults to WebKit::WebIDBKeyPathTypeNull.
   explicit IndexedDBKeyPath(const string16&);
   explicit IndexedDBKeyPath(const std::vector<string16>&);
   explicit IndexedDBKeyPath(const WebKit::WebIDBKeyPath&);
   ~IndexedDBKeyPath();
 
-  bool IsNull() const { return type_ == WebKit::WebIDBKeyPath::NullType; }
+  bool IsNull() const { return type_ == WebKit::WebIDBKeyPathTypeNull; }
   bool IsValid() const;
   bool operator==(const IndexedDBKeyPath& other) const;
 
-  WebKit::WebIDBKeyPath::Type type() const { return type_; }
+  WebKit::WebIDBKeyPathType type() const { return type_; }
   const std::vector<string16>& array() const;
   const string16& string() const;
   operator WebKit::WebIDBKeyPath() const;
 
  private:
-  WebKit::WebIDBKeyPath::Type type_;
+  WebKit::WebIDBKeyPathType type_;
   string16 string_;
   std::vector<string16> array_;
 };

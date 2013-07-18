@@ -11,6 +11,9 @@
 namespace content {
 
 using WebKit::WebIDBKeyPath;
+using WebKit::WebIDBKeyPathTypeArray;
+using WebKit::WebIDBKeyPathTypeNull;
+using WebKit::WebIDBKeyPathTypeString;
 using WebKit::WebString;
 using WebKit::WebVector;
 
@@ -23,19 +26,19 @@ static std::vector<string16> CopyArray(const WebVector<WebString>& array) {
 }
 }  // namespace
 
-IndexedDBKeyPath::IndexedDBKeyPath() : type_(WebIDBKeyPath::NullType) {}
+IndexedDBKeyPath::IndexedDBKeyPath() : type_(WebIDBKeyPathTypeNull) {}
 
 IndexedDBKeyPath::IndexedDBKeyPath(const string16& string)
-    : type_(WebIDBKeyPath::StringType), string_(string) {}
+    : type_(WebIDBKeyPathTypeString), string_(string) {}
 
 IndexedDBKeyPath::IndexedDBKeyPath(const std::vector<string16>& array)
-    : type_(WebIDBKeyPath::ArrayType), array_(array) {}
+    : type_(WebIDBKeyPathTypeArray), array_(array) {}
 
 IndexedDBKeyPath::IndexedDBKeyPath(const WebIDBKeyPath& other)
-    : type_(other.type()),
-      string_(type_ == WebIDBKeyPath::StringType
+    : type_(other.keyPathType()),
+      string_(type_ == WebIDBKeyPathTypeString
               ? static_cast<string16>(other.string()) : string16()),
-      array_(type_ == WebIDBKeyPath::ArrayType
+      array_(type_ == WebIDBKeyPathTypeArray
              ? CopyArray(other.array()) : std::vector<string16>()) {}
 
 IndexedDBKeyPath::~IndexedDBKeyPath() {}
@@ -46,12 +49,12 @@ bool IndexedDBKeyPath::IsValid() const {
 }
 
 const std::vector<string16>& IndexedDBKeyPath::array() const {
-  DCHECK(type_ == WebKit::WebIDBKeyPath::ArrayType);
+  DCHECK(type_ == WebKit::WebIDBKeyPathTypeArray);
   return array_;
 }
 
 const string16& IndexedDBKeyPath::string() const {
-  DCHECK(type_ == WebKit::WebIDBKeyPath::StringType);
+  DCHECK(type_ == WebKit::WebIDBKeyPathTypeString);
   return string_;
 }
 
@@ -60,11 +63,11 @@ bool IndexedDBKeyPath::operator==(const IndexedDBKeyPath& other) const {
     return false;
 
   switch (type_) {
-    case WebIDBKeyPath::NullType:
+    case WebIDBKeyPathTypeNull:
       return true;
-    case WebIDBKeyPath::StringType:
+    case WebIDBKeyPathTypeString:
       return string_ == other.string_;
-    case WebIDBKeyPath::ArrayType:
+    case WebIDBKeyPathTypeArray:
       return array_ == other.array_;
   }
   NOTREACHED();
@@ -73,11 +76,11 @@ bool IndexedDBKeyPath::operator==(const IndexedDBKeyPath& other) const {
 
 IndexedDBKeyPath::operator WebIDBKeyPath() const {
   switch (type_) {
-    case WebIDBKeyPath::ArrayType:
+    case WebIDBKeyPathTypeArray:
       return WebIDBKeyPath::create(array_);
-    case WebIDBKeyPath::StringType:
+    case WebIDBKeyPathTypeString:
       return WebIDBKeyPath::create(WebString(string_));
-    case WebIDBKeyPath::NullType:
+    case WebIDBKeyPathTypeNull:
       return WebIDBKeyPath::createNull();
   }
   NOTREACHED();

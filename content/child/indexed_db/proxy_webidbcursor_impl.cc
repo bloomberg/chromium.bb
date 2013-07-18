@@ -59,7 +59,7 @@ void RendererWebIDBCursorImpl::continueFunction(
       IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_.get());
   scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
 
-  if (key.type() == WebIDBKey::NullType) {
+  if (key.keyType() == WebKit::WebIDBKeyTypeNull) {
     // No key, so this would qualify for a prefetch.
     ++continue_count_;
 

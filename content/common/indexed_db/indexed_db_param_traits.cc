@@ -15,30 +15,39 @@ using content::IndexedDBKey;
 using content::IndexedDBKeyPath;
 using content::IndexedDBKeyRange;
 
-using WebKit::WebIDBKey;
-using WebKit::WebIDBKeyPath;
+using WebKit::WebIDBKeyPathTypeArray;
+using WebKit::WebIDBKeyPathTypeNull;
+using WebKit::WebIDBKeyPathTypeString;
+using WebKit::WebIDBKeyType;
+using WebKit::WebIDBKeyTypeArray;
+using WebKit::WebIDBKeyTypeDate;
+using WebKit::WebIDBKeyTypeInvalid;
+using WebKit::WebIDBKeyTypeMin;
+using WebKit::WebIDBKeyTypeNull;
+using WebKit::WebIDBKeyTypeNumber;
+using WebKit::WebIDBKeyTypeString;
 
 namespace IPC {
 
 void ParamTraits<IndexedDBKey>::Write(Message* m, const param_type& p) {
   WriteParam(m, static_cast<int>(p.type()));
   switch (p.type()) {
-    case WebIDBKey::ArrayType:
+    case WebIDBKeyTypeArray:
       WriteParam(m, p.array());
       return;
-    case WebIDBKey::StringType:
+    case WebIDBKeyTypeString:
       WriteParam(m, p.string());
       return;
-    case WebIDBKey::DateType:
+    case WebIDBKeyTypeDate:
       WriteParam(m, p.date());
       return;
-    case WebIDBKey::NumberType:
+    case WebIDBKeyTypeNumber:
       WriteParam(m, p.number());
       return;
-    case WebIDBKey::InvalidType:
-    case WebIDBKey::NullType:
+    case WebIDBKeyTypeInvalid:
+    case WebIDBKeyTypeNull:
       return;
-    case WebIDBKey::MinType:
+    case WebIDBKeyTypeMin:
       NOTREACHED();
       return;
   }
@@ -50,36 +59,36 @@ bool ParamTraits<IndexedDBKey>::Read(const Message* m,
   int type;
   if (!ReadParam(m, iter, &type))
     return false;
-  WebIDBKey::Type web_type = static_cast<WebIDBKey::Type>(type);
+  WebIDBKeyType web_type = static_cast<WebIDBKeyType>(type);
 
   switch (web_type) {
-    case WebIDBKey::ArrayType: {
+    case WebIDBKeyTypeArray: {
       std::vector<IndexedDBKey> array;
       if (!ReadParam(m, iter, &array))
         return false;
       *r = IndexedDBKey(array);
       return true;
     }
-    case WebIDBKey::StringType: {
+    case WebIDBKeyTypeString: {
       string16 string;
       if (!ReadParam(m, iter, &string))
         return false;
       *r = IndexedDBKey(string);
       return true;
     }
-    case WebIDBKey::DateType:
-    case WebIDBKey::NumberType: {
+    case WebIDBKeyTypeDate:
+    case WebIDBKeyTypeNumber: {
       double number;
       if (!ReadParam(m, iter, &number))
         return false;
       *r = IndexedDBKey(number, web_type);
       return true;
     }
-    case WebIDBKey::InvalidType:
-    case WebIDBKey::NullType:
+    case WebIDBKeyTypeInvalid:
+    case WebIDBKeyTypeNull:
       *r = IndexedDBKey(web_type);
       return true;
-    case WebIDBKey::MinType:
+    case WebIDBKeyTypeMin:
       NOTREACHED();
       return false;
   }
@@ -111,13 +120,13 @@ void ParamTraits<IndexedDBKey>::Log(const param_type& p, std::string* l) {
 void ParamTraits<IndexedDBKeyPath>::Write(Message* m, const param_type& p) {
   WriteParam(m, static_cast<int>(p.type()));
   switch (p.type()) {
-    case WebIDBKeyPath::ArrayType:
+    case WebIDBKeyPathTypeArray:
       WriteParam(m, p.array());
       return;
-    case WebIDBKeyPath::StringType:
+    case WebIDBKeyPathTypeString:
       WriteParam(m, p.string());
       return;
-    case WebIDBKeyPath::NullType:
+    case WebIDBKeyPathTypeNull:
       return;
   }
   NOTREACHED();
@@ -131,21 +140,21 @@ bool ParamTraits<IndexedDBKeyPath>::Read(const Message* m,
     return false;
 
   switch (type) {
-    case WebIDBKeyPath::ArrayType: {
+    case WebIDBKeyPathTypeArray: {
       std::vector<string16> array;
       if (!ReadParam(m, iter, &array))
         return false;
       *r = IndexedDBKeyPath(array);
       return true;
     }
-    case WebIDBKeyPath::StringType: {
+    case WebIDBKeyPathTypeString: {
       string16 string;
       if (!ReadParam(m, iter, &string))
         return false;
       *r = IndexedDBKeyPath(string);
       return true;
     }
-    case WebIDBKeyPath::NullType:
+    case WebIDBKeyPathTypeNull:
       *r = IndexedDBKeyPath();
       return true;
   }

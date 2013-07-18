@@ -27,17 +27,17 @@ TEST(IndexedDBKeyTest, KeySizeEstimates) {
   web_keys.push_back(WebIDBKey::createInvalid());
   estimates.push_back(static_cast<size_t>(16));  // Overhead.
 
-  keys.push_back(IndexedDBKey(WebIDBKey::NullType));
+  keys.push_back(IndexedDBKey(WebKit::WebIDBKeyTypeNull));
   web_keys.push_back(WebIDBKey::createNull());
   estimates.push_back(static_cast<size_t>(16));
 
   double number = 3.14159;
-  keys.push_back(IndexedDBKey(number, WebIDBKey::NumberType));
+  keys.push_back(IndexedDBKey(number, WebKit::WebIDBKeyTypeNumber));
   web_keys.push_back(WebIDBKey::createNumber(number));
   estimates.push_back(static_cast<size_t>(24));  // Overhead + sizeof(double).
 
   double date = 1370884329.0;
-  keys.push_back(IndexedDBKey(date, WebIDBKey::DateType));
+  keys.push_back(IndexedDBKey(date, WebKit::WebIDBKeyTypeDate));
   web_keys.push_back(WebIDBKey::createDate(date));
   estimates.push_back(static_cast<size_t>(24));  // Overhead + sizeof(double).
 
@@ -52,7 +52,7 @@ TEST(IndexedDBKeyTest, KeySizeEstimates) {
   WebVector<WebIDBKey> web_array(static_cast<size_t>(array_size));
   double value = 123.456;
   for (size_t i = 0; i < array_size; ++i) {
-    array.push_back(IndexedDBKey(value, WebIDBKey::NumberType));
+    array.push_back(IndexedDBKey(value, WebKit::WebIDBKeyTypeNumber));
     web_array[i] = WebIDBKey::createNumber(value);
   }
   keys.push_back(IndexedDBKey(array));

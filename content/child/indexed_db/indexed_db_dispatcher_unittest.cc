@@ -55,7 +55,7 @@ TEST(IndexedDBDispatcherTest, ValueSizeTest) {
 
   MockCallbacks callbacks;
   IndexedDBDispatcher dispatcher(thread_safe_sender.get());
-  IndexedDBKey key(0, WebIDBKey::NumberType);
+  IndexedDBKey key(0, WebKit::WebIDBKeyTypeNumber);
   dispatcher.RequestIDBDatabasePut(ipc_dummy_id,
                                    transaction_id,
                                    object_store_id,

@@ -13,7 +13,6 @@
 #include "base/sys_byteorder.h"
 #include "content/common/indexed_db/indexed_db_key.h"
 #include "content/common/indexed_db/indexed_db_key_path.h"
-#include "third_party/WebKit/public/platform/WebIDBKeyPath.h"
 
 // LevelDB stores key/value pairs. Keys and values are strings of bytes,
 // normally of type std::string.
@@ -150,8 +149,19 @@
 // IndexKeyCursorImpl::load_current_row).
 
 using base::StringPiece;
-using WebKit::WebIDBKey;
+using WebKit::WebIDBKeyType;
+using WebKit::WebIDBKeyTypeArray;
+using WebKit::WebIDBKeyTypeDate;
+using WebKit::WebIDBKeyTypeInvalid;
+using WebKit::WebIDBKeyTypeMin;
+using WebKit::WebIDBKeyTypeNull;
+using WebKit::WebIDBKeyTypeNumber;
+using WebKit::WebIDBKeyTypeString;
 using WebKit::WebIDBKeyPath;
+using WebKit::WebIDBKeyPathType;
+using WebKit::WebIDBKeyPathTypeArray;
+using WebKit::WebIDBKeyPathTypeNull;
+using WebKit::WebIDBKeyPathTypeString;
 
 namespace content {
 
@@ -277,14 +287,14 @@ void EncodeIDBKey(const IndexedDBKey& value, std::string* into) {
   size_t previous_size = into->size();
   DCHECK(value.IsValid());
   switch (value.type()) {
-    case WebIDBKey::NullType:
-    case WebIDBKey::InvalidType:
-    case WebIDBKey::MinType: {
+    case WebIDBKeyTypeNull:
+    case WebIDBKeyTypeInvalid:
+    case WebIDBKeyTypeMin: {
       NOTREACHED();
       EncodeByte(kIndexedDBKeyNullTypeByte, into);
       return;
     }
-    case WebIDBKey::ArrayType: {
+    case WebIDBKeyTypeArray: {
       EncodeByte(kIndexedDBKeyArrayTypeByte, into);
       size_t length = value.array().size();
       EncodeVarInt(length, into);
@@ -293,20 +303,20 @@ void EncodeIDBKey(const IndexedDBKey& value, std::string* into) {
       DCHECK_GT(into->size(), previous_size);
       return;
     }
-    case WebIDBKey::StringType: {
+    case WebIDBKeyTypeString: {
       EncodeByte(kIndexedDBKeyStringTypeByte, into);
       EncodeStringWithLength(value.string(), into);
       DCHECK_GT(into->size(), previous_size);
       return;
     }
-    case WebIDBKey::DateType: {
+    case WebIDBKeyTypeDate: {
       EncodeByte(kIndexedDBKeyDateTypeByte, into);
       EncodeDouble(value.date(), into);
       DCHECK_EQ(static_cast<size_t>(9),
                 static_cast<size_t>(into->size() - previous_size));
       return;
     }
-    case WebIDBKey::NumberType: {
+    case WebIDBKeyTypeNumber: {
       EncodeByte(kIndexedDBKeyNumberTypeByte, into);
       EncodeDouble(value.number(), into);
       DCHECK_EQ(static_cast<size_t>(9),
@@ -326,13 +336,13 @@ void EncodeIDBKeyPath(const IndexedDBKeyPath& value, std::string* into) {
   EncodeByte(kIndexedDBKeyPathTypeCodedByte2, into);
   EncodeByte(static_cast<char>(value.type()), into);
   switch (value.type()) {
-    case WebIDBKeyPath::NullType:
+    case WebIDBKeyPathTypeNull:
       break;
-    case WebIDBKeyPath::StringType: {
+    case WebIDBKeyPathTypeString: {
       EncodeStringWithLength(value.string(), into);
       break;
     }
-    case WebIDBKeyPath::ArrayType: {
+    case WebIDBKeyPathTypeArray: {
       const std::vector<string16>& array = value.array();
       size_t count = array.size();
       EncodeVarInt(count, into);
@@ -475,14 +485,14 @@ bool DecodeIDBKey(StringPiece* slice, scoped_ptr<IndexedDBKey>* value) {
       double d;
       if (!DecodeDouble(slice, &d))
         return false;
-      *value = make_scoped_ptr(new IndexedDBKey(d, WebIDBKey::DateType));
+      *value = make_scoped_ptr(new IndexedDBKey(d, WebIDBKeyTypeDate));
       return true;
     }
     case kIndexedDBKeyNumberTypeByte: {
       double d;
       if (!DecodeDouble(slice, &d))
         return false;
-      *value = make_scoped_ptr(new IndexedDBKey(d, WebIDBKey::NumberType));
+      *value = make_scoped_ptr(new IndexedDBKey(d, WebIDBKeyTypeNumber));
       return true;
     }
   }
@@ -515,15 +525,15 @@ bool DecodeIDBKeyPath(StringPiece* slice, IndexedDBKeyPath* value) {
 
   slice->remove_prefix(2);
   DCHECK(!slice->empty());
-  WebIDBKeyPath::Type type = static_cast<WebIDBKeyPath::Type>((*slice)[0]);
+  WebIDBKeyPathType type = static_cast<WebIDBKeyPathType>((*slice)[0]);
   slice->remove_prefix(1);
 
   switch (type) {
-    case WebIDBKeyPath::NullType:
+    case WebIDBKeyPathTypeNull:
       DCHECK(slice->empty());
       *value = IndexedDBKeyPath();
       return true;
-    case WebIDBKeyPath::StringType: {
+    case WebIDBKeyPathTypeString: {
       string16 string;
       if (!DecodeStringWithLength(slice, &string))
         return false;
@@ -531,7 +541,7 @@ bool DecodeIDBKeyPath(StringPiece* slice, IndexedDBKeyPath* value) {
       *value = IndexedDBKeyPath(string);
       return true;
     }
-    case WebIDBKeyPath::ArrayType: {
+    case WebIDBKeyPathTypeArray: {
       std::vector<string16> array;
       int64 count;
       if (!DecodeVarInt(slice, &count))
@@ -600,24 +610,24 @@ bool ExtractEncodedIDBKey(StringPiece* slice, std::string* result) {
   return true;
 }
 
-static WebIDBKey::Type KeyTypeByteToKeyType(unsigned char type) {
+static WebIDBKeyType KeyTypeByteToKeyType(unsigned char type) {
   switch (type) {
     case kIndexedDBKeyNullTypeByte:
-      return WebIDBKey::InvalidType;
+      return WebIDBKeyTypeInvalid;
     case kIndexedDBKeyArrayTypeByte:
-      return WebIDBKey::ArrayType;
+      return WebIDBKeyTypeArray;
     case kIndexedDBKeyStringTypeByte:
-      return WebIDBKey::StringType;
+      return WebIDBKeyTypeString;
     case kIndexedDBKeyDateTypeByte:
-      return WebIDBKey::DateType;
+      return WebIDBKeyTypeDate;
     case kIndexedDBKeyNumberTypeByte:
-      return WebIDBKey::NumberType;
+      return WebIDBKeyTypeNumber;
     case kIndexedDBKeyMinKeyTypeByte:
-      return WebIDBKey::MinType;
+      return WebIDBKeyTypeMin;
   }
 
   NOTREACHED();
-  return WebIDBKey::InvalidType;
+  return WebIDBKeyTypeInvalid;
 }
 
 int CompareEncodedStringsWithLength(StringPiece* slice1,
@@ -666,7 +676,7 @@ static int CompareInts(int64 a, int64 b) {
   return 0;
 }
 
-static int CompareTypes(WebIDBKey::Type a, WebIDBKey::Type b) { return b - a; }
+static int CompareTypes(WebIDBKeyType a, WebIDBKeyType b) { return b - a; }
 
 int CompareEncodedIDBKeys(StringPiece* slice_a,
                           StringPiece* slice_b,

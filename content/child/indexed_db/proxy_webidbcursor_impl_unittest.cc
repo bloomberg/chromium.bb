@@ -17,6 +17,7 @@ using WebKit::WebData;
 using WebKit::WebIDBCallbacks;
 using WebKit::WebIDBDatabase;
 using WebKit::WebIDBKey;
+using WebKit::WebIDBKeyTypeNumber;
 
 namespace content {
 
@@ -133,7 +134,7 @@ TEST(RendererWebIDBCursorImplTest, PrefetchTest) {
       std::vector<IndexedDBKey> primary_keys(prefetch_count);
       std::vector<WebData> values(prefetch_count);
       for (int i = 0; i < prefetch_count; ++i) {
-        keys.push_back(IndexedDBKey(expected_key + i, WebIDBKey::NumberType));
+        keys.push_back(IndexedDBKey(expected_key + i, WebIDBKeyTypeNumber));
       }
       cursor.SetPrefetchData(keys, primary_keys, values);
 
@@ -148,7 +149,7 @@ TEST(RendererWebIDBCursorImplTest, PrefetchTest) {
         EXPECT_EQ(continue_calls, dispatcher.continue_calls());
         EXPECT_EQ(repetitions + 1, dispatcher.prefetch_calls());
 
-        EXPECT_EQ(WebIDBKey::NumberType, key.type());
+        EXPECT_EQ(WebIDBKeyTypeNumber, key.type());
         EXPECT_EQ(expected_key++, key.number());
       }
     }

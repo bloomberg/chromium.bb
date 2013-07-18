@@ -12,10 +12,9 @@
 #include "content/browser/indexed_db/indexed_db_factory.h"
 #include "content/browser/indexed_db/indexed_db_leveldb_coding.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/WebIDBTypes.h"
 #include "url/gurl.h"
 #include "webkit/common/database/database_identifier.h"
-
-using WebKit::WebIDBKey;
 
 namespace content {
 
@@ -32,7 +31,7 @@ class IndexedDBBackingStoreTest : public testing::Test {
     m_value1 = "value1";
     m_value2 = "value2";
     m_value3 = "value3";
-    m_key1 = IndexedDBKey(99, WebIDBKey::NumberType);
+    m_key1 = IndexedDBKey(99, WebKit::WebIDBKeyTypeNumber);
     m_key2 = IndexedDBKey(ASCIIToUTF16("key2"));
     m_key3 = IndexedDBKey(ASCIIToUTF16("key3"));
   }

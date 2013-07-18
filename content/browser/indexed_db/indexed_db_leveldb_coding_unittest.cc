@@ -16,8 +16,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::StringPiece;
-using WebKit::WebIDBKey;
-using WebKit::WebIDBKeyPath;
+using WebKit::WebIDBKeyTypeDate;
+using WebKit::WebIDBKeyTypeNumber;
 
 namespace content {
 
@@ -126,9 +126,9 @@ TEST(IndexedDBLevelDBCodingTest, MaxIDBKey) {
   std::string string_key;
   EncodeIDBKey(IndexedDBKey(ASCIIToUTF16("Hello world")), &string_key);
   std::string number_key;
-  EncodeIDBKey(IndexedDBKey(3.14, WebIDBKey::NumberType), &number_key);
+  EncodeIDBKey(IndexedDBKey(3.14, WebIDBKeyTypeNumber), &number_key);
   std::string date_key;
-  EncodeIDBKey(IndexedDBKey(1000000, WebIDBKey::DateType), &date_key);
+  EncodeIDBKey(IndexedDBKey(1000000, WebIDBKeyTypeDate), &date_key);
 
   EXPECT_GT(CompareKeys(max_key, min_key), 0);
   EXPECT_GT(CompareKeys(max_key, array_key), 0);
@@ -146,9 +146,9 @@ TEST(IndexedDBLevelDBCodingTest, MinIDBKey) {
   std::string string_key;
   EncodeIDBKey(IndexedDBKey(ASCIIToUTF16("Hello world")), &string_key);
   std::string number_key;
-  EncodeIDBKey(IndexedDBKey(3.14, WebIDBKey::NumberType), &number_key);
+  EncodeIDBKey(IndexedDBKey(3.14, WebIDBKeyTypeNumber), &number_key);
   std::string date_key;
-  EncodeIDBKey(IndexedDBKey(1000000, WebIDBKey::DateType), &date_key);
+  EncodeIDBKey(IndexedDBKey(1000000, WebIDBKeyTypeDate), &date_key);
 
   EXPECT_LT(CompareKeys(min_key, max_key), 0);
   EXPECT_LT(CompareKeys(min_key, array_key), 0);
@@ -521,14 +521,14 @@ TEST(IndexedDBLevelDBCodingTest, EncodeDecodeIDBKey) {
   StringPiece slice;
 
   std::vector<IndexedDBKey> test_cases;
-  test_cases.push_back(IndexedDBKey(1234, WebIDBKey::NumberType));
-  test_cases.push_back(IndexedDBKey(7890, WebIDBKey::DateType));
+  test_cases.push_back(IndexedDBKey(1234, WebIDBKeyTypeNumber));
+  test_cases.push_back(IndexedDBKey(7890, WebIDBKeyTypeDate));
   test_cases.push_back(IndexedDBKey(ASCIIToUTF16("Hello World!")));
   test_cases.push_back(IndexedDBKey(IndexedDBKey::KeyArray()));
 
   IndexedDBKey::KeyArray array;
-  array.push_back(IndexedDBKey(1234, WebIDBKey::NumberType));
-  array.push_back(IndexedDBKey(7890, WebIDBKey::DateType));
+  array.push_back(IndexedDBKey(1234, WebIDBKeyTypeNumber));
+  array.push_back(IndexedDBKey(7890, WebIDBKeyTypeDate));
   array.push_back(IndexedDBKey(ASCIIToUTF16("Hello World!")));
   array.push_back(IndexedDBKey(IndexedDBKey::KeyArray()));
   test_cases.push_back(IndexedDBKey(array));
@@ -670,13 +670,13 @@ TEST(IndexedDBLevelDBCodingTest, DecodeLegacyIDBKeyPath) {
 TEST(IndexedDBLevelDBCodingTest, ExtractAndCompareIDBKeys) {
   std::vector<IndexedDBKey> keys;
 
-  keys.push_back(IndexedDBKey(-10, WebIDBKey::NumberType));
-  keys.push_back(IndexedDBKey(0, WebIDBKey::NumberType));
-  keys.push_back(IndexedDBKey(3.14, WebIDBKey::NumberType));
+  keys.push_back(IndexedDBKey(-10, WebIDBKeyTypeNumber));
+  keys.push_back(IndexedDBKey(0, WebIDBKeyTypeNumber));
+  keys.push_back(IndexedDBKey(3.14, WebIDBKeyTypeNumber));
 
-  keys.push_back(IndexedDBKey(0, WebIDBKey::DateType));
-  keys.push_back(IndexedDBKey(100, WebIDBKey::DateType));
-  keys.push_back(IndexedDBKey(100000, WebIDBKey::DateType));
+  keys.push_back(IndexedDBKey(0, WebIDBKeyTypeDate));
+  keys.push_back(IndexedDBKey(100, WebIDBKeyTypeDate));
+  keys.push_back(IndexedDBKey(100000, WebIDBKeyTypeDate));
 
   keys.push_back(IndexedDBKey(ASCIIToUTF16("")));
   keys.push_back(IndexedDBKey(ASCIIToUTF16("a")));
@@ -686,12 +686,12 @@ TEST(IndexedDBLevelDBCodingTest, ExtractAndCompareIDBKeys) {
   keys.push_back(IndexedDBKey(ASCIIToUTF16("c")));
 
   keys.push_back(CreateArrayIDBKey());
-  keys.push_back(CreateArrayIDBKey(IndexedDBKey(0, WebIDBKey::NumberType)));
-  keys.push_back(CreateArrayIDBKey(IndexedDBKey(0, WebIDBKey::NumberType),
-                                   IndexedDBKey(3.14, WebIDBKey::NumberType)));
-  keys.push_back(CreateArrayIDBKey(IndexedDBKey(0, WebIDBKey::DateType)));
-  keys.push_back(CreateArrayIDBKey(IndexedDBKey(0, WebIDBKey::DateType),
-                                   IndexedDBKey(0, WebIDBKey::DateType)));
+  keys.push_back(CreateArrayIDBKey(IndexedDBKey(0, WebIDBKeyTypeNumber)));
+  keys.push_back(CreateArrayIDBKey(IndexedDBKey(0, WebIDBKeyTypeNumber),
+                                   IndexedDBKey(3.14, WebIDBKeyTypeNumber)));
+  keys.push_back(CreateArrayIDBKey(IndexedDBKey(0, WebIDBKeyTypeDate)));
+  keys.push_back(CreateArrayIDBKey(IndexedDBKey(0, WebIDBKeyTypeDate),
+                                   IndexedDBKey(0, WebIDBKeyTypeDate)));
   keys.push_back(CreateArrayIDBKey(IndexedDBKey(ASCIIToUTF16(""))));
   keys.push_back(CreateArrayIDBKey(IndexedDBKey(ASCIIToUTF16("")),
                                    IndexedDBKey(ASCIIToUTF16("a"))));
