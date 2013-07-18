@@ -58,8 +58,6 @@ class HostController {
   // descriptors.
   scoped_ptr<Socket> CreateSocket();
 
-  void SelfDelete();
-
   Socket adb_control_socket_;
   int device_port_;
   const std::string forward_to_host_;

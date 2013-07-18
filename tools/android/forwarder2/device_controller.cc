@@ -118,17 +118,6 @@ void DeviceController::Start() {
           continue;
         }
         break;
-      case command::UNMAP_PORT:
-        if (!listener) {
-          SendCommand(command::UNMAP_PORT_ERROR, port, socket.get());
-          break;
-        }
-        listener->ForceExit();
-        listener->Join();
-        CHECK(!listener->is_alive());
-        listeners_.Remove(port);
-        SendCommand(command::UNMAP_PORT_SUCCESS, port, socket.get());
-        break;
       default:
         // TODO(felipeg): add a KillAllListeners command.
         LOG(ERROR) << "Invalid command received. Port: " << port
