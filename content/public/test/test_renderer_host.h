@@ -6,7 +6,7 @@
 #define CONTENT_PUBLIC_TEST_TEST_RENDERER_HOST_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/test/test_browser_thread_bundle.h"

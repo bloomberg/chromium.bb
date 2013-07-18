@@ -5,7 +5,7 @@
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
 #include "base/i18n/rtl.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 #include "content/child/child_process.h"

@@ -5,7 +5,7 @@
 #include "content/public/test/test_navigation_observer.h"
 
 #include "base/bind.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "content/public/browser/notification_service.h"

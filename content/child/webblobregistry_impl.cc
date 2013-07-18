@@ -7,7 +7,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/shared_memory.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "content/child/child_thread.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/common/fileapi/webblob_messages.h"

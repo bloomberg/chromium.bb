@@ -5,7 +5,7 @@
 #include "content/public/test/mock_render_process_host.h"
 
 #include "base/lazy_instance.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"

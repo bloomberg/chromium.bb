@@ -7,7 +7,7 @@
 #include <ctype.h>
 
 #include "base/bind.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/pickle.h"
 #include "content/child/child_process.h"

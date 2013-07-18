@@ -6,7 +6,7 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/process.h"
 #include "base/process_util.h"
 #include "content/child/request_extra_data.h"

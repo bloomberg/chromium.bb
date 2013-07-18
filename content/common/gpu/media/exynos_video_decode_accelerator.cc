@@ -14,7 +14,7 @@
 #include "base/bind.h"
 #include "base/debug/trace_event.h"
 #include "base/memory/shared_memory.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/posix/eintr_wrapper.h"
 #include "content/common/gpu/media/exynos_video_decode_accelerator.h"

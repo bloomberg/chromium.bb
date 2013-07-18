@@ -5,7 +5,7 @@
 #include "content/public/test/fake_speech_recognition_manager.h"
 
 #include "base/bind.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/speech_recognition_event_listener.h"
 #include "content/public/common/speech_recognition_result.h"

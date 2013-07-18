@@ -16,7 +16,7 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/memory/shared_memory.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "content/common/content_export.h"
 #include "media/video/video_decode_accelerator.h"
 #include "third_party/openmax/il/OMX_Component.h"

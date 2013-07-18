@@ -10,7 +10,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/strings/string_util.h"
 #include "base/threading/platform_thread.h"

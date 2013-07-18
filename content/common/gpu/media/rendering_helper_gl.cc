@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/stringize_macros.h"
 #include "base/synchronization/waitable_event.h"
 #include "ui/gl/gl_bindings.h"
