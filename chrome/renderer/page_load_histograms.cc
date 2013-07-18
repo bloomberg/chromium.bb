@@ -49,6 +49,29 @@ TimeDelta kPLTMax() {
 #define PLT_HISTOGRAM(name, sample) \
     UMA_HISTOGRAM_CUSTOM_TIMES(name, sample, kPLTMin(), kPLTMax(), kPLTCount);
 
+// In addition to PLT_HISTOGRAM, add the *_DataReductionProxy variant
+// conditionally. This macro runs only in one thread.
+#define PLT_HISTOGRAM_DRP(name, sample, data_reduction_proxy_was_used) \
+  do {                                                                  \
+    static base::HistogramBase* counter(NULL);                          \
+    static base::HistogramBase* drp_counter(NULL);                      \
+    if (!counter) {                                                     \
+      DCHECK(drp_counter == NULL);                                      \
+      counter = base::Histogram::FactoryTimeGet(                        \
+          name, kPLTMin(), kPLTMax(), kPLTCount,                        \
+          base::Histogram::kUmaTargetedHistogramFlag);                  \
+    }                                                                   \
+    counter->AddTime(sample);                                           \
+    if (!data_reduction_proxy_was_used) break;                          \
+    if (!drp_counter) {                                                 \
+      drp_counter = base::Histogram::FactoryTimeGet(                    \
+          std::string(name) + "_DataReductionProxy",                    \
+          kPLTMin(), kPLTMax(), kPLTCount,                              \
+          base::Histogram::kUmaTargetedHistogramFlag);                  \
+    }                                                                   \
+    drp_counter->AddTime(sample);                                       \
+  } while (0)
+
 // Returns the scheme type of the given URL if its type is one for which we
 // dump page load histograms. Otherwise returns NULL.
 URLPattern::SchemeMasks GetSupportedSchemeType(const GURL& url) {
@@ -89,8 +112,22 @@ void DumpPerformanceTiming(const WebPerformance& performance,
   Time request = document_state->request_time();
 
   Time navigation_start = Time::FromDoubleT(performance.navigationStart());
+  Time redirect_start = Time::FromDoubleT(performance.redirectStart());
+  Time redirect_end = Time::FromDoubleT(performance.redirectEnd());
+  Time fetch_start = Time::FromDoubleT(performance.fetchStart());
+  Time domain_lookup_start = Time::FromDoubleT(performance.domainLookupStart());
+  Time domain_lookup_end = Time::FromDoubleT(performance.domainLookupEnd());
+  Time connect_start = Time::FromDoubleT(performance.connectStart());
+  Time connect_end = Time::FromDoubleT(performance.connectEnd());
   Time request_start = Time::FromDoubleT(performance.requestStart());
   Time response_start = Time::FromDoubleT(performance.responseStart());
+  Time response_end = Time::FromDoubleT(performance.responseEnd());
+  Time dom_loading = Time::FromDoubleT(performance.domLoading());
+  Time dom_interactive = Time::FromDoubleT(performance.domInteractive());
+  Time dom_content_loaded_start =
+      Time::FromDoubleT(performance.domContentLoadedEventStart());
+  Time dom_content_loaded_end =
+      Time::FromDoubleT(performance.domContentLoadedEventEnd());
   Time load_event_start = Time::FromDoubleT(performance.loadEventStart());
   Time load_event_end = Time::FromDoubleT(performance.loadEventEnd());
   Time begin = (request.is_null() ? navigation_start : request_start);
@@ -116,6 +153,64 @@ void DumpPerformanceTiming(const WebPerformance& performance,
   if (document_state->web_timing_histograms_recorded())
     return;
   document_state->set_web_timing_histograms_recorded(true);
+
+  if (!redirect_start.is_null() && !redirect_end.is_null()) {
+    PLT_HISTOGRAM_DRP("PLT.NT_Redirect", redirect_end - redirect_start,
+                      data_reduction_proxy_was_used);
+    PLT_HISTOGRAM_DRP(
+        "PLT.NT_DelayBeforeFetchRedirect",
+        (fetch_start - navigation_start) - (redirect_end - redirect_start),
+        data_reduction_proxy_was_used);
+  } else {
+    PLT_HISTOGRAM_DRP("PLT.NT_DelayBeforeFetch",
+                      fetch_start - navigation_start,
+                      data_reduction_proxy_was_used);
+  }
+  PLT_HISTOGRAM_DRP("PLT.NT_DelayBeforeDomainLookup",
+                    domain_lookup_start - fetch_start,
+                    data_reduction_proxy_was_used);
+  PLT_HISTOGRAM_DRP("PLT.NT_DomainLookup",
+                    domain_lookup_end - domain_lookup_start,
+                    data_reduction_proxy_was_used);
+  PLT_HISTOGRAM_DRP("PLT.NT_DelayBeforeConnect",
+                    connect_start - domain_lookup_end,
+                    data_reduction_proxy_was_used);
+  PLT_HISTOGRAM_DRP("PLT.NT_Connect", connect_end - connect_start,
+                    data_reduction_proxy_was_used);
+  PLT_HISTOGRAM_DRP("PLT.NT_DelayBeforeRequest",
+                    request_start - connect_end,
+                    data_reduction_proxy_was_used);
+  PLT_HISTOGRAM_DRP("PLT.NT_Request", response_start - request_start,
+                    data_reduction_proxy_was_used);
+  PLT_HISTOGRAM_DRP("PLT.NT_Response", response_end - response_start,
+                    data_reduction_proxy_was_used);
+
+  if (!dom_loading.is_null()) {
+    PLT_HISTOGRAM_DRP("PLT.NT_DelayBeforeDomLoading",
+                      dom_loading - response_start,
+                      data_reduction_proxy_was_used);
+  }
+  if (!dom_interactive.is_null() && !dom_loading.is_null()) {
+    PLT_HISTOGRAM_DRP("PLT.NT_DomLoading",
+                      dom_interactive - dom_loading,
+                      data_reduction_proxy_was_used);
+  }
+  if (!dom_content_loaded_start.is_null() && !dom_interactive.is_null()) {
+    PLT_HISTOGRAM_DRP("PLT.NT_DomInteractive",
+                      dom_content_loaded_start - dom_interactive,
+                      data_reduction_proxy_was_used);
+  }
+  if (!dom_content_loaded_start.is_null() &&
+      !dom_content_loaded_end.is_null() ) {
+    PLT_HISTOGRAM_DRP("PLT.NT_DomContentLoaded",
+                      dom_content_loaded_end - dom_content_loaded_start,
+                      data_reduction_proxy_was_used);
+  }
+  if (!dom_content_loaded_end.is_null() && !load_event_start.is_null()) {
+    PLT_HISTOGRAM_DRP("PLT.NT_DelayBeforeLoadEvent",
+                      load_event_start - dom_content_loaded_end,
+                      data_reduction_proxy_was_used);
+  }
 
   // TODO(simonjam): There is no way to distinguish between abandonment and
   // intentional Javascript navigation before the load event fires.
@@ -146,11 +241,14 @@ void DumpPerformanceTiming(const WebPerformance& performance,
       PLT_HISTOGRAM("PLT.PT_StartToFinish_DataReductionProxy",
                     load_event_end - request_start);
     }
-
   }
   if (!load_event_start.is_null() && !load_event_end.is_null()) {
     PLT_HISTOGRAM("PLT.PT_FinishDocToFinish",
                   load_event_end - load_event_start);
+    PLT_HISTOGRAM_DRP("PLT.NT_LoadEvent",
+                      load_event_end - load_event_start,
+                      data_reduction_proxy_was_used);
+
     if (data_reduction_proxy_was_used) {
       PLT_HISTOGRAM("PLT.PT_FinishDocToFinish_DataReductionProxy",
                     load_event_end - load_event_start);

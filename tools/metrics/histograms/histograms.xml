@@ -9954,6 +9954,108 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="PLT.NT_Connect" units="milliseconds">
+  <summary>
+    Time from connectStart to connectEnd based on Navigation Timing.
+  </summary>
+</histogram>
+
+<histogram name="PLT.NT_DelayBeforeConnect" units="milliseconds">
+  <summary>
+    Time from domanLookupEnd to connectStart based on Navigation Timing.
+  </summary>
+</histogram>
+
+<histogram name="PLT.NT_DelayBeforeDomainLookup" units="milliseconds">
+  <summary>
+    Time from fetchStart to domainLookupStart based on Navigation Timing.
+  </summary>
+</histogram>
+
+<histogram name="PLT.NT_DelayBeforeDomLoading" units="milliseconds">
+  <summary>
+    Time from responseStart to domLoading based on Navigation Timing.
+  </summary>
+</histogram>
+
+<histogram name="PLT.NT_DelayBeforeFetch" units="milliseconds">
+  <summary>
+    Time from navigationStart to fetchStart based on Navigation Timing when no
+    redirect.
+  </summary>
+</histogram>
+
+<histogram name="PLT.NT_DelayBeforeFetchRedirect" units="milliseconds">
+  <summary>
+    Time from navigationStart to fetchStart excluding time spent on redirects
+    based on Navigation Timing. Only page loads with redirects are considered.
+  </summary>
+</histogram>
+
+<histogram name="PLT.NT_DelayBeforeLoadEvent" units="milliseconds">
+  <summary>
+    Time from domContentLoadedEventEnd to loadEventStart based on Navigation
+    Timing.
+  </summary>
+</histogram>
+
+<histogram name="PLT.NT_DelayBeforeRequest" units="milliseconds">
+  <summary>
+    Time from connectEnd to requestStart based on Navigation Timing.
+  </summary>
+</histogram>
+
+<histogram name="PLT.NT_DomainLookup" units="milliseconds">
+  <summary>
+    Time from domainLookupStart to domainLookupEnd based on Navigation Timing.
+  </summary>
+</histogram>
+
+<histogram name="PLT.NT_DomContentLoaded" units="milliseconds">
+  <summary>
+    Time from domContentLoadedEventStart to domContentLoadedEventEnd based on
+    Navigation Timing.
+  </summary>
+</histogram>
+
+<histogram name="PLT.NT_DomInteractive" units="milliseconds">
+  <summary>
+    Time from domInteractive to domContentLoadEventStart based on Navigation
+    Timing.
+  </summary>
+</histogram>
+
+<histogram name="PLT.NT_DomLoading" units="milliseconds">
+  <summary>
+    Time from domLoading to domInteractive based on Navigation Timing.
+  </summary>
+</histogram>
+
+<histogram name="PLT.NT_LoadEvent" units="milliseconds">
+  <summary>
+    Time from loadEventStart to loadEventEnd based on Navigation Timing.
+  </summary>
+</histogram>
+
+<histogram name="PLT.NT_Redirect" units="milliseconds">
+  <summary>
+    Time from redirectStart to redirectEnd based on Navigation Timing when
+    redirects exist.
+  </summary>
+</histogram>
+
+<histogram name="PLT.NT_Request" units="milliseconds">
+  <summary>
+    Time from requestStart to responseStart based on Navigation Timing.
+  </summary>
+</histogram>
+
+<histogram name="PLT.NT_Response" units="milliseconds">
+  <summary>
+    Time from responseStart to responseEnd based on Navigation Timing.
+  </summary>
+</histogram>
+
 <histogram name="PLT.PerceivedLoadTime" units="milliseconds">
   <obsolete>
     Deprecated as of 5/02/2011, replaced by Prerender.RendererPLT.
@@ -21255,6 +21357,27 @@ other types of suffix sets.
   <affected-histogram name="PLT.BeginToFinish_LinkLoadReload"/>
   <affected-histogram name="PLT.BeginToFinish_NormalLoad"/>
   <affected-histogram name="PLT.LoadType"/>
+</fieldtrial>
+
+<fieldtrial name="DataReductionProxy">
+  <group name="DataReductionProxy"
+      label="Only page loads through the data reduction proxy are considered."/>
+  <affected-histogram name="PLT.NT_Connect"/>
+  <affected-histogram name="PLT.NT_DelayBeforeConnect"/>
+  <affected-histogram name="PLT.NT_DelayBeforeDomainLookup"/>
+  <affected-histogram name="PLT.NT_DelayBeforeDomLoading"/>
+  <affected-histogram name="PLT.NT_DelayBeforeFetch"/>
+  <affected-histogram name="PLT.NT_DelayBeforeFetchRedirect"/>
+  <affected-histogram name="PLT.NT_DelayBeforeLoadEvent"/>
+  <affected-histogram name="PLT.NT_DelayBeforeRequest"/>
+  <affected-histogram name="PLT.NT_DomainLookup"/>
+  <affected-histogram name="PLT.NT_DomContentLoaded"/>
+  <affected-histogram name="PLT.NT_DomInteractive"/>
+  <affected-histogram name="PLT.NT_DomLoading"/>
+  <affected-histogram name="PLT.NT_LoadEvent"/>
+  <affected-histogram name="PLT.NT_Redirect"/>
+  <affected-histogram name="PLT.NT_Request"/>
+  <affected-histogram name="PLT.NT_Response"/>
 </fieldtrial>
 
 <fieldtrial name="DefaultAppsExperiment">
