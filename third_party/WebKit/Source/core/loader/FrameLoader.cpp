@@ -443,7 +443,7 @@ void FrameLoader::clear(bool clearWindowProperties, bool clearScriptObjects, boo
     m_frame->document()->stopActiveDOMObjects();
     if (m_frame->document()->attached()) {
         m_frame->document()->prepareForDestruction();
-        m_frame->document()->removeFocusedNodeOfSubtree(m_frame->document());
+        m_frame->document()->removeFocusedElementOfSubtree(m_frame->document());
     }
 
     // Do this after detaching the document so that the unload event works.

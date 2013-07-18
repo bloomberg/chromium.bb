@@ -466,7 +466,7 @@ void ContainerNode::removeChild(Node* oldChild, ExceptionCode& ec)
 
     RefPtr<Node> child = oldChild;
 
-    document()->removeFocusedNodeOfSubtree(child.get());
+    document()->removeFocusedElementOfSubtree(child.get());
 
     if (FullscreenController* fullscreen = FullscreenController::fromIfExists(document()))
         fullscreen->removeFullScreenElementOfSubtree(child.get());
@@ -562,11 +562,11 @@ void ContainerNode::removeChildren()
     // and remove... e.g. stop loading frames, fire unload events.
     willRemoveChildren(protect.get());
 
-    // Exclude this node when looking for removed focusedNode since only
+    // Exclude this node when looking for removed focusedElement since only
     // children will be removed.
     // This must be later than willRemvoeChildren, which might change focus
     // state of a child.
-    document()->removeFocusedNodeOfSubtree(this, true);
+    document()->removeFocusedElementOfSubtree(this, true);
 
     NodeVector removedChildren;
     {

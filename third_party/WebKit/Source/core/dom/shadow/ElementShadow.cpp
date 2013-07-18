@@ -56,7 +56,7 @@ void ElementShadow::removeAllShadowRoots()
 
     while (RefPtr<ShadowRoot> oldRoot = m_shadowRoots.head()) {
         InspectorInstrumentation::willPopShadowRoot(shadowHost, oldRoot.get());
-        shadowHost->document()->removeFocusedNodeOfSubtree(oldRoot.get());
+        shadowHost->document()->removeFocusedElementOfSubtree(oldRoot.get());
 
         if (oldRoot->attached())
             oldRoot->detach();

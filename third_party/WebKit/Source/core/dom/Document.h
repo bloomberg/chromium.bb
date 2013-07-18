@@ -629,10 +629,10 @@ public:
     void setSelectedStylesheetSet(const String&);
 
     bool setFocusedElement(PassRefPtr<Element>, FocusDirection = FocusDirectionNone);
-    Element* focusedElement() const { return m_focusedNode.get(); }
+    Element* focusedElement() const { return m_focusedElement.get(); }
     UserActionElementSet& userActionElements()  { return m_userActionElements; }
     const UserActionElementSet& userActionElements() const { return m_userActionElements; }
-    void didRunCheckFocusedNodeTask() { m_didPostCheckFocusedNodeTask = false; }
+    void didRunCheckFocusedElementTask() { m_didPostCheckFocusedElementTask = false; }
 
     // The m_ignoreAutofocus flag specifies whether or not the document has been changed by the user enough 
     // for WebCore to ignore the autofocus attribute on any form controls
@@ -645,7 +645,7 @@ public:
     void setActiveElement(PassRefPtr<Element>);
     Element* activeElement() const { return m_activeElement.get(); }
 
-    void removeFocusedNodeOfSubtree(Node*, bool amongChildrenOnly = false);
+    void removeFocusedElementOfSubtree(Node*, bool amongChildrenOnly = false);
     void hoveredNodeDetached(Node*);
     void activeChainNodeDetached(Node*);
 
@@ -1169,9 +1169,8 @@ private:
     CompatibilityMode m_compatibilityMode;
     bool m_compatibilityModeLocked; // This is cheaper than making setCompatibilityMode virtual.
 
-    bool m_didPostCheckFocusedNodeTask;
-    // FIXME: Rename m_focusedNode to m_focusedElement.
-    RefPtr<Element> m_focusedNode;
+    bool m_didPostCheckFocusedElementTask;
+    RefPtr<Element> m_focusedElement;
     RefPtr<Node> m_hoverNode;
     RefPtr<Element> m_activeElement;
     RefPtr<Element> m_documentElement;
