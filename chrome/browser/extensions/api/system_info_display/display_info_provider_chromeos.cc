@@ -437,7 +437,7 @@ bool DisplayInfoProvider::QueryInfo() {
 
   int64 primary_id = ash::Shell::GetScreen()->GetPrimaryDisplay().id();
   for (size_t i = 0; i < display_manager->GetNumDisplays(); ++i) {
-    AddInfoForDisplay(*display_manager->GetDisplayAt(i), display_manager,
+    AddInfoForDisplay(display_manager->GetDisplayAt(i), display_manager,
                       primary_id, &info_);
   }
 

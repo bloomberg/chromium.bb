@@ -207,50 +207,16 @@ void DisplayManager::InitFromCommandLine() {
   OnNativeDisplaysChanged(info_list);
 }
 
-void DisplayManager::UpdateDisplayBoundsForLayout(
+// static
+void DisplayManager::UpdateDisplayBoundsForLayoutById(
     const DisplayLayout& layout,
     const gfx::Display& primary_display,
-    gfx::Display* secondary_display) {
-  DCHECK_EQ("0,0", primary_display.bounds().origin().ToString());
-
-  const gfx::Rect& primary_bounds = primary_display.bounds();
-  const gfx::Rect& secondary_bounds = secondary_display->bounds();
-  gfx::Point new_secondary_origin = primary_bounds.origin();
-
-  DisplayLayout::Position position = layout.position;
-
-  // Ignore the offset in case the secondary display doesn't share edges with
-  // the primary display.
-  int offset = layout.offset;
-  if (position == DisplayLayout::TOP || position == DisplayLayout::BOTTOM) {
-    offset = std::min(
-        offset, primary_bounds.width() - kMinimumOverlapForInvalidOffset);
-    offset = std::max(
-        offset, -secondary_bounds.width() + kMinimumOverlapForInvalidOffset);
-  } else {
-    offset = std::min(
-        offset, primary_bounds.height() - kMinimumOverlapForInvalidOffset);
-    offset = std::max(
-        offset, -secondary_bounds.height() + kMinimumOverlapForInvalidOffset);
-  }
-  switch (position) {
-    case DisplayLayout::TOP:
-      new_secondary_origin.Offset(offset, -secondary_bounds.height());
-      break;
-    case DisplayLayout::RIGHT:
-      new_secondary_origin.Offset(primary_bounds.width(), offset);
-      break;
-    case DisplayLayout::BOTTOM:
-      new_secondary_origin.Offset(offset, primary_bounds.height());
-      break;
-    case DisplayLayout::LEFT:
-      new_secondary_origin.Offset(-secondary_bounds.width(), offset);
-      break;
-  }
-  gfx::Insets insets = secondary_display->GetWorkAreaInsets();
-  secondary_display->set_bounds(
-      gfx::Rect(new_secondary_origin, secondary_bounds.size()));
-  secondary_display->UpdateWorkAreaFromInsets(insets);
+    int64 secondary_display_id) {
+  DCHECK_NE(gfx::Display::kInvalidDisplayID, secondary_display_id);
+  UpdateDisplayBoundsForLayout(
+      layout, primary_display,
+      Shell::GetInstance()->display_manager()->
+      FindDisplayForId(secondary_display_id));
 }
 
 bool DisplayManager::IsActiveDisplay(const gfx::Display& display) const {
@@ -271,7 +237,9 @@ bool DisplayManager::IsInternalDisplayId(int64 id) const {
 }
 
 const gfx::Display& DisplayManager::GetDisplayForId(int64 id) const {
-  return const_cast<DisplayManager*>(this)->FindDisplayForId(id);
+  gfx::Display* display =
+      const_cast<DisplayManager*>(this)->FindDisplayForId(id);
+  return display ? *display : GetInvalidDisplay();
 }
 
 const gfx::Display& DisplayManager::FindDisplayContainingPoint(
@@ -283,6 +251,15 @@ const gfx::Display& DisplayManager::FindDisplayContainingPoint(
       return display;
   }
   return GetInvalidDisplay();
+}
+
+bool DisplayManager::UpdateWorkAreaOfDisplay(int64 display_id,
+                                             const gfx::Insets& insets) {
+  gfx::Display* display = FindDisplayForId(display_id);
+  DCHECK(display);
+  gfx::Rect old_work_area = display->work_area();
+  display->UpdateWorkAreaFromInsets(insets);
+  return old_work_area != display->work_area();
 }
 
 void DisplayManager::SetOverscanInsets(int64 display_id,
@@ -634,8 +611,9 @@ void DisplayManager::UpdateDisplays(
 #endif
 }
 
-gfx::Display* DisplayManager::GetDisplayAt(size_t index) {
-  return index < displays_.size() ? &displays_[index] : NULL;
+const gfx::Display& DisplayManager::GetDisplayAt(size_t index) const {
+  DCHECK_LT(index, displays_.size());
+  return displays_[index];
 }
 
 const gfx::Display* DisplayManager::GetPrimaryDisplayCandidate() const {
@@ -763,16 +741,6 @@ void DisplayManager::SetSoftwareMirroring(bool enabled) {
   mirrored_display_ = gfx::Display();
 }
 
-gfx::Display& DisplayManager::FindDisplayForId(int64 id) {
-  for (DisplayList::iterator iter = displays_.begin();
-       iter != displays_.end(); ++iter) {
-    if ((*iter).id() == id)
-      return *iter;
-  }
-  DLOG(WARNING) << "Could not find display:" << id;
-  return GetInvalidDisplay();
-}
-
 bool DisplayManager::UpdateDisplayBounds(int64 display_id,
                                          const gfx::Rect& new_bounds) {
   if (change_display_upon_host_resize_) {
@@ -780,12 +748,22 @@ bool DisplayManager::UpdateDisplayBounds(int64 display_id,
     // Don't notify observers if the mirrored window has changed.
     if (software_mirroring_enabled_ && mirrored_display_.id() == display_id)
       return false;
-    gfx::Display& display = FindDisplayForId(display_id);
-    display.SetSize(display_info_[display_id].size_in_pixel());
-    Shell::GetInstance()->screen()->NotifyBoundsChanged(display);
+    gfx::Display* display = FindDisplayForId(display_id);
+    display->SetSize(display_info_[display_id].size_in_pixel());
+    Shell::GetInstance()->screen()->NotifyBoundsChanged(*display);
     return true;
   }
   return false;
+}
+
+gfx::Display* DisplayManager::FindDisplayForId(int64 id) {
+  for (DisplayList::iterator iter = displays_.begin();
+       iter != displays_.end(); ++iter) {
+    if ((*iter).id() == id)
+      return &(*iter);
+  }
+  DLOG(WARNING) << "Could not find display:" << id;
+  return NULL;
 }
 
 void DisplayManager::AddMirrorDisplayInfoIfAny(
@@ -856,6 +834,53 @@ bool DisplayManager::UpdateSecondaryDisplayBoundsForLayout(
     return bounds != displays->at(secondary_index).bounds();
   }
   return false;
+}
+
+// static
+void DisplayManager::UpdateDisplayBoundsForLayout(
+    const DisplayLayout& layout,
+    const gfx::Display& primary_display,
+    gfx::Display* secondary_display) {
+  DCHECK_EQ("0,0", primary_display.bounds().origin().ToString());
+
+  const gfx::Rect& primary_bounds = primary_display.bounds();
+  const gfx::Rect& secondary_bounds = secondary_display->bounds();
+  gfx::Point new_secondary_origin = primary_bounds.origin();
+
+  DisplayLayout::Position position = layout.position;
+
+  // Ignore the offset in case the secondary display doesn't share edges with
+  // the primary display.
+  int offset = layout.offset;
+  if (position == DisplayLayout::TOP || position == DisplayLayout::BOTTOM) {
+    offset = std::min(
+        offset, primary_bounds.width() - kMinimumOverlapForInvalidOffset);
+    offset = std::max(
+        offset, -secondary_bounds.width() + kMinimumOverlapForInvalidOffset);
+  } else {
+    offset = std::min(
+        offset, primary_bounds.height() - kMinimumOverlapForInvalidOffset);
+    offset = std::max(
+        offset, -secondary_bounds.height() + kMinimumOverlapForInvalidOffset);
+  }
+  switch (position) {
+    case DisplayLayout::TOP:
+      new_secondary_origin.Offset(offset, -secondary_bounds.height());
+      break;
+    case DisplayLayout::RIGHT:
+      new_secondary_origin.Offset(primary_bounds.width(), offset);
+      break;
+    case DisplayLayout::BOTTOM:
+      new_secondary_origin.Offset(offset, primary_bounds.height());
+      break;
+    case DisplayLayout::LEFT:
+      new_secondary_origin.Offset(-secondary_bounds.width(), offset);
+      break;
+  }
+  gfx::Insets insets = secondary_display->GetWorkAreaInsets();
+  secondary_display->set_bounds(
+      gfx::Rect(new_secondary_origin, secondary_bounds.size()));
+  secondary_display->UpdateWorkAreaFromInsets(insets);
 }
 
 }  // namespace internal

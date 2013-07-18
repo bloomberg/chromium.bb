@@ -146,7 +146,7 @@ void DisplayOptionsHandler::OnDisplayConfigurationChanged() {
 void DisplayOptionsHandler::SendAllDisplayInfo() {
   DisplayManager* display_manager = GetDisplayManager();
 
-  std::vector<const gfx::Display*> displays;
+  std::vector<gfx::Display> displays;
   for (size_t i = 0; i < display_manager->GetNumDisplays(); ++i) {
     displays.push_back(display_manager->GetDisplayAt(i));
   }
@@ -154,7 +154,7 @@ void DisplayOptionsHandler::SendAllDisplayInfo() {
 }
 
 void DisplayOptionsHandler::SendDisplayInfo(
-    const std::vector<const gfx::Display*> displays) {
+    const std::vector<gfx::Display>& displays) {
   DisplayManager* display_manager = GetDisplayManager();
   ash::DisplayController* display_controller =
       ash::Shell::GetInstance()->display_controller();
@@ -163,27 +163,27 @@ void DisplayOptionsHandler::SendDisplayInfo(
   int64 primary_id = ash::Shell::GetScreen()->GetPrimaryDisplay().id();
   base::ListValue js_displays;
   for (size_t i = 0; i < displays.size(); ++i) {
-    const gfx::Display* display = displays[i];
+    const gfx::Display& display = displays[i];
     const ash::internal::DisplayInfo& display_info =
-        display_manager->GetDisplayInfo(display->id());
-    const gfx::Rect& bounds = display->bounds();
+        display_manager->GetDisplayInfo(display.id());
+    const gfx::Rect& bounds = display.bounds();
     base::DictionaryValue* js_display = new base::DictionaryValue();
-    js_display->SetString("id", base::Int64ToString(display->id()));
+    js_display->SetString("id", base::Int64ToString(display.id()));
     js_display->SetInteger("x", bounds.x());
     js_display->SetInteger("y", bounds.y());
     js_display->SetInteger("width", bounds.width());
     js_display->SetInteger("height", bounds.height());
     js_display->SetString("name",
-                          display_manager->GetDisplayNameForId(display->id()));
-    js_display->SetBoolean("isPrimary", display->id() == primary_id);
-    js_display->SetBoolean("isInternal", display->IsInternal());
+                          display_manager->GetDisplayNameForId(display.id()));
+    js_display->SetBoolean("isPrimary", display.id() == primary_id);
+    js_display->SetBoolean("isInternal", display.IsInternal());
     js_display->SetInteger("orientation",
                            static_cast<int>(display_info.rotation()));
     std::vector<float> ui_scales = DisplayManager::GetScalesForDisplay(
         display_info);
     base::ListValue* js_scales = new base::ListValue();
     gfx::SizeF base_size = display_info.bounds_in_pixel().size();
-    base_size.Scale(1.0f / display->device_scale_factor());
+    base_size.Scale(1.0f / display.device_scale_factor());
     if (display_info.rotation() == gfx::Display::ROTATE_90 ||
         display_info.rotation() == gfx::Display::ROTATE_270) {
       float tmp = base_size.width();

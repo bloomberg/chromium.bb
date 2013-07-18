@@ -69,11 +69,12 @@ class ASH_EXPORT DisplayManager
   // Returns next valid UI scale.
   static float GetNextUIScale(const DisplayInfo& info, bool up);
 
-  // Updates the bounds of |secondary_display| according to |layout|.
-  static void UpdateDisplayBoundsForLayout(
+  // Updates the bounds of the display given by |secondary_display_id|
+  // according to |layout|.
+  static void UpdateDisplayBoundsForLayoutById(
       const DisplayLayout& layout,
       const gfx::Display& primary_display,
-      gfx::Display* secondary_display);
+      int64 secondary_display_id);
 
   DisplayManager();
   virtual ~DisplayManager();
@@ -115,6 +116,9 @@ class ASH_EXPORT DisplayManager
   const gfx::Display& FindDisplayContainingPoint(
       const gfx::Point& point_in_screen) const;
 
+  // Sets the work area's |insets| to the display given by |display_id|.
+  bool UpdateWorkAreaOfDisplay(int64 display_id, const gfx::Insets& insets);
+
   // Registers the overscan insets for the display of the specified ID. Note
   // that the insets size should be specified in DIP size. It also triggers the
   // display's bounds change.
@@ -154,10 +158,9 @@ class ASH_EXPORT DisplayManager
   // Updates current displays using current |display_info_|.
   void UpdateDisplays();
 
-  // Obsoleted: Do not use in new code.
   // Returns the display at |index|. The display at 0 is
   // no longer considered "primary".
-  gfx::Display* GetDisplayAt(size_t index);
+  const gfx::Display& GetDisplayAt(size_t index) const;
 
   const gfx::Display* GetPrimaryDisplayCandidate() const;
 
@@ -200,6 +203,9 @@ class ASH_EXPORT DisplayManager
   void SetSoftwareMirroring(bool enabled);
 #endif
 
+  // Update the bounds of the display given by |display_id|.
+  bool UpdateDisplayBounds(int64 display_id,
+                           const gfx::Rect& new_bounds);
 private:
   FRIEND_TEST_ALL_PREFIXES(ExtendedDesktopTest, ConvertPoint);
   FRIEND_TEST_ALL_PREFIXES(DisplayManagerTest, TestNativeDisplaysChanged);
@@ -210,10 +216,6 @@ private:
   friend class test::DisplayManagerTestApi;
   friend class test::SystemGestureEventFilterTest;
   friend class DisplayManagerTest;
-  // This is to allow DisplayController to modify the state of
-  // DisplayManager.  TODO(oshima): consider provide separate
-  // interface to modify the state.
-  friend class ash::DisplayController;
 
   typedef std::vector<gfx::Display> DisplayList;
 
@@ -221,10 +223,7 @@ private:
     change_display_upon_host_resize_ = value;
   }
 
-  gfx::Display& FindDisplayForId(int64 id);
-
-  // Updates the bounds of the display given by |display_id|.
-  bool UpdateDisplayBounds(int64 display_id, const gfx::Rect& new_bounds);
+  gfx::Display* FindDisplayForId(int64 id);
 
   // Add the mirror display's display info if the software based
   // mirroring is in use.
@@ -248,6 +247,10 @@ private:
   bool UpdateSecondaryDisplayBoundsForLayout(DisplayList* display_list,
                                              size_t* updated_index) const;
 
+  static void UpdateDisplayBoundsForLayout(
+      const DisplayLayout& layout,
+      const gfx::Display& primary_display,
+      gfx::Display* secondary_display);
 
   Delegate* delegate_;  // not owned.
 

@@ -84,7 +84,11 @@ gfx::Rect ScreenAsh::ConvertRectFromScreen(aura::Window* window,
 
 // static
 const gfx::Display& ScreenAsh::GetSecondaryDisplay() {
-  return *(Shell::GetInstance()->display_controller()->GetSecondaryDisplay());
+  internal::DisplayManager* display_manager = GetDisplayManager();
+  CHECK_EQ(2U, display_manager->GetNumDisplays());
+  return display_manager->GetDisplayAt(0).id() ==
+      DisplayController::GetPrimaryDisplay().id() ?
+      display_manager->GetDisplayAt(1) : display_manager->GetDisplayAt(0);
 }
 
 // static

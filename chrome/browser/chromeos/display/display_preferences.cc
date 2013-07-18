@@ -182,7 +182,7 @@ void StoreCurrentDisplayProperties() {
 
   size_t num = display_manager->GetNumDisplays();
   for (size_t i = 0; i < num; ++i) {
-    int64 id = display_manager->GetDisplayAt(i)->id();
+    int64 id = display_manager->GetDisplayAt(i).id();
     ash::internal::DisplayInfo info = display_manager->GetDisplayInfo(id);
 
     scoped_ptr<base::DictionaryValue> property_value(

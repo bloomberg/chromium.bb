@@ -7,6 +7,7 @@
 #include "ash/ash_switches.h"
 #include "ash/display/display_manager.h"
 #include "ash/root_window_controller.h"
+#include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/display_manager_test_api.h"
@@ -49,12 +50,12 @@ class TouchHudTest : public test::AshTestBase {
         CreateDisplayInfo(mirrored_display_id_, gfx::Rect(0, 0, 100, 100));
   }
 
-  const gfx::Display& GetPrimaryDisplay() {
-    return GetDisplayController()->GetPrimaryDisplay();
+  gfx::Display GetPrimaryDisplay() {
+    return Shell::GetScreen()->GetPrimaryDisplay();
   }
 
   const gfx::Display& GetSecondaryDisplay() {
-    return *GetDisplayController()->GetSecondaryDisplay();
+    return ScreenAsh::GetSecondaryDisplay();
   }
 
   void SetupSingleDisplay() {

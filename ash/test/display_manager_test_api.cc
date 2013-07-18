@@ -27,11 +27,12 @@ std::vector<DisplayInfo> CreateDisplayInfoListFromString(
   std::vector<DisplayInfo> display_info_list;
   std::vector<std::string> parts;
   base::SplitString(specs, ',', &parts);
-  int index = 0;
+  size_t index = 0;
   for (std::vector<std::string>::const_iterator iter = parts.begin();
        iter != parts.end(); ++iter, ++index) {
-    gfx::Display* display = display_manager->GetDisplayAt(index);
-    int64 id = display ? display->id() : gfx::Display::kInvalidDisplayID;
+    int64 id = index < display_manager->GetNumDisplays() ?
+        display_manager->GetDisplayAt(index).id() :
+        gfx::Display::kInvalidDisplayID;
     display_info_list.push_back(
         DisplayInfo::CreateFromSpecWithID(*iter, id));
   }

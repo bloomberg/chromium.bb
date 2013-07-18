@@ -93,7 +93,7 @@ base::string16 GetAllDisplayInfo() {
   }
 
   for (size_t i = 0; i < display_manager->GetNumDisplays(); ++i) {
-    int64 id = display_manager->GetDisplayAt(i)->id();
+    int64 id = display_manager->GetDisplayAt(i).id();
     if (id == internal_id)
       continue;
     lines.push_back(GetDisplayInfoLine(id));
@@ -115,7 +115,7 @@ base::string16 GetExternalDisplayName() {
   if (external_id == gfx::Display::kInvalidDisplayID) {
     int64 internal_display_id = gfx::Display::InternalDisplayId();
     for (size_t i = 0; i < display_manager->GetNumDisplays(); ++i) {
-      int64 id = display_manager->GetDisplayAt(i)->id();
+      int64 id = display_manager->GetDisplayAt(i).id();
       if (id != internal_display_id) {
         external_id = id;
         break;
@@ -361,7 +361,7 @@ base::string16 TrayDisplay::GetDisplayMessageForNotification() {
   DisplayInfoMap old_info;
   old_info.swap(display_info_);
   for (size_t i = 0; i < display_manager->GetNumDisplays(); ++i) {
-    int64 id = display_manager->GetDisplayAt(i)->id();
+    int64 id = display_manager->GetDisplayAt(i).id();
     display_info_[id] = display_manager->GetDisplayInfo(id);
   }
 

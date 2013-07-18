@@ -13,6 +13,7 @@
 #include "ash/display/display_manager.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
@@ -112,9 +113,6 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver,
   // window to given |display|.
   void SetPrimaryDisplay(const gfx::Display& display);
 
-  // Returns the secondary display.
-  gfx::Display* GetSecondaryDisplay();
-
   // Closes all child windows in the all root windows.
   void CloseChildWindows();
 
@@ -178,13 +176,10 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver,
   virtual void PostDisplayConfigurationChange() OVERRIDE;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(DisplayControllerTest, BoundsUpdated);
+  FRIEND_TEST_ALL_PREFIXES(DisplayControllerTest, SecondaryDisplayLayout);
   friend class internal::DisplayManager;
   friend class internal::MirrorWindowController;
-
-  // Returns a display the |root| is assigned to for modification.
-  // Returns NULL if the no display is assigned, or the root window is
-  // for mirroring.
-  gfx::Display* FindDisplayForRootWindow(const aura::RootWindow* root);
 
   // Creates a root window for |display| and stores it in the |root_windows_|
   // map.
