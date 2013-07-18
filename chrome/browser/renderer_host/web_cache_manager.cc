@@ -315,15 +315,13 @@ void WebCacheManager::EnactStrategy(const AllocationStrategy& strategy) {
       // This is the capacity this renderer has been allocated.
       size_t capacity = allocation->second;
 
-      // We don't reserve any space for dead objects in the cache.  Instead, we
-      // prefer to keep live objects around.  There is probably some performance
+      // We don't reserve any space for dead objects in the cache. Instead, we
+      // prefer to keep live objects around. There is probably some performance
       // tuning to be done here.
       size_t min_dead_capacity = 0;
 
-      // We allow the dead objects to consume all of the cache, if the renderer
-      // so desires.  If we wanted this memory, we would have set the total
-      // capacity lower.
-      size_t max_dead_capacity = capacity;
+      // We allow the dead objects to consume up to half of the cache capacity.
+      size_t max_dead_capacity = capacity / 2;
 
       host->Send(new ChromeViewMsg_SetCacheCapacities(min_dead_capacity,
                                                       max_dead_capacity,
