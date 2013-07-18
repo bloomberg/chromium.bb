@@ -42,11 +42,8 @@ class DeleteTraceLogForTesting {
   }
 };
 
-// Not supported in split-dll build. http://crbug.com/237249
-#if !defined(CHROME_SPLIT_DLL)
 // The thread buckets for the sampling profiler.
 BASE_EXPORT TRACE_EVENT_API_ATOMIC_WORD g_trace_state[3];
-#endif
 
 namespace base {
 namespace debug {
@@ -981,8 +978,6 @@ void TraceLog::SetEnabled(const CategoryFilter& category_filter,
     category_filter_ = CategoryFilter(category_filter);
     EnableIncludedCategoryGroups();
 
-    // Not supported in split-dll build. http://crbug.com/237249
-  #if !defined(CHROME_SPLIT_DLL)
     if (options & ENABLE_SAMPLING) {
       sampling_thread_.reset(new TraceSamplingThread);
       sampling_thread_->RegisterSampleBucket(
@@ -1002,7 +997,6 @@ void TraceLog::SetEnabled(const CategoryFilter& category_filter,
         DCHECK(false) << "failed to create thread";
       }
     }
-  #endif
 
     dispatching_to_observer_list_ = true;
     observer_list = enabled_state_observer_list_;

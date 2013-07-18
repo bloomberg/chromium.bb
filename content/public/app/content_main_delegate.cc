@@ -48,8 +48,14 @@ ZygoteForkDelegate* ContentMainDelegate::ZygoteStarting() {
 
 #endif
 
-ContentBrowserClient* ContentMainDelegate::CreateContentBrowserClient() {
-  return new ContentBrowserClient();
+#if !defined(CHROME_MULTIPLE_DLL) || defined(CHROME_MULTIPLE_DLL_CHILD)
+
+ContentRendererClient* ContentMainDelegate::CreateContentRendererClient() {
+#if defined(OS_IOS)
+  return NULL;
+#else
+  return new ContentRendererClient();
+#endif
 }
 
 ContentPluginClient* ContentMainDelegate::CreateContentPluginClient() {
@@ -60,12 +66,8 @@ ContentPluginClient* ContentMainDelegate::CreateContentPluginClient() {
 #endif
 }
 
-ContentRendererClient* ContentMainDelegate::CreateContentRendererClient() {
-#if defined(OS_IOS)
+ContentBrowserClient* ContentMainDelegate::CreateContentBrowserClient() {
   return NULL;
-#else
-  return new ContentRendererClient();
-#endif
 }
 
 ContentUtilityClient* ContentMainDelegate::CreateContentUtilityClient() {
@@ -75,5 +77,25 @@ ContentUtilityClient* ContentMainDelegate::CreateContentUtilityClient() {
   return new ContentUtilityClient();
 #endif
 }
+
+#else  // In browser in multiple DLL mode.
+
+ContentRendererClient* ContentMainDelegate::CreateContentRendererClient() {
+  return NULL;
+}
+
+ContentPluginClient* ContentMainDelegate::CreateContentPluginClient() {
+  return NULL;
+}
+ContentBrowserClient* ContentMainDelegate::CreateContentBrowserClient() {
+  return new ContentBrowserClient();
+}
+
+ContentUtilityClient* ContentMainDelegate::CreateContentUtilityClient() {
+  return NULL;
+}
+
+#endif
+
 
 }  // namespace content

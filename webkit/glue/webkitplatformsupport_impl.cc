@@ -451,8 +451,6 @@ const unsigned char* WebKitPlatformSupportImpl::getTraceCategoryEnabledFlag(
 
 long* WebKitPlatformSupportImpl::getTraceSamplingState(
     const unsigned thread_bucket) {
-  // Not supported in split-dll build. http://crbug.com/237249
-#if !defined(CHROME_SPLIT_DLL)
   switch (thread_bucket) {
     case 0:
       return reinterpret_cast<long*>(&TRACE_EVENT_API_THREAD_BUCKET(0));
@@ -463,7 +461,6 @@ long* WebKitPlatformSupportImpl::getTraceSamplingState(
     default:
       NOTREACHED() << "Unknown thread bucket type.";
   }
-#endif
   return NULL;
 }
 
