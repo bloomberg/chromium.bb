@@ -32,7 +32,7 @@ from webkitpy.common.checkout.scm.git import Git
 from webkitpy.common.config.irc import server, port, channel, nickname
 from webkitpy.common.config.irc import update_wait_seconds, retry_attempts
 from webkitpy.common.system.executive import ScriptError
-from webkitpy.thirdparty.autoinstalled.irc.ircbot import SingleServerIRCBot
+from webkitpy.thirdparty.irc.ircbot import SingleServerIRCBot
 
 _log = logging.getLogger(__name__)
 

@@ -77,22 +77,8 @@ class AutoinstallImportHook(object):
 
         # Note: all of the methods must follow the "_install_XXX" convention in
         # order for autoinstall_everything(), below, to work properly.
-        if '.irc' in fullname:
-            self._install_irc()
         elif '.mechanize' in fullname:
             self._install_mechanize()
-
-    def _install_irc(self):
-        # Since irclib and ircbot are two top-level packages, we need to import
-        # them separately.  We group them into an irc package for better
-        # organization purposes.
-        irc_dir = self._fs.join(_AUTOINSTALLED_DIR, "irc")
-        installer = AutoInstaller(target_dir=irc_dir)
-        did_install_something = installer.install(url="http://downloads.sourceforge.net/project/python-irclib/python-irclib/0.4.8/python-irclib-0.4.8.zip",
-            url_subpath="irclib.py")
-        did_install_something |= installer.install(url="http://downloads.sourceforge.net/project/python-irclib/python-irclib/0.4.8/python-irclib-0.4.8.zip",
-            url_subpath="ircbot.py")
-        return did_install_something
 
     def _install_mechanize(self):
         return self._install("https://pypi.python.org/packages/source/m/mechanize/mechanize-0.2.5.tar.gz",
