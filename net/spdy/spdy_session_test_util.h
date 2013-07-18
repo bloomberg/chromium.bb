@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/pending_task.h"
 
 namespace net {

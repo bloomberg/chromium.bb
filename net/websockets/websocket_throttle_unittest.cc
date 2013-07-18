@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "net/base/address_list.h"
 #include "net/base/test_completion_callback.h"
 #include "net/socket_stream/socket_stream.h"

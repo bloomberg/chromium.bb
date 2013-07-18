@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "net/base/host_port_pair.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_fetcher_delegate.h"

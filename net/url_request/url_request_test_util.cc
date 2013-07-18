@@ -6,7 +6,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/threading/thread.h"
 #include "base/threading/worker_pool.h"
 #include "net/base/host_port_pair.h"

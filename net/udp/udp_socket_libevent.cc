@@ -12,7 +12,7 @@
 
 #include "base/callback.h"
 #include "base/logging.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/metrics/stats_counters.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/rand_util.h"

@@ -16,14 +16,14 @@
 #include "base/file_util.h"
 #include "base/files/file_enumerator.h"
 #include "base/format_macros.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "net/base/file_stream.h"
 #include "net/disk_cache/block_files.h"
 #include "net/disk_cache/disk_format.h"
 #include "net/disk_cache/mapped_file.h"
 #include "net/disk_cache/stats.h"
-#include "net/disk_cache/storage_block.h"
 #include "net/disk_cache/storage_block-inl.h"
+#include "net/disk_cache/storage_block.h"
 
 namespace {
 
