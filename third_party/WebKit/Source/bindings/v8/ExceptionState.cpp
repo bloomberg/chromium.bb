@@ -42,7 +42,7 @@ void ExceptionState::clearException()
     m_exception.clear();
 }
 
-void ExceptionState::throwDOMException(const ExceptionCode& ec, const String& message)
+void ExceptionState::throwDOMException(const ExceptionCode& ec, const char* message)
 {
     ASSERT(ec);
     m_code = ec;
@@ -59,7 +59,7 @@ void ExceptionState::setException(v8::Handle<v8::Value> exception)
     m_exception.set(m_isolate, exception);
 }
 
-void ExceptionState::throwTypeError(const String& message)
+void ExceptionState::throwTypeError(const char* message)
 {
     m_code = TypeError;
     setException(V8ThrowException::createTypeError(message, m_isolate));
@@ -68,12 +68,12 @@ void ExceptionState::throwTypeError(const String& message)
 NonThrowExceptionState::NonThrowExceptionState()
     : ExceptionState(0) { }
 
-void NonThrowExceptionState::throwDOMException(const ExceptionCode& ec, const String&)
+void NonThrowExceptionState::throwDOMException(const ExceptionCode& ec, const char*)
 {
     m_code = ec;
 }
 
-void NonThrowExceptionState::throwTypeError(const String&)
+void NonThrowExceptionState::throwTypeError(const char*)
 {
     m_code = TypeError;
 }

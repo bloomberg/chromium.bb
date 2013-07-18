@@ -33,7 +33,6 @@
 
 #include "bindings/v8/ExceptionState.h"
 #include "wtf/Assertions.h"
-#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
@@ -43,8 +42,8 @@ class IgnorableExceptionState : public ExceptionState {
 public:
     IgnorableExceptionState(): ExceptionState(0) { }
     ExceptionState& returnThis() { return *this; }
-    virtual void throwDOMException(const ExceptionCode&, const String& message = String()) OVERRIDE FINAL { };
-    virtual void throwTypeError(const String& message = String()) OVERRIDE FINAL { }
+    virtual void throwDOMException(const ExceptionCode&, const char* message = 0) OVERRIDE FINAL { };
+    virtual void throwTypeError(const char* message = 0) OVERRIDE FINAL { }
 };
 
 #define IGNORE_EXCEPTION_STATE (::WebCore::IgnorableExceptionState().returnThis())
@@ -59,8 +58,8 @@ class NoExceptionStateAssertionChecker : public ExceptionState {
 public:
     NoExceptionStateAssertionChecker(const char* file, int line);
     ExceptionState& returnThis() { return *this; }
-    virtual void throwDOMException(const ExceptionCode&, const String& message = String()) OVERRIDE FINAL;
-    virtual void throwTypeError(const String& message = String()) OVERRIDE FINAL;
+    virtual void throwDOMException(const ExceptionCode&, const char* message = 0) OVERRIDE FINAL;
+    virtual void throwTypeError(const char* message = 0) OVERRIDE FINAL;
 
 private:
     const char* m_file;

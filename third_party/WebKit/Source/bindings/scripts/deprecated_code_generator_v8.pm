@@ -1760,7 +1760,7 @@ sub GenerateNormalAttrSetter
         my $argType = $attribute->type;
         if (IsWrapperType($argType)) {
             $code .= "    if (!isUndefinedOrNull(value) && !V8${argType}::HasInstance(value, info.GetIsolate(), worldType(info.GetIsolate()))) {\n";
-            $code .= "        throwTypeError(info.GetIsolate());\n";
+            $code .= "        throwTypeError(0, info.GetIsolate());\n";
             $code .= "        return;\n";
             $code .= "    }\n";
         }
@@ -2044,7 +2044,7 @@ END
         $code .= "    }\n";
     }
     $code .= <<END;
-    throwTypeError(args.GetIsolate());
+    throwTypeError(0, args.GetIsolate());
 END
     $code .= "}\n\n";
     $code .= "#endif // ${conditionalString}\n\n" if $conditionalString;
@@ -2330,14 +2330,14 @@ sub GenerateParametersCheck
                 $parameterCheckString .= "    RefPtr<" . $parameter->type . "> $parameterName;\n";
                 $parameterCheckString .= "    if (args.Length() > $paramIndex && !args[$paramIndex]->IsNull() && !args[$paramIndex]->IsUndefined()) {\n";
                 $parameterCheckString .= "        if (!args[$paramIndex]->IsFunction()) {\n";
-                $parameterCheckString .= "            throwTypeError(args.GetIsolate());\n";
+                $parameterCheckString .= "            throwTypeError(0, args.GetIsolate());\n";
                 $parameterCheckString .= "            return;\n";
                 $parameterCheckString .= "        }\n";
                 $parameterCheckString .= "        $parameterName = ${v8ClassName}::create(args[$paramIndex], getScriptExecutionContext());\n";
                 $parameterCheckString .= "    }\n";
             } else {
                 $parameterCheckString .= "    if (args.Length() <= $paramIndex || !args[$paramIndex]->IsFunction()) {\n";
-                $parameterCheckString .= "        throwTypeError(args.GetIsolate());\n";
+                $parameterCheckString .= "        throwTypeError(0, args.GetIsolate());\n";
                 $parameterCheckString .= "        return;\n";
                 $parameterCheckString .= "    }\n";
                 $parameterCheckString .= "    RefPtr<" . $parameter->type . "> $parameterName = ${v8ClassName}::create(args[$paramIndex], getScriptExecutionContext());\n";
@@ -2366,7 +2366,7 @@ sub GenerateParametersCheck
                 $parameterCheckString .= "    Vector<$nativeElementType> $parameterName;\n";
                 $parameterCheckString .= "    for (int i = $paramIndex; i < args.Length(); ++i) {\n";
                 $parameterCheckString .= "        if (!V8${argType}::HasInstance(args[i], args.GetIsolate(), worldType(args.GetIsolate()))) {\n";
-                $parameterCheckString .= "            throwTypeError(args.GetIsolate());\n";
+                $parameterCheckString .= "            throwTypeError(0, args.GetIsolate());\n";
                 $parameterCheckString .= "            return;\n";
                 $parameterCheckString .= "        }\n";
                 $parameterCheckString .= "        $parameterName.append(V8${argType}::toNative(v8::Handle<v8::Object>::Cast(args[i])));\n";
@@ -2387,7 +2387,7 @@ sub GenerateParametersCheck
                 my $enumValidationExpression = join(" || ", @validEqualities);
                 $parameterCheckString .=  "    String string = $parameterName;\n";
                 $parameterCheckString .= "    if (!($enumValidationExpression)) {\n";
-                $parameterCheckString .= "        throwTypeError(args.GetIsolate());\n";
+                $parameterCheckString .= "        throwTypeError(0, args.GetIsolate());\n";
                 $parameterCheckString .= "        return;\n";
                 $parameterCheckString .= "    }\n";
             }
@@ -2403,7 +2403,7 @@ sub GenerateParametersCheck
                 my $argType = $parameter->type;
                 if (IsWrapperType($argType)) {
                     $parameterCheckString .= "    if (args.Length() > $paramIndex && !isUndefinedOrNull($argValue) && !V8${argType}::HasInstance($argValue, args.GetIsolate(), worldType(args.GetIsolate()))) {\n";
-                    $parameterCheckString .= "        throwTypeError(args.GetIsolate());\n";
+                    $parameterCheckString .= "        throwTypeError(0, args.GetIsolate());\n";
                     $parameterCheckString .= "        return;\n";
                     $parameterCheckString .= "    }\n";
                 }
@@ -2459,7 +2459,7 @@ END
         $code .= "    }\n";
     }
     $code .= <<END;
-    throwTypeError(args.GetIsolate());
+    throwTypeError(0, args.GetIsolate());
     return;
 END
     $code .= "}\n\n";

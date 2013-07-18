@@ -59,14 +59,13 @@ namespace WebCore {
     v8::Handle<v8::Value> setDOMException(int, v8::Isolate*);
 
     // Schedule a JavaScript error to be thrown.
-    v8::Handle<v8::Value> throwError(V8ErrorType, const String&, v8::Isolate*);
+    v8::Handle<v8::Value> throwError(V8ErrorType, const char*, v8::Isolate*);
 
     // Schedule a JavaScript error to be thrown.
     v8::Handle<v8::Value> throwError(v8::Handle<v8::Value>);
 
     // A helper for throwing JavaScript TypeError.
-    v8::Handle<v8::Value> throwTypeError(v8::Isolate*);
-    v8::Handle<v8::Value> throwTypeError(const String&, v8::Isolate*);
+    v8::Handle<v8::Value> throwTypeError(const char*, v8::Isolate*);
 
     // A helper for throwing JavaScript TypeError for not enough arguments.
     v8::Handle<v8::Value> throwNotEnoughArgumentsError(v8::Isolate*);
@@ -455,7 +454,7 @@ namespace WebCore {
     inline v8::Handle<v8::Value> toV8Sequence(v8::Handle<v8::Value> value, uint32_t& length, v8::Isolate* isolate)
     {
         if (!value->IsObject()) {
-            throwTypeError(isolate);
+            throwTypeError(0, isolate);
             return v8Undefined();
         }
 
@@ -465,7 +464,7 @@ namespace WebCore {
         V8TRYCATCH(v8::Local<v8::Value>, lengthValue, object->Get(v8::String::NewSymbol("length")));
 
         if (lengthValue->IsUndefined() || lengthValue->IsNull()) {
-            throwTypeError(isolate);
+            throwTypeError(0, isolate);
             return v8Undefined();
         }
 

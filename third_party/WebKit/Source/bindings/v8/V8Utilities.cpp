@@ -42,10 +42,8 @@
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/page/Frame.h"
 #include "core/workers/WorkerGlobalScope.h"
-#include "wtf/ArrayBuffer.h"
-#include "wtf/text/WTFString.h"
 #include <v8.h>
-
+#include "wtf/ArrayBuffer.h"
 
 namespace WebCore {
 
@@ -102,7 +100,7 @@ bool extractTransferables(v8::Local<v8::Value> value, MessagePortArray& ports, A
         } else if (V8ArrayBuffer::HasInstance(transferrable, isolate, worldType(isolate)))
             arrayBuffers.append(V8ArrayBuffer::toNative(v8::Handle<v8::Object>::Cast(transferrable)));
         else {
-            throwTypeError(isolate);
+            throwTypeError(0, isolate);
             return false;
         }
     }

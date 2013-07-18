@@ -40,12 +40,12 @@ NoExceptionStateAssertionChecker::NoExceptionStateAssertionChecker(const char* f
     , m_file(file)
     , m_line(line) { }
 
-void NoExceptionStateAssertionChecker::throwDOMException(const ExceptionCode&, const String&)
+void NoExceptionStateAssertionChecker::throwDOMException(const ExceptionCode&, const char*)
 {
     ASSERT_AT(false, m_file, m_line, "");
 }
 
-void NoExceptionStateAssertionChecker::throwTypeError(const String&)
+void NoExceptionStateAssertionChecker::throwTypeError(const char*)
 {
     ASSERT_AT(false, m_file, m_line, "");
 }

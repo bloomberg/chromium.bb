@@ -44,7 +44,7 @@ static void domExceptionStackSetter(v8::Local<v8::String> name, v8::Local<v8::Va
     info.Data()->ToObject()->Set(v8::String::NewSymbol("stack"), value);
 }
 
-v8::Handle<v8::Value> V8ThrowException::createDOMException(int ec, const String& message, v8::Isolate* isolate)
+v8::Handle<v8::Value> V8ThrowException::createDOMException(int ec, const char* message, v8::Isolate* isolate)
 {
     if (ec <= 0 || v8::V8::IsExecutionTerminating())
         return v8Undefined();
@@ -68,7 +68,7 @@ v8::Handle<v8::Value> V8ThrowException::createDOMException(int ec, const String&
     return exception;
 }
 
-v8::Handle<v8::Value> V8ThrowException::throwDOMException(int ec, const String& message, v8::Isolate* isolate)
+v8::Handle<v8::Value> V8ThrowException::throwDOMException(int ec, const char* message, v8::Isolate* isolate)
 {
     v8::Handle<v8::Value> exception = createDOMException(ec, message, isolate);
     if (exception.IsEmpty())
@@ -77,7 +77,7 @@ v8::Handle<v8::Value> V8ThrowException::throwDOMException(int ec, const String& 
     return V8ThrowException::throwError(exception);
 }
 
-v8::Handle<v8::Value> V8ThrowException::createError(V8ErrorType type, const String& message, v8::Isolate* isolate)
+v8::Handle<v8::Value> V8ThrowException::createError(V8ErrorType type, const char* message, v8::Isolate* isolate)
 {
     switch (type) {
     case v8RangeError:
@@ -96,7 +96,7 @@ v8::Handle<v8::Value> V8ThrowException::createError(V8ErrorType type, const Stri
     }
 }
 
-v8::Handle<v8::Value> V8ThrowException::throwError(V8ErrorType type, const String& message, v8::Isolate* isolate)
+v8::Handle<v8::Value> V8ThrowException::throwError(V8ErrorType type, const char* message, v8::Isolate* isolate)
 {
     v8::Handle<v8::Value> exception = V8ThrowException::createError(type, message, isolate);
     if (exception.IsEmpty())
@@ -104,12 +104,12 @@ v8::Handle<v8::Value> V8ThrowException::throwError(V8ErrorType type, const Strin
     return V8ThrowException::throwError(exception);
 }
 
-v8::Handle<v8::Value> V8ThrowException::createTypeError(const String& message, v8::Isolate* isolate)
+v8::Handle<v8::Value> V8ThrowException::createTypeError(const char* message, v8::Isolate* isolate)
 {
-    return v8::Exception::TypeError(v8String(message.isNull() ? "Type error" : message, isolate));
+    return v8::Exception::TypeError(v8String(message ? message : "Type error", isolate));
 }
 
-v8::Handle<v8::Value> V8ThrowException::throwTypeError(const String& message, v8::Isolate* isolate)
+v8::Handle<v8::Value> V8ThrowException::throwTypeError(const char* message, v8::Isolate* isolate)
 {
     v8::Handle<v8::Value> exception = V8ThrowException::createTypeError(message, isolate);
     return V8ThrowException::throwError(exception);

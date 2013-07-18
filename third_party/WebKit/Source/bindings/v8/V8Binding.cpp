@@ -71,7 +71,7 @@ v8::Handle<v8::Value> setDOMException(int exceptionCode, v8::Isolate* isolate)
     return V8ThrowException::throwDOMException(exceptionCode, isolate);
 }
 
-v8::Handle<v8::Value> throwError(V8ErrorType errorType, const String& message, v8::Isolate* isolate)
+v8::Handle<v8::Value> throwError(V8ErrorType errorType, const char* message, v8::Isolate* isolate)
 {
     return V8ThrowException::throwError(errorType, message, isolate);
 }
@@ -81,12 +81,7 @@ v8::Handle<v8::Value> throwError(v8::Handle<v8::Value> exception)
     return V8ThrowException::throwError(exception);
 }
 
-v8::Handle<v8::Value> throwTypeError(v8::Isolate* isolate)
-{
-    return V8ThrowException::throwTypeError(String(), isolate);
-}
-
-v8::Handle<v8::Value> throwTypeError(const String& message, v8::Isolate* isolate)
+v8::Handle<v8::Value> throwTypeError(const char* message, v8::Isolate* isolate)
 {
     return V8ThrowException::throwTypeError(message, isolate);
 }
