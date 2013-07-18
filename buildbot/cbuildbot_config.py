@@ -1434,10 +1434,16 @@ _release.add_config('parrot-release',
 
 _release.add_config('parrot32-release',
   boards=['parrot32'],
+  # TODO(moch): Need to setup machines in the lab with this configuration
+  # Until then disabling hw_tests so that builder works
+  hw_tests=[],
 )
 
 _release.add_config('parrot64-release',
   boards=['parrot64'],
+  # TODO(moch): Need to setup machines in the lab with this configuration
+  # Until then disabling hw_tests so that builder works
+  hw_tests=[],
 )
 
 _release.add_config('peppy-release',
