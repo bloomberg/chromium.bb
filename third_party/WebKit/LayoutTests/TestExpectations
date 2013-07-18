@@ -875,7 +875,7 @@ webkit.org/b/81542 css3/images/cross-fade-invalidation.html [ ImageOnlyFailure P
 webkit.org/b/76727 fast/multicol/span/span-as-immediate-child-property-removal.html [ Failure ImageOnlyFailure Pass ]
 webkit.org/b/76727 fast/multicol/span/span-as-immediate-columns-child-removal.html [ Failure ImageOnlyFailure Pass ]
 
-webkit.org/b/77314 [ Mac Win ] fast/events/touch/send-oncancel-event.html [ Failure Pass ]
+crbug.com/261278 [ Mac Win ] fast/events/touch/send-oncancel-event.html [ Failure Pass ]
 
 # Transform (rotation) seems to be flakily applied.
 crbug.com/244884 fast/layers/no-clipping-overflow-hidden-added-after-transform.html [ Failure ImageOnlyFailure Pass ]
@@ -883,7 +883,7 @@ crbug.com/244884 fast/layers/no-clipping-overflow-hidden-added-after-transition.
 crbug.com/244884 fast/layers/no-clipping-overflow-hidden-hardware-acceleration.html [ Failure ImageOnlyFailure Pass ]
 
 # Skipped until setTouchPointRadius get implemented
-webkit.org/b/91012 touchadjustment/focusout-on-touch.html [ Skip ]
+crbug.com/261276 touchadjustment/focusout-on-touch.html [ Skip ]
 
 webkit.org/b/78159 compositing/iframes/scrolling-iframe.html [ Failure Pass ]
 webkit.org/b/78159 virtual/softwarecompositing/iframes/scrolling-iframe.html [ Failure Pass ]
@@ -899,7 +899,7 @@ webkit.org/b/81145 [ Lion ] fast/writing-mode/broken-ideograph-small-caps.html [
 webkit.org/b/81145 [ Lion ] fast/writing-mode/broken-ideographic-font.html [ Crash ]
 webkit.org/b/81145 [ Lion ] fast/writing-mode/japanese-rl-text-with-broken-font.html [ Crash ]
 
-webkit.org/b/81537 fast/events/touch/gesture/pad-gesture-fling.html [ Failure Pass ]
+crbug.com/261277 fast/events/touch/gesture/pad-gesture-fling.html [ Failure Pass ]
 
 webkit.org/b/81638 [ Mac Debug ] editing/selection/iframe.html [ ImageOnlyFailure Pass ]
 
