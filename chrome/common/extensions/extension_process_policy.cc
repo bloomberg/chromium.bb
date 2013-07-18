@@ -11,7 +11,7 @@
 namespace extensions {
 
 const extensions::Extension* GetNonBookmarkAppExtension(
-    const ExtensionSet& extensions, const ExtensionURLInfo& url) {
+    const ExtensionSet& extensions, const GURL& url) {
   // Exclude bookmark apps, which do not use the app process model.
   const extensions::Extension* extension =
       extensions.GetExtensionOrAppByURL(url);
@@ -22,8 +22,8 @@ const extensions::Extension* GetNonBookmarkAppExtension(
 
 bool CrossesExtensionProcessBoundary(
     const ExtensionSet& extensions,
-    const ExtensionURLInfo& old_url,
-    const ExtensionURLInfo& new_url,
+    const GURL& old_url,
+    const GURL& new_url,
     bool should_consider_workaround) {
   const extensions::Extension* old_url_extension = GetNonBookmarkAppExtension(
       extensions,

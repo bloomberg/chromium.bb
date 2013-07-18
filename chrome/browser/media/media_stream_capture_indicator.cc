@@ -55,7 +55,7 @@ const extensions::Extension* GetExtension(WebContents* web_contents) {
     return NULL;
 
   return extension_service->extensions()->GetExtensionOrAppByURL(
-      ExtensionURLInfo(web_contents->GetURL()));
+      web_contents->GetURL());
 }
 
 // Gets the security originator of the tab. It returns a string with no '/'

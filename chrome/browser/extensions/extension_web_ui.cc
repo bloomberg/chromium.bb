@@ -129,7 +129,7 @@ ExtensionWebUI::ExtensionWebUI(content::WebUI* web_ui, const GURL& url)
   Profile* profile = Profile::FromWebUI(web_ui);
   ExtensionService* service = profile->GetExtensionService();
   const Extension* extension =
-      service->extensions()->GetExtensionOrAppByURL(ExtensionURLInfo(url));
+      service->extensions()->GetExtensionOrAppByURL(url);
   DCHECK(extension);
 
   // The base class defaults to enabling WebUI bindings, but we don't need

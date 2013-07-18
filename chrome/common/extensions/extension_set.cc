@@ -11,18 +11,7 @@
 #include "chrome/common/url_constants.h"
 #include "extensions/common/constants.h"
 
-using WebKit::WebSecurityOrigin;
 using extensions::Extension;
-
-ExtensionURLInfo::ExtensionURLInfo(WebSecurityOrigin origin, const GURL& url)
-  : origin_(origin),
-    url_(url) {
-  DCHECK(!origin_.isNull());
-}
-
-ExtensionURLInfo::ExtensionURLInfo(const GURL& url)
-  : url_(url) {
-}
 
 ExtensionSet::const_iterator::const_iterator() {}
 
@@ -75,41 +64,28 @@ void ExtensionSet::Clear() {
   extensions_.clear();
 }
 
-std::string ExtensionSet::GetExtensionOrAppIDByURL(
-    const ExtensionURLInfo& info) const {
-  DCHECK(!info.origin().isNull());
+std::string ExtensionSet::GetExtensionOrAppIDByURL(const GURL& url) const {
+  if (url.SchemeIs(extensions::kExtensionScheme))
+    return url.host();
 
-  if (info.url().SchemeIs(extensions::kExtensionScheme))
-    return info.origin().isUnique() ? std::string() : info.url().host();
-
-  const Extension* extension = GetExtensionOrAppByURL(info);
+  const Extension* extension = GetExtensionOrAppByURL(url);
   if (!extension)
     return std::string();
 
   return extension->id();
 }
 
-const Extension* ExtensionSet::GetExtensionOrAppByURL(
-    const ExtensionURLInfo& info) const {
-  // In the common case, the document's origin will correspond to its URL,
-  // but in some rare cases involving sandboxing, the two will be different.
-  // We catch those cases by checking whether the document's origin is unique.
-  // If that's not the case, then we conclude that the document's security
-  // context is well-described by its URL and proceed to use only the URL.
-  if (!info.origin().isNull() && info.origin().isUnique())
-    return NULL;
+const Extension* ExtensionSet::GetExtensionOrAppByURL(const GURL& url) const {
+  if (url.SchemeIs(extensions::kExtensionScheme))
+    return GetByID(url.host());
 
-  if (info.url().SchemeIs(extensions::kExtensionScheme))
-    return GetByID(info.url().host());
-
-  return GetHostedAppByURL(info);
+  return GetHostedAppByURL(url);
 }
 
-const Extension* ExtensionSet::GetHostedAppByURL(
-    const ExtensionURLInfo& info) const {
+const Extension* ExtensionSet::GetHostedAppByURL(const GURL& url) const {
   for (ExtensionMap::const_iterator iter = extensions_.begin();
        iter != extensions_.end(); ++iter) {
-    if (iter->second->web_extent().MatchesURL(info.url()))
+    if (iter->second->web_extent().MatchesURL(url))
       return iter->second.get();
   }
 
@@ -129,8 +105,8 @@ const Extension* ExtensionSet::GetHostedAppByOverlappingWebExtent(
 
 bool ExtensionSet::InSameExtent(const GURL& old_url,
                                 const GURL& new_url) const {
-  return GetExtensionOrAppByURL(ExtensionURLInfo(old_url)) ==
-      GetExtensionOrAppByURL(ExtensionURLInfo(new_url));
+  return GetExtensionOrAppByURL(old_url) ==
+      GetExtensionOrAppByURL(new_url);
 }
 
 const Extension* ExtensionSet::GetByID(const std::string& id) const {
@@ -150,31 +126,16 @@ std::set<std::string> ExtensionSet::GetIDs() const {
   return ids;
 }
 
-bool ExtensionSet::ExtensionBindingsAllowed(
-    const ExtensionURLInfo& info) const {
-  if (info.origin().isUnique() || IsSandboxedPage(info))
-    return false;
-
-  if (info.url().SchemeIs(extensions::kExtensionScheme))
+bool ExtensionSet::ExtensionBindingsAllowed(const GURL& url) const {
+  if (url.SchemeIs(extensions::kExtensionScheme))
     return true;
 
   ExtensionMap::const_iterator i = extensions_.begin();
   for (; i != extensions_.end(); ++i) {
     if (i->second->location() == extensions::Manifest::COMPONENT &&
-        i->second->web_extent().MatchesURL(info.url()))
+        i->second->web_extent().MatchesURL(url))
       return true;
   }
 
-  return false;
-}
-
-bool ExtensionSet::IsSandboxedPage(const ExtensionURLInfo& info) const {
-  if (info.url().SchemeIs(extensions::kExtensionScheme)) {
-    const Extension* extension = GetByID(info.url().host());
-    if (extension) {
-      return extensions::SandboxedPageInfo::IsSandboxedPage(extension,
-                                                            info.url().path());
-    }
-  }
   return false;
 }

@@ -39,7 +39,7 @@ bool ResourceRequestPolicy::CanRequestResource(
   CHECK(resource_url.SchemeIs(extensions::kExtensionScheme));
 
   const Extension* extension =
-      loaded_extensions->GetExtensionOrAppByURL(ExtensionURLInfo(resource_url));
+      loaded_extensions->GetExtensionOrAppByURL(resource_url);
   if (!extension) {
     // Allow the load in the case of a non-existent extension. We'll just get a
     // 404 from the browser process.

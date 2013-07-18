@@ -209,8 +209,7 @@ bool GetExtensionFilePath(
     base::FilePath* file_path) {
   // Check that the URL is recognized by the extension system.
   const extensions::Extension* extension =
-      extension_info_map->extensions().GetExtensionOrAppByURL(
-          ExtensionURLInfo(file_url));
+      extension_info_map->extensions().GetExtensionOrAppByURL(file_url);
   if (!extension)
     return false;
 

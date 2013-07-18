@@ -23,7 +23,7 @@ string16 GetLabelTextForType(FullscreenExitBubbleType type,
     const ExtensionSet* extensions = extension_service->extensions();
     DCHECK(extensions);
     const extensions::Extension* extension =
-        extensions->GetExtensionOrAppByURL(ExtensionURLInfo(url));
+        extensions->GetExtensionOrAppByURL(url);
     if (extension) {
       host = UTF8ToUTF16(extension->name());
     } else if (url.SchemeIs(extensions::kExtensionScheme)) {
@@ -130,4 +130,4 @@ void PermissionRequestedByType(FullscreenExitBubbleType type,
   }
 }
 
-}  // namespace
+}  // namespace fullscreen_bubble

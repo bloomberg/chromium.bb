@@ -11,15 +11,11 @@
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/platform/WebURL.h"
 
 using content::BrowserThread;
 using extensions::APIPermission;
 using extensions::Extension;
 using extensions::Manifest;
-using WebKit::WebSecurityOrigin;
-using WebKit::WebString;
 
 namespace keys = extension_manifest_keys;
 
@@ -139,8 +135,6 @@ TEST_F(ExtensionInfoMapTest, CheckPermissions) {
                                                   "tabs_extension.json"));
 
   GURL app_url("http://www.google.com/mail/foo.html");
-  WebSecurityOrigin app_origin = WebSecurityOrigin::create(
-      GURL("http://www.google.com/mail/foo.html"));
   ASSERT_TRUE(app->is_app());
   ASSERT_TRUE(app->web_extent().MatchesURL(app_url));
 
@@ -150,11 +144,10 @@ TEST_F(ExtensionInfoMapTest, CheckPermissions) {
   // The app should have the notifications permission, either from a
   // chrome-extension URL or from its web extent.
   const Extension* match = info_map->extensions().GetExtensionOrAppByURL(
-      ExtensionURLInfo(app_origin, app->GetResourceURL("a.html")));
+      app->GetResourceURL("a.html"));
   EXPECT_TRUE(match &&
       match->HasAPIPermission(APIPermission::kNotification));
-  match = info_map->extensions().GetExtensionOrAppByURL(
-      ExtensionURLInfo(app_origin, app_url));
+  match = info_map->extensions().GetExtensionOrAppByURL(app_url);
   EXPECT_TRUE(match &&
       match->HasAPIPermission(APIPermission::kNotification));
   EXPECT_FALSE(match &&
@@ -162,7 +155,7 @@ TEST_F(ExtensionInfoMapTest, CheckPermissions) {
 
   // The extension should have the tabs permission.
   match = info_map->extensions().GetExtensionOrAppByURL(
-      ExtensionURLInfo(app_origin, extension->GetResourceURL("a.html")));
+      extension->GetResourceURL("a.html"));
   EXPECT_TRUE(match &&
       match->HasAPIPermission(APIPermission::kTab));
   EXPECT_FALSE(match &&
@@ -170,14 +163,7 @@ TEST_F(ExtensionInfoMapTest, CheckPermissions) {
 
   // Random URL should not have any permissions.
   GURL evil_url("http://evil.com/a.html");
-  match = info_map->extensions().GetExtensionOrAppByURL(
-      ExtensionURLInfo(WebSecurityOrigin::create(evil_url), evil_url));
-  EXPECT_FALSE(match);
-
-  // Sandboxed origins should not have any permissions.
-  match = info_map->extensions().GetExtensionOrAppByURL(ExtensionURLInfo(
-      WebSecurityOrigin::createFromString(WebString::fromUTF8("null")),
-      app_url));
+  match = info_map->extensions().GetExtensionOrAppByURL(evil_url);
   EXPECT_FALSE(match);
 }
 

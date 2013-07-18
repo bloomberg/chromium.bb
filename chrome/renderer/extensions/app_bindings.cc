@@ -119,10 +119,13 @@ void AppBindings::GetDetailsForFrame(
 
 v8::Handle<v8::Value> AppBindings::GetDetailsForFrameImpl(
     WebFrame* frame) {
+  if (frame->document().securityOrigin().isUnique())
+    return v8::Null();
+
   const Extension* extension =
       dispatcher_->extensions()->GetExtensionOrAppByURL(
-          ExtensionURLInfo(frame->document().securityOrigin(),
-                           frame->document().url()));
+          frame->document().url());
+
   if (!extension)
     return v8::Null();
 
@@ -166,11 +169,11 @@ void AppBindings::GetRunningState(
 
   // The app associated with the top level frame.
   const Extension* parent_app = extensions->GetHostedAppByURL(
-      ExtensionURLInfo(parent_frame->document().url()));
+      parent_frame->document().url());
 
   // The app associated with this frame.
-  const Extension* this_app = extensions->GetHostedAppByURL(ExtensionURLInfo(
-      context()->web_frame()->document().url()));
+  const Extension* this_app = extensions->GetHostedAppByURL(
+      context()->web_frame()->document().url());
 
   if (!this_app || !parent_app) {
     args.GetReturnValue().Set(

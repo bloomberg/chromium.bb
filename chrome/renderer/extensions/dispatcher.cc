@@ -24,6 +24,7 @@
 #include "chrome/common/extensions/features/feature.h"
 #include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/manifest_handlers/externally_connectable.h"
+#include "chrome/common/extensions/manifest_handlers/sandboxed_page_info.h"
 #include "chrome/common/extensions/message_bundle.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/common/extensions/permissions/permissions_data.h"
@@ -73,6 +74,7 @@
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/v8_value_converter.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/view_type.h"
 #include "grit/common_resources.h"
 #include "grit/renderer_resources.h"
@@ -1015,11 +1017,10 @@ void Dispatcher::DidCreateScriptContext(
     extension_id = "";
   }
 
-  ExtensionURLInfo url_info(frame->document().securityOrigin(),
-      UserScriptSlave::GetDataSourceURLForFrame(frame));
-
-  Feature::Context context_type =
-      ClassifyJavaScriptContext(extension_id, extension_group, url_info);
+  Feature::Context context_type = ClassifyJavaScriptContext(
+      extension_id, extension_group,
+      UserScriptSlave::GetDataSourceURLForFrame(frame),
+      frame->document().securityOrigin());
 
   ChromeV8Context* context =
       new ChromeV8Context(v8_context, frame, extension, context_type);
@@ -1127,18 +1128,18 @@ std::string Dispatcher::GetExtensionID(const WebFrame* frame, int world_id) {
     return user_script_slave_->GetExtensionIdForIsolatedWorld(world_id);
   }
 
+  // TODO(kalman): Delete this check.
+  if (frame->document().securityOrigin().isUnique())
+    return std::string();
+
   // Extension pages (chrome-extension:// URLs).
   GURL frame_url = UserScriptSlave::GetDataSourceURLForFrame(frame);
-  return extensions_.GetExtensionOrAppIDByURL(
-      ExtensionURLInfo(frame->document().securityOrigin(), frame_url));
+  return extensions_.GetExtensionOrAppIDByURL(frame_url);
 }
 
 bool Dispatcher::IsWithinPlatformApp(const WebFrame* frame) {
-  // We intentionally don't use the origin parameter for ExtensionURLInfo since
-  // it would be empty (i.e. unique) for sandboxed resources and thus not match.
-  ExtensionURLInfo url_info(
-      UserScriptSlave::GetDataSourceURLForFrame(frame->top()));
-  const Extension* extension = extensions_.GetExtensionOrAppByURL(url_info);
+  GURL url(UserScriptSlave::GetDataSourceURLForFrame(frame->top()));
+  const Extension* extension = extensions_.GetExtensionOrAppByURL(url);
 
   return extension && extension->is_platform_app();
 }
@@ -1375,10 +1376,25 @@ void Dispatcher::OnCancelSuspend(const std::string& extension_id) {
   DispatchEvent(extension_id, kOnSuspendCanceledEvent);
 }
 
+// TODO(kalman): This is checking for the wrong thing, it should be checking if
+// the frame's security origin is unique. The extension sandbox directive is
+// checked for in chrome/common/extensions/csp_handler.cc.
+bool Dispatcher::IsSandboxedPage(const GURL& url) const {
+  if (url.SchemeIs(extensions::kExtensionScheme)) {
+    const Extension* extension = extensions_.GetByID(url.host());
+    if (extension) {
+      return extensions::SandboxedPageInfo::IsSandboxedPage(extension,
+                                                            url.path());
+    }
+  }
+  return false;
+}
+
 Feature::Context Dispatcher::ClassifyJavaScriptContext(
     const std::string& extension_id,
     int extension_group,
-    const ExtensionURLInfo& url_info) {
+    const GURL& url,
+    const WebKit::WebSecurityOrigin& origin) {
   DCHECK_GE(extension_group, 0);
   if (extension_group == EXTENSION_GROUP_CONTENT_SCRIPTS) {
     return extensions_.Contains(extension_id) ?
@@ -1391,20 +1407,22 @@ Feature::Context Dispatcher::ClassifyJavaScriptContext(
   //    the extension is considered active.
   // 2. ScriptContext creation (which triggers bindings injection) happens
   //    before the SecurityContext is updated with the sandbox flags (after
-  //    reading the CSP header), so url_info.url().securityOrigin() is not
-  //    unique yet.
-  if (extensions_.IsSandboxedPage(url_info))
+  //    reading the CSP header), so the caller can't check if the context's
+  //    security origin is unique yet.
+  if (IsSandboxedPage(url))
     return Feature::WEB_PAGE_CONTEXT;
 
   if (IsExtensionActive(extension_id))
     return Feature::BLESSED_EXTENSION_CONTEXT;
 
-  if (extensions_.ExtensionBindingsAllowed(url_info)) {
+  // TODO(kalman): This isUnique() check is wrong, it should be performed as
+  // part of IsSandboxedPage().
+  if (!origin.isUnique() && extensions_.ExtensionBindingsAllowed(url)) {
     return extensions_.Contains(extension_id) ?
         Feature::UNBLESSED_EXTENSION_CONTEXT : Feature::UNSPECIFIED_CONTEXT;
   }
 
-  if (url_info.url().is_valid())
+  if (url.is_valid())
     return Feature::WEB_PAGE_CONTEXT;
 
   return Feature::UNSPECIFIED_CONTEXT;
@@ -1433,9 +1451,7 @@ bool Dispatcher::CheckContextAccessToExtensionAPI(
   // Theoretically we could end up with bindings being injected into sandboxed
   // frames, for example content scripts. Don't let them execute API functions.
   WebKit::WebFrame* frame = context->web_frame();
-  ExtensionURLInfo url_info(frame->document().securityOrigin(),
-                            UserScriptSlave::GetDataSourceURLForFrame(frame));
-  if (extensions_.IsSandboxedPage(url_info)) {
+  if (IsSandboxedPage(UserScriptSlave::GetDataSourceURLForFrame(frame))) {
     static const char kMessage[] =
         "%s cannot be used within a sandboxed frame.";
     std::string error_msg = base::StringPrintf(kMessage, function_name.c_str());

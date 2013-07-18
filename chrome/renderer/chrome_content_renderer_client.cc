@@ -617,7 +617,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
             }
             const Extension* extension =
                 g_current_client->extension_dispatcher_->extensions()->
-                    GetExtensionOrAppByURL(ExtensionURLInfo(manifest_url));
+                    GetExtensionOrAppByURL(manifest_url);
             if (!IsNaClAllowed(manifest_url,
                                app_url,
                                is_nacl_unrestricted,
@@ -860,7 +860,7 @@ void ChromeContentRendererClient::GetNavigationErrorStrings(
   if (failed_url.is_valid() &&
       !failed_url.SchemeIs(extensions::kExtensionScheme)) {
     extension = extension_dispatcher_->extensions()->GetExtensionOrAppByURL(
-        ExtensionURLInfo(failed_url));
+        failed_url);
   }
 
   bool is_post = EqualsASCII(failed_request.httpMethod(), "POST");
@@ -961,7 +961,7 @@ bool ChromeContentRendererClient::ShouldFork(WebFrame* frame,
 
   // Determine if the new URL is an extension (excluding bookmark apps).
   const Extension* new_url_extension = extensions::GetNonBookmarkAppExtension(
-      *extensions, ExtensionURLInfo(url));
+      *extensions, url);
   bool is_extension_url = !!new_url_extension;
 
   // If the navigation would cross an app extent boundary, we also need
@@ -978,8 +978,7 @@ bool ChromeContentRendererClient::ShouldFork(WebFrame* frame,
     *send_referrer = true;
 
     const Extension* extension =
-        extension_dispatcher_->extensions()->GetExtensionOrAppByURL(
-            ExtensionURLInfo(url));
+        extension_dispatcher_->extensions()->GetExtensionOrAppByURL(url);
     if (extension && extension->is_app()) {
       UMA_HISTOGRAM_ENUMERATION(
           extension->is_platform_app() ?
@@ -1140,11 +1139,10 @@ bool ChromeContentRendererClient::CrossesExtensionExtents(
     // in an extension process, we want to keep it in process to allow the
     // opener to script it.
     WebDocument opener_document = frame->opener()->document();
-    GURL opener_url = opener_document.url();
-    WebSecurityOrigin opener_origin = opener_document.securityOrigin();
-    bool opener_is_extension_url = !!extensions.GetExtensionOrAppByURL(
-        ExtensionURLInfo(opener_origin, opener_url));
     WebSecurityOrigin opener = frame->opener()->document().securityOrigin();
+    bool opener_is_extension_url =
+        !opener.isUnique() && extensions.GetExtensionOrAppByURL(
+            opener_document.url()) != NULL;
     if (!is_extension_url &&
         !opener_is_extension_url &&
         extension_dispatcher_->is_extension_process() &&
@@ -1163,8 +1161,7 @@ bool ChromeContentRendererClient::CrossesExtensionExtents(
   bool should_consider_workaround = !!frame->opener();
 
   return extensions::CrossesExtensionProcessBoundary(
-      extensions, ExtensionURLInfo(old_url), ExtensionURLInfo(new_url),
-      should_consider_workaround);
+      extensions, old_url, new_url, should_consider_workaround);
 }
 
 void ChromeContentRendererClient::SetSpellcheck(SpellCheck* spellcheck) {

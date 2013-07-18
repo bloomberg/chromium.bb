@@ -6,7 +6,7 @@
 #define CHROME_COMMON_EXTENSIONS_EXTENSION_PROCESS_POLICY_H_
 
 class ExtensionSet;
-class ExtensionURLInfo;
+class GURL;
 
 namespace extensions {
 
@@ -15,7 +15,7 @@ class Extension;
 // Returns the extension for the given URL.  Excludes extension objects for
 // bookmark apps, which do not use the app process model.
 const Extension* GetNonBookmarkAppExtension(const ExtensionSet& extensions,
-                                            const ExtensionURLInfo& url);
+                                            const GURL& url);
 
 // Check if navigating a toplevel page from |old_url| to |new_url| would cross
 // an extension process boundary (e.g. navigating from a web URL into an
@@ -25,8 +25,8 @@ const Extension* GetNonBookmarkAppExtension(const ExtensionSet& extensions,
 // http://crbug.com/59285.
 bool CrossesExtensionProcessBoundary(
     const ExtensionSet& extensions,
-    const ExtensionURLInfo& old_url,
-    const ExtensionURLInfo& new_url,
+    const GURL& old_url,
+    const GURL& new_url,
     bool should_consider_workaround);
 
 }  // namespace extensions

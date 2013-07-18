@@ -140,8 +140,7 @@ NotificationOptionsMenuModel::NotificationOptionsMenuModel(Balloon* balloon)
     ExtensionService* extension_service =
         balloon_->profile()->GetExtensionService();
     const extensions::Extension* extension =
-        extension_service->extensions()->GetExtensionOrAppByURL(
-            ExtensionURLInfo(origin));
+        extension_service->extensions()->GetExtensionOrAppByURL(origin);
     // We get back no extension here when we show the notification after
     // the extension has crashed.
     if (extension) {
@@ -192,8 +191,7 @@ string16 NotificationOptionsMenuModel::GetLabelForCommandId(int command_id)
       ExtensionService* extension_service =
           balloon_->profile()->GetExtensionService();
       const extensions::Extension* extension =
-          extension_service->extensions()->GetExtensionOrAppByURL(
-              ExtensionURLInfo(origin));
+          extension_service->extensions()->GetExtensionOrAppByURL(origin);
       if (extension) {
         return l10n_util::GetStringUTF16(
             extension_service->IsExtensionEnabled(extension->id()) ?
@@ -251,8 +249,7 @@ void NotificationOptionsMenuModel::ExecuteCommand(int command_id,
       break;
     case kToggleExtensionCommand: {
       const extensions::Extension* extension =
-          extension_service->extensions()->GetExtensionOrAppByURL(
-              ExtensionURLInfo(origin));
+          extension_service->extensions()->GetExtensionOrAppByURL(origin);
       if (extension) {
         const std::string& id = extension->id();
         if (extension_service->IsExtensionEnabled(id))

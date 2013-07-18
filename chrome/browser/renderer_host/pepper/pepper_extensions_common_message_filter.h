@@ -105,8 +105,6 @@ class PepperExtensionsCommonMessageFilter
   DispatcherOwner* dispatcher_owner_;
   bool dispatcher_owner_initialized_;
 
-  base::string16 source_origin_;
-
   DISALLOW_COPY_AND_ASSIGN(PepperExtensionsCommonMessageFilter);
 };
 

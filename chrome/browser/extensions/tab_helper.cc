@@ -311,11 +311,10 @@ void TabHelper::OnGetAppInstallState(const GURL& requestor_url,
   const ExtensionSet* extensions = extension_service->extensions();
   const ExtensionSet* disabled = extension_service->disabled_extensions();
 
-  ExtensionURLInfo url(requestor_url);
   std::string state;
-  if (extensions->GetHostedAppByURL(url))
+  if (extensions->GetHostedAppByURL(requestor_url))
     state = extension_misc::kAppStateInstalled;
-  else if (disabled->GetHostedAppByURL(url))
+  else if (disabled->GetHostedAppByURL(requestor_url))
     state = extension_misc::kAppStateDisabled;
   else
     state = extension_misc::kAppStateNotInstalled;

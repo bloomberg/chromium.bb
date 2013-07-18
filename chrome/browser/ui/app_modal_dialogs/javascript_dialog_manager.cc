@@ -251,7 +251,7 @@ string16 ChromeJavaScriptDialogManager::GetTitle(const GURL& origin_url,
   if (extension_host_) {
     const extensions::Extension* extension = extension_host_->
       profile()->GetExtensionService()->extensions()->
-      GetExtensionOrAppByURL(ExtensionURLInfo(origin_url));
+      GetExtensionOrAppByURL(origin_url);
     if (extension) {
       return UTF8ToUTF16(base::StringPiece(extension->name()));
     }

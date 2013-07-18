@@ -11,7 +11,6 @@
 #include "content/public/renderer/render_view.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
-#include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 
 namespace extensions {
@@ -81,12 +80,8 @@ void RequestSender::StartRequest(Source* source,
     return;
 
   GURL source_url;
-  WebKit::WebSecurityOrigin source_origin;
-  WebKit::WebFrame* webframe = context->web_frame();
-  if (webframe) {
+  if (WebKit::WebFrame* webframe = context->web_frame())
     source_url = webframe->document().url();
-    source_origin = webframe->document().securityOrigin();
-  }
 
   InsertRequest(request_id, new PendingRequest(name, source));
 
@@ -95,7 +90,6 @@ void RequestSender::StartRequest(Source* source,
   params.arguments.Swap(value_args);
   params.extension_id = context->GetExtensionID();
   params.source_url = source_url;
-  params.source_origin = source_origin.toString();
   params.request_id = request_id;
   params.has_callback = has_callback;
   params.user_gesture =

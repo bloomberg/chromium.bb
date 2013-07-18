@@ -2211,8 +2211,7 @@ bool Browser::MaybeCreateBackgroundContents(int route_id,
   // permission as that is checked in RenderMessageFilter when the CreateWindow
   // message is processed.
   const Extension* extension =
-      extensions_service->extensions()->GetHostedAppByURL(
-          ExtensionURLInfo(opener_url));
+      extensions_service->extensions()->GetHostedAppByURL(opener_url);
   if (!extension)
     return false;
 

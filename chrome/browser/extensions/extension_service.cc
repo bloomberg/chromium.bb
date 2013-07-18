@@ -264,8 +264,7 @@ bool ExtensionService::OnExternalExtensionUpdateUrlFound(
 }
 
 const Extension* ExtensionService::GetInstalledApp(const GURL& url) const {
-  const Extension* extension = extensions_.GetExtensionOrAppByURL(
-      ExtensionURLInfo(url));
+  const Extension* extension = extensions_.GetExtensionOrAppByURL(url);
   return (extension && extension->is_app()) ? extension : NULL;
 }
 
@@ -2584,15 +2583,13 @@ const Extension* ExtensionService::GetInstalledExtension(
 
 bool ExtensionService::ExtensionBindingsAllowed(const GURL& url) {
   // Allow bindings for all packaged extensions and component hosted apps.
-  const Extension* extension = extensions_.GetExtensionOrAppByURL(
-      ExtensionURLInfo(url));
+  const Extension* extension = extensions_.GetExtensionOrAppByURL(url);
   return extension && (!extension->is_hosted_app() ||
                        extension->location() == Manifest::COMPONENT);
 }
 
 bool ExtensionService::ShouldBlockUrlInBrowserTab(GURL* url) {
-  const Extension* extension = extensions_.GetExtensionOrAppByURL(
-      ExtensionURLInfo(*url));
+  const Extension* extension = extensions_.GetExtensionOrAppByURL(*url);
   if (extension && extension->is_platform_app()) {
     *url = GURL(chrome::kExtensionInvalidRequestURL);
     return true;

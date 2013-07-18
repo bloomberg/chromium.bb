@@ -31,6 +31,7 @@ struct ExtensionMsg_Loaded_Params;
 
 namespace WebKit {
 class WebFrame;
+class WebSecurityOrigin;
 }
 
 namespace base {
@@ -230,10 +231,14 @@ class Dispatcher : public content::RenderProcessObserver {
   // are not in the same origin).
   bool IsWithinPlatformApp(const WebKit::WebFrame* frame);
 
+  bool IsSandboxedPage(const GURL& url) const;
+
   // Returns the Feature::Context type of context for a JavaScript context.
-  Feature::Context ClassifyJavaScriptContext(const std::string& extension_id,
-                                             int extension_group,
-                                             const ExtensionURLInfo& url_info);
+  Feature::Context ClassifyJavaScriptContext(
+      const std::string& extension_id,
+      int extension_group,
+      const GURL& url,
+      const WebKit::WebSecurityOrigin& origin);
 
   // Gets |field| from |object| or creates it as an empty object if it doesn't
   // exist.

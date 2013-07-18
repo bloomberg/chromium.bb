@@ -82,9 +82,9 @@ void Balloon::CloseByScript() {
 }
 
 std::string Balloon::GetExtensionId() {
-  const ExtensionURLInfo url(notification().origin_url());
   const ExtensionService* service = profile()->GetExtensionService();
   const extensions::Extension* extension =
-      service->extensions()->GetExtensionOrAppByURL(url);
+      service->extensions()->GetExtensionOrAppByURL(
+          notification().origin_url());
   return extension ? extension->id() : std::string();
 }

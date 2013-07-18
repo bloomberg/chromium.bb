@@ -38,7 +38,7 @@ SiteInstance* GetSiteInstanceForNewTab(Profile* profile,
   if (ChromeWebUIControllerFactory::GetInstance()->UseWebUIForURL(
           profile, url) ||
       (service &&
-       service->extensions()->GetHostedAppByURL(ExtensionURLInfo(url)))) {
+       service->extensions()->GetHostedAppByURL(url))) {
     return SiteInstance::CreateForURL(profile, url);
   }
 

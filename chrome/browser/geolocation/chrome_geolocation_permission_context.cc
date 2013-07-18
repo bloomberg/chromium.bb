@@ -71,9 +71,7 @@ void ChromeGeolocationPermissionContext::RequestGeolocationPermission(
   if (extension_service) {
     const extensions::Extension* extension =
         extension_service->extensions()->GetExtensionOrAppByURL(
-            ExtensionURLInfo(WebKit::WebSecurityOrigin::createFromString(
-                                 UTF8ToUTF16(requesting_frame.spec())),
-                             requesting_frame));
+            requesting_frame);
     if (IsExtensionWithPermissionOrSuggestInConsole(APIPermission::kGeolocation,
                                                     extension,
                                                     profile_)) {

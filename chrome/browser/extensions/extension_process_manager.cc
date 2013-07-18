@@ -856,8 +856,8 @@ SiteInstance* IncognitoExtensionProcessManager::GetSiteInstanceForURL(
     const GURL& url) {
   ExtensionService* service = GetProfile()->GetExtensionService();
   if (service) {
-    const Extension* extension = service->extensions()->GetExtensionOrAppByURL(
-        ExtensionURLInfo(url));
+    const Extension* extension =
+        service->extensions()->GetExtensionOrAppByURL(url);
     if (extension &&
         !extensions::IncognitoInfo::IsSplitMode(extension)) {
       return original_manager_->GetSiteInstanceForURL(url);

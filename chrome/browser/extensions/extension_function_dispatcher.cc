@@ -36,13 +36,11 @@
 #include "content/public/common/result_codes.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
-#include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 #include "webkit/glue/resource_type.h"
 
 using extensions::Extension;
 using extensions::ExtensionAPI;
 using content::RenderViewHost;
-using WebKit::WebSecurityOrigin;
 
 namespace {
 
@@ -362,9 +360,7 @@ void ExtensionFunctionDispatcher::DispatchWithCallback(
   const Extension* extension = service->extensions()->GetByID(
       params.extension_id);
   if (!extension)
-    extension = service->extensions()->GetHostedAppByURL(ExtensionURLInfo(
-        WebSecurityOrigin::createFromString(params.source_origin),
-        params.source_url));
+    extension = service->extensions()->GetHostedAppByURL(params.source_url);
 
   scoped_refptr<ExtensionFunction> function(
       CreateExtensionFunction(params, extension,

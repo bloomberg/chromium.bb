@@ -164,8 +164,6 @@ void PepperExtensionsCommonMessageFilter::EnsureDispatcherOwnerInitialized() {
     return;
   Profile* profile = profile_manager->GetProfile(profile_directory_);
 
-  source_origin_ = WebKit::WebSecurityOrigin::create(document_url_).toString();
-
   // It will be automatically destroyed when |view_host| goes away.
   dispatcher_owner_ = new DispatcherOwner(this, profile, view_host);
 }
@@ -187,7 +185,6 @@ void PepperExtensionsCommonMessageFilter::PopulateParams(
 
   params->extension_id = document_url_.host();
   params->source_url = document_url_;
-  params->source_origin = source_origin_;
 
   // We don't need an ID to map a response to the corresponding request.
   params->request_id = 0;

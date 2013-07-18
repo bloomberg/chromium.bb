@@ -17,7 +17,7 @@ static base::FilePath GetManifestPath(
     ExtensionInfoMap* extension_info_map, const std::string& manifest) {
   GURL manifest_url(manifest);
   const extensions::Extension* extension = extension_info_map->extensions()
-      .GetExtensionOrAppByURL(ExtensionURLInfo(manifest_url));
+      .GetExtensionOrAppByURL(manifest_url);
   if (extension != NULL &&
       manifest_url.SchemeIs(extensions::kExtensionScheme)) {
     std::string path = manifest_url.path();

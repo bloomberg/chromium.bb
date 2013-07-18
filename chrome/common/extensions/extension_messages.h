@@ -80,9 +80,6 @@ IPC_STRUCT_BEGIN(ExtensionHostMsg_Request_Params)
   // extension. Or, they can originate from hosted apps or normal web pages.
   IPC_STRUCT_MEMBER(GURL, source_url)
 
-  // Web security origin of the frame the request was sent from.
-  IPC_STRUCT_MEMBER(string16, source_origin)
-
   // Unique request id to match requests and responses.
   IPC_STRUCT_MEMBER(int, request_id)
 
