@@ -28,10 +28,11 @@ class VideoResourceUpdaterTest : public testing::Test {
   }
 
   scoped_refptr<media::VideoFrame> CreateTestYUVVideoFrame() {
-    gfx::Size size(10, 10);
-    static uint8 y_data[10] = { 0 };
-    static uint8 u_data[5] = { 0 };
-    static uint8 v_data[5] = { 0 };
+    const int kDimension = 10;
+    gfx::Size size(kDimension, kDimension);
+    static uint8 y_data[kDimension * kDimension] = { 0 };
+    static uint8 u_data[kDimension * kDimension / 2] = { 0 };
+    static uint8 v_data[kDimension * kDimension / 2] = { 0 };
 
     return media::VideoFrame::WrapExternalYuvData(
         media::VideoFrame::YV16,  // format
@@ -54,8 +55,7 @@ class VideoResourceUpdaterTest : public testing::Test {
   scoped_ptr<ResourceProvider> resource_provider3d_;
 };
 
-// TODO(danakj): Fix this test on ASAN: crbug.com/260920
-TEST_F(VideoResourceUpdaterTest, DISABLED_SoftwareFrame) {
+TEST_F(VideoResourceUpdaterTest, SoftwareFrame) {
   VideoResourceUpdater updater(resource_provider3d_.get());
   scoped_refptr<media::VideoFrame> video_frame = CreateTestYUVVideoFrame();
 
@@ -64,8 +64,7 @@ TEST_F(VideoResourceUpdaterTest, DISABLED_SoftwareFrame) {
   EXPECT_EQ(VideoFrameExternalResources::YUV_RESOURCE, resources.type);
 }
 
-// TODO(danakj): Fix this test on ASAN: crbug.com/260920
-TEST_F(VideoResourceUpdaterTest, DISABLED_LostContextForSoftwareFrame) {
+TEST_F(VideoResourceUpdaterTest, LostContextForSoftwareFrame) {
   VideoResourceUpdater updater(resource_provider3d_.get());
   scoped_refptr<media::VideoFrame> video_frame = CreateTestYUVVideoFrame();
 
