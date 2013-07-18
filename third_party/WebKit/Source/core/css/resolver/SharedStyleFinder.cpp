@@ -77,7 +77,7 @@ Node* SharedStyleFinder::locateCousinList(Element* parent, unsigned& visitedNode
         return 0;
     if (parent->isSVGElement() && toSVGElement(parent)->animatedSMILStyleProperties())
         return 0;
-    if (parent->hasID() && m_features.hasSelectorForId(parent->idForStyleResolution()))
+    if (parent->hasID() && m_features.idsInRules.contains(parent->idForStyleResolution().impl()))
         return 0;
 
     RenderStyle* parentStyle = parent->renderStyle();
@@ -162,7 +162,7 @@ bool SharedStyleFinder::canShareStyleWithControl(const ElementResolveContext& co
 bool SharedStyleFinder::classNamesAffectedByRules(const SpaceSplitString& classNames) const
 {
     for (unsigned i = 0; i < classNames.size(); ++i) {
-        if (m_features.hasSelectorForClass(classNames[i]))
+        if (m_features.classesInRules.contains(classNames[i].impl()))
             return true;
     }
     return false;
@@ -243,7 +243,7 @@ bool SharedStyleFinder::canShareStyleWithElement(const ElementResolveContext& co
     if (element->additionalPresentationAttributeStyle() != context.element()->additionalPresentationAttributeStyle())
         return false;
 
-    if (element->hasID() && m_features.hasSelectorForId(element->idForStyleResolution()))
+    if (element->hasID() && m_features.idsInRules.contains(element->idForStyleResolution().impl()))
         return false;
     if (element->hasScopedHTMLStyleChild())
         return false;
@@ -318,7 +318,7 @@ RenderStyle* SharedStyleFinder::locateSharedStyle(const ElementResolveContext& c
     if (context.element()->isSVGElement() && toSVGElement(context.element())->animatedSMILStyleProperties())
         return 0;
     // Ids stop style sharing if they show up in the stylesheets.
-    if (context.element()->hasID() && m_features.hasSelectorForId(context.element()->idForStyleResolution()))
+    if (context.element()->hasID() && m_features.idsInRules.contains(context.element()->idForStyleResolution().impl()))
         return 0;
     // Active and hovered elements always make a chain towards the document node
     // and no siblings or cousins will have the same state.
