@@ -169,6 +169,7 @@ class TouchSelectionControllerImpl::EditingHandleView
         controller_->SelectionHandleDragged(event->location());
         break;
       case ui::ET_GESTURE_SCROLL_END:
+      case ui::ET_SCROLL_FLING_START:
         widget_->ReleaseCapture();
         controller_->SetDraggingHandle(NULL);
         break;
