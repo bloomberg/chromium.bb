@@ -53,7 +53,6 @@ chrome::ImageCaptureDeviceManager* g_image_capture_device_manager = NULL;
     deviceBrowser_.reset([[ICDeviceBrowser alloc] init]);
     [deviceBrowser_ setDelegate:self];
     [deviceBrowser_ setBrowsedDeviceTypeMask:
-        [deviceBrowser_ browsedDeviceTypeMask] |
         ICDeviceTypeMaskCamera | ICDeviceLocationTypeMaskLocal];
     [deviceBrowser_ start];
   }
