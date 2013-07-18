@@ -398,7 +398,8 @@ static void paintTextWithShadows(GraphicsContext* context, const Font& font, con
                                  const FloatPoint& textOrigin, const FloatRect& boxRect,
                                  const ShadowData* shadow, bool stroked, bool horizontal)
 {
-    bool hasShadow = shadow;
+    // Text shadows are disabled when printing. http://crbug.com/258321
+    bool hasShadow = shadow && !context->printing();
     Color fillColor = context->fillColor();
 
     if (hasShadow) {
@@ -549,7 +550,9 @@ void InlineTextBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, 
     Color textStrokeColor;
     Color emphasisMarkColor;
     float textStrokeWidth = styleToUse->textStrokeWidth();
-    const ShadowData* textShadow = paintInfo.forceBlackText() ? 0 : styleToUse->textShadow();
+
+    // Text shadows are disabled when printing. http://crbug.com/258321
+    const ShadowData* textShadow = (context->printing() || paintInfo.forceBlackText()) ? 0 : styleToUse->textShadow();
 
     if (paintInfo.forceBlackText()) {
         textFillColor = Color::black;
@@ -608,7 +611,8 @@ void InlineTextBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, 
         }
 
         if (RenderStyle* pseudoStyle = renderer()->getCachedPseudoStyle(SELECTION)) {
-            const ShadowData* shadow = paintInfo.forceBlackText() ? 0 : pseudoStyle->textShadow();
+            // Text shadows are disabled when printing. http://crbug.com/258321
+            const ShadowData* shadow = (context->printing() || paintInfo.forceBlackText()) ? 0 : pseudoStyle->textShadow();
             if (shadow != selectionShadow) {
                 if (!paintSelectedTextOnly)
                     paintSelectedTextSeparately = true;

@@ -52,7 +52,8 @@ void EllipsisBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, La
             context->setFillColor(foreground);
     }
 
-    const ShadowData* shadow = style->textShadow();
+    // Text shadows are disabled when printing. http://crbug.com/258321
+    const ShadowData* shadow = context->printing() ? 0 : style->textShadow();
     bool hasShadow = shadow;
     if (hasShadow) {
         DrawLooper drawLooper;

@@ -606,7 +606,9 @@ void SVGInlineTextBox::paintTextWithShadows(GraphicsContext* context, RenderStyl
 
     const Font& scaledFont = textRenderer->scaledFont();
     const ShadowData* shadow = style->textShadow();
-    bool hasShadow = shadow;
+
+    // Text shadows are disabled when printing. http://crbug.com/258321
+    bool hasShadow = shadow && !context->printing();
 
     FloatPoint textOrigin(fragment.x, fragment.y);
     FloatSize textSize(fragment.width, fragment.height);
