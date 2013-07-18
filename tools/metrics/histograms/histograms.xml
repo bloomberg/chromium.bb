@@ -17297,6 +17297,7 @@ other types of suffix sets.
   <int value="20" label="CreateIDBDatabaseMetaData"/>
   <int value="21" label="DeleteDatabase"/>
   <int value="22" label="TransactionCommit"/>
+  <int value="23" label="GetDatabaseNames"/>
 </enum>
 
 <enum name="IDBLevelDBBackingStoreOpenResult" type="int">

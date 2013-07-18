@@ -54,6 +54,7 @@ enum IndexedDBBackingStoreErrorSource {
   CREATE_IDBDATABASE_METADATA,
   DELETE_DATABASE,
   TRANSACTION_COMMIT_METHOD,  // TRANSACTION_COMMIT is a WinNT.h macro
+  GET_DATABASE_NAMES,
   INTERNAL_ERROR_MAX,
 };
 
@@ -650,13 +651,12 @@ std::vector<string16> IndexedDBBackingStore::GetDatabaseNames() {
   for (it->Seek(start_key);
        it->IsValid() && CompareKeys(it->Key(), stop_key) < 0;
        it->Next()) {
-    const char* p = it->Key().begin();
-    const char* limit = it->Key().end();
-
+    StringPiece slice(it->Key());
     DatabaseNameKey database_name_key;
-    p = DatabaseNameKey::Decode(p, limit, &database_name_key);
-    DCHECK(p);
-
+    if (!DatabaseNameKey::Decode(&slice, &database_name_key)) {
+      INTERNAL_CONSISTENCY_ERROR(GET_DATABASE_NAMES);
+      continue;
+    }
     found_names.push_back(database_name_key.database_name());
   }
   return found_names;
@@ -851,10 +851,10 @@ static bool CheckObjectStoreAndMetaDataType(const LevelDBIterator* it,
   if (!it->IsValid() || CompareKeys(it->Key(), stop_key) >= 0)
     return false;
 
+  StringPiece slice(it->Key());
   ObjectStoreMetaDataKey meta_data_key;
-  const char* p = ObjectStoreMetaDataKey::Decode(
-      it->Key().begin(), it->Key().end(), &meta_data_key);
-  DCHECK(p);
+  bool ok = ObjectStoreMetaDataKey::Decode(&slice, &meta_data_key);
+  DCHECK(ok);
   if (meta_data_key.ObjectStoreId() != object_store_id)
     return false;
   if (meta_data_key.MetaDataType() != meta_data_type)
@@ -880,12 +880,10 @@ bool IndexedDBBackingStore::GetObjectStores(
   scoped_ptr<LevelDBIterator> it = db_->CreateIterator();
   it->Seek(start_key);
   while (it->IsValid() && CompareKeys(it->Key(), stop_key) < 0) {
-    const char* p = it->Key().begin();
-    const char* limit = it->Key().end();
-
+    StringPiece slice(it->Key());
     ObjectStoreMetaDataKey meta_data_key;
-    p = ObjectStoreMetaDataKey::Decode(p, limit, &meta_data_key);
-    DCHECK(p);
+    bool ok = ObjectStoreMetaDataKey::Decode(&slice, &meta_data_key);
+    DCHECK(ok);
     if (meta_data_key.MetaDataType() != ObjectStoreMetaDataKey::NAME) {
       INTERNAL_CONSISTENCY_ERROR(GET_OBJECT_STORES);
       // Possible stale metadata, but don't fail the load.
@@ -1346,13 +1344,12 @@ bool IndexedDBBackingStore::GetKeyGeneratorCurrentNumber(
   for (it->Seek(start_key);
        it->IsValid() && CompareKeys(it->Key(), stop_key) < 0;
        it->Next()) {
-    const char* p = it->Key().begin();
-    const char* limit = it->Key().end();
-
+    StringPiece slice(it->Key());
     ObjectStoreDataKey data_key;
-    p = ObjectStoreDataKey::Decode(p, limit, &data_key);
-    DCHECK(p);
-
+    if (!ObjectStoreDataKey::Decode(&slice, &data_key)) {
+      INTERNAL_READ_ERROR(GET_KEY_GENERATOR_CURRENT_NUMBER);
+      return false;
+    }
     scoped_ptr<IndexedDBKey> user_key = data_key.user_key();
     if (user_key->type() == WebKit::WebIDBKeyTypeNumber) {
       int64 n = static_cast<int64>(user_key->number());
@@ -1442,10 +1439,10 @@ static bool CheckIndexAndMetaDataKey(const LevelDBIterator* it,
   if (!it->IsValid() || CompareKeys(it->Key(), stop_key) >= 0)
     return false;
 
+  StringPiece slice(it->Key());
   IndexMetaDataKey meta_data_key;
-  const char* p = IndexMetaDataKey::Decode(
-      it->Key().begin(), it->Key().end(), &meta_data_key);
-  DCHECK(p);
+  bool ok = IndexMetaDataKey::Decode(&slice, &meta_data_key);
+  DCHECK(ok);
   if (meta_data_key.IndexId() != index_id)
     return false;
   if (meta_data_key.meta_data_type() != meta_data_type)
@@ -1472,12 +1469,10 @@ bool IndexedDBBackingStore::GetIndexes(
   scoped_ptr<LevelDBIterator> it = db_->CreateIterator();
   it->Seek(start_key);
   while (it->IsValid() && CompareKeys(it->Key(), stop_key) < 0) {
-    const char* p = it->Key().begin();
-    const char* limit = it->Key().end();
-
+    StringPiece slice(it->Key());
     IndexMetaDataKey meta_data_key;
-    p = IndexMetaDataKey::Decode(p, limit, &meta_data_key);
-    DCHECK(p);
+    bool ok = IndexMetaDataKey::Decode(&slice, &meta_data_key);
+    DCHECK(ok);
     if (meta_data_key.meta_data_type() != IndexMetaDataKey::NAME) {
       INTERNAL_CONSISTENCY_ERROR(GET_INDEXES);
       // Possible stale metadata due to http://webkit.org/b/85557 but don't fail
@@ -2046,13 +2041,9 @@ class ObjectStoreKeyCursorImpl : public IndexedDBBackingStore::Cursor {
 };
 
 bool ObjectStoreKeyCursorImpl::LoadCurrentRow() {
-  const char* key_position = iterator_->Key().begin();
-  const char* key_limit = iterator_->Key().end();
-
+  StringPiece slice(iterator_->Key());
   ObjectStoreDataKey object_store_data_key;
-  key_position = ObjectStoreDataKey::Decode(
-      key_position, key_limit, &object_store_data_key);
-  if (!key_position) {
+  if (!ObjectStoreDataKey::Decode(&slice, &object_store_data_key)) {
     INTERNAL_READ_ERROR(LOAD_CURRENT_ROW);
     return false;
   }
@@ -2060,7 +2051,7 @@ bool ObjectStoreKeyCursorImpl::LoadCurrentRow() {
   current_key_ = object_store_data_key.user_key();
 
   int64 version;
-  StringPiece slice(iterator_->Value());
+  slice = StringPiece(iterator_->Value());
   if (!DecodeVarInt(&slice, &version)) {
     INTERNAL_READ_ERROR(LOAD_CURRENT_ROW);
     return false;
@@ -2102,13 +2093,9 @@ class ObjectStoreCursorImpl : public IndexedDBBackingStore::Cursor {
 };
 
 bool ObjectStoreCursorImpl::LoadCurrentRow() {
-  const char* key_position = iterator_->Key().begin();
-  const char* key_limit = iterator_->Key().end();
-
+  StringPiece slice(iterator_->Key());
   ObjectStoreDataKey object_store_data_key;
-  key_position = ObjectStoreDataKey::Decode(
-      key_position, key_limit, &object_store_data_key);
-  if (!key_position) {
+  if (!ObjectStoreDataKey::Decode(&slice, &object_store_data_key)) {
     INTERNAL_READ_ERROR(LOAD_CURRENT_ROW);
     return false;
   }
@@ -2116,7 +2103,7 @@ bool ObjectStoreCursorImpl::LoadCurrentRow() {
   current_key_ = object_store_data_key.user_key();
 
   int64 version;
-  StringPiece slice(iterator_->Value());
+  slice = StringPiece(iterator_->Value());
   if (!DecodeVarInt(&slice, &version)) {
     INTERNAL_READ_ERROR(LOAD_CURRENT_ROW);
     return false;
@@ -2172,16 +2159,17 @@ class IndexKeyCursorImpl : public IndexedDBBackingStore::Cursor {
 };
 
 bool IndexKeyCursorImpl::LoadCurrentRow() {
-  const char* key_position = iterator_->Key().begin();
-  const char* key_limit = iterator_->Key().end();
-
+  StringPiece slice(iterator_->Key());
   IndexDataKey index_data_key;
-  key_position = IndexDataKey::Decode(key_position, key_limit, &index_data_key);
+  if (!IndexDataKey::Decode(&slice, &index_data_key)) {
+    INTERNAL_READ_ERROR(LOAD_CURRENT_ROW);
+    return false;
+  }
 
   current_key_ = index_data_key.user_key();
   DCHECK(current_key_);
 
-  StringPiece slice(iterator_->Value());
+  slice = StringPiece(iterator_->Value());
   int64 index_data_version;
   if (!DecodeVarInt(&slice, &index_data_version)) {
     INTERNAL_READ_ERROR(LOAD_CURRENT_ROW);
@@ -2271,16 +2259,17 @@ class IndexCursorImpl : public IndexedDBBackingStore::Cursor {
 };
 
 bool IndexCursorImpl::LoadCurrentRow() {
-  const char* key_position = iterator_->Key().begin();
-  const char* key_limit = iterator_->Key().end();
-
+  StringPiece slice(iterator_->Key());
   IndexDataKey index_data_key;
-  key_position = IndexDataKey::Decode(key_position, key_limit, &index_data_key);
+  if (!IndexDataKey::Decode(&slice, &index_data_key)) {
+    INTERNAL_READ_ERROR(LOAD_CURRENT_ROW);
+    return false;
+  }
 
   current_key_ = index_data_key.user_key();
   DCHECK(current_key_);
 
-  StringPiece slice(iterator_->Value());
+  slice = StringPiece(iterator_->Value());
   int64 index_data_version;
   if (!DecodeVarInt(&slice, &index_data_version)) {
     INTERNAL_READ_ERROR(LOAD_CURRENT_ROW);
