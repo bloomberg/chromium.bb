@@ -7,7 +7,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "media/base/audio_buffer.h"
 #include "media/base/buffers.h"
 #include "media/base/decoder_buffer.h"

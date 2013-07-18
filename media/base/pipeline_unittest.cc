@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/threading/simple_thread.h"

@@ -4,7 +4,7 @@
 
 #include "media/audio/audio_output_dispatcher.h"
 
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 
 namespace media {
 

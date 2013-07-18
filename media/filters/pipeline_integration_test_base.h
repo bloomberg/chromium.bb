@@ -5,8 +5,8 @@
 #ifndef MEDIA_FILTERS_PIPELINE_INTEGRATION_TEST_BASE_H_
 #define MEDIA_FILTERS_PIPELINE_INTEGRATION_TEST_BASE_H_
 
-#include "base/message_loop.h"
 #include "base/md5.h"
+#include "base/message_loop/message_loop.h"
 #include "media/audio/null_audio_sink.h"
 #include "media/base/filter_collection.h"
 #include "media/base/media_keys.h"

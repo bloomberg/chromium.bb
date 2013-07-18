@@ -6,7 +6,7 @@
 #include "base/callback_helpers.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_vector.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "media/base/audio_buffer.h"
