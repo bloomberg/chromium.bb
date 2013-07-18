@@ -34,6 +34,8 @@ class TestInstance : public TestCase {
   std::string TestExecuteScript();
   std::string TestRecursiveObjects();
   std::string TestLeakedObjectDestructors();
+  std::string TestSetupExecuteScriptAtInstanceShutdown();
+  std::string TestExecuteScriptAtInstanceShutdown();
 
   // Value written by set_string which is called by the ScriptableObject. This
   // allows us to keep track of what was called.

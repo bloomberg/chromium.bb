@@ -234,9 +234,13 @@ TEST_PPAPI_IN_PROCESS(MAYBE_ImeInputEvent)
 TEST_PPAPI_OUT_OF_PROCESS(MAYBE_ImeInputEvent)
 TEST_PPAPI_NACL(MAYBE_ImeInputEvent)
 
+// "Instance" tests are really InstancePrivate tests. InstancePrivate is not
+// supported in NaCl, so these tests are only run trusted.
+// Also note that these tests are run separately on purpose (versus collapsed
+// in to one IN_PROC_BROWSER_TEST_F macro), because some of them have leaks
+// on purpose that will look like failures to tests that are run later.
 TEST_PPAPI_IN_PROCESS(Instance_ExecuteScript);
 TEST_PPAPI_OUT_OF_PROCESS(Instance_ExecuteScript)
-// ExecuteScript isn't supported by NaCl.
 
 // We run and reload the RecursiveObjects test to ensure that the InstanceObject
 // (and others) are properly cleaned up after the first run.
@@ -251,8 +255,25 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest,
 }
 TEST_PPAPI_IN_PROCESS(Instance_LeakedObjectDestructors);
 TEST_PPAPI_OUT_OF_PROCESS(Instance_LeakedObjectDestructors);
-// ScriptableObjects aren't supported in NaCl, so Instance_RecursiveObjects and
-// Instance_TestLeakedObjectDestructors don't make sense for NaCl.
+
+IN_PROC_BROWSER_TEST_F(PPAPITest,
+                       Instance_ExecuteScriptAtInstanceShutdown) {
+  // In other tests, we use one call to RunTest so that the tests can all run
+  // in one plugin instance. This saves time on loading the plugin (especially
+  // for NaCl). Here, we actually want to destroy the Instance, to test whether
+  // the destructor can run ExecuteScript successfully. That's why we have two
+  // separate calls to RunTest; the second one forces a navigation which
+  // destroys the instance from the prior RunTest.
+  // See test_instance_deprecated.cc for more information.
+  RunTest("Instance_SetupExecuteScriptAtInstanceShutdown");
+  RunTest("Instance_ExecuteScriptAtInstanceShutdown");
+}
+IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest,
+                       Instance_ExecuteScriptAtInstanceShutdown) {
+  // (See the comment for the in-process version of this test above)
+  RunTest("Instance_SetupExecuteScriptAtInstanceShutdown");
+  RunTest("Instance_ExecuteScriptAtInstanceShutdown");
+}
 
 TEST_PPAPI_IN_PROCESS(Graphics2D)
 TEST_PPAPI_OUT_OF_PROCESS(Graphics2D)

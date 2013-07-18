@@ -68,7 +68,6 @@ InstanceSO::~InstanceSO() {
     // TODO(dmichael): It would probably be best to make in-process consistent
     //                 with out-of-process. That would mean that the instance
     //                 would already be destroyed at this point.
-    pp::Var exception;
     pp::Var ret = test_instance_->instance()->ExecuteScript(
         "document.getElementById('container').instance_object_destroyed=true;");
   } else {
@@ -127,12 +126,24 @@ bool TestInstance::Init() {
 }
 
 TestInstance::~TestInstance() {
+  // Save the fact that we were destroyed in sessionStorage. This tests that
+  // we can ExecuteScript at instance destruction without crashing. It also
+  // allows us to check that ExecuteScript will run and succeed in certain
+  // cases. In particular, when the instance is destroyed by normal DOM
+  // deletion, ExecuteScript will actually work. See
+  // TestExecuteScriptInInstanceShutdown for that test. Note, however, that
+  // ExecuteScript will *not* have an effect when the instance is destroyed
+  // because the renderer was shut down.
+  pp::Var ret = instance()->ExecuteScript(
+      "sessionStorage.setItem('instance_destroyed', 'true');");
 }
 
 void TestInstance::RunTests(const std::string& filter) {
   RUN_TEST(ExecuteScript, filter);
   RUN_TEST(RecursiveObjects, filter);
   RUN_TEST(LeakedObjectDestructors, filter);
+  RUN_TEST(SetupExecuteScriptAtInstanceShutdown, filter);
+  RUN_TEST(ExecuteScriptAtInstanceShutdown, filter);
 }
 
 void TestInstance::LeakReferenceAndIgnore(const pp::Var& leaked) {
@@ -242,6 +253,34 @@ std::string TestInstance::TestLeakedObjectDestructors() {
   pp::VarPrivate leaked(instance(), new BadDestructorObject());
   // Leak a reference so it gets deleted on instance shutdown.
   LeakReferenceAndIgnore(leaked);
+  PASS();
+}
+
+std::string TestInstance::TestSetupExecuteScriptAtInstanceShutdown() {
+  // This test only exists so that it can be run before
+  // TestExecuteScriptAtInstanceShutdown. See the comment for that test.
+  pp::Var exception;
+  pp::Var result = instance()->ExecuteScript(
+      "sessionStorage.removeItem('instance_destroyed');", &exception);
+  ASSERT_TRUE(exception.is_undefined());
+  ASSERT_TRUE(result.is_undefined());
+  PASS();
+}
+
+std::string TestInstance::TestExecuteScriptAtInstanceShutdown() {
+  // This test relies on the previous test being run in the same browser
+  // session, but in such a way that the instance is destroyed. See
+  // chrome/test/ppapi/ppapi_browsertest.cc for how the navigation happens.
+  //
+  // Given those constraints, ~TestInstance should have been invoked to set
+  // instance_destroyed in sessionStorage. So all we have to do is make sure
+  // that it was set as expected.
+  pp::Var result = instance()->ExecuteScript(
+      "sessionStorage.getItem('instance_destroyed');");
+  ASSERT_TRUE(result.is_string());
+  ASSERT_EQ(std::string("true"), result.AsString());
+  instance()->ExecuteScript("sessionStorage.removeItem('instance_destroyed');");
+
   PASS();
 }
 
