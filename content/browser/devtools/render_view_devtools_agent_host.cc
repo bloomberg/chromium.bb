@@ -10,7 +10,6 @@
 #include "content/browser/devtools/devtools_manager_impl.h"
 #include "content/browser/devtools/devtools_protocol.h"
 #include "content/browser/devtools/devtools_protocol_constants.h"
-#include "content/browser/devtools/devtools_tracing_handler.h"
 #include "content/browser/devtools/renderer_overrides_handler.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -133,14 +132,8 @@ void RenderViewDevToolsAgentHost::OnCancelPendingNavigation(
 
 RenderViewDevToolsAgentHost::RenderViewDevToolsAgentHost(
     RenderViewHost* rvh)
-    : overrides_handler_(new RendererOverridesHandler(this)),
-      tracing_handler_(new DevToolsTracingHandler())
- {
+    : overrides_handler_(new RendererOverridesHandler(this)) {
   SetRenderViewHost(rvh);
-  DevToolsProtocol::Notifier notifier(base::Bind(
-      &RenderViewDevToolsAgentHost::OnDispatchOnInspectorFrontend, this));
-  overrides_handler_->SetNotifier(notifier);
-  tracing_handler_->SetNotifier(notifier);
   g_instances.Get().push_back(this);
   RenderViewHostDelegate* delegate = render_view_host_->GetDelegate();
   if (delegate && delegate->GetAsWebContents())
@@ -160,8 +153,6 @@ void RenderViewDevToolsAgentHost::DispatchOnInspectorBackend(
   if (command) {
     scoped_ptr<DevToolsProtocol::Response> overridden_response(
         overrides_handler_->HandleCommand(command.get()));
-    if (!overridden_response)
-      overridden_response = tracing_handler_->HandleCommand(command.get());
     if (overridden_response) {
       OnDispatchOnInspectorFrontend(overridden_response->Serialize());
       return;

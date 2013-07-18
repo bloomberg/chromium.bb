@@ -14,7 +14,6 @@
 #include "base/values.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/devtools/devtools_protocol_constants.h"
-#include "content/browser/devtools/devtools_tracing_handler.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/javascript_dialog_manager.h"
