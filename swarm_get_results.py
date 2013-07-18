@@ -23,19 +23,22 @@ import urllib
 import run_isolated
 
 
+# The default time to wait for a shard to finish running.
+DEFAULT_SHARD_WAIT_TIME = 40 * 60.
+
+
 class Failure(Exception):
   """Generic failure."""
   pass
 
 
-def get_test_keys(swarm_base_url, test_name, timeout):
+def get_test_keys(swarm_base_url, test_name):
   """Returns the Swarm test key for each shards of test_name."""
-  assert isinstance(timeout, float)
   key_data = urllib.urlencode([('name', test_name)])
   url = '%s/get_matching_test_cases?%s' % (swarm_base_url, key_data)
 
   for i in range(run_isolated.URL_OPEN_MAX_ATTEMPTS):
-    response = run_isolated.url_open(url, retry_404=True, timeout=timeout)
+    response = run_isolated.url_open(url, retry_404=True)
     if response is None:
       raise Failure(
           'Error: Unable to find any tests with the name, %s, on swarm server'
@@ -83,9 +86,9 @@ def retrieve_results(base_url, test_key, timeout, should_stop):
   start = now()
   while True:
     if timeout and (now() - start) >= timeout:
-      logging.warning('retrieve_results(%s) timed out', base_url)
+      logging.error('retrieve_results(%s) timed out', base_url)
       return {}
-    # Do retries ourselve.
+    # Do retries ourselves.
     response = run_isolated.url_open(
         result_url, retry_404=False, retry_50x=False)
     if response is None:
@@ -131,10 +134,9 @@ def yield_results(swarm_base_url, test_keys, timeout, max_threads):
         results_remaining -= 1
         if not result:
           # Failed to retrieve one key.
-          logging.warning('Failed to retrieve the results for a swarm key')
+          logging.error('Failed to retrieve the results for a swarm key')
           continue
         shard_index = result['config_instance_index']
-        print 'Retrieved results for shard %d' % shard_index
         if shard_index in shards_remaining:
           shards_remaining.remove(shard_index)
           yield shard_index, result
@@ -142,8 +144,6 @@ def yield_results(swarm_base_url, test_keys, timeout, max_threads):
           logging.warning('Ignoring duplicate shard index %d', shard_index)
           # Pop the last entry, there's no such shard.
           shards_remaining.pop()
-        print 'Remaining shards %s' % shards_remaining
-        print 'Remaining results %d' % results_remaining
     finally:
       # Done, kill the remaining threads.
       should_stop.set()
@@ -163,7 +163,7 @@ def parse_args():
   parser.add_option(
       '-t', '--timeout',
       type='float',
-      default=run_isolated.URL_OPEN_TIMEOUT,
+      default=DEFAULT_SHARD_WAIT_TIME,
       help='Timeout to wait for result, set to 0 for no timeout; default: '
            '%default s')
   # TODO(maruel): Remove once the masters have been updated.
@@ -184,7 +184,7 @@ def parse_args():
 def main():
   parser, options, test_name = parse_args()
   try:
-    test_keys = get_test_keys(options.url, test_name, options.timeout)
+    test_keys = get_test_keys(options.url, test_name)
   except Failure as e:
     parser.error(e.args[0])
   if not test_keys:

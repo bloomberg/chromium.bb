@@ -177,12 +177,12 @@ class TestGetTestKeys(TestCase):
       self.requests = [
         (
           'http://host:9001/get_matching_test_cases?name=my_test',
-          {'retry_404': True, 'timeout': 0.0},
+          {'retry_404': True},
           StringIO.StringIO('No matching Test Cases'),
         ) for _ in range(run_isolated.URL_OPEN_MAX_ATTEMPTS)
       ]
       try:
-        swarm_get_results.get_test_keys('http://host:9001', 'my_test', 0.)
+        swarm_get_results.get_test_keys('http://host:9001', 'my_test')
         self.fail()
       except swarm_get_results.Failure as e:
         msg = (
@@ -200,17 +200,16 @@ class TestGetTestKeys(TestCase):
       self.requests = [
         (
           'http://host:9001/get_matching_test_cases?name=my_test',
-          {'retry_404': True, 'timeout': 0.0},
+          {'retry_404': True},
           StringIO.StringIO('No matching Test Cases'),
         ),
         (
           'http://host:9001/get_matching_test_cases?name=my_test',
-          {'retry_404': True, 'timeout': 0.0},
+          {'retry_404': True},
           StringIO.StringIO(json.dumps(keys)),
         ),
       ]
-      actual = swarm_get_results.get_test_keys('http://host:9001', 'my_test',
-                                               0.)
+      actual = swarm_get_results.get_test_keys('http://host:9001', 'my_test')
       self.assertEqual(keys, actual)
     finally:
       swarm_get_results.time.sleep = old_sleep
@@ -220,11 +219,11 @@ class TestGetTestKeys(TestCase):
     self.requests = [
       (
         'http://host:9001/get_matching_test_cases?name=my_test',
-        {'retry_404': True, 'timeout': 0.0},
+        {'retry_404': True},
         StringIO.StringIO(json.dumps(keys)),
       ),
     ]
-    actual = swarm_get_results.get_test_keys('http://host:9001', 'my_test', 0.)
+    actual = swarm_get_results.get_test_keys('http://host:9001', 'my_test')
     self.assertEqual(keys, actual)
 
 
