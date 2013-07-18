@@ -111,11 +111,9 @@ Page::Page(PageClients& pageClients)
     , m_openedByDOM(false)
     , m_tabKeyCyclesThroughElements(true)
     , m_defersLoading(false)
-    , m_defersLoadingCallCount(0)
     , m_pageScaleFactor(1)
     , m_deviceScaleFactor(1)
     , m_didLoadUserStyleSheet(false)
-    , m_userStyleSheetModificationTime(0)
     , m_group(0)
     , m_timerAlignmentInterval(DOMTimer::visiblePageAlignmentInterval())
     , m_visibilityState(PageVisibilityStateVisible)
@@ -453,7 +451,6 @@ void Page::unmarkAllTextMatches()
 
 void Page::setDefersLoading(bool defers)
 {
-    ASSERT(!m_defersLoadingCallCount);
     if (defers == m_defersLoading)
         return;
 
@@ -517,7 +514,6 @@ void Page::userStyleSheetLocationChanged()
 
     m_didLoadUserStyleSheet = false;
     m_userStyleSheet = String();
-    m_userStyleSheetModificationTime = 0;
 
     // Data URLs with base64-encoded UTF-8 style sheets are common. We can process them
     // synchronously and avoid using a loader.
