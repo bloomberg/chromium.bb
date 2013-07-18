@@ -9,7 +9,7 @@
 #include "base/android/jni_string.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "content/public/test/nested_message_pump_android.h"
 #include "content/shell/common/shell_switches.h"
 #include "jni/ShellLayoutTestUtils_jni.h"

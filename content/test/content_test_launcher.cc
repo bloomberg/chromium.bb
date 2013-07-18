@@ -18,7 +18,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_ANDROID)
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "content/public/test/nested_message_pump_android.h"
 #endif
 

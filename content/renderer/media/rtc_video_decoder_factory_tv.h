@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "content/common/content_export.h"
 #include "media/base/demuxer.h"
 #include "third_party/libjingle/source/talk/media/webrtc/webrtcvideodecoderfactory.h"

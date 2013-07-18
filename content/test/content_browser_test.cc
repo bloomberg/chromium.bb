@@ -7,7 +7,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_paths.h"

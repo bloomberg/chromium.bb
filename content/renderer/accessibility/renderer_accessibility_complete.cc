@@ -7,7 +7,7 @@
 #include <queue>
 
 #include "base/bind.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "content/renderer/accessibility/accessibility_node_serializer.h"
 #include "content/renderer/render_view_impl.h"
 #include "third_party/WebKit/public/web/WebAccessibilityObject.h"

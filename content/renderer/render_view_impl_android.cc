@@ -5,7 +5,7 @@
 #include "content/renderer/render_view_impl.h"
 
 #include "base/command_line.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "cc/trees/layer_tree_host.h"
 #include "content/renderer/gpu/render_widget_compositor.h"
 

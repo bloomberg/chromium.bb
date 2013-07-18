@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/shared_memory.h"
 #include "content/common/device_motion_messages.h"
 #include "content/public/renderer/render_thread.h"

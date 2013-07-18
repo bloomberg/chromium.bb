@@ -5,7 +5,7 @@
 #include "content/renderer/pepper/pepper_in_process_router.h"
 
 #include "base/bind.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "content/renderer/pepper/renderer_ppapi_host_impl.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_sender.h"

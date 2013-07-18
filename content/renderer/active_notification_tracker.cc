@@ -5,7 +5,7 @@
 #include "content/renderer/active_notification_tracker.h"
 
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "third_party/WebKit/public/web/WebNotification.h"
 #include "third_party/WebKit/public/web/WebNotificationPermissionCallback.h"
 

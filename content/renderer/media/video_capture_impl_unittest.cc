@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "content/child/child_process.h"
 #include "content/common/media/encoded_video_capture_messages.h"
 #include "content/common/media/video_capture_messages.h"

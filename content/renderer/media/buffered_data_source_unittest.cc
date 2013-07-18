@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "content/renderer/media/buffered_data_source.h"
 #include "content/renderer/media/test_response_generator.h"
 #include "media/base/media_log.h"

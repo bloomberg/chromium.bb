@@ -7,7 +7,7 @@
 
 #include "base/bind.h"
 #include "base/format_macros.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
 #include "content/renderer/media/buffered_resource_loader.h"
 #include "media/base/media_log.h"

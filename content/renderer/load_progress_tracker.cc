@@ -5,7 +5,7 @@
 #include "content/renderer/load_progress_tracker.h"
 
 #include "base/bind.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/render_view_impl.h"
 

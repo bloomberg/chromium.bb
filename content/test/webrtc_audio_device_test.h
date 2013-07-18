@@ -10,7 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "content/browser/renderer_host/media/mock_media_observer.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "ipc/ipc_listener.h"

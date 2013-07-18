@@ -5,7 +5,7 @@
 #include "content/renderer/image_loading_helper.h"
 
 #include "base/bind.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "content/child/image_decoder.h"
 #include "content/common/image_messages.h"
 #include "content/public/common/url_constants.h"
