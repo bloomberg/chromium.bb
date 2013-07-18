@@ -12,9 +12,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/native_library.h"
 #include "build/build_config.h"
-#include "webkit/plugins/npapi/plugin_list.h"
+#include "third_party/npapi/bindings/nphostapi.h"
 #include "webkit/plugins/npapi/webplugin.h"
 #include "webkit/plugins/webkit_plugins_export.h"
+#include "webkit/plugins/webplugininfo.h"
 
 namespace base {
 class FilePath;
@@ -24,6 +25,18 @@ namespace webkit {
 namespace npapi {
 
 class PluginInstance;
+
+// This struct holds entry points into a plugin.  The entry points are
+// slightly different between Win/Mac and Unixes.  Note that the interface for
+// querying plugins is synchronous and it is preferable to use a higher-level
+// asynchronous information to query information.
+struct PluginEntryPoints {
+#if !defined(OS_POSIX) || defined(OS_MACOSX)
+  NP_GetEntryPointsFunc np_getentrypoints;
+#endif
+  NP_InitializeFunc np_initialize;
+  NP_ShutdownFunc np_shutdown;
+};
 
 // A PluginLib is a single NPAPI Plugin Library, and is the lifecycle
 // manager for new PluginInstances.
@@ -49,8 +62,6 @@ class WEBKIT_PLUGINS_EXPORT PluginLib : public base::RefCounted<PluginLib> {
   // Gets information about this plugin and the mime types that it
   // supports.
   const webkit::WebPluginInfo& plugin_info() { return web_plugin_info_; }
-
-  bool internal() { return internal_; }
 
   //
   // NPAPI functions
@@ -86,9 +97,7 @@ class WEBKIT_PLUGINS_EXPORT PluginLib : public base::RefCounted<PluginLib> {
   friend class base::RefCounted<PluginLib>;
 
   // Creates a new PluginLib.
-  // |entry_points| is non-NULL for internal plugins.
-  PluginLib(const webkit::WebPluginInfo& info,
-            const PluginEntryPoints* entry_points);
+  explicit PluginLib(const webkit::WebPluginInfo& info);
 
   virtual ~PluginLib();
 
@@ -103,7 +112,6 @@ class WEBKIT_PLUGINS_EXPORT PluginLib : public base::RefCounted<PluginLib> {
   void Shutdown();
 
  private:
-  bool internal_;  // True for plugins that are built-in into chrome binaries.
   webkit::WebPluginInfo web_plugin_info_;  // Supported mime types, description
   base::NativeLibrary library_;  // The opened library reference.
   NPPluginFuncs plugin_funcs_;  // The struct of plugin side functions.

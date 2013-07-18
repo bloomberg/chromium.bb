@@ -110,25 +110,15 @@ void PluginList::AddExtraPluginDir(const base::FilePath& plugin_dir) {
 
 void PluginList::RegisterInternalPlugin(const webkit::WebPluginInfo& info,
                                         bool add_at_beginning) {
-  PluginEntryPoints entry_points = {0};
-  RegisterInternalPluginWithEntryPoints(info, add_at_beginning, entry_points);
-}
-
-void PluginList::RegisterInternalPluginWithEntryPoints(
-    const webkit::WebPluginInfo& info,
-    bool add_at_beginning,
-    const PluginEntryPoints& entry_points) {
   if (!NPAPIPluginsSupported() &&
       info.type == WebPluginInfo::PLUGIN_TYPE_NPAPI) {
     DLOG(INFO) << "Don't register NPAPI plugins when they're not supported";
     return;
   }
 
-  InternalPlugin plugin = { info, entry_points };
-
   base::AutoLock lock(lock_);
 
-  internal_plugins_.push_back(plugin);
+  internal_plugins_.push_back(info);
   if (add_at_beginning) {
     // Newer registrations go earlier in the list so they can override the MIME
     // types of older registrations.
@@ -141,7 +131,7 @@ void PluginList::RegisterInternalPluginWithEntryPoints(
 void PluginList::UnregisterInternalPlugin(const base::FilePath& path) {
   base::AutoLock lock(lock_);
   for (size_t i = 0; i < internal_plugins_.size(); i++) {
-    if (internal_plugins_[i].info.path == path) {
+    if (internal_plugins_[i].path == path) {
       internal_plugins_.erase(internal_plugins_.begin() + i);
       return;
     }
@@ -153,29 +143,25 @@ void PluginList::GetInternalPlugins(
     std::vector<webkit::WebPluginInfo>* internal_plugins) {
   base::AutoLock lock(lock_);
 
-  for (std::vector<InternalPlugin>::iterator it = internal_plugins_.begin();
+  for (std::vector<webkit::WebPluginInfo>::iterator it =
+          internal_plugins_.begin();
        it != internal_plugins_.end();
        ++it) {
-    internal_plugins->push_back(it->info);
+    internal_plugins->push_back(*it);
   }
 }
 
 bool PluginList::ReadPluginInfo(const base::FilePath& filename,
-                                webkit::WebPluginInfo* info,
-                                const PluginEntryPoints** entry_points) {
+                                webkit::WebPluginInfo* info) {
   {
     base::AutoLock lock(lock_);
     for (size_t i = 0; i < internal_plugins_.size(); ++i) {
-      if (filename == internal_plugins_[i].info.path) {
-        *entry_points = &internal_plugins_[i].entry_points;
-        *info = internal_plugins_[i].info;
+      if (filename == internal_plugins_[i].path) {
+        *info = internal_plugins_[i];
         return true;
       }
     }
   }
-
-  // Not an internal plugin.
-  *entry_points = NULL;
 
   return PluginList::ReadWebPluginInfo(filename, info);
 }
@@ -278,9 +264,7 @@ bool PluginList::LoadPluginIntoPluginList(
     WebPluginInfo* plugin_info) {
   LOG_IF(ERROR, PluginList::DebugPluginLoading())
       << "Loading plugin " << path.value();
-  const PluginEntryPoints* entry_points;
-
-  if (!ReadPluginInfo(path, plugin_info, &entry_points))
+  if (!ReadPluginInfo(path, plugin_info))
     return false;
 
   if (!ShouldLoadPluginUsingPluginList(*plugin_info, plugins))

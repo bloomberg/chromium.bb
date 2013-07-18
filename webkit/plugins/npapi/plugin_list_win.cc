@@ -396,7 +396,7 @@ bool PluginList::ShouldLoadPluginUsingPluginList(
 
   // If the plugin is in our internal list we should load it.
   for (size_t i = 0; i < internal_plugins_.size(); ++i) {
-    if (info.path == internal_plugins_[i].info.path)
+    if (info.path == internal_plugins_[i].path)
       return true;
   }
 

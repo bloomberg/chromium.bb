@@ -5,6 +5,7 @@
 #include "webkit/plugins/npapi/webplugin_delegate_impl.h"
 
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -394,7 +395,7 @@ WebPluginDelegateImpl::~WebPluginDelegateImpl() {
 bool WebPluginDelegateImpl::PlatformInitialize() {
   plugin_->SetWindow(windowed_handle_);
 
-  if (windowless_ && !instance_->plugin_lib()->internal()) {
+  if (windowless_) {
     CreateDummyWindowForActivation();
     handle_event_pump_messages_event_ = CreateEvent(NULL, TRUE, FALSE, NULL);
     plugin_->SetWindowlessData(
@@ -402,48 +403,45 @@ bool WebPluginDelegateImpl::PlatformInitialize() {
         reinterpret_cast<gfx::NativeViewId>(dummy_window_for_activation_));
   }
 
-  // We cannot patch internal plugins as they are not shared libraries.
-  if (!instance_->plugin_lib()->internal()) {
-    // Windowless plugins call the WindowFromPoint API and passes the result of
-    // that to the TrackPopupMenu API call as the owner window. This causes the
-    // API to fail as the API expects the window handle to live on the same
-    // thread as the caller. It works in the other browsers as the plugin lives
-    // on the browser thread. Our workaround is to intercept the TrackPopupMenu
-    // API and replace the window handle with the dummy activation window.
-    if (windowless_ && !g_iat_patch_track_popup_menu.Pointer()->is_patched()) {
-      g_iat_patch_track_popup_menu.Pointer()->Patch(
-          GetPluginPath().value().c_str(), "user32.dll", "TrackPopupMenu",
-          WebPluginDelegateImpl::TrackPopupMenuPatch);
-    }
+  // Windowless plugins call the WindowFromPoint API and passes the result of
+  // that to the TrackPopupMenu API call as the owner window. This causes the
+  // API to fail as the API expects the window handle to live on the same
+  // thread as the caller. It works in the other browsers as the plugin lives
+  // on the browser thread. Our workaround is to intercept the TrackPopupMenu
+  // API and replace the window handle with the dummy activation window.
+  if (windowless_ && !g_iat_patch_track_popup_menu.Pointer()->is_patched()) {
+    g_iat_patch_track_popup_menu.Pointer()->Patch(
+        GetPluginPath().value().c_str(), "user32.dll", "TrackPopupMenu",
+        WebPluginDelegateImpl::TrackPopupMenuPatch);
+  }
 
-    // Windowless plugins can set cursors by calling the SetCursor API. This
-    // works because the thread inputs of the browser UI thread and the plugin
-    // thread are attached. We intercept the SetCursor API for windowless
-    // plugins and remember the cursor being set. This is shipped over to the
-    // browser in the HandleEvent call, which ensures that the cursor does not
-    // change when a windowless plugin instance changes the cursor
-    // in a background tab.
-    if (windowless_ && !g_iat_patch_set_cursor.Pointer()->is_patched() &&
-        (quirks_ & PLUGIN_QUIRK_PATCH_SETCURSOR)) {
-      g_iat_patch_set_cursor.Pointer()->Patch(
-          GetPluginPath().value().c_str(), "user32.dll", "SetCursor",
-          WebPluginDelegateImpl::SetCursorPatch);
-    }
+  // Windowless plugins can set cursors by calling the SetCursor API. This
+  // works because the thread inputs of the browser UI thread and the plugin
+  // thread are attached. We intercept the SetCursor API for windowless
+  // plugins and remember the cursor being set. This is shipped over to the
+  // browser in the HandleEvent call, which ensures that the cursor does not
+  // change when a windowless plugin instance changes the cursor
+  // in a background tab.
+  if (windowless_ && !g_iat_patch_set_cursor.Pointer()->is_patched() &&
+      (quirks_ & PLUGIN_QUIRK_PATCH_SETCURSOR)) {
+    g_iat_patch_set_cursor.Pointer()->Patch(
+        GetPluginPath().value().c_str(), "user32.dll", "SetCursor",
+        WebPluginDelegateImpl::SetCursorPatch);
+  }
 
-    // The windowed flash plugin has a bug which occurs when the plugin enters
-    // fullscreen mode. It basically captures the mouse on WM_LBUTTONDOWN and
-    // does not release capture correctly causing it to stop receiving
-    // subsequent mouse events. This problem is also seen in Safari where there
-    // is code to handle this in the wndproc. However the plugin subclasses the
-    // window again in WM_LBUTTONDOWN before entering full screen. As a result
-    // Safari does not receive the WM_LBUTTONUP message. To workaround this
-    // issue we use a per thread mouse hook. This bug does not occur in Firefox
-    // and opera. Firefox has code similar to Safari. It could well be a bug in
-    // the flash plugin, which only occurs in webkit based browsers.
-    if (quirks_ & PLUGIN_QUIRK_HANDLE_MOUSE_CAPTURE) {
-      mouse_hook_ = SetWindowsHookEx(WH_MOUSE, MouseHookProc, NULL,
-                                     GetCurrentThreadId());
-    }
+  // The windowed flash plugin has a bug which occurs when the plugin enters
+  // fullscreen mode. It basically captures the mouse on WM_LBUTTONDOWN and
+  // does not release capture correctly causing it to stop receiving
+  // subsequent mouse events. This problem is also seen in Safari where there
+  // is code to handle this in the wndproc. However the plugin subclasses the
+  // window again in WM_LBUTTONDOWN before entering full screen. As a result
+  // Safari does not receive the WM_LBUTTONUP message. To workaround this
+  // issue we use a per thread mouse hook. This bug does not occur in Firefox
+  // and opera. Firefox has code similar to Safari. It could well be a bug in
+  // the flash plugin, which only occurs in webkit based browsers.
+  if (quirks_ & PLUGIN_QUIRK_HANDLE_MOUSE_CAPTURE) {
+    mouse_hook_ = SetWindowsHookEx(WH_MOUSE, MouseHookProc, NULL,
+                                    GetCurrentThreadId());
   }
 
   // On XP, WMP will use its old UI unless a registry key under HKLM has the

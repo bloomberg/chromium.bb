@@ -35,11 +35,10 @@ PluginLib* PluginLib::CreatePluginLib(const base::FilePath& filename) {
   }
 
   webkit::WebPluginInfo info;
-  const PluginEntryPoints* entry_points = NULL;
-  if (!PluginList::Singleton()->ReadPluginInfo(filename, &info, &entry_points))
+  if (!PluginList::Singleton()->ReadPluginInfo(filename, &info))
     return NULL;
 
-  return new PluginLib(info, entry_points);
+  return new PluginLib(info);
 }
 
 void PluginLib::UnloadAllPlugins() {
@@ -65,8 +64,7 @@ void PluginLib::ShutdownAllPlugins() {
   }
 }
 
-PluginLib::PluginLib(const webkit::WebPluginInfo& info,
-                     const PluginEntryPoints* entry_points)
+PluginLib::PluginLib(const webkit::WebPluginInfo& info)
     : web_plugin_info_(info),
       library_(NULL),
       initialized_(false),
@@ -78,14 +76,7 @@ PluginLib::PluginLib(const webkit::WebPluginInfo& info,
   memset(static_cast<void*>(&plugin_funcs_), 0, sizeof(plugin_funcs_));
   g_loaded_libs->push_back(make_scoped_refptr(this));
 
-  if (entry_points) {
-    internal_ = true;
-    entry_points_ = *entry_points;
-  } else {
-    internal_ = false;
-    // We will read the entry points from the plugin directly.
-    memset(&entry_points_, 0, sizeof(entry_points_));
-  }
+  memset(&entry_points_, 0, sizeof(entry_points_));
 }
 
 PluginLib::~PluginLib() {
@@ -183,62 +174,58 @@ bool PluginLib::Load() {
   base::NativeLibrary library = 0;
   std::string error;
 
-  if (!internal_) {
 #if defined(OS_WIN)
-    // This is to work around a bug in the Real player recorder plugin which
-    // intercepts LoadLibrary calls from chrome.dll and wraps NPAPI functions
-    // provided by the plugin. It crashes if the media player plugin is being
-    // loaded. Workaround is to load the dll dynamically by getting the
-    // LoadLibrary API address from kernel32.dll which bypasses the recorder
-    // plugin.
-    if (web_plugin_info_.name.find(L"Windows Media Player") !=
-        std::wstring::npos) {
-      library = base::LoadNativeLibraryDynamically(web_plugin_info_.path);
-    } else {
-      library = base::LoadNativeLibrary(web_plugin_info_.path, &error);
-    }
-#else
+  // This is to work around a bug in the Real player recorder plugin which
+  // intercepts LoadLibrary calls from chrome.dll and wraps NPAPI functions
+  // provided by the plugin. It crashes if the media player plugin is being
+  // loaded. Workaround is to load the dll dynamically by getting the
+  // LoadLibrary API address from kernel32.dll which bypasses the recorder
+  // plugin.
+  if (web_plugin_info_.name.find(L"Windows Media Player") !=
+      std::wstring::npos) {
+    library = base::LoadNativeLibraryDynamically(web_plugin_info_.path);
+  } else {
     library = base::LoadNativeLibrary(web_plugin_info_.path, &error);
+  }
+#else
+  library = base::LoadNativeLibrary(web_plugin_info_.path, &error);
 #endif
 
-    if (!library) {
-      LOG_IF(ERROR, PluginList::DebugPluginLoading())
-          << "Couldn't load plugin " << web_plugin_info_.path.value() << " "
-          << error;
-      return rv;
-    }
+  if (!library) {
+    LOG_IF(ERROR, PluginList::DebugPluginLoading())
+        << "Couldn't load plugin " << web_plugin_info_.path.value() << " "
+        << error;
+    return rv;
+  }
 
 #if defined(OS_MACOSX)
-    // According to the WebKit source, QuickTime at least requires us to call
-    // UseResFile on the plugin resources before loading.
-    if (library->bundle_resource_ref != -1)
-      UseResFile(library->bundle_resource_ref);
+  // According to the WebKit source, QuickTime at least requires us to call
+  // UseResFile on the plugin resources before loading.
+  if (library->bundle_resource_ref != -1)
+    UseResFile(library->bundle_resource_ref);
 #endif
 
-    rv = true;  // assume success now
+  rv = true;  // assume success now
 
-    entry_points_.np_initialize =
-        (NP_InitializeFunc)base::GetFunctionPointerFromNativeLibrary(library,
-            "NP_Initialize");
-    if (entry_points_.np_initialize == 0)
-      rv = false;
+  entry_points_.np_initialize =
+      (NP_InitializeFunc)base::GetFunctionPointerFromNativeLibrary(library,
+          "NP_Initialize");
+  if (entry_points_.np_initialize == 0)
+    rv = false;
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
-    entry_points_.np_getentrypoints =
-        (NP_GetEntryPointsFunc)base::GetFunctionPointerFromNativeLibrary(
-            library, "NP_GetEntryPoints");
-    if (entry_points_.np_getentrypoints == 0)
-      rv = false;
+  entry_points_.np_getentrypoints =
+      (NP_GetEntryPointsFunc)base::GetFunctionPointerFromNativeLibrary(
+          library, "NP_GetEntryPoints");
+  if (entry_points_.np_getentrypoints == 0)
+    rv = false;
 #endif
 
-    entry_points_.np_shutdown =
-        (NP_ShutdownFunc)base::GetFunctionPointerFromNativeLibrary(library,
-            "NP_Shutdown");
-    if (entry_points_.np_shutdown == 0)
-      rv = false;
-  } else {
-    rv = true;
-  }
+  entry_points_.np_shutdown =
+      (NP_ShutdownFunc)base::GetFunctionPointerFromNativeLibrary(library,
+          "NP_Shutdown");
+  if (entry_points_.np_shutdown == 0)
+    rv = false;
 
   if (rv) {
     plugin_funcs_.size = sizeof(plugin_funcs_);
@@ -251,18 +238,16 @@ bool PluginLib::Load() {
 #endif
   }
 
-  if (!internal_) {
-    if (rv) {
-      LOG_IF(ERROR, PluginList::DebugPluginLoading())
-          << "Plugin " << web_plugin_info_.path.value()
-          << " loaded successfully.";
-      library_ = library;
-    } else {
-      LOG_IF(ERROR, PluginList::DebugPluginLoading())
-          << "Plugin " << web_plugin_info_.path.value()
-          << " failed to load, unloading.";
-      base::UnloadNativeLibrary(library);
-    }
+  if (rv) {
+    LOG_IF(ERROR, PluginList::DebugPluginLoading())
+        << "Plugin " << web_plugin_info_.path.value()
+        << " loaded successfully.";
+    library_ = library;
+  } else {
+    LOG_IF(ERROR, PluginList::DebugPluginLoading())
+        << "Plugin " << web_plugin_info_.path.value()
+        << " failed to load, unloading.";
+    base::UnloadNativeLibrary(library);
   }
 
   return rv;
@@ -295,7 +280,7 @@ void FreePluginLibraryHelper(const base::FilePath& path,
 }
 
 void PluginLib::Unload() {
-  if (!internal_ && library_) {
+  if (library_) {
     // In case of single process mode, a plugin can delete itself
     // by executing a script. So delay the unloading of the library
     // so that the plugin will have a chance to unwind.
@@ -342,7 +327,7 @@ void PluginLib::Unload() {
 }
 
 void PluginLib::Shutdown() {
-  if (initialized_ && !internal_) {
+  if (initialized_) {
     NP_Shutdown();
     initialized_ = false;
   }

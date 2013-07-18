@@ -17,7 +17,6 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/synchronization/lock.h"
-#include "third_party/npapi/bindings/nphostapi.h"
 #include "webkit/plugins/webkit_plugins_export.h"
 #include "webkit/plugins/webplugininfo.h"
 
@@ -25,18 +24,6 @@ class GURL;
 
 namespace webkit {
 namespace npapi {
-
-// This struct holds entry points into a plugin.  The entry points are
-// slightly different between Win/Mac and Unixes.  Note that the interface for
-// querying plugins is synchronous and it is preferable to use a higher-level
-// asynchronous information to query information.
-struct PluginEntryPoints {
-#if !defined(OS_POSIX) || defined(OS_MACOSX)
-  NP_GetEntryPointsFunc np_getentrypoints;
-#endif
-  NP_InitializeFunc np_initialize;
-  NP_ShutdownFunc np_shutdown;
-};
 
 // The PluginList is responsible for loading our NPAPI based plugins. It does
 // so in whatever manner is appropriate for the platform. On Windows, it loads
@@ -89,14 +76,6 @@ class PluginList {
   void RegisterInternalPlugin(const webkit::WebPluginInfo& info,
                               bool add_at_beginning);
 
-  // This second version is for "plugins" that have been compiled directly into
-  // the binary -- callers must provide the plugin information and the entry
-  // points.
-  void RegisterInternalPluginWithEntryPoints(
-      const webkit::WebPluginInfo& info,
-      bool add_at_beginning,
-      const PluginEntryPoints& entry_points);
-
   // Removes a specified internal plugin from the list. The search will match
   // on the path from the version info previously registered.
   void UnregisterInternalPlugin(const base::FilePath& path);
@@ -105,13 +84,10 @@ class PluginList {
   void GetInternalPlugins(std::vector<webkit::WebPluginInfo>* plugins);
 
   // Creates a WebPluginInfo structure given a plugin's path.  On success
-  // returns true, with the information being put into "info".  If it's an
-  // internal plugin, "entry_points" is filled in as well with a
-  // internally-owned PluginEntryPoints pointer.
+  // returns true, with the information being put into "info".
   // Returns false if the library couldn't be found, or if it's not a plugin.
   bool ReadPluginInfo(const base::FilePath& filename,
-                      webkit::WebPluginInfo* info,
-                      const PluginEntryPoints** entry_points);
+                      webkit::WebPluginInfo* info);
 
   // In Windows plugins, the mime types are passed as a specially formatted list
   // of strings. This function parses those strings into a WebPluginMimeType
@@ -194,11 +170,6 @@ class PluginList {
     LOADING_STATE_UP_TO_DATE,
   };
 
-  struct InternalPlugin {
-    webkit::WebPluginInfo info;
-    PluginEntryPoints entry_points;
-  };
-
   friend class PluginListTest;
   friend struct base::DefaultLazyInstanceTraits<PluginList>;
 
@@ -257,7 +228,7 @@ class PluginList {
   std::vector<base::FilePath> extra_plugin_dirs_;
 
   // Holds information about internal plugins.
-  std::vector<InternalPlugin> internal_plugins_;
+  std::vector<webkit::WebPluginInfo> internal_plugins_;
 
   // A list holding all plug-ins.
   std::vector<webkit::WebPluginInfo> plugins_list_;

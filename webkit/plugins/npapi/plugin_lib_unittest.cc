@@ -17,7 +17,7 @@ namespace npapi {
 // variable, we can get a crash if no plugin libs were marked as always loaded.
 class PluginLibTest : public PluginLib {
  public:
-  PluginLibTest() : PluginLib(WebPluginInfo(), NULL) {}
+  PluginLibTest() : PluginLib(WebPluginInfo()) {}
   using PluginLib::Unload;
 
  protected:
