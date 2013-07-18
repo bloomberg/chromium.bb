@@ -157,10 +157,6 @@ namespace WebCore {
         virtual void didDetectXSS(const KURL&, bool didBlockEntirePage) = 0;
 
         virtual ResourceError interruptedForPolicyChangeError(const ResourceRequest&) = 0;
-        virtual bool canShowMIMEType(const String& MIMEType) const = 0;
-        virtual String generatedMIMETypeForURLScheme(const String& URLScheme) const = 0;
-
-        virtual void didFinishLoad() = 0;
 
         virtual PassRefPtr<DocumentLoader> createDocumentLoader(const ResourceRequest&, const SubstituteData&) = 0;
 

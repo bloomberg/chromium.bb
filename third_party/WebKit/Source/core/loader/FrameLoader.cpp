@@ -867,9 +867,6 @@ void FrameLoader::loadInSameDocument(const KURL& url, PassRefPtr<SerializedScrip
         m_frame->document()->enqueueHashchangeEvent(oldURL, url);
         m_client->dispatchDidChangeLocationWithinPage();
     }
-    
-    // FrameLoaderClient::didFinishLoad() tells the internal load delegate the load finished with no error
-    m_client->didFinishLoad();
 }
 
 bool FrameLoader::isComplete() const

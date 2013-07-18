@@ -618,46 +618,6 @@ ResourceError FrameLoaderClientImpl::interruptedForPolicyChangeError(
                          request.url().string(), String());
 }
 
-bool FrameLoaderClientImpl::canShowMIMEType(const String& mimeType) const
-{
-    // This method is called to determine if the media type can be shown
-    // "internally" (i.e. inside the browser) regardless of whether or not the
-    // browser or a plugin is doing the rendering.
-
-    // mimeType strings are supposed to be ASCII, but if they are not for some
-    // reason, then it just means that the mime type will fail all of these "is
-    // supported" checks and go down the path of an unhandled mime type.
-    if (WebKit::Platform::current()->mimeRegistry()->supportsMIMEType(mimeType) == WebMimeRegistry::IsSupported)
-        return true;
-
-    // If Chrome is started with the --disable-plugins switch, pluginData is null.
-    PluginData* pluginData = m_webFrame->frame()->page()->pluginData();
-
-    // See if the type is handled by an installed plugin, if so, we can show it.
-    // FIXME: (http://b/1085524) This is the place to stick a preference to
-    //        disable full page plugins (optionally for certain types!)
-    return !mimeType.isEmpty() && pluginData && pluginData->supportsMimeType(mimeType);
-}
-
-String FrameLoaderClientImpl::generatedMIMETypeForURLScheme(const String& scheme) const
-{
-    // This appears to generate MIME types for protocol handlers that are handled
-    // internally. The only place I can find in the WebKit code that uses this
-    // function is WebView::registerViewClass, where it is used as part of the
-    // process by which custom view classes for certain document representations
-    // are registered.
-    String mimeType("x-apple-web-kit/");
-    mimeType.append(scheme.lower());
-    return mimeType;
-}
-
-void FrameLoaderClientImpl::didFinishLoad()
-{
-    OwnPtr<WebPluginLoadObserver> observer = pluginLoadObserver();
-    if (observer)
-        observer->didFinishLoading();
-}
-
 PassRefPtr<DocumentLoader> FrameLoaderClientImpl::createDocumentLoader(
     const ResourceRequest& request,
     const SubstituteData& data)

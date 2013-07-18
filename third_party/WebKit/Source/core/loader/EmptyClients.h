@@ -225,11 +225,6 @@ public:
 
     virtual ResourceError interruptedForPolicyChangeError(const ResourceRequest&) OVERRIDE { return ResourceError("", 0, "", ""); }
 
-    virtual bool canShowMIMEType(const String&) const OVERRIDE { return false; }
-    virtual String generatedMIMETypeForURLScheme(const String&) const OVERRIDE { return ""; }
-
-    virtual void didFinishLoad() OVERRIDE { }
-
     virtual PassRefPtr<DocumentLoader> createDocumentLoader(const ResourceRequest&, const SubstituteData&) OVERRIDE;
 
     virtual String userAgent(const KURL&) OVERRIDE { return ""; }

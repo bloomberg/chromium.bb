@@ -55,6 +55,9 @@
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
 #include "core/platform/Logging.h"
+#include "core/plugins/PluginData.h"
+#include "public/platform/Platform.h"
+#include "public/platform/WebMimeRegistry.h"
 #include "weborigin/SchemeRegistry.h"
 #include "weborigin/SecurityPolicy.h"
 #include "wtf/Assertions.h"
@@ -499,6 +502,14 @@ void DocumentLoader::willSendRequest(ResourceRequest& newRequest, const Resource
         stopLoadingForPolicyChange();
 }
 
+static bool canShowMIMEType(const String& mimeType, Page* page)
+{
+    if (WebKit::Platform::current()->mimeRegistry()->supportsMIMEType(mimeType) == WebKit::WebMimeRegistry::IsSupported)
+        return true;
+    PluginData* pluginData = page->pluginData();
+    return !mimeType.isEmpty() && pluginData && pluginData->supportsMimeType(mimeType);
+}
+
 bool DocumentLoader::shouldContinueForResponse() const
 {
     if (m_substituteData.isValid())
@@ -517,7 +528,7 @@ bool DocumentLoader::shouldContinueForResponse() const
         return false;
     }
 
-    if (!frameLoader()->client()->canShowMIMEType(m_response.mimeType()))
+    if (!canShowMIMEType(m_response.mimeType(), m_frame->page()))
         return false;
 
     // Prevent remote web archives from loading because they can claim to be from any domain and thus avoid cross-domain security checks.
@@ -916,8 +927,7 @@ bool DocumentLoader::maybeLoadEmpty()
 
     if (m_request.url().isEmpty() && !frameLoader()->stateMachine()->creatingInitialEmptyDocument())
         m_request.setURL(blankURL());
-    String mimeType = shouldLoadEmpty ? "text/html" : frameLoader()->client()->generatedMIMETypeForURLScheme(m_request.url().protocol());
-    m_response = ResourceResponse(m_request.url(), mimeType, 0, String(), String());
+    m_response = ResourceResponse(m_request.url(), "text/html", 0, String(), String());
     finishedLoading(monotonicallyIncreasingTime());
     return true;
 }

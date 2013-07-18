@@ -112,9 +112,6 @@ public:
     virtual void didRunInsecureContent(WebCore::SecurityOrigin*, const WebCore::KURL& insecureURL);
     virtual void didDetectXSS(const WebCore::KURL&, bool didBlockEntirePage);
     virtual WebCore::ResourceError interruptedForPolicyChangeError(const WebCore::ResourceRequest&);
-    virtual bool canShowMIMEType(const WTF::String& MIMEType) const;
-    virtual WTF::String generatedMIMETypeForURLScheme(const WTF::String& URLScheme) const;
-    virtual void didFinishLoad();
     virtual PassRefPtr<WebCore::DocumentLoader> createDocumentLoader(
         const WebCore::ResourceRequest&, const WebCore::SubstituteData&);
     virtual WTF::String userAgent(const WebCore::KURL&);
