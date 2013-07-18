@@ -3,8 +3,8 @@
 # found in the LICENSE file.
 
 from cron_servlet import CronServlet
-from patch_servlet import PatchServlet
 from instance_servlet import InstanceServlet
+from patch_servlet import PatchServlet
 from servlet import Servlet, Request, Response
 
 _DEFAULT_SERVLET = InstanceServlet.GetConstructor()

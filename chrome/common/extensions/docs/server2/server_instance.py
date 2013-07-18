@@ -130,6 +130,7 @@ class ServerInstance(object):
         channel,
         self.compiled_host_fs_factory)
 
+    # TODO(kalman): delete content cache.
     self.content_cache = self.compiled_host_fs_factory.CreateIdentity(
         ServerInstance)
 

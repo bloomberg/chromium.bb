@@ -97,7 +97,7 @@
           },
           {
             "title": "Comply with CSP",
-            "href": "/apps/app_csp.html"
+            "href": "/apps/contentSecurityPolicy.html"
           }
         ]
       },

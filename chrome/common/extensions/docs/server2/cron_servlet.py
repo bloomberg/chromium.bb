@@ -10,18 +10,16 @@ from app_yaml_helper import AppYamlHelper
 from appengine_wrappers import (
     GetAppVersion, DeadlineExceededError, IsDevServer, logservice)
 from branch_utility import BranchUtility
-from caching_file_system import CachingFileSystem
 from compiled_file_system import CompiledFileSystem
 from empty_dir_file_system import EmptyDirFileSystem
+from file_system_util import CreateURLsFromPaths
 from github_file_system import GithubFileSystem
 from host_file_system_creator import HostFileSystemCreator
 from object_store_creator import ObjectStoreCreator
 from render_servlet import RenderServlet
 from server_instance import ServerInstance
 from servlet import Servlet, Request, Response
-from subversion_file_system import SubversionFileSystem
 import svn_constants
-from third_party.json_schema_compiler.memoize import memoize
 
 class _SingletonRenderServletDelegate(RenderServlet.Delegate):
   def __init__(self, server_instance):
@@ -87,16 +85,13 @@ class CronServlet(Servlet):
     def run_cron_for_dir(d, path_prefix=''):
       success = True
       start_time = time.time()
-      # TODO(jshumway): use server_instance.host_file_system.Walk.
-      # TODO(kalman): delete me where it's set.
-      files = [f for f in server_instance.content_cache.GetFromFileListing(d)
-               if not f.endswith('/') and f != 'redirects.json']
+      files = dict(
+          CreateURLsFromPaths(server_instance.host_file_system, d, path_prefix))
       logging.info('cron/%s: rendering %s files from %s...' % (
           channel, len(files), d))
       try:
-        for i, f in enumerate(files):
+        for i, path in enumerate(files):
           error = None
-          path = '%s%s' % (path_prefix, f)
           try:
             response = get_via_render_servlet(path)
             if response.status != 200:
