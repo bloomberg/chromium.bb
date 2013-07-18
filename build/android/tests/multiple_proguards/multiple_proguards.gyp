@@ -21,6 +21,8 @@
         'R_package': 'dummy',
         'R_package_relpath': 'dummy',
         'apk_name': 'MultipleProguards',
+        # This is a build-only test. There's nothing to install.
+        'gyp_managed_install': 0,
       },
       'dependencies': [
         # guava has references to objects using reflection which
