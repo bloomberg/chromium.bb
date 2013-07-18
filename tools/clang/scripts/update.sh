@@ -270,8 +270,8 @@ if [[ -n "${bootstrap}" ]]; then
         --disable-pthreads \
         --without-llvmgcc \
         --without-llvmgxx
-    MACOSX_DEPLOYMENT_TARGET=10.5 make -j"${NUM_JOBS}"
   fi
+  MACOSX_DEPLOYMENT_TARGET=10.5 make -j"${NUM_JOBS}"
   if [[ -n "${run_tests}" ]]; then
     make check-all
   fi
