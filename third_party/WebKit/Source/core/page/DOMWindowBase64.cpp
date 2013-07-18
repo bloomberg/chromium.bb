@@ -63,7 +63,7 @@ String atob(void*, const String& encodedString, ExceptionCode& ec)
     }
 
     Vector<char> out;
-    if (!base64Decode(encodedString, out, Base64FailOnInvalidCharacter)) {
+    if (!base64Decode(encodedString, out, Base64FailOnInvalidCharacter, Base64StrictPaddingValidation)) {
         ec = InvalidCharacterError;
         return String();
     }

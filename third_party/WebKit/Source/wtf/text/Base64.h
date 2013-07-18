@@ -39,10 +39,15 @@ enum Base64EncodePolicy {
     Base64InsertLFs
 };
 
-enum Base64DecodePolicy {
+enum Base64InvalidCharactersPolicy {
     Base64FailOnInvalidCharacter,
     Base64IgnoreWhitespace,
     Base64IgnoreInvalidCharacters
+};
+
+enum Base64PaddingValidationPolicy {
+    Base64NoPaddingValidation,
+    Base64StrictPaddingValidation
 };
 
 WTF_EXPORT void base64Encode(const char*, unsigned, Vector<char>&, Base64EncodePolicy = Base64DoNotInsertLFs);
@@ -52,9 +57,9 @@ WTF_EXPORT String base64Encode(const char*, unsigned, Base64EncodePolicy = Base6
 WTF_EXPORT String base64Encode(const Vector<char>&, Base64EncodePolicy = Base64DoNotInsertLFs);
 WTF_EXPORT String base64Encode(const CString&, Base64EncodePolicy = Base64DoNotInsertLFs);
 
-WTF_EXPORT bool base64Decode(const String&, Vector<char>&, Base64DecodePolicy = Base64FailOnInvalidCharacter);
-WTF_EXPORT bool base64Decode(const Vector<char>&, Vector<char>&, Base64DecodePolicy = Base64FailOnInvalidCharacter);
-WTF_EXPORT bool base64Decode(const char*, unsigned, Vector<char>&, Base64DecodePolicy = Base64FailOnInvalidCharacter);
+WTF_EXPORT bool base64Decode(const String&, Vector<char>&, Base64InvalidCharactersPolicy = Base64FailOnInvalidCharacter, Base64PaddingValidationPolicy = Base64NoPaddingValidation);
+WTF_EXPORT bool base64Decode(const Vector<char>&, Vector<char>&, Base64InvalidCharactersPolicy = Base64FailOnInvalidCharacter, Base64PaddingValidationPolicy = Base64NoPaddingValidation);
+WTF_EXPORT bool base64Decode(const char*, unsigned, Vector<char>&, Base64InvalidCharactersPolicy = Base64FailOnInvalidCharacter, Base64PaddingValidationPolicy = Base64NoPaddingValidation);
 
 inline void base64Encode(const Vector<char>& in, Vector<char>& out, Base64EncodePolicy policy)
 {
@@ -81,10 +86,13 @@ inline String base64Encode(const CString& in, Base64EncodePolicy policy)
 using WTF::Base64EncodePolicy;
 using WTF::Base64DoNotInsertLFs;
 using WTF::Base64InsertLFs;
-using WTF::Base64DecodePolicy;
+using WTF::Base64InvalidCharactersPolicy;
 using WTF::Base64FailOnInvalidCharacter;
 using WTF::Base64IgnoreWhitespace;
 using WTF::Base64IgnoreInvalidCharacters;
+using WTF::Base64PaddingValidationPolicy;
+using WTF::Base64NoPaddingValidation;
+using WTF::Base64StrictPaddingValidation;
 using WTF::base64Encode;
 using WTF::base64Decode;
 
