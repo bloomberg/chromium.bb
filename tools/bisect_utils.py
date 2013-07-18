@@ -314,7 +314,6 @@ def CopyAndSaveOriginalEnvironmentVars():
       vars_to_remove.append(k)
   vars_to_remove.append('CHROME_SRC')
   vars_to_remove.append('CHROMIUM_GYP_FILE')
-  vars_to_remove.append('GOMA_DIR')
   vars_to_remove.append('GYP_CROSSCOMPILE')
   vars_to_remove.append('GYP_DEFINES')
   vars_to_remove.append('GYP_GENERATORS')
