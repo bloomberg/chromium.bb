@@ -290,6 +290,7 @@ void FrameView::removeFromAXObjectCache()
 
 void FrameView::clearFrame()
 {
+    RELEASE_ASSERT(!isInLayout());
     m_frame = 0;
 }
 
@@ -338,6 +339,8 @@ void FrameView::init()
 
 void FrameView::prepareForDetach()
 {
+    RELEASE_ASSERT(!isInLayout());
+
     detachCustomScrollbars();
     // When the view is no longer associated with a frame, it needs to be removed from the ax object cache
     // right now, otherwise it won't be able to reach the topDocument()'s axObject cache later.
@@ -859,6 +862,11 @@ inline void FrameView::forceLayoutParentViewIfNeeded()
 
 void FrameView::layout(bool allowSubtree)
 {
+    // We should never layout a Document which is not in a Frame.
+    ASSERT(m_frame);
+    ASSERT(m_frame->view() == this);
+    ASSERT(m_frame->page());
+
     if (m_inLayout)
         return;
 
@@ -875,13 +883,6 @@ void FrameView::layout(bool allowSubtree)
     m_delayedLayout = false;
     m_setNeedsLayoutWasDeferred = false;
 
-    if (!m_frame) {
-        // FIXME: Do we need to set m_size.width here?
-        // FIXME: Should we set m_size.height here too?
-        m_size.setWidth(layoutWidth());
-        return;
-    }
-
     // we shouldn't enter layout() while painting
     ASSERT(!isPainting());
     if (isPainting())
@@ -894,18 +895,15 @@ void FrameView::layout(bool allowSubtree)
         m_layoutRoot = 0;
     }
 
-    ASSERT(m_frame->view() == this);
-
     Document* document = m_frame->document();
-    bool subtree;
-    RenderObject* root;
+    bool inSubtreeLayout = false;
+    RenderObject* rootForThisLayout = 0;
 
     {
         TemporaryChange<bool> changeSchedulingEnabled(m_layoutSchedulingEnabled, false);
 
         if (!m_nestedLayoutCount && !m_inSynchronousPostLayout && m_postLayoutTasksTimer.isActive() && !frame()->document()->shouldDisplaySeamlesslyWithParent()) {
-            // This is a new top-level layout. If there are any remaining tasks from the previous
-            // layout, finish them now.
+            // This is a new top-level layout. If there are any remaining tasks from the previous layout, finish them now.
             m_inSynchronousPostLayout = true;
             performPostLayoutTasks();
             m_inSynchronousPostLayout = false;
@@ -922,15 +920,15 @@ void FrameView::layout(bool allowSubtree)
         TemporaryChange<bool> changeDoingPreLayoutStyleUpdate(m_doingPreLayoutStyleUpdate, true);
         document->updateStyleIfNeeded();
 
-        subtree = m_layoutRoot;
+        inSubtreeLayout = m_layoutRoot;
 
         // If there is only one ref to this view left, then its going to be destroyed as soon as we exit,
         // so there's no point to continuing to layout
         if (protector->hasOneRef())
             return;
 
-        root = subtree ? m_layoutRoot : document->renderer();
-        if (!root) {
+        rootForThisLayout = inSubtreeLayout ? m_layoutRoot : document->renderer();
+        if (!rootForThisLayout) {
             // FIXME: Do we need to set m_size here?
             return;
         }
@@ -964,9 +962,9 @@ void FrameView::layout(bool allowSubtree)
         ScrollbarMode vMode;
         calculateScrollbarModesForLayout(hMode, vMode);
 
-        m_doFullRepaint = !subtree && (m_firstLayout || toRenderView(root)->printing());
+        m_doFullRepaint = !inSubtreeLayout && (m_firstLayout || toRenderView(rootForThisLayout)->printing());
 
-        if (!subtree) {
+        if (!inSubtreeLayout) {
             // Now set our scrollbar state for the layout.
             ScrollbarMode currentHMode = horizontalScrollbarMode();
             ScrollbarMode currentVMode = verticalScrollbarMode();
@@ -978,7 +976,7 @@ void FrameView::layout(bool allowSubtree)
                     m_firstLayout = false;
                     m_firstLayoutCallbackPending = true;
                     m_lastViewportSize = layoutSize(IncludeScrollbars);
-                    m_lastZoomFactor = root->style()->zoom();
+                    m_lastZoomFactor = rootForThisLayout->style()->zoom();
 
                     // Set the initial vMode to AlwaysOn if we're auto.
                     if (vMode == ScrollbarAuto)
@@ -1010,42 +1008,42 @@ void FrameView::layout(bool allowSubtree)
             }
         }
 
-        layer = root->enclosingLayer();
+        layer = rootForThisLayout->enclosingLayer();
 
         m_actionScheduler->pause();
 
         {
             bool disableLayoutState = false;
-            if (subtree) {
-                RenderView* view = root->view();
-                disableLayoutState = view->shouldDisableLayoutStateForSubtree(root);
-                view->pushLayoutState(root);
+            if (inSubtreeLayout) {
+                RenderView* view = rootForThisLayout->view();
+                disableLayoutState = view->shouldDisableLayoutStateForSubtree(rootForThisLayout);
+                view->pushLayoutState(rootForThisLayout);
             }
-            LayoutStateDisabler layoutStateDisabler(disableLayoutState ? root->view() : 0);
+            LayoutStateDisabler layoutStateDisabler(disableLayoutState ? rootForThisLayout->view() : 0);
 
             m_inLayout = true;
             beginDeferredRepaints();
             forceLayoutParentViewIfNeeded();
-            root->layout();
+            rootForThisLayout->layout();
 
-            bool autosized = document->textAutosizer()->processSubtree(root);
-            if (autosized && root->needsLayout()) {
+            bool autosized = document->textAutosizer()->processSubtree(rootForThisLayout);
+            if (autosized && rootForThisLayout->needsLayout()) {
                 TRACE_EVENT0("webkit", "2nd layout due to Text Autosizing");
-                root->layout();
+                rootForThisLayout->layout();
             }
 
             endDeferredRepaints();
             m_inLayout = false;
 
-            if (subtree)
-                root->view()->popLayoutState(root);
+            if (inSubtreeLayout)
+                rootForThisLayout->view()->popLayoutState(rootForThisLayout);
         }
         m_layoutRoot = 0;
     } // Reset m_layoutSchedulingEnabled to its previous value.
 
     bool neededFullRepaint = m_doFullRepaint;
 
-    if (!subtree && !toRenderView(root)->printing())
+    if (!inSubtreeLayout && !toRenderView(rootForThisLayout)->printing())
         adjustViewSize();
 
     m_doFullRepaint = neededFullRepaint;
@@ -1053,10 +1051,10 @@ void FrameView::layout(bool allowSubtree)
     // Now update the positions of all layers.
     beginDeferredRepaints();
     if (m_doFullRepaint)
-        root->view()->repaint(); // FIXME: This isn't really right, since the RenderView doesn't fully encompass the visibleContentRect(). It just happens
+        rootForThisLayout->view()->repaint(); // FIXME: This isn't really right, since the RenderView doesn't fully encompass the visibleContentRect(). It just happens
                                  // to work out most of the time, since first layouts and printing don't have you scrolled anywhere.
 
-    layer->updateLayerPositionsAfterLayout(renderView()->layer(), updateLayerPositionFlags(layer, subtree, m_doFullRepaint));
+    layer->updateLayerPositionsAfterLayout(renderView()->layer(), updateLayerPositionFlags(layer, inSubtreeLayout, m_doFullRepaint));
 
     endDeferredRepaints();
 
@@ -1064,19 +1062,18 @@ void FrameView::layout(bool allowSubtree)
 
     m_layoutCount++;
 
-    if (AXObjectCache* cache = root->document()->existingAXObjectCache())
-        cache->postNotification(root, AXObjectCache::AXLayoutComplete, true);
+    if (AXObjectCache* cache = rootForThisLayout->document()->existingAXObjectCache())
+        cache->postNotification(rootForThisLayout, AXObjectCache::AXLayoutComplete, true);
     updateAnnotatedRegions();
 
     layoutLazyBlocks();
 
-    ASSERT(!root->needsLayout());
+    ASSERT(!rootForThisLayout->needsLayout());
 
     updateCanBlitOnScrollRecursively();
 
     if (document->hasListenerType(Document::OVERFLOWCHANGED_LISTENER))
-        updateOverflowStatus(layoutWidth() < contentsWidth(),
-                             layoutHeight() < contentsHeight());
+        updateOverflowStatus(layoutWidth() < contentsWidth(), layoutHeight() < contentsHeight());
 
     if (!m_postLayoutTasksTimer.isActive()) {
         if (!m_inSynchronousPostLayout) {
@@ -1106,17 +1103,21 @@ void FrameView::layout(bool allowSubtree)
         m_actionScheduler->resume();
     }
 
-    InspectorInstrumentation::didLayout(cookie, root);
+    InspectorInstrumentation::didLayout(cookie, rootForThisLayout);
 
     m_nestedLayoutCount--;
     if (m_nestedLayoutCount)
         return;
 
-    Page* page = frame() ? frame()->page() : 0;
-    if (!page)
-        return;
-
-    page->chrome().client()->layoutUpdated(frame());
+    // FIXME: It should be not possible to remove the FrameView from the frame/page during layout
+    // however m_inLayout is not set for most of this function, so none of our RELEASE_ASSERTS
+    // in Frame/Page will fire. One of the post-layout tasks is disconnecting the Frame from
+    // the page in fast/frames/crash-remove-iframe-during-object-beforeload-2.html
+    // necessitating this check here.
+    ASSERT(frame());
+    // ASSERT(frame()->page());
+    if (frame() && frame()->page())
+        frame()->page()->chrome().client()->layoutUpdated(frame());
 }
 
 void FrameView::layoutLazyBlocks()

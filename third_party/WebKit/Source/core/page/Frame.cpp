@@ -347,6 +347,9 @@ void Frame::dispatchVisibilityStateChangeEvent()
 
 void Frame::willDetachPage()
 {
+    // We should never be detatching the page during a Layout.
+    RELEASE_ASSERT(!m_view || !m_view->isInLayout());
+
     if (Frame* parent = tree()->parent())
         parent->loader()->checkLoadComplete();
 
@@ -363,6 +366,13 @@ void Frame::willDetachPage()
         page()->scrollingCoordinator()->willDestroyScrollableArea(m_view.get());
 
     script()->clearScriptObjects();
+}
+
+void Frame::detachFromPage()
+{
+    // We should never be detatching the page during a Layout.
+    RELEASE_ASSERT(!m_view || !m_view->isInLayout());
+    m_page = 0;
 }
 
 void Frame::disconnectOwnerElement()
