@@ -37,6 +37,8 @@ class ChromeBreakpadClient : public breakpad::BreakpadClient {
   virtual void SetDumpWithoutCrashingFunction(void (*function)()) OVERRIDE;
 #endif
 
+  virtual size_t RegisterCrashKeys() OVERRIDE;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeBreakpadClient);
 };

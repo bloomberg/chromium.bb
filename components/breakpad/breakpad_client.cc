@@ -54,4 +54,8 @@ void BreakpadClient::SetDumpWithoutCrashingFunction(void (*function)()) {
 }
 #endif
 
+size_t BreakpadClient::RegisterCrashKeys() {
+  return 0;
+}
+
 }  // namespace breakpad

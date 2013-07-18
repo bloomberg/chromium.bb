@@ -24,7 +24,6 @@
 #include "base/threading/thread_restrictions.h"
 #import "breakpad/src/client/mac/Framework/Breakpad.h"
 #include "chrome/common/child_process_logging.h"
-#include "chrome/common/crash_keys.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "content/public/common/content_switches.h"
@@ -251,7 +250,7 @@ void InitCrashReporter() {
   // Initialize the scoped crash key system.
   base::debug::SetCrashKeyReportingFunctions(&SetCrashKeyValueImpl,
                                              &ClearCrashKeyValueImpl);
-  crash_keys::RegisterChromeCrashKeys();
+  breakpad::GetBreakpadClient()->RegisterCrashKeys();
 
   // Set Breakpad metadata values.  These values are added to Info.plist during
   // the branded Google Chrome.app build.

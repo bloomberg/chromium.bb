@@ -60,6 +60,10 @@ class BreakpadClient {
   // without crashing.
   virtual void SetDumpWithoutCrashingFunction(void (*function)());
 #endif
+
+  // Register all of the potential crash keys that can be sent to the crash
+  // reporting server. Returns the size of the union of all keys.
+  virtual size_t RegisterCrashKeys();
 };
 
 }  // namespace breakpad

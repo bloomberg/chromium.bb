@@ -32,7 +32,6 @@
 #include "chrome/app/hard_error_handler_win.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_result_codes.h"
-#include "chrome/common/crash_keys.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/installer/util/google_chrome_sxs_distribution.h"
 #include "chrome/installer/util/google_update_settings.h"
@@ -514,7 +513,7 @@ google_breakpad::CustomClientInfo* GetCustomInfo(const std::wstring& exe_path,
 
   // Create space for dynamic ad-hoc keys. The names and values are set using
   // the API defined in base/debug/crash_logging.h.
-  g_dynamic_entries_count = crash_keys::RegisterChromeCrashKeys();
+  g_dynamic_entries_count = breakpad::GetBreakpadClient()->RegisterCrashKeys();
   g_dynamic_keys_offset = g_custom_entries->size();
   for (size_t i = 0; i < g_dynamic_entries_count; ++i) {
     // The names will be mutated as they are set. Un-numbered since these are

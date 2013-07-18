@@ -13,6 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/crash_keys.h"
 
 #if defined(OS_WIN)
 #include "base/file_version_info.h"
@@ -121,5 +122,9 @@ void ChromeBreakpadClient::SetDumpWithoutCrashingFunction(void (*function)()) {
   logging::SetDumpWithoutCrashingFunction(function);
 }
 #endif
+
+size_t ChromeBreakpadClient::RegisterCrashKeys() {
+  return crash_keys::RegisterChromeCrashKeys();
+}
 
 }  // namespace chrome

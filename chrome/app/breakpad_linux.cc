@@ -40,7 +40,6 @@
 #include "chrome/app/breakpad_linux_impl.h"
 #include "chrome/browser/crash_upload_list.h"
 #include "chrome/common/child_process_logging.h"
-#include "chrome/common/crash_keys.h"
 #include "chrome/common/env_vars.h"
 #include "components/breakpad/breakpad_client.h"
 #include "content/public/common/content_descriptors.h"
@@ -1690,7 +1689,7 @@ void InitCrashReporter() {
 #endif
 
   g_crash_keys = new CrashKeyStorage;
-  crash_keys::RegisterChromeCrashKeys();
+  breakpad::GetBreakpadClient()->RegisterCrashKeys();
   base::debug::SetCrashKeyReportingFunctions(
       &SetCrashKeyValue, &ClearCrashKey);
 }
