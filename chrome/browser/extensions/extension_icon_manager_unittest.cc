@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/json/json_file_value_serializer.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_icon_manager.h"

@@ -5,7 +5,7 @@
 #include "chrome/browser/extensions/event_router_forwarder.h"
 
 #include "base/bind.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/test/thread_test_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"

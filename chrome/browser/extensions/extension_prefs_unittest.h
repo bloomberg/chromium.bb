@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_PREFS_UNITTEST_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_PREFS_UNITTEST_H_
 
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "chrome/browser/extensions/test_extension_prefs.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"

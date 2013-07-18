@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_TEST_EXTENSION_ENVIRONMENT_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "content/public/test/test_browser_thread.h"
 
 #if defined(OS_CHROMEOS)

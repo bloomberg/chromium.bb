@@ -6,7 +6,7 @@
 #include <string>
 
 #include "base/logging.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/values.h"
 #include "base/version.h"
 #include "chrome/browser/extensions/external_policy_loader.h"

@@ -4,7 +4,7 @@
 
 #include "base/file_util.h"
 #include "base/json/json_file_value_serializer.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/threading/thread.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service_unittest.h"

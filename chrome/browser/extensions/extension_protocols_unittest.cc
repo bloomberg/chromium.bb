@@ -5,7 +5,7 @@
 #include <string>
 
 #include "base/file_util.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_info_map.h"

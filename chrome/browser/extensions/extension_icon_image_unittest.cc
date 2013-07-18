@@ -5,7 +5,7 @@
 #include "chrome/browser/extensions/extension_icon_image.h"
 
 #include "base/json/json_file_value_serializer.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "chrome/browser/extensions/image_loader.h"
 #include "chrome/common/chrome_paths.h"
