@@ -515,9 +515,6 @@
           ],
         }],
         [ 'OS == "win"', {
-          'defines': [
-            'SK_GDI_ALWAYS_USE_TEXTMETRICS_FOR_FONT_METRICS'
-          ],
           'sources!': [
             '../third_party/skia/src/ports/SkOSFile_posix.cpp',
             '../third_party/skia/src/ports/SkThread_pthread.cpp',
