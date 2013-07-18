@@ -163,7 +163,8 @@ class ProfileSyncService : public ProfileSyncServiceBase,
                            public content::NotificationObserver,
                            public BrowserContextKeyedService,
                            public browser_sync::DataTypeEncryptionHandler,
-                           public OAuth2TokenService::Consumer {
+                           public OAuth2TokenService::Consumer,
+                           public OAuth2TokenService::Observer {
  public:
   typedef browser_sync::SyncBackendHost::Status Status;
 
@@ -235,11 +236,14 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   virtual bool HasSyncSetupCompleted() const OVERRIDE;
   virtual bool ShouldPushChanges() OVERRIDE;
   virtual syncer::ModelTypeSet GetActiveDataTypes() const OVERRIDE;
-  virtual void AddObserver(Observer* observer) OVERRIDE;
-  virtual void RemoveObserver(Observer* observer) OVERRIDE;
-  virtual bool HasObserver(Observer* observer) const OVERRIDE;
+  virtual void AddObserver(ProfileSyncServiceBase::Observer* observer) OVERRIDE;
+  virtual void RemoveObserver(
+      ProfileSyncServiceBase::Observer* observer) OVERRIDE;
+  virtual bool HasObserver(
+      ProfileSyncServiceBase::Observer* observer) const OVERRIDE;
 
   void RegisterAuthNotifications();
+  void UnregisterAuthNotifications();
 
   // Returns true if sync is enabled/not suppressed and the user is logged in.
   // (being logged in does not mean that tokens are available - tokens may
@@ -590,7 +594,7 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // The set of currently enabled sync experiments.
   const syncer::Experiments& current_experiments() const;
 
-  // OAuth2TokenService::Consumer implementation
+  // OAuth2TokenService::Consumer implementation.
   virtual void OnGetTokenSuccess(
       const OAuth2TokenService::Request* request,
       const std::string& access_token,
@@ -598,6 +602,14 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   virtual void OnGetTokenFailure(
       const OAuth2TokenService::Request* request,
       const GoogleServiceAuthError& error) OVERRIDE;
+
+  // OAuth2TokenService::Observer implementation.
+  virtual void OnRefreshTokenAvailable(const std::string& account_id) OVERRIDE;
+  virtual void OnRefreshTokenRevoked(
+      const std::string& account_id,
+      const GoogleServiceAuthError& error) OVERRIDE;
+  virtual void OnRefreshTokensLoaded() OVERRIDE;
+  virtual void OnRefreshTokensCleared() OVERRIDE;
 
   // BrowserContextKeyedService implementation.  This must be called exactly
   // once (before this object is destroyed).
@@ -838,7 +850,7 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // Manages the start and stop of the various data types.
   scoped_ptr<browser_sync::DataTypeManager> data_type_manager_;
 
-  ObserverList<Observer> observers_;
+  ObserverList<ProfileSyncServiceBase::Observer> observers_;
 
   syncer::SyncJsController sync_js_controller_;
 

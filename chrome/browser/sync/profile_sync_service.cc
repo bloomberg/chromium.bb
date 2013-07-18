@@ -347,25 +347,23 @@ void ProfileSyncService::StartSyncingWithServer() {
 }
 
 void ProfileSyncService::RegisterAuthNotifications() {
-  TokenService* token_service = TokenServiceFactory::GetForProfile(profile_);
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_TOKEN_AVAILABLE,
-                 content::Source<TokenService>(token_service));
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_TOKEN_LOADING_FINISHED,
-                 content::Source<TokenService>(token_service));
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_TOKEN_REQUEST_FAILED,
-                 content::Source<TokenService>(token_service));
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_TOKENS_CLEARED,
-                 content::Source<TokenService>(token_service));
+  ProfileOAuth2TokenService* token_service =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
+  token_service->AddObserver(this);
+
   registrar_.Add(this,
                  chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL,
                  content::Source<Profile>(profile_));
   registrar_.Add(this,
                  chrome::NOTIFICATION_GOOGLE_SIGNED_OUT,
                  content::Source<Profile>(profile_));
+}
+
+void ProfileSyncService::UnregisterAuthNotifications() {
+  ProfileOAuth2TokenService* token_service =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
+  token_service->RemoveObserver(this);
+  registrar_.RemoveAll();
 }
 
 void ProfileSyncService::RegisterDataTypeController(
@@ -681,7 +679,45 @@ void ProfileSyncService::OnGetTokenFailure(
   }
 }
 
+void ProfileSyncService::OnRefreshTokenAvailable(
+    const std::string& account_id) {
+  OnRefreshTokensLoaded();
+}
+
+void ProfileSyncService::OnRefreshTokenRevoked(
+    const std::string& account_id,
+    const GoogleServiceAuthError& error) {
+  if (!IsOAuthRefreshTokenAvailable()) {
+    // The additional check around IsOAuthRefreshTokenAvailable() above
+    // prevents us sounding the alarm if we actually have a valid token but
+    // a refresh attempt by TokenService failed for any variety of reasons
+    // (e.g. flaky network). It's possible the token we do have is also
+    // invalid, but in that case we should already have (or can expect) an
+    // auth error sent from the sync backend.
+    UpdateAuthErrorState(error);
+  }
+}
+
+void ProfileSyncService::OnRefreshTokensLoaded() {
+  // This notification gets fired when TokenService loads the tokens
+  // from storage.
+  // Initialize the backend if sync is enabled. If the sync token was
+  // not loaded, GetCredentials() will generate invalid credentials to
+  // cause the backend to generate an auth error (crbug.com/121755).
+  if (backend_) {
+    RequestAccessToken();
+  } else {
+    TryStart();
+  }
+}
+
+void ProfileSyncService::OnRefreshTokensCleared() {
+  access_token_.clear();
+}
+
 void ProfileSyncService::Shutdown() {
+  UnregisterAuthNotifications();
+
   if (profile_)
     SigninGlobalError::GetForProfile(profile_)->RemoveProvider(this);
 
@@ -778,14 +814,16 @@ void ProfileSyncService::UpdateLastSyncedTime() {
 }
 
 void ProfileSyncService::NotifyObservers() {
-  FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
+  FOR_EACH_OBSERVER(ProfileSyncServiceBase::Observer, observers_,
+                    OnStateChanged());
   // TODO(akalin): Make an Observer subclass that listens and does the
   // event routing.
   sync_js_controller_.HandleJsEvent("onServiceStateChanged", JsEventDetails());
 }
 
 void ProfileSyncService::NotifySyncCycleCompleted() {
-  FOR_EACH_OBSERVER(Observer, observers_, OnSyncCycleCompleted());
+  FOR_EACH_OBSERVER(ProfileSyncServiceBase::Observer, observers_,
+                    OnSyncCycleCompleted());
   sync_js_controller_.HandleJsEvent(
       "onServiceStateChanged", JsEventDetails());
 }
@@ -1898,8 +1936,6 @@ void ProfileSyncService::OnSyncManagedPrefChange(bool is_sync_managed) {
 void ProfileSyncService::Observe(int type,
                                  const content::NotificationSource& source,
                                  const content::NotificationDetails& details) {
-  const char* sync_token_service = use_oauth2_token_ ?
-      GaiaConstants::kGaiaOAuth2LoginRefreshToken : GaiaConstants::kSyncService;
   switch (type) {
     case chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL: {
       const GoogleServiceSigninSuccessDetails* successful =
@@ -1923,58 +1959,6 @@ void ProfileSyncService::Observe(int type,
       }
       break;
     }
-    case chrome::NOTIFICATION_TOKEN_REQUEST_FAILED: {
-      // TODO(atwilson): sync shouldn't report refresh token request failures.
-      // TokenService should do that instead.
-      const TokenService::TokenRequestFailedDetails& token_details =
-          *(content::Details<const TokenService::TokenRequestFailedDetails>(
-              details).ptr());
-      if (token_details.service() == sync_token_service &&
-          !IsOAuthRefreshTokenAvailable()) {
-        // The additional check around IsOAuthRefreshTokenAvailable() above
-        // prevents us sounding the alarm if we actually have a valid token but
-        // a refresh attempt by TokenService failed for any variety of reasons
-        // (e.g. flaky network). It's possible the token we do have is also
-        // invalid, but in that case we should already have (or can expect) an
-        // auth error sent from the sync backend.
-        AuthError error(AuthError::INVALID_GAIA_CREDENTIALS);
-        UpdateAuthErrorState(error);
-      }
-      break;
-    }
-    case chrome::NOTIFICATION_TOKEN_AVAILABLE: {
-      // TODO(atwilson): Listen for notifications on OAuth2TokenService
-      // (crbug.com/243737)
-      const TokenService::TokenAvailableDetails& token_details =
-          *(content::Details<const TokenService::TokenAvailableDetails>(
-              details).ptr());
-      if (token_details.service() != sync_token_service)
-        break;
-    } // Fall through.
-    case chrome::NOTIFICATION_TOKEN_LOADING_FINISHED: {
-      // This notification gets fired when TokenService loads the tokens
-      // from storage.
-      // Initialize the backend if sync is enabled. If the sync token was
-      // not loaded, GetCredentials() will generate invalid credentials to
-      // cause the backend to generate an auth error (crbug.com/121755).
-      if (backend_) {
-        if (use_oauth2_token_)
-          RequestAccessToken();
-        else
-          backend_->UpdateCredentials(GetCredentials());
-      } else {
-        TryStart();
-      }
-      break;
-    }
-    case chrome::NOTIFICATION_TOKENS_CLEARED: {
-      // GetCredentials() will generate invalid credentials to cause the backend
-      // to generate an auth error.
-      access_token_.clear();
-      if (backend_)
-        backend_->UpdateCredentials(GetCredentials());
-      break;
-    }
     case chrome::NOTIFICATION_GOOGLE_SIGNED_OUT:
       sync_disabled_by_admin_ = false;
       DisableForUser();
@@ -1985,15 +1969,18 @@ void ProfileSyncService::Observe(int type,
   }
 }
 
-void ProfileSyncService::AddObserver(Observer* observer) {
+void ProfileSyncService::AddObserver(
+    ProfileSyncServiceBase::Observer* observer) {
   observers_.AddObserver(observer);
 }
 
-void ProfileSyncService::RemoveObserver(Observer* observer) {
+void ProfileSyncService::RemoveObserver(
+    ProfileSyncServiceBase::Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-bool ProfileSyncService::HasObserver(Observer* observer) const {
+bool ProfileSyncService::HasObserver(
+    ProfileSyncServiceBase::Observer* observer) const {
   return observers_.HasObserver(observer);
 }
 
