@@ -761,7 +761,7 @@ class GitWrapper(SCMWrapper):
     if self.cache_dir:
       if not os.path.exists(altfile):
         try:
-          with open(altfile, 'wa') as f:
+          with open(altfile, 'w') as f:
             f.write(os.path.join(url, 'objects'))
           # pylint: disable=C0301
           # This dance is necessary according to emperical evidence, also at:
@@ -773,8 +773,8 @@ class GitWrapper(SCMWrapper):
           # this path again next time.
           try:
             os.remove(altfile)
-          except Exception:
-            pass
+          except OSError as e:
+            print >> sys.stderr, "FAILED: os.remove('%s') -> %s" % (altfile, e)
           raise
     else:
       if os.path.exists(altfile):
