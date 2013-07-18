@@ -2478,7 +2478,7 @@ static void tryHyphenating(RenderText* text, const Font& font, const AtomicStrin
     if (prefixLength < minimumPrefixLength)
         return;
 
-    prefixLength = lastHyphenLocation(text->bloatedCharacters() + lastSpace, pos - lastSpace, min(prefixLength, pos - lastSpace - minimumSuffixLength) + 1, localeIdentifier);
+    prefixLength = lastHyphenLocation(text->substring(lastSpace, pos - lastSpace), min(prefixLength, pos - lastSpace - minimumSuffixLength) + 1, localeIdentifier);
     if (!prefixLength || prefixLength < minimumPrefixLength)
         return;
 

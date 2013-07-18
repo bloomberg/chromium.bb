@@ -889,7 +889,7 @@ static inline float hyphenWidth(RenderText* renderer, const Font& font)
     return font.width(RenderBlock::constructTextRun(renderer, font, style->hyphenString().string(), style));
 }
 
-static float maxWordFragmentWidth(RenderText* renderer, RenderStyle* style, const Font& font, const UChar* word, int wordLength, int minimumPrefixLength, int minimumSuffixLength, int& suffixStart)
+static float maxWordFragmentWidth(RenderText* renderer, RenderStyle* style, const Font& font, int wordOffset, int wordLength, int minimumPrefixLength, int minimumSuffixLength, int& suffixStart)
 {
     suffixStart = 0;
     if (wordLength <= minimumSuffixLength)
@@ -897,7 +897,8 @@ static float maxWordFragmentWidth(RenderText* renderer, RenderStyle* style, cons
 
     Vector<int, 8> hyphenLocations;
     int hyphenLocation = wordLength - minimumSuffixLength;
-    while ((hyphenLocation = lastHyphenLocation(word, wordLength, hyphenLocation, style->locale())) >= minimumPrefixLength)
+    String word = renderer->substring(wordOffset, wordLength);
+    while ((hyphenLocation = lastHyphenLocation(word, hyphenLocation, style->locale())) >= minimumPrefixLength)
         hyphenLocations.append(hyphenLocation);
 
     if (hyphenLocations.isEmpty())
@@ -910,7 +911,10 @@ static float maxWordFragmentWidth(RenderText* renderer, RenderStyle* style, cons
     for (size_t k = 0; k < hyphenLocations.size(); ++k) {
         int fragmentLength = hyphenLocations[k] - suffixStart;
         StringBuilder fragmentWithHyphen;
-        fragmentWithHyphen.append(word + suffixStart, fragmentLength);
+        if (renderer->is8Bit())
+            fragmentWithHyphen.append(renderer->characters8() + wordOffset + suffixStart, fragmentLength);
+        else
+            fragmentWithHyphen.append(renderer->characters16() + wordOffset + suffixStart, fragmentLength);
         fragmentWithHyphen.append(style->hyphenString());
 
         TextRun run = RenderBlock::constructTextRun(renderer, font, fragmentWithHyphen.toString(), style);
@@ -1068,7 +1072,7 @@ void RenderText::computePreferredLogicalWidths(float leadWidth, HashSet<const Si
 
             if (w > maxWordWidth) {
                 int suffixStart;
-                float maxFragmentWidth = maxWordFragmentWidth(this, styleToUse, f, bloatedCharacters() + i, wordLen, minimumPrefixLength, minimumSuffixLength, suffixStart);
+                float maxFragmentWidth = maxWordFragmentWidth(this, styleToUse, f, i, wordLen, minimumPrefixLength, minimumSuffixLength, suffixStart);
 
                 if (suffixStart) {
                     float suffixWidth;

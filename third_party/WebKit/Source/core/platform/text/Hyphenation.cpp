@@ -36,9 +36,9 @@ bool canHyphenate(const AtomicString& localeIdentifier)
     return WebKit::Platform::current()->hyphenator()->canHyphenate(localeIdentifier);
 }
 
-size_t lastHyphenLocation(const UChar* characters, size_t length, size_t beforeIndex, const AtomicString& localeIdentifier)
+size_t lastHyphenLocation(const String& word, size_t beforeIndex, const AtomicString& localeIdentifier)
 {
-    return WebKit::Platform::current()->hyphenator()->computeLastHyphenLocation(characters, length, beforeIndex, localeIdentifier);
+    return WebKit::Platform::current()->hyphenator()->computeLastHyphenLocation(word, beforeIndex, localeIdentifier);
 }
 
 } // namespace WebCore

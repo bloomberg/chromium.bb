@@ -42,7 +42,7 @@ public:
     virtual bool canHyphenate(const WebString& locale) { return false; }
 
     // Returns the last position where we can add a hyphen before the given position.
-    virtual size_t computeLastHyphenLocation(const WebUChar* characters, size_t length, size_t beforeIndex, const WebString& locale) { return 0; }
+    virtual size_t computeLastHyphenLocation(const WebString& word, size_t beforeIndex, const WebString& locale) { return 0; }
 
 protected:
     ~WebHyphenator() { }
