@@ -781,8 +781,21 @@ class AndroidCommands(object):
     # 60 seconds which isn't sufficient for a lot of users of this method.
     push_command = 'push %s %s' % (local_path, device_path)
     self._LogShell(push_command)
-    output = self._adb.SendCommand(push_command, timeout_time=30 * 60)
-    assert _HasAdbPushSucceeded(output)
+
+    # Retry push with increasing backoff if the device is busy.
+    retry = 0
+    while True:
+      output = self._adb.SendCommand(push_command, timeout_time=30 * 60)
+      if _HasAdbPushSucceeded(output):
+        return
+      if 'resource busy' in output and retry < 3:
+        retry += 1
+        wait_time = 5 * retry
+        logging.error('Push failed, retrying in %d seconds: %s' %
+                      (wait_time, output))
+        time.sleep(wait_time)
+      else:
+        raise Exception('Push failed: %s' % output)
 
   def GetPushSizeInfo(self):
     """Get total size of pushes to the device done via PushIfNeeded()
