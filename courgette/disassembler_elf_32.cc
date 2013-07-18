@@ -427,7 +427,7 @@ CheckBool DisassemblerElf32::ParseAbs32Relocs() {
 
         // Quite a few of these conversions fail, and we simply skip
         // them, that's okay.
-        if (RelToRVA(relocs_table[rel_id], &rva))
+        if (RelToRVA(relocs_table[rel_id], &rva) && CheckSection(rva))
           abs32_locations_.push_back(rva);
       }
     }
@@ -435,6 +435,33 @@ CheckBool DisassemblerElf32::ParseAbs32Relocs() {
 
   std::sort(abs32_locations_.begin(), abs32_locations_.end());
   return true;
+}
+
+CheckBool DisassemblerElf32::CheckSection(RVA rva) {
+  size_t offset;
+
+  if (!RVAToFileOffset(rva, &offset)) {
+    return false;
+  }
+
+  for (int section_id = 0;
+       section_id < SectionHeaderCount();
+       section_id++) {
+
+    const Elf32_Shdr *section_header = SectionHeader(section_id);
+
+    if (offset >= section_header->sh_offset &&
+        offset < (section_header->sh_offset + section_header->sh_size)) {
+      switch (section_header->sh_type) {
+        case SHT_REL:
+          // Fall-through
+        case SHT_PROGBITS:
+          return true;
+      }
+    }
+  }
+
+  return false;
 }
 
 CheckBool DisassemblerElf32::ParseRel32RelocsFromSections() {

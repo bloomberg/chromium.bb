@@ -129,6 +129,7 @@ class DisassemblerElf32 : public Disassembler {
                               AssemblyProgram* program) WARN_UNUSED_RESULT;
 
   CheckBool ParseAbs32Relocs() WARN_UNUSED_RESULT;
+  CheckBool CheckSection(RVA rva) WARN_UNUSED_RESULT;
   CheckBool ParseRel32RelocsFromSections() WARN_UNUSED_RESULT;
   virtual CheckBool ParseRel32RelocsFromSection(
       const Elf32_Shdr* section) WARN_UNUSED_RESULT = 0;

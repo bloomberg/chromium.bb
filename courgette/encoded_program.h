@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "courgette/disassembler.h"
 #include "courgette/memory_allocator.h"
+#include "courgette/types_elf.h"
 
 namespace courgette {
 
@@ -45,6 +46,7 @@ class EncodedProgram {
   CheckBool AddAbs32(int label_index) WARN_UNUSED_RESULT;
   CheckBool AddPeMakeRelocs() WARN_UNUSED_RESULT;
   CheckBool AddElfMakeRelocs() WARN_UNUSED_RESULT;
+  CheckBool AddElfARMMakeRelocs() WARN_UNUSED_RESULT;
 
   // (3) Serialize binary assembly language tables to a set of streams.
   CheckBool WriteTo(SinkStreamSet* streams) WARN_UNUSED_RESULT;
@@ -70,7 +72,8 @@ class EncodedProgram {
     ABS32 = 4,     // ABS32 <index> - emit abs32 encoded reference to address at
                    // address table offset <index>
     MAKE_PE_RELOCATION_TABLE = 5,  // Emit PE base relocation table blocks.
-    MAKE_ELF_RELOCATION_TABLE = 6, // Emit Elf relocation table.
+    MAKE_ELF_RELOCATION_TABLE = 6, // Emit Elf relocation table for X86
+    MAKE_ELF_ARM_RELOCATION_TABLE = 7, // Emit Elf relocation table for ARM
   };
 
   typedef NoThrowBuffer<RVA> RvaVector;
@@ -80,7 +83,8 @@ class EncodedProgram {
 
   void DebuggingSummary();
   CheckBool GeneratePeRelocations(SinkStream *buffer) WARN_UNUSED_RESULT;
-  CheckBool GenerateElfRelocations(SinkStream *buffer) WARN_UNUSED_RESULT;
+  CheckBool GenerateElfRelocations(Elf32_Word pending_elf_relocation_table,
+                                   SinkStream *buffer) WARN_UNUSED_RESULT;
   CheckBool DefineLabelCommon(RvaVector*, int, RVA) WARN_UNUSED_RESULT;
   void FinishLabelsCommon(RvaVector* addresses);
 

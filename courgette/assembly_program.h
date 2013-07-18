@@ -71,8 +71,11 @@ class AssemblyProgram {
   // Generates an entire base relocation table.
   CheckBool EmitPeRelocsInstruction() WARN_UNUSED_RESULT;
 
-  // Generates an ELF style relocation table.
+  // Generates an ELF style relocation table for X86.
   CheckBool EmitElfRelocationInstruction() WARN_UNUSED_RESULT;
+
+  // Generates an ELF style relocation table for ARM.
+  CheckBool EmitElfARMRelocationInstruction() WARN_UNUSED_RESULT;
 
   // Following instruction will be assembled at address 'rva'.
   CheckBool EmitOriginInstruction(RVA rva) WARN_UNUSED_RESULT;

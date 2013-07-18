@@ -15,6 +15,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "courgette/courgette.h"
+#include "courgette/disassembler_elf_32_arm.h"
 #include "courgette/streams.h"
 #include "courgette/types_elf.h"
 
@@ -250,6 +251,10 @@ CheckBool EncodedProgram::AddElfMakeRelocs() {
   return ops_.push_back(MAKE_ELF_RELOCATION_TABLE);
 }
 
+CheckBool EncodedProgram::AddElfARMMakeRelocs() {
+  return ops_.push_back(MAKE_ELF_ARM_RELOCATION_TABLE);
+}
+
 void EncodedProgram::DebuggingSummary() {
   VLOG(1) << "EncodedProgram Summary"
           << "\n  image base  " << image_base_
@@ -405,7 +410,7 @@ CheckBool EncodedProgram::AssembleTo(SinkStream* final_buffer) {
   RVA current_rva = 0;
 
   bool pending_pe_relocation_table = false;
-  bool pending_elf_relocation_table = false;
+  Elf32_Word pending_elf_relocation_table_type = 0;
   SinkStream bytes_following_relocation_table;
 
   SinkStream* output = final_buffer;
@@ -505,15 +510,28 @@ CheckBool EncodedProgram::AssembleTo(SinkStream* final_buffer) {
         // emitting an ORIGIN after the MAKE_BASE_RELOCATION_TABLE.
       }
 
+      case MAKE_ELF_ARM_RELOCATION_TABLE: {
+        // We can see the base relocation anywhere, but we only have the
+        // information to generate it at the very end.  So we divert the bytes
+        // we are generating to a temporary stream.
+        if (pending_elf_relocation_table_type)  // Can't have two relocation
+                                                // tables.
+          return false;
+
+        pending_elf_relocation_table_type = R_ARM_RELATIVE;
+        output = &bytes_following_relocation_table;
+        break;
+      }
+
       case MAKE_ELF_RELOCATION_TABLE: {
         // We can see the base relocation anywhere, but we only have the
         // information to generate it at the very end.  So we divert the bytes
         // we are generating to a temporary stream.
-        if (pending_elf_relocation_table)  // Can't have two relocation
-                                           // tables.
+        if (pending_elf_relocation_table_type)  // Can't have two relocation
+                                                // tables.
           return false;
 
-        pending_elf_relocation_table = true;
+        pending_elf_relocation_table_type = R_386_RELATIVE;
         output = &bytes_following_relocation_table;
         break;
       }
@@ -526,8 +544,9 @@ CheckBool EncodedProgram::AssembleTo(SinkStream* final_buffer) {
       return false;
   }
 
-  if (pending_elf_relocation_table) {
-    if (!GenerateElfRelocations(final_buffer) ||
+  if (pending_elf_relocation_table_type) {
+    if (!GenerateElfRelocations(pending_elf_relocation_table_type,
+                                final_buffer) ||
         !final_buffer->Append(&bytes_following_relocation_table))
       return false;
   }
@@ -602,13 +621,13 @@ CheckBool EncodedProgram::GeneratePeRelocations(SinkStream* buffer) {
   return ok;
 }
 
-CheckBool EncodedProgram::GenerateElfRelocations(SinkStream* buffer) {
+CheckBool EncodedProgram::GenerateElfRelocations(Elf32_Word r_info,
+                                                 SinkStream* buffer) {
   std::sort(abs32_relocs_.begin(), abs32_relocs_.end());
 
   Elf32_Rel relocation_block;
 
-  // We only handle this specific type of relocation, so far.
-  relocation_block.r_info = R_386_RELATIVE;
+  relocation_block.r_info = r_info;
 
   bool ok = true;
   for (size_t i = 0;  ok && i < abs32_relocs_.size();  ++i) {

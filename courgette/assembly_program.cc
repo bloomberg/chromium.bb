@@ -27,6 +27,8 @@ enum OP {
   DEFBYTE,        // DEFBYTE <value> - emit a byte literal.
   REL32,          // REL32 <label> - emit a rel32 encoded reference to 'label'.
   ABS32,          // REL32 <label> - emit am abs32 encoded reference to 'label'.
+  REL32ARM,       // REL32ARM <c_op> <label> - arm-specific rel32 reference
+  MAKEELFARMRELOCS, // Generates a base relocation table.
   LAST_OP
 };
 
@@ -69,6 +71,12 @@ class PeRelocsInstruction : public Instruction {
 class ElfRelocsInstruction : public Instruction {
  public:
   ElfRelocsInstruction() : Instruction(MAKEELFRELOCS) {}
+};
+
+// Emits an ELF ARM relocation table.
+class ElfARMRelocsInstruction : public Instruction {
+ public:
+  ElfARMRelocsInstruction() : Instruction(MAKEELFARMRELOCS) {}
 };
 
 // Emits a single byte.
@@ -121,6 +129,10 @@ CheckBool AssemblyProgram::EmitPeRelocsInstruction() {
 
 CheckBool AssemblyProgram::EmitElfRelocationInstruction() {
   return Emit(new(std::nothrow) ElfRelocsInstruction());
+}
+
+CheckBool AssemblyProgram::EmitElfARMRelocationInstruction() {
+  return Emit(new(std::nothrow) ElfARMRelocsInstruction());
 }
 
 CheckBool AssemblyProgram::EmitOriginInstruction(RVA rva) {
@@ -375,6 +387,11 @@ EncodedProgram* AssemblyProgram::Encode() const {
       }
       case MAKEELFRELOCS: {
         if (!encoded->AddElfMakeRelocs())
+          return NULL;
+        break;
+      }
+      case MAKEELFARMRELOCS: {
+        if (!encoded->AddElfARMMakeRelocs())
           return NULL;
         break;
       }

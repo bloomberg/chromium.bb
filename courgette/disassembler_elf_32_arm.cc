@@ -51,20 +51,20 @@ CheckBool DisassemblerElf32ARM::RelToRVA(Elf32_Rel rel, RVA* result) const {
 CheckBool DisassemblerElf32ARM::ParseRelocationSection(
     const Elf32_Shdr *section_header,
       AssemblyProgram* program) {
-  // We can reproduce the R_386_RELATIVE entries in one of the relocation
-  // table based on other information in the patch, given these
-  // conditions....
-  //
-  // All R_386_RELATIVE entries are:
-  //   1) In the same relocation table
-  //   2) Are consecutive
-  //   3) Are sorted in memory address order
+  // This method compresses a contiguous stretch of R_ARM_RELATIVE
+  // entries in the relocation table with a Courgette relocation table
+  // instruction.  It skips any entries at the beginning that appear
+  // in a section that Courgette doesn't support, e.g. INIT.
+  // Specifically, the entries should be
+  //   (1) In the same relocation table
+  //   (2) Are consecutive
+  //   (3) Are sorted in memory address order
   //
   // Happily, this is normally the case, but it's not required by spec
   // so we check, and just don't do it if we don't match up.
-
+  //
   // The expectation is that one relocation section will contain
-  // all of our R_386_RELATIVE entries in the expected order followed
+  // all of our R_ARM_RELATIVE entries in the expected order followed
   // by assorted other entries we can't use special handling for.
 
   bool match = true;
@@ -82,21 +82,36 @@ CheckBool DisassemblerElf32ARM::ParseRelocationSection(
   if (abs32_locations_.size() > section_relocs_count)
     match = false;
 
-  std::vector<RVA>::iterator reloc_iter = abs32_locations_.begin();
+  if (!abs32_locations_.empty()) {
+    std::vector<RVA>::iterator reloc_iter = abs32_locations_.begin();
 
-  while (match && (reloc_iter !=  abs32_locations_.end())) {
-    if (section_relocs_iter->r_info != R_ARM_RELATIVE ||
-        section_relocs_iter->r_offset != *reloc_iter)
-      match = false;
-    section_relocs_iter++;
-    reloc_iter++;
-  }
+    for (uint32 i = 0; i < section_relocs_count; i++) {
+      if (section_relocs_iter->r_offset == *reloc_iter)
+        break;
 
-  if (match) {
-    // Skip over relocation tables
-    if (!program->EmitElfRelocationInstruction())
-      return false;
-    file_offset += sizeof(Elf32_Rel) * abs32_locations_.size();
+      if (!ParseSimpleRegion(file_offset, file_offset + sizeof(Elf32_Rel),
+                             program))
+        return false;
+
+      file_offset += sizeof(Elf32_Rel);
+      ++section_relocs_iter;
+    }
+
+    while (match && (reloc_iter != abs32_locations_.end())) {
+      if (section_relocs_iter->r_info != R_ARM_RELATIVE ||
+          section_relocs_iter->r_offset != *reloc_iter)
+        match = false;
+
+      section_relocs_iter++;
+      reloc_iter++;
+      file_offset += sizeof(Elf32_Rel);
+    }
+
+    if (match) {
+      // Skip over relocation tables
+      if (!program->EmitElfARMRelocationInstruction())
+        return false;
+    }
   }
 
   return ParseSimpleRegion(file_offset, section_end, program);
