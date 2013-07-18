@@ -175,13 +175,15 @@
        * @param {Object} detail The detail of pressed key.
        */
       keyLongpress: function(event, detail) {
-        this.lastPressedKey.classList.remove('active');
         var toKeyset = detail.toKeyset;
         // Keyset transtion key.
         if (toKeyset) {
           this.keyset = toKeyset;
           this.querySelector('#' + this.layout + '-' + this.keyset).nextKeyset =
               detail.nextKeyset;
+          // Makes last pressed key inactive if transit to a new keyset on long
+          // press.
+          this.lastPressedKey.classList.remove('active');
         }
       },
 

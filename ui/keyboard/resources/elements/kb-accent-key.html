@@ -38,7 +38,9 @@
     Polymer('kb-accent-key', {
       over: function(event) {
         if (isRelevantEvent(this, event)) {
-          this.classList.add('active');
+          // Dragging over an accent key is equivalent to pressing on the accent
+          // key.
+          this.fire('key-down', {});
         }
       },
       out: function(event) {
@@ -47,8 +49,10 @@
         }
       },
       up: function(event) {
-        var char = this.char || this.textContent;
-        insertText(char);
+        var detail = {
+            char: this.char || this.textContent
+        };
+        this.fire('key-up', detail);
       }
     });
   </script>
