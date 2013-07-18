@@ -3556,7 +3556,6 @@
               '<!(<(android_toolchain)/*-gcc -print-libgcc-file-name)',
               '-lc',
               '-ldl',
-              '-lstdc++',
               '-lm',
             ],
             'conditions': [
