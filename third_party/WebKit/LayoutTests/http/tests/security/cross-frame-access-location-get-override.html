@@ -44,8 +44,7 @@
             shouldBe("toString('targetWindow.location.assign')", "toString('window.location.assign')");
 
             // Overriden using window.location.reload = "new reload"
-            shouldBeTrue("canGet('targetWindow.location.reload')");
-            shouldBe("toString('targetWindow.location.reload')", "toString('window.location.reload')");
+            shouldBeFalse("canGet('targetWindow.location.reload')");
 
             // Overriden using window.location.reload = "new replace"
             shouldBeTrue("canGet('targetWindow.location.replace')");

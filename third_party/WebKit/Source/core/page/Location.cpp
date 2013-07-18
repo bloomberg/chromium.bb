@@ -249,14 +249,6 @@ void Location::reload(DOMWindow* activeWindow)
 {
     if (!m_frame)
         return;
-    // FIXME: It's not clear this cross-origin security check is valuable.
-    // We allow one page to change the location of another. Why block attempts to reload?
-    // Other location operations simply block use of JavaScript URLs cross origin.
-    DOMWindow* targetWindow = m_frame->domWindow();
-    if (!activeWindow->document()->securityOrigin()->canAccess(m_frame->document()->securityOrigin())) {
-        targetWindow->printErrorMessage(targetWindow->crossDomainAccessErrorMessage(activeWindow));
-        return;
-    }
     if (protocolIsJavaScript(m_frame->document()->url()))
         return;
     m_frame->navigationScheduler()->scheduleRefresh();
