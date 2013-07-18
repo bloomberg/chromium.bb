@@ -29,6 +29,8 @@
 
 import sys
 
-from webkitpy.style.checkers.python import Pylinter
+from webkitpy.style.checkers.python import PythonChecker
 
-sys.stdout.write(Pylinter().run(sys.argv[1:]).getvalue())
+for path in sys.argv[1:]:
+    checker = PythonChecker(path, lambda *args: None)
+    sys.stdout.write(checker._run_pylint(path))
