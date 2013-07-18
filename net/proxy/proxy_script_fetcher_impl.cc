@@ -7,7 +7,7 @@
 #include "base/compiler_specific.h"
 #include "base/i18n/icu_string_conversions.h"
 #include "base/logging.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
 #include "net/base/data_url.h"
 #include "net/base/io_buffer.h"

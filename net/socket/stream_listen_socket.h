@@ -25,7 +25,7 @@
 #if defined(OS_WIN)
 #include "base/win/object_watcher.h"
 #elif defined(OS_POSIX)
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #endif
 
 #include "base/basictypes.h"

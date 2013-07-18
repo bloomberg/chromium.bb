@@ -9,7 +9,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/threading/platform_thread.h"
 #include "net/base/capturing_net_log.h"
 #include "net/base/ip_endpoint.h"

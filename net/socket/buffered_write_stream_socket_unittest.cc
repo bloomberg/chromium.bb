@@ -4,9 +4,9 @@
 
 #include "net/socket/buffered_write_stream_socket.h"
 
-#include "base/message_loop.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_log.h"
 #include "net/socket/socket_test_util.h"

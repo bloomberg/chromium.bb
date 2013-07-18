@@ -6,7 +6,7 @@
 #define NET_SOCKET_TCP_SERVER_SOCKET_LIBEVENT_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/threading/non_thread_safe.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_log.h"

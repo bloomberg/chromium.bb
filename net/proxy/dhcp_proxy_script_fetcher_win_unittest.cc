@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/perftimer.h"
 #include "base/rand_util.h"
 #include "base/test/test_timeouts.h"

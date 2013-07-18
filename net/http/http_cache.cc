@@ -19,7 +19,7 @@
 #include "base/format_macros.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/pickle.h"
 #include "base/stl_util.h"

@@ -8,9 +8,9 @@
 #include <winsock2.h>
 
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
-#include "base/win/object_watcher.h"
+#include "base/message_loop/message_loop.h"
 #include "base/threading/non_thread_safe.h"
+#include "base/win/object_watcher.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_log.h"
 #include "net/socket/server_socket.h"
