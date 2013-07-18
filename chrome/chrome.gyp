@@ -380,6 +380,8 @@
                 'utility/local_discovery/local_domain_resolver.h',
                 'utility/local_discovery/service_discovery_client_impl.cc',
                 'utility/local_discovery/service_discovery_client_impl.h',
+                'utility/local_discovery/service_discovery_message_handler.cc',
+                'utility/local_discovery/service_discovery_message_handler.h',
               ]
             }],
           ],

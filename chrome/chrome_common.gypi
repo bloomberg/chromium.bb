@@ -593,6 +593,7 @@
         }],
         ['enable_mdns == 1', {
             'sources': [
+              'common/local_discovery/local_discovery_messages.h',
               'common/local_discovery/service_discovery_client.cc',
               'common/local_discovery/service_discovery_client.h',
             ]

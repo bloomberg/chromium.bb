@@ -87,6 +87,7 @@ enum IPCMessageStart {
   NaClHostMsgStart,
   WebRTCIdentityMsgStart,
   EncodedVideoCaptureMsgStart,
+  LocalDiscoveryMsgStart,
   LastIPCMsgStart      // Must come last.
 };
 
