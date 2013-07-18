@@ -4931,99 +4931,148 @@ other types of suffix sets.
 
 <histogram name="Memory.Swap.Browser" units="KB">
   <summary>
-    On ChromeOS only.  The swap used by the browser process.  Recorded once per
-    UMA ping.
+    The swap used by the browser process.  Recorded once per UMA ping if the
+    system has swapped.
   </summary>
 </histogram>
 
 <histogram name="Memory.Swap.Chrome" units="KB">
   <summary>
-    On ChromeOS only.  The swap used by each chrome:// renderer process.  Each
-    process provides one sample.  Recorded once per UMA ping.
+    The swap used by each chrome:// renderer process.  Each process provides one
+    sample.  Recorded once per UMA ping if the system has swapped.
+  </summary>
+</histogram>
+
+<histogram name="Memory.Swap.CompressedDataSize" units="MB">
+  <summary>
+    The amount of memory that swap was compressed into. Recorded once per UMA
+    ping if the system has swapped.
+  </summary>
+</histogram>
+
+<histogram name="Memory.Swap.CompressionRatio">
+  <summary>
+    The ratio of swapped data original size to compressed size. Recorded once
+    per UMA ping if the system has swapped.
   </summary>
 </histogram>
 
 <histogram name="Memory.Swap.Extension" units="KB">
   <summary>
-    On ChromeOS only.  The swap used by each extension process.  Each process
-    provides one sample.  Recorded once per UMA ping.
+    The swap used by each extension process.  Each process provides one sample.
+    Recorded once per UMA ping if the system has swapped.
   </summary>
 </histogram>
 
 <histogram name="Memory.Swap.Gpu" units="KB">
   <summary>
-    On ChromeOS only.  The swap used by the GPU process.  Recorded once per UMA
-    ping.
+    The swap used by the GPU process.  Recorded once per UMA ping if the system
+    has swapped.
+  </summary>
+</histogram>
+
+<histogram name="Memory.Swap.HaveSwapped" units="BooleanSuccess">
+  <summary>
+    Indicates that the system has swapped memory out at least once since boot.
+    Recorded once per UMA ping.
+  </summary>
+</histogram>
+
+<histogram name="Memory.Swap.MemUsedTotal" units="MB">
+  <summary>
+    The amount of memory that is used by swap, including bookkeeping.  Recorded
+    once per UMA ping if the system has swapped.
   </summary>
 </histogram>
 
 <histogram name="Memory.Swap.NativeClient" units="KB">
   <summary>
-    On ChromeOS only.  The swap used by each Native Client loader process.  Each
-    process provides one sample.  Recorded once per UMA ping.
+    The swap used by each Native Client loader process.  Each process provides
+    one sample.  Recorded once per UMA ping if the system has swapped.
   </summary>
 </histogram>
 
 <histogram name="Memory.Swap.NativeClientBroker" units="KB">
   <summary>
-    On ChromeOS only.  The swap used by each Native Client broker process.  Each
-    process provides one sample.  Recorded once per UMA ping.
+    The swap used by each Native Client broker process.  Each process provides
+    one sample.  Recorded once per UMA ping if the system has swapped.
+  </summary>
+</histogram>
+
+<histogram name="Memory.Swap.NumReads">
+  <summary>
+    The number of reads from swap.  Recorded once per UMA ping  if the system
+    has swapped.
+  </summary>
+</histogram>
+
+<histogram name="Memory.Swap.NumWrites">
+  <summary>
+    The number of writes to swap.  Recorded once per UMA ping if the system has
+    swapped.
+  </summary>
+</histogram>
+
+<histogram name="Memory.Swap.OriginalDataSize" units="MB">
+  <summary>
+    The amount of memory that was swapped out.  Recorded once per UMA ping if
+    the system has swapped.
   </summary>
 </histogram>
 
 <histogram name="Memory.Swap.PepperPlugin" units="KB">
   <summary>
-    On ChromeOS only.  The swap used by each Pepper plugin process.  Each plugin
-    process provides one sample.  Recorded once per UMA ping.
+    The swap used by each Pepper plugin process.  Each plugin process provides
+    one sample.  Recorded once per UMA ping if the system has swapped.
   </summary>
 </histogram>
 
 <histogram name="Memory.Swap.PepperPluginBroker" units="KB">
   <summary>
-    On ChromeOS only.  The swap used by each Pepper plugin broker process.  Each
-    process provides one sample.  Recorded once per UMA ping.
+    The swap used by each Pepper plugin broker process.  Each process provides
+    one sample.  Recorded once per UMA ping if the system has swapped.
   </summary>
 </histogram>
 
 <histogram name="Memory.Swap.Plugin" units="KB">
   <summary>
-    On ChromeOS only.  The swap used by each plugin process.  Each plugin
-    process provides one sample.  Recorded once per UMA ping.
+    The swap used by each plugin process.  Each plugin process provides one
+    sample.  Recorded once per UMA ping if the system has swapped.
   </summary>
 </histogram>
 
 <histogram name="Memory.Swap.Renderer" units="KB">
   <summary>
-    On ChromeOS only.  The swap used by each renderer process.  Each renderer
-    process provides one sample.  Recorded once per UMA ping.
+    The swap used by each renderer process.  Each renderer process provides one
+    sample.  Recorded once per UMA ping if the system has swapped.
   </summary>
 </histogram>
 
 <histogram name="Memory.Swap.SandboxHelper" units="KB">
   <summary>
-    On ChromeOS only.  The swap used by each sandbox helper process.  Each
-    sandbox helper process provides one sample.  Recorded once per UMA ping.
+    The swap used by each sandbox helper process.  Each sandbox helper process
+    provides one sample.  Recorded once per UMA ping if the system has swapped.
   </summary>
 </histogram>
 
 <histogram name="Memory.Swap.Total" units="MB">
   <summary>
-    On ChromeOS only.  The sum of all processes' swap.  Recorded once per UMA
-    ping.
+    The sum of all processes' swap.  Recorded once per UMA ping if the system
+    has swapped.
   </summary>
 </histogram>
 
 <histogram name="Memory.Swap.Utility" units="KB">
   <summary>
-    On ChromeOS only.  The swap used by each utility process.  Each utility
-    process provides one sample.  Recorded once per UMA ping.
+    The swap used by each utility process.  Each utility process provides one
+    sample.  Recorded once per UMA ping if the system has swapped.
   </summary>
 </histogram>
 
 <histogram name="Memory.Swap.Worker" units="KB">
   <summary>
-    On ChromeOS only. The swap used by each worker process.  Each worker process
-    provides one sample.  Recorded once per UMA ping.
+    The swap used by each worker process.  Each worker process provides one
+    sample.  Recorded once per UMA ping if the system has swapped.
   </summary>
 </histogram>
 
