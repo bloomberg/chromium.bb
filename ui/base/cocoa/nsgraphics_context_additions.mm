@@ -12,7 +12,9 @@
     NSPoint bottomLeft = NSZeroPoint;
     if ([view isFlipped])
       bottomLeft.y = NSMaxY([view bounds]);
-    phase.y -= [view convertPoint:bottomLeft toView:nil].y;
+    NSPoint offset = [view convertPoint:bottomLeft toView:nil];
+    phase.x -= offset.x;
+    phase.y -= offset.y;
   }
   [self setPatternPhase:phase];
 }
