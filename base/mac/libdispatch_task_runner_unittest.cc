@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/mac/bind_objc_block.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

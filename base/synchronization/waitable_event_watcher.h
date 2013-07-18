@@ -12,7 +12,7 @@
 #include "base/win/object_watcher.h"
 #else
 #include "base/callback.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/synchronization/waitable_event.h"
 #endif
 

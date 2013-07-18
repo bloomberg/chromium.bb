@@ -8,7 +8,7 @@
 #include "base/files/file_path_watcher.h"
 
 #include "base/logging.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 
 namespace base {
 

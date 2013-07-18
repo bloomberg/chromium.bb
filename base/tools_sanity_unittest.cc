@@ -7,7 +7,7 @@
 // errors to verify the sanity of the tools.
 
 #include "base/atomicops.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "base/threading/thread.h"
 #include "testing/gtest/include/gtest/gtest.h"

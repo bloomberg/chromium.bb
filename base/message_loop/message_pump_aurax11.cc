@@ -10,7 +10,7 @@
 #include <X11/XKBlib.h>
 
 #include "base/basictypes.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 
 namespace base {
 

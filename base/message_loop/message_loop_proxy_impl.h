@@ -6,7 +6,7 @@
 #define BASE_MESSAGE_LOOP_MESSAGE_LOOP_PROXY_IMPL_H_
 
 #include "base/base_export.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/synchronization/lock.h"
 

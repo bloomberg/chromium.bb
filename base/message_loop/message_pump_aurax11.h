@@ -17,8 +17,8 @@
 
 // It would be nice to include the X11 headers here so that we use Window
 // instead of its typedef of unsigned long, but we can't because everything in
-// chrome includes us through base/message_loop.h, and X11's crappy #define
-// heavy headers muck up half of chrome.
+// chrome includes us through base/message_loop/message_loop.h, and X11's crappy
+// #define heavy headers muck up half of chrome.
 
 typedef struct _GPollFD GPollFD;
 typedef struct _GSource GSource;

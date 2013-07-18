@@ -5,7 +5,7 @@
 #include "base/test/sequenced_worker_pool_owner.h"
 
 #include "base/location.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 
 namespace base {
 

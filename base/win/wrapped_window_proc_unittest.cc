@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/message_loop/message_loop.h"
 #include "base/win/wrapped_window_proc.h"
-#include "base/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {

@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/debug/leak_annotations.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -4,7 +4,7 @@
 
 #include "base/win/metro.h"
 
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/windows_version.h"
