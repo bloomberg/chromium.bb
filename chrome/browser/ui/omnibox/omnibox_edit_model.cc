@@ -726,8 +726,8 @@ void OmniboxEditModel::OpenMatch(const AutocompleteMatch& match,
         TemplateURLServiceFactory::GetForProfile(profile_)->
             GetDefaultSearchProvider();
     if (default_provider && default_provider->IsSearchURL(destination_url))
-      content::RecordAction(UserMetricsAction(
-          "OmniboxDestinationURLMatchesDefaultSearchProvider"));
+      content::RecordAction(
+          UserMetricsAction("OmniboxDestinationURLIsSearchOnDSP"));
 
     // This calls RevertAll again.
     base::AutoReset<bool> tmp(&in_revert_, true);
