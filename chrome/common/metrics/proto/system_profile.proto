@@ -83,7 +83,7 @@ message SystemProfileProto {
   }
   optional OS os = 5;
 
-  // Next tag for Hardware: 13
+  // Next tag for Hardware: 14
   // Information on the user's hardware.
   message Hardware {
     // The CPU architecture (x86, PowerPC, x86_64, ...)
@@ -120,6 +120,16 @@ message SystemProfileProto {
     // Max DPI for any attached screen. (Windows only)
     optional float max_dpi_x = 9;
     optional float max_dpi_y = 10;
+
+    // Information on the CPU obtained by CPUID.
+    message CPU {
+      // A 12 character string naming the vendor, e.g. "GeniuneIntel".
+      optional string vendor_name = 1;
+
+      // The signature reported by CPUID (from EAX).
+      optional uint32 signature = 2;
+    }
+    optional CPU cpu = 13;
 
     // Information on the GPU
     message Graphics {

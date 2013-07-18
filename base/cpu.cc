@@ -19,7 +19,8 @@
 namespace base {
 
 CPU::CPU()
-  : type_(0),
+  : signature_(0),
+    type_(0),
     family_(0),
     model_(0),
     stepping_(0),
@@ -105,6 +106,7 @@ void CPU::Initialize() {
   // Interpret CPU feature information.
   if (num_ids > 0) {
     __cpuid(cpu_info, 1);
+    signature_ = cpu_info[0];
     stepping_ = cpu_info[0] & 0xf;
     model_ = ((cpu_info[0] >> 4) & 0xf) + ((cpu_info[0] >> 12) & 0xf0);
     family_ = (cpu_info[0] >> 8) & 0xf;

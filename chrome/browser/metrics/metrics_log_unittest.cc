@@ -160,6 +160,10 @@ class MetricsLogTest : public testing::Test {
     EXPECT_EQ(kScreenScaleFactor, hardware.primary_screen_scale_factor());
     EXPECT_EQ(kScreenCount, hardware.screen_count());
 
+    EXPECT_TRUE(hardware.has_cpu());
+    EXPECT_TRUE(hardware.cpu().has_vendor_name());
+    EXPECT_TRUE(hardware.cpu().has_signature());
+
     // TODO(isherman): Verify other data written into the protobuf as a result
     // of this call.
   }

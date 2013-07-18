@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
+#include "base/cpu.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/perftimer.h"
@@ -721,6 +722,11 @@ void MetricsLog::RecordEnvironmentProto(
   os->set_fingerprint(
       base::android::BuildInfo::GetInstance()->android_build_fp());
 #endif
+
+  base::CPU cpu_info;
+  SystemProfileProto::Hardware::CPU* cpu = hardware->mutable_cpu();
+  cpu->set_vendor_name(cpu_info.vendor_name());
+  cpu->set_signature(cpu_info.signature());
 
   const gpu::GPUInfo& gpu_info =
       GpuDataManager::GetInstance()->GetGPUInfo();
