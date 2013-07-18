@@ -32,8 +32,8 @@ namespace chromeos {
 
 namespace {
 
-const int kLargeWallpaperResourceId = IDR_AURA_WALLPAPERS_5_GRADIENT5_LARGE;
-const int kSmallWallpaperResourceId = IDR_AURA_WALLPAPERS_5_GRADIENT5_SMALL;
+const int kLargeWallpaperResourceId = IDR_AURA_WALLPAPER_DEFAULT_LARGE;
+const int kSmallWallpaperResourceId = IDR_AURA_WALLPAPER_DEFAULT_SMALL;
 
 int kLargeWallpaperWidth = 256;
 int kLargeWallpaperHeight = ash::kLargeWallpaperMaxHeight;

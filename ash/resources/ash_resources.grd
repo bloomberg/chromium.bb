@@ -12,8 +12,8 @@
   <release seq="1">
     <includes>
       <!-- Fallback wallpaper used by Ash. -->
-      <include name="IDR_AURA_WALLPAPERS_5_GRADIENT5_LARGE" file="wallpapers/large/5-gradient5.jpg" type="BINDATA" />
-      <include name="IDR_AURA_WALLPAPERS_5_GRADIENT5_SMALL" file="wallpapers/small/5-gradient5.jpg" type="BINDATA" />
+      <include name="IDR_AURA_WALLPAPER_DEFAULT_LARGE" file="wallpaper/default_large.jpg" type="BINDATA" />
+      <include name="IDR_AURA_WALLPAPER_DEFAULT_SMALL" file="wallpaper/default_small.jpg" type="BINDATA" />
     </includes>
     <structures fallback_to_low_resolution="true">
       <!-- KEEP THESE IN ALPHABETICAL ORDER!  DO NOT ADD TO RANDOM PLACES JUST

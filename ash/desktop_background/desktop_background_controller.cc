@@ -240,8 +240,8 @@ bool DesktopBackgroundController::SetDefaultWallpaper(bool is_guest) {
   base::FilePath file_path;
   WallpaperLayout file_layout = use_large ? WALLPAPER_LAYOUT_CENTER_CROPPED :
       WALLPAPER_LAYOUT_CENTER;
-  int resource_id = use_large ? IDR_AURA_WALLPAPERS_5_GRADIENT5_LARGE :
-      IDR_AURA_WALLPAPERS_5_GRADIENT5_SMALL;
+  int resource_id = use_large ? IDR_AURA_WALLPAPER_DEFAULT_LARGE :
+      IDR_AURA_WALLPAPER_DEFAULT_SMALL;
   WallpaperLayout resource_layout = WALLPAPER_LAYOUT_TILE;
 
   const char* switch_name = is_guest ?
