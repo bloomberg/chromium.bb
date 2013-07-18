@@ -21,9 +21,6 @@ namespace plugin {
 static const char kPnaclComponentScheme[] = "pnacl-component://";
 const char PnaclUrls::kResourceInfoUrl[] = "pnacl.json";
 
-const char PnaclResources::kDefaultLlcName[] = "llc.nexe";
-const char PnaclResources::kDefaultLdName[] = "ld.nexe";
-
 nacl::string PnaclUrls::GetBaseUrl() {
   return nacl::string(kPnaclComponentScheme);
 }
