@@ -183,18 +183,8 @@ def _GetFilesFromRecursiveLsOutput(path, ls_output, re_file, utc_offset=None):
 
 
 def _ComputeFileListHash(md5sum_output):
-  """Returns a list of tuples from the provided md5sum output.
-
-  Args:
-    md5sum_output: output directly from md5sum binary.
-
-  Returns:
-    List of namedtuples (hash, path).
-  """
-  HashAndPath = collections.namedtuple('HashAndPath', ['hash', 'path'])
-  split_lines = [line.split('  ') for line in md5sum_output]
-  assert all(len(s) == 2 for s in split_lines), 'Invalid md5sum output'
-  return [HashAndPath._make(s) for s in split_lines]
+  """Returns a list of MD5 strings from the provided md5sum output."""
+  return [line.split('  ')[0] for line in md5sum_output]
 
 
 def _HasAdbPushSucceeded(command_output):
@@ -752,30 +742,17 @@ class AndroidCommands(object):
 
     cmd = (MD5SUM_LD_LIBRARY_PATH + ' ' + self._util_wrapper + ' ' +
            MD5SUM_DEVICE_PATH + ' ' + device_path)
-    device_hash_tuples = _ComputeFileListHash(
+    hashes_on_device = _ComputeFileListHash(
         self.RunShellCommand(cmd, timeout_time=2 * 60))
     assert os.path.exists(local_path), 'Local path not found %s' % local_path
     md5sum_output = cmd_helper.GetCmdOutput(
         ['%s/md5sum_bin_host' % self._md5sum_build_dir, local_path])
-    host_hash_tuples = _ComputeFileListHash(md5sum_output.splitlines())
+    hashes_on_host = _ComputeFileListHash(md5sum_output.splitlines())
 
-    # Ignore extra files on the device.
-    if len(device_hash_tuples) > len(host_hash_tuples):
-      host_files = [os.path.relpath(os.path.normpath(p.path),
-                    os.path.normpath(local_path)) for p in host_hash_tuples]
+    if ignore_paths:
+      hashes_on_device = [h.split()[0] for h in hashes_on_device]
+      hashes_on_host = [h.split()[0] for h in hashes_on_host]
 
-      def _host_has(fname):
-        return any(path in fname for path in host_files)
-
-      hashes_on_device = [h.hash for h in device_hash_tuples if
-                         _host_has(h.path)]
-    else:
-      hashes_on_device = [h.hash for h in device_hash_tuples]
-
-    # Compare md5sums between host and device files.
-    hashes_on_host = [h.hash for h in host_hash_tuples]
-    hashes_on_device.sort()
-    hashes_on_host.sort()
     return hashes_on_device == hashes_on_host
 
   def PushIfNeeded(self, local_path, device_path):
