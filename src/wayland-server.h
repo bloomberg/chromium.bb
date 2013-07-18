@@ -241,8 +241,12 @@ wl_display_remove_global(struct wl_display *display,
  */
 void wl_resource_post_event(struct wl_resource *resource,
 			    uint32_t opcode, ...);
+void wl_resource_post_event_array(struct wl_resource *resource,
+				  uint32_t opcode, union wl_argument *args);
 void wl_resource_queue_event(struct wl_resource *resource,
 			     uint32_t opcode, ...);
+void wl_resource_queue_event_array(struct wl_resource *resource,
+				   uint32_t opcode, union wl_argument *args);
 
 /* msg is a printf format string, variable args are its args. */
 void wl_resource_post_error(struct wl_resource *resource,
@@ -264,6 +268,12 @@ wl_resource_set_implementation(struct wl_resource *resource,
 			       const void *implementation,
 			       void *data,
 			       wl_resource_destroy_func_t destroy);
+void
+wl_resource_set_dispatcher(struct wl_resource *resource,
+			   wl_dispatcher_func_t dispatcher,
+			   const void *implementation,
+			   void *data,
+			   wl_resource_destroy_func_t destroy);
 
 void
 wl_resource_destroy(struct wl_resource *resource);

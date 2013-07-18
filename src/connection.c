@@ -891,7 +891,6 @@ convert_arguments_to_ffi(const char *signature, uint32_t flags,
 	}
 }
 
-
 void
 wl_closure_invoke(struct wl_closure *closure, uint32_t flags,
 		  struct wl_object *target, uint32_t opcode, void *data)
@@ -917,6 +916,14 @@ wl_closure_invoke(struct wl_closure *closure, uint32_t flags,
 
 	implementation = target->implementation;
 	ffi_call(&cif, implementation[opcode], NULL, ffi_args);
+}
+
+void
+wl_closure_dispatch(struct wl_closure *closure, wl_dispatcher_func_t dispatcher,
+		    struct wl_object *target, uint32_t opcode)
+{
+	dispatcher(target->implementation, target, opcode, closure->message,
+		   closure->args);
 }
 
 static int

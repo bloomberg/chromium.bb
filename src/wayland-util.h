@@ -199,6 +199,46 @@ static inline wl_fixed_t wl_fixed_from_int(int i)
 	return i * 256;
 }
 
+/**
+ * \brief A union representing all of the basic data types that can be passed
+ * along the wayland wire format.
+ *
+ * This union represents all of the basic data types that can be passed in the
+ * wayland wire format.  It is used by dispatchers and runtime-friendly
+ * versions of the event and request marshaling functions.
+ */
+union wl_argument {
+	int32_t i; /**< signed integer */
+	uint32_t u; /**< unsigned integer */
+	wl_fixed_t f; /**< fixed point */
+	const char *s; /**< string */
+	struct wl_object *o; /**< object */
+	uint32_t n; /**< new_id */
+	struct wl_array *a; /**< array */
+	int32_t h; /**< file descriptor */
+};
+
+/**
+ * \brief A function pointer type for a dispatcher.
+ *
+ * A dispatcher is a function that handles the emitting of callbacks in client
+ * code.  For programs directly using the C library, this is done by using
+ * libffi to call function pointers.  When binding to languages other than C,
+ * dispatchers provide a way to abstract the function calling process to be
+ * friendlier to other function calling systems.
+ *
+ * A dispatcher takes five arguments:  The first is the dispatcher-specific
+ * implementation data associated with the target object.  The second is the
+ * object on which the callback is being invoked (either wl_proxy or
+ * wl_resource).  The third and fourth arguments are the opcode the wl_messsage
+ * structure corresponding to the callback being emitted.  The final argument
+ * is an array of arguments recieved from the other process via the wire
+ * protocol.
+ */
+typedef int (*wl_dispatcher_func_t)(const void *, void *, uint32_t,
+				    const struct wl_message *,
+				    union wl_argument *);
+
 typedef void (*wl_log_func_t)(const char *, va_list);
 
 #ifdef  __cplusplus
