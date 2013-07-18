@@ -377,7 +377,7 @@
         '../gpu/gpu.gyp:gpu_ipc',
         '../ipc/ipc.gyp:ipc',
         '../media/media.gyp:shared_memory_support',
-        '../third_party/WebKit/public/blink.gyp:blink',
+        '../third_party/WebKit/public/blink.gyp:blink_minimal',
         '../ui/gl/gl.gyp:gl',
         '../webkit/common/webkit_common.gyp:webkit_common',
         '../webkit/storage_browser.gyp:webkit_storage_browser',

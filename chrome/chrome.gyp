@@ -18,7 +18,6 @@
     ],
     'chromium_child_dependencies': [
       'common',
-      '../content/content.gyp:content_app',
       '../sync/sync.gyp:sync',
     ],
     'allocator_target': '../base/allocator/allocator.gyp:allocator',
@@ -30,9 +29,8 @@
     'conditions': [
       ['OS!="ios"', {
         'chromium_browser_dependencies': [
-          'debugger',
-          '../content/content.gyp:content_ppapi_plugin',
           '../printing/printing.gyp:printing',
+          '../ppapi/ppapi_internal.gyp:ppapi_host',
         ],
         'chromium_child_dependencies': [
           'debugger',
@@ -42,7 +40,6 @@
           '../content/content.gyp:content_gpu',
           '../content/content.gyp:content_ppapi_plugin',
           '../content/content.gyp:content_worker',
-          '../printing/printing.gyp:printing',
           '../third_party/WebKit/Source/devtools/devtools.gyp:devtools_frontend_resources',
         ],
       }],

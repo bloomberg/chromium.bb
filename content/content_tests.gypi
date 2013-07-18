@@ -167,6 +167,7 @@
           'dependencies': [
             'content_child',
             'content_ppapi_plugin',
+            'content_renderer',
             'content_utility',
             'content_worker',
             '../ppapi/ppapi_internal.gyp:ppapi_host',

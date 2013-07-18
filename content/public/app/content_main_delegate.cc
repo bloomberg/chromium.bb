@@ -49,11 +49,15 @@ ZygoteForkDelegate* ContentMainDelegate::ZygoteStarting() {
 #endif
 
 ContentBrowserClient* ContentMainDelegate::CreateContentBrowserClient() {
+#if defined(CHROME_MULTIPLE_DLL_CHILD)
+  return NULL;
+#else
   return new ContentBrowserClient();
+#endif
 }
 
 ContentPluginClient* ContentMainDelegate::CreateContentPluginClient() {
-#if defined(OS_IOS)
+#if defined(OS_IOS) || defined(CHROME_MULTIPLE_DLL_BROWSER)
   return NULL;
 #else
   return new ContentPluginClient();
@@ -61,7 +65,7 @@ ContentPluginClient* ContentMainDelegate::CreateContentPluginClient() {
 }
 
 ContentRendererClient* ContentMainDelegate::CreateContentRendererClient() {
-#if defined(OS_IOS)
+#if defined(OS_IOS) || defined(CHROME_MULTIPLE_DLL_BROWSER)
   return NULL;
 #else
   return new ContentRendererClient();
@@ -69,7 +73,7 @@ ContentRendererClient* ContentMainDelegate::CreateContentRendererClient() {
 }
 
 ContentUtilityClient* ContentMainDelegate::CreateContentUtilityClient() {
-#if defined(OS_IOS)
+#if defined(OS_IOS) || defined(CHROME_MULTIPLE_DLL_BROWSER)
   return NULL;
 #else
   return new ContentUtilityClient();

@@ -21,6 +21,11 @@
                 ],
               },
             }],  # OS=="mac"
+            ['chrome_multiple_dll==1', {
+              'dependencies': [
+                'chrome_child_dll',
+              ],
+            }],
             ['incremental_chrome_dll==1', {
               # Linking to a different directory and then hardlinking back
               # to OutDir is a workaround to avoid having the .ilk for
@@ -75,8 +80,6 @@
           },
           'dependencies': [
             '<@(chromium_browser_dependencies)',
-            '<@(chromium_child_dependencies)',
-            '../content/content.gyp:content_worker',
             'app/policy/cloud_policy_codegen.gyp:policy',
           ],
           'conditions': [
@@ -221,23 +224,23 @@
                   'AdditionalManifestFiles': '$(ProjectDir)\\app\\chrome.dll.manifest',
                 },
               },
-            }],  # OS=="win"
+            }],
+            ['chrome_multiple_dll==1', {
+              'defines': [
+                'CHROME_MULTIPLE_DLL_BROWSER',
+              ],
+            }, {
+              'dependencies': [
+                '<@(chromium_child_dependencies)',
+                '../content/content.gyp:content_app_child',
+                '../content/content.gyp:content_worker',
+              ],
+            }],
             ['OS=="mac" and component!="shared_library"', {
               'includes': [ 'chrome_dll_bundle.gypi' ],
             }],
             ['OS=="mac" and component=="shared_library"', {
               'xcode_settings': { 'OTHER_LDFLAGS': [ '-Wl,-ObjC' ], },
-            }],
-            ['chrome_split_dll', {
-              'sources': [
-                # See comment in .cc for explanation.
-                'split_dll_fake_entry.cc',
-              ],
-              'msvs_settings': {
-                'VCLinkerTool': {
-                  'AdditionalOptions': ['/splitlink'],
-                },
-              }
             }],
             ['OS=="mac"', {
               'xcode_settings': {
@@ -328,6 +331,32 @@
             }],
           ],
         },
+      ],
+    }],
+    ['chrome_multiple_dll', {
+      'targets': [
+        {
+          'target_name': 'chrome_child_dll',
+          'type': 'shared_library',
+          'product_name': 'chrome_child',
+          'variables': {
+            'enable_wexit_time_destructors': 1,
+          },
+          'dependencies': [
+            '<@(chromium_child_dependencies)',
+            '../content/content.gyp:content_app_child',
+            '../content/content.gyp:content_worker',
+            'policy_path_parser',
+          ],
+          'defines': [
+            'CHROME_MULTIPLE_DLL_CHILD',
+          ],
+          'sources': [
+            'app/chrome_main.cc',
+            'app/chrome_main_delegate.cc',
+            'app/chrome_main_delegate.h',
+          ],
+        },  # target chrome_child_dll
       ],
     }],
   ],

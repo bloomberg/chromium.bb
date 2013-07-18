@@ -74,18 +74,6 @@ void ClearDidRun(const string16& dll_path) {
   GoogleUpdateSettings::UpdateDidRunState(false, system_level);
 }
 
-#if defined(CHROME_SPLIT_DLL)
-// Deferred initialization entry point for chrome1.dll.
-typedef BOOL (__stdcall *DoDeferredCrtInitFunc)(HINSTANCE hinstance);
-
-bool InitSplitChromeDll(HMODULE mod) {
-  if (!mod)
-    return false;
-  DoDeferredCrtInitFunc init = reinterpret_cast<DoDeferredCrtInitFunc>(
-      ::GetProcAddress(mod, "_DoDeferredCrtInit@4"));
-  return (init(mod) == TRUE);
-}
-#endif
 }  // namespace
 
 string16 GetExecutablePath() {
@@ -165,14 +153,6 @@ HMODULE MainDllLoader::Load(string16* out_version, string16* out_file) {
   }
 
   DCHECK(dll);
-
-#if defined(CHROME_SPLIT_DLL)
-  // In split dlls mode, we need to manually initialize both DLLs because
-  // the circular dependencies between them make the loader not call the
-  // Dllmain for DLL_PROCESS_ATTACH.
-  InitSplitChromeDll(dll);
-  InitSplitChromeDll(::GetModuleHandleA("chrome1.dll"));
-#endif
 
   return dll;
 }
