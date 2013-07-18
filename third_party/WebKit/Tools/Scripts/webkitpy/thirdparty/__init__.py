@@ -77,12 +77,8 @@ class AutoinstallImportHook(object):
 
         # Note: all of the methods must follow the "_install_XXX" convention in
         # order for autoinstall_everything(), below, to work properly.
-        elif '.mechanize' in fullname:
-            self._install_mechanize()
-
-    def _install_mechanize(self):
-        return self._install("https://pypi.python.org/packages/source/m/mechanize/mechanize-0.2.5.tar.gz",
-                             "mechanize-0.2.5/mechanize")
+        if '.unittest2' in fullname:
+            self._install_unittest2()
 
     def _install_unittest2(self):
         self._ensure_autoinstalled_dir_is_in_sys_path()

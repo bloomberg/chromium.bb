@@ -56,10 +56,6 @@ class MockBuilder(object):
     def latest_layout_test_results_url(self):
         return self.accumulated_results_url()
 
-    def force_build(self, username, comments):
-        _log.info("MOCK: force_build: name=%s, username=%s, comments=%s" % (
-            self._name, username, comments))
-
 
 class MockBuildBot(object):
     def __init__(self):

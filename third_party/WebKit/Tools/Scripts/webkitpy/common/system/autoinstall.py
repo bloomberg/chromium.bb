@@ -58,9 +58,6 @@ class AutoInstaller(object):
 
     installer.install(url="http://pypi.python.org/packages/source/p/pep8/pep8-0.5.0.tar.gz#md5=512a818af9979290cd619cce8e9c2e2b",
                       url_subpath="pep8-0.5.0/pep8.py")
-    installer.install(url="http://pypi.python.org/packages/source/m/mechanize/mechanize-0.2.4.zip",
-                      url_subpath="mechanize")
-
     """
 
     def __init__(self, append_to_search_path=False, make_package=True,

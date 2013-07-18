@@ -49,9 +49,6 @@ class Builder(object):
         self._buildbot = buildbot
         self._builds_cache = {}
         self._revision_to_build_number = None
-        from webkitpy.thirdparty.autoinstalled.mechanize import Browser
-        self._browser = Browser()
-        self._browser.set_handle_robots(False) # The builder pages are excluded by robots.txt
 
     def name(self):
         return self._name
@@ -122,20 +119,6 @@ class Builder(object):
         revision_build_pairs.sort(key=lambda i: i[1])
         latest_build_number = revision_build_pairs[-1][1]
         return self.build(latest_build_number)
-
-    def force_build(self, username="webkit-patch", comments=None):
-        def predicate(form):
-            try:
-                return form.find_control("username")
-            except Exception, e:
-                return False
-        # ignore false positives for missing Browser methods - pylint: disable=E1102
-        self._browser.open(self.url())
-        self._browser.select_form(predicate=predicate)
-        self._browser["username"] = username
-        if comments:
-            self._browser["comments"] = comments
-        return self._browser.submit()
 
     file_name_regexp = re.compile(r"r(?P<revision>\d+) \((?P<build_number>\d+)\)")
     def _revision_and_build_for_filename(self, filename):
