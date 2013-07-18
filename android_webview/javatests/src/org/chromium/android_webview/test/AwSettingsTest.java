@@ -550,9 +550,7 @@ public class AwSettingsTest extends AwTestBase {
     }
 
     class AwSettingsUniversalAccessFromFilesTestHelper extends AwSettingsTestHelper<Boolean> {
-        // TODO(mnaganov): Change to "Exception" once
-        // https://bugs.webkit.org/show_bug.cgi?id=43504 is fixed.
-        private static final String ACCESS_DENIED_TITLE = "undefined";
+        private static final String ACCESS_DENIED_TITLE = "Exception";
 
         AwSettingsUniversalAccessFromFilesTestHelper(
                 AwContents awContents,
@@ -601,9 +599,7 @@ public class AwSettingsTest extends AwTestBase {
     }
 
     class AwSettingsFileAccessFromFilesIframeTestHelper extends AwSettingsTestHelper<Boolean> {
-        // TODO(mnaganov): Change to "Exception" once
-        // https://bugs.webkit.org/show_bug.cgi?id=43504 is fixed.
-        private static final String ACCESS_DENIED_TITLE = "undefined";
+        private static final String ACCESS_DENIED_TITLE = "Exception";
 
         AwSettingsFileAccessFromFilesIframeTestHelper(
                 AwContents awContents,
@@ -1625,12 +1621,8 @@ public class AwSettingsTest extends AwTestBase {
         helper.ensureSettingHasInitialValue();
     }
 
-    /**
-     * @SmallTest
-     * @Feature({"AndroidWebView", "Preferences"})
-     * crbug.com/261409
-     */
-    @DisabledTest
+    @SmallTest
+    @Feature({"AndroidWebView", "Preferences"})
     public void testUniversalAccessFromFilesWithTwoViews() throws Throwable {
         ViewPair views = createViews();
         runPerViewSettingsTest(
@@ -1659,12 +1651,8 @@ public class AwSettingsTest extends AwTestBase {
         assertEquals(imageHeight, getTitleOnUiThread(awContents));
     }
 
-    /**
-     * @SmallTest
-     * @Feature({"AndroidWebView", "Preferences"})
-     * crbug.com/261409
-     */
-    @DisabledTest
+    @SmallTest
+    @Feature({"AndroidWebView", "Preferences"})
     public void testFileAccessFromFilesIframeWithTwoViews() throws Throwable {
         ViewPair views = createViews();
         runPerViewSettingsTest(

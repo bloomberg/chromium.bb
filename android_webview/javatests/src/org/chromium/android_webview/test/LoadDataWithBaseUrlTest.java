@@ -82,10 +82,20 @@ public class LoadDataWithBaseUrlTest extends AwTestBase {
 
     private String getCrossOriginAccessTestPageHtml(final String iframeUrl) {
         return "<html>" +
-                "  <body onload=\"" +
-                "    document.title=document.getElementById('frame').contentWindow.location.href;" +
-                "    \">" +
-                "    <iframe id='frame' src='" + iframeUrl + "'>" +
+                "  <head>" +
+                "    <script>" +
+                "      function onload() {" +
+                "        try {" +
+                "          document.title = " +
+                "            document.getElementById('frame').contentWindow.location.href;" +
+                "        } catch (e) {" +
+                "          document.title = 'Exception';" +
+                "        }" +
+                "      }" +
+                "    </script>" +
+                "  </head>" +
+                "  <body onload='onload()'>" +
+                "    <iframe id='frame' src='" + iframeUrl + "'></iframe>" +
                 "  </body>" +
                 "</html>";
     }
@@ -153,12 +163,8 @@ public class LoadDataWithBaseUrlTest extends AwTestBase {
         }
     }
 
-    /**
-     * @SmallTest
-     * @Feature({"AndroidWebView"})
-     * crbug.com/261409
-     */
-    @DisabledTest
+    @SmallTest
+    @Feature({"AndroidWebView"})
     public void testCrossOrigin() throws Throwable {
         TestWebServer webServer = null;
         try {
@@ -171,9 +177,7 @@ public class LoadDataWithBaseUrlTest extends AwTestBase {
             getAwSettingsOnUiThread(mAwContents).setJavaScriptEnabled(true);
             loadDataWithBaseUrlSync(html, "text/html", false, baseUrl, null);
 
-            // TODO(mnaganov): Catch a security exception and set the title accordingly,
-            // once https://bugs.webkit.org/show_bug.cgi?id=43504 is fixed.
-            assertEquals("undefined", getTitleOnUiThread(mAwContents));
+            assertEquals("Exception", getTitleOnUiThread(mAwContents));
 
         } finally {
             if (webServer != null) webServer.shutdown();
