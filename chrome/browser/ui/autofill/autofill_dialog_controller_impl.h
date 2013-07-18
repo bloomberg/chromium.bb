@@ -566,6 +566,9 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // Sets the state of the autocheckout flow.
   void SetAutocheckoutState(AutocheckoutState autocheckout_state);
 
+  // Obscures the web contents.
+  void DeemphasizeRenderView();
+
   // Returns the metric corresponding to the user's initial state when
   // interacting with this dialog.
   AutofillMetrics::DialogInitialUserStateMetric GetInitialUserState() const;
@@ -713,6 +716,9 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
 
   // Whether the latency to display to the UI was logged to UMA yet.
   bool was_ui_latency_logged_;
+
+  // Whether or not the render view has been deemphasized.
+  bool deemphasized_render_view_;
 
   // State of steps in the current Autocheckout flow, or empty if not an
   // Autocheckout use case.

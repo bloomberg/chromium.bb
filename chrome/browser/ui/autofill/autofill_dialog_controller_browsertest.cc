@@ -508,6 +508,8 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, AutocheckoutShowsSteps) {
   EXPECT_FALSE(controller()->ShouldShowDetailArea());
   EXPECT_FALSE(controller()->CurrentAutocheckoutSteps().empty());
   EXPECT_TRUE(controller()->ShouldShowProgressBar());
+  controller()->GetTestableView()->CancelForTesting();
+  RunMessageLoop();
 }
 
 #if defined(OS_MACOSX)

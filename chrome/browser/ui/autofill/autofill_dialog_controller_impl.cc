@@ -34,6 +34,7 @@
 #include "chrome/browser/ui/extensions/native_app_window.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "components/autofill/content/browser/risk/fingerprint.h"
 #include "components/autofill/content/browser/risk/proto/fingerprint.pb.h"
@@ -60,6 +61,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/common/url_constants.h"
@@ -433,6 +435,12 @@ AutofillDialogControllerImpl::~AutofillDialogControllerImpl() {
 
   GetMetricLogger().LogDialogInitialUserState(
       GetDialogType(), initial_user_state_);
+
+  if (deemphasized_render_view_) {
+    web_contents()->GetRenderViewHost()->Send(
+        new ChromeViewMsg_SetVisuallyDeemphasized(
+            web_contents()->GetRenderViewHost()->GetRoutingID(), false));
+  }
 }
 
 // static
@@ -1927,6 +1935,9 @@ void AutofillDialogControllerImpl::OnAccept() {
     }
   }
 
+  if (GetDialogType() == DIALOG_TYPE_AUTOCHECKOUT)
+    DeemphasizeRenderView();
+
   SetIsSubmitting(true);
   if (IsSubmitPausedOn(wallet::VERIFY_CVV)) {
     DCHECK(!active_instrument_id_.empty());
@@ -2334,7 +2345,8 @@ AutofillDialogControllerImpl::AutofillDialogControllerImpl(
       choose_another_instrument_or_address_(false),
       wallet_server_validation_recoverable_(true),
       autocheckout_state_(AUTOCHECKOUT_NOT_STARTED),
-      was_ui_latency_logged_(false) {
+      was_ui_latency_logged_(false),
+      deemphasized_render_view_(false) {
   // TODO(estade): remove duplicates from |form_structure|?
   DCHECK(!callback_.is_null());
 }
@@ -3414,6 +3426,13 @@ void AutofillDialogControllerImpl::SetAutocheckoutState(
     view_->UpdateAutocheckoutStepsArea();
     view_->UpdateNotificationArea();
   }
+}
+
+void AutofillDialogControllerImpl::DeemphasizeRenderView() {
+  web_contents()->GetRenderViewHost()->Send(
+      new ChromeViewMsg_SetVisuallyDeemphasized(
+          web_contents()->GetRenderViewHost()->GetRoutingID(), true));
+  deemphasized_render_view_ = true;
 }
 
 AutofillMetrics::DialogInitialUserStateMetric
