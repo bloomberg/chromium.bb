@@ -167,6 +167,13 @@ void TabAutofillManagerDelegate::ShowAutofillPopup(
   popup_controller_->Show(values, labels, icons, identifiers);
 }
 
+void TabAutofillManagerDelegate::UpdateAutofillPopupDataListValues(
+    const std::vector<base::string16>& values,
+    const std::vector<base::string16>& labels) {
+  if (popup_controller_.get())
+    popup_controller_->UpdateDataListValues(values, labels);
+}
+
 void TabAutofillManagerDelegate::HideAutofillPopup() {
   if (popup_controller_.get())
     popup_controller_->Hide();

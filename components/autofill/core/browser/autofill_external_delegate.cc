@@ -100,6 +100,9 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
     ids.pop_back();
   }
 
+  // If anything else is added to modify the values after inserting the data
+  // list, AutofillPopupControllerImpl::UpdateDataListValues will need to be
+  // updated to match.
   InsertDataListValues(&values, &labels, &icons, &ids);
 
   if (values.empty()) {
@@ -149,13 +152,13 @@ void AutofillExternalDelegate::OnShowPasswordSuggestions(
 
 void AutofillExternalDelegate::SetCurrentDataListValues(
     const std::vector<base::string16>& data_list_values,
-    const std::vector<base::string16>& data_list_labels,
-    const std::vector<base::string16>& data_list_icons,
-    const std::vector<int>& data_list_unique_ids) {
+    const std::vector<base::string16>& data_list_labels) {
   data_list_values_ = data_list_values;
   data_list_labels_ = data_list_labels;
-  data_list_icons_ = data_list_icons;
-  data_list_unique_ids_ = data_list_unique_ids;
+
+  autofill_manager_->delegate()->UpdateAutofillPopupDataListValues(
+      data_list_values,
+      data_list_labels);
 }
 
 void AutofillExternalDelegate::OnPopupShown(
@@ -365,12 +368,14 @@ void AutofillExternalDelegate::InsertDataListValues(
   autofill_labels->insert(autofill_labels->begin(),
                           data_list_labels_.begin(),
                           data_list_labels_.end());
+
+  // Set the values that all datalist elements share.
   autofill_icons->insert(autofill_icons->begin(),
-                         data_list_icons_.begin(),
-                         data_list_icons_.end());
+                         data_list_values_.size(),
+                         base::string16());
   autofill_unique_ids->insert(autofill_unique_ids->begin(),
-                              data_list_unique_ids_.begin(),
-                              data_list_unique_ids_.end());
+                              data_list_values_.size(),
+                              WebAutofillClient::MenuItemIDDataListEntry);
 }
 
 }  // namespace autofill

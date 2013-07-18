@@ -295,8 +295,6 @@ IPC_MESSAGE_ROUTED4(AutofillHostMsg_ShowPasswordSuggestions,
                     std::vector<base::string16> /* realms */)
 
 // Inform browser of data list values for the curent field.
-IPC_MESSAGE_ROUTED4(AutofillHostMsg_SetDataList,
+IPC_MESSAGE_ROUTED2(AutofillHostMsg_SetDataList,
                     std::vector<base::string16> /* values */,
-                    std::vector<base::string16> /* labels */,
-                    std::vector<base::string16> /* icons */,
-                    std::vector<int> /* unique ids */)
+                    std::vector<base::string16> /* labels */)

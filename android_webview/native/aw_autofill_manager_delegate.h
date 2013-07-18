@@ -93,6 +93,9 @@ class AwAutofillManagerDelegate
       const std::vector<string16>& icons,
       const std::vector<int>& identifiers,
       base::WeakPtr<autofill::AutofillPopupDelegate> delegate) OVERRIDE;
+  virtual void UpdateAutofillPopupDataListValues(
+      const std::vector<base::string16>& values,
+      const std::vector<base::string16>& labels) OVERRIDE;
   virtual void HideAutofillPopup() OVERRIDE;
   virtual bool IsAutocompleteEnabled() OVERRIDE;
   virtual void AddAutocheckoutStep(autofill::AutocheckoutStepType step_type)

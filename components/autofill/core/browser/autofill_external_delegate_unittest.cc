@@ -63,6 +63,10 @@ class MockAutofillManagerDelegate
                     const std::vector<int>& identifiers,
                     base::WeakPtr<AutofillPopupDelegate> delegate));
 
+  MOCK_METHOD2(UpdateAutofillPopupDataListValues,
+               void(const std::vector<base::string16>& values,
+                    const std::vector<base::string16>& lables));
+
   MOCK_METHOD0(HideAutofillPopup, void());
 
  private:
@@ -179,13 +183,9 @@ TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateDataList) {
 
   std::vector<base::string16> data_list_items;
   data_list_items.push_back(base::string16());
-  std::vector<int> data_list_ids;
-  data_list_ids.push_back(WebAutofillClient::MenuItemIDDataListEntry);
 
   external_delegate_->SetCurrentDataListValues(data_list_items,
-                                               data_list_items,
-                                               data_list_items,
-                                               data_list_ids);
+                                               data_list_items);
 
   // The enums must be cast to ints to prevent compile errors on linux_rel.
   EXPECT_CALL(manager_delegate_,
@@ -230,6 +230,62 @@ TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateDataList) {
                                             autofill_item,
                                             autofill_item,
                                             autofill_ids);
+}
+
+// Test that datalist values can get updated while a popup is showing.
+TEST_F(AutofillExternalDelegateUnitTest, UpdateDataListWhileShowingPopup) {
+  IssueOnQuery(kQueryId);
+
+  EXPECT_CALL(manager_delegate_,
+              ShowAutofillPopup(_, _, _, _, _, _, _)).Times(0);
+
+  // Make sure just setting the data list values doesn't cause the popup to
+  // appear.
+  std::vector<base::string16> data_list_items;
+  data_list_items.push_back(base::string16());
+
+  external_delegate_->SetCurrentDataListValues(data_list_items,
+                                               data_list_items);
+
+  // The enums must be cast to ints to prevent compile errors on linux_rel.
+  EXPECT_CALL(manager_delegate_,
+              ShowAutofillPopup(
+                  _, _, _, _, _,
+                  testing::ElementsAre(
+                      static_cast<int>(
+                          WebAutofillClient::MenuItemIDDataListEntry),
+                      static_cast<int>(WebAutofillClient::MenuItemIDSeparator),
+                      kAutofillProfileId,
+                      static_cast<int>(WebAutofillClient::MenuItemIDSeparator),
+                      static_cast<int>(
+                          WebAutofillClient::MenuItemIDAutofillOptions)),
+                  _));
+
+  // Ensure the popup is displayed.
+  std::vector<base::string16> autofill_item;
+  autofill_item.push_back(base::string16());
+  std::vector<int> autofill_ids;
+  autofill_ids.push_back(kAutofillProfileId);
+  external_delegate_->OnSuggestionsReturned(kQueryId,
+                                            autofill_item,
+                                            autofill_item,
+                                            autofill_item,
+                                            autofill_ids);
+
+  // This would normally get called from ShowAutofillPopup, but it is mocked
+  // we need to call OnPopupShown ourselves.
+  external_delegate_->OnPopupShown(NULL);
+
+  // Update the current data list and ensure the popup is updated.
+  data_list_items.push_back(base::string16());
+
+  // The enums must be cast to ints to prevent compile errors on linux_rel.
+  EXPECT_CALL(manager_delegate_,
+              UpdateAutofillPopupDataListValues(data_list_items,
+                                                data_list_items));
+
+  external_delegate_->SetCurrentDataListValues(data_list_items,
+                                               data_list_items);
 }
 
 // Test that the Autofill popup is able to display warnings explaining why

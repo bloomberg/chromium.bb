@@ -51,6 +51,9 @@ class TestAutofillManagerDelegate : public AutofillManagerDelegate {
       const std::vector<base::string16>& icons,
       const std::vector<int>& identifiers,
       base::WeakPtr<AutofillPopupDelegate> delegate) OVERRIDE;
+  virtual void UpdateAutofillPopupDataListValues(
+      const std::vector<base::string16>& values,
+      const std::vector<base::string16>& labels) OVERRIDE;
   virtual void HideAutofillPopup() OVERRIDE;
   virtual bool IsAutocompleteEnabled() OVERRIDE;
 

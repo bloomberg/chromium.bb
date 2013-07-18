@@ -138,6 +138,12 @@ void AwAutofillManagerDelegate::ShowAutofillPopupImpl(
       element_bounds.height(), data_array.obj());
 }
 
+void AwAutofillManagerDelegate::UpdateAutofillPopupDataListValues(
+    const std::vector<base::string16>& values,
+    const std::vector<base::string16>& labels) {
+  NOTIMPLEMENTED();
+}
+
 void AwAutofillManagerDelegate::HideAutofillPopup() {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);

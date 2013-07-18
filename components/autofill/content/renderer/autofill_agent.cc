@@ -99,30 +99,17 @@ void AppendDataListSuggestions(const WebKit::WebInputElement& element,
   }
 }
 
-// Trim the vectors before sending them to the browser process to ensure we
+// Trim the vector before sending it to the browser process to ensure we
 // don't send too much data through the IPC.
-void TrimDataListsForIPC(std::vector<base::string16>* values,
-                         std::vector<base::string16>* labels,
-                         std::vector<base::string16>* icons,
-                         std::vector<int>* unique_ids) {
-  // Limit the size of the vectors.
-  if (values->size() > kMaximumDataListSizeForAutofill) {
-    values->resize(kMaximumDataListSizeForAutofill);
-    labels->resize(kMaximumDataListSizeForAutofill);
-    icons->resize(kMaximumDataListSizeForAutofill);
-    unique_ids->resize(kMaximumDataListSizeForAutofill);
-  }
+void TrimStringVectorForIPC(std::vector<base::string16>* strings) {
+  // Limit the size of the vector.
+  if (strings->size() > kMaximumDataListSizeForAutofill)
+    strings->resize(kMaximumDataListSizeForAutofill);
 
-  // Limit the size of the strings in the vectors
-  for (size_t i = 0; i < values->size(); ++i) {
-    if ((*values)[i].length() > kMaximumTextSizeForAutofill)
-      (*values)[i].resize(kMaximumTextSizeForAutofill);
-
-    if ((*labels)[i].length() > kMaximumTextSizeForAutofill)
-      (*labels)[i].resize(kMaximumTextSizeForAutofill);
-
-    if ((*icons)[i].length() > kMaximumTextSizeForAutofill)
-      (*icons)[i].resize(kMaximumTextSizeForAutofill);
+  // Limit the size of the strings in the vector.
+  for (size_t i = 0; i < strings->size(); ++i) {
+    if ((*strings)[i].length() > kMaximumTextSizeForAutofill)
+      (*strings)[i].resize(kMaximumTextSizeForAutofill);
   }
 }
 
@@ -814,22 +801,18 @@ void AutofillAgent::QueryAutofillSuggestions(const WebInputElement& element,
   std::vector<base::string16> data_list_labels;
   std::vector<base::string16> data_list_icons;
   std::vector<int> data_list_unique_ids;
+  // TODO(csharp): Stop passing in icon and unique id vectors.
   AppendDataListSuggestions(element_,
                             &data_list_values,
                             &data_list_labels,
                             &data_list_icons,
                             &data_list_unique_ids);
-
-  TrimDataListsForIPC(&data_list_values,
-                      &data_list_labels,
-                      &data_list_icons,
-                      &data_list_unique_ids);
+  TrimStringVectorForIPC(&data_list_values);
+  TrimStringVectorForIPC(&data_list_labels);
 
   Send(new AutofillHostMsg_SetDataList(routing_id(),
                                        data_list_values,
-                                       data_list_labels,
-                                       data_list_icons,
-                                       data_list_unique_ids));
+                                       data_list_labels));
 
   Send(new AutofillHostMsg_QueryFormFieldAutofill(routing_id(),
                                                   autofill_query_id_,

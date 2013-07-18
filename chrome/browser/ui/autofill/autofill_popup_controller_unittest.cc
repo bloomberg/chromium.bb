@@ -90,6 +90,9 @@ class TestAutofillPopupController : public AutofillPopupControllerImpl {
   const std::vector<string16>& subtexts() const {
     return AutofillPopupControllerImpl::subtexts();
   }
+  const std::vector<int>& identifiers() const {
+    return AutofillPopupControllerImpl::identifiers();
+  }
   int selected_line() const {
     return AutofillPopupControllerImpl::selected_line();
   }
@@ -364,6 +367,61 @@ TEST_F(AutofillPopupControllerUnitTest, RowWidthWithoutText) {
             autofill_popup_controller_->RowWidthWithoutText(2));
   EXPECT_EQ(base_size + subtext_increase + icon_increase,
             autofill_popup_controller_->RowWidthWithoutText(3));
+}
+
+TEST_F(AutofillPopupControllerUnitTest, UpdateDataListValues) {
+  std::vector<string16> items;
+  items.push_back(string16());
+  std::vector<int> ids;
+  ids.push_back(1);
+
+  autofill_popup_controller_->Show(items, items, items, ids);
+
+  EXPECT_EQ(items, autofill_popup_controller_->names());
+  EXPECT_EQ(ids, autofill_popup_controller_->identifiers());
+
+  // Add one data list entry.
+  std::vector<string16> data_list_values;
+  data_list_values.push_back(ASCIIToUTF16("data list value 1"));
+
+  autofill_popup_controller_->UpdateDataListValues(data_list_values,
+                                                   data_list_values);
+
+  // Update the expected values.
+  items.insert(items.begin(), data_list_values[0]);
+  items.insert(items.begin() + 1, string16());
+  ids.insert(ids.begin(), WebAutofillClient::MenuItemIDDataListEntry);
+  ids.insert(ids.begin() + 1, WebAutofillClient::MenuItemIDSeparator);
+
+  EXPECT_EQ(items, autofill_popup_controller_->names());
+  EXPECT_EQ(ids, autofill_popup_controller_->identifiers());
+
+  // Add two data list entries (which should replace the current one).
+  data_list_values.push_back(ASCIIToUTF16("data list value 2"));
+
+  autofill_popup_controller_->UpdateDataListValues(data_list_values,
+                                                   data_list_values);
+
+  // Update the expected values.
+  items.insert(items.begin() + 1, data_list_values[1]);
+  ids.insert(ids.begin(), WebAutofillClient::MenuItemIDDataListEntry);
+
+  EXPECT_EQ(items, autofill_popup_controller_->names());
+  EXPECT_EQ(ids, autofill_popup_controller_->identifiers());
+
+  // Clear all data list values.
+  data_list_values.clear();
+
+  autofill_popup_controller_->UpdateDataListValues(data_list_values,
+                                                   data_list_values);
+
+  items.clear();
+  items.push_back(string16());
+  ids.clear();
+  ids.push_back(1);
+
+  EXPECT_EQ(items, autofill_popup_controller_->names());
+  EXPECT_EQ(ids, autofill_popup_controller_->identifiers());
 }
 
 TEST_F(AutofillPopupControllerUnitTest, GetOrCreate) {

@@ -125,6 +125,11 @@ class AutofillManagerDelegate {
       const std::vector<int>& identifiers,
       base::WeakPtr<AutofillPopupDelegate> delegate) = 0;
 
+  // Update the data list values shown by the Autofill popup, if visible.
+  virtual void UpdateAutofillPopupDataListValues(
+      const std::vector<base::string16>& values,
+      const std::vector<base::string16>& labels) = 0;
+
   // Hide the Autofill popup if one is currently showing.
   virtual void HideAutofillPopup() = 0;
 

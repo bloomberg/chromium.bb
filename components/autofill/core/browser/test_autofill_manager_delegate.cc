@@ -58,6 +58,10 @@ void TestAutofillManagerDelegate::ShowAutofillPopup(
     const std::vector<int>& identifiers,
     base::WeakPtr<AutofillPopupDelegate> delegate) {}
 
+void TestAutofillManagerDelegate::UpdateAutofillPopupDataListValues(
+    const std::vector<base::string16>& values,
+    const std::vector<base::string16>& labels) {}
+
 void TestAutofillManagerDelegate::HideAutofillPopup() {}
 
 void TestAutofillManagerDelegate::AddAutocheckoutStep(

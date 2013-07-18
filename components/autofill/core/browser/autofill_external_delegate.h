@@ -86,10 +86,8 @@ class AutofillExternalDelegate
 
   // Set the data list value associated with the current field.
   void SetCurrentDataListValues(
-      const std::vector<base::string16>& autofill_values,
-      const std::vector<base::string16>& autofill_labels,
-      const std::vector<base::string16>& autofill_icons,
-      const std::vector<int>& autofill_unique_ids);
+      const std::vector<base::string16>& data_list_values,
+      const std::vector<base::string16>& data_list_labels);
 
   // Inform the delegate that the text field editing has ended. This is
   // used to help record the metrics of when a new popup is shown.
@@ -176,8 +174,6 @@ class AutofillExternalDelegate
   // The current data list values.
   std::vector<base::string16> data_list_values_;
   std::vector<base::string16> data_list_labels_;
-  std::vector<base::string16> data_list_icons_;
-  std::vector<int> data_list_unique_ids_;
 
   base::WeakPtrFactory<AutofillExternalDelegate> weak_ptr_factory_;
 

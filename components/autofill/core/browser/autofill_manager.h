@@ -161,9 +161,7 @@ class AutofillManager : public AutofillDownloadManager::Observer {
       const std::vector<base::string16>& suggestions,
       const std::vector<base::string16>& realms);
   void OnSetDataList(const std::vector<base::string16>& values,
-                     const std::vector<base::string16>& labels,
-                     const std::vector<base::string16>& icons,
-                     const std::vector<int>& unique_ids);
+                     const std::vector<base::string16>& labels);
 
   // Requests an interactive autocomplete UI be shown.
   void OnRequestAutocomplete(const FormData& form,

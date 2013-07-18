@@ -50,6 +50,10 @@ class AutofillPopupControllerImpl : public AutofillPopupController,
             const std::vector<string16>& icons,
             const std::vector<int>& identifiers);
 
+  // Updates the data list values currently shown with the popup.
+  void UpdateDataListValues(const std::vector<base::string16>& values,
+                            const std::vector<base::string16>& labels);
+
   // Hides the popup and destroys the controller. This also invalidates
   // |delegate_|.
   virtual void Hide() OVERRIDE;
