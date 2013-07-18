@@ -12,7 +12,7 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/string16.h"
 #include "ui/base/events/event_constants.h"
 #include "win8/metro_driver/direct3d_helper.h"

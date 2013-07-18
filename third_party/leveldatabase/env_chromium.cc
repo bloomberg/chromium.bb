@@ -14,7 +14,7 @@
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/platform_file.h"
 #include "base/posix/eintr_wrapper.h"

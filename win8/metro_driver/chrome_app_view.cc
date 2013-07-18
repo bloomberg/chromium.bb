@@ -12,7 +12,7 @@
 #include <algorithm>
 
 #include "base/bind.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/win/metro.h"
 // This include allows to send WM_SYSCOMMANDs to chrome.
 #include "chrome/app/chrome_command_ids.h"
