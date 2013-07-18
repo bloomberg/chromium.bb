@@ -5,7 +5,7 @@
 #include "chrome/browser/metrics/variations/variations_request_scheduler.h"
 
 #include "base/bind.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chrome_variations {

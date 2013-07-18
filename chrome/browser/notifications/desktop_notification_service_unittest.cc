@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"

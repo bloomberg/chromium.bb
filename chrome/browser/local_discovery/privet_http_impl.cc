@@ -5,7 +5,7 @@
 #include "chrome/browser/local_discovery/privet_http_impl.h"
 
 #include "base/bind.h"
-#include "base/message_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/local_discovery/privet_constants.h"
