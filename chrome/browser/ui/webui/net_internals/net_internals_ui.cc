@@ -1555,17 +1555,9 @@ void NetInternalsMessageHandler::OnImportONCFile(const ListValue* list) {
     LOG(ERROR) << error;
   }
 
-  chromeos::CertificateHandler::CertsByGUID imported_server_and_ca_certs;
   chromeos::CertificateHandler certificate_handler;
-  if (!certificate_handler.ImportCertificates(certificates, onc_source, NULL,
-                                              &imported_server_and_ca_certs)) {
+  if (!certificate_handler.ImportCertificates(certificates, onc_source, NULL)) {
     error += "Some certificates couldn't be imported. ";
-    LOG(ERROR) << error;
-  }
-
-  if (!chromeos::onc::ResolveServerCertRefsInNetworks(
-          imported_server_and_ca_certs, &network_configs)) {
-    error += "Some certificate references could not be resolved. ";
     LOG(ERROR) << error;
   }
 

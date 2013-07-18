@@ -321,6 +321,12 @@ class NET_EXPORT X509Certificate
   static bool GetDEREncoded(OSCertHandle cert_handle,
                             std::string* der_encoded);
 
+  // Returns the PEM encoded data from a DER encoded certificate. If the return
+  // value is true, then the PEM encoded certificate is written to
+  // |pem_encoded|.
+  static bool GetPEMEncodedFromDER(const std::string& der_encoded,
+                                   std::string* pem_encoded);
+
   // Returns the PEM encoded data from an OSCertHandle. If the return value is
   // true, then the PEM encoded certificate is written to |pem_encoded|.
   static bool GetPEMEncoded(OSCertHandle cert_handle,

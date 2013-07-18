@@ -656,10 +656,9 @@ bool X509Certificate::VerifyNameMatch(const std::string& hostname) const {
 }
 
 // static
-bool X509Certificate::GetPEMEncoded(OSCertHandle cert_handle,
-                                    std::string* pem_encoded) {
-  std::string der_encoded;
-  if (!GetDEREncoded(cert_handle, &der_encoded) || der_encoded.empty())
+bool X509Certificate::GetPEMEncodedFromDER(const std::string& der_encoded,
+                                           std::string* pem_encoded) {
+  if (der_encoded.empty())
     return false;
   std::string b64_encoded;
   if (!base::Base64Encode(der_encoded, &b64_encoded) || b64_encoded.empty())
@@ -677,6 +676,15 @@ bool X509Certificate::GetPEMEncoded(OSCertHandle cert_handle,
   }
   pem_encoded->append("-----END CERTIFICATE-----\n");
   return true;
+}
+
+// static
+bool X509Certificate::GetPEMEncoded(OSCertHandle cert_handle,
+                                    std::string* pem_encoded) {
+  std::string der_encoded;
+  if (!GetDEREncoded(cert_handle, &der_encoded))
+    return false;
+  return GetPEMEncodedFromDER(der_encoded, pem_encoded);
 }
 
 bool X509Certificate::GetPEMEncodedChain(

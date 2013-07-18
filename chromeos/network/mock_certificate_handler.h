@@ -16,10 +16,9 @@ class CHROMEOS_EXPORT MockCertificateHandler : public CertificateHandler {
  public:
   MockCertificateHandler();
   virtual ~MockCertificateHandler();
-  MOCK_METHOD4(ImportCertificates, bool(const base::ListValue&,
+  MOCK_METHOD3(ImportCertificates, bool(const base::ListValue&,
                                         onc::ONCSource,
-                                        net::CertificateList*,
-                                        CertsByGUID*));
+                                        net::CertificateList*));
  private:
   DISALLOW_COPY_AND_ASSIGN(MockCertificateHandler);
 };

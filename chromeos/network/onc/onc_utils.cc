@@ -269,6 +269,69 @@ scoped_ptr<base::DictionaryValue> MaskCredentialsInOncObject(
   return OncMaskValues::Mask(signature, onc_object, mask);
 }
 
+namespace {
+
+std::string DecodePEM(const std::string& pem_encoded) {
+  // The PEM block header used for DER certificates
+  const char kCertificateHeader[] = "CERTIFICATE";
+
+  // This is an older PEM marker for DER certificates.
+  const char kX509CertificateHeader[] = "X509 CERTIFICATE";
+
+  std::vector<std::string> pem_headers;
+  pem_headers.push_back(kCertificateHeader);
+  pem_headers.push_back(kX509CertificateHeader);
+
+  net::PEMTokenizer pem_tokenizer(pem_encoded, pem_headers);
+  std::string decoded;
+  if (pem_tokenizer.GetNext()) {
+    decoded = pem_tokenizer.data();
+  } else {
+    // If we failed to read the data as a PEM file, then try plain base64 decode
+    // in case the PEM marker strings are missing. For this to work, there has
+    // to be no white space, and it has to only contain the base64-encoded data.
+    if (!base::Base64Decode(pem_encoded, &decoded)) {
+      LOG(ERROR) << "Unable to base64 decode X509 data: " << pem_encoded;
+      return std::string();
+    }
+  }
+  return decoded;
+}
+
+CertPEMsByGUIDMap GetServerAndCACertsByGUID(
+    const base::ListValue& certificates) {
+  CertPEMsByGUIDMap certs_by_guid;
+  for (base::ListValue::const_iterator it = certificates.begin();
+      it != certificates.end(); ++it) {
+    base::DictionaryValue* cert = NULL;
+    (*it)->GetAsDictionary(&cert);
+
+    std::string guid;
+    cert->GetStringWithoutPathExpansion(certificate::kGUID, &guid);
+    std::string cert_type;
+    cert->GetStringWithoutPathExpansion(certificate::kType, &cert_type);
+    if (cert_type != certificate::kServer &&
+        cert_type != certificate::kAuthority) {
+      continue;
+    }
+    std::string x509_data;
+    cert->GetStringWithoutPathExpansion(certificate::kX509, &x509_data);
+
+    std::string der = DecodePEM(x509_data);
+    std::string pem;
+    if (der.empty() || !net::X509Certificate::GetPEMEncodedFromDER(der, &pem)) {
+      LOG(ERROR) << "Certificate with GUID " << guid
+                 << " is not in PEM encoding.";
+      continue;
+    }
+    certs_by_guid[guid] = pem;
+  }
+
+  return certs_by_guid;
+}
+
+}  // namespace
+
 bool ParseAndValidateOncForImport(const std::string& onc_blob,
                                   ONCSource onc_source,
                                   const std::string& passphrase,
@@ -342,41 +405,22 @@ bool ParseAndValidateOncForImport(const std::string& onc_blob,
   base::ListValue* validated_networks = NULL;
   if (toplevel_onc->GetListWithoutPathExpansion(
           toplevel_config::kNetworkConfigurations, &validated_networks)) {
+    CertPEMsByGUIDMap server_and_ca_certs =
+        GetServerAndCACertsByGUID(*certificates);
+
+    if (!ResolveServerCertRefsInNetworks(server_and_ca_certs,
+                                         validated_networks)) {
+      LOG(ERROR) << "Some certificate references in the ONC policy for source "
+                 << GetSourceAsString(onc_source) << " could not be resolved.";
+      success = false;
+    }
+
+    ResolveServerCertRefsInNetworks(server_and_ca_certs, validated_networks);
     network_configs->Swap(validated_networks);
   }
 
   return success;
 }
-
-namespace {
-
-std::string DecodePEM(const std::string& pem_encoded) {
-  // The PEM block header used for DER certificates
-  static const char kCertificateHeader[] = "CERTIFICATE";
-  // This is an older PEM marker for DER certificates.
-  static const char kX509CertificateHeader[] = "X509 CERTIFICATE";
-
-  std::vector<std::string> pem_headers;
-  pem_headers.push_back(kCertificateHeader);
-  pem_headers.push_back(kX509CertificateHeader);
-
-  net::PEMTokenizer pem_tokenizer(pem_encoded, pem_headers);
-  std::string decoded;
-  if (pem_tokenizer.GetNext()) {
-    decoded = pem_tokenizer.data();
-  } else {
-    // If we failed to read the data as a PEM file, then try plain base64 decode
-    // in case the PEM marker strings are missing. For this to work, there has
-    // to be no white space, and it has to only contain the base64-encoded data.
-    if (!base::Base64Decode(pem_encoded, &decoded)) {
-      LOG(ERROR) << "Unable to base64 decode X509 data: " << pem_encoded;
-      return std::string();
-    }
-  }
-  return decoded;
-}
-
-}  // namespace
 
 scoped_refptr<net::X509Certificate> DecodePEMCertificate(
     const std::string& pem_encoded) {
@@ -390,23 +434,23 @@ scoped_refptr<net::X509Certificate> DecodePEMCertificate(
 
 namespace {
 
-bool GUIDRefToPEMEncoding(const CertsByGUIDMap& certs_by_guid,
+bool GUIDRefToPEMEncoding(const CertPEMsByGUIDMap& certs_by_guid,
                           const std::string& guid_ref,
                           std::string* pem_encoded) {
-  CertsByGUIDMap::const_iterator it = certs_by_guid.find(guid_ref);
+  CertPEMsByGUIDMap::const_iterator it = certs_by_guid.find(guid_ref);
   if (it == certs_by_guid.end()) {
     LOG(ERROR) << "Couldn't resolve certificate reference " << guid_ref;
     return false;
   }
-  if (!net::X509Certificate::GetPEMEncoded(it->second->os_cert_handle(),
-                                           pem_encoded)) {
+  *pem_encoded = it->second;
+  if (pem_encoded->empty()) {
     LOG(ERROR) << "Couldn't PEM-encode certificate with GUID " << guid_ref;
     return false;
   }
   return true;
 }
 
-bool ResolveSingleCertRef(const CertsByGUIDMap& certs_by_guid,
+bool ResolveSingleCertRef(const CertPEMsByGUIDMap& certs_by_guid,
                           const std::string& key_guid_ref,
                           const std::string& key_pem,
                           base::DictionaryValue* onc_object) {
@@ -423,7 +467,7 @@ bool ResolveSingleCertRef(const CertsByGUIDMap& certs_by_guid,
   return true;
 }
 
-bool ResolveCertRefList(const CertsByGUIDMap& certs_by_guid,
+bool ResolveCertRefList(const CertPEMsByGUIDMap& certs_by_guid,
                         const std::string& key_guid_ref_list,
                         const std::string& key_pem_list,
                         base::DictionaryValue* onc_object) {
@@ -451,7 +495,7 @@ bool ResolveCertRefList(const CertsByGUIDMap& certs_by_guid,
   return true;
 }
 
-bool ResolveSingleCertRefToList(const CertsByGUIDMap& certs_by_guid,
+bool ResolveSingleCertRefToList(const CertPEMsByGUIDMap& certs_by_guid,
                                 const std::string& key_guid_ref,
                                 const std::string& key_pem_list,
                                 base::DictionaryValue* onc_object) {
@@ -470,7 +514,7 @@ bool ResolveSingleCertRefToList(const CertsByGUIDMap& certs_by_guid,
   return true;
 }
 
-bool ResolveServerCertRefsInObject(const CertsByGUIDMap& certs_by_guid,
+bool ResolveServerCertRefsInObject(const CertPEMsByGUIDMap& certs_by_guid,
                                    const OncValueSignature& signature,
                                    base::DictionaryValue* onc_object) {
   if (&signature == &kCertificatePatternSignature) {
@@ -521,7 +565,7 @@ bool ResolveServerCertRefsInObject(const CertsByGUIDMap& certs_by_guid,
 
 }  // namespace
 
-bool ResolveServerCertRefsInNetworks(const CertsByGUIDMap& certs_by_guid,
+bool ResolveServerCertRefsInNetworks(const CertPEMsByGUIDMap& certs_by_guid,
                                      base::ListValue* network_configs) {
   bool success = true;
   for (base::ListValue::iterator it = network_configs->begin();
@@ -544,7 +588,7 @@ bool ResolveServerCertRefsInNetworks(const CertsByGUIDMap& certs_by_guid,
   return success;
 }
 
-bool ResolveServerCertRefsInNetwork(const CertsByGUIDMap& certs_by_guid,
+bool ResolveServerCertRefsInNetwork(const CertPEMsByGUIDMap& certs_by_guid,
                                     base::DictionaryValue* network_config) {
   return ResolveServerCertRefsInObject(certs_by_guid,
                                        kNetworkConfigurationSignature,

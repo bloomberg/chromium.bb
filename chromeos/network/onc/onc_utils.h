@@ -33,8 +33,7 @@ struct OncValueSignature;
 // configuration.
 CHROMEOS_EXPORT extern const char kEmptyUnencryptedConfiguration[];
 
-typedef std::map<std::string,
-                 scoped_refptr<net::X509Certificate> > CertsByGUIDMap;
+typedef std::map<std::string, std::string> CertPEMsByGUIDMap;
 
 // Parses |json| according to the JSON format. If |json| is a JSON formatted
 // dictionary, the function returns the dictionary as a DictionaryValue.
@@ -107,14 +106,14 @@ CHROMEOS_EXPORT scoped_refptr<net::X509Certificate> DecodePEMCertificate(
 // from |network_configs|. |network_configs| must be a list of ONC
 // NetworkConfiguration dictionaries.
 CHROMEOS_EXPORT bool ResolveServerCertRefsInNetworks(
-    const CertsByGUIDMap& certs_by_guid,
+    const CertPEMsByGUIDMap& certs_by_guid,
     base::ListValue* network_configs);
 
 // Replaces all references by GUID to Server or CA certs by their PEM
 // encoding. Returns true if all references could be resolved. |network_config|
 // must be a ONC NetworkConfiguration.
 CHROMEOS_EXPORT bool ResolveServerCertRefsInNetwork(
-    const CertsByGUIDMap& certs_by_guid,
+    const CertPEMsByGUIDMap& certs_by_guid,
     base::DictionaryValue* network_config);
 
 }  // namespace onc

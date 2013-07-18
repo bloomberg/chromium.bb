@@ -5,8 +5,7 @@
 #ifndef CHROMEOS_NETWORK_CERTIFICATE_HANDLER_H_
 #define CHROMEOS_NETWORK_CERTIFICATE_HANDLER_H_
 
-#include <map>
-
+#include "base/memory/ref_counted.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/network/onc/onc_constants.h"
 #include "net/cert/x509_certificate.h"
@@ -19,9 +18,6 @@ namespace chromeos {
 
 class CHROMEOS_EXPORT CertificateHandler {
  public:
-  typedef std::map<std::string, scoped_refptr<net::X509Certificate> >
-      CertsByGUID;
-
   CertificateHandler();
   virtual ~CertificateHandler();
 
@@ -34,8 +30,7 @@ class CHROMEOS_EXPORT CertificateHandler {
   virtual bool ImportCertificates(
       const base::ListValue& certificates,
       onc::ONCSource source,
-      net::CertificateList* onc_trusted_certificates,
-      CertsByGUID* imported_server_and_ca_certs);
+      net::CertificateList* onc_trusted_certificates);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CertificateHandler);

@@ -9,8 +9,6 @@
 #include "base/values.h"
 #include "chromeos/network/onc/onc_signature.h"
 #include "chromeos/network/onc/onc_test_utils.h"
-#include "net/cert/x509_certificate.h"
-#include "net/test/test_certificate_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -107,17 +105,9 @@ TEST(ONCResolveServerCertRefs, ResolveServerCertRefs) {
       test_utils::ReadTestDictionary(
           "network_configs_with_resolved_certs.json");
 
-  scoped_refptr<net::X509Certificate> google_cert(
-      net::X509Certificate::CreateFromBytes(
-          reinterpret_cast<const char*>(google_der), sizeof(google_der)));
-
-  scoped_refptr<net::X509Certificate> webkit_cert(
-      net::X509Certificate::CreateFromBytes(
-          reinterpret_cast<const char*>(webkit_der), sizeof(webkit_der)));
-
-  CertsByGUIDMap certs;
-  certs["cert_google"] = google_cert;
-  certs["cert_webkit"] = webkit_cert;
+  CertPEMsByGUIDMap certs;
+  certs["cert_google"] = "pem_google";
+  certs["cert_webkit"] = "pem_webkit";
 
   for (base::DictionaryValue::Iterator it(*test_cases);
        !it.IsAtEnd(); it.Advance()) {

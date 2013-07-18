@@ -174,7 +174,7 @@ TEST_F(ONCCertificateImporterTest, MultipleCertificates) {
 TEST_F(ONCCertificateImporterTest, MultipleCertificatesWithFailures) {
   AddCertificatesFromFile("toplevel_partially_invalid.onc",
                           CertificateImporter::IMPORT_INCOMPLETE);
-  EXPECT_EQ(2ul, onc_certificates_->GetSize());
+  EXPECT_EQ(3ul, onc_certificates_->GetSize());
   EXPECT_EQ(1ul, result_list_.size());
   EXPECT_TRUE(imported_server_and_ca_certs_.empty());
 }
