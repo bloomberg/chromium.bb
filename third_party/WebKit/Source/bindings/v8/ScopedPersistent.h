@@ -57,14 +57,6 @@ public:
         return v8::Local<T>::New(isolate, m_handle);
     }
 
-    // FIXME: This function does an unsafe handle access. Remove it. Do not add
-    // code which calls this function.
-    ALWAYS_INLINE v8::Handle<T> deprecatedGet() const
-    {
-        const v8::Handle<T>* handle = reinterpret_cast<const v8::Handle<T>*>(&m_handle);
-        return *handle;
-    }
-
     template<typename P>
     void makeWeak(P* parameters, void (*callback)(v8::Isolate*, v8::Persistent<T>*, P*))
     {
@@ -72,11 +64,14 @@ public:
     }
 
     bool isEmpty() const { return m_handle.IsEmpty(); }
-    bool isNull() { return deprecatedGet()->IsNull(); }
-    bool isUndefined() { return deprecatedGet()->IsUndefined(); }
-    bool isFunction() { return deprecatedGet()->IsFunction(); }
-    bool isObject() { return deprecatedGet()->IsObject(); }
-    bool isString() { return deprecatedGet()->IsString(); }
+    // FIXME: We can guarantee that the memory pointed by the Handle stays
+    // alive, since calling these functions won't cause a GC. But still, this is
+    // a hack and should be removed asap.
+    bool isNull() { return deprecatedHandle()->IsNull(); }
+    bool isUndefined() { return deprecatedHandle()->IsUndefined(); }
+    bool isFunction() { return deprecatedHandle()->IsFunction(); }
+    bool isObject() { return deprecatedHandle()->IsObject(); }
+    bool isString() { return deprecatedHandle()->IsString(); }
 
     void set(v8::Isolate* isolate, v8::Handle<T> handle)
     {
@@ -98,6 +93,17 @@ public:
     }
 
 private:
+    // FIXME: Do not introduce new calls to this function. We can guarantee that
+    // the memory pointed by the Persistent stays alive, if we can guarantee
+    // that whatever we do with the resulting Handle doesn't cause a GC (this is
+    // true for functions like IsNull etc. used in this file). However, even in
+    // that case, we shouldn't reinterpret_cast.
+    ALWAYS_INLINE v8::Handle<T> deprecatedHandle() const
+    {
+        const v8::Handle<T>* handle = reinterpret_cast<const v8::Handle<T>*>(&m_handle);
+        return *handle;
+    }
+
     // FIXME: This function does an unsafe handle access. Remove it.
     friend class V8AbstractEventListener;
     friend class V8PerIsolateData;
