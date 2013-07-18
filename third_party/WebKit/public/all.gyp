@@ -52,15 +52,5 @@
                 }],
             ],
         },
-        {
-            'target_name': 'blink_testing',
-            'type': 'none',
-            'dependencies': [
-                '../Tools/DumpRenderTree/DumpRenderTree.gyp/DumpRenderTree.gyp:TestRunner',
-            ],
-            'export_dependent_settings': [
-                '../Tools/DumpRenderTree/DumpRenderTree.gyp/DumpRenderTree.gyp:TestRunner',
-            ],
-        },
     ],
 }
