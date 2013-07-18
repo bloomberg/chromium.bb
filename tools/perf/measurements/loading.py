@@ -20,7 +20,7 @@ class Loading(page_measurement.PageMeasurement):
     # but we need to wait for the load event.
     def IsLoaded():
       return bool(tab.EvaluateJavaScript('performance.timing.loadEventStart'))
-    util.WaitFor(IsLoaded, 30)
+    util.WaitFor(IsLoaded, 300)
 
     # TODO(nduca): when crbug.com/168431 is fixed, modify the page sets to
     # recognize loading as a toplevel action.
