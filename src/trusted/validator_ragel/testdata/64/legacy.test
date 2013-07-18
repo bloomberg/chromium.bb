@@ -8,6 +8,8 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  0: ('objdump failed to decode', Instruction(0x0: 37  (bad)))
 ----------------------------------------------------------------------
 @hex:
   # aad
@@ -18,6 +20,9 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  0: ('objdump failed to decode', Instruction(0x0: d5  (bad)))
+  1: ('objdump failed to decode', Instruction(0x1: 0a  .byte 0xa))
 ----------------------------------------------------------------------
 @hex:
   # aam
@@ -28,6 +33,9 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  0: ('objdump failed to decode', Instruction(0x0: d4  (bad)))
+  1: ('objdump failed to decode', Instruction(0x1: 0a  .byte 0xa))
 ----------------------------------------------------------------------
 @hex:
   # aas
@@ -37,6 +45,8 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  0: ('objdump failed to decode', Instruction(0x0: 3f  (bad)))
 ----------------------------------------------------------------------
 @hex:
   # bound %eax, (%eax)
@@ -47,6 +57,9 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  0: ('objdump failed to decode', Instruction(0x0: 62  (bad)))
+  1: ('objdump failed to decode', Instruction(0x1: 00  .byte 0x0))
 ----------------------------------------------------------------------
 @hex:
   # daa
@@ -56,6 +69,8 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  0: ('objdump failed to decode', Instruction(0x0: 27  (bad)))
 ----------------------------------------------------------------------
 @hex:
   # das
@@ -65,6 +80,8 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  0: ('objdump failed to decode', Instruction(0x0: 2f  (bad)))
 ----------------------------------------------------------------------
 @hex:
   # pusha
@@ -74,6 +91,8 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  0: ('objdump failed to decode', Instruction(0x0: 60  (bad)))
 ----------------------------------------------------------------------
 @hex:
   # Some undocumented instructions
@@ -84,6 +103,8 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  0: unrecognized instruction 'icebp'
 ----------------------------------------------------------------------
 @hex:
   # salc
@@ -93,6 +114,8 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  0: ('objdump failed to decode', Instruction(0x0: d6  (bad)))
 ----------------------------------------------------------------------
 @hex:
   # xlat (%ebx,%al)
@@ -102,6 +125,8 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  0: ('segments in memory references are not allowed', Instruction(0x0: d7  xlat %ds:(%rbx)))
 ----------------------------------------------------------------------
 @hex:
   # xlat (%rbx,%al)
@@ -111,6 +136,8 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  0: ('segments in memory references are not allowed', Instruction(0x0: 48 d7  xlat %ds:(%rbx)))
 ----------------------------------------------------------------------
 @hex:
   # Flag instructions depend on CPUFeature_LAHF.
@@ -121,3 +148,5 @@
      1:	9e                                           	sahf   
 @rdfa_output:
   return code: 0
+@spec:
+  SAFE

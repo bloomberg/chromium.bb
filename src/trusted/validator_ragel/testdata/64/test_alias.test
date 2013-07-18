@@ -8,6 +8,8 @@
      0:	f6 c3 00                                     	test   $0x0,%bl
 @rdfa_output:
   return code: 0
+@spec:
+  SAFE
 ----------------------------------------------------------------------
 @hex:
   # "f6 /1" encoding of TEST.  This is an alias encoding, which we
@@ -20,6 +22,10 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  0: ('objdump failed to decode', Instruction(0x0: f6  (bad)))
+  1: unrecognized instruction 'lret'
+  2: ('objdump failed to decode', Instruction(0x2: 00  .byte 0x0))
 ----------------------------------------------------------------------
 @hex:
   # The same applies to the "f7" versions of TEST.
@@ -28,6 +34,8 @@
      0:	f7 c3 00 00 00 00                            	test   $0x0,%ebx
 @rdfa_output:
   return code: 0
+@spec:
+  SAFE
 ----------------------------------------------------------------------
 @hex:
   f7 cb 00 00 00 00
@@ -39,3 +47,8 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  0: ('objdump failed to decode', Instruction(0x0: f7  (bad)))
+  1: unrecognized instruction 'lret'
+  2: ("memory access only is allowed with base from ['%r15', '%rbp', '%rsp', '%rip']", Instruction(0x2: 00 00  add %al,(%rax)))
+  4: ("memory access only is allowed with base from ['%r15', '%rbp', '%rsp', '%rip']", Instruction(0x4: 00 00  add %al,(%rax)))

@@ -16,6 +16,8 @@
 @rdfa_output:
   6: [0] unrecognized instruction
   return code: 1
+@spec:
+  SAFE
 ----------------------------------------------------------------------
 @hex:
   # mov %edi, %edi
@@ -31,6 +33,8 @@
 @rdfa_output:
   6: [0] unrecognized instruction
   return code: 1
+@spec:
+  SAFE
 ----------------------------------------------------------------------
 @hex:
   # mov %edi, %edi
@@ -46,6 +50,8 @@
 @rdfa_output:
   6: [0] unrecognized instruction
   return code: 1
+@spec:
+  SAFE
 ----------------------------------------------------------------------
 @hex:
   # mov %esi, %esi
@@ -61,6 +67,8 @@
 @rdfa_output:
   6: [0] unrecognized instruction
   return code: 1
+@spec:
+  SAFE
 ----------------------------------------------------------------------
 @hex:
   # mov %esi, %esi
@@ -82,6 +90,8 @@
 @rdfa_output:
   c: [0] unrecognized instruction
   return code: 1
+@spec:
+  SAFE
 ----------------------------------------------------------------------
 @hex:
   # mov %esi, %esi
@@ -103,6 +113,8 @@
 @rdfa_output:
   c: [0] unrecognized instruction
   return code: 1
+@spec:
+  SAFE
 ----------------------------------------------------------------------
 @hex:
   # mov %esi, %esi
@@ -124,6 +136,8 @@
 @rdfa_output:
   c: [0] unrecognized instruction
   return code: 1
+@spec:
+  SAFE
 ----------------------------------------------------------------------
 @hex:
   # Examples of valid string instructions.
@@ -152,3 +166,5 @@
      e:	f3 aa                                        	rep stos %al,%es:(%rdi)
 @rdfa_output:
   return code: 0
+@spec:
+  SAFE

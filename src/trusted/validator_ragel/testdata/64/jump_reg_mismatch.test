@@ -13,3 +13,6 @@
 @rdfa_output:
   6: [0] unrecognized instruction
   return code: 1
+@spec:
+  0: ('nacljump64/naclcall64: registers do not match (%rbx, %rbx, %rax)', [Instruction(0x0: 83 e3 e0  and $0xffffffffffffffe0,%ebx), Instruction(0x3: 4c 01 fb  add %r15,%rbx), Instruction(0x6: ff e0  jmpq *%rax)])
+  6: unrecognized instruction 'jmpq *%rax'
