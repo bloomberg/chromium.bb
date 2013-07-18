@@ -356,7 +356,7 @@ TrayDisplay::~TrayDisplay() {
   Shell::GetInstance()->display_controller()->RemoveObserver(this);
 }
 
-base::string16 TrayDisplay::GetDisplayMessageForNotification() {
+bool TrayDisplay::GetDisplayMessageForNotification(base::string16* message) {
   DisplayManager* display_manager = GetDisplayManager();
   DisplayInfoMap old_info;
   old_info.swap(display_info_);
@@ -367,32 +367,38 @@ base::string16 TrayDisplay::GetDisplayMessageForNotification() {
 
   // Display is added or removed. Use the same message as the one in
   // the system tray.
-  if (display_info_.size() != old_info.size())
-    return GetTrayDisplayMessage();
+  if (display_info_.size() != old_info.size()) {
+    *message = GetTrayDisplayMessage();
+    return true;
+  }
 
   for (DisplayInfoMap::const_iterator iter = display_info_.begin();
        iter != display_info_.end(); ++iter) {
     DisplayInfoMap::const_iterator old_iter = old_info.find(iter->first);
-    // A display is removed and added at the same time. It won't happen
-    // in the actual environment, but falls back to the system tray's
-    // message just in case.
-    if (old_iter == old_info.end())
-      return GetTrayDisplayMessage();
+    // The display's number is same but different displays. This happens
+    // for the transition between docked mode and mirrored display. Falls back
+    // to GetTrayDisplayMessage().
+    if (old_iter == old_info.end()) {
+      *message = GetTrayDisplayMessage();
+      return true;
+    }
 
     if (iter->second.ui_scale() != old_iter->second.ui_scale()) {
-      return l10n_util::GetStringFUTF16(
+      *message = l10n_util::GetStringFUTF16(
           IDS_ASH_STATUS_TRAY_DISPLAY_RESOLUTION_CHANGED,
           GetDisplayName(iter->first),
           GetDisplaySize(iter->first));
+      return true;
     }
     if (iter->second.rotation() != old_iter->second.rotation()) {
-      return l10n_util::GetStringFUTF16(
+      *message = l10n_util::GetStringFUTF16(
           IDS_ASH_STATUS_TRAY_DISPLAY_ROTATED, GetDisplayName(iter->first));
+      return true;
     }
   }
 
   // Found nothing special
-  return base::string16();
+  return false;
 }
 
 views::View* TrayDisplay::CreateDefaultView(user::LoginStatus status) {
@@ -411,7 +417,9 @@ void TrayDisplay::OnDisplayConfigurationChanged() {
     return;
   }
 
-  UpdateDisplayNotification(GetDisplayMessageForNotification());
+  base::string16 message;
+  if (GetDisplayMessageForNotification(&message))
+    UpdateDisplayNotification(message);
 }
 
 base::string16 TrayDisplay::GetDefaultViewMessage() {

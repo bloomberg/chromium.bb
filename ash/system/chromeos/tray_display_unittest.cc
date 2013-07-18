@@ -66,6 +66,7 @@ class TrayDisplayTest : public ash::test::AshTestBase {
 
  protected:
   SystemTray* tray() { return tray_; }
+  TrayDisplay* tray_display() { return tray_display_; }
 
   void CloseNotification();
   bool IsDisplayVisibleInTray();
@@ -394,6 +395,33 @@ TEST_F(TrayDisplayTest, DisplayNotifications) {
       l10n_util::GetStringFUTF16(
           IDS_ASH_STATUS_TRAY_DISPLAY_ROTATED, GetSecondDisplayName()),
       GetDisplayNotificationText());
+}
+
+TEST_F(TrayDisplayTest, DisplayConfigurationChangedTwice) {
+  test::TestSystemTrayDelegate* tray_delegate =
+      static_cast<test::TestSystemTrayDelegate*>(
+          Shell::GetInstance()->system_tray_delegate());
+  tray_delegate->set_should_show_display_notification(true);
+
+  UpdateDisplay("400x400,200x200");
+  EXPECT_EQ(
+      l10n_util::GetStringUTF16(
+          IDS_ASH_STATUS_TRAY_DISPLAY_EXTENDED_NO_INTERNAL),
+      GetDisplayNotificationText());
+
+  // OnDisplayConfigurationChanged() may be called more than once for a single
+  // update display in case of primary is swapped or recovered from dock mode.
+  // Should not remove the notification in such case.
+  tray_display()->OnDisplayConfigurationChanged();
+  EXPECT_EQ(
+      l10n_util::GetStringUTF16(
+          IDS_ASH_STATUS_TRAY_DISPLAY_EXTENDED_NO_INTERNAL),
+      GetDisplayNotificationText());
+
+  // Back to the single display. It SHOULD remove the notification since the
+  // information is stale.
+  UpdateDisplay("400x400");
+  EXPECT_TRUE(GetDisplayNotificationText().empty());
 }
 
 }  // namespace internal

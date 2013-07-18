@@ -29,21 +29,23 @@ class ASH_EXPORT TrayDisplay : public SystemTrayItem,
   explicit TrayDisplay(SystemTray* system_tray);
   virtual ~TrayDisplay();
 
+  // Overridden from DisplayControllerObserver:
+  virtual void OnDisplayConfigurationChanged() OVERRIDE;
+
  private:
   friend class TrayDisplayTest;
 
   typedef std::map<int64, DisplayInfo> DisplayInfoMap;
 
   // Checks the current display settings and determine what message should be
-  // shown for notification.
-  base::string16 GetDisplayMessageForNotification();
+  // shown for notification. Returns true if there's a meaningful change. Note
+  // that it's possible to return true and set |message| to empty, which means
+  // the notification should be removed.
+  bool GetDisplayMessageForNotification(base::string16* message);
 
   // Overridden from SystemTrayItem.
   virtual views::View* CreateDefaultView(user::LoginStatus status) OVERRIDE;
   virtual void DestroyDefaultView() OVERRIDE;
-
-  // Overridden from DisplayControllerObserver:
-  virtual void OnDisplayConfigurationChanged() OVERRIDE;
 
   // Test accessors.
   base::string16 GetDefaultViewMessage();
