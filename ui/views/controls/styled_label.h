@@ -64,6 +64,10 @@ class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
   // |range| must be contained in |text_|.
   void AddStyleRange(const ui::Range& range, const RangeStyleInfo& style_info);
 
+  // Sets the default style to use for any part of the text that isn't within
+  // a range set by AddStyleRange.
+  void SetDefaultStyle(const RangeStyleInfo& style_info);
+
   // Sets the color of the background on which the label is drawn. This won't
   // be explicitly drawn, but the label will force the text color to be
   // readable over it.
@@ -76,6 +80,7 @@ class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
   virtual gfx::Insets GetInsets() const OVERRIDE;
   virtual int GetHeightForWidth(int w) OVERRIDE;
   virtual void Layout() OVERRIDE;
+  virtual void PreferredSizeChanged() OVERRIDE;
 
   // LinkListener implementation:
   virtual void LinkClicked(Link* source, int event_flags) OVERRIDE;
@@ -103,6 +108,10 @@ class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
 
   // The text to display.
   string16 text_;
+
+  // The default style to use for any part of the text that isn't within
+  // a range in |style_ranges_|.
+  RangeStyleInfo default_style_info_;
 
   // The listener that will be informed of link clicks.
   StyledLabelListener* listener_;

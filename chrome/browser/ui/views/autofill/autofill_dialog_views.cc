@@ -109,6 +109,11 @@ const int kOverlayTextPadding = 20;
 // Spacing between lines of text in the overlay view.
 const int kOverlayTextInterlineSpacing = 10;
 
+// A dimmer text color used in various parts of the dialog. TODO(estade): should
+// this be part of NativeTheme? Currently the value is duplicated in several
+// places.
+const SkColor kGreyTextColor = SkColorSetRGB(102, 102, 102);
+
 const char kDecoratedTextfieldClassName[] = "autofill/DecoratedTextfield";
 const char kNotificationAreaClassName[] = "autofill/NotificationArea";
 const char kOverlayViewClassName[] = "autofill/OverlayView";
@@ -1492,7 +1497,9 @@ views::View* AutofillDialogViews::CreateFootnoteView() {
       views::Background::CreateSolidBackground(kShadingColor));
 
   legal_document_view_ = new views::StyledLabel(string16(), this);
-  legal_document_view_->SetDisplayedOnBackgroundColor(kShadingColor);
+  views::StyledLabel::RangeStyleInfo default_style;
+  default_style.color = kGreyTextColor;
+  legal_document_view_->SetDefaultStyle(default_style);
 
   footnote_view_->AddChildView(legal_document_view_);
   footnote_view_->SetVisible(false);

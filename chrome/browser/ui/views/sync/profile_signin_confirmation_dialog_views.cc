@@ -194,12 +194,9 @@ void ProfileSigninConfirmationDialogViews::ViewHierarchyChanged(
           IDS_ENTERPRISE_SIGNIN_EXPLANATION_WITHOUT_PROFILE_CREATION_NEW_STYLE,
           username, learn_more_text, &offsets);
   explanation_label_ = new views::StyledLabel(signin_explanation_text, this);
-  views::StyledLabel::RangeStyleInfo link_style =
-      views::StyledLabel::RangeStyleInfo::CreateForLink();
-  link_style.font_style = gfx::Font::NORMAL;
   explanation_label_->AddStyleRange(
       ui::Range(offsets[1], offsets[1] + learn_more_text.size()),
-      link_style);
+      views::StyledLabel::RangeStyleInfo::CreateForLink());
 
   // Layout the components.
   views::GridLayout* dialog_layout = new views::GridLayout(this);

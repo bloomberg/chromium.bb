@@ -809,14 +809,12 @@ DialogOverlayState AutofillDialogControllerImpl::GetDialogOverlay() const {
         cc_number.substr(cc_number.size() - 4));
     string.text = l10n_util::GetStringUTF16(
         IDS_AUTOFILL_DIALOG_CARD_GENERATION_DONE);
-    // TODO(estade): figure out correct color.
-    string.text_color = SK_ColorGRAY;
+    string.text_color = SK_ColorBLACK;
 
     state.strings.push_back(DialogOverlayString());
     DialogOverlayString& subtext = state.strings.back();
     subtext.font = rb.GetFont(ui::ResourceBundle::BaseFont);
-    // TODO(estade): figure out correct color.
-    subtext.text_color = SK_ColorGRAY;
+    subtext.text_color = SkColorSetRGB(102, 102, 102);
     subtext.text = l10n_util::GetStringUTF16(
         IDS_AUTOFILL_DIALOG_CARD_GENERATION_EXPLANATION);
 
@@ -830,8 +828,7 @@ DialogOverlayState AutofillDialogControllerImpl::GetDialogOverlay() const {
     // "Submitting" waiting page.
     string.text = l10n_util::GetStringUTF16(
         IDS_AUTOFILL_DIALOG_CARD_GENERATION_IN_PROGRESS);
-    // TODO(estade): figure out correct color.
-    string.text_color = SK_ColorGRAY;
+    string.text_color = SK_ColorBLACK;
     string.alignment = gfx::ALIGN_CENTER;
   }
 

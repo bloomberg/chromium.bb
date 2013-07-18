@@ -50,7 +50,7 @@ SkColor DialogNotification::GetTextColor() const {
     case DialogNotification::REQUIRED_ACTION:
     case DialogNotification::WALLET_ERROR:
     case DialogNotification::AUTOCHECKOUT_ERROR:
-      return SK_ColorBLACK;
+      return SkColorSetRGB(102, 102, 102);
     case DialogNotification::AUTOCHECKOUT_SUCCESS:
     case DialogNotification::DEVELOPER_WARNING:
     case DialogNotification::EXPLANATORY_MESSAGE:

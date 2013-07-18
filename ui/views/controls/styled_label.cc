@@ -56,14 +56,12 @@ scoped_ptr<Label> CreateLabelRange(
 
 }  // namespace
 
-
 StyledLabel::RangeStyleInfo::RangeStyleInfo()
     : font_style(gfx::Font::NORMAL),
       color(ui::NativeTheme::instance()->GetSystemColor(
           ui::NativeTheme::kColorId_LabelEnabledColor)),
       disable_line_wrapping(false),
-      is_link(false) {
-}
+      is_link(false) {}
 
 StyledLabel::RangeStyleInfo::~RangeStyleInfo() {}
 
@@ -72,7 +70,6 @@ StyledLabel::RangeStyleInfo StyledLabel::RangeStyleInfo::CreateForLink() {
   RangeStyleInfo result;
   result.disable_line_wrapping = true;
   result.is_link = true;
-  result.font_style = gfx::Font::UNDERLINE;
   result.color = Link::GetDefaultEnabledColor();
   return result;
 }
@@ -93,7 +90,6 @@ StyledLabel::~StyledLabel() {}
 
 void StyledLabel::SetText(const string16& text) {
   text_ = text;
-  calculated_size_ = gfx::Size();
   style_ranges_ = std::priority_queue<StyleRange>();
   RemoveAllChildViews(true);
   PreferredSizeChanged();
@@ -107,7 +103,11 @@ void StyledLabel::AddStyleRange(const ui::Range& range,
 
   style_ranges_.push(StyleRange(range, style_info));
 
-  calculated_size_ = gfx::Size();
+  PreferredSizeChanged();
+}
+
+void StyledLabel::SetDefaultStyle(const RangeStyleInfo& style_info) {
+  default_style_info_ = style_info;
   PreferredSizeChanged();
 }
 
@@ -132,6 +132,11 @@ int StyledLabel::GetHeightForWidth(int w) {
 
 void StyledLabel::Layout() {
   CalculateAndDoLayout(GetLocalBounds().width(), false);
+}
+
+void StyledLabel::PreferredSizeChanged() {
+  calculated_size_ = gfx::Size();
+  View::PreferredSizeChanged();
 }
 
 void StyledLabel::LinkClicked(Link* source, int event_flags) {
@@ -236,7 +241,7 @@ int StyledLabel::CalculateAndDoLayout(int width, bool dry_run) {
       // This chunk is normal text.
       if (position + chunk.size() > range.start())
         chunk = chunk.substr(0, range.start() - position);
-      label = CreateLabelRange(chunk, RangeStyleInfo(), this);
+      label = CreateLabelRange(chunk, default_style_info_, this);
     }
 
     if (displayed_on_background_color_set_)
