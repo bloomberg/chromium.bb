@@ -582,6 +582,10 @@ void ThumbnailDatabase::Vacuum() {
   ignore_result(db_.Execute("VACUUM"));
 }
 
+void ThumbnailDatabase::TrimMemory(bool aggressively) {
+  db_.TrimMemory(aggressively);
+}
+
 bool ThumbnailDatabase::SetPageThumbnail(
     const GURL& url,
     URLID id,

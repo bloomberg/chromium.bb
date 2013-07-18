@@ -74,6 +74,10 @@ bool ArchivedDatabase::InitTables() {
   return transaction.Commit();
 }
 
+void ArchivedDatabase::TrimMemory(bool aggressively) {
+  db_.TrimMemory(aggressively);
+}
+
 void ArchivedDatabase::BeginTransaction() {
   db_.BeginTransaction();
 }

@@ -34,6 +34,10 @@ class ArchivedDatabase : public URLDatabase,
   // functions on this class are called.
   bool Init(const base::FilePath& file_name);
 
+  // Try to trim the cache memory used by the database.  If |aggressively| is
+  // true try to trim all unused cache, otherwise trim by half.
+  void TrimMemory(bool aggressively);
+
   // Transactions on the database. We support nested transactions and only
   // commit when the outermost one is committed (sqlite doesn't support true
   // nested transactions).

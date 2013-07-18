@@ -279,6 +279,35 @@ void Connection::Preload() {
 #endif
 }
 
+void Connection::TrimMemory(bool aggressively) {
+  if (!db_)
+    return;
+
+  // TODO(shess): investigate using sqlite3_db_release_memory() when possible.
+  int original_cache_size;
+  {
+    Statement sql_get_original(GetUniqueStatement("PRAGMA cache_size"));
+    if (!sql_get_original.Step()) {
+      DLOG(WARNING) << "Could not get cache size " << GetErrorMessage();
+      return;
+    }
+    original_cache_size = sql_get_original.ColumnInt(0);
+  }
+  int shrink_cache_size = aggressively ? 1 : (original_cache_size / 2);
+
+  // Force sqlite to try to reduce page cache usage.
+  const std::string sql_shrink =
+      base::StringPrintf("PRAGMA cache_size=%d", shrink_cache_size);
+  if (!Execute(sql_shrink.c_str()))
+    DLOG(WARNING) << "Could not shrink cache size: " << GetErrorMessage();
+
+  // Restore cache size.
+  const std::string sql_restore =
+      base::StringPrintf("PRAGMA cache_size=%d", original_cache_size);
+  if (!Execute(sql_restore.c_str()))
+    DLOG(WARNING) << "Could not restore cache size: " << GetErrorMessage();
+}
+
 // Create an in-memory database with the existing database's page
 // size, then backup that database over the existing database.
 bool Connection::Raze() {

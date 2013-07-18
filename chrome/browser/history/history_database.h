@@ -131,6 +131,10 @@ class HistoryDatabase : public DownloadDatabase,
   // unused space in the file. It can be VERY SLOW.
   void Vacuum();
 
+  // Try to trim the cache memory used by the database.  If |aggressively| is
+  // true try to trim all unused cache, otherwise trim by half.
+  void TrimMemory(bool aggressively);
+
   // Razes the database. Returns true if successful.
   bool Raze();
 

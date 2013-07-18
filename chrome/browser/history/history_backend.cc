@@ -260,6 +260,8 @@ void HistoryBackend::Init(const std::string& languages, bool force_fail) {
     InitImpl(languages);
   delegate_->DBLoaded(id_);
   typed_url_syncable_service_.reset(new TypedUrlSyncableService(this));
+  memory_pressure_listener_.reset(new base::MemoryPressureListener(
+      base::Bind(&HistoryBackend::OnMemoryPressure, base::Unretained(this))));
 #if defined(OS_ANDROID)
   PopulateMostVisitedURLMap();
 #endif
@@ -764,6 +766,18 @@ void HistoryBackend::InitImpl(const std::string& languages) {
 
   HISTOGRAM_TIMES("History.InitTime",
                   TimeTicks::Now() - beginning_time);
+}
+
+void HistoryBackend::OnMemoryPressure(
+    base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
+  bool trim_aggressively = memory_pressure_level ==
+      base::MemoryPressureListener::MEMORY_PRESSURE_CRITICAL;
+  if (db_)
+    db_->TrimMemory(trim_aggressively);
+  if (thumbnail_db_)
+    thumbnail_db_->TrimMemory(trim_aggressively);
+  if (archived_db_)
+    archived_db_->TrimMemory(trim_aggressively);
 }
 
 void HistoryBackend::CloseAllDatabases() {

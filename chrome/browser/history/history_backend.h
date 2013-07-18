@@ -13,6 +13,7 @@
 #include "base/containers/mru_cache.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/memory_pressure_listener.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/history/archived_database.h"
 #include "chrome/browser/history/expire_history_backend.h"
@@ -598,6 +599,10 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // Does the work of Init.
   void InitImpl(const std::string& languages);
 
+  // Called when the system is under memory pressure.
+  void OnMemoryPressure(
+      base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
+
   // Closes all databases managed by HistoryBackend. Commits any pending
   // transactions.
   void CloseAllDatabases();
@@ -938,6 +943,9 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // Used to manage syncing of the typed urls datatype. This will be NULL
   // before Init is called.
   scoped_ptr<TypedUrlSyncableService> typed_url_syncable_service_;
+
+  // Listens for the system being under memory pressure.
+  scoped_ptr<base::MemoryPressureListener> memory_pressure_listener_;
 
   DISALLOW_COPY_AND_ASSIGN(HistoryBackend);
 };
