@@ -8,7 +8,8 @@ body {
 }
 
 form {
-  width: 700px;
+  display: table;
+  margin: 8px;
 }
 
 h2 {
@@ -17,11 +18,13 @@ h2 {
 }
 
 .buttons-pane {
-  width: 90%;
+  display: inline-block;
+  width: 100%;
 }
 
 #reset-all-button {
   float: right;
+  min-width: 15em;
 }
 
 html[dir=rtl] #reset-all-button {

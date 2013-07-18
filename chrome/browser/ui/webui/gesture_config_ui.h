@@ -19,6 +19,9 @@ class GestureConfigUI : public content::WebUIController {
   virtual ~GestureConfigUI();
 
  private:
+  // TODO(mohsen): Add a whitelist of preferences that are allowed to be set or
+  // get here and check requested preferences against this whitelist.
+
   /**
    * Request a preference setting's value.
    * This method is asynchronous; the result is provided by a call to

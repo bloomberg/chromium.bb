@@ -85,6 +85,7 @@ GeneralConfig.prototype = {
       $(field.key).onchange = (function(key) {
         config.setPreferenceValue(key, $(key).value);
         gesture_config.updateResetButton($(key + '-reset'), false);
+        gesture_config.updateResetAllButton(false);
       }).bind(null, field.key);
       $(field.key + '-reset').onclick = (function(key) {
         config.resetPreferenceValue(key);
@@ -532,12 +533,26 @@ window.gesture_config = {
     };
   },
 
-/**
- * Updates the status and label of a preference reset button.
- * @param {HTMLInputElement} resetButton Reset button for the preference.
- * @param {boolean} isDefault Whether the preference is set to the default
- *     value.
- */
+  /**
+   * Checks if all gesture preferences are set to default by checking the status
+   * of the reset button associated with each preference.
+   * @return {boolean} True if all gesture preferences are set to default.
+   */
+  areAllPrefsSetToDefault: function() {
+    var resets = $('gesture-form').querySelectorAll('.row-reset');
+    for (var i = 0; i < resets.length; i++) {
+      if (!resets[i].disabled)
+        return false;
+    }
+    return true;
+  },
+
+  /**
+   * Updates the status and label of a preference reset button.
+   * @param {HTMLInputElement} resetButton Reset button for the preference.
+   * @param {boolean} isDefault Whether the preference is set to the default
+   *     value.
+   */
   updateResetButton: function(resetButton, isDefault) {
     /** @const */ var TITLE_DEFAULT = 'Default';
 
@@ -545,6 +560,21 @@ window.gesture_config = {
 
     resetButton.innerHTML = isDefault ? TITLE_DEFAULT : TITLE_NOT_DEFAULT;
     resetButton.disabled = isDefault;
+  },
+
+  /**
+   * Updates the status and label of "Reset All" button.
+   * @param {boolean} isDefault Whether all preference are set to their default
+   *     values.
+   */
+  updateResetAllButton: function(isDefault) {
+    /** @const */ var TITLE_DEFAULT = 'Everything is set to default';
+
+    /** @const */ var TITLE_NOT_DEFAULT = 'Reset All To Default';
+
+    var button = $('reset-all-button');
+    button.innerHTML = isDefault ? TITLE_DEFAULT : TITLE_NOT_DEFAULT;
+    button.disabled = isDefault;
   },
 
   /**
@@ -557,6 +587,7 @@ window.gesture_config = {
     prefName = prefName.substring(prefName.indexOf('.') + 1);
     $(prefName).value = value;
     this.updateResetButton($(prefName + '-reset'), isDefault);
+    this.updateResetAllButton(this.areAllPrefsSetToDefault());
   },
 };
 
