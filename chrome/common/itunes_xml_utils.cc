@@ -24,7 +24,7 @@ bool SkipToNextElement(XmlReader* reader) {
 bool SeekToNodeAtCurrentDepth(XmlReader* reader, const std::string& name) {
   int depth = reader->Depth();
   do {
-    if (!SkipToNextElement(reader))
+    if (!SkipToNextElement(reader) || reader->Depth() < depth)
       return false;
     DCHECK_EQ(depth, reader->Depth());
     if (reader->NodeName() == name)

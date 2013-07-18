@@ -53,8 +53,8 @@ bool ReadInteger(XmlReader* reader, uint64* result) {
 }
 
 // Walk through a dictionary filling in |result| with track information. Return
-// true if it was all found, false otherwise.  In either case, the cursor is
-// advanced out of the dictionary.
+// true if at least the id and location where found (artist and album may be
+// empty).  In either case, the cursor is advanced out of the dictionary.
 bool GetTrackInfoFromDict(XmlReader* reader, TrackInfo* result) {
   DCHECK(result);
   if (reader->NodeName() != "dict")
@@ -68,9 +68,10 @@ bool GetTrackInfoFromDict(XmlReader* reader, TrackInfo* result) {
   bool found_id = false;
   bool found_location = false;
   bool found_artist = false;
+  bool found_album_artist = false;
   bool found_album = false;
   while (reader->Depth() >= dict_content_depth &&
-         !(found_id && found_location && found_artist && found_album)) {
+         !(found_id && found_location && found_album_artist && found_album)) {
     if (!SeekToNodeAtCurrentDepth(reader, "key"))
       break;
     std::string found_key;
@@ -105,12 +106,19 @@ bool GetTrackInfoFromDict(XmlReader* reader, TrackInfo* result) {
 #endif
       result->location = base::FilePath(location);
       found_location = true;
-    } else if (found_key == "Album Artist") {
-      if (found_artist)
+    } else if (found_key == "Artist") {
+      if (found_artist || found_album_artist)
         break;
       if (!ReadString(reader, &result->artist))
         break;
       found_artist = true;
+    } else if (found_key == "Album Artist") {
+      if (found_album_artist)
+        break;
+      result->artist.clear();
+      if (!ReadString(reader, &result->artist))
+        break;
+      found_album_artist = true;
     } else if (found_key == "Album") {
       if (found_album)
         break;
@@ -129,7 +137,7 @@ bool GetTrackInfoFromDict(XmlReader* reader, TrackInfo* result) {
   while (reader->Depth() >= dict_content_depth)
     reader->Next();
 
-  return found_id && found_location && found_artist && found_album;
+  return found_id && found_location;
 }
 
 }  // namespace
@@ -213,6 +221,10 @@ bool ITunesLibraryParser::Parse(const std::string& library_xml) {
     if (GetTrackInfoFromDict(&reader, &track_info) &&
         id_valid &&
         id == track_info.id) {
+      if (track_info.artist.empty())
+        track_info.artist = "Unknown Artist";
+      if (track_info.album.empty())
+        track_info.album = "Unknown Album";
       parser::Track track(track_info.id, track_info.location);
       library_[track_info.artist][track_info.album].insert(track);
       track_found = true;

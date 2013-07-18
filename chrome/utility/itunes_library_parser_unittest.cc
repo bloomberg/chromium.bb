@@ -18,7 +18,7 @@
     "<dict>"                                                           \
     "  <key>Track ID</key><integer>" #id "</integer>"                  \
     "  <key>Location</key><string>file://localhost/" path "</string>"  \
-    "  <key>Album Artist</key><string>" artist "</string>"             \
+    "  <key>Artist</key><string>" artist "</string>"                   \
     "  <key>Album</key><string>" album "</string>"                     \
     "</dict>"
 
@@ -169,7 +169,7 @@ TEST_F(ITunesLibraryParserTest, OtherDictionaryEntries) {
       // In the body of a track dictionary before the interesting entries.
       SIMPLE_TRACK(20, 20, "C:/dir/SongB2.mp3", "Artist B", "Album B")
       // Entries in a different order.
-      "        <key>Album Artist</key><string>Artist A</string>"
+      "        <key>Artist</key><string>Artist A</string>"
       "        <key>Location</key>"
       "          <string>file://localhost/C:/dir/SongA1.mp3</string>"
       "        <key>Album</key><string>Album A</string>"
@@ -180,11 +180,87 @@ TEST_F(ITunesLibraryParserTest, OtherDictionaryEntries) {
       "      <key>40</key>"
       "      <dict>"
       // Missing album name.
-      "        <key>Album Artist</key><string>Artist B</string>"
+      "        <key>Artist</key><string>Artist B</string>"
       "        <key>Location</key>"
       "          <string>file://localhost/C:/dir/SongB4.mp3</string>"
       "        <key>Track ID</key><integer>1</integer>"
       "      </dict>"
+      SIMPLE_FOOTER());
+}
+
+TEST_F(ITunesLibraryParserTest, MissingEntry) {
+  AddExpectedTrack(1, "C:/dir/SongA1.mp3", "Artist A", "Album A");
+  AddExpectedTrack(3, "C:/dir/SongA3.mp3", "Artist A", "Album A");
+  TestParser(
+      true,
+      SIMPLE_HEADER()
+      SIMPLE_TRACK(1, 1, "C:/dir/SongA1.mp3", "Artist A", "Album A")
+      "<key>2</key><dict>"
+      "  <key>Track ID</key><integer>2</integer>"
+      "  <key>Album</key><string>Album A</string>"
+      "  <key>Foo</key><string>Bar</string>"
+      "   "  // A whitespace node is important for the test.
+      "</dict>"
+      SIMPLE_TRACK(3, 3, "C:/dir/SongA3.mp3", "Artist A", "Album A")
+      SIMPLE_FOOTER());
+}
+
+TEST_F(ITunesLibraryParserTest, UnknownAlbumOrArtist) {
+  AddExpectedTrack(1, "C:/dir/SongA1.mp3", "Artist A", "Unknown Album");
+  AddExpectedTrack(2, "C:/dir/SongA2.mp3", "Unknown Artist", "Album A");
+  AddExpectedTrack(3, "C:/dir/SongA3.mp3", "Unknown Artist", "Unknown Album");
+  TestParser(
+      true,
+      SIMPLE_HEADER()
+      "<key>1</key><dict>"
+      "  <key>Track ID</key><integer>1</integer>"
+      "  <key>Location</key><string>file://localhost/C:/dir/SongA1.mp3</string>"
+      "  <key>Artist</key><string>Artist A</string>"
+      "</dict>"
+      "<key>2</key><dict>"
+      "  <key>Track ID</key><integer>2</integer>"
+      "  <key>Location</key><string>file://localhost/C:/dir/SongA2.mp3</string>"
+      "  <key>Album</key><string>Album A</string>"
+      "</dict>"
+      "<key>3</key><dict>"
+      "  <key>Track ID</key><integer>3</integer>"
+      "  <key>Location</key><string>file://localhost/C:/dir/SongA3.mp3</string>"
+      "</dict>"
+      SIMPLE_FOOTER());
+}
+
+TEST_F(ITunesLibraryParserTest, AlbumArtist) {
+  AddExpectedTrack(1, "C:/dir/SongA1.mp3", "Artist A", "Unknown Album");
+  AddExpectedTrack(2, "C:/dir/SongA2.mp3", "Artist A", "Unknown Album");
+  AddExpectedTrack(3, "C:/dir/SongA3.mp3", "Artist A", "Unknown Album");
+  AddExpectedTrack(4, "C:/dir/SongA4.mp3", "Artist A", "Album");
+  TestParser(
+      true,
+      SIMPLE_HEADER()
+      "<key>1</key><dict>"
+      "  <key>Track ID</key><integer>1</integer>"
+      "  <key>Location</key><string>file://localhost/C:/dir/SongA1.mp3</string>"
+      "  <key>Album Artist</key><string>Artist A</string>"
+      "</dict>"
+      "<key>2</key><dict>"
+      "  <key>Track ID</key><integer>2</integer>"
+      "  <key>Location</key><string>file://localhost/C:/dir/SongA2.mp3</string>"
+      "  <key>Artist</key><string>Artist B</string>"
+      "  <key>Album Artist</key><string>Artist A</string>"
+      "</dict>"
+      "<key>3</key><dict>"
+      "  <key>Track ID</key><integer>3</integer>"
+      "  <key>Location</key><string>file://localhost/C:/dir/SongA3.mp3</string>"
+      "  <key>Album Artist</key><string>Artist A</string>"
+      "  <key>Artist</key><string>Artist B</string>"
+      "</dict>"
+      "<key>4</key><dict>"
+      "  <key>Track ID</key><integer>4</integer>"
+      "  <key>Location</key><string>file://localhost/C:/dir/SongA4.mp3</string>"
+      "  <key>Album</key><string>Album</string>"
+      "  <key>Artist</key><string>Artist B</string>"
+      "  <key>Album Artist</key><string>Artist A</string>"
+      "</dict>"
       SIMPLE_FOOTER());
 }
 
