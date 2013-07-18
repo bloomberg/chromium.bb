@@ -16,8 +16,7 @@ base::FilePath GetTestDataFilePath(const std::string& name) {
   CHECK(PathService::Get(base::DIR_SOURCE_ROOT, &file_path));
 
   file_path = file_path.Append(FILE_PATH_LITERAL("media"))
-      .Append(FILE_PATH_LITERAL("test"))
-      .Append(FILE_PATH_LITERAL("data"))
+      .Append(FILE_PATH_LITERAL("test")).Append(FILE_PATH_LITERAL("data"))
       .AppendASCII(name);
   return file_path;
 }
@@ -27,8 +26,7 @@ scoped_refptr<DecoderBuffer> ReadTestDataFile(const std::string& name) {
   CHECK(PathService::Get(base::DIR_SOURCE_ROOT, &file_path));
 
   file_path = file_path.Append(FILE_PATH_LITERAL("media"))
-      .Append(FILE_PATH_LITERAL("test"))
-      .Append(FILE_PATH_LITERAL("data"))
+      .Append(FILE_PATH_LITERAL("test")).Append(FILE_PATH_LITERAL("data"))
       .AppendASCII(name);
 
   int64 tmp = 0;
@@ -38,9 +36,10 @@ scoped_refptr<DecoderBuffer> ReadTestDataFile(const std::string& name) {
   int file_size = static_cast<int>(tmp);
 
   scoped_refptr<DecoderBuffer> buffer(new DecoderBuffer(file_size));
-  CHECK_EQ(file_size, file_util::ReadFile(
-      file_path, reinterpret_cast<char*>(buffer->GetWritableData()), file_size))
-      << "Failed to read '" << name << "'";
+  CHECK_EQ(file_size,
+           file_util::ReadFile(
+               file_path, reinterpret_cast<char*>(buffer->writable_data()),
+               file_size)) << "Failed to read '" << name << "'";
 
   return buffer;
 }

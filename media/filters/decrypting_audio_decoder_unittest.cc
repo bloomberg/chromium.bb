@@ -36,7 +36,7 @@ static const uint8 kFakeIv[DecryptConfig::kDecryptionKeySize] = { 0 };
 static scoped_refptr<DecoderBuffer> CreateFakeEncryptedBuffer() {
   const int buffer_size = 16;  // Need a non-empty buffer;
   scoped_refptr<DecoderBuffer> buffer(new DecoderBuffer(buffer_size));
-  buffer->SetDecryptConfig(scoped_ptr<DecryptConfig>(new DecryptConfig(
+  buffer->set_decrypt_config(scoped_ptr<DecryptConfig>(new DecryptConfig(
       std::string(reinterpret_cast<const char*>(kFakeKeyId),
                   arraysize(kFakeKeyId)),
       std::string(reinterpret_cast<const char*>(kFakeIv), arraysize(kFakeIv)),

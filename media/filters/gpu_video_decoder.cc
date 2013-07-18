@@ -352,7 +352,7 @@ void GpuVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
     case kNormal:
       break;
     case kDrainingDecoder:
-      DCHECK(buffer->IsEndOfStream());
+      DCHECK(buffer->end_of_stream());
       // Do nothing.  Will be satisfied either by a PictureReady or
       // NotifyFlushDone below.
       return;
@@ -361,7 +361,7 @@ void GpuVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
       return;
   }
 
-  if (buffer->IsEndOfStream()) {
+  if (buffer->end_of_stream()) {
     if (state_ == kNormal) {
       state_ = kDrainingDecoder;
       vda_loop_proxy_->PostTask(FROM_HERE, base::Bind(
@@ -370,14 +370,14 @@ void GpuVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
     return;
   }
 
-  size_t size = buffer->GetDataSize();
+  size_t size = buffer->data_size();
   SHMBuffer* shm_buffer = GetSHM(size);
   if (!shm_buffer) {
     base::ResetAndReturn(&pending_read_cb_).Run(kDecodeError, NULL);
     return;
   }
 
-  memcpy(shm_buffer->shm->memory(), buffer->GetData(), size);
+  memcpy(shm_buffer->shm->memory(), buffer->data(), size);
   BitstreamBuffer bitstream_buffer(
       next_bitstream_buffer_id_, shm_buffer->shm->handle(), size);
   // Mask against 30 bits, to avoid (undefined) wraparound on signed integer.
@@ -406,7 +406,7 @@ bool GpuVideoDecoder::CanMoreDecodeWorkBeDone() {
 void GpuVideoDecoder::RecordBufferData(const BitstreamBuffer& bitstream_buffer,
                                        const DecoderBuffer& buffer) {
   input_buffer_data_.push_front(BufferData(bitstream_buffer.id(),
-                                           buffer.GetTimestamp(),
+                                           buffer.timestamp(),
                                            config_.visible_rect(),
                                            config_.natural_size()));
   // Why this value?  Because why not.  avformat.h:MAX_REORDER_DELAY is 16, but

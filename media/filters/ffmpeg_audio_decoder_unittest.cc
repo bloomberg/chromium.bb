@@ -41,12 +41,12 @@ class FFmpegAudioDecoderTest : public testing::Test {
           ReadTestDataFile(base::StringPrintf("vorbis-packet-%d", i));
 
       if (i < 3) {
-        buffer->SetTimestamp(base::TimeDelta());
+        buffer->set_timestamp(base::TimeDelta());
       } else {
-        buffer->SetTimestamp(base::TimeDelta::FromMicroseconds(2902));
+        buffer->set_timestamp(base::TimeDelta::FromMicroseconds(2902));
       }
 
-      buffer->SetDuration(base::TimeDelta());
+      buffer->set_duration(base::TimeDelta());
       encoded_audio_.push_back(buffer);
     }
 
@@ -61,8 +61,8 @@ class FFmpegAudioDecoderTest : public testing::Test {
                               kSampleFormatPlanarF32,
                               CHANNEL_LAYOUT_STEREO,
                               44100,
-                              vorbis_extradata_->GetData(),
-                              vorbis_extradata_->GetDataSize(),
+                              vorbis_extradata_->data(),
+                              vorbis_extradata_->data_size(),
                               false);  // Not encrypted.
     demuxer_->set_audio_decoder_config(config);
     decoder_->Initialize(demuxer_.get(),

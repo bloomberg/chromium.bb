@@ -109,8 +109,8 @@ class MediaSourcePlayerTest : public testing::Test {
     params.duration_ms = kDefaultDurationInMs;
     scoped_refptr<DecoderBuffer> buffer = ReadTestDataFile("vorbis-extradata");
     params.audio_extra_data = std::vector<uint8>(
-        buffer->GetData(),
-        buffer->GetData() + buffer->GetDataSize());
+        buffer->data(),
+        buffer->data() + buffer->data_size());
     Start(params);
   }
 
@@ -137,7 +137,7 @@ class MediaSourcePlayerTest : public testing::Test {
     ack_params.access_units[0].status = DemuxerStream::kOk;
     scoped_refptr<DecoderBuffer> buffer = ReadTestDataFile("vorbis-packet-0");
     ack_params.access_units[0].data = std::vector<uint8>(
-        buffer->GetData(), buffer->GetData() + buffer->GetDataSize());
+        buffer->data(), buffer->data() + buffer->data_size());
     // Vorbis needs 4 extra bytes padding on Android to decode properly. Check
     // NuMediaExtractor.cpp in Android source code.
     uint8 padding[4] = { 0xff , 0xff , 0xff , 0xff };
@@ -155,7 +155,7 @@ class MediaSourcePlayerTest : public testing::Test {
     scoped_refptr<DecoderBuffer> buffer =
         ReadTestDataFile("vp8-I-frame-320x240");
     ack_params.access_units[0].data = std::vector<uint8>(
-        buffer->GetData(), buffer->GetData() + buffer->GetDataSize());
+        buffer->data(), buffer->data() + buffer->data_size());
     return ack_params;
   }
 
@@ -361,8 +361,8 @@ TEST_F(MediaSourcePlayerTest, DecoderJobsCannotStartWithoutAudio) {
   params.is_audio_encrypted = false;
   scoped_refptr<DecoderBuffer> buffer = ReadTestDataFile("vorbis-extradata");
   params.audio_extra_data = std::vector<uint8>(
-      buffer->GetData(),
-      buffer->GetData() + buffer->GetDataSize());
+      buffer->data(),
+      buffer->data() + buffer->data_size());
   params.video_codec = kCodecVP8;
   params.video_size = gfx::Size(320, 240);
   params.is_video_encrypted = false;

@@ -54,19 +54,19 @@ void FakeVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
   DCHECK(reset_cb_.IsNull());
   DCHECK_LE(decoded_frames_.size(), static_cast<size_t>(decoding_delay_));
 
-  int buffer_size = buffer->IsEndOfStream() ? 0 : buffer->GetDataSize();
+  int buffer_size = buffer->end_of_stream() ? 0 : buffer->data_size();
   read_cb_.SetCallback(BindToCurrentLoop(base::Bind(
       &FakeVideoDecoder::OnFrameDecoded, weak_this_, buffer_size, read_cb)));
 
-  if (buffer->IsEndOfStream() && decoded_frames_.empty()) {
+  if (buffer->end_of_stream() && decoded_frames_.empty()) {
     read_cb_.RunOrHold(kOk, VideoFrame::CreateEmptyFrame());
     return;
   }
 
-  if (!buffer->IsEndOfStream()) {
+  if (!buffer->end_of_stream()) {
     DCHECK(VerifyFakeVideoBufferForTest(buffer, current_config_));
     scoped_refptr<VideoFrame> video_frame = VideoFrame::CreateColorFrame(
-        current_config_.coded_size(), 0, 0, 0, buffer->GetTimestamp());
+        current_config_.coded_size(), 0, 0, 0, buffer->timestamp());
     decoded_frames_.push_back(video_frame);
 
     if (decoded_frames_.size() <= static_cast<size_t>(decoding_delay_)) {

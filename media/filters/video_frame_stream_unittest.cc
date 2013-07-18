@@ -88,9 +88,9 @@ class VideoFrameStreamTest : public testing::TestWithParam<bool> {
                const Decryptor::DecryptCB& decrypt_cb) {
     DCHECK_EQ(stream_type, Decryptor::kVideo);
     scoped_refptr<DecoderBuffer> decrypted = DecoderBuffer::CopyFrom(
-        encrypted->GetData(), encrypted->GetDataSize());
-    decrypted->SetTimestamp(encrypted->GetTimestamp());
-    decrypted->SetDuration(encrypted->GetDuration());
+        encrypted->data(), encrypted->data_size());
+    decrypted->set_timestamp(encrypted->timestamp());
+    decrypted->set_duration(encrypted->duration());
     decrypt_cb.Run(Decryptor::kSuccess, decrypted);
   }
 

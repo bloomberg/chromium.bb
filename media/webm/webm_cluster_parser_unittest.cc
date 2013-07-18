@@ -117,13 +117,13 @@ static bool VerifyBuffers(const WebMClusterParser::BufferQueue& audio_buffers,
     scoped_refptr<StreamParserBuffer> buffer = (*buffers)[(*offset)++];
 
 
-    EXPECT_EQ(buffer->GetTimestamp().InMilliseconds(), block_info[i].timestamp);
+    EXPECT_EQ(buffer->timestamp().InMilliseconds(), block_info[i].timestamp);
 
     if (!block_info[i].use_simple_block)
-      EXPECT_NE(buffer->GetDuration(), kNoTimestamp());
+      EXPECT_NE(buffer->duration(), kNoTimestamp());
 
-    if (buffer->GetDuration() != kNoTimestamp())
-      EXPECT_EQ(buffer->GetDuration().InMilliseconds(), block_info[i].duration);
+    if (buffer->duration() != kNoTimestamp())
+      EXPECT_EQ(buffer->duration().InMilliseconds(), block_info[i].duration);
   }
 
   return true;
@@ -175,8 +175,8 @@ static bool VerifyTextBuffers(
     EXPECT_FALSE(buffer_iter == buffer_end);
 
     const scoped_refptr<StreamParserBuffer> buffer = *buffer_iter++;
-    EXPECT_EQ(buffer->GetTimestamp().InMilliseconds(), block_info.timestamp);
-    EXPECT_EQ(buffer->GetDuration().InMilliseconds(), block_info.duration);
+    EXPECT_EQ(buffer->timestamp().InMilliseconds(), block_info.timestamp);
+    EXPECT_EQ(buffer->duration().InMilliseconds(), block_info.duration);
   }
 
   EXPECT_TRUE(buffer_iter == buffer_end);
@@ -185,10 +185,10 @@ static bool VerifyTextBuffers(
 
 static bool VerifyEncryptedBuffer(
     scoped_refptr<StreamParserBuffer> buffer) {
-  EXPECT_TRUE(buffer->GetDecryptConfig());
+  EXPECT_TRUE(buffer->decrypt_config());
   EXPECT_EQ(static_cast<unsigned long>(DecryptConfig::kDecryptionKeySize),
-            buffer->GetDecryptConfig()->iv().length());
-  const uint8* data = buffer->GetData();
+            buffer->decrypt_config()->iv().length());
+  const uint8* data = buffer->data();
   return data[0] & kWebMFlagEncryptedFrame;
 }
 

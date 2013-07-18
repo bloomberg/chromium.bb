@@ -36,7 +36,7 @@ namespace media {
 
 MATCHER(IsEndOfStreamBuffer,
         std::string(negation ? "isn't" : "is") + " end of stream") {
-  return arg->IsEndOfStream();
+  return arg->end_of_stream();
 }
 
 static void EosOnReadDone(bool* got_eos_buffer,
@@ -46,13 +46,13 @@ static void EosOnReadDone(bool* got_eos_buffer,
       FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
 
   EXPECT_EQ(status, DemuxerStream::kOk);
-  if (buffer->IsEndOfStream()) {
+  if (buffer->end_of_stream()) {
     *got_eos_buffer = true;
     return;
   }
 
-  EXPECT_TRUE(buffer->GetData());
-  EXPECT_GT(buffer->GetDataSize(), 0);
+  EXPECT_TRUE(buffer->data());
+  EXPECT_GT(buffer->data_size(), 0);
   *got_eos_buffer = false;
 };
 
@@ -111,9 +111,9 @@ class FFmpegDemuxerTest : public testing::Test {
     EXPECT_EQ(status, DemuxerStream::kOk);
     OnReadDoneCalled(size, timestampInMicroseconds);
     EXPECT_TRUE(buffer.get() != NULL);
-    EXPECT_EQ(size, buffer->GetDataSize());
+    EXPECT_EQ(size, buffer->data_size());
     EXPECT_EQ(base::TimeDelta::FromMicroseconds(timestampInMicroseconds),
-              buffer->GetTimestamp());
+              buffer->timestamp());
 
     DCHECK_EQ(&message_loop_, base::MessageLoop::current());
     message_loop_.PostTask(FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());

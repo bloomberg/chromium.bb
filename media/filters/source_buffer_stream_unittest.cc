@@ -176,8 +176,8 @@ class SourceBufferStreamTest : public testing::Test {
         EXPECT_TRUE(buffer->IsKeyframe());
 
       if (expected_data) {
-        const uint8* actual_data = buffer->GetData();
-        const int actual_size = buffer->GetDataSize();
+        const uint8* actual_data = buffer->data();
+        const int actual_size = buffer->data_size();
         EXPECT_EQ(expected_size, actual_size);
         for (int i = 0; i < std::min(actual_size, expected_size); i++) {
           EXPECT_EQ(expected_data[i], actual_data[i]);
@@ -273,7 +273,7 @@ class SourceBufferStreamTest : public testing::Test {
       } else {
         presentation_timestamp = timestamp - frame_duration_;
       }
-      buffer->SetTimestamp(presentation_timestamp);
+      buffer->set_timestamp(presentation_timestamp);
 
       queue.push_back(buffer);
     }
@@ -1975,18 +1975,18 @@ TEST_F(SourceBufferStreamTest, PresentationTimestampIndependence) {
     ASSERT_EQ(stream_->GetNextBuffer(&buffer), SourceBufferStream::kSuccess);
 
     if (buffer->IsKeyframe()) {
-      EXPECT_EQ(buffer->GetTimestamp(), buffer->GetDecodeTimestamp());
+      EXPECT_EQ(buffer->timestamp(), buffer->GetDecodeTimestamp());
       last_keyframe_idx = i;
-      last_keyframe_presentation_timestamp = buffer->GetTimestamp();
+      last_keyframe_presentation_timestamp = buffer->timestamp();
     } else if (i == last_keyframe_idx + 1) {
       ASSERT_NE(last_keyframe_idx, -1);
-      last_p_frame_presentation_timestamp = buffer->GetTimestamp();
+      last_p_frame_presentation_timestamp = buffer->timestamp();
       EXPECT_LT(last_keyframe_presentation_timestamp,
                 last_p_frame_presentation_timestamp);
     } else {
-      EXPECT_GT(buffer->GetTimestamp(), last_keyframe_presentation_timestamp);
-      EXPECT_LT(buffer->GetTimestamp(), last_p_frame_presentation_timestamp);
-      EXPECT_LT(buffer->GetTimestamp(), buffer->GetDecodeTimestamp());
+      EXPECT_GT(buffer->timestamp(), last_keyframe_presentation_timestamp);
+      EXPECT_LT(buffer->timestamp(), last_p_frame_presentation_timestamp);
+      EXPECT_LT(buffer->timestamp(), buffer->GetDecodeTimestamp());
     }
   }
 }

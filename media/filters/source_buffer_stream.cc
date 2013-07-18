@@ -1345,7 +1345,7 @@ void SourceBufferRange::AppendBuffersToEnd(const BufferQueue& new_buffers) {
        itr != new_buffers.end(); ++itr) {
     DCHECK((*itr)->GetDecodeTimestamp() != kNoTimestamp());
     buffers_.push_back(*itr);
-    size_in_bytes_ += (*itr)->GetDataSize();
+    size_in_bytes_ += (*itr)->data_size();
 
     if ((*itr)->IsKeyframe()) {
       keyframe_map_.insert(
@@ -1502,7 +1502,7 @@ int SourceBufferRange::DeleteGOPFromFront(BufferQueue* deleted_buffers) {
   // Delete buffers from the beginning of the buffered range up until (but not
   // including) the next keyframe.
   for (int i = 0; i < end_index; i++) {
-    int bytes_deleted = buffers_.front()->GetDataSize();
+    int bytes_deleted = buffers_.front()->data_size();
     size_in_bytes_ -= bytes_deleted;
     total_bytes_deleted += bytes_deleted;
     deleted_buffers->push_back(buffers_.front());
@@ -1542,7 +1542,7 @@ int SourceBufferRange::DeleteGOPFromBack(BufferQueue* deleted_buffers) {
 
   int total_bytes_deleted = 0;
   while (buffers_.size() != goal_size) {
-    int bytes_deleted = buffers_.back()->GetDataSize();
+    int bytes_deleted = buffers_.back()->data_size();
     size_in_bytes_ -= bytes_deleted;
     total_bytes_deleted += bytes_deleted;
     // We're removing buffers from the back, so push each removed buffer to the
@@ -1586,7 +1586,7 @@ void SourceBufferRange::FreeBufferRange(
     const BufferQueue::iterator& ending_point) {
   for (BufferQueue::iterator itr = starting_point;
        itr != ending_point; ++itr) {
-    size_in_bytes_ -= (*itr)->GetDataSize();
+    size_in_bytes_ -= (*itr)->data_size();
     DCHECK_GE(size_in_bytes_, 0);
   }
   buffers_.erase(starting_point, ending_point);
@@ -1729,7 +1729,7 @@ base::TimeDelta SourceBufferRange::GetEndTimestamp() const {
 
 base::TimeDelta SourceBufferRange::GetBufferedEndTimestamp() const {
   DCHECK(!buffers_.empty());
-  base::TimeDelta duration = buffers_.back()->GetDuration();
+  base::TimeDelta duration = buffers_.back()->duration();
   if (duration == kNoTimestamp() || duration == base::TimeDelta())
     duration = GetApproximateDuration();
   return GetEndTimestamp() + duration;

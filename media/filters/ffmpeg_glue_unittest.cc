@@ -78,7 +78,7 @@ class FFmpegGlueDestructionTest : public ::testing::Test {
   void Initialize(const char* filename) {
     data_ = ReadTestDataFile(filename);
     protocol_.reset(new InMemoryUrlProtocol(
-        data_->GetData(), data_->GetDataSize(), false));
+        data_->data(), data_->data_size(), false));
     glue_.reset(new FFmpegGlue(protocol_.get()));
     CHECK(glue_->format_context());
     CHECK(glue_->format_context()->pb);

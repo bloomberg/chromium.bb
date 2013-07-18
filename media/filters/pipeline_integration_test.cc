@@ -221,10 +221,10 @@ class MockMediaSource {
     file_data_ = ReadTestDataFile(filename);
 
     if (initial_append_size_ == kAppendWholeFile)
-      initial_append_size_ = file_data_->GetDataSize();
+      initial_append_size_ = file_data_->data_size();
 
     DCHECK_GT(initial_append_size_, 0);
-    DCHECK_LE(initial_append_size_, file_data_->GetDataSize());
+    DCHECK_LE(initial_append_size_, file_data_->data_size());
   }
 
   virtual ~MockMediaSource() {}
@@ -241,7 +241,7 @@ class MockMediaSource {
     chunk_demuxer_->Abort(kSourceId);
 
     DCHECK_GE(new_position, 0);
-    DCHECK_LT(new_position, file_data_->GetDataSize());
+    DCHECK_LT(new_position, file_data_->data_size());
     current_position_ = new_position;
 
     AppendData(seek_append_size);
@@ -249,10 +249,10 @@ class MockMediaSource {
 
   void AppendData(int size) {
     DCHECK(chunk_demuxer_);
-    DCHECK_LT(current_position_, file_data_->GetDataSize());
-    DCHECK_LE(current_position_ + size, file_data_->GetDataSize());
+    DCHECK_LT(current_position_, file_data_->data_size());
+    DCHECK_LE(current_position_ + size, file_data_->data_size());
     chunk_demuxer_->AppendData(
-        kSourceId, file_data_->GetData() + current_position_, size);
+        kSourceId, file_data_->data() + current_position_, size);
     current_position_ += size;
   }
 
@@ -500,7 +500,7 @@ TEST_F(PipelineIntegrationTest, MediaSource_ConfigChange_WebM) {
       ReadTestDataFile("bear-640x360.webm");
 
   source.AppendAtTime(base::TimeDelta::FromSeconds(kAppendTimeSec),
-                      second_file->GetData(), second_file->GetDataSize());
+                      second_file->data(), second_file->data_size());
 
   source.EndOfStream();
 
@@ -526,7 +526,7 @@ TEST_F(PipelineIntegrationTest, MediaSource_ConfigChange_Encrypted_WebM) {
       ReadTestDataFile("bear-640x360-av_enc-av.webm");
 
   source.AppendAtTime(base::TimeDelta::FromSeconds(kAppendTimeSec),
-                      second_file->GetData(), second_file->GetDataSize());
+                      second_file->data(), second_file->data_size());
 
   source.EndOfStream();
 
@@ -554,7 +554,7 @@ TEST_F(PipelineIntegrationTest,
       ReadTestDataFile("bear-640x360-av_enc-av.webm");
 
   source.AppendAtTime(base::TimeDelta::FromSeconds(kAppendTimeSec),
-                      second_file->GetData(), second_file->GetDataSize());
+                      second_file->data(), second_file->data_size());
 
   source.EndOfStream();
 
@@ -585,7 +585,7 @@ TEST_F(PipelineIntegrationTest,
       ReadTestDataFile("bear-640x360.webm");
 
   source.AppendAtTime(base::TimeDelta::FromSeconds(kAppendTimeSec),
-                      second_file->GetData(), second_file->GetDataSize());
+                      second_file->data(), second_file->data_size());
 
   source.EndOfStream();
 
@@ -610,7 +610,7 @@ TEST_F(PipelineIntegrationTest, MediaSource_ConfigChange_MP4) {
       ReadTestDataFile("bear-1280x720-av_frag.mp4");
 
   source.AppendAtTime(base::TimeDelta::FromSeconds(kAppendTimeSec),
-                      second_file->GetData(), second_file->GetDataSize());
+                      second_file->data(), second_file->data_size());
 
   source.EndOfStream();
 
@@ -637,7 +637,7 @@ TEST_F(PipelineIntegrationTest,
       ReadTestDataFile("bear-1280x720-v_frag-cenc.mp4");
 
   source.AppendAtTime(base::TimeDelta::FromSeconds(kAppendTimeSec),
-                      second_file->GetData(), second_file->GetDataSize());
+                      second_file->data(), second_file->data_size());
 
   source.EndOfStream();
 
@@ -666,7 +666,7 @@ TEST_F(PipelineIntegrationTest,
       ReadTestDataFile("bear-1280x720-v_frag-cenc.mp4");
 
   source.AppendAtTime(base::TimeDelta::FromSeconds(kAppendTimeSec),
-                      second_file->GetData(), second_file->GetDataSize());
+                      second_file->data(), second_file->data_size());
 
   source.EndOfStream();
 
@@ -697,7 +697,7 @@ TEST_F(PipelineIntegrationTest,
       ReadTestDataFile("bear-1280x720-av_frag.mp4");
 
   source.AppendAtTime(base::TimeDelta::FromSeconds(kAppendTimeSec),
-                      second_file->GetData(), second_file->GetDataSize());
+                      second_file->data(), second_file->data_size());
 
   source.EndOfStream();
 

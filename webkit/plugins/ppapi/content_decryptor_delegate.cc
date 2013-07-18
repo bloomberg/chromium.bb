@@ -94,18 +94,18 @@ static bool MakeEncryptedBlockInfo(
   block_info->tracking_info.request_id = request_id;
 
   // EOS buffers need a request ID and nothing more.
-  if (encrypted_buffer->IsEndOfStream())
+  if (encrypted_buffer->end_of_stream())
     return true;
 
-  DCHECK(encrypted_buffer->GetDataSize())
+  DCHECK(encrypted_buffer->data_size())
       << "DecryptConfig is set on an empty buffer";
 
   block_info->tracking_info.timestamp =
-      encrypted_buffer->GetTimestamp().InMicroseconds();
-  block_info->data_size = encrypted_buffer->GetDataSize();
+      encrypted_buffer->timestamp().InMicroseconds();
+  block_info->data_size = encrypted_buffer->data_size();
 
   const media::DecryptConfig* decrypt_config =
-      encrypted_buffer->GetDecryptConfig();
+      encrypted_buffer->decrypt_config();
   block_info->data_offset = decrypt_config->data_offset();
 
   if (!CopyStringToArray(decrypt_config->key_id(), block_info->key_id) ||
@@ -320,7 +320,7 @@ bool ContentDecryptorDelegate::Decrypt(
   DVLOG(2) << "Decrypt() - request_id " << request_id;
 
   PP_EncryptedBlockInfo block_info = {};
-  DCHECK(encrypted_buffer->GetDecryptConfig());
+  DCHECK(encrypted_buffer->decrypt_config());
   if (!MakeEncryptedBlockInfo(encrypted_buffer, request_id, &block_info)) {
     return false;
   }
@@ -496,7 +496,7 @@ bool ContentDecryptorDelegate::DecryptAndDecodeAudio(
   }
 
   // The resource should not be NULL for non-EOS buffer.
-  if (!encrypted_buffer->IsEndOfStream() && !encrypted_resource.get())
+  if (!encrypted_buffer->end_of_stream() && !encrypted_resource.get())
     return false;
 
   const uint32_t request_id = next_decryption_request_id_++;
@@ -540,7 +540,7 @@ bool ContentDecryptorDelegate::DecryptAndDecodeVideo(
   }
 
   // The resource should not be 0 for non-EOS buffer.
-  if (!encrypted_buffer->IsEndOfStream() && !encrypted_resource.get())
+  if (!encrypted_buffer->end_of_stream() && !encrypted_resource.get())
     return false;
 
   const uint32_t request_id = next_decryption_request_id_++;
@@ -738,7 +738,7 @@ void ContentDecryptorDelegate::DeliverBlock(
   scoped_refptr<media::DecoderBuffer> decrypted_buffer(
       media::DecoderBuffer::CopyFrom(
           static_cast<uint8*>(mapper.data()), block_info->data_size));
-  decrypted_buffer->SetTimestamp(base::TimeDelta::FromMicroseconds(
+  decrypted_buffer->set_timestamp(base::TimeDelta::FromMicroseconds(
       block_info->tracking_info.timestamp));
   decrypt_cb.Run(media::Decryptor::kSuccess, decrypted_buffer);
 }
@@ -919,7 +919,7 @@ bool ContentDecryptorDelegate::MakeMediaBufferResource(
   TRACE_EVENT0("eme", "ContentDecryptorDelegate::MakeMediaBufferResource");
 
   // End of stream buffers are represented as null resources.
-  if (encrypted_buffer->IsEndOfStream()) {
+  if (encrypted_buffer->end_of_stream()) {
     *resource = NULL;
     return true;
   }
@@ -930,7 +930,7 @@ bool ContentDecryptorDelegate::MakeMediaBufferResource(
       (stream_type == media::Decryptor::kAudio) ? audio_input_resource_ :
                                                   video_input_resource_;
 
-  const size_t data_size = static_cast<size_t>(encrypted_buffer->GetDataSize());
+  const size_t data_size = static_cast<size_t>(encrypted_buffer->data_size());
   if (!media_resource.get() || media_resource->size() < data_size) {
     // Either the buffer hasn't been created yet, or we have one that isn't big
     // enough to fit |size| bytes.
@@ -961,7 +961,7 @@ bool ContentDecryptorDelegate::MakeMediaBufferResource(
     media_resource = NULL;
     return false;
   }
-  memcpy(mapper.data(), encrypted_buffer->GetData(), data_size);
+  memcpy(mapper.data(), encrypted_buffer->data(), data_size);
 
   *resource = media_resource;
   return true;

@@ -46,10 +46,10 @@ void TimestampExtractor(uint64* timestamp_ms,
                         media::DemuxerStream::Status status,
                         const scoped_refptr<media::DecoderBuffer>& buffer) {
   CHECK_EQ(status, media::DemuxerStream::kOk);
-  if (buffer->GetTimestamp() == media::kNoTimestamp())
+  if (buffer->timestamp() == media::kNoTimestamp())
     *timestamp_ms = -1;
   else
-    *timestamp_ms = buffer->GetTimestamp().InMillisecondsF();
+    *timestamp_ms = buffer->timestamp().InMillisecondsF();
   loop->PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
 }
 

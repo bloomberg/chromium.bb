@@ -23,7 +23,7 @@ class AudioFileReaderTest : public testing::Test {
   void Initialize(const char* filename) {
     data_ = ReadTestDataFile(filename);
     protocol_.reset(new InMemoryUrlProtocol(
-        data_->GetData(), data_->GetDataSize(), false));
+        data_->data(), data_->data_size(), false));
     reader_.reset(new AudioFileReader(protocol_.get()));
   }
 

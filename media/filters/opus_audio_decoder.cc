@@ -36,7 +36,7 @@ static inline bool IsEndOfStream(int decoded_size,
   // Two conditions to meet to declare end of stream for this decoder:
   // 1. Opus didn't output anything.
   // 2. An end of stream buffer is received.
-  return decoded_size == 0 && input->IsEndOfStream();
+  return decoded_size == 0 && input->end_of_stream();
 }
 
 // The Opus specification is part of IETF RFC 6716:
@@ -356,14 +356,14 @@ void OpusAudioDecoder::BufferReady(
 
   // Libopus does not buffer output. Decoding is complete when an end of stream
   // input buffer is received.
-  if (input->IsEndOfStream()) {
+  if (input->end_of_stream()) {
     base::ResetAndReturn(&read_cb_).Run(kOk, AudioBuffer::CreateEOSBuffer());
     return;
   }
 
   // Make sure we are notified if http://crbug.com/49709 returns.  Issue also
   // occurs with some damaged files.
-  if (input->GetTimestamp() == kNoTimestamp() &&
+  if (input->timestamp() == kNoTimestamp() &&
       output_timestamp_helper_->base_timestamp() == kNoTimestamp()) {
     DVLOG(1) << "Received a buffer without timestamps!";
     base::ResetAndReturn(&read_cb_).Run(kDecodeError, NULL);
@@ -371,17 +371,17 @@ void OpusAudioDecoder::BufferReady(
   }
 
   if (last_input_timestamp_ != kNoTimestamp() &&
-      input->GetTimestamp() != kNoTimestamp() &&
-      input->GetTimestamp() < last_input_timestamp_) {
-    base::TimeDelta diff = input->GetTimestamp() - last_input_timestamp_;
+      input->timestamp() != kNoTimestamp() &&
+      input->timestamp() < last_input_timestamp_) {
+    base::TimeDelta diff = input->timestamp() - last_input_timestamp_;
     DVLOG(1) << "Input timestamps are not monotonically increasing! "
-              << " ts " << input->GetTimestamp().InMicroseconds() << " us"
+              << " ts " << input->timestamp().InMicroseconds() << " us"
               << " diff " << diff.InMicroseconds() << " us";
     base::ResetAndReturn(&read_cb_).Run(kDecodeError, NULL);
     return;
   }
 
-  last_input_timestamp_ = input->GetTimestamp();
+  last_input_timestamp_ = input->timestamp();
 
   scoped_refptr<AudioBuffer> output_buffer;
 
@@ -514,16 +514,16 @@ void OpusAudioDecoder::ResetTimestampState() {
 bool OpusAudioDecoder::Decode(const scoped_refptr<DecoderBuffer>& input,
                               scoped_refptr<AudioBuffer>* output_buffer) {
   int samples_decoded = opus_multistream_decode(opus_decoder_,
-                                                input->GetData(),
-                                                input->GetDataSize(),
+                                                input->data(),
+                                                input->data_size(),
                                                 &output_buffer_[0],
                                                 kMaxOpusOutputPacketSizeSamples,
                                                 0);
   if (samples_decoded < 0) {
     LOG(ERROR) << "opus_multistream_decode failed for"
-               << " timestamp: " << input->GetTimestamp().InMicroseconds()
-               << " us, duration: " << input->GetDuration().InMicroseconds()
-               << " us, packet size: " << input->GetDataSize() << " bytes with"
+               << " timestamp: " << input->timestamp().InMicroseconds()
+               << " us, duration: " << input->duration().InMicroseconds()
+               << " us, packet size: " << input->data_size() << " bytes with"
                << " status: " << opus_strerror(samples_decoded);
     return false;
   }
@@ -534,9 +534,9 @@ bool OpusAudioDecoder::Decode(const scoped_refptr<DecoderBuffer>& input,
   DCHECK_LE(decoded_audio_size, kMaxOpusOutputPacketSizeBytes);
 
   if (output_timestamp_helper_->base_timestamp() == kNoTimestamp() &&
-      !input->IsEndOfStream()) {
-    DCHECK(input->GetTimestamp() != kNoTimestamp());
-    output_timestamp_helper_->SetBaseTimestamp(input->GetTimestamp());
+      !input->end_of_stream()) {
+    DCHECK(input->timestamp() != kNoTimestamp());
+    output_timestamp_helper_->SetBaseTimestamp(input->timestamp());
   }
 
   if (decoded_audio_size > 0 && output_bytes_to_drop_ > 0) {

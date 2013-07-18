@@ -200,7 +200,7 @@ static scoped_refptr<DecoderBuffer> CreateWebMEncryptedBuffer(
     data_offset += kWebMIvSize;
   }
 
-  encrypted_buffer->SetDecryptConfig(
+  encrypted_buffer->set_decrypt_config(
       scoped_ptr<DecryptConfig>(new DecryptConfig(
           std::string(reinterpret_cast<const char*>(key_id), key_id_size),
           counter_block_str,
@@ -218,7 +218,7 @@ static scoped_refptr<DecoderBuffer> CreateSubsampleEncryptedBuffer(
   scoped_refptr<DecoderBuffer> encrypted_buffer =
       DecoderBuffer::CopyFrom(data, data_size);
   CHECK(encrypted_buffer.get());
-  encrypted_buffer->SetDecryptConfig(
+  encrypted_buffer->set_decrypt_config(
       scoped_ptr<DecryptConfig>(new DecryptConfig(
           std::string(reinterpret_cast<const char*>(key_id), key_id_size),
           std::string(reinterpret_cast<const char*>(iv), iv_size),
@@ -274,8 +274,8 @@ class AesDecryptorTest : public testing::Test {
 
     decryptor_.Decrypt(Decryptor::kVideo, encrypted, decrypt_cb_);
     ASSERT_TRUE(decrypted.get());
-    ASSERT_EQ(plain_text_size, decrypted->GetDataSize());
-    EXPECT_EQ(0, memcmp(plain_text, decrypted->GetData(), plain_text_size));
+    ASSERT_EQ(plain_text_size, decrypted->data_size());
+    EXPECT_EQ(0, memcmp(plain_text, decrypted->data(), plain_text_size));
   }
 
   void DecryptAndExpectDataMismatch(
@@ -287,8 +287,8 @@ class AesDecryptorTest : public testing::Test {
 
     decryptor_.Decrypt(Decryptor::kVideo, encrypted, decrypt_cb_);
     ASSERT_TRUE(decrypted.get());
-    ASSERT_EQ(plain_text_size, decrypted->GetDataSize());
-    EXPECT_NE(0, memcmp(plain_text, decrypted->GetData(), plain_text_size));
+    ASSERT_EQ(plain_text_size, decrypted->data_size());
+    EXPECT_NE(0, memcmp(plain_text, decrypted->data(), plain_text_size));
   }
 
   void DecryptAndExpectSizeDataMismatch(
@@ -300,8 +300,8 @@ class AesDecryptorTest : public testing::Test {
 
     decryptor_.Decrypt(Decryptor::kVideo, encrypted, decrypt_cb_);
     ASSERT_TRUE(decrypted.get());
-    EXPECT_NE(plain_text_size, decrypted->GetDataSize());
-    EXPECT_NE(0, memcmp(plain_text, decrypted->GetData(), plain_text_size));
+    EXPECT_NE(plain_text_size, decrypted->data_size());
+    EXPECT_NE(0, memcmp(plain_text, decrypted->data(), plain_text_size));
   }
 
   void DecryptAndExpectToFail(const scoped_refptr<DecoderBuffer>& encrypted) {

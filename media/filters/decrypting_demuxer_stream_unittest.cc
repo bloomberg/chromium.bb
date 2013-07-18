@@ -31,7 +31,7 @@ static const uint8 kFakeIv[DecryptConfig::kDecryptionKeySize] = { 0 };
 // Create a fake non-empty encrypted buffer.
 static scoped_refptr<DecoderBuffer> CreateFakeEncryptedBuffer() {
   scoped_refptr<DecoderBuffer> buffer(new DecoderBuffer(kFakeBufferSize));
-  buffer->SetDecryptConfig(scoped_ptr<DecryptConfig>(new DecryptConfig(
+  buffer->set_decrypt_config(scoped_ptr<DecryptConfig>(new DecryptConfig(
       std::string(reinterpret_cast<const char*>(kFakeKeyId),
                   arraysize(kFakeKeyId)),
       std::string(reinterpret_cast<const char*>(kFakeIv), arraysize(kFakeIv)),
@@ -58,7 +58,7 @@ ACTION_P2(ResetAndRunCallback, callback, param) {
 }
 
 MATCHER(IsEndOfStream, "end of stream") {
-  return (arg->IsEndOfStream());
+  return arg->end_of_stream();
 }
 
 }  // namespace
@@ -129,7 +129,7 @@ class DecryptingDemuxerStreamTest : public testing::Test {
       const scoped_refptr<DecoderBuffer>& decrypted_buffer) {
     if (status != DemuxerStream::kOk)
       EXPECT_CALL(*this, BufferReady(status, IsNull()));
-    else if (decrypted_buffer->IsEndOfStream())
+    else if (decrypted_buffer->end_of_stream())
       EXPECT_CALL(*this, BufferReady(status, IsEndOfStream()));
     else
       EXPECT_CALL(*this, BufferReady(status, decrypted_buffer));

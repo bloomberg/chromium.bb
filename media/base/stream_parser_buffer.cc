@@ -29,7 +29,7 @@ scoped_refptr<StreamParserBuffer> StreamParserBuffer::CopyFrom(
 
 base::TimeDelta StreamParserBuffer::GetDecodeTimestamp() const {
   if (decode_timestamp_ == kNoTimestamp())
-    return GetTimestamp();
+    return timestamp();
   return decode_timestamp_;
 }
 
@@ -48,7 +48,7 @@ StreamParserBuffer::StreamParserBuffer(const uint8* data, int data_size,
   // duration to force clients to set them? Today they end up being zero which
   // is both a common and valid value and could lead to bugs.
   if (data) {
-    SetDuration(kNoTimestamp());
+    set_duration(kNoTimestamp());
   }
 }
 

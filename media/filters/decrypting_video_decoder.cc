@@ -214,8 +214,8 @@ void DecryptingVideoDecoder::DecodePendingBuffer() {
       "eme", "DecryptingVideoDecoder::DecodePendingBuffer", ++trace_id_);
 
   int buffer_size = 0;
-  if (!pending_buffer_to_decode_->IsEndOfStream()) {
-    buffer_size = pending_buffer_to_decode_->GetDataSize();
+  if (!pending_buffer_to_decode_->end_of_stream()) {
+    buffer_size = pending_buffer_to_decode_->data_size();
   }
 
   decryptor_->DecryptAndDecodeVideo(
@@ -279,7 +279,7 @@ void DecryptingVideoDecoder::DeliverFrame(
 
   if (status == Decryptor::kNeedMoreData) {
     DVLOG(2) << "DeliverFrame() - kNeedMoreData";
-    if (scoped_pending_buffer_to_decode->IsEndOfStream()) {
+    if (scoped_pending_buffer_to_decode->end_of_stream()) {
       state_ = kDecodeFinished;
       base::ResetAndReturn(&read_cb_).Run(
           kOk, media::VideoFrame::CreateEmptyFrame());

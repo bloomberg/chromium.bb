@@ -222,7 +222,7 @@ void VpxVideoDecoder::DecodeBuffer(const scoped_refptr<DecoderBuffer>& buffer) {
   DCHECK(buffer);
 
   // Transition to kDecodeFinished on the first end of stream buffer.
-  if (state_ == kNormal && buffer->IsEndOfStream()) {
+  if (state_ == kNormal && buffer->end_of_stream()) {
     state_ = kDecodeFinished;
     base::ResetAndReturn(&read_cb_).Run(kOk, VideoFrame::CreateEmptyFrame());
     return;
@@ -235,6 +235,7 @@ void VpxVideoDecoder::DecodeBuffer(const scoped_refptr<DecoderBuffer>& buffer) {
     return;
   }
 
+  // If we didn't get a frame we need more data.
   if (!video_frame.get()) {
     base::ResetAndReturn(&read_cb_).Run(kNotEnoughData, NULL);
     return;
@@ -246,14 +247,14 @@ void VpxVideoDecoder::DecodeBuffer(const scoped_refptr<DecoderBuffer>& buffer) {
 bool VpxVideoDecoder::VpxDecode(const scoped_refptr<DecoderBuffer>& buffer,
                                 scoped_refptr<VideoFrame>* video_frame) {
   DCHECK(video_frame);
-  DCHECK(!buffer->IsEndOfStream());
+  DCHECK(!buffer->end_of_stream());
 
   // Pass |buffer| to libvpx.
-  int64 timestamp = buffer->GetTimestamp().InMicroseconds();
+  int64 timestamp = buffer->timestamp().InMicroseconds();
   void* user_priv = reinterpret_cast<void*>(&timestamp);
   vpx_codec_err_t status = vpx_codec_decode(vpx_codec_,
-                                            buffer->GetData(),
-                                            buffer->GetDataSize(),
+                                            buffer->data(),
+                                            buffer->data_size(),
                                             user_priv,
                                             0);
   if (status != VPX_CODEC_OK) {
@@ -275,18 +276,18 @@ bool VpxVideoDecoder::VpxDecode(const scoped_refptr<DecoderBuffer>& buffer,
   }
 
   const vpx_image_t* vpx_image_alpha = NULL;
-  if (vpx_codec_alpha_ && buffer->GetSideDataSize() >= 8) {
+  if (vpx_codec_alpha_ && buffer->side_data_size() >= 8) {
     // Pass alpha data to libvpx.
-    int64 timestamp_alpha = buffer->GetTimestamp().InMicroseconds();
+    int64 timestamp_alpha = buffer->timestamp().InMicroseconds();
     void* user_priv_alpha = reinterpret_cast<void*>(&timestamp_alpha);
 
     // First 8 bytes of side data is side_data_id in big endian.
     const uint64 side_data_id = base::NetToHost64(
-        *(reinterpret_cast<const uint64*>(buffer->GetSideData())));
+        *(reinterpret_cast<const uint64*>(buffer->side_data())));
     if (side_data_id == 1) {
       status = vpx_codec_decode(vpx_codec_alpha_,
-                                buffer->GetSideData() + 8,
-                                buffer->GetSideDataSize() - 8,
+                                buffer->side_data() + 8,
+                                buffer->side_data_size() - 8,
                                 user_priv_alpha,
                                 0);
 

@@ -246,7 +246,7 @@ void FFmpegVideoDecoder::DecodeBuffer(
   // These are the possible state transitions.
   //
   // kNormal -> kFlushCodec:
-  //     When buffer->IsEndOfStream() is first true.
+  //     When buffer->end_of_stream() is first true.
   // kNormal -> kError:
   //     A decoding error occurs and decoding needs to stop.
   // kFlushCodec -> kDecodeFinished:
@@ -257,7 +257,7 @@ void FFmpegVideoDecoder::DecodeBuffer(
   //     Any time Reset() is called.
 
   // Transition to kFlushCodec on the first end of stream buffer.
-  if (state_ == kNormal && buffer->IsEndOfStream()) {
+  if (state_ == kNormal && buffer->end_of_stream()) {
     state_ = kFlushCodec;
   }
 
@@ -270,7 +270,7 @@ void FFmpegVideoDecoder::DecodeBuffer(
 
   if (!video_frame.get()) {
     if (state_ == kFlushCodec) {
-      DCHECK(buffer->IsEndOfStream());
+      DCHECK(buffer->end_of_stream());
       state_ = kDecodeFinished;
       base::ResetAndReturn(&read_cb_).Run(kOk, VideoFrame::CreateEmptyFrame());
       return;
@@ -295,15 +295,15 @@ bool FFmpegVideoDecoder::FFmpegDecode(
   // Due to FFmpeg API changes we no longer have const read-only pointers.
   AVPacket packet;
   av_init_packet(&packet);
-  if (buffer->IsEndOfStream()) {
+  if (buffer->end_of_stream()) {
     packet.data = NULL;
     packet.size = 0;
   } else {
-    packet.data = const_cast<uint8*>(buffer->GetData());
-    packet.size = buffer->GetDataSize();
+    packet.data = const_cast<uint8*>(buffer->data());
+    packet.size = buffer->data_size();
 
     // Let FFmpeg handle presentation timestamp reordering.
-    codec_context_->reordered_opaque = buffer->GetTimestamp().InMicroseconds();
+    codec_context_->reordered_opaque = buffer->timestamp().InMicroseconds();
 
     // This is for codecs not using get_buffer to initialize
     // |av_frame_->reordered_opaque|

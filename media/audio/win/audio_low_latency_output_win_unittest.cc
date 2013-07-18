@@ -134,7 +134,7 @@ class ReadFromFileAudioSource : public AudioOutputStream::AudioSourceCallback {
     int frames = max_size / (audio_bus->channels() * kBitsPerSample / 8);
     if (max_size) {
       audio_bus->FromInterleaved(
-          file_->GetData() + pos_, frames, kBitsPerSample / 8);
+          file_->data() + pos_, frames, kBitsPerSample / 8);
       pos_ += max_size;
     }
     return frames;
@@ -149,7 +149,7 @@ class ReadFromFileAudioSource : public AudioOutputStream::AudioSourceCallback {
 
   virtual void OnError(AudioOutputStream* stream) {}
 
-  int file_size() { return file_->GetDataSize(); }
+  int file_size() { return file_->data_size(); }
 
  private:
   scoped_refptr<DecoderBuffer> file_;

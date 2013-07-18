@@ -310,8 +310,8 @@ void DecryptingAudioDecoder::DecryptAndDecodeBuffer(
   // Initialize the |next_output_timestamp_| to be the timestamp of the first
   // non-EOS buffer.
   if (timestamp_helper_->base_timestamp() == kNoTimestamp() &&
-      !buffer->IsEndOfStream()) {
-    timestamp_helper_->SetBaseTimestamp(buffer->GetTimestamp());
+      !buffer->end_of_stream()) {
+    timestamp_helper_->SetBaseTimestamp(buffer->timestamp());
   }
 
   pending_buffer_to_decode_ = buffer;
@@ -324,8 +324,8 @@ void DecryptingAudioDecoder::DecodePendingBuffer() {
   DCHECK_EQ(state_, kPendingDecode) << state_;
 
   int buffer_size = 0;
-  if (!pending_buffer_to_decode_->IsEndOfStream()) {
-    buffer_size = pending_buffer_to_decode_->GetDataSize();
+  if (!pending_buffer_to_decode_->end_of_stream()) {
+    buffer_size = pending_buffer_to_decode_->data_size();
   }
 
   decryptor_->DecryptAndDecodeAudio(
@@ -392,7 +392,7 @@ void DecryptingAudioDecoder::DeliverFrame(
 
   if (status == Decryptor::kNeedMoreData) {
     DVLOG(2) << "DeliverFrame() - kNeedMoreData";
-    if (scoped_pending_buffer_to_decode->IsEndOfStream()) {
+    if (scoped_pending_buffer_to_decode->end_of_stream()) {
       state_ = kDecodeFinished;
       base::ResetAndReturn(&read_cb_).Run(kOk, AudioBuffer::CreateEOSBuffer());
       return;

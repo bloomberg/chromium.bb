@@ -258,8 +258,8 @@ scoped_refptr<DecoderBuffer> CreateFakeVideoBufferForTest(
   scoped_refptr<DecoderBuffer> buffer = DecoderBuffer::CopyFrom(
       static_cast<const uint8*>(pickle.data()),
       static_cast<int>(pickle.size()));
-  buffer->SetTimestamp(timestamp);
-  buffer->SetDuration(duration);
+  buffer->set_timestamp(timestamp);
+  buffer->set_duration(duration);
 
   return buffer;
 }
@@ -268,8 +268,8 @@ bool VerifyFakeVideoBufferForTest(
     const scoped_refptr<DecoderBuffer>& buffer,
     const VideoDecoderConfig& config) {
   // Check if the input |buffer| matches the |config|.
-  PickleIterator pickle(Pickle(reinterpret_cast<const char*>(buffer->GetData()),
-                               buffer->GetDataSize()));
+  PickleIterator pickle(Pickle(reinterpret_cast<const char*>(buffer->data()),
+                               buffer->data_size()));
   std::string header;
   int width = 0;
   int height = 0;

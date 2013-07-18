@@ -75,9 +75,9 @@ class MP4StreamParserTest : public testing::Test {
     for (StreamParser::BufferQueue::const_iterator buf = bufs.begin();
          buf != bufs.end(); buf++) {
       DVLOG(3) << "  n=" << buf - bufs.begin()
-               << ", size=" << (*buf)->GetDataSize()
-               << ", dur=" << (*buf)->GetDuration().InMilliseconds();
-      EXPECT_GE((*buf)->GetTimestamp(), segment_start_);
+               << ", size=" << (*buf)->data_size()
+               << ", dur=" << (*buf)->duration().InMilliseconds();
+      EXPECT_GE((*buf)->timestamp(), segment_start_);
     }
     return true;
   }
@@ -131,8 +131,8 @@ class MP4StreamParserTest : public testing::Test {
     InitializeParser();
 
     scoped_refptr<DecoderBuffer> buffer = ReadTestDataFile(filename);
-    EXPECT_TRUE(AppendDataInPieces(buffer->GetData(),
-                                   buffer->GetDataSize(),
+    EXPECT_TRUE(AppendDataInPieces(buffer->data(),
+                                   buffer->data_size(),
                                    append_bytes));
     return true;
   }
@@ -161,10 +161,10 @@ TEST_F(MP4StreamParserTest, TestFlush) {
 
   scoped_refptr<DecoderBuffer> buffer =
       ReadTestDataFile("bear-1280x720-av_frag.mp4");
-  EXPECT_TRUE(AppendDataInPieces(buffer->GetData(), 65536, 512));
+  EXPECT_TRUE(AppendDataInPieces(buffer->data(), 65536, 512));
   parser_->Flush();
-  EXPECT_TRUE(AppendDataInPieces(buffer->GetData(),
-                                 buffer->GetDataSize(),
+  EXPECT_TRUE(AppendDataInPieces(buffer->data(),
+                                 buffer->data_size(),
                                  512));
 }
 
@@ -173,11 +173,11 @@ TEST_F(MP4StreamParserTest, TestReinitialization) {
 
   scoped_refptr<DecoderBuffer> buffer =
       ReadTestDataFile("bear-1280x720-av_frag.mp4");
-  EXPECT_TRUE(AppendDataInPieces(buffer->GetData(),
-                                 buffer->GetDataSize(),
+  EXPECT_TRUE(AppendDataInPieces(buffer->data(),
+                                 buffer->data_size(),
                                  512));
-  EXPECT_TRUE(AppendDataInPieces(buffer->GetData(),
-                                 buffer->GetDataSize(),
+  EXPECT_TRUE(AppendDataInPieces(buffer->data(),
+                                 buffer->data_size(),
                                  512));
 }
 
@@ -194,14 +194,14 @@ TEST_F(MP4StreamParserTest, TestNoMoovAfterFlush) {
 
   scoped_refptr<DecoderBuffer> buffer =
       ReadTestDataFile("bear-1280x720-av_frag.mp4");
-  EXPECT_TRUE(AppendDataInPieces(buffer->GetData(),
-                                 buffer->GetDataSize(),
+  EXPECT_TRUE(AppendDataInPieces(buffer->data(),
+                                 buffer->data_size(),
                                  512));
   parser_->Flush();
 
   const int kFirstMoofOffset = 1307;
-  EXPECT_TRUE(AppendDataInPieces(buffer->GetData() + kFirstMoofOffset,
-                                 buffer->GetDataSize() - kFirstMoofOffset,
+  EXPECT_TRUE(AppendDataInPieces(buffer->data() + kFirstMoofOffset,
+                                 buffer->data_size() - kFirstMoofOffset,
                                  512));
 }
 

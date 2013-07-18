@@ -29,13 +29,14 @@ struct QueuedAudioBuffer {
 };
 
 // Returns true if the decode result was end of stream.
-static inline bool IsEndOfStream(int result, int decoded_size,
+static inline bool IsEndOfStream(int result,
+                                 int decoded_size,
                                  const scoped_refptr<DecoderBuffer>& input) {
   // Three conditions to meet to declare end of stream for this decoder:
   // 1. FFmpeg didn't read anything.
   // 2. FFmpeg didn't output anything.
   // 3. An end of stream buffer is received.
-  return result == 0 && decoded_size == 0 && input->IsEndOfStream();
+  return result == 0 && decoded_size == 0 && input->end_of_stream();
 }
 
 FFmpegAudioDecoder::FFmpegAudioDecoder(
@@ -184,7 +185,7 @@ void FFmpegAudioDecoder::BufferReady(
 
   // Make sure we are notified if http://crbug.com/49709 returns.  Issue also
   // occurs with some damaged files.
-  if (!input->IsEndOfStream() && input->GetTimestamp() == kNoTimestamp() &&
+  if (!input->end_of_stream() && input->timestamp() == kNoTimestamp() &&
       output_timestamp_helper_->base_timestamp() == kNoTimestamp()) {
     DVLOG(1) << "Received a buffer without timestamps!";
     base::ResetAndReturn(&read_cb_).Run(kDecodeError, NULL);
@@ -192,27 +193,27 @@ void FFmpegAudioDecoder::BufferReady(
   }
 
   bool is_vorbis = codec_context_->codec_id == AV_CODEC_ID_VORBIS;
-  if (!input->IsEndOfStream()) {
+  if (!input->end_of_stream()) {
     if (last_input_timestamp_ == kNoTimestamp()) {
-      if (is_vorbis && (input->GetTimestamp() < base::TimeDelta())) {
+      if (is_vorbis && (input->timestamp() < base::TimeDelta())) {
         // Dropping frames for negative timestamps as outlined in section A.2
         // in the Vorbis spec. http://xiph.org/vorbis/doc/Vorbis_I_spec.html
         output_frames_to_drop_ = floor(
-            0.5 + -input->GetTimestamp().InSecondsF() * samples_per_second_);
+            0.5 + -input->timestamp().InSecondsF() * samples_per_second_);
       } else {
-        last_input_timestamp_ = input->GetTimestamp();
+        last_input_timestamp_ = input->timestamp();
       }
-    } else if (input->GetTimestamp() != kNoTimestamp()) {
-      if (input->GetTimestamp() < last_input_timestamp_) {
-        base::TimeDelta diff = input->GetTimestamp() - last_input_timestamp_;
+    } else if (input->timestamp() != kNoTimestamp()) {
+      if (input->timestamp() < last_input_timestamp_) {
+        base::TimeDelta diff = input->timestamp() - last_input_timestamp_;
         DVLOG(1) << "Input timestamps are not monotonically increasing! "
-                 << " ts " << input->GetTimestamp().InMicroseconds() << " us"
+                 << " ts " << input->timestamp().InMicroseconds() << " us"
                  << " diff " << diff.InMicroseconds() << " us";
         base::ResetAndReturn(&read_cb_).Run(kDecodeError, NULL);
         return;
       }
 
-      last_input_timestamp_ = input->GetTimestamp();
+      last_input_timestamp_ = input->timestamp();
     }
   }
 
@@ -317,12 +318,12 @@ void FFmpegAudioDecoder::RunDecodeLoop(
     bool skip_eos_append) {
   AVPacket packet;
   av_init_packet(&packet);
-  if (input->IsEndOfStream()) {
+  if (input->end_of_stream()) {
     packet.data = NULL;
     packet.size = 0;
   } else {
-    packet.data = const_cast<uint8*>(input->GetData());
-    packet.size = input->GetDataSize();
+    packet.data = const_cast<uint8*>(input->data());
+    packet.size = input->data_size();
   }
 
   // Each audio packet may contain several frames, so we must call the decoder
@@ -338,16 +339,16 @@ void FFmpegAudioDecoder::RunDecodeLoop(
         codec_context_, av_frame_, &frame_decoded, &packet);
 
     if (result < 0) {
-      DCHECK(!input->IsEndOfStream())
+      DCHECK(!input->end_of_stream())
           << "End of stream buffer produced an error! "
           << "This is quite possibly a bug in the audio decoder not handling "
           << "end of stream AVPackets correctly.";
 
       DLOG(ERROR)
           << "Error decoding an audio frame with timestamp: "
-          << input->GetTimestamp().InMicroseconds() << " us, duration: "
-          << input->GetDuration().InMicroseconds() << " us, packet size: "
-          << input->GetDataSize() << " bytes";
+          << input->timestamp().InMicroseconds() << " us, duration: "
+          << input->duration().InMicroseconds() << " us, packet size: "
+          << input->data_size() << " bytes";
 
       // TODO(dalecurtis): We should return a kDecodeError here instead:
       // http://crbug.com/145276
@@ -360,15 +361,15 @@ void FFmpegAudioDecoder::RunDecodeLoop(
     packet.data += result;
 
     if (output_timestamp_helper_->base_timestamp() == kNoTimestamp() &&
-        !input->IsEndOfStream()) {
-      DCHECK(input->GetTimestamp() != kNoTimestamp());
+        !input->end_of_stream()) {
+      DCHECK(input->timestamp() != kNoTimestamp());
       if (output_frames_to_drop_ > 0) {
         // Currently Vorbis is the only codec that causes us to drop samples.
         // If we have to drop samples it always means the timeline starts at 0.
         DCHECK_EQ(codec_context_->codec_id, AV_CODEC_ID_VORBIS);
         output_timestamp_helper_->SetBaseTimestamp(base::TimeDelta());
       } else {
-        output_timestamp_helper_->SetBaseTimestamp(input->GetTimestamp());
+        output_timestamp_helper_->SetBaseTimestamp(input->timestamp());
       }
     }
 

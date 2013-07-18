@@ -20,8 +20,8 @@ static base::TimeDelta ToTimeDelta(int seconds) {
 // Negative numbers will be converted to kNoTimestamp();
 static scoped_refptr<DecoderBuffer> CreateBuffer(int timestamp) {
   scoped_refptr<DecoderBuffer> buffer = new DecoderBuffer(0);
-  buffer->SetTimestamp(ToTimeDelta(timestamp));
-  buffer->SetDuration(ToTimeDelta(0));
+  buffer->set_timestamp(ToTimeDelta(timestamp));
+  buffer->set_duration(ToTimeDelta(0));
   return buffer;
 }
 

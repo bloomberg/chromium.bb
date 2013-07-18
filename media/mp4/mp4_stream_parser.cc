@@ -509,10 +509,10 @@ bool MP4StreamParser::EnqueueSample(BufferQueue* audio_buffers,
                                  runs_->is_keyframe());
 
   if (decrypt_config)
-    stream_buf->SetDecryptConfig(decrypt_config.Pass());
+    stream_buf->set_decrypt_config(decrypt_config.Pass());
 
-  stream_buf->SetDuration(runs_->duration());
-  stream_buf->SetTimestamp(runs_->cts());
+  stream_buf->set_duration(runs_->duration());
+  stream_buf->set_timestamp(runs_->cts());
   stream_buf->SetDecodeTimestamp(runs_->dts());
 
   DVLOG(3) << "Pushing frame: aud=" << audio

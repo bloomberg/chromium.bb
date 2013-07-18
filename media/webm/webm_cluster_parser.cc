@@ -336,15 +336,15 @@ bool WebMClusterParser::OnBlock(bool is_simple_block, int track_num,
         encryption_key_id.size()));
     if (!config)
       return false;
-    buffer->SetDecryptConfig(config.Pass());
+    buffer->set_decrypt_config(config.Pass());
   }
 
-  buffer->SetTimestamp(timestamp);
+  buffer->set_timestamp(timestamp);
   if (cluster_start_time_ == kNoTimestamp())
     cluster_start_time_ = timestamp;
 
   if (block_duration >= 0) {
-    buffer->SetDuration(base::TimeDelta::FromMicroseconds(
+    buffer->set_duration(base::TimeDelta::FromMicroseconds(
         block_duration * timecode_multiplier_));
   }
 
@@ -361,10 +361,10 @@ WebMClusterParser::Track::~Track() {}
 bool WebMClusterParser::Track::AddBuffer(
     const scoped_refptr<StreamParserBuffer>& buffer) {
   DVLOG(2) << "AddBuffer() : " << track_num_
-           << " ts " << buffer->GetTimestamp().InSecondsF()
-           << " dur " << buffer->GetDuration().InSecondsF()
+           << " ts " << buffer->timestamp().InSecondsF()
+           << " dur " << buffer->duration().InSecondsF()
            << " kf " << buffer->IsKeyframe()
-           << " size " << buffer->GetDataSize();
+           << " size " << buffer->data_size();
 
   buffers_.push_back(buffer);
   return true;

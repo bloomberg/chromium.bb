@@ -205,7 +205,7 @@ void VideoFrameStream::Decode(const scoped_refptr<DecoderBuffer>& buffer) {
   DCHECK(stop_cb_.is_null());
   DCHECK(buffer);
 
-  int buffer_size = buffer->IsEndOfStream() ? 0 : buffer->GetDataSize();
+  int buffer_size = buffer->end_of_stream() ? 0 : buffer->data_size();
   decoder_->Decode(buffer, base::Bind(&VideoFrameStream::OnFrameReady,
                                       weak_this_, buffer_size));
 }

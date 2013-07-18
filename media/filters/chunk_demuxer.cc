@@ -280,7 +280,7 @@ void SourceState::AdjustBufferTimestamps(
        itr != buffers.end(); ++itr) {
     (*itr)->SetDecodeTimestamp(
         (*itr)->GetDecodeTimestamp() + timestamp_offset_);
-    (*itr)->SetTimestamp((*itr)->GetTimestamp() + timestamp_offset_);
+    (*itr)->set_timestamp((*itr)->timestamp() + timestamp_offset_);
   }
 }
 
@@ -385,7 +385,7 @@ bool SourceState::OnBuffers(DemuxerStream::Type type,
 
   if (!stream->Append(buffers))
     return false;
-  increase_duration_cb_.Run(buffers.back()->GetTimestamp(), stream);
+  increase_duration_cb_.Run(buffers.back()->timestamp(), stream);
   return true;
 }
 
@@ -1206,13 +1206,13 @@ bool ChunkDemuxer::OnTextBuffers(
   for (StreamParser::BufferQueue::const_iterator itr = buffers.begin();
        itr != buffers.end(); ++itr) {
     const StreamParserBuffer* const buffer = itr->get();
-    const TimeDelta start = buffer->GetTimestamp();
-    const TimeDelta end = start + buffer->GetDuration();
+    const TimeDelta start = buffer->timestamp();
+    const TimeDelta end = start + buffer->duration();
 
     std::string id, settings, content;
 
-    WebMWebVTTParser::Parse(buffer->GetData(),
-                            buffer->GetDataSize(),
+    WebMWebVTTParser::Parse(buffer->data(),
+                            buffer->data_size(),
                             &id, &settings, &content);
 
     text_track->addWebVTTCue(start, end, id, content, settings);

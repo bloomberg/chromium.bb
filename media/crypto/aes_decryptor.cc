@@ -47,8 +47,8 @@ static void CopySubsamples(const std::vector<SubsampleEntry>& subsamples,
 // data if decryption succeeded or NULL if decryption failed.
 static scoped_refptr<DecoderBuffer> DecryptData(const DecoderBuffer& input,
                                                 crypto::SymmetricKey* key) {
-  CHECK(input.GetDataSize());
-  CHECK(input.GetDecryptConfig());
+  CHECK(input.data_size());
+  CHECK(input.decrypt_config());
   CHECK(key);
 
   crypto::Encryptor encryptor;
@@ -57,19 +57,19 @@ static scoped_refptr<DecoderBuffer> DecryptData(const DecoderBuffer& input,
     return NULL;
   }
 
-  DCHECK_EQ(input.GetDecryptConfig()->iv().size(),
+  DCHECK_EQ(input.decrypt_config()->iv().size(),
             static_cast<size_t>(DecryptConfig::kDecryptionKeySize));
-  if (!encryptor.SetCounter(input.GetDecryptConfig()->iv())) {
+  if (!encryptor.SetCounter(input.decrypt_config()->iv())) {
     DVLOG(1) << "Could not set counter block.";
     return NULL;
   }
 
-  const int data_offset = input.GetDecryptConfig()->data_offset();
+  const int data_offset = input.decrypt_config()->data_offset();
   const char* sample =
-      reinterpret_cast<const char*>(input.GetData() + data_offset);
-  int sample_size = input.GetDataSize() - data_offset;
+      reinterpret_cast<const char*>(input.data() + data_offset);
+  int sample_size = input.data_size() - data_offset;
 
-  if (input.GetDecryptConfig()->subsamples().empty()) {
+  if (input.decrypt_config()->subsamples().empty()) {
     std::string decrypted_text;
     base::StringPiece encrypted_text(sample, sample_size);
     if (!encryptor.Decrypt(encrypted_text, &decrypted_text)) {
@@ -84,7 +84,7 @@ static scoped_refptr<DecoderBuffer> DecryptData(const DecoderBuffer& input,
   }
 
   const std::vector<SubsampleEntry>& subsamples =
-      input.GetDecryptConfig()->subsamples();
+      input.decrypt_config()->subsamples();
 
   int total_clear_size = 0;
   int total_encrypted_size = 0;
@@ -120,7 +120,7 @@ static scoped_refptr<DecoderBuffer> DecryptData(const DecoderBuffer& input,
       reinterpret_cast<const uint8*>(sample), sample_size);
   CopySubsamples(subsamples, kDstContainsClearBytes,
                  reinterpret_cast<const uint8*>(decrypted_text.data()),
-                 output->GetWritableData());
+                 output->writable_data());
   return output;
 }
 
@@ -228,16 +228,16 @@ void AesDecryptor::RegisterNewKeyCB(StreamType stream_type,
 void AesDecryptor::Decrypt(StreamType stream_type,
                            const scoped_refptr<DecoderBuffer>& encrypted,
                            const DecryptCB& decrypt_cb) {
-  CHECK(encrypted->GetDecryptConfig());
+  CHECK(encrypted->decrypt_config());
 
   scoped_refptr<DecoderBuffer> decrypted;
   // An empty iv string signals that the frame is unencrypted.
-  if (encrypted->GetDecryptConfig()->iv().empty()) {
-    int data_offset = encrypted->GetDecryptConfig()->data_offset();
-    decrypted = DecoderBuffer::CopyFrom(encrypted->GetData() + data_offset,
-                                        encrypted->GetDataSize() - data_offset);
+  if (encrypted->decrypt_config()->iv().empty()) {
+    int data_offset = encrypted->decrypt_config()->data_offset();
+    decrypted = DecoderBuffer::CopyFrom(encrypted->data() + data_offset,
+                                        encrypted->data_size() - data_offset);
   } else {
-    const std::string& key_id = encrypted->GetDecryptConfig()->key_id();
+    const std::string& key_id = encrypted->decrypt_config()->key_id();
     DecryptionKey* key = GetKey(key_id);
     if (!key) {
       DVLOG(1) << "Could not find a matching key for the given key ID.";
@@ -254,8 +254,8 @@ void AesDecryptor::Decrypt(StreamType stream_type,
     }
   }
 
-  decrypted->SetTimestamp(encrypted->GetTimestamp());
-  decrypted->SetDuration(encrypted->GetDuration());
+  decrypted->set_timestamp(encrypted->timestamp());
+  decrypted->set_duration(encrypted->duration());
   decrypt_cb.Run(kSuccess, decrypted);
 }
 

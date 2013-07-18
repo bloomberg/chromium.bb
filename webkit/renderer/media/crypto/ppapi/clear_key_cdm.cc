@@ -98,8 +98,8 @@ static scoped_refptr<media::DecoderBuffer> CopyDecoderBufferFrom(
       input_buffer.data_offset,
       subsamples));
 
-  output_buffer->SetDecryptConfig(decrypt_config.Pass());
-  output_buffer->SetTimestamp(
+  output_buffer->set_decrypt_config(decrypt_config.Pass());
+  output_buffer->set_timestamp(
       base::TimeDelta::FromMicroseconds(input_buffer.timestamp));
 
   return output_buffer;
@@ -299,14 +299,14 @@ cdm::Status ClearKeyCdm::Decrypt(
   if (status != cdm::kSuccess)
     return status;
 
-  DCHECK(buffer->GetData());
+  DCHECK(buffer->data());
   decrypted_block->SetDecryptedBuffer(
-      host_->Allocate(buffer->GetDataSize()));
+      host_->Allocate(buffer->data_size()));
   memcpy(reinterpret_cast<void*>(decrypted_block->DecryptedBuffer()->Data()),
-         buffer->GetData(),
-         buffer->GetDataSize());
-  decrypted_block->DecryptedBuffer()->SetSize(buffer->GetDataSize());
-  decrypted_block->SetTimestamp(buffer->GetTimestamp().InMicroseconds());
+         buffer->data(),
+         buffer->data_size());
+  decrypted_block->DecryptedBuffer()->SetSize(buffer->data_size());
+  decrypted_block->SetTimestamp(buffer->timestamp().InMicroseconds());
 
   return cdm::kSuccess;
 }
@@ -402,9 +402,9 @@ cdm::Status ClearKeyCdm::DecryptAndDecodeFrame(
   const uint8_t* data = NULL;
   int32_t size = 0;
   int64_t timestamp = 0;
-  if (!buffer->IsEndOfStream()) {
-    data = buffer->GetData();
-    size = buffer->GetDataSize();
+  if (!buffer->end_of_stream()) {
+    data = buffer->data();
+    size = buffer->data_size();
     timestamp = encrypted_buffer.timestamp;
   }
 
@@ -426,16 +426,16 @@ cdm::Status ClearKeyCdm::DecryptAndDecodeSamples(
   const uint8_t* data = NULL;
   int32_t size = 0;
   int64_t timestamp = 0;
-  if (!buffer->IsEndOfStream()) {
-    data = buffer->GetData();
-    size = buffer->GetDataSize();
+  if (!buffer->end_of_stream()) {
+    data = buffer->data();
+    size = buffer->data_size();
     timestamp = encrypted_buffer.timestamp;
   }
 
   return audio_decoder_->DecodeBuffer(data, size, timestamp, audio_frames);
 #elif defined(CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER)
   int64 timestamp_in_microseconds = kNoTimestamp;
-  if (!buffer->IsEndOfStream()) {
+  if (!buffer->end_of_stream()) {
     timestamp_in_microseconds = buffer->GetTimestamp().InMicroseconds();
     DCHECK(timestamp_in_microseconds != kNoTimestamp);
   }
@@ -472,7 +472,7 @@ cdm::Status ClearKeyCdm::DecryptToMediaDecoderBuffer(
   scoped_refptr<media::DecoderBuffer> buffer =
       CopyDecoderBufferFrom(encrypted_buffer);
 
-  if (buffer->IsEndOfStream()) {
+  if (buffer->end_of_stream()) {
     *decrypted_buffer = buffer;
     return cdm::kSuccess;
   }

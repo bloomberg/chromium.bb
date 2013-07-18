@@ -188,7 +188,7 @@ void DecryptingDemuxerStream::DecryptBuffer(
     return;
   }
 
-  if (buffer->IsEndOfStream()) {
+  if (buffer->end_of_stream()) {
     DVLOG(2) << "DoDecryptBuffer() - EOS buffer.";
     state_ = kIdle;
     base::ResetAndReturn(&read_cb_).Run(status, buffer);

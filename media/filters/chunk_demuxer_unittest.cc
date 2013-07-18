@@ -89,18 +89,18 @@ static void WriteInt64(uint8* buffer, int64 number) {
 }
 
 MATCHER_P(HasTimestamp, timestamp_in_ms, "") {
-  return arg.get() && !arg->IsEndOfStream() &&
-         arg->GetTimestamp().InMilliseconds() == timestamp_in_ms;
+  return arg.get() && !arg->end_of_stream() &&
+         arg->timestamp().InMilliseconds() == timestamp_in_ms;
 }
 
-MATCHER(IsEndOfStream, "") { return arg.get() && arg->IsEndOfStream(); }
+MATCHER(IsEndOfStream, "") { return arg.get() && arg->end_of_stream(); }
 
 static void OnReadDone(const base::TimeDelta& expected_time,
                        bool* called,
                        DemuxerStream::Status status,
                        const scoped_refptr<DecoderBuffer>& buffer) {
   EXPECT_EQ(status, DemuxerStream::kOk);
-  EXPECT_EQ(expected_time, buffer->GetTimestamp());
+  EXPECT_EQ(expected_time, buffer->timestamp());
   *called = true;
 }
 
@@ -116,7 +116,7 @@ static void OnReadDone_EOSExpected(bool* called,
                                    DemuxerStream::Status status,
                                    const scoped_refptr<DecoderBuffer>& buffer) {
   EXPECT_EQ(status, DemuxerStream::kOk);
-  EXPECT_TRUE(buffer->IsEndOfStream());
+  EXPECT_TRUE(buffer->end_of_stream());
   *called = true;
 }
 
@@ -185,33 +185,33 @@ class ChunkDemuxerTest : public testing::Test {
 
     if (has_audio) {
       audio_track_entry = ReadTestDataFile("webm_vorbis_track_entry");
-      tracks_element_size += audio_track_entry->GetDataSize();
+      tracks_element_size += audio_track_entry->data_size();
       if (is_audio_encrypted) {
         audio_content_encodings = ReadTestDataFile("webm_content_encodings");
-        tracks_element_size += audio_content_encodings->GetDataSize();
+        tracks_element_size += audio_content_encodings->data_size();
       }
     }
 
     if (has_video) {
       video_track_entry = ReadTestDataFile("webm_vp8_track_entry");
-      tracks_element_size += video_track_entry->GetDataSize();
+      tracks_element_size += video_track_entry->data_size();
       if (is_video_encrypted) {
         video_content_encodings = ReadTestDataFile("webm_content_encodings");
-        tracks_element_size += video_content_encodings->GetDataSize();
+        tracks_element_size += video_content_encodings->data_size();
       }
     }
 
-    *size = ebml_header->GetDataSize() + info->GetDataSize() +
+    *size = ebml_header->data_size() + info->data_size() +
         kTracksHeaderSize + tracks_element_size;
 
     buffer->reset(new uint8[*size]);
 
     uint8* buf = buffer->get();
-    memcpy(buf, ebml_header->GetData(), ebml_header->GetDataSize());
-    buf += ebml_header->GetDataSize();
+    memcpy(buf, ebml_header->data(), ebml_header->data_size());
+    buf += ebml_header->data_size();
 
-    memcpy(buf, info->GetData(), info->GetDataSize());
-    buf += info->GetDataSize();
+    memcpy(buf, info->data(), info->data_size());
+    buf += info->data_size();
 
     memcpy(buf, kTracksHeader, kTracksHeaderSize);
     WriteInt64(buf + kTracksSizeOffset, tracks_element_size);
@@ -220,35 +220,35 @@ class ChunkDemuxerTest : public testing::Test {
     // TODO(xhwang): Simplify this! Probably have test data files that contain
     // ContentEncodings directly instead of trying to create one at run-time.
     if (has_audio) {
-      memcpy(buf, audio_track_entry->GetData(),
-             audio_track_entry->GetDataSize());
+      memcpy(buf, audio_track_entry->data(),
+             audio_track_entry->data_size());
       if (is_audio_encrypted) {
-        memcpy(buf + audio_track_entry->GetDataSize(),
-               audio_content_encodings->GetData(),
-               audio_content_encodings->GetDataSize());
+        memcpy(buf + audio_track_entry->data_size(),
+               audio_content_encodings->data(),
+               audio_content_encodings->data_size());
         WriteInt64(buf + kAudioTrackSizeOffset,
-                   audio_track_entry->GetDataSize() +
-                   audio_content_encodings->GetDataSize() -
+                   audio_track_entry->data_size() +
+                   audio_content_encodings->data_size() -
                    kAudioTrackEntryHeaderSize);
-        buf += audio_content_encodings->GetDataSize();
+        buf += audio_content_encodings->data_size();
       }
-      buf += audio_track_entry->GetDataSize();
+      buf += audio_track_entry->data_size();
     }
 
     if (has_video) {
-      memcpy(buf, video_track_entry->GetData(),
-             video_track_entry->GetDataSize());
+      memcpy(buf, video_track_entry->data(),
+             video_track_entry->data_size());
       if (is_video_encrypted) {
-        memcpy(buf + video_track_entry->GetDataSize(),
-               video_content_encodings->GetData(),
-               video_content_encodings->GetDataSize());
+        memcpy(buf + video_track_entry->data_size(),
+               video_content_encodings->data(),
+               video_content_encodings->data_size());
         WriteInt64(buf + kVideoTrackSizeOffset,
-                   video_track_entry->GetDataSize() +
-                   video_content_encodings->GetDataSize() -
+                   video_track_entry->data_size() +
+                   video_content_encodings->data_size() -
                    kVideoTrackEntryHeaderSize);
-        buf += video_content_encodings->GetDataSize();
+        buf += video_content_encodings->data_size();
       }
-      buf += video_track_entry->GetDataSize();
+      buf += video_track_entry->data_size();
     }
   }
 
@@ -460,7 +460,7 @@ class ChunkDemuxerTest : public testing::Test {
       return false;
 
     // Append the whole bear1 file.
-    AppendData(bear1->GetData(), bear1->GetDataSize());
+    AppendData(bear1->data(), bear1->data_size());
     CheckExpectedRanges(kSourceId, "{ [0,2737) }");
 
     // Append initialization segment for bear2.
@@ -469,16 +469,16 @@ class ChunkDemuxerTest : public testing::Test {
     // media/test/data/bear-320x240-manifest.js which were
     // generated from media/test/data/bear-640x360.webm and
     // media/test/data/bear-320x240.webm respectively.
-    AppendData(bear2->GetData(), 4340);
+    AppendData(bear2->data(), 4340);
 
     // Append a media segment that goes from [0.527000, 1.014000).
-    AppendData(bear2->GetData() + 55290, 18785);
+    AppendData(bear2->data() + 55290, 18785);
     CheckExpectedRanges(kSourceId, "{ [0,1028) [1201,2737) }");
 
     // Append initialization segment for bear1 & fill gap with [779-1197)
     // segment.
-    AppendData(bear1->GetData(), 4370);
-    AppendData(bear1->GetData() + 72737, 28183);
+    AppendData(bear1->data(), 4370);
+    AppendData(bear1->data() + 72737, 28183);
     CheckExpectedRanges(kSourceId, "{ [0,2737) }");
 
     EndOfStream(PIPELINE_OK);
@@ -706,9 +706,9 @@ class ChunkDemuxerTest : public testing::Test {
       stream->Read(base::Bind(&ChunkDemuxerTest::StoreStatusAndBuffer,
                               base::Unretained(this), status, &buffer));
       base::MessageLoop::current()->RunUntilIdle();
-      if (*status == DemuxerStream::kOk && !buffer->IsEndOfStream())
-        *last_timestamp = buffer->GetTimestamp();
-    } while (*status == DemuxerStream::kOk && !buffer->IsEndOfStream());
+      if (*status == DemuxerStream::kOk && !buffer->end_of_stream())
+        *last_timestamp = buffer->timestamp();
+    } while (*status == DemuxerStream::kOk && !buffer->end_of_stream());
   }
 
   void ExpectEndOfStream(DemuxerStream::Type type) {
@@ -766,7 +766,7 @@ class ChunkDemuxerTest : public testing::Test {
 
     // Read a WebM file into memory and send the data to the demuxer.
     scoped_refptr<DecoderBuffer> buffer = ReadTestDataFile(filename);
-    AppendDataInPieces(buffer->GetData(), buffer->GetDataSize(), 512);
+    AppendDataInPieces(buffer->data(), buffer->data_size(), 512);
 
     // Verify that the timestamps on the first few packets match what we
     // expect.
@@ -1205,7 +1205,7 @@ class EndOfStreamHelper {
       DemuxerStream::Status status,
       const scoped_refptr<DecoderBuffer>& buffer) {
     EXPECT_EQ(status, DemuxerStream::kOk);
-    EXPECT_TRUE(buffer->IsEndOfStream());
+    EXPECT_TRUE(buffer->end_of_stream());
     *called = true;
   }
 

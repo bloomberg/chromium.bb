@@ -306,7 +306,7 @@ void MediaSourceDelegate::OnBufferReady(
 
     case DemuxerStream::kOk:
       params->access_units[index].status = status;
-      if (buffer->IsEndOfStream()) {
+      if (buffer->end_of_stream()) {
         params->access_units[index].end_of_stream = true;
         params->access_units.resize(index + 1);
         break;
@@ -315,15 +315,15 @@ void MediaSourceDelegate::OnBufferReady(
       // right away.
       // Need to implement this properly using MediaPlayer.OnInfoListener.
       if (is_audio) {
-        statistics_.audio_bytes_decoded += buffer->GetDataSize();
+        statistics_.audio_bytes_decoded += buffer->data_size();
       } else {
-        statistics_.video_bytes_decoded += buffer->GetDataSize();
+        statistics_.video_bytes_decoded += buffer->data_size();
         statistics_.video_frames_decoded++;
       }
-      params->access_units[index].timestamp = buffer->GetTimestamp();
+      params->access_units[index].timestamp = buffer->timestamp();
       params->access_units[index].data = std::vector<uint8>(
-          buffer->GetData(),
-          buffer->GetData() + buffer->GetDataSize());
+          buffer->data(),
+          buffer->data() + buffer->data_size());
 #if !defined(GOOGLE_TV)
       // Vorbis needs 4 extra bytes padding on Android. Check
       // NuMediaExtractor.cpp in Android source code.
@@ -334,15 +334,15 @@ void MediaSourceDelegate::OnBufferReady(
             kVorbisPadding + 4);
       }
 #endif
-      if (buffer->GetDecryptConfig()) {
+      if (buffer->decrypt_config()) {
         params->access_units[index].key_id = std::vector<char>(
-            buffer->GetDecryptConfig()->key_id().begin(),
-            buffer->GetDecryptConfig()->key_id().end());
+            buffer->decrypt_config()->key_id().begin(),
+            buffer->decrypt_config()->key_id().end());
         params->access_units[index].iv = std::vector<char>(
-            buffer->GetDecryptConfig()->iv().begin(),
-            buffer->GetDecryptConfig()->iv().end());
+            buffer->decrypt_config()->iv().begin(),
+            buffer->decrypt_config()->iv().end());
         params->access_units[index].subsamples =
-            buffer->GetDecryptConfig()->subsamples();
+            buffer->decrypt_config()->subsamples();
       }
       if (++index < params->access_units.size()) {
         ReadFromDemuxerStream(type, params, index);
