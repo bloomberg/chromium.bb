@@ -88,7 +88,7 @@ public class SyncStatusHelper {
 
     public static final String AUTH_TOKEN_TYPE_SYNC = "chromiumsync";
 
-    public static final String TAG = SyncStatusHelper.class.getSimpleName();
+    public static final String TAG = "SyncStatusHelper";
 
     /**
      * Lock for ensuring singleton instantiation across threads.

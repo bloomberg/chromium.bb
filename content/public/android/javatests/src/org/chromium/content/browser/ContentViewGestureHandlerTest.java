@@ -30,7 +30,7 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
     private static final int FAKE_COORD_X = 42;
     private static final int FAKE_COORD_Y = 24;
 
-    private static final String TAG = ContentViewGestureHandler.class.toString();
+    private static final String TAG = "ContentViewGestureHandler";
     private MockListener mMockListener;
     private MockMotionEventDelegate mMockMotionEventDelegate;
     private MockGestureDetector mMockGestureDetector;

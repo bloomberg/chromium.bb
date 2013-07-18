@@ -27,7 +27,7 @@ import java.util.Deque;
  */
 class ContentViewGestureHandler implements LongPressDelegate {
 
-    private static final String TAG = ContentViewGestureHandler.class.toString();
+    private static final String TAG = "ContentViewGestureHandler";
     /**
      * Used for GESTURE_FLING_START x velocity
      */

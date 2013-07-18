@@ -36,7 +36,7 @@ import org.chromium.ui.WindowAndroid;
 public class ContentShellActivity extends ChromiumActivity {
 
     public static final String COMMAND_LINE_FILE = "/data/local/tmp/content-shell-command-line";
-    private static final String TAG = ContentShellActivity.class.getName();
+    private static final String TAG = "ContentShellActivity";
 
     private static final String ACTIVE_SHELL_URL_KEY = "activeUrl";
     private static final String ACTION_START_TRACE =

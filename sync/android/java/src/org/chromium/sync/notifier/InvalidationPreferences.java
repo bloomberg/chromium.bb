@@ -66,7 +66,7 @@ public class InvalidationPreferences {
         static final String SYNC_TANGO_INTERNAL_STATE = "sync_tango_internal_state";
     }
 
-    private static final String TAG = InvalidationPreferences.class.getSimpleName();
+    private static final String TAG = "InvalidationPreferences";
 
     private final Context mContext;
 

@@ -63,7 +63,7 @@ import javax.annotation.Nullable;
  */
 public class MockAccountManager implements AccountManagerDelegate {
 
-    private static final String TAG = MockAccountManager.class.getSimpleName();
+    private static final String TAG = "MockAccountManager";
 
     private static final int WAIT_TIME_FOR_GRANT_BROADCAST_MS = 20000;
 

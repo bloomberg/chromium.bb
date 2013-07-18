@@ -24,7 +24,7 @@ import android.widget.TextView;
  */
 public class MockGrantCredentialsPermissionActivity extends Activity {
 
-    private static final String TAG = MockGrantCredentialsPermissionActivity.class.getSimpleName();
+    private static final String TAG = "MockGrantCredentialsPermissionActivity";
 
     static final String ACCOUNT = "account";
 

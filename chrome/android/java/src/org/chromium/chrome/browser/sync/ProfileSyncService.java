@@ -38,7 +38,7 @@ public class ProfileSyncService {
         public void syncStateChanged();
     }
 
-    private static final String TAG = ProfileSyncService.class.getSimpleName();
+    private static final String TAG = "ProfileSyncService";
 
     @VisibleForTesting
     public static final String SESSION_TAG_PREFIX = "session_sync";

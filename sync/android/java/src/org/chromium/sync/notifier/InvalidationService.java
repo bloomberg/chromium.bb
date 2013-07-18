@@ -59,7 +59,7 @@ public class InvalidationService extends AndroidListener {
     @VisibleForTesting
     static final int CLIENT_TYPE = ClientType.Type.CHROME_SYNC_ANDROID_VALUE;
 
-    private static final String TAG = InvalidationService.class.getSimpleName();
+    private static final String TAG = "InvalidationService";
 
     private static final Random RANDOM = new Random();
 

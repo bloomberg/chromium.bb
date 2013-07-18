@@ -21,7 +21,7 @@ public class ChromeSigninController {
         void onClearSignedInUser();
     }
 
-    public static final String TAG = ChromeSigninController.class.getSimpleName();
+    public static final String TAG = "ChromeSigninController";
 
     @VisibleForTesting
     public static final String SIGNED_IN_ACCOUNT_KEY = "google.services.username";

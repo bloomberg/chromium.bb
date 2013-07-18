@@ -76,7 +76,7 @@ public enum ModelType {
     /** Special type representing all possible types. */
     public static final String ALL_TYPES_TYPE = "ALL_TYPES";
 
-    private static final String TAG = ModelType.class.getSimpleName();
+    private static final String TAG = "ModelType";
 
     private final String mModelType;
 

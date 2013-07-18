@@ -93,7 +93,7 @@ import java.util.Map;
      */
     public static final int INPUT_EVENTS_DELIVERED_IMMEDIATELY = 0;
 
-    private static final String TAG = ContentViewCore.class.getName();
+    private static final String TAG = "ContentViewCore";
 
     // Used to avoid enabling zooming in / out if resulting zooming will
     // produce little visible difference.

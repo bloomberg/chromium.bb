@@ -16,7 +16,7 @@ import javax.annotation.Nullable;
  * Helper functions for working with hashes.
  */
 public final class HashUtil {
-    private static final String TAG = HashUtil.class.getSimpleName();
+    private static final String TAG = "HashUtil";
 
     private HashUtil() {
     }

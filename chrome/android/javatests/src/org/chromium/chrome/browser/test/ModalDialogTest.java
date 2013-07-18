@@ -33,7 +33,7 @@ import java.util.concurrent.TimeoutException;
  * Test suite for displaying and functioning of modal dialogs.
  */
 public class ModalDialogTest extends ChromiumTestShellTestBase {
-    private final static String TAG = ModalDialogTest.class.getSimpleName();
+    private final static String TAG = "ModalDialogTest";
     private final static String EMPTY_PAGE = UrlUtils.encodeHtmlDataUri(
             "<html><title>Modal Dialog Test</title><p>Testcase.</p></title></html>");
     private final static String BEFORE_UNLOAD_URL = UrlUtils.encodeHtmlDataUri(

@@ -66,7 +66,7 @@ import java.net.URL;
  */
 @JNINamespace("android_webview")
 public class AwContents {
-    private static final String TAG = AwContents.class.getSimpleName();
+    private static final String TAG = "AwContents";
 
     private static final String WEB_ARCHIVE_EXTENSION = ".mht";
 

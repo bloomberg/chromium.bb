@@ -15,7 +15,7 @@ import org.chromium.content.common.CommandLine;
 
 public class AwShellApplication extends Application {
 
-    private static final String TAG = AwShellApplication.class.getName();
+    private static final String TAG = "AwShellApplication";
     /** The minimum set of .pak files the test runner needs. */
     private static final String[] MANDATORY_PAKS = {
         "webviewchromium.pak", "en-US.pak"
