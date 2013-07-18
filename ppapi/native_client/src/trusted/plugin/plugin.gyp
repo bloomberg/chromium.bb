@@ -11,9 +11,6 @@
     'variables': {
       'target_base': 'none',
     },
-    'include_dirs': [
-      '<(DEPTH)/ppapi',
-    ],
     'target_conditions': [
       ['target_base=="ppNaClPlugin"', {
         'sources': [
