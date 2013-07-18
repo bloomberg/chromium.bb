@@ -296,6 +296,9 @@ void ExternalProcessImporterClient::StartProcessOnIOThread(
   // in the external process.
   DictionaryValue localized_strings;
   localized_strings.SetString(
+      base::IntToString(IDS_BOOKMARK_GROUP),
+      l10n_util::GetStringUTF8(IDS_BOOKMARK_GROUP));
+  localized_strings.SetString(
       base::IntToString(IDS_BOOKMARK_GROUP_FROM_FIREFOX),
       l10n_util::GetStringUTF8(IDS_BOOKMARK_GROUP_FROM_FIREFOX));
   localized_strings.SetString(
@@ -304,6 +307,9 @@ void ExternalProcessImporterClient::StartProcessOnIOThread(
   localized_strings.SetString(
       base::IntToString(IDS_IMPORT_FROM_FIREFOX),
       l10n_util::GetStringUTF8(IDS_IMPORT_FROM_FIREFOX));
+  localized_strings.SetString(
+      base::IntToString(IDS_IMPORT_FROM_ICEWEASEL),
+      l10n_util::GetStringUTF8(IDS_IMPORT_FROM_ICEWEASEL));
   localized_strings.SetString(
       base::IntToString(IDS_IMPORT_FROM_SAFARI),
       l10n_util::GetStringUTF8(IDS_IMPORT_FROM_SAFARI));
