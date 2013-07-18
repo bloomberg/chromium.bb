@@ -37,9 +37,15 @@ class SimpleEntryImpl : public Entry, public base::RefCounted<SimpleEntryImpl>,
     public base::SupportsWeakPtr<SimpleEntryImpl> {
   friend class base::RefCounted<SimpleEntryImpl>;
  public:
-  SimpleEntryImpl(SimpleBackendImpl* backend,
-                  const base::FilePath& path,
+  enum OperationsMode {
+    NON_OPTIMISTIC_OPERATIONS,
+    OPTIMISTIC_OPERATIONS,
+  };
+
+  SimpleEntryImpl(const base::FilePath& path,
                   uint64 entry_hash,
+                  OperationsMode operations_mode,
+                  SimpleBackendImpl* backend,
                   net::NetLog* net_log);
 
   // Adds another reader/writer to this entry, if possible, returning |this| to
@@ -230,6 +236,7 @@ class SimpleEntryImpl : public Entry, public base::RefCounted<SimpleEntryImpl>,
   const scoped_refptr<base::TaskRunner> worker_pool_;
   const base::FilePath path_;
   const uint64 entry_hash_;
+  const bool use_optimistic_operations_;
   std::string key_;
 
   // |last_used_|, |last_modified_| and |data_size_| are copied from the
