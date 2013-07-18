@@ -324,7 +324,11 @@ def ParseArguments(argv):
                                    'to emerge-$board autotest-all, by '
                                    'rsyncing source tree to sysroot.')
 
-  parser.add_argument('--board', metavar='BOARD', default=None, required=True)
+
+  default_board = cros_build_lib.GetDefaultBoard()
+  parser.add_argument('--board', metavar='BOARD', default=default_board,
+                      help='Board to perform quickmerge for. Default: ' +
+                      (default_board or 'Not configured.'))
   parser.add_argument('--pretend', action='store_true',
                       help='Dry run only, do not modify sysroot autotest.')
   parser.add_argument('--overwrite', action='store_true',

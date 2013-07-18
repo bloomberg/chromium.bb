@@ -1531,3 +1531,27 @@ def UserDateTimeFormat(timeval=None):
     timeval = time.mktime(timeval.timetuple())
   return '%s (%s)' % (formatdate(timeval=timeval, localtime=True),
                       time.tzname[0])
+
+
+def GetDefaultBoard():
+  """Gets the default board.
+
+  Returns:
+    The default board (as a string), or None if either the default board
+    file was missing or malformed.
+  """
+  default_board_file_name = os.path.join(constants.SOURCE_ROOT, 'src',
+                                         'scripts', '.default_board')
+  try:
+    with open(default_board_file_name) as default_board_file:
+      default_board = default_board_file.read().strip()
+      # Check for user typos like whitespace
+      if not re.match('[a-zA-Z0-9-_]*$', default_board):
+        logging.warning('Noticed invalid default board: |%s|. '
+                        'Ignoring this default.',
+                        default_board)
+        default_board = None
+  except IOError:
+    return None
+
+  return default_board
