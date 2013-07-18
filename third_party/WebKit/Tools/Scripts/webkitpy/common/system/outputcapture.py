@@ -29,9 +29,10 @@
 # Class for unittest support.  Used for capturing stderr/stdout.
 
 import logging
-import unittest  # Don't use unittest2 here as the autoinstaller may not have it yet.
 import sys
 from StringIO import StringIO
+
+import webkitpy.thirdparty.unittest2 as unittest
 
 
 class OutputCapture(object):

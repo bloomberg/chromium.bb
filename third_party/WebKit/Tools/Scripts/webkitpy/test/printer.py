@@ -82,13 +82,12 @@ class Printer(object):
         # Messages can be selectively re-enabled for this script by updating
         # this method accordingly.
         def filter_records(record):
-            """Filter out autoinstall and non-third-party webkitpy messages."""
+            """Filter out non-third-party webkitpy messages."""
             # FIXME: Figure out a way not to use strings here, for example by
             #        using syntax like webkitpy.test.__name__.  We want to be
             #        sure not to import any non-Python 2.4 code, though, until
             #        after the version-checking code has executed.
-            if (record.name.startswith("webkitpy.common.system.autoinstall") or
-                record.name.startswith("webkitpy.test")):
+            if (record.name.startswith("webkitpy.test")):
                 return True
             if record.name.startswith("webkitpy"):
                 return False

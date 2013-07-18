@@ -135,11 +135,7 @@ def _default_handlers(stream, logging_level):
     # Create the filter.
     def should_log(record):
         """Return whether a logging.LogRecord should be logged."""
-        # FIXME: Enable the logging of autoinstall messages once
-        #        autoinstall is adjusted.  Currently, autoinstall logs
-        #        INFO messages when importing already-downloaded packages,
-        #        which is too verbose.
-        if record.name.startswith("webkitpy.thirdparty.autoinstall"):
+        if record.name.startswith("webkitpy.thirdparty"):
             return False
         return True
 
