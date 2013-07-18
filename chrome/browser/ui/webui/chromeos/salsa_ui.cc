@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/chromeos/salsa_ui.h"
 
 #include "base/bind.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_service.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -162,10 +163,16 @@ void SalsaUI::SetPreferenceValue(const base::ListValue* args) {
   const PrefService::Preference* pref =
       prefs->FindPreference(kWhitelist[index]);
 
-  if (pref->GetType() != value->GetType())
-    return;
-
-  prefs->Set(kWhitelist[index], *value);
+  if (pref->GetType() == value->GetType()) {
+    prefs->Set(kWhitelist[index], *value);
+  } else if (pref->GetType() == base::Value::TYPE_DOUBLE &&
+             value->GetType() == base::Value::TYPE_INTEGER) {
+    int int_val;
+    if (!value->GetAsInteger(&int_val))
+      return;
+    base::FundamentalValue double_val(static_cast<double>(int_val));
+    prefs->Set(kWhitelist[index], double_val);
+  }
 }
 
 void SalsaUI::BackupPreferenceValue(const base::ListValue* args) {
