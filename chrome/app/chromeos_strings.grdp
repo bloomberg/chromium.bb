@@ -693,6 +693,9 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_SETTINGS_NETWORK_DISABLE_WIFI" desc="Menu option in the Wi-Fi menu when there is a connected Wi-Fi network.">
     Disable Wi-Fi
   </message>
+  <message name="IDS_OPTIONS_SETTINGS_NETWORK_DISABLE_WIMAX" desc="Menu option in the WiMAX menu when there is a connected WiMAX network.">
+    Disable WiMAX
+  </message>
   <message name="IDS_OPTIONS_SETTINGS_NETWORK_DISABLE_CELLULAR" desc="Menu option in the Cellular menu when there is a connected cellular network.">
     Disable mobile data
   </message>

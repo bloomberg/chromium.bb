@@ -767,6 +767,7 @@ void InternetOptionsHandler::GetLocalizedValues(
     { "networkOnline", IDS_OPTIONS_SETTINGS_NETWORK_ONLINE },
     { "networkOptions", IDS_OPTIONS_SETTINGS_NETWORK_OPTIONS },
     { "turnOffWifi", IDS_OPTIONS_SETTINGS_NETWORK_DISABLE_WIFI },
+    { "turnOffWimax", IDS_OPTIONS_SETTINGS_NETWORK_DISABLE_WIMAX },
     { "turnOffCellular", IDS_OPTIONS_SETTINGS_NETWORK_DISABLE_CELLULAR },
     { "disconnectNetwork", IDS_OPTIONS_SETTINGS_DISCONNECT },
     { "preferredNetworks", IDS_OPTIONS_SETTINGS_PREFERRED_NETWORKS_LABEL },
