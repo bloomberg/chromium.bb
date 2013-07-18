@@ -25,9 +25,9 @@
 #include "ui/base/gestures/gesture_recognizer.h"
 #include "ui/base/gestures/gesture_types.h"
 #include "ui/base/ime/text_input_client.h"
+#include "ui/base/ime/win/imm32_manager.h"
 #include "ui/base/ime/win/tsf_bridge.h"
 #include "ui/base/win/extra_sdk_defines.h"
-#include "ui/base/win/ime_input.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/point.h"
 #include "ui/surface/accelerated_surface_win.h"
@@ -475,7 +475,7 @@ class RenderWidgetHostViewWin
 
   // Wrapper class for IME input.
   // (See "ui/base/win/ime_input.h" for its details.)
-  ui::ImeInput ime_input_;
+  ui::IMM32Manager imm32_manager_;
 
   // Represents whether or not this browser process is receiving status
   // messages about the focused edit control from a renderer process.

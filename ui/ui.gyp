@@ -359,8 +359,6 @@
         'base/win/hwnd_subclass.h',
         'base/win/hwnd_util.cc',
         'base/win/hwnd_util.h',
-        'base/win/ime_input.cc',
-        'base/win/ime_input.h',
         'base/win/message_box_win.cc',
         'base/win/message_box_win.h',
         'base/win/mouse_wheel_util.cc',

@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/win/ime_input.h"
+#include "ui/base/ime/win/imm32_manager.h"
 
 #include <atlbase.h>
 #include <atlcom.h>
@@ -27,7 +27,7 @@
 COMPILE_ASSERT(sizeof(wchar_t) == sizeof(char16), wchar_t__char16_diff);
 
 ///////////////////////////////////////////////////////////////////////////////
-// ImeInput
+// IMM32Manager
 
 namespace {
 
@@ -38,8 +38,8 @@ bool IsTargetAttribute(char attribute) {
           attribute == ATTR_TARGET_NOTCONVERTED);
 }
 
-// Helper function for ImeInput::GetCompositionInfo() method, to get the target
-// range that's selected by the user in the current composition string.
+// Helper function for IMM32Manager::GetCompositionInfo() method, to get the
+// target range that's selected by the user in the current composition string.
 void GetCompositionTargetRange(HIMC imm_context, int* target_start,
                                int* target_end) {
   int attribute_size = ::ImmGetCompositionString(imm_context, GCS_COMPATTR,
@@ -65,8 +65,8 @@ void GetCompositionTargetRange(HIMC imm_context, int* target_start,
   }
 }
 
-// Helper function for ImeInput::GetCompositionInfo() method, to get underlines
-// information of the current composition string.
+// Helper function for IMM32Manager::GetCompositionInfo() method, to get
+// underlines information of the current composition string.
 void GetCompositionUnderlines(HIMC imm_context,
                               int target_start,
                               int target_end,
@@ -116,7 +116,7 @@ bool IsRTLPrimaryLangID(LANGID lang) {
 
 namespace ui {
 
-ImeInput::ImeInput()
+IMM32Manager::IMM32Manager()
     : ime_status_(false),
       input_language_id_(LANG_USER_DEFAULT),
       is_composing_(false),
@@ -125,10 +125,10 @@ ImeInput::ImeInput()
       use_composition_window_(false) {
 }
 
-ImeInput::~ImeInput() {
+IMM32Manager::~IMM32Manager() {
 }
 
-bool ImeInput::SetInputLanguage() {
+bool IMM32Manager::SetInputLanguage() {
   // Retrieve the current keyboard layout from Windows and determine whether
   // or not the current input context has IMEs.
   // Also save its input language for language-specific operations required
@@ -155,7 +155,7 @@ bool ImeInput::SetInputLanguage() {
   return ime_status_;
 }
 
-void ImeInput::CreateImeWindow(HWND window_handle) {
+void IMM32Manager::CreateImeWindow(HWND window_handle) {
   // When a user disables TSF (Text Service Framework) and CUAS (Cicero
   // Unaware Application Support), Chinese IMEs somehow ignore function calls
   // to ::ImmSetCandidateWindow(), i.e. they do not move their candidate
@@ -178,7 +178,7 @@ void ImeInput::CreateImeWindow(HWND window_handle) {
   UpdateImeWindow(window_handle);
 }
 
-LRESULT ImeInput::SetImeWindowStyle(HWND window_handle, UINT message,
+LRESULT IMM32Manager::SetImeWindowStyle(HWND window_handle, UINT message,
                                     WPARAM wparam, LPARAM lparam,
                                     BOOL* handled) {
   // To prevent the IMM (Input Method Manager) from displaying the IME
@@ -194,7 +194,7 @@ LRESULT ImeInput::SetImeWindowStyle(HWND window_handle, UINT message,
   return ::DefWindowProc(window_handle, message, wparam, lparam);
 }
 
-void ImeInput::DestroyImeWindow(HWND window_handle) {
+void IMM32Manager::DestroyImeWindow(HWND window_handle) {
   // Destroy the system caret if we have created for this IME input context.
   if (system_caret_) {
     ::DestroyCaret();
@@ -202,7 +202,7 @@ void ImeInput::DestroyImeWindow(HWND window_handle) {
   }
 }
 
-void ImeInput::MoveImeWindow(HWND window_handle, HIMC imm_context) {
+void IMM32Manager::MoveImeWindow(HWND window_handle, HIMC imm_context) {
   // Does nothing when the target window has no input focus. This is important
   // because the renderer may issue SelectionBoundsChanged event even when it
   // has no input focus. (e.g. the page update caused by incremental search.)
@@ -217,7 +217,7 @@ void ImeInput::MoveImeWindow(HWND window_handle, HIMC imm_context) {
   const int kCaretMargin = 1;
   if (!use_composition_window_ &&
       PRIMARYLANGID(input_language_id_) == LANG_CHINESE) {
-    // As written in a comment in ImeInput::CreateImeWindow(),
+    // As written in a comment in IMM32Manager::CreateImeWindow(),
     // Chinese IMEs ignore function calls to ::ImmSetCandidateWindow()
     // when a user disables TSF (Text Service Framework) and CUAS (Cicero
     // Unaware Application Support).
@@ -265,7 +265,7 @@ void ImeInput::MoveImeWindow(HWND window_handle, HIMC imm_context) {
   ::ImmSetCandidateWindow(imm_context, &exclude_rectangle);
 }
 
-void ImeInput::UpdateImeWindow(HWND window_handle) {
+void IMM32Manager::UpdateImeWindow(HWND window_handle) {
   // Just move the IME window attached to the given window.
   if (caret_rect_.x() >= 0 && caret_rect_.y() >= 0) {
     HIMC imm_context = ::ImmGetContext(window_handle);
@@ -276,7 +276,7 @@ void ImeInput::UpdateImeWindow(HWND window_handle) {
   }
 }
 
-void ImeInput::CleanupComposition(HWND window_handle) {
+void IMM32Manager::CleanupComposition(HWND window_handle) {
   // Notify the IMM attached to the given window to complete the ongoing
   // composition, (this case happens when the given window is de-activated
   // while composing a text and re-activated), and reset the omposition status.
@@ -290,12 +290,12 @@ void ImeInput::CleanupComposition(HWND window_handle) {
   }
 }
 
-void ImeInput::ResetComposition(HWND window_handle) {
+void IMM32Manager::ResetComposition(HWND window_handle) {
   // Currently, just reset the composition status.
   is_composing_ = false;
 }
 
-void ImeInput::CompleteComposition(HWND window_handle, HIMC imm_context) {
+void IMM32Manager::CompleteComposition(HWND window_handle, HIMC imm_context) {
   // We have to confirm there is an ongoing composition before completing it.
   // This is for preventing some IMEs from getting confused while completing an
   // ongoing composition even if they do not have any ongoing compositions.)
@@ -305,7 +305,7 @@ void ImeInput::CompleteComposition(HWND window_handle, HIMC imm_context) {
   }
 }
 
-void ImeInput::GetCompositionInfo(HIMC imm_context, LPARAM lparam,
+void IMM32Manager::GetCompositionInfo(HIMC imm_context, LPARAM lparam,
                                   CompositionText* composition) {
   // We only care about GCS_COMPATTR, GCS_COMPCLAUSE and GCS_CURSORPOS, and
   // convert them into underlines and selection range respectively.
@@ -365,7 +365,7 @@ void ImeInput::GetCompositionInfo(HIMC imm_context, LPARAM lparam,
   }
 }
 
-bool ImeInput::GetString(HIMC imm_context,
+bool IMM32Manager::GetString(HIMC imm_context,
                          WPARAM lparam,
                          int type,
                          string16* result) {
@@ -380,7 +380,8 @@ bool ImeInput::GetString(HIMC imm_context,
   return true;
 }
 
-bool ImeInput::GetResult(HWND window_handle, LPARAM lparam, string16* result) {
+bool IMM32Manager::GetResult(
+    HWND window_handle, LPARAM lparam, string16* result) {
   bool ret = false;
   HIMC imm_context = ::ImmGetContext(window_handle);
   if (imm_context) {
@@ -390,7 +391,7 @@ bool ImeInput::GetResult(HWND window_handle, LPARAM lparam, string16* result) {
   return ret;
 }
 
-bool ImeInput::GetComposition(HWND window_handle, LPARAM lparam,
+bool IMM32Manager::GetComposition(HWND window_handle, LPARAM lparam,
                               CompositionText* composition) {
   bool ret = false;
   HIMC imm_context = ::ImmGetContext(window_handle);
@@ -425,7 +426,7 @@ bool ImeInput::GetComposition(HWND window_handle, LPARAM lparam,
   return ret;
 }
 
-void ImeInput::DisableIME(HWND window_handle) {
+void IMM32Manager::DisableIME(HWND window_handle) {
   // A renderer process have moved its input focus to a password input
   // when there is an ongoing composition, e.g. a user has clicked a
   // mouse button and selected a password input while composing a text.
@@ -435,7 +436,7 @@ void ImeInput::DisableIME(HWND window_handle) {
   ::ImmAssociateContextEx(window_handle, NULL, 0);
 }
 
-void ImeInput::CancelIME(HWND window_handle) {
+void IMM32Manager::CancelIME(HWND window_handle) {
   if (is_composing_) {
     HIMC imm_context = ::ImmGetContext(window_handle);
     if (imm_context) {
@@ -446,7 +447,7 @@ void ImeInput::CancelIME(HWND window_handle) {
   }
 }
 
-void ImeInput::EnableIME(HWND window_handle) {
+void IMM32Manager::EnableIME(HWND window_handle) {
   // Load the default IME context.
   // NOTE(hbono)
   //   IMM ignores this call if the IME context is loaded. Therefore, we do
@@ -454,7 +455,7 @@ void ImeInput::EnableIME(HWND window_handle) {
   ::ImmAssociateContextEx(window_handle, NULL, IACE_DEFAULT);
 }
 
-void ImeInput::UpdateCaretRect(HWND window_handle,
+void IMM32Manager::UpdateCaretRect(HWND window_handle,
                                const gfx::Rect& caret_rect) {
   // Save the caret position, and Update the position of the IME window.
   // This update is used for moving an IME window when a renderer process
@@ -470,11 +471,11 @@ void ImeInput::UpdateCaretRect(HWND window_handle,
   }
 }
 
-void ImeInput::SetUseCompositionWindow(bool use_composition_window) {
+void IMM32Manager::SetUseCompositionWindow(bool use_composition_window) {
   use_composition_window_ = use_composition_window;
 }
 
-std::string ImeInput::GetInputLanguageName() const {
+std::string IMM32Manager::GetInputLanguageName() const {
   const LCID locale_id = MAKELCID(input_language_id_, SORT_DEFAULT);
   // max size for LOCALE_SISO639LANGNAME and LOCALE_SISO3166CTRYNAME is 9.
   wchar_t buffer[9];
@@ -501,13 +502,13 @@ std::string ImeInput::GetInputLanguageName() const {
   return language.append(1, '-').append(region);
 }
 
-base::i18n::TextDirection ImeInput::GetTextDirection() const {
+base::i18n::TextDirection IMM32Manager::GetTextDirection() const {
   return IsRTLPrimaryLangID(PRIMARYLANGID(input_language_id_)) ?
       base::i18n::RIGHT_TO_LEFT : base::i18n::LEFT_TO_RIGHT;
 }
 
 // static
-bool ImeInput::IsRTLKeyboardLayoutInstalled() {
+bool IMM32Manager::IsRTLKeyboardLayoutInstalled() {
   static enum {
     RTL_KEYBOARD_LAYOUT_NOT_INITIALIZED,
     RTL_KEYBOARD_LAYOUT_INSTALLED,
@@ -541,7 +542,7 @@ bool ImeInput::IsRTLKeyboardLayoutInstalled() {
   return false;
 }
 
-bool ImeInput::IsCtrlShiftPressed(base::i18n::TextDirection* direction) {
+bool IMM32Manager::IsCtrlShiftPressed(base::i18n::TextDirection* direction) {
   uint8_t keystate[256];
   if (!::GetKeyboardState(&keystate[0]))
     return false;

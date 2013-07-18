@@ -36,7 +36,7 @@ InputMethodWin::InputMethodWin(internal::InputMethodDelegate* delegate,
 
 InputMethodWin::~InputMethodWin() {
   if (widget())
-    ime_input_.DisableIME(hwnd_);
+    imm32_manager_.DisableIME(hwnd_);
 }
 
 void InputMethodWin::Init(Widget* widget) {
@@ -104,12 +104,13 @@ bool InputMethodWin::OnUntranslatedIMEMessage(const base::NativeEvent& event,
 
 void InputMethodWin::DispatchKeyEvent(const ui::KeyEvent& key) {
   // Handles ctrl-shift key to change text direction and layout alignment.
-  if (ui::ImeInput::IsRTLKeyboardLayoutInstalled() && !IsTextInputTypeNone()) {
+  if (ui::IMM32Manager::IsRTLKeyboardLayoutInstalled() &&
+      !IsTextInputTypeNone()) {
     ui::KeyboardCode code = key.key_code();
     if (key.type() == ui::ET_KEY_PRESSED) {
       if (code == ui::VKEY_SHIFT) {
         base::i18n::TextDirection dir;
-        if (ui::ImeInput::IsCtrlShiftPressed(&dir))
+        if (ui::IMM32Manager::IsCtrlShiftPressed(&dir))
           pending_requested_direction_ = dir;
       } else if (code != ui::VKEY_CONTROL) {
         pending_requested_direction_ = base::i18n::UNKNOWN_DIRECTION;
@@ -128,7 +129,7 @@ void InputMethodWin::DispatchKeyEvent(const ui::KeyEvent& key) {
 
 void InputMethodWin::OnTextInputTypeChanged(View* view) {
   if (IsViewFocused(view)) {
-    ime_input_.CancelIME(hwnd_);
+    imm32_manager_.CancelIME(hwnd_);
     UpdateIMEState();
   }
   InputMethodBase::OnTextInputTypeChanged(view);
@@ -138,18 +139,18 @@ void InputMethodWin::OnCaretBoundsChanged(View* view) {
   gfx::Rect rect;
   if (!IsViewFocused(view) || !GetCaretBoundsInWidget(&rect))
     return;
-  ime_input_.UpdateCaretRect(hwnd_, rect);
+  imm32_manager_.UpdateCaretRect(hwnd_, rect);
 }
 
 void InputMethodWin::CancelComposition(View* view) {
   if (IsViewFocused(view))
-    ime_input_.CancelIME(hwnd_);
+    imm32_manager_.CancelIME(hwnd_);
 }
 
 void InputMethodWin::OnInputLocaleChanged() {
-  active_ = ime_input_.SetInputLanguage();
-  locale_ = ime_input_.GetInputLanguageName();
-  direction_ = ime_input_.GetTextDirection();
+  active_ = imm32_manager_.SetInputLanguage();
+  locale_ = imm32_manager_.GetInputLanguageName();
+  direction_ = imm32_manager_.GetTextDirection();
   OnInputMethodChanged();
 }
 
@@ -188,10 +189,11 @@ LRESULT InputMethodWin::OnImeSetContext(
     UINT message, WPARAM wparam, LPARAM lparam, BOOL* handled) {
   active_ = (wparam == TRUE);
   if (active_)
-    ime_input_.CreateImeWindow(hwnd_);
+    imm32_manager_.CreateImeWindow(hwnd_);
 
   OnInputMethodChanged();
-  return ime_input_.SetImeWindowStyle(hwnd_, message, wparam, lparam, handled);
+  return imm32_manager_.SetImeWindowStyle(hwnd_, message, wparam, lparam,
+                                          handled);
 }
 
 LRESULT InputMethodWin::OnImeStartComposition(
@@ -205,8 +207,8 @@ LRESULT InputMethodWin::OnImeStartComposition(
     return 0;
 
   // Reset the composition status and create IME windows.
-  ime_input_.CreateImeWindow(hwnd_);
-  ime_input_.ResetComposition(hwnd_);
+  imm32_manager_.CreateImeWindow(hwnd_);
+  imm32_manager_.ResetComposition(hwnd_);
   return 0;
 }
 
@@ -220,14 +222,14 @@ LRESULT InputMethodWin::OnImeComposition(
     return 0;
 
   // At first, update the position of the IME window.
-  ime_input_.UpdateImeWindow(hwnd_);
+  imm32_manager_.UpdateImeWindow(hwnd_);
 
   // Retrieve the result string and its attributes of the ongoing composition
   // and send it to a renderer process.
   ui::CompositionText composition;
-  if (ime_input_.GetResult(hwnd_, lparam, &composition.text)) {
+  if (imm32_manager_.GetResult(hwnd_, lparam, &composition.text)) {
     GetTextInputClient()->InsertText(composition.text);
-    ime_input_.ResetComposition(hwnd_);
+    imm32_manager_.ResetComposition(hwnd_);
     // Fall though and try reading the composition string.
     // Japanese IMEs send a message containing both GCS_RESULTSTR and
     // GCS_COMPSTR, which means an ongoing composition has been finished
@@ -235,7 +237,7 @@ LRESULT InputMethodWin::OnImeComposition(
   }
   // Retrieve the composition string and its attributes of the ongoing
   // composition and send it to a renderer process.
-  if (ime_input_.GetComposition(hwnd_, lparam, &composition))
+  if (imm32_manager_.GetComposition(hwnd_, lparam, &composition))
     GetTextInputClient()->SetCompositionText(composition);
 
   return 0;
@@ -252,8 +254,8 @@ LRESULT InputMethodWin::OnImeEndComposition(
   if (GetTextInputClient()->HasCompositionText())
     GetTextInputClient()->ClearCompositionText();
 
-  ime_input_.ResetComposition(hwnd_);
-  ime_input_.DestroyImeWindow(hwnd_);
+  imm32_manager_.ResetComposition(hwnd_);
+  imm32_manager_.DestroyImeWindow(hwnd_);
   return 0;
 }
 
@@ -481,7 +483,7 @@ LRESULT InputMethodWin::OnQueryCharPosition(IMECHARPOSITION *char_positon) {
 
 void InputMethodWin::ConfirmCompositionText() {
   if (!IsTextInputTypeNone()) {
-    ime_input_.CleanupComposition(hwnd_);
+    imm32_manager_.CleanupComposition(hwnd_);
     // Though above line should confirm the client's composition text by sending
     // a result text to us, in case the input method and the client are in
     // inconsistent states, we check the client's composition state again.
@@ -496,10 +498,10 @@ void InputMethodWin::UpdateIMEState() {
   switch (GetTextInputType()) {
     case ui::TEXT_INPUT_TYPE_NONE:
     case ui::TEXT_INPUT_TYPE_PASSWORD:
-      ime_input_.DisableIME(hwnd_);
+      imm32_manager_.DisableIME(hwnd_);
       break;
     default:
-      ime_input_.EnableIME(hwnd_);
+      imm32_manager_.EnableIME(hwnd_);
       break;
   }
 }

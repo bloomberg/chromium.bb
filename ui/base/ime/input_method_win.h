@@ -12,7 +12,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "ui/base/ime/input_method_base.h"
-#include "ui/base/win/ime_input.h"
+#include "ui/base/ime/win/imm32_manager.h"
 
 namespace ui {
 
@@ -57,8 +57,8 @@ class UI_EXPORT InputMethodWin : public InputMethodBase {
   bool active_;
 
   // Windows IMM32 wrapper.
-  // (See "ui/base/win/ime_input.h" for its details.)
-  ui::ImeInput ime_input_;
+  // (See "ui/base/ime/win/ime_input.h" for its details.)
+  ui::IMM32Manager imm32_manager_;
 
  private:
   // The toplevel window handle.

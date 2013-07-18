@@ -46,7 +46,8 @@ bool InputMethodWin::DispatchKeyEvent(
     return !!handled;  // Don't send WM_CHAR for post event processing.
   }
   // Handles ctrl-shift key to change text direction and layout alignment.
-  if (ui::ImeInput::IsRTLKeyboardLayoutInstalled() && !IsTextInputTypeNone()) {
+  if (ui::IMM32Manager::IsRTLKeyboardLayoutInstalled() &&
+      !IsTextInputTypeNone()) {
     // TODO: shouldn't need to generate a KeyEvent here.
     const ui::KeyEvent key(native_key_event,
                            native_key_event.message == WM_CHAR);
@@ -54,7 +55,7 @@ bool InputMethodWin::DispatchKeyEvent(
     if (key.type() == ui::ET_KEY_PRESSED) {
       if (code == ui::VKEY_SHIFT) {
         base::i18n::TextDirection dir;
-        if (ui::ImeInput::IsCtrlShiftPressed(&dir))
+        if (ui::IMM32Manager::IsCtrlShiftPressed(&dir))
           pending_requested_direction_ = dir;
       } else if (code != ui::VKEY_CONTROL) {
         pending_requested_direction_ = base::i18n::UNKNOWN_DIRECTION;
@@ -89,9 +90,9 @@ bool InputMethodWin::DispatchFabricatedKeyEvent(const ui::KeyEvent& event) {
 }
 
 void InputMethodWin::OnInputLocaleChanged() {
-  active_ = ime_input_.SetInputLanguage();
-  locale_ = ime_input_.GetInputLanguageName();
-  direction_ = ime_input_.GetTextDirection();
+  active_ = imm32_manager_.SetInputLanguage();
+  locale_ = imm32_manager_.GetInputLanguageName();
+  direction_ = imm32_manager_.GetTextDirection();
   OnInputMethodChanged();
 }
 

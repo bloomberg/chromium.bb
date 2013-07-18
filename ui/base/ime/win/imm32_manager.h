@@ -1,9 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_WIN_IME_INPUT_H_
-#define UI_BASE_WIN_IME_INPUT_H_
+#ifndef UI_BASE_IME_WIN_IMM32_MANAGER_H
+#define UI_BASE_IME_WIN_IMM32_MANAGER_H
 
 #include <windows.h>
 
@@ -27,36 +27,36 @@ struct CompositionText;
 // The following items enumerates the simplest steps for an (window)
 // application to control its IMEs with the struct and the class defined
 // this file.
-// 1. Add an instance of the ImeInput class to its window class.
-//    (The ImeInput class needs a window handle.)
+// 1. Add an instance of the IMM32Manager class to its window class.
+//    (The IMM32Manager class needs a window handle.)
 // 2. Add messages handlers listed in the following subsections, follow the
-//    instructions written in each subsection, and use the ImeInput class.
+//    instructions written in each subsection, and use the IMM32Manager class.
 // 2.1. WM_IME_SETCONTEXT (0x0281)
 //      Call the functions listed below:
-//      - ImeInput::CreateImeWindow();
-//      - ImeInput::CleanupComposition(), and;
-//      - ImeInput::SetImeWindowStyle().
+//      - IMM32Manager::CreateImeWindow();
+//      - IMM32Manager::CleanupComposition(), and;
+//      - IMM32Manager::SetImeWindowStyle().
 //      An application MUST prevent from calling ::DefWindowProc().
 // 2.2. WM_IME_STARTCOMPOSITION (0x010D)
 //      Call the functions listed below:
-//      - ImeInput::CreateImeWindow(), and;
-//      - ImeInput::ResetComposition().
+//      - IMM32Manager::CreateImeWindow(), and;
+//      - IMM32Manager::ResetComposition().
 //      An application MUST prevent from calling ::DefWindowProc().
 // 2.3. WM_IME_COMPOSITION (0x010F)
 //      Call the functions listed below:
-//      - ImeInput::UpdateImeWindow();
-//      - ImeInput::GetResult();
-//      - ImeInput::GetComposition(), and;
-//      - ImeInput::ResetComposition() (optional).
+//      - IMM32Manager::UpdateImeWindow();
+//      - IMM32Manager::GetResult();
+//      - IMM32Manager::GetComposition(), and;
+//      - IMM32Manager::ResetComposition() (optional).
 //      An application MUST prevent from calling ::DefWindowProc().
 // 2.4. WM_IME_ENDCOMPOSITION (0x010E)
 //      Call the functions listed below:
-//      - ImeInput::ResetComposition(), and;
-//      - ImeInput::DestroyImeWindow().
+//      - IMM32Manager::ResetComposition(), and;
+//      - IMM32Manager::DestroyImeWindow().
 //      An application CAN call ::DefWindowProc().
 // 2.5. WM_INPUTLANGCHANGE (0x0051)
 //      Call the functions listed below:
-//      - ImeInput::SetInputLanguage().
+//      - IMM32Manager::SetInputLanguage().
 //      An application CAN call ::DefWindowProc().
 
 // This class controls the IMM (Input Method Manager) through IMM32 APIs and
@@ -73,10 +73,10 @@ struct CompositionText;
 //   hand, we can NEVER disable either TSF or CUAS in Windows Vista, i.e.
 //   THIS CLASS IS NOT ONLY USED ON THE INPUT CONTEXTS OF EAST-ASIAN
 //   LANGUAGES BUT ALSO USED ON THE INPUT CONTEXTS OF ALL LANGUAGES.
-class UI_EXPORT ImeInput {
+class UI_EXPORT IMM32Manager {
  public:
-  ImeInput();
-  ~ImeInput();
+  IMM32Manager();
+  ~IMM32Manager();
 
   // Retrieves whether or not there is an ongoing composition.
   bool is_composing() const { return is_composing_; }
@@ -129,7 +129,7 @@ class UI_EXPORT ImeInput {
   //     Represents the window handle of the caller.
   void UpdateImeWindow(HWND window_handle);
 
-  // Cleans up the all resources attached to the given ImeInput object, and
+  // Cleans up the all resources attached to the given IMM32Manager object, and
   // reset its composition status.
   // Parameters
   //   * window_handle [in] (HWND)
@@ -311,9 +311,9 @@ class UI_EXPORT ImeInput {
   // Indicates whether or not we want IME to render composition text.
   bool use_composition_window_;
 
-  DISALLOW_COPY_AND_ASSIGN(ImeInput);
+  DISALLOW_COPY_AND_ASSIGN(IMM32Manager);
 };
 
 }  // namespace ui
 
-#endif  // UI_BASE_WIN_IME_INPUT_H_
+#endif  // UI_BASE_IME_WIN_IMM32_MANAGER_H

@@ -723,7 +723,7 @@ void RenderWidgetHostViewWin::SelectionBoundsChanged(
   // Only update caret position if the input method is enabled.
   if (is_enabled) {
     caret_rect_ = gfx::UnionRects(params.anchor_rect, params.focus_rect);
-    ime_input_.UpdateCaretRect(m_hWnd, caret_rect_);
+    imm32_manager_.UpdateCaretRect(m_hWnd, caret_rect_);
   }
 }
 
@@ -731,7 +731,7 @@ void RenderWidgetHostViewWin::ScrollOffsetChanged() {
 }
 
 void RenderWidgetHostViewWin::ImeCancelComposition() {
-  ime_input_.CancelIME(m_hWnd);
+  imm32_manager_.CancelIME(m_hWnd);
 }
 
 void RenderWidgetHostViewWin::ImeCompositionRangeChanged(
@@ -1548,7 +1548,7 @@ void RenderWidgetHostViewWin::OnCancelMode() {
 void RenderWidgetHostViewWin::OnInputLangChange(DWORD character_set,
                                                 HKL input_language_id) {
   TRACE_EVENT0("browser", "RenderWidgetHostViewWin::OnInputLangChange");
-  // Send the given Locale ID to the ImeInput object and retrieves whether
+  // Send the given Locale ID to the IMM32Manager object and retrieves whether
   // or not the current input context has IMEs.
   // If the current input context has IMEs, a browser process has to send a
   // request to a renderer process that it needs status messages about
@@ -1577,7 +1577,7 @@ void RenderWidgetHostViewWin::OnInputLangChange(DWORD character_set,
   // 1 Sending a request only if ime_status_ != ime_notification_, and;
   // 2 Copying ime_status to ime_notification_ if it sends the request
   //   successfully (because Action 1 shows ime_status = !ime_notification_.)
-  bool ime_status = ime_input_.SetInputLanguage();
+  bool ime_status = imm32_manager_.SetInputLanguage();
   if (ime_status != ime_notification_) {
     if (render_widget_host_) {
       render_widget_host_->SetInputMethodActive(ime_status);
@@ -1649,10 +1649,10 @@ LRESULT RenderWidgetHostViewWin::OnImeSetContext(
   }
 
   if (ime_notification_)
-    ime_input_.CreateImeWindow(m_hWnd);
+    imm32_manager_.CreateImeWindow(m_hWnd);
 
-  ime_input_.CleanupComposition(m_hWnd);
-  return ime_input_.SetImeWindowStyle(
+  imm32_manager_.CleanupComposition(m_hWnd);
+  return imm32_manager_.SetImeWindowStyle(
       m_hWnd, message, wparam, lparam, &handled);
 }
 
@@ -1663,8 +1663,8 @@ LRESULT RenderWidgetHostViewWin::OnImeStartComposition(
     return 0;
 
   // Reset the composition status and create IME windows.
-  ime_input_.CreateImeWindow(m_hWnd);
-  ime_input_.ResetComposition(m_hWnd);
+  imm32_manager_.CreateImeWindow(m_hWnd);
+  imm32_manager_.ResetComposition(m_hWnd);
   // When the focus is on an element that does not draw composition by itself
   // (i.e., PPAPI plugin not handling IME), let IME to draw the text. Otherwise
   // we have to prevent WTL from calling ::DefWindowProc() because the function
@@ -1681,7 +1681,7 @@ LRESULT RenderWidgetHostViewWin::OnImeComposition(
     return 0;
 
   // At first, update the position of the IME window.
-  ime_input_.UpdateImeWindow(m_hWnd);
+  imm32_manager_.UpdateImeWindow(m_hWnd);
 
   // ui::CompositionUnderline should be identical to
   // WebKit::WebCompositionUnderline, so that we can do reinterpret_cast safely.
@@ -1692,10 +1692,10 @@ LRESULT RenderWidgetHostViewWin::OnImeComposition(
   // Retrieve the result string and its attributes of the ongoing composition
   // and send it to a renderer process.
   ui::CompositionText composition;
-  if (ime_input_.GetResult(m_hWnd, lparam, &composition.text)) {
+  if (imm32_manager_.GetResult(m_hWnd, lparam, &composition.text)) {
     render_widget_host_->ImeConfirmComposition(
         composition.text, ui::Range::InvalidRange(), false);
-    ime_input_.ResetComposition(m_hWnd);
+    imm32_manager_.ResetComposition(m_hWnd);
     // Fall though and try reading the composition string.
     // Japanese IMEs send a message containing both GCS_RESULTSTR and
     // GCS_COMPSTR, which means an ongoing composition has been finished
@@ -1703,7 +1703,7 @@ LRESULT RenderWidgetHostViewWin::OnImeComposition(
   }
   // Retrieve the composition string and its attributes of the ongoing
   // composition and send it to a renderer process.
-  if (ime_input_.GetComposition(m_hWnd, lparam, &composition)) {
+  if (imm32_manager_.GetComposition(m_hWnd, lparam, &composition)) {
     // TODO(suzhe): due to a bug of webkit, we can't use selection range with
     // composition string. See: https://bugs.webkit.org/show_bug.cgi?id=37788
     composition.selection = ui::Range(composition.selection.end());
@@ -1737,15 +1737,15 @@ LRESULT RenderWidgetHostViewWin::OnImeEndComposition(
   if (!render_widget_host_)
     return 0;
 
-  if (ime_input_.is_composing()) {
+  if (imm32_manager_.is_composing()) {
     // A composition has been ended while there is an ongoing composition,
     // i.e. the ongoing composition has been canceled.
-    // We need to reset the composition status both of the ImeInput object and
-    // of the renderer process.
+    // We need to reset the composition status both of the IMM32Manager object
+    // and of the renderer process.
     render_widget_host_->ImeCancelComposition();
-    ime_input_.ResetComposition(m_hWnd);
+    imm32_manager_.ResetComposition(m_hWnd);
   }
-  ime_input_.DestroyImeWindow(m_hWnd);
+  imm32_manager_.DestroyImeWindow(m_hWnd);
   // Let WTL call ::DefWindowProc() and release its resources.
   handled = FALSE;
   return 0;
@@ -1864,7 +1864,7 @@ LRESULT RenderWidgetHostViewWin::OnMouseEvent(UINT message, WPARAM wparam,
         if (base::win::IsTSFAwareRequired()) {
           ui::TSFBridge::GetInstance()->CancelComposition();
         } else {
-          ime_input_.CleanupComposition(m_hWnd);
+          imm32_manager_.CleanupComposition(m_hWnd);
         }
         // Fall through.
       case WM_MOUSEMOVE:
@@ -1941,11 +1941,11 @@ LRESULT RenderWidgetHostViewWin::OnKeyEvent(UINT message, WPARAM wparam,
   // Bug 9718: http://crbug.com/9718 To investigate IE and notepad, this
   // shortcut is enabled only on a PC having RTL keyboard layouts installed.
   // We should emulate them.
-  if (ui::ImeInput::IsRTLKeyboardLayoutInstalled()) {
+  if (ui::IMM32Manager::IsRTLKeyboardLayoutInstalled()) {
     if (message == WM_KEYDOWN) {
       if (wparam == VK_SHIFT) {
         base::i18n::TextDirection dir;
-        if (ui::ImeInput::IsCtrlShiftPressed(&dir)) {
+        if (ui::IMM32Manager::IsCtrlShiftPressed(&dir)) {
           render_widget_host_->UpdateTextDirection(
               dir == base::i18n::RIGHT_TO_LEFT ?
               WebKit::WebTextDirectionRightToLeft :
@@ -2251,7 +2251,7 @@ LRESULT RenderWidgetHostViewWin::OnTouchEvent(UINT message, WPARAM wparam,
   if (base::win::IsTSFAwareRequired()) {
     ui::TSFBridge::GetInstance()->CancelComposition();
   } else {
-    ime_input_.CleanupComposition(m_hWnd);
+    imm32_manager_.CleanupComposition(m_hWnd);
   }
 
   // TODO(jschuh): Add support for an arbitrary number of touchpoints.
@@ -3114,7 +3114,7 @@ LRESULT RenderWidgetHostViewWin::OnDocumentFeed(RECONVERTSTRING* reconv) {
 
 LRESULT RenderWidgetHostViewWin::OnReconvertString(RECONVERTSTRING* reconv) {
   // If there is a composition string already, we don't allow reconversion.
-  if (ime_input_.is_composing())
+  if (imm32_manager_.is_composing())
     return 0;
 
   if (selection_range_.is_empty())
@@ -3164,7 +3164,7 @@ LRESULT RenderWidgetHostViewWin::OnQueryCharPosition(
     return 0;
 
   RECT target_rect = {};
-  if (ime_input_.is_composing() && !composition_range_.is_empty() &&
+  if (imm32_manager_.is_composing() && !composition_range_.is_empty() &&
       position->dwCharPos < composition_character_bounds_.size()) {
     target_rect =
         composition_character_bounds_[position->dwCharPos].ToRECT();
@@ -3196,10 +3196,10 @@ void RenderWidgetHostViewWin::UpdateIMEState() {
   }
   if (text_input_type_ != ui::TEXT_INPUT_TYPE_NONE &&
       text_input_type_ != ui::TEXT_INPUT_TYPE_PASSWORD) {
-    ime_input_.EnableIME(m_hWnd);
-    ime_input_.SetUseCompositionWindow(!can_compose_inline_);
+    imm32_manager_.EnableIME(m_hWnd);
+    imm32_manager_.SetUseCompositionWindow(!can_compose_inline_);
   } else {
-    ime_input_.DisableIME(m_hWnd);
+    imm32_manager_.DisableIME(m_hWnd);
   }
 }
 
