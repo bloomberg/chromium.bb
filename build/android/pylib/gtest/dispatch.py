@@ -10,6 +10,7 @@ import glob
 import logging
 import os
 import shutil
+import sys
 
 from pylib import android_commands
 from pylib import cmd_helper
@@ -24,9 +25,11 @@ from pylib.utils import xvfb
 import gtest_config
 import test_runner
 
+sys.path.insert(0,
+                os.path.join(constants.DIR_SOURCE_ROOT, 'build', 'util', 'lib'))
+from common import unittest_util
 
-# TODO(frankf): Add more test targets here after making sure we don't
-# blow up the dependency size (and the world).
+
 _ISOLATE_FILE_PATHS = {
     'base_unittests': 'base/base_unittests.isolate',
     'breakpad_unittests': 'breakpad/breakpad_unittests.isolate',
@@ -71,7 +74,7 @@ def _GenerateDepsDirUsingIsolate(test_suite, build_type):
   """Generate the dependency dir for the test suite using isolate.
 
   Args:
-    test_suite: The test suite basename (e.g. base_unittests).
+    test_suite: Name of the test suite (e.g. base_unittests).
     build_type: Release/Debug
   """
   product_dir = os.path.join(cmd_helper.OutDirectory.get(), build_type)
@@ -191,49 +194,113 @@ def _FullyQualifiedTestSuites(exe, option_test_suite, build_type):
   return qualified_test_suites
 
 
-def GetTestsFromDevice(runner):
-  """Get a list of tests from a device, excluding disabled tests.
+def _GetDisabledTestsFilterFromFile(test_suite):
+  """Returns a gtest filter based on the *_disabled file.
 
   Args:
-    runner: a TestRunner.
+    test_suite: Name of the test suite (e.g. base_unittests).
+
   Returns:
-    All non-disabled tests on the device.
+    A gtest filter which excludes disabled tests.
+    Example: '*-StackTrace.*:StringPrintfTest.StringPrintfMisc'
   """
-  # The executable/apk needs to be copied before we can call GetAllTests.
-  runner.test_package.Install()
-  all_tests = runner.test_package.GetAllTests()
-  # Only includes tests that do not have any match in the disabled list.
-  disabled_list = runner.GetDisabledTests()
-  return filter(lambda t: not any([fnmatch.fnmatch(t, disabled_pattern)
-                                   for disabled_pattern in disabled_list]),
-                all_tests)
+  filter_file_path = os.path.join(
+      os.path.abspath(os.path.dirname(__file__)),
+      'filter', '%s_disabled' % test_suite)
+
+  if not filter_file_path or not os.path.exists(filter_file_path):
+    logging.info('No filter file found at %s', filter_file_path)
+    return '*'
+
+  filters = [x for x in [x.strip() for x in file(filter_file_path).readlines()]
+             if x and x[0] != '#']
+  disabled_filter = '*-%s' % ':'.join(filters)
+  logging.info('Applying filter "%s" obtained from %s',
+               disabled_filter, filter_file_path)
+  return disabled_filter
 
 
-def GetAllEnabledTests(runner_factory, devices):
-  """Get all enabled tests.
-
-  Obtains a list of enabled tests from the test package on the device,
-  then filters it again using the disabled list on the host.
+def _GetTestsFromDevice(runner_factory, devices):
+  """Get a list of tests from a device.
 
   Args:
-    runner_factory: callable that takes a devices and returns a TestRunner.
-    devices: list of devices.
+    runner_factory: callable that takes a device and index and returns a
+      TestRunner object.
+    devices: List of devices.
 
   Returns:
-    List of all enabled tests.
-
-  Raises:
-    Exception: If no devices available.
+    All the tests in the test suite.
   """
   for device in devices:
     try:
       logging.info('Obtaining tests from %s', device)
       runner = runner_factory(device, 0)
-      return GetTestsFromDevice(runner)
-    except Exception as e:
+      runner.test_package.Install()
+      return runner.test_package.GetAllTests()
+    except (android_commands.errors.WaitForResponseTimedOutError,
+            android_commands.errors.DeviceUnresponsiveError), e:
       logging.warning('Failed obtaining tests from %s with exception: %s',
                       device, e)
   raise Exception('No device available to get the list of tests.')
+
+
+def _FilterTestsUsingPrefixes(all_tests, pre=False, manual=False):
+  """Removes tests with disabled prefixes.
+
+  Args:
+    all_tests: List of tests to filter.
+    pre: If True, include tests with _PRE prefix.
+    manual: If True, include tests with _MANUAL prefix.
+
+  Returns:
+    List of tests remaining.
+  """
+  filtered_tests = []
+  filter_prefixes = ['DISABLED_', 'FLAKY_', 'FAILS_']
+
+  if not pre:
+    filter_prefixes.append('PRE_')
+
+  if not manual:
+    filter_prefixes.append('MANUAL_')
+
+  for t in all_tests:
+    test_case, test = t.split('.', 1)
+    if not any([test_case.startswith(prefix) or test.startswith(prefix) for
+                prefix in filter_prefixes]):
+      filtered_tests.append(t)
+  return filtered_tests
+
+
+def GetTestsFiltered(test_suite, gtest_filter, runner_factory, devices):
+  """Get all tests in the suite and filter them.
+
+  Obtains a list of tests from the test package on the device, and
+  applies the following filters in order:
+    1. Remove tests with disabled prefixes.
+    2. Remove tests specified in the *_disabled files in the 'filter' dir
+    3. Applies |gtest_filter|.
+
+  Args:
+    test_suite: Name of the test suite (e.g. base_unittests).
+    gtest_filter: A filter including negative and/or positive patterns.
+    runner_factory: callable that takes a device and index and returns a
+      TestRunner object.
+    devices: List of devices.
+
+  Returns:
+    List of tests remaining.
+  """
+  tests = _GetTestsFromDevice(runner_factory, devices)
+  tests = _FilterTestsUsingPrefixes(
+      tests, bool(gtest_filter), bool(gtest_filter))
+  tests = unittest_util.FilterTestNames(
+      tests, _GetDisabledTestsFilterFromFile(test_suite))
+
+  if gtest_filter:
+    tests = unittest_util.FilterTestNames(tests, gtest_filter)
+
+  return tests
 
 
 def _RunATestSuite(options, suite_name):
@@ -294,12 +361,10 @@ def _RunATestSuite(options, suite_name):
         constants.GTEST_COMMAND_LINE_FILE)
 
   # Get tests and split them up based on the number of devices.
-  if options.test_filter:
-    all_tests = [t for t in options.test_filter.split(':') if t]
-  else:
-    all_tests = GetAllEnabledTests(RunnerFactory, attached_devices)
+  tests = GetTestsFiltered(suite_name, options.test_filter,
+                           RunnerFactory, attached_devices)
   num_devices = len(attached_devices)
-  tests = [':'.join(all_tests[i::num_devices]) for i in xrange(num_devices)]
+  tests = [':'.join(tests[i::num_devices]) for i in xrange(num_devices)]
   tests = [t for t in tests if t]
 
   # Run tests.

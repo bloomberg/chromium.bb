@@ -126,7 +126,7 @@ def AddCoreGTestOptions(option_parser, default_timeout=60):
   # TODO(gkanwar): Consolidate and clean up test filtering for gtests and
   # content_browsertests.
   option_parser.add_option('--gtest_filter', dest='test_filter',
-                           help='Filter GTests by name.')
+                           help='googletest-style filter string.')
   option_parser.add_option('-a', '--test_arguments', dest='test_arguments',
                            help='Additional arguments to pass to the test.')
   # TODO(gkanwar): Most likely deprecate/remove this option once we've pinned

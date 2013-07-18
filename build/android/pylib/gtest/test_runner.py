@@ -49,7 +49,6 @@ class TestRunner(base_test_runner.BaseTestRunner):
     """
     super(TestRunner, self).__init__(device, tool_name, build_type, push_deps,
                                      cleanup_test_files)
-    self._running_on_emulator = self.device.startswith('emulator')
     self._test_arguments = test_arguments
     self.in_webkit_checkout = in_webkit_checkout
     if timeout == 0:
@@ -125,25 +124,6 @@ class TestRunner(base_test_runner.BaseTestRunner):
                      'third_party/hyphen/hyph_en_US.dic'),
         os.path.join(self.adb.GetExternalStorage(),
                      'third_party/hyphen/hyph_en_US.dic'))
-
-  # TODO(craigdh): There is no reason for this to be part of TestRunner.
-  def GetDisabledTests(self):
-    """Returns a list of disabled tests.
-
-    Returns:
-      A list of disabled tests obtained from 'filter' subdirectory.
-    """
-    gtest_filter_base_path = os.path.join(
-        os.path.abspath(os.path.dirname(__file__)),
-        'filter',
-        self.test_package.test_suite_basename)
-    disabled_tests = run_tests_helper.GetExpectations(
-       gtest_filter_base_path + '_disabled')
-    if self._running_on_emulator:
-      # Append emulator's filter file.
-      disabled_tests.extend(run_tests_helper.GetExpectations(
-          gtest_filter_base_path + '_emulator_additional_disabled'))
-    return disabled_tests
 
   def _ParseTestOutput(self, p):
     """Process the test output.

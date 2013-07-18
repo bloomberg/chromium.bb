@@ -19,10 +19,6 @@ from pylib.gtest import dispatch as gtest_dispatch
 from pylib.gtest import test_runner
 from pylib.utils import report_results
 
-sys.path.insert(0,
-                os.path.join(constants.DIR_SOURCE_ROOT, 'build', 'util', 'lib'))
-from common import unittest_util
-
 
 def Dispatch(options):
   """Dispatches all content_browsertests.
@@ -75,21 +71,16 @@ def Dispatch(options):
         constants.BROWSERTEST_TEST_ACTIVITY_NAME,
         constants.BROWSERTEST_COMMAND_LINE_FILE)
 
-  # Get tests and split them up based on the number of devices.
-  all_enabled = gtest_dispatch.GetAllEnabledTests(RunnerFactory,
-                                                  attached_devices)
-  if options.test_filter:
-    all_tests = unittest_util.FilterTestNames(all_enabled,
-                                              options.test_filter)
-  else:
-    all_tests = _FilterTests(all_enabled)
+  tests = gtest_dispatch.GetTestsFiltered(
+      constants.BROWSERTEST_SUITE_NAME, options.test_filter, RunnerFactory,
+      attached_devices)
 
   # Run tests.
   # TODO(nileshagrawal): remove this abnormally long setup timeout once fewer
   # files are pushed to the devices for content_browsertests: crbug.com/138275
   setup_timeout = 20 * 60  # 20 minutes
   test_results, exit_code = shard.ShardAndRunTests(
-      RunnerFactory, attached_devices, all_tests, options.build_type,
+      RunnerFactory, attached_devices, tests, options.build_type,
       setup_timeout=setup_timeout, test_timeout=None,
       num_retries=options.num_retries)
   report_results.LogFull(
@@ -103,21 +94,3 @@ def Dispatch(options):
     shutil.rmtree(constants.ISOLATE_DEPS_DIR)
 
   return (test_results, exit_code)
-
-
-def _FilterTests(all_enabled_tests):
-  """Filters out tests and fixtures starting with PRE_ and MANUAL_."""
-  return [t for t in all_enabled_tests if _ShouldRunOnBot(t)]
-
-
-def _ShouldRunOnBot(test):
-  fixture, case = test.split('.', 1)
-  if _StartsWith(fixture, case, 'PRE_'):
-    return False
-  if _StartsWith(fixture, case, 'MANUAL_'):
-    return False
-  return True
-
-
-def _StartsWith(a, b, prefix):
-  return a.startswith(prefix) or b.startswith(prefix)

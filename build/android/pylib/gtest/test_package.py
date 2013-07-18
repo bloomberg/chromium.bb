@@ -61,14 +61,11 @@ class TestPackage(object):
     """Install the test package to the device."""
     raise NotImplementedError('Method must be overriden.')
 
-  def GetDisabledPrefixes(self):
-    return ['DISABLED_', 'FLAKY_', 'FAILS_']
-
-  def _ParseGTestListTests(self, all_tests):
-    """Parses and filters the raw test lists.
+  def _ParseGTestListTests(self, raw_list):
+    """Parses a raw test list as provided by --gtest_list_tests.
 
     Args:
-      all_tests: The raw test listing with the following format:
+      raw_list: The raw test listing with the following format:
 
       IPCChannelTest.
         SendMessageInChannelConnected
@@ -77,14 +74,14 @@ class TestPackage(object):
         DISABLED_SendWithTimeoutMixedOKAndTimeout
 
     Returns:
-      A list of non-disabled tests. For the above raw listing:
+      A list of all tests. For the above raw listing:
 
-      [IPCChannelTest.SendMessageInChannelConnected, IPCSyncChannelTest.Simple]
+      [IPCChannelTest.SendMessageInChannelConnected, IPCSyncChannelTest.Simple,
+       IPCSyncChannelTest.DISABLED_SendWithTimeoutMixedOKAndTimeout]
     """
     ret = []
     current = ''
-    disabled_prefixes = self.GetDisabledPrefixes()
-    for test in all_tests:
+    for test in raw_list:
       if not test:
         continue
       if test[0] != ' ' and not test.endswith('.'):
@@ -96,6 +93,5 @@ class TestPackage(object):
       if 'YOU HAVE' in test:
         break
       test_name = test[2:]
-      if not any([test_name.startswith(x) for x in disabled_prefixes]):
-        ret += [current + test_name]
+      ret += [current + test_name]
     return ret

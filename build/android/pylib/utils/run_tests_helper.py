@@ -31,14 +31,6 @@ class CustomFormatter(logging.Formatter):
     return '%s %ss %s' % (record.levelname[0], timediff.rjust(4), msg)
 
 
-def GetExpectations(file_name):
-  """Returns a list of test names in the |file_name| test expectations file."""
-  if not file_name or not os.path.exists(file_name):
-    return []
-  return [x for x in [x.strip() for x in file(file_name).readlines()]
-          if x and x[0] != '#']
-
-
 def SetLogLevel(verbose_count):
   """Sets log level as |verbose_count|."""
   log_level = logging.WARNING  # Default.
