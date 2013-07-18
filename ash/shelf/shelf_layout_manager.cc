@@ -70,11 +70,6 @@ bool IsDraggingTrayEnabled() {
   return dragging_tray_allowed;
 }
 
-int GetPreferredShelfSize() {
-  return ash::switches::UseAlternateShelfLayout() ?
-      ShelfLayoutManager::kShelfSize : kLauncherPreferredSize;
-}
-
 }  // namespace
 
 // static
@@ -88,6 +83,11 @@ const int ShelfLayoutManager::kAutoHideSize = 3;
 
 // static
 const int ShelfLayoutManager::kShelfSize = 47;
+
+int ShelfLayoutManager::GetPreferredShelfSize() {
+  return ash::switches::UseAlternateShelfLayout() ?
+      ShelfLayoutManager::kShelfSize : kLauncherPreferredSize;
+}
 
 // ShelfLayoutManager::AutoHideEventFilter -------------------------------------
 

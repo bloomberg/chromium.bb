@@ -29,7 +29,7 @@ class MessagePopupCollectionTest : public views::ViewsTestBase {
     // This size fits test machines resolution and also can keep a few toasts
     // w/o ill effects of hitting the screen overflow. This allows us to assume
     // and verify normal layout of the toast stack.
-    collection_->SetWorkAreaForTest(gfx::Rect(0, 0, 600, 400));
+    collection_->SetWorkArea(gfx::Rect(0, 0, 600, 400));
     id_ = 0;
   }
 

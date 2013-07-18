@@ -74,6 +74,10 @@ class ASH_EXPORT ShelfLayoutManager :
   // settings see ash::switches::UseAlternateShelfLayout).
   static const int kShelfSize;
 
+  // Returns the preferred size for the shelf (either kLauncherPreferredSize or
+  // kShelfSize).
+  static int GetPreferredShelfSize();
+
   explicit ShelfLayoutManager(ShelfWidget* shelf);
   virtual ~ShelfLayoutManager();
 

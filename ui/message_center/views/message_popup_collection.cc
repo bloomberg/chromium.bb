@@ -318,10 +318,6 @@ void MessagePopupCollection::OnNotificationUpdated(
     DoUpdateIfPossible();
 }
 
-void MessagePopupCollection::SetWorkAreaForTest(const gfx::Rect& work_area) {
-  work_area_ = work_area;
-}
-
 ToastContentsView* MessagePopupCollection::FindToast(
     const std::string& notification_id) {
   for (Toasts::iterator iter = toasts_.begin(); iter != toasts_.end(); ++iter) {
@@ -369,15 +365,20 @@ void MessagePopupCollection::DoUpdateIfPossible() {
     run_loop_for_test_->Quit();
 }
 
+void MessagePopupCollection::SetWorkArea(const gfx::Rect& work_area) {
+  if (work_area_ == work_area)
+    return;
+
+  work_area_ = work_area;
+  RepositionWidgets();
+}
+
 void MessagePopupCollection::OnDisplayBoundsChanged(
     const gfx::Display& display) {
   if (display.id() != display_id_)
     return;
-  if (work_area_ == display.work_area())
-    return;
 
-  work_area_ = display.work_area();
-  RepositionWidgets();
+  SetWorkArea(display.work_area());
 }
 
 void MessagePopupCollection::OnDisplayAdded(const gfx::Display& new_display) {

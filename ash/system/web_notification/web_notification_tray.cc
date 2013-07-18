@@ -7,6 +7,8 @@
 #include "ash/ash_switches.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_layout_manager.h"
+#include "ash/shelf/shelf_layout_manager_observer.h"
+#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/system/status_area_widget.h"
@@ -63,9 +65,74 @@ const SkColor kWebNotificationColorWithUnread = SK_ColorWHITE;
 
 }
 
+// Observes the change of work area (including temporary change by auto-hide)
+// and notifies MessagePopupCollection.
+class WorkAreaObserver : public ShelfLayoutManagerObserver,
+                         public ShellObserver {
+ public:
+  WorkAreaObserver(message_center::MessagePopupCollection* collection,
+                   ShelfLayoutManager* shelf);
+  virtual ~WorkAreaObserver();
+
+  // Overridden from ShellObserver:
+  virtual void OnDisplayWorkAreaInsetsChanged() OVERRIDE;
+
+  // Overridden from ShelfLayoutManagerObserver:
+  virtual void OnAutoHideStateChanged(ShelfAutoHideState new_state) OVERRIDE;
+
+ private:
+  message_center::MessagePopupCollection* collection_;
+  ShelfLayoutManager* shelf_;
+
+  DISALLOW_COPY_AND_ASSIGN(WorkAreaObserver);
+};
+
+WorkAreaObserver::WorkAreaObserver(
+    message_center::MessagePopupCollection* collection,
+    ShelfLayoutManager* shelf)
+    : collection_(collection),
+      shelf_(shelf) {
+  DCHECK(collection_);
+  shelf_->AddObserver(this);
+  Shell::GetInstance()->AddShellObserver(this);
+}
+
+WorkAreaObserver::~WorkAreaObserver() {
+  Shell::GetInstance()->RemoveShellObserver(this);
+  shelf_->RemoveObserver(this);
+}
+
+void WorkAreaObserver::OnDisplayWorkAreaInsetsChanged() {
+  collection_->OnDisplayBoundsChanged(
+      Shell::GetScreen()->GetDisplayNearestWindow(
+          shelf_->shelf_widget()->GetNativeView()));
+}
+
+void WorkAreaObserver::OnAutoHideStateChanged(ShelfAutoHideState new_state) {
+  gfx::Rect work_area = Shell::GetScreen()->GetDisplayNearestWindow(
+      shelf_->shelf_widget()->GetNativeView()).work_area();
+  int width = (new_state == SHELF_AUTO_HIDE_HIDDEN) ?
+      ShelfLayoutManager::kAutoHideSize :
+      ShelfLayoutManager::GetPreferredShelfSize();
+  switch (shelf_->GetAlignment()) {
+    case SHELF_ALIGNMENT_BOTTOM:
+      work_area.Inset(0, 0, 0, width);
+      break;
+    case SHELF_ALIGNMENT_LEFT:
+      work_area.Inset(width, 0, 0, 0);
+      break;
+    case SHELF_ALIGNMENT_RIGHT:
+      work_area.Inset(0, 0, width, 0);
+      break;
+    case SHELF_ALIGNMENT_TOP:
+      work_area.Inset(0, width, 0, 0);
+      break;
+  }
+  collection_->SetWorkArea(work_area);
+}
+
 // Class to initialize and manage the WebNotificationBubble and
 // TrayBubbleWrapper instances for a bubble.
-
 class WebNotificationBubbleWrapper {
  public:
   // Takes ownership of |bubble| and creates |bubble_wrapper_|.
@@ -185,6 +252,7 @@ WebNotificationTray::~WebNotificationTray() {
   // Release any child views that might have back pointers before ~View().
   message_center_bubble_.reset();
   popup_collection_.reset();
+  work_area_observer_.reset();
 }
 
 // Public methods.
@@ -270,12 +338,14 @@ bool WebNotificationTray::ShowPopups() {
           internal::kShellWindowId_StatusContainer),
       message_center(),
       message_center_tray_.get()));
-
+  work_area_observer_.reset(new internal::WorkAreaObserver(
+      popup_collection_.get(), GetShelfLayoutManager()));
   return true;
 }
 
 void WebNotificationTray::HidePopups() {
   popup_collection_.reset();
+  work_area_observer_.reset();
 }
 
 // Private methods.

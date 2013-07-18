@@ -37,11 +37,11 @@ class MessagePopupCollection;
 }
 
 namespace ash {
-
 namespace internal {
 class StatusAreaWidget;
 class WebNotificationBubbleWrapper;
 class WebNotificationButton;
+class WorkAreaObserver;
 }
 
 class ASH_EXPORT WebNotificationTray
@@ -158,6 +158,9 @@ class ASH_EXPORT WebNotificationTray
   // the check can be called when creating this object, so it would cause
   // flickers of the shelf from hidden to shown. See: crbug.com/181213
   bool should_block_shelf_auto_hide_;
+
+  // Observes the work area for |popup_collection_| and notifies to it.
+  scoped_ptr<internal::WorkAreaObserver> work_area_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(WebNotificationTray);
 };

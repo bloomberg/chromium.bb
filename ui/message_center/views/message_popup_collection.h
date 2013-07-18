@@ -79,6 +79,14 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
   // zero. Otherwise, simply waits when it becomes zero.
   void DoUpdateIfPossible();
 
+  // Updates |work_area_| and rearranges the notification toasts if necessary.
+  // This is separated from methods from OnDisplayBoundsChanged(), since
+  // sometimes a work area has to be specified directly. One example is shelf's
+  // auto-hide change. When the shelf in ChromeOS is temporarily shown from auto
+  // hide status, it doesn't change the display's work area but the actual work
+  // area for toasts should be resized.
+  void SetWorkArea(const gfx::Rect& work_area);
+
   // Overridden from gfx::DislayObserver:
   virtual void OnDisplayBoundsChanged(const gfx::Display& display) OVERRIDE;
   virtual void OnDisplayAdded(const gfx::Display& new_display) OVERRIDE;
@@ -128,7 +136,6 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
   void OnDeferTimerExpired();
 
   // "ForTest" methods.
-  void SetWorkAreaForTest(const gfx::Rect& work_area);
   views::Widget* GetWidgetForTest(const std::string& id);
   void RunLoopForTest();
   gfx::Rect GetToastRectAt(size_t index);
