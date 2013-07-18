@@ -297,7 +297,7 @@ static void constructCustomElement(const v8::FunctionCallbackInfo<v8::Value>& ar
     }
 
     if (args.Length() > 0) {
-        throwTypeError(0, isolate);
+        throwTypeError(isolate);
         return;
     }
 

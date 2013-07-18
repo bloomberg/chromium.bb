@@ -34,6 +34,7 @@
 #include "bindings/v8/ScopedPersistent.h"
 #include "bindings/v8/V8ThrowException.h"
 #include "wtf/Noncopyable.h"
+#include "wtf/text/WTFString.h"
 #include <v8.h>
 
 namespace WebCore {
@@ -47,8 +48,8 @@ public:
         : m_code(0)
         , m_isolate(isolate) { }
 
-    virtual void throwDOMException(const ExceptionCode&,  const char* message = 0);
-    virtual void throwTypeError(const char* message = 0);
+    virtual void throwDOMException(const ExceptionCode&,  const String& message = String());
+    virtual void throwTypeError(const String& message = String());
 
     bool hadException() const { return !m_exception.isEmpty() || m_code; }
     void clearException();
@@ -93,8 +94,8 @@ private:
 class NonThrowExceptionState : public ExceptionState {
 public:
     NonThrowExceptionState();
-    virtual void throwDOMException(const ExceptionCode&, const char* = 0) OVERRIDE FINAL;
-    virtual void throwTypeError(const char* = 0) OVERRIDE FINAL;
+    virtual void throwDOMException(const ExceptionCode&, const String& message = String()) OVERRIDE FINAL;
+    virtual void throwTypeError(const String& message = String()) OVERRIDE FINAL;
 };
 
 } // namespace WebCore

@@ -151,7 +151,7 @@ void constructWebGLArray(const v8::FunctionCallbackInfo<v8::Value>& args, Wrappe
 
     if (args[0]->IsNull()) {
         // Invalid first argument
-        throwTypeError(0, args.GetIsolate());
+        throwTypeError(args.GetIsolate());
         return;
     }
 
