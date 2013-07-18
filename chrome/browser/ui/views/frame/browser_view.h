@@ -48,9 +48,7 @@ class ContentsContainer;
 class DownloadShelfView;
 class FullscreenExitBubbleViews;
 class InfoBarContainerView;
-class InstantOverlayControllerViews;
 class LocationBarView;
-class OverlayContainer;
 class StatusBubbleViews;
 class SearchViewController;
 class TabStrip;
@@ -256,10 +254,6 @@ class BrowserView : public BrowserWindow,
   // Called from BookmarkBarView/DownloadShelfView during their show/hide
   // animations.
   void ToolbarSizeChanged(bool is_animating);
-
-  // Called from OverlayContainer::SetOverlay() when overlay is to be shown,
-  // expanded or hidden.  Set |repaint_infobars| to true to repaint infobars.
-  void OnOverlayStateChanged(bool repaint_infobars);
 
 #if defined(USE_ASH)
   // Test support.
@@ -473,9 +467,6 @@ class BrowserView : public BrowserWindow,
   ContentsContainer* GetContentsContainerForTest() {
     return contents_container_;
   }
-  OverlayContainer* GetOverlayContainerForTest() {
-    return overlay_container_;
-  }
   views::WebView* GetContentsWebViewForTest() { return contents_web_view_; }
 
  private:
@@ -609,11 +600,6 @@ class BrowserView : public BrowserWindow,
   // an existing showing one to the front.
   void ActivateAppModalDialog() const;
 
-  // Called when overlay is committed, i.e. made the active contents, where
-  // the overlay is reparented from |overlay_container_| to
-  // |contents_container_|.
-  void MakeOverlayContentsActiveContents();
-
   // Returns the max top arrow height for infobar.
   int GetMaxTopInfoBarArrowHeight();
 
@@ -636,16 +622,9 @@ class BrowserView : public BrowserWindow,
   // |  | Navigation buttons, address bar, menu (toolbar_)           |  |
   // |  --------------------------------------------------------------  |
   // |------------------------------------------------------------------|
-  // | OverlayContainer (overlay_container_) [1]                        |
-  // |  --------------------------------------------------------------  |
-  // |  | overlay_controller_->overlay_                              |  |
-  // |  |------------------------------------------------------------|  |
-  // |  | overlay drop shadow if overlay is partial-height           |  |
-  // |  --------------------------------------------------------------  |
+  // | All infobars (infobar_container_) [1]                            |
   // |------------------------------------------------------------------|
-  // | All infobars (infobar_container_) [2]                            |
-  // |------------------------------------------------------------------|
-  // | Bookmarks (bookmark_bar_view_) [2]                               |
+  // | Bookmarks (bookmark_bar_view_) [1]                               |
   // |------------------------------------------------------------------|
   // | Debugger splitter (contents_split_)                              |
   // |  --------------------------------------------------------------  |
@@ -662,17 +641,14 @@ class BrowserView : public BrowserWindow,
   // | Active downloads (download_shelf_)                               |
   // --------------------------------------------------------------------
   //
-  // [1] Overlay container is only visible when there's an overlay; it is
-  //     directly below the toolbar in the y-axis, and appears on top the
-  //     attached bookmark and/or info bars.
-  // [2] The bookmark bar and info bar are swapped when on the new tab page.
-  //     Additionally contents_container_ is positioned on top of the bookmark
-  //     bar when the bookmark bar is detached. This is done to allow the
-  //     overlay_controller_->overlay_ to appear over the bookmark bar.
+  // [1] The bookmark bar and info bar are swapped when on the new tab page.
+  //     Additionally when the bookmark bar is detached, contents_container_ is
+  //     positioned on top of the bar while the tab's contents are placed below
+  //     the bar.  This allows the find bar to always align with the top of
+  //     contents_container_ regardless if there's bookmark or info bars.
 
   // The view that manages the tab strip, toolbar, and sometimes the bookmark
-  // bar. Stacked second in the view hiearachy behind |overlay_container_|
-  // (refer to comments for |overlay_container_|) so it can be used to slide out
+  // bar. Stacked top in the view hiearachy so it can be used to slide out
   // the top views in immersive fullscreen.
   TopContainerView* top_container_;
 
@@ -710,11 +686,6 @@ class BrowserView : public BrowserWindow,
 
   // The view managing the |contents_web_view_|.
   ContentsContainer* contents_container_;
-
-  // The view managing the |overlay_controller_->overlay_| and, if necessary,
-  // a drop shadow below the overlay in the y-axis.  Stacked at the top of the
-  // view hiearachy so it can appear over attached bookmark and/or info bars.
-  OverlayContainer* overlay_container_;
 
   // Split view containing the contents container and devtools container.
   views::SingleSplitView* contents_split_;
@@ -789,8 +760,6 @@ class BrowserView : public BrowserWindow,
   scoped_ptr<ImmersiveModeController> immersive_mode_controller_;
 
   gfx::ScopedSysColorChangeListener color_change_listener_;
-
-  scoped_ptr<InstantOverlayControllerViews> overlay_controller_;
 
   mutable base::WeakPtrFactory<BrowserView> activate_modal_dialog_factory_;
 

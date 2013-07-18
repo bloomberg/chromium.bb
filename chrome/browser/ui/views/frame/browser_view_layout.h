@@ -19,7 +19,6 @@ class BrowserViewLayoutDelegate;
 class ContentsContainer;
 class ImmersiveModeController;
 class InfoBarContainerView;
-class OverlayContainer;
 class TabContentsContainer;
 class TabStrip;
 
@@ -56,7 +55,6 @@ class BrowserViewLayout : public views::LayoutManager {
             InfoBarContainerView* infobar_container,
             views::View* contents_split,
             ContentsContainer* contents_container,
-            OverlayContainer* overlay_container,
             ImmersiveModeController* immersive_mode_controller);
 
   // Sets or updates views that are not available when |this| is initialized.
@@ -98,16 +96,6 @@ class BrowserViewLayout : public views::LayoutManager {
   FRIEND_TEST_ALL_PREFIXES(BrowserViewLayoutTest, LayoutDownloadShelf);
   class WebContentsModalDialogHostViews;
 
-  enum InstantUIState {
-    // No instant suggestions are being shown.
-    kInstantUINone,
-    // Instant suggestions are displayed in a overlay overlapping the tab
-    // contents.
-    kInstantUIOverlay,
-    // Instant suggestions are displayed in the main tab contents.
-    kInstantUIFullPageResults,
-  };
-
   Browser* browser() { return browser_; }
 
   // Layout the tab strip region, returns the coordinate of the bottom of the
@@ -126,9 +114,6 @@ class BrowserViewLayout : public views::LayoutManager {
   // |contents_split_| and other views.
   void LayoutContentsSplitView(int top, int bottom);
 
-  // Layout the |overlay_container_| view below the toolbar.
-  void LayoutOverlayContainer();
-
   // Updates |top_container_|'s bounds. The new bounds depend on the size of
   // the bookmark bar and the toolbar.
   void UpdateTopContainerBounds();
@@ -141,14 +126,6 @@ class BrowserViewLayout : public views::LayoutManager {
   // to make the bookmark bar and contents_container_ overlap so that the
   // preview contents hides the bookmark bar.
   int GetTopMarginForActiveContent();
-
-  // Returns the top margin for the active or overlay web view in
-  // |contents_container_| for an immersive fullscreen reveal while instant
-  // extended is providing suggestions.
-  int GetTopMarginForImmersiveInstant();
-
-  // Returns the state of instant extended suggestions.
-  InstantUIState GetInstantUIState();
 
   // Layout the Download Shelf, returns the coordinate of the top of the
   // control, for laying out the previous control.
@@ -177,7 +154,6 @@ class BrowserViewLayout : public views::LayoutManager {
   InfoBarContainerView* infobar_container_;
   views::View* contents_split_;
   ContentsContainer* contents_container_;
-  OverlayContainer* overlay_container_;
   views::View* download_shelf_;
 
   ImmersiveModeController* immersive_mode_controller_;

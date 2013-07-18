@@ -8,7 +8,6 @@
 #include "chrome/browser/ui/views/frame/browser_view_layout_delegate.h"
 #include "chrome/browser/ui/views/frame/contents_container.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
-#include "chrome/browser/ui/views/frame/overlay_container.h"
 #include "chrome/browser/ui/views/infobars/infobar_container_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
@@ -134,7 +133,6 @@ class BrowserViewLayoutTest : public BrowserWithTestWindowTest {
         infobar_container_(NULL),
         contents_split_(NULL),
         contents_container_(NULL),
-        overlay_container_(NULL),
         active_web_view_(NULL) {}
   virtual ~BrowserViewLayoutTest() {}
 
@@ -163,10 +161,6 @@ class BrowserViewLayoutTest : public BrowserWithTestWindowTest {
     top_container_->AddChildView(toolbar_);
     root_view_->AddChildView(top_container_);
 
-    overlay_container_ =
-        new OverlayContainer(NULL, immersive_mode_controller_.get());
-    root_view_->AddChildView(overlay_container_);
-
     infobar_container_ = new InfoBarContainerView(NULL);
     root_view_->AddChildView(infobar_container_);
 
@@ -188,7 +182,6 @@ class BrowserViewLayoutTest : public BrowserWithTestWindowTest {
                   infobar_container_,
                   contents_split_,
                   contents_container_,
-                  overlay_container_,
                   immersive_mode_controller_.get());
   }
 
@@ -204,7 +197,6 @@ class BrowserViewLayoutTest : public BrowserWithTestWindowTest {
   InfoBarContainerView* infobar_container_;
   MockView* contents_split_;
   ContentsContainer* contents_container_;
-  OverlayContainer* overlay_container_;
   MockView* active_web_view_;
 
   scoped_ptr<MockImmersiveModeController> immersive_mode_controller_;
@@ -216,7 +208,6 @@ class BrowserViewLayoutTest : public BrowserWithTestWindowTest {
 TEST_F(BrowserViewLayoutTest, BrowserViewLayout) {
   EXPECT_TRUE(layout()->browser());
   EXPECT_TRUE(layout()->GetWebContentsModalDialogHost());
-  EXPECT_EQ(BrowserViewLayout::kInstantUINone, layout()->GetInstantUIState());
   EXPECT_FALSE(layout()->InfobarVisible());
 }
 
