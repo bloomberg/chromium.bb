@@ -164,12 +164,19 @@ class RendererWebKitPlatformSupportImpl::Hyphenator
   Hyphenator();
   virtual ~Hyphenator();
 
-  virtual bool canHyphenate(const WebKit::WebString& locale) OVERRIDE;
+  virtual bool canHyphenate(const WebKit::WebString& locale);
+  virtual size_t computeLastHyphenLocation(
+      const WebKit::WebString& word,
+      size_t before_index,
+      const WebKit::WebString& locale);
+
+  // DEPRECATED
   virtual size_t computeLastHyphenLocation(
       const char16* characters,
       size_t length,
       size_t before_index,
-      const WebKit::WebString& locale) OVERRIDE;
+      const WebKit::WebString& locale);
+
  private:
   scoped_ptr<content::Hyphenator> hyphenator_;
 
@@ -583,6 +590,7 @@ bool RendererWebKitPlatformSupportImpl::Hyphenator::canHyphenate(
   return hyphenator_->CanHyphenate(locale);
 }
 
+// DEPRECATED
 size_t RendererWebKitPlatformSupportImpl::Hyphenator::computeLastHyphenLocation(
     const char16* characters,
     size_t length,
@@ -593,6 +601,16 @@ size_t RendererWebKitPlatformSupportImpl::Hyphenator::computeLastHyphenLocation(
   DCHECK(hyphenator_.get());
   return hyphenator_->ComputeLastHyphenLocation(string16(characters, length),
                                                 before_index);
+}
+
+size_t RendererWebKitPlatformSupportImpl::Hyphenator::computeLastHyphenLocation(
+    const WebKit::WebString& word,
+    size_t before_index,
+    const WebKit::WebString& locale) {
+  // Crash if WebKit calls this function when canHyphenate returns false.
+  DCHECK(locale.isEmpty() || locale.equals("en-US"));
+  DCHECK(hyphenator_.get());
+  return hyphenator_->ComputeLastHyphenLocation(word, before_index);
 }
 
 //------------------------------------------------------------------------------

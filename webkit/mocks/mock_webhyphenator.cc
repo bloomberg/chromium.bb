@@ -44,9 +44,19 @@ bool MockWebHyphenator::canHyphenate(const WebKit::WebString& locale) {
       locale.equals("en_GB");
 }
 
+// DEPRECATED
 size_t MockWebHyphenator::computeLastHyphenLocation(
     const char16* characters,
     size_t length,
+    size_t before_index,
+    const WebKit::WebString& locale)
+{
+    return computeLastHyphenLocation(
+        WebKit::WebString(characters, length), before_index, locale);
+}
+
+size_t MockWebHyphenator::computeLastHyphenLocation(
+    const WebKit::WebString& characters,
     size_t before_index,
     const WebKit::WebString& locale) {
   DCHECK(locale.isEmpty()  || locale.equals("en") || locale.equals("en_US")  ||
@@ -57,7 +67,7 @@ size_t MockWebHyphenator::computeLastHyphenLocation(
   // Retrieve the positions where we can insert hyphens. This function assumes
   // the input word is an English word so it can use the position returned by
   // the hyphen library without conversion.
-  base::string16 word_utf16(characters, length);
+  base::string16 word_utf16(characters);
   if (!IsStringASCII(word_utf16))
     return 0;
   std::string word = StringToLowerASCII(UTF16ToASCII(word_utf16));

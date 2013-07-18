@@ -27,12 +27,18 @@ class MockWebHyphenator : public WebKit::WebHyphenator {
   void LoadDictionary(base::PlatformFile dict_file);
 
   // WebHyphenator implementation.
-  virtual bool canHyphenate(const WebKit::WebString& locale) OVERRIDE;
+  virtual bool canHyphenate(const WebKit::WebString& locale);
+  virtual size_t computeLastHyphenLocation(
+      const WebKit::WebString& word,
+      size_t before_index,
+      const WebKit::WebString& locale);
+
+  // DEPRECATED
   virtual size_t computeLastHyphenLocation(
       const char16* characters,
       size_t length,
       size_t before_index,
-      const WebKit::WebString& locale) OVERRIDE;
+      const WebKit::WebString& locale);
 
  private:
   HyphenDict* hyphen_dictionary_;
