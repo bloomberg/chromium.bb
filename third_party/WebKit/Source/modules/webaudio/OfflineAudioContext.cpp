@@ -28,25 +28,24 @@
 
 #include "modules/webaudio/OfflineAudioContext.h"
 
-#include "bindings/v8/ExceptionState.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ScriptExecutionContext.h"
 
 namespace WebCore {
 
-PassRefPtr<OfflineAudioContext> OfflineAudioContext::create(ScriptExecutionContext* context, unsigned numberOfChannels, size_t numberOfFrames, float sampleRate, ExceptionState& es)
+PassRefPtr<OfflineAudioContext> OfflineAudioContext::create(ScriptExecutionContext* context, unsigned numberOfChannels, size_t numberOfFrames, float sampleRate, ExceptionCode& ec)
 {
     // FIXME: add support for workers.
     if (!context || !context->isDocument()) {
-        es.throwDOMException(NotSupportedError);
+        ec = NotSupportedError;
         return 0;
     }
 
     Document* document = toDocument(context);
 
     if (numberOfChannels > 10 || !isSampleRateRangeGood(sampleRate)) {
-        es.throwDOMException(SyntaxError);
+        ec = SyntaxError;
         return 0;
     }
 

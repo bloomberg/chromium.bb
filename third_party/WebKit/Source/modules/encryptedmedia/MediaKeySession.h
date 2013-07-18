@@ -29,6 +29,7 @@
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/EventTarget.h"
+#include "core/dom/ExceptionCode.h"
 #include "core/platform/Timer.h"
 #include "core/platform/graphics/ContentDecryptionModuleSession.h"
 #include "wtf/Deque.h"
@@ -39,12 +40,11 @@
 
 namespace WebCore {
 
-class ContentDecryptionModule;
-class ContentDecryptionModuleSession;
-class ExceptionState;
 class GenericEventQueue;
 class MediaKeyError;
 class MediaKeys;
+class ContentDecryptionModule;
+class ContentDecryptionModuleSession;
 
 // References are held by JS and MediaKeys.
 // Because this object controls the lifetime of the ContentDecryptionModuleSession,
@@ -64,7 +64,7 @@ public:
     MediaKeyError* error() { return m_error.get(); }
 
     void generateKeyRequest(const String& mimeType, Uint8Array* initData);
-    void update(Uint8Array* key, ExceptionState&);
+    void update(Uint8Array* key, ExceptionCode&);
     void close();
 
     using RefCounted<MediaKeySession>::ref;

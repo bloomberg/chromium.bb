@@ -34,8 +34,8 @@
 #include "modules/mediastream/UserMediaRequest.h"
 
 #include "bindings/v8/Dictionary.h"
-#include "bindings/v8/ExceptionState.h"
 #include "core/dom/Document.h"
+#include "core/dom/ExceptionCode.h"
 #include "core/dom/SpaceSplitString.h"
 #include "core/platform/mediastream/MediaStreamCenter.h"
 #include "core/platform/mediastream/MediaStreamDescriptor.h"
@@ -45,14 +45,14 @@
 
 namespace WebCore {
 
-static PassRefPtr<MediaConstraintsImpl> parseOptions(const Dictionary& options, const String& mediaType, ExceptionState& es)
+static PassRefPtr<MediaConstraintsImpl> parseOptions(const Dictionary& options, const String& mediaType, ExceptionCode& ec)
 {
     RefPtr<MediaConstraintsImpl> constraints;
 
     Dictionary constraintsDictionary;
     bool ok = options.get(mediaType, constraintsDictionary);
     if (ok && !constraintsDictionary.isUndefinedOrNull())
-        constraints = MediaConstraintsImpl::create(constraintsDictionary, es);
+        constraints = MediaConstraintsImpl::create(constraintsDictionary, ec);
     else {
         bool mediaRequested = false;
         options.get(mediaType, mediaRequested);
@@ -63,14 +63,14 @@ static PassRefPtr<MediaConstraintsImpl> parseOptions(const Dictionary& options, 
     return constraints.release();
 }
 
-PassRefPtr<UserMediaRequest> UserMediaRequest::create(ScriptExecutionContext* context, UserMediaController* controller, const Dictionary& options, PassRefPtr<NavigatorUserMediaSuccessCallback> successCallback, PassRefPtr<NavigatorUserMediaErrorCallback> errorCallback, ExceptionState& es)
+PassRefPtr<UserMediaRequest> UserMediaRequest::create(ScriptExecutionContext* context, UserMediaController* controller, const Dictionary& options, PassRefPtr<NavigatorUserMediaSuccessCallback> successCallback, PassRefPtr<NavigatorUserMediaErrorCallback> errorCallback, ExceptionCode& ec)
 {
-    RefPtr<MediaConstraintsImpl> audio = parseOptions(options, ASCIILiteral("audio"), es);
-    if (es.hadException())
+    RefPtr<MediaConstraintsImpl> audio = parseOptions(options, ASCIILiteral("audio"), ec);
+    if (ec)
         return 0;
 
-    RefPtr<MediaConstraintsImpl> video = parseOptions(options, ASCIILiteral("video"), es);
-    if (es.hadException())
+    RefPtr<MediaConstraintsImpl> video = parseOptions(options, ASCIILiteral("video"), ec);
+    if (ec)
         return 0;
 
     if (!audio && !video)

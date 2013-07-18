@@ -31,9 +31,7 @@
 #include "config.h"
 #include "modules/mediasource/MediaSource.h"
 
-#include "bindings/v8/ExceptionState.h"
-#include "bindings/v8/ExceptionStatePlaceholder.h"
-#include "core/dom/ExceptionCode.h"
+#include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/dom/GenericEventQueue.h"
 #include "core/html/TimeRanges.h"
 #include "core/platform/ContentType.h"
@@ -68,7 +66,7 @@ MediaSource::~MediaSource()
     ASSERT(isClosed());
 }
 
-SourceBuffer* MediaSource::addSourceBuffer(const String& type, ExceptionState& es)
+SourceBuffer* MediaSource::addSourceBuffer(const String& type, ExceptionCode& ec)
 {
     LOG(Media, "MediaSource::addSourceBuffer(%s) %p", type.ascii().data(), this);
 
@@ -76,31 +74,31 @@ SourceBuffer* MediaSource::addSourceBuffer(const String& type, ExceptionState& e
     // 1. If type is null or an empty then throw an InvalidAccessError exception and
     // abort these steps.
     if (type.isNull() || type.isEmpty()) {
-        es.throwDOMException(InvalidAccessError);
+        ec = InvalidAccessError;
         return 0;
     }
 
     // 2. If type contains a MIME type that is not supported ..., then throw a
     // NotSupportedError exception and abort these steps.
     if (!isTypeSupported(type)) {
-        es.throwDOMException(NotSupportedError);
+        ec = NotSupportedError;
         return 0;
     }
 
     // 4. If the readyState attribute is not in the "open" state then throw an
     // InvalidStateError exception and abort these steps.
     if (!isOpen()) {
-        es.throwDOMException(InvalidStateError);
+        ec = InvalidStateError;
         return 0;
     }
 
     // 5. Create a new SourceBuffer object and associated resources.
     ContentType contentType(type);
     Vector<String> codecs = contentType.codecs();
-    OwnPtr<SourceBufferPrivate> sourceBufferPrivate = createSourceBufferPrivate(contentType.type(), codecs, es);
+    OwnPtr<SourceBufferPrivate> sourceBufferPrivate = createSourceBufferPrivate(contentType.type(), codecs, ec);
 
     if (!sourceBufferPrivate) {
-        ASSERT(es == NotSupportedError || es == QuotaExceededError);
+        ASSERT(ec == NotSupportedError || ec == QuotaExceededError);
         // 2. If type contains a MIME type that is not supported ..., then throw a NotSupportedError exception and abort these steps.
         // 3. If the user agent can't handle any more SourceBuffer objects then throw a QuotaExceededError exception and abort these steps
         return 0;
@@ -114,7 +112,7 @@ SourceBuffer* MediaSource::addSourceBuffer(const String& type, ExceptionState& e
     return buffer.get();
 }
 
-void MediaSource::removeSourceBuffer(SourceBuffer* buffer, ExceptionState& es)
+void MediaSource::removeSourceBuffer(SourceBuffer* buffer, ExceptionCode& ec)
 {
     LOG(Media, "MediaSource::removeSourceBuffer() %p", this);
     RefPtr<SourceBuffer> protect(buffer);
@@ -123,14 +121,14 @@ void MediaSource::removeSourceBuffer(SourceBuffer* buffer, ExceptionState& es)
     // 1. If sourceBuffer is null then throw an InvalidAccessError exception and
     // abort these steps.
     if (!buffer) {
-        es.throwDOMException(InvalidAccessError);
+        ec = InvalidAccessError;
         return;
     }
 
     // 2. If sourceBuffer specifies an object that is not in sourceBuffers then
     // throw a NotFoundError exception and abort these steps.
     if (!m_sourceBuffers->length() || !m_sourceBuffers->contains(buffer)) {
-        es.throwDOMException(NotFoundError);
+        ec = NotFoundError;
         return;
     }
 
@@ -179,7 +177,7 @@ Vector<RefPtr<TimeRanges> > MediaSource::activeRanges() const
 {
     Vector<RefPtr<TimeRanges> > activeRanges(m_activeSourceBuffers->length());
     for (size_t i = 0; i < m_activeSourceBuffers->length(); ++i)
-        activeRanges[i] = m_activeSourceBuffers->item(i)->buffered(ASSERT_NO_EXCEPTION_STATE);
+        activeRanges[i] = m_activeSourceBuffers->item(i)->buffered(ASSERT_NO_EXCEPTION);
 
     return activeRanges;
 }

@@ -38,7 +38,7 @@
 
 namespace WebCore {
 
-class ExceptionState;
+typedef int ExceptionCode;
 
 class MediaStream : public RefCounted<MediaStream>, public ScriptWrappable, public URLRegistrable, public MediaStreamDescriptorClient, public EventTarget, public ContextLifecycleObserver {
 public:
@@ -53,8 +53,8 @@ public:
 
     String id() const { return m_descriptor->id(); }
 
-    void addTrack(PassRefPtr<MediaStreamTrack>, ExceptionState&);
-    void removeTrack(PassRefPtr<MediaStreamTrack>, ExceptionState&);
+    void addTrack(PassRefPtr<MediaStreamTrack>, ExceptionCode&);
+    void removeTrack(PassRefPtr<MediaStreamTrack>, ExceptionCode&);
     MediaStreamTrack* getTrackById(String);
 
     MediaStreamTrackVector getAudioTracks() const { return m_audioTracks; }

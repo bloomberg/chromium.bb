@@ -24,9 +24,9 @@
  */
 
 #include "config.h"
+
 #include "modules/mediastream/RTCDTMFSender.h"
 
-#include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/platform/mediastream/RTCDTMFSenderHandler.h"
@@ -42,12 +42,12 @@ static const long maxToneDurationMs = 6000;
 static const long minInterToneGapMs = 50;
 static const long defaultInterToneGapMs = 50;
 
-PassRefPtr<RTCDTMFSender> RTCDTMFSender::create(ScriptExecutionContext* context, RTCPeerConnectionHandler* peerConnectionHandler, PassRefPtr<MediaStreamTrack> prpTrack, ExceptionState& es)
+PassRefPtr<RTCDTMFSender> RTCDTMFSender::create(ScriptExecutionContext* context, RTCPeerConnectionHandler* peerConnectionHandler, PassRefPtr<MediaStreamTrack> prpTrack, ExceptionCode& ec)
 {
     RefPtr<MediaStreamTrack> track = prpTrack;
     OwnPtr<RTCDTMFSenderHandler> handler = peerConnectionHandler->createDTMFSender(track->component());
     if (!handler) {
-        es.throwDOMException(NotSupportedError);
+        ec = NotSupportedError;
         return 0;
     }
 
@@ -88,30 +88,30 @@ String RTCDTMFSender::toneBuffer() const
     return m_handler->currentToneBuffer();
 }
 
-void RTCDTMFSender::insertDTMF(const String& tones, ExceptionState& es)
+void RTCDTMFSender::insertDTMF(const String& tones, ExceptionCode& ec)
 {
-    insertDTMF(tones, defaultToneDurationMs, defaultInterToneGapMs, es);
+    insertDTMF(tones, defaultToneDurationMs, defaultInterToneGapMs, ec);
 }
 
-void RTCDTMFSender::insertDTMF(const String& tones, long duration, ExceptionState& es)
+void RTCDTMFSender::insertDTMF(const String& tones, long duration, ExceptionCode& ec)
 {
-    insertDTMF(tones, duration, defaultInterToneGapMs, es);
+    insertDTMF(tones, duration, defaultInterToneGapMs, ec);
 }
 
-void RTCDTMFSender::insertDTMF(const String& tones, long duration, long interToneGap, ExceptionState& es)
+void RTCDTMFSender::insertDTMF(const String& tones, long duration, long interToneGap, ExceptionCode& ec)
 {
     if (!canInsertDTMF()) {
-        es.throwDOMException(NotSupportedError);
+        ec = NotSupportedError;
         return;
     }
 
     if (duration > maxToneDurationMs || duration < minToneDurationMs) {
-        es.throwDOMException(SyntaxError);
+        ec = SyntaxError;
         return;
     }
 
     if (interToneGap < minInterToneGapMs) {
-        es.throwDOMException(SyntaxError);
+        ec = SyntaxError;
         return;
     }
 
@@ -119,7 +119,7 @@ void RTCDTMFSender::insertDTMF(const String& tones, long duration, long interTon
     m_interToneGap = interToneGap;
 
     if (!m_handler->insertDTMF(tones, m_duration, m_interToneGap))
-        es.throwDOMException(SyntaxError);
+        ec = SyntaxError;
 }
 
 void RTCDTMFSender::didPlayTone(const String& tone)

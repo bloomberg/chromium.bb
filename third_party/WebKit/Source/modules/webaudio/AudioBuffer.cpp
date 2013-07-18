@@ -32,7 +32,6 @@
 
 #include "modules/webaudio/AudioBuffer.h"
 
-#include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/platform/audio/AudioBus.h"
 #include "core/platform/audio/AudioFileReader.h"
@@ -94,10 +93,10 @@ void AudioBuffer::releaseMemory()
     m_channels.clear();
 }
 
-PassRefPtr<Float32Array> AudioBuffer::getChannelData(unsigned channelIndex, ExceptionState& es)
+PassRefPtr<Float32Array> AudioBuffer::getChannelData(unsigned channelIndex, ExceptionCode& ec)
 {
     if (channelIndex >= m_channels.size()) {
-        es.throwDOMException(SyntaxError);
+        ec = SyntaxError;
         return 0;
     }
 

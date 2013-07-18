@@ -23,9 +23,9 @@
  */
 
 #include "config.h"
+
 #include "modules/mediastream/RTCDataChannel.h"
 
-#include "bindings/v8/ExceptionState.h"
 #include "core/dom/Event.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/MessageEvent.h"
@@ -44,11 +44,11 @@ PassRefPtr<RTCDataChannel> RTCDataChannel::create(ScriptExecutionContext* contex
     return adoptRef(new RTCDataChannel(context, handler));
 }
 
-PassRefPtr<RTCDataChannel> RTCDataChannel::create(ScriptExecutionContext* context, RTCPeerConnectionHandler* peerConnectionHandler, const String& label, const WebKit::WebRTCDataChannelInit& init, ExceptionState& es)
+PassRefPtr<RTCDataChannel> RTCDataChannel::create(ScriptExecutionContext* context, RTCPeerConnectionHandler* peerConnectionHandler, const String& label, const WebKit::WebRTCDataChannelInit& init, ExceptionCode& ec)
 {
     OwnPtr<RTCDataChannelHandler> handler = peerConnectionHandler->createDataChannel(label, init);
     if (!handler) {
-        es.throwDOMException(NotSupportedError);
+        ec = NotSupportedError;
         return 0;
     }
     return adoptRef(new RTCDataChannel(context, handler.release()));
@@ -114,32 +114,32 @@ String RTCDataChannel::binaryType() const
     return String();
 }
 
-void RTCDataChannel::setBinaryType(const String& binaryType, ExceptionState& es)
+void RTCDataChannel::setBinaryType(const String& binaryType, ExceptionCode& ec)
 {
     if (binaryType == "blob")
-        es.throwDOMException(NotSupportedError);
+        ec = NotSupportedError;
     else if (binaryType == "arraybuffer")
         m_binaryType = BinaryTypeArrayBuffer;
     else
-        es.throwDOMException(TypeMismatchError);
+        ec = TypeMismatchError;
 }
 
-void RTCDataChannel::send(const String& data, ExceptionState& es)
+void RTCDataChannel::send(const String& data, ExceptionCode& ec)
 {
     if (m_readyState != ReadyStateOpen) {
-        es.throwDOMException(InvalidStateError);
+        ec = InvalidStateError;
         return;
     }
     if (!m_handler->sendStringData(data)) {
         // FIXME: Decide what the right exception here is.
-        es.throwDOMException(SyntaxError);
+        ec = SyntaxError;
     }
 }
 
-void RTCDataChannel::send(PassRefPtr<ArrayBuffer> prpData, ExceptionState& es)
+void RTCDataChannel::send(PassRefPtr<ArrayBuffer> prpData, ExceptionCode& ec)
 {
     if (m_readyState != ReadyStateOpen) {
-        es.throwDOMException(InvalidStateError);
+        ec = InvalidStateError;
         return;
     }
 
@@ -153,20 +153,20 @@ void RTCDataChannel::send(PassRefPtr<ArrayBuffer> prpData, ExceptionState& es)
 
     if (!m_handler->sendRawData(dataPointer, dataLength)) {
         // FIXME: Decide what the right exception here is.
-        es.throwDOMException(SyntaxError);
+        ec = SyntaxError;
     }
 }
 
-void RTCDataChannel::send(PassRefPtr<ArrayBufferView> data, ExceptionState& es)
+void RTCDataChannel::send(PassRefPtr<ArrayBufferView> data, ExceptionCode& ec)
 {
     RefPtr<ArrayBuffer> arrayBuffer(data->buffer());
-    send(arrayBuffer.release(), es);
+    send(arrayBuffer.release(), ec);
 }
 
-void RTCDataChannel::send(PassRefPtr<Blob> data, ExceptionState& es)
+void RTCDataChannel::send(PassRefPtr<Blob> data, ExceptionCode& ec)
 {
     // FIXME: implement
-    es.throwDOMException(NotSupportedError);
+    ec = NotSupportedError;
 }
 
 void RTCDataChannel::close()

@@ -28,6 +28,7 @@
 
 #include "modules/webaudio/OscillatorNode.h"
 
+#include "core/dom/ExceptionCode.h"
 #include "core/platform/audio/AudioUtilities.h"
 #include "core/platform/audio/VectorMath.h"
 #include "modules/webaudio/AudioContext.h"

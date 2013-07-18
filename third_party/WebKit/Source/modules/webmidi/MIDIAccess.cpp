@@ -33,6 +33,7 @@
 
 #include "core/dom/DOMError.h"
 #include "core/dom/Document.h"
+#include "core/dom/ExceptionCode.h"
 #include "core/loader/DocumentLoadTiming.h"
 #include "core/loader/DocumentLoader.h"
 #include "modules/webmidi/MIDIAccessPromise.h"

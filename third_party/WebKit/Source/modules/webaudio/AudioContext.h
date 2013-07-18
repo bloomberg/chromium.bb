@@ -46,30 +46,29 @@
 
 namespace WebCore {
 
-class AnalyserNode;
 class AudioBuffer;
 class AudioBufferCallback;
 class AudioBufferSourceNode;
-class AudioListener;
-class AudioSummingJunction;
-class BiquadFilterNode;
-class ChannelMergerNode;
-class ChannelSplitterNode;
-class ConvolverNode;
-class DelayNode;
-class Document;
-class DynamicsCompressorNode;
-class ExceptionState;
-class GainNode;
-class HTMLMediaElement;
 class MediaElementAudioSourceNode;
 class MediaStreamAudioDestinationNode;
 class MediaStreamAudioSourceNode;
-class OscillatorNode;
+class HTMLMediaElement;
+class ChannelMergerNode;
+class ChannelSplitterNode;
+class GainNode;
 class PannerNode;
-class PeriodicWave;
-class ScriptProcessorNode;
+class AudioListener;
+class AudioSummingJunction;
+class BiquadFilterNode;
+class DelayNode;
+class Document;
+class ConvolverNode;
+class DynamicsCompressorNode;
+class AnalyserNode;
 class WaveShaperNode;
+class ScriptProcessorNode;
+class OscillatorNode;
+class PeriodicWave;
 
 // AudioContext is the cornerstone of the web audio API and all AudioNodes are created from it.
 // For thread safety between the audio thread and the main thread, it has a rendering graph locking mechanism.
@@ -80,7 +79,7 @@ public:
     static PassRefPtr<AudioContext> create(Document*);
 
     // Create an AudioContext for offline (non-realtime) rendering.
-    static PassRefPtr<AudioContext> createOfflineContext(Document*, unsigned numberOfChannels, size_t numberOfFrames, float sampleRate, ExceptionState&);
+    static PassRefPtr<AudioContext> createOfflineContext(Document*, unsigned numberOfChannels, size_t numberOfFrames, float sampleRate, ExceptionCode&);
 
     virtual ~AudioContext();
 
@@ -108,37 +107,37 @@ public:
     void incrementActiveSourceCount();
     void decrementActiveSourceCount();
 
-    PassRefPtr<AudioBuffer> createBuffer(unsigned numberOfChannels, size_t numberOfFrames, float sampleRate, ExceptionState&);
-    PassRefPtr<AudioBuffer> createBuffer(ArrayBuffer*, bool mixToMono, ExceptionState&);
+    PassRefPtr<AudioBuffer> createBuffer(unsigned numberOfChannels, size_t numberOfFrames, float sampleRate, ExceptionCode&);
+    PassRefPtr<AudioBuffer> createBuffer(ArrayBuffer*, bool mixToMono, ExceptionCode&);
 
     // Asynchronous audio file data decoding.
-    void decodeAudioData(ArrayBuffer*, PassRefPtr<AudioBufferCallback>, PassRefPtr<AudioBufferCallback>, ExceptionState&);
+    void decodeAudioData(ArrayBuffer*, PassRefPtr<AudioBufferCallback>, PassRefPtr<AudioBufferCallback>, ExceptionCode&);
 
     AudioListener* listener() { return m_listener.get(); }
 
     // The AudioNode create methods are called on the main thread (from JavaScript).
     PassRefPtr<AudioBufferSourceNode> createBufferSource();
-    PassRefPtr<MediaElementAudioSourceNode> createMediaElementSource(HTMLMediaElement*, ExceptionState&);
-    PassRefPtr<MediaStreamAudioSourceNode> createMediaStreamSource(MediaStream*, ExceptionState&);
+    PassRefPtr<MediaElementAudioSourceNode> createMediaElementSource(HTMLMediaElement*, ExceptionCode&);
+    PassRefPtr<MediaStreamAudioSourceNode> createMediaStreamSource(MediaStream*, ExceptionCode&);
     PassRefPtr<MediaStreamAudioDestinationNode> createMediaStreamDestination();
     PassRefPtr<GainNode> createGain();
     PassRefPtr<BiquadFilterNode> createBiquadFilter();
     PassRefPtr<WaveShaperNode> createWaveShaper();
-    PassRefPtr<DelayNode> createDelay(ExceptionState&);
-    PassRefPtr<DelayNode> createDelay(double maxDelayTime, ExceptionState&);
+    PassRefPtr<DelayNode> createDelay(ExceptionCode&);
+    PassRefPtr<DelayNode> createDelay(double maxDelayTime, ExceptionCode&);
     PassRefPtr<PannerNode> createPanner();
     PassRefPtr<ConvolverNode> createConvolver();
     PassRefPtr<DynamicsCompressorNode> createDynamicsCompressor();    
     PassRefPtr<AnalyserNode> createAnalyser();
-    PassRefPtr<ScriptProcessorNode> createScriptProcessor(size_t bufferSize, ExceptionState&);
-    PassRefPtr<ScriptProcessorNode> createScriptProcessor(size_t bufferSize, size_t numberOfInputChannels, ExceptionState&);
-    PassRefPtr<ScriptProcessorNode> createScriptProcessor(size_t bufferSize, size_t numberOfInputChannels, size_t numberOfOutputChannels, ExceptionState&);
-    PassRefPtr<ChannelSplitterNode> createChannelSplitter(ExceptionState&);
-    PassRefPtr<ChannelSplitterNode> createChannelSplitter(size_t numberOfOutputs, ExceptionState&);
-    PassRefPtr<ChannelMergerNode> createChannelMerger(ExceptionState&);
-    PassRefPtr<ChannelMergerNode> createChannelMerger(size_t numberOfInputs, ExceptionState&);
+    PassRefPtr<ScriptProcessorNode> createScriptProcessor(size_t bufferSize, ExceptionCode&);
+    PassRefPtr<ScriptProcessorNode> createScriptProcessor(size_t bufferSize, size_t numberOfInputChannels, ExceptionCode&);
+    PassRefPtr<ScriptProcessorNode> createScriptProcessor(size_t bufferSize, size_t numberOfInputChannels, size_t numberOfOutputChannels, ExceptionCode&);
+    PassRefPtr<ChannelSplitterNode> createChannelSplitter(ExceptionCode&);
+    PassRefPtr<ChannelSplitterNode> createChannelSplitter(size_t numberOfOutputs, ExceptionCode&);
+    PassRefPtr<ChannelMergerNode> createChannelMerger(ExceptionCode&);
+    PassRefPtr<ChannelMergerNode> createChannelMerger(size_t numberOfInputs, ExceptionCode&);
     PassRefPtr<OscillatorNode> createOscillator();
-    PassRefPtr<PeriodicWave> createPeriodicWave(Float32Array* real, Float32Array* imag, ExceptionState&);
+    PassRefPtr<PeriodicWave> createPeriodicWave(Float32Array* real, Float32Array* imag, ExceptionCode&);
 
     // When a source node has no more processing to do (has finished playing), then it tells the context to dereference it.
     void notifyNodeFinishedProcessing(AudioNode*);

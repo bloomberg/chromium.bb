@@ -28,6 +28,7 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/EventTarget.h"
+#include "core/dom/ExceptionCode.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -40,7 +41,6 @@ namespace WebCore {
 class ContentDecryptionModule;
 class MediaKeySession;
 class HTMLMediaElement;
-class ExceptionState;
 
 // References are held by JS and HTMLMediaElement.
 // The ContentDecryptionModule has the same lifetime as this object.
@@ -48,10 +48,10 @@ class ExceptionState;
 // long as this object unless explicitly close()'d.
 class MediaKeys : public RefCounted<MediaKeys>, public ScriptWrappable {
 public:
-    static PassRefPtr<MediaKeys> create(const String& keySystem, ExceptionState&);
+    static PassRefPtr<MediaKeys> create(const String& keySystem, ExceptionCode&);
     ~MediaKeys();
 
-    PassRefPtr<MediaKeySession> createSession(ScriptExecutionContext*, const String& mimeType, Uint8Array* initData, ExceptionState&);
+    PassRefPtr<MediaKeySession> createSession(ScriptExecutionContext*, const String& mimeType, Uint8Array* initData, ExceptionCode&);
 
     const String& keySystem() const { return m_keySystem; }
 

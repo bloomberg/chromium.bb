@@ -28,7 +28,6 @@
 
 #include "modules/webaudio/AudioContext.h"
 
-#include "bindings/v8/ExceptionState.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/html/HTMLMediaElement.h"
@@ -289,38 +288,38 @@ void AudioContext::stop()
     callOnMainThread(stopDispatch, this);
 }
 
-PassRefPtr<AudioBuffer> AudioContext::createBuffer(unsigned numberOfChannels, size_t numberOfFrames, float sampleRate, ExceptionState& es)
+PassRefPtr<AudioBuffer> AudioContext::createBuffer(unsigned numberOfChannels, size_t numberOfFrames, float sampleRate, ExceptionCode& ec)
 {
     RefPtr<AudioBuffer> audioBuffer = AudioBuffer::create(numberOfChannels, numberOfFrames, sampleRate);
     if (!audioBuffer.get()) {
-        es.throwDOMException(SyntaxError);
+        ec = SyntaxError;
         return 0;
     }
 
     return audioBuffer;
 }
 
-PassRefPtr<AudioBuffer> AudioContext::createBuffer(ArrayBuffer* arrayBuffer, bool mixToMono, ExceptionState& es)
+PassRefPtr<AudioBuffer> AudioContext::createBuffer(ArrayBuffer* arrayBuffer, bool mixToMono, ExceptionCode& ec)
 {
     ASSERT(arrayBuffer);
     if (!arrayBuffer) {
-        es.throwDOMException(SyntaxError);
+        ec = SyntaxError;
         return 0;
     }
 
     RefPtr<AudioBuffer> audioBuffer = AudioBuffer::createFromAudioFileData(arrayBuffer->data(), arrayBuffer->byteLength(), mixToMono, sampleRate());
     if (!audioBuffer.get()) {
-        es.throwDOMException(SyntaxError);
+        ec = SyntaxError;
         return 0;
     }
 
     return audioBuffer;
 }
 
-void AudioContext::decodeAudioData(ArrayBuffer* audioData, PassRefPtr<AudioBufferCallback> successCallback, PassRefPtr<AudioBufferCallback> errorCallback, ExceptionState& es)
+void AudioContext::decodeAudioData(ArrayBuffer* audioData, PassRefPtr<AudioBufferCallback> successCallback, PassRefPtr<AudioBufferCallback> errorCallback, ExceptionCode& ec)
 {
     if (!audioData) {
-        es.throwDOMException(SyntaxError);
+        ec = SyntaxError;
         return;
     }
     m_audioDecoder.decodeAsync(audioData, sampleRate(), successCallback, errorCallback);
@@ -339,11 +338,11 @@ PassRefPtr<AudioBufferSourceNode> AudioContext::createBufferSource()
     return node;
 }
 
-PassRefPtr<MediaElementAudioSourceNode> AudioContext::createMediaElementSource(HTMLMediaElement* mediaElement, ExceptionState& es)
+PassRefPtr<MediaElementAudioSourceNode> AudioContext::createMediaElementSource(HTMLMediaElement* mediaElement, ExceptionCode& ec)
 {
     ASSERT(mediaElement);
     if (!mediaElement) {
-        es.throwDOMException(InvalidStateError);
+        ec = InvalidStateError;
         return 0;
     }
         
@@ -352,7 +351,7 @@ PassRefPtr<MediaElementAudioSourceNode> AudioContext::createMediaElementSource(H
     
     // First check if this media element already has a source node.
     if (mediaElement->audioSourceNode()) {
-        es.throwDOMException(InvalidStateError);
+        ec = InvalidStateError;
         return 0;
     }
         
@@ -364,11 +363,11 @@ PassRefPtr<MediaElementAudioSourceNode> AudioContext::createMediaElementSource(H
     return node;
 }
 
-PassRefPtr<MediaStreamAudioSourceNode> AudioContext::createMediaStreamSource(MediaStream* mediaStream, ExceptionState& es)
+PassRefPtr<MediaStreamAudioSourceNode> AudioContext::createMediaStreamSource(MediaStream* mediaStream, ExceptionCode& ec)
 {
     ASSERT(mediaStream);
     if (!mediaStream) {
-        es.throwDOMException(InvalidStateError);
+        ec = InvalidStateError;
         return 0;
     }
 
@@ -406,26 +405,26 @@ PassRefPtr<MediaStreamAudioDestinationNode> AudioContext::createMediaStreamDesti
     return MediaStreamAudioDestinationNode::create(this, 1);
 }
 
-PassRefPtr<ScriptProcessorNode> AudioContext::createScriptProcessor(size_t bufferSize, ExceptionState& es)
+PassRefPtr<ScriptProcessorNode> AudioContext::createScriptProcessor(size_t bufferSize, ExceptionCode& ec)
 {
     // Set number of input/output channels to stereo by default.
-    return createScriptProcessor(bufferSize, 2, 2, es);
+    return createScriptProcessor(bufferSize, 2, 2, ec);
 }
 
-PassRefPtr<ScriptProcessorNode> AudioContext::createScriptProcessor(size_t bufferSize, size_t numberOfInputChannels, ExceptionState& es)
+PassRefPtr<ScriptProcessorNode> AudioContext::createScriptProcessor(size_t bufferSize, size_t numberOfInputChannels, ExceptionCode& ec)
 {
     // Set number of output channels to stereo by default.
-    return createScriptProcessor(bufferSize, numberOfInputChannels, 2, es);
+    return createScriptProcessor(bufferSize, numberOfInputChannels, 2, ec);
 }
 
-PassRefPtr<ScriptProcessorNode> AudioContext::createScriptProcessor(size_t bufferSize, size_t numberOfInputChannels, size_t numberOfOutputChannels, ExceptionState& es)
+PassRefPtr<ScriptProcessorNode> AudioContext::createScriptProcessor(size_t bufferSize, size_t numberOfInputChannels, size_t numberOfOutputChannels, ExceptionCode& ec)
 {
     ASSERT(isMainThread());
     lazyInitialize();
     RefPtr<ScriptProcessorNode> node = ScriptProcessorNode::create(this, m_destinationNode->sampleRate(), bufferSize, numberOfInputChannels, numberOfOutputChannels);
 
     if (!node.get()) {
-        es.throwDOMException(SyntaxError);
+        ec = SyntaxError;
         return 0;
     }
 
@@ -482,29 +481,29 @@ PassRefPtr<GainNode> AudioContext::createGain()
     return GainNode::create(this, m_destinationNode->sampleRate());
 }
 
-PassRefPtr<DelayNode> AudioContext::createDelay(ExceptionState& es)
+PassRefPtr<DelayNode> AudioContext::createDelay(ExceptionCode& ec)
 {
     const double defaultMaxDelayTime = 1;
-    return createDelay(defaultMaxDelayTime, es);
+    return createDelay(defaultMaxDelayTime, ec);
 }
 
-PassRefPtr<DelayNode> AudioContext::createDelay(double maxDelayTime, ExceptionState& es)
+PassRefPtr<DelayNode> AudioContext::createDelay(double maxDelayTime, ExceptionCode& ec)
 {
     ASSERT(isMainThread());
     lazyInitialize();
-    RefPtr<DelayNode> node = DelayNode::create(this, m_destinationNode->sampleRate(), maxDelayTime, es);
-    if (es.hadException())
+    RefPtr<DelayNode> node = DelayNode::create(this, m_destinationNode->sampleRate(), maxDelayTime, ec);
+    if (ec)
         return 0;
     return node;
 }
 
-PassRefPtr<ChannelSplitterNode> AudioContext::createChannelSplitter(ExceptionState& es)
+PassRefPtr<ChannelSplitterNode> AudioContext::createChannelSplitter(ExceptionCode& ec)
 {
     const unsigned ChannelSplitterDefaultNumberOfOutputs = 6;
-    return createChannelSplitter(ChannelSplitterDefaultNumberOfOutputs, es);
+    return createChannelSplitter(ChannelSplitterDefaultNumberOfOutputs, ec);
 }
 
-PassRefPtr<ChannelSplitterNode> AudioContext::createChannelSplitter(size_t numberOfOutputs, ExceptionState& es)
+PassRefPtr<ChannelSplitterNode> AudioContext::createChannelSplitter(size_t numberOfOutputs, ExceptionCode& ec)
 {
     ASSERT(isMainThread());
     lazyInitialize();
@@ -512,20 +511,20 @@ PassRefPtr<ChannelSplitterNode> AudioContext::createChannelSplitter(size_t numbe
     RefPtr<ChannelSplitterNode> node = ChannelSplitterNode::create(this, m_destinationNode->sampleRate(), numberOfOutputs);
 
     if (!node.get()) {
-        es.throwDOMException(SyntaxError);
+        ec = SyntaxError;
         return 0;
     }
 
     return node;
 }
 
-PassRefPtr<ChannelMergerNode> AudioContext::createChannelMerger(ExceptionState& es)
+PassRefPtr<ChannelMergerNode> AudioContext::createChannelMerger(ExceptionCode& ec)
 {
     const unsigned ChannelMergerDefaultNumberOfInputs = 6;
-    return createChannelMerger(ChannelMergerDefaultNumberOfInputs, es);
+    return createChannelMerger(ChannelMergerDefaultNumberOfInputs, ec);
 }
 
-PassRefPtr<ChannelMergerNode> AudioContext::createChannelMerger(size_t numberOfInputs, ExceptionState& es)
+PassRefPtr<ChannelMergerNode> AudioContext::createChannelMerger(size_t numberOfInputs, ExceptionCode& ec)
 {
     ASSERT(isMainThread());
     lazyInitialize();
@@ -533,7 +532,7 @@ PassRefPtr<ChannelMergerNode> AudioContext::createChannelMerger(size_t numberOfI
     RefPtr<ChannelMergerNode> node = ChannelMergerNode::create(this, m_destinationNode->sampleRate(), numberOfInputs);
 
     if (!node.get()) {
-        es.throwDOMException(SyntaxError);
+        ec = SyntaxError;
         return 0;
     }
 
@@ -554,12 +553,12 @@ PassRefPtr<OscillatorNode> AudioContext::createOscillator()
     return node;
 }
 
-PassRefPtr<PeriodicWave> AudioContext::createPeriodicWave(Float32Array* real, Float32Array* imag, ExceptionState& es)
+PassRefPtr<PeriodicWave> AudioContext::createPeriodicWave(Float32Array* real, Float32Array* imag, ExceptionCode& ec)
 {
     ASSERT(isMainThread());
     
     if (!real || !imag || (real->length() != imag->length())) {
-        es.throwDOMException(SyntaxError);
+        ec = SyntaxError;
         return 0;
     }
     

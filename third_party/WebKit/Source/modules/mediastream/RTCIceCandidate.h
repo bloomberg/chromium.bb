@@ -41,11 +41,12 @@
 namespace WebCore {
 
 class Dictionary;
-class ExceptionState;
+
+typedef int ExceptionCode;
 
 class RTCIceCandidate : public RefCounted<RTCIceCandidate>, public ScriptWrappable {
 public:
-    static PassRefPtr<RTCIceCandidate> create(const Dictionary&, ExceptionState&);
+    static PassRefPtr<RTCIceCandidate> create(const Dictionary&, ExceptionCode&);
     static PassRefPtr<RTCIceCandidate> create(WebKit::WebRTCICECandidate);
     virtual ~RTCIceCandidate();
 

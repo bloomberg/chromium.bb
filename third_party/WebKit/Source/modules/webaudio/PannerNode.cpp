@@ -28,6 +28,7 @@
 
 #include "modules/webaudio/PannerNode.h"
 
+#include "core/dom/ExceptionCode.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/platform/audio/AudioBus.h"
 #include "core/platform/audio/HRTFPanner.h"

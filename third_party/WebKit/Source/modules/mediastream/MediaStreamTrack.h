@@ -29,6 +29,7 @@
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/EventTarget.h"
+#include "core/dom/ExceptionCode.h"
 #include "core/platform/mediastream/MediaStreamDescriptor.h"
 #include "core/platform/mediastream/MediaStreamSource.h"
 #include "modules/mediastream/SourceInfo.h"
@@ -39,7 +40,6 @@
 
 namespace WebCore {
 
-class ExceptionState;
 class MediaStreamComponent;
 class MediaStreamTrackSourcesCallback;
 
@@ -59,7 +59,7 @@ public:
 
     String readyState() const;
 
-    static void getSources(ScriptExecutionContext*, PassRefPtr<MediaStreamTrackSourcesCallback>, ExceptionState&);
+    static void getSources(ScriptExecutionContext*, PassRefPtr<MediaStreamTrackSourcesCallback>, ExceptionCode&);
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(mute);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(unmute);

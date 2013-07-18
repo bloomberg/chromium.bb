@@ -42,7 +42,6 @@
 
 namespace WebCore {
 
-class ExceptionState;
 class GenericEventQueue;
 
 class MediaSourceBase : public RefCounted<MediaSourceBase>, public HTMLMediaSource, public ActiveDOMObject, public EventTarget {
@@ -68,10 +67,10 @@ public:
     virtual void refHTMLMediaSource() OVERRIDE { ref(); }
     virtual void derefHTMLMediaSource() OVERRIDE { deref(); }
 
-    void setDuration(double, ExceptionState&);
+    void setDuration(double, ExceptionCode&);
     const AtomicString& readyState() const { return m_readyState; }
     void setReadyState(const AtomicString&);
-    void endOfStream(const AtomicString& error, ExceptionState&);
+    void endOfStream(const AtomicString& error, ExceptionCode&);
 
 
     // ActiveDOMObject interface
@@ -97,7 +96,7 @@ protected:
     virtual void onReadyStateChange(const AtomicString& oldState, const AtomicString& newState) = 0;
     virtual Vector<RefPtr<TimeRanges> > activeRanges() const = 0;
 
-    PassOwnPtr<SourceBufferPrivate> createSourceBufferPrivate(const String& type, const MediaSourcePrivate::CodecsArray&, ExceptionState&);
+    PassOwnPtr<SourceBufferPrivate> createSourceBufferPrivate(const String& type, const MediaSourcePrivate::CodecsArray&, ExceptionCode&);
     void scheduleEvent(const AtomicString& eventName);
     GenericEventQueue* asyncEventQueue() const { return m_asyncEventQueue.get(); }
 

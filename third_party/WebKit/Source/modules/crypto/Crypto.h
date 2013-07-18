@@ -37,13 +37,13 @@
 
 namespace WebCore {
 
-class ExceptionState;
+typedef int ExceptionCode;
 
 class Crypto : public ScriptWrappable, public RefCounted<Crypto> {
 public:
     static PassRefPtr<Crypto> create() { return adoptRef(new Crypto()); }
 
-    static void getRandomValues(ArrayBufferView*, ExceptionState&);
+    static void getRandomValues(ArrayBufferView*, ExceptionCode&);
 
     SubtleCrypto* subtle();
 

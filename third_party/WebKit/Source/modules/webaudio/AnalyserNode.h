@@ -31,8 +31,6 @@
 
 namespace WebCore {
 
-class ExceptionState;
-
 class AnalyserNode : public AudioBasicInspectorNode {
 public:
     static PassRefPtr<AnalyserNode> create(AudioContext* context, float sampleRate)
@@ -48,7 +46,7 @@ public:
 
     // Javascript bindings
     unsigned fftSize() const { return m_analyser.fftSize(); }
-    void setFftSize(unsigned size, ExceptionState&);
+    void setFftSize(unsigned size, ExceptionCode&);
 
     unsigned frequencyBinCount() const { return m_analyser.frequencyBinCount(); }
 

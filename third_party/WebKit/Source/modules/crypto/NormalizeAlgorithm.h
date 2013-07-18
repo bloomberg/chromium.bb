@@ -38,7 +38,8 @@ namespace WebKit { class WebCryptoAlgorithm; }
 namespace WebCore {
 
 class Dictionary;
-class ExceptionState;
+
+typedef int ExceptionCode;
 
 enum AlgorithmOperation {
     Encrypt,
@@ -55,8 +56,8 @@ enum AlgorithmOperation {
 };
 
 // Normalizes an algorithm identifier (dictionary) into a WebCryptoAlgorithm. If
-// normalization fails then returns false and sets |es|.
-bool normalizeAlgorithm(const Dictionary&, AlgorithmOperation, WebKit::WebCryptoAlgorithm&, ExceptionState&) WARN_UNUSED_RETURN;
+// normalization fails then returns false and sets |ec|.
+bool normalizeAlgorithm(const Dictionary&, AlgorithmOperation, WebKit::WebCryptoAlgorithm&, ExceptionCode&) WARN_UNUSED_RETURN;
 
 } // namespace WebCore
 

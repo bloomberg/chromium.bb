@@ -30,6 +30,7 @@
 #define SQLError_h
 
 #include "bindings/v8/ScriptWrappable.h"
+#include "core/dom/ExceptionCode.h"
 #include "wtf/ThreadSafeRefCounted.h"
 #include "wtf/text/WTFString.h"
 

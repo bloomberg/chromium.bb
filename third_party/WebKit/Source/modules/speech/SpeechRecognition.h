@@ -37,7 +37,6 @@
 
 namespace WebCore {
 
-class ExceptionState;
 class ScriptExecutionContext;
 class SpeechRecognitionController;
 class SpeechRecognitionError;
@@ -62,7 +61,7 @@ public:
     void setMaxAlternatives(unsigned long maxAlternatives) { m_maxAlternatives = maxAlternatives; }
 
     // Callable by the user.
-    void start(ExceptionState&);
+    void start(ExceptionCode&);
     void stopFunction();
     void abort();
 

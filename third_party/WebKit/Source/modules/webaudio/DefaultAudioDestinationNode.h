@@ -32,8 +32,7 @@
 namespace WebCore {
 
 class AudioContext;
-class ExceptionState;
-
+    
 class DefaultAudioDestinationNode : public AudioDestinationNode {
 public:
     static PassRefPtr<DefaultAudioDestinationNode> create(AudioContext* context)
@@ -46,7 +45,7 @@ public:
     // AudioNode   
     virtual void initialize() OVERRIDE;
     virtual void uninitialize() OVERRIDE;
-    virtual void setChannelCount(unsigned long, ExceptionState&) OVERRIDE;
+    virtual void setChannelCount(unsigned long, ExceptionCode&) OVERRIDE;
 
     // AudioDestinationNode
     virtual void enableInput(const String& inputDeviceId) OVERRIDE;

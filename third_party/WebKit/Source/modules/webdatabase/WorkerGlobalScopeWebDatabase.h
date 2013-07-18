@@ -27,6 +27,7 @@
 #ifndef WorkerGlobalScopeWebDatabase_h
 #define WorkerGlobalScopeWebDatabase_h
 
+#include "core/dom/ExceptionCode.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -37,13 +38,12 @@ namespace WebCore {
 class Database;
 class DatabaseCallback;
 class DatabaseSync;
-class ExceptionState;
 class WorkerGlobalScope;
 
 class WorkerGlobalScopeWebDatabase {
 public:
-    static PassRefPtr<Database> openDatabase(WorkerGlobalScope*, const String& name, const String& version, const String& displayName, unsigned long estimatedSize, PassRefPtr<DatabaseCallback> creationCallback, ExceptionState&);
-    static PassRefPtr<DatabaseSync> openDatabaseSync(WorkerGlobalScope*, const String& name, const String& version, const String& displayName, unsigned long estimatedSize, PassRefPtr<DatabaseCallback> creationCallback, ExceptionState&);
+    static PassRefPtr<Database> openDatabase(WorkerGlobalScope*, const String& name, const String& version, const String& displayName, unsigned long estimatedSize, PassRefPtr<DatabaseCallback> creationCallback, ExceptionCode&);
+    static PassRefPtr<DatabaseSync> openDatabaseSync(WorkerGlobalScope*, const String& name, const String& version, const String& displayName, unsigned long estimatedSize, PassRefPtr<DatabaseCallback> creationCallback, ExceptionCode&);
 
 private:
     WorkerGlobalScopeWebDatabase() { };

@@ -31,9 +31,7 @@
 #include "config.h"
 #include "modules/mediasource/SourceBuffer.h"
 
-#include "bindings/v8/ExceptionState.h"
 #include "core/dom/Event.h"
-#include "core/dom/ExceptionCode.h"
 #include "core/dom/GenericEventQueue.h"
 #include "core/html/TimeRanges.h"
 #include "core/platform/Logging.h"
@@ -70,13 +68,13 @@ SourceBuffer::~SourceBuffer()
     ASSERT(isRemoved());
 }
 
-PassRefPtr<TimeRanges> SourceBuffer::buffered(ExceptionState& es) const
+PassRefPtr<TimeRanges> SourceBuffer::buffered(ExceptionCode& ec) const
 {
     // Section 3.1 buffered attribute steps.
     // 1. If this object has been removed from the sourceBuffers attribute of the parent media source then throw an
     //    InvalidStateError exception and abort these steps.
     if (isRemoved()) {
-        es.throwDOMException(InvalidStateError);
+        ec = InvalidStateError;
         return 0;
     }
 
@@ -89,13 +87,13 @@ double SourceBuffer::timestampOffset() const
     return m_timestampOffset;
 }
 
-void SourceBuffer::setTimestampOffset(double offset, ExceptionState& es)
+void SourceBuffer::setTimestampOffset(double offset, ExceptionCode& ec)
 {
     // Section 3.1 timestampOffset attribute setter steps.
     // 1. If this object has been removed from the sourceBuffers attribute of the parent media source then throw an
     //    InvalidStateError exception and abort these steps.
     if (isRemoved()) {
-        es.throwDOMException(InvalidStateError);
+        ec = InvalidStateError;
         return;
     }
 
@@ -107,7 +105,7 @@ void SourceBuffer::setTimestampOffset(double offset, ExceptionState& es)
     // 5. If this object is waiting for the end of a media segment to be appended, then throw an InvalidStateError
     // and abort these steps.
     if (!m_private->setTimestampOffset(offset)) {
-        es.throwDOMException(InvalidStateError);
+        ec = InvalidStateError;
         return;
     }
 
@@ -115,33 +113,33 @@ void SourceBuffer::setTimestampOffset(double offset, ExceptionState& es)
     m_timestampOffset = offset;
 }
 
-void SourceBuffer::appendBuffer(PassRefPtr<ArrayBuffer> data, ExceptionState& es)
+void SourceBuffer::appendBuffer(PassRefPtr<ArrayBuffer> data, ExceptionCode& ec)
 {
     // Section 3.2 appendBuffer()
     // https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#widl-SourceBuffer-appendBuffer-void-ArrayBufferView-data
     // 1. If data is null then throw an InvalidAccessError exception and abort these steps.
     if (!data) {
-        es.throwDOMException(InvalidAccessError);
+        ec = InvalidAccessError;
         return;
     }
 
-    appendBufferInternal(static_cast<unsigned char*>(data->data()), data->byteLength(), es);
+    appendBufferInternal(static_cast<unsigned char*>(data->data()), data->byteLength(), ec);
 }
 
-void SourceBuffer::appendBuffer(PassRefPtr<ArrayBufferView> data, ExceptionState& es)
+void SourceBuffer::appendBuffer(PassRefPtr<ArrayBufferView> data, ExceptionCode& ec)
 {
     // Section 3.2 appendBuffer()
     // https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#widl-SourceBuffer-appendBuffer-void-ArrayBufferView-data
     // 1. If data is null then throw an InvalidAccessError exception and abort these steps.
     if (!data) {
-        es.throwDOMException(InvalidAccessError);
+        ec = InvalidAccessError;
         return;
     }
 
-    appendBufferInternal(static_cast<unsigned char*>(data->baseAddress()), data->byteLength(), es);
+    appendBufferInternal(static_cast<unsigned char*>(data->baseAddress()), data->byteLength(), ec);
 }
 
-void SourceBuffer::abort(ExceptionState& es)
+void SourceBuffer::abort(ExceptionCode& ec)
 {
     // Section 3.2 abort() method steps.
     // https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#widl-SourceBuffer-abort-void
@@ -150,7 +148,7 @@ void SourceBuffer::abort(ExceptionState& es)
     // 2. If the readyState attribute of the parent media source is not in the "open" state
     //    then throw an InvalidStateError exception and abort these steps.
     if (isRemoved() || !m_source->isOpen()) {
-        es.throwDOMException(InvalidStateError);
+        ec = InvalidStateError;
         return;
     }
 
@@ -241,7 +239,7 @@ void SourceBuffer::scheduleEvent(const AtomicString& eventName)
     m_asyncEventQueue->enqueueEvent(event.release());
 }
 
-void SourceBuffer::appendBufferInternal(unsigned char* data, unsigned size, ExceptionState& es)
+void SourceBuffer::appendBufferInternal(unsigned char* data, unsigned size, ExceptionCode& ec)
 {
     // Section 3.2 appendBuffer()
     // https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#widl-SourceBuffer-appendBuffer-void-ArrayBufferView-data
@@ -250,7 +248,7 @@ void SourceBuffer::appendBufferInternal(unsigned char* data, unsigned size, Exce
     // 2. If this object has been removed from the sourceBuffers attribute of the parent media source then throw an InvalidStateError exception and abort these steps.
     // 3. If the updating attribute equals true, then throw an InvalidStateError exception and abort these steps.
     if (isRemoved() || m_updating) {
-        es.throwDOMException(InvalidStateError);
+        ec = InvalidStateError;
         return;
     }
 

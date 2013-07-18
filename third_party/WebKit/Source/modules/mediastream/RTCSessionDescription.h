@@ -32,6 +32,7 @@
 #define RTCSessionDescription_h
 
 #include "bindings/v8/ScriptWrappable.h"
+#include "core/dom/ExceptionCode.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
@@ -40,19 +41,20 @@
 namespace WebCore {
 
 class Dictionary;
-class ExceptionState;
+
+typedef int ExceptionCode;
 
 class RTCSessionDescription : public RefCounted<RTCSessionDescription>, public ScriptWrappable {
 public:
-    static PassRefPtr<RTCSessionDescription> create(const Dictionary&, ExceptionState&);
+    static PassRefPtr<RTCSessionDescription> create(const Dictionary&, ExceptionCode&);
     static PassRefPtr<RTCSessionDescription> create(WebKit::WebRTCSessionDescription);
     virtual ~RTCSessionDescription();
 
     String type();
-    void setType(const String&, ExceptionState&);
+    void setType(const String&, ExceptionCode&);
 
     String sdp();
-    void setSdp(const String&, ExceptionState&);
+    void setSdp(const String&, ExceptionCode&);
 
     WebKit::WebRTCSessionDescription webSessionDescription();
 

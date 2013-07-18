@@ -36,9 +36,10 @@
 
 namespace WebCore {
 
-class ExceptionState;
-class Navigator;
 class Page;
+class Navigator;
+
+typedef int ExceptionCode;
 
 class NavigatorContentUtils : public RefCountedSupplement<Page, NavigatorContentUtils> {
 public:
@@ -47,11 +48,11 @@ public:
     static const char* supplementName();
     static NavigatorContentUtils* from(Page*);
 
-    static void registerProtocolHandler(Navigator*, const String& scheme, const String& url, const String& title, ExceptionState&);
+    static void registerProtocolHandler(Navigator*, const String& scheme, const String& url, const String& title, ExceptionCode&);
 
 #if ENABLE(CUSTOM_SCHEME_HANDLER)
-    static String isProtocolHandlerRegistered(Navigator*, const String& scheme, const String& url, ExceptionState&);
-    static void unregisterProtocolHandler(Navigator*, const String& scheme, const String& url, ExceptionState&);
+    static String isProtocolHandlerRegistered(Navigator*, const String& scheme, const String& url, ExceptionCode&);
+    static void unregisterProtocolHandler(Navigator*, const String& scheme, const String& url, ExceptionCode&);
 #endif
 
     static PassRefPtr<NavigatorContentUtils> create(NavigatorContentUtilsClient*);

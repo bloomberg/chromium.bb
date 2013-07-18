@@ -42,7 +42,8 @@ class AudioContext;
 class AudioNodeInput;
 class AudioNodeOutput;
 class AudioParam;
-class ExceptionState;
+
+typedef int ExceptionCode;
 
 // An AudioNode is the basic building block for handling audio within an AudioContext.
 // It may be an audio source, an intermediate processing module, or an audio destination.
@@ -127,9 +128,9 @@ public:
     AudioNodeOutput* output(unsigned);
 
     // Called from main thread by corresponding JavaScript methods.
-    virtual void connect(AudioNode*, unsigned outputIndex, unsigned inputIndex, ExceptionState&);
-    void connect(AudioParam*, unsigned outputIndex, ExceptionState&);
-    virtual void disconnect(unsigned outputIndex, ExceptionState&);
+    virtual void connect(AudioNode*, unsigned outputIndex, unsigned inputIndex, ExceptionCode&);
+    void connect(AudioParam*, unsigned outputIndex, ExceptionCode&);
+    virtual void disconnect(unsigned outputIndex, ExceptionCode&);
 
     virtual float sampleRate() const { return m_sampleRate; }
 
@@ -168,13 +169,13 @@ public:
     void disableOutputsIfNecessary();
 
     unsigned long channelCount();
-    virtual void setChannelCount(unsigned long, ExceptionState&);
+    virtual void setChannelCount(unsigned long, ExceptionCode&);
 
     String channelCountMode();
-    void setChannelCountMode(const String&, ExceptionState&);
+    void setChannelCountMode(const String&, ExceptionCode&);
 
     String channelInterpretation();
-    void setChannelInterpretation(const String&, ExceptionState&);
+    void setChannelInterpretation(const String&, ExceptionCode&);
 
     ChannelCountMode internalChannelCountMode() const { return m_channelCountMode; }
     AudioBus::ChannelInterpretation internalChannelInterpretation() const { return m_channelInterpretation; }

@@ -26,9 +26,9 @@
 #include "V8Crypto.h"
 
 #include "V8ArrayBufferView.h"
-#include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8Utilities.h"
+#include "core/dom/ExceptionCode.h"
 #include "modules/crypto/Crypto.h"
 
 #include "wtf/ArrayBufferView.h"
@@ -54,11 +54,13 @@ void V8Crypto::getRandomValuesMethodCustom(const v8::FunctionCallbackInfo<v8::Va
     ArrayBufferView* arrayBufferView = V8ArrayBufferView::toNative(v8::Handle<v8::Object>::Cast(buffer));
     ASSERT(arrayBufferView);
 
-    ExceptionState es(args.GetIsolate());
-    Crypto::getRandomValues(arrayBufferView, es);
+    ExceptionCode ec = 0;
+    Crypto::getRandomValues(arrayBufferView, ec);
 
-    if (es.throwIfNeeded())
+    if (ec) {
+        setDOMException(ec, args.GetIsolate());
         return;
+    }
 
     v8SetReturnValue(args, buffer);
 }

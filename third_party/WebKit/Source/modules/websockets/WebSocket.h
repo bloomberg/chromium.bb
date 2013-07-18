@@ -47,15 +47,14 @@
 namespace WebCore {
 
 class Blob;
-class ExceptionState;
 
 class WebSocket : public RefCounted<WebSocket>, public ScriptWrappable, public EventTarget, public ActiveDOMObject, public WebSocketChannelClient {
 public:
     static const char* subProtocolSeperator();
     static PassRefPtr<WebSocket> create(ScriptExecutionContext*);
-    static PassRefPtr<WebSocket> create(ScriptExecutionContext*, const String& url, ExceptionState&);
-    static PassRefPtr<WebSocket> create(ScriptExecutionContext*, const String& url, const String& protocol, ExceptionState&);
-    static PassRefPtr<WebSocket> create(ScriptExecutionContext*, const String& url, const Vector<String>& protocols, ExceptionState&);
+    static PassRefPtr<WebSocket> create(ScriptExecutionContext*, const String& url, ExceptionCode&);
+    static PassRefPtr<WebSocket> create(ScriptExecutionContext*, const String& url, const String& protocol, ExceptionCode&);
+    static PassRefPtr<WebSocket> create(ScriptExecutionContext*, const String& url, const Vector<String>& protocols, ExceptionCode&);
     virtual ~WebSocket();
 
     enum State {
@@ -65,23 +64,23 @@ public:
         CLOSED = 3
     };
 
-    void connect(const String& url, ExceptionState&);
-    void connect(const String& url, const String& protocol, ExceptionState&);
-    void connect(const String& url, const Vector<String>& protocols, ExceptionState&);
+    void connect(const String& url, ExceptionCode&);
+    void connect(const String& url, const String& protocol, ExceptionCode&);
+    void connect(const String& url, const Vector<String>& protocols, ExceptionCode&);
 
-    void send(const String& message, ExceptionState&);
-    void send(ArrayBuffer*, ExceptionState&);
-    void send(ArrayBufferView*, ExceptionState&);
-    void send(Blob*, ExceptionState&);
+    void send(const String& message, ExceptionCode&);
+    void send(ArrayBuffer*, ExceptionCode&);
+    void send(ArrayBufferView*, ExceptionCode&);
+    void send(Blob*, ExceptionCode&);
 
     // To distinguish close method call with the code parameter from one
     // without, we have these three signatures. Use of
     // Optional=DefaultIsUndefined in the IDL file doesn't help for now since
     // it's bound to a value of 0 which is indistinguishable from the case 0
     // is passed as code parameter.
-    void close(unsigned short code, const String& reason, ExceptionState&);
-    void close(ExceptionState&);
-    void close(unsigned short code, ExceptionState&);
+    void close(unsigned short code, const String& reason, ExceptionCode&);
+    void close(ExceptionCode&);
+    void close(unsigned short code, ExceptionCode&);
 
     const KURL& url() const;
     State readyState() const;
@@ -127,7 +126,7 @@ private:
     // Handle the JavaScript close method call. close() methods on this class
     // are just for determining if the optional code argument is supplied or
     // not.
-    void closeInternal(int, const String&, ExceptionState&);
+    void closeInternal(int, const String&, ExceptionCode&);
 
     virtual void refEventTarget() { ref(); }
     virtual void derefEventTarget() { deref(); }
@@ -138,7 +137,7 @@ private:
 
     // Checks the result of WebSocketChannel::send() method, and shows console
     // message and sets ec appropriately.
-    void handleSendResult(WebSocketChannel::SendResult, ExceptionState&);
+    void handleSendResult(WebSocketChannel::SendResult, ExceptionCode&);
 
     // Updates m_bufferedAmountAfterClose given the amount of data passed to
     // send() method after the state changed to CLOSING or CLOSED.

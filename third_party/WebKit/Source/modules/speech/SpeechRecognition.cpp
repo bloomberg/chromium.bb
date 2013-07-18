@@ -27,7 +27,6 @@
 
 #include "modules/speech/SpeechRecognition.h"
 
-#include "bindings/v8/ExceptionState.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/page/Page.h"
@@ -44,11 +43,11 @@ PassRefPtr<SpeechRecognition> SpeechRecognition::create(ScriptExecutionContext* 
     return speechRecognition.release();
 }
 
-void SpeechRecognition::start(ExceptionState& es)
+void SpeechRecognition::start(ExceptionCode& ec)
 {
     ASSERT(m_controller);
     if (m_started) {
-        es.throwDOMException(InvalidStateError);
+        ec = InvalidStateError;
         return;
     }
 

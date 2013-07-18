@@ -29,7 +29,6 @@
 #include "config.h"
 #include "modules/webdatabase/SQLTransaction.h"
 
-#include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/html/VoidCallback.h"
 #include "core/platform/Logging.h"
@@ -251,10 +250,10 @@ void SQLTransaction::performPendingCallback()
     runStateMachine();
 }
 
-void SQLTransaction::executeSQL(const String& sqlStatement, const Vector<SQLValue>& arguments, PassRefPtr<SQLStatementCallback> callback, PassRefPtr<SQLStatementErrorCallback> callbackError, ExceptionState& es)
+void SQLTransaction::executeSQL(const String& sqlStatement, const Vector<SQLValue>& arguments, PassRefPtr<SQLStatementCallback> callback, PassRefPtr<SQLStatementErrorCallback> callbackError, ExceptionCode& ec)
 {
     if (!m_executeSqlAllowed || !m_database->opened()) {
-        es.throwDOMException(InvalidStateError);
+        ec = InvalidStateError;
         return;
     }
 

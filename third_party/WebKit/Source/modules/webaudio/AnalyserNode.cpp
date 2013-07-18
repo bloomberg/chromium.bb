@@ -28,7 +28,6 @@
 
 #include "modules/webaudio/AnalyserNode.h"
 
-#include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "modules/webaudio/AudioNodeInput.h"
 #include "modules/webaudio/AudioNodeOutput.h"
@@ -73,10 +72,10 @@ void AnalyserNode::reset()
     m_analyser.reset();
 }
 
-void AnalyserNode::setFftSize(unsigned size, ExceptionState& es)
+void AnalyserNode::setFftSize(unsigned size, ExceptionCode& ec)
 {
     if (!m_analyser.setFftSize(size))
-        es.throwDOMException(NotSupportedError);
+        ec = NotSupportedError;
 }
 
 } // namespace WebCore

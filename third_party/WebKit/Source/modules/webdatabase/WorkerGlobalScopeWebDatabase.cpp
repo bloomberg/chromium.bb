@@ -30,8 +30,6 @@
 #include "modules/webdatabase/WorkerGlobalScopeWebDatabase.h"
 
 #include "RuntimeEnabledFeatures.h"
-#include "bindings/v8/ExceptionState.h"
-#include "core/dom/ExceptionCode.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "modules/webdatabase/Database.h"
 #include "modules/webdatabase/DatabaseCallback.h"
@@ -41,7 +39,7 @@
 
 namespace WebCore {
 
-PassRefPtr<Database> WorkerGlobalScopeWebDatabase::openDatabase(WorkerGlobalScope* context, const String& name, const String& version, const String& displayName, unsigned long estimatedSize, PassRefPtr<DatabaseCallback> creationCallback, ExceptionState& es)
+PassRefPtr<Database> WorkerGlobalScopeWebDatabase::openDatabase(WorkerGlobalScope* context, const String& name, const String& version, const String& displayName, unsigned long estimatedSize, PassRefPtr<DatabaseCallback> creationCallback, ExceptionCode& ec)
 {
     DatabaseManager& dbManager = DatabaseManager::manager();
     RefPtr<Database> database;
@@ -49,15 +47,15 @@ PassRefPtr<Database> WorkerGlobalScopeWebDatabase::openDatabase(WorkerGlobalScop
     if (RuntimeEnabledFeatures::databaseEnabled() && context->securityOrigin()->canAccessDatabase(context->topOrigin())) {
         database = dbManager.openDatabase(context, name, version, displayName, estimatedSize, creationCallback, error);
         ASSERT(database || error != DatabaseError::None);
-        es.throwDOMException(DatabaseManager::exceptionCodeForDatabaseError(error));
+        ec = DatabaseManager::exceptionCodeForDatabaseError(error);
     } else {
-        es.throwDOMException(SecurityError);
+        ec = SecurityError;
     }
 
     return database.release();
 }
 
-PassRefPtr<DatabaseSync> WorkerGlobalScopeWebDatabase::openDatabaseSync(WorkerGlobalScope* context, const String& name, const String& version, const String& displayName, unsigned long estimatedSize, PassRefPtr<DatabaseCallback> creationCallback, ExceptionState& es)
+PassRefPtr<DatabaseSync> WorkerGlobalScopeWebDatabase::openDatabaseSync(WorkerGlobalScope* context, const String& name, const String& version, const String& displayName, unsigned long estimatedSize, PassRefPtr<DatabaseCallback> creationCallback, ExceptionCode& ec)
 {
     DatabaseManager& dbManager = DatabaseManager::manager();
     RefPtr<DatabaseSync> database;
@@ -66,9 +64,9 @@ PassRefPtr<DatabaseSync> WorkerGlobalScopeWebDatabase::openDatabaseSync(WorkerGl
         database = dbManager.openDatabaseSync(context, name, version, displayName, estimatedSize, creationCallback, error);
 
         ASSERT(database || error != DatabaseError::None);
-        es.throwDOMException(DatabaseManager::exceptionCodeForDatabaseError(error));
+        ec = DatabaseManager::exceptionCodeForDatabaseError(error);
     } else {
-        es.throwDOMException(SecurityError);
+        ec = SecurityError;
     }
 
     return database.release();

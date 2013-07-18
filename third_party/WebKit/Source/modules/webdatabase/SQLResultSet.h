@@ -36,15 +36,13 @@
 
 namespace WebCore {
 
-class ExceptionState;
-
 class SQLResultSet : public ThreadSafeRefCounted<SQLResultSet>, public ScriptWrappable {
 public:
     static PassRefPtr<SQLResultSet> create() { return adoptRef(new SQLResultSet); }
 
     SQLResultSetRowList* rows() const;
 
-    int64_t insertId(ExceptionState&) const;
+    int64_t insertId(ExceptionCode&) const;
     int rowsAffected() const;
 
     // For internal (non-JS) use

@@ -26,7 +26,6 @@
 #include "config.h"
 #include "modules/mediastream/MediaStream.h"
 
-#include "bindings/v8/ExceptionState.h"
 #include "core/dom/Event.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/platform/mediastream/MediaStreamCenter.h"
@@ -133,15 +132,15 @@ bool MediaStream::ended() const
     return m_stopped || m_descriptor->ended();
 }
 
-void MediaStream::addTrack(PassRefPtr<MediaStreamTrack> prpTrack, ExceptionState& es)
+void MediaStream::addTrack(PassRefPtr<MediaStreamTrack> prpTrack, ExceptionCode& ec)
 {
     if (ended()) {
-        es.throwDOMException(InvalidStateError);
+        ec = InvalidStateError;
         return;
     }
 
     if (!prpTrack) {
-        es.throwDOMException(TypeMismatchError);
+        ec = TypeMismatchError;
         return;
     }
 
@@ -167,15 +166,15 @@ void MediaStream::addTrack(PassRefPtr<MediaStreamTrack> prpTrack, ExceptionState
     MediaStreamCenter::instance().didAddMediaStreamTrack(m_descriptor.get(), newTrack->component());
 }
 
-void MediaStream::removeTrack(PassRefPtr<MediaStreamTrack> prpTrack, ExceptionState& es)
+void MediaStream::removeTrack(PassRefPtr<MediaStreamTrack> prpTrack, ExceptionCode& ec)
 {
     if (ended()) {
-        es.throwDOMException(InvalidStateError);
+        ec = InvalidStateError;
         return;
     }
 
     if (!prpTrack) {
-        es.throwDOMException(TypeMismatchError);
+        ec = TypeMismatchError;
         return;
     }
 

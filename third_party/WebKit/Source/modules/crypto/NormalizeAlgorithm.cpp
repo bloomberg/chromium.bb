@@ -32,7 +32,6 @@
 #include "modules/crypto/NormalizeAlgorithm.h"
 
 #include "bindings/v8/Dictionary.h"
-#include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "public/platform/WebCryptoAlgorithm.h"
 #include "public/platform/WebCryptoAlgorithmParams.h"
@@ -194,27 +193,27 @@ PassOwnPtr<WebKit::WebCryptoAlgorithmParams> parseAlgorithmParams(const Dictiona
 // FIXME: Throw the correct exception types!
 // This implementation corresponds with:
 // http://www.w3.org/TR/WebCryptoAPI/#algorithm-normalizing-rules
-bool normalizeAlgorithm(const Dictionary& raw, AlgorithmOperation op, WebKit::WebCryptoAlgorithm& algorithm, ExceptionState& es)
+bool normalizeAlgorithm(const Dictionary& raw, AlgorithmOperation op, WebKit::WebCryptoAlgorithm& algorithm, ExceptionCode& ec)
 {
     String algorithmName;
     if (!raw.get("name", algorithmName)) {
-        es.throwDOMException(NotSupportedError);
+        ec = NotSupportedError;
         return false;
     }
 
     if (!algorithmName.containsOnlyASCII()) {
-        es.throwDOMException(SyntaxError);
+        ec = SyntaxError;
         return false;
     }
 
     const AlgorithmInfo* info = AlgorithmRegistry::lookupAlgorithmByName(algorithmName);
     if (!info) {
-        es.throwDOMException(NotSupportedError);
+        ec = NotSupportedError;
         return false;
     }
 
     if (info->paramsForOperation[op] == UnsupportedOp) {
-        es.throwDOMException(NotSupportedError);
+        ec = NotSupportedError;
         return false;
     }
 
@@ -222,7 +221,7 @@ bool normalizeAlgorithm(const Dictionary& raw, AlgorithmOperation op, WebKit::We
     OwnPtr<WebKit::WebCryptoAlgorithmParams> params = parseAlgorithmParams(raw, paramsType);
 
     if (!params && paramsType != WebKit::WebCryptoAlgorithmParamsTypeNone) {
-        es.throwDOMException(NotSupportedError);
+        ec = NotSupportedError;
         return false;
     }
 

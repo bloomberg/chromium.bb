@@ -31,9 +31,7 @@
 #include "config.h"
 #include "modules/mediasource/WebKitMediaSource.h"
 
-#include "bindings/v8/ExceptionState.h"
-#include "bindings/v8/ExceptionStatePlaceholder.h"
-#include "core/dom/ExceptionCode.h"
+#include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/html/TimeRanges.h"
 #include "core/platform/ContentType.h"
 #include "core/platform/MIMETypeRegistry.h"
@@ -69,34 +67,34 @@ WebKitSourceBufferList* WebKitMediaSource::activeSourceBuffers()
     return m_activeSourceBuffers.get();
 }
 
-WebKitSourceBuffer* WebKitMediaSource::addSourceBuffer(const String& type, ExceptionState& es)
+WebKitSourceBuffer* WebKitMediaSource::addSourceBuffer(const String& type, ExceptionCode& ec)
 {
     // 3.1 http://dvcs.w3.org/hg/html-media/raw-file/tip/media-source/media-source.html#dom-addsourcebuffer
     // 1. If type is null or an empty then throw an InvalidAccessError exception and
     // abort these steps.
     if (type.isNull() || type.isEmpty()) {
-        es.throwDOMException(InvalidAccessError);
+        ec = InvalidAccessError;
         return 0;
     }
 
     // 2. If type contains a MIME type that is not supported ..., then throw a
     // NotSupportedError exception and abort these steps.
     if (!isTypeSupported(type)) {
-        es.throwDOMException(NotSupportedError);
+        ec = NotSupportedError;
         return 0;
     }
 
     // 4. If the readyState attribute is not in the "open" state then throw an
     // InvalidStateError exception and abort these steps.
     if (!isOpen()) {
-        es.throwDOMException(InvalidStateError);
+        ec = InvalidStateError;
         return 0;
     }
 
     // 5. Create a new SourceBuffer object and associated resources.
     ContentType contentType(type);
     Vector<String> codecs = contentType.codecs();
-    OwnPtr<SourceBufferPrivate> sourceBufferPrivate = createSourceBufferPrivate(contentType.type(), codecs, es);
+    OwnPtr<SourceBufferPrivate> sourceBufferPrivate = createSourceBufferPrivate(contentType.type(), codecs, ec);
     if (!sourceBufferPrivate)
         return 0;
 
@@ -108,20 +106,20 @@ WebKitSourceBuffer* WebKitMediaSource::addSourceBuffer(const String& type, Excep
     return buffer.get();
 }
 
-void WebKitMediaSource::removeSourceBuffer(WebKitSourceBuffer* buffer, ExceptionState& es)
+void WebKitMediaSource::removeSourceBuffer(WebKitSourceBuffer* buffer, ExceptionCode& ec)
 {
     // 3.1 http://dvcs.w3.org/hg/html-media/raw-file/tip/media-source/media-source.html#dom-removesourcebuffer
     // 1. If sourceBuffer is null then throw an InvalidAccessError exception and
     // abort these steps.
     if (!buffer) {
-        es.throwDOMException(InvalidAccessError);
+        ec = InvalidAccessError;
         return;
     }
 
     // 2. If sourceBuffers is empty then throw an InvalidStateError exception and
     // abort these steps.
     if (isClosed() || !m_sourceBuffers->length()) {
-        es.throwDOMException(InvalidStateError);
+        ec = InvalidStateError;
         return;
     }
 
@@ -130,7 +128,7 @@ void WebKitMediaSource::removeSourceBuffer(WebKitSourceBuffer* buffer, Exception
     // 6. Remove sourceBuffer from sourceBuffers and fire a removesourcebuffer event
     // on that object.
     if (!m_sourceBuffers->remove(buffer)) {
-        es.throwDOMException(NotFoundError);
+        ec = NotFoundError;
         return;
     }
 
@@ -170,7 +168,7 @@ Vector<RefPtr<TimeRanges> > WebKitMediaSource::activeRanges() const
 {
     Vector<RefPtr<TimeRanges> > activeRanges(m_activeSourceBuffers->length());
     for (size_t i = 0; i < m_activeSourceBuffers->length(); ++i)
-        activeRanges[i] = m_activeSourceBuffers->item(i)->buffered(ASSERT_NO_EXCEPTION_STATE);
+        activeRanges[i] = m_activeSourceBuffers->item(i)->buffered(ASSERT_NO_EXCEPTION);
 
     return activeRanges;
 }
