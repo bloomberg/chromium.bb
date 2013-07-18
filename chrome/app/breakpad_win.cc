@@ -17,7 +17,6 @@
 #include "base/command_line.h"
 #include "base/debug/crash_logging.h"
 #include "base/environment.h"
-#include "base/file_version_info.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_split.h"
@@ -33,13 +32,13 @@
 #include "chrome/app/hard_error_handler_win.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_result_codes.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/crash_keys.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/installer/util/google_chrome_sxs_distribution.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/install_util.h"
 #include "components/breakpad/breakpad_client.h"
+#include "content/public/common/content_switches.h"
 #include "policy/policy_constants.h"
 #include "sandbox/win/src/nt_internals.h"
 #include "sandbox/win/src/sidestep/preamble_patcher.h"
@@ -362,31 +361,10 @@ std::wstring GetProfileType() {
 google_breakpad::CustomClientInfo* GetCustomInfo(const std::wstring& exe_path,
                                                  const std::wstring& type,
                                                  const std::wstring& channel) {
-  scoped_ptr<FileVersionInfo>
-      version_info(FileVersionInfo::CreateFileVersionInfo(
-          base::FilePath(exe_path)));
-
-  std::wstring version, product;
-  std::wstring special_build;
-  if (version_info.get()) {
-    // Get the information from the file.
-    version = version_info->product_version();
-    if (!version_info->is_official_build())
-      version.append(L"-devel");
-
-    const CommandLine& command = *CommandLine::ForCurrentProcess();
-    if (command.HasSwitch(switches::kChromeFrame)) {
-      product = L"ChromeFrame";
-    } else {
-      product = version_info->product_short_name();
-    }
-
-    special_build = version_info->special_build();
-  } else {
-    // No version info found. Make up the values.
-     product = L"Chrome";
-     version = L"0.0.0.0-devel";
-  }
+  base::string16 version, product;
+  base::string16 special_build;
+  breakpad::GetBreakpadClient()->GetProductNameAndVersion(
+      base::FilePath(exe_path), &product, &version, &special_build);
 
   // We only expect this method to be called once per process.
   DCHECK(!g_custom_entries);
@@ -394,9 +372,9 @@ google_breakpad::CustomClientInfo* GetCustomInfo(const std::wstring& exe_path,
 
   // Common g_custom_entries.
   g_custom_entries->push_back(
-      google_breakpad::CustomInfoEntry(L"ver", version.c_str()));
+      google_breakpad::CustomInfoEntry(L"ver", UTF16ToWide(version).c_str()));
   g_custom_entries->push_back(
-      google_breakpad::CustomInfoEntry(L"prod", product.c_str()));
+      google_breakpad::CustomInfoEntry(L"prod", UTF16ToWide(product).c_str()));
   g_custom_entries->push_back(
       google_breakpad::CustomInfoEntry(L"plat", L"Win32"));
   g_custom_entries->push_back(
@@ -412,8 +390,8 @@ google_breakpad::CustomClientInfo* GetCustomInfo(const std::wstring& exe_path,
         google_breakpad::CustomInfoEntry(L"deferred-upload", L"true"));
 
   if (!special_build.empty())
-    g_custom_entries->push_back(
-        google_breakpad::CustomInfoEntry(L"special", special_build.c_str()));
+    g_custom_entries->push_back(google_breakpad::CustomInfoEntry(
+        L"special", UTF16ToWide(special_build).c_str()));
 
   g_num_of_extensions_offset = g_custom_entries->size();
   g_custom_entries->push_back(

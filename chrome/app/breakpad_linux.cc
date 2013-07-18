@@ -22,6 +22,7 @@
 #include <algorithm>
 #include <string>
 
+#include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/debug/crash_logging.h"
 #include "base/files/file_path.h"
@@ -39,12 +40,12 @@
 #include "chrome/app/breakpad_linux_impl.h"
 #include "chrome/browser/crash_upload_list.h"
 #include "chrome/common/child_process_logging.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info_posix.h"
 #include "chrome/common/crash_keys.h"
 #include "chrome/common/env_vars.h"
 #include "components/breakpad/breakpad_client.h"
 #include "content/public/common/content_descriptors.h"
+#include "content/public/common/content_switches.h"
 
 #if defined(OS_ANDROID)
 #include <android/log.h>

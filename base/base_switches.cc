@@ -49,4 +49,12 @@ const char kWaitForDebugger[]               = "wait-for-debugger";
 // Sends a pretty-printed version of tracing info to the console.
 const char kTraceToConsole[]                = "trace-to-console";
 
+#if defined(OS_POSIX)
+// A flag, generated internally for renderer and other helper process command
+// lines on Linux and Mac. It tells the helper process to enable crash dumping
+// and reporting, because helpers cannot access the files needed to make this
+// decision.
+const char kEnableCrashReporter[]           = "enable-crash-reporter";
+#endif
+
 }  // namespace switches

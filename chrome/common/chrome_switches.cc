@@ -1458,12 +1458,6 @@ const char kOpenAsh[]                       = "open-ash";
 #endif
 
 #if defined(OS_POSIX)
-// A flag, generated internally by Chrome for renderer and other helper process
-// command lines on Linux and Mac. It tells the helper process to enable crash
-// dumping and reporting, because helpers cannot access the profile or other
-// files needed to make this decision.
-const char kEnableCrashReporter[]           = "enable-crash-reporter";
-
 // Used for turning on Breakpad crash reporting in a debug environment where
 // crash reporting is typically compiled but disabled.
 const char kEnableCrashReporterForTesting[] =

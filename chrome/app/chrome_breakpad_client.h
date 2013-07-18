@@ -20,6 +20,10 @@ class ChromeBreakpadClient : public breakpad::BreakpadClient {
 #if defined(OS_WIN)
   virtual bool GetAlternativeCrashDumpLocation(base::FilePath* crash_dir)
       OVERRIDE;
+  virtual void GetProductNameAndVersion(const base::FilePath& exe_path,
+                                        base::string16* product_name,
+                                        base::string16* version,
+                                        base::string16* special_build) OVERRIDE;
 #endif
 
   virtual bool GetCrashDumpLocation(base::FilePath* crash_dir) OVERRIDE;

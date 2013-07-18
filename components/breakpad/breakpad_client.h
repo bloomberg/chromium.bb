@@ -5,7 +5,8 @@
 #ifndef COMPONENTS_BREAKPAD_BREAKPAD_CLIENT_H_
 #define COMPONENTS_BREAKPAD_BREAKPAD_CLIENT_H_
 
-#include "base/basictypes.h"
+#include "base/strings/string16.h"
+#include "build/build_config.h"
 
 namespace base {
 class FilePath;
@@ -32,6 +33,13 @@ class BreakpadClient {
   // Returns true if an alternative location to store the minidump files was
   // specified. Returns true if |crash_dir| was set.
   virtual bool GetAlternativeCrashDumpLocation(base::FilePath* crash_dir);
+
+  // Returns a textual description of the product type and version to include
+  // in the crash report.
+  virtual void GetProductNameAndVersion(const base::FilePath& exe_path,
+                                        base::string16* product_name,
+                                        base::string16* version,
+                                        base::string16* special_build);
 #endif
 
   // The location where minidump files should be written. Returns true if
