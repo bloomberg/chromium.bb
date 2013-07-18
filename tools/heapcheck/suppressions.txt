@@ -929,13 +929,6 @@
    fun:media::AudioBufferTest*
 }
 {
-   bug_252615
-   Heapcheck:Leak
-   fun:XGetWindowProperty
-   fun:GetXWindowName
-   fun:ash::DisplayControllerTest_XWidowNameForRootWindow_Test::TestBody
-}
-{
    bug_258113
    Heapcheck:Leak
    fun:ppapi::proxy::PPP_Class_Proxy::CreateProxiedObject
