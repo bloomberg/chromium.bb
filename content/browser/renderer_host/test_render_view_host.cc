@@ -199,6 +199,7 @@ gfx::NativeView TestRenderWidgetHostView::BuildInputMethodsGtkMenu() {
 #endif  // defined(TOOLKIT_GTK)
 
 void TestRenderWidgetHostView::OnSwapCompositorFrame(
+    uint32 output_surface_id,
     scoped_ptr<cc::CompositorFrame> frame) {
   did_swap_compositor_frame_ = true;
 }

@@ -22,6 +22,7 @@ namespace content {
 
 BrowserPluginCompositingHelper::SwapBuffersInfo::SwapBuffersInfo()
     : route_id(0),
+      output_surface_id(0),
       host_id(0),
       software_frame_id(0),
       shared_memory(NULL) {
@@ -35,6 +36,7 @@ BrowserPluginCompositingHelper::BrowserPluginCompositingHelper(
     : instance_id_(instance_id),
       host_routing_id_(host_routing_id),
       last_route_id_(0),
+      last_output_surface_id_(0),
       last_host_id_(0),
       last_mailbox_valid_(false),
       ack_pending_(true),
@@ -57,6 +59,7 @@ void BrowserPluginCompositingHelper::DidCommitCompositorFrame() {
           host_routing_id_,
           instance_id_,
           last_route_id_,
+          last_output_surface_id_,
           last_host_id_,
           ack));
 
@@ -103,7 +106,9 @@ void BrowserPluginCompositingHelper::MailboxReleased(
   }
 
   // This means the GPU process crashed or guest crashed.
-  if (last_host_id_ != mailbox.host_id || last_route_id_ != mailbox.route_id)
+  if (last_host_id_ != mailbox.host_id ||
+      last_output_surface_id_ != mailbox.output_surface_id ||
+      last_route_id_ != mailbox.route_id)
     return;
 
   // We need to send an ACK to for every buffer sent to us.
@@ -141,6 +146,7 @@ void BrowserPluginCompositingHelper::MailboxReleased(
              host_routing_id_,
              instance_id_,
              mailbox.route_id,
+             mailbox.output_surface_id,
              mailbox.host_id,
              ack));
       break;
@@ -154,6 +160,7 @@ void BrowserPluginCompositingHelper::MailboxReleased(
              host_routing_id_,
              instance_id_,
              mailbox.route_id,
+             mailbox.output_surface_id,
              mailbox.host_id,
              ack));
       break;
@@ -181,10 +188,13 @@ void BrowserPluginCompositingHelper::OnBuffersSwappedPrivate(
   // guest renderer crashed.
   // In this case, we are communicating with a new image transport
   // surface and must ACK with the new ID's and an empty mailbox.
-  if (last_route_id_ != mailbox.route_id || last_host_id_ != mailbox.host_id)
+  if (last_route_id_ != mailbox.route_id ||
+      last_output_surface_id_ != mailbox.output_surface_id ||
+      last_host_id_ != mailbox.host_id)
     last_mailbox_valid_ = false;
 
   last_route_id_ = mailbox.route_id;
+  last_output_surface_id_ = mailbox.output_surface_id;
   last_host_id_ = mailbox.host_id;
 
   ack_pending_ = true;
@@ -258,6 +268,7 @@ void BrowserPluginCompositingHelper::OnBuffersSwapped(
   swap_info.type = TEXTURE_IMAGE_TRANSPORT;
   swap_info.size = size;
   swap_info.route_id = gpu_route_id;
+  swap_info.output_surface_id = 0;
   swap_info.host_id = gpu_host_id;
   OnBuffersSwappedPrivate(swap_info, 0, device_scale_factor);
 }
@@ -265,6 +276,7 @@ void BrowserPluginCompositingHelper::OnBuffersSwapped(
 void BrowserPluginCompositingHelper::OnCompositorFrameSwapped(
     scoped_ptr<cc::CompositorFrame> frame,
     int route_id,
+    uint32 output_surface_id,
     int host_id) {
   if (frame->gl_frame_data) {
     SwapBuffersInfo swap_info;
@@ -272,6 +284,7 @@ void BrowserPluginCompositingHelper::OnCompositorFrameSwapped(
     swap_info.type = GL_COMPOSITOR_FRAME;
     swap_info.size = frame->gl_frame_data->size;
     swap_info.route_id = route_id;
+    swap_info.output_surface_id = output_surface_id;
     swap_info.host_id = host_id;
     OnBuffersSwappedPrivate(swap_info,
                             frame->gl_frame_data->sync_point,
@@ -286,6 +299,7 @@ void BrowserPluginCompositingHelper::OnCompositorFrameSwapped(
     swap_info.type = SOFTWARE_COMPOSITOR_FRAME;
     swap_info.size = frame_data->size;
     swap_info.route_id = route_id;
+    swap_info.output_surface_id = output_surface_id;
     swap_info.host_id = host_id;
     swap_info.software_frame_id = frame_data->id;
 
@@ -327,6 +341,7 @@ void BrowserPluginCompositingHelper::OnCompositorFrameSwapped(
 
   delegated_layer_->SetFrameData(frame->delegated_frame_data.Pass());
   last_route_id_ = route_id;
+  last_output_surface_id_ = output_surface_id;
   last_host_id_ = host_id;
   ack_pending_ = true;
 }

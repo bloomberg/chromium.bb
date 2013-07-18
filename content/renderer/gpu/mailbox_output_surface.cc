@@ -20,9 +20,14 @@ namespace content {
 
 MailboxOutputSurface::MailboxOutputSurface(
     int32 routing_id,
+    uint32 output_surface_id,
     WebGraphicsContext3DCommandBufferImpl* context3D,
     cc::SoftwareOutputDevice* software_device)
-    : CompositorOutputSurface(routing_id, context3D, software_device, true),
+    : CompositorOutputSurface(routing_id,
+                              output_surface_id,
+                              context3D,
+                              software_device,
+                              true),
       fbo_(0),
       is_backbuffer_discarded_(false) {
   pending_textures_.push_back(TransferableFrame());
@@ -123,7 +128,14 @@ void MailboxOutputSurface::BindFramebuffer() {
       current_backing_.texture_id, 0);
 }
 
-void MailboxOutputSurface::OnSwapAck(const cc::CompositorFrameAck& ack) {
+void MailboxOutputSurface::OnSwapAck(uint32 output_surface_id,
+                                     const cc::CompositorFrameAck& ack) {
+  // Ignore message if it's a stale one coming from a different output surface
+  // (e.g. after a lost context).
+  if (output_surface_id != output_surface_id_) {
+    CompositorOutputSurface::OnSwapAck(output_surface_id, ack);
+    return;
+  }
   if (!ack.gl_frame_data->mailbox.IsZero()) {
     DCHECK(!ack.gl_frame_data->size.IsEmpty());
     // The browser could be returning the oldest or any other pending texture
@@ -158,7 +170,7 @@ void MailboxOutputSurface::OnSwapAck(const cc::CompositorFrameAck& ack) {
       context3d_->deleteTexture(texture_id);
     pending_textures_.pop_front();
   }
-  CompositorOutputSurface::OnSwapAck(ack);
+  CompositorOutputSurface::OnSwapAck(output_surface_id, ack);
 }
 
 void MailboxOutputSurface::SwapBuffers(cc::CompositorFrame* frame) {

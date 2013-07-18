@@ -1812,10 +1812,11 @@ bool RenderWidgetHostImpl::OnSwapCompositorFrame(
   if (!ViewHostMsg_SwapCompositorFrame::Read(&message, &param))
     return false;
   scoped_ptr<cc::CompositorFrame> frame(new cc::CompositorFrame);
-  param.a.AssignTo(frame.get());
+  uint32 output_surface_id = param.a;
+  param.b.AssignTo(frame.get());
 
   if (view_) {
-    view_->OnSwapCompositorFrame(frame.Pass());
+    view_->OnSwapCompositorFrame(output_surface_id, frame.Pass());
     view_->DidReceiveRendererFrame();
   } else {
     cc::CompositorFrameAck ack;
@@ -1827,7 +1828,8 @@ bool RenderWidgetHostImpl::OnSwapCompositorFrame(
     } else if (frame->software_frame_data) {
       ack.last_software_frame_id = frame->software_frame_data->id;
     }
-    SendSwapCompositorFrameAck(routing_id_, process_->GetID(), ack);
+    SendSwapCompositorFrameAck(routing_id_, process_->GetID(),
+                               output_surface_id,  ack);
   }
   return true;
 }
@@ -2576,10 +2578,15 @@ void RenderWidgetHostImpl::AcknowledgeBufferPresent(
 
 // static
 void RenderWidgetHostImpl::SendSwapCompositorFrameAck(
-    int32 route_id, int renderer_host_id, const cc::CompositorFrameAck& ack) {
+    int32 route_id,
+    uint32 output_surface_id,
+    int renderer_host_id,
+    const cc::CompositorFrameAck& ack) {
   RenderProcessHost* host = RenderProcessHost::FromID(renderer_host_id);
-  if (host)
-    host->Send(new ViewMsg_SwapCompositorFrameAck(route_id, ack));
+  if (!host)
+    return;
+  host->Send(new ViewMsg_SwapCompositorFrameAck(
+      route_id, output_surface_id, ack));
 }
 
 void RenderWidgetHostImpl::AcknowledgeSwapBuffersToRenderer() {

@@ -298,6 +298,7 @@ bool PointerEventActivates(const ui::Event& event) {
 // Swap ack for the renderer when kCompositeToMailbox is enabled.
 void SendCompositorFrameAck(
     int32 route_id,
+    uint32 output_surface_id,
     int renderer_host_id,
     const gpu::Mailbox& received_mailbox,
     const gfx::Size& received_size,
@@ -322,7 +323,7 @@ void SendCompositorFrameAck(
   }
 
   RenderWidgetHostImpl::SendSwapCompositorFrameAck(
-      route_id, renderer_host_id, ack);
+      route_id, output_surface_id, renderer_host_id, ack);
 }
 
 void AcknowledgeBufferForGpu(
@@ -1402,6 +1403,7 @@ void RenderWidgetHostViewAura::AcceleratedSurfaceBuffersSwapped(
 }
 
 void RenderWidgetHostViewAura::SwapDelegatedFrame(
+    uint32 output_surface_id,
     scoped_ptr<cc::DelegatedFrameData> frame_data,
     float frame_device_scale_factor,
     const ui::LatencyInfo& latency_info) {
@@ -1415,7 +1417,8 @@ void RenderWidgetHostViewAura::SwapDelegatedFrame(
     cc::CompositorFrameAck ack;
     ack.resources.swap(frame_data->resource_list);
     RenderWidgetHostImpl::SendSwapCompositorFrameAck(
-        host_->GetRoutingID(), host_->GetProcess()->GetID(), ack);
+        host_->GetRoutingID(), output_surface_id,
+        host_->GetProcess()->GetID(), ack);
     return;
   }
   window_->layer()->SetDelegatedFrame(frame_data.Pass(), frame_size_in_dip);
@@ -1428,23 +1431,26 @@ void RenderWidgetHostViewAura::SwapDelegatedFrame(
 
   ui::Compositor* compositor = GetCompositor();
   if (!compositor) {
-    SendDelegatedFrameAck();
+    SendDelegatedFrameAck(output_surface_id);
   } else {
     compositor->SetLatencyInfo(latency_info);
     AddOnCommitCallbackAndDisableLocks(
         base::Bind(&RenderWidgetHostViewAura::SendDelegatedFrameAck,
-                   AsWeakPtr()));
+                   AsWeakPtr(),
+                   output_surface_id));
   }
 }
 
-void RenderWidgetHostViewAura::SendDelegatedFrameAck() {
+void RenderWidgetHostViewAura::SendDelegatedFrameAck(uint32 output_surface_id) {
   cc::CompositorFrameAck ack;
   window_->layer()->TakeUnusedResourcesForChildCompositor(&ack.resources);
   RenderWidgetHostImpl::SendSwapCompositorFrameAck(
-      host_->GetRoutingID(), host_->GetProcess()->GetID(), ack);
+      host_->GetRoutingID(), output_surface_id,
+      host_->GetProcess()->GetID(), ack);
 }
 
 void RenderWidgetHostViewAura::SwapSoftwareFrame(
+    uint32 output_surface_id,
     scoped_ptr<cc::SoftwareFrameData> frame_data,
     float frame_device_scale_factor,
     const ui::LatencyInfo& latency_info) {
@@ -1453,7 +1459,7 @@ void RenderWidgetHostViewAura::SwapSoftwareFrame(
   gfx::Size frame_size_in_dip =
       ConvertSizeToDIP(frame_device_scale_factor, frame_size);
   if (ShouldSkipFrame(frame_size_in_dip)) {
-    SendSoftwareFrameAck(frame_data->id);
+    SendSoftwareFrameAck(output_surface_id, frame_data->id);
     return;
   }
 
@@ -1483,7 +1489,7 @@ void RenderWidgetHostViewAura::SwapSoftwareFrame(
   cc::TextureMailbox::ReleaseCallback callback =
       base::Bind(ReleaseMailbox, Passed(&shared_memory),
                  base::Bind(&RenderWidgetHostViewAura::SendSoftwareFrameAck,
-                            AsWeakPtr(), frame_data->id));
+                            AsWeakPtr(), output_surface_id, frame_data->id));
   current_software_frame_ =
       cc::TextureMailbox(shared_memory_raw_ptr, frame_size, callback);
   DCHECK(current_software_frame_.IsSharedMemory());
@@ -1504,24 +1510,28 @@ void RenderWidgetHostViewAura::SwapSoftwareFrame(
 }
 
 void RenderWidgetHostViewAura::SendSoftwareFrameAck(
-    unsigned software_frame_id) {
+    uint32 output_surface_id, unsigned software_frame_id) {
   cc::CompositorFrameAck ack;
   ack.last_software_frame_id = software_frame_id;
   RenderWidgetHostImpl::SendSwapCompositorFrameAck(
-      host_->GetRoutingID(), host_->GetProcess()->GetID(), ack);
+      host_->GetRoutingID(), output_surface_id,
+      host_->GetProcess()->GetID(), ack);
 }
 
 void RenderWidgetHostViewAura::OnSwapCompositorFrame(
+    uint32 output_surface_id,
     scoped_ptr<cc::CompositorFrame> frame) {
   if (frame->delegated_frame_data) {
-    SwapDelegatedFrame(frame->delegated_frame_data.Pass(),
+    SwapDelegatedFrame(output_surface_id,
+                       frame->delegated_frame_data.Pass(),
                        frame->metadata.device_scale_factor,
                        frame->metadata.latency_info);
     return;
   }
 
   if (frame->software_frame_data) {
-    SwapSoftwareFrame(frame->software_frame_data.Pass(),
+    SwapSoftwareFrame(output_surface_id,
+                      frame->software_frame_data.Pass(),
                       frame->metadata.device_scale_factor,
                       frame->metadata.latency_info);
     return;
@@ -1532,7 +1542,7 @@ void RenderWidgetHostViewAura::OnSwapCompositorFrame(
 
   BufferPresentedCallback ack_callback = base::Bind(
       &SendCompositorFrameAck,
-      host_->GetRoutingID(), host_->GetProcess()->GetID(),
+      host_->GetRoutingID(), output_surface_id, host_->GetProcess()->GetID(),
       frame->gl_frame_data->mailbox, frame->gl_frame_data->size);
 
   if (!frame->gl_frame_data->sync_point) {

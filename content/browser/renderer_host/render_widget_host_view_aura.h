@@ -241,6 +241,7 @@ class RenderWidgetHostViewAura
   virtual bool LockMouse() OVERRIDE;
   virtual void UnlockMouse() OVERRIDE;
   virtual void OnSwapCompositorFrame(
+      uint32 output_surface_id,
       scoped_ptr<cc::CompositorFrame> frame) OVERRIDE;
 #if defined(OS_WIN)
   virtual void SetParentNativeViewAccessible(
@@ -492,16 +493,19 @@ class RenderWidgetHostViewAura
       const scoped_refptr<ui::Texture>& texture_to_return);
 
   void SwapDelegatedFrame(
+      uint32 output_surface_id,
       scoped_ptr<cc::DelegatedFrameData> frame_data,
       float frame_device_scale_factor,
       const ui::LatencyInfo& latency_info);
-  void SendDelegatedFrameAck();
+  void SendDelegatedFrameAck(uint32 output_surface_id);
 
   void SwapSoftwareFrame(
+      uint32 output_surface_id,
       scoped_ptr<cc::SoftwareFrameData> frame_data,
       float frame_device_scale_factor,
       const ui::LatencyInfo& latency_info);
-  void SendSoftwareFrameAck(unsigned software_frame_id);
+  void SendSoftwareFrameAck(uint32 output_surface_id,
+                            unsigned software_frame_id);
 
   BrowserAccessibilityManager* GetOrCreateBrowserAccessibilityManager();
 

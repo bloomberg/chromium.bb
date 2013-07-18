@@ -209,9 +209,10 @@ IPC_MESSAGE_ROUTED5(BrowserPluginHostMsg_BuffersSwappedACK,
                     uint32 /* sync_point */)
 
 // Acknowledge that we presented an ubercomp frame.
-IPC_MESSAGE_ROUTED4(BrowserPluginHostMsg_CompositorFrameACK,
+IPC_MESSAGE_ROUTED5(BrowserPluginHostMsg_CompositorFrameACK,
                     int /* instance_id */,
                     int /* route_id */,
+                    uint32 /* output_surface_id */,
                     int /* renderer_host_id */,
                     cc::CompositorFrameAck /* ack */)
 
@@ -363,10 +364,11 @@ IPC_MESSAGE_CONTROL2(BrowserPluginMsg_BuffersSwapped,
                      int /* instance_id */,
                      BrowserPluginMsg_BuffersSwapped_Params)
 
-IPC_MESSAGE_CONTROL4(BrowserPluginMsg_CompositorFrameSwapped,
+IPC_MESSAGE_CONTROL5(BrowserPluginMsg_CompositorFrameSwapped,
                      int /* instance_id */,
                      cc::CompositorFrame /* frame */,
                      int /* route_id */,
+                     uint32 /* output_surface_id */,
                      int /* renderer_host_id */)
 
 // When the guest requests permission, the browser process forwards this

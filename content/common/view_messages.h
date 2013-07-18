@@ -1323,7 +1323,8 @@ IPC_MESSAGE_ROUTED1(ViewMsg_SelectPopupMenuItem,
 #endif
 
 // Sent by the browser as a reply to ViewHostMsg_SwapCompositorFrame.
-IPC_MESSAGE_ROUTED1(ViewMsg_SwapCompositorFrameAck,
+IPC_MESSAGE_ROUTED2(ViewMsg_SwapCompositorFrameAck,
+                    uint32 /* output_surface_id */,
                     cc::CompositorFrameAck /* ack */)
 
 // Sent by the browser to ask the renderer for a snapshot of the current view.
@@ -2054,7 +2055,8 @@ IPC_MESSAGE_ROUTED1(
     ViewHostMsg_CompositorSurfaceBuffersSwapped,
     ViewHostMsg_CompositorSurfaceBuffersSwapped_Params /* params */)
 
-IPC_MESSAGE_ROUTED1(ViewHostMsg_SwapCompositorFrame,
+IPC_MESSAGE_ROUTED2(ViewHostMsg_SwapCompositorFrame,
+                    uint32 /* output_surface_id */,
                     cc::CompositorFrame /* frame */)
 
 // Sent by the compositor when input scroll events are dropped due to bounds

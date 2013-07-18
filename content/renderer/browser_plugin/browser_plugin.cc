@@ -459,7 +459,8 @@ void BrowserPlugin::OnCompositorFrameSwapped(const IPC::Message& message) {
   EnableCompositing(true);
   compositing_helper_->OnCompositorFrameSwapped(frame.Pass(),
                                                 param.c /* route_id */,
-                                                param.d /* host_id */);
+                                                param.d /* output_surface_id */,
+                                                param.e /* host_id */);
 }
 
 void BrowserPlugin::OnGuestContentWindowReady(int guest_instance_id,

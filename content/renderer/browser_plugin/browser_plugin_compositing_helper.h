@@ -51,6 +51,7 @@ class CONTENT_EXPORT BrowserPluginCompositingHelper :
                         float device_scale_factor);
   void OnCompositorFrameSwapped(scoped_ptr<cc::CompositorFrame> frame,
                                 int route_id,
+                                uint32 output_surface_id,
                                 int host_id);
   void UpdateVisibility(bool);
  protected:
@@ -69,6 +70,7 @@ class CONTENT_EXPORT BrowserPluginCompositingHelper :
     SwapBuffersType type;
     gfx::Size size;
     int route_id;
+    uint32 output_surface_id;
     int host_id;
     unsigned software_frame_id;
     base::SharedMemory* shared_memory;
@@ -86,6 +88,7 @@ class CONTENT_EXPORT BrowserPluginCompositingHelper :
   int instance_id_;
   int host_routing_id_;
   int last_route_id_;
+  uint32 last_output_surface_id_;
   int last_host_id_;
   bool last_mailbox_valid_;
   bool ack_pending_;

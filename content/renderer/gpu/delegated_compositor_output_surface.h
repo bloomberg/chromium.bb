@@ -13,6 +13,7 @@ class DelegatedCompositorOutputSurface : public CompositorOutputSurface {
  public:
   DelegatedCompositorOutputSurface(
       int32 routing_id,
+      uint32 output_surface_id,
       WebGraphicsContext3DCommandBufferImpl* context3d,
       cc::SoftwareOutputDevice* software);
   virtual ~DelegatedCompositorOutputSurface() {}

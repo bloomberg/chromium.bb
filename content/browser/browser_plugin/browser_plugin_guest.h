@@ -298,6 +298,7 @@ class CONTENT_EXPORT BrowserPluginGuest
 
   void OnCompositorFrameACK(int instance_id,
                             int route_id,
+                            uint32 output_surface_id,
                             int renderer_host_id,
                             const cc::CompositorFrameAck& ack);
 

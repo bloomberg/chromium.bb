@@ -723,6 +723,8 @@ class CONTENT_EXPORT RenderWidget
   // frame.
   ui::LatencyInfo latency_info_;
 
+  uint32 next_output_surface_id_;
+
   base::WeakPtrFactory<RenderWidget> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidget);

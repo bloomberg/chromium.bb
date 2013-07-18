@@ -183,6 +183,7 @@ void RenderWidgetHostViewGuest::AcceleratedSurfacePostSubBuffer(
 }
 
 void RenderWidgetHostViewGuest::OnSwapCompositorFrame(
+    uint32 output_surface_id,
     scoped_ptr<cc::CompositorFrame> frame) {
   if (frame->software_frame_data) {
     cc::SoftwareFrameData* frame_data = frame->software_frame_data.get();
@@ -207,6 +208,7 @@ void RenderWidgetHostViewGuest::OnSwapCompositorFrame(
           guest_->instance_id(),
           *frame,
           host_->GetRoutingID(),
+          output_surface_id,
           host_->GetProcess()->GetID()));
 }
 

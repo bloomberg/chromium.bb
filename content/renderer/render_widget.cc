@@ -226,6 +226,7 @@ RenderWidget::RenderWidget(WebKit::WebPopupType popup_type,
       screen_info_(screen_info),
       device_scale_factor_(screen_info_.deviceScaleFactor),
       is_threaded_compositing_enabled_(false),
+      next_output_surface_id_(0),
       weak_ptr_factory_(this) {
   if (!swapped_out)
     RenderProcess::current()->AddRefProcess();
@@ -641,9 +642,11 @@ scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface() {
   }
 #endif
 
+  uint32 output_surface_id = next_output_surface_id_++;
+
   if (command_line.HasSwitch(switches::kEnableSoftwareCompositingGLAdapter)) {
       return scoped_ptr<cc::OutputSurface>(
-          new CompositorOutputSurface(routing_id(), NULL,
+          new CompositorOutputSurface(routing_id(), output_surface_id, NULL,
               new CompositorSoftwareOutputDevice(), true));
   }
 
@@ -674,15 +677,18 @@ scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface() {
       !command_line.HasSwitch(switches::kDisableDelegatedRenderer)) {
     DCHECK(is_threaded_compositing_enabled_);
     return scoped_ptr<cc::OutputSurface>(
-        new DelegatedCompositorOutputSurface(routing_id(), context, NULL));
+        new DelegatedCompositorOutputSurface(routing_id(), output_surface_id,
+                                             context, NULL));
   }
   if (command_line.HasSwitch(cc::switches::kCompositeToMailbox)) {
     DCHECK(is_threaded_compositing_enabled_);
     return scoped_ptr<cc::OutputSurface>(
-        new MailboxOutputSurface(routing_id(), context, NULL));
+        new MailboxOutputSurface(routing_id(), output_surface_id,
+                                 context, NULL));
   }
   return scoped_ptr<cc::OutputSurface>(
-      new CompositorOutputSurface(routing_id(), context, NULL, false));
+      new CompositorOutputSurface(routing_id(), output_surface_id,
+                                  context, NULL, false));
 }
 
 void RenderWidget::OnViewContextSwapBuffersAborted() {

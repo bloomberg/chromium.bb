@@ -44,6 +44,7 @@ class CompositorOutputSurface
       base::TaskRunner* target_task_runner);
 
   CompositorOutputSurface(int32 routing_id,
+                          uint32 output_surface_id,
                           WebGraphicsContext3DCommandBufferImpl* context3d,
                           cc::SoftwareOutputDevice* software,
                           bool use_swap_compositor_frame_message);
@@ -61,7 +62,9 @@ class CompositorOutputSurface
   virtual void UpdateSmoothnessTakesPriority(bool prefer_smoothness) OVERRIDE;
 
  protected:
-  virtual void OnSwapAck(const cc::CompositorFrameAck& ack);
+  virtual void OnSwapAck(uint32 output_surface_id,
+                         const cc::CompositorFrameAck& ack);
+  uint32 output_surface_id_;
 
  private:
   class CompositorOutputSurfaceProxy :

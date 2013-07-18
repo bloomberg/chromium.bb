@@ -8,9 +8,14 @@ namespace content {
 
 DelegatedCompositorOutputSurface::DelegatedCompositorOutputSurface(
     int32 routing_id,
+    uint32 output_surface_id,
     WebGraphicsContext3DCommandBufferImpl* context3d,
     cc::SoftwareOutputDevice* software)
-    : CompositorOutputSurface(routing_id, context3d, software, true) {
+    : CompositorOutputSurface(routing_id,
+                              output_surface_id,
+                              context3d,
+                              software,
+                              true) {
   capabilities_.delegated_rendering = true;
   capabilities_.max_frames_pending = 1;
 }

@@ -49,11 +49,13 @@ IPC::ForwardingMessageFilter* CompositorOutputSurface::CreateFilter(
 
 CompositorOutputSurface::CompositorOutputSurface(
     int32 routing_id,
+    uint32 output_surface_id,
     WebGraphicsContext3DCommandBufferImpl* context3D,
     cc::SoftwareOutputDevice* software_device,
     bool use_swap_compositor_frame_message)
     : OutputSurface(scoped_ptr<WebKit::WebGraphicsContext3D>(context3D),
                     make_scoped_ptr(software_device)),
+      output_surface_id_(output_surface_id),
       use_swap_compositor_frame_message_(use_swap_compositor_frame_message),
       output_surface_filter_(
           RenderThreadImpl::current()->compositor_output_surface_filter()),
@@ -101,7 +103,9 @@ bool CompositorOutputSurface::BindToClient(
 
 void CompositorOutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
   if (use_swap_compositor_frame_message_) {
-    Send(new ViewHostMsg_SwapCompositorFrame(routing_id_, *frame));
+    Send(new ViewHostMsg_SwapCompositorFrame(routing_id_,
+                                             output_surface_id_,
+                                             *frame));
     DidSwapBuffers();
     return;
   }
@@ -152,7 +156,12 @@ void CompositorOutputSurface::OnBeginFrame(const cc::BeginFrameArgs& args) {
 }
 #endif  // defined(OS_ANDROID)
 
-void CompositorOutputSurface::OnSwapAck(const cc::CompositorFrameAck& ack) {
+void CompositorOutputSurface::OnSwapAck(uint32 output_surface_id,
+                                        const cc::CompositorFrameAck& ack) {
+  // Ignore message if it's a stale one coming from a different output surface
+  // (e.g. after a lost context).
+  if (output_surface_id != output_surface_id_)
+    return;
   OnSwapBuffersComplete(&ack);
 }
 

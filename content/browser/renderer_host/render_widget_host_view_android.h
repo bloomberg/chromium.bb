@@ -156,6 +156,7 @@ class RenderWidgetHostViewAndroid
   virtual void UnlockMouse() OVERRIDE;
   virtual void HasTouchEventHandlers(bool need_touch_events) OVERRIDE;
   virtual void OnSwapCompositorFrame(
+      uint32 output_surface_id,
       scoped_ptr<cc::CompositorFrame> frame) OVERRIDE;
   virtual void OnOverscrolled(gfx::Vector2dF accumulated_overscroll,
                               gfx::Vector2dF current_fling_velocity) OVERRIDE;
@@ -235,8 +236,9 @@ class RenderWidgetHostViewAndroid
 
   void RunAckCallbacks();
 
-  void SwapDelegatedFrame(scoped_ptr<cc::DelegatedFrameData> frame_data);
-  void SendDelegatedFrameAck();
+  void SwapDelegatedFrame(uint32 output_surface_id,
+                          scoped_ptr<cc::DelegatedFrameData> frame_data);
+  void SendDelegatedFrameAck(uint32 output_surface_id);
 
   void UpdateContentViewCoreFrameMetadata(
       const cc::CompositorFrameMetadata& frame_metadata);

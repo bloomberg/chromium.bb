@@ -24,6 +24,7 @@ namespace content {
 class MailboxOutputSurface : public CompositorOutputSurface {
  public:
   MailboxOutputSurface(int32 routing_id,
+                       uint32 output_surface_id,
                        WebGraphicsContext3DCommandBufferImpl* context3d,
                        cc::SoftwareOutputDevice* software);
   virtual ~MailboxOutputSurface();
@@ -37,7 +38,8 @@ class MailboxOutputSurface : public CompositorOutputSurface {
 
  private:
   // CompositorOutputSurface overrides.
-  virtual void OnSwapAck(const cc::CompositorFrameAck& ack) OVERRIDE;
+  virtual void OnSwapAck(uint32 output_surface_id,
+                         const cc::CompositorFrameAck& ack) OVERRIDE;
 
   size_t GetNumAcksPending();
 

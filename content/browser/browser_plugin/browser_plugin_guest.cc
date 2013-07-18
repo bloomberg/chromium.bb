@@ -1054,9 +1054,11 @@ void BrowserPluginGuest::Attach(
 void BrowserPluginGuest::OnCompositorFrameACK(
     int instance_id,
     int route_id,
+    uint32 output_surface_id,
     int renderer_host_id,
     const cc::CompositorFrameAck& ack) {
   RenderWidgetHostImpl::SendSwapCompositorFrameAck(route_id,
+                                                   output_surface_id,
                                                    renderer_host_id,
                                                    ack);
 }

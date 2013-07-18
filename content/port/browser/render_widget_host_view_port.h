@@ -242,7 +242,9 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView,
   // returned only if the accelerated surface size matches.
   virtual bool HasAcceleratedSurface(const gfx::Size& desired_size) = 0;
 
-  virtual void OnSwapCompositorFrame(scoped_ptr<cc::CompositorFrame> frame) = 0;
+  virtual void OnSwapCompositorFrame(
+      uint32 output_surface_id,
+      scoped_ptr<cc::CompositorFrame> frame) = 0;
 
   virtual void GetScreenInfo(WebKit::WebScreenInfo* results) = 0;
 

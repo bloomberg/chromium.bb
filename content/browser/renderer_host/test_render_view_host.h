@@ -81,6 +81,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
   virtual gfx::NativeView BuildInputMethodsGtkMenu() OVERRIDE;
 #endif  // defined(TOOLKIT_GTK)
   virtual void OnSwapCompositorFrame(
+      uint32 output_surface_id,
       scoped_ptr<cc::CompositorFrame> frame) OVERRIDE;
 
   // RenderWidgetHostViewPort implementation.
