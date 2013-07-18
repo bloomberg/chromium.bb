@@ -61,6 +61,10 @@ typedef base::Callback<
     CreateSnapshotFileCallback;
 typedef base::Callback<
     void(base::PlatformFileError result,
+         const base::FilePath& snapshot_file_path)>
+    CreateWritableSnapshotFileCallback;
+typedef base::Callback<
+    void(base::PlatformFileError result,
          base::PlatformFile platform_file)> OpenFileCallback;
 
 // Runs |file_system_getter| to obtain the instance of FileSystemInstance,
@@ -142,6 +146,13 @@ void Truncate(const base::FilePath& file_path,
 void CreateSnapshotFile(const base::FilePath& file_path,
                         const CreateSnapshotFileCallback& callback,
                         FileSystemInterface* file_system);
+
+// Creates a writable snapshot for the file at |file_path|.
+// After writing operation is done, CloseFile is needed to be called.
+void CreateWritableSnapshotFile(
+    const base::FilePath& file_path,
+    const CreateWritableSnapshotFileCallback& callback,
+    FileSystemInterface* file_system);
 
 // Opens the file at |file_path| with options |file_flags|.
 // Called from FileSystemProxy::OpenFile.

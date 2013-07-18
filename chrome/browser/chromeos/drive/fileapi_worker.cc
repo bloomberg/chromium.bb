@@ -132,6 +132,15 @@ void RunCreateSnapshotFileCallback(const CreateSnapshotFileCallback& callback,
   callback.Run(base::PLATFORM_FILE_OK, file_info, local_path, scope_out_policy);
 }
 
+// Runs |callback| with arguments converted from |error| and |local_path|.
+void RunCreateWritableSnapshotFileCallback(
+    const CreateWritableSnapshotFileCallback& callback,
+    FileError error,
+    const base::FilePath& local_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  callback.Run(FileErrorToPlatformError(error), local_path);
+}
+
 // Runs |callback| with |error| and |platform_file|.
 void RunOpenFileCallback(const OpenFileCallback& callback,
                          base::PlatformFileError* error,
@@ -294,6 +303,17 @@ void CreateSnapshotFile(const base::FilePath& file_path,
   file_system->GetFileByPath(
       file_path,
       base::Bind(&RunCreateSnapshotFileCallback, callback));
+}
+
+void CreateWritableSnapshotFile(
+    const base::FilePath& file_path,
+    const CreateWritableSnapshotFileCallback& callback,
+    FileSystemInterface* file_system) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  file_system->OpenFile(
+      file_path,
+      OPEN_FILE,
+      base::Bind(&RunCreateWritableSnapshotFileCallback, callback));
 }
 
 void OpenFile(const base::FilePath& file_path,

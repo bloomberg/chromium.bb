@@ -19,6 +19,16 @@ namespace internal {
 // Implementation of the composed callback, whose signature is |Sig|.
 template<typename Sig> struct ComposedCallback;
 
+// ComposedCallback with no argument.
+template<>
+struct ComposedCallback<void()> {
+  static void Run(
+      const base::Callback<void(const base::Closure&)>& runner,
+      const base::Closure& callback) {
+    runner.Run(callback);
+  }
+};
+
 // ComposedCallback with one argument.
 template<typename T1>
 struct ComposedCallback<void(T1)> {

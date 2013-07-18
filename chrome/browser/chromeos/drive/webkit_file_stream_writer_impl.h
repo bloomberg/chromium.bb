@@ -6,43 +6,44 @@
 #define CHROME_BROWSER_CHROMEOS_DRIVE_WEBKIT_FILE_STREAM_WRITER_IMPL_H_
 
 #include "base/basictypes.h"
-#include "base/files/file_path.h"
+#include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/platform_file.h"
 #include "webkit/browser/fileapi/file_stream_writer.h"
-#include "webkit/browser/fileapi/file_system_context.h"
-#include "webkit/browser/fileapi/file_system_url.h"
 
-namespace fileapi {
-class RemoteFileSystemProxyInterface;
-}
+namespace base {
+class FilePath;
+class TaskRunner;
+}  // namespace base
 
 namespace net {
 class IOBuffer;
-}
-
-namespace webkit_blob {
-class ShareableFileReference;
-}
+}  // namespace net
 
 namespace drive {
+
+class FileSystemInterface;
+
 namespace internal {
 
 // The implementation of fileapi::FileStreamWriter for the Drive File System.
 class WebkitFileStreamWriterImpl : public fileapi::FileStreamWriter {
  public:
-  // Creates a writer for a file on |remote_filesystem| with path url |url|
-  // (like "filesystem:chrome-extension://id/external/drive/...") that
-  // starts writing from |offset|. When invalid parameters are set, the first
-  // call to Write() method fails.
-  // Uses |local_task_runner| for local file operations.
-  WebkitFileStreamWriterImpl(
-      const scoped_refptr<fileapi::RemoteFileSystemProxyInterface>&
-          remote_filesystem,
-      const fileapi::FileSystemURL& url,
-      int64 offset,
-      base::TaskRunner* local_task_runner);
+  // Callback to return the FileSystemInterface instance. This is an
+  // injecting point for testing.
+  // Note that the callback will be copied between threads (IO and UI), and
+  // will be called on UI thread.
+  typedef base::Callback<FileSystemInterface*()> FileSystemGetter;
+
+  // Creates a writer for a file at |file_path| on FileSystem returned by
+  // |file_system_getter| that starts writing from |offset|.
+  // When invalid parameters are set, the first call to Write() method fails.
+  // Uses |file_task_runner| for local file operations.
+  WebkitFileStreamWriterImpl(const FileSystemGetter& file_system_getter,
+                             base::TaskRunner* file_task_runner,
+                             const base::FilePath& file_path,
+                             int64 offset);
   virtual ~WebkitFileStreamWriterImpl();
 
   // FileWriter override.
@@ -52,23 +53,20 @@ class WebkitFileStreamWriterImpl : public fileapi::FileStreamWriter {
   virtual int Flush(const net::CompletionCallback& callback) OVERRIDE;
 
  private:
-  // Callback function to do the continuation of the work of the first Write()
-  // call, which tries to open the local copy of the file before writing.
+  // Part of Write(). Called after CreateWritableSnapshotFile is completed.
   void WriteAfterCreateWritableSnapshotFile(
       net::IOBuffer* buf,
       int buf_len,
-      const net::CompletionCallback& callback,
       base::PlatformFileError open_result,
-      const base::FilePath& local_path,
-      const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref);
+      const base::FilePath& local_path);
 
-  scoped_refptr<fileapi::RemoteFileSystemProxyInterface> remote_filesystem_;
-  scoped_refptr<base::TaskRunner> local_task_runner_;
-  const fileapi::FileSystemURL url_;
-  const int64 initial_offset_;
+  FileSystemGetter file_system_getter_;
+  scoped_refptr<base::TaskRunner> file_task_runner_;
+  const base::FilePath file_path_;
+  const int64 offset_;
+
   scoped_ptr<fileapi::FileStreamWriter> local_file_writer_;
-  scoped_refptr<webkit_blob::ShareableFileReference> file_ref_;
-  bool has_pending_create_snapshot_;
+  net::CompletionCallback pending_write_callback_;
   net::CompletionCallback pending_cancel_callback_;
 
   // Note: This should remain the last member so it'll be destroyed and

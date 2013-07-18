@@ -325,28 +325,7 @@ void FileSystemProxy::CreateWritableSnapshotFile(
     const fileapi::WritableSnapshotFile& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  base::FilePath file_path;
-  if (!ValidateUrl(file_url, &file_path)) {
-    MessageLoopProxy::current()->PostTask(
-        FROM_HERE,
-        base::Bind(callback,
-                   base::PLATFORM_FILE_ERROR_NOT_FOUND,
-                   base::FilePath(),
-                   scoped_refptr<ShareableFileReference>(NULL)));
-    return;
-  }
-
-  CallFileSystemMethodOnUIThread(
-      base::Bind(&FileSystemInterface::OpenFile,
-                 base::Unretained(file_system_),
-                 file_path,
-                 OPEN_FILE,
-                 google_apis::CreateRelayCallback(
-                     base::Bind(
-                         &FileSystemProxy::OnCreateWritableSnapshotFile,
-                         this,
-                         file_path,
-                         callback))));
+  NOTREACHED();
 }
 
 scoped_ptr<webkit_blob::FileStreamReader>
@@ -403,38 +382,6 @@ void FileSystemProxy::CallFileApiInternalFunctionOnUIThread(
           &fileapi_internal::RunFileSystemCallback,
           base::Bind(&FileSystemProxy::GetFileSystemOnUIThread, this),
           function, base::Closure()));
-}
-
-void FileSystemProxy::OnCreateWritableSnapshotFile(
-    const base::FilePath& virtual_path,
-    const fileapi::WritableSnapshotFile& callback,
-    FileError result,
-    const base::FilePath& local_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  scoped_refptr<ShareableFileReference> file_ref;
-
-  if (result == FILE_ERROR_OK) {
-    file_ref = ShareableFileReference::GetOrCreate(
-        local_path,
-        ShareableFileReference::DONT_DELETE_ON_FINAL_RELEASE,
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE).get());
-    file_ref->AddFinalReleaseCallback(
-        base::Bind(&FileSystemProxy::CloseWritableSnapshotFile,
-                   this,
-                   virtual_path));
-  }
-
-  callback.Run(FileErrorToPlatformError(result), local_path, file_ref);
-}
-
-void FileSystemProxy::CloseWritableSnapshotFile(
-    const base::FilePath& virtual_path,
-    const base::FilePath& local_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  CallFileApiInternalFunctionOnUIThread(
-      base::Bind(&fileapi_internal::CloseFile, virtual_path));
 }
 
 FileSystemInterface* FileSystemProxy::GetFileSystemOnUIThread() {

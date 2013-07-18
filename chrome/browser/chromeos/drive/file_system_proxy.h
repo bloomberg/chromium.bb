@@ -122,21 +122,6 @@ class FileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
   void CallFileApiInternalFunctionOnUIThread(
       const base::Callback<void(FileSystemInterface*)>& function);
 
-  // Helper callback for relaying reply for CreateWritableSnapshotFile() to
-  // the calling thread.
-  void OnCreateWritableSnapshotFile(
-      const base::FilePath& virtual_path,
-      const fileapi::WritableSnapshotFile& callback,
-      FileError result,
-      const base::FilePath& local_path);
-
-  // Helper callback for closing the local cache file and committing the dirty
-  // flag. This is triggered when the callback for CreateWritableSnapshotFile
-  // released the refcounted reference to the file.
-  void CloseWritableSnapshotFile(
-      const base::FilePath& virtual_path,
-      const base::FilePath& local_path);
-
   // Returns |file_system_| on UI thread.
   FileSystemInterface* GetFileSystemOnUIThread();
 

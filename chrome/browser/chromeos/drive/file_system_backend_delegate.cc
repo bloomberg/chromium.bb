@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/drive/file_system_backend_delegate.h"
 
 #include "base/bind.h"
+#include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/drive/async_file_util.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
@@ -16,7 +17,9 @@
 #include "webkit/browser/blob/file_stream_reader.h"
 #include "webkit/browser/fileapi/async_file_util.h"
 #include "webkit/browser/fileapi/external_mount_points.h"
+#include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_task_runners.h"
+#include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/remote_file_system_proxy.h"
 
 using content::BrowserThread;
@@ -70,14 +73,14 @@ FileSystemBackendDelegate::CreateFileStreamWriter(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK_EQ(fileapi::kFileSystemTypeDrive, url.type());
 
-  fileapi::RemoteFileSystemProxyInterface* proxy =
-      mount_points_->GetRemoteFileSystemProxy(url.filesystem_id());
-  if (!proxy)
+  base::FilePath file_path = util::ExtractDrivePathFromFileSystemUrl(url);
+  if (file_path.empty())
     return scoped_ptr<fileapi::FileStreamWriter>();
 
   return scoped_ptr<fileapi::FileStreamWriter>(
       new internal::WebkitFileStreamWriterImpl(
-          proxy, url, offset, context->task_runners()->file_task_runner()));
+          base::Bind(&util::GetFileSystemByProfileId, profile_id_),
+          context->task_runners()->file_task_runner(),file_path, offset));
 }
 
 }  // namespace drive
