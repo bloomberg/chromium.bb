@@ -801,7 +801,7 @@ void RenderWidgetHostViewAndroid::AcceleratedSurfaceSuspend() {
 void RenderWidgetHostViewAndroid::AcceleratedSurfaceRelease() {
   // This tells us we should free the frontbuffer.
   if (texture_id_in_layer_) {
-    texture_layer_->ClearTexture();
+    texture_layer_->SetTextureId(0);
     texture_layer_->SetIsDrawable(false);
     ImageTransportFactoryAndroid::GetInstance()->DeleteTexture(
         texture_id_in_layer_);
