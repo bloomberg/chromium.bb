@@ -3,19 +3,36 @@
   # undetermined operand size.
   
   # The following checks that we allow Rex.w.
-  # 0000000000000000: 48 01 c3                                     add %rbx, %rax
   48 01 c3
-  
-  # The following checks that we allow data 66.
-  # 0000000000000003: 66 01 c3                                     add %bx, %ax
-  66 01 c3
-  
-  # The following checks that we don't allow Rex.w and data 66
-  66 48 01 c3
 @dis:
      0:	48 01 c3                                     	add    %rax,%rbx
-     3:	66 01 c3                                     	add    %ax,%bx
-     6:	66 48 01 c3                                  	add    %rax,%rbx
 @rdfa_output:
-  6: [0] unrecognized instruction
+  return code: 0
+@spec:
+  SAFE
+----------------------------------------------------------------------
+@hex:
+  # The following checks that we allow data 16.
+  66 01 c3
+@dis:
+     0:	66 01 c3                                     	add    %ax,%bx
+@rdfa_output:
+  return code: 0
+@spec:
+  SAFE
+----------------------------------------------------------------------
+@hex:
+  # The following checks that we don't allow Rex.w and data 16
+  # TODO(shcherbina): make sure it's rejected when nacl-objdump is updated.
+  # Newer versions of objdump decode this 'data32 add %rax,%rbx' so it would
+  # be rejected automatically. Unfortunately, current version of nacl-objdump
+  # does not, so currently there is no natural way to recognize this instruction
+  # in text-based specification.
+  66 48 01 c3
+@dis:
+     0:	66 48 01 c3                                  	add    %rax,%rbx
+@rdfa_output:
+  0: [0] unrecognized instruction
   return code: 1
+@spec:
+  SAFE
