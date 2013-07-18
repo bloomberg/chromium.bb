@@ -215,16 +215,26 @@ void PrivetRegisterOperationImpl::CompleteResponse(
 void PrivetRegisterOperationImpl::OnPrivetInfoDone(
     int http_code,
     const base::DictionaryValue* value) {
+  // TODO(noamsml): Distinguish between network errors and unparsable JSON in
+  // this case.
+  if (!value) {
+    delegate_->OnPrivetRegisterError(kPrivetActionNameInfo,
+                                     FAILURE_NETWORK,
+                                     -1,
+                                     NULL);
+    return;
+  }
+
   // If there is a key in the info response, the InfoOperation
   // has stored it in the client.
-  if (!value || !value->HasKey(kPrivetInfoKeyToken)) {
+  if (!value->HasKey(kPrivetInfoKeyToken)) {
     if (value->HasKey(kPrivetKeyError)) {
-      delegate_->OnPrivetRegisterError(current_action_,
+      delegate_->OnPrivetRegisterError(kPrivetActionNameInfo,
                                        FAILURE_JSON_ERROR,
                                        http_code,
                                        value);
     } else {
-      delegate_->OnPrivetRegisterError(current_action_,
+      delegate_->OnPrivetRegisterError(kPrivetActionNameInfo,
                                        FAILURE_MALFORMED_RESPONSE,
                                        -1,
                                        NULL);

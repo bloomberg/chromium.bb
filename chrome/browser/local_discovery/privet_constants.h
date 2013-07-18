@@ -22,6 +22,9 @@ extern const char kPrivetActionStart[];
 extern const char kPrivetActionGetClaimToken[];
 extern const char kPrivetActionComplete[];
 
+// Name for pseudo-action "info", used only to show info stage in errors.
+extern const char kPrivetActionNameInfo[];
+
 extern const char kPrivetDefaultDeviceType[];
 extern const char kPrivetSubtypeTemplate[];
 

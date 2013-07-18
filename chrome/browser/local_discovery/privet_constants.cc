@@ -21,6 +21,8 @@ const char kPrivetActionStart[] = "start";
 const char kPrivetActionGetClaimToken[] = "getClaimToken";
 const char kPrivetActionComplete[] = "complete";
 
+const char kPrivetActionNameInfo[] = "info";
+
 extern const char kPrivetDefaultDeviceType[] = "_privet._tcp.local";
 extern const char kPrivetSubtypeTemplate[] = "%s._sub._privet._tcp.local";
 
