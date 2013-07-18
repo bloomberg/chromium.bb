@@ -38,6 +38,7 @@
 #include "TestInterfaces.h"
 #include "WebPermissions.h"
 #include "public/platform/WebData.h"
+#include "public/platform/WebDeviceMotionData.h"
 #include "public/platform/WebPoint.h"
 #include "public/platform/WebURLResponse.h"
 #include "public/testing/WebPreferences.h"
@@ -205,6 +206,7 @@ TestRunner::TestRunner(TestInterfaces* interfaces)
     bindMethod("textSurroundingNode", &TestRunner::textSurroundingNode);
     bindMethod("disableAutoResizeMode", &TestRunner::disableAutoResizeMode);
     bindMethod("enableAutoResizeMode", &TestRunner::enableAutoResizeMode);
+    bindMethod("setMockDeviceMotion", &TestRunner::setMockDeviceMotion);
     bindMethod("setMockDeviceOrientation", &TestRunner::setMockDeviceOrientation);
     bindMethod("didAcquirePointerLock", &TestRunner::didAcquirePointerLock);
     bindMethod("didLosePointerLock", &TestRunner::didLosePointerLock);
@@ -1502,6 +1504,54 @@ void TestRunner::disableAutoResizeMode(const CppArgumentList& arguments, CppVari
 
     m_delegate->disableAutoResizeMode(newSize);
     result->set(true);
+}
+
+void TestRunner::setMockDeviceMotion(const CppArgumentList& arguments, CppVariant* result)
+{
+    result->setNull();
+    if (arguments.size() < 19
+        || !arguments[0].isBool() || !arguments[1].isNumber() // acceleration.x
+        || !arguments[2].isBool() || !arguments[3].isNumber() // acceleration.y
+        || !arguments[4].isBool() || !arguments[5].isNumber() // acceleration.z
+        || !arguments[6].isBool() || !arguments[7].isNumber() // accelerationIncludingGravity.x
+        || !arguments[8].isBool() || !arguments[9].isNumber() // accelerationIncludingGravity.y
+        || !arguments[10].isBool() || !arguments[11].isNumber() // accelerationIncludingGravity.z
+        || !arguments[12].isBool() || !arguments[13].isNumber() // rotationRate.alpha
+        || !arguments[14].isBool() || !arguments[15].isNumber() // rotationRate.beta
+        || !arguments[16].isBool() || !arguments[17].isNumber() // rotationRate.gamma
+        || !arguments[18].isNumber()) // interval
+        return;
+
+    WebDeviceMotionData motion;
+
+    // acceleration
+    motion.hasAccelerationX = arguments[0].toBoolean();
+    motion.accelerationX = arguments[1].toDouble();
+    motion.hasAccelerationY = arguments[2].toBoolean();
+    motion.accelerationY = arguments[3].toDouble();
+    motion.hasAccelerationZ = arguments[4].toBoolean();
+    motion.accelerationZ = arguments[5].toDouble();
+
+    // accelerationIncludingGravity
+    motion.hasAccelerationIncludingGravityX = arguments[6].toBoolean();
+    motion.accelerationIncludingGravityX = arguments[7].toDouble();
+    motion.hasAccelerationIncludingGravityY = arguments[8].toBoolean();
+    motion.accelerationIncludingGravityY = arguments[9].toDouble();
+    motion.hasAccelerationIncludingGravityZ = arguments[10].toBoolean();
+    motion.accelerationIncludingGravityZ = arguments[11].toDouble();
+
+    // rotationRate
+    motion.hasRotationRateAlpha = arguments[12].toBoolean();
+    motion.rotationRateAlpha = arguments[13].toDouble();
+    motion.hasRotationRateBeta = arguments[14].toBoolean();
+    motion.rotationRateBeta = arguments[15].toDouble();
+    motion.hasRotationRateGamma = arguments[16].toBoolean();
+    motion.rotationRateGamma = arguments[17].toDouble();
+
+    // interval
+    motion.interval = arguments[18].toDouble();
+
+    m_delegate->setDeviceMotionData(motion);
 }
 
 void TestRunner::setMockDeviceOrientation(const CppArgumentList& arguments, CppVariant* result)

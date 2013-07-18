@@ -1,0 +1,20 @@
+Tests that adding a new devicemotion event listener from a callback works as expected.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+TEST MODE enabled
+PASS deviceMotionEvent.acceleration.x is mockAccelerationX
+PASS deviceMotionEvent.acceleration.y is mockAccelerationY
+PASS deviceMotionEvent.acceleration.z is mockAccelerationZ
+PASS deviceMotionEvent.accelerationIncludingGravity.x is mockAccelerationIncludingGravityX
+PASS deviceMotionEvent.accelerationIncludingGravity.y is mockAccelerationIncludingGravityY
+PASS deviceMotionEvent.accelerationIncludingGravity.z is mockAccelerationIncludingGravityZ
+PASS deviceMotionEvent.rotationRate.alpha is mockRotationRateAlpha
+PASS deviceMotionEvent.rotationRate.beta is mockRotationRateBeta
+PASS deviceMotionEvent.rotationRate.gamma is mockRotationRateGamma
+PASS deviceMotionEvent.interval is mockInterval
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

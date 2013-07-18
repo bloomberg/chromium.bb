@@ -274,7 +274,8 @@ private:
     void enableAutoResizeMode(const CppArgumentList&, CppVariant*);
     void disableAutoResizeMode(const CppArgumentList&, CppVariant*);
 
-    // DeviceOrientation related functions
+    // Device Motion / Device Orientation related functions
+    void setMockDeviceMotion(const CppArgumentList&, CppVariant*);
     void setMockDeviceOrientation(const CppArgumentList&, CppVariant*);
 
     void didAcquirePointerLock(const CppArgumentList&, CppVariant*);

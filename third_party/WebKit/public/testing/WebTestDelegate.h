@@ -39,6 +39,7 @@
 #define WEBTESTRUNNER_NEW_HISTORY_CAPTURE
 
 namespace WebKit {
+class WebDeviceMotionData;
 class WebFrame;
 class WebGamepads;
 class WebHistoryItem;
@@ -62,6 +63,8 @@ public:
 
     // Set the gamepads to return from Platform::sampleGamepads().
     virtual void setGamepadData(const WebKit::WebGamepads&) = 0;
+
+    virtual void setDeviceMotionData(const WebKit::WebDeviceMotionData&) = 0;
 
     // Add a message to the text dump for the layout test.
     virtual void printMessage(const std::string& message) = 0;

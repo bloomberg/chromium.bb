@@ -64,6 +64,7 @@ DOMTokenList
 DataView
 Date
 DelayNode
+DeviceMotionEvent
 DeviceOrientationEvent
 Document
 DocumentFragment
