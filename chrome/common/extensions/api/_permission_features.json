@@ -525,7 +525,7 @@
     "extension_types": ["extension", "packaged_app", "platform_app"],
     "min_manifest_version": 2
   },
-  "systemInfo.cpu": {
+  "system.cpu": {
     "channel": "dev",
     "extension_types": [
       "extension", "packaged_app", "hosted_app", "platform_app"

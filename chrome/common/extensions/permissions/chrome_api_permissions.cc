@@ -283,7 +283,7 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
       APIPermissionInfo::kFlagNone,
       IDS_EXTENSION_PROMPT_WARNING_SYSTEM_INDICATOR,
       PermissionMessage::kSystemIndicator },
-    { APIPermission::kSystemInfoCpu, "systemInfo.cpu" },
+    { APIPermission::kSystemCpu, "system.cpu" },
     { APIPermission::kSystemInfoMemory, "systemInfo.memory" },
     { APIPermission::kSystemInfoDisplay, "systemInfo.display" },
     { APIPermission::kPointerLock, "pointerLock" },

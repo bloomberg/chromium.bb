@@ -1,15 +1,15 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 #include "base/command_line.h"
-#include "chrome/browser/extensions/api/system_info_cpu/cpu_info_provider.h"
+#include "chrome/browser/extensions/api/system_cpu/cpu_info_provider.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 
 namespace extensions {
 
-using api::system_info_cpu::CpuInfo;
+using api::system_cpu::CpuInfo;
 
 const char kExtensionId[] = "lfakdgdkbaleijdcpbfbngfphpmgfdfn";
 
@@ -28,10 +28,10 @@ class MockCpuInfoProviderImpl : public CpuInfoProvider {
   virtual ~MockCpuInfoProviderImpl() {}
 };
 
-class SystemInfoCpuApiTest: public ExtensionApiTest {
+class SystemCpuApiTest: public ExtensionApiTest {
  public:
-  SystemInfoCpuApiTest() {}
-  virtual ~SystemInfoCpuApiTest() {}
+  SystemCpuApiTest() {}
+  virtual ~SystemCpuApiTest() {}
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionApiTest::SetUpCommandLine(command_line);
@@ -44,11 +44,11 @@ class SystemInfoCpuApiTest: public ExtensionApiTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(SystemInfoCpuApiTest, Cpu) {
+IN_PROC_BROWSER_TEST_F(SystemCpuApiTest, Cpu) {
   CpuInfoProvider* provider = new MockCpuInfoProviderImpl();
   // The provider is owned by the single CpuInfoProvider instance.
   CpuInfoProvider::InitializeForTesting(provider);
-  ASSERT_TRUE(RunExtensionTest("systeminfo/cpu")) << message_;
+  ASSERT_TRUE(RunExtensionTest("system/cpu")) << message_;
 }
 
 }  // namespace extensions

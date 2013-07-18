@@ -192,7 +192,8 @@ const char* const kNames[] = {
     "windows.update",
     "tabs.getSelected", "tabs.sendRequest",
     "systemInfo.cpu.get", "systemInfo.memory.get",
-    "runtime.onRestartRequired"
+    "runtime.onRestartRequired",
+    "system.cpu.getInfo"
 };
 
 }  // namespace activity_log_api_name_constants

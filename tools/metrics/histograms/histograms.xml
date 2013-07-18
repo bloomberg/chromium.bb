@@ -15782,6 +15782,7 @@ other types of suffix sets.
   <int value="503" label="TYPES_PRIVATE_CHROMEDIRECTSETTING_GET"/>
   <int value="504" label="TYPES_PRIVATE_CHROMEDIRECTSETTING_SET"/>
   <int value="505" label="TYPES_PRIVATE_CHROMEDIRECTSETTING_CLEAR"/>
+  <int value="506" label="SYSTEM_CPU_GETINFO"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

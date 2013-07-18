@@ -92,7 +92,7 @@
           'storage.json',
           'sync_file_system.idl',
           'system_indicator.idl',
-          'system_info_cpu.idl',
+          'system_cpu.idl',
           'system_info_display.idl',
           'system_private.json',
           'tab_capture.idl',

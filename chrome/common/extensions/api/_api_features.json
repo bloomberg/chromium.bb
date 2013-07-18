@@ -457,8 +457,8 @@
     "dependencies": ["manifest:system_indicator"],
     "contexts": ["blessed_extension"]
   },
-  "systemInfo.cpu": {
-    "dependencies": ["permission:systemInfo.cpu"],
+  "system.cpu": {
+    "dependencies": ["permission:system.cpu"],
     "contexts": ["blessed_extension"]
   },
   "systemInfo.display": {

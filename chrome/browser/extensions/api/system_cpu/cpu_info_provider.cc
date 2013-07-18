@@ -1,14 +1,14 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/system_info_cpu/cpu_info_provider.h"
+#include "chrome/browser/extensions/api/system_cpu/cpu_info_provider.h"
 
 #include "base/sys_info.h"
 
 namespace extensions {
 
-using api::system_info_cpu::CpuInfo;
+using api::system_cpu::CpuInfo;
 
 // Static member intialization.
 template<>
