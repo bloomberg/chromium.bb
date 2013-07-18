@@ -64,8 +64,14 @@ void ExecuteScript(int argc, ...) {
   }
   va_end(vl);
 
-  content::BrowserThread::GetBlockingPool()->PostTask(FROM_HERE,
-      base::Bind(&ExecuteScriptOnFileThread, argv));
+  // Control scripts can take long enough to cause SIGART during shutdown
+  // (http://crbug.com/261426). Run the blocking pool task with
+  // CONTINUE_ON_SHUTDOWN so it won't be joined when Chrome shuts down.
+  base::SequencedWorkerPool* pool = content::BrowserThread::GetBlockingPool();
+  scoped_refptr<base::TaskRunner> runner =
+      pool->GetTaskRunnerWithShutdownBehavior(
+          base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
+  runner->PostTask(FROM_HERE, base::Bind(&ExecuteScriptOnFileThread, argv));
 }
 
 void SetPointerSensitivity(const char* script, int value) {
