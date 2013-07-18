@@ -23,9 +23,9 @@
 
 namespace {
 
-// When a window gets opened in default mode and the screen is less then this
-// width, the window will get opened in maximized mode. This value can be
-// reduced to a "tame" number if the feature is disabled.
+// When a window gets opened in default mode and the screen is less than or
+// equal to this width, the window will get opened in maximized mode. This value
+// can be reduced to a "tame" number if the feature is disabled.
 const int kForceMaximizeWidthLimit = 1366;
 const int kForceMaximizeWidthLimitDisabled = 640;
 
@@ -212,7 +212,7 @@ bool WindowSizer::GetBoundsOverrideAsh(gfx::Rect* bounds_in_screen,
       // When using "small screens" we want to always open in full screen mode.
       if (passed_show_state == ui::SHOW_STATE_DEFAULT &&
           !browser_->is_session_restore() &&
-          work_area.width() < GetForceMaximizedWidthLimit() &&
+          work_area.width() <= GetForceMaximizedWidthLimit() &&
           (!browser_->window() || !browser_->window()->IsFullscreen()) &&
           (!browser_->fullscreen_controller() ||
            !browser_->fullscreen_controller()->IsFullscreenForBrowser()))
