@@ -26,6 +26,7 @@
 #include "V8Node.h"
 #include "V8NodeList.h"
 #include "V8TestObject.h"
+#include "bindings/bindings/tests/idls/TestImplements.h"
 #include "bindings/bindings/tests/idls/TestPartialInterface.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ScriptController.h"
@@ -73,7 +74,7 @@ template <typename T> void V8_USE(T) { }
 
 static void implementsStaticReadOnlyAttrAttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    v8SetReturnValueInt(info, TestInterface::implementsStaticReadOnlyAttr());
+    v8SetReturnValueInt(info, TestImplements::implementsStaticReadOnlyAttr());
     return;
 }
 
@@ -94,7 +95,7 @@ static void implementsStaticReadOnlyAttrAttrGetterCallback(v8::Local<v8::String>
 
 static void implementsStaticAttrAttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    v8SetReturnValueString(info, TestInterface::implementsStaticAttr(), info.GetIsolate(), NullStringAsEmpty);
+    v8SetReturnValueString(info, TestImplements::implementsStaticAttr(), info.GetIsolate(), NullStringAsEmpty);
     return;
 }
 
@@ -116,7 +117,7 @@ static void implementsStaticAttrAttrGetterCallback(v8::Local<v8::String> name, c
 static void implementsStaticAttrAttrSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, v, value);
-    TestInterface::setImplementsStaticAttr(v);
+    TestImplements::setImplementsStaticAttr(v);
     return;
 }
 
@@ -138,7 +139,7 @@ static void implementsStaticAttrAttrSetterCallback(v8::Local<v8::String> name, v
 static void implementsStr1AttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
-    v8SetReturnValueString(info, imp->implementsStr1(), info.GetIsolate(), NullStringAsEmpty);
+    v8SetReturnValueString(info, TestImplements::implementsStr1(imp), info.GetIsolate(), NullStringAsEmpty);
     return;
 }
 
@@ -160,7 +161,7 @@ static void implementsStr1AttrGetterCallback(v8::Local<v8::String> name, const v
 static void implementsStr2AttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
-    v8SetReturnValueString(info, imp->implementsStr2(), info.GetIsolate(), NullStringAsEmpty);
+    v8SetReturnValueString(info, TestImplements::implementsStr2(imp), info.GetIsolate(), NullStringAsEmpty);
     return;
 }
 
@@ -183,7 +184,7 @@ static void implementsStr2AttrSetter(v8::Local<v8::String> name, v8::Local<v8::V
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, v, value);
-    imp->setImplementsStr2(v);
+    TestImplements::setImplementsStr2(imp, v);
     return;
 }
 
@@ -227,7 +228,7 @@ static void implementsStr3AttrSetterCallback(v8::Local<v8::String> name, v8::Loc
 static void implementsNodeAttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
-    v8SetReturnValue(info, toV8Fast(imp->implementsNode(), info, imp));
+    v8SetReturnValue(info, toV8Fast(TestImplements::implementsNode(imp), info, imp));
     return;
 }
 
@@ -250,7 +251,7 @@ static void implementsNodeAttrSetter(v8::Local<v8::String> name, v8::Local<v8::V
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
     V8TRYCATCH_VOID(Node*, v, V8Node::HasInstance(value, info.GetIsolate(), worldType(info.GetIsolate())) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(value)) : 0);
-    imp->setImplementsNode(WTF::getPtr(v));
+    TestImplements::setImplementsNode(imp, WTF::getPtr(v));
     return;
 }
 
@@ -272,7 +273,7 @@ static void implementsNodeAttrSetterCallback(v8::Local<v8::String> name, v8::Loc
 static void Node23AttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
-    v8SetReturnValue(info, toV8Fast(imp->node23(), info, imp));
+    v8SetReturnValue(info, toV8Fast(TestImplements::node23(imp), info, imp));
     return;
 }
 
@@ -295,7 +296,7 @@ static void Node23AttrSetter(v8::Local<v8::String> name, v8::Local<v8::Value> va
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
     V8TRYCATCH_VOID(Node*, v, V8Node::HasInstance(value, info.GetIsolate(), worldType(info.GetIsolate())) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(value)) : 0);
-    imp->setNode23(WTF::getPtr(v));
+    TestImplements::setNode23(imp, WTF::getPtr(v));
     return;
 }
 
@@ -317,7 +318,7 @@ static void Node23AttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::V
 static void Node24AttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
-    v8SetReturnValue(info, toV8Fast(imp->node24(), info, imp));
+    v8SetReturnValue(info, toV8Fast(TestImplements::node24(imp), info, imp));
     return;
 }
 
@@ -340,7 +341,7 @@ static void Node24AttrSetter(v8::Local<v8::String> name, v8::Local<v8::Value> va
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
     V8TRYCATCH_VOID(Node*, v, V8Node::HasInstance(value, info.GetIsolate(), worldType(info.GetIsolate())) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(value)) : 0);
-    imp->setNode24(WTF::getPtr(v));
+    TestImplements::setNode24(imp, WTF::getPtr(v));
     return;
 }
 
@@ -362,7 +363,7 @@ static void Node24AttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::V
 static void Node25AttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
-    v8SetReturnValue(info, toV8Fast(imp->node25(), info, imp));
+    v8SetReturnValue(info, toV8Fast(TestImplements::node25(imp), info, imp));
     return;
 }
 
@@ -385,7 +386,7 @@ static void Node25AttrSetter(v8::Local<v8::String> name, v8::Local<v8::Value> va
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
     V8TRYCATCH_VOID(Node*, v, V8Node::HasInstance(value, info.GetIsolate(), worldType(info.GetIsolate())) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(value)) : 0);
-    imp->setNode25(WTF::getPtr(v));
+    TestImplements::setNode25(imp, WTF::getPtr(v));
     return;
 }
 
@@ -740,7 +741,7 @@ static void Node15AttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::V
 static void implementsMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     TestInterface* imp = V8TestInterface::toNative(args.Holder());
-    imp->implementsMethod1();
+    TestImplements::implementsMethod1(imp);
 
     return;
 }
@@ -771,7 +772,7 @@ static void implementsMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& a
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, strArg, args[0]);
     V8TRYCATCH_VOID(TestObj*, objArg, V8TestObject::HasInstance(args[1], args.GetIsolate(), worldType(args.GetIsolate())) ? V8TestObject::toNative(v8::Handle<v8::Object>::Cast(args[1])) : 0);
     ScriptExecutionContext* scriptContext = getScriptExecutionContext();
-    RefPtr<TestObj> result = imp->implementsMethod2(scriptContext, strArg, objArg, es);
+    RefPtr<TestObj> result = TestImplements::implementsMethod2(scriptContext, imp, strArg, objArg, es);
     if (es.throwIfNeeded())
         return;
     v8SetReturnValue(args, toV8(result.release(), args.Holder(), args.GetIsolate()));
@@ -806,7 +807,7 @@ static void implementsMethod3MethodCallback(const v8::FunctionCallbackInfo<v8::V
 
 static void implementsMethod4Method(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    TestInterface::implementsMethod4();
+    TestImplements::implementsMethod4();
 
     return;
 }
@@ -1104,10 +1105,10 @@ static const V8DOMConfiguration::BatchedConstant V8TestInterfaceConsts[] = {
 
 
 #if ENABLE(Condition22) || ENABLE(Condition23)
-COMPILE_ASSERT(1 == TestInterface::IMPLEMENTSCONSTANT1, TestInterfaceEnumIMPLEMENTSCONSTANT1IsWrongUseDoNotCheckConstants);
+COMPILE_ASSERT(1 == TestImplements::IMPLEMENTSCONSTANT1, TestInterfaceEnumIMPLEMENTSCONSTANT1IsWrongUseDoNotCheckConstants);
 #endif
 #if ENABLE(Condition22) || ENABLE(Condition23)
-COMPILE_ASSERT(2 == TestInterface::CONST_IMPL, TestInterfaceEnumCONST_IMPLIsWrongUseDoNotCheckConstants);
+COMPILE_ASSERT(2 == TestImplements::CONST_IMPL, TestInterfaceEnumCONST_IMPLIsWrongUseDoNotCheckConstants);
 #endif
 #if ENABLE(Condition11) || ENABLE(Condition12)
 COMPILE_ASSERT(1 == TestPartialInterface::SUPPLEMENTALCONSTANT1, TestInterfaceEnumSUPPLEMENTALCONSTANT1IsWrongUseDoNotCheckConstants);
