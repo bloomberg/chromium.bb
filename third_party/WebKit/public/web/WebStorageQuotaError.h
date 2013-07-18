@@ -28,19 +28,4 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebStorageQuotaError_h
-#define WebStorageQuotaError_h
-
-namespace WebKit {
-
-// The error code used for WebStorageQuota.
-enum WebStorageQuotaError {
-    WebStorageQuotaErrorNotSupported = 7,
-    WebStorageQuotaErrorInvalidModification = 11,
-    WebStorageQuotaErrorInvalidAccess = 13,
-    WebStorageQuotaErrorAbort = 17,
-};
-
-} // namespace WebKit
-
-#endif // WebStorageQuotaError_h
+#include "../platform/WebStorageQuotaError.h"

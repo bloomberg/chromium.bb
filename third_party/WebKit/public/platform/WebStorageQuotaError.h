@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,4 +28,19 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "../platform/WebStorageQuotaCallbacks.h"
+#ifndef WebStorageQuotaError_h
+#define WebStorageQuotaError_h
+
+namespace WebKit {
+
+// The error code used for WebStorageQuota.
+enum WebStorageQuotaError {
+    WebStorageQuotaErrorNotSupported = 7,
+    WebStorageQuotaErrorInvalidModification = 11,
+    WebStorageQuotaErrorInvalidAccess = 13,
+    WebStorageQuotaErrorAbort = 17,
+};
+
+} // namespace WebKit
+
+#endif // WebStorageQuotaError_h

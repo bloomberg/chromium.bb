@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,4 +28,28 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "../platform/WebStorageQuotaCallbacks.h"
+#ifndef WebStorageQuotaCallbacks_h
+#define WebStorageQuotaCallbacks_h
+
+#include "WebStorageQuotaError.h"
+
+namespace WebKit {
+
+class WebStorageQuotaCallbacks {
+public:
+    // Callback for WebFrameClient::queryStorageUsageAndQuota.
+    virtual void didQueryStorageUsageAndQuota(unsigned long long usageInBytes, unsigned long long quotaInBytes) = 0;
+
+    // Callback for WebFrameClient::requestStorageQuota.
+    // This may return a smaller amount of quota than the requested.
+    virtual void didGrantStorageQuota(unsigned long long grantedQuotaInBytes) = 0;
+
+    virtual void didFail(WebStorageQuotaError) = 0;
+
+protected:
+    virtual ~WebStorageQuotaCallbacks() { }
+};
+
+} // namespace WebKit
+
+#endif // WebStorageQuotaCallbacks_h

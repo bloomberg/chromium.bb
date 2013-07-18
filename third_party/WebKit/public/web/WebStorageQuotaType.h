@@ -28,16 +28,4 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebStorageQuotaType_h
-#define WebStorageQuotaType_h
-
-namespace WebKit {
-
-enum WebStorageQuotaType {
-    WebStorageQuotaTypeTemporary,
-    WebStorageQuotaTypePersistent,
-};
-
-} // namespace WebKit
-
-#endif // WebStorageQuotaType_h
+#include "../platform/WebStorageQuotaType.h"
