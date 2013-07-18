@@ -4158,6 +4158,11 @@
               'SDKROOT': 'macosx<(mac_sdk)',  # -isysroot
               'MACOSX_DEPLOYMENT_TARGET': '<(mac_deployment_target)',
             },
+            'conditions': [
+              ['"<(GENERATOR)"!="xcode"', {
+                'xcode_settings': { 'ARCHS': [ 'x86_64' ] },
+              }],
+            ],
           }],
           ['_toolset=="target"', {
             'xcode_settings': {
@@ -4166,6 +4171,13 @@
               # instead set it here for target only.
               'IPHONEOS_DEPLOYMENT_TARGET': '<(ios_deployment_target)',
             },
+            'conditions': [
+              ['target_arch=="armv7" and "<(GENERATOR)"!="xcode"', {
+                'xcode_settings': { 'ARCHS': [ 'armv7' ]},
+              }, {
+                'xcode_settings': { 'ARCHS': [ 'i386' ] },
+              }],
+            ],
           }],
           ['_type=="executable"', {
             'configurations': {
@@ -4608,10 +4620,10 @@
           ['ios_sdk_path==""', {
             'conditions': [
               # TODO(justincohen): Ninja only supports simulator for now.
-              ['"<(GENERATOR)"=="ninja"', {
-                'SDKROOT': 'iphonesimulator<(ios_sdk)',  # -isysroot
-              }, {
+              ['"<(GENERATOR)"=="xcode" or ("<(GENERATOR)"=="ninja" and target_arch=="armv7")', {
                 'SDKROOT': 'iphoneos<(ios_sdk)',  # -isysroot
+              }, {
+                'SDKROOT': 'iphonesimulator<(ios_sdk)',  # -isysroot
               }],
             ],
           }, {
