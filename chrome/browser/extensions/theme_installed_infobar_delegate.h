@@ -26,8 +26,8 @@ class Extension;
 class ThemeInstalledInfoBarDelegate : public ConfirmInfoBarDelegate,
                                       public content::NotificationObserver {
  public:
-  // Creates a theme installed delegate and adds it to the last active tab on
-  // |profile|.
+  // Creates a theme installed infobar delegate and adds it to the last active
+  // tab on |profile|.
   static void Create(const extensions::Extension* new_theme,
                      Profile* profile,
                      const std::string& previous_theme_id,

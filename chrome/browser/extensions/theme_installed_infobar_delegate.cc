@@ -54,15 +54,15 @@ void ThemeInstalledInfoBarDelegate::Create(
   // If there's a previous theme infobar, just replace that instead of adding a
   // new one.
   for (size_t i = 0; i < infobar_service->infobar_count(); ++i) {
-    InfoBarDelegate* delegate = infobar_service->infobar_at(i);
+    InfoBarDelegate* old_infobar = infobar_service->infobar_at(i);
     ThemeInstalledInfoBarDelegate* theme_infobar =
-        delegate->AsThemePreviewInfobarDelegate();
+        old_infobar->AsThemePreviewInfobarDelegate();
     if (theme_infobar) {
       // If the user installed the same theme twice, ignore the second install
       // and keep the first install info bar, so that they can easily undo to
       // get back the previous theme.
       if (theme_infobar->theme_id_ != new_theme->id()) {
-        infobar_service->ReplaceInfoBar(delegate, new_infobar.Pass());
+        infobar_service->ReplaceInfoBar(old_infobar, new_infobar.Pass());
         theme_service->OnInfobarDisplayed();
       }
       return;
@@ -135,7 +135,7 @@ bool ThemeInstalledInfoBarDelegate::Cancel() {
         extension_service_->GetExtensionById(previous_theme_id_, true);
     if (previous_theme) {
       theme_service_->SetTheme(previous_theme);
-        return false;  // The theme change will close us.
+      return false;  // The theme change will close us.
     }
   }
 

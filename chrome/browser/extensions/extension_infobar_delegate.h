@@ -35,7 +35,7 @@ class ExtensionInfoBarDelegate : public InfoBarDelegate,
 
   virtual ~ExtensionInfoBarDelegate();
 
-  // Creates an extension delegate and adds it to |infobar_service|.
+  // Creates an extension infobar delegate and adds it to |infobar_service|.
   static void Create(InfoBarService* infobar_service,
                      Browser* browser,
                      const extensions::Extension* extension,
@@ -55,6 +55,7 @@ class ExtensionInfoBarDelegate : public InfoBarDelegate,
                            InfoBarService* infobar_service,
                            const extensions::Extension* extension,
                            const GURL& url,
+                           content::WebContents* web_contents,
                            int height);
 
   // InfoBarDelegate:

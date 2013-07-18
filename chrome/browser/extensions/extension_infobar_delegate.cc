@@ -30,7 +30,7 @@ void ExtensionInfoBarDelegate::Create(InfoBarService* infobar_service,
                                       int height) {
   infobar_service->AddInfoBar(scoped_ptr<InfoBarDelegate>(
       new ExtensionInfoBarDelegate(browser, infobar_service, extension, url,
-                                   height)));
+                                   infobar_service->web_contents(), height)));
 }
 
 ExtensionInfoBarDelegate::ExtensionInfoBarDelegate(
@@ -38,6 +38,7 @@ ExtensionInfoBarDelegate::ExtensionInfoBarDelegate(
     InfoBarService* infobar_service,
     const extensions::Extension* extension,
     const GURL& url,
+    content::WebContents* web_contents,
     int height)
     : InfoBarDelegate(infobar_service),
 #if defined(TOOLKIT_VIEWS)
@@ -49,22 +50,20 @@ ExtensionInfoBarDelegate::ExtensionInfoBarDelegate(
   ExtensionProcessManager* manager =
       extensions::ExtensionSystem::Get(browser->profile())->process_manager();
   extension_host_.reset(manager->CreateInfobarHost(url, browser));
-  extension_host_->SetAssociatedWebContents(infobar_service->web_contents());
+  extension_host_->SetAssociatedWebContents(web_contents);
 
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
                  content::Source<Profile>(browser->profile()));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
                  content::Source<Profile>(browser->profile()));
 
-#if defined(TOOLKIT_VIEWS) || defined(TOOLKIT_GTK)
+#if defined(TOOLKIT_VIEWS) || defined(TOOLKIT_GTK) || defined(OS_ANDROID)
+  // TODO(dtrainor): On Android, this is not used.  Might need to pull this from
+  // Android UI level in the future.  Tracked via issue 115303.
   int default_height = InfoBar::kDefaultBarTargetHeight;
 #elif defined(OS_MACOSX)
   // TODO(pkasting): Once Infobars have been ported to Mac, we can remove the
   // ifdefs and just use the Infobar constant below.
-  int default_height = 36;
-#elif defined(OS_ANDROID)
-  // TODO(dtrainor): This is not used.  Might need to pull this from Android UI
-  // level in the future.  Tracked via issue 115303.
   int default_height = 36;
 #endif
   height_ = std::max(0, height);

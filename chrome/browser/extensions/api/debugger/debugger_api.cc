@@ -68,7 +68,9 @@ namespace OnDetach = extensions::api::debugger::OnDetach;
 namespace OnEvent = extensions::api::debugger::OnEvent;
 namespace SendCommand = extensions::api::debugger::SendCommand;
 
+namespace {
 class ExtensionDevToolsInfoBarDelegate;
+}  // namespace
 
 
 // ExtensionDevToolsClientHost ------------------------------------------------
@@ -123,13 +125,31 @@ class ExtensionDevToolsClientHost : public DevToolsClientHost,
   DISALLOW_COPY_AND_ASSIGN(ExtensionDevToolsClientHost);
 };
 
+// The member function declarations come after the other class declarations, so
+// they can call members on them.
+
+
+namespace {
+
+// Helpers --------------------------------------------------------------------
+
+void CopyDebuggee(Debuggee* dst, const Debuggee& src) {
+  if (src.tab_id)
+    dst->tab_id.reset(new int(*src.tab_id));
+  if (src.extension_id)
+    dst->extension_id.reset(new std::string(*src.extension_id));
+  if (src.target_id)
+    dst->target_id.reset(new std::string(*src.target_id));
+}
+
 
 // ExtensionDevToolsInfoBarDelegate -------------------------------------------
 
 class ExtensionDevToolsInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  // Creates an extension dev tools delegate and adds it to |infobar_service|.
-  // Returns a pointer to the delegate if it was successfully added.
+  // Creates an extension dev tools infobar delegate and adds it to the
+  // InfoBarService associated with |rvh|.  Returns the delegate if it was
+  // successfully added.
   static ExtensionDevToolsInfoBarDelegate* Create(
       RenderViewHost* rvh,
       const std::string& client_name);
@@ -214,23 +234,8 @@ int ExtensionDevToolsInfoBarDelegate::GetButtons() const {
 }
 
 bool ExtensionDevToolsInfoBarDelegate::Cancel() {
-  if (client_host_)
-    client_host_->MarkAsDismissed();
+  InfoBarDismissed();
   return true;
-}
-
-
-namespace {
-
-// Helpers --------------------------------------------------------------------
-
-void CopyDebuggee(Debuggee* dst, const Debuggee& src) {
-  if (src.tab_id)
-    dst->tab_id.reset(new int(*src.tab_id));
-  if (src.extension_id)
-    dst->extension_id.reset(new std::string(*src.extension_id));
-  if (src.target_id)
-    dst->target_id.reset(new std::string(*src.target_id));
 }
 
 
@@ -261,6 +266,7 @@ AttachedClientHosts::AttachedClientHosts() {
 
 AttachedClientHosts::~AttachedClientHosts() {
 }
+
 // static
 AttachedClientHosts* AttachedClientHosts::GetInstance() {
   return Singleton<AttachedClientHosts>::get();
@@ -341,10 +347,8 @@ ExtensionDevToolsClientHost::~ExtensionDevToolsClientHost() {
 
   if (infobar_delegate_) {
     infobar_delegate_->set_client_host(NULL);
-    InfoBarService* infobar_service = InfoBarService::FromWebContents(
-        WebContents::FromRenderViewHost(agent_host_->GetRenderViewHost()));
-    if (infobar_service)
-      infobar_service->RemoveInfoBar(infobar_delegate_);
+    InfoBarService::FromWebContents(WebContents::FromRenderViewHost(
+        agent_host_->GetRenderViewHost()))->RemoveInfoBar(infobar_delegate_);
   }
   AttachedClientHosts::GetInstance()->Remove(this);
 }
@@ -463,7 +467,7 @@ void ExtensionDevToolsClientHost::DispatchOnInspectorFrontend(
 // DebuggerFunction -----------------------------------------------------------
 
 DebuggerFunction::DebuggerFunction()
-    : client_host_(0) {
+    : client_host_(NULL) {
 }
 
 DebuggerFunction::~DebuggerFunction() {
