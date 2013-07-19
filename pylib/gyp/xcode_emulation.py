@@ -419,13 +419,16 @@ class XcodeSettings(object):
     elif gc_policy == 'required':
       flags.append('-fobjc-gc-only')
 
+  def _AddObjectiveCARCFlags(self, flags):
+    if self._Test('CLANG_ENABLE_OBJC_ARC', 'YES', default='NO'):
+      flags.append('-fobjc-arc')
+
   def GetCflagsObjC(self, configname):
     """Returns flags that need to be added to .m compilations."""
     self.configname = configname
     cflags_objc = []
-
     self._AddObjectiveCGarbageCollectionFlags(cflags_objc)
-
+    self._AddObjectiveCARCFlags(cflags_objc)
     self.configname = None
     return cflags_objc
 
@@ -434,6 +437,7 @@ class XcodeSettings(object):
     self.configname = configname
     cflags_objcc = []
     self._AddObjectiveCGarbageCollectionFlags(cflags_objcc)
+    self._AddObjectiveCARCFlags(cflags_objcc)
     if self._Test('GCC_OBJC_CALL_CXX_CDTORS', 'YES', default='NO'):
       cflags_objcc.append('-fobjc-call-cxx-cdtors')
     self.configname = None

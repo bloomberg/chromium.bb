@@ -5,7 +5,7 @@
 # found in the LICENSE file.
 
 """
-Verifies that objc settings are handled correctly.
+Verifies that GC objc settings are handled correctly.
 """
 
 import TestGyp
