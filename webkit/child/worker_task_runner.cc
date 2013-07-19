@@ -48,9 +48,9 @@ bool WorkerTaskRunner::PostTask(
   DCHECK(id > 0);
   base::AutoLock locker(loop_map_lock_);
   IDToLoopMap::iterator found = loop_map_.find(id);
-  if (found != loop_map_.end())
-    found->second.postTask(new RunClosureTask(closure));
-  return found != loop_map_.end();
+  if (found == loop_map_.end())
+    return false;
+  return found->second.postTask(new RunClosureTask(closure));
 }
 
 int WorkerTaskRunner::PostTaskToAllThreads(const base::Closure& closure) {
