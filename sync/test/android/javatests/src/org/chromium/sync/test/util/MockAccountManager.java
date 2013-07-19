@@ -238,7 +238,8 @@ public class MockAccountManager implements AccountManagerDelegate {
         } else {
             Log.d(TAG, "getAuthTokenFuture: Account " + ah.getAccount() +
                     " is asking for permission for " + authTokenType);
-            final Intent intent = newGrantCredentialsPermissionIntent(true, account, authTokenType);
+            final Intent intent = newGrantCredentialsPermissionIntent(
+                    activity != null, account, authTokenType);
             return runTask(mExecutor,
                     new AccountManagerAuthTokenTask(activity, handler, callback,
                             account, authTokenType,
@@ -495,10 +496,13 @@ public class MockAccountManager implements AccountManagerDelegate {
             try {
                 Bundle bundle = mCallable.call();
                 Intent intent = bundle.getParcelable(AccountManager.KEY_INTENT);
-                if (intent != null && mActivity != null) {
-                    // Since the user provided an Activity we will silently start intents we see.
-                    // Starting activity and waiting for it to finish.
-                    waitForActivity(mActivity, intent);
+                if (intent != null) {
+                    // Start the intent activity and wait for it to finish.
+                    if (mActivity != null) {
+                        waitForActivity(mActivity, intent);
+                    } else {
+                        waitForActivity(mContext, intent);
+                    }
                     if (mAccountAuthTokenPreparation == null) {
                         throw new IllegalStateException("No account preparation ready for " +
                                 mAccount + ", authTokenType = " + mAuthTokenType +
