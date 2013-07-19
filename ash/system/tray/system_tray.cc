@@ -321,7 +321,9 @@ bool SystemTray::HasNotificationBubble() const {
 }
 
 bool SystemTray::IsPressed() {
-  return HasSystemBubble();
+  // We only return true when the full system bubble was triggered. Small
+  // bubbles (like audio modifications via keyboard) do not count.
+  return HasSystemBubble() && !detailed_item_;
 }
 
 internal::SystemTrayBubble* SystemTray::GetSystemBubble() {
