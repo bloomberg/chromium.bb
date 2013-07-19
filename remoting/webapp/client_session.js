@@ -153,6 +153,22 @@ remoting.ClientSession.prototype.setOnStateChange = function(onStateChange) {
   this.onStateChange_ = onStateChange;
 };
 
+/**
+ * Called when the connection has been established to set the initial scroll-
+ * bar visibility correctly.
+ *
+ * TODO(jamiewalch): crbug.com/252796: Remove this once crbug.com/240772 is
+ * fixed.
+ */
+remoting.ClientSession.prototype.setScrollbarVisibility = function() {
+  var htmlNode = /** @type {HTMLElement} */ (document.body.parentNode);
+  if (this.shrinkToFit_) {
+    htmlNode.classList.add('no-scroll');
+  } else {
+    htmlNode.classList.remove('no-scroll');
+  }
+};
+
 // Note that the positive values in both of these enums are copied directly
 // from chromoting_scriptable_object.h and must be kept in sync. The negative
 // values represent state transitions that occur within the web-app that have
@@ -640,6 +656,7 @@ remoting.ClientSession.prototype.setScreenMode_ =
 
   this.shrinkToFit_ = shrinkToFit;
   this.resizeToClient_ = resizeToClient;
+  this.setScrollbarVisibility();
 
   if (this.hostId != '') {
     var options = {};
@@ -653,14 +670,6 @@ remoting.ClientSession.prototype.setScreenMode_ =
     this.scroll_(0, 0);
   }
 
-  // TODO(jamiewalch): crbug.com/252796: Remove this once crbug.com/240772
-  // is fixed.
-  var htmlNode = /** @type {HTMLElement} */ (document.body.parentNode);
-  if (this.shrinkToFit_) {
-    htmlNode.classList.add('no-scroll');
-  } else {
-    htmlNode.classList.remove('no-scroll');
-  }
 }
 
 /**

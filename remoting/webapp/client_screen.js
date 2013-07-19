@@ -334,6 +334,7 @@ remoting.connectMe2MeHostVersionAcknowledged_ = function(host) {
 remoting.onConnected = function(clientSession) {
   remoting.clientSession = clientSession;
   remoting.clientSession.setOnStateChange(onClientStateChange_);
+  remoting.clientSession.setScrollbarVisibility();
   setConnectionInterruptedButtonsText_();
   var connectedTo = document.getElementById('connected-to');
   connectedTo.innerText = clientSession.hostDisplayName;
