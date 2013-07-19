@@ -151,10 +151,6 @@ bool SearchBox::GetMostVisitedItemWithID(
                                                            item);
 }
 
-int SearchBox::GetStartMargin() const {
-  return static_cast<int>(start_margin_ / GetZoom());
-}
-
 const ThemeBackgroundInfo& SearchBox::GetThemeBackgroundInfo() {
   return theme_info_;
 }
@@ -350,16 +346,6 @@ void SearchBox::OnToggleVoiceSearch() {
 GURL SearchBox::GetURLForMostVisitedItem(InstantRestrictedID item_id) const {
   InstantMostVisitedItem item;
   return GetMostVisitedItemWithID(item_id, &item) ? item.url : GURL();
-}
-
-double SearchBox::GetZoom() const {
-  WebKit::WebView* web_view = render_view()->GetWebView();
-  if (web_view) {
-    double zoom = WebKit::WebView::zoomLevelToZoomFactor(web_view->zoomLevel());
-    if (zoom != 0)
-      return zoom;
-  }
-  return 1.0;
 }
 
 void SearchBox::Reset() {

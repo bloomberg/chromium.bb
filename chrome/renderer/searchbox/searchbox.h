@@ -63,9 +63,6 @@ class SearchBox : public content::RenderViewObserver,
   bool GetMostVisitedItemWithID(InstantRestrictedID most_visited_item_id,
                                 InstantMostVisitedItem* item) const;
 
-  // Returns the start-edge margin of the location bar in screen pixels.
-  int GetStartMargin() const;
-
   // Sends ChromeViewHostMsg_SearchBoxNavigate to the browser.
   void NavigateToURL(const GURL& url,
                      content::PageTransition transition,
@@ -96,6 +93,7 @@ class SearchBox : public content::RenderViewObserver,
   bool is_key_capture_enabled() const { return is_key_capture_enabled_; }
   const string16& omnibox_font() const { return omnibox_font_; }
   const string16& query() const { return query_; }
+  int start_margin() const { return start_margin_; }
   size_t omnibox_font_size() const { return omnibox_font_size_; }
 
  private:

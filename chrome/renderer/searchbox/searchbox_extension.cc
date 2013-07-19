@@ -622,7 +622,7 @@ void SearchBoxExtensionWrapper::GetStartMargin(
   content::RenderView* render_view = GetRenderView();
   if (!render_view) return;
   args.GetReturnValue().Set(static_cast<int32_t>(
-      SearchBox::Get(render_view)->GetStartMargin()));
+      SearchBox::Get(render_view)->start_margin()));
 }
 
 // static
