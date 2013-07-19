@@ -8,7 +8,7 @@
 
 var chrome = requireNative('chrome').GetChrome();
 var forEach = require('utils').forEach;
-var watchForTag = require('tagWatcher').watchForTag;
+var addTagWatcher = require('tagWatcher').addTagWatcher;
 var appWindow = require('app.window');
 var getHtmlTemplate =
   requireNative('app_window_natives').GetWindowControlsHtmlTemplate;
@@ -16,7 +16,7 @@ var getHtmlTemplate =
 /**
  * @constructor
  */
-function WindowControls(document, node) {
+function WindowControls(node) {
   this.node_ = node;
   this.shadowRoot_ = this.createShadowRoot_(node);
   this.setupWindowControls_();
@@ -73,12 +73,6 @@ WindowControls.prototype.maxRestore_ = function() {
   }
 }
 
-//
-//Hook up <window-controls> tag creation in DOM.
-//
-window.addEventListener('DOMContentLoaded', function() {
-  var doc = window.document;
-  watchForTag('WINDOW-CONTROLS', function(addedNode) {
-    new WindowControls(doc, addedNode);
-    });
+addTagWatcher('WINDOW-CONTROLS', function(addedNode) {
+  new WindowControls(addedNode);
 });

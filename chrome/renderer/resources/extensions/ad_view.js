@@ -12,7 +12,7 @@
 
 var eventBindings = require('event_bindings');
 var process = requireNative('process');
-var watchForTag = require('tagWatcher').watchForTag;
+var addTagWatcher = require('tagWatcher').addTagWatcher;
 
 /**
  * Define "allowCustomAdNetworks" function such that the
@@ -522,9 +522,4 @@ AdView.prototype.dispatchEvent = function(eventname, detail) {
   this.adviewNode_.dispatchEvent(evt);
 }
 
-//
-// Hook up <adview> tag creation in DOM.
-//
-window.addEventListener('DOMContentLoaded', function() {
-  watchForTag('ADVIEW', function(addedNode) { new AdView(addedNode); });
-});
+addTagWatcher('ADVIEW', function(addedNode) { new AdView(addedNode); });

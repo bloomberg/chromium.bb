@@ -7,7 +7,7 @@
 // The actual tag is implemented via the browser plugin. The internals of this
 // are hidden via Shadow DOM.
 
-var watchForTag = require('tagWatcher').watchForTag;
+var addTagWatcher = require('tagWatcher').addTagWatcher;
 var eventBindings = require('event_bindings');
 
 /** @type {Array.<string>} */
@@ -72,26 +72,7 @@ var WEB_VIEW_EXT_EVENTS = {
   }
 };
 
-// The <webview> tags we wish to watch for (watchForTag) does not belong to the
-// current scope's "document" reference. We need to wait until the document
-// begins loading, since only then will the "document" reference
-// point to the page's document (it will be reset between now and then).
-// We can't listen for the "readystatechange" event on the document (because
-// the object that it's dispatched on doesn't exist yet), but we can instead
-// do it at the window level in the capturing phase.
-//
-// The second window.readystatechange event (The first is fired right after
-// document's readyState changes to 'loading') is the earliest place to define
-// webview so that app has no chance to be earlier to fail its definition.
-var readyStateChangeListener = function(event) {
-  if (document.readyState == 'loading')
-    return;
-
-  watchForTag('WEBVIEW', function(addedNode) { new WebView(addedNode); });
-  window.removeEventListener(event.type, readyStateChangeListener, true);
-};
-window.addEventListener('readystatechange', readyStateChangeListener,
-                        true /* useCapture */);
+addTagWatcher('WEBVIEW', function(addedNode) { new WebView(addedNode); });
 
 /** @type {number} */
 WebView.prototype.entryCount_;
