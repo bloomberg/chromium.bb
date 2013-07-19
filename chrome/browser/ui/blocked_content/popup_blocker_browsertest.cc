@@ -14,6 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
+#include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -262,6 +263,21 @@ IN_PROC_BROWSER_TEST_F(BetterPopupBlockerBrowserTest,
 
   // And no new RVH created.
   EXPECT_EQ(0, counter.GetRenderViewHostCreatedCount());
+
+  content::WindowedNotificationObserver observer(
+      chrome::NOTIFICATION_TAB_ADDED,
+      content::NotificationService::AllSources());
+
+  // Launch the blocked popup.
+  PopupBlockerTabHelper* popup_blocker_helper =
+      PopupBlockerTabHelper::FromWebContents(web_contents);
+  EXPECT_EQ(1u, popup_blocker_helper->GetBlockedPopupsCount());
+  IDMap<chrome::NavigateParams, IDMapOwnPointer>::const_iterator iter(
+      &popup_blocker_helper->GetBlockedPopupRequests());
+  ASSERT_FALSE(iter.IsAtEnd());
+  popup_blocker_helper->ShowBlockedPopup(iter.GetCurrentKey());
+
+  observer.Wait();
 }
 
 }  // namespace

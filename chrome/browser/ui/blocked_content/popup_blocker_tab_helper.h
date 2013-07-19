@@ -31,8 +31,8 @@ class PopupBlockerTabHelper
   size_t GetBlockedPopupsCount() const;
 
   // Returns the mapping from popup IDs to blocked popup requests.
-  const IDMap<chrome::NavigateParams, IDMapOwnPointer>&
-  GetBlockedPopupRequests() const;
+  IDMap<chrome::NavigateParams, IDMapOwnPointer>&
+  GetBlockedPopupRequests();
 
   // content::WebContentsObserver overrides:
   virtual void DidNavigateMainFrame(

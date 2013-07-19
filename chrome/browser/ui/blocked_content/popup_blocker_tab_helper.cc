@@ -90,7 +90,7 @@ size_t PopupBlockerTabHelper::GetBlockedPopupsCount() const {
   return blocked_popups_.size();
 }
 
-const IDMap<chrome::NavigateParams, IDMapOwnPointer>&
-PopupBlockerTabHelper::GetBlockedPopupRequests() const {
+IDMap<chrome::NavigateParams, IDMapOwnPointer>&
+PopupBlockerTabHelper::GetBlockedPopupRequests() {
   return blocked_popups_;
 }

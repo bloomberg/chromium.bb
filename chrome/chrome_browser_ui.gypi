@@ -2857,6 +2857,7 @@
             'browser/ui/window_sizer/window_sizer.h',
           ],
           'sources/': [
+            ['exclude', '^browser/ui/content_settings/'],
             ['exclude', '^browser/ui/omnibox/'],
             ['exclude', '^browser/ui/panels/'],
             ['exclude', '^browser/ui/pdf/'],

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 
+#include "base/command_line.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -19,9 +20,12 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper_delegate.h"
+#include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
+#include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/collected_cookies_infobar_delegate.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model_delegate.h"
 #include "chrome/browser/ui/content_settings/content_setting_changed_infobar_delegate.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
@@ -33,8 +37,10 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "grit/ui_resources.h"
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 
 using content::UserMetricsAction;
 using content::WebContents;
@@ -539,6 +545,29 @@ ContentSettingPopupBubbleModel::ContentSettingPopupBubbleModel(
 
 
 void ContentSettingPopupBubbleModel::SetPopups() {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBetterPopupBlocking)) {
+    IDMap<chrome::NavigateParams, IDMapOwnPointer>& blocked_popups =
+        PopupBlockerTabHelper::FromWebContents(web_contents())
+            ->GetBlockedPopupRequests();
+    for (IDMap<chrome::NavigateParams, IDMapOwnPointer>::const_iterator
+             iter(&blocked_popups);
+         !iter.IsAtEnd();
+         iter.Advance()) {
+
+      std::string title(iter.GetCurrentValue()->url.spec());
+      // The popup may not have a valid URL.
+      if (title.empty())
+        title = l10n_util::GetStringUTF8(IDS_TAB_LOADING_TITLE);
+      PopupItem popup_item(
+          ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+              IDR_DEFAULT_FAVICON),
+          title,
+          iter.GetCurrentKey());
+      add_popup(popup_item);
+    }
+    return;
+  }
   std::vector<WebContents*> blocked_contents;
   BlockedContentTabHelper::FromWebContents(web_contents())->
       GetBlockedContents(&blocked_contents);
@@ -549,18 +578,22 @@ void ContentSettingPopupBubbleModel::SetPopups() {
     // have a URL or title.
     if (title.empty())
       title = l10n_util::GetStringUTF8(IDS_TAB_LOADING_TITLE);
-    PopupItem popup_item;
-    popup_item.title = title;
-    popup_item.image = FaviconTabHelper::FromWebContents(*i)->GetFavicon();
-    popup_item.web_contents = *i;
+    PopupItem popup_item(
+        FaviconTabHelper::FromWebContents(*i)->GetFavicon(), title, *i);
     add_popup(popup_item);
   }
 }
 
 void ContentSettingPopupBubbleModel::OnPopupClicked(int index) {
   if (web_contents()) {
-    BlockedContentTabHelper::FromWebContents(web_contents())->
-        LaunchForContents(bubble_content().popup_items[index].web_contents);
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableBetterPopupBlocking)) {
+      PopupBlockerTabHelper::FromWebContents(web_contents())->
+          ShowBlockedPopup(bubble_content().popup_items[index].popup_id);
+    } else {
+      BlockedContentTabHelper::FromWebContents(web_contents())->
+          LaunchForContents(bubble_content().popup_items[index].web_contents);
+    }
   }
 }
 

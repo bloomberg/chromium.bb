@@ -2463,6 +2463,7 @@
             ['exclude', '^browser/sync/glue/app_'],
             ['exclude', '^browser/sync/glue/extension_'],
             ['exclude', '^browser/themes/'],
+            ['exclude', '^browser/ui/content_settings/'],
             ['exclude', '^browser/ui/omnibox/'],
             ['exclude', '^browser/ui/panels'],
             ['exclude', '^browser/ui/tabs/'],
