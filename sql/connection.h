@@ -28,6 +28,7 @@ class FilePath;
 
 namespace sql {
 
+class Recovery;
 class Statement;
 
 // Uniquely identifies a statement. There are two modes of operation:
@@ -166,6 +167,12 @@ class SQL_EXPORT Connection {
   // empty. You can call this or Open.
   bool OpenInMemory() WARN_UNUSED_RESULT;
 
+  // Create a temporary on-disk database.  The database will be
+  // deleted after close.  This kind of database is similar to
+  // OpenInMemory() for small databases, but can page to disk if the
+  // database becomes large.
+  bool OpenTemporary() WARN_UNUSED_RESULT;
+
   // Returns true if the database has been successfully opened.
   bool is_open() const { return !!db_; }
 
@@ -230,13 +237,17 @@ class SQL_EXPORT Connection {
   bool RazeWithTimout(base::TimeDelta timeout);
 
   // Breaks all outstanding transactions (as initiated by
-  // BeginTransaction()), calls Raze() to destroy the database, then
-  // closes the database.  After this is called, any operations
-  // against the connections (or statements prepared by the
-  // connection) should fail safely.
+  // BeginTransaction()), closes the SQLite database, and poisons the
+  // object so that all future operations against the Connection (or
+  // its Statements) fail safely, without side effects.
   //
-  // The value from Raze() is returned, with Close() called in all
-  // cases.
+  // This is intended as an alternative to Close() in error callbacks.
+  // Close() should still be called at some point.
+  void Poison();
+
+  // Raze() the database and Poison() the handle.  Returns the return
+  // value from Raze().
+  // TODO(shess): Rename to RazeAndPoison().
   bool RazeAndClose();
 
   // Delete the underlying database files associated with |path|.
@@ -266,9 +277,26 @@ class SQL_EXPORT Connection {
   void RollbackTransaction();
   bool CommitTransaction();
 
+  // Rollback all outstanding transactions.  Use with care, there may
+  // be scoped transactions on the stack.
+  void RollbackAllTransactions();
+
   // Returns the current transaction nesting, which will be 0 if there are
   // no open transactions.
   int transaction_nesting() const { return transaction_nesting_; }
+
+  // Attached databases---------------------------------------------------------
+
+  // SQLite supports attaching multiple database files to a single
+  // handle.  Attach the database in |other_db_path| to the current
+  // handle under |attachment_point|.  |attachment_point| should only
+  // contain characters from [a-zA-Z0-9_].
+  //
+  // Note that calling attach or detach with an open transaction is an
+  // error.
+  bool AttachDatabase(const base::FilePath& other_db_path,
+                      const char* attachment_point);
+  bool DetachDatabase(const char* attachment_point);
 
   // Statements ----------------------------------------------------------------
 
@@ -362,6 +390,9 @@ class SQL_EXPORT Connection {
   const char* GetErrorMessage() const;
 
  private:
+  // For recovery module.
+  friend class Recovery;
+
   // Allow test-support code to set/reset error ignorer.
   friend class ScopedErrorIgnorer;
 

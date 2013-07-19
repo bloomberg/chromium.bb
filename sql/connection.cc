@@ -94,6 +94,21 @@ int BackupDatabase(sqlite3* src, sqlite3* dst, const char* db_name) {
   return rc;
 }
 
+// Be very strict on attachment point.  SQLite can handle a much wider
+// character set with appropriate quoting, but Chromium code should
+// just use clean names to start with.
+bool ValidAttachmentPoint(const char* attachment_point) {
+  for (size_t i = 0; attachment_point[i]; ++i) {
+    if (!((attachment_point[i] >= '0' && attachment_point[i] <= '9') ||
+          (attachment_point[i] >= 'a' && attachment_point[i] <= 'z') ||
+          (attachment_point[i] >= 'A' && attachment_point[i] <= 'Z') ||
+          attachment_point[i] == '_')) {
+      return false;
+    }
+  }
+  return true;
+}
+
 }  // namespace
 
 namespace sql {
@@ -204,6 +219,10 @@ bool Connection::Open(const base::FilePath& path) {
 bool Connection::OpenInMemory() {
   in_memory_ = true;
   return OpenInternal(":memory:", NO_RETRY);
+}
+
+bool Connection::OpenTemporary() {
+  return OpenInternal("", NO_RETRY);
 }
 
 void Connection::CloseInternal(bool forced) {
@@ -442,9 +461,7 @@ bool Connection::RazeAndClose() {
   }
 
   // Raze() cannot run in a transaction.
-  while (transaction_nesting_) {
-    RollbackTransaction();
-  }
+  RollbackAllTransactions();
 
   bool result = Raze();
 
@@ -456,6 +473,21 @@ bool Connection::RazeAndClose() {
   poisoned_ = true;
 
   return result;
+}
+
+void Connection::Poison() {
+  if (!db_) {
+    DLOG_IF(FATAL, !poisoned_) << "Cannot poison null db";
+    return;
+  }
+
+  RollbackAllTransactions();
+  CloseInternal(true);
+
+  // Mark the database so that future API calls fail appropriately,
+  // but don't DCHECK (because after calling this function they are
+  // expected to fail).
+  poisoned_ = true;
 }
 
 // TODO(shess): To the extent possible, figure out the optimal
@@ -541,6 +573,35 @@ bool Connection::CommitTransaction() {
 
   Statement commit(GetCachedStatement(SQL_FROM_HERE, "COMMIT"));
   return commit.Run();
+}
+
+void Connection::RollbackAllTransactions() {
+  if (transaction_nesting_ > 0) {
+    transaction_nesting_ = 0;
+    DoRollback();
+  }
+}
+
+bool Connection::AttachDatabase(const base::FilePath& other_db_path,
+                                const char* attachment_point) {
+  DCHECK(ValidAttachmentPoint(attachment_point));
+
+  Statement s(GetUniqueStatement("ATTACH DATABASE ? AS ?"));
+#if OS_WIN
+  s.BindString16(0, other_db_path.value());
+#else
+  s.BindString(0, other_db_path.value());
+#endif
+  s.BindString(1, attachment_point);
+  return s.Run();
+}
+
+bool Connection::DetachDatabase(const char* attachment_point) {
+  DCHECK(ValidAttachmentPoint(attachment_point));
+
+  Statement s(GetUniqueStatement("DETACH DATABASE ?"));
+  s.BindString(0, attachment_point);
+  return s.Run();
 }
 
 int Connection::ExecuteAndReturnErrorCode(const char* sql) {
