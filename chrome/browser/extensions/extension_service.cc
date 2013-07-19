@@ -703,6 +703,8 @@ void ExtensionService::ReloadExtension(const std::string extension_id) {
     }
 
     path = current_extension->path();
+    // BeingUpgraded is set back to false when the extension is added.
+    SetBeingUpgraded(current_extension, true);
     DisableExtension(extension_id, Extension::DISABLE_RELOAD);
     reloading_extensions_.insert(extension_id);
   } else {
