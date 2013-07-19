@@ -185,10 +185,9 @@ void Picture::CloneForDrawing(int num_threads) {
 void Picture::Record(ContentLayerClient* painter,
                      const SkTileGridPicture::TileGridInfo& tile_grid_info,
                      RenderingStatsInstrumentation* stats_instrumentation) {
-  TRACE_EVENT2(benchmark_instrumentation::kCategory,
+  TRACE_EVENT1(benchmark_instrumentation::kCategory,
                benchmark_instrumentation::kPictureRecord,
-               benchmark_instrumentation::kWidth, layer_rect_.width(),
-               benchmark_instrumentation::kHeight, layer_rect_.height());
+               benchmark_instrumentation::kData, AsTraceableRecordData());
 
   DCHECK(!tile_grid_info.fTileInterval.isEmpty());
   picture_ = skia::AdoptRef(new SkTileGridPicture(
@@ -448,7 +447,7 @@ Picture::PixelRefIterator& Picture::PixelRefIterator::operator++() {
 }
 
 scoped_ptr<base::debug::ConvertableToTraceFormat>
-    Picture::AsTraceableRasterData(gfx::Rect rect, float scale) {
+    Picture::AsTraceableRasterData(gfx::Rect rect, float scale) const {
   scoped_ptr<base::DictionaryValue> raster_data(new base::DictionaryValue());
   raster_data->Set("picture_id", TracedValue::CreateIDRef(this).release());
   raster_data->SetDouble("scale", scale);
@@ -457,6 +456,17 @@ scoped_ptr<base::debug::ConvertableToTraceFormat>
   raster_data->SetDouble("rect_width", rect.width());
   raster_data->SetDouble("rect_height", rect.height());
   return TracedValue::FromValue(raster_data.release());
+}
+
+scoped_ptr<base::debug::ConvertableToTraceFormat>
+    Picture::AsTraceableRecordData() const {
+  scoped_ptr<base::DictionaryValue> record_data(new base::DictionaryValue());
+  record_data->Set("picture_id", TracedValue::CreateIDRef(this).release());
+  record_data->SetInteger(benchmark_instrumentation::kWidth,
+                          layer_rect_.width());
+  record_data->SetInteger(benchmark_instrumentation::kHeight,
+                          layer_rect_.height());
+  return TracedValue::FromValue(record_data.release());
 }
 
 }  // namespace cc

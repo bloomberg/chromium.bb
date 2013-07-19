@@ -66,8 +66,9 @@ class StatsCollector(object):
           for record_event in record_loop_event.GetAllSubSlicesOfName(
               "Picture::Record"):
             best_record_time = min(best_record_time, record_event.duration)
-            self.total_pixels_recorded += (record_event.args["width"] *
-                                           record_event.args["height"])
+            self.total_pixels_recorded += (
+                record_event.args["data"]["width"] *
+                record_event.args["data"]["height"])
           if best_record_time == float('inf'):
             best_record_time = 0
           self.total_best_record_time += best_record_time
