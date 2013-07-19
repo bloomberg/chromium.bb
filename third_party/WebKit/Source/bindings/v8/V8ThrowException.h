@@ -25,6 +25,7 @@
 #ifndef V8ThrowException_h
 #define V8ThrowException_h
 
+#include "wtf/text/WTFString.h"
 #include <v8.h>
 
 namespace WebCore {
@@ -42,22 +43,22 @@ public:
 
     static v8::Handle<v8::Value> createDOMException(int ec, v8::Isolate* isolate)
     {
-        return createDOMException(ec, 0, isolate);
+        return createDOMException(ec, String(), isolate);
     }
-    static v8::Handle<v8::Value> createDOMException(int, const char*, v8::Isolate*);
+    static v8::Handle<v8::Value> createDOMException(int, const String&, v8::Isolate*);
 
     static v8::Handle<v8::Value> throwDOMException(int ec, v8::Isolate* isolate)
     {
-        return throwDOMException(ec, 0, isolate);
+        return throwDOMException(ec, String(), isolate);
     }
-    static v8::Handle<v8::Value> throwDOMException(int, const char*, v8::Isolate*);
+    static v8::Handle<v8::Value> throwDOMException(int, const String&, v8::Isolate*);
 
-    static v8::Handle<v8::Value> createError(V8ErrorType, const char*, v8::Isolate*);
-    static v8::Handle<v8::Value> throwError(V8ErrorType, const char*, v8::Isolate*);
+    static v8::Handle<v8::Value> createError(V8ErrorType, const String&, v8::Isolate*);
+    static v8::Handle<v8::Value> throwError(V8ErrorType, const String&, v8::Isolate*);
     static v8::Handle<v8::Value> throwError(v8::Handle<v8::Value>);
 
-    static v8::Handle<v8::Value> createTypeError(const char*, v8::Isolate*);
-    static v8::Handle<v8::Value> throwTypeError(const char*, v8::Isolate*);
+    static v8::Handle<v8::Value> createTypeError(const String&, v8::Isolate*);
+    static v8::Handle<v8::Value> throwTypeError(const String&, v8::Isolate*);
 
     static v8::Handle<v8::Value> throwNotEnoughArgumentsError(v8::Isolate*);
 };

@@ -64,7 +64,7 @@ namespace WebCore {
                 return block.ReThrow();                      \
         }                                                    \
         if (UNLIKELY(!ok))                                   \
-            return throwTypeError(0, isolate);               \
+            return throwTypeError(isolate);                  \
     }
 
 #define V8TRYCATCH_WITH_TYPECHECK_VOID(type, var, value, isolate) \
@@ -80,7 +80,7 @@ namespace WebCore {
             }                                                     \
         }                                                         \
         if (UNLIKELY(!ok)) {                                      \
-            throwTypeError(0, isolate);                           \
+            throwTypeError(isolate);                              \
             return;                                               \
         }                                                         \
     }

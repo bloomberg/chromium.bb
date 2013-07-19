@@ -44,7 +44,7 @@ void V8DataView::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& ar
         return;
     }
     if (args[0]->IsNull() || !V8ArrayBuffer::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate()))) {
-        throwTypeError(0, args.GetIsolate());
+        throwTypeError(args.GetIsolate());
         return;
     }
     constructWebGLArrayWithArrayBufferArgument<DataView, char, V8DataView>(args, &info, v8::kExternalByteArray, false);

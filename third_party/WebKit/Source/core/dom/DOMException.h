@@ -40,7 +40,7 @@ typedef int ExceptionCode;
 
 class DOMException : public RefCounted<DOMException>, public ScriptWrappable {
 public:
-    static PassRefPtr<DOMException> create(ExceptionCode, const char* message = 0);
+    static PassRefPtr<DOMException> create(ExceptionCode, const String& message = String());
 
     unsigned short code() const { return m_code; }
     String name() const { return m_name; }
@@ -53,7 +53,7 @@ public:
     static unsigned short getLegacyErrorCode(ExceptionCode);
 
 private:
-    DOMException(unsigned short m_code, const char* name, const char* message);
+    DOMException(unsigned short m_code, const String& name, const String& message);
 
     unsigned short m_code;
     String m_name;

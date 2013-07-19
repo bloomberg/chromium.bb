@@ -86,7 +86,7 @@ static const CoreException* getErrorEntry(ExceptionCode ec)
     return tableIndex < tableSize ? &coreExceptions[tableIndex] : 0;
 }
 
-DOMException::DOMException(unsigned short code, const char* name, const char * message)
+DOMException::DOMException(unsigned short code, const String& name, const String& message)
 {
     ASSERT(name);
     m_code = code;
@@ -95,11 +95,13 @@ DOMException::DOMException(unsigned short code, const char* name, const char * m
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<DOMException> DOMException::create(ExceptionCode ec, const char* message)
+PassRefPtr<DOMException> DOMException::create(ExceptionCode ec, const String& message)
 {
     const CoreException* entry = getErrorEntry(ec);
     ASSERT(entry);
-    return adoptRef(new DOMException(entry->code, entry->name ? entry->name : "Error", message ? message : entry->message));
+    return adoptRef(new DOMException(entry->code,
+        ASCIILiteral(entry->name ? entry->name : "Error"),
+        message.isNull() ? String(ASCIILiteral(entry->message)) : message));
 }
 
 String DOMException::toString() const
@@ -112,9 +114,9 @@ String DOMException::getErrorName(ExceptionCode ec)
     const CoreException* entry = getErrorEntry(ec);
     ASSERT(entry);
     if (!entry)
-        return "UnknownError";
+        return ASCIILiteral("UnknownError");
 
-    return entry->name;
+    return ASCIILiteral(entry->name);
 }
 
 String DOMException::getErrorMessage(ExceptionCode ec)
@@ -122,9 +124,9 @@ String DOMException::getErrorMessage(ExceptionCode ec)
     const CoreException* entry = getErrorEntry(ec);
     ASSERT(entry);
     if (!entry)
-        return "Unknown error.";
+        return ASCIILiteral("Unknown error.");
 
-    return entry->message;
+    return ASCIILiteral(entry->message);
 }
 
 unsigned short DOMException::getLegacyErrorCode(ExceptionCode ec)

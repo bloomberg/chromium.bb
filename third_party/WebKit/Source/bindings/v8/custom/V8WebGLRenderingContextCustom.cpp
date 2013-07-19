@@ -322,7 +322,7 @@ void V8WebGLRenderingContext::getAttachedShadersMethodCustom(const v8::FunctionC
     ExceptionCode ec = 0;
     WebGLRenderingContext* context = V8WebGLRenderingContext::toNative(args.Holder());
     if (args.Length() > 0 && !isUndefinedOrNull(args[0]) && !V8WebGLProgram::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate()))) {
-        throwTypeError(0, args.GetIsolate());
+        throwTypeError(args.GetIsolate());
         return;
     }
     WebGLProgram* program = V8WebGLProgram::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate())) ? V8WebGLProgram::toNative(v8::Handle<v8::Object>::Cast(args[0])) : 0;
@@ -408,7 +408,7 @@ void V8WebGLRenderingContext::getProgramParameterMethodCustom(const v8::Function
     ExceptionCode ec = 0;
     WebGLRenderingContext* context = V8WebGLRenderingContext::toNative(args.Holder());
     if (args.Length() > 0 && !isUndefinedOrNull(args[0]) && !V8WebGLProgram::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate()))) {
-        throwTypeError(0, args.GetIsolate());
+        throwTypeError(args.GetIsolate());
         return;
     }
     WebGLProgram* program = V8WebGLProgram::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate())) ? V8WebGLProgram::toNative(v8::Handle<v8::Object>::Cast(args[0])) : 0;
@@ -436,7 +436,7 @@ void V8WebGLRenderingContext::getShaderParameterMethodCustom(const v8::FunctionC
     ExceptionCode ec = 0;
     WebGLRenderingContext* context = V8WebGLRenderingContext::toNative(args.Holder());
     if (args.Length() > 0 && !isUndefinedOrNull(args[0]) && !V8WebGLShader::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate()))) {
-        throwTypeError(0, args.GetIsolate());
+        throwTypeError(args.GetIsolate());
         return;
     }
     WebGLShader* shader = V8WebGLShader::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate())) ? V8WebGLShader::toNative(v8::Handle<v8::Object>::Cast(args[0])) : 0;
@@ -479,13 +479,13 @@ void V8WebGLRenderingContext::getUniformMethodCustom(const v8::FunctionCallbackI
     ExceptionCode ec = 0;
     WebGLRenderingContext* context = V8WebGLRenderingContext::toNative(args.Holder());
     if (args.Length() > 0 && !isUndefinedOrNull(args[0]) && !V8WebGLProgram::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate()))) {
-        throwTypeError(0, args.GetIsolate());
+        throwTypeError(args.GetIsolate());
         return;
     }
     WebGLProgram* program = V8WebGLProgram::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate())) ? V8WebGLProgram::toNative(v8::Handle<v8::Object>::Cast(args[0])) : 0;
 
     if (args.Length() > 1 && !isUndefinedOrNull(args[1]) && !V8WebGLUniformLocation::HasInstance(args[1], args.GetIsolate(), worldType(args.GetIsolate()))) {
-        throwTypeError(0, args.GetIsolate());
+        throwTypeError(args.GetIsolate());
         return;
     }
     bool ok = false;
@@ -556,7 +556,7 @@ static void vertexAttribAndUniformHelperf(const v8::FunctionCallbackInfo<v8::Val
         index = toInt32(args[0]);
     else {
         if (args.Length() > 0 && !isUndefinedOrNull(args[0]) && !V8WebGLUniformLocation::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate()))) {
-            throwTypeError(0, args.GetIsolate());
+            throwTypeError(args.GetIsolate());
             return;
         }
         location = toWebGLUniformLocation(args[0], ok, args.GetIsolate());
@@ -587,7 +587,7 @@ static void vertexAttribAndUniformHelperf(const v8::FunctionCallbackInfo<v8::Val
     }
 
     if (args[1].IsEmpty() || !args[1]->IsArray()) {
-        throwTypeError(0, args.GetIsolate());
+        throwTypeError(args.GetIsolate());
         return;
     }
     v8::Handle<v8::Array> array =
@@ -637,7 +637,7 @@ static void uniformHelperi(const v8::FunctionCallbackInfo<v8::Value>& args, Func
 
     WebGLRenderingContext* context = V8WebGLRenderingContext::toNative(args.Holder());
     if (args.Length() > 0 && !isUndefinedOrNull(args[0]) && !V8WebGLUniformLocation::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate()))) {
-        throwTypeError(0, args.GetIsolate());
+        throwTypeError(args.GetIsolate());
         return;
     }
     bool ok = false;
@@ -662,7 +662,7 @@ static void uniformHelperi(const v8::FunctionCallbackInfo<v8::Value>& args, Func
     }
 
     if (args[1].IsEmpty() || !args[1]->IsArray()) {
-        throwTypeError(0, args.GetIsolate());
+        throwTypeError(args.GetIsolate());
         return;
     }
     v8::Handle<v8::Array> array =
@@ -748,7 +748,7 @@ static void uniformMatrixHelper(const v8::FunctionCallbackInfo<v8::Value>& args,
     WebGLRenderingContext* context = V8WebGLRenderingContext::toNative(args.Holder());
 
     if (args.Length() > 0 && !isUndefinedOrNull(args[0]) && !V8WebGLUniformLocation::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate()))) {
-        throwTypeError(0, args.GetIsolate());
+        throwTypeError(args.GetIsolate());
         return;
     }
     bool ok = false;
@@ -773,7 +773,7 @@ static void uniformMatrixHelper(const v8::FunctionCallbackInfo<v8::Value>& args,
     }
 
     if (args[2].IsEmpty() || !args[2]->IsArray()) {
-        throwTypeError(0, args.GetIsolate());
+        throwTypeError(args.GetIsolate());
         return;
     }
     v8::Handle<v8::Array> array =
