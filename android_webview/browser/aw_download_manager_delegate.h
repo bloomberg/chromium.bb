@@ -25,6 +25,7 @@ class AwDownloadManagerDelegate : public content::DownloadManagerDelegate {
   virtual bool ShouldOpenDownload(
       content::DownloadItem* item,
       const content::DownloadOpenDelayedCallback& callback) OVERRIDE;
+  virtual void GetNextId(const content::DownloadIdCallback& callback) OVERRIDE;
 };
 
 }  // namespace android_webview

@@ -40,4 +40,10 @@ bool AwDownloadManagerDelegate::ShouldOpenDownload(
   return true;
 }
 
+void AwDownloadManagerDelegate::GetNextId(
+    const content::DownloadIdCallback& callback) {
+  static uint32 next_id = content::DownloadItem::kInvalidId + 1;
+  callback.Run(next_id++);
+}
+
 }  // namespace android_webview
