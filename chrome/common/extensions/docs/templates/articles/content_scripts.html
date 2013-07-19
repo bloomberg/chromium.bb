@@ -335,6 +335,7 @@ button.addEventListener("click", function() {
 
 <p>Another important benefit of isolated worlds is that they completely separate the JavaScript on the page from the JavaScript in extensions. This allows us to offer extra functionality to content scripts that should not be accessible from web pages without worrying about web pages accessing it.
 
+<p>It's worth noting what happens with JavaScript objects that are shared by the page and the extension - for example, the <code>window.onload</code> event. Each isolated world sees its own version of the object. Assigning to the object affects your independent copy of the object. For example, both the page and extension can assign to <code>window.onload</code>, but neither one can read the other's event handler. The event handlers are called in the order in which they were assigned.
 
 <h2 id="host-page-communication">Communication with the embedding page</h2>
 
