@@ -172,6 +172,8 @@ void OutdatedPluginInfoBarDelegate::Create(
     InfoBarService* infobar_service,
     PluginInstaller* installer,
     scoped_ptr<PluginMetadata> plugin_metadata) {
+  // Copy the name out of |plugin_metadata| now, since the Pass() call below
+  // will make it impossible to get at.
   string16 name(plugin_metadata->name());
   infobar_service->AddInfoBar(scoped_ptr<InfoBarDelegate>(
       new OutdatedPluginInfoBarDelegate(
@@ -293,9 +295,7 @@ void OutdatedPluginInfoBarDelegate::ReplaceWithInfoBar(
   // Return early if the message doesn't change. This is important in case the
   // PluginInstaller is still iterating over its observers (otherwise we would
   // keep replacing infobar delegates infinitely).
-  if (message_ == message)
-    return;
-  if (!owner())
+  if ((message_ == message) || !owner())
     return;
   PluginInstallerInfoBarDelegate::Replace(
       this, installer(), plugin_metadata_->Clone(), false, message);
@@ -396,7 +396,6 @@ bool PluginInstallerInfoBarDelegate::LinkClicked(
     url = google_util::AppendGoogleLocaleParam(GURL(
         "https://www.google.com/support/chrome/bin/answer.py?answer=142064"));
   }
-
   web_contents()->OpenURL(content::OpenURLParams(
       url, content::Referrer(),
       (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
@@ -436,9 +435,7 @@ void PluginInstallerInfoBarDelegate::ReplaceWithInfoBar(
   // Return early if the message doesn't change. This is important in case the
   // PluginInstaller is still iterating over its observers (otherwise we would
   // keep replacing infobar delegates infinitely).
-  if (message_ == message)
-    return;
-  if (!owner())
+  if ((message_ == message) || !owner())
     return;
   Replace(this, installer(), plugin_metadata_->Clone(), new_install_, message);
 }

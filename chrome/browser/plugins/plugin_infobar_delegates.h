@@ -23,11 +23,9 @@ class WebContents;
 
 // Base class for blocked plug-in infobars.
 class PluginInfoBarDelegate : public ConfirmInfoBarDelegate {
- public:
+ protected:
   PluginInfoBarDelegate(InfoBarService* infobar_service,
                         const std::string& identifier);
-
- protected:
   virtual ~PluginInfoBarDelegate();
 
   // ConfirmInfoBarDelegate:
@@ -50,7 +48,8 @@ class PluginInfoBarDelegate : public ConfirmInfoBarDelegate {
 // Infobar that's shown when a plug-in requires user authorization to run.
 class UnauthorizedPluginInfoBarDelegate : public PluginInfoBarDelegate {
  public:
-  // Creates an unauthorized plugin delegate and adds it to |infobar_service|.
+  // Creates an unauthorized plugin infobar delegate and adds it to
+  // |infobar_service|.
   static void Create(InfoBarService* infobar_service,
                      HostContentSettingsMap* content_settings,
                      const string16& name,
@@ -83,7 +82,8 @@ class UnauthorizedPluginInfoBarDelegate : public PluginInfoBarDelegate {
 class OutdatedPluginInfoBarDelegate : public PluginInfoBarDelegate,
                                       public WeakPluginInstallerObserver {
  public:
-  // Creates an outdated plugin delegate and adds it to |infobar_service|.
+  // Creates an outdated plugin infobar delegate and adds it to
+  // |infobar_service|.
   static void Create(InfoBarService* infobar_service,
                      PluginInstaller* installer,
                      scoped_ptr<PluginMetadata> metadata);
@@ -144,7 +144,7 @@ class PluginInstallerInfoBarDelegate : public ConfirmInfoBarDelegate,
   // the user to install or update a particular plugin.
   static void Replace(InfoBarDelegate* infobar,
                       PluginInstaller* installer,
-                      scoped_ptr<PluginMetadata> metadata,
+                      scoped_ptr<PluginMetadata> plugin_metadata,
                       bool new_install,
                       const string16& message);
 

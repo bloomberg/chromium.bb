@@ -403,7 +403,7 @@ void PluginObserver::OnNPAPINotSupported(const std::string& identifier) {
 
   scoped_ptr<PluginMetadata> plugin;
   bool ret = PluginFinder::GetInstance()->FindPluginWithIdentifier(
-          identifier, NULL, &plugin);
+      identifier, NULL, &plugin);
   DCHECK(ret);
 
   PluginMetroModeInfoBarDelegate::Create(
