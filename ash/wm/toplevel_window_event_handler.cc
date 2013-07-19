@@ -324,11 +324,13 @@ aura::client::WindowMoveResult ToplevelWindowEventHandler::RunMoveLoop(
     aura::Window::ConvertPointToTarget(
         root_window, source->parent(), &drag_location);
   }
-  CreateScopedWindowResizer(source, drag_location, HTCAPTION, move_source);
+  // Set the cursor before calling CreateScopedWindowResizer(), as that will
+  // eventually call LockCursor() and prevent the cursor from changing.
   aura::client::CursorClient* cursor_client =
       aura::client::GetCursorClient(root_window);
   if (cursor_client)
     cursor_client->SetCursor(ui::kCursorPointer);
+  CreateScopedWindowResizer(source, drag_location, HTCAPTION, move_source);
   bool destroyed = false;
   destroyed_ = &destroyed;
 #if !defined(OS_MACOSX)
