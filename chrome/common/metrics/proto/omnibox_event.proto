@@ -68,7 +68,8 @@ message OmniboxEventProto {
     HOMEPAGE = 3;       // user switched settings to "open this page" mode.
     // Note that if the homepage is set to the new tab page or about blank,
     // then we'll classify the web page into those categories, not HOMEPAGE.
-    OTHER = 4;          // everything else
+    OTHER = 4;          // everything not included somewhere else on this list
+    INSTANT_NEW_TAB_PAGE = 5;  // new tab page rendered by Instant
   }
   optional PageClassification current_page_classification = 10;
 

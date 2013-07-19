@@ -625,8 +625,7 @@ void OmniboxEditModel::OpenMatch(const AutocompleteMatch& match,
         autocomplete_controller()->input().type(),
         popup_model()->selected_line(),
         -1,  // don't yet know tab ID; set later if appropriate
-        delegate_->CurrentPageExists() ? ClassifyPage(delegate_->GetURL()) :
-            metrics::OmniboxEventProto_PageClassification_OTHER,
+        ClassifyPage(),
         elapsed_time_since_user_first_modified_omnibox,
         string16::npos,  // completed_length; possibly set later
         elapsed_time_since_last_change_to_default_match,
@@ -1266,7 +1265,12 @@ bool OmniboxEditModel::IsSpaceCharForAcceptingKeyword(wchar_t c) {
 }
 
 metrics::OmniboxEventProto::PageClassification
-    OmniboxEditModel::ClassifyPage(const GURL& gurl) const {
+    OmniboxEditModel::ClassifyPage() const {
+  if (!delegate_->CurrentPageExists())
+    return metrics::OmniboxEventProto_PageClassification_OTHER;
+  if (delegate_->IsInstantNTP())
+    return metrics::OmniboxEventProto_PageClassification_INSTANT_NEW_TAB_PAGE;
+  const GURL& gurl = delegate_->GetURL();
   if (!gurl.is_valid())
     return metrics::OmniboxEventProto_PageClassification_INVALID_SPEC;
   const std::string& url = gurl.spec();

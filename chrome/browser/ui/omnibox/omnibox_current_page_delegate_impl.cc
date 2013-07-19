@@ -10,6 +10,7 @@
 #include "chrome/browser/predictors/autocomplete_action_predictor.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search/search.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_controller.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
@@ -33,6 +34,10 @@ bool OmniboxCurrentPageDelegateImpl::CurrentPageExists() const {
 
 const GURL& OmniboxCurrentPageDelegateImpl::GetURL() const {
   return controller_->GetWebContents()->GetURL();
+}
+
+bool OmniboxCurrentPageDelegateImpl::IsInstantNTP() const {
+  return chrome::IsInstantNTP(controller_->GetWebContents());
 }
 
 bool OmniboxCurrentPageDelegateImpl::IsLoading() const {

@@ -389,8 +389,7 @@ class OmniboxEditModel {
   // page or a normal web page.  Used for logging omnibox events for
   // UMA opted-in users.  Examines the user's profile to determine if the
   // current page is the user's home page.
-  metrics::OmniboxEventProto::PageClassification ClassifyPage(
-      const GURL& gurl) const;
+  metrics::OmniboxEventProto::PageClassification ClassifyPage() const;
 
   // Sets |match| and |alternate_nav_url| based on classifying |text|.
   // |alternate_nav_url| may be NULL.
