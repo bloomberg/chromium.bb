@@ -15,8 +15,9 @@ class CC_EXPORT HeadsUpDisplayLayer : public ContentsScalingLayer {
  public:
   static scoped_refptr<HeadsUpDisplayLayer> Create();
 
-  virtual bool Update(ResourceUpdateQueue* queue,
-                      const OcclusionTracker* tracker) OVERRIDE;
+  void PrepareForCalculateDrawProperties(
+      gfx::Size device_viewport, float device_scale_factor);
+
   virtual bool DrawsContent() const OVERRIDE;
 
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)

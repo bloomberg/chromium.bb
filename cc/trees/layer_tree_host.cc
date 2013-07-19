@@ -702,6 +702,11 @@ bool LayerTreeHost::UpdateLayers(Layer* root_layer,
 
     Layer* root_scroll = FindFirstScrollableLayer(root_layer);
 
+    if (hud_layer_) {
+      hud_layer_->PrepareForCalculateDrawProperties(
+          device_viewport_size(), device_scale_factor_);
+    }
+
     TRACE_EVENT0("cc", "LayerTreeHost::UpdateLayers::CalcDrawProps");
     LayerTreeHostCommon::CalculateDrawProperties(
         root_layer,
