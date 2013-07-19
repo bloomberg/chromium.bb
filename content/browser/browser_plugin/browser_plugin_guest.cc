@@ -393,10 +393,6 @@ void BrowserPluginGuest::Initialize(
   // be attached.
   embedder_web_contents_ = embedder_web_contents;
 
-  WebContentsViewGuest* new_view =
-      static_cast<WebContentsViewGuest*>(GetWebContents()->GetView());
-  new_view->OnGuestInitialized(embedder_web_contents->GetView());
-
   // |render_view_host| manages the ownership of this BrowserPluginGuestHelper.
   new BrowserPluginGuestHelper(this, GetWebContents()->GetRenderViewHost());
 
@@ -438,7 +434,6 @@ void BrowserPluginGuest::Initialize(
       new BrowserPluginMsg_GuestContentWindowReady(instance_id_,
                                                    guest_routing_id));
 
-
   if (!params.src.empty())
     OnNavigateGuest(instance_id_, params.src);
 
@@ -458,7 +453,6 @@ void BrowserPluginGuest::Initialize(
         GetWebContents()->GetRenderViewHost());
     guest_rvh->SetInputMethodActive(true);
   }
-
 }
 
 BrowserPluginGuest::~BrowserPluginGuest() {

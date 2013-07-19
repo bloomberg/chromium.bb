@@ -36,8 +36,6 @@ class CONTENT_EXPORT WebContentsViewGuest
 
   WebContents* web_contents();
 
-  void OnGuestInitialized(WebContentsView* parent_view);
-
   // WebContentsView implementation --------------------------------------------
 
   virtual gfx::NativeView GetNativeView() const OVERRIDE;
