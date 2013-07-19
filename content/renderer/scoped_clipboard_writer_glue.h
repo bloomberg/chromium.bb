@@ -26,4 +26,5 @@ class ScopedClipboardWriterGlue
 };
 
 }  // namespace content
-#endif  // WEBKIT_GLUE_SCOPED_CLIPBOARD_WRITER_GLUE_H_
+
+#endif  // CONTENT_RENDERER_SCOPED_CLIPBOARD_WRITER_GLUE_H_
