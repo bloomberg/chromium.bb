@@ -203,31 +203,6 @@ class TestBackgroundTaskRunnerArgs(TestBackgroundWrapper):
     self.assertEquals(results.empty(), True)
 
 
-class TestFastPrinting(TestBackgroundWrapper):
-
-  def _FastPrinter(self):
-    # Writing lots of output quickly often reproduces bugs in this module
-    # because it can trigger race conditions.
-    for _ in range(_NUM_WRITES - 1):
-      sys.stdout.write('x' * _BUFSIZE)
-    sys.stdout.write('x' * (_BUFSIZE - 1) + '\n')
-
-  def _ParallelPrinter(self):
-    parallel.RunParallelSteps([self._FastPrinter] * _NUM_THREADS)
-
-  def _NestedParallelPrinter(self):
-    parallel.RunParallelSteps([self._ParallelPrinter])
-
-  def testSimpleParallelPrinter(self):
-    out = self.wrapOutputTest(self._ParallelPrinter)
-    self.assertEquals(len(out), _TOTAL_BYTES)
-
-  def testNestedParallelPrinter(self):
-    """Verify that no output is lost when lots of output is written."""
-    out = self.wrapOutputTest(self._NestedParallelPrinter)
-    self.assertEquals(len(out), _TOTAL_BYTES)
-
-
 class TestRunParallelSteps(cros_test_lib.TestCase):
   """Tests for RunParallelSteps."""
 
