@@ -103,12 +103,13 @@ static void failedAccessCheckCallbackInMainThread(v8::Local<v8::Object> host, v8
     if (!target)
         return;
     DOMWindow* targetWindow = target->domWindow();
-    targetWindow->printErrorMessage(targetWindow->crossDomainAccessErrorMessage(activeDOMWindow()));
 
     // Throw an exception for failed-access checks against Location objects, otherwise write to the console.
     WrapperTypeInfo* typeInfo = WrapperTypeInfo::unwrap(data);
     if (V8Location::info.equals(typeInfo))
-        setDOMException(SecurityError, v8::Isolate::GetCurrent());
+        setDOMException(SecurityError, targetWindow->crossDomainAccessErrorMessage(activeDOMWindow()), v8::Isolate::GetCurrent());
+    else
+        targetWindow->printErrorMessage(targetWindow->crossDomainAccessErrorMessage(activeDOMWindow()));
 }
 
 static bool codeGenerationCheckCallbackInMainThread(v8::Local<v8::Context> context)
