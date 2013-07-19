@@ -490,16 +490,16 @@ HistoryModel.prototype.requestPage = function(page) {
  * @param {Array} results A list of results.
  */
 HistoryModel.prototype.addResults = function(info, results) {
+  // If no requests are in flight then this was an old request so we drop the
+  // results. Double check the search term as well.
+  if (!this.inFlight_ || info.term != this.searchText_)
+    return;
+
   $('loading-spinner').hidden = true;
   this.inFlight_ = false;
   this.isQueryFinished_ = info.finished;
   this.queryStartTime = info.queryStartTime;
   this.queryEndTime = info.queryEndTime;
-
-  // If the results are not for the current search term then there is nothing
-  // more to do.
-  if (info.term != this.searchText_)
-    return;
 
   var lastVisit = this.visits_.slice(-1)[0];
   var lastDay = lastVisit ? lastVisit.dateRelativeDay : null;
