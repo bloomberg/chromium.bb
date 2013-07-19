@@ -46,7 +46,7 @@
           'CPU_CISC',
         ],
       }],
-      ['target_arch=="arm"', {
+      ['target_arch=="arm" or target_arch=="armv7"', {
         'defines': [
           # TODO(leozwang): CPU_RISC doesn't work properly on android/arm
           # platform for unknown reasons, need to investigate the root cause
