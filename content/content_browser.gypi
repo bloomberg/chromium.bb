@@ -277,6 +277,8 @@
     'browser/android/touch_point.h',
     'browser/android/tracing_intent_handler.cc',
     'browser/android/tracing_intent_handler.h',
+    'browser/android/vibration_message_filter.cc',
+    'browser/android/vibration_message_filter.h',
     'browser/android/web_contents_observer_android.cc',
     'browser/android/web_contents_observer_android.h',
     'browser/appcache/appcache_dispatcher_host.cc',

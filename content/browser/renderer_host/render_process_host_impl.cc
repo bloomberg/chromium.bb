@@ -133,6 +133,10 @@
 #include "webkit/glue/resource_type.h"
 #include "webkit/plugins/plugin_switches.h"
 
+#if defined(OS_ANDROID)
+#include "content/browser/android/vibration_message_filter.h"
+#endif
+
 #if defined(OS_WIN)
 #include "base/win/scoped_com_initializer.h"
 #include "content/common/font_cache_dispatcher_win.h"
@@ -720,6 +724,9 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableMemoryBenchmarking))
     channel_->AddFilter(new MemoryBenchmarkMessageFilter());
+#endif
+#if defined(OS_ANDROID)
+  channel_->AddFilter(new VibrationMessageFilter());
 #endif
 }
 

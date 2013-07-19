@@ -11,6 +11,7 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
 #include "base/platform_file.h"
+#include "base/safe_numerics.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/child/database_util.h"
@@ -1116,5 +1117,18 @@ WebKit::WebCrypto* RendererWebKitPlatformSupportImpl::crypto() {
   return web_crypto_.get();
 
 }
+
+//------------------------------------------------------------------------------
+
+#if defined(OS_ANDROID)
+void RendererWebKitPlatformSupportImpl::vibrate(unsigned int milliseconds) {
+  RenderThread::Get()->Send(
+      new ViewHostMsg_Vibrate(base::checked_numeric_cast<int64>(milliseconds)));
+}
+
+void RendererWebKitPlatformSupportImpl::cancelVibration() {
+  RenderThread::Get()->Send(new ViewHostMsg_CancelVibration());
+}
+#endif  // defined(OS_ANDROID)
 
 }  // namespace content

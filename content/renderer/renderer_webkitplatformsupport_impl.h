@@ -142,6 +142,11 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
       WebKit::WebDeviceMotionListener* listener) OVERRIDE;
   virtual WebKit::WebCrypto* crypto() OVERRIDE;
 
+#if defined(OS_ANDROID)
+  virtual void vibrate(unsigned int milliseconds);
+  virtual void cancelVibration();
+#endif  // defined(OS_ANDROID)
+
   // Disables the WebSandboxSupport implementation for testing.
   // Tests that do not set up a full sandbox environment should call
   // SetSandboxEnabledForTesting(false) _before_ creating any instances

@@ -2287,6 +2287,15 @@ IPC_MESSAGE_CONTROL3(ViewHostMsg_RunWebAudioMediaCodec,
 IPC_MESSAGE_ROUTED1(ViewHostMsg_SetNeedsBeginFrame,
                     bool /* enabled */)
 
+// Sent by the renderer to the browser to start a vibration with the given
+// duration.
+IPC_MESSAGE_CONTROL1(ViewHostMsg_Vibrate,
+                     int64 /* milliseconds */)
+
+// Sent by the renderer to the browser to cancel the currently running
+// vibration, if there is one.
+IPC_MESSAGE_CONTROL0(ViewHostMsg_CancelVibration)
+
 #elif defined(OS_MACOSX)
 // Request that the browser load a font into shared memory for us.
 IPC_SYNC_MESSAGE_CONTROL1_3(ViewHostMsg_LoadFont,
