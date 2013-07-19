@@ -211,7 +211,7 @@
         '../net/net.gyp:net_unittests',
         '../sql/sql.gyp:sql_unittests',
         '../ui/ui.gyp:ui_unittests',
-        '../url/url.gyp:googleurl_unittests',
+        '../url/url.gyp:url_unittests',
       ],
       'conditions': [
         ['OS!="ios"', {
@@ -515,7 +515,7 @@
             '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_unittests',
             '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber_unittests',
             '../ui/ui.gyp:ui_unittests',
-            '../url/url.gyp:googleurl_unittests',
+            '../url/url.gyp:url_unittests',
             '../webkit/renderer/compositor_bindings/compositor_bindings_tests.gyp:webkit_compositor_bindings_unittests',
           ],
         },
@@ -546,7 +546,7 @@
             '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_unittests',
             '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber_unittests',
             '../ui/ui.gyp:ui_unittests',
-            '../url/url.gyp:googleurl_unittests',
+            '../url/url.gyp:url_unittests',
             '../webkit/renderer/compositor_bindings/compositor_bindings_tests.gyp:webkit_compositor_bindings_unittests',
           ],
         },
@@ -565,7 +565,7 @@
             '../remoting/remoting.gyp:remoting_unittests',
             '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_unittests',
             '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber_unittests',
-            '../url/url.gyp:googleurl_unittests',
+            '../url/url.gyp:url_unittests',
           ],
         },
         {
@@ -598,7 +598,7 @@
             '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_unittests',
             '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber_unittests',
             '../ui/ui.gyp:ui_unittests',
-            '../url/url.gyp:googleurl_unittests',
+            '../url/url.gyp:url_unittests',
           ],
         },
       ],  # targets
@@ -643,7 +643,7 @@
             '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber_unittests',
             '../ui/ui.gyp:ui_unittests',
             '../ui/views/views.gyp:views_unittests',
-            '../url/url.gyp:googleurl_unittests',
+            '../url/url.gyp:url_unittests',
             '../webkit/renderer/compositor_bindings/compositor_bindings_tests.gyp:webkit_compositor_bindings_unittests',
             '../third_party/WebKit/Tools/DumpRenderTree/DumpRenderTree.gyp/DumpRenderTree.gyp:copy_TestNetscapePlugIn',
           ],
@@ -700,7 +700,7 @@
             '../sql/sql.gyp:sql_unittests',
             '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_unittests',
             '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber_unittests',
-            '../url/url.gyp:googleurl_unittests',
+            '../url/url.gyp:url_unittests',
           ],
         },
         {
@@ -724,7 +724,7 @@
             '../sql/sql.gyp:sql_unittests',
             '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_unittests',
             '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber_unittests',
-            '../url/url.gyp:googleurl_unittests',
+            '../url/url.gyp:url_unittests',
           ],
         },
         {

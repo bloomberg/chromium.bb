@@ -3145,7 +3145,7 @@
                 '../jingle/jingle.gyp:jingle_unittests',
                 '../net/net.gyp:net_perftests',
                 '../third_party/WebKit/public/all.gyp:all_blink',
-                '../url/url.gyp:googleurl_unittests',
+                '../url/url.gyp:url_unittests',
                 'browser_tests',
                 'chromedriver_unittests',
                 'gpu_tests',

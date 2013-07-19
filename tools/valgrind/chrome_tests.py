@@ -290,9 +290,6 @@ class ChromeTests:
   def TestGPU(self):
     return self.SimpleTest("gpu", "gpu_unittests")
 
-  def TestGURL(self):
-    return self.SimpleTest("chrome", "googleurl_unittests")
-
   def TestIpc(self):
     return self.SimpleTest("ipc", "ipc_tests",
                            valgrind_test_args=["--trace_children"])
@@ -537,7 +534,6 @@ class ChromeTests:
     "device": TestDevice,        "device_unittests": TestDevice,
     "ffmpeg": TestFFmpeg,        "ffmpeg_unittests": TestFFmpeg,
     "ffmpeg_regression_tests": TestFFmpegRegressions,
-    "googleurl": TestGURL,       "googleurl_unittests": TestGURL,
     "gpu": TestGPU,              "gpu_unittests": TestGPU,
     "ipc": TestIpc,              "ipc_tests": TestIpc,
     "interactive_ui": TestInteractiveUI,
