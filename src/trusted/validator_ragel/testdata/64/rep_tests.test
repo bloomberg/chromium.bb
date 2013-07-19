@@ -123,3 +123,29 @@
   return code: 1
 @spec:
   0: rep is only allowed with string instructions
+----------------------------------------------------------------------
+@hex:
+  # Despite maskmov it similar to string instruction
+  # in that it writes to es:rdi, ...
+  89 ff \\
+  49 8d 3c 3f \\
+  0f f7 d1
+  
+  # ... it does not admit REP prefix
+  89 ff \\
+  49 8d 3c 3f \\
+  f3 0f f7 d1
+@dis:
+     0:	89 ff                                        	mov    %edi,%edi
+     2:	49 8d 3c 3f                                  	lea    (%r15,%rdi,1),%rdi
+     6:	0f f7 d1                                     	maskmovq %mm1,%mm2
+     9:	89 ff                                        	mov    %edi,%edi
+     b:	49 8d 3c 3f                                  	lea    (%r15,%rdi,1),%rdi
+     f:	f3 0f f7                                     	(bad)  
+    12:	d1                                           	.byte 0xd1
+@rdfa_output:
+  f: [0] unrecognized instruction
+  return code: 1
+@spec:
+  f: ('objdump failed to decode', Instruction(0xf: f3 0f f7  (bad)))
+  12: ('objdump failed to decode', Instruction(0x12: d1  .byte 0xd1))
