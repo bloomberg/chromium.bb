@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 Martin Pieuchot <mpi@openbsd.org>
+ * Copyright © 2011 Martin Pieuchot <mpi@openbsd.org>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -89,15 +89,18 @@ static int _access_endpoint(struct libusb_transfer *);
 
 const struct usbi_os_backend openbsd_backend = {
 	"Synchronous OpenBSD backend",
+	0,
 	NULL,				/* init() */
 	NULL,				/* exit() */
 	obsd_get_device_list,
+	NULL,				/* hotplug_poll */
 	obsd_open,
 	obsd_close,
 
 	obsd_get_device_descriptor,
 	obsd_get_active_config_descriptor,
 	obsd_get_config_descriptor,
+	NULL,				/* get_config_descriptor_by_value() */
 
 	obsd_get_configuration,
 	obsd_set_configuration,
@@ -158,7 +161,9 @@ obsd_get_device_list(struct libusb_context * ctx,
 		session_id = (di.udi_bus << 8 | di.udi_addr);
 		dev = usbi_get_device_by_session_id(ctx, session_id);
 
-		if (dev == NULL) {
+		if (dev) {
+			dev = libusb_ref_device(dev);
+		} else {
 			dev = usbi_alloc_device(ctx, session_id);
 			if (dev == NULL)
 				return (LIBUSB_ERROR_NO_MEM);
@@ -189,6 +194,8 @@ obsd_get_device_list(struct libusb_context * ctx,
 
 		if (discovered_devs_append(*discdevs, dev) == NULL)
 			return (LIBUSB_ERROR_NO_MEM);
+
+		libusb_unref_device(dev);
 	}
 
 	return (LIBUSB_SUCCESS);
@@ -268,7 +275,7 @@ obsd_get_active_config_descriptor(struct libusb_device *dev,
 
 	*host_endian = 0;
 
-	return (LIBUSB_SUCCESS);
+	return len;
 }
 
 int
@@ -306,7 +313,7 @@ obsd_get_config_descriptor(struct libusb_device *dev, uint8_t idx,
 
 	*host_endian = 0;
 
-	return (LIBUSB_SUCCESS);
+	return len;
 }
 
 int
@@ -634,7 +641,7 @@ _sync_control_transfer(struct usbi_transfer *itransfer)
 
 	req.ucr_request.bmRequestType = setup->bmRequestType;
 	req.ucr_request.bRequest = setup->bRequest;
-	/* Don't use USETW, libusb already deals with the endianness */
+	/* Don't use USETW, libusbx already deals with the endianness */
 	(*(uint16_t *)req.ucr_request.wValue) = setup->wValue;
 	(*(uint16_t *)req.ucr_request.wIndex) = setup->wIndex;
 	(*(uint16_t *)req.ucr_request.wLength) = setup->wLength;

@@ -5,20 +5,35 @@
 #error "Please make sure the msvc/ directory is removed from your build path."
 #endif
 
+/* Disable: warning C4200: nonstandard extension used : zero-sized array in struct/union */
+#pragma warning(disable:4200)
+/* Disable: warning C6258: Using TerminateThread does not allow proper thread clean up */
+#pragma warning(disable: 6258)
+#if defined(_PREFAST_)
+/* Disable "Banned API" errors when using the MS's WDK OACR/Prefast */
+#pragma warning(disable:28719)
+/* Disable "The function 'InitializeCriticalSection' must be called from within a try/except block" */
+#pragma warning(disable:28125)
+#endif
+
 /* Default visibility */
 #define DEFAULT_VISIBILITY /**/
 
-/* Debug message logging */
-//#define ENABLE_DEBUG_LOGGING 1
-
-/* Message logging */
+/* Enable global message logging */
 #define ENABLE_LOGGING 1
 
-/* Windows backend */
-#define OS_WINDOWS 1
+/* Uncomment to start with debug message logging enabled */
+// #define ENABLE_DEBUG_LOGGING 1
 
 /* type of second poll() argument */
 #define POLL_NFDS_TYPE unsigned int
 
-/* no way to run git describe from MSVC? */
-#define LIBUSB_DESCRIBE ""
+/* Windows/WinCE backend */
+#if defined(_WIN32_WCE)
+#define OS_WINCE 1
+#define HAVE_MISSING_H
+#else
+#define OS_WINDOWS 1
+#define HAVE_SIGNAL_H 1
+#define HAVE_SYS_TYPES_H 1
+#endif
