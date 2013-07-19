@@ -32,7 +32,6 @@
 #define CustomElementCallbackDispatcher_h
 
 #include "core/dom/CustomElementCallbackQueue.h"
-#include "core/dom/CustomElementLifecycleCallbacks.h"
 #include "core/dom/Element.h"
 #include "wtf/HashMap.h"
 #include "wtf/OwnPtr.h"
@@ -66,15 +65,16 @@ public:
         size_t m_savedElementQueueStart;
     };
 
-    void enqueueAttributeChangedCallback(PassRefPtr<CustomElementLifecycleCallbacks>, PassRefPtr<Element>, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue);
-    void enqueueCreatedCallback(PassRefPtr<CustomElementLifecycleCallbacks>, PassRefPtr<Element>);
-    void enqueueEnteredDocumentCallback(PassRefPtr<CustomElementLifecycleCallbacks>, PassRefPtr<Element>);
-    void enqueueLeftDocumentCallback(PassRefPtr<CustomElementLifecycleCallbacks>, PassRefPtr<Element>);
-
     // Returns true if more work may have to be performed at the
     // checkpoint by this or other workers (for example, this work
     // invoked author scripts)
     bool dispatch();
+
+protected:
+    friend class CustomElementCallbackScheduler;
+
+    CustomElementCallbackQueue* createAtFrontOfCurrentElementQueue(PassRefPtr<Element>);
+    CustomElementCallbackQueue* ensureInCurrentElementQueue(PassRefPtr<Element>);
 
 private:
     CustomElementCallbackDispatcher()
@@ -107,7 +107,6 @@ private:
 
     CustomElementCallbackQueue* createCallbackQueue(PassRefPtr<Element>);
     CustomElementCallbackQueue* ensureCallbackQueue(PassRefPtr<Element>);
-    CustomElementCallbackQueue* scheduleInCurrentElementQueue(PassRefPtr<Element>);
 
     // The processing stack, flattened. Element queues lower in the
     // stack appear toward the head of the vector. The first element

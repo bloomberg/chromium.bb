@@ -47,49 +47,6 @@ CustomElementCallbackDispatcher& CustomElementCallbackDispatcher::instance()
     return instance;
 }
 
-void CustomElementCallbackDispatcher::enqueueAttributeChangedCallback(PassRefPtr<CustomElementLifecycleCallbacks> callbacks, PassRefPtr<Element> element, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue)
-{
-    if (!callbacks->hasAttributeChangedCallback())
-        return;
-
-    CustomElementCallbackQueue* queue = scheduleInCurrentElementQueue(element);
-    queue->append(CustomElementCallbackInvocation::createAttributeChangedInvocation(callbacks, name, oldValue, newValue));
-}
-
-void CustomElementCallbackDispatcher::enqueueCreatedCallback(PassRefPtr<CustomElementLifecycleCallbacks> callbacks, PassRefPtr<Element> element)
-{
-    if (!callbacks->hasCreatedCallback())
-        return;
-
-    CustomElementCallbackQueue* queue = createCallbackQueue(element);
-    queue->setOwner(currentElementQueue());
-
-    // The created callback is unique in being prepended to the front
-    // of the element queue
-    m_flattenedProcessingStack.insert(inCallbackDeliveryScope() ? s_elementQueueStart : /* skip null sentinel */ 1, queue);
-    ++s_elementQueueEnd;
-
-    queue->append(CustomElementCallbackInvocation::createInvocation(callbacks, CustomElementLifecycleCallbacks::Created));
-}
-
-void CustomElementCallbackDispatcher::enqueueEnteredDocumentCallback(PassRefPtr<CustomElementLifecycleCallbacks> callbacks, PassRefPtr<Element> element)
-{
-    if (!callbacks->hasEnteredDocumentCallback())
-        return;
-
-    CustomElementCallbackQueue* queue = scheduleInCurrentElementQueue(element);
-    queue->append(CustomElementCallbackInvocation::createInvocation(callbacks, CustomElementLifecycleCallbacks::EnteredDocument));
-}
-
-void CustomElementCallbackDispatcher::enqueueLeftDocumentCallback(PassRefPtr<CustomElementLifecycleCallbacks> callbacks, PassRefPtr<Element> element)
-{
-    if (!callbacks->hasLeftDocumentCallback())
-        return;
-
-    CustomElementCallbackQueue* queue = scheduleInCurrentElementQueue(element);
-    queue->append(CustomElementCallbackInvocation::createInvocation(callbacks, CustomElementLifecycleCallbacks::LeftDocument));
-}
-
 // Dispatches callbacks at microtask checkpoint.
 bool CustomElementCallbackDispatcher::dispatch()
 {
@@ -168,7 +125,7 @@ CustomElementCallbackQueue* CustomElementCallbackDispatcher::ensureCallbackQueue
 // its owner is set to the element queue on the top of the processing
 // stack. Because callback queues are processed exhaustively, this
 // effectively moves the callback queue to the top of the stack.
-CustomElementCallbackQueue* CustomElementCallbackDispatcher::scheduleInCurrentElementQueue(PassRefPtr<Element> element)
+CustomElementCallbackQueue* CustomElementCallbackDispatcher::ensureInCurrentElementQueue(PassRefPtr<Element> element)
 {
     CustomElementCallbackQueue* queue = ensureCallbackQueue(element);
     bool isInCurrentQueue = queue->owner() == currentElementQueue();
@@ -177,6 +134,19 @@ CustomElementCallbackQueue* CustomElementCallbackDispatcher::scheduleInCurrentEl
         m_flattenedProcessingStack.append(queue);
         ++s_elementQueueEnd;
     }
+    return queue;
+}
+
+CustomElementCallbackQueue* CustomElementCallbackDispatcher::createAtFrontOfCurrentElementQueue(PassRefPtr<Element> element)
+{
+    CustomElementCallbackQueue* queue = createCallbackQueue(element);
+    queue->setOwner(currentElementQueue());
+
+    // The created callback is unique in being prepended to the front
+    // of the element queue
+    m_flattenedProcessingStack.insert(inCallbackDeliveryScope() ? s_elementQueueStart : /* skip null sentinel */ 1, queue);
+    ++s_elementQueueEnd;
+
     return queue;
 }
 

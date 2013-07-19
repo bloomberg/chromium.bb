@@ -34,7 +34,7 @@
 #include "HTMLNames.h"
 #include "MathMLNames.h"
 #include "SVGNames.h"
-#include "core/dom/CustomElementCallbackDispatcher.h"
+#include "core/dom/CustomElementCallbackScheduler.h"
 #include "core/dom/CustomElementDefinition.h"
 #include "core/dom/CustomElementRegistry.h"
 #include "core/dom/CustomElementUpgradeCandidateMap.h"
@@ -169,7 +169,7 @@ void ActiveRegistrationContext::resolve(Element* element)
 
 void ActiveRegistrationContext::didResolveElement(CustomElementDefinition* definition, Element* element)
 {
-    CustomElementCallbackDispatcher::instance().enqueueCreatedCallback(definition->callbacks(), element);
+    CustomElementCallbackScheduler::scheduleCreatedCallback(definition->callbacks(), element);
 }
 
 void ActiveRegistrationContext::didCreateUnresolvedElement(const CustomElementDescriptor& descriptor, Element* element)
@@ -188,21 +188,21 @@ void ActiveRegistrationContext::customElementAttributeDidChange(Element* element
 {
     ASSERT(element->isUpgradedCustomElement());
     CustomElementDefinition* definition = definitionFor(element);
-    CustomElementCallbackDispatcher::instance().enqueueAttributeChangedCallback(definition->callbacks(), element, name, oldValue, newValue);
+    CustomElementCallbackScheduler::scheduleAttributeChangedCallback(definition->callbacks(), element, name, oldValue, newValue);
 }
 
 void ActiveRegistrationContext::customElementDidEnterDocument(Element* element)
 {
     ASSERT(element->isUpgradedCustomElement());
     CustomElementDefinition* definition = definitionFor(element);
-    CustomElementCallbackDispatcher::instance().enqueueEnteredDocumentCallback(definition->callbacks(), element);
+    CustomElementCallbackScheduler::scheduleEnteredDocumentCallback(definition->callbacks(), element);
 }
 
 void ActiveRegistrationContext::customElementDidLeaveDocument(Element* element)
 {
     ASSERT(element->isUpgradedCustomElement());
     CustomElementDefinition* definition = definitionFor(element);
-    CustomElementCallbackDispatcher::instance().enqueueLeftDocumentCallback(definition->callbacks(), element);
+    CustomElementCallbackScheduler::scheduleLeftDocumentCallback(definition->callbacks(), element);
 }
 
 void ActiveRegistrationContext::customElementIsBeingDestroyed(Element* element)

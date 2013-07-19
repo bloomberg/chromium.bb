@@ -31,7 +31,8 @@
 #include "config.h"
 #include "core/dom/CustomElementCallbackInvocation.h"
 
-#include "core/dom/CustomElementCallbackDispatcher.h"
+#include "core/dom/CustomElementCallbackScheduler.h"
+#include "core/dom/Element.h"
 
 namespace WebCore {
 
@@ -49,7 +50,7 @@ private:
 void CreatedInvocation::dispatch(Element* element)
 {
     if (element->inDocument())
-        CustomElementCallbackDispatcher::instance().enqueueEnteredDocumentCallback(callbacks(), element);
+        CustomElementCallbackScheduler::scheduleEnteredDocumentCallback(callbacks(), element);
     callbacks()->created(element);
 }
 

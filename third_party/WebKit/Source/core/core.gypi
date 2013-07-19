@@ -1731,6 +1731,8 @@
             'dom/CustomElementCallbackInvocation.h',
             'dom/CustomElementCallbackQueue.cpp',
             'dom/CustomElementCallbackQueue.h',
+            'dom/CustomElementCallbackScheduler.cpp',
+            'dom/CustomElementCallbackScheduler.h',
             'dom/CustomElementDefinition.cpp',
             'dom/CustomElementDefinition.h',
             'dom/CustomElementDescriptor.h',
