@@ -159,14 +159,6 @@ public:
         return m_impl->length();
     }
 
-    // FIXME: Remove all the callers of bloatedCharacters().
-    const UChar* bloatedCharacters() const
-    {
-        if (!m_impl)
-            return 0;
-        return m_impl->bloatedCharacters();
-    }
-
     const LChar* characters8() const
     {
         if (!m_impl)
@@ -307,6 +299,7 @@ public:
     void append(const LChar*, unsigned length);
     void append(const UChar*, unsigned length);
     void insert(const String&, unsigned pos);
+    void insert(const LChar*, unsigned length, unsigned pos);
     void insert(const UChar*, unsigned length, unsigned pos);
 
     String& replace(UChar a, UChar b) { if (m_impl) m_impl = m_impl->replace(a, b); return *this; }
@@ -636,7 +629,7 @@ inline bool String::isAllSpecialCharacters() const
 
     if (is8Bit())
         return WTF::isAllSpecialCharacters<isSpecialCharacter, LChar>(characters8(), len);
-    return WTF::isAllSpecialCharacters<isSpecialCharacter, UChar>(bloatedCharacters(), len);
+    return WTF::isAllSpecialCharacters<isSpecialCharacter, UChar>(characters16(), len);
 }
 
 template<size_t inlineCapacity>

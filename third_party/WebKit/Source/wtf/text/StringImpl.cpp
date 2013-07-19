@@ -438,38 +438,6 @@ PassRefPtr<StringImpl> StringImpl::create(const LChar* string)
     return create(string, length);
 }
 
-const UChar* StringImpl::getData16SlowCase() const
-{
-    if (has16BitShadow())
-        return m_copyData16;
-
-    if (bufferOwnership() == BufferSubstring) {
-        // If this is a substring, return a pointer into the parent string.
-        // TODO: Consider severing this string from the parent string
-        unsigned offset = m_data8 - m_substringBuffer->characters8();
-        return m_substringBuffer->bloatedCharacters() + offset;
-    }
-
-    STRING_STATS_ADD_UPCONVERTED_STRING(m_length);
-
-    unsigned length = this->length();
-    m_copyData16 = static_cast<UChar*>(fastMalloc(length * sizeof(UChar)));
-    m_hashAndFlags |= s_hashFlagHas16BitShadow;
-    upconvertCharacters(0, length);
-
-    return m_copyData16;
-}
-
-void StringImpl::upconvertCharacters(unsigned start, unsigned end) const
-{
-    ASSERT(is8Bit());
-    ASSERT(has16BitShadow());
-
-    for (size_t i = start; i < end; ++i)
-        m_copyData16[i] = m_data8[i];
-}
-
-
 bool StringImpl::containsOnlyWhitespace()
 {
     // FIXME: The definition of whitespace here includes a number of characters
@@ -661,7 +629,14 @@ PassRefPtr<StringImpl> StringImpl::upper()
     }
 
 upconvert:
-    const UChar* source16 = bloatedCharacters();
+    const UChar* source16 = 0;
+    RefPtr<StringImpl> upconverted;
+    if (is8Bit()) {
+        upconverted = String::make16BitFrom8BitSource(characters8(), m_length).impl();
+        source16 = upconverted->characters16();
+    } else {
+        source16 = characters16();
+    }
 
     UChar* data16;
     RefPtr<StringImpl> newImpl = createUninitialized(m_length, data16);
@@ -1044,7 +1019,7 @@ size_t StringImpl::find(const LChar* matchString, unsigned index)
     // delta is the number of additional times to test; delta == 0 means test only once.
     unsigned delta = searchLength - matchLength;
 
-    const UChar* searchCharacters = bloatedCharacters() + index;
+    const UChar* searchCharacters = characters16() + index;
 
     // Optimization 2: keep a running hash of the strings,
     // only call equal if the hashes match.
@@ -1067,6 +1042,21 @@ size_t StringImpl::find(const LChar* matchString, unsigned index)
     return index + i;
 }
 
+template<typename CharType>
+ALWAYS_INLINE size_t findIgnoringCaseInternal(const CharType* searchCharacters, const LChar* matchString, unsigned index, unsigned searchLength, unsigned matchLength)
+{
+    // delta is the number of additional times to test; delta == 0 means test only once.
+    unsigned delta = searchLength - matchLength;
+
+    unsigned i = 0;
+    while (!equalIgnoringCase(searchCharacters + i, matchString, matchLength)) {
+        if (i == delta)
+            return notFound;
+        ++i;
+    }
+    return index + i;
+}
+
 size_t StringImpl::findIgnoringCase(const LChar* matchString, unsigned index)
 {
     // Check for null or empty string to match against
@@ -1084,23 +1074,14 @@ size_t StringImpl::findIgnoringCase(const LChar* matchString, unsigned index)
     unsigned searchLength = length() - index;
     if (matchLength > searchLength)
         return notFound;
-    // delta is the number of additional times to test; delta == 0 means test only once.
-    unsigned delta = searchLength - matchLength;
 
-    const UChar* searchCharacters = bloatedCharacters() + index;
-
-    unsigned i = 0;
-    // keep looping until we match
-    while (!equalIgnoringCase(searchCharacters + i, matchString, matchLength)) {
-        if (i == delta)
-            return notFound;
-        ++i;
-    }
-    return index + i;
+    if (is8Bit())
+        return findIgnoringCaseInternal(characters8() + index, matchString, index, searchLength, matchLength);
+    return findIgnoringCaseInternal(characters16() + index, matchString, index, searchLength, matchLength);
 }
 
 template <typename SearchCharacterType, typename MatchCharacterType>
-ALWAYS_INLINE static size_t findInner(const SearchCharacterType* searchCharacters, const MatchCharacterType* matchCharacters, unsigned index, unsigned searchLength, unsigned matchLength)
+ALWAYS_INLINE static size_t findInternal(const SearchCharacterType* searchCharacters, const MatchCharacterType* matchCharacters, unsigned index, unsigned searchLength, unsigned matchLength)
 {
     // Optimization: keep a running hash of the strings,
     // only call equal() if the hashes match.
@@ -1157,14 +1138,14 @@ size_t StringImpl::find(StringImpl* matchString)
 
     if (is8Bit()) {
         if (matchString->is8Bit())
-            return findInner(characters8(), matchString->characters8(), 0, length(), matchLength);
-        return findInner(characters8(), matchString->characters16(), 0, length(), matchLength);
+            return findInternal(characters8(), matchString->characters8(), 0, length(), matchLength);
+        return findInternal(characters8(), matchString->characters16(), 0, length(), matchLength);
     }
 
     if (matchString->is8Bit())
-        return findInner(characters16(), matchString->characters8(), 0, length(), matchLength);
+        return findInternal(characters16(), matchString->characters8(), 0, length(), matchLength);
 
-    return findInner(characters16(), matchString->characters16(), 0, length(), matchLength);
+    return findInternal(characters16(), matchString->characters16(), 0, length(), matchLength);
 }
 
 size_t StringImpl::find(StringImpl* matchString, unsigned index)
@@ -1194,14 +1175,14 @@ size_t StringImpl::find(StringImpl* matchString, unsigned index)
 
     if (is8Bit()) {
         if (matchString->is8Bit())
-            return findInner(characters8() + index, matchString->characters8(), index, searchLength, matchLength);
-        return findInner(characters8() + index, matchString->characters16(), index, searchLength, matchLength);
+            return findInternal(characters8() + index, matchString->characters8(), index, searchLength, matchLength);
+        return findInternal(characters8() + index, matchString->characters16(), index, searchLength, matchLength);
     }
 
     if (matchString->is8Bit())
-        return findInner(characters16() + index, matchString->characters8(), index, searchLength, matchLength);
+        return findInternal(characters16() + index, matchString->characters8(), index, searchLength, matchLength);
 
-    return findInner(characters16() + index, matchString->characters16(), index, searchLength, matchLength);
+    return findInternal(characters16() + index, matchString->characters16(), index, searchLength, matchLength);
 }
 
 template <typename SearchCharacterType, typename MatchCharacterType>
@@ -1530,7 +1511,7 @@ PassRefPtr<StringImpl> StringImpl::replace(unsigned position, unsigned lengthToR
         for (unsigned i = 0; i < length() - position - lengthToReplace; ++i)
             data[i + position + lengthToInsert] = m_data8[i + position + lengthToReplace];
     } else {
-        memcpy(data + position + lengthToInsert, bloatedCharacters() + position + lengthToReplace,
+        memcpy(data + position + lengthToInsert, characters16() + position + lengthToReplace,
             (length() - position - lengthToReplace) * sizeof(UChar));
     }
     return newImpl.release();

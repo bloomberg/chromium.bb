@@ -42,7 +42,6 @@ public:
         : m_bufferCharacters8(0)
         , m_length(0)
         , m_is8Bit(true)
-        , m_valid16BitShadowLength(0)
     {
     }
 
@@ -255,7 +254,6 @@ public:
         m_buffer = 0;
         m_bufferCharacters8 = 0;
         m_is8Bit = true;
-        m_valid16BitShadowLength = 0;
     }
 
     void swap(StringBuilder& stringBuilder)
@@ -264,7 +262,6 @@ public:
         m_string.swap(stringBuilder.m_string);
         m_buffer.swap(stringBuilder.m_buffer);
         std::swap(m_is8Bit, stringBuilder.m_is8Bit);
-        std::swap(m_valid16BitShadowLength, stringBuilder.m_valid16BitShadowLength);
         std::swap(m_bufferCharacters8, stringBuilder.m_bufferCharacters8);
     }
 
@@ -290,7 +287,6 @@ private:
     };
     unsigned m_length;
     bool m_is8Bit;
-    mutable unsigned m_valid16BitShadowLength;
 };
 
 template <>

@@ -186,9 +186,12 @@ struct HashAndUTF8CharactersTranslator {
 
         // If buffer contains only ASCII characters UTF-8 and UTF16 length are the same.
         if (buffer.utf16Length != buffer.length) {
-            const UChar* stringCharacters = string->bloatedCharacters();
-
-            return equalUTF16WithUTF8(stringCharacters, stringCharacters + string->length(), buffer.characters, buffer.characters + buffer.length);
+            if (string->is8Bit()) {
+                const LChar* characters8 = string->characters8();
+                return equalLatin1WithUTF8(characters8, characters8 + string->length(), buffer.characters, buffer.characters + buffer.length);
+            }
+            const UChar* characters16 = string->characters16();
+            return equalUTF16WithUTF8(characters16, characters16 + string->length(), buffer.characters, buffer.characters + buffer.length);
         }
 
         if (string->is8Bit()) {
@@ -282,12 +285,16 @@ struct SubstringLocation {
 struct SubstringTranslator {
     static unsigned hash(const SubstringLocation& buffer)
     {
-        return StringHasher::computeHashAndMaskTop8Bits(buffer.baseString->bloatedCharacters() + buffer.start, buffer.length);
+        if (buffer.baseString->is8Bit())
+            return StringHasher::computeHashAndMaskTop8Bits(buffer.baseString->characters8() + buffer.start, buffer.length);
+        return StringHasher::computeHashAndMaskTop8Bits(buffer.baseString->characters16() + buffer.start, buffer.length);
     }
 
     static bool equal(StringImpl* const& string, const SubstringLocation& buffer)
     {
-        return WTF::equal(string, buffer.baseString->bloatedCharacters() + buffer.start, buffer.length);
+        if (buffer.baseString->is8Bit())
+            return WTF::equal(string, buffer.baseString->characters8() + buffer.start, buffer.length);
+        return WTF::equal(string, buffer.baseString->characters16() + buffer.start, buffer.length);
     }
 
     static void translate(StringImpl*& location, const SubstringLocation& buffer, unsigned hash)

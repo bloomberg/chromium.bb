@@ -416,16 +416,8 @@ public:
     bool hasOwnedBuffer() const { return bufferOwnership() == BufferOwned; }
     StringImpl* baseString() const { return bufferOwnership() == BufferSubstring ? m_substringBuffer : 0; }
 
-    // FIXME: Remove all unnecessary usages of bloatedCharacters()
     ALWAYS_INLINE const LChar* characters8() const { ASSERT(is8Bit()); return m_data8; }
     ALWAYS_INLINE const UChar* characters16() const { ASSERT(!is8Bit()); return m_data16; }
-    ALWAYS_INLINE const UChar* bloatedCharacters() const
-    {
-        if (!is8Bit())
-            return m_data16;
-
-        return getData16SlowCase();
-    }
 
     template <typename CharType>
     ALWAYS_INLINE const CharType * getCharacters() const;
@@ -446,7 +438,6 @@ public:
     size_t sizeInBytes() const;
 
     bool has16BitShadow() const { return m_hashAndFlags & s_hashFlagHas16BitShadow; }
-    void upconvertCharacters(unsigned, unsigned) const;
 
     bool isEmptyUnique() const
     {
@@ -540,6 +531,7 @@ public:
             return;
         }
 
+        // FIXME: Is this implementation really faster than memcpy?
         if (numCharacters <= s_copyCharsInlineCutOff) {
             unsigned i = 0;
 #if (CPU(X86) || CPU(X86_64))
@@ -684,7 +676,6 @@ private:
     BufferOwnership bufferOwnership() const { return static_cast<BufferOwnership>(m_hashAndFlags & s_hashMaskBufferOwnership); }
     template <class UCharPredicate> PassRefPtr<StringImpl> stripMatchedCharacters(UCharPredicate);
     template <typename CharType, class UCharPredicate> PassRefPtr<StringImpl> simplifyMatchedCharactersToSpace(UCharPredicate);
-    NEVER_INLINE const UChar* getData16SlowCase() const;
     NEVER_INLINE unsigned hashSlowCase() const;
 
     // The bottom bit in the ref count indicates a static (immortal) string.
@@ -751,7 +742,7 @@ template <>
 ALWAYS_INLINE const LChar* StringImpl::getCharacters<LChar>() const { return characters8(); }
 
 template <>
-ALWAYS_INLINE const UChar* StringImpl::getCharacters<UChar>() const { return bloatedCharacters(); }
+ALWAYS_INLINE const UChar* StringImpl::getCharacters<UChar>() const { return characters16(); }
 
 WTF_EXPORT bool equal(const StringImpl*, const StringImpl*);
 WTF_EXPORT bool equal(const StringImpl*, const LChar*);
@@ -946,7 +937,9 @@ bool equalIgnoringNullity(const Vector<UChar, inlineCapacity>& a, StringImpl* b)
         return !a.size();
     if (a.size() != b->length())
         return false;
-    return !memcmp(a.data(), b->bloatedCharacters(), b->length() * sizeof(UChar));
+    if (b->is8Bit())
+        return equal(a.data(), b->characters8(), b->length());
+    return equal(a.data(), b->characters16(), b->length());
 }
 
 template<typename CharacterType1, typename CharacterType2>

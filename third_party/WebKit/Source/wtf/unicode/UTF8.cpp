@@ -418,7 +418,8 @@ unsigned calculateStringHashAndLengthFromUTF8MaskingTop8Bits(const char* data, c
     return stringHasher.hashWithTop8BitsMasked();
 }
 
-bool equalUTF16WithUTF8(const UChar* a, const UChar* aEnd, const char* b, const char* bEnd)
+template<typename CharType>
+ALWAYS_INLINE bool equalWithUTF8Internal(const CharType* a, const CharType* aEnd, const char* b, const char* bEnd)
 {
     while (b < bEnd) {
         if (isASCII(*b)) {
@@ -454,6 +455,16 @@ bool equalUTF16WithUTF8(const UChar* a, const UChar* aEnd, const char* b, const 
     }
 
     return a == aEnd;
+}
+
+bool equalUTF16WithUTF8(const UChar* a, const UChar* aEnd, const char* b, const char* bEnd)
+{
+    return equalWithUTF8Internal(a, aEnd, b, bEnd);
+}
+
+bool equalLatin1WithUTF8(const LChar* a, const LChar* aEnd, const char* b, const char* bEnd)
+{
+    return equalWithUTF8Internal(a, aEnd, b, bEnd);
 }
 
 } // namespace Unicode
