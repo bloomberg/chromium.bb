@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
-#include "content/child/npobject_stub.h"
+#include "content/child/npapi/npobject_stub.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "third_party/npapi/bindings/npapi.h"

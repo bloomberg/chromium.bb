@@ -10,7 +10,7 @@
 #include "base/memory/scoped_handle.h"
 #include "base/process.h"
 #include "build/build_config.h"
-#include "content/child/np_channel_base.h"
+#include "content/child/npapi/np_channel_base.h"
 #include "content/plugin/webplugin_delegate_stub.h"
 
 namespace base {

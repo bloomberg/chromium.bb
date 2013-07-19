@@ -4,8 +4,8 @@
 //
 // Helper functions that are used by the NPObject proxy and stub.
 
-#ifndef CONTENT_CHILD_NPOBJECT_UTIL_H_
-#define CONTENT_CHILD_NPOBJECT_UTIL_H_
+#ifndef CONTENT_NPAPI_CHILD_NPOBJECT_UTIL_H_
+#define CONTENT_NPAPI_CHILD_NPOBJECT_UTIL_H_
 
 #include "build/build_config.h"
 
@@ -13,7 +13,7 @@
 #include <windows.h>
 #endif
 
-#include "content/child/npobject_stub.h"
+#include "content/child/npapi/npobject_stub.h"
 
 class GURL;
 
@@ -71,4 +71,4 @@ HANDLE GetMessageBoxEvent(HWND hwnd);
 
 }  // namespace content
 
-#endif  // CONTENT_CHILD_NPOBJECT_UTIL_H_
+#endif  // CONTENT_NPAPI_CHILD_NPOBJECT_UTIL_H_

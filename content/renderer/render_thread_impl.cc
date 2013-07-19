@@ -31,7 +31,7 @@
 #include "content/child/db_message_filter.h"
 #include "content/child/indexed_db/indexed_db_dispatcher.h"
 #include "content/child/indexed_db/indexed_db_message_filter.h"
-#include "content/child/npobject_util.h"
+#include "content/child/npapi/npobject_util.h"
 #include "content/child/plugin_messages.h"
 #include "content/child/resource_dispatcher.h"
 #include "content/child/runtime_features.h"
@@ -116,7 +116,7 @@
 #else
 // TODO(port)
 #include "base/memory/scoped_handle.h"
-#include "content/child/np_channel_base.h"
+#include "content/child/npapi/np_channel_base.h"
 #endif
 
 #if defined(OS_POSIX)

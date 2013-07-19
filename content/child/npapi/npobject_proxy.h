@@ -5,11 +5,11 @@
 // A proxy for NPObject that sends all calls to the object to an NPObjectStub
 // running in a different process.
 
-#ifndef CONTENT_CHILD_NPOBJECT_PROXY_H_
-#define CONTENT_CHILD_NPOBJECT_PROXY_H_
+#ifndef CONTENT_CHILD_NPAPI_NPOBJECT_PROXY_H_
+#define CONTENT_CHILD_NPAPI_NPOBJECT_PROXY_H_
 
 #include "base/memory/ref_counted.h"
-#include "content/child/npobject_base.h"
+#include "content/child/npapi/npobject_base.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "third_party/npapi/bindings/npruntime.h"
@@ -125,4 +125,4 @@ class NPObjectProxy : public IPC::Listener,
 
 }  // namespace content
 
-#endif  // CONTENT_CHILD_NPOBJECT_PROXY_H_
+#endif  // CONTENT_CHILD_NPAPI_NPOBJECT_PROXY_H_

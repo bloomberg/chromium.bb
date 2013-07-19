@@ -6,7 +6,6 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "content/child/npapi/plugin_host.h"
-#include "content/child/npruntime_util.h"
 #include "ipc/ipc_message_utils.h"
 #include "third_party/WebKit/public/web/WebBindings.h"
 

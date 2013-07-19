@@ -6,7 +6,7 @@
 #define CONTENT_RENDERER_JAVA_JAVA_BRIDGE_CHANNEL_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "content/child/np_channel_base.h"
+#include "content/child/npapi/np_channel_base.h"
 #include "ipc/ipc_channel_handle.h"
 
 namespace content {

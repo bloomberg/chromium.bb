@@ -16,7 +16,7 @@
 #include "content/child/database_util.h"
 #include "content/child/fileapi/webfilesystem_impl.h"
 #include "content/child/indexed_db/proxy_webidbfactory_impl.h"
-#include "content/child/npobject_util.h"
+#include "content/child/npapi/npobject_util.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/child/webblobregistry_impl.h"
 #include "content/child/webmessageportchannel_impl.h"

@@ -15,7 +15,8 @@
 #define CONTENT_CHILD_PLUGIN_PARAM_TRAITS_H_
 
 #include <string>
-#include "content/child/npruntime_util.h"
+
+#include "content/child/npapi/npruntime_util.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_param_traits.h"
 

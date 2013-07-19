@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/child/npobject_stub.h"
+#include "content/child/npapi/npobject_stub.h"
 
-#include "content/child/np_channel_base.h"
+#include "content/child/npapi/np_channel_base.h"
+#include "content/child/npapi/npobject_util.h"
 #include "content/child/npapi/plugin_host.h"
-#include "content/child/npobject_util.h"
 #include "content/child/plugin_messages.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"

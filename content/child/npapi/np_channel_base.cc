@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/child/np_channel_base.h"
+#include "content/child/npapi/np_channel_base.h"
 
 #include <stack>
 

@@ -5,7 +5,7 @@
 #include "content/renderer/java/java_bridge_dispatcher.h"
 
 #include "content/child/child_process.h"
-#include "content/child/npobject_util.h"  // For CreateNPVariant()
+#include "content/child/npapi/npobject_util.h"  // For CreateNPVariant()
 #include "content/common/java_bridge_messages.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"

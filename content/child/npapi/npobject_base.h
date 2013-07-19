@@ -5,8 +5,8 @@
 // Base interface used by NPChannelBase and implemented by NPObjectProxy and
 // NPObjectStub.
 
-#ifndef CONTENT_CHILD_NPOBJECT_BASE_H_
-#define CONTENT_CHILD_NPOBJECT_BASE_H_
+#ifndef CONTENT_CHILD_NPAPI_NPOBJECT_BASE_H_
+#define CONTENT_CHILD_NPAPI_NPOBJECT_BASE_H_
 
 #include "ipc/ipc_listener.h"
 #include "third_party/npapi/bindings/npruntime.h"
@@ -28,4 +28,4 @@ class NPObjectBase {
 
 }  // namespace content
 
-#endif  // CONTENT_CHILD_NPOBJECT_BASE_H_
+#endif  // CONTENT_CHILD_NPAPI_NPOBJECT_BASE_H_
