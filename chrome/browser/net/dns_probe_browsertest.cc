@@ -467,8 +467,7 @@ IN_PROC_BROWSER_TEST_F(DnsProbeBrowserTest,
 // Double-check to make sure sync failures don't explode.
 IN_PROC_BROWSER_TEST_F(DnsProbeBrowserTest, SyncFailureWithBrokenLinkDoctor) {
   SetLinkDoctorBroken(true);
-  SetMockDnsClientRules(MockDnsClientRule::FAIL_SYNC,
-                        MockDnsClientRule::FAIL_SYNC);
+  SetMockDnsClientRules(MockDnsClientRule::FAIL, MockDnsClientRule::FAIL);
 
   NavigateToDnsError();
 

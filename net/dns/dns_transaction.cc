@@ -553,32 +553,25 @@ class DnsTransactionImpl : public DnsTransaction,
     return qtype_;
   }
 
-  virtual int Start() OVERRIDE {
+  virtual void Start() OVERRIDE {
     DCHECK(!callback_.is_null());
     DCHECK(attempts_.empty());
     net_log_.BeginEvent(NetLog::TYPE_DNS_TRANSACTION,
                         base::Bind(&NetLogStartCallback, &hostname_, qtype_));
-    int rv = PrepareSearch();
-    if (rv == OK) {
+    AttemptResult result(PrepareSearch(), NULL);
+    if (result.rv == OK) {
       qnames_initial_size_ = qnames_.size();
       if (qtype_ == dns_protocol::kTypeA)
         UMA_HISTOGRAM_COUNTS("AsyncDNS.SuffixSearchStart", qnames_.size());
-      AttemptResult result = ProcessAttemptResult(StartQuery());
-      if (result.rv == OK) {
-        // DnsTransaction must never succeed synchronously.
-        base::MessageLoop::current()->PostTask(
-            FROM_HERE,
-            base::Bind(&DnsTransactionImpl::DoCallback, AsWeakPtr(), result));
-        return ERR_IO_PENDING;
-      }
-      rv = result.rv;
+      result = ProcessAttemptResult(StartQuery());
     }
-    if (rv != ERR_IO_PENDING) {
-      callback_.Reset();
-      net_log_.EndEventWithNetErrorCode(NetLog::TYPE_DNS_TRANSACTION, rv);
+
+    // Must always return result asynchronously, to avoid reentrancy.
+    if (result.rv != ERR_IO_PENDING) {
+      base::MessageLoop::current()->PostTask(
+          FROM_HERE,
+          base::Bind(&DnsTransactionImpl::DoCallback, AsWeakPtr(), result));
     }
-    DCHECK_NE(OK, rv);
-    return rv;
   }
 
  private:

@@ -250,12 +250,7 @@ class TransactionHelper {
         BoundNetLog());
     EXPECT_EQ(hostname_, transaction_->GetHostname());
     EXPECT_EQ(qtype_, transaction_->GetType());
-    int rv = transaction_->Start();
-    if (rv != ERR_IO_PENDING) {
-      EXPECT_NE(OK, rv);
-      EXPECT_EQ(expected_answer_count_, rv);
-      completed_ = true;
-    }
+    transaction_->Start();
   }
 
   void Cancel() {
@@ -748,7 +743,7 @@ TEST_F(DnsTransactionTest, EmptySuffixSearch) {
   TransactionHelper helper1("singlelabel", dns_protocol::kTypeA,
                             ERR_DNS_SEARCH_EMPTY);
 
-  helper1.StartTransaction(transaction_factory_.get());
+  helper1.Run(transaction_factory_.get());
   EXPECT_TRUE(helper1.has_completed());
 }
 

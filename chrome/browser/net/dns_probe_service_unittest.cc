@@ -95,18 +95,18 @@ TEST_F(DnsProbeServiceTest, Probe_TIMEOUT_TIMEOUT) {
           chrome_common_net::DNS_PROBE_FINISHED_NO_INTERNET);
 }
 
-TEST_F(DnsProbeServiceTest, Probe_OK_FAIL_SYNC) {
-  RunTest(MockDnsClientRule::OK, MockDnsClientRule::FAIL_SYNC,
+TEST_F(DnsProbeServiceTest, Probe_OK_FAIL) {
+  RunTest(MockDnsClientRule::OK, MockDnsClientRule::FAIL,
           chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
 }
 
-TEST_F(DnsProbeServiceTest, Probe_FAIL_SYNC_OK) {
-  RunTest(MockDnsClientRule::FAIL_SYNC, MockDnsClientRule::OK,
+TEST_F(DnsProbeServiceTest, Probe_FAIL_OK) {
+  RunTest(MockDnsClientRule::FAIL, MockDnsClientRule::OK,
           chrome_common_net::DNS_PROBE_FINISHED_BAD_CONFIG);
 }
 
-TEST_F(DnsProbeServiceTest, Probe_FAIL_SYNC_FAIL_SYNC) {
-  RunTest(MockDnsClientRule::FAIL_SYNC, MockDnsClientRule::FAIL_SYNC,
+TEST_F(DnsProbeServiceTest, Probe_FAIL_FAIL) {
+  RunTest(MockDnsClientRule::FAIL, MockDnsClientRule::FAIL,
           chrome_common_net::DNS_PROBE_FINISHED_INCONCLUSIVE);
 }
 

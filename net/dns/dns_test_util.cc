@@ -34,7 +34,7 @@ class MockTransaction : public DnsTransaction,
                   const std::string& hostname,
                   uint16 qtype,
                   const DnsTransactionFactory::CallbackType& callback)
-      : result_(MockDnsClientRule::FAIL_SYNC),
+      : result_(MockDnsClientRule::FAIL),
         hostname_(hostname),
         qtype_(qtype),
         callback_(callback),
@@ -59,15 +59,12 @@ class MockTransaction : public DnsTransaction,
     return qtype_;
   }
 
-  virtual int Start() OVERRIDE {
+  virtual void Start() OVERRIDE {
     EXPECT_FALSE(started_);
     started_ = true;
-    if (MockDnsClientRule::FAIL_SYNC == result_)
-      return ERR_NAME_NOT_RESOLVED;
     // Using WeakPtr to cleanly cancel when transaction is destroyed.
     base::MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(&MockTransaction::Finish, AsWeakPtr()));
-    return ERR_IO_PENDING;
   }
 
  private:
@@ -122,7 +119,7 @@ class MockTransaction : public DnsTransaction,
         EXPECT_TRUE(response.InitParse(nbytes, query));
         callback_.Run(this, OK, &response);
       } break;
-      case MockDnsClientRule::FAIL_ASYNC:
+      case MockDnsClientRule::FAIL:
         callback_.Run(this, ERR_NAME_NOT_RESOLVED, NULL);
         break;
       case MockDnsClientRule::TIMEOUT:

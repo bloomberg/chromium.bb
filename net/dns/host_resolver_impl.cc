@@ -993,9 +993,9 @@ class HostResolverImpl::DnsTask : public base::SupportsWeakPtr<DnsTask> {
         net_log_);
   }
 
-  int Start() {
+  void Start() {
     net_log_.BeginEvent(NetLog::TYPE_HOST_RESOLVER_IMPL_DNS_TASK);
-    return transaction_->Start();
+    transaction_->Start();
   }
 
  private:
@@ -1051,9 +1051,7 @@ class HostResolverImpl::DnsTask : public base::SupportsWeakPtr<DnsTask> {
             base::Bind(&DnsTask::OnTransactionComplete, base::Unretained(this),
                        false /* first_query */, base::TimeTicks::Now()),
             net_log_);
-        net_error = transaction_->Start();
-        if (net_error != ERR_IO_PENDING)
-          OnFailure(net_error, DnsResponse::DNS_PARSE_OK);
+        transaction_->Start();
         return;
       }
     } else {
@@ -1448,27 +1446,7 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job {
         base::Bind(&Job::OnDnsTaskComplete, base::Unretained(this), start_time),
         net_log_));
 
-    int rv = dns_task_->Start();
-    if (rv == ERR_IO_PENDING)
-      return;  // Complete asynchronously.
-    DCHECK_NE(OK, rv);
-    base::TimeDelta duration = base::TimeTicks::Now() - start_time;
-    if (resolver_->fallback_to_proctask_) {
-      DNS_HISTOGRAM("AsyncDNS.ResolveFail", duration);
-      dns_task_error_ = rv;
-      dns_task_.reset();
-      StartProcTask();
-    } else {
-      // We could be running within Resolve(), so make sure to complete
-      // asynchronously.
-      base::MessageLoopProxy::current()->PostTask(
-          FROM_HERE,
-          base::Bind(&Job::OnDnsTaskFailure,
-                     base::Unretained(this),
-                     dns_task_->AsWeakPtr(),
-                     duration,
-                     rv));
-    }
+    dns_task_->Start();
   }
 
   // Called if DnsTask fails. It is posted from StartDnsTask, so Job may be

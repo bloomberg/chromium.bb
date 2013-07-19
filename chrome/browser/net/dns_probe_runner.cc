@@ -103,9 +103,7 @@ void DnsProbeRunner::RunProbe(const base::Closure& callback) {
                  weak_factory_.GetWeakPtr()),
       BoundNetLog());
 
-  int rv = transaction_->Start();
-  if (rv != net::ERR_IO_PENDING)
-    OnTransactionComplete(transaction_.get(), rv, NULL);
+  transaction_->Start();
 }
 
 bool DnsProbeRunner::IsRunning() const {

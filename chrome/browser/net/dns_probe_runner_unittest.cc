@@ -77,12 +77,8 @@ TEST_F(DnsProbeRunnerTest, Probe_TIMEOUT) {
   RunTest(MockDnsClientRule::TIMEOUT, DnsProbeRunner::UNREACHABLE);
 }
 
-TEST_F(DnsProbeRunnerTest, Probe_FAIL_ASYNC) {
-  RunTest(MockDnsClientRule::FAIL_ASYNC, DnsProbeRunner::INCORRECT);
-}
-
-TEST_F(DnsProbeRunnerTest, Probe_FAIL_SYNC) {
-  RunTest(MockDnsClientRule::FAIL_SYNC, DnsProbeRunner::INCORRECT);
+TEST_F(DnsProbeRunnerTest, Probe_FAIL) {
+  RunTest(MockDnsClientRule::FAIL, DnsProbeRunner::INCORRECT);
 }
 
 TEST_F(DnsProbeRunnerTest, TwoProbes) {
