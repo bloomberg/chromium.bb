@@ -44,6 +44,7 @@ class PageCycler(page_measurement.PageMeasurement):
   def AddCommandLineOptions(self, parser):
     # The page cyclers should default to 10 iterations. In order to change the
     # default of an option, we must remove and re-add it.
+    # TODO: Remove this after transition to run_benchmark.
     pageset_repeat_option = parser.get_option('--pageset-repeat')
     pageset_repeat_option.default = 10
     parser.remove_option('--pageset-repeat')
