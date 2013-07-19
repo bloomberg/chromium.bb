@@ -5,6 +5,7 @@
 #ifndef CC_LAYERS_PICTURE_LAYER_H_
 #define CC_LAYERS_PICTURE_LAYER_H_
 
+#include "cc/base/invalidation_region.h"
 #include "cc/debug/devtools_instrumentation.h"
 #include "cc/layers/contents_scaling_layer.h"
 #include "cc/layers/layer.h"
@@ -45,7 +46,7 @@ class CC_EXPORT PictureLayer : public ContentsScalingLayer {
   devtools_instrumentation::
       ScopedLayerObjectTracker instrumentation_object_tracker_;
   // Invalidation to use the next time update is called.
-  Region pending_invalidation_;
+  InvalidationRegion pending_invalidation_;
   // Invalidation from the last time update was called.
   Region pile_invalidation_;
   bool is_mask_;

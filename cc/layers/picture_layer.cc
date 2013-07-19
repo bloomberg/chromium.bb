@@ -94,7 +94,7 @@ bool PictureLayer::Update(ResourceUpdateQueue*,
 
   // Calling paint in WebKit can sometimes cause invalidations, so save
   // off the invalidation prior to calling update.
-  pile_invalidation_.Swap(&pending_invalidation_);
+  pending_invalidation_.Swap(&pile_invalidation_);
   pending_invalidation_.Clear();
 
   gfx::Rect visible_layer_rect = gfx::ScaleToEnclosingRect(

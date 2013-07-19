@@ -43,6 +43,10 @@ bool Region::IsEmpty() const {
   return skregion_.isEmpty();
 }
 
+int Region::GetRegionComplexity() const {
+  return skregion_.computeRegionComplexity();
+}
+
 bool Region::Contains(gfx::Point point) const {
   return skregion_.contains(point.x(), point.y());
 }

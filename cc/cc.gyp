@@ -33,6 +33,8 @@
       'animation/transform_operations.cc',
       'animation/transform_operations.h',
       'base/completion_event.h',
+      'base/invalidation_region.cc',
+      'base/invalidation_region.h',
       'base/math_util.cc',
       'base/math_util.h',
       'base/region.cc',
