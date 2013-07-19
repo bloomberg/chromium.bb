@@ -386,6 +386,7 @@
         'wm/default_window_resizer.h',
         'wm/dock/docked_window_layout_manager.cc',
         'wm/dock/docked_window_layout_manager.h',
+        'wm/dock/docked_window_layout_manager_observer.h',
         'wm/dock/docked_window_resizer.cc',
         'wm/dock/docked_window_resizer.h',
         'wm/drag_window_controller.cc',

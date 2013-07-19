@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,11 +10,18 @@ namespace ash {
 namespace internal {
 
 // Possible values of which side of the screen the windows are docked at.
+// This is used by DockedwindowLayoutManager and DockedWindowResizer to
+// implement docking behavior including magnetism while dragging windows into
+// or out of the docked windows area.
 enum DockedAlignment {
+  // No docked windows.
   DOCKED_ALIGNMENT_NONE,
+
+  // Some windows are already docked on the left side of the screen.
   DOCKED_ALIGNMENT_LEFT,
+
+  // Some windows are already docked on the right side of the screen.
   DOCKED_ALIGNMENT_RIGHT,
-  DOCKED_ALIGNMENT_ANY,
 };
 
 }  // namespace internal
