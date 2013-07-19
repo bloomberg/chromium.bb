@@ -60,8 +60,9 @@ class CHROMEOS_EXPORT StringSubstitution {
   // Returns the replacement string for |placeholder| in
   // |substitute|. Currently, substitutes::kLoginIDField and
   // substitutes::kEmailField are supported.
-  virtual bool GetSubstitute(std::string placeholder,
+  virtual bool GetSubstitute(const std::string& placeholder,
                              std::string* substitute) const = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(StringSubstitution);
 };
@@ -74,6 +75,12 @@ CHROMEOS_EXPORT void ExpandStringsInOncObject(
     const OncValueSignature& signature,
     const StringSubstitution& substitution,
     base::DictionaryValue* onc_object);
+
+// Replaces expandable fields in the networks of |network_configs|, which must
+// be a list of ONC NetworkConfigurations. See ExpandStringsInOncObject above.
+CHROMEOS_EXPORT void ExpandStringsInNetworks(
+    const StringSubstitution& substitution,
+    base::ListValue* network_configs);
 
 // Creates a copy of |onc_object| with all values of sensitive fields replaced
 // by |mask|. To find sensitive fields, signature and field name are checked

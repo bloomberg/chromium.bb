@@ -15,7 +15,6 @@ class Value;
 
 namespace chromeos {
 class CertificateHandler;
-class ManagedNetworkConfigurationHandler;
 }
 
 namespace policy {

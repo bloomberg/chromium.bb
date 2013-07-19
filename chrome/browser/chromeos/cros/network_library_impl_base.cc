@@ -938,7 +938,7 @@ namespace {
 class UserStringSubstitution : public onc::StringSubstitution {
  public:
   UserStringSubstitution() {}
-  virtual bool GetSubstitute(std::string placeholder,
+  virtual bool GetSubstitute(const std::string& placeholder,
                              std::string* substitute) const OVERRIDE {
     if (!UserManager::Get()->IsUserLoggedIn())
       return false;

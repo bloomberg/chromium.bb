@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/net/onc_utils.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chromeos/network/certificate_handler.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
@@ -158,8 +159,13 @@ void NetworkConfigurationUpdaterImpl::ApplyNetworkConfiguration(
   certificate_handler_->ImportCertificates(
       certificates, onc_source, web_trust_certs.get());
 
-  std::string userhash = onc_source == chromeos::onc::ONC_SOURCE_USER_POLICY ?
-      hashed_username_ : std::string();
+  std::string userhash;
+  if (onc_source == chromeos::onc::ONC_SOURCE_USER_POLICY) {
+    userhash = hashed_username_;
+    chromeos::onc::ExpandStringPlaceholdersInNetworksForUser(hashed_username_,
+                                                             &network_configs);
+  }
+
   chromeos::NetworkHandler::Get()->managed_network_configuration_handler()->
       SetPolicy(onc_source, userhash, network_configs);
 

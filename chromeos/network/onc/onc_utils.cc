@@ -224,6 +224,18 @@ void ExpandStringsInOncObject(
   }
 }
 
+void ExpandStringsInNetworks(const StringSubstitution& substitution,
+                             base::ListValue* network_configs) {
+  for (base::ListValue::iterator it = network_configs->begin();
+       it != network_configs->end(); ++it) {
+    base::DictionaryValue* network = NULL;
+    (*it)->GetAsDictionary(&network);
+    DCHECK(network);
+    ExpandStringsInOncObject(
+        kNetworkConfigurationSignature, substitution, network);
+  }
+}
+
 namespace {
 
 class OncMaskValues : public Mapper {
