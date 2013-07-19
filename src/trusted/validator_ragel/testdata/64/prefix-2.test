@@ -7,8 +7,11 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  0: ('duplicate legacy prefix', Instruction(0x0: f0 f0 01 04 24  lock add %eax,(%rsp)))
 ----------------------------------------------------------------------
 @hex:
+  # TODO(shcherbina): disallow repeated prefixes in superinstructions in spec.
   # mov %edi,%edi
   # lea (%r15,%rdi),%rdi
   # rep rep stos %eax,%es:(%rdi)
@@ -37,6 +40,8 @@
 @rdfa_output:
   6: [0] unrecognized instruction
   return code: 1
+@spec:
+  6: rep is only allowed with string instructions
 ----------------------------------------------------------------------
 @hex:
   # mov %edi,%edi
@@ -52,6 +57,8 @@
 @rdfa_output:
   6: [0] unrecognized instruction
   return code: 1
+@spec:
+  6: rep is only allowed with string instructions
 ----------------------------------------------------------------------
 @hex:
   # fs gs mov %eax,%eax
@@ -63,6 +70,9 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  0: unrecognized instruction 'fs'
+  1: unrecognized instruction 'gs'
 ----------------------------------------------------------------------
 @hex:
   # data16 data16
@@ -72,6 +82,8 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  0: ('duplicate legacy prefix', Instruction(0x0: 66 66 89 c0  mov %ax,%ax))
 ----------------------------------------------------------------------
 @hex:
   # addr32 addr32
@@ -81,6 +93,8 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  0: ('duplicate legacy prefix', Instruction(0x0: 67 67 48 8d 04 24  addr32 lea (%esp),%rax))
 ----------------------------------------------------------------------
 @hex:
   # rex rex jmp $
@@ -91,6 +105,8 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  0: ('dangling rex prefix', Instruction(0x0: 40  rex))
 ----------------------------------------------------------------------
 @hex:
   # 2 prefixes of different type
@@ -100,6 +116,8 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  0: ('segments in memory references are not allowed', Instruction(0x0: 36 f0 01 04 24  lock add %eax,%ss:(%rsp)))
 ----------------------------------------------------------------------
 @hex:
   F0 36 01 04 24
@@ -108,6 +126,8 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  0: ('segments in memory references are not allowed', Instruction(0x0: f0 36 01 04 24  lock add %eax,%ss:(%rsp)))
 ----------------------------------------------------------------------
 @hex:
   # mov %edi,%edi
@@ -124,6 +144,9 @@
 @rdfa_output:
   6: [0] unrecognized instruction
   return code: 1
+@spec:
+  6: unrecognized instruction 'es'
+  7: rep is only allowed with string instructions
 ----------------------------------------------------------------------
 @hex:
   # mov %edi,%edi
@@ -141,6 +164,10 @@
 @rdfa_output:
   6: [0] unrecognized instruction
   return code: 1
+@spec:
+  6: ('dangling legacy prefixes', Instruction(0x6: f3  repz))
+  7: unrecognized instruction 'es'
+  8: ('segments in memory references are not allowed', Instruction(0x8: ab  stos %eax,%es:(%rdi)))
 ----------------------------------------------------------------------
 @hex:
   # lock add %ax, (%rsp)
@@ -151,6 +178,8 @@
      5:	f0 66 01 04 24                               	lock add %ax,(%rsp)
 @rdfa_output:
   return code: 0
+@spec:
+  SAFE
 ----------------------------------------------------------------------
 @hex:
   # Doesn't validate due to bug,
@@ -165,6 +194,8 @@
 @rdfa_output:
   6: [0] unrecognized instruction
   return code: 1
+@spec:
+  SAFE
 ----------------------------------------------------------------------
 @hex:
   89 FF
@@ -177,6 +208,8 @@
 @rdfa_output:
   6: [0] unrecognized instruction
   return code: 1
+@spec:
+  SAFE
 ----------------------------------------------------------------------
 @hex:
   67 F0 01 04 24
@@ -185,6 +218,8 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  0: ('addr prefixes are not allowed', Instruction(0x0: 67 f0 01 04 24  lock addr32 add %eax,(%esp)))
 ----------------------------------------------------------------------
 @hex:
   F0 67 01 04 24
@@ -193,6 +228,8 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  0: ('addr prefixes are not allowed', Instruction(0x0: f0 67 01 04 24  lock addr32 add %eax,(%esp)))
 ----------------------------------------------------------------------
 @hex:
   # addr32 rep
@@ -206,6 +243,8 @@
 @rdfa_output:
   6: [0] unrecognized instruction
   return code: 1
+@spec:
+  6: ('addr prefixes are not allowed', Instruction(0x6: 67 f3 ab  rep addr32 stos %eax,%es:(%edi)))
 ----------------------------------------------------------------------
 @hex:
   # rep addr32
@@ -219,6 +258,8 @@
 @rdfa_output:
   6: [0] unrecognized instruction
   return code: 1
+@spec:
+  6: ('addr prefixes are not allowed', Instruction(0x6: f3 67 ab  rep addr32 stos %eax,%es:(%edi)))
 ----------------------------------------------------------------------
 @hex:
   f0 48 01 04 24
@@ -226,6 +267,8 @@
      0:	f0 48 01 04 24                               	lock add %rax,(%rsp)
 @rdfa_output:
   return code: 0
+@spec:
+  SAFE
 ----------------------------------------------------------------------
 @hex:
   # REX before legacy prefixes
@@ -236,6 +279,8 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  0: ('dangling rex prefix', Instruction(0x0: 48  rex.W))
 ----------------------------------------------------------------------
 @hex:
   # Unneeded REX.
@@ -248,6 +293,8 @@
      6:	f3 48 ab                                     	rep stos %rax,%es:(%rdi)
 @rdfa_output:
   return code: 0
+@spec:
+  SAFE
 ----------------------------------------------------------------------
 @hex:
   64 66 89 C0
@@ -257,6 +304,8 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  0: unrecognized instruction 'fs'
 ----------------------------------------------------------------------
 @hex:
   66 64 89 C0
@@ -267,6 +316,9 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  0: ('dangling legacy prefixes', Instruction(0x0: 66  data16))
+  1: unrecognized instruction 'fs'
 ----------------------------------------------------------------------
 @hex:
   67 64 01 04 24
@@ -275,6 +327,8 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  0: ('addr prefixes are not allowed', Instruction(0x0: 67 64 01 04 24  addr32 add %eax,%fs:(%esp)))
 ----------------------------------------------------------------------
 @hex:
   64 67 01 04 24
@@ -283,6 +337,8 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  0: ('addr prefixes are not allowed', Instruction(0x0: 64 67 01 04 24  addr32 add %eax,%fs:(%esp)))
 ----------------------------------------------------------------------
 @hex:
   64 48 89 C0
@@ -292,6 +348,8 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  0: unrecognized instruction 'fs'
 ----------------------------------------------------------------------
 @hex:
   48 64 89 C0
@@ -302,6 +360,9 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  0: ('dangling rex prefix', Instruction(0x0: 48  rex.W))
+  1: unrecognized instruction 'fs'
 ----------------------------------------------------------------------
 @hex:
   66 67 01 04 24
@@ -310,6 +371,8 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  0: ('addr prefixes are not allowed', Instruction(0x0: 66 67 01 04 24  addr32 add %ax,(%esp)))
 ----------------------------------------------------------------------
 @hex:
   67 66 01 04 24
@@ -318,6 +381,8 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  0: ('addr prefixes are not allowed', Instruction(0x0: 67 66 01 04 24  addr32 add %ax,(%esp)))
 ----------------------------------------------------------------------
 @hex:
   66 44 89 3C 24
@@ -325,6 +390,8 @@
      0:	66 44 89 3c 24                               	mov    %r15w,(%rsp)
 @rdfa_output:
   return code: 0
+@spec:
+  SAFE
 ----------------------------------------------------------------------
 @hex:
   # REX prefix can't go begore legacy prefix
@@ -335,6 +402,8 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  0: ('dangling rex prefix', Instruction(0x0: 44  rex.R))
 ----------------------------------------------------------------------
 @hex:
   67 4C 89 3C 24
@@ -343,6 +412,8 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  0: ('addr prefixes are not allowed', Instruction(0x0: 67 4c 89 3c 24  addr32 mov %r15,(%esp)))
 ----------------------------------------------------------------------
 @hex:
   4C 67 89 3C 24
@@ -352,6 +423,9 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  0: ('dangling rex prefix', Instruction(0x0: 4c  rex.WR))
+  1: ('addr prefixes are not allowed', Instruction(0x1: 67 89 3c 24  addr32 mov %edi,(%esp)))
 ----------------------------------------------------------------------
 @hex:
   # 2 prefixes when one is mandatory
@@ -363,6 +437,8 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  0: unrecognized instruction 'fs'
 ----------------------------------------------------------------------
 @hex:
   # fs addsd %xmm0,%xmm1
@@ -373,6 +449,8 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  0: unrecognized instruction 'fs'
 ----------------------------------------------------------------------
 @hex:
   # 0x66 phaddw %xmm0,%xmm1
@@ -382,6 +460,8 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  0: ('duplicate legacy prefix', Instruction(0x0: 66 66 0f 38 01 c8  phaddw %xmm0,%xmm1))
 ----------------------------------------------------------------------
 @hex:
   # 0x66 addsd %xmm0,%xmm1
@@ -392,6 +472,8 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  0: ('dangling legacy prefixes', Instruction(0x0: 66  data16))
 ----------------------------------------------------------------------
 @hex:
   # phaddw (%esp), %xmm0
@@ -401,6 +483,8 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  0: ('addr prefixes are not allowed', Instruction(0x0: 67 66 0f 38 01 04 24  addr32 phaddw (%esp),%xmm0))
 ----------------------------------------------------------------------
 @hex:
   # addsd (%esp), %xmm0
@@ -410,6 +494,8 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  0: ('addr prefixes are not allowed', Instruction(0x0: 67 f2 0f 58 04 24  addr32 addsd (%esp),%xmm0))
 ----------------------------------------------------------------------
 @hex:
   89 C0 \\
@@ -419,6 +505,8 @@
      2:	66 41 0f 38 01 04 07                         	phaddw (%r15,%rax,1),%xmm0
 @rdfa_output:
   return code: 0
+@spec:
+  SAFE
 ----------------------------------------------------------------------
 @hex:
   # REX prefix can't go before legacy prefix
@@ -431,6 +519,9 @@
 @rdfa_output:
   2: [0] unrecognized instruction
   return code: 1
+@spec:
+  2: ('dangling rex prefix', Instruction(0x2: 41  rex.B))
+  3: ("memory access only is allowed with base from ['%r15', '%rbp', '%rsp', '%rip']", Instruction(0x3: 66 0f 38 01 04 07  phaddw (%rdi,%rax,1),%xmm0))
 ----------------------------------------------------------------------
 @hex:
   89 C0 \\
@@ -440,6 +531,8 @@
      2:	f2 41 0f 58 04 07                            	addsd  (%r15,%rax,1),%xmm0
 @rdfa_output:
   return code: 0
+@spec:
+  SAFE
 ----------------------------------------------------------------------
 @hex:
   # REX prefix can't go before legacy prefix
@@ -452,3 +545,6 @@
 @rdfa_output:
   2: [0] unrecognized instruction
   return code: 1
+@spec:
+  2: ('dangling rex prefix', Instruction(0x2: 41  rex.B))
+  3: ("memory access only is allowed with base from ['%r15', '%rbp', '%rsp', '%rip']", Instruction(0x3: f2 0f 58 04 07  addsd (%rdi,%rax,1),%xmm0))
