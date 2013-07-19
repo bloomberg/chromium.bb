@@ -69,21 +69,6 @@ void OmniboxController::OnResultChanged(bool default_match_changed) {
     const AutocompleteResult::const_iterator match(result.default_match());
     if (match != result.end()) {
       current_match_ = *match;
-      // TODO(beaudoin): This code could be made simpler if AutocompleteMatch
-      // had an |inline_autocompletion| instead of |inline_autocomplete_offset|.
-      // The |fill_into_edit| we get may not match what we have in the view at
-      // that time. We're only interested in the inline_autocomplete part, so
-      // update this here.
-      current_match_.fill_into_edit = omnibox_edit_model_->user_text();
-      if (match->inline_autocomplete_offset < match->fill_into_edit.length()) {
-        current_match_.inline_autocomplete_offset =
-            current_match_.fill_into_edit.length();
-        current_match_.fill_into_edit += match->fill_into_edit.substr(
-            match->inline_autocomplete_offset);
-      } else {
-        current_match_.inline_autocomplete_offset = string16::npos;
-      }
-
       if (!prerender::IsOmniboxEnabled(profile_))
         DoPreconnect(*match);
       omnibox_edit_model_->OnCurrentMatchChanged();

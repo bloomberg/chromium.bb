@@ -326,8 +326,7 @@ AutocompleteMatch SearchProvider::CreateSearchSuggestion(
     match.fill_into_edit.append(match.keyword + char16(' '));
   if (!input.prevent_inline_autocomplete() &&
       StartsWith(query_string, input_text, false)) {
-    match.inline_autocomplete_offset =
-        match.fill_into_edit.length() + input_text.length();
+    match.inline_autocompletion = query_string.substr(input_text.length());
   }
   match.fill_into_edit.append(query_string);
 
@@ -1076,7 +1075,7 @@ bool SearchProvider::IsTopMatchNotInlinable() const {
   return
       matches_.front().type != AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED &&
       matches_.front().type != AutocompleteMatchType::SEARCH_OTHER_ENGINE &&
-      matches_.front().inline_autocomplete_offset == string16::npos &&
+      matches_.front().inline_autocompletion.empty() &&
       matches_.front().fill_into_edit != input_.text();
 }
 
@@ -1446,10 +1445,12 @@ AutocompleteMatch SearchProvider::NavigationToMatch(
           net::FormatUrl(navigation.url(), languages, format_types,
                          net::UnescapeRule::SPACES, NULL, NULL,
                          &inline_autocomplete_offset));
-  if (!input_.prevent_inline_autocomplete())
-    match.inline_autocomplete_offset = inline_autocomplete_offset;
-  DCHECK((match.inline_autocomplete_offset == string16::npos) ||
-         (match.inline_autocomplete_offset <= match.fill_into_edit.length()));
+  if (!input_.prevent_inline_autocomplete() &&
+      (inline_autocomplete_offset != string16::npos)) {
+    DCHECK(inline_autocomplete_offset <= match.fill_into_edit.length());
+    match.inline_autocompletion =
+        match.fill_into_edit.substr(inline_autocomplete_offset);
+  }
 
   match.contents = net::FormatUrl(navigation.url(), languages,
       format_types, net::UnescapeRule::SPACES, NULL, NULL, &match_start);

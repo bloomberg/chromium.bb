@@ -627,7 +627,7 @@ void OmniboxEditModel::OpenMatch(const AutocompleteMatch& match,
         -1,  // don't yet know tab ID; set later if appropriate
         ClassifyPage(),
         elapsed_time_since_user_first_modified_omnibox,
-        string16::npos,  // completed_length; possibly set later
+        match.inline_autocompletion.length(),
         elapsed_time_since_last_change_to_default_match,
         result());
 
@@ -645,12 +645,6 @@ void OmniboxEditModel::OpenMatch(const AutocompleteMatch& match,
 
     if (index != OmniboxPopupModel::kNoMatch)
       log.selected_index = index;
-    if (match.inline_autocomplete_offset != string16::npos) {
-      DCHECK_GE(match.fill_into_edit.length(),
-                match.inline_autocomplete_offset);
-      log.completed_length =
-          match.fill_into_edit.length() - match.inline_autocomplete_offset;
-    }
 
     if ((disposition == CURRENT_TAB) && delegate_->CurrentPageExists()) {
       // If we know the destination is being opened in the current tab,
@@ -1099,6 +1093,8 @@ bool OmniboxEditModel::OnAfterPossibleChange(const string16& old_text,
            MaybeAcceptKeywordBySpace(user_text_));
 }
 
+// TODO(beaudoin): Merge OnPopupDataChanged with this method once the popup
+// handling has completely migrated to omnibox_controller.
 void OmniboxEditModel::OnCurrentMatchChanged() {
   has_temporary_text_ = false;
 
@@ -1109,17 +1105,12 @@ void OmniboxEditModel::OnCurrentMatchChanged() {
   string16 keyword;
   bool is_keyword_hint;
   match.GetKeywordUIState(profile_, &keyword, &is_keyword_hint);
-  string16 inline_autocomplete_text;
-  if (match.inline_autocomplete_offset < match.fill_into_edit.length()) {
-    // We have blue text, go through OnPopupDataChanged.
-    // TODO(beaudoin): Merge OnPopupDataChanged with this method once the
-    // popup handling has completely migrated to omnibox_controller.
-    inline_autocomplete_text =
-        match.fill_into_edit.substr(match.inline_autocomplete_offset);
-  }
   popup_model()->OnResultChanged();
-  OnPopupDataChanged(inline_autocomplete_text, NULL, keyword,
-                     is_keyword_hint);
+  // OnPopupDataChanged() resets OmniboxController's |current_match_| early
+  // on.  Therefore, copy match.inline_autocompletion to a temp to preserve
+  // its value across the entire call.
+  const string16 inline_autocompletion(match.inline_autocompletion);
+  OnPopupDataChanged(inline_autocompletion, NULL, keyword, is_keyword_hint);
 }
 
 string16 OmniboxEditModel::GetViewText() const {

@@ -126,8 +126,9 @@ cr.define('omniboxDebug', function() {
     new PresentationInfoRecord('Fill Into Edit', '', 'fill_into_edit', false,
         'The text shown in the omnibox when the result is selected.'),
     new PresentationInfoRecord(
-        'IAO', '', 'inline_autocomplete_offset', false,
-        'The Inline Autocomplete Offset.'),
+        'Inline Autocompletion', '', 'inline_autocompletion', false,
+        'The text shown in the omnibox as a blue highlight selection ' +
+        'following the cursor, if this match is shown inline.'),
     new PresentationInfoRecord('Del', '', 'deletable', false,
         'A green checkmark indicates that the results can be deleted from ' +
         'the visit history.'),

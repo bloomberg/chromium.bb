@@ -43,7 +43,6 @@ AutocompleteMatch::AutocompleteMatch()
       relevance(0),
       typed_count(-1),
       deletable(false),
-      inline_autocomplete_offset(string16::npos),
       transition(content::PAGE_TRANSITION_GENERATED),
       is_history_what_you_typed_match(false),
       type(AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED),
@@ -59,7 +58,6 @@ AutocompleteMatch::AutocompleteMatch(AutocompleteProvider* provider,
       relevance(relevance),
       typed_count(-1),
       deletable(deletable),
-      inline_autocomplete_offset(string16::npos),
       transition(content::PAGE_TRANSITION_TYPED),
       is_history_what_you_typed_match(false),
       type(type),
@@ -73,7 +71,7 @@ AutocompleteMatch::AutocompleteMatch(const AutocompleteMatch& match)
       typed_count(match.typed_count),
       deletable(match.deletable),
       fill_into_edit(match.fill_into_edit),
-      inline_autocomplete_offset(match.inline_autocomplete_offset),
+      inline_autocompletion(match.inline_autocompletion),
       destination_url(match.destination_url),
       stripped_destination_url(match.stripped_destination_url),
       contents(match.contents),
@@ -107,7 +105,7 @@ AutocompleteMatch& AutocompleteMatch::operator=(
   typed_count = match.typed_count;
   deletable = match.deletable;
   fill_into_edit = match.fill_into_edit;
-  inline_autocomplete_offset = match.inline_autocomplete_offset;
+  inline_autocompletion = match.inline_autocompletion;
   destination_url = match.destination_url;
   stripped_destination_url = match.stripped_destination_url;
   contents = match.contents;

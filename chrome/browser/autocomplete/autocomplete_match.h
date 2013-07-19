@@ -246,10 +246,9 @@ struct AutocompleteMatch {
   // for search suggestions, this would just be the search terms.
   string16 fill_into_edit;
 
-  // The position within fill_into_edit from which we'll display the inline
-  // autocomplete string.  This will be string16::npos if this match should
-  // not be inline autocompleted.
-  size_t inline_autocomplete_offset;
+  // The inline autocompletion to display after the user's typing in the
+  // omnibox, if this match becomes the default match.  It may be empty.
+  string16 inline_autocompletion;
 
   // The URL to actually load when the autocomplete item is selected. This URL
   // should be canonical so we can compare URLs with strcmp to avoid dupes.

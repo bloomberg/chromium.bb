@@ -446,12 +446,11 @@ AutocompleteMatch KeywordProvider::CreateAutocompleteMatch(
   if (!remaining_input.empty() || !keyword_complete || supports_replacement)
     match.fill_into_edit.push_back(L' ');
   match.fill_into_edit.append(remaining_input);
-  // If we wanted to set |result.inline_autocomplete_offset| correctly, we'd
-  // need CleanUserInputKeyword() to return the amount of adjustment it's made
-  // to the user's input.  Because right now inexact keyword matches can't score
+  // If we wanted to set |result.inline_autocompletion| correctly, we'd need
+  // CleanUserInputKeyword() to return the amount of adjustment it's made to
+  // the user's input.  Because right now inexact keyword matches can't score
   // more highly than a "what you typed" match from one of the other providers,
   // we just don't bother to do this, and leave inline autocompletion off.
-  match.inline_autocomplete_offset = string16::npos;
 
   // Create destination URL and popup entry content by substituting user input
   // into keyword templates.

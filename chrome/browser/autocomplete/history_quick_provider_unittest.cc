@@ -295,11 +295,11 @@ void HistoryQuickProviderTest::RunTest(const string16 text,
         << "' but we expected '" << expected_fill_into_edit << "'.";
     size_t text_pos = expected_fill_into_edit.find(text);
     ASSERT_NE(string16::npos, text_pos);
-    EXPECT_EQ(text_pos + text.size(),
-              ac_matches_[0].inline_autocomplete_offset);
+    EXPECT_EQ(ac_matches_[0].fill_into_edit.substr(text_pos + text.size()),
+              ac_matches_[0].inline_autocompletion);
   } else {
     // When the top scorer is not inline-able autocomplete offset must be npos.
-    EXPECT_EQ(string16::npos, ac_matches_[0].inline_autocomplete_offset);
+    EXPECT_TRUE(ac_matches_[0].inline_autocompletion.empty());
     // Also, the score must be too low to be inlineable.
     EXPECT_LT(ac_matches_[0].relevance,
               AutocompleteResult::kLowestDefaultScore);

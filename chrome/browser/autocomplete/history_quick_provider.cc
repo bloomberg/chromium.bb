@@ -272,17 +272,18 @@ AutocompleteMatch HistoryQuickProvider::QuickMatchToACMatch(
   match.contents_class =
       SpansFromTermMatch(new_matches, match.contents.length(), true);
 
-  if (!history_match.can_inline) {
-    match.inline_autocomplete_offset = string16::npos;
-  } else {
+  if (history_match.can_inline) {
     DCHECK(!new_matches.empty());
-    match.inline_autocomplete_offset = new_matches[0].offset +
+    size_t inline_autocomplete_offset = new_matches[0].offset +
         new_matches[0].length;
-    // The following will happen if the user has typed an URL with a scheme
-    // and the last character typed is a slash because that slash is removed
-    // by the FormatURLWithOffsets call above.
-    if (match.inline_autocomplete_offset > match.fill_into_edit.length())
-      match.inline_autocomplete_offset = match.fill_into_edit.length();
+    // |inline_autocomplete_offset| may be beyond the end of the
+    // |fill_into_edit| if the user has typed an URL with a scheme and the
+    // last character typed is a slash.  That slash is removed by the
+    // FormatURLWithOffsets call above.
+    if (inline_autocomplete_offset < match.fill_into_edit.length()) {
+      match.inline_autocompletion =
+          match.fill_into_edit.substr(inline_autocomplete_offset);
+    }
   }
 
   // Format the description autocomplete presentation.

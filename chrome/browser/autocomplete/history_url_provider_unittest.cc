@@ -183,8 +183,6 @@ class HistoryURLProviderTest : public testing::Test,
                    expected_urls, num_results, &type);
   }
 
-  void RunAdjustOffsetTest(const string16 text, size_t expected_offset);
-
   content::TestBrowserThreadBundle thread_bundle_;
   ACMatches matches_;
   scoped_ptr<TestingProfile> profile_;
@@ -284,19 +282,6 @@ void HistoryURLProviderTest::RunTest(
                                           << "\nTLD: \"" << desired_tld << "\"";
   for (size_t i = 0; i < num_results; ++i)
     EXPECT_EQ(expected_urls[i], matches_[i].destination_url.spec());
-}
-
-void HistoryURLProviderTest::RunAdjustOffsetTest(const string16 text,
-                                                 size_t expected_offset) {
-  AutocompleteInput input(text, string16::npos, string16(), GURL(), false,
-                          false, true, AutocompleteInput::ALL_MATCHES);
-  autocomplete_->Start(input, false);
-  if (!autocomplete_->done())
-    base::MessageLoop::current()->Run();
-
-  matches_ = autocomplete_->matches();
-  ASSERT_GE(matches_.size(), 1U) << "Input text: " << text;
-  EXPECT_EQ(expected_offset, matches_[0].inline_autocomplete_offset);
 }
 
 TEST_F(HistoryURLProviderTest, PromoteShorterURLs) {
@@ -490,7 +475,8 @@ TEST_F(HistoryURLProviderTest, Fixup) {
   const std::string fixup_1[] = {"file:///C:/foo.txt"};
   ASSERT_NO_FATAL_FAILURE(RunTest(input_1, string16(), false, fixup_1,
                                   arraysize(fixup_1)));
-  EXPECT_EQ(input_1.length(), matches_.front().inline_autocomplete_offset);
+  EXPECT_EQ(ASCIIToUTF16("///C:/foo.txt"),
+            matches_.front().inline_autocompletion);
 
   // Fixing up "http:/" should result in an inline autocomplete offset of just
   // after "http:/", not just after "http:".
@@ -502,7 +488,8 @@ TEST_F(HistoryURLProviderTest, Fixup) {
   };
   ASSERT_NO_FATAL_FAILURE(RunTest(input_2, string16(), false, fixup_2,
                                   arraysize(fixup_2)));
-  EXPECT_EQ(input_2.length(), matches_.front().inline_autocomplete_offset);
+  EXPECT_EQ(ASCIIToUTF16("/bogussite.com/a"),
+            matches_.front().inline_autocompletion);
 
   // Adding a TLD to a small number like "56" should result in "www.56.com"
   // rather than "0.0.0.56.com".
@@ -520,12 +507,6 @@ TEST_F(HistoryURLProviderTest, Fixup) {
   const std::string fixup_5[] = {"http://www.17173.com/"};
   RunTest(ASCIIToUTF16("17173"), string16(), false, fixup_5,
           arraysize(fixup_5));
-}
-
-TEST_F(HistoryURLProviderTest, AdjustOffset) {
-  RunAdjustOffsetTest(WideToUTF16(L"http://www.\uAD50\uC721"), 13);
-  RunAdjustOffsetTest(ASCIIToUTF16("http://spaces.com/path%20with%20spa"), 31);
-  RunAdjustOffsetTest(ASCIIToUTF16("http://ms/c++ s"), 15);
 }
 
 // Make sure the results for the input 'p' don't change between the first and
@@ -580,7 +561,7 @@ TEST_F(HistoryURLProviderTest, DontAutocompleteOnTrailingWhitespace) {
   // None of the matches should attempt to autocomplete.
   matches_ = autocomplete_->matches();
   for (size_t i = 0; i < matches_.size(); ++i)
-    EXPECT_EQ(string16::npos, matches_[i].inline_autocomplete_offset);
+    EXPECT_TRUE(matches_[i].inline_autocompletion.empty());
 }
 
 TEST_F(HistoryURLProviderTest, TreatEmailsAsSearches) {

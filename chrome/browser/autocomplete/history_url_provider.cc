@@ -349,8 +349,8 @@ AutocompleteMatch HistoryURLProvider::SuggestExactInput(
     match.fill_into_edit =
         AutocompleteInput::FormattedStringWithEquivalentMeaning(url,
                                                                 display_string);
-    // NOTE: Don't set match.inline_autocomplete_offset (to allow inline
-    // autocompletion) here, it's surprising and annoying.
+    // NOTE: Don't set match.inline_autocompletion to something non-empty here;
+    // it's surprising and annoying.
 
     // Try to highlight "innermost" match location.  If we fix up "w" into
     // "www.w.com", we want to highlight the fifth character, not the first.
@@ -1059,10 +1059,12 @@ AutocompleteMatch HistoryURLProvider::HistoryMatchToACMatch(
           net::FormatUrl(info.url(), languages, format_types,
                          net::UnescapeRule::SPACES, NULL, NULL,
                          &inline_autocomplete_offset));
-  if (!params->prevent_inline_autocomplete)
-    match.inline_autocomplete_offset = inline_autocomplete_offset;
-  DCHECK((match.inline_autocomplete_offset == string16::npos) ||
-         (match.inline_autocomplete_offset <= match.fill_into_edit.length()));
+  if (!params->prevent_inline_autocomplete &&
+      (inline_autocomplete_offset != string16::npos)) {
+    DCHECK(inline_autocomplete_offset <= match.fill_into_edit.length());
+    match.inline_autocompletion =
+        match.fill_into_edit.substr(inline_autocomplete_offset);
+  }
 
   size_t match_start = history_match.input_location;
   match.contents = net::FormatUrl(info.url(), languages,

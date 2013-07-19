@@ -349,7 +349,6 @@ AutocompleteMatch ZeroSuggestProvider::NavigationToMatch(
   match.fill_into_edit +=
       AutocompleteInput::FormattedStringWithEquivalentMeaning(navigation.url(),
           match.contents);
-  match.inline_autocomplete_offset = string16::npos;
 
   AutocompleteMatch::ClassifyLocationInString(string16::npos, 0,
       match.contents.length(), ACMatchClassification::URL,
@@ -458,7 +457,6 @@ AutocompleteMatch ZeroSuggestProvider::MatchForCurrentURL() {
       HistoryURLProvider::SuggestExactInput(this, input,
                                             !HasHTTPScheme(input.text())));
   match.is_history_what_you_typed_match = false;
-  match.inline_autocomplete_offset = string16::npos;
 
   // The placeholder suggestion for the current URL has high relevance so
   // that it is in the first suggestion slot and inline autocompleted. It
