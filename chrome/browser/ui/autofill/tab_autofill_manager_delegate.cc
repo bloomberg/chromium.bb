@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/common/url_constants.h"
+#include "components/autofill/content/browser/autofill_driver_impl.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
@@ -203,17 +204,23 @@ void TabAutofillManagerDelegate::HideRequestAutocompleteDialog() {
 void TabAutofillManagerDelegate::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
-  // A redirect immediately after a successful Autocheckout flow shouldn't hide
-  // the dialog.
-  bool was_redirect = details.entry &&
-      content::PageTransitionIsRedirect(details.entry->GetTransitionType());
-  if (dialog_controller_.get() &&
-      (dialog_controller_->dialog_type() == DIALOG_TYPE_REQUEST_AUTOCOMPLETE ||
-       (!dialog_controller_->AutocheckoutIsRunning() && !was_redirect))) {
-    HideRequestAutocompleteDialog();
-  }
 
   HideAutocheckoutBubble();
+
+  if (!dialog_controller_.get())
+    return;
+
+  // A redirect immediately after a successful Autocheckout flow shouldn't hide
+  // the dialog.
+  bool preserve_dialog = AutofillDriverImpl::FromWebContents(web_contents())->
+      autofill_manager()->autocheckout_manager()->should_preserve_dialog();
+  bool was_redirect = details.entry &&
+      content::PageTransitionIsRedirect(details.entry->GetTransitionType());
+
+  if (dialog_controller_->dialog_type() == DIALOG_TYPE_REQUEST_AUTOCOMPLETE ||
+      (!was_redirect && !preserve_dialog)) {
+    HideRequestAutocompleteDialog();
+  }
 }
 
 void TabAutofillManagerDelegate::WebContentsDestroyed(

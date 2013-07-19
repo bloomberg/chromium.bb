@@ -36,6 +36,11 @@ typedef Tuple4<std::vector<FormData>,
                std::vector<WebElementDescriptor>,
                WebElementDescriptor> AutofillParam;
 
+enum ProceedElementPresence {
+  NO_PROCEED_ELEMENT,
+  HAS_PROCEED_ELEMENT,
+};
+
 FormFieldData BuildFieldWithValue(
     const std::string& autocomplete_attribute,
     const std::string& value) {
@@ -169,16 +174,19 @@ scoped_ptr<AutocheckoutPageMetaData> CreateNotInFlowMetaData() {
   return not_in_flow.Pass();
 }
 
-scoped_ptr<AutocheckoutPageMetaData> CreateEndOfFlowMetaData() {
+scoped_ptr<AutocheckoutPageMetaData> CreateEndOfFlowMetaData(
+    ProceedElementPresence proceed_element_presence) {
   scoped_ptr<AutocheckoutPageMetaData> end_of_flow(
       new AutocheckoutPageMetaData());
   end_of_flow->current_page_number = 2;
   end_of_flow->total_pages = 3;
-  PopulateClickElement(&end_of_flow->proceed_element_descriptor, "#foo");
+  if (proceed_element_presence == HAS_PROCEED_ELEMENT)
+    PopulateClickElement(&end_of_flow->proceed_element_descriptor, "#foo");
   return end_of_flow.Pass();
 }
 
-scoped_ptr<AutocheckoutPageMetaData> CreateOnePageFlowMetaData() {
+scoped_ptr<AutocheckoutPageMetaData> CreateOnePageFlowMetaData(
+    ProceedElementPresence proceed_element_presence) {
   scoped_ptr<AutocheckoutPageMetaData> one_page_flow(
       new AutocheckoutPageMetaData());
   one_page_flow->current_page_number = 0;
@@ -186,7 +194,8 @@ scoped_ptr<AutocheckoutPageMetaData> CreateOnePageFlowMetaData() {
   one_page_flow->page_types[0].push_back(AUTOCHECKOUT_STEP_SHIPPING);
   one_page_flow->page_types[0].push_back(AUTOCHECKOUT_STEP_DELIVERY);
   one_page_flow->page_types[0].push_back(AUTOCHECKOUT_STEP_BILLING);
-  PopulateClickElement(&one_page_flow->proceed_element_descriptor, "#foo");
+  if (proceed_element_presence == HAS_PROCEED_ELEMENT)
+    PopulateClickElement(&one_page_flow->proceed_element_descriptor, "#foo");
   return one_page_flow.Pass();
 }
 
@@ -436,7 +445,8 @@ class AutocheckoutManagerTest : public ChromeRenderViewHostTestHarness {
     return autofill_param.a;
   }
 
-  void CheckFillFormsAndClickIpc() {
+  void CheckFillFormsAndClickIpc(
+      ProceedElementPresence proceed_element_presence) {
     EXPECT_EQ(1U, process()->sink().message_count());
     uint32 kMsgID = AutofillMsg_FillFormsAndClick::ID;
     const IPC::Message* message =
@@ -444,8 +454,12 @@ class AutocheckoutManagerTest : public ChromeRenderViewHostTestHarness {
     EXPECT_TRUE(message);
     AutofillParam autofill_param;
     AutofillMsg_FillFormsAndClick::Read(message, &autofill_param);
-    EXPECT_EQ(WebElementDescriptor::ID, autofill_param.d.retrieval_method);
-    EXPECT_EQ("#foo", autofill_param.d.descriptor);
+    if (proceed_element_presence == HAS_PROCEED_ELEMENT) {
+      EXPECT_EQ(WebElementDescriptor::ID, autofill_param.d.retrieval_method);
+      EXPECT_EQ("#foo", autofill_param.d.descriptor);
+    } else {
+      EXPECT_EQ(WebElementDescriptor::NONE, autofill_param.d.retrieval_method);
+    }
     ClearIpcSink();
   }
 
@@ -471,8 +485,9 @@ class AutocheckoutManagerTest : public ChromeRenderViewHostTestHarness {
     autocheckout_manager_->MaybeShowAutocheckoutDialog(
         frame_url,
         AUTOCHECKOUT_BUBBLE_ACCEPTED);
-    CheckFillFormsAndClickIpc();
+    CheckFillFormsAndClickIpc(HAS_PROCEED_ELEMENT);
     EXPECT_TRUE(autocheckout_manager_->in_autocheckout_flow());
+    EXPECT_TRUE(autocheckout_manager_->should_preserve_dialog());
     EXPECT_TRUE(autofill_manager_delegate_->request_autocomplete_dialog_open());
     EXPECT_TRUE(autofill_manager_delegate_
         ->AutocheckoutStepExistsWithStatus(AUTOCHECKOUT_STEP_SHIPPING,
@@ -491,6 +506,120 @@ class AutocheckoutManagerTest : public ChromeRenderViewHostTestHarness {
     autofill_manager_delegate_->HideRequestAutocompleteDialog();
     EXPECT_FALSE(
         autofill_manager_delegate_->request_autocomplete_dialog_open());
+  }
+
+  // Test a multi-page Autocheckout flow end to end.
+  // |proceed_element_presence_on_last_page| indicates whether the last page
+  // of the flow should have a proceed element.
+  void TestFullAutocheckoutFlow(
+      ProceedElementPresence proceed_element_presence_on_last_page) {
+    // Test for progression through last page.
+    OpenRequestAutocompleteDialog();
+    EXPECT_TRUE(autofill_manager_delegate_
+        ->AutocheckoutStepExistsWithStatus(AUTOCHECKOUT_STEP_SHIPPING,
+                                           AUTOCHECKOUT_STEP_STARTED));
+    // Complete the first page.
+    autocheckout_manager_->OnAutocheckoutPageCompleted(SUCCESS);
+    EXPECT_TRUE(autocheckout_manager_->should_preserve_dialog());
+    EXPECT_TRUE(autofill_manager_delegate_
+        ->AutocheckoutStepExistsWithStatus(AUTOCHECKOUT_STEP_SHIPPING,
+                                           AUTOCHECKOUT_STEP_COMPLETED));
+
+    // Go to the second page.
+    EXPECT_CALL(*autofill_manager_delegate_, OnAutocheckoutSuccess()).Times(1);
+    autocheckout_manager_->OnLoadedPageMetaData(CreateInFlowMetaData());
+    EXPECT_TRUE(autocheckout_manager_->in_autocheckout_flow());
+    EXPECT_TRUE(autocheckout_manager_->should_preserve_dialog());
+    CheckFillFormsAndClickIpc(HAS_PROCEED_ELEMENT);
+    EXPECT_TRUE(autofill_manager_delegate_
+        ->AutocheckoutStepExistsWithStatus(AUTOCHECKOUT_STEP_DELIVERY,
+                                           AUTOCHECKOUT_STEP_STARTED));
+    autocheckout_manager_->OnAutocheckoutPageCompleted(SUCCESS);
+    EXPECT_TRUE(autofill_manager_delegate_
+        ->AutocheckoutStepExistsWithStatus(AUTOCHECKOUT_STEP_DELIVERY,
+                                           AUTOCHECKOUT_STEP_COMPLETED));
+
+    // Go to the third page.
+    EXPECT_CALL(autocheckout_manager_->metric_logger(),
+                LogAutocheckoutBuyFlowMetric(
+                    AutofillMetrics::AUTOCHECKOUT_BUY_FLOW_SUCCESS)).Times(1);
+    autocheckout_manager_->OnLoadedPageMetaData(
+        CreateEndOfFlowMetaData(proceed_element_presence_on_last_page));
+    CheckFillFormsAndClickIpc(proceed_element_presence_on_last_page);
+    EXPECT_TRUE(autocheckout_manager_->in_autocheckout_flow());
+    EXPECT_TRUE(autocheckout_manager_->should_preserve_dialog());
+    EXPECT_TRUE(autofill_manager_delegate_
+        ->AutocheckoutStepExistsWithStatus(AUTOCHECKOUT_STEP_BILLING,
+                                           AUTOCHECKOUT_STEP_STARTED));
+    autocheckout_manager_->OnAutocheckoutPageCompleted(SUCCESS);
+    EXPECT_FALSE(autocheckout_manager_->in_autocheckout_flow());
+    EXPECT_TRUE(autocheckout_manager_->should_preserve_dialog());
+    EXPECT_TRUE(autofill_manager_delegate_
+        ->AutocheckoutStepExistsWithStatus(AUTOCHECKOUT_STEP_BILLING,
+                                           AUTOCHECKOUT_STEP_COMPLETED));
+
+    EXPECT_TRUE(autofill_manager_delegate_->request_autocomplete_dialog_open());
+
+    // Go to the page after the flow.
+    autocheckout_manager_->OnLoadedPageMetaData(
+          scoped_ptr<AutocheckoutPageMetaData>());
+    EXPECT_EQ(proceed_element_presence_on_last_page == HAS_PROCEED_ELEMENT,
+              autocheckout_manager_->should_preserve_dialog());
+    // Go to another page and we should not preserve the dialog now.
+    autocheckout_manager_->OnLoadedPageMetaData(
+          scoped_ptr<AutocheckoutPageMetaData>());
+    EXPECT_FALSE(autocheckout_manager_->should_preserve_dialog());
+  }
+
+  // Test a signle-page Autocheckout flow. |proceed_element_presence| indicates
+  // whether the page should have a proceed element.
+  void TestSinglePageFlow(ProceedElementPresence proceed_element_presence) {
+    // Test one page flow.
+    EXPECT_FALSE(autocheckout_manager_->in_autocheckout_flow());
+    EXPECT_FALSE(
+        autofill_manager_delegate_->request_autocomplete_dialog_open());
+    EXPECT_CALL(autocheckout_manager_->metric_logger(),
+                LogAutocheckoutBubbleMetric(
+                    AutofillMetrics::BUBBLE_COULD_BE_DISPLAYED)).Times(1);
+    EXPECT_CALL(*autofill_manager_delegate_, OnAutocheckoutSuccess()).Times(1);
+    autocheckout_manager_->OnLoadedPageMetaData(
+        CreateOnePageFlowMetaData(proceed_element_presence));
+    // Simulate the user submitting some data via the requestAutocomplete UI.
+    autofill_manager_delegate_->SetUserSuppliedData(
+        FakeUserSubmittedFormStructure());
+    GURL frame_url;
+    EXPECT_CALL(autocheckout_manager_->metric_logger(),
+                LogAutocheckoutBuyFlowMetric(
+                    AutofillMetrics::AUTOCHECKOUT_BUY_FLOW_STARTED)).Times(1);
+    EXPECT_CALL(autocheckout_manager_->metric_logger(),
+                LogAutocheckoutBuyFlowMetric(
+                    AutofillMetrics::AUTOCHECKOUT_BUY_FLOW_SUCCESS)).Times(1);
+    autocheckout_manager_->MaybeShowAutocheckoutDialog(
+        frame_url,
+        AUTOCHECKOUT_BUBBLE_ACCEPTED);
+    autocheckout_manager_->OnAutocheckoutPageCompleted(SUCCESS);
+    CheckFillFormsAndClickIpc(proceed_element_presence);
+    EXPECT_FALSE(autocheckout_manager_->in_autocheckout_flow());
+    EXPECT_TRUE(autocheckout_manager_->should_preserve_dialog());
+    EXPECT_TRUE(autofill_manager_delegate_->request_autocomplete_dialog_open());
+    EXPECT_TRUE(autofill_manager_delegate_
+        ->AutocheckoutStepExistsWithStatus(AUTOCHECKOUT_STEP_SHIPPING,
+                                           AUTOCHECKOUT_STEP_COMPLETED));
+    EXPECT_TRUE(autofill_manager_delegate_
+        ->AutocheckoutStepExistsWithStatus(AUTOCHECKOUT_STEP_DELIVERY,
+                                           AUTOCHECKOUT_STEP_COMPLETED));
+    EXPECT_TRUE(autofill_manager_delegate_
+        ->AutocheckoutStepExistsWithStatus(AUTOCHECKOUT_STEP_BILLING,
+                                           AUTOCHECKOUT_STEP_COMPLETED));
+    // Go to the page after the flow.
+    autocheckout_manager_->OnLoadedPageMetaData(
+          scoped_ptr<AutocheckoutPageMetaData>());
+    EXPECT_EQ(proceed_element_presence == HAS_PROCEED_ELEMENT,
+              autocheckout_manager_->should_preserve_dialog());
+    // Go to another page, and we should not preserve the dialog now.
+    autocheckout_manager_->OnLoadedPageMetaData(
+          scoped_ptr<AutocheckoutPageMetaData>());
+    EXPECT_FALSE(autocheckout_manager_->should_preserve_dialog());
   }
 
  protected:
@@ -694,7 +823,7 @@ TEST_F(AutocheckoutManagerTest, OnLoadedPageMetaDataRepeatedPage) {
   // Go to second page.
   autocheckout_manager_->OnLoadedPageMetaData(CreateInFlowMetaData());
   EXPECT_TRUE(autocheckout_manager_->in_autocheckout_flow());
-  CheckFillFormsAndClickIpc();
+  CheckFillFormsAndClickIpc(HAS_PROCEED_ELEMENT);
   EXPECT_CALL(*autofill_manager_delegate_, OnAutocheckoutError()).Times(1);
   EXPECT_CALL(
       autocheckout_manager_->metric_logger(),
@@ -716,7 +845,7 @@ TEST_F(AutocheckoutManagerTest, OnLoadedPageMetaDataNotInFlow) {
   // Go to second page.
   autocheckout_manager_->OnLoadedPageMetaData(CreateInFlowMetaData());
   EXPECT_TRUE(autocheckout_manager_->in_autocheckout_flow());
-  CheckFillFormsAndClickIpc();
+  CheckFillFormsAndClickIpc(HAS_PROCEED_ELEMENT);
   EXPECT_CALL(*autofill_manager_delegate_, OnAutocheckoutError()).Times(1);
   EXPECT_CALL(
       autocheckout_manager_->metric_logger(),
@@ -746,47 +875,11 @@ TEST_F(AutocheckoutManagerTest,
 }
 
 TEST_F(AutocheckoutManagerTest, FullAutocheckoutFlow) {
-  // Test for progression through last page.
-  OpenRequestAutocompleteDialog();
-  EXPECT_TRUE(autofill_manager_delegate_
-      ->AutocheckoutStepExistsWithStatus(AUTOCHECKOUT_STEP_SHIPPING,
-                                         AUTOCHECKOUT_STEP_STARTED));
-  // Complete the first page.
-  autocheckout_manager_->OnAutocheckoutPageCompleted(SUCCESS);
-  EXPECT_TRUE(autofill_manager_delegate_
-      ->AutocheckoutStepExistsWithStatus(AUTOCHECKOUT_STEP_SHIPPING,
-                                         AUTOCHECKOUT_STEP_COMPLETED));
+  TestFullAutocheckoutFlow(HAS_PROCEED_ELEMENT);
+}
 
-  // Go to the second page.
-  EXPECT_CALL(*autofill_manager_delegate_, OnAutocheckoutSuccess()).Times(1);
-  autocheckout_manager_->OnLoadedPageMetaData(CreateInFlowMetaData());
-  EXPECT_TRUE(autocheckout_manager_->in_autocheckout_flow());
-  CheckFillFormsAndClickIpc();
-  EXPECT_TRUE(autofill_manager_delegate_
-      ->AutocheckoutStepExistsWithStatus(AUTOCHECKOUT_STEP_DELIVERY,
-                                         AUTOCHECKOUT_STEP_STARTED));
-  autocheckout_manager_->OnAutocheckoutPageCompleted(SUCCESS);
-  EXPECT_TRUE(autofill_manager_delegate_
-      ->AutocheckoutStepExistsWithStatus(AUTOCHECKOUT_STEP_DELIVERY,
-                                         AUTOCHECKOUT_STEP_COMPLETED));
-
-  // Go to the third page.
-  EXPECT_CALL(autocheckout_manager_->metric_logger(),
-              LogAutocheckoutBuyFlowMetric(
-                  AutofillMetrics::AUTOCHECKOUT_BUY_FLOW_SUCCESS)).Times(1);
-  autocheckout_manager_->OnLoadedPageMetaData(CreateEndOfFlowMetaData());
-  CheckFillFormsAndClickIpc();
-  EXPECT_TRUE(autocheckout_manager_->in_autocheckout_flow());
-  EXPECT_TRUE(autofill_manager_delegate_
-      ->AutocheckoutStepExistsWithStatus(AUTOCHECKOUT_STEP_BILLING,
-                                         AUTOCHECKOUT_STEP_STARTED));
-  autocheckout_manager_->OnAutocheckoutPageCompleted(SUCCESS);
-  EXPECT_FALSE(autocheckout_manager_->in_autocheckout_flow());
-  EXPECT_TRUE(autofill_manager_delegate_
-      ->AutocheckoutStepExistsWithStatus(AUTOCHECKOUT_STEP_BILLING,
-                                         AUTOCHECKOUT_STEP_COMPLETED));
-
-  EXPECT_TRUE(autofill_manager_delegate_->request_autocomplete_dialog_open());
+TEST_F(AutocheckoutManagerTest, FullAutocheckoutFlowNoClickOnLastPage) {
+  TestFullAutocheckoutFlow(NO_PROCEED_ELEMENT);
 }
 
 TEST_F(AutocheckoutManagerTest, CancelledAutocheckoutFlow) {
@@ -795,7 +888,7 @@ TEST_F(AutocheckoutManagerTest, CancelledAutocheckoutFlow) {
   // Go to second page.
   autocheckout_manager_->OnLoadedPageMetaData(CreateInFlowMetaData());
   EXPECT_TRUE(autocheckout_manager_->in_autocheckout_flow());
-  CheckFillFormsAndClickIpc();
+  CheckFillFormsAndClickIpc(HAS_PROCEED_ELEMENT);
 
   // Cancel the flow.
   autocheckout_manager_->ReturnAutocheckoutData(NULL, std::string());
@@ -804,49 +897,20 @@ TEST_F(AutocheckoutManagerTest, CancelledAutocheckoutFlow) {
   // Go to third page.
   EXPECT_CALL(autocheckout_manager_->metric_logger(),
               LogAutocheckoutBuyFlowMetric(testing::_)).Times(0);
-  autocheckout_manager_->OnLoadedPageMetaData(CreateEndOfFlowMetaData());
+  autocheckout_manager_->OnLoadedPageMetaData(
+      CreateEndOfFlowMetaData(HAS_PROCEED_ELEMENT));
   EXPECT_EQ(0U, process()->sink().message_count());
 }
 
 TEST_F(AutocheckoutManagerTest, SinglePageFlow) {
-  // Test one page flow.
-  EXPECT_FALSE(autocheckout_manager_->in_autocheckout_flow());
-  EXPECT_FALSE(
-      autofill_manager_delegate_->request_autocomplete_dialog_open());
-  EXPECT_CALL(autocheckout_manager_->metric_logger(),
-              LogAutocheckoutBubbleMetric(
-                  AutofillMetrics::BUBBLE_COULD_BE_DISPLAYED)).Times(1);
-  EXPECT_CALL(*autofill_manager_delegate_, OnAutocheckoutSuccess()).Times(1);
-  autocheckout_manager_->OnLoadedPageMetaData(CreateOnePageFlowMetaData());
-  // Simulate the user submitting some data via the requestAutocomplete UI.
-  autofill_manager_delegate_->SetUserSuppliedData(
-      FakeUserSubmittedFormStructure());
-  GURL frame_url;
-  EXPECT_CALL(autocheckout_manager_->metric_logger(),
-              LogAutocheckoutBuyFlowMetric(
-                  AutofillMetrics::AUTOCHECKOUT_BUY_FLOW_STARTED)).Times(1);
-  EXPECT_CALL(autocheckout_manager_->metric_logger(),
-              LogAutocheckoutBuyFlowMetric(
-                  AutofillMetrics::AUTOCHECKOUT_BUY_FLOW_SUCCESS)).Times(1);
-  autocheckout_manager_->MaybeShowAutocheckoutDialog(
-      frame_url,
-      AUTOCHECKOUT_BUBBLE_ACCEPTED);
-  autocheckout_manager_->OnAutocheckoutPageCompleted(SUCCESS);
-  CheckFillFormsAndClickIpc();
-  EXPECT_FALSE(autocheckout_manager_->in_autocheckout_flow());
-  EXPECT_TRUE(autofill_manager_delegate_->request_autocomplete_dialog_open());
-  EXPECT_TRUE(autofill_manager_delegate_
-      ->AutocheckoutStepExistsWithStatus(AUTOCHECKOUT_STEP_SHIPPING,
-                                         AUTOCHECKOUT_STEP_COMPLETED));
-  EXPECT_TRUE(autofill_manager_delegate_
-      ->AutocheckoutStepExistsWithStatus(AUTOCHECKOUT_STEP_DELIVERY,
-                                         AUTOCHECKOUT_STEP_COMPLETED));
-  EXPECT_TRUE(autofill_manager_delegate_
-      ->AutocheckoutStepExistsWithStatus(AUTOCHECKOUT_STEP_BILLING,
-                                         AUTOCHECKOUT_STEP_COMPLETED));
+  TestSinglePageFlow(HAS_PROCEED_ELEMENT);
 }
 
-TEST_F(AutocheckoutManagerTest, CancelAutocheckoutDialog) {
+TEST_F(AutocheckoutManagerTest, SinglePageFlowNoClickElement) {
+  TestSinglePageFlow(NO_PROCEED_ELEMENT);
+}
+
+TEST_F(AutocheckoutManagerTest, CancelAutocheckoutBubble) {
   GURL frame_url;
   gfx::RectF bounding_box;
   autofill_manager_delegate_->set_should_autoclick_bubble(false);

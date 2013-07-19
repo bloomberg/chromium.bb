@@ -180,6 +180,10 @@ class AutofillManager : public AutofillDownloadManager::Observer {
   // Resets cache.
   virtual void Reset();
 
+  autofill::AutocheckoutManager* autocheckout_manager() {
+    return &autocheckout_manager_;
+  }
+
  protected:
   // Test code should prefer to use this constructor.
   AutofillManager(AutofillDriver* driver,
@@ -221,11 +225,6 @@ class AutofillManager : public AutofillDownloadManager::Observer {
   // Exposed for testing.
   AutofillExternalDelegate* external_delegate() {
     return external_delegate_;
-  }
-
-  // Exposed for testing.
-  autofill::AutocheckoutManager* autocheckout_manager() {
-    return &autocheckout_manager_;
   }
 
   // Tell the renderer the current interactive autocomplete finished.

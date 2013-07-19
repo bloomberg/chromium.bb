@@ -624,10 +624,6 @@ void AutofillDialogControllerImpl::Hide() {
     view_->Hide();
 }
 
-bool AutofillDialogControllerImpl::AutocheckoutIsRunning() const {
-  return autocheckout_state_ == AUTOCHECKOUT_IN_PROGRESS;
-}
-
 void AutofillDialogControllerImpl::OnAutocheckoutError() {
   DCHECK_EQ(AUTOCHECKOUT_IN_PROGRESS, autocheckout_state_);
   GetMetricLogger().LogAutocheckoutDuration(

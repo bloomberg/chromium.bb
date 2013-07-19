@@ -238,6 +238,10 @@ class TestAutofillDialogController
     OnWalletSigninError();
   }
 
+  bool AutocheckoutIsRunning() const {
+    return AUTOCHECKOUT_IN_PROGRESS == autocheckout_state();
+  }
+
   MOCK_METHOD0(LoadRiskFingerprintData, void());
   using AutofillDialogControllerImpl::OnDidLoadRiskFingerprintData;
   using AutofillDialogControllerImpl::IsEditingExistingData;

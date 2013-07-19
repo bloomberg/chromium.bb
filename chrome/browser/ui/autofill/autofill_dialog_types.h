@@ -173,7 +173,7 @@ enum AutocheckoutState {
   AUTOCHECKOUT_ERROR,        // There was an error in the flow.
   AUTOCHECKOUT_IN_PROGRESS,  // The flow is currently in.
   AUTOCHECKOUT_NOT_STARTED,  // The flow has not been initiated by the user yet.
-  AUTOCHECKOUT_SUCCESS,      // The flow completed successsfully.
+  AUTOCHECKOUT_SUCCESS,      // The flow completed successfully.
 };
 
 struct SuggestionState {

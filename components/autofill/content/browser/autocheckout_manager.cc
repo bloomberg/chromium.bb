@@ -156,6 +156,7 @@ AutocheckoutManager::AutocheckoutManager(AutofillManager* autofill_manager)
       should_show_bubble_(true),
       is_autocheckout_bubble_showing_(false),
       in_autocheckout_flow_(false),
+      should_preserve_dialog_(false),
       google_transaction_id_(kTransactionIdNotSet),
       weak_ptr_factory_(this) {}
 
@@ -203,12 +204,13 @@ void AutocheckoutManager::FillForms() {
 
 void AutocheckoutManager::OnAutocheckoutPageCompleted(
     AutocheckoutStatus status) {
+  if (!in_autocheckout_flow_)
+    return;
+
   DVLOG(2) << "OnAutocheckoutPageCompleted, page_no: "
            << page_meta_data_->current_page_number
            << " status: "
            << status;
-  if (!in_autocheckout_flow_)
-    return;
 
   DCHECK_NE(MISSING_FIELDMAPPING, status);
 
@@ -225,6 +227,18 @@ void AutocheckoutManager::OnLoadedPageMetaData(
     scoped_ptr<AutocheckoutPageMetaData> page_meta_data) {
   scoped_ptr<AutocheckoutPageMetaData> old_meta_data = page_meta_data_.Pass();
   page_meta_data_ = page_meta_data.Pass();
+
+  // If there is no click element in the last page, then it's the real last page
+  // of the flow, and the dialog will be closed when the page navigates.
+  // Otherwise, the dialog should be preserved for the page loaded by the click
+  // element on the last page of the flow.
+  // Note, |should_preserve_dialog_| has to be computed at this point because
+  // |in_autocheckout_flow_| may change after |OnLoadedPageMetaData| is called.
+  should_preserve_dialog_ = in_autocheckout_flow_ ||
+      (old_meta_data.get() &&
+       old_meta_data->IsEndOfAutofillableFlow() &&
+       old_meta_data->proceed_element_descriptor.retrieval_method !=
+           WebElementDescriptor::NONE);
 
   // Don't log that the bubble could be displayed if the user entered an
   // Autocheckout flow and sees the first page of the flow again due to an
@@ -319,6 +333,9 @@ void AutocheckoutManager::ReturnAutocheckoutData(
     const FormStructure* result,
     const std::string& google_transaction_id) {
   if (!result) {
+    // When user cancels the dialog, |result| is NULL.
+    // TODO(): add AutocheckoutStatus.USER_CANCELLED, and call
+    //         EndAutocheckout(USER_CANCELLED) instead.
     in_autocheckout_flow_ = false;
     return;
   }
@@ -327,6 +344,7 @@ void AutocheckoutManager::ReturnAutocheckoutData(
   last_step_completion_timestamp_ = base::TimeTicks().Now();
   google_transaction_id_ = google_transaction_id;
   in_autocheckout_flow_ = true;
+  should_preserve_dialog_ = true;
   metric_logger_->LogAutocheckoutBuyFlowMetric(
       AutofillMetrics::AUTOCHECKOUT_BUY_FLOW_STARTED);
 

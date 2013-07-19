@@ -92,9 +92,6 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   void Show();
   void Hide();
 
-  // Whether Autocheckout is currently running.
-  bool AutocheckoutIsRunning() const;
-
   // Adds a step in the flow to the Autocheckout UI.
   void AddAutocheckoutStep(AutocheckoutStepType step_type);
 
@@ -312,6 +309,8 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // Whether the information input in this dialog will be securely transmitted
   // to the requesting site.
   virtual bool TransmissionWillBeSecure() const;
+
+  AutocheckoutState autocheckout_state() const { return autocheckout_state_; }
 
  private:
   // Whether or not the current request wants credit info back.
