@@ -23,7 +23,7 @@ import getos
 import http_download
 
 
-MAKE = 'nacl_sdk/make_3_81/make.exe'
+MAKE = 'nacl_sdk/make_3.99.90-26-gf80222c/make.exe'
 LIB_DICT = {
   'linux': [],
   'mac': [],
