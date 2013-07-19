@@ -806,20 +806,14 @@ void GraphicsContext::drawLineForDocumentMarker(const FloatPoint& pt, float widt
     originY *= deviceScaleFactor;
 #endif
 
-    // Make a shader for the bitmap with an origin of the box we'll draw. This
-    // shader is refcounted and will have an initial refcount of 1.
-    SkShader* shader = SkShader::CreateBitmapShader(
-        *misspellBitmap[index], SkShader::kRepeat_TileMode,
-        SkShader::kRepeat_TileMode);
+    RefPtr<SkShader> shader = adoptRef(SkShader::CreateBitmapShader(
+        *misspellBitmap[index], SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode));
     SkMatrix matrix;
     matrix.setTranslate(originX, originY);
     shader->setLocalMatrix(matrix);
 
-    // Assign the shader to the paint & release our reference. The paint will
-    // now own the shader and the shader will be destroyed when the paint goes
-    // out of scope.
     SkPaint paint;
-    paint.setShader(shader)->unref();
+    paint.setShader(shader.get());
 
     SkRect rect;
     rect.set(originX, originY, originX + WebCoreFloatToSkScalar(width) * deviceScaleFactor, originY + SkIntToScalar(misspellBitmap[index]->height()));
@@ -1861,7 +1855,7 @@ const SkPMColor GraphicsContext::antiColors2(int index)
 
 void GraphicsContext::setupShader(SkPaint* paint, Gradient* grad, Pattern* pat, SkColor color) const
 {
-    SkShader* shader = 0;
+    RefPtr<SkShader> shader;
 
     if (grad) {
         shader = grad->shader();
@@ -1873,7 +1867,7 @@ void GraphicsContext::setupShader(SkPaint* paint, Gradient* grad, Pattern* pat, 
     }
 
     paint->setColor(m_state->applyAlpha(color));
-    paint->setShader(shader);
+    paint->setShader(shader.get());
 }
 
 

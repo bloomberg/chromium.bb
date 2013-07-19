@@ -37,7 +37,8 @@
 #include "third_party/skia/include/core/SkColorPriv.h"
 #include "third_party/skia/include/effects/SkDashPathEffect.h"
 
-#include "wtf/PassOwnPtr.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 
@@ -52,27 +53,7 @@ public:
         , m_lineCap(SkPaint::kDefault_Cap)
         , m_lineJoin(SkPaint::kDefault_Join)
         , m_miterLimit(4)
-        , m_dash(0)
     {
-    }
-
-    StrokeData(const StrokeData& other)
-        : m_style(other.m_style)
-        , m_thickness(other.m_thickness)
-        , m_color(other.m_color)
-        , m_gradient(other.m_gradient)
-        , m_pattern(other.m_pattern)
-        , m_lineCap(other.m_lineCap)
-        , m_lineJoin(other.m_lineJoin)
-        , m_miterLimit(other.m_miterLimit)
-        , m_dash(other.m_dash)
-    {
-        SkSafeRef(m_dash);
-    }
-
-    ~StrokeData()
-    {
-        SkSafeUnref(m_dash);
     }
 
     StrokeStyle style() const { return m_style; }
@@ -119,7 +100,7 @@ private:
     SkPaint::Cap m_lineCap;
     SkPaint::Join m_lineJoin;
     float m_miterLimit;
-    SkDashPathEffect* m_dash;
+    RefPtr<SkDashPathEffect> m_dash;
 };
 
 } // namespace WebCore

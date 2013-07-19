@@ -28,6 +28,8 @@
 
 #include "config.h"
 #include "core/platform/graphics/StrokeData.h"
+#include "wtf/OwnArrayPtr.h"
+#include "wtf/PassOwnArrayPtr.h"
 
 namespace WebCore {
 
@@ -42,21 +44,17 @@ void StrokeData::setLineDash(const DashArray& dashes, float dashOffset)
         // If no dash is set, revert to solid stroke
         // FIXME: do we need to set NoStroke in some cases?
         m_style = SolidStroke;
-        SkSafeUnref(m_dash);
-        m_dash = 0;
+        m_dash.clear();
         return;
     }
 
     size_t count = !(dashLength % 2) ? dashLength : dashLength * 2;
-    SkScalar* intervals = new SkScalar[count];
+    OwnArrayPtr<SkScalar> intervals = adoptArrayPtr(new SkScalar[count]);
 
     for (unsigned i = 0; i < count; i++)
         intervals[i] = dashes[i % dashLength];
 
-    SkSafeUnref(m_dash);
-    m_dash = new SkDashPathEffect(intervals, count, dashOffset);
-
-    delete[] intervals;
+    m_dash = adoptRef(new SkDashPathEffect(intervals.get(), count, dashOffset));
 }
 
 float StrokeData::setupPaint(SkPaint* paint, int length) const
@@ -70,7 +68,7 @@ float StrokeData::setupPaint(SkPaint* paint, int length) const
     paint->setStrokeMiter(SkFloatToScalar(m_miterLimit));
 
     if (m_dash) {
-        paint->setPathEffect(m_dash);
+        paint->setPathEffect(m_dash.get());
     } else {
         switch (m_style) {
         case NoStroke:
@@ -102,7 +100,8 @@ float StrokeData::setupPaint(SkPaint* paint, int length) const
             }
             SkScalar dashLengthSk = SkIntToScalar(dashLength);
             SkScalar intervals[2] = { dashLengthSk, dashLengthSk };
-            paint->setPathEffect(new SkDashPathEffect(intervals, 2, SkIntToScalar(phase)))->unref();
+            RefPtr<SkDashPathEffect> pathEffect = adoptRef(new SkDashPathEffect(intervals, 2, SkIntToScalar(phase)));
+            paint->setPathEffect(pathEffect.get());
         }
     }
 
