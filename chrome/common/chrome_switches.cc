@@ -654,6 +654,9 @@ const char kEnableResetProfileSettings[]    = "enable-reset-profile-settings";
 const char kEnableResourceContentSettings[] =
     "enable-resource-content-settings";
 
+// Enables save password prompt bubble.
+const char kEnableSavePasswordBubble[]      = "enable-save-password-bubble";
+
 // Controls the support for SDCH filtering (dictionary based expansion of
 // content). By default SDCH filtering is enabled. To disable SDCH filtering,
 // use "--enable-sdch=0" as command line argument. SDCH is currently only
