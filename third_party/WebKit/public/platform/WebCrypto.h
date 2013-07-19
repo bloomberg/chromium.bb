@@ -44,7 +44,7 @@ class WebCryptoOperationResult;
 class WebCrypto {
 public:
     // FIXME: Deprecated, delete once chromium side is updated.
-    virtual WebCryptoOperation* digest(const WebCryptoAlgorithm&) = 0;
+    virtual WebCryptoOperation* digest(const WebCryptoAlgorithm&) { return 0; }
 
     // The following methods begin an asynchronous multi-part cryptographic
     // operation.
@@ -84,7 +84,7 @@ public:
     // Once the cryptoOperation is no longer "in progress" the "result" pointer
     // is no longer valid. At this time the embedder is responsible for freeing
     // the cryptoOperation.
-    virtual void digest2(const WebCryptoAlgorithm&, WebCryptoOperationResult*) { }
+    virtual void digest(const WebCryptoAlgorithm&, WebCryptoOperationResult*) { }
 
 protected:
     virtual ~WebCrypto() { }

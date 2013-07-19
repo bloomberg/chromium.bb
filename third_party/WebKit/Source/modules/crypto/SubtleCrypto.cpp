@@ -103,10 +103,7 @@ private:
 
 class MockPlatformCrypto : public WebKit::WebCrypto {
 public:
-    // FIXME: delete
-    virtual WebKit::WebCryptoOperation* digest(const WebKit::WebCryptoAlgorithm&) { return 0; }
-
-    virtual void digest2(const WebKit::WebCryptoAlgorithm& algorithm, WebKit::WebCryptoOperationResult* result) OVERRIDE
+    virtual void digest(const WebKit::WebCryptoAlgorithm& algorithm, WebKit::WebCryptoOperationResult* result) OVERRIDE
     {
         if (algorithm.id() == WebKit::WebCryptoAlgorithmIdSha1) {
             result->initializationSucceded(new MockSha1Operation(result));
@@ -176,7 +173,7 @@ PassRefPtr<CryptoOperation> SubtleCrypto::digest(const Dictionary& rawAlgorithm,
         return 0;
 
     RefPtr<CryptoOperation> op = CryptoOperation::create(algorithm, &ec);
-    platformCrypto->digest2(algorithm, op.get());
+    platformCrypto->digest(algorithm, op.get());
     return op.release();
 }
 
