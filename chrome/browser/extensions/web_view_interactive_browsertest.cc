@@ -143,6 +143,12 @@ class WebViewInteractiveTest
     LoadAndLaunchPlatformApp(app_location.c_str());
     ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
 
+    ASSERT_TRUE(ui_test_utils::ShowAndFocusNativeWindow(
+        GetPlatformAppWindow()));
+
+    // Flush any pending events to make sure we start with a clean slate.
+    content::RunAllPendingInMessageLoop();
+
     content::WebContents* embedder_web_contents =
         GetFirstShellWindowWebContents();
     ASSERT_TRUE(embedder_web_contents);
@@ -654,3 +660,12 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, Navigation_BackForwardKeys) {
 
   ASSERT_TRUE(done_listener.WaitUntilSatisfied());
 }
+
+IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest,
+                       PointerLock_PointerLockLostWithFocus) {
+  TestHelper("testPointerLockLostWithFocus",
+             "DonePointerLockTest.PASSED",
+             "DonePointerLockTest.FAILED",
+             "web_view/pointerlock");
+}
+

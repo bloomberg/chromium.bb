@@ -1,0 +1,14 @@
+{
+  "name": "Platform App Test: <webview> Pointer Lock",
+  "description": "Loads a guest which requests a pointer lock",
+  "version": "1",
+  "permissions": [
+    "pointerLock",
+    "webview"
+  ],
+  "app": {
+    "background": {
+      "scripts": ["test.js"]
+    }
+  }
+}
