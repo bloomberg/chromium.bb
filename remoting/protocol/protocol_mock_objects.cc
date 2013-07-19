@@ -48,13 +48,28 @@ MockSessionManager::MockSessionManager() {}
 
 MockSessionManager::~MockSessionManager() {}
 
-MockPairingRegistryDelegate::MockPairingRegistryDelegate() {
+MockPairingRegistryDelegate::MockPairingRegistryDelegate()
+    : run_save_callback_automatically_(true) {
 }
 
 MockPairingRegistryDelegate::~MockPairingRegistryDelegate() {
 }
 
 void MockPairingRegistryDelegate::Save(
+    const std::string& pairings_json,
+    const PairingRegistry::SaveCallback& callback) {
+  EXPECT_TRUE(load_callback_.is_null());
+  EXPECT_TRUE(save_callback_.is_null());
+  if (run_save_callback_automatically_) {
+    SetPairingsJsonAndRunCallback(pairings_json, callback);
+  } else {
+    save_callback_ = base::Bind(
+        &MockPairingRegistryDelegate::SetPairingsJsonAndRunCallback,
+        base::Unretained(this), pairings_json, callback);
+  }
+}
+
+void MockPairingRegistryDelegate::SetPairingsJsonAndRunCallback(
     const std::string& pairings_json,
     const PairingRegistry::SaveCallback& callback) {
   pairings_json_ = pairings_json;
@@ -65,13 +80,25 @@ void MockPairingRegistryDelegate::Save(
 
 void MockPairingRegistryDelegate::Load(
     const PairingRegistry::LoadCallback& callback) {
-  load_callback_ = base::Bind(base::Bind(callback), pairings_json_);
+  EXPECT_TRUE(load_callback_.is_null());
+  EXPECT_TRUE(save_callback_.is_null());
+  load_callback_ = base::Bind(callback, pairings_json_);
 }
 
 void MockPairingRegistryDelegate::RunCallback() {
-  DCHECK(!load_callback_.is_null());
-  load_callback_.Run();
-  load_callback_.Reset();
+  if (!load_callback_.is_null()) {
+    EXPECT_TRUE(save_callback_.is_null());
+    base::Closure load_callback = load_callback_;
+    load_callback_.Reset();
+    load_callback.Run();
+  } else if (!save_callback_.is_null()) {
+    EXPECT_TRUE(load_callback_.is_null());
+    base::Closure save_callback = save_callback_;
+    save_callback_.Reset();
+    save_callback.Run();
+  } else {
+    ADD_FAILURE() << "RunCallback called without any callbacks set.";
+  }
 }
 
 }  // namespace protocol

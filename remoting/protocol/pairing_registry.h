@@ -6,6 +6,7 @@
 #define REMOTING_PROTOCOL_PAIRING_REGISTRY_H_
 
 #include <map>
+#include <queue>
 #include <string>
 #include <vector>
 
@@ -127,8 +128,13 @@ class PairingRegistry : public base::RefCountedThreadSafe<PairingRegistry>,
 
   virtual ~PairingRegistry();
 
+  // Helper method for unit tests.
   void AddPairing(const Pairing& pairing);
+
+  // Worker functions for each of the public methods, passed as a callback to
+  // the delegate.
   void MergePairingAndSave(const Pairing& pairing,
+                           const SaveCallback& callback,
                            const std::string& pairings_json);
   void DoGetPairing(const std::string& client_id,
                     const GetPairingCallback& callback,
@@ -139,6 +145,22 @@ class PairingRegistry : public base::RefCountedThreadSafe<PairingRegistry>,
                        const SaveCallback& callback,
                        const std::string& pairings_json);
 
+  // "Trampoline" callbacks that schedule the next pending request and then
+  // invoke the original caller-supplied callback.
+  void InvokeLoadCallbackAndScheduleNext(
+      const LoadCallback& callback, const std::string& pairings_json);
+  void InvokeSaveCallbackAndScheduleNext(
+      const SaveCallback& callback, bool success);
+  void InvokeGetPairingCallbackAndScheduleNext(
+      const GetPairingCallback& callback, Pairing pairing);
+  void InvokeGetAllPairingsCallbackAndScheduleNext(
+      const GetAllPairingsCallback& callback,
+      scoped_ptr<base::ListValue> pairings);
+
+  // Queue management methods.
+  void ServiceOrQueueRequest(const base::Closure& request);
+  void ServiceNextRequest();
+
   // Translate between the structured and serialized forms of the pairing data.
   static PairedClients DecodeJson(const std::string& pairings_json);
   static std::string EncodeJson(const PairedClients& clients);
@@ -147,6 +169,8 @@ class PairingRegistry : public base::RefCountedThreadSafe<PairingRegistry>,
       bool include_shared_secrets);
 
   scoped_ptr<Delegate> delegate_;
+
+  std::queue<base::Closure> pending_requests_;
 
   DISALLOW_COPY_AND_ASSIGN(PairingRegistry);
 };

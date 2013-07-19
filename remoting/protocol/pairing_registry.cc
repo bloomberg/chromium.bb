@@ -83,41 +83,82 @@ PairingRegistry::Pairing PairingRegistry::CreatePairing(
 void PairingRegistry::GetPairing(const std::string& client_id,
                                  const GetPairingCallback& callback) {
   DCHECK(CalledOnValidThread());
-  delegate_->Load(
-      base::Bind(&PairingRegistry::DoGetPairing, this, client_id, callback));
+  GetPairingCallback wrapped_callback = base::Bind(
+      &PairingRegistry::InvokeGetPairingCallbackAndScheduleNext,
+      this, callback);
+  LoadCallback load_callback = base::Bind(
+      &PairingRegistry::DoGetPairing, this, client_id, wrapped_callback);
+  // |Unretained| and |get| are both safe here because the delegate is owned
+  // by the pairing registry and so is guaranteed to exist when the request
+  // is serviced.
+  base::Closure request = base::Bind(
+      &PairingRegistry::Delegate::Load,
+      base::Unretained(delegate_.get()), load_callback);
+  ServiceOrQueueRequest(request);
 }
 
-void PairingRegistry::GetAllPairings(const GetAllPairingsCallback& callback) {
+void PairingRegistry::GetAllPairings(
+    const GetAllPairingsCallback& callback) {
   DCHECK(CalledOnValidThread());
-  delegate_->Load(
-      base::Bind(&PairingRegistry::SanitizePairings, this, callback));
+  GetAllPairingsCallback wrapped_callback = base::Bind(
+      &PairingRegistry::InvokeGetAllPairingsCallbackAndScheduleNext,
+      this, callback);
+  LoadCallback load_callback = base::Bind(
+      &PairingRegistry::SanitizePairings, this, wrapped_callback);
+  base::Closure request = base::Bind(
+      &PairingRegistry::Delegate::Load,
+      base::Unretained(delegate_.get()), load_callback);
+  ServiceOrQueueRequest(request);
 }
 
-void PairingRegistry::DeletePairing(const std::string& client_id,
-                                    const SaveCallback& callback) {
+void PairingRegistry::DeletePairing(
+    const std::string& client_id, const SaveCallback& callback) {
   DCHECK(CalledOnValidThread());
-  delegate_->Load(
-      base::Bind(&PairingRegistry::DoDeletePairing,
-                 this, client_id, callback));
+  SaveCallback wrapped_callback = base::Bind(
+      &PairingRegistry::InvokeSaveCallbackAndScheduleNext,
+      this, callback);
+  LoadCallback load_callback = base::Bind(
+      &PairingRegistry::DoDeletePairing, this, client_id, wrapped_callback);
+  base::Closure request = base::Bind(
+      &PairingRegistry::Delegate::Load,
+      base::Unretained(delegate_.get()), load_callback);
+  ServiceOrQueueRequest(request);
 }
 
-void PairingRegistry::ClearAllPairings(const SaveCallback& callback) {
+void PairingRegistry::ClearAllPairings(
+    const SaveCallback& callback) {
   DCHECK(CalledOnValidThread());
-  delegate_->Save(EncodeJson(PairedClients()), callback);
+  SaveCallback wrapped_callback = base::Bind(
+      &PairingRegistry::InvokeSaveCallbackAndScheduleNext,
+      this, callback);
+  base::Closure request = base::Bind(
+      &PairingRegistry::Delegate::Save,
+      base::Unretained(delegate_.get()),
+      EncodeJson(PairedClients()),
+      wrapped_callback);
+  ServiceOrQueueRequest(request);
 }
 
 void PairingRegistry::AddPairing(const Pairing& pairing) {
-  delegate_->Load(
-      base::Bind(&PairingRegistry::MergePairingAndSave, this, pairing));
+  SaveCallback callback = base::Bind(
+      &PairingRegistry::InvokeSaveCallbackAndScheduleNext,
+      this, SaveCallback());
+  LoadCallback load_callback = base::Bind(
+      &PairingRegistry::MergePairingAndSave, this, pairing, callback);
+  base::Closure request = base::Bind(
+      &PairingRegistry::Delegate::Load,
+      base::Unretained(delegate_.get()), load_callback);
+  ServiceOrQueueRequest(request);
 }
 
 void PairingRegistry::MergePairingAndSave(const Pairing& pairing,
+                                          const SaveCallback& callback,
                                           const std::string& pairings_json) {
   DCHECK(CalledOnValidThread());
   PairedClients clients = DecodeJson(pairings_json);
   clients[pairing.client_id()] = pairing;
   std::string new_pairings_json = EncodeJson(clients);
-  delegate_->Save(new_pairings_json, SaveCallback());
+  delegate_->Save(new_pairings_json, callback);
 }
 
 void PairingRegistry::DoGetPairing(const std::string& client_id,
@@ -141,6 +182,38 @@ void PairingRegistry::DoDeletePairing(const std::string& client_id,
   clients.erase(client_id);
   std::string new_pairings_json = EncodeJson(clients);
   delegate_->Save(new_pairings_json, callback);
+}
+
+void PairingRegistry::InvokeLoadCallbackAndScheduleNext(
+    const LoadCallback& callback, const std::string& pairings_json) {
+  callback.Run(pairings_json);
+  pending_requests_.pop();
+  ServiceNextRequest();
+}
+
+void PairingRegistry::InvokeSaveCallbackAndScheduleNext(
+    const SaveCallback& callback, bool success) {
+  // CreatePairing doesn't have a callback, so the callback can be null.
+  if (!callback.is_null()) {
+    callback.Run(success);
+  }
+  pending_requests_.pop();
+  ServiceNextRequest();
+}
+
+void PairingRegistry::InvokeGetPairingCallbackAndScheduleNext(
+    const GetPairingCallback& callback, Pairing pairing) {
+  callback.Run(pairing);
+  pending_requests_.pop();
+  ServiceNextRequest();
+}
+
+void PairingRegistry::InvokeGetAllPairingsCallbackAndScheduleNext(
+    const GetAllPairingsCallback& callback,
+    scoped_ptr<base::ListValue> pairings) {
+  callback.Run(pairings.Pass());
+  pending_requests_.pop();
+  ServiceNextRequest();
 }
 
 // static
@@ -187,6 +260,22 @@ PairingRegistry::PairedClients PairingRegistry::DecodeJson(
   }
 
   return result;
+}
+
+void PairingRegistry::ServiceOrQueueRequest(const base::Closure& request) {
+  bool servicing_request = !pending_requests_.empty();
+  pending_requests_.push(request);
+  if (!servicing_request) {
+    ServiceNextRequest();
+  }
+}
+
+void PairingRegistry::ServiceNextRequest() {
+  if (pending_requests_.empty()) {
+    return;
+  }
+  base::Closure request = pending_requests_.front();
+  request.Run();
 }
 
 // static
