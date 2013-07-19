@@ -22,7 +22,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/test/cocoa_test_event_utils.h"
 #import "ui/base/test/ui_cocoa_test_helper.h"
-#include "webkit/plugins/npapi/webplugin.h"
 
 // Declare things that are part of the 10.7 SDK.
 #if !defined(MAC_OS_X_VERSION_10_7) || \

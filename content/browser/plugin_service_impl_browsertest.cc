@@ -18,7 +18,6 @@
 #include "content/shell/shell.h"
 #include "content/test/content_browser_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/npapi/plugin_utils.h"
 
 namespace content {

@@ -65,19 +65,16 @@ class Range;
 }
 
 namespace webkit {
-namespace npapi {
-struct WebPluginGeometry;
-}  // namespace npapi
-
 namespace ppapi {
 class PluginInstance;
 }  // namespace ppapi
 }  // namespace webkit
 
 namespace content {
-struct GpuRenderingStats;
 class RenderWidgetCompositor;
 class RenderWidgetTest;
+struct GpuRenderingStats;
+struct WebPluginGeometry;
 
 // RenderWidget provides a communication bridge between a WebWidget and
 // a RenderWidgetHost, the latter of which lives in a different process.
@@ -162,7 +159,7 @@ class CONTENT_EXPORT RenderWidget
 
   // Called when a plugin is moved.  These events are queued up and sent with
   // the next paint or scroll message to the host.
-  void SchedulePluginMove(const webkit::npapi::WebPluginGeometry& move);
+  void SchedulePluginMove(const WebPluginGeometry& move);
 
   // Called when a plugin window has been destroyed, to make sure the currently
   // pending moves don't try to reference it.
@@ -657,7 +654,7 @@ class CONTENT_EXPORT RenderWidget
   WebKit::WebPopupType popup_type_;
 
   // Holds all the needed plugin window moves for a scroll.
-  typedef std::vector<webkit::npapi::WebPluginGeometry> WebPluginGeometryVector;
+  typedef std::vector<WebPluginGeometry> WebPluginGeometryVector;
   WebPluginGeometryVector plugin_window_moves_;
 
   // A custom background for the widget.

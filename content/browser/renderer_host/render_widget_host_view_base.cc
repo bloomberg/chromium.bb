@@ -22,17 +22,15 @@
 #include "base/message_loop/message_loop.h"
 #include "base/win/wrapped_window_proc.h"
 #include "content/browser/plugin_process_host.h"
+#include "content/common/plugin_constants_win.h"
+#include "content/common/webplugin_geometry.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/common/content_switches.h"
 #include "ui/base/win/dpi.h"
 #include "ui/base/win/hwnd_util.h"
 #include "ui/gfx/gdi_util.h"
-#include "webkit/plugins/npapi/plugin_constants_win.h"
-#include "webkit/plugins/npapi/webplugin.h"
-#include "webkit/plugins/npapi/webplugin_delegate_impl.h"
-
-using webkit::npapi::WebPluginDelegateImpl;
+#include "webkit/plugins/npapi/plugin_utils.h"
 #endif
 
 #if defined(TOOLKIT_GTK)
@@ -120,7 +118,7 @@ LRESULT CALLBACK PluginWrapperWindowProc(HWND window, unsigned int message,
 
 bool IsPluginWrapperWindow(HWND window) {
   return ui::GetClassNameW(window) ==
-      string16(webkit::npapi::kWrapperNativeWindowClassName);
+      string16(kWrapperNativeWindowClassName);
 }
 
 // Create an intermediate window between the given HWND and its parent.
@@ -130,7 +128,7 @@ HWND ReparentWindow(HWND window, HWND parent) {
   if (!atom) {
     WNDCLASSEX window_class;
     base::win::InitializeWindowClass(
-        webkit::npapi::kWrapperNativeWindowClassName,
+        kWrapperNativeWindowClassName,
         &base::win::WrappedWindowProc<PluginWrapperWindowProc>,
         CS_DBLCLKS,
         0,
@@ -166,12 +164,12 @@ HWND ReparentWindow(HWND window, HWND parent) {
 }
 
 BOOL CALLBACK PaintEnumChildProc(HWND hwnd, LPARAM lparam) {
-  if (!WebPluginDelegateImpl::IsPluginDelegateWindow(hwnd))
+  if (!webkit::npapi::IsPluginDelegateWindow(hwnd))
     return TRUE;
 
   gfx::Rect* rect = reinterpret_cast<gfx::Rect*>(lparam);
   gfx::Rect rect_in_pixels = ui::win::DIPToScreenRect(*rect);
-  static UINT msg = RegisterWindowMessage(webkit::npapi::kPaintMessageName);
+  static UINT msg = RegisterWindowMessage(kPaintMessageName);
   WPARAM wparam = rect_in_pixels.x() << 16 | rect_in_pixels.y();
   lparam = rect_in_pixels.width() << 16 | rect_in_pixels.height();
 
@@ -193,7 +191,7 @@ BOOL CALLBACK DetachPluginWindowsCallbackInternal(HWND window, LPARAM param) {
 
 // static
 void RenderWidgetHostViewBase::DetachPluginWindowsCallback(HWND window) {
-  if (WebPluginDelegateImpl::IsPluginDelegateWindow(window) &&
+  if (webkit::npapi::IsPluginDelegateWindow(window) &&
       !IsHungAppWindow(window)) {
     ::ShowWindow(window, SW_HIDE);
     SetParent(window, NULL);
@@ -203,7 +201,7 @@ void RenderWidgetHostViewBase::DetachPluginWindowsCallback(HWND window) {
 // static
 void RenderWidgetHostViewBase::MovePluginWindowsHelper(
     HWND parent,
-    const std::vector<webkit::npapi::WebPluginGeometry>& moves) {
+    const std::vector<WebPluginGeometry>& moves) {
   if (moves.empty())
     return;
 
@@ -221,7 +219,7 @@ void RenderWidgetHostViewBase::MovePluginWindowsHelper(
 
   for (size_t i = 0; i < moves.size(); ++i) {
     unsigned long flags = 0;
-    const webkit::npapi::WebPluginGeometry& move = moves[i];
+    const WebPluginGeometry& move = moves[i];
     HWND window = move.window;
 
     // As the plugin parent window which lives on the browser UI thread is
@@ -234,7 +232,7 @@ void RenderWidgetHostViewBase::MovePluginWindowsHelper(
     if (!::IsWindow(window))
       continue;
 
-    if (!WebPluginDelegateImpl::IsPluginDelegateWindow(window)) {
+    if (!webkit::npapi::IsPluginDelegateWindow(window)) {
       // The renderer should only be trying to move plugin windows. However,
       // this may happen as a result of a race condition (i.e. even after the
       // check right above), so we ignore it.
@@ -242,7 +240,7 @@ void RenderWidgetHostViewBase::MovePluginWindowsHelper(
     }
 
     if (oop_plugins) {
-      if (cur_parent == WebPluginDelegateImpl::GetDefaultWindowParent()) {
+      if (cur_parent == webkit::npapi::GetDefaultWindowParent()) {
         // The plugin window hasn't been parented yet, add an intermediate
         // window that lives on this thread to speed up scrolling. Note this
         // only works with out of process plugins since we depend on
@@ -257,7 +255,7 @@ void RenderWidgetHostViewBase::MovePluginWindowsHelper(
       // process synchronous Windows messages.
       window = cur_parent;
     } else {
-      if (cur_parent == WebPluginDelegateImpl::GetDefaultWindowParent())
+      if (cur_parent == webkit::npapi::GetDefaultWindowParent())
         SetParent(window, parent);
     }
 
@@ -314,7 +312,7 @@ void RenderWidgetHostViewBase::MovePluginWindowsHelper(
 
 #if defined(USE_AURA)
   for (size_t i = 0; i < moves.size(); ++i) {
-    const webkit::npapi::WebPluginGeometry& move = moves[i];
+    const WebPluginGeometry& move = moves[i];
     RECT r;
     GetWindowRect(move.window, &r);
     gfx::Rect gr(r);

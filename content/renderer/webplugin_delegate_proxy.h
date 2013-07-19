@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner_helpers.h"
+#include "content/child/npapi/webplugin_delegate.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_sender.h"
@@ -19,7 +20,6 @@
 #include "ui/gfx/rect.h"
 #include "ui/surface/transport_dib.h"
 #include "url/gurl.h"
-#include "webkit/plugins/npapi/webplugin_delegate.h"
 #include "webkit/plugins/webplugininfo.h"
 
 #if defined(OS_MACOSX)
@@ -49,7 +49,7 @@ class RenderViewImpl;
 // An implementation of WebPluginDelegate that proxies all calls to
 // the plugin process.
 class WebPluginDelegateProxy
-    : public webkit::npapi::WebPluginDelegate,
+    : public WebPluginDelegate,
       public IPC::Listener,
       public IPC::Sender,
       public base::SupportsWeakPtr<WebPluginDelegateProxy> {
@@ -62,7 +62,7 @@ class WebPluginDelegateProxy
   virtual bool Initialize(const GURL& url,
                           const std::vector<std::string>& arg_names,
                           const std::vector<std::string>& arg_values,
-                          webkit::npapi::WebPlugin* plugin,
+                          WebPlugin* plugin,
                           bool load_manually) OVERRIDE;
   virtual void UpdateGeometry(const gfx::Rect& window_rect,
                               const gfx::Rect& clip_rect) OVERRIDE;
@@ -124,9 +124,9 @@ class WebPluginDelegateProxy
   virtual void DidReceiveManualData(const char* buffer, int length) OVERRIDE;
   virtual void DidFinishManualLoading() OVERRIDE;
   virtual void DidManualLoadFail() OVERRIDE;
-  virtual webkit::npapi::WebPluginResourceClient* CreateResourceClient(
+  virtual WebPluginResourceClient* CreateResourceClient(
       unsigned long resource_id, const GURL& url, int notify_id) OVERRIDE;
-  virtual webkit::npapi::WebPluginResourceClient* CreateSeekableResourceClient(
+  virtual WebPluginResourceClient* CreateSeekableResourceClient(
       unsigned long resource_id, int range_request_id) OVERRIDE;
 
   gfx::PluginWindowHandle GetPluginWindowHandle();
@@ -247,7 +247,7 @@ class WebPluginDelegateProxy
 #endif
 
   base::WeakPtr<RenderViewImpl> render_view_;
-  webkit::npapi::WebPlugin* plugin_;
+  WebPlugin* plugin_;
   bool uses_shared_bitmaps_;
 #if defined(OS_MACOSX)
   bool uses_compositor_;

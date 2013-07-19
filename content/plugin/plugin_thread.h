@@ -9,8 +9,8 @@
 #include "base/native_library.h"
 #include "build/build_config.h"
 #include "content/child/child_thread.h"
+#include "content/child/npapi/plugin_lib.h"
 #include "content/plugin/plugin_channel.h"
-#include "webkit/plugins/npapi/plugin_lib.h"
 
 #if defined(OS_POSIX)
 #include "base/file_descriptor_posix.h"

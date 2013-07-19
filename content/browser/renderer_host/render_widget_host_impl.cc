@@ -60,8 +60,7 @@
 #include "ui/gfx/vector2d_conversions.h"
 #include "webkit/common/cursors/webcursor.h"
 #include "webkit/common/webpreferences.h"
-#include "webkit/plugins/npapi/webplugin.h"
-#include "webkit/plugins/npapi/webplugin_delegate_impl.h"
+#include "webkit/plugins/npapi/plugin_utils.h"
 
 #if defined(TOOLKIT_GTK)
 #include "content/browser/renderer_host/backing_store_gtk.h"
@@ -72,7 +71,6 @@
 using base::Time;
 using base::TimeDelta;
 using base::TimeTicks;
-using webkit::npapi::WebPluginDelegateImpl;
 using WebKit::WebGestureEvent;
 using WebKit::WebInputEvent;
 using WebKit::WebKeyboardEvent;
@@ -2233,8 +2231,7 @@ void RenderWidgetHostImpl::OnShowDisambiguationPopup(
 void RenderWidgetHostImpl::OnWindowlessPluginDummyWindowCreated(
     gfx::NativeViewId dummy_activation_window) {
   HWND hwnd = reinterpret_cast<HWND>(dummy_activation_window);
-  if (!IsWindow(hwnd) ||
-      !WebPluginDelegateImpl::IsDummyActivationWindow(hwnd)) {
+  if (!IsWindow(hwnd) || !webkit::npapi::IsDummyActivationWindow(hwnd)) {
     // This may happen as a result of a race condition when the plugin is going
     // away.
     return;
@@ -2600,7 +2597,7 @@ void RenderWidgetHostImpl::ParentChanged(gfx::NativeViewId new_parent) {
 #if defined(OS_WIN)
   HWND hwnd = reinterpret_cast<HWND>(new_parent);
   if (!hwnd)
-    hwnd = WebPluginDelegateImpl::GetDefaultWindowParent();
+    hwnd = webkit::npapi::GetDefaultWindowParent();
   for (std::list<HWND>::iterator i = dummy_windows_for_activation_.begin();
         i != dummy_windows_for_activation_.end(); ++i) {
     SetParent(*i, hwnd);

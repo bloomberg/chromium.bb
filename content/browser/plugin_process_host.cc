@@ -50,9 +50,8 @@
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
+#include "content/common/plugin_constants_win.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
-#include "webkit/plugins/npapi/plugin_constants_win.h"
-#include "webkit/plugins/npapi/webplugin_delegate_impl.h"
 #endif
 
 namespace content {

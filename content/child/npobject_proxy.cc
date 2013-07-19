@@ -5,12 +5,11 @@
 #include "content/child/npobject_proxy.h"
 
 #include "content/child/np_channel_base.h"
+#include "content/child/npapi/plugin_host.h"
+#include "content/child/npapi/plugin_instance.h"
 #include "content/child/npobject_util.h"
 #include "content/child/plugin_messages.h"
 #include "third_party/WebKit/public/web/WebBindings.h"
-#include "webkit/glue/webkit_glue.h"
-#include "webkit/plugins/npapi/plugin_host.h"
-#include "webkit/plugins/npapi/plugin_instance.h"
 
 using WebKit::WebBindings;
 
@@ -390,7 +389,7 @@ bool NPObjectProxy::NPNEnumerate(NPObject *obj,
 
   *count = static_cast<unsigned int>(value_param.size());
   *value = static_cast<NPIdentifier *>(
-      webkit::npapi::PluginHost::Singleton()->host_functions()->memalloc(
+      PluginHost::Singleton()->host_functions()->memalloc(
           sizeof(NPIdentifier) * *count));
   for (unsigned int i = 0; i < *count; ++i)
     (*value)[i] = CreateNPIdentifier(value_param[i]);
@@ -470,8 +469,8 @@ bool NPObjectProxy::NPNEvaluate(NPP npp,
   bool popups_allowed = false;
 
   if (npp) {
-    webkit::npapi::PluginInstance* plugin_instance =
-        reinterpret_cast<webkit::npapi::PluginInstance*>(npp->ndata);
+    PluginInstance* plugin_instance =
+        reinterpret_cast<PluginInstance*>(npp->ndata);
     if (plugin_instance)
       popups_allowed = plugin_instance->popups_allowed();
   }

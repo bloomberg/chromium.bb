@@ -14,7 +14,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/win/hwnd_util.h"
 #include "webkit/plugins/npapi/plugin_utils.h"
-#include "webkit/plugins/npapi/webplugin_delegate_impl.h"
 
 namespace {
 
@@ -175,9 +174,8 @@ bool HungPluginAction::GetPluginNameAndVersion(HWND plugin_window,
       // we have gone too far.
       return false;
     }
-    if (webkit::npapi::WebPluginDelegateImpl::GetPluginNameFromWindow(
-            window_to_check, plugin_name)) {
-      webkit::npapi::WebPluginDelegateImpl::GetPluginVersionFromWindow(
+    if (webkit::npapi::GetPluginNameFromWindow(window_to_check, plugin_name)) {
+      webkit::npapi::GetPluginVersionFromWindow(
           window_to_check, plugin_version);
       return true;
     }

@@ -17,6 +17,7 @@
 #include "base/memory/shared_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
+#include "content/child/npapi/webplugin.h"
 #include "ipc/ipc_message.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -26,16 +27,10 @@
 #endif
 #include "ui/gl/gpu_preference.h"
 #include "ui/surface/transport_dib.h"
-#include "webkit/plugins/npapi/webplugin.h"
-
-namespace webkit {
-namespace npapi {
-class WebPluginDelegateImpl;
-}
-}
 
 namespace content {
 class PluginChannel;
+class WebPluginDelegateImpl;
 
 #if defined(OS_MACOSX)
 class WebPluginAcceleratedSurfaceProxy;
@@ -43,7 +38,7 @@ class WebPluginAcceleratedSurfaceProxy;
 
 // This is an implementation of WebPlugin that proxies all calls to the
 // renderer.
-class WebPluginProxy : public webkit::npapi::WebPlugin {
+class WebPluginProxy : public WebPlugin {
  public:
   // Creates a new proxy for WebPlugin, using the given sender to send the
   // marshalled WebPlugin calls.
@@ -53,7 +48,7 @@ class WebPluginProxy : public webkit::npapi::WebPlugin {
                  int host_render_view_routing_id);
   virtual ~WebPluginProxy();
 
-  void set_delegate(webkit::npapi::WebPluginDelegateImpl* d) { delegate_ = d; }
+  void set_delegate(WebPluginDelegateImpl* d) { delegate_ = d; }
 
   // WebPlugin overrides
   virtual void SetWindow(gfx::PluginWindowHandle window) OVERRIDE;
@@ -84,7 +79,7 @@ class WebPluginProxy : public webkit::npapi::WebPlugin {
 
   // Returns a WebPluginResourceClient object given its id, or NULL if no
   // object with that id exists.
-  webkit::npapi::WebPluginResourceClient* GetResourceClient(int id);
+  WebPluginResourceClient* GetResourceClient(int id);
 
   // Returns the id of the renderer that contains this plugin.
   int GetRendererId();
@@ -101,8 +96,7 @@ class WebPluginProxy : public webkit::npapi::WebPlugin {
   void DidPaint();
 
   // Notification received on a plugin issued resource request creation.
-  void OnResourceCreated(int resource_id,
-                         webkit::npapi::WebPluginResourceClient* client);
+  void OnResourceCreated(int resource_id, WebPluginResourceClient* client);
 
   virtual void HandleURLRequest(const char* url,
                                 const char* method,
@@ -124,14 +118,12 @@ class WebPluginProxy : public webkit::npapi::WebPlugin {
                                        bool defer) OVERRIDE;
   virtual bool IsOffTheRecord() OVERRIDE;
   virtual void ResourceClientDeleted(
-      webkit::npapi::WebPluginResourceClient* resource_client) OVERRIDE;
+      WebPluginResourceClient* resource_client) OVERRIDE;
 
 #if defined(OS_MACOSX)
   virtual void FocusChanged(bool focused) OVERRIDE;
-
   virtual void StartIme() OVERRIDE;
-
-  virtual webkit::npapi::WebPluginAcceleratedSurface*
+  virtual WebPluginAcceleratedSurface*
       GetAcceleratedSurface(gfx::GpuPreference gpu_preference) OVERRIDE;
 
   //----------------------------------------------------------------------
@@ -221,15 +213,14 @@ class WebPluginProxy : public webkit::npapi::WebPlugin {
 
 #endif
 
-  typedef base::hash_map<int, webkit::npapi::WebPluginResourceClient*>
-      ResourceClientMap;
+  typedef base::hash_map<int, WebPluginResourceClient*> ResourceClientMap;
   ResourceClientMap resource_clients_;
 
   scoped_refptr<PluginChannel> channel_;
   int route_id_;
   NPObject* window_npobject_;
   NPObject* plugin_element_;
-  webkit::npapi::WebPluginDelegateImpl* delegate_;
+  WebPluginDelegateImpl* delegate_;
   gfx::Rect damaged_rect_;
   bool waiting_for_paint_;
   // The url of the main frame hosting the plugin.

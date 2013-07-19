@@ -18,6 +18,7 @@
 #include "cc/base/switches.h"
 #include "cc/output/output_surface.h"
 #include "cc/trees/layer_tree_host.h"
+#include "content/child/npapi/webplugin.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/common/input_messages.h"
 #include "content/common/swapped_out_messages.h"
@@ -57,7 +58,6 @@
 #include "ui/gl/gl_switches.h"
 #include "ui/surface/transport_dib.h"
 #include "webkit/glue/webkit_glue.h"
-#include "webkit/plugins/npapi/webplugin.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/renderer/compositor_bindings/web_rendering_stats_impl.h"
 #include "webkit/renderer/cursor_utils.h"
@@ -2370,8 +2370,7 @@ void RenderWidget::didHandleGestureEvent(
 #endif
 }
 
-void RenderWidget::SchedulePluginMove(
-    const webkit::npapi::WebPluginGeometry& move) {
+void RenderWidget::SchedulePluginMove(const WebPluginGeometry& move) {
   size_t i = 0;
   for (; i < plugin_window_moves_.size(); ++i) {
     if (plugin_window_moves_[i].window == move.window) {

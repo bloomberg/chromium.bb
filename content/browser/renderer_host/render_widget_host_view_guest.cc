@@ -12,10 +12,10 @@
 #include "content/common/browser_plugin/browser_plugin_messages.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/view_messages.h"
+#include "content/common/webplugin_geometry.h"
 #include "content/public/common/content_switches.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/web/WebScreenInfo.h"
-#include "webkit/plugins/npapi/webplugin.h"
 
 #if defined(OS_MACOSX)
 #import "content/browser/renderer_host/render_widget_host_view_mac_dictionary_helper.h"
@@ -251,7 +251,7 @@ gfx::NativeViewAccessible RenderWidgetHostViewGuest::GetNativeViewAccessible() {
 
 void RenderWidgetHostViewGuest::MovePluginWindows(
     const gfx::Vector2d& scroll_offset,
-    const std::vector<webkit::npapi::WebPluginGeometry>& moves) {
+    const std::vector<WebPluginGeometry>& moves) {
   platform_view_->MovePluginWindows(scroll_offset, moves);
 }
 

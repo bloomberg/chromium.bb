@@ -168,7 +168,7 @@ class RenderWidgetHostViewAura
   virtual void WasHidden() OVERRIDE;
   virtual void MovePluginWindows(
       const gfx::Vector2d& scroll_offset,
-      const std::vector<webkit::npapi::WebPluginGeometry>& moves) OVERRIDE;
+      const std::vector<WebPluginGeometry>& moves) OVERRIDE;
   virtual void Focus() OVERRIDE;
   virtual void Blur() OVERRIDE;
   virtual void UpdateCursor(const WebCursor& cursor) OVERRIDE;
@@ -672,7 +672,7 @@ class RenderWidgetHostViewAura
   std::vector<gfx::Rect> transient_rects_;
   std::vector<gfx::Rect> constrained_rects_;
 
-  typedef std::map<HWND, webkit::npapi::WebPluginGeometry> PluginWindowMoves;
+  typedef std::map<HWND, WebPluginGeometry> PluginWindowMoves;
   // Contains information about each windowed plugin's clip and cutout rects (
   // from the renderer). This is needed because when the transient windoiws
   // over this view changes, we need this information in order to create a new

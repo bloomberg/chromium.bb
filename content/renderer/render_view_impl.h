@@ -41,6 +41,7 @@
 #include "content/renderer/render_widget.h"
 #include "content/renderer/renderer_webcookiejar_impl.h"
 #include "content/renderer/stats_collection_observer.h"
+#include "content/renderer/webplugin_page_delegate.h"
 #include "ipc/ipc_platform_file.h"
 #include "third_party/WebKit/public/platform/WebFileSystem.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
@@ -59,7 +60,6 @@
 #include "ui/base/ui_base_types.h"
 #include "ui/surface/transport_dib.h"
 #include "webkit/common/webpreferences.h"
-#include "webkit/plugins/npapi/webplugin_page_delegate.h"
 
 #if defined(OS_ANDROID)
 #include "content/renderer/android/content_detector.h"
@@ -196,7 +196,7 @@ class CONTENT_EXPORT RenderViewImpl
       NON_EXPORTED_BASE(public WebKit::WebFrameClient),
       NON_EXPORTED_BASE(public WebKit::WebPageSerializerClient),
       public RenderView,
-      NON_EXPORTED_BASE(public webkit::npapi::WebPluginPageDelegate),
+      NON_EXPORTED_BASE(public WebPluginPageDelegate),
       NON_EXPORTED_BASE(public WebMediaPlayerDelegate),
       public base::SupportsWeakPtr<RenderViewImpl> {
  public:
@@ -746,15 +746,14 @@ class CONTENT_EXPORT RenderViewImpl
 
   // webkit_glue::WebPluginPageDelegate implementation -------------------------
 
-  virtual webkit::npapi::WebPluginDelegate* CreatePluginDelegate(
+  virtual WebPluginDelegate* CreatePluginDelegate(
       const base::FilePath& file_path,
       const std::string& mime_type) OVERRIDE;
   virtual WebKit::WebPlugin* CreatePluginReplacement(
       const base::FilePath& file_path) OVERRIDE;
   virtual void CreatedPluginWindow(gfx::PluginWindowHandle handle) OVERRIDE;
   virtual void WillDestroyPluginWindow(gfx::PluginWindowHandle handle) OVERRIDE;
-  virtual void DidMovePlugin(
-      const webkit::npapi::WebPluginGeometry& move) OVERRIDE;
+  virtual void DidMovePlugin(const WebPluginGeometry& move) OVERRIDE;
   virtual void DidStartLoadingForPlugin() OVERRIDE;
   virtual void DidStopLoadingForPlugin() OVERRIDE;
   virtual WebKit::WebCookieJar* GetCookieJar() OVERRIDE;

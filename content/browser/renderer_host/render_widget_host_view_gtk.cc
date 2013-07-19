@@ -34,6 +34,7 @@
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
+#include "content/common/webplugin_geometry.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/common/content_switches.h"
 #include "skia/ext/platform_canvas.h"
@@ -48,7 +49,6 @@
 #include "ui/gfx/gtk_native_view_id_manager.h"
 #include "ui/gfx/gtk_preserve_window.h"
 #include "webkit/common/cursors/webcursor_gtk_data.h"
-#include "webkit/plugins/npapi/webplugin.h"
 
 using WebKit::WebInputEventFactory;
 using WebKit::WebMouseWheelEvent;
@@ -753,7 +753,7 @@ gfx::NativeViewAccessible RenderWidgetHostViewGtk::GetNativeViewAccessible() {
 
 void RenderWidgetHostViewGtk::MovePluginWindows(
     const gfx::Vector2d& scroll_offset,
-    const std::vector<webkit::npapi::WebPluginGeometry>& moves) {
+    const std::vector<WebPluginGeometry>& moves) {
   for (size_t i = 0; i < moves.size(); ++i) {
     plugin_container_manager_.MovePluginContainer(moves[i]);
   }

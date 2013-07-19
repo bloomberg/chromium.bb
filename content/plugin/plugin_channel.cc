@@ -12,6 +12,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "build/build_config.h"
 #include "content/child/child_process.h"
+#include "content/child/npapi/plugin_instance.h"
 #include "content/child/plugin_messages.h"
 #include "content/common/plugin_process_messages.h"
 #include "content/plugin/plugin_thread.h"
@@ -19,7 +20,6 @@
 #include "content/plugin/webplugin_proxy.h"
 #include "content/public/common/content_switches.h"
 #include "third_party/WebKit/public/web/WebBindings.h"
-#include "webkit/plugins/npapi/plugin_instance.h"
 
 #if defined(OS_POSIX)
 #include "base/posix/eintr_wrapper.h"
@@ -312,8 +312,7 @@ void PluginChannel::OnClearSiteData(const std::string& site,
   bool success = false;
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   base::FilePath path = command_line->GetSwitchValuePath(switches::kPluginPath);
-  scoped_refptr<webkit::npapi::PluginLib> plugin_lib(
-      webkit::npapi::PluginLib::CreatePluginLib(path));
+  scoped_refptr<PluginLib> plugin_lib(PluginLib::CreatePluginLib(path));
   if (plugin_lib.get()) {
     NPError err = plugin_lib->NP_Initialize();
     if (err == NPERR_NO_ERROR) {

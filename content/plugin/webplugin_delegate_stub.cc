@@ -9,6 +9,8 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
+#include "content/child/npapi/plugin_instance.h"
+#include "content/child/npapi/webplugin_delegate_impl.h"
 #include "content/child/plugin_messages.h"
 #include "content/plugin/plugin_channel.h"
 #include "content/plugin/plugin_thread.h"
@@ -22,19 +24,15 @@
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/npapi/bindings/npruntime.h"
 #include "webkit/common/cursors/webcursor.h"
-#include "webkit/plugins/npapi/plugin_instance.h"
-#include "webkit/plugins/npapi/webplugin_delegate_impl.h"
 
 using WebKit::WebBindings;
 using WebKit::WebCursorInfo;
-using webkit::npapi::WebPlugin;
-using webkit::npapi::WebPluginResourceClient;
 
 namespace content {
 
 static void DestroyWebPluginAndDelegate(
     base::WeakPtr<NPObjectStub> scriptable_object,
-    webkit::npapi::WebPluginDelegateImpl* delegate,
+    WebPluginDelegateImpl* delegate,
     WebPlugin* webplugin) {
   // The plugin may not expect us to try to release the scriptable object
   // after calling NPP_Destroy on the instance, so delete the stub now.
@@ -182,7 +180,7 @@ void WebPluginDelegateStub::OnInit(const PluginMsg_Init_Params& params,
                                   instance_id_,
                                   page_url_,
                                   params.host_render_view_routing_id);
-  delegate_ = webkit::npapi::WebPluginDelegateImpl::Create(path, mime_type_);
+  delegate_ = WebPluginDelegateImpl::Create(path, mime_type_);
   if (delegate_) {
     webplugin_->set_delegate(delegate_);
     std::vector<std::string> arg_names = params.arg_names;

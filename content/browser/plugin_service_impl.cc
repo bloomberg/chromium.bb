@@ -20,6 +20,7 @@
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/common/pepper_plugin_registry.h"
+#include "content/common/plugin_list.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -27,13 +28,12 @@
 #include "content/public/browser/resource_context.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/process_type.h"
-#include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/npapi/plugin_utils.h"
 #include "webkit/plugins/plugin_constants.h"
 #include "webkit/plugins/webplugininfo.h"
 
 #if defined(OS_WIN)
-#include "webkit/plugins/npapi/plugin_constants_win.h"
+#include "content/common/plugin_constants_win.h"
 #endif
 
 #if defined(OS_POSIX)
@@ -107,7 +107,7 @@ void NotifyPluginDirChanged(const base::FilePath& path, bool error) {
   }
   VLOG(1) << "Watched path changed: " << path.value();
   // Make the plugin list update itself
-  webkit::npapi::PluginList::Singleton()->RefreshPlugins();
+  PluginList::Singleton()->RefreshPlugins();
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&PluginService::PurgePluginListCache,
@@ -166,7 +166,7 @@ PluginServiceImpl::~PluginServiceImpl() {
 
 void PluginServiceImpl::Init() {
   plugin_list_token_ = BrowserThread::GetBlockingPool()->GetSequenceToken();
-  webkit::npapi::PluginList::Singleton()->set_will_load_plugins_callback(
+  PluginList::Singleton()->set_will_load_plugins_callback(
       base::Bind(&WillLoadPluginsCallback, plugin_list_token_));
 
   RegisterPepperPlugins();
@@ -196,10 +196,10 @@ void PluginServiceImpl::Init() {
     AddExtraPluginPath(path);
   path = command_line->GetSwitchValuePath(switches::kExtraPluginDir);
   if (!path.empty())
-    webkit::npapi::PluginList::Singleton()->AddExtraPluginDir(path);
+    PluginList::Singleton()->AddExtraPluginDir(path);
 
   if (command_line->HasSwitch(switches::kDisablePluginsDiscovery))
-    webkit::npapi::PluginList::Singleton()->DisablePluginsDiscovery();
+    PluginList::Singleton()->DisablePluginsDiscovery();
 }
 
 void PluginServiceImpl::StartWatchingPlugins() {
@@ -208,7 +208,7 @@ void PluginServiceImpl::StartWatchingPlugins() {
   // watch for changes in the paths that are expected to contain plugins.
 #if defined(OS_WIN)
   if (hkcu_key_.Create(HKEY_CURRENT_USER,
-                       webkit::npapi::kRegistryMozillaPlugins,
+                       kRegistryMozillaPlugins,
                        KEY_NOTIFY) == ERROR_SUCCESS) {
     if (hkcu_key_.StartWatching() == ERROR_SUCCESS) {
       hkcu_event_.reset(new base::WaitableEvent(hkcu_key_.watch_event()));
@@ -219,7 +219,7 @@ void PluginServiceImpl::StartWatchingPlugins() {
     }
   }
   if (hklm_key_.Create(HKEY_LOCAL_MACHINE,
-                       webkit::npapi::kRegistryMozillaPlugins,
+                       kRegistryMozillaPlugins,
                        KEY_NOTIFY) == ERROR_SUCCESS) {
     if (hklm_key_.StartWatching() == ERROR_SUCCESS) {
       hklm_event_.reset(new base::WaitableEvent(hklm_key_.watch_event()));
@@ -237,7 +237,7 @@ void PluginServiceImpl::StartWatchingPlugins() {
   // Get the list of all paths for registering the FilePathWatchers
   // that will track and if needed reload the list of plugins on runtime.
   std::vector<base::FilePath> plugin_dirs;
-  webkit::npapi::PluginList::Singleton()->GetPluginDirectories(&plugin_dirs);
+  PluginList::Singleton()->GetPluginDirectories(&plugin_dirs);
 
   for (size_t i = 0; i < plugin_dirs.size(); ++i) {
     // FilePathWatcher can not handle non-absolute paths under windows.
@@ -510,7 +510,7 @@ bool PluginServiceImpl::GetPluginInfoArray(
     std::vector<webkit::WebPluginInfo>* plugins,
     std::vector<std::string>* actual_mime_types) {
   bool use_stale = false;
-  webkit::npapi::PluginList::Singleton()->GetPluginInfoArray(
+  PluginList::Singleton()->GetPluginInfoArray(
       url, mime_type, allow_wildcard, &use_stale, plugins, actual_mime_types);
   return use_stale;
 }
@@ -551,7 +551,7 @@ bool PluginServiceImpl::GetPluginInfo(int render_process_id,
 bool PluginServiceImpl::GetPluginInfoByPath(const base::FilePath& plugin_path,
                                             webkit::WebPluginInfo* info) {
   std::vector<webkit::WebPluginInfo> plugins;
-  webkit::npapi::PluginList::Singleton()->GetPluginsNoRefresh(&plugins);
+  PluginList::Singleton()->GetPluginsNoRefresh(&plugins);
 
   for (std::vector<webkit::WebPluginInfo>::iterator it = plugins.begin();
        it != plugins.end();
@@ -600,8 +600,7 @@ void PluginServiceImpl::GetPlugins(const GetPluginsCallback& callback) {
   }
 #if defined(OS_POSIX)
   std::vector<webkit::WebPluginInfo> cached_plugins;
-  if (webkit::npapi::PluginList::Singleton()->GetPluginsNoRefresh(
-          &cached_plugins)) {
+  if (PluginList::Singleton()->GetPluginsNoRefresh(&cached_plugins)) {
     // Can't assume the caller is reentrant.
     target_loop->PostTask(FROM_HERE,
         base::Bind(callback, cached_plugins));
@@ -626,7 +625,7 @@ void PluginServiceImpl::GetPluginsInternal(
       plugin_list_token_));
 
   std::vector<webkit::WebPluginInfo> plugins;
-  webkit::npapi::PluginList::Singleton()->GetPlugins(&plugins);
+  PluginList::Singleton()->GetPlugins(&plugins);
 
   target_loop->PostTask(FROM_HERE,
       base::Bind(callback, plugins));
@@ -641,7 +640,7 @@ void PluginServiceImpl::OnWaitableEventSignaled(
     hklm_key_.StartWatching();
   }
 
-  webkit::npapi::PluginList::Singleton()->RefreshPlugins();
+  PluginList::Singleton()->RefreshPlugins();
   PurgePluginListCache(NULL, false);
 #else
   // This event should only get signaled on a Windows machine.
@@ -749,39 +748,38 @@ bool PluginServiceImpl::IsPluginUnstable(const base::FilePath& path) {
 }
 
 void PluginServiceImpl::RefreshPlugins() {
-  webkit::npapi::PluginList::Singleton()->RefreshPlugins();
+  PluginList::Singleton()->RefreshPlugins();
 }
 
 void PluginServiceImpl::AddExtraPluginPath(const base::FilePath& path) {
-  webkit::npapi::PluginList::Singleton()->AddExtraPluginPath(path);
+  PluginList::Singleton()->AddExtraPluginPath(path);
 }
 
 void PluginServiceImpl::RemoveExtraPluginPath(const base::FilePath& path) {
-  webkit::npapi::PluginList::Singleton()->RemoveExtraPluginPath(path);
+  PluginList::Singleton()->RemoveExtraPluginPath(path);
 }
 
 void PluginServiceImpl::AddExtraPluginDir(const base::FilePath& path) {
-  webkit::npapi::PluginList::Singleton()->AddExtraPluginDir(path);
+  PluginList::Singleton()->AddExtraPluginDir(path);
 }
 
 void PluginServiceImpl::RegisterInternalPlugin(
     const webkit::WebPluginInfo& info,
     bool add_at_beginning) {
-  webkit::npapi::PluginList::Singleton()->RegisterInternalPlugin(
-      info, add_at_beginning);
+  PluginList::Singleton()->RegisterInternalPlugin(info, add_at_beginning);
 }
 
 void PluginServiceImpl::UnregisterInternalPlugin(const base::FilePath& path) {
-  webkit::npapi::PluginList::Singleton()->UnregisterInternalPlugin(path);
+  PluginList::Singleton()->UnregisterInternalPlugin(path);
 }
 
 void PluginServiceImpl::GetInternalPlugins(
     std::vector<webkit::WebPluginInfo>* plugins) {
-  webkit::npapi::PluginList::Singleton()->GetInternalPlugins(plugins);
+  PluginList::Singleton()->GetInternalPlugins(plugins);
 }
 
 void PluginServiceImpl::DisablePluginsDiscoveryForTesting() {
-  webkit::npapi::PluginList::Singleton()->DisablePluginsDiscovery();
+  PluginList::Singleton()->DisablePluginsDiscovery();
 }
 
 #if defined(OS_MACOSX)

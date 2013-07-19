@@ -25,6 +25,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/version.h"
 #include "content/child/child_process.h"
+#include "content/child/npapi/webplugin.h"
 #include "content/child/npobject_proxy.h"
 #include "content/child/npobject_stub.h"
 #include "content/child/npobject_util.h"
@@ -50,7 +51,6 @@
 #include "ui/gfx/skia_util.h"
 #include "webkit/common/cursors/webcursor.h"
 #include "webkit/glue/webkit_glue.h"
-#include "webkit/plugins/npapi/webplugin.h"
 #include "webkit/plugins/plugin_constants.h"
 #include "webkit/plugins/sad_plugin.h"
 
@@ -99,7 +99,7 @@ ScopedLogLevel::~ScopedLogLevel() {
 
 // Proxy for WebPluginResourceClient.  The object owns itself after creation,
 // deleting itself after its callback has been called.
-class ResourceClientProxy : public webkit::npapi::WebPluginResourceClient {
+class ResourceClientProxy : public WebPluginResourceClient {
  public:
   ResourceClientProxy(PluginChannelHost* channel, int instance_id)
     : channel_(channel), instance_id_(instance_id), resource_id_(0),
@@ -283,7 +283,7 @@ bool WebPluginDelegateProxy::Initialize(
     const GURL& url,
     const std::vector<std::string>& arg_names,
     const std::vector<std::string>& arg_values,
-    webkit::npapi::WebPlugin* plugin,
+    WebPlugin* plugin,
     bool load_manually) {
   // TODO(shess): Attempt to work around http://crbug.com/97285 and
   // http://crbug.com/141055 by retrying the connection.  Reports seem
@@ -1101,8 +1101,7 @@ void WebPluginDelegateProxy::OnHandleURLRequest(
       params.popups_allowed, params.notify_redirects);
 }
 
-webkit::npapi::WebPluginResourceClient*
-WebPluginDelegateProxy::CreateResourceClient(
+WebPluginResourceClient* WebPluginDelegateProxy::CreateResourceClient(
     unsigned long resource_id, const GURL& url, int notify_id) {
   if (!channel_host_.get())
     return NULL;
@@ -1113,8 +1112,7 @@ WebPluginDelegateProxy::CreateResourceClient(
   return proxy;
 }
 
-webkit::npapi::WebPluginResourceClient*
-WebPluginDelegateProxy::CreateSeekableResourceClient(
+WebPluginResourceClient* WebPluginDelegateProxy::CreateSeekableResourceClient(
     unsigned long resource_id, int range_request_id) {
   if (!channel_host_.get())
     return NULL;

@@ -39,7 +39,9 @@
 #include "content/browser/renderer_host/ui_events_helper.h"
 #include "content/common/accessibility_messages.h"
 #include "content/common/gpu/gpu_messages.h"
+#include "content/common/plugin_constants_win.h"
 #include "content/common/view_messages.h"
+#include "content/common/webplugin_geometry.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/content_browser_client.h"
@@ -72,9 +74,6 @@
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/screen.h"
 #include "webkit/common/cursors/webcursor.h"
-#include "webkit/plugins/npapi/plugin_constants_win.h"
-#include "webkit/plugins/npapi/webplugin.h"
-#include "webkit/plugins/npapi/webplugin_delegate_impl.h"
 #include "win8/util/win8_util.h"
 
 using base::TimeDelta;
@@ -558,7 +557,7 @@ void RenderWidgetHostViewWin::CreateBrowserAccessibilityManagerIfNeeded() {
 
 void RenderWidgetHostViewWin::MovePluginWindows(
     const gfx::Vector2d& scroll_offset,
-    const std::vector<webkit::npapi::WebPluginGeometry>& plugin_window_moves) {
+    const std::vector<WebPluginGeometry>& plugin_window_moves) {
   MovePluginWindowsHelper(m_hWnd, plugin_window_moves);
 }
 
@@ -2320,8 +2319,7 @@ LRESULT RenderWidgetHostViewWin::OnMouseActivate(UINT message,
     ::ScreenToClient(m_hWnd, &cursor_pos);
     HWND child_window = ::RealChildWindowFromPoint(m_hWnd, cursor_pos);
     if (::IsWindow(child_window) && child_window != m_hWnd) {
-      if (ui::GetClassName(child_window) ==
-              webkit::npapi::kWrapperNativeWindowClassName)
+      if (ui::GetClassName(child_window) == kWrapperNativeWindowClassName)
         child_window = ::GetWindow(child_window, GW_CHILD);
 
       ::SetFocus(child_window);

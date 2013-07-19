@@ -39,6 +39,7 @@
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
+#include "content/common/webplugin_geometry.h"
 #include "content/port/browser/render_widget_host_view_frame_subscriber.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/native_web_keyboard_event.h"
@@ -61,7 +62,6 @@
 #include "ui/gfx/screen.h"
 #include "ui/gfx/size_conversions.h"
 #include "ui/gl/io_surface_support_mac.h"
-#include "webkit/plugins/npapi/webplugin.h"
 
 using content::BackingStoreMac;
 using content::BrowserAccessibility;
@@ -797,7 +797,7 @@ gfx::NativeViewAccessible RenderWidgetHostViewMac::GetNativeViewAccessible() {
 
 void RenderWidgetHostViewMac::MovePluginWindows(
     const gfx::Vector2d& scroll_offset,
-    const std::vector<webkit::npapi::WebPluginGeometry>& moves) {
+    const std::vector<WebPluginGeometry>& moves) {
   // Must be overridden, but unused on this platform. Core Animation
   // plugins are drawn by the GPU process (through the compositor),
   // and Core Graphics plugins are drawn by the renderer process.

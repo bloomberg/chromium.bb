@@ -19,6 +19,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
 #include "content/child/child_thread.h"
+#include "content/child/npapi/plugin_instance.h"
+#include "content/child/npapi/plugin_lib.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/content_renderer_client.h"
@@ -27,8 +29,6 @@
 #include "skia/ext/platform_canvas.h"
 #include "ui/surface/transport_dib.h"
 #include "webkit/glue/webkit_glue.h"
-#include "webkit/plugins/npapi/plugin_instance.h"
-#include "webkit/plugins/npapi/plugin_lib.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"

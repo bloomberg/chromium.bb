@@ -6,12 +6,12 @@
 
 #include "base/strings/string_util.h"
 #include "content/child/np_channel_base.h"
+#include "content/child/npapi/plugin_host.h"
 #include "content/child/npobject_proxy.h"
 #include "content/child/plugin_messages.h"
 #include "third_party/WebKit/public/web/WebBindings.h"
 #include "third_party/npapi/bindings/nphostapi.h"
 #include "webkit/glue/webkit_glue.h"
-#include "webkit/plugins/npapi/plugin_host.h"
 
 using WebKit::WebBindings;
 
@@ -129,7 +129,7 @@ NPNetscapeFuncs *GetHostFunctions() {
 void PatchNPNFunctions() {
   g_plugin_process = true;
   NPNetscapeFuncs* funcs = GetHostFunctions();
-  webkit::npapi::PluginHost::Singleton()->PatchNPNetscapeFuncs(funcs);
+  PluginHost::Singleton()->PatchNPNetscapeFuncs(funcs);
 }
 
 bool IsPluginProcess() {

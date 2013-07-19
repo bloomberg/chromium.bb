@@ -6,8 +6,8 @@
 #define CONTENT_PLUGIN_WEBPLUGIN_ACCELERATED_SURFACE_PROXY_H_
 
 #include "base/compiler_specific.h"
+#include "content/child/npapi/webplugin_accelerated_surface_mac.h"
 #include "ui/gl/gpu_preference.h"
-#include "webkit/plugins/npapi/webplugin_accelerated_surface_mac.h"
 
 class AcceleratedSurface;
 
@@ -16,8 +16,7 @@ class WebPluginProxy;
 
 // Out-of-process implementation of WebPluginAcceleratedSurface that proxies
 // calls through a WebPluginProxy.
-class WebPluginAcceleratedSurfaceProxy
-    : public webkit::npapi::WebPluginAcceleratedSurface {
+class WebPluginAcceleratedSurfaceProxy : public WebPluginAcceleratedSurface {
  public:
   // Creates a new WebPluginAcceleratedSurfaceProxy that uses plugin_proxy
   // to proxy calls. plugin_proxy must outlive this object. Returns NULL if

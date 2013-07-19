@@ -10,6 +10,10 @@
 #include "base/strings/string_util.h"
 #include "base/version.h"
 
+#if defined(OS_WIN)
+#include "ui/base/win/hwnd_util.h"
+#endif
+
 namespace webkit {
 namespace npapi {
 
@@ -62,6 +66,70 @@ void SetForcefullyTerminatePluginProcess(bool value) {
 bool ShouldForcefullyTerminatePluginProcess() {
   return g_forcefully_terminate_plugin_process;
 }
+
+#if defined(OS_WIN)
+
+const char16 kNativeWindowClassName[] = L"NativeWindowClass";
+const char16 kPluginNameAtomProperty[] = L"PluginNameAtom";
+const char16 kPluginVersionAtomProperty[] = L"PluginVersionAtom";
+const char16 kDummyActivationWindowName[] = L"DummyWindowForActivation";
+
+namespace {
+
+bool GetPluginPropertyFromWindow(
+    HWND window, const wchar_t* plugin_atom_property,
+    base::string16* plugin_property) {
+  ATOM plugin_atom = reinterpret_cast<ATOM>(
+      GetPropW(window, plugin_atom_property));
+  if (plugin_atom != 0) {
+    WCHAR plugin_property_local[MAX_PATH] = {0};
+    GlobalGetAtomNameW(plugin_atom,
+                       plugin_property_local,
+                       ARRAYSIZE(plugin_property_local));
+    *plugin_property = plugin_property_local;
+    return true;
+  }
+  return false;
+}
+
+}  // namespace
+
+bool IsPluginDelegateWindow(HWND window) {
+  return ui::GetClassName(window) == base::string16(kNativeWindowClassName);
+}
+
+// static
+bool GetPluginNameFromWindow(
+    HWND window, base::string16* plugin_name) {
+  return IsPluginDelegateWindow(window) &&
+      GetPluginPropertyFromWindow(
+          window, kPluginNameAtomProperty, plugin_name);
+}
+
+// static
+bool GetPluginVersionFromWindow(
+    HWND window, base::string16* plugin_version) {
+  return IsPluginDelegateWindow(window) &&
+      GetPluginPropertyFromWindow(
+          window, kPluginVersionAtomProperty, plugin_version);
+}
+
+bool IsDummyActivationWindow(HWND window) {
+  if (!IsWindow(window))
+    return false;
+
+  wchar_t window_title[MAX_PATH + 1] = {0};
+  if (GetWindowText(window, window_title, arraysize(window_title))) {
+    return (0 == lstrcmpiW(window_title, kDummyActivationWindowName));
+  }
+  return false;
+}
+
+HWND GetDefaultWindowParent() {
+  return GetDesktopWindow();
+}
+
+#endif
 
 }  // namespace npapi
 }  // namespace webkit

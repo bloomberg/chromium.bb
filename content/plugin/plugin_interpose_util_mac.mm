@@ -7,9 +7,9 @@
 #import <AppKit/AppKit.h>
 #import <objc/runtime.h>
 
+#include "content/child/npapi/webplugin_delegate_impl.h"
 #include "content/common/plugin_process_messages.h"
 #include "content/plugin/plugin_thread.h"
-#include "webkit/plugins/npapi/webplugin_delegate_impl.h"
 
 using content::PluginThread;
 
@@ -34,7 +34,7 @@ void SwitchToPluginProcess() {
 
 __attribute__((visibility("default")))
 OpaquePluginRef GetActiveDelegate() {
-  return webkit::npapi::WebPluginDelegateImpl::GetActiveDelegate();
+  return content::WebPluginDelegateImpl::GetActiveDelegate();
 }
 
 __attribute__((visibility("default")))
@@ -211,8 +211,7 @@ static void OnPluginWindowShown(const WindowInfo& window_info, BOOL is_modal) {
 - (void)chromePlugin_set {
   OpaquePluginRef delegate = mac_plugin_interposing::GetActiveDelegate();
   if (delegate) {
-    static_cast<webkit::npapi::WebPluginDelegateImpl*>(delegate)->SetNSCursor(
-        self);
+    static_cast<content::WebPluginDelegateImpl*>(delegate)->SetNSCursor(self);
     return;
   }
   [self chromePlugin_set];

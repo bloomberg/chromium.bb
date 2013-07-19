@@ -290,6 +290,13 @@
     'common/pepper_renderer_instance_data.h',
     'common/plugin_carbon_interpose_constants_mac.cc',
     'common/plugin_carbon_interpose_constants_mac.h',
+    'common/plugin_constants_win.cc',
+    'common/plugin_constants_win.h',
+    'common/plugin_list.cc',
+    'common/plugin_list.h',
+    'common/plugin_list_mac.mm',
+    'common/plugin_list_posix.cc',
+    'common/plugin_list_win.cc',
     'common/plugin_process_messages.h',
     'common/process_type.cc',
     'common/quota_messages.h',
@@ -330,6 +337,8 @@
     'common/utility_messages.h',
     'common/view_messages.h',
     'common/view_message_enums.h',
+    'common/webplugin_geometry.cc',
+    'common/webplugin_geometry.h',
     'common/websocket.h',
     'common/websocket_messages.h',
     'common/worker_messages.h',
@@ -384,6 +393,16 @@
         '../webkit/storage_common.gyp:webkit_storage_common',
         '../webkit/support/webkit_support.gyp:glue',
       ],
+    }],
+    ['OS=="mac"', {
+      'sources!': [
+        'common/plugin_list_posix.cc',
+      ],
+      'link_settings': {
+        'libraries': [
+          '$(SDKROOT)/System/Library/Frameworks/QuartzCore.framework',
+        ],
+      },
     }],
     ['OS=="android"',{
       'link_settings': {

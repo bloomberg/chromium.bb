@@ -48,7 +48,6 @@
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/websocketstreamhandle_impl.h"
 #include "webkit/glue/weburlloader_impl.h"
-#include "webkit/plugins/npapi/plugin_instance.h"
 #include "webkit/plugins/webplugininfo.h"
 
 using WebKit::WebAudioBus;

@@ -142,7 +142,7 @@ BOOL CALLBACK ShowWindowsCallback(HWND window, LPARAM param) {
 struct CutoutRectsParams {
   RenderWidgetHostViewAura* widget;
   std::vector<gfx::Rect> cutout_rects;
-  std::map<HWND, webkit::npapi::WebPluginGeometry>* geometry;
+  std::map<HWND, WebPluginGeometry>* geometry;
 };
 
 // Used to update the region for the windowed plugin to draw in. We start with
@@ -163,8 +163,7 @@ BOOL CALLBACK SetCutoutRectsCallback(HWND window, LPARAM param) {
 
     // Now get the cached clip rect and cutouts for this plugin window that came
     // from the renderer.
-    std::map<HWND, webkit::npapi::WebPluginGeometry>::iterator i =
-        params->geometry->begin();
+    std::map<HWND, WebPluginGeometry>::iterator i = params->geometry->begin();
     while (i != params->geometry->end() &&
            i->second.window != window &&
            GetParent(i->second.window) != window) {
@@ -878,7 +877,7 @@ RenderWidgetHostViewAura::GetOrCreateBrowserAccessibilityManager() {
 
 void RenderWidgetHostViewAura::MovePluginWindows(
     const gfx::Vector2d& scroll_offset,
-    const std::vector<webkit::npapi::WebPluginGeometry>& plugin_window_moves) {
+    const std::vector<WebPluginGeometry>& plugin_window_moves) {
 #if defined(OS_WIN)
   // We need to clip the rectangle to the tab's viewport, otherwise we will draw
   // over the browser UI.
@@ -888,7 +887,7 @@ void RenderWidgetHostViewAura::MovePluginWindows(
   }
   HWND parent = window_->GetRootWindow()->GetAcceleratedWidget();
   gfx::Rect view_bounds = window_->GetBoundsInRootWindow();
-  std::vector<webkit::npapi::WebPluginGeometry> moves = plugin_window_moves;
+  std::vector<WebPluginGeometry> moves = plugin_window_moves;
 
   gfx::Rect view_port(scroll_offset.x(), scroll_offset.y(), view_bounds.width(),
                       view_bounds.height());

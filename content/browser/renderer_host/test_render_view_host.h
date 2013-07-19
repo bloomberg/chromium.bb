@@ -93,7 +93,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
   virtual void WasHidden() OVERRIDE {}
   virtual void MovePluginWindows(
       const gfx::Vector2d& scroll_offset,
-      const std::vector<webkit::npapi::WebPluginGeometry>& moves) OVERRIDE {}
+      const std::vector<WebPluginGeometry>& moves) OVERRIDE {}
   virtual void Focus() OVERRIDE {}
   virtual void Blur() OVERRIDE {}
   virtual void SetIsLoading(bool is_loading) OVERRIDE {}

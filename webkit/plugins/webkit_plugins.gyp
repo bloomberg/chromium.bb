@@ -30,13 +30,6 @@
         '../plugins/plugin_constants.h',
         '../plugins/plugin_switches.cc',
         '../plugins/plugin_switches.h',
-        '../plugins/npapi/plugin_constants_win.cc',
-        '../plugins/npapi/plugin_constants_win.h',
-        '../plugins/npapi/plugin_list.cc',
-        '../plugins/npapi/plugin_list.h',
-        '../plugins/npapi/plugin_list_mac.mm',
-        '../plugins/npapi/plugin_list_posix.cc',
-        '../plugins/npapi/plugin_list_win.cc',
         '../plugins/npapi/plugin_utils.cc',
         '../plugins/npapi/plugin_utils.h',
         '../common/plugins/ppapi/ppapi_utils.cc',
@@ -48,16 +41,6 @@
             '<(DEPTH)/build/linux/system.gyp:gtk',
           ],
           'sources/': [['exclude', '_x11\\.cc$']],
-        }],
-        ['OS!="mac"', {
-          'sources/': [['exclude', '_mac\\.(cc|mm)$']],
-        }, {  # else: OS=="mac"
-          'sources/': [['exclude', 'plugin_list_posix\\.cc$']],
-          'link_settings': {
-            'libraries': [
-              '$(SDKROOT)/System/Library/Frameworks/QuartzCore.framework',
-            ],
-          },
         }],
         ['OS!="win"', {
           'sources/': [['exclude', '_win\\.cc$']],

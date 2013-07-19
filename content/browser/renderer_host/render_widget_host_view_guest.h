@@ -19,7 +19,7 @@
 #include "webkit/common/cursors/webcursor.h"
 
 #if defined(TOOLKIT_GTK)
-#include "webkit/plugins/npapi/gtk_plugin_container_manager.h"
+#include "content/browser/renderer_host/gtk_plugin_container_manager.h"
 #endif  // defined(TOOLKIT_GTK)
 
 namespace content {
@@ -79,7 +79,7 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   virtual void WasHidden() OVERRIDE;
   virtual void MovePluginWindows(
       const gfx::Vector2d& scroll_offset,
-      const std::vector<webkit::npapi::WebPluginGeometry>& moves) OVERRIDE;
+      const std::vector<WebPluginGeometry>& moves) OVERRIDE;
   virtual void Focus() OVERRIDE;
   virtual void Blur() OVERRIDE;
   virtual void UpdateCursor(const WebCursor& cursor) OVERRIDE;

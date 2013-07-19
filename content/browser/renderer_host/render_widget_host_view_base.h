@@ -102,7 +102,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   // Shared implementation of MovePluginWindows for use by win and aura/wina.
   static void MovePluginWindowsHelper(
       HWND parent,
-      const std::vector<webkit::npapi::WebPluginGeometry>& moves);
+      const std::vector<WebPluginGeometry>& moves);
 
   static void PaintPluginWindowsHelper(
       HWND parent,

@@ -291,7 +291,7 @@ RenderWidgetHostViewAndroid::GetNativeViewAccessible() {
 
 void RenderWidgetHostViewAndroid::MovePluginWindows(
     const gfx::Vector2d& scroll_offset,
-    const std::vector<webkit::npapi::WebPluginGeometry>& moves) {
+    const std::vector<WebPluginGeometry>& moves) {
   // We don't have plugin windows on Android. Do nothing. Note: this is called
   // from RenderWidgetHost::OnUpdateRect which is itself invoked while
   // processing the corresponding message from Renderer.

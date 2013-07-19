@@ -11,6 +11,7 @@
 #include "base/memory/scoped_handle.h"
 #include "base/memory/shared_memory.h"
 #include "build/build_config.h"
+#include "content/child/npapi/webplugin_delegate_impl.h"
 #include "content/child/npobject_proxy.h"
 #include "content/child/npobject_util.h"
 #include "content/child/plugin_messages.h"
@@ -23,7 +24,6 @@
 #include "third_party/WebKit/public/web/WebBindings.h"
 #include "ui/gfx/blit.h"
 #include "ui/gfx/canvas.h"
-#include "webkit/plugins/npapi/webplugin_delegate_impl.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
@@ -41,11 +41,6 @@
 #endif
 
 using WebKit::WebBindings;
-
-using webkit::npapi::WebPluginResourceClient;
-#if defined(OS_MACOSX)
-using webkit::npapi::WebPluginAcceleratedSurface;
-#endif
 
 namespace content {
 
@@ -323,8 +318,7 @@ void WebPluginProxy::HandleURLRequest(const char* url,
     // Please refer to https://bugzilla.mozilla.org/show_bug.cgi?id=366082
     // for more details on this.
     if (delegate_->GetQuirks() &
-        webkit::npapi::WebPluginDelegateImpl::
-            PLUGIN_QUIRK_BLOCK_NONSTANDARD_GETURL_REQUESTS) {
+        WebPluginDelegateImpl::PLUGIN_QUIRK_BLOCK_NONSTANDARD_GETURL_REQUESTS) {
       GURL request_url(url);
       if (!request_url.SchemeIs(chrome::kHttpScheme) &&
           !request_url.SchemeIs(chrome::kHttpsScheme) &&

@@ -46,42 +46,6 @@
         # This list contains all .h, .cc, and .mm files in glue except for
         # those in the test subdirectory and those with unittest in in their
         # names.
-        '../plugins/npapi/gtk_plugin_container.cc',
-        '../plugins/npapi/gtk_plugin_container.h',
-        '../plugins/npapi/gtk_plugin_container_manager.cc',
-        '../plugins/npapi/gtk_plugin_container_manager.h',
-        '../plugins/npapi/plugin_host.cc',
-        '../plugins/npapi/plugin_host.h',
-        '../plugins/npapi/plugin_instance.cc',
-        '../plugins/npapi/plugin_instance.h',
-        '../plugins/npapi/plugin_instance_mac.mm',
-        '../plugins/npapi/plugin_lib.cc',
-        '../plugins/npapi/plugin_lib.h',
-        '../plugins/npapi/plugin_stream.cc',
-        '../plugins/npapi/plugin_stream.h',
-        '../plugins/npapi/plugin_stream_posix.cc',
-        '../plugins/npapi/plugin_stream_url.cc',
-        '../plugins/npapi/plugin_stream_url.h',
-        '../plugins/npapi/plugin_stream_win.cc',
-        '../plugins/npapi/plugin_string_stream.cc',
-        '../plugins/npapi/plugin_string_stream.h',
-        '../plugins/npapi/plugin_web_event_converter_mac.h',
-        '../plugins/npapi/plugin_web_event_converter_mac.mm',
-        '../plugins/npapi/webplugin.cc',
-        '../plugins/npapi/webplugin.h',
-        '../plugins/npapi/webplugin_accelerated_surface_mac.h',
-        '../plugins/npapi/webplugin_delegate.h',
-        '../plugins/npapi/webplugin_delegate_impl.cc',
-        '../plugins/npapi/webplugin_delegate_impl.h',
-        '../plugins/npapi/webplugin_delegate_impl_android.cc',
-        '../plugins/npapi/webplugin_delegate_impl_aura.cc',
-        '../plugins/npapi/webplugin_delegate_impl_gtk.cc',
-        '../plugins/npapi/webplugin_delegate_impl_mac.mm',
-        '../plugins/npapi/webplugin_delegate_impl_win.cc',
-        '../plugins/npapi/webplugin_ime_win.cc',
-        '../plugins/npapi/webplugin_ime_win.h',
-        '../plugins/npapi/webplugin_impl.cc',
-        '../plugins/npapi/webplugin_impl.h',
         '../plugins/ppapi/audio_helper.cc',
         '../plugins/ppapi/audio_helper.h',
         '../plugins/ppapi/common.h',
@@ -170,31 +134,6 @@
         '../plugins/webkit_plugins_export.h',
       ],
       'conditions': [
-        ['toolkit_uses_gtk == 1', {
-          'dependencies': [
-            '<(DEPTH)/build/linux/system.gyp:gtk',
-          ],
-          'sources/': [['exclude', '_x11\\.cc$']],
-        }],
-        ['use_aura==1', {
-          'sources/': [
-            ['exclude', '^\\.\\./plugins/npapi/webplugin_delegate_impl_mac.mm'],
-          ],
-        }],
-        ['use_aura==1 and OS=="win"', {
-          'sources/': [
-            ['exclude', '^\\.\\./plugins/npapi/webplugin_delegate_impl_aura'],
-          ],
-        }],
-        ['OS!="mac"', {
-          'sources/': [['exclude', '_mac\\.(cc|mm)$']],
-        }, {  # else: OS=="mac"
-          'link_settings': {
-            'libraries': [
-              '$(SDKROOT)/System/Library/Frameworks/QuartzCore.framework',
-            ],
-          },
-        }],
         ['enable_gpu!=1', {
           'sources!': [
             '../plugins/ppapi/ppb_graphics_3d_impl.cc',

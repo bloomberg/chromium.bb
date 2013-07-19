@@ -33,6 +33,7 @@
 #include "content/child/child_thread.h"
 #include "content/child/fileapi/file_system_dispatcher.h"
 #include "content/child/fileapi/webfilesystem_callback_adapters.h"
+#include "content/child/npapi/webplugin_delegate_impl.h"
 #include "content/child/quota_dispatcher.h"
 #include "content/child/request_extra_data.h"
 #include "content/child/webmessageportchannel_impl.h"
@@ -126,6 +127,7 @@
 #include "content/renderer/web_ui_extension.h"
 #include "content/renderer/web_ui_extension_data.h"
 #include "content/renderer/webplugin_delegate_proxy.h"
+#include "content/renderer/webplugin_impl.h"
 #include "content/renderer/websharedworker_proxy.h"
 #include "media/audio/audio_output_device.h"
 #include "media/base/audio_renderer_mixer_input.h"
@@ -207,11 +209,7 @@
 #include "webkit/common/dom_storage/dom_storage_types.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/weburlresponse_extradata_impl.h"
-#include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/npapi/plugin_utils.h"
-#include "webkit/plugins/npapi/webplugin_delegate.h"
-#include "webkit/plugins/npapi/webplugin_delegate_impl.h"
-#include "webkit/plugins/npapi/webplugin_impl.h"
 #include "webkit/renderer/appcache/web_application_cache_host_impl.h"
 #include "webkit/renderer/webpreferences_renderer.h"
 
@@ -298,7 +296,6 @@ using WebKit::WebPeerConnection00Handler;
 using WebKit::WebPeerConnection00HandlerClient;
 using WebKit::WebPeerConnectionHandler;
 using WebKit::WebPeerConnectionHandlerClient;
-using WebKit::WebPlugin;
 using WebKit::WebPluginAction;
 using WebKit::WebPluginContainer;
 using WebKit::WebPluginDocument;
@@ -2822,9 +2819,9 @@ void RenderViewImpl::didHandleGestureEvent(
 
 // WebKit::WebFrameClient -----------------------------------------------------
 
-WebPlugin* RenderViewImpl::createPlugin(WebFrame* frame,
-                                        const WebPluginParams& params) {
-  WebPlugin* plugin = NULL;
+WebKit::WebPlugin* RenderViewImpl::createPlugin(WebFrame* frame,
+                                                const WebPluginParams& params) {
+  WebKit::WebPlugin* plugin = NULL;
   if (GetContentClient()->renderer()->OverrideCreatePlugin(
           this, frame, params, &plugin)) {
     return plugin;
@@ -4697,8 +4694,7 @@ WebKit::WebPlugin* RenderViewImpl::CreatePlugin(
   if (!webkit::npapi::NPAPIPluginsSupported())
     return NULL;
 
-  return new webkit::npapi::WebPluginImpl(
-      frame, params, info.path, AsWeakPtr());
+  return new WebPluginImpl(frame, params, info.path, AsWeakPtr());
 }
 
 void RenderViewImpl::EvaluateScript(const string16& frame_xpath,
@@ -4777,7 +4773,7 @@ void RenderViewImpl::LoadURLExternally(
 
 // webkit_glue::WebPluginPageDelegate ------------------------------------------
 
-webkit::npapi::WebPluginDelegate* RenderViewImpl::CreatePluginDelegate(
+WebPluginDelegate* RenderViewImpl::CreatePluginDelegate(
     const base::FilePath& file_path,
     const std::string& mime_type) {
   if (!PluginChannelHost::IsListening()) {
@@ -4788,7 +4784,7 @@ webkit::npapi::WebPluginDelegate* RenderViewImpl::CreatePluginDelegate(
   bool in_process_plugin = RenderProcess::current()->UseInProcessPlugins();
   if (in_process_plugin) {
 #if defined(OS_WIN) && !defined(USE_AURA)
-    return webkit::npapi::WebPluginDelegateImpl::Create(file_path, mime_type);
+    return WebPluginDelegateImpl::Create(file_path, mime_type);
 #else
     // In-proc plugins aren't supported on non-Windows.
     NOTIMPLEMENTED();
@@ -4818,8 +4814,7 @@ void RenderViewImpl::WillDestroyPluginWindow(gfx::PluginWindowHandle window) {
   CleanupWindowInPluginMoves(window);
 }
 
-void RenderViewImpl::DidMovePlugin(
-    const webkit::npapi::WebPluginGeometry& move) {
+void RenderViewImpl::DidMovePlugin(const WebPluginGeometry& move) {
   SchedulePluginMove(move);
 }
 

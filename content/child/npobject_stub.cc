@@ -5,6 +5,7 @@
 #include "content/child/npobject_stub.h"
 
 #include "content/child/np_channel_base.h"
+#include "content/child/npapi/plugin_host.h"
 #include "content/child/npobject_util.h"
 #include "content/child/plugin_messages.h"
 #include "content/public/common/content_client.h"
@@ -12,11 +13,10 @@
 #include "third_party/WebKit/public/web/WebBindings.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/npapi/bindings/npruntime.h"
-#include "webkit/plugins/npapi/plugin_host.h"
 
 #if defined(OS_WIN)
 #include "base/command_line.h"
-#include "webkit/plugins/npapi/plugin_constants_win.h"
+#include "content/common/plugin_constants_win.h"
 #endif
 
 using WebKit::WebBindings;
@@ -264,7 +264,7 @@ void NPObjectStub::OnSetProperty(const NPIdentifier_Param& name,
           plugin_path.BaseName().value());
       static NPIdentifier fullscreen =
           WebBindings::getStringIdentifier("fullScreen");
-      if (filename == webkit::npapi::kNewWMPPlugin && id == fullscreen) {
+      if (filename == kNewWMPPlugin && id == fullscreen) {
         // Workaround for bug 15985, which is if Flash causes WMP to go
         // full screen a deadlock can occur when WMP calls SetFocus.
         NPObjectMsg_SetProperty::WriteReplyParams(reply_msg, true);
@@ -339,7 +339,7 @@ void NPObjectStub::OnEnumeration(std::vector<NPIdentifier_Param>* value,
     value->push_back(param);
   }
 
-  webkit::npapi::PluginHost::Singleton()->host_functions()->memfree(value_np);
+  PluginHost::Singleton()->host_functions()->memfree(value_np);
 }
 
 void NPObjectStub::OnConstruct(const std::vector<NPVariant_Param>& args,

@@ -18,6 +18,7 @@
 #include "content/common/navigation_gesture.h"
 #include "content/common/pepper_renderer_instance_data.h"
 #include "content/common/view_message_enums.h"
+#include "content/common/webplugin_geometry.h"
 #include "content/port/common/input_event_ack_state.h"
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/context_menu_params.h"
@@ -59,7 +60,6 @@
 #include "ui/gfx/vector2d.h"
 #include "ui/gfx/vector2d_f.h"
 #include "ui/shell_dialogs/selected_file_info.h"
-#include "webkit/plugins/npapi/webplugin.h"
 
 #if defined(OS_MACOSX)
 #include "content/common/mac/font_descriptor.h"
@@ -280,7 +280,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::CookieData)
   IPC_STRUCT_TRAITS_MEMBER(session)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(webkit::npapi::WebPluginGeometry)
+IPC_STRUCT_TRAITS_BEGIN(content::WebPluginGeometry)
   IPC_STRUCT_TRAITS_MEMBER(window)
   IPC_STRUCT_TRAITS_MEMBER(window_rect)
   IPC_STRUCT_TRAITS_MEMBER(clip_rect)
@@ -555,7 +555,7 @@ IPC_STRUCT_BEGIN(ViewHostMsg_UpdateRect_Params)
   IPC_STRUCT_MEMBER(gfx::Size, view_size)
 
   // New window locations for plugin child windows.
-  IPC_STRUCT_MEMBER(std::vector<webkit::npapi::WebPluginGeometry>,
+  IPC_STRUCT_MEMBER(std::vector<content::WebPluginGeometry>,
                     plugin_window_moves)
 
   // The following describes the various bits that may be set in flags:

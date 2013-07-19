@@ -12,12 +12,12 @@
 #include "content/child/child_process.h"
 #include "content/child/webkitplatformsupport_impl.h"
 #include "content/common/child_process_messages.h"
+#include "content/common/plugin_list.h"
 #include "content/common/utility_messages.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/utility/content_utility_client.h"
 #include "ipc/ipc_sync_channel.h"
 #include "third_party/WebKit/public/web/WebKit.h"
-#include "webkit/plugins/npapi/plugin_list.h"
 
 #if defined(TOOLKIT_GTK)
 #include <gtk/gtk.h>
@@ -128,8 +128,7 @@ void UtilityThreadImpl::OnBatchModeFinished() {
 #if defined(OS_POSIX)
 void UtilityThreadImpl::OnLoadPlugins(
     const std::vector<base::FilePath>& plugin_paths) {
-  webkit::npapi::PluginList* plugin_list =
-      webkit::npapi::PluginList::Singleton();
+  PluginList* plugin_list = PluginList::Singleton();
 
   // On Linux, some plugins expect the browser to have loaded glib/gtk. Do that
   // before attempting to call into the plugin.

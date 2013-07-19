@@ -63,7 +63,6 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "third_party/WebKit/public/web/WebNotificationPresenter.h"
 #include "ui/gfx/color_profile.h"
-#include "webkit/plugins/npapi/webplugin.h"
 #include "webkit/plugins/plugin_constants.h"
 #include "webkit/plugins/webplugininfo.h"
 
