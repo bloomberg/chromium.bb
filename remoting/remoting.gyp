@@ -1699,6 +1699,49 @@
             'client/jni/jni_interface.cc',
           ],
         },  # end of target 'remoting_client_jni'
+        {
+          'target_name': 'remoting_android_resources',
+          'type': 'none',
+          'copies': [
+            {
+              'destination': '<(SHARED_INTERMEDIATE_DIR)/remoting/android/res/drawable',
+              'files': [
+                'resources/chromoting128.png',
+                'resources/icon_host.png',
+              ],
+            },
+            {
+              'destination': '<(SHARED_INTERMEDIATE_DIR)/remoting/android/res/layout',
+              'files': [
+                'resources/layout/main.xml',
+                'resources/layout/host.xml',
+              ],
+            },
+            {
+              'destination': '<(SHARED_INTERMEDIATE_DIR)/remoting/android/res/values',
+              'files': [
+                'resources/strings.xml',
+              ],
+            },
+          ],
+        },  # end of target 'remoting_android_resources'
+        {
+          'target_name': 'remoting_apk',
+          'type': 'none',
+          'dependencies': [
+            'remoting_client_jni',
+            'remoting_android_resources',
+          ],
+          'variables': {
+            'apk_name': 'Chromoting',
+            'manifest_package_name': 'org.chromium.chromoting',
+            'native_lib_target': 'libremoting_client_jni',
+            'java_in_dir': 'android/java',
+            'additional_res_dirs': [ '<(SHARED_INTERMEDIATE_DIR)/remoting/android/res' ],
+            'additional_input_paths': [ '<(PRODUCT_DIR)/obj/remoting/remoting_android_resources.actions_rules_copies.stamp' ],
+          },
+          'includes': [ '../build/java_apk.gypi' ],
+        },  # end of target 'remoting_apk'
       ],  # end of 'targets'
     }],  # 'OS=="android"'
 

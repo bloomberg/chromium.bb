@@ -22,7 +22,7 @@
         'android_builder_tests',
         '../android_webview/android_webview.gyp:android_webview_apk',
         '../chrome/chrome.gyp:chromium_testshell',
-        '../remoting/remoting.gyp:remoting_client_jni',
+        '../remoting/remoting.gyp:remoting_apk',
         # TODO(nyquist) This should instead by a target for sync when all of
         # the sync-related code for Android has been upstreamed.
         # See http://crbug.com/159203

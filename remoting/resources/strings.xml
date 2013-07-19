@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--User-facing strings for the Android app-->
+<!--TODO(solb) Merge in with localized strings-->
+<resources>
+    <!--Application-wide attributes-->
+    <string name="app_name">Chromoting</string>
+
+    <!--Instructional blurbs-->
+    <string name="inst_host_list">My computers:</string>
+
+    <!--Dialog box messages-->
+    <string name="pin_entry_title">Authenticate to host</string>
+    <string name="pin_entry_message">Enter the host\'s PIN</string>
+    <string name="pin_entry_connect">Connect</string>
+    <string name="pin_entry_cancel">Cancel</string>
+
+    <!--Informative messages-->
+    <string name="msg_pin_canceled">No PIN was provided, so the connection attempt was canceled</string>
+    <string name="msg_pin_entered">Attempting to authenticate to specified host with provided PIN</string>
+
+    <!--Error messages-->
+    <string name="error_unknown">Unexpected error</string>
+    <string name="error_auth_canceled">Authentication prompt canceled by user</string>
+    <string name="error_no_accounts">Device not linked to any Google accounts</string>
+    <string name="error_auth_failed">Authentication with specified account failed</string>
+    <string name="error_cataloging_hosts">Unable to display host list</string>
+    <string name="error_displaying_host">Unable to display host entry</string>
+    <string name="error_unexpected_response">Unexpected response from directory server</string>
+    <string name="error_reading_host">Unable to read host entry</string>
+
+    <!--Protocol states (see remoting/protocol/connection_to_host.h)-->
+    <string-array name="protoc_states">
+        <item>Initializing protocol</item>
+        <item>Connecting to host</item>
+        <item>Authenticated to host</item>
+        <item>Connected to host</item>
+        <item>Connection failed</item>
+        <item>Connection closed</item>
+    </string-array>
+
+    <!--Protocol errors (see remoting/protocol/errors.h)-->
+    <string-array name="protoc_errors">
+        <item></item>
+        <item>Host is offline</item>
+        <item>Host rejected connection</item>
+        <item>Host using incompatible protocol</item>
+        <item>Host rejected authentication</item>
+        <item>Unable to establish data channel</item>
+        <item>Bad signal</item>
+        <item>Signal timed out</item>
+        <item>Host received too many bad PINs</item>
+        <item>Unknown error</item>
+    </string-array>
+</resources>
