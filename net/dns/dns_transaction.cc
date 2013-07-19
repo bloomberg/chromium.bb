@@ -895,8 +895,9 @@ class DnsTransactionImpl : public DnsTransaction,
   void OnTimeout() {
     if (callback_.is_null())
       return;
+    DCHECK(!attempts_.empty());
     AttemptResult result = ProcessAttemptResult(
-        AttemptResult(ERR_DNS_TIMED_OUT, NULL));
+        AttemptResult(ERR_DNS_TIMED_OUT, attempts_.back()));
     if (result.rv != ERR_IO_PENDING)
       DoCallback(result);
   }
