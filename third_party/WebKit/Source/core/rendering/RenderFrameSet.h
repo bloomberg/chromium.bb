@@ -27,6 +27,7 @@
 
 namespace WebCore {
 
+class HTMLDimension;
 class HTMLFrameSetElement;
 class MouseEvent;
 class RenderFrame;
@@ -108,7 +109,7 @@ private:
 
     void setIsResizing(bool);
 
-    void layOutAxis(GridAxis&, const Vector<Length>&, int availableSpace);
+    void layOutAxis(GridAxis&, const Vector<HTMLDimension>&, int availableSpace);
     void computeEdgeInfo();
     void fillFromEdgeInfo(const FrameEdgeInfo& edgeInfo, int r, int c);
     void positionFrames();

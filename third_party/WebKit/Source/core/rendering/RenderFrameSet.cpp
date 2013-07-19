@@ -27,6 +27,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/EventNames.h"
 #include "core/dom/MouseEvent.h"
+#include "core/html/HTMLDimension.h"
 #include "core/html/HTMLFrameSetElement.h"
 #include "core/page/EventHandler.h"
 #include "core/page/Frame.h"
@@ -165,7 +166,7 @@ void RenderFrameSet::GridAxis::resize(int size)
     m_allowBorder.resize(size + 1);
 }
 
-void RenderFrameSet::layOutAxis(GridAxis& axis, const Vector<Length>& grid, int availableLen)
+void RenderFrameSet::layOutAxis(GridAxis& axis, const Vector<HTMLDimension>& grid, int availableLen)
 {
     availableLen = max(availableLen, 0);
 
@@ -191,16 +192,16 @@ void RenderFrameSet::layOutAxis(GridAxis& axis, const Vector<Length>& grid, int 
     for (int i = 0; i < gridLen; ++i) {
         // Count the total length of all of the fixed columns/rows -> totalFixed
         // Count the number of columns/rows which are fixed -> countFixed
-        if (grid[i].isFixed()) {
-            gridLayout[i] = max(grid[i].intValue(), 0);
+        if (grid[i].isAbsolute()) {
+            gridLayout[i] = max<int>(grid[i].value(), 0);
             totalFixed += gridLayout[i];
             countFixed++;
         }
         
         // Count the total percentage of all of the percentage columns/rows -> totalPercent
         // Count the number of columns/rows which are percentages -> countPercent
-        if (grid[i].isPercent()) {
-            gridLayout[i] = max(intValueForLength(grid[i], availableLen), 0);
+        if (grid[i].isPercentage()) {
+            gridLayout[i] = max<int>(grid[i].value() * availableLen / 100., 0);
             totalPercent += gridLayout[i];
             countPercent++;
         }
@@ -208,7 +209,7 @@ void RenderFrameSet::layOutAxis(GridAxis& axis, const Vector<Length>& grid, int 
         // Count the total relative of all the relative columns/rows -> totalRelative
         // Count the number of columns/rows which are relative -> countRelative
         if (grid[i].isRelative()) {
-            totalRelative += max(grid[i].intValue(), 1);
+            totalRelative += max<int>(grid[i].value(), 1);
             countRelative++;
         }            
     }
@@ -221,7 +222,7 @@ void RenderFrameSet::layOutAxis(GridAxis& axis, const Vector<Length>& grid, int 
         int remainingFixed = remainingLen;
 
         for (int i = 0; i < gridLen; ++i) {
-            if (grid[i].isFixed()) {
+            if (grid[i].isAbsolute()) {
                 gridLayout[i] = (gridLayout[i] * remainingFixed) / totalFixed;
                 remainingLen -= gridLayout[i];
             }
@@ -237,7 +238,7 @@ void RenderFrameSet::layOutAxis(GridAxis& axis, const Vector<Length>& grid, int 
         int remainingPercent = remainingLen;
 
         for (int i = 0; i < gridLen; ++i) {
-            if (grid[i].isPercent()) {
+            if (grid[i].isPercentage()) {
                 gridLayout[i] = (gridLayout[i] * remainingPercent) / totalPercent;
                 remainingLen -= gridLayout[i];
             }
@@ -253,7 +254,7 @@ void RenderFrameSet::layOutAxis(GridAxis& axis, const Vector<Length>& grid, int 
 
         for (int i = 0; i < gridLen; ++i) {
             if (grid[i].isRelative()) {
-                gridLayout[i] = (max(grid[i].intValue(), 1) * remainingRelative) / totalRelative;
+                gridLayout[i] = (max(grid[i].value(), 1.) * remainingRelative) / totalRelative;
                 remainingLen -= gridLayout[i];
                 lastRelative = i;
             }
@@ -281,7 +282,7 @@ void RenderFrameSet::layOutAxis(GridAxis& axis, const Vector<Length>& grid, int 
             int changePercent = 0;
 
             for (int i = 0; i < gridLen; ++i) {
-                if (grid[i].isPercent()) {
+                if (grid[i].isPercentage()) {
                     changePercent = (remainingPercent * gridLayout[i]) / totalPercent;
                     gridLayout[i] += changePercent;
                     remainingLen -= changePercent;
@@ -295,7 +296,7 @@ void RenderFrameSet::layOutAxis(GridAxis& axis, const Vector<Length>& grid, int 
             int changeFixed = 0;
 
             for (int i = 0; i < gridLen; ++i) {
-                if (grid[i].isFixed()) {
+                if (grid[i].isAbsolute()) {
                     changeFixed = (remainingFixed * gridLayout[i]) / totalFixed;
                     gridLayout[i] += changeFixed;
                     remainingLen -= changeFixed;
@@ -313,7 +314,7 @@ void RenderFrameSet::layOutAxis(GridAxis& axis, const Vector<Length>& grid, int 
         int changePercent = 0;
 
         for (int i = 0; i < gridLen; ++i) {
-            if (grid[i].isPercent()) {
+            if (grid[i].isPercentage()) {
                 changePercent = remainingPercent / countPercent;
                 gridLayout[i] += changePercent;
                 remainingLen -= changePercent;
@@ -327,7 +328,7 @@ void RenderFrameSet::layOutAxis(GridAxis& axis, const Vector<Length>& grid, int 
         int changeFixed = 0;
         
         for (int i = 0; i < gridLen; ++i) {
-            if (grid[i].isFixed()) {
+            if (grid[i].isAbsolute()) {
                 changeFixed = remainingFixed / countFixed;
                 gridLayout[i] += changeFixed;
                 remainingLen -= changeFixed;

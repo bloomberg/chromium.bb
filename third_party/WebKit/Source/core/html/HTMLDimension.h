@@ -31,16 +31,51 @@
 #ifndef HTMLDimension_h
 #define HTMLDimension_h
 
-// FIXME: Remove once we introduce HTMLDimension.
-#include "core/platform/Length.h"
 #include "wtf/Forward.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {
 
-struct Length;
+// This class corresponds to a dimension as described in HTML5 by the
+// "rules for parsing a list of dimensions" (section 2.4.4.6).
+class HTMLDimension {
+public:
+    enum HTMLDimensionType {
+        Relative, Percentage, Absolute
+    };
 
-Vector<Length> parseListOfDimensions(const String&);
+    HTMLDimension()
+        : m_type(Absolute)
+        , m_value(0)
+    {
+    }
+
+    HTMLDimension(double value, HTMLDimensionType type)
+        : m_type(type)
+        , m_value(value)
+    {
+    }
+
+    HTMLDimensionType type() const { return m_type; }
+
+    bool isRelative() const { return m_type == Relative; }
+    bool isPercentage() const { return m_type == Percentage; }
+    bool isAbsolute() const { return m_type == Absolute; }
+
+    double value() const { return m_value; }
+
+    bool operator==(const HTMLDimension& other) const
+    {
+        return m_type == other.m_type && m_value == other.m_value;
+    }
+    bool operator!=(const HTMLDimension& other) const { return !(*this == other); }
+
+private:
+    HTMLDimensionType m_type;
+    double m_value;
+};
+
+Vector<HTMLDimension> parseListOfDimensions(const String&);
 
 } // namespace WebCore
 

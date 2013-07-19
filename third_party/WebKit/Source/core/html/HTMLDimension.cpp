@@ -31,14 +31,15 @@
 #include "config.h"
 #include "core/html/HTMLDimension.h"
 
+#include "wtf/MathExtras.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
 template <typename CharacterType>
-static Length parseDimension(const CharacterType* characters, size_t lastParsedIndex, size_t endOfCurrentToken)
+static HTMLDimension parseDimension(const CharacterType* characters, size_t lastParsedIndex, size_t endOfCurrentToken)
 {
-    LengthType type = Fixed;
+    HTMLDimension::HTMLDimensionType type = HTMLDimension::Absolute;
     double value = 0.;
 
     // HTML5's split removes leading and trailing spaces so we need to skip the leading spaces here.
@@ -47,7 +48,7 @@ static Length parseDimension(const CharacterType* characters, size_t lastParsedI
 
     // This is Step 5.5. in the algorithm. Going to the last step would make the code less readable.
     if (lastParsedIndex >= endOfCurrentToken)
-        return Length(value, Relative);
+        return HTMLDimension(value, HTMLDimension::Relative);
 
     size_t position = lastParsedIndex;
     while (position < endOfCurrentToken && isASCIIDigit(characters[position]))
@@ -83,15 +84,15 @@ static Length parseDimension(const CharacterType* characters, size_t lastParsedI
 
     if (position < endOfCurrentToken) {
         if (characters[position] == '*')
-            type = Relative;
+            type = HTMLDimension::Relative;
         else if (characters[position] == '%')
-            type = Percent;
+            type = HTMLDimension::Percentage;
     }
 
-    return Length(value, type);
+    return HTMLDimension(value, type);
 }
 
-static Length parseDimension(const String& rawToken, size_t lastParsedIndex, size_t endOfCurrentToken)
+static HTMLDimension parseDimension(const String& rawToken, size_t lastParsedIndex, size_t endOfCurrentToken)
 {
     if (rawToken.is8Bit())
         return parseDimension<LChar>(rawToken.characters8(), lastParsedIndex, endOfCurrentToken);
@@ -100,7 +101,7 @@ static Length parseDimension(const String& rawToken, size_t lastParsedIndex, siz
 
 // This implements the "rules for parsing a list of dimensions" per HTML5.
 // http://www.whatwg.org/specs/web-apps/current-work/multipage/common-microsyntaxes.html#rules-for-parsing-a-list-of-dimensions
-Vector<Length> parseListOfDimensions(const String& input)
+Vector<HTMLDimension> parseListOfDimensions(const String& input)
 {
     static const char comma = ',';
 
@@ -112,22 +113,22 @@ Vector<Length> parseListOfDimensions(const String& input)
     // HTML5's split doesn't return a token for an empty string so
     // we need to match them here.
     if (trimmedString.isEmpty())
-        return Vector<Length>();
+        return Vector<HTMLDimension>();
 
     // Step 3. To avoid String copies, we just look for commas instead of splitting.
-    Vector<Length> parsedLength;
+    Vector<HTMLDimension> parsedDimensions;
     size_t lastParsedIndex = 0;
     while (true) {
         size_t nextComma = trimmedString.find(comma, lastParsedIndex);
         if (nextComma == notFound)
             break;
 
-        parsedLength.append(parseDimension(trimmedString, lastParsedIndex, nextComma));
+        parsedDimensions.append(parseDimension(trimmedString, lastParsedIndex, nextComma));
         lastParsedIndex = nextComma + 1;
     }
 
-    parsedLength.append(parseDimension(trimmedString, lastParsedIndex, trimmedString.length()));
-    return parsedLength;
+    parsedDimensions.append(parseDimension(trimmedString, lastParsedIndex, trimmedString.length()));
+    return parsedDimensions;
 }
 
 } // namespace WebCore

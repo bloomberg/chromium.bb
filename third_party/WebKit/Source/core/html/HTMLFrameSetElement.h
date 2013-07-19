@@ -24,6 +24,7 @@
 #ifndef HTMLFrameSetElement_h
 #define HTMLFrameSetElement_h
 
+#include "core/html/HTMLDimension.h"
 #include "core/html/HTMLElement.h"
 
 namespace WebCore {
@@ -41,8 +42,8 @@ public:
 
     bool hasBorderColor() const { return m_borderColorSet; }
 
-    const Vector<Length>& rowLengths() const { return m_rowLengths; }
-    const Vector<Length>& colLengths() const { return m_colLengths; }
+    const Vector<HTMLDimension>& rowLengths() const { return m_rowLengths; }
+    const Vector<HTMLDimension>& colLengths() const { return m_colLengths; }
 
     DOMWindow* anonymousNamedGetter(const AtomicString&);
 
@@ -81,8 +82,8 @@ private:
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
     virtual void willRecalcStyle(StyleChange) OVERRIDE;
 
-    Vector<Length> m_rowLengths;
-    Vector<Length> m_colLengths;
+    Vector<HTMLDimension> m_rowLengths;
+    Vector<HTMLDimension> m_colLengths;
 
     int m_border;
     bool m_borderSet;
