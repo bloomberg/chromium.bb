@@ -8,9 +8,10 @@ WorkerTest.*
 MediaTest.*
 WebGLConformanceTest.*
 MessagePortTest.Tests
-EncryptedMediaTest.InvalidKeySystem
+EncryptedMediaTest.*
 CrossPlatformAccessibilityBrowserTest.*
 DatabaseTest.*
+ResourceDispatcherHostBrowserTest.SyncXMLHttpRequest_DuringUnload
 
 # Failures
 RenderViewHostTest.BaseURLParam
@@ -90,6 +91,7 @@ BookmarkletTest.NonEmptyResult
 MediaSourceTest.Playback_AudioOnly_WebM
 MediaSourceTest.Playback_VideoAudio_WebM
 MediaSourceTest.Playback_VideoOnly_WebM
+MediaSourceTest.ConfigChangeVideo
 
 # http://crbug.com/248796
 ResourceFetcherTests.ResourceFetcher404
