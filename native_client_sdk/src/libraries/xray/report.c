@@ -75,7 +75,7 @@ void XRayTraceReport(struct XRayTraceCapture* capture,
         } else {
           strcpy(annotation, "");
         }
-        fprintf(f, "0x%08X   %10ld     %5.1f     %s%s %s\n",
+        fprintf(f, "0x%08X   %10lld     %5.1f     %s%s %s\n",
                 (unsigned int)addr, (int64_t)ticks, percent,
                 &space[256 - depth], symbol_name, annotation);
       }
@@ -115,7 +115,7 @@ void XRayFrameReport(struct XRayTraceCapture* capture, FILE* f) {
     bool valid = XRayFrameIsValid(capture, frame);
     char label[XRAY_MAX_LABEL];
     XRayFrameMakeLabel(capture, counter, label);
-    fprintf(f, "   %3d %s     %10ld        %10d     %10d   %s\n",
+    fprintf(f, "   %3d %s     %10lld        %10d     %10d   %s\n",
       counter,
       valid ? " " : "*",
       (int64_t)total_ticks,
@@ -151,7 +151,7 @@ void XRayFrameReport(struct XRayTraceCapture* capture, FILE* f) {
     int annotation_count = XRayFrameGetAnnotationCount(capture, frame);
     char label[XRAY_MAX_LABEL];
     XRayFrameMakeLabel(capture, index, label);
-    fprintf(f, "   %3d       %10ld        %10d     %10d   %s\n",
+    fprintf(f, "   %3d       %10lld        %10d     %10d   %s\n",
         index,
         (int64_t)total_ticks,
         capture_size,
@@ -189,7 +189,6 @@ void XRayReport(struct XRayTraceCapture* capture,
   fflush(f);
 }
 
-
 /* Write a profile report to text file. */
 void XRaySaveReport(struct XRayTraceCapture* capture,
                     const char* filename,
@@ -203,4 +202,4 @@ void XRaySaveReport(struct XRayTraceCapture* capture,
   }
 }
 
-#endif  // XRAY
+#endif  /* XRAY */

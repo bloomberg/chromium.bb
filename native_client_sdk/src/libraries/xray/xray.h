@@ -11,6 +11,10 @@
 
 #include <stdint.h>
 
+#ifndef XRAY_DISABLE_BROWSER_INTEGRATION
+#include "ppapi/c/ppb.h"
+#endif
+
 #if defined(__arm__)
 #undef XRAY
 #endif
@@ -53,6 +57,15 @@ XRAY_NO_INSTRUMENT void XRayReport(struct XRayTraceCapture* capture,
                                    FILE* f,
                                    float percent_cutoff,
                                    int ticks_cutoff);
+
+#ifndef XRAY_DISABLE_BROWSER_INTEGRATION
+XRAY_NO_INSTRUMENT void XRayBrowserTraceReport(
+    struct XRayTraceCapture* capture);
+XRAY_NO_INSTRUMENT void XRayRegisterBrowserInterface(
+    PPB_GetInterface get_browser_interface);
+#endif  /* XRAY_DISABLE_BROWSER_INTEGRATION */
+
+
 #if defined(XRAY_ANNOTATE)
 #define XRayAnnotate(...) __XRayAnnotate(__VA_ARGS__)
 #define XRayAnnotateFiltered(...) __XRayAnnotateFiltered(__VA_ARGS__)
@@ -86,6 +99,14 @@ inline void XRayReport(struct XRayTraceCapture* capture,
                        FILE* f,
                        float percent_cutoff,
                        int ticks_cutoff);
+
+#ifndef XRAY_DISABLE_BROWSER_INTEGRATION
+inline void XRayBrowserTraceReport(struct XRayTraceCapture* capture) {}
+inline void XRayRegisterBrowserInterface(
+    PPB_GetInterface get_browser_interface) {}
+#endif  /* XRAY_DISABLE_BROWSER_INTEGRATION */
+
+
 #endif  /* defined(XRAY) */
 
 #ifdef __cplusplus

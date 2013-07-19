@@ -40,9 +40,9 @@ FORCE_INLINE uint64_t GTOD() {
 #define GTSC(_x) _x = GTOD();
 #endif
 
-
 /* Use a TLS variable for cheap thread uid. */
 __thread struct XRayTraceCapture* g_xray_capture = NULL;
+__thread int g_xray_thread_id_placeholder = 0;
 
 
 struct XRayTraceStackEntry {
@@ -62,6 +62,11 @@ struct XRayTraceFrameEntry {
   uint64_t total_ticks;
   int annotation_count;
   bool valid;
+
+#ifndef XRAY_DISABLE_BROWSER_INTEGRATION
+  struct XRayTimestampPair start_time;
+  struct XRayTimestampPair end_time;
+#endif
 };
 
 
@@ -93,6 +98,10 @@ struct XRayTraceCapture {
   uint32_t guard3;
   struct XRayTraceBufferEntry* buffer;
   struct XRayTraceFrame frame;
+
+#ifndef XRAY_DISABLE_BROWSER_INTEGRATION
+  int32_t thread_id;
+#endif
 } XRAY_ALIGN64;
 
 
@@ -100,10 +109,16 @@ struct XRayTraceCapture {
 extern "C" {
 #endif
 
+#if defined(__pnacl__)
+XRAY_NO_INSTRUMENT void __pnacl_profile_func_enter(const char* fname);
+XRAY_NO_INSTRUMENT void __pnacl_profile_func_exit(const char* fname);
+#else
 XRAY_NO_INSTRUMENT void __cyg_profile_func_enter(void* this_fn,
                                                  void* call_site);
 XRAY_NO_INSTRUMENT void __cyg_profile_func_exit(void* this_fn,
                                                 void* call_site);
+#endif
+
 XRAY_NO_INSTRUMENT void __xray_profile_append_annotation(
     struct XRayTraceCapture* capture,
     struct XRayTraceStackEntry* se,
@@ -112,7 +127,6 @@ XRAY_NO_INSTRUMENT void __xray_profile_append_annotation(
 #ifdef __cplusplus
 }
 #endif
-
 
 /* Asserts that the guard values haven't changed. */
 void XRayCheckGuards(struct XRayTraceCapture* capture) {
@@ -303,11 +317,14 @@ void XRayFree(void* data) {
 }
 
 
-
 /* Main profile capture function that is called at the start */
 /* of every instrumented function.  This function is implicitly */
 /* called when code is compilied with the -finstrument-functions option */
+#if defined(__pnacl__)
+void __pnacl_profile_func_enter(const char* this_fn) {
+#else
 void __cyg_profile_func_enter(void* this_fn, void* call_site) {
+#endif
   struct XRayTraceCapture* capture = g_xray_capture;
   if (capture && capture->recording) {
     uint32_t depth = capture->stack_depth;
@@ -329,7 +346,11 @@ void __cyg_profile_func_enter(void* this_fn, void* call_site) {
 /* Main profile capture function that is called at the exit of */
 /* every instrumented function.  This function is implicity called */
 /* when the code is compiled with the -finstrument-functions option */
+#if defined(__pnacl__)
+void __pnacl_profile_func_exit(const char* this_fn) {
+#else
 void __cyg_profile_func_exit(void* this_fn, void* call_site) {
+#endif
   struct XRayTraceCapture* capture = g_xray_capture;
   if (capture && capture->recording) {
     --capture->stack_depth;
@@ -350,6 +371,25 @@ void __cyg_profile_func_exit(void* this_fn, void* call_site) {
   }
 }
 
+#ifndef XRAY_DISABLE_BROWSER_INTEGRATION
+void XRayGetTSC(uint64_t* tsc) {
+  GTSC(*tsc);
+}
+
+int32_t XRayGetSavedThreadID(struct XRayTraceCapture* capture) {
+  return capture->thread_id;
+}
+
+struct XRayTimestampPair XRayFrameGetStartTimestampPair(
+    struct XRayTraceCapture* capture, int frame) {
+  return capture->frame.entry[frame].start_time;
+}
+
+struct XRayTimestampPair XRayFrameGetEndTimestampPair(
+    struct XRayTraceCapture* capture, int frame) {
+  return capture->frame.entry[frame].end_time;
+}
+#endif
 
 /* Special case appending annotation string to trace buffer */
 /* this function should only ever be called from __cyg_profile_func_exit() */
@@ -573,6 +613,11 @@ void XRayStartFrame(struct XRayTraceCapture* capture) {
   capture->recording = true;
   GTSC(capture->frame.entry[i].start_tsc);
   g_xray_capture = capture;
+
+#ifndef XRAY_DISABLE_BROWSER_INTEGRATION
+  capture->frame.entry[i].start_time = XRayGenerateTimestampsNow();
+#endif
+
 }
 
 
@@ -612,6 +657,10 @@ void XRayEndFrame(struct XRayTraceCapture* capture) {
     XRayCheckGuards(capture);
   }
   g_xray_capture = NULL;
+
+#ifndef XRAY_DISABLE_BROWSER_INTEGRATION
+  capture->frame.entry[i].end_time = XRayGenerateTimestampsNow();
+#endif
 }
 
 
@@ -698,6 +747,11 @@ struct XRayTraceCapture* XRayInit(int stack_depth,
       XRaySymbolTableCreate(XRAY_DEFAULT_SYMBOL_TABLE_SIZE);
   if (NULL != mapfilename)
     XRaySymbolTableParseMapfile(capture->symbols, mapfilename);
+
+#ifndef XRAY_DISABLE_BROWSER_INTEGRATION
+  /* Use the address of a thread local variable as a fake thread id. */
+  capture->thread_id = (int32_t)(&g_xray_thread_id_placeholder);
+#endif
 
   return capture;
 }
