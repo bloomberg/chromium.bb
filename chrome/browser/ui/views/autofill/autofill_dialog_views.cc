@@ -1970,8 +1970,10 @@ void AutofillDialogViews::ShowErrorBubbleForViewIfNecessary(views::View* view) {
 
   std::map<views::View*, string16>::iterator error_message =
       validity_map_.find(view);
-  if (error_message != validity_map_.end())
+  if (error_message != validity_map_.end()) {
+    view->ScrollRectToVisible(view->GetLocalBounds());
     error_bubble_.reset(new ErrorBubble(view, error_message->second));
+  }
 }
 
 void AutofillDialogViews::MarkInputsInvalid(DialogSection section,
