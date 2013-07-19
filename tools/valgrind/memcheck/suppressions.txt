@@ -3942,7 +3942,7 @@
    fun:_Znw*
    ...
    fun:_ZN15tracked_objects10ThreadData19TallyABirthIfActiveERKNS_8LocationE
-   fun:_ZN4base12TrackingInfoC2ERKN15tracked_objects8LocationENS_9TimeTicksE
+   fun:_ZN4base12TrackingInfoC?ERKN15tracked_objects8LocationENS_9TimeTicksE
 }
 {
    bug_104806_b
