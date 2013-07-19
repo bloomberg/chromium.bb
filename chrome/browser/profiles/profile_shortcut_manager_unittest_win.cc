@@ -71,16 +71,17 @@ class ProfileShortcutManagerTest : public testing::Test {
       profile_info_cache_->DeleteProfileFromCache(profile_path);
       RunPendingTasks();
       ASSERT_FALSE(ProfileShortcutExistsAtDefaultPath(profile_name));
+      // The icon file is not deleted until the profile directory is deleted.
       const base::FilePath icon_path =
-          profile_path.AppendASCII(profiles::internal::kProfileIconFileName);
-      ASSERT_FALSE(base::PathExists(icon_path));
+          profiles::internal::GetProfileIconPath(profile_path);
+      ASSERT_TRUE(base::PathExists(icon_path));
     }
   }
 
   base::FilePath CreateProfileDirectory(const string16& profile_name) {
     const base::FilePath profile_path =
         profile_info_cache_->GetUserDataDir().Append(profile_name);
-    file_util::CreateDirectoryW(profile_path);
+    file_util::CreateDirectory(profile_path);
     return profile_path;
   }
 
@@ -134,7 +135,7 @@ class ProfileShortcutManagerTest : public testing::Test {
 
     // Ensure that the corresponding icon exists.
     const base::FilePath icon_path =
-        profile_path.AppendASCII(profiles::internal::kProfileIconFileName);
+        profiles::internal::GetProfileIconPath(profile_path);
     EXPECT_TRUE(base::PathExists(icon_path)) << location.ToString();
 
     base::win::ShortcutProperties expected_properties;
@@ -760,7 +761,7 @@ TEST_F(ProfileShortcutManagerTest,
       CreateRegularSystemLevelShortcut(FROM_HERE);
 
   // Delete the profile that has a shortcut, which will exercise the non-profile
-  // shortcut creation path in |DeleteDesktopShortcutsAndIconFile()|, which is
+  // shortcut creation path in |DeleteDesktopShortcuts()|, which is
   // not covered by the |DeleteSecondToLastProfileWithSystemLevelShortcut| test.
   profile_info_cache_->DeleteProfileFromCache(profile_2_path_);
   RunPendingTasks();
@@ -771,4 +772,96 @@ TEST_F(ProfileShortcutManagerTest,
                    GetDefaultShortcutPathForProfile(string16())));
   EXPECT_FALSE(base::PathExists(profile_1_shortcut_path));
   EXPECT_FALSE(base::PathExists(profile_2_shortcut_path));
+}
+
+TEST_F(ProfileShortcutManagerTest, CreateProfileIcon) {
+  SetupDefaultProfileShortcut(FROM_HERE);
+
+  const base::FilePath icon_path =
+      profiles::internal::GetProfileIconPath(profile_1_path_);
+
+  EXPECT_TRUE(base::PathExists(icon_path));
+  EXPECT_TRUE(base::DeleteFile(icon_path, false));
+  EXPECT_FALSE(base::PathExists(icon_path));
+
+  profile_shortcut_manager_->CreateOrUpdateProfileIcon(profile_1_path_,
+                                                       base::Closure());
+  RunPendingTasks();
+  EXPECT_TRUE(base::PathExists(icon_path));
+}
+
+TEST_F(ProfileShortcutManagerTest, UnbadgeProfileIconOnDeletion) {
+  SetupDefaultProfileShortcut(FROM_HERE);
+  const base::FilePath icon_path_1 =
+      profiles::internal::GetProfileIconPath(profile_1_path_);
+  const base::FilePath icon_path_2 =
+      profiles::internal::GetProfileIconPath(profile_2_path_);
+
+  // Default profile has unbadged icon to start.
+  std::string unbadged_icon_1;
+  EXPECT_TRUE(file_util::ReadFileToString(icon_path_1, &unbadged_icon_1));
+
+  // Creating a new profile adds a badge to both the new profile icon and the
+  // default profile icon. Since they use the same icon index, the icon files
+  // should be the same.
+  CreateProfileWithShortcut(FROM_HERE, profile_2_name_, profile_2_path_);
+
+  std::string badged_icon_1;
+  EXPECT_TRUE(file_util::ReadFileToString(icon_path_1, &badged_icon_1));
+  std::string badged_icon_2;
+  EXPECT_TRUE(file_util::ReadFileToString(icon_path_2, &badged_icon_2));
+
+  EXPECT_NE(badged_icon_1, unbadged_icon_1);
+  EXPECT_EQ(badged_icon_1, badged_icon_2);
+
+  // Deleting the default profile will unbadge the new profile's icon and should
+  // result in an icon that is identical to the unbadged default profile icon.
+  profile_info_cache_->DeleteProfileFromCache(profile_1_path_);
+  RunPendingTasks();
+
+  std::string unbadged_icon_2;
+  EXPECT_TRUE(file_util::ReadFileToString(icon_path_2, &unbadged_icon_2));
+  EXPECT_EQ(unbadged_icon_1, unbadged_icon_2);
+}
+
+TEST_F(ProfileShortcutManagerTest, ProfileIconOnAvatarChange) {
+  SetupAndCreateTwoShortcuts(FROM_HERE);
+  const base::FilePath icon_path_1 =
+      profiles::internal::GetProfileIconPath(profile_1_path_);
+  const base::FilePath icon_path_2 =
+      profiles::internal::GetProfileIconPath(profile_2_path_);
+  const size_t profile_index_1 =
+      profile_info_cache_->GetIndexOfProfileWithPath(profile_1_path_);
+
+  std::string badged_icon_1;
+  EXPECT_TRUE(file_util::ReadFileToString(icon_path_1, &badged_icon_1));
+  std::string badged_icon_2;
+  EXPECT_TRUE(file_util::ReadFileToString(icon_path_2, &badged_icon_2));
+
+  // Profile 1 and 2 are created with the same icon.
+  EXPECT_EQ(badged_icon_1, badged_icon_2);
+
+  // Change profile 1's icon.
+  profile_info_cache_->SetAvatarIconOfProfileAtIndex(profile_index_1, 1);
+  RunPendingTasks();
+
+  std::string new_badged_icon_1;
+  EXPECT_TRUE(file_util::ReadFileToString(icon_path_1, &new_badged_icon_1));
+  EXPECT_NE(new_badged_icon_1, badged_icon_1);
+
+  // Ensure the new icon is not the unbadged icon.
+  profile_info_cache_->DeleteProfileFromCache(profile_2_path_);
+  RunPendingTasks();
+
+  std::string unbadged_icon_1;
+  EXPECT_TRUE(file_util::ReadFileToString(icon_path_1, &unbadged_icon_1));
+  EXPECT_NE(unbadged_icon_1, new_badged_icon_1);
+
+  // Ensure the icon doesn't change on avatar change without 2 profiles.
+  profile_info_cache_->SetAvatarIconOfProfileAtIndex(profile_index_1, 1);
+  RunPendingTasks();
+
+  std::string unbadged_icon_1_a;
+  EXPECT_TRUE(file_util::ReadFileToString(icon_path_1, &unbadged_icon_1_a));
+  EXPECT_EQ(unbadged_icon_1, unbadged_icon_1_a);
 }

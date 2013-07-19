@@ -16,6 +16,12 @@ class ProfileShortcutManager {
  public:
   virtual ~ProfileShortcutManager();
 
+  // Create a profile icon for the profile with path |profile_path|.
+  // |callback| is called only on creation success.
+  virtual void CreateOrUpdateProfileIcon(
+      const base::FilePath& profile_path,
+      const base::Closure& callback) = 0;
+
   // Create a profile shortcut for the profile with path |profile_path|, plus
   // update the original profile shortcut if |profile_path| is the second
   // profile created.

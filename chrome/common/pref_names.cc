@@ -47,6 +47,10 @@ const char kManagedUserCustodianEmail[] = "profile.managed.custodian_email";
 // starts a session.
 const char kManagedUserCustodianName[] = "profile.managed.custodian_name";
 
+// An integer that keeps track of the profile icon version. This allows us to
+// determine the state of the profile icon for icon format changes.
+const char kProfileIconVersion[] = "profile.icon_version";
+
 // Used to determine if the last session exited cleanly. Set to false when
 // first opened, and to true when closing. On startup if the value is false,
 // it means the profile didn't exit cleanly.
@@ -70,15 +74,15 @@ const char kSessionExitType[] = "profile.exit_type";
 // 5: open the New Tab Page on startup.
 const char kRestoreOnStartup[] = "session.restore_on_startup";
 
-// The URLs to restore on startup or when the home button is pressed. The URLs
-// are only restored on startup if kRestoreOnStartup is 4.
-const char kURLsToRestoreOnStartup[] = "session.urls_to_restore_on_startup";
-
 // A preference to keep track of whether we have already checked whether we
 // need to migrate the user from kRestoreOnStartup=0 to kRestoreOnStartup=4.
 // We only need to do this check once, on upgrade from m18 or lower to m19 or
 // higher.
 const char kRestoreOnStartupMigrated[] = "session.restore_on_startup_migrated";
+
+// The URLs to restore on startup or when the home button is pressed. The URLs
+// are only restored on startup if kRestoreOnStartup is 4.
+const char kURLsToRestoreOnStartup[] = "session.urls_to_restore_on_startup";
 
 // The application locale.
 // For OS_CHROMEOS we maintain kApplicationLocale property in both local state
