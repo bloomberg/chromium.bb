@@ -84,6 +84,10 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
 
   const gfx::Rect& background_bounds() const { return background_bounds_; }
 
+  // Trace id for ShowLoginWebUI event (since there exists at most one login
+  // WebUI at a time).
+  static const int kShowLoginWebUIid;
+
  protected:
   // content::NotificationObserver implementation:
   virtual void Observe(int type,

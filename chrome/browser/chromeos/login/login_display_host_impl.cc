@@ -151,6 +151,9 @@ namespace chromeos {
 // static
 LoginDisplayHost* LoginDisplayHostImpl::default_host_ = NULL;
 
+// static
+const int LoginDisplayHostImpl::kShowLoginWebUIid = 0x1111;
+
 ////////////////////////////////////////////////////////////////////////////////
 // LoginDisplayHostImpl, public
 
@@ -439,8 +442,10 @@ void LoginDisplayHostImpl::StartSignInScreen() {
   }
   LOG(WARNING) << "Login WebUI >> sign in";
 
-  if (!login_window_)
+  if (!login_window_) {
+    TRACE_EVENT_ASYNC_BEGIN0("ui", "ShowLoginWebUI", kShowLoginWebUIid);
     LoadURL(GURL(kLoginURL));
+  }
 
   DVLOG(1) << "Starting sign in screen";
   const chromeos::UserList& users = chromeos::UserManager::Get()->GetUsers();
