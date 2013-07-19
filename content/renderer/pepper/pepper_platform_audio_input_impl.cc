@@ -125,13 +125,16 @@ PepperPlatformAudioInputImpl::~PepperPlatformAudioInputImpl() {
   DCHECK(!ipc_);
   DCHECK(!client_);
   DCHECK(label_.empty());
+  DCHECK(!pending_open_device_);
 }
 
 PepperPlatformAudioInputImpl::PepperPlatformAudioInputImpl()
     : client_(NULL),
       main_message_loop_proxy_(base::MessageLoopProxy::current()),
       io_message_loop_proxy_(ChildProcess::current()->io_message_loop_proxy()),
-      create_stream_sent_(false) {
+      create_stream_sent_(false),
+      pending_open_device_(false),
+      pending_open_device_id_(-1) {
 }
 
 bool PepperPlatformAudioInputImpl::Initialize(
@@ -159,11 +162,12 @@ bool PepperPlatformAudioInputImpl::Initialize(
 
   // We need to open the device and obtain the label and session ID before
   // initializing.
-  plugin_delegate_->OpenDevice(
+  pending_open_device_id_ = plugin_delegate_->OpenDevice(
       PP_DEVICETYPE_DEV_AUDIOCAPTURE,
       device_id.empty() ? media::AudioManagerBase::kDefaultDeviceId : device_id,
       document_url,
       base::Bind(&PepperPlatformAudioInputImpl::OnDeviceOpened, this));
+  pending_open_device_ = true;
 
   return true;
 }
@@ -214,6 +218,9 @@ void PepperPlatformAudioInputImpl::OnDeviceOpened(int request_id,
                                                   const std::string& label) {
   DCHECK(main_message_loop_proxy_->BelongsToCurrentThread());
 
+  pending_open_device_ = false;
+  pending_open_device_id_ = -1;
+
   if (succeeded && plugin_delegate_.get()) {
     DCHECK(!label.empty());
     label_ = label;
@@ -237,9 +244,16 @@ void PepperPlatformAudioInputImpl::OnDeviceOpened(int request_id,
 void PepperPlatformAudioInputImpl::CloseDevice() {
   DCHECK(main_message_loop_proxy_->BelongsToCurrentThread());
 
-  if (plugin_delegate_.get() && !label_.empty()) {
-    plugin_delegate_->CloseDevice(label_);
-    label_.clear();
+  if (plugin_delegate_.get()) {
+    if (!label_.empty()) {
+      plugin_delegate_->CloseDevice(label_);
+      label_.clear();
+    }
+    if (pending_open_device_) {
+      plugin_delegate_->CancelOpenDevice(pending_open_device_id_);
+      pending_open_device_ = false;
+      pending_open_device_id_ = -1;
+    }
   }
 }
 

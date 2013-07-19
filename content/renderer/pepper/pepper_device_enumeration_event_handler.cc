@@ -48,6 +48,11 @@ int PepperDeviceEnumerationEventHandler::RegisterOpenDeviceCallback(
   return next_id_++;
 }
 
+void PepperDeviceEnumerationEventHandler::UnregisterOpenDeviceCallback(
+    int request_id) {
+  open_callbacks_.erase(request_id);
+}
+
 void PepperDeviceEnumerationEventHandler::OnStreamGenerated(
     int request_id,
     const std::string& label,
@@ -144,7 +149,7 @@ void PepperDeviceEnumerationEventHandler::NotifyDeviceOpened(
     const std::string& label) {
   OpenCallbackMap::iterator iter = open_callbacks_.find(request_id);
   if (iter == open_callbacks_.end()) {
-    NOTREACHED();
+    // The callback may have been unregistered.
     return;
   }
 

@@ -103,6 +103,10 @@ class PepperPluginDelegateImpl
                  const std::string& device_id,
                  const GURL& document_url,
                  const OpenDeviceCallback& callback);
+  // Cancels an request to open device, using the request ID returned by
+  // OpenDevice(). It is guaranteed that the callback passed into OpenDevice()
+  // won't be called afterwards.
+  void CancelOpenDevice(int request_id);
   void CloseDevice(const std::string& label);
   // Gets audio/video session ID given a label.
   int GetSessionID(PP_DeviceType_Dev type, const std::string& label);

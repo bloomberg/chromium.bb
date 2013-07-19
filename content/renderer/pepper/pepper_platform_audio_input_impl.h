@@ -113,8 +113,16 @@ class PepperPlatformAudioInputImpl
   // Initialized on the main thread and accessed on the I/O thread afterwards.
   media::AudioParameters params_;
 
-  // Whether we have tried to create an audio stream.
+  // Whether we have tried to create an audio stream. THIS MUST ONLY BE ACCESSED
+  // ON THE I/O THREAD.
   bool create_stream_sent_;
+
+  // Whether we have a pending request to open a device. We have to make sure
+  // there isn't any pending request before this object goes away.
+  // THIS MUST ONLY BE ACCESSED ON THE MAIN THREAD.
+  bool pending_open_device_;
+  // THIS MUST ONLY BE ACCESSED ON THE MAIN THREAD.
+  int pending_open_device_id_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperPlatformAudioInputImpl);
 };

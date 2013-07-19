@@ -27,6 +27,7 @@ class PepperDeviceEnumerationEventHandler
 
   int RegisterOpenDeviceCallback(
       const PepperPluginDelegateImpl::OpenDeviceCallback& callback);
+  void UnregisterOpenDeviceCallback(int request_id);
 
   // MediaStreamDispatcherEventHandler implementation.
   virtual void OnStreamGenerated(

@@ -85,6 +85,11 @@ class PepperPlatformVideoCaptureImpl
   // will leak.
   bool unbalanced_start_;
 
+  // Whether we have a pending request to open a device. We have to make sure
+  // there isn't any pending request before this object goes away.
+  bool pending_open_device_;
+  int pending_open_device_id_;
+
   DISALLOW_COPY_AND_ASSIGN(PepperPlatformVideoCaptureImpl);
 };
 
