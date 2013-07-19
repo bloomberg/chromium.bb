@@ -2212,7 +2212,7 @@ translate-sb-tool() {
   if [ "${toolname}" == "pnacl-llc" ]; then
     for tarch in ${arches}; do
       local nexe="${toolname}.${tarch}.nexe"
-      local llvm_host_lib=$(ls "${LLVM_INSTALL_DIR}"/lib/libLLVM-*svn.so)
+      local llvm_host_lib=$(ls "${LLVM_INSTALL_DIR}"/lib/libLLVM-3.*.so)
       python "${PNACL_ROOT}/prune_test.py" "${PNACL_NM}" \
         "${llvm_host_lib}" "${nexe}"
     done
