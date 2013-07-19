@@ -1120,68 +1120,69 @@ protected:
     // The bitfields are up here so they will fall into the padding from ScrollableArea on 64-bit.
 
     // Keeps track of whether the layer is currently resizing, so events can cause resizing to start and stop.
-    bool m_inResizeMode : 1;
+    unsigned m_inResizeMode : 1;
 
-    bool m_scrollDimensionsDirty : 1;
-    bool m_zOrderListsDirty : 1;
-    bool m_normalFlowListDirty: 1;
-    bool m_isNormalFlowOnly : 1;
+    unsigned m_scrollDimensionsDirty : 1;
+    unsigned m_zOrderListsDirty : 1;
+    unsigned m_normalFlowListDirty: 1;
+    unsigned m_isNormalFlowOnly : 1;
 
-    bool m_isSelfPaintingLayer : 1;
+    unsigned m_isSelfPaintingLayer : 1;
 
     // If have no self-painting descendants, we don't have to walk our children during painting. This can lead to
     // significant savings, especially if the tree has lots of non-self-painting layers grouped together (e.g. table cells).
-    bool m_hasSelfPaintingLayerDescendant : 1;
-    bool m_hasSelfPaintingLayerDescendantDirty : 1;
+    unsigned m_hasSelfPaintingLayerDescendant : 1;
+    unsigned m_hasSelfPaintingLayerDescendantDirty : 1;
 
-    bool m_hasOutOfFlowPositionedDescendant : 1;
-    bool m_hasOutOfFlowPositionedDescendantDirty : 1;
+    unsigned m_hasOutOfFlowPositionedDescendant : 1;
+    unsigned m_hasOutOfFlowPositionedDescendantDirty : 1;
 
     // This is true if we have an out-of-flow positioned descendant whose
     // containing block is our ancestor. If this is the case, the descendant
     // may fall outside of our clip preventing things like opting into
     // composited scrolling (which causes clipping of all descendants).
-    bool m_hasUnclippedDescendant : 1;
+    unsigned m_hasUnclippedDescendant : 1;
 
-    bool m_needsCompositedScrolling : 1;
+    unsigned m_needsCompositedScrolling : 1;
 
     // If this is true, then no non-descendant appears between any of our
     // descendants in stacking order. This is one of the requirements of being
     // able to safely become a stacking context.
-    bool m_canBePromotedToStackingContainer : 1;
-    bool m_canBePromotedToStackingContainerDirty : 1;
+    unsigned m_canBePromotedToStackingContainer : 1;
+    unsigned m_canBePromotedToStackingContainerDirty : 1;
 
-    const bool m_isRootLayer : 1;
+    const unsigned m_isRootLayer : 1;
 
-    bool m_usedTransparency : 1; // Tracks whether we need to close a transparent layer, i.e., whether
+    unsigned m_usedTransparency : 1; // Tracks whether we need to close a transparent layer, i.e., whether
                                  // we ended up painting this layer or any descendants (and therefore need to
                                  // blend).
-    bool m_paintingInsideReflection : 1;  // A state bit tracking if we are painting inside a replica.
-    bool m_inOverflowRelayout : 1;
+    unsigned m_paintingInsideReflection : 1; // A state bit tracking if we are painting inside a replica.
+    unsigned m_inOverflowRelayout : 1;
     unsigned m_repaintStatus : 2; // RepaintStatus
 
-    bool m_visibleContentStatusDirty : 1;
-    bool m_hasVisibleContent : 1;
-    bool m_visibleDescendantStatusDirty : 1;
-    bool m_hasVisibleDescendant : 1;
+    unsigned m_visibleContentStatusDirty : 1;
+    unsigned m_hasVisibleContent : 1;
+    unsigned m_visibleDescendantStatusDirty : 1;
+    unsigned m_hasVisibleDescendant : 1;
 
-    bool m_isPaginated : 1; // If we think this layer is split by a multi-column ancestor, then this bit will be set.
+    unsigned m_isPaginated : 1; // If we think this layer is split by a multi-column ancestor, then this bit will be set.
 
-    bool m_3DTransformedDescendantStatusDirty : 1;
-    bool m_has3DTransformedDescendant : 1;  // Set on a stacking context layer that has 3D descendants anywhere
-                                            // in a preserves3D hierarchy. Hint to do 3D-aware hit testing.
+    unsigned m_3DTransformedDescendantStatusDirty : 1;
+    // Set on a stacking context layer that has 3D descendants anywhere
+    // in a preserves3D hierarchy. Hint to do 3D-aware hit testing.
+    unsigned m_has3DTransformedDescendant : 1;
 
-    bool m_containsDirtyOverlayScrollbars : 1;
+    unsigned m_containsDirtyOverlayScrollbars : 1;
 
 #if !ASSERT_DISABLED
-    bool m_layerListMutationAllowed : 1;
+    unsigned m_layerListMutationAllowed : 1;
 #endif
     // This is an optimization added for <table>.
     // Currently cells do not need to update their repaint rectangles when scrolling. This also
     // saves a lot of time when scrolling on a table.
-    const bool m_canSkipRepaintRectsUpdateOnScroll : 1;
+    const unsigned m_canSkipRepaintRectsUpdateOnScroll : 1;
 
-    bool m_hasFilterInfo : 1;
+    unsigned m_hasFilterInfo : 1;
 
     BlendMode m_blendMode;
 
