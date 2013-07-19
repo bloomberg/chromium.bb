@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_PLUGINS_NPAPI_PLUGIN_STREAM_URL_H_
-#define WEBKIT_PLUGINS_NPAPI_PLUGIN_STREAM_URL_H_
+#ifndef CONTENT_CHILD_NPAPI_PLUGIN_STREAM_URL_H_
+#define CONTENT_CHILD_NPAPI_PLUGIN_STREAM_URL_H_
 
 #include <vector>
 
@@ -69,4 +69,4 @@ class PluginStreamUrl : public PluginStream,
 
 }  // namespace content
 
-#endif // WEBKIT_PLUGINS_NPAPI_PLUGIN_STREAM_URL_H_
+#endif // CONTENT_CHILD_NPAPI_PLUGIN_STREAM_URL_H_

@@ -2053,8 +2053,8 @@
           # npapi test plugin doesn't build on android or ios
           'dependencies': [
             # build time dependency.
+            '../content/content.gyp:copy_npapi_test_plugin',
             '../v8/tools/gyp/v8.gyp:v8_shell#host',
-            '../webkit/plugins/webkit_plugins.gyp:copy_npapi_test_plugin',
           ],
         }],
         ['enable_app_list==0', {
