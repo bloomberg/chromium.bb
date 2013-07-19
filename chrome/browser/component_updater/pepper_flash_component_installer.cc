@@ -170,7 +170,7 @@ bool IsPepperFlash(const webkit::WebPluginInfo& plugin) {
   // We try to recognize Pepper Flash by the following criteria:
   // * It is a Pepper plug-in.
   // * It has the special Flash permissions.
-  return webkit::IsPepperPlugin(plugin) &&
+  return plugin.is_pepper_plugin() &&
          (plugin.pepper_permissions & ppapi::PERMISSION_FLASH);
 }
 

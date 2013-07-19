@@ -959,7 +959,7 @@ bool PepperFlashSettingsManager::IsPepperFlashInUse(
 
   for (std::vector<webkit::WebPluginInfo>::iterator iter = plugins.begin();
        iter != plugins.end(); ++iter) {
-    if (webkit::IsPepperPlugin(*iter) && plugin_prefs->IsPluginEnabled(*iter)) {
+    if (iter->is_pepper_plugin() && plugin_prefs->IsPluginEnabled(*iter)) {
       if (plugin_info)
         *plugin_info = *iter;
       return true;

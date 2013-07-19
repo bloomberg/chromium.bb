@@ -56,6 +56,12 @@ struct WebPluginInfo {
                 const base::string16& fake_version,
                 const base::string16& fake_desc);
 
+  bool is_pepper_plugin() const {
+    return ((type == PLUGIN_TYPE_PEPPER_IN_PROCESS ) ||
+          (type == PLUGIN_TYPE_PEPPER_OUT_OF_PROCESS) ||
+          (type == PLUGIN_TYPE_PEPPER_UNSANDBOXED));
+  }
+
   // The name of the plugin (i.e. Flash).
   base::string16 name;
 
@@ -77,11 +83,6 @@ struct WebPluginInfo {
   // When type is PLUGIN_TYPE_PEPPER_* this indicates the permission bits.
   int32 pepper_permissions;
 };
-
-// Checks whether a plugin is a Pepper plugin, enabled or disabled.
-bool IsPepperPlugin(const WebPluginInfo& plugin);
-
-bool IsOutOfProcessPlugin(const WebPluginInfo& plugin);
 
 }  // namespace webkit
 

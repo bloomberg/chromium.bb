@@ -63,16 +63,4 @@ WebPluginInfo::WebPluginInfo(const base::string16& fake_name,
       pepper_permissions(0) {
 }
 
-bool IsPepperPlugin(const WebPluginInfo& plugin) {
-  return ((plugin.type == WebPluginInfo::PLUGIN_TYPE_PEPPER_IN_PROCESS ) ||
-          (plugin.type == WebPluginInfo::PLUGIN_TYPE_PEPPER_OUT_OF_PROCESS) ||
-          (plugin.type == WebPluginInfo::PLUGIN_TYPE_PEPPER_UNSANDBOXED));
-}
-
-bool IsOutOfProcessPlugin(const WebPluginInfo& plugin) {
-  return ((plugin.type == WebPluginInfo::PLUGIN_TYPE_NPAPI) ||
-          (plugin.type == WebPluginInfo::PLUGIN_TYPE_PEPPER_OUT_OF_PROCESS) ||
-          (plugin.type == WebPluginInfo::PLUGIN_TYPE_PEPPER_UNSANDBOXED));
-}
-
 }  // namespace webkit

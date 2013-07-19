@@ -13,6 +13,8 @@
 #include "content/public/common/content_switches.h"
 #include "ppapi/shared_impl/ppapi_permissions.h"
 
+using webkit::WebPluginInfo;
+
 namespace content {
 namespace {
 
@@ -83,32 +85,14 @@ void ComputePluginsFromCommandLine(std::vector<PepperPluginInfo>* plugins) {
 
 }  // namespace
 
-webkit::WebPluginInfo PepperPluginInfo::ToWebPluginInfo() const {
-  webkit::WebPluginInfo info;
-
-  info.type = is_out_of_process ?
-      (is_sandboxed ?
-        webkit::WebPluginInfo::PLUGIN_TYPE_PEPPER_OUT_OF_PROCESS :
-        webkit::WebPluginInfo::PLUGIN_TYPE_PEPPER_UNSANDBOXED) :
-      webkit::WebPluginInfo::PLUGIN_TYPE_PEPPER_IN_PROCESS;
-
-  info.name = name.empty() ?
-      path.BaseName().LossyDisplayName() : UTF8ToUTF16(name);
-  info.path = path;
-  info.version = ASCIIToUTF16(version);
-  info.desc = ASCIIToUTF16(description);
-  info.mime_types = mime_types;
-  info.pepper_permissions = permissions;
-
-  return info;
-}
-
 bool MakePepperPluginInfo(const webkit::WebPluginInfo& webplugin_info,
                           PepperPluginInfo* pepper_info) {
-  if (!webkit::IsPepperPlugin(webplugin_info))
+  if (!webplugin_info.is_pepper_plugin())
     return false;
 
-  pepper_info->is_out_of_process = webkit::IsOutOfProcessPlugin(webplugin_info);
+  pepper_info->is_out_of_process =
+      webplugin_info.type == WebPluginInfo::PLUGIN_TYPE_PEPPER_OUT_OF_PROCESS ||
+      webplugin_info.type == WebPluginInfo::PLUGIN_TYPE_PEPPER_UNSANDBOXED;
   pepper_info->is_sandboxed = webplugin_info.type !=
       webkit::WebPluginInfo::PLUGIN_TYPE_PEPPER_UNSANDBOXED;
 
