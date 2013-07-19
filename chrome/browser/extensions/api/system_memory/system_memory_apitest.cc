@@ -1,10 +1,10 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
-#include "chrome/browser/extensions/api/system_info_memory/memory_info_provider.h"
+#include "chrome/browser/extensions/api/system_memory/memory_info_provider.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/common/chrome_switches.h"
@@ -12,7 +12,7 @@
 
 namespace extensions {
 
-using api::system_info_memory::MemoryInfo;
+using api::system_memory::MemoryInfo;
 
 const char kExtensionId[] = "lfmcnjhchhgejbpbonjobnlbcgcnmjif";
 
@@ -29,10 +29,10 @@ class MockMemoryInfoProviderImpl : public MemoryInfoProvider {
   virtual ~MockMemoryInfoProviderImpl() {}
 };
 
-class SystemInfoMemoryApiTest: public ExtensionApiTest {
+class SystemMemoryApiTest: public ExtensionApiTest {
  public:
-  SystemInfoMemoryApiTest() {}
-  virtual ~SystemInfoMemoryApiTest() {}
+  SystemMemoryApiTest() {}
+  virtual ~SystemMemoryApiTest() {}
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionApiTest::SetUpCommandLine(command_line);
@@ -49,11 +49,11 @@ class SystemInfoMemoryApiTest: public ExtensionApiTest {
   scoped_ptr<base::MessageLoop> message_loop_;
 };
 
-IN_PROC_BROWSER_TEST_F(SystemInfoMemoryApiTest, Memory) {
+IN_PROC_BROWSER_TEST_F(SystemMemoryApiTest, Memory) {
   scoped_refptr<MemoryInfoProvider> provider = new MockMemoryInfoProviderImpl();
   // The provider is owned by the single MemoryInfoProvider instance.
   MemoryInfoProvider::InitializeForTesting(provider);
-  ASSERT_TRUE(RunExtensionTest("systeminfo/memory")) << message_;
+  ASSERT_TRUE(RunExtensionTest("system/memory")) << message_;
 }
 
 }  // namespace extensions

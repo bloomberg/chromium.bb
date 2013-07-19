@@ -194,6 +194,7 @@ const char* const kNames[] = {
     "systemInfo.cpu.get", "systemInfo.memory.get",
     "runtime.onRestartRequired",
     "system.cpu.getInfo"
+    "system.memory.getInfo"
 };
 
 }  // namespace activity_log_api_name_constants
