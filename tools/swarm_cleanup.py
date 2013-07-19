@@ -120,6 +120,7 @@ def main():
   # Clears up stale run_isolated.py temporary directories.
   for filename in glob.iglob('run_tha_test*'):
     delete(filename)
+  print ''
   return 0
 
 
