@@ -55,6 +55,7 @@
 #include "core/page/ContentSecurityPolicy.h"
 #include "core/page/DOMTimer.h"
 #include "core/page/DOMWindow.h"
+#include "core/page/DOMWindowTimers.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/page/Location.h"
@@ -66,9 +67,12 @@
 #include "core/storage/Storage.h"
 #include "core/workers/SharedWorkerRepository.h"
 #include "wtf/ArrayBuffer.h"
+#include "wtf/OwnArrayPtr.h"
 
 namespace WebCore {
 
+// FIXME: There is a lot of duplication with SetTimeoutOrInterval() in V8WorkerGlobalScopeCustom.cpp.
+// We should refactor this.
 void WindowSetTimeoutImpl(const v8::FunctionCallbackInfo<v8::Value>& args, bool singleShot)
 {
     int argumentCount = args.Length();
@@ -85,7 +89,7 @@ void WindowSetTimeoutImpl(const v8::FunctionCallbackInfo<v8::Value>& args, bool 
     }
 
     v8::Handle<v8::Value> function = args[0];
-    WTF::String functionString;
+    String functionString;
     if (!function->IsFunction()) {
         if (function->IsString()) {
             functionString = toWebCoreString(function);
@@ -105,19 +109,15 @@ void WindowSetTimeoutImpl(const v8::FunctionCallbackInfo<v8::Value>& args, bool 
             return;
     }
 
-    int32_t timeout = 0;
-    if (argumentCount >= 2)
-        timeout = args[1]->Int32Value();
-
     if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame()))
         return;
 
-    int id;
+    OwnPtr<ScheduledAction> action;
     if (function->IsFunction()) {
         int paramCount = argumentCount >= 2 ? argumentCount - 2 : 0;
-        v8::Local<v8::Value>* params = 0;
+        OwnArrayPtr<v8::Local<v8::Value> > params;
         if (paramCount > 0) {
-            params = new v8::Local<v8::Value>[paramCount];
+            params = adoptArrayPtr(new v8::Local<v8::Value>[paramCount]);
             for (int i = 0; i < paramCount; i++) {
                 // parameters must be globalized
                 params[i] = args[i+2];
@@ -126,20 +126,22 @@ void WindowSetTimeoutImpl(const v8::FunctionCallbackInfo<v8::Value>& args, bool 
 
         // params is passed to action, and released in action's destructor
         ASSERT(imp->frame());
-        OwnPtr<ScheduledAction> action = adoptPtr(new ScheduledAction(imp->frame()->script()->currentWorldContext(), v8::Handle<v8::Function>::Cast(function), paramCount, params, args.GetIsolate()));
-
-        // FIXME: We should use OwnArrayPtr for params.
-        delete[] params;
-
-        id = DOMTimer::install(scriptContext, action.release(), timeout, singleShot);
+        action = adoptPtr(new ScheduledAction(imp->frame()->script()->currentWorldContext(), v8::Handle<v8::Function>::Cast(function), paramCount, params.get(), args.GetIsolate()));
     } else {
         if (imp->document() && !imp->document()->contentSecurityPolicy()->allowEval()) {
             v8SetReturnValue(args, 0);
             return;
         }
         ASSERT(imp->frame());
-        id = DOMTimer::install(scriptContext, adoptPtr(new ScheduledAction(imp->frame()->script()->currentWorldContext(), functionString, KURL(), args.GetIsolate())), timeout, singleShot);
+        action = adoptPtr(new ScheduledAction(imp->frame()->script()->currentWorldContext(), functionString, KURL(), args.GetIsolate()));
     }
+
+    int32_t timeout = argumentCount >= 2 ? args[1]->Int32Value() : 0;
+    int timerId;
+    if (singleShot)
+        timerId = DOMWindowTimers::setTimeout(imp, action.release(), timeout);
+    else
+        timerId = DOMWindowTimers::setInterval(imp, action.release(), timeout);
 
     // Try to do the idle notification before the timeout expires to get better
     // use of any idle time. Aim for the middle of the interval for simplicity.
@@ -148,7 +150,7 @@ void WindowSetTimeoutImpl(const v8::FunctionCallbackInfo<v8::Value>& args, bool 
         V8GCForContextDispose::instance().notifyIdleSooner(maximumFireInterval);
     }
 
-    v8SetReturnValue(args, id);
+    v8SetReturnValue(args, timerId);
 }
 
 void V8Window::eventAttrGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)

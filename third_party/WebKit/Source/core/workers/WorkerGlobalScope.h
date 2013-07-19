@@ -90,12 +90,6 @@ namespace WebCore {
         virtual void importScripts(const Vector<String>& urls, ExceptionCode&);
         WorkerNavigator* navigator() const;
 
-        // Timers
-        int setTimeout(PassOwnPtr<ScheduledAction>, int timeout);
-        void clearTimeout(int timeoutId);
-        int setInterval(PassOwnPtr<ScheduledAction>, int timeout);
-        void clearInterval(int timeoutId);
-
         // ScriptExecutionContext
         virtual WorkerEventQueue* eventQueue() const OVERRIDE;
 

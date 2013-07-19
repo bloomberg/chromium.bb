@@ -243,10 +243,6 @@ namespace WebCore {
         void resizeBy(float x, float y) const;
         void resizeTo(float width, float height) const;
 
-        // Timers
-        void clearTimeout(int timeoutId);
-        void clearInterval(int timeoutId);
-
         // Images
         void createImageBitmap(HTMLImageElement*, PassRefPtr<ImageBitmapCallback>, ExceptionCode&);
         void createImageBitmap(HTMLImageElement*, PassRefPtr<ImageBitmapCallback>, int sx, int sy, int sw, int sh, ExceptionCode&);

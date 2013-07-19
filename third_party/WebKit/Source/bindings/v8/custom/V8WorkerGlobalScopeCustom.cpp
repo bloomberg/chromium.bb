@@ -41,8 +41,10 @@
 #include "core/inspector/ScriptCallStack.h"
 #include "core/page/ContentSecurityPolicy.h"
 #include "core/page/DOMTimer.h"
+#include "core/page/DOMWindowTimers.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "modules/websockets/WebSocket.h"
+#include "wtf/OwnArrayPtr.h"
 
 namespace WebCore {
 
@@ -55,13 +57,12 @@ void SetTimeoutOrInterval(const v8::FunctionCallbackInfo<v8::Value>& args, bool 
         return;
 
     v8::Handle<v8::Value> function = args[0];
-    int32_t timeout = argumentCount >= 2 ? args[1]->Int32Value() : 0;
-    int timerId;
 
     WorkerScriptController* script = workerGlobalScope->script();
     if (!script)
         return;
 
+    OwnPtr<ScheduledAction> action;
     v8::Handle<v8::Context> v8Context = script->context();
     if (function->IsString()) {
         if (ContentSecurityPolicy* policy = workerGlobalScope->contentSecurityPolicy()) {
@@ -70,23 +71,26 @@ void SetTimeoutOrInterval(const v8::FunctionCallbackInfo<v8::Value>& args, bool 
                 return;
             }
         }
-        WTF::String stringFunction = toWebCoreString(function);
-        timerId = DOMTimer::install(workerGlobalScope, adoptPtr(new ScheduledAction(v8Context, stringFunction, workerGlobalScope->url(), args.GetIsolate())), timeout, singleShot);
+        action = adoptPtr(new ScheduledAction(v8Context, toWebCoreString(function), workerGlobalScope->url(), args.GetIsolate()));
     } else if (function->IsFunction()) {
         size_t paramCount = argumentCount >= 2 ? argumentCount - 2 : 0;
-        v8::Local<v8::Value>* params = 0;
+        OwnArrayPtr<v8::Local<v8::Value> > params;
         if (paramCount > 0) {
-            params = new v8::Local<v8::Value>[paramCount];
+            params = adoptArrayPtr(new v8::Local<v8::Value>[paramCount]);
             for (size_t i = 0; i < paramCount; ++i)
                 params[i] = args[i+2];
         }
         // ScheduledAction takes ownership of actual params and releases them in its destructor.
-        OwnPtr<ScheduledAction> action = adoptPtr(new ScheduledAction(v8Context, v8::Handle<v8::Function>::Cast(function), paramCount, params, args.GetIsolate()));
-        // FIXME: We should use a OwnArrayPtr for params.
-        delete [] params;
-        timerId = DOMTimer::install(workerGlobalScope, action.release(), timeout, singleShot);
+        action = adoptPtr(new ScheduledAction(v8Context, v8::Handle<v8::Function>::Cast(function), paramCount, params.get(), args.GetIsolate()));
     } else
         return;
+
+    int32_t timeout = argumentCount >= 2 ? args[1]->Int32Value() : 0;
+    int timerId;
+    if (singleShot)
+        timerId = DOMWindowTimers::setTimeout(workerGlobalScope, action.release(), timeout);
+    else
+        timerId = DOMWindowTimers::setInterval(workerGlobalScope, action.release(), timeout);
 
     v8SetReturnValue(args, timerId);
 }

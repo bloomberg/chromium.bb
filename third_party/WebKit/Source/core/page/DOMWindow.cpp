@@ -74,7 +74,6 @@
 #include "core/page/Console.h"
 #include "core/page/CreateWindow.h"
 #include "core/page/DOMPoint.h"
-#include "core/page/DOMTimer.h"
 #include "core/page/EventHandler.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameTree.h"
@@ -1359,18 +1358,6 @@ void DOMWindow::resizeTo(float width, float height) const
     FloatSize dest = FloatSize(width, height);
     FloatRect update(fr.location(), dest);
     page->chrome().setWindowRect(adjustWindowRect(page, update));
-}
-
-void DOMWindow::clearTimeout(int timeoutID)
-{
-    if (ScriptExecutionContext* context = scriptExecutionContext())
-        DOMTimer::removeByID(context, timeoutID);
-}
-
-void DOMWindow::clearInterval(int timeoutID)
-{
-    if (ScriptExecutionContext* context = scriptExecutionContext())
-        DOMTimer::removeByID(context, timeoutID);
 }
 
 static LayoutSize size(HTMLImageElement* image)

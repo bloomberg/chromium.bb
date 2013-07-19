@@ -43,7 +43,6 @@
 #include "core/inspector/WorkerInspectorController.h"
 #include "core/loader/WorkerThreadableLoader.h"
 #include "core/page/ContentSecurityPolicy.h"
-#include "core/page/DOMTimer.h"
 #include "core/page/DOMWindow.h"
 #include "core/page/WorkerNavigator.h"
 #include "core/platform/NotImplemented.h"
@@ -179,29 +178,9 @@ void WorkerGlobalScope::postTask(PassOwnPtr<Task> task)
     thread()->runLoop().postTask(task);
 }
 
-int WorkerGlobalScope::setTimeout(PassOwnPtr<ScheduledAction> action, int timeout)
-{
-    return DOMTimer::install(scriptExecutionContext(), action, timeout, true);
-}
-
-void WorkerGlobalScope::clearTimeout(int timeoutID)
-{
-    DOMTimer::removeByID(scriptExecutionContext(), timeoutID);
-}
-
 void WorkerGlobalScope::clearInspector()
 {
     m_workerInspectorController.clear();
-}
-
-int WorkerGlobalScope::setInterval(PassOwnPtr<ScheduledAction> action, int timeout)
-{
-    return DOMTimer::install(scriptExecutionContext(), action, timeout, false);
-}
-
-void WorkerGlobalScope::clearInterval(int timeoutID)
-{
-    DOMTimer::removeByID(scriptExecutionContext(), timeoutID);
 }
 
 void WorkerGlobalScope::importScripts(const Vector<String>& urls, ExceptionCode& ec)
