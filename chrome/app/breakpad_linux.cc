@@ -40,7 +40,6 @@
 #include "chrome/app/breakpad_linux_impl.h"
 #include "chrome/browser/crash_upload_list.h"
 #include "chrome/common/child_process_logging.h"
-#include "chrome/common/env_vars.h"
 #include "components/breakpad/breakpad_client.h"
 #include "content/public/common/content_descriptors.h"
 #include "content/public/common/content_switches.h"
@@ -1656,7 +1655,7 @@ void InitCrashReporter() {
   const std::string process_type =
       parsed_command_line.GetSwitchValueASCII(switches::kProcessType);
   if (process_type.empty()) {
-    EnableCrashDumping(getenv(env_vars::kHeadless) != NULL);
+    EnableCrashDumping(breakpad::GetBreakpadClient()->IsRunningUnattended());
   } else if (process_type == switches::kRendererProcess ||
              process_type == switches::kPluginProcess ||
              process_type == switches::kPpapiPluginProcess ||

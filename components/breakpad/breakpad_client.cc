@@ -37,6 +37,16 @@ void BreakpadClient::GetProductNameAndVersion(const base::FilePath& exe_path,
                                               base::string16* version,
                                               base::string16* special_build) {
 }
+
+bool BreakpadClient::ShouldShowRestartDialog(base::string16* title,
+                                             base::string16* message,
+                                             bool* is_rtl_locale) {
+  return false;
+}
+
+bool BreakpadClient::AboutToRestart() {
+  return true;
+}
 #endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_IOS)
@@ -56,6 +66,10 @@ void BreakpadClient::SetDumpWithoutCrashingFunction(void (*function)()) {
 
 size_t BreakpadClient::RegisterCrashKeys() {
   return 0;
+}
+
+bool BreakpadClient::IsRunningUnattended() {
+  return false;
 }
 
 }  // namespace breakpad

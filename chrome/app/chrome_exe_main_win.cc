@@ -10,6 +10,8 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/lazy_instance.h"
+#include "chrome/app/chrome_breakpad_client.h"
 #include "chrome/app/breakpad_win.h"
 #include "chrome/app/client_util.h"
 #include "chrome/app/metro_driver_win.h"
@@ -17,13 +19,19 @@
 #include "chrome/browser/policy/policy_path_parser.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
+#include "components/breakpad/breakpad_client.h"
 #include "content/public/app/startup_helper_win.h"
 #include "content/public/common/result_codes.h"
 #include "sandbox/win/src/sandbox_factory.h"
 
 namespace {
 
+base::LazyInstance<chrome::ChromeBreakpadClient>::Leaky
+    g_chrome_breakpad_client = LAZY_INSTANCE_INITIALIZER;
+
 int RunChrome(HINSTANCE instance) {
+  breakpad::SetBreakpadClient(g_chrome_breakpad_client.Pointer());
+
   bool exit_now = true;
   // We restarted because of a previous crash. Ask user if we should relaunch.
   if (ShowRestartDialogIfCrashed(&exit_now)) {

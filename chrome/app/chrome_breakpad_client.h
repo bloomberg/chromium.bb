@@ -24,6 +24,10 @@ class ChromeBreakpadClient : public breakpad::BreakpadClient {
                                         base::string16* product_name,
                                         base::string16* version,
                                         base::string16* special_build) OVERRIDE;
+  virtual bool ShouldShowRestartDialog(base::string16* title,
+                                       base::string16* message,
+                                       bool* is_rtl_locale) OVERRIDE;
+  virtual bool AboutToRestart() OVERRIDE;
 #endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_IOS)
@@ -38,6 +42,8 @@ class ChromeBreakpadClient : public breakpad::BreakpadClient {
 #endif
 
   virtual size_t RegisterCrashKeys() OVERRIDE;
+
+  virtual bool IsRunningUnattended() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeBreakpadClient);

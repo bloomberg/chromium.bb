@@ -42,6 +42,18 @@ class BreakpadClient {
                                         base::string16* product_name,
                                         base::string16* version,
                                         base::string16* special_build);
+
+  // Returns true if a restart dialog should be displayed. In that case,
+  // |message| and |title| are set to a message to display in a dialog box with
+  // the given title before restarting, and |is_rtl_locale| indicates whether
+  // to display the text as RTL.
+  virtual bool ShouldShowRestartDialog(base::string16* title,
+                                       base::string16* message,
+                                       bool* is_rtl_locale);
+
+  // Returns true if it is ok to restart the application. Invoked right before
+  // restarting after a crash.
+  virtual bool AboutToRestart();
 #endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_IOS)
@@ -64,6 +76,9 @@ class BreakpadClient {
   // Register all of the potential crash keys that can be sent to the crash
   // reporting server. Returns the size of the union of all keys.
   virtual size_t RegisterCrashKeys();
+
+  // Returns true if running in unattended mode (for automated testing).
+  virtual bool IsRunningUnattended();
 };
 
 }  // namespace breakpad

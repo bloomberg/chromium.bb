@@ -9,7 +9,6 @@
 #include "base/debug/trace_event.h"
 #include "base/environment.h"
 #include "base/file_version_info.h"
-#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
@@ -19,7 +18,6 @@
 #include "base/version.h"
 #include "base/win/windows_version.h"
 #include "chrome/app/breakpad_win.h"
-#include "chrome/app/chrome_breakpad_client.h"
 #include "chrome/app/client_util.h"
 #include "chrome/app/image_pre_reader_win.h"
 #include "chrome/common/chrome_constants.h"
@@ -32,16 +30,12 @@
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/util_constants.h"
-#include "components/breakpad/breakpad_client.h"
 
 namespace {
 // The entry point signature of chrome.dll.
 typedef int (*DLL_MAIN)(HINSTANCE, sandbox::SandboxInterfaceInfo*);
 
 typedef void (*RelaunchChromeBrowserWithNewCommandLineIfNeededFunc)();
-
-base::LazyInstance<chrome::ChromeBreakpadClient>::Leaky
-    g_chrome_breakpad_client = LAZY_INSTANCE_INITIALIZER;
 
 // Expects that |dir| has a trailing backslash. |dir| is modified so it
 // contains the full path that was tried. Caller must check for the return
@@ -174,7 +168,6 @@ int MainDllLoader::Launch(HINSTANCE instance,
   // widely deployed.
   env->UnSetVar(env_vars::kGoogleUpdateIsMachineEnvVar);
 
-  breakpad::SetBreakpadClient(g_chrome_breakpad_client.Pointer());
   InitCrashReporter();
   OnBeforeLaunch(file);
 
