@@ -77,11 +77,11 @@ TEST_F(ComponentPatcherOperationTest, CheckCreateOperation) {
   int error = 0;
   scoped_ptr<DeltaUpdateOp> op(new DeltaUpdateOpCreate());
   ComponentUnpacker::Error result = op->Run(command_args.get(),
-                                     input_dir_.path(),
-                                     unpack_dir_.path(),
-                                     patcher_.get(),
-                                     NULL,
-                                     &error);
+                                            input_dir_.path(),
+                                            unpack_dir_.path(),
+                                            patcher_.get(),
+                                            NULL,
+                                            &error);
 
   EXPECT_EQ(ComponentUnpacker::kNone, result);
   EXPECT_EQ(0, error);
@@ -105,11 +105,74 @@ TEST_F(ComponentPatcherOperationTest, CheckCopyOperation) {
   int error = 0;
   scoped_ptr<DeltaUpdateOp> op(new DeltaUpdateOpCopy());
   ComponentUnpacker::Error result = op->Run(command_args.get(),
-                                     input_dir_.path(),
-                                     unpack_dir_.path(),
-                                     patcher_.get(),
-                                     installer_.get(),
-                                     &error);
+                                            input_dir_.path(),
+                                            unpack_dir_.path(),
+                                            patcher_.get(),
+                                            installer_.get(),
+                                            &error);
+  EXPECT_EQ(ComponentUnpacker::kNone, result);
+  EXPECT_EQ(0, error);
+  EXPECT_TRUE(base::ContentsEqual(
+      unpack_dir_.path().Append(FILE_PATH_LITERAL("output.bin")),
+      test_file("binary_output.bin")));
+}
+
+// Verify that a 'courgette' delta update operation works correctly.
+TEST_F(ComponentPatcherOperationTest, CheckCourgetteOperation) {
+  EXPECT_TRUE(base::CopyFile(
+      test_file("binary_input.bin"),
+      installed_dir_.path().Append(FILE_PATH_LITERAL("binary_input.bin"))));
+  EXPECT_TRUE(base::CopyFile(
+      test_file("binary_courgette_patch.bin"),
+      input_dir_.path().Append(
+          FILE_PATH_LITERAL("binary_courgette_patch.bin"))));
+
+  scoped_ptr<base::DictionaryValue> command_args(new base::DictionaryValue());
+  command_args->SetString("output", "output.bin");
+  command_args->SetString("sha256", binary_output_hash);
+  command_args->SetString("op", "courgette");
+  command_args->SetString("input", "binary_input.bin");
+  command_args->SetString("patch", "binary_courgette_patch.bin");
+
+  int error = 0;
+  scoped_ptr<DeltaUpdateOp> op(new DeltaUpdateOpPatchCourgette());
+  ComponentUnpacker::Error result = op->Run(command_args.get(),
+                                            input_dir_.path(),
+                                            unpack_dir_.path(),
+                                            patcher_.get(),
+                                            installer_.get(),
+                                            &error);
+  EXPECT_EQ(ComponentUnpacker::kNone, result);
+  EXPECT_EQ(0, error);
+  EXPECT_TRUE(base::ContentsEqual(
+      unpack_dir_.path().Append(FILE_PATH_LITERAL("output.bin")),
+      test_file("binary_output.bin")));
+}
+
+// Verify that a 'bsdiff' delta update operation works correctly.
+TEST_F(ComponentPatcherOperationTest, CheckBsdiffOperation) {
+  EXPECT_TRUE(base::CopyFile(
+      test_file("binary_input.bin"),
+      installed_dir_.path().Append(FILE_PATH_LITERAL("binary_input.bin"))));
+  EXPECT_TRUE(base::CopyFile(
+      test_file("binary_bsdiff_patch.bin"),
+      input_dir_.path().Append(FILE_PATH_LITERAL("binary_bsdiff_patch.bin"))));
+
+  scoped_ptr<base::DictionaryValue> command_args(new base::DictionaryValue());
+  command_args->SetString("output", "output.bin");
+  command_args->SetString("sha256", binary_output_hash);
+  command_args->SetString("op", "courgette");
+  command_args->SetString("input", "binary_input.bin");
+  command_args->SetString("patch", "binary_bsdiff_patch.bin");
+
+  int error = 0;
+  scoped_ptr<DeltaUpdateOp> op(new DeltaUpdateOpPatchBsdiff());
+  ComponentUnpacker::Error result = op->Run(command_args.get(),
+                                            input_dir_.path(),
+                                            unpack_dir_.path(),
+                                            patcher_.get(),
+                                            installer_.get(),
+                                            &error);
   EXPECT_EQ(ComponentUnpacker::kNone, result);
   EXPECT_EQ(0, error);
   EXPECT_TRUE(base::ContentsEqual(

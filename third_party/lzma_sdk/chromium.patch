@@ -1,4 +1,4 @@
-1,186c1,168
+1,168c1,187
 < /* CpuArch.c -- CPU specific code
 < 2010-10-26: Igor Pavlov : Public domain */
 < 
@@ -73,31 +73,13 @@
 < 
 <   #else
 < 
-<   #if defined(MY_CPU_AMD64)
-< 
 <   __asm__ __volatile__ (
-<     "mov %%rbx, %%rdi\n"
-<     "cpuid\n"
-<     "xchg %%rdi, %%rbx\n"
+<     "cpuid"
 <     : "=a" (*a) ,
-<       "=D" (*b) ,
+<       "=b" (*b) ,
 <       "=c" (*c) ,
 <       "=d" (*d)
 <     : "0" (function)) ;
-< 
-<   #else
-< 
-<   __asm__ __volatile__ (
-<     "mov %%ebx, %%edi\n"
-<     "cpuid\n"
-<     "xchg %%edi, %%ebx\n"
-<     : "=a" (*a) ,
-<       "=D" (*b) ,
-<       "=c" (*c) ,
-<       "=d" (*d)
-<     : "0" (function)) ;
-< 
-<   #endif
 < 
 <   #endif
 <   
@@ -227,7 +209,8 @@
 >     "push %%EDX\n\t"
 >     "popf\n\t"
 >     "andl %%EAX, %0\n\t":
->     "=c" (flag) : "c" (flag));
+>     "=c" (flag) : "c" (flag):
+>     "%eax", "%edx" );
 >   #endif
 >   return flag;
 > }
@@ -260,13 +243,31 @@
 > 
 >   #else
 > 
+>   #if defined(MY_CPU_AMD64)
+> 
 >   __asm__ __volatile__ (
->     "cpuid"
+>     "mov %%rbx, %%rdi\n"
+>     "cpuid\n"
+>     "xchg %%rdi, %%rbx\n"
 >     : "=a" (*a) ,
->       "=b" (*b) ,
+>       "=D" (*b) ,
 >       "=c" (*c) ,
 >       "=d" (*d)
 >     : "0" (function)) ;
+> 
+>   #else
+> 
+>   __asm__ __volatile__ (
+>     "mov %%ebx, %%edi\n"
+>     "cpuid\n"
+>     "xchg %%edi, %%ebx\n"
+>     : "=a" (*a) ,
+>       "=D" (*b) ,
+>       "=c" (*c) ,
+>       "=d" (*d)
+>     : "0" (function)) ;
+> 
+>   #endif
 > 
 >   #endif
 >   
