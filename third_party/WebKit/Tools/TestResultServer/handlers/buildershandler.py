@@ -163,7 +163,10 @@ class GetBuilders(webapp2.RequestHandler):
         if not buildbot_data:
             logging.warning('No buildbot data in memcache. If this message repeats, something is probably wrong with memcache.')
             buildbot_data = fetch_buildbot_data(MASTERS)
-            memcache.set('buildbot_data', buildbot_data)
+            try:
+                memcache.set('buildbot_data', buildbot_data)
+            except ValueError, err:
+                logging.error(str(err))
 
         if callback:
             buildbot_data = callback + '(' + buildbot_data + ');'
