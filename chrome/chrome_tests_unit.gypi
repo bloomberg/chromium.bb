@@ -1706,6 +1706,7 @@
         'common/extensions/value_counter_unittest.cc',
         'common/extensions/api/extension_api_unittest.cc',
         'common/favicon/favicon_url_parser_unittest.cc',
+        'common/importer/firefox_importer_utils_unittest.cc',
         'common/instant_restricted_id_cache_unittest.cc',
         'common/json_schema/json_schema_validator_unittest.cc',
         'common/json_schema/json_schema_validator_unittest_base.cc',
@@ -1789,7 +1790,6 @@
         'utility/extensions/unpacker_unittest.cc',
         'utility/importer/bookmark_html_reader_unittest.cc',
         'utility/importer/firefox_importer_unittest.cc',
-        'utility/importer/firefox_importer_utils_unittest.cc',
         'utility/importer/safari_importer_unittest.mm',
 
         # Duplicate these tests here because PathService has more items in
@@ -2448,6 +2448,9 @@
 
             # Android uses a different invaliator.
             'browser/invalidation/ticl_invalidation_service_unittest.cc',
+            
+            # The importer code is not used on Android.
+            'common/importer/firefox_importer_utils_unittest.cc',
           ],
           'sources/': [
             ['exclude', '^browser/captive_portal/'],

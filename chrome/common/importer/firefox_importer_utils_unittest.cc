@@ -1,11 +1,12 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+#include "chrome/common/importer/firefox_importer_utils.h"
 
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/values.h"
-#include "chrome/common/importer/firefox_importer_utils.h"
 #include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
