@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <limits>
 
 #include "base/debug/trace_event.h"
 #include "cc/base/math_util.h"
@@ -338,6 +339,35 @@ void PictureLayerTiling::Reset() {
   tiles_.clear();
 }
 
+namespace {
+
+bool NearlyOne(SkMScalar lhs) {
+  return std::abs(lhs-1.0) < std::numeric_limits<float>::epsilon();
+}
+
+bool NearlyZero(SkMScalar lhs) {
+  return std::abs(lhs) < std::numeric_limits<float>::epsilon();
+}
+
+bool ApproximatelyTranslation(const SkMatrix44& matrix) {
+  return
+      NearlyOne(matrix.get(0, 0)) &&
+      NearlyZero(matrix.get(1, 0)) &&
+      NearlyZero(matrix.get(2, 0)) &&
+      matrix.get(3, 0) == 0 &&
+      NearlyZero(matrix.get(0, 1)) &&
+      NearlyOne(matrix.get(1, 1)) &&
+      NearlyZero(matrix.get(2, 1)) &&
+      matrix.get(3, 1) == 0 &&
+      NearlyZero(matrix.get(0, 2)) &&
+      NearlyZero(matrix.get(1, 2)) &&
+      NearlyOne(matrix.get(2, 2)) &&
+      matrix.get(3, 2) == 0 &&
+      matrix.get(3, 3) == 1;
+}
+
+}  // namespace
+
 void PictureLayerTiling::UpdateTilePriorities(
     WhichTree tree,
     gfx::Size device_viewport,
@@ -398,8 +428,8 @@ void PictureLayerTiling::UpdateTilePriorities(
                                      &store_screen_space_quads_on_tiles);
 
   // Fast path tile priority calculation when both transforms are translations.
-  if (last_screen_transform.IsIdentityOrTranslation() &&
-      current_screen_transform.IsIdentityOrTranslation()) {
+  if (ApproximatelyTranslation(last_screen_transform.matrix()) &&
+      ApproximatelyTranslation(current_screen_transform.matrix())) {
     gfx::Vector2dF current_offset(
         current_screen_transform.matrix().get(0, 3),
         current_screen_transform.matrix().get(1, 3));
@@ -437,6 +467,101 @@ void PictureLayerTiling::UpdateTilePriorities(
           distance_to_visible_in_pixels);
       if (store_screen_space_quads_on_tiles)
         priority.set_current_screen_quad(gfx::QuadF(current_screen_rect));
+      tile->SetPriority(tree, priority);
+    }
+  } else if (!last_screen_transform.HasPerspective() &&
+             !current_screen_transform.HasPerspective()) {
+    // Secondary fast path that can be applied for any affine transforms.
+
+    // Initialize the necessary geometry in screen space, so that we can
+    // iterate over tiles in screen space without needing a costly transform
+    // mapping for each tile.
+
+    // Apply screen space transform to the local origin point (0, 0); only the
+    // translation component is needed and can be initialized directly.
+    gfx::Point current_screen_space_origin(
+        current_screen_transform.matrix().get(0, 3),
+        current_screen_transform.matrix().get(1, 3));
+
+    gfx::Point last_screen_space_origin(
+        last_screen_transform.matrix().get(0, 3),
+        last_screen_transform.matrix().get(1, 3));
+
+    float current_tile_width = tiling_data_.TileSizeX(0) * current_scale;
+    float last_tile_width = tiling_data_.TileSizeX(0) * last_scale;
+    float current_tile_height = tiling_data_.TileSizeY(0) * current_scale;
+    float last_tile_height = tiling_data_.TileSizeY(0) * last_scale;
+
+    // Apply screen space transform to local basis vectors (tile_width, 0) and
+    // (0, tile_height); the math simplifies and can be initialized directly.
+    gfx::Vector2dF current_horizontal(
+        current_screen_transform.matrix().get(0, 0) * current_tile_width,
+        current_screen_transform.matrix().get(1, 0) * current_tile_width);
+    gfx::Vector2dF current_vertical(
+        current_screen_transform.matrix().get(0, 1) * current_tile_height,
+        current_screen_transform.matrix().get(1, 1) * current_tile_height);
+
+    gfx::Vector2dF last_horizontal(
+        last_screen_transform.matrix().get(0, 0) * last_tile_width,
+        last_screen_transform.matrix().get(1, 0) * last_tile_width);
+    gfx::Vector2dF last_vertical(
+        last_screen_transform.matrix().get(0, 1) * last_tile_height,
+        last_screen_transform.matrix().get(1, 1) * last_tile_height);
+
+    for (TilingData::Iterator iter(&tiling_data_, interest_rect);
+         iter; ++iter) {
+      TileMap::iterator find = tiles_.find(iter.index());
+      if (find == tiles_.end())
+        continue;
+
+      Tile* tile = find->second.get();
+
+      int i = iter.index_x();
+      int j = iter.index_y();
+      gfx::PointF current_tile_origin = current_screen_space_origin +
+              ScaleVector2d(current_horizontal, i) +
+              ScaleVector2d(current_vertical, j);
+      gfx::PointF last_tile_origin = last_screen_space_origin +
+              ScaleVector2d(last_horizontal, i) +
+              ScaleVector2d(last_vertical, j);
+
+      gfx::RectF current_screen_rect = gfx::QuadF(
+          current_tile_origin,
+          current_tile_origin + current_horizontal,
+          current_tile_origin + current_horizontal + current_vertical,
+          current_tile_origin + current_vertical).BoundingBox();
+
+      gfx::RectF last_screen_rect = gfx::QuadF(
+          last_tile_origin,
+          last_tile_origin + last_horizontal,
+          last_tile_origin + last_horizontal + last_vertical,
+          last_tile_origin + last_vertical).BoundingBox();
+
+      float distance_to_visible_in_pixels =
+          TilePriority::manhattanDistance(current_screen_rect, view_rect);
+
+      float time_to_visible_in_seconds =
+          TilePriority::TimeForBoundsToIntersect(
+              last_screen_rect, current_screen_rect, time_delta, view_rect);
+      TilePriority priority(
+          resolution_,
+          time_to_visible_in_seconds,
+          distance_to_visible_in_pixels);
+
+      if (store_screen_space_quads_on_tiles) {
+        // This overhead is only triggered when logging event tracing data.
+        gfx::Rect tile_bounds =
+            tiling_data_.TileBounds(iter.index_x(), iter.index_y());
+        gfx::RectF current_layer_content_rect = gfx::ScaleRect(
+            tile_bounds,
+            current_scale,
+            current_scale);
+        bool clipped;
+        priority.set_current_screen_quad(
+            MathUtil::MapQuad(current_screen_transform,
+                              gfx::QuadF(current_layer_content_rect),
+                              &clipped));
+      }
       tile->SetPriority(tree, priority);
     }
   } else {
