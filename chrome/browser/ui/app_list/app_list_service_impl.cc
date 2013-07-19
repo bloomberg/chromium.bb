@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/app_list/app_list_service_impl.h"
 
+#include "apps/pref_names.h"
+#include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/time/time.h"
@@ -11,6 +13,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
@@ -64,6 +67,11 @@ void RecordDailyEventFrequency(
   if (SendDailyEventFrequency(last_ping_pref, count_pref, send_callback)) {
     local_state->SetInteger(count_pref, 1);
   }
+}
+
+void SetAppListEnabledPreference(bool enabled) {
+  PrefService* local_state = g_browser_process->local_state();
+  local_state->SetBoolean(apps::prefs::kAppLauncherHasBeenEnabled, enabled);
 }
 
 }  // namespace
@@ -144,6 +152,7 @@ AppListControllerDelegate* AppListServiceImpl::CreateControllerDelegate() {
   return NULL;
 }
 
+void AppListServiceImpl::CreateShortcut() {}
 void AppListServiceImpl::OnSigninStatusChanged() {}
 
 // We need to watch for profile removal to keep kAppListProfile updated.
@@ -174,6 +183,12 @@ void AppListServiceImpl::Show() {
                  weak_factory_.GetWeakPtr()));
 }
 
+void AppListServiceImpl::EnableAppList(Profile* initial_profile) {
+  SetAppListEnabledPreference(true);
+  SetProfilePath(initial_profile->GetPath());
+  CreateShortcut();
+}
+
 Profile* AppListServiceImpl::GetCurrentAppListProfile() {
   return profile();
 }
@@ -194,4 +209,12 @@ void AppListServiceImpl::SetProfile(Profile* new_profile) {
 
 void AppListServiceImpl::InvalidatePendingProfileLoads() {
   profile_loader_.InvalidatePendingProfileLoads();
+}
+
+void AppListServiceImpl::HandleCommandLineFlags(Profile* initial_profile) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableAppList))
+    EnableAppList(initial_profile);
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableAppList))
+    SetAppListEnabledPreference(false);
 }

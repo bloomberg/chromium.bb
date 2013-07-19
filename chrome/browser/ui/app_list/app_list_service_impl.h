@@ -46,6 +46,12 @@ class AppListServiceImpl : public AppListService,
   ProfileLoader& profile_loader() { return profile_loader_; }
   const ProfileLoader& profile_loader() const { return profile_loader_; }
 
+  // Process command line flags shared between desktop implementations of the
+  // app list. Currently this allows for enabling or disabling the app list.
+  void HandleCommandLineFlags(Profile* initial_profile);
+
+  // Create a platform-specific shortcut for the app list.
+  virtual void CreateShortcut();
 
   // Called in response to observed successful and unsuccessful signin changes.
   virtual void OnSigninStatusChanged();
@@ -59,6 +65,7 @@ class AppListServiceImpl : public AppListService,
       const base::FilePath& user_data_dir) OVERRIDE;
   virtual void SetProfilePath(const base::FilePath& profile_path) OVERRIDE;
   virtual void Show() OVERRIDE;
+  virtual void EnableAppList(Profile* initial_profile) OVERRIDE;
   virtual AppListControllerDelegate* CreateControllerDelegate() OVERRIDE;
 
  private:

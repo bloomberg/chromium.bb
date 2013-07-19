@@ -301,7 +301,6 @@ class AppListController : public AppListServiceImpl {
   void AppListClosing();
   void AppListActivationChanged(bool active);
   void ShowAppListDuringModeSwitch(Profile* requested_profile);
-  void DisableAppList();
 
   app_list::AppListView* GetView() { return current_view_; }
 
@@ -311,11 +310,11 @@ class AppListController : public AppListServiceImpl {
   virtual void ShowForProfile(Profile* requested_profile) OVERRIDE;
   virtual void DismissAppList() OVERRIDE;
   virtual bool IsAppListVisible() const OVERRIDE;
-  virtual void EnableAppList(Profile* initial_profile) OVERRIDE;
   virtual gfx::NativeWindow GetAppListWindow() OVERRIDE;
   virtual AppListControllerDelegate* CreateControllerDelegate() OVERRIDE;
 
   // AppListServiceImpl overrides:
+  virtual void CreateShortcut() OVERRIDE;
   virtual void OnSigninStatusChanged() OVERRIDE;
 
  private:
@@ -913,26 +912,18 @@ void AppListController::Init(Profile* initial_profile) {
   ScheduleWarmup();
 
   MigrateAppLauncherEnabledPref();
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableAppList))
-    EnableAppList(initial_profile);
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableAppList))
-    DisableAppList();
+  HandleCommandLineFlags(initial_profile);
 }
 
 bool AppListController::IsAppListVisible() const {
   return current_view_ && current_view_->GetWidget()->IsVisible();
 }
 
-void AppListController::EnableAppList(Profile* initial_profile) {
-  SetProfilePath(initial_profile->GetPath());
+void AppListController::CreateShortcut() {
   // Check if the app launcher shortcuts have ever been created before.
   // Shortcuts should only be created once. If the user unpins the taskbar
   // shortcut, they can restore it by pinning the start menu or desktop
   // shortcut.
-  PrefService* local_state = g_browser_process->local_state();
-  local_state->SetBoolean(apps::prefs::kAppLauncherHasBeenEnabled, true);
   ShellIntegration::ShortcutLocations shortcut_locations;
   shortcut_locations.on_desktop = true;
   shortcut_locations.in_quick_launch_bar = true;
@@ -947,11 +938,6 @@ void AppListController::EnableAppList(Profile* initial_profile) {
       FROM_HERE,
       base::Bind(&CreateAppListShortcuts,
                   user_data_dir, GetAppModelId(), shortcut_locations));
-}
-
-void AppListController::DisableAppList() {
-  PrefService* local_state = g_browser_process->local_state();
-  local_state->SetBoolean(apps::prefs::kAppLauncherHasBeenEnabled, false);
 }
 
 void AppListController::ScheduleWarmup() {

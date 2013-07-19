@@ -252,9 +252,10 @@ const char kDiagnostics[]                   = "diagnostics";
 // Sets the output format for diagnostic modes enabled by diagnostics flag.
 const char kDiagnosticsFormat[]             = "diagnostics-format";
 
-// Replaces the audio IPC layer for <audio> and <video> with a mock audio
-// device, useful when using remote desktop or machines without sound cards.
-// This is temporary until we fix the underlying problem.
+// If set, the app list will be disabled at startup. Note this doesn't prevent
+// the app list from running, it just makes Chrome think the app list hasn't
+// been enabled (as in kEnableAppList) yet.
+const char kDisableAppList[]                = "disable-app-list";
 
 // Disables the experimental asynchronous DNS client.
 const char kDisableAsyncDns[]               = "disable-async-dns";
@@ -475,6 +476,9 @@ const char kDnsPrefetchDisable[]            = "dns-prefetch-disable";
 
 // Enables the <adview> tag in packaged apps.
 const char kEnableAdview[]                  = "enable-adview";
+
+// If set, the app list will be enabled as if enabled from CWS.
+const char kEnableAppList[]                 = "enable-app-list";
 
 // Enables specifying a "src" attribute on <adview> elements
 // (for testing purposes, to skip the whitelist).
@@ -1489,14 +1493,6 @@ const char kUseMockKeychain[]               = "use-mock-keychain";
 #endif
 
 #if defined(OS_WIN)
-// If set, the app list will be disabled at startup. Note this doesn't prevent
-// the app list from running, it just makes Chrome think the app list hasn't
-// been enabled (as in kEnableAppList) yet.
-const char kDisableAppList[]                = "disable-app-list";
-
-// If set, the app list will be enabled as if enabled from CWS.
-const char kEnableAppList[]                 = "enable-app-list";
-
 // For the DelegateExecute verb handler to launch Chrome in metro mode on
 // Windows 8 and higher.  Used when relaunching metro Chrome.
 const char kForceImmersive[]                = "force-immersive";

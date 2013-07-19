@@ -20,11 +20,11 @@ void RegisterPrefs(PrefRegistrySimple* registry) {
   // Anything that needs to know the absolute truth should call
   // GetIsAppLauncherEnabled().
   registry->RegisterBooleanPref(prefs::kAppLauncherIsEnabled, false);
+  registry->RegisterBooleanPref(prefs::kAppLauncherHasBeenEnabled, false);
 
 #if defined(OS_WIN)
   registry->RegisterStringPref(prefs::kAppLaunchForMetroRestart, "");
   registry->RegisterStringPref(prefs::kAppLaunchForMetroRestartProfile, "");
-  registry->RegisterBooleanPref(prefs::kAppLauncherHasBeenEnabled, false);
 #endif
 
   // Identifies whether we should show the app launcher promo or not.

@@ -81,6 +81,7 @@ extern const char kDebugPrint[];
 extern const char kDeviceManagementUrl[];
 extern const char kDiagnostics[];
 extern const char kDiagnosticsFormat[];
+extern const char kDisableAppList[];
 extern const char kDisableAsyncDns[];
 extern const char kDisableAuthNegotiateCnameLookup[];
 extern const char kDisableBackgroundMode[];
@@ -143,6 +144,7 @@ extern const char kDisableSyncTabs[];
 extern const char kEasyOffStoreExtensionInstall[];
 extern const char kEnableAdview[];
 extern const char kEnableAdviewSrcAttribute[];
+extern const char kEnableAppList[];
 extern const char kEnableAppWindowControls[];
 extern const char kEnableAsyncDns[];
 extern const char kEnableAuthNegotiatePort[];
@@ -417,8 +419,6 @@ extern const char kUseMockKeychain[];
 #endif
 
 #if defined(OS_WIN)
-extern const char kDisableAppList[];
-extern const char kEnableAppList[];
 extern const char kForceImmersive[];
 extern const char kForceDesktop[];
 extern const char kOverlappedRead[];
