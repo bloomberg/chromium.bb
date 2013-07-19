@@ -82,17 +82,10 @@ if env.Bit('target_arm'):
 # cover IRT-internal code.
 env.ComponentLibrary('libirt_support_private', irt_support_objs)
 
-# These go into only one image or the other.
 irt_nonbrowser = ['irt_interfaces.c',
                   'irt_core_entry.c',
                   'irt_core_resource.c',
                   ]
-
-irt_browser = ['irt_interfaces_ppapi.c',
-               'irt_entry_ppapi.c',
-               'irt_ppapi.c',
-               'irt_manifest.c',
-               ]
 
 irt_libs = ['srpc',
             'imc_syscalls',
@@ -101,12 +94,10 @@ irt_libs = ['srpc',
             'm',
             ]
 
-def LinkIrt(output, files, libs):
-  return blob_env.ComponentProgram(output,
-                                   [irt_entry_obj] + irt_support_objs + files,
-                                   EXTRA_LIBS=libs + irt_libs)
-
-irt_core_library = LinkIrt('irt_core', irt_nonbrowser, [])
+irt_core_library = blob_env.ComponentProgram(
+    'irt_core',
+    [irt_entry_obj] + irt_support_objs + irt_nonbrowser,
+    EXTRA_LIBS=irt_libs)
 env.SDKInstallBin('irt_core.nexe', irt_core_library)
 
 # TODO(mcgrathr): these should be installed, but scons is a mystery

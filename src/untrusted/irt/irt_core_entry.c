@@ -9,7 +9,13 @@
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 
-static int IrtInit(void) {
+/*
+ * This is declared as weak because plugin_main_nacl.cc on the
+ * Chromium side has a copy of IrtInit().
+ * TODO(mseaborn): Remove IrtInit() from there and use this copy.
+ */
+__attribute__((weak))
+int IrtInit(void) {
   static int initialized = 0;
   if (initialized) {
     return 0;

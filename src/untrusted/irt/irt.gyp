@@ -9,6 +9,7 @@
   'variables': {
     'irt_sources': [
 # irt_support_sources
+      'irt_core_entry.c',
       'irt_entry.c',
       'irt_malloc.c',
       'irt_private_pthread.c',
@@ -42,12 +43,10 @@
     ],
     'irt_nonbrowser': [
       'irt_interfaces.c',
-      'irt_core_entry.c',
       'irt_core_resource.c',
     ],
     'irt_browser': [
       'irt_interfaces_ppapi.c',
-      'irt_entry_ppapi.c',
       'irt_ppapi.c',
       'irt_manifest.c',
     ],
