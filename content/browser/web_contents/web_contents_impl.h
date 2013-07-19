@@ -47,6 +47,7 @@ class DownloadItem;
 class InterstitialPageImpl;
 class JavaBridgeDispatcherHostManager;
 class JavaScriptDialogManager;
+class PowerSaveBlocker;
 class RenderViewHost;
 class RenderViewHostDelegateView;
 class RenderViewHostImpl;
@@ -625,6 +626,11 @@ class CONTENT_EXPORT WebContentsImpl
                        const std::string& frame_name);
   void OnFrameDetached(int64 parent_frame_id, int64 frame_id);
 
+  void OnMediaNotification(int64 player_cookie,
+                           bool has_video,
+                           bool has_audio,
+                           bool is_playing);
+
   // Changes the IsLoading state and notifies delegate as needed
   // |details| is used to provide details on the load that just finished
   // (but can be null if not applicable). Can be overridden.
@@ -742,6 +748,12 @@ class CONTENT_EXPORT WebContentsImpl
   // Removes browser plugin embedder if there is one.
   void RemoveBrowserPluginEmbedder();
 
+  // Clear |render_view_host|'s PowerSaveBlockers.
+  void ClearPowerSaveBlockers(RenderViewHost* render_view_host);
+
+  // Clear all PowerSaveBlockers, leave power_save_blocker_ empty.
+  void ClearAllPowerSaveBlockers();
+
   // Data for core operation ---------------------------------------------------
 
   // Delegate for notifying our owner about stuff. Not owned by us.
@@ -786,6 +798,13 @@ class CONTENT_EXPORT WebContentsImpl
 #endif
 
   // Helper classes ------------------------------------------------------------
+
+  // Maps the RenderViewHost to its media_player_cookie and PowerSaveBlocker
+  // pairs. Key is the RenderViewHost, value is the map which maps player_cookie
+  // on to PowerSaveBlocker.
+  typedef std::map<RenderViewHost*, std::map<int64, PowerSaveBlocker*> >
+      PowerSaveBlockerMap;
+  PowerSaveBlockerMap power_save_blockers_;
 
   // Manages creation and swapping of render views.
   RenderViewHostManager render_manager_;

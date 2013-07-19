@@ -11,6 +11,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.SparseArray;
+import android.view.WindowManager;
 import android.widget.Toast;
 
 import java.util.HashMap;
@@ -99,6 +100,7 @@ public class WindowAndroid {
      * TODO(nileshagrawal): Stop returning Activity Context crbug.com/233440.
      * @return Activity context.
      */
+    @Deprecated
     public Context getContext() {
         return mActivity;
     }
@@ -188,6 +190,14 @@ public class WindowAndroid {
             mNativeWindowAndroid = nativeInit();
         }
         return mNativeWindowAndroid;
+    }
+
+    public void keepScreenOn(boolean screenOn) {
+        if (screenOn) {
+            mActivity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        } else {
+            mActivity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        }
     }
 
     private native int nativeInit();

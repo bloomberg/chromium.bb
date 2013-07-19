@@ -609,14 +609,6 @@ public class ContentVideoView
         }
     }
 
-    @CalledByNative
-    public static void keepScreenOnContentVideoView(boolean screenOn) {
-        ContentVideoView content_video_view = getContentVideoView();
-        if ( content_video_view != null) {
-            content_video_view.mClient.keepScreenOn(screenOn);
-        }
-    }
-
     /**
      * This method shall only be called by native and exitFullscreen,
      * To exit fullscreen, use exitFullscreen in Java.
