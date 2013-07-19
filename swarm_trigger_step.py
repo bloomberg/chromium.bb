@@ -14,7 +14,6 @@ import hashlib
 import json
 import optparse
 import os
-import socket
 import StringIO
 import sys
 import time
@@ -156,15 +155,6 @@ class Manifest(object):
     # Clean up
     self.add_task('Clean Up', ['python', CLEANUP_SCRIPT_NAME])
 
-    # This separation of vlans isn't required anymore, but it is
-    # still a useful separation to keep.
-    hostname = socket.gethostname().lower().split('.', 1)[0]
-    vlan = None
-    if hostname.endswith('-m1'):
-      vlan = 'm1'
-    elif hostname.endswith('m4'):
-      vlan = 'm4'
-
     # Construct test case
     test_case = {
       'test_case_name': self.test_name,
@@ -194,10 +184,6 @@ class Manifest(object):
     if self.shards > 1:
       test_case['env_vars']['GTEST_SHARD_INDEX'] = '%(instance_index)s'
       test_case['env_vars']['GTEST_TOTAL_SHARDS'] = '%(num_instances)s'
-
-    # This flag is chromium infrastructure specific.
-    if vlan:
-      test_case['configurations'][0]['dimensions']['vlan'] = vlan
 
     return json.dumps(test_case)
 

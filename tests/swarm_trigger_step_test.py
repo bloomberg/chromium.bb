@@ -46,7 +46,6 @@ def GenerateExpectedJSON(options):
         u'config_name': swarm_trigger_step.PLATFORM_MAPPING[options.os_image],
         u'dimensions': {
           u'os': swarm_trigger_step.PLATFORM_MAPPING[options.os_image],
-          u'vlan': u'm4',
         },
         u'min_instances': options.shards,
       },
@@ -114,7 +113,6 @@ def MockUrlOpenNoZip(url, data=None, content_type=None):
 
 class ManifestTest(auto_stub.TestCase):
   def setUp(self):
-    self.mock(swarm_trigger_step.socket, 'gethostname', lambda: 'vm1-m4')
     self.mock(swarm_trigger_step.time, 'sleep', lambda x: None)
     self.mock(swarm_trigger_step.zipfile, 'ZipFile', MockZipFile)
     self.mock(sys, 'stdout', StringIO.StringIO())
