@@ -129,12 +129,20 @@ cat <<EOF > "${rundir}/tmp/.netrc"
 machine localhost login ${username} password ${password}
 EOF
 
+# Create a .git-credentials file, to enable password-less push.
+cat <<EOF > "${rundir}/tmp/.git-credentials"
+http://${username}:${password}@localhost:8080
+EOF
+
 echo
 echo "To start gerrit server:"
 echo "  ${rundir}/bin/gerrit.sh start"
 echo
 echo "To use the REST API:"
 echo "  curl --netrc-file ${rundir}/tmp/.netrc http://localhost:8080/<endpoint>"
+echo
+echo "To enable 'git push' without a password prompt:"
+echo "  git config credential.helper 'store --file=${rundir}/tmp/.git-credentials'"
 echo
 echo "To stop the server:"
 echo "  ${rundir}/bin/gerrit.sh stop"
