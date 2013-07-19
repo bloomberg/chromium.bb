@@ -95,10 +95,6 @@ public:
         return m_frameStatus;
     }
 
-    virtual size_t frameCount() { return 1; }
-    virtual int repetitionCount() const { return cAnimationNone; }
-    virtual float frameDuration() const { return 0; }
-
 protected:
     PassOwnPtr<ScaledImageFragment> createCompleteImage(const SkISize& size)
     {
@@ -141,7 +137,7 @@ TEST_F(ImageFrameGeneratorTest, cacheHit)
     const ScaledImageFragment* tempImage = m_generator->decodeAndScale(fullSize());
     EXPECT_EQ(fullImage, tempImage);
     EXPECT_EQ(fullSize(), tempImage->scaledSize());
-    EXPECT_TRUE(m_generator->hasAlpha(0));
+    EXPECT_TRUE(m_generator->hasAlpha());
     ImageDecodingStore::instance()->unlockCache(m_generator.get(), tempImage);
     EXPECT_EQ(0, m_frameBufferRequestCount);
 }
@@ -157,14 +153,14 @@ TEST_F(ImageFrameGeneratorTest, cacheMissWithScale)
     const ScaledImageFragment* scaledImage = m_generator->decodeAndScale(scaledSize());
     EXPECT_NE(fullImage, scaledImage);
     EXPECT_EQ(scaledSize(), scaledImage->scaledSize());
-    EXPECT_TRUE(m_generator->hasAlpha(0));
+    EXPECT_TRUE(m_generator->hasAlpha());
     ImageDecodingStore::instance()->unlockCache(m_generator.get(), scaledImage);
 
     // Cache hit.
     const ScaledImageFragment* tempImage = m_generator->decodeAndScale(scaledSize());
     EXPECT_EQ(scaledImage, tempImage);
     EXPECT_EQ(scaledSize(), tempImage->scaledSize());
-    EXPECT_TRUE(m_generator->hasAlpha(0));
+    EXPECT_TRUE(m_generator->hasAlpha());
     ImageDecodingStore::instance()->unlockCache(m_generator.get(), tempImage);
     EXPECT_EQ(0, m_frameBufferRequestCount);
 }
@@ -177,7 +173,7 @@ TEST_F(ImageFrameGeneratorTest, cacheMissWithDecodeAndScale)
     const ScaledImageFragment* scaledImage = m_generator->decodeAndScale(scaledSize());
     EXPECT_EQ(1, m_frameBufferRequestCount);
     EXPECT_EQ(scaledSize(), scaledImage->scaledSize());
-    EXPECT_FALSE(m_generator->hasAlpha(0));
+    EXPECT_FALSE(m_generator->hasAlpha());
     ImageDecodingStore::instance()->unlockCache(m_generator.get(), scaledImage);
     EXPECT_EQ(1, m_decodersDestroyed);
 
@@ -185,14 +181,14 @@ TEST_F(ImageFrameGeneratorTest, cacheMissWithDecodeAndScale)
     const ScaledImageFragment* fullImage = m_generator->decodeAndScale(fullSize());
     EXPECT_NE(scaledImage, fullImage);
     EXPECT_EQ(fullSize(), fullImage->scaledSize());
-    EXPECT_FALSE(m_generator->hasAlpha(0));
+    EXPECT_FALSE(m_generator->hasAlpha());
     ImageDecodingStore::instance()->unlockCache(m_generator.get(), fullImage);
 
     // Cache hit.
     const ScaledImageFragment* tempImage = m_generator->decodeAndScale(scaledSize());
     EXPECT_EQ(scaledImage, tempImage);
     EXPECT_EQ(scaledSize(), tempImage->scaledSize());
-    EXPECT_FALSE(m_generator->hasAlpha(0));
+    EXPECT_FALSE(m_generator->hasAlpha());
     ImageDecodingStore::instance()->unlockCache(m_generator.get(), tempImage);
     EXPECT_EQ(1, m_frameBufferRequestCount);
 }
@@ -390,37 +386,6 @@ TEST_F(ImageFrameGeneratorTest, incompleteBitmapCopied)
     EXPECT_NE(tempDecoder->frameBufferAtIndex(0)->getSkBitmap().getPixels(), tempImage->bitmap().getPixels());
     ImageDecodingStore::instance()->unlockCache(m_generator.get(), tempImage);
     ImageDecodingStore::instance()->unlockDecoder(m_generator.get(), tempDecoder);
-}
-
-TEST_F(ImageFrameGeneratorTest, resumeDecodeEmptyFrame)
-{
-    m_generator = ImageFrameGenerator::create(fullSize(), m_data, false, true);
-    m_generator->setImageDecoderFactoryForTesting(MockImageDecoderFactory::create(this));
-    setFrameStatus(ImageFrame::FrameComplete);
-
-    const ScaledImageFragment* tempImage = m_generator->decodeAndScale(fullSize(), 0);
-    EXPECT_TRUE(tempImage->isComplete());
-    ImageDecodingStore::instance()->unlockCache(m_generator.get(), tempImage);
-
-    setFrameStatus(ImageFrame::FrameEmpty);
-    EXPECT_FALSE(m_generator->decodeAndScale(fullSize(), 1));
-}
-
-TEST_F(ImageFrameGeneratorTest, frameHasAlpha)
-{
-    setFrameStatus(ImageFrame::FramePartial);
-    ImageDecodingStore::instance()->unlockCache(m_generator.get(), m_generator->decodeAndScale(fullSize(), 1));
-    EXPECT_TRUE(m_generator->hasAlpha(1));
-
-    ImageDecoder* tempDecoder = 0;
-    EXPECT_TRUE(ImageDecodingStore::instance()->lockDecoder(m_generator.get(), fullSize(), &tempDecoder));
-    ASSERT_TRUE(tempDecoder);
-    static_cast<MockImageDecoder*>(tempDecoder)->setFrameHasAlpha(false);
-    ImageDecodingStore::instance()->unlockDecoder(m_generator.get(), tempDecoder);
-
-    setFrameStatus(ImageFrame::FrameComplete);
-    ImageDecodingStore::instance()->unlockCache(m_generator.get(), m_generator->decodeAndScale(fullSize(), 1));
-    EXPECT_FALSE(m_generator->hasAlpha(1));
 }
 
 } // namespace
