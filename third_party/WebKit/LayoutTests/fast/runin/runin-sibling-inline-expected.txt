@@ -1,6 +1,0 @@
-This test checks that dynamically changing 'display' from block to inline moves the run-in to its own block.
-
-For this test to pass there should be 2 lines below with PASS, each PASS should be on its own line:
-
-PASS (run-in)
-PASS (div#t1 that changed 'display')
