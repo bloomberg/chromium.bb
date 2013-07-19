@@ -7,6 +7,7 @@
 
 #include <string>
 #include "content/public/browser/web_contents_observer.h"
+#include "url/gurl.h"
 
 class SkBitmap;
 
@@ -21,7 +22,8 @@ class IconHelper : public content::WebContentsObserver {
  public:
   class Listener {
    public:
-    virtual void OnReceivedIcon(const SkBitmap& bitmap) = 0;
+    virtual void OnReceivedIcon(const GURL& icon_url,
+                                const SkBitmap& bitmap) = 0;
     virtual void OnReceivedTouchIconUrl(const std::string& url,
                                         const bool precomposed) = 0;
    protected:

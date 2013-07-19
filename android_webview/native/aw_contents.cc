@@ -37,6 +37,7 @@
 #include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cert_store.h"
+#include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -46,6 +47,7 @@
 #include "net/cert/x509_certificate.h"
 #include "ui/base/l10n/l10n_util_android.h"
 #include "ui/gfx/android/java_bitmap.h"
+#include "ui/gfx/image/image.h"
 
 struct AwDrawSWFunctionTable;
 struct AwDrawGLFunctionTable;
@@ -481,23 +483,23 @@ void AwContents::OnFindResultReceived(int active_ordinal,
       env, obj.obj(), active_ordinal, match_count, finished);
 }
 
-void AwContents::OnReceivedIcon(const SkBitmap& bitmap) {
+void AwContents::OnReceivedIcon(const GURL& icon_url, const SkBitmap& bitmap) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())
     return;
 
-  Java_AwContents_onReceivedIcon(
-      env, obj.obj(), gfx::ConvertToJavaBitmap(&bitmap).obj());
-
   content::NavigationEntry* entry =
       web_contents_->GetController().GetActiveEntry();
 
-  if (!entry || entry->GetURL().is_empty())
-    return;
+  if (entry) {
+    entry->GetFavicon().valid = true;
+    entry->GetFavicon().url = icon_url;
+    entry->GetFavicon().image = gfx::Image::CreateFrom1xBitmap(bitmap);
+  }
 
-  // TODO(acleung): Get the last history entry and set
-  // the icon.
+  Java_AwContents_onReceivedIcon(
+      env, obj.obj(), gfx::ConvertToJavaBitmap(&bitmap).obj());
 }
 
 void AwContents::OnReceivedTouchIconUrl(const std::string& url,

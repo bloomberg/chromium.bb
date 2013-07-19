@@ -43,7 +43,7 @@ void IconHelper::DownloadFaviconCallback(
 
   // TODO(acleung): Pick the best icon to return based on size.
   if (listener_)
-    listener_->OnReceivedIcon(bitmaps[0]);
+    listener_->OnReceivedIcon(image_url, bitmaps[0]);
 }
 
 void IconHelper::DidUpdateFaviconURL(int32 page_id,

@@ -135,7 +135,8 @@ class AwContents : public FindHelper::Listener,
                                     int match_count,
                                     bool finished) OVERRIDE;
   // IconHelper::Listener implementation.
-  virtual void OnReceivedIcon(const SkBitmap& bitmap) OVERRIDE;
+  virtual void OnReceivedIcon(const GURL& icon_url,
+                              const SkBitmap& bitmap) OVERRIDE;
   virtual void OnReceivedTouchIconUrl(const std::string& url,
                                       const bool precomposed) OVERRIDE;
 
