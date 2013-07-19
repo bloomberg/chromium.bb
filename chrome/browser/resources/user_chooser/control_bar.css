@@ -1,0 +1,51 @@
+/* Copyright 2013 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+/* Overrides of styles in chrome/browser/resources/chromeos/login/header_bar.js
+* that are needed by the desktop user chooser screen
+*/
+#login-header-bar {
+  -webkit-padding-after: 7px;
+  bottom: 0;
+  left: 0;
+  position: absolute;
+  right: 0;
+}
+
+#login-header-bar {
+  -webkit-padding-before: 7px;
+}
+
+.header-bar-item:first-child {
+  -webkit-padding-start: 15px;
+}
+
+.header-bar-item {
+  display: inline-block;
+  height: 34px;
+}
+
+html[dir=rtl] .header-bar-item {
+  background-position: right center;
+}
+
+html[dir=rtl] #login-header-bar button {
+  background-position: right center;
+}
+
+#login-header-bar #add-user-button {
+  background-image: url('chrome://theme/IDR_ICON_ADD_USER_WHITE');
+}
+
+#login-header-bar #guest-user-button {
+  background-image: url('chrome://theme/IDR_ICON_GUEST_WHITE');
+}
+
+#login-header-bar button {
+  -webkit-padding-start: 24px;
+  background-position: left center;
+  background-repeat: no-repeat;
+  background-size: 24px;
+}

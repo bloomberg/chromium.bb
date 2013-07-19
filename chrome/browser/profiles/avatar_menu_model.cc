@@ -152,15 +152,7 @@ void AvatarMenuModel::SwitchToProfile(size_t index, bool always_create) {
   if (browser_)
     desktop_type = browser_->host_desktop_type();
 
-  g_browser_process->profile_manager()->CreateProfileAsync(
-      path,
-      base::Bind(&OnProfileCreated,
-                 always_create,
-                 desktop_type),
-      string16(),
-      string16(),
-      false);
-
+  profiles::SwitchToProfile(path, desktop_type, always_create);
   ProfileMetrics::LogProfileSwitchUser(ProfileMetrics::SWITCH_PROFILE_ICON);
 }
 

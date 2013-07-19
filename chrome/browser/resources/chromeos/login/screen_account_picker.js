@@ -74,7 +74,9 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
       // hide the add user button and activate the locked user's pod.
       var lockedPod = podRow.lockedPod;
       $('add-user-header-bar-item').hidden = !!lockedPod;
-      $('sign-out-user-item').hidden = !lockedPod;
+      var signOutUserItem = $('sign-out-user-item');
+      if (signOutUserItem)
+        signOutUserItem.hidden = !lockedPod;
       // In case of the preselected pod onShow will be called once pod
       // receives focus.
       if (!podRow.preselectedPod)

@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 /**
- * @fileoverview Login UI header bar implementation.
+ * @fileoverview Desktop User Chooser UI control bar implementation.
  */
 
 cr.define('login', function() {
@@ -18,20 +18,16 @@ cr.define('login', function() {
     __proto__: HTMLDivElement.prototype,
 
     // Whether guest button should be shown when header bar is in normal mode.
-    showGuest_: false,
+    showGuest_: true,
 
     // Current UI state of the sign-in screen.
-    signinUIState_: SIGNIN_UI_STATE.HIDDEN,
+    signinUIState_: SIGNIN_UI_STATE.ACCOUNT_PICKER,
 
     // Whether to show kiosk apps menu.
     hasApps_: false,
 
     /** @override */
     decorate: function() {
-      $('shutdown-header-bar-item').addEventListener('click',
-          this.handleShutdownClick_);
-      $('shutdown-button').addEventListener('click',
-          this.handleShutdownClick_);
       $('add-user-button').addEventListener('click',
           this.handleAddUserClick_);
       $('cancel-add-user-button').addEventListener('click',
@@ -40,12 +36,7 @@ cr.define('login', function() {
           this.handleGuestClick_);
       $('guest-user-button').addEventListener('click',
           this.handleGuestClick_);
-      $('sign-out-user-button').addEventListener('click',
-          this.handleSignoutClick_);
-      $('cancel-multiple-sign-in-button').addEventListener('click',
-          this.handleCancelMultipleSignInClick_);
-      if (document.documentElement.getAttribute('screen') == 'login')
-        login.AppsMenuButton.decorate($('show-apps-button'));
+      this.updateUI_();
     },
 
     /**
@@ -75,7 +66,7 @@ cr.define('login', function() {
      * @private
      */
     handleAddUserClick_: function(e) {
-      Oobe.showSigninUI();
+      chrome.send('addUser');
       // Prevent further propagation of click event. Otherwise, the click event
       // handler of document object will set wallpaper to user's wallpaper when
       // there is only one existing user. See http://crbug.com/166477
@@ -94,8 +85,6 @@ cr.define('login', function() {
         return;
       }
 
-      $('pod-row').loadLastWallpaper();
-
       Oobe.showScreen({id: SCREEN_ACCOUNT_PICKER});
       Oobe.resetSigninUI(true);
     },
@@ -105,36 +94,7 @@ cr.define('login', function() {
      * @private
      */
     handleGuestClick_: function(e) {
-      Oobe.disableSigninUI();
-      chrome.send('launchIncognito');
-      e.stopPropagation();
-    },
-
-    /**
-     * Sign out button click handler.
-     * @private
-     */
-    handleSignoutClick_: function(e) {
-      this.disabled = true;
-      chrome.send('signOutUser');
-      e.stopPropagation();
-    },
-
-    /**
-     * Shutdown button click handler.
-     * @private
-     */
-    handleShutdownClick_: function(e) {
-      chrome.send('shutdownSystem');
-      e.stopPropagation();
-    },
-
-    /**
-     * Cancel user adding button handler.
-     * @private
-     */
-    handleCancelMultipleSignInClick_: function(e) {
-      chrome.send('cancelUserAdding');
+      chrome.send('launchGuest');
       e.stopPropagation();
     },
 
@@ -167,46 +127,14 @@ cr.define('login', function() {
     },
 
     /**
-     * Update whether there are kiosk apps.
-     * @type {boolean}
-     */
-    set hasApps(value) {
-      this.hasApps_ = value;
-      this.updateUI_();
-    },
-
-    /**
      * Updates visibility state of action buttons.
      * @private
      */
     updateUI_: function() {
-      var gaiaIsActive = (this.signinUIState_ == SIGNIN_UI_STATE.GAIA_SIGNIN);
-      var accountPickerIsActive =
-          (this.signinUIState_ == SIGNIN_UI_STATE.ACCOUNT_PICKER);
-      var managedUserCreationDialogIsActive =
-          (this.signinUIState_ == SIGNIN_UI_STATE.MANAGED_USER_CREATION_FLOW);
-      var wrongHWIDWarningIsActive =
-          (this.signinUIState_ == SIGNIN_UI_STATE.WRONG_HWID_WARNING);
-      var isMultiProfilesUI = Oobe.getInstance().isSignInToAddScreen();
-
-      $('add-user-button').hidden = !accountPickerIsActive || isMultiProfilesUI;
-      $('cancel-add-user-button').hidden = accountPickerIsActive ||
-          !this.allowCancel_ ||
-          wrongHWIDWarningIsActive ||
-          isMultiProfilesUI;
-      $('guest-user-header-bar-item').hidden = gaiaIsActive ||
-          managedUserCreationDialogIsActive ||
-          !this.showGuest_ ||
-          wrongHWIDWarningIsActive ||
-          isMultiProfilesUI;
-      $('add-user-header-bar-item').hidden =
-          $('add-user-button').hidden && $('cancel-add-user-button').hidden;
-      $('apps-header-bar-item').hidden = !this.hasApps_ ||
-          (!gaiaIsActive && !accountPickerIsActive);
-      $('cancel-multiple-sign-in-item').hidden = !isMultiProfilesUI;
-
-      if (!$('apps-header-bar-item').hidden)
-        $('show-apps-button').didShow();
+      $('add-user-button').hidden = false;
+      $('cancel-add-user-button').hidden = !this.allowCancel_;
+      $('guest-user-header-bar-item').hidden = false;
+      $('add-user-header-bar-item').hidden = false;
     },
 
     /**

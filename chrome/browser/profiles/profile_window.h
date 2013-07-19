@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/startup/startup_types.h"
 
 class Profile;
+namespace base { class FilePath; }
 
 namespace profiles {
 
@@ -22,6 +23,14 @@ void FindOrCreateNewWindowForProfile(
     Profile* profile,
     chrome::startup::IsProcessStartup process_startup,
     chrome::startup::IsFirstRun is_first_run,
+    chrome::HostDesktopType desktop_type,
+    bool always_create);
+
+// Opens a Browser with the specified profile given by |path|.
+// If |always_create| is true then a new window is created
+// even if a window for that profile already exists.
+void SwitchToProfile(
+    const base::FilePath& path,
     chrome::HostDesktopType desktop_type,
     bool always_create);
 

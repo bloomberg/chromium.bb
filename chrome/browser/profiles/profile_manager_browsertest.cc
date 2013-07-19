@@ -8,6 +8,8 @@
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_info_cache_observer.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profile_window.h"
+#include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/host_desktop.h"
@@ -180,4 +182,56 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest,
        it != profiles.end(); ++it) {
     BrowserList::CloseAllBrowsersWithProfile(*it);
   }
+}
+
+IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest,
+                       SwitchToProfile) {
+  // If multiprofile mode is not enabled, you can't switch between profiles.
+  if (!profiles::IsMultipleProfilesEnabled())
+    return;
+
+
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
+  base::FilePath path_profile1 = cache.GetPathOfProfileAtIndex(0);
+
+  ASSERT_EQ(profile_manager->GetNumberOfProfiles(), 1U);
+  EXPECT_EQ(chrome::GetTotalBrowserCount(), 1U);
+
+  // Create an additional profile.
+  base::FilePath path_profile2 =
+      profile_manager->GenerateNextProfileDirectoryPath();
+  profile_manager->CreateProfileAsync(path_profile2,
+                                      base::Bind(&OnUnblockOnProfileCreation),
+                                      string16(), string16(), false);
+
+  // Spin to allow profile creation to take place, loop is terminated
+  // by OnUnblockOnProfileCreation when the profile is created.
+  content::RunMessageLoop();
+
+  chrome::HostDesktopType desktop_type = chrome::HOST_DESKTOP_TYPE_NATIVE;
+  BrowserList* browser_list = BrowserList::GetInstance(desktop_type);
+  ASSERT_EQ(cache.GetNumberOfProfiles(), 2U);
+  EXPECT_EQ(1U, browser_list->size());
+
+  // Open a browser window for the first profile.
+  profiles::SwitchToProfile(path_profile1, desktop_type, false);
+  EXPECT_EQ(chrome::GetTotalBrowserCount(), 1U);
+  EXPECT_EQ(1U, browser_list->size());
+  EXPECT_EQ(path_profile1, browser_list->get(0)->profile()->GetPath());
+
+  // Open a browser window for the second profile.
+  profiles::SwitchToProfile(path_profile2, desktop_type, false);
+  EXPECT_EQ(chrome::GetTotalBrowserCount(), 2U);
+  EXPECT_EQ(2U, browser_list->size());
+  EXPECT_EQ(path_profile2, browser_list->get(1)->profile()->GetPath());
+
+  // Switch to the first profile without opening a new window.
+  profiles::SwitchToProfile(path_profile1, desktop_type, false);
+  EXPECT_EQ(chrome::GetTotalBrowserCount(), 2U);
+  EXPECT_EQ(2U, browser_list->size());
+
+  EXPECT_EQ(path_profile1, browser_list->get(0)->profile()->GetPath());
+  EXPECT_EQ(path_profile2, browser_list->get(1)->profile()->GetPath());
+
 }

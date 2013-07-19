@@ -17,6 +17,14 @@
 
 namespace {
 
+// An observer that returns back to test code after a new profile is
+// initialized.
+void OnUnblockOnProfileCreation(Profile* profile,
+                                Profile::CreateStatus status) {
+  if (status == Profile::CREATE_STATUS_INITIALIZED)
+    base::MessageLoop::current()->Quit();
+}
+
 typedef InProcessBrowserTest AvatarMenuModelTest;
 
 IN_PROC_BROWSER_TEST_F(AvatarMenuModelTest, SignOut) {
@@ -46,4 +54,48 @@ IN_PROC_BROWSER_TEST_F(AvatarMenuModelTest, SignOut) {
   EXPECT_EQ(0U, browser_list->size());
 }
 
+IN_PROC_BROWSER_TEST_F(AvatarMenuModelTest, SwitchToProfile) {
+  if (!profiles::IsMultipleProfilesEnabled())
+    return;
+
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  Profile* current_profile = browser()->profile();
+  ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
+  base::FilePath path_profile1 = current_profile->GetPath();
+  base::FilePath user_dir = cache.GetUserDataDir();
+
+  // Create an additional profile.
+  base::FilePath path_profile2 = user_dir.Append(
+      FILE_PATH_LITERAL("New Profile 2"));
+  profile_manager->CreateProfileAsync(path_profile2,
+                                      base::Bind(&OnUnblockOnProfileCreation),
+                                      string16(), string16(), false);
+
+  // Spin to allow profile creation to take place, loop is terminated
+  // by OnUnblockOnProfileCreation when the profile is created.
+  content::RunMessageLoop();
+  ASSERT_EQ(cache.GetNumberOfProfiles(), 2U);
+
+  AvatarMenuModel model(&cache, NULL, browser());
+  BrowserList* browser_list =
+      BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_NATIVE);
+  EXPECT_EQ(1U, browser_list->size());
+  EXPECT_EQ(path_profile1, browser_list->get(0)->profile()->GetPath());
+
+  // Open a browser window for the first profile.
+  model.SwitchToProfile(cache.GetIndexOfProfileWithPath(path_profile1), false);
+  EXPECT_EQ(1U, browser_list->size());
+  EXPECT_EQ(path_profile1, browser_list->get(0)->profile()->GetPath());
+
+  // Open a browser window for the second profile.
+  model.SwitchToProfile(cache.GetIndexOfProfileWithPath(path_profile2), false);
+  EXPECT_EQ(2U, browser_list->size());
+
+  // Switch to the first profile without opening a new window.
+  model.SwitchToProfile(cache.GetIndexOfProfileWithPath(path_profile1), false);
+  EXPECT_EQ(2U, browser_list->size());
+  EXPECT_EQ(path_profile1, browser_list->get(0)->profile()->GetPath());
+  EXPECT_EQ(path_profile2, browser_list->get(1)->profile()->GetPath());
+
+}
 }  // namespace

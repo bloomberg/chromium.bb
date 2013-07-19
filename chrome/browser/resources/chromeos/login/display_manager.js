@@ -415,7 +415,9 @@ cr.define('cr.ui.login', function() {
       var dot = document.createElement('div');
       dot.id = screenId + '-dot';
       dot.className = 'progdot';
-      $('progress-dots').appendChild(dot);
+      var progressDots = $('progress-dots');
+      if (progressDots)
+        progressDots.appendChild(dot);
 
       this.appendButtons_(el.buttons, screenId);
     },
