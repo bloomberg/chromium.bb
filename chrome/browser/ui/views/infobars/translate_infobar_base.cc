@@ -103,7 +103,7 @@ void TranslateInfoBarBase::AnimationProgressed(const ui::Animation* animation) {
 }
 
 const views::Background& TranslateInfoBarBase::GetBackground() {
-  return GetDelegate()->IsError() ? error_background_ : *background();
+  return GetDelegate()->is_error() ? error_background_ : *background();
 }
 
 void TranslateInfoBarBase::FadeBackground(gfx::Canvas* canvas,

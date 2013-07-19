@@ -59,14 +59,14 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
   // |infobar_service|, replacing any other translate infobar already present
   // there.  Otherwise, the infobar will only be added if there is no other
   // translate infobar already present.
-  static void Create(InfoBarService* infobar_service,
-                     bool replace_existing_infobar,
+  static void Create(bool replace_existing_infobar,
+                     InfoBarService* infobar_service,
                      Type infobar_type,
+                     const std::string& original_language,
+                     const std::string& target_language,
                      TranslateErrors::Type error_type,
                      PrefService* prefs,
-                     const ShortcutConfiguration& shortcut_config,
-                     const std::string& original_language,
-                     const std::string& target_language);
+                     const ShortcutConfiguration& shortcut_config);
 
   // Returns the number of languages supported.
   size_t num_languages() const { return languages_.size(); }
@@ -112,7 +112,7 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
 
   // Returns true if the current infobar indicates an error (in which case it
   // should get a yellow background instead of a blue one).
-  bool IsError() const { return infobar_type_ == TRANSLATION_ERROR; }
+  bool is_error() const { return infobar_type_ == TRANSLATION_ERROR; }
 
   // Returns what kind of background fading effect the infobar should use when
   // its is shown.
@@ -157,11 +157,6 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
   bool ShouldShowNeverTranslateShortcut();
   bool ShouldShowAlwaysTranslateShortcut();
 
-  // Sets this infobar background animation based on the previous infobar shown.
-  // A fading background effect is used when transitioning from a normal state
-  // to an error state (and vice-versa).
-  void UpdateBackgroundAnimation(TranslateInfoBarDelegate* previous_infobar);
-
   // Convenience method that returns the displayable language name for
   // |language_code| in the current application locale.
   static string16 GetLanguageDisplayableName(const std::string& language_code);
@@ -183,13 +178,14 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
                                        bool autodetermined_source_language);
 
  protected:
-  TranslateInfoBarDelegate(Type infobar_type,
-                           TranslateErrors::Type error_type,
-                           InfoBarService* infobar_service,
-                           PrefService* prefs,
-                           ShortcutConfiguration shortcut_config,
+  TranslateInfoBarDelegate(InfoBarService* infobar_service,
+                           Type infobar_type,
+                           TranslateInfoBarDelegate* old_delegate,
                            const std::string& original_language,
-                           const std::string& target_language);
+                           const std::string& target_language,
+                           TranslateErrors::Type error_type,
+                           PrefService* prefs,
+                           ShortcutConfiguration shortcut_config);
 
  private:
   typedef std::pair<std::string, string16> LanguageNamePair;

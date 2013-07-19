@@ -43,10 +43,14 @@ TranslateInfoBarDelegate::~TranslateInfoBarDelegate() {
 
 // static
 void TranslateInfoBarDelegate::Create(
-    InfoBarService* infobar_service, bool replace_existing_infobar,
-    Type infobar_type, TranslateErrors::Type error_type, PrefService* prefs,
-    const ShortcutConfiguration& shortcut_config,
-    const std::string& original_language, const std::string& target_language) {
+    bool replace_existing_infobar,
+    InfoBarService* infobar_service,
+    Type infobar_type,
+    const std::string& original_language,
+    const std::string& target_language,
+    TranslateErrors::Type error_type,
+    PrefService* prefs,
+    const ShortcutConfiguration& shortcut_config) {
   // Check preconditions.
   if (infobar_type != TRANSLATION_ERROR) {
     DCHECK(TranslateManager::IsSupportedLanguage(target_language));
@@ -63,20 +67,22 @@ void TranslateInfoBarDelegate::Create(
   TranslateInfoBarDelegate* old_delegate = NULL;
   for (size_t i = 0; i < infobar_service->infobar_count(); ++i) {
     old_delegate = infobar_service->infobar_at(i)->AsTranslateInfoBarDelegate();
-    if (old_delegate)
+    if (old_delegate) {
+      if (!replace_existing_infobar)
+        return;
       break;
+    }
   }
 
   // Create the new delegate.
   scoped_ptr<TranslateInfoBarDelegate> infobar(
-      new TranslateInfoBarDelegate(infobar_type, error_type, infobar_service,
-                                   prefs, shortcut_config,
-                                   original_language, target_language));
-  infobar->UpdateBackgroundAnimation(old_delegate);
+      new TranslateInfoBarDelegate(infobar_service, infobar_type, old_delegate,
+                                   original_language, target_language,
+                                   error_type, prefs, shortcut_config));
 
   // Do not create the after translate infobar if we are auto translating.
-  if (infobar_type == TranslateInfoBarDelegate::AFTER_TRANSLATE ||
-      infobar_type == TranslateInfoBarDelegate::TRANSLATING) {
+  if ((infobar_type == TranslateInfoBarDelegate::AFTER_TRANSLATE) ||
+      (infobar_type == TranslateInfoBarDelegate::TRANSLATING)) {
     TranslateTabHelper* translate_tab_helper =
       TranslateTabHelper::FromWebContents(infobar_service->web_contents());
     if (!translate_tab_helper ||
@@ -87,7 +93,8 @@ void TranslateInfoBarDelegate::Create(
   // Add the new delegate if necessary.
   if (!old_delegate) {
     infobar_service->AddInfoBar(infobar.PassAs<InfoBarDelegate>());
-  } else if (replace_existing_infobar) {
+  } else {
+    DCHECK(replace_existing_infobar);
     infobar_service->ReplaceInfoBar(old_delegate,
                                     infobar.PassAs<InfoBarDelegate>());
   }
@@ -276,14 +283,6 @@ bool TranslateInfoBarDelegate::ShouldShowAlwaysTranslateShortcut() {
           shortcut_config_.always_translate_min_count);
 }
 
-void TranslateInfoBarDelegate::UpdateBackgroundAnimation(
-    TranslateInfoBarDelegate* previous_infobar) {
-  if (!previous_infobar || previous_infobar->IsError() == IsError())
-    background_animation_ = NONE;
-  else
-    background_animation_ = IsError() ? NORMAL_TO_ERROR : ERROR_TO_NORMAL;
-}
-
 // static
 string16 TranslateInfoBarDelegate::GetLanguageDisplayableName(
     const std::string& language_code) {
@@ -326,13 +325,14 @@ void TranslateInfoBarDelegate::GetAfterTranslateStrings(
 }
 
 TranslateInfoBarDelegate::TranslateInfoBarDelegate(
-    Type infobar_type,
-    TranslateErrors::Type error_type,
     InfoBarService* infobar_service,
-    PrefService* prefs,
-    ShortcutConfiguration shortcut_config,
+    Type infobar_type,
+    TranslateInfoBarDelegate* old_delegate,
     const std::string& original_language,
-    const std::string& target_language)
+    const std::string& target_language,
+    TranslateErrors::Type error_type,
+    PrefService* prefs,
+    ShortcutConfiguration shortcut_config)
     : InfoBarDelegate(infobar_service),
       infobar_type_(infobar_type),
       background_animation_(NONE),
@@ -344,6 +344,9 @@ TranslateInfoBarDelegate::TranslateInfoBarDelegate(
       shortcut_config_(shortcut_config) {
   DCHECK_NE((infobar_type_ == TRANSLATION_ERROR),
             (error_type_ == TranslateErrors::NONE));
+
+  if (old_delegate && (old_delegate->is_error() != is_error()))
+    background_animation_ = is_error() ? NORMAL_TO_ERROR : ERROR_TO_NORMAL;
 
   std::vector<std::string> language_codes;
   TranslateManager::GetSupportedLanguages(&language_codes);
@@ -384,16 +387,6 @@ TranslateInfoBarDelegate::TranslateInfoBarDelegate(
   DCHECK_NE(kNoIndex, target_language_index_);
 }
 
-bool TranslateInfoBarDelegate::ShouldExpire(
-    const content::LoadCommittedDetails& details) const {
-  // Note: we allow closing this infobar even if the main frame navigation
-  // was programmatic and not initiated by the user - crbug.com/70261 .
-  if (!details.is_navigation_to_different_page() && !details.is_main_frame)
-    return false;
-
-  return InfoBarDelegate::ShouldExpireInternal(details);
-}
-
 void TranslateInfoBarDelegate::InfoBarDismissed() {
   if (infobar_type_ != BEFORE_TRANSLATE)
     return;
@@ -409,6 +402,16 @@ int TranslateInfoBarDelegate::GetIconID() const {
 
 InfoBarDelegate::Type TranslateInfoBarDelegate::GetInfoBarType() const {
   return PAGE_ACTION_TYPE;
+}
+
+bool TranslateInfoBarDelegate::ShouldExpire(
+    const content::LoadCommittedDetails& details) const {
+  // Note: we allow closing this infobar even if the main frame navigation
+  // was programmatic and not initiated by the user - crbug.com/70261 .
+  if (!details.is_navigation_to_different_page() && !details.is_main_frame)
+    return false;
+
+  return InfoBarDelegate::ShouldExpireInternal(details);
 }
 
 TranslateInfoBarDelegate*

@@ -509,7 +509,7 @@ TEST_F(TranslateManagerBrowserTest, TranslateUnknownLanguage) {
   ASSERT_TRUE(infobar != NULL);
   EXPECT_EQ(TranslateInfoBarDelegate::TRANSLATION_ERROR,
             infobar->infobar_type());
-  EXPECT_TRUE(infobar->IsError());
+  EXPECT_TRUE(infobar->is_error());
   infobar->MessageInfoBarButtonPressed();
   SimulateTranslateScriptURLFetch(true);  // This time succeed.
 

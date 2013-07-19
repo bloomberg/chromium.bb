@@ -35,13 +35,13 @@ TranslateInfoBarDelegate::Type kTranslateToolbarStates[] = {
 
 class MockTranslateInfoBarDelegate : public TranslateInfoBarDelegate {
  public:
-  MockTranslateInfoBarDelegate(TranslateInfoBarDelegate::Type type,
+  MockTranslateInfoBarDelegate(InfoBarService* infobar_service,
+                               TranslateInfoBarDelegate::Type type,
                                TranslateErrors::Type error,
-                               InfoBarService* infobar_service,
                                PrefService* prefs,
                                ShortcutConfiguration config)
-      : TranslateInfoBarDelegate(type, error, infobar_service, prefs,
-                                 config, "en", "es") {
+      : TranslateInfoBarDelegate(infobar_service, type, NULL, "en", "es", error,
+                                 prefs, config) {
   }
 
   MOCK_METHOD0(Translate, void());
@@ -86,18 +86,12 @@ class TranslationInfoBarTest : public CocoaProfileTest {
     config.never_translate_min_count = 3;
     config.always_translate_min_count = 3;
     infobar_delegate_.reset(new MockTranslateInfoBarDelegate(
-        type,
-        error,
-        infobar_service,
-        profile->GetPrefs(),
-        config));
+        infobar_service, type, error, profile->GetPrefs(), config));
     [[infobar_controller_ view] removeFromSuperview];
-    scoped_ptr<InfoBar> infobar(
-        static_cast<InfoBarDelegate*>(infobar_delegate_.get())->
-            CreateInfoBar(infobar_service));
-    infobar_controller_.reset(
-        reinterpret_cast<TranslateInfoBarControllerBase*>(
-            infobar->controller()));
+    scoped_ptr<InfoBar> infobar(static_cast<InfoBarDelegate*>(
+        infobar_delegate_.get())->CreateInfoBar(infobar_service));
+    infobar_controller_.reset(reinterpret_cast<TranslateInfoBarControllerBase*>(
+        infobar->controller()));
     // We need to set the window to be wide so that the options button
     // doesn't overlap the other buttons.
     [test_window() setContentSize:NSMakeSize(2000, 500)];

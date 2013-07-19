@@ -52,7 +52,7 @@ TranslateInfoBarBase::TranslateInfoBarBase(InfoBarService* owner,
       background_color_animation_->Hide();
     }
   } else {
-    background_error_percent_ = delegate->IsError() ? 1 : 0;
+    background_error_percent_ = delegate->is_error() ? 1 : 0;
   }
 }
 

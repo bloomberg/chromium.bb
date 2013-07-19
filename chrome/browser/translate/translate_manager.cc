@@ -427,10 +427,9 @@ void TranslateManager::InitiateTranslation(WebContents* web_contents,
   TranslateBrowserMetrics::ReportInitiationStatus(
       TranslateBrowserMetrics::INITIATION_STATUS_SHOW_INFOBAR);
   TranslateInfoBarDelegate::Create(
-      InfoBarService::FromWebContents(web_contents), false,
-      TranslateInfoBarDelegate::BEFORE_TRANSLATE, TranslateErrors::NONE,
-      profile->GetPrefs(), ShortcutConfig(),
-      language_code, target_lang);
+      false, InfoBarService::FromWebContents(web_contents),
+      TranslateInfoBarDelegate::BEFORE_TRANSLATE, language_code, target_lang,
+      TranslateErrors::NONE, profile->GetPrefs(), ShortcutConfig());
 }
 
 void TranslateManager::InitiateTranslationPosted(int process_id,
@@ -474,22 +473,20 @@ void TranslateManager::TranslatePage(WebContents* web_contents,
     return;
   }
 
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-
-  std::string source_lang(original_source_lang);
-
   // Translation can be kicked by context menu against unsupported languages.
   // Unsupported language strings should be replaced with
   // kUnknownLanguageCode in order to send a translation request with enabling
   // server side auto language detection.
+  std::string source_lang(original_source_lang);
   if (!IsSupportedLanguage(source_lang))
     source_lang = std::string(chrome::kUnknownLanguageCode);
 
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
   TranslateInfoBarDelegate::Create(
-      InfoBarService::FromWebContents(web_contents), true,
-      TranslateInfoBarDelegate::TRANSLATING, TranslateErrors::NONE,
-      profile->GetPrefs(), ShortcutConfig(), source_lang, target_lang);
+      true, InfoBarService::FromWebContents(web_contents),
+      TranslateInfoBarDelegate::TRANSLATING, source_lang, target_lang,
+      TranslateErrors::NONE, profile->GetPrefs(), ShortcutConfig());
 
   DCHECK(script_.get() != NULL);
 
@@ -604,12 +601,12 @@ void TranslateManager::PageTranslated(WebContents* web_contents,
   PrefService* prefs = Profile::FromBrowserContext(
       web_contents->GetBrowserContext())->GetPrefs();
   TranslateInfoBarDelegate::Create(
-      InfoBarService::FromWebContents(web_contents), true,
+      true, InfoBarService::FromWebContents(web_contents),
       (details->error_type == TranslateErrors::NONE) ?
-      TranslateInfoBarDelegate::AFTER_TRANSLATE :
-      TranslateInfoBarDelegate::TRANSLATION_ERROR,
-      details->error_type, prefs, ShortcutConfig(), details->source_language,
-      details->target_language);
+          TranslateInfoBarDelegate::AFTER_TRANSLATE :
+          TranslateInfoBarDelegate::TRANSLATION_ERROR,
+      details->source_language, details->target_language, details->error_type,
+      prefs, ShortcutConfig());
 
   if (details->error_type != TranslateErrors::NONE &&
       !web_contents->GetBrowserContext()->IsOffTheRecord()) {
@@ -670,14 +667,10 @@ void TranslateManager::OnTranslateScriptFetchComplete(
       Profile* profile =
           Profile::FromBrowserContext(web_contents->GetBrowserContext());
       TranslateInfoBarDelegate::Create(
-          InfoBarService::FromWebContents(web_contents),
-          true,
-          TranslateInfoBarDelegate::TRANSLATION_ERROR,
-          TranslateErrors::NETWORK,
-          profile->GetPrefs(),
-          ShortcutConfig(),
-          request.source_lang,
-          request.target_lang);
+          true, InfoBarService::FromWebContents(web_contents),
+          TranslateInfoBarDelegate::TRANSLATION_ERROR, request.source_lang,
+          request.target_lang, TranslateErrors::NETWORK, profile->GetPrefs(),
+          ShortcutConfig());
 
       if (!web_contents->GetBrowserContext()->IsOffTheRecord()) {
         TranslateErrorDetails error_details;
@@ -720,8 +713,8 @@ std::string TranslateManager::GetTargetLanguage(PrefService* prefs) {
 ShortcutConfiguration TranslateManager::ShortcutConfig() {
   ShortcutConfiguration config;
 
-  // The android implementation does not offer a drop down for space
-  // reason so we are more aggressive showing the shortcuts for never translate.
+  // The android implementation does not offer a drop down (for space reasons),
+  // so we are more aggressive about showing the shortcut to never translate.
   #if defined(OS_ANDROID)
   config.never_translate_min_count = 1;
   #else
