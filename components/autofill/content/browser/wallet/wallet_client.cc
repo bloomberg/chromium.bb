@@ -23,6 +23,7 @@
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
 
+// TODO(ahutter): Change all VLOGs to DVLOGs after dogfood.
 namespace autofill {
 namespace wallet {
 
@@ -662,7 +663,7 @@ void WalletClient::MakeWalletRequest(const GURL& url,
   request_.reset(net::URLFetcher::Create(
       0, url, net::URLFetcher::POST, this));
   request_->SetRequestContext(context_getter_.get());
-  DVLOG(1) << "Making request to " << url << " with post_body=" << post_body;
+  VLOG(1) << "Making request to " << url << " with post_body=" << post_body;
   request_->SetUploadData(kJsonMimeType, post_body);
   request_->AddExtraRequestHeader("Authorization: GoogleLogin auth=" +
                                   delegate_->GetWalletCookieValue());
@@ -687,11 +688,11 @@ void WalletClient::OnURLFetchComplete(
       base::Time::Now() - request_started_timestamp_);
 
   DCHECK_EQ(source, request_.get());
-  DVLOG(1) << "Got response from " << source->GetOriginalURL();
+  VLOG(1) << "Got response from " << source->GetOriginalURL();
 
   std::string data;
   source->GetResponseAsString(&data);
-  DVLOG(1) << "Response body: " << data;
+  VLOG(1) << "Response body: " << data;
 
   scoped_ptr<base::DictionaryValue> response_dict;
 
@@ -912,6 +913,39 @@ void WalletClient::HandleMalformedResponse() {
 }
 
 void WalletClient::HandleWalletError(WalletClient::ErrorType error_type) {
+  std::string error_message;
+  switch (error_type) {
+    case WalletClient::BAD_REQUEST:
+      error_message = "WALLET_BAD_REQUEST";
+      break;
+    case WalletClient::BUYER_ACCOUNT_ERROR:
+      error_message = "WALLET_BUYER_ACCOUNT_ERROR";
+      break;
+    case WalletClient::INTERNAL_ERROR:
+      error_message = "WALLET_INTERNAL_ERROR";
+      break;
+    case WalletClient::INVALID_PARAMS:
+      error_message = "WALLET_INVALID_PARAMS";
+      break;
+    case WalletClient::SERVICE_UNAVAILABLE:
+      error_message = "WALLET_SERVICE_UNAVAILABLE";
+      break;
+    case WalletClient::UNSUPPORTED_API_VERSION:
+      error_message = "WALLET_UNSUPPORTED_API_VERSION";
+      break;
+    case WalletClient::MALFORMED_RESPONSE:
+      error_message = "WALLET_MALFORMED_RESPONSE";
+      break;
+    case WalletClient::NETWORK_ERROR:
+      error_message = "WALLET_NETWORK_ERROR";
+      break;
+    case WalletClient::UNKNOWN_ERROR:
+      error_message = "WALLET_UNKNOWN_ERROR";
+      break;
+  }
+
+  VLOG(1) << "Wallet encountered a " << error_message;
+
   delegate_->OnWalletError(error_type);
   delegate_->GetMetricLogger().LogWalletErrorMetric(
       delegate_->GetDialogType(), ErrorTypeToUmaMetric(error_type));
