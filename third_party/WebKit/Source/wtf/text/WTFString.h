@@ -275,6 +275,9 @@ public:
     template<typename BufferType>
     void appendTo(BufferType&, unsigned pos = 0, unsigned len = UINT_MAX) const;
 
+    template<size_t inlineCapacity>
+    void prependTo(Vector<UChar, inlineCapacity>&, unsigned pos = 0, unsigned len = UINT_MAX) const;
+
     UChar32 characterStartingAt(unsigned) const;
     
     bool contains(UChar c) const { return find(c) != notFound; }
@@ -661,6 +664,22 @@ inline void String::appendTo(BufferType& result, unsigned pos, unsigned len) con
         result.append(m_impl->characters8() + pos, numberOfCharactersToCopy);
     else
         result.append(m_impl->characters16() + pos, numberOfCharactersToCopy);
+}
+
+template<size_t inlineCapacity>
+inline void String::prependTo(Vector<UChar, inlineCapacity>& result, unsigned pos, unsigned len) const
+{
+    unsigned numberOfCharactersToCopy = std::min(len, length() - pos);
+    if (numberOfCharactersToCopy <= 0)
+        return;
+    if (is8Bit()) {
+        size_t oldSize = result.size();
+        result.resize(oldSize + numberOfCharactersToCopy);
+        memmove(result.data() + numberOfCharactersToCopy, result.data(), oldSize * sizeof(UChar));
+        StringImpl::copyChars(result.data(), m_impl->characters8() + pos, numberOfCharactersToCopy);
+    } else {
+        result.prepend(m_impl->characters16() + pos, numberOfCharactersToCopy);
+    }
 }
 
 // StringHash is the default hash for String

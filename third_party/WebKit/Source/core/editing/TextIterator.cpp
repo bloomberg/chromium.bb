@@ -1088,7 +1088,7 @@ SimplifiedBackwardsTextIterator::SimplifiedBackwardsTextIterator(const Range* r,
     , m_positionNode(0)
     , m_positionStartOffset(0)
     , m_positionEndOffset(0)
-    , m_textCharacters(0)
+    , m_textOffset(0)
     , m_textLength(0)
     , m_lastTextNode(0)
     , m_lastCharacter(0)
@@ -1253,9 +1253,10 @@ bool SimplifiedBackwardsTextIterator::handleTextNode()
     ASSERT(m_positionStartOffset <= m_positionEndOffset);
 
     m_textLength = m_positionEndOffset - m_positionStartOffset;
-    m_textCharacters = text.bloatedCharacters() + (m_positionStartOffset - offsetInNode);
-    ASSERT(m_textCharacters >= text.bloatedCharacters());
-    RELEASE_ASSERT(m_textCharacters + m_textLength <= text.bloatedCharacters() + static_cast<int>(text.length()));
+    m_textOffset = m_positionStartOffset - offsetInNode;
+    m_textContainer = text;
+    m_singleCharacterBuffer = 0;
+    RELEASE_ASSERT(static_cast<unsigned>(m_textOffset + m_textLength) <= text.length());
 
     m_lastCharacter = text[m_positionEndOffset - 1];
 
@@ -1330,7 +1331,7 @@ void SimplifiedBackwardsTextIterator::emitCharacter(UChar c, Node* node, int sta
     m_positionNode = node;
     m_positionStartOffset = startOffset;
     m_positionEndOffset = endOffset;
-    m_textCharacters = &m_singleCharacterBuffer;
+    m_textOffset = 0;
     m_textLength = 1;
     m_lastCharacter = c;
 }
@@ -2398,7 +2399,9 @@ static size_t findPlainText(CharacterIterator& it, const String& target, FindOpt
         RefPtr<Range> beforeStartRange = startRange->ownerDocument()->createRange();
         beforeStartRange->setEnd(startRange->startContainer(), startRange->startOffset(), IGNORE_EXCEPTION);
         for (SimplifiedBackwardsTextIterator backwardsIterator(beforeStartRange.get()); !backwardsIterator.atEnd(); backwardsIterator.advance()) {
-            buffer.prependContext(backwardsIterator.bloatedCharacters(), backwardsIterator.length());
+            Vector<UChar, 1024> characters;
+            backwardsIterator.prependTextTo(characters);
+            buffer.prependContext(characters.data(), characters.size());
             if (!buffer.needsMoreContext())
                 break;
         }

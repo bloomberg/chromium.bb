@@ -489,7 +489,7 @@ static VisiblePosition previousBoundary(const VisiblePosition& c, BoundarySearch
     while (!it.atEnd()) {
         // iterate to get chunks until the searchFunction returns a non-zero value.
         if (!inTextSecurityMode)
-            string.prepend(it.bloatedCharacters(), it.length());
+            it.prependTextTo(string);
         else {
             // Treat bullets used in the text security mode as regular characters when looking for boundaries
             Vector<UChar, 1024> iteratorString;
@@ -542,10 +542,11 @@ static VisiblePosition nextBoundary(const VisiblePosition& c, BoundarySearchFunc
         backwardsScanRange->setEnd(start.deprecatedNode(), start.deprecatedEditingOffset(), IGNORE_EXCEPTION);
         SimplifiedBackwardsTextIterator backwardsIterator(backwardsScanRange.get());
         while (!backwardsIterator.atEnd()) {
-            const UChar* characters = backwardsIterator.bloatedCharacters();
-            int length = backwardsIterator.length();
-            int i = startOfLastWordBoundaryContext(characters, length);
-            string.prepend(characters + i, length - i);
+            Vector<UChar, 1024> characters;
+            backwardsIterator.prependTextTo(characters);
+            int length = characters.size();
+            int i = startOfLastWordBoundaryContext(characters.data(), length);
+            string.prepend(characters.data() + i, length - i);
             prefixLength += length - i;
             if (i > 0)
                 break;

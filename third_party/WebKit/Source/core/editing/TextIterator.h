@@ -218,15 +218,25 @@ private:
 class SimplifiedBackwardsTextIterator {
 public:
     explicit SimplifiedBackwardsTextIterator(const Range*, TextIteratorBehavior = TextIteratorDefaultBehavior);
-    
+
     bool atEnd() const { return !m_positionNode || m_shouldStop; }
     void advance();
-    
+
     int length() const { return m_textLength; }
-    const UChar* bloatedCharacters() const { return m_textCharacters; }
-    
+
+    template<typename BufferType>
+    void prependTextTo(BufferType& output)
+    {
+        if (!m_textLength)
+            return;
+        if (m_singleCharacterBuffer)
+            output.prepend(&m_singleCharacterBuffer, 1);
+        else
+            m_textContainer.prependTo(output, m_textOffset, m_textLength);
+    }
+
     PassRefPtr<Range> range() const;
-        
+
 private:
     void exitNode();
     bool handleTextNode();
@@ -250,12 +260,14 @@ private:
     // Start of the range.
     Node* m_endNode;
     int m_endOffset;
-    
+
     // The current text and its position, in the form to be returned from the iterator.
     Node* m_positionNode;
     int m_positionStartOffset;
     int m_positionEndOffset;
-    const UChar* m_textCharacters;
+
+    String m_textContainer; // We're interested in the range [m_textOffset, m_textOffset + m_textLength) of m_textContainer.
+    int m_textOffset;
     int m_textLength;
 
     // Used to do the whitespace logic.
