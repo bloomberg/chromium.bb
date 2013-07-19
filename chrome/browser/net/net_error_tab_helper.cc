@@ -207,9 +207,6 @@ bool NetErrorTabHelper::ProbesAllowed() const {
   if (testing_state_ != TESTING_DEFAULT)
     return testing_state_ == TESTING_FORCE_ENABLED;
 
-  // TODO(ttuttle): Remove once DnsProbeRunner doesn't crash on invalid config.
-  return false;
-
   // TODO(ttuttle): Disable on mobile?
   return enabled_by_trial_ && *resolve_errors_with_web_service_;
 }

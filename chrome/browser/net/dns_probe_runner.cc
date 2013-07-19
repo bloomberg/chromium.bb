@@ -24,6 +24,7 @@ using net::BoundNetLog;
 using net::DnsClient;
 using net::DnsResponse;
 using net::DnsTransaction;
+using net::DnsTransactionFactory;
 using net::IPAddressNumber;
 using net::IPEndPoint;
 using net::NetLog;
@@ -44,7 +45,7 @@ DnsProbeRunner::Result EvaluateResponse(
       break;
 
     // ERR_NAME_NOT_RESOLVED maps to NXDOMAIN, which means the server is working
-    // but gave us a wrong answer.
+    // but returned a wrong answer.
     case net::ERR_NAME_NOT_RESOLVED:
       return DnsProbeRunner::INCORRECT;
 
@@ -68,15 +69,12 @@ DnsProbeRunner::Result EvaluateResponse(
   TimeDelta ttl;
   DnsResponse::Result result = response->ParseToAddressList(&addr_list, &ttl);
 
-  if (result != DnsResponse::DNS_PARSE_OK) {
+  if (result != DnsResponse::DNS_PARSE_OK)
     return DnsProbeRunner::FAILING;
-  }
-
-  if (addr_list.empty()) {
+  else if (addr_list.empty())
     return DnsProbeRunner::INCORRECT;
-  }
-
-  return DnsProbeRunner::CORRECT;
+  else
+    return DnsProbeRunner::CORRECT;
 }
 
 }  // namespace
@@ -96,7 +94,20 @@ void DnsProbeRunner::RunProbe(const base::Closure& callback) {
   DCHECK(!transaction_.get());
 
   callback_ = callback;
-  transaction_ = client_->GetTransactionFactory()->CreateTransaction(
+  DnsTransactionFactory* factory = client_->GetTransactionFactory();
+  if (!factory) {
+    // If the DnsTransactionFactory is NULL, then the DnsConfig is invalid, so
+    // the runner can't run a transaction.  Return UNKNOWN asynchronously.
+    result_ = UNKNOWN;
+    BrowserThread::PostTask(
+        BrowserThread::IO,
+        FROM_HERE,
+        base::Bind(&DnsProbeRunner::CallCallback,
+                   weak_factory_.GetWeakPtr()));
+    return;
+  }
+
+  transaction_ = factory->CreateTransaction(
       kKnownGoodHostname,
       net::dns_protocol::kTypeA,
       base::Bind(&DnsProbeRunner::OnTransactionComplete,
