@@ -654,7 +654,7 @@ static void HeapProfilerInit() {
     return;
   }
   // We do a uid check so we don't write out files in a setuid executable.
-#ifdef HAVE_GETEUID
+#if !defined(__ANDROID__) && defined(HAVE_GETEUID)
   if (getuid() != geteuid()) {
     RAW_LOG(WARNING, ("HeapProfiler: ignoring " HEAPPROFILE " because "
                       "program seems to be setuid\n"));

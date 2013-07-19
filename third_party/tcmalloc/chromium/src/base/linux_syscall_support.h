@@ -157,7 +157,9 @@ extern "C" {
 #include <sys/types.h>
 #if defined(__ANDROID__)
 #include <sys/syscall.h>
+#ifndef ANDROID_NON_SDK_BUILD
 #include <sys/linux-syscalls.h>
+#endif
 #else
 #include <syscall.h>
 #endif

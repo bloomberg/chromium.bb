@@ -297,6 +297,11 @@ ${ANDROID_SDK_VERSION}
   DEFINES+=" android_sdk_tools=\$(PWD)/${ANDROID_SDK_TOOLS}"
   DEFINES+=" android_sdk_version=${ANDROID_SDK_VERSION}"
   DEFINES+=" android_toolchain=${ANDROID_TOOLCHAIN}"
+  if [[ -n "$CHROME_ANDROID_WEBVIEW_ENABLE_DMPROF" ]]; then
+    DEFINES+=" disable_debugallocation=1"
+    DEFINES+=" android_full_debug=1"
+    DEFINES+=" android_use_tcmalloc=1"
+  fi
   export GYP_DEFINES="${DEFINES}"
 
   export GYP_GENERATORS="android"

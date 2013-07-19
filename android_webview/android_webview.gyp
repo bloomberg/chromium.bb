@@ -16,6 +16,15 @@
       'dependencies': [
         'android_webview_common',
       ],
+      'conditions': [
+        # The general approach is to allow the executable target to choose
+        # the allocator, but as in the WebView case we are building a library
+        # only, put the dependency on the allocator here
+        [ 'android_webview_build==1 and android_use_tcmalloc==1', {
+          'dependencies': [
+            '../base/allocator/allocator.gyp:allocator', ],
+        }],
+      ],
       'ldflags': [
         # fix linking to hidden symbols and re-enable this (crbug.com/157326)
         '-Wl,--no-fatal-warnings'
