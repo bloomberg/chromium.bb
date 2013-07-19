@@ -9,6 +9,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
+import android.os.Looper;
 import android.text.InputType;
 import android.util.Log;
 import android.widget.EditText;
@@ -103,6 +104,9 @@ public class JniInterface {
     /*
      * Entry points *from* the native code.
      */
+    /** The callback to signal whenever we need to redraw. */
+    private static Runnable sRedrawCallback = null;
+
     /** Screen width of the video feed. */
     private static int sWidth = 0;
 
@@ -159,6 +163,11 @@ public class JniInterface {
         pinPrompt.show();
     }
 
+    /** Sets the redraw callback to the provided functor. */
+    public static void provideRedrawCallback(Runnable redrawCallback) {
+        sRedrawCallback = redrawCallback;
+    }
+
     /** Forces the native graphics thread to redraw to the canvas. */
     public static boolean redrawGraphics() {
         synchronized(JniInterface.class) {
@@ -171,7 +180,28 @@ public class JniInterface {
 
     /** Performs the redrawing callback. */
     private static void redrawGraphicsInternal() {
-        // TODO(solb) Actually draw the image onto some canvas.
+        sRedrawCallback.run();
+    }
+
+    /**
+     * Obtains the image buffer.
+     * This should not be called from the UI thread. (We prefer the native graphics thread.)
+     */
+    public static Bitmap retrieveVideoFrame() {
+        if (Looper.myLooper()==Looper.getMainLooper()) {
+            Log.w("deskview", "Canvas being redrawn on UI thread");
+        }
+
+        if (!sConnected) {
+            return null;
+        }
+
+        int[] frame = new int[sWidth * sHeight];
+
+        sBuffer.order(ByteOrder.LITTLE_ENDIAN);
+        sBuffer.asIntBuffer().get(frame, 0, frame.length);
+
+        return Bitmap.createBitmap(frame, 0, sWidth, sWidth, sHeight, Bitmap.Config.ARGB_8888);
     }
 
     /** Performs the native response to the user's PIN. */

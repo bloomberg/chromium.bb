@@ -281,7 +281,7 @@ public class Chromoting extends Activity {
                                             new Runnable() {
                                         @Override
                                         public void run() {
-                                            // TODO(solb) Start an Activity to display the desktop.
+                                            startActivity(new Intent(getContext(), Desktop.class));
                                         }
                                     });
                                 }

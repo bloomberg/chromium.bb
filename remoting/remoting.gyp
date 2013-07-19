@@ -1738,7 +1738,13 @@
             'native_lib_target': 'libremoting_client_jni',
             'java_in_dir': 'android/java',
             'additional_res_dirs': [ '<(SHARED_INTERMEDIATE_DIR)/remoting/android/res' ],
-            'additional_input_paths': [ '<(PRODUCT_DIR)/obj/remoting/remoting_android_resources.actions_rules_copies.stamp' ],
+            'additional_input_paths': [
+              'android/java/src/org/chromium/chromoting/Chromoting.java',
+              'android/java/src/org/chromium/chromoting/Desktop.java',
+              'android/java/src/org/chromium/chromoting/DesktopView.java',
+              'android/java/src/org/chromium/chromoting/jni/JniInterface.java',
+              '<(PRODUCT_DIR)/obj/remoting/remoting_android_resources.actions_rules_copies.stamp',
+            ],
           },
           'includes': [ '../build/java_apk.gypi' ],
         },  # end of target 'remoting_apk'
