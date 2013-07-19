@@ -37,7 +37,7 @@ Instructions for recreating the yasm.gyp file.
 
   5) Grab the generated Makefile, libyasm-stdint.h, config.h, and put into
      the correct platform location. For android platform, copy the files
-     generated for linux.
+     generated for linux.  For ios, copy the files from mac.
 
        src/third_party/yasm/source/config/[platform]
 

@@ -40,26 +40,26 @@
       }],
 
       # Define yasm_flags that pass into YASM.
-      [ 'os_posix==1 and OS!="mac" and target_arch=="ia32"', {
+      [ 'os_posix==1 and OS!="mac" and OS!="ios" and target_arch=="ia32"', {
         'yasm_flags': [
           '-felf32',
           '-m', 'x86',
         ],
       }],
-      [ 'os_posix==1 and OS!="mac" and target_arch=="x64"', {
+      [ 'os_posix==1 and OS!="mac" and OS!="ios" and target_arch=="x64"', {
         'yasm_flags': [
           '-DPIC',
           '-felf64',
           '-m', 'amd64',
         ],
       }],
-      [ 'OS=="mac" and target_arch=="ia32"', {
+      [ '(OS=="mac" or OS=="ios") and target_arch=="ia32"', {
         'yasm_flags': [
           '-fmacho32',
           '-m', 'x86',
         ],
       }],
-      [ 'OS=="mac" and target_arch=="x64"', {
+      [ '(OS=="mac" or OS=="ios") and target_arch=="x64"', {
         'yasm_flags': [
           '-fmacho64',
           '-m', 'amd64',
