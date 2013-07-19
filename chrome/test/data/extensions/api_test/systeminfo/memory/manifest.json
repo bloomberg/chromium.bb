@@ -1,10 +1,10 @@
 {
   // extension id: lfmcnjhchhgejbpbonjobnlbcgcnmjif
   "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCuGVkV8WQR3dyfDUEb5N7P6amn/m/0LmTUtQmqMJrVSiFRkpU8JmTY5wSoUoS6jYCkGcW2lbbPRqhcbSuW8GZ5uo6+r0D8Al/aa/j36BTfxm97MmsS+VNLOby0cBW6CtJEs3TTTk5tlZdI2RZOp0FE1k5G12Qm0aaRjyt1DRqqnQIDAQAB",
-  "name": "system.memory test",
+  "name": "systemInfo.memory test",
   "version": "1.0",
-  "description": "Test system.memory API",
-  "permissions": ["system.memory"],
+  "description": "Test systeminfo.memory API",
+  "permissions": ["systemInfo.memory"],
   "app": {
     "background": {
       "scripts": ["test_memory_api.js"]

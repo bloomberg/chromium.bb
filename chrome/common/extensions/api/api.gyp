@@ -55,7 +55,7 @@
           'location.idl',
           'experimental_media_galleries.idl',
           'experimental_record.json',
-          'system_memory.idl',
+          'system_info_memory.idl',
           'experimental_system_info_storage.idl',
           'extension.json',
           'feedback_private.idl',
