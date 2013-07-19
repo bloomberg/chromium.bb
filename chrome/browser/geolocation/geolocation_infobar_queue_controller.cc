@@ -49,19 +49,19 @@ class GeolocationInfoBarQueueController::PendingInfoBarRequest {
 
   const GeolocationPermissionRequestID& id() const { return id_; }
   const GURL& requesting_frame() const { return requesting_frame_; }
-  bool has_infobar_delegate() const { return !!infobar_delegate_; }
-  InfoBarDelegate* infobar_delegate() { return infobar_delegate_; }
+  bool has_infobar() const { return !!infobar_; }
+  InfoBarDelegate* infobar() { return infobar_; }
 
   void RunCallback(bool allowed);
-  void CreateInfoBarDelegate(GeolocationInfoBarQueueController* controller,
-                             const std::string& display_languages);
+  void CreateInfoBar(GeolocationInfoBarQueueController* controller,
+                     const std::string& display_languages);
 
  private:
   GeolocationPermissionRequestID id_;
   GURL requesting_frame_;
   GURL embedder_;
   PermissionDecidedCallback callback_;
-  InfoBarDelegate* infobar_delegate_;
+  InfoBarDelegate* infobar_;
 
   // Purposefully do not disable copying, as this is stored in STL containers.
 };
@@ -75,7 +75,7 @@ GeolocationInfoBarQueueController::PendingInfoBarRequest::PendingInfoBarRequest(
       requesting_frame_(requesting_frame),
       embedder_(embedder),
       callback_(callback),
-      infobar_delegate_(NULL) {
+      infobar_(NULL) {
 }
 
 GeolocationInfoBarQueueController::PendingInfoBarRequest::
@@ -94,9 +94,9 @@ void GeolocationInfoBarQueueController::PendingInfoBarRequest::RunCallback(
 }
 
 void GeolocationInfoBarQueueController::PendingInfoBarRequest::
-    CreateInfoBarDelegate(GeolocationInfoBarQueueController* controller,
-                          const std::string& display_languages) {
-  infobar_delegate_ = GeolocationInfoBarDelegate::Create(
+    CreateInfoBar(GeolocationInfoBarQueueController* controller,
+                  const std::string& display_languages) {
+  infobar_ = GeolocationInfoBarDelegate::Create(
       GetInfoBarService(id_), controller, id_, requesting_frame_,
       display_languages);
 }
@@ -138,8 +138,8 @@ void GeolocationInfoBarQueueController::CancelInfoBarRequest(
   for (PendingInfoBarRequests::iterator i(pending_infobar_requests_.begin());
        i != pending_infobar_requests_.end(); ++i) {
     if (i->id().Equals(id)) {
-      if (i->has_infobar_delegate())
-        GetInfoBarService(id)->RemoveInfoBar(i->infobar_delegate());
+      if (i->has_infobar())
+        GetInfoBarService(id)->RemoveInfoBar(i->infobar());
       else
         pending_infobar_requests_.erase(i);
       return;
@@ -167,18 +167,18 @@ void GeolocationInfoBarQueueController::OnPermissionSet(
     if (i->IsForPair(requesting_frame, embedder)) {
       requests_to_notify.push_back(*i);
       if (i->id().Equals(id)) {
-        // The delegate that called us is i, and it's currently in either
-        // Accept() or Cancel(). This means that the owning InfoBar will call
-        // RemoveInfoBar() later on, and that will trigger a notification we're
+        // The infobar that called us is i->infobar(), and it's currently in
+        // either Accept() or Cancel(). This means that RemoveInfoBar() will be
+        // called later on, and that will trigger a notification we're
         // observing.
         ++i;
-      } else if (i->has_infobar_delegate()) {
-        // This InfoBar is for the same frame/embedder pair, but in a different
+      } else if (i->has_infobar()) {
+        // This infobar is for the same frame/embedder pair, but in a different
         // tab. We should remove it now that we've got an answer for it.
         infobars_to_remove.push_back(*i);
         ++i;
       } else {
-        // We haven't created an InfoBar yet, just remove the pending request.
+        // We haven't created an infobar yet, just remove the pending request.
         i = pending_infobar_requests_.erase(i);
       }
     } else {
@@ -186,10 +186,10 @@ void GeolocationInfoBarQueueController::OnPermissionSet(
     }
   }
 
-  // Remove all InfoBars for the same |requesting_frame| and |embedder|.
+  // Remove all infobars for the same |requesting_frame| and |embedder|.
   for (PendingInfoBarRequests::iterator i = infobars_to_remove.begin();
        i != infobars_to_remove.end(); ++i)
-    GetInfoBarService(i->id())->RemoveInfoBar(i->infobar_delegate());
+    GetInfoBarService(i->id())->RemoveInfoBar(i->infobar());
 
   // Send out the permission notifications.
   for (PendingInfoBarRequests::iterator i = requests_to_notify.begin();
@@ -205,17 +205,17 @@ void GeolocationInfoBarQueueController::Observe(
   // We will receive this notification for all infobar closures, so we need to
   // check whether this is the geolocation infobar we're tracking. Note that the
   // InfoBarContainer (if any) may have received this notification before us and
-  // caused the delegate to be deleted, so it's not safe to dereference the
-  // contents of the delegate. The address of the delegate, however, is OK to
+  // caused the infobar to be deleted, so it's not safe to dereference the
+  // contents of the infobar. The address of the infobar, however, is OK to
   // use to find the PendingInfoBarRequest to remove because
   // pending_infobar_requests_ will not have received any new entries between
   // the NotificationService's call to InfoBarContainer::Observe and this
   // method.
-  InfoBarDelegate* delegate =
+  InfoBarDelegate* infobar =
       content::Details<InfoBarRemovedDetails>(details)->first;
   for (PendingInfoBarRequests::iterator i = pending_infobar_requests_.begin();
        i != pending_infobar_requests_.end(); ++i) {
-    if (i->infobar_delegate() == delegate) {
+    if (i->infobar() == infobar) {
       GeolocationPermissionRequestID id(i->id());
       pending_infobar_requests_.erase(i);
       ShowQueuedInfoBarForTab(id);
@@ -229,7 +229,7 @@ bool GeolocationInfoBarQueueController::AlreadyShowingInfoBarForTab(
   for (PendingInfoBarRequests::const_iterator i(
            pending_infobar_requests_.begin());
        i != pending_infobar_requests_.end(); ++i) {
-    if (i->id().IsForSameTabAs(id) && i->has_infobar_delegate())
+    if (i->id().IsForSameTabAs(id) && i->has_infobar())
       return true;
   }
   return false;
@@ -253,9 +253,9 @@ void GeolocationInfoBarQueueController::ShowQueuedInfoBarForTab(
 
   for (PendingInfoBarRequests::iterator i = pending_infobar_requests_.begin();
        i != pending_infobar_requests_.end(); ++i) {
-    if (i->id().IsForSameTabAs(id) && !i->has_infobar_delegate()) {
+    if (i->id().IsForSameTabAs(id) && !i->has_infobar()) {
       RegisterForInfoBarNotifications(infobar_service);
-      i->CreateInfoBarDelegate(
+      i->CreateInfoBar(
           this, profile_->GetPrefs()->GetString(prefs::kAcceptLanguages));
       return;
     }
@@ -269,7 +269,7 @@ void GeolocationInfoBarQueueController::ClearPendingInfoBarRequestsForTab(
   for (PendingInfoBarRequests::iterator i = pending_infobar_requests_.begin();
        i != pending_infobar_requests_.end(); ) {
     if (i->id().IsForSameTabAs(id)) {
-      DCHECK(!i->has_infobar_delegate());
+      DCHECK(!i->has_infobar());
       i = pending_infobar_requests_.erase(i);
     } else {
       ++i;

@@ -31,8 +31,11 @@ InfoBarDelegate* GeolocationInfoBarDelegate::Create(
     const GeolocationPermissionRequestID& id,
     const GURL& requesting_frame,
     const std::string& display_languages) {
+  const content::NavigationEntry* committed_entry =
+      infobar_service->web_contents()->GetController().GetLastCommittedEntry();
   return infobar_service->AddInfoBar(scoped_ptr<InfoBarDelegate>(
       new DelegateType(infobar_service, controller, id, requesting_frame,
+                       committed_entry ? committed_entry->GetUniqueID() : 0,
                        display_languages)));
 }
 
@@ -41,15 +44,14 @@ GeolocationInfoBarDelegate::GeolocationInfoBarDelegate(
     GeolocationInfoBarQueueController* controller,
     const GeolocationPermissionRequestID& id,
     const GURL& requesting_frame,
+    int contents_unique_id,
     const std::string& display_languages)
     : ConfirmInfoBarDelegate(infobar_service),
       controller_(controller),
       id_(id),
       requesting_frame_(requesting_frame),
+      contents_unique_id_(contents_unique_id),
       display_languages_(display_languages) {
-  const content::NavigationEntry* committed_entry = infobar_service->
-      web_contents()->GetController().GetLastCommittedEntry();
-   contents_unique_id_ = committed_entry ? committed_entry->GetUniqueID() : 0;
 }
 
 GeolocationInfoBarDelegate::~GeolocationInfoBarDelegate() {

@@ -17,6 +17,7 @@ class GeolocationInfoBarDelegateAndroid : public GeolocationInfoBarDelegate {
       GeolocationInfoBarQueueController* controller,
       const GeolocationPermissionRequestID& id,
       const GURL& requesting_frame_url,
+      int contents_unique_id,
       const std::string& display_languages);
 
  private:
