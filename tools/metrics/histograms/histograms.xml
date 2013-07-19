@@ -2667,6 +2667,18 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Event.Latency.Browser.TouchAcked" units="microseconds">
+  <summary>
+    Time between touch events sent from RWH to renderer and acked by renderer.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.Browser.TouchUI" units="microseconds">
+  <summary>
+    Time between touch events received by Chrome and sent from RWH to renderer.
+  </summary>
+</histogram>
+
 <histogram name="Event.Latency.Renderer" units="microseconds">
   <summary>
     Time between initiation of all input events and renderer processing.
@@ -2861,6 +2873,20 @@ other types of suffix sets.
 <histogram name="Event.Latency.Renderer.Undefined" units="microseconds">
   <summary>
     Time between initiation of input event and browser processing.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.RendererImpl.GestureScroll" units="microseconds">
+  <summary>
+    Time between initial creation of touch event and the resulting ScrollGesture
+    reaches Impl thread.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.TouchToScrollUpdateSwap" units="microseconds">
+  <summary>
+    Time between initial creation of touch event and the resulting frame from
+    ScrollUpdate is swapped.
   </summary>
 </histogram>
 
@@ -13610,6 +13636,10 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="TryScroll.SlowScroll" enum="ScrollThread">
+  <summary>Whether the scroll is executed on main thread.</summary>
+</histogram>
+
 <histogram name="UMA.CollectExternalEventsTime" units="milliseconds">
   <summary>
     The time to run the external metrics collection task (Chrome OS).
@@ -20157,6 +20187,11 @@ other types of suffix sets.
   <int value="5" label="UPLOAD_FILE_NET_ERROR"/>
   <int value="6" label="UPLOAD_FILE_RESPONSE_ERROR"/>
   <int value="7" label="UPLOAD_COMPLETE_RESPONSE_ERROR"/>
+</enum>
+
+<enum name="ScrollThread" type="int">
+  <int value="0" label="Scroll on impl-thread"/>
+  <int value="1" label="Scroll on main-thread"/>
 </enum>
 
 <enum name="ShillTerminationActionResult" type="int">
