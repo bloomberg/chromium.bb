@@ -325,6 +325,27 @@
                     'mac_real_dsym': 1,
                   },
                 }],
+                ['target_arch != "x64"', {
+                  # -read_only_relocs cannot be used with x86_64
+                  'xcode_settings': {
+                    'OTHER_LDFLAGS': [
+                      # This is needed because even though FFmpeg now builds
+                      # with -fPIC, it's not quite a complete PIC build, only
+                      # partial :( Thus we need to instruct the linker to allow
+                      # relocations for read-only segments for this target to be
+                      # able to generated the shared library on Mac.
+                      #
+                      # This makes Mark sad, but he's okay with it since it is
+                      # isolated to this module. When Mark finds this in the
+                      # future, and has forgotten this conversation, this
+                      # comment should remind him that the world is still nice
+                      # and butterflies still exist...as do rainbows, sunshine,
+                      # tulips, etc., etc...but not kittens. Those went away
+                      # with this flag.
+                      '-Wl,-read_only_relocs,suppress',
+                    ],
+                  },
+                }],
               ],
               'link_settings': {
                 'libraries': [
@@ -336,22 +357,6 @@
                 'DYLIB_INSTALL_NAME_BASE': '@loader_path',
                 'LIBRARY_SEARCH_PATHS': [
                   '<(shared_generated_dir)'
-                ],
-                'OTHER_LDFLAGS': [
-                  # This is needed because even though FFmpeg now builds with
-                  # -fPIC, it's not quite a complete PIC build, only partial :(
-                  # Thus we need to instruct the linker to allow relocations
-                  # for read-only segments for this target to be able to
-                  # generated the shared library on Mac.
-                  #
-                  # This makes Mark sad, but he's okay with it since it is
-                  # isolated to this module. When Mark finds this in the
-                  # future, and has forgotten this conversation, this comment
-                  # should remind him that the world is still nice and
-                  # butterflies still exist...as do rainbows, sunshine,
-                  # tulips, etc., etc...but not kittens. Those went away
-                  # with this flag.
-                  '-Wl,-read_only_relocs,suppress',
                 ],
               },
             }],  # OS == "mac"
