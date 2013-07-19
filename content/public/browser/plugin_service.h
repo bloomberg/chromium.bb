@@ -143,6 +143,10 @@ class PluginService {
   virtual void GetInternalPlugins(
       std::vector<webkit::WebPluginInfo>* plugins) = 0;
 
+  // Returns true iff NPAPI plugins are supported on the current platform.
+  // This can be called from any thread.
+  virtual bool NPAPIPluginsSupported() = 0;
+
   // This is equivalent to specifying kDisablePluginsDiscovery, but is useful
   // for unittests.
   virtual void DisablePluginsDiscoveryForTesting() = 0;
@@ -151,6 +155,13 @@ class PluginService {
   // Called when the application is made active so that modal plugin windows can
   // be made forward too.
   virtual void AppActivated() = 0;
+#elif defined(OS_WIN)
+  // Returns the name and version of a plugin HWND. If the HWND isn't a valid
+  // plugin, returns false.
+  // This can be called from any thread.
+  virtual bool GetPluginInfoFromWindow(HWND window,
+                                       base::string16* plugin_name,
+                                       base::string16* plugin_version) = 0;
 #endif
 };
 

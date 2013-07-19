@@ -13,10 +13,17 @@
 
 namespace content {
 
+// The window class name for a plugin window.
+extern const char16 kNativeWindowClassName[];
+
 // The name of the window class name for the wrapper HWND around the actual
 // plugin window that's used when running in multi-process mode.  This window
 // is created on the browser UI thread.
 extern const char16 kWrapperNativeWindowClassName[];
+
+extern const char16 kPluginNameAtomProperty[];
+extern const char16 kPluginVersionAtomProperty[];
+extern const char16 kDummyActivationWindowName[];
 
 // The name of the custom window message that the browser uses to tell the
 // plugin process to paint a window.

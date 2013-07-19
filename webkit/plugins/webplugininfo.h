@@ -11,6 +11,10 @@
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
 
+namespace base {
+class Version;
+}
+
 namespace webkit {
 
 struct WebPluginMimeType {
@@ -61,6 +65,11 @@ struct WebPluginInfo {
           (type == PLUGIN_TYPE_PEPPER_OUT_OF_PROCESS) ||
           (type == PLUGIN_TYPE_PEPPER_UNSANDBOXED));
   }
+
+  // Parse a version string as used by a plug-in. This method is more lenient
+  // in accepting weird version strings than base::Version::GetFromString()
+  static void CreateVersionFromString(const base::string16& version_string,
+                                      base::Version* parsed_version);
 
   // The name of the plugin (i.e. Flash).
   base::string16 name;

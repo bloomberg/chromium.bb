@@ -21,7 +21,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/pepper_plugin_info.h"
 #include "ppapi/proxy/ppapi_messages.h"
-#include "webkit/plugins/npapi/plugin_utils.h"
 #include "webkit/plugins/plugin_constants.h"
 
 namespace content {
@@ -51,7 +50,7 @@ void PluginDataRemover::GetSupportedPlugins(
   for (std::vector<webkit::WebPluginInfo>::iterator it = plugins.begin();
        it != plugins.end(); ++it) {
     Version version;
-    webkit::npapi::CreateVersionFromString(it->version, &version);
+    webkit::WebPluginInfo::CreateVersionFromString(it->version, &version);
     if (version.IsValid() && min_version.CompareTo(version) == -1)
       supported_plugins->push_back(*it);
   }

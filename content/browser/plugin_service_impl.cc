@@ -28,12 +28,12 @@
 #include "content/public/browser/resource_context.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/process_type.h"
-#include "webkit/plugins/npapi/plugin_utils.h"
 #include "webkit/plugins/plugin_constants.h"
 #include "webkit/plugins/webplugininfo.h"
 
 #if defined(OS_WIN)
 #include "content/common/plugin_constants_win.h"
+#include "ui/base/win/hwnd_util.h"
 #endif
 
 #if defined(OS_POSIX)
@@ -72,7 +72,7 @@ bool LoadPluginListInProcess() {
   if (RenderProcessHost::run_renderer_in_process())
     return true;
 
-  return !webkit::npapi::NPAPIPluginsSupported();
+  return !PluginService::GetInstance()->NPAPIPluginsSupported();
 #endif
 }
 
@@ -511,7 +511,8 @@ bool PluginServiceImpl::GetPluginInfoArray(
     std::vector<std::string>* actual_mime_types) {
   bool use_stale = false;
   PluginList::Singleton()->GetPluginInfoArray(
-      url, mime_type, allow_wildcard, &use_stale, plugins, actual_mime_types);
+      url, mime_type, allow_wildcard, &use_stale, NPAPIPluginsSupported(),
+      plugins, actual_mime_types);
   return use_stale;
 }
 
@@ -625,7 +626,7 @@ void PluginServiceImpl::GetPluginsInternal(
       plugin_list_token_));
 
   std::vector<webkit::WebPluginInfo> plugins;
-  PluginList::Singleton()->GetPlugins(&plugins);
+  PluginList::Singleton()->GetPlugins(&plugins, NPAPIPluginsSupported());
 
   target_loop->PostTask(FROM_HERE,
       base::Bind(callback, plugins));
@@ -752,6 +753,12 @@ void PluginServiceImpl::RefreshPlugins() {
 }
 
 void PluginServiceImpl::AddExtraPluginPath(const base::FilePath& path) {
+ if (!NPAPIPluginsSupported()) {
+    // TODO(jam): remove and just have CHECK once we're sure this doesn't get
+    // triggered.
+    DLOG(INFO) << "NPAPI plugins not supported";
+    return;
+  }
   PluginList::Singleton()->AddExtraPluginPath(path);
 }
 
@@ -766,6 +773,11 @@ void PluginServiceImpl::AddExtraPluginDir(const base::FilePath& path) {
 void PluginServiceImpl::RegisterInternalPlugin(
     const webkit::WebPluginInfo& info,
     bool add_at_beginning) {
+  if (!NPAPIPluginsSupported() &&
+      info.type == webkit::WebPluginInfo::PLUGIN_TYPE_NPAPI) {
+    DLOG(INFO) << "Don't register NPAPI plugins when they're not supported";
+    return;
+  }
   PluginList::Singleton()->RegisterInternalPlugin(info, add_at_beginning);
 }
 
@@ -778,6 +790,14 @@ void PluginServiceImpl::GetInternalPlugins(
   PluginList::Singleton()->GetInternalPlugins(plugins);
 }
 
+bool PluginServiceImpl::NPAPIPluginsSupported() {
+#if defined(OS_WIN) || defined(OS_MACOSX) || (defined(OS_LINUX) && !defined(USE_AURA))
+  return true;
+#else
+  return false;
+#endif
+}
+
 void PluginServiceImpl::DisablePluginsDiscoveryForTesting() {
   PluginList::Singleton()->DisablePluginsDiscovery();
 }
@@ -786,6 +806,41 @@ void PluginServiceImpl::DisablePluginsDiscoveryForTesting() {
 void PluginServiceImpl::AppActivated() {
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           base::Bind(&NotifyPluginsOfActivation));
+}
+#elif defined(OS_WIN)
+
+bool GetPluginPropertyFromWindow(
+    HWND window, const wchar_t* plugin_atom_property,
+    base::string16* plugin_property) {
+  ATOM plugin_atom = reinterpret_cast<ATOM>(
+      GetPropW(window, plugin_atom_property));
+  if (plugin_atom != 0) {
+    WCHAR plugin_property_local[MAX_PATH] = {0};
+    GlobalGetAtomNameW(plugin_atom,
+                       plugin_property_local,
+                       ARRAYSIZE(plugin_property_local));
+    *plugin_property = plugin_property_local;
+    return true;
+  }
+  return false;
+}
+
+bool PluginServiceImpl::GetPluginInfoFromWindow(
+    HWND window,
+    base::string16* plugin_name,
+    base::string16* plugin_version) {
+  if (!IsPluginWindow(window))
+    return false;
+
+  GetPluginPropertyFromWindow(
+          window, kPluginNameAtomProperty, plugin_name);
+  GetPluginPropertyFromWindow(
+          window, kPluginVersionAtomProperty, plugin_version);
+  return true;
+}
+
+bool PluginServiceImpl::IsPluginWindow(HWND window) {
+  return ui::GetClassName(window) == base::string16(kNativeWindowClassName);
 }
 #endif
 

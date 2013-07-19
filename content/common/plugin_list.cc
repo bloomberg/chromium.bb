@@ -15,7 +15,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "net/base/mime_util.h"
 #include "url/gurl.h"
-#include "webkit/plugins/npapi/plugin_utils.h"
 #include "webkit/plugins/plugin_switches.h"
 
 #if defined(OS_WIN)
@@ -77,13 +76,6 @@ void PluginList::RefreshPlugins() {
 }
 
 void PluginList::AddExtraPluginPath(const base::FilePath& plugin_path) {
-  if (!webkit::npapi::NPAPIPluginsSupported()) {
-    // TODO(jam): remove and just have CHECK once we're sure this doesn't get
-    // triggered.
-    DLOG(INFO) << "NPAPI plugins not supported";
-    return;
-  }
-
   // Chrome OS only loads plugins from /opt/google/chrome/plugins.
 #if !defined(OS_CHROMEOS)
   base::AutoLock lock(lock_);
@@ -110,12 +102,6 @@ void PluginList::AddExtraPluginDir(const base::FilePath& plugin_dir) {
 
 void PluginList::RegisterInternalPlugin(const webkit::WebPluginInfo& info,
                                         bool add_at_beginning) {
-  if (!webkit::npapi::NPAPIPluginsSupported() &&
-      info.type == WebPluginInfo::PLUGIN_TYPE_NPAPI) {
-    DLOG(INFO) << "Don't register NPAPI plugins when they're not supported";
-    return;
-  }
-
   base::AutoLock lock(lock_);
 
   internal_plugins_.push_back(info);
@@ -215,28 +201,7 @@ PluginList::PluginList()
       plugins_discovery_disabled_(false) {
 }
 
-void PluginList::LoadPluginsIntoPluginListInternal(
-    std::vector<webkit::WebPluginInfo>* plugins) {
-  base::Closure will_load_callback;
-  {
-    base::AutoLock lock(lock_);
-    will_load_callback = will_load_plugins_callback_;
-  }
-  if (!will_load_callback.is_null())
-    will_load_callback.Run();
-
-  std::vector<base::FilePath> plugin_paths;
-  GetPluginPathsToLoad(&plugin_paths);
-
-  for (std::vector<base::FilePath>::const_iterator it = plugin_paths.begin();
-       it != plugin_paths.end();
-       ++it) {
-    WebPluginInfo plugin_info;
-    LoadPluginIntoPluginList(*it, plugins, &plugin_info);
-  }
-}
-
-void PluginList::LoadPlugins() {
+void PluginList::LoadPlugins(bool include_npapi) {
   {
     base::AutoLock lock(lock_);
     if (loading_state_ == LOADING_STATE_UP_TO_DATE)
@@ -246,8 +211,23 @@ void PluginList::LoadPlugins() {
   }
 
   std::vector<webkit::WebPluginInfo> new_plugins;
-  // Do the actual loading of the plugins.
-  LoadPluginsIntoPluginListInternal(&new_plugins);
+  base::Closure will_load_callback;
+  {
+    base::AutoLock lock(lock_);
+    will_load_callback = will_load_plugins_callback_;
+  }
+  if (!will_load_callback.is_null())
+    will_load_callback.Run();
+
+  std::vector<base::FilePath> plugin_paths;
+  GetPluginPathsToLoad(&plugin_paths, include_npapi);
+
+  for (std::vector<base::FilePath>::const_iterator it = plugin_paths.begin();
+       it != plugin_paths.end();
+       ++it) {
+    WebPluginInfo plugin_info;
+    LoadPluginIntoPluginList(*it, &new_plugins, &plugin_info);
+  }
 
   base::AutoLock lock(lock_);
   plugins_list_.swap(new_plugins);
@@ -287,7 +267,8 @@ bool PluginList::LoadPluginIntoPluginList(
   return true;
 }
 
-void PluginList::GetPluginPathsToLoad(std::vector<base::FilePath>* plugin_paths) {
+void PluginList::GetPluginPathsToLoad(std::vector<base::FilePath>* plugin_paths,
+                                      bool include_npapi) {
   // Don't want to hold the lock while loading new plugins, so we don't block
   // other methods if they're called on other threads.
   std::vector<base::FilePath> extra_plugin_paths;
@@ -307,7 +288,7 @@ void PluginList::GetPluginPathsToLoad(std::vector<base::FilePath>* plugin_paths)
     plugin_paths->push_back(path);
   }
 
-  if (webkit::npapi::NPAPIPluginsSupported()) {
+  if (include_npapi) {
     // A bit confusingly, this function is used to load Pepper plugins as well.
     // Those are all internal plugins so we have to use extra_plugin_paths.
     for (size_t i = 0; i < extra_plugin_dirs.size(); ++i)
@@ -339,8 +320,9 @@ void PluginList::set_will_load_plugins_callback(const base::Closure& callback) {
   will_load_plugins_callback_ = callback;
 }
 
-void PluginList::GetPlugins(std::vector<WebPluginInfo>* plugins) {
-  LoadPlugins();
+void PluginList::GetPlugins(std::vector<WebPluginInfo>* plugins,
+                            bool include_npapi) {
+  LoadPlugins(include_npapi);
   base::AutoLock lock(lock_);
   plugins->insert(plugins->end(), plugins_list_.begin(), plugins_list_.end());
 }
@@ -358,13 +340,14 @@ void PluginList::GetPluginInfoArray(
     const std::string& mime_type,
     bool allow_wildcard,
     bool* use_stale,
+    bool include_npapi,
     std::vector<webkit::WebPluginInfo>* info,
     std::vector<std::string>* actual_mime_types) {
   DCHECK(mime_type == StringToLowerASCII(mime_type));
   DCHECK(info);
 
   if (!use_stale)
-    LoadPlugins();
+    LoadPlugins(include_npapi);
   base::AutoLock lock(lock_);
   if (use_stale)
     *use_stale = (loading_state_ != LOADING_STATE_UP_TO_DATE);

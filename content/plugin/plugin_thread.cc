@@ -23,13 +23,11 @@
 #include "content/child/child_process.h"
 #include "content/child/npapi/npobject_util.h"
 #include "content/child/npapi/plugin_lib.h"
-#include "content/child/npapi/webplugin_delegate_impl.h"
 #include "content/common/plugin_process_messages.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/plugin/content_plugin_client.h"
 #include "ipc/ipc_channel_handle.h"
 #include "webkit/glue/webkit_glue.h"
-#include "webkit/plugins/npapi/plugin_utils.h"
 
 #if defined(TOOLKIT_GTK)
 #include "ui/gfx/gtk_util.h"
@@ -76,7 +74,8 @@ static base::LazyInstance<base::ThreadLocalPointer<PluginThread> > lazy_tls =
     LAZY_INSTANCE_INITIALIZER;
 
 PluginThread::PluginThread()
-    : preloaded_plugin_module_(NULL) {
+    : preloaded_plugin_module_(NULL),
+      forcefully_terminate_plugin_process_(false) {
   base::FilePath plugin_path =
       CommandLine::ForCurrentProcess()->GetSwitchValuePath(
           switches::kPluginPath);
@@ -135,6 +134,10 @@ PluginThread::PluginThread()
 PluginThread::~PluginThread() {
 }
 
+void PluginThread::SetForcefullyTerminatePluginProcess() {
+  forcefully_terminate_plugin_process_ = true;
+}
+
 void PluginThread::Shutdown() {
   if (preloaded_plugin_module_) {
     base::UnloadNativeLibrary(preloaded_plugin_module_);
@@ -143,7 +146,7 @@ void PluginThread::Shutdown() {
   NPChannelBase::CleanupChannels();
   PluginLib::UnloadAllPlugins();
 
-  if (webkit::npapi::ShouldForcefullyTerminatePluginProcess())
+  if (forcefully_terminate_plugin_process_)
     base::KillProcess(base::GetCurrentProcessHandle(), 0, /* wait= */ false);
 
   lazy_tls.Pointer()->Set(NULL);

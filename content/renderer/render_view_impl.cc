@@ -209,7 +209,6 @@
 #include "webkit/common/dom_storage/dom_storage_types.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/weburlresponse_extradata_impl.h"
-#include "webkit/plugins/npapi/plugin_utils.h"
 #include "webkit/renderer/appcache/web_application_cache_host_impl.h"
 #include "webkit/renderer/webpreferences_renderer.h"
 
@@ -4690,9 +4689,6 @@ WebKit::WebPlugin* RenderViewImpl::CreatePlugin(
 
   if (pepper_webplugin)
     return pepper_webplugin;
-
-  if (!webkit::npapi::NPAPIPluginsSupported())
-    return NULL;
 
   return new WebPluginImpl(frame, params, info.path, AsWeakPtr());
 }

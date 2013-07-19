@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/plugins/npapi/plugin_utils.h"
+#include "webkit/plugins/webplugininfo.h"
 
 #include <string>
 #include <vector>
@@ -13,7 +13,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace webkit {
-namespace npapi {
 
 TEST(PluginUtilsTest, VersionExtraction) {
   // Some real-world plugin versions (spaces, commata, parentheses, 'r', oh my)
@@ -33,12 +32,12 @@ TEST(PluginUtilsTest, VersionExtraction) {
 
   for (size_t i = 0; i < arraysize(versions); i++) {
     Version version;
-    CreateVersionFromString(ASCIIToUTF16(versions[i][0]), &version);
+    WebPluginInfo::CreateVersionFromString(
+        ASCIIToUTF16(versions[i][0]), &version);
 
     ASSERT_TRUE(version.IsValid());
     EXPECT_EQ(versions[i][1], version.GetString());
   }
 }
 
-}  // namespace npapi
 }  // namespace webkit

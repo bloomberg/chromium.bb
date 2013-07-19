@@ -99,7 +99,8 @@ class CONTENT_EXPORT PluginList {
       std::vector<webkit::WebPluginMimeType>* parsed_mime_types);
 
   // Get all the plugins synchronously, loading them if necessary.
-  void GetPlugins(std::vector<webkit::WebPluginInfo>* plugins);
+  void GetPlugins(std::vector<webkit::WebPluginInfo>* plugins,
+                  bool include_npapi);
 
   // Copies the list of plug-ins into |plugins| without loading them.
   // Returns true if the list of plugins is up-to-date.
@@ -122,6 +123,7 @@ class CONTENT_EXPORT PluginList {
                           const std::string& mime_type,
                           bool allow_wildcard,
                           bool* use_stale,
+                          bool include_npapi,
                           std::vector<webkit::WebPluginInfo>* info,
                           std::vector<std::string>* actual_mime_types);
 
@@ -135,7 +137,8 @@ class CONTENT_EXPORT PluginList {
   // using a different instance of this class.
 
   // Computes a list of all plugins to potentially load from all sources.
-  void GetPluginPathsToLoad(std::vector<base::FilePath>* plugin_paths);
+  void GetPluginPathsToLoad(std::vector<base::FilePath>* plugin_paths,
+                            bool include_npapi);
 
   // Clears the internal list of Plugins and copies them from the vector.
   void SetPlugins(const std::vector<webkit::WebPluginInfo>& plugins);
@@ -174,13 +177,8 @@ class CONTENT_EXPORT PluginList {
 
   PluginList();
 
-  // Implements all IO dependent operations of the LoadPlugins method so that
-  // test classes can mock these out.
-  virtual void LoadPluginsIntoPluginListInternal(
-      std::vector<webkit::WebPluginInfo>* plugins);
-
   // Load all plugins from the default plugins directory.
-  void LoadPlugins();
+  void LoadPlugins(bool include_npapi);
 
   // Walks a directory and produces a list of all the plugins to potentially
   // load in that directory.

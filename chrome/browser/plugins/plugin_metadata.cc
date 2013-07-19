@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 #include "base/strings/string_util.h"
-#include "webkit/plugins/npapi/plugin_utils.h"
 #include "webkit/plugins/webplugininfo.h"
 
 // static
@@ -103,7 +102,7 @@ PluginMetadata::SecurityStatus PluginMetadata::GetSecurityStatus(
   }
 
   Version version;
-  webkit::npapi::CreateVersionFromString(plugin.version, &version);
+  webkit::WebPluginInfo::CreateVersionFromString(plugin.version, &version);
   if (!version.IsValid())
     version = Version("0");
 

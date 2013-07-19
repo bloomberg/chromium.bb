@@ -22,6 +22,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/win/wrapped_window_proc.h"
 #include "content/browser/plugin_process_host.h"
+#include "content/browser/plugin_service_impl.h"
 #include "content/common/plugin_constants_win.h"
 #include "content/common/webplugin_geometry.h"
 #include "content/public/browser/browser_thread.h"
@@ -30,7 +31,6 @@
 #include "ui/base/win/dpi.h"
 #include "ui/base/win/hwnd_util.h"
 #include "ui/gfx/gdi_util.h"
-#include "webkit/plugins/npapi/plugin_utils.h"
 #endif
 
 #if defined(TOOLKIT_GTK)
@@ -164,7 +164,7 @@ HWND ReparentWindow(HWND window, HWND parent) {
 }
 
 BOOL CALLBACK PaintEnumChildProc(HWND hwnd, LPARAM lparam) {
-  if (!webkit::npapi::IsPluginDelegateWindow(hwnd))
+  if (!PluginServiceImpl::GetInstance()->IsPluginWindow(hwnd))
     return TRUE;
 
   gfx::Rect* rect = reinterpret_cast<gfx::Rect*>(lparam);
@@ -191,7 +191,7 @@ BOOL CALLBACK DetachPluginWindowsCallbackInternal(HWND window, LPARAM param) {
 
 // static
 void RenderWidgetHostViewBase::DetachPluginWindowsCallback(HWND window) {
-  if (webkit::npapi::IsPluginDelegateWindow(window) &&
+  if (PluginServiceImpl::GetInstance()->IsPluginWindow(window) &&
       !IsHungAppWindow(window)) {
     ::ShowWindow(window, SW_HIDE);
     SetParent(window, NULL);
@@ -232,7 +232,7 @@ void RenderWidgetHostViewBase::MovePluginWindowsHelper(
     if (!::IsWindow(window))
       continue;
 
-    if (!webkit::npapi::IsPluginDelegateWindow(window)) {
+    if (!PluginServiceImpl::GetInstance()->IsPluginWindow(window)) {
       // The renderer should only be trying to move plugin windows. However,
       // this may happen as a result of a race condition (i.e. even after the
       // check right above), so we ignore it.
@@ -240,7 +240,7 @@ void RenderWidgetHostViewBase::MovePluginWindowsHelper(
     }
 
     if (oop_plugins) {
-      if (cur_parent == webkit::npapi::GetDefaultWindowParent()) {
+      if (cur_parent == GetDesktopWindow()) {
         // The plugin window hasn't been parented yet, add an intermediate
         // window that lives on this thread to speed up scrolling. Note this
         // only works with out of process plugins since we depend on
@@ -255,7 +255,7 @@ void RenderWidgetHostViewBase::MovePluginWindowsHelper(
       // process synchronous Windows messages.
       window = cur_parent;
     } else {
-      if (cur_parent == webkit::npapi::GetDefaultWindowParent())
+      if (cur_parent == GetDesktopWindow())
         SetParent(window, parent);
     }
 

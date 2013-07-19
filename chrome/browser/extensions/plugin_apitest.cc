@@ -15,10 +15,10 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/plugin_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/base/net_util.h"
-#include "webkit/plugins/npapi/plugin_utils.h"
 
 using content::NavigationController;
 using content::WebContents;
@@ -41,7 +41,7 @@ using extensions::Extension;
 // Tests that a renderer's plugin list is properly updated when we load and
 // unload an extension that contains a plugin.
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_PluginLoadUnload) {
-  if (!webkit::npapi::NPAPIPluginsSupported())
+  if (!content::PluginService::GetInstance()->NPAPIPluginsSupported())
     return;
   browser()->profile()->GetPrefs()->SetBoolean(prefs::kPluginsAlwaysAuthorize,
                                                true);
@@ -124,7 +124,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_PluginLoadUnload) {
 #endif
 // Tests that private extension plugins are only visible to the extension.
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_PluginPrivate) {
-  if (!webkit::npapi::NPAPIPluginsSupported())
+  if (!content::PluginService::GetInstance()->NPAPIPluginsSupported())
     return;
 
   browser()->profile()->GetPrefs()->SetBoolean(prefs::kPluginsAlwaysAuthorize,

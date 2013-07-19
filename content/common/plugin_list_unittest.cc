@@ -15,6 +15,10 @@ namespace content {
 
 namespace {
 
+base::FilePath::CharType kFooPath[] = FILE_PATH_LITERAL("/plugins/foo.plugin");
+base::FilePath::CharType kBarPath[] = FILE_PATH_LITERAL("/plugins/bar.plugin");
+const char* kFooName = "Foo Plugin";
+
 bool Equals(const WebPluginInfo& a, const WebPluginInfo& b) {
   return (a.name == b.name &&
           a.path == b.path &&
@@ -33,13 +37,6 @@ bool Contains(const std::vector<WebPluginInfo>& list,
 }
 
 }  // namespace
-
-// Linux Aura and Android don't support NPAPI.
-#if defined(OS_WIN) || defined(OS_MACOSX) || (defined(OS_LINUX) && !defined(USE_AURA))
-
-base::FilePath::CharType kFooPath[] = FILE_PATH_LITERAL("/plugins/foo.plugin");
-base::FilePath::CharType kBarPath[] = FILE_PATH_LITERAL("/plugins/bar.plugin");
-const char* kFooName = "Foo Plugin";
 
 class PluginListTest : public testing::Test {
  public:
@@ -68,7 +65,7 @@ class PluginListTest : public testing::Test {
 
 TEST_F(PluginListTest, GetPlugins) {
   std::vector<WebPluginInfo> plugins;
-  plugin_list_.GetPlugins(&plugins);
+  plugin_list_.GetPlugins(&plugins, true);
   EXPECT_EQ(2u, plugins.size());
   EXPECT_TRUE(Contains(plugins, foo_plugin_));
   EXPECT_TRUE(Contains(plugins, bar_plugin_));
@@ -83,11 +80,9 @@ TEST_F(PluginListTest, BadPluginDescription) {
   // Now we should have them in the state we specified above.
   plugin_list_.RefreshPlugins();
   std::vector<WebPluginInfo> plugins;
-  plugin_list_.GetPlugins(&plugins);
+  plugin_list_.GetPlugins(&plugins, true);
   ASSERT_TRUE(Contains(plugins, plugin_3043));
 }
-
-#endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 

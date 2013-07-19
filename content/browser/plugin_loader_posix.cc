@@ -13,6 +13,7 @@
 #include "content/common/plugin_list.h"
 #include "content/common/utility_messages.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/plugin_service.h"
 
 namespace content {
 
@@ -75,7 +76,9 @@ void PluginLoaderPosix::GetPluginsToLoad() {
   next_load_index_ = 0;
 
   canonical_list_.clear();
-  PluginList::Singleton()->GetPluginPathsToLoad(&canonical_list_);
+  PluginList::Singleton()->GetPluginPathsToLoad(
+      &canonical_list_,
+      PluginService::GetInstance()->NPAPIPluginsSupported());
 
   internal_plugins_.clear();
   PluginList::Singleton()->GetInternalPlugins(&internal_plugins_);

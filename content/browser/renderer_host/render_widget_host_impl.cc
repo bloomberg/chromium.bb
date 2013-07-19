@@ -60,12 +60,13 @@
 #include "ui/gfx/vector2d_conversions.h"
 #include "webkit/common/cursors/webcursor.h"
 #include "webkit/common/webpreferences.h"
-#include "webkit/plugins/npapi/plugin_utils.h"
 
 #if defined(TOOLKIT_GTK)
 #include "content/browser/renderer_host/backing_store_gtk.h"
 #elif defined(OS_MACOSX)
 #include "content/browser/renderer_host/backing_store_mac.h"
+#elif defined(OS_WIN)
+#include "content/common/plugin_constants_win.h"
 #endif
 
 using base::Time;
@@ -2231,9 +2232,13 @@ void RenderWidgetHostImpl::OnShowDisambiguationPopup(
 void RenderWidgetHostImpl::OnWindowlessPluginDummyWindowCreated(
     gfx::NativeViewId dummy_activation_window) {
   HWND hwnd = reinterpret_cast<HWND>(dummy_activation_window);
-  if (!IsWindow(hwnd) || !webkit::npapi::IsDummyActivationWindow(hwnd)) {
-    // This may happen as a result of a race condition when the plugin is going
-    // away.
+
+  // This may happen as a result of a race condition when the plugin is going
+  // away.
+  wchar_t window_title[MAX_PATH + 1] = {0};
+  if (!IsWindow(hwnd) ||
+      !GetWindowText(hwnd, window_title, arraysize(window_title)) ||
+      lstrcmpiW(window_title, kDummyActivationWindowName) != 0) {
     return;
   }
 
@@ -2597,7 +2602,7 @@ void RenderWidgetHostImpl::ParentChanged(gfx::NativeViewId new_parent) {
 #if defined(OS_WIN)
   HWND hwnd = reinterpret_cast<HWND>(new_parent);
   if (!hwnd)
-    hwnd = webkit::npapi::GetDefaultWindowParent();
+    hwnd = GetDesktopWindow();
   for (std::list<HWND>::iterator i = dummy_windows_for_activation_.begin();
         i != dummy_windows_for_activation_.end(); ++i) {
     SetParent(*i, hwnd);

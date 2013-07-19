@@ -108,9 +108,17 @@ class CONTENT_EXPORT PluginServiceImpl
   virtual void UnregisterInternalPlugin(const base::FilePath& path) OVERRIDE;
   virtual void GetInternalPlugins(
       std::vector<webkit::WebPluginInfo>* plugins) OVERRIDE;
+  virtual bool NPAPIPluginsSupported() OVERRIDE;
   virtual void DisablePluginsDiscoveryForTesting() OVERRIDE;
 #if defined(OS_MACOSX)
   virtual void AppActivated() OVERRIDE;
+#elif defined(OS_WIN)
+  virtual bool GetPluginInfoFromWindow(HWND window,
+                                       base::string16* plugin_name,
+                                       base::string16* plugin_version) OVERRIDE;
+
+  // Returns true iff the given HWND is a plugin.
+  bool IsPluginWindow(HWND window);
 #endif
 
   // Returns the plugin process host corresponding to the plugin process that

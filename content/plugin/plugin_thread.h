@@ -30,6 +30,10 @@ class PluginThread : public ChildThread {
   // Returns the one plugin thread.
   static PluginThread* current();
 
+  // Tells the plugin thread to terminate the process forcefully instead of
+  // exiting cleanly.
+  void SetForcefullyTerminatePluginProcess();
+
  private:
   virtual bool OnControlMessageReceived(const IPC::Message& msg) OVERRIDE;
 
@@ -44,6 +48,8 @@ class PluginThread : public ChildThread {
 
   // The plugin module which is preloaded in Init
   base::NativeLibrary preloaded_plugin_module_;
+
+  bool forcefully_terminate_plugin_process_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginThread);
 };

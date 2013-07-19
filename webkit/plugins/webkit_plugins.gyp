@@ -30,8 +30,6 @@
         '../plugins/plugin_constants.h',
         '../plugins/plugin_switches.cc',
         '../plugins/plugin_switches.h',
-        '../plugins/npapi/plugin_utils.cc',
-        '../plugins/npapi/plugin_utils.h',
         '../common/plugins/ppapi/ppapi_utils.cc',
         '../common/plugins/ppapi/ppapi_utils.h',
       ],

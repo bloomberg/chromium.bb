@@ -33,7 +33,6 @@
 #include "ui/base/win/dpi.h"
 #include "ui/base/win/hwnd_util.h"
 #include "webkit/common/cursors/webcursor.h"
-#include "webkit/plugins/npapi/plugin_utils.h"
 #include "webkit/plugins/plugin_constants.h"
 
 using WebKit::WebKeyboardEvent;
@@ -189,7 +188,8 @@ std::wstring GetKeyPath(HKEY key) {
 
 int GetPluginMajorVersion(const WebPluginInfo& plugin_info) {
   Version plugin_version;
-  webkit::npapi::CreateVersionFromString(plugin_info.version, &plugin_version);
+  webkit::WebPluginInfo::CreateVersionFromString(
+      plugin_info.version, &plugin_version);
 
   int major_version = 0;
   if (plugin_version.IsValid())
@@ -458,14 +458,14 @@ bool WebPluginDelegateImpl::WindowedCreatePlugin() {
   // The window will be sized and shown later.
   windowed_handle_ = CreateWindowEx(
       WS_EX_LEFT | WS_EX_LTRREADING | WS_EX_RIGHTSCROLLBAR,
-      webkit::npapi::kNativeWindowClassName,
+      kNativeWindowClassName,
       0,
       WS_POPUP | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,
       0,
       0,
       0,
       0,
-      webkit::npapi::GetDefaultWindowParent(),
+      GetDesktopWindow(),
       0,
       GetModuleHandle(NULL),
       0);
@@ -498,7 +498,7 @@ bool WebPluginDelegateImpl::WindowedCreatePlugin() {
         ATOM plugin_name_atom = GlobalAddAtomW(plugin_name.c_str());
         DCHECK_NE(0, plugin_name_atom);
         result = SetProp(windowed_handle_,
-            webkit::npapi::kPluginNameAtomProperty,
+            kPluginNameAtomProperty,
             reinterpret_cast<HANDLE>(plugin_name_atom));
         DCHECK(result == TRUE) << "SetProp failed, last error = " <<
             GetLastError();
@@ -508,7 +508,7 @@ bool WebPluginDelegateImpl::WindowedCreatePlugin() {
         ATOM plugin_version_atom = GlobalAddAtomW(plugin_version.c_str());
         DCHECK_NE(0, plugin_version_atom);
         result = SetProp(windowed_handle_,
-            webkit::npapi::kPluginVersionAtomProperty,
+            kPluginVersionAtomProperty,
             reinterpret_cast<HANDLE>(plugin_version_atom));
         DCHECK(result == TRUE) << "SetProp failed, last error = " <<
             GetLastError();
@@ -732,7 +732,7 @@ bool WebPluginDelegateImpl::CreateDummyWindowForActivation() {
   dummy_window_for_activation_ = CreateWindowEx(
     0,
     L"Static",
-    webkit::npapi::kDummyActivationWindowName,
+    kDummyActivationWindowName,
     WS_CHILD,
     0,
     0,
@@ -740,7 +740,7 @@ bool WebPluginDelegateImpl::CreateDummyWindowForActivation() {
     0,
     // We don't know the parent of the dummy window yet, so just set it to the
     // desktop and it'll get parented by the browser.
-      webkit::npapi::GetDefaultWindowParent(),
+    GetDesktopWindow(),
     0,
     GetModuleHandle(NULL),
     0);
@@ -873,7 +873,7 @@ ATOM WebPluginDelegateImpl::RegisterNativeWindowClass() {
   // implement WM_ERASEBKGND correctly if we have a valid background brush.
   wcex.hbrBackground  = reinterpret_cast<HBRUSH>(COLOR_WINDOW+1);
   wcex.lpszMenuName   = 0;
-  wcex.lpszClassName  = webkit::npapi::kNativeWindowClassName;
+  wcex.lpszClassName  = kNativeWindowClassName;
   wcex.hIconSm        = 0;
 
   return RegisterClassEx(&wcex);
@@ -1006,11 +1006,11 @@ LRESULT CALLBACK WebPluginDelegateImpl::NativeWndProc(
     if (message == WM_NCDESTROY) {
       RemoveProp(hwnd, kWebPluginDelegateProperty);
       ATOM plugin_name_atom = reinterpret_cast<ATOM>(
-          RemoveProp(hwnd, webkit::npapi::kPluginNameAtomProperty));
+          RemoveProp(hwnd, kPluginNameAtomProperty));
       if (plugin_name_atom != 0)
         GlobalDeleteAtom(plugin_name_atom);
       ATOM plugin_version_atom = reinterpret_cast<ATOM>(
-          RemoveProp(hwnd, webkit::npapi::kPluginVersionAtomProperty));
+          RemoveProp(hwnd, kPluginVersionAtomProperty));
       if (plugin_version_atom != 0)
         GlobalDeleteAtom(plugin_version_atom);
       ClearThrottleQueueForWindow(hwnd);
@@ -1253,9 +1253,7 @@ bool WebPluginDelegateImpl::PlatformHandleInputEvent(
     // windowless plugin is under the mouse and to handle this. This would
     // also require some changes in RenderWidgetHost to detect this in the
     // WM_MOUSEACTIVATE handler and inform the renderer accordingly.
-    bool valid =
-        GetParent(dummy_window_for_activation_) !=
-        webkit::npapi::GetDefaultWindowParent();
+    bool valid = GetParent(dummy_window_for_activation_) != GetDesktopWindow();
     if (valid) {
       last_focus_window = ::SetFocus(dummy_window_for_activation_);
     } else {
@@ -1379,7 +1377,7 @@ BOOL WINAPI WebPluginDelegateImpl::TrackPopupMenuPatch(
     if (::GetCurrentThreadId() != window_thread_id) {
       bool valid =
           GetParent(g_current_plugin_instance->dummy_window_for_activation_) !=
-              webkit::npapi::GetDefaultWindowParent();
+              GetDesktopWindow();
       if (valid) {
         window = g_current_plugin_instance->dummy_window_for_activation_;
       } else {
@@ -1463,7 +1461,7 @@ FARPROC WINAPI WebPluginDelegateImpl::GetProcAddressPatch(HMODULE module,
 
 void WebPluginDelegateImpl::HandleCaptureForMessage(HWND window,
                                                     UINT message) {
-  if (!webkit::npapi::IsPluginDelegateWindow(window))
+  if (ui::GetClassName(window) != base::string16(kNativeWindowClassName))
     return;
 
   switch (message) {

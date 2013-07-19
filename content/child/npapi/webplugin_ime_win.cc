@@ -14,7 +14,6 @@
 #include "base/synchronization/lock.h"
 #include "content/child/npapi/plugin_instance.h"
 #include "content/common/plugin_constants_win.h"
-#include "webkit/plugins/npapi/plugin_utils.h"
 
 #pragma comment(lib, "imm32.lib")
 
@@ -273,7 +272,7 @@ HIMC WINAPI WebPluginIMEWin::ImmGetContext(HWND window) {
   if (IsWindow(window)) {
     wchar_t name[128];
     GetClassName(window, &name[0], arraysize(name));
-    if (!wcscmp(&name[0], webkit::npapi::kNativeWindowClassName))
+    if (!wcscmp(&name[0], kNativeWindowClassName))
       return ::ImmGetContext(window);
   }
 

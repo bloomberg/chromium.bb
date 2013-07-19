@@ -182,6 +182,11 @@ void WebPluginDelegateStub::OnInit(const PluginMsg_Init_Params& params,
                                   params.host_render_view_routing_id);
   delegate_ = WebPluginDelegateImpl::Create(path, mime_type_);
   if (delegate_) {
+    if (delegate_->GetQuirks() &
+        WebPluginDelegateImpl::PLUGIN_QUIRK_DIE_AFTER_UNLOAD) {
+      PluginThread::current()->SetForcefullyTerminatePluginProcess();
+    }
+
     webplugin_->set_delegate(delegate_);
     std::vector<std::string> arg_names = params.arg_names;
     std::vector<std::string> arg_values = params.arg_values;
