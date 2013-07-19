@@ -342,7 +342,7 @@ GCCPatterns = [
 
   ( '(-MG)',          AddCCFlag),
   ( '(-MMD)',         AddCCFlag),
-  ( '(-MM)',          "env.append('CC_FLAGS', $0)\n"
+  ( '(-MM?)',         "env.append('CC_FLAGS', $0)\n"
                       "env.set('GCC_MODE', '-E')"),
   ( '(-MP)',          AddCCFlag),
   ( ('(-MQ)','(.*)'), AddCCFlag),
