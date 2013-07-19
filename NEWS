@@ -1,5 +1,10 @@
 liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 
+* Noteworthy changes in release 2.?.? (yyyy-mm-dd)
+
+** Braille Table Improvements
+   - fr-bfu-comp8.utb: corrections, zero was wrongly displayed in some instances.
+
 * Noteworthy changes in release 2.5.3 (2013-6-21)
 
 ** New features
