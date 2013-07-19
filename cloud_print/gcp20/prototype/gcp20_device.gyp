@@ -20,9 +20,17 @@
       'type': 'static_library',
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
+        '<(DEPTH)/google_apis/google_apis.gyp:google_apis',
+        '<(DEPTH)/net/net.gyp:http_server',
         '<(DEPTH)/net/net.gyp:net',
+        '<(DEPTH)/url/url.gyp:url_lib',
+        '<(DEPTH)/base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
       ],
       'sources': [
+        'cloud_print_response_parser.cc',
+        'cloud_print_response_parser.h',
+        'cloud_print_requester.cc',
+        'cloud_print_requester.h',  
         'dns_packet_parser.cc',
         'dns_packet_parser.h',
         'dns_response_builder.cc',
@@ -32,6 +40,8 @@
         'gcp20_device.cc',
         'printer.cc',
         'printer.h',
+        'privet_http_server.cc',
+        'privet_http_server.h',
         'service_parameters.cc',
         'service_parameters.h',
       ],
@@ -49,9 +59,10 @@
         'VCLinkerTool': {
           'SubSystem': '1',         # Set /SUBSYSTEM:CONSOLE
           'AdditionalDependencies': [
-              'secur32.lib',
-              'httpapi.lib',
-              'Ws2_32.lib',
+# TODO(maksymb): Check which of whis libs is needed.
+            'secur32.lib',
+            'httpapi.lib',
+            'Ws2_32.lib',
           ],
         },
       },

@@ -34,6 +34,9 @@ DnsResponseBuilder::DnsResponseBuilder(uint16 id) {
   header_.arcount = 0;
 }
 
+DnsResponseBuilder::~DnsResponseBuilder() {
+}
+
 void DnsResponseBuilder::AppendPtr(const std::string& service_type, uint32 ttl,
                                    const std::string& service_name) {
   std::string rdata;

@@ -7,6 +7,9 @@
 ServiceParameters::ServiceParameters() : http_port_(0) {
 }
 
+ServiceParameters::~ServiceParameters() {
+}
+
 ServiceParameters::ServiceParameters(const std::string& service_type,
                                      const std::string& service_name_prefix,
                                      const std::string& service_domain_name,

@@ -5,4 +5,5 @@ include_rules = [
   "+grit",
   "+net",
   "+printing",
+  "+url",
 ]

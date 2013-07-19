@@ -16,28 +16,23 @@
 
 namespace {
 
-Printer printer;
-base::AtExitManager at_exit;
-
-void StopPrinter() {
-  printer.Stop();
-}
-
-void StartPrinter() {
-  bool success = printer.Start();
+void StartPrinter(Printer* printer) {
+  bool success = printer->Start();
   DCHECK(success);
-
-  at_exit.RegisterTask(base::Bind(&StopPrinter));
 }
+
+base::RunLoop* g_runner = NULL;
 
 void OnAbort(int val) {
-  StopPrinter();
-  base::MessageLoop::current()->Quit();
+  if (g_runner)
+    g_runner->Quit();
 }
 
 }  // namespace
 
 int main(int argc, char* argv[]) {
+  base::AtExitManager at_exit;
+  Printer printer;
   CommandLine::Init(argc, argv);
 
   logging::LoggingSettings settings;
@@ -47,9 +42,14 @@ int main(int argc, char* argv[]) {
   signal(SIGINT, OnAbort);  // Handle Ctrl+C signal.
 
   base::MessageLoop loop(base::MessageLoop::TYPE_IO);
-  base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(&StartPrinter));
+  base::MessageLoop::current()->PostTask(FROM_HERE,
+                                         base::Bind(&StartPrinter, &printer));
   base::RunLoop runner;
+  g_runner = &runner;
   runner.Run();
+  g_runner = NULL;
+  printer.Stop();
 
   return 0;
 }
+

@@ -13,8 +13,10 @@
 #include "net/dns/dns_protocol.h"
 
 namespace net {
-  class IOBufferWithSize;
-}
+
+class IOBufferWithSize;
+
+}  // namespace net
 
 // Record for storing response data.
 struct DnsResponseRecord {
@@ -35,7 +37,7 @@ class DnsResponseBuilder {
   explicit DnsResponseBuilder(uint16 id);
 
   // Destroys the object.
-  ~DnsResponseBuilder() {}
+  ~DnsResponseBuilder();
 
   // Methods for appending different types of responses to packet.
   void AppendPtr(const std::string& service_type, uint32 ttl,

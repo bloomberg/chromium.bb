@@ -15,8 +15,10 @@
 #include "net/udp/udp_socket.h"
 
 namespace net {
-  class IOBufferWithSize;
-}
+
+class IOBufferWithSize;
+
+}  // namespace net
 
 struct DnsQueryRecord;
 class DnsResponseBuilder;

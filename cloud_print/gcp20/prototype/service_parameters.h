@@ -13,7 +13,7 @@
 struct ServiceParameters {
   ServiceParameters();
 
-  ~ServiceParameters() {}
+  ~ServiceParameters();
 
   ServiceParameters(const std::string& service_type,
                     const std::string& service_name_prefix,
