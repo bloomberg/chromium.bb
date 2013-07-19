@@ -1,11 +1,12 @@
 function initialize_EditorTests()
 {
 
-InspectorTest.createTestEditor = function(clientHeight, chunkSize, textEditorDelegate)
+InspectorTest.createTestEditor = function(clientHeight, textEditorDelegate)
 {
     loadScript("CodeMirrorTextEditor.js");
-    WebInspector.debugDefaultTextEditor = true;
     var textEditor = new WebInspector.CodeMirrorTextEditor("", textEditorDelegate || new WebInspector.TextEditorDelegate());
+    if (clientHeight)
+        textEditor.element.style.height = clientHeight + "px";
     textEditor.show(WebInspector.inspectorView.element);
     return textEditor;
 };
