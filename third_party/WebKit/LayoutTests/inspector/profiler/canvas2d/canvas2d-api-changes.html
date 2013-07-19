@@ -10,7 +10,6 @@ var CanvasRenderingContext2DResource = {};
  * @type {Array.<string>}
  */
 CanvasRenderingContext2DResource.AttributeProperties = [
-    "currentPath",
     "strokeStyle",
     "fillStyle",
     "globalAlpha",
@@ -27,6 +26,8 @@ CanvasRenderingContext2DResource.AttributeProperties = [
     "textAlign",
     "textBaseline",
     "lineDashOffset",
+    "imageSmoothingEnabled",
+    "webkitImageSmoothingEnabled",
     // FIXME: Temporary properties implemented in JSC, but not in V8.
     "webkitLineDash",
     "webkitLineDashOffset"
@@ -66,6 +67,7 @@ CanvasRenderingContext2DResource.TransformationMatrixMethods = [
  */
 CanvasRenderingContext2DResource.IgnoreProperties = [
     "canvas",
+    "currentPath",
     "createLinearGradient",
     "createRadialGradient",
     "createPattern",
@@ -103,7 +105,6 @@ CanvasRenderingContext2DResource.IgnoreProperties = [
     "strokeText",
     "webkitBackingStorePixelRatio",
     "webkitGetImageDataHD",
-    "webkitImageSmoothingEnabled",
     "webkitPutImageDataHD"
 ];
 

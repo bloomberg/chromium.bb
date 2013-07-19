@@ -1,0 +1,49 @@
+Tests canvas 2D ResourceState during the replay.
+
+
+Started capturing.
+Stopped capturing.
+Number of trace log calls received: 20
+
+--- Canvas 2D initial state ---
+{ResourceState}  length(descriptors):18  length(imageURL):1594
+  fillStyle: #000000
+  font: 10px sans-serif
+  globalAlpha: 1
+  globalCompositeOperation: source-over
+  lineCap: butt
+  lineDash: Array[0]
+  lineDashOffset: 0
+  lineJoin: miter
+  lineWidth: 1
+  miterLimit: 10
+  shadowBlur: 0
+  shadowColor: rgba(0, 0, 0, 0)
+  shadowOffsetX: 0
+  shadowOffsetY: 0
+  strokeStyle: #000000
+  textAlign: start
+  textBaseline: alphabetic
+  webkitImageSmoothingEnabled: true
+
+--- Canvas 2D state after canvas calls ---
+{ResourceState}  length(descriptors):18  length(imageURL):1594
+  fillStyle: #ff0000
+  font: 13px sans-serif
+  globalAlpha: 0
+  globalCompositeOperation: xor
+  lineCap: square
+  lineDash: Array[2]
+  lineDashOffset: 2
+  lineJoin: round
+  lineWidth: 3
+  miterLimit: 11
+  shadowBlur: 2
+  shadowColor: #123456
+  shadowOffsetX: 3
+  shadowOffsetY: 4
+  strokeStyle: #656667
+  textAlign: left
+  textBaseline: middle
+  webkitImageSmoothingEnabled: false
+

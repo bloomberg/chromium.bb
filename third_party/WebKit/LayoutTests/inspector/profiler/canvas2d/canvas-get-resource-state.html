@@ -1,0 +1,99 @@
+<html>
+<head>
+    <script src="../../../http/tests/inspector/inspector-test.js"></script>
+    <script src="../canvas-profiler-test.js"></script>
+<script>
+
+var context;
+
+function createCanvasContext()
+{
+    context = createCanvas2DContext();
+    console.assert(context, "Failed to create a canvas context");
+}
+
+function doCanvasCalls()
+{
+    context.beginPath();
+    context.rect(0, 0, 100, 100);
+    // Changing canvas 2D state.
+    context.fillStyle = "red";
+    context.font = "13px sans-serif";
+    context.globalAlpha = 0;
+    context.globalCompositeOperation = "xor";
+    context.lineCap = "square";
+    context.lineDashOffset = 2;
+    context.lineJoin = "round";
+    context.lineWidth = 3;
+    context.miterLimit = 11;
+    context.shadowBlur = 2;
+    context.shadowColor = "#123456";
+    context.shadowOffsetX = 3;
+    context.shadowOffsetY = 4;
+    context.strokeStyle = "rgb(101, 102, 103)";
+    context.textAlign = "left";
+    context.textBaseline = "middle";
+    context.webkitImageSmoothingEnabled = false;
+    context.setLineDash([3,4]);
+}
+
+function test()
+{
+    var traceLogId;
+    var traceLogCallsNumber;
+    InspectorTest.enableCanvasAgent(step1);
+    function step1()
+    {
+        InspectorTest.evaluateInConsole("createCanvasContext()", step2);
+    }
+    function step2()
+    {
+        CanvasAgent.startCapturing(didStartCapturing);
+    }
+    function didStartCapturing(error, id)
+    {
+        InspectorTest.assertTrue(!error && !!id, "Unexpected error: " + error);
+        InspectorTest.addResult("\nStarted capturing.");
+        traceLogId = id;
+        InspectorTest.evaluateInConsole("doCanvasCalls()", didCanvasCalls);
+    }
+    function didCanvasCalls()
+    {
+        CanvasAgent.stopCapturing(traceLogId, didStopCapturing);
+    }
+    function didStopCapturing()
+    {
+        InspectorTest.addResult("Stopped capturing.");
+        CanvasAgent.getTraceLog(traceLogId, 0, undefined, didReceiveTraceLog);
+    }
+    function didReceiveTraceLog(error, traceLog)
+    {
+        InspectorTest.assertTrue(!error && !!traceLog, "Unexpected error: " + error);
+        traceLogCallsNumber = traceLog.calls.length;
+        InspectorTest.addResult("Number of trace log calls received: " + traceLogCallsNumber);
+        CanvasAgent.replayTraceLog(traceLogId, 0, didReplayFirstCall);
+    }
+    function didReplayFirstCall(error, resourceState)
+    {
+        InspectorTest.assertTrue(!error && !!resourceState, "Unexpected error: " + error);
+        InspectorTest.addResult("\n--- Canvas 2D initial state ---");
+        InspectorTest.dumpResourceState(resourceState);
+        CanvasAgent.replayTraceLog(traceLogId, traceLogCallsNumber - 1, didReplayLastCall);
+    }
+    function didReplayLastCall(error, resourceState)
+    {
+        InspectorTest.assertTrue(!error && !!resourceState, "Unexpected error: " + error);
+        InspectorTest.addResult("\n--- Canvas 2D state after canvas calls ---");
+        InspectorTest.dumpResourceState(resourceState);
+        InspectorTest.completeTest();
+    }
+}
+
+</script>
+</head>
+<body onload="runTest()">
+<p>
+Tests canvas 2D ResourceState during the replay.
+</p>
+</body>
+</html>

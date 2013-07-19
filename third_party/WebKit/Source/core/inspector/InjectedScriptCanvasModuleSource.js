@@ -183,6 +183,9 @@ var TypeUtils = {
     }
 }
 
+/** @typedef {{name: string, value: *, values: (!Array.<TypeUtils.InternalResourceStateDescriptor>|undefined)}} */
+TypeUtils.InternalResourceStateDescriptor;
+
 /**
  * @interface
  */
@@ -698,6 +701,22 @@ Resource.prototype = {
     },
 
     /**
+     * @return {string}
+     */
+    name: function()
+    {
+        return this._name;
+    },
+
+    /**
+     * @return {string}
+     */
+    description: function()
+    {
+        return this._name + "@" + this._kindId;
+    },
+
+    /**
      * @return {Object}
      */
     wrappedObject: function()
@@ -770,6 +789,23 @@ Resource.prototype = {
         }
         delete this._calculatingContextResource;
         console.assert(result, "Failed to find context resource for " + this._name + "@" + this._kindId);
+        return result;
+    },
+
+    /**
+     * @return {!Array.<TypeUtils.InternalResourceStateDescriptor>}
+     */
+    currentState: function()
+    {
+        var result = [];
+        var proxyObject = this.proxyObject();
+        if (!proxyObject)
+            return result;
+        var statePropertyNames = this._proxyStatePropertyNames || [];
+        for (var i = 0, n = statePropertyNames.length; i < n; ++i) {
+            var pname = statePropertyNames[i];
+            result.push({ name: pname, value: proxyObject[pname] });
+        }
         return result;
     },
 
@@ -894,20 +930,26 @@ Resource.prototype = {
             return null;
         var proxy = Object.create(wrappedObject.__proto__); // In order to emulate "instanceof".
 
-        var self = this;
         var customWrapFunctions = this._customWrapFunctions();
+        /** @type {Array.<string>} */
+        this._proxyStatePropertyNames = [];
+
+        /**
+         * @param {string} property
+         */
         function processProperty(property)
         {
             if (typeof wrappedObject[property] === "function") {
                 var customWrapFunction = customWrapFunctions[property];
                 if (customWrapFunction)
-                    proxy[property] = self._wrapCustomFunction(self, wrappedObject, wrappedObject[property], property, customWrapFunction);
+                    proxy[property] = this._wrapCustomFunction(this, wrappedObject, wrappedObject[property], property, customWrapFunction);
                 else
-                    proxy[property] = self._wrapFunction(self, wrappedObject, wrappedObject[property], property);
+                    proxy[property] = this._wrapFunction(this, wrappedObject, wrappedObject[property], property);
             } else if (/^[A-Z0-9_]+$/.test(property) && typeof wrappedObject[property] === "number") {
                 // Fast access to enums and constants.
                 proxy[property] = wrappedObject[property];
             } else {
+                this._proxyStatePropertyNames.push(property);
                 Object.defineProperty(proxy, property, {
                     get: function()
                     {
@@ -915,7 +957,7 @@ Resource.prototype = {
                         var resource = Resource.forObject(obj);
                         return resource ? resource : obj;
                     },
-                    set: self._wrapPropertySetter(self, wrappedObject, property),
+                    set: this._wrapPropertySetter(this, wrappedObject, property),
                     enumerable: true
                 });
             }
@@ -924,7 +966,7 @@ Resource.prototype = {
         var isEmpty = true;
         for (var property in wrappedObject) {
             isEmpty = false;
-            processProperty(property);
+            processProperty.call(this, property);
         }
         if (isEmpty)
             return wrappedObject; // Nothing to proxy.
@@ -1129,7 +1171,7 @@ ReplayableResource.prototype = {
     /**
      * @return {!ReplayableResource}
      */
-    replayableContextResource: function()
+    contextResource: function()
     {
         return this._data.contextResource || this;
     },
@@ -1872,6 +1914,111 @@ WebGLRenderingContextResource.prototype = {
 
     /**
      * @override
+     * @return {!Array.<TypeUtils.InternalResourceStateDescriptor>}
+     */
+    currentState: function()
+    {
+        /**
+         * @param {!Object} obj
+         * @param {!Array.<TypeUtils.InternalResourceStateDescriptor>} output
+         */
+        function convertToStateDescriptors(obj, output)
+        {
+            for (var pname in obj)
+                output.push({ name: pname, value: obj[pname] });
+        }
+
+        var glState = this._internalCurrentState(null);
+
+        // VERTEX_ATTRIB_ARRAYS
+        var vertexAttribStates = [];
+        for (var i = 0, n = glState.VERTEX_ATTRIB_ARRAYS.length; i < n; ++i) {
+            var pname = "" + i;
+            var values = [];
+            convertToStateDescriptors(glState.VERTEX_ATTRIB_ARRAYS[i], values);
+            vertexAttribStates.push({ name: pname, values: values });
+        }
+        delete glState.VERTEX_ATTRIB_ARRAYS;
+
+        // TEXTURE_UNITS
+        var textureUnits = [];
+        for (var i = 0, n = glState.TEXTURE_UNITS.length; i < n; ++i) {
+            var pname = "TEXTURE" + i;
+            var values = [];
+            convertToStateDescriptors(glState.TEXTURE_UNITS[i], values);
+            textureUnits.push({ name: pname, values: values });
+        }
+        delete glState.TEXTURE_UNITS;
+
+        var result = [];
+        convertToStateDescriptors(glState, result);
+        result.push({ name: "VERTEX_ATTRIB_ARRAYS[" + vertexAttribStates.length + "]", values: vertexAttribStates });
+        result.push({ name: "TEXTURE_UNITS[" + textureUnits.length + "]", values: textureUnits });
+        return result;
+    },
+
+    /**
+     * @override
+     * @param {?Cache.<ReplayableResource>} cache
+     * @return {!Object.<string, *>}
+     */
+    _internalCurrentState: function(cache)
+    {
+        /**
+         * @param {Resource|*} obj
+         * @return {Resource|ReplayableResource|*}
+         */
+        function maybeToReplayable(obj)
+        {
+            return cache ? Resource.toReplayable(obj, cache) : (Resource.forObject(obj) || obj);
+        }
+
+        var gl = this.wrappedObject();
+        var originalErrors = this.getAllErrors();
+
+        // Take a full GL state snapshot.
+        var glState = Object.create(null);
+        WebGLRenderingContextResource.GLCapabilities.forEach(function(parameter) {
+            glState[parameter] = gl.isEnabled(gl[parameter]);
+        });
+        WebGLRenderingContextResource.StateParameters.forEach(function(parameter) {
+            glState[parameter] = maybeToReplayable(gl.getParameter(gl[parameter]));
+        });
+
+        // VERTEX_ATTRIB_ARRAYS
+        var maxVertexAttribs = /** @type {number} */ (gl.getParameter(gl.MAX_VERTEX_ATTRIBS));
+        var vertexAttribParameters = ["VERTEX_ATTRIB_ARRAY_BUFFER_BINDING", "VERTEX_ATTRIB_ARRAY_ENABLED", "VERTEX_ATTRIB_ARRAY_SIZE", "VERTEX_ATTRIB_ARRAY_STRIDE", "VERTEX_ATTRIB_ARRAY_TYPE", "VERTEX_ATTRIB_ARRAY_NORMALIZED", "CURRENT_VERTEX_ATTRIB"];
+        var vertexAttribStates = [];
+        for (var i = 0; i < maxVertexAttribs; ++i) {
+            var state = Object.create(null);
+            vertexAttribParameters.forEach(function(attribParameter) {
+                state[attribParameter] = maybeToReplayable(gl.getVertexAttrib(i, gl[attribParameter]));
+            });
+            state.VERTEX_ATTRIB_ARRAY_POINTER = gl.getVertexAttribOffset(i, gl.VERTEX_ATTRIB_ARRAY_POINTER);
+            vertexAttribStates.push(state);
+        }
+        glState.VERTEX_ATTRIB_ARRAYS = vertexAttribStates;
+
+        // TEXTURE_UNITS
+        var savedActiveTexture = /** @type {number} */ (gl.getParameter(gl.ACTIVE_TEXTURE));
+        var maxTextureImageUnits = /** @type {number} */ (gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS));
+        var textureUnits = [];
+        for (var i = 0; i < maxTextureImageUnits; ++i) {
+            gl.activeTexture(gl.TEXTURE0 + i);
+            var state = Object.create(null);
+            state.TEXTURE_2D = maybeToReplayable(gl.getParameter(gl.TEXTURE_BINDING_2D));
+            state.TEXTURE_CUBE_MAP = maybeToReplayable(gl.getParameter(gl.TEXTURE_BINDING_CUBE_MAP));
+            textureUnits.push(state);
+        }
+        glState.TEXTURE_UNITS = textureUnits;
+        gl.activeTexture(savedActiveTexture);
+
+        this.restoreErrors(originalErrors);
+        return glState;
+    },
+
+    /**
+     * @override
      * @param {!Object} data
      * @param {!Cache.<ReplayableResource>} cache
      */
@@ -1881,50 +2028,7 @@ WebGLRenderingContextResource.prototype = {
         data.originalCanvas = gl.canvas;
         data.originalContextAttributes = gl.getContextAttributes();
         data.extensions = TypeUtils.cloneObject(this._extensions);
-
-        var originalErrors = this.getAllErrors();
-
-        // Take a full GL state snapshot.
-        var glState = {};
-        WebGLRenderingContextResource.GLCapabilities.forEach(function(parameter) {
-            glState[parameter] = gl.isEnabled(gl[parameter]);
-        });
-        WebGLRenderingContextResource.StateParameters.forEach(function(parameter) {
-            glState[parameter] = Resource.toReplayable(gl.getParameter(gl[parameter]), cache);
-        });
-
-        // VERTEX_ATTRIB_ARRAYS
-        var maxVertexAttribs = /** @type {number} */ (gl.getParameter(gl.MAX_VERTEX_ATTRIBS));
-        var vertexAttribParameters = ["VERTEX_ATTRIB_ARRAY_BUFFER_BINDING", "VERTEX_ATTRIB_ARRAY_ENABLED", "VERTEX_ATTRIB_ARRAY_SIZE", "VERTEX_ATTRIB_ARRAY_STRIDE", "VERTEX_ATTRIB_ARRAY_TYPE", "VERTEX_ATTRIB_ARRAY_NORMALIZED", "CURRENT_VERTEX_ATTRIB"];
-        var vertexAttribStates = [];
-        for (var i = 0; i < maxVertexAttribs; ++i) {
-            var state = {};
-            vertexAttribParameters.forEach(function(attribParameter) {
-                state[attribParameter] = Resource.toReplayable(gl.getVertexAttrib(i, gl[attribParameter]), cache);
-            });
-            state.VERTEX_ATTRIB_ARRAY_POINTER = gl.getVertexAttribOffset(i, gl.VERTEX_ATTRIB_ARRAY_POINTER);
-            vertexAttribStates.push(state);
-        }
-        glState.vertexAttribStates = vertexAttribStates;
-
-        // TEXTURES
-        var currentTextureBinding = /** @type {number} */ (gl.getParameter(gl.ACTIVE_TEXTURE));
-        var maxTextureImageUnits = /** @type {number} */ (gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS));
-        var textureBindings = [];
-        for (var i = 0; i < maxTextureImageUnits; ++i) {
-            gl.activeTexture(gl.TEXTURE0 + i);
-            var state = {
-                TEXTURE_2D: Resource.toReplayable(gl.getParameter(gl.TEXTURE_BINDING_2D), cache),
-                TEXTURE_CUBE_MAP: Resource.toReplayable(gl.getParameter(gl.TEXTURE_BINDING_CUBE_MAP), cache)
-            };
-            textureBindings.push(state);
-        }
-        glState.textureBindings = textureBindings;
-        gl.activeTexture(currentTextureBinding);
-
-        data.glState = glState;
-
-        this.restoreErrors(originalErrors);
+        data.glState = this._internalCurrentState(cache);
     },
 
     /**
@@ -2004,7 +2108,7 @@ WebGLRenderingContextResource.prototype = {
         // VERTEX_ATTRIB_ARRAYS
         var maxVertexAttribs = /** @type {number} */ (gl.getParameter(gl.MAX_VERTEX_ATTRIBS));
         for (var i = 0; i < maxVertexAttribs; ++i) {
-            var state = glState.vertexAttribStates[i] || {};
+            var state = glState.VERTEX_ATTRIB_ARRAYS[i] || {};
             if (state.VERTEX_ATTRIB_ARRAY_ENABLED)
                 gl.enableVertexAttribArray(i);
             else
@@ -2020,11 +2124,11 @@ WebGLRenderingContextResource.prototype = {
         gl.bindBuffer(gl.ARRAY_BUFFER, /** @type {WebGLBuffer} */ (ReplayableResource.replay(glState.ARRAY_BUFFER_BINDING, cache)));
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, /** @type {WebGLBuffer} */ (ReplayableResource.replay(glState.ELEMENT_ARRAY_BUFFER_BINDING, cache)));
 
-        // TEXTURES
+        // TEXTURE_UNITS
         var maxTextureImageUnits = /** @type {number} */ (gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS));
         for (var i = 0; i < maxTextureImageUnits; ++i) {
             gl.activeTexture(gl.TEXTURE0 + i);
-            var state = glState.textureBindings[i] || {};
+            var state = glState.TEXTURE_UNITS[i] || {};
             gl.bindTexture(gl.TEXTURE_2D, /** @type {WebGLTexture} */ (ReplayableResource.replay(state.TEXTURE_2D, cache)));
             gl.bindTexture(gl.TEXTURE_CUBE_MAP, /** @type {WebGLTexture} */ (ReplayableResource.replay(state.TEXTURE_CUBE_MAP, cache)));
         }
@@ -2294,7 +2398,8 @@ CanvasRenderingContext2DResource.AttributeProperties = [
     "textAlign",
     "textBaseline",
     "lineDashOffset",
-    // FIXME: Temporary properties implemented in JSC, but not in V8.
+    "imageSmoothingEnabled",
+    "webkitImageSmoothingEnabled",
     "webkitLineDash",
     "webkitLineDashOffset"
 ];
@@ -2368,13 +2473,71 @@ CanvasRenderingContext2DResource.prototype = {
 
     /**
      * @override
+     * @return {!Array.<TypeUtils.InternalResourceStateDescriptor>}
+     */
+    currentState: function()
+    {
+        var result = [];
+        var state = this._internalCurrentState(null);
+        for (var pname in state)
+            result.push({ name: pname, value: state[pname] });
+        return result;
+    },
+
+    /**
+     * @param {?Cache.<ReplayableResource>} cache
+     * @return {!Object.<string, *>}
+     */
+    _internalCurrentState: function(cache)
+    {
+        /**
+         * @param {Resource|*} obj
+         * @return {Resource|ReplayableResource|*}
+         */
+        function maybeToReplayable(obj)
+        {
+            return cache ? Resource.toReplayable(obj, cache) : (Resource.forObject(obj) || obj);
+        }
+
+        var ctx = this.wrappedObject();
+        var state = Object.create(null);
+        CanvasRenderingContext2DResource.AttributeProperties.forEach(function(attribute) {
+            if (attribute in ctx)
+                state[attribute] = maybeToReplayable(ctx[attribute]);
+        });
+        if (ctx.getLineDash)
+            state.lineDash = ctx.getLineDash();
+        return state;
+    },
+
+    /**
+     * @param {Object.<string, *>} state
+     * @param {!Cache.<Resource>} cache
+     */
+    _applyAttributesState: function(state, cache)
+    {
+        if (!state)
+            return;
+        var ctx = this.wrappedObject();
+        for (var attribute in state) {
+            if (attribute === "lineDash") {
+                if (ctx.setLineDash)
+                    ctx.setLineDash(/** @type {Array.<number>} */ (state[attribute]));
+            } else
+                ctx[attribute] = ReplayableResource.replay(state[attribute], cache);
+        }
+    },
+
+    /**
+     * @override
      * @param {!Object} data
      * @param {!Cache.<ReplayableResource>} cache
      */
     _populateReplayableData: function(data, cache)
     {
         var ctx = this.wrappedObject();
-        data.currentAttributes = this._currentAttributesState();
+        // FIXME: Convert resources in the state (CanvasGradient, CanvasPattern) to Replayable.
+        data.currentAttributes = this._internalCurrentState(null);
         data.originalCanvasCloned = TypeUtils.cloneIntoCanvas(ctx.canvas);
         if (ctx.getContextAttributes)
             data.originalContextAttributes = ctx.getContextAttributes();
@@ -2394,10 +2557,10 @@ CanvasRenderingContext2DResource.prototype = {
         for (var i = 0, n = data.calls.length; i < n; ++i) {
             var replayableCall = /** @type {ReplayableCall} */ (data.calls[i]);
             if (replayableCall.functionName() === "save")
-                this._applyAttributesState(replayableCall.attachment("canvas2dAttributesState"));
+                this._applyAttributesState(replayableCall.attachment("canvas2dAttributesState"), cache);
             this._calls.push(replayableCall.replay(cache));
         }
-        this._applyAttributesState(data.currentAttributes);
+        this._applyAttributesState(data.currentAttributes, cache);
     },
 
     /**
@@ -2429,7 +2592,8 @@ CanvasRenderingContext2DResource.prototype = {
      */
     pushCall_save: function(call)
     {
-        call.setAttachment("canvas2dAttributesState", this._currentAttributesState());
+        // FIXME: Convert resources in the state (CanvasGradient, CanvasPattern) to Replayable.
+        call.setAttachment("canvas2dAttributesState", this._internalCurrentState(null));
         this.pushCall(call);
     },
 
@@ -2573,39 +2737,6 @@ CanvasRenderingContext2DResource.prototype = {
     },
 
     /**
-     * @return {!Object.<string, string>}
-     */
-    _currentAttributesState: function()
-    {
-        var ctx = this.wrappedObject();
-        var state = {};
-        state.attributes = {};
-        CanvasRenderingContext2DResource.AttributeProperties.forEach(function(attribute) {
-            state.attributes[attribute] = ctx[attribute];
-        });
-        if (ctx.getLineDash)
-            state.lineDash = ctx.getLineDash();
-        return state;
-    },
-
-    /**
-     * @param {Object.<string, string>=} state
-     */
-    _applyAttributesState: function(state)
-    {
-        if (!state)
-            return;
-        var ctx = this.wrappedObject();
-        if (state.attributes) {
-            Object.keys(state.attributes).forEach(function(attribute) {
-                ctx[attribute] = state.attributes[attribute];
-            });
-        }
-        if (ctx.setLineDash)
-            ctx.setLineDash(state.lineDash);
-    },
-
-    /**
      * @override
      * @return {!Object.<string, Function>}
      */
@@ -2695,7 +2826,7 @@ CallFormatter.prototype = {
      */
     formatValue: function(value)
     {
-        if (value instanceof ReplayableResource) {
+        if (value instanceof Resource || value instanceof ReplayableResource) {
             return {
                 description: value.description(),
                 resourceId: CallFormatter.makeStringResourceId(value.id())
@@ -2711,6 +2842,23 @@ CallFormatter.prototype = {
             result.subtype = /** @type {CanvasAgent.CallArgumentSubtype} */ (remoteObject.subtype);
         if (remoteObject.objectId)
             injectedScript.releaseObject(remoteObject.objectId);
+        return result;
+    },
+
+    /**
+     * @param {!Array.<TypeUtils.InternalResourceStateDescriptor>} descriptors
+     * @return {!Array.<!CanvasAgent.ResourceStateDescriptor>}
+     */
+    convertResourceStateDescriptors: function(descriptors)
+    {
+        var result = [];
+        for (var i = 0, n = descriptors.length; i < n; ++i) {
+            var d = descriptors[i];
+            if (d.values)
+                result.push({ name: d.name, values: this.convertResourceStateDescriptors(d.values) });
+            else
+                result.push({ name: d.name, value: this.formatValue(d.value) });
+        }
         return result;
     }
 }
@@ -2731,16 +2879,15 @@ CallFormatter.register = function(resourceName, callFormatter)
 }
 
 /**
- * @param {!ReplayableCall} replayableCall
+ * @param {!Resource|!ReplayableResource} resource
  * @return {!CallFormatter}
  */
-CallFormatter.forReplayableCall = function(replayableCall)
+CallFormatter.forResource = function(resource)
 {
-    var resource = replayableCall.replayableResource();
     var formatter = CallFormatter._formatters[resource.name()];
     if (!formatter) {
-        var contextResource = resource.replayableContextResource();
-        formatter = CallFormatter._formatters[contextResource.name()] || new CallFormatter();
+        var contextResource = resource.contextResource();
+        formatter = (contextResource && CallFormatter._formatters[contextResource.name()]) || new CallFormatter();
     }
     return formatter;
 }
@@ -3449,10 +3596,11 @@ InjectedCanvasModule.prototype = {
         var contextIds = {};
         for (var i = fromIndex; i <= toIndex; ++i) {
             var call = replayableCalls[i];
-            var contextResource = call.replayableResource().replayableContextResource();
+            var resource = call.replayableResource();
+            var contextResource = resource.contextResource();
             var stackTrace = call.stackTrace();
             var callFrame = stackTrace ? stackTrace.callFrame(0) || {} : {};
-            var item = CallFormatter.forReplayableCall(call).formatCall(call);
+            var item = CallFormatter.forResource(resource).formatCall(call);
             item.contextId = CallFormatter.makeStringResourceId(contextResource.id());
             item.sourceURL = callFrame.sourceURL;
             item.lineNumber = callFrame.lineNumber;
@@ -3461,7 +3609,7 @@ InjectedCanvasModule.prototype = {
             result.calls.push(item);
             if (!contextIds[item.contextId]) {
                 contextIds[item.contextId] = true;
-                result.contexts.push(CallFormatter.forReplayableCall(call).formatValue(contextResource));
+                result.contexts.push(CallFormatter.forResource(resource).formatValue(contextResource));
             }
         }
         return result;
@@ -3485,7 +3633,7 @@ InjectedCanvasModule.prototype = {
             resource = resource.contextResource();
             dataURL = resource.toDataURL();
         }
-        return this._makeResourceState(CallFormatter.makeStringResourceId(resource.id()), traceLogId, dataURL);
+        return this._makeResourceState(resource.id(), traceLogId, resource, dataURL);
     },
 
     /**
@@ -3510,7 +3658,7 @@ InjectedCanvasModule.prototype = {
 
         var traceLogPlayer = this._traceLogPlayers[traceLogId];
         var resource = traceLogPlayer && traceLogPlayer.replayWorldResource(resourceId);
-        return this._makeResourceState(stringResourceId, traceLogId, resource ? resource.toDataURL() : "");
+        return this._makeResourceState(resourceId, traceLogId, resource);
     },
 
     /**
@@ -3518,7 +3666,7 @@ InjectedCanvasModule.prototype = {
      * @param {number} callIndex
      * @param {number} argumentIndex
      * @param {string} objectGroup
-     * @return {!Object|string}
+     * @return {{result:(!RuntimeAgent.RemoteObject|undefined), resourceState:(!CanvasAgent.ResourceState|undefined)}|string}
      */
     evaluateTraceLogCallArgument: function(traceLogId, callIndex, argumentIndex, objectGroup)
     {
@@ -3545,7 +3693,7 @@ InjectedCanvasModule.prototype = {
         if (value instanceof ReplayableResource) {
             var traceLogPlayer = this._traceLogPlayers[traceLogId];
             var resource = traceLogPlayer && traceLogPlayer.replayWorldResource(value.id());
-            var resourceState = this._makeResourceState(CallFormatter.makeStringResourceId(value.id()), traceLogId, resource ? resource.toDataURL() : "");
+            var resourceState = this._makeResourceState(value.id(), traceLogId, resource);
             return { resourceState: resourceState };
         }
 
@@ -3562,18 +3710,23 @@ InjectedCanvasModule.prototype = {
     },
 
     /**
-     * @param {CanvasAgent.ResourceId} stringResourceId
+     * @param {number} resourceId
      * @param {CanvasAgent.TraceLogId} traceLogId
-     * @param {string} imageURL
+     * @param {Resource|undefined} resource
+     * @param {string=} overrideImageURL
      * @return {!CanvasAgent.ResourceState}
      */
-    _makeResourceState: function(stringResourceId, traceLogId, imageURL)
+    _makeResourceState: function(resourceId, traceLogId, resource, overrideImageURL)
     {
-        return {
-            id: stringResourceId,
-            traceLogId: traceLogId,
-            imageURL: imageURL
+        var result = {
+            id: CallFormatter.makeStringResourceId(resourceId),
+            traceLogId: traceLogId
         };
+        if (resource) {
+            result.imageURL = overrideImageURL || resource.toDataURL();
+            result.descriptors = CallFormatter.forResource(resource).convertResourceStateDescriptors(resource.currentState());
+        }
+        return result;
     },
 
     /**

@@ -95,6 +95,52 @@ InspectorTest.dumpTraceLog = function(traceLog, indent, filter)
         InspectorTest.dumpTraceLogCall(calls[i], indent + "  ", filter);
 };
 
+InspectorTest.sortResourceStateDescriptors = function(descriptors)
+{
+    var wordNumRegex = /^(\D+)(\d+)$/;
+    function comparator(a, b)
+    {
+        a = a.name.replace(wordNumRegex, "$2");
+        b = b.name.replace(wordNumRegex, "$2");
+        if (!isNaN(a) && !isNaN(b))
+            return Number(a) - Number(b);
+        if (a < b)
+            return -1;
+        if (a > b)
+            return 1;
+        return 0;
+    }
+    descriptors.sort(comparator);
+};
+
+InspectorTest.dumpResourceStateDescriptor = function(descriptor, indent)
+{
+    indent = indent || "";
+    if (descriptor.values) {
+        InspectorTest.addResult(indent + descriptor.name);
+        var descriptors = descriptor.values;
+        InspectorTest.sortResourceStateDescriptors(descriptors);
+        for (var i = 0, n = descriptors.length; i < n; ++i)
+            InspectorTest.dumpResourceStateDescriptor(descriptors[i], indent + "  ");
+    } else
+        InspectorTest.addResult(indent + descriptor.name + ": " + descriptor.value.description);
+};
+
+InspectorTest.dumpResourceState = function(resourceState, indent)
+{
+    indent = indent || "";
+    var descriptors = resourceState.descriptors || [];
+    var properties = [
+        "{ResourceState}",
+        "length(descriptors):" + descriptors.length,
+        "length(imageURL):" + (resourceState.imageURL || "").length
+    ];
+    InspectorTest.addResult(indent + properties.filter(Boolean).join("  "));
+    InspectorTest.sortResourceStateDescriptors(descriptors);
+    for (var i = 0, n = descriptors.length; i < n; ++i)
+        InspectorTest.dumpResourceStateDescriptor(descriptors[i], indent + "  ");
+};
+
 };
 
 function createWebGLContext(opt_canvas)
