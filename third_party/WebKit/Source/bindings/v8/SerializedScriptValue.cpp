@@ -2487,7 +2487,12 @@ v8::Handle<v8::Value> SerializedScriptValue::deserialize(v8::Isolate* isolate, M
     if (!m_data.impl())
         return v8NullWithCheck(isolate);
     COMPILE_ASSERT(sizeof(BufferValueType) == 2, BufferValueTypeIsTwoBytes);
-    Reader reader(reinterpret_cast<const uint8_t*>(m_data.impl()->bloatedCharacters()), 2 * m_data.length(), isolate);
+    m_data.ensure16Bit();
+    // FIXME: SerializedScriptValue shouldn't use String for its underlying
+    // storage. Instead, it should use SharedBuffer or Vector<uint8_t>. The
+    // information stored in m_data isn't even encoded in UTF-16. Instead,
+    // unicode characters are encoded as UTF-8 with two code units per UChar.
+    Reader reader(reinterpret_cast<const uint8_t*>(m_data.impl()->characters16()), 2 * m_data.length(), isolate);
     Deserializer deserializer(reader, messagePorts, m_arrayBufferContentsArray.get());
 
     // deserialize() can run arbitrary script (e.g., setters), which could result in |this| being destroyed.

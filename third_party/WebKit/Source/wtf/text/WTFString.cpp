@@ -250,6 +250,14 @@ UChar32 String::characterStartingAt(unsigned i) const
     return m_impl->characterStartingAt(i);
 }
 
+void String::ensure16Bit()
+{
+    unsigned length = this->length();
+    if (!length || !is8Bit())
+        return;
+    m_impl = make16BitFrom8BitSource(m_impl->characters8(), length).impl();
+}
+
 void String::truncate(unsigned position)
 {
     if (position >= length())

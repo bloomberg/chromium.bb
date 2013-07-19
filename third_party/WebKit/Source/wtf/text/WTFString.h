@@ -327,6 +327,8 @@ public:
     void makeUpper() { if (m_impl) m_impl = m_impl->upper(); }
     void fill(UChar c) { if (m_impl) m_impl = m_impl->fill(c); }
 
+    void ensure16Bit();
+
     void truncate(unsigned len);
     void remove(unsigned pos, int len = 1);
 
