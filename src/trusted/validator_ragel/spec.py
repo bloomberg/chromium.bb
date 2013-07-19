@@ -1458,6 +1458,8 @@ def ValidateSuperinstruction32(superinstruction):
     register_call_jmp = m.group('register')
 
     if register_and == register_call_jmp:
+      for instruction in superinstruction:
+        _GetLegacyPrefixes(instruction)  # to detect repeated prefixes
       return
 
     raise SandboxingError(
@@ -1533,6 +1535,8 @@ def ValidateSuperinstruction64(superinstruction):
       assert False, ('Unknown (or possible non-32-bit) register found. '
                      'This should never happen!')
     if register_and == register_add == register_callq_jmpq:
+      for instruction in superinstruction:
+        _GetLegacyPrefixes(instruction)  # to detect repeated prefixes
       return
 
     raise SandboxingError(
@@ -1566,9 +1570,8 @@ def ValidateSuperinstruction64(superinstruction):
       raise DoNotMatchError(superinstruction)
     if lea_r15_rsi_rsi.match(superinstruction[1].disasm) is None:
       raise DoNotMatchError(superinstruction)
-    return
 
-  if string_instruction_rdi_no_rsi.match(dangerous_instruction):
+  elif string_instruction_rdi_no_rsi.match(dangerous_instruction):
     if len(superinstruction) != 3:
       raise DoNotMatchError(superinstruction)
     if mov_edi_edi.match(superinstruction[0].disasm) is None:
@@ -1578,9 +1581,8 @@ def ValidateSuperinstruction64(superinstruction):
     # vmaskmovdqu is disabled for compatibility with the previous validator
     if dangerous_instruction.startswith('vmaskmovdqu '):
       raise SandboxingError('vmaskmovdqu is disallowed', superinstruction)
-    return
 
-  if string_instruction_rsi_rdi.match(dangerous_instruction):
+  elif string_instruction_rsi_rdi.match(dangerous_instruction):
     if len(superinstruction) != 5:
       raise DoNotMatchError(superinstruction)
     if mov_esi_esi.match(superinstruction[0].disasm) is None:
@@ -1591,6 +1593,9 @@ def ValidateSuperinstruction64(superinstruction):
       raise DoNotMatchError(superinstruction)
     if lea_r15_rdi_rdi.match(superinstruction[3].disasm) is None:
       raise DoNotMatchError(superinstruction)
-    return
 
-  raise DoNotMatchError(superinstruction)
+  else:
+    raise DoNotMatchError(superinstruction)
+
+  for instruction in superinstruction:
+    _GetLegacyPrefixes(instruction)  # to detect repeated prefixes
