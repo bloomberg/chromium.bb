@@ -1,5 +1,6 @@
 vars = {
   "pnacl_binutils_rev": "dd7ce973efdd41e13db27a5e0477caa73ac3aecd",
+  "pnacl_clang_rev": "0eb1be38d149f22aab802958086a295628a3d76f",
   "pnacl_llvm_rev": "4412ea4b8e019d00dc7574fe1723eea0473a8ec1",
   "pnacl_gcc_rev": "98250ea17accd948b067388143d3b38da9f49fef",
 
@@ -7,11 +8,6 @@ vars = {
   "newlib_rev": "ea41247df4c25e3cfacc56d28755424b81a563da",
   "pnacl_llvm_testsuite_rev": "0d6d7c909e6f7cc83e2b85c11332e9347b73dfb9",
   "compiler_rt_rev": "cad11a9ea0008d18125e81beafc27271ee71926e",
-  # clang_rev should be the first clang commit after the llvm commit from
-  # which the local llvm is branched. Unfortunately because the llvm and
-  # clang git repos are separate (even upstream), the same revision cannot
-  # be used for both of them, the way it can with SVN.
-  "clang_rev": "0eb1be38d149f22aab802958086a295628a3d76f",
   "nacl_base_readonly": "http://git.chromium.org/native_client",
   "nacl_base_readwrite": "ssh://gerrit.chromium.org:29418/native_client",
   "llvm_upstream_base": "http://llvm.org/git/",
@@ -33,7 +29,7 @@ deps = {
   "compiler-rt":
     Var("nacl_base_readonly") + "/pnacl-compiler-rt.git@" + Var("compiler_rt_rev"),
   "clang":
-    Var("nacl_base_readonly") + "/pnacl-clang.git@" + Var("clang_rev"),
+    Var("nacl_base_readonly") + "/pnacl-clang.git@" + Var("pnacl_clang_rev"),
 }
 
 skip_child_includes = [
