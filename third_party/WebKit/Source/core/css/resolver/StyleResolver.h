@@ -290,7 +290,7 @@ private:
 
     InspectorCSSOMWrappers m_inspectorCSSOMWrappers;
 
-    StyleResolverState m_state;
+    StyleResolverState* m_state;
     StyleResourceLoader m_styleResourceLoader;
 
     friend void StyleBuilder::oldApplyProperty(CSSPropertyID, StyleResolver*, StyleResolverState&, CSSValue*, bool isInitial, bool isInherit);

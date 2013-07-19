@@ -47,29 +47,16 @@ ElementResolveContext::ElementResolveContext(Element* element)
     m_rootElementStyle = documentElement && element != documentElement ? documentElement->renderStyle() : documentStyle;
 }
 
-StyleResolveScope::StyleResolveScope(StyleResolverState* state, const Document* document, Element* e, RenderStyle* parentStyle, RenderRegion* regionForStyling)
-    : m_state(state)
+StyleResolverState::StyleResolverState(StyleResolverState** thisPointer, const Document* newDocument, Element* newElement, RenderStyle* parentStyle, RenderRegion* regionForStyling)
+    : m_regionForStyling(0)
+    , m_applyPropertyToRegularStyle(true)
+    , m_applyPropertyToVisitedLinkStyle(false)
+    , m_lineHeightValue(0)
+    , m_styleMap(*this, m_elementStyleResources)
+    , m_thisPointer(thisPointer)
 {
-    m_state->initForStyleResolve(document, e, parentStyle, regionForStyling);
-}
-
-StyleResolveScope::~StyleResolveScope()
-{
-    m_state->clear();
-}
-
-void StyleResolverState::clear()
-{
-    m_elementContext = ElementResolveContext();
-    m_style = 0;
-    m_parentStyle = 0;
-    m_regionForStyling = 0;
-    m_elementStyleResources.clear();
-    m_fontBuilder.clear();
-}
-
-void StyleResolverState::initForStyleResolve(const Document* newDocument, Element* newElement, RenderStyle* parentStyle, RenderRegion* regionForStyling)
-{
+    if (m_thisPointer)
+        *m_thisPointer = this;
     ASSERT(!element() || document() == newDocument);
     if (newElement)
         m_elementContext = ElementResolveContext(newElement);
@@ -96,6 +83,18 @@ void StyleResolverState::initForStyleResolve(const Document* newDocument, Elemen
     // createion time instead of now, correct?
     if (Page* page = newDocument->page())
         m_elementStyleResources.setDeviceScaleFactor(page->deviceScaleFactor());
+}
+
+StyleResolverState::~StyleResolverState()
+{
+    if (m_thisPointer)
+        *m_thisPointer = 0;
+    m_elementContext = ElementResolveContext();
+    m_style = 0;
+    m_parentStyle = 0;
+    m_regionForStyling = 0;
+    m_elementStyleResources.clear();
+    m_fontBuilder.clear();
 }
 
 } // namespace WebCore

@@ -72,25 +72,11 @@ private:
     bool m_resetStyleInheritance;
 };
 
-// Initializes a StyleResolverState within a scope.
-class StyleResolveScope {
-public:
-    StyleResolveScope(StyleResolverState*, const Document*, Element*, RenderStyle* parentStyle = 0, RenderRegion* regionForStyling = 0);
-    ~StyleResolveScope();
-private:
-    StyleResolverState* m_state;
-};
-
 class StyleResolverState {
 WTF_MAKE_NONCOPYABLE(StyleResolverState);
 public:
-    StyleResolverState()
-    : m_regionForStyling(0)
-    , m_applyPropertyToRegularStyle(true)
-    , m_applyPropertyToVisitedLinkStyle(false)
-    , m_lineHeightValue(0)
-    , m_styleMap(*this, m_elementStyleResources)
-    { }
+    StyleResolverState(StyleResolverState**, const Document*, Element*, RenderStyle* parentStyle = 0, RenderRegion* regionForStyling = 0);
+    ~StyleResolverState();
 
     // These are all just pass-through methods to ElementResolveContext.
     Document* document() const { return m_elementContext.document(); }
@@ -164,9 +150,6 @@ public:
 private:
     friend class StyleResolveScope;
 
-    void initForStyleResolve(const Document*, Element*, RenderStyle* parentStyle = 0, RenderRegion* regionForStyling = 0);
-    void clear();
-
     void initElement(Element*);
 
     ElementResolveContext m_elementContext;
@@ -196,6 +179,8 @@ private:
     // CSSToStyleMap is a pure-logic class and only contains
     // a back-pointer to this object.
     CSSToStyleMap m_styleMap;
+
+    StyleResolverState** m_thisPointer;
 };
 
 } // namespace WebCore
