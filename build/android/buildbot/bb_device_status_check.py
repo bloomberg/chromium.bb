@@ -186,8 +186,7 @@ def main():
   parser = optparse.OptionParser()
   parser.add_option('', '--out-dir',
                     help='Directory where the device path is stored',
-                    default=os.path.join(os.path.dirname(__file__), '..',
-                                         '..', 'out'))
+                    default=os.path.join(constants.DIR_SOURCE_ROOT, 'out'))
   parser.add_option('--no-provisioning-check',
                     help='Will not check if devices are provisioned properly.')
 
