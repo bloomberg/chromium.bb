@@ -12,10 +12,10 @@
 #include "chrome/browser/extensions/api/execute_code_function.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/common/extensions/api/tabs.h"
-#include "chrome/common/extensions/user_script.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/common/extension_resource.h"
+#include "extensions/common/user_script.h"
 #include "url/gurl.h"
 
 class BackingStore;

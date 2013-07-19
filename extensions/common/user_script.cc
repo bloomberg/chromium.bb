@@ -1,13 +1,13 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/user_script.h"
+#include "extensions/common/user_script.h"
 
 #include "base/command_line.h"
 #include "base/pickle.h"
 #include "base/strings/string_util.h"
-#include "chrome/common/chrome_switches.h"
+#include "extensions/common/switches.h"
 
 namespace {
 

@@ -54,6 +54,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/common/switches.h"
 #include "grit/generated_resources.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/url_request/url_request_context.h"
@@ -2764,7 +2765,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTestWithExtensions,
   extensions::FrameNavigationState::set_allow_extension_scheme(true);
 
   CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kAllowLegacyExtensionManifests);
+      extensions::switches::kAllowLegacyExtensionManifests);
 
   // Wait for the extension to set itself up and return control to us.
   ASSERT_TRUE(

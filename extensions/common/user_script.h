@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_EXTENSIONS_USER_SCRIPT_H_
-#define CHROME_COMMON_EXTENSIONS_USER_SCRIPT_H_
+#ifndef EXTENSIONS_COMMON_USER_SCRIPT_H_
+#define EXTENSIONS_COMMON_USER_SCRIPT_H_
 
 #include <string>
 #include <vector>
@@ -257,4 +257,4 @@ typedef std::vector<UserScript> UserScriptList;
 
 }  // namespace extensions
 
-#endif  // CHROME_COMMON_EXTENSIONS_USER_SCRIPT_H_
+#endif  // EXTENSIONS_COMMON_USER_SCRIPT_H_

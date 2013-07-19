@@ -10,7 +10,7 @@
 #include "base/callback_forward.h"
 #include "base/observer_list.h"
 #include "chrome/browser/extensions/tab_helper.h"
-#include "chrome/common/extensions/user_script.h"
+#include "extensions/common/user_script.h"
 
 class GURL;
 

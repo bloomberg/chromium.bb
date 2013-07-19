@@ -21,6 +21,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "components/nacl/common/nacl_switches.h"
 #include "content/public/browser/user_metrics.h"
+#include "extensions/common/switches.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/google_chrome_strings.h"
@@ -545,7 +546,7 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_EXTENSIONS_ON_CHROME_URLS_NAME,
     IDS_FLAGS_EXTENSIONS_ON_CHROME_URLS_DESCRIPTION,
     kOsAll,
-    SINGLE_VALUE_TYPE(switches::kExtensionsOnChromeURLs)
+    SINGLE_VALUE_TYPE(extensions::switches::kExtensionsOnChromeURLs)
   },
   {
     "enable-fast-unload",

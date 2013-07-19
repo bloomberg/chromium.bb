@@ -8,9 +8,9 @@
 #include <map>
 #include <queue>
 
-#include "chrome/common/extensions/user_script.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "extensions/common/user_script.h"
 
 class RenderView;
 struct ExtensionMsg_ExecuteCode_Params;

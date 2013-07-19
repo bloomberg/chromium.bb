@@ -512,6 +512,7 @@
         '../extensions/common/one_shot_event_unittest.cc',
         '../extensions/common/url_pattern_set_unittest.cc',
         '../extensions/common/url_pattern_unittest.cc',
+        '../extensions/common/user_script_unittest.cc',
         'app/chrome_dll.rc',
         '<(SHARED_INTERMEDIATE_DIR)/chrome/chrome_unscaled_resources.rc',
         # All unittests in browser, common, renderer and service.
@@ -1702,7 +1703,6 @@
         'common/extensions/permissions/usb_device_permission_unittest.cc',
         'common/extensions/sync_type_unittest.cc',
         'common/extensions/update_manifest_unittest.cc',
-        'common/extensions/user_script_unittest.cc',
         'common/extensions/value_counter_unittest.cc',
         'common/extensions/api/extension_api_unittest.cc',
         'common/favicon/favicon_url_parser_unittest.cc',

@@ -21,11 +21,12 @@
 #include "chrome/common/extensions/permissions/chrome_scheme_hosts.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/common/extensions/permissions/permissions_info.h"
-#include "chrome/common/extensions/user_script.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
+#include "extensions/common/switches.h"
 #include "extensions/common/url_pattern_set.h"
+#include "extensions/common/user_script.h"
 #include "url/gurl.h"
 
 namespace keys = extension_manifest_keys;
@@ -59,7 +60,7 @@ bool CanSpecifyExperimentalPermission(const Extension* extension) {
     return true;
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableExperimentalExtensionApis)) {
+          ::switches::kEnableExperimentalExtensionApis)) {
     return true;
   }
 

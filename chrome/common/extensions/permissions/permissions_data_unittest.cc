@@ -8,7 +8,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
@@ -21,6 +20,7 @@
 #include "content/public/common/socket_permission_request.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/id_util.h"
+#include "extensions/common/switches.h"
 #include "extensions/common/url_pattern_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

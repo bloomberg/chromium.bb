@@ -38,11 +38,6 @@ const char kAllowHTTPBackgroundPage[]       = "allow-http-background-page";
 // Allow non-secure origins to use the screen capture API.
 const char kAllowHttpScreenCapture[] = "allow-http-screen-capture";
 
-// Allows the browser to load extensions that lack a modern manifest when that
-// would otherwise be forbidden.
-const char kAllowLegacyExtensionManifests[] =
-    "allow-legacy-extension-manifests";
-
 // Specifies comma-separated list of extension ids or hosts to grant
 // access to CRX file system APIs.
 const char kAllowNaClCrxFsAPI[]             = "allow-nacl-crxfs-api";
@@ -61,11 +56,6 @@ const char kAllowOutdatedPlugins[]          = "allow-outdated-plugins";
 // By default, an https page cannot run JavaScript, CSS or plug-ins from http
 // URLs. This provides an override to get the old insecure behavior.
 const char kAllowRunningInsecureContent[]   = "allow-running-insecure-content";
-
-// Allows injecting extensions and user scripts on the extensions gallery
-// site. Normally prevented for security reasons, but can be useful for
-// automation testing of the gallery.
-const char kAllowScriptingGallery[]         = "allow-scripting-gallery";
 
 // Prevents Chrome from requiring authorization to run certain widely installed
 // but less commonly used plug-ins.
@@ -553,11 +543,6 @@ const char kEnableExtensionActivityLogTesting[] =
 
 // Enables or disables showing extensions in the action box.
 const char kExtensionsInActionBox[]         = "extensions-in-action-box";
-
-// Enables or disables running extensions on chrome:// URLs.
-// Extensions still need to explicitly request access to chrome:// URLs in the
-// manifest.
-const char kExtensionsOnChromeURLs[]        = "extensions-on-chrome-urls";
 
 // Enable the fast unload controller, which speeds up tab/window close by
 // running a tab's onunload js handler independently of the GUI -
@@ -1220,10 +1205,6 @@ const char kSetToken[]                      = "set-token";
 
 // If true the app list will be shown.
 const char kShowAppList[]                   = "show-app-list";
-
-// Makes component extensions appear in chrome://settings/extensions.
-const char kShowComponentExtensionOptions[] =
-    "show-component-extension-options";
 
 // See kHideIcons.
 const char kShowIcons[]                     = "show-icons";

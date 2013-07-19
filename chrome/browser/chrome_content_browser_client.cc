@@ -125,6 +125,7 @@
 #include "content/public/common/content_descriptors.h"
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/constants.h"
+#include "extensions/common/switches.h"
 #include "grit/generated_resources.h"
 #include "grit/ui_resources.h"
 #include "net/base/escape.h"
@@ -1385,12 +1386,13 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       autofill::switches::kDisableInteractiveAutocomplete,
       autofill::switches::kEnableExperimentalFormFilling,
       autofill::switches::kEnableInteractiveAutocomplete,
+      extensions::switches::kAllowLegacyExtensionManifests,
+      extensions::switches::kAllowScriptingGallery,
+      extensions::switches::kExtensionsOnChromeURLs,
       switches::kAllowHTTPBackgroundPage,
-      switches::kAllowLegacyExtensionManifests,
       // TODO(victorhsieh): remove the following flag once we move PPAPI FileIO
       // to browser.
       switches::kAllowNaClFileHandleAPI,
-      switches::kAllowScriptingGallery,
       switches::kAppsCheckoutURL,
       switches::kAppsGalleryURL,
       switches::kCloudPrintServiceURL,
@@ -1409,7 +1411,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kEnablePasswordGeneration,
       switches::kEnablePnacl,
       switches::kEnableWatchdog,
-      switches::kExtensionsOnChromeURLs,
       switches::kMemoryProfiling,
       switches::kMessageLoopHistogrammer,
       switches::kNoJsRandomness,
@@ -1431,9 +1432,9 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
                                    arraysize(kSwitchNames));
   } else if (process_type == switches::kUtilityProcess) {
     static const char* const kSwitchNames[] = {
+      extensions::switches::kExtensionsOnChromeURLs,
       switches::kAllowHTTPBackgroundPage,
       switches::kEnableExperimentalExtensionApis,
-      switches::kExtensionsOnChromeURLs,
       switches::kWhitelistedExtensionID,
     };
 
