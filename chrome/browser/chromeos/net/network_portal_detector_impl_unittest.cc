@@ -149,6 +149,10 @@ class NetworkPortalDetectorImplTest
     return network_portal_detector()->attempt_count_for_testing();
   }
 
+  void set_attempt_count(int ac) {
+    return network_portal_detector()->set_attempt_count_for_testing(ac);
+  }
+
   void set_min_time_between_attempts(const base::TimeDelta& delta) {
     network_portal_detector()->set_min_time_between_attempts_for_testing(delta);
   }
@@ -548,6 +552,17 @@ TEST_F(NetworkPortalDetectorImplTest, NoResponseButBehindPortal) {
   CheckPortalState(NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL,
                    net::URLFetcher::RESPONSE_CODE_INVALID,
                    kStubWireless1);
+}
+
+TEST_F(NetworkPortalDetectorImplTest, DisableLazyDetectionWhilePendingRequest) {
+  ASSERT_TRUE(is_state_idle());
+  set_attempt_count(3);
+  enable_lazy_detection();
+  ASSERT_TRUE(is_state_portal_detection_pending());
+  disable_lazy_detection();
+
+  // To run CaptivePortalDetector::DetectCaptivePortal().
+  base::MessageLoop::current()->RunUntilIdle();
 }
 
 TEST_F(NetworkPortalDetectorImplTest, LazyDetectionForOnlineNetwork) {
