@@ -139,7 +139,41 @@ struct nacl_irt_dyncode {
 
 #define NACL_IRT_THREAD_v0_1   "nacl-irt-thread-0.1"
 struct nacl_irt_thread {
+  /*
+   * thread_create() starts a new thread which calls start_func().
+   *
+   * In the new thread, tls_get() (from nacl_irt_tls) will return
+   * |thread_ptr|.  start_func() is called with no arguments, so
+   * |thread_ptr| is the only way to pass parameters to the new
+   * thread.
+   *
+   * |stack| is a pointer to the top of the stack for the new thread.
+   * Note that this assumes the stack grows downwards.
+   *
+   * |stack| does not need to be aligned.  thread_func() will be
+   * called with a stack pointer aligned appropriately for the
+   * architecture's ABI.  (However, prior to r9299, from July 2012,
+   * |stack| did need to be aligned for thread_func() to be called
+   * with an appropriately aligned stack pointer.)
+   *
+   * The exact stack pointer that thread_func() is called with may be
+   * less than |stack|, and the system may write data to addresses
+   * below |stack| before calling start_func(), so user code may not
+   * use the stack as a way to pass parameters to start_func().
+   *
+   * If start_func() returns in the new thread, the behaviour is
+   * undefined.
+   */
   int (*thread_create)(void (*start_func)(void), void *stack, void *thread_ptr);
+  /*
+   * thread_exit() terminates the current thread.
+   *
+   * If |stack_flag| is non-NULL, thread_exit() will write 0 to
+   * |*stack_flag|.  This is intended to be used by a threading
+   * library to determine when the thread's stack can be deallocated
+   * or reused.  The system will not read or write the thread's stack
+   * after writing 0 to |*stack_flag|.
+   */
   void (*thread_exit)(int32_t *stack_flag);
   int (*thread_nice)(const int nice);
 };
