@@ -291,6 +291,7 @@
             '../third_party/libxml/libxml.gyp:libxml',
             'common',
             '<(DEPTH)/chrome/chrome_resources.gyp:chrome_resources',
+            '<(DEPTH)/chrome/chrome_resources.gyp:chrome_strings',
           ],
           'sources': [
             'utility/chrome_content_utility_client.cc',
