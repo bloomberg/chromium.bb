@@ -155,7 +155,7 @@ ExtensionInstallUI* ExtensionInstallUI::Create(Profile* profile) {
 void ExtensionInstallUI::OpenAppInstalledUI(Profile* profile,
                                             const std::string& app_id) {
 #if defined(OS_CHROMEOS)
-  AppListService::Get()->ShowAppList(profile);
+  AppListService::Get()->ShowForProfile(profile);
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_APP_INSTALLED_TO_APPLIST,
@@ -255,7 +255,7 @@ void ExtensionInstallUIDefault::OnInstallSuccess(const Extension* extension,
 #endif
 
     if (apps::IsAppLauncherEnabled()) {
-      AppListService::Get()->ShowAppList(current_profile);
+      AppListService::Get()->ShowForProfile(current_profile);
 
       content::NotificationService::current()->Notify(
           chrome::NOTIFICATION_APP_INSTALLED_TO_APPLIST,

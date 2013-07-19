@@ -357,7 +357,7 @@ bool StartupBrowserCreatorImpl::Launch(Profile* profile,
   AppListService::InitAll(profile);
   if (command_line_.HasSwitch(switches::kShowAppList)) {
     AppListService::RecordShowTimings(command_line_);
-    AppListService::Get()->ShowAppList(profile);
+    AppListService::Get()->ShowForProfile(profile);
     return true;
   }
 

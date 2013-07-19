@@ -60,7 +60,7 @@ class AppListServiceMac : public AppListServiceImpl,
 
   // AppListService overrides:
   virtual void Init(Profile* initial_profile) OVERRIDE;
-  virtual void ShowAppList(Profile* requested_profile) OVERRIDE;
+  virtual void ShowForProfile(Profile* requested_profile) OVERRIDE;
   virtual void DismissAppList() OVERRIDE;
   virtual bool IsAppListVisible() const OVERRIDE;
   virtual void EnableAppList(Profile* initial_profile) OVERRIDE;
@@ -290,7 +290,7 @@ void AppListServiceMac::Init(Profile* initial_profile) {
                                         AppListServiceMac::GetInstance());
 }
 
-void AppListServiceMac::ShowAppList(Profile* requested_profile) {
+void AppListServiceMac::ShowForProfile(Profile* requested_profile) {
   InvalidatePendingProfileLoads();
 
   if (IsAppListVisible() && (requested_profile == profile())) {
@@ -298,7 +298,7 @@ void AppListServiceMac::ShowAppList(Profile* requested_profile) {
     return;
   }
 
-  SaveProfilePathToLocalState(requested_profile->GetPath());
+  SetProfilePath(requested_profile->GetPath());
 
   DismissAppList();
   CreateAppList(requested_profile);
@@ -334,7 +334,7 @@ void AppListServiceMac::OnSigninStatusChanged() {
 
 void AppListServiceMac::OnShimLaunch(apps::AppShimHandler::Host* host,
                                      apps::AppShimLaunchType launch_type) {
-  ShowForSavedProfile();
+  Show();
   observers_.AddObserver(host);
   host->OnAppLaunchComplete(apps::APP_SHIM_LAUNCH_SUCCESS);
 }

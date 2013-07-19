@@ -34,27 +34,27 @@ class AppListService {
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
+  static void RecordShowTimings(const CommandLine& command_line);
+
   // Perform Chrome first run logic. This is executed before Chrome's threads
   // have been created.
   virtual void HandleFirstRun() = 0;
 
   virtual base::FilePath GetProfilePath(
       const base::FilePath& user_data_dir) = 0;
-
-  static void RecordShowTimings(const CommandLine& command_line);
-
-  // Show the app list.
-  virtual void ShowAppList(Profile* requested_profile) = 0;
-
-  // Dismiss the app list.
-  virtual void DismissAppList() = 0;
-
-  // TODO(koz): Merge this into ShowAppList().
-  virtual void SetAppListProfile(const base::FilePath& profile_file_path) = 0;
+  virtual void SetProfilePath(const base::FilePath& profile_path) = 0;
 
   // Show the app list for the profile configured in the user data dir for the
   // current browser process.
-  virtual void ShowForSavedProfile() = 0;
+  virtual void Show() = 0;
+
+  // Show the app list for the given profile. If it differs from the profile the
+  // app list is currently showing, repopulate the app list and save the new
+  // profile to local prefs as the default app list profile.
+  virtual void ShowForProfile(Profile* requested_profile) = 0;
+
+  // Dismiss the app list.
+  virtual void DismissAppList() = 0;
 
   // Get the profile the app list is currently showing.
   virtual Profile* GetCurrentAppListProfile() = 0;

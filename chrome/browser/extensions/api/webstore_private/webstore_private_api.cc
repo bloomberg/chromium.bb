@@ -566,7 +566,7 @@ bool CompleteInstallFunction::RunImpl() {
     // Show the app list to show download is progressing. Don't show the app
     // list on first app install so users can be trained to open it themselves.
     if (approval_->manifest->is_app() && !approval_->enable_launcher)
-      AppListService::Get()->ShowAppList(profile());
+      AppListService::Get()->ShowForProfile(profile());
   }
 
   // The extension will install through the normal extension install flow, but

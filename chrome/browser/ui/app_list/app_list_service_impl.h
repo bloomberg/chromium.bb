@@ -46,8 +46,6 @@ class AppListServiceImpl : public AppListService,
   ProfileLoader& profile_loader() { return profile_loader_; }
   const ProfileLoader& profile_loader() const { return profile_loader_; }
 
-  // Save |profile_file_path| as the app list profile in local state.
-  void SaveProfilePathToLocalState(const base::FilePath& profile_file_path);
 
   // Called in response to observed successful and unsuccessful signin changes.
   virtual void OnSigninStatusChanged();
@@ -55,10 +53,12 @@ class AppListServiceImpl : public AppListService,
   // AppListService overrides:
   virtual void HandleFirstRun() OVERRIDE;
   virtual void Init(Profile* initial_profile) OVERRIDE;
+
+  // Returns the app list path configured in BrowserProcess::local_state().
   virtual base::FilePath GetProfilePath(
       const base::FilePath& user_data_dir) OVERRIDE;
-
-  virtual void ShowForSavedProfile() OVERRIDE;
+  virtual void SetProfilePath(const base::FilePath& profile_path) OVERRIDE;
+  virtual void Show() OVERRIDE;
   virtual AppListControllerDelegate* CreateControllerDelegate() OVERRIDE;
 
  private:
@@ -69,12 +69,6 @@ class AppListServiceImpl : public AppListService,
   void OnProfileLoaded(int profile_load_sequence_id,
                        Profile* profile,
                        Profile::CreateStatus status);
-
-  // AppListService overrides:
-  // Update the profile path stored in local prefs, load it (if not already
-  // loaded), and show the app list.
-  virtual void SetAppListProfile(
-      const base::FilePath& profile_file_path) OVERRIDE;
 
   virtual Profile* GetCurrentAppListProfile() OVERRIDE;
 

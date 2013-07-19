@@ -78,7 +78,7 @@ IN_PROC_BROWSER_TEST_F(AppListServiceMacBrowserTest, ShowAppListUsingShim) {
   EXPECT_EQ(0, close_count_);
 
   // With no saved profile, the default profile should be chosen and saved.
-  service->ShowForSavedProfile();
+  service->Show();
   EXPECT_EQ(browser()->profile(), service->GetCurrentAppListProfile());
   EXPECT_TRUE(service->IsAppListVisible());
   EXPECT_EQ(0, launch_count_);
@@ -118,7 +118,7 @@ IN_PROC_BROWSER_TEST_F(AppListServiceMacBrowserTest, ShowAppListUsingShim) {
 
   // Verify that observers are correctly removed by ensuring that |close_count_|
   // is unchanged when the app list is dismissed again.
-  service->ShowAppList(browser()->profile());
+  service->ShowForProfile(browser()->profile());
   EXPECT_TRUE(service->IsAppListVisible());
   EXPECT_EQ(3, launch_count_);
   service->DismissAppList();

@@ -42,7 +42,7 @@ class AppListControllerBrowserTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(AppListControllerBrowserTest, ShowAndDismiss) {
   AppListService* service = AppListService::Get();
   ASSERT_FALSE(service->IsAppListVisible());
-  service->ShowAppList(browser()->profile());
+  service->ShowForProfile(browser()->profile());
   ASSERT_TRUE(service->IsAppListVisible());
   service->DismissAppList();
   ASSERT_FALSE(service->IsAppListVisible());
@@ -60,10 +60,10 @@ IN_PROC_BROWSER_TEST_F(AppListControllerBrowserTest, SwitchAppListProfiles) {
 
   AppListService* service = AppListService::Get();
   ASSERT_FALSE(service->IsAppListVisible());
-  service->ShowAppList(browser()->profile());
+  service->ShowForProfile(browser()->profile());
   ASSERT_TRUE(service->IsAppListVisible());
   ASSERT_EQ(browser()->profile(), service->GetCurrentAppListProfile());
-  service->ShowAppList(profile2_);
+  service->ShowForProfile(profile2_);
   ASSERT_TRUE(service->IsAppListVisible());
   ASSERT_EQ(profile2_, service->GetCurrentAppListProfile());
   service->DismissAppList();

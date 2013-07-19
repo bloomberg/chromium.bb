@@ -333,7 +333,10 @@ void ManageProfileHandler::SwitchAppListProfile(const ListValue* args) {
       !base::GetValueAsFilePath(*file_path_value, &profile_file_path))
     return;
 
-  AppListService::Get()->SetAppListProfile(profile_file_path);
+  AppListService* app_list_service = AppListService::Get();
+  app_list_service->SetProfilePath(profile_file_path);
+  app_list_service->Show();
+
   // Close the settings app, since it will now be for the wrong profile.
   web_ui()->GetWebContents()->Close();
 }

@@ -308,7 +308,7 @@ class AppListController : public AppListServiceImpl {
   // AppListService overrides:
   virtual void HandleFirstRun() OVERRIDE;
   virtual void Init(Profile* initial_profile) OVERRIDE;
-  virtual void ShowAppList(Profile* requested_profile) OVERRIDE;
+  virtual void ShowForProfile(Profile* requested_profile) OVERRIDE;
   virtual void DismissAppList() OVERRIDE;
   virtual bool IsAppListVisible() const OVERRIDE;
   virtual void EnableAppList(Profile* initial_profile) OVERRIDE;
@@ -504,7 +504,7 @@ void AppListController::OnSigninStatusChanged() {
     current_view_->OnSigninStatusChanged();
 }
 
-void AppListController::ShowAppList(Profile* requested_profile) {
+void AppListController::ShowForProfile(Profile* requested_profile) {
   DCHECK(requested_profile);
   ScopedKeepAlive show_app_list_keepalive;
 
@@ -531,7 +531,7 @@ void AppListController::ShowAppList(Profile* requested_profile) {
     return;
   }
 
-  SaveProfilePathToLocalState(requested_profile->GetPath());
+  SetProfilePath(requested_profile->GetPath());
 
   DismissAppList();
   PopulateViewFromProfile(requested_profile);
@@ -549,7 +549,7 @@ void AppListController::ShowAppList(Profile* requested_profile) {
 void AppListController::ShowAppListDuringModeSwitch(
     Profile* requested_profile) {
   regain_first_lost_focus_ = true;
-  ShowAppList(requested_profile);
+  ShowForProfile(requested_profile);
 }
 
 void AppListController::PopulateViewFromProfile(Profile* requested_profile) {
@@ -926,7 +926,7 @@ bool AppListController::IsAppListVisible() const {
 }
 
 void AppListController::EnableAppList(Profile* initial_profile) {
-  SaveProfilePathToLocalState(initial_profile->GetPath());
+  SetProfilePath(initial_profile->GetPath());
   // Check if the app launcher shortcuts have ever been created before.
   // Shortcuts should only be created once. If the user unpins the taskbar
   // shortcut, they can restore it by pinning the start menu or desktop

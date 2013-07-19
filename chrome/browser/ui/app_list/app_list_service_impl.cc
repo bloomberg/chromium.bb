@@ -123,14 +123,21 @@ base::FilePath AppListServiceImpl::GetProfilePath(
   // If the user has no profile preference for the app launcher, default to the
   // last browser profile used.
   if (app_list_profile.empty() &&
-      local_state->HasPrefPath(prefs::kProfileLastUsed))
+      local_state->HasPrefPath(prefs::kProfileLastUsed)) {
     app_list_profile = local_state->GetString(prefs::kProfileLastUsed);
+  }
 
-  std::string profile_path = app_list_profile.empty() ?
-      chrome::kInitialProfile :
-      app_list_profile;
+  // If there is no last used profile recorded, use the initial profile.
+  if (app_list_profile.empty())
+    app_list_profile = chrome::kInitialProfile;
 
-  return user_data_dir.AppendASCII(profile_path);
+  return user_data_dir.AppendASCII(app_list_profile);
+}
+
+void AppListServiceImpl::SetProfilePath(const base::FilePath& profile_path) {
+  g_browser_process->local_state()->SetString(
+      prefs::kAppListProfile,
+      profile_path.BaseName().MaybeAsASCII());
 }
 
 AppListControllerDelegate* AppListServiceImpl::CreateControllerDelegate() {
@@ -160,16 +167,11 @@ void AppListServiceImpl::Observe(
   OnSigninStatusChanged();
 }
 
-void AppListServiceImpl::SetAppListProfile(
-    const base::FilePath& profile_file_path) {
+void AppListServiceImpl::Show() {
   profile_loader_.LoadProfileInvalidatingOtherLoads(
-      profile_file_path, base::Bind(&AppListServiceImpl::ShowAppList,
-                                    weak_factory_.GetWeakPtr()));
-}
-
-void AppListServiceImpl::ShowForSavedProfile() {
-  SetAppListProfile(GetProfilePath(
-      g_browser_process->profile_manager()->user_data_dir()));
+      GetProfilePath(g_browser_process->profile_manager()->user_data_dir()),
+      base::Bind(&AppListServiceImpl::ShowForProfile,
+                 weak_factory_.GetWeakPtr()));
 }
 
 Profile* AppListServiceImpl::GetCurrentAppListProfile() {
@@ -192,11 +194,4 @@ void AppListServiceImpl::SetProfile(Profile* new_profile) {
 
 void AppListServiceImpl::InvalidatePendingProfileLoads() {
   profile_loader_.InvalidatePendingProfileLoads();
-}
-
-void AppListServiceImpl::SaveProfilePathToLocalState(
-    const base::FilePath& profile_file_path) {
-  g_browser_process->local_state()->SetString(
-      prefs::kAppListProfile,
-      profile_file_path.BaseName().MaybeAsASCII());
 }

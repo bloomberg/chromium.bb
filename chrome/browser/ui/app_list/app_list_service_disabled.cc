@@ -28,13 +28,11 @@ class AppListServiceDisabled : public AppListService {
       const base::FilePath& user_data_dir) OVERRIDE {
     return base::FilePath();
   }
+  virtual void SetProfilePath(const base::FilePath& profile_path) OVERRIDE {}
 
-  virtual void ShowForSavedProfile() OVERRIDE {}
-  virtual void ShowAppList(Profile* profile) OVERRIDE {}
+  virtual void Show() OVERRIDE {}
+  virtual void ShowForProfile(Profile* profile) OVERRIDE {}
   virtual void DismissAppList() OVERRIDE {}
-
-  virtual void SetAppListProfile(
-    const base::FilePath& profile_file_path) OVERRIDE {}
 
   virtual Profile* GetCurrentAppListProfile() OVERRIDE { return NULL; }
   virtual bool IsAppListVisible() const OVERRIDE { return false; }
