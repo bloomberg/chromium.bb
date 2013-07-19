@@ -1593,12 +1593,8 @@ public class AwSettingsTest extends AwTestBase {
         helper.ensureSettingHasInitialValue();
     }
 
-    /**
-     * @SmallTest
-     * @Feature({"AndroidWebView", "Preferences"})
-     * crbug.com/261421
-     */
-    @DisabledTest
+    @SmallTest
+    @Feature({"AndroidWebView", "Preferences"})
     public void testDatabaseEnabled() throws Throwable {
         TestAwContentsClient client = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
