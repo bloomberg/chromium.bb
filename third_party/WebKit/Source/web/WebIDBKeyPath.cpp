@@ -76,12 +76,6 @@ WebIDBKeyPathType WebIDBKeyPath::keyPathType() const
     return static_cast<WebIDBKeyPathType>(m_private->type());
 }
 
-WebIDBKeyPath::Type WebIDBKeyPath::type() const
-{
-    ASSERT(m_private.get());
-    return static_cast<WebIDBKeyPath::Type>(m_private->type());
-}
-
 WebVector<WebString> WebIDBKeyPath::array() const
 {
     ASSERT(m_private.get());

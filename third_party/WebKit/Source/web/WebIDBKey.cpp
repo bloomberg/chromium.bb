@@ -184,13 +184,6 @@ WebIDBKeyType WebIDBKey::keyType() const
     return static_cast<WebIDBKeyType>(m_private->type());
 }
 
-WebIDBKey::Type WebIDBKey::type() const
-{
-    if (!m_private.get())
-        return WebIDBKey::NullType;
-    return static_cast<WebIDBKey::Type>(m_private->type());
-}
-
 bool WebIDBKey::isValid() const
 {
     if (!m_private.get())

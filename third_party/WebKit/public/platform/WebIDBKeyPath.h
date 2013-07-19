@@ -64,16 +64,6 @@ public:
     operator const WebCore::IDBKeyPath&() const;
 #endif
 
-    // DEPRECATED. Use WebIDBKeyPathType and keyPathType() instead.
-    // FIXME: Remove once the chromium-side users are gone
-    enum Type {
-        NullType = 0,
-        StringType,
-        ArrayType,
-    };
-
-    WEBKIT_EXPORT Type type() const;
-
 private:
     WebPrivateOwnPtr<WebCore::IDBKeyPath> m_private;
 };

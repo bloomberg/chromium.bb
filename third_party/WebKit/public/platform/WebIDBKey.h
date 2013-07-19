@@ -78,19 +78,6 @@ public:
     operator WTF::PassRefPtr<WebCore::IDBKey>() const;
 #endif
 
-    // DEPRECATED! Use WebIDBKeyType and keyType() instead.
-    // FIXME: Remove once the chromium-side users are updated.
-    enum Type {
-        InvalidType = 0,
-        ArrayType,
-        StringType,
-        DateType,
-        NumberType,
-        NullType,
-        MinType,
-    };
-    WEBKIT_EXPORT Type type() const;
-
 private:
     WebPrivatePtr<WebCore::IDBKey> m_private;
 };
