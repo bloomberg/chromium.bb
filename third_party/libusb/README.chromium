@@ -1,12 +1,12 @@
-Name: libusbx
+Name: libusb
 URL: http://libusb.org
-Version: 1.0.16
+Version: 1.0.9
 License: LGPL 2.1
 License File: src/COPYING
 Security Critical: yes
 
 Description:
-libusbx provides a platform-agnostic API for accessing the USB subsystem on Mac,
+libusb provides a platform-agnostic API for accessing the USB subsystem on Mac,
 Windows, and Linux systems.
 
 Local Modifications:
