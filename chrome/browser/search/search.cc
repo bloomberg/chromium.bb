@@ -415,6 +415,20 @@ GURL GetPrivilegedURLForInstant(const GURL& url, Profile* profile) {
   std::string search_scheme(chrome::kChromeSearchScheme);
   replacements.SetScheme(search_scheme.data(),
                          url_parse::Component(0, search_scheme.length()));
+
+  // If the URL corresponds to an online NTP, replace the host with
+  // "online-ntp".
+  std::string online_ntp_host(chrome::kChromeSearchOnlineNtpHost);
+  TemplateURL* template_url = GetDefaultSearchProviderTemplateURL(profile);
+  if (template_url) {
+    const GURL instant_url = TemplateURLRefToGURL(
+        template_url->instant_url_ref(), kDisableStartMargin, false);
+    if (instant_url.is_valid() && MatchesOriginAndPath(url, instant_url)) {
+      replacements.SetHost(online_ntp_host.c_str(),
+                           url_parse::Component(0, online_ntp_host.length()));
+    }
+  }
+
   privileged_url = privileged_url.ReplaceComponents(replacements);
   return privileged_url;
 }

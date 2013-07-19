@@ -19,6 +19,9 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 
 namespace chrome {
@@ -284,6 +287,112 @@ TEST_F(SearchTest, ShouldAssignURLToInstantRendererExtendedEnabled) {
     EXPECT_EQ(test.expected_result,
               ShouldAssignURLToInstantRenderer(GURL(test.url), profile()))
         << test.url << " " << test.comment;
+  }
+}
+
+struct PrivilegedURLTestCase {
+  bool add_as_alternate_url;
+  const char* input_url;
+  const char* privileged_url;
+  bool different_site_instance;
+  const char* comment;
+};
+
+TEST_F(SearchTest, GetPrivilegedURLForInstant) {
+  EnableInstantExtendedAPIForTesting();
+
+  const PrivilegedURLTestCase kTestCases[] = {
+    { false,  // don't append input_url as alternate URL.
+      chrome::kChromeSearchLocalNtpUrl,  // input URL.
+      chrome::kChromeSearchLocalNtpUrl,  // expected privileged URL.
+      true,  // expected different SiteInstance.
+      "local NTP" },
+    { false,  // don't append input_url as alternate URL.
+      "https://foo.com/instant?strk",
+      "chrome-search://online-ntp/instant?strk",
+      true,  // expected different SiteInstance.
+      "Valid Instant NTP" },
+    { false,  // don't append input_url as alternate URL.
+      "https://foo.com/instant?strk&more=junk",
+      "chrome-search://online-ntp/instant?strk&more=junk",
+      true,  // expected different SiteInstance.
+      "Valid Instant NTP with extra query" },
+    { false,  // don't append input_url as alternate URL.
+      "https://foo.com/url?strk",
+      "chrome-search://foo.com/url?strk",
+      false,  // expected same SiteInstance.
+      "Search URL" },
+    { true,  // append input_url as alternate URL.
+      "https://notfoo.com/instant?strk",
+      "chrome-search://notfoo.com/instant?strk",
+      true,  // expected different SiteInstance.
+      "Invalid host in URL" },
+    { true,  // append input_url as alternate URL.
+      "https://foo.com/webhp?strk",
+      "chrome-search://foo.com/webhp?strk",
+      false,  // expected same SiteInstance.
+      "Invalid path in URL" },
+    { true,  // append input_url as alternate URL.
+      "https://foo.com/search?strk",
+      "chrome-search://foo.com/search?strk",
+      false,  // expected same SiteInstance.
+      "Invalid path in URL" },
+  };
+
+  // GetPrivilegedURLForInstant expects ShouldAssignURLToInstantRenderer to
+  // be true, and the latter expects chrome-search: scheme or IsInstantURL to be
+  // true.  To force IsInstantURL to return true, add the input_url of each
+  // PrivilegedURLTestCase as the alternate URL for the default template URL.
+  const char* kSearchURL = "https://foo.com/url?strk";
+  TemplateURLService* template_url_service =
+      TemplateURLServiceFactory::GetForProfile(profile());
+  TemplateURLData data;
+  data.SetURL(kSearchURL);
+  data.instant_url = "http://foo.com/instant?strk";
+  data.search_terms_replacement_key = "strk";
+  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
+    const PrivilegedURLTestCase& test = kTestCases[i];
+    if (test.add_as_alternate_url)
+      data.alternate_urls.push_back(test.input_url);
+  }
+  TemplateURL* template_url = new TemplateURL(profile(), data);
+  // Takes ownership of |template_url|.
+  template_url_service->Add(template_url);
+  template_url_service->SetDefaultSearchProvider(template_url);
+
+  AddTab(browser(), GURL("chrome://blank"));
+  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
+    const PrivilegedURLTestCase& test = kTestCases[i];
+
+    // Verify GetPrivilegedURLForInstant.
+    EXPECT_EQ(GURL(test.privileged_url),
+              GetPrivilegedURLForInstant(GURL(test.input_url), profile()))
+        << test.input_url << " " << test.comment;
+
+    // Verify that navigating from input_url to search URL results in same or
+    // different SiteInstance.
+    // First, navigate to input_url.
+    NavigateAndCommitActiveTab(GURL(test.input_url));
+    content::WebContents* contents =
+        browser()->tab_strip_model()->GetWebContentsAt(0);
+    // Cache the SiteInstance, RenderViewHost and RenderProcessHost for
+    // input_url.
+    const scoped_refptr<content::SiteInstance> prev_site_instance =
+        contents->GetSiteInstance();
+    const content::RenderViewHost* prev_rvh = contents->GetRenderViewHost();
+    const content::RenderProcessHost* prev_rph =
+        contents->GetRenderProcessHost();
+    // Then, navigate to search URL.
+    NavigateAndCommitActiveTab(GURL(kSearchURL));
+    EXPECT_EQ(test.different_site_instance,
+              contents->GetSiteInstance() != prev_site_instance)
+        << test.input_url << " " << test.comment;
+    EXPECT_EQ(test.different_site_instance,
+              contents->GetRenderViewHost() != prev_rvh)
+        << test.input_url << " " << test.comment;
+    EXPECT_EQ(test.different_site_instance,
+              contents->GetRenderProcessHost() != prev_rph)
+        << test.input_url << " " << test.comment;
   }
 }
 

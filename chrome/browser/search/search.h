@@ -131,6 +131,10 @@ bool MatchesOriginAndPath(const GURL& my_url, const GURL& other_url);
 // Notice the scheme change.
 //
 // If the input is already a privileged URL then that same URL is returned.
+//
+// If |url| is that of the online NTP, its host is replaced with "online-ntp".
+// This forces the NTP and search results pages to have different SiteIntances,
+// and hence different processes.
 GURL GetPrivilegedURLForInstant(const GURL& url, Profile* profile);
 
 // Returns true if the input |url| is a privileged Instant URL.
