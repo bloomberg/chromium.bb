@@ -215,6 +215,32 @@
         },
 
         {
+          'target_name': 'autofill_core_test_support',
+          'type': 'static_library',
+          'dependencies': [
+            'autofill_core_common',
+            'autofill_core_browser',
+            '../testing/gtest.gyp:gtest',
+          ],
+          'sources': [
+            'autofill/core/browser/android/test_auxiliary_profile_loader_android.cc',
+            'autofill/core/browser/android/test_auxiliary_profile_loader_android.h',
+            'autofill/core/browser/autofill_common_test.cc',
+            'autofill/core/browser/autofill_common_test.h',
+            'autofill/core/browser/data_driven_test.cc',
+            'autofill/core/browser/data_driven_test.h',
+            'autofill/core/browser/test_autofill_driver.cc',
+            'autofill/core/browser/test_autofill_driver.h',
+            'autofill/core/browser/test_autofill_external_delegate.cc',
+            'autofill/core/browser/test_autofill_external_delegate.h',
+            'autofill/core/browser/test_autofill_manager_delegate.cc',
+            'autofill/core/browser/test_autofill_manager_delegate.h',
+            'autofill/core/browser/test_personal_data_manager.cc',
+            'autofill/core/browser/test_personal_data_manager.h',
+          ],
+        },
+
+        {
           # Protobuf compiler / generate rule for Autofill's risk integration.
           'target_name': 'autofill_content_risk_proto',
           'type': 'static_library',
@@ -228,7 +254,7 @@
           'includes': [ '../build/protoc.gypi' ]
         },
        {
-         'target_name': 'autofill_content_test_util',
+         'target_name': 'autofill_content_test_support',
          'type': 'static_library',
          'dependencies': [
             '../testing/gmock.gyp:gmock',

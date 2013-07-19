@@ -6,9 +6,7 @@
 
 #include "base/file_util.h"
 #include "base/files/file_enumerator.h"
-#include "base/path_service.h"
 #include "base/strings/string_util.h"
-#include "chrome/common/chrome_paths.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace autofill {
@@ -27,7 +25,7 @@ bool ReadFile(const base::FilePath& file, std::string* content) {
 // Write |content| to |file|. Returns true on success.
 bool WriteFile(const base::FilePath& file, const std::string& content) {
   int write_size = file_util::WriteFile(file, content.c_str(),
-                                        content.length());
+                                        static_cast<int>(content.length()));
   return write_size == static_cast<int>(content.length());
 }
 
@@ -37,6 +35,8 @@ void DataDrivenTest::RunDataDrivenTest(
     const base::FilePath& input_directory,
     const base::FilePath& output_directory,
     const base::FilePath::StringType& file_name_pattern) {
+  ASSERT_TRUE(base::DirectoryExists(input_directory));
+  ASSERT_TRUE(base::DirectoryExists(output_directory));
   base::FileEnumerator input_files(input_directory,
                                    false,
                                    base::FileEnumerator::FILES,
@@ -67,25 +67,24 @@ void DataDrivenTest::RunDataDrivenTest(
 
 base::FilePath DataDrivenTest::GetInputDirectory(
     const base::FilePath::StringType& test_name) {
-  base::FilePath test_data_dir_;
-  PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_);
-  test_data_dir_ = test_data_dir_.AppendASCII("autofill")
-                                 .Append(test_name)
-                                 .AppendASCII("input");
-  return test_data_dir_;
+  base::FilePath dir;
+  dir = test_data_directory_.AppendASCII("autofill")
+                            .Append(test_name)
+                            .AppendASCII("input");
+  return dir;
 }
 
 base::FilePath DataDrivenTest::GetOutputDirectory(
     const base::FilePath::StringType& test_name) {
-  base::FilePath test_data_dir_;
-  PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_);
-  test_data_dir_ = test_data_dir_.AppendASCII("autofill")
-                                 .Append(test_name)
-                                 .AppendASCII("output");
-  return test_data_dir_;
+  base::FilePath dir;
+  dir = test_data_directory_.AppendASCII("autofill")
+                            .Append(test_name)
+                            .AppendASCII("output");
+  return dir;
 }
 
-DataDrivenTest::DataDrivenTest() {
+DataDrivenTest::DataDrivenTest(const base::FilePath& test_data_directory)
+    : test_data_directory_(test_data_directory) {
 }
 
 DataDrivenTest::~DataDrivenTest() {

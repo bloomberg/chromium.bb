@@ -42,10 +42,12 @@ class DataDrivenTest {
       const base::FilePath::StringType& test_name);
 
  protected:
-  DataDrivenTest();
+  DataDrivenTest(const base::FilePath& test_data_directory);
   virtual ~DataDrivenTest();
 
  private:
+  base::FilePath test_data_directory_;
+
   DISALLOW_COPY_AND_ASSIGN(DataDrivenTest);
 };
 

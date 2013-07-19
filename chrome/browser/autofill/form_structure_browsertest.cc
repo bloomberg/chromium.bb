@@ -5,10 +5,12 @@
 #include <vector>
 
 #include "base/files/file_path.h"
+#include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/autofill/content/browser/autofill_driver_impl.h"
@@ -25,6 +27,13 @@ const base::FilePath::CharType kTestName[] = FILE_PATH_LITERAL("heuristics");
 // Convert the |html| snippet to a data URI.
 GURL HTMLToDataURI(const std::string& html) {
   return GURL(std::string("data:text/html;charset=utf-8,") + html);
+}
+
+const base::FilePath& GetTestDataDir() {
+  CR_DEFINE_STATIC_LOCAL(base::FilePath, dir, ());
+  if (dir.empty())
+    PathService::Get(chrome::DIR_TEST_DATA, &dir);
+  return dir;
 }
 
 }  // namespace
@@ -49,7 +58,8 @@ class FormStructureBrowserTest : public InProcessBrowserTest,
   DISALLOW_COPY_AND_ASSIGN(FormStructureBrowserTest);
 };
 
-FormStructureBrowserTest::FormStructureBrowserTest() {
+FormStructureBrowserTest::FormStructureBrowserTest()
+    : DataDrivenTest(GetTestDataDir()) {
 }
 
 FormStructureBrowserTest::~FormStructureBrowserTest() {

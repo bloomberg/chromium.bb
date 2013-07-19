@@ -272,24 +272,6 @@
         'test/logging/win/test_log_collector.h',
         'test/ppapi/ppapi_test.cc',
         'test/ppapi/ppapi_test.h',
-
-        # TODO(joi): Move to //components/components.gypi once
-        # remaining dependencies back to //chrome are eliminated.
-        '../components/autofill/core/browser/android/test_auxiliary_profile_loader_android.cc',
-        '../components/autofill/core/browser/android/test_auxiliary_profile_loader_android.h',
-        '../components/autofill/core/browser/autofill_common_test.cc',
-        '../components/autofill/core/browser/autofill_common_test.h',
-        '../components/autofill/core/browser/data_driven_test.cc',
-        '../components/autofill/core/browser/data_driven_test.h',
-        '../components/autofill/core/browser/test_autofill_driver.cc',
-        '../components/autofill/core/browser/test_autofill_driver.h',
-        '../components/autofill/core/browser/test_autofill_external_delegate.cc',
-        '../components/autofill/core/browser/test_autofill_external_delegate.h',
-        '../components/autofill/core/browser/test_autofill_manager_delegate.cc',
-        '../components/autofill/core/browser/test_autofill_manager_delegate.h',
-        '../components/autofill/core/browser/test_personal_data_manager.cc',
-        '../components/autofill/core/browser/test_personal_data_manager.h',
-
         '../ui/gfx/image/image_unittest_util.h',
         '../ui/gfx/image/image_unittest_util.cc',
         '../webkit/browser/quota/mock_quota_manager.cc',
@@ -309,6 +291,7 @@
             '../content/content.gyp:content_renderer',
             '../content/content.gyp:content_utility',
             '../content/content.gyp:content_worker',
+            '../components/components.gyp:autofill_core_test_support',
             '../ipc/ipc.gyp:test_support_ipc',
             '../ppapi/ppapi_internal.gyp:ppapi_shared',
             '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
@@ -1913,7 +1896,7 @@
         ['OS!="ios"', {
           'dependencies': [
             'common/extensions/api/api.gyp:api',
-            '../components/components.gyp:autofill_content_test_util',
+            '../components/components.gyp:autofill_content_test_support',
             '../components/component_strings.gyp:component_strings',
             '../device/bluetooth/bluetooth.gyp:device_bluetooth_mocks',
             '../gpu/gpu.gyp:gpu_unittest_utils',

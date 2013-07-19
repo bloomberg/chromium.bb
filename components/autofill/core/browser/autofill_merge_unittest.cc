@@ -6,6 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
+#include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_common_test.h"
@@ -43,6 +44,17 @@ const AutofillFieldType kProfileFieldTypes[] = {
   ADDRESS_HOME_COUNTRY,
   PHONE_HOME_WHOLE_NUMBER
 };
+
+const base::FilePath& GetTestDataDir() {
+  CR_DEFINE_STATIC_LOCAL(base::FilePath, dir, ());
+  if (dir.empty()) {
+    PathService::Get(base::DIR_SOURCE_ROOT, &dir);
+    dir = dir.AppendASCII("components");
+    dir = dir.AppendASCII("test");
+    dir = dir.AppendASCII("data");
+  }
+  return dir;
+}
 
 // Serializes the |profiles| into a string.
 std::string SerializeProfiles(const std::vector<AutofillProfile*>& profiles) {
@@ -137,7 +149,7 @@ class AutofillMergeTest : public testing::Test,
   DISALLOW_COPY_AND_ASSIGN(AutofillMergeTest);
 };
 
-AutofillMergeTest::AutofillMergeTest() : DataDrivenTest() {
+AutofillMergeTest::AutofillMergeTest() : DataDrivenTest(GetTestDataDir()) {
 }
 
 AutofillMergeTest::~AutofillMergeTest() {
