@@ -332,7 +332,11 @@ void NativeMessagingHost::SendResponse(
 void NativeMessagingHost::SendConfigResponse(
     scoped_ptr<base::DictionaryValue> response,
     scoped_ptr<base::DictionaryValue> config) {
-  response->Set("config", config.release());
+  if (config) {
+    response->Set("config", config.release());
+  } else {
+    response->Set("config", Value::CreateNullValue());
+  }
   SendResponse(response.Pass());
 }
 
