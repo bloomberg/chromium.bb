@@ -31,7 +31,7 @@ class Orientation;
 class CONTENT_EXPORT DataFetcherImplAndroid {
  public:
   // Must be called at startup, before GetInstance().
-  static void Init(JNIEnv* env);
+  static bool Register(JNIEnv* env);
 
   // Needs to be thread-safe, because accessed from different threads.
   static DataFetcherImplAndroid* GetInstance();

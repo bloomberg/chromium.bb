@@ -35,9 +35,8 @@ DataFetcherImplAndroid::DataFetcherImplAndroid()
 DataFetcherImplAndroid::~DataFetcherImplAndroid() {
 }
 
-void DataFetcherImplAndroid::Init(JNIEnv* env) {
-  bool result = RegisterNativesImpl(env);
-  DCHECK(result);
+bool DataFetcherImplAndroid::Register(JNIEnv* env) {
+  return RegisterNativesImpl(env);
 }
 
 DataFetcherImplAndroid* DataFetcherImplAndroid::GetInstance() {

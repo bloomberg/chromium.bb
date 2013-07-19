@@ -24,6 +24,7 @@
 #include "content/browser/android/touch_point.h"
 #include "content/browser/android/tracing_intent_handler.h"
 #include "content/browser/android/web_contents_observer_android.h"
+#include "content/browser/device_orientation/data_fetcher_impl_android.h"
 #include "content/browser/geolocation/location_api_adapter_android.h"
 #include "content/browser/power_save_blocker_android.h"
 #include "content/browser/renderer_host/ime_adapter_android.h"
@@ -45,7 +46,8 @@ base::android::RegistrationMethod kContentRegisteredMethods[] = {
     content::ContentViewRenderView::RegisterContentViewRenderView },
   { "ContentVideoView", content::ContentVideoView::RegisterContentVideoView },
   { "ContentViewCore", content::RegisterContentViewCore },
-  { "DateTimePickerAndroid", content::RegisterDateTimeChooserAndroid},
+  { "DataFetcherImplAndroid", content::DataFetcherImplAndroid::Register },
+  { "DateTimePickerAndroid", content::RegisterDateTimeChooserAndroid },
   { "DownloadControllerAndroidImpl",
     content::DownloadControllerAndroidImpl::RegisterDownloadController },
   { "InterstitialPageDelegateAndroid",

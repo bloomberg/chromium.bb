@@ -61,7 +61,6 @@
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
 #include "content/browser/android/surface_texture_peer_browser_impl.h"
-#include "content/browser/device_orientation/data_fetcher_impl_android.h"
 #endif
 
 #if defined(OS_WIN)
@@ -463,10 +462,6 @@ void BrowserMainLoop::MainMessageLoopStart() {
   {
     TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:SurfaceTexturePeer")
     SurfaceTexturePeer::InitInstance(new SurfaceTexturePeerBrowserImpl());
-  }
-  {
-    TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:DataFetcher")
-    DataFetcherImplAndroid::Init(base::android::AttachCurrentThread());
   }
 #endif
 

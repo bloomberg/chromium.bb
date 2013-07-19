@@ -50,7 +50,7 @@ class AndroidDataFetcherTest : public testing::Test {
 };
 
 TEST_F(AndroidDataFetcherTest, ThreeDeviceMotionSensorsActive) {
-  FakeDataFetcherImplAndroid::Init(base::android::AttachCurrentThread());
+  FakeDataFetcherImplAndroid::Register(base::android::AttachCurrentThread());
   FakeDataFetcherImplAndroid fetcher;
   fetcher.SetNumberActiveDeviceMotionSensors(3);
 
@@ -72,7 +72,7 @@ TEST_F(AndroidDataFetcherTest, ThreeDeviceMotionSensorsActive) {
 }
 
 TEST_F(AndroidDataFetcherTest, TwoDeviceMotionSensorsActive) {
-  FakeDataFetcherImplAndroid::Init(base::android::AttachCurrentThread());
+  FakeDataFetcherImplAndroid::Register(base::android::AttachCurrentThread());
   FakeDataFetcherImplAndroid fetcher;
   fetcher.SetNumberActiveDeviceMotionSensors(2);
 
@@ -91,7 +91,7 @@ TEST_F(AndroidDataFetcherTest, TwoDeviceMotionSensorsActive) {
 }
 
 TEST_F(AndroidDataFetcherTest, ZeroDeviceMotionSensorsActive) {
-  FakeDataFetcherImplAndroid::Init(base::android::AttachCurrentThread());
+  FakeDataFetcherImplAndroid::Register(base::android::AttachCurrentThread());
   FakeDataFetcherImplAndroid fetcher;
   fetcher.SetNumberActiveDeviceMotionSensors(0);
 
