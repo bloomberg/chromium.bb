@@ -18,8 +18,8 @@ class InsecureContentInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   // Depending on the |type| requested and whether an insecure content infobar
   // is already present in |infobar_service|, may do nothing; otherwise, creates
-  // an insecure content delegate and either adds it to |infobar_service| or
-  // replaces the existing infobar delegate.
+  // an insecure content infobar delegate and either adds it to
+  // |infobar_service| or replaces the existing infobar.
   static void Create(InfoBarService* infobar_service, InfoBarType type);
 
  private:

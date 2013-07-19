@@ -12,7 +12,7 @@
 
 class SimpleAlertInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  // Creates a simple alert delegate and adds it to |infobar_service|.
+  // Creates a simple alert infobar delegate and adds it to |infobar_service|.
   static void Create(InfoBarService* infobar_service,
                      int icon_id,  // May be |kNoIconID| if no icon is shown.
                      const string16& message,
