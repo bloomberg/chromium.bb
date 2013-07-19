@@ -157,6 +157,7 @@ def get_landmines(target):
       gyp_defines().get('target_arch') == 'x64' and
       gyp_defines().get('dcheck_always_on') == '1'):
     add("Switched win x64 trybots from VS2010 to VS2012.")
+  add('Need to clobber everything due to an IDL change in r154579 (blink)')
 
   return landmines
 
