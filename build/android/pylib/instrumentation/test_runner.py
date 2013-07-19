@@ -26,17 +26,17 @@ import test_result
 _PERF_TEST_ANNOTATION = 'PerfTest'
 
 
-def _GetDataFilesForTestSuite(test_suite_basename):
+def _GetDataFilesForTestSuite(suite_basename):
   """Returns a list of data files/dirs needed by the test suite.
 
   Args:
-    test_suite_basename: The test suite basename for which to return file paths.
+    suite_basename: The test suite basename for which to return file paths.
 
   Returns:
     A list of test file and directory paths.
   """
   test_files = []
-  if test_suite_basename in ['ChromeTest', 'ContentShellTest']:
+  if suite_basename in ['ChromeTest', 'ContentShellTest']:
     test_files += [
         'net/data/ssl/certificates/',
     ]
@@ -52,41 +52,42 @@ class TestRunner(base_test_runner.BaseTestRunner):
                                        '/chrome-profile*')
   _DEVICE_HAS_TEST_FILES = {}
 
-  def __init__(self, options, device, shard_index, test_pkg, ports_to_forward):
+  def __init__(self, build_type, test_data, install_apk, save_perf_json,
+               screenshot_failures, tool, wait_for_debugger, disable_assertions,
+               push_deps, cleanup_test_files, device, shard_index, test_pkg,
+               ports_to_forward):
     """Create a new TestRunner.
 
     Args:
-      options: An options object with the following required attributes:
-      -  build_type: 'Release' or 'Debug'.
-      -  install_apk: Re-installs the apk if opted.
-      -  save_perf_json: Whether or not to save the JSON file from UI perf
-            tests.
-      -  screenshot_failures: Take a screenshot for a test failure
-      -  tool: Name of the Valgrind tool.
-      -  wait_for_debugger: blocks until the debugger is connected.
-      -  disable_assertions: Whether to disable java assertions on the device.
-      -  push_deps: If True, push all dependencies to the device.
-      -  cleanup_test_files: Whether or not to cleanup test files on device.
+      build_type: 'Release' or 'Debug'.
+      test_data: Location of the test data.
+      install_apk: Re-installs the apk if opted.
+      save_perf_json: Whether or not to save the JSON file from UI perf tests.
+      screenshot_failures: Take a screenshot for a test failure
+      tool: Name of the Valgrind tool.
+      wait_for_debugger: Blocks until the debugger is connected.
+      disable_assertions: Whether to disable java assertions on the device.
+      push_deps: If True, push all dependencies to the device.
+      cleanup_test_files: Whether or not to cleanup test files on device.
       device: Attached android device.
       shard_index: Shard index.
       test_pkg: A TestPackage object.
       ports_to_forward: A list of port numbers for which to set up forwarders.
                         Can be optionally requested by a test case.
     """
-    super(TestRunner, self).__init__(
-        device, options.tool, options.build_type, options.push_deps,
-        options.cleanup_test_files)
+    super(TestRunner, self).__init__(device, tool, build_type, push_deps,
+                                     cleanup_test_files)
     self._lighttp_port = constants.LIGHTTPD_RANDOM_PORT_FIRST + shard_index
 
-    self.build_type = options.build_type
-    self.test_data = options.test_data
-    self.save_perf_json = options.save_perf_json
-    self.screenshot_failures = options.screenshot_failures
-    self.wait_for_debugger = options.wait_for_debugger
-    self.disable_assertions = options.disable_assertions
+    self.build_type = build_type
+    self.test_data = test_data
+    self.save_perf_json = save_perf_json
+    self.screenshot_failures = screenshot_failures
+    self.wait_for_debugger = wait_for_debugger
+    self.disable_assertions = disable_assertions
     self.test_pkg = test_pkg
     self.ports_to_forward = ports_to_forward
-    self.install_apk = options.install_apk
+    self.install_apk = install_apk
 
   #override
   def InstallTestPackage(self):

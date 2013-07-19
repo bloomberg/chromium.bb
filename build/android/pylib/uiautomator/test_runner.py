@@ -10,19 +10,22 @@ from pylib.instrumentation import test_runner as instr_test_runner
 class TestRunner(instr_test_runner.TestRunner):
   """Responsible for running a series of tests connected to a single device."""
 
-  def __init__(self, options, device, shard_index, test_pkg, ports_to_forward):
+  def __init__(self, package_name, build_type, test_data, save_perf_json,
+               screenshot_failures, tool, wait_for_debugger,
+               disable_assertions, push_deps, cleanup_test_files, device,
+               shard_index, test_pkg, ports_to_forward):
     """Create a new TestRunner.
 
     Args:
-      options: An options object similar to the one in parent class plus:
-        - package_name: Application package name under test.
+      package_name: Application package name under test.
+      See the super class for all other args.
     """
-    options.ensure_value('install_apk', True)
-    options.ensure_value('wait_for_debugger', False)
     super(TestRunner, self).__init__(
-        options, device, shard_index, test_pkg, ports_to_forward)
+        build_type, test_data, False, save_perf_json, screenshot_failures, tool,
+        wait_for_debugger, disable_assertions, push_deps, cleanup_test_files,
+        device, shard_index, test_pkg, ports_to_forward)
 
-    self.package_name = options.package_name
+    self.package_name = package_name
 
   #override
   def InstallTestPackage(self):
@@ -41,4 +44,3 @@ class TestRunner(instr_test_runner.TestRunner):
       self.flags.AddFlags(['--disable-fre'])
     return self.adb.RunUIAutomatorTest(
         test, self.test_pkg.GetPackageName(), timeout)
-

@@ -78,7 +78,17 @@ class PythonTestBase(object):
     test = self._ComposeFullTestName(fname, suite, test)
     test_pkg = test_package.TestPackage(
         self.options.test_apk_path, self.options.test_apk_jar_path)
-    java_test_runner = test_runner.TestRunner(self.options, self.device_id,
+    java_test_runner = test_runner.TestRunner(self.options.build_type,
+                                              self.options.test_data,
+                                              self.options.install_apk,
+                                              self.options.save_perf_json,
+                                              self.options.screenshot_failures,
+                                              self.options.tool,
+                                              self.options.wait_for_debugger,
+                                              self.options.disable_assertions,
+                                              self.options.push_deps,
+                                              self.options.cleanup_test_files,
+                                              self.device_id,
                                               self.shard_index, test_pkg,
                                               self.ports_to_forward)
     try:

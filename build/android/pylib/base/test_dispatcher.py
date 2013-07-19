@@ -1,8 +1,20 @@
-# Copyright (c) 2013 The Chromium Authors. All rights reserved.
+# Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Implements test sharding logic."""
+"""Dispatches tests, either sharding or replicating them.
+
+To dispatch, performs the following steps:
+* Create a test collection factory, using the given tests
+  - If sharding: test collection factory returns the same shared test collection
+    to all test runners
+  - If replciating: test collection factory returns a unique test collection to
+    each test runner, with the same set of tests in each.
+* Get the list of devices to run on
+* Create test runners
+* Run each test runner in its own thread, pulling tests from the test collection
+  generated from the test collection factory until there are no tests left.
+"""
 
 import logging
 import threading
@@ -44,8 +56,8 @@ class _Test(object):
     """Initializes the _Test object.
 
     Args:
-      test: the test.
-      tries: number of tries so far.
+      test: The test.
+      tries: Number of tries so far.
     """
     self.test = test
     self.tries = tries
@@ -55,7 +67,7 @@ class _TestCollection(object):
   """A threadsafe collection of tests.
 
   Args:
-    tests: list of tests to put in the collection.
+    tests: List of tests to put in the collection.
   """
 
   def __init__(self, tests=[]):
@@ -117,7 +129,7 @@ class _TestCollection(object):
 
 
 def _RunTestsFromQueue(runner, test_collection, out_results, watcher,
-                       num_retries):
+                       num_retries, tag_results_with_device=False):
   """Runs tests from the test_collection until empty using the given runner.
 
   Adds TestRunResults objects to the out_results list and may add tests to the
@@ -129,7 +141,25 @@ def _RunTestsFromQueue(runner, test_collection, out_results, watcher,
     out_results: A list to add TestRunResults to.
     watcher: A watchdog_timer.WatchdogTimer object, used as a shared timeout.
     num_retries: Number of retries for a test.
+    tag_results_with_device: If True, appends the name of the device on which
+        the test was run to the test name. Used when replicating to identify
+        which device ran each copy of the test, and to ensure each copy of the
+        test is recorded separately.
   """
+
+  def TagTestRunResults(test_run_results):
+    """Tags all results with the last 4 digits of the device id.
+
+    Used when replicating tests to distinguish the same tests run on different
+    devices. We use a set to store test results, so the hash (generated from
+    name and tag) must be unique to be considered different results.
+    """
+    new_test_run_results = base_test_result.TestRunResults()
+    for test_result in test_run_results.GetAll():
+      test_result.SetTag(runner.device[-4:])
+      new_test_run_results.AddResult(test_result)
+    return new_test_run_results
+
   for test in test_collection:
     watcher.Reset()
     try:
@@ -139,6 +169,8 @@ def _RunTestsFromQueue(runner, test_collection, out_results, watcher,
         logging.warning(msg)
         raise android_commands.errors.DeviceUnresponsiveError(msg)
       result, retry = runner.RunTest(test.test)
+      if tag_results_with_device:
+        result = TagTestRunResults(result)
       test.tries += 1
       if retry and test.tries <= num_retries:
         # Retry non-passing results, only record passing results.
@@ -167,11 +199,11 @@ def _SetUp(runner_factory, device, out_runners, threadsafe_counter):
     added to out_runners.
 
   Args:
-    runner_factory: callable that takes a device and index and returns a
+    runner_factory: Callable that takes a device and index and returns a
       TestRunner object.
-    device: the device serial number to set up.
-    out_runners: list to add the successfully set up TestRunner object.
-    threadsafe_counter: a _ThreadSafeCounter object used to get shard indices.
+    device: The device serial number to set up.
+    out_runners: List to add the successfully set up TestRunner object.
+    threadsafe_counter: A _ThreadSafeCounter object used to get shard indices.
   """
   try:
     index = threadsafe_counter.GetAndIncrement()
@@ -183,28 +215,34 @@ def _SetUp(runner_factory, device, out_runners, threadsafe_counter):
     logging.warning('Failed to create shard for %s: [%s]', device, e)
 
 
-def _RunAllTests(runners, tests, num_retries, timeout=None):
+def _RunAllTests(runners, test_collection_factory, num_retries, timeout=None,
+                 tag_results_with_device=False):
   """Run all tests using the given TestRunners.
 
   Args:
-    runners: a list of TestRunner objects.
-    tests: a list of Tests to run using the given TestRunners.
-    num_retries: number of retries for a test.
-    timeout: watchdog timeout in seconds, defaults to the default timeout.
+    runners: A list of TestRunner objects.
+    test_collection_factory: A callable to generate a _TestCollection object for
+        each test runner.
+    num_retries: Number of retries for a test.
+    timeout: Watchdog timeout in seconds.
+    tag_results_with_device: If True, appends the name of the device on which
+        the test was run to the test name. Used when replicating to identify
+        which device ran each copy of the test, and to ensure each copy of the
+        test is recorded separately.
 
   Returns:
     A tuple of (TestRunResults object, exit code)
   """
-  logging.warning('Running %s tests with %s test runners.' %
-                  (len(tests), len(runners)))
-  tests_collection = _TestCollection([_Test(t) for t in tests])
+  logging.warning('Running tests with %s test runners.' % (len(runners)))
   results = []
   exit_code = 0
   watcher = watchdog_timer.WatchdogTimer(timeout)
+
   workers = reraiser_thread.ReraiserThreadGroup(
       [reraiser_thread.ReraiserThread(
           _RunTestsFromQueue,
-          [r, tests_collection, results, watcher, num_retries],
+          [r, test_collection_factory(), results, watcher, num_retries,
+           tag_results_with_device],
           name=r.device[-4:])
        for r in runners])
   run_results = base_test_result.TestRunResults()
@@ -231,10 +269,10 @@ def _CreateRunners(runner_factory, devices, timeout=None):
     included in the returned list.
 
   Args:
-    runner_factory: callable that takes a device and index and returns a
+    runner_factory: Callable that takes a device and index and returns a
       TestRunner object.
-    devices: list of device serial numbers as strings.
-    timeout: watchdog timeout in seconds, defaults to the default timeout.
+    devices: List of device serial numbers as strings.
+    timeout: Watchdog timeout in seconds, defaults to the default timeout.
 
   Returns:
     A list of TestRunner objects.
@@ -256,8 +294,8 @@ def _TearDownRunners(runners, timeout=None):
   """Calls TearDown() for each test runner in parallel.
 
   Args:
-    runners: a list of TestRunner objects.
-    timeout: watchdog timeout in seconds, defaults to the default timeout.
+    runners: A list of TestRunner objects.
+    timeout: Watchdog timeout in seconds, defaults to the default timeout.
   """
   threads = reraiser_thread.ReraiserThreadGroup(
       [reraiser_thread.ReraiserThread(r.TearDown, name=r.device[-4:])
@@ -266,23 +304,59 @@ def _TearDownRunners(runners, timeout=None):
   threads.JoinAll(watchdog_timer.WatchdogTimer(timeout))
 
 
-def ShardAndRunTests(runner_factory, devices, tests, build_type='Debug',
-                     test_timeout=DEFAULT_TIMEOUT,
-                     setup_timeout=DEFAULT_TIMEOUT,
-                     num_retries=2):
+
+def _GetAttachedDevices(wait_for_debugger=False, test_device=None):
+  """Get all attached devices.
+
+  If we are using a debugger, limit to only one device.
+
+  Args:
+    wait_for_debugger: True if this run will use a debugger.
+    test_device: Name of a specific device to use.
+
+  Returns:
+    A list of attached devices.
+  """
+  attached_devices = []
+
+  attached_devices = android_commands.GetAttachedDevices()
+  if test_device:
+    assert test_device in attached_devices, (
+        'Did not find device %s among attached device. Attached devices: %s'
+        % (test_device, ', '.join(attached_devices)))
+    attached_devices = [test_device]
+
+  if len(attached_devices) > 1 and wait_for_debugger:
+    logging.warning('Debugger can not be sharded, using first available device')
+    attached_devices = attached_devices[:1]
+
+  return attached_devices
+
+
+def RunTests(tests, runner_factory, wait_for_debugger, test_device,
+             shard=True,
+             build_type='Debug',
+             test_timeout=DEFAULT_TIMEOUT,
+             setup_timeout=DEFAULT_TIMEOUT,
+             num_retries=2):
   """Run all tests on attached devices, retrying tests that don't pass.
 
   Args:
-    runner_factory: callable that takes a device and index and returns a
-      TestRunner object.
-    devices: list of attached device serial numbers as strings.
-    tests: list of tests to run.
-    build_type: either 'Debug' or 'Release'.
-    test_timeout: watchdog timeout in seconds for running tests, defaults to the
-      default timeout.
-    setup_timeout: watchdog timeout in seconds for creating and cleaning up
-      test runners, defaults to the default timeout.
-    num_retries: number of retries for a test.
+    tests: List of tests to run.
+    runner_factory: Callable that takes a device and index and returns a
+        TestRunner object.
+    wait_for_debugger: True if this test is using a debugger.
+    test_device: A specific device to run tests on, or None.
+    shard: True if we should shard, False if we should replicate tests.
+      - Sharding tests will distribute tests across all test runners through a
+        shared test collection.
+      - Replicating tests will copy all tests to each test runner through a
+        unique test collection for each test runner.
+    build_type: Either 'Debug' or 'Release'.
+    test_timeout: Watchdog timeout in seconds for running tests.
+    setup_timeout: Watchdog timeout in seconds for creating and cleaning up
+        test runners.
+    num_retries: Number of retries for a test.
 
   Returns:
     A tuple of (base_test_result.TestRunResults object, exit code).
@@ -291,10 +365,26 @@ def ShardAndRunTests(runner_factory, devices, tests, build_type='Debug',
     logging.error('No tests to run.')
     return (base_test_result.TestRunResults(), constants.ERROR_EXIT_CODE)
 
+  if shard:
+    # Generate a shared _TestCollection object for all test runners, so they
+    # draw from a common pool of tests.
+    shared_test_collection = _TestCollection([_Test(t) for t in tests])
+    test_collection_factory = lambda: shared_test_collection
+    tag_results_with_device = False
+  else:
+    # Generate a unique _TestCollection object for each test runner, but use
+    # the same set of tests.
+    test_collection_factory = lambda: _TestCollection([_Test(t) for t in tests])
+    tag_results_with_device = True
+
+  devices = _GetAttachedDevices(wait_for_debugger, test_device)
+
   logging.info('Will run %d tests: %s', len(tests), str(tests))
+
   runners = _CreateRunners(runner_factory, devices, setup_timeout)
   try:
-    return _RunAllTests(runners, tests, num_retries, test_timeout)
+    return _RunAllTests(runners, test_collection_factory,
+                        num_retries, test_timeout, tag_results_with_device)
   finally:
     try:
       _TearDownRunners(runners, setup_timeout)

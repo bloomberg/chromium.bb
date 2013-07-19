@@ -13,18 +13,22 @@ TODO(gkanwar):
 import collections
 import optparse
 import os
+import shutil
 import sys
 
 from pylib import cmd_helper
 from pylib import constants
 from pylib import ports
 from pylib.base import base_test_result
-from pylib.browsertests import dispatch as browsertests_dispatch
-from pylib.gtest import dispatch as gtest_dispatch
+from pylib.base import test_dispatcher
+from pylib.browsertests import setup as browsertests_setup
+from pylib.gtest import setup as gtest_setup
+from pylib.gtest import gtest_config
 from pylib.host_driven import run_python_tests as python_dispatch
-from pylib.instrumentation import dispatch as instrumentation_dispatch
-from pylib.uiautomator import dispatch as uiautomator_dispatch
-from pylib.utils import emulator, report_results, run_tests_helper
+from pylib.instrumentation import setup as instrumentation_setup
+from pylib.uiautomator import setup as uiautomator_setup
+from pylib.utils import report_results
+from pylib.utils import run_tests_helper
 
 
 _SDK_OUT_DIR = os.path.join(constants.DIR_SOURCE_ROOT, 'out')
@@ -43,28 +47,6 @@ def AddBuildTypeOption(option_parser):
                            const='Release', dest='build_type',
                            help=('If set, run test suites under out/Release.'
                                  ' Default is env var BUILDTYPE or Debug.'))
-
-
-def AddEmulatorOptions(option_parser):
-  """Adds all emulator-related options to |option_parser|."""
-
-  # TODO(gkanwar): Figure out what we're doing with the emulator setup
-  # and determine whether these options should be deprecated/removed.
-  option_parser.add_option('-e', '--emulator', dest='use_emulator',
-                           action='store_true',
-                           help='Run tests in a new instance of emulator.')
-  option_parser.add_option('-n', '--emulator-count',
-                           type='int', default=1,
-                           help=('Number of emulators to launch for '
-                                 'running the tests.'))
-  option_parser.add_option('--abi', default='armeabi-v7a',
-                           help='Platform of emulators to launch.')
-
-
-def ProcessEmulatorOptions(options):
-  """Processes emulator options."""
-  if options.use_emulator:
-    emulator.DeleteAllTempAVDs()
 
 
 def AddCommonOptions(option_parser):
@@ -120,20 +102,15 @@ def ProcessCommonOptions(options):
   run_tests_helper.SetLogLevel(options.verbose_count)
 
 
-def AddCoreGTestOptions(option_parser, default_timeout=60):
+def AddCoreGTestOptions(option_parser):
   """Add options specific to the gtest framework to |option_parser|."""
 
   # TODO(gkanwar): Consolidate and clean up test filtering for gtests and
   # content_browsertests.
-  option_parser.add_option('--gtest_filter', dest='test_filter',
+  option_parser.add_option('-f', '--gtest_filter', dest='test_filter',
                            help='googletest-style filter string.')
   option_parser.add_option('-a', '--test_arguments', dest='test_arguments',
                            help='Additional arguments to pass to the test.')
-  # TODO(gkanwar): Most likely deprecate/remove this option once we've pinned
-  # down what we're doing with the emulator setup.
-  option_parser.add_option('-x', '--xvfb', dest='use_xvfb',
-                           action='store_true',
-                           help='Use Xvfb around tests (ignored if not Linux).')
   # TODO(gkanwar): Possible deprecate this flag. Waiting on word from Peter
   # Beverloo.
   option_parser.add_option('--webkit', action='store_true',
@@ -144,7 +121,7 @@ def AddCoreGTestOptions(option_parser, default_timeout=60):
   option_parser.add_option('-t', dest='timeout',
                            help='Timeout to wait for each test',
                            type='int',
-                           default=default_timeout)
+                           default=60)
 
 
 def AddContentBrowserTestOptions(option_parser):
@@ -165,14 +142,39 @@ def AddGTestOptions(option_parser):
   option_parser.command_list = []
   option_parser.example = '%prog gtest -s base_unittests'
 
-  option_parser.add_option('-s', '--suite', dest='test_suite',
+  # TODO(gkanwar): Make this option required
+  option_parser.add_option('-s', '--suite', dest='suite_name',
                            help=('Executable name of the test suite to run '
                                  '(use -s help to list them).'))
   AddCoreGTestOptions(option_parser)
   # TODO(gkanwar): Move these to Common Options once we have the plumbing
   # in our other test types to handle these commands
-  AddEmulatorOptions(option_parser)
   AddCommonOptions(option_parser)
+
+
+def ProcessGTestOptions(options):
+  """Intercept test suite help to list test suites.
+
+  Args:
+    options: Command line options.
+
+  Returns:
+    True if the command should continue.
+  """
+  if options.suite_name == 'help':
+    print 'Available test suites are:'
+    for test_suite in gtest_config.STABLE_TEST_SUITES:
+      print test_suite.name
+    return False
+
+  # Convert to a list, assuming all test suites if nothing was specified.
+  # TODO(gkanwar): Require having a test suite
+  if options.suite_name:
+    options.suite_name = [options.suite_name]
+  else:
+    options.suite_name = [suite.name
+                          for suite in gtest_config.STABLE_TEST_SUITES]
+  return True
 
 
 def AddJavaTestOptions(option_parser):
@@ -201,10 +203,6 @@ def AddJavaTestOptions(option_parser):
                            help='Capture screenshots of test failures')
   option_parser.add_option('--save-perf-json', action='store_true',
                            help='Saves the JSON file for each UI Perf test.')
-  # TODO(gkanwar): Remove this option. It is not used anywhere.
-  option_parser.add_option('--shard_retries', type=int, default=1,
-                           help=('Number of times to retry each failure when '
-                                 'sharding.'))
   option_parser.add_option('--official-build', help='Run official build tests.')
   option_parser.add_option('--python_test_root',
                            help='Root of the host-driven tests.')
@@ -249,7 +247,8 @@ def ProcessJavaTestOptions(options, error_func):
   elif options.test_filter:
     options.annotations = []
   else:
-    options.annotations = ['Smoke', 'SmallTest', 'MediumTest', 'LargeTest']
+    options.annotations = ['Smoke', 'SmallTest', 'MediumTest', 'LargeTest',
+                           'EnormousTest']
 
   if options.exclude_annotation_str:
     options.exclude_annotations = options.exclude_annotation_str.split(',')
@@ -351,6 +350,166 @@ def ProcessUIAutomatorOptions(options, error_func):
       '_java.jar')
 
 
+def _RunGTests(options, error_func):
+  """Subcommand of RunTestsCommands which runs gtests."""
+  if not ProcessGTestOptions(options):
+    return 0
+
+  exit_code = 0
+  for suite_name in options.suite_name:
+    runner_factory, tests = gtest_setup.Setup(
+        options.exe, suite_name, options.test_arguments,
+        options.timeout, options.cleanup_test_files, options.tool,
+        options.build_type, options.webkit, options.push_deps,
+        options.test_filter)
+
+    results, test_exit_code = test_dispatcher.RunTests(
+        tests, runner_factory, False, options.test_device,
+        shard=True,
+        build_type=options.build_type,
+        test_timeout=None,
+        num_retries=options.num_retries)
+
+    if test_exit_code and exit_code != constants.ERROR_EXIT_CODE:
+      exit_code = test_exit_code
+
+    report_results.LogFull(
+        results=results,
+        test_type='Unit test',
+        test_package=suite_name,
+        build_type=options.build_type,
+        flakiness_server=options.flakiness_dashboard_server)
+
+  if os.path.isdir(constants.ISOLATE_DEPS_DIR):
+    shutil.rmtree(constants.ISOLATE_DEPS_DIR)
+
+  return exit_code
+
+
+def _RunContentBrowserTests(options, error_func):
+  """Subcommand of RunTestsCommands which runs content_browsertests."""
+  runner_factory, tests = browsertests_setup.Setup(
+      options.test_arguments, options.timeout, options.cleanup_test_files,
+      options.tool, options.build_type, options.webkit, options.push_deps,
+      options.test_filter)
+
+  # TODO(nileshagrawal): remove this abnormally long setup timeout once fewer
+  # files are pushed to the devices for content_browsertests: crbug.com/138275
+  setup_timeout = 20 * 60  # 20 minutes
+  results, exit_code = test_dispatcher.RunTests(
+      tests, runner_factory, False, options.test_device,
+      shard=True,
+      build_type=options.build_type,
+      test_timeout=None,
+      setup_timeout=setup_timeout,
+      num_retries=options.num_retries)
+
+  report_results.LogFull(
+      results=results,
+      test_type='Unit test',
+      test_package=constants.BROWSERTEST_SUITE_NAME,
+      build_type=options.build_type,
+      flakiness_server=options.flakiness_dashboard_server)
+
+  if os.path.isdir(constants.ISOLATE_DEPS_DIR):
+    shutil.rmtree(constants.ISOLATE_DEPS_DIR)
+
+  return exit_code
+
+
+def _RunInstrumentationTests(options, error_func):
+  """Subcommand of RunTestsCommands which runs instrumentation tests."""
+  ProcessInstrumentationOptions(options, error_func)
+
+  results = base_test_result.TestRunResults()
+  exit_code = 0
+
+  if options.run_java_tests:
+    runner_factory, tests = instrumentation_setup.Setup(
+        options.test_apk_path, options.test_apk_jar_path, options.annotations,
+        options.exclude_annotations, options.test_filter, options.build_type,
+        options.test_data, options.install_apk, options.save_perf_json,
+        options.screenshot_failures, options.tool, options.wait_for_debugger,
+        options.disable_assertions, options.push_deps,
+        options.cleanup_test_files)
+
+    test_results, exit_code = test_dispatcher.RunTests(
+        tests, runner_factory, options.wait_for_debugger,
+        options.test_device,
+        shard=True,
+        build_type=options.build_type,
+        test_timeout=None,
+        num_retries=options.num_retries)
+
+    results.AddTestRunResults(test_results)
+
+  if options.run_python_tests:
+    test_results, test_exit_code = (
+        python_dispatch.DispatchPythonTests(options))
+
+    results.AddTestRunResults(test_results)
+
+    # Only allow exit code escalation
+    if test_exit_code and exit_code != constants.ERROR_EXIT_CODE:
+      exit_code = test_exit_code
+
+  report_results.LogFull(
+      results=results,
+      test_type='Instrumentation',
+      test_package=os.path.basename(options.test_apk),
+      annotation=options.annotations,
+      build_type=options.build_type,
+      flakiness_server=options.flakiness_dashboard_server)
+
+  return exit_code
+
+
+def _RunUIAutomatorTests(options, error_func):
+  """Subcommand of RunTestsCommands which runs uiautomator tests."""
+  ProcessUIAutomatorOptions(options, error_func)
+
+  results = base_test_result.TestRunResults()
+  exit_code = 0
+
+  if options.run_java_tests:
+    runner_factory, tests = uiautomator_setup.Setup(
+        options.uiautomator_jar, options.uiautomator_info_jar,
+        options.annotations, options.exclude_annotations, options.test_filter,
+        options.package_name, options.build_type, options.test_data,
+        options.save_perf_json, options.screenshot_failures, options.tool,
+        options.disable_assertions, options.push_deps,
+        options.cleanup_test_files)
+
+    test_results, exit_code = test_dispatcher.RunTests(
+        tests, runner_factory, False, options.test_device,
+        shard=True,
+        build_type=options.build_type,
+        test_timeout=None,
+        num_retries=options.num_retries)
+
+    results.AddTestRunResults(test_results)
+
+  if options.run_python_tests:
+    test_results, test_exit_code = (
+        python_dispatch.DispatchPythonTests(options))
+
+    results.AddTestRunResults(test_results)
+
+    # Only allow exit code escalation
+    if test_exit_code and exit_code != constants.ERROR_EXIT_CODE:
+      exit_code = test_exit_code
+
+  report_results.LogFull(
+      results=results,
+      test_type='UIAutomator',
+      test_package=os.path.basename(options.test_jar),
+      annotation=options.annotations,
+      build_type=options.build_type,
+      flakiness_server=options.flakiness_dashboard_server)
+
+  return exit_code
+
+
 def RunTestsCommand(command, options, args, option_parser):
   """Checks test type and dispatches to the appropriate function.
 
@@ -377,56 +536,15 @@ def RunTestsCommand(command, options, args, option_parser):
   ProcessCommonOptions(options)
 
   if command == 'gtest':
-    # TODO(gkanwar): See the emulator TODO above -- this call should either go
-    # away or become generalized.
-    ProcessEmulatorOptions(options)
-    results, exit_code = gtest_dispatch.Dispatch(options)
+    return _RunGTests(options, option_parser.error)
   elif command == 'content_browsertests':
-    results, exit_code = browsertests_dispatch.Dispatch(options)
+    return _RunContentBrowserTests(options, option_parser.error)
   elif command == 'instrumentation':
-    ProcessInstrumentationOptions(options, option_parser.error)
-    results = base_test_result.TestRunResults()
-    exit_code = 0
-    if options.run_java_tests:
-      test_results, exit_code = instrumentation_dispatch.Dispatch(options)
-      results.AddTestRunResults(test_results)
-    if options.run_python_tests:
-      test_results, test_exit_code = (python_dispatch.
-                                      DispatchPythonTests(options))
-      results.AddTestRunResults(test_results)
-      # Only allow exit code escalation
-      if test_exit_code and exit_code != constants.ERROR_EXIT_CODE:
-        exit_code = test_exit_code
-    report_results.LogFull(
-        results=results,
-        test_type='Instrumentation',
-        test_package=os.path.basename(options.test_apk),
-        annotation=options.annotations,
-        build_type=options.build_type,
-        flakiness_server=options.flakiness_dashboard_server)
+    return _RunInstrumentationTests(options, option_parser.error)
   elif command == 'uiautomator':
-    ProcessUIAutomatorOptions(options, option_parser.error)
-    results = base_test_result.TestRunResults()
-    exit_code = 0
-    if options.run_java_tests:
-      test_results, exit_code = uiautomator_dispatch.Dispatch(options)
-      results.AddTestRunResults(test_results)
-    if options.run_python_tests:
-      test_results, test_exit_code = (python_dispatch.
-                                      DispatchPythonTests(options))
-      results.AddTestRunResults(test_results)
-      # Only allow exit code escalation
-      if test_exit_code and exit_code != constants.ERROR_EXIT_CODE:
-        exit_code = test_exit_code
-    report_results.LogFull(
-        results=results,
-        test_type='UIAutomator',
-        test_package=os.path.basename(options.test_jar),
-        annotation=options.annotations,
-        build_type=options.build_type,
-        flakiness_server=options.flakiness_dashboard_server)
+    return _RunUIAutomatorTests(options, option_parser.error)
   else:
-    raise Exception('Unknown test type state')
+    raise Exception('Unknown test type.')
 
   return exit_code
 

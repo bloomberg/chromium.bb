@@ -22,19 +22,25 @@ from test_package import TestPackage
 class TestPackageApk(TestPackage):
   """A helper class for running APK-based native tests."""
 
-  def __init__(self, adb, device, test_suite, tool, test_apk_package_name,
+  def __init__(self, adb, device, suite_path_full, tool, test_apk_package_name,
                test_activity_name, command_line_file):
     """
     Args:
       adb: ADB interface the tests are using.
       device: Device to run the tests.
-      test_suite: A specific test suite to run, empty to run all.
+      suite_path_full: Absolute path to a specific test suite to run,
+          empty to run all.
+          Ex: '/foo/bar/base_unittests-debug.apk', for which
+            self.suite_path_full = '/foo/bar/base_unittests-debug.apk'
+            self.suite_path = '/foo/bar/base_unittests-debug'
+            self.suite_basename = 'base_unittests'
+            self.suite_dirname = '/foo/bar'
       tool: Name of the Valgrind tool.
       test_apk_package_name: Apk package name for tests running in APKs.
       test_activity_name: Test activity to invoke for APK tests.
       command_line_file: Filename to use to pass arguments to tests.
     """
-    TestPackage.__init__(self, adb, device, test_suite, tool)
+    TestPackage.__init__(self, adb, device, suite_path_full, tool)
     self._test_apk_package_name = test_apk_package_name
     self._test_activity_name = test_activity_name
     self._command_line_file = command_line_file
@@ -42,7 +48,7 @@ class TestPackageApk(TestPackage):
   def _CreateCommandLineFileOnDevice(self, options):
     command_line_file = tempfile.NamedTemporaryFile()
     # GTest expects argv[0] to be the executable path.
-    command_line_file.write(self.test_suite_basename + ' ' + options)
+    command_line_file.write(self.suite_basename + ' ' + options)
     command_line_file.flush()
     self.adb.PushIfNeeded(command_line_file.name,
                           constants.TEST_EXECUTABLE_DIR + '/' +
@@ -87,14 +93,14 @@ class TestPackageApk(TestPackage):
         self._test_apk_package_name)
     if installed_apk_path:
       return not self.adb.CheckMd5Sum(
-          self.test_suite_full, installed_apk_path, ignore_paths=True)
+          self.suite_path_full, installed_apk_path, ignore_paths=True)
     else:
       return True
 
   def _GetTestSuiteBaseName(self):
     """Returns the  base name of the test suite."""
     # APK test suite names end with '-debug.apk'
-    return os.path.basename(self.test_suite).rsplit('-debug', 1)[0]
+    return os.path.basename(self.suite_path).rsplit('-debug', 1)[0]
 
   #override
   def ClearApplicationState(self):
@@ -140,6 +146,5 @@ class TestPackageApk(TestPackage):
     if self._NeedsInstall():
       # Always uninstall the previous one (by activity name); we don't
       # know what was embedded in it.
-      self.adb.ManagedInstall(self.test_suite_full, False,
+      self.adb.ManagedInstall(self.suite_path_full, False,
                               package_name=self._test_apk_package_name)
-

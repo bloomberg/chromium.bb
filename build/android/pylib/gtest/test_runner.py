@@ -17,17 +17,17 @@ import test_package_apk
 import test_package_exe
 
 
-def _TestSuiteRequiresMockTestServer(test_suite_basename):
+def _TestSuiteRequiresMockTestServer(suite_basename):
   """Returns True if the test suite requires mock test server."""
   tests_require_net_test_server = ['unit_tests', 'net_unittests',
                                    'content_unittests',
                                    'content_browsertests']
-  return (test_suite_basename in
+  return (suite_basename in
           tests_require_net_test_server)
 
 
 class TestRunner(base_test_runner.BaseTestRunner):
-  def __init__(self, device, test_suite, test_arguments, timeout,
+  def __init__(self, device, suite_name, test_arguments, timeout,
                cleanup_test_files, tool_name, build_type,
                in_webkit_checkout, push_deps, test_apk_package_name=None,
                test_activity_name=None, command_line_file=None):
@@ -35,7 +35,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
 
     Args:
       device: Device to run the tests.
-      test_suite: A specific test suite to run, empty to run all.
+      suite_name: A specific test suite to run, empty to run all.
       test_arguments: Additional arguments to pass to the test binary.
       timeout: Timeout for each test.
       cleanup_test_files: Whether or not to cleanup test files on device.
@@ -58,12 +58,12 @@ class TestRunner(base_test_runner.BaseTestRunner):
       timeout = timeout * 2
     self.timeout = timeout * self.tool.GetTimeoutScale()
 
-    logging.warning('Test suite: ' + test_suite)
-    if os.path.splitext(test_suite)[1] == '.apk':
+    logging.warning('Test suite: ' + str(suite_name))
+    if os.path.splitext(suite_name)[1] == '.apk':
       self.test_package = test_package_apk.TestPackageApk(
           self.adb,
           device,
-          test_suite,
+          suite_name,
           self.tool,
           test_apk_package_name,
           test_activity_name,
@@ -76,7 +76,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
       self.test_package = test_package_exe.TestPackageExecutable(
           self.adb,
           device,
-          test_suite,
+          suite_name,
           self.tool,
           symbols_dir)
 
@@ -88,7 +88,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
   def PushDataDeps(self):
     self.adb.WaitForSdCardReady(20)
     self.tool.CopyFiles()
-    if self.test_package.test_suite_basename == 'webkit_unit_tests':
+    if self.test_package.suite_basename == 'webkit_unit_tests':
       self.PushWebKitUnitTestsData()
       return
 
@@ -96,7 +96,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
       device_dir = self.adb.GetExternalStorage()
       # TODO(frankf): linux_dumper_unittest_helper needs to be in the same dir
       # as breakpad_unittests exe. Find a better way to do this.
-      if self.test_package.test_suite_basename == 'breakpad_unittests':
+      if self.test_package.suite_basename == 'breakpad_unittests':
         device_dir = constants.TEST_EXECUTABLE_DIR
       for p in os.listdir(constants.ISOLATE_DEPS_DIR):
         self.adb.PushIfNeeded(
@@ -231,7 +231,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
   def SetUp(self):
     """Sets up necessary test enviroment for the test suite."""
     super(TestRunner, self).SetUp()
-    if _TestSuiteRequiresMockTestServer(self.test_package.test_suite_basename):
+    if _TestSuiteRequiresMockTestServer(self.test_package.suite_basename):
       self.LaunchChromeTestServerSpawner()
     self.tool.SetupEnvironment()
 

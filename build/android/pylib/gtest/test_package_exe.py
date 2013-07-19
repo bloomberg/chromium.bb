@@ -22,21 +22,22 @@ class TestPackageExecutable(TestPackage):
 
   _TEST_RUNNER_RET_VAL_FILE = 'gtest_retval'
 
-  def __init__(self, adb, device, test_suite, tool, symbols_dir=None):
+  def __init__(self, adb, device, suite_path_full, tool, symbols_dir=None):
     """
     Args:
       adb: ADB interface the tests are using.
       device: Device to run the tests.
-      test_suite: A specific test suite to run, empty to run all.
+      suite_path_full: Absolute path to a specific test suite to run,
+          empty to run all.
       tool: Name of the Valgrind tool.
       symbols_dir: Directory to put the stripped binaries.
     """
-    TestPackage.__init__(self, adb, device, test_suite, tool)
+    TestPackage.__init__(self, adb, device, suite_path_full, tool)
     self.symbols_dir = symbols_dir
 
   def _GetTestSuiteBaseName(self):
-    """Returns the  base name of the test suite."""
-    return os.path.basename(self.test_suite)
+    """Returns the base name of the test suite."""
+    return os.path.basename(self.suite_path)
 
   #override
   def GetGTestReturnCode(self):
@@ -80,7 +81,7 @@ class TestPackageExecutable(TestPackage):
 
   #override
   def ClearApplicationState(self):
-    self.adb.KillAllBlocking(self.test_suite_basename, 30)
+    self.adb.KillAllBlocking(self.suite_basename, 30)
 
   #override
   def CreateCommandLineFileOnDevice(self, test_filter, test_arguments):
@@ -95,7 +96,7 @@ class TestPackageExecutable(TestPackage):
                          (constants.TEST_EXECUTABLE_DIR,
                           self._AddNativeCoverageExports(),
                           tool_wrapper, constants.TEST_EXECUTABLE_DIR,
-                          self.test_suite_basename,
+                          self.suite_basename,
                           test_filter, test_arguments,
                           TestPackageExecutable._TEST_RUNNER_RET_VAL_FILE))
     sh_script_file.flush()
@@ -113,7 +114,7 @@ class TestPackageExecutable(TestPackage):
         '%s %s/%s --gtest_list_tests' %
         (self.tool.GetTestWrapper(),
          constants.TEST_EXECUTABLE_DIR,
-         self.test_suite_basename))
+         self.suite_basename))
     return self._ParseGTestListTests(all_tests)
 
   #override
@@ -126,14 +127,14 @@ class TestPackageExecutable(TestPackage):
   #override
   def Install(self):
     if self.tool.NeedsDebugInfo():
-      target_name = self.test_suite
+      target_name = self.suite_path
     else:
-      target_name = self.test_suite + '_' + self.device + '_stripped'
+      target_name = self.suite_path + '_' + self.device + '_stripped'
       should_strip = True
       if os.path.isfile(target_name):
         logging.info('Found target file %s' % target_name)
         target_mtime = os.stat(target_name).st_mtime
-        source_mtime = os.stat(self.test_suite).st_mtime
+        source_mtime = os.stat(self.suite_path).st_mtime
         if target_mtime > source_mtime:
           logging.info('Target mtime (%d) is newer than source (%d), assuming '
                        'no change.' % (target_mtime, source_mtime))
@@ -147,8 +148,8 @@ class TestPackageExecutable(TestPackage):
         if self.symbols_dir:
           if not os.path.exists(self.symbols_dir):
             os.makedirs(self.symbols_dir)
-          shutil.copy(self.test_suite, self.symbols_dir)
+          shutil.copy(self.suite_path, self.symbols_dir)
         strip = os.environ['STRIP']
-        cmd_helper.RunCmd([strip, self.test_suite, '-o', target_name])
-    test_binary = constants.TEST_EXECUTABLE_DIR + '/' + self.test_suite_basename
+        cmd_helper.RunCmd([strip, self.suite_path, '-o', target_name])
+    test_binary = constants.TEST_EXECUTABLE_DIR + '/' + self.suite_basename
     self.adb.PushIfNeeded(target_name, test_binary)

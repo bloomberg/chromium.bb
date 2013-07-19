@@ -1,8 +1,8 @@
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Unittests for shard.py."""
+"""Unittests for test_dispatcher.py."""
 
 import os
 import sys
@@ -18,7 +18,7 @@ from pylib import constants
 from pylib.utils import watchdog_timer
 
 import base_test_result
-import shard
+import test_dispatcher
 
 
 class TestException(Exception):
@@ -78,13 +78,14 @@ class MockRunnerException(MockRunner):
 
 
 class TestFunctions(unittest.TestCase):
-  """Tests for shard._RunTestsFromQueue."""
+  """Tests test_dispatcher._RunTestsFromQueue."""
   @staticmethod
   def _RunTests(mock_runner, tests):
     results = []
-    tests = shard._TestCollection([shard._Test(t) for t in tests])
-    shard._RunTestsFromQueue(mock_runner, tests, results,
-                             watchdog_timer.WatchdogTimer(None), 2)
+    tests = test_dispatcher._TestCollection(
+        [test_dispatcher._Test(t) for t in tests])
+    test_dispatcher._RunTestsFromQueue(mock_runner, tests, results,
+                                       watchdog_timer.WatchdogTimer(None), 2)
     run_results = base_test_result.TestRunResults()
     for r in results:
       run_results.AddTestRunResults(r)
@@ -107,24 +108,27 @@ class TestFunctions(unittest.TestCase):
 
   def testSetUp(self):
     runners = []
-    counter = shard._ThreadSafeCounter()
-    shard._SetUp(MockRunner, '0', runners, counter)
+    counter = test_dispatcher._ThreadSafeCounter()
+    test_dispatcher._SetUp(MockRunner, '0', runners, counter)
     self.assertEqual(len(runners), 1)
     self.assertEqual(runners[0].setups, 1)
 
   def testThreadSafeCounter(self):
-    counter = shard._ThreadSafeCounter()
+    counter = test_dispatcher._ThreadSafeCounter()
     for i in xrange(5):
       self.assertEqual(counter.GetAndIncrement(), i)
 
 
 class TestThreadGroupFunctions(unittest.TestCase):
-  """Tests for shard._RunAllTests and shard._CreateRunners."""
+  """Tests test_dispatcher._RunAllTests and test_dispatcher._CreateRunners."""
   def setUp(self):
     self.tests = ['a', 'b', 'c', 'd', 'e', 'f', 'g']
+    shared_test_collection = test_dispatcher._TestCollection(
+        [test_dispatcher._Test(t) for t in self.tests])
+    self.test_collection_factory = lambda: shared_test_collection
 
   def testCreate(self):
-    runners = shard._CreateRunners(MockRunner, ['0', '1'])
+    runners = test_dispatcher._CreateRunners(MockRunner, ['0', '1'])
     for runner in runners:
       self.assertEqual(runner.setups, 1)
     self.assertEqual(set([r.device for r in runners]),
@@ -134,33 +138,36 @@ class TestThreadGroupFunctions(unittest.TestCase):
 
   def testRun(self):
     runners = [MockRunner('0'), MockRunner('1')]
-    results, exit_code = shard._RunAllTests(runners, self.tests, 0)
+    results, exit_code = test_dispatcher._RunAllTests(
+        runners, self.test_collection_factory, 0)
     self.assertEqual(len(results.GetPass()), len(self.tests))
     self.assertEqual(exit_code, 0)
 
   def testTearDown(self):
     runners = [MockRunner('0'), MockRunner('1')]
-    shard._TearDownRunners(runners)
+    test_dispatcher._TearDownRunners(runners)
     for runner in runners:
       self.assertEqual(runner.teardowns, 1)
 
   def testRetry(self):
-    runners = shard._CreateRunners(MockRunnerFail, ['0', '1'])
-    results, exit_code = shard._RunAllTests(runners, self.tests, 0)
+    runners = test_dispatcher._CreateRunners(MockRunnerFail, ['0', '1'])
+    results, exit_code = test_dispatcher._RunAllTests(
+        runners, self.test_collection_factory, 0)
     self.assertEqual(len(results.GetFail()), len(self.tests))
     self.assertEqual(exit_code, constants.ERROR_EXIT_CODE)
 
   def testReraise(self):
-    runners = shard._CreateRunners(MockRunnerException, ['0', '1'])
+    runners = test_dispatcher._CreateRunners(MockRunnerException, ['0', '1'])
     with self.assertRaises(TestException):
-      shard._RunAllTests(runners, self.tests, 0)
+      test_dispatcher._RunAllTests(runners, self.test_collection_factory, 0)
 
 
 class TestShard(unittest.TestCase):
-  """Tests for shard.Shard."""
+  """Tests test_dispatcher.RunTests with sharding."""
   @staticmethod
   def _RunShard(runner_factory):
-    return shard.ShardAndRunTests(runner_factory, ['0', '1'], ['a', 'b', 'c'])
+    return test_dispatcher.RunTests(
+        ['a', 'b', 'c'], runner_factory, False, None, shard=True)
 
   def testShard(self):
     results, exit_code = TestShard._RunShard(MockRunner)
@@ -171,10 +178,37 @@ class TestShard(unittest.TestCase):
     results, exit_code = TestShard._RunShard(MockRunnerFail)
     self.assertEqual(len(results.GetPass()), 0)
     self.assertEqual(len(results.GetFail()), 3)
-    self.assertEqual(exit_code, 0)
+    self.assertEqual(exit_code, constants.ERROR_EXIT_CODE)
 
   def testNoTests(self):
-    results, exit_code = shard.ShardAndRunTests(MockRunner, ['0', '1'], [])
+    results, exit_code = test_dispatcher.RunTests(
+        [], MockRunner, False, None, shard=True)
+    self.assertEqual(len(results.GetAll()), 0)
+    self.assertEqual(exit_code, constants.ERROR_EXIT_CODE)
+
+
+class TestReplicate(unittest.TestCase):
+  """Tests test_dispatcher.RunTests with replication."""
+  @staticmethod
+  def _RunReplicate(runner_factory):
+    return test_dispatcher.RunTests(
+        ['a', 'b', 'c'], runner_factory, False, None, shard=False)
+
+  def testReplicate(self):
+    results, exit_code = TestReplicate._RunReplicate(MockRunner)
+    # We expect 6 results since each test should have been run on every device
+    self.assertEqual(len(results.GetPass()), 6)
+    self.assertEqual(exit_code, 0)
+
+  def testFailing(self):
+    results, exit_code = TestReplicate._RunReplicate(MockRunnerFail)
+    self.assertEqual(len(results.GetPass()), 0)
+    self.assertEqual(len(results.GetFail()), 6)
+    self.assertEqual(exit_code, constants.ERROR_EXIT_CODE)
+
+  def testNoTests(self):
+    results, exit_code = test_dispatcher.RunTests(
+        [], MockRunner, False, None, shard=False)
     self.assertEqual(len(results.GetAll()), 0)
     self.assertEqual(exit_code, constants.ERROR_EXIT_CODE)
 

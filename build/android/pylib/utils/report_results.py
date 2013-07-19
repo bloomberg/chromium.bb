@@ -13,7 +13,7 @@ from pylib import constants
 import flakiness_dashboard_results_uploader
 
 
-def _LogToFile(results, test_type, test_suite, build_type):
+def _LogToFile(results, test_type, suite_name, build_type):
   """Log results to local files which can be used for aggregation later."""
   log_file_path = os.path.join(constants.DIR_SOURCE_ROOT, 'out',
                                build_type, 'test_logs')
@@ -30,7 +30,7 @@ def _LogToFile(results, test_type, test_suite, build_type):
 
   logging.info('Writing results to %s.' % full_file_name)
   with open(full_file_name, 'a') as log_file:
-    shortened_suite_name = test_suite[:25] + (test_suite[25:] and '...')
+    shortened_suite_name = suite_name[:25] + (suite_name[25:] and '...')
     print >> log_file, '%s%s' % (shortened_suite_name.ljust(30),
                                  results.GetShortForm())
 
@@ -101,10 +101,10 @@ def LogFull(results, test_type, test_package, annotation=None,
     # It is possible to have multiple buildbot steps for the same
     # instrumenation test package using different annotations.
     if annotation and len(annotation) == 1:
-      test_suite = annotation[0]
+      suite_name = annotation[0]
     else:
-      test_suite = test_package
-    _LogToFile(results, test_type, test_suite, build_type)
+      suite_name = test_package
+    _LogToFile(results, test_type, suite_name, build_type)
 
     if flakiness_server:
       _LogToFlakinessDashboard(results, test_type, test_package,

@@ -95,7 +95,7 @@ class PythonTestSharder(object):
   def __init__(self, attached_devices, available_tests, options):
     self.options = options
     self.attached_devices = attached_devices
-    self.retries = options.shard_retries
+    self.retries = options.num_retries
     self.tests = available_tests
 
   def _SetupSharding(self, tests):

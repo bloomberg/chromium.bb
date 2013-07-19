@@ -22,7 +22,7 @@ class ResultType(object):
 class BaseTestResult(object):
   """Base class for a single test result."""
 
-  def __init__(self, name, test_type, log=''):
+  def __init__(self, name, test_type, tag='', log=''):
     """Construct a BaseTestResult.
 
     Args:
@@ -34,20 +34,28 @@ class BaseTestResult(object):
     assert test_type in ResultType.GetTypes()
     self._name = name
     self._test_type = test_type
+    self._tag = tag
     self._log = log
 
   def __str__(self):
-    return self._name
+    return self.GetTaggedName()
 
   def __repr__(self):
-    return self._name
+    return self.GetTaggedName()
 
   def __cmp__(self, other):
     # pylint: disable=W0212
-    return cmp(self._name, other._name)
+    return cmp(self.GetTaggedName(), other.GetTaggedName())
 
   def __hash__(self):
-    return hash(self._name)
+    return hash(self.GetTaggedName())
+
+  def GetTaggedName(self):
+    """Get the test name with tag."""
+    if self._tag:
+      return '%s_%s' % (self._tag, self._name)
+    else:
+      return self._name
 
   def GetName(self):
     """Get the test name."""
@@ -57,9 +65,17 @@ class BaseTestResult(object):
     """Get the test result type."""
     return self._test_type
 
+  def GetTag(self):
+    """Get the test tag."""
+    return self._tag
+
   def GetLog(self):
     """Get the test log."""
     return self._log
+
+  def SetTag(self, tag):
+    """Set the test tag."""
+    self._tag = tag
 
 
 class TestRunResults(object):

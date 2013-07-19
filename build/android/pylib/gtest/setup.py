@@ -1,10 +1,9 @@
-# Copyright (c) 2013 The Chromium Authors. All rights reserved.
+# Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Dispatches GTests."""
+"""Generates test runner factory and tests for GTests."""
 
-import copy
 import fnmatch
 import glob
 import logging
@@ -17,10 +16,6 @@ from pylib import cmd_helper
 from pylib import constants
 from pylib import ports
 from pylib.base import base_test_result
-from pylib.base import shard
-from pylib.utils import emulator
-from pylib.utils import report_results
-from pylib.utils import xvfb
 
 import gtest_config
 import test_runner
@@ -70,11 +65,11 @@ _ISOLATE_SCRIPT = os.path.join(
     constants.DIR_SOURCE_ROOT, 'tools', 'swarm_client', 'isolate.py')
 
 
-def _GenerateDepsDirUsingIsolate(test_suite, build_type):
+def _GenerateDepsDirUsingIsolate(suite_name, build_type):
   """Generate the dependency dir for the test suite using isolate.
 
   Args:
-    test_suite: Name of the test suite (e.g. base_unittests).
+    suite_name: Name of the test suite (e.g. base_unittests).
     build_type: Release/Debug
   """
   product_dir = os.path.join(cmd_helper.OutDirectory.get(), build_type)
@@ -83,14 +78,14 @@ def _GenerateDepsDirUsingIsolate(test_suite, build_type):
   if os.path.isdir(constants.ISOLATE_DEPS_DIR):
     shutil.rmtree(constants.ISOLATE_DEPS_DIR)
 
-  isolate_rel_path = _ISOLATE_FILE_PATHS.get(test_suite)
+  isolate_rel_path = _ISOLATE_FILE_PATHS.get(suite_name)
   if not isolate_rel_path:
     logging.info('Did not find an isolate file for the test suite.')
     return
 
   isolate_abs_path = os.path.join(constants.DIR_SOURCE_ROOT, isolate_rel_path)
   isolated_abs_path = os.path.join(
-      product_dir, '%s.isolated' % test_suite)
+      product_dir, '%s.isolated' % suite_name)
   assert os.path.exists(isolate_abs_path)
   isolate_cmd = [
       'python', _ISOLATE_SCRIPT,
@@ -151,54 +146,43 @@ def _GenerateDepsDirUsingIsolate(test_suite, build_type):
     os.rmdir(os.path.join(constants.ISOLATE_DEPS_DIR, 'out'))
 
 
-def _FullyQualifiedTestSuites(exe, option_test_suite, build_type):
-  """Get a list of absolute paths to test suite targets.
+def _GetSuitePath(use_exe_test_runner, suite_name, build_type):
+  """Get the absolute path to the test suite.
 
   Args:
-    exe: if True, use the executable-based test runner.
-    option_test_suite: the test_suite specified as an option.
+    use_exe_test_runner: If True, use the executable-based test runner.
+    suite_name: The suite name specified on the command line.
     build_type: 'Release' or 'Debug'.
 
   Returns:
-    A list of tuples containing the suite and absolute path.
-    Ex. ('content_unittests',
-          '/tmp/chrome/src/out/Debug/content_unittests_apk/'
-          'content_unittests-debug.apk')
+    The absolute path of the given suite.
+    Ex. '/tmp/chrome/src/out/Debug/content_unittests_apk/'
+        'content_unittests-debug.apk'
 
   Raises:
     Exception: If test suite not found.
   """
-  def GetQualifiedSuite(suite):
-    if suite.is_suite_exe:
-      relpath = suite.name
-    else:
-      # out/(Debug|Release)/$SUITE_apk/$SUITE-debug.apk
-      relpath = os.path.join(suite.name + '_apk', suite.name + '-debug.apk')
-    return suite.name, os.path.join(test_suite_dir, relpath)
-
-  test_suite_dir = os.path.join(cmd_helper.OutDirectory.get(), build_type)
-  if option_test_suite:
-    all_test_suites = [gtest_config.Suite(exe, option_test_suite)]
+  if use_exe_test_runner:
+    relpath = suite_name
   else:
-    all_test_suites = gtest_config.STABLE_TEST_SUITES
+    relpath = os.path.join(suite_name + '_apk', suite_name + '-debug.apk')
+  suite_path = os.path.join(cmd_helper.OutDirectory.get(), build_type, relpath)
 
-  # List of tuples (suite_name, suite_path)
-  qualified_test_suites = map(GetQualifiedSuite, all_test_suites)
+  if not os.path.exists(suite_path):
+    raise Exception('Test suite %s not found in %s.\n'
+                    'Supported test suites:\n %s\n'
+                    'Ensure it has been built.\n' %
+                    (suite_name, suite_path,
+                     [s.name for s in gtest_config.STABLE_TEST_SUITES]))
 
-  for t, q in qualified_test_suites:
-    if not os.path.exists(q):
-      raise Exception('Test suite %s not found in %s.\n'
-                      'Supported test suites:\n %s\n'
-                      'Ensure it has been built.\n' %
-                      (t, q, [s.name for s in gtest_config.STABLE_TEST_SUITES]))
-  return qualified_test_suites
+  return suite_path
 
 
-def _GetDisabledTestsFilterFromFile(test_suite):
+def _GetDisabledTestsFilterFromFile(suite_name):
   """Returns a gtest filter based on the *_disabled file.
 
   Args:
-    test_suite: Name of the test suite (e.g. base_unittests).
+    suite_name: Name of the test suite (e.g. base_unittests).
 
   Returns:
     A gtest filter which excludes disabled tests.
@@ -206,7 +190,7 @@ def _GetDisabledTestsFilterFromFile(test_suite):
   """
   filter_file_path = os.path.join(
       os.path.abspath(os.path.dirname(__file__)),
-      'filter', '%s_disabled' % test_suite)
+      'filter', '%s_disabled' % suite_name)
 
   if not filter_file_path or not os.path.exists(filter_file_path):
     logging.info('No filter file found at %s', filter_file_path)
@@ -224,9 +208,9 @@ def _GetTestsFromDevice(runner_factory, devices):
   """Get a list of tests from a device.
 
   Args:
-    runner_factory: callable that takes a device and index and returns a
-      TestRunner object.
-    devices: List of devices.
+    runner_factory: Callable that takes device and shard_index and returns
+        a TestRunner.
+    devices: A list of device ids.
 
   Returns:
     All the tests in the test suite.
@@ -272,7 +256,7 @@ def _FilterTestsUsingPrefixes(all_tests, pre=False, manual=False):
   return filtered_tests
 
 
-def GetTestsFiltered(test_suite, gtest_filter, runner_factory, devices):
+def GetTestsFiltered(suite_name, gtest_filter, runner_factory, devices):
   """Get all tests in the suite and filter them.
 
   Obtains a list of tests from the test package on the device, and
@@ -282,7 +266,7 @@ def GetTestsFiltered(test_suite, gtest_filter, runner_factory, devices):
     3. Applies |gtest_filter|.
 
   Args:
-    test_suite: Name of the test suite (e.g. base_unittests).
+    suite_name: Name of the test suite (e.g. base_unittests).
     gtest_filter: A filter including negative and/or positive patterns.
     runner_factory: callable that takes a device and index and returns a
       TestRunner object.
@@ -295,7 +279,7 @@ def GetTestsFiltered(test_suite, gtest_filter, runner_factory, devices):
   tests = _FilterTestsUsingPrefixes(
       tests, bool(gtest_filter), bool(gtest_filter))
   tests = unittest_util.FilterTestNames(
-      tests, _GetDisabledTestsFilterFromFile(test_suite))
+      tests, _GetDisabledTestsFilterFromFile(suite_name))
 
   if gtest_filter:
     tests = unittest_util.FilterTestNames(tests, gtest_filter)
@@ -303,133 +287,58 @@ def GetTestsFiltered(test_suite, gtest_filter, runner_factory, devices):
   return tests
 
 
-def _RunATestSuite(options, suite_name):
-  """Run a single test suite.
-
-  Helper for Dispatch() to allow stop/restart of the emulator across
-  test bundles.  If using the emulator, we start it on entry and stop
-  it on exit.
+def Setup(use_exe_test_runner, suite_name, test_arguments, timeout,
+          cleanup_test_files, tool, build_type, webkit, push_deps,
+          gtest_filter):
+  """Create the test runner factory and tests.
 
   Args:
-    options: options for running the tests.
-    suite_name: name of the test suite being run.
+    use_exe_test_runner: If True, use the executable-based test runner.
+    suite_name: The suite name specified on the command line.
+    test_arguments: Additional arguments to pass to the test binary.
+    timeout: Timeout for each test.
+    cleanup_test_files: Whether or not to cleanup test files on device.
+    tool: Name of the Valgrind tool.
+    build_type: 'Release' or 'Debug'.
+    webkit: Whether the suite is being run from a WebKit checkout.
+    push_deps: If True, push all dependencies to the device.
+    gtest_filter: Filter for tests.
 
   Returns:
-    A tuple of (base_test_result.TestRunResult object, exit code).
-
-  Raises:
-    Exception: For various reasons including device failure or failing to reset
-        the test server port.
+    A tuple of (TestRunnerFactory, tests).
   """
-  attached_devices = []
-  buildbot_emulators = []
 
-  if options.use_emulator:
-    buildbot_emulators = emulator.LaunchEmulators(options.emulator_count,
-                                                  options.abi,
-                                                  wait_for_boot=True)
-    attached_devices = [e.device for e in buildbot_emulators]
-  elif options.test_device:
-    attached_devices = [options.test_device]
-  else:
-    attached_devices = android_commands.GetAttachedDevices()
-
-  if not attached_devices:
-    raise Exception('A device must be attached and online.')
-
-  # Reset the test port allocation. It's important to do it before starting
-  # to dispatch any tests.
   if not ports.ResetTestServerPortAllocation():
     raise Exception('Failed to reset test server port.')
 
-  _GenerateDepsDirUsingIsolate(suite_name, options.build_type)
+  suite_path = _GetSuitePath(use_exe_test_runner, suite_name, build_type)
 
+  # TODO(gkanwar): This breaks the abstraction of having test_dispatcher.py deal
+  # entirely with the devices. Can we do this another way?
+  attached_devices = android_commands.GetAttachedDevices()
+
+  deps_dir = _GenerateDepsDirUsingIsolate(suite_name, build_type)
   # Constructs a new TestRunner with the current options.
-  def RunnerFactory(device, shard_index):
+  def TestRunnerFactory(device, shard_index):
     return test_runner.TestRunner(
         device,
-        options.test_suite,
-        options.test_arguments,
-        options.timeout,
-        options.cleanup_test_files,
-        options.tool,
-        options.build_type,
-        options.webkit,
-        options.push_deps,
+        suite_path,
+        test_arguments,
+        timeout,
+        cleanup_test_files,
+        tool,
+        build_type,
+        webkit,
+        push_deps,
         constants.GTEST_TEST_PACKAGE_NAME,
         constants.GTEST_TEST_ACTIVITY_NAME,
         constants.GTEST_COMMAND_LINE_FILE)
 
   # Get tests and split them up based on the number of devices.
-  tests = GetTestsFiltered(suite_name, options.test_filter,
-                           RunnerFactory, attached_devices)
+  tests = GetTestsFiltered(suite_name, gtest_filter,
+                           TestRunnerFactory, attached_devices)
   num_devices = len(attached_devices)
   tests = [':'.join(tests[i::num_devices]) for i in xrange(num_devices)]
   tests = [t for t in tests if t]
 
-  # Run tests.
-  test_results, exit_code = shard.ShardAndRunTests(
-      RunnerFactory, attached_devices, tests, options.build_type,
-      test_timeout=None, num_retries=options.num_retries)
-
-  report_results.LogFull(
-      results=test_results,
-      test_type='Unit test',
-      test_package=suite_name,
-      build_type=options.build_type,
-      flakiness_server=options.flakiness_dashboard_server)
-
-  if os.path.isdir(constants.ISOLATE_DEPS_DIR):
-    shutil.rmtree(constants.ISOLATE_DEPS_DIR)
-
-  for buildbot_emulator in buildbot_emulators:
-    buildbot_emulator.Shutdown()
-
-  return (test_results, exit_code)
-
-
-def _ListTestSuites():
-  """Display a list of available test suites."""
-  print 'Available test suites are:'
-  for test_suite in gtest_config.STABLE_TEST_SUITES:
-    print test_suite
-
-
-def Dispatch(options):
-  """Dispatches the tests, sharding if possible.
-
-  If options.use_emulator is True, all tests will be run in new emulator
-  instance.
-
-  Args:
-    options: options for running the tests.
-
-  Returns:
-    base_test_result.TestRunResults object with the results of running the tests
-  """
-  results = base_test_result.TestRunResults()
-
-  if options.test_suite == 'help':
-    _ListTestSuites()
-    return (results, 0)
-
-  if options.use_xvfb:
-    framebuffer = xvfb.Xvfb()
-    framebuffer.Start()
-
-  all_test_suites = _FullyQualifiedTestSuites(options.exe, options.test_suite,
-                                              options.build_type)
-  exit_code = 0
-  for suite_name, suite_path in all_test_suites:
-    # Give each test suite its own copy of options.
-    test_options = copy.deepcopy(options)
-    test_options.test_suite = suite_path
-    test_results, test_exit_code = _RunATestSuite(test_options, suite_name)
-    results.AddTestRunResults(test_results)
-    if test_exit_code and exit_code != constants.ERROR_EXIT_CODE:
-      exit_code = test_exit_code
-
-  if options.use_xvfb:
-    framebuffer.Stop()
-
-  return (results, exit_code)
+  return (TestRunnerFactory, tests)
