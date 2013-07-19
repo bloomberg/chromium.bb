@@ -6,6 +6,8 @@
      6:	f0 66 44 01 3c 24                            	lock add %r15w,(%rsp)
 @rdfa_output:
   return code: 0
+@spec:
+  SAFE
 ----------------------------------------------------------------------
 @hex:
   64 66 41 89 C0
@@ -15,6 +17,8 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  0: unrecognized instruction 'fs'
 ----------------------------------------------------------------------
 @hex:
   66 64 41 89 C0
@@ -25,9 +29,13 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  0: ('dangling legacy prefixes', Instruction(0x0: 66  data16))
+  1: unrecognized instruction 'fs'
 ----------------------------------------------------------------------
 @hex:
-  # DATA16 prefix together with REP
+  # DATA16 prefix together with REP is disallowed because of the bug,
+  # see https://code.google.com/p/nativeclient/issues/detail?id=1950
   89 FF
   49 8D 3C 3F
   66 F3 48 AB
@@ -38,6 +46,8 @@
 @rdfa_output:
   6: [0] unrecognized instruction
   return code: 1
+@spec:
+  SAFE
 ----------------------------------------------------------------------
 @hex:
   # REP prefix together with DATA16
@@ -51,6 +61,8 @@
 @rdfa_output:
   6: [0] unrecognized instruction
   return code: 1
+@spec:
+  SAFE
 ----------------------------------------------------------------------
 @hex:
   66 90
@@ -58,6 +70,8 @@
      0:	66 90                                        	xchg   %ax,%ax
 @rdfa_output:
   return code: 0
+@spec:
+  SAFE
 ----------------------------------------------------------------------
 @hex:
   66 66 90
@@ -66,6 +80,8 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  0: ('duplicate legacy prefix', Instruction(0x0: 66 66 90  xchg %ax,%ax))
 ----------------------------------------------------------------------
 @hex:
   66 66 66 90
@@ -74,6 +90,8 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  0: ('duplicate legacy prefix', Instruction(0x0: 66 66 66 90  xchg %ax,%ax))
 ----------------------------------------------------------------------
 @hex:
   # white-listed nop
@@ -82,3 +100,5 @@
      0:	66 66 66 2e 0f 1f 84 00 00 00 00 00          	nopw   %cs:0x0(%rax,%rax,1)
 @rdfa_output:
   return code: 0
+@spec:
+  SAFE
