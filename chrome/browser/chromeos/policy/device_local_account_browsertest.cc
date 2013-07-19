@@ -35,6 +35,7 @@
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
@@ -332,9 +333,10 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, StartSession) {
                                         base::Bind(IsSessionStarted)).Wait();
 
   // Check that the startup pages specified in policy were opened.
-  EXPECT_EQ(1U, chrome::GetTotalBrowserCount());
-  Browser* browser =
-      chrome::FindLastActiveWithHostDesktopType(chrome::HOST_DESKTOP_TYPE_ASH);
+  BrowserList* browser_list =
+    BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH);
+  EXPECT_EQ(1U, browser_list->size());
+  Browser* browser = browser_list->get(0);
   ASSERT_TRUE(browser);
 
   TabStripModel* tabs = browser->tab_strip_model();

@@ -387,5 +387,38 @@ TEST_F(RootWindowControllerTest, GetFullscreenWindow) {
   EXPECT_EQ(w2->GetNativeWindow(), controller->GetFullscreenWindow());
 }
 
+// Test that user session window can't be focused if user session blocked by
+// some overlapping UI.
+TEST_F(RootWindowControllerTest, FocusBlockedWindow) {
+  UpdateDisplay("600x600");
+  internal::RootWindowController* controller =
+      Shell::GetInstance()->GetPrimaryRootWindowController();
+  aura::Window* lock_container =
+      Shell::GetContainer(controller->root_window(),
+                          internal::kShellWindowId_LockScreenContainer);
+  aura::Window* lock_window = Widget::CreateWindowWithParentAndBounds(NULL,
+      lock_container, gfx::Rect(0, 0, 100, 100))->GetNativeView();
+  lock_window->Show();
+  aura::Window* session_window =
+      CreateTestWidget(gfx::Rect(0, 0, 100, 100))->GetNativeView();
+  session_window->Show();
+
+  // Lock screen.
+  Shell::GetInstance()->session_state_delegate()->LockScreen();
+  lock_window->Focus();
+  EXPECT_TRUE(lock_window->HasFocus());
+  session_window->Focus();
+  EXPECT_FALSE(session_window->HasFocus());
+  Shell::GetInstance()->session_state_delegate()->UnlockScreen();
+
+  // Session not started yet.
+  SetSessionStarted(false);
+  lock_window->Focus();
+  EXPECT_TRUE(lock_window->HasFocus());
+  session_window->Focus();
+  EXPECT_FALSE(session_window->HasFocus());
+  SetSessionStarted(true);
+}
+
 }  // namespace test
 }  // namespace ash
