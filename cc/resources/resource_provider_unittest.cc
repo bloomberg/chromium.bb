@@ -1692,11 +1692,11 @@ TEST_P(ResourceProviderTest, Image_Bitmap) {
   resource_provider->DeleteResource(id);
 }
 
-void InitializeGLAndCheck(ResourceProvider* resource_provider,
+void InitializeGLAndCheck(ContextSharedData* shared_data,
+                          ResourceProvider* resource_provider,
                           FakeOutputSurface* output_surface) {
-  scoped_ptr<ContextSharedData> shared_data = ContextSharedData::Create();
   scoped_ptr<ResourceProviderContext> context =
-      ResourceProviderContext::Create(shared_data.release());
+      ResourceProviderContext::Create(shared_data);
   output_surface->SetAndInitializeContext3D(
       context.PassAs<WebKit::WebGraphicsContext3D>());
   EXPECT_TRUE(resource_provider->InitializeGL());
@@ -1707,6 +1707,7 @@ void InitializeGLAndCheck(ResourceProvider* resource_provider,
 }
 
 TEST(ResourceProviderTest, BasicInitializeGLSoftware) {
+  scoped_ptr<ContextSharedData> shared_data = ContextSharedData::Create();
   FakeOutputSurfaceClient client;
   scoped_ptr<FakeOutputSurface> output_surface(
       FakeOutputSurface::CreateDeferredGL(
@@ -1717,12 +1718,16 @@ TEST(ResourceProviderTest, BasicInitializeGLSoftware) {
 
   CheckCreateResource(ResourceProvider::Bitmap, resource_provider.get(), NULL);
 
-  InitializeGLAndCheck(resource_provider.get(), output_surface.get());
+  InitializeGLAndCheck(shared_data.get(),
+                       resource_provider.get(),
+                       output_surface.get());
 
   resource_provider->InitializeSoftware();
   CheckCreateResource(ResourceProvider::Bitmap, resource_provider.get(), NULL);
 
-  InitializeGLAndCheck(resource_provider.get(), output_surface.get());
+  InitializeGLAndCheck(shared_data.get(),
+                       resource_provider.get(),
+                       output_surface.get());
 }
 
 INSTANTIATE_TEST_CASE_P(
