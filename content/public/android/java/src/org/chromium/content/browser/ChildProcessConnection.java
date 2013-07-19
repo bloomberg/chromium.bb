@@ -355,22 +355,14 @@ public class ChildProcessConnection {
         TraceEvent.end();
     }
 
-    private static final long REMOVE_INITIAL_BINDING_DELAY_MILLIS = 1 * 1000;  // One second.
-
     /**
      * Called to remove the strong binding estabilished when the connection was started. It is safe
-     * to call this multiple times. The binding is removed after a fixed delay period so that the
-     * renderer will not be killed immediately after the call.
+     * to call this multiple times.
      */
     void removeInitialBinding() {
-        ThreadUtils.postOnUiThreadDelayed(new Runnable() {
-            @Override
-            public void run() {
-                synchronized(mUiThreadLock) {
-                    mInitialBinding.unbind();
-                }
-            }
-        }, REMOVE_INITIAL_BINDING_DELAY_MILLIS);
+        synchronized(mUiThreadLock) {
+            mInitialBinding.unbind();
+        }
     }
 
     /**
@@ -392,29 +384,21 @@ public class ChildProcessConnection {
         }
     }
 
-    private static final long DETACH_AS_ACTIVE_DELAY_MILLIS = 5 * 1000;  // Five seconds.
-
     /**
-     * Called when the service is no longer considered active. Actual binding is removed after a
-     * fixed delay period so that the renderer will not be killed immediately after the call.
+     * Called when the service is no longer considered active.
      */
     void detachAsActive() {
-        ThreadUtils.postOnUiThreadDelayed(new Runnable() {
-            @Override
-            public void run() {
-                synchronized(mUiThreadLock) {
-                    assert mAttachAsActiveCount > 0;
-                    if (mService == null) {
-                        Log.w(TAG, "The connection is not bound for " + mPID);
-                        return;
-                    }
-                    mAttachAsActiveCount--;
-                    if (mAttachAsActiveCount == 0) {
-                        mStrongBinding.unbind();
-                    }
-                }
+        synchronized(mUiThreadLock) {
+            assert mAttachAsActiveCount > 0;
+            if (mService == null) {
+                Log.w(TAG, "The connection is not bound for " + mPID);
+                return;
             }
-        }, DETACH_AS_ACTIVE_DELAY_MILLIS);
+            mAttachAsActiveCount--;
+            if (mAttachAsActiveCount == 0) {
+                mStrongBinding.unbind();
+            }
+        }
     }
 
 
