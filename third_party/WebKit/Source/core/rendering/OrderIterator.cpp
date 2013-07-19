@@ -74,6 +74,16 @@ void OrderIterator::reset()
     m_currentChild = 0;
 }
 
+void OrderIterator::invalidate()
+{
+    // Note that we don't release the memory here, we only invalidate the size.
+    // This avoids unneeded reallocation if the size ends up not changing.
+    m_orderValues.shrink(0);
+    m_orderedValues.clear();
+
+    reset();
+}
+
 OrderIteratorPopulator::~OrderIteratorPopulator()
 {
     m_iterator.reset();

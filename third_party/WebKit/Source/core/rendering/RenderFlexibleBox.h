@@ -64,6 +64,8 @@ protected:
 
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle);
 
+    virtual void removeChild(RenderObject* child) OVERRIDE;
+
 private:
     enum FlexSign {
         PositiveFlexibility,

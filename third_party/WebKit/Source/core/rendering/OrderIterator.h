@@ -61,6 +61,8 @@ public:
     RenderBox* next();
     void reset();
 
+    void invalidate();
+
 private:
     const RenderBox* m_containerBox;
 
@@ -83,10 +85,7 @@ public:
     OrderIteratorPopulator(OrderIterator& iterator)
         : m_iterator(iterator)
     {
-        // Note that we don't release the memory here, we only invalidate the size.
-        // This avoids unneeded reallocation if the size ends up not changing.
-        m_iterator.m_orderValues.shrink(0);
-        m_iterator.m_orderedValues.clear();
+        m_iterator.invalidate();
     }
 
     ~OrderIteratorPopulator();
