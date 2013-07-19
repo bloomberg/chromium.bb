@@ -122,7 +122,7 @@ class PythonTestSharder(object):
     final_results = base_test_result.TestRunResults()
     tests_to_run = self.tests
 
-    Forwarder.KillHost()
+    Forwarder.UseMultiprocessing()
 
     for retry in xrange(self.retries):
       logging.warning('Try %d of %d', retry + 1, self.retries)
