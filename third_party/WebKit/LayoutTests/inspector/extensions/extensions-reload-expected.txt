@@ -1,3 +1,11 @@
+CONSOLE MESSAGE: line 3: preprocessor transcoding inspector-test.js
+CONSOLE MESSAGE: line 3: preprocessor transcoding extensions-test.js
+CONSOLE MESSAGE: line 3: preprocessor transcoding test-script.js
+CONSOLE MESSAGE: line 1: running preprocessed test-script.js
+CONSOLE MESSAGE: line 3: preprocessor transcoding extensions-reload.html
+CONSOLE MESSAGE: line 7: running preprocessed extensions-reload_html
+CONSOLE MESSAGE: line 3: preprocessor transcoding onload
+CONSOLE MESSAGE: line 57: running preprocessed onload
 Tests that webInspector.inspectedWindow.reload() successfully injects user's code upon reload
 
 Started extension.
@@ -7,5 +15,7 @@ Page reloaded.
 Page reloaded.
 With injected code: foo = 42
 Without injected code: foo = undefined
+RUNNING TEST: extension_testReloadPreprocessesCode
+Page reloaded.
 All tests done.
 

@@ -2,6 +2,8 @@
 <head>
 <script src="../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../http/tests/inspector/extensions-test.js"></script>
+
+<script src="resources/test-script.js"></script>
 <script type="text/javascript">
 
 window.bar = "foo = " + window.foo;
@@ -29,6 +31,24 @@ function extension_testReloadInjectsCode(nextTest)
     evaluateOnFrontend("InspectorTest.runWhenPageLoads(reply)", onPageWithInjectedCodeLoaded);
     webInspector.inspectedWindow.reload({
         injectedScript: "window.foo = 42;"
+    });
+}
+
+function extension_testReloadPreprocessesCode(nextTest)
+{
+    evaluateOnFrontend("InspectorTest.runWhenPageLoads(reply)", nextTest);
+    function preprocessor(src, url)
+    {
+        console.log("preprocessor transcoding " + url);
+        if(/-test.js/.test(url))
+            return src;
+        url = url.replace(/\.html/, '_html');
+        var preamble = 'console.log("running preprocessed " + \"' + url + '\");\n';
+        var sourceURL = '\n//# sourceURL=' + url + '.js\n';
+        return preamble + src + sourceURL;
+    }
+    webInspector.inspectedWindow.reload({
+        preprocessingScript: '(' + preprocessor + ')'
     });
 }
 
