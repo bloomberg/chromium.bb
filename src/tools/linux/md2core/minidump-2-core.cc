@@ -1128,7 +1128,7 @@ main(int argc, char** argv) {
   nhdr.n_type = NT_AUXV;
   if (!writea(1, &nhdr, sizeof(nhdr)) ||
       !writea(1, "CORE\0\0\0\0", 8) ||
-      !writea(1, &crashinfo.auxv, crashinfo.auxv_length)) {
+      !writea(1, crashinfo.auxv, crashinfo.auxv_length)) {
     return 1;
   }
 
