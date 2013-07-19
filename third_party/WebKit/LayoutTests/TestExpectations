@@ -1724,5 +1724,3 @@ crbug.com/255407 plugins/npruntime/leak-window-scriptable-object.html [ Pass Fai
 # started timing out around r154246..r154251
 crbug.com/260744 [ Debug ] fast/js/regress/function-dot-apply.html  [ Timeout ]
 crbug.com/260744 [ Debug ] fast/js/regress/inline-arguments-local-escape.html  [ Timeout ]
-
-crbug.com/261123 editing/spelling/inline-spelling-markers-hidpi-composited.html [ NeedsRebaseline ]
