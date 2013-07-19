@@ -325,7 +325,7 @@ scoped_ptr<ConfirmInfoBarDelegate> AutofillMetricsTest::CreateDelegate(
               LogCreditCardInfoBarMetric(AutofillMetrics::INFOBAR_SHOWN));
 
   CreditCard credit_card;
-  return AutofillCCInfoBarDelegate::CreateForTesting(
+  return AutofillCCInfoBarDelegate::Create(
       metric_logger,
       base::Bind(&TestPersonalDataManager::SaveImportedCreditCard,
                  base::Unretained(personal_data_.get()), credit_card));

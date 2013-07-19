@@ -29,14 +29,6 @@ void AutofillCCInfoBarDelegate::Create(
           infobar_service, metric_logger, save_card_callback)));
 }
 
-// static
-scoped_ptr<ConfirmInfoBarDelegate> AutofillCCInfoBarDelegate::CreateForTesting(
-    const AutofillMetrics* metric_logger,
-    const base::Closure& save_card_callback) {
-  return scoped_ptr<ConfirmInfoBarDelegate>(
-      new AutofillCCInfoBarDelegate(NULL, metric_logger, save_card_callback));
-}
-
 AutofillCCInfoBarDelegate::AutofillCCInfoBarDelegate(
     InfoBarService* infobar_service,
     const AutofillMetrics* metric_logger,
