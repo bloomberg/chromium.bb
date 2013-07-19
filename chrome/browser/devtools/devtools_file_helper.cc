@@ -299,9 +299,18 @@ void DevToolsFileHelper::InnerAddFileSystem(
     const AddFileSystemCallback& callback,
     const ShowInfoBarCallback& show_info_bar_callback,
     const base::FilePath& path) {
+  std::string file_system_path = path.AsUTF8Unsafe();
+
+  const DictionaryValue* file_systems_paths_value =
+      profile_->GetPrefs()->GetDictionary(prefs::kDevToolsFileSystemPaths);
+  if (file_systems_paths_value->HasKey(file_system_path)) {
+    callback.Run(FileSystem());
+    return;
+  }
+
   string16 message = l10n_util::GetStringFUTF16(
       IDS_DEV_TOOLS_CONFIRM_ADD_FILE_SYSTEM_MESSAGE,
-      UTF8ToUTF16(path.AsUTF8Unsafe() + "/"));
+      UTF8ToUTF16(file_system_path + "/"));
   show_info_bar_callback.Run(
       message,
       Bind(&DevToolsFileHelper::AddUserConfirmedFileSystem,
