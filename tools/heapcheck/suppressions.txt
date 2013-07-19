@@ -1009,3 +1009,57 @@
    ...
    fun:gpu::*_Test::TestBody
 }
+{
+   bug_222687a
+   Heapcheck:Leak
+   ...
+   fun:chrome::StorageMonitor::GetInstance
+   fun:GetMediaTransferProtocolManager
+   fun:~MediaTransferProtocolDeviceObserverLinux
+   fun:~MediaTransferProtocolDeviceObserverLinux
+   fun:base::DefaultDeleter::operator
+   fun:~scoped_ptr_impl
+   fun:~scoped_ptr
+   fun:~StorageMonitorLinux
+   fun:~TestStorageMonitorLinux
+   fun:~TestStorageMonitorLinux
+}
+{
+   bug_222687b
+   Heapcheck:Leak
+   fun:base::internal::WeakReferenceOwner::GetRef
+   fun:base::WeakPtrFactory::GetWeakPtr
+   fun:chrome::StorageMonitorLinux::Init
+   fun:SetUp
+}
+{
+   bug_222687c
+   Heapcheck:Leak
+   fun:base::internal::WeakReferenceOwner::GetRef
+   fun:base::WeakPtrFactory::GetWeakPtr
+   fun:MtabWatcherLinux
+   fun:CreateMtabWatcherLinuxOnFileThread
+}
+{
+   bug_222687d
+   Heapcheck:Leak
+   ...
+   fun:CreateMtabWatcherLinuxOnFileThread
+}
+{
+   bug_222687e
+   Heapcheck:Leak
+   fun:MessageLoop
+   fun:StorageMonitorLinuxTest
+   fun:StorageMonitorLinuxTest_*_Test
+}
+{
+   bug_222687f
+   Heapcheck:Leak
+   fun:std::basic_string::_Rep::_S_create
+   fun:base::FilePath::clear
+   fun:CancelOnMessageLoopThread
+   fun:WillDestroyCurrentMessageLoop
+   fun:~MessageLoop
+   fun:~StorageMonitorLinuxTest
+}

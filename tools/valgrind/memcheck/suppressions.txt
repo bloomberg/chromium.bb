@@ -6404,8 +6404,6 @@
    Memcheck:Leak
    fun:_Znw*
    ...
-   fun:_ZNK6chrome16MtabWatcherLinux8ReadMtab*
-   fun:_ZN6chrome16MtabWatcherLinuxC1ERKN4base8FilePath*
    fun:_ZN6chrome12_GLOBAL__N_134CreateMtabWatcherLinuxOnFileThread*
 }
 {
@@ -6426,6 +6424,22 @@
    fun:_ZN22ChromeBrowserMainParts25PreMainMessageLoopRunImplEv
    fun:_ZN22ChromeBrowserMainParts21PreMainMessageLoopRunEv
    fun:_ZN7content15BrowserMainLoop13CreateThreadsEv
+}
+{
+   bug_222687d
+   Memcheck:Leak
+   ...
+   fun:_ZN21TestingBrowserProcess15storage_monitorEv
+   fun:_ZN6chrome14StorageMonitor11GetInstanceEv
+   fun:_ZN6chrome12_GLOBAL__N_131GetMediaTransferProtocolManagerEv
+   fun:_ZN6chrome40MediaTransferProtocolDeviceObserverLinuxD1Ev
+   fun:_ZN6chrome40MediaTransferProtocolDeviceObserverLinuxD0Ev
+   fun:_ZNK4base14DefaultDeleterIN6chrome40MediaTransferProtocolDeviceObserverLinuxEEclEPS2_
+   fun:_ZN4base8internal15scoped_ptr_implIN6chrome40MediaTransferProtocolDeviceObserverLinuxENS_14DefaultDeleterIS3_EEED1Ev
+   fun:_ZN10scoped_ptrIN6chrome40MediaTransferProtocolDeviceObserverLinuxEN4base14DefaultDeleterIS1_EEED1Ev
+   fun:_ZN6chrome19StorageMonitorLinuxD1Ev
+   ...
+   fun:_ZN6chrome4test18TestStorageMonitor15RemoveSingletonEv
 }
 {
    bug_222876
