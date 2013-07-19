@@ -269,6 +269,7 @@ StackTraceV8.prototype = {
 
 /**
  * @constructor
+ * @template T
  */
 function Cache()
 {
@@ -286,7 +287,7 @@ Cache.prototype = {
 
     reset: function()
     {
-        /** @type {!Object.<number, Object>} */
+        /** @type {!Object.<number, !T>} */
         this._items = Object.create(null);
         /** @type {number} */
         this._size = 0;
@@ -303,7 +304,7 @@ Cache.prototype = {
 
     /**
      * @param {number} key
-     * @return {Object}
+     * @return {T|undefined}
      */
     get: function(key)
     {
@@ -312,7 +313,7 @@ Cache.prototype = {
 
     /**
      * @param {number} key
-     * @param {Object} item
+     * @param {!T} item
      */
     put: function(key, item)
     {
@@ -443,7 +444,7 @@ Call.prototype = {
     },
 
     /**
-     * @param {!Cache} cache
+     * @param {!Cache.<ReplayableResource>} cache
      * @return {!ReplayableCall}
      */
     toReplayable: function(cache)
@@ -460,7 +461,7 @@ Call.prototype = {
 
     /**
      * @param {!ReplayableCall} replayableCall
-     * @param {!Cache} cache
+     * @param {!Cache.<Resource>} cache
      * @return {!Call}
      */
     replay: function(replayableCall, cache)
@@ -602,7 +603,7 @@ ReplayableCall.prototype = {
     },
 
     /**
-     * @param {!Cache} cache
+     * @param {!Cache.<Resource>} cache
      * @return {!Call}
      */
     replay: function(cache)
@@ -678,7 +679,7 @@ Resource.wrappedObject = function(obj)
 
 /**
  * @param {Resource|*} obj
- * @param {!Cache} cache
+ * @param {!Cache.<ReplayableResource>} cache
  * @return {ReplayableResource|*}
  */
 Resource.toReplayable = function(obj, cache)
@@ -781,12 +782,12 @@ Resource.prototype = {
     },
 
     /**
-     * @param {!Cache} cache
+     * @param {!Cache.<ReplayableResource>} cache
      * @return {!ReplayableResource}
      */
     toReplayable: function(cache)
     {
-        var result = /** @type {ReplayableResource} */ (cache.get(this._id));
+        var result = cache.get(this._id);
         if (result)
             return result;
         var data = {
@@ -808,7 +809,7 @@ Resource.prototype = {
 
     /**
      * @param {!Object} data
-     * @param {!Cache} cache
+     * @param {!Cache.<ReplayableResource>} cache
      */
     _populateReplayableData: function(data, cache)
     {
@@ -817,12 +818,12 @@ Resource.prototype = {
 
     /**
      * @param {!Object} data
-     * @param {!Cache} cache
+     * @param {!Cache.<Resource>} cache
      * @return {!Resource}
      */
     replay: function(data, cache)
     {
-        var resource = /** @type {Resource} */ (cache.get(data.id));
+        var resource = cache.get(data.id);
         if (resource)
             return resource;
         this._id = data.id;
@@ -840,7 +841,7 @@ Resource.prototype = {
 
     /**
      * @param {!Object} data
-     * @param {!Cache} cache
+     * @param {!Cache.<Resource>} cache
      */
     _doReplayCalls: function(data, cache)
     {
@@ -1134,7 +1135,7 @@ ReplayableResource.prototype = {
     },
 
     /**
-     * @param {!Cache} cache
+     * @param {!Cache.<Resource>} cache
      * @return {!Resource}
      */
     replay: function(cache)
@@ -1148,7 +1149,7 @@ ReplayableResource.prototype = {
 
 /**
  * @param {ReplayableResource|*} obj
- * @param {!Cache} cache
+ * @param {!Cache.<Resource>} cache
  * @return {*}
  */
 ReplayableResource.replay = function(obj, cache)
@@ -1227,7 +1228,7 @@ WebGLBoundResource.prototype = {
     /**
      * @override
      * @param {!Object} data
-     * @param {!Cache} cache
+     * @param {!Cache.<ReplayableResource>} cache
      */
     _populateReplayableData: function(data, cache)
     {
@@ -1241,7 +1242,7 @@ WebGLBoundResource.prototype = {
     /**
      * @override
      * @param {!Object} data
-     * @param {!Cache} cache
+     * @param {!Cache.<Resource>} cache
      */
     _doReplayCalls: function(data, cache)
     {
@@ -1277,7 +1278,7 @@ WebGLBoundResource.prototype = {
 
     /**
      * @param {!Object} data
-     * @param {!Cache} cache
+     * @param {!Cache.<Resource>} cache
      * @return {WebGLRenderingContextResource}
      */
     _replayContextResource: function(data, cache)
@@ -1322,7 +1323,7 @@ WebGLTextureResource.prototype = {
     /**
      * @override
      * @param {!Object} data
-     * @param {!Cache} cache
+     * @param {!Cache.<Resource>} cache
      */
     _doReplayCalls: function(data, cache)
     {
@@ -1422,7 +1423,7 @@ WebGLProgramResource.prototype = {
     /**
      * @override
      * @param {!Object} data
-     * @param {!Cache} cache
+     * @param {!Cache.<ReplayableResource>} cache
      */
     _populateReplayableData: function(data, cache)
     {
@@ -1456,7 +1457,7 @@ WebGLProgramResource.prototype = {
     /**
      * @override
      * @param {!Object} data
-     * @param {!Cache} cache
+     * @param {!Cache.<Resource>} cache
      */
     _doReplayCalls: function(data, cache)
     {
@@ -1872,7 +1873,7 @@ WebGLRenderingContextResource.prototype = {
     /**
      * @override
      * @param {!Object} data
-     * @param {!Cache} cache
+     * @param {!Cache.<ReplayableResource>} cache
      */
     _populateReplayableData: function(data, cache)
     {
@@ -1929,7 +1930,7 @@ WebGLRenderingContextResource.prototype = {
     /**
      * @override
      * @param {!Object} data
-     * @param {!Cache} cache
+     * @param {!Cache.<Resource>} cache
      */
     _doReplayCalls: function(data, cache)
     {
@@ -2368,7 +2369,7 @@ CanvasRenderingContext2DResource.prototype = {
     /**
      * @override
      * @param {!Object} data
-     * @param {!Cache} cache
+     * @param {!Cache.<ReplayableResource>} cache
      */
     _populateReplayableData: function(data, cache)
     {
@@ -2382,7 +2383,7 @@ CanvasRenderingContext2DResource.prototype = {
     /**
      * @override
      * @param {!Object} data
-     * @param {!Cache} cache
+     * @param {!Cache.<Resource>} cache
      */
     _doReplayCalls: function(data, cache)
     {
@@ -3053,7 +3054,7 @@ function TraceLog()
 {
     /** @type {!Array.<ReplayableCall>} */
     this._replayableCalls = [];
-    /** @type {!Cache} */
+    /** @type {!Cache.<ReplayableResource>} */
     this._replayablesCache = new Cache();
     /** @type {!Object.<number, boolean>} */
     this._frameEndCallIndexes = {};
@@ -3078,11 +3079,11 @@ TraceLog.prototype = {
 
     /**
      * @param {number} id
-     * @return {ReplayableResource}
+     * @return {ReplayableResource|undefined}
      */
     replayableResource: function(id)
     {
-        return /** @type {ReplayableResource} */ (this._replayablesCache.get(id));
+        return this._replayablesCache.get(id);
     },
 
     /**
@@ -3128,7 +3129,7 @@ function TraceLogPlayer(traceLog)
     this._traceLog = traceLog;
     /** @type {number} */
     this._nextReplayStep = 0;
-    /** @type {!Cache} */
+    /** @type {!Cache.<Resource>} */
     this._replayWorldCache = new Cache();
 }
 
@@ -3143,11 +3144,11 @@ TraceLogPlayer.prototype = {
 
     /**
      * @param {number} id
-     * @return {Resource}
+     * @return {Resource|undefined}
      */
     replayWorldResource: function(id)
     {
-        return /** @type {Resource} */ (this._replayWorldCache.get(id));
+        return this._replayWorldCache.get(id);
     },
 
     /**
