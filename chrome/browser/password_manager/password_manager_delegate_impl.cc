@@ -40,7 +40,8 @@
 class SavePasswordInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   // If we won't be showing the one-click signin infobar, creates a save
-  // password delegate and adds it to the InfoBarService for |web_contents|.
+  // password infobar delegate and adds it to the InfoBarService for
+  // |web_contents|.
   static void Create(content::WebContents* web_contents,
                      PasswordFormManager* form_to_save);
 

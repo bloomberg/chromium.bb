@@ -9,8 +9,8 @@
 
 class NaClInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  // Creates a NaCl delegate and adds it to the infobar service corresponding to
-  // the given render process and view IDs.
+  // Creates a NaCl infobar delegate and adds it to the infobar service
+  // corresponding to the given render process and view IDs.
   static void Create(int render_process_id, int render_view_id);
 
  private:

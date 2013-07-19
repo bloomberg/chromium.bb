@@ -88,17 +88,17 @@ void PPAPITestBase::InfoBarObserver::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   ASSERT_EQ(chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED, type);
-  InfoBarDelegate* info_bar_delegate =
+  InfoBarDelegate* infobar =
       content::Details<InfoBarAddedDetails>(details).ptr();
-  ConfirmInfoBarDelegate* confirm_info_bar_delegate =
-      info_bar_delegate->AsConfirmInfoBarDelegate();
-  ASSERT_TRUE(confirm_info_bar_delegate);
+  ConfirmInfoBarDelegate* confirm_infobar_delegate =
+      infobar->AsConfirmInfoBarDelegate();
+  ASSERT_TRUE(confirm_infobar_delegate);
 
   ASSERT_FALSE(expected_infobars_.empty()) << "Unexpected infobar";
   if (expected_infobars_.front())
-    confirm_info_bar_delegate->Accept();
+    confirm_infobar_delegate->Accept();
   else
-    confirm_info_bar_delegate->Cancel();
+    confirm_infobar_delegate->Cancel();
   expected_infobars_.pop_front();
 
   // TODO(bauerb): We should close the infobar.

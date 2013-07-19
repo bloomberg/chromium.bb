@@ -1635,16 +1635,16 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DISABLED_TranslateEnabled) {
 
   // Verify that the translate infobar showed up.
   ASSERT_EQ(1u, infobar_service->infobar_count());
-  InfoBarDelegate* infobar_delegate = infobar_service->infobar_at(0);
-  TranslateInfoBarDelegate* delegate =
-      infobar_delegate->AsTranslateInfoBarDelegate();
-  ASSERT_TRUE(delegate);
+  InfoBarDelegate* infobar = infobar_service->infobar_at(0);
+  TranslateInfoBarDelegate* translate_infobar_delegate =
+      infobar->AsTranslateInfoBarDelegate();
+  ASSERT_TRUE(translate_infobar_delegate);
   EXPECT_EQ(TranslateInfoBarDelegate::BEFORE_TRANSLATE,
-            delegate->infobar_type());
-  EXPECT_EQ("fr", delegate->original_language_code());
+            translate_infobar_delegate->infobar_type());
+  EXPECT_EQ("fr", translate_infobar_delegate->original_language_code());
 
   // Now force disable translate.
-  infobar_service->RemoveInfoBar(infobar_delegate);
+  infobar_service->RemoveInfoBar(infobar);
   EXPECT_EQ(0u, infobar_service->infobar_count());
   policies.Set(key::kTranslateEnabled, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, base::Value::CreateBooleanValue(false), NULL);

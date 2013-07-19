@@ -22,9 +22,9 @@ class MediaStreamInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual ~MediaStreamInfoBarDelegate();
 
   // Handles a permission request (in |request|) for |web_contents|.  If this
-  // involves prompting the user, creates a media stream delegate, then checks
-  // for an existing infobar for |web_contents| and replaces it if found, or
-  // just adds the new infobar otherwise.  Returns whether an infobar was
+  // involves prompting the user, creates a media stream infobar delegate, then
+  // checks for an existing infobar for |web_contents| and replaces it if found,
+  // or just adds the new infobar otherwise.  Returns whether an infobar was
   // created.
   static bool Create(content::WebContents* web_contents,
                      const content::MediaStreamRequest& request,

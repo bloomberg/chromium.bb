@@ -16,9 +16,10 @@ class ProtocolHandlerRegistry;
 // card information gathered from a form submission.
 class RegisterProtocolHandlerInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  // Creates a new RPH delegate.  Searches |infobar_service| for an existing
-  // delegate for the same |handler|; replaces it with the new delegate if
-  // found, otherwise adds the new infobar to |infobar_service|.
+  // Creates a new register protocol handler infobar delegate.  Searches
+  // |infobar_service| for an existing delegate for the same |handler|; replaces
+  // it with the new delegate if found, otherwise adds the new infobar to
+  // |infobar_service|.
   static void Create(InfoBarService* infobar_service,
                      ProtocolHandlerRegistry* registry,
                      const ProtocolHandler& handler);

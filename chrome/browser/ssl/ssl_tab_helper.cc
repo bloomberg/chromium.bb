@@ -42,9 +42,9 @@ namespace {
 
 class SSLCertResultInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  // Creates an SSL cert result delegate.  If |previous_infobar| is
+  // Creates an SSL cert result infobar delegate.  If |previous_infobar| is
   // NULL, adds the infobar to |infobar_service|; otherwise, replaces
-  // |previous_infobar|.  Returns the new delegate if it was successfully added.
+  // |previous_infobar|.  Returns the new infobar if it was successfully added.
   // |cert| is valid iff cert addition was successful.
   static InfoBarDelegate* Create(InfoBarService* infobar_service,
                                  InfoBarDelegate* previous_infobar,
@@ -137,7 +137,7 @@ class SSLTabHelper::SSLAddCertData
   explicit SSLAddCertData(InfoBarService* infobar_service);
   virtual ~SSLAddCertData();
 
-  // Displays an infobar, replacing |infobar_delegate_| if it exists.
+  // Displays an infobar, replacing |infobar_| if it exists.
   void ShowInfoBar(const string16& message, net::X509Certificate* cert);
 
  private:
@@ -147,7 +147,7 @@ class SSLTabHelper::SSLAddCertData
                        const content::NotificationDetails& details) OVERRIDE;
 
   InfoBarService* infobar_service_;
-  InfoBarDelegate* infobar_delegate_;
+  InfoBarDelegate* infobar_;
   content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLAddCertData);
@@ -155,7 +155,7 @@ class SSLTabHelper::SSLAddCertData
 
 SSLTabHelper::SSLAddCertData::SSLAddCertData(InfoBarService* infobar_service)
     : infobar_service_(infobar_service),
-      infobar_delegate_(NULL) {
+      infobar_(NULL) {
   content::Source<InfoBarService> source(infobar_service_);
   registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
                  source);
@@ -168,8 +168,8 @@ SSLTabHelper::SSLAddCertData::~SSLAddCertData() {
 
 void SSLTabHelper::SSLAddCertData::ShowInfoBar(const string16& message,
                                                net::X509Certificate* cert) {
-  infobar_delegate_ = SSLCertResultInfoBarDelegate::Create(
-      infobar_service_, infobar_delegate_, message, cert);
+  infobar_ = SSLCertResultInfoBarDelegate::Create(infobar_service_, infobar_,
+                                                  message, cert);
 }
 
 void SSLTabHelper::SSLAddCertData::Observe(
@@ -178,11 +178,11 @@ void SSLTabHelper::SSLAddCertData::Observe(
     const content::NotificationDetails& details) {
   DCHECK(type == chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED ||
          type == chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REPLACED);
-  if (infobar_delegate_ ==
+  if (infobar_ ==
       ((type == chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED) ?
           content::Details<InfoBarRemovedDetails>(details)->first :
           content::Details<InfoBarReplacedDetails>(details)->first))
-    infobar_delegate_ = NULL;
+    infobar_ = NULL;
 }
 
 

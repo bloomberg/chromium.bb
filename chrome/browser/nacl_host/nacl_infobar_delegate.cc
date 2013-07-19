@@ -24,9 +24,10 @@ void NaClInfoBarDelegate::Create(int render_process_id, int render_view_id) {
     return;
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(web_contents);
-  if (infobar_service)
+  if (infobar_service) {
     infobar_service->AddInfoBar(scoped_ptr<InfoBarDelegate>(
         new NaClInfoBarDelegate(infobar_service)));
+  }
 }
 
 NaClInfoBarDelegate::NaClInfoBarDelegate(InfoBarService* infobar_service)

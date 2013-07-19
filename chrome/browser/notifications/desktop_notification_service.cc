@@ -64,7 +64,7 @@ using WebKit::WebSecurityOrigin;
 // permissions.
 class NotificationPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  // Creates a notification permission delegate and adds it to
+  // Creates a notification permission infobar delegate and adds it to
   // |infobar_service|.
   static void Create(InfoBarService* infobar_service,
                      DesktopNotificationService* notification_service,
