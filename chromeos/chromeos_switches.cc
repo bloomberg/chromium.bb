@@ -123,6 +123,10 @@ const char kFileManagerShowCheckboxes[]     = "file-manager-show-checkboxes";
 // Enables the sharing feature in the Files.app.
 const char kFileManagerEnableSharing[]      = "file-manager-enable-sharing";
 
+// Enables folder shortcuts feature in the Files.app.
+const char kFileManagerEnableFolderShortcuts[] =
+    "file-manager-enable-folder-shortcuts";
+
 // Passed to Chrome on first boot. Not passed on restart after sign out.
 const char kFirstBoot[]                     = "first-boot";
 

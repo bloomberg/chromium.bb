@@ -332,6 +332,15 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       }.bind(this));
     }.bind(this));
 
+    // TODO(yoshiki): Remove this after launching folder shortcuts feature.
+    group.add(function(done) {
+      chrome.commandLinePrivate.hasSwitch(
+          'file-manager-enable-folder-shortcuts', function(flag) {
+        this.isFolderShortcutsEnabled_ = flag;
+        done();
+      }.bind(this));
+    }.bind(this));
+
     group.run(callback);
   };
 
@@ -2066,7 +2075,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   };
 
   FileManager.prototype.isDriveEnabled = function() {
-    // TODO(kinaba): remove the "!shouldReturnLocalPath &&" condition once
+    // TODO(kinaba): Remove the "!shouldReturnLocalPath &&" condition once
     // crbug.com/140425 is done.
     return !this.params_.shouldReturnLocalPath &&
         (!('driveEnabled' in this.preferences_) ||
@@ -2209,6 +2218,17 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    */
   FileManager.prototype.shareSelection = function() {
     // TODO(mtomasz): Implement it. crbug.com/141396
+  };
+
+  /**
+   * Folder shared feature is under development and hidden behind flag. This
+   * method returns if the feature is explicitly enabled by the flag or not.
+   * TODO(yoshiki): Remove this after launching folder feature feature.
+   *
+   * @return {boolena} True if the flag is enabled.
+   */
+  FileManager.prototype.isFolderShortcutsEnabled = function() {
+    return this.isFolderShortcutsEnabled_;
   };
 
   /**

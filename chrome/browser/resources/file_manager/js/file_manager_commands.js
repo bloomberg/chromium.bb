@@ -558,6 +558,12 @@ Commands.pinCommand = {
    * @param {FileManager} fileManager The file manager instance.
    */
   canExecute: function(event, fileManager) {
+    // TODO(yoshiki): remove this after launching folder shortcuts feature.
+    if (!fileManager.isFolderShortcutsEnabled()) {
+      event.command.setHidden(true);
+      return;
+    }
+
     var selection = fileManager.getSelection();
     var selectionEntries = selection.entries;
     var onlyOneFolderSelected =
@@ -589,6 +595,12 @@ Commands.unpinCommand = {
    * @param {DirectoryTree} directoryTree Target directory tree.
    */
   canExecute: function(event, fileManager, directoryTree) {
+    // TODO(yoshiki): remove this after launching folder shortcut feature.
+    if (!fileManager.isFolderShortcutsEnabled()) {
+      event.command.setHidden(true);
+      return;
+    }
+
     var path = CommandUtil.getCommandRoot(event, directoryTree);
     var isPinned = path && !PathUtil.isRootPath(path);
     event.canExecute = isPinned;

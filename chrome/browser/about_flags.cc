@@ -1116,6 +1116,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(chromeos::switches::kFileManagerEnableSharing)
   },
   {
+    "file-manager-enable-folder-shortcuts",
+    IDS_FLAGS_FILE_MANAGER_ENABLE_FOLDER_SHORTCUTS,
+    IDS_FLAGS_FILE_MANAGER_ENABLE_FOLDER_SHORTCUTS_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(chromeos::switches::kFileManagerEnableFolderShortcuts)
+  },
+  {
     "disable-quickoffice-component-app",
     IDS_FLAGS_DISABLE_QUICKOFFICE_COMPONENT_APP_NAME,
     IDS_FLAGS_DISABLE_QUICKOFFICE_COMPONENT_APP_DESCRIPTION,
