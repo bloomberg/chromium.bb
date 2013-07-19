@@ -33,10 +33,10 @@ namespace {
 class TestInfoBarDelegate : public GoogleURLTrackerInfoBarDelegate {
  public:
   // Creates a test delegate and returns it.  Unlike the parent class, this does
-  // not create add the infobar to |infobar_service|, since that "pointer" is
-  // really just a magic number.  Thus there is no InfoBarService ownership of
-  // the returned object; and since the caller doesn't own the returned object,
-  // we rely on |test_harness| cleaning this up eventually in
+  // not add the infobar to |infobar_service|, since that "pointer" is really
+  // just a magic number.  Thus there is no InfoBarService ownership of the
+  // returned object; and since the caller doesn't own the returned object, we
+  // rely on |test_harness| cleaning this up eventually in
   // GoogleURLTrackerTest::OnInfoBarClosed() to avoid leaks.
   static GoogleURLTrackerInfoBarDelegate* Create(
       GoogleURLTrackerTest* test_harness,
@@ -201,7 +201,7 @@ bool TestGoogleURLTrackerNavigationHelper::IsListeningForTabDestruction(
 class GoogleURLTrackerTest : public testing::Test {
  public:
   // Called by TestInfoBarDelegate::Close().
-  void OnInfoBarClosed(InfoBarDelegate* infobar,
+  void OnInfoBarClosed(scoped_ptr<InfoBarDelegate> infobar,
                        InfoBarService* infobar_service);
 
  protected:
@@ -265,10 +265,10 @@ class GoogleURLTrackerTest : public testing::Test {
   std::set<int> unique_ids_seen_;
 };
 
-void GoogleURLTrackerTest::OnInfoBarClosed(InfoBarDelegate* infobar,
+void GoogleURLTrackerTest::OnInfoBarClosed(scoped_ptr<InfoBarDelegate> infobar,
                                            InfoBarService* infobar_service) {
   // First, simulate the InfoBarService firing INFOBAR_REMOVED.
-  InfoBarRemovedDetails removed_details(infobar, false);
+  InfoBarRemovedDetails removed_details(infobar.get(), false);
   GoogleURLTracker::EntryMap::const_iterator i =
       google_url_tracker_->entry_map_.find(infobar_service);
   ASSERT_FALSE(i == google_url_tracker_->entry_map_.end());
@@ -279,7 +279,7 @@ void GoogleURLTrackerTest::OnInfoBarClosed(InfoBarDelegate* infobar,
                      content::Details<InfoBarRemovedDetails>(&removed_details));
 
   // Second, simulate the infobar container closing the infobar in response.
-  delete infobar;
+  // This happens automatically as |infobar| goes out of scope.
 }
 
 GoogleURLTrackerTest::GoogleURLTrackerTest()
@@ -491,7 +491,8 @@ void TestInfoBarDelegate::Update(const GURL& search_url) {
 }
 
 void TestInfoBarDelegate::Close(bool redo_search) {
-  test_harness_->OnInfoBarClosed(this, infobar_service_);
+  test_harness_->OnInfoBarClosed(scoped_ptr<InfoBarDelegate>(this),
+                                 infobar_service_);
   // WARNING: At this point |this| has been deleted!
 }
 

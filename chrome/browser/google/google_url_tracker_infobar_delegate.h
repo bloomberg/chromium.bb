@@ -14,8 +14,8 @@ class GoogleURLTracker;
 // changed.
 class GoogleURLTrackerInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  // Creates a Google URL tracker delegate and adds it to |infobar_service|.
-  // Returns the delegate if it was successfully added.
+  // Creates a Google URL tracker infobar delegate and adds it to
+  // |infobar_service|.  Returns the delegate if it was successfully added.
   static GoogleURLTrackerInfoBarDelegate* Create(
       InfoBarService* infobar_service,
       GoogleURLTracker* google_url_tracker,

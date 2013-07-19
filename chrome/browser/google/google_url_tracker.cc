@@ -343,10 +343,10 @@ void GoogleURLTracker::OnNavigationCommitted(InfoBarService* infobar_service,
   if (map_entry->has_infobar_delegate()) {
     map_entry->infobar_delegate()->Update(search_url);
   } else {
-    GoogleURLTrackerInfoBarDelegate* infobar_delegate =
+    GoogleURLTrackerInfoBarDelegate* infobar =
         infobar_creator_.Run(infobar_service, this, search_url);
-    if (infobar_delegate)
-      map_entry->SetInfoBarDelegate(infobar_delegate);
+    if (infobar)
+      map_entry->SetInfoBarDelegate(infobar);
     else
       map_entry->Close(false);
   }
@@ -354,14 +354,14 @@ void GoogleURLTracker::OnNavigationCommitted(InfoBarService* infobar_service,
 
 void GoogleURLTracker::OnTabClosed(
     content::NavigationController* navigation_controller) {
-  // Because InfoBarService tears itself down in on tab destruction, it may
-  // or may not be possible to get a non-NULL InfoBarService pointer here,
-  // depending on which order notifications fired in.  Likewise, the pointer in
-  // |entry_map_| (and in its associated MapEntry) may point to deleted memory.
-  // Therefore, if we were to access to the InfoBarService* we have for this
-  // tab, we'd need to ensure we just looked at the raw pointer value, and never
-  // dereferenced it.  This function doesn't need to do even that, but others in
-  // the call chain from here might (and have comments pointing back here).
+  // Because InfoBarService tears itself down on tab destruction, it's possible
+  // to get a non-NULL InfoBarService pointer here, depending on which order
+  // notifications fired in.  Likewise, the pointer in |entry_map_| (and in its
+  // associated MapEntry) may point to deleted memory.  Therefore, if we were to
+  // access the InfoBarService* we have for this tab, we'd need to ensure we
+  // just looked at the raw pointer value, and never dereferenced it.  This
+  // function doesn't need to do even that, but others in the call chain from
+  // here might (and have comments pointing back here).
   for (EntryMap::iterator i(entry_map_.begin()); i != entry_map_.end(); ++i) {
     if (i->second->navigation_controller() == navigation_controller) {
       i->second->Close(false);
