@@ -206,10 +206,10 @@ interface InspectorInstrumentation {
     void didDispatchXHRLoadEvent(const InspectorInstrumentationCookie&);
 
     [Timeline, Inline=FastReturn]
-    void willScrollLayer([Keep] Frame*);
+    void willScrollLayer([Keep] RenderObject*);
 
     [Timeline, Inline=FastReturn]
-    void didScrollLayer(Frame*);
+    void didScrollLayer(RenderObject*);
 
     [Timeline, Inline=FastReturn]
     void willPaint([Keep] RenderObject*);

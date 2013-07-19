@@ -381,9 +381,9 @@ void InspectorTimelineAgent::didPaint(RenderObject* renderer, GraphicsContext*, 
     didCompleteCurrentRecord(TimelineRecordType::Paint);
 }
 
-void InspectorTimelineAgent::willScrollLayer(Frame* frame)
+void InspectorTimelineAgent::willScrollLayer(RenderObject* renderer)
 {
-    pushCurrentRecord(JSONObject::create(), TimelineRecordType::ScrollLayer, false, frame);
+    pushCurrentRecord(TimelineRecordFactory::createLayerData(idForNode(renderer->generatingNode())), TimelineRecordType::ScrollLayer, false, renderer->frame());
 }
 
 void InspectorTimelineAgent::didScrollLayer()

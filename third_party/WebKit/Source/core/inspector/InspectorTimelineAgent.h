@@ -151,7 +151,7 @@ public:
     void willPaint(RenderObject*);
     void didPaint(RenderObject*, GraphicsContext*, const LayoutRect&);
 
-    void willScrollLayer(Frame*);
+    void willScrollLayer(RenderObject*);
     void didScrollLayer();
 
     void willComposite();

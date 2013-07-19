@@ -2128,7 +2128,7 @@ void RenderLayer::setScrollOffset(const IntPoint& newScrollOffset)
     m_scrollOffset = toIntSize(newScrollOffset);
 
     Frame* frame = renderer()->frame();
-    InspectorInstrumentation::willScrollLayer(frame);
+    InspectorInstrumentation::willScrollLayer(renderer());
 
     RenderView* view = renderer()->view();
     
@@ -2177,7 +2177,7 @@ void RenderLayer::setScrollOffset(const IntPoint& newScrollOffset)
     if (renderer()->node())
         renderer()->node()->document()->eventQueue()->enqueueOrDispatchScrollEvent(renderer()->node(), DocumentEventQueue::ScrollEventElementTarget);
 
-    InspectorInstrumentation::didScrollLayer(frame);
+    InspectorInstrumentation::didScrollLayer(renderer());
 }
 
 static inline bool frameElementAndViewPermitScroll(HTMLFrameElementBase* frameElementBase, FrameView* frameView)
