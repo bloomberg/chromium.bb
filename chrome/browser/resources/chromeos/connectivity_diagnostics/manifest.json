@@ -1,0 +1,31 @@
+{
+  "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDGJWLUb83WKoDeODlrPIZu60M8bzbvrkg3Jf/5aO3ux2FL+G+/BO4Vyt/J0t8lXBtnTOvHo6KPpA042PyE9xMdlufFnJqEkvPXNzRlBWeVQqFHbMWE6o/x8diG69dNmHyFYcUjjFFDk2X2GOLQXNUGJQ6MIikbdzoWdLGttmhAIwIDAQAB",
+  "manifest_version": 2,
+  "name": "Chrome Connectivity Debugger (Dev)",
+  "version": "0.2.8",
+  "minimum_chrome_version": "27",
+  "offline_enabled": true,
+  "default_locale": "en",
+  "icons": {
+    "128": "img/icon_128.png",
+    "16": "img/icon_16.png"
+  },
+  "permissions" : [
+   { "socket" : [
+     "tcp-connect:*:443",
+     "tcp-connect:*:80",
+     "tcp-connect:*:25",
+     "udp-bind:*",
+     "udp-send-to:*:53"
+   ]},
+   "clipboardWrite",
+   "experimental",
+   "http://*.google.com/*",
+   "http://www.yahoo.com/*"
+  ],
+  "app": {
+    "background": {
+      "scripts": ["background.js"]
+    }
+  }
+}

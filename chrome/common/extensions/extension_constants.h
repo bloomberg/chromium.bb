@@ -272,6 +272,8 @@ namespace extension_misc {
 #if defined(OS_CHROMEOS)
   // Path to preinstalled ChromeVox screen reader extension.
   extern const char kChromeVoxExtensionPath[];
+  // Path to preinstalled Connectivity Diagnostics extension.
+  extern const char kConnectivityDiagnosticsPath[];
   // Path to preinstalled speech synthesis extension.
   extern const char kSpeechSynthesisExtensionPath[];
   // The extension id of the speech synthesis extension.

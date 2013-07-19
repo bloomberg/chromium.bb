@@ -452,6 +452,9 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
 
     Add(IDR_NETWORK_CONFIGURATION_MANIFEST,
         base::FilePath(FILE_PATH_LITERAL("chromeos/network_configuration")));
+
+    Add(IDR_CONNECTIVITY_DIAGNOSTICS_MANIFEST,
+        base::FilePath(extension_misc::kConnectivityDiagnosticsPath));
   }
 
   // Load ChromeVox extension now if spoken feedback is enabled.
