@@ -207,6 +207,8 @@ class CC_EXPORT LayerTreeHostImpl
   virtual void SetMemoryPolicy(
       const ManagedMemoryPolicy& policy,
       bool discard_backbuffer_when_not_visible) OVERRIDE;
+  virtual void SetTreeActivationCallback(const base::Closure& callback)
+      OVERRIDE;
 
   // Called from LayerTreeImpl.
   void OnCanDrawStateChangedForTree();
@@ -532,6 +534,9 @@ class CC_EXPORT LayerTreeHostImpl
   RenderingStatsInstrumentation* rendering_stats_instrumentation_;
 
   bool need_check_for_completed_tile_uploads_before_draw_;
+
+  // Optional callback to notify of new tree activations.
+  base::Closure tree_activiation_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerTreeHostImpl);
 };

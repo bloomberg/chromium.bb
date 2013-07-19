@@ -151,6 +151,7 @@ class LayerTreeTest : public testing::Test, public TestHooks {
 
   LayerTreeHost* layer_tree_host() { return layer_tree_host_.get(); }
   bool delegating_renderer() const { return delegating_renderer_; }
+  FakeOutputSurface* output_surface() { return output_surface_; }
 
   virtual scoped_ptr<OutputSurface> CreateOutputSurface() OVERRIDE;
   virtual scoped_refptr<cc::ContextProvider>

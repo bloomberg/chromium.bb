@@ -40,6 +40,13 @@ scoped_ptr<WebKit::WebGraphicsContext3D> CreateWebGraphicsContext3D() {
           ::CreateViewContext(attributes, NULL));
 }
 
+void DidActivatePendingTree(int routing_id) {
+  SynchronousCompositorOutputSurfaceDelegate* delegate =
+      SynchronousCompositorImpl::FromRoutingID(routing_id);
+  if (delegate)
+    delegate->DidActivatePendingTree();
+}
+
 } // namespace
 
 class SynchronousCompositorOutputSurface::SoftwareDevice
@@ -111,6 +118,8 @@ bool SynchronousCompositorOutputSurface::BindToClient(
   DCHECK(CalledOnValidThread());
   if (!cc::OutputSurface::BindToClient(surface_client))
     return false;
+  surface_client->SetTreeActivationCallback(
+      base::Bind(&DidActivatePendingTree, routing_id_));
   SynchronousCompositorOutputSurfaceDelegate* delegate = GetDelegate();
   if (delegate)
     delegate->DidBindOutputSurface(this);

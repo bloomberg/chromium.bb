@@ -242,6 +242,11 @@ void SynchronousCompositorImpl::UpdateFrameMetaData(
     rwhv->SynchronousFrameMetadata(frame_metadata);
 }
 
+void SynchronousCompositorImpl::DidActivatePendingTree() {
+  if (compositor_client_)
+    compositor_client_->DidUpdateContent();
+}
+
 void SynchronousCompositorImpl::SetTotalScrollOffset(gfx::Vector2dF new_value) {
   DCHECK(CalledOnValidThread());
   if (compositor_client_)

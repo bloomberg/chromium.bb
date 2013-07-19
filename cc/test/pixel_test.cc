@@ -67,6 +67,7 @@ class PixelTest::PixelTestRendererClient
   }
   virtual void SetMemoryPolicy(
       const ManagedMemoryPolicy& policy, bool discard) OVERRIDE {}
+  virtual void SetTreeActivationCallback(const base::Closure&) OVERRIDE {}
 
  private:
   gfx::Rect device_viewport_;

@@ -55,6 +55,7 @@ import java.io.File;
 import java.lang.annotation.Annotation;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.concurrent.Callable;
 
 /**
  * Exposes the native AwContents class, and together these classes wrap the ContentViewCore
@@ -160,7 +161,9 @@ public class AwContents {
 
     private DefaultVideoPosterRequestHandler mDefaultVideoPosterRequestHandler;
 
-    private boolean mNewPictureInvalidationOnly;
+    // Bound method for suppling Picture instances to the AwContentClient. Will be null if the
+    // picture listener API has not yet been enabled, or if it is using invalidation-only mode.
+    private Callable<Picture> mPictureListenerContentProvider;
 
     private int mLastGlobalVisibleWidth;
     private int mLastGlobalVisibleHeight;
@@ -687,12 +690,21 @@ public class AwContents {
     }
 
     /**
-     * Enable the OnNewPicture callback.
+     * Enable the onNewPicture callback.
      * @param enabled Flag to enable the callback.
      * @param invalidationOnly Flag to call back only on invalidation without providing a picture.
      */
     public void enableOnNewPicture(boolean enabled, boolean invalidationOnly) {
-        mNewPictureInvalidationOnly = invalidationOnly;
+        if (invalidationOnly) {
+            mPictureListenerContentProvider = null;
+        } else if (enabled && mPictureListenerContentProvider == null) {
+            mPictureListenerContentProvider = new Callable<Picture>() {
+                @Override
+                public Picture call() {
+                    return capturePicture();
+                }
+            };
+        }
         nativeEnableOnNewPicture(mNativeAwContents, enabled);
     }
 
@@ -1535,7 +1547,10 @@ public class AwContents {
 
     @CalledByNative
     public void onNewPicture() {
-        mContentsClient.onNewPicture(mNewPictureInvalidationOnly ? null : capturePicture());
+        // Don't call capturePicture() here but instead defer it until the posted task runs within
+        // the callback helper, to avoid doubling back into the renderer compositor in the middle
+        // of the notification it is sending up to here.
+        mContentsClient.getCallbackHelper().postOnNewPicture(mPictureListenerContentProvider);
     }
 
     // Called as a result of nativeUpdateLastHitTestData.

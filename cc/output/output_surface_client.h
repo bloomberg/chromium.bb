@@ -5,6 +5,7 @@
 #ifndef CC_OUTPUT_OUTPUT_SURFACE_CLIENT_H_
 #define CC_OUTPUT_OUTPUT_SURFACE_CLIENT_H_
 
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "cc/base/cc_export.h"
@@ -37,6 +38,12 @@ class CC_EXPORT OutputSurfaceClient {
                                           gfx::Rect viewport) = 0;
   virtual void SetMemoryPolicy(const ManagedMemoryPolicy& policy,
                                bool discard_backbuffer_when_not_visible) = 0;
+  // If set, |callback| will be called subsequent to each new tree activation,
+  // regardless of the compositor visibility or damage. |callback| must remain
+  // valid for the lifetime of the OutputSurfaceClient or until unregisted --
+  // use SetTreeActivationCallback(base::Closure()) to unregister it.
+  virtual void SetTreeActivationCallback(const base::Closure& callback) = 0;
+
 
  protected:
   virtual ~OutputSurfaceClient() {}

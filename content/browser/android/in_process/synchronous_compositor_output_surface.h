@@ -32,6 +32,7 @@ class SynchronousCompositorOutputSurfaceDelegate {
   virtual void SetContinuousInvalidate(bool enable) = 0;
   virtual void UpdateFrameMetaData(
       const cc::CompositorFrameMetadata& frame_metadata) = 0;
+  virtual void DidActivatePendingTree() = 0;
 
  protected:
   SynchronousCompositorOutputSurfaceDelegate() {}
@@ -75,8 +76,6 @@ class SynchronousCompositorOutputSurface
   virtual void PostCheckForRetroactiveBeginFrame() OVERRIDE;
 
   void InvokeComposite(gfx::Size damage_size);
-  void UpdateCompositorClientSettings();
-  void NotifyCompositorSettingsChanged();
   bool CalledOnValidThread() const;
   SynchronousCompositorOutputSurfaceDelegate* GetDelegate();
 

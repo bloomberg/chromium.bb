@@ -63,6 +63,7 @@ class InProcessViewRenderer : public BrowserViewRenderer,
   virtual void SetContinuousInvalidate(bool invalidate) OVERRIDE;
   virtual void SetTotalRootLayerScrollOffset(
       gfx::Vector2dF new_value_css) OVERRIDE;
+  virtual void DidUpdateContent() OVERRIDE;
   virtual gfx::Vector2dF GetTotalRootLayerScrollOffset() OVERRIDE;
   virtual void DidOverscroll(gfx::Vector2dF latest_overscroll_delta,
                              gfx::Vector2dF current_fling_velocity) OVERRIDE;
@@ -91,6 +92,7 @@ class InProcessViewRenderer : public BrowserViewRenderer,
   bool visible_;
   float dip_scale_;
   float page_scale_factor_;
+  bool on_new_picture_enable_;
 
   // When true, we should continuously invalidate and keep drawing, for example
   // to drive animation.

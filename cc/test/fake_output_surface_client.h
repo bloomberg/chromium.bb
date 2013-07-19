@@ -32,6 +32,7 @@ class FakeOutputSurfaceClient : public OutputSurfaceClient {
   virtual void SetMemoryPolicy(
       const ManagedMemoryPolicy& policy,
       bool discard_backbuffer_when_not_visible) OVERRIDE;
+  virtual void SetTreeActivationCallback(const base::Closure&) OVERRIDE {}
 
   int begin_frame_count() {
     return begin_frame_count_;

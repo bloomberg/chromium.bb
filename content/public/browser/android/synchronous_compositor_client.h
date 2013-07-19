@@ -35,6 +35,8 @@ class SynchronousCompositorClient {
   // can change inside DemandDrawHw call.
   virtual void SetContinuousInvalidate(bool invalidate) = 0;
 
+  virtual void DidUpdateContent() = 0;
+
  protected:
   SynchronousCompositorClient() {}
   virtual ~SynchronousCompositorClient() {}

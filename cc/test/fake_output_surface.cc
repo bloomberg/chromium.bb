@@ -16,6 +16,7 @@ FakeOutputSurface::FakeOutputSurface(
     scoped_ptr<WebKit::WebGraphicsContext3D> context3d,
     bool delegated_rendering)
     : OutputSurface(context3d.Pass()),
+      client_(NULL),
       num_sent_frames_(0),
       needs_begin_frame_(false),
       forced_draw_to_software_device_(false),
@@ -29,6 +30,7 @@ FakeOutputSurface::FakeOutputSurface(
 FakeOutputSurface::FakeOutputSurface(
     scoped_ptr<SoftwareOutputDevice> software_device, bool delegated_rendering)
     : OutputSurface(software_device.Pass()),
+      client_(NULL),
       num_sent_frames_(0),
       forced_draw_to_software_device_(false),
       fake_weak_ptr_factory_(this) {
@@ -43,6 +45,7 @@ FakeOutputSurface::FakeOutputSurface(
     scoped_ptr<SoftwareOutputDevice> software_device,
     bool delegated_rendering)
     : OutputSurface(context3d.Pass(), software_device.Pass()),
+      client_(NULL),
       num_sent_frames_(0),
       forced_draw_to_software_device_(false),
       fake_weak_ptr_factory_(this) {
@@ -91,11 +94,26 @@ bool FakeOutputSurface::ForcedDrawToSoftwareDevice() const {
   return forced_draw_to_software_device_;
 }
 
+bool FakeOutputSurface::BindToClient(OutputSurfaceClient* client) {
+  if (OutputSurface::BindToClient(client)) {
+    client_ = client;
+    return true;
+  } else {
+    return false;
+  }
+}
+
 bool FakeOutputSurface::SetAndInitializeContext3D(
     scoped_ptr<WebKit::WebGraphicsContext3D> context3d) {
   context3d_.reset();
   return InitializeAndSetContext3D(context3d.Pass(),
                                    scoped_refptr<ContextProvider>());
+}
+
+void FakeOutputSurface::SetTreeActivationCallback(
+    const base::Closure& callback) {
+  DCHECK(client_);
+  client_->SetTreeActivationCallback(callback);
 }
 
 }  // namespace cc

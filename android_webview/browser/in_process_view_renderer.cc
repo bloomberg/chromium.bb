@@ -158,6 +158,7 @@ InProcessViewRenderer::InProcessViewRenderer(
       visible_(false),
       dip_scale_(0.0),
       page_scale_factor_(1.0),
+      on_new_picture_enable_(false),
       continuous_invalidate_(false),
       block_invalidates_(false),
       width_(0),
@@ -411,6 +412,7 @@ InProcessViewRenderer::CapturePicture() {
 }
 
 void InProcessViewRenderer::EnableOnNewPicture(bool enabled) {
+  on_new_picture_enable_ = enabled;
 }
 
 void InProcessViewRenderer::OnVisibilityChanged(bool visible) {
@@ -538,6 +540,11 @@ void InProcessViewRenderer::ScrollTo(gfx::Vector2d new_value) {
 
   if (compositor_)
     compositor_->DidChangeRootLayerScrollOffset();
+}
+
+void InProcessViewRenderer::DidUpdateContent() {
+  if (on_new_picture_enable_)
+    client_->OnNewPicture();
 }
 
 void InProcessViewRenderer::SetTotalRootLayerScrollOffset(

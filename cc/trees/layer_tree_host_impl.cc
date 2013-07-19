@@ -1064,6 +1064,13 @@ void LayerTreeHostImpl::SetMemoryPolicy(
       discard_backbuffer_when_not_visible);
 }
 
+void LayerTreeHostImpl::SetTreeActivationCallback(
+    const base::Closure& callback) {
+  DCHECK(proxy_->IsImplThread());
+  DCHECK(settings_.impl_side_painting || callback.is_null());
+  tree_activiation_callback_ = callback;
+}
+
 void LayerTreeHostImpl::SetManagedMemoryPolicy(
     const ManagedMemoryPolicy& policy) {
   if (managed_memory_policy_ == policy)
@@ -1440,6 +1447,8 @@ void LayerTreeHostImpl::ActivatePendingTree() {
   }
 
   client_->DidActivatePendingTree();
+  if (!tree_activiation_callback_.is_null())
+    tree_activiation_callback_.Run();
 }
 
 void LayerTreeHostImpl::SetVisible(bool visible) {

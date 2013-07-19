@@ -3817,5 +3817,74 @@ class LayerTreeHostTestPushPropertiesSetPropertyInChildThenParent
 MULTI_THREAD_TEST_F(
     LayerTreeHostTestPushPropertiesSetPropertyInChildThenParent);
 
+// This test verifies that the tree activation callback is invoked correctly.
+class LayerTreeHostTestTreeActivationCallback : public LayerTreeHostTest {
+ public:
+  LayerTreeHostTestTreeActivationCallback()
+      : num_commits_(0), callback_count_(0) {}
+
+  virtual void BeginTest() OVERRIDE {
+    EXPECT_TRUE(HasImplThread());
+    PostSetNeedsCommitToMainThread();
+  }
+
+  virtual bool PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
+                                     LayerTreeHostImpl::FrameData* frame_data,
+                                     bool result) OVERRIDE {
+    ++num_commits_;
+    switch (num_commits_) {
+      case 1:
+        EXPECT_EQ(0, callback_count_);
+        callback_count_ = 0;
+        SetCallback(true);
+        PostSetNeedsCommitToMainThread();
+        break;
+      case 2:
+        EXPECT_EQ(1, callback_count_);
+        callback_count_ = 0;
+        SetCallback(false);
+        PostSetNeedsCommitToMainThread();
+        break;
+      case 3:
+        EXPECT_EQ(0, callback_count_);
+        callback_count_ = 0;
+        EndTest();
+        break;
+      default:
+        ADD_FAILURE() << num_commits_;
+        EndTest();
+        break;
+    }
+    return LayerTreeHostTest::PrepareToDrawOnThread(host_impl, frame_data,
+                                                    result);
+  }
+
+  virtual void AfterTest() OVERRIDE {
+    EXPECT_EQ(3, num_commits_);
+  }
+
+  void SetCallback(bool enable) {
+    output_surface()->SetTreeActivationCallback(enable ?
+        base::Bind(&LayerTreeHostTestTreeActivationCallback::ActivationCallback,
+                   base::Unretained(this)) :
+        base::Closure());
+  }
+
+  void ActivationCallback() {
+    ++callback_count_;
+  }
+
+  int num_commits_;
+  int callback_count_;
+};
+
+TEST_F(LayerTreeHostTestTreeActivationCallback, DirectRenderer) {
+  RunTest(true, false, true);
+}
+
+TEST_F(LayerTreeHostTestTreeActivationCallback, DelegatingRenderer) {
+  RunTest(true, true, true);
+}
+
 }  // namespace
 }  // namespace cc

@@ -5,6 +5,7 @@
 #ifndef CC_TEST_FAKE_OUTPUT_SURFACE_H_
 #define CC_TEST_FAKE_OUTPUT_SURFACE_H_
 
+#include "base/callback.h"
 #include "base/time/time.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/output/compositor_frame.h"
@@ -78,10 +79,14 @@ class FakeOutputSurface : public OutputSurface {
   }
   virtual bool ForcedDrawToSoftwareDevice() const OVERRIDE;
 
+  virtual bool BindToClient(OutputSurfaceClient* client) OVERRIDE;
+
   bool SetAndInitializeContext3D(
       scoped_ptr<WebKit::WebGraphicsContext3D> context3d);
 
   using OutputSurface::ReleaseGL;
+
+  void SetTreeActivationCallback(const base::Closure& callback);
 
  protected:
   FakeOutputSurface(
@@ -99,6 +104,7 @@ class FakeOutputSurface : public OutputSurface {
 
   void OnBeginFrame();
 
+  OutputSurfaceClient* client_;
   CompositorFrame last_sent_frame_;
   size_t num_sent_frames_;
   bool needs_begin_frame_;

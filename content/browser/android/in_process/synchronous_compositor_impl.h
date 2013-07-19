@@ -65,6 +65,7 @@ class SynchronousCompositorImpl
   virtual void SetContinuousInvalidate(bool enable) OVERRIDE;
   virtual void UpdateFrameMetaData(
       const cc::CompositorFrameMetadata& frame_info) OVERRIDE;
+  virtual void DidActivatePendingTree() OVERRIDE;
 
   // LayerScrollOffsetDelegate
   virtual void SetTotalScrollOffset(gfx::Vector2dF new_value) OVERRIDE;
