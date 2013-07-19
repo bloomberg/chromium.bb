@@ -169,6 +169,22 @@ var TypeUtils = {
     },
 
     /**
+     * @return {number}
+     */
+    now: function()
+    {
+        try {
+            return inspectedWindow.performance.now();
+        } catch(e) {
+            try {
+                return Date.now();
+            } catch(ex) {
+            }
+        }
+        return 0;
+    },
+
+    /**
      * @return {CanvasRenderingContext2D}
      */
     _dummyCanvas2dContext: function()
@@ -3618,7 +3634,7 @@ InjectedCanvasModule.prototype = {
     /**
      * @param {CanvasAgent.TraceLogId} traceLogId
      * @param {number} stepNo
-     * @return {!CanvasAgent.ResourceState|string}
+     * @return {{resourceState: !CanvasAgent.ResourceState, replayTime: number}|string}
      */
     replayTraceLog: function(traceLogId, stepNo)
     {
@@ -3626,14 +3642,21 @@ InjectedCanvasModule.prototype = {
         if (!traceLog)
             return "Error: Trace log with the given ID not found.";
         this._traceLogPlayers[traceLogId] = this._traceLogPlayers[traceLogId] || new TraceLogPlayer(traceLog);
+
+        var beforeTime = TypeUtils.now();
         var lastCall = this._traceLogPlayers[traceLogId].stepTo(stepNo);
+        var replayTime = Math.max(0, TypeUtils.now() - beforeTime);
+
         var resource = lastCall.resource();
         var dataURL = resource.toDataURL();
         if (!dataURL) {
             resource = resource.contextResource();
             dataURL = resource.toDataURL();
         }
-        return this._makeResourceState(resource.id(), traceLogId, resource, dataURL);
+        return {
+            resourceState: this._makeResourceState(resource.id(), traceLogId, resource, dataURL),
+            replayTime: replayTime
+        };
     },
 
     /**

@@ -82,7 +82,7 @@ public:
     virtual void startCapturing(ErrorString*, const TypeBuilder::Network::FrameId*, TypeBuilder::Canvas::TraceLogId*);
     virtual void stopCapturing(ErrorString*, const TypeBuilder::Canvas::TraceLogId&);
     virtual void getTraceLog(ErrorString*, const TypeBuilder::Canvas::TraceLogId&, const int*, const int*, RefPtr<TypeBuilder::Canvas::TraceLog>&);
-    virtual void replayTraceLog(ErrorString*, const TypeBuilder::Canvas::TraceLogId&, int, RefPtr<TypeBuilder::Canvas::ResourceState>&);
+    virtual void replayTraceLog(ErrorString*, const TypeBuilder::Canvas::TraceLogId&, int, RefPtr<TypeBuilder::Canvas::ResourceState>&, double*);
     virtual void getResourceState(ErrorString*, const TypeBuilder::Canvas::TraceLogId&, const TypeBuilder::Canvas::ResourceId&, RefPtr<TypeBuilder::Canvas::ResourceState>&);
     virtual void evaluateTraceLogCallArgument(ErrorString*, const TypeBuilder::Canvas::TraceLogId&, int, int, const String*, RefPtr<TypeBuilder::Runtime::RemoteObject>&, RefPtr<TypeBuilder::Canvas::ResourceState>&);
 

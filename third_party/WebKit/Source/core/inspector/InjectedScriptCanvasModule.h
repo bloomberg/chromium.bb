@@ -58,7 +58,7 @@ public:
     void stopCapturing(ErrorString*, const TypeBuilder::Canvas::TraceLogId&);
     void dropTraceLog(ErrorString*, const TypeBuilder::Canvas::TraceLogId&);
     void traceLog(ErrorString*, const String&, const int*, const int*, RefPtr<TypeBuilder::Canvas::TraceLog>*);
-    void replayTraceLog(ErrorString*, const TypeBuilder::Canvas::TraceLogId&, int, RefPtr<TypeBuilder::Canvas::ResourceState>*);
+    void replayTraceLog(ErrorString*, const TypeBuilder::Canvas::TraceLogId&, int, RefPtr<TypeBuilder::Canvas::ResourceState>*, double*);
     void resourceState(ErrorString*, const TypeBuilder::Canvas::TraceLogId&, const TypeBuilder::Canvas::ResourceId&, RefPtr<TypeBuilder::Canvas::ResourceState>*);
     void evaluateTraceLogCallArgument(ErrorString*, const TypeBuilder::Canvas::TraceLogId&, int, int, const String&, RefPtr<TypeBuilder::Runtime::RemoteObject>*, RefPtr<TypeBuilder::Canvas::ResourceState>*);
 

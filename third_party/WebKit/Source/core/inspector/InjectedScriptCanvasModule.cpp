@@ -150,7 +150,7 @@ void InjectedScriptCanvasModule::traceLog(ErrorString* errorString, const TraceL
     *traceLog = TraceLog::runtimeCast(resultValue);
 }
 
-void InjectedScriptCanvasModule::replayTraceLog(ErrorString* errorString, const TraceLogId& traceLogId, int stepNo, RefPtr<ResourceState>* result)
+void InjectedScriptCanvasModule::replayTraceLog(ErrorString* errorString, const TraceLogId& traceLogId, int stepNo, RefPtr<ResourceState>* result, double* replayTime)
 {
     ScriptFunctionCall function(injectedScriptObject(), "replayTraceLog");
     function.appendArgument(traceLogId);
@@ -162,7 +162,15 @@ void InjectedScriptCanvasModule::replayTraceLog(ErrorString* errorString, const 
             *errorString = "Internal error: replayTraceLog";
         return;
     }
-    *result = ResourceState::runtimeCast(resultValue);
+    RefPtr<JSONObject> resultObject = resultValue->asObject();
+    RefPtr<JSONObject> resourceStateObject = resultObject->getObject("resourceState");
+    if (!resourceStateObject) {
+        *errorString = "Internal error: replayTraceLog: no resourceState";
+        return;
+    }
+    *result = ResourceState::runtimeCast(resourceStateObject);
+    if (!resultObject->getNumber("replayTime", replayTime))
+        *errorString = "Internal error: replayTraceLog: no replayTime";
 }
 
 void InjectedScriptCanvasModule::resourceState(ErrorString* errorString, const TraceLogId& traceLogId, const ResourceId& resourceId, RefPtr<ResourceState>* result)

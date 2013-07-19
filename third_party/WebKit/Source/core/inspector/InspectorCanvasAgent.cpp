@@ -169,11 +169,11 @@ void InspectorCanvasAgent::getTraceLog(ErrorString* errorString, const TraceLogI
         module.traceLog(errorString, traceLogId, startOffset, maxLength, &traceLog);
 }
 
-void InspectorCanvasAgent::replayTraceLog(ErrorString* errorString, const TraceLogId& traceLogId, int stepNo, RefPtr<ResourceState>& result)
+void InspectorCanvasAgent::replayTraceLog(ErrorString* errorString, const TraceLogId& traceLogId, int stepNo, RefPtr<ResourceState>& result, double* replayTime)
 {
     InjectedScriptCanvasModule module = injectedScriptCanvasModule(errorString, traceLogId);
     if (!module.hasNoValue())
-        module.replayTraceLog(errorString, traceLogId, stepNo, &result);
+        module.replayTraceLog(errorString, traceLogId, stepNo, &result, replayTime);
 }
 
 void InspectorCanvasAgent::getResourceState(ErrorString* errorString, const TraceLogId& traceLogId, const ResourceId& resourceId, RefPtr<ResourceState>& result)
