@@ -301,7 +301,7 @@ def FetchRevision(context, rev, filename, quit_event=None, progress_event=None):
     pass
 
 
-def RunRevision(context, revision, zipfile, profile, num_runs, args):
+def RunRevision(context, revision, zipfile, profile, num_runs, command, args):
   """Given a zipped revision, unzip it and run the test."""
   print "Trying revision %s..." % str(revision)
 
@@ -312,13 +312,22 @@ def RunRevision(context, revision, zipfile, profile, num_runs, args):
   os.chdir(tempdir)
 
   # Run the build as many times as specified.
-  testargs = [context.GetLaunchPath(), '--user-data-dir=%s' % profile] + args
+  testargs = ['--user-data-dir=%s' % profile] + args
   # The sandbox must be run as root on Official Chrome, so bypass it.
   if context.is_official and context.platform.startswith('linux'):
     testargs.append('--no-sandbox')
 
+  runcommand = []
+  for token in command.split():
+    if token == "%a":
+      runcommand.extend(testargs)
+    else:
+      runcommand.append( \
+          token.replace('%p', context.GetLaunchPath()) \
+               .replace('%s', ' '.join(testargs)))
+
   for i in range(0, num_runs):
-    subproc = subprocess.Popen(testargs,
+    subproc = subprocess.Popen(runcommand,
                                bufsize=-1,
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE)
@@ -388,6 +397,7 @@ def Bisect(platform,
            good_rev=0,
            bad_rev=0,
            num_runs=1,
+           command="%p %a",
            try_args=(),
            profile=None,
            evaluate=AskIsGoodBuild):
@@ -490,6 +500,7 @@ def Bisect(platform,
                                              fetch.zipfile,
                                              profile,
                                              num_runs,
+                                             command,
                                              try_args)
     except Exception, e:
       print >>sys.stderr, e
@@ -632,6 +643,13 @@ def main():
                     help = 'Number of times to run each build before asking ' +
                     'if it\'s good or bad. Temporary profiles are reused.',
                     default = 1)
+  parser.add_option('-c', '--command', type = 'str',
+                    help = 'Command to execute. %p and %a refer to Chrome ' +
+                    'executable and specified extra arguments respectively. ' +
+                    'Use %s to specify all extra arguments as one string. ' +
+                    'Defaults to "%p %a". Note that any extra paths ' +
+                    'specified should be absolute.',
+                    default = '%p %a');
   (opts, args) = parser.parse_args()
 
   if opts.archive is None:
@@ -670,8 +688,8 @@ def main():
     return 1
 
   (min_chromium_rev, max_chromium_rev) = Bisect(
-      opts.archive, opts.official_builds, good_rev, bad_rev, opts.times, args,
-      opts.profile)
+      opts.archive, opts.official_builds, good_rev, bad_rev, opts.times,
+      opts.command, args, opts.profile)
 
   # Get corresponding blink revisions.
   try:
