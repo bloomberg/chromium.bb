@@ -162,8 +162,15 @@ else
 ARCHES ?= ${VALID_ARCHES}
 endif
 
+GLIBC_REMAP :=
+
 #
 # SO Macro
+#
+# As well as building and installing a shared library this rule adds dependencies
+# on the library's .stamp file in STAMPDIR.  However, the rule for creating the stamp
+# file is part of LIB_RULE, so users of the DEPS system are currently required to
+# use the LIB_RULE macro as well as the SO_RULE for each shared library.
 #
 # $1 = Target Name
 # $2 = List of Sources
@@ -171,13 +178,13 @@ endif
 # $4 = List of DEPS
 # $5 = 1 => Don't add to NMF.
 #
-GLIBC_REMAP :=
 define SO_RULE
 ifneq (,$(findstring x86_32,$(ARCHES)))
 all: $(OUTDIR)/lib$(1)_x86_32.so
 $(OUTDIR)/lib$(1)_x86_32.so: $(foreach src,$(2),$(call SRC_TO_OBJ,$(src),_x86_32_pic)) $(4)
 	$(call LOG,LINK,$$@,$(X86_32_LINK) -o $$@ $$(filter-out $(4),$$^) -shared -m32 $(LD_X86_32) $$(LD_FLAGS) $(foreach lib,$(3),-l$(lib)))
 
+$(STAMPDIR)/$(1).stamp: $(LIBDIR)/$(TOOLCHAIN)_x86_32/$(CONFIG)/lib$(1).so
 install: $(LIBDIR)/$(TOOLCHAIN)_x86_32/$(CONFIG)/lib$(1).so
 $(LIBDIR)/$(TOOLCHAIN)_x86_32/$(CONFIG)/lib$(1).so: $(OUTDIR)/lib$(1)_x86_32.so
 	$(MKDIR) -p $$(dir $$@)
@@ -193,6 +200,7 @@ all: $(OUTDIR)/lib$(1)_x86_64.so
 $(OUTDIR)/lib$(1)_x86_64.so: $(foreach src,$(2),$(call SRC_TO_OBJ,$(src),_x86_64_pic)) $(4)
 	$(call LOG,LINK,$$@,$(X86_32_LINK) -o $$@ $$(filter-out $(4),$$^) -shared -m64 $(LD_X86_64) $$(LD_FLAGS) $(foreach lib,$(3),-l$(lib)))
 
+$(STAMPDIR)/$(1).stamp: $(LIBDIR)/$(TOOLCHAIN)_x86_64/$(CONFIG)/lib$(1).so
 install: $(LIBDIR)/$(TOOLCHAIN)_x86_64/$(CONFIG)/lib$(1).so
 $(LIBDIR)/$(TOOLCHAIN)_x86_64/$(CONFIG)/lib$(1).so: $(OUTDIR)/lib$(1)_x86_64.so
 	$(MKDIR) -p $$(dir $$@)
@@ -204,7 +212,6 @@ endif
 endif
 endef
 
-
 #
 # LIB Macro
 #
@@ -214,13 +221,8 @@ endef
 # $4 = VC Link Flags (unused)
 #
 define LIB_RULE
-$(STAMPDIR)/$(1).stamp: $(OUTDIR)/lib$(1)_x86_32.a
-$(STAMPDIR)/$(1).stamp: $(OUTDIR)/lib$(1)_x86_64.a
-ifneq ($(TOOLCHAIN),glibc)
-$(STAMPDIR)/$(1).stamp: $(OUTDIR)/lib$(1)_arm.a
-endif
-
 $(STAMPDIR)/$(1).stamp:
+	@echo "  STAMP $$@"
 	@echo "TOUCHED $$@" > $(STAMPDIR)/$(1).stamp
 
 ifneq (,$(findstring x86_32,$(ARCHES)))
@@ -229,6 +231,7 @@ $(OUTDIR)/lib$(1)_x86_32.a: $(foreach src,$(2),$(call SRC_TO_OBJ,$(src),_x86_32)
 	$(MKDIR) -p $$(dir $$@)
 	$(call LOG,LIB ,$$@,$(X86_32_LIB) -cr $$@ $$^)
 
+$(STAMPDIR)/$(1).stamp: $(LIBDIR)/$(TOOLCHAIN)_x86_32/$(CONFIG)/lib$(1).a
 install: $(LIBDIR)/$(TOOLCHAIN)_x86_32/$(CONFIG)/lib$(1).a
 $(LIBDIR)/$(TOOLCHAIN)_x86_32/$(CONFIG)/lib$(1).a: $(OUTDIR)/lib$(1)_x86_32.a
 	$(MKDIR) -p $$(dir $$@)
@@ -241,6 +244,7 @@ $(OUTDIR)/lib$(1)_x86_64.a: $(foreach src,$(2),$(call SRC_TO_OBJ,$(src),_x86_64)
 	$(MKDIR) -p $$(dir $$@)
 	$(call LOG,LIB ,$$@,$(X86_64_LIB) -cr $$@ $$^)
 
+$(STAMPDIR)/$(1).stamp: $(LIBDIR)/$(TOOLCHAIN)_x86_64/$(CONFIG)/lib$(1).a
 install: $(LIBDIR)/$(TOOLCHAIN)_x86_64/$(CONFIG)/lib$(1).a
 $(LIBDIR)/$(TOOLCHAIN)_x86_64/$(CONFIG)/lib$(1).a: $(OUTDIR)/lib$(1)_x86_64.a
 	$(MKDIR) -p $$(dir $$@)
@@ -254,6 +258,7 @@ $(OUTDIR)/lib$(1)_arm.a: $(foreach src,$(2),$(call SRC_TO_OBJ,$(src),_arm))
 	$(MKDIR) -p $$(dir $$@)
 	$(call LOG,LIB ,$$@,$(ARM_LIB) -cr $$@ $$^)
 
+$(STAMPDIR)/$(1).stamp: $(LIBDIR)/$(TOOLCHAIN)_arm/$(CONFIG)/lib$(1).a
 install: $(LIBDIR)/$(TOOLCHAIN)_arm/$(CONFIG)/lib$(1).a
 $(LIBDIR)/$(TOOLCHAIN)_arm/$(CONFIG)/lib$(1).a: $(OUTDIR)/lib$(1)_arm.a
 	$(MKDIR) -p $$(dir $$@)

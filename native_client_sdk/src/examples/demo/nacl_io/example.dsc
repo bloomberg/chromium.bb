@@ -12,7 +12,8 @@
         'queue.c',
         'queue.h',
       ],
-      'LIBS': ['nacl_io', 'ppapi', 'pthread']
+      'DEPS': ['nacl_io'],
+      'LIBS': ['ppapi', 'pthread']
     }
   ],
   'DATA': [
