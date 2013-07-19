@@ -19,7 +19,10 @@ blob_env.Append(LINKFLAGS=[blob_env.RodataSwitch('${IRT_BLOB_DATA_START}'),
 irt_entry_obj = blob_env.ComponentObject(
     '${MAIN_DIR}/src/untrusted/irt/irt_entry.c')
 
-# Build custom IRT library which provides old interface versions.
+# Build custom IRT library which provides a minimal subset of old
+# interface versions.
+blob_env.Append(CPPDEFINES=[['ALLOW_DYNAMIC_LINKING',
+                             str(int(not env.Bit('nacl_static_link')))]])
 irt_comp_test_library = blob_env.ComponentProgram(
     'irt_comp_test', [irt_entry_obj, 'irt_comp_interfaces.c'],
     EXTRA_LIBS=['irt_support_private'])
