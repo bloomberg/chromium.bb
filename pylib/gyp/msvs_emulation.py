@@ -289,6 +289,15 @@ class MsvsSettings(object):
       pdbname = expand_special(self.ConvertVSMacros(pdbname))
     return pdbname
 
+  def GetMapFileName(self, config, expand_special):
+    """Gets the explicitly overriden map file name for a target or returns None
+    if it's not set."""
+    config = self._TargetConfig(config)
+    map_file = self._Setting(('VCLinkerTool', 'MapFileName'), config)
+    if map_file:
+      map_file = expand_special(self.ConvertVSMacros(map_file, config=config))
+    return map_file
+
   def GetOutputName(self, config, expand_special):
     """Gets the explicitly overridden output name for a target or returns None
     if it's not overridden."""
@@ -322,6 +331,8 @@ class MsvsSettings(object):
     cl('Optimization',
        map={'0': 'd', '1': '1', '2': '2', '3': 'x'}, prefix='/O')
     cl('InlineFunctionExpansion', prefix='/Ob')
+    cl('StringPooling', map={'true': '/GF'})
+    cl('EnableFiberSafeOptimizations', map={'true': '/GT'})
     cl('OmitFramePointers', map={'false': '-', 'true': ''}, prefix='/Oy')
     cl('EnableIntrinsicFunctions', map={'false': '-', 'true': ''}, prefix='/Oi')
     cl('FavorSizeOrSpeed', map={'1': 't', '2': 's'}, prefix='/O')
@@ -440,6 +451,10 @@ class MsvsSettings(object):
     pdb = self.GetPDBName(config, expand_special)
     if pdb:
       ldflags.append('/PDB:' + pdb)
+    map_file = self.GetMapFileName(config, expand_special)
+    ld('GenerateMapFile', map={'true': '/MAP:' + map_file if map_file
+        else '/MAP'})
+    ld('MapExports', map={'true': '/MAPINFO:EXPORTS'})
     ld('AdditionalOptions', prefix='')
     ld('SubSystem', map={'1': 'CONSOLE', '2': 'WINDOWS'}, prefix='/SUBSYSTEM:')
     ld('TerminalServerAware', map={'1': ':NO', '2': ''}, prefix='/TSAWARE')

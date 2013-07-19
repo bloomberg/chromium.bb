@@ -163,5 +163,45 @@
       },
       'sources': ['hello.cc'],
     },
+    {
+      'target_name': 'test_opt_sp',
+      'type': 'executable',
+      'msvs_settings': {
+        'VCCLCompilerTool': {
+          'StringPooling': 'true'
+        }
+      },
+      'sources': ['hello.cc'],
+    },
+    {
+      'target_name': 'test_opt_sp_off',
+      'type': 'executable',
+      'msvs_settings': {
+        'VCCLCompilerTool': {
+          'StringPooling': 'false'
+        }
+      },
+      'sources': ['hello.cc'],
+    },
+    {
+      'target_name': 'test_opt_fso',
+      'type': 'executable',
+      'msvs_settings': {
+        'VCCLCompilerTool': {
+          'EnableFiberSafeOptimizations': 'true'
+        }
+      },
+      'sources': ['hello.cc'],
+    },
+    {
+      'target_name': 'test_opt_fso_off',
+      'type': 'executable',
+      'msvs_settings': {
+        'VCCLCompilerTool': {
+          'EnableFiberSafeOptimizations': 'false'
+        }
+      },
+      'sources': ['hello.cc'],
+    },
   ]
 }

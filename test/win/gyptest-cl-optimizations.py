@@ -85,4 +85,20 @@ if sys.platform == 'win32':
       chdir=CHDIR)
   test.must_contain(ninja_file, '/GL')
 
+  ninja_file = test.built_file_path('obj/test_opt_sp.ninja',
+      chdir=CHDIR)
+  test.must_contain(ninja_file, '/GF')
+
+  ninja_file = test.built_file_path('obj/test_opt_sp_off.ninja',
+      chdir=CHDIR)
+  test.must_not_contain(ninja_file, '/GF')
+
+  ninja_file = test.built_file_path('obj/test_opt_fso.ninja',
+      chdir=CHDIR)
+  test.must_contain(ninja_file, '/GT')
+
+  ninja_file = test.built_file_path('obj/test_opt_fso_off.ninja',
+      chdir=CHDIR)
+  test.must_not_contain(ninja_file, '/GT')
+
   test.pass_test()
