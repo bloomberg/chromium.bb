@@ -109,6 +109,10 @@ TabModalConfirmDialogGtk::TabModalConfirmDialogGtk(
 }
 
 TabModalConfirmDialogGtk::~TabModalConfirmDialogGtk() {
+  // Provide a disposition in case the dialog was closed without accepting or
+  // cancelling.
+  delegate_->Cancel();
+
   gtk_widget_destroy(dialog_);
 }
 

@@ -14,10 +14,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 MockTabModalConfirmDialogDelegate::MockTabModalConfirmDialogDelegate(
-    content::WebContents* web_contents,
     Delegate* delegate)
-    : TabModalConfirmDialogDelegate(web_contents),
-      delegate_(delegate) {
+    : delegate_(delegate) {
 }
 
 MockTabModalConfirmDialogDelegate::~MockTabModalConfirmDialogDelegate() {
@@ -49,8 +47,7 @@ TabModalConfirmDialogTest::TabModalConfirmDialogTest()
 }
 
 void TabModalConfirmDialogTest::SetUpOnMainThread() {
-  delegate_ = new MockTabModalConfirmDialogDelegate(
-      browser()->tab_strip_model()->GetActiveWebContents(), this);
+  delegate_ = new MockTabModalConfirmDialogDelegate(this);
   dialog_ = TabModalConfirmDialog::Create(
       delegate_, browser()->tab_strip_model()->GetActiveWebContents());
   content::RunAllPendingInMessageLoop();

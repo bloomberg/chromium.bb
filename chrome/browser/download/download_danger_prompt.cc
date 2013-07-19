@@ -22,7 +22,6 @@ class DownloadDangerPromptImpl
     public TabModalConfirmDialogDelegate {
  public:
   DownloadDangerPromptImpl(content::DownloadItem* item,
-                           content::WebContents* web_contents,
                            bool show_context,
                            const base::Closure& accepted,
                            const base::Closure& canceled);
@@ -63,12 +62,10 @@ class DownloadDangerPromptImpl
 
 DownloadDangerPromptImpl::DownloadDangerPromptImpl(
     content::DownloadItem* download,
-    content::WebContents* web_contents,
     bool show_context,
     const base::Closure& accepted,
     const base::Closure& canceled)
-    : TabModalConfirmDialogDelegate(web_contents),
-      download_(download),
+    : download_(download),
       show_context_(show_context),
       accepted_(accepted),
       canceled_(canceled) {
@@ -175,7 +172,7 @@ DownloadDangerPrompt* DownloadDangerPrompt::Create(
     const base::Closure& accepted,
     const base::Closure& canceled) {
   DownloadDangerPromptImpl* prompt = new DownloadDangerPromptImpl(
-      item, web_contents, show_context, accepted, canceled);
+      item, show_context, accepted, canceled);
   // |prompt| will be deleted when the dialog is done.
   TabModalConfirmDialog::Create(prompt, web_contents);
   return prompt;
