@@ -9,6 +9,8 @@
      0:	00 c0                                        	add    %al,%al
 @rdfa_output:
   return code: 0
+@spec:
+  SAFE
 ----------------------------------------------------------------------
 @hex:
   # The following is the same instruction with an illegal REP prefix.
@@ -18,6 +20,8 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  0: rep is only allowed with string instructions
 ----------------------------------------------------------------------
 @hex:
   # The following is the same instruction with an illegal REPNE prefix.
@@ -27,17 +31,18 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  0: rep is only allowed with string instructions
 ----------------------------------------------------------------------
 @hex:
-  # The following is an example of a multibyte instruction explicitly requiring
-  # a REP prefix.
-  #   movss %xmm0, [%rdx]
-  f3 0f 10 02
+  # Here 0xf3 prefix is used as part of SSE instruction encoding, not as REP.
+  f3 0f 10 45 00
 @dis:
-     0:	f3 0f 10 02                                  	movss  (%rdx),%xmm0
+     0:	f3 0f 10 45 00                               	movss  0x0(%rbp),%xmm0
 @rdfa_output:
-  0: [0] improper memory address - bad base
-  return code: 1
+  return code: 0
+@spec:
+  SAFE
 ----------------------------------------------------------------------
 @hex:
   # The following is an example of a multibyte instruction explicitly requiring
@@ -48,6 +53,8 @@
      0:	f2 0f 11 54 24 10                            	movsd  %xmm2,0x10(%rsp)
 @rdfa_output:
   return code: 0
+@spec:
+  SAFE
 ----------------------------------------------------------------------
 @hex:
   # The following is an example of an instruction that can get a REP prefix.
@@ -58,6 +65,8 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  0: ('segments in memory references are not allowed', Instruction(0x0: 6c  insb (%dx),%es:(%rdi)))
 ----------------------------------------------------------------------
 @hex:
   # The same instrucition with a REP prefix.
@@ -67,6 +76,8 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  0: rep is only allowed with string instructions
 ----------------------------------------------------------------------
 @hex:
   # The same instruction with a REPNE prefix.
@@ -76,6 +87,8 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  0: rep is only allowed with string instructions
 ----------------------------------------------------------------------
 @hex:
   # The following is an example of an instruction that can get a REP/REPNE prefix.
@@ -86,6 +99,8 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  0: ('segments in memory references are not allowed', Instruction(0x0: a6  cmpsb %es:(%rdi),%ds:(%rsi)))
 ----------------------------------------------------------------------
 @hex:
   # The same instruction with a REP prefix.
@@ -95,6 +110,8 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  0: rep is only allowed with string instructions
 ----------------------------------------------------------------------
 @hex:
   # The same instruction with a REPNE prefix
@@ -104,3 +121,5 @@
 @rdfa_output:
   0: [0] unrecognized instruction
   return code: 1
+@spec:
+  0: rep is only allowed with string instructions

@@ -1073,6 +1073,12 @@ def ValidateRegularInstruction(instruction, bitness):
   if 'addr16' in prefixes or 'addr32' in prefixes:
     raise SandboxingError('addr prefixes are not allowed', instruction)
 
+  # Older versions of objdump decode 'tzcnt' as 'repz bsf'.
+  # TODO(shcherbina): get rid of this exception once objdump is updated.
+  if name != 'bsf':
+    if 'rep' in prefixes or 'repz' in prefixes or 'repnz' in prefixes:
+      raise SandboxingError('rep is only allowed with string instructions')
+
   for op in ops:
     if op in ['%cs', '%ds', '%es', '%ss', '%fs', '%gs']:
       raise SandboxingError(
