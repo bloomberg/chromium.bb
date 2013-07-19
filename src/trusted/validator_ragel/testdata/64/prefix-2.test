@@ -2,54 +2,84 @@
   # 2 prefixes of the same type
   # lock lock add %eax,(%rsp)
   F0 F0 01 04 24
+@dis:
+     0:	f0 f0 01 04 24                               	lock add %eax,(%rsp)
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
   # mov %edi,%edi
   # lea (%r15,%rdi),%rdi
   # rep rep stos %eax,%es:(%rdi)
   89 FF
   49 8D 3C 3F
   F3 F3 AB
+@dis:
+     0:	89 ff                                        	mov    %edi,%edi
+     2:	49 8d 3c 3f                                  	lea    (%r15,%rdi,1),%rdi
+     6:	f3 f3 ab                                     	rep stos %eax,%es:(%rdi)
+@rdfa_output:
+  6: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
   # mov %edi,%edi
   # lea (%r15,%rdi),%rdi
   # repne rep stos %eax,%es:(%rdi)
   89 FF
   49 8D 3C 3F
   F2 F3 AB
+@dis:
+     0:	89 ff                                        	mov    %edi,%edi
+     2:	49 8d 3c 3f                                  	lea    (%r15,%rdi,1),%rdi
+     6:	f2 f3 ab                                     	rep repnz stos %eax,%es:(%rdi)
+@rdfa_output:
+  6: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
   # mov %edi,%edi
   # lea (%r15,%rdi),%rdi
   # rep repne scas %es:(%rdi),%al
   89 FF
   49 8D 3C 3F
   F3 F2 AE
+@dis:
+     0:	89 ff                                        	mov    %edi,%edi
+     2:	49 8d 3c 3f                                  	lea    (%r15,%rdi,1),%rdi
+     6:	f3 f2 ae                                     	repz repnz scas %es:(%rdi),%al
+@rdfa_output:
+  6: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
   # fs gs mov %eax,%eax
   64 65 89 C0
-  # 0x66 mov %ax,%ax
-  66 66 89 C0
-  # 0x67 mov %eax,(%esp)
-  67 67 89 04 24
 @dis:
-     0:	f0 f0 01 04 24                               	lock add %eax,(%rsp)
-     5:	89 ff                                        	mov    %edi,%edi
-     7:	49 8d 3c 3f                                  	lea    (%r15,%rdi,1),%rdi
-     b:	f3 f3 ab                                     	rep stos %eax,%es:(%rdi)
-     e:	89 ff                                        	mov    %edi,%edi
-    10:	49 8d 3c 3f                                  	lea    (%r15,%rdi,1),%rdi
-    14:	f2 f3 ab                                     	rep repnz stos %eax,%es:(%rdi)
-    17:	89 ff                                        	mov    %edi,%edi
-    19:	49 8d 3c 3f                                  	lea    (%r15,%rdi,1),%rdi
-    1d:	f3 f2 ae                                     	repz repnz scas %es:(%rdi),%al
-    20:	64                                           	fs
-    21:	65                                           	gs
-    22:	89 c0                                        	mov    %eax,%eax
-    24:	66 66 89 c0                                  	mov    %ax,%ax
-    28:	67 67 89 04 24                               	addr32 mov %eax,(%esp)
+     0:	64                                           	fs
+     1:	65                                           	gs
+     2:	89 c0                                        	mov    %eax,%eax
 @rdfa_output:
   0: [0] unrecognized instruction
-  b: [1] unrecognized instruction
-  14: [2] unrecognized instruction
-  1d: [3] unrecognized instruction
-  20: [0] unrecognized instruction
-  24: [1] unrecognized instruction
-  28: [2] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  # data16 data16
+  66 66 89 C0
+@dis:
+     0:	66 66 89 c0                                  	mov    %ax,%ax
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  # addr32 addr32
+  67 67 48 8d 04 24
+@dis:
+     0:	67 67 48 8d 04 24                            	addr32 lea (%esp),%rax
+@rdfa_output:
+  0: [0] unrecognized instruction
   return code: 1
 ----------------------------------------------------------------------
 @hex:
@@ -64,125 +94,162 @@
 ----------------------------------------------------------------------
 @hex:
   # 2 prefixes of different type
-  # lock add %eax, %ss:(%rsp)
   36 F0 01 04 24
+@dis:
+     0:	36 f0 01 04 24                               	lock add %eax,%ss:(%rsp)
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
   F0 36 01 04 24
-  
+@dis:
+     0:	f0 36 01 04 24                               	lock add %eax,%ss:(%rsp)
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
   # mov %edi,%edi
   # lea (%r15,%rdi),%rdi
   # es rep stos %eax,%es:(%rdi)
   89 FF
   49 8D 3C 3F
   26 F3 AB
+@dis:
+     0:	89 ff                                        	mov    %edi,%edi
+     2:	49 8d 3c 3f                                  	lea    (%r15,%rdi,1),%rdi
+     6:	26                                           	es
+     7:	f3 ab                                        	rep stos %eax,%es:(%rdi)
+@rdfa_output:
+  6: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  # mov %edi,%edi
+  # lea (%r15,%rdi),%rdi
+  # rep es stos %eax,%es:(%rdi)
   89 FF
   49 8D 3C 3F
   F3 26 AB
-  
-  # nops for bundle alignment
-  90 90 90 90
-  
+@dis:
+     0:	89 ff                                        	mov    %edi,%edi
+     2:	49 8d 3c 3f                                  	lea    (%r15,%rdi,1),%rdi
+     6:	f3                                           	repz
+     7:	26                                           	es
+     8:	ab                                           	stos   %eax,%es:(%rdi)
+@rdfa_output:
+  6: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
   # lock add %ax, (%rsp)
   66 F0 01 04 24
   F0 66 01 04 24
 @dis:
-     0:	36 f0 01 04 24                               	lock add %eax,%ss:(%rsp)
-     5:	f0 36 01 04 24                               	lock add %eax,%ss:(%rsp)
-     a:	89 ff                                        	mov    %edi,%edi
-     c:	49 8d 3c 3f                                  	lea    (%r15,%rdi,1),%rdi
-    10:	26                                           	es
-    11:	f3 ab                                        	rep stos %eax,%es:(%rdi)
-    13:	89 ff                                        	mov    %edi,%edi
-    15:	49 8d 3c 3f                                  	lea    (%r15,%rdi,1),%rdi
-    19:	f3                                           	repz
-    1a:	26                                           	es
-    1b:	ab                                           	stos   %eax,%es:(%rdi)
-    1c:	90                                           	nop
-    1d:	90                                           	nop
-    1e:	90                                           	nop
-    1f:	90                                           	nop
-    20:	66 f0 01 04 24                               	lock add %ax,(%rsp)
-    25:	f0 66 01 04 24                               	lock add %ax,(%rsp)
+     0:	66 f0 01 04 24                               	lock add %ax,(%rsp)
+     5:	f0 66 01 04 24                               	lock add %ax,(%rsp)
 @rdfa_output:
-  0: [0] unrecognized instruction
-  5: [1] unrecognized instruction
-  10: [2] unrecognized instruction
-  19: [3] unrecognized instruction
-  return code: 1
+  return code: 0
 ----------------------------------------------------------------------
 @hex:
-  # Doesn't validate due to bug.
-  # mov %edi,%edi
-  # lea (%r15,%rdi),%rdi
-  # rep stosw %ax,%es:(%rdi)
+  # Doesn't validate due to bug,
+  # see http://code.google.com/p/nativeclient/issues/detail?id=1950
   89 FF
   49 8D 3C 3F
   66 F3 AB
+@dis:
+     0:	89 ff                                        	mov    %edi,%edi
+     2:	49 8d 3c 3f                                  	lea    (%r15,%rdi,1),%rdi
+     6:	66 f3 ab                                     	rep stos %ax,%es:(%rdi)
+@rdfa_output:
+  6: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
   89 FF
   49 8D 3C 3F
   F3 66 AB
 @dis:
      0:	89 ff                                        	mov    %edi,%edi
      2:	49 8d 3c 3f                                  	lea    (%r15,%rdi,1),%rdi
-     6:	66 f3 ab                                     	rep stos %ax,%es:(%rdi)
-     9:	89 ff                                        	mov    %edi,%edi
-     b:	49 8d 3c 3f                                  	lea    (%r15,%rdi,1),%rdi
-     f:	f3 66 ab                                     	rep stos %ax,%es:(%rdi)
+     6:	f3 66 ab                                     	rep stos %ax,%es:(%rdi)
 @rdfa_output:
   6: [0] unrecognized instruction
-  f: [1] unrecognized instruction
   return code: 1
 ----------------------------------------------------------------------
 @hex:
-  # lock add %eax, (%esp)
   67 F0 01 04 24
+@dis:
+     0:	67 f0 01 04 24                               	lock addr32 add %eax,(%esp)
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
   F0 67 01 04 24
-  
-  # rep stos %eax, %es:(%edi)
+@dis:
+     0:	f0 67 01 04 24                               	lock addr32 add %eax,(%esp)
+@rdfa_output:
+  0: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  # addr32 rep
   89 FF
   49 8D 3C 3F
   67 F3 AB
+@dis:
+     0:	89 ff                                        	mov    %edi,%edi
+     2:	49 8d 3c 3f                                  	lea    (%r15,%rdi,1),%rdi
+     6:	67 f3 ab                                     	rep addr32 stos %eax,%es:(%edi)
+@rdfa_output:
+  6: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  # rep addr32
   89 FF
   49 8D 3C 3F
   F3 67 AB
 @dis:
-     0:	67 f0 01 04 24                               	lock addr32 add %eax,(%esp)
-     5:	f0 67 01 04 24                               	lock addr32 add %eax,(%esp)
-     a:	89 ff                                        	mov    %edi,%edi
-     c:	49 8d 3c 3f                                  	lea    (%r15,%rdi,1),%rdi
-    10:	67 f3 ab                                     	rep addr32 stos %eax,%es:(%edi)
-    13:	89 ff                                        	mov    %edi,%edi
-    15:	49 8d 3c 3f                                  	lea    (%r15,%rdi,1),%rdi
-    19:	f3 67 ab                                     	rep addr32 stos %eax,%es:(%edi)
+     0:	89 ff                                        	mov    %edi,%edi
+     2:	49 8d 3c 3f                                  	lea    (%r15,%rdi,1),%rdi
+     6:	f3 67 ab                                     	rep addr32 stos %eax,%es:(%edi)
 @rdfa_output:
-  0: [0] unrecognized instruction
-  5: [1] unrecognized instruction
-  10: [2] unrecognized instruction
-  19: [3] unrecognized instruction
+  6: [0] unrecognized instruction
   return code: 1
 ----------------------------------------------------------------------
 @hex:
-  # lock add %rax, (%rsp)
   f0 48 01 04 24
-  48 f0 01 04 24
-  # mov %edi,%edi
-  # lea (%r15,%rdi),%rdi
-  # rep stos %rax,%es:(%rdi)
-  89 FF
-  49 8D 3C 3F
-  F3 48 AB
 @dis:
      0:	f0 48 01 04 24                               	lock add %rax,(%rsp)
-     5:	48                                           	rex.W
-     6:	f0 01 04 24                                  	lock add %eax,(%rsp)
-     a:	89 ff                                        	mov    %edi,%edi
-     c:	49 8d 3c 3f                                  	lea    (%r15,%rdi,1),%rdi
-    10:	f3 48 ab                                     	rep stos %rax,%es:(%rdi)
 @rdfa_output:
-  5: [0] unrecognized instruction
+  return code: 0
+----------------------------------------------------------------------
+@hex:
+  # REX before legacy prefixes
+  48 f0 01 04 24
+@dis:
+     0:	48                                           	rex.W
+     1:	f0 01 04 24                                  	lock add %eax,(%rsp)
+@rdfa_output:
+  0: [0] unrecognized instruction
   return code: 1
 ----------------------------------------------------------------------
 @hex:
-  # fs mov %ax,%ax
+  # Unneeded REX.
+  89 FF \\
+  49 8D 3C 3F \\
+  F3 48 AB
+@dis:
+     0:	89 ff                                        	mov    %edi,%edi
+     2:	49 8d 3c 3f                                  	lea    (%r15,%rdi,1),%rdi
+     6:	f3 48 ab                                     	rep stos %rax,%es:(%rdi)
+@rdfa_output:
+  return code: 0
+----------------------------------------------------------------------
+@hex:
   64 66 89 C0
 @dis:
      0:	64                                           	fs
@@ -192,7 +259,6 @@
   return code: 1
 ----------------------------------------------------------------------
 @hex:
-  # fs mov %ax,%ax
   66 64 89 C0
 @dis:
      0:	66                                           	data16
@@ -376,7 +442,7 @@
   return code: 0
 ----------------------------------------------------------------------
 @hex:
-  # REX prefix can't go begore legacy prefix
+  # REX prefix can't go before legacy prefix
   89 C0
   41 F2 0F 58 04 07
 @dis:
