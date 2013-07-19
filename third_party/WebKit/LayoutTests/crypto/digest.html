@@ -180,6 +180,13 @@ allTests = [
 
     function()
     {
+        debug("SHA-256 rejects (dummy implementation)");
+        op = crypto.subtle.digest({name: 'sha-256'});
+        op.finish().then(resultHandler, rejectHandler);
+    },
+
+    function()
+    {
         op = crypto.subtle.digest({name: 'sha-1'});
         shouldThrow("op.process(null)");
         shouldThrow("op.process()");

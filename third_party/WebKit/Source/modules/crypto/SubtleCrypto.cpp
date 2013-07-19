@@ -34,6 +34,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "modules/crypto/CryptoOperation.h"
 #include "modules/crypto/NormalizeAlgorithm.h"
+#include "public/platform/Platform.h"
 #include "public/platform/WebArrayBuffer.h" // FIXME: temporary
 #include "public/platform/WebCrypto.h"
 #include "wtf/ArrayBuffer.h"
@@ -52,28 +53,39 @@ namespace {
 //------------------------------------------------------------------------------
 class DummyOperation : public WebKit::WebCryptoOperation {
 public:
+    explicit DummyOperation(WebKit::WebCryptoOperationResult* result) : m_result(result) { }
+
     virtual void process(const unsigned char* bytes, size_t size) OVERRIDE
     {
-        ASSERT_NOT_REACHED();
+        m_result->completeWithError();
+        delete this;
     }
+
     virtual void abort() OVERRIDE
     {
         delete this;
     }
-    virtual void finish(WebKit::WebCryptoOperationResult* result) OVERRIDE
+
+    virtual void finish() OVERRIDE
     {
-        ASSERT_NOT_REACHED();
+        m_result->completeWithError();
+        delete this;
     }
+
+protected:
+    WebKit::WebCryptoOperationResult* m_result;
 };
 
 class MockSha1Operation : public DummyOperation {
 public:
+    explicit MockSha1Operation(WebKit::WebCryptoOperationResult* result) : DummyOperation(result) { }
+
     virtual void process(const unsigned char* bytes, size_t size) OVERRIDE
     {
         m_sha1.addBytes(bytes, size);
     }
 
-    virtual void finish(WebKit::WebCryptoOperationResult* result) OVERRIDE
+    virtual void finish() OVERRIDE
     {
         Vector<uint8_t, 20> hash;
         m_sha1.computeHash(hash);
@@ -81,13 +93,47 @@ public:
         WebKit::WebArrayBuffer buffer = WebKit::WebArrayBuffer::create(hash.size(), 1);
         memcpy(buffer.data(), hash.data(), hash.size());
 
-        result->setArrayBuffer(buffer);
+        m_result->completeWithArrayBuffer(buffer);
         delete this;
     }
 
 private:
     SHA1 m_sha1;
 };
+
+class MockPlatformCrypto : public WebKit::WebCrypto {
+public:
+    // FIXME: delete
+    virtual WebKit::WebCryptoOperation* digest(const WebKit::WebCryptoAlgorithm&) { return 0; }
+
+    virtual void digest2(const WebKit::WebCryptoAlgorithm& algorithm, WebKit::WebCryptoOperationResult* result) OVERRIDE
+    {
+        if (algorithm.id() == WebKit::WebCryptoAlgorithmIdSha1) {
+            result->initializationSucceded(new MockSha1Operation(result));
+        } else {
+            // Don't fail synchronously, since existing layout tests rely on
+            // digest for testing algorithm normalization.
+            result->initializationSucceded(new DummyOperation(result));
+        }
+    }
+};
+
+WebKit::WebCrypto* mockPlatformCrypto()
+{
+    DEFINE_STATIC_LOCAL(MockPlatformCrypto, crypto, ());
+    return &crypto;
+}
+
+PassRefPtr<CryptoOperation> doDummyOperation(const Dictionary& rawAlgorithm, AlgorithmOperation operationType, ExceptionCode& ec)
+{
+    WebKit::WebCryptoAlgorithm algorithm;
+    if (!normalizeAlgorithm(rawAlgorithm, operationType, algorithm, ec))
+        return 0;
+
+    RefPtr<CryptoOperation> op = CryptoOperation::create(algorithm, &ec);
+    op->initializationSucceded(new DummyOperation(op.get()));
+    return op.release();
+}
 //------------------------------------------------------------------------------
 
 } // namespace
@@ -99,47 +145,39 @@ SubtleCrypto::SubtleCrypto()
 
 PassRefPtr<CryptoOperation> SubtleCrypto::encrypt(const Dictionary& rawAlgorithm, ExceptionCode& ec)
 {
-    WebKit::WebCryptoAlgorithm algorithm;
-    if (!normalizeAlgorithm(rawAlgorithm, Encrypt, algorithm, ec))
-        return 0;
-    return CryptoOperation::create(algorithm, new DummyOperation);
+    return doDummyOperation(rawAlgorithm, Encrypt, ec);
 }
 
 PassRefPtr<CryptoOperation> SubtleCrypto::decrypt(const Dictionary& rawAlgorithm, ExceptionCode& ec)
 {
-    WebKit::WebCryptoAlgorithm algorithm;
-    if (!normalizeAlgorithm(rawAlgorithm, Decrypt, algorithm, ec))
-        return 0;
-    return CryptoOperation::create(algorithm, new DummyOperation);
+    return doDummyOperation(rawAlgorithm, Decrypt, ec);
 }
 
 PassRefPtr<CryptoOperation> SubtleCrypto::sign(const Dictionary& rawAlgorithm, ExceptionCode& ec)
 {
-    WebKit::WebCryptoAlgorithm algorithm;
-    if (!normalizeAlgorithm(rawAlgorithm, Sign, algorithm, ec))
-        return 0;
-    return CryptoOperation::create(algorithm, new DummyOperation);
+    return doDummyOperation(rawAlgorithm, Sign, ec);
 }
 
 PassRefPtr<CryptoOperation> SubtleCrypto::verifySignature(const Dictionary& rawAlgorithm, ExceptionCode& ec)
 {
-    WebKit::WebCryptoAlgorithm algorithm;
-    if (!normalizeAlgorithm(rawAlgorithm, Verify, algorithm, ec))
-        return 0;
-    return CryptoOperation::create(algorithm, new DummyOperation);
+    return doDummyOperation(rawAlgorithm, Verify, ec);
 }
 
 PassRefPtr<CryptoOperation> SubtleCrypto::digest(const Dictionary& rawAlgorithm, ExceptionCode& ec)
 {
+    WebKit::WebCrypto* platformCrypto = mockPlatformCrypto();
+    if (!platformCrypto) {
+        ec = NotSupportedError;
+        return 0;
+    }
+
     WebKit::WebCryptoAlgorithm algorithm;
     if (!normalizeAlgorithm(rawAlgorithm, Digest, algorithm, ec))
         return 0;
 
-    // FIXME: Create the WebCryptoImplementation by calling out to
-    // Platform::crypto() instead.
-    WebKit::WebCryptoOperation* operationImpl = algorithm.id() == WebKit::WebCryptoAlgorithmIdSha1 ? new MockSha1Operation : new DummyOperation;
-
-    return CryptoOperation::create(algorithm, operationImpl);
+    RefPtr<CryptoOperation> op = CryptoOperation::create(algorithm, &ec);
+    platformCrypto->digest2(algorithm, op.get());
+    return op.release();
 }
 
 } // namespace WebCore

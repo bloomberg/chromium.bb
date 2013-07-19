@@ -33,6 +33,7 @@
 
 #include "bindings/v8/custom/V8ArrayBufferCustom.h" // MUST precede ScriptPromiseResolver for compilation to work.
 #include "bindings/v8/ScriptPromiseResolver.h"
+#include "core/dom/ExceptionCode.h"
 #include "modules/crypto/Algorithm.h"
 #include "public/platform/WebArrayBuffer.h"
 #include "public/platform/WebCrypto.h"
@@ -41,41 +42,24 @@
 
 namespace WebCore {
 
-class CryptoOperation::Result : public WebKit::WebCryptoOperationResult {
-public:
-    explicit Result(CryptoOperation* parent) : m_parent(parent) { }
-
-    virtual void setArrayBuffer(const WebKit::WebArrayBuffer& buffer) OVERRIDE
-    {
-        ASSERT(m_parent->m_state == Finishing);
-        m_parent->m_state = Done;
-        m_parent->m_impl = 0;
-
-        m_parent->promiseResolver()->fulfill(PassRefPtr<ArrayBuffer>(buffer));
-    }
-
-private:
-    CryptoOperation* m_parent;
-};
-
 CryptoOperation::~CryptoOperation()
 {
     abortImpl();
     ASSERT(!m_impl);
 }
 
-PassRefPtr<CryptoOperation> CryptoOperation::create(const WebKit::WebCryptoAlgorithm& algorithm, WebKit::WebCryptoOperation* impl)
+PassRefPtr<CryptoOperation> CryptoOperation::create(const WebKit::WebCryptoAlgorithm& algorithm, ExceptionCode* ec)
 {
-    return adoptRef(new CryptoOperation(algorithm, impl));
+    return adoptRef(new CryptoOperation(algorithm, ec));
 }
 
-CryptoOperation::CryptoOperation(const WebKit::WebCryptoAlgorithm& algorithm, WebKit::WebCryptoOperation* impl)
+CryptoOperation::CryptoOperation(const WebKit::WebCryptoAlgorithm& algorithm, ExceptionCode* ec)
     : m_algorithm(algorithm)
-    , m_impl(impl)
-    , m_state(Processing)
-    , m_result(adoptPtr(new Result(this)))
+    , m_impl(0)
+    , m_exceptionCode(ec)
+    , m_state(Initializing)
 {
-    ASSERT(impl);
+    ASSERT(ec);
     ScriptWrappable::init(this);
 }
 
@@ -94,10 +78,13 @@ CryptoOperation* CryptoOperation::process(ArrayBufferView* data)
 ScriptObject CryptoOperation::finish()
 {
     switch (m_state) {
+    case Initializing:
+        ASSERT_NOT_REACHED();
+        return ScriptObject();
     case Processing:
         m_state = Finishing;
         // NOTE: The following line can result in re-entrancy to |this|
-        m_impl->finish(m_result.get());
+        m_impl->finish();
         break;
     case Finishing:
         // Calling finish() twice is a no-op.
@@ -125,9 +112,52 @@ Algorithm* CryptoOperation::algorithm()
     return m_algorithmNode.get();
 }
 
+void CryptoOperation::initializationFailed()
+{
+    ASSERT(m_state == Initializing);
+
+    *m_exceptionCode = NotSupportedError;
+
+    m_exceptionCode = 0;
+    m_state = Done;
+}
+
+void CryptoOperation::initializationSucceded(WebKit::WebCryptoOperation* operationImpl)
+{
+    ASSERT(m_state == Initializing);
+    ASSERT(operationImpl);
+    ASSERT(!m_impl);
+
+    m_exceptionCode = 0;
+    m_impl = operationImpl;
+    m_state = Processing;
+}
+
+void CryptoOperation::completeWithError()
+{
+    ASSERT(m_state == Processing || m_state == Finishing);
+
+    m_impl = 0;
+    m_state = Done;
+
+    promiseResolver()->reject(ScriptValue::createNull());
+}
+
+void CryptoOperation::completeWithArrayBuffer(const WebKit::WebArrayBuffer& buffer)
+{
+    ASSERT(m_state == Processing || m_state == Finishing);
+
+    m_impl = 0;
+    m_state = Done;
+
+    promiseResolver()->fulfill(PassRefPtr<ArrayBuffer>(buffer));
+}
+
 void CryptoOperation::process(const unsigned char* bytes, size_t size)
 {
     switch (m_state) {
+    case Initializing:
+        ASSERT_NOT_REACHED();
     case Processing:
         m_impl->process(bytes, size);
         break;
@@ -140,11 +170,14 @@ void CryptoOperation::process(const unsigned char* bytes, size_t size)
 bool CryptoOperation::abortImpl()
 {
     switch (m_state) {
+    case Initializing:
+        ASSERT_NOT_REACHED();
+        break;
     case Processing:
     case Finishing:
         // This will cause m_impl to be deleted.
-        m_impl->abort();
         m_state = Done;
+        m_impl->abort();
         m_impl = 0;
         return true;
     case Done:

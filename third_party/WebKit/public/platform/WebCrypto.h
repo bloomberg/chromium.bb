@@ -43,30 +43,53 @@ class WebCryptoOperationResult;
 
 class WebCrypto {
 public:
-    // The following methods start a new asynchronous multi-part cryptographic
+    // FIXME: Deprecated, delete once chromium side is updated.
+    virtual WebCryptoOperation* digest(const WebCryptoAlgorithm&) = 0;
+
+    // The following methods begin an asynchronous multi-part cryptographic
     // operation.
     //
-    //   - Returns 0 on failure
-    //   - The returned pointer must remain valid until the operation has
-    //     completed. After this, the embedder is responsible for freeing it.
-
-    virtual WebCryptoOperation* digest(const WebCryptoAlgorithm&) = 0;
+    // Let the WebCryptoOperationResult* be called "result".
+    //
+    // Implementations can either:
+    //
+    // * Synchronously fail initialization by calling:
+    //   result->initializationFailed(errorDetails)
+    //
+    // OR
+    //
+    // * Create a new WebCryptoOperation* and return it by calling:
+    //   result->initializationSucceeded(cryptoOperation)
+    //
+    // If initialization succeeds, then Blink will subsequently call
+    // methods on cryptoOperation:
+    //
+    //   - cryptoOperation->process() to feed it data
+    //   - cryptoOperation->finish() to indicate there is no more data
+    //   - cryptoOperation->abort() to cancel.
+    //
+    // The embedder may call result->completeWithXXX() at any time while the
+    // cryptoOperation is "in progress". Typically completion is set once
+    // cryptoOperation->finish() is called, however it can also be called
+    // during cryptoOperation->process() (for instance to set an error).
+    //
+    // The cryptoOperation pointer MUST remain valid while it is "in progress".
+    // The cryptoOperation is said to be "in progress" from the time after
+    // result->initializationSucceded() has been called, up until either:
+    //
+    //   - Blink calls cryptoOperation->abort()
+    //   OR
+    //   - Embedder calls result->completeWithXXX()
+    //
+    // Once the cryptoOperation is no longer "in progress" the "result" pointer
+    // is no longer valid. At this time the embedder is responsible for freeing
+    // the cryptoOperation.
+    virtual void digest2(const WebCryptoAlgorithm&, WebCryptoOperationResult*) { }
 
 protected:
     virtual ~WebCrypto() { }
 };
 
-// WebCryptoOperation represents a multi-part cryptographic operation. The
-// methods on this interface will be called in this order:
-//
-//   (1) 0 or more calls to process()
-//   (2) 0 or 1 calls to finish()
-//   (3) 0 or 1 calls to abort()
-//
-// Deletion of the WebCryptoOperation is the responsibility of the embedder.
-// However it MUST remain alive until either:
-//   (a) Blink has called this->abort()
-//   (b) The embedder has called result->setXXX()
 class WebCryptoOperation {
 public:
     // Feeds data (bytes, size) to the operation.
@@ -79,36 +102,23 @@ public:
     //   * Implementations should delete |this| after aborting.
     virtual void abort() = 0;
 
-    // Completes the operation and writes the result to the
-    // WebCryptoOperationResult* (henceforth called |result|).
-    //
-    // |result| can be set either synchronously or asynchronously. |result|
-    // will remain alive until the operation completes OR this->abort() is
-    // called. |result| SHOULD NOT be used after this->abort() has been called.
-    //
-    //   * Implementations should delete |this| after setting |result|.
-    virtual void finish(WebCryptoOperationResult*) = 0;
+    // Indicates that there is no more data to receive.
+    virtual void finish() = 0;
 
 protected:
     virtual ~WebCryptoOperation() { }
 };
 
-// WebCryptoOperationResult is a handle for either synchronous or asynchronous
-// completion of WebCryptoOperation::finish().
-//
-// The result can be either an error or a value.
-//
-// Only one of the setXXX() methods should be called, corresponding to the
-// expected type of result for the operation. For instance digest() outputs an
-// ArrayBuffer whereas verify() outputs a boolean.
-//
-// Note on re-entrancy: After completing the result (i.e. calling one of the
-// setXXX() methods) the embedder must be ready to service other requests. In
-// other words, it should release any locks that would prevent other
-// WebCryptoOperations from being created or used.
+// FIXME: Add error types.
 class WebCryptoOperationResult {
 public:
-    virtual void setArrayBuffer(const WebArrayBuffer&) = 0;
+    // Only one of these should be called.
+    virtual void initializationFailed() = 0;
+    virtual void initializationSucceded(WebCryptoOperation*) = 0;
+
+    // Only one of these should be called to set the result.
+    virtual void completeWithError() = 0;
+    virtual void completeWithArrayBuffer(const WebArrayBuffer&) = 0;
 
 protected:
     virtual ~WebCryptoOperationResult() { }
