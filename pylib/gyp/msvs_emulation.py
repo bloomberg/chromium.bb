@@ -167,12 +167,17 @@ class MsvsSettings(object):
     """Get a dict of variables mapping internal VS macro names to their gyp
     equivalents."""
     target_platform = 'Win32' if self.GetArch(config) == 'x86' else 'x64'
+    target_name = self.spec.get('product_prefix', '') + \
+        self.spec.get('product_name', self.spec['target_name'])
+    target_dir = base_to_build + '\\' if base_to_build else ''
     replacements = {
-        '$(OutDir)\\': base_to_build + '\\' if base_to_build else '',
+        '$(OutDir)\\': target_dir,
+        '$(TargetDir)\\': target_dir,
         '$(IntDir)': '$!INTERMEDIATE_DIR',
         '$(InputPath)': '${source}',
         '$(InputName)': '${root}',
         '$(ProjectName)': self.spec['target_name'],
+        '$(TargetName)': target_name,
         '$(PlatformName)': target_platform,
         '$(ProjectDir)\\': '',
     }
