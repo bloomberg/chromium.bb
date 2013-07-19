@@ -356,6 +356,9 @@ void MessageChannel::PostMessageToJavaScript(PP_Var message_data) {
 
   v8::Local<v8::Context> context =
       container->element().document().frame()->mainWorldScriptContext();
+  // If the page is being destroyed, the context may be empty.
+  if (context.IsEmpty())
+    return;
   v8::Context::Scope context_scope(context);
 
   v8::Handle<v8::Value> v8_val;

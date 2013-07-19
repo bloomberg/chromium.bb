@@ -145,6 +145,9 @@ TestPostMessage::TestPostMessage(TestingInstance* instance)
 }
 
 TestPostMessage::~TestPostMessage() {
+  instance_->PostMessage(pp::Var("This isn't guaranteed to be received, but "
+                                 "shouldn't cause a crash."));
+
   // Remove the special listener that only responds to a FINISHED_WAITING
   // string. See Init for where it gets added.
   std::string js_code;
