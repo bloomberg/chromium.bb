@@ -429,3 +429,10 @@ name=http://crbug.com/234484
 ...
 *!chrome::`anonymous namespace'::SetOverlayIcon
 
+INVALID HEAP ARGUMENT
+name=http://crbug.com/262088
+drmemorylib.dll!av_dup_packet
+msvcrt.dll!wcsrchr
+ntdll.dll!RtlIsCurrentThreadAttachExempt
+ntdll.dll!LdrShutdownThread
+ntdll.dll!RtlExitUserThread
