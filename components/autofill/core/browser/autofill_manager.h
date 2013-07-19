@@ -151,7 +151,7 @@ class AutofillManager : public AutofillDownloadManager::Observer {
                                 const gfx::RectF& bounding_box,
                                 bool display_warning);
   void OnDidEndTextFieldEditing();
-  void OnHideAutofillUi();
+  void OnHideAutofillUI();
   void OnAddPasswordFormMapping(
       const FormFieldData& form,
       const PasswordFormFillData& fill_data);

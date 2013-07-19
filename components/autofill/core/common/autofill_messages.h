@@ -266,7 +266,7 @@ IPC_MESSAGE_ROUTED0(AutofillHostMsg_ShowAutofillDialog)
 IPC_MESSAGE_ROUTED0(AutofillHostMsg_DidEndTextFieldEditing)
 
 // Instructs the browser to hide the Autofill UI.
-IPC_MESSAGE_ROUTED0(AutofillHostMsg_HideAutofillUi)
+IPC_MESSAGE_ROUTED0(AutofillHostMsg_HideAutofillUI)
 
 // Sent when the renderer filled an Autocheckout page and clicked the proceed
 // button or if there was an error.

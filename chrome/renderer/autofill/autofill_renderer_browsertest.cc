@@ -92,15 +92,14 @@ TEST_F(ChromeRenderViewTest, SendForms) {
   autofill_agent_->element_ = firstname;
   autofill_agent_->QueryAutofillSuggestions(firstname, false);
 
-  // Accept suggestion that contains a label.  Labeled items indicate Autofill
-  // as opposed to Autocomplete.  We're testing this distinction below with
-  // the |AutofillHostMsg_FillAutofillFormData::ID| message.
-  autofill_agent_->didAcceptAutofillSuggestion(
+  // Fill the form with a suggestion that contained a label.  Labeled items
+  // indicate Autofill as opposed to Autocomplete.  We're testing this
+  // distinction below with the |AutofillHostMsg_FillAutofillFormData::ID|
+  // message.
+  autofill_agent_->FillAutofillFormData(
       firstname,
-      WebKit::WebString::fromUTF8("Johnny"),
-      WebKit::WebString::fromUTF8("Home"),
       1,
-      -1);
+      AutofillAgent::AUTOFILL_PREVIEW);
 
   ProcessPendingMessages();
   const IPC::Message* message2 =
@@ -186,7 +185,7 @@ TEST_F(ChromeRenderViewTest, SendDynamicForms) {
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, forms[0].fields[4]);
 }
 
-TEST_F(ChromeRenderViewTest, FillFormElement) {
+TEST_F(ChromeRenderViewTest, EnsureNoFormSeenIfTooFewFields) {
   // Don't want any delay for form state sync changes. This will still post a
   // message so updates will get coalesced, but as soon as we spin the message
   // loop, it will generate an update.
@@ -205,37 +204,6 @@ TEST_F(ChromeRenderViewTest, FillFormElement) {
   AutofillHostMsg_FormsSeen::Read(message, &params);
   const std::vector<FormData>& forms = params.a;
   ASSERT_EQ(0UL, forms.size());
-
-  // Verify that |didAcceptAutofillSuggestion()| sets the value of the expected
-  // field.
-  WebFrame* web_frame = GetMainFrame();
-  WebDocument document = web_frame->document();
-  WebInputElement firstname =
-      document.getElementById("firstname").to<WebInputElement>();
-  WebInputElement middlename =
-      document.getElementById("middlename").to<WebInputElement>();
-  middlename.setAutofilled(true);
-
-  // Make sure to query for Autofill suggestions before selecting one.
-  autofill_agent_->element_ = firstname;
-  autofill_agent_->QueryAutofillSuggestions(firstname, false);
-
-  // Accept a suggestion in a form that has been auto-filled.  This triggers
-  // the direct filling of the firstname element with value parameter.
-  autofill_agent_->didAcceptAutofillSuggestion(firstname,
-                                               WebString::fromUTF8("David"),
-                                               WebString(),
-                                               0,
-                                               0);
-
-  ProcessPendingMessages();
-  const IPC::Message* message2 =
-      render_thread_->sink().GetUniqueMessageMatching(
-          AutofillHostMsg_FillAutofillFormData::ID);
-
-  // No message should be sent in this case.  |firstname| is filled directly.
-  ASSERT_EQ(static_cast<IPC::Message*>(NULL), message2);
-  EXPECT_EQ(firstname.value(), WebKit::WebString::fromUTF8("David"));
 }
 
 TEST_F(ChromeRenderViewTest, ShowAutofillWarning) {

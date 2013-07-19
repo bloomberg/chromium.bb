@@ -482,26 +482,6 @@ TEST_F(PasswordAutofillAgentTest, InlineAutocomplete) {
   CheckUsernameSelection(1, 17);
 }
 
-// Tests that accepting an item in the suggestion drop-down works.
-TEST_F(PasswordAutofillAgentTest, SuggestionAccept) {
-  // Simulate the browser sending back the login info.
-  SimulateOnFillPasswordForm(fill_data_);
-
-  // Clear the text fields to start fresh.
-  ClearUsernameAndPasswordFields();
-
-  // To simulate accepting an item in the suggestion drop-down we just mimic
-  // what the WebView does: it sets the element value then calls
-  // didAcceptAutofillSuggestion on the renderer.
-  autofill_agent_->didAcceptAutofillSuggestion(username_element_,
-                                               ASCIIToUTF16(kAliceUsername),
-                                               WebKit::WebString(),
-                                               0,
-                                               0);
-  // Autocomplete should have kicked in.
-  CheckTextFieldsState(kAliceUsername, true, kAlicePassword, true);
-}
-
 // Tests that selecting an item in the suggestion drop-down no-ops.
 TEST_F(PasswordAutofillAgentTest, SuggestionSelect) {
   // Simulate the browser sending back the login info.

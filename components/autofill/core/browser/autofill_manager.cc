@@ -614,7 +614,7 @@ void AutofillManager::OnDidShowAutofillSuggestions(bool is_new_popup) {
   }
 }
 
-void AutofillManager::OnHideAutofillUi() {
+void AutofillManager::OnHideAutofillUI() {
   if (!IsAutofillEnabled())
     return;
 

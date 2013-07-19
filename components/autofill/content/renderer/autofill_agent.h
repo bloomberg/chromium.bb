@@ -81,19 +81,7 @@ class AutofillAgent : public content::RenderViewObserver,
   virtual void InputElementLostFocus() OVERRIDE;
 
   // WebKit::WebAutofillClient:
-  virtual void didAcceptAutofillSuggestion(const WebKit::WebNode& node,
-                                           const WebKit::WebString& value,
-                                           const WebKit::WebString& label,
-                                           int item_id,
-                                           unsigned index) OVERRIDE;
-  virtual void didSelectAutofillSuggestion(const WebKit::WebNode& node,
-                                           const WebKit::WebString& value,
-                                           const WebKit::WebString& label,
-                                           int item_id) OVERRIDE;
   virtual void didClearAutofillSelection(const WebKit::WebNode& node) OVERRIDE;
-  virtual void removeAutocompleteSuggestion(
-      const WebKit::WebString& name,
-      const WebKit::WebString& value) OVERRIDE;
   virtual void textFieldDidEndEditing(
       const WebKit::WebInputElement& element) OVERRIDE;
   virtual void textFieldDidChange(
@@ -205,11 +193,8 @@ class AutofillAgent : public content::RenderViewObserver,
   // Set |node| to display the given |value|.
   void SetNodeText(const base::string16& value, WebKit::WebInputElement* node);
 
-  // Hides any currently showing Autofill UI in the renderer or browser.
-  void HideAutofillUi();
-
-  // Hides any currently showing Autofill UI in the browser only.
-  void HideHostAutofillUi();
+  // Hides any currently showing Autofill UI.
+  void HideAutofillUI();
 
   void MaybeSendDynamicFormsSeen();
 

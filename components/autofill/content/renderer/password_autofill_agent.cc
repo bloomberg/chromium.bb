@@ -330,13 +330,6 @@ bool PasswordAutofillAgent::DidAcceptAutofillSuggestion(
                                  password.fill_data, true, true);
 }
 
-bool PasswordAutofillAgent::DidSelectAutofillSuggestion(
-    const WebKit::WebNode& node) {
-  WebKit::WebInputElement input;
-  PasswordInfo password;
-  return FindLoginInfo(node, &input, &password);
-}
-
 bool PasswordAutofillAgent::DidClearAutofillSelection(
     const WebKit::WebNode& node) {
   WebKit::WebInputElement input;

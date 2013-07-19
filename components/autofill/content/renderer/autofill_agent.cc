@@ -268,7 +268,7 @@ void AutofillAgent::ZoomLevelChanged() {
   // Any time the zoom level changes, the page's content moves, so any Autofill
   // popups should be hidden. This is only needed for the new Autofill UI
   // because WebKit already knows to hide the old UI when this occurs.
-  HideHostAutofillUi();
+  HideAutofillUI();
 }
 
 void AutofillAgent::FocusedNodeChanged(const WebKit::WebNode& node) {
@@ -308,7 +308,7 @@ void AutofillAgent::MaybeShowAutocheckoutBubble() {
 }
 
 void AutofillAgent::DidChangeScrollOffset(WebKit::WebFrame*) {
-  HideAutofillUi();
+  HideAutofillUI();
 }
 
 void AutofillAgent::didRequestAutocomplete(WebKit::WebFrame* frame,
@@ -333,7 +333,7 @@ void AutofillAgent::didRequestAutocomplete(WebKit::WebFrame* frame,
 
   // Cancel any pending Autofill requests and hide any currently showing popups.
   ++autofill_query_id_;
-  HideAutofillUi();
+  HideAutofillUI();
 
   in_flight_request_form_ = form;
   Send(new AutofillHostMsg_RequestAutocomplete(routing_id(), form_data, url));
@@ -351,60 +351,7 @@ void AutofillAgent::InputElementClicked(const WebInputElement& element,
 }
 
 void AutofillAgent::InputElementLostFocus() {
-  HideHostAutofillUi();
-}
-
-void AutofillAgent::didAcceptAutofillSuggestion(const WebNode& node,
-                                                const WebString& value,
-                                                const WebString& label,
-                                                int item_id,
-                                                unsigned index) {
-  if (password_autofill_agent_->DidAcceptAutofillSuggestion(node, value))
-    return;
-
-  DCHECK(node == element_);
-
-  switch (item_id) {
-    case WebAutofillClient::MenuItemIDWarningMessage:
-    case WebAutofillClient::MenuItemIDSeparator:
-      NOTREACHED();
-      break;
-    case WebAutofillClient::MenuItemIDAutofillOptions:
-      // User selected 'Autofill Options'.
-      Send(new AutofillHostMsg_ShowAutofillDialog(routing_id()));
-      break;
-    case WebAutofillClient::MenuItemIDClearForm:
-      // User selected 'Clear form'.
-      form_cache_.ClearFormWithElement(element_);
-      break;
-    case WebAutofillClient::MenuItemIDAutocompleteEntry:
-    case WebAutofillClient::MenuItemIDPasswordEntry:
-      // User selected an Autocomplete or password entry, so we fill directly.
-      SetNodeText(value, &element_);
-      break;
-    case WebAutofillClient::MenuItemIDDataListEntry:
-      AcceptDataListSuggestion(value);
-      break;
-    default:
-      // A positive item_id is a unique id for an autofill (vs. autocomplete)
-      // suggestion.
-      DCHECK_GT(item_id, 0);
-      // Fill the values for the whole form.
-      FillAutofillFormData(node, item_id, AUTOFILL_FILL);
-  }
-}
-
-void AutofillAgent::didSelectAutofillSuggestion(const WebNode& node,
-                                                const WebString& value,
-                                                const WebString& label,
-                                                int item_id) {
-  if (password_autofill_agent_->DidSelectAutofillSuggestion(node))
-    return;
-
-  didClearAutofillSelection(node);
-
-  if (item_id > 0)
-    FillAutofillFormData(node, item_id, AUTOFILL_PREVIEW);
+  HideAutofillUI();
 }
 
 void AutofillAgent::didClearAutofillSelection(const WebNode& node) {
@@ -421,11 +368,6 @@ void AutofillAgent::didClearAutofillSelection(const WebNode& node) {
     // NOTREACHED(), please file a bug against me.
     NOTREACHED();
   }
-}
-
-void AutofillAgent::removeAutocompleteSuggestion(const WebString& name,
-                                                 const WebString& value) {
-  Send(new AutofillHostMsg_RemoveAutocompleteEntry(routing_id(), name, value));
 }
 
 void AutofillAgent::textFieldDidEndEditing(const WebInputElement& element) {
@@ -518,7 +460,7 @@ void AutofillAgent::CombineDataListEntriesAndShow(
 
   if (v.empty()) {
     // No suggestions, any popup currently showing is obsolete.
-    HideAutofillUi();
+    HideAutofillUI();
     return;
   }
 
@@ -747,7 +689,7 @@ void AutofillAgent::ShowSuggestions(const WebInputElement& element,
        (element.selectionStart() != element.selectionEnd() ||
         element.selectionEnd() != static_cast<int>(value.length())))) {
     // Any popup currently showing is obsolete.
-    HideAutofillUi();
+    HideAutofillUI();
     return;
   }
 
@@ -851,16 +793,8 @@ void AutofillAgent::SetNodeText(const base::string16& value,
   node->setEditingValue(substring);
 }
 
-void AutofillAgent::HideAutofillUi() {
-  WebKit::WebView* web_view = render_view()->GetWebView();
-  if (web_view)
-    web_view->hidePopups();
-
-  HideHostAutofillUi();
-}
-
-void AutofillAgent::HideHostAutofillUi() {
-  Send(new AutofillHostMsg_HideAutofillUi(routing_id()));
+void AutofillAgent::HideAutofillUI() {
+  Send(new AutofillHostMsg_HideAutofillUI(routing_id()));
 }
 
 void AutofillAgent::didAssociateFormControls(
