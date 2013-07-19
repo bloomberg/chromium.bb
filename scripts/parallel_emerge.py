@@ -882,7 +882,10 @@ def EmergeProcess(output, *args, **kwargs):
                   2: output.fileno(),
                   sys.stdin.fileno(): sys.stdin.fileno(),
                   output.fileno(): output.fileno()}
-      portage.process._setup_pipes(fd_pipes)
+      if 0 <= vercmp(portage.VERSION, "2.1.11.50"):
+        portage.process._setup_pipes(fd_pipes, close_fds=False)
+      else:
+        portage.process._setup_pipes(fd_pipes)
 
       # Portage doesn't like when sys.stdin.fileno() != 0, so point sys.stdin
       # at the filehandle we just created in _setup_pipes.
