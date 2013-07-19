@@ -950,19 +950,12 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
   extensions::ExtensionSystem::Get(browser()->profile())->event_router()->
       SetRegisteredEvents(extension->id(), std::set<std::string>());
 
-  const base::StringValue old_version("1");
-  std::string pref_path("extensions.settings.");
-  pref_path += extension->id();
-  pref_path += ".manifest.version";
-  // TODO(joi): Do registrations up front.
-  user_prefs::PrefRegistrySyncable* registry =
-      static_cast<user_prefs::PrefRegistrySyncable*>(
-          extension_prefs->pref_service()->DeprecatedGetPrefRegistry());
-  registry->RegisterStringPref(
-      pref_path.c_str(),
-      std::string(),
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  extension_prefs->pref_service()->Set(pref_path.c_str(), old_version);
+  DictionaryPrefUpdate update(extension_prefs->pref_service(),
+                              ExtensionPrefs::kExtensionsPref);
+  DictionaryValue* dict = update.Get();
+  std::string key(extension->id());
+  key += ".manifest.version";
+  dict->SetString(key, "1");
 }
 
 // Component App Test 3 of 3: simulate a component extension upgrade that
