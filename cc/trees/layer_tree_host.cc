@@ -931,8 +931,6 @@ void LayerTreeHost::PaintLayerContents(
     occlusion_tracker.EnterLayer(it, prevent_occlusion);
 
     if (it.represents_target_render_surface()) {
-      DCHECK(it->render_surface()->draw_opacity() ||
-             it->render_surface()->draw_opacity_is_animating());
       PaintMasksForRenderSurface(
           *it, queue, did_paint_content, need_more_updates);
     } else if (it.represents_itself()) {
