@@ -397,3 +397,39 @@ node = env.CommandSelLdrTestNacl('vla.out', nexe,
 env.AddNodeToTestSuite(node, ['toolchain_tests', 'small_tests'],
                        'run_vla_test',
                        is_broken=vla_is_broken)
+
+if not env.Bit('pnacl_generate_pexe'):
+  asm_env = env.Clone()
+  if env.Bit('bitcode'):
+    asm_env.PNaClForceNative()
+    asm_env.AddBiasForPNaCl()
+
+  def FarCallObjects(env, suffix=''):
+    return [env.ComponentObject(file[:-2] + suffix + '.o', file)
+            for file in ['far_caller.c', 'far_padding.S', 'far_callee.c']]
+  nexe = asm_env.ComponentProgram('far_call', FarCallObjects(asm_env),
+                                  EXTRA_LIBS=['${NONIRT_LIBS}'])
+  node = asm_env.CommandSelLdrTestNacl('far_call.out', nexe)
+  # TODO(mcgrathr): Broken for bitcode pending fixes to gold; see
+  # https://code.google.com/p/nativeclient/issues/detail?id=3568
+  asm_env.AddNodeToTestSuite(node, ['toolchain_tests', 'small_tests'],
+                             'run_far_call_test',
+                             is_broken=env.Bit('bitcode'))
+
+  # TODO(mcgrathr): Disabled for bitcode because pnacl-ld doesn't grok
+  # --pic-veneer.  Another tack to test this would be to generate a shared
+  # object and validate it, but -shared is not really supported either.
+  # Since PNaCl has no reason to generate PIC at all until there is some
+  # form of ELF shared object support (if that ever happens at all),
+  # perhaps we'll never really need to test this.
+  if not env.Bit('bitcode'):
+    pic_env = asm_env.Clone()
+    pic_env.Append(CFLAGS=['-fPIC'])
+    if pic_env.Bit('target_arm'):
+      pic_env.Append(LINKFLAGS=['-Wl,--pic-veneer'])
+    nexe = pic_env.ComponentProgram('far_call_pic',
+                                    FarCallObjects(pic_env, '_pic'),
+                                    EXTRA_LIBS=['${NONIRT_LIBS}'])
+    node = pic_env.CommandSelLdrTestNacl('far_call_pic.out', nexe)
+    pic_env.AddNodeToTestSuite(node, ['toolchain_tests', 'small_tests'],
+                               'run_far_call_pic_test')
