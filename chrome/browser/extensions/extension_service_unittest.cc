@@ -47,6 +47,9 @@
 #include "chrome/browser/extensions/external_pref_loader.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
 #include "chrome/browser/extensions/external_provider_interface.h"
+#include "chrome/browser/extensions/install_observer.h"
+#include "chrome/browser/extensions/install_tracker.h"
+#include "chrome/browser/extensions/install_tracker_factory.h"
 #include "chrome/browser/extensions/installed_loader.h"
 #include "chrome/browser/extensions/management_policy.h"
 #include "chrome/browser/extensions/pack_extension_job.h"
@@ -1605,6 +1608,80 @@ TEST_F(ExtensionServiceTest, InstallExtension) {
 
   // TODO(erikkay): add more tests for many of the failure cases.
   // TODO(erikkay): add tests for upgrade cases.
+}
+
+struct MockInstallObserver : public extensions::InstallObserver {
+  MockInstallObserver() {
+  }
+
+  virtual ~MockInstallObserver() {
+  }
+
+  virtual void OnBeginExtensionInstall(
+      const std::string& extension_id,
+      const std::string& extension_name,
+      const gfx::ImageSkia& installing_icon,
+      bool is_app,
+      bool is_platform_app) OVERRIDE {
+  }
+
+  virtual void OnDownloadProgress(const std::string& extension_id,
+                                  int percent_downloaded) OVERRIDE {
+  }
+
+  virtual void OnExtensionInstalled(const Extension* extension) OVERRIDE {
+    last_extension_installed = extension->id();
+  }
+
+  virtual void OnInstallFailure(const std::string& extension_id) OVERRIDE {
+  }
+
+  virtual void OnExtensionLoaded(const Extension* extension) OVERRIDE {
+  }
+
+  virtual void OnExtensionUnloaded(const Extension* extension) OVERRIDE {
+  }
+
+  virtual void OnExtensionUninstalled(const Extension* extension) OVERRIDE {
+    last_extension_uninstalled = extension->id();
+  }
+
+  virtual void OnAppsReordered() OVERRIDE {
+  }
+
+  virtual void OnAppInstalledToAppList(
+      const std::string& extension_id) OVERRIDE {
+  }
+
+  virtual void OnShutdown() OVERRIDE {
+  }
+
+  std::string last_extension_installed;
+  std::string last_extension_uninstalled;
+};
+
+// Test that correct notifications are sent to InstallTracker observers on
+// extension install and uninstall.
+TEST_F(ExtensionServiceTest, InstallObserverNotified) {
+  InitializeEmptyExtensionService();
+
+  extensions::InstallTracker* tracker(
+      extensions::InstallTrackerFactory::GetForProfile(profile_.get()));
+  MockInstallObserver observer;
+  tracker->AddObserver(&observer);
+
+  // A simple extension that should install without error.
+  ASSERT_TRUE(observer.last_extension_installed.empty());
+  base::FilePath path = data_dir_.AppendASCII("good.crx");
+  InstallCRX(path, INSTALL_NEW);
+  ASSERT_EQ(good_crx, observer.last_extension_installed);
+
+  // Uninstall the extension.
+  ASSERT_TRUE(observer.last_extension_uninstalled.empty());
+  UninstallExtension(good_crx, false);
+  ASSERT_EQ(good_crx, observer.last_extension_uninstalled);
+
+  tracker->RemoveObserver(&observer);
 }
 
 // Tests that flags passed to OnExternalExtensionFileFound() make it to the
