@@ -137,24 +137,6 @@ WebKit::WebNavigationPolicy RenderFrameImpl::decidePolicyForNavigation(
       frame, request, type, default_policy, is_redirect);
 }
 
-WebKit::WebURLError RenderFrameImpl::cannotHandleRequestError(
-    WebKit::WebFrame* frame,
-    const WebKit::WebURLRequest& request) {
-  return render_view_->cannotHandleRequestError(frame, request);
-}
-
-WebKit::WebURLError RenderFrameImpl::cancelledError(
-    WebKit::WebFrame* frame,
-    const WebKit::WebURLRequest& request) {
-  return render_view_->cancelledError(frame, request);
-}
-
-void RenderFrameImpl::unableToImplementPolicyWithError(
-    WebKit::WebFrame* frame,
-    const WebKit::WebURLError& error) {
-  render_view_->unableToImplementPolicyWithError(frame, error);
-}
-
 void RenderFrameImpl::willSendSubmitEvent(WebKit::WebFrame* frame,
                                           const WebKit::WebFormElement& form) {
   render_view_->willSendSubmitEvent(frame, form);
@@ -270,12 +252,6 @@ void RenderFrameImpl::didReceiveResponse(
 void RenderFrameImpl::didFinishResourceLoad(WebKit::WebFrame* frame,
                                             unsigned identifier) {
   render_view_->didFinishResourceLoad(frame, identifier);
-}
-
-void RenderFrameImpl::didFailResourceLoad(WebKit::WebFrame* frame,
-                                          unsigned identifier,
-                                          const WebKit::WebURLError& error) {
-  render_view_->didFailResourceLoad(frame, identifier, error);
 }
 
 void RenderFrameImpl::didLoadResourceFromMemoryCache(

@@ -3277,33 +3277,6 @@ WebNavigationPolicy RenderViewImpl::decidePolicyForNavigation(
                                    request, type, default_policy, is_redirect);
 }
 
-bool RenderViewImpl::canHandleRequest(
-    WebFrame* frame, const WebURLRequest& request) {
-  // We allow WebKit to think that everything can be handled even though
-  // browser-side we limit what we load.
-  return true;
-}
-
-WebURLError RenderViewImpl::cannotHandleRequestError(
-    WebFrame* frame, const WebURLRequest& request) {
-  NOTREACHED();  // Since we said we can handle all requests.
-  return WebURLError();
-}
-
-WebURLError RenderViewImpl::cancelledError(
-    WebFrame* frame, const WebURLRequest& request) {
-  WebURLError error;
-  error.domain = WebString::fromUTF8(net::kErrorDomain);
-  error.reason = net::ERR_ABORTED;
-  error.unreachableURL = request.url();
-  return error;
-}
-
-void RenderViewImpl::unableToImplementPolicyWithError(
-    WebFrame*, const WebURLError&) {
-  NOTREACHED();  // Since we said we can handle all requests.
-}
-
 void RenderViewImpl::willSendSubmitEvent(WebKit::WebFrame* frame,
     const WebKit::WebFormElement& form) {
   // Some login forms have onSubmit handlers that put a hash of the password
@@ -3984,11 +3957,6 @@ void RenderViewImpl::didUpdateCurrentHistoryItem(WebFrame* frame) {
   StartNavStateSyncTimerIfNecessary();
 }
 
-void RenderViewImpl::assignIdentifierToRequest(
-    WebFrame* frame, unsigned identifier, const WebURLRequest& request) {
-  // Ignore
-}
-
 void RenderViewImpl::willSendRequest(WebFrame* frame,
                                      unsigned identifier,
                                      WebURLRequest& request,
@@ -4180,11 +4148,6 @@ void RenderViewImpl::didFinishResourceLoad(
     LoadNavigationErrorPage(
         frame, frame->dataSource()->request(), error, std::string(), true);
   }
-}
-
-void RenderViewImpl::didFailResourceLoad(
-    WebFrame* frame, unsigned identifier, const WebURLError& error) {
-  // Ignore
 }
 
 void RenderViewImpl::didLoadResourceFromMemoryCache(
