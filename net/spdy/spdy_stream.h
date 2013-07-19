@@ -158,7 +158,7 @@ class NET_EXPORT_PRIVATE SpdyStream {
   // SpdyStream constructor
   SpdyStream(SpdyStreamType type,
              SpdySession* session,
-             const std::string& path,
+             const GURL& url,
              RequestPriority priority,
              int32 initial_send_window_size,
              int32 initial_recv_window_size,
@@ -186,7 +186,7 @@ class NET_EXPORT_PRIVATE SpdyStream {
   SpdyStreamId stream_id() const { return stream_id_; }
   void set_stream_id(SpdyStreamId stream_id) { stream_id_ = stream_id; }
 
-  const std::string& path() const { return path_; }
+  const GURL& url() const { return url_; }
 
   RequestPriority priority() const { return priority_; }
 
@@ -387,14 +387,19 @@ class NET_EXPORT_PRIVATE SpdyStream {
 
   bool GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const;
 
-  // Get the URL associated with this stream, or the empty GURL() if
-  // it is unknown.
-  GURL GetUrl() const;
+  // Get the URL from the appropriate stream headers, or the empty
+  // GURL() if it is unknown.
+  //
+  // TODO(akalin): Figure out if we really need this function,
+  // i.e. can we just use the URL this stream was created with and/or
+  // one we receive headers validate that the URL from them is the
+  // same.
+  GURL GetUrlFromHeaders() const;
 
   // Returns whether the URL for this stream is known.
   //
   // TODO(akalin): Remove this, as it's only used in tests.
-  bool HasUrl() const;
+  bool HasUrlFromHeaders() const;
 
   int GetProtocolVersion() const;
 
@@ -473,7 +478,7 @@ class NET_EXPORT_PRIVATE SpdyStream {
   bool continue_buffering_data_;
 
   SpdyStreamId stream_id_;
-  const std::string path_;
+  const GURL url_;
   const RequestPriority priority_;
   size_t slot_;
 

@@ -37,6 +37,7 @@
 #include "net/spdy/spdy_write_queue.h"
 #include "net/ssl/ssl_client_cert_type.h"
 #include "net/ssl/ssl_config_service.h"
+#include "url/gurl.h"
 
 namespace net {
 
@@ -197,8 +198,6 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
   // Create a new SpdySession.
   // |spdy_session_key| is the host/port that this session connects to, privacy
   // and proxy configuration settings that it's using.
-  // |spdy_session_pool| is the SpdySessionPool that owns us.  Its lifetime must
-  // strictly be greater than |this|.
   // |session| is the HttpNetworkSession.  |net_log| is the NetLog that we log
   // network events to.
   SpdySession(const SpdySessionKey& spdy_session_key,
@@ -230,8 +229,9 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
   // might also not have initiated the stream yet, but indicated it
   // will via X-Associated-Content.  Returns OK if a stream was found
   // and put into |spdy_stream|, or if one was not found but it is
-  // okay to create a new stream.  Returns an error (not
-  // ERR_IO_PENDING) otherwise.
+  // okay to create a new stream (in which case |spdy_stream| is
+  // reset).  Returns an error (not ERR_IO_PENDING) otherwise, and
+  // resets |spdy_stream|.
   int GetPushStream(
       const GURL& url,
       base::WeakPtr<SpdyStream>* spdy_stream,
@@ -242,11 +242,17 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
   // is usually true, but it can be false for testing or when SPDY is
   // configured to work with non-secure sockets.
   //
+  // |pool| is the SpdySessionPool that owns us.  Its lifetime must
+  // strictly be greater than |this|.
+  //
+  // |certificate_error_code| must either be OK or less than
+  // ERR_IO_PENDING.
+  //
   // Returns OK on success, or an error on failure. Never returns
   // ERR_IO_PENDING. If an error is returned, the session must be
   // destroyed immediately.
   Error InitializeWithSocket(scoped_ptr<ClientSocketHandle> connection,
-                             SpdySessionPool* spdy_session_pool,
+                             SpdySessionPool* pool,
                              bool is_secure,
                              int certificate_error_code);
 
@@ -498,7 +504,7 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
     SpdyStreamId stream_id;
     base::TimeTicks creation_time;
   };
-  typedef std::map<std::string, PushedStreamInfo> PushedStreamMap;
+  typedef std::map<GURL, PushedStreamInfo> PushedStreamMap;
 
   typedef std::set<SpdyStream*> CreatedStreamSet;
 
@@ -527,6 +533,12 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
   };
 
   virtual ~SpdySession();
+
+  // Checks whether a stream for the given |url| can be created or
+  // retrieved from the set of unclaimed push streams. Returns OK if
+  // so. Otherwise, the session is closed and an error <
+  // ERR_IO_PENDING is returned.
+  Error TryAccessStream(const GURL& url);
 
   // Called by SpdyStreamRequest to start a request to create a
   // stream. If OK is returned, then |stream| will be filled in with a
@@ -650,13 +662,10 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
   // that |stream| may hold the last reference to the session.
   void DeleteStream(scoped_ptr<SpdyStream> stream, int status);
 
-  // Removes this session from the session pool.
-  void RemoveFromPool();
-
   // Check if we have a pending pushed-stream for this url
   // Returns the stream if found (and returns it from the pending
-  // list), returns NULL otherwise.
-  base::WeakPtr<SpdyStream> GetActivePushStream(const std::string& url);
+  // list). Returns NULL otherwise.
+  base::WeakPtr<SpdyStream> GetActivePushStream(const GURL& url);
 
   // Delegates to |stream->OnInitialResponseHeadersReceived()|. If an
   // error is returned, the last reference to |this| may have been
@@ -670,17 +679,43 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
   void RecordHistograms();
   void RecordProtocolErrorHistogram(SpdyProtocolErrorDetails details);
 
+  // DCHECKs that |availability_state_| >= STATE_GOING_AWAY, that
+  // there are no pending stream creation requests, and that there are
+  // no created streams.
+  void DcheckGoingAway() const;
+
+  // Calls DcheckGoingAway(), then DCHECKs that |availability_state_|
+  // == STATE_CLOSED, |error_on_close_| has a valid value, that there
+  // are no active streams or unclaimed pushed streams, and that the
+  // write queue is empty.
+  void DcheckClosed() const;
+
   // Closes all active streams with stream id's greater than
-  // |last_good_stream_id|, as well as any created or pending streams.
-  // Does not close unclaimed push streams.
-  void CloseAllStreamsAfter(SpdyStreamId last_good_stream_id,
-                            Error status);
+  // |last_good_stream_id|, as well as any created or pending
+  // streams. Must be called only when |availability_state_| >=
+  // STATE_GOING_AWAY. After this function, DcheckGoingAway() will
+  // pass. May be called multiple times.
+  void StartGoingAway(SpdyStreamId last_good_stream_id, Error status);
 
-  // Closes all streams, including unclaimed push streams.  Used as part of
-  // shutdown.
-  void CloseAllStreams(Error status);
+  // Must be called only when going away (i.e., DcheckGoingAway()
+  // passes). If there are no more active streams and the session
+  // isn't closed yet, close it.
+  void MaybeFinishGoingAway();
 
+  // Sets |availability_state_| to STATE_CLOSED, closes all streams,
+  // and clears the write queue. Must be called only when
+  // |availability_state_| < STATE_CLOSED. After this function,
+  // DcheckClosed() will pass.
+  void DoCloseSession(Error status);
+
+  // Called right before closing a (possibly-inactive) stream for a
+  // reason other than being requested to by the stream.
   void LogAbandonedStream(SpdyStream* stream, Error status);
+
+  // Called right before closing an active stream for a reason other
+  // than being requested to by the stream.
+  void LogAbandonedActiveStream(ActiveStreamMap::const_iterator it,
+                                Error status);
 
   // Invokes a user callback for stream creation.  We provide this method so it
   // can be deferred to the MessageLoop, so we avoid re-entrancy problems.
@@ -840,9 +875,9 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
   // requests.
   std::set<SpdySessionKey> pooled_aliases_;
 
-  // |spdy_session_pool_| owns us, therefore its lifetime must exceed ours.  We
-  // set this to NULL after we are removed from the pool.
-  SpdySessionPool* spdy_session_pool_;
+  // |pool_| owns us, therefore its lifetime must exceed ours.  We set
+  // this to NULL after we are removed from the pool.
+  SpdySessionPool* pool_;
   const base::WeakPtr<HttpServerProperties> http_server_properties_;
 
   // The socket handle for this session.
@@ -876,11 +911,9 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
   // them?
   ActiveStreamMap active_streams_;
 
-  // Map of all the streams that have already started to be pushed by the
-  // server, but do not have consumers yet.
-  //
-  // |unclaimed_pushed_streams_| does not own any of its SpdyStream
-  // objects.
+  // (Bijective) map from the URL to the ID of the streams that have
+  // already started to be pushed by the server, but do not have
+  // consumers yet. Contains a subset of |active_streams_|.
   PushedStreamMap unclaimed_pushed_streams_;
 
   // Set of all created streams but that have not yet sent any frames.

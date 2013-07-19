@@ -17,6 +17,7 @@
 #include "net/spdy/spdy_buffer_producer.h"
 #include "net/spdy/spdy_stream.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace net {
 
@@ -63,7 +64,7 @@ int ProducerToInt(scoped_ptr<SpdyBufferProducer> producer) {
 // be there.
 SpdyStream* MakeTestStream(RequestPriority priority) {
   return new SpdyStream(
-      SPDY_BIDIRECTIONAL_STREAM, NULL, std::string(), priority,
+      SPDY_BIDIRECTIONAL_STREAM, NULL, GURL(), priority,
       0, 0, BoundNetLog());
 }
 

@@ -521,7 +521,7 @@ TEST_P(SpdyHttpStreamTest, SpdyURLTest) {
   EXPECT_EQ(ERR_IO_PENDING, http_stream->SendRequest(headers, &response,
                                                      callback.callback()));
 
-  EXPECT_EQ(base_url, http_stream->stream()->GetUrl().spec());
+  EXPECT_EQ(base_url, http_stream->stream()->GetUrlFromHeaders().spec());
 
   // This triggers the MockWrite and read 2
   callback.WaitForResult();

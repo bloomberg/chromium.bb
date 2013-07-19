@@ -288,7 +288,7 @@ void SpdyStreamRequest::OnRequestCompleteSuccess(
   DCHECK(!callback_.is_null());
   CompletionCallback callback = callback_;
   Reset();
-  DCHECK(stream->get());
+  DCHECK(*stream);
   stream_ = *stream;
   callback.Run(OK);
 }
@@ -350,7 +350,7 @@ SpdySession::SpdySession(
     NetLog* net_log)
     : weak_factory_(this),
       spdy_session_key_(spdy_session_key),
-      spdy_session_pool_(NULL),
+      pool_(NULL),
       http_server_properties_(http_server_properties),
       read_buffer_(new IOBuffer(kReadBufferSize)),
       stream_hi_water_mark_(kFirstStreamId),
@@ -413,28 +413,18 @@ SpdySession::SpdySession(
 }
 
 SpdySession::~SpdySession() {
-  if (availability_state_ != STATE_CLOSED) {
-    availability_state_ = STATE_CLOSED;
-    error_on_close_ = ERR_ABORTED;
+  // TODO(akalin): CHECK that we're already closed once we're owned by
+  // |pool_|.
+  if (availability_state_ != STATE_CLOSED)
+    DoCloseSession(ERR_ABORTED);
 
-    // Cleanup all the streams.
-    CloseAllStreams(ERR_ABORTED);
-  }
+  DcheckClosed();
 
   // TODO(akalin): Check connection->is_initialized() instead. This
   // requires re-working CreateFakeSpdySession(), though.
   DCHECK(connection_->socket());
   // With SPDY we can't recycle sockets.
   connection_->socket()->Disconnect();
-
-  // Streams should all be gone now.
-  DCHECK_EQ(0u, num_active_streams());
-  DCHECK_EQ(0u, num_unclaimed_pushed_streams());
-
-  for (int i = 0; i < NUM_PRIORITIES; ++i) {
-    DCHECK(pending_create_stream_queues_[i].empty());
-  }
-  DCHECK(pending_stream_request_completions_.empty());
 
   RecordHistograms();
 
@@ -443,10 +433,12 @@ SpdySession::~SpdySession() {
 
 Error SpdySession::InitializeWithSocket(
     scoped_ptr<ClientSocketHandle> connection,
-    SpdySessionPool* spdy_session_pool,
+    SpdySessionPool* pool,
     bool is_secure,
     int certificate_error_code) {
   DCHECK(!connection_);
+  DCHECK(certificate_error_code == OK ||
+         certificate_error_code < ERR_IO_PENDING);
   // TODO(akalin): Check connection->is_initialized() instead. This
   // requires re-working CreateFakeSpdySession(), though.
   DCHECK(connection->socket());
@@ -511,7 +503,7 @@ Error SpdySession::InitializeWithSocket(
   if (error == OK) {
     connection_->AddLayeredPool(this);
     SendInitialSettings();
-    spdy_session_pool_ = spdy_session_pool;
+    pool_ = pool;
   }
   return static_cast<Error>(error);
 }
@@ -540,13 +532,24 @@ int SpdySession::GetPushStream(
     const GURL& url,
     base::WeakPtr<SpdyStream>* stream,
     const BoundNetLog& stream_net_log) {
+  stream->reset();
+
   if (availability_state_ == STATE_CLOSED)
     return ERR_CONNECTION_CLOSED;
 
-  stream->reset();
+  Error err = TryAccessStream(url);
+  if (err != OK)
+    return err;
 
-  // Don't allow access to secure push streams over an unauthenticated, but
-  // encrypted SSL socket.
+  *stream = GetActivePushStream(url);
+  if (*stream) {
+    DCHECK_LT(streams_pushed_and_claimed_count_, streams_pushed_count_);
+    streams_pushed_and_claimed_count_++;
+  }
+  return OK;
+}
+
+Error SpdySession::TryAccessStream(const GURL& url) {
   if (is_secure_ && certificate_error_code_ != OK &&
       (url.SchemeIs("https") || url.SchemeIs("wss"))) {
     RecordProtocolErrorHistogram(
@@ -557,12 +560,6 @@ int SpdySession::GetPushStream(
         "session.");
     return ERR_SPDY_PROTOCOL_ERROR;
   }
-
-  *stream = GetActivePushStream(url.spec());
-  if (stream->get()) {
-    DCHECK(streams_pushed_and_claimed_count_ < streams_pushed_count_);
-    streams_pushed_and_claimed_count_++;
-  }
   return OK;
 }
 
@@ -572,8 +569,15 @@ int SpdySession::TryCreateStream(SpdyStreamRequest* request,
 
   // TODO(akalin): Also refuse to create the stream when
   // |availability_state_| == STATE_GOING_AWAY.
+  if (availability_state_ == STATE_GOING_AWAY)
+    return ERR_FAILED;
+
   if (availability_state_ == STATE_CLOSED)
     return ERR_CONNECTION_CLOSED;
+
+  Error err = TryAccessStream(request->url());
+  if (err != OK)
+    return err;
 
   if (!max_concurrent_streams_ ||
       (active_streams_.size() + created_streams_.size() <
@@ -592,22 +596,17 @@ int SpdySession::CreateStream(const SpdyStreamRequest& request,
   DCHECK_GE(request.priority(), MINIMUM_PRIORITY);
   DCHECK_LT(request.priority(), NUM_PRIORITIES);
 
-  // TODO(akalin): Also refuse to create the stream when
-  // |availability_state_| == STATE_GOING_AWAY.
+  if (availability_state_ == STATE_GOING_AWAY)
+    return ERR_FAILED;
+
   if (availability_state_ == STATE_CLOSED)
     return ERR_CONNECTION_CLOSED;
 
-  // Make sure that we don't try to send https/wss over an unauthenticated, but
-  // encrypted SSL socket.
-  if (is_secure_ && certificate_error_code_ != OK &&
-      (request.url().SchemeIs("https") || request.url().SchemeIs("wss"))) {
-    RecordProtocolErrorHistogram(
-        PROTOCOL_ERROR_REQUEST_FOR_SECURE_CONTENT_OVER_INSECURE_SESSION);
-    CloseSessionOnError(
-        static_cast<Error>(certificate_error_code_),
-        "Tried to create SPDY stream for secure content over an "
-        "unauthenticated session.");
-    return ERR_SPDY_PROTOCOL_ERROR;
+  Error err = TryAccessStream(request.url());
+  if (err != OK) {
+    // This should have been caught in TryCreateStream().
+    NOTREACHED();
+    return err;
   }
 
   DCHECK(connection_->socket());
@@ -623,9 +622,8 @@ int SpdySession::CreateStream(const SpdyStreamRequest& request,
     }
   }
 
-  const std::string& path = request.url().PathForRequest();
   scoped_ptr<SpdyStream> new_stream(
-      new SpdyStream(request.type(), this, path, request.priority(),
+      new SpdyStream(request.type(), this, request.url(), request.priority(),
                      stream_initial_send_window_size_,
                      stream_initial_recv_window_size_,
                      request.net_log()));
@@ -717,12 +715,12 @@ int SpdySession::GetProtocolVersion() const {
 }
 
 bool SpdySession::CloseOneIdleConnection() {
-  DCHECK(spdy_session_pool_);
-  if (num_active_streams() > 0)
+  DCHECK(pool_);
+  DCHECK_NE(availability_state_, STATE_CLOSED);
+  if (!active_streams_.empty())
     return false;
   base::WeakPtr<SpdySession> weak_ptr = weak_factory_.GetWeakPtr();
-  // Will remove a reference to this.
-  RemoveFromPool();
+  CloseSessionOnError(ERR_CONNECTION_CLOSED, "Closing one idle connection.");
   // Since the underlying socket is only returned when |this| is destroyed,
   // we should only return true if |this| no longer exists.
   return !weak_ptr;
@@ -984,21 +982,18 @@ void SpdySession::CloseActiveStreamIterator(ActiveStreamMap::iterator it,
   // TODO(mbelshe): We should send a RST_STREAM control frame here
   //                so that the server can cancel a large send.
 
-  // For push streams, if they are being deleted normally, we leave
-  // the stream in the unclaimed_pushed_streams_ list.  However, if
-  // the stream is errored out, clean it up entirely.
-  if (status != OK) {
-    for (PushedStreamMap::iterator it2 = unclaimed_pushed_streams_.begin();
-         it2 != unclaimed_pushed_streams_.end(); ++it2) {
-      if (it2->second.stream_id == it->first) {
-        unclaimed_pushed_streams_.erase(it2);
-        break;
-      }
-    }
-  }
-
   scoped_ptr<SpdyStream> owned_stream(it->second.stream);
   active_streams_.erase(it);
+
+  // TODO(akalin): When SpdyStream was ref-counted (and
+  // |unclaimed_pushed_streams_| held scoped_refptr<SpdyStream>), this
+  // was only done when status was not OK. This meant that pushed
+  // streams can still be claimed after they're closed. This is
+  // probably something that we still want to support, although server
+  // push is hardly used. Write tests for this and fix this. (See
+  // http://crbug.com/261712 .)
+  if (owned_stream->type() == SPDY_PUSH_STREAM)
+      unclaimed_pushed_streams_.erase(owned_stream->url());
 
   DeleteStream(owned_stream.Pass(), status);
 }
@@ -1312,8 +1307,31 @@ int SpdySession::DoWriteComplete(int result) {
   return OK;
 }
 
-void SpdySession::CloseAllStreamsAfter(SpdyStreamId last_good_stream_id,
-                                       Error status) {
+void SpdySession::DcheckGoingAway() const {
+  DCHECK_GE(availability_state_, STATE_GOING_AWAY);
+  if (DCHECK_IS_ON()) {
+    for (int i = 0; i < NUM_PRIORITIES; ++i) {
+      DCHECK(pending_create_stream_queues_[i].empty());
+    }
+  }
+  DCHECK(pending_stream_request_completions_.empty());
+  DCHECK(created_streams_.empty());
+}
+
+void SpdySession::DcheckClosed() const {
+  DcheckGoingAway();
+  DCHECK_EQ(availability_state_, STATE_CLOSED);
+  DCHECK_LT(error_on_close_, ERR_IO_PENDING);
+  DCHECK(active_streams_.empty());
+  DCHECK(unclaimed_pushed_streams_.empty());
+  DCHECK(write_queue_.IsEmpty());
+}
+
+void SpdySession::StartGoingAway(SpdyStreamId last_good_stream_id,
+                                 Error status) {
+  DCHECK_GE(availability_state_, STATE_GOING_AWAY);
+  // The loops below are carefully written to avoid reentrancy problems.
+
   for (int i = 0; i < NUM_PRIORITIES; ++i) {
     PendingStreamRequestQueue queue;
     queue.swap(pending_create_stream_queues_[i]);
@@ -1324,16 +1342,20 @@ void SpdySession::CloseAllStreamsAfter(SpdyStreamId last_good_stream_id,
     }
   }
 
-  // The loops below are carefully written to avoid problems with
-  // streams closing other streams.
+  PendingStreamRequestCompletionSet pending_completions;
+  pending_completions.swap(pending_stream_request_completions_);
+  for (PendingStreamRequestCompletionSet::const_iterator it =
+           pending_completions.begin();
+       it != pending_completions.end(); ++it) {
+    (*it)->OnRequestCompleteFailure(ERR_ABORTED);
+  }
 
   while (true) {
     ActiveStreamMap::iterator it =
         active_streams_.lower_bound(last_good_stream_id + 1);
     if (it == active_streams_.end())
       break;
-    streams_abandoned_count_++;
-    LogAbandonedStream(it->second.stream, status);
+    LogAbandonedActiveStream(it, status);
     CloseActiveStreamIterator(it, status);
   }
 
@@ -1344,28 +1366,53 @@ void SpdySession::CloseAllStreamsAfter(SpdyStreamId last_good_stream_id,
   }
 
   write_queue_.RemovePendingWritesForStreamsAfter(last_good_stream_id);
+
+  DcheckGoingAway();
 }
 
-void SpdySession::CloseAllStreams(Error status) {
-  base::StatsCounter abandoned_streams("spdy.abandoned_streams");
-  base::StatsCounter abandoned_push_streams(
-      "spdy.abandoned_push_streams");
+void SpdySession::MaybeFinishGoingAway() {
+    DcheckGoingAway();
+    if (active_streams_.empty() && availability_state_ != STATE_CLOSED)
+      CloseSessionOnError(ERR_CONNECTION_CLOSED, "Finished going away");
+}
 
-  if (!unclaimed_pushed_streams_.empty()) {
-    streams_abandoned_count_ += unclaimed_pushed_streams_.size();
-    abandoned_push_streams.Add(unclaimed_pushed_streams_.size());
-    unclaimed_pushed_streams_.clear();
-  }
+void SpdySession::DoCloseSession(Error status) {
+  DCHECK_NE(availability_state_, STATE_CLOSED);
 
-  CloseAllStreamsAfter(0, status);
+  availability_state_ = STATE_CLOSED;
+  error_on_close_ = status;
+
+  StartGoingAway(0, status);
   write_queue_.Clear();
+
+  DcheckClosed();
 }
 
 void SpdySession::LogAbandonedStream(SpdyStream* stream, Error status) {
   DCHECK(stream);
   std::string description = base::StringPrintf(
-      "ABANDONED (stream_id=%d): ", stream->stream_id()) + stream->path();
+      "ABANDONED (stream_id=%d): ", stream->stream_id()) +
+      stream->url().spec();
   stream->LogStreamError(status, description);
+  // We don't increment the streams abandoned counter here. If the
+  // stream isn't active (i.e., it hasn't written anything to the wire
+  // yet) then it's as if it never existed. If it is active, then
+  // LogAbandonedActiveStream() will increment the counters.
+}
+
+void SpdySession::LogAbandonedActiveStream(ActiveStreamMap::const_iterator it,
+                                           Error status) {
+  DCHECK_GT(it->first, 0u);
+  LogAbandonedStream(it->second.stream, status);
+  ++streams_abandoned_count_;
+  base::StatsCounter abandoned_streams("spdy.abandoned_streams");
+  abandoned_streams.Increment();
+  if (it->second.stream->type() == SPDY_PUSH_STREAM &&
+      unclaimed_pushed_streams_.find(it->second.stream->url()) !=
+      unclaimed_pushed_streams_.end()) {
+    base::StatsCounter abandoned_push_streams("spdy.abandoned_push_streams");
+    abandoned_push_streams.Increment();
+  }
 }
 
 int SpdySession::GetNewStreamId() {
@@ -1394,12 +1441,22 @@ void SpdySession::CloseSessionOnError(Error err,
     UMA_HISTOGRAM_SPARSE_SLOWLY("Net.SpdySession.ClosedOnError", -err);
     UMA_HISTOGRAM_CUSTOM_COUNTS("Net.SpdySession.BytesRead.OtherErrors",
                                 total_bytes_received_, 1, 100000000, 50);
-    availability_state_ = STATE_CLOSED;
-    error_on_close_ = err;
-    // TODO(akalin): Move this after CloseAllStreams() once we're
-    // owned by the pool.
-    RemoveFromPool();
-    CloseAllStreams(err);
+
+    // |pool_| will be NULL when |InitializeWithSocket()| is in the
+    // call stack.
+    if (pool_) {
+      SpdySessionPool* pool = pool_;
+      pool_ = NULL;
+      if (availability_state_ != STATE_GOING_AWAY)
+        pool->MakeSessionUnavailable(self);
+      pool->RemoveUnavailableSession(self);
+    }
+
+    // TODO(akalin): Move this before RemoveUnavailableSessions() (but
+    // still after MakeSessionUnavailable()) once we're owned by the
+    // pool.
+    DoCloseSession(err);
+    DcheckClosed();
   }
 }
 
@@ -1424,7 +1481,7 @@ base::Value* SpdySession::GetInfoAsValue() const {
   dict->SetInteger("active_streams", active_streams_.size());
 
   dict->SetInteger("unclaimed_pushed_streams",
-      unclaimed_pushed_streams_.size());
+                   unclaimed_pushed_streams_.size());
 
   dict->SetBoolean("is_secure", is_secure_);
 
@@ -1563,41 +1620,41 @@ void SpdySession::DeleteStream(scoped_ptr<SpdyStream> stream, int status) {
 
   stream->OnClose(status);
 
-  ProcessPendingStreamRequests();
+  switch (availability_state_) {
+    case STATE_AVAILABLE:
+      ProcessPendingStreamRequests();
+      break;
+    case STATE_GOING_AWAY:
+      DcheckGoingAway();
+      MaybeFinishGoingAway();
+      break;
+    case STATE_CLOSED:
+      // Do nothing.
+      break;
+  }
 
   // Deleting |stream| may release the last reference to |this|.
 }
 
-void SpdySession::RemoveFromPool() {
-  if (spdy_session_pool_) {
-    SpdySessionPool* pool = spdy_session_pool_;
-    spdy_session_pool_ = NULL;
-    scoped_refptr<SpdySession> self(this);
-    pool->MakeSessionUnavailable(self);
-    pool->RemoveUnavailableSession(self);
-  }
-}
-
-base::WeakPtr<SpdyStream> SpdySession::GetActivePushStream(
-    const std::string& path) {
+base::WeakPtr<SpdyStream> SpdySession::GetActivePushStream(const GURL& url) {
   base::StatsCounter used_push_streams("spdy.claimed_push_streams");
 
-  PushedStreamMap::iterator it = unclaimed_pushed_streams_.find(path);
-  if (it == unclaimed_pushed_streams_.end())
+  PushedStreamMap::iterator unclaimed_it = unclaimed_pushed_streams_.find(url);
+  if (unclaimed_it == unclaimed_pushed_streams_.end())
     return base::WeakPtr<SpdyStream>();
 
-  SpdyStreamId stream_id = it->second.stream_id;
-  unclaimed_pushed_streams_.erase(it);
+  SpdyStreamId stream_id = unclaimed_it->second.stream_id;
+  unclaimed_pushed_streams_.erase(unclaimed_it);
 
-  ActiveStreamMap::iterator it2 = active_streams_.find(stream_id);
-  if (it2 == active_streams_.end()) {
+  ActiveStreamMap::iterator active_it = active_streams_.find(stream_id);
+  if (active_it == active_streams_.end()) {
     NOTREACHED();
     return base::WeakPtr<SpdyStream>();
   }
 
   net_log_.AddEvent(NetLog::TYPE_SPDY_STREAM_ADOPTED_PUSH_STREAM);
   used_push_streams.Increment();
-  return it2->second.stream->GetWeakPtr();
+  return active_it->second.stream->GetWeakPtr();
 }
 
 bool SpdySession::GetSSLInfo(SSLInfo* ssl_info,
@@ -1783,9 +1840,6 @@ void SpdySession::OnSynStream(SpdyStreamId stream_id,
   if (availability_state_ == STATE_CLOSED)
     return;
 
-  // TODO(akalin): Reset the stream when |availability_state_| ==
-  // STATE_GOING_AWAY.
-
   base::Time response_time = base::Time::Now();
   base::TimeTicks recv_first_byte_time = time_func_();
 
@@ -1811,6 +1865,15 @@ void SpdySession::OnSynStream(SpdyStreamId stream_id,
   RequestPriority request_priority =
       ConvertSpdyPriorityToRequestPriority(priority, GetProtocolVersion());
 
+  if (availability_state_ == STATE_GOING_AWAY) {
+    // TODO(akalin): This behavior isn't in the SPDY spec, although it
+    // probably should be.
+    SendResetStreamFrame(stream_id, request_priority,
+                         RST_STREAM_REFUSED_STREAM,
+                         "OnSyn received when going away");
+    return;
+  }
+
   if (associated_stream_id == 0) {
     std::string description = base::StringPrintf(
         "Received invalid OnSyn associated stream id %d for stream %d",
@@ -1831,7 +1894,6 @@ void SpdySession::OnSynStream(SpdyStreamId stream_id,
                          "Pushed stream url was invalid: " + gurl.spec());
     return;
   }
-  const std::string& url = gurl.spec();
 
   // Verify we have a valid stream association.
   ActiveStreamMap::iterator associated_it =
@@ -1858,7 +1920,7 @@ void SpdySession::OnSynStream(SpdyStreamId stream_id,
               associated_stream_id));
     }
   } else {
-    GURL associated_url(associated_it->second.stream->GetUrl());
+    GURL associated_url(associated_it->second.stream->GetUrlFromHeaders());
     if (associated_url.GetOrigin() != gurl.GetOrigin()) {
       SendResetStreamFrame(
           stream_id, request_priority, RST_STREAM_REFUSED_STREAM,
@@ -1870,14 +1932,18 @@ void SpdySession::OnSynStream(SpdyStreamId stream_id,
   }
 
   // There should not be an existing pushed stream with the same path.
-  if (unclaimed_pushed_streams_.find(url) != unclaimed_pushed_streams_.end()) {
+  PushedStreamMap::iterator pushed_it =
+      unclaimed_pushed_streams_.lower_bound(gurl);
+  if (pushed_it != unclaimed_pushed_streams_.end() &&
+      pushed_it->first == gurl) {
     SendResetStreamFrame(stream_id, request_priority, RST_STREAM_PROTOCOL_ERROR,
-                         "Received duplicate pushed stream with url: " + url);
+                         "Received duplicate pushed stream with url: " +
+                         gurl.spec());
     return;
   }
 
   scoped_ptr<SpdyStream> stream(
-      new SpdyStream(SPDY_PUSH_STREAM, this, gurl.PathForRequest(),
+      new SpdyStream(SPDY_PUSH_STREAM, this, gurl,
                      request_priority,
                      stream_initial_send_window_size_,
                      stream_initial_recv_window_size_,
@@ -1885,12 +1951,16 @@ void SpdySession::OnSynStream(SpdyStreamId stream_id,
   stream->set_stream_id(stream_id);
 
   DeleteExpiredPushedStreams();
-  unclaimed_pushed_streams_[url] = PushedStreamInfo(stream_id, time_func_());
+  PushedStreamMap::iterator inserted_pushed_it =
+      unclaimed_pushed_streams_.insert(
+          pushed_it,
+          std::make_pair(gurl, PushedStreamInfo(stream_id, time_func_())));
+  DCHECK(inserted_pushed_it != pushed_it);
 
   InsertActivatedStream(stream.Pass());
 
-  ActiveStreamMap::iterator it = active_streams_.find(stream_id);
-  if (it == active_streams_.end()) {
+  ActiveStreamMap::iterator active_it = active_streams_.find(stream_id);
+  if (active_it == active_streams_.end()) {
     NOTREACHED();
     return;
   }
@@ -1898,7 +1968,7 @@ void SpdySession::OnSynStream(SpdyStreamId stream_id,
   // Parse the headers.
   if (OnInitialResponseHeadersReceived(
           headers, response_time,
-          recv_first_byte_time, it->second.stream) != OK)
+          recv_first_byte_time, active_it->second.stream) != OK)
     return;
 
   base::StatsCounter push_requests("spdy.pushed_streams");
@@ -1923,21 +1993,17 @@ void SpdySession::DeleteExpiredPushedStreams() {
       streams_to_close.push_back(it->second.stream_id);
   }
 
-  for (std::vector<SpdyStreamId>::const_iterator it = streams_to_close.begin();
-       it != streams_to_close.end(); ++it) {
-    ActiveStreamMap::iterator it2 = active_streams_.find(*it);
-    if (it2 == active_streams_.end())
+  for (std::vector<SpdyStreamId>::const_iterator to_close_it =
+           streams_to_close.begin();
+       to_close_it != streams_to_close.end(); ++to_close_it) {
+    ActiveStreamMap::iterator active_it = active_streams_.find(*to_close_it);
+    if (active_it == active_streams_.end())
       continue;
 
-    base::StatsCounter abandoned_push_streams(
-        "spdy.abandoned_push_streams");
-    base::StatsCounter abandoned_streams("spdy.abandoned_streams");
-    abandoned_push_streams.Increment();
-    abandoned_streams.Increment();
-    streams_abandoned_count_++;
+    LogAbandonedActiveStream(active_it, ERR_INVALID_SPDY_STREAM);
     // CloseActiveStreamIterator() will remove the stream from
     // |unclaimed_pushed_streams_|.
-    CloseActiveStreamIterator(it2, ERR_INVALID_SPDY_STREAM);
+    CloseActiveStreamIterator(active_it, ERR_INVALID_SPDY_STREAM);
   }
 
   next_unclaimed_push_stream_sweep_time_ = time_func_() +
@@ -2061,9 +2127,17 @@ void SpdySession::OnGoAway(SpdyStreamId last_accepted_stream_id,
                  active_streams_.size(),
                  unclaimed_pushed_streams_.size(),
                  status));
-  // TODO(akalin): Move into a "going away" state in the pool instead.
-  RemoveFromPool();
-  CloseAllStreamsAfter(last_accepted_stream_id, ERR_ABORTED);
+  if (availability_state_ < STATE_GOING_AWAY) {
+    availability_state_ = STATE_GOING_AWAY;
+    if (pool_)
+      pool_->MakeSessionUnavailable(make_scoped_refptr(this));
+  }
+  StartGoingAway(last_accepted_stream_id, ERR_ABORTED);
+  // This is to handle the case when we already don't have any active
+  // streams (i.e., StartGoingAway() did nothing). Otherwise, we have
+  // active streams and so the last one being closed will finish the
+  // going away process (see DeleteStream()).
+  MaybeFinishGoingAway();
 }
 
 void SpdySession::OnPing(uint32 unique_id) {

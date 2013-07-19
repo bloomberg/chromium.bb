@@ -4394,7 +4394,6 @@ TEST_P(SpdyNetworkTransactionTest, GoAwayWithActiveStream) {
   scoped_ptr<SpdyFrame> go_away(spdy_util_.ConstructSpdyGoAway());
   MockRead reads[] = {
     CreateMockRead(*go_away),
-    MockRead(ASYNC, 0, 0),  // EOF
   };
 
   DelayedSocketData data(1, reads, arraysize(reads),

@@ -79,7 +79,7 @@ class SpdyStream::SynStreamBufferProducer : public SpdyBufferProducer {
 
 SpdyStream::SpdyStream(SpdyStreamType type,
                        SpdySession* session,
-                       const std::string& path,
+                       const GURL& url,
                        RequestPriority priority,
                        int32 initial_send_window_size,
                        int32 initial_recv_window_size,
@@ -89,7 +89,7 @@ SpdyStream::SpdyStream(SpdyStreamType type,
       in_do_loop_(false),
       continue_buffering_data_(type_ == SPDY_PUSH_STREAM),
       stream_id_(0),
-      path_(path),
+      url_(url),
       priority_(priority),
       slot_(0),
       send_stalled_by_flow_control_(false),
@@ -641,7 +641,7 @@ bool SpdyStream::GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const {
   return session_->GetLoadTimingInfo(stream_id_, load_timing_info);
 }
 
-GURL SpdyStream::GetUrl() const {
+GURL SpdyStream::GetUrlFromHeaders() const {
   if (type_ != SPDY_PUSH_STREAM && !request_headers_)
     return GURL();
 
@@ -651,8 +651,8 @@ GURL SpdyStream::GetUrl() const {
                                type_ == SPDY_PUSH_STREAM);
 }
 
-bool SpdyStream::HasUrl() const {
-  return !GetUrl().is_empty();
+bool SpdyStream::HasUrlFromHeaders() const {
+  return !GetUrlFromHeaders().is_empty();
 }
 
 void SpdyStream::OnGetDomainBoundCertComplete(int result) {
@@ -724,14 +724,14 @@ int SpdyStream::DoLoop(int result) {
 int SpdyStream::DoGetDomainBoundCert() {
   CHECK(request_headers_);
   DCHECK_NE(type_, SPDY_PUSH_STREAM);
-  GURL url = GetUrl();
+  GURL url = GetUrlFromHeaders();
   if (!session_->NeedsCredentials() || !url.SchemeIs("https")) {
     // Proceed directly to sending the request headers
     io_state_ = STATE_SEND_REQUEST_HEADERS;
     return OK;
   }
 
-  slot_ = session_->credential_state()->FindCredentialSlot(GetUrl());
+  slot_ = session_->credential_state()->FindCredentialSlot(GetUrlFromHeaders());
   if (slot_ != SpdyCredentialState::kNoEntry) {
     // Proceed directly to sending the request headers
     io_state_ = STATE_SEND_REQUEST_HEADERS;
@@ -757,7 +757,7 @@ int SpdyStream::DoGetDomainBoundCertComplete(int result) {
     return result;
 
   io_state_ = STATE_SEND_DOMAIN_BOUND_CERT;
-  slot_ =  session_->credential_state()->SetHasCredential(GetUrl());
+  slot_ =  session_->credential_state()->SetHasCredential(GetUrlFromHeaders());
   return OK;
 }
 
@@ -766,7 +766,7 @@ int SpdyStream::DoSendDomainBoundCert() {
   DCHECK_NE(type_, SPDY_PUSH_STREAM);
   io_state_ = STATE_SEND_DOMAIN_BOUND_CERT_COMPLETE;
 
-  std::string origin = GetUrl().GetOrigin().spec();
+  std::string origin = GetUrlFromHeaders().GetOrigin().spec();
   DCHECK(origin[origin.length() - 1] == '/');
   origin.erase(origin.length() - 1);  // Trim trailing slash.
   scoped_ptr<SpdyFrame> frame;

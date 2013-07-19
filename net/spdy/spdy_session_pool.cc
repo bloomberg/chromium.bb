@@ -364,10 +364,6 @@ void SpdySessionPool::CloseCurrentSessionsHelper(
     if (!ContainsKey(sessions_, *it))
       continue;
 
-    // TODO(akalin): Handle unavailable sessions once those aren't
-    // removed immediately.
-    DCHECK(IsSessionAvailable(*it));
-
     if (idle_only && (*it)->is_active())
       continue;
 
