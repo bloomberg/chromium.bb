@@ -1,0 +1,20 @@
+<table class="intro">
+  {{#api.intro_list}}
+  <tr>
+    <td>
+      <strong>{{title}}:</strong>
+    </td>
+    <td>
+      {{#content}}
+        {{?link}}<a href="{{link}}">{{/link}}
+        {{?class}}<span class="{{class}}">{{/class}}
+        {{?text}}{{{text}}}{{/text}}
+        {{?partial}}{{+partial content:content}}{{/partial}}
+        {{?class}}</span>{{/class}}
+        {{?link}}</a>{{/link}}
+        <br>
+      {{/content}}
+    </td>
+  </tr>
+  {{/api.intro_list}}
+</table>

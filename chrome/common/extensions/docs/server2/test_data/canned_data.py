@@ -64,20 +64,26 @@ CANNED_TEST_FILE_SYSTEM_DATA = {
           'tester': {
             'Permissions': [
               {
-                'permission': 'tester'
+                'perm': 'tester',
+                'text': '"thing1", "thing2"'
               },
               {
-                'extra': 'is an API.'
+                'text': 'is an API for testing things.'
               }
             ],
-            'LearnMore': [
+            'Learn More': [
               {
-                'href': 'https://tester.test.com/welcome.html',
-                'content': 'Welcome!'
+                'link': 'https://tester.test.com/welcome.html',
+                'text': 'Welcome!'
               }
             ]
           }
         })
+      },
+      'private': {
+        'intro_tables': {
+          'trunk_message.html': 'available on trunk'
+        }
       }
     }
   }
@@ -409,6 +415,7 @@ CANNED_API_FILE_SYSTEM_DATA = {
           'channel': 'stable'
         }
       }),
+      'alarms.idl': 'alarms contents',
       'idle.json': 'idle contents',
       'input_ime.json': 'input.ime contents',
       'menus.json': 'menus contents',
@@ -437,9 +444,11 @@ CANNED_API_FILE_SYSTEM_DATA = {
           'channel': 'beta'
         }
       }),
+      'alarms.idl': 'alarms contents',
       'idle.json': 'idle contents',
       'input_ime.json': 'input.ime contents',
       'menus.json': 'menus contents',
+      'system_info_display.idl': 'systemInfo.display contents',
       'tabs.json': 'tabs contents'
     }
   },
@@ -461,6 +470,7 @@ CANNED_API_FILE_SYSTEM_DATA = {
           'channel': 'stable'
         }
       }),
+      'bookmarks.json': 'bookmarks contents',
       'idle.json': 'idle contents',
       'input_ime.json': 'input.ime contents',
       'menus.json': 'menus contents',
@@ -470,6 +480,9 @@ CANNED_API_FILE_SYSTEM_DATA = {
   '1132': {
     'api': {
       '_manifest_features.json': json.dumps({
+        'bookmarks': {
+          'channel': 'trunk'
+        },
         'page_action': {
           'channel': 'stable'
         }
@@ -479,6 +492,7 @@ CANNED_API_FILE_SYSTEM_DATA = {
           'channel': 'stable'
         }
       }),
+      'bookmarks.json': 'bookmarks contents',
       'idle.json': 'idle contents',
       'input.ime.json': 'input.ime contents',
       'menus.json': 'menus contents',

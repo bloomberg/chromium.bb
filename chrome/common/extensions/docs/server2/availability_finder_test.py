@@ -48,11 +48,11 @@ class AvailabilityFinderTest(unittest.TestCase):
         self._avail_finder.GetApiAvailability('jsonAPI1').version)
     self.assertEqual('trunk',
         self._avail_finder.GetApiAvailability('jsonAPI2').channel)
-    self.assertEqual(None,
+    self.assertEqual('trunk',
         self._avail_finder.GetApiAvailability('jsonAPI2').version)
     self.assertEqual('dev',
         self._avail_finder.GetApiAvailability('jsonAPI3').channel)
-    self.assertEqual(None,
+    self.assertEqual(28,
         self._avail_finder.GetApiAvailability('jsonAPI3').version)
 
     # Testing APIs found only by checking file system existence.

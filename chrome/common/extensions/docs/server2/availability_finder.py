@@ -44,7 +44,7 @@ def _GetChannelFromFeatures(api_name, file_system, path):
 def _GetChannelFromApiFeatures(api_name, file_system):
   try:
     return _GetChannelFromFeatures(api_name, file_system, _API_FEATURES)
-  except FileNotFoundError as e:
+  except FileNotFoundError:
     # TODO(epeterson) Remove except block once _api_features is in all channels.
     return None
 
@@ -75,7 +75,7 @@ def _ExistsInExtensionApi(api_name, file_system):
     api_rows = [row.get('namespace') for row in extension_api_json
                 if 'namespace' in row]
     return True if api_name in api_rows else False
-  except FileNotFoundError as e:
+  except FileNotFoundError:
     # This should only happen on preview.py since extension_api.json is no
     # longer present in trunk.
     return False
@@ -152,6 +152,7 @@ class AvailabilityFinder(object):
         # SVN data isn't available below version 5.
         return version + 1
       available = False
+      available_channel = None
       features_fs, names_fs = self._CreateFeaturesAndNamesFileSystems(version)
       if version >= 28:
         # The _api_features.json file first appears in version 28 and should be
@@ -160,14 +161,17 @@ class AvailabilityFinder(object):
         # are present in Chrome 20 and onwards. Fall back to a check for file
         # system existence if the API is not stable in any of the _features.json
         # files.
-        available = _GetChannelFromApiFeatures(api_name, features_fs) == _STABLE
+        available_channel = _GetChannelFromApiFeatures(api_name, features_fs)
       if version >= 20:
         # Check other _features.json files/file existence if the API wasn't
         # found in _api_features.json, or if _api_features.json wasn't present.
-        available = available or (
-            _GetChannelFromPermissionFeatures(api_name, features_fs) == _STABLE
-            or _GetChannelFromManifestFeatures(api_name, features_fs) == _STABLE
-            or _ExistsInFileSystem(api_name, names_fs))
+        available_channel = available_channel or (
+            _GetChannelFromPermissionFeatures(api_name, features_fs)
+            or _GetChannelFromManifestFeatures(api_name, features_fs))
+        if available_channel is None:
+          available = _ExistsInFileSystem(api_name, names_fs)
+        else:
+          available = available_channel == _STABLE
       elif version >= 18:
         # These versions are a little troublesome. Version 19 has
         # _permission_features.json, but it lacks 'channel' information.
@@ -189,16 +193,16 @@ class AvailabilityFinder(object):
     the channel that the given API is determined to be available on.
     '''
     features_fs, names_fs = self._CreateFeaturesAndNamesFileSystems(version)
-    channel = (_GetChannelFromApiFeatures(api_name, features_fs)
-               or _GetChannelFromPermissionFeatures(api_name, features_fs)
-               or _GetChannelFromManifestFeatures(api_name, features_fs))
-    if channel is None and _ExistsInFileSystem(api_name, names_fs):
+    available_channel = (_GetChannelFromApiFeatures(api_name, features_fs)
+        or _GetChannelFromPermissionFeatures(api_name, features_fs)
+        or _GetChannelFromManifestFeatures(api_name, features_fs))
+    if available_channel is None and _ExistsInFileSystem(api_name, names_fs):
       # If an API is not represented in any of the _features files, but exists
       # in the filesystem, then assume it is available in this version.
       # The windows API is an example of this.
       return self._branch_utility.GetChannelForVersion(version)
 
-    return channel
+    return available_channel
 
   def GetApiAvailability(self, api_name):
     '''Determines the availability for an API by testing several scenarios.
@@ -213,9 +217,13 @@ class AvailabilityFinder(object):
     api_info = self._json_cache.GetFromFile(_API_AVAILABILITIES).get(api_name)
     if api_info is not None:
       channel = api_info.get('channel')
-      return AvailabilityInfo(
-          channel,
-          api_info.get('version') if channel == _STABLE else None)
+      if channel == _STABLE:
+        version = api_info.get('version')
+      else:
+        version = self._branch_utility.GetChannelInfo(channel).version
+      # The file data for predetermined availabilities is already cached, so
+      # skip caching this result.
+      return AvailabilityInfo(channel, version)
 
     # Check for the API in the development channels.
     availability = None

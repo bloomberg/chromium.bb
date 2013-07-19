@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import copy
+from copy import deepcopy
 import json
 import os
 import sys
@@ -14,9 +14,14 @@ from api_data_source import (_JSCModel,
                              _RemoveNoDocs,
                              _DetectInlineableTypes,
                              _InlineDocs)
+from collections import namedtuple
+from compiled_file_system import CompiledFileSystem
 from file_system import FileNotFoundError
 from object_store_creator import ObjectStoreCreator
 from reference_resolver import ReferenceResolver
+from test_data.canned_data import CANNED_TEST_FILE_SYSTEM_DATA
+from test_file_system import TestFileSystem
+import third_party.json_schema_compiler.json_parse as json_parse
 
 def _MakeLink(href, text):
   return '<a href="%s">%s</a>' % (href, text)
@@ -25,6 +30,15 @@ def _GetType(dict_, name):
   for type_ in dict_['types']:
     if type_['name'] == name:
       return type_
+
+class FakeAvailabilityFinder(object):
+  AvailabilityInfo = namedtuple('AvailabilityInfo', 'channel version')
+
+  def GetApiAvailability(self, version):
+    return FakeAvailabilityFinder.AvailabilityInfo('trunk', 'trunk')
+
+  def StringifyAvailability(self, availability):
+    return availability.channel
 
 class FakeSamplesDataSource(object):
   def Create(self, request):
@@ -45,9 +59,20 @@ class FakeAPIAndListDataSource(object):
   def GetAllNames(self):
     return self._json.keys()
 
+class FakeTemplateDataSource(object):
+  def get(self, key):
+    return 'handlebar %s' % key
+
 class APIDataSourceTest(unittest.TestCase):
   def setUp(self):
     self._base_path = os.path.join(sys.path[0], 'test_data', 'test_json')
+    self._compiled_fs_factory = CompiledFileSystem.Factory(
+        TestFileSystem(CANNED_TEST_FILE_SYSTEM_DATA),
+        ObjectStoreCreator.ForTest())
+    self._json_cache = self._compiled_fs_factory.Create(
+        lambda _, json: json_parse.Parse(json),
+        APIDataSourceTest,
+        'test')
 
   def _ReadLocalFile(self, filename):
     with open(os.path.join(self._base_path, filename), 'r') as f:
@@ -68,7 +93,10 @@ class APIDataSourceTest(unittest.TestCase):
         self._LoadJSON('test_file_data_source.json'))
     dict_ = _JSCModel(self._LoadJSON('test_file.json')[0],
                       self._CreateRefResolver('test_file_data_source.json'),
-                      False).ToDict()
+                      False,
+                      FakeAvailabilityFinder(),
+                      self._json_cache,
+                      FakeTemplateDataSource()).ToDict()
     self.assertEquals('type-TypeA', dict_['types'][0]['id'])
     self.assertEquals('property-TypeA-b',
                       dict_['types'][0]['properties'][0]['id'])
@@ -83,7 +111,10 @@ class APIDataSourceTest(unittest.TestCase):
         self._LoadJSON('test_file_data_source.json'))
     dict_ = _JSCModel(self._LoadJSON(filename)[0],
                       self._CreateRefResolver('test_file_data_source.json'),
-                      False).ToDict()
+                      False,
+                      FakeAvailabilityFinder(),
+                      self._json_cache,
+                      FakeTemplateDataSource()).ToDict()
     self.assertEquals(expected_json, dict_)
 
   def testFormatValue(self):
@@ -94,7 +125,10 @@ class APIDataSourceTest(unittest.TestCase):
   def testFormatDescription(self):
     dict_ = _JSCModel(self._LoadJSON('ref_test.json')[0],
                       self._CreateRefResolver('ref_test_data_source.json'),
-                      False).ToDict()
+                      False,
+                      FakeAvailabilityFinder(),
+                      self._json_cache,
+                      FakeTemplateDataSource()).ToDict()
     self.assertEquals(_MakeLink('ref_test.html#type-type2', 'type2'),
                       _GetType(dict_, 'type1')['description'])
     self.assertEquals(
@@ -109,7 +143,46 @@ class APIDataSourceTest(unittest.TestCase):
   def testRemoveNoDocs(self):
     d = self._LoadJSON('nodoc_test.json')
     _RemoveNoDocs(d)
-    self.assertEqual(self._LoadJSON('expected_nodoc.json'), d)
+    self.assertEquals(self._LoadJSON('expected_nodoc.json'), d)
+
+  def testGetIntroList(self):
+    model = _JSCModel(self._LoadJSON('test_file.json')[0],
+                      self._CreateRefResolver('test_file_data_source.json'),
+                      False,
+                      FakeAvailabilityFinder(),
+                      self._json_cache,
+                      FakeTemplateDataSource())
+    expected_list = [
+      { 'title': 'Description',
+        'content': [
+          { 'text': 'a test api' }
+        ]
+      },
+      { 'title': 'Availability',
+        'content': [
+          { 'partial': 'handlebar intro_tables/trunk_message.html',
+            'version': 'trunk'
+          }
+        ]
+      },
+      { 'title': 'Permissions',
+        'content': [
+          { 'perm': 'tester',
+            'text': '"thing1", "thing2"'
+          },
+          { 'text': 'is an API for testing things.' }
+        ]
+      },
+      { 'title': 'Learn More',
+        'content': [
+          { 'link': 'https://tester.test.com/welcome.html',
+            'text': 'Welcome!'
+          }
+        ]
+      }
+    ]
+    self.assertEquals(json.dumps(model._GetIntroTableList()),
+                      json.dumps(expected_list))
 
   def testInlineDocs(self):
     schema = {
@@ -171,7 +244,7 @@ class APIDataSourceTest(unittest.TestCase):
       ]
     }
 
-    inlined_schema = copy.deepcopy(schema)
+    inlined_schema = deepcopy(schema)
     _InlineDocs(inlined_schema)
     self.assertEqual(expected_schema, inlined_schema)
 

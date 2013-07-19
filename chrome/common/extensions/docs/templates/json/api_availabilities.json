@@ -1,3 +1,7 @@
+// Availability for these APIs either can't be accurately found or would take a
+// significant amount of specific logic to determine (devtools).
+// The versions listed here were drawn either from hardcoded HTML intro tables
+// or from the whats_new page.
 {
   "devtools.inspectedWindow": {
     "channel": "stable",
@@ -11,7 +15,20 @@
     "channel": "stable",
     "version": 18
   },
+  "input.ime": {
+    "channel": "stable",
+    "version": 21
+  },
+  "storage": {
+    "channel": "stable",
+    "version": 20
+  },
+  "pageCapture": {
+    "channel": "stable",
+    "version": 18
+  },
   "webstore": {
+    // Only 'webstorePrivate' is present before version 19.
     "channel": "stable",
     "version": 15
   }

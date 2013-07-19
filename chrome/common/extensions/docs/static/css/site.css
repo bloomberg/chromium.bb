@@ -74,13 +74,15 @@ p img {
   padding: 0 2px;
 }
 
+.code,
 code,
 pre {
   font-family: monospace;
   color: #080;
 }
 
-code {
+.code,
+code{
   font-size: 10pt;
 }
 

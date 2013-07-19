@@ -95,6 +95,47 @@
   "properties": [],
   "name": "tester",
   "description": "a test api",
+  "intro_list": [
+    {
+      "content": [
+        {
+          "text": "a test api"
+        }
+      ],
+      "title": "Description"
+    },
+    {
+      "content": [
+        {
+          "message": true,
+          "trunk": true,
+          "version": null
+        }
+      ],
+      "title": "Availability"
+    },
+    {
+      "content": [
+        {
+          "text": "\"thing1\", \"thing2\"",
+          "perm": "tester"
+        },
+        {
+          "text": "is an API for testing things."
+        }
+      ],
+      "title": "Permissions"
+    },
+    {
+      "content": [
+        {
+          "text": "Welcome!",
+          "link": "https://tester.test.com/welcome.html"
+        }
+      ],
+      "title": "Learn More"
+    }
+  ],
   "types": [
     {
       "properties": [

@@ -70,7 +70,8 @@ class ServerInstance(object):
 
     self.api_data_source_factory = APIDataSource.Factory(
         self.compiled_host_fs_factory,
-        svn_constants.API_PATH)
+        svn_constants.API_PATH,
+        self.availability_finder_factory)
 
     self.ref_resolver_factory = ReferenceResolver.Factory(
         self.api_data_source_factory,
@@ -122,6 +123,9 @@ class ServerInstance(object):
         svn_constants.PRIVATE_TEMPLATE_PATH,
         base_path)
 
+    self.api_data_source_factory.SetTemplateDataSource(
+        self.template_data_source_factory)
+
     self.example_zipper = ExampleZipper(
         self.compiled_host_fs_factory,
         svn_constants.DOCS_PATH)
@@ -161,8 +165,7 @@ class ServerInstance(object):
                                               store_type=TestObjectStore)
     host_file_system_creator = HostFileSystemCreator.ForLocal(
         object_store_creator)
-    trunk_file_system = host_file_system_creator.Create(
-        'trunk')
+    trunk_file_system = host_file_system_creator.Create('trunk')
     return ServerInstance(
         channel,
         object_store_creator,

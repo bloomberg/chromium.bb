@@ -14,6 +14,7 @@ from local_file_system import LocalFileSystem
 from object_store_creator import ObjectStoreCreator
 from reference_resolver import ReferenceResolver
 from template_data_source import TemplateDataSource
+from test_file_system import TestFileSystem
 from test_util import DisableLogging
 from third_party.handlebar import Handlebar
 from servlet import Request
@@ -51,7 +52,9 @@ class TemplateDataSourceTest(unittest.TestCase):
 
   def _CreateTemplateDataSource(self, compiled_fs_factory, api_data=None):
     if api_data is None:
-      api_data_factory = APIDataSource.Factory(compiled_fs_factory, 'fake_path')
+      api_data_factory = APIDataSource.Factory(compiled_fs_factory,
+                                               'fake_path',
+                                               _FakeFactory())
     else:
       api_data_factory = _FakeFactory(api_data)
     reference_resolver_factory = ReferenceResolver.Factory(

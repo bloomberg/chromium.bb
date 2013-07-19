@@ -1,15 +1,6 @@
 <h2 id="manifest">Notes</h2>
 
 <p>
-Debugger API serves as an alternate transport for Chrome's
-<a href="http://code.google.com/chrome/devtools/docs/remote-debugging.html">
-remote debugging protocol</a>. Use <code>chrome.debugger</code>
-to attach to one or more tabs to instrument network interaction, debug
-JavaScript, mutate the DOM  and CSS, etc. Use the Debuggee tabId to target tabs
-with sendCommand and route events by <code>tabId</code> from onEvent callbacks. 
-</p>
-
-<p>
 As of today, attaching to the tab by means of the debugger API
 and using embedded Chrome DevTools with that tab are mutually exclusive.
 If user invokes Chrome DevTools while extension is attached to the tab,
