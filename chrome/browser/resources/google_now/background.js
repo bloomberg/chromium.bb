@@ -32,8 +32,10 @@
  */
 var HTTP_OK = 200;
 
+var HTTP_BAD_REQUEST = 400;
 var HTTP_UNAUTHORIZED = 401;
 var HTTP_FORBIDDEN = 403;
+var HTTP_METHOD_NOT_ALLOWED = 405;
 
 /**
  * Initial period for polling for Google Now Notifications cards to use when the
@@ -56,6 +58,11 @@ var INITIAL_RETRY_DISMISS_PERIOD_SECONDS = 60;  // 1 minute
  * Maximum period for retrying the server request for dismissing cards.
  */
 var MAXIMUM_RETRY_DISMISS_PERIOD_SECONDS = 60 * 60;  // 1 hour
+
+/**
+ * Time we keep retrying dismissals.
+ */
+var MAXIMUM_DISMISSAL_AGE_MS = 24 * 60 * 60 * 1000; // 1 day
 
 /**
  * Time we keep dismissals after successful server dismiss requests.
@@ -466,24 +473,37 @@ function updateNotificationsCards(position) {
  * @param {string} notificationId Unique identifier of the card.
  * @param {number} dismissalTimeMs Time of the user's dismissal of the card in
  *     milliseconds since epoch.
- * @param {function(boolean)} callbackBoolean Completion callback with 'success'
+ * @param {function(boolean)} callbackBoolean Completion callback with 'done'
  *     parameter.
  */
 function requestCardDismissal(
     notificationId, dismissalTimeMs, callbackBoolean) {
   console.log('requestDismissingCard ' + notificationId + ' from ' +
       NOTIFICATION_CARDS_URL);
+
+  var dismissalAge = Date.now() - dismissalTimeMs;
+
+  if (dismissalAge > MAXIMUM_DISMISSAL_AGE_MS) {
+    callbackBoolean(true);
+    return;
+  }
+
   recordEvent(DiagnosticEvent.DISMISS_REQUEST_TOTAL);
   // Send a dismiss request to the server.
   var requestParameters = 'id=' + notificationId +
-                          '&dismissalAge=' + (Date.now() - dismissalTimeMs);
+                          '&dismissalAge=' + dismissalAge;
   var request = buildServerRequest('dismiss');
   request.onloadend = function(event) {
     console.log('requestDismissingCard-onloadend ' + request.status);
     if (request.status == HTTP_OK)
       recordEvent(DiagnosticEvent.DISMISS_REQUEST_SUCCESS);
 
-    callbackBoolean(request.status == HTTP_OK);
+    // A dismissal doesn't require further retries if it was successful or
+    // doesn't have a chance for successful completion.
+    var done = request.status == HTTP_OK ||
+        request.status == HTTP_BAD_REQUEST ||
+        request.status == HTTP_METHOD_NOT_ALLOWED;
+    callbackBoolean(done);
   };
 
   setAuthorization(request, function(success) {
@@ -532,8 +552,8 @@ function processPendingDismissals(callbackBoolean) {
       // recursively with the rest.
       var dismissal = items.pendingDismissals[0];
       requestCardDismissal(
-          dismissal.notificationId, dismissal.time, function(success) {
-        if (success) {
+          dismissal.notificationId, dismissal.time, function(done) {
+        if (done) {
           dismissalsChanged = true;
           items.pendingDismissals.splice(0, 1);
           items.recentDismissals[dismissal.notificationId] = Date.now();
