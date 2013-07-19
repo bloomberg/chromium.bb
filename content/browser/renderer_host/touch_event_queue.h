@@ -17,27 +17,13 @@
 namespace content {
 
 class CoalescedWebTouchEvent;
-
-// Interface with which TouchEventQueue can forward touch events, and dispatch
-// touch event responses.
-class TouchEventQueueClient {
- public:
-  virtual ~TouchEventQueueClient() {}
-
-  virtual void SendTouchEventImmediately(
-      const TouchEventWithLatencyInfo& event) = 0;
-
-  virtual void OnTouchEventAck(
-      const TouchEventWithLatencyInfo& event,
-      InputEventAckState ack_result) = 0;
-};
+class MockRenderWidgetHost;
+class RenderWidgetHostImpl;
 
 // A queue for throttling and coalescing touch-events.
 class TouchEventQueue {
  public:
-
-  // The |client| must outlive the TouchEventQueue.
-  explicit TouchEventQueue(TouchEventQueueClient* client);
+  explicit TouchEventQueue(RenderWidgetHostImpl* host);
   virtual ~TouchEventQueue();
 
   // Adds an event to the queue. The event may be coalesced with previously
@@ -55,6 +41,10 @@ class TouchEventQueue {
   // events being sent to the renderer.
   void FlushQueue();
 
+  // Resets all internal state. This does not trigger any touch or gesture
+  // events to be sent.
+  void Reset();
+
   // Returns whether the event-queue is empty.
   bool empty() const WARN_UNUSED_RESULT {
     return touch_queue_.empty();
@@ -67,13 +57,13 @@ class TouchEventQueue {
   CONTENT_EXPORT const TouchEventWithLatencyInfo& GetLatestEvent() const;
 
   // Pops the touch-event from the top of the queue and sends it to the
-  // TouchEventQueueClient. This reduces the size of the queue by one.
-  void PopTouchEventWithAck(InputEventAckState ack_result);
+  // RenderWidgetHostView. This reduces the size of the queue by one.
+  void PopTouchEventToView(InputEventAckState ack_result);
 
   bool ShouldForwardToRenderer(const WebKit::WebTouchEvent& event) const;
 
-  // Handles touch event forwarding and ack'ed event dispatch.
-  TouchEventQueueClient* client_;
+  // The RenderWidgetHost that owns this event-queue.
+  RenderWidgetHostImpl* render_widget_host_;
 
   typedef std::deque<CoalescedWebTouchEvent*> TouchQueue;
   TouchQueue touch_queue_;

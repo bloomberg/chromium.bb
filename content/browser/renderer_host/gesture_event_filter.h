@@ -15,8 +15,8 @@
 #include "ui/gfx/transform.h"
 
 namespace content {
-class InputRouter;
 class MockRenderWidgetHost;
+class RenderWidgetHostImpl;
 class TouchpadTapSuppressionController;
 class TouchscreenTapSuppressionController;
 
@@ -43,18 +43,20 @@ class TouchscreenTapSuppressionController;
 // http://crbug.com/148443.
 class GestureEventFilter {
  public:
-  // The |input_router| must outlive the GestureEventFilter.
-  explicit GestureEventFilter(InputRouter* input_router);
+  explicit GestureEventFilter(RenderWidgetHostImpl*);
   ~GestureEventFilter();
 
   // Returns |true| if the caller should immediately forward the provided
   // |GestureEventWithLatencyInfo| argument to the renderer.
   bool ShouldForward(const GestureEventWithLatencyInfo&);
 
-  // Indicates that the caller has received an acknowledgement from the renderer
-  // with state |processed| and event |type|. May send events if the queue is
-  // not empty.
+  // Indicates that the calling RenderWidgetHostImpl has received an
+  // acknowledgement from the renderer with state |processed| and event |type|.
+  // May send events if the queue is not empty.
   void ProcessGestureAck(bool processed, int type);
+
+  // Resets the state of the filter as would be needed when the renderer exits.
+  void Reset();
 
   // Sets the state of the |fling_in_progress_| field to indicate that a fling
   // is definitely not in progress.
@@ -67,7 +69,7 @@ class GestureEventFilter {
   bool HasQueuedGestureEvents() const;
 
   // Returns the last gesture event that was sent to the renderer.
-  const WebKit::WebGestureEvent& GetGestureEventAwaitingAck() const;
+  const WebKit::WebInputEvent& GetGestureEventAwaitingAck() const;
 
   // Tries forwarding the event to the tap deferral sub-filter.
   void ForwardGestureEventForDeferral(
@@ -144,8 +146,8 @@ class GestureEventFilter {
   gfx::Transform GetTransformForEvent(
       const GestureEventWithLatencyInfo& gesture_event);
 
-  // The receiver of all forwarded gesture events.
-  InputRouter* input_router_;
+  // Only a RenderWidgetHostViewImpl can own an instance.
+  RenderWidgetHostImpl* render_widget_host_;
 
   // True if a GestureFlingStart is in progress on the renderer or
   // queued without a subsequent queued GestureFlingCancel event.
