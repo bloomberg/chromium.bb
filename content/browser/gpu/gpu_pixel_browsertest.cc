@@ -535,7 +535,9 @@ class GpuPixelTestBrowserPlugin : public GpuPixelBrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(GpuPixelTestBrowserPlugin, MANUAL_BrowserPluginBlueBox) {
+// TODO(fsamuel): re-enable as MANUAL_BrowserPluginBlueBox: crbug.com/166165
+IN_PROC_BROWSER_TEST_F(GpuPixelTestBrowserPlugin,
+                       DISABLED_BrowserPluginBlueBox) {
   // If test baseline needs to be updated after a given revision, update the
   // following number. If no revision requirement, then 0.
   const int64 ref_img_revision_update = 209445;
