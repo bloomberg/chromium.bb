@@ -11,7 +11,7 @@
   SAFE
 ----------------------------------------------------------------------
 @hex:
-  # The following tests that rex.w doesn't effect the size.
+  # The following tests that rex.w doesn't affect the size.
   48 68 03 04 05 06
   90
   90
