@@ -538,7 +538,9 @@ PermissionSet* ExtensionPrefs::ReadPrefAsPermissionSet(
   const ListValue* api_values = NULL;
   std::string api_pref = JoinPrefs(pref_key, kPrefAPIs);
   if (ReadPrefAsList(extension_id, api_pref, &api_values)) {
-    APIPermissionSet::ParseFromJSON(api_values, &apis, NULL, NULL);
+    APIPermissionSet::ParseFromJSON(api_values,
+                                    APIPermissionSet::kAllowInternalPermissions,
+                                    &apis, NULL, NULL);
   }
 
   // Retrieve the explicit host permissions.

@@ -60,6 +60,16 @@ class APIPermissionSet {
     APIPermissionMap::const_iterator it_;
   };
 
+  enum ParseSource {
+    // Don't allow internal permissions to be parsed (e.g. entries in the
+    // "permissions" list in a manifest).
+    kDisallowInternalPermissions,
+
+    // Allow internal permissions to be parsed (e.g. from the "api" field of a
+    // permissions list in the prefs).
+    kAllowInternalPermissions,
+  };
+
   APIPermissionSet();
 
   APIPermissionSet(const APIPermissionSet& set);
@@ -137,14 +147,17 @@ class APIPermissionSet {
       const APIPermissionSet& set2,
       APIPermissionSet* set3);
 
-  // Parses permissions from |permissions_data| and adds the parsed permissions
-  // to |api_permissions|. If |unhandled_permissions| is not NULL the names of
-  // all permissions that couldn't be parsed will be added to this vector.
-  // If |error| is NULL, parsing will continue with the next permission if
-  // invalid data is detected. If |error| is not NULL, it will be set to an
-  // error message and false is returned when an invalid permission is found.
+  // Parses permissions from |permissions| and adds the parsed permissions to
+  // |api_permissions|. If |source| is kDisallowInternalPermissions, treat
+  // permissions with kFlagInternal as errors. If |unhandled_permissions|
+  // is not NULL, the names of all permissions that couldn't be parsed will be
+  // added to this vector. If |error| is NULL, parsing will continue with the
+  // next permission if invalid data is detected. If |error| is not NULL, it
+  // will be set to an error message and false is returned when an invalid
+  // permission is found.
   static bool ParseFromJSON(
-      const base::ListValue* permissions_data,
+      const base::ListValue* permissions,
+      ParseSource source,
       APIPermissionSet* api_permissions,
       string16* error,
       std::vector<std::string>* unhandled_permissions);

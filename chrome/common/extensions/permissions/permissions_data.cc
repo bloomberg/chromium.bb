@@ -125,7 +125,8 @@ bool ParseHelper(Extension* extension,
 
   std::vector<std::string> host_data;
   if (!APIPermissionSet::ParseFromJSON(
-          permissions, api_permissions, error, &host_data)) {
+          permissions, APIPermissionSet::kDisallowInternalPermissions,
+          api_permissions, error, &host_data)) {
     return false;
   }
 

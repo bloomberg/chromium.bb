@@ -8,6 +8,7 @@
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/sync_helper.h"
+#include "extensions/common/error_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -30,10 +31,11 @@ class ExtensionSyncTypeTest : public testing::Test {
       const GURL& update_url,
       const GURL& launch_url,
       Manifest::Location location,
-      int num_plugins,
       const base::FilePath& extension_path,
       int creation_flags,
-      bool has_plugin_permission) {
+      int num_plugins,
+      bool has_plugin_permission,
+      const std::string& expected_error) {
     base::DictionaryValue source;
     source.SetString(keys::kName, "PossiblySyncableExtension");
     source.SetString(keys::kVersion, "0.0.0.0");
@@ -55,7 +57,8 @@ class ExtensionSyncTypeTest : public testing::Test {
         plugin->SetString(keys::kPluginsPath, std::string());
         plugins->Set(i, plugin);
       }
-      source.Set(keys::kPlugins, plugins);
+      if (num_plugins >= 0)
+        source.Set(keys::kPlugins, plugins);
     }
     if (has_plugin_permission) {
       ListValue* plugins = new ListValue();
@@ -66,8 +69,11 @@ class ExtensionSyncTypeTest : public testing::Test {
     std::string error;
     scoped_refptr<Extension> extension = Extension::Create(
         extension_path, location, source, creation_flags, &error);
-    EXPECT_TRUE(extension.get());
-    EXPECT_EQ("", error);
+    if (expected_error == "")
+      EXPECT_TRUE(extension.get());
+    else
+      EXPECT_FALSE(extension.get());
+    EXPECT_EQ(expected_error, error);
     return extension;
   }
 
@@ -76,12 +82,11 @@ class ExtensionSyncTypeTest : public testing::Test {
       const GURL& update_url,
       const GURL& launch_url,
       Manifest::Location location,
-      int num_plugins,
       const base::FilePath& extension_path,
       int creation_flags) {
     return MakeSyncTestExtensionWithPluginPermission(
-        type, update_url, launch_url, location, num_plugins, extension_path,
-        creation_flags, false);
+        type, update_url, launch_url, location, extension_path,
+        creation_flags, -1, false, "");
   }
 
   static const char kValidUpdateUrl1[];
@@ -96,7 +101,7 @@ const char ExtensionSyncTypeTest::kValidUpdateUrl2[] =
 TEST_F(ExtensionSyncTypeTest, NormalExtensionNoUpdateUrl) {
   scoped_refptr<Extension> extension(
       MakeSyncTestExtension(EXTENSION, GURL(), GURL(),
-                            Manifest::INTERNAL, 0, base::FilePath(),
+                            Manifest::INTERNAL, base::FilePath(),
                             Extension::NO_FLAGS));
   EXPECT_TRUE(sync_helper::IsSyncableExtension(extension.get()));
 }
@@ -104,7 +109,7 @@ TEST_F(ExtensionSyncTypeTest, NormalExtensionNoUpdateUrl) {
 TEST_F(ExtensionSyncTypeTest, UserScriptValidUpdateUrl) {
   scoped_refptr<Extension> extension(
       MakeSyncTestExtension(USER_SCRIPT, GURL(kValidUpdateUrl1), GURL(),
-                            Manifest::INTERNAL, 0, base::FilePath(),
+                            Manifest::INTERNAL, base::FilePath(),
                             Extension::NO_FLAGS));
   EXPECT_TRUE(sync_helper::IsSyncableExtension(extension.get()));
 }
@@ -112,7 +117,7 @@ TEST_F(ExtensionSyncTypeTest, UserScriptValidUpdateUrl) {
 TEST_F(ExtensionSyncTypeTest, UserScriptNoUpdateUrl) {
   scoped_refptr<Extension> extension(
       MakeSyncTestExtension(USER_SCRIPT, GURL(), GURL(),
-                            Manifest::INTERNAL, 0, base::FilePath(),
+                            Manifest::INTERNAL, base::FilePath(),
                             Extension::NO_FLAGS));
   EXPECT_FALSE(sync_helper::IsSyncableExtension(extension.get()));
 }
@@ -120,7 +125,7 @@ TEST_F(ExtensionSyncTypeTest, UserScriptNoUpdateUrl) {
 TEST_F(ExtensionSyncTypeTest, ThemeNoUpdateUrl) {
   scoped_refptr<Extension> extension(
       MakeSyncTestExtension(THEME, GURL(), GURL(),
-                            Manifest::INTERNAL, 0, base::FilePath(),
+                            Manifest::INTERNAL, base::FilePath(),
                             Extension::NO_FLAGS));
   EXPECT_FALSE(sync_helper::IsSyncableExtension(extension.get()));
   EXPECT_FALSE(sync_helper::IsSyncableApp(extension.get()));
@@ -129,7 +134,7 @@ TEST_F(ExtensionSyncTypeTest, ThemeNoUpdateUrl) {
 TEST_F(ExtensionSyncTypeTest, AppWithLaunchUrl) {
   scoped_refptr<Extension> extension(
       MakeSyncTestExtension(EXTENSION, GURL(), GURL("http://www.google.com"),
-                            Manifest::INTERNAL, 0, base::FilePath(),
+                            Manifest::INTERNAL, base::FilePath(),
                             Extension::NO_FLAGS));
   EXPECT_TRUE(sync_helper::IsSyncableApp(extension.get()));
 }
@@ -137,7 +142,7 @@ TEST_F(ExtensionSyncTypeTest, AppWithLaunchUrl) {
 TEST_F(ExtensionSyncTypeTest, ExtensionExternal) {
   scoped_refptr<Extension> extension(
       MakeSyncTestExtension(EXTENSION, GURL(), GURL(),
-                            Manifest::EXTERNAL_PREF, 0, base::FilePath(),
+                            Manifest::EXTERNAL_PREF, base::FilePath(),
                             Extension::NO_FLAGS));
   EXPECT_FALSE(sync_helper::IsSyncableExtension(extension.get()));
 }
@@ -146,14 +151,14 @@ TEST_F(ExtensionSyncTypeTest, UserScriptThirdPartyUpdateUrl) {
   scoped_refptr<Extension> extension(
       MakeSyncTestExtension(
           USER_SCRIPT, GURL("http://third-party.update_url.com"), GURL(),
-          Manifest::INTERNAL, 0, base::FilePath(), Extension::NO_FLAGS));
+          Manifest::INTERNAL, base::FilePath(), Extension::NO_FLAGS));
   EXPECT_FALSE(sync_helper::IsSyncableExtension(extension.get()));
 }
 
 TEST_F(ExtensionSyncTypeTest, OnlyDisplayAppsInLauncher) {
   scoped_refptr<Extension> extension(
       MakeSyncTestExtension(EXTENSION, GURL(), GURL(),
-                            Manifest::INTERNAL, 0, base::FilePath(),
+                            Manifest::INTERNAL, base::FilePath(),
                             Extension::NO_FLAGS));
 
   EXPECT_FALSE(extension->ShouldDisplayInAppLauncher());
@@ -161,7 +166,7 @@ TEST_F(ExtensionSyncTypeTest, OnlyDisplayAppsInLauncher) {
 
   scoped_refptr<Extension> app(
       MakeSyncTestExtension(APP, GURL(), GURL("http://www.google.com"),
-                            Manifest::INTERNAL, 0, base::FilePath(),
+                            Manifest::INTERNAL, base::FilePath(),
                             Extension::NO_FLAGS));
   EXPECT_TRUE(app->ShouldDisplayInAppLauncher());
   EXPECT_TRUE(app->ShouldDisplayInNewTabPage());
@@ -219,13 +224,13 @@ TEST_F(ExtensionSyncTypeTest, DisplayInXManifestProperties) {
 TEST_F(ExtensionSyncTypeTest, OnlySyncInternal) {
   scoped_refptr<Extension> extension_internal(
       MakeSyncTestExtension(EXTENSION, GURL(), GURL(),
-                            Manifest::INTERNAL, 0, base::FilePath(),
+                            Manifest::INTERNAL, base::FilePath(),
                             Extension::NO_FLAGS));
   EXPECT_TRUE(sync_helper::IsSyncable(extension_internal.get()));
 
   scoped_refptr<Extension> extension_noninternal(
       MakeSyncTestExtension(EXTENSION, GURL(), GURL(),
-                            Manifest::COMPONENT, 0, base::FilePath(),
+                            Manifest::COMPONENT, base::FilePath(),
                             Extension::NO_FLAGS));
   EXPECT_FALSE(sync_helper::IsSyncable(extension_noninternal.get()));
 }
@@ -233,41 +238,55 @@ TEST_F(ExtensionSyncTypeTest, OnlySyncInternal) {
 TEST_F(ExtensionSyncTypeTest, DontSyncDefault) {
   scoped_refptr<Extension> extension_default(
       MakeSyncTestExtension(EXTENSION, GURL(), GURL(),
-                            Manifest::INTERNAL, 0, base::FilePath(),
+                            Manifest::INTERNAL, base::FilePath(),
                             Extension::WAS_INSTALLED_BY_DEFAULT));
   EXPECT_FALSE(sync_helper::IsSyncable(extension_default.get()));
 }
 
-// These last 2 tests don't make sense on Chrome OS, where extension plugins
+// These plugin tests don't make sense on Chrome OS, where extension plugins
 // are not allowed.
 #if !defined(OS_CHROMEOS)
+TEST_F(ExtensionSyncTypeTest, ExtensionWithEmptyPlugins) {
+  scoped_refptr<Extension> extension(
+      MakeSyncTestExtensionWithPluginPermission(
+          EXTENSION, GURL(), GURL(),
+          Manifest::INTERNAL, base::FilePath(),
+          Extension::NO_FLAGS, 0, false, ""));
+  if (extension.get())
+    EXPECT_TRUE(sync_helper::IsSyncableExtension(extension.get()));
+}
+
 TEST_F(ExtensionSyncTypeTest, ExtensionWithPlugin) {
   scoped_refptr<Extension> extension(
-      MakeSyncTestExtension(EXTENSION, GURL(), GURL(),
-                            Manifest::INTERNAL, 1, base::FilePath(),
-                            Extension::NO_FLAGS));
+      MakeSyncTestExtensionWithPluginPermission(
+          EXTENSION, GURL(), GURL(),
+          Manifest::INTERNAL, base::FilePath(),
+          Extension::NO_FLAGS, 1, false, ""));
   if (extension.get())
     EXPECT_FALSE(sync_helper::IsSyncableExtension(extension.get()));
 }
 
 TEST_F(ExtensionSyncTypeTest, ExtensionWithTwoPlugins) {
   scoped_refptr<Extension> extension(
-      MakeSyncTestExtension(EXTENSION, GURL(), GURL(),
-                            Manifest::INTERNAL, 2, base::FilePath(),
-                            Extension::NO_FLAGS));
+      MakeSyncTestExtensionWithPluginPermission(
+          EXTENSION, GURL(), GURL(),
+          Manifest::INTERNAL, base::FilePath(),
+          Extension::NO_FLAGS, 2, false, ""));
   if (extension.get())
     EXPECT_FALSE(sync_helper::IsSyncableExtension(extension.get()));
 }
 
 TEST_F(ExtensionSyncTypeTest, ExtensionWithPluginPermission) {
+  // Specifying the "plugin" permission in the manifest is an error.
   scoped_refptr<Extension> extension(
-      MakeSyncTestExtensionWithPluginPermission(EXTENSION, GURL(), GURL(),
-                                                Manifest::INTERNAL,
-                                                0, base::FilePath(),
-                                                Extension::NO_FLAGS, true));
-  if (extension.get())
-    EXPECT_FALSE(sync_helper::IsSyncableExtension(extension.get()));
+      MakeSyncTestExtensionWithPluginPermission(
+          EXTENSION, GURL(), GURL(),
+          Manifest::INTERNAL, base::FilePath(),
+          Extension::NO_FLAGS, 0, true,
+          ErrorUtils::FormatErrorMessage(
+              errors::kPermissionNotAllowedInManifest, "plugin")));
 }
+
 #endif // !defined(OS_CHROMEOS)
 
 }  // namespace extensions

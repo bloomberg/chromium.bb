@@ -2910,6 +2910,7 @@ TEST_F(ExtensionServiceTest, LoadExtensionsWithPlugins) {
   EXPECT_EQ(0u, service_->disabled_extensions()->size());
 
   // But the extension with no plugin should since there's no prompt.
+  ExtensionErrorReporter::GetInstance()->ClearErrors();
   extensions::UnpackedInstaller::Create(service_)->Load(
       extension_no_plugin_path);
   loop_.RunUntilIdle();
@@ -2924,6 +2925,7 @@ TEST_F(ExtensionServiceTest, LoadExtensionsWithPlugins) {
       switches::kAppsGalleryInstallAutoConfirmForTests,
       "accept");
 
+  ExtensionErrorReporter::GetInstance()->ClearErrors();
   extensions::UnpackedInstaller::Create(service_)->Load(
       extension_with_plugin_path);
   loop_.RunUntilIdle();

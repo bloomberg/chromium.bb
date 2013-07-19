@@ -57,7 +57,8 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
       // appear in the install permission dialogue, so we need a fake
       // permission for it. See http://crbug.com/247857.
     { APIPermission::kWebConnectable, "webConnectable",
-      APIPermissionInfo::kFlagCannotBeOptional,
+      APIPermissionInfo::kFlagCannotBeOptional |
+      APIPermissionInfo::kFlagInternal,
       IDS_EXTENSION_PROMPT_WARNING_WEB_CONNECTABLE,
       PermissionMessage::kWebConnectable},
     { APIPermission::kGeolocation, "geolocation",
@@ -208,15 +209,17 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
       PermissionMessage::kDebugger },
     { APIPermission::kDevtools, "devtools",
       APIPermissionInfo::kFlagImpliesFullURLAccess |
-      APIPermissionInfo::kFlagCannotBeOptional },
+      APIPermissionInfo::kFlagCannotBeOptional |
+      APIPermissionInfo::kFlagInternal },
     { APIPermission::kPageCapture, "pageCapture",
       APIPermissionInfo::kFlagImpliesFullURLAccess },
     { APIPermission::kTabCapture, "tabCapture",
       APIPermissionInfo::kFlagImpliesFullURLAccess },
     { APIPermission::kPlugin, "plugin",
       APIPermissionInfo::kFlagImpliesFullURLAccess |
-          APIPermissionInfo::kFlagImpliesFullAccess |
-          APIPermissionInfo::kFlagCannotBeOptional,
+      APIPermissionInfo::kFlagImpliesFullAccess |
+      APIPermissionInfo::kFlagCannotBeOptional |
+      APIPermissionInfo::kFlagInternal,
       IDS_EXTENSION_PROMPT_WARNING_FULL_ACCESS,
       PermissionMessage::kFullAccess },
     { APIPermission::kProxy, "proxy",

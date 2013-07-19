@@ -455,6 +455,8 @@ const char kInvalidOptionsPageExpectUrlInPackage[] =
 const char kInvalidOptionsPageInHostedApp[] =
     "Invalid value for 'options_page'. Hosted apps must specify an "
     "absolute URL.";
+const char kInvalidOptionalPermissions[] =
+    "Invalid value for 'optional_permissions'.";
 const char kInvalidPageAction[] =
     "Invalid value for 'page_action'.";
 const char kInvalidPageActionDefaultTitle[] =
@@ -483,7 +485,7 @@ const char kInvalidPageLauncher[] =
 const char kInvalidPermission[] =
     "Invalid value for 'permissions[*]'.";
 const char kInvalidPermissions[] =
-    "Required value 'permissions' is missing or invalid.";
+    "Invalid value for 'permissions'.";
 const char kInvalidPermissionScheme[] =
     "Invalid scheme for 'permissions[*]'.";
 const char kInvalidPlugins[] =
