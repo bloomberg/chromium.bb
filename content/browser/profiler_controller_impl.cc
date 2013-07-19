@@ -5,6 +5,7 @@
 #include "content/browser/profiler_controller_impl.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/tracked_objects.h"
 #include "content/common/child_process_messages.h"
 #include "content/public/browser/browser_child_process_host_iterator.h"
@@ -12,6 +13,7 @@
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/profiler_subscriber.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/common/content_switches.h"
 
 namespace content {
 
@@ -76,6 +78,13 @@ void ProfilerControllerImpl::GetProfilerDataFromChildProcesses(
 
   int pending_processes = 0;
   for (BrowserChildProcessHostIterator iter; !iter.Done(); ++iter) {
+    // Skips requesting profiler data from the "GPU Process" if we are using in
+    // process GPU. Those stats should be in the Browser-process's GPU thread.
+    if (iter.GetData().process_type == PROCESS_TYPE_GPU &&
+        CommandLine::ForCurrentProcess()->HasSwitch(switches::kInProcessGPU)) {
+      continue;
+    }
+
     ++pending_processes;
     if (!iter.Send(new ChildProcessMsg_GetChildProfilerData(sequence_number)))
       --pending_processes;
