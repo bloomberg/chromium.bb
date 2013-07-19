@@ -223,6 +223,14 @@ class GDig {
   scoped_ptr<FileNetLogObserver> log_observer_;
   scoped_ptr<NetLog> log_;
   scoped_ptr<HostResolver> resolver_;
+
+#if defined(OS_MACOSX)
+  // Without this there will be a mem leak on osx.
+  base::mac::ScopedNSAutoreleasePool scoped_pool_;
+#endif
+
+  // Need AtExitManager to support AsWeakPtr (in NetLog).
+  base::AtExitManager exit_manager_;
 };
 
 GDig::GDig()
@@ -254,12 +262,6 @@ GDig::Result GDig::Main(int argc, const char* argv[]) {
       return RESULT_WRONG_USAGE;
   }
 
-#if defined(OS_MACOSX)
-  // Without this there will be a mem leak on osx.
-  base::mac::ScopedNSAutoreleasePool scoped_pool;
-#endif
-
-  base::AtExitManager exit_manager;
   base::MessageLoopForIO loop;
 
   result_ = RESULT_PENDING;
