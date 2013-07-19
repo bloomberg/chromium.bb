@@ -53,6 +53,10 @@ CHROMIUM_BUG_PREFIX = 'crbug.com/'
 V8_BUG_PREFIX = 'code.google.com/p/v8/issues/detail?id='
 NAMED_BUG_PREFIX = 'Bug('
 
+MISSING_KEYWORD = 'Missing'
+NEEDS_REBASELINE_KEYWORD = 'NeedsRebaseline'
+NEEDS_MANUAL_REBASELINE_KEYWORD = 'NeedsManualRebaseline'
+
 class ParseError(Exception):
     def __init__(self, warnings):
         super(ParseError, self).__init__()
@@ -237,11 +241,11 @@ class TestExpectationParser(object):
         'Crash': 'CRASH',
         'Failure': 'FAIL',
         'ImageOnlyFailure': 'IMAGE',
-        'Missing': 'MISSING',
+        MISSING_KEYWORD: 'MISSING',
         'Pass': 'PASS',
         'Rebaseline': 'REBASELINE',
-        'NeedsRebaseline': 'NeedsRebaseline',
-        'NeedsManualRebaseline': 'NeedsManualRebaseline',
+        NEEDS_REBASELINE_KEYWORD: NEEDS_REBASELINE_KEYWORD,
+        NEEDS_MANUAL_REBASELINE_KEYWORD: NEEDS_MANUAL_REBASELINE_KEYWORD,
         'Skip': 'SKIP',
         'Slow': 'SLOW',
         'Timeout': 'TIMEOUT',
@@ -360,7 +364,7 @@ class TestExpectationParser(object):
             # FIXME: This is really a semantic warning and shouldn't be here. Remove when we drop the old syntax.
             warnings.append('A test marked Skip must not have other expectations.')
         elif not expectations:
-            if 'SKIP' not in modifiers and 'REBASELINE' not in modifiers and 'NeedsRebaseline' not in modifiers  and 'NeedsManualRebaseline' not in modifiers and 'SLOW' not in modifiers:
+            if 'SKIP' not in modifiers and 'REBASELINE' not in modifiers and NEEDS_REBASELINE_KEYWORD not in modifiers and NEEDS_MANUAL_REBASELINE_KEYWORD not in modifiers and 'SLOW' not in modifiers:
                 modifiers.append('SKIP')
             expectations = ['PASS']
 
@@ -517,7 +521,7 @@ class TestExpectationLine(object):
             else:
                 # FIXME: Make this all work with the mixed-cased modifiers (e.g. WontFix, Slow, etc).
                 modifier = modifier.upper()
-                if modifier in ('SLOW', 'SKIP', 'REBASELINE', 'NeedsRebaseline', 'NeedsManualRebaseline', 'WONTFIX'):
+                if modifier in ('SLOW', 'SKIP', 'REBASELINE', NEEDS_REBASELINE_KEYWORD, NEEDS_MANUAL_REBASELINE_KEYWORD, 'WONTFIX'):
                     new_expectations.append(TestExpectationParser._inverted_expectation_tokens.get(modifier))
                 else:
                     new_modifiers.append(TestExpectationParser._inverted_configuration_tokens.get(modifier, modifier))

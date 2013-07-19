@@ -881,6 +881,58 @@ class RebaselineTest(unittest.TestCase, StreamTestingMixin):
         self.assertBaselines(file_list, "platform/test/failures/unexpected/missing_image", [".png"], err)
         self.assertBaselines(file_list, "platform/test/failures/unexpected/missing_render_tree_dump", [".txt"], err)
 
+    def test_missing_results_not_added_if_expected_missing(self):
+        # Test that we update expectations in place. If the expectation
+        # is missing, update the expected generic location.
+        host = MockHost()
+        options, parsed_args = run_webkit_tests.parse_args([])
+
+        port = test.TestPort(host, options=options)
+        host.filesystem.write_text_file(port.path_to_generic_test_expectations_file(), """
+Bug(foo) failures/unexpected/missing_text.html [ Missing ]
+Bug(foo) failures/unexpected/missing_image.html [ NeedsRebaseline ]
+Bug(foo) failures/unexpected/missing_audio.html [ NeedsManualRebaseline ]
+Bug(foo) failures/unexpected/missing_render_tree_dump.html [ Missing ]
+""")
+        details, err, _ = logging_run(['--no-show-results',
+            'failures/unexpected/missing_text.html',
+            'failures/unexpected/missing_image.html',
+            'failures/unexpected/missing_audio.html',
+            'failures/unexpected/missing_render_tree_dump.html'],
+            tests_included=True, host=host, new_results=True,  port_obj=port)
+        file_list = host.filesystem.written_files.keys()
+        self.assertEqual(details.exit_code, 0)
+        self.assertEqual(len(file_list), 7)
+        self.assertFalse(any('failures/unexpected/missing_text-expected' in file for file in file_list))
+        self.assertFalse(any('failures/unexpected/missing_image-expected' in file for file in file_list))
+        self.assertFalse(any('failures/unexpected/missing_render_tree_dump-expected' in file for file in file_list))
+
+    def test_missing_results_not_added_if_expected_missing_and_reset_results(self):
+        # Test that we update expectations in place. If the expectation
+        # is missing, update the expected generic location.
+        host = MockHost()
+        options, parsed_args = run_webkit_tests.parse_args(['--pixel-tests', '--reset-results'])
+
+        port = test.TestPort(host, options=options)
+        host.filesystem.write_text_file(port.path_to_generic_test_expectations_file(), """
+Bug(foo) failures/unexpected/missing_text.html [ Missing ]
+Bug(foo) failures/unexpected/missing_image.html [ NeedsRebaseline ]
+Bug(foo) failures/unexpected/missing_audio.html [ NeedsManualRebaseline ]
+Bug(foo) failures/unexpected/missing_render_tree_dump.html [ Missing ]
+""")
+        details, err, _ = logging_run(['--pixel-tests', '--reset-results',
+            'failures/unexpected/missing_text.html',
+            'failures/unexpected/missing_image.html',
+            'failures/unexpected/missing_audio.html',
+            'failures/unexpected/missing_render_tree_dump.html'],
+            tests_included=True, host=host, new_results=True,  port_obj=port)
+        file_list = host.filesystem.written_files.keys()
+        self.assertEqual(details.exit_code, 0)
+        self.assertEqual(len(file_list), 11)
+        self.assertBaselines(file_list, "failures/unexpected/missing_text", [".txt"], err)
+        self.assertBaselines(file_list, "failures/unexpected/missing_image", [".png"], err)
+        self.assertBaselines(file_list, "failures/unexpected/missing_render_tree_dump", [".txt"], err)
+
     def test_new_baseline(self):
         # Test that we update the platform expectations in the version-specific directories
         # for both existing and new baselines.

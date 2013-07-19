@@ -128,7 +128,8 @@ class Manager(object):
     def _test_input_for_file(self, test_file):
         return TestInput(test_file,
             self._options.slow_time_out_ms if self._test_is_slow(test_file) else self._options.time_out_ms,
-            self._test_requires_lock(test_file))
+            self._test_requires_lock(test_file),
+            should_add_missing_baselines=(self._options.new_test_results and not self._test_is_expected_missing(test_file)))
 
     def _test_requires_lock(self, test_file):
         """Return True if the test needs to be locked when
@@ -136,6 +137,11 @@ class Manager(object):
         because heavy load caused by running other tests in parallel
         might cause some of them to timeout."""
         return self._is_http_test(test_file) or self._is_perf_test(test_file)
+
+    def _test_is_expected_missing(self, test_file):
+        return (self._expectations.model().has_keyword(test_file, test_expectations.MISSING_KEYWORD)
+            or self._expectations.model().has_keyword(test_file, test_expectations.NEEDS_REBASELINE_KEYWORD)
+            or self._expectations.model().has_keyword(test_file, test_expectations.NEEDS_MANUAL_REBASELINE_KEYWORD))
 
     def _test_is_slow(self, test_file):
         return self._expectations.has_modifier(test_file, test_expectations.SLOW)

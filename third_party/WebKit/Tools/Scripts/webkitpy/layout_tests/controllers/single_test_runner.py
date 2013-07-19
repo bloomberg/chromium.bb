@@ -60,6 +60,7 @@ class SingleTestRunner(object):
         self._test_name = test_input.test_name
         self._should_run_pixel_test = test_input.should_run_pixel_test
         self._reference_files = test_input.reference_files
+        self._should_add_missing_baselines = test_input.should_add_missing_baselines
         self._stop_when_done = stop_when_done
 
         if self._reference_files:
@@ -109,7 +110,7 @@ class SingleTestRunner(object):
         expected_driver_output = self._expected_driver_output()
 
         test_result = self._compare_output(expected_driver_output, driver_output)
-        if self._options.new_test_results:
+        if self._should_add_missing_baselines:
             self._add_missing_baselines(test_result, driver_output)
         test_result_writer.write_test_result(self._filesystem, self._port, self._results_directory, self._test_name, driver_output, expected_driver_output, test_result.failures)
         return test_result
