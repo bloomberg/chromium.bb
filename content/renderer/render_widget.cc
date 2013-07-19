@@ -1398,8 +1398,6 @@ void RenderWidget::Composite(base::TimeTicks frame_begin_time) {
 // WebWidgetClient
 
 void RenderWidget::didInvalidateRect(const WebRect& rect) {
-  TRACE_EVENT2("renderer", "RenderWidget::didInvalidateRect",
-               "width", rect.width, "height", rect.height);
   // The invalidated rect might be outside the bounds of the view.
   gfx::Rect view_rect(size_);
   gfx::Rect damaged_rect = gfx::IntersectRects(view_rect, rect);
@@ -1633,7 +1631,6 @@ void RenderWidget::didCompleteSwapBuffers() {
 }
 
 void RenderWidget::scheduleComposite() {
-  TRACE_EVENT0("gpu", "RenderWidget::scheduleComposite");
   if (RenderThreadImpl::current()->compositor_message_loop_proxy().get() &&
       compositor_) {
     compositor_->setNeedsRedraw();
