@@ -44,7 +44,6 @@ class TestBrowserThreadBundle {
     DEFAULT = 0x00,
     IO_MAINLOOP = 0x01,
     REAL_DB_THREAD = 0x02,
-    REAL_WEBKIT_DEPRECATED_THREAD = 0x04,
     REAL_FILE_THREAD = 0x08,
     REAL_FILE_USER_BLOCKING_THREAD = 0x10,
     REAL_PROCESS_LAUNCHER_THREAD = 0x20,
@@ -63,7 +62,6 @@ class TestBrowserThreadBundle {
   scoped_ptr<base::MessageLoop> message_loop_;
   scoped_ptr<TestBrowserThread> ui_thread_;
   scoped_ptr<TestBrowserThread> db_thread_;
-  scoped_ptr<TestBrowserThread> webkit_deprecated_thread_;
   scoped_ptr<TestBrowserThread> file_thread_;
   scoped_ptr<TestBrowserThread> file_user_blocking_thread_;
   scoped_ptr<TestBrowserThread> process_launcher_thread_;

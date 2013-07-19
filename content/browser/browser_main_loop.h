@@ -37,7 +37,6 @@ class MediaStreamManager;
 class ResourceDispatcherHostImpl;
 class SpeechRecognitionManagerImpl;
 class SystemMessageWindowWin;
-class WebKitThread;
 struct MainFunctionParams;
 
 #if defined(OS_LINUX)
@@ -136,9 +135,6 @@ class CONTENT_EXPORT BrowserMainLoop {
 
   // Members initialized in |RunMainMessageLoopParts()| ------------------------
   scoped_ptr<BrowserProcessSubThread> db_thread_;
-#if !defined(OS_IOS)
-  scoped_ptr<WebKitThread> webkit_thread_;
-#endif
   scoped_ptr<BrowserProcessSubThread> file_user_blocking_thread_;
   scoped_ptr<BrowserProcessSubThread> file_thread_;
   scoped_ptr<BrowserProcessSubThread> process_launcher_thread_;

@@ -34,8 +34,6 @@ TestBrowserThreadBundle::~TestBrowserThreadBundle() {
   base::RunLoop().RunUntilIdle();
   file_thread_.reset();
   base::RunLoop().RunUntilIdle();
-  webkit_deprecated_thread_.reset();
-  base::RunLoop().RunUntilIdle();
   db_thread_.reset();
   base::RunLoop().RunUntilIdle();
   ui_thread_.reset();
@@ -58,16 +56,6 @@ void TestBrowserThreadBundle::Init(int options) {
   } else {
     db_thread_.reset(new TestBrowserThread(BrowserThread::DB,
                                            message_loop_.get()));
-  }
-
-  if (options & REAL_WEBKIT_DEPRECATED_THREAD) {
-    webkit_deprecated_thread_.reset(
-        new TestBrowserThread(BrowserThread::WEBKIT_DEPRECATED));
-    webkit_deprecated_thread_->Start();
-  } else {
-    webkit_deprecated_thread_.reset(
-        new TestBrowserThread(BrowserThread::WEBKIT_DEPRECATED,
-                              message_loop_.get()));
   }
 
   if (options & REAL_FILE_THREAD) {

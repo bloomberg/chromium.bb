@@ -82,7 +82,6 @@ class ExtensionServiceTestBase : public testing::Test {
   size_t expected_extensions_count_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread db_thread_;
-  content::TestBrowserThread webkit_thread_;
   content::TestBrowserThread file_thread_;
   content::TestBrowserThread file_user_blocking_thread_;
   content::TestBrowserThread io_thread_;

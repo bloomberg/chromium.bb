@@ -42,7 +42,6 @@ class CONTENT_EXPORT BrowserThreadImpl : public BrowserThread,
   // the thread id from the callstack alone in crash dumps.
   void UIThreadRun(base::MessageLoop* message_loop);
   void DBThreadRun(base::MessageLoop* message_loop);
-  void WebKitThreadRun(base::MessageLoop* message_loop);
   void FileThreadRun(base::MessageLoop* message_loop);
   void FileUserBlockingThreadRun(base::MessageLoop* message_loop);
   void ProcessLauncherThreadRun(base::MessageLoop* message_loop);

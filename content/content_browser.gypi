@@ -558,8 +558,6 @@
     'browser/hyphenator/hyphenator_message_filter.h',
     'browser/in_process_webkit/browser_webkitplatformsupport_impl.cc',
     'browser/in_process_webkit/browser_webkitplatformsupport_impl.h',
-    'browser/in_process_webkit/webkit_thread.cc',
-    'browser/in_process_webkit/webkit_thread.h',
     'browser/indexed_db/indexed_db.h',
     'browser/indexed_db/indexed_db_backing_store.cc',
     'browser/indexed_db/indexed_db_backing_store.h',

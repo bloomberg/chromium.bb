@@ -238,24 +238,23 @@ class ThreadWatcherTest : public ::testing::Test {
   static const TimeDelta kUnresponsiveTime;
   static const BrowserThread::ID io_thread_id;
   static const std::string io_thread_name;
-  static const BrowserThread::ID webkit_thread_id;
-  static const std::string webkit_thread_name;
+  static const BrowserThread::ID db_thread_id;
+  static const std::string db_thread_name;
   static const std::string crash_on_hang_seconds;
   static const std::string crash_on_hang_thread_names;
   static const std::string thread_names_and_live_threshold;
   static const std::string crash_on_hang_thread_data;
   CustomThreadWatcher* io_watcher_;
-  CustomThreadWatcher* webkit_watcher_;
+  CustomThreadWatcher* db_watcher_;
   ThreadWatcherList* thread_watcher_list_;
 
   ThreadWatcherTest()
       : setup_complete_(&lock_),
         initialized_(false) {
-    webkit_thread_.reset(new content::TestBrowserThread(
-        BrowserThread::WEBKIT_DEPRECATED));
+    db_thread_.reset(new content::TestBrowserThread(BrowserThread::DB));
     io_thread_.reset(new content::TestBrowserThread(BrowserThread::IO));
     watchdog_thread_.reset(new WatchDogThread());
-    webkit_thread_->Start();
+    db_thread_->Start();
     io_thread_->Start();
     watchdog_thread_->Start();
 
@@ -277,10 +276,10 @@ class ThreadWatcherTest : public ::testing::Test {
                                           kSleepTime, kUnresponsiveTime);
     EXPECT_EQ(io_watcher_, thread_watcher_list_->Find(io_thread_id));
 
-    // Create thread watcher object for the WEBKIT thread.
-    webkit_watcher_ = new CustomThreadWatcher(
-        webkit_thread_id, webkit_thread_name, kSleepTime, kUnresponsiveTime);
-    EXPECT_EQ(webkit_watcher_, thread_watcher_list_->Find(webkit_thread_id));
+    // Create thread watcher object for the DB thread.
+    db_watcher_ = new CustomThreadWatcher(
+        db_thread_id, db_thread_name, kSleepTime, kUnresponsiveTime);
+    EXPECT_EQ(db_watcher_, thread_watcher_list_->Find(db_thread_id));
 
     {
       base::AutoLock lock(lock_);
@@ -302,9 +301,9 @@ class ThreadWatcherTest : public ::testing::Test {
   virtual ~ThreadWatcherTest() {
     ThreadWatcherList::DeleteAll();
     io_watcher_ = NULL;
-    webkit_watcher_ = NULL;
+    db_watcher_ = NULL;
     io_thread_.reset();
-    webkit_thread_.reset();
+    db_thread_.reset();
     watchdog_thread_.reset();
     thread_watcher_list_ = NULL;
   }
@@ -313,7 +312,7 @@ class ThreadWatcherTest : public ::testing::Test {
   base::Lock lock_;
   base::ConditionVariable setup_complete_;
   bool initialized_;
-  scoped_ptr<content::TestBrowserThread> webkit_thread_;
+  scoped_ptr<content::TestBrowserThread> db_thread_;
   scoped_ptr<content::TestBrowserThread> io_thread_;
   scoped_ptr<WatchDogThread> watchdog_thread_;
 };
@@ -325,9 +324,8 @@ const TimeDelta ThreadWatcherTest::kUnresponsiveTime =
     TimeDelta::FromMilliseconds(500);
 const BrowserThread::ID ThreadWatcherTest::io_thread_id = BrowserThread::IO;
 const std::string ThreadWatcherTest::io_thread_name = "IO";
-const BrowserThread::ID ThreadWatcherTest::webkit_thread_id =
-    BrowserThread::WEBKIT_DEPRECATED;
-const std::string ThreadWatcherTest::webkit_thread_name = "WEBKIT";
+const BrowserThread::ID ThreadWatcherTest::db_thread_id = BrowserThread::DB;
+const std::string ThreadWatcherTest::db_thread_name = "DB";
 const std::string ThreadWatcherTest::crash_on_hang_thread_names = "UI,IO";
 const std::string ThreadWatcherTest::thread_names_and_live_threshold =
     "UI:4,IO:4";
@@ -441,12 +439,12 @@ TEST_F(ThreadWatcherTest, Registration) {
   EXPECT_EQ(kUnresponsiveTime, io_watcher_->unresponsive_time());
   EXPECT_FALSE(io_watcher_->active());
 
-  // Check ThreadWatcher object of watched WEBKIT thread has correct data.
-  EXPECT_EQ(webkit_thread_id, webkit_watcher_->thread_id());
-  EXPECT_EQ(webkit_thread_name, webkit_watcher_->thread_name());
-  EXPECT_EQ(kSleepTime, webkit_watcher_->sleep_time());
-  EXPECT_EQ(kUnresponsiveTime, webkit_watcher_->unresponsive_time());
-  EXPECT_FALSE(webkit_watcher_->active());
+  // Check ThreadWatcher object of watched DB thread has correct data.
+  EXPECT_EQ(db_thread_id, db_watcher_->thread_id());
+  EXPECT_EQ(db_thread_name, db_watcher_->thread_name());
+  EXPECT_EQ(kSleepTime, db_watcher_->sleep_time());
+  EXPECT_EQ(kUnresponsiveTime, db_watcher_->unresponsive_time());
+  EXPECT_FALSE(db_watcher_->active());
 }
 
 // Test ActivateThreadWatching and DeActivateThreadWatching of IO thread. This
@@ -525,11 +523,11 @@ TEST_F(ThreadWatcherTest, ThreadNotResponding) {
 
 // Test watching of multiple threads with all threads not responding.
 TEST_F(ThreadWatcherTest, MultipleThreadsResponding) {
-  // Check for WEBKIT thread to perform ping/pong messaging.
+  // Check for DB thread to perform ping/pong messaging.
   WatchDogThread::PostTask(
       FROM_HERE,
       base::Bind(&ThreadWatcher::ActivateThreadWatching,
-                 base::Unretained(webkit_watcher_)));
+                 base::Unretained(db_watcher_)));
 
   // Check for IO thread to perform ping/pong messaging.
   WatchDogThread::PostTask(
@@ -537,14 +535,14 @@ TEST_F(ThreadWatcherTest, MultipleThreadsResponding) {
       base::Bind(&ThreadWatcher::ActivateThreadWatching,
                  base::Unretained(io_watcher_)));
 
-  // Verify WEBKIT thread is responding with ping/pong messaging.
-  webkit_watcher_->WaitForCheckResponse(
+  // Verify DB thread is responding with ping/pong messaging.
+  db_watcher_->WaitForCheckResponse(
       kUnresponsiveTime + TimeDelta::FromMinutes(1), SUCCESSFUL);
-  EXPECT_GT(webkit_watcher_->ping_sent_, static_cast<uint64>(0));
-  EXPECT_GT(webkit_watcher_->pong_received_, static_cast<uint64>(0));
-  EXPECT_GE(webkit_watcher_->ping_sequence_number_, static_cast<uint64>(0));
-  EXPECT_GT(webkit_watcher_->success_response_, static_cast<uint64>(0));
-  EXPECT_EQ(webkit_watcher_->failed_response_, static_cast<uint64>(0));
+  EXPECT_GT(db_watcher_->ping_sent_, static_cast<uint64>(0));
+  EXPECT_GT(db_watcher_->pong_received_, static_cast<uint64>(0));
+  EXPECT_GE(db_watcher_->ping_sequence_number_, static_cast<uint64>(0));
+  EXPECT_GT(db_watcher_->success_response_, static_cast<uint64>(0));
+  EXPECT_EQ(db_watcher_->failed_response_, static_cast<uint64>(0));
 
   // Verify IO thread is responding with ping/pong messaging.
   io_watcher_->WaitForCheckResponse(
@@ -564,7 +562,7 @@ TEST_F(ThreadWatcherTest, MultipleThreadsResponding) {
   WatchDogThread::PostTask(
       FROM_HERE,
       base::Bind(&ThreadWatcher::DeActivateThreadWatching,
-                 base::Unretained(webkit_watcher_)));
+                 base::Unretained(db_watcher_)));
 }
 
 // Test watching of multiple threads with one of the threads not responding.
@@ -580,11 +578,11 @@ TEST_F(ThreadWatcherTest, MultipleThreadsNotResponding) {
                  base::Unretained(io_watcher_),
                  kUnresponsiveTime * 10));
 
-  // Activate watching of WEBKIT thread.
+  // Activate watching of DB thread.
   WatchDogThread::PostTask(
       FROM_HERE,
       base::Bind(&ThreadWatcher::ActivateThreadWatching,
-                 base::Unretained(webkit_watcher_)));
+                 base::Unretained(db_watcher_)));
 
   // Activate watching of IO thread.
   WatchDogThread::PostTask(
@@ -592,11 +590,11 @@ TEST_F(ThreadWatcherTest, MultipleThreadsNotResponding) {
       base::Bind(&ThreadWatcher::ActivateThreadWatching,
                  base::Unretained(io_watcher_)));
 
-  // Verify WEBKIT thread is responding with ping/pong messaging.
-  webkit_watcher_->WaitForCheckResponse(
+  // Verify DB thread is responding with ping/pong messaging.
+  db_watcher_->WaitForCheckResponse(
       kUnresponsiveTime + TimeDelta::FromMinutes(1), SUCCESSFUL);
-  EXPECT_GT(webkit_watcher_->success_response_, static_cast<uint64>(0));
-  EXPECT_EQ(webkit_watcher_->failed_response_, static_cast<uint64>(0));
+  EXPECT_GT(db_watcher_->success_response_, static_cast<uint64>(0));
+  EXPECT_EQ(db_watcher_->failed_response_, static_cast<uint64>(0));
 
   // Verify IO thread is not responding for ping messages.
   io_watcher_->WaitForCheckResponse(
@@ -612,7 +610,7 @@ TEST_F(ThreadWatcherTest, MultipleThreadsNotResponding) {
   WatchDogThread::PostTask(
       FROM_HERE,
       base::Bind(&ThreadWatcher::DeActivateThreadWatching,
-                 base::Unretained(webkit_watcher_)));
+                 base::Unretained(db_watcher_)));
 
   // Wait for the io_watcher_'s VeryLongMethod to finish.
   io_watcher_->WaitForWaitStateChange(kUnresponsiveTime * 10, ALL_DONE);

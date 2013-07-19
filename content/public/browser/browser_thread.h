@@ -64,12 +64,6 @@ class CONTENT_EXPORT BrowserThread {
     // This is the thread that interacts with the database.
     DB,
 
-    // This is the "main" thread for WebKit within the browser process when
-    // NOT in --single-process mode.
-    // Deprecated: Do not design new code to use this thread; see
-    // http://crbug.com/106839
-    WEBKIT_DEPRECATED,
-
     // This is the thread that interacts with the file system.
     FILE,
 

@@ -63,10 +63,6 @@ NOINLINE void ThreadUnresponsive_DB() {
   NullPointerCrash(__LINE__);
 }
 
-NOINLINE void ThreadUnresponsive_WEBKIT() {
-  NullPointerCrash(__LINE__);
-}
-
 NOINLINE void ThreadUnresponsive_FILE() {
   NullPointerCrash(__LINE__);
 }
@@ -98,8 +94,6 @@ void CrashBecauseThreadWasUnresponsive(BrowserThread::ID thread_id) {
       return ThreadUnresponsive_UI();
     case BrowserThread::DB:
       return ThreadUnresponsive_DB();
-    case BrowserThread::WEBKIT_DEPRECATED:
-      return ThreadUnresponsive_WEBKIT();
     case BrowserThread::FILE:
       return ThreadUnresponsive_FILE();
     case BrowserThread::FILE_USER_BLOCKING:

@@ -27,7 +27,6 @@
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/gpu/gpu_process_host_ui_shim.h"
 #include "content/browser/histogram_synchronizer.h"
-#include "content/browser/in_process_webkit/webkit_thread.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/net/browser_online_state_observer.h"
 #include "content/browser/plugin_service_impl.h"
@@ -526,13 +525,6 @@ void BrowserMainLoop::CreateThreads() {
             "Thread", "BrowserThread::DB");
         thread_to_start = &db_thread_;
         break;
-      case BrowserThread::WEBKIT_DEPRECATED:
-        // Special case as WebKitThread is a separate
-        // type.  |thread_to_start| is not used in this case.
-        TRACE_EVENT_BEGIN1("startup",
-            "BrowserMainLoop::CreateThreads:start",
-            "Thread", "BrowserThread::WEBKIT_DEPRECATED");
-        break;
       case BrowserThread::FILE_USER_BLOCKING:
         TRACE_EVENT_BEGIN1("startup",
             "BrowserMainLoop::CreateThreads:start",
@@ -582,12 +574,7 @@ void BrowserMainLoop::CreateThreads() {
 
     BrowserThread::ID id = static_cast<BrowserThread::ID>(thread_id);
 
-    if (thread_id == BrowserThread::WEBKIT_DEPRECATED) {
-#if !defined(OS_IOS)
-      webkit_thread_.reset(new WebKitThread);
-      webkit_thread_->Initialize();
-#endif
-    } else if (thread_to_start) {
+    if (thread_to_start) {
       (*thread_to_start).reset(new BrowserProcessSubThread(id));
       (*thread_to_start)->StartWithOptions(*options);
     } else {
@@ -689,27 +676,10 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
     //   the IO thread posted a task to terminate a process on the
     //   process launcher thread.
     //
-    // - (Not sure why FILE needs to stop before WEBKIT.)
-    //
-    // - The WEBKIT thread (which currently is the responsibility of
-    //   the embedder to stop, by destroying ResourceDispatcherHost
-    //   before the DB thread is stopped)
-    //
     // - (Not sure why DB stops last.)
     switch (thread_id) {
       case BrowserThread::DB:
         db_thread_.reset();
-        break;
-      case BrowserThread::WEBKIT_DEPRECATED:
-        // Special case as WebKitThread is a separate
-        // type.  |thread_to_stop| is not used in this case.
-
-        // Need to destroy ResourceDispatcherHost before PluginService
-        // and since it caches a pointer to it.
-        resource_dispatcher_host_.reset();
-#if !defined(OS_IOS)
-        webkit_thread_.reset();
-#endif
         break;
       case BrowserThread::FILE_USER_BLOCKING:
         file_user_blocking_thread_.reset();

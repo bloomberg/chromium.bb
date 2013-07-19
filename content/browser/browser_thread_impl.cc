@@ -24,7 +24,6 @@ namespace {
 static const char* g_browser_thread_names[BrowserThread::ID_COUNT] = {
   "",  // UI (name assembled in browser_main.cc).
   "Chrome_DBThread",  // DB
-  "Chrome_WebKitThread",  // WEBKIT_DEPRECATED
   "Chrome_FileThread",  // FILE
   "Chrome_FileUserBlockingThread",  // FILE_USER_BLOCKING
   "Chrome_ProcessLauncherThread",  // PROCESS_LAUNCHER
@@ -130,13 +129,6 @@ NOINLINE void BrowserThreadImpl::DBThreadRun(base::MessageLoop* message_loop) {
   CHECK_GT(line_number, 0);
 }
 
-NOINLINE void BrowserThreadImpl::WebKitThreadRun(
-    base::MessageLoop* message_loop) {
-  volatile int line_number = __LINE__;
-  Thread::Run(message_loop);
-  CHECK_GT(line_number, 0);
-}
-
 NOINLINE void BrowserThreadImpl::FileThreadRun(
     base::MessageLoop* message_loop) {
   volatile int line_number = __LINE__;
@@ -184,8 +176,6 @@ void BrowserThreadImpl::Run(base::MessageLoop* message_loop) {
       return UIThreadRun(message_loop);
     case BrowserThread::DB:
       return DBThreadRun(message_loop);
-    case BrowserThread::WEBKIT_DEPRECATED:
-      return WebKitThreadRun(message_loop);
     case BrowserThread::FILE:
       return FileThreadRun(message_loop);
     case BrowserThread::FILE_USER_BLOCKING:
