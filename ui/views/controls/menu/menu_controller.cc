@@ -91,11 +91,6 @@ bool TitleMatchesMnemonic(MenuItemView* menu, char16 key) {
 
 }  // namespace
 
-// Convenience for scrolling the view such that the origin is visible.
-static void ScrollToVisible(View* view) {
-  view->ScrollRectToVisible(view->GetLocalBounds());
-}
-
 // Returns the first descendant of |view| that is hot tracked.
 static View* GetFirstHotTrackedView(View* view) {
   if (!view)
@@ -796,7 +791,7 @@ void MenuController::SetSelection(MenuItemView* menu_item,
 
   // Notify the new path it is selected.
   for (size_t i = paths_differ_at; i < new_size; ++i) {
-    ScrollToVisible(new_path[i]);
+    new_path[i]->ScrollRectToVisible(new_path[i]->GetLocalBounds());
     new_path[i]->SetSelected(true);
   }
 
@@ -1889,7 +1884,6 @@ void MenuController::IncrementSelection(int delta) {
     // select the first menu item.
     if (item->GetSubmenu()->GetMenuItemCount()) {
       SetSelection(item->GetSubmenu()->GetMenuItemAt(0), SELECTION_DEFAULT);
-      ScrollToVisible(item->GetSubmenu()->GetMenuItemAt(0));
       return;
     }
   }
@@ -1928,7 +1922,6 @@ void MenuController::IncrementSelection(int delta) {
               FindNextSelectableMenuItem(parent, i, delta);
           if (!to_select)
             break;
-          ScrollToVisible(to_select);
           SetSelection(to_select, SELECTION_DEFAULT);
           View* to_make_hot = GetInitialFocusableView(to_select, delta == 1);
           if (to_make_hot && !strcmp(to_make_hot->GetClassName(),

@@ -149,12 +149,23 @@ class MenuScrollViewContainer::MenuScrollView : public View {
   virtual void ScrollRectToVisible(const gfx::Rect& rect) OVERRIDE {
     // NOTE: this assumes we only want to scroll in the y direction.
 
+    // If the rect is already visible, do not scroll.
+    if (GetLocalBounds().Contains(rect))
+      return;
+
+    // Scroll just enough so that the rect is visible.
+    int dy = 0;
+    if (rect.bottom() > GetLocalBounds().bottom())
+      dy = rect.bottom() - GetLocalBounds().bottom();
+    else
+      dy = rect.y();
+
     // Convert rect.y() to view's coordinates and make sure we don't show past
     // the bottom of the view.
     View* child = GetContents();
     child->SetY(-std::max(0, std::min(
         child->GetPreferredSize().height() - this->height(),
-        rect.y() - child->y())));
+        dy - child->y())));
   }
 
   // Returns the contents, which is the SubmenuView.
