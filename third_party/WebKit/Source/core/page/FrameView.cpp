@@ -943,19 +943,6 @@ void FrameView::layout(bool allowSubtree)
 
         m_nestedLayoutCount++;
 
-        if (!m_layoutRoot) {
-            Document* document = m_frame->document();
-            Node* body = document->body();
-            if (body && body->renderer()) {
-                if (body->hasTagName(framesetTag)) {
-                    body->renderer()->setChildNeedsLayout(true);
-                } else if (body->hasTagName(bodyTag)) {
-                    if (!m_firstLayout && m_size.height() != layoutHeight() && body->renderer()->enclosingBox()->stretchesToViewport())
-                        body->renderer()->setChildNeedsLayout(true);
-                }
-            }
-        }
-
         autoSizeIfEnabled();
 
         ScrollbarMode hMode;
