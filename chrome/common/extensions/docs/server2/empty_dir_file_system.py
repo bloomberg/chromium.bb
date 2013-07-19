@@ -21,3 +21,6 @@ class EmptyDirFileSystem(FileSystem):
     if not path.endswith('/'):
       raise FileNotFoundError('EmptyDirFileSystem cannot stat %s' % path)
     return StatInfo(0, child_versions=[])
+
+  def GetIdentity(self):
+    return self.__class__.__name__

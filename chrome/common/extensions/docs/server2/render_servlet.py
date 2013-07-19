@@ -8,7 +8,6 @@ import mimetypes
 import traceback
 from urlparse import urlsplit
 
-from branch_utility import BranchUtility
 from file_system import FileNotFoundError
 from servlet import Servlet, Response
 import svn_constants
@@ -21,43 +20,34 @@ class RenderServlet(Servlet):
   '''Servlet which renders templates.
   '''
   class Delegate(object):
-    def CreateServerInstanceForChannel(self, channel):
-      raise NotImplementedError()
+    def CreateServerInstance(self):
+      raise NotImplementedError(self.__class__)
 
-  def __init__(self, request, delegate, default_channel='stable'):
+  def __init__(self, request, delegate):
     Servlet.__init__(self, request)
     self._delegate = delegate
-    self._default_channel = default_channel
 
   def Get(self):
     ''' Render the page for a request.
     '''
-    headers = self._request.headers
-    channel, path = BranchUtility.SplitChannelNameFromPath(self._request.path)
+    # TODO(kalman): a consistent path syntax (even a Path class?) so that we
+    # can stop being so conservative with stripping and adding back the '/'s.
+    path = self._request.path.lstrip('/')
 
     if path.split('/')[-1] == 'redirects.json':
       return Response.Ok('')
 
-    if channel == self._default_channel:
-      return Response.Redirect('/' + path)
-    if channel is None:
-      channel = self._default_channel
-
-    server_instance = self._delegate.CreateServerInstanceForChannel(channel)
+    server_instance = self._delegate.CreateServerInstance()
 
     redirect = server_instance.redirector.Redirect(self._request.host, path)
     if redirect is not None:
-      if (channel != self._default_channel and
-          not urlsplit(redirect).scheme in ('http', 'https')):
-        redirect = '/%s%s' % (channel, redirect)
       return Response.Redirect(redirect)
 
-    canonical_path = server_instance.path_canonicalizer.Canonicalize(path)
-    redirect = canonical_path.lstrip('/')
+    canonical_result = server_instance.path_canonicalizer.Canonicalize(path)
+    redirect = canonical_result.path.lstrip('/')
     if path != redirect:
-      if channel is not None:
-        redirect = '%s/%s' % (channel, canonical_path)
-      return Response.Redirect('/' + redirect)
+      return Response.Redirect('/' + redirect,
+                               permanent=canonical_result.permanent)
 
     templates = server_instance.template_data_source_factory.Create(
         self._request, path)

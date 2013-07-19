@@ -15,8 +15,8 @@ class Request(object):
     return Request(path, host, headers or {})
 
   def __repr__(self):
-    return 'Request(path=%s, host=%s, headers=%s entries)' % (
-        self.path, self.host, len(self.headers.keys()))
+    return 'Request(path=%s, host=%s, headers=%s)' % (
+        self.path, self.host, self.headers)
 
   def __str__(self):
     return repr(self)
@@ -105,9 +105,18 @@ class Response(object):
       return (None, None)
     return (self.headers.get('Location'), self.status == 301)
 
+  def __eq__(self, other):
+    return (isinstance(other, self.__class__) and
+            str(other.content) == str(self.content) and
+            other.headers == self.headers and
+            other.status == self.status)
+
+  def __ne__(self, other):
+    return not (self == other)
+
   def __repr__(self):
-    return 'Response(content=%s bytes, status=%s, headers=%s entries)' % (
-        len(self.content), self.status, len(self.headers.keys()))
+    return 'Response(content=%s bytes, status=%s, headers=%s)' % (
+        len(self.content), self.status, self.headers)
 
   def __str__(self):
     return repr(self)

@@ -12,10 +12,12 @@ from itertools import groupby
 from operator import itemgetter
 import optparse
 import os
+import posixpath
 import sys
 import time
 import unittest
 
+from branch_utility import BranchUtility
 from link_error_detector import LinkErrorDetector
 from local_file_system import LocalFileSystem
 from local_renderer import LocalRenderer
@@ -124,7 +126,23 @@ class IntegrationTest(unittest.TestCase):
           # that render large files. At least it'll catch zero-length responses.
           self.assertTrue(len(response.content) >= len(content),
               'Content was "%s" when rendering %s' % (response.content, path))
+
         check_result(Handler(Request.ForTest(path)).Get())
+
+        # Make sure that leaving out the .html will temporarily redirect to the
+        # path with the .html.
+        if path != '/404.html':
+          redirect_result = Handler(
+              Request.ForTest(posixpath.splitext(path)[0])).Get()
+          self.assertEqual((path, False), redirect_result.GetRedirect())
+
+        # Make sure including a channel will permanently redirect to the same
+        # path without a channel.
+        for channel in BranchUtility.GetAllChannelNames():
+          redirect_result = Handler(
+              Request.ForTest('%s/%s' % (channel, path))).Get()
+          self.assertEqual((path, True), redirect_result.GetRedirect())
+
         # Samples are internationalized, test some locales.
         if path.endswith('/samples.html'):
           for lang in ['en-US', 'es', 'ar']:

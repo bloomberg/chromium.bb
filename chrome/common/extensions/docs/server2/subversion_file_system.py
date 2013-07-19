@@ -54,12 +54,11 @@ class SubversionFileSystem(FileSystem):
   '''Class to fetch resources from src.chromium.org.
   '''
   @staticmethod
-  def Create(branch, revision=None):
+  def Create(branch='trunk', revision=None):
     if branch == 'trunk':
       svn_path = 'trunk/src/%s' % svn_constants.EXTENSIONS_PATH
     else:
-      svn_path = 'branches/%s/src/%s' % (branch,
-                                         svn_constants.EXTENSIONS_PATH)
+      svn_path = 'branches/%s/src/%s' % (branch, svn_constants.EXTENSIONS_PATH)
     return SubversionFileSystem(
         AppEngineUrlFetcher('%s/%s' % (url_constants.SVN_URL, svn_path)),
         AppEngineUrlFetcher('%s/%s' % (url_constants.VIEWVC_URL, svn_path)),

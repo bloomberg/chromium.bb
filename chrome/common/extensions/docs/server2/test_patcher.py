@@ -33,3 +33,6 @@ class TestPatcher(Patcher):
                                for path in paths))
     except KeyError:
       raise FileNotFoundError('One of %s is deleted in the patch.' % paths)
+
+  def GetIdentity(self):
+    return self.__class__.__name__

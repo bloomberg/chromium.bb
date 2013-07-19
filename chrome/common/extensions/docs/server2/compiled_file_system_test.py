@@ -30,8 +30,7 @@ _TEST_DATA = {
 def _CreateFactory():
   return CompiledFileSystem.Factory(
       TestFileSystem(deepcopy(_TEST_DATA)),
-      ObjectStoreCreator('test',
-                         start_empty=False,
+      ObjectStoreCreator(start_empty=False,
                          store_type=TestObjectStore,
                          disable_wrappers=True))
 
@@ -40,8 +39,9 @@ class CompiledFileSystemTest(unittest.TestCase):
     factory = _CreateFactory()
     compiled_fs = factory.CreateIdentity(CompiledFileSystemTest)
     self.assertEqual(
-        'class=CompiledFileSystem&category=CompiledFileSystemTest/file&'
-            'channel=test&app_version=%s' % GetAppVersion(),
+        'class=CompiledFileSystem&'
+            'category=CompiledFileSystemTest/TestFileSystem/file&'
+            'app_version=%s' % GetAppVersion(),
         compiled_fs._file_object_store.namespace)
 
   def testIdentityFromFile(self):
@@ -73,16 +73,20 @@ class CompiledFileSystemTest(unittest.TestCase):
     factory = _CreateFactory()
     f = lambda x: x
     CheckNamespace(
-        'class=CompiledFileSystem&category=CompiledFileSystemTest/file&'
-            'channel=test&app_version=%s' % GetAppVersion(),
-        'class=CompiledFileSystem&category=CompiledFileSystemTest/list&'
-            'channel=test&app_version=%s' % GetAppVersion(),
+        'class=CompiledFileSystem&'
+            'category=CompiledFileSystemTest/TestFileSystem/file&'
+            'app_version=%s' % GetAppVersion(),
+        'class=CompiledFileSystem&'
+            'category=CompiledFileSystemTest/TestFileSystem/list&'
+            'app_version=%s' % GetAppVersion(),
         factory.Create(f, CompiledFileSystemTest))
     CheckNamespace(
-        'class=CompiledFileSystem&category=CompiledFileSystemTest/foo/file&'
-            'channel=test&app_version=%s' % GetAppVersion(),
-        'class=CompiledFileSystem&category=CompiledFileSystemTest/foo/list&'
-            'channel=test&app_version=%s' % GetAppVersion(),
+        'class=CompiledFileSystem&'
+            'category=CompiledFileSystemTest/TestFileSystem/foo/file&'
+            'app_version=%s' % GetAppVersion(),
+        'class=CompiledFileSystem&'
+            'category=CompiledFileSystemTest/TestFileSystem/foo/list&'
+            'app_version=%s' % GetAppVersion(),
         factory.Create(f, CompiledFileSystemTest, category='foo'))
 
   def testPopulateFromFile(self):

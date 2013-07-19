@@ -67,12 +67,13 @@ class CachingRietveldPatcher(Patcher):
                object_store_creator,
                test_datetime=datetime):
     self._patcher = rietveld_patcher
-    self._version_object_store = object_store_creator.Create(
-        CachingRietveldPatcher, category='version')
-    self._list_object_store = object_store_creator.Create(
-        CachingRietveldPatcher, category='list')
-    self._file_object_store = object_store_creator.Create(
-        CachingRietveldPatcher, category='file')
+    def create_object_store(category):
+      return object_store_creator.Create(
+          CachingRietveldPatcher,
+          category='%s/%s' % (rietveld_patcher.GetIdentity(), category))
+    self._version_object_store = create_object_store('version')
+    self._list_object_store = create_object_store('list')
+    self._file_object_store = create_object_store('file')
     self._datetime = test_datetime
 
   def GetVersion(self):
@@ -124,3 +125,6 @@ class CachingRietveldPatcher(Patcher):
                                                     True,
                                                     version),
                                 self._file_object_store)
+
+  def GetIdentity(self):
+    return self._patcher.GetIdentity()

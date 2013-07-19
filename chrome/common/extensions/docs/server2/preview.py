@@ -23,9 +23,6 @@
 #    ./preview.py -r extensions/tabs.html
 #
 # will output the documentation for the tabs API on stdout and exit immediately.
-#
-# Note: absolute paths into static content (e.g. /static/css/site.css) will be
-# relative paths (e.g. static/css/site.css) for convenient sandboxing.
 
 # NOTE: RUN THIS FIRST. Or all third_party imports will fail.
 import build_server
@@ -91,9 +88,7 @@ if __name__ == '__main__':
     if opts.time:
       print('Took %s seconds' % (time.time() - start_time))
     else:
-      # Static paths will show up as /trunk/static/foo but this only makes
-      # sense from a webserver.
-      print(response.content.ToString().replace('/trunk/', ''))
+      print(response.content.ToString())
     exit()
 
   print('Starting previewserver on port %s' % opts.port)

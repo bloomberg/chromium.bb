@@ -4,7 +4,6 @@
 
 import logging
 
-from branch_utility import BranchUtility
 from docs_server_utils import FormatKey
 from file_system import FileNotFoundError
 from third_party.handlebar import Handlebar
@@ -21,16 +20,6 @@ _STRING_CONSTANTS = {
   'methods': 'methods',
   'properties': 'properties',
   }
-
-def _MakeChannelDict(channel_name):
-  channel_dict = {
-    'channels': [{'name': name} for name in BranchUtility.GetAllChannelNames()],
-    'current': channel_name
-  }
-  for channel in channel_dict['channels']:
-    if channel['name'] == channel_name:
-      channel['isCurrent'] = True
-  return channel_dict
 
 class TemplateDataSource(object):
   """Renders Handlebar templates, providing them with the context in which to
@@ -49,7 +38,6 @@ class TemplateDataSource(object):
     individual Requests.
     """
     def __init__(self,
-                 channel_name,
                  api_data_source_factory,
                  api_list_data_source_factory,
                  intro_data_source_factory,
@@ -60,7 +48,6 @@ class TemplateDataSource(object):
                  public_template_path,
                  private_template_path,
                  base_path):
-      self._branch_info = _MakeChannelDict(channel_name)
       self._api_data_source_factory = api_data_source_factory
       self._api_list_data_source_factory = api_list_data_source_factory
       self._intro_data_source_factory = intro_data_source_factory
@@ -71,7 +58,7 @@ class TemplateDataSource(object):
       self._ref_resolver = ref_resolver_factory.Create()
       self._public_template_path = public_template_path
       self._private_template_path = private_template_path
-      self._static_resources = '%s/static' % base_path
+      self._base_path = base_path
 
     def _CreateTemplate(self, template_name, text):
       return Handlebar(self._ref_resolver.ResolveAllLinks(text))
@@ -80,7 +67,6 @@ class TemplateDataSource(object):
       """Returns a new TemplateDataSource bound to |request|.
       """
       return TemplateDataSource(
-          self._branch_info,
           self._api_data_source_factory.Create(request),
           self._api_list_data_source_factory.Create(),
           self._intro_data_source_factory.Create(),
@@ -89,10 +75,9 @@ class TemplateDataSource(object):
           self._cache,
           self._public_template_path,
           self._private_template_path,
-          self._static_resources)
+          self._base_path)
 
   def __init__(self,
-               branch_info,
                api_data_source,
                api_list_data_source,
                intro_data_source,
@@ -101,8 +86,7 @@ class TemplateDataSource(object):
                cache,
                public_template_path,
                private_template_path,
-               static_resources):
-    self._branch_info = branch_info
+               base_path):
     self._api_list_data_source = api_list_data_source
     self._intro_data_source = intro_data_source
     self._samples_data_source = samples_data_source
@@ -111,7 +95,7 @@ class TemplateDataSource(object):
     self._cache = cache
     self._public_template_path = public_template_path
     self._private_template_path = private_template_path
-    self._static_resources = static_resources
+    self._base_path = base_path
 
   def Render(self, template_name):
     """This method will render a template named |template_name|, fetching all
@@ -125,19 +109,13 @@ class TemplateDataSource(object):
     render_data = template.render({
       'api_list': self._api_list_data_source,
       'apis': self._api_data_source,
-      'branchInfo': self._branch_info,
       'intros': self._intro_data_source,
       'sidenavs': self._sidenav_data_source,
       'partials': self,
       'samples': self._samples_data_source,
-      'static': self._static_resources,
       'apps_samples_url': url_constants.GITHUB_BASE,
-      # TODO(kalman): this is wrong, it's always getting from trunk, but meh
-      # it hardly ever shows up (only in the "cannot fetch samples" message).
-      # In fact I don't even know if it can show up anymore due the samples data
-      # being persisent. In any case, when the channel distinctions are gone
-      # this can go away, so, double meh.
       'extensions_samples_url': url_constants.EXTENSIONS_SAMPLES,
+      'static': self._base_path + '/static',
       'strings': _STRING_CONSTANTS,
       'true': True,
       'false': False

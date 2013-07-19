@@ -18,13 +18,10 @@ class ChannelInfo(object):
 class BranchUtility(object):
   def __init__(self, fetch_url, history_url, fetcher, object_store_creator):
     self._fetcher = fetcher
-    # BranchUtility is obviously cross-channel, so set the channel to None.
-    self._branch_object_store = object_store_creator.Create(BranchUtility,
-                                                            category='branch',
-                                                            channel=None)
-    self._version_object_store = object_store_creator.Create(BranchUtility,
-                                                             category='version',
-                                                             channel=None)
+    def create_object_store(category):
+      return object_store_creator.Create(BranchUtility, category=category)
+    self._branch_object_store = create_object_store('branch')
+    self._version_object_store = create_object_store('version')
     self._fetch_result = self._fetcher.FetchAsync(fetch_url)
     self._history_result = self._fetcher.FetchAsync(history_url)
 

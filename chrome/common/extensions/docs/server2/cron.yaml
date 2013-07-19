@@ -1,20 +1,5 @@
 cron:
-- description: Load everything for trunk.
-  url: /_cron/trunk
+- description: Repopulates all cached data.
+  url: /_cron
   schedule: every 5 minutes
-  target: 2-10-0
-
-- description: Load everything for dev.
-  url: /_cron/dev
-  schedule: every 5 minutes
-  target: 2-10-0
-
-- description: Load everything for beta.
-  url: /_cron/beta
-  schedule: every 5 minutes
-  target: 2-10-0
-
-- description: Load everything for stable.
-  url: /_cron/stable
-  schedule: every 5 minutes
-  target: 2-10-0
+  target: 2-11-0

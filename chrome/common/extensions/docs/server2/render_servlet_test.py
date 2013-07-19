@@ -8,23 +8,25 @@ import unittest
 from local_file_system import LocalFileSystem
 from render_servlet import RenderServlet
 from server_instance import ServerInstance
-from servlet import Request
+from servlet import Request, Response
 from test_util import DisableLogging, ReadFile
 
 class _RenderServletDelegate(RenderServlet.Delegate):
-  def CreateServerInstanceForChannel(self, channel):
+  def CreateServerInstance(self):
     return ServerInstance.ForTest(LocalFileSystem.Create())
 
 class RenderServletTest(unittest.TestCase):
   def testExtensionAppRedirect(self):
     request = Request.ForTest('storage.html')
-    response = RenderServlet(request, _RenderServletDelegate()).Get()
-    self.assertEqual(302, response.status)
+    self.assertEqual(
+        Response.Redirect('/extensions/storage.html', permanent=False),
+        RenderServlet(request, _RenderServletDelegate()).Get())
 
-  def testDefaultChannel(self):
+  def testChannelRedirect(self):
     request = Request.ForTest('stable/extensions/storage.html')
-    response = RenderServlet(request, _RenderServletDelegate()).Get()
-    self.assertEqual(302, response.status)
+    self.assertEqual(
+        Response.Redirect('/extensions/storage.html', permanent=True),
+        RenderServlet(request, _RenderServletDelegate()).Get())
 
   @DisableLogging('warning')
   def testNotFound(self):

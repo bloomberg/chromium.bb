@@ -35,16 +35,14 @@ class SamplesDataSourceTest(unittest.TestCase):
 
   def testLevels(self):
     sidenav_data_source = SidenavDataSource.Factory(self._compiled_fs_factory,
-                                                    self._json_path,
-                                                    '').Create('')
+                                                    self._json_path).Create('')
     sidenav_json = sidenav_data_source.get('test')
     self._CheckLevels(sidenav_json)
 
   def testSelected(self):
     sidenav_data_source = SidenavDataSource.Factory(
         self._compiled_fs_factory,
-        self._json_path,
-        '').Create('www.b.com')
+        self._json_path).Create('www.b.com')
     sidenav_json = sidenav_data_source.get('test')
     # This will be prettier once JSON is loaded with an OrderedDict.
     for item in sidenav_json:
@@ -60,8 +58,7 @@ class SamplesDataSourceTest(unittest.TestCase):
   def testAbsolutePath(self):
     sidenav_data_source = SidenavDataSource.Factory(
         self._compiled_fs_factory,
-        self._json_path,
-        '/trunk').Create('absolute_path/test.html')
+        self._json_path).Create('absolute_path/test.html')
     sidenav_json = sidenav_data_source.get('absolute_path')
     self.assertEqual(
         sidenav_json,

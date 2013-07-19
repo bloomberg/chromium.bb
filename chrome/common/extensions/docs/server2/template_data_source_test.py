@@ -66,7 +66,6 @@ class TemplateDataSourceTest(unittest.TestCase):
       path = 'extensions/foo'
       return factory.Create(Request.ForTest(path), path)
     return create_from_factory(TemplateDataSource.Factory(
-        'fake_channel',
         api_data_factory,
         self._fake_api_list_data_source_factory,
         self._fake_intro_data_source_factory,

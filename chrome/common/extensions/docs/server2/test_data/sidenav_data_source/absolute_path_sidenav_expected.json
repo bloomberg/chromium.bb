@@ -1,11 +1,11 @@
 [
   {
     "title": "H1",
-    "href": "/trunk/absolute_path/h1.html",
+    "href": "/absolute_path/h1.html",
     "level": 2
   },
   {
-    "href": "/trunk/absolute_path/h2.html",
+    "href": "/absolute_path/h2.html",
     "title": "H2",
     "level": 2,
     "items": [
@@ -20,7 +20,7 @@
           },
           {
             "title": "Y",
-            "href": "/trunk/absolute_path/y.html",
+            "href": "/absolute_path/y.html",
             "level": 4
           },
           {
@@ -30,7 +30,7 @@
           },
           {
             "title": "X3",
-            "href": "/trunk/test.html",
+            "href": "/test.html",
             "level": 4
           }
         ]
@@ -49,7 +49,7 @@
   },
   {
     "title": "X3",
-    "href": "/trunk/test.html",
+    "href": "/test.html",
     "level": 2
   }
 ]

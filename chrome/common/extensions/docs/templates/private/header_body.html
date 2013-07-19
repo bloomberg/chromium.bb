@@ -1,21 +1,16 @@
 <div id="gc-topnav">
   <table><tr>
   <td id="chrome-logo">
-    <a href="." title="Google Chrome {{title}}">
-      <img src="{{static}}/images/chrome-logo.png" alt="">
-      chrome {{platform}}s
+    <a href="/{{platform}}s/" title="Google Chrome {{title}}">
+      <img src="{{static}}/images/chrome-logo.png" alt=""> chrome
     </a>
-    <div id="branch-chooser">
-      <button id="branch-chooser-toggle"
-              class="{{branchInfo.current}}" data-menu="branch-chooser-popup">
-        {{branchInfo.current}} &#x25be;&#x202F;
+    <div id="platform-chooser">
+      <button id="platform-chooser-toggle" data-menu="platform-chooser-popup">
+        {{platform}}s &#x25be;&#x202F;
       </button>
-      <div id="branch-chooser-popup">
-        {{#branchInfo.channels}}
-        {{^isCurrent}}
-        <button class="{{name}}">{{name}}</button>
-        {{/isCurrent}}
-        {{/branchInfo.channels}}
+      <div id="platform-chooser-popup">
+        <button class="apps" data-href="/apps/about_apps.html">apps</button>
+        <button class="extensions" data-href="/extensions">extensions</button>
       </div>
     </div>
   </td>

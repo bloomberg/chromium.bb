@@ -32,23 +32,21 @@ class _OfflineRenderServletDelegate(RenderServlet.Delegate):
     self._delegate = delegate
 
   @memoize
-  def CreateServerInstanceForChannel(self, channel):
-    object_store_creator = ObjectStoreCreator(channel, start_empty=False)
+  def CreateServerInstance(self):
+    object_store_creator = ObjectStoreCreator(start_empty=False)
     branch_utility = self._delegate.CreateBranchUtility(object_store_creator)
     host_file_system_creator = self._delegate.CreateHostFileSystemCreator(
         object_store_creator)
-    host_file_system = host_file_system_creator.Create(
-        branch_utility.GetChannelInfo(channel).branch)
+    host_file_system = host_file_system_creator.Create()
     app_samples_file_system = self._delegate.CreateAppSamplesFileSystem(
         object_store_creator)
     compiled_host_fs_factory = CompiledFileSystem.Factory(
         host_file_system,
         object_store_creator)
-    return ServerInstance(channel,
-                          object_store_creator,
+    return ServerInstance(object_store_creator,
                           host_file_system,
                           app_samples_file_system,
-                          '' if channel == 'stable' else '/%s' % channel,
+                          '',
                           compiled_host_fs_factory,
                           branch_utility,
                           host_file_system_creator)

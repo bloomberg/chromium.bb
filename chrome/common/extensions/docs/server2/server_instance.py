@@ -37,7 +37,6 @@ import url_constants
 
 class ServerInstance(object):
   def __init__(self,
-               channel,
                object_store_creator,
                host_file_system,
                app_samples_file_system,
@@ -45,8 +44,6 @@ class ServerInstance(object):
                compiled_fs_factory,
                branch_utility,
                host_file_system_creator):
-    self.channel = channel
-
     self.object_store_creator = object_store_creator
 
     self.host_file_system = host_file_system
@@ -88,14 +85,14 @@ class ServerInstance(object):
     else:
       extension_samples_fs = self.host_file_system
     self.samples_data_source_factory = SamplesDataSource.Factory(
-        channel,
         extension_samples_fs,
         CompiledFileSystem.Factory(extension_samples_fs, object_store_creator),
         self.app_samples_file_system,
         CompiledFileSystem.Factory(self.app_samples_file_system,
                                    object_store_creator),
         self.ref_resolver_factory,
-        svn_constants.EXAMPLES_PATH)
+        svn_constants.EXAMPLES_PATH,
+        base_path)
 
     self.api_data_source_factory.SetSamplesDataSourceFactory(
         self.samples_data_source_factory)
@@ -107,11 +104,9 @@ class ServerInstance(object):
 
     self.sidenav_data_source_factory = SidenavDataSource.Factory(
         self.compiled_host_fs_factory,
-        svn_constants.JSON_PATH,
-        base_path)
+        svn_constants.JSON_PATH)
 
     self.template_data_source_factory = TemplateDataSource.Factory(
-        channel,
         self.api_data_source_factory,
         self.api_list_data_source_factory,
         self.intro_data_source_factory,
@@ -130,9 +125,7 @@ class ServerInstance(object):
         self.compiled_host_fs_factory,
         svn_constants.DOCS_PATH)
 
-    self.path_canonicalizer = PathCanonicalizer(
-        channel,
-        self.compiled_host_fs_factory)
+    self.path_canonicalizer = PathCanonicalizer(self.compiled_host_fs_factory)
 
     # TODO(kalman): delete content cache.
     self.content_cache = self.compiled_host_fs_factory.CreateIdentity(
@@ -146,8 +139,7 @@ class ServerInstance(object):
   @staticmethod
   def ForTest(file_system):
     object_store_creator = ObjectStoreCreator.ForTest()
-    return ServerInstance('test',
-                          object_store_creator,
+    return ServerInstance(object_store_creator,
                           file_system,
                           EmptyDirFileSystem(),
                           '',
@@ -159,15 +151,12 @@ class ServerInstance(object):
 
   @staticmethod
   def ForLocal():
-    channel = 'trunk'
-    object_store_creator = ObjectStoreCreator(channel,
-                                              start_empty=False,
+    object_store_creator = ObjectStoreCreator(start_empty=False,
                                               store_type=TestObjectStore)
     host_file_system_creator = HostFileSystemCreator.ForLocal(
         object_store_creator)
-    trunk_file_system = host_file_system_creator.Create('trunk')
+    trunk_file_system = host_file_system_creator.Create()
     return ServerInstance(
-        channel,
         object_store_creator,
         trunk_file_system,
         EmptyDirFileSystem(),

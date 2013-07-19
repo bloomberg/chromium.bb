@@ -20,8 +20,7 @@ class AppYamlHelper(object):
                app_yaml_path,
                file_system_at_head,
                object_store_creator,
-               host_file_system_creator,
-               branch):
+               host_file_system_creator):
     self._app_yaml_path = app_yaml_path
     self._file_system_at_head = file_system_at_head
     self._store = object_store_creator.Create(
@@ -29,7 +28,6 @@ class AppYamlHelper(object):
         category=file_system_at_head.GetIdentity(),
         start_empty=False)
     self._host_file_system_creator = host_file_system_creator
-    self._branch = branch
 
   @staticmethod
   def ExtractVersion(app_yaml, key='version'):
@@ -120,7 +118,6 @@ class AppYamlHelper(object):
         logging.warning('All revisions are greater than %s' % app_version)
         return 0
       next_file_system = self._host_file_system_creator.Create(
-          self._branch,
           revision=found - 1)
 
     if found is None:

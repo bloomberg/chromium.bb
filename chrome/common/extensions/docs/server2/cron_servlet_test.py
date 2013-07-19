@@ -31,8 +31,8 @@ class _TestDelegate(CronServlet.Delegate):
     return TestBranchUtility.CreateWithCannedData()
 
   def CreateHostFileSystemCreator(self, object_store_creator):
-    def constructor(branch, revision=None):
-      file_system = self._create_file_system(branch, revision)
+    def constructor(branch=None, revision=None):
+      file_system = self._create_file_system(revision)
       self.file_systems.append(file_system)
       return file_system
     return HostFileSystemCreator(object_store_creator,
@@ -53,8 +53,7 @@ class CronServletTest(unittest.TestCase):
   def testEverything(self):
     # All these tests are dependent (see above comment) so lump everything in
     # the one test.
-    delegate = _TestDelegate(
-        lambda _, __: MockFileSystem(LocalFileSystem.Create()))
+    delegate = _TestDelegate(lambda _: MockFileSystem(LocalFileSystem.Create()))
 
     # Test that the cron runs successfully.
     response = CronServlet(Request.ForTest('trunk'),
@@ -122,7 +121,7 @@ class CronServletTest(unittest.TestCase):
     storage_html_path = 'docs/templates/public/apps/storage.html'
     static_txt_path = 'docs/static/static.txt'
 
-    def create_file_system(branch, revision=None):
+    def create_file_system(revision=None):
       '''Creates a MockFileSystem at |revision| by applying that many |updates|
       to it.
       '''

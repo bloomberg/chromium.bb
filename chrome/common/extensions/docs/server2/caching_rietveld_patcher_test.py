@@ -37,7 +37,7 @@ class CachingRietveldPatcherTest(unittest.TestCase):
                                      assert_binary=True)
     self._patcher = CachingRietveldPatcher(
         self._test_patcher,
-        ObjectStoreCreator('test', start_empty=False),
+        ObjectStoreCreator(start_empty=False),
         self._datetime)
 
   def testGetVersion(self):

@@ -28,18 +28,13 @@ _TEST_DATA_NEW = {
 
 class ChainedCompiledFileSystemTest(unittest.TestCase):
   def setUp(self):
-    self._object_store_creator = ObjectStoreCreator(
-        'chained', start_empty=False)
-    self._base_object_store_creator = ObjectStoreCreator(
-        'base', start_empty=False)
+    object_store_creator = ObjectStoreCreator(start_empty=False)
     base_file_system = TestFileSystem(_TEST_DATA_BASE)
-    self._base_factory = CompiledFileSystem.Factory(
-        base_file_system,
-        self._base_object_store_creator)
+    self._base_factory = CompiledFileSystem.Factory(base_file_system,
+                                                    object_store_creator)
     self._file_system = TestFileSystem(_TEST_DATA_NEW)
-    self._patched_factory = CompiledFileSystem.Factory(
-        self._file_system,
-        self._object_store_creator)
+    self._patched_factory = CompiledFileSystem.Factory(self._file_system,
+                                                       object_store_creator)
     self._chained_factory = ChainedCompiledFileSystem.Factory(
         [(self._patched_factory, self._file_system),
          (self._base_factory, base_file_system)])

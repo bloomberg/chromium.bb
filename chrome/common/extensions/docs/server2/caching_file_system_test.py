@@ -37,8 +37,7 @@ class CachingFileSystemTest(unittest.TestCase):
       if start_empty:
         db.clear()
       return TestObjectStore(namespace, init=db)
-    object_store_creator = ObjectStoreCreator('test',
-                                              start_empty=start_empty,
+    object_store_creator = ObjectStoreCreator(start_empty=start_empty,
                                               store_type=store_type_constructor)
     return CachingFileSystem(fs, object_store_creator)
 

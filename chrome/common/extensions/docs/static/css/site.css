@@ -205,7 +205,6 @@ dd {
   font-family: inherit;
   font-size: inherit;
   font-style: inherit;
-  font-weight: bold;
   margin: 0; padding: 0;
   outline: none;
 }
@@ -214,25 +213,12 @@ dd {
   outline: 1px dotted;
 }
 
-#branch-chooser {
+#platform-chooser {
   display: inline;
   position: relative;
-  font-weight: bold;
-}
-#branch-chooser .stable {
-  color: #0d68ae;
-}
-#branch-chooser .beta {
-  color: #409544;
-}
-#branch-chooser .dev {
-  color: #dba30d;
-}
-#branch-chooser .trunk {
-  color: #e02629;
 }
 
-#branch-chooser-popup {
+#platform-chooser-popup {
   /* Make it appear to be an extension of the header. */
   background-color: white;
   border: 1px solid #F5F5F5;
@@ -245,14 +231,14 @@ dd {
   left: -6px;
 }
 
-#branch-chooser-popup button {
+#platform-chooser-popup button {
   display: block;
   padding: 6px;
   width: 100%;
   text-align: left;
 }
-#branch-chooser-popup button:hover {
-  background-color: #F5F5F5;
+#platform-chooser-popup button:hover {
+  color: #4787ed;
 }
 
 button.google-button {

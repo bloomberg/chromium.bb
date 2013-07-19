@@ -174,3 +174,6 @@ class RietveldPatcher(Patcher):
                                              paths,
                                              binary,
                                              self._fetcher))
+
+  def GetIdentity(self):
+    return self._issue

@@ -14,14 +14,11 @@ class _Model(db.Model):
 class BlobReferenceStore(object):
   """A wrapper around the datastore API that can store blob keys.
   """
-  def __init__(self, branch):
-    self._branch = branch
-
   def _Query(self, namespace, key):
     return _Model.gql('WHERE key_ = :1', self._MakeKey(namespace, key)).get()
 
   def _MakeKey(self, namespace, key):
-    return '.'.join([self._branch, namespace, key])
+    return '.'.join((namespace, key))
 
   def Set(self, namespace, key, value):
     _Model(key_=self._MakeKey(namespace, key), value=value).put()

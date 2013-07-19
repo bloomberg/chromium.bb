@@ -18,7 +18,6 @@ class ObjectStoreCreator(object):
   via the variants of Create which do this automatically).
   '''
   def __init__(self,
-               channel,
                # TODO(kalman): rename start_dirty?
                start_empty=_unspecified,
                # Override for testing. A custom ObjectStore type to construct
@@ -29,7 +28,6 @@ class ObjectStoreCreator(object):
                # useful to override when specific state tests/manipulations are
                # being done on the underlying object store.
                disable_wrappers=False):
-    self._channel = channel
     if start_empty is _unspecified:
       raise ValueError('start_empty must be specified (typically False)')
     self._start_empty = start_empty
@@ -42,8 +40,7 @@ class ObjectStoreCreator(object):
   def ForTest(start_empty=False,
               store_type=TestObjectStore,
               disable_wrappers=True):
-    return ObjectStoreCreator('test',
-                              start_empty=start_empty,
+    return ObjectStoreCreator(start_empty=start_empty,
                               store_type=store_type,
                               disable_wrappers=disable_wrappers)
 
@@ -52,20 +49,17 @@ class ObjectStoreCreator(object):
              category=None,
              # Override any of these for a custom configuration.
              start_empty=_unspecified,
-             channel=_unspecified,
              app_version=_unspecified):
     # Resolve namespace components.
     if start_empty is not _unspecified:
       start_empty = bool(start_empty)
     else:
       start_empty = self._start_empty
-    if channel is _unspecified:
-      channel = self._channel
     if app_version is _unspecified:
       app_version = GetAppVersion()
 
     # Reserve & and = for namespace separators.
-    for component in (category, channel, app_version):
+    for component in (category, app_version):
       if component and ('&' in component or '=' in component):
         raise ValueError('%s cannot be used in a namespace')
 
@@ -73,7 +67,6 @@ class ObjectStoreCreator(object):
         '%s=%s' % (key, value)
         for key, value in (('class', cls.__name__),
                            ('category', category),
-                           ('channel', channel),
                            ('app_version', app_version))
         if value is not None)
 

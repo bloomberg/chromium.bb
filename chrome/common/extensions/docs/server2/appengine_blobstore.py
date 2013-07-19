@@ -14,7 +14,7 @@ class AppEngineBlobstore(object):
   datastore.
   """
   def __init__(self):
-    self._datastore = BlobReferenceStore('blobstore')
+    self._datastore = BlobReferenceStore()
 
   def Set(self, key, blob, namespace):
     """Add a blob to the blobstore. |version| is used as part of the key so

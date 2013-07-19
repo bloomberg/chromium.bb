@@ -10,7 +10,7 @@ from server_instance import ServerInstance
 from servlet import Request
 
 class _LocalRenderServletDelegate(object):
-  def CreateServerInstanceForChannel(self, channel):
+  def CreateServerInstance(self):
     return ServerInstance.ForLocal()
 
 class LocalRenderer(object):
@@ -19,13 +19,5 @@ class LocalRenderer(object):
   @staticmethod
   def Render(path):
     assert not '\\' in path
-    def render_path(path):
-      return RenderServlet(Request(path, 'http://localhost', {}),
-                           _LocalRenderServletDelegate(),
-                           default_channel='trunk').Get()
-    response = render_path(path)
-    while response.status in [301, 302]:
-      redirect = response.headers['Location']
-      sys.stderr.write('<!-- Redirected %s to %s -->\n' % (path, redirect))
-      response = render_path(redirect)
-    return response
+    return RenderServlet(Request.ForTest(path),
+                         _LocalRenderServletDelegate()).Get()

@@ -156,3 +156,8 @@ class PatchedFileSystem(FileSystem):
         else:
           raise FileNotFoundError('%s was not in child versions' % filename)
     return stat_info
+
+  def GetIdentity(self):
+    return '%s(%s,%s)' % (self.__class__.__name__,
+                          self._host_file_system.GetIdentity(),
+                          self._patcher.GetIdentity())

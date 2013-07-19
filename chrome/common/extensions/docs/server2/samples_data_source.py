@@ -13,7 +13,7 @@ import third_party.json_schema_compiler.json_comment_eater as json_comment_eater
 import third_party.json_schema_compiler.model as model
 import url_constants
 
-DEFAULT_ICON_PATH = '/images/sample-default-icon.png'
+DEFAULT_ICON_PATH = 'images/sample-default-icon.png'
 
 class SamplesDataSource(object):
   '''Constructs a list of samples and their respective files and api calls.
@@ -23,18 +23,18 @@ class SamplesDataSource(object):
     Requests.
     '''
     def __init__(self,
-                 channel,
                  host_file_system,
                  compiled_host_fs_factory,
                  app_samples_file_system,
                  compiled_app_samples_fs_factory,
                  ref_resolver_factory,
-                 extension_samples_path):
+                 extension_samples_path,
+                 base_path):
       self._host_file_system = host_file_system
       self._app_samples_file_system = app_samples_file_system
-      self._static_path = '/%s/static' % channel
       self._ref_resolver = ref_resolver_factory.Create()
       self._extension_samples_path = extension_samples_path
+      self._base_path = base_path
       self._extensions_cache = compiled_host_fs_factory.Create(
           self._MakeSamplesList,
           SamplesDataSource,
@@ -50,6 +50,7 @@ class SamplesDataSource(object):
       return SamplesDataSource(self._extensions_cache,
                                self._apps_cache,
                                self._extension_samples_path,
+                               self._base_path,
                                request)
 
     def _GetAPIItems(self, js_file):
@@ -159,9 +160,9 @@ class SamplesDataSource(object):
           download_url = sample_base_path + '.zip'
 
         if manifest_data['icon'] is None:
-          icon_path = self._static_path + DEFAULT_ICON_PATH
+          icon_path = '%s/static/%s' % (self._base_path, DEFAULT_ICON_PATH)
         else:
-          icon_path = icon_base + '/' + manifest_data['icon']
+          icon_path = '%s/%s' % (icon_base, manifest_data['icon'])
         manifest_data.update({
           'icon': icon_path,
           'id': hashlib.md5(url).hexdigest(),
@@ -178,10 +179,12 @@ class SamplesDataSource(object):
                extensions_cache,
                apps_cache,
                extension_samples_path,
+               base_path,
                request):
     self._extensions_cache = extensions_cache
     self._apps_cache = apps_cache
     self._extension_samples_path = extension_samples_path
+    self._base_path = base_path
     self._request = request
 
   def _GetAcceptedLanguages(self):

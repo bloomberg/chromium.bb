@@ -3,92 +3,84 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from compiled_file_system import CompiledFileSystem
-from path_canonicalizer import PathCanonicalizer
-import svn_constants
-from object_store_creator import ObjectStoreCreator
-from test_file_system import TestFileSystem
 import unittest
 
-_TEST_DATA = TestFileSystem.MoveTo(svn_constants.PUBLIC_TEMPLATE_PATH, {
-  'extensions': {
-    'browserAction.html': 'yo',
-    'storage.html': 'dawg',
-  },
-  'apps': {
-    'bluetooth': 'hey',
-    'storage.html': 'wassup',
-  }
-})
+from path_canonicalizer import PathCanonicalizer
+from server_instance import ServerInstance
+import svn_constants
 
 class PathCanonicalizerTest(unittest.TestCase):
   def setUp(self):
-    test_fs = TestFileSystem(_TEST_DATA)
-    compiled_fs_factory = CompiledFileSystem.Factory(
-        test_fs,
-        ObjectStoreCreator.ForTest())
-    self._path_canonicalizer = PathCanonicalizer('stable', compiled_fs_factory)
+    self._server_instance = ServerInstance.ForLocal()
 
-  def _assertIdentity(self, path):
-    self.assertEqual(path, self._path_canonicalizer.Canonicalize(path))
+  def _Cze(self, path):
+    return self._server_instance.path_canonicalizer.Canonicalize(path)
 
-  def testExtensions(self):
-    self._assertIdentity('extensions/browserAction.html')
-    self._assertIdentity('extensions/storage.html')
-    self._assertIdentity('extensions/bluetooth.html')
-    self._assertIdentity('extensions/blah.html')
-    self._assertIdentity('stable/extensions/browserAction.html')
-    self._assertIdentity('stable/extensions/storage.html')
-    self._assertIdentity('stable/extensions/bluetooth.html')
-    self._assertIdentity('stable/extensions/blah.html')
+  def testSpecifyCorrectly(self):
+    self._AssertIdentity('extensions/browserAction.html')
+    self._AssertIdentity('extensions/storage.html')
+    self._AssertIdentity('extensions/blah.html')
+    self._AssertIdentity('extensions/index.html')
+    self._AssertIdentity('extensions/whats_new.html')
+    self._AssertIdentity('apps/storage.html')
+    self._AssertIdentity('apps/bluetooth.html')
+    self._AssertIdentity('apps/blah.html')
+    self._AssertIdentity('static/browserAction.html')
+    self._AssertIdentity('static/storage.html')
+    self._AssertIdentity('static/bluetooth.html')
+    self._AssertIdentity('static/blah.html')
 
-  def testApps(self):
-    self._assertIdentity('apps/browserAction.html')
-    self._assertIdentity('apps/storage.html')
-    self._assertIdentity('apps/bluetooth.html')
-    self._assertIdentity('apps/blah.html')
-    self._assertIdentity('stable/apps/browserAction.html')
-    self._assertIdentity('stable/apps/storage.html')
-    self._assertIdentity('stable/apps/bluetooth.html')
-    self._assertIdentity('stable/apps/blah.html')
+  def testSpecifyIncorrectly(self):
+    self._AssertTemporaryRedirect('extensions/browserAction.html',
+                                  'apps/browserAction.html')
+    self._AssertTemporaryRedirect('apps/bluetooth.html',
+                                  'extensions/bluetooth.html')
+    self._AssertTemporaryRedirect('extensions/index.html',
+                                  'apps/index.html')
 
-  def testStatic(self):
-    self._assertIdentity('static/browserAction.html')
-    self._assertIdentity('static/storage.html')
-    self._assertIdentity('static/bluetooth.html')
-    self._assertIdentity('static/blah.html')
-    self._assertIdentity('stable/static/browserAction.html')
-    self._assertIdentity('stable/static/storage.html')
-    self._assertIdentity('stable/static/bluetooth.html')
-    self._assertIdentity('stable/static/blah.html')
+  def testUnspecified(self):
+    self._AssertTemporaryRedirect('extensions/browserAction.html',
+                                  'browserAction.html')
+    self._AssertTemporaryRedirect('apps/bluetooth.html',
+                                  'bluetooth.html')
+    # Extensions are default for now.
+    self._AssertTemporaryRedirect('extensions/storage.html',
+                                  'storage.html')
+    # Nonexistent APIs should be left alone.
+    self._AssertIdentity('blah.html')
 
-  def testNeither(self):
-    self.assertEqual(
-        'extensions/browserAction.html',
-        self._path_canonicalizer.Canonicalize('browserAction.html'))
-    self.assertEqual(
-        'stable/extensions/browserAction.html',
-        self._path_canonicalizer.Canonicalize('stable/browserAction.html'))
-    self.assertEqual(
-        'extensions/storage.html',
-        self._path_canonicalizer.Canonicalize('storage.html'))
-    self.assertEqual(
-        'stable/extensions/storage.html',
-        self._path_canonicalizer.Canonicalize('stable/storage.html'))
-    self.assertEqual(
-        'apps/bluetooth.html',
-        self._path_canonicalizer.Canonicalize('bluetooth.html'))
-    self.assertEqual(
-        'stable/apps/bluetooth.html',
-        self._path_canonicalizer.Canonicalize('stable/bluetooth.html'))
-    # Assign non-existent paths to extensions because they came first, so such
-    # paths are more likely to be for extensions.
-    self.assertEqual(
-        'extensions/blah.html',
-        self._path_canonicalizer.Canonicalize('blah.html'))
-    self.assertEqual(
-        'stable/extensions/blah.html',
-        self._path_canonicalizer.Canonicalize('stable/blah.html'))
+  def testSpellingErrors(self):
+    for spelme in ('browseraction', 'browseraction.htm', 'BrowserAction',
+                   'BrowserAction.html', 'browseraction.html', 'Browseraction',
+                   'browser-action', 'Browser.action.html', 'browser_action',
+                   'browser-action.html', 'Browser_Action.html'):
+      self._AssertTemporaryRedirect('extensions/browserAction.html', spelme)
+      self._AssertTemporaryRedirect('extensions/browserAction.html',
+                                    'extensions/%s' % spelme)
+      self._AssertTemporaryRedirect('extensions/browserAction.html',
+                                    'apps/%s' % spelme)
+
+  def testChannelRedirect(self):
+    def assert_channel_redirect(channel, path):
+      self._AssertPermanentRedirect(path, '%s/%s' % (channel, path))
+    for channel in ('stable', 'beta', 'dev', 'trunk'):
+      assert_channel_redirect(channel, 'extensions/browserAction.html')
+      assert_channel_redirect(channel, 'extensions/storage.html')
+      assert_channel_redirect(channel, 'apps/bluetooth.html')
+      assert_channel_redirect(channel, 'apps/storage.html')
+
+  def _AssertIdentity(self, path):
+    self._AssertTemporaryRedirect(path, path)
+
+  def _AssertTemporaryRedirect(self, to, from_):
+    result = self._Cze(from_)
+    self.assertEqual(to, result.path)
+    self.assertFalse(result.permanent)
+
+  def _AssertPermanentRedirect(self, to, from_):
+    result = self._Cze(from_)
+    self.assertEqual(to, result.path)
+    self.assertTrue(result.permanent)
 
 if __name__ == '__main__':
   unittest.main()

@@ -14,35 +14,27 @@ class _FooClass(object):
 
 class ObjectStoreCreatorTest(unittest.TestCase):
   def setUp(self):
-    self._creator = ObjectStoreCreator('trunk',
-                                       start_empty=False,
+    self._creator = ObjectStoreCreator(start_empty=False,
                                        store_type=TestObjectStore,
                                        disable_wrappers=True)
 
   def testVanilla(self):
     store = self._creator.Create(_FooClass)
     self.assertEqual(
-        'class=_FooClass&channel=trunk&app_version=%s' % GetAppVersion(),
+        'class=_FooClass&app_version=%s' % GetAppVersion(),
         store.namespace)
     self.assertFalse(store.start_empty)
 
   def testWithCategory(self):
     store = self._creator.Create(_FooClass, category='hi')
     self.assertEqual(
-        'class=_FooClass&category=hi&channel=trunk&app_version=%s' %
-            GetAppVersion(),
+        'class=_FooClass&category=hi&app_version=%s' % GetAppVersion(),
         store.namespace)
-    self.assertFalse(store.start_empty)
-
-  def testWithoutChannel(self):
-    store = self._creator.Create(_FooClass, channel=None)
-    self.assertEqual('class=_FooClass&app_version=%s' % GetAppVersion(),
-                     store.namespace)
     self.assertFalse(store.start_empty)
 
   def testWithoutAppVersion(self):
     store = self._creator.Create(_FooClass, app_version=None)
-    self.assertEqual('class=_FooClass&channel=trunk', store.namespace)
+    self.assertEqual('class=_FooClass', store.namespace)
     self.assertFalse(store.start_empty)
 
   def testStartConfiguration(self):
@@ -50,11 +42,9 @@ class ObjectStoreCreatorTest(unittest.TestCase):
     self.assertTrue(store.start_empty)
     store = self._creator.Create(_FooClass, start_empty=False)
     self.assertFalse(store.start_empty)
-    self.assertRaises(ValueError, ObjectStoreCreator, 'foo')
+    self.assertRaises(ValueError, ObjectStoreCreator)
 
   def testIllegalCharacters(self):
-    self.assertRaises(ValueError,
-                      self._creator.Create, _FooClass, channel='foo=')
     self.assertRaises(ValueError,
                       self._creator.Create, _FooClass, app_version='1&2')
     self.assertRaises(ValueError,

@@ -95,8 +95,7 @@ class AppYamlHelperTest(unittest.TestCase):
     helper = AppYamlHelper('server2/app.yaml',
                            file_system_at_head,
                            ObjectStoreCreator.ForTest(disable_wrappers=False),
-                           host_file_system_creator,
-                           'trunk')
+                           host_file_system_creator)
 
     def assert_is_up_to_date(version):
       self.assertTrue(helper.IsUpToDate(version),

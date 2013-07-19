@@ -23,16 +23,17 @@ class HostFileSystemCreator(object):
      # Provides custom create behavior, useful in tests.
      self._constructor_for_test = constructor_for_test
 
-  def Create(self, branch, revision=None):
+  def Create(self, branch='trunk', revision=None):
     '''Creates either SVN file systems or specialized file systems from the
     constructor passed into this instance. Wraps the resulting file system in
     an Offline file system if the offline flag is set, and finally wraps it in a
     Caching file system.
     '''
     if self._constructor_for_test is not None:
-      file_system = self._constructor_for_test(branch, revision)
+      file_system = self._constructor_for_test(branch=branch, revision=revision)
     else:
-      file_system = SubversionFileSystem.Create(branch, revision=revision)
+      file_system = SubversionFileSystem.Create(branch=branch,
+                                                revision=revision)
     if self._offline:
       file_system = OfflineFileSystem(file_system)
     return CachingFileSystem(file_system, self._object_store_creator)
@@ -43,7 +44,7 @@ class HostFileSystemCreator(object):
     '''
     return HostFileSystemCreator(
         object_store_creator,
-        constructor_for_test=lambda _, __: LocalFileSystem.Create())
+        constructor_for_test=lambda **_: LocalFileSystem.Create())
 
   @staticmethod
   def ForTest(file_system, object_store_creator):
@@ -53,4 +54,4 @@ class HostFileSystemCreator(object):
     '''
     return HostFileSystemCreator(
         object_store_creator,
-        constructor_for_test=lambda _, __: file_system)
+        constructor_for_test=lambda **_: file_system)
