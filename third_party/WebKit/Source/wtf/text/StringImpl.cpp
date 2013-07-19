@@ -128,8 +128,6 @@ public:
         }
         if (string->isAtomic())
             ++m_numberOfAtomicCopies;
-        if (string->has16BitShadow())
-            m_upconverted = true;
         if (isUnnecessarilyWide(string))
             m_unnecessarilyWide = true;
     }
@@ -142,14 +140,11 @@ public:
     void print()
     {
         const char* status = "ok";
-        if (m_upconverted)
-            status = "up";
         else if (m_unnecessarilyWide)
             status = "16";
         dataLogF("%8u copies (%s) of length %8u %s\n", m_numberOfCopies, status, m_length, m_snippet.data());
     }
 
-    bool m_upconverted;
     bool m_unnecessarilyWide;
     unsigned m_numberOfCopies;
     unsigned m_length;
@@ -158,8 +153,7 @@ public:
 
 private:
     PerStringStats()
-        : m_upconverted(false)
-        , m_unnecessarilyWide(false)
+        : m_unnecessarilyWide(false)
         , m_numberOfCopies(0)
         , m_length(0)
         , m_numberOfAtomicCopies(0)
@@ -169,8 +163,6 @@ private:
 
 bool operator<(const RefPtr<PerStringStats>& a, const RefPtr<PerStringStats>& b)
 {
-    if (a->m_upconverted != b->m_upconverted)
-        return !a->m_upconverted && b->m_upconverted;
     if (a->m_unnecessarilyWide != b->m_unnecessarilyWide)
         return !a->m_unnecessarilyWide && b->m_unnecessarilyWide;
     if (a->totalCharacters() != b->totalCharacters())
@@ -217,12 +209,6 @@ void StringStats::removeString(StringImpl* string)
 
     --m_totalNumberStrings;
 
-    if (string->has16BitShadow()) {
-        --m_numberUpconvertedStrings;
-        if (!isSubString)
-            m_totalUpconvertedData -= length;
-    }
-
     if (string->is8Bit()) {
         --m_number8BitStrings;
         if (!isSubString)
@@ -252,14 +238,10 @@ void StringStats::printStats()
     double average16bitLength = m_number16BitStrings ? (double)m_total16BitData / (double)m_number16BitStrings : 0.0;
     dataLogF("%8u (%5.2f%%) 16 bit       %12llu chars  %12llu bytes  avg length %6.1f\n", m_number16BitStrings, percent16Bit, m_total16BitData, m_total16BitData * 2, average16bitLength);
 
-    double percentUpconverted = m_totalNumberStrings ? ((double)m_numberUpconvertedStrings * 100) / (double)m_number8BitStrings : 0.0;
-    double averageUpconvertedLength = m_numberUpconvertedStrings ? (double)m_totalUpconvertedData / (double)m_numberUpconvertedStrings : 0.0;
-    dataLogF("%8u (%5.2f%%) upconverted  %12llu chars  %12llu bytes  avg length %6.1f\n", m_numberUpconvertedStrings, percentUpconverted, m_totalUpconvertedData, m_totalUpconvertedData * 2, averageUpconvertedLength);
-
     double averageLength = m_totalNumberStrings ? (double)totalNumberCharacters / (double)m_totalNumberStrings : 0.0;
-    unsigned long long totalDataBytes = m_total8BitData + (m_total16BitData + m_totalUpconvertedData) * 2;
+    unsigned long long totalDataBytes = m_total8BitData + m_total16BitData * 2;
     dataLogF("%8u Total                 %12llu chars  %12llu bytes  avg length %6.1f\n", m_totalNumberStrings, totalNumberCharacters, totalDataBytes, averageLength);
-    unsigned long long totalSavedBytes = m_total8BitData - m_totalUpconvertedData;
+    unsigned long long totalSavedBytes = m_total8BitData;
     double percentSavings = totalSavedBytes ? ((double)totalSavedBytes * 100) / (double)(totalDataBytes + totalSavedBytes) : 0.0;
     dataLogF("         Total savings %12llu bytes (%5.2f%%)\n", totalSavedBytes, percentSavings);
 
@@ -278,11 +260,6 @@ StringImpl::~StringImpl()
         AtomicString::remove(this);
 
     BufferOwnership ownership = bufferOwnership();
-
-    if (has16BitShadow()) {
-        ASSERT(m_copyData16);
-        fastFree(m_copyData16);
-    }
 
     if (ownership == BufferInternal)
         return;
@@ -2021,10 +1998,7 @@ size_t StringImpl::sizeInBytes() const
 {
     // FIXME: support substrings
     size_t size = length();
-    if (is8Bit()) {
-        if (has16BitShadow())
-            size += 2 * size;
-    } else
+    if (!is8Bit())
         size *= 2;
     return size + sizeof(*this);
 }

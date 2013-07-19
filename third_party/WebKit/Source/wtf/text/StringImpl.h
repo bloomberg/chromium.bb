@@ -77,12 +77,6 @@ struct StringStats {
             m_total16BitData += length;
     }
 
-    inline void addUpconvertedString(unsigned length)
-    {
-        ++m_numberUpconvertedStrings;
-        m_totalUpconvertedData += length;
-    }
-
     void removeString(StringImpl*);
     void printStats();
 
@@ -92,10 +86,8 @@ struct StringStats {
     unsigned m_totalNumberStrings;
     unsigned m_number8BitStrings;
     unsigned m_number16BitStrings;
-    unsigned m_numberUpconvertedStrings;
     unsigned long long m_total8BitData;
     unsigned long long m_total16BitData;
-    unsigned long long m_totalUpconvertedData;
 };
 
 void addStringForStats(StringImpl*);
@@ -105,14 +97,12 @@ void removeStringForStats(StringImpl*);
 #define STRING_STATS_ADD_8BIT_STRING2(length, isSubString) StringImpl::stringStats().add8BitString(length, isSubString); addStringForStats(this)
 #define STRING_STATS_ADD_16BIT_STRING(length) StringImpl::stringStats().add16BitString(length); addStringForStats(this)
 #define STRING_STATS_ADD_16BIT_STRING2(length, isSubString) StringImpl::stringStats().add16BitString(length, isSubString); addStringForStats(this)
-#define STRING_STATS_ADD_UPCONVERTED_STRING(length) StringImpl::stringStats().addUpconvertedString(length)
 #define STRING_STATS_REMOVE_STRING(string) StringImpl::stringStats().removeString(string); removeStringForStats(this)
 #else
 #define STRING_STATS_ADD_8BIT_STRING(length) ((void)0)
 #define STRING_STATS_ADD_8BIT_STRING2(length, isSubString) ((void)0)
 #define STRING_STATS_ADD_16BIT_STRING(length) ((void)0)
 #define STRING_STATS_ADD_16BIT_STRING2(length, isSubString) ((void)0)
-#define STRING_STATS_ADD_UPCONVERTED_STRING(length) ((void)0)
 #define STRING_STATS_REMOVE_STRING(string) ((void)0)
 #endif
 
@@ -437,8 +427,6 @@ public:
 
     size_t sizeInBytes() const;
 
-    bool has16BitShadow() const { return m_hashAndFlags & s_hashFlagHas16BitShadow; }
-
     bool isEmptyUnique() const
     {
         return !length() && !isStatic();
@@ -687,7 +675,6 @@ private:
     static const unsigned s_flagMask = (1u << s_flagCount) - 1;
     COMPILE_ASSERT(s_flagCount == StringHasher::flagCount, StringHasher_reserves_enough_bits_for_StringImpl_flags);
 
-    static const unsigned s_hashFlagHas16BitShadow = 1u << 7;
     static const unsigned s_hashFlag8BitBuffer = 1u << 6;
     static const unsigned s_unusedHashFlag = 1u << 5;
     static const unsigned s_hashFlagIsAtomic = 1u << 4;
@@ -702,13 +689,13 @@ public:
     struct StaticASCIILiteral {
         // These member variables must match the layout of StringImpl.
         const LChar* m_data8;
-        const UChar* m_copyData16;
+        void* m_buffer;
         unsigned m_refCount;
         unsigned m_length;
         unsigned m_hashAndFlags;
 
         static const unsigned s_initialRefCount = s_refCountFlagIsStaticString;
-        static const unsigned s_initialFlags = s_hashFlag8BitBuffer | s_hashFlagHas16BitShadow | BufferInternal;
+        static const unsigned s_initialFlags = s_hashFlag8BitBuffer | BufferInternal;
         static const unsigned s_hashShift = s_flagCount;
     };
 
@@ -729,7 +716,6 @@ private:
     union {
         void* m_buffer;
         StringImpl* m_substringBuffer;
-        mutable UChar* m_copyData16;
     };
     unsigned m_refCount;
     unsigned m_length;
