@@ -113,8 +113,8 @@ size_t QuicPacketCreator::CreateStreamFrame(QuicStreamId id,
     // Comparing against the last stream frame size including the length
     // guarantees that all the bytes will fit.  Otherwise there is a
     // discontinuity where the packet goes one byte over due to the length data.
-    if (data.size() > free_bytes - min_last_stream_frame_size -
-        kQuicStreamPayloadLengthSize) {
+    if (data.size() + min_last_stream_frame_size + kQuicStreamPayloadLengthSize
+        >= free_bytes) {
       // Its the last frame, put as much data as possible in.
       bytes_consumed =
           min<size_t>(free_bytes - min_last_stream_frame_size, data.size());

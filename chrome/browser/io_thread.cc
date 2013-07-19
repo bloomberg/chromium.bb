@@ -973,8 +973,7 @@ bool IOThread::ShouldEnableQuic(const CommandLine& command_line) {
   if (command_line.HasSwitch(switches::kDisableQuic))
     return false;
 
-  if (command_line.HasSwitch(switches::kEnableQuic) ||
-      command_line.HasSwitch(switches::kEnableQuicHttps)) {
+  if (command_line.HasSwitch(switches::kEnableQuic)) {
     return true;
   }
 

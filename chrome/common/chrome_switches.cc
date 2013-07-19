@@ -639,7 +639,7 @@ const char kEnableProfiling[]               = "enable-profiling";
 const char kEnableQuic[]                    = "enable-quic";
 
 // Enables support for the HTTPS over QUIC protocol.  This is a temporary
-// testing flag.
+// testing flag.  This only has an effect if QUIC protocol is enabled.
 const char kEnableQuicHttps[]               = "enable-quic-https";
 
 // Enables the Quickoffoce/Chrome document editor rather than the viewer.

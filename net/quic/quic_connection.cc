@@ -474,6 +474,7 @@ void QuicConnection::HandleAckForSentPackets(const QuicAckFrame& incoming_ack,
   while (it != unacked_packets_.end()) {
     QuicPacketSequenceNumber sequence_number = it->first;
     if (sequence_number > peer_largest_observed_packet_) {
+      // These are very new sequence_numbers.
       break;
     }
     RetransmittableFrames* unacked = it->second;
@@ -502,8 +503,7 @@ void QuicConnection::HandleAckForSentPackets(const QuicAckFrame& incoming_ack,
         DVLOG(1) << ENDPOINT << "Trying to retransmit packet "
                  << sequence_number
                  << " as it has been nacked 3 or more times.";
-        // TODO(satyamshekhar): save in a vector and retransmit after the
-        // loop.
+        // RetransmitPacket will retransmit with a new sequence_number.
         RetransmitPacket(sequence_number);
       }
     }
@@ -903,22 +903,25 @@ bool QuicConnection::MaybeRetransmitPacketForRTO(
 
 void QuicConnection::RetransmitUnackedPackets(
     RetransmissionType retransmission_type) {
-  UnackedPacketMap::iterator current_it = unacked_packets_.begin();
-  UnackedPacketMap::iterator next_it;
-  while (current_it != unacked_packets_.end()) {
-    next_it = current_it;
+  if (unacked_packets_.empty()) {
+    return;
+  }
+  UnackedPacketMap::iterator next_it = unacked_packets_.begin();
+  QuicPacketSequenceNumber end_sequence_number =
+      unacked_packets_.rbegin()->first;
+  do {
+    UnackedPacketMap::iterator current_it = next_it;
     ++next_it;
 
-    if (retransmission_type != INITIAL_ENCRYPTION_ONLY ||
+    if (retransmission_type == ALL_PACKETS ||
         current_it->second->encryption_level() == ENCRYPTION_INITIAL) {
       // TODO(satyamshekhar): Think about congestion control here.
       // Specifically, about the retransmission count of packets being sent
       // proactively to achieve 0 (minimal) RTT.
       RetransmitPacket(current_it->first);
     }
-
-    current_it = next_it;
-  }
+  } while (next_it != unacked_packets_.end() &&
+           next_it->first <= end_sequence_number);
 }
 
 void QuicConnection::RetransmitPacket(
@@ -938,7 +941,6 @@ void QuicConnection::RetransmitPacket(
   // congestion window see b/8331807 for details.
   congestion_manager_.AbandoningPacket(sequence_number);
 
-  // TODO(ianswett): Never change the sequence number of the connect packet.
   // Re-packetize the frames with a new sequence number for retransmission.
   // Retransmitted data packets do not use FEC, even when it's enabled.
   SerializedPacket serialized_packet =
