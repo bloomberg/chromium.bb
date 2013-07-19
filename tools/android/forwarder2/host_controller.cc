@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "tools/android/forwarder2/command.h"
@@ -45,7 +46,7 @@ bool HostController::Connect() {
   if (!adb_control_socket_.ConnectTcp("", adb_port_)) {
     LOG(ERROR) << "Could not connect HostController socket on port: "
                << adb_port_;
-    delete_callback_.Run(this);
+    SelfDelete();
     return false;
   }
   // Send the command to the device start listening to the "device_forward_port"
@@ -57,7 +58,7 @@ bool HostController::Connect() {
   if (!ReadCommand(&adb_control_socket_, &device_port_allocated, &command) ||
       command != command::BIND_SUCCESS) {
     LOG(ERROR) << "Device binding error using port " << device_port_;
-    delete_callback_.Run(this);
+    SelfDelete();
     return false;
   }
   // When doing dynamically allocation of port, we get the port from the
@@ -78,7 +79,7 @@ void HostController::ThreadHandler() {
   CHECK(ready_) << "HostController not ready. Must call Connect() first.";
   while (true) {
     if (!ReceivedCommand(command::ACCEPT_SUCCESS, &adb_control_socket_)) {
-      delete_callback_.Run(this);
+      SelfDelete();
       return;
     }
     // Try to connect to host server.
@@ -96,7 +97,7 @@ void HostController::ThreadHandler() {
         // re-try later.
         continue;
       }
-      delete_callback_.Run(this);
+      SelfDelete();
       return;
     }
     SendCommand(command::HOST_SERVER_SUCCESS,
@@ -111,7 +112,7 @@ void HostController::StartForwarder(
   scoped_ptr<Socket> adb_data_socket(CreateSocket());
   if (!adb_data_socket->ConnectTcp("", adb_port_)) {
     LOG(ERROR) << "Could not connect AdbDataSocket on port: " << adb_port_;
-    delete_callback_.Run(this);
+    SelfDelete();
     return;
   }
   // Open the Adb data connection, and send a command with the
@@ -126,7 +127,7 @@ void HostController::StartForwarder(
   if (!ReceivedCommand(command::ADB_DATA_SOCKET_SUCCESS,
                        &adb_control_socket_)) {
     LOG(ERROR) << "Device could not handle the new Adb Data Connection.";
-    delete_callback_.Run(this);
+    SelfDelete();
     return;
   }
   Forwarder* forwarder = new Forwarder(host_server_data_socket.Pass(),
@@ -140,6 +141,28 @@ scoped_ptr<Socket> HostController::CreateSocket() {
   socket->AddEventFd(global_exit_notifier_fd_);
   socket->AddEventFd(delete_controller_notifier_.receiver_fd());
   return socket.Pass();
+}
+
+void HostController::SelfDelete() {
+  base::ScopedClosureRunner delete_runner(
+      base::Bind(
+          &DeleteCallback::Run, base::Unretained(&delete_callback_),
+          base::Unretained(this)));
+  // Tell the device to delete its corresponding controller instance before we
+  // self-delete.
+  Socket socket;
+  if (!socket.ConnectTcp("", adb_port_)) {
+    LOG(ERROR) << "Could not connect to device on port " << adb_port_;
+    return;
+  }
+  if (!SendCommand(command::UNMAP_PORT, device_port_, &socket)) {
+    LOG(ERROR) << "Could not send unmap command for port " << device_port_;
+    return;
+  }
+  if (!ReceivedCommand(command::UNMAP_PORT_SUCCESS, &socket)) {
+    LOG(ERROR) << "Unamp command failed for port " << device_port_;
+    return;
+  }
 }
 
 }  // namespace forwarder2
