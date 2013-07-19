@@ -332,7 +332,7 @@ void CollectedCookiesViews::Init() {
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   layout->StartRow(0, single_column_layout_id);
-  cookie_info_view_ = new CookieInfoView(false);
+  cookie_info_view_ = new CookieInfoView();
   layout->AddView(cookie_info_view_);
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 

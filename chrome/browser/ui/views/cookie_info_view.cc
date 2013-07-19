@@ -20,7 +20,6 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/views/border.h"
-#include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/grid_layout.h"
@@ -37,7 +36,7 @@ const int kCookieInfoViewInsetSize = 3;
 ///////////////////////////////////////////////////////////////////////////////
 // CookieInfoView, public:
 
-CookieInfoView::CookieInfoView(bool editable_expiration_date)
+CookieInfoView::CookieInfoView()
     : name_label_(NULL),
       name_value_field_(NULL),
       content_label_(NULL),
@@ -51,11 +50,7 @@ CookieInfoView::CookieInfoView(bool editable_expiration_date)
       created_label_(NULL),
       created_value_field_(NULL),
       expires_label_(NULL),
-      expires_value_field_(NULL),
-      expires_value_combobox_(NULL),
-      expire_view_(NULL),
-      editable_expiration_date_(editable_expiration_date),
-      delegate_(NULL) {
+      expires_value_field_(NULL) {
 }
 
 CookieInfoView::~CookieInfoView() {
@@ -74,20 +69,7 @@ void CookieInfoView::SetCookie(const std::string& domain,
       base::TimeFormatFriendlyDateAndTime(cookie.ExpiryDate()) :
       l10n_util::GetStringUTF16(IDS_COOKIES_COOKIE_EXPIRES_SESSION);
 
-  if (editable_expiration_date_) {
-    expire_combo_values_.clear();
-    if (cookie.IsPersistent())
-      expire_combo_values_.push_back(expire_text);
-    expire_combo_values_.push_back(
-        l10n_util::GetStringUTF16(IDS_COOKIES_COOKIE_EXPIRES_SESSION));
-    expires_value_combobox_->ModelChanged();
-    expires_value_combobox_->SetSelectedIndex(0);
-    expires_value_combobox_->SetEnabled(true);
-    expires_value_combobox_->set_listener(this);
-  } else {
-    expires_value_field_->SetText(expire_text);
-  }
-
+  expires_value_field_->SetText(expire_text);
   send_for_value_field_->SetText(cookie.IsSecure() ?
       l10n_util::GetStringUTF16(IDS_COOKIES_COOKIE_SENDFOR_SECURE) :
       l10n_util::GetStringUTF16(IDS_COOKIES_COOKIE_SENDFOR_ANY));
@@ -112,8 +94,7 @@ void CookieInfoView::ClearCookieDisplay() {
   path_value_field_->SetText(no_cookie_string);
   send_for_value_field_->SetText(no_cookie_string);
   created_value_field_->SetText(no_cookie_string);
-  if (expires_value_field_)
-    expires_value_field_->SetText(no_cookie_string);
+  expires_value_field_->SetText(no_cookie_string);
   EnableCookieDisplay(false);
 }
 
@@ -124,8 +105,7 @@ void CookieInfoView::EnableCookieDisplay(bool enabled) {
   path_value_field_->SetEnabled(enabled);
   send_for_value_field_->SetEnabled(enabled);
   created_value_field_->SetEnabled(enabled);
-  if (expires_value_field_)
-    expires_value_field_->SetEnabled(enabled);
+  expires_value_field_->SetEnabled(enabled);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -135,25 +115,6 @@ void CookieInfoView::ViewHierarchyChanged(
     const ViewHierarchyChangedDetails& details) {
   if (details.is_add && details.child == this)
     Init();
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// CookieInfoView, views::ComboboxListener overrides.
-
-void CookieInfoView::OnSelectedIndexChanged(views::Combobox* combobox) {
-  DCHECK_EQ(combobox, expires_value_combobox_);
-  if (delegate_)
-    delegate_->ModifyExpireDate(combobox->selected_index() != 0);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// CookieInfoView, ui::ComboboxModel overrides.
-int CookieInfoView::GetItemCount() const {
-  return static_cast<int>(expire_combo_values_.size());
-}
-
-string16 CookieInfoView::GetItemAt(int index) {
-  return expire_combo_values_[index];
 }
 
 void CookieInfoView::AddLabelRow(int layout_id, views::GridLayout* layout,
@@ -206,10 +167,7 @@ void CookieInfoView::Init() {
   created_value_field_ = new views::Textfield;
   expires_label_ = new views::Label(
       l10n_util::GetStringUTF16(IDS_COOKIES_COOKIE_EXPIRES_LABEL));
-  if (editable_expiration_date_)
-    expires_value_combobox_ = new views::Combobox(this);
-  else
-    expires_value_field_ = new views::Textfield;
+  expires_value_field_ = new views::Textfield;
 
   using views::GridLayout;
   using views::ColumnSet;
@@ -248,14 +206,8 @@ void CookieInfoView::Init() {
               send_for_value_field_);
   AddLabelRow(three_column_layout_id, layout, created_label_,
               created_value_field_);
-
-  if (editable_expiration_date_) {
-    AddControlRow(three_column_layout_id, layout, expires_label_,
-                  expires_value_combobox_);
-  } else {
-    AddLabelRow(three_column_layout_id, layout, expires_label_,
-                expires_value_field_);
-  }
+  AddLabelRow(three_column_layout_id, layout, expires_label_,
+              expires_value_field_);
 
   // Color these borderless text areas the same as the containing dialog.
 #if defined(USE_AURA) || !defined(OS_WIN)
@@ -282,9 +234,7 @@ void CookieInfoView::Init() {
   created_value_field_->SetReadOnly(true);
   created_value_field_->RemoveBorder();
   created_value_field_->SetBackgroundColor(text_area_background);
-  if (expires_value_field_) {
-    expires_value_field_->SetReadOnly(true);
-    expires_value_field_->RemoveBorder();
-    expires_value_field_->SetBackgroundColor(text_area_background);
-  }
+  expires_value_field_->SetReadOnly(true);
+  expires_value_field_->RemoveBorder();
+  expires_value_field_->SetBackgroundColor(text_area_background);
 }

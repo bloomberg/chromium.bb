@@ -11,8 +11,6 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/strings/string16.h"
-#include "ui/base/models/combobox_model.h"
-#include "ui/views/controls/combobox/combobox_listener.h"
 #include "ui/views/view.h"
 
 namespace views {
@@ -26,25 +24,12 @@ class CanonicalCookie;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// CookieInfoViewDelegate
-//
-class CookieInfoViewDelegate {
- public:
-  virtual void ModifyExpireDate(bool session_expire) = 0;
-
- protected:
-  virtual ~CookieInfoViewDelegate() {}
-};
-
-///////////////////////////////////////////////////////////////////////////////
 // CookieInfoView
 //
 //  Responsible for displaying a tabular grid of Cookie information.
-class CookieInfoView : public views::View,
-                       public views::ComboboxListener,
-                       public ui::ComboboxModel {
+class CookieInfoView : public views::View {
  public:
-  explicit CookieInfoView(bool editable_expiration_date);
+  CookieInfoView();
   virtual ~CookieInfoView();
 
   // Update the display from the specified CookieNode.
@@ -61,19 +46,10 @@ class CookieInfoView : public views::View,
   // Enables or disables the cookie property text fields.
   void EnableCookieDisplay(bool enabled);
 
-  void set_delegate(CookieInfoViewDelegate* delegate) { delegate_ = delegate; }
-
  protected:
   // views::View:
   virtual void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) OVERRIDE;
-
-  // views::ComboboxListener:
-  virtual void OnSelectedIndexChanged(views::Combobox* combobox) OVERRIDE;
-
-  // ui::ComboboxModel:
-  virtual int GetItemCount() const OVERRIDE;
-  virtual string16 GetItemAt(int index) OVERRIDE;
 
  private:
   // Layout helper routines.
@@ -100,20 +76,6 @@ class CookieInfoView : public views::View,
   views::Textfield* created_value_field_;
   views::Label* expires_label_;
   views::Textfield* expires_value_field_;
-  views::Combobox* expires_value_combobox_;
-  views::View* expire_view_;
-
-  // Option values for expires_value_combobox_.
-  std::vector<string16> expire_combo_values_;
-
-  // True if expiration date can be edited. In this case we will show
-  // expires_value_combobox_ instead of expires_value_field_. The cookie's
-  // expiration date is editable only this class is used in
-  // CookiesPromptView (alert before cookie is set), in all other cases we
-  // don't let user directly change cookie setting.
-  bool editable_expiration_date_;
-
-  CookieInfoViewDelegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(CookieInfoView);
 };
