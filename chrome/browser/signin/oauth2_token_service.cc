@@ -283,8 +283,7 @@ OAuth2TokenService::Consumer::Consumer() {
 OAuth2TokenService::Consumer::~Consumer() {
 }
 
-OAuth2TokenService::OAuth2TokenService(net::URLRequestContextGetter* getter)
-    : request_context_getter_(getter) {
+OAuth2TokenService::OAuth2TokenService() {
 }
 
 OAuth2TokenService::~OAuth2TokenService() {
@@ -342,7 +341,7 @@ scoped_ptr<OAuth2TokenService::Request> OAuth2TokenService::StartRequest(
 
   pending_fetchers_[fetch_parameters] =
       Fetcher::CreateAndStart(this,
-                              request_context_getter_.get(),
+                              GetRequestContext(),
                               refresh_token,
                               scopes,
                               request->AsWeakPtr());

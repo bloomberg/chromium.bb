@@ -195,16 +195,21 @@ void DeviceOAuth2TokenService::ValidatingConsumer::InformConsumer() {
 DeviceOAuth2TokenService::DeviceOAuth2TokenService(
     net::URLRequestContextGetter* getter,
     PrefService* local_state)
-    : OAuth2TokenService(getter),
-      refresh_token_is_valid_(false),
+    : refresh_token_is_valid_(false),
       max_refresh_token_validation_retries_(3),
       pending_validators_(new std::set<ValidatingConsumer*>()),
+      url_request_context_getter_(getter),
       local_state_(local_state) {
 }
 
 DeviceOAuth2TokenService::~DeviceOAuth2TokenService() {
   STLDeleteElements(pending_validators_.get());
 }
+
+net::URLRequestContextGetter* DeviceOAuth2TokenService::GetRequestContext() {
+  return url_request_context_getter_.get();
+}
+
 
 // TODO(davidroche): if the caller deletes the returned Request while
 // the fetches are in-flight, the OAuth2TokenService class won't call

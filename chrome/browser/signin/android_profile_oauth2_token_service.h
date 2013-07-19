@@ -15,10 +15,6 @@
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
-namespace net {
-class URLRequestContextGetter;
-}
-
 class TokenService;
 
 
@@ -67,8 +63,7 @@ class AndroidProfileOAuth2TokenService : public ProfileOAuth2TokenService {
 
  protected:
   friend class ProfileOAuth2TokenServiceFactory;
-  explicit AndroidProfileOAuth2TokenService(
-      net::URLRequestContextGetter* getter);
+  AndroidProfileOAuth2TokenService();
   virtual ~AndroidProfileOAuth2TokenService();
 
   // virtual for testing.

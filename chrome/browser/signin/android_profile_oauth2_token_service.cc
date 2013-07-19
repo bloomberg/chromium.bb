@@ -13,7 +13,6 @@
 #include "chrome/browser/sync/profile_sync_service_android.h"
 #include "content/public/browser/browser_thread.h"
 #include "jni/AndroidProfileOAuth2TokenServiceHelper_jni.h"
-#include "net/url_request/url_request_context_getter.h"
 
 using base::android::AttachCurrentThread;
 using base::android::CheckException;
@@ -39,9 +38,7 @@ std::string CombineScopes(const OAuth2TokenService::ScopeSet& scopes) {
 
 }  // namespace
 
-AndroidProfileOAuth2TokenService::AndroidProfileOAuth2TokenService(
-    net::URLRequestContextGetter* getter)
-    : ProfileOAuth2TokenService(getter) {
+AndroidProfileOAuth2TokenService::AndroidProfileOAuth2TokenService() {
 }
 
 AndroidProfileOAuth2TokenService::~AndroidProfileOAuth2TokenService() {

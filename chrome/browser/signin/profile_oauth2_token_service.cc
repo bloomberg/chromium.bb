@@ -35,10 +35,8 @@ std::string GetAccountId(Profile* profile) {
 
 }  // namespace
 
-ProfileOAuth2TokenService::ProfileOAuth2TokenService(
-    net::URLRequestContextGetter* getter)
-    : OAuth2TokenService(getter),
-      profile_(NULL),
+ProfileOAuth2TokenService::ProfileOAuth2TokenService()
+    : profile_(NULL),
       last_auth_error_(GoogleServiceAuthError::NONE) {
 }
 
@@ -151,6 +149,10 @@ void ProfileOAuth2TokenService::Observe(
 
 GoogleServiceAuthError ProfileOAuth2TokenService::GetAuthStatus() const {
   return last_auth_error_;
+}
+
+net::URLRequestContextGetter* ProfileOAuth2TokenService::GetRequestContext() {
+  return profile_->GetRequestContext();
 }
 
 void ProfileOAuth2TokenService::RegisterCacheEntry(

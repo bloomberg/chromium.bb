@@ -327,8 +327,7 @@ BrowserContextKeyedService* FakeOAuth2TokenService::BuildTokenService(
     content::BrowserContext* context) {
   Profile* profile = static_cast<Profile*>(context);
 
-  FakeOAuth2TokenService* service =
-      new FakeOAuth2TokenService(context->GetRequestContext());
+  FakeOAuth2TokenService* service = new FakeOAuth2TokenService();
   service->Initialize(profile);
   return service;
 }

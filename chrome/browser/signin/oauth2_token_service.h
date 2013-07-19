@@ -101,7 +101,7 @@ class OAuth2TokenService {
   // A set of scopes in OAuth2 authentication.
   typedef std::set<std::string> ScopeSet;
 
-  explicit OAuth2TokenService(net::URLRequestContextGetter* getter);
+  OAuth2TokenService();
   virtual ~OAuth2TokenService();
 
   // Add or remove observers of this token service.
@@ -188,6 +188,10 @@ class OAuth2TokenService {
   void FireRefreshTokensCleared();
 
  private:
+  // Derived classes must provide a request context used for fetching access
+  // tokens with the |StartRequest| method.
+  virtual net::URLRequestContextGetter* GetRequestContext() = 0;
+
   // Class that fetches an OAuth2 access token for a given set of scopes and
   // OAuth2 refresh token.
   class Fetcher;
@@ -214,9 +218,6 @@ class OAuth2TokenService {
 
   // Called when |fetcher| finishes fetching.
   void OnFetchComplete(Fetcher* fetcher);
-
-  // Getter to use for fetchers.
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
 
   // The cache of currently valid tokens.
   typedef std::map<ScopeSet, CacheEntry> TokenCache;

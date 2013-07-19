@@ -49,9 +49,9 @@ ProfileOAuth2TokenServiceFactory::BuildServiceInstanceFor(
   Profile* profile = static_cast<Profile*>(context);
   ProfileOAuth2TokenService* service;
 #if defined(OS_ANDROID)
-  service = new AndroidProfileOAuth2TokenService(profile->GetRequestContext());
+  service = new AndroidProfileOAuth2TokenService();
 #else
-  service = new ProfileOAuth2TokenService(profile->GetRequestContext());
+  service = new ProfileOAuth2TokenService();
 #endif
   service->Initialize(profile);
   return service;

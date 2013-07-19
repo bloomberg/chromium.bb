@@ -44,8 +44,8 @@ class RetryingTestingOAuth2TokenServiceConsumer
 
 class TestOAuth2TokenService : public OAuth2TokenService {
  public:
-  explicit TestOAuth2TokenService(net::URLRequestContextGetter* getter)
-      : OAuth2TokenService(getter) {
+  explicit TestOAuth2TokenService(net::TestURLRequestContextGetter* getter)
+      : request_context_getter_(getter) {
   }
 
   // For testing: set the refresh token to be used.
@@ -57,22 +57,24 @@ class TestOAuth2TokenService : public OAuth2TokenService {
   virtual std::string GetRefreshToken() OVERRIDE { return refresh_token_; }
 
  private:
+  // OAuth2TokenService implementation.
+  virtual net::URLRequestContextGetter* GetRequestContext() OVERRIDE {
+    return request_context_getter_.get();
+  }
+
   std::string refresh_token_;
+  scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
 };
 
 class OAuth2TokenServiceTest : public TokenServiceTestHarness {
  public:
-  OAuth2TokenServiceTest()
-      : request_context_getter_(new net::TestURLRequestContextGetter(
-            message_loop_.message_loop_proxy())) {
-  }
-
   virtual void SetUp() OVERRIDE {
     TokenServiceTestHarness::SetUp();
     io_thread_.reset(new content::TestBrowserThread(content::BrowserThread::IO,
                                                     &message_loop_));
     oauth2_service_.reset(
-        new TestOAuth2TokenService(request_context_getter_.get()));
+        new TestOAuth2TokenService(new net::TestURLRequestContextGetter(
+            message_loop_.message_loop_proxy())));
   }
 
   virtual void TearDown() OVERRIDE {
@@ -81,7 +83,6 @@ class OAuth2TokenServiceTest : public TokenServiceTestHarness {
 
  protected:
   scoped_ptr<content::TestBrowserThread> io_thread_;
-  scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
   net::TestURLFetcherFactory factory_;
   scoped_ptr<TestOAuth2TokenService> oauth2_service_;
   TestingOAuth2TokenServiceConsumer consumer_;

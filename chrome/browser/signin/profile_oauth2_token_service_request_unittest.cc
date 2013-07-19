@@ -115,8 +115,7 @@ void MockProfileOAuth2TokenService::Request::InformConsumer() const {
 }
 
 MockProfileOAuth2TokenService::MockProfileOAuth2TokenService()
-    : ProfileOAuth2TokenService(NULL /* URLRequestContextGetter */),
-      success_(true),
+    : success_(true),
       oauth2_access_token_(std::string("success token")) {
 }
 

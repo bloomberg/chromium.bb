@@ -193,9 +193,6 @@ class TestProfileSyncService : public ProfileSyncService {
 
 class FakeOAuth2TokenService : public ProfileOAuth2TokenService {
  public:
-  explicit FakeOAuth2TokenService(net::URLRequestContextGetter* getter)
-      : ProfileOAuth2TokenService(getter) {}
-
   virtual scoped_ptr<OAuth2TokenService::Request> StartRequest(
       const OAuth2TokenService::ScopeSet& scopes,
       OAuth2TokenService::Consumer* consumer) OVERRIDE;
