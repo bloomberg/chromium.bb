@@ -356,6 +356,7 @@ void TiclInvalidationService::StopInvalidator() {
 }
 
 void TiclInvalidationService::Logout() {
+  access_token_request_.reset();
   request_access_token_retry_timer_.Stop();
 
   if (IsStarted()) {
