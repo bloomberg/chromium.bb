@@ -12,14 +12,15 @@
 
 namespace content {
 
-class RenderWidgetHostImpl;
+class InputRouter;
 class TapSuppressionController;
 
 // Controls the suppression of touchpad taps immediately following the dispatch
 // of a GestureFlingCancel event.
 class TouchpadTapSuppressionController : public TapSuppressionControllerClient {
  public:
-  explicit TouchpadTapSuppressionController(RenderWidgetHostImpl* rwhv);
+  // The |input_router| must outlive the TouchpadTapSupressionController.
+  explicit TouchpadTapSuppressionController(InputRouter* input_router);
   virtual ~TouchpadTapSuppressionController();
 
   // Should be called on arrival of GestureFlingCancel events.
@@ -48,7 +49,7 @@ class TouchpadTapSuppressionController : public TapSuppressionControllerClient {
   virtual void ForwardStashedTapDownForDeferral() OVERRIDE;
   virtual void ForwardStashedTapDownSkipDeferral() OVERRIDE;
 
-  RenderWidgetHostImpl* render_widget_host_;
+  InputRouter* input_router_;
   MouseEventWithLatencyInfo stashed_mouse_down_;
 
   // The core controller of tap suppression.

@@ -23,6 +23,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
+#include "content/browser/renderer_host/input/input_router_client.h"
 #include "content/browser/renderer_host/smooth_scroll_gesture_controller.h"
 #include "content/common/browser_rendering_stats.h"
 #include "content/common/view_message_enums.h"
@@ -72,18 +73,18 @@ class WebLayer;
 
 namespace content {
 class BackingStore;
-class GestureEventFilter;
+class InputRouter;
 class MockRenderWidgetHost;
 class OverscrollController;
 class RenderWidgetHostDelegate;
 class RenderWidgetHostViewPort;
 class SmoothScrollGestureController;
-class TouchEventQueue;
 struct EditCommand;
 
 // This implements the RenderWidgetHost interface that is exposed to
 // embedders of content, and adds things only visible to content.
 class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
+                                            public InputRouterClient,
                                             public IPC::Listener {
  public:
   // routing_id can be MSG_ROUTING_NONE, in which case the next available
@@ -280,17 +281,13 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   void ForwardGestureEventWithLatencyInfo(
       const WebKit::WebGestureEvent& gesture_event,
       const ui::LatencyInfo& ui_latency);
-  virtual void ForwardTouchEventWithLatencyInfo(
+  void ForwardTouchEventWithLatencyInfo(
       const WebKit::WebTouchEvent& touch_event,
       const ui::LatencyInfo& ui_latency);
-
-  // Forwards the given event immediately to the renderer.
-  void ForwardMouseEventImmediately(
+  void ForwardMouseEventWithLatencyInfo(
       const MouseEventWithLatencyInfo& mouse_event);
-  void ForwardTouchEventImmediately(
-      const TouchEventWithLatencyInfo& touch_event);
-  void ForwardGestureEventImmediately(
-      const GestureEventWithLatencyInfo& gesture_event);
+  void ForwardWheelEventWithLatencyInfo(
+      const MouseWheelEventWithLatencyInfo& wheel_event);
 
   void CancelUpdateTextDirection();
 
@@ -355,7 +352,15 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
     return input_method_active_;
   }
 
+  // Whether forwarded WebInputEvents should be ignored.  True if either
+  // |ignore_input_events_| or |process_->IgnoreInputEvents()| is true.
+  bool IgnoreInputEvents() const;
+
+  // Event queries delegated to the |input_router_|.
   bool ShouldForwardTouchEvent() const;
+  bool ShouldForwardGestureEvent(
+      const GestureEventWithLatencyInfo& gesture_event) const;
+  bool HasQueuedGestureEvents() const;
 
   bool has_touch_handler() const { return has_touch_handler_; }
 
@@ -489,11 +494,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // Update the renderer's cache of the screen rect of the view and window.
   void SendScreenRects();
 
-  GestureEventFilter* gesture_event_filter() {
-    return gesture_event_filter_.get();
-  }
-
-  OverscrollController* overscroll_controller() {
+  OverscrollController* overscroll_controller() const {
     return overscroll_controller_.get();
   }
 
@@ -525,24 +526,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
 
  protected:
   virtual RenderWidgetHostImpl* AsRenderWidgetHostImpl() OVERRIDE;
-
-  // Transmits the given input event. This is an internal helper for
-  // |ForwardInputEvent()| and should not be used directly from elsewhere.
-  void SendInputEvent(const WebKit::WebInputEvent& input_event,
-                      int event_size, const ui::LatencyInfo& latency_info,
-                      bool is_keyboard_shortcut);
-
-  // Internal implementation of the public Forward*Event() methods.
-  void ForwardInputEvent(const WebKit::WebInputEvent& input_event,
-                         int event_size, const ui::LatencyInfo& latency_info,
-                         bool is_keyboard_shortcut);
-
-  // Internal forwarding implementations that take a LatencyInfo.
-  virtual void ForwardMouseEventWithLatencyInfo(
-      const MouseEventWithLatencyInfo& mouse_event);
-  virtual void ForwardWheelEventWithLatencyInfo(
-      const WebKit::WebMouseWheelEvent& wheel_event,
-      const ui::LatencyInfo& latency_info);
 
   // Create a LatencyInfo struct with INPUT_EVENT_LATENCY_RWH_COMPONENT
   // component if it is not already in |original|. And if |original| is
@@ -658,15 +641,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
                       gfx::Vector2dF current_fling_velocity);
   void OnUpdateRect(const ViewHostMsg_UpdateRect_Params& params);
   void OnUpdateIsDelayed();
-  void OnInputEventAck(WebKit::WebInputEvent::Type event_type,
-                       InputEventAckState ack_result);
   void OnBeginSmoothScroll(
       const ViewHostMsg_BeginSmoothScroll_Params& params);
-  void OnSelectRangeAck();
-  void OnMsgMoveCaretAck();
   virtual void OnFocus();
   virtual void OnBlur();
-  void OnHasTouchEventHandlers(bool has_handlers);
   void OnSetCursor(const WebCursor& cursor);
   void OnTextInputTypeChanged(ui::TextInputType type,
                               bool can_compose_inline,
@@ -721,25 +699,42 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // widgets that don't have focus to still handle key presses.
   bool KeyPressListenersHandleEvent(const NativeWebKeyboardEvent& event);
 
-  // Called by OnInputEventAck() to process a keyboard event ack message.
-  void ProcessKeyboardEventAck(int type, bool processed);
-
-  // Called by OnInputEventAck() to process a wheel event ack message.
-  // This could result in a task being posted to allow additional wheel
-  // input messages to be coalesced.
-  void ProcessWheelAck(bool processed);
-
-  // Called by OnInputEventAck() to process a gesture event ack message.
-  // This validates the gesture for suppression of touchpad taps and sends one
-  // previously queued coalesced gesture if it exists.
-  void ProcessGestureAck(bool processed, int type);
+  // InputRouterClient
+  virtual InputEventAckState FilterInputEvent(
+      const WebKit::WebInputEvent& event,
+      const ui::LatencyInfo& latency_info) OVERRIDE;
+  virtual void IncrementInFlightEventCount() OVERRIDE;
+  virtual void DecrementInFlightEventCount() OVERRIDE;
+  virtual void OnHasTouchEventHandlers(bool has_handlers) OVERRIDE;
+  virtual bool OnSendKeyboardEvent(
+      const NativeWebKeyboardEvent& key_event,
+      const ui::LatencyInfo& latency_info,
+      bool* is_shortcut) OVERRIDE;
+  virtual bool OnSendWheelEvent(
+      const MouseWheelEventWithLatencyInfo& wheel_event) OVERRIDE;
+  virtual bool OnSendMouseEvent(
+      const MouseEventWithLatencyInfo& mouse_event) OVERRIDE;
+  virtual bool OnSendTouchEvent(
+      const TouchEventWithLatencyInfo& touch_event) OVERRIDE;
+  virtual bool OnSendGestureEvent(
+      const GestureEventWithLatencyInfo& gesture_event) OVERRIDE;
+  virtual bool OnSendMouseEventImmediately(
+      const MouseEventWithLatencyInfo& mouse_event) OVERRIDE;
+  virtual bool OnSendTouchEventImmediately(
+      const TouchEventWithLatencyInfo& touch_event) OVERRIDE;
+  virtual bool OnSendGestureEventImmediately(
+      const GestureEventWithLatencyInfo& gesture_event) OVERRIDE;
+  virtual void OnKeyboardEventAck(const NativeWebKeyboardEvent& event,
+                                  InputEventAckState ack_result) OVERRIDE;
+  virtual void OnWheelEventAck(const WebKit::WebMouseWheelEvent& event,
+                               InputEventAckState ack_result) OVERRIDE;
+  virtual void OnTouchEventAck(const TouchEventWithLatencyInfo& event,
+                               InputEventAckState ack_result) OVERRIDE;
+  virtual void OnGestureEventAck(const WebKit::WebGestureEvent& event,
+                                 InputEventAckState ack_result) OVERRIDE;
+  virtual void OnUnexpectedEventAck(bool bad_message) OVERRIDE;
 
   void SimulateTouchGestureWithMouse(const WebKit::WebMouseEvent& mouse_event);
-
-  // Called on OnInputEventAck() to process a touch event ack message.
-  // This can result in a gesture event being generated and sent back to the
-  // renderer.
-  void ProcessTouchAck(InputEventAckState ack_result);
 
   // Called when there is a new auto resize (using a post to avoid a stack
   // which may get in recursive loops).
@@ -818,49 +813,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   gfx::Rect last_view_screen_rect_;
   gfx::Rect last_window_screen_rect_;
 
-  // True if a mouse move event was sent to the render view and we are waiting
-  // for a corresponding InputHostMsg_HandleInputEvent_ACK message.
-  bool mouse_move_pending_;
-
-  // The next mouse move event to send (only non-null while mouse_move_pending_
-  // is true).
-  scoped_ptr<MouseEventWithLatencyInfo> next_mouse_move_;
-
-  // (Similar to |mouse_move_pending_|.) True if a mouse wheel event was sent
-  // and we are waiting for a corresponding ack.
-  bool mouse_wheel_pending_;
-  WebKit::WebMouseWheelEvent current_wheel_event_;
-
-  typedef std::deque<MouseWheelEventWithLatencyInfo> WheelEventQueue;
-
-  // (Similar to |next_mouse_move_|.) The next mouse wheel events to send.
-  // Unlike mouse moves, mouse wheel events received while one is pending are
-  // coalesced (by accumulating deltas) if they match the previous event in
-  // modifiers. On the Mac, in particular, mouse wheel events are received at a
-  // high rate; not waiting for the ack results in jankiness, and using the same
-  // mechanism as for mouse moves (just dropping old events when multiple ones
-  // would be queued) results in very slow scrolling.
-  WheelEventQueue coalesced_mouse_wheel_events_;
-
   AccessibilityMode accessibility_mode_;
-
-  // (Similar to |mouse_move_pending_|.) True while waiting for SelectRange_ACK.
-  bool select_range_pending_;
-
-  // (Similar to |next_mouse_move_|.) The next SelectRange to send, if any.
-  struct SelectionRange {
-    gfx::Point start, end;
-  };
-  scoped_ptr<SelectionRange> next_selection_range_;
-
-  // (Similar to |mouse_move_pending_|.) True while waiting for MoveCaret_ACK.
-  bool move_caret_pending_;
-
-  // (Similar to |next_mouse_move_|.) The next MoveCaret to send, if any.
-  scoped_ptr<gfx::Point> next_move_caret_;
-
-  // The time when an input event was sent to the RenderWidget.
-  base::TimeTicks input_event_start_time_;
 
   // Keyboard event listeners.
   ObserverList<KeyboardListener> keyboard_listeners_;
@@ -897,14 +850,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // Used for UMA histogram logging to measure the time for a repaint view
   // operation to finish.
   base::TimeTicks repaint_start_time_;
-
-  // Queue of keyboard events that we need to track.
-  typedef std::deque<NativeWebKeyboardEvent> KeyQueue;
-
-  // A queue of keyboard events. We can't trust data from the renderer so we
-  // stuff key events into a queue and pop them out on ACK, feeding our copy
-  // back to whatever unhandled handler instead of the returned version.
-  KeyQueue key_queue_;
 
   // Set to true if we shouldn't send input events from the render widget.
   bool ignore_input_events_;
@@ -950,8 +895,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   base::WeakPtrFactory<RenderWidgetHostImpl> weak_factory_;
 
   SmoothScrollGestureController smooth_scroll_gesture_controller_;
-  scoped_ptr<TouchEventQueue> touch_event_queue_;
-  scoped_ptr<GestureEventFilter> gesture_event_filter_;
+
+  // Receives and handles all input events.
+  scoped_ptr<InputRouter> input_router_;
+
   scoped_ptr<OverscrollController> overscroll_controller_;
 
 #if defined(OS_WIN)

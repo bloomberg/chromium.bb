@@ -6,7 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
-#include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/browser/renderer_host/input/input_router.h"
 #include "content/browser/renderer_host/touchpad_tap_suppression_controller.h"
 #include "content/browser/renderer_host/touchscreen_tap_suppression_controller.h"
 #include "content/public/common/content_switches.h"
@@ -58,14 +58,14 @@ static int GetTapDownDeferralTimeMs() {
 }
 }  // namespace
 
-GestureEventFilter::GestureEventFilter(RenderWidgetHostImpl* rwhv)
-     : render_widget_host_(rwhv),
+GestureEventFilter::GestureEventFilter(InputRouter* input_router)
+     : input_router_(input_router),
        fling_in_progress_(false),
        scrolling_in_progress_(false),
        ignore_next_ack_(false),
        combined_scroll_pinch_(gfx::Transform()),
        touchpad_tap_suppression_controller_(
-           new TouchpadTapSuppressionController(rwhv)),
+           new TouchpadTapSuppressionController(input_router)),
        touchscreen_tap_suppression_controller_(
            new TouchscreenTapSuppressionController(this)),
        maximum_tap_gap_time_ms_(GetTapDownDeferralTimeMs()),
@@ -242,19 +242,6 @@ bool GestureEventFilter::ShouldForwardForCoalescing(
   return ShouldHandleEventNow();
 }
 
-void GestureEventFilter::Reset() {
-  fling_in_progress_ = false;
-  scrolling_in_progress_ = false;
-  ignore_next_ack_ = false;
-  combined_scroll_pinch_ = gfx::Transform();
-  coalesced_gesture_events_.clear();
-  deferred_tap_down_event_.event.type = WebInputEvent::Undefined;
-  debouncing_deferral_queue_.clear();
-  send_gtd_timer_.Stop();
-  debounce_deferring_timer_.Stop();
-  // TODO(rjkroege): Reset the tap suppression controller.
-}
-
 void GestureEventFilter::ProcessGestureAck(bool processed, int type) {
   if (coalesced_gesture_events_.empty()) {
     DLOG(ERROR) << "Received unexpected ACK for event type " << type;
@@ -274,7 +261,7 @@ void GestureEventFilter::ProcessGestureAck(bool processed, int type) {
   } else if (!coalesced_gesture_events_.empty()) {
     const GestureEventWithLatencyInfo& next_gesture_event =
         coalesced_gesture_events_.front();
-    render_widget_host_->ForwardGestureEventImmediately(next_gesture_event);
+    input_router_->SendGestureEventImmediately(next_gesture_event);
     // TODO(yusufo): Introduce GesturePanScroll so that these can be combined
     // into one gesture and kept inside the queue that way.
     if (coalesced_gesture_events_.size() > 1) {
@@ -284,8 +271,7 @@ void GestureEventFilter::ProcessGestureAck(bool processed, int type) {
               WebInputEvent::GestureScrollUpdate &&
           second_gesture_event.event.type ==
               WebInputEvent::GesturePinchUpdate) {
-        render_widget_host_->
-            ForwardGestureEventImmediately(second_gesture_event);
+        input_router_->SendGestureEventImmediately(second_gesture_event);
         ignore_next_ack_ = true;
         combined_scroll_pinch_ = gfx::Transform();
       }
@@ -302,7 +288,7 @@ bool GestureEventFilter::HasQueuedGestureEvents() const {
   return !coalesced_gesture_events_.empty();
 }
 
-const WebKit::WebInputEvent&
+const WebKit::WebGestureEvent&
 GestureEventFilter::GetGestureEventAwaitingAck() const {
   DCHECK(!coalesced_gesture_events_.empty());
   if (!ignore_next_ack_)
@@ -328,7 +314,7 @@ void GestureEventFilter::ForwardGestureEventForDeferral(
 void GestureEventFilter::ForwardGestureEventSkipDeferral(
     const GestureEventWithLatencyInfo& gesture_event) {
   if (ShouldForwardForCoalescing(gesture_event))
-      render_widget_host_->ForwardGestureEventImmediately(gesture_event);
+      input_router_->SendGestureEventImmediately(gesture_event);
 }
 
 void GestureEventFilter::SendGestureTapDownNow() {
@@ -349,7 +335,7 @@ void GestureEventFilter::SendScrollEndingEventsNow() {
         ShouldForwardForTapSuppression(*it) &&
         ShouldForwardForTapDeferral(*it) &&
         ShouldForwardForCoalescing(*it)) {
-      render_widget_host_->ForwardGestureEventImmediately(*it);
+      input_router_->SendGestureEventImmediately(*it);
     }
   }
   debouncing_deferral_queue_.clear();

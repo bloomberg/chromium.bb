@@ -13,8 +13,8 @@
 namespace content {
 
 TouchpadTapSuppressionController::TouchpadTapSuppressionController(
-    RenderWidgetHostImpl* /*rwhv*/)
-    : render_widget_host_(NULL) {}
+    InputRouter* /*input_router*/)
+    : input_router_(NULL) {}
 
 TouchpadTapSuppressionController::~TouchpadTapSuppressionController() {}
 

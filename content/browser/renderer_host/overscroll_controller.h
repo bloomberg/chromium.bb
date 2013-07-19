@@ -103,8 +103,8 @@ class OverscrollController {
   void SetOverscrollMode(OverscrollMode new_mode);
 
   // Returns whether the input event should be forwarded to the
-  // GestureEventFilter.
-  bool ShouldForwardToGestureFilter(const WebKit::WebInputEvent& event) const;
+  // RenderWidgetHost.
+  bool ShouldForwardToHost(const WebKit::WebInputEvent& event) const;
 
   // The RenderWidgetHost that owns this overscroll controller.
   RenderWidgetHostImpl* render_widget_host_;

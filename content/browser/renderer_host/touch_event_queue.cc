@@ -7,9 +7,6 @@
 #include "base/auto_reset.h"
 #include "base/debug/trace_event.h"
 #include "base/stl_util.h"
-#include "content/browser/renderer_host/render_widget_host_impl.h"
-#include "content/public/browser/render_widget_host_view.h"
-#include "content/port/browser/render_widget_host_view_port.h"
 
 namespace content {
 
@@ -18,8 +15,8 @@ typedef std::vector<TouchEventWithLatencyInfo> WebTouchEventWithLatencyList;
 // This class represents a single coalesced touch event. However, it also keeps
 // track of all the original touch-events that were coalesced into a single
 // event. The coalesced event is forwarded to the renderer, while the original
-// touch-events are sent to the View (on ACK for the coalesced event) so that
-// the View receives the event with their original timestamp.
+// touch-events are sent to the Client (on ACK for the coalesced event) so that
+// the Client receives the event with their original timestamp.
 class CoalescedWebTouchEvent {
  public:
   explicit CoalescedWebTouchEvent(const TouchEventWithLatencyInfo& event)
@@ -44,6 +41,8 @@ class CoalescedWebTouchEvent {
         event_with_latency.event.modifiers &&
         coalesced_event_.event.touchesLength ==
         event_with_latency.event.touchesLength) {
+      TRACE_EVENT_INSTANT0(
+          "input", "TouchEventQueue::MoveCoalesced", TRACE_EVENT_SCOPE_THREAD);
       events_.push_back(event_with_latency);
       // The WebTouchPoints include absolute position information. So it is
       // sufficient to simply replace the previous event with the new event.
@@ -90,9 +89,10 @@ class CoalescedWebTouchEvent {
   DISALLOW_COPY_AND_ASSIGN(CoalescedWebTouchEvent);
 };
 
-TouchEventQueue::TouchEventQueue(RenderWidgetHostImpl* host)
-    : render_widget_host_(host),
+TouchEventQueue::TouchEventQueue(TouchEventQueueClient* client)
+    : client_(client),
       dispatching_touch_ack_(false) {
+  DCHECK(client);
 }
 
 TouchEventQueue::~TouchEventQueue() {
@@ -108,9 +108,9 @@ void TouchEventQueue::QueueEvent(const TouchEventWithLatencyInfo& event) {
     // immediately.
     touch_queue_.push_back(new CoalescedWebTouchEvent(event));
     if (ShouldForwardToRenderer(event.event))
-      render_widget_host_->ForwardTouchEventImmediately(event);
+      client_->SendTouchEventImmediately(event);
     else
-      PopTouchEventToView(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+      PopTouchEventWithAck(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
     return;
   }
 
@@ -149,30 +149,25 @@ void TouchEventQueue::ProcessTouchAck(InputEventAckState ack_result) {
     }
   }
 
-  PopTouchEventToView(ack_result);
+  PopTouchEventWithAck(ack_result);
 
   // If there are queued touch events, then try to forward them to the renderer
-  // immediately, or ACK the events back to the view if appropriate.
+  // immediately, or ACK the events back to the client if appropriate.
   while (!touch_queue_.empty()) {
     const TouchEventWithLatencyInfo& touch =
         touch_queue_.front()->coalesced_event();
     if (ShouldForwardToRenderer(touch.event)) {
-      render_widget_host_->ForwardTouchEventImmediately(touch);
+      client_->SendTouchEventImmediately(touch);
       break;
     }
-    PopTouchEventToView(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+    PopTouchEventWithAck(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
   }
 }
 
 void TouchEventQueue::FlushQueue() {
   DCHECK(!dispatching_touch_ack_);
   while (!touch_queue_.empty())
-    PopTouchEventToView(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-}
-
-void TouchEventQueue::Reset() {
-  if (!touch_queue_.empty())
-    STLDeleteElements(&touch_queue_);
+    PopTouchEventWithAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
 }
 
 size_t TouchEventQueue::GetQueueSize() const {
@@ -183,7 +178,7 @@ const TouchEventWithLatencyInfo& TouchEventQueue::GetLatestEvent() const {
   return touch_queue_.back()->coalesced_event();
 }
 
-void TouchEventQueue::PopTouchEventToView(InputEventAckState ack_result) {
+void TouchEventQueue::PopTouchEventWithAck(InputEventAckState ack_result) {
   if (touch_queue_.empty())
     return;
   scoped_ptr<CoalescedWebTouchEvent> acked_event(touch_queue_.front());
@@ -193,16 +188,13 @@ void TouchEventQueue::PopTouchEventToView(InputEventAckState ack_result) {
   // to the renderer, or touch-events being queued.
   base::AutoReset<bool> dispatching_touch_ack(&dispatching_touch_ack_, true);
 
-  RenderWidgetHostViewPort* view = RenderWidgetHostViewPort::FromRWHV(
-      render_widget_host_->GetView());
   for (WebTouchEventWithLatencyList::const_iterator iter = acked_event->begin(),
        end = acked_event->end();
        iter != end; ++iter) {
     ui::LatencyInfo* latency = const_cast<ui::LatencyInfo*>(&(iter->latency));
     latency->AddLatencyNumber(
         ui::INPUT_EVENT_LATENCY_ACKED_COMPONENT, 0, 0);
-    render_widget_host_->ComputeTouchLatency(*latency);
-    view->ProcessAckedTouchEvent((*iter), ack_result);
+    client_->OnTouchEventAck((*iter), ack_result);
   }
 }
 
