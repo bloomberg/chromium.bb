@@ -1,7 +1,7 @@
 <h1 id="lab_8_web_resources">Access Web Resources</h1>
 
 <p>Chrome packaged apps have a strict
-<a href="app_csp.html">Content Security Policy</a>
+<a href="contentSecurityPolicy.html">Content Security Policy</a>
 which will not let the user execute code or load resources that are hosted remotely.</p>
 
 <p>Many applications, however, need to be able to load and display content from a remote location. A News Reader, for example, needs to display remote content inline or load and show images from a remote URL.</p>
@@ -145,7 +145,7 @@ and launch the app from a new tab.</p>
 
 <p class="note"><b></b> Refused to load the image &#39;http://angularjs.org/img/AngularJS-large.png&#39; because it violates the following Content Security Policy directive: &quot;img-src &#39;self&#39; data: chrome-extension-resource:&quot;.</p>
 
-<p>Chrome packaged apps cannot load any external resource directly in the DOM, because of the <a href="app_csp.html">CSP restrictions</a>.</p>
+<p>Chrome packaged apps cannot load any external resource directly in the DOM, because of the <a href="contentSecurityPolicy.html">CSP restrictions</a>.</p>
 
 <p>To avoid this restriction, you can use XHR requests, grab the blob corresponding to the remote file and use it appropriately.
 For example, <code>&lt;img&gt;</code> tags can use a blob URL.
