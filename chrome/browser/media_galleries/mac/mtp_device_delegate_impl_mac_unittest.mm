@@ -184,7 +184,9 @@ class MTPDeviceDelegateImplMacTest : public testing::Test {
         content::BrowserThread::IO));
     ASSERT_TRUE(io_thread_->Start());
 
-    manager_.SetNotifications(monitor_.receiver());
+    chrome::test::TestStorageMonitor* monitor =
+        chrome::test::TestStorageMonitor::CreateAndInstall();
+    manager_.SetNotifications(monitor->receiver());
 
     camera_ = [MockMTPICCameraDevice alloc];
     id<ICDeviceBrowserDelegate> delegate = manager_.device_browser();
@@ -304,7 +306,6 @@ class MTPDeviceDelegateImplMacTest : public testing::Test {
   scoped_ptr<content::TestBrowserThread> file_thread_;
   scoped_ptr<content::TestBrowserThread> io_thread_;
   base::ScopedTempDir temp_dir_;
-  chrome::test::TestStorageMonitor monitor_;
   chrome::ImageCaptureDeviceManager manager_;
   MockMTPICCameraDevice* camera_;
 

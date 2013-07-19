@@ -369,4 +369,8 @@ bool StorageMonitorMac::FindDiskWithMountPoint(
   return false;
 }
 
+StorageMonitor* StorageMonitor::Create() {
+  return new StorageMonitorMac();
+}
+
 }  // namespace chrome

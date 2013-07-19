@@ -18,9 +18,11 @@
 #include "chrome/browser/storage_monitor/storage_info.h"
 #include "chrome/browser/storage_monitor/storage_monitor.h"
 #include "chrome/browser/storage_monitor/test_portable_device_watcher_win.h"
+#include "chrome/browser/storage_monitor/test_storage_monitor.h"
 #include "chrome/browser/storage_monitor/test_storage_monitor_win.h"
 #include "chrome/browser/storage_monitor/test_volume_mount_watcher_win.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -60,8 +62,8 @@ class MTPDeviceDelegateImplWinTest : public ChromeRenderViewHostTestHarness {
                         bool removable,
                         bool media_device);
 
-  // Note: need to make this weak ptr once ownership moves to g_browser_process
-  scoped_ptr<test::TestStorageMonitorWin> monitor_;
+  // Pointer to the storage monitor. Owned by TestingBrowserProcess.
+  test::TestStorageMonitorWin* monitor_;
   scoped_refptr<extensions::Extension> extension_;
 
   EnsureMediaDirectoriesExists media_directories_;
@@ -69,13 +71,21 @@ class MTPDeviceDelegateImplWinTest : public ChromeRenderViewHostTestHarness {
 
 void MTPDeviceDelegateImplWinTest::SetUp() {
   ChromeRenderViewHostTestHarness::SetUp();
+
+  test::TestStorageMonitor::RemoveSingleton();
   test::TestPortableDeviceWatcherWin* portable_device_watcher =
       new test::TestPortableDeviceWatcherWin;
   test::TestVolumeMountWatcherWin* mount_watcher =
       new test::TestVolumeMountWatcherWin;
   portable_device_watcher->set_use_dummy_mtp_storage_info(true);
-  monitor_.reset(new test::TestStorageMonitorWin(
-      mount_watcher, portable_device_watcher));
+  scoped_ptr<test::TestStorageMonitorWin> monitor(
+      new test::TestStorageMonitorWin(
+          mount_watcher, portable_device_watcher));
+  TestingBrowserProcess* browser_process = TestingBrowserProcess::GetGlobal();
+  DCHECK(browser_process);
+  monitor_ = monitor.get();
+  browser_process->SetStorageMonitor(monitor.Pass());
+
   base::RunLoop runloop;
   monitor_->EnsureInitialized(runloop.QuitClosure());
   runloop.Run();
@@ -93,7 +103,9 @@ void MTPDeviceDelegateImplWinTest::SetUp() {
 }
 
 void MTPDeviceDelegateImplWinTest::TearDown() {
-  monitor_.reset();
+  // Windows storage monitor must be destroyed on the same thread
+  // as construction.
+  test::TestStorageMonitor::RemoveSingleton();
 
   ChromeRenderViewHostTestHarness::TearDown();
 }

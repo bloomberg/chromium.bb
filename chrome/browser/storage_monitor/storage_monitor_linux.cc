@@ -513,4 +513,9 @@ void StorageMonitorLinux::AddNewMount(const base::FilePath& mount_device,
   receiver()->ProcessAttach(*storage_info);
 }
 
+StorageMonitor* StorageMonitor::Create() {
+  const base::FilePath kDefaultMtabPath("/etc/mtab");
+  return new StorageMonitorLinux(kDefaultMtabPath);
+}
+
 }  // namespace chrome

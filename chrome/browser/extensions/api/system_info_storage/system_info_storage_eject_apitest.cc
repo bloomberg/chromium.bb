@@ -35,7 +35,7 @@ struct TestStorageUnitInfo kRemovableStorageData[] = {
 
 class SystemInfoStorageEjectApiTest : public ExtensionApiTest {
  public:
-  SystemInfoStorageEjectApiTest() {}
+  SystemInfoStorageEjectApiTest() : monitor_(NULL) {}
   virtual ~SystemInfoStorageEjectApiTest() {}
 
  protected:
@@ -43,6 +43,11 @@ class SystemInfoStorageEjectApiTest : public ExtensionApiTest {
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
+  }
+
+  virtual void SetUpOnMainThread() OVERRIDE {
+    monitor_ = chrome::test::TestStorageMonitor::CreateForBrowserTests();
+    ExtensionApiTest::SetUpOnMainThread();
   }
 
   content::RenderViewHost* GetHost() {
@@ -75,17 +80,15 @@ class SystemInfoStorageEjectApiTest : public ExtensionApiTest {
     content::RunAllPendingInMessageLoop();
   }
 
+ protected:
+  chrome::test::TestStorageMonitor* monitor_;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(SystemInfoStorageEjectApiTest);
 };
 
 
 IN_PROC_BROWSER_TEST_F(SystemInfoStorageEjectApiTest, EjectTest) {
-  scoped_ptr<chrome::test::TestStorageMonitor> monitor(
-      chrome::test::TestStorageMonitor::CreateForBrowserTests());
-  monitor->Init();
-  monitor->MarkInitialized();
-
   TestStorageInfoProvider* provider =
       new TestStorageInfoProvider(kRemovableStorageData,
                                   arraysize(kRemovableStorageData));
@@ -104,17 +107,12 @@ IN_PROC_BROWSER_TEST_F(SystemInfoStorageEjectApiTest, EjectTest) {
   EXPECT_TRUE(attach_finished_listener.WaitUntilSatisfied());
 
   ExecuteCmdAndCheckReply(host, "ejectTest()", "eject_ok");
-  EXPECT_EQ(kRemovableStorageData[0].device_id, monitor->ejected_device());
+  EXPECT_EQ(kRemovableStorageData[0].device_id, monitor_->ejected_device());
 
   Detach();
 }
 
 IN_PROC_BROWSER_TEST_F(SystemInfoStorageEjectApiTest, EjectBadDeviceTest) {
-  scoped_ptr<chrome::test::TestStorageMonitor> monitor(
-      chrome::test::TestStorageMonitor::CreateForBrowserTests());
-  monitor->Init();
-  monitor->MarkInitialized();
-
   TestStorageInfoProvider* provider =
       new TestStorageInfoProvider(kRemovableStorageData,
                                   arraysize(kRemovableStorageData));
@@ -122,5 +120,5 @@ IN_PROC_BROWSER_TEST_F(SystemInfoStorageEjectApiTest, EjectBadDeviceTest) {
 
   ExecuteCmdAndCheckReply(GetHost(), "ejectFailTest()", "eject_no_such_device");
 
-  EXPECT_EQ("", monitor->ejected_device());
+  EXPECT_EQ("", monitor_->ejected_device());
 }

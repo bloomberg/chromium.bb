@@ -108,12 +108,8 @@ class MediaGalleriesPrivateApiTest : public ExtensionApiTest {
 };
 
 IN_PROC_BROWSER_TEST_F(MediaGalleriesPrivateApiTest, DeviceAttachDetachEvents) {
-  scoped_ptr<chrome::test::TestStorageMonitor> monitor(
-      chrome::test::TestStorageMonitor::CreateForBrowserTests());
-  monitor->Init();
-  monitor->MarkInitialized();
-
   // Setup.
+  chrome::test::TestStorageMonitor::SyncInitialize();
   const extensions::Extension* extension =
       LoadExtension(test_data_dir_.AppendASCII(kTestExtensionPath));
   ASSERT_TRUE(extension);

@@ -13,6 +13,7 @@
 #include "chrome/browser/storage_monitor/removable_device_constants.h"
 #include "chrome/browser/storage_monitor/storage_monitor.h"
 #include "chrome/browser/storage_monitor/test_storage_monitor.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -47,7 +48,7 @@ class MediaStorageUtilTest : public testing::Test {
                      const string16& name,
                      const base::FilePath::StringType& location) {
     StorageInfo info(id, name, location, string16(), string16(), string16(), 0);
-    monitor_.receiver()->ProcessAttach(info);
+    monitor_->receiver()->ProcessAttach(info);
   }
 
  protected:
@@ -62,11 +63,12 @@ class MediaStorageUtilTest : public testing::Test {
   }
 
   virtual void SetUp() OVERRIDE {
+    monitor_ = chrome::test::TestStorageMonitor::CreateAndInstall();
     ASSERT_TRUE(scoped_temp_dir_.CreateUniqueTempDir());
     file_thread_.Start();
   }
 
-  virtual void TearDown() {
+  virtual void TearDown() OVERRIDE {
     WaitForFileThread();
   }
 
@@ -86,7 +88,7 @@ class MediaStorageUtilTest : public testing::Test {
   base::MessageLoop message_loop_;
 
  private:
-  chrome::test::TestStorageMonitor monitor_;
+  chrome::test::TestStorageMonitor* monitor_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
   base::ScopedTempDir scoped_temp_dir_;

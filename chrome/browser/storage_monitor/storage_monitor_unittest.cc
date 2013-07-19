@@ -10,22 +10,31 @@
 #include "chrome/browser/storage_monitor/test_storage_monitor.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace {
+
+void SetLatch(bool* called) {
+  *called = true;
+}
+
+}  // namespace
+
 namespace chrome {
 
 TEST(StorageMonitorTest, TestInitialize) {
+  test::TestStorageMonitor::RemoveSingleton();
   test::TestStorageMonitor monitor;
   EXPECT_FALSE(monitor.init_called_);
 
-  base::WaitableEvent event(false, false);
-  monitor.EnsureInitialized(base::Bind(&base::WaitableEvent::Signal,
-                                       base::Unretained(&event)));
+  bool initialized = false;
+  monitor.EnsureInitialized(base::Bind(&SetLatch, &initialized));
   EXPECT_TRUE(monitor.init_called_);
-  EXPECT_FALSE(event.IsSignaled());
+  EXPECT_FALSE(initialized);
   monitor.MarkInitialized();
-  EXPECT_TRUE(event.IsSignaled());
+  EXPECT_TRUE(initialized);
 }
 
 TEST(StorageMonitorTest, DeviceAttachDetachNotifications) {
+  test::TestStorageMonitor::RemoveSingleton();
   base::MessageLoop message_loop;
   const string16 kDeviceName = ASCIIToUTF16("media device");
   const std::string kDeviceId1 = "dcim:UUID:FFF0-0001";
@@ -73,6 +82,7 @@ TEST(StorageMonitorTest, DeviceAttachDetachNotifications) {
 }
 
 TEST(StorageMonitorTest, GetAllAvailableStoragesEmpty) {
+  test::TestStorageMonitor::RemoveSingleton();
   base::MessageLoop message_loop;
   test::TestStorageMonitor monitor;
   std::vector<StorageInfo> devices = monitor.GetAllAvailableStorages();
@@ -80,6 +90,7 @@ TEST(StorageMonitorTest, GetAllAvailableStoragesEmpty) {
 }
 
 TEST(StorageMonitorTest, GetAllAvailableStorageAttachDetach) {
+  test::TestStorageMonitor::RemoveSingleton();
   base::MessageLoop message_loop;
   test::TestStorageMonitor monitor;
   const std::string kDeviceId1 = "dcim:UUID:FFF0-0042";

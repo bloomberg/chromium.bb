@@ -25,10 +25,6 @@ class VolumeMountWatcherWin;
 
 class StorageMonitorWin : public StorageMonitor {
  public:
-  // Creates an instance of StorageMonitorWin. Should only be called by browser
-  // start up code. Use GetInstance() instead.
-  static StorageMonitorWin* Create();
-
   virtual ~StorageMonitorWin();
 
   // Must be called after the file thread is created.
@@ -49,10 +45,11 @@ class StorageMonitorWin : public StorageMonitor {
  private:
   class PortableDeviceNotifications;
   friend class test::TestStorageMonitorWin;
+  friend StorageMonitor* StorageMonitor::Create();
 
   // To support unit tests, this constructor takes |volume_mount_watcher| and
   // |portable_device_watcher| objects. These params are either constructed in
-  // unit tests or in StorageMonitorWin::Create() function.
+  // unit tests or in StorageMonitorWin Create() function.
   StorageMonitorWin(VolumeMountWatcherWin* volume_mount_watcher,
                     PortableDeviceWatcherWin* portable_device_watcher);
 

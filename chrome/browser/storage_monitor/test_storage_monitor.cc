@@ -4,7 +4,12 @@
 
 #include "chrome/browser/storage_monitor/test_storage_monitor.h"
 
+#include "base/run_loop.h"
+#include "base/synchronization/waitable_event.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_impl.h"
 #include "chrome/browser/storage_monitor/storage_info.h"
+#include "chrome/test/base/testing_browser_process.h"
 
 #if defined(OS_LINUX)
 #include "chrome/browser/storage_monitor/test_media_transfer_protocol_manager_linux.h"
@@ -25,10 +30,52 @@ TestStorageMonitor::TestStorageMonitor()
 
 TestStorageMonitor::~TestStorageMonitor() {}
 
-TestStorageMonitor*
-TestStorageMonitor::CreateForBrowserTests() {
-  StorageMonitor::RemoveSingletonForTesting();
-  return new TestStorageMonitor();
+TestStorageMonitor* TestStorageMonitor::CreateAndInstall() {
+  RemoveSingleton();
+  TestStorageMonitor* monitor = new TestStorageMonitor();
+  scoped_ptr<StorageMonitor> pass_monitor(monitor);
+  monitor->Init();
+  monitor->MarkInitialized();
+  TestingBrowserProcess* browser_process = TestingBrowserProcess::GetGlobal();
+  if (browser_process) {
+    browser_process->SetStorageMonitor(pass_monitor.Pass());
+    return monitor;
+  }
+  return NULL;
+}
+
+TestStorageMonitor* TestStorageMonitor::CreateForBrowserTests() {
+  TestStorageMonitor* return_monitor = new TestStorageMonitor();
+  return_monitor->Init();
+  return_monitor->MarkInitialized();
+
+  scoped_ptr<StorageMonitor> monitor(return_monitor);
+  BrowserProcessImpl* browser_process =
+      static_cast<BrowserProcessImpl*>(g_browser_process);
+  DCHECK(browser_process);
+  browser_process->set_storage_monitor_for_test(monitor.Pass());
+  return return_monitor;
+}
+
+void TestStorageMonitor::RemoveSingleton() {
+  TestingBrowserProcess* browser_process = TestingBrowserProcess::GetGlobal();
+  if (browser_process)
+    browser_process->SetStorageMonitor(scoped_ptr<StorageMonitor>());
+}
+
+// static
+void TestStorageMonitor::SyncInitialize() {
+  StorageMonitor* monitor = g_browser_process->storage_monitor();
+  if (monitor->IsInitialized())
+    return;
+
+  base::WaitableEvent event(true, false);
+  monitor->EnsureInitialized(base::Bind(&base::WaitableEvent::Signal,
+                             base::Unretained(&event)));
+  while (!event.IsSignaled()) {
+    base::RunLoop().RunUntilIdle();
+  }
+  DCHECK(monitor->IsInitialized());
 }
 
 void TestStorageMonitor::Init() {

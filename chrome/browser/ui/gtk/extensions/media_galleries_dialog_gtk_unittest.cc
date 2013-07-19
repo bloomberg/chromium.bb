@@ -6,7 +6,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/media_galleries/media_galleries_dialog_controller_mock.h"
 #include "chrome/browser/storage_monitor/storage_info.h"
-#include "chrome/browser/storage_monitor/test_storage_monitor.h"
 #include "chrome/browser/ui/gtk/extensions/media_galleries_dialog_gtk.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -33,8 +32,6 @@ MediaGalleryPrefInfo MakePrefInfoForTesting(MediaGalleryPrefId id) {
 }  // namespace
 
 class MediaGalleriesDialogTest : public testing::Test {
- private:
-  test::TestStorageMonitor test_storage_monitor_;
 };
 
 // Tests that checkboxes are initialized according to the contents of

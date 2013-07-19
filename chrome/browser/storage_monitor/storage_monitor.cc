@@ -6,12 +6,11 @@
 
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/storage_monitor/removable_storage_observer.h"
 #include "chrome/browser/storage_monitor/transient_device_ids.h"
 
 namespace chrome {
-
-static StorageMonitor* g_storage_monitor = NULL;
 
 StorageMonitor::Receiver::~Receiver() {
 }
@@ -46,7 +45,10 @@ void StorageMonitor::ReceiverImpl::MarkInitialized() {
 }
 
 StorageMonitor* StorageMonitor::GetInstance() {
-  return g_storage_monitor;
+  if (g_browser_process)
+    return g_browser_process->storage_monitor();
+
+  return NULL;
 }
 
 std::vector<StorageInfo> StorageMonitor::GetAllAvailableStorages() const {
@@ -117,18 +119,9 @@ StorageMonitor::StorageMonitor()
       initialized_(false),
       transient_device_ids_(new TransientDeviceIds) {
   receiver_.reset(new ReceiverImpl(this));
-
-  DCHECK(!g_storage_monitor);
-  g_storage_monitor = this;
 }
 
 StorageMonitor::~StorageMonitor() {
-  g_storage_monitor = NULL;
-}
-
-// static
-void StorageMonitor::RemoveSingletonForTesting() {
-  g_storage_monitor = NULL;
 }
 
 StorageMonitor::Receiver* StorageMonitor::receiver() const {

@@ -11,14 +11,12 @@
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/storage_monitor/storage_info.h"
 #include "chrome/browser/storage_monitor/storage_monitor.h"
-#include "chrome/browser/storage_monitor/test_storage_monitor.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 
 namespace {
 
 using chrome::StorageMonitor;
-using chrome::test::TestStorageMonitor;
 using extensions::api::experimental_system_info_storage::ParseStorageUnitType;
 using extensions::api::experimental_system_info_storage::StorageUnitInfo;
 using extensions::StorageInfoProvider;
@@ -87,9 +85,6 @@ IN_PROC_BROWSER_TEST_F(SystemInfoStorageApiTest, Storage) {
 }
 
 IN_PROC_BROWSER_TEST_F(SystemInfoStorageApiTest, StorageAttachment) {
-  scoped_ptr<TestStorageMonitor> monitor(
-      TestStorageMonitor::CreateForBrowserTests());
-
   TestStorageInfoProvider* provider =
       new TestStorageInfoProvider(kRemovableStorageData,
                                   arraysize(kRemovableStorageData));

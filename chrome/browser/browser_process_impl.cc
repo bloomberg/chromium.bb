@@ -62,6 +62,7 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/status_icons/status_tray.h"
+#include "chrome/browser/storage_monitor/storage_monitor.h"
 #include "chrome/browser/thumbnails/render_widget_snapshot_taker.h"
 #include "chrome/browser/ui/bookmarks/bookmark_prompt_controller.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -106,7 +107,7 @@
 #include "ui/aura/env.h"
 #endif
 
-#if !defined(OS_ANDROID)
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
 #endif
 
@@ -250,6 +251,15 @@ void BrowserProcessImpl::StartTearDown() {
 #endif
 
   ExtensionRendererState::GetInstance()->Shutdown();
+
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+  media_file_system_registry_.reset();
+  // Delete |storage_monitor_| now. Otherwise the FILE thread would be gone
+  // when we try to release it in the dtor and Valgrind would report a
+  // leak on almost every single browser_test.
+  // TODO(gbillock): Make this unnecessary.
+  storage_monitor_.reset();
+#endif
 
   message_center::MessageCenter::Shutdown();
 
@@ -619,9 +629,24 @@ BookmarkPromptController* BrowserProcessImpl::bookmark_prompt_controller() {
 #endif
 }
 
+chrome::StorageMonitor* BrowserProcessImpl::storage_monitor() {
+#if defined(OS_ANDROID) || defined(OS_IOS)
+  return NULL;
+#else
+  return storage_monitor_.get();
+#endif
+}
+
+void BrowserProcessImpl::set_storage_monitor_for_test(
+    scoped_ptr<chrome::StorageMonitor> monitor) {
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+  storage_monitor_ = monitor.Pass();
+#endif
+}
+
 chrome::MediaFileSystemRegistry*
 BrowserProcessImpl::media_file_system_registry() {
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_IOS)
     return NULL;
 #else
   if (!media_file_system_registry_)
@@ -908,6 +933,10 @@ void BrowserProcessImpl::PreMainMessageLoopRun() {
       BookmarkPromptController::IsEnabled()) {
     bookmark_prompt_controller_.reset(new BookmarkPromptController());
   }
+#endif
+
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+  storage_monitor_.reset(chrome::StorageMonitor::Create());
 #endif
 
 #if defined(OS_MACOSX)

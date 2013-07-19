@@ -7,15 +7,9 @@
 #ifndef CHROME_BROWSER_CHROME_BROWSER_MAIN_WIN_H_
 #define CHROME_BROWSER_CHROME_BROWSER_MAIN_WIN_H_
 
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chrome_browser_main.h"
 
 class CommandLine;
-
-namespace chrome {
-class StorageMonitorWin;
-}  // namespace chrome
-
 
 // Handle uninstallation when given the appropriate the command-line switch.
 // If |chrome_still_running| is true a modal dialog will be shown asking the
@@ -34,7 +28,6 @@ class ChromeBrowserMainPartsWin : public ChromeBrowserMainParts {
   virtual void PreMainMessageLoopStart() OVERRIDE;
   virtual int PreCreateThreads() OVERRIDE;
   virtual void PostMainMessageLoopRun() OVERRIDE;
-  virtual void PreProfileInit() OVERRIDE;
 
   // ChromeBrowserMainParts overrides.
   virtual void ShowMissingLocaleMessageBox() OVERRIDE;
@@ -68,8 +61,6 @@ class ChromeBrowserMainPartsWin : public ChromeBrowserMainParts {
   static void SetupInstallerUtilStrings();
 
  private:
-  scoped_ptr<chrome::StorageMonitorWin> storage_monitor_;
-
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainPartsWin);
 };
 

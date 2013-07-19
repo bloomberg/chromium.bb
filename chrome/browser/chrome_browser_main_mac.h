@@ -5,12 +5,7 @@
 #ifndef CHROME_BROWSER_CHROME_BROWSER_MAIN_MAC_H_
 #define CHROME_BROWSER_CHROME_BROWSER_MAIN_MAC_H_
 
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chrome_browser_main_posix.h"
-
-namespace chrome {
-class StorageMonitorMac;
-}
 
 class ChromeBrowserMainPartsMac : public ChromeBrowserMainPartsPosix {
  public:
@@ -21,7 +16,6 @@ class ChromeBrowserMainPartsMac : public ChromeBrowserMainPartsPosix {
   // BrowserParts overrides.
   virtual void PreEarlyInitialization() OVERRIDE;
   virtual void PreMainMessageLoopStart() OVERRIDE;
-  virtual void PreProfileInit() OVERRIDE;
   virtual void PostProfileInit() OVERRIDE;
 
   // Perform platform-specific work that needs to be done after the main event
@@ -29,8 +23,6 @@ class ChromeBrowserMainPartsMac : public ChromeBrowserMainPartsPosix {
   static void DidEndMainMessageLoop();
 
  private:
-  scoped_ptr<chrome::StorageMonitorMac> storage_monitor_;
-
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainPartsMac);
 };
 

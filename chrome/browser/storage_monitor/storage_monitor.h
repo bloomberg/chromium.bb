@@ -37,8 +37,8 @@ class TransientDeviceIds;
 
 // Base class for platform-specific instances watching for removable storage
 // attachments/detachments.
-// Lifecycle contracts: This class is created by ChromeBrowserMain
-// implementations before the profile is initialized, so listeners can be
+// Lifecycle contracts: This class is created in the browser process
+// before the profile is initialized, so listeners can be
 // created during profile construction. The platform-specific initialization,
 // which can lead to calling registered listeners with notifications of
 // attached volumes, are done lazily at first use through the async
@@ -70,9 +70,17 @@ class StorageMonitor {
     EJECT_FAILURE
   };
 
-  // Returns a pointer to an object owned by the BrowserMainParts, with lifetime
-  // somewhat shorter than a process Singleton.
+  // Returns a pointer to a newly created per-platform object with the
+  // StorageMonitor interface.
+  static StorageMonitor* Create();
+
+  // Returns a pointer to an object owned by BrowserProcess, with lifetime
+  // starting before main message loop start, and ending after main message loop
+  // shutdown. Called outside it's lifetime (or with no browser process),
+  // returns NULL.
   static StorageMonitor* GetInstance();
+
+  virtual ~StorageMonitor();
 
   // Ensures that the storage monitor is initialized. The provided callback, If
   // non-null, will be called when initialization is complete. If initialization
@@ -135,11 +143,6 @@ class StorageMonitor {
   friend class ::SystemInfoStorageEjectApiTest;
 
   StorageMonitor();
-  virtual ~StorageMonitor();
-
-  // Removes the existing singleton for testing.
-  // (So that a new one can be created.)
-  static void RemoveSingletonForTesting();
 
   virtual Receiver* receiver() const;
 

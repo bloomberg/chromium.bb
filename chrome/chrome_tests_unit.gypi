@@ -2387,6 +2387,7 @@
 
             'browser/browser_commands_unittest.cc',
             'browser/download/download_shelf_unittest.cc',
+            'browser/storage_monitor/media_storage_util_unittest.cc',
             'browser/net/gaia/gaia_oauth_fetcher_unittest.cc',
             'browser/page_cycler/page_cycler_unittest.cc',
             'browser/policy/async_policy_provider_unittest.cc',

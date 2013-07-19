@@ -21,9 +21,20 @@ class TestStorageMonitor : public chrome::StorageMonitor {
 
   void MarkInitialized();
 
-  // Will create a new testing implementation for browser tests,
-  // taking care to deal with the existing singleton correctly.
+  // Create and initialize a new TestStorageMonitor and install it
+  // in the TestingBrowserProcess.
+  static TestStorageMonitor* CreateAndInstall();
+
+  // Create and initialize a new TestStorageMonitor, and install it
+  // in the BrowserProcessImpl. (Browser tests use the production browser
+  // process implementation.)
   static TestStorageMonitor* CreateForBrowserTests();
+
+  // Remove the singleton StorageMonitor from the TestingBrowserProcess.
+  static void RemoveSingleton();
+
+  // Synchronously initialize the current storage monitor.
+  static void SyncInitialize();
 
   virtual bool GetStorageInfoForPath(
       const base::FilePath& path,

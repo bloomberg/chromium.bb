@@ -53,7 +53,9 @@ base::FilePath::CharType kDevicePath[] = FILE_PATH_LITERAL("/qux");
 
 class MediaGalleriesPrivateEjectApiTest : public ExtensionApiTest {
  public:
-  MediaGalleriesPrivateEjectApiTest() : device_id_(GetDeviceId()) {}
+  MediaGalleriesPrivateEjectApiTest()
+      : device_id_(GetDeviceId()),
+        monitor_(NULL) {}
   virtual ~MediaGalleriesPrivateEjectApiTest() {}
 
  protected:
@@ -62,6 +64,11 @@ class MediaGalleriesPrivateEjectApiTest : public ExtensionApiTest {
     ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(switches::kWhitelistedExtensionID,
                                     kTestExtensionId);
+  }
+
+  virtual void SetUpOnMainThread() OVERRIDE {
+    monitor_ = chrome::test::TestStorageMonitor::CreateForBrowserTests();
+    ExtensionApiTest::SetUpOnMainThread();
   }
 
   content::RenderViewHost* GetHost() {
@@ -103,6 +110,8 @@ class MediaGalleriesPrivateEjectApiTest : public ExtensionApiTest {
  protected:
   const std::string device_id_;
 
+  chrome::test::TestStorageMonitor* monitor_;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(MediaGalleriesPrivateEjectApiTest);
 };
@@ -113,11 +122,6 @@ class MediaGalleriesPrivateEjectApiTest : public ExtensionApiTest {
 ///////////////////////////////////////////////////////////////////////////////
 
 IN_PROC_BROWSER_TEST_F(MediaGalleriesPrivateEjectApiTest, EjectTest) {
-  scoped_ptr<chrome::test::TestStorageMonitor> monitor(
-      chrome::test::TestStorageMonitor::CreateForBrowserTests());
-  monitor->Init();
-  monitor->MarkInitialized();
-
   content::RenderViewHost* host = GetHost();
   ExecuteCmdAndCheckReply(host, kAddAttachListenerCmd, kAddAttachListenerOk);
 
@@ -130,18 +134,13 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesPrivateEjectApiTest, EjectTest) {
   EXPECT_TRUE(attach_finished_listener.WaitUntilSatisfied());
 
   ExecuteCmdAndCheckReply(host, kEjectTestCmd, kEjectListenerOk);
-  EXPECT_EQ(device_id_, monitor->ejected_device());
+  EXPECT_EQ(device_id_, monitor_->ejected_device());
 
   Detach();
 }
 
 IN_PROC_BROWSER_TEST_F(MediaGalleriesPrivateEjectApiTest, EjectBadDeviceTest) {
-  scoped_ptr<chrome::test::TestStorageMonitor> monitor(
-      chrome::test::TestStorageMonitor::CreateForBrowserTests());
-  monitor->Init();
-  monitor->MarkInitialized();
-
   ExecuteCmdAndCheckReply(GetHost(), kEjectFailTestCmd, kEjectFailListenerOk);
 
-  EXPECT_EQ("", monitor->ejected_device());
+  EXPECT_EQ("", monitor_->ejected_device());
 }

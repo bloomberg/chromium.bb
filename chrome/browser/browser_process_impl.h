@@ -127,6 +127,8 @@ class BrowserProcessImpl : public BrowserProcess,
   virtual CRLSetFetcher* crl_set_fetcher() OVERRIDE;
   virtual PnaclComponentInstaller* pnacl_component_installer() OVERRIDE;
   virtual BookmarkPromptController* bookmark_prompt_controller() OVERRIDE;
+  virtual chrome::StorageMonitor* storage_monitor() OVERRIDE;
+  void set_storage_monitor_for_test(scoped_ptr<chrome::StorageMonitor> monitor);
   virtual chrome::MediaFileSystemRegistry*
       media_file_system_registry() OVERRIDE;
   virtual bool created_local_state() const OVERRIDE;
@@ -196,6 +198,10 @@ class BrowserProcessImpl : public BrowserProcess,
 
   // Bookmark prompt controller displays the prompt for frequently visited URL.
   scoped_ptr<BookmarkPromptController> bookmark_prompt_controller_;
+#endif
+
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+  scoped_ptr<chrome::StorageMonitor> storage_monitor_;
 
   scoped_ptr<chrome::MediaFileSystemRegistry> media_file_system_registry_;
 #endif

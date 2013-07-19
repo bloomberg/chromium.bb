@@ -16,6 +16,8 @@
 #include "chrome/browser/storage_monitor/removable_device_constants.h"
 #include "chrome/browser/storage_monitor/storage_info.h"
 #include "chrome/browser/storage_monitor/test_media_transfer_protocol_manager_linux.h"
+#include "chrome/browser/storage_monitor/test_storage_monitor.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/disks/mock_disk_mount_manager.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -135,7 +137,7 @@ class StorageMonitorCrosTest : public testing::Test {
 
   base::MessageLoop ui_loop_;
 
-  scoped_ptr<TestStorageMonitorCros> monitor_;
+  TestStorageMonitorCros* monitor_;
 
   // Owned by DiskMountManager.
   disks::MockDiskMountManager* disk_mount_manager_mock_;
@@ -176,14 +178,20 @@ void StorageMonitorCrosTest::SetUp() {
   mock_storage_observer_.reset(new chrome::MockRemovableStorageObserver);
 
   // Initialize the test subject.
-  monitor_.reset(new TestStorageMonitorCros());
+  chrome::test::TestStorageMonitor::RemoveSingleton();
+  monitor_ = new TestStorageMonitorCros();
+  scoped_ptr<chrome::StorageMonitor> pass_monitor(monitor_);
+  TestingBrowserProcess* browser_process = TestingBrowserProcess::GetGlobal();
+  DCHECK(browser_process);
+  browser_process->SetStorageMonitor(pass_monitor.Pass());
+
   monitor_->Init();
   monitor_->AddObserver(mock_storage_observer_.get());
 }
 
 void StorageMonitorCrosTest::TearDown() {
   monitor_->RemoveObserver(mock_storage_observer_.get());
-  monitor_.reset();
+  monitor_ = NULL;
 
   disk_mount_manager_mock_ = NULL;
   DiskMountManager::Shutdown();

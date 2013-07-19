@@ -47,6 +47,7 @@ class WebRtcLogUploader;
 
 namespace chrome {
 class MediaFileSystemRegistry;
+class StorageMonitor;
 }
 
 namespace chrome_variations {
@@ -216,6 +217,8 @@ class BrowserProcess {
   virtual BookmarkPromptController* bookmark_prompt_controller() = 0;
 
   virtual chrome::MediaFileSystemRegistry* media_file_system_registry() = 0;
+
+  virtual chrome::StorageMonitor* storage_monitor() = 0;
 
   virtual bool created_local_state() const = 0;
 

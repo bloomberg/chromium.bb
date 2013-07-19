@@ -15,6 +15,7 @@
 #include "chrome/browser/storage_monitor/image_capture_device.h"
 #include "chrome/browser/storage_monitor/image_capture_device_manager.h"
 #include "chrome/browser/storage_monitor/test_storage_monitor.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -257,6 +258,8 @@ class ImageCaptureDeviceManagerTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     ui_thread_.reset(new content::TestBrowserThread(
         content::BrowserThread::UI, &message_loop_));
+
+    monitor_ = chrome::test::TestStorageMonitor::CreateAndInstall();
   }
 
   MockICCameraDevice* AttachDevice(
@@ -278,28 +281,29 @@ class ImageCaptureDeviceManagerTest : public testing::Test {
  protected:
   base::MessageLoopForUI message_loop_;
   scoped_ptr<content::TestBrowserThread> ui_thread_;
-  chrome::test::TestStorageMonitor monitor_;
+
+  chrome::test::TestStorageMonitor* monitor_;
   TestCameraListener listener_;
 };
 
 TEST_F(ImageCaptureDeviceManagerTest, TestAttachDetach) {
   chrome::ImageCaptureDeviceManager manager;
-  manager.SetNotifications(monitor_.receiver());
+  manager.SetNotifications(monitor_->receiver());
   ICCameraDevice* device = AttachDevice(&manager);
   std::vector<chrome::StorageInfo> devices =
-      monitor_.GetAllAvailableStorages();
+      monitor_->GetAllAvailableStorages();
 
   ASSERT_EQ(1U, devices.size());
   EXPECT_EQ(std::string("ic:") + kDeviceId, devices[0].device_id());
 
   DetachDevice(&manager, device);
-  devices = monitor_.GetAllAvailableStorages();
+  devices = monitor_->GetAllAvailableStorages();
   ASSERT_EQ(0U, devices.size());
 };
 
 TEST_F(ImageCaptureDeviceManagerTest, OpenCamera) {
   chrome::ImageCaptureDeviceManager manager;
-  manager.SetNotifications(monitor_.receiver());
+  manager.SetNotifications(monitor_->receiver());
   ICCameraDevice* device = AttachDevice(&manager);
 
   EXPECT_FALSE(chrome::ImageCaptureDeviceManager::deviceForUUID(
@@ -335,7 +339,7 @@ TEST_F(ImageCaptureDeviceManagerTest, OpenCamera) {
 
 TEST_F(ImageCaptureDeviceManagerTest, RemoveCamera) {
   chrome::ImageCaptureDeviceManager manager;
-  manager.SetNotifications(monitor_.receiver());
+  manager.SetNotifications(monitor_->receiver());
   ICCameraDevice* device = AttachDevice(&manager);
 
   base::scoped_nsobject<ImageCaptureDevice> camera(
@@ -354,7 +358,7 @@ TEST_F(ImageCaptureDeviceManagerTest, DownloadFile) {
           content::BrowserThread::FILE, &message_loop_));
 
   chrome::ImageCaptureDeviceManager manager;
-  manager.SetNotifications(monitor_.receiver());
+  manager.SetNotifications(monitor_->receiver());
   MockICCameraDevice* device = AttachDevice(&manager);
 
   base::scoped_nsobject<ImageCaptureDevice> camera(
@@ -410,7 +414,7 @@ TEST_F(ImageCaptureDeviceManagerTest, TestSubdirectories) {
           content::BrowserThread::FILE, &message_loop_));
 
   chrome::ImageCaptureDeviceManager manager;
-  manager.SetNotifications(monitor_.receiver());
+  manager.SetNotifications(monitor_->receiver());
   MockICCameraDevice* device = AttachDevice(&manager);
 
   base::scoped_nsobject<ImageCaptureDevice> camera(

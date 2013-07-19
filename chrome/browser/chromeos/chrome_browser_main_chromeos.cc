@@ -84,7 +84,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/rlz/rlz.h"
-#include "chrome/browser/storage_monitor/storage_monitor_chromeos.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
@@ -555,8 +554,6 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
                                   base::Bind(&ChromeOSVersionCallback),
                                   &tracker_);
 
-  storage_monitor_.reset(new StorageMonitorCros());
-
   // Make sure that wallpaper boot transition and other delays in OOBE
   // are disabled for tests and kiosk app launch by default.
   // Individual tests may enable them if they want.
@@ -801,7 +798,6 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   power_button_observer_.reset();
   screensaver_controller_.reset();
   idle_action_warning_observer_.reset();
-  storage_monitor_.reset();
 
   // Delete ContactManager while |g_browser_process| is still alive.
   contact_manager_.reset();

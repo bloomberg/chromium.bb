@@ -22,7 +22,6 @@
 #include "chrome/browser/mac/keychain_reauthorize.h"
 #import "chrome/browser/mac/keystone_glue.h"
 #include "chrome/browser/metrics/metrics_service.h"
-#include "chrome/browser/storage_monitor/storage_monitor_mac.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/common/main_function_params.h"
@@ -263,12 +262,6 @@ void ChromeBrowserMainPartsMac::PreMainMessageLoopStart() {
   // |-application:openFiles:|, since we already handle them directly.
   [[NSUserDefaults standardUserDefaults]
       setObject:@"NO" forKey:@"NSTreatUnknownArgumentsAsOpen"];
-}
-
-void ChromeBrowserMainPartsMac::PreProfileInit() {
-  storage_monitor_.reset(new chrome::StorageMonitorMac());
-
-  ChromeBrowserMainPartsPosix::PreProfileInit();
 }
 
 void ChromeBrowserMainPartsMac::PostProfileInit() {

@@ -19,9 +19,11 @@
 #include "chrome/browser/storage_monitor/storage_info.h"
 #include "chrome/browser/storage_monitor/storage_monitor_win.h"
 #include "chrome/browser/storage_monitor/test_portable_device_watcher_win.h"
+#include "chrome/browser/storage_monitor/test_storage_monitor.h"
 #include "chrome/browser/storage_monitor/test_storage_monitor_win.h"
 #include "chrome/browser/storage_monitor/test_volume_mount_watcher_win.h"
 #include "chrome/browser/storage_monitor/volume_mount_watcher_win.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -63,7 +65,7 @@ class StorageMonitorWinTest : public testing::Test {
                          base::string16* pnp_device_id,
                          base::string16* storage_object_id);
 
-  scoped_ptr<TestStorageMonitorWin> monitor_;
+  TestStorageMonitorWin* monitor_;
 
   // Weak pointer; owned by the device notifications class.
   TestVolumeMountWatcherWin* volume_mount_watcher_;
@@ -86,9 +88,15 @@ StorageMonitorWinTest::~StorageMonitorWinTest() {
 
 void StorageMonitorWinTest::SetUp() {
   ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  test::TestStorageMonitor::RemoveSingleton();
   volume_mount_watcher_ = new TestVolumeMountWatcherWin;
-  monitor_.reset(new TestStorageMonitorWin(volume_mount_watcher_,
-                                           new TestPortableDeviceWatcherWin));
+  monitor_ = new TestStorageMonitorWin(volume_mount_watcher_,
+                                       new TestPortableDeviceWatcherWin);
+  scoped_ptr<StorageMonitor> pass_monitor(monitor_);
+  TestingBrowserProcess* browser_process = TestingBrowserProcess::GetGlobal();
+  DCHECK(browser_process);
+  browser_process->SetStorageMonitor(pass_monitor.Pass());
+
   monitor_->Init();
   RunUntilIdle();
   monitor_->AddObserver(&observer_);
@@ -98,11 +106,16 @@ void StorageMonitorWinTest::TearDown() {
   RunUntilIdle();
   monitor_->RemoveObserver(&observer_);
   volume_mount_watcher_->ShutdownWorkerPool();
-  monitor_.reset();
+  monitor_ = NULL;
+
+  // Windows storage monitor must be destroyed on the same thread
+  // as construction.
+  test::TestStorageMonitor::RemoveSingleton();
 }
 
 void StorageMonitorWinTest::PreAttachDevices() {
-  monitor_.reset();
+  test::TestStorageMonitor::RemoveSingleton();
+  monitor_ = NULL;
   volume_mount_watcher_ = new TestVolumeMountWatcherWin;
   volume_mount_watcher_->SetAttachedDevicesFake();
 
@@ -117,8 +130,13 @@ void StorageMonitorWinTest::PreAttachDevices() {
       expect_attach_calls++;
   }
 
-  monitor_.reset(new TestStorageMonitorWin(volume_mount_watcher_,
-                                           new TestPortableDeviceWatcherWin));
+  monitor_ = new TestStorageMonitorWin(volume_mount_watcher_,
+                                       new TestPortableDeviceWatcherWin);
+  scoped_ptr<StorageMonitor> pass_monitor(monitor_);
+  TestingBrowserProcess* browser_process = TestingBrowserProcess::GetGlobal();
+  DCHECK(browser_process);
+  browser_process->SetStorageMonitor(pass_monitor.Pass());
+
   monitor_->AddObserver(&observer_);
   monitor_->Init();
 

@@ -14,6 +14,8 @@
 #include "chrome/browser/storage_monitor/mock_removable_storage_observer.h"
 #include "chrome/browser/storage_monitor/removable_device_constants.h"
 #include "chrome/browser/storage_monitor/storage_info.h"
+#include "chrome/browser/storage_monitor/test_storage_monitor.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -44,7 +46,12 @@ class StorageMonitorMacTest : public testing::Test {
   }
 
   virtual void SetUp() OVERRIDE {
-    monitor_.reset(new StorageMonitorMac);
+    test::TestStorageMonitor::RemoveSingleton();
+    monitor_ = new StorageMonitorMac;
+    scoped_ptr<StorageMonitor> pass_monitor(monitor_);
+    TestingBrowserProcess* browser_process = TestingBrowserProcess::GetGlobal();
+    DCHECK(browser_process);
+    browser_process->SetStorageMonitor(pass_monitor.Pass());
 
     mock_storage_observer_.reset(new MockRemovableStorageObserver);
     monitor_->AddObserver(mock_storage_observer_.get());
@@ -60,7 +67,7 @@ class StorageMonitorMacTest : public testing::Test {
   void UpdateDisk(StorageInfo info, StorageMonitorMac::UpdateType update_type) {
     content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
         base::Bind(&StorageMonitorMac::UpdateDisk,
-                   base::Unretained(monitor_.get()),
+                   base::Unretained(monitor_),
                    "dummy_bsd_name", info, update_type));
     base::RunLoop().RunUntilIdle();
   }
@@ -79,7 +86,7 @@ class StorageMonitorMacTest : public testing::Test {
   std::string device_id_;
   StorageInfo disk_info_;
 
-  scoped_ptr<StorageMonitorMac> monitor_;
+  StorageMonitorMac* monitor_;
 };
 
 TEST_F(StorageMonitorMacTest, AddRemove) {

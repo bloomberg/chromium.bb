@@ -18,12 +18,6 @@ namespace chrome {
 
 // StorageMonitorWin -------------------------------------------------------
 
-// static
-StorageMonitorWin* StorageMonitorWin::Create() {
-  return new StorageMonitorWin(new VolumeMountWatcherWin(),
-                               new PortableDeviceWatcherWin());
-}
-
 StorageMonitorWin::StorageMonitorWin(
     VolumeMountWatcherWin* volume_mount_watcher,
     PortableDeviceWatcherWin* portable_device_watcher)
@@ -165,6 +159,11 @@ bool StorageMonitorWin::GetDeviceInfo(const base::FilePath& device_path,
 void StorageMonitorWin::OnDeviceChange(UINT event_type, LPARAM data) {
   volume_mount_watcher_->OnWindowMessage(event_type, data);
   portable_device_watcher_->OnWindowMessage(event_type, data);
+}
+
+StorageMonitor* StorageMonitor::Create() {
+  return new StorageMonitorWin(new VolumeMountWatcherWin(),
+                               new PortableDeviceWatcherWin());
 }
 
 }  // namespace chrome

@@ -9,6 +9,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/background/background_mode_manager.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_impl.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/bookmarks/bookmark_prompt_controller.h"
 #include "chrome/test/base/testing_browser_process_platform_part.h"
@@ -18,13 +19,18 @@
 #include "ui/message_center/message_center.h"
 
 #if !defined(OS_IOS)
-#include "chrome/browser/media_galleries/media_file_system_registry.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/prerender/prerender_tracker.h"
 #include "chrome/browser/printing/background_printing_manager.h"
 #include "chrome/browser/printing/print_preview_dialog_controller.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/thumbnails/render_widget_snapshot_taker.h"
+#endif
+
+#if !defined(OS_IOS) && !defined(OS_ANDROID)
+#include "chrome/browser/media_galleries/media_file_system_registry.h"
+#include "chrome/browser/storage_monitor/storage_monitor.h"
+#include "chrome/browser/storage_monitor/test_storage_monitor.h"
 #endif
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
@@ -318,9 +324,25 @@ BookmarkPromptController* TestingBrowserProcess::bookmark_prompt_controller() {
 #endif
 }
 
+chrome::StorageMonitor* TestingBrowserProcess::storage_monitor() {
+#if defined(OS_IOS) || defined(OS_ANDROID)
+  NOTIMPLEMENTED();
+  return NULL;
+#else
+  if (!storage_monitor_.get()) {
+    chrome::test::TestStorageMonitor* monitor =
+        new chrome::test::TestStorageMonitor();
+    monitor->Init();
+    monitor->MarkInitialized();
+    storage_monitor_.reset(monitor);
+  }
+  return storage_monitor_.get();
+#endif
+}
+
 chrome::MediaFileSystemRegistry*
 TestingBrowserProcess::media_file_system_registry() {
-#if defined(OS_IOS) || defined (OS_ANDROID)
+#if defined(OS_IOS) || defined(OS_ANDROID)
   NOTIMPLEMENTED();
   return NULL;
 #else
@@ -394,5 +416,12 @@ void TestingBrowserProcess::SetSafeBrowsingService(
 #if !defined(OS_IOS)
   NOTIMPLEMENTED();
   sb_service_ = sb_service;
+#endif
+}
+
+void TestingBrowserProcess::SetStorageMonitor(
+    scoped_ptr<chrome::StorageMonitor> storage_monitor) {
+#if !defined(OS_IOS) && !defined(OS_ANDROID)
+  storage_monitor_.reset(storage_monitor.release());
 #endif
 }

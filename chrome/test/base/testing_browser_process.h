@@ -105,6 +105,7 @@ class TestingBrowserProcess : public BrowserProcess {
   virtual CRLSetFetcher* crl_set_fetcher() OVERRIDE;
   virtual PnaclComponentInstaller* pnacl_component_installer() OVERRIDE;
   virtual BookmarkPromptController* bookmark_prompt_controller() OVERRIDE;
+  virtual chrome::StorageMonitor* storage_monitor() OVERRIDE;
   virtual chrome::MediaFileSystemRegistry*
       media_file_system_registry() OVERRIDE;
   virtual bool created_local_state() const OVERRIDE;
@@ -122,6 +123,7 @@ class TestingBrowserProcess : public BrowserProcess {
   void SetSafeBrowsingService(SafeBrowsingService* sb_service);
   void SetBookmarkPromptController(BookmarkPromptController* controller);
   void SetSystemRequestContext(net::URLRequestContextGetter* context_getter);
+  void SetStorageMonitor(scoped_ptr<chrome::StorageMonitor> storage_monitor);
 
  private:
   scoped_ptr<content::NotificationService> notification_service_;
@@ -144,10 +146,12 @@ class TestingBrowserProcess : public BrowserProcess {
   scoped_ptr<RenderWidgetSnapshotTaker> render_widget_snapshot_taker_;
   scoped_refptr<SafeBrowsingService> sb_service_;
   scoped_ptr<BookmarkPromptController> bookmark_prompt_controller_;
-#if !defined(OS_ANDROID)
+#endif  // !defined(OS_IOS)
+
+#if !defined(OS_IOS) && !defined(OS_ANDROID)
+  scoped_ptr<chrome::StorageMonitor> storage_monitor_;
   scoped_ptr<chrome::MediaFileSystemRegistry> media_file_system_registry_;
 #endif
-#endif  // !defined(OS_IOS)
 
   // The following objects are not owned by TestingBrowserProcess:
   PrefService* local_state_;

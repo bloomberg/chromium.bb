@@ -307,3 +307,11 @@ void StorageMonitorCros::AddMountedPath(
 }
 
 }  // namespace chromeos
+
+namespace chrome {
+
+StorageMonitor* StorageMonitor::Create() {
+  return new chromeos::StorageMonitorCros();
+}
+
+}  // namespace chrome

@@ -27,7 +27,6 @@
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_shortcut_manager.h"
 #include "chrome/browser/shell_integration.h"
-#include "chrome/browser/storage_monitor/storage_monitor_win.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "chrome/browser/search_engines/template_url_service.h"
@@ -228,12 +227,6 @@ void ChromeBrowserMainPartsWin::PostMainMessageLoopRun() {
   }
 
   ChromeBrowserMainParts::PostMainMessageLoopRun();
-}
-
-void ChromeBrowserMainPartsWin::PreProfileInit() {
-  storage_monitor_.reset(chrome::StorageMonitorWin::Create());
-
-  ChromeBrowserMainParts::PreProfileInit();
 }
 
 void ChromeBrowserMainPartsWin::ShowMissingLocaleMessageBox() {
