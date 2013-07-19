@@ -269,6 +269,8 @@ KeyboardCode KeyboardCodeFromXKeysym(unsigned int keysym) {
     case XK_quoteright:
     case XK_quotedbl:
       return VKEY_OEM_7;
+    case XK_ISO_Level5_Shift:
+      return VKEY_OEM_8;
     case XK_Shift_L:
     case XK_Shift_R:
       return VKEY_SHIFT;
@@ -711,6 +713,8 @@ int XKeysymForWindowsKeyCode(KeyboardCode keycode, bool shift) {
       return shift ? XK_braceright : XK_bracketright;
     case VKEY_OEM_7:
       return shift ? XK_quotedbl : XK_quoteright;
+    case VKEY_OEM_8:
+      return XK_ISO_Level5_Shift;
     case VKEY_OEM_102:
       return shift ? XK_guillemotleft : XK_guillemotright;
 
