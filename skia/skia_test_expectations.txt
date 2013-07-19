@@ -58,9 +58,4 @@ crbug.com/258850 svg/custom/marker-opacity.svg [ ImageOnlyFailure ]
 crbug.com/258850 svg/batik/text/smallFonts.svg [ ImageOnlyFailure ]
 crbug.com/258850 svg/batik/text/textFeatures.svg [ ImageOnlyFailure ]
 
-# The Skia DEPS roll to r10025 introduced 1 new image difference
-# due to changes to the image resizing code in r9980 
-# (fix bug with awesome filtered images sometimes being slightly offset)
-crbug.com/260153 virtual/deferred/fast/images/webp-color-profile-lossy.html [ ImageOnlyFailure ]
-
 # END OVERRIDES HERE (this line ensures that the file is newline-terminated)
