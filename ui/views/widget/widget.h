@@ -491,6 +491,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // Returns the InputMethod for this widget.
   // Note that all widgets in a widget hierarchy share the same input method.
   InputMethod* GetInputMethod();
+  const InputMethod* GetInputMethod() const;
 
   // Starts a drag operation for the specified view. This blocks until the drag
   // operation completes. |view| can be NULL.
@@ -744,6 +745,9 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   bool GetSavedWindowPlacement(gfx::Rect* bounds,
                                ui::WindowShowState* show_state);
 
+  // Creates and initializes a new InputMethod and returns it, otherwise null.
+  scoped_ptr<InputMethod> CreateInputMethod();
+
   // Sets a different InputMethod instance to this widget. The instance
   // must not be initialized, the ownership will be assumed by the widget.
   // It's only for testing purpose.
@@ -811,7 +815,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // initial focus for the widget.
   bool focus_on_creation_;
 
-  scoped_ptr<InputMethod> input_method_;
+  mutable scoped_ptr<InputMethod> input_method_;
 
   // See |is_top_level()| accessor.
   bool is_top_level_;

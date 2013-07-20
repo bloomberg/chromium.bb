@@ -1032,6 +1032,11 @@ InputMethod* View::GetInputMethod() {
   return widget ? widget->GetInputMethod() : NULL;
 }
 
+const InputMethod* View::GetInputMethod() const {
+  const Widget* widget = GetWidget();
+  return widget ? widget->GetInputMethod() : NULL;
+}
+
 bool View::CanAcceptEvent(const ui::Event& event) {
   return event.dispatch_to_hidden_targets() || IsDrawn();
 }
