@@ -51,14 +51,15 @@ class ExtensionSyncTypeTest : public testing::Test {
     }
     if (type != THEME) {
       source.SetBoolean(keys::kConvertedFromUserScript, type == USER_SCRIPT);
-      base::ListValue* plugins = new base::ListValue();
-      for (int i = 0; i < num_plugins; ++i) {
-        base::DictionaryValue* plugin = new base::DictionaryValue();
-        plugin->SetString(keys::kPluginsPath, std::string());
-        plugins->Set(i, plugin);
-      }
-      if (num_plugins >= 0)
+      if (num_plugins >= 0) {
+        base::ListValue* plugins = new base::ListValue();
+        for (int i = 0; i < num_plugins; ++i) {
+          base::DictionaryValue* plugin = new base::DictionaryValue();
+          plugin->SetString(keys::kPluginsPath, std::string());
+          plugins->Set(i, plugin);
+        }
         source.Set(keys::kPlugins, plugins);
+      }
     }
     if (has_plugin_permission) {
       ListValue* plugins = new ListValue();

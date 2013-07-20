@@ -7347,10 +7347,3 @@
    fun:_ZN7WebCore13TypingCommand28insertTextRunWithoutNewlinesERKN3WTF6StringEb
    fun:_ZNK7WebCore26TypingCommandLineOperationclEmmb
 }
-{
-   bug_262096
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN10extensions21ExtensionSyncTypeTest41MakeSyncTestExtensionWithPluginPermissionENS0_21SyncTestExtensionTypeERK4GURLS4_NS_8Manifest8LocationERKN4base8FilePathEiibRKSs
-   fun:_ZN10extensions21ExtensionSyncTypeTest21MakeSyncTestExtensionENS0_21SyncTestExtensionTypeERK4GURLS4_NS_8Manifest8LocationERKN4base8FilePathEi
-}

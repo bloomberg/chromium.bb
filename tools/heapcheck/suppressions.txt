@@ -1063,9 +1063,3 @@
    fun:~MessageLoop
    fun:~StorageMonitorLinuxTest
 }
-{
-   bug_262096
-   Heapcheck:Leak
-   fun:extensions::ExtensionSyncTypeTest::MakeSyncTestExtensionWithPluginPermission
-   fun:extensions::ExtensionSyncTypeTest::MakeSyncTestExtension
-}
