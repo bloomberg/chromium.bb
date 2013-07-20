@@ -157,7 +157,6 @@ using WebKit::WebIDBKeyTypeMin;
 using WebKit::WebIDBKeyTypeNull;
 using WebKit::WebIDBKeyTypeNumber;
 using WebKit::WebIDBKeyTypeString;
-using WebKit::WebIDBKeyPath;
 using WebKit::WebIDBKeyPathType;
 using WebKit::WebIDBKeyPathTypeArray;
 using WebKit::WebIDBKeyPathTypeNull;

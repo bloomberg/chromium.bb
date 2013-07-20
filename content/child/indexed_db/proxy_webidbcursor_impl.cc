@@ -8,6 +8,7 @@
 
 #include "content/child/thread_safe_sender.h"
 #include "content/child/indexed_db/indexed_db_dispatcher.h"
+#include "content/child/indexed_db/indexed_db_key_builders.h"
 #include "content/common/indexed_db/indexed_db_messages.h"
 
 using WebKit::WebData;
@@ -88,7 +89,7 @@ void RendererWebIDBCursorImpl::continueFunction(
   }
 
   dispatcher->RequestIDBCursorContinue(
-      IndexedDBKey(key), callbacks.release(), ipc_cursor_id_);
+      IndexedDBKeyBuilder::Build(key), callbacks.release(), ipc_cursor_id_);
 }
 
 void RendererWebIDBCursorImpl::postSuccessHandlerCallback() {
@@ -133,7 +134,8 @@ void RendererWebIDBCursorImpl::CachedContinue(WebIDBCallbacks* callbacks) {
 
   pending_onsuccess_callbacks_++;
 
-  callbacks->onSuccess(key, primary_key, value);
+  callbacks->onSuccess(WebIDBKeyBuilder::Build(key),
+                       WebIDBKeyBuilder::Build(primary_key), value);
 }
 
 void RendererWebIDBCursorImpl::ResetPrefetchCache() {

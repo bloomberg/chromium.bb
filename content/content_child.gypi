@@ -49,6 +49,8 @@
     'child/indexed_db/indexed_db_dispatcher.h',
     'child/indexed_db/indexed_db_message_filter.cc',
     'child/indexed_db/indexed_db_message_filter.h',
+    'child/indexed_db/indexed_db_key_builders.cc',
+    'child/indexed_db/indexed_db_key_builders.h',
     'child/indexed_db/proxy_webidbcursor_impl.cc',
     'child/indexed_db/proxy_webidbcursor_impl.h',
     'child/indexed_db/proxy_webidbdatabase_impl.cc',

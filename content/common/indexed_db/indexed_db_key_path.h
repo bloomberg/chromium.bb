@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
-#include "third_party/WebKit/public/platform/WebIDBKeyPath.h"
+#include "third_party/WebKit/public/platform/WebIDBTypes.h"
 
 namespace content {
 
@@ -19,17 +19,14 @@ class CONTENT_EXPORT IndexedDBKeyPath {
   IndexedDBKeyPath();  // Defaults to WebKit::WebIDBKeyPathTypeNull.
   explicit IndexedDBKeyPath(const string16&);
   explicit IndexedDBKeyPath(const std::vector<string16>&);
-  explicit IndexedDBKeyPath(const WebKit::WebIDBKeyPath&);
   ~IndexedDBKeyPath();
 
   bool IsNull() const { return type_ == WebKit::WebIDBKeyPathTypeNull; }
-  bool IsValid() const;
   bool operator==(const IndexedDBKeyPath& other) const;
 
   WebKit::WebIDBKeyPathType type() const { return type_; }
   const std::vector<string16>& array() const;
   const string16& string() const;
-  operator WebKit::WebIDBKeyPath() const;
 
  private:
   WebKit::WebIDBKeyPathType type_;

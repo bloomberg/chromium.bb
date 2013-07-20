@@ -5,6 +5,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "content/child/indexed_db/indexed_db_dispatcher.h"
+#include "content/child/indexed_db/indexed_db_key_builders.h"
 #include "content/child/indexed_db/proxy_webidbcursor_impl.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/common/indexed_db/indexed_db_key.h"
@@ -73,7 +74,7 @@ class MockContinueCallbacks : public WebIDBCallbacks {
                          const WebData& value) {
 
     if (key_)
-      *key_ = IndexedDBKey(key);
+      *key_ = IndexedDBKeyBuilder::Build(key);
   }
 
  private:

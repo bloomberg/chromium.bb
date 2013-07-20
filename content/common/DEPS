@@ -38,11 +38,6 @@ include_rules = [
   "+third_party/WebKit/public/web/WebTextDirection.h",
 
   # These should be burned down. http://crbug.com/237267
-  "!third_party/WebKit/public/platform/WebIDBDatabaseError.h",
-  "!third_party/WebKit/public/platform/WebIDBKey.h",
-  "!third_party/WebKit/public/platform/WebIDBKeyPath.h",
-  "!third_party/WebKit/public/platform/WebIDBKeyRange.h",
-  "!third_party/WebKit/public/platform/WebVector.h",
   "!third_party/WebKit/public/platform/WebHTTPBody.h",
   "!third_party/WebKit/public/web/WebDatabase.h",
 ]

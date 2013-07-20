@@ -29,7 +29,6 @@ class CONTENT_EXPORT IndexedDBKey {
   explicit IndexedDBKey(const string16& str);
   IndexedDBKey(double number,
                WebKit::WebIDBKeyType type);  // must be date or number
-  explicit IndexedDBKey(const WebKit::WebIDBKey& key);
   ~IndexedDBKey();
 
   bool IsValid() const;
@@ -44,7 +43,6 @@ class CONTENT_EXPORT IndexedDBKey {
   double date() const { return date_; }
   double number() const { return number_; }
 
-  operator WebKit::WebIDBKey() const;
   size_t size_estimate() const { return size_estimate_; }
 
  private:

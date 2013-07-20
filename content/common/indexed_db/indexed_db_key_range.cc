@@ -5,23 +5,15 @@
 #include "content/common/indexed_db/indexed_db_key_range.h"
 
 #include "base/logging.h"
-#include "third_party/WebKit/public/platform/WebIDBKey.h"
+#include "third_party/WebKit/public/platform/WebIDBTypes.h"
 
 namespace content {
-
-using WebKit::WebIDBKeyRange;
 
 IndexedDBKeyRange::IndexedDBKeyRange()
     : lower_(WebKit::WebIDBKeyTypeNull),
       upper_(WebKit::WebIDBKeyTypeNull),
       lower_open_(false),
       upper_open_(false) {}
-
-IndexedDBKeyRange::IndexedDBKeyRange(const WebIDBKeyRange& key_range)
-    : lower_(key_range.lower()),
-      upper_(key_range.upper()),
-      lower_open_(key_range.lowerOpen()),
-      upper_open_(key_range.upperOpen()) {}
 
 IndexedDBKeyRange::IndexedDBKeyRange(const IndexedDBKey& lower,
                                      const IndexedDBKey& upper,
@@ -42,10 +34,6 @@ bool IndexedDBKeyRange::IsOnlyKey() const {
     return false;
 
   return lower_.IsEqual(upper_);
-}
-
-IndexedDBKeyRange::operator WebIDBKeyRange() const {
-  return WebIDBKeyRange(lower_, upper_, lower_open_, upper_open_);
 }
 
 }  // namespace content

@@ -8,6 +8,7 @@
 #include "base/lazy_instance.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_local.h"
+#include "content/child/indexed_db/indexed_db_key_builders.h"
 #include "content/child/indexed_db/proxy_webidbcursor_impl.h"
 #include "content/child/indexed_db/proxy_webidbdatabase_impl.h"
 #include "content/child/thread_safe_sender.h"
@@ -16,7 +17,6 @@
 #include "third_party/WebKit/public/platform/WebIDBDatabaseCallbacks.h"
 #include "third_party/WebKit/public/platform/WebIDBDatabaseError.h"
 #include "third_party/WebKit/public/platform/WebIDBDatabaseException.h"
-#include "third_party/WebKit/public/platform/WebIDBKeyRange.h"
 
 using WebKit::WebData;
 using WebKit::WebIDBCallbacks;
@@ -24,7 +24,6 @@ using WebKit::WebIDBDatabase;
 using WebKit::WebIDBDatabaseCallbacks;
 using WebKit::WebIDBDatabaseError;
 using WebKit::WebIDBKey;
-using WebKit::WebIDBKeyRange;
 using WebKit::WebIDBMetadata;
 using WebKit::WebString;
 using WebKit::WebVector;
@@ -100,7 +99,8 @@ WebIDBMetadata IndexedDBDispatcher::ConvertMetadata(
 
     web_store_metadata.id = idb_store_metadata.id;
     web_store_metadata.name = idb_store_metadata.name;
-    web_store_metadata.keyPath = idb_store_metadata.keyPath;
+    web_store_metadata.keyPath =
+        WebIDBKeyPathBuilder::Build(idb_store_metadata.keyPath);
     web_store_metadata.autoIncrement = idb_store_metadata.autoIncrement;
     web_store_metadata.maxIndexId = idb_store_metadata.max_index_id;
     web_store_metadata.indexes =
@@ -113,7 +113,8 @@ WebIDBMetadata IndexedDBDispatcher::ConvertMetadata(
 
       web_index_metadata.id = idb_index_metadata.id;
       web_index_metadata.name = idb_index_metadata.name;
-      web_index_metadata.keyPath = idb_index_metadata.keyPath;
+      web_index_metadata.keyPath =
+          WebIDBKeyPathBuilder::Build(idb_index_metadata.keyPath);
       web_index_metadata.unique = idb_index_metadata.unique;
       web_index_metadata.multiEntry = idb_index_metadata.multiEntry;
     }
@@ -359,7 +360,8 @@ void IndexedDBDispatcher::RequestIDBDatabasePut(
   for (size_t i = 0; i < index_keys.size(); ++i) {
     params.index_keys[i].resize(index_keys[i].size());
     for (size_t j = 0; j < index_keys[i].size(); ++j) {
-      params.index_keys[i][j] = IndexedDBKey(index_keys[i][j]);
+      params.index_keys[i][j] =
+          IndexedDBKey(IndexedDBKeyBuilder::Build(index_keys[i][j]));
     }
   }
   Send(new IndexedDBHostMsg_DatabasePut(params));
@@ -473,7 +475,7 @@ void IndexedDBDispatcher::OnSuccessIndexedDBKey(int32 ipc_thread_id,
   WebIDBCallbacks* callbacks = pending_callbacks_.Lookup(ipc_callbacks_id);
   if (!callbacks)
     return;
-  callbacks->onSuccess(WebIDBKey(key));
+  callbacks->onSuccess(WebIDBKeyBuilder::Build(key));
   pending_callbacks_.Remove(ipc_callbacks_id);
 }
 
@@ -516,7 +518,9 @@ void IndexedDBDispatcher::OnSuccessValueWithKey(
   WebData web_value;
   if (value.size())
     web_value.assign(&*value.begin(), value.size());
-  callbacks->onSuccess(web_value, primary_key, key_path);
+  callbacks->onSuccess(web_value,
+                       WebIDBKeyBuilder::Build(primary_key),
+                       WebIDBKeyPathBuilder::Build(key_path));
   pending_callbacks_.Remove(ipc_callbacks_id);
 }
 
@@ -559,7 +563,8 @@ void IndexedDBDispatcher::OnSuccessOpenCursor(
   RendererWebIDBCursorImpl* cursor =
       new RendererWebIDBCursorImpl(ipc_object_id, thread_safe_sender_.get());
   cursors_[ipc_object_id] = cursor;
-  callbacks->onSuccess(cursor, key, primary_key, web_value);
+  callbacks->onSuccess(cursor, WebIDBKeyBuilder::Build(key),
+                       WebIDBKeyBuilder::Build(primary_key), web_value);
 
   pending_callbacks_.Remove(ipc_callbacks_id);
 }
@@ -583,7 +588,8 @@ void IndexedDBDispatcher::OnSuccessCursorContinue(
   WebData web_value;
   if (value.size())
     web_value.assign(&*value.begin(), value.size());
-  callbacks->onSuccess(key, primary_key, web_value);
+  callbacks->onSuccess(WebIDBKeyBuilder::Build(key),
+                       WebIDBKeyBuilder::Build(primary_key), web_value);
 
   pending_callbacks_.Remove(ipc_callbacks_id);
 }
