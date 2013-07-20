@@ -110,13 +110,14 @@ class XModifierStateWatcher{
 
 #if defined(USE_XI2_MT)
 // Detects if a touch event is a driver-generated 'special event'.
-// A 'special event' is a touch release or move event with maximum radius and
-// pressure at location (0, 0).
+// A 'special event' is a touch event with maximum radius and pressure at
+// location (0, 0).
 // This needs to be done in a cleaner way: http://crbug.com/169256
 bool TouchEventIsGeneratedHack(const base::NativeEvent& native_event) {
   XIDeviceEvent* event =
       static_cast<XIDeviceEvent*>(native_event->xcookie.data);
-  CHECK(event->evtype == XI_TouchUpdate ||
+  CHECK(event->evtype == XI_TouchBegin ||
+        event->evtype == XI_TouchUpdate ||
         event->evtype == XI_TouchEnd);
 
   // Force is normalized to [0, 1].
@@ -197,7 +198,8 @@ ui::EventType GetTouchEventType(const base::NativeEvent& native_event) {
 #if defined(USE_XI2_MT)
   switch(event->evtype) {
     case XI_TouchBegin:
-      return ui::ET_TOUCH_PRESSED;
+      return TouchEventIsGeneratedHack(native_event) ? ui::ET_UNKNOWN :
+                                                       ui::ET_TOUCH_PRESSED;
     case XI_TouchUpdate:
       return TouchEventIsGeneratedHack(native_event) ? ui::ET_UNKNOWN :
                                                        ui::ET_TOUCH_MOVED;
