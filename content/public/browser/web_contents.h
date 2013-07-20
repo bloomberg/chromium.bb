@@ -91,8 +91,8 @@ class WebContents : public PageNavigator,
   // Creates a new WebContents.
   CONTENT_EXPORT static WebContents* Create(const CreateParams& params);
 
-  // Similar to Create() above but should be used when you need to set the
-  // the SessionStorageNamespace of the WebContents. This can happen if
+  // Similar to Create() above but should be used when you need to prepopulate
+  // the SessionStorageNamespaceMap of the WebContents. This can happen if
   // you duplicate a WebContents, try to reconstitute it from a saved state,
   // or when you create a new WebContents based on another one (eg., when
   // servicing a window.open() call).
@@ -103,7 +103,7 @@ class WebContents : public PageNavigator,
   // can happen if you share the object.
   CONTENT_EXPORT static WebContents* CreateWithSessionStorage(
       const CreateParams& params,
-      SessionStorageNamespace* session_storage_namespace);
+      const SessionStorageNamespaceMap& session_storage_namespace_map);
 
   // Adds/removes a callback called on creation of each new WebContents.
   typedef base::Callback<void(WebContents*)> CreatedCallback;

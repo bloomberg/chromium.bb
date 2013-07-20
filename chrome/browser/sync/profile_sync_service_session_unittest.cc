@@ -1295,7 +1295,7 @@ TEST_F(ProfileSyncServiceSessionTest, CheckPrerenderedWebContentsSwap) {
   // Create new WebContents, with the required tab helpers.
   WebContents* new_web_contents = WebContents::CreateWithSessionStorage(
       WebContents::CreateParams(profile()),
-      old_web_contents->GetController().GetSessionStorageNamespace());
+      old_web_contents->GetController().GetSessionStorageNamespaceMap());
   SessionTabHelper::CreateForWebContents(new_web_contents);
   TabContentsSyncedTabDelegate::CreateForWebContents(new_web_contents);
   new_web_contents->GetController()

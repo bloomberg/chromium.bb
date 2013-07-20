@@ -153,7 +153,8 @@ RenderViewHostImpl::RenderViewHostImpl(
     RenderWidgetHostDelegate* widget_delegate,
     int routing_id,
     int main_frame_routing_id,
-    bool swapped_out)
+    bool swapped_out,
+    SessionStorageNamespace* session_storage)
     : RenderWidgetHostImpl(widget_delegate, instance->GetProcess(), routing_id),
       delegate_(delegate),
       instance_(static_cast<SiteInstanceImpl*>(instance)),
@@ -172,7 +173,10 @@ RenderViewHostImpl::RenderViewHostImpl(
       unload_ack_is_for_cross_site_transition_(false),
       are_javascript_messages_suppressed_(false),
       sudden_termination_allowed_(false),
+      session_storage_namespace_(
+          static_cast<SessionStorageNamespaceImpl*>(session_storage)),
       render_view_termination_status_(base::TERMINATION_STATUS_STILL_RUNNING) {
+  DCHECK(session_storage_namespace_.get());
   DCHECK(instance_.get());
   CHECK(delegate_);  // http://crbug.com/82827
 
@@ -253,8 +257,7 @@ bool RenderViewHostImpl::CreateRenderView(
   params.view_id = GetRoutingID();
   params.main_frame_routing_id = main_render_frame_host_->routing_id();
   params.surface_id = surface_id();
-  params.session_storage_namespace_id =
-      delegate_->GetSessionStorageNamespace()->id();
+  params.session_storage_namespace_id = session_storage_namespace_->id();
   params.frame_name = frame_name;
   // Ensure the RenderView sets its opener correctly.
   params.opener_route_id = opener_route_id;

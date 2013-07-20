@@ -536,7 +536,7 @@ void PrerenderLocalPredictor::OnLookupURL(
 
 
   scoped_refptr<SessionStorageNamespace> session_storage_namespace =
-      source_web_contents->GetController().GetSessionStorageNamespace();
+      source_web_contents->GetController().GetDefaultSessionStorageNamespace();
 
   gfx::Rect container_bounds;
   source_web_contents->GetView()->GetContainerBounds(&container_bounds);
@@ -883,7 +883,7 @@ void PrerenderLocalPredictor::OnTabHelperURLSeen(
           p->prerender_handle->Matches(
               url,
               web_contents->GetController().
-              GetSessionStorageNamespace());
+              GetDefaultSessionStorageNamespace());
     }
   }
   if (best_matched_prerender) {

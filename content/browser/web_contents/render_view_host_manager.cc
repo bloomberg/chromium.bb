@@ -83,7 +83,9 @@ void RenderViewHostManager::Init(BrowserContext* browser_context,
   render_view_host_ = static_cast<RenderViewHostImpl*>(
       RenderViewHostFactory::Create(
           site_instance, render_view_delegate_, render_widget_delegate_,
-          routing_id, main_frame_routing_id, false));
+          routing_id, main_frame_routing_id, false, delegate_->
+          GetControllerForRenderManager().GetSessionStorageNamespace(
+              site_instance)));
 
   // Keep track of renderer processes as they start to shut down or are
   // crashed/killed.
@@ -659,11 +661,10 @@ int RenderViewHostManager::CreateRenderView(
     // Create a new RenderViewHost if we don't find an existing one.
     new_render_view_host = static_cast<RenderViewHostImpl*>(
         RenderViewHostFactory::Create(instance,
-                                      render_view_delegate_,
-                                      render_widget_delegate_,
-                                      MSG_ROUTING_NONE,
-                                      MSG_ROUTING_NONE,
-                                      swapped_out));
+            render_view_delegate_, render_widget_delegate_, MSG_ROUTING_NONE,
+            MSG_ROUTING_NONE, swapped_out, delegate_->
+            GetControllerForRenderManager().GetSessionStorageNamespace(
+                instance)));
 
     // If the new RVH is swapped out already, store it.  Otherwise prevent the
     // process from exiting while we're trying to navigate in it.

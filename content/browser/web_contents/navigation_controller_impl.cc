@@ -1214,8 +1214,14 @@ void NavigationControllerImpl::CopyStateFrom(
   needs_reload_ = true;
   InsertEntriesFrom(source, source.GetEntryCount());
 
-  session_storage_namespace_ = static_cast<SessionStorageNamespaceImpl*>(
-      source.session_storage_namespace_.get())->Clone();
+  for (SessionStorageNamespaceMap::const_iterator it =
+           source.session_storage_namespace_map_.begin();
+       it != source.session_storage_namespace_map_.end();
+       ++it) {
+    SessionStorageNamespaceImpl* source_namespace =
+        static_cast<SessionStorageNamespaceImpl*>(it->second.get());
+    session_storage_namespace_map_[it->first] = source_namespace->Clone();
+  }
 
   FinishRestore(source.last_committed_entry_index_, RESTORE_CURRENT_SESSION);
 
@@ -1337,6 +1343,7 @@ void NavigationControllerImpl::ClearAllScreenshots() {
 }
 
 void NavigationControllerImpl::SetSessionStorageNamespace(
+    const std::string& partition_id,
     SessionStorageNamespace* session_storage_namespace) {
   if (!session_storage_namespace)
     return;
@@ -1344,8 +1351,12 @@ void NavigationControllerImpl::SetSessionStorageNamespace(
   // We can't overwrite an existing SessionStorage without violating spec.
   // Attempts to do so may give a tab access to another tab's session storage
   // so die hard on an error.
-  CHECK(!session_storage_namespace_.get());
-  session_storage_namespace_ = session_storage_namespace;
+  bool successful_insert = session_storage_namespace_map_.insert(
+      make_pair(partition_id,
+                static_cast<SessionStorageNamespaceImpl*>(
+                    session_storage_namespace)))
+          .second;
+  CHECK(successful_insert) << "Cannot replace existing SessionStorageNamespace";
 }
 
 void NavigationControllerImpl::SetMaxRestoredPageID(int32 max_id) {
@@ -1357,15 +1368,45 @@ int32 NavigationControllerImpl::GetMaxRestoredPageID() const {
 }
 
 SessionStorageNamespace*
-NavigationControllerImpl::GetSessionStorageNamespace() {
-  if (session_storage_namespace_.get())
-    return session_storage_namespace_.get();
+NavigationControllerImpl::GetSessionStorageNamespace(SiteInstance* instance) {
+  std::string partition_id;
+  if (instance) {
+    // TODO(ajwong): When GetDefaultSessionStorageNamespace() goes away, remove
+    // this if statement so |instance| must not be NULL.
+    partition_id =
+        GetContentClient()->browser()->GetStoragePartitionIdForSite(
+            browser_context_, instance->GetSiteURL());
+  }
 
-  session_storage_namespace_ =
-      new SessionStorageNamespaceImpl(static_cast<DOMStorageContextImpl*>(
-          BrowserContext::GetDefaultStoragePartition(browser_context_)
-              ->GetDOMStorageContext()));
-  return session_storage_namespace_.get();
+  SessionStorageNamespaceMap::const_iterator it =
+      session_storage_namespace_map_.find(partition_id);
+  if (it != session_storage_namespace_map_.end())
+    return it->second.get();
+
+  // Create one if no one has accessed session storage for this partition yet.
+  //
+  // TODO(ajwong): Should this use the |partition_id| directly rather than
+  // re-lookup via |instance|?  http://crbug.com/142685
+  StoragePartition* partition =
+              BrowserContext::GetStoragePartition(browser_context_, instance);
+  SessionStorageNamespaceImpl* session_storage_namespace =
+      new SessionStorageNamespaceImpl(
+          static_cast<DOMStorageContextImpl*>(
+              partition->GetDOMStorageContext()));
+  session_storage_namespace_map_[partition_id] = session_storage_namespace;
+
+  return session_storage_namespace;
+}
+
+SessionStorageNamespace*
+NavigationControllerImpl::GetDefaultSessionStorageNamespace() {
+  // TODO(ajwong): Remove if statement in GetSessionStorageNamespace().
+  return GetSessionStorageNamespace(NULL);
+}
+
+const SessionStorageNamespaceMap&
+NavigationControllerImpl::GetSessionStorageNamespaceMap() const {
+  return session_storage_namespace_map_;
 }
 
 bool NavigationControllerImpl::NeedsReload() const {

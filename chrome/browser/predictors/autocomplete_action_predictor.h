@@ -98,7 +98,7 @@ class AutocompleteActionPredictor
   // prerenders (if any).
   void StartPrerendering(
       const GURL& url,
-      content::SessionStorageNamespace* session_storage_namespace,
+      const content::SessionStorageNamespaceMap& session_storage_namespace_map,
       const gfx::Size& size);
 
   // Return true if the suggestion type warrants a TCP/IP preconnection.

@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/session_storage_namespace.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 
@@ -44,6 +45,13 @@ WebContents* CreateRestoredTab(
     content::SessionStorageNamespace* session_storage_namespace,
     const std::string& user_agent_override) {
   GURL restore_url = navigations.at(selected_navigation).virtual_url();
+  // TODO(ajwong): Remove the temporary session_storage_namespace_map when
+  // we teach session restore to understand that one tab can have multiple
+  // SessionStorageNamespace objects. Also remove the
+  // session_storage_namespace.h include since we only need that to assign
+  // into the map.
+  content::SessionStorageNamespaceMap session_storage_namespace_map;
+  session_storage_namespace_map[std::string()] = session_storage_namespace;
   WebContents::CreateParams create_params(
       browser->profile(),
       tab_util::GetSiteInstanceForNewTab(browser->profile(), restore_url));
@@ -55,7 +63,7 @@ WebContents* CreateRestoredTab(
   }
   WebContents* web_contents = content::WebContents::CreateWithSessionStorage(
       create_params,
-      session_storage_namespace);
+      session_storage_namespace_map);
   extensions::TabHelper::CreateForWebContents(web_contents);
   extensions::TabHelper::FromWebContents(web_contents)->
       SetExtensionAppById(extension_app_id);

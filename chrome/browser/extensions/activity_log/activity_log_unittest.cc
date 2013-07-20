@@ -249,7 +249,7 @@ TEST_F(ActivityLogTest, LogPrerender) {
   scoped_ptr<prerender::PrerenderHandle> prerender_handle(
       prerender_manager->AddPrerenderFromLocalPredictor(
           url,
-          web_contents()->GetController().GetSessionStorageNamespace(),
+          web_contents()->GetController().GetDefaultSessionStorageNamespace(),
           kSize));
 
   const std::vector<content::WebContents*> contentses =
@@ -271,3 +271,4 @@ TEST_F(ActivityLogTest, LogPrerender) {
 }
 
 }  // namespace extensions
+

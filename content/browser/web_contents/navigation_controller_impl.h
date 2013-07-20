@@ -70,7 +70,10 @@ class CONTENT_EXPORT NavigationControllerImpl
   virtual void GoToIndex(int index) OVERRIDE;
   virtual void GoToOffset(int offset) OVERRIDE;
   virtual void RemoveEntryAtIndex(int index) OVERRIDE;
-  virtual SessionStorageNamespace* GetSessionStorageNamespace() OVERRIDE;
+  virtual const SessionStorageNamespaceMap&
+      GetSessionStorageNamespaceMap() const OVERRIDE;
+  virtual SessionStorageNamespace*
+      GetDefaultSessionStorageNamespace() OVERRIDE;
   virtual void SetMaxRestoredPageID(int32 max_id) OVERRIDE;
   virtual int32 GetMaxRestoredPageID() const OVERRIDE;
   virtual bool NeedsReload() const OVERRIDE;
@@ -89,6 +92,11 @@ class CONTENT_EXPORT NavigationControllerImpl
   virtual bool CanPruneAllButVisible() OVERRIDE;
   virtual void PruneAllButVisible() OVERRIDE;
   virtual void ClearAllScreenshots() OVERRIDE;
+
+  // The session storage namespace that all child RenderViews belonging to
+  // |instance| should use.
+  SessionStorageNamespace* GetSessionStorageNamespace(
+      SiteInstance* instance);
 
   // Returns the index of the specified entry, or -1 if entry is not contained
   // in this NavigationController.
@@ -157,13 +165,16 @@ class CONTENT_EXPORT NavigationControllerImpl
   // origin isn't changing.
   bool IsURLInPageNavigation(const GURL& url, bool renderer_says_in_page) const;
 
-  // Sets the SessionStorageNamespace. This is used during initialization of a
-  // new NavigationController. Session restore, prerendering, and the
-  // implementaion of window.open() are the primary users of this API.
+  // Sets the SessionStorageNamespace for the given |partition_id|. This is
+  // used during initialization of a new NavigationController to allow
+  // pre-population of the SessionStorageNamespace objects. Session restore,
+  // prerendering, and the implementaion of window.open() are the primary users
+  // of this API.
   //
   // Calling this function when a SessionStorageNamespace has already been
-  // associated will CHECK() fail.
+  // associated with a |partition_id| will CHECK() fail.
   void SetSessionStorageNamespace(
+      const std::string& partition_id,
       SessionStorageNamespace* session_storage_namespace);
 
   // Random data ---------------------------------------------------------------
@@ -359,7 +370,14 @@ class CONTENT_EXPORT NavigationControllerImpl
   // Becomes false when initial navigation commits.
   bool is_initial_navigation_;
 
-  scoped_refptr<SessionStorageNamespace> session_storage_namespace_;
+  // Used to find the appropriate SessionStorageNamespace for the storage
+  // partition of a NavigationEntry.
+  //
+  // A NavigationController may contain NavigationEntries that correspond to
+  // different StoragePartitions. Even though they are part of the same
+  // NavigationController, only entries in the same StoragePartition may
+  // share session storage state with one another.
+  SessionStorageNamespaceMap session_storage_namespace_map_;
 
   // The maximum number of entries that a navigation controller can store.
   static size_t max_entry_count_for_testing_;

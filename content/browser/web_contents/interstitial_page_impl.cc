@@ -493,7 +493,7 @@ RenderViewHost* InterstitialPageImpl::CreateRenderViewHost() {
   DOMStorageContextImpl* dom_storage_context =
       static_cast<DOMStorageContextImpl*>(BrowserContext::GetStoragePartition(
           browser_context, site_instance.get())->GetDOMStorageContext());
-  session_storage_namespace_ =
+  SessionStorageNamespaceImpl* session_storage_namespace_impl =
       new SessionStorageNamespaceImpl(dom_storage_context);
 
   RenderViewHostImpl* render_view_host =
@@ -502,7 +502,8 @@ RenderViewHost* InterstitialPageImpl::CreateRenderViewHost() {
                              this,
                              MSG_ROUTING_NONE,
                              MSG_ROUTING_NONE,
-                             false);
+                             false,
+                             session_storage_namespace_impl);
   web_contents_->RenderViewForInterstitialPageCreated(render_view_host);
   return render_view_host;
 }
@@ -701,10 +702,6 @@ void InterstitialPageImpl::ShowCreatedWidget(int route_id,
 void InterstitialPageImpl::ShowCreatedFullscreenWidget(int route_id) {
   NOTREACHED()
       << "InterstitialPage does not support showing full screen popups.";
-}
-
-SessionStorageNamespace* InterstitialPageImpl::GetSessionStorageNamespace() {
-  return session_storage_namespace_.get();
 }
 
 void InterstitialPageImpl::Disable() {
