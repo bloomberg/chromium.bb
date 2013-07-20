@@ -83,6 +83,10 @@ LIBRARY_DEPENDENCIES_DEFAULT = {
         'nacl_exception',
         'pthread',
         ],
+    'irt_support_private': [
+        'srpc',
+        'platform',
+        ],
     }
 
 # Untrusted only library dependencies.

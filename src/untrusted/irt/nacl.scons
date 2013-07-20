@@ -19,12 +19,11 @@ blob_env.Append(LINKFLAGS=[blob_env.RodataSwitch('${IRT_BLOB_DATA_START}'),
                            blob_env.TextSwitch('${IRT_BLOB_CODE_START}')])
 
 irt_support_sources = [
+    'irt_entry.c',
     'irt_malloc.c',
     'irt_private_pthread.c',
     'irt_private_tls.c',
     ]
-
-irt_entry_obj = blob_env.ComponentObject('irt_entry.c')
 
 # NACL_GC_WRAP_SYSCALL uses ({...}) syntax.
 blob_env.FilterOut(CCFLAGS=['-pedantic'])
@@ -83,7 +82,6 @@ if env.Bit('target_arm'):
 env.ComponentLibrary('libirt_support_private', irt_support_objs)
 
 irt_nonbrowser = ['irt_interfaces.c',
-                  'irt_core_entry.c',
                   'irt_core_resource.c',
                   ]
 
@@ -95,9 +93,7 @@ irt_libs = ['srpc',
             ]
 
 irt_core_library = blob_env.ComponentProgram(
-    'irt_core',
-    [irt_entry_obj] + irt_support_objs + irt_nonbrowser,
-    EXTRA_LIBS=irt_libs)
+    'irt_core', irt_support_objs + irt_nonbrowser, EXTRA_LIBS=irt_libs)
 env.SDKInstallBin('irt_core.nexe', irt_core_library)
 
 # TODO(mcgrathr): these should be installed, but scons is a mystery

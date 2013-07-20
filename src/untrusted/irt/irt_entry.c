@@ -9,12 +9,33 @@
 
 #include "native_client/src/include/elf32.h"
 #include "native_client/src/include/elf_auxv.h"
+#include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/untrusted/irt/irt_interfaces.h"
 #include "native_client/src/untrusted/nacl/nacl_irt.h"
 #include "native_client/src/untrusted/nacl/nacl_startup.h"
 #include "native_client/src/untrusted/nacl/tls.h"
 
 void __libc_init_array(void);
+
+/*
+ * This is declared as weak because plugin_main_nacl.cc on the
+ * Chromium side has a copy of IrtInit().
+ * TODO(mseaborn): Remove IrtInit() from there and use this copy.
+ */
+__attribute__((weak))
+int IrtInit(void) {
+  static int initialized = 0;
+  if (initialized) {
+    return 0;
+  }
+  if (!NaClSrpcModuleInit()) {
+    return 1;
+  }
+  NaClLogModuleInit();  /* Enable NaClLog'ing used by CHECK(). */
+  initialized = 1;
+  return 0;
+}
 
 /*
  * This is the true entry point for untrusted code.
@@ -39,6 +60,12 @@ void _start(uint32_t *info) {
   __pthread_initialize();
 
   __libc_init_array();
+
+  if (IrtInit()) {
+    static const char fatal_msg[] = "IrtInit() failed\n";
+    write(2, fatal_msg, sizeof(fatal_msg) - 1);
+    _exit(-1);
+  }
 
   Elf32_auxv_t *entry = NULL;
   for (Elf32_auxv_t *av = auxv; av->a_type != AT_NULL; ++av) {

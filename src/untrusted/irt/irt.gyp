@@ -9,7 +9,6 @@
   'variables': {
     'irt_sources': [
 # irt_support_sources
-      'irt_core_entry.c',
       'irt_entry.c',
       'irt_malloc.c',
       'irt_private_pthread.c',
