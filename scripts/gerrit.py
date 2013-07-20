@@ -13,6 +13,7 @@ with the prefix "UserAct".
 
 import inspect
 import os
+import pipes
 import re
 
 from chromite.buildbot import constants
@@ -259,6 +260,11 @@ def UserActReviewers(opts, idx, *emails):
 
   if add_list or remove_list:
     opts.gerrit.SetReviewers(idx, add=add_list, remove=remove_list)
+
+
+def UserActMessage(opts, idx, message):
+  """Add a message to CL <n>"""
+  ReviewCommand(opts, idx, ['--message', pipes.quote(message)])
 
 
 def main(argv):
