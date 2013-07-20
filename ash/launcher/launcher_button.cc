@@ -33,6 +33,7 @@ const int kBarSpacing = 5;
 const int kIconSize = 32;
 const int kHopSpacing = 2;
 const int kIconPad = 8;
+const int kAlternateIconPad = 7;
 const int kHopUpMS = 0;
 const int kHopDownMS = 200;
 const int kAttentionThrobDurationMS = 800;
@@ -395,8 +396,10 @@ void LauncherButton::GetAccessibleState(ui::AccessibleViewState* state) {
 
 void LauncherButton::Layout() {
   const gfx::Rect button_bounds(GetContentsBounds());
-  int x_offset = shelf_layout_manager_->PrimaryAxisValue(0, kIconPad);
-  int y_offset = shelf_layout_manager_->PrimaryAxisValue(kIconPad, 0);
+  int icon_pad = ash::switches::UseAlternateShelfLayout() ?
+      kAlternateIconPad : kIconPad;
+  int x_offset = shelf_layout_manager_->PrimaryAxisValue(0, icon_pad);
+  int y_offset = shelf_layout_manager_->PrimaryAxisValue(icon_pad, 0);
 
   int icon_width = std::min(kIconSize,
       button_bounds.width() - x_offset);
@@ -406,10 +409,10 @@ void LauncherButton::Layout() {
   // If on the left or top 'invert' the inset so the constant gap is on
   // the interior (towards the center of display) edge of the shelf.
   if (SHELF_ALIGNMENT_LEFT == shelf_layout_manager_->GetAlignment())
-    x_offset = button_bounds.width() - (kIconSize + kIconPad);
+    x_offset = button_bounds.width() - (kIconSize + icon_pad);
 
   if (SHELF_ALIGNMENT_TOP == shelf_layout_manager_->GetAlignment())
-    y_offset = button_bounds.height() - (kIconSize + kIconPad);
+    y_offset = button_bounds.height() - (kIconSize + icon_pad);
 
   if (ShouldHop(state_) && !ash::switches::UseAlternateShelfLayout()) {
     x_offset += shelf_layout_manager_->SelectValueForShelfAlignment(

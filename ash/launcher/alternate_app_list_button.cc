@@ -24,6 +24,9 @@
 
 namespace ash {
 namespace internal {
+namespace {
+const int kImagePaddingFromShelf = 5;
+}  // namespace
 
 // static
 const int AlternateAppListButton::kImageBoundsSize = 7;
@@ -102,13 +105,22 @@ void AlternateAppListButton::OnPaint(gfx::Canvas* canvas) {
   gfx::Rect contents_bounds = GetContentsBounds();
   gfx::Rect background_bounds, forground_bounds;
 
-  background_bounds.set_x(contents_bounds.x() +
-      std::max(0,
-          (contents_bounds.width() - background_image->width()) / 2));
-  background_bounds.set_y(contents_bounds.y() +
-      std::max(kImageBoundsSize,
-          (contents_bounds.height() - background_image->height()) / 2));
+  ShelfAlignment alignment = shelf_widget_->GetAlignment();
   background_bounds.set_size(background_image->size());
+  if (alignment == SHELF_ALIGNMENT_LEFT) {
+    background_bounds.set_x(contents_bounds.width() -
+        kImagePaddingFromShelf - background_image->width());
+    background_bounds.set_y(contents_bounds.y() +
+        (contents_bounds.height() - background_image->height()) / 2);
+  } else if(alignment == SHELF_ALIGNMENT_RIGHT) {
+    background_bounds.set_x(kImagePaddingFromShelf);
+    background_bounds.set_y(contents_bounds.y() +
+        (contents_bounds.height() - background_image->height()) / 2);
+  } else {
+    background_bounds.set_y(kImagePaddingFromShelf);
+    background_bounds.set_x(contents_bounds.x() +
+        (contents_bounds.width() - background_image->width()) / 2);
+  }
 
   forground_bounds.set_size(forground_image->size());
   forground_bounds.set_x(background_bounds.x() +
