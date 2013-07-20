@@ -175,8 +175,7 @@ void AutofillPopupControllerImpl::UpdateDataListValues(
     const std::vector<base::string16>& labels) {
   // Remove all the old data list values, which should always be at the top of
   // the list if they are present.
-  while (!identifiers_.empty() &&
-         identifiers_[0] == WebAutofillClient::MenuItemIDDataListEntry) {
+  while (identifiers_[0] == WebAutofillClient::MenuItemIDDataListEntry) {
     names_.erase(names_.begin());
     subtexts_.erase(subtexts_.begin());
     icons_.erase(icons_.begin());
@@ -192,13 +191,6 @@ void AutofillPopupControllerImpl::UpdateDataListValues(
       icons_.erase(icons_.begin());
       identifiers_.erase(identifiers_.begin());
     }
-
-     // The popup contents have changed, so either update the bounds or hide it.
-    if (HasSuggestions())
-      UpdateBoundsAndRedrawPopup();
-    else
-      Hide();
-
     return;
   }
 
