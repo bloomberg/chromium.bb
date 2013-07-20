@@ -7,7 +7,6 @@
 #include "cc/layers/scrollbar_layer_impl.h"
 #include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
-#include "cc/trees/single_thread_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
