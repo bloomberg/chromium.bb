@@ -24,6 +24,7 @@ class KernelHandle : public RefObject {
  public:
   KernelHandle();
   KernelHandle(const ScopedMount& mnt, const ScopedMountNode& node);
+  ~KernelHandle();
 
   Error Init(int open_flags);
 
