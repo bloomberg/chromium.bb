@@ -22,12 +22,12 @@ const uint64 kSimpleFinalMagicNumber = GG_UINT64_C(0xf4fa6f45970d41d8);
 // A file in the Simple cache consists of a SimpleFileHeader followed
 // by data.
 
-// A file in the Simple cache, version 2, consists of:
+// A file in the Simple cache consists of:
 //   - a SimpleFileHeader.
 //   - the key.
 //   - the data.
 //   - at the end, a SimpleFileEOF record.
-const uint32 kSimpleVersion = 3;
+const uint32 kSimpleVersion = 4;
 
 static const int kSimpleEntryFileCount = 3;
 
