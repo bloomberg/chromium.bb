@@ -239,6 +239,7 @@ class SyncerTest : public testing::Test,
             &extensions_activity_monitor_,
             listeners, NULL, &traffic_recorder_,
             true,  // enable keystore encryption
+            false,  // force enable pre-commit GU avoidance experiment
             "fake_invalidator_client_id"));
     context_->set_routing_info(routing_info);
     syncer_ = new Syncer();

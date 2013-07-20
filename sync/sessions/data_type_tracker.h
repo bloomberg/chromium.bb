@@ -49,6 +49,10 @@ class DataTypeTracker {
   // cycle.  That's for the scheduler to decide.
   bool IsSyncRequired() const;
 
+  // Returns true if there is a good reason to fetch updates for this type as
+  // part of the next sync cycle.
+  bool IsGetUpdatesRequired() const;
+
   // Returns true if there is an uncommitted local change.
   bool HasLocalChangePending() const;
 

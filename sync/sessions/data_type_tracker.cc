@@ -59,7 +59,17 @@ bool DataTypeTracker::IsSyncRequired() const {
   return !IsThrottled() &&
       (local_nudge_count_ > 0 ||
        local_refresh_request_count_ > 0 ||
-       !pending_payloads_.empty());
+       HasPendingInvalidation() ||
+       local_payload_overflow_ ||
+       server_payload_overflow_);
+}
+
+bool DataTypeTracker::IsGetUpdatesRequired() const {
+  return !IsThrottled() &&
+      (local_refresh_request_count_ > 0 ||
+       HasPendingInvalidation() ||
+       local_payload_overflow_ ||
+       server_payload_overflow_);
 }
 
 bool DataTypeTracker::HasLocalChangePending() const {

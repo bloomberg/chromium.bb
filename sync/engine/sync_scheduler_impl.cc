@@ -616,7 +616,8 @@ void SyncSchedulerImpl::UpdateNudgeTimeRecords(ModelTypeSet types) {
 void SyncSchedulerImpl::AdjustPolling(PollAdjustType type) {
   DCHECK(CalledOnValidThread());
 
-  TimeDelta poll  = (!session_context_->notifications_enabled()) ?
+  TimeDelta poll  = (!session_context_->notifications_enabled() ||
+                     !session_context_->ShouldFetchUpdatesBeforeCommit()) ?
       syncer_short_poll_interval_seconds_ :
       syncer_long_poll_interval_seconds_;
   bool rate_changed = !poll_timer_.IsRunning() ||

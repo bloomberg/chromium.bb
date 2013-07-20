@@ -11,6 +11,7 @@ namespace syncer {
 
 const char kAutofillCullingTag[] = "autofill_culling";
 const char kFaviconSyncTag[] = "favicon_sync";
+const char kPreCommitUpdateAvoidanceTag[] = "pre_commit_update_avoidance";
 
 // A structure to hold the enable status of experimental sync features.
 struct Experiments {

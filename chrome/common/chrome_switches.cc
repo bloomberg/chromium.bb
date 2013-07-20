@@ -1338,6 +1338,10 @@ const char kSyncEnableDeferredStartup[]     = "sync-enable-deferred-startup";
 // ClientLogin token.
 const char kSyncDisableOAuth2Token[]         = "sync-disable-oauth2-token";
 
+// Enables feature to avoid unnecessary GetUpdate requests.
+const char kSyncEnableGetUpdateAvoidance[]   =
+    "sync-enable-get-update-avoidance";
+
 // Enables directory support for sync filesystem
 const char kSyncfsEnableDirectoryOperation[] =
     "enable-syncfs-directory-operation";

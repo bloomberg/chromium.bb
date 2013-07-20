@@ -50,6 +50,16 @@ class SYNC_EXPORT InternalComponentsFactory {
     BACKOFF_SHORT_INITIAL_RETRY_OVERRIDE
   };
 
+  enum PreCommitUpdatesPolicy {
+    // By default, the server will enable or disable this experiment through the
+    // sync protocol's experiments data type.
+    SERVER_CONTROLLED_PRE_COMMIT_UPDATE_AVOIANCE,
+
+    // This flag overrides the server's decision and enables the pre-commit
+    // update avoidance experiment.
+    FORCE_ENABLE_PRE_COMMIT_UPDATE_AVOIDANCE,
+  };
+
   // Configuration options for internal components. This struct is expected
   // to grow and shrink over time with transient features / experiments,
   // roughly following command line flags in chrome. Implementations of
@@ -58,6 +68,7 @@ class SYNC_EXPORT InternalComponentsFactory {
   struct Switches {
     EncryptionMethod encryption_method;
     BackoffOverride backoff_override;
+    PreCommitUpdatesPolicy pre_commit_updates_policy;
   };
 
   virtual ~InternalComponentsFactory() {}

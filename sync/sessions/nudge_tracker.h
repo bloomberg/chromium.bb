@@ -34,6 +34,10 @@ class SYNC_EXPORT_PRIVATE NudgeTracker {
   // perform a sync cycle; that's the scheduler's job.
   bool IsSyncRequired() const;
 
+  // Returns true if there is a good reason for performing a get updates
+  // request as part of the next sync cycle.
+  bool IsGetUpdatesRequired() const;
+
   // Tells this class that all required update fetching and committing has
   // completed successfully.
   void RecordSuccessfulSyncCycle();

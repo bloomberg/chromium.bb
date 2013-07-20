@@ -65,6 +65,7 @@ class SyncSessionTest : public testing::Test,
             NULL,
             NULL,
             true,  // enable keystore encryption
+            false,  // force enable pre-commit GU avoidance experiment
             "fake_invalidator_client_id"));
     context_->set_routing_info(routes_);
 

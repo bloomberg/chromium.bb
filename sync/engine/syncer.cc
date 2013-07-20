@@ -64,14 +64,17 @@ bool Syncer::NormalSyncShare(ModelTypeSet request_types,
                              SyncSession* session) {
   HandleCycleBegin(session);
   VLOG(1) << "Downloading types " << ModelTypeSetToString(request_types);
-  if (!DownloadAndApplyUpdates(
-          session,
-          base::Bind(&NormalDownloadUpdates,
-                     session,
-                     kCreateMobileBookmarksFolder,
-                     request_types,
-                     base::ConstRef(nudge_tracker)))) {
-    return HandleCycleEnd(session);
+  if (nudge_tracker.IsGetUpdatesRequired() ||
+      session->context()->ShouldFetchUpdatesBeforeCommit()) {
+    if (!DownloadAndApplyUpdates(
+            session,
+            base::Bind(&NormalDownloadUpdates,
+                       session,
+                       kCreateMobileBookmarksFolder,
+                       request_types,
+                       base::ConstRef(nudge_tracker)))) {
+      return HandleCycleEnd(session);
+    }
   }
 
   VLOG(1) << "Committing from types " << ModelTypeSetToString(request_types);

@@ -1295,6 +1295,17 @@ bool SyncManagerImpl::ReceivedExperiment(Experiments* experiments) {
     found_experiment = true;
   }
 
+  ReadNode pre_commit_update_avoidance_node(&trans);
+  if (pre_commit_update_avoidance_node.InitByClientTagLookup(
+          syncer::EXPERIMENTS,
+          syncer::kPreCommitUpdateAvoidanceTag) == BaseNode::INIT_OK) {
+    session_context_->set_server_enabled_pre_commit_update_avoidance(
+        pre_commit_update_avoidance_node.GetExperimentsSpecifics().
+            pre_commit_update_avoidance().enabled());
+    // We don't bother setting found_experiment.  The frontend doesn't need to
+    // know about this.
+  }
+
   return found_experiment;
 }
 

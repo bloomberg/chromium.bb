@@ -38,6 +38,16 @@ bool NudgeTracker::IsSyncRequired() const {
   return false;
 }
 
+bool NudgeTracker::IsGetUpdatesRequired() const {
+  for (TypeTrackerMap::const_iterator it = type_trackers_.begin();
+       it != type_trackers_.end(); ++it) {
+    if (it->second.IsGetUpdatesRequired()) {
+      return true;
+    }
+  }
+  return false;
+}
+
 void NudgeTracker::RecordSuccessfulSyncCycle() {
   updates_source_ = sync_pb::GetUpdatesCallerInfo::UNKNOWN;
 

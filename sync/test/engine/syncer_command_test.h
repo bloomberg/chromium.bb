@@ -136,6 +136,7 @@ class SyncerCommandTestBase : public testing::Test,
             &mock_debug_info_getter_,
             &traffic_recorder_,
             true,  // enable keystore encryption
+            false,  // force enable pre-commit GU avoidance experiment
             "fake_invalidator_client_id"));
     context_->set_routing_info(routing_info_);
     context_->set_account_name(directory()->name());

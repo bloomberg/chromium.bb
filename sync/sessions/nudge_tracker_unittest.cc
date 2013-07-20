@@ -61,6 +61,7 @@ TEST_F(NudgeTrackerTest, EmptyNudgeTracker) {
   NudgeTracker nudge_tracker;
 
   EXPECT_FALSE(nudge_tracker.IsSyncRequired());
+  EXPECT_FALSE(nudge_tracker.IsGetUpdatesRequired());
   EXPECT_EQ(sync_pb::GetUpdatesCallerInfo::UNKNOWN,
             nudge_tracker.updates_source());
 
@@ -300,6 +301,33 @@ TEST_F(NudgeTrackerTest, IsSyncRequired) {
   EXPECT_FALSE(nudge_tracker.IsSyncRequired());
 }
 
+// Basic tests for the IsGetUpdatesRequired() flag.
+TEST_F(NudgeTrackerTest, IsGetUpdatesRequired) {
+  NudgeTracker nudge_tracker;
+  EXPECT_FALSE(nudge_tracker.IsGetUpdatesRequired());
+
+  // Local changes.
+  nudge_tracker.RecordLocalChange(ModelTypeSet(SESSIONS));
+  EXPECT_FALSE(nudge_tracker.IsGetUpdatesRequired());
+  nudge_tracker.RecordSuccessfulSyncCycle();
+  EXPECT_FALSE(nudge_tracker.IsGetUpdatesRequired());
+
+  // Refresh requests.
+  nudge_tracker.RecordLocalRefreshRequest(ModelTypeSet(SESSIONS));
+  EXPECT_TRUE(nudge_tracker.IsGetUpdatesRequired());
+  nudge_tracker.RecordSuccessfulSyncCycle();
+  EXPECT_FALSE(nudge_tracker.IsGetUpdatesRequired());
+
+  // Invalidations.
+  ModelTypeInvalidationMap invalidation_map =
+      ModelTypeSetToInvalidationMap(ModelTypeSet(PREFERENCES),
+                                    std::string("hint"));
+  nudge_tracker.RecordRemoteInvalidation(invalidation_map);
+  EXPECT_TRUE(nudge_tracker.IsGetUpdatesRequired());
+  nudge_tracker.RecordSuccessfulSyncCycle();
+  EXPECT_FALSE(nudge_tracker.IsGetUpdatesRequired());
+}
+
 // Test IsSyncRequired() responds correctly to data type throttling.
 TEST_F(NudgeTrackerTest, IsSyncRequired_Throttling) {
   NudgeTracker nudge_tracker;
@@ -320,7 +348,7 @@ TEST_F(NudgeTrackerTest, IsSyncRequired_Throttling) {
   EXPECT_FALSE(nudge_tracker.IsSyncRequired());
 
   // A refresh request for bookmarks means we have reason to sync again.
-  nudge_tracker.RecordLocalChange(ModelTypeSet(BOOKMARKS));
+  nudge_tracker.RecordLocalRefreshRequest(ModelTypeSet(BOOKMARKS));
   EXPECT_TRUE(nudge_tracker.IsSyncRequired());
 
   // A successful sync cycle means we took care of bookmarks.
@@ -333,6 +361,41 @@ TEST_F(NudgeTrackerTest, IsSyncRequired_Throttling) {
   nudge_tracker.UpdateTypeThrottlingState(t1);
   EXPECT_FALSE(nudge_tracker.IsTypeThrottled(SESSIONS));
   EXPECT_TRUE(nudge_tracker.IsSyncRequired());
+}
+
+// Test IsGetUpdatesRequired() responds correctly to data type throttling.
+TEST_F(NudgeTrackerTest, IsGetUpdatesRequired_Throttling) {
+  NudgeTracker nudge_tracker;
+  const base::TimeTicks t0 = base::TimeTicks::FromInternalValue(1234);
+  const base::TimeDelta throttle_length = base::TimeDelta::FromMinutes(10);
+  const base::TimeTicks t1 = t0 + throttle_length;
+
+  EXPECT_FALSE(nudge_tracker.IsGetUpdatesRequired());
+
+  // A refresh request to sessions enables the flag.
+  nudge_tracker.RecordLocalRefreshRequest(ModelTypeSet(SESSIONS));
+  EXPECT_TRUE(nudge_tracker.IsGetUpdatesRequired());
+
+  // But the throttling of sessions unsets it.
+  nudge_tracker.SetTypesThrottledUntil(ModelTypeSet(SESSIONS),
+                                       throttle_length,
+                                       t0);
+  EXPECT_FALSE(nudge_tracker.IsGetUpdatesRequired());
+
+  // A refresh request for bookmarks means we have reason to sync again.
+  nudge_tracker.RecordLocalRefreshRequest(ModelTypeSet(BOOKMARKS));
+  EXPECT_TRUE(nudge_tracker.IsGetUpdatesRequired());
+
+  // A successful sync cycle means we took care of bookmarks.
+  nudge_tracker.RecordSuccessfulSyncCycle();
+  EXPECT_FALSE(nudge_tracker.IsGetUpdatesRequired());
+
+  // But we still haven't dealt with sessions.  We'll need to remember
+  // that sessions are out of sync and re-enable the flag when their
+  // throttling interval expires.
+  nudge_tracker.UpdateTypeThrottlingState(t1);
+  EXPECT_FALSE(nudge_tracker.IsTypeThrottled(SESSIONS));
+  EXPECT_TRUE(nudge_tracker.IsGetUpdatesRequired());
 }
 
 // Tests throttling-related getter functions when no types are throttled.

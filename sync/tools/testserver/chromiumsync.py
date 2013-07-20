@@ -129,8 +129,9 @@ UNIX_TIME_EPOCH = (1970, 1, 1, 0, 0, 0, 3, 1, 0)
 # The number of characters in the server-generated encryption key.
 KEYSTORE_KEY_LENGTH = 16
 
-# The hashed client tag for the keystore encryption experiment node.
+# The hashed client tags for some experiment nodes.
 KEYSTORE_ENCRYPTION_EXPERIMENT_TAG = "pis8ZRzh98/MKLtVEio2mr42LQA="
+PRE_COMMIT_GU_AVOIDANCE_EXPERIMENT_TAG = "Z1xgeh3QUBa50vdEPd8C/4c7jfE="
 
 class Error(Exception):
   """Error class for this module."""
@@ -1101,6 +1102,25 @@ class SyncDataModel(object):
       user.specifics.managed_user.acknowledged = True
       self._SaveEntry(user)
 
+  def TriggerEnablePreCommitGetUpdateAvoidance(self):
+    """Sets the experiment to enable pre-commit GetUpdate avoidance."""
+    experiment_id = self._ServerTagToId("google_chrome_experiments")
+    pre_commit_gu_avoidance_id = self._ClientTagToId(
+        EXPERIMENTS,
+        PRE_COMMIT_GU_AVOIDANCE_EXPERIMENT_TAG)
+    entry = self._entries.get(pre_commit_gu_avoidance_id)
+    if entry is None:
+      entry = sync_pb2.SyncEntity()
+      entry.id_string = pre_commit_gu_avoidance_id
+      entry.name = "Pre-commit GU avoidance"
+      entry.client_defined_unique_tag = PRE_COMMIT_GU_AVOIDANCE_EXPERIMENT_TAG
+      entry.folder = False
+      entry.deleted = False
+      entry.specifics.CopyFrom(GetDefaultEntitySpecifics(EXPERIMENTS))
+      self._WritePosition(entry, experiment_id)
+    entry.specifics.experiments.pre_commit_update_avoidance.enabled = True
+    self._SaveEntry(entry)
+
   def SetInducedError(self, error, error_frequency,
                       sync_count_before_errors):
     self.induced_error = error
@@ -1280,6 +1300,14 @@ class TestServer(object):
         200,
         '<html><title>Enable Managed User Acknowledgement</title>'
             '<h1>Enable Managed User Acknowledgement</h1></html>')
+
+  def HandleEnablePreCommitGetUpdateAvoidance(self):
+    """Enables the pre-commit GU avoidance experiment."""
+    self.account.TriggerEnablePreCommitGetUpdateAvoidance()
+    return (
+        200,
+        '<html><title>Enable pre-commit GU avoidance</title>'
+            '<H1>Enable pre-commit GU avoidance</H1></html>')
 
   def HandleCommand(self, query, raw_request):
     """Decode and handle a sync command from a raw input of bytes.

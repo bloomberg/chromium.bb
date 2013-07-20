@@ -383,6 +383,10 @@ void SyncBackendHost::Initialize(
     factory_switches.backoff_override =
         InternalComponentsFactoryImpl::BACKOFF_SHORT_INITIAL_RETRY_OVERRIDE;
   }
+  if (cl->HasSwitch(switches::kSyncEnableGetUpdateAvoidance)) {
+    factory_switches.pre_commit_updates_policy =
+        InternalComponentsFactoryImpl::FORCE_ENABLE_PRE_COMMIT_UPDATE_AVOIDANCE;
+  }
 
   initialization_state_ = CREATING_SYNC_MANAGER;
   InitCore(DoInitializeOptions(

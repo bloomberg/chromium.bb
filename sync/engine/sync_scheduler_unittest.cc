@@ -150,6 +150,7 @@ class SyncSchedulerTest : public testing::Test {
             &extensions_activity_monitor_,
             std::vector<SyncEngineEventListener*>(), NULL, NULL,
             true,  // enable keystore encryption
+            false,  // force enable pre-commit GU avoidance
             "fake_invalidator_client_id"));
     context_->set_routing_info(routing_info_);
     context_->set_notifications_enabled(true);
