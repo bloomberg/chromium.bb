@@ -12,12 +12,15 @@
 #include "chrome/browser/ui/chrome_style.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_account_chooser.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_details_container.h"
+#include "chrome/browser/ui/cocoa/autofill/autofill_dialog_constants.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_main_container.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_section_container.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_sign_in_container.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_button.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_sheet.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_window.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #import "ui/base/cocoa/flipped_view.h"
 #include "ui/base/cocoa/window_size_constants.h"
 
@@ -181,6 +184,13 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
 
 #pragma mark Window Controller
 
+@interface AutofillDialogWindowController ()
+
+// Notification that the WebContent's view frame has changed.
+- (void)onContentViewFrameDidChange:(NSNotification*)notification;
+
+@end
+
 @implementation AutofillDialogWindowController
 
 - (id)initWithWebContents:(content::WebContents*)webContents
@@ -236,8 +246,27 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
                                chrome_style::kClientBottomPadding +
                                chrome_style::kTitleTopPadding;
     [self performLayout];
+
+    // Resizing the browser causes the ConstrainedWindow to move.
+    // Observe that to allow resizes based on browser size.
+    NSView* contentView = [[self window] contentView];
+    [contentView setPostsFrameChangedNotifications:YES];
+    [[NSNotificationCenter defaultCenter]
+        addObserver:self
+           selector:@selector(onContentViewFrameDidChange:)
+               name:NSWindowDidMoveNotification
+             object:[self window]];
   }
   return self;
+}
+
+- (void)dealloc {
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
+  [super dealloc];
+}
+
+- (void)onContentViewFrameDidChange:(NSNotification*)notification {
+  [self performLayout];
 }
 
 - (void)requestRelayout {
@@ -253,10 +282,21 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
   NSSize headerSize = NSMakeSize(contentSize.width, kAccountChooserHeight);
   NSSize size = NSMakeSize(
       std::max(contentSize.width, headerSize.width),
-      contentSize.height + headerSize.height + kRelatedControlVerticalSpacing);
+      contentSize.height + headerSize.height + kDetailTopPadding);
   size.width += 2 * chrome_style::kHorizontalPadding;
   size.height += chrome_style::kClientBottomPadding +
                  chrome_style::kTitleTopPadding;
+
+  // Show as much of the main view as is possible without going past the
+  // bottom of the browser window.
+  NSRect dialogFrameRect = [[self window] frame];
+  NSRect browserFrameRect =
+      [webContents_->GetView()->GetTopLevelNativeWindow() frame];
+  dialogFrameRect.size.height =
+      NSMaxY(dialogFrameRect) - NSMinY(browserFrameRect);
+  dialogFrameRect = [[self window] contentRectForFrameRect:dialogFrameRect];
+  size.height = std::min(NSHeight(dialogFrameRect), size.height);
+
   return size;
 }
 
@@ -269,9 +309,11 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
   clientRect.size.height -= chrome_style::kTitleTopPadding +
                             chrome_style::kClientBottomPadding;
 
-  NSRect headerRect, mainRect;
+  NSRect headerRect, mainRect, dummyRect;
   NSDivideRect(clientRect, &headerRect, &mainRect,
                kAccountChooserHeight, NSMinYEdge);
+  NSDivideRect(mainRect, &dummyRect, &mainRect,
+               kDetailTopPadding, NSMinYEdge);
 
   [accountChooser_ setFrame:headerRect];
   if ([[signInContainer_ view] isHidden]) {

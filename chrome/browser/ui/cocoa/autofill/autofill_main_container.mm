@@ -104,6 +104,7 @@
 
   NSSize size = NSMakeSize(std::max(buttonSize.width, detailsSize.width),
                            buttonSize.height + detailsSize.height);
+  size.height += kDetailBottomPadding;
 
   if (![legalDocumentsView_ isHidden]) {
     NSSize legalDocumentSize =
@@ -118,12 +119,12 @@
 }
 
 - (void)performLayout {
-  NSSize preferredContainerSize = [self preferredSize];
+  NSRect bounds = [[self view] bounds];
 
   CGFloat currentY = 0.0;
   if (![legalDocumentsView_ isHidden]) {
     [legalDocumentsView_ setFrameSize:
-        [self preferredLegalDocumentSizeForWidth:preferredContainerSize.width]];
+        [self preferredLegalDocumentSizeForWidth:NSWidth(bounds)]];
     currentY = NSMaxY([legalDocumentsView_ frame]) + kVerticalSpacing;
   }
 
@@ -135,15 +136,23 @@
   checkboxFrame.origin.y = NSMidY(buttonFrame) - NSHeight(checkboxFrame) / 2.0;
   [saveInChromeCheckbox_ setFrameOrigin:checkboxFrame.origin];
 
-  [detailsContainer_ performLayout];
-  NSRect containerFrame = [[detailsContainer_ view] frame];
-  containerFrame.origin.y = NSMaxY(buttonFrame);
-  [[detailsContainer_ view] setFrameOrigin:containerFrame.origin];
+  currentY = NSMaxY(buttonFrame) + kDetailBottomPadding;
 
-  NSRect notificationFrame;
-  notificationFrame.origin = NSMakePoint(0, NSMaxY(containerFrame));
+  NSRect notificationFrame = NSZeroRect;
   notificationFrame.size = [notificationContainer_ preferredSizeForWidth:
-      preferredContainerSize.width];
+      NSWidth(bounds)];
+
+  // Buttons/checkbox/legal take up lower part of view, notifications the
+  // upper part. Adjust the detailsContainer to take up the remainder.
+  CGFloat remainingHeight =
+      NSHeight(bounds) - currentY - NSHeight(notificationFrame);
+  NSRect containerFrame =
+      NSMakeRect(0, currentY, NSWidth(bounds), remainingHeight);
+  [[detailsContainer_ view] setFrame:containerFrame];
+  [detailsContainer_ performLayout];
+
+  notificationFrame.origin =
+      NSMakePoint(0, NSMaxY(containerFrame) + kDetailTopPadding);
   [[notificationContainer_ view] setFrame:notificationFrame];
   [notificationContainer_ performLayout];
 }

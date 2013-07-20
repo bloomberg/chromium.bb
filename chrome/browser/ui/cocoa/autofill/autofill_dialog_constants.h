@@ -25,6 +25,12 @@ const int kNotificationPadding = 14;
 // Vertical spacing between legal text and details section.
 const int kVerticalSpacing = 8;
 
+// Padding between top bar and details section.
+const int kDetailTopPadding = 20;
+
+// Padding between the bottom of the details section and the button strip.
+const int kDetailBottomPadding = 30;
+
 }  // namespace
 
 #endif  // CHROME_BROWSER_UI_COCOA_AUTOFILL_AUTOFILL_DIALOG_CONSTANTS__H_

@@ -32,7 +32,10 @@ class AutofillDetailsContainerTest : public ui::CocoaTest {
 TEST_VIEW(AutofillDetailsContainerTest, [container_ view])
 
 TEST_F(AutofillDetailsContainerTest, BasicProperties) {
+  EXPECT_TRUE([[container_ view] isKindOfClass:[NSScrollView class]]);
   EXPECT_GT([[[container_ view] subviews] count], 0U);
+
+  [[container_ view] setFrameSize:[container_ preferredSize]];
   EXPECT_GT(NSHeight([[container_ view] frame]), 0);
   EXPECT_GT(NSWidth([[container_ view] frame]), 0);
 }

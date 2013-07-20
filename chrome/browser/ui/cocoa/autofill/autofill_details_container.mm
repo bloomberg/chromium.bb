@@ -50,9 +50,17 @@ SkColor const kWarningColor = 0xffde4932;  // SkColorSetRGB(0xde, 0x49, 0x32);
   [self addSection:autofill::SECTION_CC_BILLING];
   [self addSection:autofill::SECTION_SHIPPING];
 
-  [self setView:[[NSView alloc] init]];
+  scrollView_.reset([[NSScrollView alloc] initWithFrame:NSZeroRect]);
+  [scrollView_ setHasVerticalScroller:YES];
+  [scrollView_ setHasHorizontalScroller:NO];
+  [scrollView_ setBorderType:NSNoBorder];
+  [scrollView_ setAutohidesScrollers:YES];
+  [self setView:scrollView_];
+
+  [scrollView_ setDocumentView:[[NSView alloc] initWithFrame:NSZeroRect]];
+
   for (AutofillSectionContainer* container in details_.get())
-    [[self view] addSubview:[container view]];
+    [[scrollView_ documentView] addSubview:[container view]];
 
   infoBubble_.reset([[InfoBubbleView alloc] initWithFrame:NSZeroRect]);
   [infoBubble_ setBackgroundColor:
@@ -67,7 +75,7 @@ SkColor const kWarningColor = 0xffde4932;  // SkColorSetRGB(0xde, 0x49, 0x32);
   [label setDrawsBackground:NO];
   [infoBubble_ addSubview:label];
 
-  [[self view] addSubview:infoBubble_];
+  [[scrollView_ documentView] addSubview:infoBubble_];
 
   [self performLayout];
 }
@@ -93,7 +101,7 @@ SkColor const kWarningColor = 0xffde4932;  // SkColorSetRGB(0xde, 0x49, 0x32);
     }
   }
 
-  [[self view] setFrameSize:[self preferredSize]];
+  [[scrollView_ documentView] setFrameSize:[self preferredSize]];
 }
 
 - (AutofillSectionContainer*)sectionForId:(autofill::DialogSection)section {

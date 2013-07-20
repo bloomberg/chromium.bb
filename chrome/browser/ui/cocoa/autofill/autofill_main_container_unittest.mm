@@ -42,7 +42,9 @@ TEST_F(AutofillMainContainerTest, SubViews) {
   EXPECT_EQ(5U, [[[container_ view] subviews] count]);
   for (NSView* view in [[container_ view] subviews]) {
     NSArray* subviews = [view subviews];
-    if ([subviews count] == 2) {
+    if ([view isKindOfClass:[NSScrollView class]]) {
+      hasDetailsContainer = true;
+    } else if ([subviews count] == 2) {
       EXPECT_TRUE(
           [[subviews objectAtIndex:0] isKindOfClass:[NSButton class]]);
       EXPECT_TRUE(
@@ -50,10 +52,6 @@ TEST_F(AutofillMainContainerTest, SubViews) {
       hasButtons = true;
     } else if ([view isKindOfClass:[NSTextView class]]) {
       hasTextView = true;
-    } else if ([subviews count] > 0 &&
-               [[subviews objectAtIndex:0] isKindOfClass:
-                   [AutofillSectionView class]]) {
-      hasDetailsContainer = true;
     } else if ([view isKindOfClass:[NSButton class]] &&
                view == [container_ saveInChromeCheckboxForTesting]) {
       hasCheckbox = true;

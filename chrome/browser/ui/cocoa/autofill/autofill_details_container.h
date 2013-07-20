@@ -24,6 +24,9 @@ class AutofillDialogController;
     : NSViewController<AutofillLayout,
                        AutofillValidationDisplay> {
  @private
+  // Scroll view containing all detail sections.
+  base::scoped_nsobject<NSScrollView> scrollView_;
+
   // The individual detail sections.
   base::scoped_nsobject<NSMutableArray> details_;
 
