@@ -10,6 +10,7 @@
 #include "net/cert/cert_verifier.h"
 #include "net/cert/test_root_certs.h"
 #include "net/cert/x509_certificate.h"
+#include "net/quic/crypto/proof_source_chromium.h"
 #include "net/quic/crypto/proof_verifier_chromium.h"
 #include "net/test/cert_test_util.h"
 
@@ -34,6 +35,11 @@ class TestProofVerifierChromium : public ProofVerifierChromium {
   ScopedTestRoot scoped_root_;
   scoped_ptr<CertVerifier> cert_verifier_;
 };
+
+// static
+ProofSource* CryptoTestUtils::ProofSourceForTesting() {
+  return new ProofSourceChromium();
+}
 
 // static
 ProofVerifier* CryptoTestUtils::ProofVerifierForTesting() {
