@@ -148,6 +148,8 @@ void GetMostVisitedURLs(
     return;
 
   TopSites* top_sites = profile->GetTopSites();
+  if (!top_sites)
+    return;
 
   scoped_refptr<NativeCallback> native_callback =
       new NativeCallback(j_callback_obj, static_cast<int>(num_results));
@@ -180,4 +182,19 @@ void GetURLThumbnail(
           &GetUrlThumbnailTask,
           url_string,
           top_sites, base::Owned(j_callback_ref)));
+}
+
+void BlacklistUrl(JNIEnv* env, jclass clazz, jobject j_profile, jstring j_url) {
+  Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
+
+  DCHECK(profile);
+  if (!profile)
+    return;
+
+  TopSites* top_sites = profile->GetTopSites();
+  if (!top_sites)
+    return;
+
+  std::string url_string = ConvertJavaStringToUTF8(env, j_url);
+  top_sites->AddBlacklistedURL(GURL(url_string));
 }

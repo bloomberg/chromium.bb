@@ -69,8 +69,17 @@ public class MostVisitedSites {
         nativeGetURLThumbnail(mProfile, url, callback);
     }
 
+    /**
+     * Blacklist a URL from the most visited URLs list.
+     * @param url The URL to be blacklisted.
+     */
+    public void blacklistUrl(String url) {
+        nativeBlacklistUrl(mProfile, url);
+    }
+
     private static native void nativeGetMostVisitedURLs(
             Profile profile, MostVisitedURLsCallback callback, int numResults);
     private static native void nativeGetURLThumbnail(
             Profile profile, String url, ThumbnailCallback callback);
+    private static native void nativeBlacklistUrl(Profile profile, String url);
 }
