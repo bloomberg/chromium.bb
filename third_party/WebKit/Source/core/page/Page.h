@@ -133,12 +133,7 @@ public:
     bool openedByDOM() const;
     void setOpenedByDOM();
 
-    // DEPRECATED. Use backForward() instead of the following 5 functions.
-    bool goBack();
-    bool goForward();
-    void goBackOrForward(int distance);
-    int getHistoryLength();
-
+    // DEPRECATED. Use backForward() instead of the following function.
     void goToItem(HistoryItem*);
 
     // FIXME: InspectorPageGroup is only needed to support single process debugger layout tests, it should be removed when DumpRenderTree is gone.

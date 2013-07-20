@@ -50,17 +50,46 @@ PassOwnPtr<BackForwardController> BackForwardController::create(Page* page, Back
 
 void BackForwardController::goBackOrForward(int distance)
 {
-    m_page->goBackOrForward(distance);
+    if (distance == 0)
+        return;
+
+    HistoryItem* item = itemAtIndex(distance);
+    if (!item) {
+        if (distance > 0) {
+            if (forwardCount())
+                item = itemAtIndex(forwardCount());
+        } else {
+            if (backCount())
+                item = itemAtIndex(-backCount());
+        }
+    }
+
+    if (!item)
+        return;
+
+    m_page->goToItem(item);
 }
 
 bool BackForwardController::goBack()
 {
-    return m_page->goBack();
+    HistoryItem* item = backItem();
+
+    if (item) {
+        m_page->goToItem(item);
+        return true;
+    }
+    return false;
 }
 
 bool BackForwardController::goForward()
 {
-    return m_page->goForward();
+    HistoryItem* item = forwardItem();
+
+    if (item) {
+        m_page->goToItem(item);
+        return true;
+    }
+    return false;
 }
 
 void BackForwardController::addItem(PassRefPtr<HistoryItem> item)
@@ -75,7 +104,7 @@ void BackForwardController::setCurrentItem(HistoryItem* item)
 
 int BackForwardController::count() const
 {
-    return m_page->getHistoryLength();
+    return backCount() + 1 + forwardCount();
 }
 
 int BackForwardController::backCount() const

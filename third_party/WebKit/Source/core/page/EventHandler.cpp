@@ -49,6 +49,7 @@
 #include "core/editing/FrameSelection.h"
 #include "core/editing/TextIterator.h"
 #include "core/editing/htmlediting.h"
+#include "core/history/BackForwardController.h"
 #include "core/html/HTMLFrameElementBase.h"
 #include "core/html/HTMLFrameSetElement.h"
 #include "core/html/HTMLInputElement.h"
@@ -3360,7 +3361,7 @@ void EventHandler::defaultBackspaceEventHandler(KeyboardEvent* event)
 
     if (!m_frame->editor()->behavior().shouldNavigateBackOnBackspace())
         return;
-    
+
     Page* page = m_frame->page();
     if (!page)
         return;
@@ -3368,9 +3369,9 @@ void EventHandler::defaultBackspaceEventHandler(KeyboardEvent* event)
     bool handledEvent = false;
 
     if (event->shiftKey())
-        handledEvent = page->goForward();
+        handledEvent = page->backForward()->goForward();
     else
-        handledEvent = page->goBack();
+        handledEvent = page->backForward()->goBack();
 
     if (handledEvent)
         event->setDefaultHandled();

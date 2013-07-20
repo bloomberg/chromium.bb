@@ -287,50 +287,6 @@ void Page::setOpenedByDOM()
     m_openedByDOM = true;
 }
 
-bool Page::goBack()
-{
-    HistoryItem* item = backForward()->backItem();
-
-    if (item) {
-        goToItem(item);
-        return true;
-    }
-    return false;
-}
-
-bool Page::goForward()
-{
-    HistoryItem* item = backForward()->forwardItem();
-
-    if (item) {
-        goToItem(item);
-        return true;
-    }
-    return false;
-}
-
-void Page::goBackOrForward(int distance)
-{
-    if (distance == 0)
-        return;
-
-    HistoryItem* item = backForward()->itemAtIndex(distance);
-    if (!item) {
-        if (distance > 0) {
-            if (int forwardCount = backForward()->forwardCount())
-                item = backForward()->itemAtIndex(forwardCount);
-        } else {
-            if (int backCount = backForward()->backCount())
-                item = backForward()->itemAtIndex(-backCount);
-        }
-    }
-
-    if (!item)
-        return;
-
-    goToItem(item);
-}
-
 void Page::goToItem(HistoryItem* item)
 {
     // stopAllLoaders may end up running onload handlers, which could cause further history traversals that may lead to the passed in HistoryItem
@@ -341,11 +297,6 @@ void Page::goToItem(HistoryItem* item)
         m_mainFrame->loader()->stopAllLoaders();
 
     m_mainFrame->loader()->history()->goToItem(item);
-}
-
-int Page::getHistoryLength()
-{
-    return backForward()->backCount() + 1 + backForward()->forwardCount();
 }
 
 void Page::clearPageGroup()
