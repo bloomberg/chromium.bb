@@ -379,12 +379,12 @@ class ExpectationSyntaxTests(Base):
         expectations = expectations or []
         warnings = warnings or []
         filename = 'TestExpectations'
-        line_number = 1
+        line_number = '1'
         expectation_line = TestExpectationParser._tokenize_line(filename, line, line_number)
         self.assertEqual(expectation_line.warnings, warnings)
         self.assertEqual(expectation_line.name, name)
         self.assertEqual(expectation_line.filename, filename)
-        self.assertEqual(expectation_line.line_number, line_number)
+        self.assertEqual(expectation_line.line_numbers, line_number)
         if not warnings:
             self.assertEqual(expectation_line.modifiers, modifiers)
             self.assertEqual(expectation_line.expectations, expectations)
@@ -488,6 +488,12 @@ Bug(exp) failures/expected/text.html [ ImageOnlyFailure ]""", is_lint_mode=True)
             self.get_basic_expectations(), overrides="""
 Bug(override) failures/expected/text.html [ Failure ]
 Bug(override) failures/expected/text.html [ ImageOnlyFailure ]""", is_lint_mode=True)
+
+    def test_duplicate_with_line_before_preceding_line(self):
+        self.assert_bad_expectations("""Bug(exp) [ Debug ] failures/expected/text.html [ Failure ]
+Bug(exp) [ Release ] failures/expected/text.html [ Failure ]
+Bug(exp) [ Debug ] failures/expected/text.html [ Failure ]
+""")
 
     def test_missing_file(self):
         self.parse_exp('Bug(test) missing_file.html [ Failure ]')
@@ -750,7 +756,7 @@ class TestExpectationsParserTests(unittest.TestCase):
         expectation_line.original_string = test_name
         expectation_line.name = test_name
         expectation_line.filename = '<Bot TestExpectations>'
-        expectation_line.line_number = 0
+        expectation_line.line_numbers = '0'
         expectation_line.expectations = expectations
         self._parser._parse_line(expectation_line)
 

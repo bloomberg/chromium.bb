@@ -105,7 +105,7 @@ class TestExpectationParser(object):
         expectation_line.original_string = test_name
         expectation_line.name = test_name
         expectation_line.filename = file_name
-        expectation_line.line_number = 0
+        expectation_line.line_numbers = "0"
         expectation_line.expectations = expectations
         return expectation_line
 
@@ -270,7 +270,7 @@ class TestExpectationParser(object):
         expectation_line = TestExpectationLine()
         expectation_line.original_string = expectation_string
         expectation_line.filename = filename
-        expectation_line.line_number = line_number
+        expectation_line.line_numbers = str(line_number)
 
         comment_index = expectation_string.find("#")
         if comment_index == -1:
@@ -388,7 +388,7 @@ class TestExpectationLine(object):
         """Initializes a blank-line equivalent of an expectation."""
         self.original_string = None
         self.filename = None  # this is the path to the expectations file for this line
-        self.line_number = None
+        self.line_numbers = None
         self.name = None  # this is the path in the line itself
         self.path = None  # this is the normpath of self.name
         self.modifiers = []
@@ -405,7 +405,7 @@ class TestExpectationLine(object):
     def __eq__(self, other):
         return (self.original_string == other.original_string
             and self.filename == other.filename
-            and self.line_number == other.line_number
+            and self.line_numbers == other.line_numbers
             and self.name == other.name
             and self.path == other.path
             and self.modifiers == other.modifiers
@@ -439,15 +439,22 @@ class TestExpectationLine(object):
         return expectation_line
 
     @staticmethod
-    def merge_expectation_lines(line1, line2):
+    def merge_expectation_lines(line1, line2, model_all_expectations):
         """Merges the expectations of line2 into line1 and returns a fresh object."""
         if line1 is None:
             return line2
         if line2 is None:
             return line1
+        if model_all_expectations and line1.filename != line2.filename:
+            return line2
 
-        # Don't merge original_string, filename, line_number or comment.
+        # Don't merge original_string or comment.
         result = TestExpectationLine()
+        # We only care about filenames when we're linting, in which case the filenames are the same.
+        # Not clear that there's anything better to do when not linting and the filenames are different.
+        if model_all_expectations:
+            result.filename = line2.filename
+        result.line_numbers = line1.line_numbers + "," + line2.line_numbers
         result.name = line1.name
         result.path = line1.path
         result.parsed_expectations = set(line1.parsed_expectations) | set(line2.parsed_expectations)
@@ -668,7 +675,8 @@ class TestExpectationsModel(object):
 
     def add_expectation_line(self, expectation_line,
                              override_existing_matches=False,
-                             merge_existing_matches=False):
+                             merge_existing_matches=False,
+                             model_all_expectations=False):
         """Returns a list of warnings encountered while matching modifiers."""
 
         if expectation_line.is_invalid():
@@ -679,9 +687,8 @@ class TestExpectationsModel(object):
                     and self._already_seen_better_match(test, expectation_line)):
                 continue
 
-            if merge_existing_matches:
-                merge = TestExpectationLine.merge_expectation_lines
-                expectation_line = merge(self.get_expectation_line(test), expectation_line)
+            if merge_existing_matches or model_all_expectations:
+                expectation_line = TestExpectationLine.merge_expectation_lines(self.get_expectation_line(test), expectation_line, model_all_expectations)
 
             self._clear_expectations_for_test(test)
             self._test_to_expectation_line[test] = expectation_line
@@ -775,28 +782,28 @@ class TestExpectationsModel(object):
         # to be warnings and return False".
 
         if prev_expectation_line.matching_configurations == expectation_line.matching_configurations:
-            expectation_line.warnings.append('Duplicate or ambiguous entry lines %s:%d and %s:%d.' % (
-                self._shorten_filename(prev_expectation_line.filename), prev_expectation_line.line_number,
-                self._shorten_filename(expectation_line.filename), expectation_line.line_number))
+            expectation_line.warnings.append('Duplicate or ambiguous entry lines %s:%s and %s:%s.' % (
+                self._shorten_filename(prev_expectation_line.filename), prev_expectation_line.line_numbers,
+                self._shorten_filename(expectation_line.filename), expectation_line.line_numbers))
             return True
 
         if prev_expectation_line.matching_configurations >= expectation_line.matching_configurations:
-            expectation_line.warnings.append('More specific entry for %s on line %s:%d overrides line %s:%d.' % (expectation_line.name,
-                self._shorten_filename(prev_expectation_line.filename), prev_expectation_line.line_number,
-                self._shorten_filename(expectation_line.filename), expectation_line.line_number))
+            expectation_line.warnings.append('More specific entry for %s on line %s:%s overrides line %s:%s.' % (expectation_line.name,
+                self._shorten_filename(prev_expectation_line.filename), prev_expectation_line.line_numbers,
+                self._shorten_filename(expectation_line.filename), expectation_line.line_numbers))
             # FIXME: return False if we want more specific to win.
             return True
 
         if prev_expectation_line.matching_configurations <= expectation_line.matching_configurations:
-            expectation_line.warnings.append('More specific entry for %s on line %s:%d overrides line %s:%d.' % (expectation_line.name,
-                self._shorten_filename(expectation_line.filename), expectation_line.line_number,
-                self._shorten_filename(prev_expectation_line.filename), prev_expectation_line.line_number))
+            expectation_line.warnings.append('More specific entry for %s on line %s:%s overrides line %s:%s.' % (expectation_line.name,
+                self._shorten_filename(expectation_line.filename), expectation_line.line_numbers,
+                self._shorten_filename(prev_expectation_line.filename), prev_expectation_line.line_numbers))
             return True
 
         if prev_expectation_line.matching_configurations & expectation_line.matching_configurations:
-            expectation_line.warnings.append('Entries for %s on lines %s:%d and %s:%d match overlapping sets of configurations.' % (expectation_line.name,
-                self._shorten_filename(prev_expectation_line.filename), prev_expectation_line.line_number,
-                self._shorten_filename(expectation_line.filename), expectation_line.line_number))
+            expectation_line.warnings.append('Entries for %s on lines %s:%s and %s:%s match overlapping sets of configurations.' % (expectation_line.name,
+                self._shorten_filename(prev_expectation_line.filename), prev_expectation_line.line_numbers,
+                self._shorten_filename(expectation_line.filename), expectation_line.line_numbers))
             return True
 
         # Configuration sets are disjoint, then.
@@ -1028,7 +1035,7 @@ class TestExpectations(object):
         warnings = []
         for expectation in self._expectations:
             for warning in expectation.warnings:
-                warnings.append('%s:%d %s %s' % (self._shorten_filename(expectation.filename), expectation.line_number,
+                warnings.append('%s:%s %s %s' % (self._shorten_filename(expectation.filename), expectation.line_numbers,
                                 warning, expectation.name if expectation.expectations else expectation.original_string))
 
         if warnings:
@@ -1092,14 +1099,14 @@ class TestExpectations(object):
                 continue
 
             if self._model_all_expectations or self._test_config in expectation_line.matching_configurations:
-                self._model.add_expectation_line(expectation_line)
+                self._model.add_expectation_line(expectation_line, model_all_expectations=self._model_all_expectations)
 
     def add_extra_skipped_tests(self, tests_to_skip):
         if not tests_to_skip:
             return
         for test in self._expectations:
             if test.name and test.name in tests_to_skip:
-                test.warnings.append('%s:%d %s is also in a Skipped file.' % (test.filename, test.line_number, test.name))
+                test.warnings.append('%s:%s %s is also in a Skipped file.' % (test.filename, test.line_numbers, test.name))
 
         for test_name in tests_to_skip:
             expectation_line = self._parser.expectation_for_skipped_test(test_name)

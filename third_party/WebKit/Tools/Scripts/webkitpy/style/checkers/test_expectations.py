@@ -72,7 +72,7 @@ class TestExpectationsChecker(object):
         level = 5
         for expectation_line in expectations:
             for warning in expectation_line.warnings:
-                self._handle_style_error(expectation_line.line_number, 'test/expectations', level, warning)
+                self._handle_style_error(expectation_line.line_numbers, 'test/expectations', level, warning)
 
     def check_tabs(self, lines):
         self._tab_checker.check(lines)
