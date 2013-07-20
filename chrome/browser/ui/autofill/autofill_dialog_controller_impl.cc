@@ -378,20 +378,39 @@ base::string16 WalletErrorMessage(wallet::WalletClient::ErrorType error_type) {
       return l10n_util::GetStringUTF16(IDS_AUTOFILL_WALLET_BUYER_ACCOUNT_ERROR);
 
     case wallet::WalletClient::BAD_REQUEST:
+      return l10n_util::GetStringFUTF16(
+          IDS_AUTOFILL_WALLET_UPGRADE_CHROME_ERROR,
+          ASCIIToUTF16("71"));
+
     case wallet::WalletClient::INVALID_PARAMS:
+      return l10n_util::GetStringFUTF16(
+          IDS_AUTOFILL_WALLET_UPGRADE_CHROME_ERROR,
+          ASCIIToUTF16("42"));
+
     case wallet::WalletClient::UNSUPPORTED_API_VERSION:
-      return l10n_util::GetStringUTF16(
-          IDS_AUTOFILL_WALLET_UPGRADE_CHROME_ERROR);
+      return l10n_util::GetStringFUTF16(
+          IDS_AUTOFILL_WALLET_UPGRADE_CHROME_ERROR,
+          ASCIIToUTF16("43"));
 
     case wallet::WalletClient::SERVICE_UNAVAILABLE:
       return l10n_util::GetStringUTF16(
           IDS_AUTOFILL_WALLET_SERVICE_UNAVAILABLE_ERROR);
 
     case wallet::WalletClient::INTERNAL_ERROR:
+      return l10n_util::GetStringFUTF16(IDS_AUTOFILL_WALLET_UNKNOWN_ERROR,
+                                        ASCIIToUTF16("62"));
+
     case wallet::WalletClient::MALFORMED_RESPONSE:
+      return l10n_util::GetStringFUTF16(IDS_AUTOFILL_WALLET_UNKNOWN_ERROR,
+                                        ASCIIToUTF16("72"));
+
     case wallet::WalletClient::NETWORK_ERROR:
+      return l10n_util::GetStringFUTF16(IDS_AUTOFILL_WALLET_UNKNOWN_ERROR,
+                                        ASCIIToUTF16("73"));
+
     case wallet::WalletClient::UNKNOWN_ERROR:
-      return l10n_util::GetStringUTF16(IDS_AUTOFILL_WALLET_UNKNOWN_ERROR);
+      return l10n_util::GetStringFUTF16(IDS_AUTOFILL_WALLET_UNKNOWN_ERROR,
+                                        ASCIIToUTF16("74"));
   }
 
   NOTREACHED();
