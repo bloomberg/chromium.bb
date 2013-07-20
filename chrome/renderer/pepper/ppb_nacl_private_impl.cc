@@ -281,6 +281,7 @@ int32_t GetNexeFd(PP_Instance instance,
 
   g_pnacl_resource_host.Get()->RequestNexeFd(
       GetRoutingID(instance),
+      instance,
       cache_info,
       is_hit,
       handle,
@@ -294,8 +295,7 @@ void ReportTranslationFinished(PP_Instance instance) {
   // Just return because something is already very wrong.
   if (g_pnacl_resource_host.Get() == NULL)
     return;
-  g_pnacl_resource_host.Get()->ReportTranslationFinished(
-      GetRoutingID(instance));
+  g_pnacl_resource_host.Get()->ReportTranslationFinished(instance);
 }
 
 PP_Bool IsOffTheRecord() {

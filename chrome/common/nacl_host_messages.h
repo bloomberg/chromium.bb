@@ -61,22 +61,23 @@ IPC_SYNC_MESSAGE_CONTROL0_1(NaClHostMsg_NaClCreateTemporaryFile,
 
 // A renderer sends this to the browser to request a file descriptor for
 // a translated nexe.
-IPC_MESSAGE_CONTROL2(NaClHostMsg_NexeTempFileRequest,
+IPC_MESSAGE_CONTROL3(NaClHostMsg_NexeTempFileRequest,
                      int /* render_view_id */,
+                     int /* instance */,
                      nacl::PnaclCacheInfo /* cache info */)
 
 // The browser replies to a renderer's temp file request with output_file,
 // which is either a writeable temp file to use for translation, or a
 // read-only file containing the translated nexe from the cache.
 IPC_MESSAGE_CONTROL3(NaClViewMsg_NexeTempFileReply,
-                     int /* render_view_id */,
+                     int /* instance */,
                      bool /* is_cache_hit */,
                      IPC::PlatformFileForTransit /* output file */)
 
 // A renderer sends this to the browser to report that its translation has
 // finished and its temp file contains the translated nexe.
 IPC_MESSAGE_CONTROL1(NaClHostMsg_ReportTranslationFinished,
-                     int /* render_view_id */)
+                     int /* instance */)
 
 // A renderer sends this to the browser process to report an error.
 IPC_MESSAGE_CONTROL2(NaClHostMsg_NaClErrorStatus,

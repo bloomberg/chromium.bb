@@ -24,11 +24,12 @@ class PnaclTranslationResourceHost : public IPC::ChannelProxy::MessageFilter {
   explicit PnaclTranslationResourceHost(
       const scoped_refptr<base::MessageLoopProxy>& io_message_loop);
   void RequestNexeFd(int render_view_id,
+                     PP_Instance instance,
                      const nacl::PnaclCacheInfo& cache_info,
                      PP_Bool* is_hit,
                      PP_FileHandle* file_handle,
                      scoped_refptr<ppapi::TrackedCallback> callback);
-  void ReportTranslationFinished(int render_view_id);
+  void ReportTranslationFinished(PP_Instance instance);
 
  protected:
   virtual ~PnaclTranslationResourceHost();
@@ -47,16 +48,16 @@ class PnaclTranslationResourceHost : public IPC::ChannelProxy::MessageFilter {
     scoped_refptr<ppapi::TrackedCallback> callback;
   };
 
-  // Maps the render_view_id with an outstanding cache request to the info
+  // Maps the instance with an outstanding cache request to the info
   // about that request.
-  typedef std::map<int, CacheRequestInfo> CacheRequestInfoMap;
+  typedef std::map<PP_Instance, CacheRequestInfo> CacheRequestInfoMap;
   // IPC::ChannelProxy::MessageFilter implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void OnFilterAdded(IPC::Channel* channel) OVERRIDE;
   virtual void OnFilterRemoved() OVERRIDE;
   virtual void OnChannelClosing() OVERRIDE;
 
-  void OnNexeTempFileReply(int render_view_id,
+  void OnNexeTempFileReply(PP_Instance instance,
                            bool is_hit,
                            IPC::PlatformFileForTransit file);
   void CleanupCacheRequests();

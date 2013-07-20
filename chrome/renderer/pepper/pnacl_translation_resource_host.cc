@@ -56,6 +56,7 @@ bool PnaclTranslationResourceHost::OnMessageReceived(
 
 void PnaclTranslationResourceHost::RequestNexeFd(
     int render_view_id,
+    PP_Instance instance,
     const nacl::PnaclCacheInfo& cache_info,
     PP_Bool* is_hit,
     PP_FileHandle* file_handle,
@@ -67,6 +68,7 @@ void PnaclTranslationResourceHost::RequestNexeFd(
         base::Bind(&PnaclTranslationResourceHost::RequestNexeFd,
                    this,
                    render_view_id,
+                   instance,
                    cache_info,
                    is_hit,
                    file_handle,
@@ -74,7 +76,7 @@ void PnaclTranslationResourceHost::RequestNexeFd(
     return;
   }
   if (!channel_ || !channel_->Send(new NaClHostMsg_NexeTempFileRequest(
-                       render_view_id, cache_info))) {
+                       render_view_id, instance, cache_info))) {
     PpapiGlobals::Get()->GetMainThreadMessageLoop()
         ->PostTask(FROM_HERE,
                    base::Bind(&TrackedCallback::Run,
@@ -83,33 +85,32 @@ void PnaclTranslationResourceHost::RequestNexeFd(
     return;
   }
   pending_cache_requests_.insert(std::make_pair(
-      render_view_id, CacheRequestInfo(is_hit, file_handle, callback)));
+      instance, CacheRequestInfo(is_hit, file_handle, callback)));
 }
 
 void PnaclTranslationResourceHost::ReportTranslationFinished(
-    int render_view_id) {
+    PP_Instance instance) {
   if (!io_message_loop_->BelongsToCurrentThread()) {
     io_message_loop_->PostTask(
         FROM_HERE,
         base::Bind(&PnaclTranslationResourceHost::ReportTranslationFinished,
                    this,
-                   render_view_id));
+                   instance));
     return;
   }
   // If the channel is closed or we have been detached, we are probably shutting
   // down, so just don't send anything.
   if (!channel_)
     return;
-  DCHECK(pending_cache_requests_.count(render_view_id) == 0);
-  channel_->Send(new NaClHostMsg_ReportTranslationFinished(render_view_id));
+  DCHECK(pending_cache_requests_.count(instance) == 0);
+  channel_->Send(new NaClHostMsg_ReportTranslationFinished(instance));
 }
 
 void PnaclTranslationResourceHost::OnNexeTempFileReply(
-    int render_view_id,
+    PP_Instance instance,
     bool is_hit,
     IPC::PlatformFileForTransit file) {
-  CacheRequestInfoMap::iterator it =
-      pending_cache_requests_.find(render_view_id);
+  CacheRequestInfoMap::iterator it = pending_cache_requests_.find(instance);
   int32_t status = PP_ERROR_FAILED;
   // Handle the expected successful case first.
   if (it != pending_cache_requests_.end() &&
