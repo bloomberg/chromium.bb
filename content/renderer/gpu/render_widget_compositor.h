@@ -31,7 +31,8 @@ class RenderWidgetCompositor : public WebKit::WebLayerTreeView,
  public:
   // Attempt to construct and initialize a compositor instance for the widget
   // with the given settings. Returns NULL if initialization fails.
-  static scoped_ptr<RenderWidgetCompositor> Create(RenderWidget* widget);
+  static scoped_ptr<RenderWidgetCompositor> Create(RenderWidget* widget,
+                                                   bool threaded);
 
   virtual ~RenderWidgetCompositor();
 
@@ -107,7 +108,7 @@ class RenderWidgetCompositor : public WebKit::WebLayerTreeView,
       OffscreenContextProviderForCompositorThread() OVERRIDE;
 
  private:
-  explicit RenderWidgetCompositor(RenderWidget* widget);
+  RenderWidgetCompositor(RenderWidget* widget, bool threaded);
 
   bool initialize(cc::LayerTreeSettings settings);
 

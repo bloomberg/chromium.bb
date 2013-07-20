@@ -79,9 +79,10 @@ bool GetSwitchValueAsFloat(
 
 // static
 scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
-      RenderWidget* widget) {
+    RenderWidget* widget,
+    bool threaded) {
   scoped_ptr<RenderWidgetCompositor> compositor(
-      new RenderWidgetCompositor(widget));
+      new RenderWidgetCompositor(widget, threaded));
 
   CommandLine* cmd = CommandLine::ForCurrentProcess();
 
@@ -284,9 +285,11 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
   return compositor.Pass();
 }
 
-RenderWidgetCompositor::RenderWidgetCompositor(RenderWidget* widget)
-  : suppress_schedule_composite_(false),
-    widget_(widget) {
+RenderWidgetCompositor::RenderWidgetCompositor(RenderWidget* widget,
+                                               bool threaded)
+    : threaded_(threaded),
+      suppress_schedule_composite_(false),
+      widget_(widget) {
 }
 
 RenderWidgetCompositor::~RenderWidgetCompositor() {}
