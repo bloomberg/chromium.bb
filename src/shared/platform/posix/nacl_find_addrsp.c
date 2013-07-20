@@ -35,15 +35,23 @@
 # define NACL_POINTER_SIZE 64
 
 #elif (NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32) || \
-      NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm || \
-      NACL_ARCH(NACL_BUILD_ARCH) == NACL_mips
+      NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
 /*
- * The x86-32 / ARM / MIPS architectures use a 32-bit address space,
- * but it is common for the kernel to reserve the high 1 or 2 GB.  In
- * order to allow the start address to be in the 2GB-3GB range, we
- * choose from all possible 32-bit addresses.
+ * The x86-32 / ARM architectures use a 32-bit address space, but it is common
+ * for the kernel to reserve the high 1 or 2 GB. In order to allow the start
+ * address to be in the 2GB-3GB range, we choose from all possible 32-bit
+ * addresses.
  */
 # define NUM_USER_ADDRESS_BITS 32
+# define NACL_POINTER_SIZE 32
+
+#elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_mips
+/*
+ * The MIPS architecture uses a 32-bit address space, but it is common for the
+ * kernel to reserve the high 1 or 2 GB. The current MIPS platforms we target
+ * will not be making use of the address space in the 2GB-4GB range.
+ */
+# define NUM_USER_ADDRESS_BITS 31
 # define NACL_POINTER_SIZE 32
 
 #else
@@ -63,6 +71,7 @@ int NaClFindAddressSpaceRandomized(uintptr_t *addr, size_t memory_size,
    */
   uintptr_t addr_mask;
   uintptr_t suggested_addr;
+  int mmap_type;
 
   size_t map_failed_count_left = NACL_VALGRIND_MAP_FAILED_COUNT;
 
@@ -72,8 +81,23 @@ int NaClFindAddressSpaceRandomized(uintptr_t *addr, size_t memory_size,
           memory_size);
   NaClLog(4, "NaClFindAddressSpaceRandomized: max %d tries\n", max_tries);
 
-  /* 4kB pages */
-  addr_mask = ~(((uintptr_t) 1 << 12) - 1);
+  if (NACL_ARCH(NACL_BUILD_ARCH) != NACL_mips) {
+    /* 4kB pages */
+    addr_mask = ~(((uintptr_t) 1 << 12) - 1);
+    mmap_type = MAP_PRIVATE;
+  } else {
+    /*
+     * 8kB pages in userspace memory region.
+     * Apart from system page size, MIPS shared memory mask in kernel can depend
+     * on dcache attributes. Ideally, we could use kernel constant SHMLBA, but
+     * it is too large. Common case is that 8kB is sufficient.
+     * As shared memory mask alignment is more rigid on MIPS, we need to pass
+     * MAP_SHARED type to mmap, so it can return value applicable both for
+     * private and shared mapping.
+     */
+    addr_mask = ~(((uintptr_t) 1 << 13) - 1);
+    mmap_type = MAP_SHARED;
+  }
   /*
    * We cannot just do
    *
@@ -119,7 +143,7 @@ int NaClFindAddressSpaceRandomized(uintptr_t *addr, size_t memory_size,
             suggested_addr);
     map_addr = mmap((void *) suggested_addr, memory_size,
                     PROT_NONE,
-                    MAP_ANONYMOUS | MAP_NORESERVE | MAP_PRIVATE,
+                    MAP_ANONYMOUS | MAP_NORESERVE | mmap_type,
                     -1,
                     0);
     /*
