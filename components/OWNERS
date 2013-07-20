@@ -11,6 +11,13 @@ per-file breakpad.gypi=thestig@chromium.org
 per-file tracing*=jbauman@chromium.org
 per-file tracing*=nduca@chromium.org
 
+per-file nacl*=bradchen@chromium.org
+per-file nacl*=bradnelson@chromium.org
+per-file nacl*=jvoung@chromium.org
+per-file nacl*=mseaborn@chromium.org
+per-file nacl*=noelallen@chromium.org
+per-file nacl*=sehr@chromium.org
+
 per-file navigation_interception.gypi=joth@chromium.org
 per-file navigation_interception.gypi=mkosiba@chromium.org
 
