@@ -253,4 +253,4 @@ def CheckChangeOnCommit(input_api, output_api):
     return results
 
 def GetPreferredTrySlaves(project, change):
-    return ['linux_blink_rel', 'mac_blink_rel', 'win_blink_rel']
+    return ['linux_layout_rel', 'mac_layout_rel', 'win_layout_rel']
