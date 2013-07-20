@@ -16,6 +16,7 @@ FontListTest.Fonts_FromDescStringWithStyleInFlexibleFormat
 FontListTest.Fonts_FromFont
 FontListTest.Fonts_FromFontVector
 FontListTest.Fonts_FromFontWithNonNormalStyle
+FontListTest.Fonts_GetHeight_GetBaseline
 FontListTest.Fonts_GetStyle
 FontTest.Ascent
 FontTest.AvgCharWidth
@@ -30,10 +31,10 @@ TextEliderTest.ElideEmailMoreSpace
 TextEliderTest.ElideRectangleText
 TextEliderTest.ElideRectangleTextLongWords
 TextEliderTest.ElideRectangleTextPunctuation
+TextEliderTest.ElideTextEllipsis
 TextEliderTest.ElideTextLongStrings
 TextEliderTest.ElideTextSurrogatePairs
 TextEliderTest.ElideTextTruncate
-TextEliderTest.ElideTextEllipsis
 TextEliderTest.TestFileURLEliding
 TextEliderTest.TestFilenameEliding
 TextEliderTest.TestGeneralEliding

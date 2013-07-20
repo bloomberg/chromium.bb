@@ -4,6 +4,7 @@
 
 #include "ui/gfx/font_list.h"
 
+#include <algorithm>
 #include <string>
 #include <vector>
 
@@ -230,6 +231,32 @@ TEST(FontListTest, Fonts_DeriveFontListWithSize) {
   EXPECT_EQ(2U, derived_fonts.size());
   EXPECT_EQ("Arial|5", FontToString(derived_fonts[0]));
   EXPECT_EQ("Sans serif|5", FontToString(derived_fonts[1]));
+}
+
+TEST(FontListTest, Fonts_GetHeight_GetBaseline) {
+  // If a font list has only one font, the height and baseline must be the same.
+  Font font1("Arial", 16);
+  FontList font_list1("Arial, 16px");
+  EXPECT_EQ(font1.GetHeight(), font_list1.GetHeight());
+  EXPECT_EQ(font1.GetBaseline(), font_list1.GetBaseline());
+
+  // If there are two different fonts, the font list returns the max value
+  // for ascent and descent.
+  Font font2("Symbol", 16);
+  EXPECT_NE(font1.GetBaseline(), font2.GetBaseline());
+  EXPECT_NE(font1.GetHeight() - font1.GetBaseline(),
+            font2.GetHeight() - font2.GetBaseline());
+  std::vector<Font> fonts;
+  fonts.push_back(font1);
+  fonts.push_back(font2);
+  FontList font_list_mix(fonts);
+  // ascent of FontList == max(ascent of Fonts)
+  EXPECT_EQ(std::max(font1.GetHeight() - font1.GetBaseline(),
+                     font2.GetHeight() - font2.GetBaseline()),
+            font_list_mix.GetHeight() - font_list_mix.GetBaseline());
+  // descent of FontList == max(descent of Fonts)
+  EXPECT_EQ(std::max(font1.GetBaseline(), font2.GetBaseline()),
+            font_list_mix.GetBaseline());
 }
 
 }  // namespace gfx

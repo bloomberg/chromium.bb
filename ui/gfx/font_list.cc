@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <stdlib.h>
+#include "ui/gfx/font_list.h"
+
+#include <algorithm>
 
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "ui/gfx/font_list.h"
 
 namespace {
 
@@ -69,19 +70,23 @@ std::string BuildFontDescription(const std::vector<std::string>& font_names,
 
 namespace gfx {
 
-FontList::FontList() {
+FontList::FontList() : common_height_(-1), common_baseline_(-1) {
   fonts_.push_back(Font());
 }
 
 FontList::FontList(const std::string& font_description_string)
-    : font_description_string_(font_description_string) {
+    : font_description_string_(font_description_string),
+      common_height_(-1),
+      common_baseline_(-1) {
   DCHECK(!font_description_string.empty());
   // DCHECK description string ends with "px" for size in pixel.
   DCHECK(EndsWith(font_description_string, "px", true));
 }
 
 FontList::FontList(const std::vector<Font>& fonts)
-    : fonts_(fonts) {
+    : fonts_(fonts),
+      common_height_(-1),
+      common_baseline_(-1) {
   DCHECK(!fonts.empty());
   if (DCHECK_IS_ON()) {
     int style = fonts[0].GetStyle();
@@ -93,7 +98,9 @@ FontList::FontList(const std::vector<Font>& fonts)
   }
 }
 
-FontList::FontList(const Font& font) {
+FontList::FontList(const Font& font)
+    : common_height_(-1),
+      common_baseline_(-1) {
   fonts_.push_back(font);
 }
 
@@ -144,6 +151,34 @@ FontList FontList::DeriveFontListWithSize(int size) const {
     return FontList(font_description_string_);
 
   return FontList(BuildFontDescription(font_names, font_style, size));
+}
+
+int FontList::GetHeight() const {
+  if (common_height_ < 0) {
+    int ascent = 0;
+    int descent = 0;
+    const std::vector<Font>& fonts = GetFonts();
+    for (std::vector<Font>::const_iterator i = fonts.begin();
+         i != fonts.end(); ++i) {
+      ascent = std::max(ascent, i->GetBaseline());
+      descent = std::max(descent, i->GetHeight() - i->GetBaseline());
+    }
+    common_height_ = ascent + descent;
+  }
+  return common_height_;
+}
+
+int FontList::GetBaseline() const {
+  if (common_baseline_ < 0) {
+    int baseline = 0;
+    const std::vector<Font>& fonts = GetFonts();
+    for (std::vector<Font>::const_iterator i = fonts.begin();
+         i != fonts.end(); ++i) {
+      baseline = std::max(baseline, i->GetBaseline());
+    }
+    common_baseline_ = baseline;
+  }
+  return common_baseline_;
 }
 
 int FontList::GetFontStyle() const {
