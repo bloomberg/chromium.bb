@@ -135,23 +135,8 @@ TEST_F(SearchModelTest, UpdateSearchModelMode) {
   EXPECT_TRUE(model->state() == expected_new_state);
 }
 
-TEST_F(SearchModelTest, UpdateTopBarVisibility) {
-  mock_observer.VerifyNotificationCount(0);
-  EXPECT_TRUE(model->top_bars_visible());
-
-  SearchModel::State expected_old_state = model->state();
-  SearchModel::State expected_new_state(model->state());
-  expected_new_state.top_bars_visible = false;
-
-  model->SetTopBarsVisible(false);
-  mock_observer.VerifySearchModelStates(expected_old_state, expected_new_state);
-  mock_observer.VerifyNotificationCount(1);
-  EXPECT_FALSE(model->top_bars_visible());
-}
-
 TEST_F(SearchModelTest, UpdateSearchModelState) {
   SearchModel::State expected_new_state(model->state());
-  expected_new_state.top_bars_visible = false;
   expected_new_state.instant_support = INSTANT_SUPPORT_NO;
   EXPECT_FALSE(model->state() == expected_new_state);
   model->SetState(expected_new_state);

@@ -205,7 +205,6 @@ void SearchTabHelper::UpdateMode(bool update_origin, bool is_preloaded_ntp) {
     // OmniboxEditModel::SetInputInProgress() which is called from
     // OmniboxEditModel::Revert().
     model_.SetState(SearchModel::State(SearchMode(type, origin),
-                                       model_.state().top_bars_visible,
                                        model_.instant_support(),
                                        model_.state().voice_search_supported));
   } else {
