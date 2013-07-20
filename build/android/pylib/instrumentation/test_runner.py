@@ -160,7 +160,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
   def TearDown(self):
     """Cleans up the test harness and saves outstanding data from test run."""
     if self.ports_to_forward:
-      self._UnmapPortPairs(self.ports_to_forward)
+      self._UnmapPorts([(port, port) for port in self.ports_to_forward])
     super(TestRunner, self).TearDown()
 
   def TestSetup(self, test):
