@@ -105,6 +105,13 @@ struct Experiment {
   string16 DescriptionForChoice(int index) const;
 };
 
+// Migration is used internally by about_flags to move users from old,
+// busted flags to the new hotness. This is exposed only for testing.
+struct Migration {
+  const char* const from;
+  const char* const to;
+};
+
 // Reads the Labs |prefs| (called "Labs" for historical reasons) and adds the
 // commandline flags belonging to the active experiments to |command_line|.
 void ConvertFlagsToSwitches(FlagsStorage* flags_storage,
@@ -162,6 +169,10 @@ void ClearState();
 // Sets the list of experiments. Pass in NULL to use the default set. This does
 // NOT take ownership of the supplied Experiments.
 void SetExperiments(const Experiment* e, size_t count);
+
+// Sets the list of migrations. Pass in NULL to use the default set. This does
+// NOT take ownership of the supplied Migrations.
+void SetMigrations(const Migration* e, size_t count);
 
 // Returns the current set of experiments.
 const Experiment* GetExperiments(size_t* count);
