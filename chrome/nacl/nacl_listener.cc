@@ -310,6 +310,16 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
   args->enable_exception_handling = params.enable_exception_handling;
   args->enable_debug_stub = params.enable_debug_stub;
   args->enable_dyncode_syscalls = params.enable_dyncode_syscalls;
+  if (!params.enable_dyncode_syscalls) {
+    // Bound the initial nexe's code segment size under PNaCl to
+    // reduce the chance of a code spraying attack succeeding (see
+    // https://code.google.com/p/nativeclient/issues/detail?id=3572).
+    // We assume that !params.enable_dyncode_syscalls is synonymous
+    // with PNaCl.  We can't apply this arbitrary limit outside of
+    // PNaCl because it might break existing NaCl apps, and this limit
+    // is only useful if the dyncode syscalls are disabled.
+    args->initial_nexe_max_code_bytes = 32 << 20;  // 32 MB
+  }
 #if defined(OS_LINUX) || defined(OS_MACOSX)
   args->debug_stub_server_bound_socket_fd = nacl::ToNativeHandle(
       params.debug_stub_server_bound_socket);
