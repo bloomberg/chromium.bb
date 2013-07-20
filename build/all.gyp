@@ -783,6 +783,10 @@
                 ['target_arch=="x64"', {
                   'dependencies!': [
                     '../chrome_frame/chrome_frame.gyp:npchrome_frame',
+                    # Temporarily removing these to speed up win64 cycle times.
+                    '../chrome/chrome.gyp:interactive_ui_tests',
+                    '../chrome/chrome.gyp:reliability_tests',
+                    '../chrome/chrome.gyp:automated_ui_tests',
                   ],
                   'defines': [
                     'OMIT_CHROME_FRAME',
