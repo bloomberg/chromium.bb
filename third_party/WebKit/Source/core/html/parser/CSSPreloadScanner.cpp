@@ -212,7 +212,7 @@ static String parseCSSStringOrURL(const String& string)
 void CSSPreloadScanner::emitRule(const SegmentedString& source)
 {
     if (equalIgnoringCase(m_rule, "import")) {
-        String url = parseCSSStringOrURL(m_ruleValue.toStringPreserveCapacity());
+        String url = parseCSSStringOrURL(m_ruleValue.toString());
         if (!url.isEmpty()) {
             KURL baseElementURL; // FIXME: This should be passed in from the HTMLPreloadScaner via scan()!
             TextPosition position = TextPosition(source.currentLine(), source.currentColumn());

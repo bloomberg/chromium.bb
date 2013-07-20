@@ -180,11 +180,11 @@ public:
         return m_string;
     }
 
-    const String& toStringPreserveCapacity() const
+    String substring(unsigned position, unsigned length) const
     {
-        if (m_string.isNull())
-            reifyString();
-        return m_string;
+        if (!m_string.isNull())
+            return m_string.substring(position, length);
+        return reifySubstring(position, length);
     }
 
     AtomicString toAtomicString() const
@@ -288,9 +288,10 @@ private:
     CharType* appendUninitializedSlow(unsigned length);
     template <typename CharType>
     ALWAYS_INLINE CharType * getBufferCharacters();
-    void reifyString() const;
+    void reifyString();
+    String reifySubstring(unsigned position, unsigned length) const;
 
-    mutable String m_string;  // Pointers first: crbug.com/232031
+    String m_string; // Pointers first: crbug.com/232031
     RefPtr<StringImpl> m_buffer;
     union {
         LChar* m_bufferCharacters8;

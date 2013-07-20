@@ -382,6 +382,16 @@ public:
     static PassRefPtr<StringImpl> reallocate(PassRefPtr<StringImpl> originalString, unsigned length, LChar*& data);
     static PassRefPtr<StringImpl> reallocate(PassRefPtr<StringImpl> originalString, unsigned length, UChar*& data);
 
+    // If this StringImpl has only one reference, we can truncate the string by updating
+    // its m_length property without actually re-allocating its buffer.
+    void truncateAssumingIsolated(unsigned length)
+    {
+        ASSERT(hasOneRef());
+        ASSERT(length <= m_length);
+        ASSERT(bufferOwnership() == BufferInternal);
+        m_length = length;
+    }
+
     static unsigned flagsOffset() { return OBJECT_OFFSETOF(StringImpl, m_hashAndFlags); }
     static unsigned flagIs8Bit() { return s_hashFlag8BitBuffer; }
     static unsigned dataOffset() { return OBJECT_OFFSETOF(StringImpl, m_data8); }

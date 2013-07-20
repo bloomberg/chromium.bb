@@ -50,8 +50,7 @@ namespace {
 
 static void expectBuilderContent(const String& expected, const StringBuilder& builder)
 {
-    // Not using builder.toString() or builder.toStringPreserveCapacity() because they all
-    // change internal state of builder.
+    // Not using builder.toString() because it changes internal state of builder.
     if (builder.is8Bit())
         EXPECT_EQ(expected, String(builder.characters8(), builder.length()));
     else
@@ -100,9 +99,6 @@ TEST(StringBuilderTest, Append)
     const LChar* characters = builder2.characters8();
     builder2.append("0123456789");
     ASSERT_EQ(characters, builder2.characters8());
-    builder2.toStringPreserveCapacity(); // Test after reifyString with buffer preserved.
-    builder2.append("abcd");
-    ASSERT_EQ(characters, builder2.characters8());
 
     // Test appending UChar32 characters to StringBuilder.
     StringBuilder builderForUChar32Append;
@@ -143,51 +139,6 @@ TEST(StringBuilderTest, ToString)
 
     // Resizing the StringBuilder should not affect the original result of toString().
     string1 = builder.toString();
-    builder.resize(10);
-    builder.append("###");
-    ASSERT_EQ(String("0123456789abcdefghijklmnopqrstuvwxyzABC"), string1);
-}
-
-TEST(StringBuilderTest, ToStringPreserveCapacity)
-{
-    StringBuilder builder;
-    builder.append("0123456789");
-    unsigned capacity = builder.capacity();
-    String string = builder.toStringPreserveCapacity();
-    ASSERT_EQ(capacity, builder.capacity());
-    ASSERT_EQ(String("0123456789"), string);
-    ASSERT_EQ(string.impl(), builder.toStringPreserveCapacity().impl());
-    ASSERT_EQ(string.characters8(), builder.characters8());
-
-    // Changing the StringBuilder should not affect the original result of toStringPreserveCapacity().
-    builder.append("abcdefghijklmnopqrstuvwxyz");
-    ASSERT_EQ(String("0123456789"), string);
-
-    // Changing the StringBuilder should not affect the original result of toStringPreserveCapacity() in case the capacity is not changed.
-    builder.reserveCapacity(200);
-    capacity = builder.capacity();
-    string = builder.toStringPreserveCapacity();
-    ASSERT_EQ(capacity, builder.capacity());
-    ASSERT_EQ(string.characters8(), builder.characters8());
-    ASSERT_EQ(String("0123456789abcdefghijklmnopqrstuvwxyz"), string);
-    builder.append("ABC");
-    ASSERT_EQ(String("0123456789abcdefghijklmnopqrstuvwxyz"), string);
-
-    // Changing the original result of toStringPreserveCapacity() should not affect the content of the StringBuilder.
-    capacity = builder.capacity();
-    String string1 = builder.toStringPreserveCapacity();
-    ASSERT_EQ(capacity, builder.capacity());
-    ASSERT_EQ(string1.characters8(), builder.characters8());
-    ASSERT_EQ(String("0123456789abcdefghijklmnopqrstuvwxyzABC"), string1);
-    string1.append("DEF");
-    ASSERT_EQ(String("0123456789abcdefghijklmnopqrstuvwxyzABC"), builder.toStringPreserveCapacity());
-    ASSERT_EQ(String("0123456789abcdefghijklmnopqrstuvwxyzABCDEF"), string1);
-
-    // Resizing the StringBuilder should not affect the original result of toStringPreserveCapacity().
-    capacity = builder.capacity();
-    string1 = builder.toStringPreserveCapacity();
-    ASSERT_EQ(capacity, builder.capacity());
-    ASSERT_EQ(string.characters8(), builder.characters8());
     builder.resize(10);
     builder.append("###");
     ASSERT_EQ(String("0123456789abcdefghijklmnopqrstuvwxyzABC"), string1);

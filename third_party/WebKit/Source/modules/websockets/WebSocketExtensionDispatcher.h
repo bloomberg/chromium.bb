@@ -57,7 +57,7 @@ private:
     void fail(const String& reason);
 
     Vector<OwnPtr<WebSocketExtensionProcessor> > m_processors;
-    StringBuilder m_acceptedExtensionsBuilder;
+    mutable StringBuilder m_acceptedExtensionsBuilder;
     String m_failureReason;
 };
 

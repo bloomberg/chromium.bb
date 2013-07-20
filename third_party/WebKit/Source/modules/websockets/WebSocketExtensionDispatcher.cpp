@@ -141,7 +141,7 @@ String WebSocketExtensionDispatcher::acceptedExtensions() const
 {
     if (m_acceptedExtensionsBuilder.isEmpty())
         return String();
-    return m_acceptedExtensionsBuilder.toStringPreserveCapacity();
+    return m_acceptedExtensionsBuilder.toString();
 }
 
 String WebSocketExtensionDispatcher::failureReason() const

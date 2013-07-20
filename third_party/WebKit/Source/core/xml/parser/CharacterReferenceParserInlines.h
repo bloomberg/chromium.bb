@@ -50,7 +50,7 @@ inline UChar asHexDigit(UChar cc)
     return 0;
 }
 
-inline void unconsumeCharacters(SegmentedString& source, const StringBuilder& consumedCharacters)
+inline void unconsumeCharacters(SegmentedString& source, StringBuilder& consumedCharacters)
 {
     if (consumedCharacters.length() == 1)
         source.push(consumedCharacters[0]);
@@ -58,7 +58,7 @@ inline void unconsumeCharacters(SegmentedString& source, const StringBuilder& co
         source.push(consumedCharacters[0]);
         source.push(consumedCharacters[1]);
     } else
-        source.prepend(SegmentedString(consumedCharacters.toStringPreserveCapacity()));
+        source.prepend(SegmentedString(consumedCharacters.toString()));
 }
 
 template <typename ParserFunctions>

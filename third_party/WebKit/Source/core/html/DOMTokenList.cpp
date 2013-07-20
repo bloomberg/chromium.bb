@@ -208,12 +208,13 @@ String DOMTokenList::removeTokens(const AtomicString& input, const Vector<String
         }
 
         // Step 7
-        StringBuilder s;
+        StringBuilder tokenBuilder;
         while (position < inputLength && isNotHTMLSpace(input[position]))
-            s.append(input[position++]);
+            tokenBuilder.append(input[position++]);
 
         // Step 8
-        if (tokens.contains(s.toStringPreserveCapacity())) {
+        String token = tokenBuilder.toString();
+        if (tokens.contains(token)) {
             // Step 8.1
             while (position < inputLength && isHTMLSpace(input[position]))
                 ++position;
@@ -227,8 +228,9 @@ String DOMTokenList::removeTokens(const AtomicString& input, const Vector<String
             // Step 8.3
             if (position < inputLength && !output.isEmpty())
                 output.append(' ');
-        } else
-            output.append(s.toStringPreserveCapacity()); // Step 9
+        } else {
+            output.append(token); // Step 9
+        }
     }
 
     return output.toString();
