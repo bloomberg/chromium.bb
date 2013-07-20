@@ -2010,7 +2010,7 @@ willAnimateFromState:(BookmarkBar::State)oldState
   if (!chrome::IsCommandEnabled(browser_.get(), IDC_FULLSCREEN))
     return;
 
-  if (chrome::mac::SupportsSystemFullscreen()) {
+  if (chrome::mac::SupportsSystemFullscreen() && !fullscreenWindow_) {
     enteredPresentationModeFromFullscreen_ = YES;
     if ([[self window] isKindOfClass:[FramedBrowserWindow class]])
       [static_cast<FramedBrowserWindow*>([self window]) toggleSystemFullScreen];
@@ -2034,6 +2034,7 @@ willAnimateFromState:(BookmarkBar::State)oldState
                            bubbleType:(FullscreenExitBubbleType)bubbleType {
   fullscreenUrl_ = url;
   fullscreenBubbleType_ = bubbleType;
+  [self layoutSubviews];
   [self showFullscreenExitBubbleIfNecessary];
 }
 
@@ -2113,6 +2114,16 @@ willAnimateFromState:(BookmarkBar::State)oldState
 - (void)exitPresentationMode {
   // url: and bubbleType: are ignored when leaving presentation mode.
   [self setPresentationMode:NO url:GURL() bubbleType:FEB_TYPE_NONE];
+}
+
+- (void)enterFullscreenForURL:(const GURL&)url
+                   bubbleType:(FullscreenExitBubbleType)bubbleType {
+  // This method may only be called in simplified fullscreen mode.
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  DCHECK(command_line->HasSwitch(switches::kEnableSimplifiedFullscreen));
+
+  [self enterFullscreenForSnowLeopard];
+  [self updateFullscreenExitBubbleURL:url bubbleType:bubbleType];
 }
 
 - (BOOL)inPresentationMode {

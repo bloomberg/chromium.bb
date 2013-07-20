@@ -613,11 +613,9 @@ willPositionSheet:(NSWindow*)sheet
   [self layoutSubviews];
 }
 
+// TODO(rohitrao): This method is misnamed now, since there is a flag that
+// enables 10.6-style fullscreen on newer OSes.
 - (void)enterFullscreenForSnowLeopard {
-  // TODO(rohitrao): This method is misnamed now, since there is a flag that
-  // enables 10.6-style fullscreen on newer OSes.
-  DCHECK(!chrome::mac::SupportsSystemFullscreen());
-
   // Fade to black.
   const CGDisplayReservationInterval kFadeDurationSeconds = 0.6;
   Boolean didFadeOut = NO;

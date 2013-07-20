@@ -409,6 +409,12 @@ class WebContents;
                          bubbleType:(FullscreenExitBubbleType)bubbleType;
 - (void)exitPresentationMode;
 
+// For simplified fullscreen: Enters fullscreen for a tab at a URL. The |url|
+// is guaranteed to be non-empty; see -enterFullscreen for the user-initiated
+// fullscreen mode. Called on Snow Leopard and Lion+.
+- (void)enterFullscreenForURL:(const GURL&)url
+                   bubbleType:(FullscreenExitBubbleType)bubbleType;
+
 // Returns presentation mode state.  This method is safe to call on all OS
 // versions.
 - (BOOL)inPresentationMode;

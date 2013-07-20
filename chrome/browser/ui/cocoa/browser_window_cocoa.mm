@@ -374,8 +374,10 @@ void BrowserWindowCocoa::EnterFullscreen(
   // When simplified fullscreen is enabled, always enter normal fullscreen.
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kEnableSimplifiedFullscreen)) {
-    [controller_ enterFullscreen];
-    [controller_ updateFullscreenExitBubbleURL:url bubbleType:bubble_type];
+    if (url.is_empty())
+      [controller_ enterFullscreen];
+    else
+      [controller_ enterFullscreenForURL:url bubbleType:bubble_type];
     return;
   }
 
