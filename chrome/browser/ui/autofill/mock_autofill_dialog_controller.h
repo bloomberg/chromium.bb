@@ -15,76 +15,65 @@ class MockAutofillDialogController : public AutofillDialogController {
   MockAutofillDialogController();
   virtual ~MockAutofillDialogController();
 
-  virtual string16 DialogTitle() const OVERRIDE;
-  virtual string16 AccountChooserText() const OVERRIDE;
-  virtual string16 SignInLinkText() const OVERRIDE;
-  virtual string16 EditSuggestionText() const OVERRIDE;
-  virtual string16 CancelButtonText() const OVERRIDE;
-  virtual string16 ConfirmButtonText() const OVERRIDE;
-  virtual string16 SaveLocallyText() const OVERRIDE;
-  virtual string16 LegalDocumentsText() OVERRIDE;
-  virtual DialogSignedInState SignedInState() const OVERRIDE;
-  virtual bool ShouldShowSpinner() const OVERRIDE;
+  MOCK_CONST_METHOD0(DialogTitle, string16());
+  MOCK_CONST_METHOD0(AccountChooserText, string16());
+  MOCK_CONST_METHOD0(SignInLinkText, string16());
+  MOCK_CONST_METHOD0(EditSuggestionText, string16());
+  MOCK_CONST_METHOD0(CancelButtonText, string16());
+  MOCK_CONST_METHOD0(ConfirmButtonText, string16());
+  MOCK_CONST_METHOD0(SaveLocallyText, string16());
+  MOCK_METHOD0(LegalDocumentsText, string16());
+  MOCK_CONST_METHOD0(SignedInState, DialogSignedInState());
+  MOCK_CONST_METHOD0(ShouldShowSpinner, bool());
   MOCK_CONST_METHOD0(ShouldOfferToSaveInChrome, bool());
   MOCK_METHOD0(MenuModelForAccountChooser, ui::MenuModel*());
-  virtual gfx::Image AccountChooserImage() OVERRIDE;
-  virtual bool ShouldShowProgressBar() const OVERRIDE;
-  virtual int GetDialogButtons() const OVERRIDE;
-  virtual bool ShouldShowDetailArea() const OVERRIDE;
-  virtual bool IsDialogButtonEnabled(ui::DialogButton button) const OVERRIDE;
-  virtual DialogOverlayState GetDialogOverlay() const OVERRIDE;
-  virtual const std::vector<ui::Range>& LegalDocumentLinks() OVERRIDE;
+  MOCK_METHOD0(AccountChooserImage, gfx::Image());
+  MOCK_CONST_METHOD0(ShouldShowProgressBar, bool());
+  MOCK_CONST_METHOD0(GetDialogButtons, int());
+  MOCK_CONST_METHOD0(ShouldShowDetailArea, bool());
+  MOCK_CONST_METHOD1(IsDialogButtonEnabled, bool(ui::DialogButton button));
+  MOCK_CONST_METHOD0(GetDialogOverlay, DialogOverlayState());
+  MOCK_METHOD0(LegalDocumentLinks, const std::vector<ui::Range>&());
   MOCK_CONST_METHOD1(SectionIsActive, bool(DialogSection));
   MOCK_CONST_METHOD1(RequestedFieldsForSection,
                      const DetailInputs&(DialogSection));
   MOCK_METHOD1(ComboboxModelForAutofillType,
                ui::ComboboxModel*(AutofillFieldType));
   MOCK_METHOD1(MenuModelForSection, ui::MenuModel*(DialogSection));
-  virtual string16 LabelForSection(DialogSection section) const OVERRIDE;
-  virtual SuggestionState SuggestionStateForSection(
-      DialogSection section) OVERRIDE;
-  virtual void EditClickedForSection(DialogSection section) OVERRIDE;
-  virtual void EditCancelledForSection(DialogSection section) OVERRIDE;
-  virtual gfx::Image IconForField(AutofillFieldType type,
-                                  const string16& user_input) const OVERRIDE;
-  virtual string16 InputValidityMessage(
-      DialogSection section,
-      AutofillFieldType type,
-      const string16& value) OVERRIDE;
+  MOCK_CONST_METHOD1(LabelForSection, string16(DialogSection section));
+  MOCK_METHOD1(SuggestionStateForSection, SuggestionState(DialogSection));
+  MOCK_METHOD1(EditClickedForSection, void(DialogSection section));
+  MOCK_METHOD1(EditCancelledForSection, void(DialogSection section));
+  MOCK_CONST_METHOD2(IconForField,
+                     gfx::Image(AutofillFieldType, const string16&));
+  MOCK_METHOD3(InputValidityMessage,
+      string16(DialogSection, AutofillFieldType, const string16&));
   MOCK_METHOD3(InputsAreValid, ValidityData(DialogSection,
                                             const DetailOutputMap&,
                                             ValidationType));
-  virtual void UserEditedOrActivatedInput(DialogSection section,
-                                          const DetailInput* input,
-                                          gfx::NativeView parent_view,
-                                          const gfx::Rect& content_bounds,
-                                          const string16& field_contents,
-                                          bool was_edit) OVERRIDE;
-  virtual bool HandleKeyPressEventInInput(
-      const content::NativeWebKeyboardEvent& event) OVERRIDE;
-
-  virtual void FocusMoved() OVERRIDE;
-
-  virtual gfx::Image SplashPageImage() const OVERRIDE;
-
-  virtual void ViewClosed() OVERRIDE;
-
-  virtual std::vector<DialogNotification> CurrentNotifications() OVERRIDE;
-
-  virtual std::vector<DialogAutocheckoutStep> CurrentAutocheckoutSteps()
-      const OVERRIDE;
-
-  virtual void SignInLinkClicked() OVERRIDE;
-  virtual void NotificationCheckboxStateChanged(DialogNotification::Type type,
-                                                bool checked) OVERRIDE;
-
-  virtual void LegalDocumentLinkClicked(const ui::Range& range) OVERRIDE;
-  virtual void OverlayButtonPressed() OVERRIDE;
-  virtual void OnCancel() OVERRIDE;
-  virtual void OnAccept() OVERRIDE;
-
+  MOCK_METHOD6(UserEditedOrActivatedInput,void(DialogSection,
+                                               const DetailInput*,
+                                               gfx::NativeView,
+                                               const gfx::Rect&,
+                                               const string16&,
+                                               bool was_edit));
+  MOCK_METHOD1(HandleKeyPressEventInInput,
+               bool(const content::NativeWebKeyboardEvent& event));
+  MOCK_METHOD0(FocusMoved, void());
+  MOCK_CONST_METHOD0(SplashPageImage, gfx::Image());
+  MOCK_METHOD0(ViewClosed, void());
+  MOCK_METHOD0(CurrentNotifications,std::vector<DialogNotification>());
+  MOCK_CONST_METHOD0(CurrentAutocheckoutSteps,
+                     std::vector<DialogAutocheckoutStep>());
+  MOCK_METHOD0(SignInLinkClicked, void());
+  MOCK_METHOD2(NotificationCheckboxStateChanged,
+               void(DialogNotification::Type, bool));
+  MOCK_METHOD1(LegalDocumentLinkClicked, void(const ui::Range&));
+  MOCK_METHOD0(OverlayButtonPressed, void());
+  MOCK_METHOD0(OnCancel, void());
+  MOCK_METHOD0(OnAccept, void());
   MOCK_METHOD0(profile, Profile*());
-  virtual content::WebContents* web_contents() OVERRIDE;
+  MOCK_METHOD0(web_contents, content::WebContents*());
  private:
   DetailInputs default_inputs_;
   DetailInputs cc_default_inputs_;  // Default inputs for SECTION_CC.
