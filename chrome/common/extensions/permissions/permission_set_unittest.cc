@@ -649,7 +649,7 @@ TEST(PermissionsTest, PermissionMessages) {
   skip.insert(APIPermission::kStorage);
   skip.insert(APIPermission::kSystemCpu);
   skip.insert(APIPermission::kSystemInfoMemory);
-  skip.insert(APIPermission::kSystemInfoDisplay);
+  skip.insert(APIPermission::kSystemDisplay);
   skip.insert(APIPermission::kTts);
   skip.insert(APIPermission::kUnlimitedStorage);
   skip.insert(APIPermission::kWebView);

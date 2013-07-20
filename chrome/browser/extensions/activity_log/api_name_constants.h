@@ -193,7 +193,10 @@ const char* const kNames[] = {
     "tabs.getSelected", "tabs.sendRequest",
     "systemInfo.cpu.get", "systemInfo.memory.get",
     "runtime.onRestartRequired",
-    "system.cpu.getInfo"
+    "system.cpu.getInfo",
+    "system.display.getInfo",
+    "system.display.onDisplayChanged",
+    "system.display.setDisplayProperties"
 };
 
 }  // namespace activity_log_api_name_constants

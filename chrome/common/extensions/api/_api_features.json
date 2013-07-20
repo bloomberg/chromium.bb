@@ -462,8 +462,8 @@
     "dependencies": ["permission:system.cpu"],
     "contexts": ["blessed_extension"]
   },
-  "systemInfo.display": {
-    "dependencies": ["permission:systemInfo.display"],
+  "system.display": {
+    "dependencies": ["permission:system.display"],
     "contexts": ["blessed_extension"]
   },
   "systemInfo.memory": {

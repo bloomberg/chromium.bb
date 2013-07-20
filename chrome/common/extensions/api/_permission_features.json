@@ -539,7 +539,7 @@
     ],
     "whitelist": [""]
   },
-  "systemInfo.display": {
+  "system.display": {
     "channel": "stable",
     "extension_types": ["extension", "packaged_app", "platform_app"]
   },

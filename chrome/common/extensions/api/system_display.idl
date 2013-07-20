@@ -1,9 +1,9 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Use the <code>systemInfo.display</code> API to query display metadata.
-namespace systemInfo.display {
+// Use the <code>system.display</code> API to query display metadata.
+namespace system.display {
 
   dictionary Bounds {
     // The x-coordinate of the upper-left corner.
@@ -108,7 +108,7 @@ namespace systemInfo.display {
     // together with <code>boundsOriginY</code>, if <code>boundsOriginY</code>
     // is set. Note that, when updating the display origin, some constraints
     // will be applied, so the final bounds origin may be different than the one
-    // set. The final bounds can be retrieved using $ref:getDisplayInfo.
+    // set. The final bounds can be retrieved using $ref:getInfo.
     // The bounds origin is applied after <code>rotation</code>.
     // The bounds origin cannot be changed on the primary display. Note that is
     // also invalid to set bounds origin values if <code>isPrimary</code> is
@@ -125,7 +125,7 @@ namespace systemInfo.display {
 
   interface Functions {
     // Get the information of all attached display devices.
-    static void getDisplayInfo(DisplayInfoCallback callback);
+    static void getInfo(DisplayInfoCallback callback);
 
     // Updates the properties for the display specified by |id|, according to
     // the information provided in |info|. On failure, $ref:runtime.lastError

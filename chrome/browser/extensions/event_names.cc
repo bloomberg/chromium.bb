@@ -71,7 +71,7 @@ const char kBluetoothOnDeviceSearchResult[] = "bluetooth.onDeviceSearchResult";
 
 const char kOnPushMessage[] = "pushMessaging.onMessage";
 
-const char kOnDisplayChanged[] = "systemInfo.display.onDisplayChanged";
+const char kOnDisplayChanged[] = "system.display.onDisplayChanged";
 const char kOnStorageAvailableCapacityChanged[] =
     "experimental.systemInfo.storage.onAvailableCapacityChanged";
 const char kOnStorageAttached[] = "experimental.systemInfo.storage.onAttached";

@@ -1,8 +1,8 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/system_info_display/display_info_provider.h"
+#include "chrome/browser/extensions/api/system_display/display_info_provider.h"
 
 #include "ash/display/display_controller.h"
 #include "ash/display/display_manager.h"
@@ -18,10 +18,10 @@ using ash::internal::DisplayManager;
 
 namespace extensions {
 
-using api::system_info_display::Bounds;
-using api::system_info_display::DisplayUnitInfo;
-using api::system_info_display::DisplayProperties;
-using api::system_info_display::Insets;
+using api::system_display::Bounds;
+using api::system_display::DisplayUnitInfo;
+using api::system_display::DisplayProperties;
+using api::system_display::Insets;
 
 namespace {
 
@@ -73,8 +73,8 @@ void AddInfoForDisplay(const gfx::Display& display,
                        DisplayManager* display_manager,
                        int64 primary_display_id,
                        DisplayInfo* list) {
-  linked_ptr<extensions::api::system_info_display::DisplayUnitInfo> unit(
-      new extensions::api::system_info_display::DisplayUnitInfo());
+  linked_ptr<extensions::api::system_display::DisplayUnitInfo> unit(
+      new extensions::api::system_display::DisplayUnitInfo());
   const gfx::Rect& bounds = display.bounds();
   const gfx::Rect& work_area = display.work_area();
   const float dpi = display.device_scale_factor() * kDpi96;

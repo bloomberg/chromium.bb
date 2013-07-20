@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/system_info_display/display_info_provider.h"
+#include "chrome/browser/extensions/api/system_display/display_info_provider.h"
 
 #include <windows.h>
 
@@ -13,8 +13,8 @@
 
 namespace extensions {
 
-using api::system_info_display::Bounds;
-using api::system_info_display::DisplayUnitInfo;
+using api::system_display::Bounds;
+using api::system_display::DisplayUnitInfo;
 
 namespace {
 
@@ -74,7 +74,7 @@ void DisplayInfoProvider::RequestInfo(const RequestInfoCallback& callback) {
 
 void DisplayInfoProvider::SetInfo(
     const std::string& display_id,
-    const api::system_info_display::DisplayProperties& info,
+    const api::system_display::DisplayProperties& info,
     const SetInfoCallback& callback) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,

@@ -115,7 +115,7 @@ class APIPermission {
     kSyncFileSystem,
     kSystemPrivate,
     kSystemIndicator,
-    kSystemInfoDisplay,
+    kSystemDisplay,
     kTab,
     kTabCapture,
     kTerminalPrivate,

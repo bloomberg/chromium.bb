@@ -1,11 +1,11 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/system_info_display/system_info_display_api.h"
+#include "chrome/browser/extensions/api/system_display/system_display_api.h"
 
 #include "base/strings/string_number_conversions.h"
-#include "chrome/browser/extensions/api/system_info_display/display_info_provider.h"
+#include "chrome/browser/extensions/api/system_display/display_info_provider.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 
@@ -13,8 +13,8 @@ namespace utils = extension_function_test_utils;
 
 namespace extensions {
 
-using api::system_info_display::Bounds;
-using api::system_info_display::DisplayUnitInfo;
+using api::system_display::Bounds;
+using api::system_display::DisplayUnitInfo;
 
 class MockDisplayInfoProvider : public DisplayInfoProvider {
  public:
@@ -55,7 +55,7 @@ class MockDisplayInfoProvider : public DisplayInfoProvider {
 
   virtual void SetInfo(
       const std::string& display_id,
-      const api::system_info_display::DisplayProperties& params,
+      const api::system_display::DisplayProperties& params,
       const SetInfoCallback& callback) OVERRIDE {
     // Should get called only once per test case.
     EXPECT_FALSE(set_info_value_);
@@ -81,10 +81,10 @@ class MockDisplayInfoProvider : public DisplayInfoProvider {
   DISALLOW_COPY_AND_ASSIGN(MockDisplayInfoProvider);
 };
 
-class SystemInfoDisplayApiTest: public ExtensionApiTest {
+class SystemDisplayApiTest: public ExtensionApiTest {
  public:
-  SystemInfoDisplayApiTest() {}
-  virtual ~SystemInfoDisplayApiTest() {}
+  SystemDisplayApiTest() {}
+  virtual ~SystemDisplayApiTest() {}
 
   virtual void SetUpOnMainThread() OVERRIDE {
     ExtensionApiTest::SetUpOnMainThread();
@@ -102,17 +102,17 @@ class SystemInfoDisplayApiTest: public ExtensionApiTest {
  protected:
   scoped_refptr<MockDisplayInfoProvider> provider_;
 
-  DISALLOW_COPY_AND_ASSIGN(SystemInfoDisplayApiTest);
+  DISALLOW_COPY_AND_ASSIGN(SystemDisplayApiTest);
 };
 
-IN_PROC_BROWSER_TEST_F(SystemInfoDisplayApiTest, GetDisplay) {
-  ASSERT_TRUE(RunPlatformAppTest("systeminfo/display")) << message_;
+IN_PROC_BROWSER_TEST_F(SystemDisplayApiTest, GetDisplay) {
+  ASSERT_TRUE(RunPlatformAppTest("system/display")) << message_;
 }
 
 #if !defined(OS_CHROMEOS)
-IN_PROC_BROWSER_TEST_F(SystemInfoDisplayApiTest, SetDisplay) {
-  scoped_refptr<SystemInfoDisplaySetDisplayPropertiesFunction>
-      set_info_function(new SystemInfoDisplaySetDisplayPropertiesFunction());
+IN_PROC_BROWSER_TEST_F(SystemDisplayApiTest, SetDisplay) {
+  scoped_refptr<SystemDisplaySetDisplayPropertiesFunction>
+      set_info_function(new SystemDisplaySetDisplayPropertiesFunction());
 
   set_info_function->set_has_callback(true);
 
@@ -127,7 +127,7 @@ IN_PROC_BROWSER_TEST_F(SystemInfoDisplayApiTest, SetDisplay) {
 #endif  // !defined(OS_CHROMEOS)
 
 #if defined(OS_CHROMEOS)
-IN_PROC_BROWSER_TEST_F(SystemInfoDisplayApiTest, SetDisplayNotKioskEnabled) {
+IN_PROC_BROWSER_TEST_F(SystemDisplayApiTest, SetDisplayNotKioskEnabled) {
   scoped_ptr<base::DictionaryValue> test_extension_value(utils::ParseDictionary(
       "{\n"
       "  \"name\": \"Test\",\n"
@@ -141,8 +141,8 @@ IN_PROC_BROWSER_TEST_F(SystemInfoDisplayApiTest, SetDisplayNotKioskEnabled) {
   scoped_refptr<Extension> test_extension(
       utils::CreateExtension(test_extension_value.get()));
 
-  scoped_refptr<SystemInfoDisplaySetDisplayPropertiesFunction>
-      set_info_function(new SystemInfoDisplaySetDisplayPropertiesFunction());
+  scoped_refptr<SystemDisplaySetDisplayPropertiesFunction>
+      set_info_function(new SystemDisplaySetDisplayPropertiesFunction());
 
   set_info_function->set_extension(test_extension.get());
   set_info_function->set_has_callback(true);
@@ -156,7 +156,7 @@ IN_PROC_BROWSER_TEST_F(SystemInfoDisplayApiTest, SetDisplayNotKioskEnabled) {
   EXPECT_FALSE(set_info);
 }
 
-IN_PROC_BROWSER_TEST_F(SystemInfoDisplayApiTest, SetDisplayKioskEnabled) {
+IN_PROC_BROWSER_TEST_F(SystemDisplayApiTest, SetDisplayKioskEnabled) {
   scoped_ptr<base::DictionaryValue> test_extension_value(utils::ParseDictionary(
       "{\n"
       "  \"name\": \"Test\",\n"
@@ -171,8 +171,8 @@ IN_PROC_BROWSER_TEST_F(SystemInfoDisplayApiTest, SetDisplayKioskEnabled) {
   scoped_refptr<Extension> test_extension(
       utils::CreateExtension(test_extension_value.get()));
 
-  scoped_refptr<SystemInfoDisplaySetDisplayPropertiesFunction>
-      set_info_function(new SystemInfoDisplaySetDisplayPropertiesFunction());
+  scoped_refptr<SystemDisplaySetDisplayPropertiesFunction>
+      set_info_function(new SystemDisplaySetDisplayPropertiesFunction());
 
   set_info_function->set_has_callback(true);
   set_info_function->set_extension(test_extension.get());

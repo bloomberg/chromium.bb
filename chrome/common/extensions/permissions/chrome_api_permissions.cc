@@ -288,7 +288,7 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
       PermissionMessage::kSystemIndicator },
     { APIPermission::kSystemCpu, "system.cpu" },
     { APIPermission::kSystemInfoMemory, "systemInfo.memory" },
-    { APIPermission::kSystemInfoDisplay, "systemInfo.display" },
+    { APIPermission::kSystemDisplay, "system.display" },
     { APIPermission::kPointerLock, "pointerLock" },
     { APIPermission::kFullscreen, "fullscreen" },
     { APIPermission::kAudio, "audio" },

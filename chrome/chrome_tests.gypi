@@ -1337,7 +1337,7 @@
         'browser/extensions/api/sync_file_system/sync_file_system_apitest.cc',
         'browser/extensions/api/system_indicator/system_indicator_apitest.cc',
         'browser/extensions/api/system_cpu/system_cpu_apitest.cc',
-        'browser/extensions/api/system_info_display/system_info_display_apitest.cc',
+        'browser/extensions/api/system_display/system_display_apitest.cc',
         'browser/extensions/api/system_info_memory/system_info_memory_apitest.cc',
         'browser/extensions/api/system_info_storage/system_info_storage_apitest.cc',
         'browser/extensions/api/system_private/system_private_apitest.cc',
