@@ -29,7 +29,10 @@ class WebMediaSourceClientImpl : public WebKit::WebMediaSourceClient {
       WebKit::WebSourceBuffer** source_buffer) OVERRIDE;
   virtual double duration() OVERRIDE;
   virtual void setDuration(double duration) OVERRIDE;
-  virtual void endOfStream(EndOfStreamStatus status) OVERRIDE;
+  // TODO(acolwell): Remove this once endOfStream() is removed from Blink.
+  virtual void endOfStream(EndOfStreamStatus status);
+  virtual void markEndOfStream(EndOfStreamStatus status) OVERRIDE;
+  virtual void unmarkEndOfStream() OVERRIDE;
 
  private:
   media::ChunkDemuxer* demuxer_;  // Owned by WebMediaPlayerImpl.

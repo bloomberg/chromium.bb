@@ -481,7 +481,7 @@ class ChunkDemuxerTest : public testing::Test {
     AppendData(bear1->data() + 72737, 28183);
     CheckExpectedRanges(kSourceId, "{ [0,2737) }");
 
-    EndOfStream(PIPELINE_OK);
+    MarkEndOfStream(PIPELINE_OK);
     return true;
   }
 
@@ -821,8 +821,8 @@ class ChunkDemuxerTest : public testing::Test {
     message_loop_.RunUntilIdle();
   }
 
-  void EndOfStream(PipelineStatus status) {
-    demuxer_->EndOfStream(status);
+  void MarkEndOfStream(PipelineStatus status) {
+    demuxer_->MarkEndOfStream(status);
     message_loop_.RunUntilIdle();
   }
 
@@ -1114,12 +1114,12 @@ TEST_F(ChunkDemuxerTest, TestClusterBeforeInitSegment) {
   AppendData(cluster->data(), cluster->size());
 }
 
-// Test cases where we get an EndOfStream() call during initialization.
+// Test cases where we get an MarkEndOfStream() call during initialization.
 TEST_F(ChunkDemuxerTest, TestEOSDuringInit) {
   EXPECT_CALL(*this, DemuxerOpened());
   demuxer_->Initialize(
       &host_, NewExpectedStatusCB(DEMUXER_ERROR_COULD_NOT_OPEN));
-  EndOfStream(PIPELINE_OK);
+  MarkEndOfStream(PIPELINE_OK);
 }
 
 TEST_F(ChunkDemuxerTest, TestEndOfStreamWithNoAppend) {
@@ -1130,7 +1130,7 @@ TEST_F(ChunkDemuxerTest, TestEndOfStreamWithNoAppend) {
   ASSERT_EQ(AddId(), ChunkDemuxer::kOk);
 
   CheckExpectedRanges("{ }");
-  EndOfStream(PIPELINE_OK);
+  MarkEndOfStream(PIPELINE_OK);
   ShutdownDemuxer();
   CheckExpectedRanges("{ }");
   demuxer_->RemoveId(kSourceId);
@@ -1141,7 +1141,7 @@ TEST_F(ChunkDemuxerTest, TestEndOfStreamWithNoMediaAppend) {
   ASSERT_TRUE(InitDemuxer(true, true));
 
   CheckExpectedRanges("{ }");
-  EndOfStream(PIPELINE_OK);
+  MarkEndOfStream(PIPELINE_OK);
   CheckExpectedRanges("{ }");
 }
 
@@ -1153,7 +1153,7 @@ TEST_F(ChunkDemuxerTest, TestDecodeErrorEndOfStream) {
   CheckExpectedRanges(kDefaultFirstClusterRange);
 
   EXPECT_CALL(host_, OnDemuxerError(PIPELINE_ERROR_DECODE));
-  EndOfStream(PIPELINE_ERROR_DECODE);
+  MarkEndOfStream(PIPELINE_ERROR_DECODE);
   CheckExpectedRanges(kDefaultFirstClusterRange);
 }
 
@@ -1165,7 +1165,7 @@ TEST_F(ChunkDemuxerTest, TestNetworkErrorEndOfStream) {
   CheckExpectedRanges(kDefaultFirstClusterRange);
 
   EXPECT_CALL(host_, OnDemuxerError(PIPELINE_ERROR_NETWORK));
-  EndOfStream(PIPELINE_ERROR_NETWORK);
+  MarkEndOfStream(PIPELINE_ERROR_NETWORK);
 }
 
 // Helper class to reduce duplicate code when testing end of stream
@@ -1217,7 +1217,7 @@ class EndOfStreamHelper {
 };
 
 // Make sure that all pending reads that we don't have media data for get an
-// "end of stream" buffer when EndOfStream() is called.
+// "end of stream" buffer when MarkEndOfStream() is called.
 TEST_F(ChunkDemuxerTest, TestEndOfStreamWithPendingReads) {
   ASSERT_TRUE(InitDemuxer(true, true));
 
@@ -1244,7 +1244,7 @@ TEST_F(ChunkDemuxerTest, TestEndOfStreamWithPendingReads) {
 
   EXPECT_CALL(host_, SetDuration(
       base::TimeDelta::FromMilliseconds(kVideoBlockDuration)));
-  EndOfStream(PIPELINE_OK);
+  MarkEndOfStream(PIPELINE_OK);
 
   end_of_stream_helper_1.CheckIfReadDonesWereCalled(true);
 
@@ -1252,7 +1252,7 @@ TEST_F(ChunkDemuxerTest, TestEndOfStreamWithPendingReads) {
   end_of_stream_helper_2.CheckIfReadDonesWereCalled(true);
 }
 
-// Make sure that all Read() calls after we get an EndOfStream()
+// Make sure that all Read() calls after we get an MarkEndOfStream()
 // call return an "end of stream" buffer.
 TEST_F(ChunkDemuxerTest, TestReadsAfterEndOfStream) {
   ASSERT_TRUE(InitDemuxer(true, true));
@@ -1281,7 +1281,7 @@ TEST_F(ChunkDemuxerTest, TestReadsAfterEndOfStream) {
 
   EXPECT_CALL(host_, SetDuration(
       base::TimeDelta::FromMilliseconds(kVideoBlockDuration)));
-  EndOfStream(PIPELINE_OK);
+  MarkEndOfStream(PIPELINE_OK);
 
   end_of_stream_helper_1.CheckIfReadDonesWereCalled(true);
 
@@ -1299,7 +1299,7 @@ TEST_F(ChunkDemuxerTest, TestEndOfStreamDuringCanceledSeek) {
 
   AppendCluster(0, 10);
   EXPECT_CALL(host_, SetDuration(base::TimeDelta::FromMilliseconds(138)));
-  EndOfStream(PIPELINE_OK);
+  MarkEndOfStream(PIPELINE_OK);
 
   // Start the first seek.
   Seek(base::TimeDelta::FromMilliseconds(20));
@@ -1775,7 +1775,7 @@ TEST_F(ChunkDemuxerTest, TestEndOfStreamAfterPastEosSeek) {
 
   EXPECT_CALL(host_, SetDuration(
       base::TimeDelta::FromMilliseconds(120)));
-  EndOfStream(PIPELINE_OK);
+  MarkEndOfStream(PIPELINE_OK);
   message_loop_.RunUntilIdle();
 
   EXPECT_TRUE(seek_cb_was_called);
@@ -1814,10 +1814,12 @@ TEST_F(ChunkDemuxerTest, TestEndOfStreamDuringPendingSeek) {
 
   EXPECT_CALL(host_, SetDuration(
       base::TimeDelta::FromMilliseconds(300)));
-  EndOfStream(PIPELINE_OK);
+  MarkEndOfStream(PIPELINE_OK);
   message_loop_.RunUntilIdle();
 
   EXPECT_FALSE(seek_cb_was_called);
+
+  demuxer_->UnmarkEndOfStream();
 
   scoped_ptr<Cluster> cluster_a3(
       GenerateSingleStreamCluster(140, 180, kAudioTrackNum, 10));
@@ -1975,7 +1977,7 @@ TEST_F(ChunkDemuxerTest, GetBufferedRanges_AudioVideo) {
   CheckExpectedRanges("{ [0,23) [320,400) [520,570) [720,750) [920,950) }");
 }
 
-// Once EndOfStream() is called, GetBufferedRanges should not cut off any
+// Once MarkEndOfStream() is called, GetBufferedRanges should not cut off any
 // over-hanging tails at the end of the ranges as this is likely due to block
 // duration differences.
 TEST_F(ChunkDemuxerTest, GetBufferedRanges_EndOfStream) {
@@ -1992,7 +1994,7 @@ TEST_F(ChunkDemuxerTest, GetBufferedRanges_EndOfStream) {
   CheckExpectedRanges("{ [0,90) }");
 
   EXPECT_CALL(host_, SetDuration(base::TimeDelta::FromMilliseconds(100)));
-  EndOfStream(PIPELINE_OK);
+  MarkEndOfStream(PIPELINE_OK);
 
   CheckExpectedRanges("{ [0,100) }");
 }
@@ -2132,7 +2134,7 @@ TEST_F(ChunkDemuxerTest, TestEndOfStreamStillSetAfterSeek) {
 
   AppendData(cluster_a->data(), cluster_a->size());
   AppendData(cluster_b->data(), cluster_b->size());
-  EndOfStream(PIPELINE_OK);
+  MarkEndOfStream(PIPELINE_OK);
 
   DemuxerStream::Status status;
   base::TimeDelta last_timestamp;
@@ -2185,7 +2187,7 @@ TEST_F(ChunkDemuxerTest, TestEndOfStreamDuringSeek) {
   AppendData(cluster_b->data(), cluster_b->size());
   EXPECT_CALL(host_, SetDuration(
       base::TimeDelta::FromMilliseconds(kDefaultSecondClusterEndTimestamp)));
-  EndOfStream(PIPELINE_OK);
+  MarkEndOfStream(PIPELINE_OK);
 
   demuxer_->Seek(seek_time, NewExpectedStatusCB(PIPELINE_OK));
 
@@ -2478,7 +2480,7 @@ TEST_F(ChunkDemuxerTest, TestEndOfStreamTruncateDuration) {
 
   EXPECT_CALL(host_, SetDuration(
       base::TimeDelta::FromMilliseconds(kDefaultFirstClusterEndTimestamp)));
-  EndOfStream(PIPELINE_OK);
+  MarkEndOfStream(PIPELINE_OK);
 }
 
 
@@ -2495,11 +2497,13 @@ TEST_F(ChunkDemuxerTest, TestAppendAfterEndOfStream) {
 
   scoped_ptr<Cluster> cluster_a(kDefaultFirstCluster());
   AppendData(cluster_a->data(), cluster_a->size());
-  EndOfStream(PIPELINE_OK);
+  MarkEndOfStream(PIPELINE_OK);
+
+  demuxer_->UnmarkEndOfStream();
 
   scoped_ptr<Cluster> cluster_b(kDefaultSecondCluster());
   AppendData(cluster_b->data(), cluster_b->size());
-  EndOfStream(PIPELINE_OK);
+  MarkEndOfStream(PIPELINE_OK);
 }
 
 // Test receiving a Shutdown() call before we get an Initialize()
@@ -2559,11 +2563,13 @@ TEST_F(ChunkDemuxerTest, TestEndOfStreamWhileWaitingForGapToBeFilled) {
   EXPECT_FALSE(video_read_done);
 
   EXPECT_CALL(host_, SetDuration(base::TimeDelta::FromMilliseconds(438)));
-  EndOfStream(PIPELINE_OK);
+  MarkEndOfStream(PIPELINE_OK);
 
   // Verify that the reads still haven't completed.
   EXPECT_FALSE(audio_read_done);
   EXPECT_FALSE(video_read_done);
+
+  demuxer_->UnmarkEndOfStream();
 
   AppendCluster(138, 24);
 
@@ -2590,7 +2596,7 @@ TEST_F(ChunkDemuxerTest, TestEndOfStreamWhileWaitingForGapToBeFilled) {
   EXPECT_FALSE(audio_read_done);
   EXPECT_FALSE(video_read_done);
 
-  EndOfStream(PIPELINE_OK);
+  MarkEndOfStream(PIPELINE_OK);
 
   EXPECT_TRUE(audio_read_done);
   EXPECT_TRUE(video_read_done);

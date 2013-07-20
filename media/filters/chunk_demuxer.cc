@@ -160,8 +160,8 @@ class ChunkDemuxerStream : public DemuxerStream {
   bool UpdateAudioConfig(const AudioDecoderConfig& config, const LogCB& log_cb);
   bool UpdateVideoConfig(const VideoDecoderConfig& config, const LogCB& log_cb);
 
-  void EndOfStream();
-  void CancelEndOfStream();
+  void MarkEndOfStream();
+  void UnmarkEndOfStream();
 
   // DemuxerStream methods.
   virtual void Read(const ReadCB& read_cb) OVERRIDE;
@@ -532,14 +532,14 @@ bool ChunkDemuxerStream::UpdateVideoConfig(const VideoDecoderConfig& config,
   return stream_->UpdateVideoConfig(config);
 }
 
-void ChunkDemuxerStream::EndOfStream() {
+void ChunkDemuxerStream::MarkEndOfStream() {
   base::AutoLock auto_lock(lock_);
-  stream_->EndOfStream();
+  stream_->MarkEndOfStream();
 }
 
-void ChunkDemuxerStream::CancelEndOfStream() {
+void ChunkDemuxerStream::UnmarkEndOfStream() {
   base::AutoLock auto_lock(lock_);
-  stream_->CancelEndOfStream();
+  stream_->UnmarkEndOfStream();
 }
 
 // DemuxerStream methods.
@@ -882,20 +882,11 @@ void ChunkDemuxer::AppendData(const std::string& id,
 
   {
     base::AutoLock auto_lock(lock_);
+    DCHECK_NE(state_, ENDED);
 
     // Capture if any of the SourceBuffers are waiting for data before we start
     // parsing.
     bool old_waiting_for_data = IsSeekWaitingForData_Locked();
-
-    if (state_ == ENDED) {
-      ChangeState_Locked(INITIALIZED);
-
-      if (audio_)
-        audio_->CancelEndOfStream();
-
-      if (video_)
-        video_->CancelEndOfStream();
-    }
 
     if (length == 0u)
       return;
@@ -1022,8 +1013,8 @@ bool ChunkDemuxer::SetTimestampOffset(const std::string& id, TimeDelta offset) {
   return source_state_map_[id]->SetTimestampOffset(offset);
 }
 
-void ChunkDemuxer::EndOfStream(PipelineStatus status) {
-  DVLOG(1) << "EndOfStream(" << status << ")";
+void ChunkDemuxer::MarkEndOfStream(PipelineStatus status) {
+  DVLOG(1) << "MarkEndOfStream(" << status << ")";
   base::AutoLock auto_lock(lock_);
   DCHECK_NE(state_, WAITING_FOR_INIT);
   DCHECK_NE(state_, ENDED);
@@ -1038,10 +1029,10 @@ void ChunkDemuxer::EndOfStream(PipelineStatus status) {
 
   bool old_waiting_for_data = IsSeekWaitingForData_Locked();
   if (audio_)
-    audio_->EndOfStream();
+    audio_->MarkEndOfStream();
 
   if (video_)
-    video_->EndOfStream();
+    video_->MarkEndOfStream();
 
   CompletePendingReadsIfPossible();
 
@@ -1058,6 +1049,20 @@ void ChunkDemuxer::EndOfStream(PipelineStatus status) {
       !seek_cb_.is_null()) {
     base::ResetAndReturn(&seek_cb_).Run(PIPELINE_OK);
   }
+}
+
+void ChunkDemuxer::UnmarkEndOfStream() {
+  DVLOG(1) << "UnmarkEndOfStream()";
+  base::AutoLock auto_lock(lock_);
+  DCHECK_EQ(state_, ENDED);
+
+  ChangeState_Locked(INITIALIZED);
+
+  if (audio_)
+    audio_->UnmarkEndOfStream();
+
+  if (video_)
+    video_->UnmarkEndOfStream();
 }
 
 void ChunkDemuxer::Shutdown() {

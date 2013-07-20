@@ -264,7 +264,7 @@ class MockMediaSource {
   }
 
   void EndOfStream() {
-    chunk_demuxer_->EndOfStream(PIPELINE_OK);
+    chunk_demuxer_->MarkEndOfStream(PIPELINE_OK);
   }
 
   void Abort() {

@@ -2806,7 +2806,7 @@ TEST_F(SourceBufferStreamTest, EndSelected_During_PendingSeek) {
 
   Seek(20);
   EXPECT_TRUE(stream_->IsSeekPending());
-  stream_->EndOfStream();
+  stream_->MarkEndOfStream();
   EXPECT_FALSE(stream_->IsSeekPending());
 }
 
@@ -2821,7 +2821,7 @@ TEST_F(SourceBufferStreamTest, EndNotSelected_During_PendingSeek) {
 
   Seek(20);
   EXPECT_TRUE(stream_->IsSeekPending());
-  stream_->EndOfStream();
+  stream_->MarkEndOfStream();
   EXPECT_TRUE(stream_->IsSeekPending());
 }
 

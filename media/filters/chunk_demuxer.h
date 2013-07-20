@@ -124,8 +124,12 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   // middle of parsing a media segment.
   bool SetTimestampOffset(const std::string& id, base::TimeDelta offset);
 
-  // Signals an EndOfStream request.
-  void EndOfStream(PipelineStatus status);
+  // Called to signal changes in the "end of stream"
+  // state. UnmarkEndOfStream() must not be called if a matching
+  // MarkEndOfStream() has not come before it.
+  void MarkEndOfStream(PipelineStatus status);
+  void UnmarkEndOfStream();
+
   void Shutdown();
 
   void SetMemoryLimitsForTesting(int memory_limit);

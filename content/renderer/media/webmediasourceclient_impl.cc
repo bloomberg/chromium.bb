@@ -60,7 +60,13 @@ void WebMediaSourceClientImpl::setDuration(double new_duration) {
   demuxer_->SetDuration(new_duration);
 }
 
+// TODO(acolwell): Remove this once endOfStream() is removed from Blink.
 void WebMediaSourceClientImpl::endOfStream(
+    WebMediaSourceClient::EndOfStreamStatus status) {
+  markEndOfStream(status);
+}
+
+void WebMediaSourceClientImpl::markEndOfStream(
     WebMediaSourceClient::EndOfStreamStatus status) {
   media::PipelineStatus pipeline_status = media::PIPELINE_OK;
 
@@ -77,7 +83,11 @@ void WebMediaSourceClientImpl::endOfStream(
       NOTIMPLEMENTED();
   }
 
-  demuxer_->EndOfStream(pipeline_status);
+  demuxer_->MarkEndOfStream(pipeline_status);
+}
+
+void WebMediaSourceClientImpl::unmarkEndOfStream() {
+  demuxer_->UnmarkEndOfStream();
 }
 
 }  // namespace content

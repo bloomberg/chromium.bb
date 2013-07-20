@@ -90,10 +90,10 @@ class MEDIA_EXPORT SourceBufferStream {
   Ranges<base::TimeDelta> GetBufferedTime() const;
 
   // Notifies this object that end of stream has been signalled.
-  void EndOfStream();
+  void MarkEndOfStream();
 
-  // Cancel the previous end of stream notification.
-  void CancelEndOfStream();
+  // Clear the end of stream state set by MarkEndOfStream().
+  void UnmarkEndOfStream();
 
   const AudioDecoderConfig& GetCurrentAudioDecoderConfig();
   const VideoDecoderConfig& GetCurrentVideoDecoderConfig();
