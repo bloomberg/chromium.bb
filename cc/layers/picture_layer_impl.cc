@@ -1014,6 +1014,23 @@ void PictureLayerImpl::AsValueInto(base::DictionaryValue* state) const {
   state->Set("tilings", tilings_->AsValue().release());
   state->Set("pictures", pile_->AsValue().release());
   state->Set("invalidation", invalidation_.AsValue().release());
+
+  scoped_ptr<base::ListValue> coverage_tiles(new base::ListValue);
+  for (PictureLayerTilingSet::CoverageIterator iter(tilings_.get(),
+                                                    contents_scale_x(),
+                                                    gfx::Rect(bounds()),
+                                                    ideal_contents_scale_);
+       iter;
+       ++iter) {
+    scoped_ptr<base::DictionaryValue> tile_data(new base::DictionaryValue);
+    tile_data->Set("geometry_rect",
+                   MathUtil::AsValue(iter.geometry_rect()).release());
+    if (*iter)
+      tile_data->Set("tile", TracedValue::CreateIDRef(*iter).release());
+
+    coverage_tiles->Append(tile_data.release());
+  }
+  state->Set("coverage_tiles", coverage_tiles.release());
 }
 
 size_t PictureLayerImpl::GPUMemoryUsageInBytes() const {
