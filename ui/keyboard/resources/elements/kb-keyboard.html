@@ -5,8 +5,8 @@
   -->
 
 <polymer-element name="kb-keyboard" on-key-over="keyOver" on-key-up="keyUp"
-    on-key-down="keyDown" on-key-longpress="keyLongpress"
-    attributes="keyset layout rows">
+    on-key-down="keyDown" on-key-longpress="keyLongpress" on-pointerup="up"
+    on-enable-dbl="enableDbl" attributes="keyset layout rows">
   <template>
     <style>
       @host {
@@ -28,6 +28,7 @@
      * The repeat delay in milliseconds before a key starts repeating. Use the
      * same rate as Chromebook.
      * (See chrome/browser/chromeos/language_preferences.cc)
+     * @const
      * @type {number}
      */
     var REPEAT_DELAY_MSEC = 500;
@@ -35,9 +36,17 @@
     /**
      * The repeat interval or number of milliseconds between subsequent
      * keypresses. Use the same rate as Chromebook.
+     * @const
      * @type {number}
      */
     var REPEAT_INTERVAL_MSEC = 50;
+
+    /**
+     * The double click/tap interval.
+     * @const
+     * @type {number}
+     */
+    var DBL_INTERVAL_MSEC = 300;
 
     /**
      * The boolean to decide if keyboard should transit to upper case keyset
@@ -84,9 +93,31 @@
     Polymer('kb-keyboard', {
       lastPressedKey: null,
       voiceInput_: null,
+      dblDetail_: null,
+      dblTimer_: null,
 
       ready: function() {
         this.voiceInput_ = new VoiceInput(this);
+      },
+
+      /**
+       * When double click/tap event is enabled, the second key-down and key-up
+       * events on the same key should be skipped. Return true when the event
+       * with |detail| should be skipped.
+       * @param {Object} detail The detail of key-up or key-down event.
+       */
+      skipEvent: function(detail) {
+        if (this.dblDetail_) {
+          if (this.dblDetail_.char != detail.char) {
+            // The second key down is not on the same key. Double click/tap
+            // should be ignored.
+            this.dblDetail_ = null;
+            clearTimeout(this.dblTimer_);
+          } else if (this.dblDetail_.clickCount == 1) {
+            return true;
+          }
+        }
+        return false;
       },
 
       /**
@@ -96,6 +127,9 @@
        * @param {Object} detail The detail of pressed kb-key.
        */
       keyDown: function(event, detail) {
+        if (this.skipEvent(detail))
+          return;
+
         if (this.lastPressedKey)
           this.lastPressedKey.classList.remove('active');
         this.lastPressedKey = event.target;
@@ -122,11 +156,49 @@
       },
 
       /**
+       * Enable/start double click/tap event recognition.
+       * @param {CustomEvent} event The enable-dbl event dispatched by
+       *     kb-shift-key.
+       * @param {Object} detail The detail of pressed kb-shift-key.
+       */
+      enableDbl: function(event, detail) {
+        if (!this.dblDetail_) {
+          this.dblDetail_ = detail;
+          this.dblDetail_.clickCount = 0;
+          var self = this;
+          this.dblTimer_ = setTimeout(function() {
+            self.dblDetail_ = null;
+          }, DBL_INTERVAL_MSEC);
+        }
+      },
+
+      /**
+       * Handles pointerup event. This is used for double tap/click events.
+       * @param {PointerEvent} event The pointerup event that bubbled to
+       *     kb-keyboard.
+       */
+      up: function(event) {
+        if(this.dblDetail_) {
+          this.dblDetail_.clickCount++;
+          if (this.dblDetail_.clickCount == 2) {
+            this.keyset = this.dblDetail_.toKeyset;
+            var keysetId = '#' + this.layout + '-' + this.keyset
+            this.querySelector(keysetId).nextKeyset = this.dblTimer_.nextKeyset;
+            clearTimeout(this.dblTimer_);
+            this.dblDetail_ = null;
+          }
+        }
+      },
+
+      /**
        * Handles key-up event that is sent by kb-key-base.
        * @param {CustomEvent} event The key-up event dispatched by kb-key-base.
        * @param {Object} detail The detail of pressed kb-key.
        */
       keyUp: function(event, detail) {
+        if (this.skipEvent(detail))
+          return;
+
         this.lastPressedKey.classList.remove('active');
         if (this.lastPressedKey != event.target)
           return;
@@ -153,6 +225,7 @@
         }
         switch(char) {
           case 'Invalid':
+          case 'Shift':
             return;
           case 'Microphone':
             this.voiceInput_.onDown();

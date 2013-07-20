@@ -23,7 +23,7 @@
   <script>
     Polymer('kb-keyset', {
       isDefault: false,
-      nextKeyset: null,
+      nextKeyset: undefined,
       // TODO(bshe): support select keyset on down, long and dbl events.
       keyUp: function(event, detail) {
         if (!detail.toKeyset)

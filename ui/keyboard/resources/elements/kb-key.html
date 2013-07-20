@@ -10,11 +10,6 @@
       @host {
         * {
           -webkit-box-flex: {{weight}};
-          display: -webkit-box;
-          position: relative;
-          background-position: center center;
-          background-repeat: no-repeat;
-          background-size: contain;
         }
       }
     </style>
@@ -32,9 +27,27 @@
 
 <!-- Special keys -->
 
-<!-- 
+<polymer-element name="kb-shift-key" class="shift dark" char="Shift"
+    extends="kb-key">
+  <script>
+    Polymer('kb-shift-key', {
+      down: function(event) {
+        this.super();
+        var detail = {};
+        if (this.keysetRules && this.keysetRules.dbl != undefined) {
+          detail.char = this.char || this.textContent;
+          detail.toKeyset = this.keysetRules.dbl[TO_KEYSET - OFFSET];
+          detail.nextKeyset = this.keysetRules.dbl[NEXT_KEYSET - OFFSET];
+        }
+        this.fire('enable-dbl', detail);
+      }
+    });
+  </script>
+</polymer-element>
+
+<!--
   -- TODO(kevers): Display popup menu for selecting layout on keypress. Display
-  -- code for keyboard layout in place of image. 
+  -- code for keyboard layout in place of image.
   -->
 <polymer-element name="kb-layout-selector" class="layout-selector dark" char="Invalid"
     extends="kb-key">

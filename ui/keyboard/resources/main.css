@@ -21,16 +21,25 @@ kb-keyboard {
   width: 1280px;
 }
 
+kb-shift-key,
+kb-layout-selector,
 kb-key {
   background-color: #3b3b3e;
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: contain;
   border-top: 2px solid #4b4b4e;
   border-radius: 2px;
   color: #ffffff;
+  display: -webkit-box;
   font-family: 'Open Sans', sans-serif;
   font-weight: 300;
   margin-left: 7px;
+  position: relative;
 }
 
+kb-shift-key::x-key,
+kb-layout-selector::x-key,
 kb-key::x-key {
   bottom: 0;
   height: 1.2em;
@@ -59,6 +68,8 @@ kb-key::x-superscript[inverted] {
   color: #ffffff;
 }
 
+kb-shift-key.dark,
+kb-layout-selector.dark,
 kb-key.dark {
   background-color: #2a2a2c;
   border-top: 2px solid #3a3a3c;
@@ -76,8 +87,6 @@ kb-accent-key::x-key {
   text-align: center;
 }
 
-#upper .left-shift,
-#upper .right-shift,
 .active {
   background-color: #848490 !important;
   border-top: 2px solid #A9A9AF !important;
@@ -116,12 +125,10 @@ kb-accent-key::x-key {
   -webkit-box-flex: 1.7 !important;
 }
 
-.left-shift,
 .left-more {
   -webkit-box-flex: 1.8 !important;
 }
 
-.right-shift,
 .right-more {
   -webkit-box-flex: 1.8 !important;
 }
@@ -133,11 +140,9 @@ kb-accent-key::x-key {
 .backspace,
 .dotcom,
 .left-more,
-.left-shift,
-.moddown.shift,
+.shift,
 .return,
 .right-more,
-.right-shift,
 .symbol,
 .tab {
   font-size: 70%;
