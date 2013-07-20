@@ -136,7 +136,7 @@ class CBuildBotTest(cros_test_lib.MoxTestCase):
 
     for build_name, config in cbuildbot_config.config.iteritems():
       self.assertTrue(
-          config['vm_tests'] in constants.VALID_AU_TEST_TYPES + [None],
+          config['vm_tests'] in constants.VALID_VM_TEST_TYPES + [None],
           'Config %s: has unexpected vm test type value.' % build_name)
 
   def testBuildType(self):

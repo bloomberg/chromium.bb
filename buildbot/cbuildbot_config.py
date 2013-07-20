@@ -26,6 +26,7 @@ CONFIG_TYPE_DUMP_ORDER = (
     'pre-cq',
     'pre-cq-launcher',
     'incremental',
+    'telemetry',
     CONFIG_TYPE_FULL,
     CONFIG_TYPE_RELEASE,
     'release-group',
@@ -788,6 +789,28 @@ paladin.add_config('x32-generic-paladin',
   boards=['x32-generic'],
   paladin_builder_name='x32 generic paladin',
   important=False,
+)
+
+telemetry = _config(
+  build_type=constants.INCREMENTAL_TYPE,
+  uprev=False,
+  overlays=constants.PUBLIC_OVERLAYS,
+  vm_tests=constants.TELEMETRY_SUITE_TEST_TYPE,
+  description='Telemetry Builds',
+)
+
+telemetry.add_config('amd64-generic-telemetry',
+  amd64,
+  boards=['amd64-generic'],
+)
+
+telemetry.add_config('arm-generic-telemetry',
+  arm,
+  boards=['arm-generic'],
+)
+
+telemetry.add_config('x86-generic-telemetry',
+  boards=['x86-generic'],
 )
 
 chromium_pfq = _config(

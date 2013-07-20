@@ -240,12 +240,13 @@ HWTEST_BOARD_WHITELIST = ['x86-mario', 'lumpy', 'daisy', 'parrot']
 HWTEST_AU_SUITE = 'au'
 
 # Defines VM Test types.
-SMOKE_SUITE_TEST_TYPE = 'smoke_suite'
-SIMPLE_AU_TEST_TYPE = 'pfq_suite'
 FULL_AU_TEST_TYPE = 'full_suite'
+SIMPLE_AU_TEST_TYPE = 'pfq_suite'
+SMOKE_SUITE_TEST_TYPE = 'smoke_suite'
+TELEMETRY_SUITE_TEST_TYPE = 'telemetry_suite'
 
-VALID_AU_TEST_TYPES = [SMOKE_SUITE_TEST_TYPE, SIMPLE_AU_TEST_TYPE,
-                       FULL_AU_TEST_TYPE]
+VALID_VM_TEST_TYPES = [FULL_AU_TEST_TYPE, SIMPLE_AU_TEST_TYPE,
+                       SMOKE_SUITE_TEST_TYPE, TELEMETRY_SUITE_TEST_TYPE]
 
 CHROMIUMOS_OVERLAY_DIR = 'src/third_party/chromiumos-overlay'
 VERSION_FILE = os.path.join(CHROMIUMOS_OVERLAY_DIR,

@@ -485,12 +485,18 @@ def RunTestSuite(buildroot, board, image_dir, results_dir, test_type,
          '--test_results_root=%s' % results_dir_in_chroot
         ]
 
-  if test_type != constants.FULL_AU_TEST_TYPE:
+  if test_type not in constants.VALID_VM_TEST_TYPES:
+    raise AssertionError('Unrecognized test type %r' % test_type)
+
+  if test_type == constants.FULL_AU_TEST_TYPE:
+    cmd.append('--archive_dir=%s' % archive_dir)
+  else:
     cmd.append('--quick')
     if test_type == constants.SMOKE_SUITE_TEST_TYPE:
       cmd.append('--only_verify')
-  else:
-    cmd.append('--archive_dir=%s' % archive_dir)
+      cmd.append('--suite=smoke')
+    elif test_type == constants.TELEMETRY_SUITE_TEST_TYPE:
+      cmd.append('--suite=telemetry')
 
   if whitelist_chrome_crashes:
     cmd.append('--whitelist_chrome_crashes')
