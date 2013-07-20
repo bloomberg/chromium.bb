@@ -8,7 +8,6 @@
 # pylint: disable=E1103
 
 # Import before super_mox to keep valid references.
-from os import rename
 from shutil import rmtree
 from subprocess import Popen, PIPE, STDOUT
 
@@ -1025,21 +1024,6 @@ class ManagedGitWrapperTestCase(BaseGitWrapperTestCase):
                  '\tPlease commit, stash, or reset.\n')
     self.assertRaisesError(exception, scm.update, options, (), [])
     sys.stdout.close()
-
-  def testUpdateNotGit(self):
-    if not self.enabled:
-      return
-    options = self.Options()
-    scm = gclient_scm.CreateSCM(url=self.url, root_dir=self.root_dir,
-                                relpath=self.relpath)
-    git_path = join(self.base_path, '.git')
-    rename(git_path, git_path + 'foo')
-    exception = ('\n____ . at refs/heads/master\n'
-                 '\tPath is not a git repo. No .git dir.\n'
-                 '\tTo resolve:\n'
-                 '\t\trm -rf .\n'
-                 '\tAnd run gclient sync again\n')
-    self.assertRaisesError(exception, scm.update, options, (), [])
 
   def testRevinfo(self):
     if not self.enabled:

@@ -10,6 +10,7 @@ import os
 import posixpath
 import re
 import sys
+import tempfile
 import threading
 import time
 
@@ -350,10 +351,9 @@ class GitWrapper(SCMWrapper):
       # hash is also a tag, only make a distinction at checkout
       rev_type = "hash"
 
-    if not os.path.exists(self.checkout_path) or (
-        os.path.isdir(self.checkout_path) and
-        not os.listdir(self.checkout_path)):
-      gclient_utils.safe_makedirs(os.path.dirname(self.checkout_path))
+    if (not os.path.exists(self.checkout_path) or
+        (os.path.isdir(self.checkout_path) and
+         not os.path.exists(os.path.join(self.checkout_path, '.git')))):
       self._Clone(revision, url, options)
       self.UpdateSubmoduleConfig()
       if file_list is not None:
@@ -407,19 +407,6 @@ class GitWrapper(SCMWrapper):
 
     if return_early:
       return
-
-    if not self._IsValidGitRepo():
-      # .git directory is hosed for some reason, set it back up.
-      print('_____ %s/.git is corrupted, rebuilding' % self.relpath)
-      self._Run(['init'], options)
-      self._Run(['remote', 'set-url', 'origin', url], options)
-
-    if not self._HasHead():
-      # Previous checkout was aborted before branches could be created in repo,
-      # so we need to reconstruct them here.
-      self._Run(['-c', 'core.deltaBaseCacheLimit=2g', 'pull', 'origin',
-                 'master'], options)
-      self._FetchAndReset(revision, file_list, options)
 
     cur_branch = self._GetCurrentBranch()
 
@@ -859,47 +846,45 @@ class GitWrapper(SCMWrapper):
       print('')
     template_path = os.path.join(
         os.path.dirname(THIS_FILE_PATH), 'git-templates')
-    clone_cmd = ['-c', 'core.deltaBaseCacheLimit=2g', 'clone', '--progress',
-                 '--template=%s' % template_path]
+    clone_cmd = ['-c', 'core.deltaBaseCacheLimit=2g', 'clone', '--no-checkout',
+                 '--progress', '--template=%s' % template_path]
     if self.cache_dir:
       clone_cmd.append('--shared')
-    if revision.startswith('refs/heads/'):
-      clone_cmd.extend(['-b', revision.replace('refs/heads/', '')])
-      detach_head = False
-    else:
-      detach_head = True
     if options.verbose:
       clone_cmd.append('--verbose')
-    clone_cmd.extend([url, self.checkout_path])
-
+    clone_cmd.append(url)
     # If the parent directory does not exist, Git clone on Windows will not
     # create it, so we need to do it manually.
     parent_dir = os.path.dirname(self.checkout_path)
-    if not os.path.exists(parent_dir):
-      gclient_utils.safe_makedirs(parent_dir)
-
-    for _ in range(3):
-      try:
-        self._Run(clone_cmd, options, cwd=self._root_dir, git_filter=True)
-        break
-      except subprocess2.CalledProcessError, e:
-        # Too bad we don't have access to the actual output yet.
-        # We should check for "transfer closed with NNN bytes remaining to
-        # read". In the meantime, just make sure .git exists.
-        if (e.returncode == 128 and
-            os.path.exists(os.path.join(self.checkout_path, '.git'))):
+    gclient_utils.safe_makedirs(parent_dir)
+    tmp_dir = tempfile.mkdtemp(
+        prefix='_gclient_%s_' % os.path.basename(self.checkout_path),
+        dir=parent_dir)
+    try:
+      clone_cmd.append(tmp_dir)
+      for i in xrange(3):
+        try:
+          self._Run(clone_cmd, options, cwd=self._root_dir, git_filter=True)
+          break
+        except subprocess2.CalledProcessError as e:
+          gclient_utils.rmtree(os.path.join(tmp_dir, '.git'))
+          if e.returncode != 128 or i == 2:
+            raise
           print(str(e))
           print('Retrying...')
-          continue
-        raise e
-
-    # Update the "branch-heads" remote-tracking branches, since we might need it
-    # to checkout a specific revision below.
-    self._UpdateBranchHeads(options, fetch=True)
-
-    if detach_head:
+      gclient_utils.safe_makedirs(self.checkout_path)
+      os.rename(os.path.join(tmp_dir, '.git'),
+                os.path.join(self.checkout_path, '.git'))
+    finally:
+      if os.listdir(tmp_dir):
+        print('\n_____ removing non-empty tmp dir %s' % tmp_dir)
+      gclient_utils.rmtree(tmp_dir)
+    if revision.startswith('refs/heads/'):
+      self._Run(
+          ['checkout', '--quiet', revision.replace('refs/heads/', '')], options)
+    else:
       # Squelch git's very verbose detached HEAD warning and use our own
-      self._Capture(['checkout', '--quiet', '%s' % revision])
+      self._Run(['checkout', '--quiet', revision], options)
       print(
         ('Checked out %s to a detached HEAD. Before making any commits\n'
          'in this repo, you should use \'git checkout <branch>\' to switch to\n'
@@ -976,28 +961,6 @@ class GitWrapper(SCMWrapper):
       # Make the output a little prettier. It's nice to have some
       # whitespace between projects when syncing.
       print('')
-
-  def _IsValidGitRepo(self):
-    """Returns if the directory is a valid git repository.
-
-    Checks if git status works.
-    """
-    try:
-      self._Capture(['status'])
-      return True
-    except subprocess2.CalledProcessError:
-      return False
-
-  def _HasHead(self):
-    """Returns True if any commit is checked out.
-
-    This is done by checking if rev-parse HEAD works in the current repository.
-    """
-    try:
-      self._GetCurrentBranch()
-      return True
-    except subprocess2.CalledProcessError:
-      return False
 
   @staticmethod
   def _CheckMinVersion(min_version):
