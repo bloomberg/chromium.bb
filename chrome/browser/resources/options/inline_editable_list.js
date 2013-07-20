@@ -95,8 +95,10 @@ cr.define('options', function() {
      * Updates the edit state based on the current selected and lead states.
      */
     updateEditState: function() {
-      if (this.editable)
-        this.editing = this.selected && this.lead;
+      if (this.editable) {
+        this.editing = this.selected && this.lead &&
+          !this.isExtraFocusableControl(document.activeElement);
+      }
     },
 
     /**
@@ -109,9 +111,6 @@ cr.define('options', function() {
     set editing(editing) {
       if (this.editing == editing)
         return;
-
-      if (this.isExtraFocusableControl(document.activeElement))
-        editing = false;
 
       if (editing)
         this.setAttribute('editing', '');
@@ -343,6 +342,11 @@ cr.define('options', function() {
         return;
 
       var clickTarget = e.target;
+      if (this.isExtraFocusableControl(clickTarget)) {
+        clickTarget.focus();
+        return;
+      }
+
       var editFields = this.editFields_;
       for (var i = 0; i < editFields.length; i++) {
         if (editFields[i] == clickTarget ||
