@@ -73,7 +73,6 @@ struct weston_launch {
 
 	pid_t child;
 	int verbose;
-	int sleep_fork;
 };
 
 union cmsg_data { unsigned char b[4]; int fd; };
@@ -535,13 +534,6 @@ launch_compositor(struct weston_launch *wl, int argc, char *argv[])
 	    setuid(wl->pw->pw_uid) < 0)
 		error(1, errno, "dropping privileges failed");
 
-	if (wl->sleep_fork) {
-		if (wl->verbose)
-			printf("weston-launch: waiting %d seconds\n",
-			       wl->sleep_fork);
-		sleep(wl->sleep_fork);
-	}
-
 	env = pam_getenvlist(wl->ph);
 	if (env) {
 		for (i = 0; env[i]; ++i) {
@@ -578,7 +570,6 @@ help(const char *name)
 	fprintf(stderr, "  -u, --user      Start session as specified username\n");
 	fprintf(stderr, "  -t, --tty       Start session on alternative tty\n");
 	fprintf(stderr, "  -v, --verbose   Be verbose\n");
-	fprintf(stderr, "  -s, --sleep     Sleep specified amount of time before exec\n");
 	fprintf(stderr, "  -h, --help      Display this help message\n");
 }
 
@@ -593,14 +584,13 @@ main(int argc, char *argv[])
 		{ "user",    required_argument, NULL, 'u' },
 		{ "tty",     required_argument, NULL, 't' },
 		{ "verbose", no_argument,       NULL, 'v' },
-		{ "sleep",   optional_argument, NULL, 's' },
 		{ "help",    no_argument,       NULL, 'h' },
 		{ 0,         0,                 NULL,  0  }
 	};	
 
 	memset(&wl, 0, sizeof wl);
 
-	while ((c = getopt_long(argc, argv, "u:t:s::vh", opts, &i)) != -1) {
+	while ((c = getopt_long(argc, argv, "u:t::vh", opts, &i)) != -1) {
 		switch (c) {
 		case 'u':
 			new_user = optarg;
@@ -612,12 +602,6 @@ main(int argc, char *argv[])
 			break;
 		case 'v':
 			wl.verbose = 1;
-			break;
-		case 's':
-			if (optarg)
-				wl.sleep_fork = atoi(optarg);
-			else
-				wl.sleep_fork = 10;
 			break;
 		case 'h':
 			help("weston-launch");
