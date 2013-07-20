@@ -7,7 +7,7 @@
 
 // This file exists (instead of putting this type into nacl_types.h) because
 // nacl_types is built into nacl_helper in addition to chrome, and we don't
-// want to pull googleurl into there, since it would be unnecessary bloat.
+// want to pull src/url/ into there, since it would be unnecessary bloat.
 
 #include "base/time/time.h"
 #include "url/gurl.h"

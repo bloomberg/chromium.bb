@@ -16,7 +16,7 @@ namespace content {
 // of standard schemes at init time.
 //
 // Called near the beginning of startup to register URL schemes that should
-// be parsed as "standard" with the googleurl library. Optionally, the set
+// be parsed as "standard" with the src/url/ library. Optionally, the set
 // of standard schemes is locked down. The embedder can add additional
 // schemes by overriding the ContentClient::AddAdditionalSchemes method.
 CONTENT_EXPORT void RegisterContentSchemes(bool lock_standard_schemes);
