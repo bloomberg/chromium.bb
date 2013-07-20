@@ -1660,10 +1660,13 @@ enum {
   return style;
 }
 
-- (NSPoint)themePatternPhase {
+- (NSPoint)themePatternPhaseForAlignment:(ThemePatternAlignment)alignment {
   NSView* windowChromeView = [[[self window] contentView] superview];
+  NSView* tabStripView = nil;
+  if (alignment == THEME_PATTERN_ALIGN_WITH_TAB_STRIP && [self hasTabStrip])
+    tabStripView = [self tabStripView];
   return [BrowserWindowUtils themePatternPhaseFor:windowChromeView
-                                     withTabStrip:[self tabStripView]];
+                                     withTabStrip:tabStripView];
 }
 
 - (NSPoint)bookmarkBubblePoint {

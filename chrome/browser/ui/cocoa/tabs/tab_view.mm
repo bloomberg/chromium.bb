@@ -301,6 +301,21 @@ const CGFloat kRapidCloseDist = 2.5;
       bitmapResources[active][selected], true);
 }
 
+// Draws the active tab background.
+- (void)drawFillForActiveTab:(NSRect)dirtyRect {
+  NSColor* backgroundImageColor = [self backgroundColorForSelected:YES];
+  [backgroundImageColor set];
+
+  // Themes can have partially transparent images. NSRectFill() is measurably
+  // faster though, so call it for the known-safe default theme.
+  ThemeService* themeProvider =
+      static_cast<ThemeService*>([[self window] themeProvider]);
+  if (themeProvider && themeProvider->UsingDefaultTheme())
+    NSRectFill(dirtyRect);
+  else
+    NSRectFillUsingOperation(dirtyRect, NSCompositeSourceOver);
+}
+
 // Draws the tab background.
 - (void)drawFill:(NSRect)dirtyRect {
   gfx::ScopedNSGraphicsContextSaveGState scopedGState;
@@ -309,65 +324,51 @@ const CGFloat kRapidCloseDist = 2.5;
 
   ThemeService* themeProvider =
       static_cast<ThemeService*>([[self window] themeProvider]);
-  [context cr_setPatternPhase:[[self window] themePatternPhase] forView:self];
-
+  NSPoint phase = [[self window]
+      themePatternPhaseForAlignment: THEME_PATTERN_ALIGN_WITH_TAB_STRIP];
+  [context cr_setPatternPhase:phase forView:self];
 
   CGImageRef mask([self tabClippingMask]);
   CGRect maskBounds = CGRectMake(0, 0, maskCacheWidth_, kMaskHeight);
   CGContextClipToMask(cgContext, maskBounds, mask);
 
   bool selected = [self state];
+  if (selected) {
+    [self drawFillForActiveTab:dirtyRect];
+    return;
+  }
 
   // Background tabs should not paint over the tab strip separator, which is
   // two pixels high in both lodpi and hidpi.
-  if (!selected && dirtyRect.origin.y < 1)
+  if (dirtyRect.origin.y < 1)
     dirtyRect.origin.y = 2 * [self cr_lineWidth];
 
+  // Draw the tab background.
+  NSColor* backgroundImageColor = [self backgroundColorForSelected:NO];
+  [backgroundImageColor set];
+
+  // Themes can have partially transparent images. NSRectFill() is measurably
+  // faster though, so call it for the known-safe default theme.
   bool usingDefaultTheme = themeProvider && themeProvider->UsingDefaultTheme();
-  NSColor* backgroundImageColor = [self backgroundColorForSelected:selected];
+  if (usingDefaultTheme)
+    NSRectFill(dirtyRect);
+  else
+    NSRectFillUsingOperation(dirtyRect, NSCompositeSourceOver);
 
-  // Don't draw the window/tab bar background when selected, since the tab
-  // background overlay drawn over it (see below) will be fully opaque.
-  if (!selected) {
-    [backgroundImageColor set];
-    // Themes can have partially transparent images. NSRectFill() is measurably
-    // faster though, so call it for the known-safe default theme.
-    if (usingDefaultTheme)
-      NSRectFill(dirtyRect);
-    else
-      NSRectFillUsingOperation(dirtyRect, NSCompositeSourceOver);
-  }
-
-  // Use the same overlay for the selected state and for hover and alert
-  // glows; for the selected state, it's fully opaque.
+  // Draw the glow for hover and the overlay for alerts.
   CGFloat hoverAlpha = [self hoverAlpha];
   CGFloat alertAlpha = [self alertAlpha];
-  if (selected || hoverAlpha > 0 || alertAlpha > 0) {
+  if (hoverAlpha > 0 || alertAlpha > 0) {
     gfx::ScopedNSGraphicsContextSaveGState contextSave;
-
-    // Draw the selected background / glow overlay.
     CGContextBeginTransparencyLayer(cgContext, 0);
-    if (!selected) {
-      // The alert glow overlay is like the selected state but at most at most
-      // 80% opaque. The hover glow brings up the overlay's opacity at most
-      // 50%.
-      CGFloat backgroundAlpha = 0.8 * alertAlpha;
-      backgroundAlpha += (1 - backgroundAlpha) * 0.5 * hoverAlpha;
-      CGContextSetAlpha(cgContext, backgroundAlpha);
-    }
 
-    // For background tabs, this branch is taken to draw a highlight. The
-    // highlight is drawn using the foreground tab bitmap.
-    if (!selected && themeProvider)
-      backgroundImageColor = [self backgroundColorForSelected:YES];
+    // The alert glow overlay is like the selected state but at most at most 80%
+    // opaque. The hover glow brings up the overlay's opacity at most 50%.
+    CGFloat backgroundAlpha = 0.8 * alertAlpha;
+    backgroundAlpha += (1 - backgroundAlpha) * 0.5 * hoverAlpha;
+    CGContextSetAlpha(cgContext, backgroundAlpha);
 
-    [backgroundImageColor set];
-    // Themes can have partially transparent images. NSRectFill() is measurably
-    // faster though, so call it for the known-safe default theme.
-    if (usingDefaultTheme)
-      NSRectFill(dirtyRect);
-    else
-      NSRectFillUsingOperation(dirtyRect, NSCompositeSourceOver);
+    [self drawFillForActiveTab:dirtyRect];
 
     // ui::ThemeProvider::HasCustomImage is true only if the theme provides the
     // image. However, even if the theme doesn't provide a tab background, the
@@ -377,7 +378,7 @@ const CGFloat kRapidCloseDist = 2.5;
         (themeProvider->HasCustomImage(IDR_THEME_TAB_BACKGROUND) ||
          themeProvider->HasCustomImage(IDR_THEME_FRAME));
     // Draw a mouse hover gradient for the default themes.
-    if (!selected && hoverAlpha > 0) {
+    if (hoverAlpha > 0) {
       if (themeProvider && !hasCustomTheme) {
         base::scoped_nsobject<NSGradient> glow([NSGradient alloc]);
         [glow initWithStartingColor:[NSColor colorWithCalibratedWhite:1.0

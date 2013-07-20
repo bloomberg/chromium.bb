@@ -21,12 +21,22 @@ enum {
 };
 typedef NSUInteger ThemedWindowStyle;
 
+// Indicates how the theme image should be aligned.
+enum ThemePatternAlignment {
+  // Aligns the top of the theme image with the top of the frame. Use this
+  // for IDR_THEME_THEME_FRAME.*
+  THEME_PATTERN_ALIGN_WITH_FRAME,
+  // Aligns the top of the theme image with the top of the tab
+  // strip. Use this for IDR_THEME_TAB_BACKGROUND and IDR_THEME_TOOLBAR.
+  THEME_PATTERN_ALIGN_WITH_TAB_STRIP
+};
+
 // Implemented by windows that support theming.
 
 @interface NSWindow (ThemeProvider)
 - (ThemeProvider*)themeProvider;
 - (ThemedWindowStyle)themedWindowStyle;
-- (NSPoint)themePatternPhase;
+- (NSPoint)themePatternPhaseForAlignment:(ThemePatternAlignment)alignment;
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_THEMED_WINDOW_H_

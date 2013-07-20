@@ -18,9 +18,8 @@
 }
 
 - (void)drawRect:(NSRect)rect {
-  // The toolbar's background pattern is phased relative to the
-  // tab strip view's background pattern.
-  NSPoint phase = [[self window] themePatternPhase];
+  NSPoint phase = [[self window]
+      themePatternPhaseForAlignment:THEME_PATTERN_ALIGN_WITH_TAB_STRIP];
   [[NSGraphicsContext currentContext] cr_setPatternPhase:phase forView:self];
   [self drawBackgroundWithOpaque:YES];
 }

@@ -311,8 +311,9 @@ class WebContents;
 // Gets the window style.
 - (ThemedWindowStyle)themedWindowStyle;
 
-// Gets the pattern phase for the window.
-- (NSPoint)themePatternPhase;
+// Returns the pattern phase for |alignment|. If the window does not have a tab
+// strip, the phase for THEME_PATTERN_ALIGN_WITH_FRAME is always returned.
+- (NSPoint)themePatternPhaseForAlignment:(ThemePatternAlignment)alignment;
 
 // Return the point to which a bubble window's arrow should point, in window
 // coordinates.

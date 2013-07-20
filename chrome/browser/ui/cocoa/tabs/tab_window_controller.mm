@@ -33,9 +33,11 @@
   return NO;
 }
 
-- (NSPoint)themePatternPhase {
-  if ([self parentWindow])
-    return [[[self parentWindow] windowController] themePatternPhase];
+- (NSPoint)themePatternPhaseForAlignment:(ThemePatternAlignment)alignment {
+  if ([self parentWindow]) {
+    return [[[self parentWindow] windowController]
+        themePatternPhaseForAlignment:alignment];
+  }
   return NSZeroPoint;
 }
 

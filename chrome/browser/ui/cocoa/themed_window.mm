@@ -16,7 +16,7 @@
   return THEMED_NORMAL;
 }
 
-- (NSPoint)themePatternPhase {
+- (NSPoint)themePatternPhaseForAlignment:(ThemePatternAlignment)alignment {
   return NSZeroPoint;
 }
 
