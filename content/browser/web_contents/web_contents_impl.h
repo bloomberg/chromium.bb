@@ -243,6 +243,7 @@ class CONTENT_EXPORT WebContentsImpl
   virtual bool DisplayedInsecureContent() const OVERRIDE;
   virtual void IncrementCapturerCount() OVERRIDE;
   virtual void DecrementCapturerCount() OVERRIDE;
+  virtual int GetCapturerCount() const OVERRIDE;
   virtual bool IsCrashed() const OVERRIDE;
   virtual void SetIsCrashed(base::TerminationStatus status,
                             int error_code) OVERRIDE;

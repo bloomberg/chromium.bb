@@ -1077,6 +1077,10 @@ void WebContentsImpl::DecrementCapturerCount() {
   }
 }
 
+int WebContentsImpl::GetCapturerCount() const {
+  return capturer_count_;
+}
+
 bool WebContentsImpl::IsCrashed() const {
   return (crashed_status_ == base::TERMINATION_STATUS_PROCESS_CRASHED ||
           crashed_status_ == base::TERMINATION_STATUS_ABNORMAL_TERMINATION ||

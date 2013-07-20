@@ -127,6 +127,7 @@ bool ShouldRenderPrerenderedPageCorrectly(FinalStatus status) {
     case FINAL_STATUS_RENDERER_CRASHED:
     case FINAL_STATUS_CANCELLED:
     case FINAL_STATUS_DEVTOOLS_ATTACHED:
+    case FINAL_STATUS_PAGE_BEING_CAPTURED:
       return true;
     default:
       return false;
@@ -1158,10 +1159,6 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
     ui_test_utils::NavigateToURLWithDisposition(
         current_browser(), dest_url, disposition,
         ui_test_utils::BROWSER_TEST_NONE);
-
-    // Make sure the PrerenderContents found earlier was used or removed,
-    // unless we expect the swap in to fail.
-    EXPECT_EQ(expect_swap_to_succeed, !GetPrerenderContents());
 
     if (call_javascript_ && web_contents && expect_swap_to_succeed) {
       if (page_load_observer.get())
@@ -2906,6 +2903,17 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderHTML5MediaSourceVideo) {
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, DISABLED_PrerenderWebAudioDevice) {
   PrerenderTestURL("files/prerender/prerender_web_audio_device.html",
                    FINAL_STATUS_CREATING_AUDIO_STREAM, 1);
+}
+
+// Checks that prerenders do not swap in to WebContents being captured.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderCapturedWebContents) {
+  PrerenderTestURL("files/prerender/prerender_page.html",
+                   FINAL_STATUS_PAGE_BEING_CAPTURED, 1);
+  WebContents* web_contents =
+      current_browser()->tab_strip_model()->GetActiveWebContents();
+  web_contents->IncrementCapturerCount();
+  NavigateToDestURLWithDisposition(CURRENT_TAB, false);
+  web_contents->DecrementCapturerCount();
 }
 
 }  // namespace prerender

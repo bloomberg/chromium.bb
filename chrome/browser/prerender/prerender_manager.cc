@@ -112,7 +112,8 @@ bool NeedMatchCompleteDummyForFinalStatus(FinalStatus final_status) {
       final_status != FINAL_STATUS_CACHE_OR_HISTORY_CLEARED &&
       final_status != FINAL_STATUS_CANCELLED &&
       final_status != FINAL_STATUS_DEVTOOLS_ATTACHED &&
-      final_status != FINAL_STATUS_CROSS_SITE_NAVIGATION_PENDING;
+      final_status != FINAL_STATUS_CROSS_SITE_NAVIGATION_PENDING &&
+      final_status != FINAL_STATUS_PAGE_BEING_CAPTURED;
 }
 
 void CheckIfCookiesExistForDomainResultOnUIThread(
@@ -440,6 +441,12 @@ bool PrerenderManager::MaybeUsePrerenderedPage(WebContents* web_contents,
   // Do not use the prerendered version if there is an opener object.
   if (web_contents->HasOpener()) {
     prerender_data->contents()->Destroy(FINAL_STATUS_WINDOW_OPENER);
+    return false;
+  }
+
+  // Do not swap in the prerender if the current WebContents is being captured.
+  if (web_contents->GetCapturerCount() > 0) {
+    prerender_data->contents()->Destroy(FINAL_STATUS_PAGE_BEING_CAPTURED);
     return false;
   }
 

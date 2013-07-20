@@ -55,6 +55,7 @@ const char* kFinalStatusNames[] = {
   "WouldHaveBeenUsed",
   "Register Protocol Handler",
   "Creating Audio Stream",
+  "Page Being Captured",
   "Max",
 };
 COMPILE_ASSERT(arraysize(kFinalStatusNames) == FINAL_STATUS_MAX + 1,

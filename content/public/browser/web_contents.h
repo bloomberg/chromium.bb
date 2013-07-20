@@ -263,6 +263,7 @@ class WebContents : public PageNavigator,
   // of decrement calls.
   virtual void IncrementCapturerCount() = 0;
   virtual void DecrementCapturerCount() = 0;
+  virtual int GetCapturerCount() const = 0;
 
   // Indicates whether this tab should be considered crashed. The setter will
   // also notify the delegate when the flag is changed.
