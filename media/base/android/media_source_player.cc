@@ -127,7 +127,7 @@ void MediaDecoderJob::DecodeInternal(
   int input_buf_index = media_codec_bridge_->DequeueInputBuffer(timeout);
   if (input_buf_index == MediaCodecBridge::INFO_MEDIA_CODEC_ERROR) {
     ui_loop_->PostTask(FROM_HERE, base::Bind(
-        callback, DECODE_FAILED, start_presentation_timestamp, 0, false));
+        callback, DECODE_FAILED, start_presentation_timestamp, 0));
     return;
   }
   // TODO(qinmin): skip frames if video is falling far behind.
@@ -142,7 +142,7 @@ void MediaDecoderJob::DecodeInternal(
         LOG(ERROR) << "The access unit doesn't have iv or subsamples while it "
                    << "has key IDs!";
         ui_loop_->PostTask(FROM_HERE, base::Bind(
-            callback, DECODE_FAILED, start_presentation_timestamp, 0, false));
+            callback, DECODE_FAILED, start_presentation_timestamp, 0));
         return;
       }
       media_codec_bridge_->QueueSecureInputBuffer(
@@ -157,16 +157,19 @@ void MediaDecoderJob::DecodeInternal(
   size_t size = 0;
   base::TimeDelta presentation_timestamp;
   bool end_of_stream = false;
-  DecodeStatus decode_status = DECODE_SUCCEEDED;
 
   int outputBufferIndex = media_codec_bridge_->DequeueOutputBuffer(
       timeout, &offset, &size, &presentation_timestamp, &end_of_stream);
+  DecodeStatus decode_status = DECODE_SUCCEEDED;
+  if (end_of_stream)
+    decode_status = DECODE_END_OF_STREAM;
   switch (outputBufferIndex) {
     case MediaCodecBridge::INFO_OUTPUT_BUFFERS_CHANGED:
       media_codec_bridge_->GetOutputBuffers();
       break;
     case MediaCodecBridge::INFO_OUTPUT_FORMAT_CHANGED:
       // TODO(qinmin): figure out what we should do if format changes.
+      decode_status = DECODE_FORMAT_CHANGED;
       break;
     case MediaCodecBridge::INFO_TRY_AGAIN_LATER:
       decode_status = DECODE_TRY_AGAIN_LATER;
@@ -176,8 +179,6 @@ void MediaDecoderJob::DecodeInternal(
       break;
     default:
       DCHECK_LE(0, outputBufferIndex);
-      if (size == 0 && end_of_stream)
-        break;
       base::TimeDelta time_to_render;
       DCHECK(!start_time_ticks.is_null());
       if (!is_audio_) {
@@ -189,7 +190,7 @@ void MediaDecoderJob::DecodeInternal(
             FROM_HERE,
             base::Bind(&MediaDecoderJob::ReleaseOutputBuffer,
                        weak_this_.GetWeakPtr(), outputBufferIndex, size,
-                       presentation_timestamp, end_of_stream, callback),
+                       presentation_timestamp, callback, decode_status),
             time_to_render);
       } else {
         // TODO(qinmin): The codec is lagging behind, need to recalculate the
@@ -197,28 +198,28 @@ void MediaDecoderJob::DecodeInternal(
         DVLOG(1) << (is_audio_ ? "audio " : "video ")
             << "codec is lagging behind :" << time_to_render.InMicroseconds();
         ReleaseOutputBuffer(outputBufferIndex, size, presentation_timestamp,
-                            end_of_stream, callback);
+                            callback, decode_status);
       }
       return;
   }
   ui_loop_->PostTask(FROM_HERE, base::Bind(
-      callback, decode_status, start_presentation_timestamp, 0, end_of_stream));
+      callback, decode_status, start_presentation_timestamp, 0));
 }
 
 void MediaDecoderJob::ReleaseOutputBuffer(
     int outputBufferIndex, size_t size,
     const base::TimeDelta& presentation_timestamp,
-    bool end_of_stream, const MediaDecoderJob::DecoderCallback& callback) {
+    const MediaDecoderJob::DecoderCallback& callback, DecodeStatus status) {
   // TODO(qinmin): Refactor this function. Maybe AudioDecoderJob should provide
   // its own ReleaseOutputBuffer().
   if (is_audio_) {
     static_cast<AudioCodecBridge*>(media_codec_bridge_.get())->PlayOutputBuffer(
         outputBufferIndex, size);
   }
-  media_codec_bridge_->ReleaseOutputBuffer(outputBufferIndex, !is_audio_);
+  if (status != DECODE_END_OF_STREAM || size != 0u)
+    media_codec_bridge_->ReleaseOutputBuffer(outputBufferIndex, !is_audio_);
   ui_loop_->PostTask(FROM_HERE, base::Bind(
-      callback, DECODE_SUCCEEDED, presentation_timestamp, is_audio_ ? size : 0,
-      end_of_stream));
+      callback, status, presentation_timestamp, is_audio_ ? size : 0));
 }
 
 void MediaDecoderJob::OnDecodeCompleted() {
@@ -599,8 +600,7 @@ void MediaSourcePlayer::ProcessPendingEvents() {
 
 void MediaSourcePlayer::MediaDecoderCallback(
     bool is_audio, MediaDecoderJob::DecodeStatus decode_status,
-    const base::TimeDelta& presentation_timestamp, size_t audio_output_bytes,
-    bool end_of_stream) {
+    const base::TimeDelta& presentation_timestamp, size_t audio_output_bytes) {
   if (is_audio && audio_decoder_job_)
     audio_decoder_job_->OnDecodeCompleted();
   if (!is_audio && video_decoder_job_)
@@ -625,10 +625,12 @@ void MediaSourcePlayer::MediaDecoderCallback(
     return;
   }
 
-  if (is_audio || !HasAudio())
+  if (decode_status == MediaDecoderJob::DECODE_SUCCEEDED &&
+      (is_audio || !HasAudio())) {
     UpdateTimestamps(presentation_timestamp, audio_output_bytes);
+  }
 
-  if (end_of_stream) {
+  if (decode_status == MediaDecoderJob::DECODE_END_OF_STREAM) {
     PlaybackCompleted(is_audio);
     return;
   }
@@ -646,9 +648,11 @@ void MediaSourcePlayer::MediaDecoderCallback(
 
   base::TimeDelta current_timestamp = GetCurrentTime();
   if (is_audio) {
-    base::TimeDelta timeout =
-        audio_timestamp_helper_->GetTimestamp() - current_timestamp;
-    StartStarvationCallback(timeout);
+    if (decode_status == MediaDecoderJob::DECODE_SUCCEEDED) {
+      base::TimeDelta timeout =
+          audio_timestamp_helper_->GetTimestamp() - current_timestamp;
+      StartStarvationCallback(timeout);
+    }
     if (!HasAudioData())
       RequestAudioData();
     else
@@ -656,7 +660,7 @@ void MediaSourcePlayer::MediaDecoderCallback(
     return;
   }
 
-  if (!HasAudio()) {
+  if (!HasAudio() && decode_status == MediaDecoderJob::DECODE_SUCCEEDED) {
     DCHECK(current_timestamp <= presentation_timestamp);
     // For video only streams, fps can be estimated from the difference
     // between the previous and current presentation timestamps. The

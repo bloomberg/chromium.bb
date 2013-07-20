@@ -5,8 +5,11 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "media/base/android/media_codec_bridge.h"
+#include "media/base/decoder_buffer.h"
+#include "media/base/test_data_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace {
@@ -91,6 +94,33 @@ unsigned char test_mp3[] = {
 namespace media {
 
 static const int kPresentationTimeBase = 100;
+
+void DecodeMediaFrame(
+    VideoCodecBridge* media_codec, const uint8* data, size_t data_size,
+    const base::TimeDelta input_presentation_timestamp,
+    const base::TimeDelta initial_timestamp_lower_bound) {
+  base::TimeDelta input_pts = input_presentation_timestamp;
+  base::TimeDelta timestamp = initial_timestamp_lower_bound;
+  base::TimeDelta new_timestamp;
+  for (int i = 0; i < 10; ++i) {
+    int input_buf_index = media_codec->DequeueInputBuffer(
+        MediaCodecBridge::kTimeOutInfinity);
+    media_codec->QueueInputBuffer(
+        input_buf_index, data, data_size, input_presentation_timestamp);
+    size_t unused_offset = 0;
+    size_t size = 0;
+    bool eos = false;
+    int output_buf_index = media_codec->DequeueOutputBuffer(
+        MediaCodecBridge::kTimeOutInfinity,
+        &unused_offset, &size, &new_timestamp, &eos);
+    if (output_buf_index > 0)
+      media_codec->ReleaseOutputBuffer(output_buf_index, false);
+    // Output time stamp should not be smaller than old timestamp.
+    ASSERT_TRUE(new_timestamp >= timestamp);
+    input_pts += base::TimeDelta::FromMicroseconds(33000);
+    timestamp = new_timestamp;
+  }
+}
 
 TEST(MediaCodecBridgeTest, Initialize) {
   if (!MediaCodecBridge::IsAvailable())
@@ -185,6 +215,37 @@ TEST(MediaCodecBridgeTest, InvalidVorbisHeader) {
   EXPECT_FALSE(media_codec->Start(
       kCodecVorbis, 44100, 2, very_large_header, 0x80000000, false, NULL));
   delete[] very_large_header;
+}
+
+TEST(MediaCodecBridgeTest, PresentationTimestampsDoNotDecrease) {
+  if (!MediaCodecBridge::IsAvailable())
+    return;
+
+  scoped_ptr<VideoCodecBridge> media_codec;
+  media_codec.reset(VideoCodecBridge::Create(kCodecVP8));
+  EXPECT_TRUE(media_codec->Start(
+      kCodecVP8, gfx::Size(320, 240), NULL, NULL));
+  scoped_refptr<DecoderBuffer> buffer =
+      ReadTestDataFile("vp8-I-frame-320x240");
+  DecodeMediaFrame(
+      media_codec.get(), buffer->data(), buffer->data_size(),
+      base::TimeDelta(), base::TimeDelta());
+
+  // Simulate a seek to 10 seconds, and each chunk has 2 I-frames.
+  std::vector<uint8> chunk(buffer->data(),
+                           buffer->data() + buffer->data_size());
+  chunk.insert(chunk.end(), buffer->data(),
+               buffer->data() + buffer->data_size());
+  media_codec->Reset();
+  DecodeMediaFrame(media_codec.get(), &chunk[0], chunk.size(),
+                   base::TimeDelta::FromMicroseconds(10000000),
+                   base::TimeDelta::FromMicroseconds(9900000));
+
+  // Simulate a seek to 5 seconds.
+  media_codec->Reset();
+  DecodeMediaFrame(media_codec.get(), &chunk[0], chunk.size(),
+                   base::TimeDelta::FromMicroseconds(5000000),
+                   base::TimeDelta::FromMicroseconds(4900000));
 }
 
 TEST(MediaCodecBridgeTest, CreateUnsupportedCodec) {

@@ -39,18 +39,19 @@ class VideoDecoderJob;
 class MediaDecoderJob {
  public:
   enum DecodeStatus {
-    DECODE_SUCCEEDED = 0,
-    DECODE_TRY_AGAIN_LATER = 1,
-    DECODE_FAILED = 2,
+    DECODE_SUCCEEDED,
+    DECODE_TRY_AGAIN_LATER,
+    DECODE_FORMAT_CHANGED,
+    DECODE_END_OF_STREAM,
+    DECODE_FAILED,
   };
 
   virtual ~MediaDecoderJob();
 
   // Callback when a decoder job finishes its work. Args: whether decode
-  // finished successfully, presentation time, audio output bytes, whether
-  // decoder is reaching EOS.
+  // finished successfully, presentation time, audio output bytes.
   typedef base::Callback<void(DecodeStatus, const base::TimeDelta&,
-                              size_t, bool)> DecoderCallback;
+                              size_t)> DecoderCallback;
 
   // Called by MediaSourcePlayer to decode some data.
   void Decode(
@@ -83,7 +84,7 @@ class MediaDecoderJob {
   void ReleaseOutputBuffer(
       int outputBufferIndex, size_t size,
       const base::TimeDelta& presentation_timestamp,
-      bool end_of_stream, const MediaDecoderJob::DecoderCallback& callback);
+      const MediaDecoderJob::DecoderCallback& callback, DecodeStatus status);
 
   // Helper function to decoder data on |thread_|. |unit| contains all the data
   // to be decoded. |start_time_ticks| and |start_presentation_timestamp|
@@ -174,7 +175,7 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid {
   void MediaDecoderCallback(
         bool is_audio, MediaDecoderJob::DecodeStatus decode_status,
         const base::TimeDelta& presentation_timestamp,
-        size_t audio_output_bytes, bool end_of_stream);
+        size_t audio_output_bytes);
 
   // Handle pending events when all the decoder jobs finished.
   void ProcessPendingEvents();
