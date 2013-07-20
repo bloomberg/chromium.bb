@@ -1073,7 +1073,7 @@ TEST(NetUtilTest, GenerateFileName) {
       L"",
       L"test.html"
     },
-    { // Now that we use googleurl's ExtractFileName, this case falls back to
+    { // Now that we use src/url's ExtractFileName, this case falls back to
       // the hostname. If this behavior is not desirable, we'd better change
       // ExtractFileName (in url_parse).
       __LINE__,

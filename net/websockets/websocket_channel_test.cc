@@ -15,7 +15,6 @@
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_piece.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request_context.h"
 #include "net/websockets/websocket_errors.h"
@@ -23,6 +22,7 @@
 #include "net/websockets/websocket_mux.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace net {
 

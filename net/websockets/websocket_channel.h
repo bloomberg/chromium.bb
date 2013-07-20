@@ -12,10 +12,10 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/net_export.h"
 #include "net/websockets/websocket_frame.h"
 #include "net/websockets/websocket_stream.h"
+#include "url/gurl.h"
 
 namespace net {
 

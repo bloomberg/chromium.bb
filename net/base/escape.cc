@@ -67,7 +67,7 @@ std::string Escape(const std::string& text, const Charmap& charmap,
 // The basic rule is that we can't unescape anything that would changing parsing
 // like # or ?. We also can't unescape &, =, or + since that could be part of a
 // query and that could change the server's parsing of the query. Nor can we
-// unescape \ since googleurl will convert it to a /.
+// unescape \ since src/url/ will convert it to a /.
 //
 // Lastly, we can't unescape anything that doesn't have a canonical
 // representation in a URL. This means that unescaping will change the URL, and
