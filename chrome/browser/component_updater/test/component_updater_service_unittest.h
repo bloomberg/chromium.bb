@@ -6,18 +6,23 @@
 #define CHROME_BROWSER_COMPONENT_UPDATER_TEST_COMPONENT_UPDATER_SERVICE_UNITTEST_H_
 
 #include <list>
+#include <map>
+#include <string>
 #include <utility>
-
+#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/files/file_path.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop.h"
 #include "chrome/browser/component_updater/component_updater_service.h"
 #include "chrome/browser/component_updater/test/component_patcher_mock.h"
+#include "chrome/browser/component_updater/test/url_request_post_interceptor.h"
+#include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_notification_tracker.h"
+#include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using content::TestNotificationTracker;
-
-class GURL;
 class TestInstaller;
 
 // component 1 has extension id "jebgalgnebhfojomionfpkfelancnnkf", and
@@ -59,6 +64,8 @@ class TestConfigurator : public ComponentUpdateService::Configurator {
 
   virtual GURL UpdateUrl() OVERRIDE;
 
+  virtual GURL PingUrl() OVERRIDE;
+
   virtual const char* ExtraRequestParams() OVERRIDE;
 
   virtual size_t UrlSizeLimit() OVERRIDE;
@@ -67,8 +74,6 @@ class TestConfigurator : public ComponentUpdateService::Configurator {
 
   // Don't use the utility process to decode files.
   virtual bool InProcess() OVERRIDE;
-
-  virtual void OnEvent(Events event, int extra) OVERRIDE;
 
   virtual ComponentPatcher* CreateComponentPatcher() OVERRIDE;
 
@@ -91,6 +96,7 @@ class TestConfigurator : public ComponentUpdateService::Configurator {
 
   std::list<CheckAtLoopCount> components_to_check_;
   ComponentUpdateService* cus_;
+  scoped_refptr<net::TestURLRequestContextGetter> context_;
 };
 
 class ComponentUpdaterTest : public testing::Test {
@@ -112,7 +118,7 @@ class ComponentUpdaterTest : public testing::Test {
   // Makes the full path to a component updater test file.
   const base::FilePath test_file(const char* file);
 
-  TestNotificationTracker& notification_tracker();
+  content::TestNotificationTracker& notification_tracker();
 
   TestConfigurator* test_configurator();
 
@@ -120,15 +126,42 @@ class ComponentUpdaterTest : public testing::Test {
                                                    TestComponents component,
                                                    const Version& version,
                                                    TestInstaller* installer);
+ protected:
+  base::MessageLoop message_loop_;
 
  private:
-  scoped_ptr<ComponentUpdateService> component_updater_;
-  base::FilePath test_data_dir_;
-  TestNotificationTracker notification_tracker_;
   TestConfigurator* test_config_;
+  base::FilePath test_data_dir_;
+  content::TestNotificationTracker notification_tracker_;
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread file_thread_;
+  content::TestBrowserThread io_thread_;
+  scoped_ptr<ComponentUpdateService> component_updater_;
 };
 
 const char expected_crx_url[] =
     "http://localhost/download/jebgalgnebhfojomionfpkfelancnnkf.crx";
+
+class PingChecker : public RequestCounter {
+ public:
+  explicit PingChecker(const std::map<std::string, std::string>& attributes);
+
+  virtual ~PingChecker();
+
+  virtual void Trial(net::URLRequest* request) OVERRIDE;
+
+  int NumHits() const {
+    return num_hits_;
+  }
+  int NumMisses() const {
+    return num_misses_;
+  }
+
+ private:
+  int num_hits_;
+  int num_misses_;
+  const std::map<std::string, std::string> attributes_;
+  virtual bool Test(net::URLRequest* request);
+};
 
 #endif  // CHROME_BROWSER_COMPONENT_UPDATER_TEST_COMPONENT_UPDATER_SERVICE_UNITTEST_H_

@@ -10,7 +10,6 @@
 
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
-#include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
 #include "base/win/windows_version.h"
 #include "build/build_config.h"
@@ -38,6 +37,10 @@ const char kSwitchOutOfProcess[] = "out-of-process";
 const char kSwitchRequestParam[] = "test-request";
 // Disables differential updates.
 const char kSwitchDisableDeltaUpdates[] = "disable-delta-updates";
+// Disables pings. Pings are the requests sent to the update server that report
+// the success or the failure of component install or update attempts.
+extern const char kSwitchDisablePings[] = "disable-pings";
+
 // Sets the URL for updates.
 const char kSwitchUrlSource[] = "url-source";
 
@@ -45,6 +48,9 @@ const char kSwitchUrlSource[] = "url-source";
 // overridden with --component-updater=url-source=someurl.
 const char kDefaultUrlSource[] =
     "http://clients2.google.com/service/update2/crx";
+
+// The url to send the pings to.
+const char kPingUrl[] = "http://tools.google.com/service/update2";
 
 // Returns true if and only if |test| is contained in |vec|.
 bool HasSwitchValue(const std::vector<std::string>& vec, const char* test) {
@@ -89,11 +95,11 @@ class ChromeConfigurator : public ComponentUpdateService::Configurator {
   virtual int MinimumReCheckWait() OVERRIDE;
   virtual int OnDemandDelay() OVERRIDE;
   virtual GURL UpdateUrl() OVERRIDE;
+  virtual GURL PingUrl() OVERRIDE;
   virtual const char* ExtraRequestParams() OVERRIDE;
   virtual size_t UrlSizeLimit() OVERRIDE;
   virtual net::URLRequestContextGetter* RequestContext() OVERRIDE;
   virtual bool InProcess() OVERRIDE;
-  virtual void OnEvent(Events event, int val) OVERRIDE;
   virtual ComponentPatcher* CreateComponentPatcher() OVERRIDE;
   virtual bool DeltasEnabled() const OVERRIDE;
 
@@ -103,6 +109,7 @@ class ChromeConfigurator : public ComponentUpdateService::Configurator {
   std::string url_source_;
   bool fast_update_;
   bool out_of_process_;
+  bool pings_enabled_;
   bool deltas_enabled_;
 };
 
@@ -113,6 +120,7 @@ ChromeConfigurator::ChromeConfigurator(const CommandLine* cmdline,
             chrome::OmahaQueryParams::CHROME)),
         fast_update_(false),
         out_of_process_(false),
+        pings_enabled_(false),
         deltas_enabled_(false) {
   // Parse comma-delimited debug flags.
   std::vector<std::string> switch_values;
@@ -120,6 +128,7 @@ ChromeConfigurator::ChromeConfigurator(const CommandLine* cmdline,
       ",", &switch_values);
   fast_update_ = HasSwitchValue(switch_values, kSwitchFastUpdate);
   out_of_process_ = HasSwitchValue(switch_values, kSwitchOutOfProcess);
+  pings_enabled_ = !HasSwitchValue(switch_values, kSwitchDisablePings);
 #if defined(OS_WIN)
   deltas_enabled_ = !HasSwitchValue(switch_values, kSwitchDisableDeltaUpdates);
 #else
@@ -166,6 +175,10 @@ GURL ChromeConfigurator::UpdateUrl() {
   return GURL(url_source_);
 }
 
+GURL ChromeConfigurator::PingUrl() {
+  return pings_enabled_ ? GURL(kPingUrl) : GURL();
+}
+
 const char* ChromeConfigurator::ExtraRequestParams() {
   return extra_info_.c_str();
 }
@@ -180,32 +193,6 @@ net::URLRequestContextGetter* ChromeConfigurator::RequestContext() {
 
 bool ChromeConfigurator::InProcess() {
   return !out_of_process_;
-}
-
-void ChromeConfigurator::OnEvent(Events event, int val) {
-  switch (event) {
-    case kManifestCheck:
-      UMA_HISTOGRAM_ENUMERATION("ComponentUpdater.ManifestCheck", val, 100);
-      break;
-    case kComponentUpdated:
-      UMA_HISTOGRAM_ENUMERATION("ComponentUpdater.ComponentUpdated", val, 100);
-      break;
-    case kManifestError:
-      UMA_HISTOGRAM_COUNTS_100("ComponentUpdater.ManifestError", val);
-      break;
-    case kNetworkError:
-      UMA_HISTOGRAM_ENUMERATION("ComponentUpdater.NetworkError", val, 100);
-      break;
-    case kUnpackError:
-      UMA_HISTOGRAM_ENUMERATION("ComponentUpdater.UnpackError", val, 100);
-      break;
-    case kInstallerError:
-      UMA_HISTOGRAM_ENUMERATION("ComponentUpdater.InstallError", val, 100);
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
 }
 
 ComponentPatcher* ChromeConfigurator::CreateComponentPatcher() {

@@ -11,13 +11,13 @@
 #include "base/version.h"
 #include "url/gurl.h"
 
-namespace net {
-class URLRequestContextGetter;
-}
-
 namespace base {
 class DictionaryValue;
 class FilePath;
+}
+
+namespace net {
+class URLRequestContextGetter;
 }
 
 class ComponentPatcher;
@@ -91,15 +91,6 @@ class ComponentUpdateService {
   // Controls the component updater behavior.
   class Configurator {
    public:
-    enum Events {
-      kManifestCheck,
-      kComponentUpdated,
-      kManifestError,
-      kNetworkError,
-      kUnpackError,
-      kInstallerError
-    };
-
     virtual ~Configurator() {}
     // Delay in seconds from calling Start() to the first update check.
     virtual int InitialDelay() = 0;
@@ -114,6 +105,9 @@ class ComponentUpdateService {
     virtual int OnDemandDelay() = 0;
     // The url that is going to be used update checks over Omaha protocol.
     virtual GURL UpdateUrl() = 0;
+    // The url where the completion pings are sent. Invalid if and only if
+    // pings are disabled.
+    virtual GURL PingUrl() = 0;
     // Parameters added to each url request. It can be null if none are needed.
     virtual const char* ExtraRequestParams() = 0;
     // How big each update request can be. Don't go above 2000.
@@ -122,10 +116,6 @@ class ComponentUpdateService {
     virtual net::URLRequestContextGetter* RequestContext() = 0;
     // True means that all ops are performed in this process.
     virtual bool InProcess() = 0;
-    // The component updater will call this function when an interesting event
-    // happens. It should be used mostly as a place to add application specific
-    // logging or telemetry. |extra| is |event| dependent.
-    virtual void OnEvent(Events event, int extra) = 0;
     // Creates a new ComponentPatcher in a platform-specific way. This is useful
     // for dependency injection.
     virtual ComponentPatcher* CreateComponentPatcher() = 0;

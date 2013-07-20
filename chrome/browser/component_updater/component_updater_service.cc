@@ -25,6 +25,8 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/component_updater/component_patcher.h"
 #include "chrome/browser/component_updater/component_unpacker.h"
+#include "chrome/browser/component_updater/component_updater_ping_manager.h"
+#include "chrome/browser/component_updater/crx_update_item.h"
 #include "chrome/common/chrome_utility_messages.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/extension.h"
@@ -107,14 +109,6 @@ static std::string HexStringToID(const std::string& hexstr) {
   return id;
 }
 
-// Returns given a crx id it returns a small number, less than 100, that has a
-// decent chance of being unique among the registered components. It also has
-// the nice property that can be trivially computed by hand.
-static int CrxIdtoUMAId(const std::string& id) {
-  CHECK_GT(id.size(), 2U);
-  return id[0] + id[1] + id[2] - ('a' * 3);
-}
-
 // Helper to do version check for components.
 bool IsVersionNewer(const Version& current, const std::string& proposed) {
   Version proposed_ver(proposed);
@@ -172,97 +166,28 @@ bool FetchSuccess(const net::URLFetcher& fetcher) {
          (fetcher.GetResponseCode() == 200);
 }
 
-// This is the one and only per-item state structure. Designed to be hosted
-// in a std::vector or a std::list. The two main members are |component|
-// which is supplied by the the component updater client and |status| which
-// is modified as the item is processed by the update pipeline. The expected
-// transition graph is:
-//
-//                                 kNew
-//                                  |
-//                                  V
-//     +----------------------> kChecking -<---------+-----<-------+
-//     |                            |                |             |
-//     |              error         V       no       |             |
-//  kNoUpdate <---------------- [update?] ->---- kUpToDate     kUpdated
-//     ^                            |                              ^
-//     |                        yes |                              |
-//     |        diff=false          V                              |
-//     |          +-----------> kCanUpdate                         |
-//     |          |                 |                              |
-//     |          |                 V              no              |
-//     |          |        [differential update?]->----+           |
-//     |          |                 |                  |           |
-//     |          |             yes |                  |           |
-//     |          |   error         V                  |           |
-//     |          +---------<- kDownloadingDiff        |           |
-//     |          |                 |                  |           |
-//     |          |                 |                  |           |
-//     |          |   error         V                  |           |
-//     |          +---------<- kUpdatingDiff ->--------|-----------+ success
-//     |                                               |           |
-//     |              error                            V           |
-//     +----------------------------------------- kDownloading     |
-//     |                                               |           |
-//     |              error                            V           |
-//     +------------------------------------------ kUpdating ->----+ success
-//
-struct CrxUpdateItem {
-  enum Status {
-    kNew,
-    kChecking,
-    kCanUpdate,
-    kDownloadingDiff,
-    kDownloading,
-    kUpdatingDiff,
-    kUpdating,
-    kUpdated,
-    kUpToDate,
-    kNoUpdate,
-    kLastStatus
-  };
+// Returns the error code which occured during the fetch.The function returns 0
+// if the fetch was successful. If errors happen, the function could return a
+// network error, an http response code, or the status of the fetch, if the
+// fetch is pending or canceled.
+int GetFetchError(const net::URLFetcher& fetcher) {
+  if (FetchSuccess(fetcher))
+    return 0;
 
-  Status status;
-  std::string id;
-  CrxComponent component;
+  const net::URLRequestStatus::Status status(fetcher.GetStatus().status());
+  if (status == net::URLRequestStatus::FAILED)
+    return fetcher.GetStatus().error();
 
-  base::Time last_check;
+  if (status == net::URLRequestStatus::IO_PENDING ||
+      status == net::URLRequestStatus::CANCELED)
+    return status;
 
-  // These members are initialized with their corresponding values from the
-  // update server response.
-  GURL crx_url;
-  GURL diff_crx_url;
-  int size;
-  int diff_size;
+  const int response_code(fetcher.GetResponseCode());
+  if (status == net::URLRequestStatus::SUCCESS && response_code != 200)
+    return response_code;
 
-  // The from/to version and fingerprint values.
-  Version previous_version;
-  Version next_version;
-  std::string previous_fp;
-  std::string next_fp;
-
-  // True if the differential update failed for any reason.
-  bool diff_update_failed;
-
-  CrxUpdateItem()
-      : status(kNew),
-        size(0),
-        diff_size(0),
-        diff_update_failed(false) {
+  return -1;
   }
-
-  // Function object used to find a specific component.
-  class FindById {
-   public:
-    explicit FindById(const std::string& id) : id_(id) {}
-
-    bool operator() (CrxUpdateItem* item) const {
-      return (item->id == id_);
-    }
-   private:
-    const std::string& id_;
-  };
-};
 
 // Returns true if a differential update is available for the update item.
 bool IsDiffUpdateAvailable(const CrxUpdateItem* update_item) {
@@ -278,7 +203,21 @@ bool CanTryDiffUpdate(const CrxUpdateItem* update_item,
          config.DeltasEnabled();
 }
 
-}  // namespace.
+}  // namespace
+
+CrxUpdateItem::CrxUpdateItem()
+    : status(kNew),
+      diff_update_failed(false),
+      error_category(0),
+      error_code(0),
+      extra_code1(0),
+      diff_error_category(0),
+      diff_error_code(0),
+      diff_extra_code1(0) {
+}
+
+CrxUpdateItem::~CrxUpdateItem() {
+}
 
 CrxComponent::CrxComponent()
     : installer(NULL) {
@@ -370,9 +309,15 @@ class CrxUpdateService : public ComponentUpdateService {
                           CRXContext* context);
 
  private:
+  enum ErrorCategory {
+    kErrorNone = 0,
+    kNetworkError,
+    kUnpackError,
+    kInstallError,
+  };
+
   // See ManifestParserBridge.
-  void OnParseUpdateManifestSucceeded(
-      const UpdateManifest::Results& results);
+  void OnParseUpdateManifestSucceeded(const UpdateManifest::Results& results);
 
   // See ManifestParserBridge.
   void OnParseUpdateManifestFailed(const std::string& error_message);
@@ -402,6 +347,8 @@ class CrxUpdateService : public ComponentUpdateService {
 
   scoped_ptr<net::URLFetcher> url_fetcher_;
 
+  scoped_ptr<component_updater::PingManager> ping_manager_;
+
   // A collection of every work item.
   typedef std::vector<CrxUpdateItem*> UpdateItems;
   UpdateItems work_items_;
@@ -424,11 +371,14 @@ class CrxUpdateService : public ComponentUpdateService {
 CrxUpdateService::CrxUpdateService(ComponentUpdateService::Configurator* config)
     : config_(config),
       component_patcher_(config->CreateComponentPatcher()),
+      ping_manager_(new component_updater::PingManager(
+          config->PingUrl(),
+          config->RequestContext())),
       chrome_version_(chrome::VersionInfo().Version()),
       prod_id_(chrome::OmahaQueryParams::GetProdIdString(
           chrome::OmahaQueryParams::CHROME)),
       running_(false) {
-}
+ }
 
 CrxUpdateService::~CrxUpdateService() {
   // Because we are a singleton, at this point only the UI thread should be
@@ -436,7 +386,7 @@ CrxUpdateService::~CrxUpdateService() {
   // flight in other threads.
   Stop();
   STLDeleteElements(&work_items_);
-}
+ }
 
 ComponentUpdateService::Status CrxUpdateService::Start() {
   // Note that RegisterComponent will call Start() when the first
@@ -586,6 +536,12 @@ bool CrxUpdateService::AddItemToUpdateCheck(CrxUpdateItem* item,
   item->previous_fp = item->component.fingerprint;
   item->next_fp.clear();
   item->diff_update_failed = false;
+  item->error_category = 0;
+  item->error_code = 0;
+  item->extra_code1 = 0;
+  item->diff_error_category = 0;
+  item->diff_error_code = 0;
+  item->diff_extra_code1 = 0;
   return true;
 }
 
@@ -801,8 +757,6 @@ void CrxUpdateService::OnParseUpdateManifestSucceeded(
     if (crx->status != CrxUpdateItem::kChecking)
       continue;  // Not updating this component now.
 
-    config_->OnEvent(Configurator::kManifestCheck, CrxIdtoUMAId(crx->id));
-
     if (it->version.empty()) {
       // No version means no update available.
       crx->status = CrxUpdateItem::kNoUpdate;
@@ -823,9 +777,7 @@ void CrxUpdateService::OnParseUpdateManifestSucceeded(
     // All test passed. Queue an upgrade for this component and fire the
     // notifications.
     crx->crx_url = it->crx_url;
-    crx->size = it->size;
     crx->diff_crx_url = it->diff_crx_url;
-    crx->diff_size = it->diff_size;
     crx->status = CrxUpdateItem::kCanUpdate;
     crx->next_version = Version(it->version);
     crx->next_fp = it->package_fingerprint;
@@ -850,7 +802,6 @@ void CrxUpdateService::OnParseUpdateManifestFailed(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   size_t count = ChangeItemStatus(CrxUpdateItem::kChecking,
                                   CrxUpdateItem::kNoUpdate);
-  config_->OnEvent(Configurator::kManifestError, static_cast<int>(count));
   DCHECK_GT(count, 0ul);
   ScheduleNextRun(false);
 }
@@ -869,18 +820,27 @@ void CrxUpdateService::OnURLFetchComplete(const net::URLFetcher* source,
 
   if (source->FileErrorOccurred(&error_code) || !FetchSuccess(*source)) {
     if (crx->status == CrxUpdateItem::kDownloadingDiff) {
+      crx->diff_error_category = kNetworkError;
+      crx->diff_error_code = GetFetchError(*source);
       crx->diff_update_failed = true;
       size_t count = ChangeItemStatus(CrxUpdateItem::kDownloadingDiff,
                                       CrxUpdateItem::kCanUpdate);
       DCHECK_EQ(count, 1ul);
+      url_fetcher_.reset();
+
       ScheduleNextRun(true);
       return;
     }
+    crx->error_category = kNetworkError;
+    crx->error_code = GetFetchError(*source);
     size_t count = ChangeItemStatus(CrxUpdateItem::kDownloading,
                                     CrxUpdateItem::kNoUpdate);
     DCHECK_EQ(count, 1ul);
-    config_->OnEvent(Configurator::kNetworkError, CrxIdtoUMAId(context->id));
     url_fetcher_.reset();
+
+    // At this point, since both the differential and the full downloads failed,
+    // the update for this component has finished with an error.
+    ping_manager_->OnUpdateComplete(crx);
 
     ScheduleNextRun(false);
   } else {
@@ -942,15 +902,32 @@ void CrxUpdateService::Install(const CRXContext* context,
 }
 
 // Installation has been completed. Adjust the component status and
-// schedule the next check.
+// schedule the next check. Schedule a short delay before trying the full
+// update when the differential update failed.
 void CrxUpdateService::DoneInstalling(const std::string& component_id,
                                       ComponentUnpacker::Error error,
                                       int extra_code) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
+  ErrorCategory error_category = kErrorNone;
+  switch (error) {
+    case ComponentUnpacker::kNone:
+      break;
+    case ComponentUnpacker::kInstallerError:
+      error_category = kInstallError;
+      break;
+    default:
+      error_category = kUnpackError;
+      break;
+  }
+
+  const bool is_success = error == ComponentUnpacker::kNone;
+
   CrxUpdateItem* item = FindUpdateItemById(component_id);
-  if (item->status == CrxUpdateItem::kUpdatingDiff) {
-    if (error != ComponentUnpacker::kNone) {
+  if (item->status == CrxUpdateItem::kUpdatingDiff && !is_success) {
+    item->diff_error_category = error_category;
+    item->diff_error_code = error;
+    item->diff_extra_code1 = extra_code;
       item->diff_update_failed = true;
       size_t count = ChangeItemStatus(CrxUpdateItem::kUpdatingDiff,
                                       CrxUpdateItem::kCanUpdate);
@@ -958,29 +935,20 @@ void CrxUpdateService::DoneInstalling(const std::string& component_id,
       ScheduleNextRun(true);
       return;
     }
-  }
 
-  item->status = (error == ComponentUnpacker::kNone) ? CrxUpdateItem::kUpdated :
-                                                       CrxUpdateItem::kNoUpdate;
-  if (item->status == CrxUpdateItem::kUpdated) {
+  if (is_success) {
+    item->status = CrxUpdateItem::kUpdated;
     item->component.version = item->next_version;
     item->component.fingerprint = item->next_fp;
+  } else {
+    item->status = CrxUpdateItem::kNoUpdate;
+    item->error_category = error_category;
+    item->error_code = error;
+    item->extra_code1 = extra_code;
   }
 
-  Configurator::Events event;
-  switch (error) {
-    case ComponentUnpacker::kNone:
-      event = Configurator::kComponentUpdated;
-      break;
-    case ComponentUnpacker::kInstallerError:
-      event = Configurator::kInstallerError;
-      break;
-    default:
-      event = Configurator::kUnpackError;
-      break;
-  }
+  ping_manager_->OnUpdateComplete(item);
 
-  config_->OnEvent(event, CrxIdtoUMAId(component_id));
   ScheduleNextRun(false);
 }
 
