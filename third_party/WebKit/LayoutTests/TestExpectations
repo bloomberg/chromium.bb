@@ -1281,8 +1281,7 @@ crbug.com/234069 [ Mac Release ] fast/events/touch/gesture/long-press-drag-drop-
 
 crbug.com/234891 fast/dom/timer-throttling-hidden-page.html [ Failure Pass ]
 
-# These tests use paths and need a rebaseline after crbug.com/227397
-crbug.com/227397 svg/animations/animateMotion-additive-1.svg [ ImageOnlyFailure Pass ]
+crbug.com/227397 svg/animations/animateMotion-additive-1.svg [ ImageOnlyFailure ]
 crbug.com/224317 http/tests/security/canvas-remote-read-data-url-svg-image.html [ Failure Pass ]
 
 crbug.com/234758 [ Win Debug ] tables/mozilla/other/test3.html [ Crash Pass ]
