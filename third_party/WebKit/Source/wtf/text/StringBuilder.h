@@ -103,6 +103,17 @@ public:
             append(string.characters16() + offset, length);
     }
 
+    void append(const StringView& string)
+    {
+        if (!string.length())
+            return;
+
+        if (string.is8Bit())
+            append(string.characters8(), string.length());
+        else
+            append(string.characters16(), string.length());
+    }
+
     void append(const char* characters)
     {
         if (characters)

@@ -83,7 +83,7 @@ int RegularExpression::match(const String& string, int startFrom, int* matchLeng
     v8::Local<v8::RegExp> regex = m_regex.newLocal(isolate);
     v8::Local<v8::Function> exec = regex->Get(v8::String::NewSymbol("exec")).As<v8::Function>();
 
-    v8::Handle<v8::Value> argv[] = { v8String(string.substringSharingImpl(startFrom), context->GetIsolate()) };
+    v8::Handle<v8::Value> argv[] = { v8String(string.substring(startFrom), context->GetIsolate()) };
     v8::Local<v8::Value> returnValue = exec->Call(regex, 1, argv);
 
     // RegExp#exec returns null if there's no match, otherwise it returns an

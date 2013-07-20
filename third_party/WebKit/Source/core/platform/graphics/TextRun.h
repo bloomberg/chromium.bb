@@ -98,8 +98,36 @@ public:
     {
         m_data.characters16 = c;
     }
-    
+
     TextRun(const String& string, float xpos = 0, float expansion = 0, ExpansionBehavior expansionBehavior = AllowTrailingExpansion | ForbidLeadingExpansion, TextDirection direction = LTR, bool directionalOverride = false, bool characterScanForCodePath = true, RoundingHacks roundingHacks = RunRounding | WordRounding)
+        : m_charactersLength(string.length())
+        , m_len(string.length())
+        , m_xpos(xpos)
+        , m_horizontalGlyphStretch(1)
+        , m_expansion(expansion)
+        , m_expansionBehavior(expansionBehavior)
+        , m_allowTabs(false)
+        , m_direction(direction)
+        , m_directionalOverride(directionalOverride)
+        , m_characterScanForCodePath(characterScanForCodePath)
+        , m_applyRunRounding((roundingHacks & RunRounding) && s_allowsRoundingHacks)
+        , m_applyWordRounding((roundingHacks & WordRounding) && s_allowsRoundingHacks)
+        , m_disableSpacing(false)
+        , m_tabSize(0)
+    {
+        if (!m_charactersLength) {
+            m_is8Bit = true;
+            m_data.characters8 = 0;
+        } else if (string.is8Bit()) {
+            m_data.characters8 = string.characters8();
+            m_is8Bit = true;
+        } else {
+            m_data.characters16 = string.characters16();
+            m_is8Bit = false;
+        }
+    }
+
+    TextRun(const StringView& string, float xpos = 0, float expansion = 0, ExpansionBehavior expansionBehavior = AllowTrailingExpansion | ForbidLeadingExpansion, TextDirection direction = LTR, bool directionalOverride = false, bool characterScanForCodePath = true, RoundingHacks roundingHacks = RunRounding | WordRounding)
         : m_charactersLength(string.length())
         , m_len(string.length())
         , m_xpos(xpos)
