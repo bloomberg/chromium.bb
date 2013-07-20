@@ -40,10 +40,12 @@ const char* const kPortableKey =    "portable";
 const char* const kPnaclTranslateKey = "pnacl-translate";
 const char* const kUrlKey =            "url";
 
-// Pnacl keys
-const char* const kOptLevelKey = "-O";
+// PNaCl keys
+const char* const kOptLevelKey = "optlevel";
+// DEPRECATED! TODO(jvoung): remove the error message after launch.
+const char* const kOptLevelKeyDeprecated = "-O";
 
-// Sample NaCL manifest file:
+// Sample NaCl manifest file:
 // {
 //   "program": {
 //     "x86-32": {"url": "myprogram_x86-32.nexe"},
@@ -75,7 +77,7 @@ const char* const kOptLevelKey = "-O";
 //     "portable": {
 //       "pnacl-translate": {
 //         "url": "myprogram.pexe",
-//         "-O": 0
+//         "optlevel": 0
 //       }
 //     }
 //   },
@@ -208,6 +210,14 @@ bool IsValidUrlSpec(const Json::Value& url_spec,
     error_stream << parent_key << " property '" << container_key <<
         "' has non-numeric value '" << opt_level.toStyledString() <<
         "' for key '" << kOptLevelKey << "'.";
+    *error_string = error_stream.str();
+    return false;
+  }
+  if (url_spec.isMember(kOptLevelKeyDeprecated)) {
+    nacl::stringstream error_stream;
+    error_stream << parent_key << " property '" << container_key <<
+        "' has deprecated key '" << kOptLevelKeyDeprecated <<
+        "' please use '" << kOptLevelKey << "' instead.";
     *error_string = error_stream.str();
     return false;
   }
@@ -363,11 +373,9 @@ void GrabUrlAndPnaclOptions(const Json::Value& url_spec,
                             PnaclOptions* pnacl_options) {
   *url = url_spec[kUrlKey].asString();
   if (url_spec.isMember(kOptLevelKey)) {
-    uint32_t opt_raw = url_spec[kOptLevelKey].asUInt();
-    // Clamp the opt value to fit into an int8_t.
-    if (opt_raw > 3)
-      opt_raw = 3;
-    pnacl_options->set_opt_level(static_cast<int8_t>(opt_raw));
+    int32_t opt_raw = url_spec[kOptLevelKey].asInt();
+    // set_opt_level will normalize the values.
+    pnacl_options->set_opt_level(opt_raw);
   }
 }
 

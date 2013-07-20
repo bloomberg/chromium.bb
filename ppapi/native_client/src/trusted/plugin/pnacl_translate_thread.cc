@@ -153,22 +153,14 @@ void PnaclTranslateThread::DoTranslate() {
 
   int64_t compile_start_time = NaClGetTimeOfDayMicroseconds();
   bool init_success;
-  if (pnacl_options_->HasDefaultOpts()) {
-    PLUGIN_PRINTF(("PnaclCoordinator: StreamInit with default options\n"));
-    init_success = llc_subprocess_->InvokeSrpcMethod("StreamInit",
-                                                     "h",
-                                                     &params,
-                                                     llc_out_file->desc());
-  } else {
-    std::vector<char> options = pnacl_options_->GetOptCommandline();
-    init_success = llc_subprocess_->InvokeSrpcMethod(
-        "StreamInitWithOverrides",
-        "hC",
-        &params,
-        llc_out_file->desc(),
-        &options[0],
-        options.size());
-  }
+  std::vector<char> options = pnacl_options_->GetOptCommandline();
+  init_success = llc_subprocess_->InvokeSrpcMethod(
+      "StreamInitWithOverrides",
+      "hC",
+      &params,
+      llc_out_file->desc(),
+      &options[0],
+      options.size());
 
   if (!init_success) {
     if (llc_subprocess_->srpc_client()->GetLastError() ==

@@ -29,20 +29,14 @@ class PnaclOptions {
   // as well as the commandline options).
   nacl::string GetCacheKey() const;
 
-  // Return true if the manifest did not specify any special options
-  // (just using the default).
-  bool HasDefaultOpts() const {
-    return opt_level_ == -1;
-  }
-
   // Return a character array of \x00 delimited commandline options.
   std::vector<char> GetOptCommandline() const;
 
   bool translate() const { return translate_; }
   void set_translate(bool t) { translate_ = t; }
 
-  uint8_t opt_level() const { return opt_level_; }
-  void set_opt_level(int8_t l);
+  int32_t opt_level() const { return opt_level_; }
+  void set_opt_level(int32_t l);
 
   void set_cache_validators(const nacl::string& c) {
     cache_validators_ = c;
@@ -53,7 +47,7 @@ class PnaclOptions {
   // Currently the default copy constructor is good enough, but
   // double-check that it is the case when more fields are added.
   bool translate_;
-  int8_t opt_level_;
+  int32_t opt_level_;
   nacl::string cache_validators_;
 };
 

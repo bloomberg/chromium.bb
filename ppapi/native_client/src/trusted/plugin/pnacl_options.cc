@@ -26,8 +26,7 @@ nacl::string ReplaceBadFSChars(nacl::string str,
 
 namespace plugin {
 
-// Default to -O0 for now.
-PnaclOptions::PnaclOptions() : translate_(false), opt_level_(0) { }
+PnaclOptions::PnaclOptions() : translate_(false), opt_level_(2) { }
 
 PnaclOptions::~PnaclOptions() {
 }
@@ -51,28 +50,22 @@ nacl::string PnaclOptions::GetCacheKey() const {
   return key;
 }
 
-void PnaclOptions::set_opt_level(int8_t l) {
-  if (l < 0) {
+void PnaclOptions::set_opt_level(int32_t l) {
+  if (l <= 0) {
     opt_level_ = 0;
     return;
   }
-  if (l > 3) {
-    opt_level_ = 3;
-    return;
-  }
-  opt_level_ = l;
+  // Currently only allow 0 or 2, since that is what we test.
+  opt_level_ = 2;
 }
 
 std::vector<char> PnaclOptions::GetOptCommandline() const {
   std::vector<char> result;
   nacl::string str;
 
-  if (opt_level_ != -1) {
-    nacl::stringstream ss;
-    // Cast as int so that it doesn't think it's a char.
-    ss << "-O" << static_cast<int>(opt_level_);
-    str = ss.str();
-  }
+  nacl::stringstream ss;
+  ss << "-O" << opt_level_;
+  str = ss.str();
 
   std::copy(str.begin(), str.end(), std::back_inserter(result));
   result.push_back('\x00');
