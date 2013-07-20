@@ -190,6 +190,7 @@ extern const char kOutputFile[];
 extern const wchar_t kActiveSetupExe[];
 extern const wchar_t kChromeAppHostExe[];
 extern const wchar_t kChromeDll[];
+extern const wchar_t kChromeChildDll[];
 extern const wchar_t kChromeExe[];
 extern const wchar_t kChromeFrameDll[];
 extern const wchar_t kChromeFrameHelperExe[];

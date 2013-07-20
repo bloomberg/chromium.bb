@@ -42,16 +42,25 @@ typedef void (*RelaunchChromeBrowserWithNewCommandLineIfNeededFunc)();
 // value not being null to determine if this path contains a valid dll.
 HMODULE LoadChromeWithDirectory(string16* dir) {
   ::SetCurrentDirectoryW(dir->c_str());
-  dir->append(installer::kChromeDll);
+  const CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
+#if !defined(CHROME_MULTIPLE_DLL)
+  const wchar_t* dll_name = installer::kChromeDll;
+#else
+  const wchar_t* dll_name = cmd_line.HasSwitch(switches::kProcessType) ?
+      installer::kChromeChildDll : installer::kChromeDll;
+#endif
+  dir->append(dll_name);
 
 #if !defined(WIN_DISABLE_PREREAD)
   // On Win7 with Syzygy, pre-read is a win. There've very little difference
   // between 25% and 100%. For cold starts, with or without prefetch 25%
   // performs slightly better than 100%. On XP, pre-read is generally a
   // performance loss.
-  const size_t kStepSize = 1024 * 1024;
-  uint8 percent = base::win::GetVersion() > base::win::VERSION_XP ? 25 : 0;
-  ImagePreReader::PartialPreReadImage(dir->c_str(), percent, kStepSize);
+  if (!cmd_line.HasSwitch(switches::kProcessType)) {
+    const size_t kStepSize = 1024 * 1024;
+    uint8 percent = base::win::GetVersion() > base::win::VERSION_XP ? 25 : 0;
+    ImagePreReader::PartialPreReadImage(dir->c_str(), percent, kStepSize);
+  }
 #endif
 
   return ::LoadLibraryExW(dir->c_str(), NULL,
