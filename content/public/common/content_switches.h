@@ -139,6 +139,7 @@ extern const char kDisableLegacyEncryptedMedia[];
 CONTENT_EXPORT extern const char kUseFakeDeviceForMediaStream[];
 CONTENT_EXPORT extern const char kUseFakeUIForMediaStream[];
 extern const char kEnableMonitorProfile[];
+extern const char kEnableNewMediaInternals[];
 extern const char kEnableUserMediaScreenCapturing[];
 extern const char kEnablePinch[];
 CONTENT_EXPORT extern const char kEnableOfflineCacheAccess[];

@@ -4,10 +4,12 @@
 
 #include "content/browser/media/media_internals_ui.h"
 
+#include "base/command_line.h"
 #include "content/browser/media/media_internals_handler.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "grit/content_resources.h"
 
@@ -19,6 +21,13 @@ WebUIDataSource* CreateMediaInternalsHTMLSource() {
       WebUIDataSource::Create(kChromeUIMediaInternalsHost);
 
   source->SetJsonPath("strings.js");
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableNewMediaInternals)) {
+    source->AddResourcePath("media_internals.js", IDR_MEDIA_INTERNALS_NEW_JS);
+    source->SetDefaultResource(IDR_MEDIA_INTERNALS_NEW_HTML);
+    return source;
+  }
+
   source->AddResourcePath("media_internals.js", IDR_MEDIA_INTERNALS_JS);
   source->SetDefaultResource(IDR_MEDIA_INTERNALS_HTML);
   return source;

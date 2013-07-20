@@ -412,6 +412,10 @@ const char kUseFakeUIForMediaStream[]     = "use-fake-ui-for-media-stream";
 // assumed to be sRGB.
 const char kEnableMonitorProfile[]          = "enable-monitor-profile";
 
+// Enables the new chrome://media-internals page.
+// http://crbug.com/260005
+const char kEnableNewMediaInternals[]       = "enable-new-media-internals";
+
 // Enables compositor-accelerated touch-screen pinch gestures.
 const char kEnablePinch[]                   = "enable-pinch";
 const char kDisablePinch[]                  = "disable-pinch";

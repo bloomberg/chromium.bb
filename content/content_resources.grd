@@ -21,6 +21,8 @@
       <include name="IDR_INDEXED_DB_INTERNALS_CSS" file="browser/resources/indexed_db/indexeddb_internals.css" flattenhtml="true" type="BINDATA" />
       <include name="IDR_MEDIA_INTERNALS_HTML" file="browser/resources/media/media_internals.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_MEDIA_INTERNALS_JS" file="browser/resources/media/media_internals.js" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_MEDIA_INTERNALS_NEW_HTML" file="browser/resources/media/new/media_internals.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+      <include name="IDR_MEDIA_INTERNALS_NEW_JS" file="browser/resources/media/new/media_internals.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_WEBRTC_INTERNALS_HTML" file="browser/resources/media/webrtc_internals.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_WEBRTC_INTERNALS_JS" file="browser/resources/media/webrtc_internals.js" flattenhtml="true" type="BINDATA" />
       <if expr="is_macosx">
