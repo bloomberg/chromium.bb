@@ -47,6 +47,7 @@ class BreakList {
 
   // Get the break applicable to |position| (at or preceeding |position|).
   typename std::vector<Break>::iterator GetBreak(size_t position);
+  typename std::vector<Break>::const_iterator GetBreak(size_t position) const;
 
   // Get the range of the supplied break; returns the break's start position and
   // the next break's start position (or |max_| for the terminal break).
@@ -121,6 +122,14 @@ template<class T>
 typename std::vector<std::pair<size_t, T> >::iterator BreakList<T>::GetBreak(
     size_t position) {
   typename std::vector<Break>::iterator i = breaks_.end() - 1;
+  for (; i != breaks_.begin() && i->first > position; --i);
+  return i;
+}
+
+template<class T>
+typename std::vector<std::pair<size_t, T> >::const_iterator
+    BreakList<T>::GetBreak(size_t position) const {
+  typename std::vector<Break>::const_iterator i = breaks_.end() - 1;
   for (; i != breaks_.begin() && i->first > position; --i);
   return i;
 }
