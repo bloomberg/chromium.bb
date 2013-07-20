@@ -209,8 +209,18 @@ void DnsSession::RecordServerStats() {
 
 
 base::TimeDelta DnsSession::NextTimeout(unsigned server_index, int attempt) {
-  // Use Histogram to calculate next timeout.
-  return NextTimeoutFromHistogram(server_index, attempt);
+  DCHECK_LT(server_index, server_stats_.size());
+
+  base::TimeDelta timeout = config_.timeout;
+  // If this server has not responded successfully, then don't wait too long.
+  if (server_stats_[server_index]->last_success.is_null())
+    return timeout;
+
+  // The timeout doubles every full round (each nameserver once).
+  unsigned num_backoffs = attempt / config_.nameservers.size();
+
+  return std::min(timeout * (1 << num_backoffs),
+                  base::TimeDelta::FromMilliseconds(kMaxTimeoutMs));
 }
 
 // Allocate a socket, already connected to the server address.
