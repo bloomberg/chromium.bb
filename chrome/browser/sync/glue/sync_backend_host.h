@@ -228,6 +228,10 @@ class SyncBackendHost
   // Must be called *after* StopSyncingForShutdown.
   void Shutdown(bool sync_disabled);
 
+  // Removes all current registrations from the backend on the
+  // InvalidationService.
+  void UnregisterInvalidationIds();
+
   // Changes the set of data types that are currently being synced.
   // The ready_task will be run when configuration is done with the
   // set of all types that failed configuration (i.e., if its argument

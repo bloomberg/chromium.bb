@@ -2018,6 +2018,9 @@ bool ProfileSyncService::ShouldPushChanges() {
 
 void ProfileSyncService::StopAndSuppress() {
   sync_prefs_.SetStartSuppressed(true);
+  if (backend_) {
+    backend_->UnregisterInvalidationIds();
+  }
   ShutdownImpl(false);
 }
 

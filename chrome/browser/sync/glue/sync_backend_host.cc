@@ -565,9 +565,7 @@ void SyncBackendHost::Shutdown(bool sync_disabled) {
 
   if (invalidation_handler_registered_) {
     if (sync_disabled) {
-      invalidator_->UpdateRegisteredInvalidationIds(
-          this,
-          syncer::ObjectIdSet());
+      UnregisterInvalidationIds();
     }
     invalidator_->UnregisterInvalidationHandler(this);
     invalidator_ = NULL;
@@ -605,6 +603,14 @@ void SyncBackendHost::Shutdown(bool sync_disabled) {
   registrar_.reset();
   js_backend_.Reset();
   core_ = NULL;  // Releases reference to core_.
+}
+
+void SyncBackendHost::UnregisterInvalidationIds() {
+  if (invalidation_handler_registered_) {
+    invalidator_->UpdateRegisteredInvalidationIds(
+        this,
+        syncer::ObjectIdSet());
+  }
 }
 
 void SyncBackendHost::ConfigureDataTypes(
