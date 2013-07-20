@@ -30,12 +30,12 @@
 #include "core/platform/chromium/TraceEvent.h"
 #include "core/platform/graphics/chromium/ImageDecodingStore.h"
 #include "core/platform/graphics/chromium/ImageFrameGenerator.h"
-#include <wtf/MainThread.h>
 
 namespace WebCore {
 
-LazyDecodingPixelRef::LazyDecodingPixelRef(PassRefPtr<ImageFrameGenerator> frameGenerator, const SkISize& scaledSize, const SkIRect& scaledSubset)
+LazyDecodingPixelRef::LazyDecodingPixelRef(PassRefPtr<ImageFrameGenerator> frameGenerator, const SkISize& scaledSize, size_t index, const SkIRect& scaledSubset)
     : m_frameGenerator(frameGenerator)
+    , m_frameIndex(index)
     , m_scaledSize(scaledSize)
     , m_scaledSubset(scaledSubset)
     , m_lockedCachedImage(0)
@@ -76,16 +76,15 @@ void* LazyDecodingPixelRef::onLockPixels(SkColorTable**)
 {
     TRACE_EVENT_ASYNC_BEGIN0("webkit", "LazyDecodingPixelRef::lockPixels", this);
 
-    m_mutex.lock();
     ASSERT(!m_lockedCachedImage);
 
-    if (!ImageDecodingStore::instance()->lockCache(m_frameGenerator.get(), m_scaledSize, 0, &m_lockedCachedImage))
+    if (!ImageDecodingStore::instance()->lockCache(m_frameGenerator.get(), m_scaledSize, m_frameIndex, &m_lockedCachedImage))
         m_lockedCachedImage = 0;
 
     // Use ImageFrameGenerator to generate the image. It will lock the cache
     // entry for us.
     if (!m_lockedCachedImage)
-        m_lockedCachedImage = m_frameGenerator->decodeAndScale(m_scaledSize);
+        m_lockedCachedImage = m_frameGenerator->decodeAndScale(m_scaledSize, m_frameIndex);
 
     if (!m_lockedCachedImage)
         return 0;
@@ -101,7 +100,6 @@ void LazyDecodingPixelRef::onUnlockPixels()
         ImageDecodingStore::instance()->unlockCache(m_frameGenerator.get(), m_lockedCachedImage);
         m_lockedCachedImage = 0;
     }
-    m_mutex.unlock();
 
     TRACE_EVENT_ASYNC_END0("webkit", "LazyDecodingPixelRef::lockPixels", this);
 }
@@ -113,18 +111,13 @@ bool LazyDecodingPixelRef::onLockPixelsAreWritable() const
 
 bool LazyDecodingPixelRef::MaybeDecoded()
 {
-    return ImageDecodingStore::instance()->isCached(m_frameGenerator.get(), m_scaledSize, 0);
+    return ImageDecodingStore::instance()->isCached(m_frameGenerator.get(), m_scaledSize, m_frameIndex);
 }
 
 bool LazyDecodingPixelRef::PrepareToDecode(const LazyPixelRef::PrepareParams& params)
 {
-    // TODO: check if only a particular rect is available in image cache.
-    UNUSED_PARAM(params);
-    const ScaledImageFragment* cachedImage = 0;
-    bool cached = ImageDecodingStore::instance()->lockCache(m_frameGenerator.get(), m_scaledSize, 0, &cachedImage);
-    if (cached)
-        ImageDecodingStore::instance()->unlockCache(m_frameGenerator.get(), cachedImage);
-    return cached;
+    ASSERT(false);
+    return false;
 }
 
 void LazyDecodingPixelRef::Decode()

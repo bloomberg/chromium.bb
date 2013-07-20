@@ -1721,6 +1721,8 @@ crbug.com/257325 [ Mac ] media/audio-repaint.html [ Pass ImageOnlyFailure ]
 
 crbug.com/255407 plugins/npruntime/leak-window-scriptable-object.html [ Pass Failure ]
 
+crbug.com/169377 virtual/deferred/fast/images/webp-color-profile-lossy.html [ NeedsRebaseline ]
+
 # started timing out around r154246..r154251
 crbug.com/260744 [ Debug ] fast/js/regress/function-dot-apply.html  [ Timeout ]
 crbug.com/260744 [ Debug ] fast/js/regress/inline-arguments-local-escape.html  [ Timeout ]

@@ -79,9 +79,12 @@ public:
         m_actualDecoder = decoder.get();
         m_actualDecoder->setSize(1, 1);
         m_lazyDecoder = DeferredImageDecoder::createForTesting(decoder.release());
-        m_lazyDecoder->setData(m_data.get(), true);
         m_canvas.reset(createRasterCanvas(100, 100));
         m_frameBufferRequestCount = 0;
+        m_frameCount = 1;
+        m_repetitionCount = cAnimationNone;
+        m_frameStatus = ImageFrame::FrameComplete;
+        m_frameDuration = 0;
     }
 
     virtual void TearDown()
@@ -99,9 +102,24 @@ public:
         ++m_frameBufferRequestCount;
     }
 
+    virtual size_t frameCount()
+    {
+        return m_frameCount;
+    }
+
+    virtual int repetitionCount() const
+    {
+        return m_repetitionCount;
+    }
+
     virtual ImageFrame::FrameStatus frameStatus()
     {
-        return ImageFrame::FrameComplete;
+        return m_frameStatus;
+    }
+
+    virtual float frameDuration() const
+    {
+        return m_frameDuration;
     }
 
 protected:
@@ -112,10 +130,15 @@ protected:
     SkAutoTUnref<SkCanvas> m_canvas;
     int m_frameBufferRequestCount;
     RefPtr<SharedBuffer> m_data;
+    size_t m_frameCount;
+    int m_repetitionCount;
+    ImageFrame::FrameStatus m_frameStatus;
+    float m_frameDuration;
 };
 
 TEST_F(DeferredImageDecoderTest, drawIntoSkPicture)
 {
+    m_lazyDecoder->setData(m_data.get(), true);
     RefPtr<NativeImageSkia> image = m_lazyDecoder->frameBufferAtIndex(0)->asNewNativeImage();
     EXPECT_EQ(1, image->bitmap().width());
     EXPECT_EQ(1, image->bitmap().height());
@@ -139,6 +162,7 @@ TEST_F(DeferredImageDecoderTest, drawIntoSkPicture)
 
 TEST_F(DeferredImageDecoderTest, DISABLED_drawScaledIntoSkPicture)
 {
+    m_lazyDecoder->setData(m_data.get(), true);
     RefPtr<NativeImageSkia> image = m_lazyDecoder->frameBufferAtIndex(0)->asNewNativeImage();
     SkBitmap scaledBitmap = image->resizedBitmap(SkISize::Make(50, 51), SkIRect::MakeWH(50, 51));
     EXPECT_FALSE(scaledBitmap.isNull());
@@ -171,6 +195,7 @@ static void rasterizeMain(void* arg)
 
 TEST_F(DeferredImageDecoderTest, decodeOnOtherThread)
 {
+    m_lazyDecoder->setData(m_data.get(), true);
     RefPtr<NativeImageSkia> image = m_lazyDecoder->frameBufferAtIndex(0)->asNewNativeImage();
     EXPECT_EQ(1, image->bitmap().width());
     EXPECT_EQ(1, image->bitmap().height());
@@ -195,6 +220,69 @@ TEST_F(DeferredImageDecoderTest, decodeOnOtherThread)
     ASSERT_TRUE(m_canvas->readPixels(&canvasBitmap, 0, 0));
     SkAutoLockPixels autoLock(canvasBitmap);
     EXPECT_EQ(SkColorSetARGB(255, 255, 255, 255), canvasBitmap.getColor(0, 0));
+}
+
+TEST_F(DeferredImageDecoderTest, singleFrameImageLoading)
+{
+    m_frameStatus = ImageFrame::FramePartial;
+    m_lazyDecoder->setData(m_data.get(), false);
+    EXPECT_FALSE(m_lazyDecoder->frameIsCompleteAtIndex(0));
+    ImageFrame* frame = m_lazyDecoder->frameBufferAtIndex(0);
+    EXPECT_EQ(ImageFrame::FramePartial, frame->status());
+    EXPECT_TRUE(m_actualDecoder);
+
+    m_frameStatus = ImageFrame::FrameComplete;
+    m_lazyDecoder->setData(m_data.get(), true);
+    EXPECT_FALSE(m_actualDecoder);
+    EXPECT_TRUE(m_lazyDecoder->frameIsCompleteAtIndex(0));
+    frame = m_lazyDecoder->frameBufferAtIndex(0);
+    EXPECT_EQ(ImageFrame::FrameComplete, frame->status());
+    EXPECT_FALSE(m_frameBufferRequestCount);
+}
+
+TEST_F(DeferredImageDecoderTest, multiFrameImageLoading)
+{
+    m_repetitionCount = 10;
+    m_frameCount = 1;
+    m_frameDuration = 10;
+    m_frameStatus = ImageFrame::FramePartial;
+    m_lazyDecoder->setData(m_data.get(), false);
+    EXPECT_EQ(ImageFrame::FramePartial, m_lazyDecoder->frameBufferAtIndex(0)->status());
+    EXPECT_FALSE(m_lazyDecoder->frameIsCompleteAtIndex(0));
+    EXPECT_EQ(10.0f, m_lazyDecoder->frameBufferAtIndex(0)->duration());
+    EXPECT_EQ(10.0f, m_lazyDecoder->frameDurationAtIndex(0));
+
+    m_frameCount = 2;
+    m_frameDuration = 20;
+    m_frameStatus = ImageFrame::FrameComplete;
+    m_lazyDecoder->setData(m_data.get(), false);
+    EXPECT_EQ(ImageFrame::FrameComplete, m_lazyDecoder->frameBufferAtIndex(0)->status());
+    EXPECT_EQ(ImageFrame::FrameComplete, m_lazyDecoder->frameBufferAtIndex(1)->status());
+    EXPECT_TRUE(m_lazyDecoder->frameIsCompleteAtIndex(0));
+    EXPECT_TRUE(m_lazyDecoder->frameIsCompleteAtIndex(1));
+    EXPECT_EQ(20.0f, m_lazyDecoder->frameDurationAtIndex(1));
+    EXPECT_EQ(10.0f, m_lazyDecoder->frameBufferAtIndex(0)->duration());
+    EXPECT_EQ(20.0f, m_lazyDecoder->frameBufferAtIndex(1)->duration());
+    EXPECT_TRUE(m_actualDecoder);
+
+    m_frameCount = 3;
+    m_frameDuration = 30;
+    m_frameStatus = ImageFrame::FrameComplete;
+    m_lazyDecoder->setData(m_data.get(), true);
+    EXPECT_FALSE(m_actualDecoder);
+    EXPECT_EQ(ImageFrame::FrameComplete, m_lazyDecoder->frameBufferAtIndex(0)->status());
+    EXPECT_EQ(ImageFrame::FrameComplete, m_lazyDecoder->frameBufferAtIndex(1)->status());
+    EXPECT_EQ(ImageFrame::FrameComplete, m_lazyDecoder->frameBufferAtIndex(2)->status());
+    EXPECT_TRUE(m_lazyDecoder->frameIsCompleteAtIndex(0));
+    EXPECT_TRUE(m_lazyDecoder->frameIsCompleteAtIndex(1));
+    EXPECT_TRUE(m_lazyDecoder->frameIsCompleteAtIndex(2));
+    EXPECT_EQ(10.0f, m_lazyDecoder->frameDurationAtIndex(0));
+    EXPECT_EQ(20.0f, m_lazyDecoder->frameDurationAtIndex(1));
+    EXPECT_EQ(30.0f, m_lazyDecoder->frameDurationAtIndex(2));
+    EXPECT_EQ(10.0f, m_lazyDecoder->frameBufferAtIndex(0)->duration());
+    EXPECT_EQ(20.0f, m_lazyDecoder->frameBufferAtIndex(1)->duration());
+    EXPECT_EQ(30.0f, m_lazyDecoder->frameBufferAtIndex(2)->duration());
+    EXPECT_EQ(10, m_lazyDecoder->repetitionCount());
 }
 
 } // namespace
