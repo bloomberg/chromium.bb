@@ -30,7 +30,7 @@
 #include "core/platform/graphics/filters/FELighting.h"
 
 #include "core/platform/graphics/cpu/arm/filters/FELightingNEON.h"
-#include <wtf/ParallelJobs.h>
+#include "wtf/ParallelJobs.h"
 
 #include "SkLightingImageFilter.h"
 #include "core/platform/graphics/filters/DistantLightSource.h"

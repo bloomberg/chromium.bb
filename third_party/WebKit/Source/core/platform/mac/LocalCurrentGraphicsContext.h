@@ -18,7 +18,7 @@
  */
 
 #include "core/platform/graphics/GraphicsContext.h"
-#include <wtf/Noncopyable.h>
+#include "wtf/Noncopyable.h"
 
 #include "skia/ext/skia_utils_mac.h"
 

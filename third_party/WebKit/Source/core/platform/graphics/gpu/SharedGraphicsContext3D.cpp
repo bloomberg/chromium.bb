@@ -33,7 +33,7 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebGraphicsContext3D.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
-#include <wtf/MainThread.h>
+#include "wtf/MainThread.h"
 
 namespace WebCore {
 

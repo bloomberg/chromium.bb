@@ -32,8 +32,8 @@
 #ifndef LineEnding_h
 #define LineEnding_h
 
-#include <wtf/Forward.h>
-#include <wtf/Vector.h>
+#include "wtf/Forward.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

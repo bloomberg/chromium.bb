@@ -21,8 +21,8 @@
 #define IntSizeHash_h
 
 #include "core/platform/graphics/IntSize.h"
-#include <wtf/HashMap.h>
-#include <wtf/HashSet.h>
+#include "wtf/HashMap.h"
+#include "wtf/HashSet.h"
 
 namespace WTF {
 

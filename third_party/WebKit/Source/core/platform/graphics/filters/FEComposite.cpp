@@ -37,7 +37,7 @@
 #include "core/rendering/RenderTreeAsText.h"
 #include "third_party/skia/include/core/SkDevice.h"
 
-#include <wtf/Uint8ClampedArray.h>
+#include "wtf/Uint8ClampedArray.h"
 
 #include "core/platform/graphics/filters/SkiaImageFilterBuilder.h"
 

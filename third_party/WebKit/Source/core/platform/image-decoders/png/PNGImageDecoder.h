@@ -27,7 +27,7 @@
 #define PNGImageDecoder_h
 
 #include "core/platform/image-decoders/ImageDecoder.h"
-#include <wtf/OwnPtr.h>
+#include "wtf/OwnPtr.h"
 
 namespace WebCore {
 

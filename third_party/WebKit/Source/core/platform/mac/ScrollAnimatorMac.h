@@ -32,7 +32,7 @@
 #include "core/platform/graphics/FloatSize.h"
 #include "core/platform/graphics/IntRect.h"
 #include "core/platform/mac/ScrollElasticityController.h"
-#include <wtf/RetainPtr.h>
+#include "wtf/RetainPtr.h"
 
 OBJC_CLASS WebScrollAnimationHelperDelegate;
 OBJC_CLASS WebScrollbarPainterControllerDelegate;

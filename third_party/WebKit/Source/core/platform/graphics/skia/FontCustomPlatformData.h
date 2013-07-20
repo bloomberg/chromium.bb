@@ -34,12 +34,12 @@
 
 #include "core/platform/graphics/FontOrientation.h"
 #include "core/platform/graphics/FontWidthVariant.h"
-#include <wtf/Forward.h>
-#include <wtf/Noncopyable.h>
+#include "wtf/Forward.h"
+#include "wtf/Noncopyable.h"
 
 #if OS(WINDOWS)
 #include <windows.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/text/WTFString.h"
 #elif OS(UNIX)
 #include "SkTypeface.h"
 #endif

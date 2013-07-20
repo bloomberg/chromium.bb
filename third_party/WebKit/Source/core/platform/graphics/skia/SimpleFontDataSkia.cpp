@@ -38,7 +38,7 @@
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/FontDescription.h"
 #include "core/platform/graphics/chromium/VDMXParser.h"
-#include <wtf/unicode/Unicode.h>
+#include "wtf/unicode/Unicode.h"
 
 #if OS(WINDOWS)
 #include "core/platform/win/HWndDC.h"

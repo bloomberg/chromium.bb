@@ -33,7 +33,7 @@
 
 #include "core/platform/PlatformInstrumentation.h"
 #include "core/platform/image-decoders/bmp/BMPImageReader.h"
-#include <wtf/PassOwnPtr.h>
+#include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
 

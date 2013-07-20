@@ -33,7 +33,7 @@
 
 #include <sqlite3.h>
 #include "public/platform/Platform.h"
-#include <wtf/text/CString.h>
+#include "wtf/text/CString.h"
 
 // SQLiteFileSystem::registerSQLiteVFS() is implemented in the
 // platform-specific files SQLiteFileSystemChromium{Win|Posix}.cpp

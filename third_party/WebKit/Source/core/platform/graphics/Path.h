@@ -32,8 +32,8 @@
 #include "core/platform/graphics/RoundedRect.h"
 #include "core/platform/graphics/WindRule.h"
 #include "third_party/skia/include/core/SkPath.h"
-#include <wtf/FastAllocBase.h>
-#include <wtf/Forward.h>
+#include "wtf/FastAllocBase.h"
+#include "wtf/Forward.h"
 
 class SkPath;
 

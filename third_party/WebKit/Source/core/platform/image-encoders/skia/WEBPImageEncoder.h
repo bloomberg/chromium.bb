@@ -31,7 +31,7 @@
 #ifndef WEBPImageEncoder_h
 #define WEBPImageEncoder_h
 
-#include <wtf/Vector.h>
+#include "wtf/Vector.h"
 
 class SkBitmap;
 

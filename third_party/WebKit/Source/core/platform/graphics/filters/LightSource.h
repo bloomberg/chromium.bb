@@ -25,8 +25,8 @@
 #define LightSource_h
 
 #include "core/platform/graphics/FloatPoint3D.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 

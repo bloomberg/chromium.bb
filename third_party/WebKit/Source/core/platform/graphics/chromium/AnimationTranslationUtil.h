@@ -31,7 +31,7 @@
 #ifndef AnimationTranslationUtil_h
 #define AnimationTranslationUtil_h
 
-#include <wtf/PassOwnPtr.h>
+#include "wtf/PassOwnPtr.h"
 
 namespace WebKit {
 class WebAnimation;

@@ -20,11 +20,11 @@
 
 #include "config.h"
 
-#include <wtf/text/WTFString.h>
+#include "wtf/text/WTFString.h"
 
 #if USE(CF)
 #include <CoreFoundation/CoreFoundation.h>
-#include <wtf/RetainPtr.h>
+#include "wtf/RetainPtr.h"
 
 namespace WTF {
 

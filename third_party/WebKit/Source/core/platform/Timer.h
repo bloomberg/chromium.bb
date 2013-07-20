@@ -26,9 +26,9 @@
 #ifndef Timer_h
 #define Timer_h
 
-#include <wtf/Noncopyable.h>
-#include <wtf/Threading.h>
-#include <wtf/Vector.h>
+#include "wtf/Noncopyable.h"
+#include "wtf/Threading.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

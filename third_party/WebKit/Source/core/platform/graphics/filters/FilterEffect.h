@@ -27,11 +27,11 @@
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/IntRect.h"
 
-#include <wtf/PassOwnPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/RefPtr.h>
-#include <wtf/Uint8ClampedArray.h>
-#include <wtf/Vector.h>
+#include "wtf/PassOwnPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/RefPtr.h"
+#include "wtf/Uint8ClampedArray.h"
+#include "wtf/Vector.h"
 
 static const float kMaxFilterSize = 5000.0f;
 

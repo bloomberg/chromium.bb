@@ -32,9 +32,9 @@
 #include "core/platform/text/TextStream.h"
 #include "core/rendering/RenderTreeAsText.h"
 
-#include <wtf/ParallelJobs.h>
-#include <wtf/Uint8ClampedArray.h>
-#include <wtf/Vector.h>
+#include "wtf/ParallelJobs.h"
+#include "wtf/Uint8ClampedArray.h"
+#include "wtf/Vector.h"
 
 #include "SkMorphologyImageFilter.h"
 

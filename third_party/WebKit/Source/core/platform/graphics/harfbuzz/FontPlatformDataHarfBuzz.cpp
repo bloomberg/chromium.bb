@@ -41,8 +41,8 @@
 #include "public/platform/linux/WebFontRenderStyle.h"
 #include "public/platform/linux/WebSandboxSupport.h"
 #include "public/platform/Platform.h"
-#include <wtf/text/StringImpl.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/text/StringImpl.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

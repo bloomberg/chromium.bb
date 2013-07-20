@@ -39,9 +39,9 @@
 #include "core/platform/graphics/chromium/FontPlatformDataChromiumWin.h"
 #include "core/platform/graphics/chromium/FontUtilsChromiumWin.h"
 #include "core/platform/win/HWndDC.h"
-#include <wtf/HashMap.h>
-#include <wtf/HashSet.h>
-#include <wtf/text/StringHash.h>
+#include "wtf/HashMap.h"
+#include "wtf/HashSet.h"
+#include "wtf/text/StringHash.h"
 
 #include <windows.h>
 #include <mlang.h>

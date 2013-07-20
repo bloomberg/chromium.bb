@@ -34,7 +34,7 @@
 #include "core/platform/ScrollAnimator.h"
 #include "core/platform/Timer.h"
 #include "core/platform/graphics/FloatPoint.h"
-#include <wtf/OwnPtr.h>
+#include "wtf/OwnPtr.h"
 
 class ScrollAnimatorNoneTest;
 

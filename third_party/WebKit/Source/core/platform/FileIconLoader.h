@@ -31,8 +31,8 @@
 #ifndef FileIconLoader_h
 #define FileIconLoader_h
 
-#include <wtf/RefPtr.h>
-#include <wtf/RefCounted.h>
+#include "wtf/RefPtr.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 

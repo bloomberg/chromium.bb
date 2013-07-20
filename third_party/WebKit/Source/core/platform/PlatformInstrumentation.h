@@ -31,8 +31,8 @@
 #ifndef PlatformInstrumentation_h
 #define PlatformInstrumentation_h
 
-#include <wtf/MainThread.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/MainThread.h"
+#include "wtf/text/WTFString.h"
 
 #include "core/platform/chromium/TraceEvent.h"
 

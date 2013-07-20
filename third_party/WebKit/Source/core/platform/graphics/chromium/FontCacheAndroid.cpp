@@ -42,9 +42,9 @@
 #include "SkUtils.h"
 
 #include <unicode/locid.h>
-#include <wtf/Assertions.h>
-#include <wtf/text/AtomicString.h>
-#include <wtf/text/CString.h>
+#include "wtf/Assertions.h"
+#include "wtf/text/AtomicString.h"
+#include "wtf/text/CString.h"
 
 namespace WebCore {
 

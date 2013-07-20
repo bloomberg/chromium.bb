@@ -32,8 +32,8 @@
 
 #include "core/platform/graphics/FloatSize.h"
 #include "core/platform/graphics/Glyph.h"
-#include <wtf/UnusedParam.h>
-#include <wtf/Vector.h>
+#include "wtf/UnusedParam.h"
+#include "wtf/Vector.h"
 
 #if OS(DARWIN)
 #include <ApplicationServices/ApplicationServices.h>

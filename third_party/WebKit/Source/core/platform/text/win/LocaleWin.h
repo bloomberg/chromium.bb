@@ -33,9 +33,9 @@
 
 #include <windows.h>
 #include "core/platform/text/PlatformLocale.h"
-#include <wtf/Forward.h>
-#include <wtf/text/WTFString.h>
-#include <wtf/Vector.h>
+#include "wtf/Forward.h"
+#include "wtf/text/WTFString.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

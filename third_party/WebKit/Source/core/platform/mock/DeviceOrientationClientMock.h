@@ -30,8 +30,8 @@
 #include "core/platform/Timer.h"
 #include "modules/device_orientation/DeviceOrientationData.h"
 
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefPtr.h>
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 

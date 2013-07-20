@@ -32,8 +32,8 @@
 
 #include "core/platform/graphics/ANGLEWebKitBridge.h"
 #include "core/platform/graphics/filters/custom/CustomFilterProgramInfo.h"
-#include <wtf/HashMap.h>
-#include <wtf/RefPtr.h>
+#include "wtf/HashMap.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 

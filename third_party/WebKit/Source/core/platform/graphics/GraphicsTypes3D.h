@@ -26,7 +26,7 @@
 #ifndef GraphicsTypes3D_h
 #define GraphicsTypes3D_h
 
-#include <wtf/Forward.h>
+#include "wtf/Forward.h"
 
 // GC3D types match the corresponding GL types as defined in OpenGL ES 2.0
 // header file gl2.h from khronos.org.

@@ -28,7 +28,7 @@
 #define PlatformKeyboardEvent_h
 
 #include "core/platform/PlatformEvent.h"
-#include <wtf/text/WTFString.h>
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

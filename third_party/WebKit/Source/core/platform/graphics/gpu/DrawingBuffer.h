@@ -37,9 +37,9 @@
 
 #include "public/platform/WebExternalTextureLayerClient.h"
 #include "public/platform/WebExternalTextureMailbox.h"
-#include <wtf/Noncopyable.h>
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
+#include "wtf/Noncopyable.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace WebKit {
 class WebExternalBitmap;

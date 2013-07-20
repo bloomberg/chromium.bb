@@ -32,8 +32,8 @@
 #include "core/platform/text/TextStream.h"
 #include "core/rendering/RenderTreeAsText.h"
 
-#include <wtf/MathExtras.h>
-#include <wtf/Uint8ClampedArray.h>
+#include "wtf/MathExtras.h"
+#include "wtf/Uint8ClampedArray.h"
 
 #include "SkColorFilterImageFilter.h"
 #include "SkColorMatrixFilter.h"

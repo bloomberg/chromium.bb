@@ -33,7 +33,7 @@
 #include "core/platform/audio/DynamicsCompressorKernel.h"
 #include "core/platform/audio/ZeroPole.h"
 
-#include <wtf/OwnArrayPtr.h>
+#include "wtf/OwnArrayPtr.h"
 
 namespace WebCore {
 

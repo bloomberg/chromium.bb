@@ -29,8 +29,8 @@
 #include <sqlite3.h>
 #include "core/platform/Logging.h"
 #include "core/platform/sql/SQLValue.h"
-#include <wtf/Assertions.h>
-#include <wtf/text/CString.h>
+#include "wtf/Assertions.h"
+#include "wtf/text/CString.h"
 
 // SQLite 3.6.16 makes sqlite3_prepare_v2 automatically retry preparing the statement
 // once if the database scheme has changed. We rely on this behavior.

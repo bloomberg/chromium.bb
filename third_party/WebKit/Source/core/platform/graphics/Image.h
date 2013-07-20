@@ -33,11 +33,11 @@
 #include "core/platform/graphics/IntRect.h"
 #include "core/platform/graphics/skia/NativeImageSkia.h"
 #include "third_party/skia/include/core/SkXfermode.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/RefPtr.h>
-#include <wtf/RetainPtr.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/RefPtr.h"
+#include "wtf/RetainPtr.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

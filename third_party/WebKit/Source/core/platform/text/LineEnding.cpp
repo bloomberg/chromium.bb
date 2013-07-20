@@ -32,8 +32,8 @@
 #include "config.h"
 #include "core/platform/text/LineEnding.h"
 
-#include <wtf/text/CString.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/text/CString.h"
+#include "wtf/text/WTFString.h"
 
 namespace {
 

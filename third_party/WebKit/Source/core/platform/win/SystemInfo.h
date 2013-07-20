@@ -26,7 +26,7 @@
 #ifndef SystemInfo_h
 #define SystemInfo_h
 
-#include <wtf/text/WTFString.h>
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

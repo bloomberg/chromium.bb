@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/platform/network/ProxyServer.h"
 
-#include <wtf/text/StringBuilder.h>
+#include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
 

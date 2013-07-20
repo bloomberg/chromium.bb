@@ -28,8 +28,8 @@
 
 #include "core/platform/graphics/IntRectExtent.h"
 #include "core/platform/graphics/filters/FilterOperation.h"
-#include <wtf/RefPtr.h>
-#include <wtf/Vector.h>
+#include "wtf/RefPtr.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

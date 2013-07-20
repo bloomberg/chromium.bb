@@ -22,7 +22,7 @@
 #ifndef Latin1TextIterator_h
 #define Latin1TextIterator_h
 
-#include <wtf/text/WTFString.h>
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

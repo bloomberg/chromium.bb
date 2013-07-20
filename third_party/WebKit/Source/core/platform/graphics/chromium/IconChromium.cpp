@@ -32,7 +32,7 @@
 #include "core/platform/graphics/Icon.h"
 
 #include "core/platform/graphics/GraphicsContext.h"
-#include <wtf/text/WTFString.h>
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

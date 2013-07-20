@@ -49,8 +49,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <algorithm>
-#include <wtf/Assertions.h>
-#include <wtf/FastMalloc.h>
+#include "wtf/Assertions.h"
+#include "wtf/FastMalloc.h"
 
 using namespace std;
 

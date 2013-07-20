@@ -31,7 +31,7 @@
 #ifndef UUID_h
 #define UUID_h
 
-#include <wtf/text/WTFString.h>
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

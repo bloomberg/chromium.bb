@@ -165,8 +165,8 @@
 
 #include "core/platform/EventTracer.h"
 
-#include <wtf/DynamicAnnotations.h>
-#include <wtf/text/CString.h>
+#include "wtf/DynamicAnnotations.h"
+#include "wtf/text/CString.h"
 
 // By default, const char* argument values are assumed to have long-lived scope
 // and will not be copied. Use this macro to force a const char* to be copied.

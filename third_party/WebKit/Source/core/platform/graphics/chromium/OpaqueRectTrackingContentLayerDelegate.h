@@ -26,8 +26,8 @@
 #define OpaqueRectTrackingContentLayerDelegate_h
 
 #include "public/platform/WebContentLayerClient.h"
-#include <wtf/Noncopyable.h>
-#include <wtf/PassOwnPtr.h>
+#include "wtf/Noncopyable.h"
+#include "wtf/PassOwnPtr.h"
 
 class SkCanvas;
 

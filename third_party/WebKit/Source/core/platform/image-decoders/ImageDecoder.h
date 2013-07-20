@@ -33,17 +33,17 @@
 #include "core/platform/graphics/ImageSource.h"
 #include "core/platform/graphics/IntRect.h"
 #include "core/platform/graphics/skia/NativeImageSkia.h"
-#include <wtf/Assertions.h>
-#include <wtf/RefPtr.h>
-#include <wtf/text/WTFString.h>
-#include <wtf/Vector.h>
+#include "wtf/Assertions.h"
+#include "wtf/RefPtr.h"
+#include "wtf/text/WTFString.h"
+#include "wtf/Vector.h"
 
 #if USE(QCMSLIB)
 #include "qcms.h"
 #if OS(DARWIN)
 #include <ApplicationServices/ApplicationServices.h>
 #include "core/platform/graphics/cg/GraphicsContextCG.h"
-#include <wtf/RetainPtr.h>
+#include "wtf/RetainPtr.h"
 #endif
 #endif
 

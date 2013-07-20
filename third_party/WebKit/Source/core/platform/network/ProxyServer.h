@@ -26,8 +26,8 @@
 #ifndef ProxyServer_h
 #define ProxyServer_h
 
-#include <wtf/Vector.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/Vector.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

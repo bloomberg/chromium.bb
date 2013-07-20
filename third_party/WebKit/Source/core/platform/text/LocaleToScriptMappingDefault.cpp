@@ -31,9 +31,9 @@
 #include "config.h"
 #include "core/platform/text/LocaleToScriptMapping.h"
 
-#include <wtf/HashMap.h>
-#include <wtf/HashSet.h>
-#include <wtf/text/StringHash.h>
+#include "wtf/HashMap.h"
+#include "wtf/HashSet.h"
+#include "wtf/text/StringHash.h"
 
 namespace WebCore {
 

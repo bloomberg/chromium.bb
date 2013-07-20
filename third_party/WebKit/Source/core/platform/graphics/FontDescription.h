@@ -34,9 +34,9 @@
 #include "core/platform/graphics/FontWidthVariant.h"
 #include "core/platform/graphics/TextRenderingMode.h"
 #include "core/platform/text/NonCJKGlyphOrientation.h"
-#include <wtf/MathExtras.h>
+#include "wtf/MathExtras.h"
 
-#include <wtf/RefPtr.h>
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 

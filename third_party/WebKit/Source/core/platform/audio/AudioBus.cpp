@@ -39,8 +39,8 @@
 #include <algorithm>
 #include "core/platform/audio/SincResampler.h"
 #include "core/platform/audio/VectorMath.h"
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
 

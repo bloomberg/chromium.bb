@@ -43,7 +43,7 @@
 #include "core/platform/graphics/harfbuzz/HarfBuzzShaper.h"
 
 #include "hb.h"
-#include <wtf/HashMap.h>
+#include "wtf/HashMap.h"
 
 namespace WebCore {
 

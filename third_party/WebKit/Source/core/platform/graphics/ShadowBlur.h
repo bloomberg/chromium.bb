@@ -32,7 +32,7 @@
 #include "core/platform/graphics/Color.h"
 #include "core/platform/graphics/FloatSize.h"
 
-#include <wtf/Noncopyable.h>
+#include "wtf/Noncopyable.h"
 
 namespace WebCore {
 

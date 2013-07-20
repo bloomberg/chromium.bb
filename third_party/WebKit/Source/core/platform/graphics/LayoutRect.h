@@ -34,7 +34,7 @@
 #include "core/platform/graphics/IntRect.h"
 #include "core/platform/graphics/LayoutBoxExtent.h"
 #include "core/platform/graphics/LayoutPoint.h"
-#include <wtf/Vector.h>
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

@@ -28,7 +28,7 @@
 
 #include "public/platform/WebRect.h"
 #include "public/platform/WebScrollbarThemeGeometry.h"
-#include <wtf/PassOwnPtr.h>
+#include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
 class ScrollbarThemeComposite;

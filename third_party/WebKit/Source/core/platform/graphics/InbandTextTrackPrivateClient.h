@@ -27,8 +27,8 @@
 #define InbandTextTrackPrivateClient_h
 
 #include "core/platform/graphics/Color.h"
-#include <wtf/Noncopyable.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/Noncopyable.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

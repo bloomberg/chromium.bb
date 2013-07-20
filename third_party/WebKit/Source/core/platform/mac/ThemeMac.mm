@@ -32,7 +32,7 @@
 #import "core/platform/mac/BlockExceptions.h"
 #import "core/platform/mac/LocalCurrentGraphicsContext.h"
 #import "core/platform/mac/WebCoreNSCellExtras.h"
-#include <wtf/StdLibExtras.h>
+#include "wtf/StdLibExtras.h"
 
 using namespace std;
 

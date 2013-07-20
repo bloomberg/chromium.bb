@@ -26,8 +26,8 @@
 #include "config.h"
 #include "core/platform/text/DateTimeFormat.h"
 
-#include <wtf/ASCIICType.h>
-#include <wtf/text/StringBuilder.h>
+#include "wtf/ASCIICType.h"
+#include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
 

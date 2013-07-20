@@ -32,7 +32,7 @@
 #include "core/platform/graphics/Color.h"
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/IntRect.h"
-#include <wtf/Forward.h>
+#include "wtf/Forward.h"
 
 namespace WebCore {
 

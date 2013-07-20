@@ -32,9 +32,9 @@
 #include "core/platform/sql/SQLiteFileSystem.h"
 #include "core/platform/sql/SQLiteStatement.h"
 #include "modules/webdatabase/DatabaseAuthorizer.h"
-#include <wtf/text/CString.h>
-#include <wtf/text/WTFString.h>
-#include <wtf/Threading.h>
+#include "wtf/text/CString.h"
+#include "wtf/text/WTFString.h"
+#include "wtf/Threading.h"
 
 namespace WebCore {
 

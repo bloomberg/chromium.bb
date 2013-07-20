@@ -26,9 +26,9 @@
 #include "config.h"
 #include "core/platform/network/NetworkStateNotifier.h"
 
-#include <wtf/Assertions.h>
-#include <wtf/StdLibExtras.h>
-#include <wtf/Threading.h>
+#include "wtf/Assertions.h"
+#include "wtf/StdLibExtras.h"
+#include "wtf/Threading.h"
 
 namespace WebCore {
 

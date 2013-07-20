@@ -26,7 +26,7 @@
 #ifndef AtomicStringKeyedMRUCache_h
 #define AtomicStringKeyedMRUCache_h
 
-#include <wtf/text/AtomicString.h>
+#include "wtf/text/AtomicString.h"
 
 namespace WebCore {
 

@@ -20,8 +20,8 @@
 #include "config.h"
 #include "core/platform/graphics/PathTraversalState.h"
 
-#include <wtf/MathExtras.h>
-#include <wtf/Vector.h>
+#include "wtf/MathExtras.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

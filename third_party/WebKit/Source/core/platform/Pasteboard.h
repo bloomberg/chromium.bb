@@ -26,11 +26,11 @@
 #ifndef Pasteboard_h
 #define Pasteboard_h
 
-#include <wtf/Forward.h>
-#include <wtf/HashSet.h>
-#include <wtf/Noncopyable.h>
-#include <wtf/text/WTFString.h>
-#include <wtf/Vector.h>
+#include "wtf/Forward.h"
+#include "wtf/HashSet.h"
+#include "wtf/Noncopyable.h"
+#include "wtf/text/WTFString.h"
+#include "wtf/Vector.h"
 
 // FIXME: This class is too high-level to be in the platform directory, since it
 // uses the DOM and makes calls to Editor. It should either be divested of its

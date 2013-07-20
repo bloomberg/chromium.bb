@@ -25,7 +25,7 @@
 
 #include "core/platform/graphics/filters/Filter.h"
 #include "core/platform/graphics/filters/FilterEffect.h"
-#include <wtf/Vector.h>
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

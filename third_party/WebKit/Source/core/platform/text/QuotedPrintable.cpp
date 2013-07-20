@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/platform/text/QuotedPrintable.h"
 
-#include <wtf/ASCIICType.h>
+#include "wtf/ASCIICType.h"
 
 namespace WebCore {
 

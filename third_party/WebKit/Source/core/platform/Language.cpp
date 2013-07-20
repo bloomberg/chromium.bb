@@ -26,9 +26,9 @@
 #include "config.h"
 #include "core/platform/Language.h"
 
-#include <wtf/HashMap.h>
-#include <wtf/RetainPtr.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/HashMap.h"
+#include "wtf/RetainPtr.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

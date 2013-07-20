@@ -28,8 +28,8 @@
 
 #include "modules/speech/SpeechRecognitionAlternative.h"
 #include "modules/speech/SpeechSynthesisVoice.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/Vector.h>
+#include "wtf/PassRefPtr.h"
+#include "wtf/Vector.h"
 
 namespace WebKit {
 

@@ -31,7 +31,7 @@
 #include "core/platform/graphics/GlyphPage.h"
 #include "core/platform/graphics/SimpleFontData.h"
 #include "core/platform/graphics/opentype/OpenTypeTypes.h"
-#include <wtf/RefPtr.h>
+#include "wtf/RefPtr.h"
 
 using namespace std;
 

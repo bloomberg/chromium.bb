@@ -35,12 +35,12 @@
 #include "core/platform/graphics/GlyphBuffer.h"
 #include "core/platform/graphics/TextRun.h"
 #include "hb.h"
-#include <wtf/HashSet.h>
-#include <wtf/OwnArrayPtr.h>
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
-#include <wtf/unicode/CharacterNames.h>
-#include <wtf/Vector.h>
+#include "wtf/HashSet.h"
+#include "wtf/OwnArrayPtr.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/unicode/CharacterNames.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

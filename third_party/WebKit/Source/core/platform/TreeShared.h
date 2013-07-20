@@ -21,9 +21,9 @@
 #ifndef TreeShared_h
 #define TreeShared_h
 
-#include <wtf/Assertions.h>
-#include <wtf/MainThread.h>
-#include <wtf/Noncopyable.h>
+#include "wtf/Assertions.h"
+#include "wtf/MainThread.h"
+#include "wtf/Noncopyable.h"
 
 namespace WebCore {
 

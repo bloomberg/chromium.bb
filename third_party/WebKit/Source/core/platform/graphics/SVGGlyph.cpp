@@ -23,7 +23,7 @@
 #if ENABLE(SVG_FONTS)
 #include "core/platform/graphics/SVGGlyph.h"
 
-#include <wtf/unicode/Unicode.h>
+#include "wtf/unicode/Unicode.h"
 
 using namespace WTF::Unicode;
 

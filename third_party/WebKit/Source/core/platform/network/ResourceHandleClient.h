@@ -27,7 +27,7 @@
 #ifndef ResourceHandleClient_h
 #define ResourceHandleClient_h
 
-#include <wtf/PassRefPtr.h>
+#include "wtf/PassRefPtr.h"
 
 namespace WebCore {
     class ResourceHandle;

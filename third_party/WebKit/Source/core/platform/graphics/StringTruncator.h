@@ -29,7 +29,7 @@
 #ifndef StringTruncator_h
 #define StringTruncator_h
 
-#include <wtf/Forward.h>
+#include "wtf/Forward.h"
 
 namespace WebCore {
     

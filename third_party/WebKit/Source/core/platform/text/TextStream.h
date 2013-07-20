@@ -26,9 +26,9 @@
 #ifndef TextStream_h
 #define TextStream_h
 
-#include <wtf/Forward.h>
-#include <wtf/text/StringBuilder.h>
-#include <wtf/unicode/Unicode.h>
+#include "wtf/Forward.h"
+#include "wtf/text/StringBuilder.h"
+#include "wtf/unicode/Unicode.h"
 
 namespace WebCore {
 

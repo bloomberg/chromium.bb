@@ -32,10 +32,10 @@
 
 #include <string.h>
 #include "core/platform/graphics/Glyph.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/RefPtr.h>
-#include <wtf/unicode/Unicode.h>
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/RefPtr.h"
+#include "wtf/unicode/Unicode.h"
 
 namespace WebCore {
 

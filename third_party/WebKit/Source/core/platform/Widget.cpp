@@ -31,7 +31,7 @@
 #include "core/platform/ScrollView.h"
 #include "core/platform/graphics/IntRect.h"
 
-#include <wtf/Assertions.h>
+#include "wtf/Assertions.h"
 
 namespace WebCore {
 

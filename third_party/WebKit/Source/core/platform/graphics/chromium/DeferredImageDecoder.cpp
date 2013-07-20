@@ -28,8 +28,8 @@
 
 #include "core/platform/graphics/chromium/ImageFrameGenerator.h"
 #include "core/platform/graphics/chromium/LazyDecodingPixelRef.h"
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
 

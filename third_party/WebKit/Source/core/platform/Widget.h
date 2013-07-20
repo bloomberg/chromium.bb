@@ -29,8 +29,8 @@
 #define Widget_h
 
 #include "core/platform/graphics/IntRect.h"
-#include <wtf/Forward.h>
-#include <wtf/RefCounted.h>
+#include "wtf/Forward.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 

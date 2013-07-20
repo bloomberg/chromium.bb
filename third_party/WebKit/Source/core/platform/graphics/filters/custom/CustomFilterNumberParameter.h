@@ -32,7 +32,7 @@
 
 #include "core/platform/animation/AnimationUtilities.h"
 #include "core/platform/graphics/filters/custom/CustomFilterParameter.h"
-#include <wtf/Vector.h>
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

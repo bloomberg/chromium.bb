@@ -32,7 +32,7 @@
 #include "core/platform/text/TextStream.h"
 #include "core/rendering/RenderTreeAsText.h"
 
-#include <wtf/Uint8ClampedArray.h>
+#include "wtf/Uint8ClampedArray.h"
 
 #include "SkBitmapSource.h"
 #include "SkXfermodeImageFilter.h"

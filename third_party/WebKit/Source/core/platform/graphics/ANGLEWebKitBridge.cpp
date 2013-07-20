@@ -26,7 +26,7 @@
 #include "config.h"
 
 #include "core/platform/graphics/ANGLEWebKitBridge.h"
-#include <wtf/OwnArrayPtr.h>
+#include "wtf/OwnArrayPtr.h"
 
 namespace WebCore {
 

@@ -26,7 +26,7 @@
 #include "core/platform/graphics/filters/FilterEffect.h"
 
 #include "core/platform/graphics/filters/Filter.h"
-#include <wtf/text/WTFString.h>
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

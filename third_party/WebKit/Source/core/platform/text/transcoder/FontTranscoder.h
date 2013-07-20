@@ -31,9 +31,9 @@
 #ifndef FontTranscoder_h
 #define FontTranscoder_h
 
-#include <wtf/HashMap.h>
-#include <wtf/Noncopyable.h>
-#include <wtf/text/AtomicStringHash.h>
+#include "wtf/HashMap.h"
+#include "wtf/Noncopyable.h"
+#include "wtf/text/AtomicStringHash.h"
 
 namespace WTF{
 class TextEncoding;

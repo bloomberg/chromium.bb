@@ -30,8 +30,8 @@
 #define AudioArray_h
 
 #include <string.h>
-#include <wtf/FastMalloc.h>
-#include <wtf/Vector.h>
+#include "wtf/FastMalloc.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

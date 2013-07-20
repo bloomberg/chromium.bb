@@ -25,9 +25,9 @@
 #include "core/platform/text/BidiContext.h"
 #include "core/platform/text/BidiRunList.h"
 #include "core/platform/text/TextDirection.h"
-#include <wtf/Noncopyable.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/Vector.h>
+#include "wtf/Noncopyable.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

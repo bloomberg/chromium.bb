@@ -33,7 +33,7 @@
 
 #include <SkGraphics.h>
 #include "public/platform/Platform.h"
-#include <wtf/OwnPtr.h>
+#include "wtf/OwnPtr.h"
 
 namespace WebCore {
 

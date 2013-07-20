@@ -24,8 +24,8 @@
 #include <CoreFoundation/CFBase.h>
 #include "core/platform/graphics/FontOrientation.h"
 #include "core/platform/graphics/FontWidthVariant.h"
-#include <wtf/Forward.h>
-#include <wtf/Noncopyable.h>
+#include "wtf/Forward.h"
+#include "wtf/Noncopyable.h"
 
 typedef struct CGFont* CGFontRef;
 typedef UInt32 ATSFontContainerRef;

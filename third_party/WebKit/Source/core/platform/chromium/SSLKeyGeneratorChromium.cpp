@@ -34,7 +34,7 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
-#include <wtf/text/WTFString.h>
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

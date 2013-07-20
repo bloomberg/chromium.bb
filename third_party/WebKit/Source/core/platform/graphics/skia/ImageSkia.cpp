@@ -42,7 +42,7 @@
 #include "core/platform/graphics/skia/NativeImageSkia.h"
 #include "core/platform/graphics/skia/SkiaUtils.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"
-#include <wtf/text/WTFString.h>
+#include "wtf/text/WTFString.h"
 
 #include <math.h>
 #include <limits>

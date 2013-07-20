@@ -26,7 +26,7 @@
 #ifndef KeyEventCocoa_h
 #define KeyEventCocoa_h
 
-#include <wtf/Forward.h>
+#include "wtf/Forward.h"
 
 namespace WebCore {
 

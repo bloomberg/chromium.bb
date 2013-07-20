@@ -35,7 +35,7 @@
 #include "dl/sp/api/armSP.h"
 #include "dl/sp/api/omxSP.h"
 
-#include <wtf/MathExtras.h>
+#include "wtf/MathExtras.h"
 
 namespace WebCore {
 

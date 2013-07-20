@@ -26,8 +26,8 @@
 #define CSSAnimationDataList_h
 
 #include "core/platform/animation/CSSAnimationData.h"
-#include <wtf/RefPtr.h>
-#include <wtf/Vector.h>
+#include "wtf/RefPtr.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

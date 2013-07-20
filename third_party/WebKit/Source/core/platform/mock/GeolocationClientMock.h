@@ -34,10 +34,10 @@
 
 #include "core/platform/Timer.h"
 #include "modules/geolocation/GeolocationClient.h"
-#include <wtf/HashSet.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefPtr.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/HashSet.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefPtr.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

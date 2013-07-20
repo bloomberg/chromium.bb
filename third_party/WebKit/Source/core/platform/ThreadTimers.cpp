@@ -31,8 +31,8 @@
 #include "core/platform/ThreadGlobalData.h"
 #include "core/platform/Timer.h"
 #include "core/platform/chromium/TraceEvent.h"
-#include <wtf/CurrentTime.h>
-#include <wtf/MainThread.h>
+#include "wtf/CurrentTime.h"
+#include "wtf/MainThread.h"
 
 using namespace std;
 

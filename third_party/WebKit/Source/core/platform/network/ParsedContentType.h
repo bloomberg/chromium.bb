@@ -32,8 +32,8 @@
 #ifndef ParsedContentType_h
 #define ParsedContentType_h
 
-#include <wtf/HashMap.h>
-#include <wtf/text/StringHash.h>
+#include "wtf/HashMap.h"
+#include "wtf/text/StringHash.h"
 
 namespace WebCore {
 

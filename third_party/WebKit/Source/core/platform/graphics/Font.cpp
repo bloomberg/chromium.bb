@@ -28,10 +28,10 @@
 #include "core/platform/graphics/TextRun.h"
 #include "core/platform/graphics/WidthIterator.h"
 #include "core/platform/text/transcoder/FontTranscoder.h"
-#include <wtf/MainThread.h>
-#include <wtf/MathExtras.h>
-#include <wtf/text/StringBuilder.h>
-#include <wtf/UnusedParam.h>
+#include "wtf/MainThread.h"
+#include "wtf/MathExtras.h"
+#include "wtf/text/StringBuilder.h"
+#include "wtf/UnusedParam.h"
 
 using namespace WTF;
 using namespace Unicode;

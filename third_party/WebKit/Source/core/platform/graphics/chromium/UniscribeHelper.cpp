@@ -38,7 +38,7 @@
 #include "core/platform/graphics/skia/SkiaFontWin.h"
 #include "core/platform/win/HWndDC.h"
 #include "third_party/skia/include/core/SkPoint.h"
-#include <wtf/Assertions.h>
+#include "wtf/Assertions.h"
 
 namespace WebCore {
 

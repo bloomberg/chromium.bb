@@ -26,7 +26,7 @@
 #ifndef KillRing_h
 #define KillRing_h
 
-#include <wtf/text/WTFString.h>
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

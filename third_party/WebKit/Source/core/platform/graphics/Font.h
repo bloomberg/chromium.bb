@@ -30,10 +30,10 @@
 #include "core/platform/graphics/SimpleFontData.h"
 #include "core/platform/graphics/TypesettingFeatures.h"
 #include "core/platform/text/TextDirection.h"
-#include <wtf/HashMap.h>
-#include <wtf/HashSet.h>
-#include <wtf/MathExtras.h>
-#include <wtf/unicode/CharacterNames.h>
+#include "wtf/HashMap.h"
+#include "wtf/HashSet.h"
+#include "wtf/MathExtras.h"
+#include "wtf/unicode/CharacterNames.h"
 
 // "X11/X.h" defines Complex to 0 and conflicts
 // with Complex value in CodePath enum.

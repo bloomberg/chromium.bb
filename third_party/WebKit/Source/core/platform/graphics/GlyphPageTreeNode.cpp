@@ -33,10 +33,10 @@
 #include "core/platform/graphics/SegmentedFontData.h"
 #include "core/platform/graphics/SimpleFontData.h"
 #include "core/platform/graphics/opentype/OpenTypeVerticalData.h"
-#include <wtf/text/CString.h>
-#include <wtf/text/WTFString.h>
-#include <wtf/unicode/CharacterNames.h>
-#include <wtf/unicode/Unicode.h>
+#include "wtf/text/CString.h"
+#include "wtf/text/WTFString.h"
+#include "wtf/unicode/CharacterNames.h"
+#include "wtf/unicode/Unicode.h"
 
 namespace WebCore {
 

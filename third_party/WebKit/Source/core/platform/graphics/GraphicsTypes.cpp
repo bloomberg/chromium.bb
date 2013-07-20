@@ -27,8 +27,8 @@
 #include "config.h"
 #include "core/platform/graphics/GraphicsTypes.h"
 
-#include <wtf/Assertions.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/Assertions.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

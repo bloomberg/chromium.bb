@@ -27,7 +27,7 @@
 #ifndef LocalizedStrings_h
 #define LocalizedStrings_h
 
-#include <wtf/Forward.h>
+#include "wtf/Forward.h"
 
 namespace WebCore {
 

@@ -22,8 +22,8 @@
 #ifndef TextBreakIterator_h
 #define TextBreakIterator_h
 
-#include <wtf/text/AtomicString.h>
-#include <wtf/unicode/Unicode.h>
+#include "wtf/text/AtomicString.h"
+#include "wtf/unicode/Unicode.h"
 
 namespace WebCore {
 

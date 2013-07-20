@@ -27,8 +27,8 @@
 #include "core/platform/graphics/filters/Filter.h"
 #include "core/platform/text/TextStream.h"
 #include "core/rendering/RenderTreeAsText.h"
-#include <wtf/StdLibExtras.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/StdLibExtras.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

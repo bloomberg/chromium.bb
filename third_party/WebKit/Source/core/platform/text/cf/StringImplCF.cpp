@@ -19,15 +19,15 @@
  */
 
 #include "config.h"
-#include <wtf/text/StringImpl.h>
+#include "wtf/text/StringImpl.h"
 
 #if USE(CF)
 
 #include <CoreFoundation/CoreFoundation.h>
-#include <wtf/MainThread.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RetainPtr.h>
-#include <wtf/Threading.h>
+#include "wtf/MainThread.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RetainPtr.h"
+#include "wtf/Threading.h"
 
 namespace WTF {
 

@@ -33,11 +33,11 @@
 
 #include "core/platform/SharedBufferChunkReader.h"
 #include "core/platform/network/ParsedContentType.h"
-#include <wtf/HashMap.h>
-#include <wtf/text/CString.h>
-#include <wtf/text/StringBuilder.h>
-#include <wtf/text/StringConcatenate.h>
-#include <wtf/text/StringHash.h>
+#include "wtf/HashMap.h"
+#include "wtf/text/CString.h"
+#include "wtf/text/StringBuilder.h"
+#include "wtf/text/StringConcatenate.h"
+#include "wtf/text/StringHash.h"
 
 namespace WebCore {
 

@@ -27,8 +27,8 @@
 #define PlatformScreen_h
 
 #include "core/platform/graphics/FloatRect.h"
-#include <wtf/Forward.h>
-#include <wtf/RefPtr.h>
+#include "wtf/Forward.h"
+#include "wtf/RefPtr.h"
 
 typedef uint32_t PlatformDisplayID;
 

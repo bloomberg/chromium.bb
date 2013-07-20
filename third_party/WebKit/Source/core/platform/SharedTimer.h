@@ -26,8 +26,8 @@
 #ifndef SharedTimer_h
 #define SharedTimer_h
 
-#include <wtf/FastAllocBase.h>
-#include <wtf/Noncopyable.h>
+#include "wtf/FastAllocBase.h"
+#include "wtf/Noncopyable.h"
 
 namespace WebCore {
 

@@ -27,8 +27,8 @@
 #include "core/platform/graphics/SegmentedFontData.h"
 
 #include "core/platform/graphics/SimpleFontData.h"
-#include <wtf/Assertions.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/Assertions.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

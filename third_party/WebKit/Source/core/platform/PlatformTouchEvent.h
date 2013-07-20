@@ -22,7 +22,7 @@
 
 #include "core/platform/PlatformEvent.h"
 #include "core/platform/PlatformTouchPoint.h"
-#include <wtf/Vector.h>
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

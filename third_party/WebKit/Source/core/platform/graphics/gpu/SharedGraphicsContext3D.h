@@ -27,8 +27,8 @@
 #define SharedGraphicsContext3D_h
 
 #include "core/platform/graphics/GraphicsContext3D.h"
-#include <wtf/RefCounted.h>
-#include <wtf/RefPtr.h>
+#include "wtf/RefCounted.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 

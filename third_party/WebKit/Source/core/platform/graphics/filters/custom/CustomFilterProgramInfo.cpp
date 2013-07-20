@@ -31,8 +31,8 @@
 
 #include "core/platform/graphics/filters/custom/CustomFilterProgramInfo.h"
 
-#include <wtf/HashFunctions.h>
-#include <wtf/text/StringHash.h>
+#include "wtf/HashFunctions.h"
+#include "wtf/text/StringHash.h"
 
 namespace WebCore {
 

@@ -38,8 +38,8 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebLocalizedString.h"
 #include "public/platform/WebString.h"
-#include <wtf/text/StringBuilder.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/text/StringBuilder.h"
+#include "wtf/text/WTFString.h"
 
 using WebKit::WebLocalizedString;
 using WebKit::WebString;

@@ -27,8 +27,8 @@
 #define PlatformSpeechSynthesizer_h
 
 #include "core/platform/PlatformSpeechSynthesisVoice.h"
-#include <wtf/PassOwnPtr.h>
-#include <wtf/Vector.h>
+#include "wtf/PassOwnPtr.h"
+#include "wtf/Vector.h"
 
 namespace WebKit {
 class WebSpeechSynthesizer;

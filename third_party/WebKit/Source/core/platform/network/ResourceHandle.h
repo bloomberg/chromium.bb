@@ -28,10 +28,10 @@
 
 #include "core/platform/network/ResourceHandleTypes.h"
 #include "core/platform/network/ResourceLoadPriority.h"
-#include <wtf/Forward.h>
-#include <wtf/OwnPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/Vector.h>
+#include "wtf/Forward.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 class KURL;

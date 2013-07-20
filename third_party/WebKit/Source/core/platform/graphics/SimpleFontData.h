@@ -36,13 +36,13 @@
 #include "core/platform/graphics/opentype/OpenTypeVerticalData.h"
 #endif
 #include "core/platform/graphics/TypesettingFeatures.h"
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
-#include <wtf/text/StringHash.h>
-#include <wtf/UnusedParam.h>
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/text/StringHash.h"
+#include "wtf/UnusedParam.h"
 
 #if OS(DARWIN)
-#include <wtf/RetainPtr.h>
+#include "wtf/RetainPtr.h"
 #endif
 
 namespace WebCore {

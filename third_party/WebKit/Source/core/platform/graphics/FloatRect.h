@@ -28,7 +28,7 @@
 #define FloatRect_h
 
 #include "core/platform/graphics/FloatPoint.h"
-#include <wtf/Vector.h>
+#include "wtf/Vector.h"
 
 #if OS(DARWIN)
 typedef struct CGRect CGRect;

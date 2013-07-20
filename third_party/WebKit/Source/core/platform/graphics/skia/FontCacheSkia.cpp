@@ -36,9 +36,9 @@
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/FontDescription.h"
 #include "core/platform/graphics/SimpleFontData.h"
-#include <wtf/Assertions.h>
-#include <wtf/text/AtomicString.h>
-#include <wtf/text/CString.h>
+#include "wtf/Assertions.h"
+#include "wtf/text/AtomicString.h"
+#include "wtf/text/CString.h"
 
 namespace WebCore {
 

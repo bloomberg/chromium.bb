@@ -19,10 +19,10 @@
  */
 
 #include "config.h"
-#include <wtf/text/StringImpl.h>
+#include "wtf/text/StringImpl.h"
 
 #include "core/platform/mac/FoundationExtras.h"
-#include <wtf/RetainPtr.h>
+#include "wtf/RetainPtr.h"
 
 namespace WTF {
 

@@ -36,7 +36,7 @@
 #include "core/platform/ScrollbarTheme.h"
 #include "core/platform/graphics/FloatPoint.h"
 #include "core/platform/graphics/GraphicsLayer.h"
-#include <wtf/PassOwnPtr.h>
+#include "wtf/PassOwnPtr.h"
 
 #include "core/platform/chromium/TraceEvent.h"
 

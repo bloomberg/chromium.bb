@@ -26,8 +26,8 @@
 #ifndef SQLiteTransaction_h
 #define SQLiteTransaction_h
 
-#include <wtf/FastAllocBase.h>
-#include <wtf/Noncopyable.h>
+#include "wtf/FastAllocBase.h"
+#include "wtf/Noncopyable.h"
 
 namespace WebCore {
 

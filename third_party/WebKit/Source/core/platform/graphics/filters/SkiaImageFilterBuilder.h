@@ -27,7 +27,7 @@
 #define SkiaImageFilterBuilder_h
 
 #include "core/platform/graphics/ColorSpace.h"
-#include <wtf/HashMap.h>
+#include "wtf/HashMap.h"
 
 class SkImageFilter;
 

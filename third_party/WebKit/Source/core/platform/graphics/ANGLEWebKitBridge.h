@@ -26,8 +26,8 @@
 #ifndef ANGLEWebKitBridge_h
 #define ANGLEWebKitBridge_h
 
-#include <wtf/text/CString.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/text/CString.h"
+#include "wtf/text/WTFString.h"
 
 #include "ShaderLang.h"
 

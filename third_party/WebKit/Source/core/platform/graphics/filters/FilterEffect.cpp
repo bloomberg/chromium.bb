@@ -27,7 +27,7 @@
 
 #include "core/platform/graphics/ImageBuffer.h"
 #include "core/platform/graphics/filters/Filter.h"
-#include <wtf/Uint8ClampedArray.h>
+#include "wtf/Uint8ClampedArray.h"
 
 #if HAVE(ARM_NEON_INTRINSICS)
 #include <arm_neon.h>

@@ -28,7 +28,7 @@
 
 #include "core/platform/NotImplemented.h"
 #include "core/platform/graphics/GraphicsContext.h"
-#include <wtf/text/WTFString.h>
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

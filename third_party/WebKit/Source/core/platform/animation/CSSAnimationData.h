@@ -28,9 +28,9 @@
 #include "CSSPropertyNames.h"
 #include "core/platform/animation/TimingFunction.h"
 #include "core/rendering/style/RenderStyleConstants.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

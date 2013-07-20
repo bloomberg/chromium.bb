@@ -32,7 +32,7 @@
 #include "core/platform/graphics/Image.h"
 #include "core/platform/graphics/ImageBuffer.h"
 #include "core/platform/graphics/IntSize.h"
-#include <wtf/RefPtr.h>
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 

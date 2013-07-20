@@ -28,7 +28,7 @@
 
 #include "core/platform/graphics/GraphicsTypes3D.h"
 
-#include <wtf/text/WTFString.h>
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

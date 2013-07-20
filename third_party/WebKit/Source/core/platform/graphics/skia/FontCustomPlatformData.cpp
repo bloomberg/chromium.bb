@@ -48,7 +48,7 @@
 
 #if OS(WINDOWS)
 #include <objbase.h>
-#include <wtf/text/Base64.h>
+#include "wtf/text/Base64.h"
 #endif
 
 namespace WebCore {

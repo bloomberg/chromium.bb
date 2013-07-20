@@ -47,8 +47,8 @@
 #include "public/platform/WebTransformAnimationCurve.h"
 #include "public/platform/WebTransformOperations.h"
 
-#include <wtf/OwnPtr.h>
-#include <wtf/text/CString.h>
+#include "wtf/OwnPtr.h"
+#include "wtf/text/CString.h"
 
 using namespace std;
 using namespace WebKit;

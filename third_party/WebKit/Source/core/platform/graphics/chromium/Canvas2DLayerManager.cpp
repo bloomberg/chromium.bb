@@ -26,7 +26,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "core/platform/graphics/chromium/Canvas2DLayerManager.h"
 
 #include "public/platform/Platform.h"
-#include <wtf/StdLibExtras.h>
+#include "wtf/StdLibExtras.h"
 
 using WebKit::WebThread;
 

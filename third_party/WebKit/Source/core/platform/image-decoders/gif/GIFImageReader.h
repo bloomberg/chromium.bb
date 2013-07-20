@@ -42,9 +42,9 @@
 // so we will too.
 #include "core/platform/SharedBuffer.h"
 #include "core/platform/image-decoders/gif/GIFImageDecoder.h"
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
-#include <wtf/Vector.h>
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/Vector.h"
 
 #define MAX_LZW_BITS          12
 #define MAX_BYTES           4097 /* 2^MAX_LZW_BITS+1 */

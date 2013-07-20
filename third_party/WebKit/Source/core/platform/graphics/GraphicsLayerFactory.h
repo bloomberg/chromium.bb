@@ -26,7 +26,7 @@
 #ifndef GraphicsLayerFactory_h
 #define GraphicsLayerFactory_h
 
-#include <wtf/Forward.h>
+#include "wtf/Forward.h"
 
 namespace WebCore {
 

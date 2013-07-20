@@ -33,9 +33,9 @@
 
 #include "core/platform/ColorChooser.h"
 #include "core/platform/graphics/IntRect.h"
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
-#include <wtf/Vector.h>
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

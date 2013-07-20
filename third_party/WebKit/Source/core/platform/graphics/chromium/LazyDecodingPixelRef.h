@@ -32,9 +32,8 @@
 #include "SkSize.h"
 #include "SkTypes.h"
 #include "skia/ext/lazy_pixel_ref.h"
-
-#include <wtf/RefPtr.h>
-#include <wtf/ThreadingPrimitives.h>
+#include "wtf/RefPtr.h"
+#include "wtf/ThreadingPrimitives.h"
 
 using skia::LazyPixelRef;
 

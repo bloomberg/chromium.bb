@@ -41,7 +41,7 @@
 #include "SkPaint.h"
 #include "SkTemplates.h"
 
-#include <wtf/unicode/Unicode.h>
+#include "wtf/unicode/Unicode.h"
 
 namespace WebCore {
 

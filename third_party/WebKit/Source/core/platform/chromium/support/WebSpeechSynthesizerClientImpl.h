@@ -30,8 +30,8 @@
 #include "public/platform/WebSpeechSynthesisUtterance.h"
 #include "public/platform/WebSpeechSynthesisVoice.h"
 #include "public/platform/WebSpeechSynthesizerClient.h"
-#include <wtf/HashMap.h>
-#include <wtf/Vector.h>
+#include "wtf/HashMap.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

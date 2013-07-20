@@ -26,9 +26,9 @@
 #include "config.h"
 #include "core/platform/text/TextStream.h"
 
-#include <wtf/MathExtras.h>
-#include <wtf/StringExtras.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/MathExtras.h"
+#include "wtf/StringExtras.h"
+#include "wtf/text/WTFString.h"
 
 using namespace std;
 

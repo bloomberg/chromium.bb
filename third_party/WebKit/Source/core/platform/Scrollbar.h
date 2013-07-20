@@ -30,8 +30,8 @@
 #include "core/platform/ScrollbarThemeClient.h"
 #include "core/platform/Timer.h"
 #include "core/platform/Widget.h"
-#include <wtf/MathExtras.h>
-#include <wtf/PassRefPtr.h>
+#include "wtf/MathExtras.h"
+#include "wtf/PassRefPtr.h"
 
 namespace WebCore {
 

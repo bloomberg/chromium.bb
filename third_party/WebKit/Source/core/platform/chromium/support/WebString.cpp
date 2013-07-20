@@ -32,9 +32,9 @@
 #include "public/platform/WebString.h"
 
 #include "public/platform/WebCString.h"
-#include <wtf/text/AtomicString.h>
-#include <wtf/text/CString.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/text/AtomicString.h"
+#include "wtf/text/CString.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebKit {
 

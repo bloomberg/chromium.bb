@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/platform/Clock.h"
 
-#include <wtf/CurrentTime.h>
+#include "wtf/CurrentTime.h"
 
 using namespace WebCore;
 

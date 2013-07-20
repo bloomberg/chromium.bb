@@ -28,8 +28,8 @@
 #include "public/platform/WebSpeechSynthesisUtterance.h"
 
 #include "core/platform/PlatformSpeechSynthesisUtterance.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefPtr.h>
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefPtr.h"
 
 using namespace WebCore;
 

@@ -28,8 +28,8 @@
 #include "core/platform/graphics/Path.h"
 
 #include <limits>
-#include <wtf/text/WTFString.h>
-#include <wtf/Vector.h>
+#include "wtf/text/WTFString.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

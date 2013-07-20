@@ -28,10 +28,10 @@
 #if ENABLE(OPENTYPE_VERTICAL)
 
 #include "core/platform/graphics/Glyph.h"
-#include <wtf/HashMap.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/Vector.h>
+#include "wtf/HashMap.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

@@ -32,8 +32,8 @@
 #define HTTPParsers_h
 
 #include "core/page/ContentSecurityPolicy.h"
-#include <wtf/Forward.h>
-#include <wtf/Vector.h>
+#include "wtf/Forward.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

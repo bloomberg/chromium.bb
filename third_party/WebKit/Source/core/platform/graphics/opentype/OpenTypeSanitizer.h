@@ -31,7 +31,7 @@
 #ifndef OpenTypeSanitizer_h
 #define OpenTypeSanitizer_h
 
-#include <wtf/Forward.h>
+#include "wtf/Forward.h"
 
 namespace WebCore {
 

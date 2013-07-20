@@ -29,7 +29,7 @@
 #include "SkScalar.h"
 #include "SkSize.h"
 
-#include <wtf/HashMap.h>
+#include "wtf/HashMap.h"
 
 namespace WTF {
 

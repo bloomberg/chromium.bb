@@ -32,7 +32,7 @@
 #define BMPImageDecoder_h
 
 #include "core/platform/image-decoders/bmp/BMPImageReader.h"
-#include <wtf/OwnPtr.h>
+#include "wtf/OwnPtr.h"
 
 namespace WebCore {
 

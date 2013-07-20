@@ -26,8 +26,8 @@
 #ifndef Cookie_h
 #define Cookie_h
 
-#include <wtf/text/StringHash.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/text/StringHash.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

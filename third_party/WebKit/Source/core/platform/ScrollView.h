@@ -33,7 +33,7 @@
 #include "core/platform/Widget.h"
 #include "core/platform/graphics/IntRect.h"
 
-#include <wtf/HashSet.h>
+#include "wtf/HashSet.h"
 
 namespace WebCore {
 

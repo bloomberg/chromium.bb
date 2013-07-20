@@ -21,8 +21,8 @@
 #ifndef SurrogatePairAwareTextIterator_h
 #define SurrogatePairAwareTextIterator_h
 
-#include <wtf/unicode/CharacterNames.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/unicode/CharacterNames.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

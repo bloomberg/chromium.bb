@@ -32,8 +32,8 @@
 
 #include "core/platform/graphics/opentype/OpenTypeVerticalData.h"
 
-#include <wtf/MathExtras.h>
-#include <wtf/UnusedParam.h>
+#include "wtf/MathExtras.h"
+#include "wtf/UnusedParam.h"
 
 using namespace std;
 

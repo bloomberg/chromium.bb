@@ -30,7 +30,7 @@
 #include "core/platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "core/platform/text/TextStream.h"
 #include "core/rendering/RenderTreeAsText.h"
-#include <wtf/OwnArrayPtr.h>
+#include "wtf/OwnArrayPtr.h"
 
 namespace WebCore {
 

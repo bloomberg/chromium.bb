@@ -27,11 +27,11 @@
 #include "core/platform/graphics/Color.h"
 
 #include "core/platform/HashTools.h"
-#include <wtf/Assertions.h>
-#include <wtf/DecimalNumber.h>
-#include <wtf/HexNumber.h>
-#include <wtf/MathExtras.h>
-#include <wtf/text/StringBuilder.h>
+#include "wtf/Assertions.h"
+#include "wtf/DecimalNumber.h"
+#include "wtf/HexNumber.h"
+#include "wtf/MathExtras.h"
+#include "wtf/text/StringBuilder.h"
 
 using namespace std;
 

@@ -27,9 +27,9 @@
 #define Color_h
 
 #include "core/platform/animation/AnimationUtilities.h"
-#include <wtf/FastAllocBase.h>
-#include <wtf/Forward.h>
-#include <wtf/unicode/Unicode.h>
+#include "wtf/FastAllocBase.h"
+#include "wtf/Forward.h"
+#include "wtf/unicode/Unicode.h"
 
 namespace WebCore {
 

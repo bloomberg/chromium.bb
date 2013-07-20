@@ -23,7 +23,7 @@
 #ifndef BidiRunList_h
 #define BidiRunList_h
 
-#include <wtf/Noncopyable.h>
+#include "wtf/Noncopyable.h"
 
 namespace WebCore {
 

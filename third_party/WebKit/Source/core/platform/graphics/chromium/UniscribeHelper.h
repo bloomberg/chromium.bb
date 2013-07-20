@@ -38,7 +38,7 @@
 #include <map>
 
 #include <unicode/uchar.h>
-#include <wtf/Vector.h>
+#include "wtf/Vector.h"
 
 class UniscribeTest_TooBig_Test; // A gunit test for UniscribeHelper.
 

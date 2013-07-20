@@ -27,8 +27,8 @@
 #ifndef ContextMenuItem_h
 #define ContextMenuItem_h
 
-#include <wtf/OwnPtr.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/OwnPtr.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

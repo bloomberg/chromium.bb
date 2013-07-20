@@ -31,7 +31,7 @@
 #include "core/platform/ScrollTypes.h"
 #include "core/platform/graphics/FloatPoint.h"
 #include "core/platform/graphics/FloatSize.h"
-#include <wtf/Noncopyable.h>
+#include "wtf/Noncopyable.h"
 
 namespace WebCore {
 

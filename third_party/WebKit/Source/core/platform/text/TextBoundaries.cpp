@@ -28,8 +28,8 @@
 #include "core/platform/text/TextBoundaries.h"
 
 #include "core/platform/text/TextBreakIterator.h"
-#include <wtf/text/StringImpl.h>
-#include <wtf/unicode/Unicode.h>
+#include "wtf/text/StringImpl.h"
+#include "wtf/unicode/Unicode.h"
 
 using namespace WTF;
 using namespace Unicode;

@@ -31,8 +31,8 @@
 #ifndef SharedBufferChunkReader_h
 #define SharedBufferChunkReader_h
 
-#include <wtf/Vector.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/Vector.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

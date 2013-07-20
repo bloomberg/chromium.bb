@@ -32,9 +32,9 @@
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/TextRun.h"
 #include "core/platform/text/TextBreakIterator.h"
-#include <wtf/Assertions.h>
-#include <wtf/unicode/CharacterNames.h>
-#include <wtf/Vector.h>
+#include "wtf/Assertions.h"
+#include "wtf/unicode/CharacterNames.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

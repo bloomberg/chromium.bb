@@ -32,8 +32,8 @@
 #define Decimal_h
 
 #include <stdint.h>
-#include <wtf/Assertions.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/Assertions.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

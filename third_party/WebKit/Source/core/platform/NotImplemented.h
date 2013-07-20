@@ -26,7 +26,7 @@
 #ifndef NotImplemented_h
 #define NotImplemented_h
 
-#include <wtf/Assertions.h>
+#include "wtf/Assertions.h"
 
 #if LOG_DISABLED
     #define notImplemented() ((void)0)

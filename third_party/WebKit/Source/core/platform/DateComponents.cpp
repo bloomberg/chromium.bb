@@ -32,10 +32,10 @@
 #include "core/platform/DateComponents.h"
 
 #include <limits.h>
-#include <wtf/ASCIICType.h>
-#include <wtf/DateMath.h>
-#include <wtf/MathExtras.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/ASCIICType.h"
+#include "wtf/DateMath.h"
+#include "wtf/MathExtras.h"
+#include "wtf/text/WTFString.h"
 
 using namespace std;
 

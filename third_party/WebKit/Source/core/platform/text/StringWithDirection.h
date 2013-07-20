@@ -32,7 +32,7 @@
 #define StringWithDirection_h
 
 #include "core/platform/text/TextDirection.h"
-#include <wtf/text/WTFString.h>
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

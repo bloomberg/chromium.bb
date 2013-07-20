@@ -35,8 +35,8 @@
 #include "core/platform/graphics/skia/SkiaUtils.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"
 
-#include <wtf/Assertions.h>
-#include <wtf/MathExtras.h>
+#include "wtf/Assertions.h"
+#include "wtf/MathExtras.h"
 
 #if CPU(X86_64)
 #include <emmintrin.h>
