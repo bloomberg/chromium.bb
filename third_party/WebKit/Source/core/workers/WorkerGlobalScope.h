@@ -47,6 +47,7 @@ namespace WebCore {
 
     class Blob;
     class DOMURL;
+    class ExceptionState;
     class ScheduledAction;
     class WorkerInspectorController;
     class WorkerLocation;
@@ -87,7 +88,7 @@ namespace WebCore {
         DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
 
         // WorkerUtils
-        virtual void importScripts(const Vector<String>& urls, ExceptionCode&);
+        virtual void importScripts(const Vector<String>& urls, ExceptionState&);
         WorkerNavigator* navigator() const;
 
         // ScriptExecutionContext

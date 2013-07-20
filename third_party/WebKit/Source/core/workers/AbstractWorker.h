@@ -43,36 +43,37 @@
 
 namespace WebCore {
 
-    class KURL;
-    class ScriptExecutionContext;
+class ExceptionState;
+class KURL;
+class ScriptExecutionContext;
 
-    class AbstractWorker : public RefCounted<AbstractWorker>, public EventTarget, public ActiveDOMObject {
-    public:
-        // EventTarget APIs
-        virtual ScriptExecutionContext* scriptExecutionContext() const OVERRIDE { return ActiveDOMObject::scriptExecutionContext(); }
+class AbstractWorker : public RefCounted<AbstractWorker>, public EventTarget, public ActiveDOMObject {
+public:
+    // EventTarget APIs
+    virtual ScriptExecutionContext* scriptExecutionContext() const OVERRIDE { return ActiveDOMObject::scriptExecutionContext(); }
 
-        DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
 
-        using RefCounted<AbstractWorker>::ref;
-        using RefCounted<AbstractWorker>::deref;
+    using RefCounted<AbstractWorker>::ref;
+    using RefCounted<AbstractWorker>::deref;
 
-        virtual void contextDestroyed() OVERRIDE;
-        AbstractWorker(ScriptExecutionContext*);
-        virtual ~AbstractWorker();
+    virtual void contextDestroyed() OVERRIDE;
+    AbstractWorker(ScriptExecutionContext*);
+    virtual ~AbstractWorker();
 
-    protected:
-        // Helper function that converts a URL to an absolute URL and checks the result for validity.
-        KURL resolveURL(const String& url, ExceptionCode& ec);
-        intptr_t asID() const { return reinterpret_cast<intptr_t>(this); }
+protected:
+    // Helper function that converts a URL to an absolute URL and checks the result for validity.
+    KURL resolveURL(const String& url, ExceptionState&);
+    intptr_t asID() const { return reinterpret_cast<intptr_t>(this); }
 
-    private:
-        virtual void refEventTarget() OVERRIDE { ref(); }
-        virtual void derefEventTarget() OVERRIDE { deref(); }
-        virtual EventTargetData* eventTargetData() OVERRIDE;
-        virtual EventTargetData* ensureEventTargetData() OVERRIDE;
-        
-        EventTargetData m_eventTargetData;
-    };
+private:
+    virtual void refEventTarget() OVERRIDE { ref(); }
+    virtual void derefEventTarget() OVERRIDE { deref(); }
+    virtual EventTargetData* eventTargetData() OVERRIDE;
+    virtual EventTargetData* ensureEventTargetData() OVERRIDE;
+
+    EventTargetData m_eventTargetData;
+};
 
 } // namespace WebCore
 

@@ -41,42 +41,41 @@
 
 namespace WebCore {
 
-    class ScriptExecutionContext;
-    class WorkerGlobalScopeProxy;
-    class WorkerScriptLoader;
+class ExceptionState;
+class ScriptExecutionContext;
+class WorkerGlobalScopeProxy;
+class WorkerScriptLoader;
 
-    typedef int ExceptionCode;
+class Worker : public AbstractWorker, public ScriptWrappable, private WorkerScriptLoaderClient {
+public:
+    static PassRefPtr<Worker> create(ScriptExecutionContext*, const String& url, ExceptionState&);
+    virtual ~Worker();
 
-    class Worker : public AbstractWorker, public ScriptWrappable, private WorkerScriptLoaderClient {
-    public:
-        static PassRefPtr<Worker> create(ScriptExecutionContext*, const String& url, ExceptionCode&);
-        virtual ~Worker();
+    virtual const AtomicString& interfaceName() const OVERRIDE;
 
-        virtual const AtomicString& interfaceName() const OVERRIDE;
+    void postMessage(PassRefPtr<SerializedScriptValue> message, const MessagePortArray*, ExceptionState&);
 
-        void postMessage(PassRefPtr<SerializedScriptValue> message, const MessagePortArray*, ExceptionCode&);
+    void terminate();
 
-        void terminate();
+    virtual bool canSuspend() const OVERRIDE;
+    virtual void stop() OVERRIDE;
+    virtual bool hasPendingActivity() const OVERRIDE;
 
-        virtual bool canSuspend() const OVERRIDE;
-        virtual void stop() OVERRIDE;
-        virtual bool hasPendingActivity() const OVERRIDE;
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(message);
 
-        DEFINE_ATTRIBUTE_EVENT_LISTENER(message);
+private:
+    explicit Worker(ScriptExecutionContext*);
 
-    private:
-        explicit Worker(ScriptExecutionContext*);
+    // WorkerScriptLoaderClient callbacks
+    virtual void didReceiveResponse(unsigned long identifier, const ResourceResponse&) OVERRIDE;
+    virtual void notifyFinished() OVERRIDE;
 
-        // WorkerScriptLoaderClient callbacks
-        virtual void didReceiveResponse(unsigned long identifier, const ResourceResponse&) OVERRIDE;
-        virtual void notifyFinished() OVERRIDE;
+    virtual void refEventTarget() OVERRIDE { ref(); }
+    virtual void derefEventTarget() OVERRIDE { deref(); }
 
-        virtual void refEventTarget() OVERRIDE { ref(); }
-        virtual void derefEventTarget() OVERRIDE { deref(); }
-
-        RefPtr<WorkerScriptLoader> m_scriptLoader;
-        WorkerGlobalScopeProxy* m_contextProxy; // The proxy outlives the worker to perform thread shutdown.
-    };
+    RefPtr<WorkerScriptLoader> m_scriptLoader;
+    WorkerGlobalScopeProxy* m_contextProxy; // The proxy outlives the worker to perform thread shutdown.
+};
 
 } // namespace WebCore
 

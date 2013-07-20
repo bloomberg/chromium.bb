@@ -48,12 +48,12 @@ namespace WebCore {
         virtual bool isDedicatedWorkerGlobalScope() const OVERRIDE { return true; }
 
         // Overridden to allow us to check our pending activity after executing imported script.
-        virtual void importScripts(const Vector<String>& urls, ExceptionCode&) OVERRIDE;
+        virtual void importScripts(const Vector<String>& urls, ExceptionState&) OVERRIDE;
 
         // EventTarget
         virtual const AtomicString& interfaceName() const OVERRIDE;
 
-        void postMessage(PassRefPtr<SerializedScriptValue>, const MessagePortArray*, ExceptionCode&);
+        void postMessage(PassRefPtr<SerializedScriptValue>, const MessagePortArray*, ExceptionState&);
 
         DEFINE_ATTRIBUTE_EVENT_LISTENER(message);
 

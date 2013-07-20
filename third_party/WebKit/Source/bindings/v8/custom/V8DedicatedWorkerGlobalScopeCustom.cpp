@@ -32,6 +32,7 @@
 
 #include "V8DedicatedWorkerGlobalScope.h"
 
+#include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8Utilities.h"
 #include "bindings/v8/V8WorkerGlobalScopeEventListener.h"
@@ -58,9 +59,9 @@ void V8DedicatedWorkerGlobalScope::postMessageMethodCustom(const v8::FunctionCal
                                       args.GetIsolate());
     if (didThrow)
         return;
-    ExceptionCode ec = 0;
-    workerGlobalScope->postMessage(message.release(), &ports, ec);
-    setDOMException(ec, args.GetIsolate());
+    ExceptionState es(args.GetIsolate());
+    workerGlobalScope->postMessage(message.release(), &ports, es);
+    es.throwIfNeeded();
 }
 
 } // namespace WebCore

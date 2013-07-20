@@ -31,10 +31,10 @@
 #include "config.h"
 
 #include "V8MessagePort.h"
+#include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/SerializedScriptValue.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8Utilities.h"
-#include "core/dom/ExceptionCode.h"
 #include "core/dom/MessagePort.h"
 #include "wtf/ArrayBuffer.h"
 
@@ -58,9 +58,9 @@ void V8MessagePort::postMessageMethodCustom(const v8::FunctionCallbackInfo<v8::V
                                       args.GetIsolate());
     if (didThrow)
         return;
-    ExceptionCode ec = 0;
-    messagePort->postMessage(message.release(), &portArray, ec);
-    setDOMException(ec, args.GetIsolate());
+    ExceptionState es(args.GetIsolate());
+    messagePort->postMessage(message.release(), &portArray, es);
+    es.throwIfNeeded();
 }
 
 } // namespace WebCore

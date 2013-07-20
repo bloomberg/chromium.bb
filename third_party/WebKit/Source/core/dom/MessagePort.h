@@ -41,6 +41,7 @@
 namespace WebCore {
 
 class Event;
+class ExceptionState;
 class Frame;
 class MessagePort;
 class ScriptExecutionContext;
@@ -53,7 +54,7 @@ public:
     static PassRefPtr<MessagePort> create(ScriptExecutionContext& scriptExecutionContext) { return adoptRef(new MessagePort(scriptExecutionContext)); }
     virtual ~MessagePort();
 
-    void postMessage(PassRefPtr<SerializedScriptValue> message, const MessagePortArray*, ExceptionCode&);
+    void postMessage(PassRefPtr<SerializedScriptValue> message, const MessagePortArray*, ExceptionState&);
 
     void start();
     void close();
@@ -62,7 +63,7 @@ public:
     PassOwnPtr<MessagePortChannel> disentangle();
 
     // Returns 0 if there is an exception, or if the passed-in array is 0/empty.
-    static PassOwnPtr<MessagePortChannelArray> disentanglePorts(const MessagePortArray*, ExceptionCode&);
+    static PassOwnPtr<MessagePortChannelArray> disentanglePorts(const MessagePortArray*, ExceptionState&);
 
     // Returns 0 if the passed array is 0/empty.
     static PassOwnPtr<MessagePortArray> entanglePorts(ScriptExecutionContext&, PassOwnPtr<MessagePortChannelArray>);

@@ -29,9 +29,9 @@
  */
 
 #include "config.h"
-
 #include "core/workers/DedicatedWorkerGlobalScope.h"
 
+#include "bindings/v8/ExceptionState.h"
 #include "core/page/DOMWindow.h"
 #include "core/workers/DedicatedWorkerThread.h"
 #include "core/workers/WorkerObjectProxy.h"
@@ -60,18 +60,18 @@ const AtomicString& DedicatedWorkerGlobalScope::interfaceName() const
     return eventNames().interfaceForDedicatedWorkerGlobalScope;
 }
 
-void DedicatedWorkerGlobalScope::postMessage(PassRefPtr<SerializedScriptValue> message, const MessagePortArray* ports, ExceptionCode& ec)
+void DedicatedWorkerGlobalScope::postMessage(PassRefPtr<SerializedScriptValue> message, const MessagePortArray* ports, ExceptionState& es)
 {
     // Disentangle the port in preparation for sending it to the remote context.
-    OwnPtr<MessagePortChannelArray> channels = MessagePort::disentanglePorts(ports, ec);
-    if (ec)
+    OwnPtr<MessagePortChannelArray> channels = MessagePort::disentanglePorts(ports, es);
+    if (es.hadException())
         return;
     thread()->workerObjectProxy().postMessageToWorkerObject(message, channels.release());
 }
 
-void DedicatedWorkerGlobalScope::importScripts(const Vector<String>& urls, ExceptionCode& ec)
+void DedicatedWorkerGlobalScope::importScripts(const Vector<String>& urls, ExceptionState& es)
 {
-    Base::importScripts(urls, ec);
+    Base::importScripts(urls, es);
     thread()->workerObjectProxy().reportPendingActivity(hasPendingActivity());
 }
 

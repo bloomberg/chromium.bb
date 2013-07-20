@@ -37,6 +37,7 @@
 #include "WebKit.h"
 #include "WebSharedWorker.h"
 #include "WebSharedWorkerRepository.h"
+#include "bindings/v8/ExceptionState.h"
 #include "core/dom/Event.h"
 #include "core/dom/EventNames.h"
 #include "core/dom/ExceptionCode.h"
@@ -217,7 +218,7 @@ static WebSharedWorkerRepository::DocumentID getId(void* document)
     return reinterpret_cast<WebSharedWorkerRepository::DocumentID>(document);
 }
 
-void SharedWorkerRepository::connect(PassRefPtr<SharedWorker> worker, PassOwnPtr<MessagePortChannel> port, const KURL& url, const String& name, ExceptionCode& ec)
+void SharedWorkerRepository::connect(PassRefPtr<SharedWorker> worker, PassOwnPtr<MessagePortChannel> port, const KURL& url, const String& name, ExceptionState& es)
 {
     WebKit::WebSharedWorkerRepository* repository = WebKit::sharedWorkerRepository();
 
@@ -234,7 +235,7 @@ void SharedWorkerRepository::connect(PassRefPtr<SharedWorker> worker, PassOwnPtr
 
     if (!webWorker) {
         // Existing worker does not match this url, so return an error back to the caller.
-        ec = URLMismatchError;
+        es.throwDOMException(URLMismatchError);
         return;
     }
 

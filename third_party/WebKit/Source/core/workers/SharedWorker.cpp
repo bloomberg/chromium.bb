@@ -30,9 +30,9 @@
  */
 
 #include "config.h"
-
 #include "core/workers/SharedWorker.h"
 
+#include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/MessageChannel.h"
 #include "core/dom/MessagePort.h"
@@ -51,7 +51,7 @@ inline SharedWorker::SharedWorker(ScriptExecutionContext* context)
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<SharedWorker> SharedWorker::create(ScriptExecutionContext* context, const String& url, const String& name, ExceptionCode& ec)
+PassRefPtr<SharedWorker> SharedWorker::create(ScriptExecutionContext* context, const String& url, const String& name, ExceptionState& es)
 {
     ASSERT(isMainThread());
     UseCounter::count(toDocument(context)->domWindow(), UseCounter::SharedWorkerStart);
@@ -65,7 +65,7 @@ PassRefPtr<SharedWorker> SharedWorker::create(ScriptExecutionContext* context, c
 
     worker->suspendIfNeeded();
 
-    KURL scriptURL = worker->resolveURL(url, ec);
+    KURL scriptURL = worker->resolveURL(url, es);
     if (scriptURL.isEmpty())
         return 0;
 
@@ -73,11 +73,11 @@ PassRefPtr<SharedWorker> SharedWorker::create(ScriptExecutionContext* context, c
     ASSERT_WITH_SECURITY_IMPLICATION(context->isDocument());
     Document* document = toDocument(context);
     if (!document->securityOrigin()->canAccessSharedWorkers(document->topOrigin())) {
-        ec = SecurityError;
+        es.throwDOMException(SecurityError);
         return 0;
     }
 
-    SharedWorkerRepository::connect(worker.get(), remotePort.release(), scriptURL, name, ec);
+    SharedWorkerRepository::connect(worker.get(), remotePort.release(), scriptURL, name, es);
 
     return worker.release();
 }

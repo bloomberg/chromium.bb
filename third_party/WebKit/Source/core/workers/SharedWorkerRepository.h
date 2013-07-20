@@ -38,11 +38,10 @@
 namespace WebCore {
 
     class Document;
+    class ExceptionState;
     class KURL;
     class MessagePortChannel;
     class SharedWorker;
-
-    typedef int ExceptionCode;
 
     // Interface to a repository which manages references to the set of active shared workers.
     class SharedWorkerRepository {
@@ -51,7 +50,7 @@ namespace WebCore {
         static bool isAvailable();
 
         // Connects the passed SharedWorker object with the specified worker thread, creating a new thread if necessary.
-        static void connect(PassRefPtr<SharedWorker>, PassOwnPtr<MessagePortChannel>, const KURL&, const String& name, ExceptionCode&);
+        static void connect(PassRefPtr<SharedWorker>, PassOwnPtr<MessagePortChannel>, const KURL&, const String& name, ExceptionState&);
 
         // Invoked when a document has been detached.
         static void documentDetached(Document*);

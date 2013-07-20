@@ -36,20 +36,22 @@
 
 namespace WebCore {
 
-    class SharedWorker : public AbstractWorker, public ScriptWrappable {
-    public:
-        static PassRefPtr<SharedWorker> create(ScriptExecutionContext*, const String& url, const String& name, ExceptionCode&);
-        virtual ~SharedWorker();
+class ExceptionState;
 
-        MessagePort* port() const { return m_port.get(); }
+class SharedWorker : public AbstractWorker, public ScriptWrappable {
+public:
+    static PassRefPtr<SharedWorker> create(ScriptExecutionContext*, const String& url, const String& name, ExceptionState&);
+    virtual ~SharedWorker();
 
-        virtual const AtomicString& interfaceName() const OVERRIDE;
+    MessagePort* port() const { return m_port.get(); }
 
-    private:
-        explicit SharedWorker(ScriptExecutionContext*);
+    virtual const AtomicString& interfaceName() const OVERRIDE;
 
-        RefPtr<MessagePort> m_port;
-    };
+private:
+    explicit SharedWorker(ScriptExecutionContext*);
+
+    RefPtr<MessagePort> m_port;
+};
 
 } // namespace WebCore
 

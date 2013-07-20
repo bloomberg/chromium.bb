@@ -27,6 +27,7 @@
 #include "config.h"
 #include "core/dom/MessagePort.h"
 
+#include "bindings/v8/ExceptionState.h"
 #include "core/dom/Document.h"
 #include "core/dom/EventNames.h"
 #include "core/dom/ExceptionCode.h"
@@ -55,7 +56,7 @@ MessagePort::~MessagePort()
         m_scriptExecutionContext->destroyedMessagePort(this);
 }
 
-void MessagePort::postMessage(PassRefPtr<SerializedScriptValue> message, const MessagePortArray* ports, ExceptionCode& ec)
+void MessagePort::postMessage(PassRefPtr<SerializedScriptValue> message, const MessagePortArray* ports, ExceptionState& es)
 {
     if (!isEntangled())
         return;
@@ -67,12 +68,12 @@ void MessagePort::postMessage(PassRefPtr<SerializedScriptValue> message, const M
         for (unsigned int i = 0; i < ports->size(); ++i) {
             MessagePort* dataPort = (*ports)[i].get();
             if (dataPort == this || m_entangledChannel->isConnectedTo(dataPort)) {
-                ec = InvalidStateError;
+                es.throwDOMException(InvalidStateError);
                 return;
             }
         }
-        channels = MessagePort::disentanglePorts(ports, ec);
-        if (ec)
+        channels = MessagePort::disentanglePorts(ports, es);
+        if (es.hadException())
             return;
     }
     m_entangledChannel->postMessageToRemote(message, channels.release());
@@ -188,7 +189,7 @@ MessagePort* MessagePort::locallyEntangledPort()
     return m_entangledChannel ? m_entangledChannel->locallyEntangledPort(m_scriptExecutionContext) : 0;
 }
 
-PassOwnPtr<MessagePortChannelArray> MessagePort::disentanglePorts(const MessagePortArray* ports, ExceptionCode& ec)
+PassOwnPtr<MessagePortChannelArray> MessagePort::disentanglePorts(const MessagePortArray* ports, ExceptionState& es)
 {
     if (!ports || !ports->size())
         return nullptr;
@@ -200,7 +201,7 @@ PassOwnPtr<MessagePortChannelArray> MessagePort::disentanglePorts(const MessageP
     for (unsigned int i = 0; i < ports->size(); ++i) {
         MessagePort* port = (*ports)[i].get();
         if (!port || port->isNeutered() || portSet.contains(port)) {
-            ec = DataCloneError;
+            es.throwDOMException(DataCloneError);
             return nullptr;
         }
         portSet.add(port);

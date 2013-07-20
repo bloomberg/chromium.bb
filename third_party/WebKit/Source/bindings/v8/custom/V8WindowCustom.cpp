@@ -34,6 +34,7 @@
 #include "V8HTMLCollection.h"
 #include "V8Node.h"
 #include "bindings/v8/BindingSecurity.h"
+#include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ScheduledAction.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/ScriptSourceCode.h"
@@ -281,9 +282,9 @@ void V8Window::postMessageMethodCustom(const v8::FunctionCallbackInfo<v8::Value>
     if (didThrow)
         return;
 
-    ExceptionCode ec = 0;
-    window->postMessage(message.release(), &portArray, targetOrigin, source, ec);
-    setDOMException(ec, args.GetIsolate());
+    ExceptionState es(args.GetIsolate());
+    window->postMessage(message.release(), &portArray, targetOrigin, source, es);
+    es.throwIfNeeded();
 }
 
 // FIXME(fqian): returning string is cheating, and we should

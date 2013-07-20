@@ -26,9 +26,9 @@
  */
 
 #include "config.h"
-
 #include "core/workers/WorkerGlobalScope.h"
 
+#include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ScheduledAction.h"
 #include "bindings/v8/ScriptSourceCode.h"
 #include "bindings/v8/ScriptValue.h"
@@ -36,6 +36,7 @@
 #include "core/dom/ContextLifecycleNotifier.h"
 #include "core/dom/ErrorEvent.h"
 #include "core/dom/Event.h"
+#include "core/dom/ExceptionCode.h"
 #include "core/dom/MessagePort.h"
 #include "core/html/DOMURL.h"
 #include "core/inspector/InspectorConsoleInstrumentation.h"
@@ -59,7 +60,7 @@
 #include "modules/notifications/NotificationCenter.h"
 #endif
 
-#include "core/dom/ExceptionCode.h"
+
 
 namespace WebCore {
 
@@ -183,16 +184,15 @@ void WorkerGlobalScope::clearInspector()
     m_workerInspectorController.clear();
 }
 
-void WorkerGlobalScope::importScripts(const Vector<String>& urls, ExceptionCode& ec)
+void WorkerGlobalScope::importScripts(const Vector<String>& urls, ExceptionState& es)
 {
     ASSERT(contentSecurityPolicy());
-    ec = 0;
     Vector<String>::const_iterator urlsEnd = urls.end();
     Vector<KURL> completedURLs;
     for (Vector<String>::const_iterator it = urls.begin(); it != urlsEnd; ++it) {
         const KURL& url = scriptExecutionContext()->completeURL(*it);
         if (!url.isValid()) {
-            ec = SyntaxError;
+            es.throwDOMException(SyntaxError);
             return;
         }
         completedURLs.append(url);
@@ -206,7 +206,7 @@ void WorkerGlobalScope::importScripts(const Vector<String>& urls, ExceptionCode&
 
         // If the fetching attempt failed, throw a NetworkError exception and abort all these steps.
         if (scriptLoader->failed()) {
-            ec = NetworkError;
+            es.throwDOMException(NetworkError);
             return;
         }
 

@@ -26,13 +26,12 @@
  */
 
 #include "config.h"
-
 #include "core/workers/Worker.h"
 
+#include "bindings/v8/ExceptionState.h"
 #include "core/dom/Document.h"
 #include "core/dom/EventListener.h"
 #include "core/dom/EventNames.h"
-#include "core/dom/ExceptionCode.h"
 #include "core/dom/MessageEvent.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/FrameLoader.h"
@@ -54,7 +53,7 @@ inline Worker::Worker(ScriptExecutionContext* context)
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<Worker> Worker::create(ScriptExecutionContext* context, const String& url, ExceptionCode& ec)
+PassRefPtr<Worker> Worker::create(ScriptExecutionContext* context, const String& url, ExceptionState& es)
 {
     ASSERT(isMainThread());
     UseCounter::count(toDocument(context)->domWindow(), UseCounter::WorkerStart);
@@ -63,7 +62,7 @@ PassRefPtr<Worker> Worker::create(ScriptExecutionContext* context, const String&
 
     worker->suspendIfNeeded();
 
-    KURL scriptURL = worker->resolveURL(url, ec);
+    KURL scriptURL = worker->resolveURL(url, es);
     if (scriptURL.isEmpty())
         return 0;
 
@@ -88,11 +87,11 @@ const AtomicString& Worker::interfaceName() const
     return eventNames().interfaceForWorker;
 }
 
-void Worker::postMessage(PassRefPtr<SerializedScriptValue> message, const MessagePortArray* ports, ExceptionCode& ec)
+void Worker::postMessage(PassRefPtr<SerializedScriptValue> message, const MessagePortArray* ports, ExceptionState& es)
 {
     // Disentangle the port in preparation for sending it to the remote context.
-    OwnPtr<MessagePortChannelArray> channels = MessagePort::disentanglePorts(ports, ec);
-    if (ec)
+    OwnPtr<MessagePortChannelArray> channels = MessagePort::disentanglePorts(ports, es);
+    if (es.hadException())
         return;
     m_contextProxy->postMessageToWorkerGlobalScope(message, channels.release());
 }

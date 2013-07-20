@@ -44,13 +44,12 @@
 namespace WebCore {
 
     class Document;
+    class ExceptionState;
     class KURL;
     class MessagePortChannel;
     class ScriptExecutionContext;
     class SharedWorker;
     class SharedWorkerProxy;
-
-    typedef int ExceptionCode;
 
     // Platform-specific implementation of the SharedWorkerRepository static interface.
     class DefaultSharedWorkerRepository {
@@ -60,7 +59,7 @@ namespace WebCore {
         void workerScriptLoaded(SharedWorkerProxy&, const String& userAgent, const String& workerScript, PassOwnPtr<MessagePortChannel>, const String& contentSecurityPolicy, ContentSecurityPolicy::HeaderType);
 
         // Internal implementation of SharedWorkerRepository::connect()
-        void connectToWorker(PassRefPtr<SharedWorker>, PassOwnPtr<MessagePortChannel>, const KURL&, const String& name, ExceptionCode&);
+        void connectToWorker(PassRefPtr<SharedWorker>, PassOwnPtr<MessagePortChannel>, const KURL&, const String& name, ExceptionState&);
 
         // Notification that a document has been detached.
         void documentDetached(Document*);

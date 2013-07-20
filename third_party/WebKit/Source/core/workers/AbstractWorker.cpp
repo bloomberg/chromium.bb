@@ -29,9 +29,9 @@
  */
 
 #include "config.h"
-
 #include "core/workers/AbstractWorker.h"
 
+#include "bindings/v8/ExceptionState.h"
 #include "core/dom/EventNames.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ScriptExecutionContext.h"
@@ -54,27 +54,27 @@ void AbstractWorker::contextDestroyed()
     ActiveDOMObject::contextDestroyed();
 }
 
-KURL AbstractWorker::resolveURL(const String& url, ExceptionCode& ec)
+KURL AbstractWorker::resolveURL(const String& url, ExceptionState& es)
 {
     if (url.isEmpty()) {
-        ec = SyntaxError;
+        es.throwDOMException(SyntaxError);
         return KURL();
     }
 
     // FIXME: This should use the dynamic global scope (bug #27887)
     KURL scriptURL = scriptExecutionContext()->completeURL(url);
     if (!scriptURL.isValid()) {
-        ec = SyntaxError;
+        es.throwDOMException(SyntaxError);
         return KURL();
     }
 
     if (!scriptExecutionContext()->securityOrigin()->canRequest(scriptURL)) {
-        ec = SecurityError;
+        es.throwDOMException(SecurityError);
         return KURL();
     }
 
     if (scriptExecutionContext()->contentSecurityPolicy() && !scriptExecutionContext()->contentSecurityPolicy()->allowScriptFromSource(scriptURL)) {
-        ec = SecurityError;
+        es.throwDOMException(SecurityError);
         return KURL();
     }
 

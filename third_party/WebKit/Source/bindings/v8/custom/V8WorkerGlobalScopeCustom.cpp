@@ -29,9 +29,9 @@
  */
 
 #include "config.h"
-
 #include "V8WorkerGlobalScope.h"
 
+#include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ScheduledAction.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8Utilities.h"
@@ -110,12 +110,9 @@ void V8WorkerGlobalScope::importScriptsMethodCustom(const v8::FunctionCallbackIn
 
     WorkerGlobalScope* workerGlobalScope = V8WorkerGlobalScope::toNative(args.Holder());
 
-    ExceptionCode ec = 0;
-    workerGlobalScope->importScripts(urls, ec);
-
-    if (!ec)
-        return;
-    setDOMException(ec, args.GetIsolate());
+    ExceptionState es(args.GetIsolate());
+    workerGlobalScope->importScripts(urls, es);
+    es.throwIfNeeded();
 }
 
 void V8WorkerGlobalScope::setTimeoutMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
