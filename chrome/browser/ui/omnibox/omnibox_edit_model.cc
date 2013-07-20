@@ -695,6 +695,9 @@ void OmniboxEditModel::OpenMatch(const AutocompleteMatch& match,
         TemplateURLPrepopulateData::kMaxPrepopulatedEngineID);
   }
 
+  // Get the current text before we call RevertAll() which will clear it.
+  string16 current_text = GetViewText();
+
   if (disposition != NEW_BACKGROUND_TAB) {
     base::AutoReset<bool> tmp(&in_revert_, true);
     view_->RevertAll();  // Revert the box to its unedited state
@@ -709,7 +712,7 @@ void OmniboxEditModel::OpenMatch(const AutocompleteMatch& match,
         GetDestinationURL(match, query_formulation_time);
 
     RecordPercentageMatchHistogram(
-        permanent_text_, match.contents,
+        permanent_text_, current_text,
         view_->toolbar_model()->WouldReplaceSearchURLWithSearchTerms(false),
         match.transition);
 
