@@ -7,7 +7,10 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/gtest_prod_util.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
+#include "chrome/browser/ui/bookmarks/bookmark_bubble_delegate.h"
 #include "chrome/browser/ui/bookmarks/recently_used_folders_combo_model.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/button.h"
@@ -32,6 +35,7 @@ class BookmarkBubbleView : public views::BubbleDelegateView,
  public:
   static void ShowBubble(views::View* anchor_view,
                          BookmarkBubbleViewObserver* observer,
+                         scoped_ptr<BookmarkBubbleDelegate> delegate,
                          Profile* profile,
                          const GURL& url,
                          bool newly_bookmarked);
@@ -56,9 +60,14 @@ class BookmarkBubbleView : public views::BubbleDelegateView,
   virtual void Init() OVERRIDE;
 
  private:
+  friend class BookmarkBubbleViewTest;
+  FRIEND_TEST_ALL_PREFIXES(BookmarkBubbleViewTest, SyncPromoSignedIn);
+  FRIEND_TEST_ALL_PREFIXES(BookmarkBubbleViewTest, SyncPromoNotSignedIn);
+
   // Creates a BookmarkBubbleView.
   BookmarkBubbleView(views::View* anchor_view,
                      BookmarkBubbleViewObserver* observer,
+                     scoped_ptr<BookmarkBubbleDelegate> delegate,
                      Profile* profile,
                      const GURL& url,
                      bool newly_bookmarked);
@@ -92,6 +101,9 @@ class BookmarkBubbleView : public views::BubbleDelegateView,
   // Our observer, to notify when the bubble shows or hides.
   BookmarkBubbleViewObserver* observer_;
 
+  // Delegate, to handle clicks on the sign in link.
+  scoped_ptr<BookmarkBubbleDelegate> delegate_;
+
   // The profile.
   Profile* profile_;
 
@@ -118,6 +130,9 @@ class BookmarkBubbleView : public views::BubbleDelegateView,
   // Combobox showing a handful of folders the user can choose from, including
   // the current parent.
   views::Combobox* parent_combobox_;
+
+  // Bookmark sync promo view, if displayed.
+  views::View* sync_promo_view_;
 
   // When the destructor is invoked should the bookmark be removed?
   bool remove_bookmark_;

@@ -182,8 +182,15 @@ void LogHistogramValue(SyncPromoUI::Source source, int action) {
       UMA_HISTOGRAM_ENUMERATION("Signin.AppsPageLinkActions", action,
                                 one_click_signin::HISTOGRAM_MAX);
       break;
+    case SyncPromoUI::SOURCE_BOOKMARK_BUBBLE:
+      UMA_HISTOGRAM_ENUMERATION("Signin.BookmarkBubbleActions", action,
+                                one_click_signin::HISTOGRAM_MAX);
+      break;
     default:
-      NOTREACHED() << "Invalid Source";
+      // This switch statement needs to be updated when the enum Source changes.
+      COMPILE_ASSERT(SyncPromoUI::SOURCE_UNKNOWN == 9,
+                     kSourceEnumHasChangedButNotThisSwitchStatement);
+      NOTREACHED();
       return;
   }
   UMA_HISTOGRAM_ENUMERATION("Signin.AllAccessPointActions", action,

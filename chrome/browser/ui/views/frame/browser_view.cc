@@ -35,6 +35,8 @@
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog_queue.h"
+#include "chrome/browser/ui/bookmarks/bookmark_bubble_delegate.h"
+#include "chrome/browser/ui/bookmarks/bookmark_bubble_sign_in_delegate.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
@@ -1087,9 +1089,15 @@ void BrowserView::ShowUpdateChromeDialog() {
 }
 
 void BrowserView::ShowBookmarkBubble(const GURL& url, bool already_bookmarked) {
+  scoped_ptr<BookmarkBubbleDelegate> delegate;
+  delegate.reset(new BookmarkBubbleSignInDelegate(browser_.get()));
+
   chrome::ShowBookmarkBubbleView(GetToolbarView()->GetBookmarkBubbleAnchor(),
-                                 bookmark_bar_view_.get(), browser_->profile(),
-                                 url, !already_bookmarked);
+                                 bookmark_bar_view_.get(),
+                                 delegate.Pass(),
+                                 browser_->profile(),
+                                 url,
+                                 !already_bookmarked);
 }
 
 void BrowserView::ShowBookmarkPrompt() {

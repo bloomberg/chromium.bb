@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_BROWSER_DIALOGS_H_
 #define CHROME_BROWSER_UI_VIEWS_BROWSER_DIALOGS_H_
 
+#include "base/memory/scoped_ptr.h"
 #include "ui/gfx/native_widget_types.h"
 
 // This file contains functions for running a variety of browser dialogs and
@@ -14,6 +15,7 @@
 // TODO: Make as many of these methods as possible cross platform, and move them
 // into chrome/browser/ui/browser_dialogs.h.
 
+class BookmarkBubbleDelegate;
 class BookmarkBubbleViewObserver;
 class Browser;
 class BrowserView;
@@ -36,6 +38,7 @@ namespace chrome {
 // Shows or hides the bookmark bubble anchored to the supplied view.
 void ShowBookmarkBubbleView(views::View* anchor_view,
                             BookmarkBubbleViewObserver* observer,
+                            scoped_ptr<BookmarkBubbleDelegate> delegate,
                             Profile* profile,
                             const GURL& url,
                             bool newly_bookmarked);

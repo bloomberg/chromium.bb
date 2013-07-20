@@ -29,6 +29,7 @@ class SyncPromoUI {
     SOURCE_WEBSTORE_INSTALL,
     SOURCE_APP_LAUNCHER,
     SOURCE_APPS_PAGE_LINK,
+    SOURCE_BOOKMARK_BUBBLE,
     SOURCE_UNKNOWN, // This must be last.
   };
 

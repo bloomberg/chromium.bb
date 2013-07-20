@@ -510,6 +510,9 @@ const char kEnableBenchmarking[]            = "enable-benchmarking";
 // Enables (experimental) more strict popup blocking.
 const char kEnableBetterPopupBlocking[]     = "enable-better-popup-blocking";
 
+// Enables a sync promo that is displayed in the bookmark bubble.
+const char kEnableBookmarkSyncPromo[]       = "enable-bookmark-sync-promo";
+
 // This applies only when the process type is "service". Enables the Cloud
 // Print Proxy component within the service process.
 const char kEnableCloudPrintProxy[]         = "enable-cloud-print-proxy";

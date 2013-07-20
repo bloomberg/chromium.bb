@@ -97,10 +97,6 @@ bool SyncPromoUI::ShouldShowSyncPromo(Profile* profile) {
   if (net::NetworkChangeNotifier::IsOffline())
     return false;
 
-  // Don't show if the profile is an incognito.
-  if (profile->IsOffTheRecord())
-    return false;
-
   // Don't show for managed profiles.
   if (profile->GetPrefs()->GetBoolean(prefs::kProfileIsManaged))
     return false;
@@ -142,6 +138,10 @@ void SyncPromoUI::RegisterProfilePrefs(
 bool SyncPromoUI::ShouldShowSyncPromoAtStartup(Profile* profile,
                                                bool is_new_profile) {
   DCHECK(profile);
+
+  // Don't show if the profile is an incognito.
+  if (profile->IsOffTheRecord())
+    return false;
 
   if (!ShouldShowSyncPromo(profile))
     return false;

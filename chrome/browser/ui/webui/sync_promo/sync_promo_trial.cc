@@ -31,6 +31,8 @@ enum {
   UMA_APP_LAUNCHER_SIGNED_IN,
   UMA_APPS_PAGE_LINK_SHOWN,
   UMA_APPS_PAGE_LINK_SIGNED_IN,
+  UMA_BOOKMARK_BUBBLE_SHOWN,
+  UMA_BOOKMARK_BUBBLE_SIGNED_IN,
   UMA_MAX,
 };
 
@@ -67,6 +69,9 @@ void RecordUserShownPromo(content::WebUI* web_ui) {
     case SyncPromoUI::SOURCE_APPS_PAGE_LINK:
       uma = UMA_APPS_PAGE_LINK_SHOWN;
       break;
+    case SyncPromoUI::SOURCE_BOOKMARK_BUBBLE:
+      uma = UMA_BOOKMARK_BUBBLE_SHOWN;
+      break;
     case SyncPromoUI::SOURCE_UNKNOWN:
       uma = UMA_UNKNOWN_SHOWN;
       break;
@@ -74,7 +79,7 @@ void RecordUserShownPromo(content::WebUI* web_ui) {
       // If this assert hits, then the SyncPromoUI::Source enum has changed and
       // the UMA enum above, this switch statement and histograms.xml all need
       // to be updated to reflect that.
-      COMPILE_ASSERT(SyncPromoUI::SOURCE_UNKNOWN == 8,
+      COMPILE_ASSERT(SyncPromoUI::SOURCE_UNKNOWN == 9,
                      kSourceEnumHasChangedButNotThisSwitchStatement);
       NOTREACHED();
       break;
@@ -111,12 +116,15 @@ void RecordUserSignedIn(content::WebUI* web_ui) {
     case SyncPromoUI::SOURCE_APPS_PAGE_LINK:
       uma = UMA_APPS_PAGE_LINK_SIGNED_IN;
       break;
+    case SyncPromoUI::SOURCE_BOOKMARK_BUBBLE:
+      uma = UMA_BOOKMARK_BUBBLE_SIGNED_IN;
+      break;
     case SyncPromoUI::SOURCE_UNKNOWN:
       uma = UMA_UNKNOWN_SIGNED_IN;
       break;
     default:
       // This switch statement needs to be updated when the enum Source changes.
-      COMPILE_ASSERT(SyncPromoUI::SOURCE_UNKNOWN == 8,
+      COMPILE_ASSERT(SyncPromoUI::SOURCE_UNKNOWN == 9,
                      kSourceEnumHasChangedButNotThisSwitchStatement);
       NOTREACHED();
       break;
