@@ -15,6 +15,17 @@
 // called Read yet).
 LOAD_STATE(IDLE)
 
+// When a socket pool group is below the maximum number of sockets allowed per
+// group, but a new socket cannot be created due to the per-pool socket limit,
+// this state is returned by all requests for the group waiting on an idle
+// connection, except those that may be serviced by a pending new connection.
+LOAD_STATE(WAITING_FOR_STALLED_SOCKET_POOL)
+
+// When a socket pool group has reached the maximum number of sockets allowed
+// per group, this state is returned for all requests that don't have a socket,
+// except those that correspond to a pending new connection.
+LOAD_STATE(WAITING_FOR_AVAILABLE_SOCKET)
+
 // This state indicates that the URLRequest delegate has chosen to block this
 // request before it was sent over the network. When in this state, the
 // delegate should set a load state parameter on the URLRequest describing

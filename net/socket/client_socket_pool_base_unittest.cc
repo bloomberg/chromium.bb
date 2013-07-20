@@ -220,7 +220,12 @@ class MockClientSocketFactory : public ClientSocketFactory {
   }
 
   void WaitForSignal(TestConnectJob* job) { waiting_jobs_.push_back(job); }
+
   void SignalJobs();
+
+  void SignalJob(size_t job);
+
+  void SetJobLoadState(size_t job, LoadState load_state);
 
   int allocation_count() const { return allocation_count_; }
 
@@ -237,7 +242,6 @@ class TestConnectJob : public ConnectJob {
     kMockPendingJob,
     kMockPendingFailingJob,
     kMockWaitingJob,
-    kMockAdvancingLoadStateJob,
     kMockRecoverableJob,
     kMockPendingRecoverableJob,
     kMockAdditionalErrorStateJob,
@@ -267,6 +271,10 @@ class TestConnectJob : public ConnectJob {
     DoConnect(waiting_success_, true /* async */, false /* recoverable */);
   }
 
+  void set_load_state(LoadState load_state) { load_state_ = load_state; }
+
+  // From ConnectJob:
+
   virtual LoadState GetLoadState() const OVERRIDE { return load_state_; }
 
   virtual void GetAdditionalErrorState(ClientSocketHandle* handle) OVERRIDE {
@@ -280,7 +288,7 @@ class TestConnectJob : public ConnectJob {
   }
 
  private:
-  // ConnectJob implementation.
+  // From ConnectJob:
 
   virtual int ConnectInternal() OVERRIDE {
     AddressList ignored;
@@ -329,13 +337,9 @@ class TestConnectJob : public ConnectJob {
             base::TimeDelta::FromMilliseconds(2));
         return ERR_IO_PENDING;
       case kMockWaitingJob:
+        set_load_state(LOAD_STATE_CONNECTING);
         client_socket_factory_->WaitForSignal(this);
         waiting_success_ = true;
-        return ERR_IO_PENDING;
-      case kMockAdvancingLoadStateJob:
-        base::MessageLoop::current()->PostTask(
-            FROM_HERE, base::Bind(&TestConnectJob::AdvanceLoadState,
-                                  weak_factory_.GetWeakPtr(), load_state_));
         return ERR_IO_PENDING;
       case kMockRecoverableJob:
         return DoConnect(false /* error */, false /* sync */,
@@ -374,8 +378,6 @@ class TestConnectJob : public ConnectJob {
     }
   }
 
-  void set_load_state(LoadState load_state) { load_state_ = load_state; }
-
   int DoConnect(bool succeed, bool was_async, bool recoverable) {
     int result = OK;
     if (succeed) {
@@ -390,22 +392,6 @@ class TestConnectJob : public ConnectJob {
     if (was_async)
       NotifyDelegateOfCompletion(result);
     return result;
-  }
-
-  // This function helps simulate the progress of load states on a ConnectJob.
-  // Each time it is called it advances the load state and posts a task to be
-  // called again.  It stops at the last connecting load state (the one
-  // before LOAD_STATE_SENDING_REQUEST).
-  void AdvanceLoadState(LoadState state) {
-    int tmp = state;
-    tmp++;
-    if (tmp < LOAD_STATE_SENDING_REQUEST) {
-      state = static_cast<LoadState>(tmp);
-      set_load_state(state);
-      base::MessageLoop::current()->PostTask(
-          FROM_HERE, base::Bind(&TestConnectJob::AdvanceLoadState,
-                                weak_factory_.GetWeakPtr(), state));
-    }
   }
 
   bool waiting_success_;
@@ -622,6 +608,18 @@ void MockClientSocketFactory::SignalJobs() {
     (*it)->Signal();
   }
   waiting_jobs_.clear();
+}
+
+void MockClientSocketFactory::SignalJob(size_t job) {
+  ASSERT_LT(job, waiting_jobs_.size());
+  waiting_jobs_[job]->Signal();
+  waiting_jobs_.erase(waiting_jobs_.begin() + job);
+}
+
+void MockClientSocketFactory::SetJobLoadState(size_t job,
+                                              LoadState load_state) {
+  ASSERT_LT(job, waiting_jobs_.size());
+  waiting_jobs_[job]->set_load_state(load_state);
 }
 
 class TestConnectJobDelegate : public ConnectJob::Delegate {
@@ -1924,10 +1922,10 @@ TEST_F(ClientSocketPoolBaseTest, PendingJobCompletionOrder) {
   EXPECT_EQ(&req3, request_order[2]);
 }
 
-TEST_F(ClientSocketPoolBaseTest, LoadState) {
+// Test GetLoadState in the case there's only one socket request.
+TEST_F(ClientSocketPoolBaseTest, LoadStateOneRequest) {
   CreatePool(kDefaultMaxSockets, kDefaultMaxSocketsPerGroup);
-  connect_job_factory_->set_job_type(
-      TestConnectJob::kMockAdvancingLoadStateJob);
+  connect_job_factory_->set_job_type(TestConnectJob::kMockWaitingJob);
 
   ClientSocketHandle handle;
   TestCompletionCallback callback;
@@ -1938,17 +1936,165 @@ TEST_F(ClientSocketPoolBaseTest, LoadState) {
                        pool_.get(),
                        BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
-  EXPECT_EQ(LOAD_STATE_IDLE, handle.GetLoadState());
+  EXPECT_EQ(LOAD_STATE_CONNECTING, handle.GetLoadState());
 
-  base::MessageLoop::current()->RunUntilIdle();
+  client_socket_factory_.SetJobLoadState(0, LOAD_STATE_SSL_HANDSHAKE);
+  EXPECT_EQ(LOAD_STATE_SSL_HANDSHAKE, handle.GetLoadState());
+
+  // No point in completing the connection, since ClientSocketHandles only
+  // expect the LoadState to be checked while connecting.
+}
+
+// Test GetLoadState in the case there are two socket requests.
+TEST_F(ClientSocketPoolBaseTest, LoadStateTwoRequests) {
+  CreatePool(2, 2);
+  connect_job_factory_->set_job_type(TestConnectJob::kMockWaitingJob);
+
+  ClientSocketHandle handle;
+  TestCompletionCallback callback;
+  int rv = handle.Init("a",
+                       params_,
+                       kDefaultPriority,
+                       callback.callback(),
+                       pool_.get(),
+                       BoundNetLog());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
 
   ClientSocketHandle handle2;
   TestCompletionCallback callback2;
-  rv = handle2.Init("a", params_, kDefaultPriority, callback2.callback(),
-                    pool_.get(), BoundNetLog());
+  rv = handle2.Init("a",
+                    params_,
+                    kDefaultPriority,
+                    callback2.callback(),
+                    pool_.get(),
+                    BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
-  EXPECT_NE(LOAD_STATE_IDLE, handle.GetLoadState());
-  EXPECT_NE(LOAD_STATE_IDLE, handle2.GetLoadState());
+
+  // If the first Job is in an earlier state than the second, the state of
+  // the second job should be used for both handles.
+  client_socket_factory_.SetJobLoadState(0, LOAD_STATE_RESOLVING_HOST);
+  EXPECT_EQ(LOAD_STATE_CONNECTING, handle.GetLoadState());
+  EXPECT_EQ(LOAD_STATE_CONNECTING, handle2.GetLoadState());
+
+  // If the second Job is in an earlier state than the second, the state of
+  // the first job should be used for both handles.
+  client_socket_factory_.SetJobLoadState(0, LOAD_STATE_SSL_HANDSHAKE);
+  // One request is farther
+  EXPECT_EQ(LOAD_STATE_SSL_HANDSHAKE, handle.GetLoadState());
+  EXPECT_EQ(LOAD_STATE_SSL_HANDSHAKE, handle2.GetLoadState());
+
+  // Farthest along job connects and the first request gets the socket.  The
+  // second handle switches to the state of the remaining ConnectJob.
+  client_socket_factory_.SignalJob(0);
+  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_EQ(LOAD_STATE_CONNECTING, handle2.GetLoadState());
+}
+
+// Test GetLoadState in the case the per-group limit is reached.
+TEST_F(ClientSocketPoolBaseTest, LoadStateGroupLimit) {
+  CreatePool(2, 1);
+  connect_job_factory_->set_job_type(TestConnectJob::kMockWaitingJob);
+
+  ClientSocketHandle handle;
+  TestCompletionCallback callback;
+  int rv = handle.Init("a",
+                       params_,
+                       MEDIUM,
+                       callback.callback(),
+                       pool_.get(),
+                       BoundNetLog());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_EQ(LOAD_STATE_CONNECTING, handle.GetLoadState());
+
+  // Request another socket from the same pool, buth with a higher priority.
+  // The first request should now be stalled at the socket group limit.
+  ClientSocketHandle handle2;
+  TestCompletionCallback callback2;
+  rv = handle2.Init("a",
+                    params_,
+                    HIGHEST,
+                    callback2.callback(),
+                    pool_.get(),
+                    BoundNetLog());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_EQ(LOAD_STATE_WAITING_FOR_AVAILABLE_SOCKET, handle.GetLoadState());
+  EXPECT_EQ(LOAD_STATE_CONNECTING, handle2.GetLoadState());
+
+  // The first handle should remain stalled as the other socket goes through
+  // the connect process.
+
+  client_socket_factory_.SetJobLoadState(0, LOAD_STATE_SSL_HANDSHAKE);
+  EXPECT_EQ(LOAD_STATE_WAITING_FOR_AVAILABLE_SOCKET, handle.GetLoadState());
+  EXPECT_EQ(LOAD_STATE_SSL_HANDSHAKE, handle2.GetLoadState());
+
+  client_socket_factory_.SignalJob(0);
+  EXPECT_EQ(OK, callback2.WaitForResult());
+  EXPECT_EQ(LOAD_STATE_WAITING_FOR_AVAILABLE_SOCKET, handle.GetLoadState());
+
+  // Closing the second socket should cause the stalled handle to finally get a
+  // ConnectJob.
+  handle2.socket()->Disconnect();
+  handle2.Reset();
+  EXPECT_EQ(LOAD_STATE_CONNECTING, handle.GetLoadState());
+}
+
+// Test GetLoadState in the case the per-pool limit is reached.
+TEST_F(ClientSocketPoolBaseTest, LoadStatePoolLimit) {
+  CreatePool(2, 2);
+  connect_job_factory_->set_job_type(TestConnectJob::kMockWaitingJob);
+
+  ClientSocketHandle handle;
+  TestCompletionCallback callback;
+  int rv = handle.Init("a",
+                       params_,
+                       kDefaultPriority,
+                       callback.callback(),
+                       pool_.get(),
+                       BoundNetLog());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+
+  // Request for socket from another pool.
+  ClientSocketHandle handle2;
+  TestCompletionCallback callback2;
+  rv = handle2.Init("b",
+                    params_,
+                    kDefaultPriority,
+                    callback2.callback(),
+                    pool_.get(),
+                    BoundNetLog());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+
+  // Request another socket from the first pool.  Request should stall at the
+  // socket pool limit.
+  ClientSocketHandle handle3;
+  TestCompletionCallback callback3;
+  rv = handle3.Init("a",
+                    params_,
+                    kDefaultPriority,
+                    callback2.callback(),
+                    pool_.get(),
+                    BoundNetLog());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+
+  // The third handle should remain stalled as the other sockets in its group
+  // goes through the connect process.
+
+  EXPECT_EQ(LOAD_STATE_CONNECTING, handle.GetLoadState());
+  EXPECT_EQ(LOAD_STATE_WAITING_FOR_STALLED_SOCKET_POOL, handle3.GetLoadState());
+
+  client_socket_factory_.SetJobLoadState(0, LOAD_STATE_SSL_HANDSHAKE);
+  EXPECT_EQ(LOAD_STATE_SSL_HANDSHAKE, handle.GetLoadState());
+  EXPECT_EQ(LOAD_STATE_WAITING_FOR_STALLED_SOCKET_POOL, handle3.GetLoadState());
+
+  client_socket_factory_.SignalJob(0);
+  EXPECT_EQ(OK, callback.WaitForResult());
+  EXPECT_EQ(LOAD_STATE_WAITING_FOR_STALLED_SOCKET_POOL, handle3.GetLoadState());
+
+  // Closing a socket should allow the stalled handle to finally get a new
+  // ConnectJob.
+  handle.socket()->Disconnect();
+  handle.Reset();
+  EXPECT_EQ(LOAD_STATE_CONNECTING, handle3.GetLoadState());
 }
 
 TEST_F(ClientSocketPoolBaseTest, Recoverable) {

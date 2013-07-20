@@ -9158,6 +9158,9 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       </message>
 
       <!-- Load State -->
+      <message name="IDS_LOAD_STATE_WAITING_FOR_SOCKET_SLOT" desc="Status text when Chrome is at its connection limit, and is waiting for a URL request to complete to free up a connection.">
+        Waiting for available socket...
+      </message>
       <message name="IDS_LOAD_STATE_WAITING_FOR_DELEGATE">
         Waiting for <ph name="LOAD_STATE_PARAMETER">$1<ex>extension Adblock</ex></ph>...
       </message>

@@ -560,27 +560,29 @@ LoadState ClientSocketPoolBaseHelper::GetLoadState(
   // Can't use operator[] since it is non-const.
   const Group& group = *group_map_.find(group_name)->second;
 
-  // Search pending_requests for matching handle.
+  // Search the first group.jobs().size() |pending_requests| for |handle|.
+  // If it's farther back in the deque than that, it doesn't have a
+  // corresponding ConnectJob.
+  size_t connect_jobs = group.jobs().size();
   RequestQueue::const_iterator it = group.pending_requests().begin();
-  for (size_t i = 0; it != group.pending_requests().end(); ++it, ++i) {
-    if ((*it)->handle() == handle) {
-      if (i < group.jobs().size()) {
-        LoadState max_state = LOAD_STATE_IDLE;
-        for (ConnectJobSet::const_iterator job_it = group.jobs().begin();
-             job_it != group.jobs().end(); ++job_it) {
-          max_state = std::max(max_state, (*job_it)->GetLoadState());
-        }
-        return max_state;
-      } else {
-        // TODO(wtc): Add a state for being on the wait list.
-        // See http://crbug.com/5077.
-        return LOAD_STATE_IDLE;
-      }
+  for (size_t i = 0; it != group.pending_requests().end() && i < connect_jobs;
+       ++it, ++i) {
+    if ((*it)->handle() != handle)
+      continue;
+
+    // Just return the state  of the farthest along ConnectJob for the first
+    // group.jobs().size() pending requests.
+    LoadState max_state = LOAD_STATE_IDLE;
+    for (ConnectJobSet::const_iterator job_it = group.jobs().begin();
+         job_it != group.jobs().end(); ++job_it) {
+      max_state = std::max(max_state, (*job_it)->GetLoadState());
     }
+    return max_state;
   }
 
-  NOTREACHED();
-  return LOAD_STATE_IDLE;
+  if (group.IsStalledOnPoolMaxSockets(max_sockets_per_group_))
+    return LOAD_STATE_WAITING_FOR_STALLED_SOCKET_POOL;
+  return LOAD_STATE_WAITING_FOR_AVAILABLE_SOCKET;
 }
 
 base::DictionaryValue* ClientSocketPoolBaseHelper::GetInfoAsValue(
