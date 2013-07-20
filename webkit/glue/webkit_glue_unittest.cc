@@ -29,11 +29,6 @@ class TestWebKitPlatformSupport
     return base::StringPiece();
   }
 
-  virtual void GetPlugins(bool,
-                          std::vector<webkit::WebPluginInfo,
-                          std::allocator<webkit::WebPluginInfo> >*) OVERRIDE {
-  }
-
   virtual webkit_glue::ResourceLoaderBridge* CreateResourceLoader(
       const webkit_glue::ResourceLoaderBridge::RequestInfo&) OVERRIDE {
     return NULL;

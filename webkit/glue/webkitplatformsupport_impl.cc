@@ -36,7 +36,6 @@
 #include "third_party/WebKit/public/platform/WebData.h"
 #include "third_party/WebKit/public/platform/WebDiscardableMemory.h"
 #include "third_party/WebKit/public/platform/WebGestureCurve.h"
-#include "third_party/WebKit/public/platform/WebPluginListBuilder.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
@@ -49,7 +48,6 @@
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/websocketstreamhandle_impl.h"
 #include "webkit/glue/weburlloader_impl.h"
-#include "webkit/plugins/webplugininfo.h"
 
 using WebKit::WebAudioBus;
 using WebKit::WebCookie;
@@ -386,32 +384,6 @@ WebData WebKitPlatformSupportImpl::parseDataURL(
 WebURLError WebKitPlatformSupportImpl::cancelledError(
     const WebURL& unreachableURL) const {
   return WebURLLoaderImpl::CreateError(unreachableURL, net::ERR_ABORTED);
-}
-
-void WebKitPlatformSupportImpl::getPluginList(bool refresh,
-                                     WebPluginListBuilder* builder) {
-  std::vector<webkit::WebPluginInfo> plugins;
-  GetPlugins(refresh, &plugins);
-
-  for (size_t i = 0; i < plugins.size(); ++i) {
-    const webkit::WebPluginInfo& plugin = plugins[i];
-
-    builder->addPlugin(
-        plugin.name, plugin.desc,
-        plugin.path.BaseName().AsUTF16Unsafe());
-
-    for (size_t j = 0; j < plugin.mime_types.size(); ++j) {
-      const webkit::WebPluginMimeType& mime_type = plugin.mime_types[j];
-
-      builder->addMediaTypeToLastPlugin(
-          WebString::fromUTF8(mime_type.mime_type), mime_type.description);
-
-      for (size_t k = 0; k < mime_type.file_extensions.size(); ++k) {
-        builder->addFileExtensionToLastMediaType(
-            UTF8ToUTF16(mime_type.file_extensions[k]));
-      }
-    }
-  }
 }
 
 void WebKitPlatformSupportImpl::decrementStatsCounter(const char* name) {

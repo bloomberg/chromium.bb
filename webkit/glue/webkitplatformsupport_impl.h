@@ -19,10 +19,6 @@ namespace base {
 class MessageLoop;
 }
 
-namespace webkit {
-struct WebPluginInfo;
-}
-
 namespace WebKit {
 class WebSocketStreamHandle;
 }
@@ -60,9 +56,9 @@ class WEBKIT_GLUE_EXPORT WebKitPlatformSupportImpl :
   virtual size_t highUsageDeltaMB();
 #endif
 
-  virtual void startHeapProfiling(const WebKit::WebString& /*prefix*/) OVERRIDE;
+  virtual void startHeapProfiling(const WebKit::WebString& prefix);
   virtual void stopHeapProfiling() OVERRIDE;
-  virtual void dumpHeapProfiling(const WebKit::WebString& /*reason*/) OVERRIDE;
+  virtual void dumpHeapProfiling(const WebKit::WebString& reason);
   virtual WebKit::WebString getHeapProfile() OVERRIDE;
 
   virtual bool processMemorySizesInBytes(size_t* private_bytes,
@@ -75,7 +71,6 @@ class WEBKIT_GLUE_EXPORT WebKitPlatformSupportImpl :
       const WebKit::WebURL& url, WebKit::WebString& mimetype,
       WebKit::WebString& charset);
   virtual WebKit::WebURLError cancelledError(const WebKit::WebURL& url) const;
-  virtual void getPluginList(bool refresh, WebKit::WebPluginListBuilder*);
   virtual void decrementStatsCounter(const char* name);
   virtual void incrementStatsCounter(const char* name);
   virtual void histogramCustomCounts(
@@ -129,9 +124,6 @@ class WEBKIT_GLUE_EXPORT WebKitPlatformSupportImpl :
   virtual base::StringPiece GetDataResource(int resource_id,
                                             ui::ScaleFactor scale_factor) = 0;
 
-  // Returns the list of plugins.
-  virtual void GetPlugins(bool refresh,
-                          std::vector<webkit::WebPluginInfo>* plugins) = 0;
   // Creates a ResourceLoaderBridge.
   virtual ResourceLoaderBridge* CreateResourceLoader(
       const ResourceLoaderBridge::RequestInfo& request_info) = 0;

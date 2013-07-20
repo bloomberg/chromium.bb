@@ -26,13 +26,6 @@ base::StringPiece WebKitPlatformSupportImpl::GetDataResource(
   return GetContentClient()->GetDataResource(resource_id, scale_factor);
 }
 
-void WebKitPlatformSupportImpl::GetPlugins(
-    bool refresh, std::vector<webkit::WebPluginInfo>* plugins) {
-  // This should not be called except in the renderer.
-  // RendererWebKitPlatformSupportImpl overrides this.
-  NOTREACHED();
-}
-
 webkit_glue::ResourceLoaderBridge*
 WebKitPlatformSupportImpl::CreateResourceLoader(
     const webkit_glue::ResourceLoaderBridge::RequestInfo& request_info) {

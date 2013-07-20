@@ -57,6 +57,7 @@
 #include "third_party/WebKit/public/platform/WebHyphenator.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamCenter.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamCenterClient.h"
+#include "third_party/WebKit/public/platform/WebPluginListBuilder.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
@@ -66,6 +67,7 @@
 #include "webkit/glue/simple_webmimeregistry_impl.h"
 #include "webkit/glue/webfileutilities_impl.h"
 #include "webkit/glue/webkit_glue.h"
+#include "webkit/plugins/webplugininfo.h"
 
 #if defined(OS_WIN)
 #include "content/common/child_process_messages.h"
@@ -902,6 +904,37 @@ RendererWebKitPlatformSupportImpl::createMIDIAccessor(
   return new RendererWebMIDIAccessorImpl(client);
 }
 
+void RendererWebKitPlatformSupportImpl::getPluginList(
+    bool refresh,
+    WebKit::WebPluginListBuilder* builder) {
+#if defined(ENABLE_PLUGINS)
+  std::vector<webkit::WebPluginInfo> plugins;
+  if (!plugin_refresh_allowed_)
+    refresh = false;
+  RenderThread::Get()->Send(
+      new ViewHostMsg_GetPlugins(refresh, &plugins));
+  for (size_t i = 0; i < plugins.size(); ++i) {
+    const webkit::WebPluginInfo& plugin = plugins[i];
+
+    builder->addPlugin(
+        plugin.name, plugin.desc,
+        plugin.path.BaseName().AsUTF16Unsafe());
+
+    for (size_t j = 0; j < plugin.mime_types.size(); ++j) {
+      const webkit::WebPluginMimeType& mime_type = plugin.mime_types[j];
+
+      builder->addMediaTypeToLastPlugin(
+          WebString::fromUTF8(mime_type.mime_type), mime_type.description);
+
+      for (size_t k = 0; k < mime_type.file_extensions.size(); ++k) {
+        builder->addFileExtensionToLastMediaType(
+            WebString::fromUTF8(mime_type.file_extensions[k]));
+      }
+    }
+  }
+#endif
+}
+
 //------------------------------------------------------------------------------
 
 WebKit::WebString
@@ -953,16 +986,6 @@ void RendererWebKitPlatformSupportImpl::sampleGamepads(WebGamepads& gamepads) {
 WebKit::WebString RendererWebKitPlatformSupportImpl::userAgent(
     const WebKit::WebURL& url) {
   return WebKitPlatformSupportImpl::userAgent(url);
-}
-
-void RendererWebKitPlatformSupportImpl::GetPlugins(
-    bool refresh, std::vector<webkit::WebPluginInfo>* plugins) {
-#if defined(ENABLE_PLUGINS)
-  if (!plugin_refresh_allowed_)
-    refresh = false;
-  RenderThread::Get()->Send(
-      new ViewHostMsg_GetPlugins(refresh, plugins));
-#endif
 }
 
 //------------------------------------------------------------------------------

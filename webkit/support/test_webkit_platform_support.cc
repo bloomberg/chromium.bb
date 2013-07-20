@@ -354,10 +354,6 @@ void TestWebKitPlatformSupport::setGamepadData(
   gamepad_data_ = data;
 }
 
-void TestWebKitPlatformSupport::GetPlugins(
-    bool refresh, std::vector<webkit::WebPluginInfo>* plugins) {
-}
-
 webkit_glue::ResourceLoaderBridge*
 TestWebKitPlatformSupport::CreateResourceLoader(
     const webkit_glue::ResourceLoaderBridge::RequestInfo& request_info) {
