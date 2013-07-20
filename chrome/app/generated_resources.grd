@@ -10852,7 +10852,7 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         Wallet never shares your credit information with merchants. Shop with confidence knowing that you credit card number is protected online.
       </message>
       <message name="IDS_AUTOFILL_DIALOG_CARD_GENERATION_OK_BUTTON" desc="Text for the button users have to press to proceed past the wallet card generation text.">
-        OK, got it
+        Okay, got it
       </message>
 
       <!--- Autofill dialog: Wallet error messages -->

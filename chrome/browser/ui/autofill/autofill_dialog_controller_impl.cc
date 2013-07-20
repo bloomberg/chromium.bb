@@ -814,6 +814,7 @@ DialogOverlayState AutofillDialogControllerImpl::GetDialogOverlay() const {
     string.text = l10n_util::GetStringUTF16(
         IDS_AUTOFILL_DIALOG_CARD_GENERATION_DONE);
     string.text_color = SK_ColorBLACK;
+    string.alignment = gfx::ALIGN_CENTER;
 
     state.strings.push_back(DialogOverlayString());
     DialogOverlayString& subtext = state.strings.back();
@@ -821,6 +822,7 @@ DialogOverlayState AutofillDialogControllerImpl::GetDialogOverlay() const {
     subtext.text_color = SkColorSetRGB(102, 102, 102);
     subtext.text = l10n_util::GetStringUTF16(
         IDS_AUTOFILL_DIALOG_CARD_GENERATION_EXPLANATION);
+    subtext.alignment = gfx::ALIGN_CENTER;
 
     state.button_text = l10n_util::GetStringUTF16(
         IDS_AUTOFILL_DIALOG_CARD_GENERATION_OK_BUTTON);

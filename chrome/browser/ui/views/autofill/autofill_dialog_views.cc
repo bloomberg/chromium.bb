@@ -33,6 +33,7 @@
 #include "ui/gfx/skia_util.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
+#include "ui/views/controls/button/blue_button.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/label_button.h"
@@ -546,7 +547,7 @@ void AutofillDialogViews::AccountChooser::LinkClicked(views::Link* source,
 AutofillDialogViews::OverlayView::OverlayView(views::ButtonListener* listener)
     : image_view_(new views::ImageView()),
       message_stack_(new views::View()),
-      button_(new views::LabelButton(listener, string16())) {
+      button_(new views::BlueButton(listener, string16())) {
   set_border(views::Border::CreateEmptyBorder(12, 12, 12, 12));
   set_background(views::Background::CreateSolidBackground(GetNativeTheme()->
       GetSystemColor(ui::NativeTheme::kColorId_DialogBackground)));
@@ -561,7 +562,6 @@ AutofillDialogViews::OverlayView::OverlayView(views::ButtonListener* listener)
       kOverlayTextPadding, kOverlayTextPadding, 0, kOverlayTextPadding));
 
   AddChildView(button_);
-  button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
   button_->set_focusable(true);
 }
 
@@ -645,9 +645,7 @@ void AutofillDialogViews::OverlayView::Layout() {
     button_->SizeToPreferredSize();
     y -= button_->height();
     button_->SetPosition(gfx::Point(
-        bounds.width() - button_->width() -
-            views::kButtonHEdgeMarginNew,
-        y));
+        bounds.CenterPoint().x() - button_->width() / 2, y));
     y -= views::kButtonVEdgeMarginNew;
   }
 
