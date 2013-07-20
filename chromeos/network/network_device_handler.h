@@ -14,6 +14,12 @@
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_handler_callbacks.h"
 
+namespace base {
+
+class Value;
+
+}  // namespace base
+
 namespace chromeos {
 
 // The NetworkDeviceHandler class allows making device specific requests on a
@@ -31,8 +37,7 @@ namespace chromeos {
 // that is suitable for logging. None of the error message text is meant for
 // user consumption.
 
-class CHROMEOS_EXPORT NetworkDeviceHandler
-    : public base::SupportsWeakPtr<NetworkDeviceHandler> {
+class CHROMEOS_EXPORT NetworkDeviceHandler {
  public:
 
   // Constants for |error_name| from |error_callback|.
@@ -52,6 +57,15 @@ class CHROMEOS_EXPORT NetworkDeviceHandler
       const std::string& device_path,
       const network_handler::DictionaryResultCallback& callback,
       const network_handler::ErrorCallback& error_callback) const;
+
+  // Sets the value of property |name| on device with id |device_path| to
+  // |value|.
+  void SetDeviceProperty(
+      const std::string& device_path,
+      const std::string& name,
+      const base::Value& value,
+      const base::Closure& callback,
+      const network_handler::ErrorCallback& error_callback);
 
   // Requests a refresh of the IP configuration for the device specified by
   // |device_path| if it exists. This will apply any newly configured

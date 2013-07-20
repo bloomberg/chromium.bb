@@ -124,6 +124,20 @@ void NetworkDeviceHandler::GetDeviceProperties(
                  callback, error_callback, device_path));
 }
 
+void NetworkDeviceHandler::SetDeviceProperty(
+    const std::string& device_path,
+    const std::string& name,
+    const base::Value& value,
+    const base::Closure& callback,
+    const network_handler::ErrorCallback& error_callback) {
+  DBusThreadManager::Get()->GetShillDeviceClient()->SetProperty(
+      dbus::ObjectPath(device_path),
+      name,
+      value,
+      callback,
+      base::Bind(&HandleShillCallFailure, device_path, error_callback));
+}
+
 void NetworkDeviceHandler::RequestRefreshIPConfigs(
     const std::string& device_path,
     const base::Closure& callback,
