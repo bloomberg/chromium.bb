@@ -75,6 +75,7 @@ sqlite-3.7.6.3-fix-out-of-scope-memory-reference.patch
 misalignment.patch
 memcmp.patch
 separate_cache_pool.patch
+recover.patch
 
 So, e.g. you could do this to apply all our patches to vanilla SQLite:
 
@@ -93,6 +94,7 @@ patch -p0 < ../sqlite/sqlite-3.7.6.3-fix-out-of-scope-memory-reference.patch
 patch -p0 < ../sqlite/misalignment.patch
 patch -p0 < ../sqlite/memcmp.patch
 patch -p0 < ../sqlite/separate_cache_pool.patch
+patch -p0 < ../sqlite/recover.patch
 
 This will only be the case if all changes we make also update the corresponding
 patch files. Therefore please remember to do that whenever you make a change!

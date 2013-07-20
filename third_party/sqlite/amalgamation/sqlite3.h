@@ -6408,6 +6408,17 @@ SQLITE_API int sqlite3_wal_checkpoint_v2(
 #define SQLITE_CHECKPOINT_RESTART 2
 
 
+/* Begin recover.patch for Chromium */
+/*
+** Call to initialize the recover virtual-table modules (see recover.c).
+**
+** This could be loaded by default in main.c, but that would make the
+** virtual table available to Web SQL.  Breaking it out allows only
+** selected users to enable it (currently sql/recovery.cc).
+*/
+int recoverVtableInit(sqlite3 *db);
+/* End recover.patch for Chromium */
+
 /*
 ** Undo the hack that converts floating point types to integer for
 ** builds on processors without floating point support.
