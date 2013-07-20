@@ -32,14 +32,15 @@ function verify(condition, message) {
 /**
  * Builds a request to the notification server.
  * @param {string} handlerName Server handler to send the request to.
+ * @param {string} contentType Value for the Content-type header.
  * @return {XMLHttpRequest} Server request.
  */
-function buildServerRequest(handlerName) {
+function buildServerRequest(handlerName, contentType) {
   var request = new XMLHttpRequest();
 
   request.responseType = 'text';
   request.open('POST', NOTIFICATION_CARDS_URL + '/' + handlerName, true);
-  request.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+  request.setRequestHeader('Content-type', contentType);
 
   return request;
 }
@@ -177,7 +178,8 @@ function buildTaskManager(areConflicting) {
         '&script=' + encodeURIComponent(file) +
         '&line=' + encodeURIComponent(line) +
         '&trace=' + encodeURIComponent(filteredStack);
-    var request = buildServerRequest('jserror');
+    var request = buildServerRequest('jserror',
+                                     'application/x-www-form-urlencoded');
     request.onloadend = function(event) {
       console.log('sendErrorReport status: ' + request.status);
     };

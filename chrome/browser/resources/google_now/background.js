@@ -281,7 +281,8 @@ function showNotification(card, notificationsData, opt_previousVersion) {
 
   notificationsData[card.notificationId] = {
     actionUrls: card.actionUrls,
-    version: card.version
+    version: card.version,
+    dismissalParameters: card.dismissal
   };
 }
 
@@ -412,7 +413,8 @@ function requestNotificationCards(position, callback) {
       ',' + position.coords.longitude +
       ',' + position.coords.accuracy;
 
-  var request = buildServerRequest('notifications');
+  var request = buildServerRequest('notifications',
+                                   'application/x-www-form-urlencoded');
 
   request.onloadend = function(event) {
     console.log('requestNotificationCards-onloadend ' + request.status);
@@ -473,11 +475,12 @@ function updateNotificationsCards(position) {
  * @param {string} notificationId Unique identifier of the card.
  * @param {number} dismissalTimeMs Time of the user's dismissal of the card in
  *     milliseconds since epoch.
+ * @param {Object} dismissalParameters Dismissal parameters.
  * @param {function(boolean)} callbackBoolean Completion callback with 'done'
  *     parameter.
  */
 function requestCardDismissal(
-    notificationId, dismissalTimeMs, callbackBoolean) {
+    notificationId, dismissalTimeMs, dismissalParameters, callbackBoolean) {
   console.log('requestDismissingCard ' + notificationId + ' from ' +
       NOTIFICATION_CARDS_URL);
 
@@ -489,10 +492,7 @@ function requestCardDismissal(
   }
 
   recordEvent(DiagnosticEvent.DISMISS_REQUEST_TOTAL);
-  // Send a dismiss request to the server.
-  var requestParameters = 'id=' + notificationId +
-                          '&dismissalAge=' + dismissalAge;
-  var request = buildServerRequest('dismiss');
+  var request = buildServerRequest('dismiss', 'application/json');
   request.onloadend = function(event) {
     console.log('requestDismissingCard-onloadend ' + request.status);
     if (request.status == HTTP_OK)
@@ -509,7 +509,13 @@ function requestCardDismissal(
   setAuthorization(request, function(success) {
     if (success) {
       tasks.debugSetStepName('requestCardDismissal-send-request');
-      request.send(requestParameters);
+
+      var dismissalObject = {
+        id: notificationId,
+        age: dismissalAge,
+        dismissal: dismissalParameters
+      };
+      request.send(JSON.stringify(dismissalObject));
     } else {
       callbackBoolean(false);
     }
@@ -552,16 +558,19 @@ function processPendingDismissals(callbackBoolean) {
       // recursively with the rest.
       var dismissal = items.pendingDismissals[0];
       requestCardDismissal(
-          dismissal.notificationId, dismissal.time, function(done) {
-        if (done) {
-          dismissalsChanged = true;
-          items.pendingDismissals.splice(0, 1);
-          items.recentDismissals[dismissal.notificationId] = Date.now();
-          doProcessDismissals();
-        } else {
-          onFinish(false);
-        }
-      });
+          dismissal.notificationId,
+          dismissal.time,
+          dismissal.parameters,
+          function(done) {
+            if (done) {
+              dismissalsChanged = true;
+              items.pendingDismissals.splice(0, 1);
+              items.recentDismissals[dismissal.notificationId] = Date.now();
+              doProcessDismissals();
+            } else {
+              onFinish(false);
+            }
+          });
     }
 
     doProcessDismissals();
@@ -665,13 +674,17 @@ function onNotificationClosed(notificationId, byUser) {
         notificationId,
         function() {});
 
-    tasks.debugSetStepName('onNotificationClosed-get-pendingDismissals');
-    storage.get('pendingDismissals', function(items) {
+    tasks.debugSetStepName('onNotificationClosed-storage-get');
+    storage.get(['pendingDismissals', 'notificationsData'], function(items) {
       items.pendingDismissals = items.pendingDismissals || [];
+      items.notificationsData = items.notificationsData || {};
+
+      var notificationData = items.notificationsData[notificationId];
 
       var dismissal = {
         notificationId: notificationId,
-        time: Date.now()
+        time: Date.now(),
+        parameters: notificationData && notificationData.dismissalParameters
       };
       items.pendingDismissals.push(dismissal);
       storage.set({pendingDismissals: items.pendingDismissals});
