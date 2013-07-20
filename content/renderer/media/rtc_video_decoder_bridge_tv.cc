@@ -87,7 +87,7 @@ int32_t RTCVideoDecoderBridgeTv::Decode(
   scoped_refptr<media::DecoderBuffer> buffer =
       media::DecoderBuffer::CopyFrom(input_image._buffer, input_image._length);
   if (render_time_ms != -1) {
-    buffer->SetTimestamp(base::TimeDelta::FromMilliseconds(
+    buffer->set_timestamp(base::TimeDelta::FromMilliseconds(
         render_time_ms - timestamp_offset_millis_));
   }
 
