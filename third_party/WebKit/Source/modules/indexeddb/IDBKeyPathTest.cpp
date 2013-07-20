@@ -29,9 +29,9 @@
 #include "bindings/v8/IDBBindingUtilities.h"
 #include "bindings/v8/SerializedScriptValue.h"
 #include "modules/indexeddb/IDBKey.h"
+#include "wtf/Vector.h"
 
 #include <gtest/gtest.h>
-#include "wtf/Vector.h"
 
 using namespace WebCore;
 

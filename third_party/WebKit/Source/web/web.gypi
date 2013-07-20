@@ -306,7 +306,6 @@
       'tests/GraphicsContextTest.cpp',
       'tests/GraphicsLayerTest.cpp',
       'tests/IDBBindingUtilitiesTest.cpp',
-      'tests/IDBKeyPathTest.cpp',
       'tests/IDBRequestTest.cpp',
       'tests/IDBTransactionTest.cpp',
       'tests/ImageFilterBuilderTest.cpp',

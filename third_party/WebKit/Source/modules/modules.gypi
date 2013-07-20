@@ -724,6 +724,7 @@
       'websockets/WorkerThreadableWebSocketChannel.h',
     ],
     'modules_unittest_files': [
+      'indexeddb/IDBKeyPathTest.cpp',
       'websockets/WebSocketDeflaterTest.cpp',
       'websockets/WebSocketExtensionDispatcherTest.cpp',
       'websockets/WebSocketExtensionParserTest.cpp',

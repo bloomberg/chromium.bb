@@ -31,8 +31,10 @@
 {
     'includes': [
         'WinPrecompile.gypi',
+        '../../bindings/bindings.gypi',
         '../../core/core.gypi',
         '../../core/features.gypi',
+        '../../modules/modules.gypi',
         '../../web/web.gypi',
         '../../wtf/wtf.gypi',
     ],
@@ -102,7 +104,9 @@
                         '../../core/testing/v8', # for WebCoreTestSupport.h, needed to link in window.internals code.
                     ],
                     'sources': [
+                        '<@(bindings_unittest_files)',
                         '<@(core_unittest_files)',
+                        '<@(modules_unittest_files)',
                         '<@(web_unittest_files)',
                         '../../web/WebTestingSupport.cpp',
                         '../../web/tests/WebUnitTests.cpp',   # Components test runner support.
