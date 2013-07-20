@@ -37,7 +37,7 @@
 
 #include "WebKit.h"
 #include "public/platform/Platform.h"
-#include <webkit/support/webkit_support.h>
+#include <content/test/webkit_unit_test_support.h>
 
 #if defined(WEBKIT_DLL_UNITTEST)
 #include "WebUnitTests.h"
@@ -53,16 +53,16 @@ int main(int argc, char** argv)
 {
 #if defined(WEBKIT_DLL_UNITTEST)
     WebKit::InitTestSuite(argc, argv);
-    webkit_support::SetUpTestEnvironmentForUnitTests();
+    content::SetUpTestEnvironmentForWebKitUnitTests();
     int result = WebKit::RunAllUnitTests();
-    webkit_support::TearDownTestEnvironment();
+    content::TearDownEnvironmentForWebKitUnitTests();
     WebKit::DeleteTestSuite();
 #else
     ::testing::InitGoogleMock(&argc, argv);
     TestSuite testSuite(argc, argv);
-    webkit_support::SetUpTestEnvironmentForUnitTests();
+    content::SetUpTestEnvironmentForWebKitUnitTests();
     int result = testSuite.Run();
-    webkit_support::TearDownTestEnvironment();
+    content::TearDownEnvironmentForWebKitUnitTests();
 #endif
 
     return result;

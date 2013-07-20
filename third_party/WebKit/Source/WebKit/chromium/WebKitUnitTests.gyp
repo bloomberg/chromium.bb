@@ -55,7 +55,7 @@
                 '<(DEPTH)/third_party/zlib/zlib.gyp:zlib',
                 '<(DEPTH)/url/url.gyp:url_lib',
                 '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
-                '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_support',
+                '<(DEPTH)/content/content.gyp:content_webkit_unit_test_support',
             ],
             'sources': [
                 '../../web/tests/RunAllTests.cpp',
