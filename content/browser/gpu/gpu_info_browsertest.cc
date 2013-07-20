@@ -88,10 +88,14 @@ class GpuInfoBrowserTest : public ContentBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(GpuInfoBrowserTest, MANUAL_DisplayGpuInfo) {
+  // crbug.com/262287
 #if defined(OS_MACOSX)
   // TODO(zmo): crashing on Mac, and also we don't have the full info
   // collected.
   return;
+#endif
+#if defined(OS_LINUX) && !defined(NDEBUG)
+  // TODO(zmo): crashing on Linux Debug.
 #endif
   TestObserver observer(GetMessageLoop());
   GpuDataManagerImpl::GetInstance()->AddObserver(&observer);
