@@ -424,6 +424,36 @@ TEST_F(AutofillPopupControllerUnitTest, UpdateDataListValues) {
   EXPECT_EQ(ids, autofill_popup_controller_->identifiers());
 }
 
+TEST_F(AutofillPopupControllerUnitTest, PopupsWithOnlyDataLists) {
+  // Create the popup with a single datalist element.
+  std::vector<string16> items;
+  items.push_back(string16());
+  std::vector<int> ids;
+  ids.push_back(WebAutofillClient::MenuItemIDDataListEntry);
+
+  autofill_popup_controller_->Show(items, items, items, ids);
+
+  EXPECT_EQ(items, autofill_popup_controller_->names());
+  EXPECT_EQ(ids, autofill_popup_controller_->identifiers());
+
+  // Replace the datalist element with a new one.
+  std::vector<string16> data_list_values;
+  data_list_values.push_back(ASCIIToUTF16("data list value 1"));
+
+  autofill_popup_controller_->UpdateDataListValues(data_list_values,
+                                                   data_list_values);
+
+  EXPECT_EQ(data_list_values, autofill_popup_controller_->names());
+  // The id value should stay the same.
+  EXPECT_EQ(ids, autofill_popup_controller_->identifiers());
+
+  // Clear datalist values and check that the popup becomes hidden.
+  EXPECT_CALL(*autofill_popup_controller_, Hide());
+  data_list_values.clear();
+  autofill_popup_controller_->UpdateDataListValues(data_list_values,
+                                                   data_list_values);
+}
+
 TEST_F(AutofillPopupControllerUnitTest, GetOrCreate) {
   AutofillDriverImpl* driver =
       AutofillDriverImpl::FromWebContents(web_contents());
