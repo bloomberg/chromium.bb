@@ -14,7 +14,6 @@
 #include "base/observer_list_threadsafe.h"
 #include "base/strings/string16.h"
 #include "base/synchronization/lock.h"
-#include "base/threading/thread_checker.h"
 #include "chrome/browser/storage_monitor/storage_info.h"
 
 class ChromeBrowserMainPartsLinux;
