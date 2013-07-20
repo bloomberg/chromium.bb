@@ -254,6 +254,18 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="AsyncDNS.AttemptCountFail">
+  <summary>
+    Count of DnsAttempts before DnsTransaction completes with failure.
+  </summary>
+</histogram>
+
+<histogram name="AsyncDNS.AttemptCountSuccess">
+  <summary>
+    Count of DnsAttempts before DnsTransaction completes successfully.
+  </summary>
+</histogram>
+
 <histogram name="AsyncDNS.ConfigChange" enum="BooleanSuccess">
   <summary>
     Whether DnsConfigService::OnConfigChange actually corresponded to a change

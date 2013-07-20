@@ -528,6 +528,7 @@ class DnsTransactionImpl : public DnsTransaction,
       callback_(callback),
       net_log_(net_log),
       qnames_initial_size_(0),
+      attempts_count_(0),
       had_tcp_attempt_(false),
       first_server_index_(0) {
     DCHECK(session_.get());
@@ -641,6 +642,10 @@ class DnsTransactionImpl : public DnsTransaction,
 
     timer_.Stop();
     RecordLostPacketsIfAny();
+    if (result.rv == OK)
+      UMA_HISTOGRAM_COUNTS("AsyncDNS.AttemptCountSuccess", attempts_count_);
+    else
+      UMA_HISTOGRAM_COUNTS("AsyncDNS.AttemptCountFail", attempts_count_);
 
     if (response && qtype_ == dns_protocol::kTypeA) {
       UMA_HISTOGRAM_COUNTS("AsyncDNS.SuffixSearchRemain", qnames_.size());
@@ -684,6 +689,7 @@ class DnsTransactionImpl : public DnsTransaction,
         new DnsUDPAttempt(server_index, lease.Pass(), query.Pass());
 
     attempts_.push_back(attempt);
+    ++attempts_count_;
 
     if (!got_socket)
       return AttemptResult(ERR_CONNECTION_REFUSED, NULL);
@@ -728,6 +734,7 @@ class DnsTransactionImpl : public DnsTransaction,
                                                query.Pass());
 
     attempts_.push_back(attempt);
+    ++attempts_count_;
     had_tcp_attempt_ = true;
 
     net_log_.AddEvent(
@@ -909,6 +916,8 @@ class DnsTransactionImpl : public DnsTransaction,
 
   // List of attempts for the current name.
   ScopedVector<DnsAttempt> attempts_;
+  // Count of attempts, not reset when |attempts_| vector is cleared.
+  int  attempts_count_;
   bool had_tcp_attempt_;
 
   // Index of the first server to try on each search query.
