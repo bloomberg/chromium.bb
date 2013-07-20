@@ -178,11 +178,8 @@ void ChromeWebContentsViewDelegateViews::SizeChanged(const gfx::Size& size) {
 }
 
 views::Widget* ChromeWebContentsViewDelegateViews::GetTopLevelWidget() {
-  gfx::NativeWindow top_level_window =
-      web_contents_->GetView()->GetTopLevelNativeWindow();
-  if (!top_level_window)
-    return NULL;
-  return views::Widget::GetWidgetForNativeWindow(top_level_window);
+  return views::Widget::GetTopLevelWidgetForNativeView(
+      web_contents_->GetView()->GetNativeView());
 }
 
 views::FocusManager*
