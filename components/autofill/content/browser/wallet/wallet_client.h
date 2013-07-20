@@ -14,8 +14,6 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/autofill/content/browser/autocheckout_statistic.h"
-#include "components/autofill/content/browser/wallet/encryption_escrow_client.h"
-#include "components/autofill/content/browser/wallet/encryption_escrow_client_observer.h"
 #include "components/autofill/content/browser/wallet/full_wallet.h"
 #include "components/autofill/content/browser/wallet/wallet_items.h"
 #include "components/autofill/core/browser/autofill_manager_delegate.h"
@@ -42,15 +40,15 @@ class WalletClientDelegate;
 // the user's behalf. The normal flow for using this class is as follows:
 // 1) GetWalletItems should be called to retrieve the user's Wallet.
 //   a) If the user does not have a Wallet, they must AcceptLegalDocuments and
-//      SaveInstrumentAndAddress before continuing.
+//      SaveToWallet to set up their account before continuing.
 //   b) If the user has not accepted the most recent legal documents for
 //      Wallet, they must AcceptLegalDocuments.
 // 2) The user then chooses what instrument and shipping address to use for the
 //    current transaction.
 //   a) If they choose an instrument with a zip code only address, the billing
-//      address will need to be updated using UpdateInstrument.
+//      address will need to be updated using SaveToWallet.
 //   b) The user may also choose to add a new instrument or address using
-//      SaveAddress, SaveInstrument, or SaveInstrumentAndAddress.
+//      SaveToWallet.
 // 3) Once the user has selected the backing instrument and shipping address
 //    for this transaction, a FullWallet with the fronting card is generated
 //    using GetFullWallet.
@@ -65,9 +63,7 @@ class WalletClientDelegate;
 // GetWalletItems(), the request will be queued and started later. Queued
 // requests start in the order they were received.
 
-class WalletClient
-    : public net::URLFetcherDelegate,
-      public EncryptionEscrowClientObserver {
+class WalletClient : public net::URLFetcherDelegate {
  public:
   // The Risk challenges supported by users of WalletClient.
   enum RiskCapability {
@@ -130,33 +126,6 @@ class WalletClient
     DISALLOW_ASSIGN(FullWalletRequest);
   };
 
-  struct UpdateInstrumentRequest {
-   public:
-    UpdateInstrumentRequest(const std::string& instrument_id,
-                            const GURL& source_url);
-    ~UpdateInstrumentRequest();
-
-    // The id of the instrument being modified.
-    std::string instrument_id;
-
-    // The new expiration date. If these are set, |card_verification_number| and
-    // |obfuscated_gaia_id| must be provided.
-    int expiration_month;
-    int expiration_year;
-
-    // Used to authenticate the card the user is modifying.
-    std::string card_verification_number;
-
-    // Used to key the escrow of |card_verification_number|.
-    std::string obfuscated_gaia_id;
-
-    // The url this call is initiated from.
-    GURL source_url;
-
-   private:
-    DISALLOW_ASSIGN(UpdateInstrumentRequest);
-  };
-
   // |context_getter| is reference counted so it has no lifetime or ownership
   // requirements. |delegate| must outlive |this|.
   WalletClient(net::URLRequestContextGetter* context_getter,
@@ -185,25 +154,17 @@ class WalletClient
   // complete. Used to respond to Risk challenges.
   virtual void AuthenticateInstrument(
       const std::string& instrument_id,
-      const std::string& card_verification_number,
-      const std::string& obfuscated_gaia_id);
+      const std::string& card_verification_number);
 
   // GetFullWallet retrieves the a FullWallet for the user.
   virtual void GetFullWallet(const FullWalletRequest& full_wallet_request);
 
-  // SaveAddress saves a new shipping address.
-  virtual void SaveAddress(const Address& address, const GURL& source_url);
-
-  // SaveInstrument saves a new instrument.
-  virtual void SaveInstrument(const Instrument& instrument,
-                              const std::string& obfuscated_gaia_id,
-                              const GURL& source_url);
-
-  // SaveInstrumentAndAddress saves a new instrument and address.
-  virtual void SaveInstrumentAndAddress(const Instrument& instrument,
-                                        const Address& shipping_address,
-                                        const std::string& obfuscated_gaia_id,
-                                        const GURL& source_url);
+  // Saves the data in |instrument| and/or |address| to Wallet. |instrument|
+  // does not have to be complete if its being used to update an existing
+  // instrument, like in the case of expiration date or address only updates.
+  virtual void SaveToWallet(scoped_ptr<Instrument> instrument,
+                            scoped_ptr<Address> address,
+                            const GURL& source_url);
 
   // SendAutocheckoutStatus is used for tracking the success of Autocheckout
   // flows. |status| is the result of the flow, |source_url| is the domain
@@ -215,15 +176,6 @@ class WalletClient
       const GURL& source_url,
       const std::vector<AutocheckoutStatistic>& latency_statistics,
       const std::string& google_transaction_id);
-
-  // UpdateAddress updates Online Wallet with the data in |address|.
-  virtual void UpdateAddress(const Address& address, const GURL& source_url);
-
-  // Updates Online Wallet with the data in |update_instrument_request| and, if
-  // it's provided, |billing_address|.
-  virtual void UpdateInstrument(
-      const UpdateInstrumentRequest& update_instrument_request,
-      scoped_ptr<Address> billing_address);
 
   bool HasRequestInProgress() const;
 
@@ -240,12 +192,8 @@ class WalletClient
     AUTHENTICATE_INSTRUMENT,
     GET_FULL_WALLET,
     GET_WALLET_ITEMS,
-    SAVE_ADDRESS,
-    SAVE_INSTRUMENT,
-    SAVE_INSTRUMENT_AND_ADDRESS,
+    SAVE_TO_WALLET,
     SEND_STATUS,
-    UPDATE_ADDRESS,
-    UPDATE_INSTRUMENT,
   };
 
   // Like AcceptLegalDocuments, but takes a vector of document ids.
@@ -254,9 +202,11 @@ class WalletClient
       const std::string& google_transaction_id,
       const GURL& source_url);
 
-  // Posts |post_body| to |url| and notifies |delegate_| when the request is
-  // complete.
-  void MakeWalletRequest(const GURL& url, const std::string& post_body);
+  // Posts |post_body| to |url| with content type |mime_type| and notifies
+  // |delegate_| when the request is complete.
+  void MakeWalletRequest(const GURL& url,
+                         const std::string& post_body,
+                         const std::string& mime_type);
 
   // Performs bookkeeping tasks for any invalid requests.
   void HandleMalformedResponse();
@@ -268,18 +218,6 @@ class WalletClient
 
   // net::URLFetcherDelegate:
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
-
-  // EncryptionEscrowClientObserver:
-  virtual void OnDidEncryptOneTimePad(
-      const std::string& encrypted_one_time_pad,
-      const std::string& session_material) OVERRIDE;
-  virtual void OnDidEscrowInstrumentInformation(
-      const std::string& escrow_handle)  OVERRIDE;
-  virtual void OnDidEscrowCardVerificationNumber(
-      const std::string& escrow_handle) OVERRIDE;
-  virtual void OnDidMakeRequest() OVERRIDE;
-  virtual void OnNetworkError() OVERRIDE;
-  virtual void OnMalformedResponse() OVERRIDE;
 
   // Logs an UMA metric for each of the |required_actions|.
   void LogRequiredActions(
@@ -307,17 +245,8 @@ class WalletClient
   // The one time pad used for GetFullWallet encryption.
   std::vector<uint8> one_time_pad_;
 
-  // GetFullWallet requests and requests that alter instruments rely on requests
-  // made through the |encryption_escrow_client_| finishing first. The request
-  // body is saved here while that those requests are in flight.
-  base::DictionaryValue pending_request_body_;
-
   // Requests that are waiting to be run.
   std::queue<base::Closure> pending_requests_;
-
-  // This client is repsonsible for making encryption and escrow calls to Online
-  // Wallet.
-  EncryptionEscrowClient encryption_escrow_client_;
 
   // When the current request started. Used to track client side latency.
   base::Time request_started_timestamp_;

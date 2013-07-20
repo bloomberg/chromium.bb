@@ -61,52 +61,14 @@ class WalletClientDelegate {
   // transferred to implementer of this interface.
   virtual void OnDidGetWalletItems(scoped_ptr<WalletItems> wallet_items) = 0;
 
-  // Called when a SaveAddress request finishes successfully. |address_id| can
-  // be used in subsequent GetFullWallet calls. |required_actions| is populated
-  // if there was a validation error with the data being saved.
-  // |form_field_errors| is populated with the actual form fields that are
-  // failing validation.
-  virtual void OnDidSaveAddress(
-      const std::string& address_id,
-      const std::vector<RequiredAction>& required_actions,
-      const std::vector<FormFieldError>& form_field_errors) = 0;
-
-  // Called when a SaveInstrument request finishes sucessfully. |instrument_id|
-  // can be used in subsequent GetFullWallet calls. |required_actions| is
-  // populated if there was a validation error with the data being saved.
-  // |form_field_errors| is populated with the actual form fields that are
-  // failing validation.
-  virtual void OnDidSaveInstrument(
-      const std::string& instrument_id,
-      const std::vector<RequiredAction>& required_actions,
-      const std::vector<FormFieldError>& form_field_errors) = 0;
-
-  // Called when a SaveInstrumentAndAddress request finishes succesfully.
+  // Called when a SaveToWallet request finishes succesfully.
   // |instrument_id| and |address_id| can be used in subsequent
   // GetFullWallet calls. |required_actions| is populated if there was a
   // validation error with the data being saved. |form_field_errors| is
   // populated with the actual form fields that are failing validation.
-  virtual void OnDidSaveInstrumentAndAddress(
+  virtual void OnDidSaveToWallet(
       const std::string& instrument_id,
       const std::string& address_id,
-      const std::vector<RequiredAction>& required_actions,
-      const std::vector<FormFieldError>& form_field_errors) = 0;
-
-  // Called when an UpdateAddress request finishes successfully.
-  // |required_actions| is populated if there was a validation error with the
-  // data being saved. |form_field_errors| is populated with the actual form
-  // fields that are failing validation.
-  virtual void OnDidUpdateAddress(
-      const std::string& address_id,
-      const std::vector<RequiredAction>& required_actions,
-      const std::vector<FormFieldError>& form_field_errors) = 0;
-
-  // Called when an UpdateInstrument request finishes successfully.
-  // |required_actions| is populated if there was a validation error with the
-  // data being saved. |form_field_errors| is populated with the actual form
-  // fields that are failing validation.
-  virtual void OnDidUpdateInstrument(
-      const std::string& instrument_id,
       const std::vector<RequiredAction>& required_actions,
       const std::vector<FormFieldError>& form_field_errors) = 0;
 

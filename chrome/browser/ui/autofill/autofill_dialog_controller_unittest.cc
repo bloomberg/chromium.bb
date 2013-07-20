@@ -1126,7 +1126,9 @@ TEST_F(AutofillDialogControllerTest, SelectInstrument) {
 TEST_F(AutofillDialogControllerTest, SaveAddress) {
   EXPECT_CALL(*controller()->GetView(), ModelChanged()).Times(1);
   EXPECT_CALL(*controller()->GetTestingWalletClient(),
-              SaveAddress(_, _)).Times(1);
+              SaveToWalletMock(testing::IsNull(),
+                               testing::NotNull(),
+                               _)).Times(1);
 
   scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
   wallet_items->AddInstrument(wallet::GetTestMaskedInstrument());
@@ -1143,7 +1145,9 @@ TEST_F(AutofillDialogControllerTest, SaveAddress) {
 TEST_F(AutofillDialogControllerTest, SaveInstrument) {
   EXPECT_CALL(*controller()->GetView(), ModelChanged()).Times(1);
   EXPECT_CALL(*controller()->GetTestingWalletClient(),
-              SaveInstrument(_, _, _)).Times(1);
+              SaveToWalletMock(testing::NotNull(),
+                               testing::IsNull(),
+                               _)).Times(1);
 
   scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
   wallet_items->AddAddress(wallet::GetTestShippingAddress());
@@ -1153,7 +1157,9 @@ TEST_F(AutofillDialogControllerTest, SaveInstrument) {
 TEST_F(AutofillDialogControllerTest, SaveInstrumentWithInvalidInstruments) {
   EXPECT_CALL(*controller()->GetView(), ModelChanged()).Times(1);
   EXPECT_CALL(*controller()->GetTestingWalletClient(),
-              SaveInstrument(_, _, _)).Times(1);
+              SaveToWalletMock(testing::NotNull(),
+                               testing::IsNull(),
+                               _)).Times(1);
 
   scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
   wallet_items->AddAddress(wallet::GetTestShippingAddress());
@@ -1163,17 +1169,25 @@ TEST_F(AutofillDialogControllerTest, SaveInstrumentWithInvalidInstruments) {
 
 TEST_F(AutofillDialogControllerTest, SaveInstrumentAndAddress) {
   EXPECT_CALL(*controller()->GetTestingWalletClient(),
-              SaveInstrumentAndAddress(_, _, _, _)).Times(1);
+              SaveToWalletMock(testing::NotNull(),
+                               testing::NotNull(),
+                               _)).Times(1);
 
   controller()->OnDidGetWalletItems(wallet::GetTestWalletItems());
   AcceptAndLoadFakeFingerprint();
+}
+
+MATCHER(IsUpdatingExistingData, "updating existing Wallet data") {
+  return !arg->object_id().empty();
 }
 
 // Tests that editing an address (in wallet mode0 and submitting the dialog
 // should update the existing address on the server via WalletClient.
 TEST_F(AutofillDialogControllerTest, UpdateAddress) {
   EXPECT_CALL(*controller()->GetTestingWalletClient(),
-              UpdateAddress(_, _)).Times(1);
+              SaveToWalletMock(testing::IsNull(),
+                               IsUpdatingExistingData(),
+                               _)).Times(1);
 
   controller()->OnDidGetWalletItems(CompleteAndValidWalletItems());
 
@@ -1184,20 +1198,24 @@ TEST_F(AutofillDialogControllerTest, UpdateAddress) {
 // Tests that editing an instrument (CC + address) in wallet mode updates an
 // existing instrument on the server via WalletClient.
 TEST_F(AutofillDialogControllerTest, UpdateInstrument) {
+  EXPECT_CALL(*controller()->GetTestingWalletClient(),
+              SaveToWalletMock(IsUpdatingExistingData(),
+                               testing::IsNull(),
+                               _)).Times(1);
+
   controller()->OnDidGetWalletItems(CompleteAndValidWalletItems());
 
   controller()->EditClickedForSection(SECTION_CC_BILLING);
   AcceptAndLoadFakeFingerprint();
-
-  EXPECT_TRUE(
-      controller()->GetTestingWalletClient()->updated_billing_address());
 }
 
 // Test that a user is able to edit their instrument and add a new address in
 // the same submission.
 TEST_F(AutofillDialogControllerTest, UpdateInstrumentSaveAddress) {
   EXPECT_CALL(*controller()->GetTestingWalletClient(),
-              SaveAddress(_, _)).Times(1);
+              SaveToWalletMock(IsUpdatingExistingData(),
+                               testing::NotNull(),
+                               _)).Times(1);
 
   scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
   wallet_items->AddInstrument(wallet::GetTestMaskedInstrument());
@@ -1205,17 +1223,14 @@ TEST_F(AutofillDialogControllerTest, UpdateInstrumentSaveAddress) {
 
   controller()->EditClickedForSection(SECTION_CC_BILLING);
   AcceptAndLoadFakeFingerprint();
-
-  EXPECT_TRUE(
-      controller()->GetTestingWalletClient()->updated_billing_address());
 }
 
 // Test that saving a new instrument and editing an address works.
 TEST_F(AutofillDialogControllerTest, SaveInstrumentUpdateAddress) {
   EXPECT_CALL(*controller()->GetTestingWalletClient(),
-              SaveInstrument(_, _, _)).Times(1);
-  EXPECT_CALL(*controller()->GetTestingWalletClient(),
-              UpdateAddress(_, _)).Times(1);
+              SaveToWalletMock(testing::NotNull(),
+                               IsUpdatingExistingData(),
+                               _)).Times(1);
 
   scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
   wallet_items->AddAddress(wallet::GetTestShippingAddress());
@@ -1227,14 +1242,16 @@ TEST_F(AutofillDialogControllerTest, SaveInstrumentUpdateAddress) {
 }
 
 MATCHER(UsesLocalBillingAddress, "uses the local billing address") {
-  return arg.address_line_1() == ASCIIToUTF16(kEditedBillingAddress);
+  return arg->address_line_1() == ASCIIToUTF16(kEditedBillingAddress);
 }
 
 // Tests that when using billing address for shipping, and there is no exact
 // matched shipping address, then a shipping address should be added.
 TEST_F(AutofillDialogControllerTest, BillingForShipping) {
   EXPECT_CALL(*controller()->GetTestingWalletClient(),
-              SaveAddress(_, _)).Times(1);
+              SaveToWalletMock(testing::IsNull(),
+                               testing::NotNull(),
+                               _)).Times(1);
 
   controller()->OnDidGetWalletItems(CompleteAndValidWalletItems());
   // Select "Same as billing" in the address menu.
@@ -1247,7 +1264,7 @@ TEST_F(AutofillDialogControllerTest, BillingForShipping) {
 // matched shipping address, then a shipping address should not be added.
 TEST_F(AutofillDialogControllerTest, BillingForShippingHasMatch) {
   EXPECT_CALL(*controller()->GetTestingWalletClient(),
-              SaveAddress(_, _)).Times(0);
+              SaveToWalletMock(_, _, _)).Times(0);
 
   scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
   scoped_ptr<wallet::WalletItems::MaskedInstrument> instrument =
@@ -1258,22 +1275,6 @@ TEST_F(AutofillDialogControllerTest, BillingForShippingHasMatch) {
   shipping_address->set_object_id("shipping_address_id");
   wallet_items->AddAddress(shipping_address.Pass());
   wallet_items->AddInstrument(instrument.Pass());
-  wallet_items->AddAddress(wallet::GetTestShippingAddress());
-
-  controller()->OnDidGetWalletItems(wallet_items.Pass());
-  // Select "Same as billing" in the address menu.
-  UseBillingForShipping();
-
-  AcceptAndLoadFakeFingerprint();
-}
-
-// Tests that adding new instrument and also using billing address for shipping,
-// then a shipping address should not be added.
-TEST_F(AutofillDialogControllerTest, BillingForShippingNewInstrument) {
-  EXPECT_CALL(*controller()->GetTestingWalletClient(),
-              SaveInstrumentAndAddress(_, _, _, _)).Times(1);
-
-  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
   wallet_items->AddAddress(wallet::GetTestShippingAddress());
 
   controller()->OnDidGetWalletItems(wallet_items.Pass());
@@ -1304,16 +1305,15 @@ TEST_F(AutofillDialogControllerTest, SaveInstrumentSameAsBilling) {
   controller()->GetView()->SetUserInput(SECTION_CC_BILLING, outputs);
 
   EXPECT_CALL(*controller()->GetTestingWalletClient(),
-              SaveAddress(UsesLocalBillingAddress(), _)).Times(1);
+              SaveToWalletMock(testing::NotNull(),
+                               UsesLocalBillingAddress(),
+                               _)).Times(1);
   AcceptAndLoadFakeFingerprint();
-
-  EXPECT_TRUE(
-      controller()->GetTestingWalletClient()->updated_billing_address());
 }
 
 TEST_F(AutofillDialogControllerTest, CancelNoSave) {
   EXPECT_CALL(*controller()->GetTestingWalletClient(),
-              SaveInstrumentAndAddress(_, _, _, _)).Times(0);
+              SaveToWalletMock(_, _, _)).Times(0);
 
   EXPECT_CALL(*controller()->GetView(), ModelChanged()).Times(1);
 
@@ -1505,7 +1505,7 @@ TEST_F(AutofillDialogControllerTest, VerifyCvv) {
   EXPECT_CALL(*controller()->GetTestingWalletClient(),
               GetFullWallet(_)).Times(1);
   EXPECT_CALL(*controller()->GetTestingWalletClient(),
-              AuthenticateInstrument(_, _, _)).Times(1);
+              AuthenticateInstrument(_, _)).Times(1);
 
   SubmitWithWalletItems(CompleteAndValidWalletItems());
 
@@ -1621,7 +1621,10 @@ TEST_F(AutofillDialogControllerTest, WalletServerSideValidation) {
                              wallet::FormFieldError::SHIPPING_ADDRESS));
 
   EXPECT_CALL(*controller()->GetView(), UpdateForErrors()).Times(1);
-  controller()->OnDidSaveAddress(std::string(), required_actions, form_errors);
+  controller()->OnDidSaveToWallet(std::string(),
+                                  std::string(),
+                                  required_actions,
+                                  form_errors);
 }
 
 // Simulates receiving unrecoverable Wallet server validation errors.
@@ -1639,7 +1642,10 @@ TEST_F(AutofillDialogControllerTest, WalletServerSideValidationUnrecoverable) {
       wallet::FormFieldError(wallet::FormFieldError::UNKNOWN_ERROR,
                              wallet::FormFieldError::UNKNOWN_LOCATION));
 
-  controller()->OnDidSaveAddress(std::string(), required_actions, form_errors);
+  controller()->OnDidSaveToWallet(std::string(),
+                                  std::string(),
+                                  required_actions,
+                                  form_errors);
 
   EXPECT_EQ(1U, NotificationsOfType(
       DialogNotification::REQUIRED_ACTION).size());

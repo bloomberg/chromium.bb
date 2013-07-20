@@ -212,25 +212,9 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
       scoped_ptr<wallet::FullWallet> full_wallet) OVERRIDE;
   virtual void OnDidGetWalletItems(
       scoped_ptr<wallet::WalletItems> wallet_items) OVERRIDE;
-  virtual void OnDidSaveAddress(
-      const std::string& address_id,
-      const std::vector<wallet::RequiredAction>& required_actions,
-      const std::vector<wallet::FormFieldError>& form_field_errors) OVERRIDE;
-  virtual void OnDidSaveInstrument(
-      const std::string& instrument_id,
-      const std::vector<wallet::RequiredAction>& required_actions,
-      const std::vector<wallet::FormFieldError>& form_field_errors) OVERRIDE;
-  virtual void OnDidSaveInstrumentAndAddress(
+  virtual void OnDidSaveToWallet(
       const std::string& instrument_id,
       const std::string& address_id,
-      const std::vector<wallet::RequiredAction>& required_actions,
-      const std::vector<wallet::FormFieldError>& form_field_errors) OVERRIDE;
-  virtual void OnDidUpdateAddress(
-      const std::string& address_id,
-      const std::vector<wallet::RequiredAction>& required_actions,
-      const std::vector<wallet::FormFieldError>& form_field_errors) OVERRIDE;
-  virtual void OnDidUpdateInstrument(
-      const std::string& instrument_id,
       const std::vector<wallet::RequiredAction>& required_actions,
       const std::vector<wallet::FormFieldError>& form_field_errors) OVERRIDE;
   virtual void OnWalletError(
@@ -498,21 +482,12 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // Creates an instrument based on |views_|' contents.
   scoped_ptr<wallet::Instrument> CreateTransientInstrument();
 
-  // Creates an update request based on |instrument|. May return NULL.
-  scoped_ptr<wallet::WalletClient::UpdateInstrumentRequest>
-      CreateUpdateInstrumentRequest(const wallet::Instrument* instrument,
-                                    const std::string& instrument_id);
-
   // Creates an address based on the contents of |view_|.
   scoped_ptr<wallet::Address> CreateTransientAddress();
 
   // Gets a full wallet from Online Wallet so the user can purchase something.
   // This information is decoded to reveal a fronting (proxy) card.
   void GetFullWallet();
-
-  // Calls |GetFullWallet()| if the required members (|risk_data_|,
-  // |active_instrument_id_|, and |active_address_id_|) are populated.
-  void GetFullWalletIfReady();
 
   // Updates the state of the controller and |view_| based on any required
   // actions returned by Save or Update calls to Wallet.

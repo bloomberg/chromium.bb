@@ -13939,6 +13939,9 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Wallet.ApiCallDuration.SaveAddress" units="ms">
+  <obsolete>
+    Deprecated as of 7/2013, replaced by Wallet.ApiCallDuration.SaveToWallet.
+  </obsolete>
   <summary>
     Measures the time taken by Google Online Wallet server's save address API
     call.
@@ -13946,6 +13949,9 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Wallet.ApiCallDuration.SaveInstrument" units="ms">
+  <obsolete>
+    Deprecated as of 7/2013, replaced by Wallet.ApiCallDuration.SaveToWallet.
+  </obsolete>
   <summary>
     Measures the time taken by Google Online Wallet server's save instrument API
     call.
@@ -13953,9 +13959,19 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Wallet.ApiCallDuration.SaveInstrumentAndAddress" units="ms">
+  <obsolete>
+    Deprecated as of 7/2013, replaced by Wallet.ApiCallDuration.SaveToWallet.
+  </obsolete>
   <summary>
     Measures the time taken by Google Online Wallet server's save instument and
     address API call.
+  </summary>
+</histogram>
+
+<histogram name="Wallet.ApiCallDuration.SaveToWallet" units="ms">
+  <summary>
+    Measures the time taken by Google Online Wallet server's save to wallet API
+    call.
   </summary>
 </histogram>
 
@@ -13973,6 +13989,9 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Wallet.ApiCallDuration.UpdateAddress" units="ms">
+  <obsolete>
+    Deprecated as of 7/2013, replaced by Wallet.ApiCallDuration.SaveToWallet.
+  </obsolete>
   <summary>
     Measures the time taken by Google Online Wallet server's update address API
     call.
@@ -13980,6 +13999,9 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Wallet.ApiCallDuration.UpdateInstrument" units="ms">
+  <obsolete>
+    Deprecated as of 7/2013, replaced by Wallet.ApiCallDuration.SaveToWallet.
+  </obsolete>
   <summary>
     Measures the time taken by Google Online Wallet server's update instument
     API call.

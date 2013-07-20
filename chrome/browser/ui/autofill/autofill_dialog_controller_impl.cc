@@ -1941,8 +1941,7 @@ void AutofillDialogControllerImpl::OnAccept() {
     DCHECK(!active_instrument_id_.empty());
     GetWalletClient()->AuthenticateInstrument(
         active_instrument_id_,
-        UTF16ToUTF8(view_->GetCvc()),
-        wallet_items_->obfuscated_gaia_id());
+        UTF16ToUTF8(view_->GetCvc()));
   } else if (IsPayingWithWallet()) {
     // TODO(dbeam): disallow interacting with the dialog while submitting.
     // http://crbug.com/230932
@@ -2193,59 +2192,23 @@ void AutofillDialogControllerImpl::OnDidGetWalletItems(
   OnWalletOrSigninUpdate();
 }
 
-void AutofillDialogControllerImpl::OnDidSaveAddress(
+void AutofillDialogControllerImpl::OnDidSaveToWallet(
+    const std::string& instrument_id,
     const std::string& address_id,
     const std::vector<wallet::RequiredAction>& required_actions,
     const std::vector<wallet::FormFieldError>& form_field_errors) {
   DCHECK(is_submitting_ && IsPayingWithWallet());
 
   if (required_actions.empty()) {
-    active_address_id_ = address_id;
-    GetFullWalletIfReady();
+    if (!address_id.empty())
+      active_address_id_ = address_id;
+    if (!instrument_id.empty())
+      active_instrument_id_ = instrument_id;
+    GetFullWallet();
   } else {
     OnWalletFormFieldError(form_field_errors);
     HandleSaveOrUpdateRequiredActions(required_actions);
   }
-}
-
-void AutofillDialogControllerImpl::OnDidSaveInstrument(
-    const std::string& instrument_id,
-    const std::vector<wallet::RequiredAction>& required_actions,
-    const std::vector<wallet::FormFieldError>& form_field_errors) {
-  DCHECK(is_submitting_ && IsPayingWithWallet());
-
-  if (required_actions.empty()) {
-    active_instrument_id_ = instrument_id;
-    GetFullWalletIfReady();
-  } else {
-    OnWalletFormFieldError(form_field_errors);
-    HandleSaveOrUpdateRequiredActions(required_actions);
-  }
-}
-
-void AutofillDialogControllerImpl::OnDidSaveInstrumentAndAddress(
-    const std::string& instrument_id,
-    const std::string& address_id,
-    const std::vector<wallet::RequiredAction>& required_actions,
-    const std::vector<wallet::FormFieldError>& form_field_errors) {
-  OnDidSaveInstrument(instrument_id, required_actions, form_field_errors);
-  // |is_submitting_| can change while in |OnDidSaveInstrument()|.
-  if (is_submitting_)
-    OnDidSaveAddress(address_id, required_actions, form_field_errors);
-}
-
-void AutofillDialogControllerImpl::OnDidUpdateAddress(
-    const std::string& address_id,
-    const std::vector<wallet::RequiredAction>& required_actions,
-    const std::vector<wallet::FormFieldError>& form_field_errors) {
-  OnDidSaveAddress(address_id, required_actions, form_field_errors);
-}
-
-void AutofillDialogControllerImpl::OnDidUpdateInstrument(
-    const std::string& instrument_id,
-    const std::vector<wallet::RequiredAction>& required_actions,
-    const std::vector<wallet::FormFieldError>& form_field_errors) {
-  OnDidSaveInstrument(instrument_id, required_actions, form_field_errors);
 }
 
 void AutofillDialogControllerImpl::OnWalletError(
@@ -3027,17 +2990,16 @@ void AutofillDialogControllerImpl::SubmitWithWallet() {
 
   scoped_ptr<wallet::Instrument> inputted_instrument =
       CreateTransientInstrument();
-  scoped_ptr<wallet::WalletClient::UpdateInstrumentRequest> update_request =
-      CreateUpdateInstrumentRequest(
-          inputted_instrument.get(),
-          !IsEditingExistingData(SECTION_CC_BILLING) ? std::string() :
-              active_instrument->object_id());
+  if (inputted_instrument && IsEditingExistingData(SECTION_CC_BILLING)) {
+    inputted_instrument->set_object_id(active_instrument->object_id());
+    DCHECK(!inputted_instrument->object_id().empty());
+  }
 
   scoped_ptr<wallet::Address> inputted_address;
   if (active_address_id_.empty()) {
     if (ShouldUseBillingForShipping()) {
       const wallet::Address& address = inputted_instrument ?
-          inputted_instrument->address() : active_instrument->address();
+          *inputted_instrument->address() : active_instrument->address();
       // Try to find an exact matched shipping address and use it for shipping,
       // otherwise save it as a new shipping address. http://crbug.com/225442
       const wallet::Address* duplicated_address =
@@ -3065,36 +3027,9 @@ void AutofillDialogControllerImpl::SubmitWithWallet() {
     return;
   }
 
-  // If instrument and address aren't based off of any existing data, save both.
-  if (inputted_instrument && inputted_address && !update_request &&
-      inputted_address->object_id().empty()) {
-    GetWalletClient()->SaveInstrumentAndAddress(
-        *inputted_instrument,
-        *inputted_address,
-        wallet_items_->obfuscated_gaia_id(),
-        source_url_);
-    return;
-  }
-
-  if (inputted_instrument) {
-    if (update_request) {
-      scoped_ptr<wallet::Address> billing_address(
-          new wallet::Address(inputted_instrument->address()));
-      GetWalletClient()->UpdateInstrument(*update_request,
-                                          billing_address.Pass());
-    } else {
-      GetWalletClient()->SaveInstrument(*inputted_instrument,
-                                        wallet_items_->obfuscated_gaia_id(),
-                                        source_url_);
-    }
-  }
-
-  if (inputted_address) {
-    if (!inputted_address->object_id().empty())
-      GetWalletClient()->UpdateAddress(*inputted_address, source_url_);
-    else
-      GetWalletClient()->SaveAddress(*inputted_address, source_url_);
-  }
+  GetWalletClient()->SaveToWallet(inputted_instrument.Pass(),
+                                  inputted_address.Pass(),
+                                  source_url_);
 }
 
 scoped_ptr<wallet::Instrument> AutofillDialogControllerImpl::
@@ -3112,24 +3047,6 @@ scoped_ptr<wallet::Instrument> AutofillDialogControllerImpl::
 
   return scoped_ptr<wallet::Instrument>(
       new wallet::Instrument(card, cvc, profile));
-}
-
-scoped_ptr<wallet::WalletClient::UpdateInstrumentRequest>
-    AutofillDialogControllerImpl::CreateUpdateInstrumentRequest(
-        const wallet::Instrument* instrument,
-        const std::string& instrument_id) {
-  if (!instrument || instrument_id.empty())
-    return scoped_ptr<wallet::WalletClient::UpdateInstrumentRequest>();
-
-  scoped_ptr<wallet::WalletClient::UpdateInstrumentRequest> update_request(
-      new wallet::WalletClient::UpdateInstrumentRequest(
-          instrument_id, source_url_));
-  update_request->expiration_month = instrument->expiration_month();
-  update_request->expiration_year = instrument->expiration_year();
-  update_request->card_verification_number =
-      UTF16ToUTF8(instrument->card_verification_number());
-  update_request->obfuscated_gaia_id = wallet_items_->obfuscated_gaia_id();
-  return update_request.Pass();
 }
 
 scoped_ptr<wallet::Address>AutofillDialogControllerImpl::
@@ -3163,14 +3080,6 @@ void AutofillDialogControllerImpl::GetFullWallet() {
       source_url_,
       wallet_items_->google_transaction_id(),
       capabilities));
-}
-
-void AutofillDialogControllerImpl::GetFullWalletIfReady() {
-  DCHECK(is_submitting_);
-  DCHECK(IsPayingWithWallet());
-
-  if (!active_instrument_id_.empty() && !active_address_id_.empty())
-    GetFullWallet();
 }
 
 void AutofillDialogControllerImpl::HandleSaveOrUpdateRequiredActions(

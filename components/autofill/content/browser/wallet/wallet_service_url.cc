@@ -63,6 +63,15 @@ GURL GetBaseSecureUrl() {
   return GURL(kSandboxWalletSecureServiceUrl);
 }
 
+GURL GetBaseEncryptedFrontendUrl() {
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  // TODO(ahutter): Stop checking these switches once we switch over to prod.
+  GURL base_url = IsWalletProductionEnabled() ||
+      command_line.HasSwitch(switches::kWalletServiceUrl) ?
+          GetWalletHostUrl() : GetBaseSecureUrl();
+  return base_url.Resolve("online-secure/v2/autocheckout/v1/");
+}
+
 }  // namespace
 
 namespace wallet {
@@ -72,7 +81,7 @@ GURL GetGetWalletItemsUrl() {
 }
 
 GURL GetGetFullWalletUrl() {
-  return GetBaseAutocheckoutUrl().Resolve("getFullWalletJwtless");
+  return GetBaseEncryptedFrontendUrl().Resolve("getFullWalletJwtless?s7e=otp");
 }
 
 GURL GetManageInstrumentsUrl() {
@@ -88,43 +97,25 @@ GURL GetAcceptLegalDocumentsUrl() {
 }
 
 GURL GetAuthenticateInstrumentUrl() {
-  return GetBaseAutocheckoutUrl().Resolve("authenticateInstrument");
+  return GetBaseEncryptedFrontendUrl()
+      .Resolve("authenticateInstrument?s7e=cvn");
 }
 
 GURL GetSendStatusUrl() {
   return GetBaseAutocheckoutUrl().Resolve("reportStatus");
 }
 
-GURL GetSaveToWalletUrl() {
+GURL GetSaveToWalletNoEscrowUrl() {
   return GetBaseAutocheckoutUrl().Resolve("saveToWallet");
+}
+
+GURL GetSaveToWalletUrl() {
+  return GetBaseEncryptedFrontendUrl()
+      .Resolve("saveToWallet?s7e=card_number%3Bcvn");
 }
 
 GURL GetPassiveAuthUrl() {
   return GetBaseWalletUrl().Resolve("passiveauth?isChromePayments=true");
-}
-
-GURL GetEncryptionUrl() {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  // TODO(ahutter): Stop checking these switches once we switch over to prod.
-  if (IsWalletProductionEnabled() ||
-      command_line.HasSwitch(switches::kWalletServiceUrl)) {
-    return GetWalletHostUrl().Resolve(
-        "online-secure/temporarydata/cvv?s7e=cvv");
-  } else {
-    return GetBaseSecureUrl().Resolve(
-        "online-secure/temporarydata/cvv?s7e=cvv");
-  }
-}
-
-GURL GetEscrowUrl() {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  // TODO(ahutter): Stop checking these switches once we switch over to prod.
-  if (IsWalletProductionEnabled() ||
-      command_line.HasSwitch(switches::kWalletServiceUrl)) {
-    return GetBaseSecureUrl().Resolve("dehEfe?s7e=cardNumber%3Bcvv");
-  } else {
-    return GetBaseSecureUrl().Resolve("checkout/dehEfe?s7e=cardNumber%3Bcvv");
-  }
 }
 
 GURL GetSignInUrl() {

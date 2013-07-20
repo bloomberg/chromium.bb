@@ -55,10 +55,6 @@ class Instrument {
 
   scoped_ptr<base::DictionaryValue> ToDictionary() const;
 
-  // Users of this class should call IsValid to check that the inputs provided
-  // in the constructor were valid for use with Google Wallet.
-  bool IsValid() const;
-
   const base::string16& primary_account_number() const {
     return primary_account_number_;
   }
@@ -67,9 +63,11 @@ class Instrument {
   }
   int expiration_month() const { return expiration_month_; }
   int expiration_year() const { return expiration_year_; }
-  const Address& address() const { return *address_; }
+  const Address* address() const { return address_.get(); }
   FormOfPayment form_of_payment() const { return form_of_payment_; }
   const base::string16& last_four_digits() const { return last_four_digits_; }
+  const std::string& object_id() const { return object_id_; }
+  void set_object_id(const std::string& object_id) { object_id_ = object_id; }
 
  private:
   void Init();
@@ -94,6 +92,9 @@ class Instrument {
 
   // The last four digits of |primary_account_number_|.
   base::string16 last_four_digits_;
+
+  // Externalized Online Wallet id for this instrument.
+  std::string object_id_;
 
   DISALLOW_ASSIGN(Instrument);
 };

@@ -16,9 +16,8 @@ GURL GetManageInstrumentsUrl();
 GURL GetManageAddressesUrl();
 GURL GetAcceptLegalDocumentsUrl();
 GURL GetAuthenticateInstrumentUrl();
-GURL GetEncryptionUrl();
-GURL GetEscrowUrl();
 GURL GetSendStatusUrl();
+GURL GetSaveToWalletNoEscrowUrl();
 GURL GetSaveToWalletUrl();
 GURL GetPassiveAuthUrl();
 

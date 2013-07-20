@@ -80,7 +80,6 @@ Instrument::Instrument(const base::string16& primary_account_number,
       expiration_year_(expiration_year),
       form_of_payment_(form_of_payment),
       address_(address.Pass()) {
-  DCHECK(address_);
   Init();
 }
 
@@ -90,7 +89,8 @@ Instrument::Instrument(const Instrument& instrument)
       expiration_month_(instrument.expiration_month()),
       expiration_year_(instrument.expiration_year()),
       form_of_payment_(instrument.form_of_payment()),
-      address_(new Address(instrument.address())) {
+      address_(instrument.address() ?
+          new Address(*instrument.address()) : NULL) {
   Init();
 }
 
@@ -112,22 +112,6 @@ scoped_ptr<base::DictionaryValue> Instrument::ToDictionary() const {
             address_.get()->ToDictionaryWithoutID().release());
 
   return dict.Pass();
-}
-
-bool Instrument::IsValid() const {
-  if (!IsStringASCII(primary_account_number_))
-    return false;
-  bool primary_account_number_valid =
-      autofill::IsValidCreditCardNumber(primary_account_number_);
-  bool card_verification_number_valid = card_verification_number_.size() == 3 ||
-                                        card_verification_number_.size() == 4;
-  bool exp_month_valid = expiration_month_ >= 1 && expiration_month_ <= 12;
-  bool exp_year_valid = expiration_year_ >= 2013 && expiration_year_ <= 2100;
-
-  return primary_account_number_valid &&
-         card_verification_number_valid &&
-         exp_month_valid &&
-         exp_year_valid;
 }
 
 void Instrument::Init() {

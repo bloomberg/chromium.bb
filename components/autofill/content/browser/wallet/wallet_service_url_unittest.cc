@@ -15,8 +15,8 @@ TEST(WalletServiceUrl, CheckDefaultUrls) {
   EXPECT_EQ("https://payments-form-dogfood.sandbox.google.com/online/v2/wallet/"
            "autocheckout/v1/getWalletItemsJwtless",
             GetGetWalletItemsUrl().spec());
-  EXPECT_EQ("https://payments-form-dogfood.sandbox.google.com/online/v2/wallet/"
-            "autocheckout/v1/getFullWalletJwtless",
+  EXPECT_EQ("https://wallet-web.sandbox.google.com/online-secure/v2/"
+            "autocheckout/v1/getFullWalletJwtless?s7e=otp",
             GetGetFullWalletUrl().spec());
   EXPECT_EQ("https://wallet-web.sandbox.google.com/manage/w/0/#paymentMethods:",
             GetManageInstrumentsUrl().spec());
@@ -26,24 +26,21 @@ TEST(WalletServiceUrl, CheckDefaultUrls) {
   EXPECT_EQ("https://payments-form-dogfood.sandbox.google.com/online/v2/wallet/"
             "autocheckout/v1/acceptLegalDocument",
             GetAcceptLegalDocumentsUrl().spec());
-  EXPECT_EQ("https://payments-form-dogfood.sandbox.google.com/online/v2/wallet/"
-            "autocheckout/v1/authenticateInstrument",
+  EXPECT_EQ("https://wallet-web.sandbox.google.com/online-secure/v2/"
+            "autocheckout/v1/authenticateInstrument?s7e=cvn",
             GetAuthenticateInstrumentUrl().spec());
   EXPECT_EQ("https://payments-form-dogfood.sandbox.google.com/online/v2/wallet/"
             "autocheckout/v1/reportStatus",
             GetSendStatusUrl().spec());
   EXPECT_EQ("https://payments-form-dogfood.sandbox.google.com/online/v2/wallet/"
             "autocheckout/v1/saveToWallet",
+            GetSaveToWalletNoEscrowUrl().spec());
+  EXPECT_EQ("https://wallet-web.sandbox.google.com/online-secure/v2/"
+            "autocheckout/v1/saveToWallet?s7e=card_number%3Bcvn",
             GetSaveToWalletUrl().spec());
   EXPECT_EQ("https://payments-form-dogfood.sandbox.google.com/online/v2/"
             "passiveauth?isChromePayments=true",
             GetPassiveAuthUrl().spec());
-  EXPECT_EQ("https://wallet-web.sandbox.google.com/online-secure/"
-            "temporarydata/cvv?s7e=cvv",
-            GetEncryptionUrl().spec());
-  EXPECT_EQ("https://wallet-web.sandbox.google.com/checkout/dehEfe?"
-            "s7e=cardNumber%3Bcvv",
-            GetEscrowUrl().spec());
 }
 
 TEST(WalletServiceUrl, IsUsingProd) {

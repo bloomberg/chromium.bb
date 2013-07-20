@@ -296,12 +296,8 @@ class AutofillMetrics {
     AUTHENTICATE_INSTRUMENT,
     GET_FULL_WALLET,
     GET_WALLET_ITEMS,
-    SAVE_ADDRESS,
-    SAVE_INSTRUMENT,
-    SAVE_INSTRUMENT_AND_ADDRESS,
     SEND_STATUS,
-    UPDATE_ADDRESS,
-    UPDATE_INSTRUMENT,
+    SAVE_TO_WALLET,
   };
 
   // For measuring the frequency of errors while communicating with the Wallet

@@ -105,6 +105,39 @@ scoped_ptr<Instrument> GetTestInstrument() {
                                                GetTestAddress()));
 }
 
+scoped_ptr<Instrument> GetTestAddressUpgradeInstrument() {
+  scoped_ptr<Instrument> instrument(new Instrument(base::string16(),
+                                                   base::string16(),
+                                                   0,
+                                                   0,
+                                                   Instrument::UNKNOWN,
+                                                   GetTestAddress()));
+  instrument->set_object_id("instrument_id");
+  return instrument.Pass();
+}
+
+scoped_ptr<Instrument> GetTestExpirationDateChangeInstrument() {
+  scoped_ptr<Instrument> instrument(new Instrument(base::string16(),
+                                                   ASCIIToUTF16("123"),
+                                                   12,
+                                                   FutureYear(),
+                                                   Instrument::UNKNOWN,
+                                                   scoped_ptr<Address>()));
+  instrument->set_object_id("instrument_id");
+  return instrument.Pass();
+}
+
+scoped_ptr<Instrument> GetTestAddressNameChangeInstrument() {
+  scoped_ptr<Instrument> instrument(new Instrument(base::string16(),
+                                                   ASCIIToUTF16("123"),
+                                                   0,
+                                                   0,
+                                                   Instrument::UNKNOWN,
+                                                   GetTestAddress()));
+  instrument->set_object_id("instrument_id");
+  return instrument.Pass();
+}
+
 scoped_ptr<WalletItems::LegalDocument> GetTestLegalDocument() {
   base::DictionaryValue dict;
   dict.SetString("legal_document_id", "document_id");

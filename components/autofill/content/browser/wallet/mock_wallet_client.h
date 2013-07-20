@@ -31,26 +31,24 @@ class MockWalletClient : public WalletClient {
            const std::string& google_transaction_id,
            const GURL& source_url));
 
-  MOCK_METHOD3(AuthenticateInstrument,
+  MOCK_METHOD2(AuthenticateInstrument,
       void(const std::string& instrument_id,
-           const std::string& card_verification_number,
-           const std::string& obfuscated_gaia_id));
+           const std::string& card_verification_number));
 
   MOCK_METHOD1(GetFullWallet,
       void(const WalletClient::FullWalletRequest& request));
 
-  MOCK_METHOD2(SaveAddress,
-      void(const Address& address, const GURL& source_url));
+  // Methods with scoped_ptrs can't be mocked but by using the implementation
+  // below the same effect can be achieved.
+  virtual void SaveToWallet(scoped_ptr<wallet::Instrument> instrument,
+                            scoped_ptr<wallet::Address> address,
+                            const GURL& source_url) OVERRIDE {
+      SaveToWalletMock(instrument.get(), address.get(), source_url);
+  }
 
-  MOCK_METHOD3(SaveInstrument,
-      void(const Instrument& instrument,
-           const std::string& obfuscated_gaia_id,
-           const GURL& source_url));
-
-  MOCK_METHOD4(SaveInstrumentAndAddress,
-      void(const Instrument& instrument,
-           const Address& address,
-           const std::string& obfuscated_gaia_id,
+  MOCK_METHOD3(SaveToWalletMock,
+      void(Instrument* instrument,
+           Address* address,
            const GURL& source_url));
 
   MOCK_METHOD4(SendAutocheckoutStatus,
@@ -59,22 +57,7 @@ class MockWalletClient : public WalletClient {
            const std::vector<AutocheckoutStatistic>& latency_statistics,
            const std::string& google_transaction_id));
 
-  MOCK_METHOD2(UpdateAddress,
-      void(const Address& address, const GURL& source_url));
-
-  virtual void UpdateInstrument(
-      const WalletClient::UpdateInstrumentRequest& update_request,
-      scoped_ptr<Address> billing_address) OVERRIDE {
-    updated_billing_address_ = billing_address.Pass();
-  }
-
-  const Address* updated_billing_address() {
-    return updated_billing_address_.get();
-  }
-
  private:
-  scoped_ptr<Address> updated_billing_address_;
-
   DISALLOW_COPY_AND_ASSIGN(MockWalletClient);
 };
 

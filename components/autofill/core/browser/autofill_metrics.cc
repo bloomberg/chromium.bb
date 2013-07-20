@@ -182,18 +182,10 @@ std::string WalletApiMetricToString(
       return "GetFullWallet";
     case AutofillMetrics::GET_WALLET_ITEMS:
       return "GetWalletItems";
-    case AutofillMetrics::SAVE_ADDRESS:
-      return "SaveAddress";
-    case AutofillMetrics::SAVE_INSTRUMENT:
-      return "SaveInstrument";
-    case AutofillMetrics::SAVE_INSTRUMENT_AND_ADDRESS:
-      return "SaveInstrumentAndAddress";
+    case AutofillMetrics::SAVE_TO_WALLET:
+      return "SaveToWallet";
     case AutofillMetrics::SEND_STATUS:
       return "SendStatus";
-    case AutofillMetrics::UPDATE_ADDRESS:
-      return "UpdateAddress";
-    case AutofillMetrics::UPDATE_INSTRUMENT:
-      return "UpdateInstrument";
     case AutofillMetrics::UNKNOWN_API_CALL:
       NOTREACHED();
       return "UnknownApiCall";
