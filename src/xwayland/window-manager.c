@@ -1801,6 +1801,7 @@ weston_wm_destroy(struct weston_wm *wm)
 	wl_list_remove(&wm->selection_listener.link);
 	wl_list_remove(&wm->activate_listener.link);
 	wl_list_remove(&wm->kill_listener.link);
+	wl_list_remove(&wm->transform_listener.link);
 
 	free(wm);
 }
