@@ -29,6 +29,7 @@
 
 #include "CSSValueKeywords.h"
 #include "RuntimeEnabledFeatures.h"
+#include "StylePropertyShorthand.h"
 #include "core/css/CSSArrayFunctionValue.h"
 #include "core/css/CSSAspectRatioValue.h"
 #include "core/css/CSSBasicShapes.h"
@@ -67,7 +68,6 @@
 #include "core/css/Rect.h"
 #include "core/css/ShadowValue.h"
 #include "core/css/StylePropertySet.h"
-#include "core/css/StylePropertyShorthand.h"
 #include "core/css/StyleRule.h"
 #include "core/css/StyleRuleImport.h"
 #include "core/css/StyleSheetContents.h"
@@ -2601,7 +2601,7 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
     case CSSPropertyBorder:
         // [ 'border-width' || 'border-style' || <color> ] | inherit
     {
-        if (parseShorthand(propId, borderAbridgedShorthand(), important)) {
+        if (parseShorthand(propId, borderShorthandForParsing(), important)) {
             // The CSS3 Borders and Backgrounds specification says that border also resets border-image. It's as
             // though a value of none was specified for the image.
             addExpandedPropertyForValue(CSSPropertyBorderImage, cssValuePool().createImplicitInitialValue(), important);

@@ -21,8 +21,8 @@
 #include "config.h"
 #include "core/css/CSSProperty.h"
 
+#include "StylePropertyShorthand.h"
 #include "core/css/CSSValueList.h"
-#include "core/css/StylePropertyShorthand.h"
 #include "core/rendering/style/RenderStyleConstants.h"
 
 namespace WebCore {

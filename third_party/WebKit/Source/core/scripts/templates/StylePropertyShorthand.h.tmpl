@@ -66,50 +66,12 @@ private:
     CSSPropertyID m_shorthandID;
 };
 
-const StylePropertyShorthand& backgroundShorthand();
-const StylePropertyShorthand& backgroundPositionShorthand();
-const StylePropertyShorthand& backgroundRepeatShorthand();
-const StylePropertyShorthand& borderShorthand();
-const StylePropertyShorthand& borderAbridgedShorthand();
-const StylePropertyShorthand& borderBottomShorthand();
-const StylePropertyShorthand& borderColorShorthand();
-const StylePropertyShorthand& borderImageShorthand();
-const StylePropertyShorthand& borderLeftShorthand();
-const StylePropertyShorthand& borderRadiusShorthand();
-const StylePropertyShorthand& borderRightShorthand();
-const StylePropertyShorthand& borderSpacingShorthand();
-const StylePropertyShorthand& borderStyleShorthand();
-const StylePropertyShorthand& borderTopShorthand();
-const StylePropertyShorthand& borderWidthShorthand();
-const StylePropertyShorthand& listStyleShorthand();
-const StylePropertyShorthand& fontShorthand();
-const StylePropertyShorthand& marginShorthand();
-const StylePropertyShorthand& outlineShorthand();
-const StylePropertyShorthand& overflowShorthand();
-const StylePropertyShorthand& paddingShorthand();
-const StylePropertyShorthand& transitionShorthand();
-const StylePropertyShorthand& webkitAnimationShorthand();
+{% for property_id, property in properties.items() %}
+{%- set camel_case_name = property.camel_case_name %}
+const StylePropertyShorthand& {{ camel_case_name }}Shorthand();
+{%- endfor %}
+const StylePropertyShorthand& borderShorthandForParsing();
 const StylePropertyShorthand& webkitAnimationShorthandForParsing();
-const StylePropertyShorthand& webkitBorderAfterShorthand();
-const StylePropertyShorthand& webkitBorderBeforeShorthand();
-const StylePropertyShorthand& webkitBorderEndShorthand();
-const StylePropertyShorthand& webkitBorderStartShorthand();
-const StylePropertyShorthand& webkitColumnsShorthand();
-const StylePropertyShorthand& webkitColumnRuleShorthand();
-const StylePropertyShorthand& flexFlowShorthand();
-const StylePropertyShorthand& flexShorthand();
-const StylePropertyShorthand& gridColumnShorthand();
-const StylePropertyShorthand& gridRowShorthand();
-const StylePropertyShorthand& gridAreaShorthand();
-const StylePropertyShorthand& webkitMarginCollapseShorthand();
-const StylePropertyShorthand& webkitMarqueeShorthand();
-const StylePropertyShorthand& webkitMaskShorthand();
-const StylePropertyShorthand& webkitMaskPositionShorthand();
-const StylePropertyShorthand& webkitMaskRepeatShorthand();
-const StylePropertyShorthand& webkitTextEmphasisShorthand();
-const StylePropertyShorthand& webkitTextStrokeShorthand();
-const StylePropertyShorthand& webkitTransitionShorthand();
-const StylePropertyShorthand& webkitTransformOriginShorthand();
 
 // Returns an empty list if the property is not a shorthand.
 const StylePropertyShorthand& shorthandForProperty(CSSPropertyID);

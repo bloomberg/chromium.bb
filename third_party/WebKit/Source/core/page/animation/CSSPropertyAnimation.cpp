@@ -32,10 +32,10 @@
 
 #include <algorithm>
 #include "CSSPropertyNames.h"
+#include "StylePropertyShorthand.h"
 #include "core/css/CSSCrossfadeValue.h"
 #include "core/css/CSSImageValue.h"
 #include "core/css/CSSPrimitiveValue.h"
-#include "core/css/StylePropertyShorthand.h"
 #include "core/loader/cache/CachedImage.h"
 #include "core/page/animation/AnimationBase.h"
 #include "core/platform/FloatConversion.h"

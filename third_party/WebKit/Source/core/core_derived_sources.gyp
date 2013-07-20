@@ -218,6 +218,27 @@
           'msvs_cygwin_shell': 1,
         },
         {
+          'action_name': 'StylePropertyShorthand',
+          'inputs': [
+            '<@(scripts_for_in_files)',
+            'scripts/make_style_shorthands.py',
+            'css/CSSShorthands.in',
+            'scripts/templates/StylePropertyShorthand.h.tmpl',
+            'scripts/templates/StylePropertyShorthand.cpp.tmpl',
+          ],
+          'outputs': [
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/StylePropertyShorthand.cpp',
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/StylePropertyShorthand.h',
+          ],
+          'action': [
+            'python',
+            'scripts/make_style_shorthands.py',
+            'css/CSSShorthands.in',
+            '--output_dir',
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/',
+          ],
+        },
+        {
           'action_name': 'StyleBuilder',
           'inputs': [
             '<@(scripts_for_in_files)',

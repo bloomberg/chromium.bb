@@ -23,12 +23,12 @@
 #include "core/css/StylePropertySet.h"
 
 #include "RuntimeEnabledFeatures.h"
+#include "StylePropertyShorthand.h"
 #include "core/css/CSSParser.h"
 #include "core/css/CSSValuePool.h"
 #include "core/css/CSSVariableValue.h"
 #include "core/css/PropertySetCSSStyleDeclaration.h"
 #include "core/css/StylePropertySerializer.h"
-#include "core/css/StylePropertyShorthand.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/page/RuntimeCSSEnabled.h"
 #include "wtf/text/StringBuilder.h"

@@ -24,7 +24,7 @@
 #include "core/css/StylePropertySerializer.h"
 
 #include "CSSValueKeywords.h"
-#include "core/css/StylePropertyShorthand.h"
+#include "StylePropertyShorthand.h"
 #include "core/page/RuntimeCSSEnabled.h"
 #include "wtf/BitArray.h"
 #include "wtf/text/StringBuilder.h"
