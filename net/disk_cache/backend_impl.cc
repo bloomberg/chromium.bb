@@ -89,9 +89,8 @@ bool InitExperiment(disk_cache::IndexHeader* header, bool cache_created) {
     if (cache_created) {
       header->experiment = disk_cache::EXPERIMENT_SIMPLE_CONTROL;
       return true;
-    } else if (header->experiment != disk_cache::EXPERIMENT_SIMPLE_CONTROL) {
-      return false;
     }
+    return header->experiment == disk_cache::EXPERIMENT_SIMPLE_CONTROL;
   }
 
   header->experiment = disk_cache::NO_EXPERIMENT;

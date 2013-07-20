@@ -4,6 +4,7 @@
 
 #include "base/basictypes.h"
 #include "base/file_util.h"
+#include "base/metrics/field_trial.h"
 #include "base/port.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -19,6 +20,7 @@
 #include "net/disk_cache/disk_cache_test_base.h"
 #include "net/disk_cache/disk_cache_test_util.h"
 #include "net/disk_cache/entry_impl.h"
+#include "net/disk_cache/experiments.h"
 #include "net/disk_cache/histogram_macros.h"
 #include "net/disk_cache/mapped_file.h"
 #include "net/disk_cache/mem_backend_impl.h"
@@ -34,6 +36,34 @@
 #endif
 
 using base::Time;
+
+namespace {
+
+const char kExistingEntryKey[] = "existing entry key";
+
+disk_cache::BackendImpl* CreateExistingEntryCache(
+    const base::Thread& cache_thread,
+    base::FilePath& cache_path) {
+  net::TestCompletionCallback cb;
+
+  disk_cache::BackendImpl* cache = new disk_cache::BackendImpl(
+      cache_path, cache_thread.message_loop_proxy(), NULL);
+  int rv = cache->Init(cb.callback());
+  if (cb.GetResult(rv) != net::OK)
+    return NULL;
+
+  disk_cache::Entry* entry = NULL;
+  rv = cache->CreateEntry(kExistingEntryKey, &entry, cb.callback());
+  if (cb.GetResult(rv) != net::OK) {
+    delete cache;
+    return NULL;
+  }
+  entry->Close();
+
+  return cache;
+}
+
+}  // namespace
 
 // Tests that can run with different types of caches.
 class DiskCacheBackendTest : public DiskCacheTestWithCache {
@@ -1699,6 +1729,136 @@ TEST_F(DiskCacheTest, WrongVersion) {
   ASSERT_EQ(net::ERR_FAILED, cb.GetResult(rv));
 
   delete cache;
+}
+
+class BadEntropyProvider : public base::FieldTrial::EntropyProvider {
+ public:
+  virtual ~BadEntropyProvider() {}
+
+  virtual double GetEntropyForTrial(const std::string& trial_name,
+                                    uint32 randomization_seed) const OVERRIDE {
+    return 0.5;
+  }
+};
+
+// Tests that the disk cache successfully joins the control group, dropping the
+// existing cache in favour of a new empty cache.
+TEST_F(DiskCacheTest, SimpleCacheControlJoin) {
+  base::Thread cache_thread("CacheThread");
+  ASSERT_TRUE(cache_thread.StartWithOptions(
+                  base::Thread::Options(base::MessageLoop::TYPE_IO, 0)));
+
+  disk_cache::BackendImpl* cache = CreateExistingEntryCache(cache_thread,
+                                                            cache_path_);
+  ASSERT_TRUE(cache);
+  delete cache;
+  cache = NULL;
+
+  // Instantiate the SimpleCacheTrial, forcing this run into the
+  // ExperimentControl group.
+  base::FieldTrialList field_trial_list(new BadEntropyProvider());
+  base::FieldTrialList::CreateFieldTrial("SimpleCacheTrial",
+                                         "ExperimentControl");
+  net::TestCompletionCallback cb;
+  disk_cache::Backend* base_cache = NULL;
+  int rv =
+      disk_cache::CreateCacheBackend(net::DISK_CACHE,
+                                     net::CACHE_BACKEND_BLOCKFILE,
+                                     cache_path_,
+                                     0,
+                                     true,
+                                     cache_thread.message_loop_proxy().get(),
+                                     NULL,
+                                     &base_cache,
+                                     cb.callback());
+  ASSERT_EQ(net::OK, cb.GetResult(rv));
+  cache = static_cast<disk_cache::BackendImpl*>(base_cache);
+  EXPECT_EQ(0, base_cache->GetEntryCount());
+  delete cache;
+}
+
+// Tests that the disk cache can restart in the control group preserving
+// existing entries.
+TEST_F(DiskCacheTest, SimpleCacheControlRestart) {
+  // Instantiate the SimpleCacheTrial, forcing this run into the
+  // ExperimentControl group.
+  base::FieldTrialList field_trial_list(new BadEntropyProvider());
+  base::FieldTrialList::CreateFieldTrial("SimpleCacheTrial",
+                                         "ExperimentControl");
+
+  base::Thread cache_thread("CacheThread");
+  ASSERT_TRUE(cache_thread.StartWithOptions(
+                  base::Thread::Options(base::MessageLoop::TYPE_IO, 0)));
+
+  disk_cache::BackendImpl* cache = CreateExistingEntryCache(cache_thread,
+                                                            cache_path_);
+  ASSERT_TRUE(cache);
+  delete cache;
+  cache = NULL;
+
+  net::TestCompletionCallback cb;
+
+  const int kRestartCount = 5;
+  for (int i=0; i < kRestartCount; ++i) {
+    cache = new disk_cache::BackendImpl(cache_path_,
+                                        cache_thread.message_loop_proxy(),
+                                        NULL);
+    int rv = cache->Init(cb.callback());
+    ASSERT_EQ(net::OK, cb.GetResult(rv));
+    EXPECT_EQ(1, cache->GetEntryCount());
+
+    disk_cache::Entry* entry = NULL;
+    rv = cache->OpenEntry(kExistingEntryKey, &entry, cb.callback());
+    EXPECT_EQ(net::OK, cb.GetResult(rv));
+    EXPECT_TRUE(entry);
+    entry->Close();
+    delete cache;
+    cache = NULL;
+  }
+}
+
+// Tests that the disk cache can leave the control group preserving existing
+// entries.
+TEST_F(DiskCacheTest, SimpleCacheControlLeave) {
+  base::Thread cache_thread("CacheThread");
+  ASSERT_TRUE(cache_thread.StartWithOptions(
+      base::Thread::Options(base::MessageLoop::TYPE_IO, 0)));
+
+  {
+    // Instantiate the SimpleCacheTrial, forcing this run into the
+    // ExperimentControl group.
+    base::FieldTrialList field_trial_list(new BadEntropyProvider());
+    base::FieldTrialList::CreateFieldTrial("SimpleCacheTrial",
+                                           "ExperimentControl");
+
+    disk_cache::BackendImpl* cache = CreateExistingEntryCache(cache_thread,
+                                                              cache_path_);
+    ASSERT_TRUE(cache);
+    delete cache;
+  }
+
+  // Instantiate the SimpleCacheTrial, forcing this run into the
+  // ExperimentNo group.
+  base::FieldTrialList field_trial_list(new BadEntropyProvider());
+  base::FieldTrialList::CreateFieldTrial("SimpleCacheTrial", "ExperimentNo");
+  net::TestCompletionCallback cb;
+
+  const int kRestartCount = 5;
+  for (int i = 0; i < kRestartCount; ++i) {
+    disk_cache::BackendImpl* cache = new disk_cache::BackendImpl(
+        cache_path_, cache_thread.message_loop_proxy(), NULL);
+    int rv = cache->Init(cb.callback());
+    ASSERT_EQ(net::OK, cb.GetResult(rv));
+    EXPECT_EQ(1, cache->GetEntryCount());
+
+    disk_cache::Entry* entry = NULL;
+    rv = cache->OpenEntry(kExistingEntryKey, &entry, cb.callback());
+    EXPECT_EQ(net::OK, cb.GetResult(rv));
+    EXPECT_TRUE(entry);
+    entry->Close();
+    delete cache;
+    cache = NULL;
+  }
 }
 
 // Tests that the cache is properly restarted on recovery error.
