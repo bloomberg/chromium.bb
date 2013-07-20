@@ -108,7 +108,6 @@
 #include "content/renderer/mhtml_generator.h"
 #include "content/renderer/notification_provider.h"
 #include "content/renderer/pepper/pepper_plugin_delegate_impl.h"
-#include "content/renderer/plugin_channel_host.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_process.h"
 #include "content/renderer/render_thread_impl.h"
@@ -4765,67 +4764,6 @@ void RenderViewImpl::LoadURLExternally(
     const WebKit::WebURLRequest& request,
     WebKit::WebNavigationPolicy policy) {
   loadURLExternally(frame, request, policy);
-}
-
-// webkit_glue::WebPluginPageDelegate ------------------------------------------
-
-WebPluginDelegate* RenderViewImpl::CreatePluginDelegate(
-    const base::FilePath& file_path,
-    const std::string& mime_type) {
-  if (!PluginChannelHost::IsListening()) {
-    LOG(ERROR) << "PluginChannelHost isn't listening";
-    return NULL;
-  }
-
-  bool in_process_plugin = RenderProcess::current()->UseInProcessPlugins();
-  if (in_process_plugin) {
-#if defined(OS_WIN) && !defined(USE_AURA)
-    return WebPluginDelegateImpl::Create(file_path, mime_type);
-#else
-    // In-proc plugins aren't supported on non-Windows.
-    NOTIMPLEMENTED();
-    return NULL;
-#endif
-  }
-
-  return new WebPluginDelegateProxy(mime_type, AsWeakPtr());
-}
-
-WebKit::WebPlugin* RenderViewImpl::CreatePluginReplacement(
-    const base::FilePath& file_path) {
-  return GetContentClient()->renderer()->CreatePluginReplacement(
-      this, file_path);
-}
-
-void RenderViewImpl::CreatedPluginWindow(gfx::PluginWindowHandle window) {
-#if defined(USE_X11)
-  Send(new ViewHostMsg_CreatePluginContainer(routing_id(), window));
-#endif
-}
-
-void RenderViewImpl::WillDestroyPluginWindow(gfx::PluginWindowHandle window) {
-#if defined(USE_X11)
-  Send(new ViewHostMsg_DestroyPluginContainer(routing_id(), window));
-#endif
-  CleanupWindowInPluginMoves(window);
-}
-
-void RenderViewImpl::DidMovePlugin(const WebPluginGeometry& move) {
-  SchedulePluginMove(move);
-}
-
-void RenderViewImpl::DidStartLoadingForPlugin() {
-  // TODO(darin): Make is_loading_ be a counter!
-  didStartLoading();
-}
-
-void RenderViewImpl::DidStopLoadingForPlugin() {
-  // TODO(darin): Make is_loading_ be a counter!
-  didStopLoading();
-}
-
-WebCookieJar* RenderViewImpl::GetCookieJar() {
-  return &cookie_jar_;
 }
 
 void RenderViewImpl::DidPlay(WebKit::WebMediaPlayer* player) {

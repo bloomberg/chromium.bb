@@ -50,65 +50,6 @@ bool remove_tracking = false;
 
 namespace content {
 
-// A simple MessageFilter that will ignore all messages and respond to sync
-// messages with an error when is_listening_ is false.
-class IsListeningFilter : public IPC::ChannelProxy::MessageFilter {
- public:
-  IsListeningFilter() : channel_(NULL) {}
-
-  // MessageFilter overrides
-  virtual void OnFilterRemoved() OVERRIDE {}
-  virtual void OnFilterAdded(IPC::Channel* channel) OVERRIDE {
-    channel_ = channel;
-  }
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-
-  static bool is_listening_;
-
- protected:
-  virtual ~IsListeningFilter() {}
-
- private:
-  IPC::Channel* channel_;
-
-  DISALLOW_COPY_AND_ASSIGN(IsListeningFilter);
-};
-
-bool IsListeningFilter::OnMessageReceived(const IPC::Message& message) {
-  if (IsListeningFilter::is_listening_) {
-    // Proceed with normal operation.
-    return false;
-  }
-
-  // Always process message reply to prevent renderer from hanging on sync
-  // messages.
-  if (message.is_reply() || message.is_reply_error()) {
-    return false;
-  }
-
-  // Reply to synchronous messages with an error (so they don't block while
-  // we're not listening).
-  if (message.is_sync()) {
-    IPC::Message* reply = IPC::SyncMessage::GenerateReply(&message);
-    reply->set_reply_error();
-    channel_->Send(reply);
-  }
-  return true;
-}
-
-// static
-bool IsListeningFilter::is_listening_ = true;
-
-// static
-bool PluginChannelHost::IsListening() {
-  return IsListeningFilter::is_listening_;
-}
-
-// static
-void PluginChannelHost::SetListening(bool flag) {
-  IsListeningFilter::is_listening_ = flag;
-}
-
 #if defined(OS_MACOSX)
 // static
 bool* PluginChannelHost::GetRemoveTrackingFlag() {
@@ -140,13 +81,7 @@ PluginChannelHost::~PluginChannelHost() {
 bool PluginChannelHost::Init(base::MessageLoopProxy* ipc_message_loop,
                              bool create_pipe_now,
                              base::WaitableEvent* shutdown_event) {
-  bool ret =
-      NPChannelBase::Init(ipc_message_loop, create_pipe_now, shutdown_event);
-  if (ret) {
-    is_listening_filter_ = new IsListeningFilter;
-    channel_->AddFilter(is_listening_filter_.get());
-  }
-  return ret;
+  return NPChannelBase::Init(ipc_message_loop, create_pipe_now, shutdown_event);
 }
 
 int PluginChannelHost::GenerateRouteID() {

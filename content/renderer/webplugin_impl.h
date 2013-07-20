@@ -44,8 +44,8 @@ class MultipartResponseDelegate;
 
 namespace content {
 
+class RenderViewImpl;
 class WebPluginDelegate;
-class WebPluginPageDelegate;
 
 // This is the WebKit side of the plugin implementation that forwards calls,
 // after changing out of WebCore types, to a delegate.  The delegate may
@@ -58,7 +58,7 @@ class WebPluginImpl : public WebPlugin,
       WebKit::WebFrame* frame,
       const WebKit::WebPluginParams& params,
       const base::FilePath& file_path,
-      const base::WeakPtr<WebPluginPageDelegate>& page_delegate);
+      const base::WeakPtr<RenderViewImpl>& render_view);
   virtual ~WebPluginImpl();
 
   // Helper function for sorting post data.
@@ -273,6 +273,8 @@ class WebPluginImpl : public WebPlugin,
   // Check for invalid chars like @, ;, \ before the first / (in path).
   bool IsValidUrl(const GURL& url, Referrer referrer_flag);
 
+  WebPluginDelegate* CreatePluginDelegate();
+
   std::vector<ClientInfo> clients_;
 
   bool windowless_;
@@ -286,7 +288,7 @@ class WebPluginImpl : public WebPlugin,
   scoped_ptr<WebKit::WebLayer> web_layer_;
 #endif
   bool accepts_input_events_;
-  base::WeakPtr<WebPluginPageDelegate> page_delegate_;
+  base::WeakPtr<RenderViewImpl> render_view_;
   WebKit::WebFrame* webframe_;
 
   WebPluginDelegate* delegate_;

@@ -15,8 +15,12 @@
 #include "cc/layers/io_surface_layer.h"
 #include "content/child/npapi/plugin_host.h"
 #include "content/child/npapi/plugin_instance.h"
-#include "content/child/npapi/webplugin_delegate.h"
-#include "content/renderer/webplugin_page_delegate.h"
+#include "content/child/npapi/webplugin_delegate_impl.h"
+#include "content/common/view_messages.h"
+#include "content/public/renderer/content_renderer_client.h"
+#include "content/renderer/render_process.h"
+#include "content/renderer/render_view_impl.h"
+#include "content/renderer/webplugin_delegate_proxy.h"
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
@@ -233,13 +237,12 @@ struct WebPluginImpl::ClientInfo {
 };
 
 bool WebPluginImpl::initialize(WebPluginContainer* container) {
-  if (!page_delegate_.get()) {
-    LOG(ERROR) << "No page delegate";
+  if (!render_view_.get()) {
+    LOG(ERROR) << "No RenderView";
     return false;
   }
 
-  WebPluginDelegate* plugin_delegate = page_delegate_->CreatePluginDelegate(
-      file_path_, mime_type_);
+  WebPluginDelegate* plugin_delegate = CreatePluginDelegate();
   if (!plugin_delegate)
     return false;
 
@@ -259,7 +262,8 @@ bool WebPluginImpl::initialize(WebPluginContainer* container) {
     plugin_delegate->PluginDestroyed();
 
     WebKit::WebPlugin* replacement_plugin =
-        page_delegate_->CreatePluginReplacement(file_path_);
+        GetContentClient()->renderer()->CreatePluginReplacement(
+            render_view_.get(), file_path_);
     if (!replacement_plugin)
       return false;
 
@@ -331,9 +335,9 @@ void WebPluginImpl::updateGeometry(
     new_geometry.cutout_rects.push_back(cutout_rects[i]);
 
   // Only send DidMovePlugin if the geometry changed in some way.
-  if (window_ && page_delegate_.get() &&
+  if (window_ && render_view_.get() &&
       (first_geometry_update_ || !new_geometry.Equals(geometry_))) {
-    page_delegate_->DidMovePlugin(new_geometry);
+    render_view_->SchedulePluginMove(new_geometry);
     // We invalidate windowed plugins during the first geometry update to
     // ensure that they get reparented to the wrapper window in the browser.
     // This ensures that they become visible and are painted by the OS. This is
@@ -392,7 +396,7 @@ void WebPluginImpl::updateFocus(bool focused) {
 }
 
 void WebPluginImpl::updateVisibility(bool visible) {
-  if (!window_ || !page_delegate_.get())
+  if (!window_ || !render_view_.get())
     return;
 
   WebPluginGeometry move;
@@ -402,7 +406,7 @@ void WebPluginImpl::updateVisibility(bool visible) {
   move.rects_valid = false;
   move.visible = visible;
 
-  page_delegate_->DidMovePlugin(move);
+  render_view_->SchedulePluginMove(move);
 }
 
 bool WebPluginImpl::acceptsInputEvents() {
@@ -489,11 +493,11 @@ WebPluginImpl::WebPluginImpl(
     WebFrame* webframe,
     const WebPluginParams& params,
     const base::FilePath& file_path,
-    const base::WeakPtr<WebPluginPageDelegate>& page_delegate)
+    const base::WeakPtr<RenderViewImpl>& render_view)
     : windowless_(false),
       window_(gfx::kNullPluginWindow),
       accepts_input_events_(false),
-      page_delegate_(page_delegate),
+      render_view_(render_view),
       webframe_(webframe),
       delegate_(NULL),
       container_(NULL),
@@ -535,12 +539,15 @@ void WebPluginImpl::SetWindow(gfx::PluginWindowHandle window) {
     // window was created -- so don't.
 #else
     accepts_input_events_ = false;
-    if (page_delegate_.get()) {
-      // Tell the view delegate that the plugin window was created, so that it
-      // can create necessary container widgets.
-      page_delegate_->CreatedPluginWindow(window);
-    }
-#endif
+
+#if defined(USE_X11)
+    // Tell the view delegate that the plugin window was created, so that it
+    // can create necessary container widgets.
+    render_view_->Send(new ViewHostMsg_CreatePluginContainer(
+        render_view_->routing_id(), window));
+#endif  // USE_X11
+
+#endif  // OS_MACOSX
   } else {
     DCHECK(!window_);  // Make sure not called twice.
     windowless_ = true;
@@ -555,8 +562,13 @@ void WebPluginImpl::SetAcceptsInputEvents(bool accepts) {
 void WebPluginImpl::WillDestroyWindow(gfx::PluginWindowHandle window) {
   DCHECK_EQ(window, window_);
   window_ = gfx::kNullPluginWindow;
-  if (page_delegate_.get())
-    page_delegate_->WillDestroyPluginWindow(window);
+  if (render_view_.get()) {
+#if defined(USE_X11)
+    render_view_->Send(new ViewHostMsg_DestroyPluginContainer(
+        render_view_->routing_id(), window));
+#endif
+    render_view_->CleanupWindowInPluginMoves(window);
+  }
 }
 
 GURL WebPluginImpl::CompleteURL(const char* url) {
@@ -638,6 +650,21 @@ bool WebPluginImpl::IsValidUrl(const GURL& url, Referrer referrer_flag) {
   }
 
   return true;
+}
+
+WebPluginDelegate* WebPluginImpl::CreatePluginDelegate() {
+  bool in_process_plugin = RenderProcess::current()->UseInProcessPlugins();
+  if (in_process_plugin) {
+#if defined(OS_WIN) && !defined(USE_AURA)
+    return WebPluginDelegateImpl::Create(file_path_, mime_type_);
+#else
+    // In-proc plugins aren't supported on non-Windows.
+    NOTIMPLEMENTED();
+    return NULL;
+#endif
+  }
+
+  return new WebPluginDelegateProxy(mime_type_, render_view_);
 }
 
 WebPluginImpl::RoutingStatus WebPluginImpl::RouteToFrame(
@@ -735,10 +762,10 @@ bool WebPluginImpl::FindProxyForUrl(const GURL& url, std::string* proxy_list) {
 void WebPluginImpl::SetCookie(const GURL& url,
                               const GURL& first_party_for_cookies,
                               const std::string& cookie) {
-  if (!page_delegate_.get())
+  if (!render_view_.get())
     return;
 
-  WebCookieJar* cookie_jar = page_delegate_->GetCookieJar();
+  WebCookieJar* cookie_jar = render_view_->cookie_jar();
   if (!cookie_jar) {
     DLOG(WARNING) << "No cookie jar!";
     return;
@@ -750,10 +777,10 @@ void WebPluginImpl::SetCookie(const GURL& url,
 
 std::string WebPluginImpl::GetCookies(const GURL& url,
                                       const GURL& first_party_for_cookies) {
-  if (!page_delegate_.get())
+  if (!render_view_.get())
     return std::string();
 
-  WebCookieJar* cookie_jar = page_delegate_->GetCookieJar();
+  WebCookieJar* cookie_jar = render_view_->cookie_jar();
   if (!cookie_jar) {
     DLOG(WARNING) << "No cookie jar!";
     return std::string();
@@ -1046,8 +1073,10 @@ void WebPluginImpl::didFinishLoading(WebURLLoader* loader, double finishTime) {
     if (index != multi_part_response_map_.end()) {
       delete (*index).second;
       multi_part_response_map_.erase(index);
-      if (page_delegate_.get())
-        page_delegate_->DidStopLoadingForPlugin();
+      if (render_view_.get()) {
+        // TODO(darin): Make is_loading_ be a counter!
+        render_view_->didStopLoading();
+      }
     }
     loader->setDefersLoading(true);
     WebPluginResourceClient* resource_client = client_info->client;
@@ -1310,8 +1339,10 @@ bool WebPluginImpl::HandleHttpMultipartResponse(
     return false;
   }
 
-  if (page_delegate_.get())
-    page_delegate_->DidStartLoadingForPlugin();
+  if (render_view_.get()) {
+    // TODO(darin): Make is_loading_ be a counter!
+    render_view_->didStartLoading();
+  }
 
   MultiPartResponseClient* multi_part_response_client =
       new MultiPartResponseClient(client);
@@ -1342,8 +1373,7 @@ bool WebPluginImpl::ReinitializePluginForResponse(
   container_ = container_widget;
   webframe_ = webframe;
 
-  WebPluginDelegate* plugin_delegate = page_delegate_->CreatePluginDelegate(
-      file_path_, mime_type_);
+  WebPluginDelegate* plugin_delegate = CreatePluginDelegate();
 
   // Store the plugin's unique identifier, used by the container to track its
   // script objects, and enable script objects (since Initialize may use them

@@ -1306,11 +1306,11 @@ void PepperPluginDelegateImpl::ZoomLimitsChanged(double minimum_factor,
 }
 
 void PepperPluginDelegateImpl::DidStartLoading() {
-  render_view_->DidStartLoadingForPlugin();
+  render_view_->didStartLoading();
 }
 
 void PepperPluginDelegateImpl::DidStopLoading() {
-  render_view_->DidStopLoadingForPlugin();
+  render_view_->didStopLoading();
 }
 
 void PepperPluginDelegateImpl::SetContentRestriction(int restrictions) {

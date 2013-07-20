@@ -419,7 +419,6 @@
     'renderer/webplugin_delegate_proxy.h',
     'renderer/webplugin_impl.cc',
     'renderer/webplugin_impl.h',
-    'renderer/webplugin_page_delegate.h',
     'renderer/websharedworker_proxy.cc',
     'renderer/websharedworker_proxy.h',
     'renderer/websharedworkerrepository_impl.cc',

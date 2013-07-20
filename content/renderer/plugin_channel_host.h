@@ -10,7 +10,6 @@
 #include "ipc/ipc_channel_handle.h"
 
 namespace content {
-class IsListeningFilter;
 class NPObjectBase;
 
 // Encapsulates an IPC channel between the renderer and one plugin process.
@@ -42,10 +41,6 @@ class PluginChannelHost : public NPChannelBase {
   // IPC::Listener override
   virtual void OnChannelError() OVERRIDE;
 
-  static void SetListening(bool flag);
-
-  static bool IsListening();
-
   static void Broadcast(IPC::Message* message) {
     NPChannelBase::Broadcast(message);
   }
@@ -67,10 +62,6 @@ class PluginChannelHost : public NPChannelBase {
   // inform about OnChannelError
   typedef base::hash_map<int, IPC::Listener*> ProxyMap;
   ProxyMap proxies_;
-
-  // An IPC MessageFilter that can be told to filter out all messages. This is
-  // used when the JS debugger is attached in order to avoid browser hangs.
-  scoped_refptr<IsListeningFilter> is_listening_filter_;
 
   // True if we are expecting the plugin process to go away - in which case,
   // don't treat it as a crash.
