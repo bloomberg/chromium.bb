@@ -82,6 +82,7 @@ class WEBKIT_GLUE_EXPORT WebKitPlatformSupportImpl :
     const char* name, int sample, int min, int max, int bucket_count);
   virtual void histogramEnumeration(
     const char* name, int sample, int boundary_value);
+  virtual void histogramSparse(const char* name, int sample);
   virtual const unsigned char* getTraceCategoryEnabledFlag(
       const char* category_name);
   virtual long* getTraceSamplingState(const unsigned thread_bucket);

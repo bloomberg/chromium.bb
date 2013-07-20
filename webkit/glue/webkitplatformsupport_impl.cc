@@ -15,6 +15,7 @@
 #include "base/memory/singleton.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/metrics/stats_counters.h"
 #include "base/platform_file.h"
 #include "base/process_util.h"
@@ -441,6 +442,12 @@ void WebKitPlatformSupportImpl::histogramEnumeration(
           boundary_value + 1, base::HistogramBase::kUmaTargetedHistogramFlag);
   DCHECK_EQ(name, counter->histogram_name());
   counter->Add(sample);
+}
+
+void WebKitPlatformSupportImpl::histogramSparse(const char* name, int sample) {
+  // For sparse histograms, we can use the macro, as it does not incorporate a
+  // static.
+  UMA_HISTOGRAM_SPARSE_SLOWLY(name, sample);
 }
 
 const unsigned char* WebKitPlatformSupportImpl::getTraceCategoryEnabledFlag(
