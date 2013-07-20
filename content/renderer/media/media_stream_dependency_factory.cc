@@ -11,6 +11,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "content/public/common/content_switches.h"
 #include "content/renderer/media/media_stream_source_extra_data.h"
+#include "content/renderer/media/peer_connection_identity_service.h"
 #include "content/renderer/media/rtc_media_constraints.h"
 #include "content/renderer/media/rtc_peer_connection_handler.h"
 #include "content/renderer/media/rtc_video_capturer.h"
@@ -567,9 +568,16 @@ MediaStreamDependencyFactory::CreatePeerConnection(
             network_manager_,
             socket_factory_.get(),
             web_frame);
-  return pc_factory_->CreatePeerConnection(
-      ice_servers, constraints, pa_factory.get(), NULL, observer)
-      .get();
+
+  PeerConnectionIdentityService* identity_service =
+      new PeerConnectionIdentityService(GURL(web_frame->document().url().spec())
+                                            .GetOrigin());
+
+  return pc_factory_->CreatePeerConnection(ice_servers,
+                                           constraints,
+                                           pa_factory.get(),
+                                           identity_service,
+                                           observer).get();
 }
 
 scoped_refptr<webrtc::MediaStreamInterface>

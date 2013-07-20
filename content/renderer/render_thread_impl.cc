@@ -72,6 +72,7 @@
 #include "content/renderer/media/renderer_gpu_video_decoder_factories.h"
 #include "content/renderer/media/video_capture_impl_manager.h"
 #include "content/renderer/media/video_capture_message_filter.h"
+#include "content/renderer/media/webrtc_identity_service.h"
 #include "content/renderer/memory_benchmarking_extension.h"
 #include "content/renderer/p2p/socket_dispatcher.h"
 #include "content/renderer/plugin_channel_host.h"
@@ -376,6 +377,8 @@ void RenderThreadImpl::Init() {
   p2p_socket_dispatcher_ =
       new P2PSocketDispatcher(GetIOMessageLoopProxy().get());
   AddFilter(p2p_socket_dispatcher_.get());
+
+  webrtc_identity_service_.reset(new WebRTCIdentityService());
 #endif  // defined(ENABLE_WEBRTC)
   vc_manager_ = new VideoCaptureImplManager();
   AddFilter(vc_manager_->video_capture_message_filter());

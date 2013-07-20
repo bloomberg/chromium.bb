@@ -30,7 +30,8 @@ class CONTENT_EXPORT WebRTCIdentityStore {
       CompletionCallback;
 
   WebRTCIdentityStore();
-  ~WebRTCIdentityStore();
+  // Only virtual to allow subclassing for test mock.
+  virtual ~WebRTCIdentityStore();
 
   // Retrieve the cached DTLS private key and certificate, i.e. identity, for
   // the |origin| and |identity_name| pair, or generate a new identity using
@@ -52,10 +53,10 @@ class CONTENT_EXPORT WebRTCIdentityStore {
   //
   // Returns the Closure used to cancel the request if the request is accepted.
   // The Closure can only be called before the request completes.
-  base::Closure RequestIdentity(const GURL& origin,
-                                const std::string& identity_name,
-                                const std::string& common_name,
-                                const CompletionCallback& callback);
+  virtual base::Closure RequestIdentity(const GURL& origin,
+                                        const std::string& identity_name,
+                                        const std::string& common_name,
+                                        const CompletionCallback& callback);
 
  private:
   friend class WebRTCIdentityStoreTest;

@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "content/common/content_export.h"
 #include "content/public/browser/browser_message_filter.h"
 
 class GURL;
@@ -23,37 +24,31 @@ class WebRTCIdentityStore;
 // Only one outstanding request is allowed per renderer at a time. If a second
 // request is made before the first one completes, an IPC with error
 // ERR_INSUFFICIENT_RESOURCES will be sent back to the renderer.
-class WebRTCIdentityServiceHost : public BrowserMessageFilter {
+class CONTENT_EXPORT WebRTCIdentityServiceHost : public BrowserMessageFilter {
  public:
   explicit WebRTCIdentityServiceHost(WebRTCIdentityStore* identity_store);
 
- private:
+ protected:
   virtual ~WebRTCIdentityServiceHost();
 
   // content::BrowserMessageFilter override.
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
 
-  void OnComplete(int request_id,
-                  int error,
+ private:
+  // See WebRTCIdentityStore for the meaning of the parameters.
+  void OnComplete(int status,
                   const std::string& certificate,
                   const std::string& private_key);
 
-  // Requests a DTLS identity from the DTLS identity store for the given
-  // |origin| and |identity_name|. If no such identity exists, a new one will be
-  // generated using the given |common_name|.
-  // |request_id| is a unique id chosen by the client and used to cancel a
-  // pending request.
-  void OnRequestIdentity(int request_id,
-                         const GURL& origin,
+  // See WebRTCIdentityStore for the meaning of the parameters.
+  void OnRequestIdentity(const GURL& origin,
                          const std::string& identity_name,
                          const std::string& common_name);
 
-  // Cancels a pending request by its id. If there is no pending request having
-  // the same id, the call is ignored.
-  void OnCancelRequest(int request_id);
+  void OnCancelRequest();
 
-  void SendErrorMessage(int request_id, int error);
+  void SendErrorMessage(int error);
 
   base::Closure cancel_callback_;
   WebRTCIdentityStore* identity_store_;

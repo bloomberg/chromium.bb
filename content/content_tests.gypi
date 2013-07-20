@@ -613,6 +613,7 @@
         ['enable_webrtc==1', {
           'sources': [
             'browser/media/webrtc_internals_unittest.cc',
+            'browser/renderer_host/media/webrtc_identity_service_host_unittest.cc',
             'browser/renderer_host/p2p/socket_host_test_utils.h',
             'browser/renderer_host/p2p/socket_host_tcp_unittest.cc',
             'browser/renderer_host/p2p/socket_host_tcp_server_unittest.cc',
@@ -625,6 +626,7 @@
             'renderer/media/video_destination_handler_unittest.cc',
             'renderer/media/video_source_handler_unittest.cc',
             'renderer/media/webrtc_audio_device_unittest.cc',
+            'renderer/media/webrtc_identity_service_unittest.cc',
             'renderer/media/webrtc_local_audio_track_unittest.cc',
           ],
           'dependencies': [

@@ -17,13 +17,12 @@ WebRTCIdentityServiceHost::WebRTCIdentityServiceHost(
     : identity_store_(identity_store) {}
 
 WebRTCIdentityServiceHost::~WebRTCIdentityServiceHost() {
-  if (cancel_callback_.is_null())
-    return;
-  cancel_callback_.Run();
+  if (!cancel_callback_.is_null())
+    cancel_callback_.Run();
 }
 
 bool WebRTCIdentityServiceHost::OnMessageReceived(const IPC::Message& message,
-                                                  bool* message_was_ok) {
+                                                bool* message_was_ok) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(WebRTCIdentityServiceHost, message, *message_was_ok)
     IPC_MESSAGE_HANDLER(WebRTCIdentityMsg_RequestIdentity, OnRequestIdentity)
@@ -34,14 +33,13 @@ bool WebRTCIdentityServiceHost::OnMessageReceived(const IPC::Message& message,
 }
 
 void WebRTCIdentityServiceHost::OnRequestIdentity(
-    int request_id,
     const GURL& origin,
     const std::string& identity_name,
     const std::string& common_name) {
   if (!cancel_callback_.is_null()) {
     DLOG(WARNING)
-        << "The request is rejected because there is already a pending request";
-    SendErrorMessage(request_id, net::ERR_INSUFFICIENT_RESOURCES);
+        << "Request rejected because the previous request has not finished.";
+    SendErrorMessage(net::ERR_INSUFFICIENT_RESOURCES);
     return;
   }
   cancel_callback_ = identity_store_->RequestIdentity(
@@ -49,32 +47,29 @@ void WebRTCIdentityServiceHost::OnRequestIdentity(
       identity_name,
       common_name,
       base::Bind(&WebRTCIdentityServiceHost::OnComplete,
-                 base::Unretained(this),
-                 request_id));
+                 base::Unretained(this)));
   if (cancel_callback_.is_null()) {
-    SendErrorMessage(request_id, net::ERR_UNEXPECTED);
+    SendErrorMessage(net::ERR_UNEXPECTED);
   }
 }
 
-void WebRTCIdentityServiceHost::OnCancelRequest(int request_id) {
-  base::ResetAndReturn(&cancel_callback_);
+void WebRTCIdentityServiceHost::OnCancelRequest() {
+  base::ResetAndReturn(&cancel_callback_).Run();
 }
 
-void WebRTCIdentityServiceHost::OnComplete(int request_id,
-                                           int error,
-                                           const std::string& certificate,
-                                           const std::string& private_key) {
+void WebRTCIdentityServiceHost::OnComplete(int status,
+                                         const std::string& certificate,
+                                         const std::string& private_key) {
   cancel_callback_.Reset();
-  if (error == net::OK) {
-    Send(new WebRTCIdentityHostMsg_IdentityReady(
-        request_id, certificate, private_key));
+  if (status == net::OK) {
+    Send(new WebRTCIdentityHostMsg_IdentityReady(certificate, private_key));
   } else {
-    SendErrorMessage(request_id, error);
+    SendErrorMessage(status);
   }
 }
 
-void WebRTCIdentityServiceHost::SendErrorMessage(int request_id, int error) {
-  Send(new WebRTCIdentityHostMsg_RequestFailed(request_id, error));
+void WebRTCIdentityServiceHost::SendErrorMessage(int error) {
+  Send(new WebRTCIdentityHostMsg_RequestFailed(error));
 }
 
 }  // namespace content

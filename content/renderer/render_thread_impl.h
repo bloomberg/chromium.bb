@@ -90,6 +90,7 @@ class RenderProcessObserver;
 class VideoCaptureImplManager;
 class WebDatabaseObserverImpl;
 class WebGraphicsContext3DCommandBufferImpl;
+class WebRTCIdentityService;
 
 // The RenderThreadImpl class represents a background thread where RenderView
 // instances live.  The RenderThread supports an API that is used by its
@@ -287,6 +288,12 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   void PreCacheFontCharacters(const LOGFONT& log_font, const string16& str);
 #endif
 
+#if defined(ENABLE_WEBRTC)
+  WebRTCIdentityService* get_webrtc_identity_service() {
+    return webrtc_identity_service_.get();
+  }
+#endif
+
   // For producing custom V8 histograms. Custom histograms are produced if all
   // RenderViews share the same host, and the host is in the pre-specified set
   // of hosts we want to produce custom diagrams for. The name for a custom
@@ -476,6 +483,8 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   HistogramCustomizer histogram_customizer_;
 
   scoped_ptr<base::MemoryPressureListener> memory_pressure_listener_;
+
+  scoped_ptr<WebRTCIdentityService> webrtc_identity_service_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderThreadImpl);
 };
