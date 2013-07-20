@@ -84,7 +84,7 @@ def RebootDevices():
   # which might not exist in this checkout.
   if bb_utils.TESTING:
     return
-  devices = android_commands.GetAttachedDevices()
+  devices = android_commands.GetAttachedDevices(emulator=False)
   print 'Rebooting: %s' % devices
   if devices:
     pool = multiprocessing.Pool(len(devices))

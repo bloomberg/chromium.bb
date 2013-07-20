@@ -47,14 +47,14 @@ def _KillAllEmulators():
   running but a device slot is taken.  A little bot trouble and and
   we're out of room forever.
   """
-  emulators = android_commands.GetEmulators()
+  emulators = android_commands.GetAttachedDevices(hardware=False)
   if not emulators:
     return
   for emu_name in emulators:
     cmd_helper.RunCmd(['adb', '-s', emu_name, 'emu', 'kill'])
   logging.info('Emulator killing is async; give a few seconds for all to die.')
   for i in range(5):
-    if not android_commands.GetEmulators():
+    if not android_commands.GetAttachedDevices(hardware=False):
       return
     time.sleep(1)
 
@@ -98,7 +98,7 @@ class PortPool(object):
 def _GetAvailablePort():
   """Returns an available TCP port for the console."""
   used_ports = []
-  emulators = android_commands.GetEmulators()
+  emulators = android_commands.GetAttachedDevices(hardware=False)
   for emulator in emulators:
     used_ports.append(emulator.split('-')[1])
   for port in PortPool.port_range():

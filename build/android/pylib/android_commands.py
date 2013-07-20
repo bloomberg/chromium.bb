@@ -65,23 +65,6 @@ MD5SUM_DEVICE_FOLDER = constants.TEST_EXECUTABLE_DIR + '/md5sum/'
 MD5SUM_DEVICE_PATH = MD5SUM_DEVICE_FOLDER + 'md5sum_bin'
 MD5SUM_LD_LIBRARY_PATH = 'LD_LIBRARY_PATH=%s' % MD5SUM_DEVICE_FOLDER
 
-def GetEmulators():
-  """Returns a list of emulators.  Does not filter by status (e.g. offline).
-
-  Both devices starting with 'emulator' will be returned in below output:
-
-    * daemon not running. starting it now on port 5037 *
-    * daemon started successfully *
-    List of devices attached
-    027c10494100b4d7        device
-    emulator-5554   offline
-    emulator-5558   device
-  """
-  re_device = re.compile('^emulator-[0-9]+', re.MULTILINE)
-  devices = re_device.findall(cmd_helper.GetCmdOutput([constants.ADB_PATH,
-                                                       'devices']))
-  return devices
-
 
 def GetAVDs():
   """Returns a list of AVDs."""
@@ -90,11 +73,11 @@ def GetAVDs():
   return avds
 
 
-def GetAttachedDevices():
-  """Returns a list of attached, online android devices.
+def GetAttachedDevices(hardware=True, emulator=True, offline=False):
+  """Returns a list of attached, android devices and emulators.
 
   If a preferred device has been set with ANDROID_SERIAL, it will be first in
-  the returned list.
+  the returned list. The arguments specify what devices to include in the list.
 
   Example output:
 
@@ -103,25 +86,44 @@ def GetAttachedDevices():
     List of devices attached
     027c10494100b4d7        device
     emulator-5554   offline
+
+  Args:
+    hardware: Include attached actual devices that are online.
+    emulator: Include emulators (i.e. AVD's) currently on host.
+    offline: Include devices and emulators that are offline.
+
+  Returns: List of devices.
   """
+  adb_devices_output = cmd_helper.GetCmdOutput([constants.ADB_PATH, 'devices'])
+
   re_device = re.compile('^([a-zA-Z0-9_:.-]+)\tdevice$', re.MULTILINE)
-  devices = re_device.findall(cmd_helper.GetCmdOutput([constants.ADB_PATH,
-                                                       'devices']))
+  online_devices = re_device.findall(adb_devices_output)
+
+  re_device = re.compile('^(emulator-[0-9]+)\tdevice', re.MULTILINE)
+  emulator_devices = re_device.findall(adb_devices_output)
+
+  re_device = re.compile('^([a-zA-Z0-9_:.-]+)\toffline$', re.MULTILINE)
+  offline_devices = re_device.findall(adb_devices_output)
+
+  devices = []
+  # First determine list of online devices (e.g. hardware and/or emulator).
+  if hardware and emulator:
+    devices = online_devices
+  elif hardware:
+    devices = [device for device in online_devices
+               if device not in emulator_devices]
+  elif emulator:
+    devices = emulator_devices
+
+  # Now add offline devices if offline is true
+  if offline:
+    devices = devices + offline_devices
+
   preferred_device = os.environ.get('ANDROID_SERIAL')
   if preferred_device in devices:
     devices.remove(preferred_device)
     devices.insert(0, preferred_device)
   return devices
-
-
-def GetAttachedOfflineDevices():
-  """Returns a list of attached, offline android devices.
-
-  Returns: List of devices with status 'offline'.
-  """
-  re_device = re.compile('^([a-zA-Z0-9_:.-]+)\toffline$', re.MULTILINE)
-  return re_device.findall(cmd_helper.GetCmdOutput([constants.ADB_PATH,
-                                                    'devices']))
 
 
 def IsDeviceAttached(device):
