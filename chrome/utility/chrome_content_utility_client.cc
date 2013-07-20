@@ -151,6 +151,12 @@ bool ChromeContentUtilityClient::OnMessageReceived(
   return handled;
 }
 
+void ChromeContentUtilityClient::PreSandboxStartup() {
+#if defined(ENABLE_MDNS)
+  local_discovery::ServiceDiscoveryMessageHandler::PreSandboxStartup();
+#endif  // ENABLE_MDNS
+}
+
 void ChromeContentUtilityClient::OnUnpackExtension(
     const base::FilePath& extension_path,
     const std::string& extension_id,

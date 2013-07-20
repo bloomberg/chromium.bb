@@ -163,8 +163,7 @@ void ServiceDiscoveryHostClient::StartOnIOThread() {
       this, base::MessageLoopProxy::current().get())->AsWeakPtr();
   if (utility_host_) {
     utility_host_->EnableZygote();
-    // TODO(vitalybuka): enable sandbox. http://crbug.com/245391
-    utility_host_->DisableSandbox();
+    utility_host_->EnableMDns();
     utility_host_->StartBatchMode();
   }
 }

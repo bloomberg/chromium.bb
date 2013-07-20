@@ -111,6 +111,7 @@ UtilityProcessHostImpl::UtilityProcessHostImpl(
     : client_(client),
       client_task_runner_(client_task_runner),
       is_batch_mode_(false),
+      is_mdns_enabled_(false),
       no_sandbox_(false),
 #if defined(OS_LINUX)
       child_flags_(ChildProcessHost::CHILD_ALLOW_SELF),
@@ -123,7 +124,8 @@ UtilityProcessHostImpl::UtilityProcessHostImpl(
 
 UtilityProcessHostImpl::~UtilityProcessHostImpl() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(!is_batch_mode_);
+  if (is_batch_mode_)
+    EndBatchMode();
 }
 
 bool UtilityProcessHostImpl::Send(IPC::Message* message) {
@@ -148,6 +150,10 @@ void UtilityProcessHostImpl::EndBatchMode()  {
 
 void UtilityProcessHostImpl::SetExposedDir(const base::FilePath& dir) {
   exposed_dir_ = dir;
+}
+
+void UtilityProcessHostImpl::EnableMDns() {
+  is_mdns_enabled_ = true;
 }
 
 void UtilityProcessHostImpl::DisableSandbox() {
@@ -243,6 +249,9 @@ bool UtilityProcessHostImpl::StartProcess() {
 
     cmd_line->AppendSwitchPath(switches::kUtilityProcessAllowedDir, exposed_dir_);
 #endif
+
+    if (is_mdns_enabled_)
+      cmd_line->AppendSwitch(switches::kUtilityProcessEnableMDns);
 
     bool use_zygote = false;
 

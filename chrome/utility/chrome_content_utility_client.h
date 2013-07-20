@@ -41,6 +41,8 @@ class ChromeContentUtilityClient : public content::ContentUtilityClient {
   virtual void UtilityThreadStarted() OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
+  static void PreSandboxStartup();
+
  private:
   // IPC message handlers.
   void OnUnpackExtension(const base::FilePath& extension_path,

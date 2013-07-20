@@ -37,6 +37,7 @@ class CONTENT_EXPORT UtilityProcessHostImpl
   virtual bool StartBatchMode() OVERRIDE;
   virtual void EndBatchMode() OVERRIDE;
   virtual void SetExposedDir(const base::FilePath& dir) OVERRIDE;
+  virtual void EnableMDns() OVERRIDE;
   virtual void DisableSandbox() OVERRIDE;
   virtual void EnableZygote() OVERRIDE;
   virtual const ChildProcessData& GetData() OVERRIDE;
@@ -63,6 +64,9 @@ class CONTENT_EXPORT UtilityProcessHostImpl
   bool is_batch_mode_;
 
   base::FilePath exposed_dir_;
+
+  // Whether utility process needs perform presandbox initialization for MDns.
+  bool is_mdns_enabled_;
 
   // Whether to pass switches::kNoSandbox to the child.
   bool no_sandbox_;

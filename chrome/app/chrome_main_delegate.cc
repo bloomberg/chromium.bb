@@ -636,6 +636,11 @@ void ChromeMainDelegate::PreSandboxStartup() {
     // only do this when ResourcesBundle has been initialized).
     SetMacProcessName(command_line);
 #endif  // defined(OS_MACOSX)
+
+#if !defined(CHROME_MULTIPLE_DLL_BROWSER)
+    if (process_type == switches::kUtilityProcess)
+      chrome::ChromeContentUtilityClient::PreSandboxStartup();
+#endif
   }
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)

@@ -28,12 +28,14 @@ class ServiceDiscoveryMessageHandler : public chrome::UtilityMessageHandler {
   // UtilityMessageHandler implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
+  static void PreSandboxStartup();
+
  private:
   typedef std::map<uint64, linked_ptr<ServiceWatcher> > ServiceWatchers;
   typedef std::map<uint64, linked_ptr<ServiceResolver> > ServiceResolvers;
 
   // Lazy initializes ServiceDiscoveryClient.
-  void Initialize();
+  bool Initialize();
 
   // IPC message handlers.
   void OnStartWatcher(uint64 id, const std::string& service_type);
@@ -62,3 +64,4 @@ class ServiceDiscoveryMessageHandler : public chrome::UtilityMessageHandler {
 }  // namespace local_discovery
 
 #endif  // CHROME_UTILITY_LOCAL_DISCOVERY_SERVICE_DISCOVERY_MESSAGE_HANDLER_H_
+

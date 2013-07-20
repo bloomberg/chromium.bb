@@ -236,6 +236,7 @@ CONTENT_EXPORT extern const char kUserAgent[];
 extern const char kUtilityCmdPrefix[];
 CONTENT_EXPORT extern const char kUtilityProcess[];
 extern const char kUtilityProcessAllowedDir[];
+CONTENT_EXPORT extern const char kUtilityProcessEnableMDns[];
 CONTENT_EXPORT extern const char kWaitForDebuggerChildren[];
 extern const char kWebCoreLogChannels[];
 CONTENT_EXPORT extern const char kWorkerProcess[];
