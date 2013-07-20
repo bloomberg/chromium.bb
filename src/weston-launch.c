@@ -73,6 +73,7 @@ struct weston_launch {
 
 	pid_t child;
 	int verbose;
+	int sleep_fork;
 };
 
 union cmsg_data { unsigned char b[4]; int fd; };
@@ -512,6 +513,65 @@ setup_tty(struct weston_launch *wl, const char *tty)
 }
 
 static void
+launch_compositor(struct weston_launch *wl, int argc, char *argv[])
+{
+	char *child_argv[MAX_ARGV_SIZE];
+	char **env;
+	int i;
+
+	if (wl->verbose)
+		printf("weston-launch: spawned weston with pid: %d\n", getpid());
+	if (wl->tty != STDIN_FILENO) {
+		if (setsid() < 0)
+			error(1, errno, "setsid failed");
+		if (ioctl(wl->tty, TIOCSCTTY, 0) < 0)
+			error(1, errno, "TIOCSCTTY failed - tty is in use");
+	}
+
+	if (setgid(wl->pw->pw_gid) < 0 ||
+#ifdef HAVE_INITGROUPS
+	    initgroups(wl->pw->pw_name, wl->pw->pw_gid) < 0 ||
+#endif
+	    setuid(wl->pw->pw_uid) < 0)
+		error(1, errno, "dropping privileges failed");
+
+	if (wl->sleep_fork) {
+		if (wl->verbose)
+			printf("weston-launch: waiting %d seconds\n",
+			       wl->sleep_fork);
+		sleep(wl->sleep_fork);
+	}
+
+	env = pam_getenvlist(wl->ph);
+	if (env) {
+		for (i = 0; env[i]; ++i) {
+			if (putenv(env[i]) < 0)
+				error(0, 0, "putenv %s failed", env[i]);
+		}
+		free(env);
+	}
+
+	if (wl->tty != STDIN_FILENO)
+		setenv_fd("WESTON_TTY_FD", wl->tty);
+
+	setenv_fd("WESTON_LAUNCHER_SOCK", wl->sock[1]);
+
+	unsetenv("DISPLAY");
+
+	child_argv[0] = wl->pw->pw_shell;
+	child_argv[1] = "-l";
+	child_argv[2] = "-c";
+	child_argv[3] = BINDIR "/weston \"$@\"";
+	child_argv[4] = "weston";
+	for (i = 0; i < argc; ++i)
+		child_argv[5 + i] = argv[i];
+	child_argv[5 + i] = NULL;
+
+	execv(child_argv[0], child_argv);
+	error(1, errno, "exec failed");
+}
+
+static void
 help(const char *name)
 {
 	fprintf(stderr, "Usage: %s [args...] [-- [weston args..]]\n", name);
@@ -526,12 +586,9 @@ int
 main(int argc, char *argv[])
 {
 	struct weston_launch wl;
-	char **env;
 	int i, c;
-	char *child_argv[MAX_ARGV_SIZE];
 	char *tty = NULL, *new_user = NULL;
 	char *term;
-	int sleep_fork = 0;
 	struct option opts[] = {
 		{ "user",    required_argument, NULL, 'u' },
 		{ "tty",     required_argument, NULL, 't' },
@@ -558,9 +615,9 @@ main(int argc, char *argv[])
 			break;
 		case 's':
 			if (optarg)
-				sleep_fork = atoi(optarg);
+				wl.sleep_fork = atoi(optarg);
 			else
-				sleep_fork = 10;
+				wl.sleep_fork = 10;
 			break;
 		case 'h':
 			help("weston-launch");
@@ -577,15 +634,6 @@ main(int argc, char *argv[])
 		wl.pw = getpwuid(getuid());
 	if (wl.pw == NULL)
 		error(1, errno, "failed to get username");
-
-	child_argv[0] = wl.pw->pw_shell;
-	child_argv[1] = "-l";
-	child_argv[2] = "-c";
-	child_argv[3] = BINDIR "/weston \"$@\"";
-	child_argv[4] = "weston";
-	for (i = 0; i < (argc - optind); ++i)
-		child_argv[5 + i] = argv[optind + i];
-	child_argv[5 + i] = NULL;
 
 	term = getenv("TERM");
 	clearenv();
@@ -620,74 +668,33 @@ main(int argc, char *argv[])
 	if (setup_signals(&wl) < 0)
 		exit(EXIT_FAILURE);
 
-	switch ((wl.child = fork())) {
-	case -1:
+	wl.child = fork();
+	if (wl.child == -1) {
 		error(1, errno, "fork failed");
-		break;
-	case 0:
-		if (wl.verbose)
-			printf("weston-launch: spawned weston with pid: %d\n", getpid());
-		if (wl.tty != STDIN_FILENO) {
-			if (setsid() < 0)
-				error(1, errno, "setsid failed");
-			if (ioctl(wl.tty, TIOCSCTTY, 0) < 0)
-				error(1, errno, "TIOCSCTTY failed - tty is in use");
-		}
+		exit(EXIT_FAILURE);
+	}
 
-		if (setgid(wl.pw->pw_gid) < 0 ||
-#ifdef HAVE_INITGROUPS
-                    initgroups(wl.pw->pw_name, wl.pw->pw_gid) < 0 ||
-#endif
-		    setuid(wl.pw->pw_uid) < 0)
-			error(1, errno, "dropping privileges failed");
+	if (wl.child == 0)
+		launch_compositor(&wl, argc - optind, argv + optind);
 
+	close(wl.sock[1]);
+	if (wl.tty != STDIN_FILENO)
+		close(wl.tty);
 
-		if (sleep_fork) {
-			if (wl.verbose)
-				printf("weston-launch: waiting %d seconds\n", sleep_fork);
-			sleep(sleep_fork);
-		}
+	while (1) {
+		struct epoll_event ev;
+		int n;
 
-		env = pam_getenvlist(wl.ph);
-		if (env) {
-			for (i = 0; env[i]; ++i) {
-				if (putenv(env[i]) < 0)
-					error(0, 0, "putenv %s failed", env[i]);
-			}
-			free(env);
-		}
+		n = epoll_wait(wl.epollfd, &ev, 1, -1);
+		if (n < 0)
+			error(0, errno, "epoll_wait failed");
+		if (n != 1)
+			continue;
 
-		if (wl.tty != STDIN_FILENO)
-			setenv_fd("WESTON_TTY_FD", wl.tty);
-
-		setenv_fd("WESTON_LAUNCHER_SOCK", wl.sock[1]);
-
-		unsetenv("DISPLAY");
-
-		execv(child_argv[0], child_argv);
-		error(1, errno, "exec failed");
-		break;
-	default:
-		close(wl.sock[1]);
-		if (wl.tty != STDIN_FILENO)
-			close(wl.tty);
-
-		while (1) {
-			struct epoll_event ev;
-			int n;
-
-			n = epoll_wait(wl.epollfd, &ev, 1, -1);
-			if (n < 0)
-				error(0, errno, "epoll_wait failed");
-			if (n != 1)
-				continue;
-
-			if (ev.data.fd == wl.sock[0])
-				handle_socket_msg(&wl);
-			else if (ev.data.fd == wl.signalfd)
-				handle_signal(&wl);
-		}
-		break;
+		if (ev.data.fd == wl.sock[0])
+			handle_socket_msg(&wl);
+		else if (ev.data.fd == wl.signalfd)
+			handle_signal(&wl);
 	}
 
 	return 0;
