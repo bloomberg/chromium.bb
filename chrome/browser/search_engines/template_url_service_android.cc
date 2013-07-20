@@ -100,6 +100,14 @@ jboolean TemplateUrlServiceAndroid::IsSearchProviderManaged(JNIEnv* env,
   return template_url_service_->is_default_search_managed();
 }
 
+jboolean TemplateUrlServiceAndroid::IsDefaultSearchEngineGoogle(JNIEnv* env,
+                                                                jobject obj) {
+  TemplateURL* default_search_provider =
+      template_url_service_->GetDefaultSearchProvider();
+  return default_search_provider &&
+      default_search_provider->url_ref().HasGoogleBaseURLs();
+}
+
 base::android::ScopedJavaLocalRef<jobject>
 TemplateUrlServiceAndroid::GetPrepopulatedTemplateUrlAt(JNIEnv* env,
                                                         jobject obj,

@@ -128,6 +128,14 @@ public class TemplateUrlService {
     public boolean isSearchProviderManaged() {
         return nativeIsSearchProviderManaged(mNativeTemplateUrlServiceAndroid);
     }
+
+    /**
+     * @return Whether the default configured search engine is for a Google property.
+     */
+    public boolean isDefaultSearchEngineGoogle() {
+        return nativeIsDefaultSearchEngineGoogle(mNativeTemplateUrlServiceAndroid);
+    }
+
     /**
      * Registers a listener for the TEMPLATE_URL_SERVICE_LOADED notification.
      */
@@ -156,4 +164,5 @@ public class TemplateUrlService {
             int selectedIndex);
     private native int nativeGetDefaultSearchProvider(int nativeTemplateUrlServiceAndroid);
     private native boolean nativeIsSearchProviderManaged(int nativeTemplateUrlServiceAndroid);
+    private native boolean nativeIsDefaultSearchEngineGoogle(int nativeTemplateUrlServiceAndroid);
 }
