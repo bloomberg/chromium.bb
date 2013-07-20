@@ -11,6 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/debug/alias.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_service.h"
@@ -409,20 +410,80 @@ ProfileIOData::~ProfileIOData() {
   if (BrowserThread::IsMessageLoopValid(BrowserThread::IO))
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
+  // Pull the contents of the request context maps onto the stack for sanity
+  // checking of values in a minidump. http://crbug.com/260425
+  size_t num_app_contexts = app_request_context_map_.size();
+  size_t num_media_contexts = isolated_media_request_context_map_.size();
+  size_t current_context = 0;
+  static const size_t kMaxCachedContexts = 20;
+  ChromeURLRequestContext* app_context_cache[kMaxCachedContexts] = {0};
+  void* app_context_vtable_cache[kMaxCachedContexts] = {0};
+  ChromeURLRequestContext* media_context_cache[kMaxCachedContexts] = {0};
+  void* media_context_vtable_cache[kMaxCachedContexts] = {0};
+  void* tmp_vtable = NULL;
+  base::debug::Alias(&num_app_contexts);
+  base::debug::Alias(&num_media_contexts);
+  base::debug::Alias(&current_context);
+  base::debug::Alias(app_context_cache);
+  base::debug::Alias(app_context_vtable_cache);
+  base::debug::Alias(media_context_cache);
+  base::debug::Alias(media_context_vtable_cache);
+  base::debug::Alias(&tmp_vtable);
+
+  current_context = 0;
+  for (URLRequestContextMap::const_iterator it =
+           app_request_context_map_.begin();
+       current_context < kMaxCachedContexts &&
+           it != app_request_context_map_.end();
+       ++it, ++current_context) {
+    app_context_cache[current_context] = it->second;
+    memcpy(&app_context_vtable_cache[current_context],
+           static_cast<void*>(it->second), sizeof(void*));
+  }
+
+  current_context = 0;
+  for (URLRequestContextMap::const_iterator it =
+           isolated_media_request_context_map_.begin();
+       current_context < kMaxCachedContexts &&
+           it != isolated_media_request_context_map_.end();
+       ++it, ++current_context) {
+    media_context_cache[current_context] = it->second;
+    memcpy(&media_context_vtable_cache[current_context],
+           static_cast<void*>(it->second), sizeof(void*));
+  }
+
+  // TODO(ajwong): These AssertNoURLRequests() calls are unnecessary since they
+  // are already done in the URLRequestContext destructor.
   if (main_request_context_)
     main_request_context_->AssertNoURLRequests();
   if (extensions_request_context_)
     extensions_request_context_->AssertNoURLRequests();
+
+  current_context = 0;
   for (URLRequestContextMap::iterator it = app_request_context_map_.begin();
        it != app_request_context_map_.end(); ++it) {
+    if (current_context < kMaxCachedContexts) {
+      CHECK_EQ(app_context_cache[current_context], it->second);
+      memcpy(&tmp_vtable, static_cast<void*>(it->second), sizeof(void*));
+      CHECK_EQ(app_context_vtable_cache[current_context], tmp_vtable);
+    }
     it->second->AssertNoURLRequests();
     delete it->second;
+    current_context++;
   }
+
+  current_context = 0;
   for (URLRequestContextMap::iterator it =
            isolated_media_request_context_map_.begin();
        it != isolated_media_request_context_map_.end(); ++it) {
+    if (current_context < kMaxCachedContexts) {
+      CHECK_EQ(media_context_cache[current_context], it->second);
+      memcpy(&tmp_vtable, static_cast<void*>(it->second), sizeof(void*));
+      CHECK_EQ(media_context_vtable_cache[current_context], tmp_vtable);
+    }
     it->second->AssertNoURLRequests();
     delete it->second;
+    current_context++;
   }
 }
 
