@@ -66,9 +66,7 @@
 #include "content/public/common/ssl_status.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
-#include "third_party/WebKit/public/platform/WebCString.h"
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
-#include "third_party/WebKit/public/platform/WebString.h"
 #include "ui/base/events/event_utils.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/menu_model.h"
@@ -93,9 +91,7 @@ using content::OpenURLParams;
 using content::RenderViewHost;
 using content::SSLStatus;
 using content::WebContents;
-using WebKit::WebCString;
 using WebKit::WebReferrerPolicy;
-using WebKit::WebString;
 
 namespace {
 

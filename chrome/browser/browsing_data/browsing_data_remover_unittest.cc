@@ -43,8 +43,6 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/platform/WebCString.h"
-#include "third_party/WebKit/public/platform/WebString.h"
 #include "webkit/browser/quota/mock_quota_manager.h"
 #include "webkit/browser/quota/quota_manager.h"
 #include "webkit/common/dom_storage/dom_storage_types.h"

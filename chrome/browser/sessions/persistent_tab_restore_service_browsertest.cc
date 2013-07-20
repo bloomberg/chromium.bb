@@ -32,7 +32,6 @@
 #include "content/public/test/test_utils.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/web/WebKit.h"
 
 typedef TabRestoreService::Tab Tab;
 typedef TabRestoreService::Window Window;
@@ -79,7 +78,6 @@ class PersistentTabRestoreServiceTest : public ChromeRenderViewHostTestHarness {
 
   // testing::Test:
   virtual void SetUp() OVERRIDE {
-    WebKit::initialize(webkit_platform_support_.Get());
     ChromeRenderViewHostTestHarness::SetUp();
     time_factory_ = new PersistentTabRestoreTimeFactory();
     service_.reset(new PersistentTabRestoreService(profile(), time_factory_));
@@ -90,7 +88,6 @@ class PersistentTabRestoreServiceTest : public ChromeRenderViewHostTestHarness {
     service_.reset();
     delete time_factory_;
     ChromeRenderViewHostTestHarness::TearDown();
-    WebKit::shutdown();
   }
 
   TabRestoreService::Entries* mutable_entries() {
@@ -171,8 +168,6 @@ class PersistentTabRestoreServiceTest : public ChromeRenderViewHostTestHarness {
   std::string user_agent_override_;
   scoped_ptr<PersistentTabRestoreService> service_;
   PersistentTabRestoreTimeFactory* time_factory_;
-  content::RenderViewTest::RendererWebKitPlatformSupportImplNoSandbox
-      webkit_platform_support_;
 };
 
 namespace {

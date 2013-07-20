@@ -21,7 +21,6 @@
 #if defined(USE_ASH)
 #include "ash/shell.h"
 #include "ash/test/test_shell_delegate.h"
-#include "third_party/WebKit/public/web/WebKit.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
@@ -103,7 +102,6 @@ DesktopNotificationsTest::~DesktopNotificationsTest() {
 void DesktopNotificationsTest::SetUp() {
   ui::InitializeInputMethodForTesting();
 #if defined(USE_ASH)
-  WebKit::initialize(webkit_platform_support_.Get());
   ui::ScopedAnimationDurationScaleMode normal_duration_mode(
       ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
   // The message center is notmally initialized on |g_browser_process| which
@@ -133,7 +131,6 @@ void DesktopNotificationsTest::TearDown() {
   // is not created for these tests.
   message_center::MessageCenter::Shutdown();
   aura::Env::DeleteInstance();
-  WebKit::shutdown();
 #endif
   ui::ShutdownInputMethodForTesting();
 }

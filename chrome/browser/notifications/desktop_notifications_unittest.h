@@ -114,11 +114,6 @@ class DesktopNotificationsTest : public testing::Test {
   // Real DesktopNotificationService
   scoped_ptr<DesktopNotificationService> service_;
 
-#if defined(USE_ASH)
-  content::RenderViewTest::RendererWebKitPlatformSupportImplNoSandbox
-      webkit_platform_support_;
-#endif
-
   // Contains the cumulative output of the unit test.
   static std::string log_output_;
 };

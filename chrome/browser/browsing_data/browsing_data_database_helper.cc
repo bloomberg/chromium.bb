@@ -15,8 +15,6 @@
 #include "content/public/browser/storage_partition.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
-#include "third_party/WebKit/public/platform/WebCString.h"
-#include "third_party/WebKit/public/platform/WebString.h"
 #include "webkit/common/database/database_identifier.h"
 
 using content::BrowserContext;

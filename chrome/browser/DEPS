@@ -92,17 +92,13 @@ include_rules = [
   # No inclusion of WebKit from the browser, other than strictly enum/POD,
   # header-only types, and some selected common code.
   "-third_party/WebKit",
-  "+third_party/WebKit/public/platform/WebCString.h",
   "+third_party/WebKit/public/platform/WebRect.h",
   "+third_party/WebKit/public/platform/WebReferrerPolicy.h",
   "+third_party/WebKit/public/platform/WebScreenInfo.h",
-  "+third_party/WebKit/public/platform/WebString.h",
-  "+third_party/WebKit/public/platform/WebURL.h",
   "+third_party/WebKit/public/web/WebAutofillClient.h",
   "+third_party/WebKit/public/web/WebCache.h",
   "+third_party/WebKit/public/web/WebContextMenuData.h",
   "+third_party/WebKit/public/web/WebCursorInfo.h",
-  "+third_party/WebKit/public/web/WebDevToolsAgent.h",
   "+third_party/WebKit/public/web/WebFindOptions.h",
   "+third_party/WebKit/public/web/WebInputEvent.h",
   "+third_party/WebKit/public/web/WebMediaPlayerAction.h",
@@ -112,7 +108,5 @@ include_rules = [
   "+third_party/WebKit/public/web/WebTextDirection.h",
 
   # These should be burned down. http://crbug.com/237267
-  "!third_party/WebKit/public/web/WebKit.h",
-  "!third_party/WebKit/public/web/WebSecurityOrigin.h",
   "!third_party/WebKit/public/web/WebView.h",
 ]

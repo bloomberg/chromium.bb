@@ -11,10 +11,6 @@
 
 #include "base/basictypes.h"
 
-namespace WebKit {
-class WebString;
-}
-
 class ExtensionSpecialStoragePolicy;
 class GURL;
 
@@ -33,12 +29,10 @@ class BrowsingDataHelper {
   // in ChildProcessSecurityPolicy, but excluding schemes like
   // `chrome-extension`.
   static bool IsWebScheme(const std::string& scheme);
-  static bool IsWebScheme(const WebKit::WebString& scheme);
   static bool HasWebScheme(const GURL& origin);
 
   // Returns true iff the provided scheme is an extension.
   static bool IsExtensionScheme(const std::string& scheme);
-  static bool IsExtensionScheme(const WebKit::WebString& scheme);
   static bool HasExtensionScheme(const GURL& origin);
 
   // Returns true if the provided origin matches the provided mask.

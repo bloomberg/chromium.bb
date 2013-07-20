@@ -10,7 +10,6 @@
 #include "content/public/common/url_constants.h"
 #include "extensions/common/constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/platform/WebString.h"
 #include "url/gurl.h"
 
 namespace {
@@ -39,17 +38,13 @@ class BrowsingDataHelperTest : public testing::Test {
   bool IsWebScheme(const std::string& scheme) {
     GURL test(scheme + "://example.com");
     return (BrowsingDataHelper::HasWebScheme(test) &&
-            BrowsingDataHelper::IsWebScheme(scheme) &&
-            BrowsingDataHelper::IsWebScheme(
-                WebKit::WebString::fromUTF8(scheme)));
+            BrowsingDataHelper::IsWebScheme(scheme));
   }
 
   bool IsExtensionScheme(const std::string& scheme) {
     GURL test(scheme + "://example.com");
     return (BrowsingDataHelper::HasExtensionScheme(test) &&
-            BrowsingDataHelper::IsExtensionScheme(scheme) &&
-            BrowsingDataHelper::IsExtensionScheme(
-                WebKit::WebString::fromUTF8(scheme)));
+            BrowsingDataHelper::IsExtensionScheme(scheme));
   }
 
   bool Match(const GURL& origin,
