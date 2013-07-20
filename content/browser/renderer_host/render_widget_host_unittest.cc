@@ -9,6 +9,7 @@
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/renderer_host/backing_store.h"
 #include "content/browser/renderer_host/gesture_event_filter.h"
+#include "content/browser/renderer_host/input/immediate_input_router.h"
 #include "content/browser/renderer_host/overscroll_controller.h"
 #include "content/browser/renderer_host/overscroll_controller_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
@@ -113,6 +114,8 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
       int routing_id)
       : RenderWidgetHostImpl(delegate, process, routing_id),
         unresponsive_timer_fired_(false) {
+    immediate_input_router_ =
+        static_cast<ImmediateInputRouter*>(input_router_.get());
   }
 
   // Allow poking at a few private members.
@@ -122,9 +125,7 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
   using RenderWidgetHostImpl::last_requested_size_;
   using RenderWidgetHostImpl::is_hidden_;
   using RenderWidgetHostImpl::resize_ack_pending_;
-  using RenderWidgetHostImpl::gesture_event_filter_;
-  using RenderWidgetHostImpl::touch_event_queue_;
-  using RenderWidgetHostImpl::overscroll_controller_;
+  using RenderWidgetHostImpl::input_router_;
 
   bool unresponsive_timer_fired() const {
     return unresponsive_timer_fired_;
@@ -135,40 +136,40 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
   }
 
   unsigned GestureEventLastQueueEventSize() {
-    return gesture_event_filter_->coalesced_gesture_events_.size();
+    return gesture_event_filter()->coalesced_gesture_events_.size();
   }
 
   WebGestureEvent GestureEventSecondFromLastQueueEvent() {
-    return gesture_event_filter_->coalesced_gesture_events_.at(
+    return gesture_event_filter()->coalesced_gesture_events_.at(
       GestureEventLastQueueEventSize() - 2).event;
   }
 
   WebGestureEvent GestureEventLastQueueEvent() {
-    return gesture_event_filter_->coalesced_gesture_events_.back().event;
+    return gesture_event_filter()->coalesced_gesture_events_.back().event;
   }
 
   unsigned GestureEventDebouncingQueueSize() {
-    return gesture_event_filter_->debouncing_deferral_queue_.size();
+    return gesture_event_filter()->debouncing_deferral_queue_.size();
   }
 
   WebGestureEvent GestureEventQueueEventAt(int i) {
-    return gesture_event_filter_->coalesced_gesture_events_.at(i).event;
+    return gesture_event_filter()->coalesced_gesture_events_.at(i).event;
   }
 
   bool shouldDeferTapDownEvents() {
-    return gesture_event_filter_->maximum_tap_gap_time_ms_ != 0;
+    return gesture_event_filter()->maximum_tap_gap_time_ms_ != 0;
   }
 
   bool ScrollingInProgress() {
-    return gesture_event_filter_->scrolling_in_progress_;
+    return gesture_event_filter()->scrolling_in_progress_;
   }
 
   bool FlingInProgress() {
-    return gesture_event_filter_->fling_in_progress_;
+    return gesture_event_filter()->fling_in_progress_;
   }
 
   bool WillIgnoreNextACK() {
-    return gesture_event_filter_->ignore_next_ack_;
+    return gesture_event_filter()->ignore_next_ack_;
   }
 
   void SetupForOverscrollControllerTest() {
@@ -178,15 +179,15 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
   }
 
   void set_maximum_tap_gap_time_ms(int delay_ms) {
-    gesture_event_filter_->maximum_tap_gap_time_ms_ = delay_ms;
+    gesture_event_filter()->maximum_tap_gap_time_ms_ = delay_ms;
   }
 
   void set_debounce_interval_time_ms(int delay_ms) {
-    gesture_event_filter_->debounce_interval_time_ms_ = delay_ms;
+    gesture_event_filter()->debounce_interval_time_ms_ = delay_ms;
   }
 
   size_t TouchEventQueueSize() {
-    return touch_event_queue_->GetQueueSize();
+    return touch_event_queue()->GetQueueSize();
   }
 
   bool ScrollStateIsContentScrolling() const {
@@ -206,7 +207,7 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
   }
 
   const WebTouchEvent& latest_event() const {
-    return touch_event_queue_->GetLatestEvent().event;
+    return touch_event_queue()->GetLatestEvent().event;
   }
 
   OverscrollMode overscroll_mode() const {
@@ -230,9 +231,18 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
     unresponsive_timer_fired_ = true;
   }
 
+  TouchEventQueue* touch_event_queue() const {
+    return immediate_input_router_->touch_event_queue();
+  }
+
+  GestureEventFilter* gesture_event_filter() const {
+    return immediate_input_router_->gesture_event_filter();
+  }
+
  private:
   bool unresponsive_timer_fired_;
 
+  ImmediateInputRouter* immediate_input_router_;
   scoped_ptr<TestOverscrollDelegate> overscroll_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(MockRenderWidgetHost);

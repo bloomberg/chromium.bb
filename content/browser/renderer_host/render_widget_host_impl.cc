@@ -28,14 +28,12 @@
 #include "content/browser/renderer_host/backing_store.h"
 #include "content/browser/renderer_host/backing_store_manager.h"
 #include "content/browser/renderer_host/dip_util.h"
-#include "content/browser/renderer_host/gesture_event_filter.h"
+#include "content/browser/renderer_host/input/immediate_input_router.h"
 #include "content/browser/renderer_host/overscroll_controller.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_helper.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
-#include "content/browser/renderer_host/touch_event_queue.h"
-#include "content/browser/renderer_host/touchpad_tap_suppression_controller.h"
 #include "content/common/accessibility_messages.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/gpu/gpu_messages.h"
@@ -90,27 +88,6 @@ bool g_check_for_pending_resize_ack = true;
 // This timeout impacts the "choppiness" of our window resize perf.
 const int kPaintMsgTimeoutMS = 50;
 
-// Returns |true| if the two wheel events should be coalesced.
-bool ShouldCoalesceMouseWheelEvents(const WebMouseWheelEvent& last_event,
-                                    const WebMouseWheelEvent& new_event) {
-  return last_event.modifiers == new_event.modifiers &&
-         last_event.scrollByPage == new_event.scrollByPage &&
-         last_event.hasPreciseScrollingDeltas
-             == new_event.hasPreciseScrollingDeltas &&
-         last_event.phase == new_event.phase &&
-         last_event.momentumPhase == new_event.momentumPhase;
-}
-
-float GetUnacceleratedDelta(float accelerated_delta, float acceleration_ratio) {
-  return accelerated_delta * acceleration_ratio;
-}
-
-float GetAccelerationRatio(float accelerated_delta, float unaccelerated_delta) {
-  if (unaccelerated_delta == 0.f || accelerated_delta == 0.f)
-    return 1.f;
-  return unaccelerated_delta / accelerated_delta;
-}
-
 base::LazyInstance<std::vector<RenderWidgetHost::CreatedCallback> >
 g_created_callbacks = LAZY_INSTANCE_INITIALIZER;
 
@@ -156,11 +133,7 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
       overdraw_bottom_height_(0.f),
       should_auto_resize_(false),
       waiting_for_screen_rects_ack_(false),
-      mouse_move_pending_(false),
-      mouse_wheel_pending_(false),
       accessibility_mode_(AccessibilityModeOff),
-      select_range_pending_(false),
-      move_caret_pending_(false),
       needs_repainting_on_restore_(false),
       is_unresponsive_(false),
       in_flight_event_count_(0),
@@ -177,8 +150,6 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
       allow_privileged_mouse_lock_(false),
       has_touch_handler_(false),
       weak_factory_(this),
-      touch_event_queue_(new TouchEventQueue(this)),
-      gesture_event_filter_(new GestureEventFilter(this)),
       last_input_number_(0) {
   CHECK(delegate_);
   if (routing_id_ == MSG_ROUTING_NONE) {
@@ -214,6 +185,8 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
 
   for (size_t i = 0; i < g_created_callbacks.Get().size(); i++)
     g_created_callbacks.Get().at(i).Run(this);
+
+  input_router_.reset(new ImmediateInputRouter(process, this, routing_id_));
 
 #if defined(USE_AURA)
   bool overscroll_enabled = CommandLine::ForCurrentProcess()->
@@ -457,14 +430,9 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidOverscroll, OnOverscrolled)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateRect, OnUpdateRect)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateIsDelayed, OnUpdateIsDelayed)
-    IPC_MESSAGE_HANDLER(InputHostMsg_HandleInputEvent_ACK, OnInputEventAck)
     IPC_MESSAGE_HANDLER(ViewHostMsg_BeginSmoothScroll, OnBeginSmoothScroll)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_SelectRange_ACK, OnSelectRangeAck)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_MoveCaret_ACK, OnMsgMoveCaretAck)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Focus, OnFocus)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Blur, OnBlur)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_HasTouchEventHandlers,
-                        OnHasTouchEventHandlers)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetCursor, OnSetCursor)
     IPC_MESSAGE_HANDLER(ViewHostMsg_TextInputTypeChanged,
                         OnTextInputTypeChanged)
@@ -490,6 +458,9 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
 
+  if (!handled && input_router_ && input_router_->OnMessageReceived(msg))
+    return true;
+
   if (!handled && view_ && view_->OnMessageReceived(msg))
     return true;
 
@@ -502,6 +473,9 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
 }
 
 bool RenderWidgetHostImpl::Send(IPC::Message* msg) {
+  if (IPC_MESSAGE_ID_CLASS(msg->type()) == InputMsgStart)
+    return input_router_->SendInput(msg);
+
   return process_->Send(msg);
 }
 
@@ -1029,28 +1003,9 @@ void RenderWidgetHostImpl::ForwardMouseEvent(const WebMouseEvent& mouse_event) {
 
 void RenderWidgetHostImpl::ForwardMouseEventWithLatencyInfo(
     const MouseEventWithLatencyInfo& mouse_event) {
-  TRACE_EVENT2("input",
-               "RenderWidgetHostImpl::ForwardMouseEventWithLatencyInfo",
+  TRACE_EVENT2("input", "RenderWidgetHostImpl::ForwardMouseEvent",
                "x", mouse_event.event.x, "y", mouse_event.event.y);
-  if (ignore_input_events_ || process_->IgnoreInputEvents())
-    return;
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSimulateTouchScreenWithMouse)) {
-    SimulateTouchGestureWithMouse(mouse_event.event);
-    return;
-  }
-
-  if (mouse_event.event.type == WebInputEvent::MouseDown &&
-      gesture_event_filter_->GetTouchpadTapSuppressionController()->
-          ShouldDeferMouseDown(mouse_event))
-      return;
-  if (mouse_event.event.type == WebInputEvent::MouseUp &&
-      gesture_event_filter_->GetTouchpadTapSuppressionController()->
-          ShouldSuppressMouseUp())
-      return;
-
-  ForwardMouseEventImmediately(mouse_event);
+  input_router_->SendMouseEvent(mouse_event);
 }
 
 void RenderWidgetHostImpl::OnPointerEventActivate() {
@@ -1058,67 +1013,15 @@ void RenderWidgetHostImpl::OnPointerEventActivate() {
 
 void RenderWidgetHostImpl::ForwardWheelEvent(
     const WebMouseWheelEvent& wheel_event) {
-  ForwardWheelEventWithLatencyInfo(wheel_event,
-                                   CreateRWHLatencyInfoIfNotExist(NULL));
+  ForwardWheelEventWithLatencyInfo(
+      MouseWheelEventWithLatencyInfo(wheel_event,
+                                     CreateRWHLatencyInfoIfNotExist(NULL)));
 }
 
 void RenderWidgetHostImpl::ForwardWheelEventWithLatencyInfo(
-    const WebMouseWheelEvent& wheel_event,
-    const ui::LatencyInfo& latency_info) {
-  TRACE_EVENT0("input",
-               "RenderWidgetHostImpl::ForwardWheelEventWithLatencyInfo");
-  if (ignore_input_events_ || process_->IgnoreInputEvents())
-    return;
-
-  if (delegate_->PreHandleWheelEvent(wheel_event))
-    return;
-
-  // If there's already a mouse wheel event waiting to be sent to the renderer,
-  // add the new deltas to that event. Not doing so (e.g., by dropping the old
-  // event, as for mouse moves) results in very slow scrolling on the Mac (on
-  // which many, very small wheel events are sent).
-  if (mouse_wheel_pending_) {
-    if (coalesced_mouse_wheel_events_.empty() ||
-        !ShouldCoalesceMouseWheelEvents(
-            coalesced_mouse_wheel_events_.back().event, wheel_event)) {
-      coalesced_mouse_wheel_events_.push_back(
-          MouseWheelEventWithLatencyInfo(wheel_event, latency_info));
-    } else {
-      MouseWheelEventWithLatencyInfo* last_wheel_event =
-          &coalesced_mouse_wheel_events_.back();
-      float unaccelerated_x =
-          GetUnacceleratedDelta(last_wheel_event->event.deltaX,
-                                last_wheel_event->event.accelerationRatioX) +
-          GetUnacceleratedDelta(wheel_event.deltaX,
-                                wheel_event.accelerationRatioX);
-      float unaccelerated_y =
-          GetUnacceleratedDelta(last_wheel_event->event.deltaY,
-                                last_wheel_event->event.accelerationRatioY) +
-          GetUnacceleratedDelta(wheel_event.deltaY,
-                                wheel_event.accelerationRatioY);
-      last_wheel_event->event.deltaX += wheel_event.deltaX;
-      last_wheel_event->event.deltaY += wheel_event.deltaY;
-      last_wheel_event->event.wheelTicksX += wheel_event.wheelTicksX;
-      last_wheel_event->event.wheelTicksY += wheel_event.wheelTicksY;
-      last_wheel_event->event.accelerationRatioX =
-          GetAccelerationRatio(last_wheel_event->event.deltaX, unaccelerated_x);
-      last_wheel_event->event.accelerationRatioY =
-          GetAccelerationRatio(last_wheel_event->event.deltaY, unaccelerated_y);
-      DCHECK_GE(wheel_event.timeStampSeconds,
-                last_wheel_event->event.timeStampSeconds);
-      last_wheel_event->event.timeStampSeconds = wheel_event.timeStampSeconds;
-      last_wheel_event->latency.MergeWith(latency_info);
-    }
-    return;
-  }
-  mouse_wheel_pending_ = true;
-  current_wheel_event_ = wheel_event;
-
-  HISTOGRAM_COUNTS_100("MPArch.RWH_WheelQueueSize",
-                       coalesced_mouse_wheel_events_.size());
-
-  ForwardInputEvent(wheel_event, sizeof(WebMouseWheelEvent), latency_info,
-                    false);
+    const MouseWheelEventWithLatencyInfo& wheel_event) {
+  TRACE_EVENT0("input", "RenderWidgetHostImpl::ForwardWheelEvent");
+  input_router_->SendWheelEvent(wheel_event);
 }
 
 void RenderWidgetHostImpl::ForwardGestureEvent(
@@ -1130,7 +1033,8 @@ void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
     const WebKit::WebGestureEvent& gesture_event,
     const ui::LatencyInfo& ui_latency) {
   TRACE_EVENT0("input", "RenderWidgetHostImpl::ForwardGestureEvent");
-  if (ignore_input_events_ || process_->IgnoreInputEvents())
+  // Early out if necessary, prior to performing latency logic.
+  if (IgnoreInputEvents())
     return;
 
   ui::LatencyInfo latency_info = CreateRWHLatencyInfoIfNotExist(&ui_latency);
@@ -1157,152 +1061,24 @@ void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
     }
   }
 
-  if (!IsInOverscrollGesture() &&
-      !gesture_event_filter_->ShouldForward(
-          GestureEventWithLatencyInfo(gesture_event, latency_info))) {
-    if (overscroll_controller_.get())
-      overscroll_controller_->DiscardingGestureEvent(gesture_event);
-    return;
-  }
-
-  ForwardInputEvent(gesture_event, sizeof(WebGestureEvent),
-                    latency_info, false);
+  GestureEventWithLatencyInfo gesture_with_latency(gesture_event, latency_info);
+  input_router_->SendGestureEvent(gesture_with_latency);
 }
 
-// Forwards MouseEvent without passing it through
-// TouchpadTapSuppressionController.
-void RenderWidgetHostImpl::ForwardMouseEventImmediately(
-    const MouseEventWithLatencyInfo& mouse_event) {
-  TRACE_EVENT2("input",
-               "RenderWidgetHostImpl::ForwardMouseEventImmediately",
-               "x", mouse_event.event.x, "y", mouse_event.event.y);
-  if (ignore_input_events_ || process_->IgnoreInputEvents())
-    return;
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSimulateTouchScreenWithMouse)) {
-    SimulateTouchGestureWithMouse(mouse_event.event);
-    return;
-  }
-
-  // Avoid spamming the renderer with mouse move events.  It is important
-  // to note that WM_MOUSEMOVE events are anyways synthetic, but since our
-  // thread is able to rapidly consume WM_MOUSEMOVE events, we may get way
-  // more WM_MOUSEMOVE events than we wish to send to the renderer.
-  if (mouse_event.event.type == WebInputEvent::MouseMove) {
-    if (mouse_move_pending_) {
-      if (!next_mouse_move_) {
-        next_mouse_move_.reset(new MouseEventWithLatencyInfo(mouse_event));
-      } else {
-        // Accumulate movement deltas.
-        int x = next_mouse_move_->event.movementX;
-        int y = next_mouse_move_->event.movementY;
-        next_mouse_move_->event = mouse_event.event;
-        next_mouse_move_->event.movementX += x;
-        next_mouse_move_->event.movementY += y;
-        next_mouse_move_->latency.MergeWith(mouse_event.latency);
-      }
-      return;
-    }
-    mouse_move_pending_ = true;
-  } else if (mouse_event.event.type == WebInputEvent::MouseDown) {
-    OnUserGesture();
-  }
-
-  ForwardInputEvent(mouse_event.event, sizeof(WebMouseEvent),
-                    mouse_event.latency, false);
-}
-
-void RenderWidgetHostImpl::ForwardTouchEventImmediately(
-    const TouchEventWithLatencyInfo& touch_event) {
+void RenderWidgetHostImpl::ForwardTouchEventWithLatencyInfo(
+      const WebKit::WebTouchEvent& touch_event,
+      const ui::LatencyInfo& ui_latency) {
   TRACE_EVENT0("input", "RenderWidgetHostImpl::ForwardTouchEvent");
-  if (ignore_input_events_ || process_->IgnoreInputEvents())
-    return;
-
-  ForwardInputEvent(touch_event.event, sizeof(WebKit::WebTouchEvent),
-                    touch_event.latency, false);
-}
-
-void RenderWidgetHostImpl::ForwardGestureEventImmediately(
-    const GestureEventWithLatencyInfo& gesture_event) {
-  if (ignore_input_events_ || process_->IgnoreInputEvents())
-    return;
-  ForwardInputEvent(gesture_event.event, sizeof(WebGestureEvent),
-                    gesture_event.latency, false);
+  ui::LatencyInfo latency_info = CreateRWHLatencyInfoIfNotExist(&ui_latency);
+  TouchEventWithLatencyInfo touch_with_latency(touch_event, latency_info);
+  input_router_->SendTouchEvent(touch_with_latency);
 }
 
 void RenderWidgetHostImpl::ForwardKeyboardEvent(
     const NativeWebKeyboardEvent& key_event) {
   TRACE_EVENT0("input", "RenderWidgetHostImpl::ForwardKeyboardEvent");
-  if (ignore_input_events_ || process_->IgnoreInputEvents())
-    return;
-
-  // First, let keypress listeners take a shot at handling the event.  If a
-  // listener handles the event, it should not be propagated to the renderer.
-  if (KeyPressListenersHandleEvent(key_event)) {
-    // Some keypresses that are accepted by the listener might have follow up
-    // char events, which should be ignored.
-    if (key_event.type == WebKeyboardEvent::RawKeyDown)
-      suppress_next_char_events_ = true;
-    return;
-  }
-
-  if (key_event.type == WebKeyboardEvent::Char &&
-      (key_event.windowsKeyCode == ui::VKEY_RETURN ||
-       key_event.windowsKeyCode == ui::VKEY_SPACE)) {
-    OnUserGesture();
-  }
-
-  // Double check the type to make sure caller hasn't sent us nonsense that
-  // will mess up our key queue.
-  if (WebInputEvent::isKeyboardEventType(key_event.type)) {
-    if (suppress_next_char_events_) {
-      // If preceding RawKeyDown event was handled by the browser, then we need
-      // suppress all Char events generated by it. Please note that, one
-      // RawKeyDown event may generate multiple Char events, so we can't reset
-      // |suppress_next_char_events_| until we get a KeyUp or a RawKeyDown.
-      if (key_event.type == WebKeyboardEvent::Char)
-        return;
-      // We get a KeyUp or a RawKeyDown event.
-      suppress_next_char_events_ = false;
-    }
-
-    bool is_keyboard_shortcut = false;
-    // Only pre-handle the key event if it's not handled by the input method.
-    if (delegate_ && !key_event.skip_in_browser) {
-      // We need to set |suppress_next_char_events_| to true if
-      // PreHandleKeyboardEvent() returns true, but |this| may already be
-      // destroyed at that time. So set |suppress_next_char_events_| true here,
-      // then revert it afterwards when necessary.
-      if (key_event.type == WebKeyboardEvent::RawKeyDown)
-        suppress_next_char_events_ = true;
-
-      // Tab switching/closing accelerators aren't sent to the renderer to avoid
-      // a hung/malicious renderer from interfering.
-      if (delegate_->PreHandleKeyboardEvent(key_event, &is_keyboard_shortcut))
-        return;
-
-      if (key_event.type == WebKeyboardEvent::RawKeyDown)
-        suppress_next_char_events_ = false;
-    }
-
-    // Don't add this key to the queue if we have no way to send the message...
-    if (!process_->HasConnection())
-      return;
-
-    // Put all WebKeyboardEvent objects in a queue since we can't trust the
-    // renderer and we need to give something to the HandleKeyboardEvent
-    // handler.
-    key_queue_.push_back(key_event);
-    HISTOGRAM_COUNTS_100("Renderer.KeyboardQueueSize", key_queue_.size());
-
-    gesture_event_filter_->FlingHasBeenHalted();
-
-    // Only forward the non-native portions of our event.
-    ForwardInputEvent(key_event, sizeof(WebKeyboardEvent),
-                      CreateRWHLatencyInfoIfNotExist(NULL),
-                      is_keyboard_shortcut);
-  }
+  input_router_->SendKeyboardEvent(key_event,
+                                   CreateRWHLatencyInfoIfNotExist(NULL));
 }
 
 void RenderWidgetHostImpl::SendCursorVisibilityState(bool is_visible) {
@@ -1335,111 +1111,6 @@ ui::LatencyInfo RenderWidgetHostImpl::CreateRWHLatencyInfoIfNotExist(
   return info;
 }
 
-void RenderWidgetHostImpl::SendInputEvent(const WebInputEvent& input_event,
-                                          int event_size,
-                                          const ui::LatencyInfo& latency_info,
-                                          bool is_keyboard_shortcut) {
-  DCHECK(latency_info.FindLatency(ui::INPUT_EVENT_LATENCY_RWH_COMPONENT,
-                                  GetLatencyComponentId(),
-                                  NULL));
-  input_event_start_time_ = TimeTicks::Now();
-  Send(new InputMsg_HandleInputEvent(
-      routing_id_, &input_event, latency_info, is_keyboard_shortcut));
-  increment_in_flight_event_count();
-}
-
-void RenderWidgetHostImpl::ForwardInputEvent(
-    const WebInputEvent& input_event, int event_size,
-    const ui::LatencyInfo& latency_info, bool is_keyboard_shortcut) {
-  TRACE_EVENT0("input", "RenderWidgetHostImpl::ForwardInputEvent");
-
-  if (!process_->HasConnection())
-    return;
-
-  DCHECK(!process_->IgnoreInputEvents());
-
-  if (overscroll_controller_.get() &&
-      !overscroll_controller_->WillDispatchEvent(input_event, latency_info)) {
-    if (input_event.type == WebKit::WebInputEvent::MouseMove) {
-      // Since this mouse-move event has been consumed, there will be no ACKs.
-      // So reset the state here so that future mouse-move events do reach the
-      // renderer.
-      mouse_move_pending_ = false;
-    } else if (input_event.type == WebKit::WebInputEvent::MouseWheel) {
-      // Reset the wheel-event state when appropriate.
-      mouse_wheel_pending_ = false;
-    } else if (WebInputEvent::isGestureEventType(input_event.type) &&
-               gesture_event_filter_->HasQueuedGestureEvents()) {
-      // If the gesture-event filter has queued gesture events, that implies it
-      // is awaiting an ack for the event. Since the event is being consumed by
-      // the over scroll here, it is never sent to the renderer, and so it won't
-      // receive any ACKs. So send the ACK to the gesture event filter
-      // immediately, and mark it as having been processed.
-      gesture_event_filter_->ProcessGestureAck(true, input_event.type);
-    } else if (WebInputEvent::isTouchEventType(input_event.type)) {
-      // During an overscroll gesture initiated by touch-scrolling, the
-      // touch-events do not reset or contribute to the overscroll gesture.
-      // However, the touch-events are not sent to the renderer. So send and ACK
-      // to the touch-event queue immediately. Mark the event as not processed,
-      // to make sure that the touch-scroll gesture that initiated the
-      // overscroll is updated properly.
-      touch_event_queue_->ProcessTouchAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-    }
-    return;
-  }
-
-  // Transmit any pending wheel events on a non-wheel event. This ensures that
-  // the renderer receives the final PhaseEnded wheel event, which is necessary
-  // to terminate rubber-banding, for example.
-  if (input_event.type != WebInputEvent::MouseWheel) {
-    for (size_t i = 0; i < coalesced_mouse_wheel_events_.size(); ++i) {
-      SendInputEvent(coalesced_mouse_wheel_events_[i].event,
-                     sizeof(WebMouseWheelEvent),
-                     coalesced_mouse_wheel_events_[i].latency,
-                     false);
-    }
-    coalesced_mouse_wheel_events_.clear();
-  }
-
-  if (view_) {
-    // Perform optional, synchronous event handling, sending ACK messages for
-    // processed events, or proceeding as usual.
-    InputEventAckState filter_ack = view_->FilterInputEvent(input_event);
-    switch (filter_ack) {
-      // Send the ACK and early exit.
-      case INPUT_EVENT_ACK_STATE_CONSUMED:
-      case INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS:
-        next_mouse_move_.reset();
-        OnInputEventAck(input_event.type, filter_ack);
-        // WARNING: |this| may be deleted at this point.
-        return;
-
-      // Proceed as normal.
-      case INPUT_EVENT_ACK_STATE_UNKNOWN:
-      case INPUT_EVENT_ACK_STATE_NOT_CONSUMED:
-      default:
-        break;
-    };
-  }
-
-  SendInputEvent(input_event, event_size, latency_info, is_keyboard_shortcut);
-
-  // Any input event cancels a pending mouse move event. Note that
-  // |next_mouse_move_| possibly owns |input_event|, so don't use |input_event|
-  // after this line.
-  next_mouse_move_.reset();
-
-  StartHangMonitorTimeout(
-      TimeDelta::FromMilliseconds(hung_renderer_delay_ms_));
-}
-
-void RenderWidgetHostImpl::ForwardTouchEventWithLatencyInfo(
-    const WebKit::WebTouchEvent& touch_event,
-    const ui::LatencyInfo& ui_latency) {
-  ui::LatencyInfo latency_info = CreateRWHLatencyInfoIfNotExist(&ui_latency);
-  TouchEventWithLatencyInfo touch_with_latency(touch_event, latency_info);
-  touch_event_queue_->QueueEvent(touch_with_latency);
-}
 
 void RenderWidgetHostImpl::AddKeyboardListener(KeyboardListener* listener) {
   keyboard_listeners_.AddObserver(listener);
@@ -1462,9 +1133,7 @@ void RenderWidgetHostImpl::GetWebScreenInfo(WebKit::WebScreenInfo* result) {
 
 const NativeWebKeyboardEvent*
     RenderWidgetHostImpl::GetLastKeyboardEvent() const {
-  if (key_queue_.empty())
-    return NULL;
-  return &key_queue_.front();
+  return input_router_->GetLastKeyboardEvent();
 }
 
 void RenderWidgetHostImpl::NotifyScreenInfoChanged() {
@@ -1522,31 +1191,13 @@ void RenderWidgetHostImpl::RendererExited(base::TerminationStatus status,
 
   waiting_for_screen_rects_ack_ = false;
 
-  // Must reset these to ensure that mouse move/wheel events work with a new
-  // renderer.
-  mouse_move_pending_ = false;
-  next_mouse_move_.reset();
-  mouse_wheel_pending_ = false;
-  coalesced_mouse_wheel_events_.clear();
-
-  // Must reset these to ensure that SelectRange works with a new renderer.
-  select_range_pending_ = false;
-  next_selection_range_.reset();
-
-  // Must reset these to ensure that MoveCaret works with a new renderer.
-  move_caret_pending_ = false;
-  next_move_caret_.reset();
-
-  touch_event_queue_->Reset();
-
-  // Must reset these to ensure that gesture events work with a new renderer.
-  gesture_event_filter_->Reset();
+  // Reset to ensure that input routing works with a new renderer.
+  input_router_.reset(new ImmediateInputRouter(process_, this, routing_id_));
 
   if (overscroll_controller_)
     overscroll_controller_->Reset();
 
-  // Must reset these to ensure that keyboard events work with a new renderer.
-  key_queue_.clear();
+ // Must reset these to ensure that keyboard events work with a new renderer.
   suppress_next_char_events_ = false;
 
   // Reset some fields in preparation for recovering from a crash.
@@ -2002,114 +1653,11 @@ void RenderWidgetHostImpl::DidUpdateBackingStore(
   UMA_HISTOGRAM_TIMES("MPArch.RWH_TotalPaintTime", delta);
 }
 
-void RenderWidgetHostImpl::OnInputEventAck(
-    WebInputEvent::Type event_type, InputEventAckState ack_result) {
-  TRACE_EVENT0("input", "RenderWidgetHostImpl::OnInputEventAck");
-  bool processed = (ack_result == INPUT_EVENT_ACK_STATE_CONSUMED);
-
-  // Log the time delta for processing an input event.
-  TimeDelta delta = TimeTicks::Now() - input_event_start_time_;
-  UMA_HISTOGRAM_TIMES("MPArch.RWH_InputEventDelta", delta);
-
-  // Cancel pending hung renderer checks since the renderer is responsive.
-  if (decrement_in_flight_event_count() == 0)
-    StopHangMonitorTimeout();
-
-  int type = static_cast<int>(event_type);
-  if (type < WebInputEvent::Undefined) {
-    RecordAction(UserMetricsAction("BadMessageTerminate_RWH2"));
-    process_->ReceivedBadMessage();
-  } else if (type == WebInputEvent::MouseMove) {
-    mouse_move_pending_ = false;
-
-    // now, we can send the next mouse move event
-    if (next_mouse_move_) {
-      DCHECK(next_mouse_move_->event.type == WebInputEvent::MouseMove);
-      ForwardMouseEventWithLatencyInfo(*next_mouse_move_);
-    }
-  } else if (WebInputEvent::isKeyboardEventType(type)) {
-    ProcessKeyboardEventAck(type, processed);
-  } else if (type == WebInputEvent::MouseWheel) {
-    ProcessWheelAck(processed);
-  } else if (WebInputEvent::isTouchEventType(type)) {
-    ProcessTouchAck(ack_result);
-  } else if (WebInputEvent::isGestureEventType(type)) {
-    ProcessGestureAck(processed, type);
-  }
-
-  // WARNING: |this| may be deleted at this point.
-
-  // This is used only for testing, and the other end does not use the
-  // source object.  On linux, specifying
-  // Source<RenderWidgetHost> results in a very strange
-  // runtime error in the epilogue of the enclosing
-  // (OnInputEventAck) method, but not on other platforms; using
-  // 'void' instead is just as safe (since NotificationSource
-  // is not actually typesafe) and avoids this error.
-  NotificationService::current()->Notify(
-      NOTIFICATION_RENDER_WIDGET_HOST_DID_RECEIVE_INPUT_EVENT_ACK,
-      Source<void>(this),
-      Details<int>(&type));
-}
-
 void RenderWidgetHostImpl::OnBeginSmoothScroll(
     const ViewHostMsg_BeginSmoothScroll_Params& params) {
   if (!view_)
     return;
   smooth_scroll_gesture_controller_.BeginSmoothScroll(view_, params);
-}
-
-void RenderWidgetHostImpl::OnSelectRangeAck() {
-  select_range_pending_ = false;
-  if (next_selection_range_) {
-    scoped_ptr<SelectionRange> next(next_selection_range_.Pass());
-    SelectRange(next->start, next->end);
-  }
-}
-
-void RenderWidgetHostImpl::OnMsgMoveCaretAck() {
-  move_caret_pending_ = false;
-  if (next_move_caret_) {
-    scoped_ptr<gfx::Point> next(next_move_caret_.Pass());
-    MoveCaret(*next);
-  }
-}
-
-void RenderWidgetHostImpl::ProcessWheelAck(bool processed) {
-  mouse_wheel_pending_ = false;
-
-  if (overscroll_controller_)
-    overscroll_controller_->ReceivedEventACK(current_wheel_event_, processed);
-
-  // Process the unhandled wheel event here before calling
-  // ForwardWheelEventWithLatencyInfo() since it will mutate
-  // current_wheel_event_.
-  if (!processed && !is_hidden_ && view_)
-    view_->UnhandledWheelEvent(current_wheel_event_);
-
-  // Now send the next (coalesced) mouse wheel event.
-  if (!coalesced_mouse_wheel_events_.empty()) {
-    MouseWheelEventWithLatencyInfo next_wheel_event =
-        coalesced_mouse_wheel_events_.front();
-    coalesced_mouse_wheel_events_.pop_front();
-    ForwardWheelEventWithLatencyInfo(next_wheel_event.event,
-                                     next_wheel_event.latency);
-  }
-}
-
-void RenderWidgetHostImpl::ProcessGestureAck(bool processed, int type) {
-  if (overscroll_controller_) {
-    overscroll_controller_->ReceivedEventACK(
-        gesture_event_filter_->GetGestureEventAwaitingAck(), processed);
-  }
-  gesture_event_filter_->ProcessGestureAck(processed, type);
-
-  if (view_)
-    view_->GestureEventAck(type);
-}
-
-void RenderWidgetHostImpl::ProcessTouchAck(InputEventAckState ack_result) {
-  touch_event_queue_->ProcessTouchAck(ack_result);
 }
 
 void RenderWidgetHostImpl::OnFocus() {
@@ -2122,18 +1670,6 @@ void RenderWidgetHostImpl::OnBlur() {
   // Only RenderViewHost can deal with that message.
   RecordAction(UserMetricsAction("BadMessageTerminate_RWH5"));
   GetProcess()->ReceivedBadMessage();
-}
-
-void RenderWidgetHostImpl::OnHasTouchEventHandlers(bool has_handlers) {
-  if (has_touch_handler_ == has_handlers)
-    return;
-  has_touch_handler_ = has_handlers;
-  if (!has_touch_handler_)
-    touch_event_queue_->FlushQueue();
-#if defined(OS_ANDROID)
-  if (view_)
-    view_->HasTouchEventHandlers(has_touch_handler_);
-#endif
 }
 
 void RenderWidgetHostImpl::OnSetCursor(const WebCursor& cursor) {
@@ -2345,51 +1881,263 @@ bool RenderWidgetHostImpl::KeyPressListenersHandleEvent(
   return false;
 }
 
-void RenderWidgetHostImpl::ProcessKeyboardEventAck(int type, bool processed) {
-  if (key_queue_.empty()) {
-    LOG(ERROR) << "Got a KeyEvent back from the renderer but we "
-               << "don't seem to have sent it to the renderer!";
-  } else if (key_queue_.front().type != type) {
-    LOG(ERROR) << "We seem to have a different key type sent from "
-               << "the renderer. (" << key_queue_.front().type << " vs. "
-               << type << "). Ignoring event.";
+InputEventAckState RenderWidgetHostImpl::FilterInputEvent(
+    const WebKit::WebInputEvent& event, const ui::LatencyInfo& latency_info) {
+  if (overscroll_controller() &&
+      !overscroll_controller()->WillDispatchEvent(event, latency_info)) {
+    return INPUT_EVENT_ACK_STATE_UNKNOWN;
+  }
 
-    // Something must be wrong. Clear the |key_queue_| and
-    // |suppress_next_char_events_| so that we can resume from the error.
-    key_queue_.clear();
+  return view_ ? view_->FilterInputEvent(event)
+               : INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
+}
+
+void RenderWidgetHostImpl::IncrementInFlightEventCount() {
+  StartHangMonitorTimeout(
+      TimeDelta::FromMilliseconds(hung_renderer_delay_ms_));
+  increment_in_flight_event_count();
+}
+
+void RenderWidgetHostImpl::DecrementInFlightEventCount() {
+  DCHECK(in_flight_event_count_ >= 0);
+  // Cancel pending hung renderer checks since the renderer is responsive.
+  if (decrement_in_flight_event_count() <= 0)
+    StopHangMonitorTimeout();
+}
+
+void RenderWidgetHostImpl::OnHasTouchEventHandlers(bool has_handlers) {
+  if (has_touch_handler_ == has_handlers)
+    return;
+  has_touch_handler_ = has_handlers;
+#if defined(OS_ANDROID)
+  if (view_)
+    view_->HasTouchEventHandlers(has_touch_handler_);
+#endif
+}
+
+bool RenderWidgetHostImpl::OnSendKeyboardEvent(
+    const NativeWebKeyboardEvent& key_event,
+    const ui::LatencyInfo& latency_info,
+    bool* is_shortcut) {
+  if (IgnoreInputEvents())
+    return false;
+
+  if (!process_->HasConnection())
+    return false;
+
+  // First, let keypress listeners take a shot at handling the event.  If a
+  // listener handles the event, it should not be propagated to the renderer.
+  if (KeyPressListenersHandleEvent(key_event)) {
+    // Some keypresses that are accepted by the listener might have follow up
+    // char events, which should be ignored.
+    if (key_event.type == WebKeyboardEvent::RawKeyDown)
+      suppress_next_char_events_ = true;
+    return false;
+  }
+
+  if (key_event.type == WebKeyboardEvent::Char &&
+      (key_event.windowsKeyCode == ui::VKEY_RETURN ||
+       key_event.windowsKeyCode == ui::VKEY_SPACE)) {
+    OnUserGesture();
+  }
+
+  // Double check the type to make sure caller hasn't sent us nonsense that
+  // will mess up our key queue.
+  if (!WebInputEvent::isKeyboardEventType(key_event.type))
+    return false;
+
+  if (suppress_next_char_events_) {
+    // If preceding RawKeyDown event was handled by the browser, then we need
+    // suppress all Char events generated by it. Please note that, one
+    // RawKeyDown event may generate multiple Char events, so we can't reset
+    // |suppress_next_char_events_| until we get a KeyUp or a RawKeyDown.
+    if (key_event.type == WebKeyboardEvent::Char)
+      return false;
+    // We get a KeyUp or a RawKeyDown event.
     suppress_next_char_events_ = false;
-  } else {
-    NativeWebKeyboardEvent front_item = key_queue_.front();
-    key_queue_.pop_front();
+  }
 
+  // Only pre-handle the key event if it's not handled by the input method.
+  if (delegate_ && !key_event.skip_in_browser) {
+    // We need to set |suppress_next_char_events_| to true if
+    // PreHandleKeyboardEvent() returns true, but |this| may already be
+    // destroyed at that time. So set |suppress_next_char_events_| true here,
+    // then revert it afterwards when necessary.
+    if (key_event.type == WebKeyboardEvent::RawKeyDown)
+      suppress_next_char_events_ = true;
+
+    // Tab switching/closing accelerators aren't sent to the renderer to avoid
+    // a hung/malicious renderer from interfering.
+    if (delegate_->PreHandleKeyboardEvent(key_event, is_shortcut))
+      return false;
+
+    if (key_event.type == WebKeyboardEvent::RawKeyDown)
+      suppress_next_char_events_ = false;
+  }
+
+  return true;
+}
+
+bool RenderWidgetHostImpl::OnSendWheelEvent(
+    const MouseWheelEventWithLatencyInfo& wheel_event) {
+  if (IgnoreInputEvents())
+    return false;
+
+  if (delegate_->PreHandleWheelEvent(wheel_event.event))
+    return false;
+
+  return true;
+}
+
+bool RenderWidgetHostImpl::OnSendMouseEvent(
+    const MouseEventWithLatencyInfo& mouse_event) {
+  if (IgnoreInputEvents())
+    return false;
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSimulateTouchScreenWithMouse)) {
+    SimulateTouchGestureWithMouse(mouse_event.event);
+    return false;
+  }
+
+  return true;
+}
+
+bool RenderWidgetHostImpl::OnSendTouchEvent(
+    const TouchEventWithLatencyInfo& touch_event) {
+  return !IgnoreInputEvents();
+}
+
+bool RenderWidgetHostImpl::OnSendGestureEvent(
+    const GestureEventWithLatencyInfo& gesture_event) {
+  if (IgnoreInputEvents())
+    return false;
+
+  if (!IsInOverscrollGesture() &&
+      !input_router_->ShouldForwardGestureEvent(gesture_event)) {
+    if (overscroll_controller_.get())
+      overscroll_controller_->DiscardingGestureEvent(gesture_event.event);
+    return false;
+  }
+
+  return true;
+}
+
+bool RenderWidgetHostImpl::OnSendMouseEventImmediately(
+      const MouseEventWithLatencyInfo& mouse_event) {
+  TRACE_EVENT_INSTANT0("input",
+                       "RenderWidgetHostImpl::OnSendMouseEventImmediately",
+                       TRACE_EVENT_SCOPE_THREAD);
+  if (IgnoreInputEvents())
+    return false;
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSimulateTouchScreenWithMouse)) {
+    SimulateTouchGestureWithMouse(mouse_event.event);
+    return false;
+  }
+
+  if (mouse_event.event.type == WebInputEvent::MouseDown)
+    OnUserGesture();
+
+  return true;
+}
+
+bool RenderWidgetHostImpl::OnSendTouchEventImmediately(
+      const TouchEventWithLatencyInfo& touch_event) {
+  TRACE_EVENT_INSTANT0("input",
+                       "RenderWidgetHostImpl::OnSendTouchEventImmediately",
+                       TRACE_EVENT_SCOPE_THREAD);
+  return !IgnoreInputEvents();
+}
+
+bool RenderWidgetHostImpl::OnSendGestureEventImmediately(
+      const GestureEventWithLatencyInfo& gesture_event) {
+  TRACE_EVENT_INSTANT0("input",
+                       "RenderWidgetHostImpl::OnSendGestureEventImmediately",
+                       TRACE_EVENT_SCOPE_THREAD);
+  return !IgnoreInputEvents();
+}
+
+void RenderWidgetHostImpl::OnKeyboardEventAck(
+      const NativeWebKeyboardEvent& event,
+      InputEventAckState ack_result) {
 #if defined(OS_MACOSX)
-    if (!is_hidden_ && view_->PostProcessEventForPluginIme(front_item))
-      return;
+  if (!is_hidden() && view_ && view_->PostProcessEventForPluginIme(event))
+    return;
 #endif
 
-    // We only send unprocessed key event upwards if we are not hidden,
-    // because the user has moved away from us and no longer expect any effect
-    // of this key event.
-    if (delegate_ && !processed && !is_hidden_ && !front_item.skip_in_browser) {
-      delegate_->HandleKeyboardEvent(front_item);
+  // We only send unprocessed key event upwards if we are not hidden,
+  // because the user has moved away from us and no longer expect any effect
+  // of this key event.
+  const bool processed = (INPUT_EVENT_ACK_STATE_CONSUMED == ack_result);
+  if (delegate_ && !processed && !is_hidden() && !event.skip_in_browser) {
+    delegate_->HandleKeyboardEvent(event);
 
-      // WARNING: This RenderWidgetHostImpl can be deallocated at this point
-      // (i.e.  in the case of Ctrl+W, where the call to
-      // HandleKeyboardEvent destroys this RenderWidgetHostImpl).
-    }
+    // WARNING: This RenderWidgetHostImpl can be deallocated at this point
+    // (i.e.  in the case of Ctrl+W, where the call to
+    // HandleKeyboardEvent destroys this RenderWidgetHostImpl).
   }
+}
+
+void RenderWidgetHostImpl::OnWheelEventAck(
+    const WebKit::WebMouseWheelEvent& wheel_event,
+    InputEventAckState ack_result) {
+  const bool processed = (INPUT_EVENT_ACK_STATE_CONSUMED == ack_result);
+  if (overscroll_controller_)
+    overscroll_controller_->ReceivedEventACK(wheel_event, processed);
+
+  if (!processed && !is_hidden() && view_)
+    view_->UnhandledWheelEvent(wheel_event);
+}
+
+void RenderWidgetHostImpl::OnGestureEventAck(
+    const WebKit::WebGestureEvent& event,
+    InputEventAckState ack_result) {
+  const bool processed = (INPUT_EVENT_ACK_STATE_CONSUMED == ack_result);
+  if (overscroll_controller_)
+    overscroll_controller_->ReceivedEventACK(event, processed);
+
+  if (view_)
+    view_->GestureEventAck(event.type);
+}
+
+void RenderWidgetHostImpl::OnTouchEventAck(
+    const TouchEventWithLatencyInfo& event,
+    InputEventAckState ack_result) {
+  ComputeTouchLatency(event.latency);
+  if (view_)
+    view_->ProcessAckedTouchEvent(event, ack_result);
+}
+
+void RenderWidgetHostImpl::OnUnexpectedEventAck(bool bad_message) {
+  if (bad_message) {
+    RecordAction(UserMetricsAction("BadMessageTerminate_RWH2"));
+    process_->ReceivedBadMessage();
+  }
+
+  suppress_next_char_events_ = false;
 }
 
 const gfx::Vector2d& RenderWidgetHostImpl::GetLastScrollOffset() const {
   return last_scroll_offset_;
 }
 
+bool RenderWidgetHostImpl::IgnoreInputEvents() const {
+  return ignore_input_events_ || process_->IgnoreInputEvents();
+}
+
 bool RenderWidgetHostImpl::ShouldForwardTouchEvent() const {
-  // Always send a touch event if the renderer has a touch-event handler. It is
-  // possible that a renderer stops listening to touch-events while there are
-  // still events in the touch-queue. In such cases, the new events should still
-  // get into the queue.
-  return has_touch_handler_ || !touch_event_queue_->empty();
+  return input_router_->ShouldForwardTouchEvent();
+}
+
+bool RenderWidgetHostImpl::ShouldForwardGestureEvent(
+    const GestureEventWithLatencyInfo& gesture_event) const {
+  return input_router_->ShouldForwardGestureEvent(gesture_event);
+}
+
+bool RenderWidgetHostImpl::HasQueuedGestureEvents() const {
+  return input_router_->HasQueuedGestureEvents();
 }
 
 void RenderWidgetHostImpl::StartUserGesture() {
@@ -2411,7 +2159,7 @@ void RenderWidgetHostImpl::SetEditCommandsForNextKeyEvent(
 
 void RenderWidgetHostImpl::SetAccessibilityMode(AccessibilityMode mode) {
   accessibility_mode_ = mode;
-  Send(new ViewMsg_SetAccessibilityMode(routing_id_, mode));
+  Send(new ViewMsg_SetAccessibilityMode(GetRoutingID(), mode));
 }
 
 void RenderWidgetHostImpl::AccessibilityDoDefaultAction(int object_id) {
@@ -2469,26 +2217,10 @@ void RenderWidgetHostImpl::ScrollFocusedEditableNodeIntoRect(
 
 void RenderWidgetHostImpl::SelectRange(const gfx::Point& start,
                                        const gfx::Point& end) {
-  if (select_range_pending_) {
-    if (!next_selection_range_) {
-      next_selection_range_.reset(new SelectionRange());
-    }
-    next_selection_range_->start = start;
-    next_selection_range_->end = end;
-    return;
-  }
-
-  select_range_pending_ = true;
   Send(new InputMsg_SelectRange(GetRoutingID(), start, end));
 }
 
 void RenderWidgetHostImpl::MoveCaret(const gfx::Point& point) {
-  if (move_caret_pending_) {
-    next_move_caret_.reset(new gfx::Point(point));
-    return;
-  }
-
-  move_caret_pending_ = true;
   Send(new InputMsg_MoveCaret(GetRoutingID(), point));
 }
 

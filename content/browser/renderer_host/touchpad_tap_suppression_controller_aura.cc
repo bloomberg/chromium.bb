@@ -4,7 +4,7 @@
 
 #include "content/browser/renderer_host/touchpad_tap_suppression_controller.h"
 
-#include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/browser/renderer_host/input/input_router.h"
 #include "content/browser/renderer_host/tap_suppression_controller.h"
 #include "content/browser/renderer_host/tap_suppression_controller_client.h"
 #include "ui/base/gestures/gesture_configuration.h"
@@ -12,8 +12,8 @@
 namespace content {
 
 TouchpadTapSuppressionController::TouchpadTapSuppressionController(
-    RenderWidgetHostImpl* rwhv)
-    : render_widget_host_(rwhv),
+    InputRouter* input_router)
+    : input_router_(input_router),
       controller_(new TapSuppressionController(this)) {
 }
 
@@ -53,13 +53,13 @@ void TouchpadTapSuppressionController::DropStashedTapDown() {
 void TouchpadTapSuppressionController::ForwardStashedTapDownForDeferral() {
   // Mouse downs are not handled by gesture event filter; so, they are
   // immediately forwarded to the renderer.
-  render_widget_host_->ForwardMouseEventImmediately(stashed_mouse_down_);
+  input_router_->SendMouseEventImmediately(stashed_mouse_down_);
 }
 
 void TouchpadTapSuppressionController::ForwardStashedTapDownSkipDeferral() {
   // Mouse downs are not handled by gesture event filter; so, they are
   // immediately forwarded to the renderer.
-  render_widget_host_->ForwardMouseEventImmediately(stashed_mouse_down_);
+  input_router_->SendMouseEventImmediately(stashed_mouse_down_);
 }
 
 }  // namespace content
