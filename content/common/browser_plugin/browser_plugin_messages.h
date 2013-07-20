@@ -380,5 +380,7 @@ IPC_MESSAGE_CONTROL4(BrowserPluginMsg_RequestPermission,
                      base::DictionaryValue /* request_info */)
 
 // Forwards a PointerLock Unlock request to the BrowserPlugin.
-IPC_MESSAGE_CONTROL1(BrowserPluginMsg_UnlockMouse, int /* instance_id */)
+IPC_MESSAGE_CONTROL2(BrowserPluginMsg_SetMouseLock,
+                     int /* instance_id */,
+                     bool /* enable */)
 

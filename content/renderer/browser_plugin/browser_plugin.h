@@ -288,17 +288,11 @@ class CONTENT_EXPORT BrowserPlugin :
   bool UsesPendingDamageBuffer(
       const BrowserPluginMsg_UpdateRect_Params& params);
 
-  void AddPermissionRequestToMap(int request_id,
-                                 BrowserPluginPermissionType type);
+  void AddPermissionRequestToSet(int request_id);
 
   // Informs the BrowserPlugin that the guest's permission request has been
   // allowed or denied by the embedder.
-  void RespondPermission(BrowserPluginPermissionType permission_type,
-                         int request_id,
-                         bool allow);
-
-  // Handles the response to the pointerLock permission request.
-  void RespondPermissionPointerLock(bool allow);
+  void RespondPermission(int request_id, bool allow);
 
   // If the request with id |request_id| is pending then informs the
   // BrowserPlugin that the guest's permission request has been allowed or
@@ -332,8 +326,8 @@ class CONTENT_EXPORT BrowserPlugin :
                            int request_id,
                            const base::DictionaryValue& request_info);
   void OnSetCursor(int instance_id, const WebCursor& cursor);
+  void OnSetMouseLock(int instance_id, bool enable);
   void OnShouldAcceptTouchEvents(int instance_id, bool accept);
-  void OnUnlockMouse(int instance_id);
   void OnUpdatedName(int instance_id, const std::string& name);
   void OnUpdateRect(int instance_id,
                     const BrowserPluginMsg_UpdateRect_Params& params);
@@ -377,10 +371,10 @@ class CONTENT_EXPORT BrowserPlugin :
   gfx::Size last_view_size_;
   bool size_changed_in_flight_;
   bool before_first_navigation_;
+  bool mouse_locked_;
 
-  // Each permission request item in the map is a pair of request id and
-  // permission type.
-  typedef std::map<int, BrowserPluginPermissionType> PendingPermissionRequests;
+  // The set of permission request IDs that have not yet been processed.
+  typedef std::set<int> PendingPermissionRequests;
   PendingPermissionRequests pending_permission_requests_;
 
   typedef std::pair<int, base::WeakPtr<BrowserPlugin> > TrackedV8ObjectID;

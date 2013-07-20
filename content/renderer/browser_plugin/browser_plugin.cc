@@ -109,6 +109,7 @@ BrowserPlugin::BrowserPlugin(
       visible_(true),
       size_changed_in_flight_(false),
       before_first_navigation_(true),
+      mouse_locked_(false),
       browser_plugin_manager_(render_view->GetBrowserPluginManager()),
       compositing_enabled_(false),
       weak_ptr_factory_(this) {
@@ -149,9 +150,9 @@ bool BrowserPlugin::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_GuestUnresponsive, OnGuestUnresponsive)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_RequestPermission, OnRequestPermission)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_SetCursor, OnSetCursor)
+    IPC_MESSAGE_HANDLER(BrowserPluginMsg_SetMouseLock, OnSetMouseLock)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_ShouldAcceptTouchEvents,
                         OnShouldAcceptTouchEvents)
-    IPC_MESSAGE_HANDLER(BrowserPluginMsg_UnlockMouse, OnUnlockMouse)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_UpdatedName, OnUpdatedName)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_UpdateRect, OnUpdateRect)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -507,7 +508,7 @@ void BrowserPlugin::OnRequestPermission(
           browser_plugin::kEventNewWindow :
               browser_plugin::kEventRequestPermission;
 
-  AddPermissionRequestToMap(request_id, permission_type);
+  AddPermissionRequestToSet(request_id);
 
   std::map<std::string, base::Value*> props;
   props[browser_plugin::kPermission] =
@@ -528,6 +529,21 @@ void BrowserPlugin::OnSetCursor(int guest_instance_id,
   cursor_ = cursor;
 }
 
+void BrowserPlugin::OnSetMouseLock(int guest_instance_id,
+                                   bool enable) {
+  if (enable) {
+    if (mouse_locked_)
+      return;
+    render_view_->mouse_lock_dispatcher()->LockMouse(this);
+  } else {
+    if (!mouse_locked_) {
+      OnLockMouseACK(false);
+      return;
+    }
+    render_view_->mouse_lock_dispatcher()->UnlockMouse(this);
+  }
+}
+
 void BrowserPlugin::OnShouldAcceptTouchEvents(int guest_instance_id,
                                               bool accept) {
   if (container()) {
@@ -537,19 +553,14 @@ void BrowserPlugin::OnShouldAcceptTouchEvents(int guest_instance_id,
   }
 }
 
-void BrowserPlugin::OnUnlockMouse(int guest_instance_id) {
-  render_view_->mouse_lock_dispatcher()->UnlockMouse(this);
-}
-
 void BrowserPlugin::OnUpdatedName(int guest_instance_id,
                                   const std::string& name) {
   UpdateDOMAttribute(browser_plugin::kAttributeName, name);
 }
 
-void BrowserPlugin::AddPermissionRequestToMap(int request_id,
-    BrowserPluginPermissionType type) {
+void BrowserPlugin::AddPermissionRequestToSet(int request_id) {
   DCHECK(!pending_permission_requests_.count(request_id));
-  pending_permission_requests_.insert(std::make_pair(request_id, type));
+  pending_permission_requests_.insert(request_id);
 }
 
 void BrowserPlugin::OnUpdateRect(
@@ -963,21 +974,10 @@ WebKit::WebPluginContainer* BrowserPlugin::container() const {
   return container_;
 }
 
-void BrowserPlugin::RespondPermission(
-    BrowserPluginPermissionType permission_type, int request_id, bool allow) {
-  if (permission_type == BrowserPluginPermissionTypePointerLock)
-      RespondPermissionPointerLock(allow);
-  else
-    browser_plugin_manager()->Send(
-        new BrowserPluginHostMsg_RespondPermission(
-            render_view_routing_id_, guest_instance_id_, request_id, allow));
-}
-
-void BrowserPlugin::RespondPermissionPointerLock(bool allow) {
-  if (allow)
-    render_view_->mouse_lock_dispatcher()->LockMouse(this);
-  else
-    OnLockMouseACK(false);
+void BrowserPlugin::RespondPermission(int request_id, bool allow) {
+  browser_plugin_manager()->Send(
+      new BrowserPluginHostMsg_RespondPermission(
+          render_view_routing_id_, guest_instance_id_, request_id, allow));
 }
 
 void BrowserPlugin::RespondPermissionIfRequestIsPending(
@@ -987,9 +987,8 @@ void BrowserPlugin::RespondPermissionIfRequestIsPending(
   if (iter == pending_permission_requests_.end())
     return;
 
-  BrowserPluginPermissionType permission_type = iter->second;
   pending_permission_requests_.erase(iter);
-  RespondPermission(permission_type, request_id, allow);
+  RespondPermission(request_id, allow);
 }
 
 void BrowserPlugin::OnEmbedderDecidedPermission(int request_id, bool allow) {
@@ -1164,8 +1163,8 @@ bool BrowserPlugin::ShouldForwardToBrowserPlugin(
     case BrowserPluginMsg_GuestUnresponsive::ID:
     case BrowserPluginMsg_RequestPermission::ID:
     case BrowserPluginMsg_SetCursor::ID:
+    case BrowserPluginMsg_SetMouseLock::ID:
     case BrowserPluginMsg_ShouldAcceptTouchEvents::ID:
-    case BrowserPluginMsg_UnlockMouse::ID:
     case BrowserPluginMsg_UpdatedName::ID:
     case BrowserPluginMsg_UpdateRect::ID:
       return true;
@@ -1439,6 +1438,7 @@ bool BrowserPlugin::executeEditCommand(const WebKit::WebString& name,
 }
 
 void BrowserPlugin::OnLockMouseACK(bool succeeded) {
+  mouse_locked_ = succeeded;
   browser_plugin_manager()->Send(new BrowserPluginHostMsg_LockMouse_ACK(
       render_view_routing_id_,
       guest_instance_id_,
@@ -1446,6 +1446,7 @@ void BrowserPlugin::OnLockMouseACK(bool succeeded) {
 }
 
 void BrowserPlugin::OnMouseLockLost() {
+  mouse_locked_ = false;
   browser_plugin_manager()->Send(new BrowserPluginHostMsg_UnlockMouse_ACK(
       render_view_routing_id_,
       guest_instance_id_));

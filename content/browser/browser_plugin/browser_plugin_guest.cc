@@ -77,12 +77,15 @@ class BrowserPluginGuest::DownloadRequest : public PermissionRequest {
     RecordAction(
         UserMetricsAction("BrowserPlugin.Guest.PermissionRequest.Download"));
   }
+
   virtual void Respond(bool should_allow) OVERRIDE {
     callback_.Run(should_allow);
   }
+
   virtual BrowserPluginPermissionType GetType() const OVERRIDE {
     return BrowserPluginPermissionTypeDownload;
   }
+
   virtual ~DownloadRequest() {}
  private:
   base::Callback<void(bool)> callback_;
@@ -133,9 +136,11 @@ class BrowserPluginGuest::GeolocationRequest : public PermissionRequest {
     }
     guest_->SetGeolocationPermission(callback_, bridge_id_, false);
   }
+
   virtual BrowserPluginPermissionType GetType() const OVERRIDE {
     return BrowserPluginPermissionTypeGeolocation;
   }
+
   virtual ~GeolocationRequest() {}
  private:
   base::Callback<void(bool)> callback_;
@@ -167,9 +172,11 @@ class BrowserPluginGuest::MediaRequest : public PermissionRequest {
       callback_.Run(MediaStreamDevices(), scoped_ptr<MediaStreamUI>());
     }
   }
+
   virtual BrowserPluginPermissionType GetType() const OVERRIDE {
     return BrowserPluginPermissionTypeMedia;
   }
+
   virtual ~MediaRequest() {}
  private:
   MediaStreamRequest request_;
@@ -201,12 +208,36 @@ class BrowserPluginGuest::NewWindowRequest : public PermissionRequest {
     if (!should_allow)
       guest->Destroy();
   }
+
   virtual BrowserPluginPermissionType GetType() const OVERRIDE {
     return BrowserPluginPermissionTypeNewWindow;
   }
+
   virtual ~NewWindowRequest() {}
  private:
   int instance_id_;
+  BrowserPluginGuest* guest_;
+};
+
+class BrowserPluginGuest::PointerLockRequest : public PermissionRequest {
+ public:
+  PointerLockRequest(BrowserPluginGuest* guest)
+      : guest_(guest) {
+    RecordAction(
+        UserMetricsAction("BrowserPlugin.Guest.PermissionRequest.PointerLock"));
+  }
+
+  virtual void Respond(bool should_allow) OVERRIDE {
+    guest_->SendMessageToEmbedder(
+        new BrowserPluginMsg_SetMouseLock(guest_->instance_id(), should_allow));
+  }
+
+  virtual BrowserPluginPermissionType GetType() const OVERRIDE {
+    return BrowserPluginPermissionTypePointerLock;
+  }
+
+  virtual ~PointerLockRequest() {}
+ private:
   BrowserPluginGuest* guest_;
 };
 
@@ -338,6 +369,11 @@ void BrowserPluginGuest::Destroy() {
   if (!attached() && opener())
     opener()->pending_new_windows_.erase(this);
   DestroyUnattachedWindows();
+  // Clean up any pending permission requests.
+  for (RequestMap::iterator it = permission_request_map_.begin();
+       it != permission_request_map_.end(); ++it) {
+    delete it->second;
+  }
   GetWebContents()->GetBrowserPluginGuestManager()->RemoveGuest(instance_id_);
   delete GetWebContents();
 }
@@ -1154,16 +1190,17 @@ void BrowserPluginGuest::OnHandleInputEvent(
 void BrowserPluginGuest::OnLockMouse(bool user_gesture,
                                      bool last_unlocked_by_target,
                                      bool privileged) {
-  if (pending_lock_request_) {
+  if (pending_lock_request_ ||
+      (permission_request_map_.size() >=
+          kNumMaxOutstandingPermissionRequests)) {
     // Immediately reject the lock because only one pointerLock may be active
     // at a time.
     Send(new ViewMsg_LockMouse_ACK(routing_id(), false));
     return;
   }
-  RecordAction(
-      UserMetricsAction("BrowserPlugin.Guest.PermissionRequest.PointerLock"));
   pending_lock_request_ = true;
   int request_id = next_permission_request_id_++;
+  permission_request_map_[request_id] = new PointerLockRequest(this);
   base::DictionaryValue request_info;
   request_info.Set(browser_plugin::kUserGesture,
                    base::Value::CreateBooleanValue(user_gesture));
@@ -1339,7 +1376,8 @@ void BrowserPluginGuest::OnSwapBuffersACK(int instance_id,
 }
 
 void BrowserPluginGuest::OnUnlockMouse() {
-  SendMessageToEmbedder(new BrowserPluginMsg_UnlockMouse(instance_id()));
+  SendMessageToEmbedder(
+      new BrowserPluginMsg_SetMouseLock(instance_id(), false));
 }
 
 void BrowserPluginGuest::OnUnlockMouseAck(int instance_id) {

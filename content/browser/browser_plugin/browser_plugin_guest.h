@@ -268,6 +268,7 @@ class CONTENT_EXPORT BrowserPluginGuest
   class MediaRequest;
   class NewWindowRequest;
   class PermissionRequest;
+  class PointerLockRequest;
 
   BrowserPluginGuest(int instance_id,
                      WebContentsImpl* web_contents,
