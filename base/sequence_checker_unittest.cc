@@ -196,6 +196,8 @@ void SequenceCheckerTest::MethodOnDifferentThreadDeathTest() {
 
 #if ENABLE_SEQUENCE_CHECKER
 TEST_F(SequenceCheckerTest, MethodNotAllowedOnDifferentThreadDeathTestInDebug) {
+  // The default style "fast" does not support multi-threaded tests.
+  ::testing::FLAGS_gtest_death_test_style = "threadsafe";
   ASSERT_DEATH({
     MethodOnDifferentThreadDeathTest();
   }, "");
@@ -223,6 +225,8 @@ void SequenceCheckerTest::DetachThenCallFromDifferentThreadDeathTest() {
 
 #if ENABLE_SEQUENCE_CHECKER
 TEST_F(SequenceCheckerTest, DetachFromSequenceDeathTestInDebug) {
+  // The default style "fast" does not support multi-threaded tests.
+  ::testing::FLAGS_gtest_death_test_style = "threadsafe";
   ASSERT_DEATH({
     DetachThenCallFromDifferentThreadDeathTest();
   }, "");
@@ -250,6 +254,8 @@ void SequenceCheckerTest::DifferentSequenceTokensDeathTest() {
 
 #if ENABLE_SEQUENCE_CHECKER
 TEST_F(SequenceCheckerTest, DifferentSequenceTokensDeathTestInDebug) {
+  // The default style "fast" does not support multi-threaded tests.
+  ::testing::FLAGS_gtest_death_test_style = "threadsafe";
   ASSERT_DEATH({
     DifferentSequenceTokensDeathTest();
   }, "");
@@ -276,6 +282,8 @@ void SequenceCheckerTest::WorkerPoolAndSimpleThreadDeathTest() {
 
 #if ENABLE_SEQUENCE_CHECKER
 TEST_F(SequenceCheckerTest, WorkerPoolAndSimpleThreadDeathTestInDebug) {
+  // The default style "fast" does not support multi-threaded tests.
+  ::testing::FLAGS_gtest_death_test_style = "threadsafe";
   ASSERT_DEATH({
     WorkerPoolAndSimpleThreadDeathTest();
   }, "");
@@ -308,6 +316,8 @@ void SequenceCheckerTest::TwoDifferentWorkerPoolsDeathTest() {
 
 #if ENABLE_SEQUENCE_CHECKER
 TEST_F(SequenceCheckerTest, TwoDifferentWorkerPoolsDeathTestInDebug) {
+  // The default style "fast" does not support multi-threaded tests.
+  ::testing::FLAGS_gtest_death_test_style = "threadsafe";
   ASSERT_DEATH({
     TwoDifferentWorkerPoolsDeathTest();
   }, "");
