@@ -1,4 +1,7 @@
 /*
+ * Header file for missing WinCE functionality
+ * Copyright © 2012-2013 RealVNC Ltd.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
@@ -14,14 +17,16 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef LIBUSB_POLL_POSIX_H
-#define LIBUSB_POLL_POSIX_H
+#ifndef MISSING_H
+#define MISSING_H
 
-#define usbi_write write
-#define usbi_read read
-#define usbi_close close
-#define usbi_poll poll
+/* Windows CE doesn't have SleepEx() - Fallback to Sleep() */
+#define SleepEx(m, a) Sleep(m)
 
-int usbi_pipe(int pipefd[2]);
+/* Windows CE doesn't have any APIs to query environment variables.
+ *
+ * This contains a registry based implementation of getenv.
+ */
+char *getenv(const char *name);
 
-#endif /* LIBUSB_POLL_POSIX_H */
+#endif

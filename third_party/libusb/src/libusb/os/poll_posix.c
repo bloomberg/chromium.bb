@@ -1,4 +1,7 @@
 /*
+ * poll_posix: poll compatibility wrapper for POSIX systems
+ * Copyright © 2013 RealVNC Ltd.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
@@ -12,16 +15,37 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ *
  */
 
-#ifndef LIBUSB_POLL_POSIX_H
-#define LIBUSB_POLL_POSIX_H
+#include <unistd.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <stdlib.h>
 
-#define usbi_write write
-#define usbi_read read
-#define usbi_close close
-#define usbi_poll poll
+#include "libusbi.h"
 
-int usbi_pipe(int pipefd[2]);
+int usbi_pipe(int pipefd[2])
+{
+	int ret = pipe(pipefd);
+	if (ret != 0) {
+		return ret;
+	}
+	ret = fcntl(pipefd[1], F_GETFL);
+	if (ret == -1) {
+		usbi_dbg("Failed to get pipe fd flags: %d", errno);
+		goto err_close_pipe;
+	}
+	ret = fcntl(pipefd[1], F_SETFL, ret | O_NONBLOCK);
+	if (ret != 0) {
+		usbi_dbg("Failed to set non-blocking on new pipe: %d", errno);
+		goto err_close_pipe;
+	}
 
-#endif /* LIBUSB_POLL_POSIX_H */
+	return 0;
+
+err_close_pipe:
+	usbi_close(pipefd[0]);
+	usbi_close(pipefd[1]);
+	return ret;
+}

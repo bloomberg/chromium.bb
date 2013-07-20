@@ -1,16 +1,17 @@
-Name: libusb
+Name: libusbx
 URL: http://libusb.org
-Version: 1.0.9
+Version: 1.0.16
 License: LGPL 2.1
 License File: src/COPYING
 Security Critical: yes
 
 Description:
-libusb provides a platform-agnostic API for accessing the USB subsystem on Mac,
-Windows, and Linux systems.
+libusbx provides a platform-agnostic API for accessing the USB subsystem on Mac,
+Windows, and Linux systems. All the unused files are removed.
 
 Local Modifications:
-- config.h (empty) has been created to satisfy includes within the tree.
-- Exposing an API (libusb_interrupt_handle_event) to explicitly interrupt 
+- License headers fixed.
+- config.h has been created to satisfy includes within the tree.
+- Exposing an API (libusb_interrupt_handle_event) to explicitly interrupt
   libusb_handle_event.
 - windows-build.patch has been applied.
