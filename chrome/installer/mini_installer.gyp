@@ -146,18 +146,6 @@
             'message': 'Generating version information'
           },
         ],
-        # Copy the version file to a known location for FILES.cfg
-        # TODO(jschuh): crbug.com/262193 Remove this copy and output
-        # directly to PRODUCT_DIR when the official builders are
-        # verified to not need the intermediate location.
-        'copies': [
-          {
-            'destination': '<(PRODUCT_DIR)',
-            'files': [
-              '<(INTERMEDIATE_DIR)/mini_installer_exe_version.rc',
-            ],
-          },
-        ],
         # TODO(mark):  <(branding_dir) should be defined by the
         # global condition block at the bottom of the file, but
         # this doesn't work due to the following issue:
