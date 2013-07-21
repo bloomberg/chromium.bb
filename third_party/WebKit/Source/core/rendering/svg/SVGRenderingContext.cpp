@@ -102,12 +102,20 @@ void SVGRenderingContext::prepareToRenderSVGContent(RenderObject* object, PaintI
     // Setup transparency layers before setting up SVG resources!
     bool isRenderingMask = isRenderingMaskImage(m_object);
     float opacity = isRenderingMask ? 1 : style->opacity();
+    BlendMode blendMode = isRenderingMask ? BlendModeNormal : style->blendMode();
     const ShadowData* shadow = svgStyle->shadow();
-    if (opacity < 1 || shadow) {
+    if (opacity < 1 || shadow || blendMode != BlendModeNormal) {
         FloatRect repaintRect = m_object->repaintRectInLocalCoordinates();
 
-        if (opacity < 1) {
+        if (opacity < 1 || blendMode != BlendModeNormal) {
             m_paintInfo->context->clip(repaintRect);
+            if (blendMode != BlendModeNormal) {
+                if (!(m_renderingFlags & RestoreGraphicsContext)) {
+                    m_paintInfo->context->save();
+                    m_renderingFlags |= RestoreGraphicsContext;
+                }
+                m_paintInfo->context->setCompositeOperation(CompositeSourceOver, blendMode);
+            }
             m_paintInfo->context->beginTransparencyLayer(opacity);
             m_renderingFlags |= EndOpacityLayer;
         }
