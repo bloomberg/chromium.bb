@@ -40,7 +40,8 @@ static const double animationFrameDelay = 0.025;
 SMILTimeContainer::SMILTimeContainer(SVGSVGElement* owner) 
     : m_beginTime(0)
     , m_pauseTime(0)
-    , m_accumulatedPauseTime(0)
+    , m_resumeTime(0)
+    , m_accumulatedActiveTime(0)
     , m_presetStartTime(0)
     , m_documentOrderIndexesDirty(false)
     , m_timer(this, &SMILTimeContainer::timerFired)
@@ -107,7 +108,11 @@ SMILTime SMILTimeContainer::elapsed() const
 {
     if (!m_beginTime)
         return 0;
-    return currentTime() - m_beginTime - m_accumulatedPauseTime;
+
+    if (isPaused())
+        return m_accumulatedActiveTime;
+
+    return currentTime() + m_accumulatedActiveTime - lastResumeTime();
 }
 
 bool SMILTimeContainer::isActive() const
@@ -147,16 +152,17 @@ void SMILTimeContainer::pause()
     ASSERT(!isPaused());
     m_pauseTime = currentTime();
 
-    if (m_beginTime)
+    if (m_beginTime) {
+        m_accumulatedActiveTime += m_pauseTime - lastResumeTime();
         m_timer.stop();
+    }
+    m_resumeTime = 0;
 }
 
 void SMILTimeContainer::resume()
 {
     ASSERT(isPaused());
-
-    if (m_beginTime)
-        m_accumulatedPauseTime += currentTime() - m_pauseTime;
+    m_resumeTime = currentTime();
 
     m_pauseTime = 0;
     startTimer(0);
@@ -176,9 +182,12 @@ void SMILTimeContainer::setElapsed(SMILTime time)
     double now = currentTime();
     m_beginTime = now - time.value();
 
-    m_accumulatedPauseTime = 0;
-    if (m_pauseTime)
-        m_pauseTime = now;
+    if (m_pauseTime) {
+        m_resumeTime = m_pauseTime = now;
+        m_accumulatedActiveTime = time.value();
+    } else {
+        m_resumeTime = 0;
+    }
 
 #ifndef NDEBUG
     m_preventScheduledAnimationsChanges = true;

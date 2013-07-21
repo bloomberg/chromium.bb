@@ -73,10 +73,12 @@ private:
     
     void updateDocumentOrderIndexes();
     void sortByPriority(Vector<SVGSMILElement*>& smilElements, SMILTime elapsed);
+    double lastResumeTime() const { return m_resumeTime ? m_resumeTime : m_beginTime; }
 
     double m_beginTime;
     double m_pauseTime;
-    double m_accumulatedPauseTime;
+    double m_resumeTime;
+    double m_accumulatedActiveTime;
     double m_presetStartTime;
 
     bool m_documentOrderIndexesDirty;
