@@ -33,7 +33,6 @@ class QuicClientSessionTest : public ::testing::Test {
                  DefaultQuicConfig(), &crypto_config_, &net_log_) {
     session_.config()->SetDefaults();
     crypto_config_.SetDefaults();
-    QuicClientSessionPeer::SetMaxOpenStreams(&session_, 1, 1);
   }
 
   void CompleteCryptoHandshake() {
@@ -64,7 +63,7 @@ TEST_F(QuicClientSessionTest, CryptoConnect) {
   CompleteCryptoHandshake();
 }
 
-TEST_F(QuicClientSessionTest, MaxNumConnections) {
+TEST_F(QuicClientSessionTest, MaxNumStreams) {
   if (!Aes128Gcm12Encrypter::IsSupported()) {
     LOG(INFO) << "AES GCM not supported. Test skipped.";
     return;

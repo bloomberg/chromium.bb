@@ -161,6 +161,7 @@ void QuicClientSession::OnCryptoHandshakeEvent(CryptoHandshakeEvent event) {
     // following code needs to changed.
     base::ResetAndReturn(&callback_).Run(OK);
   }
+  QuicSession::OnCryptoHandshakeEvent(event);
 }
 
 void QuicClientSession::ConnectionClose(QuicErrorCode error, bool from_peer) {

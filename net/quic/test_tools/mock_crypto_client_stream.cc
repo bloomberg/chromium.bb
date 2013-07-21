@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "net/quic/test_tools/mock_crypto_client_stream.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
 
@@ -36,6 +37,7 @@ bool MockCryptoClientStream::CryptoConnect() {
     case CONFIRM_HANDSHAKE: {
       encryption_established_ = true;
       handshake_confirmed_ = true;
+      SetConfigNegotiated();
       session()->OnCryptoHandshakeEvent(QuicSession::HANDSHAKE_CONFIRMED);
       break;
     }
@@ -47,6 +49,27 @@ bool MockCryptoClientStream::CryptoConnect() {
     }
   }
   return true;
+}
+
+void MockCryptoClientStream::SetConfigNegotiated() {
+  ASSERT_FALSE(session()->config()->negotiated());
+  QuicTagVector cgst;
+  cgst.push_back(kINAR);
+  cgst.push_back(kQBIC);
+  session()->config()->set_congestion_control(cgst, kQBIC);
+  session()->config()->set_idle_connection_state_lifetime(
+      QuicTime::Delta::FromSeconds(2 * kDefaultTimeoutSecs),
+      QuicTime::Delta::FromSeconds(kDefaultTimeoutSecs));
+  session()->config()->set_max_streams_per_connection(
+      2 * kDefaultMaxStreamsPerConnection, kDefaultMaxStreamsPerConnection);
+
+  CryptoHandshakeMessage msg;
+  session()->config()->ToHandshakeMessage(&msg);
+  string error_details;
+  const QuicErrorCode error =
+      session()->config()->ProcessClientHello(msg, &error_details);
+  ASSERT_EQ(QUIC_NO_ERROR, error);
+  ASSERT_TRUE(session()->config()->negotiated());
 }
 
 }  // namespace net

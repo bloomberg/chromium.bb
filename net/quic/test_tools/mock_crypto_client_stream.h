@@ -47,6 +47,9 @@ class MockCryptoClientStream : public QuicCryptoClientStream {
   virtual bool CryptoConnect() OVERRIDE;
 
   HandshakeMode handshake_mode_;
+
+ private:
+  void SetConfigNegotiated();
 };
 
 }  // namespace net
