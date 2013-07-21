@@ -40,6 +40,7 @@
 #include "core/dom/FullscreenController.h"
 #include "core/dom/Node.h"
 #include "core/dom/NodeRenderStyle.h"
+#include "core/dom/NodeTraversal.h"
 #include "core/dom/QualifiedName.h"
 #include "core/dom/SpaceSplitString.h"
 #include "core/html/HTMLElement.h"
@@ -307,8 +308,20 @@ inline Element* SharedStyleFinder::findSiblingForStyleSharing(const ElementResol
     return toElement(node);
 }
 
+#ifdef STYLE_STATS
+Element* SharedStyleFinder::searchDocumentForSharedStyle(const ElementResolveContext& context) const
+{
+    for (Element* element = context.element()->document()->documentElement(); element; element = ElementTraversal::next(element)) {
+        if (canShareStyleWithElement(context, element))
+            return element;
+    }
+    return 0;
+}
+#endif
+
 RenderStyle* SharedStyleFinder::locateSharedStyle(const ElementResolveContext& context)
 {
+    STYLE_STATS_ADD_SEARCH();
     if (!context.element() || !context.element()->isStyledElement())
         return 0;
 
@@ -345,6 +358,8 @@ RenderStyle* SharedStyleFinder::locateSharedStyle(const ElementResolveContext& c
     if (context.element()->hasTagName(dialogTag))
         return 0;
 
+    STYLE_STATS_ADD_ELEMENT_ELIGIBLE_FOR_SHARING();
+
     // Cache whether context.element() is affected by any known class selectors.
     // FIXME: This should be an explicit out parameter, instead of a member variable.
     m_elementAffectedByClassRules = context.element() && context.element()->hasClass() && classNamesAffectedByRules(context.element()->classNames());
@@ -361,6 +376,19 @@ RenderStyle* SharedStyleFinder::locateSharedStyle(const ElementResolveContext& c
         cousinList = locateCousinList(cousinList->parentElement(), visitedNodeCount);
     }
 
+#ifdef STYLE_STATS
+    // FIXME: these stats don't to into account whether or not sibling/attribute
+    // rules prevent these nodes from actually sharing
+    if (shareElement) {
+        STYLE_STATS_ADD_SEARCH_FOUND_SIBLING_FOR_SHARING();
+    } else {
+        shareElement = searchDocumentForSharedStyle(context);
+        if (shareElement)
+            STYLE_STATS_ADD_SEARCH_MISSED_SHARING();
+        shareElement = 0;
+    }
+#endif
+
     // If we have exhausted all our budget or our cousins.
     if (!shareElement)
         return 0;
@@ -374,6 +402,7 @@ RenderStyle* SharedStyleFinder::locateSharedStyle(const ElementResolveContext& c
     // Tracking child index requires unique style for each node. This may get set by the sibling rule match above.
     if (parentElementPreventsSharing(context.element()->parentElement()))
         return 0;
+    STYLE_STATS_ADD_STYLE_SHARED();
     return shareElement->renderStyle();
 }
 

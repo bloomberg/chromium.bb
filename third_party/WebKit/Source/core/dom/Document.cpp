@@ -1673,6 +1673,9 @@ void Document::recalcStyle(StyleChange change)
         implicitClose();
     }
 
+    STYLE_STATS_PRINT();
+    STYLE_STATS_CLEAR();
+
     InspectorInstrumentation::didRecalculateStyle(cookie);
 
     // As a result of the style recalculation, the currently hovered element might have been

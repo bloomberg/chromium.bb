@@ -1426,4 +1426,31 @@ bool StyleResolver::affectedByViewportChange() const
     return false;
 }
 
+#ifdef STYLE_STATS
+StyleSharingStats StyleResolver::m_styleSharingStats;
+
+static void printStyleStats(unsigned searches, unsigned elementsEligibleForSharing, unsigned stylesShared, unsigned searchFoundSiblingForSharing, unsigned searchesMissedSharing)
+{
+    double percentOfElementsSharingStyle = (stylesShared * 100.0) / searches;
+    double percentOfNodesEligibleForSharing = (elementsEligibleForSharing * 100.0) / searches;
+    double percentOfEligibleSharingRelativesFound = (searchFoundSiblingForSharing * 100.0) / searches;
+
+    fprintf(stderr, "%u elements checked, %u were eligible for style sharing (%.2f%%).\n", searches, elementsEligibleForSharing, percentOfNodesEligibleForSharing);
+    fprintf(stderr, "%u elements were found to share with, %u were possible (%.2f%%).\n", searchFoundSiblingForSharing, searchesMissedSharing + searchFoundSiblingForSharing, percentOfEligibleSharingRelativesFound);
+    fprintf(stderr, "%u styles were actually shared once sibling and attribute rules were considered (%.2f%%).\n", stylesShared, percentOfElementsSharingStyle);
+
+}
+
+void StyleSharingStats::printStats() const
+{
+    fprintf(stderr, "--------------------------------------------------------------------------------\n");
+    fprintf(stderr, "This recalc style:\n");
+    printStyleStats(m_searches, m_elementsEligibleForSharing, m_stylesShared, m_searchFoundSiblingForSharing, m_searchesMissedSharing);
+
+    fprintf(stderr, "Total:\n");
+    printStyleStats(m_totalSearches, m_totalElementsEligibleForSharing, m_totalStylesShared, m_totalSearchFoundSiblingForSharing, m_totalSearchesMissedSharing);
+    fprintf(stderr, "--------------------------------------------------------------------------------\n");
+}
+#endif
+
 } // namespace WebCore

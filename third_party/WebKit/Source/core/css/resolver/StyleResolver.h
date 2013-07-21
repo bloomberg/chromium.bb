@@ -82,6 +82,53 @@ enum RuleMatchingBehavior {
     MatchOnlyUserAgentRules,
 };
 
+#undef STYLE_STATS
+
+#ifdef STYLE_STATS
+struct StyleSharingStats {
+    void addSearch() { ++m_searches; ++m_totalSearches; }
+    void addElementEligibleForSharing() { ++m_elementsEligibleForSharing; ++m_totalElementsEligibleForSharing; }
+    void addStyleShared() { ++m_stylesShared; ++m_totalStylesShared; }
+    void addSearchFoundSiblingForSharing() { ++m_searchFoundSiblingForSharing; ++m_totalSearchFoundSiblingForSharing; }
+    void addSearchMissedSharing() { ++m_searchesMissedSharing; ++m_totalSearchesMissedSharing; }
+
+    void clear()
+    {
+        m_searches = m_elementsEligibleForSharing = m_stylesShared = m_searchesMissedSharing = m_searchFoundSiblingForSharing = 0;
+    }
+
+    void printStats() const;
+
+    unsigned m_searches;
+    unsigned m_elementsEligibleForSharing;
+    unsigned m_stylesShared;
+    unsigned m_searchFoundSiblingForSharing;
+    unsigned m_searchesMissedSharing;
+
+    unsigned m_totalSearches;
+    unsigned m_totalElementsEligibleForSharing;
+    unsigned m_totalStylesShared;
+    unsigned m_totalSearchFoundSiblingForSharing;
+    unsigned m_totalSearchesMissedSharing;
+};
+
+#define STYLE_STATS_ADD_SEARCH() StyleResolver::styleSharingStats().addSearch();
+#define STYLE_STATS_ADD_ELEMENT_ELIGIBLE_FOR_SHARING() StyleResolver::styleSharingStats().addElementEligibleForSharing();
+#define STYLE_STATS_ADD_STYLE_SHARED() StyleResolver::styleSharingStats().addStyleShared();
+#define STYLE_STATS_ADD_SEARCH_FOUND_SIBLING_FOR_SHARING() StyleResolver::styleSharingStats().addSearchFoundSiblingForSharing();
+#define STYLE_STATS_ADD_SEARCH_MISSED_SHARING() StyleResolver::styleSharingStats().addSearchMissedSharing();
+#define STYLE_STATS_PRINT() StyleResolver::styleSharingStats().printStats();
+#define STYLE_STATS_CLEAR() StyleResolver::styleSharingStats().clear();
+#else
+#define STYLE_STATS_ADD_SEARCH() (void(0));
+#define STYLE_STATS_ADD_ELEMENT_ELIGIBLE_FOR_SHARING() (void(0));
+#define STYLE_STATS_ADD_STYLE_SHARED() (void(0));
+#define STYLE_STATS_ADD_SEARCH_FOUND_SIBLING_FOR_SHARING() (void(0));
+#define STYLE_STATS_ADD_SEARCH_MISSED_SHARING() (void(0));
+#define STYLE_STATS_PRINT() (void(0));
+#define STYLE_STATS_CLEAR() (void(0));
+#endif
+
 // FIXME: Move to separate file.
 class MatchRequest {
 public:
@@ -212,6 +259,9 @@ public:
 
     const RuleFeatureSet& ruleFeatureSet() const { return m_features; }
 
+#ifdef STYLE_STATS
+    ALWAYS_INLINE static StyleSharingStats& styleSharingStats() { return m_styleSharingStats; }
+#endif
 private:
     // FIXME: This should probably go away, folded into FontBuilder.
     void updateFont();
@@ -292,6 +342,10 @@ private:
 
     StyleResolverState* m_state;
     StyleResourceLoader m_styleResourceLoader;
+
+#ifdef STYLE_STATS
+    static StyleSharingStats m_styleSharingStats;
+#endif
 
     friend void StyleBuilder::oldApplyProperty(CSSPropertyID, StyleResolver*, StyleResolverState&, CSSValue*, bool isInitial, bool isInherit);
 

@@ -54,6 +54,9 @@ private:
     Node* locateCousinList(Element* parent, unsigned& visitedNodeCount) const;
     Element* findSiblingForStyleSharing(const ElementResolveContext&, Node*, unsigned& count) const;
 
+    // Only used when we're collecting stats on styles
+    Element* searchDocumentForSharedStyle(const ElementResolveContext&) const;
+
     bool classNamesAffectedByRules(const SpaceSplitString&) const;
 
     bool canShareStyleWithElement(const ElementResolveContext&, Element*) const;
