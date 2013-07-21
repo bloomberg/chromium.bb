@@ -407,7 +407,7 @@ void RenderListBox::paintItemForeground(PaintInfo& paintInfo, const LayoutPoint&
         itemText = toHTMLOptGroupElement(element)->groupLabelText();
     applyTextTransform(style(), itemText, ' ');
 
-    Color textColor = element->renderStyle() ? element->renderStyle()->visitedDependentColor(CSSPropertyColor) : style()->visitedDependentColor(CSSPropertyColor);
+    Color textColor = element->renderStyle() ? resolveColor(element->renderStyle(), CSSPropertyColor) : resolveColor(CSSPropertyColor);
     if (isOptionElement && toHTMLOptionElement(element)->selected()) {
         if (frame()->selection()->isFocusedAndActive() && document()->focusedElement() == node())
             textColor = theme()->activeListBoxSelectionForegroundColor();
@@ -447,8 +447,9 @@ void RenderListBox::paintItemBackground(PaintInfo& paintInfo, const LayoutPoint&
             backColor = theme()->activeListBoxSelectionBackgroundColor();
         else
             backColor = theme()->inactiveListBoxSelectionBackgroundColor();
-    } else
-        backColor = element->renderStyle() ? element->renderStyle()->visitedDependentColor(CSSPropertyBackgroundColor) : style()->visitedDependentColor(CSSPropertyBackgroundColor);
+    } else {
+        backColor = element->renderStyle() ? resolveColor(element->renderStyle(), CSSPropertyBackgroundColor) : resolveColor(CSSPropertyBackgroundColor);
+    }
 
     // Draw the background for this list box item
     if (!element->renderStyle() || element->renderStyle()->visibility() != HIDDEN) {

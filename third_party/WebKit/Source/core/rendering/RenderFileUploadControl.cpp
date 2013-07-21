@@ -149,7 +149,7 @@ void RenderFileUploadControl::paintObject(PaintInfo& paintInfo, const LayoutPoin
                                             textWidth,
                                             style()->fontMetrics().height());
 
-        paintInfo.context->setFillColor(style()->visitedDependentColor(CSSPropertyColor));
+        paintInfo.context->setFillColor(resolveColor(CSSPropertyColor));
 
         // Draw the filename
         paintInfo.context->drawBidiText(font, textRunPaintInfo, IntPoint(roundToInt(textX), roundToInt(textY)));

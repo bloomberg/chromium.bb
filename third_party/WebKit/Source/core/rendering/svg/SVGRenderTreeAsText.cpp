@@ -384,7 +384,7 @@ static void writeRenderSVGTextBox(TextStream& ts, const RenderSVGText& text)
     ts << " contains 1 chunk(s)";
 
     if (text.parent() && (text.parent()->style()->visitedDependentColor(CSSPropertyColor) != text.style()->visitedDependentColor(CSSPropertyColor)))
-        writeNameValuePair(ts, "color", text.style()->visitedDependentColor(CSSPropertyColor).nameForRenderTreeAsText());
+        writeNameValuePair(ts, "color", text.resolveColor(CSSPropertyColor).nameForRenderTreeAsText());
 }
 
 static inline void writeSVGInlineTextBox(TextStream& ts, SVGInlineTextBox* textBox, int indent)

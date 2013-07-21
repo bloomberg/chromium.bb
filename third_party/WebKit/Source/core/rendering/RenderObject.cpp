@@ -1116,7 +1116,7 @@ void RenderObject::paintFocusRing(PaintInfo& paintInfo, const LayoutPoint& paint
     Vector<IntRect> focusRingRects;
     addFocusRingRects(focusRingRects, paintOffset, paintInfo.paintContainer);
     if (style->outlineStyleIsAuto())
-        paintInfo.context->drawFocusRing(focusRingRects, style->outlineWidth(), style->outlineOffset(), style->visitedDependentColor(CSSPropertyOutlineColor));
+        paintInfo.context->drawFocusRing(focusRingRects, style->outlineWidth(), style->outlineOffset(), resolveColor(style, CSSPropertyOutlineColor));
     else
         addPDFURLRect(paintInfo.context, unionRect(focusRingRects));
 }
@@ -1174,7 +1174,7 @@ void RenderObject::paintOutline(PaintInfo& paintInfo, const LayoutRect& paintRec
         return;
 
     EBorderStyle outlineStyle = styleToUse->outlineStyle();
-    Color outlineColor = styleToUse->visitedDependentColor(CSSPropertyOutlineColor);
+    Color outlineColor = resolveColor(styleToUse, CSSPropertyOutlineColor);
 
     GraphicsContext* graphicsContext = paintInfo.context;
     bool useTransparencyLayer = outlineColor.hasAlpha();
@@ -1657,8 +1657,8 @@ Color RenderObject::selectionBackgroundColor() const
     Color color;
     if (shouldUseSelectionColor(*style())) {
         RefPtr<RenderStyle> pseudoStyle = getUncachedPseudoStyle(PseudoStyleRequest(SELECTION));
-        if (pseudoStyle && pseudoStyle->visitedDependentColor(CSSPropertyBackgroundColor).isValid())
-            color = pseudoStyle->visitedDependentColor(CSSPropertyBackgroundColor).blendWithWhite();
+        if (pseudoStyle && resolveColor(pseudoStyle.get(), CSSPropertyBackgroundColor).isValid())
+            color = resolveColor(pseudoStyle.get(), CSSPropertyBackgroundColor).blendWithWhite();
         else
             color = frame()->selection()->isFocusedAndActive() ?
                     theme()->activeSelectionBackgroundColor() :
@@ -1678,9 +1678,8 @@ Color RenderObject::selectionColor(int colorProperty) const
         return color;
 
     if (RefPtr<RenderStyle> pseudoStyle = getUncachedPseudoStyle(PseudoStyleRequest(SELECTION))) {
-        color = pseudoStyle->visitedDependentColor(colorProperty);
-        if (!color.isValid())
-            color = pseudoStyle->visitedDependentColor(CSSPropertyColor);
+        Color selectionColor = resolveColor(pseudoStyle.get(), colorProperty);
+        color = selectionColor.isValid() ? selectionColor : resolveColor(pseudoStyle.get(), CSSPropertyColor);
     } else
         color = frame()->selection()->isFocusedAndActive() ?
                 theme()->activeSelectionForegroundColor() :
@@ -2869,21 +2868,21 @@ bool RenderObject::hasBlendMode() const
     return RuntimeEnabledFeatures::cssCompositingEnabled() && style() && style()->hasBlendMode();
 }
 
-static Color decorationColor(RenderStyle* style)
+static Color decorationColor(const RenderObject* object, RenderStyle* style)
 {
     Color result;
     // Check for text decoration color first.
-    result = style->visitedDependentColor(CSSPropertyTextDecorationColor);
+    result = object->resolveColor(style, CSSPropertyTextDecorationColor);
     if (result.isValid())
         return result;
     if (style->textStrokeWidth() > 0) {
         // Prefer stroke color if possible but not if it's fully transparent.
-        result = style->visitedDependentColor(CSSPropertyWebkitTextStrokeColor);
+        result = object->resolveColor(style, CSSPropertyWebkitTextStrokeColor);
         if (result.alpha())
             return result;
     }
     
-    result = style->visitedDependentColor(CSSPropertyWebkitTextFillColor);
+    result = object->resolveColor(style, CSSPropertyWebkitTextFillColor);
     return result;
 }
 
@@ -2897,7 +2896,7 @@ void RenderObject::getTextDecorationColors(int decorations, Color& underline, Co
     do {
         styleToUse = curr->style(firstlineStyle);
         currDecs = styleToUse->textDecoration();
-        resultColor = decorationColor(styleToUse);
+        resultColor = decorationColor(this, styleToUse);
         // Parameter 'decorations' is cast as an int to enable the bitwise operations below.
         if (currDecs) {
             if (currDecs & TextDecorationUnderline) {
@@ -2923,7 +2922,7 @@ void RenderObject::getTextDecorationColors(int decorations, Color& underline, Co
     // If we bailed out, use the element we bailed out at (typically a <font> or <a> element).
     if (decorations && curr) {
         styleToUse = curr->style(firstlineStyle);
-        resultColor = decorationColor(styleToUse);
+        resultColor = decorationColor(this, styleToUse);
         if (decorations & TextDecorationUnderline)
             underline = resultColor;
         if (decorations & TextDecorationOverline)

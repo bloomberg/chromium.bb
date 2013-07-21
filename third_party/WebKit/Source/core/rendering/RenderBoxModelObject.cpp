@@ -509,14 +509,14 @@ RoundedRect RenderBoxModelObject::backgroundRoundedRectAdjustedForBleedAvoidance
     return getBackgroundRoundedRect(borderRect, box, boxSize.width(), boxSize.height(), includeLogicalLeftEdge, includeLogicalRightEdge);
 }
 
-static void applyBoxShadowForBackground(GraphicsContext* context, RenderStyle* style)
+static void applyBoxShadowForBackground(GraphicsContext* context, const RenderObject* renderer)
 {
-    const ShadowData* boxShadow = style->boxShadow();
+    const ShadowData* boxShadow = renderer->style()->boxShadow();
     while (boxShadow->style() != Normal)
         boxShadow = boxShadow->next();
 
     FloatSize shadowOffset(boxShadow->x(), boxShadow->y());
-    context->setShadow(shadowOffset, boxShadow->blur(), boxShadow->color(),
+    context->setShadow(shadowOffset, boxShadow->blur(), renderer->resolveColor(boxShadow->color()),
         DrawLooper::ShadowRespectsTransforms, DrawLooper::ShadowIgnoresAlpha);
 }
 
@@ -573,7 +573,7 @@ void RenderBoxModelObject::paintFillLayerExtended(const PaintInfo& paintInfo, co
         bool boxShadowShouldBeAppliedToBackground = this->boxShadowShouldBeAppliedToBackground(bleedAvoidance, box);
         GraphicsContextStateSaver shadowStateSaver(*context, boxShadowShouldBeAppliedToBackground);
         if (boxShadowShouldBeAppliedToBackground)
-            applyBoxShadowForBackground(context, style());
+            applyBoxShadowForBackground(context, this);
 
         if (hasRoundedBorder && bleedAvoidance != BackgroundBleedUseTransparencyLayer) {
             RoundedRect border = backgroundRoundedRectAdjustedForBleedAvoidance(context, rect, bleedAvoidance, box, boxSize, includeLeftEdge, includeRightEdge);
@@ -717,7 +717,7 @@ void RenderBoxModelObject::paintFillLayerExtended(const PaintInfo& paintInfo, co
 
             GraphicsContextStateSaver shadowStateSaver(*context, boxShadowShouldBeAppliedToBackground);
             if (boxShadowShouldBeAppliedToBackground)
-                applyBoxShadowForBackground(context, style());
+                applyBoxShadowForBackground(context, this);
 
             if (baseColor.alpha()) {
                 if (bgColor.alpha())
@@ -1784,7 +1784,7 @@ void RenderBoxModelObject::paintBorder(const PaintInfo& info, const LayoutRect& 
                 path.addRoundedRect(innerBorder);
             else
                 path.addRect(innerBorder.rect());
-            
+
             graphicsContext->setFillRule(RULE_EVENODD);
             graphicsContext->setFillColor(edges[firstVisibleEdge].color);
             graphicsContext->fillPath(path);
@@ -2289,25 +2289,25 @@ void RenderBoxModelObject::getBorderEdgeInfo(BorderEdge edges[], const RenderSty
     bool horizontal = style->isHorizontalWritingMode();
 
     edges[BSTop] = BorderEdge(style->borderTopWidth(),
-        style->visitedDependentColor(CSSPropertyBorderTopColor),
+        resolveColor(style, CSSPropertyBorderTopColor),
         style->borderTopStyle(),
         style->borderTopIsTransparent(),
         horizontal || includeLogicalLeftEdge);
 
     edges[BSRight] = BorderEdge(style->borderRightWidth(),
-        style->visitedDependentColor(CSSPropertyBorderRightColor),
+        resolveColor(style, CSSPropertyBorderRightColor),
         style->borderRightStyle(),
         style->borderRightIsTransparent(),
         !horizontal || includeLogicalRightEdge);
 
     edges[BSBottom] = BorderEdge(style->borderBottomWidth(),
-        style->visitedDependentColor(CSSPropertyBorderBottomColor),
+        resolveColor(style, CSSPropertyBorderBottomColor),
         style->borderBottomStyle(),
         style->borderBottomIsTransparent(),
         horizontal || includeLogicalRightEdge);
 
     edges[BSLeft] = BorderEdge(style->borderLeftWidth(),
-        style->visitedDependentColor(CSSPropertyBorderLeftColor),
+        resolveColor(style, CSSPropertyBorderLeftColor),
         style->borderLeftStyle(),
         style->borderLeftIsTransparent(),
         !horizontal || includeLogicalLeftEdge);
@@ -2374,7 +2374,7 @@ bool RenderBoxModelObject::boxShadowShouldBeAppliedToBackground(BackgroundBleedA
     if (!hasOneNormalBoxShadow)
         return false;
 
-    Color backgroundColor = style()->visitedDependentColor(CSSPropertyBackgroundColor);
+    Color backgroundColor = resolveColor(CSSPropertyBackgroundColor);
     if (!backgroundColor.isValid() || backgroundColor.hasAlpha())
         return false;
 
@@ -2436,7 +2436,7 @@ void RenderBoxModelObject::paintBoxShadow(const PaintInfo& info, const LayoutRec
         if (shadowOffset.isZero() && !shadowBlur && !shadowSpread)
             continue;
         
-        const Color& shadowColor = shadow->color();
+        const Color& shadowColor = resolveColor(shadow->color());
 
         if (shadow->style() == Normal) {
             RoundedRect fillRect = border;

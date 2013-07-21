@@ -2961,7 +2961,7 @@ void RenderBlock::paintColumnRules(PaintInfo& paintInfo, const LayoutPoint& pain
     if (paintInfo.context->paintingDisabled())
         return;
 
-    const Color& ruleColor = style()->visitedDependentColor(CSSPropertyWebkitColumnRuleColor);
+    const Color& ruleColor = resolveColor(CSSPropertyWebkitColumnRuleColor);
     bool ruleTransparent = style()->columnRuleIsTransparent();
     EBorderStyle ruleStyle = style()->columnRuleStyle();
     LayoutUnit ruleThickness = style()->columnRuleWidth();

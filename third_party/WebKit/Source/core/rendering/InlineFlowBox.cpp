@@ -1278,7 +1278,7 @@ void InlineFlowBox::paintBoxDecorations(PaintInfo& paintInfo, const LayoutPoint&
         if (!boxModelObject()->boxShadowShouldBeAppliedToBackground(BackgroundBleedNone, this))
             paintBoxShadow(paintInfo, styleToUse, Normal, paintRect);
 
-        Color c = styleToUse->visitedDependentColor(CSSPropertyBackgroundColor);
+        Color c = renderer()->resolveColor(styleToUse, CSSPropertyBackgroundColor);
         paintFillLayers(paintInfo, c, styleToUse->backgroundLayers(), paintRect);
         paintBoxShadow(paintInfo, styleToUse, Inset, paintRect);
 

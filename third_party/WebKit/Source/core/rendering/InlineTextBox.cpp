@@ -392,11 +392,12 @@ bool InlineTextBox::nodeAtPoint(const HitTestRequest& request, HitTestResult& re
     return false;
 }
 
-static void paintTextWithShadows(GraphicsContext* context, const Font& font, const TextRun& textRun,
-                                 const AtomicString& emphasisMark, int emphasisMarkOffset,
-                                 int startOffset, int endOffset, int truncationPoint,
-                                 const FloatPoint& textOrigin, const FloatRect& boxRect,
-                                 const ShadowData* shadow, bool stroked, bool horizontal)
+static void paintTextWithShadows(GraphicsContext* context,
+    const RenderObject* renderer, const Font& font, const TextRun& textRun,
+    const AtomicString& emphasisMark, int emphasisMarkOffset,
+    int startOffset, int endOffset, int truncationPoint,
+    const FloatPoint& textOrigin, const FloatRect& boxRect,
+    const ShadowData* shadow, bool stroked, bool horizontal)
 {
     // Text shadows are disabled when printing. http://crbug.com/258321
     bool hasShadow = shadow && !context->printing();
@@ -408,7 +409,7 @@ static void paintTextWithShadows(GraphicsContext* context, const Font& font, con
             int shadowX = horizontal ? shadow->x() : shadow->y();
             int shadowY = horizontal ? shadow->y() : -shadow->x();
             FloatSize offset(shadowX, shadowY);
-            drawLooper.addShadow(offset, shadow->blur(), shadow->color(),
+            drawLooper.addShadow(offset, shadow->blur(), renderer->resolveColor(shadow->color()),
                 DrawLooper::ShadowRespectsTransforms, DrawLooper::ShadowIgnoresAlpha);
         } while ((shadow = shadow->next()));
         drawLooper.addUnmodifiedContent();
@@ -527,7 +528,8 @@ void InlineTextBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, 
 
     GraphicsContext* context = paintInfo.context;
 
-    RenderStyle* styleToUse = renderer()->style(isFirstLineStyle());
+    RenderObject* rendererToUse = renderer();
+    RenderStyle* styleToUse = rendererToUse->style(isFirstLineStyle());
     
     adjustedPaintOffset.move(0, styleToUse->isHorizontalWritingMode() ? 0 : -logicalHeight());
 
@@ -559,7 +561,7 @@ void InlineTextBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, 
         textStrokeColor = Color::black;
         emphasisMarkColor = Color::black;
     } else {
-        textFillColor = styleToUse->visitedDependentColor(CSSPropertyWebkitTextFillColor);
+        textFillColor = rendererToUse->resolveColor(styleToUse, CSSPropertyWebkitTextFillColor);
         
         bool forceBackgroundToWhite = false;
         if (isPrinting) {
@@ -573,13 +575,13 @@ void InlineTextBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, 
         if (forceBackgroundToWhite)
             textFillColor = correctedTextColor(textFillColor, Color::white);
 
-        textStrokeColor = styleToUse->visitedDependentColor(CSSPropertyWebkitTextStrokeColor);
+        textStrokeColor = rendererToUse->resolveColor(styleToUse, CSSPropertyWebkitTextStrokeColor);
         
         // Make the text stroke color legible against a white background
         if (forceBackgroundToWhite)
             textStrokeColor = correctedTextColor(textStrokeColor, Color::white);
 
-        emphasisMarkColor = styleToUse->visitedDependentColor(CSSPropertyWebkitTextEmphasisColor);
+        emphasisMarkColor = rendererToUse->resolveColor(styleToUse, CSSPropertyWebkitTextEmphasisColor);
         
         // Make the text stroke color legible against a white background
         if (forceBackgroundToWhite)
@@ -626,7 +628,7 @@ void InlineTextBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, 
                 selectionStrokeWidth = strokeWidth;
             }
 
-            Color stroke = paintInfo.forceBlackText() ? Color::black : pseudoStyle->visitedDependentColor(CSSPropertyWebkitTextStrokeColor);
+            Color stroke = paintInfo.forceBlackText() ? Color::black : rendererToUse->resolveColor(pseudoStyle, CSSPropertyWebkitTextStrokeColor);
             if (stroke != selectionStrokeColor) {
                 if (!paintSelectedTextOnly)
                     paintSelectedTextSeparately = true;
@@ -714,9 +716,10 @@ void InlineTextBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, 
         updateGraphicsContext(context, textFillColor, textStrokeColor, textStrokeWidth);
         if (!paintSelectedTextSeparately || ePos <= sPos) {
             // FIXME: Truncate right-to-left text correctly.
-            paintTextWithShadows(context, font, textRun, nullAtom, 0, 0, length, length, textOrigin, boxRect, textShadow, textStrokeWidth > 0, isHorizontal());
-        } else
-            paintTextWithShadows(context, font, textRun, nullAtom, 0, ePos, sPos, length, textOrigin, boxRect, textShadow, textStrokeWidth > 0, isHorizontal());
+            paintTextWithShadows(context, rendererToUse, font, textRun, nullAtom, 0, 0, length, length, textOrigin, boxRect, textShadow, textStrokeWidth > 0, isHorizontal());
+        } else {
+            paintTextWithShadows(context, rendererToUse, font, textRun, nullAtom, 0, ePos, sPos, length, textOrigin, boxRect, textShadow, textStrokeWidth > 0, isHorizontal());
+        }
 
         if (!emphasisMark.isEmpty()) {
             updateGraphicsContext(context, emphasisMarkColor, textStrokeColor, textStrokeWidth);
@@ -729,9 +732,10 @@ void InlineTextBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, 
 
             if (!paintSelectedTextSeparately || ePos <= sPos) {
                 // FIXME: Truncate right-to-left text correctly.
-                paintTextWithShadows(context, combinedText ? combinedText->originalFont() : font, emphasisMarkTextRun, emphasisMark, emphasisMarkOffset, 0, length, length, emphasisMarkTextOrigin, boxRect, textShadow, textStrokeWidth > 0, isHorizontal());
-            } else
-                paintTextWithShadows(context, combinedText ? combinedText->originalFont() : font, emphasisMarkTextRun, emphasisMark, emphasisMarkOffset, ePos, sPos, length, emphasisMarkTextOrigin, boxRect, textShadow, textStrokeWidth > 0, isHorizontal());
+                paintTextWithShadows(context, rendererToUse, combinedText ? combinedText->originalFont() : font, emphasisMarkTextRun, emphasisMark, emphasisMarkOffset, 0, length, length, emphasisMarkTextOrigin, boxRect, textShadow, textStrokeWidth > 0, isHorizontal());
+            } else {
+                paintTextWithShadows(context, rendererToUse, combinedText ? combinedText->originalFont() : font, emphasisMarkTextRun, emphasisMark, emphasisMarkOffset, ePos, sPos, length, emphasisMarkTextOrigin, boxRect, textShadow, textStrokeWidth > 0, isHorizontal());
+            }
 
             if (combinedText)
                 context->concatCTM(rotation(boxRect, Counterclockwise));
@@ -743,7 +747,7 @@ void InlineTextBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, 
         GraphicsContextStateSaver stateSaver(*context, selectionStrokeWidth > 0);
 
         updateGraphicsContext(context, selectionFillColor, selectionStrokeColor, selectionStrokeWidth);
-        paintTextWithShadows(context, font, textRun, nullAtom, 0, sPos, ePos, length, textOrigin, boxRect, selectionShadow, selectionStrokeWidth > 0, isHorizontal());
+        paintTextWithShadows(context, rendererToUse, font, textRun, nullAtom, 0, sPos, ePos, length, textOrigin, boxRect, selectionShadow, selectionStrokeWidth > 0, isHorizontal());
         if (!emphasisMark.isEmpty()) {
             updateGraphicsContext(context, selectionEmphasisMarkColor, textStrokeColor, textStrokeWidth);
 
@@ -753,7 +757,7 @@ void InlineTextBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, 
             if (combinedText)
                 context->concatCTM(rotation(boxRect, Clockwise));
 
-            paintTextWithShadows(context, combinedText ? combinedText->originalFont() : font, emphasisMarkTextRun, emphasisMark, emphasisMarkOffset, sPos, ePos, length, emphasisMarkTextOrigin, boxRect, selectionShadow, selectionStrokeWidth > 0, isHorizontal());
+            paintTextWithShadows(context, rendererToUse, combinedText ? combinedText->originalFont() : font, emphasisMarkTextRun, emphasisMark, emphasisMarkOffset, sPos, ePos, length, emphasisMarkTextOrigin, boxRect, selectionShadow, selectionStrokeWidth > 0, isHorizontal());
 
             if (combinedText)
                 context->concatCTM(rotation(boxRect, Counterclockwise));

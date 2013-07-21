@@ -126,7 +126,7 @@ void RenderDetailsMarker::paint(PaintInfo& paintInfo, const LayoutPoint& paintOf
     if (!paintInfo.rect.intersects(pixelSnappedIntRect(overflowRect)))
         return;
 
-    const Color color(style()->visitedDependentColor(CSSPropertyColor));
+    const Color color(resolveColor(CSSPropertyColor));
     paintInfo.context->setStrokeColor(color);
     paintInfo.context->setStrokeStyle(SolidStroke);
     paintInfo.context->setStrokeThickness(1.0f);

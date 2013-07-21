@@ -37,7 +37,7 @@ void EllipsisBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, La
 {
     GraphicsContext* context = paintInfo.context;
     RenderStyle* style = m_renderer->style(isFirstLineStyle());
-    Color styleTextColor = style->visitedDependentColor(CSSPropertyWebkitTextFillColor);
+    Color styleTextColor = m_renderer->resolveColor(style, CSSPropertyWebkitTextFillColor);
     if (styleTextColor != context->fillColor())
         context->setFillColor(styleTextColor);
 
@@ -61,7 +61,7 @@ void EllipsisBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, La
             int shadowX = isHorizontal() ? shadow->x() : shadow->y();
             int shadowY = isHorizontal() ? shadow->y() : -shadow->x();
             FloatSize offset(shadowX, shadowY);
-            drawLooper.addShadow(offset, shadow->blur(), shadow->color(),
+            drawLooper.addShadow(offset, shadow->blur(), m_renderer->resolveColor(shadow->color()),
                 DrawLooper::ShadowRespectsTransforms, DrawLooper::ShadowIgnoresAlpha);
         } while ((shadow = shadow->next()));
         drawLooper.addUnmodifiedContent();
@@ -129,7 +129,7 @@ IntRect EllipsisBox::selectionRect()
 
 void EllipsisBox::paintSelection(GraphicsContext* context, const LayoutPoint& paintOffset, RenderStyle* style, const Font& font)
 {
-    Color textColor = style->visitedDependentColor(CSSPropertyColor);
+    Color textColor = m_renderer->resolveColor(style, CSSPropertyColor);
     Color c = m_renderer->selectionBackgroundColor();
     if (!c.isValid() || !c.alpha())
         return;

@@ -272,7 +272,7 @@ bool RenderThemeChromiumDefault::paintButton(RenderObject* o, const PaintInfo& i
     extraParams.button.hasBorder = true;
     extraParams.button.backgroundColor = defaultButtonBackgroundColor;
     if (o->hasBackground())
-        extraParams.button.backgroundColor = o->style()->visitedDependentColor(CSSPropertyBackgroundColor).rgb();
+        extraParams.button.backgroundColor = o->resolveColor(CSSPropertyBackgroundColor).rgb();
 
     WebKit::Platform::current()->themeEngine()->paint(canvas, WebKit::WebThemeEngine::PartButton, getWebThemeState(this, o), WebKit::WebRect(rect), &extraParams);
     return false;
@@ -294,9 +294,7 @@ bool RenderThemeChromiumDefault::paintTextField(RenderObject* o, const PaintInfo
     WebKit::WebCanvas* canvas = i.context->canvas();
 
     // Fallback to white if the specified color object is invalid.
-    Color backgroundColor(Color::white);
-    if (o->style()->visitedDependentColor(CSSPropertyBackgroundColor).isValid())
-        backgroundColor = o->style()->visitedDependentColor(CSSPropertyBackgroundColor);
+    Color backgroundColor = o->resolveColor(CSSPropertyBackgroundColor, Color::white);
     extraParams.textField.backgroundColor = backgroundColor.rgb();
 
     WebKit::Platform::current()->themeEngine()->paint(canvas, WebKit::WebThemeEngine::PartTextField, getWebThemeState(this, o), WebKit::WebRect(rect), &extraParams);
@@ -321,7 +319,7 @@ bool RenderThemeChromiumDefault::paintMenuList(RenderObject* o, const PaintInfo&
     // Fallback to transparent if the specified color object is invalid.
     extraParams.menuList.backgroundColor = Color::transparent;
     if (o->hasBackground())
-        extraParams.menuList.backgroundColor = o->style()->visitedDependentColor(CSSPropertyBackgroundColor).rgb();
+        extraParams.menuList.backgroundColor = o->resolveColor(CSSPropertyBackgroundColor).rgb();
 
     WebKit::WebCanvas* canvas = i.context->canvas();
 

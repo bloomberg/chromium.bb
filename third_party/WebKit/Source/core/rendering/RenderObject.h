@@ -245,7 +245,7 @@ public:
     // again.  We have to make sure the render tree updates as needed to accommodate the new
     // normal flow object.
     void handleDynamicFloatPositionChange();
-    
+
     // RenderObject tree manipulation
     //////////////////////////////////////////
     virtual bool canHaveChildren() const { return virtualChildren(); }
@@ -265,7 +265,7 @@ protected:
     void setParent(RenderObject* parent)
     {
         m_parent = parent;
-        
+
         // Only update if our flow thread state is different from our new parent and if we're not a RenderFlowThread.
         // A RenderFlowThread is always considered to be inside itself, so it never has to change its state
         // in response to parent changes.
@@ -501,7 +501,7 @@ public:
         // This function is kept in sync with anonymous block creation conditions in
         // RenderBlock::createAnonymousBlock(). This includes creating an anonymous
         // RenderBlock having a BLOCK or BOX display. Other classes such as RenderTextFragment
-        // are not RenderBlocks and will return false. See https://bugs.webkit.org/show_bug.cgi?id=56709. 
+        // are not RenderBlocks and will return false. See https://bugs.webkit.org/show_bug.cgi?id=56709.
         return isAnonymous() && (style()->display() == BLOCK || style()->display() == BOX) && style()->styleType() == NOPSEUDO && isRenderBlock() && !isListMarker() && !isRenderFlowThread()
             && !isRenderFullScreen()
             && !isRenderFullScreenPlaceholder();
@@ -561,7 +561,7 @@ public:
     bool posChildNeedsLayout() const { return m_bitfields.posChildNeedsLayout(); }
     bool needsSimplifiedNormalFlowLayout() const { return m_bitfields.needsSimplifiedNormalFlowLayout(); }
     bool normalChildNeedsLayout() const { return m_bitfields.normalChildNeedsLayout(); }
-    
+
     bool preferredLogicalWidthsDirty() const { return m_bitfields.preferredLogicalWidthsDirty(); }
 
     bool isSelectionBorder() const;
@@ -585,7 +585,7 @@ public:
     // any pseudo classes (and therefore has no concept of changing state).
     RenderStyle* getCachedPseudoStyle(PseudoId, RenderStyle* parentStyle = 0) const;
     PassRefPtr<RenderStyle> getUncachedPseudoStyle(const PseudoStyleRequest&, RenderStyle* parentStyle = 0, RenderStyle* ownStyle = 0) const;
-    
+
     virtual void updateDragState(bool dragOn);
 
     RenderView* view() const { return document()->renderView(); };
@@ -626,7 +626,7 @@ public:
     void setNeedsSimplifiedNormalFlowLayout();
     void setPreferredLogicalWidthsDirty(bool, MarkingBehavior = MarkContainingBlockChain);
     void invalidateContainerPreferredLogicalWidths();
-    
+
     void setNeedsLayoutAndPrefWidthsRecalc()
     {
         setNeedsLayout(true);
@@ -668,7 +668,7 @@ public:
 
     /* This function performs a layout only if one is needed. */
     void layoutIfNeeded() { if (needsLayout()) layout(); }
-    
+
     // used for element state updates that cannot be fixed with a
     // repaint and do not need a relayout
     virtual void updateFromElement() { }
@@ -733,7 +733,7 @@ public:
     virtual LayoutSize offsetFromContainer(RenderObject*, const LayoutPoint&, bool* offsetDependsOnPoint = 0) const;
     // Return the offset from an object up the container() chain. Asserts that none of the intermediate objects have transforms.
     LayoutSize offsetFromAncestorContainer(RenderObject*) const;
-    
+
     virtual void absoluteRects(Vector<IntRect>&, const LayoutPoint&) const { }
 
     // FIXME: useTransforms should go away eventually
@@ -757,6 +757,27 @@ public:
     RenderStyle* firstLineStyle() const { return document()->styleSheetCollection()->usesFirstLineRules() ? cachedFirstLineStyle() : style(); }
     RenderStyle* style(bool firstLine) const { return firstLine ? firstLineStyle() : style(); }
 
+    inline Color resolveColor(const RenderStyle* styleToUse, int colorProperty) const
+    {
+        return styleToUse->visitedDependentColor(colorProperty);
+    }
+
+    inline Color resolveColor(int colorProperty) const
+    {
+        return style()->visitedDependentColor(colorProperty);
+    }
+
+    inline Color resolveColor(int colorProperty, Color fallback) const
+    {
+        Color color = resolveColor(colorProperty);
+        return color.isValid() ? color : fallback;
+    }
+
+    inline Color resolveColor(Color color) const
+    {
+        return color;
+    }
+
     // Used only by Element::pseudoStyleCacheIsInvalid to get a first line style based off of a
     // given new style, without accessing the cache.
     PassRefPtr<RenderStyle> uncachedFirstLineStyle(RenderStyle*) const;
@@ -764,7 +785,7 @@ public:
     // Anonymous blocks that are part of of a continuation chain will return their inline continuation's outline style instead.
     // This is typically only relevant when repainting.
     virtual RenderStyle* outlineStyleForRepaint() const { return style(); }
-    
+
     virtual CursorDirective getCursor(const LayoutPoint&, Cursor&) const;
 
     void getTextDecorationColors(int decorations, Color& underline, Color& overline, Color& linethrough, bool quirksMode = false, bool firstlineStyle = false);
@@ -776,7 +797,7 @@ public:
     // Actually do the repaint of rect r for this object which has been computed in the coordinate space
     // of repaintContainer. If repaintContainer is 0, repaint via the view.
     void repaintUsingContainer(const RenderLayerModelObject* repaintContainer, const IntRect&) const;
-    
+
     // Repaint the entire object.  Called when, e.g., the color of a border changes, or when a border
     // style changes.
     void repaint() const;
@@ -906,7 +927,7 @@ public:
     virtual bool willRenderImage(CachedImage*);
 
     void selectionStartEnd(int& spos, int& epos) const;
-    
+
     void remove() { if (parent()) parent()->removeChild(this); }
 
     AnimationController* animation() const;
@@ -923,13 +944,13 @@ public:
     // Pushes state onto RenderGeometryMap about how to map coordinates from this renderer to its container, or ancestorToStopAt (whichever is encountered first).
     // Returns the renderer which was mapped to (container or ancestorToStopAt).
     virtual const RenderObject* pushMappingToContainer(const RenderLayerModelObject* ancestorToStopAt, RenderGeometryMap&) const;
-    
+
     bool shouldUseTransformFromContainer(const RenderObject* container) const;
     void getTransformFromContainer(const RenderObject* container, const LayoutSize& offsetInContainer, TransformationMatrix&) const;
-    
+
     // return true if this object requires a new stacking context
-    bool createsGroup() const { return isTransparent() || hasMask() || hasFilter() || hasBlendMode(); } 
-    
+    bool createsGroup() const { return isTransparent() || hasMask() || hasFilter() || hasBlendMode(); }
+
     virtual void addFocusRingRects(Vector<IntRect>&, const LayoutPoint& /* additionalOffset */, const RenderLayerModelObject* /* paintContainer */ = 0) { };
 
     // Compute a list of hit-test rectangles per layer rooted at this renderer.
@@ -960,7 +981,7 @@ protected:
     void paintFocusRing(PaintInfo&, const LayoutPoint&, RenderStyle*);
     void paintOutline(PaintInfo&, const LayoutRect&);
     void addPDFURLRect(GraphicsContext*, const LayoutRect&);
-    
+
     virtual LayoutRect viewRect() const;
 
     void adjustRectForOutlineAndShadow(LayoutRect&) const;
@@ -1064,7 +1085,7 @@ private:
             , m_boxDecorationState(NoBoxDecorations)
         {
         }
-        
+
         // 31 bits have been used here. There is one bit available.
         ADD_BOOLEAN_BITFIELD(needsLayout, NeedsLayout);
         ADD_BOOLEAN_BITFIELD(needsPositionedMovementLayout, NeedsPositionedMovementLayout);
@@ -1115,7 +1136,7 @@ private:
 
         ALWAYS_INLINE SelectionState selectionState() const { return static_cast<SelectionState>(m_selectionState); }
         ALWAYS_INLINE void setSelectionState(SelectionState selectionState) { m_selectionState = selectionState; }
-        
+
         ALWAYS_INLINE FlowThreadState flowThreadState() const { return static_cast<FlowThreadState>(m_flowThreadState); }
         ALWAYS_INLINE void setFlowThreadState(FlowThreadState flowThreadState) { m_flowThreadState = flowThreadState; }
 

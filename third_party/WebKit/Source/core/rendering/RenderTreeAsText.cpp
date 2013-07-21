@@ -199,6 +199,11 @@ String quoteAndEscapeNonPrintables(const String& s)
     return result.toString();
 }
 
+static inline Color colorWithFallback(const RenderObject& o, const Color& color)
+{
+    return color.isValid() ? color : o.resolveColor(CSSPropertyColor);
+}
+
 void RenderTreeAsText::writeRenderObject(TextStream& ts, const RenderObject& o, RenderAsTextBehavior behavior)
 {
     ts << o.renderName();
@@ -262,23 +267,23 @@ void RenderTreeAsText::writeRenderObject(TextStream& ts, const RenderObject& o, 
             ts << " " << quoteAndEscapeNonPrintables(toRenderFileUploadControl(&o)->fileTextValue());
 
         if (o.parent()) {
-            Color color = o.style()->visitedDependentColor(CSSPropertyColor);
-            if (o.parent()->style()->visitedDependentColor(CSSPropertyColor) != color)
+            Color color = o.resolveColor(CSSPropertyColor);
+            if (o.parent()->resolveColor(CSSPropertyColor) != color)
                 ts << " [color=" << color.nameForRenderTreeAsText() << "]";
 
             // Do not dump invalid or transparent backgrounds, since that is the default.
-            Color backgroundColor = o.style()->visitedDependentColor(CSSPropertyBackgroundColor);
-            if (o.parent()->style()->visitedDependentColor(CSSPropertyBackgroundColor) != backgroundColor
+            Color backgroundColor = o.resolveColor(CSSPropertyBackgroundColor);
+            if (o.parent()->resolveColor(CSSPropertyBackgroundColor) != backgroundColor
                 && backgroundColor.isValid() && backgroundColor.rgb())
                 ts << " [bgcolor=" << backgroundColor.nameForRenderTreeAsText() << "]";
             
-            Color textFillColor = o.style()->visitedDependentColor(CSSPropertyWebkitTextFillColor);
-            if (o.parent()->style()->visitedDependentColor(CSSPropertyWebkitTextFillColor) != textFillColor
+            Color textFillColor = o.resolveColor(CSSPropertyWebkitTextFillColor);
+            if (o.parent()->resolveColor(CSSPropertyWebkitTextFillColor) != textFillColor
                 && textFillColor.isValid() && textFillColor != color && textFillColor.rgb())
                 ts << " [textFillColor=" << textFillColor.nameForRenderTreeAsText() << "]";
 
-            Color textStrokeColor = o.style()->visitedDependentColor(CSSPropertyWebkitTextStrokeColor);
-            if (o.parent()->style()->visitedDependentColor(CSSPropertyWebkitTextStrokeColor) != textStrokeColor
+            Color textStrokeColor = o.resolveColor(CSSPropertyWebkitTextStrokeColor);
+            if (o.parent()->resolveColor(CSSPropertyWebkitTextStrokeColor) != textStrokeColor
                 && textStrokeColor.isValid() && textStrokeColor != color && textStrokeColor.rgb())
                 ts << " [textStrokeColor=" << textStrokeColor.nameForRenderTreeAsText() << "]";
 
@@ -299,9 +304,7 @@ void RenderTreeAsText::writeRenderObject(TextStream& ts, const RenderObject& o, 
             else {
                 ts << " (" << box.borderTop() << "px ";
                 printBorderStyle(ts, o.style()->borderTopStyle());
-                Color col = o.style()->borderTopColor();
-                if (!col.isValid())
-                    col = o.style()->color();
+                Color col = colorWithFallback(o, o.style()->borderTopColor());
                 ts << col.nameForRenderTreeAsText() << ")";
             }
 
@@ -312,9 +315,7 @@ void RenderTreeAsText::writeRenderObject(TextStream& ts, const RenderObject& o, 
                 else {
                     ts << " (" << box.borderRight() << "px ";
                     printBorderStyle(ts, o.style()->borderRightStyle());
-                    Color col = o.style()->borderRightColor();
-                    if (!col.isValid())
-                        col = o.style()->color();
+                    Color col = colorWithFallback(o, o.style()->borderRightColor());
                     ts << col.nameForRenderTreeAsText() << ")";
                 }
             }
@@ -326,9 +327,7 @@ void RenderTreeAsText::writeRenderObject(TextStream& ts, const RenderObject& o, 
                 else {
                     ts << " (" << box.borderBottom() << "px ";
                     printBorderStyle(ts, o.style()->borderBottomStyle());
-                    Color col = o.style()->borderBottomColor();
-                    if (!col.isValid())
-                        col = o.style()->color();
+                    Color col = colorWithFallback(o, o.style()->borderBottomColor());
                     ts << col.nameForRenderTreeAsText() << ")";
                 }
             }
@@ -340,9 +339,7 @@ void RenderTreeAsText::writeRenderObject(TextStream& ts, const RenderObject& o, 
                 else {
                     ts << " (" << box.borderLeft() << "px ";
                     printBorderStyle(ts, o.style()->borderLeftStyle());
-                    Color col = o.style()->borderLeftColor();
-                    if (!col.isValid())
-                        col = o.style()->color();
+                    Color col = colorWithFallback(o, o.style()->borderLeftColor());
                     ts << col.nameForRenderTreeAsText() << ")";
                 }
             }

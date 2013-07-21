@@ -1441,7 +1441,7 @@ void RenderInline::paintOutline(PaintInfo& paintInfo, const LayoutPoint& paintOf
     }
     rects.append(LayoutRect());
 
-    Color outlineColor = styleToUse->visitedDependentColor(CSSPropertyOutlineColor);
+    Color outlineColor = resolveColor(styleToUse, CSSPropertyOutlineColor);
     bool useTransparencyLayer = outlineColor.hasAlpha();
     if (useTransparencyLayer) {
         graphicsContext->beginTransparencyLayer(static_cast<float>(outlineColor.alpha()) / 255);

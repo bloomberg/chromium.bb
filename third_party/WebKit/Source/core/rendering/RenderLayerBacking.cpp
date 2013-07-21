@@ -1092,7 +1092,7 @@ Color RenderLayerBacking::rendererBackgroundColor() const
     if (backgroundRenderer->isRoot())
         backgroundRenderer = backgroundRenderer->rendererForRootBackground();
 
-    return backgroundRenderer->style()->visitedDependentColor(CSSPropertyBackgroundColor);
+    return backgroundRenderer->resolveColor(CSSPropertyBackgroundColor);
 }
 
 void RenderLayerBacking::updateBackgroundColor(bool isSimpleContainer)
