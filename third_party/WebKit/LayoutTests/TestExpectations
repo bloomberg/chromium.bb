@@ -98,7 +98,6 @@ crbug.com/248081 [ Win7 ] css3/calc/simple-calcs.html [ Slow ]
 crbug.com/248081 [ Win7 ] css3/filters/filter-change-repaint-composited.html [ Slow ]
 crbug.com/248081 [ Win7 Debug ] fast/filesystem/file-writer-abort.html [ Slow ]
 crbug.com/248081 [ Win7 Debug ] fast/filesystem/file-writer-abort-continue.html [ Slow ]
-crbug.com/248081 [ Win7 Debug ] fast/filesystem/workers/file-writer-gc-blob.html [ Slow ]
 crbug.com/248081 [ Win7 Debug ] fast/forms/calendar-picker/month-picker-key-operations.html [ Slow ]
 crbug.com/248081 [ Win7 Debug ] fast/forms/suggestion-picker/date-suggestion-picker-step-attribute.html [ Slow ]
 crbug.com/248081 [ Win7 Debug ] fast/forms/suggestion-picker/date-suggestion-picker-reset-value-after-reload.html [ Slow ]
@@ -203,8 +202,11 @@ crbug.com/239874 http/tests/xmlhttprequest/send-data-view.html [ Failure Pass ]
 crbug.com/239465 [ Win ] fast/canvas/webgl/premultiplyalpha-test.html [ Pass Timeout ]
 
 crbug.com/24182 [ Win Debug ] fast/filesystem/workers/file-writer-events-shared-worker.html [ Slow ]
-crbug.com/24182 [ XP ] fast/filesystem/workers/file-writer-events.html [ Timeout Pass ]
-crbug.com/24182 [ Debug ] fast/filesystem/workers/file-writer-empty-blob.html [ Timeout Pass ]
+crbug.com/258949 crbug.com/24182 [ Debug ] fast/filesystem/workers/file-writer-empty-blob.html [ Crash Timeout Pass ]
+crbug.com/258949 crbug.com/24182 [ Debug ] fast/filesystem/workers/file-writer-events.html [ Crash Timeout Pass ]
+crbug.com/258949 [ Debug ] fast/filesystem/workers/file-writer-gc-blob.html [ Crash Pass ]
+crbug.com/258949 [ Debug ] fast/filesystem/workers/file-writer-truncate-extend.html [ Crash Pass ]
+crbug.com/258949 crbug.com/86340 [ Debug ] fast/filesystem/workers/file-writer-write-overlapped.html [ Crash Pass ]
 crbug.com/258949 [ Release ] fast/filesystem/workers/file-writer-truncate-extend.html [ Crash Pass ]
 crbug.com/24182 [ Mac Debug ] editing/selection/selection-button-text.html [ Timeout Pass ]
 
@@ -778,7 +780,6 @@ webkit.org/b/56702 [ Win ] http/tests/navigation/ping-cross-origin-from-https.ht
 
 crbug.com/246067 fast/filesystem/file-writer-write-overlapped.html [ Crash Pass ]
 # crbug.com/86340 [ Win Debug ] fast/filesystem/file-writer-write-overlapped.html [ Failure Pass ]
-crbug.com/86340 [ Win Debug ] fast/filesystem/workers/file-writer-write-overlapped.html [ Failure Pass ]
 
 crbug.com/82281 fast/xpath/xpath-iterator-result-should-mark-its-nodeset.html [ Failure Timeout ]
 
