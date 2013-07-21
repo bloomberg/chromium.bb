@@ -425,7 +425,8 @@ struct drm_mode_crtc_lut {
 };
 
 #define DRM_MODE_PAGE_FLIP_EVENT 0x01
-#define DRM_MODE_PAGE_FLIP_FLAGS DRM_MODE_PAGE_FLIP_EVENT
+#define DRM_MODE_PAGE_FLIP_ASYNC 0x02
+#define DRM_MODE_PAGE_FLIP_FLAGS (DRM_MODE_PAGE_FLIP_EVENT|DRM_MODE_PAGE_FLIP_ASYNC)
 
 /*
  * Request a page flip on the specified crtc.
