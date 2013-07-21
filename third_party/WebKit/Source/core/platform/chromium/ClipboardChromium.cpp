@@ -364,32 +364,38 @@ static void writeImageToDataObject(ChromiumDataObject* dataObject, Element* elem
     if (!imageBuffer || !imageBuffer->size())
         return;
 
+    String imageExtension = cachedImage->image()->filenameExtension();
+    ASSERT(!imageExtension.isEmpty());
+
     // Determine the filename for the file contents of the image.
     String filename = cachedImage->response().suggestedFilename();
-    String extension;
     if (filename.isEmpty())
         filename = url.lastPathComponent();
-    if (filename.isEmpty())
+
+    String fileExtension;
+    if (filename.isEmpty()) {
         filename = element->getAttribute(altAttr);
-    else {
+    } else {
         // Strip any existing extension. Assume that alt text is usually not a filename.
         int extensionIndex = filename.reverseFind('.');
         if (extensionIndex != -1) {
-            extension = filename.substring(extensionIndex + 1);
+            fileExtension = filename.substring(extensionIndex + 1);
             filename.truncate(extensionIndex);
         }
     }
 
-    String extensionMimeType = MIMETypeRegistry::getMIMETypeForExtension(extension);
-    if (extensionMimeType != cachedImage->response().mimeType()) {
-        extension = MIMETypeRegistry::getPreferredExtensionForMIMEType(
-            cachedImage->response().mimeType());
+    if (!fileExtension.isEmpty() && fileExtension != imageExtension) {
+        String imageMimeType = MIMETypeRegistry::getMIMETypeForExtension(imageExtension);
+        ASSERT(imageMimeType.startsWith("image/"));
+        // Use the file extension only if it has imageMimeType: it's untrustworthy otherwise.
+        if (imageMimeType == MIMETypeRegistry::getMIMETypeForExtension(fileExtension))
+            imageExtension = fileExtension;
     }
 
-    extension = extension.isEmpty() ? emptyString() : "." + extension;
-    ClipboardChromium::validateFilename(filename, extension);
+    imageExtension = "." + imageExtension;
+    ClipboardChromium::validateFilename(filename, imageExtension);
 
-    dataObject->addSharedBuffer(filename + extension, imageBuffer);
+    dataObject->addSharedBuffer(filename + imageExtension, imageBuffer);
 }
 
 void ClipboardChromium::declareAndWriteDragImage(Element* element, const KURL& url, const String& title, Frame* frame)
