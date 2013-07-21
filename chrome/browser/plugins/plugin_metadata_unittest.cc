@@ -5,20 +5,19 @@
 #include "chrome/browser/plugins/plugin_metadata.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "content/public/common/webplugininfo.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/plugins/webplugininfo.h"
-
-using webkit::WebPluginInfo;
 
 namespace {
 
 PluginMetadata::SecurityStatus GetSecurityStatus(
     PluginMetadata* plugin_metadata,
     const char* version) {
-  WebPluginInfo plugin(ASCIIToUTF16("Foo plug-in"),
-                       base::FilePath(FILE_PATH_LITERAL("/tmp/plugin.so")),
-                       ASCIIToUTF16(version),
-                       ASCIIToUTF16("Foo plug-in."));
+  content::WebPluginInfo plugin(
+      ASCIIToUTF16("Foo plug-in"),
+      base::FilePath(FILE_PATH_LITERAL("/tmp/plugin.so")),
+      ASCIIToUTF16(version),
+      ASCIIToUTF16("Foo plug-in."));
   return plugin_metadata->GetSecurityStatus(plugin);
 }
 

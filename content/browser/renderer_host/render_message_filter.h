@@ -64,10 +64,6 @@ class URLRequestContext;
 class URLRequestContextGetter;
 }
 
-namespace webkit {
-struct WebPluginInfo;
-}
-
 namespace content {
 class BrowserContext;
 class DOMStorageContextImpl;
@@ -77,6 +73,7 @@ class RenderWidgetHelper;
 class ResourceContext;
 class ResourceDispatcherHostImpl;
 struct Referrer;
+struct WebPluginInfo;
 
 // This class filters out incoming IPC messages for the renderer process on the
 // IPC thread.
@@ -162,13 +159,13 @@ class RenderMessageFilter : public BrowserMessageFilter {
 
   void OnGetPlugins(bool refresh, IPC::Message* reply_msg);
   void GetPluginsCallback(IPC::Message* reply_msg,
-                          const std::vector<webkit::WebPluginInfo>& plugins);
+                          const std::vector<WebPluginInfo>& plugins);
   void OnGetPluginInfo(int routing_id,
                        const GURL& url,
                        const GURL& policy_url,
                        const std::string& mime_type,
                        bool* found,
-                       webkit::WebPluginInfo* info,
+                       WebPluginInfo* info,
                        std::string* actual_mime_type);
   void OnOpenChannelToPlugin(int routing_id,
                              const GURL& url,

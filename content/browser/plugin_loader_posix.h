@@ -14,8 +14,8 @@
 #include "base/time/time.h"
 #include "content/browser/plugin_service_impl.h"
 #include "content/public/browser/utility_process_host_client.h"
+#include "content/public/common/webplugininfo.h"
 #include "ipc/ipc_sender.h"
-#include "webkit/plugins/webplugininfo.h"
 
 namespace base {
 class MessageLoopProxy;
@@ -82,7 +82,7 @@ class CONTENT_EXPORT PluginLoaderPosix
   virtual void LoadPluginsInternal();
 
   // Message handlers.
-  void OnPluginLoaded(uint32 index, const webkit::WebPluginInfo& plugin);
+  void OnPluginLoaded(uint32 index, const WebPluginInfo& plugin);
   void OnPluginLoadFailed(uint32 index, const base::FilePath& plugin_path);
 
   // Checks if the plugin path is an internal plugin, and, if it is, adds it to
@@ -106,10 +106,10 @@ class CONTENT_EXPORT PluginLoaderPosix
   size_t next_load_index_;
 
   // Internal plugins that have been registered at the time of loading.
-  std::vector<webkit::WebPluginInfo> internal_plugins_;
+  std::vector<WebPluginInfo> internal_plugins_;
 
   // A vector of plugins that have been loaded successfully.
-  std::vector<webkit::WebPluginInfo> loaded_plugins_;
+  std::vector<WebPluginInfo> loaded_plugins_;
 
   // The callback and message loop on which the callback will be run when the
   // plugin loading process has been completed.

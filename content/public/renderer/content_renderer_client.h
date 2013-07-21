@@ -51,13 +51,13 @@ namespace webkit {
 namespace ppapi {
 class PpapiInterfaceFactoryManager;
 }
-struct WebPluginInfo;
 }
 
 namespace content {
 
 class RenderView;
 class SynchronousCompositor;
+struct WebPluginInfo;
 
 // Embedder API for participating in renderer logic.
 class CONTENT_EXPORT ContentRendererClient {

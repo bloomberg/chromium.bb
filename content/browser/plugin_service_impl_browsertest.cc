@@ -64,7 +64,7 @@ class MockPluginProcessHostClient : public PluginProcessHost::Client,
     ASSERT_TRUE(channel_->Connect());
   }
 
-  virtual void SetPluginInfo(const webkit::WebPluginInfo& info) OVERRIDE {
+  virtual void SetPluginInfo(const WebPluginInfo& info) OVERRIDE {
     ASSERT_TRUE(info.mime_types.size());
     ASSERT_EQ(kNPAPITestPluginMimeType, info.mime_types[0].mime_type);
     set_plugin_info_called_ = true;
@@ -125,7 +125,7 @@ class MockPluginServiceFilter : public content::PluginServiceFilter {
       const void* context,
       const GURL& url,
       const GURL& policy_url,
-      webkit::WebPluginInfo* plugin) OVERRIDE { return true; }
+      WebPluginInfo* plugin) OVERRIDE { return true; }
 
   virtual bool CanLoadPlugin(
       int render_process_id,
@@ -201,7 +201,7 @@ class MockCanceledPluginServiceClient : public PluginProcessHost::Client {
   MOCK_METHOD1(OnFoundPluginProcessHost, void(PluginProcessHost* host));
   MOCK_METHOD0(OnSentPluginChannelRequest, void());
   MOCK_METHOD1(OnChannelOpened, void(const IPC::ChannelHandle& handle));
-  MOCK_METHOD1(SetPluginInfo, void(const webkit::WebPluginInfo& info));
+  MOCK_METHOD1(SetPluginInfo, void(const WebPluginInfo& info));
   MOCK_METHOD0(OnError, void());
 
   bool get_resource_context_called() const {
@@ -257,7 +257,7 @@ class MockCanceledBeforeSentPluginProcessHostClient
   virtual ~MockCanceledBeforeSentPluginProcessHostClient() {}
 
   // Client implementation.
-  virtual void SetPluginInfo(const webkit::WebPluginInfo& info) OVERRIDE {
+  virtual void SetPluginInfo(const WebPluginInfo& info) OVERRIDE {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     ASSERT_TRUE(info.mime_types.size());
     ASSERT_EQ(kNPAPITestPluginMimeType, info.mime_types[0].mime_type);

@@ -53,7 +53,6 @@ using WebKit::WebMouseEvent;
 using WebKit::WebNode;
 using WebKit::WebPlugin;
 using WebKit::WebPluginContainer;
-using webkit::WebPluginInfo;
 using WebKit::WebPluginParams;
 using WebKit::WebPoint;
 using WebKit::WebScriptSource;
@@ -150,7 +149,7 @@ PluginPlaceholder* PluginPlaceholder::CreateBlockedPlugin(
     RenderView* render_view,
     WebFrame* frame,
     const WebPluginParams& params,
-    const WebPluginInfo& plugin,
+    const content::WebPluginInfo& plugin,
     const std::string& identifier,
     const string16& name,
     int template_id,

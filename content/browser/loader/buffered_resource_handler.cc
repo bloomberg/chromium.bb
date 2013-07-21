@@ -23,13 +23,13 @@
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/common/resource_response.h"
+#include "content/public/common/webplugininfo.h"
 #include "net/base/io_buffer.h"
 #include "net/base/mime_sniffer.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_content_disposition.h"
 #include "net/http/http_response_headers.h"
-#include "webkit/plugins/webplugininfo.h"
 
 namespace content {
 
@@ -439,7 +439,7 @@ bool BufferedResourceHandler::HasSupportingPlugin(bool* stale) {
   ResourceRequestInfoImpl* info = ResourceRequestInfoImpl::ForRequest(request_);
 
   bool allow_wildcard = false;
-  webkit::WebPluginInfo plugin;
+  WebPluginInfo plugin;
   return PluginServiceImpl::GetInstance()->GetPluginInfo(
       info->GetChildID(), info->GetRouteID(), info->GetContext(),
       request_->url(), GURL(), response_->head.mime_type, allow_wildcard,
@@ -461,7 +461,7 @@ bool BufferedResourceHandler::CopyReadBufferToNextHandler(int request_id) {
 }
 
 void BufferedResourceHandler::OnPluginsLoaded(
-    const std::vector<webkit::WebPluginInfo>& plugins) {
+    const std::vector<WebPluginInfo>& plugins) {
   bool defer = false;
   if (!ProcessResponse(&defer)) {
     controller()->Cancel();

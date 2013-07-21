@@ -116,7 +116,7 @@ void PluginLoaderPosix::LoadPluginsInternal() {
 }
 
 void PluginLoaderPosix::OnPluginLoaded(uint32 index,
-                                       const webkit::WebPluginInfo& plugin) {
+                                       const WebPluginInfo& plugin) {
   if (index != next_load_index_) {
     LOG(ERROR) << "Received unexpected plugin load message for "
                << plugin.path.value() << "; index=" << index;
@@ -147,8 +147,7 @@ void PluginLoaderPosix::OnPluginLoadFailed(uint32 index,
 
 bool PluginLoaderPosix::MaybeAddInternalPlugin(
     const base::FilePath& plugin_path) {
-  for (std::vector<webkit::WebPluginInfo>::iterator it =
-           internal_plugins_.begin();
+  for (std::vector<WebPluginInfo>::iterator it = internal_plugins_.begin();
        it != internal_plugins_.end();
        ++it) {
     if (it->path == plugin_path) {

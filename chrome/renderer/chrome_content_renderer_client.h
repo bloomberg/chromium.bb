@@ -26,6 +26,10 @@ class SpellCheckProvider;
 
 struct ChromeViewHostMsg_GetPluginInfo_Output;
 
+namespace content {
+struct WebPluginInfo;
+}
+
 namespace extensions {
 class Dispatcher;
 class Extension;
@@ -42,10 +46,6 @@ class PhishingClassifierFilter;
 
 namespace visitedlink {
 class VisitedLinkSlave;
-}
-
-namespace webkit {
-struct WebPluginInfo;
 }
 
 namespace WebKit {
@@ -176,7 +176,7 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
                                bool is_initial_navigation);
 
   static GURL GetNaClContentHandlerURL(const std::string& actual_mime_type,
-                                       const webkit::WebPluginInfo& plugin);
+                                       const content::WebPluginInfo& plugin);
   static bool IsNaClAllowed(const GURL& manifest_url,
                             const GURL& app_url,
                             bool is_nacl_unrestricted,

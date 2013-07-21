@@ -16,14 +16,11 @@ class PrefService;
 
 namespace content {
 class BrowserContext;
+struct WebPluginInfo;
 }
 
 namespace user_prefs {
 class PrefRegistrySyncable;
-}
-
-namespace webkit {
-struct WebPluginInfo;
 }
 
 // PepperFlashSettingsManager communicates with a PPAPI broker process to
@@ -64,7 +61,7 @@ class PepperFlashSettingsManager {
   // |plugin_info| will be updated if it is not NULL and the method returns
   // true.
   static bool IsPepperFlashInUse(PluginPrefs* plugin_prefs,
-                                 webkit::WebPluginInfo* plugin_info);
+                                 content::WebPluginInfo* plugin_info);
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 

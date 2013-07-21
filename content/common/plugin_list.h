@@ -18,7 +18,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
-#include "webkit/plugins/webplugininfo.h"
+#include "content/public/common/webplugininfo.h"
 
 class GURL;
 
@@ -44,7 +44,7 @@ class CONTENT_EXPORT PluginList {
 
   // Returns true if the plugin supports |mime_type|. |mime_type| should be all
   // lower case.
-  static bool SupportsType(const webkit::WebPluginInfo& plugin,
+  static bool SupportsType(const WebPluginInfo& plugin,
                            const std::string& mime_type,
                            bool allow_wildcard);
 
@@ -72,7 +72,7 @@ class CONTENT_EXPORT PluginList {
   // be loaded using PluginList::LoadPlugin().
   // If |add_at_beginning| is true the plugin will be added earlier in
   // the list so that it can override the MIME types of older registrations.
-  void RegisterInternalPlugin(const webkit::WebPluginInfo& info,
+  void RegisterInternalPlugin(const WebPluginInfo& info,
                               bool add_at_beginning);
 
   // Removes a specified internal plugin from the list. The search will match
@@ -80,13 +80,13 @@ class CONTENT_EXPORT PluginList {
   void UnregisterInternalPlugin(const base::FilePath& path);
 
   // Gets a list of all the registered internal plugins.
-  void GetInternalPlugins(std::vector<webkit::WebPluginInfo>* plugins);
+  void GetInternalPlugins(std::vector<WebPluginInfo>* plugins);
 
   // Creates a WebPluginInfo structure given a plugin's path.  On success
   // returns true, with the information being put into "info".
   // Returns false if the library couldn't be found, or if it's not a plugin.
   bool ReadPluginInfo(const base::FilePath& filename,
-                      webkit::WebPluginInfo* info);
+                      WebPluginInfo* info);
 
   // In Windows plugins, the mime types are passed as a specially formatted list
   // of strings. This function parses those strings into a WebPluginMimeType
@@ -96,16 +96,15 @@ class CONTENT_EXPORT PluginList {
       const std::string& mime_types,
       const std::string& file_extensions,
       const base::string16& mime_type_descriptions,
-      std::vector<webkit::WebPluginMimeType>* parsed_mime_types);
+      std::vector<WebPluginMimeType>* parsed_mime_types);
 
   // Get all the plugins synchronously, loading them if necessary.
-  void GetPlugins(std::vector<webkit::WebPluginInfo>* plugins,
+  void GetPlugins(std::vector<WebPluginInfo>* plugins,
                   bool include_npapi);
 
   // Copies the list of plug-ins into |plugins| without loading them.
   // Returns true if the list of plugins is up-to-date.
-  bool GetPluginsNoRefresh(
-      std::vector<webkit::WebPluginInfo>* plugins);
+  bool GetPluginsNoRefresh(std::vector<WebPluginInfo>* plugins);
 
   // Returns a list in |info| containing plugins that are found for
   // the given url and mime type (including disabled plugins, for
@@ -124,14 +123,14 @@ class CONTENT_EXPORT PluginList {
                           bool allow_wildcard,
                           bool* use_stale,
                           bool include_npapi,
-                          std::vector<webkit::WebPluginInfo>* info,
+                          std::vector<WebPluginInfo>* info,
                           std::vector<std::string>* actual_mime_types);
 
   // Load a specific plugin with full path. Return true iff loading the plug-in
   // was successful.
   bool LoadPluginIntoPluginList(const base::FilePath& filename,
-                                std::vector<webkit::WebPluginInfo>* plugins,
-                                webkit::WebPluginInfo* plugin_info);
+                                std::vector<WebPluginInfo>* plugins,
+                                WebPluginInfo* plugin_info);
 
   // The following functions are used to support probing for WebPluginInfo
   // using a different instance of this class.
@@ -141,7 +140,7 @@ class CONTENT_EXPORT PluginList {
                             bool include_npapi);
 
   // Clears the internal list of Plugins and copies them from the vector.
-  void SetPlugins(const std::vector<webkit::WebPluginInfo>& plugins);
+  void SetPlugins(const std::vector<WebPluginInfo>& plugins);
 
   void set_will_load_plugins_callback(const base::Closure& callback);
 
@@ -151,18 +150,18 @@ class CONTENT_EXPORT PluginList {
   // returns true, with the information being put into "info".
   // Returns false if the library couldn't be found, or if it's not a plugin.
   static bool ReadWebPluginInfo(const base::FilePath& filename,
-                                webkit::WebPluginInfo* info);
+                                WebPluginInfo* info);
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   // Parse the result of an NP_GetMIMEDescription() call.
   // This API is only used on Unixes, and is exposed here for testing.
   static void ParseMIMEDescription(const std::string& description,
-      std::vector<webkit::WebPluginMimeType>* mime_types);
+      std::vector<WebPluginMimeType>* mime_types);
 
   // Extract a version number from a description string.
   // This API is only used on Unixes, and is exposed here for testing.
   static void ExtractVersionString(const std::string& version,
-                                   webkit::WebPluginInfo* info);
+                                   WebPluginInfo* info);
 #endif
 
  private:
@@ -188,15 +187,14 @@ class CONTENT_EXPORT PluginList {
   // Returns true if we should load the given plugin, or false otherwise.
   // |plugins| is the list of plugins we have crawled in the current plugin
   // loading run.
-  bool ShouldLoadPluginUsingPluginList(
-      const webkit::WebPluginInfo& info,
-      std::vector<webkit::WebPluginInfo>* plugins);
+  bool ShouldLoadPluginUsingPluginList(const WebPluginInfo& info,
+                                       std::vector<WebPluginInfo>* plugins);
 
   // Returns true if the given plugin supports a given file extension.
   // |extension| should be all lower case. If |mime_type| is not NULL, it will
   // be set to the MIME type if found. The MIME type which corresponds to the
   // extension is optionally returned back.
-  bool SupportsExtension(const webkit::WebPluginInfo& plugin,
+  bool SupportsExtension(const WebPluginInfo& plugin,
                          const std::string& extension,
                          std::string* actual_mime_type);
   //
@@ -225,10 +223,10 @@ class CONTENT_EXPORT PluginList {
   std::vector<base::FilePath> extra_plugin_dirs_;
 
   // Holds information about internal plugins.
-  std::vector<webkit::WebPluginInfo> internal_plugins_;
+  std::vector<WebPluginInfo> internal_plugins_;
 
   // A list holding all plug-ins.
-  std::vector<webkit::WebPluginInfo> plugins_list_;
+  std::vector<WebPluginInfo> plugins_list_;
 
   // Callback that is invoked whenever the PluginList will reload the plugins.
   base::Closure will_load_plugins_callback_;

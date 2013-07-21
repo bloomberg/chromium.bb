@@ -14,8 +14,8 @@
 #include "build/build_config.h"
 #include "content/child/npapi/webplugin.h"
 #include "content/common/content_export.h"
+#include "content/public/common/webplugininfo.h"
 #include "third_party/npapi/bindings/nphostapi.h"
-#include "webkit/plugins/webplugininfo.h"
 
 namespace base {
 class FilePath;
@@ -60,7 +60,7 @@ class CONTENT_EXPORT PluginLib : public base::RefCounted<PluginLib> {
 
   // Gets information about this plugin and the mime types that it
   // supports.
-  const webkit::WebPluginInfo& plugin_info() { return web_plugin_info_; }
+  const WebPluginInfo& plugin_info() { return web_plugin_info_; }
 
   //
   // NPAPI functions
@@ -96,7 +96,7 @@ class CONTENT_EXPORT PluginLib : public base::RefCounted<PluginLib> {
   friend class base::RefCounted<PluginLib>;
 
   // Creates a new PluginLib.
-  explicit PluginLib(const webkit::WebPluginInfo& info);
+  explicit PluginLib(const WebPluginInfo& info);
 
   virtual ~PluginLib();
 
@@ -111,7 +111,7 @@ class CONTENT_EXPORT PluginLib : public base::RefCounted<PluginLib> {
   void Shutdown();
 
  private:
-  webkit::WebPluginInfo web_plugin_info_;  // Supported mime types, description
+  WebPluginInfo web_plugin_info_;  // Supported mime types, description
   base::NativeLibrary library_;  // The opened library reference.
   NPPluginFuncs plugin_funcs_;  // The struct of plugin side functions.
   bool initialized_;  // Is the plugin initialized?

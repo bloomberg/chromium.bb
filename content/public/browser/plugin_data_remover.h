@@ -14,11 +14,8 @@ namespace base {
 class WaitableEvent;
 }
 
-namespace webkit {
-struct WebPluginInfo;
-}
-
 namespace content {
+struct WebPluginInfo;
 
 class BrowserContext;
 
@@ -33,7 +30,7 @@ class CONTENT_EXPORT PluginDataRemover {
   // Returns a list of all plug-ins that support removing LSO data. This method
   // will use cached plugin data. Call PluginService::GetPlugins() if the latest
   // data is needed.
-  static void GetSupportedPlugins(std::vector<webkit::WebPluginInfo>* plugins);
+  static void GetSupportedPlugins(std::vector<WebPluginInfo>* plugins);
 };
 
 }  // namespace content

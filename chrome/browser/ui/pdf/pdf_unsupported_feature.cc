@@ -50,7 +50,7 @@ using content::PluginService;
 using content::Referrer;
 using content::UserMetricsAction;
 using content::WebContents;
-using webkit::WebPluginInfo;
+using content::WebPluginInfo;
 
 namespace {
 
@@ -243,7 +243,7 @@ class PDFUnsupportedFeaturePromptDelegate
  public:
   // |reader| is NULL if Adobe Reader isn't installed.
   PDFUnsupportedFeaturePromptDelegate(WebContents* web_contents,
-                                      const webkit::WebPluginInfo* reader,
+                                      const content::WebPluginInfo* reader,
                                       PluginFinder* plugin_finder);
   virtual ~PDFUnsupportedFeaturePromptDelegate();
 
@@ -267,7 +267,7 @@ class PDFUnsupportedFeaturePromptDelegate
 
 PDFUnsupportedFeaturePromptDelegate::PDFUnsupportedFeaturePromptDelegate(
     WebContents* web_contents,
-    const webkit::WebPluginInfo* reader,
+    const content::WebPluginInfo* reader,
     PluginFinder* plugin_finder)
     : web_contents_(web_contents),
       reader_installed_(!!reader),
@@ -358,13 +358,13 @@ void PDFUnsupportedFeaturePromptDelegate::Cancel() {
 #if defined(OS_WIN) && defined(ENABLE_PLUGIN_INSTALLATION)
 void GotPluginsCallback(int process_id,
                         int routing_id,
-                        const std::vector<webkit::WebPluginInfo>& plugins) {
+                        const std::vector<content::WebPluginInfo>& plugins) {
   WebContents* web_contents =
       tab_util::GetWebContentsByID(process_id, routing_id);
   if (!web_contents)
     return;
 
-  const webkit::WebPluginInfo* reader = NULL;
+  const content::WebPluginInfo* reader = NULL;
   PluginFinder* plugin_finder = PluginFinder::GetInstance();
   for (size_t i = 0; i < plugins.size(); ++i) {
     scoped_ptr<PluginMetadata> plugin_metadata(

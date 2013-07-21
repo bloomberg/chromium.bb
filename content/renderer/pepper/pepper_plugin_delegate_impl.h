@@ -41,7 +41,6 @@ class PpapiPermissions;
 }
 
 namespace webkit {
-struct WebPluginInfo;
 namespace ppapi {
 class PluginInstance;
 class PluginModule;
@@ -59,6 +58,7 @@ class GamepadSharedMemoryReader;
 class PepperBrokerImpl;
 class PepperDeviceEnumerationEventHandler;
 class RenderViewImpl;
+struct WebPluginInfo;
 
 class PepperPluginDelegateImpl
     : public webkit::ppapi::PluginDelegate,
@@ -114,7 +114,7 @@ class PepperPluginDelegateImpl
  private:
   // RenderViewPepperHelper implementation.
   virtual WebKit::WebPlugin* CreatePepperWebPlugin(
-    const webkit::WebPluginInfo& webplugin_info,
+    const WebPluginInfo& webplugin_info,
     const WebKit::WebPluginParams& params) OVERRIDE;
   virtual void ViewWillInitiatePaint() OVERRIDE;
   virtual void ViewInitiatedPaint() OVERRIDE;
@@ -385,9 +385,8 @@ class PepperPluginDelegateImpl
   // |*pepper_plugin_was_registered| will be set to true and the caller should
   // not fall back on any other plugin types.
   scoped_refptr<webkit::ppapi::PluginModule>
-  CreatePepperPluginModule(
-      const webkit::WebPluginInfo& webplugin_info,
-      bool* pepper_plugin_was_registered);
+  CreatePepperPluginModule(const WebPluginInfo& webplugin_info,
+                           bool* pepper_plugin_was_registered);
 
   // Asynchronously attempts to create a PPAPI broker for the given plugin.
   scoped_refptr<PepperBrokerImpl> CreateBroker(

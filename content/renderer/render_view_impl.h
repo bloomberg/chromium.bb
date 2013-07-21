@@ -347,7 +347,7 @@ class CONTENT_EXPORT RenderViewImpl
   bool GetPluginInfo(const GURL& url,
                      const GURL& page_url,
                      const std::string& mime_type,
-                     webkit::WebPluginInfo* plugin_info,
+                     WebPluginInfo* plugin_info,
                      std::string* actual_mime_type);
 
   void TransferActiveWheelFlingAnimation(
@@ -712,7 +712,7 @@ class CONTENT_EXPORT RenderViewImpl
   virtual bool IsEditableNode(const WebKit::WebNode& node) const OVERRIDE;
   virtual WebKit::WebPlugin* CreatePlugin(
       WebKit::WebFrame* frame,
-      const webkit::WebPluginInfo& info,
+      const WebPluginInfo& info,
       const WebKit::WebPluginParams& params) OVERRIDE;
   virtual void EvaluateScript(const string16& frame_xpath,
                               const string16& jscript,

@@ -31,7 +31,6 @@ using WebKit::WebKeyboardEvent;
 using WebKit::WebInputEvent;
 using WebKit::WebMouseEvent;
 using WebKit::WebMouseWheelEvent;
-using webkit::WebPluginInfo;
 
 // Important implementation notes: The Mac definition of NPAPI, particularly
 // the distinction between windowed and windowless modes, differs from the

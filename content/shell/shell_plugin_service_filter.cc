@@ -5,7 +5,7 @@
 #include "content/shell/shell_plugin_service_filter.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "webkit/plugins/webplugininfo.h"
+#include "content/public/common/webplugininfo.h"
 
 namespace content {
 
@@ -19,7 +19,7 @@ bool ShellPluginServiceFilter::IsPluginAvailable(
     const void* context,
     const GURL& url,
     const GURL& policy_url,
-    webkit::WebPluginInfo* plugin) {
+    WebPluginInfo* plugin) {
   return plugin->name == ASCIIToUTF16("WebKit Test PlugIn");
 }
 

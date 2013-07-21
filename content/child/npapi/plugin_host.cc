@@ -17,6 +17,7 @@
 #include "content/child/npapi/plugin_lib.h"
 #include "content/child/npapi/plugin_stream_url.h"
 #include "content/child/npapi/webplugin_delegate.h"
+#include "content/public/common/webplugininfo.h"
 #include "net/base/net_util.h"
 #include "third_party/WebKit/public/web/WebBindings.h"
 #include "third_party/WebKit/public/web/WebKit.h"
@@ -25,7 +26,6 @@
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
 #include "webkit/common/user_agent/user_agent.h"
-#include "webkit/plugins/webplugininfo.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"

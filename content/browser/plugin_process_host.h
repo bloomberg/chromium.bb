@@ -19,8 +19,8 @@
 #include "content/public/browser/browser_child_process_host_delegate.h"
 #include "content/public/browser/browser_child_process_host_iterator.h"
 #include "content/public/common/process_type.h"
+#include "content/public/common/webplugininfo.h"
 #include "ipc/ipc_channel_proxy.h"
-#include "webkit/plugins/webplugininfo.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace gfx {
@@ -54,7 +54,7 @@ class CONTENT_EXPORT PluginProcessHost : public BrowserChildProcessHostDelegate,
     // Returns the resource context for the renderer requesting the channel.
     virtual ResourceContext* GetResourceContext() = 0;
     virtual bool OffTheRecord() = 0;
-    virtual void SetPluginInfo(const webkit::WebPluginInfo& info) = 0;
+    virtual void SetPluginInfo(const WebPluginInfo& info) = 0;
     virtual void OnFoundPluginProcessHost(PluginProcessHost* host) = 0;
     virtual void OnSentPluginChannelRequest() = 0;
     // The client should delete itself when one of these methods is called.
@@ -73,7 +73,7 @@ class CONTENT_EXPORT PluginProcessHost : public BrowserChildProcessHostDelegate,
 
   // Initialize the new plugin process, returning true on success. This must
   // be called before the object can be used.
-  bool Init(const webkit::WebPluginInfo& info);
+  bool Init(const WebPluginInfo& info);
 
   // Force the plugin process to shutdown (cleanly).
   void ForceShutdown();
@@ -108,7 +108,7 @@ class CONTENT_EXPORT PluginProcessHost : public BrowserChildProcessHostDelegate,
   void OnAppActivation();
 #endif
 
-  const webkit::WebPluginInfo& info() const { return info_; }
+  const WebPluginInfo& info() const { return info_; }
 
 #if defined(OS_WIN)
   // Tracks plugin parent windows created on the browser UI thread.
@@ -157,7 +157,7 @@ class CONTENT_EXPORT PluginProcessHost : public BrowserChildProcessHostDelegate,
   std::list<Client*> sent_requests_;
 
   // Information about the plugin.
-  webkit::WebPluginInfo info_;
+  WebPluginInfo info_;
 
 #if defined(OS_WIN)
   // Tracks plugin parent windows created on the UI thread.

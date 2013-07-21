@@ -16,7 +16,7 @@ namespace content {
 // variable, we can get a crash if no plugin libs were marked as always loaded.
 class PluginLibTest : public PluginLib {
  public:
-  PluginLibTest() : PluginLib(webkit::WebPluginInfo()) {}
+  PluginLibTest() : PluginLib(WebPluginInfo()) {}
   using PluginLib::Unload;
 
  protected:

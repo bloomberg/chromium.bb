@@ -27,6 +27,7 @@
 #include "content/common/mime_registry_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/webplugininfo.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/device_orientation/device_motion_event_pump.h"
 #include "content/renderer/dom_storage/webstoragenamespace_impl.h"
@@ -67,7 +68,6 @@
 #include "webkit/glue/simple_webmimeregistry_impl.h"
 #include "webkit/glue/webfileutilities_impl.h"
 #include "webkit/glue/webkit_glue.h"
-#include "webkit/plugins/webplugininfo.h"
 
 #if defined(OS_WIN)
 #include "content/common/child_process_messages.h"
@@ -908,20 +908,20 @@ void RendererWebKitPlatformSupportImpl::getPluginList(
     bool refresh,
     WebKit::WebPluginListBuilder* builder) {
 #if defined(ENABLE_PLUGINS)
-  std::vector<webkit::WebPluginInfo> plugins;
+  std::vector<WebPluginInfo> plugins;
   if (!plugin_refresh_allowed_)
     refresh = false;
   RenderThread::Get()->Send(
       new ViewHostMsg_GetPlugins(refresh, &plugins));
   for (size_t i = 0; i < plugins.size(); ++i) {
-    const webkit::WebPluginInfo& plugin = plugins[i];
+    const WebPluginInfo& plugin = plugins[i];
 
     builder->addPlugin(
         plugin.name, plugin.desc,
         plugin.path.BaseName().AsUTF16Unsafe());
 
     for (size_t j = 0; j < plugin.mime_types.size(); ++j) {
-      const webkit::WebPluginMimeType& mime_type = plugin.mime_types[j];
+      const WebPluginMimeType& mime_type = plugin.mime_types[j];
 
       builder->addMediaTypeToLastPlugin(
           WebString::fromUTF8(mime_type.mime_type), mime_type.description);

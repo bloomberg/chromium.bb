@@ -135,7 +135,7 @@ IPC_STRUCT_TRAITS_END()
 // Output parameters for ChromeViewHostMsg_GetPluginInfo message.
 IPC_STRUCT_BEGIN(ChromeViewHostMsg_GetPluginInfo_Output)
   IPC_STRUCT_MEMBER(ChromeViewHostMsg_GetPluginInfo_Status, status)
-  IPC_STRUCT_MEMBER(webkit::WebPluginInfo, plugin)
+  IPC_STRUCT_MEMBER(content::WebPluginInfo, plugin)
   IPC_STRUCT_MEMBER(std::string, actual_mime_type)
   IPC_STRUCT_MEMBER(std::string, group_identifier)
   IPC_STRUCT_MEMBER(string16, group_name)

@@ -134,7 +134,7 @@ bool MakeWidevineCdmPluginInfo(const base::FilePath& path,
   plugin_info->name = kWidevineCdmDisplayName;
   plugin_info->description = kWidevineCdmDescription;
   plugin_info->version = version.GetString();
-  webkit::WebPluginMimeType widevine_cdm_mime_type(
+  content::WebPluginMimeType widevine_cdm_mime_type(
       kWidevineCdmPluginMimeType,
       kWidevineCdmPluginExtension,
       kWidevineCdmPluginMimeTypeDescription);

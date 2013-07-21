@@ -35,12 +35,12 @@
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/geoposition.h"
+#include "content/public/common/webplugininfo.h"
 #include "gpu/config/gpu_info.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/platform/WebScreenInfo.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/screen.h"
-#include "webkit/plugins/webplugininfo.h"
 
 using WebKit::WebScreenInfo;
 
@@ -102,15 +102,15 @@ void AddFontsToFingerprint(const base::ListValue& fonts,
 }
 
 // Adds the list of |plugins| to the |machine|.
-void AddPluginsToFingerprint(const std::vector<webkit::WebPluginInfo>& plugins,
+void AddPluginsToFingerprint(const std::vector<content::WebPluginInfo>& plugins,
                              Fingerprint::MachineCharacteristics* machine) {
-  for (std::vector<webkit::WebPluginInfo>::const_iterator it = plugins.begin();
+  for (std::vector<content::WebPluginInfo>::const_iterator it = plugins.begin();
        it != plugins.end(); ++it) {
     Fingerprint::MachineCharacteristics::Plugin* plugin =
         machine->add_plugin();
     plugin->set_name(UTF16ToUTF8(it->name));
     plugin->set_description(UTF16ToUTF8(it->desc));
-    for (std::vector<webkit::WebPluginMimeType>::const_iterator mime_type =
+    for (std::vector<content::WebPluginMimeType>::const_iterator mime_type =
              it->mime_types.begin();
          mime_type != it->mime_types.end(); ++mime_type) {
       plugin->add_mime_type(mime_type->mime_type);
@@ -213,7 +213,7 @@ class FingerprintDataLoader : public content::GpuDataManagerObserver {
 
   // Callbacks for asynchronously loaded data.
   void OnGotFonts(scoped_ptr<base::ListValue> fonts);
-  void OnGotPlugins(const std::vector<webkit::WebPluginInfo>& plugins);
+  void OnGotPlugins(const std::vector<content::WebPluginInfo>& plugins);
   void OnGotGeoposition(const content::Geoposition& geoposition);
 
   // Methods that run on the IO thread to communicate with the
@@ -254,7 +254,7 @@ class FingerprintDataLoader : public content::GpuDataManagerObserver {
 
   // Data that will be loaded asynchronously.
   scoped_ptr<base::ListValue> fonts_;
-  std::vector<webkit::WebPluginInfo> plugins_;
+  std::vector<content::WebPluginInfo> plugins_;
   bool waiting_on_plugins_;
   content::Geoposition geoposition_;
 
@@ -334,7 +334,7 @@ void FingerprintDataLoader::OnGotFonts(scoped_ptr<base::ListValue> fonts) {
 }
 
 void FingerprintDataLoader::OnGotPlugins(
-    const std::vector<webkit::WebPluginInfo>& plugins) {
+    const std::vector<content::WebPluginInfo>& plugins) {
   DCHECK(waiting_on_plugins_);
   waiting_on_plugins_ = false;
   plugins_ = plugins;

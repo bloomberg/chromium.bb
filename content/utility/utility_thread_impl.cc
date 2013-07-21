@@ -143,12 +143,12 @@ void UtilityThreadImpl::OnLoadPlugins(
   gfx::GtkInitFromCommandLine(*CommandLine::ForCurrentProcess());
 #endif
 
-  std::vector<webkit::WebPluginInfo> plugins;
+  std::vector<WebPluginInfo> plugins;
   // TODO(bauerb): If we restart loading plug-ins, we might mess up the logic in
   // PluginList::ShouldLoadPlugin due to missing the previously loaded plug-ins
   // in |plugin_groups|.
   for (size_t i = 0; i < plugin_paths.size(); ++i) {
-    webkit::WebPluginInfo plugin;
+    WebPluginInfo plugin;
     if (!plugin_list->LoadPluginIntoPluginList(
         plugin_paths[i], &plugins, &plugin))
       Send(new UtilityHostMsg_LoadPluginFailed(i, plugin_paths[i]));

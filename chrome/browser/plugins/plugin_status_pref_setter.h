@@ -17,7 +17,7 @@ class PluginPrefs;
 class PrefService;
 class Profile;
 
-namespace webkit {
+namespace content {
 struct WebPluginInfo;
 }
 
@@ -53,7 +53,7 @@ class PluginStatusPrefSetter : public content::NotificationObserver {
  private:
   void StartUpdate();
   void GotPlugins(scoped_refptr<PluginPrefs> plugin_prefs,
-                  const std::vector<webkit::WebPluginInfo>& plugins);
+                  const std::vector<content::WebPluginInfo>& plugins);
 
   content::NotificationRegistrar registrar_;
   // Weak pointer.

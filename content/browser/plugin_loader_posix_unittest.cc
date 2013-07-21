@@ -13,7 +13,6 @@
 #include "content/browser/browser_thread_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/plugins/webplugininfo.h"
 
 namespace content {
 
@@ -33,11 +32,11 @@ class MockPluginLoaderPosix : public PluginLoaderPosix {
     return next_load_index_;
   }
 
-  const std::vector<webkit::WebPluginInfo>& loaded_plugins() {
+  const std::vector<WebPluginInfo>& loaded_plugins() {
     return loaded_plugins_;
   }
 
-  std::vector<webkit::WebPluginInfo>* internal_plugins() {
+  std::vector<WebPluginInfo>* internal_plugins() {
     return &internal_plugins_;
   }
 
@@ -45,7 +44,7 @@ class MockPluginLoaderPosix : public PluginLoaderPosix {
     PluginLoaderPosix::LoadPluginsInternal();
   }
 
-  void TestOnPluginLoaded(uint32 index, const webkit::WebPluginInfo& plugin) {
+  void TestOnPluginLoaded(uint32 index, const WebPluginInfo& plugin) {
     OnPluginLoaded(index, plugin);
   }
 
@@ -57,7 +56,7 @@ class MockPluginLoaderPosix : public PluginLoaderPosix {
   virtual ~MockPluginLoaderPosix() {}
 };
 
-void VerifyCallback(int* run_count, const std::vector<webkit::WebPluginInfo>&) {
+void VerifyCallback(int* run_count, const std::vector<WebPluginInfo>&) {
   ++(*run_count);
 }
 
@@ -90,9 +89,9 @@ class PluginLoaderPosixTest : public testing::Test {
   }
 
   // Data used for testing.
-  webkit::WebPluginInfo plugin1_;
-  webkit::WebPluginInfo plugin2_;
-  webkit::WebPluginInfo plugin3_;
+  WebPluginInfo plugin1_;
+  WebPluginInfo plugin2_;
+  WebPluginInfo plugin3_;
 
  private:
   base::ShadowingAtExitManager at_exit_manager_;  // Destroys PluginService.
@@ -152,8 +151,7 @@ TEST_F(PluginLoaderPosixTest, ThreeSuccessfulLoads) {
 
   EXPECT_EQ(0u, plugin_loader()->next_load_index());
 
-  const std::vector<webkit::WebPluginInfo>& plugins(
-      plugin_loader()->loaded_plugins());
+  const std::vector<WebPluginInfo>& plugins(plugin_loader()->loaded_plugins());
 
   plugin_loader()->TestOnPluginLoaded(0, plugin1_);
   EXPECT_EQ(1u, plugin_loader()->next_load_index());
@@ -193,8 +191,7 @@ TEST_F(PluginLoaderPosixTest, ThreeSuccessfulLoadsThenCrash) {
 
   EXPECT_EQ(0u, plugin_loader()->next_load_index());
 
-  const std::vector<webkit::WebPluginInfo>& plugins(
-      plugin_loader()->loaded_plugins());
+  const std::vector<WebPluginInfo>& plugins(plugin_loader()->loaded_plugins());
 
   plugin_loader()->TestOnPluginLoaded(0, plugin1_);
   EXPECT_EQ(1u, plugin_loader()->next_load_index());
@@ -236,8 +233,7 @@ TEST_F(PluginLoaderPosixTest, TwoFailures) {
 
   EXPECT_EQ(0u, plugin_loader()->next_load_index());
 
-  const std::vector<webkit::WebPluginInfo>& plugins(
-      plugin_loader()->loaded_plugins());
+  const std::vector<WebPluginInfo>& plugins(plugin_loader()->loaded_plugins());
 
   plugin_loader()->TestOnPluginLoadFailed(0, plugin1_.path);
   EXPECT_EQ(1u, plugin_loader()->next_load_index());
@@ -275,8 +271,7 @@ TEST_F(PluginLoaderPosixTest, CrashedProcess) {
 
   EXPECT_EQ(0u, plugin_loader()->next_load_index());
 
-  const std::vector<webkit::WebPluginInfo>& plugins(
-      plugin_loader()->loaded_plugins());
+  const std::vector<WebPluginInfo>& plugins(plugin_loader()->loaded_plugins());
 
   plugin_loader()->TestOnPluginLoaded(0, plugin1_);
   EXPECT_EQ(1u, plugin_loader()->next_load_index());
@@ -313,8 +308,7 @@ TEST_F(PluginLoaderPosixTest, InternalPlugin) {
 
   EXPECT_EQ(0u, plugin_loader()->next_load_index());
 
-  const std::vector<webkit::WebPluginInfo>& plugins(
-      plugin_loader()->loaded_plugins());
+  const std::vector<WebPluginInfo>& plugins(plugin_loader()->loaded_plugins());
 
   plugin_loader()->TestOnPluginLoaded(0, plugin1_);
   EXPECT_EQ(1u, plugin_loader()->next_load_index());

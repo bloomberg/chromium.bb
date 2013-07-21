@@ -14,10 +14,10 @@
 #include "chrome/common/chrome_paths.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/common/webplugininfo.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/plugins/webplugininfo.h"
 
 using content::BrowserThread;
 using content::PluginService;
@@ -48,7 +48,7 @@ base::FilePath GetBundledPepperFlashPath() {
 }
 
 void GotPlugins(const base::Closure& quit_closure,
-                const std::vector<webkit::WebPluginInfo>& plugins) {
+                const std::vector<content::WebPluginInfo>& plugins) {
   quit_closure.Run();
 }
 
@@ -196,20 +196,20 @@ TEST_F(PluginPrefsTest, UnifiedPepperFlashState) {
 
   string16 component_updated_plugin_name(
       ASCIIToUTF16("Component-updated Pepper Flash"));
-  webkit::WebPluginInfo component_updated_plugin_1(
+  content::WebPluginInfo component_updated_plugin_1(
       component_updated_plugin_name,
       GetComponentUpdatedPepperFlashPath(FILE_PATH_LITERAL("11.3.31.227")),
       ASCIIToUTF16("11.3.31.227"),
       ASCIIToUTF16(""));
-  webkit::WebPluginInfo component_updated_plugin_2(
+  content::WebPluginInfo component_updated_plugin_2(
       component_updated_plugin_name,
       GetComponentUpdatedPepperFlashPath(FILE_PATH_LITERAL("11.3.31.228")),
       ASCIIToUTF16("11.3.31.228"),
       ASCIIToUTF16(""));
-  webkit::WebPluginInfo bundled_plugin(ASCIIToUTF16("Pepper Flash"),
-                                       GetBundledPepperFlashPath(),
-                                       ASCIIToUTF16("11.3.31.229"),
-                                       ASCIIToUTF16(""));
+  content::WebPluginInfo bundled_plugin(ASCIIToUTF16("Pepper Flash"),
+                                        GetBundledPepperFlashPath(),
+                                        ASCIIToUTF16("11.3.31.229"),
+                                        ASCIIToUTF16(""));
 
   PluginService::GetInstance()->RegisterInternalPlugin(
       component_updated_plugin_1, false);

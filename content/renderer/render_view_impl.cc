@@ -1134,7 +1134,7 @@ void RenderViewImpl::UnregisterPluginDelegate(
 bool RenderViewImpl::GetPluginInfo(const GURL& url,
                                    const GURL& page_url,
                                    const std::string& mime_type,
-                                   webkit::WebPluginInfo* plugin_info,
+                                   WebPluginInfo* plugin_info,
                                    std::string* actual_mime_type) {
   bool found = false;
   Send(new ViewHostMsg_GetPluginInfo(
@@ -2830,7 +2830,7 @@ WebKit::WebPlugin* RenderViewImpl::createPlugin(WebFrame* frame,
     return GetBrowserPluginManager()->CreateBrowserPlugin(this, frame, params);
   }
 
-  webkit::WebPluginInfo info;
+  WebPluginInfo info;
   std::string mime_type;
   bool found = GetPluginInfo(params.url, frame->top()->document().url(),
                              params.mimeType.utf8(), &info, &mime_type);
@@ -4681,7 +4681,7 @@ bool RenderViewImpl::IsEditableNode(const WebNode& node) const {
 
 WebKit::WebPlugin* RenderViewImpl::CreatePlugin(
     WebKit::WebFrame* frame,
-    const webkit::WebPluginInfo& info,
+    const WebPluginInfo& info,
     const WebKit::WebPluginParams& params) {
   WebKit::WebPlugin* pepper_webplugin =
       pepper_helper_->CreatePepperWebPlugin(info, params);

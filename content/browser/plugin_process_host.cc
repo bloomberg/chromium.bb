@@ -145,7 +145,7 @@ bool PluginProcessHost::Send(IPC::Message* message) {
   return process_->Send(message);
 }
 
-bool PluginProcessHost::Init(const webkit::WebPluginInfo& info) {
+bool PluginProcessHost::Init(const WebPluginInfo& info) {
   info_ = info;
   process_->SetName(info_.name);
 

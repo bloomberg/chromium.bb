@@ -110,6 +110,7 @@ using autofill::AutofillAgent;
 using autofill::PasswordAutofillAgent;
 using autofill::PasswordGenerationManager;
 using content::RenderThread;
+using content::WebPluginInfo;
 using extensions::Extension;
 using WebKit::WebCache;
 using WebKit::WebConsoleMessage;
@@ -117,8 +118,6 @@ using WebKit::WebDataSource;
 using WebKit::WebDocument;
 using WebKit::WebFrame;
 using WebKit::WebPlugin;
-using webkit::WebPluginInfo;
-using webkit::WebPluginMimeType;
 using WebKit::WebPluginParams;
 using WebKit::WebSecurityOrigin;
 using WebKit::WebSecurityPolicy;
@@ -556,7 +555,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
     // In Aura for Windows we need to check if we can load NPAPI plugins.
     // For example, if the render view is in the Ash desktop, we should not.
     if (status_value == ChromeViewHostMsg_GetPluginInfo_Status::kAllowed &&
-        plugin.type == webkit::WebPluginInfo::PLUGIN_TYPE_NPAPI) {
+        plugin.type == content::WebPluginInfo::PLUGIN_TYPE_NPAPI) {
         if (observer->AreNPAPIPluginsBlocked())
           status_value =
               ChromeViewHostMsg_GetPluginInfo_Status::kNPAPINotSupported;
@@ -742,13 +741,13 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
 //  static
 GURL ChromeContentRendererClient::GetNaClContentHandlerURL(
     const std::string& actual_mime_type,
-    const WebPluginInfo& plugin) {
+    const content::WebPluginInfo& plugin) {
   // Look for the manifest URL among the MIME type's additonal parameters.
   const char* kNaClPluginManifestAttribute = "nacl";
   string16 nacl_attr = ASCIIToUTF16(kNaClPluginManifestAttribute);
   for (size_t i = 0; i < plugin.mime_types.size(); ++i) {
     if (plugin.mime_types[i].mime_type == actual_mime_type) {
-      const WebPluginMimeType& content_type = plugin.mime_types[i];
+      const content::WebPluginMimeType& content_type = plugin.mime_types[i];
       for (size_t i = 0; i < content_type.additional_param_names.size(); ++i) {
         if (content_type.additional_param_names[i] == nacl_attr)
           return GURL(content_type.additional_param_values[i]);

@@ -170,6 +170,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/renderer_preferences.h"
+#include "content/public/common/webplugininfo.h"
 #include "extensions/common/constants.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -183,7 +184,6 @@
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/point.h"
 #include "ui/shell_dialogs/selected_file_info.h"
-#include "webkit/plugins/webplugininfo.h"
 
 #if defined(OS_WIN)
 #include "base/win/metro.h"

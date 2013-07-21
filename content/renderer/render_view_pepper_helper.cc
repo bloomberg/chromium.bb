@@ -12,7 +12,7 @@ RenderViewPepperHelper::~RenderViewPepperHelper() {
 }
 
 WebKit::WebPlugin* RenderViewPepperHelper::CreatePepperWebPlugin(
-    const webkit::WebPluginInfo& webplugin_info,
+    const WebPluginInfo& webplugin_info,
     const WebKit::WebPluginParams& params) {
   return NULL;
 }

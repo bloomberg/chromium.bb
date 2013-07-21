@@ -42,7 +42,7 @@ void ChromePluginServiceFilter::OverridePluginForTab(
     int render_process_id,
     int render_view_id,
     const GURL& url,
-    const webkit::WebPluginInfo& plugin) {
+    const content::WebPluginInfo& plugin) {
   base::AutoLock auto_lock(lock_);
   ProcessDetails* details = GetOrRegisterProcess(render_process_id);
   OverriddenPlugin overridden_plugin;
@@ -73,7 +73,7 @@ bool ChromePluginServiceFilter::IsPluginAvailable(
     const void* context,
     const GURL& url,
     const GURL& policy_url,
-    webkit::WebPluginInfo* plugin) {
+    content::WebPluginInfo* plugin) {
   base::AutoLock auto_lock(lock_);
   const ProcessDetails* details = GetProcess(render_process_id);
 

@@ -22,7 +22,7 @@ class ShellPluginServiceFilter : public PluginServiceFilter {
                                  const void* context,
                                  const GURL& url,
                                  const GURL& policy_url,
-                                 webkit::WebPluginInfo* plugin) OVERRIDE;
+                                 WebPluginInfo* plugin) OVERRIDE;
 
   virtual bool CanLoadPlugin(int render_process_id,
                              const base::FilePath& path) OVERRIDE;

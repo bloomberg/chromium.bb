@@ -28,13 +28,13 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
+#include "content/public/common/webplugininfo.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "webkit/plugins/webplugininfo.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
@@ -109,7 +109,7 @@ class NaClDomHandler : public WebUIMessageHandler {
   void HandleRequestNaClInfo(const ListValue* args);
 
   // Callback for the NaCl plugin information.
-  void OnGotPlugins(const std::vector<webkit::WebPluginInfo>& plugins);
+  void OnGotPlugins(const std::vector<content::WebPluginInfo>& plugins);
 
   // A helper callback that receives the result of checking if PNaCl path
   // exists. |is_valid| is true if the PNaCl path that was returned by
@@ -236,7 +236,7 @@ void NaClDomHandler::HandleRequestNaClInfo(const ListValue* args) {
 }
 
 void NaClDomHandler::OnGotPlugins(
-    const std::vector<webkit::WebPluginInfo>& plugins) {
+    const std::vector<content::WebPluginInfo>& plugins) {
   has_plugin_info_ = true;
   MaybeRespondToPage();
 }
@@ -282,7 +282,7 @@ void NaClDomHandler::PopulatePageInformation(DictionaryValue* naclInfo) {
   AddLineBreak(list.get());
 
   // Obtain the version of the NaCl plugin.
-  std::vector<webkit::WebPluginInfo> info_array;
+  std::vector<content::WebPluginInfo> info_array;
   PluginService::GetInstance()->GetPluginInfoArray(
       GURL(), "application/x-nacl", false, &info_array, NULL);
   string16 nacl_version;

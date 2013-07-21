@@ -25,9 +25,6 @@ class Profile;
 
 namespace content {
 class ResourceContext;
-}
-
-namespace webkit {
 struct WebPluginInfo;
 }
 
@@ -46,7 +43,7 @@ class PluginInfoMessageFilter : public content::BrowserMessageFilter {
 
     void DecidePluginStatus(
         const GetPluginInfo_Params& params,
-        const webkit::WebPluginInfo& plugin,
+        const content::WebPluginInfo& plugin,
         const PluginMetadata* plugin_metadata,
         ChromeViewHostMsg_GetPluginInfo_Status* status) const;
     bool FindEnabledPlugin(int render_view_id,
@@ -54,10 +51,10 @@ class PluginInfoMessageFilter : public content::BrowserMessageFilter {
                            const GURL& top_origin_url,
                            const std::string& mime_type,
                            ChromeViewHostMsg_GetPluginInfo_Status* status,
-                           webkit::WebPluginInfo* plugin,
+                           content::WebPluginInfo* plugin,
                            std::string* actual_mime_type,
                            scoped_ptr<PluginMetadata>* plugin_metadata) const;
-    void GetPluginContentSetting(const webkit::WebPluginInfo& plugin,
+    void GetPluginContentSetting(const content::WebPluginInfo& plugin,
                                  const GURL& policy_url,
                                  const GURL& plugin_url,
                                  const std::string& resource,
@@ -99,7 +96,7 @@ class PluginInfoMessageFilter : public content::BrowserMessageFilter {
   // |base::Bind| doesn't support the required arity <http://crbug.com/98542>.
   void PluginsLoaded(const GetPluginInfo_Params& params,
                      IPC::Message* reply_msg,
-                     const std::vector<webkit::WebPluginInfo>& plugins);
+                     const std::vector<content::WebPluginInfo>& plugins);
 
   Context context_;
 

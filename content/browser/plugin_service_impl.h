@@ -76,7 +76,7 @@ class CONTENT_EXPORT PluginServiceImpl
       const GURL& url,
       const std::string& mime_type,
       bool allow_wildcard,
-      std::vector<webkit::WebPluginInfo>* info,
+      std::vector<WebPluginInfo>* info,
       std::vector<std::string>* actual_mime_types) OVERRIDE;
   virtual bool GetPluginInfo(int render_process_id,
                              int render_view_id,
@@ -86,10 +86,10 @@ class CONTENT_EXPORT PluginServiceImpl
                              const std::string& mime_type,
                              bool allow_wildcard,
                              bool* is_stale,
-                             webkit::WebPluginInfo* info,
+                             WebPluginInfo* info,
                              std::string* actual_mime_type) OVERRIDE;
   virtual bool GetPluginInfoByPath(const base::FilePath& plugin_path,
-                                   webkit::WebPluginInfo* info) OVERRIDE;
+                                   WebPluginInfo* info) OVERRIDE;
   virtual string16 GetPluginDisplayNameByPath(
       const base::FilePath& path) OVERRIDE;
   virtual void GetPlugins(const GetPluginsCallback& callback) OVERRIDE;
@@ -104,10 +104,10 @@ class CONTENT_EXPORT PluginServiceImpl
   virtual void RemoveExtraPluginPath(const base::FilePath& path) OVERRIDE;
   virtual void AddExtraPluginDir(const base::FilePath& path) OVERRIDE;
   virtual void RegisterInternalPlugin(
-      const webkit::WebPluginInfo& info, bool add_at_beginning) OVERRIDE;
+      const WebPluginInfo& info, bool add_at_beginning) OVERRIDE;
   virtual void UnregisterInternalPlugin(const base::FilePath& path) OVERRIDE;
   virtual void GetInternalPlugins(
-      std::vector<webkit::WebPluginInfo>* plugins) OVERRIDE;
+      std::vector<WebPluginInfo>* plugins) OVERRIDE;
   virtual bool NPAPIPluginsSupported() OVERRIDE;
   virtual void DisablePluginsDiscoveryForTesting() OVERRIDE;
 #if defined(OS_MACOSX)
@@ -191,7 +191,7 @@ class CONTENT_EXPORT PluginServiceImpl
       const GURL& url,
       const std::string& mime_type,
       PluginProcessHost::Client* client,
-      const std::vector<webkit::WebPluginInfo>&);
+      const std::vector<WebPluginInfo>&);
   // Helper so we can do the plugin lookup on the FILE thread.
   void GetAllowedPluginForOpenChannelToPlugin(
       int render_process_id,

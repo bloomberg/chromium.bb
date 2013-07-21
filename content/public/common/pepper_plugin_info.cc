@@ -18,14 +18,14 @@ PepperPluginInfo::PepperPluginInfo()
 PepperPluginInfo::~PepperPluginInfo() {
 }
 
-webkit::WebPluginInfo PepperPluginInfo::ToWebPluginInfo() const {
-  webkit::WebPluginInfo info;
+WebPluginInfo PepperPluginInfo::ToWebPluginInfo() const {
+  WebPluginInfo info;
 
   info.type = is_out_of_process ?
       (is_sandboxed ?
-        webkit::WebPluginInfo::PLUGIN_TYPE_PEPPER_OUT_OF_PROCESS :
-        webkit::WebPluginInfo::PLUGIN_TYPE_PEPPER_UNSANDBOXED) :
-      webkit::WebPluginInfo::PLUGIN_TYPE_PEPPER_IN_PROCESS;
+        WebPluginInfo::PLUGIN_TYPE_PEPPER_OUT_OF_PROCESS :
+        WebPluginInfo::PLUGIN_TYPE_PEPPER_UNSANDBOXED) :
+      WebPluginInfo::PLUGIN_TYPE_PEPPER_IN_PROCESS;
 
   info.name = name.empty() ?
       path.BaseName().LossyDisplayName() : UTF8ToUTF16(name);

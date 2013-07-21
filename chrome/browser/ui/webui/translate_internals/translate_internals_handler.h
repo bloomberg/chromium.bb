@@ -9,7 +9,7 @@
 
 #include "chrome/browser/translate/translate_manager.h"
 #include "content/public/browser/web_ui_message_handler.h"
-#include "webkit/plugins/webplugininfo.h"
+#include "content/public/common/webplugininfo.h"
 
 struct LanguageDetectionDetails;
 struct TranslateErrorDetails;

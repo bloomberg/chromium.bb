@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/plugins/webplugininfo.h"
+#include "content/public/common/webplugininfo.h"
 
 #include <algorithm>
 
@@ -12,7 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/version.h"
 
-namespace webkit {
+namespace content {
 
 WebPluginMimeType::WebPluginMimeType() {}
 
@@ -100,4 +100,4 @@ void WebPluginInfo::CreateVersionFromString(
   *parsed_version = Version(no_leading_zeros_version);
 }
 
-}  // namespace webkit
+}  // namespace content

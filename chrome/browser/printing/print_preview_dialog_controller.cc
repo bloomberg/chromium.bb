@@ -40,9 +40,9 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_view.h"
+#include "content/public/common/webplugininfo.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
 #include "ui/web_dialogs/web_dialog_web_contents_delegate.h"
-#include "webkit/plugins/webplugininfo.h"
 
 using content::NativeWebKeyboardEvent;
 using content::NavigationController;
@@ -59,7 +59,7 @@ void EnableInternalPDFPluginForContents(WebContents* preview_dialog) {
   if (!PathService::Get(chrome::FILE_PDF_PLUGIN, &pdf_plugin_path))
     return;
 
-  webkit::WebPluginInfo pdf_plugin;
+  content::WebPluginInfo pdf_plugin;
   if (!content::PluginService::GetInstance()->GetPluginInfoByPath(
       pdf_plugin_path, &pdf_plugin))
     return;

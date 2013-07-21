@@ -8,19 +8,19 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_builder.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
+#include "content/public/common/webplugininfo.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebPluginParams.h"
 #include "url/gurl.h"
-#include "webkit/plugins/webplugininfo.h"
 
 using WebKit::WebPluginParams;
 using WebKit::WebString;
 using WebKit::WebVector;
 using chrome::ChromeContentRendererClient;
-using webkit::WebPluginInfo;
-using webkit::WebPluginMimeType;
+using content::WebPluginInfo;
+using content::WebPluginMimeType;
 
 namespace chrome {
 
@@ -58,10 +58,10 @@ void AddFakeDevAttribute(WebPluginParams* params) {
   params->attributeValues.swap(values);
 }
 
-void AddContentTypeHandler(WebPluginInfo* info,
+void AddContentTypeHandler(content::WebPluginInfo* info,
                            const char* mime_type,
                            const char* manifest_url) {
-  WebPluginMimeType mime_type_info;
+  content::WebPluginMimeType mime_type_info;
   mime_type_info.mime_type = mime_type;
   mime_type_info.additional_param_names.push_back(UTF8ToUTF16("nacl"));
   mime_type_info.additional_param_values.push_back(

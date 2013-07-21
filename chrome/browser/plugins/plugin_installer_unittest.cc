@@ -5,19 +5,18 @@
 #include "chrome/browser/plugins/plugin_installer.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "content/public/common/webplugininfo.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/plugins/webplugininfo.h"
-
-using webkit::WebPluginInfo;
 
 namespace {
 
 PluginInstaller::SecurityStatus GetSecurityStatus(PluginInstaller* installer,
                                                   const char* version) {
-  WebPluginInfo plugin(ASCIIToUTF16("Foo plug-in"),
-                       base::FilePath(FILE_PATH_LITERAL("/tmp/plugin.so")),
-                       ASCIIToUTF16(version),
-                       ASCIIToUTF16("Foo plug-in."));
+  content:: WebPluginInfo plugin(
+      ASCIIToUTF16("Foo plug-in"),
+      base::FilePath(FILE_PATH_LITERAL("/tmp/plugin.so")),
+      ASCIIToUTF16(version),
+      ASCIIToUTF16("Foo plug-in."));
   return installer->GetSecurityStatus(plugin);
 }
 

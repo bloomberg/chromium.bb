@@ -20,9 +20,9 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/webplugininfo.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/dns/mock_host_resolver.h"
-#include "webkit/plugins/webplugininfo.h"
 
 using content::PluginService;
 using content::WebContents;
@@ -107,7 +107,7 @@ class NaClExtensionTest : public ExtensionBrowserTest {
   bool IsNaClPluginLoaded() {
     base::FilePath path;
     if (PathService::Get(chrome::FILE_NACL_PLUGIN, &path)) {
-      webkit::WebPluginInfo info;
+      content::WebPluginInfo info;
       return PluginService::GetInstance()->GetPluginInfoByPath(path, &info);
     }
     return false;

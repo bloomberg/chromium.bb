@@ -10,8 +10,8 @@
 #include "base/basictypes.h"
 #include "content/common/content_export.h"
 #include "content/public/common/common_param_traits.h"
+#include "content/public/common/webplugininfo.h"
 #include "ipc/ipc_message_macros.h"
-#include "webkit/plugins/webplugininfo.h"
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
@@ -48,5 +48,5 @@ IPC_SYNC_MESSAGE_CONTROL2_0(UtilityHostMsg_LoadPluginFailed,
 // Notifies the browser that a plugin in the vector sent by it has been loaded.
 IPC_SYNC_MESSAGE_CONTROL2_0(UtilityHostMsg_LoadedPlugin,
                             uint32_t /* index in the vector */,
-                            webkit::WebPluginInfo /* plugin info */)
+                            content::WebPluginInfo /* plugin info */)
 #endif  // OS_POSIX

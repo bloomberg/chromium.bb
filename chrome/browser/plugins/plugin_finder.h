@@ -14,7 +14,7 @@
 #include "base/memory/singleton.h"
 #include "base/strings/string16.h"
 #include "base/synchronization/lock.h"
-#include "webkit/plugins/webplugininfo.h"
+#include "content/public/common/webplugininfo.h"
 
 namespace base {
 class DictionaryValue;
@@ -65,7 +65,7 @@ class PluginFinder {
 
   // Gets plug-in metadata using |plugin|.
   scoped_ptr<PluginMetadata> GetPluginMetadata(
-      const webkit::WebPluginInfo& plugin);
+      const content::WebPluginInfo& plugin);
 
  private:
   friend struct DefaultSingletonTraits<PluginFinder>;

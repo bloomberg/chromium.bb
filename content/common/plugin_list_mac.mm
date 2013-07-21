@@ -20,8 +20,6 @@
 #include "base/strings/utf_string_conversions.h"
 
 using base::ScopedCFTypeRef;
-using webkit::WebPluginInfo;
-using webkit::WebPluginMimeType;
 
 namespace content {
 
@@ -298,7 +296,7 @@ void PluginList::GetPluginsInDir(
 
 bool PluginList::ShouldLoadPluginUsingPluginList(
     const WebPluginInfo& info,
-    std::vector<webkit::WebPluginInfo>* plugins) {
+    std::vector<WebPluginInfo>* plugins) {
   return !IsBlacklistedPlugin(info);
 }
 

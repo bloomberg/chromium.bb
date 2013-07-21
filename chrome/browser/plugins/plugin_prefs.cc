@@ -31,7 +31,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/plugin_service.h"
-#include "webkit/plugins/webplugininfo.h"
+#include "content/public/common/webplugininfo.h"
 
 using content::BrowserThread;
 using content::PluginService;
@@ -110,7 +110,7 @@ void PluginPrefs::EnablePluginGroup(bool enabled, const string16& group_name) {
 void PluginPrefs::EnablePluginGroupInternal(
     bool enabled,
     const string16& group_name,
-    const std::vector<webkit::WebPluginInfo>& plugins) {
+    const std::vector<content::WebPluginInfo>& plugins) {
   base::AutoLock auto_lock(lock_);
   PluginFinder* finder = PluginFinder::GetInstance();
 
@@ -135,7 +135,7 @@ void PluginPrefs::EnablePlugin(
     bool enabled, const base::FilePath& path,
     const base::Callback<void(bool)>& callback) {
   PluginFinder* finder = PluginFinder::GetInstance();
-  webkit::WebPluginInfo plugin;
+  content::WebPluginInfo plugin;
   bool can_enable = true;
   if (PluginService::GetInstance()->GetPluginInfoByPath(path, &plugin)) {
     scoped_ptr<PluginMetadata> plugin_metadata(
@@ -169,7 +169,7 @@ void PluginPrefs::EnablePluginInternal(
     const base::FilePath& path,
     PluginFinder* plugin_finder,
     const base::Callback<void(bool)>& callback,
-    const std::vector<webkit::WebPluginInfo>& plugins) {
+    const std::vector<content::WebPluginInfo>& plugins) {
   {
     // Set the desired state for the plug-in.
     base::AutoLock auto_lock(lock_);
@@ -225,7 +225,7 @@ PluginPrefs::PolicyStatus PluginPrefs::PolicyStatusForPlugin(
   }
 }
 
-bool PluginPrefs::IsPluginEnabled(const webkit::WebPluginInfo& plugin) const {
+bool PluginPrefs::IsPluginEnabled(const content::WebPluginInfo& plugin) const {
   scoped_ptr<PluginMetadata> plugin_metadata(
       PluginFinder::GetInstance()->GetPluginMetadata(plugin));
   string16 group_name = plugin_metadata->name();
@@ -522,7 +522,7 @@ void PluginPrefs::SetPolicyEnforcedPluginPatterns(
 }
 
 void PluginPrefs::OnUpdatePreferences(
-    const std::vector<webkit::WebPluginInfo>& plugins) {
+    const std::vector<content::WebPluginInfo>& plugins) {
   if (!prefs_)
     return;
 

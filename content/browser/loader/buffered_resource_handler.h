@@ -16,12 +16,9 @@ namespace net {
 class URLRequest;
 }
 
-namespace webkit {
-struct WebPluginInfo;
-}
-
 namespace content {
 class ResourceDispatcherHostImpl;
+struct WebPluginInfo;
 
 // Used to buffer a request until enough data has been received.
 class BufferedResourceHandler
@@ -72,7 +69,7 @@ class BufferedResourceHandler
   bool CopyReadBufferToNextHandler(int request_id);
 
   // Called on the IO thread once the list of plugins has been loaded.
-  void OnPluginsLoaded(const std::vector<webkit::WebPluginInfo>& plugins);
+  void OnPluginsLoaded(const std::vector<WebPluginInfo>& plugins);
 
   enum State {
     STATE_STARTING,

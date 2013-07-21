@@ -44,13 +44,13 @@
 #include "components/nacl/common/nacl_process_type.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/webplugininfo.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "gpu/config/gpu_info.h"
 #include "ui/gfx/screen.h"
 #include "url/gurl.h"
-#include "webkit/plugins/webplugininfo.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"
@@ -193,7 +193,7 @@ PluginPrefs* GetPluginPrefs() {
 }
 
 // Fills |plugin| with the info contained in |plugin_info| and |plugin_prefs|.
-void SetPluginInfo(const webkit::WebPluginInfo& plugin_info,
+void SetPluginInfo(const content::WebPluginInfo& plugin_info,
                    const PluginPrefs* plugin_prefs,
                    SystemProfileProto::Plugin* plugin) {
   plugin->set_name(UTF16ToUTF8(plugin_info.name));
@@ -405,7 +405,7 @@ const std::string& MetricsLog::version_extension() {
 }
 
 void MetricsLog::RecordIncrementalStabilityElements(
-    const std::vector<webkit::WebPluginInfo>& plugin_list) {
+    const std::vector<content::WebPluginInfo>& plugin_list) {
   DCHECK(!locked());
 
   PrefService* pref = GetPrefService();
@@ -440,7 +440,7 @@ void MetricsLog::GetFieldTrialIds(
 }
 
 void MetricsLog::WriteStabilityElement(
-    const std::vector<webkit::WebPluginInfo>& plugin_list,
+    const std::vector<content::WebPluginInfo>& plugin_list,
     PrefService* pref) {
   DCHECK(!locked());
 
@@ -483,7 +483,7 @@ void MetricsLog::WriteStabilityElement(
 }
 
 void MetricsLog::WritePluginStabilityElements(
-    const std::vector<webkit::WebPluginInfo>& plugin_list,
+    const std::vector<content::WebPluginInfo>& plugin_list,
     PrefService* pref) {
   // Now log plugin stability info.
   const ListValue* plugin_stats_list = pref->GetList(
@@ -509,11 +509,11 @@ void MetricsLog::WritePluginStabilityElements(
     // fine.
     // TODO(isherman): Verify that this does not show up as a hotspot in
     // profiler runs.
-    const webkit::WebPluginInfo* plugin_info = NULL;
+    const content::WebPluginInfo* plugin_info = NULL;
     std::string plugin_name;
     plugin_dict->GetString(prefs::kStabilityPluginName, &plugin_name);
     const string16 plugin_name_utf16 = UTF8ToUTF16(plugin_name);
-    for (std::vector<webkit::WebPluginInfo>::const_iterator iter =
+    for (std::vector<content::WebPluginInfo>::const_iterator iter =
              plugin_list.begin();
          iter != plugin_list.end(); ++iter) {
       if (iter->name == plugin_name_utf16) {
@@ -637,13 +637,13 @@ void MetricsLog::WriteRealtimeStabilityAttributes(PrefService* pref) {
 }
 
 void MetricsLog::WritePluginList(
-    const std::vector<webkit::WebPluginInfo>& plugin_list) {
+    const std::vector<content::WebPluginInfo>& plugin_list) {
   DCHECK(!locked());
 
 #if defined(ENABLE_PLUGINS)
   PluginPrefs* plugin_prefs = GetPluginPrefs();
   SystemProfileProto* system_profile = uma_proto()->mutable_system_profile();
-  for (std::vector<webkit::WebPluginInfo>::const_iterator iter =
+  for (std::vector<content::WebPluginInfo>::const_iterator iter =
            plugin_list.begin();
        iter != plugin_list.end(); ++iter) {
     SystemProfileProto::Plugin* plugin = system_profile->add_plugin();
@@ -653,7 +653,7 @@ void MetricsLog::WritePluginList(
 }
 
 void MetricsLog::RecordEnvironment(
-         const std::vector<webkit::WebPluginInfo>& plugin_list,
+         const std::vector<content::WebPluginInfo>& plugin_list,
          const GoogleUpdateMetrics& google_update_metrics) {
   DCHECK(!locked());
 
@@ -664,7 +664,7 @@ void MetricsLog::RecordEnvironment(
 }
 
 void MetricsLog::RecordEnvironmentProto(
-    const std::vector<webkit::WebPluginInfo>& plugin_list,
+    const std::vector<content::WebPluginInfo>& plugin_list,
     const GoogleUpdateMetrics& google_update_metrics) {
   SystemProfileProto* system_profile = uma_proto()->mutable_system_profile();
 

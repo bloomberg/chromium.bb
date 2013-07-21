@@ -35,9 +35,6 @@
 // happy.
 #include "base/third_party/nspr/prcpucfg_linux.h"
 
-using webkit::WebPluginInfo;
-using webkit::WebPluginMimeType;
-
 namespace content {
 
 namespace {
@@ -564,7 +561,7 @@ void PluginList::GetPluginsInDir(
 }
 
 bool PluginList::ShouldLoadPluginUsingPluginList(
-    const WebPluginInfo& info, std::vector<webkit::WebPluginInfo>* plugins) {
+    const WebPluginInfo& info, std::vector<WebPluginInfo>* plugins) {
   LOG_IF(ERROR, PluginList::DebugPluginLoading())
       << "Considering " << info.path.value() << " (" << info.name << ")";
 

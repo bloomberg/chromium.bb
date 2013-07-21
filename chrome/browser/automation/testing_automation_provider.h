@@ -38,14 +38,11 @@ class DictionaryValue;
 namespace content {
 class RenderViewHost;
 struct NativeWebKeyboardEvent;
+struct WebPluginInfo;
 }
 
 namespace gfx {
 class Rect;
-}
-
-namespace webkit {
-struct WebPluginInfo;
 }
 
 // This is an automation provider containing testing calls.
@@ -402,7 +399,7 @@ class TestingAutomationProvider : public AutomationProvider,
   void GetPluginsInfoCallback(Browser* browser,
       base::DictionaryValue* args,
       IPC::Message* reply_message,
-      const std::vector<webkit::WebPluginInfo>& plugins);
+      const std::vector<content::WebPluginInfo>& plugins);
 
   // Enable a plugin.
   // Uses the JSON interface for input/output.

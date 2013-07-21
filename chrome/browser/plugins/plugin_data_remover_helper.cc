@@ -6,13 +6,13 @@
 
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "content/public/browser/plugin_data_remover.h"
-#include "webkit/plugins/webplugininfo.h"
+#include "content/public/common/webplugininfo.h"
 
 // static
 bool PluginDataRemoverHelper::IsSupported(PluginPrefs* plugin_prefs) {
-  std::vector<webkit::WebPluginInfo> plugins;
+  std::vector<content::WebPluginInfo> plugins;
   content::PluginDataRemover::GetSupportedPlugins(&plugins);
-  for (std::vector<webkit::WebPluginInfo>::const_iterator it = plugins.begin();
+  for (std::vector<content::WebPluginInfo>::const_iterator it = plugins.begin();
        it != plugins.end(); ++it) {
     if (plugin_prefs->IsPluginEnabled(*it))
       return true;

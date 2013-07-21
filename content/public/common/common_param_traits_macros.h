@@ -13,6 +13,7 @@
 #include "content/public/common/password_form.h"
 #include "content/public/common/security_style.h"
 #include "content/public/common/ssl_status.h"
+#include "content/public/common/webplugininfo.h"
 #include "ipc/ipc_message_macros.h"
 #include "net/base/request_priority.h"
 #include "third_party/WebKit/public/platform/WebPoint.h"
@@ -21,7 +22,6 @@
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "ui/base/window_open_disposition.h"
 #include "webkit/common/webpreferences.h"
-#include "webkit/plugins/webplugininfo.h"
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
@@ -76,7 +76,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::SSLStatus)
   IPC_STRUCT_TRAITS_MEMBER(content_status)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(webkit::WebPluginMimeType)
+IPC_STRUCT_TRAITS_BEGIN(content::WebPluginMimeType)
   IPC_STRUCT_TRAITS_MEMBER(mime_type)
   IPC_STRUCT_TRAITS_MEMBER(file_extensions)
   IPC_STRUCT_TRAITS_MEMBER(description)
@@ -84,7 +84,7 @@ IPC_STRUCT_TRAITS_BEGIN(webkit::WebPluginMimeType)
   IPC_STRUCT_TRAITS_MEMBER(additional_param_values)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(webkit::WebPluginInfo)
+IPC_STRUCT_TRAITS_BEGIN(content::WebPluginInfo)
   IPC_STRUCT_TRAITS_MEMBER(name)
   IPC_STRUCT_TRAITS_MEMBER(path)
   IPC_STRUCT_TRAITS_MEMBER(version)

@@ -46,6 +46,7 @@ class MessageLoopProxy;
 namespace content {
 class RenderProcessHost;
 class WebContents;
+struct WebPluginInfo;
 }
 
 namespace extensions {
@@ -63,10 +64,6 @@ bool IsOmniboxEnabled(Profile* profile);
 
 namespace tracked_objects {
 struct ProcessDataSnapshot;
-}
-
-namespace webkit {
-struct WebPluginInfo;
 }
 
 class MetricsService
@@ -236,7 +233,7 @@ class MetricsService
   // Callback from PluginService::GetPlugins() that continues the init task by
   // launching a task to gather Google Update statistics.
   void OnInitTaskGotPluginInfo(
-      const std::vector<webkit::WebPluginInfo>& plugins);
+      const std::vector<content::WebPluginInfo>& plugins);
 
   // Task launched by OnInitTaskGotPluginInfo() that continues the init task by
   // loading Google Update statistics.  Called on a blocking pool thread.
@@ -418,7 +415,7 @@ class MetricsService
   std::string hardware_class_;
 
   // The list of plugins which was retrieved on the file thread.
-  std::vector<webkit::WebPluginInfo> plugins_;
+  std::vector<content::WebPluginInfo> plugins_;
 
   // Google Update statistics, which were retrieved on a blocking pool thread.
   GoogleUpdateMetrics google_update_metrics_;

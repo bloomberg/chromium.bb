@@ -17,8 +17,8 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/plugin_service_filter.h"
+#include "content/public/common/webplugininfo.h"
 #include "url/gurl.h"
-#include "webkit/plugins/webplugininfo.h"
 
 class PluginPrefs;
 class Profile;
@@ -40,7 +40,7 @@ class ChromePluginServiceFilter : public content::PluginServiceFilter,
   void OverridePluginForTab(int render_process_id,
                             int render_view_id,
                             const GURL& url,
-                            const webkit::WebPluginInfo& plugin);
+                            const content::WebPluginInfo& plugin);
 
   // Restricts the given plugin to the given profile and origin of the given
   // URL.
@@ -65,7 +65,7 @@ class ChromePluginServiceFilter : public content::PluginServiceFilter,
       const void* context,
       const GURL& url,
       const GURL& policy_url,
-      webkit::WebPluginInfo* plugin) OVERRIDE;
+      content::WebPluginInfo* plugin) OVERRIDE;
 
   // CanLoadPlugin always grants permission to the browser
   // (render_process_id == 0)
@@ -82,7 +82,7 @@ class ChromePluginServiceFilter : public content::PluginServiceFilter,
 
     int render_view_id;
     GURL url;  // If empty, the override applies to all urls in render_view.
-    webkit::WebPluginInfo plugin;
+    content::WebPluginInfo plugin;
   };
 
   struct ProcessDetails {

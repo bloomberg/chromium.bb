@@ -266,11 +266,11 @@ bool ContentSettingsContentSettingGetResourceIdentifiersFunction::RunImpl() {
 }
 
 void ContentSettingsContentSettingGetResourceIdentifiersFunction::OnGotPlugins(
-    const std::vector<webkit::WebPluginInfo>& plugins) {
+    const std::vector<content::WebPluginInfo>& plugins) {
   PluginFinder* finder = PluginFinder::GetInstance();
   std::set<std::string> group_identifiers;
   base::ListValue* list = new base::ListValue();
-  for (std::vector<webkit::WebPluginInfo>::const_iterator it = plugins.begin();
+  for (std::vector<content::WebPluginInfo>::const_iterator it = plugins.begin();
        it != plugins.end(); ++it) {
     scoped_ptr<PluginMetadata> plugin_metadata(finder->GetPluginMetadata(*it));
     const std::string& group_identifier = plugin_metadata->identifier();

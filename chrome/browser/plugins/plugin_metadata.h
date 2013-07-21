@@ -12,7 +12,7 @@
 #include "base/version.h"
 #include "url/gurl.h"
 
-namespace webkit {
+namespace content {
 struct WebPluginInfo;
 }
 
@@ -72,7 +72,7 @@ class PluginMetadata {
   // Checks if |plugin| mime types match all |matching_mime_types_|.
   // If there is no |matching_mime_types_|, |group_name_matcher_| is used
   // for matching.
-  bool MatchesPlugin(const webkit::WebPluginInfo& plugin);
+  bool MatchesPlugin(const content::WebPluginInfo& plugin);
 
   // If |status_str| describes a valid security status, writes it to |status|
   // and returns true, else returns false and leaves |status| unchanged.
@@ -81,7 +81,7 @@ class PluginMetadata {
 
   // Returns the security status for the given plug-in (i.e. whether it is
   // considered out-of-date, etc.)
-  SecurityStatus GetSecurityStatus(const webkit::WebPluginInfo& plugin) const;
+  SecurityStatus GetSecurityStatus(const content::WebPluginInfo& plugin) const;
 
   scoped_ptr<PluginMetadata> Clone() const;
 

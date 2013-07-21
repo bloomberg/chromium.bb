@@ -46,6 +46,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/common/webplugininfo.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_platform_file.h"
 #include "media/audio/audio_manager.h"
@@ -64,7 +65,6 @@
 #include "third_party/WebKit/public/web/WebNotificationPresenter.h"
 #include "ui/gfx/color_profile.h"
 #include "webkit/plugins/plugin_constants.h"
-#include "webkit/plugins/webplugininfo.h"
 
 #if defined(OS_MACOSX)
 #include "content/common/mac/font_descriptor.h"
@@ -242,7 +242,7 @@ class RenderMessageFilter::OpenChannelToNpapiPluginCallback
     return false;
   }
 
-  virtual void SetPluginInfo(const webkit::WebPluginInfo& info) OVERRIDE {
+  virtual void SetPluginInfo(const WebPluginInfo& info) OVERRIDE {
     info_ = info;
   }
 
@@ -284,7 +284,7 @@ class RenderMessageFilter::OpenChannelToNpapiPluginCallback
   }
 
   ResourceContext* context_;
-  webkit::WebPluginInfo info_;
+  WebPluginInfo info_;
   PluginProcessHost* host_;
   bool sent_plugin_channel_request_;
 };
@@ -667,16 +667,16 @@ void RenderMessageFilter::OnGetPlugins(
 
 void RenderMessageFilter::GetPluginsCallback(
     IPC::Message* reply_msg,
-    const std::vector<webkit::WebPluginInfo>& all_plugins) {
+    const std::vector<WebPluginInfo>& all_plugins) {
   // Filter the plugin list.
   PluginServiceFilter* filter = PluginServiceImpl::GetInstance()->GetFilter();
-  std::vector<webkit::WebPluginInfo> plugins;
+  std::vector<WebPluginInfo> plugins;
 
   int child_process_id = -1;
   int routing_id = MSG_ROUTING_NONE;
   for (size_t i = 0; i < all_plugins.size(); ++i) {
     // Copy because the filter can mutate.
-    webkit::WebPluginInfo plugin(all_plugins[i]);
+    WebPluginInfo plugin(all_plugins[i]);
     if (!filter || filter->IsPluginAvailable(child_process_id,
                                              routing_id,
                                              resource_context_,
@@ -697,7 +697,7 @@ void RenderMessageFilter::OnGetPluginInfo(
     const GURL& page_url,
     const std::string& mime_type,
     bool* found,
-    webkit::WebPluginInfo* info,
+    WebPluginInfo* info,
     std::string* actual_mime_type) {
   bool allow_wildcard = true;
   *found = plugin_service_->GetPluginInfo(

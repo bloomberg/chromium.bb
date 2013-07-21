@@ -99,6 +99,8 @@
     'public/common/url_fetcher.h',
     'public/common/url_utils.cc',
     'public/common/url_utils.h',
+    'public/common/webplugininfo.cc',
+    'public/common/webplugininfo.h',
     'public/common/zygote_fork_delegate_linux.h',
     'common/accessibility_messages.h',
     'common/accessibility_notification.h',

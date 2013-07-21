@@ -17,8 +17,8 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/webplugininfo.h"
 #include "net/base/net_util.h"
-#include "webkit/plugins/webplugininfo.h"
 
 typedef TestMessageHandler::MessageResponse MessageResponse;
 

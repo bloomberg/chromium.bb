@@ -31,7 +31,6 @@ class Range;
 }
 
 namespace webkit {
-struct WebPluginInfo;
 namespace ppapi {
 class PluginInstance;
 }
@@ -44,6 +43,7 @@ class WebPlugin;
 }
 
 namespace content {
+struct WebPluginInfo;
 
 class CONTENT_EXPORT RenderViewPepperHelper {
  public:
@@ -51,7 +51,7 @@ class CONTENT_EXPORT RenderViewPepperHelper {
   virtual ~RenderViewPepperHelper();
 
   virtual WebKit::WebPlugin* CreatePepperWebPlugin(
-      const webkit::WebPluginInfo& webplugin_info,
+      const WebPluginInfo& webplugin_info,
       const WebKit::WebPluginParams& params);
 
   // Called by RenderView to implement the corresponding function in its base

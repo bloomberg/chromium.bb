@@ -22,8 +22,7 @@
 #include "base/win/windows_version.h"
 #include "content/common/plugin_constants_win.h"
 
-using webkit::WebPluginInfo;
-
+namespace content {
 namespace {
 
 const char16 kRegistryApps[] =
@@ -220,8 +219,8 @@ bool IsValid32BitImage(const base::FilePath& path) {
 // Returns true if the given plugins share at least one mime type.  This is used
 // to differentiate newer versions of a plugin vs two plugins which happen to
 // have the same filename.
-bool HaveSharedMimeType(const webkit::WebPluginInfo& plugin1,
-                        const webkit::WebPluginInfo& plugin2) {
+bool HaveSharedMimeType(const WebPluginInfo& plugin1,
+                        const WebPluginInfo& plugin2) {
   for (size_t i = 0; i < plugin1.mime_types.size(); ++i) {
     for (size_t j = 0; j < plugin2.mime_types.size(); ++j) {
       if (plugin1.mime_types[i].mime_type == plugin2.mime_types[j].mime_type)
@@ -259,10 +258,8 @@ bool IsNewerVersion(const base::string16& a, const base::string16& b) {
 
 }  // namespace
 
-namespace content {
-
 bool PluginList::ReadWebPluginInfo(const base::FilePath& filename,
-                                   webkit::WebPluginInfo* info) {
+                                   WebPluginInfo* info) {
   // On windows, the way we get the mime types for the library is
   // to check the version information in the DLL itself.  This
   // will be a string of the format:  <type1>|<type2>|<type3>|...
@@ -373,8 +370,8 @@ void PluginList::GetPluginPathsFromRegistry(
 }
 
 bool PluginList::ShouldLoadPluginUsingPluginList(
-    const webkit::WebPluginInfo& info,
-    std::vector<webkit::WebPluginInfo>* plugins) {
+    const WebPluginInfo& info,
+    std::vector<WebPluginInfo>* plugins) {
   // Version check
   for (size_t j = 0; j < plugins->size(); ++j) {
     base::FilePath::StringType plugin1 =

@@ -23,7 +23,7 @@ namespace base {
 class ListValue;
 }
 
-namespace webkit {
+namespace content {
 struct WebPluginInfo;
 }
 
@@ -70,7 +70,7 @@ class PluginPrefs : public RefcountedBrowserContextKeyedService {
   PolicyStatus PolicyStatusForPlugin(const string16& name) const;
 
   // Returns whether the plugin is enabled or not.
-  bool IsPluginEnabled(const webkit::WebPluginInfo& plugin) const;
+  bool IsPluginEnabled(const content::WebPluginInfo& plugin) const;
 
   void set_profile(Profile* profile) { profile_ = profile; }
 
@@ -117,16 +117,16 @@ class PluginPrefs : public RefcountedBrowserContextKeyedService {
   void EnablePluginGroupInternal(
       bool enabled,
       const string16& group_name,
-      const std::vector<webkit::WebPluginInfo>& plugins);
+      const std::vector<content::WebPluginInfo>& plugins);
   void EnablePluginInternal(
       bool enabled,
       const base::FilePath& path,
       PluginFinder* plugin_finder,
       const base::Callback<void(bool)>& callback,
-      const std::vector<webkit::WebPluginInfo>& plugins);
+      const std::vector<content::WebPluginInfo>& plugins);
 
   // Called on the UI thread with the plugin data to save the preferences.
-  void OnUpdatePreferences(const std::vector<webkit::WebPluginInfo>& plugins);
+  void OnUpdatePreferences(const std::vector<content::WebPluginInfo>& plugins);
 
   // Sends the notification that plugin data has changed.
   void NotifyPluginStatusChanged();

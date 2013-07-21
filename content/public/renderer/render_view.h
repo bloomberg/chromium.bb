@@ -31,16 +31,13 @@ namespace gfx {
 class Size;
 }
 
-namespace webkit {
-struct WebPluginInfo;
-}
-
 namespace content {
 
 class ContextMenuClient;
 class RenderViewVisitor;
 struct ContextMenuParams;
 struct SSLStatus;
+struct WebPluginInfo;
 
 class CONTENT_EXPORT RenderView : public IPC::Sender {
  public:
@@ -92,7 +89,7 @@ class CONTENT_EXPORT RenderView : public IPC::Sender {
   // plugin was found.
   virtual WebKit::WebPlugin* CreatePlugin(
       WebKit::WebFrame* frame,
-      const webkit::WebPluginInfo& info,
+      const WebPluginInfo& info,
       const WebKit::WebPluginParams& params) = 0;
 
   // Evaluates a string of JavaScript in a particular frame.

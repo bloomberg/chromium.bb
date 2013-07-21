@@ -17,11 +17,11 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/referrer.h"
+#include "content/public/common/webplugininfo.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "webkit/plugins/webplugininfo.h"
 
 #if defined(GOOGLE_TV)
 #include "base/android/context_types.h"
@@ -139,7 +139,7 @@ int PepperBrokerInfoBarDelegate::GetIconID() const {
 string16 PepperBrokerInfoBarDelegate::GetMessageText() const {
   content::PluginService* plugin_service =
       content::PluginService::GetInstance();
-  webkit::WebPluginInfo plugin;
+  content::WebPluginInfo plugin;
   bool success = plugin_service->GetPluginInfoByPath(plugin_path_, &plugin);
   DCHECK(success);
   scoped_ptr<PluginMetadata> plugin_metadata(

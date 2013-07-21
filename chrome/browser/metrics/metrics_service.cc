@@ -208,9 +208,9 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/process_type.h"
+#include "content/public/common/webplugininfo.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_fetcher.h"
-#include "webkit/plugins/webplugininfo.h"
 
 // TODO(port): port browser_distribution.h.
 #if !defined(OS_POSIX)
@@ -909,13 +909,13 @@ void MetricsService::OnInitTaskGotHardwareClass(
       base::Bind(&MetricsService::OnInitTaskGotPluginInfo,
           self_ptr_factory_.GetWeakPtr()));
 #else
-  std::vector<webkit::WebPluginInfo> plugin_list_empty;
+  std::vector<content::WebPluginInfo> plugin_list_empty;
   OnInitTaskGotPluginInfo(plugin_list_empty);
 #endif  // defined(ENABLE_PLUGINS)
 }
 
 void MetricsService::OnInitTaskGotPluginInfo(
-    const std::vector<webkit::WebPluginInfo>& plugins) {
+    const std::vector<content::WebPluginInfo>& plugins) {
   DCHECK_EQ(INIT_TASK_SCHEDULED, state_);
   plugins_ = plugins;
 
@@ -1595,7 +1595,7 @@ void MetricsService::LogChromeOSCrash(const std::string &crash_type) {
 #endif  // OS_CHROMEOS
 
 void MetricsService::LogPluginLoadingError(const base::FilePath& plugin_path) {
-  webkit::WebPluginInfo plugin;
+  content::WebPluginInfo plugin;
   bool success =
       content::PluginService::GetInstance()->GetPluginInfoByPath(plugin_path,
                                                                  &plugin);

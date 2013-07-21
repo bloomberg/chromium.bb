@@ -49,6 +49,7 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/pepper_plugin_info.h"
+#include "content/public/common/webplugininfo.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
 #include "net/base/mime_util.h"
@@ -60,7 +61,6 @@
 #include "webkit/browser/fileapi/file_system_operation_runner.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/common/fileapi/file_system_util.h"
-#include "webkit/plugins/webplugininfo.h"
 
 using base::DictionaryValue;
 using base::ListValue;

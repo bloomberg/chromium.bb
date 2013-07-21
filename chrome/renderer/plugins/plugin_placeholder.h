@@ -6,16 +6,16 @@
 #define CHROME_RENDERER_PLUGINS_PLUGIN_PLACEHOLDER_H_
 
 #include "chrome/renderer/plugins/webview_plugin.h"
+#include "content/public/common/webplugininfo.h"
 #include "content/public/renderer/context_menu_client.h"
 #include "content/public/renderer/render_process_observer.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "third_party/WebKit/public/web/WebPluginParams.h"
-#include "webkit/plugins/webplugininfo.h"
 #include "webkit/renderer/cpp_bound_class.h"
 
 struct ChromeViewHostMsg_GetPluginInfo_Status;
 
-namespace webkit {
+namespace content {
 struct WebPluginInfo;
 }
 
@@ -41,7 +41,7 @@ class PluginPlaceholder : public content::RenderViewObserver,
       content::RenderView* render_view,
       WebKit::WebFrame* frame,
       const WebKit::WebPluginParams& params,
-      const webkit::WebPluginInfo& info,
+      const content::WebPluginInfo& info,
       const std::string& identifier,
       const string16& name,
       int resource_id,
@@ -160,7 +160,7 @@ class PluginPlaceholder : public content::RenderViewObserver,
   WebKit::WebPluginParams plugin_params_;
   WebViewPlugin* plugin_;
 
-  webkit::WebPluginInfo plugin_info_;
+  content::WebPluginInfo plugin_info_;
 
   string16 title_;
   string16 message_;

@@ -24,8 +24,6 @@
         '<(DEPTH)/ui/ui.gyp:ui_resources',
       ],
       'sources': [
-        '../plugins/webplugininfo.cc',
-        '../plugins/webplugininfo.h',
         '../plugins/plugin_constants.cc',
         '../plugins/plugin_constants.h',
         '../plugins/plugin_switches.cc',

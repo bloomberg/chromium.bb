@@ -9,7 +9,7 @@
 
 class PluginFinder;
 
-namespace webkit {
+namespace content {
 struct WebPluginInfo;
 }
 
@@ -67,7 +67,7 @@ class ContentSettingsContentSettingGetResourceIdentifiersFunction
 
   // Callback method that gets executed when |plugins|
   // are asynchronously fetched.
-  void OnGotPlugins(const std::vector<webkit::WebPluginInfo>& plugins);
+  void OnGotPlugins(const std::vector<content::WebPluginInfo>& plugins);
 };
 
 }  // namespace extensions

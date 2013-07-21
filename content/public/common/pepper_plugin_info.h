@@ -10,8 +10,8 @@
 
 #include "base/files/file_path.h"
 #include "content/common/content_export.h"
+#include "content/public/common/webplugininfo.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
-#include "webkit/plugins/webplugininfo.h"
 
 namespace content {
 
@@ -19,7 +19,7 @@ struct CONTENT_EXPORT PepperPluginInfo {
   PepperPluginInfo();
   ~PepperPluginInfo();
 
-  webkit::WebPluginInfo ToWebPluginInfo() const;
+  WebPluginInfo ToWebPluginInfo() const;
 
   // Indicates internal plugins for which there's not actually a library.
   // These plugins are implemented in the Chrome binary using a separate set
@@ -38,7 +38,7 @@ struct CONTENT_EXPORT PepperPluginInfo {
   std::string name;
   std::string description;
   std::string version;
-  std::vector<webkit::WebPluginMimeType> mime_types;
+  std::vector<WebPluginMimeType> mime_types;
 
   // When is_internal is set, this contains the function pointers to the
   // entry points for the internal plugins.

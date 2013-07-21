@@ -35,6 +35,7 @@
 #include "content/public/common/context_menu_params.h"
 #include "content/public/common/media_stream_request.h"
 #include "content/public/common/referrer.h"
+#include "content/public/common/webplugininfo.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/renderer_restrict_dispatch_group.h"
 #include "content/renderer/gamepad_shared_memory_reader.h"
@@ -101,7 +102,6 @@
 #include "webkit/plugins/ppapi/ppb_tcp_server_socket_private_impl.h"
 #include "webkit/plugins/ppapi/ppb_tcp_socket_private_impl.h"
 #include "webkit/plugins/ppapi/resource_helper.h"
-#include "webkit/plugins/webplugininfo.h"
 
 using WebKit::WebView;
 using WebKit::WebFrame;
@@ -306,7 +306,7 @@ void DidFailOpenFileSystemURL(
 
 void CreateHostForInProcessModule(RenderViewImpl* render_view,
                                   webkit::ppapi::PluginModule* module,
-                                  const webkit::WebPluginInfo& webplugin_info) {
+                                  const WebPluginInfo& webplugin_info) {
   // First time an in-process plugin was used, make a host for it.
   const PepperPluginInfo* info =
       PepperPluginRegistry::GetInstance()->GetInfoForPlugin(webplugin_info);
@@ -347,7 +347,7 @@ PepperPluginDelegateImpl::~PepperPluginDelegateImpl() {
 }
 
 WebKit::WebPlugin* PepperPluginDelegateImpl::CreatePepperWebPlugin(
-    const webkit::WebPluginInfo& webplugin_info,
+    const WebPluginInfo& webplugin_info,
     const WebKit::WebPluginParams& params) {
   bool pepper_plugin_was_registered = false;
   scoped_refptr<webkit::ppapi::PluginModule> pepper_module(
@@ -365,7 +365,7 @@ WebKit::WebPlugin* PepperPluginDelegateImpl::CreatePepperWebPlugin(
 
 scoped_refptr<webkit::ppapi::PluginModule>
 PepperPluginDelegateImpl::CreatePepperPluginModule(
-    const webkit::WebPluginInfo& webplugin_info,
+    const WebPluginInfo& webplugin_info,
     bool* pepper_plugin_was_registered) {
   *pepper_plugin_was_registered = true;
 

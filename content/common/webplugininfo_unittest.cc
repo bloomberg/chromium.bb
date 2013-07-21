@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/plugins/webplugininfo.h"
+#include "content/public/common/webplugininfo.h"
 
 #include <string>
 #include <vector>
@@ -12,7 +12,7 @@
 #include "base/version.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace webkit {
+namespace content {
 
 TEST(PluginUtilsTest, VersionExtraction) {
   // Some real-world plugin versions (spaces, commata, parentheses, 'r', oh my)
@@ -40,4 +40,4 @@ TEST(PluginUtilsTest, VersionExtraction) {
   }
 }
 
-}  // namespace webkit
+}  // namespace content

@@ -140,10 +140,10 @@ void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins) {
       content::PepperPluginInfo pdf;
       pdf.path = path;
       pdf.name = chrome::ChromeContentClient::kPDFPluginName;
-      webkit::WebPluginMimeType pdf_mime_type(kPDFPluginMimeType,
-                                              kPDFPluginExtension,
-                                              kPDFPluginDescription);
-      webkit::WebPluginMimeType print_preview_pdf_mime_type(
+      content::WebPluginMimeType pdf_mime_type(kPDFPluginMimeType,
+                                               kPDFPluginExtension,
+                                               kPDFPluginDescription);
+      content::WebPluginMimeType print_preview_pdf_mime_type(
           kPDFPluginPrintPreviewMimeType,
           kPDFPluginExtension,
           kPDFPluginDescription);
@@ -168,14 +168,14 @@ void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins) {
       content::PepperPluginInfo nacl;
       nacl.path = path;
       nacl.name = chrome::ChromeContentClient::kNaClPluginName;
-      webkit::WebPluginMimeType nacl_mime_type(kNaClPluginMimeType,
-                                               kNaClPluginExtension,
-                                               kNaClPluginDescription);
+      content::WebPluginMimeType nacl_mime_type(kNaClPluginMimeType,
+                                                kNaClPluginExtension,
+                                                kNaClPluginDescription);
       nacl.mime_types.push_back(nacl_mime_type);
       if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnablePnacl)) {
-        webkit::WebPluginMimeType pnacl_mime_type(kPnaclPluginMimeType,
-                                                  kPnaclPluginExtension,
-                                                  kPnaclPluginDescription);
+        content::WebPluginMimeType pnacl_mime_type(kPnaclPluginMimeType,
+                                                   kPnaclPluginExtension,
+                                                   kPnaclPluginDescription);
         nacl.mime_types.push_back(pnacl_mime_type);
       }
       nacl.permissions = kNaClPluginPermissions;
@@ -196,9 +196,9 @@ void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins) {
       o3d.is_out_of_process = true;
       o3d.is_sandboxed = false;
       o3d.permissions = kO3DPluginPermissions;
-      webkit::WebPluginMimeType o3d_mime_type(kO3DPluginMimeType,
-                                              kO3DPluginExtension,
-                                              kO3DPluginDescription);
+      content::WebPluginMimeType o3d_mime_type(kO3DPluginMimeType,
+                                               kO3DPluginExtension,
+                                               kO3DPluginDescription);
       o3d.mime_types.push_back(o3d_mime_type);
       plugins->push_back(o3d);
 
@@ -215,9 +215,9 @@ void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins) {
       o1d.is_out_of_process = true;
       o1d.is_sandboxed = false;
       o1d.permissions = kO1DPluginPermissions;
-      webkit::WebPluginMimeType o1d_mime_type(kO1DPluginMimeType,
-                                              kO1DPluginExtension,
-                                              kO1DPluginDescription);
+      content::WebPluginMimeType o1d_mime_type(kO1DPluginMimeType,
+                                               kO1DPluginExtension,
+                                               kO1DPluginDescription);
       o1d.mime_types.push_back(o1d_mime_type);
       plugins->push_back(o1d);
 
@@ -234,9 +234,9 @@ void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins) {
       gtalk.is_out_of_process = true;
       gtalk.is_sandboxed = false;
       gtalk.permissions = kGTalkPluginPermissions;
-      webkit::WebPluginMimeType gtalk_mime_type(kGTalkPluginMimeType,
-                                                kGTalkPluginExtension,
-                                                kGTalkPluginDescription);
+      content::WebPluginMimeType gtalk_mime_type(kGTalkPluginMimeType,
+                                                 kGTalkPluginExtension,
+                                                 kGTalkPluginDescription);
       gtalk.mime_types.push_back(gtalk_mime_type);
       plugins->push_back(gtalk);
 
@@ -255,7 +255,7 @@ void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins) {
       widevine_cdm.name = kWidevineCdmDisplayName;
       widevine_cdm.description = kWidevineCdmDescription;
       widevine_cdm.version = WIDEVINE_CDM_VERSION_STRING;
-      webkit::WebPluginMimeType widevine_cdm_mime_type(
+      content::WebPluginMimeType widevine_cdm_mime_type(
           kWidevineCdmPluginMimeType,
           kWidevineCdmPluginExtension,
           kWidevineCdmPluginMimeTypeDescription);
@@ -277,7 +277,7 @@ void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins) {
   info.name = kRemotingViewerPluginName;
   info.description = kRemotingViewerPluginDescription;
   info.path = base::FilePath(kRemotingViewerPluginPath);
-  webkit::WebPluginMimeType remoting_mime_type(
+  content::WebPluginMimeType remoting_mime_type(
       kRemotingViewerPluginMimeType,
       kRemotingViewerPluginMimeExtension,
       kRemotingViewerPluginMimeDescription);
@@ -321,13 +321,13 @@ content::PepperPluginInfo CreatePepperFlashInfo(const base::FilePath& path,
   plugin.description = plugin.name + " " + flash_version_numbers[0] + "." +
       flash_version_numbers[1] + " r" + flash_version_numbers[2];
   plugin.version = JoinString(flash_version_numbers, '.');
-  webkit::WebPluginMimeType swf_mime_type(kFlashPluginSwfMimeType,
-                                          kFlashPluginSwfExtension,
-                                          kFlashPluginSwfDescription);
+  content::WebPluginMimeType swf_mime_type(kFlashPluginSwfMimeType,
+                                           kFlashPluginSwfExtension,
+                                           kFlashPluginSwfDescription);
   plugin.mime_types.push_back(swf_mime_type);
-  webkit::WebPluginMimeType spl_mime_type(kFlashPluginSplMimeType,
-                                          kFlashPluginSplExtension,
-                                          kFlashPluginSplDescription);
+  content::WebPluginMimeType spl_mime_type(kFlashPluginSplMimeType,
+                                           kFlashPluginSplExtension,
+                                           kFlashPluginSplDescription);
   plugin.mime_types.push_back(spl_mime_type);
 
   return plugin;

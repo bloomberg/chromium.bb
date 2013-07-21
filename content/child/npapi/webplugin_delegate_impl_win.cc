@@ -38,7 +38,6 @@
 using WebKit::WebKeyboardEvent;
 using WebKit::WebInputEvent;
 using WebKit::WebMouseEvent;
-using webkit::WebPluginInfo;
 
 namespace content {
 
@@ -188,8 +187,7 @@ std::wstring GetKeyPath(HKEY key) {
 
 int GetPluginMajorVersion(const WebPluginInfo& plugin_info) {
   Version plugin_version;
-  webkit::WebPluginInfo::CreateVersionFromString(
-      plugin_info.version, &plugin_version);
+  WebPluginInfo::CreateVersionFromString(plugin_info.version, &plugin_version);
 
   int major_version = 0;
   if (plugin_version.IsValid())

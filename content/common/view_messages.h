@@ -1679,7 +1679,7 @@ IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_CookiesEnabled,
 // Used to get the list of plugins
 IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_GetPlugins,
     bool /* refresh*/,
-    std::vector<webkit::WebPluginInfo> /* plugins */)
+    std::vector<content::WebPluginInfo> /* plugins */)
 
 // Return information about a plugin for the given URL and MIME
 // type. If there is no matching plugin, |found| is false.
@@ -1691,7 +1691,7 @@ IPC_SYNC_MESSAGE_CONTROL4_3(ViewHostMsg_GetPluginInfo,
                             GURL /* page_url */,
                             std::string /* mime_type */,
                             bool /* found */,
-                            webkit::WebPluginInfo /* plugin info */,
+                            content::WebPluginInfo /* plugin info */,
                             std::string /* actual_mime_type */)
 
 // A renderer sends this to the browser process when it wants to
@@ -1704,7 +1704,7 @@ IPC_SYNC_MESSAGE_CONTROL4_2(ViewHostMsg_OpenChannelToPlugin,
                             GURL /* page_url */,
                             std::string /* mime_type */,
                             IPC::ChannelHandle /* channel_handle */,
-                            webkit::WebPluginInfo /* info */)
+                            content::WebPluginInfo /* info */)
 
 #if defined(OS_WIN)
 IPC_MESSAGE_ROUTED1(ViewHostMsg_WindowlessPluginDummyWindowCreated,

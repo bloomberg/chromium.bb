@@ -155,18 +155,18 @@ bool MakePepperFlashPluginInfo(const base::FilePath& flash_path,
 
   plugin_info->version = flash_version.GetString();
 
-  webkit::WebPluginMimeType swf_mime_type(kFlashPluginSwfMimeType,
-                                          kFlashPluginSwfExtension,
-                                          kFlashPluginName);
+  content::WebPluginMimeType swf_mime_type(kFlashPluginSwfMimeType,
+                                           kFlashPluginSwfExtension,
+                                           kFlashPluginName);
   plugin_info->mime_types.push_back(swf_mime_type);
-  webkit::WebPluginMimeType spl_mime_type(kFlashPluginSplMimeType,
-                                          kFlashPluginSplExtension,
-                                          kFlashPluginName);
+  content::WebPluginMimeType spl_mime_type(kFlashPluginSplMimeType,
+                                           kFlashPluginSplExtension,
+                                           kFlashPluginName);
   plugin_info->mime_types.push_back(spl_mime_type);
   return true;
 }
 
-bool IsPepperFlash(const webkit::WebPluginInfo& plugin) {
+bool IsPepperFlash(const content::WebPluginInfo& plugin) {
   // We try to recognize Pepper Flash by the following criteria:
   // * It is a Pepper plug-in.
   // * It has the special Flash permissions.
@@ -181,9 +181,9 @@ void RegisterPepperFlashWithChrome(const base::FilePath& path,
   if (!MakePepperFlashPluginInfo(path, version, true, &plugin_info))
     return;
 
-  std::vector<webkit::WebPluginInfo> plugins;
+  std::vector<content::WebPluginInfo> plugins;
   PluginService::GetInstance()->GetInternalPlugins(&plugins);
-  for (std::vector<webkit::WebPluginInfo>::const_iterator it = plugins.begin();
+  for (std::vector<content::WebPluginInfo>::const_iterator it = plugins.begin();
        it != plugins.end(); ++it) {
     if (!IsPepperFlash(*it))
       continue;

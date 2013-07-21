@@ -28,8 +28,8 @@
 #include "content/public/browser/resource_context.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/process_type.h"
+#include "content/public/common/webplugininfo.h"
 #include "webkit/plugins/plugin_constants.h"
-#include "webkit/plugins/webplugininfo.h"
 
 #if defined(OS_WIN)
 #include "content/common/plugin_constants_win.h"
@@ -176,13 +176,13 @@ void PluginServiceImpl::Init() {
   // type we use with the plugin, so the renderer can instantiate it.
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kSitePerProcess)) {
-    webkit::WebPluginInfo webview_plugin(
+    WebPluginInfo webview_plugin(
         ASCIIToUTF16("WebView Tag"),
         base::FilePath(),
         ASCIIToUTF16("1.2.3.4"),
         ASCIIToUTF16("Browser Plugin."));
-    webview_plugin.type = webkit::WebPluginInfo::PLUGIN_TYPE_NPAPI;
-    webkit::WebPluginMimeType webview_plugin_mime_type;
+    webview_plugin.type = WebPluginInfo::PLUGIN_TYPE_NPAPI;
+    WebPluginMimeType webview_plugin_mime_type;
     webview_plugin_mime_type.mime_type = "application/browser-plugin";
     webview_plugin_mime_type.file_extensions.push_back("*");
     webview_plugin.mime_types.push_back(webview_plugin_mime_type);
@@ -302,7 +302,7 @@ PluginProcessHost* PluginServiceImpl::FindOrStartNpapiPluginProcess(
   if (plugin_host)
     return plugin_host;
 
-  webkit::WebPluginInfo info;
+  WebPluginInfo info;
   if (!GetPluginInfoByPath(plugin_path, &info)) {
     return NULL;
   }
@@ -448,7 +448,7 @@ void PluginServiceImpl::ForwardGetAllowedPluginForOpenChannelToPlugin(
     const GURL& url,
     const std::string& mime_type,
     PluginProcessHost::Client* client,
-    const std::vector<webkit::WebPluginInfo>&) {
+    const std::vector<WebPluginInfo>&) {
   GetAllowedPluginForOpenChannelToPlugin(params.render_process_id,
       params.render_view_id, url, params.page_url, mime_type, client,
       params.resource_context);
@@ -462,7 +462,7 @@ void PluginServiceImpl::GetAllowedPluginForOpenChannelToPlugin(
     const std::string& mime_type,
     PluginProcessHost::Client* client,
     ResourceContext* resource_context) {
-  webkit::WebPluginInfo info;
+  WebPluginInfo info;
   bool allow_wildcard = true;
   bool found = GetPluginInfo(
       render_process_id, render_view_id, resource_context,
@@ -507,7 +507,7 @@ bool PluginServiceImpl::GetPluginInfoArray(
     const GURL& url,
     const std::string& mime_type,
     bool allow_wildcard,
-    std::vector<webkit::WebPluginInfo>* plugins,
+    std::vector<WebPluginInfo>* plugins,
     std::vector<std::string>* actual_mime_types) {
   bool use_stale = false;
   PluginList::Singleton()->GetPluginInfoArray(
@@ -524,9 +524,9 @@ bool PluginServiceImpl::GetPluginInfo(int render_process_id,
                                       const std::string& mime_type,
                                       bool allow_wildcard,
                                       bool* is_stale,
-                                      webkit::WebPluginInfo* info,
+                                      WebPluginInfo* info,
                                       std::string* actual_mime_type) {
-  std::vector<webkit::WebPluginInfo> plugins;
+  std::vector<WebPluginInfo> plugins;
   std::vector<std::string> mime_types;
   bool stale = GetPluginInfoArray(
       url, mime_type, allow_wildcard, &plugins, &mime_types);
@@ -550,11 +550,11 @@ bool PluginServiceImpl::GetPluginInfo(int render_process_id,
 }
 
 bool PluginServiceImpl::GetPluginInfoByPath(const base::FilePath& plugin_path,
-                                            webkit::WebPluginInfo* info) {
-  std::vector<webkit::WebPluginInfo> plugins;
+                                            WebPluginInfo* info) {
+  std::vector<WebPluginInfo> plugins;
   PluginList::Singleton()->GetPluginsNoRefresh(&plugins);
 
-  for (std::vector<webkit::WebPluginInfo>::iterator it = plugins.begin();
+  for (std::vector<WebPluginInfo>::iterator it = plugins.begin();
        it != plugins.end();
        ++it) {
     if (it->path == plugin_path) {
@@ -569,7 +569,7 @@ bool PluginServiceImpl::GetPluginInfoByPath(const base::FilePath& plugin_path,
 string16 PluginServiceImpl::GetPluginDisplayNameByPath(
     const base::FilePath& path) {
   string16 plugin_name = path.LossyDisplayName();
-  webkit::WebPluginInfo info;
+  WebPluginInfo info;
   if (PluginService::GetInstance()->GetPluginInfoByPath(path, &info) &&
       !info.name.empty()) {
     plugin_name = info.name;
@@ -600,7 +600,7 @@ void PluginServiceImpl::GetPlugins(const GetPluginsCallback& callback) {
     return;
   }
 #if defined(OS_POSIX)
-  std::vector<webkit::WebPluginInfo> cached_plugins;
+  std::vector<WebPluginInfo> cached_plugins;
   if (PluginList::Singleton()->GetPluginsNoRefresh(&cached_plugins)) {
     // Can't assume the caller is reentrant.
     target_loop->PostTask(FROM_HERE,
@@ -625,7 +625,7 @@ void PluginServiceImpl::GetPluginsInternal(
   DCHECK(BrowserThread::GetBlockingPool()->IsRunningSequenceOnCurrentThread(
       plugin_list_token_));
 
-  std::vector<webkit::WebPluginInfo> plugins;
+  std::vector<WebPluginInfo> plugins;
   PluginList::Singleton()->GetPlugins(&plugins, NPAPIPluginsSupported());
 
   target_loop->PostTask(FROM_HERE,
@@ -674,7 +674,7 @@ PepperPluginInfo* PluginServiceImpl::GetRegisteredPpapiPluginInfo(
   // can be obtained from the PluginList singleton and we can use it to
   // construct it and add it to the list. This same deal needs to be done
   // in the renderer side in PepperPluginRegistry.
-  webkit::WebPluginInfo webplugin_info;
+  WebPluginInfo webplugin_info;
   if (!GetPluginInfoByPath(plugin_path, &webplugin_info))
     return NULL;
   PepperPluginInfo new_pepper_info;
@@ -771,10 +771,10 @@ void PluginServiceImpl::AddExtraPluginDir(const base::FilePath& path) {
 }
 
 void PluginServiceImpl::RegisterInternalPlugin(
-    const webkit::WebPluginInfo& info,
+    const WebPluginInfo& info,
     bool add_at_beginning) {
   if (!NPAPIPluginsSupported() &&
-      info.type == webkit::WebPluginInfo::PLUGIN_TYPE_NPAPI) {
+      info.type == WebPluginInfo::PLUGIN_TYPE_NPAPI) {
     DLOG(INFO) << "Don't register NPAPI plugins when they're not supported";
     return;
   }
@@ -786,7 +786,7 @@ void PluginServiceImpl::UnregisterInternalPlugin(const base::FilePath& path) {
 }
 
 void PluginServiceImpl::GetInternalPlugins(
-    std::vector<webkit::WebPluginInfo>* plugins) {
+    std::vector<WebPluginInfo>* plugins) {
   PluginList::Singleton()->GetInternalPlugins(plugins);
 }
 

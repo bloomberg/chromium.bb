@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "content/child/npapi/webplugin_delegate.h"
+#include "content/public/common/webplugininfo.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_sender.h"
@@ -20,7 +21,6 @@
 #include "ui/gfx/rect.h"
 #include "ui/surface/transport_dib.h"
 #include "url/gurl.h"
-#include "webkit/plugins/webplugininfo.h"
 
 #if defined(OS_MACOSX)
 #include "base/containers/hash_tables.h"
@@ -259,7 +259,7 @@ class WebPluginDelegateProxy
   scoped_refptr<PluginChannelHost> channel_host_;
   std::string mime_type_;
   int instance_id_;
-  webkit::WebPluginInfo info_;
+  WebPluginInfo info_;
 
   gfx::Rect plugin_rect_;
   gfx::Rect clip_rect_;

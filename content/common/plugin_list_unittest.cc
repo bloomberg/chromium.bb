@@ -8,9 +8,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using webkit::WebPluginInfo;
-using webkit::WebPluginMimeType;
-
 namespace content {
 
 namespace {

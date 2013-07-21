@@ -13,8 +13,6 @@
 #include "content/public/common/content_switches.h"
 #include "ppapi/shared_impl/ppapi_permissions.h"
 
-using webkit::WebPluginInfo;
-
 namespace content {
 namespace {
 
@@ -66,9 +64,9 @@ void ComputePluginsFromCommandLine(std::vector<PepperPluginInfo>* plugins) {
     if (name_parts.size() > 3)
       plugin.version = name_parts[3];
     for (size_t j = 1; j < parts.size(); ++j) {
-      webkit::WebPluginMimeType mime_type(parts[j],
-                                          std::string(),
-                                          plugin.description);
+      WebPluginMimeType mime_type(parts[j],
+                                  std::string(),
+                                  plugin.description);
       plugin.mime_types.push_back(mime_type);
     }
 
@@ -85,7 +83,7 @@ void ComputePluginsFromCommandLine(std::vector<PepperPluginInfo>* plugins) {
 
 }  // namespace
 
-bool MakePepperPluginInfo(const webkit::WebPluginInfo& webplugin_info,
+bool MakePepperPluginInfo(const WebPluginInfo& webplugin_info,
                           PepperPluginInfo* pepper_info) {
   if (!webplugin_info.is_pepper_plugin())
     return false;
@@ -94,7 +92,7 @@ bool MakePepperPluginInfo(const webkit::WebPluginInfo& webplugin_info,
       webplugin_info.type == WebPluginInfo::PLUGIN_TYPE_PEPPER_OUT_OF_PROCESS ||
       webplugin_info.type == WebPluginInfo::PLUGIN_TYPE_PEPPER_UNSANDBOXED;
   pepper_info->is_sandboxed = webplugin_info.type !=
-      webkit::WebPluginInfo::PLUGIN_TYPE_PEPPER_UNSANDBOXED;
+      WebPluginInfo::PLUGIN_TYPE_PEPPER_UNSANDBOXED;
 
   pepper_info->path = base::FilePath(webplugin_info.path);
   pepper_info->name = UTF16ToASCII(webplugin_info.name);
@@ -140,7 +138,7 @@ void PepperPluginRegistry::PreloadModules() {
 }
 
 const PepperPluginInfo* PepperPluginRegistry::GetInfoForPlugin(
-    const webkit::WebPluginInfo& info) {
+    const WebPluginInfo& info) {
   for (size_t i = 0; i < plugin_list_.size(); ++i) {
     if (info.path == plugin_list_[i].path)
       return &plugin_list_[i];

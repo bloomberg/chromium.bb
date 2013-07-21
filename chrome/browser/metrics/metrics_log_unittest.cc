@@ -25,11 +25,11 @@
 #include "chrome/installer/util/google_update_settings.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/process_type.h"
+#include "content/public/common/webplugininfo.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/size.h"
 #include "url/gurl.h"
-#include "webkit/plugins/webplugininfo.h"
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/dbus/mock_dbus_thread_manager_without_gmock.h"
@@ -128,7 +128,7 @@ class MetricsLogTest : public testing::Test {
   void TestRecordEnvironment(bool proto_only) {
     TestMetricsLog log(kClientId, kSessionId);
 
-    std::vector<webkit::WebPluginInfo> plugins;
+    std::vector<content::WebPluginInfo> plugins;
     GoogleUpdateMetrics google_update_metrics;
     if (proto_only)
       log.RecordEnvironmentProto(plugins, google_update_metrics);

@@ -129,9 +129,9 @@ void VersionHandler::OnGotFilePaths(string16* executable_path_data,
 
 #if defined(ENABLE_PLUGINS)
 void VersionHandler::OnGotPlugins(
-    const std::vector<webkit::WebPluginInfo>& plugins) {
+    const std::vector<content::WebPluginInfo>& plugins) {
   // Obtain the version of the first enabled Flash plugin.
-  std::vector<webkit::WebPluginInfo> info_array;
+  std::vector<content::WebPluginInfo> info_array;
   content::PluginService::GetInstance()->GetPluginInfoArray(
       GURL(), kFlashPluginSwfMimeType, false, &info_array, NULL);
   string16 flash_version =

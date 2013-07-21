@@ -2,22 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_PLUGINS_WEBPLUGININFO_H_
-#define WEBKIT_PLUGINS_WEBPLUGININFO_H_
+#ifndef CONTENT_PUBLIC_COMMON_WEBPLUGININFO_H_
+#define CONTENT_PUBLIC_COMMON_WEBPLUGININFO_H_
 
 #include <string>
 #include <vector>
 
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
+#include "content/common/content_export.h"
 
 namespace base {
 class Version;
 }
 
-namespace webkit {
+namespace content {
 
-struct WebPluginMimeType {
+struct CONTENT_EXPORT WebPluginMimeType {
   WebPluginMimeType();
   // A constructor for the common case of a single file extension and an ASCII
   // description.
@@ -41,7 +42,7 @@ struct WebPluginMimeType {
 };
 
 // Describes an available NPAPI or Pepper plugin.
-struct WebPluginInfo {
+struct CONTENT_EXPORT WebPluginInfo {
   enum PluginType {
     PLUGIN_TYPE_NPAPI,
     PLUGIN_TYPE_PEPPER_IN_PROCESS,
@@ -93,6 +94,6 @@ struct WebPluginInfo {
   int32 pepper_permissions;
 };
 
-}  // namespace webkit
+}  // namespace content
 
-#endif  // WEBKIT_PLUGINS_WEBPLUGININFO_H_
+#endif  // CONTENT_PUBLIC_COMMON_WEBPLUGININFO_H_

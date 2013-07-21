@@ -24,12 +24,12 @@
 #include "content/public/browser/pepper_flash_settings_helper.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/common/content_constants.h"
+#include "content/public/common/webplugininfo.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_listener.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "url/gurl.h"
 #include "webkit/plugins/plugin_constants.h"
-#include "webkit/plugins/webplugininfo.h"
 
 using content::BrowserThread;
 
@@ -401,7 +401,7 @@ void PepperFlashSettingsManager::Core::InitializeOnIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK_EQ(STATE_UNINITIALIZED, state_);
 
-  webkit::WebPluginInfo plugin_info;
+  content::WebPluginInfo plugin_info;
   if (!PepperFlashSettingsManager::IsPepperFlashInUse(plugin_prefs_.get(),
                                                       &plugin_info)) {
     NotifyErrorFromIOThread();
@@ -947,17 +947,17 @@ PepperFlashSettingsManager::~PepperFlashSettingsManager() {
 // static
 bool PepperFlashSettingsManager::IsPepperFlashInUse(
     PluginPrefs* plugin_prefs,
-    webkit::WebPluginInfo* plugin_info) {
+    content::WebPluginInfo* plugin_info) {
   if (!plugin_prefs)
     return false;
 
   content::PluginService* plugin_service =
       content::PluginService::GetInstance();
-  std::vector<webkit::WebPluginInfo> plugins;
+  std::vector<content::WebPluginInfo> plugins;
   plugin_service->GetPluginInfoArray(
       GURL(), kFlashPluginSwfMimeType, false, &plugins, NULL);
 
-  for (std::vector<webkit::WebPluginInfo>::iterator iter = plugins.begin();
+  for (std::vector<content::WebPluginInfo>::iterator iter = plugins.begin();
        iter != plugins.end(); ++iter) {
     if (iter->is_pepper_plugin() && plugin_prefs->IsPluginEnabled(*iter)) {
       if (plugin_info)

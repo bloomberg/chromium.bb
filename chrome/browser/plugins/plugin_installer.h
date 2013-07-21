@@ -18,9 +18,6 @@ class WeakPluginInstallerObserver;
 
 namespace content {
 class WebContents;
-}
-
-namespace webkit {
 struct WebPluginInfo;
 }
 

@@ -52,8 +52,8 @@
 
 using content::PluginService;
 using content::WebContents;
+using content::WebPluginInfo;
 using content::WebUIMessageHandler;
-using webkit::WebPluginInfo;
 
 namespace {
 
@@ -167,7 +167,7 @@ class PluginsDOMHandler : public WebUIMessageHandler,
   void LoadPlugins();
 
   // Called on the UI thread when the plugin information is ready.
-  void PluginsLoaded(const std::vector<webkit::WebPluginInfo>& plugins);
+  void PluginsLoaded(const std::vector<WebPluginInfo>& plugins);
 
   content::NotificationRegistrar registrar_;
 
@@ -329,7 +329,7 @@ void PluginsDOMHandler::LoadPlugins() {
 }
 
 void PluginsDOMHandler::PluginsLoaded(
-    const std::vector<webkit::WebPluginInfo>& plugins) {
+    const std::vector<WebPluginInfo>& plugins) {
   Profile* profile = Profile::FromWebUI(web_ui());
   PluginPrefs* plugin_prefs = PluginPrefs::GetForProfile(profile).get();
 
@@ -371,7 +371,7 @@ void PluginsDOMHandler::PluginsLoaded(
       plugin_file->SetString("type", PluginTypeToString(group_plugin.type));
 
       ListValue* mime_types = new ListValue();
-      const std::vector<webkit::WebPluginMimeType>& plugin_mime_types =
+      const std::vector<content::WebPluginMimeType>& plugin_mime_types =
           group_plugin.mime_types;
       for (size_t k = 0; k < plugin_mime_types.size(); ++k) {
         DictionaryValue* mime_type = new DictionaryValue();

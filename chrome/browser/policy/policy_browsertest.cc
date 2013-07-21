@@ -95,6 +95,7 @@
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/process_type.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/common/webplugininfo.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
 #include "content/public/test/mock_notification_observer.h"
@@ -117,7 +118,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "url/gurl.h"
 #include "webkit/plugins/plugin_constants.h"
-#include "webkit/plugins/webplugininfo.h"
 
 #if defined(OS_CHROMEOS)
 #include "ash/accelerators/accelerator_controller.h"
@@ -334,8 +334,8 @@ bool IsJavascriptEnabled(content::WebContents* contents) {
   return result == 123;
 }
 
-void CopyPluginListAndQuit(std::vector<webkit::WebPluginInfo>* out,
-                           const std::vector<webkit::WebPluginInfo>& in) {
+void CopyPluginListAndQuit(std::vector<content::WebPluginInfo>* out,
+                           const std::vector<content::WebPluginInfo>& in) {
   *out = in;
   base::MessageLoop::current()->QuitWhenIdle();
 }
@@ -346,15 +346,15 @@ void CopyValueAndQuit(T* out, T in) {
   base::MessageLoop::current()->QuitWhenIdle();
 }
 
-void GetPluginList(std::vector<webkit::WebPluginInfo>* plugins) {
+void GetPluginList(std::vector<content::WebPluginInfo>* plugins) {
   content::PluginService* service = content::PluginService::GetInstance();
   service->GetPlugins(base::Bind(CopyPluginListAndQuit, plugins));
   content::RunMessageLoop();
 }
 
-const webkit::WebPluginInfo* GetFlashPlugin(
-    const std::vector<webkit::WebPluginInfo>& plugins) {
-  const webkit::WebPluginInfo* flash = NULL;
+const content::WebPluginInfo* GetFlashPlugin(
+    const std::vector<content::WebPluginInfo>& plugins) {
+  const content::WebPluginInfo* flash = NULL;
   for (size_t i = 0; i < plugins.size(); ++i) {
     if (plugins[i].name == ASCIIToUTF16(kFlashPluginName)) {
       flash = &plugins[i];
@@ -372,7 +372,7 @@ const webkit::WebPluginInfo* GetFlashPlugin(
 }
 
 bool SetPluginEnabled(PluginPrefs* plugin_prefs,
-                      const webkit::WebPluginInfo* plugin,
+                      const content::WebPluginInfo* plugin,
                       bool enabled) {
   bool ok = false;
   plugin_prefs->EnablePlugin(enabled, plugin->path,
@@ -1020,9 +1020,9 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DisabledPlugins) {
 
   // Verify that the Flash plugin exists and that it can be enabled and disabled
   // by the user.
-  std::vector<webkit::WebPluginInfo> plugins;
+  std::vector<content::WebPluginInfo> plugins;
   GetPluginList(&plugins);
-  const webkit::WebPluginInfo* flash = GetFlashPlugin(plugins);
+  const content::WebPluginInfo* flash = GetFlashPlugin(plugins);
   if (!flash)
     return;
   PluginPrefs* plugin_prefs =
@@ -1051,9 +1051,9 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DisabledPluginsExceptions) {
 
   // Verify that the Flash plugin exists and that it can be enabled and disabled
   // by the user.
-  std::vector<webkit::WebPluginInfo> plugins;
+  std::vector<content::WebPluginInfo> plugins;
   GetPluginList(&plugins);
-  const webkit::WebPluginInfo* flash = GetFlashPlugin(plugins);
+  const content::WebPluginInfo* flash = GetFlashPlugin(plugins);
   if (!flash)
     return;
   PluginPrefs* plugin_prefs =
@@ -1090,9 +1090,9 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DisabledPluginsExceptions) {
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, EnabledPlugins) {
   // Verifies that a plugin can be force-installed with a policy.
-  std::vector<webkit::WebPluginInfo> plugins;
+  std::vector<content::WebPluginInfo> plugins;
   GetPluginList(&plugins);
-  const webkit::WebPluginInfo* flash = GetFlashPlugin(plugins);
+  const content::WebPluginInfo* flash = GetFlashPlugin(plugins);
   if (!flash)
     return;
   PluginPrefs* plugin_prefs =

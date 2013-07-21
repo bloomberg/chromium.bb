@@ -31,7 +31,7 @@
 #endif
 
 using content::PluginService;
-using webkit::WebPluginInfo;
+using content::WebPluginInfo;
 
 namespace {
 
