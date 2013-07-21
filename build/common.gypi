@@ -3378,12 +3378,18 @@
             ],
           }],
           ['linux_use_gold_flags==1', {
-            'ldflags': [
-              # Experimentation found that using four linking threads
-              # saved ~20% of link time.
-              # https://groups.google.com/a/chromium.org/group/chromium-dev/browse_thread/thread/281527606915bb36
-              '-Wl,--threads',
-              '-Wl,--thread-count=4',
+            'target_conditions': [
+              ['_toolset=="target"', {
+                'ldflags': [
+                  # Experimentation found that using four linking threads
+                  # saved ~20% of link time.
+                  # https://groups.google.com/a/chromium.org/group/chromium-dev/browse_thread/thread/281527606915bb36
+                  # Only apply this to the target linker, since the host
+                  # linker might not be gold, but isn't used much anyway.
+                  '-Wl,--threads',
+                  '-Wl,--thread-count=4',
+                ],
+              }],
             ],
             'conditions': [
               ['release_valgrind_build==0', {
