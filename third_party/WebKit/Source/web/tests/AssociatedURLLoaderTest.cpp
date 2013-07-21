@@ -71,7 +71,7 @@ public:
     {
         // Reuse one of the test files from WebFrameTest.
         m_baseFilePath = Platform::current()->unitTestSupport()->webKitRootDir();
-        m_baseFilePath.append("/Source/WebKit/chromium/tests/data/");
+        m_baseFilePath.append("/Source/web/tests/data/");
         m_frameFilePath = m_baseFilePath;
         m_frameFilePath.append("iframes_test.html");
     }

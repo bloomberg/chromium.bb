@@ -61,7 +61,7 @@ void registerMockedURLLoad(const WebURL& fullURL, const WebString& fileName, con
 
     // Physical file path for the mock = <webkitRootDir> + relativeBaseDirectory + fileName.
     std::string filePath = std::string(Platform::current()->unitTestSupport()->webKitRootDir().utf8().data());
-    filePath.append("/Source/WebKit/chromium/tests/data/");
+    filePath.append("/Source/web/tests/data/");
     filePath.append(std::string(relativeBaseDirectory.utf8().data()));
     filePath.append(std::string(fileName.utf8().data()));
 

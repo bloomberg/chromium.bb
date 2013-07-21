@@ -252,7 +252,7 @@ TEST(GIFImageDecoderTest, brokenSecondFrame)
 {
     OwnPtr<GIFImageDecoder> decoder = createDecoder();
 
-    RefPtr<SharedBuffer> data = readFile("/Source/WebKit/chromium/tests/data/broken.gif");
+    RefPtr<SharedBuffer> data = readFile("/Source/web/tests/data/broken.gif");
     ASSERT_TRUE(data.get());
     decoder->setData(data.get(), true);
 
@@ -264,7 +264,7 @@ TEST(GIFImageDecoderTest, brokenSecondFrame)
 
 TEST(GIFImageDecoderTest, progressiveDecode)
 {
-    RefPtr<SharedBuffer> fullData = readFile("/Source/WebKit/chromium/tests/data/radient.gif");
+    RefPtr<SharedBuffer> fullData = readFile("/Source/web/tests/data/radient.gif");
     ASSERT_TRUE(fullData.get());
     const size_t fullLength = fullData->size();
 
@@ -369,8 +369,8 @@ TEST(GIFImageDecoderTest, frameIsCompleteLoading)
 
 TEST(GIFImageDecoderTest, badTerminator)
 {
-    RefPtr<SharedBuffer> referenceData = readFile("/Source/WebKit/chromium/tests/data/radient.gif");
-    RefPtr<SharedBuffer> testData = readFile("/Source/WebKit/chromium/tests/data/radient-bad-terminator.gif");
+    RefPtr<SharedBuffer> referenceData = readFile("/Source/web/tests/data/radient.gif");
+    RefPtr<SharedBuffer> testData = readFile("/Source/web/tests/data/radient-bad-terminator.gif");
     ASSERT_TRUE(referenceData.get());
     ASSERT_TRUE(testData.get());
 
@@ -418,7 +418,7 @@ TEST(GIFImageDecoderTest, updateRequiredPreviousFrameAfterFirstDecode)
 TEST(GIFImageDecoderTest, randomFrameDecode)
 {
     // Single frame image.
-    testRandomFrameDecode("/Source/WebKit/chromium/tests/data/radient.gif");
+    testRandomFrameDecode("/Source/web/tests/data/radient.gif");
     // Multiple frame images.
     testRandomFrameDecode("/LayoutTests/fast/images/resources/animated-gif-with-offsets.gif");
     testRandomFrameDecode("/LayoutTests/fast/images/resources/animated-10color.gif");
@@ -427,7 +427,7 @@ TEST(GIFImageDecoderTest, randomFrameDecode)
 TEST(GIFImageDecoderTest, randomDecodeAfterClearFrameBufferCache)
 {
     // Single frame image.
-    testRandomDecodeAfterClearFrameBufferCache("/Source/WebKit/chromium/tests/data/radient.gif");
+    testRandomDecodeAfterClearFrameBufferCache("/Source/web/tests/data/radient.gif");
     // Multiple frame images.
     testRandomDecodeAfterClearFrameBufferCache("/LayoutTests/fast/images/resources/animated-gif-with-offsets.gif");
     testRandomDecodeAfterClearFrameBufferCache("/LayoutTests/fast/images/resources/animated-10color.gif");

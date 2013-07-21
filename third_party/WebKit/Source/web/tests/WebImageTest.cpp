@@ -29,7 +29,6 @@
  */
 
 #include "config.h"
-
 #include "public/platform/WebImage.h"
 
 #include <gtest/gtest.h>
@@ -48,7 +47,7 @@ namespace {
 static PassRefPtr<SharedBuffer> readFile(const char* fileName)
 {
     String filePath = Platform::current()->unitTestSupport()->webKitRootDir();
-    filePath.append("/Source/WebKit/chromium/tests/data/");
+    filePath.append("/Source/web/tests/data/");
     filePath.append(fileName);
 
     long long fileSize;

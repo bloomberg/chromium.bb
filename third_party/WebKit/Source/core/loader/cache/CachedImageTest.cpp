@@ -147,7 +147,7 @@ TEST(CachedImageTest, CancelOnDetach)
     response.initialize();
     response.setMIMEType("text/html");
     WTF::String localPath = WebKit::Platform::current()->unitTestSupport()->webKitRootDir();
-    localPath.append("/Source/WebKit/chromium/tests/data/cancelTest.html");
+    localPath.append("/Source/web/tests/data/cancelTest.html");
     WebKit::Platform::current()->unitTestSupport()->registerMockedURL(testURL, response, localPath);
 
     // Create enough of a mocked world to get a functioning ResourceLoader.

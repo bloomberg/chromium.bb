@@ -3350,7 +3350,7 @@ TEST_F(WebFrameTest, CompositorScrollIsUserScrollShortPage)
 TEST_F(WebFrameTest, FirstPartyForCookiesForRedirect)
 {
     WTF::String filePath = Platform::current()->unitTestSupport()->webKitRootDir();
-    filePath.append("/Source/WebKit/chromium/tests/data/first_party.html");
+    filePath.append("/Source/web/tests/data/first_party.html");
 
     WebURL testURL(toKURL("http://www.test.com/first_party_redirect.html"));
     char redirect[] = "http://www.test.com/first_party.html";
