@@ -21,6 +21,7 @@
 #ifndef SVGGradientElement_h
 #define SVGGradientElement_h
 
+#include "SVGNames.h"
 #include "core/platform/graphics/Gradient.h"
 #include "core/svg/SVGAnimatedBoolean.h"
 #include "core/svg/SVGAnimatedEnumeration.h"
@@ -105,6 +106,12 @@ private:
         DECLARE_ANIMATED_BOOLEAN(ExternalResourcesRequired, externalResourcesRequired)
     END_DECLARE_ANIMATED_PROPERTIES
 };
+
+inline SVGGradientElement* toSVGGradientElement(Node* node)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!node || (node->hasTagName(SVGNames::radialGradientTag) || node->hasTagName(SVGNames::linearGradientTag)));
+    return static_cast<SVGGradientElement*>(node);
+}
 
 } // namespace WebCore
 
