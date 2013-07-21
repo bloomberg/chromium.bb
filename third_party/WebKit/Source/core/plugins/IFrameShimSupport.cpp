@@ -40,8 +40,7 @@
 #include "core/platform/Widget.h"
 #include "core/rendering/RenderBox.h"
 #include "core/rendering/RenderObject.h"
-
-#include <wtf/HashSet.h>
+#include "wtf/HashSet.h"
 
 // This file provides plugin-related utility functions for iframe shims and is shared by platforms that inherit
 // from PluginView (e.g. Qt) and those that do not (e.g. Chromium).

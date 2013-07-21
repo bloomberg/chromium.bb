@@ -28,7 +28,7 @@
 
 #include "core/platform/ScrollTypes.h"
 #include "core/platform/Widget.h"
-#include <wtf/text/WTFString.h>
+#include "wtf/text/WTFString.h"
 
 struct NPObject;
 

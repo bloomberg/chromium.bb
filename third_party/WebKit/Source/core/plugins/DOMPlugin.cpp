@@ -20,7 +20,7 @@
 #include "core/plugins/DOMPlugin.h"
 
 #include "core/plugins/PluginData.h"
-#include <wtf/text/AtomicString.h>
+#include "wtf/text/AtomicString.h"
 
 namespace WebCore {
 
