@@ -727,6 +727,7 @@
             'css/ShadowValue.cpp',
             'css/ShadowValue.h',
             'css/SiblingTraversalStrategies.h',
+            'css/StyleColor.h',
             'css/StyleInvalidationAnalysis.cpp',
             'css/StyleInvalidationAnalysis.h',
             'css/StyleMedia.cpp',
