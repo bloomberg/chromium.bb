@@ -270,7 +270,7 @@ static void dumpInstanceTree(unsigned int& depth, String& text, SVGElementInstan
     ASSERT(element);
 
     if (element->hasTagName(SVGNames::useTag)) {
-        if (static_cast<SVGUseElement*>(element)->cachedDocumentIsStillLoading())
+        if (toSVGUseElement(element)->cachedDocumentIsStillLoading())
             return;
     }
 
@@ -579,7 +579,7 @@ void SVGUseElement::buildInstanceTree(SVGElement* target, SVGElementInstance* ta
     bool targetHasUseTag = target->hasTagName(SVGNames::useTag);
     SVGElement* newTarget = 0;
     if (targetHasUseTag) {
-        foundProblem = hasCycleUseReferencing(static_cast<SVGUseElement*>(target), targetInstance, newTarget);
+        foundProblem = hasCycleUseReferencing(toSVGUseElement(target), targetInstance, newTarget);
         if (foundProblem)
             return;
 
@@ -625,7 +625,7 @@ void SVGUseElement::buildInstanceTree(SVGElement* target, SVGElementInstance* ta
     if (!targetHasUseTag || !newTarget)
         return;
 
-    RefPtr<SVGElementInstance> newInstance = SVGElementInstance::create(this, static_cast<SVGUseElement*>(target), newTarget);
+    RefPtr<SVGElementInstance> newInstance = SVGElementInstance::create(this, toSVGUseElement(target), newTarget);
     SVGElementInstance* newInstancePtr = newInstance.get();
     targetInstance->appendChild(newInstance.release());
     buildInstanceTree(newTarget, newInstancePtr, foundProblem, foundUse);
@@ -702,7 +702,7 @@ void SVGUseElement::expandUseElementsInShadowTree(Node* element)
     // actual shadow tree (after the special case modification for svg/symbol) we have
     // to walk it completely and expand all <use> elements.
     if (element->hasTagName(SVGNames::useTag)) {
-        SVGUseElement* use = static_cast<SVGUseElement*>(element);
+        SVGUseElement* use = toSVGUseElement(element);
         ASSERT(!use->cachedDocumentIsStillLoading());
 
         Element* targetElement = SVGURIReference::targetElementFromIRIString(use->hrefCurrentValue(), referencedDocument());

@@ -21,6 +21,7 @@
 #ifndef SVGUseElement_h
 #define SVGUseElement_h
 
+#include "SVGNames.h"
 #include "core/loader/cache/CachedDocument.h"
 #include "core/svg/SVGAnimatedBoolean.h"
 #include "core/svg/SVGAnimatedLength.h"
@@ -123,6 +124,12 @@ private:
     CachedResourceHandle<CachedDocument> m_cachedDocument;
     Timer<SVGElement> m_svgLoadEventTimer;
 };
+
+inline SVGUseElement* toSVGUseElement(Node* node)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(SVGNames::useTag));
+    return static_cast<SVGUseElement*>(node);
+}
 
 }
 
