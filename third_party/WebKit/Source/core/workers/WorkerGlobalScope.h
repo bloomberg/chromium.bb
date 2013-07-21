@@ -124,6 +124,8 @@ namespace WebCore {
         void unregisterObserver(Observer*);
         void notifyObserversOfStop();
 
+        bool idleNotification();
+
         virtual const SecurityOrigin* topOrigin() const OVERRIDE { return m_topOrigin.get(); }
 
         double timeOrigin() const { return m_timeOrigin; }

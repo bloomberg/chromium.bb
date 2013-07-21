@@ -29,13 +29,13 @@
  */
  
 #include "config.h"
+#include "core/workers/WorkerRunLoop.h"
 
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/platform/SharedTimer.h"
 #include "core/platform/ThreadGlobalData.h"
 #include "core/platform/ThreadTimers.h"
 #include "core/workers/WorkerGlobalScope.h"
-#include "core/workers/WorkerRunLoop.h"
 #include "core/workers/WorkerThread.h"
 #include <wtf/CurrentTime.h>
 
@@ -150,12 +150,31 @@ MessageQueueWaitResult WorkerRunLoop::runInMode(WorkerGlobalScope* context, cons
     ASSERT(context->thread()->isCurrentThread());
 
     double absoluteTime = 0.0;
-    if (waitMode == WaitForMessage)
+    bool nextTimeoutEventIsIdleWatchdog = false;
+    if (waitMode == WaitForMessage) {
         absoluteTime = (predicate.isDefaultMode() && m_sharedTimer->isActive()) ? m_sharedTimer->fireTime() : MessageQueue<Task>::infiniteTime();
+
+        // Do a script engine idle notification if the next event is distant enough.
+        const double kMinIdleTimespan = 0.3; // seconds
+        if (m_messageQueue.isEmpty() && absoluteTime > currentTime() + kMinIdleTimespan) {
+            bool hasMoreWork = !context->idleNotification();
+            if (hasMoreWork) {
+                // Schedule a watchdog, so if there are no events within a particular time interval
+                // idle notifications won't stop firing.
+                const double kWatchdogInterval = 3; // seconds
+                double nextWatchdogTime = currentTime() + kWatchdogInterval;
+                if (absoluteTime > nextWatchdogTime) {
+                    absoluteTime = nextWatchdogTime;
+                    nextTimeoutEventIsIdleWatchdog = true;
+                }
+            }
+        }
+    }
     MessageQueueWaitResult result;
     OwnPtr<WorkerRunLoop::Task> task = m_messageQueue.waitForMessageFilteredWithTimeout(result, predicate, absoluteTime);
 
-    // If the context is closing, don't execute any further JavaScript tasks (per section 4.1.1 of the Web Workers spec).  However, there may be implementation cleanup tasks in the queue, so keep running through it.
+    // If the context is closing, don't execute any further JavaScript tasks (per section 4.1.1 of the Web Workers spec).
+    // However, there may be implementation cleanup tasks in the queue, so keep running through it.
 
     switch (result) {
     case MessageQueueTerminated:
@@ -166,7 +185,7 @@ MessageQueueWaitResult WorkerRunLoop::runInMode(WorkerGlobalScope* context, cons
         break;
 
     case MessageQueueTimeout:
-        if (!context->isClosing())
+        if (!context->isClosing() && !nextTimeoutEventIsIdleWatchdog)
             m_sharedTimer->fire();
         break;
     }

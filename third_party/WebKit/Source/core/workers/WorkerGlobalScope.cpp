@@ -328,6 +328,11 @@ void WorkerGlobalScope::notifyObserversOfStop()
     }
 }
 
+bool WorkerGlobalScope::idleNotification()
+{
+    return script()->idleNotification();
+}
+
 WorkerEventQueue* WorkerGlobalScope::eventQueue() const
 {
     return m_eventQueue.get();
