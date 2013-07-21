@@ -196,13 +196,8 @@ void HTMLOptionElement::parseAttribute(const QualifiedName& name, const AtomicSt
                 renderer()->theme()->stateChanged(renderer(), EnabledState);
         }
     } else if (name == selectedAttr) {
-        // FIXME: This doesn't match what the HTML specification says.
-        // The specification implies that removing the selected attribute or
-        // changing the value of a selected attribute that is already present
-        // has no effect on whether the element is selected. Further, it seems
-        // that we need to do more than just set m_isSelected to select in that
-        // case; we'd need to do the other work from the setSelected function.
-        m_isSelected = !value.isNull();
+        if (bool willBeSelected = !value.isNull())
+            setSelected(willBeSelected);
     } else
         HTMLElement::parseAttribute(name, value);
 }

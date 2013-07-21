@@ -34,15 +34,21 @@ var content1 = shadowRoot1.querySelector('content');
 var content2 = shadowRoot2.querySelector('content');
 
 setTimeout(function() {
-    option1.setAttribute('selected', true);
-    option2.removeAttribute('selected');
-
     nodes1 = content1.getDistributedNodes();
     shouldBe('nodes1.length', '0');
 
     nodes2 = content2.getDistributedNodes();
     shouldBe('nodes2.length', '1');
-    shouldBe('nodes2.item(0).innerHTML', '"option 2"');
+
+    debug('Flipping :checked state');
+    option1.setAttribute('selected', true);
+    option2.selected = false;
+
+    nodes1 = content1.getDistributedNodes();
+    shouldBe('nodes1.length', '1');
+
+    nodes2 = content2.getDistributedNodes();
+    shouldBe('nodes2.length', '0');
 
     container.innerHTML = "";
     finishJSTest();
