@@ -252,6 +252,123 @@ void RenderTableSection::addCell(RenderTableCell* cell, RenderTableRow* row)
     cell->setCol(table()->effColToCol(col));
 }
 
+void RenderTableSection::populateSpanningRowsHeightFromCell(RenderTableCell* cell, struct SpanningRowsHeight& spanningRowsHeight)
+{
+    const unsigned rowSpan = cell->rowSpan();
+    const unsigned rowIndex = cell->rowIndex();
+
+    spanningRowsHeight.spanningCellHeightIgnoringBorderSpacing = cell->logicalHeightForRowSizing();
+
+    spanningRowsHeight.rowHeight.resize(rowSpan);
+    spanningRowsHeight.totalRowsHeight = 0;
+    for (unsigned row = 0; row < rowSpan; row++) {
+        unsigned actualRow = row + rowIndex;
+        spanningRowsHeight.rowHeight[row] = m_rowPos[actualRow + 1] - m_rowPos[actualRow] - borderSpacingForRow(actualRow);
+        spanningRowsHeight.totalRowsHeight += spanningRowsHeight.rowHeight[row];
+        spanningRowsHeight.spanningCellHeightIgnoringBorderSpacing -= borderSpacingForRow(actualRow);
+    }
+    // We don't span the following row so its border-spacing (if any) should be included.
+    spanningRowsHeight.spanningCellHeightIgnoringBorderSpacing += borderSpacingForRow(rowIndex + rowSpan - 1);
+}
+
+void RenderTableSection::distributeExtraRowSpanHeightToPercentRows(RenderTableCell* cell, int totalPercent, int& extraRowSpanningHeight, Vector<int>& rowsHeight)
+{
+    if (!extraRowSpanningHeight || !totalPercent)
+        return;
+
+    const unsigned rowSpan = cell->rowSpan();
+    const unsigned rowIndex = cell->rowIndex();
+    int percent = min(totalPercent, 100);
+    const int tableHeight = m_rowPos[m_grid.size()] + extraRowSpanningHeight;
+
+    // Our algorithm matches Firefox. Extra spanning height would be distributed Only in first percent height rows
+    // those total percent is 100. Other percent rows would be uneffected even extra spanning height is remain.
+    int accumulatedPositionIncrease = 0;
+    for (unsigned row = rowIndex; row < (rowIndex + rowSpan); row++) {
+        if (percent > 0 && extraRowSpanningHeight > 0) {
+            if (m_grid[row].logicalHeight.isPercent()) {
+                int toAdd = (tableHeight * m_grid[row].logicalHeight.percent() / 100) - rowsHeight[row - rowIndex];
+                // FIXME: Note that this is wrong if we have a percentage above 100% and may make us grow
+                // above the available space.
+
+                toAdd = min(toAdd, extraRowSpanningHeight);
+                accumulatedPositionIncrease += toAdd;
+                extraRowSpanningHeight -= toAdd;
+                percent -= m_grid[row].logicalHeight.percent();
+            }
+        }
+        m_rowPos[row + 1] += accumulatedPositionIncrease;
+    }
+}
+
+void RenderTableSection::distributeExtraRowSpanHeightToAutoRows(RenderTableCell* cell, int totalAutoRowsHeight, int& extraRowSpanningHeight, Vector<int>& rowsHeight)
+{
+    if (!extraRowSpanningHeight || !totalAutoRowsHeight)
+        return;
+
+    const unsigned rowSpan = cell->rowSpan();
+    const unsigned rowIndex = cell->rowIndex();
+    int accumulatedPositionIncrease = 0;
+    int remainder = 0;
+
+    // Aspect ratios of auto rows should not change otherwise table may look different than user expected.
+    // So extra height distributed in auto spanning rows based on their weight in spanning cell.
+    for (unsigned row = rowIndex; row < (rowIndex + rowSpan); row++) {
+        if (m_grid[row].logicalHeight.isAuto()) {
+            accumulatedPositionIncrease += (extraRowSpanningHeight * rowsHeight[row - rowIndex]) / totalAutoRowsHeight;
+            remainder += (extraRowSpanningHeight * rowsHeight[row - rowIndex]) % totalAutoRowsHeight;
+
+            // While whole extra spanning height is distributing in auto spanning rows, rational parts remains
+            // in every integer division. So accumulating all remainder part in integer division and when total remainder
+            // is equvalent to divisor then 1 unit increased in row position.
+            // Note that this algorithm is biased towards adding more space towards the lower rows.
+            if (remainder >= totalAutoRowsHeight) {
+                remainder -= totalAutoRowsHeight;
+                accumulatedPositionIncrease++;
+            }
+        }
+        m_rowPos[row + 1] += accumulatedPositionIncrease;
+    }
+
+    ASSERT(!remainder);
+
+    extraRowSpanningHeight -= accumulatedPositionIncrease;
+}
+
+void RenderTableSection::distributeExtraRowSpanHeightToRemainingRows(RenderTableCell* cell, int totalRemainingRowsHeight, int& extraRowSpanningHeight, Vector<int>& rowsHeight)
+{
+    if (!extraRowSpanningHeight || !totalRemainingRowsHeight)
+        return;
+
+    const unsigned rowSpan = cell->rowSpan();
+    const unsigned rowIndex = cell->rowIndex();
+    int accumulatedPositionIncrease = 0;
+    int remainder = 0;
+
+    // Aspect ratios of the rows should not change otherwise table may look different than user expected.
+    // So extra height distribution in remaining spanning rows based on their weight in spanning cell.
+    for (unsigned row = rowIndex; row < (rowIndex + rowSpan); row++) {
+        if (!m_grid[row].logicalHeight.isPercent()) {
+            accumulatedPositionIncrease += (extraRowSpanningHeight * rowsHeight[row - rowIndex]) / totalRemainingRowsHeight;
+            remainder += (extraRowSpanningHeight * rowsHeight[row - rowIndex]) % totalRemainingRowsHeight;
+
+            // While whole extra spanning height is distributing in remaining spanning rows, rational parts remains
+            // in every integer division. So accumulating all remainder part in integer division and when total remainder
+            // is equvalent to divisor then 1 unit increased in row position.
+            // Note that this algorithm is biased towards adding more space towards the lower rows.
+            if (remainder >= totalRemainingRowsHeight) {
+                remainder -= totalRemainingRowsHeight;
+                accumulatedPositionIncrease++;
+            }
+        }
+        m_rowPos[row + 1] += accumulatedPositionIncrease;
+    }
+
+    ASSERT(!remainder);
+
+    extraRowSpanningHeight -= accumulatedPositionIncrease;
+}
+
 // Distribute rowSpan cell height in rows those comes in rowSpan cell based on the ratio of row's height if
 // 1. RowSpan cell height is greater then the total height of rows in rowSpan cell
 void RenderTableSection::distributeRowSpanHeightToRows(SpanningRenderTableCells& rowSpanCells)
@@ -262,38 +379,40 @@ void RenderTableSection::distributeRowSpanHeightToRows(SpanningRenderTableCells&
     RenderTableCell* cell = rowSpanCells[0];
 
     unsigned rowSpan = cell->rowSpan();
-    unsigned rowIndex = cell->rowIndex();
-    int initialPos = m_rowPos[rowIndex + rowSpan];
 
-    int totalRowsHeight = 0;
-    int rowSpanCellHeight = cell->logicalHeightForRowSizing();
-    Vector<int> rowsHeight(rowSpan);
+    struct SpanningRowsHeight spanningRowsHeight;
 
-    // Getting height of rows in current rowSpan cell, getting total height of rows and adjusting rowSpan cell height with border spacing.
-    for (unsigned row = 0; row < rowSpan; row++) {
-        unsigned actualRow = row + rowIndex;
-        rowsHeight[row] = m_rowPos[actualRow + 1] - m_rowPos[actualRow] - borderSpacingForRow(actualRow);
-        totalRowsHeight += rowsHeight[row];
-        rowSpanCellHeight -= borderSpacingForRow(actualRow);
-    }
-    rowSpanCellHeight += borderSpacingForRow(rowIndex + rowSpan - 1);
+    populateSpanningRowsHeightFromCell(cell, spanningRowsHeight);
 
-    if (!totalRowsHeight || rowSpanCellHeight <= totalRowsHeight)
+    if (!spanningRowsHeight.totalRowsHeight || spanningRowsHeight.spanningCellHeightIgnoringBorderSpacing <= spanningRowsHeight.totalRowsHeight)
         return;
 
-    // Recalculating the height of rows based on rowSpan cell height if rowSpan cell height is more than total height of rows.
-    int remainingHeight = rowSpanCellHeight;
+    unsigned rowIndex = cell->rowIndex();
+    int totalPercent = 0;
+    int totalAutoRowsHeight = 0;
+    int totalRemainingRowsHeight = spanningRowsHeight.totalRowsHeight;
 
+    // Calculate total percentage, total auto rows height and total rows height except percent rows.
     for (unsigned row = rowIndex; row < (rowIndex + rowSpan); row++) {
-        int rowHeight = (rowSpanCellHeight * rowsHeight[row - rowIndex]) / totalRowsHeight;
-        remainingHeight -= rowHeight;
-        m_rowPos[row + 1] = m_rowPos[row] + rowHeight + borderSpacingForRow(row);
+        if (m_grid[row].logicalHeight.isPercent()) {
+            totalPercent += m_grid[row].logicalHeight.percent();
+            totalRemainingRowsHeight -= spanningRowsHeight.rowHeight[row - rowIndex];
+        } else if (m_grid[row].logicalHeight.isAuto()) {
+            totalAutoRowsHeight += spanningRowsHeight.rowHeight[row - rowIndex];
+        }
     }
-    // Remaining height added in the last row under rowSpan cell
-    m_rowPos[rowIndex + rowSpan] += remainingHeight;
+
+    int initialPos = m_rowPos[rowIndex + rowSpan];
+    int extraRowSpanningHeight = spanningRowsHeight.spanningCellHeightIgnoringBorderSpacing - spanningRowsHeight.totalRowsHeight;
+
+    distributeExtraRowSpanHeightToPercentRows(cell, totalPercent, extraRowSpanningHeight, spanningRowsHeight.rowHeight);
+    distributeExtraRowSpanHeightToAutoRows(cell, totalAutoRowsHeight, extraRowSpanningHeight, spanningRowsHeight.rowHeight);
+    distributeExtraRowSpanHeightToRemainingRows(cell, totalRemainingRowsHeight, extraRowSpanningHeight, spanningRowsHeight.rowHeight);
+
+    ASSERT(!extraRowSpanningHeight);
 
     // Getting total changed height in the table
-    unsigned changedHeight = changedHeight = m_rowPos[rowIndex + rowSpan] - initialPos;
+    unsigned changedHeight = m_rowPos[rowIndex + rowSpan] - initialPos;
 
     if (changedHeight) {
         unsigned totalRows = m_grid.size();

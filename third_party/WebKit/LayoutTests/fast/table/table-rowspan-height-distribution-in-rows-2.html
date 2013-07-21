@@ -12,7 +12,7 @@
     </style>
 </head>
 <body onload="checkLayout('tr')">
-<h3>Test for chromium bug : <a href="https://code.google.com/p/chromium/issues/detail?id=78724">78724</a>. Extra logical height is not properly spread over the rows in a row-spanning cell.</h3>
+<h3>Test for chromium bug : <a href="https://code.google.com/p/chromium/issues/detail?id=254914">254914</a>. Height of fixed height cell is not proper when cell's row is under row spanning cell.</h3>
 <h4>Rows in rowspan should get proportional height.</h4>
 <h5>Test 1 - One rowSpan cell</h5>
 <table border="1">
@@ -67,7 +67,7 @@
     </tr>
     <tr data-expected-height="57">
 	  <td>row1 col0</td>
-	  <td rowspan="4" style="height:300px">row1 col1 - rowspan=4</td>
+	  <td rowspan="4" style="height:300px">row1 col1 - rowspan=4 height=300px</td>
 	</tr>
     <tr data-expected-height="57">
       <td>row2 col0</td>
@@ -84,32 +84,157 @@
     </tr>
   </tbody>
 </table>
-<h5>Test 4 - One rowSpan cell and specified cells height</h5>
+<h5>Test 4 - One rowSpan cell and one cell have fixed height.</h5>
 <table border="1">
   <tbody>
     <tr>
       <td>row0 col0</td>
     </tr>
-    <tr data-expected-height="59">
+    <tr data-expected-height="60">
 	  <td>row1 col0</td>
-	  <td rowspan="4" style="height:300px">row1 col1 - rowspan=4</td>
+	  <td rowspan="4" style="height:300px">row1 col1 - rowspan=4 height=300px</td>
 	</tr>
-    <tr data-expected-height="74">
-      <td style="height:70px">row2 col0</td>
+    <tr data-expected-height="60">
+      <td>row2 col0</td>
     </tr>
-    <tr data-expected-height="34">
-      <td style="height:30px">row3 col0</td>
+    <tr data-expected-height="44">
+      <td style="height:40px">row3 col0 height=40px</td>
     </tr>
-    <tr data-expected-height="104">
-      <td style="height:100px">row4 col0</td>
+    <tr data-expected-height="85">
+      <td>row4 col0</td>
     </tr>
-    <tr data-expected-height="54">
-      <td style="height:50px">row5 col0</td>
+    <tr data-expected-height="19">
+      <td>row5 col0</td>
       <td>row5 col1</td>
     </tr>
   </tbody>
 </table>
-<h5>Test 5 - RowSpan and ColSpan. </h5>
+<h5>Test 5 - One rowSpan cell and one cell have percent height.</h5>
+<table border="1">
+  <tbody>
+    <tr>
+      <td>row0 col0</td>
+    </tr>
+    <tr data-expected-height="23">
+	  <td>row1 col0</td>
+	  <td rowspan="4" style="height:300px">row1 col1 - rowspan=4 height=300px</td>
+	</tr>
+    <tr data-expected-height="183">
+      <td style="height:40%">row2 col0 height=40%</td>
+    </tr>
+    <tr data-expected-height="41">
+      <td>row3 col0</td>
+    </tr>
+    <tr data-expected-height="47">
+      <td>row4 col0</td>
+    </tr>
+    <tr data-expected-height="19">
+      <td>row5 col0</td>
+      <td>row5 col1</td>
+    </tr>
+  </tbody>
+</table>
+<h5>Test 6 - One rowSpan cell, one cell have percent height and another one cell have fixed height.</h5>
+<table border="1">
+  <tbody>
+    <tr>
+      <td>row0 col0</td>
+    </tr>
+    <tr data-expected-height="19">
+	  <td>row1 col0</td>
+	  <td rowspan="4" style="height:300px">row1 col1 - rowspan=4 height=300px</td>
+	</tr>
+    <tr data-expected-height="183">
+      <td style="height:40%">row2 col0 height=40%</td>
+    </tr>
+    <tr data-expected-height="44">
+      <td style="height:40px">row3 col0 height=40px</td>
+    </tr>
+    <tr data-expected-height="49">
+      <td>row4 col0</td>
+    </tr>
+    <tr data-expected-height="19">
+      <td>row5 col0</td>
+      <td>row5 col1</td>
+    </tr>
+  </tbody>
+</table>
+<h5>Test 7 - One rowSpan cell and two cells have percent height but total percent is less than 100.</h5>
+<table border="1">
+  <tbody>
+    <tr>
+      <td>row0 col0</td>
+    </tr>
+    <tr data-expected-height="33">
+	  <td>row1 col0</td>
+	  <td rowspan="4" style="height:300px">row1 col1 - rowspan=4 height=300px</td>
+	</tr>
+    <tr data-expected-height="37">
+      <td>row2 col0</td>
+    </tr>
+    <tr data-expected-height="131">
+      <td style="height:30%">row3 col0 height=30%</td>
+    </tr>
+    <tr data-expected-height="142">
+      <td style="height:40%">row4 col0 height=40%</td>
+    </tr>
+    <tr data-expected-height="19">
+      <td>row5 col0</td>
+      <td>row5 col1</td>
+    </tr>
+  </tbody>
+</table>
+<h5>Test 8 - One rowSpan cell and three cells have percent height but total percent is more than 100.</h5>
+<table border="1">
+  <tbody>
+    <tr>
+      <td>row0 col0</td>
+    </tr>
+    <tr data-expected-height="203">
+	  <td style="height:60%">row1 col0 height=60%</td>
+	  <td rowspan="4" style="height:300px">row1 col1 - rowspan=4 height=300px</td>
+	</tr>
+    <tr data-expected-height="34">
+      <td style="height:40%">row2 col0 height=40%</td>
+    </tr>
+    <tr data-expected-height="19">
+      <td>row3 col0</td>
+    </tr>
+    <tr data-expected-height="34">
+      <td style="height:50%">row4 col0 height=50%</td>
+    </tr>
+    <tr data-expected-height="19">
+      <td>row5 col0</td>
+      <td>row5 col1</td>
+    </tr>
+  </tbody>
+</table>
+<h5>Test 9 - One rowSpan cell and specified cells height.</h5>
+<table border="1">
+  <tbody>
+    <tr>
+      <td>row0 col0</td>
+    </tr>
+    <tr data-expected-height="74">
+	  <td style="height:70px">row1 col0 height=70px</td>
+	  <td rowspan="4" style="height:500px">row1 col1 - rowspan=4 height=500px</td>
+	</tr>
+    <tr data-expected-height="74">
+      <td style="height:70px">row2 col0 height=70px</td>
+    </tr>
+    <tr data-expected-height="59">
+      <td style="height:30px">row3 col0 height=30px</td>
+    </tr>
+    <tr data-expected-height="182">
+      <td style="height:100px">row4 col0 height=100px</td>
+    </tr>
+    <tr data-expected-height="54">
+      <td style="height:50px">row5 col0 height=50px</td>
+      <td>row5 col1</td>
+    </tr>
+  </tbody>
+</table>
+<h5>Test 10 - RowSpan and ColSpan. </h5>
 <table border="1" width="607">
   <tbody>
     <tr data-expected-height="34">
@@ -131,7 +256,7 @@
     </tr>
   </tbody>
 </table>
-<h5>Test 6 - Mix of baseline aligned and non-baseline aligned cells.</h5>
+<h5>Test 11 - Mix of baseline aligned and non-baseline aligned cells.</h5>
 <table border="1" width="607">
   <tbody>
     <tr data-expected-height="104">
@@ -160,7 +285,7 @@
     </tr>
   </tbody>
 </table>
-<h5>Test 7 - CSS Table.</h5>
+<h5>Test 12 - CSS Table.</h5>
 <div id="div-table">
     <span id="span-row">
         <span id="span-cell">row0 col0</span>
@@ -205,7 +330,7 @@
         <div id="div-cell">row10 col0</div>
     </div>
 </div>
-<h5>Test 8 - Table Similar to CSS table with rowspan.</h5>
+<h5>Test 13 - Table Similar to CSS table with rowspan.</h5>
 <table border="1px">
     <tr data-expected-height="39">
         <td rowspan=5 style="height:300px">row0 col0</td>

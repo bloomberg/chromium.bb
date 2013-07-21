@@ -1723,3 +1723,11 @@ crbug.com/255407 plugins/npruntime/leak-window-scriptable-object.html [ Pass Fai
 # started timing out around r154246..r154251
 crbug.com/260744 [ Debug ] fast/js/regress/function-dot-apply.html  [ Timeout ]
 crbug.com/260744 [ Debug ] fast/js/regress/inline-arguments-local-escape.html  [ Timeout ]
+
+# Below test case need to rebaseline after crbug.com/254914
+crbug.com/254914 [ Win Mac ] tables/mozilla_expected_failures/bugs/bug58402-2.html [ Failure ]
+crbug.com/254914 [ Win Mac ] tables/mozilla/core/bloomberg.html [ Failure ]
+crbug.com/254914 [ Linux ] tables/mozilla_expected_failures/bugs/bug58402-2.html [ ImageOnlyFailure ]
+crbug.com/254914 [ Linux ] tables/mozilla/core/bloomberg.html [ ImageOnlyFailure ]
+crbug.com/254914 [ Mac ] fast/table/table-rowspan-height-distribution-in-rows-1.html [ Failure ]
+crbug.com/254914 [ Mac ] fast/table/table-rowspan-height-distribution-in-rows-2.html [ Failure ]

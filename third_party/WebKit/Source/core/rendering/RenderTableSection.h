@@ -122,6 +122,21 @@ public:
         Length logicalHeight;
     };
 
+    struct SpanningRowsHeight {
+        WTF_MAKE_NONCOPYABLE(SpanningRowsHeight);
+
+    public:
+        SpanningRowsHeight()
+            : totalRowsHeight(0)
+            , spanningCellHeightIgnoringBorderSpacing(0)
+        {
+        }
+
+        Vector<int> rowHeight;
+        int totalRowsHeight;
+        int spanningCellHeightIgnoringBorderSpacing;
+    };
+
     const BorderValue& borderAdjoiningTableStart() const
     {
         if (hasSameDirectionAs(table()))
@@ -226,6 +241,10 @@ private:
 
     void ensureRows(unsigned);
 
+    void populateSpanningRowsHeightFromCell(RenderTableCell*, struct SpanningRowsHeight&);
+    void distributeExtraRowSpanHeightToPercentRows(RenderTableCell*, int, int&, Vector<int>&);
+    void distributeExtraRowSpanHeightToAutoRows(RenderTableCell*, int, int&, Vector<int>&);
+    void distributeExtraRowSpanHeightToRemainingRows(RenderTableCell*, int, int&, Vector<int>&);
     void distributeRowSpanHeightToRows(SpanningRenderTableCells& rowSpanCells);
 
     void distributeExtraLogicalHeightToPercentRows(int& extraLogicalHeight, int totalPercent);
