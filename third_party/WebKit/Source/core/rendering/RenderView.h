@@ -37,6 +37,9 @@ class RenderLazyBlock;
 class RenderQuote;
 class RenderWidget;
 
+// The root of the render tree, corresponding to the CSS initial containing block.
+// It's dimensions match that of the viewport, and it is always at position (0,0)
+// relative to the document (and so isn't necessarily in view).
 class RenderView FINAL : public RenderBlock {
 public:
     explicit RenderView(Document*);
@@ -203,6 +206,7 @@ protected:
     virtual const RenderObject* pushMappingToContainer(const RenderLayerModelObject* ancestorToStopAt, RenderGeometryMap&) const OVERRIDE;
     virtual void mapAbsoluteToLocalPoint(MapCoordinatesFlags, TransformState&) const;
     virtual bool requiresColumns(int desiredColumnCount) const OVERRIDE;
+    virtual void computeSelfHitTestRects(Vector<LayoutRect>&, const LayoutPoint& layerOffset) const OVERRIDE;
     
 private:
     bool initializeLayoutState(LayoutState&);

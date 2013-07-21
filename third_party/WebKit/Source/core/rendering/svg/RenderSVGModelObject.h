@@ -67,7 +67,10 @@ public:
     bool hasSVGShadow() const { return m_hasSVGShadow; }
     void setHasSVGShadow(bool hasShadow) { m_hasSVGShadow = hasShadow; }
 
+    virtual void computeLayerHitTestRects(LayerHitTestRects&) const OVERRIDE;
+
 protected:
+    virtual void addLayerHitTestRects(LayerHitTestRects&, const RenderLayer* currentCompositedLayer, const LayoutPoint& layerOffset) const OVERRIDE;
     virtual void willBeDestroyed();
 
 private:

@@ -615,7 +615,10 @@ protected:
     void paintRootBoxFillLayers(const PaintInfo&);
 
     RenderObject* splitAnonymousBoxesAroundChild(RenderObject* beforeChild);
- 
+
+    virtual void addLayerHitTestRects(LayerHitTestRects&, const RenderLayer* currentCompositedLayer, const LayoutPoint& layerOffset) const OVERRIDE;
+    virtual void computeSelfHitTestRects(Vector<LayoutRect>&, const LayoutPoint& layerOffset) const OVERRIDE;
+
 private:
     void updateShapeOutsideInfoAfterStyleChange(const ShapeValue* shapeOutside, const ShapeValue* oldShapeOutside);
 

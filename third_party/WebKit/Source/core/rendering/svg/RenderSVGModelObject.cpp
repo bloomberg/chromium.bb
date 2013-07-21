@@ -33,6 +33,7 @@
 #include "core/rendering/svg/RenderSVGModelObject.h"
 
 #include "SVGNames.h"
+#include "core/rendering/svg/RenderSVGRoot.h"
 #include "core/rendering/svg/SVGResourcesCache.h"
 #include "core/svg/SVGStyledElement.h"
 
@@ -92,6 +93,17 @@ void RenderSVGModelObject::willBeDestroyed()
 {
     SVGResourcesCache::clientDestroyed(this);
     RenderObject::willBeDestroyed();
+}
+
+void RenderSVGModelObject::computeLayerHitTestRects(LayerHitTestRects& rects) const
+{
+    // Using just the rect for the SVGRoot is good enough for now.
+    SVGRenderSupport::findTreeRootObject(this)->computeLayerHitTestRects(rects);
+}
+
+void RenderSVGModelObject::addLayerHitTestRects(LayerHitTestRects&, const RenderLayer* currentLayer, const LayoutPoint& layerOffset) const
+{
+    // We don't walk into SVG trees at all - just report their container.
 }
 
 void RenderSVGModelObject::styleWillChange(StyleDifference diff, const RenderStyle* newStyle)

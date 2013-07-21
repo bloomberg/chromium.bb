@@ -1372,6 +1372,11 @@ UChar RenderText::previousCharacter() const
     return prev;
 }
 
+void RenderText::addLayerHitTestRects(LayerHitTestRects&, const RenderLayer* currentLayer, const LayoutPoint& layerOffset) const
+{
+    // Text nodes aren't event targets, so don't descend any further.
+}
+
 void applyTextTransform(const RenderStyle* style, String& text, UChar previousCharacter)
 {
     if (!style)

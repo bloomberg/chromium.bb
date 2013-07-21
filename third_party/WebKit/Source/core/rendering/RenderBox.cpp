@@ -580,6 +580,18 @@ void RenderBox::addFocusRingRects(Vector<IntRect>& rects, const LayoutPoint& add
         rects.append(pixelSnappedIntRect(additionalOffset, size()));
 }
 
+void RenderBox::addLayerHitTestRects(LayerHitTestRects& layerRects, const RenderLayer* currentLayer, const LayoutPoint& layerOffset) const
+{
+    LayoutPoint adjustedLayerOffset = layerOffset + locationOffset();
+    RenderBoxModelObject::addLayerHitTestRects(layerRects, currentLayer, adjustedLayerOffset);
+}
+
+void RenderBox::computeSelfHitTestRects(Vector<LayoutRect>& rects, const LayoutPoint& layerOffset) const
+{
+    if (!size().isEmpty())
+        rects.append(LayoutRect(layerOffset, size()));
+}
+
 LayoutRect RenderBox::reflectionBox() const
 {
     LayoutRect result;

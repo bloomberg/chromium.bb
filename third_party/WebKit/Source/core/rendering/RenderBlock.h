@@ -568,6 +568,8 @@ protected:
 
     virtual void addFocusRingRects(Vector<IntRect>&, const LayoutPoint& additionalOffset, const RenderLayerModelObject* paintContainer = 0) OVERRIDE;
 
+    virtual void computeSelfHitTestRects(Vector<LayoutRect>&, const LayoutPoint& layerOffset) const OVERRIDE;
+
     // Only used by RenderSVGText, which explicitly overrides RenderBlock::layoutBlock(), do NOT use for anything else.
     void forceLayoutInlineChildren()
     {

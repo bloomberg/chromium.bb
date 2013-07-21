@@ -1131,6 +1131,10 @@
         '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8InternalSettingsGenerated.h',
         '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8InternalRuntimeFlags.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8InternalRuntimeFlags.h',
+        '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8LayerRect.cpp',
+        '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8LayerRect.h',
+        '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8LayerRectList.cpp',
+        '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8LayerRectList.h',
       ],
       'sources/': [
         ['exclude', 'testing/js'],

@@ -301,9 +301,6 @@ void RenderView::layout()
 
 void RenderView::mapLocalToContainer(const RenderLayerModelObject* repaintContainer, TransformState& transformState, MapCoordinatesFlags mode, bool* wasFixed) const
 {
-    // If a container was specified, and was not 0 or the RenderView,
-    // then we should have found it by now.
-    ASSERT_ARG(repaintContainer, !repaintContainer || repaintContainer == this);
     ASSERT_UNUSED(wasFixed, !wasFixed || *wasFixed == (mode & IsFixed));
 
     if (!repaintContainer && mode & UseTransforms && shouldUseTransformFromContainer(0)) {
@@ -314,6 +311,23 @@ void RenderView::mapLocalToContainer(const RenderLayerModelObject* repaintContai
     
     if (mode & IsFixed && m_frameView)
         transformState.move(m_frameView->scrollOffsetForFixedPosition());
+
+    if (repaintContainer == this)
+        return;
+
+    if (mode & TraverseDocumentBoundaries) {
+        if (RenderObject* parentDocRenderer = frame()->ownerRenderer()) {
+            transformState.move(-frame()->view()->scrollOffset());
+            if (parentDocRenderer->isBox())
+                transformState.move(toLayoutSize(toRenderBox(parentDocRenderer)->contentBoxRect().location()));
+            parentDocRenderer->mapLocalToContainer(repaintContainer, transformState, mode, wasFixed);
+            return;
+        }
+    }
+
+    // If a container was specified, and was not 0 or the RenderView,
+    // then we should have found it by now.
+    ASSERT_ARG(repaintContainer, !repaintContainer);
 }
 
 const RenderObject* RenderView::pushMappingToContainer(const RenderLayerModelObject* ancestorToStopAt, RenderGeometryMap& geometryMap) const
@@ -347,6 +361,14 @@ void RenderView::mapAbsoluteToLocalPoint(MapCoordinatesFlags mode, TransformStat
         getTransformFromContainer(0, LayoutSize(), t);
         transformState.applyTransform(t);
     }
+}
+
+void RenderView::computeSelfHitTestRects(Vector<LayoutRect>& rects, const LayoutPoint&) const
+{
+    // Record the entire size of the contents of the frame. Note that we don't just
+    // use the viewport size (containing block) here because we want to ensure this includes
+    // all children (so we can avoid walking them explicitly).
+    rects.append(LayoutRect(LayoutPoint::zero(), frameView()->contentsSize()));
 }
 
 bool RenderView::requiresColumns(int desiredColumnCount) const

@@ -151,6 +151,8 @@ protected:
 
     virtual void setTextInternal(PassRefPtr<StringImpl>);
     virtual UChar previousCharacter() const;
+
+    virtual void addLayerHitTestRects(LayerHitTestRects&, const RenderLayer* currentLayer, const LayoutPoint& layerOffset) const OVERRIDE;
     
     virtual InlineTextBox* createTextBox(); // Subclassed by SVG.
 

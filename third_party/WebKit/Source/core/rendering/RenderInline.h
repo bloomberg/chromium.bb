@@ -100,6 +100,8 @@ protected:
 
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) OVERRIDE;
 
+    virtual void computeSelfHitTestRects(Vector<LayoutRect>& rects, const LayoutPoint& layerOffset) const OVERRIDE;
+
 private:
     virtual RenderObjectChildList* virtualChildren() OVERRIDE FINAL { return children(); }
     virtual const RenderObjectChildList* virtualChildren() const OVERRIDE FINAL { return children(); }

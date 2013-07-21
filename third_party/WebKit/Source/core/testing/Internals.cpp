@@ -32,6 +32,8 @@
 #include "InternalProfilers.h"
 #include "InternalRuntimeFlags.h"
 #include "InternalSettings.h"
+#include "LayerRect.h"
+#include "LayerRectList.h"
 #include "MallocStatistics.h"
 #include "MockPagePopupDriver.h"
 #include "RuntimeEnabledFeatures.h"
@@ -176,6 +178,9 @@ PassRefPtr<Internals> Internals::create(Document* document)
 
 Internals::~Internals()
 {
+    if (m_scrollingCoordinator) {
+        m_scrollingCoordinator->removeTouchEventTargetRectsObserver(this);
+    }
 }
 
 void Internals::resetToConsistentState(Page* page)
@@ -200,7 +205,12 @@ void Internals::resetToConsistentState(Page* page)
 Internals::Internals(Document* document)
     : ContextLifecycleObserver(document)
     , m_runtimeFlags(InternalRuntimeFlags::create())
+    , m_scrollingCoordinator(document->page()->scrollingCoordinator())
+    , m_touchEventTargetRectUpdateCount(0)
 {
+    if (m_scrollingCoordinator) {
+        m_scrollingCoordinator->addTouchEventTargetRectsObserver(this);
+    }
 }
 
 Document* Internals::contextDocument() const
@@ -1265,25 +1275,44 @@ unsigned Internals::touchEventHandlerCount(Document* document, ExceptionCode& ec
     return count;
 }
 
-PassRefPtr<ClientRectList> Internals::touchEventTargetClientRects(Document* document, ExceptionCode& ec)
+LayerRectList* Internals::touchEventTargetLayerRects(Document* document, ExceptionCode& ec)
 {
-    if (!document || !document->view() || !document->page()) {
+    if (!document || !document->view() || !document->page() || document != contextDocument()) {
         ec = InvalidAccessError;
         return 0;
     }
-    if (!document->page()->scrollingCoordinator())
-        return ClientRectList::create();
 
-    document->updateLayoutIgnorePendingStylesheets();
+    // Do any pending layouts (which may call touchEventTargetRectsChange) to ensure this
+    // really takes any previous changes into account.
+    document->updateLayout();
+    return m_currentTouchEventRects.get();
+}
 
-    Vector<IntRect> absoluteRects;
-    document->page()->scrollingCoordinator()->computeAbsoluteTouchEventTargetRects(document, absoluteRects);
-    Vector<FloatQuad> absoluteQuads(absoluteRects.size());
+unsigned Internals::touchEventTargetLayerRectsUpdateCount(Document* document, ExceptionCode& ec)
+{
+    if (!document || !document->view() || !document->page() || document != contextDocument()) {
+        ec = InvalidAccessError;
+        return 0;
+    }
 
-    for (size_t i = 0; i < absoluteRects.size(); ++i)
-        absoluteQuads[i] = FloatQuad(absoluteRects[i]);
+    // Do any pending layouts to ensure this really takes any previous changes into account.
+    document->updateLayout();
 
-    return ClientRectList::create(absoluteQuads);
+    return m_touchEventTargetRectUpdateCount;
+}
+
+void Internals::touchEventTargetRectsChanged(const LayerHitTestRects& rects)
+{
+    m_touchEventTargetRectUpdateCount++;
+
+    // Since it's not safe to hang onto the pointers in a LayerHitTestRects, we immediately
+    // copy into a LayerRectList.
+    m_currentTouchEventRects = LayerRectList::create();
+    for (LayerHitTestRects::const_iterator iter = rects.begin(); iter != rects.end(); ++iter) {
+        for (size_t i = 0; i < iter->value.size(); ++i) {
+            m_currentTouchEventRects->append(iter->key->renderer()->node(), ClientRect::create(enclosingIntRect(iter->value[i])));
+        }
+    }
 }
 
 PassRefPtr<NodeList> Internals::nodesFromRect(Document* document, int centerX, int centerY, unsigned topPadding, unsigned rightPadding,

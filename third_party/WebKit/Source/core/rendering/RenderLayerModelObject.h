@@ -58,6 +58,8 @@ protected:
 
     virtual void willBeDestroyed() OVERRIDE;
 
+    virtual void addLayerHitTestRects(LayerHitTestRects&, const RenderLayer* = 0, const LayoutPoint& = LayoutPoint()) const OVERRIDE;
+
 private:
     virtual bool isLayerModelObject() const OVERRIDE FINAL { return true; }
 

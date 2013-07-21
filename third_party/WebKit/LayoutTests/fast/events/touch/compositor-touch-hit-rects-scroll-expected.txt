@@ -1,0 +1,15 @@
+This test verifies the hit test regions given to the compositor specifically around composited overflow scroll elements.
+
+scrollContent[0]: DIV#scroll1 (1, 14, 273, 12)
+
+nestedContent[0]: DIV#scroll2b (1, 31, 256, 12)
+
+overflowWithHandler[0]: DIV#overflowWithHandler (0, 0, 273, 52)
+overflowWithHandler[1]: DIV#overflowWithHandler (1, 1, 256, 32)
+overflowWithHandler[2]: DIV#overflowWithHandler (1, 33, 256, 22)
+overflowWithHandler[3]: DIV#overflowWithHandler (1, 55, 256, 62)
+
+withTransform[0]: DIV#transformed (0, 0, 271, 12)
+withTransform[1]: DIV#scroll3 (1, 14, 273, 14)
+
+

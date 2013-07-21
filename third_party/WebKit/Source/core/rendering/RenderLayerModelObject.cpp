@@ -182,5 +182,17 @@ void RenderLayerModelObject::styleDidChange(StyleDifference diff, const RenderSt
     }
 }
 
+void RenderLayerModelObject::addLayerHitTestRects(LayerHitTestRects& rects, const RenderLayer* currentLayer, const LayoutPoint& layerOffset) const
+{
+    // If we have a new layer then our current layer/offset is irrelevant.
+    LayoutPoint adjustedLayerOffset = layerOffset;
+    if (hasLayer()) {
+        currentLayer = layer();
+        adjustedLayerOffset = LayoutPoint();
+    }
+
+    RenderObject::addLayerHitTestRects(rects, currentLayer, adjustedLayerOffset);
+}
+
 } // namespace WebCore
 

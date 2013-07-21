@@ -2271,6 +2271,60 @@ LayoutRect RenderObject::localCaretRect(InlineBox*, int, LayoutUnit* extraWidthT
     return LayoutRect();
 }
 
+void RenderObject::computeLayerHitTestRects(LayerHitTestRects& layerRects) const
+{
+    // Figure out what layer our container is in. Any offset (or new layer) for this
+    // renderer within it's container will be applied in addLayerHitTestRects.
+    LayoutPoint layerOffset;
+    const RenderLayer* currentLayer = 0;
+
+    if (!hasLayer()) {
+        RenderObject* container = this->container();
+        if (container) {
+            currentLayer = container->enclosingLayer();
+            if (currentLayer && currentLayer->renderer() != container)
+                layerOffset.move(container->offsetFromAncestorContainer(currentLayer->renderer()));
+        } else {
+            currentLayer = enclosingLayer();
+        }
+        if (!currentLayer)
+            return;
+    }
+
+    this->addLayerHitTestRects(layerRects, currentLayer, layerOffset);
+}
+
+void RenderObject::addLayerHitTestRects(LayerHitTestRects& layerRects, const RenderLayer* currentLayer, const LayoutPoint& layerOffset) const
+{
+    ASSERT(currentLayer);
+    ASSERT(currentLayer == this->enclosingLayer());
+
+    // If it's possible for children to have rects outside our bounds, then we need to descend into
+    // the children and compute them.
+    // Ideally there would be other cases where we could detect that children couldn't have rects
+    // outside our bounds and prune the tree walk.
+    // Note that we don't use Region here because Union is O(N) - better to just keep a list of
+    // partially redundant rectangles. If we find examples where this is expensive, then we could
+    // rewrite Region to be more efficient. See https://bugs.webkit.org/show_bug.cgi?id=100814.
+    if (!isRenderView()) {
+        for (RenderObject* curr = firstChild(); curr; curr = curr->nextSibling()) {
+            curr->addLayerHitTestRects(layerRects, currentLayer,  layerOffset);
+        }
+    }
+
+    // Compute the rects for this renderer only and add them to the results.
+    // Note that we could avoid passing the offset and instead adjust each result, but this
+    // seems slightly simpler.
+    Vector<LayoutRect> ownRects;
+    computeSelfHitTestRects(ownRects, layerOffset);
+
+    LayerHitTestRects::iterator iter = layerRects.find(currentLayer);
+    if (iter == layerRects.end())
+        layerRects.add(currentLayer, ownRects);
+    else
+        iter->value.append(ownRects);
+}
+
 bool RenderObject::isRooted(RenderView** view) const
 {
     const RenderObject* o = this;

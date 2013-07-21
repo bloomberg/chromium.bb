@@ -108,7 +108,8 @@ enum MarkingBehavior {
 enum MapCoordinatesMode {
     IsFixed = 1 << 0,
     UseTransforms = 1 << 1,
-    ApplyContainerFlip = 1 << 2
+    ApplyContainerFlip = 1 << 2,
+    TraverseDocumentBoundaries = 1 << 3,
 };
 typedef unsigned MapCoordinatesFlags;
 
@@ -129,6 +130,7 @@ struct AnnotatedRegionValue {
 };
 
 typedef WTF::HashSet<const RenderObject*> RenderObjectAncestorLineboxDirtySet;
+typedef WTF::HashMap<const RenderLayer*, Vector<LayoutRect> > LayerHitTestRects;
 
 #ifndef NDEBUG
 const int showTreeCharacterOffset = 39;
@@ -930,6 +932,9 @@ public:
     
     virtual void addFocusRingRects(Vector<IntRect>&, const LayoutPoint& /* additionalOffset */, const RenderLayerModelObject* /* paintContainer */ = 0) { };
 
+    // Compute a list of hit-test rectangles per layer rooted at this renderer.
+    virtual void computeLayerHitTestRects(LayerHitTestRects&) const;
+
     LayoutRect absoluteOutlineBounds() const
     {
         return outlineBoundsForRepaint(0);
@@ -970,6 +975,17 @@ protected:
     virtual void willBeRemovedFromTree();
 
     void setDocumentForAnonymous(Document* document) { ASSERT(isAnonymous()); m_node = document; }
+
+    // Add hit-test rects for the render tree rooted at this node to the provided collection on a
+    // per-RenderLayer basis. CurrentLayer must be the enclosing layer,
+    // and layerOffset is the current offset within this layer. Subclass implementations will add
+    // any offset for this renderer within it's container, so callers should provide only the
+    // offset of the container within it's layer.
+    virtual void addLayerHitTestRects(LayerHitTestRects&, const RenderLayer* currentLayer, const LayoutPoint& layerOffset) const;
+
+    // Add hit-test rects for this renderer only to the provided list. layerOffset is the offset
+    // of this renderer within the current layer that should be used for each result.
+    virtual void computeSelfHitTestRects(Vector<LayoutRect>&, const LayoutPoint& layerOffset) const { };
 
 private:
     RenderFlowThread* locateFlowThreadContainingBlock() const;

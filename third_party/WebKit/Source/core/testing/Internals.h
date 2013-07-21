@@ -31,6 +31,7 @@
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/dom/NodeList.h"
+#include "core/page/scrolling/ScrollingCoordinator.h"
 #include <wtf/ArrayBuffer.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
@@ -51,6 +52,7 @@ class InspectorFrontendChannelDummy;
 class InternalRuntimeFlags;
 class InternalProfilers;
 class InternalSettings;
+class LayerRectList;
 class Node;
 class Page;
 class PagePopupController;
@@ -63,7 +65,9 @@ class TypeConversions;
 
 typedef int ExceptionCode;
 
-class Internals : public RefCounted<Internals>, public ContextLifecycleObserver {
+class Internals : public RefCounted<Internals>
+    , public ContextLifecycleObserver
+    , public ScrollingCoordinator::TouchEventTargetRectsObserver {
 public:
     static PassRefPtr<Internals> create(Document*);
     virtual ~Internals();
@@ -175,7 +179,9 @@ public:
 
     unsigned wheelEventHandlerCount(Document*, ExceptionCode&);
     unsigned touchEventHandlerCount(Document*, ExceptionCode&);
-    PassRefPtr<ClientRectList> touchEventTargetClientRects(Document*, ExceptionCode&);
+    LayerRectList* touchEventTargetLayerRects(Document*, ExceptionCode&);
+    unsigned touchEventTargetLayerRectsUpdateCount(Document*, ExceptionCode&);
+    virtual void touchEventTargetRectsChanged(const LayerHitTestRects&);
 
     // This is used to test rect based hit testing like what's done on touch screens.
     PassRefPtr<NodeList> nodesFromRect(Document*, int x, int y, unsigned topPadding, unsigned rightPadding,
@@ -296,6 +302,9 @@ private:
     RefPtr<DOMWindow> m_frontendWindow;
     OwnPtr<InspectorFrontendChannelDummy> m_frontendChannel;
     RefPtr<InternalRuntimeFlags> m_runtimeFlags;
+    RefPtr<ScrollingCoordinator> m_scrollingCoordinator;
+    int m_touchEventTargetRectUpdateCount;
+    RefPtr<LayerRectList> m_currentTouchEventRects;
     RefPtr<InternalProfilers> m_profilers;
 };
 

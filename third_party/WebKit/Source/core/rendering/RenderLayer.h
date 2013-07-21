@@ -1100,7 +1100,7 @@ private:
     friend class RenderLayerCompositor;
     friend class RenderLayerModelObject;
 
-    // Only safe to call from RenderBoxModelObject::destroyLayer(RenderArena*)
+    // Only safe to call from RenderLayerModelObject::destroyLayer(RenderArena*)
     void destroy(RenderArena*);
 
     LayoutUnit overflowTop() const;
