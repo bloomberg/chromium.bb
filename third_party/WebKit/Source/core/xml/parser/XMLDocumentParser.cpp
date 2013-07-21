@@ -1438,10 +1438,9 @@ void XMLDocumentParser::doEnd()
 
     XMLTreeViewer xmlTreeViewer(document());
     bool xmlViewerMode = !m_sawError && !m_sawCSS && !m_sawXSLTransform && xmlTreeViewer.hasNoStyleInformation();
-    if (xmlViewerMode)
+    if (xmlViewerMode) {
         xmlTreeViewer.transformDocumentToTreeView();
-
-    if (m_sawXSLTransform) {
+    } else if (m_sawXSLTransform) {
         xmlDocPtr doc = xmlDocPtrForString(document()->cachedResourceLoader(), m_originalSourceForTransform.toString(), document()->url().string());
         document()->setTransformSource(adoptPtr(new TransformSource(doc)));
 
