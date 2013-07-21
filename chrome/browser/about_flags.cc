@@ -309,7 +309,6 @@ const Experiment::Choice kTabCaptureDownscaleQualityChoices[] = {
 //   array of choices.
 // See the documentation of Experiment for details on the fields.
 //
-
 // When adding a new choice, add it to the end of the list.
 const Experiment kExperiments[] = {
   {
@@ -1637,15 +1636,6 @@ const Experiment kExperiments[] = {
 const Experiment* experiments = kExperiments;
 size_t num_experiments = arraysize(kExperiments);
 
-const Migration kMigrations[] = {
-  // TODO(mkwst): Remove this once some reasonable amount of time has passed.
-  {"enable-experimental-webkit-features",
-   "enable-experimental-web-platform-features"}
-};
-
-const Migration* migrations = kMigrations;
-size_t num_migrations = arraysize(kMigrations);
-
 // Stores and encapsulates the little state that about:flags has.
 class FlagsState {
  public:
@@ -1714,17 +1704,6 @@ bool ValidateExperiment(const Experiment& e) {
   return true;
 }
 
-// Given the set of currently active experiments, migrate deprecated experiments
-// to their shiny new counterparts.
-void MigrateExperiments(std::set<std::string>* experimentList) {
-  for (size_t i = 0; i < num_migrations; ++i) {
-    if (experimentList->count(migrations[i].from)) {
-      experimentList->erase(experimentList->find(migrations[i].from));
-      experimentList->insert(migrations[i].to);
-    }
-  }
-}
-
 // Removes all experiments from prefs::kEnabledLabsExperiments that are
 // unknown, to prevent this list to become very long as experiments are added
 // and removed.
@@ -1735,11 +1714,7 @@ void SanitizeList(FlagsStorage* flags_storage) {
     AddInternalName(experiments[i], &known_experiments);
   }
 
-  // Store the original list of Experiments, then copy it for processing.
-  std::set<std::string> unsanitized_experiments = flags_storage->GetFlags();
-  std::set<std::string> enabled_experiments = unsanitized_experiments;
-
-  MigrateExperiments(&enabled_experiments);
+  std::set<std::string> enabled_experiments = flags_storage->GetFlags();
 
   std::set<std::string> new_enabled_experiments;
   std::set_intersection(
@@ -1747,7 +1722,7 @@ void SanitizeList(FlagsStorage* flags_storage) {
       enabled_experiments.begin(), enabled_experiments.end(),
       std::inserter(new_enabled_experiments, new_enabled_experiments.begin()));
 
-  if (new_enabled_experiments != unsanitized_experiments)
+  if (new_enabled_experiments != enabled_experiments)
     flags_storage->SetFlags(new_enabled_experiments);
 }
 
@@ -2136,16 +2111,6 @@ void SetExperiments(const Experiment* e, size_t count) {
   } else {
     experiments = e;
     num_experiments = count;
-  }
-}
-
-void SetMigrations(const Migration* e, size_t count) {
-  if (!e) {
-    migrations = kMigrations;
-    num_migrations = arraysize(kMigrations);
-  } else {
-    migrations = e;
-    num_migrations = count;
   }
 }
 

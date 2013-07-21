@@ -110,13 +110,6 @@ static Experiment kExperiments[] = {
   },
 };
 
-static Migration kMigrations[] = {
-  {
-    kFlags1,
-    kFlags2
-  }
-};
-
 class AboutFlagsTest : public ::testing::Test {
  protected:
   AboutFlagsTest() : flags_storage_(&prefs_) {
@@ -228,21 +221,6 @@ TEST_F(AboutFlagsTest, ConvertFlagsToSwitches) {
 
   EXPECT_TRUE(command_line.HasSwitch("foo"));
   EXPECT_TRUE(command_line.HasSwitch(kSwitch1));
-}
-
-TEST_F(AboutFlagsTest, ConvertFlagsToSwitchesMigration) {
-  testing::SetMigrations(kMigrations, arraysize(kMigrations));
-  SetExperimentEnabled(&flags_storage_,kFlags1, true);
-
-  CommandLine command_line(CommandLine::NO_PROGRAM);
-
-  EXPECT_FALSE(command_line.HasSwitch(kSwitch1));
-  EXPECT_FALSE(command_line.HasSwitch(kSwitch2));
-
-  ConvertFlagsToSwitches(&flags_storage_, &command_line);
-
-  EXPECT_FALSE(command_line.HasSwitch(kSwitch1));
-  EXPECT_TRUE(command_line.HasSwitch(kSwitch2));
 }
 
 TEST_F(AboutFlagsTest, CompareSwitchesToCurrentCommandLine) {
