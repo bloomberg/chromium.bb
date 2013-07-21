@@ -246,21 +246,7 @@ void PpapiPluginRegisterThreadCreator(
   ppapi::PPB_Audio_Shared::SetThreadFunctions(thread_functions);
 }
 
-int IrtInit() {
-  static int initialized = 0;
-  if (initialized) {
-    return 0;
-  }
-  if (!NaClSrpcModuleInit()) {
-    return 1;
-  }
-  initialized = 1;
-  return 0;
-}
-
 int PpapiPluginMain() {
-  IrtInit();
-
   // Though it isn't referenced here, we must instantiate an AtExitManager.
   base::AtExitManager exit_manager;
   base::MessageLoop loop;
@@ -291,8 +277,6 @@ int PpapiPluginMain() {
   plugin_globals.set_plugin_proxy_delegate(&ppapi_dispatcher);
 
   loop.Run();
-
-  NaClSrpcModuleFini();
 
   return 0;
 }
