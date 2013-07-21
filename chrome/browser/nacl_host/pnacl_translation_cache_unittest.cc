@@ -16,7 +16,7 @@
 using content::BrowserThread;
 using base::FilePath;
 
-namespace pnacl_cache {
+namespace pnacl {
 
 class PnaclTranslationCacheTest : public testing::Test {
  protected:
@@ -155,4 +155,4 @@ TEST_F(PnaclTranslationCacheTest, GetMiss) {
   EXPECT_EQ(net::ERR_FAILED, load_cb.GetResult(net::ERR_IO_PENDING));
 }
 
-}  // namespace pnacl_cache
+}  // namespace pnacl

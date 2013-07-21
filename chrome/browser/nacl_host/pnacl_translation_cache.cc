@@ -16,16 +16,13 @@
 
 using content::BrowserThread;
 
-static const base::FilePath::CharType kDiskCacheDirectoryName[] =
-    FILE_PATH_LITERAL("PnaclTranslationCache");
-
 namespace {
 
 void CloseDiskCacheEntry(disk_cache::Entry* entry) { entry->Close(); }
 
 }  // namespace
 
-namespace pnacl_cache {
+namespace pnacl {
 // These are in pnacl_cache namespace instead of static so they can be used
 // by the unit test.
 const int kMaxDiskCacheSize = 1000 * 1024 * 1024;
@@ -367,7 +364,7 @@ int PnaclTranslationCache::InitCache(const base::FilePath& cache_directory,
   if (in_memory_) {
     rv = InitWithMemBackend(kMaxMemCacheSize, callback);
   } else {
-    rv = InitWithDiskBackend(cache_directory.Append(kDiskCacheDirectoryName),
+    rv = InitWithDiskBackend(cache_directory,
                              kMaxDiskCacheSize,
                              callback);
   }
@@ -381,4 +378,4 @@ int PnaclTranslationCache::Size() {
   return disk_cache_->GetEntryCount();
 }
 
-}  // namespace pnacl_cache
+}  // namespace pnacl

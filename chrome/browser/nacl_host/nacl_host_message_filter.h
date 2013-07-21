@@ -36,6 +36,7 @@ class NaClHostMessageFilter : public content::BrowserMessageFilter {
   // content::BrowserMessageFilter methods:
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
+  virtual void OnChannelClosing() OVERRIDE;
 
   int render_process_id() { return render_process_id_; }
   bool off_the_record() { return off_the_record_; }
@@ -64,8 +65,9 @@ class NaClHostMessageFilter : public content::BrowserMessageFilter {
 
   void SyncReturnTemporaryFile(IPC::Message* reply_msg,
                                IPC::PlatformFileForTransit fd);
-  void AsyncReturnTemporaryFile(int render_view_id,
-                                IPC::PlatformFileForTransit fd);
+  void AsyncReturnTemporaryFile(int pp_instance,
+                                IPC::PlatformFileForTransit fd,
+                                bool is_hit);
 #endif
   int render_process_id_;
 

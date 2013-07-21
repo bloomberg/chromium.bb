@@ -145,38 +145,6 @@ void DoOpenPnaclFile(
   nacl_host_message_filter->Send(reply_msg);
 }
 
-IPC::PlatformFileForTransit GetTemporaryFile(
-    scoped_refptr<NaClHostMessageFilter> nacl_host_message_filter) {
-  DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
-
-  base::FilePath file_path;
-  if (!file_util::CreateTemporaryFile(&file_path))
-    return IPC::InvalidPlatformFileForTransit();
-
-  base::PlatformFileError error;
-  base::PlatformFile file_handle = base::CreatePlatformFile(
-      file_path,
-      base::PLATFORM_FILE_CREATE_ALWAYS | base::PLATFORM_FILE_READ |
-      base::PLATFORM_FILE_WRITE | base::PLATFORM_FILE_TEMPORARY |
-      base::PLATFORM_FILE_DELETE_ON_CLOSE,
-      NULL, &error);
-
-  if (error != base::PLATFORM_FILE_OK)
-    return IPC::InvalidPlatformFileForTransit();
-
-  // Do any DuplicateHandle magic that is necessary first.
-  return IPC::GetFileHandleForProcess(file_handle,
-                                      nacl_host_message_filter->PeerHandle(),
-                                      true);
-}
-
-void ReturnTemporaryFileOnIOThread(
-    nacl_file_host::TempFileCallback cb,
-    IPC::PlatformFileForTransit fd) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  cb.Run(fd);
-}
-
 void DoRegisterOpenedNaClExecutableFile(
     scoped_refptr<NaClHostMessageFilter> nacl_host_message_filter,
     base::PlatformFile file,
@@ -331,19 +299,6 @@ bool PnaclCanOpenFile(const std::string& filename,
       std::string(kExpectedFilePrefix) + filename);
   *file_to_open = full_path;
   return true;
-}
-
-void CreateTemporaryFile(
-    scoped_refptr<NaClHostMessageFilter> nacl_host_message_filter,
-    TempFileCallback cb) {
-    if (!base::PostTaskAndReplyWithResult(
-            BrowserThread::GetBlockingPool(),
-            FROM_HERE,
-            base::Bind(&GetTemporaryFile, nacl_host_message_filter),
-            base::Bind(&ReturnTemporaryFileOnIOThread, cb))) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    cb.Run(IPC::InvalidPlatformFileForTransit());
-  }
 }
 
 void OpenNaClExecutable(

@@ -2499,6 +2499,8 @@
             'browser/nacl_host/nacl_process_host.h',
             'browser/nacl_host/nacl_validation_cache.cc',
             'browser/nacl_host/nacl_validation_cache.h',
+            'browser/nacl_host/pnacl_host.cc',
+            'browser/nacl_host/pnacl_host.h',
             'browser/nacl_host/pnacl_translation_cache.cc',
             'browser/nacl_host/pnacl_translation_cache.h',
             'common/nacl_debug_exception_handler_win.cc',

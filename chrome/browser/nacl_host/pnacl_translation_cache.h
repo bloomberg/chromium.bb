@@ -20,7 +20,7 @@ namespace disk_cache {
 class Backend;
 }
 
-namespace pnacl_cache {
+namespace pnacl {
 typedef base::Callback<void(int)> CompletionCallback;
 class PnaclTranslationCacheEntry;
 extern const int kMaxMemCacheSize;
@@ -85,6 +85,6 @@ class PnaclTranslationCache
   DISALLOW_COPY_AND_ASSIGN(PnaclTranslationCache);
 };
 
-}  // namespace pnacl_cache
+}  // namespace pnacl
 
 #endif  // CHROME_BROWSER_NACL_HOST_PNACL_TRANSLATION_CACHE_H_
