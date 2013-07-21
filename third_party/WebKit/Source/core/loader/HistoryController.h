@@ -30,6 +30,7 @@
 #ifndef HistoryController_h
 #define HistoryController_h
 
+#include "core/history/HistoryItem.h"
 #include "core/loader/FrameLoaderTypes.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/RefPtr.h"
@@ -38,7 +39,6 @@
 namespace WebCore {
 
 class Frame;
-class HistoryItem;
 class SerializedScriptValue;
 class StringWithDirection;
 

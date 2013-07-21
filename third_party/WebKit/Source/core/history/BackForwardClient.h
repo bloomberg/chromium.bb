@@ -28,17 +28,15 @@
 #ifndef BackForwardClient_h
 #define BackForwardClient_h
 
-#include "core/history/HistoryItem.h"
-#include "wtf/Forward.h"
-#include "wtf/RefCounted.h"
+#include "wtf/PassRefPtr.h"
 
 namespace WebCore {
 
+class HistoryItem;
+
 class BackForwardClient {
 public:
-    virtual ~BackForwardClient()
-    {
-    }
+    virtual ~BackForwardClient() { }
 
     virtual void addItem(PassRefPtr<HistoryItem>) = 0;
 
