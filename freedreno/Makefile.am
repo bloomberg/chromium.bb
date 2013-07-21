@@ -23,6 +23,12 @@ libdrm_freedreno_la_SOURCES = \
 	kgsl/kgsl_priv.h \
 	kgsl/kgsl_ringbuffer.c \
 	kgsl/msm_kgsl.h \
+	msm/msm_bo.c \
+	msm/msm_device.c \
+	msm/msm_drm.h \
+	msm/msm_pipe.c \
+	msm/msm_priv.h \
+	msm/msm_ringbuffer.c \
 	list.h
 
 libdrm_freedrenocommonincludedir = ${includedir}/freedreno
