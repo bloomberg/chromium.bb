@@ -1674,8 +1674,6 @@ crbug.com/250970 [ Debug ] fast/events/simulated-key-state.html [ Crash Timeout 
 
 Bug(dpranke) [ Linux ] fast/writing-mode/broken-ideographic-font.html [ Failure ]
 
-crbug.com/248522 [ Mac Win ] fast/events/touch/compositor-touch-hit-rects.html [ NeedsRebaseline ]
-
 crbug.com/254332 [ Linux Win ] fast/forms/button/button-reset-focus-by-mouse-then-keydown.html [ ImageOnlyFailure Pass ]
 crbug.com/254332 [ Linux Win ] fast/forms/button/button-reset-focus-by-mouse.html [ ImageOnlyFailure Pass ]
 crbug.com/254332 fast/forms/checkbox/checkbox-focus-by-mouse-then-keydown.html [ ImageOnlyFailure Pass ]
