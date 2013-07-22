@@ -3766,10 +3766,6 @@
               '-Wl,-O1',
               '-Wl,--as-needed',
             ],
-            'sources/': [
-              ['exclude', '_android(_unittest)?\\.cc$'],
-              ['exclude', '(^|/)android/']
-            ],
           }],
           # Settings for building host targets on mac.
           ['_toolset=="host" and host_os=="mac"', {

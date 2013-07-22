@@ -35,7 +35,7 @@
         ['exclude', '(^|/)linux/'],
       ],
     }],
-    ['OS!="android"', {
+    ['OS!="android" or _toolset=="host"', {
       'sources/': [
         ['exclude', '_android(_unittest)?\\.cc$'],
         ['exclude', '(^|/)android/'],
