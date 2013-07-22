@@ -1763,9 +1763,8 @@ function updateParentCheckbox(checkbox) {
 
 function entryBoxMousedown(event) {
   // Prevent text selection when shift-clicking to select multiple entries.
-  if (event.shiftKey) {
+  if (event.shiftKey)
     event.preventDefault();
-  }
 }
 
 /**
@@ -1788,12 +1787,20 @@ function removeNodeWithoutTransition(node) {
   node.parentNode.removeChild(node);
 }
 
-function removeNode(node) {
+/**
+ * Triggers a fade-out animation, and then removes |node| from the DOM.
+ * @param {Node} node The node to be removed.
+ * @param {Function?} onRemove A function to be called after the node
+ *     has been removed from the DOM.
+ */
+function removeNode(node, onRemove) {
   node.classList.add('fade-out'); // Trigger CSS fade out animation.
 
   // Delete the node when the animation is complete.
   node.addEventListener('webkitTransitionEnd', function() {
     removeNodeWithoutTransition(node);
+    if (onRemove)
+      onRemove();
   });
 }
 
@@ -1806,17 +1813,17 @@ function removeEntryFromView(entry) {
   var nextEntry = entry.nextSibling;
   var previousEntry = entry.previousSibling;
 
-  removeNode(entry);
+  removeNode(entry, function() {
+    historyView.updateSelectionEditButtons();
+  });
 
   // if there is no previous entry, and the next entry is a gap, remove it
-  if (!previousEntry && nextEntry && nextEntry.className == 'gap') {
+  if (!previousEntry && nextEntry && nextEntry.className == 'gap')
     removeNode(nextEntry);
-  }
 
   // if there is no next entry, and the previous entry is a gap, remove it
-  if (!nextEntry && previousEntry && previousEntry.className == 'gap') {
+  if (!nextEntry && previousEntry && previousEntry.className == 'gap')
     removeNode(previousEntry);
-  }
 
   // if both the next and previous entries are gaps, remove one
   if (nextEntry && nextEntry.className == 'gap' &&
