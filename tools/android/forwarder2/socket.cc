@@ -153,7 +153,7 @@ bool Socket::InitTcpSocket(const std::string& host, int port) {
 bool Socket::BindAndListen() {
   errno = 0;
   if (HANDLE_EINTR(bind(socket_, addr_ptr_, addr_len_)) < 0 ||
-      HANDLE_EINTR(listen(socket_, 5)) < 0) {
+      HANDLE_EINTR(listen(socket_, SOMAXCONN)) < 0) {
     SetSocketError();
     return false;
   }
