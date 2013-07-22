@@ -8,6 +8,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
@@ -144,6 +145,7 @@ class NET_EXPORT SpdySessionPool
   friend class SpdySessionPoolPeer;  // For testing.
 
   typedef std::set<scoped_refptr<SpdySession> > SessionSet;
+  typedef std::vector<base::WeakPtr<SpdySession> > WeakSessionList;
   typedef std::map<SpdySessionKey, base::WeakPtr<SpdySession> >
       AvailableSessionMap;
   typedef std::map<IPEndPoint, SpdySessionKey> AliasMap;
@@ -170,6 +172,10 @@ class NET_EXPORT SpdySessionPool
 
   // Remove all aliases for |key| from the aliases table.
   void RemoveAliases(const SpdySessionKey& key);
+
+  // Get a copy of the current sessions as a list of WeakPtrs. Used by
+  // CloseCurrentSessionsHelper() below.
+  WeakSessionList GetCurrentSessions() const;
 
   // Close only the currently existing SpdySessions with |error|.  Let
   // any new ones created while this method is running continue to

@@ -434,19 +434,19 @@ Error SpdySession::InitializeWithSocket(
     bool is_secure,
     int certificate_error_code) {
   CHECK(!in_io_loop_);
-  DCHECK(!connection_);
-  DCHECK(certificate_error_code == OK ||
-         certificate_error_code < ERR_IO_PENDING);
-
-  // TODO(akalin): Check connection->is_initialized() instead. This
-  // requires re-working CreateFakeSpdySession(), though.
-  DCHECK(connection->socket());
-  base::StatsCounter spdy_sessions("spdy.sessions");
-  spdy_sessions.Increment();
-
   DCHECK_EQ(availability_state_, STATE_AVAILABLE);
   DCHECK_EQ(read_state_, READ_STATE_DO_READ);
   DCHECK_EQ(write_state_, WRITE_STATE_IDLE);
+  DCHECK(!connection_);
+
+  DCHECK(certificate_error_code == OK ||
+         certificate_error_code < ERR_IO_PENDING);
+  // TODO(akalin): Check connection->is_initialized() instead. This
+  // requires re-working CreateFakeSpdySession(), though.
+  DCHECK(connection->socket());
+
+  base::StatsCounter spdy_sessions("spdy.sessions");
+  spdy_sessions.Increment();
 
   connection_ = connection.Pass();
   is_secure_ = is_secure;
@@ -538,6 +538,7 @@ int SpdySession::GetPushStream(
 
   stream->reset();
 
+  // TODO(akalin): Add unit test exercising this code path.
   if (availability_state_ == STATE_CLOSED)
     return ERR_CONNECTION_CLOSED;
 
@@ -579,6 +580,7 @@ int SpdySession::TryCreateStream(SpdyStreamRequest* request,
   if (availability_state_ == STATE_GOING_AWAY)
     return ERR_FAILED;
 
+  // TODO(akalin): Add unit test exercising this code path.
   if (availability_state_ == STATE_CLOSED)
     return ERR_CONNECTION_CLOSED;
 
@@ -607,6 +609,7 @@ int SpdySession::CreateStream(const SpdyStreamRequest& request,
   if (availability_state_ == STATE_GOING_AWAY)
     return ERR_FAILED;
 
+  // TODO(akalin): Add unit test exercising this code path.
   if (availability_state_ == STATE_CLOSED)
     return ERR_CONNECTION_CLOSED;
 
@@ -730,17 +733,17 @@ base::WeakPtr<SpdySession> SpdySession::GetWeakPtr() {
 
 bool SpdySession::CloseOneIdleConnection() {
   CHECK(!in_io_loop_);
-  DCHECK(pool_);
   DCHECK_NE(availability_state_, STATE_CLOSED);
+  DCHECK(pool_);
   if (!active_streams_.empty())
     return false;
-  base::WeakPtr<SpdySession> weak_ptr = weak_factory_.GetWeakPtr();
   CloseSessionResult result =
       DoCloseSession(ERR_CONNECTION_CLOSED, "Closing one idle connection.");
-  DCHECK_EQ(result, SESSION_CLOSED_AND_REMOVED);
-  // Since the underlying socket is only returned when |this| is destroyed,
-  // we should only return true if |this| no longer exists.
-  return !weak_ptr;
+  if (result != SESSION_CLOSED_AND_REMOVED) {
+    NOTREACHED();
+    return false;
+  }
+  return true;
 }
 
 void SpdySession::EnqueueStreamWrite(
@@ -1061,14 +1064,8 @@ void SpdySession::SendResetStreamFrame(SpdyStreamId stream_id,
 
 void SpdySession::PumpReadLoop(ReadState expected_read_state, int result) {
   CHECK(!in_io_loop_);
+  DCHECK_NE(availability_state_, STATE_CLOSED);
   DCHECK_EQ(read_state_, expected_read_state);
-
-  // TODO(akalin): Change this to a DCHECK once the SpdySessionPool
-  // will hold the last reference to this.
-  if (availability_state_ == STATE_CLOSED) {
-    DCHECK_LT(error_on_close_, ERR_IO_PENDING);
-    return;
-  }
 
   result = DoReadLoop(expected_read_state, result);
 
@@ -1202,14 +1199,8 @@ int SpdySession::DoReadComplete(int result) {
 
 void SpdySession::PumpWriteLoop(WriteState expected_write_state, int result) {
   CHECK(!in_io_loop_);
+  DCHECK_NE(availability_state_, STATE_CLOSED);
   DCHECK_EQ(write_state_, expected_write_state);
-
-  // TODO(akalin): Change this to a DCHECK once the SpdySessionPool
-  // will hold the last reference to this.
-  if (availability_state_ == STATE_CLOSED) {
-    DCHECK_LT(error_on_close_, ERR_IO_PENDING);
-    return;
-  }
 
   result = DoWriteLoop(expected_write_state, result);
 
@@ -1711,8 +1702,6 @@ void SpdySession::DeleteStream(scoped_ptr<SpdyStream> stream, int status) {
       // Do nothing.
       break;
   }
-
-  // Deleting |stream| may release the last reference to |this|.
 }
 
 base::WeakPtr<SpdyStream> SpdySession::GetActivePushStream(const GURL& url) {
@@ -2549,6 +2538,7 @@ void SpdySession::PlanToCheckPingStatus() {
 
 void SpdySession::CheckPingStatus(base::TimeTicks last_check_time) {
   CHECK(!in_io_loop_);
+  DCHECK_NE(availability_state_, STATE_CLOSED);
 
   // Check if we got a response back for all PINGs we had sent.
   if (pings_in_flight_ == 0) {
@@ -2700,15 +2690,13 @@ void SpdySession::OnWriteBufferConsumed(
     size_t frame_payload_size,
     size_t consume_size,
     SpdyBuffer::ConsumeSource consume_source) {
-  // This can happen when pending writes are deleted when closing the
-  // session.
+  // We can be called with |in_io_loop_| set if a write SpdyBuffer is
+  // deleted (e.g., a stream is closed due to incoming data).
+
   if (availability_state_ == STATE_CLOSED)
     return;
 
   DCHECK_EQ(flow_control_state_, FLOW_CONTROL_STREAM_AND_SESSION);
-
-  // We can be called with |in_io_loop_| set if a write SpdyBuffer is
-  // deleted (e.g., a stream is closed due to incoming data).
 
   if (consume_source == SpdyBuffer::DISCARD) {
     // If we're discarding a frame or part of it, increase the send
@@ -2780,17 +2768,16 @@ void SpdySession::DecreaseSendWindowSize(int32 delta_window_size) {
 void SpdySession::OnReadBufferConsumed(
     size_t consume_size,
     SpdyBuffer::ConsumeSource consume_source) {
-  // TODO(akalin): Change this to a DCHECK when we make |pool_| hold
-  // the last reference to |this|.
-  if (availability_state_ == STATE_CLOSED)
-    return;
-
   // We can be called with |in_io_loop_| set if a read SpdyBuffer is
   // deleted (e.g., discarded by a SpdyReadQueue).
+
+  if (availability_state_ == STATE_CLOSED)
+    return;
 
   DCHECK_EQ(flow_control_state_, FLOW_CONTROL_STREAM_AND_SESSION);
   DCHECK_GE(consume_size, 1u);
   DCHECK_LE(consume_size, static_cast<size_t>(kint32max));
+
   IncreaseRecvWindowSize(static_cast<int32>(consume_size));
 }
 

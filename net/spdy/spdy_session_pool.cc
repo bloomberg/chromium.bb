@@ -231,7 +231,10 @@ void SpdySessionPool::RemoveUnavailableSession(
 
   SessionSet::iterator it = sessions_.find(unavailable_session.get());
   CHECK(it != sessions_.end());
+  scoped_refptr<SpdySession> last_ref(*it);
   sessions_.erase(it);
+
+  CHECK(last_ref->HasOneRef());
 }
 
 // Make a copy of |sessions_| in the Close* functions below to avoid
@@ -354,22 +357,31 @@ void SpdySessionPool::RemoveAliases(const SpdySessionKey& key) {
   }
 }
 
+SpdySessionPool::WeakSessionList SpdySessionPool::GetCurrentSessions() const {
+  WeakSessionList current_sessions;
+  for (SessionSet::const_iterator it = sessions_.begin();
+       it != sessions_.end(); ++it) {
+    current_sessions.push_back((*it)->GetWeakPtr());
+  }
+  return current_sessions;
+}
+
 void SpdySessionPool::CloseCurrentSessionsHelper(
     Error error,
     const std::string& description,
     bool idle_only) {
-  SessionSet current_sessions = sessions_;
-  for (SessionSet::const_iterator it = current_sessions.begin();
+  WeakSessionList current_sessions = GetCurrentSessions();
+  for (WeakSessionList::const_iterator it = current_sessions.begin();
        it != current_sessions.end(); ++it) {
-    if (!ContainsKey(sessions_, *it))
+    if (!*it)
       continue;
 
     if (idle_only && (*it)->is_active())
       continue;
 
     (*it)->CloseSessionOnError(error, description);
-    DCHECK(!IsSessionAvailable((*it)->GetWeakPtr()));
-    DCHECK(!ContainsKey(sessions_, *it));
+    DCHECK(!IsSessionAvailable(*it));
+    DCHECK(!*it);
   }
 }
 
