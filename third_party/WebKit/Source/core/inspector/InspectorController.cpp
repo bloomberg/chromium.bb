@@ -344,7 +344,7 @@ bool InspectorController::handleTouchEvent(Frame* frame, const PlatformTouchEven
     // Overlay should not consume events.
     m_overlay->handleTouchEvent(event);
     if (InspectorDOMAgent* domAgent = m_instrumentingAgents->inspectorDOMAgent())
-        domAgent->handleTouchEvent(frame, event);
+        return domAgent->handleTouchEvent(frame, event);
     return false;
 }
 
