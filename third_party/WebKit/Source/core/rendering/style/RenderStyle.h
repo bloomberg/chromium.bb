@@ -119,7 +119,6 @@ class RenderStyle: public RefCounted<RenderStyle> {
     friend class StyleBuilderFunctions; // Sets color styles
     friend class StyleBuilder; // FIXME: Revove this! StyleBuilder::oldApplyProperty reads color().
     friend class StyleResolver; // Sets members directly.
-    friend class StyleResolverState; // Needs to read color() to compute currentColor.
     friend class CachedUAStyle; // Saves Border/Background information for later comparison.
 protected:
 
