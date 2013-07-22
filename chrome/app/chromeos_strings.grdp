@@ -951,8 +951,8 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_ORIENTATION" desc="The section title for display orientation option for a selected display.">
     Orientation:
   </message>
-  <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_OVERSCAN" desc="The section title for overscan option for a selected display.">
-    Overscan:
+  <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_OVERSCAN" desc="The section title for TV alignment (calibration of display overscan) option for a selected display.">
+    TV alignment:
   </message>
   <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_START_MIRRORING" desc="Button label to start display mirroring.">
     Start mirroring
@@ -982,7 +982,7 @@ Press any key to continue exploring.
     270&#x00B0;
   </message>
   <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_START_CALIBRATING_OVERSCAN" desc="Button label to start calibrating the overscan preference.">
-    Adjust overscan...
+    Adjust...
   </message>
   <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OVERSCAN_TAB_TITLE" desc="Title for the display overscan calibration tab.">
     TV alignment
