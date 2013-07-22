@@ -292,8 +292,6 @@ TEST_F(GLES2DecoderWithShaderTest, DrawArraysDeletedProgramSucceeds) {
   EXPECT_CALL(*gl_, DrawArrays(_, _, _))
       .Times(1)
       .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, DeleteProgram(kServiceProgramId))
-      .Times(1);
   DrawArrays cmd;
   cmd.Init(GL_TRIANGLES, 0, kNumVertices);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
@@ -686,8 +684,6 @@ TEST_F(GLES2DecoderWithShaderTest, DrawElementsDeletedProgramSucceeds) {
   DoDeleteProgram(client_program_id_, kServiceProgramId);
 
   EXPECT_CALL(*gl_, DrawElements(_, _, _, _))
-      .Times(1);
-  EXPECT_CALL(*gl_, DeleteProgram(kServiceProgramId))
       .Times(1);
   DrawElements cmd;
   cmd.Init(GL_TRIANGLES, kValidIndexRangeCount, GL_UNSIGNED_SHORT,
