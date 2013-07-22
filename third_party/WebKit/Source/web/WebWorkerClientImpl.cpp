@@ -47,8 +47,10 @@
 #include "core/page/PageGroup.h"
 #include "core/workers/DedicatedWorkerThread.h"
 #include "core/workers/Worker.h"
+#include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerMessagingProxy.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/Threading.h"
 
 #include "FrameLoaderClientImpl.h"
@@ -74,7 +76,7 @@ WorkerGlobalScopeProxy* WebWorkerClientImpl::createWorkerGlobalScopeProxy(Worker
     if (worker->scriptExecutionContext()->isDocument()) {
         Document* document = toDocument(worker->scriptExecutionContext());
         WebFrameImpl* webFrame = WebFrameImpl::fromFrame(document->frame());
-        WebWorkerClientImpl* proxy = new WebWorkerClientImpl(worker, webFrame);
+        WebWorkerClientImpl* proxy = new WebWorkerClientImpl(worker, webFrame, WorkerClients::create());
         return proxy;
     }
     ASSERT_NOT_REACHED();
@@ -148,8 +150,8 @@ void WebWorkerClientImpl::queryUsageAndQuota(WebStorageQuotaType type, WebStorag
     m_webFrame->client()->queryStorageUsageAndQuota(m_webFrame, type, callbacks);
 }
 
-WebWorkerClientImpl::WebWorkerClientImpl(Worker* worker, WebFrameImpl* webFrame)
-    : WebCore::WorkerMessagingProxy(worker)
+WebWorkerClientImpl::WebWorkerClientImpl(Worker* worker, WebFrameImpl* webFrame, PassOwnPtr<WorkerClients> workerClients)
+    : WebCore::WorkerMessagingProxy(worker, workerClients)
     , m_webFrame(webFrame)
 {
 }

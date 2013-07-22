@@ -47,6 +47,7 @@
 #include "core/page/DOMWindow.h"
 #include "core/page/WorkerNavigator.h"
 #include "core/platform/NotImplemented.h"
+#include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerLocation.h"
 #include "core/workers/WorkerObjectProxy.h"
 #include "core/workers/WorkerScriptLoader.h"
@@ -81,7 +82,7 @@ public:
     virtual bool isCleanupTask() const { return true; }
 };
 
-WorkerGlobalScope::WorkerGlobalScope(const KURL& url, const String& userAgent, WorkerThread* thread, PassRefPtr<SecurityOrigin> topOrigin, double timeOrigin)
+WorkerGlobalScope::WorkerGlobalScope(const KURL& url, const String& userAgent, WorkerThread* thread, PassRefPtr<SecurityOrigin> topOrigin, double timeOrigin, PassOwnPtr<WorkerClients> workerClients)
     : m_url(url)
     , m_userAgent(userAgent)
     , m_script(adoptPtr(new WorkerScriptController(this)))
@@ -91,9 +92,11 @@ WorkerGlobalScope::WorkerGlobalScope(const KURL& url, const String& userAgent, W
     , m_eventQueue(WorkerEventQueue::create(this))
     , m_topOrigin(topOrigin)
     , m_timeOrigin(timeOrigin)
+    , m_workerClients(workerClients)
 {
     ScriptWrappable::init(this);
     setSecurityOrigin(SecurityOrigin::create(url));
+    m_workerClients->reattachThread();
 }
 
 WorkerGlobalScope::~WorkerGlobalScope()

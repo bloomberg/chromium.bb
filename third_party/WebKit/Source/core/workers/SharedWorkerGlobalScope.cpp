@@ -37,6 +37,7 @@
 #include "core/inspector/ScriptCallStack.h"
 #include "core/page/DOMWindow.h"
 #include "core/workers/SharedWorkerThread.h"
+#include "core/workers/WorkerClients.h"
 #include "wtf/CurrentTime.h"
 
 namespace WebCore {
@@ -49,15 +50,15 @@ PassRefPtr<MessageEvent> createConnectEvent(PassRefPtr<MessagePort> port)
 }
 
 // static
-PassRefPtr<SharedWorkerGlobalScope> SharedWorkerGlobalScope::create(const String& name, const KURL& url, const String& userAgent, SharedWorkerThread* thread, const String& contentSecurityPolicy, ContentSecurityPolicy::HeaderType contentSecurityPolicyType)
+PassRefPtr<SharedWorkerGlobalScope> SharedWorkerGlobalScope::create(const String& name, const KURL& url, const String& userAgent, SharedWorkerThread* thread, const String& contentSecurityPolicy, ContentSecurityPolicy::HeaderType contentSecurityPolicyType, PassOwnPtr<WorkerClients> workerClients)
 {
-    RefPtr<SharedWorkerGlobalScope> context = adoptRef(new SharedWorkerGlobalScope(name, url, userAgent, thread));
+    RefPtr<SharedWorkerGlobalScope> context = adoptRef(new SharedWorkerGlobalScope(name, url, userAgent, thread, workerClients));
     context->applyContentSecurityPolicyFromString(contentSecurityPolicy, contentSecurityPolicyType);
     return context.release();
 }
 
-SharedWorkerGlobalScope::SharedWorkerGlobalScope(const String& name, const KURL& url, const String& userAgent, SharedWorkerThread* thread)
-    : WorkerGlobalScope(url, userAgent, thread, 0, monotonicallyIncreasingTime())
+SharedWorkerGlobalScope::SharedWorkerGlobalScope(const String& name, const KURL& url, const String& userAgent, SharedWorkerThread* thread, PassOwnPtr<WorkerClients> workerClients)
+    : WorkerGlobalScope(url, userAgent, thread, 0, monotonicallyIncreasingTime(), workerClients)
     , m_name(name)
 {
     ScriptWrappable::init(this);

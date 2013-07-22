@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -27,30 +27,32 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef SharedWorkerThread_h
-#define SharedWorkerThread_h
 
-#include "core/page/ContentSecurityPolicy.h"
-#include "core/workers/WorkerThread.h"
+#ifndef WorkerClients_h
+#define WorkerClients_h
+
+#include "core/platform/Supplementable.h"
+#include "wtf/Forward.h"
 
 namespace WebCore {
 
-class WorkerClients;
-
-class SharedWorkerThread : public WorkerThread {
+// This is created on the main thread, passed to the worker thread and
+// attached to WorkerGlobalScope when it is created.
+// This class can be used to provide "client" implementations to Workers.
+class WorkerClients : public Supplementable<WorkerClients> {
+    WTF_MAKE_NONCOPYABLE(WorkerClients);
 public:
-    static PassRefPtr<SharedWorkerThread> create(const String& name, const KURL&, const String& userAgent, const String& sourceCode, WorkerLoaderProxy&, WorkerReportingProxy&, WorkerThreadStartMode, const String& contentSecurityPolicy, ContentSecurityPolicy::HeaderType, PassOwnPtr<WorkerClients>);
-    virtual ~SharedWorkerThread();
+    static PassOwnPtr<WorkerClients> create()
+    {
+        return adoptPtr(new WorkerClients());
+    }
 
-protected:
-    virtual PassRefPtr<WorkerGlobalScope> createWorkerGlobalScope(const KURL&, const String& userAgent, const String& contentSecurityPolicy, ContentSecurityPolicy::HeaderType, PassRefPtr<SecurityOrigin> topOrigin, PassOwnPtr<WorkerClients>) OVERRIDE;
+    virtual ~WorkerClients() { }
 
 private:
-    SharedWorkerThread(const String& name, const KURL&, const String& userAgent, const String& sourceCode, WorkerLoaderProxy&, WorkerReportingProxy&, WorkerThreadStartMode, const String& contentSecurityPolicy, ContentSecurityPolicy::HeaderType, PassOwnPtr<WorkerClients>);
-
-    String m_name;
+    WorkerClients() { }
 };
 
 } // namespace WebCore
 
-#endif // SharedWorkerThread_h
+#endif // WorkerClients_h

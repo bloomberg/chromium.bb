@@ -88,7 +88,7 @@ public:
     virtual void queryUsageAndQuota(WebStorageQuotaType, WebStorageQuotaCallbacks*) OVERRIDE;
 
 private:
-    WebWorkerClientImpl(WebCore::Worker*, WebFrameImpl*);
+    WebWorkerClientImpl(WebCore::Worker*, WebFrameImpl*, PassOwnPtr<WebCore::WorkerClients>);
     virtual ~WebWorkerClientImpl();
 
     WebFrameImpl* m_webFrame;

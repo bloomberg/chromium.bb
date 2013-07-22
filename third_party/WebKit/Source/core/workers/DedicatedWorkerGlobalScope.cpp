@@ -34,19 +34,20 @@
 #include "bindings/v8/ExceptionState.h"
 #include "core/page/DOMWindow.h"
 #include "core/workers/DedicatedWorkerThread.h"
+#include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerObjectProxy.h"
 
 namespace WebCore {
 
-PassRefPtr<DedicatedWorkerGlobalScope> DedicatedWorkerGlobalScope::create(const KURL& url, const String& userAgent, DedicatedWorkerThread* thread, const String& contentSecurityPolicy, ContentSecurityPolicy::HeaderType contentSecurityPolicyType, PassRefPtr<SecurityOrigin> topOrigin, double timeOrigin)
+PassRefPtr<DedicatedWorkerGlobalScope> DedicatedWorkerGlobalScope::create(const KURL& url, const String& userAgent, DedicatedWorkerThread* thread, const String& contentSecurityPolicy, ContentSecurityPolicy::HeaderType contentSecurityPolicyType, PassRefPtr<SecurityOrigin> topOrigin, double timeOrigin, PassOwnPtr<WorkerClients> workerClients)
 {
-    RefPtr<DedicatedWorkerGlobalScope> context = adoptRef(new DedicatedWorkerGlobalScope(url, userAgent, thread, topOrigin, timeOrigin));
+    RefPtr<DedicatedWorkerGlobalScope> context = adoptRef(new DedicatedWorkerGlobalScope(url, userAgent, thread, topOrigin, timeOrigin, workerClients));
     context->applyContentSecurityPolicyFromString(contentSecurityPolicy, contentSecurityPolicyType);
     return context.release();
 }
 
-DedicatedWorkerGlobalScope::DedicatedWorkerGlobalScope(const KURL& url, const String& userAgent, DedicatedWorkerThread* thread, PassRefPtr<SecurityOrigin> topOrigin, double timeOrigin)
-    : WorkerGlobalScope(url, userAgent, thread, topOrigin, timeOrigin)
+DedicatedWorkerGlobalScope::DedicatedWorkerGlobalScope(const KURL& url, const String& userAgent, DedicatedWorkerThread* thread, PassRefPtr<SecurityOrigin> topOrigin, double timeOrigin, PassOwnPtr<WorkerClients> workerClients)
+    : WorkerGlobalScope(url, userAgent, thread, topOrigin, timeOrigin, workerClients)
 {
     ScriptWrappable::init(this);
 }

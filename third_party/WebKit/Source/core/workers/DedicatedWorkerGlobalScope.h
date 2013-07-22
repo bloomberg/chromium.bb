@@ -42,7 +42,7 @@ namespace WebCore {
     class DedicatedWorkerGlobalScope : public WorkerGlobalScope {
     public:
         typedef WorkerGlobalScope Base;
-        static PassRefPtr<DedicatedWorkerGlobalScope> create(const KURL&, const String& userAgent, DedicatedWorkerThread*, const String& contentSecurityPolicy, ContentSecurityPolicy::HeaderType contentSecurityPolicyType, PassRefPtr<SecurityOrigin> topOrigin, double timeOrigin);
+        static PassRefPtr<DedicatedWorkerGlobalScope> create(const KURL&, const String& userAgent, DedicatedWorkerThread*, const String& contentSecurityPolicy, ContentSecurityPolicy::HeaderType contentSecurityPolicyType, PassRefPtr<SecurityOrigin> topOrigin, double timeOrigin, PassOwnPtr<WorkerClients>);
         virtual ~DedicatedWorkerGlobalScope();
 
         virtual bool isDedicatedWorkerGlobalScope() const OVERRIDE { return true; }
@@ -60,7 +60,7 @@ namespace WebCore {
         DedicatedWorkerThread* thread();
 
     private:
-        DedicatedWorkerGlobalScope(const KURL&, const String& userAgent, DedicatedWorkerThread*, PassRefPtr<SecurityOrigin> topOrigin, double timeOrigin);
+        DedicatedWorkerGlobalScope(const KURL&, const String& userAgent, DedicatedWorkerThread*, PassRefPtr<SecurityOrigin> topOrigin, double timeOrigin, PassOwnPtr<WorkerClients>);
     };
 
 } // namespace WebCore

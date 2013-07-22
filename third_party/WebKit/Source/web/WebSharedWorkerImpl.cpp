@@ -58,6 +58,7 @@
 #include "core/page/PageGroup.h"
 #include "core/workers/SharedWorkerGlobalScope.h"
 #include "core/workers/SharedWorkerThread.h"
+#include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerThread.h"
@@ -366,9 +367,7 @@ void WebSharedWorkerImpl::startWorkerContext(const WebURL& url, const WebString&
 {
     initializeLoader(url);
     WorkerThreadStartMode startMode = m_pauseWorkerContextOnStart ? PauseWorkerGlobalScopeOnStart : DontPauseWorkerGlobalScopeOnStart;
-    setWorkerThread(SharedWorkerThread::create(name, url, userAgent,
-                                               sourceCode, *this, *this, startMode, contentSecurityPolicy,
-                                               static_cast<WebCore::ContentSecurityPolicy::HeaderType>(policyType)));
+    setWorkerThread(SharedWorkerThread::create(name, url, userAgent, sourceCode, *this, *this, startMode, contentSecurityPolicy, static_cast<WebCore::ContentSecurityPolicy::HeaderType>(policyType), WorkerClients::create()));
 
     workerThread()->start();
 }

@@ -49,6 +49,7 @@ namespace WebCore {
     class DOMURL;
     class ExceptionState;
     class ScheduledAction;
+    class WorkerClients;
     class WorkerInspectorController;
     class WorkerLocation;
     class WorkerNavigator;
@@ -130,8 +131,10 @@ namespace WebCore {
 
         double timeOrigin() const { return m_timeOrigin; }
 
+        WorkerClients* clients() { return m_workerClients.get(); }
+
     protected:
-        WorkerGlobalScope(const KURL&, const String& userAgent, WorkerThread*, PassRefPtr<SecurityOrigin> topOrigin, double timeOrigin);
+        WorkerGlobalScope(const KURL&, const String& userAgent, WorkerThread*, PassRefPtr<SecurityOrigin> topOrigin, double timeOrigin, PassOwnPtr<WorkerClients>);
         void applyContentSecurityPolicyFromString(const String& contentSecurityPolicy, ContentSecurityPolicy::HeaderType);
 
         virtual void logExceptionToConsole(const String& errorMessage, const String& sourceURL, int lineNumber, PassRefPtr<ScriptCallStack>) OVERRIDE;
@@ -173,6 +176,8 @@ namespace WebCore {
         OwnPtr<WorkerEventQueue> m_eventQueue;
 
         RefPtr<SecurityOrigin> m_topOrigin;
+
+        OwnPtr<WorkerClients> m_workerClients;
 
         double m_timeOrigin;
     };

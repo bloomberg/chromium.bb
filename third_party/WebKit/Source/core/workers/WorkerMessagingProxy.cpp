@@ -47,6 +47,7 @@
 #include "core/workers/DedicatedWorkerGlobalScope.h"
 #include "core/workers/DedicatedWorkerThread.h"
 #include "core/workers/Worker.h"
+#include "core/workers/WorkerClients.h"
 #include <wtf/MainThread.h>
 
 namespace WebCore {
@@ -237,7 +238,7 @@ private:
     String m_message;
 };
 
-WorkerMessagingProxy::WorkerMessagingProxy(Worker* workerObject)
+WorkerMessagingProxy::WorkerMessagingProxy(Worker* workerObject, PassOwnPtr<WorkerClients> workerClients)
     : m_scriptExecutionContext(workerObject->scriptExecutionContext())
     , m_workerObject(workerObject)
     , m_mayBeDestroyed(false)
@@ -245,6 +246,7 @@ WorkerMessagingProxy::WorkerMessagingProxy(Worker* workerObject)
     , m_workerThreadHadPendingActivity(false)
     , m_askedToTerminate(false)
     , m_pageInspector(0)
+    , m_workerClients(workerClients)
 {
     ASSERT(m_workerObject);
     ASSERT((m_scriptExecutionContext->isDocument() && isMainThread())
@@ -263,7 +265,7 @@ void WorkerMessagingProxy::startWorkerGlobalScope(const KURL& scriptURL, const S
     // FIXME: This need to be revisited when we support nested worker one day
     ASSERT(m_scriptExecutionContext->isDocument());
     Document* document = toDocument(m_scriptExecutionContext.get());
-    RefPtr<DedicatedWorkerThread> thread = DedicatedWorkerThread::create(scriptURL, userAgent, sourceCode, *this, *this, startMode, document->contentSecurityPolicy()->deprecatedHeader(), document->contentSecurityPolicy()->deprecatedHeaderType(), document->topOrigin(), document->loader() ? document->loader()->timing()->referenceMonotonicTime() : monotonicallyIncreasingTime());
+    RefPtr<DedicatedWorkerThread> thread = DedicatedWorkerThread::create(scriptURL, userAgent, sourceCode, *this, *this, startMode, document->contentSecurityPolicy()->deprecatedHeader(), document->contentSecurityPolicy()->deprecatedHeaderType(), document->topOrigin(), document->loader() ? document->loader()->timing()->referenceMonotonicTime() : monotonicallyIncreasingTime(), m_workerClients.release());
     workerThreadCreated(thread);
     thread->start();
     InspectorInstrumentation::didStartWorkerGlobalScope(m_scriptExecutionContext.get(), this, scriptURL);

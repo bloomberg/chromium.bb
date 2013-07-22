@@ -33,16 +33,17 @@
 #include "core/workers/SharedWorkerThread.h"
 
 #include "core/workers/SharedWorkerGlobalScope.h"
+#include "core/workers/WorkerClients.h"
 
 namespace WebCore {
 
-PassRefPtr<SharedWorkerThread> SharedWorkerThread::create(const String& name, const KURL& scriptURL, const String& userAgent, const String& sourceCode, WorkerLoaderProxy& workerLoaderProxy, WorkerReportingProxy& workerReportingProxy, WorkerThreadStartMode startMode, const String& contentSecurityPolicy, ContentSecurityPolicy::HeaderType contentSecurityPolicyType)
+PassRefPtr<SharedWorkerThread> SharedWorkerThread::create(const String& name, const KURL& scriptURL, const String& userAgent, const String& sourceCode, WorkerLoaderProxy& workerLoaderProxy, WorkerReportingProxy& workerReportingProxy, WorkerThreadStartMode startMode, const String& contentSecurityPolicy, ContentSecurityPolicy::HeaderType contentSecurityPolicyType, PassOwnPtr<WorkerClients> workerClients)
 {
-    return adoptRef(new SharedWorkerThread(name, scriptURL, userAgent, sourceCode, workerLoaderProxy, workerReportingProxy, startMode, contentSecurityPolicy, contentSecurityPolicyType));
+    return adoptRef(new SharedWorkerThread(name, scriptURL, userAgent, sourceCode, workerLoaderProxy, workerReportingProxy, startMode, contentSecurityPolicy, contentSecurityPolicyType, workerClients));
 }
 
-SharedWorkerThread::SharedWorkerThread(const String& name, const KURL& url, const String& userAgent, const String& sourceCode, WorkerLoaderProxy& workerLoaderProxy, WorkerReportingProxy& workerReportingProxy, WorkerThreadStartMode startMode, const String& contentSecurityPolicy, ContentSecurityPolicy::HeaderType contentSecurityPolicyType)
-    : WorkerThread(url, userAgent, sourceCode, workerLoaderProxy, workerReportingProxy, startMode, contentSecurityPolicy, contentSecurityPolicyType, 0)
+SharedWorkerThread::SharedWorkerThread(const String& name, const KURL& url, const String& userAgent, const String& sourceCode, WorkerLoaderProxy& workerLoaderProxy, WorkerReportingProxy& workerReportingProxy, WorkerThreadStartMode startMode, const String& contentSecurityPolicy, ContentSecurityPolicy::HeaderType contentSecurityPolicyType, PassOwnPtr<WorkerClients> workerClients)
+    : WorkerThread(url, userAgent, sourceCode, workerLoaderProxy, workerReportingProxy, startMode, contentSecurityPolicy, contentSecurityPolicyType, 0, workerClients)
     , m_name(name.isolatedCopy())
 {
 }
@@ -51,9 +52,9 @@ SharedWorkerThread::~SharedWorkerThread()
 {
 }
 
-PassRefPtr<WorkerGlobalScope> SharedWorkerThread::createWorkerGlobalScope(const KURL& url, const String& userAgent, const String& contentSecurityPolicy, ContentSecurityPolicy::HeaderType contentSecurityPolicyType, PassRefPtr<SecurityOrigin>)
+PassRefPtr<WorkerGlobalScope> SharedWorkerThread::createWorkerGlobalScope(const KURL& url, const String& userAgent, const String& contentSecurityPolicy, ContentSecurityPolicy::HeaderType contentSecurityPolicyType, PassRefPtr<SecurityOrigin>, PassOwnPtr<WorkerClients> workerClients)
 {
-    return SharedWorkerGlobalScope::create(m_name, url, userAgent, this, contentSecurityPolicy, contentSecurityPolicyType);
+    return SharedWorkerGlobalScope::create(m_name, url, userAgent, this, contentSecurityPolicy, contentSecurityPolicyType, workerClients);
 }
 
 } // namespace WebCore

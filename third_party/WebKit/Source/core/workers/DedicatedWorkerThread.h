@@ -35,24 +35,26 @@
 
 namespace WebCore {
 
-    class WorkerObjectProxy;
+class WorkerClients;
+class WorkerObjectProxy;
 
-    class DedicatedWorkerThread : public WorkerThread {
-    public:
-        static PassRefPtr<DedicatedWorkerThread> create(const KURL& scriptURL, const String& userAgent, const String& sourceCode, WorkerLoaderProxy&, WorkerObjectProxy&, WorkerThreadStartMode, const String& contentSecurityPolicy, ContentSecurityPolicy::HeaderType, const SecurityOrigin* topOrigin, double timeOrigin);
-        WorkerObjectProxy& workerObjectProxy() const { return m_workerObjectProxy; }
-        virtual ~DedicatedWorkerThread();
+class DedicatedWorkerThread : public WorkerThread {
+public:
+    static PassRefPtr<DedicatedWorkerThread> create(const KURL& scriptURL, const String& userAgent, const String& sourceCode, WorkerLoaderProxy&, WorkerObjectProxy&, WorkerThreadStartMode, const String& contentSecurityPolicy, ContentSecurityPolicy::HeaderType, const SecurityOrigin* topOrigin, double timeOrigin, PassOwnPtr<WorkerClients>);
+    WorkerObjectProxy& workerObjectProxy() const { return m_workerObjectProxy; }
+    virtual ~DedicatedWorkerThread();
 
-    protected:
-        virtual PassRefPtr<WorkerGlobalScope> createWorkerGlobalScope(const KURL&, const String& userAgent, const String& contentSecurityPolicy, ContentSecurityPolicy::HeaderType, PassRefPtr<SecurityOrigin> topOrigin) OVERRIDE;
-        virtual void runEventLoop() OVERRIDE;
+protected:
+    virtual PassRefPtr<WorkerGlobalScope> createWorkerGlobalScope(const KURL&, const String& userAgent, const String& contentSecurityPolicy, ContentSecurityPolicy::HeaderType, PassRefPtr<SecurityOrigin> topOrigin, PassOwnPtr<WorkerClients>) OVERRIDE;
+    virtual void runEventLoop() OVERRIDE;
 
-    private:
-        DedicatedWorkerThread(const KURL&, const String& userAgent, const String& sourceCode, WorkerLoaderProxy&, WorkerObjectProxy&, WorkerThreadStartMode, const String& contentSecurityPolicy, ContentSecurityPolicy::HeaderType, const SecurityOrigin* topOrigin, double timeOrigin);
+private:
+    DedicatedWorkerThread(const KURL&, const String& userAgent, const String& sourceCode, WorkerLoaderProxy&, WorkerObjectProxy&, WorkerThreadStartMode, const String& contentSecurityPolicy, ContentSecurityPolicy::HeaderType, const SecurityOrigin* topOrigin, double timeOrigin, PassOwnPtr<WorkerClients>);
 
-        WorkerObjectProxy& m_workerObjectProxy;
-        double m_timeOrigin;
-    };
+    WorkerObjectProxy& m_workerObjectProxy;
+    double m_timeOrigin;
+};
+
 } // namespace WebCore
 
 #endif // DedicatedWorkerThread_h

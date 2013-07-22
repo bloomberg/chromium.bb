@@ -39,6 +39,7 @@ namespace WebCore {
 
     class KURL;
     class NotificationClient;
+    class WorkerClients;
     class WorkerGlobalScope;
     class WorkerLoaderProxy;
     class WorkerReportingProxy;
@@ -68,10 +69,10 @@ namespace WebCore {
 #endif
 
     protected:
-        WorkerThread(const KURL&, const String& userAgent, const String& sourceCode, WorkerLoaderProxy&, WorkerReportingProxy&, WorkerThreadStartMode, const String& contentSecurityPolicy, ContentSecurityPolicy::HeaderType, const SecurityOrigin* topOrigin);
+        WorkerThread(const KURL&, const String& userAgent, const String& sourceCode, WorkerLoaderProxy&, WorkerReportingProxy&, WorkerThreadStartMode, const String& contentSecurityPolicy, ContentSecurityPolicy::HeaderType, const SecurityOrigin* topOrigin, PassOwnPtr<WorkerClients>);
 
         // Factory method for creating a new worker context for the thread.
-        virtual PassRefPtr<WorkerGlobalScope> createWorkerGlobalScope(const KURL&, const String& userAgent, const String& contentSecurityPolicy, ContentSecurityPolicy::HeaderType, PassRefPtr<SecurityOrigin> topOrigin) = 0;
+        virtual PassRefPtr<WorkerGlobalScope> createWorkerGlobalScope(const KURL&, const String& userAgent, const String& contentSecurityPolicy, ContentSecurityPolicy::HeaderType, PassRefPtr<SecurityOrigin> topOrigin, PassOwnPtr<WorkerClients>) = 0;
 
         // Executes the event loop for the worker thread. Derived classes can override to perform actions before/after entering the event loop.
         virtual void runEventLoop();
@@ -102,4 +103,3 @@ namespace WebCore {
 } // namespace WebCore
 
 #endif // WorkerThread_h
-
