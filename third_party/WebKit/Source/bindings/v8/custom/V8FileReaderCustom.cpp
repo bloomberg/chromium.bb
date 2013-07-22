@@ -46,7 +46,7 @@ void V8FileReader::resultAttrGetterCustom(v8::Local<v8::String> name, const v8::
         v8SetReturnValue(info, toV8Fast(imp->arrayBufferResult(), info, imp));
         return;
     }
-    v8SetReturnValueString(info, imp->stringResult(), info.GetIsolate(), NullStringAsNull);
+    v8SetReturnValueStringOrNull(info, imp->stringResult(), info.GetIsolate());
 }
 
 } // namespace WebCore

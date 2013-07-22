@@ -124,27 +124,31 @@ namespace WebCore {
         args.GetReturnValue().SetNull();
     }
 
-    enum TreatNullStringAs {
-        NullStringAsEmpty,
-        NullStringAsNull,
-        NullStringAsUndefined,
-    };
-
     template <class CallbackInfo>
-    inline void v8SetReturnValueString(const CallbackInfo& info, const String& string, v8::Isolate* isolate, TreatNullStringAs treatNullStringAs = NullStringAsEmpty)
+    inline void v8SetReturnValueString(const CallbackInfo& info, const String& string, v8::Isolate* isolate)
     {
         if (string.isNull()) {
-            switch (treatNullStringAs) {
-            case NullStringAsEmpty:
-                v8SetReturnValue(info, v8::String::Empty(isolate));
-                break;
-            case NullStringAsNull:
-                v8SetReturnValueNull(info);
-                break;
-            case NullStringAsUndefined:
-                v8SetReturnValue(info, v8::Undefined(isolate));
-                break;
-            }
+            v8SetReturnValue(info, v8::String::Empty(isolate));
+            return;
+        }
+        V8PerIsolateData::from(isolate)->stringCache()->setReturnValueFromString(info, string.impl(), isolate);
+    }
+
+    template <class CallbackInfo>
+    inline void v8SetReturnValueStringOrNull(const CallbackInfo& info, const String& string, v8::Isolate* isolate)
+    {
+        if (string.isNull()) {
+            v8SetReturnValueNull(info);
+            return;
+        }
+        V8PerIsolateData::from(isolate)->stringCache()->setReturnValueFromString(info, string.impl(), isolate);
+    }
+
+    template <class CallbackInfo>
+    inline void v8SetReturnValueStringOrUndefined(const CallbackInfo& info, const String& string, v8::Isolate* isolate)
+    {
+        if (string.isNull()) {
+            v8SetReturnValue(info, v8::Undefined(isolate));
             return;
         }
         V8PerIsolateData::from(isolate)->stringCache()->setReturnValueFromString(info, string.impl(), isolate);

@@ -212,7 +212,7 @@ void V8CSSStyleDeclaration::namedPropertyGetterCustom(v8::Local<v8::String> name
                 cssValue.get())->getFloatValue(CSSPrimitiveValue::CSS_PX));
             return;
         }
-        v8SetReturnValueString(info, cssValue->cssText(), info.GetIsolate(), NullStringAsNull);
+        v8SetReturnValueStringOrNull(info, cssValue->cssText(), info.GetIsolate());
         return;
     }
 

@@ -5426,17 +5426,17 @@ sub NativeToJSValue
 
     my $conv = $extendedAttributes->{"TreatReturnedNullStringAs"};
     if (($type eq "DOMString" || IsEnumType($type)) && $isReturnValue) {
-        my $nullAs = "NullStringAsEmpty";
+        my $functionSuffix = "";
         if (defined $conv) {
             if ($conv eq "Null") {
-                $nullAs = "NullStringAsNull";
+                $functionSuffix = "OrNull";
             } elsif ($conv eq "Undefined") {
-                $nullAs = "NullStringAsUndefined";
+                $functionSuffix = "OrUndefined";
             } else {
                 die "Unknown value for TreatReturnedNullStringAs extended attribute";
             }
         }
-        return "${indent}v8SetReturnValueString(${getCallbackInfo}, $nativeValue, $getIsolate, $nullAs);";
+        return "${indent}v8SetReturnValueString${functionSuffix}(${getCallbackInfo}, $nativeValue, $getIsolate);";
     }
 
     if ($type eq "DOMString" or IsEnumType($type)) {
