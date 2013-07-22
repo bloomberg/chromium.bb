@@ -36,13 +36,14 @@
 #include "core/workers/DedicatedWorkerThread.h"
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerObjectProxy.h"
+#include "core/workers/WorkerThreadStartupData.h"
 
 namespace WebCore {
 
-PassRefPtr<DedicatedWorkerGlobalScope> DedicatedWorkerGlobalScope::create(const KURL& url, const String& userAgent, DedicatedWorkerThread* thread, const String& contentSecurityPolicy, ContentSecurityPolicy::HeaderType contentSecurityPolicyType, PassRefPtr<SecurityOrigin> topOrigin, double timeOrigin, PassOwnPtr<WorkerClients> workerClients)
+PassRefPtr<DedicatedWorkerGlobalScope> DedicatedWorkerGlobalScope::create(DedicatedWorkerThread* thread, PassOwnPtr<WorkerThreadStartupData> startupData, double timeOrigin)
 {
-    RefPtr<DedicatedWorkerGlobalScope> context = adoptRef(new DedicatedWorkerGlobalScope(url, userAgent, thread, topOrigin, timeOrigin, workerClients));
-    context->applyContentSecurityPolicyFromString(contentSecurityPolicy, contentSecurityPolicyType);
+    RefPtr<DedicatedWorkerGlobalScope> context = adoptRef(new DedicatedWorkerGlobalScope(startupData->m_scriptURL, startupData->m_userAgent, thread, startupData->m_topOrigin, timeOrigin, startupData->m_workerClients.release()));
+    context->applyContentSecurityPolicyFromString(startupData->m_contentSecurityPolicy, startupData->m_contentSecurityPolicyType);
     return context.release();
 }
 

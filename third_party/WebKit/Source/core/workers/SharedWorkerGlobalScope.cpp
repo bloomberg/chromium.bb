@@ -38,6 +38,7 @@
 #include "core/page/DOMWindow.h"
 #include "core/workers/SharedWorkerThread.h"
 #include "core/workers/WorkerClients.h"
+#include "core/workers/WorkerThreadStartupData.h"
 #include "wtf/CurrentTime.h"
 
 namespace WebCore {
@@ -50,10 +51,10 @@ PassRefPtr<MessageEvent> createConnectEvent(PassRefPtr<MessagePort> port)
 }
 
 // static
-PassRefPtr<SharedWorkerGlobalScope> SharedWorkerGlobalScope::create(const String& name, const KURL& url, const String& userAgent, SharedWorkerThread* thread, const String& contentSecurityPolicy, ContentSecurityPolicy::HeaderType contentSecurityPolicyType, PassOwnPtr<WorkerClients> workerClients)
+PassRefPtr<SharedWorkerGlobalScope> SharedWorkerGlobalScope::create(const String& name, SharedWorkerThread* thread, PassOwnPtr<WorkerThreadStartupData> startupData)
 {
-    RefPtr<SharedWorkerGlobalScope> context = adoptRef(new SharedWorkerGlobalScope(name, url, userAgent, thread, workerClients));
-    context->applyContentSecurityPolicyFromString(contentSecurityPolicy, contentSecurityPolicyType);
+    RefPtr<SharedWorkerGlobalScope> context = adoptRef(new SharedWorkerGlobalScope(name, startupData->m_scriptURL, startupData->m_userAgent, thread, startupData->m_workerClients.release()));
+    context->applyContentSecurityPolicyFromString(startupData->m_contentSecurityPolicy, startupData->m_contentSecurityPolicyType);
     return context.release();
 }
 

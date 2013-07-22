@@ -33,6 +33,7 @@
 #include "core/platform/ThreadGlobalData.h"
 #include "core/workers/DedicatedWorkerGlobalScope.h"
 #include "core/workers/WorkerClients.h"
+#include "core/workers/WorkerThreadStartupData.h"
 #include "modules/webdatabase/DatabaseManager.h"
 #include "modules/webdatabase/DatabaseTask.h"
 #include "public/platform/Platform.h"
@@ -63,44 +64,11 @@ unsigned WorkerThread::workerThreadCount()
     return workerThreads().size();
 }
 
-struct WorkerThreadStartupData {
-    WTF_MAKE_NONCOPYABLE(WorkerThreadStartupData); WTF_MAKE_FAST_ALLOCATED;
-public:
-    static PassOwnPtr<WorkerThreadStartupData> create(const KURL& scriptURL, const String& userAgent, const String& sourceCode, WorkerThreadStartMode startMode, const String& contentSecurityPolicy, ContentSecurityPolicy::HeaderType contentSecurityPolicyType, const SecurityOrigin* topOrigin, PassOwnPtr<WorkerClients> workerClients)
-    {
-        return adoptPtr(new WorkerThreadStartupData(scriptURL, userAgent, sourceCode, startMode, contentSecurityPolicy, contentSecurityPolicyType, topOrigin, workerClients));
-    }
-
-    KURL m_scriptURL;
-    String m_userAgent;
-    String m_sourceCode;
-    WorkerThreadStartMode m_startMode;
-    String m_contentSecurityPolicy;
-    ContentSecurityPolicy::HeaderType m_contentSecurityPolicyType;
-    RefPtr<SecurityOrigin> m_topOrigin;
-    OwnPtr<WorkerClients> m_workerClients;
-
-private:
-    WorkerThreadStartupData(const KURL& scriptURL, const String& userAgent, const String& sourceCode, WorkerThreadStartMode, const String& contentSecurityPolicy, ContentSecurityPolicy::HeaderType contentSecurityPolicyType, const SecurityOrigin* topOrigin, PassOwnPtr<WorkerClients>);
-};
-
-WorkerThreadStartupData::WorkerThreadStartupData(const KURL& scriptURL, const String& userAgent, const String& sourceCode, WorkerThreadStartMode startMode, const String& contentSecurityPolicy, ContentSecurityPolicy::HeaderType contentSecurityPolicyType, const SecurityOrigin* topOrigin, PassOwnPtr<WorkerClients> workerClients)
-    : m_scriptURL(scriptURL.copy())
-    , m_userAgent(userAgent.isolatedCopy())
-    , m_sourceCode(sourceCode.isolatedCopy())
-    , m_startMode(startMode)
-    , m_contentSecurityPolicy(contentSecurityPolicy.isolatedCopy())
-    , m_contentSecurityPolicyType(contentSecurityPolicyType)
-    , m_topOrigin(topOrigin ? topOrigin->isolatedCopy() : 0)
-    , m_workerClients(workerClients)
-{
-}
-
-WorkerThread::WorkerThread(const KURL& scriptURL, const String& userAgent, const String& sourceCode, WorkerLoaderProxy& workerLoaderProxy, WorkerReportingProxy& workerReportingProxy, WorkerThreadStartMode startMode, const String& contentSecurityPolicy, ContentSecurityPolicy::HeaderType contentSecurityPolicyType, const SecurityOrigin* topOrigin, PassOwnPtr<WorkerClients> workerClients)
+WorkerThread::WorkerThread(WorkerLoaderProxy& workerLoaderProxy, WorkerReportingProxy& workerReportingProxy, PassOwnPtr<WorkerThreadStartupData> startupData)
     : m_threadID(0)
     , m_workerLoaderProxy(workerLoaderProxy)
     , m_workerReportingProxy(workerReportingProxy)
-    , m_startupData(WorkerThreadStartupData::create(scriptURL, userAgent, sourceCode, startMode, contentSecurityPolicy, contentSecurityPolicyType, topOrigin, workerClients))
+    , m_startupData(startupData)
 #if ENABLE(NOTIFICATIONS) || ENABLE(LEGACY_NOTIFICATIONS)
     , m_notificationClient(0)
 #endif
@@ -136,9 +104,14 @@ void WorkerThread::workerThreadStart(void* thread)
 
 void WorkerThread::workerThread()
 {
+    KURL scriptURL = m_startupData->m_scriptURL;
+    String sourceCode = m_startupData->m_sourceCode;
+    WorkerThreadStartMode startMode = m_startupData->m_startMode;
+
     {
         MutexLocker lock(m_threadCreationMutex);
-        m_workerGlobalScope = createWorkerGlobalScope(m_startupData->m_scriptURL, m_startupData->m_userAgent, m_startupData->m_contentSecurityPolicy, m_startupData->m_contentSecurityPolicyType, m_startupData->m_topOrigin.release(), m_startupData->m_workerClients.release());
+
+        m_workerGlobalScope = createWorkerGlobalScope(m_startupData.release());
 
         if (m_runLoop.terminated()) {
             // The worker was terminated before the thread had a chance to run. Since the context didn't exist yet,
@@ -151,12 +124,8 @@ void WorkerThread::workerThread()
     WebKit::Platform::current()->didStartWorkerRunLoop(WebKit::WebWorkerRunLoop(&m_runLoop));
 
     WorkerScriptController* script = m_workerGlobalScope->script();
-    InspectorInstrumentation::willEvaluateWorkerScript(workerGlobalScope(), m_startupData->m_startMode);
-    script->evaluate(ScriptSourceCode(m_startupData->m_sourceCode, m_startupData->m_scriptURL));
-    // Free the startup data to cause its member variable deref's happen on the worker's thread (since
-    // all ref/derefs of these objects are happening on the thread at this point). Note that
-    // WorkerThread::~WorkerThread happens on a different thread where it was created.
-    m_startupData.clear();
+    InspectorInstrumentation::willEvaluateWorkerScript(workerGlobalScope(), startMode);
+    script->evaluate(ScriptSourceCode(sourceCode, scriptURL));
 
     runEventLoop();
 

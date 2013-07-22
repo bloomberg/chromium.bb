@@ -43,6 +43,7 @@ namespace WebCore {
     class DedicatedWorkerThread;
     class ScriptExecutionContext;
     class Worker;
+    class WorkerClients;
 
     class WorkerMessagingProxy : public WorkerGlobalScopeProxy, public WorkerObjectProxy, public WorkerLoaderProxy {
         WTF_MAKE_NONCOPYABLE(WorkerMessagingProxy); WTF_MAKE_FAST_ALLOCATED;

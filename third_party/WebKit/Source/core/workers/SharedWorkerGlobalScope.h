@@ -33,6 +33,7 @@
 
 #include "core/page/ContentSecurityPolicy.h"
 #include "core/workers/WorkerGlobalScope.h"
+#include "core/workers/WorkerThreadStartupData.h"
 
 namespace WebCore {
 
@@ -42,7 +43,7 @@ namespace WebCore {
     class SharedWorkerGlobalScope : public WorkerGlobalScope {
     public:
         typedef WorkerGlobalScope Base;
-        static PassRefPtr<SharedWorkerGlobalScope> create(const String& name, const KURL&, const String& userAgent, SharedWorkerThread*, const String& contentSecurityPolicy, ContentSecurityPolicy::HeaderType contentSecurityPolicyType, PassOwnPtr<WorkerClients>);
+        static PassRefPtr<SharedWorkerGlobalScope> create(const String& name, SharedWorkerThread*, PassOwnPtr<WorkerThreadStartupData>);
         virtual ~SharedWorkerGlobalScope();
 
         virtual bool isSharedWorkerGlobalScope() const OVERRIDE { return true; }

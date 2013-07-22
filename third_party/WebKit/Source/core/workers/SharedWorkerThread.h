@@ -35,18 +35,18 @@
 
 namespace WebCore {
 
-class WorkerClients;
+struct WorkerThreadStartupData;
 
 class SharedWorkerThread : public WorkerThread {
 public:
-    static PassRefPtr<SharedWorkerThread> create(const String& name, const KURL&, const String& userAgent, const String& sourceCode, WorkerLoaderProxy&, WorkerReportingProxy&, WorkerThreadStartMode, const String& contentSecurityPolicy, ContentSecurityPolicy::HeaderType, PassOwnPtr<WorkerClients>);
+    static PassRefPtr<SharedWorkerThread> create(const String& name, WorkerLoaderProxy&, WorkerReportingProxy&, PassOwnPtr<WorkerThreadStartupData>);
     virtual ~SharedWorkerThread();
 
 protected:
-    virtual PassRefPtr<WorkerGlobalScope> createWorkerGlobalScope(const KURL&, const String& userAgent, const String& contentSecurityPolicy, ContentSecurityPolicy::HeaderType, PassRefPtr<SecurityOrigin> topOrigin, PassOwnPtr<WorkerClients>) OVERRIDE;
+    virtual PassRefPtr<WorkerGlobalScope> createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData>) OVERRIDE;
 
 private:
-    SharedWorkerThread(const String& name, const KURL&, const String& userAgent, const String& sourceCode, WorkerLoaderProxy&, WorkerReportingProxy&, WorkerThreadStartMode, const String& contentSecurityPolicy, ContentSecurityPolicy::HeaderType, PassOwnPtr<WorkerClients>);
+    SharedWorkerThread(const String& name, WorkerLoaderProxy&, WorkerReportingProxy&, PassOwnPtr<WorkerThreadStartupData>);
 
     String m_name;
 };

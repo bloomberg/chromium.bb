@@ -48,6 +48,7 @@
 #include "core/workers/DedicatedWorkerThread.h"
 #include "core/workers/Worker.h"
 #include "core/workers/WorkerClients.h"
+#include "core/workers/WorkerThreadStartupData.h"
 #include <wtf/MainThread.h>
 
 namespace WebCore {
@@ -267,7 +268,11 @@ void WorkerMessagingProxy::startWorkerGlobalScope(const KURL& scriptURL, const S
     // FIXME: This need to be revisited when we support nested worker one day
     ASSERT(m_scriptExecutionContext->isDocument());
     Document* document = toDocument(m_scriptExecutionContext.get());
-    RefPtr<DedicatedWorkerThread> thread = DedicatedWorkerThread::create(scriptURL, userAgent, sourceCode, *this, *this, startMode, document->contentSecurityPolicy()->deprecatedHeader(), document->contentSecurityPolicy()->deprecatedHeaderType(), document->topOrigin(), document->loader() ? document->loader()->timing()->referenceMonotonicTime() : monotonicallyIncreasingTime(), m_workerClients.release());
+
+    OwnPtr<WorkerThreadStartupData> startupData = WorkerThreadStartupData::create(scriptURL, userAgent, sourceCode, startMode, document->contentSecurityPolicy()->deprecatedHeader(), document->contentSecurityPolicy()->deprecatedHeaderType(), document->topOrigin(), m_workerClients.release());
+    double originTime = document->loader() ? document->loader()->timing()->referenceMonotonicTime() : monotonicallyIncreasingTime();
+
+    RefPtr<DedicatedWorkerThread> thread = DedicatedWorkerThread::create(*this, *this, originTime, startupData.release());
     workerThreadCreated(thread);
     thread->start();
     InspectorInstrumentation::didStartWorkerGlobalScope(m_scriptExecutionContext.get(), this, scriptURL);

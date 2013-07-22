@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,42 +28,28 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DedicatedWorkerGlobalScope_h
-#define DedicatedWorkerGlobalScope_h
+#include "config.h"
+#include "WorkerThreadStartupData.h"
 
-#include "core/dom/MessagePort.h"
-#include "core/page/ContentSecurityPolicy.h"
-#include "core/workers/WorkerGlobalScope.h"
+#include "core/workers/WorkerClients.h"
+#include "weborigin/SecurityOrigin.h"
 
 namespace WebCore {
 
-class DedicatedWorkerThread;
-struct WorkerThreadStartupData;
+WorkerThreadStartupData::WorkerThreadStartupData(const KURL& scriptURL, const String& userAgent, const String& sourceCode, WorkerThreadStartMode startMode, const String& contentSecurityPolicy, ContentSecurityPolicy::HeaderType contentSecurityPolicyType, const SecurityOrigin* topOrigin, PassOwnPtr<WorkerClients> workerClients)
+    : m_scriptURL(scriptURL.copy())
+    , m_userAgent(userAgent.isolatedCopy())
+    , m_sourceCode(sourceCode.isolatedCopy())
+    , m_startMode(startMode)
+    , m_contentSecurityPolicy(contentSecurityPolicy.isolatedCopy())
+    , m_contentSecurityPolicyType(contentSecurityPolicyType)
+    , m_topOrigin(topOrigin ? topOrigin->isolatedCopy() : 0)
+    , m_workerClients(workerClients)
+{
+}
 
-class DedicatedWorkerGlobalScope : public WorkerGlobalScope {
-public:
-    typedef WorkerGlobalScope Base;
-    static PassRefPtr<DedicatedWorkerGlobalScope> create(DedicatedWorkerThread*, PassOwnPtr<WorkerThreadStartupData>, double timeOrigin);
-    virtual ~DedicatedWorkerGlobalScope();
-
-    virtual bool isDedicatedWorkerGlobalScope() const OVERRIDE { return true; }
-
-    // Overridden to allow us to check our pending activity after executing imported script.
-    virtual void importScripts(const Vector<String>& urls, ExceptionState&) OVERRIDE;
-
-    // EventTarget
-    virtual const AtomicString& interfaceName() const OVERRIDE;
-
-    void postMessage(PassRefPtr<SerializedScriptValue>, const MessagePortArray*, ExceptionState&);
-
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(message);
-
-    DedicatedWorkerThread* thread();
-
-private:
-    DedicatedWorkerGlobalScope(const KURL&, const String& userAgent, DedicatedWorkerThread*, PassRefPtr<SecurityOrigin> topOrigin, double timeOrigin, PassOwnPtr<WorkerClients>);
-};
+WorkerThreadStartupData::~WorkerThreadStartupData()
+{
+}
 
 } // namespace WebCore
-
-#endif // DedicatedWorkerGlobalScope_h

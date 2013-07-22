@@ -62,6 +62,7 @@
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerThread.h"
+#include "core/workers/WorkerThreadStartupData.h"
 #include "modules/webdatabase/DatabaseTask.h"
 #include "weborigin/KURL.h"
 #include "weborigin/SecurityOrigin.h"
@@ -367,8 +368,11 @@ void WebSharedWorkerImpl::connectTask(ScriptExecutionContext* context, PassOwnPt
 void WebSharedWorkerImpl::startWorkerContext(const WebURL& url, const WebString& name, const WebString& userAgent, const WebString& sourceCode, const WebString& contentSecurityPolicy, WebContentSecurityPolicyType policyType, long long)
 {
     initializeLoader(url);
+
     WorkerThreadStartMode startMode = m_pauseWorkerContextOnStart ? PauseWorkerGlobalScopeOnStart : DontPauseWorkerGlobalScopeOnStart;
-    setWorkerThread(SharedWorkerThread::create(name, url, userAgent, sourceCode, *this, *this, startMode, contentSecurityPolicy, static_cast<WebCore::ContentSecurityPolicy::HeaderType>(policyType), WorkerClients::create()));
+    OwnPtr<WorkerClients> workerClients = WorkerClients::create();
+    OwnPtr<WorkerThreadStartupData> startupData = WorkerThreadStartupData::create(url, userAgent, sourceCode, startMode, contentSecurityPolicy, static_cast<WebCore::ContentSecurityPolicy::HeaderType>(policyType), 0, workerClients.release());
+    setWorkerThread(SharedWorkerThread::create(name, *this, *this, startupData.release()));
 
     workerThread()->start();
 }
