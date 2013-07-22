@@ -367,7 +367,7 @@ video::-webkit-media-text-track-region-container {
 }
 
 video::-webkit-media-text-track-region-container.scrolling {
-    -webkit-transition: top 433ms linear;
+    transition: top 433ms linear;
 }
 
 

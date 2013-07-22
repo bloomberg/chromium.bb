@@ -64,7 +64,7 @@ body {
     box-sizing: border-box;
     display: inline-block;
     cursor: default;
-    -webkit-transition: color 1s;
+    transition: color 1s;
     padding: 1px;
 }
 

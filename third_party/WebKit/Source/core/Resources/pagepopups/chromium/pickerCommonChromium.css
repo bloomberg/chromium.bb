@@ -62,7 +62,7 @@ button {
 }
 
 :enabled:focus:-webkit-any(button, input[type='button']) {
-    -webkit-transition: border-color 200ms;
+    transition: border-color 200ms;
     /* We use border color because it follows the border radius (unlike outline).
     * This is particularly noticeable on mac. */
     border-color: rgb(77, 144, 254);
