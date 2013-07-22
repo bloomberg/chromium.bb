@@ -715,6 +715,7 @@ void ExistingUserController::OnLoginFailure(const LoginFailure& failure) {
 
   if (UserManager::Get()->GetUserFlow(last_login_attempt_username_)->
           HandleLoginFailure(failure)) {
+    login_display_->SetUIEnabled(true);
     return;
   }
 
