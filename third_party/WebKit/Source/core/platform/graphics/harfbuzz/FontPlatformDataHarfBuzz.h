@@ -86,7 +86,7 @@ public:
     // the font's file name so refers to a single face.
     // -------------------------------------------------------------------------
     SkFontID uniqueID() const;
-    SkTypeface* typeface() const { return m_typeface; }
+    SkTypeface* typeface() const { return m_typeface.get(); }
 
     unsigned hash() const;
     float size() const { return m_textSize; }
@@ -98,7 +98,7 @@ public:
     void setFakeItalic(bool fakeItalic) { m_fakeItalic = fakeItalic; }
     bool operator==(const FontPlatformData&) const;
     FontPlatformData& operator=(const FontPlatformData&);
-    bool isHashTableDeletedValue() const { return m_typeface == hashTableDeletedFontValue(); }
+    bool isHashTableDeletedValue() const { return m_isHashTableDeletedValue; }
 
 #if ENABLE(OPENTYPE_VERTICAL)
     PassRefPtr<OpenTypeVerticalData> verticalData() const;
@@ -128,8 +128,7 @@ private:
     void getRenderStyleForStrike(const char*, int);
     void querySystemForRenderStyle();
 
-    // FIXME: Could SkAutoUnref be used here?
-    SkTypeface* m_typeface;
+    RefPtr<SkTypeface> m_typeface;
     CString m_family;
     float m_textSize;
     mutable int m_emSizeInFontUnits;
@@ -138,8 +137,7 @@ private:
     FontOrientation m_orientation;
     FontRenderStyle m_style;
     mutable RefPtr<HarfBuzzFace> m_harfBuzzFace;
-
-    SkTypeface* hashTableDeletedFontValue() const { return reinterpret_cast<SkTypeface*>(-1); }
+    bool m_isHashTableDeletedValue;
 };
 
 } // namespace WebCore

@@ -84,32 +84,32 @@ void FontPlatformData::setSubpixelPositioning(bool useSubpixelPositioning)
 }
 
 FontPlatformData::FontPlatformData(WTF::HashTableDeletedValueType)
-    : m_typeface(hashTableDeletedFontValue())
-    , m_textSize(0)
+    : m_textSize(0)
     , m_emSizeInFontUnits(0)
     , m_fakeBold(false)
     , m_fakeItalic(false)
     , m_orientation(Horizontal)
+    , m_isHashTableDeletedValue(true)
 {
 }
 
 FontPlatformData::FontPlatformData()
-    : m_typeface(0)
-    , m_textSize(0)
+    : m_textSize(0)
     , m_emSizeInFontUnits(0)
     , m_fakeBold(false)
     , m_fakeItalic(false)
     , m_orientation(Horizontal)
+    , m_isHashTableDeletedValue(false)
 {
 }
 
 FontPlatformData::FontPlatformData(float textSize, bool fakeBold, bool fakeItalic)
-    : m_typeface(0)
-    , m_textSize(textSize)
+    : m_textSize(textSize)
     , m_emSizeInFontUnits(0)
     , m_fakeBold(fakeBold)
     , m_fakeItalic(fakeItalic)
     , m_orientation(Horizontal)
+    , m_isHashTableDeletedValue(false)
 {
 }
 
@@ -123,8 +123,8 @@ FontPlatformData::FontPlatformData(const FontPlatformData& src)
     , m_orientation(src.m_orientation)
     , m_style(src.m_style)
     , m_harfBuzzFace(src.m_harfBuzzFace)
+    , m_isHashTableDeletedValue(false)
 {
-    SkSafeRef(m_typeface);
 }
 
 FontPlatformData::FontPlatformData(SkTypeface* tf, const char* family, float textSize, bool fakeBold, bool fakeItalic, FontOrientation orientation)
@@ -135,8 +135,8 @@ FontPlatformData::FontPlatformData(SkTypeface* tf, const char* family, float tex
     , m_fakeBold(fakeBold)
     , m_fakeItalic(fakeItalic)
     , m_orientation(orientation)
+    , m_isHashTableDeletedValue(false)
 {
-    SkSafeRef(m_typeface);
     querySystemForRenderStyle();
 }
 
@@ -149,14 +149,13 @@ FontPlatformData::FontPlatformData(const FontPlatformData& src, float textSize)
     , m_fakeItalic(src.m_fakeItalic)
     , m_orientation(src.m_orientation)
     , m_harfBuzzFace(src.m_harfBuzzFace)
+    , m_isHashTableDeletedValue(false)
 {
-    SkSafeRef(m_typeface);
     querySystemForRenderStyle();
 }
 
 FontPlatformData::~FontPlatformData()
 {
-    SkSafeUnref(m_typeface);
 }
 
 int FontPlatformData::emSizeInFontUnits() const
@@ -170,8 +169,7 @@ int FontPlatformData::emSizeInFontUnits() const
 
 FontPlatformData& FontPlatformData::operator=(const FontPlatformData& src)
 {
-    SkRefCnt_SafeAssign(m_typeface, src.m_typeface);
-
+    m_typeface = src.m_typeface;
     m_family = src.m_family;
     m_textSize = src.m_textSize;
     m_fakeBold = src.m_fakeBold;
@@ -203,7 +201,7 @@ void FontPlatformData::setupPaint(SkPaint* paint) const
 
     const float ts = m_textSize >= 0 ? m_textSize : 12;
     paint->setTextSize(SkFloatToScalar(ts));
-    paint->setTypeface(m_typeface);
+    paint->setTypeface(m_typeface.get());
     paint->setFakeBoldText(m_fakeBold);
     paint->setTextSkewX(m_fakeItalic ? -SK_Scalar1 / 4 : 0);
 }
@@ -215,29 +213,26 @@ SkFontID FontPlatformData::uniqueID() const
 
 bool FontPlatformData::operator==(const FontPlatformData& a) const
 {
-    // If either of the typeface pointers are invalid (either 0 or the
-    // special deleted value) then we test for pointer equality. Otherwise, we
-    // call SkTypeface::Equal on the valid pointers.
+    // If either of the typeface pointers are null then we test for pointer
+    // equality. Otherwise, we call SkTypeface::Equal on the valid pointers.
     bool typefacesEqual;
-    if (m_typeface == hashTableDeletedFontValue()
-        || a.m_typeface == hashTableDeletedFontValue()
-        || !m_typeface
-        || !a.m_typeface)
+    if (!m_typeface || !a.m_typeface)
         typefacesEqual = m_typeface == a.m_typeface;
     else
-        typefacesEqual = SkTypeface::Equal(m_typeface, a.m_typeface);
+        typefacesEqual = SkTypeface::Equal(m_typeface.get(), a.m_typeface.get());
 
     return typefacesEqual
         && m_textSize == a.m_textSize
         && m_fakeBold == a.m_fakeBold
         && m_fakeItalic == a.m_fakeItalic
         && m_orientation == a.m_orientation
-        && m_style == a.m_style;
+        && m_style == a.m_style
+        && m_isHashTableDeletedValue == a.m_isHashTableDeletedValue;
 }
 
 unsigned FontPlatformData::hash() const
 {
-    unsigned h = SkTypeface::UniqueID(m_typeface);
+    unsigned h = SkTypeface::UniqueID(m_typeface.get());
     h ^= 0x01010101 * ((static_cast<int>(m_orientation) << 2) | (static_cast<int>(m_fakeBold) << 1) | static_cast<int>(m_fakeItalic));
 
     // This memcpy is to avoid a reinterpret_cast that breaks strict-aliasing
