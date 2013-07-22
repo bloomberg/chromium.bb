@@ -139,6 +139,13 @@ MessagePumpAuraX11::MessagePumpAuraX11() : MessagePumpGlib(),
   x_root_window_ = DefaultRootWindow(g_xdisplay);
 }
 
+MessagePumpAuraX11::~MessagePumpAuraX11() {
+  g_source_destroy(x_source_);
+  g_source_unref(x_source_);
+  XCloseDisplay(g_xdisplay);
+  g_xdisplay = NULL;
+}
+
 // static
 Display* MessagePumpAuraX11::GetDefaultXDisplay() {
   if (!g_xdisplay)
@@ -209,13 +216,6 @@ void MessagePumpAuraX11::BlockUntilWindowMapped(unsigned long xid) {
     XWindowEvent(display, xid, StructureNotifyMask, &event);
     ProcessXEvent(dispatcher, &event);
   } while (event.type != MapNotify);
-}
-
-MessagePumpAuraX11::~MessagePumpAuraX11() {
-  g_source_destroy(x_source_);
-  g_source_unref(x_source_);
-  XCloseDisplay(g_xdisplay);
-  g_xdisplay = NULL;
 }
 
 void MessagePumpAuraX11::InitXSource() {

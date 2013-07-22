@@ -11,7 +11,6 @@ MessagePumpIOSForIO::FileDescriptorWatcher::FileDescriptorWatcher()
       fdref_(NULL),
       callback_types_(0),
       fd_source_(NULL),
-      pump_(NULL),
       watcher_(NULL) {
 }
 
@@ -24,11 +23,12 @@ bool MessagePumpIOSForIO::FileDescriptorWatcher::StopWatchingFileDescriptor() {
     return true;
 
   CFFileDescriptorDisableCallBacks(fdref_, callback_types_);
-  pump_->RemoveRunLoopSource(fd_source_);
+  if (pump_)
+    pump_->RemoveRunLoopSource(fd_source_);
   fd_source_.reset();
   fdref_.reset();
   callback_types_ = 0;
-  pump_ = NULL;
+  pump_.reset();
   watcher_ = NULL;
   return true;
 }
@@ -65,7 +65,7 @@ void MessagePumpIOSForIO::FileDescriptorWatcher::OnFileCanWriteWithoutBlocking(
   pump->DidProcessIOEvent();
 }
 
-MessagePumpIOSForIO::MessagePumpIOSForIO() {
+MessagePumpIOSForIO::MessagePumpIOSForIO() : weak_factory_(this) {
 }
 
 MessagePumpIOSForIO::~MessagePumpIOSForIO() {
@@ -143,7 +143,7 @@ bool MessagePumpIOSForIO::WatchFileDescriptor(
   }
 
   controller->set_watcher(delegate);
-  controller->set_pump(this);
+  controller->set_pump(weak_factory_.GetWeakPtr());
 
   return true;
 }
@@ -183,7 +183,8 @@ void MessagePumpIOSForIO::HandleFdIOEvent(CFFileDescriptorRef fdref,
       fdref, base::scoped_policy::RETAIN);
 
   int fd = CFFileDescriptorGetNativeDescriptor(fdref);
-  MessagePumpIOSForIO* pump = controller->pump();
+  MessagePumpIOSForIO* pump = controller->pump().get();
+  DCHECK(pump);
   if (callback_types & kCFFileDescriptorWriteCallBack)
     controller->OnFileCanWriteWithoutBlocking(fd, pump);
 

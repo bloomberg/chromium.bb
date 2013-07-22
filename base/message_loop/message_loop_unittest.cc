@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_proxy_impl.h"
 #include "base/pending_task.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/run_loop.h"
@@ -25,19 +26,6 @@
 #endif
 
 namespace base {
-
-class MessageLoopLockTest {
- public:
-  static void LockWaitUnLock(MessageLoop* loop,
-                             WaitableEvent* caller_wait,
-                             WaitableEvent* caller_signal) {
-
-    loop->incoming_queue_lock_.Acquire();
-    caller_wait->Signal();
-    caller_signal->Wait();
-    loop->incoming_queue_lock_.Release();
-  }
-};
 
 // TODO(darin): Platform-specific MessageLoop tests should be grouped together
 // to avoid chopping this file up with so many #ifdefs.
@@ -121,10 +109,10 @@ void RunTest_PostTask(MessageLoop::Type message_loop_type) {
   thread.Start();
   thread.message_loop()->PostTask(
       FROM_HERE,
-      Bind(&MessageLoopLockTest::LockWaitUnLock,
-      MessageLoop::current(),
-      &wait,
-      &signal));
+      Bind(&MessageLoop::LockWaitUnLockForTesting,
+           base::Unretained(MessageLoop::current()),
+           &wait,
+           &signal));
 
   wait.Wait();
   EXPECT_FALSE(MessageLoop::current()->TryPostTask(FROM_HERE, Bind(
@@ -1895,20 +1883,20 @@ TEST(MessageLoopTest, HighResolutionTimer) {
   const TimeDelta kFastTimer = TimeDelta::FromMilliseconds(5);
   const TimeDelta kSlowTimer = TimeDelta::FromMilliseconds(100);
 
-  EXPECT_FALSE(loop.high_resolution_timers_enabled());
+  EXPECT_FALSE(loop.IsHighResolutionTimerEnabledForTesting());
 
   // Post a fast task to enable the high resolution timers.
   loop.PostDelayedTask(FROM_HERE, Bind(&PostNTasksThenQuit, 1),
                        kFastTimer);
   loop.Run();
-  EXPECT_TRUE(loop.high_resolution_timers_enabled());
+  EXPECT_TRUE(loop.IsHighResolutionTimerEnabledForTesting());
 
   // Post a slow task and verify high resolution timers
   // are still enabled.
   loop.PostDelayedTask(FROM_HERE, Bind(&PostNTasksThenQuit, 1),
                        kSlowTimer);
   loop.Run();
-  EXPECT_TRUE(loop.high_resolution_timers_enabled());
+  EXPECT_TRUE(loop.IsHighResolutionTimerEnabledForTesting());
 
   // Wait for a while so that high-resolution mode elapses.
   PlatformThread::Sleep(TimeDelta::FromMilliseconds(
@@ -1918,7 +1906,7 @@ TEST(MessageLoopTest, HighResolutionTimer) {
   loop.PostDelayedTask(FROM_HERE, Bind(&PostNTasksThenQuit, 1),
                        kSlowTimer);
   loop.Run();
-  EXPECT_FALSE(loop.high_resolution_timers_enabled());
+  EXPECT_FALSE(loop.IsHighResolutionTimerEnabledForTesting());
 }
 
 #endif  // defined(OS_WIN)

@@ -35,6 +35,7 @@ class MessagePumpDispatcher;
 class BASE_EXPORT MessagePumpGlib : public MessagePump {
  public:
   MessagePumpGlib();
+  virtual ~MessagePumpGlib();
 
   // Like MessagePump::Run, but events are routed through dispatcher.
   virtual void RunWithDispatcher(Delegate* delegate,
@@ -64,8 +65,6 @@ class BASE_EXPORT MessagePumpGlib : public MessagePump {
   virtual void ScheduleDelayedWork(const TimeTicks& delayed_work_time) OVERRIDE;
 
  protected:
-  virtual ~MessagePumpGlib();
-
   // Returns the dispatcher for the current run state (|state_->dispatcher|).
   MessagePumpDispatcher* GetDispatcher();
 

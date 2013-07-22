@@ -6,7 +6,7 @@
 
 #import <QuartzCore/QuartzCore.h>
 
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_pump_mac.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "third_party/ocmock/gtest_support.h"
@@ -53,7 +53,7 @@ TEST_F(HistoryOverlayControllerTest, DismissClearsAnimations) {
       [[HistoryOverlayController alloc] initForMode:kHistoryOverlayModeBack]);
   [controller showPanelForView:test_view()];
 
-  scoped_refptr<base::MessagePumpNSRunLoop> message_pump(
+  scoped_ptr<base::MessagePumpNSRunLoop> message_pump(
       new base::MessagePumpNSRunLoop);
 
   id mock = [OCMockObject partialMockForObject:controller];
@@ -61,8 +61,9 @@ TEST_F(HistoryOverlayControllerTest, DismissClearsAnimations) {
   [[[mock expect] andForwardToRealObject] dismiss];
 
   // Called after |-animationDidStop:finished:|.
+  base::MessagePumpNSRunLoop* weak_message_pump = message_pump.get();
   void (^quit_loop)(NSInvocation* invocation) = ^(NSInvocation* invocation) {
-      message_pump->Quit();
+      weak_message_pump->Quit();
   };
   // Set up the mock to first forward to the real implementation and then call
   // the above block to quit the run loop.

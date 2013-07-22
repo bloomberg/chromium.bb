@@ -141,7 +141,7 @@ TEST_F(SerialWorkerTest, ExecuteAndSerializeReads) {
     WaitForWork();
     RunUntilBreak("OnWorkFinished");
 
-    message_loop_->AssertIdle();
+    EXPECT_TRUE(message_loop_->IsIdleForTesting());
   }
 
   // Schedule two calls. OnWork checks if it is called serially.
@@ -154,7 +154,7 @@ TEST_F(SerialWorkerTest, ExecuteAndSerializeReads) {
   RunUntilBreak("OnWorkFinished");
 
   // No more tasks should remain.
-  message_loop_->AssertIdle();
+  EXPECT_TRUE(message_loop_->IsIdleForTesting());
 }
 
 }  // namespace
