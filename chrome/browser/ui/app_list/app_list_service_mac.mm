@@ -5,6 +5,7 @@
 #include <ApplicationServices/ApplicationServices.h>
 #import <Cocoa/Cocoa.h>
 
+#include "apps/app_launcher.h"
 #include "apps/app_shim/app_shim_handler_mac.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -14,8 +15,10 @@
 #include "base/memory/singleton.h"
 #include "base/message_loop/message_loop.h"
 #include "base/observer_list.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/app_list/app_list_service_impl.h"
@@ -63,10 +66,10 @@ class AppListServiceMac : public AppListServiceImpl,
   virtual void ShowForProfile(Profile* requested_profile) OVERRIDE;
   virtual void DismissAppList() OVERRIDE;
   virtual bool IsAppListVisible() const OVERRIDE;
-  virtual void EnableAppList(Profile* initial_profile) OVERRIDE;
   virtual gfx::NativeWindow GetAppListWindow() OVERRIDE;
 
-  // AppListServiceImpl override:
+  // AppListServiceImpl overrides:
+  virtual void CreateShortcut() OVERRIDE;
   virtual void OnSigninStatusChanged() OVERRIDE;
 
   // AppShimHandler overrides:
@@ -175,7 +178,7 @@ void CreateAppListShim(const base::FilePath& profile_path) {
 }
 
 // Check that there is an app list shim. If enabling and there is not, make one.
-// If disabling with --enable-app-list-shim=0, and there is one, delete it.
+// If the flag is not present, and there is a shim, delete it.
 void CheckAppListShimOnFileThread(const base::FilePath& profile_path) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
   const bool enable =
@@ -286,10 +289,12 @@ void AppListServiceMac::Init(Profile* initial_profile) {
   // browser window open and a new window is opened, and during process startup
   // to handle the silent launch case (e.g. for app shims). In the startup case,
   // a profile has not yet been determined so |initial_profile| will be NULL.
-  if (initial_profile) {
-    static bool checked_shim = false;
-    if (!checked_shim) {
-      checked_shim = true;
+  static bool init_called_with_profile = false;
+  if (initial_profile && !init_called_with_profile) {
+    init_called_with_profile = true;
+    HandleCommandLineFlags(initial_profile);
+    if (!apps::IsAppLauncherEnabled()) {
+      // Not yet enabled via the Web Store. Check for the chrome://flag.
       content::BrowserThread::PostTask(
           content::BrowserThread::FILE, FROM_HERE,
           base::Bind(&CheckAppListShimOnFileThread,
@@ -352,8 +357,9 @@ bool AppListServiceMac::IsAppListVisible() const {
   return [[window_controller_ window] isVisible];
 }
 
-void AppListServiceMac::EnableAppList(Profile* initial_profile) {
-  // TODO(tapted): Implement enable logic here for OSX.
+void AppListServiceMac::CreateShortcut() {
+  CreateAppListShim(GetProfilePath(
+      g_browser_process->profile_manager()->user_data_dir()));
 }
 
 NSWindow* AppListServiceMac::GetAppListWindow() {

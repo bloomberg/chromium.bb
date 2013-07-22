@@ -20,20 +20,19 @@
 namespace apps {
 
 bool IsAppLauncherEnabled() {
-#if defined(USE_ASH) && !defined(OS_WIN)
-  return true;
-#elif !defined(OS_WIN)
+#if !defined(ENABLE_APP_LIST)
   return false;
-#else
-#if defined(USE_ASH)
+
+#elif defined(OS_CHROMEOS)
+  return true;
+
+#else  // defined(ENABLE_APP_LIST) && !defined(OS_CHROMEOS)
   if (chrome::GetActiveDesktop() == chrome::HOST_DESKTOP_TYPE_ASH)
     return true;
-#endif
+
   PrefService* prefs = g_browser_process->local_state();
   // In some tests, the prefs aren't initialised.
-  if (!prefs)
-    return false;
-  return prefs->GetBoolean(prefs::kAppLauncherHasBeenEnabled);
+  return prefs && prefs->GetBoolean(prefs::kAppLauncherHasBeenEnabled);
 #endif
 }
 
