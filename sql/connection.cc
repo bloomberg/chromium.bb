@@ -8,6 +8,7 @@
 
 #include "base/files/file_path.h"
 #include "base/file_util.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
@@ -15,6 +16,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/synchronization/lock.h"
 #include "sql/statement.h"
 #include "third_party/sqlite/sqlite3.h"
 
@@ -107,6 +109,20 @@ bool ValidAttachmentPoint(const char* attachment_point) {
     }
   }
   return true;
+}
+
+// SQLite automatically calls sqlite3_initialize() lazily, but
+// sqlite3_initialize() uses double-checked locking and thus can have
+// data races.
+//
+// TODO(shess): Another alternative would be to have
+// sqlite3_initialize() called as part of process bring-up.  If this
+// is changed, remove the dynamic_annotations dependency in sql.gyp.
+base::LazyInstance<base::Lock>::Leaky
+    g_sqlite_init_lock = LAZY_INSTANCE_INITIALIZER;
+void InitializeSqlite() {
+  base::AutoLock lock(g_sqlite_init_lock.Get());
+  sqlite3_initialize();
 }
 
 }  // namespace
@@ -798,6 +814,9 @@ bool Connection::OpenInternal(const std::string& file_name,
     DLOG(FATAL) << "sql::Connection is already open.";
     return false;
   }
+
+  // Make sure sqlite3_initialize() is called before anything else.
+  InitializeSqlite();
 
   // If |poisoned_| is set, it means an error handler called
   // RazeAndClose().  Until regular Close() is called, the caller

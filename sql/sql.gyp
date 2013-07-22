@@ -13,6 +13,7 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../third_party/sqlite/sqlite.gyp:sqlite',
+        '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
       ],
       'export_dependent_settings': [
         '../base/base.gyp:base',
