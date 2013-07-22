@@ -329,7 +329,7 @@
     // request (second argument) is required.
     var request = args[lastArg--];
 
-    // targetId (first argument, extensionId in the manfiest) is optional.
+    // targetId (first argument, extensionId in the manifest) is optional.
     var targetId = null;
     if (lastArg >= 0)
       targetId = args[lastArg--];
