@@ -157,6 +157,9 @@ _OS_NEGATIVE_FILTER['android'] = [
     # Alerts are not yet supported on Android.
     'AlertsTest.*',
 
+    # http://crbug.com/156390
+    'DragAndDropTest.*',
+
     # Touch events are not yet supported.
     'TouchFlickTest.*',
     'TouchScrollTest.*',
