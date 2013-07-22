@@ -19,25 +19,6 @@
 void __libc_init_array(void);
 
 /*
- * This is declared as weak because plugin_main_nacl.cc on the
- * Chromium side has a copy of IrtInit().
- * TODO(mseaborn): Remove IrtInit() from there and use this copy.
- */
-__attribute__((weak))
-int IrtInit(void) {
-  static int initialized = 0;
-  if (initialized) {
-    return 0;
-  }
-  if (!NaClSrpcModuleInit()) {
-    return 1;
-  }
-  NaClLogModuleInit();  /* Enable NaClLog'ing used by CHECK(). */
-  initialized = 1;
-  return 0;
-}
-
-/*
  * This is the true entry point for untrusted code.
  * See nacl_startup.h for the layout at the argument pointer.
  */
@@ -61,11 +42,16 @@ void _start(uint32_t *info) {
 
   __libc_init_array();
 
-  if (IrtInit()) {
-    static const char fatal_msg[] = "IrtInit() failed\n";
+  /*
+   * SRPC is initialized for use by irt_nameservice.c, which is used
+   * by irt_random.c, and (in Chromium) by irt_manifest.c.
+   */
+  if (!NaClSrpcModuleInit()) {
+    static const char fatal_msg[] = "NaClSrpcModuleInit() failed\n";
     write(2, fatal_msg, sizeof(fatal_msg) - 1);
     _exit(-1);
   }
+  NaClLogModuleInit();  /* Enable NaClLog'ing used by CHECK(). */
 
   Elf32_auxv_t *entry = NULL;
   for (Elf32_auxv_t *av = auxv; av->a_type != AT_NULL; ++av) {
