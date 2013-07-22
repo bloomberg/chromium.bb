@@ -9,11 +9,13 @@
 <translation id="2208514473086078157">La configuración de la política no permite compartir esta computadora como host de Escritorio remoto de Chrome. Comunícate con el administrador de tu sistema para obtener ayuda.</translation>
 <translation id="2801119484858626560">Se detectó una versión incompatible del Escritorio remoto de Chrome. Asegúrate de que se hayan instalado la última versión de Chrome y del Escritorio remoto de Chrome en ambas computadoras y vuelve a intentarlo.</translation>
 <translation id="6998989275928107238">Para</translation>
+<translation id="406849768426631008">¿Quieres ayudar a otra persona al mismo tiempo que mantienes con ella un videochat? Prueba el <ph name="LINK_BEGIN"/>Escritorio remoto en Google Hangouts<ph name="LINK_END"/>.</translation>
 <translation id="3258789396564295715">Puedes acceder a esta computadora sin correr riesgos a través del Escritorio remoto de Chrome.</translation>
 <translation id="5070121137485264635">El host remoto requiere la autenticación de un sitio web de terceros. Para continuar, debes otorgar permisos adicionales al Escritorio remoto de Chrome para acceder a la siguiente dirección:</translation>
 <translation id="4808503597364150972">Ingresa tu PIN de <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">Se inhabilitaron las conexiones remotas con esta computadora.</translation>
 <translation id="8244400547700556338">Más información</translation>
+<translation id="4368630973089289038">¿Quieres ayudar a mejorar Chromoting? <ph name="LINK_BEGIN"/>Realiza la encuesta<ph name="LINK_END"/>.</translation>
 <translation id="332624996707057614">Editar el nombre de la computadora</translation>
 <translation id="1996161829609978754">Chrome está descargando el instalador del host de  Chromoting. Cuando termine la descarga, abre el instalador antes de continuar.</translation>
 <translation id="7658239707568436148">Cancelar</translation>
@@ -43,10 +45,10 @@
 <translation id="174018511426417793">No tienes ninguna computadora registrada. Para habilitar conexiones remotas con una computadora, instala allí Escritorio remoto de Chrome y haz clic en &quot;<ph name="BUTTON_NAME"/>&quot;.</translation>
 <translation id="8525306231823319788">Pantalla completa</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME"/> (desactualizado)</translation>
+<translation id="327263477022142889">¿Quieres ayudar a mejorar el Escritorio remoto de Chrome? <ph name="LINK_BEGIN"/>Realiza la encuesta<ph name="LINK_END"/>.</translation>
 <translation id="5702987232842159181">Conectado:</translation>
 <translation id="4736223761657662401">Historial de conexiones</translation>
 <translation id="4430915108080446161">Generando el código de acceso...</translation>
-<translation id="7022800415798056893">Participar en la encuesta</translation>
 <translation id="8228265668171617545">Se detectó una versión incompatible de Chromoting. Asegúrate de que tienes instalada la última versión de Chrome y de Chromoting en ambas computadoras y vuelve a intentarlo.</translation>
 <translation id="6985691951107243942">¿Realmente deseas inhabilitar las conexiones remotas con <ph name="HOSTNAME"/>? Si te arrepientes, tendrás que ir a esa computadora para volver a habilitar las conexiones.</translation>
 <translation id="9149992051684092333">Para comenzar a compartir tu escritorio, proporciona el código de acceso que aparece a continuación a la persona que te asistirá.</translation>
@@ -77,7 +79,6 @@
 <translation id="3933246213702324812">Chromoting en <ph name="HOSTNAME"/> está desactualizado y debe actualizarse.</translation>
 <translation id="6193698048504518729">Establecer conexión con <ph name="HOSTNAME"/></translation>
 <translation id="3020807351229499221">No se pudo actualizar el PIN. Vuelve a intentarlo más tarde.</translation>
-<translation id="785147662223870933">¿Quieres ayudar a mejorar el Escritorio remoto de Chrome?</translation>
 <translation id="579702532610384533">Volver a conectar</translation>
 <translation id="4211066471404647515">Faltan algunos de los componentes necesarios para Chromoting. Asegúrate de estar usando la última versión de Chrome y vuelve a intentarlo.</translation>
 <translation id="5265129178187621741">(Esta función todavía no está disponible para las Chromebooks. Pronto habrá novedades).</translation>
@@ -119,7 +120,7 @@
 <translation id="652218476070540101">Se está actualizando el PIN para esta computadora…</translation>
 <translation id="5308380583665731573">Conectar</translation>
 <translation id="7319983568955948908">Dejar de compartir</translation>
-<translation id="2229673624483529540">¿Quieres ayudar a mejorar Chromoting?</translation>
+<translation id="1462361961931793308">No volver a pedir un PIN al conectarse a este host desde esta computadora</translation>
 <translation id="6668065415969892472">Se actualizó tu PIN.</translation>
 <translation id="4277736576214464567">El código de acceso no es válido. Vuelve a intentarlo.</translation>
 <translation id="979100198331752041">La aplicación Escritorio remoto de Chrome en <ph name="HOSTNAME"/> está desactualizada y debe actualizarse.</translation>

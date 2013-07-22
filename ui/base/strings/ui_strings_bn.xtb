@@ -2,18 +2,18 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="bn">
 <translation id="4820616160060340806">Command+<ph name="KEY_COMBO_NAME"/></translation>
-<translation id="6420214550675866556">কোয়ায়েট মোড</translation>
 <translation id="1871244248791675517">Ins</translation>
 <translation id="6135826906199951471">Del</translation>
 <translation id="528468243742722775">End</translation>
+<translation id="1801827354178857021">সময়কাল</translation>
 <translation id="1190609913194133056">বিজ্ঞপ্তি কেন্দ্র</translation>
 <translation id="5613020302032141669">Left Arrow</translation>
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE"/> ফাইল (.<ph name="SAVEAS_EXTENSION_NAME"/>)</translation>
-<translation id="4519844444318892125">এক দিনের জন্য কোয়ায়েট মোড</translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="7658239707568436148">বাতিল</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY"/> B</translation>
+<translation id="3660179305079774227">Up Arrow</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY"/> MB/s</translation>
 <translation id="3990502903496589789">ডান প্রান্ত</translation>
 <translation id="932327136139879170">হোম</translation>
@@ -22,11 +22,12 @@
 <translation id="5076340679995252485">&amp;প্রতিলেপন</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY"/> TB</translation>
 <translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME"/></translation>
+<translation id="3234408098842461169">Down Arrow</translation>
 <translation id="3087734570205094154">নীচে</translation>
+<translation id="1860796786778352021">বিজ্ঞপ্তি বন্ধ করা হয়েছে</translation>
 <translation id="6364916375976753737">বাম দিকে স্ক্রোল করুন</translation>
 <translation id="6945221475159498467">নির্বাচন</translation>
 <translation id="6620110761915583480">ফাইল সংরক্ষণ করুন</translation>
-<translation id="7394346403752882908">এক ঘন্টার জন্য কোয়ায়েট মোড</translation>
 <translation id="8210608804940886430">পৃষ্ঠা উপরে</translation>
 <translation id="5329858601952122676">&amp;মুছুন</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY"/> KB</translation>
@@ -36,6 +37,8 @@
 <translation id="2497284189126895209">সকল ফাইল</translation>
 <translation id="7814458197256864873">&amp;copy</translation>
 <translation id="3889424535448813030">Right Arrow</translation>
+<translation id="6829324100069873704">বিজ্ঞপ্তিগুলিতে ফিরে যান</translation>
+<translation id="6528179044667508675">বিরক্ত করবেন না</translation>
 <translation id="7135556860107312402">নিম্নলিখিত থেকে বিজ্ঞপ্তিগুলি মঞ্জুরি করুন:</translation>
 <translation id="1398853756734560583">বড় করুন</translation>
 <translation id="4250229828105606438">স্ক্রীনশট</translation>
@@ -48,6 +51,7 @@
 <translation id="4552416320897244156">PgDwn</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY"/> KB/s</translation>
+<translation id="7960078400008666149">এক ঘন্টার জন্য বিরক্ত করবেন না</translation>
 <translation id="2190355936436201913">(খালি)</translation>
 <translation id="8447116497070723931">PgUp</translation>
 <translation id="4588090240171750605">ডান দিকে স্ক্রোল করুন</translation>
@@ -66,17 +70,22 @@
 <translation id="6845383723252244143">ফোল্ডার নির্বাচন করুন</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY"/> GB/s</translation>
+<translation id="4570886800634958009">বিজ্ঞপ্তি প্রসারিত করুন</translation>
 <translation id="436869212180315161">টিপুন</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY"/> TB/s</translation>
 <translation id="6040143037577758943">বন্ধ</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY"/> B/s</translation>
+<translation id="7649070708921625228">সহায়তা</translation>
+<translation id="8226233771743600312">এক দিনের জন্য বিরক্ত করবেন না</translation>
 <translation id="7457942297256758195">সমস্ত সাফ করুন</translation>
 <translation id="7509316384504965641"><ph name="PRODUCT"/> - বিজ্ঞপ্তিগুলি</translation>
 <translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="6907759265145635167"><ph name="QUANTITY"/> PB/s</translation>
 <translation id="4481522213790366002"><ph name="PRODUCT"/> - বিজ্ঞপ্তিগুলি (<ph name="QUANTITY"/>টি অপঠিত)</translation>
 <translation id="6965382102122355670">ওকে</translation>
+<translation id="7850320739366109486">বিরক্ত করবেন না</translation>
 <translation id="5941711191222866238">ছোট করুন</translation>
+<translation id="6394627529324717982">কমা</translation>
 <translation id="4469842253116033348"><ph name="SITE"/>-এর থেকে বিজ্ঞপ্তি অক্ষম করুন</translation>
 <translation id="3036649622769666520">খোলা ফাইল</translation>
 <translation id="8328145009876646418">বাম প্রান্ত</translation>

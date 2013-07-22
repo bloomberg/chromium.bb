@@ -9,11 +9,13 @@
 <translation id="2208514473086078157">Policy settings do not permit sharing this computer as a Chrome Remote Desktop host. Contact your system administrator for assistance.</translation>
 <translation id="2801119484858626560">An incompatible version of Chrome Remote Desktop was detected. Please make sure that you have the latest version of Chrome and Chrome Remote Desktop on both computers and try again.</translation>
 <translation id="6998989275928107238">To</translation>
+<translation id="406849768426631008">Want to help someone while having a video chat with them too? Try <ph name="LINK_BEGIN"/> Remote Desktop in Google Hangouts<ph name="LINK_END"/>.</translation>
 <translation id="3258789396564295715">You may securely access this computer using Chrome Remote Desktop.</translation>
 <translation id="5070121137485264635">The remote host requires you to authenticate to a third-party website. To continue, you must grant Chrome Remote Desktop additional permissions to access this address:</translation>
 <translation id="4808503597364150972">Please enter your PIN for <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">Remote connections for this computer have been disabled.</translation>
 <translation id="8244400547700556338">Learn how.</translation>
+<translation id="4368630973089289038">Want to help improve Chromoting? <ph name="LINK_BEGIN"/>Take the survey.<ph name="LINK_END"/></translation>
 <translation id="332624996707057614">Edit computer name</translation>
 <translation id="1996161829609978754">Chrome is downloading the Chromoting Host installer.  Once the download is complete, please run the installer before continuing.</translation>
 <translation id="7658239707568436148">Cancel</translation>
@@ -43,10 +45,10 @@
 <translation id="174018511426417793">You have no computers registered. To enable remote connections to a computer, install Chrome Remote Desktop there and click “<ph name="BUTTON_NAME"/>”.</translation>
 <translation id="8525306231823319788">Full screen</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME"/> (out-of-date)</translation>
+<translation id="327263477022142889">Want to help improve Chrome Remote Desktop? <ph name="LINK_BEGIN"/>Take the survey.<ph name="LINK_END"/></translation>
 <translation id="5702987232842159181">Connected:</translation>
 <translation id="4736223761657662401">Connection History</translation>
 <translation id="4430915108080446161">Generating access code…</translation>
-<translation id="7022800415798056893">Take the survey</translation>
 <translation id="8228265668171617545">An incompatible version of Chromoting was detected. Please make sure that you have the latest version of Chrome and Chromoting on both computers and try again.</translation>
 <translation id="6985691951107243942">Are you sure you want to disable remote connections to <ph name="HOSTNAME"/>? If you change your mind, you'll need to visit that computer to re-enable connections.</translation>
 <translation id="9149992051684092333">To begin sharing your desktop, give the access code below to the person who will be assisting you.</translation>
@@ -77,7 +79,6 @@
 <translation id="3933246213702324812">Chromoting on <ph name="HOSTNAME"/> is out-of-date and needs to be updated.</translation>
 <translation id="6193698048504518729">Connect to <ph name="HOSTNAME"/></translation>
 <translation id="3020807351229499221">Failed to update the PIN. Please try again later.</translation>
-<translation id="785147662223870933">Want to help improve Chrome Remote Desktop?</translation>
 <translation id="579702532610384533">Reconnect</translation>
 <translation id="4211066471404647515">Some components required for Chromoting are missing. Please make sure you're running the latest version of Chrome and try again.</translation>
 <translation id="5265129178187621741">(this feature is not yet available for Chromebooks… stay tuned)</translation>
@@ -119,7 +120,7 @@
 <translation id="652218476070540101">The PIN for this computer is being updated…</translation>
 <translation id="5308380583665731573">Connect</translation>
 <translation id="7319983568955948908">Stop Sharing</translation>
-<translation id="2229673624483529540">Want to help improve Chromoting?</translation>
+<translation id="1462361961931793308">Don't ask for a PIN again when connecting to this host from this computer.</translation>
 <translation id="6668065415969892472">Your PIN has been updated.</translation>
 <translation id="4277736576214464567">The access code is invalid. Please try again.</translation>
 <translation id="979100198331752041">Chrome Remote Desktop on <ph name="HOSTNAME"/> is out-of-date and needs to be updated.</translation>

@@ -1,23 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="pl">
-<translation id="1491151370853475546">Przeładuj stronę</translation>
+<translation id="1491151370853475546">Załaduj tę stronę ponownie</translation>
 <translation id="7658239707568436148">Anuluj</translation>
-<translation id="6458785801851713928">Synchronizacja nie jest dostępna w Twojej domenie.</translation>
-<translation id="1623104350909869708">Zapobiegaj wyświetlaniu dodatkowych okien dialogowych na tej stronie</translation>
 <translation id="7791543448312431591">Dodaj</translation>
-<translation id="3896036286668839683">Przeglądarka certyfikatów</translation>
 <translation id="8730621377337864115">Gotowe</translation>
-<translation id="4170011742729630528">Usługa jest niedostępna. Spróbuj ponownie później.</translation>
-<translation id="8627706565932943526">Błąd synchronizacji</translation>
-<translation id="3136378934686431938">Zaktualizuj swoje dane logowania.</translation>
-<translation id="4510973599275542560">Nie ładuj ponownie</translation>
 <translation id="9154176715500758432">Pozostań na tej stronie</translation>
-<translation id="7063006564040364415">Nie można nawiązać połączenia z serwerem synchronizacji.</translation>
 <translation id="9065203028668620118">Edycja</translation>
 <translation id="6512448926095770873">Opuść tę stronę</translation>
-<translation id="5032574515228824816">Monit</translation>
-<translation id="177206394375746242">Klikając przycisk poniżej, wyrażasz zgodę na warunki usługi. I jeszcze jakiś inny tekst, dla pewności, że zajmie to więcej niż jeden wiersz.</translation>
-<translation id="8830134817694641714">Pobieram szczegóły płatności</translation>
 <translation id="6965382102122355670">OK</translation>
 </translationbundle>

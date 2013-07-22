@@ -9,11 +9,13 @@
 <translation id="2208514473086078157">De beleidsinstellingen staan het delen van deze computer als host voor Chrome Remote Desktop niet toe. Neem contact op met uw systeembeheerder voor hulp.</translation>
 <translation id="2801119484858626560">Er is een incompatibele versie van Chrome Remote Desktop gedetecteerd. Controleer of beide computers beschikken over de nieuwste versie van Chrome en Chrome Remote Desktop en probeer het opnieuw.</translation>
 <translation id="6998989275928107238">Aan</translation>
+<translation id="406849768426631008">Wilt u tijdens een videochat iemand helpen? Probeer <ph name="LINK_BEGIN"/> Remote Desktop in Google Hangouts<ph name="LINK_END"/>.</translation>
 <translation id="3258789396564295715">U kunt veilig toegang krijgen tot deze computer via Chrome Remote Desktop.</translation>
 <translation id="5070121137485264635">De externe host vereist dat u op een website van derden wordt geverifieerd. Als u wilt doorgaan, moet u Chrome Remote Desktop aanvullende machtigingen geven om toegang tot dit adres te krijgen:</translation>
 <translation id="4808503597364150972">Geef uw pincode voor <ph name="HOSTNAME"/> op.</translation>
 <translation id="7672203038394118626">Externe verbindingen voor deze computer zijn uitgeschakeld.</translation>
 <translation id="8244400547700556338">Meer informatie.</translation>
+<translation id="4368630973089289038">Wilt u ons helpen Chromoting te verbeteren? <ph name="LINK_BEGIN"/>Vul de enquête in.<ph name="LINK_END"/></translation>
 <translation id="332624996707057614">Computernaam bewerken</translation>
 <translation id="1996161829609978754">Chrome downloadt het installatieprogramma voor de Chromoting-host. Zodra het downloaden is voltooid, voert u het installatieprogramma uit voordat u doorgaat.</translation>
 <translation id="7658239707568436148">Annuleren</translation>
@@ -43,10 +45,10 @@
 <translation id="174018511426417793">U heeft geen geregistreerde computers. Als u externe verbindingen met een computer mogelijk wilt maken, installeert u Chrome Remote Desktop op die computer en klikt u op '<ph name="BUTTON_NAME"/>'.</translation>
 <translation id="8525306231823319788">Volledig scherm</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME"/> (verouderd)</translation>
+<translation id="327263477022142889">Wilt u ons helpen Chrome Remote Desktop te verbeteren? <ph name="LINK_BEGIN"/>Vul de enquête in.<ph name="LINK_END"/></translation>
 <translation id="5702987232842159181">Verbonden:</translation>
 <translation id="4736223761657662401">Verbindingsgeschiedenis</translation>
 <translation id="4430915108080446161">Toegangscode genereren…</translation>
-<translation id="7022800415798056893">De enquête invullen</translation>
 <translation id="8228265668171617545">Er is een incompatibele versie van Chromoting gedetecteerd. Controleer of beide computers beschikken over de nieuwste versie van Chrome en Chromoting en probeer het opnieuw.</translation>
 <translation id="6985691951107243942">Weet u zeker dat u externe verbindingen met <ph name="HOSTNAME"/> wilt uitschakelen? Als u van gedachten verandert, moet u naar die computer gaan om de verbindingen weer in te schakelen.</translation>
 <translation id="9149992051684092333">Om uw bureaublad te delen, geeft u de onderstaande toegangscode aan de persoon die u gaat helpen.</translation>
@@ -77,7 +79,6 @@
 <translation id="3933246213702324812">Chromoting op <ph name="HOSTNAME"/> is verouderd en moet worden bijgewerkt.</translation>
 <translation id="6193698048504518729">Verbinding maken met <ph name="HOSTNAME"/></translation>
 <translation id="3020807351229499221">Kan pincode niet bijwerken. Probeer het later opnieuw.</translation>
-<translation id="785147662223870933">Wilt u helpen bij het verbeteren van Chrome Remote Desktop?</translation>
 <translation id="579702532610384533">Opnieuw verbinding maken</translation>
 <translation id="4211066471404647515">Er ontbreken enkele componenten die vereist zijn voor Chromoting. Controleer of u de nieuwste versie van Chrome gebruikt en probeer het opnieuw.</translation>
 <translation id="5265129178187621741">(deze functie is nog niet beschikbaar voor Chromebooks… nog even geduld)</translation>
@@ -119,7 +120,7 @@
 <translation id="652218476070540101">De pincode voor deze computer wordt bijgewerkt…</translation>
 <translation id="5308380583665731573">Verbinding maken</translation>
 <translation id="7319983568955948908">Delen stoppen</translation>
-<translation id="2229673624483529540">Wilt u helpen bij het verbeteren van Chromoting?</translation>
+<translation id="1462361961931793308">Niet meer vragen naar een pincode bij het aansluiten van deze computer op deze host.</translation>
 <translation id="6668065415969892472">Uw pincode is bijgewerkt.</translation>
 <translation id="4277736576214464567">De toegangscode is ongeldig. Probeer het opnieuw.</translation>
 <translation id="979100198331752041">Chrome Remote Desktop op <ph name="HOSTNAME"/> is verouderd en moet worden bijgewerkt.</translation>

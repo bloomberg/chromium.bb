@@ -1,21 +1,13 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ro">
-<translation id="6015796118275082299">Anul</translation>
-<translation id="1256337885411059545">Nu se poate reda videoclipul</translation>
-<translation id="7821540960913969614">Setați data</translation>
+<translation id="6015796118275082299">An</translation>
 <translation id="4932733599132424254">Data</translation>
 <translation id="6727102863431372879">Setați</translation>
-<translation id="273860350361291195">Videoclipul nu este valid pentru fluxul către acest dispozitiv.</translation>
-<translation id="2410828433627930127">Ne pare rău, acest videoclip nu poate fi redat.</translation>
-<translation id="8987927404178983737">Luna</translation>
-<translation id="2532336938189706096">Vizualizare pe web</translation>
-<translation id="7096034533295549981">Încărcare video</translation>
-<translation id="1542044944667958430">Căutare pe web</translation>
-<translation id="6527303717912515753">Trimiteți</translation>
-<translation id="2841013758207633010">Ora</translation>
-<translation id="6643016212128521049">Ștergeţi</translation>
-<translation id="7781164152564914424">Setați luna</translation>
+<translation id="5966707198760109579">Săptămână</translation>
+<translation id="8987927404178983737">Lună</translation>
+<translation id="6527303717912515753">Distribuiți</translation>
+<translation id="2841013758207633010">Oră</translation>
+<translation id="6643016212128521049">Ștergeți</translation>
 <translation id="6965382102122355670">OK</translation>
-<translation id="6444070574980481588">Setați data și ora</translation>
 </translationbundle>

@@ -9,11 +9,13 @@
 <translation id="2208514473086078157">Hindi pinapahintulutan ng mga setting ng patakaran ang pagbabahagi sa computer na ito bilang host ng Remote na Desktop ng Chrome. Makipag-ugnay sa iyong system administrator para sa tulong.</translation>
 <translation id="2801119484858626560">Nakakita ng hindi tugmang bersyon ng Remote na Desktop ng Chrome. Mangyaring tiyaking na mayroon ka ng pinakabagong bersyon ng Chrome at Remote na Desktop ng Chrome sa parehong computer at subukang muli.</translation>
 <translation id="6998989275928107238">Para kay</translation>
+<translation id="406849768426631008">Gustong tulungan ang isang tao habang nagvi-video chat rin kasama nila? Subukan ang <ph name="LINK_BEGIN"/> Remote na Desktop sa Google Hangouts<ph name="LINK_END"/>.</translation>
 <translation id="3258789396564295715">Maaari mong ligtas na ma-access ang computer na ito gamit ang Remote na Desktop ng Chrome.</translation>
 <translation id="5070121137485264635">Hinihiling sa iyo ng remote host na magpatunay sa isang website ng third-party. Upang makapagpatuloy, dapat mong bigyan ng mga karagdagang pahintulot ang Remote na Desktop ng Chrome upang ma-access ang address na ito:</translation>
 <translation id="4808503597364150972">Pakilagay ang iyong PIN para sa <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">Hindi pinagana ang mga malayuang koneksyon para sa computer na ito.</translation>
 <translation id="8244400547700556338">Matutunan kung paano.</translation>
+<translation id="4368630973089289038">Gustong tulungang mapabuti ang Chromoting? <ph name="LINK_BEGIN"/>Sagutan ang survey.<ph name="LINK_END"/></translation>
 <translation id="332624996707057614">I-edit ang pangalan ng computer</translation>
 <translation id="1996161829609978754">Dina-download ng Chrome ang installer ng Host ng Chromoting.  Sa sandaling makumpleto ang pag-download, mangyaring patakbuhin ang installer bago magpatuloy.</translation>
 <translation id="7658239707568436148">Kanselahin</translation>
@@ -43,10 +45,10 @@
 <translation id="174018511426417793">Wala kang mga nakarehistrong computer. Upang paganahin ang mga malayuang koneksyon sa isang computer, i-install ang Remote na Desktop ng Chrome doon at i-click ang “<ph name="BUTTON_NAME"/>”.</translation>
 <translation id="8525306231823319788">Buong screen</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME"/> (luma)</translation>
+<translation id="327263477022142889">Gustong tulungang mapabuti ang Chrome Remote Desktop? <ph name="LINK_BEGIN"/>Sagutan ang survey.<ph name="LINK_END"/></translation>
 <translation id="5702987232842159181">Nakakonekta:</translation>
 <translation id="4736223761657662401">Kasaysayan ng Koneksyon</translation>
 <translation id="4430915108080446161">Bumubuo ng access code…</translation>
-<translation id="7022800415798056893">Sagutan ang survey</translation>
 <translation id="8228265668171617545">Nakakita ng hindi tugmang bersyon ng Chromoting. Mangyaring tiyakin na mayroon ka ng pinakabagong bersyon ng Chrome at Chromoting sa parehong computer at subukang muli.</translation>
 <translation id="6985691951107243942">Sigurado ka bang nais mong hindi paganahin ang mga malayuang koneksyon sa <ph name="HOSTNAME"/>? Kung magbago ang iyong isip, kakailanganin mong bisitahin ang computer na iyon upang muling paganahin ang mga koneksyon.</translation>
 <translation id="9149992051684092333">Upang simulang ibahagi ang iyong desktop, ibigay ang access code sa ibaba sa taong tutulong sa iyo.</translation>
@@ -77,7 +79,6 @@
 <translation id="3933246213702324812">Ang Chromoting sa <ph name="HOSTNAME"/> ay luma na at kinakailangang ma-update.</translation>
 <translation id="6193698048504518729">Kumonekta sa <ph name="HOSTNAME"/></translation>
 <translation id="3020807351229499221">Nabigong i-update ang PIN. Pakisubukang muli sa ibang pagkakataon.</translation>
-<translation id="785147662223870933">Gustong makatulong na mapahusay ang Remote na Desktop ng Chrome?</translation>
 <translation id="579702532610384533">Muling kumonekta</translation>
 <translation id="4211066471404647515">Nawawala ang ilang bahagi na kinakailangan para sa Chromoting. Mangyaring tiyakin na pinapatakbo mo ang pinakabagong bersyon ng Chrome at subukang muli.</translation>
 <translation id="5265129178187621741">(hindi pa available ang tampok na ito para sa mga Chromebook… manatiling nakasubaybay)</translation>
@@ -119,7 +120,7 @@
 <translation id="652218476070540101">Ina-update ang PIN para sa computer na ito…</translation>
 <translation id="5308380583665731573">Kumunekta</translation>
 <translation id="7319983568955948908">Ihinto ang Pagbabahagi</translation>
-<translation id="2229673624483529540">Gustong makatulong na mapahusay ang Chromoting?</translation>
+<translation id="1462361961931793308">Huwag humingi ng PIN muli kapag kumokonekta sa host na ito mula sa computer na ito.</translation>
 <translation id="6668065415969892472">Na-update na ang iyong PIN.</translation>
 <translation id="4277736576214464567">Di-wasto ang access code. Pakisubukang muli.</translation>
 <translation id="979100198331752041">Ang Remote na Desktop ng Chrome sa <ph name="HOSTNAME"/> ay luma na at kinakailangang ma-update.</translation>

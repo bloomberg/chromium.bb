@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-CN">
-<translation id="5324685310432603046">演示模式下闲置延迟的调整幅度</translation>
 <translation id="1503959756075098984">要静默安装的扩展程序的 ID 和更新网址</translation>
 <translation id="2463365186486772703">应用语言区域</translation>
 <translation id="1397855852561539316">默认搜索服务提供商建议网址</translation>
@@ -11,7 +10,27 @@
 <translation id="7040229947030068419">值示例：</translation>
 <translation id="1213523811751486361">指定用于提供搜索建议的搜索引擎的网址，其中应包含字符串“<ph name="SEARCH_TERM_MARKER"/>”，系统会在查询时将该字符串替换为用户输入的文字。此政策是可选的，如果未设置，就不会使用任何建议网址。要实施此政策，必须先启用“DefaultSearchProviderEnabled”政策。</translation>
 <translation id="6106630674659980926">启用密码管理器</translation>
+<translation id="7109916642577279530">是否允许音频捕获。
+
+      如果启用或未配置此政策（默认），则系统会在收到音频捕获设备使用请求时提示用户；但对于 AudioCaptureAllowedUrls 列表中配置的网址，系统不会提示用户，而是直接允许其使用。
+
+      如果停用此政策，则系统一律不提示用户，且仅 AudioCaptureAllowedUrls 中配置的网址可以使用音频捕获设备。
+
+      此政策会影响所有类型的音频输入（而不仅仅是内置麦克风）。</translation>
 <translation id="9150416707757015439">此政策已弃用，请改用 IncognitoModeAvailability。在 <ph name="PRODUCT_NAME"/>中启用隐身模式。如果已启用或未配置此设置，用户就可以在隐身模式下打开网页。如果停用此设置，用户就无法在隐身模式下打开网页。如果未设置此政策，将会启用此设置，用户便能使用隐身模式。</translation>
+<translation id="4203389617541558220">安排自动重启以限制设备的正常运行时间。
+
+      如果设置此政策，则会指定设备正常运行的时间，并安排之后自动重启。
+
+      如果未设置此政策，设备的正常运行时间将不受限制。
+
+      如果您设置了此政策，那么用户将无法更改或覆盖此政策。
+
+      系统会在您所选的时间安排自动重启，但是如果用户当前正在使用此设备，那么设备上的自动重启最多可能延迟 24 小时。
+
+      请注意：目前，系统仅在显示登录屏幕或正在访问信息亭模式下的应用时才会启用自动重启。这在日后会有所改变，但此政策将始终适用，无论是否正在进行任何特殊类型的会话。
+
+      政策值应以秒为单位。该值不得低于 3600（1 小时）。</translation>
 <translation id="5304269353650269372">指定在使用电池供电时用户停止输入后隔多久系统才显示警告对话框。
 
           如果设置了此政策，则只要机器闲置的时间达到了此处指定的时长，<ph name="PRODUCT_OS_NAME"/>就会显示警告对话框，提示用户系统将会采取闲置操作。
@@ -19,12 +38,29 @@
           如果未设置此政策，系统不会显示任何警告对话框。
 
           指定的政策值应以毫秒为单位，并且不得大于闲置延迟时间。</translation>
+<translation id="7818131573217430250">设置登录屏幕上高反差模式的默认状态</translation>
 <translation id="7614663184588396421">已停用协议方案的列表</translation>
 <translation id="2309390639296060546">默认地理位置设置</translation>
+<translation id="1313457536529613143">指定系统在屏幕变暗或屏幕关闭不久后察觉到用户活动时，对屏幕变暗延迟时间的调整幅度（百分比）。
+
+          如果设置此政策，则会指定系统在屏幕变暗或屏幕关闭后不久察觉到用户活动时，对屏幕变暗延迟时间的调整幅度（百分比）。屏幕变暗延迟时间调整后，系统会调整屏幕关闭、锁定和待机的延迟时间，使其与屏幕变暗延迟时间之间的差值与原有配置下的差值相同。
+
+          如果未设置此政策，系统会使用默认的调整因子。
+
+          调整因子不得小于 100%。</translation>
 <translation id="7443616896860707393">跨域 HTTP 基本身份验证提示</translation>
 <translation id="2337466621458842053">可让您设置网址格式的列表，这些网址格式用于指定允许显示图片的网站。在未设置此政策的情况下，如果设置了“DefaultImagesSetting”政策，那么将对该政策中的所有网站使用全局默认值，否则将对用户个人配置中的所有网站使用全局默认值。</translation>
 <translation id="4680961954980851756">启用自动填充</translation>
 <translation id="5183383917553127163">可让您指定不受黑名单影响的扩展程序。黑名单值“*”表示所有扩展程序均已列入黑名单，用户只能安装白名单中列出的扩展程序。默认情况下，所有扩展程序都列在白名单中，但如果所有扩展程序均已根据某个政策列入黑名单，则白名单可用于覆盖相关政策。</translation>
+<translation id="5921888683953999946">设置登录屏幕上大号光标辅助功能的默认状态。
+
+          如果此政策的值设为 True，则登录屏幕显示时将会启用大号光标。
+
+          如果此政策的值设为 False，则登录屏幕显示时将会停用大号光标。
+
+          如果您设置了此政策，那么用户将可通过启用或停用大号光标暂时覆盖此政策。不过，用户选择的设置并不是永久有效的；只要登录屏幕重新显示或用户在登录屏幕上停止操作一段时间，系统即会恢复默认设置。
+
+          如果未设置此政策，则登录屏幕初次显示时会停用大号光标。用户可以随时启用或停用大号光标，并且其在登录屏幕上的启用或停用状态对于各用户均有效。</translation>
 <translation id="3185009703220253572">从版本 <ph name="SINCE_VERSION"/> 开始</translation>
 <translation id="2204753382813641270">控制文件架自动隐藏</translation>
 <translation id="3816312845600780067">启用停止自动登录的键盘快捷键</translation>
@@ -32,6 +68,13 @@
 <translation id="5330684698007383292">允许 <ph name="PRODUCT_FRAME_NAME"/>处理以下内容类型</translation>
 <translation id="5469825884154817306">在这些网站上阻止图片</translation>
 <translation id="8412312801707973447">是否执行在线 OCSP/CRL 检查</translation>
+<translation id="6649397154027560979">此政策已弃用，请改用 URLBlacklist。
+
+      在 <ph name="PRODUCT_NAME"/> 中停用列出的协议方案。
+
+      系统无法加载和导航到使用此列表中的协议的网址。
+
+      如果未设置此政策或此列表为空，则可在 <ph name="PRODUCT_NAME"/> 中使用所有方案。</translation>
 <translation id="3213821784736959823">控制是否在 <ph name="PRODUCT_NAME"/> 中使用内置 DNS 客户端。
 
       如果此策略设置为 True，系统将使用内置 DNS 客户端（如果有）。
@@ -92,6 +135,7 @@
       请注意，此策略可由 EnabledPlugins 和 DisabledPluginsExceptions 覆盖。
 
       如果未设置此策略，那么用户就可以使用系统中安装的任何插件（硬编码的不兼容、过期或危险插件除外）。</translation>
+<translation id="9197740283131855199">系统在屏幕变暗后察觉到用户活动时，屏幕变暗延迟时间的调整幅度（百分比）</translation>
 <translation id="1492145937778428165">指定向设备管理服务查询设备政策信息的周期（以毫秒为单位）。
 
       设置此政策会替换默认值（3 小时）。此政策的有效值范围为 1800000（30 分钟）至 86400000（1 天）。任何超出此范围的值都会强制调整到相应范围内。
@@ -114,8 +158,24 @@
 <translation id="1427655258943162134">代理服务器的地址或网址</translation>
 <translation id="1827523283178827583">使用固定的代理服务器</translation>
 <translation id="3021409116652377124">停用插件查找器</translation>
+<translation id="7236775576470542603">设置登录屏幕上启用的放大镜默认类型。
+
+          如果设置此政策，则会控制登录屏幕显示时启用的放大镜类型。如果此政策的值设为“None”，则会停用放大镜。
+
+          如果您设置了此政策，那么用户将可通过启用或停用放大镜暂时覆盖此政策。不过，用户选择的设置并不是永久有效的；只要登录屏幕重新显示或用户在登录屏幕上停止操作一段时间，系统即会恢复默认设置。
+
+          如果未设置此政策，则登录屏幕初次显示时会停用放大镜。用户可以随时启用或停用放大镜，并且其在登录屏幕上的启用或停用状态对各用户均有效。</translation>
 <translation id="5423001109873148185">如果启用此政策，就会强制从当前默认浏览器导入搜索引擎，还会影响导入对话框。如果停用此政策，就不会导入默认搜索引擎。如果未设置此政策，系统就会询问用户是否导入默认搜索引擎，或者系统自动进行导入。</translation>
 <translation id="3288595667065905535">发布版</translation>
+<translation id="2785954641789149745">启用 <ph name="PRODUCT_NAME"/> 的安全浏览功能，并阻止用户更改此设置。
+
+      如果您启用了此设置，则系统将始终启用安全浏览功能。
+
+      如果您停用了此设置，则系统将一律停用安全浏览功能。
+
+      如果您启用或停用了此设置，那么用户将无法在 <ph name="PRODUCT_NAME"/> 中更改或覆盖“启用网上诱骗和恶意软件防护”设置。
+
+      如果未设置此政策，则系统将会启用安全浏览功能，但用户可以对其进行更改。</translation>
 <translation id="8369602308428138533">使用交流电源供电时的屏幕关闭延迟时间</translation>
 <translation id="6513756852541213407">可让您指定 <ph name="PRODUCT_NAME"/>使用的代理服务器，并禁止用户更改代理设置。如果您选择永不使用代理服务器，而总是直接连接，就会忽略其他所有选项。如果您选择使用系统代理设置或自动检测代理服务器，就会忽略其他所有选项。如果您选择固定服务器代理模式，可在“代理服务器的地址或网址”以及“代理绕过规则的逗号分隔列表”中进一步指定选项。如果您选择使用 .pac 代理脚本，必须在“代理 .pac 文件的网址”中指定该脚本的网址。要查看详细示例，请访问：<ph name="PROXY_HELP_URL"/>。如果您启用了此设置，<ph name="PRODUCT_NAME"/>就会忽略通过命令行指定的所有代理相关选项。如果未设置此政策，用户就可以自行选择代理设置。</translation>
 <translation id="7763311235717725977">可让您设置是否允许网站显示图片。可以针对所有网站允许或拒绝显示图片。如果未设置此政策，系统将使用“AllowImages”并允许用户更改此设置。</translation>
@@ -231,8 +291,16 @@
       使用已下载的字典，仍然可以进行拼写检查，此策略仅控制在线服务的使用情况。
 
       如果未配置此设置，那么用户可以选择是否使用拼写检查服务。</translation>
+<translation id="8782750230688364867">指定设备处于演示模式时屏幕变暗延迟时间的调整幅度（百分比）。
+
+          如果设置此政策，则指定当设备处于演示模式时屏幕变暗延迟时间的调整幅度（百分比）。屏幕变暗延迟时间调整后，系统会调整屏幕关闭、锁定和待机的延迟时间，使其与屏幕变暗延迟时间之间的差值与原有配置下的差值相同。
+
+          如果未设置此政策，系统会使用默认的调整因子。
+
+          调整因子不得小于 100%。所设置的值不得使演示模式下的屏幕变暗延迟时间短于常规屏幕变暗延迟时间。</translation>
 <translation id="254524874071906077">将 Chrome 浏览器设为默认浏览器</translation>
 <translation id="8764119899999036911">指定 Kerberos SPN 是基于规范 DNS 名称还是基于输入的原始名称。如果您启用了此设置，系统将跳过 CNAME 查找步骤，并使用输入的服务器名称。如果您停用或未配置此设置，系统将通过 CNAME 查找来确定服务器的规范名称。</translation>
+<translation id="5056708224511062314">放大镜已停用</translation>
 <translation id="4377599627073874279">允许所有网站显示所有图片</translation>
 <translation id="7195064223823777550">指定在用户合上屏幕时执行的操作。
 
@@ -249,11 +317,6 @@
 
       该策略值应该以毫秒为单位。</translation>
 <translation id="7683777542468165012">动态政策刷新</translation>
-<translation id="3217480257513989987">为企业网上应用店指定网址。启用此设置后，新标签页上将会显示应用，当用户点击该应用时就会转到指定的网址。要真正允许从配置的网站安装扩展程序，必须将 ExtensionInstallSources 政策配置为允许从相应的扩展程序下载网址安装。如果设置了此政策，则也应设定 EnterpriseWebStoreName 设置。
-
-      如果停用了此设置，新标签页上就不会显示任何企业网上应用店应用。
-
-      此设置从版本 27 开始已弃用，并将在以后的版本中废除。我们建议您将托管 CRX 软件包的站点包含在 ExtensionInstallSources 中，然后将上述软件包的直接下载链接放置在某网页上；从而建立一个由企业托管的扩展程序/应用集合。该网页的启动器可使用 ExtensionInstallForcelist 政策创建。</translation>
 <translation id="1160939557934457296">禁止从安全浏览警告页面继续访问</translation>
 <translation id="8987262643142408725">停用 SSL 记录分割</translation>
 <translation id="4529945827292143461">自定义应始终由托管浏览器呈现的网址格式的列表。如果未设置此政策，系统将按照“ChromeFrameRendererSettings”政策的规定，对所有网站使用默认呈现器。要查看示例格式，请访问 http://www.chromium.org/developers/how-tos/chrome-frame-getting-started。</translation>
@@ -266,7 +329,6 @@
 
       如果启用或不设定此设置，网页就可以使用 JavaScript，但用户可以更改该设置。</translation>
 <translation id="1942957375738056236">您可以在此指定代理服务器的网址。只有当您在“选择如何指定代理服务器设置”中选择了手动代理设置后，此政策才会生效。如果您选择了其他任何模式来设置代理政策，就不应设置此政策。要查看更多选项和详细示例，请访问：<ph name="PROXY_HELP_URL"/></translation>
-<translation id="8642088216849640113">启用 <ph name="PRODUCT_NAME"/>的安全浏览功能，并禁止用户更改此设置。如果您启用了此设置，就会始终使用安全浏览功能。如果您停用了此设置，就永远不会使用安全浏览功能。如果您启用或停用了此设置，用户就无法在 <ph name="PRODUCT_NAME"/>中更改或替换此设置。如果未设置此政策，就会启用此设置，不过用户也可以更改此设置。</translation>
 <translation id="6076008833763548615">禁止装载外部存储设备。
 
       当该策略设置为 True 时，用户将无法在文件浏览器中使用外部存储设备。
@@ -311,8 +373,20 @@
       新设备的出厂时区设置是“美国/太平洋”。
 
       值的格式采用“IANA 时区数据库”（参阅“http://zh.wikipedia.org/wiki/List_of_tz_database_time”）中的时区名称。具体而言，大多数时区都可以用“洲/大城市”或“洋/大城市”的格式表示。</translation>
+<translation id="3646859102161347133">设置放大镜类型</translation>
 <translation id="3528000905991875314">启用备用的错误页面</translation>
 <translation id="1283072268083088623">指定 <ph name="PRODUCT_NAME"/>所支持的 HTTP 身份验证方案。可用的值有“basic”、“digest”、“ntlm”和“negotiate”。多个值之间用英文逗号分隔。如果未设置此政策，系统将会使用所有这四种方案。</translation>
+<translation id="4914647484900375533">启用 <ph name="PRODUCT_NAME"/> 的即搜即得功能，并阻止用户更改此设置。
+
+      如果您启用了此设置，则系统会启用 <ph name="PRODUCT_NAME"/> 即搜即得功能。
+
+      如果您停用了此设置，则系统会停用 <ph name="PRODUCT_NAME"/> 即搜即得功能。
+
+      如果您启用或停用了此设置，那么用户将无法对其进行更改或覆盖。
+
+      如果未设置此设置，则用户可以决定是否使用此功能。
+
+      此设置已从 Chrome 29 及更高版本中删除。</translation>
 <translation id="6114416803310251055">已弃用</translation>
 <translation id="8493645415242333585">停用保存浏览器历史记录的功能</translation>
 <translation id="5319306267766543020">在 <ph name="PRODUCT_OS_NAME"/>中配置电源管理。
@@ -325,7 +399,6 @@
           如果停用或未设置该设置，那么使用任何帐户都可以分享主机。</translation>
 <translation id="6417861582779909667">可让您设置网址格式的列表，这些网址格式用于指定不允许设置 Cookie 的网站。在未设置此政策的情况下，如果设置了“DefaultCookiesSetting”政策，那么将对该政策中的所有网站使用全局默认值，否则将对用户个人配置中的所有网站使用全局默认值。</translation>
 <translation id="5457296720557564923">允许网页访问 JavaScript 内存使用情况统计信息。此设置可让网页访问来自开发者工具分析面板的内存统计信息。</translation>
-<translation id="3390940575626654915">企业的网上应用店名称</translation>
 <translation id="5776485039795852974">每次网站尝试显示桌面通知时都询问</translation>
 <translation id="5052081091120171147">如果启用此政策，就会强制从当前默认浏览器导入浏览记录，还会影响导入对话框。如果停用此政策，就不会导入浏览记录。如果未设置此政策，系统就会询问用户是否导入浏览记录，或者系统自动进行导入。</translation>
 <translation id="6786747875388722282">扩展程序</translation>
@@ -372,12 +445,6 @@
       您可在网址白名单策略中定义例外。这些策略的条目上限为 1000，超出的条目将被忽略。
 
       如果未设置此策略，浏览器就不会将任何网址列入黑名单。</translation>
-<translation id="9074735209675488877">是否允许音频捕获。
-
-      如果停用此政策，音频捕获功能将无法使用。如果启用此政策，系统将始终允许音频捕获。
-      如果未配置此政策（默认），则系统收到使用音频捕获设备的请求时会提示用户。
-
-      此政策影响所有类型的音频输入，而不仅仅是影响内置麦克风。</translation>
 <translation id="2762164719979766599">指定要在登录屏幕上显示的设备本地帐户列表。
 
       每个列表条目指定一个标识符，用于在内部区分不同的设备本地帐户。</translation>
@@ -409,6 +476,7 @@
 <translation id="8170878842291747619">在 <ph name="PRODUCT_NAME"/>中启用集成的 Google 翻译服务。如果您启用了此设置，<ph name="PRODUCT_NAME"/>将显示一个集成的工具栏，以便在合适的情况下帮助用户翻译网页。如果您停用了此设置，系统就不会显示翻译栏。如果您启用或停用了此设置，用户就无法在 <ph name="PRODUCT_NAME"/>中更改或替换此设置。如果未进行设置，用户就可以自行决定是否使用此功能。</translation>
 <translation id="9035964157729712237">要从黑名单中排除的扩展程序 ID</translation>
 <translation id="8587229956764455752">允许创建新的用户帐户</translation>
+<translation id="7417972229667085380">演示模式下待机延迟时间的调整幅度（百分比）（已弃用）</translation>
 <translation id="3964909636571393861">允许访问网址列表</translation>
 <translation id="3450318623141983471">报告设备的 dev 开关在引导时的状态。
 
@@ -431,17 +499,12 @@
       如果未设置此政策，用户就可以在启动程序中更改固定应用的列表。</translation>
 <translation id="1679420586049708690">用于自动登录的公开会话</translation>
 <translation id="7625444193696794922">指定该设备应锁定到的发布渠道。</translation>
-<translation id="1172056905334713854">应用 <ph name="PRODUCT_OS_NAME"/>更新后安排自动重启。
-
-      如果此政策的值设置为 True，则当应用 <ph name="PRODUCT_OS_NAME"/>更新后需要重启才能完成更新过程时，系统会安排自动重启。系统会立即安排重启，但是设备上的重启最长可能会延迟 24 小时，例如，用户当前正在使用设备，或某应用/扩展程序已请求暂时禁止重启。
-
-      如果此政策的值设置为 False，则应用 <ph name="PRODUCT_OS_NAME"/>更新后，系统不会安排自动重启。当用户下次重启设备时系统会完成更新。
-
-      如果您设置了此政策，则用户无法对其更改或覆盖。</translation>
 <translation id="2552966063069741410">时区</translation>
 <translation id="2240879329269430151">可让您设置是否允许网站显示弹出式窗口。可以针对所有网站允许或拒绝显示弹出式窗口。如果未设置此政策，系统将使用“BlockPopups”并允许用户更改此设置。</translation>
 <translation id="2529700525201305165">限制哪些用户可登录 <ph name="PRODUCT_NAME"/></translation>
 <translation id="8971221018777092728">公开会话自动登录计时器</translation>
+<translation id="8285435910062771358">已启用全屏放大镜</translation>
+<translation id="5141670636904227950">设置登录屏幕上启用的默认放大镜类型</translation>
 <translation id="3864818549971490907">默认插件设置</translation>
 <translation id="1910566775788829857">注销用户</translation>
 <translation id="7151201297958662315">确定是否要在登录操作系统后启动 <ph name="PRODUCT_NAME"/>进程，以及该进程是否在最后一个浏览器窗口关闭后仍保持运行，从而允许后台应用继续运行。后台进程会在系统任务栏中显示图标，您随时可以在此处将其关闭。
@@ -456,6 +519,7 @@
 
           如果未设置此政策，系统将会使用默认命令行。</translation>
 <translation id="2646290749315461919">可让您设置是否允许网站跟踪用户的地理位置。默认情况下，可以允许或拒绝跟踪用户的地理位置，也可以在每次网站请求地理位置时询问用户。如果未设置此政策，系统将使用“AskGeolocation”并允许用户更改此设置。</translation>
+<translation id="6394350458541421998">此政策从 <ph name="PRODUCT_OS_NAME"/>版本 29 起开始弃用。请改用 PresentationScreenDimDelayScale 政策。</translation>
 <translation id="5770738360657678870">开发者版（可能不稳定）</translation>
 <translation id="2959898425599642200">代理绕过规则</translation>
 <translation id="228659285074633994">指定在使用交流电源供电时用户停止输入后隔多久系统才会显示警告对话框。
@@ -469,7 +533,11 @@
 
       如果将此设置设为 True，注册设备就会报告用户使用此设备的时间段。如果未配置此设置或设为 False，就不会记录或报告设备活动时间。</translation>
 <translation id="7937766917976512374">是否允许视频捕获</translation>
+<translation id="8818646462962777576">系统会将此列表中的网址格式与请求网址的安全来源进行比对。如果找到了匹配项，则系统不会提示用户，而是直接允许该网址使用音频捕获设备。
+
+      请注意：目前仅当在信息亭模式下运行时支持此政策。</translation>
 <translation id="489803897780524242">此参数可控制是否为默认搜索服务提供商替换搜索字词</translation>
+<translation id="316778957754360075">此设置从 <ph name="PRODUCT_NAME"/>版本 29 起开始弃用。我们建议您将托管 CRX 软件包的网站包含在 ExtensionInstallSources 中，然后将上述软件包的直接下载链接放在某网页上，从而建立一个由企业托管的扩展程序/应用包。相关网页的启动器可使用 ExtensionInstallForcelist 政策创建。</translation>
 <translation id="7912255076272890813">配置允许的应用/扩展程序类型</translation>
 <translation id="817455428376641507">允许访问列出的网址（黑名单中的网址除外）。
 
@@ -487,6 +555,15 @@
       如果此政策的值设置为 true 或未设置此政策，用户就能够通过注册 Chrome 操作系统来兑换优惠。
 
       如果此政策的值设置为 false，用户就不能兑换优惠。</translation>
+<translation id="8148901634826284024">启用高反差模式辅助功能。
+
+          如果此政策的值设为 True，则系统将始终启用高反差模式。
+
+          如果此政策的值设为 False，则系统将始终停用高反差模式。
+
+          如果您设置了此政策，那么用户将无法对其进行更改或覆盖。
+
+          如果未设置此政策，则高反差模式最初处于停用状态，但用户可以随时启用该模式。</translation>
 <translation id="6177482277304066047">设置自动更新的目标版本。
 
       指定 <ph name="PRODUCT_OS_NAME"/>应更新到的目标版本的前缀。如果设备运行的版本早于指定的前缀，那么该设备将更新到具有指定前缀的最新版本。如果设备运行的已经是较新版本，则不会产生任何效果（即不会执行任何下载操作），并且该设备将继续采用当前版本。前缀格式以组件的方式工作，具体如以下示例所示：
@@ -508,8 +585,16 @@
 
       每个列表条目都包含一个词典，其“extension-id”字段必须包含扩展程序 ID，而其“update-url”字段必须包含更新网址。</translation>
 <translation id="9096086085182305205">身份验证服务器白名单</translation>
+<translation id="4980301635509504364">允许或拒绝视频捕获。
+
+      如果启用或未配置此政策（默认），则系统会在收到视频捕获设备使用请求时提示用户；但对于 VideoCaptureAllowedUrls 列表中配置的网址，系统不会提示用户，而是直接授予访问权限。
+
+      如果停用此政策，则系统一律不提示用户，只有 VideoCaptureAllowedUrls 中配置的网址可以使用视频捕获设备。
+
+      此政策会影响所有类型的视频输入（而不仅仅是内置摄像头）。</translation>
 <translation id="7063895219334505671">在这些网站上允许弹出式窗口</translation>
 <translation id="4052765007567912447">控制用户是否可以在密码管理器中以明文显示密码。如果您停用了此设置，就不允许在密码管理器窗口中以明文显示存储的密码。如果您启用或未设置此策略，用户就可以在密码管理器中以明文查看自己的密码。</translation>
+<translation id="5213629107215526747">系统无需提示用户即可向允许其使用视频捕获设备的网址。</translation>
 <translation id="5936622343001856595">在安全搜索被设置为激活的状态下强制在 Google 网页搜索中执行查询，并禁止用户更改此设置。
 
       如果您启用此设置，Google 搜索中的安全搜索将始终处于激活状态。
@@ -520,13 +605,6 @@
       启用此设置后，当用户请求打印某个页面时，<ph name="PRODUCT_NAME"/> 将打开系统打印对话框而非内置打印预览。
 
       如果此策略未设置或设置为 False，打印命令将触发打印预览屏幕。</translation>
-<translation id="3120725863988702582">此策略将优先于 <ph name="PRODUCT_NAME"/>在版本 21 之前所支持的“关闭浏览器时清除 Cookie 和其他网站数据”内容设置选项。
-
-      该策略只是为了保证向后兼容性，将来会废除。在版本 21 及更高版本上，要在退出时清除网站数据，我们建议您将 DefaultCookiesSetting 策略配置为仅限会话。
-
-      如果启用该策略，系统会将该策略翻译成 DefaultCookiesSetting 策略的适当设置，如果 DefaultCookiesSetting 策略未配置或设置为“允许”，那么系统会将该策略设置为仅限会话。
-
-      如果停用或未配置该策略，那么存储网站数据的策略将由 DefaultCookiesSetting 策略决定。</translation>
 <translation id="2824715612115726353">启用隐身模式</translation>
 <translation id="1057535219415338480">在 <ph name="PRODUCT_NAME"/>中启用网络预测功能，并禁止用户更改此设置。
 
@@ -540,7 +618,7 @@
 <translation id="1757688868319862958">允许“<ph name="PRODUCT_NAME"/>”运行需要授权的插件。如果启用了此设置，则未过期的插件会一直运行。如果停用或未设置此设置，系统会要求用户提供运行需要授权的插件的权限。这些插件可能会危及安全性。</translation>
 <translation id="6392973646875039351">启用 <ph name="PRODUCT_NAME"/>的自动填充功能，并允许用户使用以前存储的信息（例如地址或信用卡信息）自动填写网络表单。如果您停用了此设置，用户就无法使用自动填充功能。如果您启用了此设置或未设置值，那么自动填充功能仍由用户控制。这样，用户就可以配置自动填充个人资料，并自行决定是启用还是停用自动填充功能。</translation>
 <translation id="6157537876488211233">代理绕过规则的逗号分隔列表</translation>
-<translation id="7788511847830146438">按配置文件</translation>
+<translation id="7788511847830146438">根据个人资料</translation>
 <translation id="2516525961735516234">指定视频活动是否影响电源管理。
 
           如果此政策的值设置为 True 或未设置此政策，则播放视频时机器不会被视为闲置，这样，系统就不会开始计算闲置延迟、屏幕变暗、屏幕关闭和锁定的延迟时间，也不会执行相应的操作。
@@ -557,19 +635,9 @@
       Chromium 政策的注册表位置以 <ph name="CHROMIUM_KEY"/> 开头，而 Google Chrome 政策的注册表位置则以 <ph name="GOOGLE_CHROME_KEY"/> 开头。
 
       这些政策仅用于配置您单位内部所用的 Chrome 实例。在您单位外部使用这些政策的软件（例如在公开发布的程序中）将被视为恶意软件，并且很可能会被 Google 和防病毒软件供应商标记为恶意软件。</translation>
+<translation id="5814301096961727113">设置登录屏幕上语音反馈的默认状态</translation>
 <translation id="9084985621503260744">指定视频活动是否影响电源管理</translation>
 <translation id="7091198954851103976">始终运行需要授权的插件</translation>
-<translation id="2704032342102549239">通过安排自动重启限制设备的正常运行时间。
-
-      如果设置了此政策，则设备的正常运行时间达到指定的时长后，系统就会安排自动重启。
-
-      如果未设置此政策，则设备正常运行时间不受限制。
-
-      如果您设置了此政策，则用户无法对其更改或覆盖。
-
-      系统会在所选的时间安排自动重启，但是设备上的重启最多可能延迟 24 小时，例如，用户当前正在使用设备，或某应用/扩展程序已请求暂时禁止重启。
-
-      指定的政策值应以秒为单位。该值至少为 3600（1 小时）。</translation>
 <translation id="1708496595873025510">对变体种子的提取设置限制条件</translation>
 <translation id="8870318296973696995">主页</translation>
 <translation id="1240643596769627465">指定用于提供即搜即得结果的搜索引擎的网址，其中应包含字符串“<ph name="SEARCH_TERM_MARKER"/>”，系统会在查询时将该字符串替换为用户输入的文字。此政策是可选的，如果未设置，就不会提供任何即搜即得结果。要实施此政策，必须先启用“DefaultSearchProviderEnabled”政策。</translation>
@@ -581,7 +649,6 @@
 <translation id="2236488539271255289">不允许任何网站设置本地数据</translation>
 <translation id="4467952432486360968">阻止第三方 Cookie</translation>
 <translation id="2041396837791669429">禁止访问非内容包内的网站。</translation>
-<translation id="7754863709994542614">在 <ph name="PRODUCT_NAME"/>中停用列出的协议方案。对于使用了此列表中方案的网址，系统不会加载，也无法导航。如果未设置此政策或者该列表为空，则可在 <ph name="PRODUCT_NAME"/>中访问所有方案。</translation>
 <translation id="1305864769064309495">将网址映射到布尔值标记的字典，以指定 Chrome 是否能访问主机；允许值为 true，阻止值为 false。
 
           此政策仅供 Chrome 内部使用。</translation>
@@ -592,6 +659,17 @@
 <translation id="3709266154059827597">配置扩展程序安装黑名单</translation>
 <translation id="8451988835943702790">使用“新标签页”作为主页</translation>
 <translation id="8469342921412620373">启用默认搜索服务提供商。如果您启用了此设置，当用户在多功能框中输入非网址的文字时，系统会执行默认搜索。您可以设置其余的默认搜索政策，从而指定要使用的默认搜索服务提供商。如果这些选项都留空，用户就可以选择默认的服务提供商。如果您停用了此设置，当用户在多功能框中输入非网址的文字时，系统不会执行任何搜索。如果您启用或停用了此设置，用户就无法在 <ph name="PRODUCT_NAME"/>中更改或替换此设置。如果未设置此政策，就会启用默认搜索服务提供商，而用户也可以设置搜索服务提供商的列表。</translation>
+<translation id="4791031774429044540">启用大号光标辅助功能。
+
+          如果此政策的值设为 True，则系统将会始终启用大号光标。
+
+          如果此政策的值设为 False，则系统将会始终停用大号光标。
+
+          如果您设置了此政策，那么用户将无法对其进行更改或覆盖。
+
+          如果未设置此政策，则大号光标最初处于停用状态，但用户可以随时启用该功能。</translation>
+<translation id="2633084400146331575">启用语音反馈</translation>
+<translation id="7712008868843631413">启用受监管用户。</translation>
 <translation id="8731693562790917685">“内容设置”可让您指定特定类型的内容（例如 Cookie、图片或 JavaScript）的处理方式。</translation>
 <translation id="2411919772666155530">阻止在这些网站上显示通知</translation>
 <translation id="6923366716660828830">指定默认搜索服务提供商的名称。如果留空或未设置，系统就会使用由搜索网址指定的主机名。要考虑此政策，必须先启用“DefaultSearchProviderEnabled”政策。</translation>
@@ -603,6 +681,7 @@
 <translation id="467236746355332046">支持的功能：</translation>
 <translation id="7632724434767231364">GSSAPI 库名称</translation>
 <translation id="3038323923255997294">在<ph name="PRODUCT_NAME"/>关闭后继续运行后台应用</translation>
+<translation id="4652284479838524692">为此设备启用远程认证。</translation>
 <translation id="8909280293285028130">指定在使用交流电源供电时用户停止输入后隔多久才锁定屏幕。
 
           当此政策的值设置为大于 0 时，只要机器闲置的时间达到此处指定的时长，<ph name="PRODUCT_OS_NAME"/>就会锁定屏幕。
@@ -731,9 +810,11 @@
 <translation id="681446116407619279">支持的身份验证方案</translation>
 <translation id="4027608872760987929">启用默认搜索服务提供商</translation>
 <translation id="2223598546285729819">默认通知设置</translation>
+<translation id="6158324314836466367">企业网上应用店名称（已弃用）</translation>
 <translation id="3984028218719007910">确定 <ph name="PRODUCT_OS_NAME"/>是否要在退出后保留本地帐户数据。如果将此政策设置为 true，<ph name="PRODUCT_OS_NAME"/>就不会持续保留帐户，且会在退出后舍弃用户会话中的所有数据。如果未配置此政策或将其设置为 false，设备就会保留（经过加密的）本地用户数据。</translation>
 <translation id="3793095274466276777">在“<ph name="PRODUCT_NAME"/>”中配置默认浏览器检查，并禁止用户更改此设置。如果您启用了此设置，则“<ph name="PRODUCT_NAME"/>”在启动时总是会检查自己是否为默认浏览器，并会自动注册（如果可以）。如果此设置已停用，则“<ph name="PRODUCT_NAME"/>”永远不会检查自己是否为默认浏览器，并会禁止用户设置此选项。如果此设置未配置，则“<ph name="PRODUCT_NAME"/>”会让用户控制是否将它设为默认浏览器，并控制是否在它不是默认浏览器的情况下显示用户通知。</translation>
 <translation id="7529100000224450960">可让您设置网址格式的列表，这些网址格式用于指定允许打开弹出式窗口的网站。在未设置此政策的情况下，如果设置了“DefaultPopupsSetting”政策，那么将对该政策中的所有网站使用全局默认值，否则将对用户个人配置中的所有网站使用全局默认值。</translation>
+<translation id="6155936611791017817">设置登录屏幕上大号光标的默认状态</translation>
 <translation id="1530812829012954197">总是通过托管浏览器呈现以下网址格式</translation>
 <translation id="9026000212339701596">将主机名映射到布尔值标记的字典，以指定 Chrome 是否能访问主机；允许值为 true，阻止值为 false。
 
@@ -784,6 +865,7 @@
 <translation id="5868414965372171132">用户级网络配置</translation>
 <translation id="8519264904050090490">托管用户手动管理的例外网址</translation>
 <translation id="4480694116501920047">强制使用安全搜索</translation>
+<translation id="465099050592230505">企业网上应用店网址（已弃用）</translation>
 <translation id="1221359380862872747">在演示登录时加载指定网址</translation>
 <translation id="2431811512983100641">指定是否应启用 TLS 域绑定证书扩展程序。
 
@@ -793,6 +875,15 @@
 <translation id="4650759511838826572">停用网址协议方案</translation>
 <translation id="8099880303030573137">使用电池供电时的闲置延迟时间</translation>
 <translation id="2761483219396643566">使用电池供电时的闲置警告延迟时间</translation>
+<translation id="1468307069016535757">设置登录屏幕上高反差模式辅助功能的默认状态。
+
+          如果此政策的值设为 True，则登录屏幕显示时将会启用高反差模式。
+
+          如果此政策的值设置为 False，则登录屏幕显示时将会停用高反差模式。
+
+          如果您设置了此政策，那么用户将可通过启用或停用高反差模式暂时覆盖此政策。但是用户选择的设置并不是永久有效的；只要登录屏幕重新显示或用户在登录屏幕上停止操作一段时间，系统即会恢复默认设置。
+
+          如果未设置此政策，则登录屏幕初次显示时会停用高反差模式。用户可以随时启用或停用高反差模式，并且其在登录屏幕上的启用或停用状态对于各用户均有效。</translation>
 <translation id="8580857153747395000">在访问非内容包内的网站时发出警告。</translation>
 <translation id="602728333950205286">默认搜索服务提供商的即搜即得网址</translation>
 <translation id="3030000825273123558">启用指标报告</translation>
@@ -807,9 +898,10 @@
           此策略是可选的。如果未设置此策略，系统将不会使用备选网址提取搜索字词。
 
           要实施此策略，必须启用“DefaultSearchProviderEnabled”策略。</translation>
-<translation id="7547044444554936129">启用 <ph name="PRODUCT_NAME"/>的即搜即得功能，并禁止用户更改此设置。如果您启用了此设置，就会启用 <ph name="PRODUCT_NAME"/>即搜即得功能。如果您停用了此设置，就会停用 <ph name="PRODUCT_NAME"/>即搜即得功能。如果您启用或停用了此设置，用户就无法更改或替换此设置。如果未进行此设置，用户就可以决定是否使用此功能。</translation>
 <translation id="6282799760374509080">是否允许音频捕获</translation>
+<translation id="8864975621965365890">浏览使用 <ph name="PRODUCT_FRAME_NAME"/>呈现的网站时，阻止显示“停止支持”的提示。</translation>
 <translation id="3264793472749429012">默认搜索服务提供商的编码</translation>
+<translation id="285480231336205327">启用高反差模式</translation>
 <translation id="8101760444435022591">鉴于软故障和在线撤消检查未提供有效的安全优势，因此它们在 <ph name="PRODUCT_NAME"/>版本 19 及更高版本中默认停用。将此政策设置为 true，即可恢复以前的行为，系统将执行在线 OCSP/CRL 检查。
 
       如果未设置此政策或将其设置为 false，Chrome 浏览器 19 及更高版本就不会执行在线撤消检查。</translation>
@@ -823,12 +915,9 @@
 
       如果将此政策设为 False，则无法绕过零延时自动登录过程（如果已配置）。</translation>
 <translation id="5208240613060747912">可让您设置网址格式的列表，这些网址格式用于指定不允许显示通知的网站。在未设置此政策的情况下，如果设置了“DefaultNotificationsSetting”政策，那么将对该政策中的所有网站使用全局默认值，否则将对用户个人配置中的所有网站使用全局默认值。</translation>
+<translation id="7927140259706020912">系统无需提示用户即可允许其使用音频捕获设备的网址。</translation>
+<translation id="4600786265870346112">启用大号光标</translation>
 <translation id="8592105098257899882">配置 <ph name="PRODUCT_NAME"/>用于在磁盘上存储缓存文件的缓存大小。如果您设置了此政策，那么无论用户是否指定“--disk-cache-size”标记，<ph name="PRODUCT_NAME"/>都会使用提供的缓存大小。如果此政策的值为 0，系统将使用默认缓存大小，但不允许用户更改大小。如果未设置此政策，系统将使用默认缓存大小，并允许用户通过“--disk-cache-size”标记替换该值。</translation>
-<translation id="1527937796509599149">企业网上应用店的名称将会显示在新标签页上的相应应用图标下方。如果未设置 EnterpriseWebStoreURL，则此设置不会生效。
-
-      如果停用了此设置，企业网上应用店应用（如果存在）会标明其网址。
-
-      此设置从版本 27 开始弃用，并将在以后的版本中废除。我们建议您将托管 CRX 软件包的站点包含在 ExtensionInstallSources 中，然后将上述软件包的直接下载链接放置在某网页上；从而建立一个由企业托管的扩展程序/应用集合。该网页的启动器可使用 ExtensionInstallForcelist 政策创建。</translation>
 <translation id="5887414688706570295">配置供远程访问主机使用的 TalkGadget 前缀，并禁止用户更改此设置。
 
           如果指定的话，该前缀将附加到 TalkGadge 基本名称之前，两者共同构成 TalkGadget 的完整域名。TalkGadget 基本域名为.talkgadget.google.com。
@@ -839,6 +928,15 @@
 
           远程访问客户端不受此策略设置影响。它们将始终使用“chromoting-client.talkgadget.google.com”访问 TalkGadget。</translation>
 <translation id="5765780083710877561">说明：</translation>
+<translation id="6915442654606973733">启用语音反馈辅助功能。
+
+          如果此政策的值设为 True，则系统将始终启用语音反馈。
+
+          如果此政策的值设为 False，则系统将始终停用语音反馈。
+
+          如果您设置了此政策，那么用户将无法对其进行更改或覆盖。
+
+          如果未设置此政策，则语音反馈最初处于停用状态，但用户可以随时启用该功能。</translation>
 <translation id="7796141075993499320">可让您设置网址格式的列表，这些网址格式用于指定允许运行插件的网站。在未设置此政策的情况下，如果设置了“DefaultPluginsSetting”政策，那么将对该政策中的所有网站使用全局默认值，否则将对用户个人配置中的所有网站使用全局默认值。</translation>
 <translation id="3809527282695568696">如果选择“打开网址列表”作为启动时的操作，您就可以指定要打开的网址的列表。如果未设置，启动时就不会打开任何网址。此政策只有在“RestoreOnStartup”政策设为“RestoreOnStartupIsURLs”的情况下才有效。</translation>
 <translation id="649418342108050703">停用对 3D 图形 API 的支持。启用此设置可禁止网页访问图形处理单元 (GPU)。具体而言，就是网页无法访问 WebGL API，并且插件无法使用 Pepper 3D API。停用或未配置此设置可能会允许网页使用 WebGL API，并且允许插件使用 Pepper 3D API。浏览器的默认设置可能仍然需要传递命令行参数才能使用这些 API。</translation>
@@ -888,13 +986,6 @@
 
           指定的政策值应以毫秒为单位，并且不得大于闲置延迟时间。</translation>
 <translation id="1897365952389968758">允许所有网站运行 JavaScript</translation>
-<translation id="2057466537682332544">指定设备处于演示模式时闲置延迟时间的调整幅度。
-
-          如果设置了此政策，则设备处于演示模式时将按照此处指定的百分比调整闲置延迟时间。闲置延迟时间调整后，系统会调整屏幕变暗、关闭和锁定的延迟时间，以保持其原有配置下与闲置延迟相隔的时间。
-
-          如果未设置此政策，系统会使用默认的调整因子。
-
-          调整因子不得小于 100%。所用值不得导致演示模式下的闲置延迟时间短于常规模式。</translation>
 <translation id="922540222991413931">配置扩展程序、应用和用户脚本安装源</translation>
 <translation id="7323896582714668701">适用于 <ph name="PRODUCT_NAME"/>的其他命令行参数</translation>
 <translation id="6931242315485576290">停用与 Google 同步数据的功能</translation>
@@ -910,6 +1001,13 @@
 <translation id="868187325500643455">允许所有网站自动运行插件</translation>
 <translation id="7421483919690710988">设置媒体磁盘缓存大小（字节）</translation>
 <translation id="5226033722357981948">指定是否应停用插件查找器</translation>
+<translation id="4890209226533226410">设置启用的放大镜类型。
+
+          如果设置此政策，则会控制启用的放大镜类型。如果此政策的值设为“None”，那么系统将会停用放大镜。
+
+          如果您设置了此政策，那么用户将无法对其进行更改或覆盖。
+
+          如果未设置此政策，则放大镜最初会处于停用状态，但用户可以随时启用该功能。</translation>
 <translation id="3428247105888806363">启用网络预测功能</translation>
 <translation id="6145799962557135888">可让您设置网址格式的列表，这些网址格式用于指定允许运行 JavaScript 的网站。在未设置此政策的情况下，如果设置了“DefaultJavaScriptSetting”政策，那么将对该政策中的所有网站使用全局默认值，否则将对用户个人配置中的所有网站使用全局默认值。</translation>
 <translation id="2757054304033424106">允许安装的扩展程序/应用的类型</translation>
@@ -945,12 +1043,6 @@
 <translation id="2098658257603918882">启用关于使用情况和崩溃相关数据的报告</translation>
 <translation id="2324547593752594014">允许登录 Chrome</translation>
 <translation id="172374442286684480">允许所有网站设置本地数据</translation>
-<translation id="6922569848241326941">是否允许视频捕获。
-
-      如果停用此政策，将无法使用视频捕获设备。如果启用此政策，系统将始终允许视频捕获。
-      如果未配置此政策（默认），则系统收到使用视频捕获设备的请求时会提示用户。
-
-      此政策会影响所有类型的视频输入，而不仅仅是影响内置摄像头。</translation>
 <translation id="1151353063931113432">在这些网站上允许图片</translation>
 <translation id="1297182715641689552">使用 .pac 代理脚本</translation>
 <translation id="2976002782221275500">指定在使用电池供电时用户停止输入后隔多久屏幕才变暗。
@@ -976,6 +1068,15 @@
 
           如果未设置此政策，系统将使用“AllowPlugins”并允许用户更改此设置。</translation>
 <translation id="7974114691960514888">此政策已不再受支持。在连接到远程客户端时，允许使用 STUN 和中继服务器。如果启用此设置，那么即使远程客户端受到防火墙隔离，也仍然可以检测到并连接到此计算机。如果停用此设置，并且防火墙过滤了外发 UDP 连接，那么此计算机将只能与本地网络内的客户端计算机建立连接。</translation>
+<translation id="7694807474048279351">安排在应用 <ph name="PRODUCT_OS_NAME"/>更新后自动重启。
+
+      如果此政策的值设为 True，则当应用 <ph name="PRODUCT_OS_NAME"/>更新后需要重启才能完成更新过程时，系统会安排自动重启。系统会立即安排重启，但如果用户当前正在使用此设备，那么设备重启操作最多可能延迟 24 小时。
+
+      如果此政策的值设为 False，则当应用 <ph name="PRODUCT_OS_NAME"/>更新后，系统不会安排自动重启。更新过程会在用户下次重启设备时完成。
+
+      如果您设置了此政策，那么用户将无法对其进行更改或覆盖。
+
+      请注意：目前，系统仅在显示登录屏幕或正在访问信息亭模式下的应用时才会启用自动重启。这在日后会有所改变，但此政策将始终适用，无论是否正在进行任何特殊类型的会话。</translation>
 <translation id="5511702823008968136">启用书签栏</translation>
 <translation id="5105313908130842249">使用电池供电时的屏幕锁定延迟时间</translation>
 <translation id="7882585827992171421">此策略仅在零售模式下有效。
@@ -1004,10 +1105,11 @@
 <translation id="718956142899066210">允许用于更新的连接类型</translation>
 <translation id="1734716591049455502">配置远程访问选项</translation>
 <translation id="7336878834592315572">在会话期间保留 Cookie</translation>
+<translation id="7715711044277116530">演示模式下屏幕变暗延迟时间的调整幅度（百分比）</translation>
 <translation id="8777120694819070607">允许“<ph name="PRODUCT_NAME"/>”运行过期插件。如果您启用了此设置，则过期插件可作为正常插件使用。如果您停用了此设置，则过期插件将无法使用，并且系统不会要求用户提供运行过期插件的权限。如果此设置未配置，则系统会要求用户提供运行过期插件的权限。</translation>
 <translation id="2629448496147630947">在<ph name="PRODUCT_NAME"/>中配置远程访问选项。除非安装了远程访问网络应用，否则这些功能将被忽略。</translation>
 <translation id="1310699457130669094">您可以在此指定代理 .pac 文件的网址。只有当您在“选择如何指定代理服务器设置”中选择了手动代理设置后，此政策才会生效。如果您选择了其他任何模式来设置代理政策，就不应设置此政策。要查看详细示例，请访问：<ph name="PROXY_HELP_URL"/></translation>
-<translation id="3406810703404235731">企业的网上应用店网址</translation>
+<translation id="1509692106376861764">此政策从 <ph name="PRODUCT_NAME"/> 版本 29 起开始弃用。</translation>
 <translation id="5464816904705580310">为托管用户配置设置。</translation>
 <translation id="3219421230122020860">隐身模式已启用</translation>
 <translation id="7690740696284155549">配置 <ph name="PRODUCT_NAME"/>将用于下载文件的目录。
@@ -1027,6 +1129,7 @@
 <translation id="1583248206450240930">默认情况下使用“<ph name="PRODUCT_FRAME_NAME"/>”</translation>
 <translation id="1047128214168693844">不允许任何网站跟踪用户的地理位置</translation>
 <translation id="4101778963403261403">在 <ph name="PRODUCT_NAME"/>中配置默认主页的类型，并禁止用户更改主页偏好设置。您既可以将主页设为指定的网址，也可以将其设为新标签页。如果您启用了此设置，系统就会始终使用新标签页作为主页，并忽略主页网址。如果您停用了此设置，那么除非将用户的主页设为“chrome://newtab”，否则主页永远不会是新标签页。如果您启用或停用了此设置，用户就无法在 <ph name="PRODUCT_NAME"/>中更改自己的主页类型。如果未设置此政策，用户就可以自行选择是否将新标签页作为主页。</translation>
+<translation id="8970205333161758602">阻止显示 <ph name="PRODUCT_FRAME_NAME"/>停止支持的提示</translation>
 <translation id="3273221114520206906">默认 JavaScript 设置</translation>
 <translation id="4025586928523884733">阻止第三方 Cookie。启用此设置后，如果网页元素并非来自浏览器的地址栏中的域名，就无法设置 Cookie。停用此设置后，并非来自浏览器地址栏中的域名的网页元素也可以设置 Cookie，并且用户无法更改此设置。如果未设置此政策，将启用第三方 Cookie，不过用户也可以更改此设置。</translation>
 <translation id="6810445994095397827">在这些网站上阻止 JavaScript</translation>
@@ -1055,6 +1158,9 @@
 <translation id="523505283826916779">辅助功能设置</translation>
 <translation id="1948757837129151165">HTTP 身份验证的政策</translation>
 <translation id="5946082169633555022">测试版</translation>
+<translation id="7187256234726597551">如果此政策的值为 True，则系统将允许此设备进行远程认证，然后自动生成证书并将其上传到设备管理服务器。
+
+          如果此政策的值设为 False 或未设置，则不会生成证书，也无法调用 enterprise.platformKeysPrivate 扩展程序 API。</translation>
 <translation id="8303314579975657113">指定要用于 HTTP 身份验证的 GSSAPI 库。您可以仅设置库名称，也可以设置完整路径。如果未提供任何设置，<ph name="PRODUCT_NAME"/>就会使用后备的默认库名称。</translation>
 <translation id="7749402620209366169">为远程访问主机启用双重身份验证，而不是采用用户指定的 PIN。
 
@@ -1092,6 +1198,15 @@
       如果未指定，则不会修改变体种子网址。</translation>
 <translation id="7049373494483449255">允许 <ph name="PRODUCT_NAME"/>将文档提交到 <ph name="CLOUD_PRINT_NAME"/>进行打印。请注意：这只会影响 <ph name="PRODUCT_NAME"/>中的 <ph name="CLOUD_PRINT_NAME"/>支持，并不会禁止用户在网站上提交打印作业。如果启用或未配置此设置，用户就可以通过 <ph name="PRODUCT_NAME"/>的打印对话框使用 <ph name="CLOUD_PRINT_NAME"/>进行打印。如果停用此设置，用户就无法通过 <ph name="PRODUCT_NAME"/>的打印对话框使用 <ph name="CLOUD_PRINT_NAME"/>进行打印。</translation>
 <translation id="4088589230932595924">强制使用隐身模式</translation>
+<translation id="5862253018042179045">设置登录屏幕上语音反馈辅助功能的默认状态。
+
+          如果此政策的值设为 True，则登录屏幕显示时将会启用语音反馈。
+
+          如果此政策的值设为 False，则登录屏幕显示时将会停用语音反馈。
+
+          如果您设置了此政策，那么用户将可通过启用或停用语音反馈暂时覆盖此政策。不过，用户选择的设置并不是永久有效的；只要登录屏幕重新显示或用户在登录屏幕上停止操作一段时间，系统即会恢复默认设置。
+
+          如果未设置此政策，则登录屏幕初次显示时会停用语音反馈。用户可以随时启用或停用语音反馈，并且其在登录屏幕上的启用或停用状态对各用户均有效。</translation>
 <translation id="8197918588508433925">此政策指定了允许使用 Enterprise Platform Keys API chrome.enterprise.platformKeysPrivate.challengeUserKey() 进行远程认证的扩展程序。只有添加到此列表中的扩展程序才能使用该 API。
 
           如果扩展程序不在此列表中，或者未设置此列表，则会导致无法调用 API，并返回错误代码。</translation>

@@ -21,7 +21,7 @@
 <translation id="795667975304826397">Cap fitxer seleccionat.</translation>
 <translation id="1320012872283894746">torna enrere ràpidament</translation>
 <translation id="7789962463072032349">pausa</translation>
-<translation id="6853785296079745596">amaga els subtítols tancats</translation>
+<translation id="6853785296079745596">amaga els subtítols ocults</translation>
 <translation id="1758486001363313524">Altres...</translation>
 <translation id="8141602879876242471">És un índex on es poden realitzar cerques. Introdueix els termes de cerca:</translation>
 <translation id="1930711995431081526">estat</translation>
@@ -39,13 +39,13 @@
 <translation id="901493112792887934">temps actual en segons</translation>
 <translation id="5164977714490026579">El valor ha de ser més gran o igual que <ph name="MINIMUM"/>.</translation>
 <translation id="2247351761944213033">Setmana <ph name="WEEKNUMBER"/>, <ph name="YEAR"/></translation>
-<translation id="7740016676195725605">deixa de mostrar subtítols tancats</translation>
+<translation id="7740016676195725605">deixa de mostrar subtítols ocults</translation>
 <translation id="5944544982112848342">2048 (Gran)</translation>
 <translation id="3075154866155599887">Introduïu un valor vàlid. El camp està incomplet o conté una data no vàlida.</translation>
 <translation id="3040011195152428237">enllaç</translation>
 <translation id="1014825444426747588">buit</translation>
 <translation id="3356679314312413792">torna 30 segons enrere en la pel·lícula</translation>
-<translation id="9050748414552849310">mostra els subtítols tancats</translation>
+<translation id="9050748414552849310">mostra els subtítols ocults</translation>
 <translation id="4522570452068850558">Detalls</translation>
 <translation id="8451268428117625855">Seleccioneu un fitxer.</translation>
 <translation id="8117451130807776954">Aquesta setmana</translation>
@@ -53,7 +53,7 @@
 <translation id="2901282870647571346">estat actual de la pel·lícula</translation>
 <translation id="2674318244760992338">peu</translation>
 <translation id="8987927404178983737">Mes</translation>
-<translation id="8115662671911883373">comença a mostrar subtítols tancats</translation>
+<translation id="8115662671911883373">comença a mostrar subtítols ocults</translation>
 <translation id="7364796246159120393">Selecciona el fitxer</translation>
 <translation id="2761667185364618470">Marqueu aquesta casella si voleu continuar.</translation>
 <translation id="8534579021159131403">Minuts</translation>

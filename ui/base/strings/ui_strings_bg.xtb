@@ -2,18 +2,18 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="bg">
 <translation id="4820616160060340806">Command + <ph name="KEY_COMBO_NAME"/></translation>
-<translation id="6420214550675866556">Тих режим</translation>
 <translation id="1871244248791675517">Ins</translation>
 <translation id="6135826906199951471">Del</translation>
 <translation id="528468243742722775">End</translation>
+<translation id="1801827354178857021">Точка</translation>
 <translation id="1190609913194133056">Център за известия</translation>
 <translation id="5613020302032141669">Стрелка наляво</translation>
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE"/> файл (.<ph name="SAVEAS_EXTENSION_NAME"/>)</translation>
-<translation id="4519844444318892125">Тих режим за един ден</translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="7658239707568436148">Отказ</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY"/> Б</translation>
+<translation id="3660179305079774227">Стрелка нагоре</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY"/> МБ/сек</translation>
 <translation id="3990502903496589789">Десн край</translation>
 <translation id="932327136139879170">Home</translation>
@@ -22,11 +22,12 @@
 <translation id="5076340679995252485">&amp;Поставяне</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY"/> ТБ</translation>
 <translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME"/></translation>
+<translation id="3234408098842461169">Стрелка надолу</translation>
 <translation id="3087734570205094154">Най-долу</translation>
+<translation id="1860796786778352021">Затваряне на известието</translation>
 <translation id="6364916375976753737">Превъртане наляво</translation>
 <translation id="6945221475159498467">Изберете</translation>
 <translation id="6620110761915583480">Запазване на файл</translation>
-<translation id="7394346403752882908">Тих режим за един час</translation>
 <translation id="8210608804940886430">Страница надолу</translation>
 <translation id="5329858601952122676">&amp;Изтриване</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY"/> KБ</translation>
@@ -36,6 +37,8 @@
 <translation id="2497284189126895209">Всички файлове</translation>
 <translation id="7814458197256864873">&amp;Копиране</translation>
 <translation id="3889424535448813030">Стрелка надясно</translation>
+<translation id="6829324100069873704">Назад към известията</translation>
+<translation id="6528179044667508675">Не безпокойте</translation>
 <translation id="7135556860107312402">Разрешаване на известията от следните неща:</translation>
 <translation id="1398853756734560583">Увеличаване</translation>
 <translation id="4250229828105606438">Eкранна снимка</translation>
@@ -48,6 +51,7 @@
 <translation id="4552416320897244156">PgDwn</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY"/> КБ/сек</translation>
+<translation id="7960078400008666149">Не безпокойте за един час</translation>
 <translation id="2190355936436201913">(празно)</translation>
 <translation id="8447116497070723931">PgUp</translation>
 <translation id="4588090240171750605">Превъртане надясно</translation>
@@ -66,17 +70,22 @@
 <translation id="6845383723252244143">Избор на папка</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY"/> ГБ/сек</translation>
+<translation id="4570886800634958009">Разгъване на известието</translation>
 <translation id="436869212180315161">Натиснете</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY"/> ТБ/сек</translation>
 <translation id="6040143037577758943">Затваряне</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY"/> Б/сек</translation>
+<translation id="7649070708921625228">Помощ</translation>
+<translation id="8226233771743600312">Не безпокойте за един ден</translation>
 <translation id="7457942297256758195">Изчистване на всички</translation>
 <translation id="7509316384504965641"><ph name="PRODUCT"/> – Известия</translation>
 <translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="6907759265145635167"><ph name="QUANTITY"/> ПБ/сек</translation>
 <translation id="4481522213790366002"><ph name="PRODUCT"/> – Известия (<ph name="QUANTITY"/> непрочетени)</translation>
 <translation id="6965382102122355670">OK</translation>
+<translation id="7850320739366109486">Не безпокойте</translation>
 <translation id="5941711191222866238">Намаляване</translation>
+<translation id="6394627529324717982">Запетая</translation>
 <translation id="4469842253116033348">Деактивиране на известията от <ph name="SITE"/></translation>
 <translation id="3036649622769666520">Отваряне на файлове</translation>
 <translation id="8328145009876646418">Ляв край</translation>

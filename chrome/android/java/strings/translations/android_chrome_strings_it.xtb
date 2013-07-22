@@ -1,23 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="it">
-<translation id="1491151370853475546">Ricarica la pagina</translation>
+<translation id="1491151370853475546">Ricarica questa pagina</translation>
 <translation id="7658239707568436148">Annulla</translation>
-<translation id="6458785801851713928">Il servizio di sincronizzazione non è disponibile per il tuo dominio.</translation>
-<translation id="1623104350909869708">Impedisci creazione altre finestre di dialogo in questa pagina</translation>
 <translation id="7791543448312431591">Aggiungi</translation>
-<translation id="3896036286668839683">Visualizzatore certificati</translation>
 <translation id="8730621377337864115">Fine</translation>
-<translation id="4170011742729630528">Il servizio non è disponibile, riprova più tardi.</translation>
-<translation id="8627706565932943526">Errore di sincronizzazione</translation>
-<translation id="3136378934686431938">Aggiorna i dati di accesso.</translation>
-<translation id="4510973599275542560">Non ricaricare</translation>
 <translation id="9154176715500758432">Rimani su questa pagina</translation>
-<translation id="7063006564040364415">Impossibile collegarsi al server di sincronizzazione.</translation>
 <translation id="9065203028668620118">Modifica</translation>
 <translation id="6512448926095770873">Esci dalla pagina</translation>
-<translation id="5032574515228824816">Messaggio</translation>
-<translation id="177206394375746242">Se fai clic sul pulsante sotto accetti i termini di servizio.</translation>
-<translation id="8830134817694641714">Recupero dei dettagli sul pagamento</translation>
 <translation id="6965382102122355670">OK</translation>
 </translationbundle>

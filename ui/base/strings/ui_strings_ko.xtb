@@ -2,18 +2,18 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ko">
 <translation id="4820616160060340806">Command+<ph name="KEY_COMBO_NAME"/></translation>
-<translation id="6420214550675866556">조용히 모드</translation>
 <translation id="1871244248791675517">Insert</translation>
 <translation id="6135826906199951471">삭제</translation>
 <translation id="528468243742722775">End</translation>
+<translation id="1801827354178857021">마침표</translation>
 <translation id="1190609913194133056">알림 센터</translation>
 <translation id="5613020302032141669">왼쪽 화살표</translation>
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE"/> 파일(.<ph name="SAVEAS_EXTENSION_NAME"/>)</translation>
-<translation id="4519844444318892125">하루 동안 조용히 모드</translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="7658239707568436148">취소</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY"/>B</translation>
+<translation id="3660179305079774227">위쪽 화살표</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY"/>MB/초</translation>
 <translation id="3990502903496589789">오른쪽 모서리</translation>
 <translation id="932327136139879170">홈</translation>
@@ -22,11 +22,12 @@
 <translation id="5076340679995252485">붙여넣기(&amp;P)</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY"/>TB</translation>
 <translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME"/></translation>
+<translation id="3234408098842461169">아래 화살표</translation>
 <translation id="3087734570205094154">맨 아래</translation>
+<translation id="1860796786778352021">알림 닫기</translation>
 <translation id="6364916375976753737">왼쪽으로 스크롤</translation>
 <translation id="6945221475159498467">선택</translation>
 <translation id="6620110761915583480">파일 저장</translation>
-<translation id="7394346403752882908">한 시간 동안 조용히 모드</translation>
 <translation id="8210608804940886430">페이지 아래로</translation>
 <translation id="5329858601952122676">삭제(&amp;D)</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY"/>KB</translation>
@@ -36,6 +37,8 @@
 <translation id="2497284189126895209">모든 파일</translation>
 <translation id="7814458197256864873">복사(&amp;C)</translation>
 <translation id="3889424535448813030">오른쪽 화살표</translation>
+<translation id="6829324100069873704">알림으로 돌아가기</translation>
+<translation id="6528179044667508675">알림 일시중지</translation>
 <translation id="7135556860107312402">다음 항목에 알림 허용:</translation>
 <translation id="1398853756734560583">최대화</translation>
 <translation id="4250229828105606438">캡처화면</translation>
@@ -48,6 +51,7 @@
 <translation id="4552416320897244156">PageDown</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY"/>KB/초</translation>
+<translation id="7960078400008666149">1시간 동안 알림 일시중지</translation>
 <translation id="2190355936436201913">(비어있음)</translation>
 <translation id="8447116497070723931">PageUp</translation>
 <translation id="4588090240171750605">오른쪽 스크롤</translation>
@@ -66,17 +70,22 @@
 <translation id="6845383723252244143">폴더 선택</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY"/>GB/s</translation>
+<translation id="4570886800634958009">알림 펼치기</translation>
 <translation id="436869212180315161">누르기</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY"/>TB/s</translation>
 <translation id="6040143037577758943">닫기</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY"/>B/s</translation>
+<translation id="7649070708921625228">도움말</translation>
+<translation id="8226233771743600312">하루 동안 알림 일시중지</translation>
 <translation id="7457942297256758195">모두 지우기</translation>
 <translation id="7509316384504965641"><ph name="PRODUCT"/> - 알림</translation>
 <translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="6907759265145635167"><ph name="QUANTITY"/>PB/s</translation>
 <translation id="4481522213790366002"><ph name="PRODUCT"/> - 알림(읽지 않은 알림 <ph name="QUANTITY"/>개)</translation>
 <translation id="6965382102122355670">확인</translation>
+<translation id="7850320739366109486">알림 일시중지</translation>
 <translation id="5941711191222866238">최소화</translation>
+<translation id="6394627529324717982">콤마</translation>
 <translation id="4469842253116033348"><ph name="SITE"/>의 알림을 표시 안함</translation>
 <translation id="3036649622769666520">파일 열기</translation>
 <translation id="8328145009876646418">왼쪽 모서리</translation>

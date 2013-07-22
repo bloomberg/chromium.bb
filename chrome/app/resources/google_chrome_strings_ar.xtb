@@ -12,6 +12,7 @@
 <translation id="5453904507266736060">دع Google Chrome يعمل في الخلفية</translation>
 <translation id="2383457833405848421">حول إطار Google Chrome...</translation>
 <translation id="3454512769850953877">نعم، الخروج من Chrome</translation>
+<translation id="4167057906098955729">يُمكنك الاطلاع على جميع إشعاراتك من تطبيقات Chrome والإضافات ومواقع الويب هنا.</translation>
 <translation id="2704356438731803243">إذا كنت تفضل الإبقاء على بيانات Chrome الحالية بشكل منفصل، فيمكنك إنشاء حساب مستخدم Chrome جديد للمستخدم <ph name="USER_NAME"/>.</translation>
 <translation id="386202838227397562">الرجاء إغلاق كل نوافذ Google Chrome وإعادة المحاولة.</translation>
 <translation id="2770231113462710648">تغيير المتصفح الافتراضي إلى:</translation>
@@ -71,6 +72,7 @@
 <translation id="225614027745146050">مرحبًا</translation>
 <translation id="7451721381978275812">وسيطات غير صالحة. لا يمكن تثبيت إطار Google Chrome في وضع الاستعداد بدون تثبيت Google Chrome أيضًا.</translation>
 <translation id="8684521613357479262">لقد حاولت الوصول إلى &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;، ولكن الخادم قدم شهادة لا تُعد صالحة حتى الآن. ليست هناك أية معلومات متاحة لتحديد ما إذا كانت هذه الشهادة يمكن الوثوق بها أم لا. لا يمكن أن يضمن Google Chrome على نحو موثوق أنك تتصل بـ &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; وليس أحد المخترقين. تم ضبط ساعة الكمبيوتر حاليًا على <ph name="CURRENT_TIME"/>. هل يبدو ذلك صحيحًا؟ إذا لم يكن كذلك، يجب عليك تصحيح الخطأ وتحديث هذه الصفحة.</translation>
+<translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="4585888816441913908">يحتوي جهاز الكمبيوتر هذا على إصدار أحدث من Google Chrome وإطار Google Chrome. إذا كان البرنامج لا يعمل، فالرجاء إزالة كل من Google Chrome وإطار Google Chrome وإعادة المحاولة.</translation>
 <translation id="3149510190863420837">تطبيقات Chrome</translation>
 <translation id="6368958679917195344">أصبح نظام التشغيل Chrome متاحًا من خلال <ph name="BEGIN_LINK_CROS_OSS"/>برنامج مفتوح المصدر<ph name="END_LINK_CROS_OSS"/> إضافي.</translation>
@@ -80,6 +82,7 @@
 <translation id="1195935957447623558">لم يتمّ إغلاق Google Chrome بطريقة صحيحة. لإعادة فتح الصفحات التي سبق فتحها، انقر على زرّ إعادة.</translation>
 <translation id="2576431527583832481">لقد أصبح Chrome أفضل من ذي قبل! يتوفر إصدار جديد.</translation>
 <translation id="2580411288591421699">لا يمكن تثبيت نفس الإصدار المثبت من Google Chrome والذي يتم تشغيله حاليًا. الرجاء إغلاق Google Chrome وإعادة المحاولة.</translation>
+<translation id="8460191995881063249">مركز إشعارات Chrome</translation>
 <translation id="1457721931618994305">جارٍ تحديث Google Chrome...</translation>
 <translation id="7747138024166251722">تعذر على أداة المثبِّت إنشاء دليل مؤقت. يُرجى التحقق من وجود مساحة خالية على القرص وتوفر الإذن اللازم لتثبيت البرنامج.</translation>
 <translation id="6557998774620459028">لقد حاولت الوصول إلى <ph name="DOMAIN"/>، لكن الخادم قدّم شهادة تم إصدارها من قِبل جهة غير موثوق فيها من قِبل نظام تشغيل الكمبيوتر. قد يعني هذا أن الخادم قد أنشأ بيانات اعتماد الأمان الخاصة به التي يتعذر على Chrome الاعتماد عليها للحصول على معلومات الهوية، أو ربما يحاول أحد المهاجمين اعتراض اتصالاتك.</translation>
@@ -106,8 +109,10 @@
 سيؤدي تسجيل الدخول على أية حال إلى دمج معلومات Chrome مثل الإشارات المرجعية والسجل والإعدادات الأخرى مع <ph name="ACCOUNT_EMAIL_NEW"/>.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD"/>تحذير:<ph name="END_BOLD"/> لا يستطيع Google Chrome منع الإضافات من تسجيل سجل التصفح الخاص بك. لتعطيل هذا الإضافة في وضع التصفح المتخفي، ألغ تحديد هذا الخيار.</translation>
 <translation id="1759842336958782510">Chrome</translation>
+<translation id="2290014774651636340">مفاتيح واجهة برمجة تطبيقات Google مفقودة. وسيترتب على ذلك توقف بعض وظائف Google Chrome عن العمل.</translation>
 <translation id="4794050651896644714">حفظ التفاصيل في Chrome</translation>
 <translation id="911206726377975832">هل تريد أيضًا حذف بيانات التصفح؟</translation>
+<translation id="5855036575689098185">البرامج التي تعمل على جهاز الكمبيوتر لا تتوافق مع Google Chrome.</translation>
 <translation id="2044287590254833138">شريط أدوات Google Chrome</translation>
 <translation id="5074344184765391290">مضيف المكون الإضافي لمتصفح Chrome</translation>
 <translation id="8862326446509486874">لا تملك الحقوق الكافية للتثبيت على مستوى النظام. جرّب تشغيل المثبِّت بصفة مشرف.</translation>
@@ -123,7 +128,6 @@
 <translation id="1104959162601287462">حول &amp;نظام التشغيل Google Chrome</translation>
 <translation id="5328989068199000832">ثنائيات Google Chrome</translation>
 <translation id="5941830788786076944">جعل Google Chrome المتصفّح الافتراضي</translation>
-<translation id="7417357582482895658">السماح بتسجيل الدخول إلى Chrome.</translation>
 <translation id="1469002951682717133">مشغل تطبيقات Chrome</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">يتيح لك Google Chrome النقر على رقم هاتف على الويب والاتصال به باستخدام Skype!</translation>
@@ -145,6 +149,8 @@
 <translation id="2871893339301912279">تم تسجيل دخولك إلى Chrome!</translation>
 <translation id="7161904924553537242">مرحبًا بك في Google Chrome</translation>
 <translation id="1686446242839005801">أنت تسجّل الدخول إلى Chrome باستخدام الحساب <ph name="USER_EMAIL_ADDRESS"/>. سيكون بمقدورك الدخول إلى إشاراتك المرجعية وسجلك والإعدادات الأخرى على كل الأجهزة التي سجلت الدخول عليها.</translation>
+<translation id="4147555960264124640">إنك تسجل الدخول باستخدام حساب مُدار وتمنح المشرف إمكانية التحكم في ملفك الشخصي في Google Chrome. وسيتم ربط بيانات Chrome التابعة لك، مثل التطبيقات والإشارات المرجعية والسجلّ وكلمات المرور والإعدادات الأخرى بالمستخدم <ph name="USER_NAME"/>. وستتمكن من حذف هذه البيانات عبر لوحة تحكم حسابات Google، ولكنك لن تتمكن من إقران هذه البيانات بحساب آخر. <ph name="LEARN_MORE"/></translation>
+<translation id="7931439880631187247">هذا الموقع يستخدم المكون الإضافي Chrome Frame والذي سيصبح غير معتمد قريبًا. يُرجى إلغاء تثبيته والترقية إلى متصفّح حديث.</translation>
 <translation id="8187289872471304532">انتقل إلى Applications (التطبيقات) &gt; System Preferences (تفضيلات النظام) &gt; Network (الشبكة) &gt; Advanced (الخيارات المتقدمة) &gt; Proxies (الخوادم الوكيلة) وألغ تحديد أي خوادم وكيلة تم تحديدها.</translation>
 <translation id="8669527147644353129">مساعد Google Chrome</translation>
 <translation id="870251953148363156">&amp;تحديث Google Chrome</translation>
@@ -152,19 +158,17 @@
 <translation id="163860049029591106">البدء في استخدام نظام التشغيل Chrome</translation>
 <translation id="1399397803214730675">يحتوي جهاز الكمبيوتر هذا على نسخة أحدث من Google Chrome. إذا كان برنامج Google Chrome لا يعمل، فالرجاء إزالة Google Chrome وإعادة المحاولة.</translation>
 <translation id="576822117893741893">إظهار قائمة Chrome</translation>
-<translation id="8520216698644798023">تم اكتشاف خطأ في نظام التشغيل Windows</translation>
 <translation id="3444832043240812445">تعرض هذه الصفحة فقط معلومات عن الأعطال الحديثة إذا <ph name="BEGIN_LINK"/>مكّنت الإبلاغ عن الأعطال<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">لا يستجيب Google Chrome. هل تريد إعادة التشغيل الآن؟</translation>
 <translation id="5318056482164160049">مضيف المكون الإضافي لمتصفح Google Chrome</translation>
-<translation id="6479088914470149333">جهاز الكمبيوتر تنقصه بعض ملفات Windows المهمة، لذا سيتعذر على Chrome العمل بشكل صحيح.</translation>
 <translation id="6126631249883707068">هل تريد من Google Chrome حفظ كلمة المرور؟</translation>
 <translation id="7773845170078702898">هل تريد من Google Chrome حفظ كلمة المرور لهذا الموقع؟</translation>
 <translation id="5046764976540625289">إنهاء Chrome</translation>
+<translation id="4251615635259297716">هل ترغب في ربط بياناتك في Chrome بهذا الحساب؟</translation>
 <translation id="9039578207253536065">عامل Google Chrome</translation>
 <translation id="2680623880102270805">يتعذر على Google Chrome إنشاء اختصار للتطبيق بسبب عدم التمكن من تحديد بيئة سطح المكتب الحالية.</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">متصفح الإنترنت</translation>
-<translation id="5244325494201350962">لقد سجلت الدخول في السابق باستخدام حساب مختلف، سيؤدي تسجيل الدخول إلى دمج بياناتك. جرِّب إنشاء مستخدم Chrome جديد عبر <ph name="BEGIN_LINK"/>صفحة الإعدادات<ph name="END_LINK"/> من أجل عناصر Chrome.</translation>
 <translation id="2189123953385179981">لا يتيح نظام التشغيل Google ChromeOS إمكانية تشغيل تطبيق خارجي للتعامل مع روابط <ph name="SCHEME"/>. والرابط المطلوب هو <ph name="PROTOLINK"/>.</translation>
 <translation id="7396375882099008034">اسمح للمتصفح Chrome بالدخول إلى الشبكة من خلال إعدادات الجدار الناري أو
         برنامج مكافحة الفيروسات.</translation>
@@ -183,6 +187,7 @@
           إعدادات الشبكة المحلية
           وألغ تحديد &quot;استخدام خادم وكيل لشبكة الاتصال المحلية&quot;.</translation>
 <translation id="7825851276765848807">فشل التثبيت نظرًا لحدوث خطأ غير محدد. الرجاء تنزيل Google Chrome مرة أخرى.</translation>
+<translation id="5553980212343253394">هذا الموقع يستخدم المكون الإضافي Chrome Frame والذي سيصبح غير معتمد قريبًا. يُرجى إلغاء تثبيته وتنزيل متصفح متوافق.</translation>
 <translation id="1061257178446858647">أنت الآن مسجل الدخول إلى Chrome! ستتم مزامنة الإشارات المرجعية والسجل والإعدادات الأخرى مع حسابك في Google.</translation>
 <translation id="3335672657969596251">لا يعمل Google Chrome بموجب نظام التشغيل <ph name="OS_NAME"/>.</translation>
 <translation id="4458285410772214805">الرجاء الخروج ثم تسجيل الدخول حتى يسري هذا التغيير.</translation>
@@ -197,6 +202,7 @@
 <translation id="1001534784610492198">أرشيف المثبت تالف أو غير صالح. يُرجى تنزيل Google Chrome مرة أخرى.</translation>
 <translation id="2246246234298806438">لا يمكن لـ Google Chrome عرض معاينة الطباعة عندما يكون عارض PDF المضمّن مفقودًا.</translation>
 <translation id="6626317981028933585">لا يمكن استيراد إعدادات موزيلا فايرفوكس أثناء تشغيل المتصفّح. لاستيراد الإعدادات إلى متصفّح Google Chrome، احفظ عملك وأغلق جميع نوافذ فايرفوكس، ثمّ انقر على زرّ المتابعة.</translation>
+<translation id="7242029209006116544">إنك تسجل الدخول باستخدام حساب مُدار وتمنح المشرف إمكانية التحكم في ملفك الشخصي في Google Chrome. وسيتم ربط بيانات Chrome التابعة لك، مثل التطبيقات والإشارات المرجعية والسجلّ وكلمات المرور والإعدادات الأخرى بالمستخدم <ph name="USER_NAME"/>. وستتمكن من حذف هذه البيانات عبر لوحة تحكم حسابات Google، ولكنك لن تتمكن من إقران هذه البيانات بحساب آخر. ويُمكنك اختيار إنشاء ملف شخصي جديد للإبقاء على بياناتك الحالية في Chrome بشكل مستقل. <ph name="LEARN_MORE"/></translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="1698376642261615901">إن Google Chrome هو متصفح ويب يشغّل صفحات الويب والتطبيقات بسرعة خاطفة. فهذا المتصفح سريع ويتميز بالثبات وسهولة الاستخدام، ويمكنك من خلاله تصفح الويب بقدر أكبر من الأمان من خلال وجود حماية مضمنة داخله ضد البرامج الضارة والتصيّد.</translation>
 <translation id="3419750618886995598">تحديث إطار Google Chrome</translation>
@@ -205,7 +211,6 @@
 <translation id="6049075767726609708">قام أحد المشرفين بتثبيت Google Chrome على هذا الجهاز، وهو متاح لجميع المستخدمين. سيحل Google Chrome على مستوى النظام محل النسخة المثبتة على مستوى المستخدم لديك الآن.</translation>
 <translation id="4338032231047635328">لقد حاولت الوصول إلى &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;، ولكن الشهادة التي قدّمها الخادم تحتوي على أخطاء. يتعذر على Google Chrome استخدام شهادة تحتوي على أخطاء، ويتعذر عليه التحقق من هوية الموقع الذي حاولت الاتصال به.</translation>
 <translation id="3870154837782082782">Google Inc‎.‎</translation>
-<translation id="1847321074516120686">إعدادات الملء التلقائي في Chrome</translation>
 <translation id="3836351788193713666">أوشك الانتهاء من التحديث! إعادة تشغيل Google Chrome لإنهاء التحديث.</translation>
 <translation id="7106741999175697885">مدير المهام - Google Chrome</translation>
 <translation id="8449380764213232436">Google Chrome في صدد استيراد العناصر التالية من <ph name="BROWSER_COMPONENT"/>:</translation>

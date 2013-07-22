@@ -9,11 +9,13 @@
 <translation id="2208514473086078157">ポリシー設定により、Chrome リモート デスクトップのホストとしてこのパソコンを共有することはできません。詳しくはシステム管理者にお問い合わせください。</translation>
 <translation id="2801119484858626560">互換性のないバージョンの Chrome リモート デスクトップが検出されました。最新バージョンの Chrome と Chrome リモート デスクトップが両方のパソコンにインストールされていることを確認して、もう一度お試しください。</translation>
 <translation id="6998989275928107238">接続先</translation>
+<translation id="406849768426631008">他のユーザーがサポートを必要としているときに、ビデオ チャットしながらサポートできます。<ph name="LINK_BEGIN"/>Google ハングアウトのリモート デスクトップ機能<ph name="LINK_END"/>をお試しください。</translation>
 <translation id="3258789396564295715">Chrome リモート デスクトップを使用して、このパソコンに安全にアクセスできます。</translation>
 <translation id="5070121137485264635">リモート ホストで、サードパーティ ウェブサイトへの認証が求められています。続行するには、次のアドレスにアクセスできるように Chrome リモート デスクトップに追加の権限を与える必要があります:</translation>
 <translation id="4808503597364150972"><ph name="HOSTNAME"/> の PIN を入力してください。</translation>
 <translation id="7672203038394118626">このパソコンのリモート接続が無効になりました。</translation>
 <translation id="8244400547700556338">詳細を見る。</translation>
+<translation id="4368630973089289038">Chromoting の品質向上にご協力ください。<ph name="LINK_BEGIN"/>アンケートに回答する<ph name="LINK_END"/></translation>
 <translation id="332624996707057614">パソコン名を編集</translation>
 <translation id="1996161829609978754">Chromoting ホスト インストーラをダウンロードしています。ダウンロードが完了したら、続行する前にインストーラを実行してください。</translation>
 <translation id="7658239707568436148">キャンセル</translation>
@@ -43,10 +45,10 @@
 <translation id="174018511426417793">パソコンが登録されていません。パソコンへのリモート接続を有効にするには、対象となるパソコンに Chrome リモート デスクトップをインストールし、[<ph name="BUTTON_NAME"/>] をクリックしてください。</translation>
 <translation id="8525306231823319788">全画面表示</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME"/>（最新ではありません）</translation>
+<translation id="327263477022142889">Chrome リモート デスクトップの品質向上にご協力ください。<ph name="LINK_BEGIN"/>アンケートに回答する<ph name="LINK_END"/></translation>
 <translation id="5702987232842159181">接続済み:</translation>
 <translation id="4736223761657662401">接続履歴</translation>
 <translation id="4430915108080446161">アクセス コードを生成しています...</translation>
-<translation id="7022800415798056893">アンケートに回答する</translation>
 <translation id="8228265668171617545">互換性のないバージョンの Chromoting が検出されました。最新バージョンの Chrome と Chromoting が両方のパソコンにインストールされていることを確認して、もう一度お試しください。</translation>
 <translation id="6985691951107243942"><ph name="HOSTNAME"/> へのリモート接続を無効にしてもよろしいですか？元に戻す場合は、該当のパソコンにアクセスして接続を再び有効にする必要があります。</translation>
 <translation id="9149992051684092333">デスクトップの共有を開始するには、共有するユーザーに以下のアクセス コードをお知らせください。</translation>
@@ -77,7 +79,6 @@
 <translation id="3933246213702324812"><ph name="HOSTNAME"/> の Chromoting は最新ではないため、更新する必要があります。</translation>
 <translation id="6193698048504518729"><ph name="HOSTNAME"/> に接続</translation>
 <translation id="3020807351229499221">PIN を更新できませんでした。しばらくしてからもう一度お試しください。</translation>
-<translation id="785147662223870933">Chrome リモート デスクトップの品質向上にご協力ください</translation>
 <translation id="579702532610384533">再接続</translation>
 <translation id="4211066471404647515">Chromoting に必要なコンポーネントが見つかりません。実行している Chrome のバージョンが最新であることを確認して、もう一度お試しください。</translation>
 <translation id="5265129178187621741">（この機能は現在 Chromebook に対応していません。対応までしばらくお待ちください。）</translation>
@@ -119,7 +120,7 @@
 <translation id="652218476070540101">このパソコン用の PIN を更新しています...</translation>
 <translation id="5308380583665731573">接続</translation>
 <translation id="7319983568955948908">共有を停止</translation>
-<translation id="2229673624483529540">Chromoting の品質向上にご協力ください</translation>
+<translation id="1462361961931793308">このパソコンからこのホストに接続するときに PIN の再入力を要求しない</translation>
 <translation id="6668065415969892472">PIN を更新しました。</translation>
 <translation id="4277736576214464567">アクセス コードが無効です。もう一度入力してください。</translation>
 <translation id="979100198331752041"><ph name="HOSTNAME"/> の Chrome リモート デスクトップは最新ではないため、更新する必要があります。</translation>

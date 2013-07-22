@@ -9,11 +9,13 @@
 <translation id="2208514473086078157">Nastavitve pravilnika ne dovoljujejo skupne rabe tega računalnika kot gostitelja Oddaljenega namizja za Chrome. Če želite pomoč, se obrnite na sistemskega skrbnika.</translation>
 <translation id="2801119484858626560">Zaznana je bila nezdružljiva različica Oddaljenega namizja za Chrome. Preverite, ali imate v obeh računalnikih najnovejši različici Google Chroma in Oddaljenega namizja za Chrome, ter poskusite znova.</translation>
 <translation id="6998989275928107238">Za</translation>
+<translation id="406849768426631008">Želite nekomu pomagati in hkrati v živo prek videa klepetati z njimi? Preskusite <ph name="LINK_BEGIN"/> Oddaljeno namizje v klepetalnicah Google Hangouts<ph name="LINK_END"/>.</translation>
 <translation id="3258789396564295715">Oddaljeno namizje za Chrome omogoča varen dostop do tega računalnika.</translation>
 <translation id="5070121137485264635">Oddaljeni gostitelj zahteva, da previte pristnost na spletnem mestu tretje osebe. Če želite nadaljevati, morate Oddaljenemu namizju za Chrome dodeliti dodatna dovoljenja za dostop do tega naslova:</translation>
 <translation id="4808503597364150972">Vnesite kodo PIN za gostitelja <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">Oddaljene povezave za ta računalnik so onemogočene.</translation>
 <translation id="8244400547700556338">Več o tem.</translation>
+<translation id="4368630973089289038">Želite pomagati izboljšati oddaljeno povezovanje s Chromom? <ph name="LINK_BEGIN"/>Sodelujte v anketi.<ph name="LINK_END"/></translation>
 <translation id="332624996707057614">Urejanje imena računalnika</translation>
 <translation id="1996161829609978754">Chrome prenaša namestitveni program za gostitelja Oddaljenega povezovanja s Chromom. Po končanem prenosu zaženite namestitveni program, preden nadaljujete.</translation>
 <translation id="7658239707568436148">Prekliči</translation>
@@ -43,10 +45,10 @@
 <translation id="174018511426417793">Nimate registriranih računalnikov. Če želite omogočiti oddaljene povezave z računalnikom, vanj namestite Oddaljeno namizje za Chrome in kliknite »<ph name="BUTTON_NAME"/>«.</translation>
 <translation id="8525306231823319788">Celozaslonsko</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME"/> (zastarelo)</translation>
+<translation id="327263477022142889">Želite pomagati izboljšati oddaljeno namizje za Chrome? <ph name="LINK_BEGIN"/>Sodelujte v anketi.<ph name="LINK_END"/></translation>
 <translation id="5702987232842159181">Povezava vzpostavljena:</translation>
 <translation id="4736223761657662401">Zgodovina povezav</translation>
 <translation id="4430915108080446161">Ustvarjanje kode za dostop ...</translation>
-<translation id="7022800415798056893">Sodelujte v anketi</translation>
 <translation id="8228265668171617545">Zaznana je bila nezdružljiva različica Oddaljenega povezovanja s Chromom. Preverite, ali imate v obeh računalnikih najnovejši različici Google Chroma in Oddaljenega povezovanja s Chromom, ter poskusite znova.</translation>
 <translation id="6985691951107243942">Ali ste prepričani, da želite onemogočiti oddaljene povezave z gostiteljem <ph name="HOSTNAME"/>? Če si premislite, boste morali v tistem računalniku znova omogočiti povezave.</translation>
 <translation id="9149992051684092333">Če želite začeti skupno rabo namizja, pošljite spodnjo kodo za dostop osebi, ki vam bo pomagala.</translation>
@@ -77,7 +79,6 @@
 <translation id="3933246213702324812">Oddaljeno povezovanje s Chromom pri gostitelju <ph name="HOSTNAME"/> je zastarelo in ga je treba posodobiti.</translation>
 <translation id="6193698048504518729">Vzpostavljanje povezave z gostiteljem <ph name="HOSTNAME"/></translation>
 <translation id="3020807351229499221">Kode PIN ni bilo mogoče posodobiti. Poskusite znova pozneje.</translation>
-<translation id="785147662223870933">Želite pomagati izboljšati Oddaljeno namizje za Chrome?</translation>
 <translation id="579702532610384533">Znova poveži</translation>
 <translation id="4211066471404647515">Ni nekaterih delov, ki so zahtevani za Oddaljeno povezovanje s Chromom. Preverite, ali imate najnovejšo različico Google Chroma in poskusite znova.</translation>
 <translation id="5265129178187621741">(ta funkcija še ni na voljo za računalnike Chromebook … preverite pozneje)</translation>
@@ -119,7 +120,7 @@
 <translation id="652218476070540101">PIN za ta računalnik se posodablja ...</translation>
 <translation id="5308380583665731573">Vzpostavi povezavo</translation>
 <translation id="7319983568955948908">Prekliči skupno rabo</translation>
-<translation id="2229673624483529540">Želite pomagati izboljšati Oddaljeno povezovanje s Chromom?</translation>
+<translation id="1462361961931793308">Pri povezovanju s tem gostiteljem iz tega računalnika ne vprašaj več za PIN.</translation>
 <translation id="6668065415969892472">PIN je posodobljen.</translation>
 <translation id="4277736576214464567">Koda za dostop je neveljavna. Poskusite znova.</translation>
 <translation id="979100198331752041">Oddaljeno namizje za Chrome pri gostitelju <ph name="HOSTNAME"/> je zastarelo in ga je treba posodobiti.</translation>

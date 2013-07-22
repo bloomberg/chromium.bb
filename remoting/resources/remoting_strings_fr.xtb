@@ -9,11 +9,13 @@
 <translation id="2208514473086078157">Les paramètres des règles n'autorisent pas le partage de cet ordinateur en tant qu'hôte du bureau à distance Google Chrome. Veuillez contacter votre administrateur système pour obtenir de l'aide.</translation>
 <translation id="2801119484858626560">Une version incompatible du bureau à distance Google Chrome a été détectée. Veuillez vous assurer que vous utilisez la dernière version de Google Chrome et du bureau à distance sur les deux ordinateurs, puis réessayer.</translation>
 <translation id="6998989275928107238">À</translation>
+<translation id="406849768426631008">Vous voulez aider une personne au cours d'un chat vidéo avec elle ? Essayez <ph name="LINK_BEGIN"/> le Bureau à distance dans Google Hangouts<ph name="LINK_END"/>.</translation>
 <translation id="3258789396564295715">Vous pouvez accéder à cet ordinateur en toute sécurité via le bureau à distance Google Chrome.</translation>
 <translation id="5070121137485264635">L'hôte distant nécessite votre authentification auprès d'un site Web tiers. Pour continuer, vous devez accorder au Bureau à distance Chrome des autorisations supplémentaires afin d'accéder à l'adresse suivante :</translation>
 <translation id="4808503597364150972">Veuillez saisir le code d'accès pour <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">Les connexions à distance ont été désactivées pour cet ordinateur.</translation>
 <translation id="8244400547700556338">En savoir plus</translation>
+<translation id="4368630973089289038">Vous voulez nous aider à améliorer Chromoting ? <ph name="LINK_BEGIN"/>Répondez à notre enquête<ph name="LINK_END"/>.</translation>
 <translation id="332624996707057614">Modifier le nom de l'ordinateur</translation>
 <translation id="1996161829609978754">Le programme d'installation de l'hôte de Google Chromoting est en cours de téléchargement dans Google Chrome. Une fois le téléchargement terminé, veuillez lancer le programme d'installation avant de continuer.</translation>
 <translation id="7658239707568436148">Annuler</translation>
@@ -43,10 +45,10 @@
 <translation id="174018511426417793">Aucun ordinateur n'est enregistré. Pour activer les connexions à distance à un ordinateur, installez l'application Bureau à distance Google Chrome sur celui-ci, puis cliquez sur &quot;<ph name="BUTTON_NAME"/>&quot;.</translation>
 <translation id="8525306231823319788">Plein écran</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME"/> (obsolète)</translation>
+<translation id="327263477022142889">Vous voulez nous aider à améliorer le Bureau à distance Chrome ? <ph name="LINK_BEGIN"/>Répondez à notre enquête<ph name="LINK_END"/>.</translation>
 <translation id="5702987232842159181">Connecté :</translation>
 <translation id="4736223761657662401">Historique des connexions</translation>
 <translation id="4430915108080446161">Génération du code d'accès…</translation>
-<translation id="7022800415798056893">Participer au sondage</translation>
 <translation id="8228265668171617545">Une version incompatible de Google Chromoting a été détectée. Veuillez vous assurer que vous utilisez la dernière version de Google Chrome et de Google Chromoting sur les deux ordinateurs, puis réessayer.</translation>
 <translation id="6985691951107243942">Voulez-vous vraiment désactiver les connexions à distance à <ph name="HOSTNAME"/> ? Si vous changez d'avis, vous devrez réactiver les connexions depuis cet ordinateur.</translation>
 <translation id="9149992051684092333">Pour démarrer le partage de votre bureau, communiquez le code d'accès ci-dessous à la personne qui vous assistera.</translation>
@@ -77,7 +79,6 @@
 <translation id="3933246213702324812">La fonctionnalité Chromoting sur <ph name="HOSTNAME"/> est obsolète. Vous devez la mettre à jour.</translation>
 <translation id="6193698048504518729">Se connecter à <ph name="HOSTNAME"/></translation>
 <translation id="3020807351229499221">Échec de la mise à jour du code d'accès. Veuillez réessayer ultérieurement.</translation>
-<translation id="785147662223870933">Vous voulez contribuer à l'amélioration du bureau à distance Chrome ?</translation>
 <translation id="579702532610384533">Reconnexion</translation>
 <translation id="4211066471404647515">Certains composants nécessaires à l'utilisation de Google Chromoting sont introuvables. Veuillez vous assurer que vous utilisez la dernière version de Google Chrome, puis réessayer.</translation>
 <translation id="5265129178187621741">Cette fonctionnalité n'est pas encore disponible pour les Chromebooks. Merci de votre patience.</translation>
@@ -119,7 +120,7 @@
 <translation id="652218476070540101">Mise à jour du code d'accès pour cet ordinateur en cours…</translation>
 <translation id="5308380583665731573">Se connecter</translation>
 <translation id="7319983568955948908">Arrêter le partage</translation>
-<translation id="2229673624483529540">Vous voulez contribuer à l'amélioration de Chromoting ?</translation>
+<translation id="1462361961931793308">Ne pas redemander de code PIN lors de la connexion à cet hôte à partir de cet ordinateur</translation>
 <translation id="6668065415969892472">Votre code d'accès a été mis à jour.</translation>
 <translation id="4277736576214464567">Le code d'accès n'est pas valide. Veuillez réessayer.</translation>
 <translation id="979100198331752041">Le bureau à distance Chrome sur <ph name="HOSTNAME"/> est obsolète. Vous devez le mettre à jour.</translation>

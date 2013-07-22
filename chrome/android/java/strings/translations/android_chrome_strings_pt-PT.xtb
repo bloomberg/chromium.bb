@@ -1,23 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="pt-PT">
-<translation id="1491151370853475546">Atualizar Página</translation>
+<translation id="1491151370853475546">Atualizar esta Página</translation>
 <translation id="7658239707568436148">Cancelar</translation>
-<translation id="6458785801851713928">A sincronização não está disponível para o seu domínio.</translation>
-<translation id="1623104350909869708">Evitar que esta página crie caixas de diálogo adicionais</translation>
 <translation id="7791543448312431591">Adicionar</translation>
-<translation id="3896036286668839683">Visualizador de Certificados</translation>
 <translation id="8730621377337864115">Concluído</translation>
-<translation id="4170011742729630528">O serviço não está disponível; tente novamente mais tarde.</translation>
-<translation id="8627706565932943526">Erro de sincronização</translation>
-<translation id="3136378934686431938">Atualize os detalhes de início de sessão.</translation>
-<translation id="4510973599275542560">Não atualizar</translation>
 <translation id="9154176715500758432">Permanecer nesta página</translation>
-<translation id="7063006564040364415">Não foi possível estabelecer ligação ao servidor de sincronização.</translation>
 <translation id="9065203028668620118">Editar</translation>
 <translation id="6512448926095770873">Sair desta página</translation>
-<translation id="5032574515228824816">Mensagem</translation>
-<translation id="177206394375746242">Se clicar no botão abaixo, está a aceitar os termos de utilização e, também, um pouco mais de texto para garantir que isto não é só uma linha.</translation>
-<translation id="8830134817694641714">A obter detalhes de pagamento</translation>
 <translation id="6965382102122355670">OK</translation>
 </translationbundle>

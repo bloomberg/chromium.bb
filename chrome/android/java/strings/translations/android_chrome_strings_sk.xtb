@@ -1,23 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sk">
-<translation id="1491151370853475546">Načít. stránku znova</translation>
+<translation id="1491151370853475546">Znova načítať stránku</translation>
 <translation id="7658239707568436148">Zrušiť</translation>
-<translation id="6458785801851713928">Synchronizácia nie je pre vašu doménu k dispozícii.</translation>
-<translation id="1623104350909869708">Zakázať tejto stránke otvárať ďalšie dialógové okná</translation>
 <translation id="7791543448312431591">Pridať</translation>
-<translation id="3896036286668839683">Zobrazovač certifikátov</translation>
 <translation id="8730621377337864115">Hotovo</translation>
-<translation id="4170011742729630528">Služba nie je k dispozícii; skúste to znova neskôr.</translation>
-<translation id="8627706565932943526">Chyba synchronizácie</translation>
-<translation id="3136378934686431938">Aktualizujte svoje prihlasovacie údaje.</translation>
-<translation id="4510973599275542560">Nenačítať znova</translation>
 <translation id="9154176715500758432">Zostať na tejto stránke</translation>
-<translation id="7063006564040364415">K synchronizačnému serveru sa nepodarilo pripojiť.</translation>
 <translation id="9065203028668620118">Upraviť</translation>
 <translation id="6512448926095770873">Odísť z tejto stránky</translation>
-<translation id="5032574515228824816">Výzva</translation>
-<translation id="177206394375746242">Kliknutím na tlačidlo nižšie vyjadrujete súhlas so zmluvnými podmienkami. A takisto s nejakým ďalším textom, ktorý je tu na to, aby táto správa nemala iba jeden riadok.</translation>
-<translation id="8830134817694641714">Prebieha načítanie platobných podrobností</translation>
 <translation id="6965382102122355670">OK</translation>
 </translationbundle>

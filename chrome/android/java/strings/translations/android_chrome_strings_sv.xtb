@@ -1,23 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sv">
-<translation id="1491151370853475546">Läs in sidan igen</translation>
+<translation id="1491151370853475546">Hämta sidan igen</translation>
 <translation id="7658239707568436148">Avbryt</translation>
-<translation id="6458785801851713928">Synkronisering är inte tillgänglig för din domän.</translation>
-<translation id="1623104350909869708">Förhindra att den här sidan öppnar ytterligare dialogrutor</translation>
 <translation id="7791543448312431591">Lägg till</translation>
-<translation id="3896036286668839683">Certifikatvisare</translation>
 <translation id="8730621377337864115">Klart</translation>
-<translation id="4170011742729630528">Tjänsten är inte tillgänglig. Försök igen senare.</translation>
-<translation id="8627706565932943526">Synkroniseringsfel</translation>
-<translation id="3136378934686431938">Uppdatera dina inloggningsuppgifter.</translation>
-<translation id="4510973599275542560">Läs inte in igen</translation>
 <translation id="9154176715500758432">Stanna på den här sidan</translation>
-<translation id="7063006564040364415">Det gick inte att ansluta till synkroniseringsservern.</translation>
 <translation id="9065203028668620118">Redigera</translation>
 <translation id="6512448926095770873">Lämna denna sida</translation>
-<translation id="5032574515228824816">Fråga</translation>
-<translation id="177206394375746242">När du klickar på knappen nedan godkänner du användarvillkoren. Och så lite mer text så att det här blir längre än en rad.</translation>
-<translation id="8830134817694641714">Betalningsinformation hämtas</translation>
 <translation id="6965382102122355670">OK</translation>
 </translationbundle>

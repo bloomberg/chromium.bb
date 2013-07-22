@@ -9,11 +9,13 @@
 <translation id="2208514473086078157">Postavke pravila ne dopuštaju dijeljenje ovog računala kao hosta za Udaljenu radnu površinu Chrome. Obratite se administratoru sustava za pomoć.</translation>
 <translation id="2801119484858626560">Otkrivena je nekompatibilna verzija aplikacije Udaljena radna površina Chrome. Provjerite imate li na oba računala najnoviju verziju sustava Chrome i aplikacije Udaljena radna površina Chrome, a zatim pokušajte ponovo.</translation>
 <translation id="6998989275928107238">Prima</translation>
+<translation id="406849768426631008">Želite li pomoći nekome tijekom videochata? Isprobajte <ph name="LINK_BEGIN"/> Udaljenu radnu površinu na usluzi Google Hangouts<ph name="LINK_END"/>.</translation>
 <translation id="3258789396564295715">Ovom računalu možete sigurno pristupiti pomoću Udaljene radne površine Chrome.</translation>
 <translation id="5070121137485264635">Udaljeni host zahtijeva autentifikaciju web-lokacije treće strane. Da biste nastavili, morate dati Udaljenoj radnoj površini Chrome dodatne dozvole za pristup ovoj adresi:</translation>
 <translation id="4808503597364150972">Unesite svoj PIN za host <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">Na ovom su računalu onemogućene daljinske veze.</translation>
 <translation id="8244400547700556338">Saznajte kako.</translation>
+<translation id="4368630973089289038">Želite li pomoći poboljšati Chromoting? <ph name="LINK_BEGIN"/>Ispunite upitnik.<ph name="LINK_END"/></translation>
 <translation id="332624996707057614">Uredi naziv računala</translation>
 <translation id="1996161829609978754">Chrome preuzima instalacijski program hosta za Chromoting. Nakon završetka preuzimanja pokrenite alat za instalaciju prije nego što nastavite.</translation>
 <translation id="7658239707568436148">Odustani</translation>
@@ -43,10 +45,10 @@
 <translation id="174018511426417793">Nije registrirano nijedno računalo. Da biste omogućili daljinske veze s računalom, instalirajte Udaljenu radnu površinu Chrome pa kliknite &quot;<ph name="BUTTON_NAME"/>&quot;.</translation>
 <translation id="8525306231823319788">Cijeli zaslon</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME"/> (zastarjelo)</translation>
+<translation id="327263477022142889">Želite li pomoći poboljšati Udaljenu radnu površinu Chrome? <ph name="LINK_BEGIN"/>Ispunite upitnik.<ph name="LINK_END"/></translation>
 <translation id="5702987232842159181">Povezan:</translation>
 <translation id="4736223761657662401">Povijest veza</translation>
 <translation id="4430915108080446161">Generiranje pristupnog koda...</translation>
-<translation id="7022800415798056893">Ispunite anketu</translation>
 <translation id="8228265668171617545">Otkrivena je nekompatibilna verzija aplikacije Chromoting. Provjerite da na oba računala imate najnoviju verziju sustava Chrome i Chromoting pa pokušajte ponovo.</translation>
 <translation id="6985691951107243942">Jeste li sigurni da želite onemogućiti daljinske veze s hostom <ph name="HOSTNAME"/>? Ako se predomislite, morat ćete se spojiti na to računalo da biste ponovo omogućili veze.</translation>
 <translation id="9149992051684092333">Da biste započeli dijeliti radnu površinu, pošaljite pristupni kôd u nastavku osobi koja će vam pomagati.</translation>
@@ -77,7 +79,6 @@
 <translation id="3933246213702324812">Chromoting na hostu <ph name="HOSTNAME"/> zastario je i mora se ažurirati.</translation>
 <translation id="6193698048504518729">Povezivanje s hostom <ph name="HOSTNAME"/></translation>
 <translation id="3020807351229499221">PIN nije uspješno ažuriran. Pokušajte ponovo kasnije.</translation>
-<translation id="785147662223870933">Želite li pomoći poboljšati udaljenu radnu površinu Chrome?</translation>
 <translation id="579702532610384533">Ponovno povezivanje</translation>
 <translation id="4211066471404647515">Nedostaju neke komponente za Chromoting. Provjerite jeste li pokrenuli najnoviju verziju sustava Chrome i pokušajte ponovo.</translation>
 <translation id="5265129178187621741">(ova značajka još nije dostupna za Chromebookove... pratite nas i dalje)</translation>
@@ -119,7 +120,7 @@
 <translation id="652218476070540101">U tijeku je ažuriranje PIN-a za ovo računalo…</translation>
 <translation id="5308380583665731573">Poveži se</translation>
 <translation id="7319983568955948908">Zaustavi dijeljenje</translation>
-<translation id="2229673624483529540">Želite li pomoći poboljšati Chromoting?</translation>
+<translation id="1462361961931793308">Više ne traži PIN prilikom povezivanja s tim hostom s ovog računala.</translation>
 <translation id="6668065415969892472">Ažuriran je PIN.</translation>
 <translation id="4277736576214464567">Pristupni je kôd nevažeći. Pokušajte ponovo.</translation>
 <translation id="979100198331752041">Udaljena radna površina Chrome na hostu <ph name="HOSTNAME"/> zastarjela je i mora se ažurirati.</translation>

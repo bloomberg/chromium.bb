@@ -1,23 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="uk">
-<translation id="1491151370853475546">Оновити цю сторінку</translation>
+<translation id="1491151370853475546">Перезавантажити цю сторінку</translation>
 <translation id="7658239707568436148">Скасувати</translation>
-<translation id="6458785801851713928">Синхронізація не доступна для вашого домену.</translation>
-<translation id="1623104350909869708">Заборонити цій сторінці створювати додаткові діалогові вікна.</translation>
 <translation id="7791543448312431591">Додати</translation>
-<translation id="3896036286668839683">Перегляд сертифікатів</translation>
 <translation id="8730621377337864115">Виконано</translation>
-<translation id="4170011742729630528">Служба не доступна. Повторіть спробу пізніше.</translation>
-<translation id="8627706565932943526">Помилка синхронізації</translation>
-<translation id="3136378934686431938">Оновіть свої дані для входу.</translation>
-<translation id="4510973599275542560">Не оновлювати</translation>
 <translation id="9154176715500758432">Залишатися на цій сторінці</translation>
-<translation id="7063006564040364415">Не вдалося з’єднатись із сервером синхронізації.</translation>
 <translation id="9065203028668620118">Редагувати</translation>
 <translation id="6512448926095770873">Залишити цю сторінку</translation>
-<translation id="5032574515228824816">Підказка</translation>
-<translation id="177206394375746242">Натиснувши кнопку нижче, ви приймаєте умови використання.</translation>
-<translation id="8830134817694641714">Отримання інформації про платіж</translation>
 <translation id="6965382102122355670">ОК</translation>
 </translationbundle>

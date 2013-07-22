@@ -9,11 +9,13 @@
 <translation id="2208514473086078157">政策設定不允許以 Chrome 遠端桌面主機的形式共用這台電腦。如需協助，請與您的系統管理員聯絡。</translation>
 <translation id="2801119484858626560">偵測到不相容的 Chrome 遠端桌面版本。請確認您與共用對象的電腦使用的都是最新版本的 Chrome 和 Chrome 遠端桌面，然後再試一次。</translation>
 <translation id="6998989275928107238">目標電腦</translation>
+<translation id="406849768426631008">想要透過視訊通訊功能協助其他使用者解決問題嗎？建議您試試 <ph name="LINK_BEGIN"/>Google Hangouts 的遠端桌面<ph name="LINK_END"/>。</translation>
 <translation id="3258789396564295715">您可以透過 Chrome 遠端桌面安全地存取這台電腦。</translation>
 <translation id="5070121137485264635">遠端主機要求您向第三方網站進行驗證。如要繼續，您必須授予額外權限，讓 Chrome 遠端桌面能夠存取這個位址：</translation>
 <translation id="4808503597364150972">請輸入 <ph name="HOSTNAME"/> 的 PIN。</translation>
 <translation id="7672203038394118626">這台電腦的遠端連線已停用。</translation>
 <translation id="8244400547700556338">瞭解詳情</translation>
+<translation id="4368630973089289038">想要協助改善 Chromoting 嗎？<ph name="LINK_BEGIN"/>請填寫我們的問卷調查<ph name="LINK_END"/>。</translation>
 <translation id="332624996707057614">編輯電腦名稱</translation>
 <translation id="1996161829609978754">Chrome 正在下載 Chromoting 主機安裝程式。下載完成後，請先執行安裝程式，然後再繼續操作。</translation>
 <translation id="7658239707568436148">取消</translation>
@@ -43,10 +45,10 @@
 <translation id="174018511426417793">您尚未註冊任何電腦。如要為電腦啟用遠端連線，請在電腦上安裝 Chrome 遠端桌面，然後按一下 [<ph name="BUTTON_NAME"/>]。</translation>
 <translation id="8525306231823319788">全螢幕</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME"/> (版本過舊)</translation>
+<translation id="327263477022142889">想要協助改善 Chrome 遠端桌面嗎？<ph name="LINK_BEGIN"/>請填寫我們的問卷調查<ph name="LINK_END"/>。</translation>
 <translation id="5702987232842159181">已連線的電腦：</translation>
 <translation id="4736223761657662401">連線紀錄</translation>
 <translation id="4430915108080446161">正在產生存取碼...</translation>
-<translation id="7022800415798056893">參加調查</translation>
 <translation id="8228265668171617545">偵測到不相容的 Chromoting 遠端桌面版本。請確認您與共用對象的電腦使用的都是最新版本的 Chrome 和 Chromoting，然後再試一次。</translation>
 <translation id="6985691951107243942">您是否確定要停用與 <ph name="HOSTNAME"/> 之間的遠端連線？如果之後改變心意的話，您必須親身前往該電腦所在位置並修改設定後，才能重新啟用連線。</translation>
 <translation id="9149992051684092333">如要開始共用您的電腦，請將下方的存取碼告知要協助您的人員。</translation>
@@ -77,7 +79,6 @@
 <translation id="3933246213702324812"><ph name="HOSTNAME"/> 上的 Chromoting 版本過舊，必須更新。</translation>
 <translation id="6193698048504518729">連線至 <ph name="HOSTNAME"/></translation>
 <translation id="3020807351229499221">無法更新 PIN，請稍後再試。</translation>
-<translation id="785147662223870933">想要協助改善 Chrome 遠端桌面嗎？</translation>
 <translation id="579702532610384533">重新連線</translation>
 <translation id="4211066471404647515">找不到 Chromoting 所需的部分元件。請確認您執行的是最新版本的 Chrome，然後再試一次。</translation>
 <translation id="5265129178187621741">(Chromebook 目前暫不支援這項功能，請密切注意)</translation>
@@ -119,7 +120,7 @@
 <translation id="652218476070540101">正在更新這台電腦的 PIN...</translation>
 <translation id="5308380583665731573">連線</translation>
 <translation id="7319983568955948908">停止共用</translation>
-<translation id="2229673624483529540">想要協助改善 Chromoting 嗎？</translation>
+<translation id="1462361961931793308">從這台電腦連線至這個主機時，請勿再次詢問 PIN。</translation>
 <translation id="6668065415969892472">您的 PIN 已更新。</translation>
 <translation id="4277736576214464567">存取碼無效，請再試一次。</translation>
 <translation id="979100198331752041"><ph name="HOSTNAME"/> 上的 Chrome 遠端桌面版本過舊，必須更新。</translation>

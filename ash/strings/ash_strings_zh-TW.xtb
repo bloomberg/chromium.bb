@@ -9,12 +9,14 @@
 <translation id="5571066253365925590">藍牙已啟用</translation>
 <translation id="9074739597929991885">藍牙</translation>
 <translation id="2268130516524549846">藍牙已停用</translation>
+<translation id="3775358506042162758">多帳戶登入功能一次只能登入最多 3 個帳戶。</translation>
 <translation id="370649949373421643">啟用 Wi-Fi</translation>
 <translation id="3626281679859535460">亮度</translation>
 <translation id="8054466585765276473">正在計算電池使用時間。</translation>
 <translation id="7982789257301363584">網路</translation>
 <translation id="5565793151875479467">Proxy...</translation>
 <translation id="938582441709398163">鍵盤自訂快速鍵</translation>
+<translation id="4387004326333427325">遠端已拒絕驗證憑證</translation>
 <translation id="6979158407327259162">Google 雲端硬碟</translation>
 <translation id="6943836128787782965">HTTP 擷取失敗</translation>
 <translation id="2297568595583585744">狀態匣</translation>
@@ -29,50 +31,59 @@
 <translation id="3621712662352432595">音訊設定</translation>
 <translation id="1812696562331527143">您的輸入法已變更為 <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>第三方<ph name="END_LINK"/>)。
 按下 Shift + Alt 鍵即可切換。</translation>
+<translation id="2127372758936585790">低功率充電器</translation>
 <translation id="3846575436967432996">沒有可用的網路資訊</translation>
 <translation id="3026237328237090306">設定行動數據</translation>
 <translation id="785750925697875037">查看行動帳戶</translation>
 <translation id="153454903766751181">正在初始化行動數據機...</translation>
+<translation id="4628814525959230255">透過 Hangouts 與 <ph name="HELPER_NAME"/> 分享螢幕控制權。</translation>
+<translation id="8343941333792395995">已旋轉 <ph name="DISPLAY_NAME"/></translation>
 <translation id="7864539943188674973">停用藍牙</translation>
 <translation id="939252827960237676">無法儲存螢幕擷取畫面</translation>
 <translation id="3126069444801937830">重新啟用即可更新</translation>
+<translation id="2268813581635650749">登出所有使用者</translation>
 <translation id="735745346212279324">已中斷 VPN 連線</translation>
 <translation id="7320906967354320621">閒置</translation>
 <translation id="6303423059719347535">電池電量為 <ph name="PERCENTAGE"/>%</translation>
+<translation id="15373452373711364">大型滑鼠游標</translation>
 <translation id="2778346081696727092">無法使用您所提供的使用者名稱或密碼進行驗證</translation>
 <translation id="3294437725009624529">訪客</translation>
 <translation id="8190698733819146287">自訂語言與輸入法...</translation>
 <translation id="2903907270192926896">輸入</translation>
+<translation id="8676770494376880701">已連接低功率充電器</translation>
 <translation id="7170041865419449892">超出範圍</translation>
 <translation id="4804818685124855865">中斷連線</translation>
+<translation id="2544853746127077729">網路已拒絕驗證憑證</translation>
 <translation id="5222676887888702881">登出</translation>
 <translation id="2688477613306174402">設定</translation>
 <translation id="1272079795634619415">停止</translation>
 <translation id="4957722034734105353">瞭解詳情...</translation>
 <translation id="2964193600955408481">停用 WiFi</translation>
 <translation id="811680302244032017">新增裝置...</translation>
+<translation id="4279490309300973883">鏡像</translation>
 <translation id="2509468283778169019">大寫鍵已啟用</translation>
 <translation id="3892641579809465218">內部畫面</translation>
 <translation id="7823564328645135659">同步處理您的設定後，系統已將語言從「<ph name="FROM_LOCALE"/>」變更為「<ph name="TO_LOCALE"/>」。</translation>
 <translation id="3368922792935385530">已連線</translation>
 <translation id="8340999562596018839">互動朗讀</translation>
 <translation id="8654520615680304441">開啟 Wi-Fi...</translation>
-<translation id="4632619405246189264">充電狀態不穩定</translation>
 <translation id="5825747213122829519">您的輸入法已變更為 <ph name="INPUT_METHOD_ID"/>。
 按下 Shift + Alt 鍵即可切換。</translation>
 <translation id="2562916301614567480">私人網路</translation>
 <translation id="6549021752953852991">沒有可用的行動網路</translation>
 <translation id="4379753398862151997">Dear Monitor, it's not working out between us. (系統無法支援該顯示器)</translation>
-<translation id="8448732935696070385">使用非標準電源供應器，可能導致充電狀態不穩定。</translation>
 <translation id="6426039856985689743">停用行動數據</translation>
 <translation id="3087734570205094154">置底</translation>
 <translation id="3742055079367172538">已拍攝螢幕擷取畫面</translation>
+<translation id="8878886163241303700">延伸螢幕</translation>
 <translation id="5271016907025319479">尚未設定 VPN。</translation>
+<translation id="372094107052732682">按兩下 Ctrl+Shift+Q 鍵即可結束。</translation>
 <translation id="6803622936009808957">找不到系統支援的解析度，因此無法顯示鏡像。已改為進入延伸桌面。</translation>
 <translation id="1480041086352807611">示範模式</translation>
 <translation id="3626637461649818317">剩餘電量：<ph name="PERCENTAGE"/>%</translation>
 <translation id="9089416786594320554">輸入法</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
+<translation id="2614835198358683673">您的 Chromebook 可能無法在開機時充電。建議您使用官方提供的充電器。</translation>
 <translation id="1895658205118569222">關閉</translation>
 <translation id="4430019312045809116">音量</translation>
 <translation id="4442424173763614572">DNS 查詢失敗</translation>
@@ -87,7 +98,9 @@
 <translation id="5980301590375426705">結束訪客工作階段</translation>
 <translation id="4471417012762451363">電池電量為 <ph name="PERCENTAGE"/>% (充電中)</translation>
 <translation id="8308637677604853869">前一個選單</translation>
+<translation id="4666297444214622512">無法登入其他帳戶。</translation>
 <translation id="1346748346194534595">向右</translation>
+<translation id="1773212559869067373">本機已拒絕驗證憑證</translation>
 <translation id="8528322925433439945">行動服務 ...</translation>
 <translation id="7049357003967926684">關聯</translation>
 <translation id="8428213095426709021">設定</translation>
@@ -105,23 +118,25 @@
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="1398853756734560583">放到最大</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>：正在連線...</translation>
-<translation id="8639033665604704195">無法使用您所提供的預先共用金鑰進行驗證</translation>
 <translation id="252373100621549798">顯示器不明</translation>
 <translation id="1882897271359938046">正在建立 <ph name="DISPLAY_NAME"/> 鏡像</translation>
+<translation id="2727977024730340865">使用低功率充電器，可能導致充電狀態不穩定。</translation>
 <translation id="3784455785234192852">鎖定</translation>
 <translation id="2805756323405976993">應用程式</translation>
+<translation id="8871072142849158571">已將 <ph name="DISPLAY_NAME"/> 的大小重新調整為 <ph name="RESOLUTION"/></translation>
 <translation id="1512064327686280138">啟用失敗</translation>
 <translation id="5097002363526479830">無法連線至「<ph name="NAME"/>」：<ph name="DETAILS"/></translation>
 <translation id="1850504506766569011">Wi-Fi 已關閉。</translation>
-<translation id="8036518327127111261">無法使用您所提供的憑證進行驗證</translation>
 <translation id="8132793192354020517">已連線至 <ph name="NAME"/></translation>
 <translation id="7052914147756339792">設定桌布...</translation>
 <translation id="8678698760965522072">線上狀態</translation>
+<translation id="2532589005999780174">高反差模式</translation>
 <translation id="1119447706177454957">內部錯誤</translation>
 <translation id="3019353588588144572">電池剩餘充電時間：<ph name="TIME_REMAINING"/></translation>
 <translation id="3473479545200714844">畫面放大鏡</translation>
 <translation id="7005812687360380971">失敗</translation>
 <translation id="882279321799040148">按這裡瀏覽</translation>
+<translation id="5045550434625856497">密碼不正確</translation>
 <translation id="1602076796624386989">啟用行動數據</translation>
 <translation id="6981982820502123353">協助工具</translation>
 <translation id="3157931365184549694">還原</translation>
@@ -130,6 +145,8 @@
 <translation id="225680501294068881">正在掃描裝置...</translation>
 <translation id="5597451508971090205"><ph name="DATE"/><ph name="SHORT_WEEKDAY"/></translation>
 <translation id="4448844063988177157">正在搜尋 Wi-Fi 網路...</translation>
+<translation id="8401662262483418323">無法連線至「<ph name="NAME"/>」：<ph name="DETAILS"/>
+伺服器訊息：<ph name="SERVER_MSG"/></translation>
 <translation id="2475982808118771221">發生錯誤</translation>
 <translation id="7229570126336867161">需要 EVDO</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> 是受 <ph name="DOMAIN"/> 管理的公開工作階段</translation>
@@ -137,15 +154,18 @@
 <translation id="8454013096329229812">Wi-Fi 已開啟。</translation>
 <translation id="4872237917498892622">Alt + 搜尋鍵或 Shift 鍵</translation>
 <translation id="2983818520079887040">設定...</translation>
+<translation id="1717216362413677834">座架模式</translation>
 <translation id="8927026611342028580">已要求連線</translation>
 <translation id="8300849813060516376">OTASP 失敗</translation>
 <translation id="2792498699870441125">Alt + 搜尋鍵</translation>
 <translation id="8660803626959853127">正在同步處理 <ph name="COUNT"/> 個檔案</translation>
 <translation id="3709443003275901162">9+</translation>
 <translation id="639644700271529076">大寫鍵已關閉</translation>
+<translation id="6248847161401822652">按兩下 Control、Shift 和 Q 鍵即可結束。</translation>
 <translation id="6267036997247669271"><ph name="NAME"/>：正在啟用...</translation>
 <translation id="1391854757121130358">您可能已用盡行動數據配額。</translation>
 <translation id="5413208160176941586">本機管理化環境下的使用者</translation>
+<translation id="1059194134494239015"><ph name="DISPLAY_NAME"/>：<ph name="RESOLUTION"/></translation>
 <translation id="4864165860509564259">啟動器位置</translation>
 <translation id="7593891976182323525">搜尋鍵或 Shift 鍵</translation>
 <translation id="7649070708921625228">說明</translation>
@@ -165,12 +185,14 @@
 <translation id="3573179567135747900">改回「<ph name="FROM_LOCALE"/>」(需要重新啟動)</translation>
 <translation id="8103386449138765447">簡訊數：<ph name="MESSAGE_COUNT"/></translation>
 <translation id="5045002648206642691">Google 雲端硬碟設定...</translation>
+<translation id="1510238584712386396">啟動器</translation>
 <translation id="7209101170223508707">大寫鍵已啟用。
 按下 Alt + 搜尋鍵或 Shift 鍵即可取消。</translation>
-<translation id="8061464966246066292">高對比模式</translation>
 <translation id="8940956008527784070">電池電量不足 (<ph name="PERCENTAGE"/>%)</translation>
 <translation id="5102001756192215136">電量尚餘 <ph name="HOUR"/> 小時 <ph name="MINUTE"/> 分鐘</translation>
+<translation id="520760366042891468">透過 Hangouts 分享螢幕控制權。</translation>
 <translation id="8000066093800657092">沒有網路</translation>
+<translation id="4015692727874266537">使用其他帳戶登入...</translation>
 <translation id="5941711191222866238">縮到最小</translation>
 <translation id="6911468394164995108">加入其他網路...</translation>
 <translation id="412065659894267608">尚需 <ph name="HOUR"/> 小時 <ph name="MINUTE"/> 分鐘才能充滿電</translation>

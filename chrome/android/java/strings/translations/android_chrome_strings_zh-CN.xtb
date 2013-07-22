@@ -3,21 +3,10 @@
 <translationbundle lang="zh-CN">
 <translation id="1491151370853475546">重新加载此页</translation>
 <translation id="7658239707568436148">取消</translation>
-<translation id="6458785801851713928">您的域不支持同步功能。</translation>
-<translation id="1623104350909869708">阻止此页创建其他对话框</translation>
 <translation id="7791543448312431591">添加</translation>
-<translation id="3896036286668839683">证书查看器</translation>
 <translation id="8730621377337864115">完成</translation>
-<translation id="4170011742729630528">该服务不可用，请稍后重试。</translation>
-<translation id="8627706565932943526">同步错误</translation>
-<translation id="3136378934686431938">请更新您的登录详细信息。</translation>
-<translation id="4510973599275542560">不重新加载</translation>
 <translation id="9154176715500758432">留在此页</translation>
-<translation id="7063006564040364415">无法连接到同步服务器。</translation>
 <translation id="9065203028668620118">编辑</translation>
 <translation id="6512448926095770873">离开此页</translation>
-<translation id="5032574515228824816">提示</translation>
-<translation id="177206394375746242">触摸下方的按钮即表示您同意接受服务条款（以及其他一些补充性说明文字）。</translation>
-<translation id="8830134817694641714">正在抓取付款详情</translation>
 <translation id="6965382102122355670">确定</translation>
 </translationbundle>

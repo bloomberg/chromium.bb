@@ -12,6 +12,7 @@
 <translation id="5453904507266736060">Google Chrome को पृष्ठभूमि में चलने दें</translation>
 <translation id="2383457833405848421">Chrome Frame के बारे में...</translation>
 <translation id="3454512769850953877">हां, Chrome से बाहर निकलें</translation>
+<translation id="4167057906098955729">आप Chrome एप्लिकेशन, एक्सटेंशन, और वेबसाइटों की अपनी सभी सूचनाएं यहां देख सकते हैं.</translation>
 <translation id="2704356438731803243">यदि आप अपने मौजूदा Chrome डेटा को अलग बनाए रखना चाहते हैं, तो आप <ph name="USER_NAME"/> के लिए एक नया Chrome उपयोगकर्ता बना सकते हैं.</translation>
 <translation id="386202838227397562">कृपया सभी Google Chrome विंडो बंद करें और पुनः प्रयास करें.</translation>
 <translation id="2770231113462710648">डिफ़ॉल्ट ब्राउज़र को इसमें बदलें:</translation>
@@ -69,6 +70,7 @@
 <translation id="225614027745146050">आपका स्वागत है</translation>
 <translation id="7451721381978275812">अमान्य तर्क. Google Chrome इंस्टॉल किए बिना Google Chrome Frame को तैयार मोड में इंस्टॉल नहीं किया जा सकता है.</translation>
 <translation id="8684521613357479262">आपने &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; पर पहुंचने का प्रयास किया, लेकिन सर्वर ने ऐसा प्रमाणपत्र प्रस्‍तुत किया जो अभी तक मान्‍य नहीं है. प्रमाणपत्र पर विश्वास किया जा सकता है या नहीं इस बारे में कोई जानकारी उपलब्ध नहीं है. Google Chrome विश्वसनीय रूप से इस बात की गारंटी नहीं दे सकता कि आप &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; से संचार कर रहे हैं, न कि किसी हमलावर से. आपके कंप्‍यूटर की घड़ी वर्तमान में <ph name="CURRENT_TIME"/> पर सेट है. क्‍या यह सही लगती है? यदि नहीं, तो आपको त्रुटि सही करनी चाहिए और इस पृष्ठ को रीफ्रेश करना चाहिए.</translation>
+<translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="4585888816441913908">इस कंप्‍यूटर में पहले से ही Google Chrome और Google Chrome Frame का कोई अधिक नवीन संस्‍करण है. यदि सॉफ़्टवेयर कार्य नहीं कर रहा है, तो कृपया Google Chrome और Google Chrome Frame दोनों को अनइंस्‍टॉल करें और पुन: प्रयास करें.</translation>
 <translation id="3149510190863420837">Chrome एप्लिकेशन</translation>
 <translation id="6368958679917195344">Chrome OS को अतिरिक्त <ph name="BEGIN_LINK_CROS_OSS"/>ओपन सोर्स सॉफ़्टवेयर<ph name="END_LINK_CROS_OSS"/> द्वारा संभव बनाया गया है.</translation>
@@ -78,6 +80,7 @@
 <translation id="1195935957447623558">Google Chrome ठीक से बंद नहीं हुआ था. आपके द्वारा खोले गए पृष्ठों को पुन: खोलने के लिए, पुनर्स्थापित करें पर क्लिक करें.</translation>
 <translation id="2576431527583832481">Chrome अब बेहतर हो गया है! एक नया संस्करण उपलब्ध है.</translation>
 <translation id="2580411288591421699">Google Chrome के उस संस्करण के समान संस्करण को इंस्‍टॉल नहीं कर सकता, जो वर्तमान में चल रहा है. कृपया Google Chrome बंद करें और पुनः प्रयास करें.</translation>
+<translation id="8460191995881063249">Chrome सूचना केंद्र</translation>
 <translation id="1457721931618994305">Google Chrome अपडेट हो रहा है...</translation>
 <translation id="7747138024166251722">इंस्टॉलर अस्थायी निर्देशिका नहीं बना सकता. कृपया डिस्क में खाली जगह और सॉफ़्टवेयर को इंस्‍टॉल करने की अनुमति की जांच करें.</translation>
 <translation id="6557998774620459028">आपने &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; तक पहुंचने का प्रयास किया, लेकिन सर्वर ने ऐसी इकाई द्वारा जारी प्रमाणपत्र प्रस्‍तुत किया जो आपके कंप्‍यूटर के ऑपरेटिंग सिस्‍टम द्वारा विश्वस्‍त नहीं है. इसका अर्थ यह हो सकता है कि सर्वर ने स्‍वयं के सुरक्षा क्रेडेंशियल जेनरेट कर लिए हैं, जिन पर Chrome द्वारा पहचान जानकारी के लिए विश्वास नहीं किया जा सकता, या हो सकता है कि कोई हमलावर आपके संवाद को बीच में रोकने का प्रयास कर रहा हो.</translation>
@@ -104,8 +107,10 @@
 किसी भी तरह साइन इन करने से बुकमार्क, इतिहास, और अन्य सेटिंग जैसी Chrome जानकारी <ph name="ACCOUNT_EMAIL_NEW"/> में मर्ज हो जाएगी.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD"/>चेतावनी:<ph name="END_BOLD"/> Google Chrome एक्‍सटेंशन को आपका ब्राउज़िंग इतिहास रिकॉर्ड करने से रोक नहीं सकता. गुप्त मोड में यह एक्‍सटेंशन अक्षम करने के लिए, इस विकल्प का चयन रद्द करें.</translation>
 <translation id="1759842336958782510">Chrome</translation>
+<translation id="2290014774651636340">Google API कुंजियां अनुपलब्ध हैं. Google Chrome की कुछ कार्यक्षमता अक्षम कर दी जाएगी.</translation>
 <translation id="4794050651896644714">Chrome में विवरण सहेजें</translation>
 <translation id="911206726377975832">अपने ब्राउज़िंग डेटा भी हटाएं?</translation>
+<translation id="5855036575689098185">आपके कंप्यूटर पर चल रहा सॉफ़्टवेयर Google Chrome के साथ असंगत है.</translation>
 <translation id="2044287590254833138">Google Chrome टूलबार</translation>
 <translation id="5074344184765391290">Chrome प्लग-इन होस्ट</translation>
 <translation id="8862326446509486874">सिस्टम-स्तर स्थापना के लिए आपके पास उचित अधिकार नहीं हैं. इंस्टॉलर को व्यवस्थापक के रूप में फिर से चलाने का प्रयास करें.</translation>
@@ -121,7 +126,6 @@
 <translation id="1104959162601287462">&amp;Chrome OS के बारे में</translation>
 <translation id="5328989068199000832">Google Chrome बाइनरी</translation>
 <translation id="5941830788786076944">Google Chrome को डिफ़ॉल्ट ब्राउज़र बनाएं</translation>
-<translation id="7417357582482895658">Chrome में साइन इन करने दें.</translation>
 <translation id="1469002951682717133">Chrome एप्लिकेशन लॉन्चर</translation>
 <translation id="4990567037958725628">Google Chrome कैनरी</translation>
 <translation id="4561051373932531560">Google Chrome आपको वेब पर फ़ोन नंबर क्लिक करने और उसे Skype से कॉल करने की सुविधा देता है!</translation>
@@ -143,6 +147,8 @@
 <translation id="2871893339301912279">आप Chrome में साइन इन हैं.</translation>
 <translation id="7161904924553537242">Google Chrome में आपका स्वागत है</translation>
 <translation id="1686446242839005801">आप अपने <ph name="USER_EMAIL_ADDRESS"/> खाते का उपयोग करके Chrome में साइन इन कर रहे हैं. आप अपने सभी साइन इन किए गए उपकरणों पर बुकमार्क, इतिहास, और अन्य सेटिंग एक्सेस कर सकेंगे.</translation>
+<translation id="4147555960264124640">आप प्रबंधित खाते से साइन इन कर रहे हैं और उसके व्यवस्थापक को अपनी Google Chrome प्रोफ़ाइल पर नियंत्रण दे रहे हैं. आपका Chrome डेटा, जैसे आपके एप्लिकेशन, बुकमार्क, इतिहास, पासवर्ड, और अन्य सेटिंग <ph name="USER_NAME"/> से स्थायी रूप से जुड़ जाएंगी. आप Google खाता डैशबोर्ड से इस डेटा को हटा सकेंगे, लेकिन आप किसी अन्य खाते से इस डेटा को संबद्ध नहीं कर सकेंगे. <ph name="LEARN_MORE"/></translation>
+<translation id="7931439880631187247">यह साइट Chrome फ़्रेम प्लग-इन का उपयोग कर रही है जो जल्द ही असमर्थित हो जाएगा. कृपया  इसे अनइंस्टॉल करें और किसी आधुनिक ब्राउज़र में अपग्रेड करें.</translation>
 <translation id="8187289872471304532">यहां
           एप्लिकेशन &gt; सिस्टम प्राथमिकताएं &gt; नेटवर्क &gt; उन्नत &gt; प्रॉक्सी
           पर जाएं और चयनित प्रॉक्सी का चयन रद्द करें.</translation>
@@ -152,19 +158,17 @@
 <translation id="163860049029591106">Chrome OS के साथ आरंभ करना</translation>
 <translation id="1399397803214730675">इस कंप्यूटर में Google Chrome का अधिक नवीन संस्करण पहले से मौजूद है. यदि सॉफ्टवेयर काम नहीं कर रहा है, तो कृपया Google Chrome अनइंस्‍टॉल करें और पुनः प्रयास करें.</translation>
 <translation id="576822117893741893">Chrome मेनू दिखाएं</translation>
-<translation id="8520216698644798023">Windows त्रुटि का पता चला</translation>
 <translation id="3444832043240812445">यदि आप <ph name="BEGIN_LINK"/>क्रैश रिपोर्टिंग सक्षम<ph name="END_LINK"/> करते हैं तो यह पृष्‍ठ केवल आपके हाल ही के क्रैश की जानकारी प्रदर्शित करेगा.</translation>
 <translation id="8614913330719544658">Google Chrome निष्‍क्रिय है. अभी पुन: लॉन्च करें?</translation>
 <translation id="5318056482164160049">Google Chrome प्लग-इन होस्ट</translation>
-<translation id="6479088914470149333">आपके कंप्यूटर में कुछ महत्वपूर्ण Windows सिस्टम फ़ाइलें अनुपलब्ध हैं, इसलिए Chrome ठीक से काम नहीं कर पाएगा.</translation>
 <translation id="6126631249883707068">क्या आप चाहते हैं कि Google Chrome आपका पासवर्ड सहेजे?</translation>
 <translation id="7773845170078702898">क्या आप चाहते हैं कि Google Chrome इस साइट के लिए आपका पासवर्ड सहेजे?</translation>
 <translation id="5046764976540625289">Chrome से बाहर निकलें</translation>
+<translation id="4251615635259297716">आपके Chrome डेटा को इस खाते से लिंक करें?</translation>
 <translation id="9039578207253536065">Google Chrome कार्यकर्ता</translation>
 <translation id="2680623880102270805">Google Chrome एप्लिकेशन शॉर्टकट नहीं बना सकता क्‍योंकि वह वर्तमान डेस्‍कटॉप वातावरण का निर्धारण नहीं कर सकता.</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">इंटरनेट ब्राउज़र</translation>
-<translation id="5244325494201350962">आपने पहले भिन्न खाते से साइन इन किया था, साइन इन करने से आपका डेटा मर्ज हो जाएगा. अपनी Chrome सामग्री के लिए <ph name="BEGIN_LINK"/>सेटिंग पृष्ठ<ph name="END_LINK"/> के माध्यम से नया Chrome उपयोगकर्ता बनाने का प्रयास करें.</translation>
 <translation id="2189123953385179981">Google ChromeOS <ph name="SCHEME"/> लिंक को प्रबंधित करने के लिए किसी बाह्य एप्लिकेशन को लॉन्च करने का समर्थन नहीं करता है. अनुरोध किया गया लिंक <ph name="PROTOLINK"/> है.</translation>
 <translation id="7396375882099008034">Chrome को अपनी फ़ायरवॉल और एंटीवायरस सेटिंग में नेटवर्क एक्सेस
         करने दें.</translation>
@@ -183,6 +187,7 @@
           LAN सेटिंग में जाएं
           और &quot;अपने LAN के लिए किसी प्रॉक्सी सर्वर का उपयोग करें&quot; का चयन रद्द करें.</translation>
 <translation id="7825851276765848807">अनिर्दिष्ट त्रुटि के कारण डाउनलोड विफल हुआ. कृपया Google Chrome पुन: डाउनलोड करें.</translation>
+<translation id="5553980212343253394">यह साइट Chrome फ़्रेम प्लग-इन का उपयोग कर रही है जो जल्द ही असमर्थित हो जाएगा. कृपया इसे अनइंस्टॉल करें और कोई संगत ब्राउज़र डाउनलोड करें.</translation>
 <translation id="1061257178446858647">अब आप Chrome में साइन इन हैं! आपके बुकमार्क, इतिहास, और अन्य सेटिंग आपके Google खाते से समन्वयित कर दी जाएंगी.</translation>
 <translation id="3335672657969596251">Google Chrome में <ph name="OS_NAME"/> समर्थित नहीं है.</translation>
 <translation id="4458285410772214805">इस परिवर्तन के प्रभावी होने के लिए, कृपया साइन आउट करें और पुन: साइन इन करें.</translation>
@@ -197,6 +202,7 @@
 <translation id="1001534784610492198">इंस्टॉलर संग्रह अनुपयोगी या अमान्य है. कृपया Google Chrome पुनः डाउनलोड करें.</translation>
 <translation id="2246246234298806438">अंतर्निहित PDF व्‍यूअर गुम होने पर Google Chrome प्रिंट पूर्वावलोकन नहीं दिखा सकता.</translation>
 <translation id="6626317981028933585">खेद है, आपकी Mozilla Firefox सेटिंग उपलब्ध नहीं हैं जबकि वह ब्राउजर चल रहा है. उन सेटिंग को Google Chrome पर आयात करने के लिए, अपने कार्य सहेजें और सभी Firefox विंडो बंद करें. इसके बाद जारी रखें पर क्लिक करें.</translation>
+<translation id="7242029209006116544">आप प्रबंधित खाते से साइन इन कर रहे हैं और उसके व्यवस्थापक को अपनी Google Chrome प्रोफ़ाइल पर नियंत्रण दे रहे हैं. आपका Chrome डेटा, जैसे आपके एप्लिकेशन, बुकमार्क, इतिहास, पासवर्ड, और अन्य सेटिंग <ph name="USER_NAME"/> से स्थायी रूप से जुड़ जाएंगी. आप Google खाता डैशबोर्ड से इस डेटा को हटा सकेंगे, लेकिन आप किसी अन्य खाते से इस डेटा को संबद्ध नहीं कर सकेंगे. <ph name="LEARN_MORE"/></translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="1698376642261615901">Google Chrome एक ऐसा वेब ब्राउज़र है, जो वेब पृष्ठ और एप्लिकेशन को बिजली की गति से चलाता है. यह तेज़, स्थिर, और उपयोग में आसान है. Google Chrome में अंतर्निहित मैलवेयर और फ़िशिंग सुरक्षा के साथ अधिक सुरक्षित रूप से वेब ब्राउज़ करें.</translation>
 <translation id="3419750618886995598">Chrome Frame अपडेट.</translation>
@@ -205,7 +211,6 @@
 <translation id="6049075767726609708">एक व्यवस्थापक ने इस सिस्टम में Google Chrome स्थापित किया है और यह सभी उपयोगकर्ताओं के लिए उपलब्ध है. सिस्टम-स्तरीय Google Chrome आपके उपयोगकर्ता-स्तरीय स्थापना को अब बदल देगा.</translation>
 <translation id="4338032231047635328">आपने &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; तक पहुंचने का प्रयास किया, लेकिन सर्वर द्वारा प्रस्‍तुत किए गए प्रमाणपत्र में त्रुटियां हैं. Google Chrome त्रुटियों वाले प्रमाणपत्र का उपयोग नहीं कर सकता और उस साइट की पहचान को मान्‍य नहीं कर सकता जिस पर आपने पहुंचने का प्रयास किया है.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
-<translation id="1847321074516120686">Chrome स्‍वत:-भरण सेटिंग</translation>
 <translation id="3836351788193713666">लगभग अद्यतित! अपडेट करना समाप्त करने के लिए Google Chrome पुन: लॉन्‍च करें.</translation>
 <translation id="7106741999175697885">कार्य प्रबंधक - Google Chrome</translation>
 <translation id="8449380764213232436">Google Chrome अब <ph name="BROWSER_COMPONENT"/> से निम्न आइटम आयात कर रहा है:</translation>

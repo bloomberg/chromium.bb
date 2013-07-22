@@ -1,23 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="de">
-<translation id="1491151370853475546">Seite aktualisieren</translation>
-<translation id="7658239707568436148">Abbruch</translation>
-<translation id="6458785801851713928">Die Synchronisierung ist für Ihre Domain nicht verfügbar.</translation>
-<translation id="1623104350909869708">Keine weiteren Dialogfelder auf dieser Seite zulassen</translation>
+<translation id="1491151370853475546">Diese Seite aktualisieren</translation>
+<translation id="7658239707568436148">Abbrechen</translation>
 <translation id="7791543448312431591">Hinzufügen</translation>
-<translation id="3896036286668839683">Zertifikats-Viewer</translation>
 <translation id="8730621377337864115">Fertig</translation>
-<translation id="4170011742729630528">Der Dienst ist momentan nicht verfügbar. Bitte versuchen Sie es später erneut.</translation>
-<translation id="8627706565932943526">Synchronisierungsfehler</translation>
-<translation id="3136378934686431938">Aktualisieren Sie Ihre Anmeldeinformationen.</translation>
-<translation id="4510973599275542560">Nicht aktualisieren</translation>
 <translation id="9154176715500758432">Auf dieser Seite bleiben</translation>
-<translation id="7063006564040364415">Verbindung zum Synchronisierungsserver konnte nicht hergestellt werden.</translation>
 <translation id="9065203028668620118">Bearbeiten</translation>
 <translation id="6512448926095770873">Diese Seite verlassen</translation>
-<translation id="5032574515228824816">Eingabeaufforderung</translation>
-<translation id="177206394375746242">Indem Sie auf die Schaltfläche unten klicken, stimmen Sie den Nutzungsbedingungen zu.</translation>
-<translation id="8830134817694641714">Zahlungsdetails werden abgerufen...</translation>
 <translation id="6965382102122355670">OK</translation>
 </translationbundle>

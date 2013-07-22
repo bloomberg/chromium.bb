@@ -12,6 +12,7 @@
 <translation id="5453904507266736060">Разрешить работу Google Chrome в фоновом режиме</translation>
 <translation id="2383457833405848421">О Chrome Frame</translation>
 <translation id="3454512769850953877">Да, закрыть Chrome</translation>
+<translation id="4167057906098955729">Здесь можно просмотреть все оповещения от приложений, расширений и веб-сайтов Chrome.</translation>
 <translation id="2704356438731803243">Чтобы закрыть доступ к уже существующим данным Chrome, можно создать новый профиль Chrome для аккаунта <ph name="USER_NAME"/>.</translation>
 <translation id="386202838227397562">Закройте все окна Chrome и повторите попытку снова.</translation>
 <translation id="2770231113462710648">Назначить браузером по умолчанию:</translation>
@@ -69,6 +70,7 @@
 <translation id="225614027745146050">Добро пожаловать!</translation>
 <translation id="7451721381978275812">Недопустимые аргументы. Чтобы установить в режиме готовности Google Chrome Frame, необходимо также установить Google Chrome.</translation>
 <translation id="8684521613357479262">Вы пытаетесь войти в &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, однако сервер предоставил сертификат, который ещё не действителен. Получить информацию о безопасности этого сертификата невозможно. Chromium не может гарантировать, что вы будете обмениваться данными именно с &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, а не с сайтом злоумышленников. На вашем компьютере установлены следующие дата и время: <ph name="CURRENT_TIME"/>. Если эти данные неверны, укажите правильные и обновите страницу.</translation>
+<translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="4585888816441913908">На компьютере уже установлены последние версии Google Chrome и Google Chrome Frame. Если они не работают, удалите их и установите снова.</translation>
 <translation id="3149510190863420837">Приложения Chrome</translation>
 <translation id="6368958679917195344">Своим появлением Chrome OS обязана дополнительному <ph name="BEGIN_LINK_CROS_OSS"/>программному обеспечению с открытым исходным кодом<ph name="END_LINK_CROS_OSS"/>.</translation>
@@ -78,6 +80,7 @@
 <translation id="1195935957447623558">Работа была завершена некорректно. Чтобы вернуться к просматриваемым страницам, нажмите &quot;Восстановить&quot;.</translation>
 <translation id="2576431527583832481">Chrome становится лучше! Доступна новая версия.</translation>
 <translation id="2580411288591421699">Не удается установить версию Google Chrome, аналогичную уже выполняемой. Закройте Google Chrome и повторите попытку.</translation>
+<translation id="8460191995881063249">Центр оповещений Chrome</translation>
 <translation id="1457721931618994305">Выполняется обновление Google Chrome...</translation>
 <translation id="7747138024166251722">Программе установки не удалось создать временный каталог. Возможно, у вас нет прав на установку приложений или недостаточно места на диске.</translation>
 <translation id="6557998774620459028">Вы попытались перейти на сайт &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, но сервер предоставил сертификат, выданный организацией, которую операционная система компьютера не считает надежной. Это может означать, что сервер создал свой собственный сертификат, которому Google Chrome не может доверять, или что вмешался злоумышленник.</translation>
@@ -102,8 +105,10 @@
 Если войти в систему сейчас, закладки, история и прочие данные Chrome будут синхронизированы с аккаунтом <ph name="ACCOUNT_EMAIL_NEW"/>.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD"/>Внимание!<ph name="END_BOLD"/> Google Chrome не может запретить расширениям записывать историю браузера. Чтобы отключить это расширение в режиме инкогнито, снимите этот флажок.</translation>
 <translation id="1759842336958782510">Chrome</translation>
+<translation id="2290014774651636340">Отсутствуют ключи API Google. Некоторые функции Google Chrome могут не работать.</translation>
 <translation id="4794050651896644714">Сохранять данные в Chrome</translation>
 <translation id="911206726377975832">Также удалить данные о работе в браузере?</translation>
+<translation id="5855036575689098185">Используемое программное обеспечение несовместимо с Google Chrome.</translation>
 <translation id="2044287590254833138">Панель инструментов Google Chrome</translation>
 <translation id="5074344184765391290">Chrome Plug-In Host</translation>
 <translation id="8862326446509486874">У вас нет прав, необходимых для установки на системном уровне. Запустите программу установки еще раз в качестве администратора.</translation>
@@ -119,7 +124,6 @@
 <translation id="1104959162601287462">О &amp;Chrome OS</translation>
 <translation id="5328989068199000832">Google Chrome Binaries</translation>
 <translation id="5941830788786076944">Назначить Google Chrome браузером по умолчанию</translation>
-<translation id="7417357582482895658">Разрешить вход в Chrome</translation>
 <translation id="1469002951682717133">Панель запуска приложений Chrome</translation>
 <translation id="4990567037958725628">Google Chrome – Канарейка</translation>
 <translation id="4561051373932531560">В Google Chrome вы можете нажать на любой номер телефона и позвонить на него через Skype!</translation>
@@ -141,6 +145,8 @@
 <translation id="2871893339301912279">Добро пожаловать в Chrome!</translation>
 <translation id="7161904924553537242">Добро пожаловать в Google Chrome</translation>
 <translation id="1686446242839005801">Для входа в Chrome используется аккаунт <ph name="USER_EMAIL_ADDRESS"/>. Ваши закладки, история и другие настройки будут доступны на всех устройствах, где вы используете этот аккаунт.</translation>
+<translation id="4147555960264124640">Выполнив вход в управляемый аккаунт, вы предоставляете администратору право контролировать настройки вашего профиля Google Chrome. Ваши данные Chrome (приложения, закладки, история, пароли и другие настройки) будут временно связаны с аккаунтом <ph name="USER_NAME"/>. Эти данные можно удалить в Личном кабинете Google, но их нельзя связать с другим аккаунтом. <ph name="LEARN_MORE"/></translation>
+<translation id="7931439880631187247">Этот сайт использует плагин Chrome Frame, поддержка которого скоро будет прекращена. Установите новую версию браузера.</translation>
 <translation id="8187289872471304532">Выберите
           Программы &gt; Системные настройки &gt; Сеть &gt; Дополнительно &gt; Прокси
           и снимите флажки напротив всех прокси-серверов.</translation>
@@ -150,19 +156,17 @@
 <translation id="163860049029591106">Начало работы с Chrome OS</translation>
 <translation id="1399397803214730675">На компьютере уже установлена последняя версия браузера Google Chrome. Если он не работает, удалите его и установите снова.</translation>
 <translation id="576822117893741893">Открыть меню Chrome</translation>
-<translation id="8520216698644798023">Обнаружена ошибка Windows</translation>
 <translation id="3444832043240812445">Информация о недавних сбоях отображается на этой странице только при <ph name="BEGIN_LINK"/>включенной функции отчетов о сбоях<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Google Chrome не отвечает. Перезапустить сейчас?</translation>
 <translation id="5318056482164160049">Хост подключаемых модулей Google Chrome</translation>
-<translation id="6479088914470149333">На вашем компьютере отсутствует часть важных системных файлов Windows. Это приведет к ошибкам в работе Chrome.</translation>
 <translation id="6126631249883707068">Сохранить пароль в Google Chrome?</translation>
 <translation id="7773845170078702898">Сохранить пароль для этого сайта в Google Chrome?</translation>
 <translation id="5046764976540625289">Закрыть Chrome</translation>
+<translation id="4251615635259297716">Связать данные Chrome с этим аккаунтом?</translation>
 <translation id="9039578207253536065">Google Chrome Worker</translation>
 <translation id="2680623880102270805">Google Chrome не удается создать ярлык приложения, поскольку невозможно определить текущее окружение рабочего стола.</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">Веб-браузер</translation>
-<translation id="5244325494201350962">Так как ранее был выполнен вход под другим аккаунтом, вход под этим аккаунтом сейчас приведет к объединению данных. Рекомендуем создать для работы с Chrome новый аккаунт пользователя на <ph name="BEGIN_LINK"/>странице настроек<ph name="END_LINK"/>.</translation>
 <translation id="2189123953385179981">Google Chrome OS не поддерживает запуск внешних приложений для обработки ссылок типа <ph name="SCHEME"/>. Запрошенная ссылка: <ph name="PROTOLINK"/>.</translation>
 <translation id="7396375882099008034">Разрешите доступ к сети для Chrome в настройках брандмауэра и антивирусного ПО.</translation>
 <translation id="8205111949707227942">(Необязательно) Помогите улучшить Chrome OS, разрешив автоматическую отправку статистики использования и отчетов о сбоях в Google.</translation>
@@ -180,6 +184,7 @@
           Настройка сети
           и снимите флажок &quot;Использовать прокси-сервер для локальных подключений&quot;.</translation>
 <translation id="7825851276765848807">Не удалось выполнить установку из-за неизвестной ошибки. Загрузите Google Chrome еще раз.</translation>
+<translation id="5553980212343253394">Этот сайт использует плагин Chrome Frame, поддержка которого скоро будет прекращена. Загрузите совместимую версию браузера.</translation>
 <translation id="1061257178446858647">Вы вошли в Chrome. Ваши закладки, история и другие настройки синхронизируются с аккаунтом Google.</translation>
 <translation id="3335672657969596251">Google Chrome не поддерживает <ph name="OS_NAME"/>.</translation>
 <translation id="4458285410772214805">Чтобы изменения вступили в силу, выполните вход еще раз.</translation>
@@ -194,6 +199,7 @@
 <translation id="1001534784610492198">Архив программы установки поврежден или имеет неправильный формат. Загрузите Google Chrome снова.</translation>
 <translation id="2246246234298806438">Если отсутствует встроенный просмотрщик PDF, предварительный просмотр в Google Chrome невозможен.</translation>
 <translation id="6626317981028933585">К сожалению, настройки Mozilla Firefox недоступны при открытом браузере. Чтобы импортировать настройки в Google Chrome, сохраните работу, закройте все окна Firefox и нажмите &quot;Далее&quot;.</translation>
+<translation id="7242029209006116544">Выполнив вход в управляемый аккаунт, вы предоставляете администратору право контролировать настройки вашего профиля Google Chrome. Ваши данные Chrome (приложения, закладки, история, пароли и другие настройки) будут временно связаны с аккаунтом <ph name="USER_NAME"/>. Эти данные можно удалить в Личном кабинете Google, но их нельзя связать с другим аккаунтом. Чтобы сохранить данные Chrome отдельно, создайте новый профиль. <ph name="LEARN_MORE"/></translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="1698376642261615901">Google Chrome – это быстрый и удобный браузер для работы с веб-страницами и приложениями. Он надежен и прост в использовании. Вы можете просматривать страницы в Интернете, положившись на систему защиту от вредоносного ПО и фишинга, которая уже встроена в Google Chrome.</translation>
 <translation id="3419750618886995598">Обновление Chrome Frame</translation>
@@ -202,7 +208,6 @@
 <translation id="6049075767726609708">На этот компьютер администратором был установлен браузер Google Chrome системного уровня, который заменит вашу установку Google Chrome.</translation>
 <translation id="4338032231047635328">Вы попытались перейти на сайт &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, но предоставленный сервером сертификат содержит ошибки. Google Chrome не может использовать такой сертификат и не имеет возможности осуществить проверку сайта, с которым вы пытались установить соединение.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
-<translation id="1847321074516120686">Настройки автозаполнения в Chrome</translation>
 <translation id="3836351788193713666">Перезапустите Google Chrome для завершения обновления.</translation>
 <translation id="7106741999175697885">Диспетчер задач - Google Chrome</translation>
 <translation id="8449380764213232436">Google Chrome выполняет импорт следующих элементов из раздела <ph name="BROWSER_COMPONENT"/>:</translation>

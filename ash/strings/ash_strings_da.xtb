@@ -9,12 +9,14 @@
 <translation id="5571066253365925590">Bluetooth er aktiveret</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="2268130516524549846">Bluetooth er deaktiveret</translation>
+<translation id="3775358506042162758">Du kan kun have op til tre konti i samlet login fra flere konti.</translation>
 <translation id="370649949373421643">Aktivér Wi-Fi</translation>
 <translation id="3626281679859535460">Lysstyrke</translation>
 <translation id="8054466585765276473">Beregner batteritid.</translation>
 <translation id="7982789257301363584">Netværk</translation>
 <translation id="5565793151875479467">Proxy...</translation>
 <translation id="938582441709398163">Tastaturoverlejring</translation>
+<translation id="4387004326333427325">Godkendelsescertifikatet blev afvist eksternt</translation>
 <translation id="6979158407327259162">Google Drev</translation>
 <translation id="6943836128787782965">Det lykkedes ikke at hente HTTP</translation>
 <translation id="2297568595583585744">Statusbakke</translation>
@@ -29,50 +31,59 @@
 <translation id="3621712662352432595">Lydindstillinger</translation>
 <translation id="1812696562331527143">Din inputmetode er ændret til <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>tredjepart<ph name="END_LINK"/>).
 Tryk på Shift+Alt for at ændre den.</translation>
+<translation id="2127372758936585790">Oplader ved lav kraft</translation>
 <translation id="3846575436967432996">Der er ingen tilgængelige netværksoplysninger</translation>
 <translation id="3026237328237090306">Konfigurer mobildata</translation>
 <translation id="785750925697875037">Vis mobilkonto</translation>
 <translation id="153454903766751181">Initialiserer mobilmodem...</translation>
+<translation id="4628814525959230255">Deler kontrollen over din skærm med <ph name="HELPER_NAME"/> via Hangouts.</translation>
+<translation id="8343941333792395995"><ph name="DISPLAY_NAME"/> er roteret</translation>
 <translation id="7864539943188674973">Deaktiver Bluetooth</translation>
 <translation id="939252827960237676">Skærmbilledet kunne ikke gemmes</translation>
 <translation id="3126069444801937830">Genstart for at opdatere</translation>
+<translation id="2268813581635650749">Log alle ud</translation>
 <translation id="735745346212279324">VPN afbrudt</translation>
 <translation id="7320906967354320621">Ikke aktiv</translation>
 <translation id="6303423059719347535">Batteriet er <ph name="PERCENTAGE"/> % fuldt</translation>
+<translation id="15373452373711364">Stor musemarkør</translation>
 <translation id="2778346081696727092">Der kunne ikke godkendes med det angivne brugernavn eller adgangskoden</translation>
 <translation id="3294437725009624529">Gæst</translation>
 <translation id="8190698733819146287">Tilpas sprog og indtastning...</translation>
 <translation id="2903907270192926896">INPUT</translation>
+<translation id="8676770494376880701">Oplader med lav kraft er tilsluttet</translation>
 <translation id="7170041865419449892">Intet signal</translation>
 <translation id="4804818685124855865">Afbryd</translation>
+<translation id="2544853746127077729">Godkendelsescertifikatet blev afvist af netværk</translation>
 <translation id="5222676887888702881">Log ud</translation>
 <translation id="2688477613306174402">Konfiguration</translation>
 <translation id="1272079795634619415">Stop</translation>
 <translation id="4957722034734105353">Flere oplysninger...</translation>
 <translation id="2964193600955408481">Deaktiver Wi-Fi</translation>
 <translation id="811680302244032017">Tilføj enhed...</translation>
+<translation id="4279490309300973883">Spejling</translation>
 <translation id="2509468283778169019">CAPS LOCK er slået til</translation>
 <translation id="3892641579809465218">Internt display</translation>
 <translation id="7823564328645135659">Sproget er blevet ændret fra &quot;<ph name="FROM_LOCALE"/>&quot; til &quot;<ph name="TO_LOCALE"/>&quot;, efter at du har synkroniseret dine indstillinger.</translation>
 <translation id="3368922792935385530">Tilsluttet</translation>
 <translation id="8340999562596018839">Talefeedback</translation>
 <translation id="8654520615680304441">Slå Wi-Fi til...</translation>
-<translation id="4632619405246189264">Opladning er ikke pålidelig</translation>
 <translation id="5825747213122829519">Din inputmetode er ændret til <ph name="INPUT_METHOD_ID"/>.
 Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="2562916301614567480">Privat netværk</translation>
 <translation id="6549021752953852991">Der er ingen tilgængelige mobilnetværk</translation>
 <translation id="4379753398862151997">Kære Skærm. Det fungerer ikke mellem os. (Denne skærm understøttes ikke)</translation>
-<translation id="8448732935696070385">Tilsluttet en strømforsyning, der ikke er standardstrømforsyningen. Batteriopladning er muligvis ikke pålidelig.</translation>
 <translation id="6426039856985689743">Deaktiver mobildata</translation>
 <translation id="3087734570205094154">Bund</translation>
 <translation id="3742055079367172538">Skærmbilledet blev taget</translation>
+<translation id="8878886163241303700">Udvider skærm</translation>
 <translation id="5271016907025319479">VPN er ikke konfigureret.</translation>
+<translation id="372094107052732682">Tryk på Ctrl+Shift+Q to gange for at afslutte.</translation>
 <translation id="6803622936009808957">Skærmene kunne ikke spejles, da der ikke fandtes en understøttet opløsning. I stedet anvendes Udvidet skrivebord.</translation>
 <translation id="1480041086352807611">Demotilstand</translation>
 <translation id="3626637461649818317"><ph name="PERCENTAGE"/> % tilbage</translation>
 <translation id="9089416786594320554">Indtastningsmetoder</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/> %</translation>
+<translation id="2614835198358683673">Din Chromebook oplades muligvis ikke, når den er tændt. Anvend eventuelt den officielle oplader.</translation>
 <translation id="1895658205118569222">Nedlukning</translation>
 <translation id="4430019312045809116">Lydstyrke</translation>
 <translation id="4442424173763614572">DNS-opslag mislykkedes</translation>
@@ -87,7 +98,9 @@ Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="5980301590375426705">Afslut gæstesession</translation>
 <translation id="4471417012762451363">Batteriet er <ph name="PERCENTAGE"/> % fuldt og oplader</translation>
 <translation id="8308637677604853869">Forrige menu</translation>
+<translation id="4666297444214622512">Kan ikke logge ind på en anden konto.</translation>
 <translation id="1346748346194534595">Højre</translation>
+<translation id="1773212559869067373">Godkendelsescertifikatet blev afvist lokalt</translation>
 <translation id="8528322925433439945">Mobil...</translation>
 <translation id="7049357003967926684">Tilknytning</translation>
 <translation id="8428213095426709021">Indstillinger</translation>
@@ -105,23 +118,25 @@ Tryk på Ctrl+Alt+Z for at deaktivere dette.</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="1398853756734560583">Maksimer</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: Opretter forbindelse...</translation>
-<translation id="8639033665604704195">Der kunne ikke godkendes med den angivne foruddelte nøgle</translation>
 <translation id="252373100621549798">Ukendt skærm</translation>
 <translation id="1882897271359938046">Spejler mod <ph name="DISPLAY_NAME"/></translation>
+<translation id="2727977024730340865">Tilsluttet en oplader med lav kraft. Batteriopladningen er muligvis ikke pålidelig.</translation>
 <translation id="3784455785234192852">Lås</translation>
 <translation id="2805756323405976993">Applikationer</translation>
+<translation id="8871072142849158571"><ph name="DISPLAY_NAME"/> er blevet ændret til <ph name="RESOLUTION"/></translation>
 <translation id="1512064327686280138">Aktiveringsfejl:</translation>
 <translation id="5097002363526479830">Der kunne ikke oprettes forbindelse til netværket &quot;<ph name="NAME"/>&quot;: <ph name="DETAILS"/></translation>
 <translation id="1850504506766569011">Wi-Fi er slået fra.</translation>
-<translation id="8036518327127111261">Der kunne ikke godkendes med det angivne certifikat</translation>
 <translation id="8132793192354020517">Forbundet til <ph name="NAME"/></translation>
 <translation id="7052914147756339792">Angiv baggrundsbillede...</translation>
 <translation id="8678698760965522072">Onlinetilstand</translation>
+<translation id="2532589005999780174">Tilstanden Høj kontrast</translation>
 <translation id="1119447706177454957">Intern fejl</translation>
 <translation id="3019353588588144572">Resterende tid, indtil batteriet er fuldt opladet, <ph name="TIME_REMAINING"/></translation>
 <translation id="3473479545200714844">Skærmforstørrer</translation>
 <translation id="7005812687360380971">Fejl:</translation>
 <translation id="882279321799040148">Klik for at se det</translation>
+<translation id="5045550434625856497">Ugyldig adgangskode</translation>
 <translation id="1602076796624386989">Aktivér mobildata</translation>
 <translation id="6981982820502123353">Tilgængelighed</translation>
 <translation id="3157931365184549694">Gendan</translation>
@@ -130,6 +145,8 @@ Tryk på Ctrl+Alt+Z for at deaktivere dette.</translation>
 <translation id="225680501294068881">Scanner efter enheder...</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY"/> d. <ph name="DATE"/></translation>
 <translation id="4448844063988177157">Søger efter Wi-Fi-netværk...</translation>
+<translation id="8401662262483418323">Der kunne ikke oprettes forbindelse til &quot;<ph name="NAME"/>&quot;: <ph name="DETAILS"/>
+Servermeddelelse: <ph name="SERVER_MSG"/></translation>
 <translation id="2475982808118771221">Der opstod en fejl</translation>
 <translation id="7229570126336867161">EVDO mangler</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> er en offentlig session administreret af <ph name="DOMAIN"/></translation>
@@ -137,15 +154,18 @@ Tryk på Ctrl+Alt+Z for at deaktivere dette.</translation>
 <translation id="8454013096329229812">Wi-Fi er slået til.</translation>
 <translation id="4872237917498892622">Alt+Søg eller Skift</translation>
 <translation id="2983818520079887040">Indstillinger...</translation>
+<translation id="1717216362413677834">Docktilstand</translation>
 <translation id="8927026611342028580">Der er anmodet om forbindelse</translation>
 <translation id="8300849813060516376">OTASP mislykkedes</translation>
 <translation id="2792498699870441125">Alt+Søg</translation>
 <translation id="8660803626959853127">Synkroniserer <ph name="COUNT"/> fil(er)</translation>
 <translation id="3709443003275901162">9 eller flere</translation>
 <translation id="639644700271529076">CAPS LOCK er deaktiveret</translation>
+<translation id="6248847161401822652">Tryk på Ctrl+Shift+Q to gange for at afslutte.</translation>
 <translation id="6267036997247669271"><ph name="NAME"/>: Aktiverer...</translation>
 <translation id="1391854757121130358">Du har muligvis nået din mobildatagrænse.</translation>
 <translation id="5413208160176941586">Lokalt administreret bruger</translation>
+<translation id="1059194134494239015"><ph name="DISPLAY_NAME"/>: <ph name="RESOLUTION"/></translation>
 <translation id="4864165860509564259">Applikationslistens placering</translation>
 <translation id="7593891976182323525">Søg eller skift</translation>
 <translation id="7649070708921625228">Hjælp</translation>
@@ -165,12 +185,14 @@ Tryk på Søg eller Skift for at annullere.</translation>
 <translation id="3573179567135747900">Skift tilbage til &quot;<ph name="FROM_LOCALE"/>&quot; (kræver genstart)</translation>
 <translation id="8103386449138765447">SMS-beskeder: <ph name="MESSAGE_COUNT"/></translation>
 <translation id="5045002648206642691">Google Drev-indstillinger...</translation>
+<translation id="1510238584712386396">Applikationsliste</translation>
 <translation id="7209101170223508707">CAPS LOCK er slået til.
 Tryk på Alt+Søg eller Skift for at annullere.</translation>
-<translation id="8061464966246066292">Høj kontrast</translation>
 <translation id="8940956008527784070">Batteriniveauet er lavt (<ph name="PERCENTAGE"/> %)</translation>
 <translation id="5102001756192215136"><ph name="HOUR"/>:<ph name="MINUTE"/> tilbage</translation>
+<translation id="520760366042891468">Deler kontrollen over din skærm via Hangouts.</translation>
 <translation id="8000066093800657092">Intet netværk</translation>
+<translation id="4015692727874266537">Log ind på en anden konto...</translation>
 <translation id="5941711191222866238">Minimer</translation>
 <translation id="6911468394164995108">Find andre... </translation>
 <translation id="412065659894267608"><ph name="HOUR"/> t <ph name="MINUTE"/> m, indtil det er fuldt opladet</translation>

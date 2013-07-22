@@ -9,11 +9,13 @@
 <translation id="2208514473086078157">Cài đặt chính sách không cho phép chia sẻ máy tính này dưới dạng máy chủ lưu trữ Chrome Remote Desktop. Liên hệ với quản trị viên hệ thống của bạn để được hỗ trợ.</translation>
 <translation id="2801119484858626560">Đã phát hiện ra phiên bản Chrome Remote Desktop không tương thích. Vui lòng đảm bảo rằng bạn đã cài đặt phiên bản Chrome và Chrome Remote Desktop mới nhất trên cả hai máy tính và thử lại.</translation>
 <translation id="6998989275928107238">Đến</translation>
+<translation id="406849768426631008">Bạn có muốn trợ giúp ai đó trong khi trò chuyện video với họ không? Hãy thử ứng dụng <ph name="LINK_BEGIN"/> Remote Desktop trong Google Hangouts<ph name="LINK_END"/>.</translation>
 <translation id="3258789396564295715">Bạn có thể truy cập an toàn vào máy tính này bằng Chrome Remote Desktop.</translation>
 <translation id="5070121137485264635">Máy chủ lưu trữ từ xa yêu cầu bạn xác thực với một trang web của bên thứ ba. Để tiếp tục, bạn phải cấp cho Chrome Remote Desktop thêm quyền truy cập vào địa chỉ sau:</translation>
 <translation id="4808503597364150972">Vui lòng nhập mã PIN của bạn cho <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">Kết nối từ xa cho máy tính này đã bị tắt.</translation>
 <translation id="8244400547700556338">Tìm hiểu cách thức.</translation>
+<translation id="4368630973089289038">Bạn muốn trợ giúp cải tiến tính năng Kết nối từ xa trên Chrome? Hãy <ph name="LINK_BEGIN"/>tham gia khảo sát.<ph name="LINK_END"/></translation>
 <translation id="332624996707057614">Chỉnh sửa tên máy tính</translation>
 <translation id="1996161829609978754">Chrome đang tải xuống trình cài đặt máy chủ Kết nối từ xa trên Chrome. Sau khi quá trình tải xuống hoàn tất, vui lòng chạy trình cài đặt trước khi tiếp tục.</translation>
 <translation id="7658239707568436148">Hủy</translation>
@@ -43,10 +45,10 @@
 <translation id="174018511426417793">Bạn chưa đăng ký máy tính nào. Để bật kết nối từ xa với một máy tính, hãy cài đặt Chrome Remote Desktop trên máy tính đó và nhấp “<ph name="BUTTON_NAME"/>”.</translation>
 <translation id="8525306231823319788">Toàn màn hình</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME"/> (lỗi thời)</translation>
+<translation id="327263477022142889">Bạn muốn trợ giúp cải tiến ứng dụng Chrome Remote Desktop? Hãy <ph name="LINK_BEGIN"/>tham gia khảo sát.<ph name="LINK_END"/></translation>
 <translation id="5702987232842159181">Đã kết nối:</translation>
 <translation id="4736223761657662401">Lịch sử kết nối</translation>
 <translation id="4430915108080446161">Đang tạo mã truy cập…</translation>
-<translation id="7022800415798056893">Tham gia khảo sát</translation>
 <translation id="8228265668171617545">Đã phát hiện một phiên bản Kết nối từ xa trên Chrome không tương thích. Vui lòng đảm bảo rằng bạn có phiên bản Chrome và Kết nối từ xa trên Chrome mới nhất trên cả hai máy tính và thử lại.</translation>
 <translation id="6985691951107243942">Bạn có chắc chắn muốn tắt kết nối từ xa với <ph name="HOSTNAME"/> không? Nếu bạn thay đổi ý định, bạn cần truy cập vào máy tính đó để bật lại kết nối.</translation>
 <translation id="9149992051684092333">Để bắt đầu chia sẻ máy tính của bạn, hãy cung cấp mã truy cập bên dưới cho người sẽ trợ giúp bạn.</translation>
@@ -77,7 +79,6 @@
 <translation id="3933246213702324812">Kết nối từ xa trên Chrome trên <ph name="HOSTNAME"/> đã lỗi thời và cần được cập nhật.</translation>
 <translation id="6193698048504518729">Kết nối với <ph name="HOSTNAME"/></translation>
 <translation id="3020807351229499221">Không thể cập nhật mã PIN. Vui lòng thử lại sau.</translation>
-<translation id="785147662223870933">Bạn muốn giúp cải tiến Chrome Remote Desktop?</translation>
 <translation id="579702532610384533">Kết nối lại</translation>
 <translation id="4211066471404647515">Thiếu một số thành phần cần thiết cho Kết nối từ xa trên Chrome. Vui lòng đảm bảo bạn đang chạy phiên bản Chrome mới nhất và thử lại.</translation>
 <translation id="5265129178187621741">(tính năng này chưa khả dụng đối với Chromebook… hãy chú ý theo dõi)</translation>
@@ -119,7 +120,7 @@
 <translation id="652218476070540101">Mã PIN cho máy tính này đang được cập nhật…</translation>
 <translation id="5308380583665731573">Kết nối</translation>
 <translation id="7319983568955948908">Ngừng chia sẻ</translation>
-<translation id="2229673624483529540">Bạn muốn giúp cải tiến Kết nối từ xa trên Chrome?</translation>
+<translation id="1462361961931793308">Không hỏi lại mã PIN khi kết nối với máy chủ này từ máy tính này.</translation>
 <translation id="6668065415969892472">Mã PIN của bạn đã được cập nhật.</translation>
 <translation id="4277736576214464567">Mã truy cập không hợp lệ. Vui lòng thử lại.</translation>
 <translation id="979100198331752041">Kết nối từ xa trên Chrome trên <ph name="HOSTNAME"/> đã lỗi thời và cần được cập nhật.</translation>

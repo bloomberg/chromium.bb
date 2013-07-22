@@ -1,23 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sr">
-<translation id="1491151370853475546">Учитај поново</translation>
+<translation id="1491151370853475546">Поново учитај ову страницу</translation>
 <translation id="7658239707568436148">Откажи</translation>
-<translation id="6458785801851713928">Синхронизација није доступна за домен.</translation>
-<translation id="1623104350909869708">Спречи ову страницу да прави додатне дијалоге</translation>
 <translation id="7791543448312431591">Додај</translation>
-<translation id="3896036286668839683">Приказивач сертификата</translation>
 <translation id="8730621377337864115">Готово</translation>
-<translation id="4170011742729630528">Услуга није доступна. Покушајте поново касније.</translation>
-<translation id="8627706565932943526">Грешка при синхронизацији</translation>
-<translation id="3136378934686431938">Ажурирајте податке за пријављивање.</translation>
-<translation id="4510973599275542560">Не учитавај поново</translation>
 <translation id="9154176715500758432">Остани на овој страници</translation>
-<translation id="7063006564040364415">Није могуће повезати се са сервером за синхронизацију.</translation>
 <translation id="9065203028668620118">Измени</translation>
 <translation id="6512448926095770873">Напусти ову страницу</translation>
-<translation id="5032574515228824816">Упит</translation>
-<translation id="177206394375746242">Кликом на дугме у наставку прихватате услове коришћења услуге.</translation>
-<translation id="8830134817694641714">Преузимање информација о плаћању</translation>
 <translation id="6965382102122355670">Потврди</translation>
 </translationbundle>

@@ -1,23 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ja">
-<translation id="1491151370853475546">ページを再読み込み</translation>
+<translation id="1491151370853475546">このページを再読み込み</translation>
 <translation id="7658239707568436148">キャンセル</translation>
-<translation id="6458785801851713928">お使いのドメインでは同期機能をご利用いただけません。</translation>
-<translation id="1623104350909869708">このページで追加のダイアログが作成されないようにする</translation>
 <translation id="7791543448312431591">追加</translation>
-<translation id="3896036286668839683">証明書ビューア</translation>
 <translation id="8730621377337864115">完了</translation>
-<translation id="4170011742729630528">このサービスはご利用になれません。しばらくしてからもう一度お試しください。</translation>
-<translation id="8627706565932943526">同期エラー</translation>
-<translation id="3136378934686431938">ログイン情報を更新してください。</translation>
-<translation id="4510973599275542560">再読み込みしない</translation>
 <translation id="9154176715500758432">このページにとどまる</translation>
-<translation id="7063006564040364415">同期サーバーに接続できませんでした。</translation>
 <translation id="9065203028668620118">編集</translation>
 <translation id="6512448926095770873">このページを離れる</translation>
-<translation id="5032574515228824816">メッセージ</translation>
-<translation id="177206394375746242">下のボタンをクリックすると、利用規約に同意したことになります。</translation>
-<translation id="8830134817694641714">支払いの詳細を取得しています</translation>
 <translation id="6965382102122355670">OK</translation>
 </translationbundle>

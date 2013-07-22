@@ -9,12 +9,14 @@
 <translation id="5571066253365925590">Bluetooth オン</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="2268130516524549846">Bluetooth オフ</translation>
+<translation id="3775358506042162758">マルチ ログインできるアカウントは 3 つまでです。</translation>
 <translation id="370649949373421643">Wi-Fi を有効にする</translation>
 <translation id="3626281679859535460">輝度</translation>
 <translation id="8054466585765276473">バッテリーの残り時間を計算しています。</translation>
 <translation id="7982789257301363584">ネットワーク</translation>
 <translation id="5565793151875479467">プロキシ...</translation>
 <translation id="938582441709398163">キーボード オーバーレイ</translation>
+<translation id="4387004326333427325">認証証明書がリモートで拒否されました</translation>
 <translation id="6979158407327259162">Google ドライブ</translation>
 <translation id="6943836128787782965">HTTP を取得できませんでした</translation>
 <translation id="2297568595583585744">ステータス トレイ</translation>
@@ -29,50 +31,59 @@
 <translation id="3621712662352432595">オーディオ設定</translation>
 <translation id="1812696562331527143">入力方法を <ph name="INPUT_METHOD_ID"/>*（<ph name="BEGIN_LINK"/>サードパーティ<ph name="END_LINK"/>）に変更しました。
 切り替えるには Shift+Alt キーを押します。</translation>
+<translation id="2127372758936585790">低電力の充電器</translation>
 <translation id="3846575436967432996">利用可能なネットワーク情報がありません</translation>
 <translation id="3026237328237090306">モバイル データをセットアップ</translation>
 <translation id="785750925697875037">モバイル アカウントを表示</translation>
 <translation id="153454903766751181">セルラー モデムを初期化しています...</translation>
+<translation id="4628814525959230255">ハングアウトを介して画面の制御を <ph name="HELPER_NAME"/> さんと共有しています。</translation>
+<translation id="8343941333792395995"><ph name="DISPLAY_NAME"/> は回転されました</translation>
 <translation id="7864539943188674973">Bluetooth を無効にする</translation>
 <translation id="939252827960237676">スクリーンショットを保存できませんでした</translation>
 <translation id="3126069444801937830">再起動して更新</translation>
+<translation id="2268813581635650749">すべてログアウト</translation>
 <translation id="735745346212279324">VPN が切断されました</translation>
 <translation id="7320906967354320621">待機中</translation>
 <translation id="6303423059719347535">バッテリー残量: <ph name="PERCENTAGE"/>%</translation>
+<translation id="15373452373711364">大きいマウス カーソル</translation>
 <translation id="2778346081696727092">入力されたユーザー名またはパスワードで認証できませんでした</translation>
 <translation id="3294437725009624529">ゲスト</translation>
 <translation id="8190698733819146287">言語と入力方法をカスタマイズ...</translation>
 <translation id="2903907270192926896">入力</translation>
+<translation id="8676770494376880701">低電力の充電器に接続されています</translation>
 <translation id="7170041865419449892">圏外</translation>
 <translation id="4804818685124855865">切断</translation>
+<translation id="2544853746127077729">認証証明書がネットワークによって拒否されました</translation>
 <translation id="5222676887888702881">ログアウト</translation>
 <translation id="2688477613306174402">設定</translation>
 <translation id="1272079795634619415">中止</translation>
 <translation id="4957722034734105353">詳細...</translation>
 <translation id="2964193600955408481">Wi-Fi を無効にする</translation>
 <translation id="811680302244032017">デバイスを追加...</translation>
+<translation id="4279490309300973883">ミラーリングしています</translation>
 <translation id="2509468283778169019">Caps Lock がオンになっています</translation>
 <translation id="3892641579809465218">内蔵ディスプレイ</translation>
 <translation id="7823564328645135659">設定の同期後に言語が「<ph name="FROM_LOCALE"/>」から「<ph name="TO_LOCALE"/>」に変更されました。</translation>
 <translation id="3368922792935385530">接続済み</translation>
 <translation id="8340999562596018839">音声フィードバック</translation>
 <translation id="8654520615680304441">Wi-Fi をオンにしています...</translation>
-<translation id="4632619405246189264">充電に問題があります</translation>
 <translation id="5825747213122829519">入力方法を <ph name="INPUT_METHOD_ID"/> に変更しました。
 切り替えるには Shift+Alt キーを押します。</translation>
 <translation id="2562916301614567480">プライベート ネットワーク</translation>
 <translation id="6549021752953852991">利用可能なセルラー ネットワークがありません</translation>
 <translation id="4379753398862151997">Dear Monitor, it's not working out between us.（このモニターはサポートされていません）</translation>
-<translation id="8448732935696070385">標準以外の電源に接続しています。バッテリーが充電されない可能性があります。</translation>
 <translation id="6426039856985689743">モバイル データを無効にする</translation>
 <translation id="3087734570205094154">一番下</translation>
 <translation id="3742055079367172538">スクリーンショット撮影完了</translation>
+<translation id="8878886163241303700">画面を拡張しています</translation>
 <translation id="5271016907025319479">VPN が設定されていません。</translation>
+<translation id="372094107052732682">終了するには Ctrl+Shift+Q を 2 回押してください。</translation>
 <translation id="6803622936009808957">サポートされている解像度が見つからなかったため、ディスプレイをミラーリングできませんでした。代わりに拡張デスクトップ モードに切り替えました。</translation>
 <translation id="1480041086352807611">デモ モード</translation>
 <translation id="3626637461649818317">残り <ph name="PERCENTAGE"/>%</translation>
 <translation id="9089416786594320554">入力方法</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
+<translation id="2614835198358683673">この充電器がオンになっている間は、Chromebook が充電されない可能性があります。正規の充電器の使用をご検討ください。</translation>
 <translation id="1895658205118569222">シャットダウン</translation>
 <translation id="4430019312045809116">音量</translation>
 <translation id="4442424173763614572">DNS を検索できませんでした</translation>
@@ -87,7 +98,9 @@
 <translation id="5980301590375426705">ゲスト セッションを終了</translation>
 <translation id="4471417012762451363">バッテリー残量: <ph name="PERCENTAGE"/>%、充電しています。</translation>
 <translation id="8308637677604853869">前のメニュー</translation>
+<translation id="4666297444214622512">別のアカウントにログインすることはできません。</translation>
 <translation id="1346748346194534595">右</translation>
+<translation id="1773212559869067373">認証証明書がローカルで拒否されました</translation>
 <translation id="8528322925433439945">モバイル...</translation>
 <translation id="7049357003967926684">アソシエーション</translation>
 <translation id="8428213095426709021">設定</translation>
@@ -105,23 +118,25 @@
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="1398853756734560583">最大化</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: 接続しています...</translation>
-<translation id="8639033665604704195">提示された事前共有キーで認証できませんでした</translation>
 <translation id="252373100621549798">不明なディスプレイ</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME"/> へミラーリング</translation>
+<translation id="2727977024730340865">低電力の充電器に接続しています。バッテリーが充電されない可能性があります。</translation>
 <translation id="3784455785234192852">ロック</translation>
 <translation id="2805756323405976993">アプリ</translation>
+<translation id="8871072142849158571"><ph name="DISPLAY_NAME"/> のサイズが <ph name="RESOLUTION"/> に変更されました</translation>
 <translation id="1512064327686280138">起動失敗</translation>
 <translation id="5097002363526479830">ネットワーク「<ph name="NAME"/>」に接続できませんでした: <ph name="DETAILS"/></translation>
 <translation id="1850504506766569011">Wi-Fi が無効になりました。</translation>
-<translation id="8036518327127111261">提示された証明書で認証できませんでした</translation>
 <translation id="8132793192354020517"><ph name="NAME"/> に接続しました</translation>
 <translation id="7052914147756339792">壁紙を設定...</translation>
 <translation id="8678698760965522072">オンライン状態</translation>
+<translation id="2532589005999780174">ハイコントラスト モード</translation>
 <translation id="1119447706177454957">内部エラー</translation>
 <translation id="3019353588588144572">バッテリーがフル充電されるまであと: <ph name="TIME_REMAINING"/></translation>
 <translation id="3473479545200714844">画面拡大鏡</translation>
 <translation id="7005812687360380971">失敗</translation>
 <translation id="882279321799040148">クリックして表示</translation>
+<translation id="5045550434625856497">パスワードが正しくありません</translation>
 <translation id="1602076796624386989">モバイル データを有効にする</translation>
 <translation id="6981982820502123353">アクセシビリティ</translation>
 <translation id="3157931365184549694">復元</translation>
@@ -130,6 +145,8 @@
 <translation id="225680501294068881">デバイスをスキャンしています...</translation>
 <translation id="5597451508971090205"><ph name="DATE"/> (<ph name="SHORT_WEEKDAY"/>)</translation>
 <translation id="4448844063988177157">Wi-Fi ネットワークを検出しています...</translation>
+<translation id="8401662262483418323">'<ph name="NAME"/>' への接続に失敗しました: <ph name="DETAILS"/>
+サーバー メッセージ: <ph name="SERVER_MSG"/></translation>
 <translation id="2475982808118771221">エラーが発生しました</translation>
 <translation id="7229570126336867161">EVDO が必要です</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> は <ph name="DOMAIN"/> が管理する公開セッションです</translation>
@@ -137,15 +154,18 @@
 <translation id="8454013096329229812">Wi-Fi が有効になりました。</translation>
 <translation id="4872237917498892622">Alt+ 検索/Shift</translation>
 <translation id="2983818520079887040">設定...</translation>
+<translation id="1717216362413677834">ドック モード</translation>
 <translation id="8927026611342028580">接続をリクエスト済み</translation>
 <translation id="8300849813060516376">OTASP に失敗しました</translation>
 <translation id="2792498699870441125">Alt+ 検索</translation>
 <translation id="8660803626959853127"><ph name="COUNT"/> 個のファイルを同期中</translation>
 <translation id="3709443003275901162">9+</translation>
 <translation id="639644700271529076">CapsLock 機能はオフになっています</translation>
+<translation id="6248847161401822652">終了するには Ctrl+Shift+Q を 2 回押してください。</translation>
 <translation id="6267036997247669271"><ph name="NAME"/>: 有効にしています...</translation>
 <translation id="1391854757121130358">モバイル データの使用量上限に達した可能性があります。</translation>
 <translation id="5413208160176941586">ローカルの管理対象ユーザー</translation>
+<translation id="1059194134494239015"><ph name="DISPLAY_NAME"/>: <ph name="RESOLUTION"/></translation>
 <translation id="4864165860509564259">ランチャーの位置</translation>
 <translation id="7593891976182323525">検索/Shift</translation>
 <translation id="7649070708921625228">ヘルプ</translation>
@@ -165,12 +185,14 @@
 <translation id="3573179567135747900">「<ph name="FROM_LOCALE"/>」に戻します（再起動が必要です）</translation>
 <translation id="8103386449138765447">SMS メッセージ: <ph name="MESSAGE_COUNT"/></translation>
 <translation id="5045002648206642691">Google ドライブの設定...</translation>
+<translation id="1510238584712386396">ランチャー</translation>
 <translation id="7209101170223508707">CapsLock がオンになっています。
 Alt+ 検索/Shift キーを押すと解除されます。</translation>
-<translation id="8061464966246066292">ハイコントラスト</translation>
 <translation id="8940956008527784070">バッテリー残量: 少（<ph name="PERCENTAGE"/>%）</translation>
 <translation id="5102001756192215136">残り時間: <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
+<translation id="520760366042891468">ハングアウトを介して画面の制御を共有しています。</translation>
 <translation id="8000066093800657092">ネットワーク接続なし</translation>
+<translation id="4015692727874266537">別のアカウントにログイン...</translation>
 <translation id="5941711191222866238">最小化</translation>
 <translation id="6911468394164995108">他のネットワークに接続...</translation>
 <translation id="412065659894267608">フル充電まで <ph name="HOUR"/> 時間 <ph name="MINUTE"/> 分</translation>

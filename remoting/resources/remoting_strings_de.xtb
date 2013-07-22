@@ -9,11 +9,13 @@
 <translation id="2208514473086078157">Gemäß den Richtlinieneinstellungen können Sie diesen Computer nicht als Chrome Remote Desktop-Host verwenden. Wenden Sie sich für weitere Hilfe an Ihren Systemadministrator.</translation>
 <translation id="2801119484858626560">Eine inkompatible Version von Chrome Remote Desktop wurde erkannt. Überprüfen Sie, ob die neueste Version von Chrome und Chrome Remote Desktop auf beiden Computern installiert ist, und versuchen Sie es erneut.</translation>
 <translation id="6998989275928107238">Zu</translation>
+<translation id="406849768426631008">Möchten Sie jemandem helfen und gleichzeitig per Video mit ihm chatten? Testen Sie <ph name="LINK_BEGIN"/>Remote Desktop in Google Hangouts<ph name="LINK_END"/>.</translation>
 <translation id="3258789396564295715">Mit Chrome Remote Desktop erhalten Sie sicheren Zugriff auf diesen Computer.</translation>
 <translation id="5070121137485264635">Der Remote-Host verlangt, dass Sie sich über eine Drittanbieter-Website authentifizieren. Um fortfahren zu können, geben Sie Chrome Remote Desktop zusätzliche Berechtigungen für den Zugriff auf die folgende Adresse:</translation>
 <translation id="4808503597364150972">Bitte geben Sie Ihre PIN für <ph name="HOSTNAME"/> ein.</translation>
 <translation id="7672203038394118626">Die Remote-Verbindungen für diesen Computer wurden deaktiviert.</translation>
 <translation id="8244400547700556338">Weitere Informationen</translation>
+<translation id="4368630973089289038">Möchten Sie uns helfen, Chromoting zu verbessern? <ph name="LINK_BEGIN"/>Nehmen Sie an der Umfrage teil.<ph name="LINK_END"/></translation>
 <translation id="332624996707057614">Computernamen bearbeiten</translation>
 <translation id="1996161829609978754">Chrome lädt das Installationsprogramm für den Chromoting-Host herunter. Führen Sie nach dem Download das Installationsprogramm aus, bevor Sie fortfahren.</translation>
 <translation id="7658239707568436148">Abbrechen</translation>
@@ -43,10 +45,10 @@
 <translation id="174018511426417793">Sie haben noch keine Computer registriert. Um Remote-Verbindungen zu einem Computer zu ermöglichen, installieren Sie Chrome Remote Desktop auf dem betreffenden Computer und klicken Sie auf &quot;<ph name="BUTTON_NAME"/>&quot;.</translation>
 <translation id="8525306231823319788">Vollbildmodus</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME"/> (veraltet)</translation>
+<translation id="327263477022142889">Möchten Sie uns helfen, Chrome Remote Desktop zu verbessern? <ph name="LINK_BEGIN"/>Nehmen Sie an der Umfrage teil.<ph name="LINK_END"/></translation>
 <translation id="5702987232842159181">Verbunden:</translation>
 <translation id="4736223761657662401">Verlauf &quot;Verbindungen&quot;</translation>
 <translation id="4430915108080446161">Zugriffscode wird generiert...</translation>
-<translation id="7022800415798056893">An der Umfrage teilnehmen</translation>
 <translation id="8228265668171617545">Eine inkompatible Version von Chromoting wurde erkannt. Überprüfen Sie, ob die neueste Version von Chrome und Chromoting auf beiden Computern installiert ist, und versuchen Sie es erneut.</translation>
 <translation id="6985691951107243942">Möchten Sie die Remote-Verbindung zu <ph name="HOSTNAME"/> wirklich deaktivieren? Wenn Sie die Verbindung später erneut aktivieren möchten, müssen Sie dies von dem betreffenden Computer aus tun.</translation>
 <translation id="9149992051684092333">Teilen Sie zur Freigabe Ihres Desktops zunächst der Person, die Sie unterstützen wird, den unten stehenden Zugriffscode mit.</translation>
@@ -77,7 +79,6 @@
 <translation id="3933246213702324812">Chromoting auf <ph name="HOSTNAME"/> ist veraltet und muss aktualisiert werden.</translation>
 <translation id="6193698048504518729">Mit <ph name="HOSTNAME"/> verbinden</translation>
 <translation id="3020807351229499221">Fehler beim Aktualisieren der PIN. Bitte versuchen Sie es später erneut.</translation>
-<translation id="785147662223870933">Möchten Sie uns dabei helfen, Chrome Remote Desktop zu verbessern?</translation>
 <translation id="579702532610384533">Erneut verbinden</translation>
 <translation id="4211066471404647515">Es fehlen einige Komponenten, die für Chromoting erforderlich sind. Überprüfen Sie, ob Sie die neueste Version von Chrome verwenden, und versuchen Sie es erneut.</translation>
 <translation id="5265129178187621741">(Diese Funktion ist noch nicht für Chromebooks verfügbar… Bitte haben Sie noch etwas Geduld.)</translation>
@@ -119,7 +120,7 @@
 <translation id="652218476070540101">Die PIN für diesen Computer wird aktualisiert…</translation>
 <translation id="5308380583665731573">Verbinden</translation>
 <translation id="7319983568955948908">Freigabe beenden</translation>
-<translation id="2229673624483529540">Möchten Sie uns dabei helfen, Chromoting zu verbessern?</translation>
+<translation id="1462361961931793308">Beim Verbinden dieses Computers mit diesem Host nicht mehr nach der PIN fragen</translation>
 <translation id="6668065415969892472">Ihre PIN wurde aktualisiert.</translation>
 <translation id="4277736576214464567">Der Zugriffscode ist ungültig. Bitte versuchen Sie es erneut.</translation>
 <translation id="979100198331752041">Chrome Remote Desktop auf <ph name="HOSTNAME"/> ist veraltet und muss aktualisiert werden.</translation>

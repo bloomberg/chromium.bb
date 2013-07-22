@@ -1,23 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ca">
-<translation id="1491151370853475546">Torna a carreg. pàg.</translation>
+<translation id="1491151370853475546">Torna a carregar aquesta pàgina</translation>
 <translation id="7658239707568436148">Cancel·la</translation>
-<translation id="6458785801851713928">La sincronització no està disponible per al vostre domini.</translation>
-<translation id="1623104350909869708">Impedeix que aquesta pàgina creï diàlegs addicionals</translation>
 <translation id="7791543448312431591">Afegeix</translation>
-<translation id="3896036286668839683">Lector de certificats</translation>
 <translation id="8730621377337864115">Finalitzat</translation>
-<translation id="4170011742729630528">El servei no està disponible. Torneu-ho a provar més tard.</translation>
-<translation id="8627706565932943526">Error de sincronització</translation>
-<translation id="3136378934686431938">Actualitzeu les dades d'inici de sessió.</translation>
-<translation id="4510973599275542560">No tornis a carregar</translation>
 <translation id="9154176715500758432">Roman en aquesta pàgina</translation>
-<translation id="7063006564040364415">No s'ha pogut connectar amb el servidor de sincronització.</translation>
 <translation id="9065203028668620118">Edita</translation>
 <translation id="6512448926095770873">Abandona aquesta pàgina</translation>
-<translation id="5032574515228824816">Sol·licitud</translation>
-<translation id="177206394375746242">En fer clic al botó següent, accepteu les Condicions del servei, així com un altre text que garanteix que no hi hagi només una línia.</translation>
-<translation id="8830134817694641714">S'estan obtenint els detalls del pagament</translation>
 <translation id="6965382102122355670">D'acord</translation>
 </translationbundle>

@@ -1,23 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="es">
-<translation id="1491151370853475546">Volver a cargar página</translation>
+<translation id="1491151370853475546">Volver a cargar esta página</translation>
 <translation id="7658239707568436148">Cancelar</translation>
-<translation id="6458785801851713928">La función de sincronización no está disponible para tu dominio.</translation>
-<translation id="1623104350909869708">Evitar que esta página cree cuadros de diálogo adicionales</translation>
 <translation id="7791543448312431591">Añadir</translation>
-<translation id="3896036286668839683">Visor de certificados</translation>
 <translation id="8730621377337864115">Ok</translation>
-<translation id="4170011742729630528">El servicio no está disponible. Vuelve a intentarlo más tarde.</translation>
-<translation id="8627706565932943526">Error de sincronización</translation>
-<translation id="3136378934686431938">Actualiza tus datos de inicio de sesión.</translation>
-<translation id="4510973599275542560">No volver a cargar</translation>
 <translation id="9154176715500758432">Permanecer en esta página</translation>
-<translation id="7063006564040364415">No ha sido posible establecer conexión con el servidor de sincronización.</translation>
 <translation id="9065203028668620118">Editar</translation>
 <translation id="6512448926095770873">Abandonar esta página</translation>
-<translation id="5032574515228824816">Datos solicitados</translation>
-<translation id="177206394375746242">Al hacer clic en el botón que aparece a continuación, aceptas las condiciones de servicio, así como otro texto que garantiza que no se trata de una sola línea.</translation>
-<translation id="8830134817694641714">Recuperando datos de pago</translation>
 <translation id="6965382102122355670">Aceptar</translation>
 </translationbundle>

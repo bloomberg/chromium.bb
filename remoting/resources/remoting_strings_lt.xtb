@@ -9,11 +9,13 @@
 <translation id="2208514473086078157">Pagal politikos nustatymus šio kompiuterio negalima bendrinti kaip „Chrome“ nuotolinio kompiuterio valdymo prieglobos. Kreipkitės pagalbos į sistemos administratorių.</translation>
 <translation id="2801119484858626560">Aptikta nesuderinama „Chrome“ nuotolinio kompiuterio valdymo versija. Įsitikinkite, kad naudojate naujausios versijos „Chrome“ ir „Chrome“ nuotolinį kompiuterio valdymą abiejuose kompiuteriuose, ir bandykite dar kartą.</translation>
 <translation id="6998989275928107238">Ryšys užmezgamas su</translation>
+<translation id="406849768426631008">Norite padėti kam nors bendraudami su jais vaizdo pokalbyje? Išbandykite <ph name="LINK_BEGIN"/>nuotolinį kompiuterio valdymą „Google Hangout“<ph name="LINK_END"/>.</translation>
 <translation id="3258789396564295715">Galite saugiai pasiekti kompiuterį naudodami „Chrome“ nuotolinį kompiuterio valdymą.</translation>
 <translation id="5070121137485264635">Nuotolinė priegloba reikalauja autentifikuoti trečiosios šalies svetainę. Jei norite tęsti, turite suteikti „Chrome“ nuotolinio kompiuterio valdymo programai papildomas teises pasiekti šį adresą</translation>
 <translation id="4808503597364150972">Įveskite „<ph name="HOSTNAME"/>“ PIN kodą.</translation>
 <translation id="7672203038394118626">Nuotolinis ryšys šiame kompiuteryje neleidžiamas.</translation>
 <translation id="8244400547700556338">Sužinokite, kaip tai padaryti.</translation>
+<translation id="4368630973089289038">Norite padėti patobulinti „Chrome“ nuotolinį ryšį? <ph name="LINK_BEGIN"/>Sudalyvaukite apklausoje.<ph name="LINK_END"/></translation>
 <translation id="332624996707057614">Redaguoti kompiuterio pavadinimą</translation>
 <translation id="1996161829609978754">„Chrome“ atsisiunčiama „Chrome“ nuotolinio ryšio prieglobos diegimo programa. Kai atsisiuntimas bus baigtas, prieš tęsdami paleiskite ją.</translation>
 <translation id="7658239707568436148">Atšaukti</translation>
@@ -43,10 +45,10 @@
 <translation id="174018511426417793">Neturite jokių registruotų kompiuterių. Jei norite įgalinti nuotolinį ryšį su kompiuteriu, jame įdiekite „Chrome“ nuotolinį kompiuterio valdymą ir spustelėkite „<ph name="BUTTON_NAME"/>“.</translation>
 <translation id="8525306231823319788">Viso ekrano režimas</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME"/> (pasenusi)</translation>
+<translation id="327263477022142889">Norite padėti tobulinti „Chrome“ nuotolinį kompiuterio valdymą? <ph name="LINK_BEGIN"/>Sudalyvaukite apklausoje.<ph name="LINK_END"/></translation>
 <translation id="5702987232842159181">Prisijungta:</translation>
 <translation id="4736223761657662401">Ryšių istorija</translation>
 <translation id="4430915108080446161">Generuojamas prieigos kodas...</translation>
-<translation id="7022800415798056893">Dalyvauti apklausoje</translation>
 <translation id="8228265668171617545">Aptikta nesuderinama „Chrome“ nuotolinio ryšio versija. Įsitikinkite, kad naudojate naujausios versijos „Chrome“ ir „Chrome“ nuotolinį ryšį abiejuose kompiuteriuose, ir bandykite dar kartą.</translation>
 <translation id="6985691951107243942">Ar tikrai norite neleisti nuotolinio ryšio su „<ph name="HOSTNAME"/>“? Jei apsigalvosite, turėsite iš naujo įgalinti ryšį tame kompiuteryje.</translation>
 <translation id="9149992051684092333">Jei norite pradėti bendrinti darbalaukį, pateikite toliau nurodytą prieigos kodą padėjėjui.</translation>
@@ -77,7 +79,6 @@
 <translation id="3933246213702324812">„Chrome“ nuotolinis ryšys <ph name="HOSTNAME"/> yra pasenęs ir jį reikia atnaujinti.</translation>
 <translation id="6193698048504518729">Prisijungti prie „<ph name="HOSTNAME"/>“</translation>
 <translation id="3020807351229499221">Atnaujinant PIN kodą įvyko klaida. Bandykite dar kartą vėliau.</translation>
-<translation id="785147662223870933">Norite padėti patobulinti „Chrome“ nuotolinį kompiuterio valdymą?</translation>
 <translation id="579702532610384533">Pakartotinai prijungti</translation>
 <translation id="4211066471404647515">Trūksta kai kurių „Chrome“ nuotoliniam ryšiui reikalingų komponentų. Įsitikinkite, kad naudojate naujausios versijos „Chrome“, ir bandykite dar kartą.</translation>
 <translation id="5265129178187621741">(ši funkcija „Chromebook“ dar negalima… Sekite naujienas.)</translation>
@@ -119,7 +120,7 @@
 <translation id="652218476070540101">Šio kompiuterio PIN kodas atnaujinamas…</translation>
 <translation id="5308380583665731573">Prisijungti</translation>
 <translation id="7319983568955948908">Stabdyti bendrinimą</translation>
-<translation id="2229673624483529540">Norite padėti patobulinti „Chrome“ nuotolinį ryšį?</translation>
+<translation id="1462361961931793308">Neprašyti įvesti PIN kodą dar kartą, kai šiuo kompiuteriu bus jungiamasi prie šio pagrindinio kompiuterio.</translation>
 <translation id="6668065415969892472">PIN kodas atnaujintas.</translation>
 <translation id="4277736576214464567">Netinkamas prieigos kodas. Bandykite dar kartą.</translation>
 <translation id="979100198331752041">„Chrome“ nuotolinis kompiuterio valdymas <ph name="HOSTNAME"/> yra pasenęs ir jį reikia atnaujinti.</translation>

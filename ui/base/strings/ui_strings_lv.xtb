@@ -2,18 +2,18 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="lv">
 <translation id="4820616160060340806">Command+<ph name="KEY_COMBO_NAME"/></translation>
-<translation id="6420214550675866556">Klusais režīms</translation>
 <translation id="1871244248791675517">Iespraušana</translation>
 <translation id="6135826906199951471">Dzēst</translation>
 <translation id="528468243742722775">Beigas</translation>
+<translation id="1801827354178857021">Punkts</translation>
 <translation id="1190609913194133056">Paziņojumu centrs</translation>
 <translation id="5613020302032141669">Kreisā bulta</translation>
 <translation id="8602707065186045623">Fails <ph name="SAVEAS_EXTENSION_TYPE"/> (.<ph name="SAVEAS_EXTENSION_NAME"/>)</translation>
-<translation id="4519844444318892125">Aktivizēt kluso režīmu vienu dienu</translation>
 <translation id="5948410903763073882">Alt +<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="7658239707568436148">Atcelt</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY"/> B</translation>
+<translation id="3660179305079774227">Bulta augšup</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY"/> MB/s</translation>
 <translation id="3990502903496589789">Labā puse</translation>
 <translation id="932327136139879170">Sākumvieta</translation>
@@ -22,11 +22,12 @@
 <translation id="5076340679995252485">&amp;Ielīmēt</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY"/> TB</translation>
 <translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME"/></translation>
+<translation id="3234408098842461169">Bulta Lejup</translation>
 <translation id="3087734570205094154">Apakša</translation>
+<translation id="1860796786778352021">Paziņojuma aizvēršana</translation>
 <translation id="6364916375976753737">Ritināt pa kreisi</translation>
 <translation id="6945221475159498467">Atlasīt</translation>
 <translation id="6620110761915583480">Saglabāt failu</translation>
-<translation id="7394346403752882908">Aktivizēt kluso režīmu vienu stundu</translation>
 <translation id="8210608804940886430">Lejup</translation>
 <translation id="5329858601952122676">Dzēst</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY"/> KB</translation>
@@ -36,6 +37,8 @@
 <translation id="2497284189126895209">Visi faili</translation>
 <translation id="7814458197256864873">Ko&amp;pēt</translation>
 <translation id="3889424535448813030">Labā bulta</translation>
+<translation id="6829324100069873704">Atgriezties paziņojumos</translation>
+<translation id="6528179044667508675">Netraucēt</translation>
 <translation id="7135556860107312402">Atļaut paziņojumu saņemšanu no:</translation>
 <translation id="1398853756734560583">Maksimizēt</translation>
 <translation id="4250229828105606438">Ekrānuzņēmums</translation>
@@ -48,6 +51,7 @@
 <translation id="4552416320897244156">Lejup</translation>
 <translation id="7052633198403197513">taustiņš F1</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY"/> KB/s</translation>
+<translation id="7960078400008666149">Netraucēt stundu</translation>
 <translation id="2190355936436201913">(tukšs)</translation>
 <translation id="8447116497070723931">Augšup</translation>
 <translation id="4588090240171750605">Ritināt pa labi</translation>
@@ -66,17 +70,22 @@
 <translation id="6845383723252244143">Atlasīt mapi</translation>
 <translation id="5583640892426849032">Atkāpšanās taustiņš</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY"/> GB/s</translation>
+<translation id="4570886800634958009">Paziņojuma izvēršana</translation>
 <translation id="436869212180315161">Nospiediet</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY"/> TB/s</translation>
 <translation id="6040143037577758943">Aizvērt</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY"/> B/s</translation>
+<translation id="7649070708921625228">Palīdzība</translation>
+<translation id="8226233771743600312">Netraucēt dienu</translation>
 <translation id="7457942297256758195">Notīrīt visu</translation>
 <translation id="7509316384504965641"><ph name="PRODUCT"/> — paziņojumi</translation>
 <translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="6907759265145635167"><ph name="QUANTITY"/> PB/s</translation>
 <translation id="4481522213790366002"><ph name="PRODUCT"/> — paziņojumi (nelasīti: <ph name="QUANTITY"/>)</translation>
 <translation id="6965382102122355670">Labi</translation>
+<translation id="7850320739366109486">Netraucēt</translation>
 <translation id="5941711191222866238">Minimizēt</translation>
+<translation id="6394627529324717982">Komats</translation>
 <translation id="4469842253116033348">Atspējot vietnes <ph name="SITE"/> paziņojumus</translation>
 <translation id="3036649622769666520">Atvērt failus</translation>
 <translation id="8328145009876646418">Kreisā mala</translation>

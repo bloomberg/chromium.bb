@@ -1,23 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="el">
-<translation id="1491151370853475546">Επαναφόρτωση σελ.</translation>
+<translation id="1491151370853475546">Εκ νέου φόρτωση αυτής της σελίδας</translation>
 <translation id="7658239707568436148">Ακύρωση</translation>
-<translation id="6458785801851713928">Η υπηρεσία συγχρονισμού δεν είναι διαθέσιμη για τον τομέα σας.</translation>
-<translation id="1623104350909869708">Αποτροπή δημιουργίας πρόσθετων παραθύρων διαλόγου απ' αυτήν τη σελίδα</translation>
 <translation id="7791543448312431591">Προσθήκη</translation>
-<translation id="3896036286668839683">Πρόγραμμα προβολής πιστοποιητικού</translation>
-<translation id="8730621377337864115">Ολοκληρώθηκε</translation>
-<translation id="4170011742729630528">Η υπηρεσία δεν είναι διαθέσιμη. Δοκιμάστε ξανά αργότερα.</translation>
-<translation id="8627706565932943526">Σφάλμα συγχρονισμού</translation>
-<translation id="3136378934686431938">Ενημερώστε τις λεπτομέρειες της σύνδεσής σας.</translation>
-<translation id="4510973599275542560">Να μην γίνει επαναφ.</translation>
+<translation id="8730621377337864115">Τέλος</translation>
 <translation id="9154176715500758432">Παραμονή σε αυτή τη σελίδα</translation>
-<translation id="7063006564040364415">Δεν ήταν δυνατή η σύνδεση στο διακομιστή συγχρονισμού.</translation>
 <translation id="9065203028668620118">Επεξεργασία</translation>
 <translation id="6512448926095770873">Έξοδος από αυτή τη σελίδα</translation>
-<translation id="5032574515228824816">Είσοδος</translation>
-<translation id="177206394375746242">Κάνοντας κλικ στο παρακάτω κουμπί, αποδέχεστε τους Όρους Παροχής Υπηρεσιών. And also some other text that makes sure this is not one line.</translation>
-<translation id="8830134817694641714">Ανάκτηση λεπτομερειών πληρωμής</translation>
 <translation id="6965382102122355670">OK</translation>
 </translationbundle>

@@ -9,11 +9,13 @@
 <translation id="2208514473086078157">Politika ayarları bu bilgisayarın bir Chrome Uzaktan Masaüstü ana bilgisayarı olarak paylaşılmasına izin vermiyor. Yardım için sistem yöneticinizle iletişim kurun.</translation>
 <translation id="2801119484858626560">Chrome Uzaktan Masaüstü uygulamasının uyumsuz bir sürümü algılandı. Lütfen, her iki bilgisayarda Google Chrome ve Chrome Uzaktan Masaüstü uygulamalarının son sürümlerinin bulunduğundan emin olun ve tekrar deneyin.</translation>
 <translation id="6998989275928107238">Kime</translation>
+<translation id="406849768426631008">Biriyle görüntülü sohbet yaparken aynı anda ona yardım etmek ister misiniz? <ph name="LINK_BEGIN"/>Google Hangouts'taki Uzaktan Masaüstü'nü<ph name="LINK_END"/> deneyin.</translation>
 <translation id="3258789396564295715">Chrome Uzaktan Masaüstü uygulamasını kullanarak bu bilgisayara güvenli bir şekilde erişebilirsiniz.</translation>
 <translation id="5070121137485264635">Uzak ana makine üçüncü taraf bir web sitesine kimlik doğrulama işlemi yapmanızı gerektiriyor. Devam etmek üzere şu adrese erişim için Chrome Uzaktan Masaüstü'ne ek izinler vermelisiniz:</translation>
 <translation id="4808503597364150972">Lütfen <ph name="HOSTNAME"/> için PIN'inizi girin.</translation>
 <translation id="7672203038394118626">Bu bilgisayara uzaktan bağlantılar devre dışı bırakıldı.</translation>
 <translation id="8244400547700556338">Nasıl yapıldığını öğrenin.</translation>
+<translation id="4368630973089289038">Chromoting'i daha iyi hale getirmeye yardımcı olmak ister misiniz? <ph name="LINK_BEGIN"/>Ankete katılın.<ph name="LINK_END"/></translation>
 <translation id="332624996707057614">Bilgisayarın adını düzenle</translation>
 <translation id="1996161829609978754">Chrome, Chromoting Ana Bilgisayar yükleyicisini indiriyor. İndirme işlemi tamamlandığında, devam etmeden önce lütfen yükleyiciyi çalıştırın.</translation>
 <translation id="7658239707568436148">İptal</translation>
@@ -43,10 +45,10 @@
 <translation id="174018511426417793">Kayıtlı bilgisayarınız yok. Bir bilgisayara uzaktan bağlantıları etkinleştirmek için Chrome Uzaktan Masaüstü uygulamasını o bilgisayara yükleyin ve “<ph name="BUTTON_NAME"/>” düğmesini tıklayın.</translation>
 <translation id="8525306231823319788">Tam ekran</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME"/> (eski)</translation>
+<translation id="327263477022142889">Chrome Uzaktan Masaüstü'nü daha iyi hale getirmeye yardımcı olmak ister misiniz? <ph name="LINK_BEGIN"/>Ankete katılın.<ph name="LINK_END"/></translation>
 <translation id="5702987232842159181">Bağlı:</translation>
 <translation id="4736223761657662401">Bağlantı Geçmişi</translation>
 <translation id="4430915108080446161">Erişim kodu oluşturuluyor...</translation>
-<translation id="7022800415798056893">Ankete katıl</translation>
 <translation id="8228265668171617545">Uyumsuz bir Chromoting sürümü algılandı. Lütfen her iki bilgisayara da Chrome ve Chromoting'in son sürümünü yüklediğinizden emin olun ve tekrar deneyin.</translation>
 <translation id="6985691951107243942"><ph name="HOSTNAME"/> adlı ana bilgisayara uzaktan bağlantıları devre dışı bırakmak istediğinizden emin misiniz? Daha sonra fikrinizi değiştirirseniz, bağlantıları yeniden etkinleştirmek için söz konusu bilgisayarı ziyaret etmeniz gerekecektir.</translation>
 <translation id="9149992051684092333">Masaüstünüzü paylaşmaya başlamak için, size yardımcı olacak kişiye aşağıdaki erişim kodunu verin.</translation>
@@ -77,7 +79,6 @@
 <translation id="3933246213702324812"><ph name="HOSTNAME"/> üzerindeki Chromoting eski ve güncellenmesi gerekiyor.</translation>
 <translation id="6193698048504518729"><ph name="HOSTNAME"/> adlı ana bilgisayara bağlan</translation>
 <translation id="3020807351229499221">PIN güncellenemedi. Lütfen daha sonra tekrar deneyin.</translation>
-<translation id="785147662223870933">Chrome Uzaktan Masaüstü'nü iyileştirmeye yardımcı olmak ister misiniz?</translation>
 <translation id="579702532610384533">Yeniden bağlan</translation>
 <translation id="4211066471404647515">Chromoting için gereken bazı bileşenler eksik. Lütfen Google Chrome'un son sürümünü çalıştırdığınızdan emin olun ve tekrar deneyin.</translation>
 <translation id="5265129178187621741">(bu özellik henüz Chromebook'larda kullanılmıyor... bizi izlemeye devam edin)</translation>
@@ -119,7 +120,7 @@
 <translation id="652218476070540101">Bu bilgisayarın PIN'i güncelleniyor…</translation>
 <translation id="5308380583665731573">Bağlan</translation>
 <translation id="7319983568955948908">Paylaşmayı Durdur</translation>
-<translation id="2229673624483529540">Chromoting'i iyileştirmeye yardımcı olmak ister misiniz?</translation>
+<translation id="1462361961931793308">Bu bilgisayardan bu ana makineye bağlantı kurarken bir daha PIN sorma.</translation>
 <translation id="6668065415969892472">PIN'iniz güncellendi.</translation>
 <translation id="4277736576214464567">Erişim kodu geçersiz. Lütfen tekrar deneyin.</translation>
 <translation id="979100198331752041"><ph name="HOSTNAME"/> üzerindeki Chrome Uzaktan Masaüstü eski ve güncellenmesi gerekiyor.</translation>

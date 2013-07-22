@@ -9,11 +9,13 @@
 <translation id="2208514473086078157">Setelan kebijakan tidak mengizinkan berbagi komputer ini sebagai inang Chrome Desktop Jarak Jauh. Hubungi administrator sistem Anda untuk mendapatkan bantuan.</translation>
 <translation id="2801119484858626560">Versi Chrome Desktop Jarak Jauh yang tidak kompatibel terdeteksi. Pastikan bahwa Anda memiliki Chrome dan Chrome Desktop Jarak Jauh versi teranyar di kedua komputer, lalu coba lagi.</translation>
 <translation id="6998989275928107238">Ke</translation>
+<translation id="406849768426631008">Ingin membantu seseorang sambil video chat dengannya? Coba <ph name="LINK_BEGIN"/> Desktop Jarak Jauh di Google Hangouts<ph name="LINK_END"/>.</translation>
 <translation id="3258789396564295715">Mungkin Anda dapat mengakses komputer ini dengan aman menggunakan Chrome Desktop Jarak Jauh.</translation>
 <translation id="5070121137485264635">Hosting jarak jauh mewajibkan Anda mengautentikasi ke situs web pihak ketiga. Untuk melanjutkan, Anda harus memberikan izin tambahan ke Chrome Desktop Jarak Jauh untuk mengakses alamat ini:</translation>
 <translation id="4808503597364150972">Masukkan PIN Anda untuk <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">Sambungan jarak jauh untuk komputer ini telah dinonaktifkan.</translation>
 <translation id="8244400547700556338">Pelajari caranya.</translation>
+<translation id="4368630973089289038">Ingin membantu meningkatkan Chromoting? <ph name="LINK_BEGIN"/>Isi survei ini.<ph name="LINK_END"/></translation>
 <translation id="332624996707057614">Edit nama komputer</translation>
 <translation id="1996161829609978754">Chrome sedang mengunduh pemasang Inang Chromoting. Setelah unduhan selesai, jalankan pemasang sebelum melanjutkan.</translation>
 <translation id="7658239707568436148">Batal</translation>
@@ -43,10 +45,10 @@
 <translation id="174018511426417793">Anda tidak memiliki komputer yang terdaftar. Untuk mengaktifkan sambungan jarak jauh ke komputer, pasang Chrome Desktop Jarak Jauh di komputer tersebut, lalu klik “<ph name="BUTTON_NAME"/>”.</translation>
 <translation id="8525306231823319788">Layar penuh</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME"/> (kedaluwarsa)</translation>
+<translation id="327263477022142889">Ingin membantu meningkatkan Desktop Jarak Jauh Chrome? <ph name="LINK_BEGIN"/>Isi survei ini.<ph name="LINK_END"/></translation>
 <translation id="5702987232842159181">Tersambung:</translation>
 <translation id="4736223761657662401">Riwayat Sambungan</translation>
 <translation id="4430915108080446161">Membuat kode akses...</translation>
-<translation id="7022800415798056893">Ikut survei</translation>
 <translation id="8228265668171617545">Versi Chromoting yang tidak kompatibel terdeteksi. Pastikan bahwa Anda memiliki Chrome versi teranyar dan Chromoting di kedua komputer tersebut, lalu coba lagi.</translation>
 <translation id="6985691951107243942">Yakin ingin menonaktifkan sambungan jarak jauh dengan <ph name="HOSTNAME"/>? Jika Anda berubah pikiran, Anda harus mengunjungi komputer tersebut untuk mengaktifkan kembali sambungan.</translation>
 <translation id="9149992051684092333">Untuk mulai berbagi desktop, berikan kode akses di bawah kepada orang yang akan membantu Anda.</translation>
@@ -77,7 +79,6 @@
 <translation id="3933246213702324812">Chromoting di <ph name="HOSTNAME"/> telah kedaluwarsa dan perlu diperbarui.</translation>
 <translation id="6193698048504518729">Sambungkan ke <ph name="HOSTNAME"/></translation>
 <translation id="3020807351229499221">Gagal memperbarui PIN. Coba lagi nanti.</translation>
-<translation id="785147662223870933">Ingin membantu meningkatkan Chrome Desktop Jarak Jauh?</translation>
 <translation id="579702532610384533">Sambungkan ulang</translation>
 <translation id="4211066471404647515">Beberapa komponen yang diperlukan untuk Chromoting hilang. Pastikan bahwa Anda menjalankan Chrome versi teranyar dan coba lagi.</translation>
 <translation id="5265129178187621741">(fitur ini belum tersedia untuk Chromebook... nantikan kabar berikutnya)</translation>
@@ -119,7 +120,7 @@
 <translation id="652218476070540101">PIN untuk komputer ini sedang diperbarui...</translation>
 <translation id="5308380583665731573">Hubungkan</translation>
 <translation id="7319983568955948908">Hentikan Berbagi</translation>
-<translation id="2229673624483529540">Ingin membantu meningkatkan Chromoting?</translation>
+<translation id="1462361961931793308">Jangan minta PIN lagi saat menyambungkan ke hosting tersebut dari komputer ini.</translation>
 <translation id="6668065415969892472">PIN Anda telah diperbarui.</translation>
 <translation id="4277736576214464567">Kode akses tidak valid. Harap coba lagi.</translation>
 <translation id="979100198331752041">Chrome Desktop Jarak Jauh di <ph name="HOSTNAME"/> telah kedaluwarsa dan perlu diperbarui.</translation>

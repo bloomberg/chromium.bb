@@ -9,11 +9,13 @@
 <translation id="2208514473086078157">การตั้งค่านโยบายไม่อนุญาตให้แบ่งปันคอมพิวเตอร์นี้เป็นโฮสต์ Chrome Remote Desktop โปรดติดต่อขอรับความช่วยเหลือจากผู้ดูแลระบบของคุณ</translation>
 <translation id="2801119484858626560">ตรวจพบรุ่นที่เข้ากันไม่ได้ของ Chrome Remote Desktop โปรดตรวจสอบให้แน่ใจว่าคุณมี Chrome และ Chrome Remote Desktop เวอร์ชันล่าสุดบนคอมพิวเตอร์ทั้งสองเครื่องและลองอีกครั้ง</translation>
 <translation id="6998989275928107238">ถึง</translation>
+<translation id="406849768426631008">หากต้องการช่วยคนอื่นในขณะที่วิดีโอแชทกับพวกเขา ลองใช้<ph name="LINK_BEGIN"/> &quot;เดสก์ท็อปเครื่องอื่น&quot; ใน Google แฮงเอาท์<ph name="LINK_END"/></translation>
 <translation id="3258789396564295715">คุณสามารถเข้าถึงคอมพิวเตอร์เครื่องนี้ได้อย่างปลอดภัยโดยใช้ Chrome Remote Desktop</translation>
 <translation id="5070121137485264635">โฮสต์ระยะไกลกำหนดให้คุณตรวจสอบสิทธิ์กับเว็บไซต์ของบุคคลที่สาม หากต้องการดำเนินการต่อ คุณต้องให้สิทธิ์อนุญาตเพิ่มเติมแก่ Chrome Remote Desktop เพื่อเข้าถึงที่อยู่นี้:</translation>
 <translation id="4808503597364150972">โปรดป้อน PIN ของคุณสำหรับ <ph name="HOSTNAME"/></translation>
 <translation id="7672203038394118626">การเชื่อมต่อระยะไกลสำหรับคอมพิวเตอร์เครื่องนี้ถูกปิดใช้งานแล้ว</translation>
 <translation id="8244400547700556338">เรียนรู้วิธีการ</translation>
+<translation id="4368630973089289038">หากต้องการช่วยปรับปรุง Chromoting โปรด<ph name="LINK_BEGIN"/>ตอบแบบสำรวจ<ph name="LINK_END"/></translation>
 <translation id="332624996707057614">แก้ไขชื่อคอมพิวเตอร์</translation>
 <translation id="1996161829609978754">Chrome กำลังดาวน์โหลดตัวติดตั้ง Chromoting Host เมื่อดาวน์โหลดเสร็จแล้ว โปรดเรียกใช้โปรแกรมติดตั้งก่อนดำเนินการต่อ</translation>
 <translation id="7658239707568436148">ยกเลิก</translation>
@@ -43,10 +45,10 @@
 <translation id="174018511426417793">คุณไม่มีคอมพิวเตอร์ที่ได้ลงทะเบียนไว้ หากต้องการเปิดใช้งานการเชื่อมต่อระยะไกลกับคอมพิวเตอร์ ให้ติดตั้ง Chrome Remote Desktop ที่คอมพิวเตอร์ที่ต้องการใช้งานและคลิก &quot;<ph name="BUTTON_NAME"/>&quot;</translation>
 <translation id="8525306231823319788">เต็มหน้าจอ</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME"/> (ล้าสมัย)</translation>
+<translation id="327263477022142889">หากต้องการช่วยปรับปรุง Chrome Remote Desktop โปรด<ph name="LINK_BEGIN"/>ตอบแบบสำรวจ<ph name="LINK_END"/></translation>
 <translation id="5702987232842159181">เชื่อมต่อแล้ว:</translation>
 <translation id="4736223761657662401">ประวัติการเชื่อมต่อ</translation>
 <translation id="4430915108080446161">กำลังสร้างรหัสการเข้าถึง...</translation>
-<translation id="7022800415798056893">ทำแบบสำรวจ</translation>
 <translation id="8228265668171617545">พบ Chromoting ในเวอร์ชันที่ไม่สามารถทำงานร่วมกัน โปรดตรวจสอบให้แน่ใจว่าคุณมี Chrome และ Chromoting เวอร์ชันล่าสุดในคอมพิวเตอร์ทั้งสองเครื่องและลองอีกครั้ง</translation>
 <translation id="6985691951107243942">คุณแน่ใจหรือไม่ว่าต้องการปิดใช้งานการเชื่อมต่อระยะไกลกับ <ph name="HOSTNAME"/> หากคุณเปลี่ยนใจภายหลัง คุณจะต้องไปที่คอมพิวเตอร์เครื่องนั้นเพื่อเปิดใช้งานการเชื่อมต่ออีกครั้ง</translation>
 <translation id="9149992051684092333">หากต้องการเริ่มการแบ่งปันเดสก์ท็อปของคุณ โปรดให้รหัสการเข้าถึงที่ด้านล่างนี้แก่บุคคลที่จะให้ความช่วยเหลือคุณ</translation>
@@ -77,7 +79,6 @@
 <translation id="3933246213702324812">Chromoting บน <ph name="HOSTNAME"/> เก่าเกินไปและต้องมีการอัปเดต</translation>
 <translation id="6193698048504518729">เชื่อมต่อกับ <ph name="HOSTNAME"/></translation>
 <translation id="3020807351229499221">ไม่สามารถอัปเดต PIN โปรดลองอีกครั้งในภายหลัง</translation>
-<translation id="785147662223870933">หากต้องการช่วยปรับปรุง Chrome Remote Desktop</translation>
 <translation id="579702532610384533">เชื่อมต่อใหม่</translation>
 <translation id="4211066471404647515">องค์ประกอบที่จำเป็นบางอย่างสำหรับ Chromoting ขาดหายไป โปรดตรวจสอบให้แน่ใจว่าคุณใช้ Chrome เวอร์ชันล่าสุดแล้วและลองอีกครั้ง</translation>
 <translation id="5265129178187621741">(คุณลักษณะนี้ยังไม่มีให้ใช้งานใน Chromebook... โปรดคอยติดตาม)</translation>
@@ -119,7 +120,7 @@
 <translation id="652218476070540101">กำลังอัปเดต PIN สำหรับคอมพิวเตอร์เครื่องนี้…</translation>
 <translation id="5308380583665731573">เชื่อมต่อ</translation>
 <translation id="7319983568955948908">หยุดการแบ่งปัน</translation>
-<translation id="2229673624483529540">หากต้องการช่วยปรับปรุง Chromoting</translation>
+<translation id="1462361961931793308">อย่าขอ PIN อีกเมื่อเชื่อมต่อไปยังโฮสต์นี้จากคอมพิวเตอร์เครื่องนี้</translation>
 <translation id="6668065415969892472">PIN ของคุณได้รับการอัปเดตแล้ว</translation>
 <translation id="4277736576214464567">รหัสการเข้าถึงไม่ถูกต้อง โปรดลองอีกครั้ง</translation>
 <translation id="979100198331752041">Chrome Remote Desktop บน <ph name="HOSTNAME"/> เก่าเกินไปและต้องมีการอัปเดต</translation>

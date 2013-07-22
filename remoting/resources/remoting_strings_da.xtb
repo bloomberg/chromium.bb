@@ -9,11 +9,13 @@
 <translation id="2208514473086078157">Politikindstillingerne tillader ikke, at denne computer deles som en Chrome Fjernskrivebord-host. Kontakt din systemadministrator for at få hjælp.</translation>
 <translation id="2801119484858626560">Der er registreret en inkompatibel version af Chrome Fjernskrivebord. Kontrollér, at du har den nyeste version af Chrome og Chrome Fjernskrivebord på begge computere, og prøv igen.</translation>
 <translation id="6998989275928107238">Til</translation>
+<translation id="406849768426631008">Vil du hjælpe en anden person, mens I videochatter? Prøv <ph name="LINK_BEGIN"/>Fjernskrivebord i Google Hangouts<ph name="LINK_END"/>.</translation>
 <translation id="3258789396564295715">Du kan få sikker adgang til denne computer via Chrome Fjernskrivebord.</translation>
 <translation id="5070121137485264635">Fjernværten kræver, at du bekræftes over for et tredjepartswebsite. Du skal give Chrome Fjernskrivebord yderligere tilladelser til at få adgang til denne adresse, før du kan fortsætte:</translation>
 <translation id="4808503597364150972">Indtast din pinkode til <ph name="HOSTNAME"/>.</translation>
 <translation id="7672203038394118626">Fjernforbindelserne til denne computer er blevet deaktiveret.</translation>
 <translation id="8244400547700556338">Få flere oplysninger.</translation>
+<translation id="4368630973089289038">Vil du gerne være med til at forbedre Chromoting? <ph name="LINK_BEGIN"/>Deltag i spørgeundersøgelsen.<ph name="LINK_END"/></translation>
 <translation id="332624996707057614">Rediger computerens navn</translation>
 <translation id="1996161829609978754">Chrome downloader installationsprogrammet Chromoting Host. Når overførslen er færdig, skal du køre installationsprogrammet, før du fortsætter.</translation>
 <translation id="7658239707568436148">Annuller</translation>
@@ -43,10 +45,10 @@
 <translation id="174018511426417793">Du har ingen registrerede computere. Hvis du vil aktivere fjernforbindelser til en computer, skal du installere Chrome Fjernskrivebord på den pågældende computer og klikke på &quot;<ph name="BUTTON_NAME"/>&quot;.</translation>
 <translation id="8525306231823319788">Fuld skærm</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME"/> (forældet)</translation>
+<translation id="327263477022142889">Vil du gerne være med til at forbedre Chrome Fjernskrivebord? <ph name="LINK_BEGIN"/>Deltag i spørgeundersøgelsen.<ph name="LINK_END"/></translation>
 <translation id="5702987232842159181">Tilsluttet:</translation>
 <translation id="4736223761657662401">Forbindelseshistorik</translation>
 <translation id="4430915108080446161">Genererer adgangskode...</translation>
-<translation id="7022800415798056893">Deltag i undersøgelsen</translation>
 <translation id="8228265668171617545">Der er registreret en inkompatibel version af Chromoting. Kontrollér, at du har den nyeste version af Chrome og Chromoting på begge computere, og prøv igen.</translation>
 <translation id="6985691951107243942">Er du sikker på, at du vil deaktivere fjernforbindelserne til <ph name="HOSTNAME"/>? Hvis du ombestemmer dig, skal du genaktivere forbindelserne på den computer.</translation>
 <translation id="9149992051684092333">Hvis du vil begynde at dele dit skrivebord, skal du give adgangskoden nedenfor til den person, som skal hjælpe dig.</translation>
@@ -77,7 +79,6 @@
 <translation id="3933246213702324812">Chromoting på <ph name="HOSTNAME"/> er forældet og skal opdateres.</translation>
 <translation id="6193698048504518729">Opret forbindelse til <ph name="HOSTNAME"/></translation>
 <translation id="3020807351229499221">Pinkoden kunne ikke opdateres. Prøv igen senere.</translation>
-<translation id="785147662223870933">Vil du hjælpe med at forbedre Chrome Fjernskrivebord?</translation>
 <translation id="579702532610384533">Genopret forbindelse</translation>
 <translation id="4211066471404647515">Nogle komponenter, der kræves til Chromoting, mangler. Kontrollér, at du har den nyeste version af Chrome, og prøv igen.</translation>
 <translation id="5265129178187621741">(denne funktion er endnu ikke tilgængelig for Chromebooks... hold dig opdateret)</translation>
@@ -119,7 +120,7 @@
 <translation id="652218476070540101">Pinkoden for denne computer opdateres…</translation>
 <translation id="5308380583665731573">Opret forbindelse</translation>
 <translation id="7319983568955948908">Stop deling</translation>
-<translation id="2229673624483529540">Vil du hjælpe med at forbedre Chromoting?</translation>
+<translation id="1462361961931793308">Bed ikke om en pinkode igen, når der oprettes forbindelse til denne host fra denne computer.</translation>
 <translation id="6668065415969892472">Din pinkode er blevet opdateret.</translation>
 <translation id="4277736576214464567">Adgangskoden er ugyldig. Prøv igen.</translation>
 <translation id="979100198331752041">Chrome Fjernskrivebord på <ph name="HOSTNAME"/> er forældet og skal opdateres.</translation>

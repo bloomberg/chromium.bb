@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fr">
-<translation id="793640675459356075">Échec de l'ouverture du fichier.</translation>
-<translation id="6315516427814392808">Impossible de terminer l'opération précédente. Mémoire insuffisante.</translation>
+<translation id="7658239707568436148">Annuler</translation>
+<translation id="6727102863431372879">Définir</translation>
+<translation id="6042308850641462728">Plus</translation>
 </translationbundle>
