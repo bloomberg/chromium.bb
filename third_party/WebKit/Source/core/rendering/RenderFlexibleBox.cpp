@@ -265,13 +265,6 @@ void RenderFlexibleBox::styleDidChange(StyleDifference diff, const RenderStyle* 
     }
 }
 
-void RenderFlexibleBox::removeChild(RenderObject* child)
-{
-    m_orderIterator.invalidate();
-
-    RenderBlock::removeChild(child);
-}
-
 void RenderFlexibleBox::layoutBlock(bool relayoutChildren, LayoutUnit)
 {
     ASSERT(needsLayout());

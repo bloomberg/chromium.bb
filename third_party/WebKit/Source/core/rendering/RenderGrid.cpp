@@ -252,13 +252,6 @@ void RenderGrid::computePreferredLogicalWidths()
     setPreferredLogicalWidthsDirty(false);
 }
 
-void RenderGrid::removeChild(RenderObject* child)
-{
-    m_orderIterator.invalidate();
-
-    RenderBlock::removeChild(child);
-}
-
 LayoutUnit RenderGrid::computePreferredTrackWidth(const GridLength& gridLength, size_t trackIndex) const
 {
     if (gridLength.isFlex())

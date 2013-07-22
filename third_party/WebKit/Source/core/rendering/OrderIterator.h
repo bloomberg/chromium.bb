@@ -31,23 +31,12 @@
 #ifndef OrderIterator_h
 #define OrderIterator_h
 
-#include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {
 
 class RenderBox;
-
-// Normally, -1 and 0 are not valid in a HashSet, but these are relatively likel y order: values. Instead,
-// we make the two smallest int values invalid order: values (in the css parser code we clamp them to
-// int min + 2).
-struct OrdererValueMapKeyHashTraits : WTF::GenericHashTraits<int> {
-    static const bool emptyValueIsZero = false;
-    static int emptyValue() { return std::numeric_limits<int>::min(); }
-    static void constructDeletedValue(int& slot) { slot = std::numeric_limits<int>::min() + 1; }
-    static bool isDeletedValue(int value) { return value == std::numeric_limits<int>::min() + 1; }
-};
 
 class OrderIterator {
     WTF_MAKE_NONCOPYABLE(OrderIterator);
@@ -61,39 +50,36 @@ public:
     RenderBox* next();
     void reset();
 
-    void invalidate();
-
 private:
     const RenderBox* m_containerBox;
-
+    RenderBox* m_currentChild;
     // The inline capacity for a single item is used to cover the most
     // common case by far: if we only have the default 'order' value 0.
     typedef Vector<int, 1> OrderValues;
     OrderValues m_orderValues;
-
-    RenderBox* m_currentChild;
-    size_t m_currentOrderIndex;
-    size_t m_currentChildIndex;
-
-    // This HashMap is empty if there is only one value.
-    typedef HashMap<int, Vector<RenderBox*>, DefaultHash<int>::Hash, OrdererValueMapKeyHashTraits > OrderedValuesMap;
-    OrderedValuesMap m_orderedValues;
+    Vector<int>::const_iterator m_orderValuesIterator;
 };
 
 class OrderIteratorPopulator {
 public:
     OrderIteratorPopulator(OrderIterator& iterator)
         : m_iterator(iterator)
+        , m_anyChildHasDefaultOrderValue(false)
     {
-        m_iterator.invalidate();
+        // Note that we don't release the memory here, we only invalidate the size.
+        // This avoids unneeded reallocation if the size ends up not changing.
+        m_iterator.m_orderValues.shrink(0);
     }
 
     ~OrderIteratorPopulator();
 
-    void collectChild(RenderBox*);
+    void collectChild(const RenderBox*);
 
 private:
+    void removeDuplicatedOrderValues();
+
     OrderIterator& m_iterator;
+    bool m_anyChildHasDefaultOrderValue;
 };
 
 } // namespace WebCore

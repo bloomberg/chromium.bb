@@ -59,8 +59,6 @@ private:
     virtual void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const OVERRIDE;
     virtual void computePreferredLogicalWidths() OVERRIDE;
 
-    virtual void removeChild(RenderObject* child) OVERRIDE FINAL;
-
     LayoutUnit computePreferredTrackWidth(const GridLength&, size_t) const;
 
     class GridIterator;

@@ -38,8 +38,7 @@ namespace WebCore {
 OrderIterator::OrderIterator(const RenderBox* containerBox)
     : m_containerBox(containerBox)
     , m_currentChild(0)
-    , m_currentOrderIndex(0)
-    , m_currentChildIndex(0)
+    , m_orderValuesIterator(0)
 {
 }
 
@@ -51,60 +50,73 @@ RenderBox* OrderIterator::first()
 
 RenderBox* OrderIterator::next()
 {
-    for (; m_currentOrderIndex < m_orderValues.size(); ++m_currentOrderIndex) {
-        const Vector<RenderBox*>& currentOrderChildren = m_orderedValues.get(m_orderValues[m_currentOrderIndex]);
-        ASSERT(!currentOrderChildren.isEmpty());
-        for (; m_currentChildIndex < currentOrderChildren.size(); ++m_currentChildIndex) {
-            m_currentChild = currentOrderChildren[m_currentChildIndex];
-            ++m_currentChildIndex;
-            return m_currentChild;
+    do {
+        if (!m_currentChild) {
+            if (m_orderValuesIterator == m_orderValues.end())
+                return 0;
+            if (m_orderValuesIterator) {
+                ++m_orderValuesIterator;
+                if (m_orderValuesIterator == m_orderValues.end())
+                    return 0;
+            } else {
+                m_orderValuesIterator = m_orderValues.begin();
+            }
+
+            m_currentChild = m_containerBox->firstChildBox();
+        } else {
+            m_currentChild = m_currentChild->nextSiblingBox();
         }
+    } while (!m_currentChild || m_currentChild->style()->order() != *m_orderValuesIterator);
 
-        m_currentChildIndex = 0;
-    }
-
-    m_currentChild = 0;
     return m_currentChild;
 }
 
 void OrderIterator::reset()
 {
-    m_currentOrderIndex = 0;
-    m_currentChildIndex = 0;
     m_currentChild = 0;
-}
-
-void OrderIterator::invalidate()
-{
-    // Note that we don't release the memory here, we only invalidate the size.
-    // This avoids unneeded reallocation if the size ends up not changing.
-    m_orderValues.shrink(0);
-    m_orderedValues.clear();
-
-    reset();
+    m_orderValuesIterator = 0;
 }
 
 OrderIteratorPopulator::~OrderIteratorPopulator()
 {
     m_iterator.reset();
 
-    std::sort(m_iterator.m_orderValues.begin(), m_iterator.m_orderValues.end());
+    if (m_anyChildHasDefaultOrderValue)
+        m_iterator.m_orderValues.append(0);
+
+    if (m_iterator.m_orderValues.size() > 1)
+        removeDuplicatedOrderValues();
 
     // Ensure that we release any extra memory we hold onto.
     m_iterator.m_orderValues.shrinkToFit();
 }
 
-void OrderIteratorPopulator::collectChild(RenderBox* child)
+void OrderIteratorPopulator::removeDuplicatedOrderValues()
 {
-    int order = child->style()->order();
+    OrderIterator::OrderValues& orderValues = m_iterator.m_orderValues;
 
-    // FIXME: Ideally we would want to avoid inserting into the HashMap for the common case where there are only items
-    // with the default 'order' 0. The current API is designed to blend into a single iteration which makes having a
-    // slower fallback difficult without having to store the children (grid items may not be contiguous in DOM order).
-    OrderIterator::OrderedValuesMap::AddResult result = m_iterator.m_orderedValues.add(order, Vector<RenderBox*>());
-    result.iterator->value.append(child);
-    if (result.isNewEntry)
+    std::sort(orderValues.begin(), orderValues.end());
+
+    int previous = orderValues[0];
+    size_t uniqueItemIndex = 0;
+    for (size_t i = 1; i < orderValues.size(); ++i) {
+        int current = orderValues[i];
+        if (current == previous)
+            continue;
+        ++uniqueItemIndex;
+        std::swap(orderValues[i], orderValues[uniqueItemIndex]);
+        previous = current;
+    }
+    orderValues.shrink(uniqueItemIndex + 1);
+}
+
+void OrderIteratorPopulator::collectChild(const RenderBox* child)
+{
+    // Avoid growing the vector for the common-case default value of 0.
+    if (int order = child->style()->order())
         m_iterator.m_orderValues.append(order);
+    else
+        m_anyChildHasDefaultOrderValue = true;
 }
 
 } // namespace WebCore
