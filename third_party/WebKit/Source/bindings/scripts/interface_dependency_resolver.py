@@ -35,26 +35,34 @@ entire interface.
 
 It also checks whether a file should have bindings generated, or whether
 instead it is just a dependency.
-
-FIXME: Currently a stub, as part of landing the parser incrementally.
-Just computes dependencies, and should always return None, indicating
-bindings should not be generated.
-Does not read IDL files or merge IdlDefinitions yet.
 """
 
 import os.path
 
+import idl_reader
 
-def merge_interface_dependencies(idl_definitions, idl_filename, interface_dependencies_filename, additional_idl_filenames):
-    """Merges dependencies into an existing IDL document.
 
-    Modifies idl_definitions in place by adding parsed dependencies, and checks
+class InterfaceNotFoundError(Exception):
+    """Raised if (partial) interface not found in target IDL file."""
+    pass
+
+
+class InvalidPartialInterfaceError(Exception):
+    """Raised if a file listed as a partial interface is not in fact so."""
+    pass
+
+
+def resolve_dependencies(definitions, idl_filename, interface_dependencies_filename, additional_idl_filenames, verbose=False):
+    """Resolves dependencies, merging them into IDL definitions of main file.
+
+    Dependencies consist of 'partial interface' for the same interface as in the
+    main file, and other interfaces that this interface 'implements'.
+
+    Modifies definitions in place by adding parsed dependencies, and checks
     whether bindings should be generated, returning bool.
 
-    FIXME: stub: parser not implemented yet
-
     Arguments:
-        idl_definitions: IdlDefinitions object, modified in place
+        definitions: IdlDefinitions object, modified in place
         idl_filename: filename of main IDL file for the interface
         interface_dependencies_file: filename of dependencies file (produced by compute_dependencies.py)
         additional_idl_files: list of additional files, not listed in interface_dependencies_file, for which bindings should nonetheless be generated
@@ -67,10 +75,18 @@ def merge_interface_dependencies(idl_definitions, idl_filename, interface_depend
     dependency_idl_filenames = compute_dependency_idl_files(basename, interface_dependencies_filename, additional_idl_filenames)
     if dependency_idl_filenames is None:
         return False
-    # FIXME: currently dependency_idl_files *must* be None (indicating that
-    # dummy .cpp and .h files should be generated), as actual parser not
-    # present yet.
-    raise RuntimeError('Stub: parser not implemented yet')
+    # The Blink IDL filenaming convention is that the file <interface_name>.idl
+    # MUST contain the interface "interface_name" or exception "interface_name".
+    if interface_name in definitions.exceptions:
+        # Exceptions do not have dependencies, so no merging necessary
+        return definitions
+    try:
+        target_interface = definitions.interfaces[interface_name]
+    except KeyError:
+        raise InterfaceNotFoundError('Could not find interface or exception "%s" in %s' % (interface_name, basename))
+    merge_interface_dependencies(target_interface, idl_filename, dependency_idl_filenames, verbose=verbose)
+
+    return definitions
 
 
 def compute_dependency_idl_files(target_idl_basename, interface_dependencies_filename, additional_idl_filenames):
@@ -85,9 +101,6 @@ def compute_dependency_idl_files(target_idl_basename, interface_dependencies_fil
     - Otherwise, return None. This happens when the given IDL file is a
       dependency, for which we don't want to generate bindings.
     """
-    if interface_dependencies_filename is None:
-        return []
-
     # The format of the interface dependencies file is:
     #
     # Document.idl P.idl
@@ -121,3 +134,42 @@ def compute_dependency_idl_files(target_idl_basename, interface_dependencies_fil
         return []
 
     return None
+
+
+def merge_interface_dependencies(target_interface, idl_filename, dependency_idl_filenames, verbose=False):
+    """Merge dependencies ('partial interface' and 'implements') in dependency_idl_filenames into target_interface.
+
+    No return: modifies target_document in place.
+    """
+    # Sort so order consistent, so can compare output from run to run.
+    for dependency_idl_filename in sorted(dependency_idl_filenames):
+        dependency_interface_name, _ = os.path.splitext(os.path.basename(dependency_idl_filename))
+        definitions = idl_reader.read_idl_file(dependency_idl_filename, verbose=verbose)
+
+        for dependency_interface in definitions.interfaces.itervalues():
+            # Dependency files contain either partial interfaces for
+            # the (single) target interface, in which case the interface names
+            # must agree, or interfaces that are implemented by the target
+            # interface, in which case the interface names differ.
+            if dependency_interface.is_partial and dependency_interface.name != target_interface.name:
+                raise InvalidPartialInterfaceError('%s is not a partial interface of %s. There maybe a bug in the the dependency generator (compute_depedencies.py).' % (dependency_idl_filename, idl_filename))
+            if 'ImplementedAs' in dependency_interface.extended_attributes:
+                del dependency_interface.extended_attributes['ImplementedAs']
+            merge_dependency_interface(target_interface, dependency_interface, dependency_interface_name)
+
+
+def merge_dependency_interface(target_interface, dependency_interface, dependency_interface_name):
+    """Merge dependency_interface into target_interface.
+
+    No return: modifies target_interface in place.
+    """
+    def merge_lists(source_list, target_list):
+        for element in source_list:
+            if dependency_interface.is_partial:
+                element.extended_attributes['ImplementedBy'] = dependency_interface_name
+            element.extended_attributes.update(dependency_interface.extended_attributes)
+            target_list.append(element)
+
+    merge_lists(dependency_interface.attributes, target_interface.attributes)
+    merge_lists(dependency_interface.constants, target_interface.constants)
+    merge_lists(dependency_interface.operations, target_interface.operations)

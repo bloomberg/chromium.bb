@@ -26,48 +26,32 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-"""Read an IDL file or complete IDL interface, producing an IdlDefinitions object.
-
-FIXME: Currently a stub, as part of landing the parser incrementally.
-Just create dummy IdlDefinitions objects (no parsing or object building done),
-and resolve dependencies.
-The interface reader should always return None, indicating that bindings should
-not be generated, since the code generator has also not landed yet.
-"""
+"""Read an IDL file or complete IDL interface, producing an IdlDefinitions object."""
 
 import os.path
 
+import blink_idl_parser
+import idl_definitions_builder
+import idl_validator
 import interface_dependency_resolver
 
 
-class IdlDefinitions():
-    """Top-level IDL class.
-
-    In Web IDL spec terms, represents a set of definitions, obtained by parsing
-    a set of IDL fragments (i.e., the contents of .idl files).
-    See: http://www.w3.org/TR/WebIDL/#idl
-    """
-    # FIXME: Dummy class; full class hierarchy will be added with parser
-    pass
-
-
-def read_idl_definitions(idl_filename, interface_dependencies_filename, additional_idl_filenames):
+def read_idl_definitions(idl_filename, interface_dependencies_filename, additional_idl_filenames, idl_attributes_filename, verbose=False):
     """Returns an IdlDefinitions object for an IDL file, including all dependencies."""
     basename = os.path.basename(idl_filename)
 
-    idl_definitions = read_idl_file(idl_filename)
-    should_generate_bindings = interface_dependency_resolver.merge_interface_dependencies(idl_definitions, idl_filename, interface_dependencies_filename, additional_idl_filenames)
-    if not should_generate_bindings:
-        return None
-    # FIXME: turn on validator
-    # idl_validator.validate_extended_attributes(idl_definitions, basename, options.idl_attributes_file)
-    return idl_definitions
+    definitions = read_idl_file(idl_filename)
+    if interface_dependencies_filename:
+        should_generate_bindings = interface_dependency_resolver.resolve_dependencies(definitions, idl_filename, interface_dependencies_filename, additional_idl_filenames, verbose=verbose)
+        if not should_generate_bindings:
+            return None
+    if idl_attributes_filename:
+        idl_validator.validate_extended_attributes(definitions, basename, idl_attributes_filename)
+    return definitions
 
 
 def read_idl_file(idl_filename, verbose=False):
     """Returns an IdlDefinitions object for an IDL file, without any dependencies."""
-    # FIXME: Currently returns dummy object, as parser not present yet.
-    # parser = BlinkIDLParser(verbose=verbose)
-    # file_node = blink_idl_parser.parse_file(parser, idl_filename)
-    # return idl_object_builder.file_node_to_idl_definitions(file_node)
-    return IdlDefinitions()
+    parser = blink_idl_parser.BlinkIDLParser(verbose=verbose)
+    ast = blink_idl_parser.parse_file(parser, idl_filename)
+    return idl_definitions_builder.build_idl_definitions_from_ast(ast)

@@ -51,6 +51,10 @@
         '<@(deprecated_perl_idl_files)',
         '<@(python_idl_files)',
     ],
+    'webcore_test_support_idl_files': [
+        '<@(deprecated_perl_webcore_test_support_idl_files)',
+        '<@(python_webcore_test_support_idl_files)',
+    ],
 
     'bindings_output_dir': '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings',
     'generated_global_constructors_idl_files': [
@@ -254,9 +258,19 @@
         'msvs_external_rule': 1,
         'inputs': [
           'scripts/idl_compiler.py',
-          'scripts/idl_reader.py',
-          'scripts/interface_dependency_resolver.py',
+          '../../../ply/lex.py',
+          '../../../ply/yacc.py',
+          '../../../../tools/idl_parser/idl_lexer.py',
+          '../../../../tools/idl_parser/idl_node.py',
+          '../../../../tools/idl_parser/idl_parser.py',
+          'scripts/blink_idl_lexer.py',
+          'scripts/blink_idl_parser.py',
           'scripts/code_generator_v8.py',
+          'scripts/idl_definitions.py',
+          'scripts/idl_definitions_builder.py',
+          'scripts/idl_reader.py',
+          'scripts/idl_validator.py',
+          'scripts/interface_dependency_resolver.py',
           'scripts/IDLAttributes.txt',
           # FIXME: If the dependency structure changes, we rebuild all files,
           # since we're not computing dependencies file-by-file in the build.
@@ -300,7 +314,7 @@
           '--interface-dependencies-file',
           '<(SHARED_INTERMEDIATE_DIR)/InterfaceDependencies.txt',
           '--additional-idl-files',
-          '<(python_webcore_test_support_idl_files)',
+          '<(webcore_test_support_idl_files)',
           '<@(write_file_only_if_changed)',
           '<(RULE_INPUT_PATH)',
         ],

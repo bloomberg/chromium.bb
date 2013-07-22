@@ -43,16 +43,21 @@ incrementally. See http://crbug.com/239771
 """
 import optparse
 import os
+import pickle
 import shlex
 import sys
 
-import idl_reader
 import code_generator_v8
+import idl_reader
 
 
 def parse_options():
     parser = optparse.OptionParser()
     parser.add_option('--additional-idl-files')
+    # FIXME: The --dump-json-and-pickle option is only for debugging and will
+    # be removed once we complete migrating all IDL files from the Perl flow to
+    # the Python flow.
+    parser.add_option('--dump-json-and-pickle', action='store_true', default=False)
     parser.add_option('--idl-attributes-file')
     parser.add_option('--include', dest='idl_directories', action='append')
     parser.add_option('--output-directory')
@@ -75,6 +80,18 @@ def parse_options():
     return options
 
 
+def write_json_and_pickle(definitions, interface_name, output_directory):
+    json_string = definitions.to_json()
+    json_basename = interface_name + '.json'
+    json_filename = os.path.join(output_directory, json_basename)
+    with open(json_filename, 'w') as json_file:
+        json_file.write(json_string)
+    pickle_basename = interface_name + '.pkl'
+    pickle_filename = os.path.join(output_directory, pickle_basename)
+    with open(pickle_filename, 'wb') as pickle_file:
+        pickle.dump(definitions, pickle_file)
+
+
 def main():
     options = parse_options()
     idl_filename = options.idl_filename
@@ -84,18 +101,20 @@ def main():
     if verbose:
         print idl_filename
 
-    idl_definitions = idl_reader.read_idl_definitions(idl_filename, options.interface_dependencies_file, options.additional_idl_files)
-    # FIXME: add parameters when add validator
-    # idl_definitions = idl_reader.read_idl_interface(idl_filename, options.interface_dependencies_file, options.additional_idl_files, options.idl_attributes_file, verbose=verbose)
-    if not idl_definitions:
+    definitions = idl_reader.read_idl_definitions(idl_filename, options.interface_dependencies_file, options.additional_idl_files, options.idl_attributes_file, verbose=options.verbose)
+    if not definitions:
         # We generate dummy .h and .cpp files just to tell build scripts
         # that outputs have been created.
         code_generator_v8.generate_dummy_header_and_cpp(interface_name, options.output_directory)
         return
+    if options.dump_json_and_pickle:
+        write_json_and_pickle(definitions, interface_name, options.output_directory)
+        return
     # FIXME: turn on code generator
-    # Currently idl_definitions must be None (so dummy .h and .cpp files are
-    # generated), as actual code generator not present yet.
-    # code_generator_v8.write_interface(idl_definitions, interface_name, options.output_directory)
+    # Currently definitions must be None (so dummy .h and .cpp files are
+    # generated), or --dump-json-and-pickle selected, as actual code generator
+    # not present yet.
+    # code_generator_v8.write_interface(definitions, interface_name, options.output_directory)
     raise RuntimeError('Stub: code generator not implemented yet')
 
 
