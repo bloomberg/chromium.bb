@@ -32,20 +32,20 @@
 namespace WebCore {
 
 class Frame;
-class Node;
+class Element;
 
 class UserTypingGestureIndicator {
     WTF_MAKE_NONCOPYABLE(UserTypingGestureIndicator);
 public:
     static bool processingUserTypingGesture();
-    static Node* focusedElementAtGestureStart();
+    static Element* focusedElementAtGestureStart();
 
     explicit UserTypingGestureIndicator(Frame*);
     ~UserTypingGestureIndicator();
 
 private:
     bool m_previousProcessingUserTypingGesture;
-    RefPtr<Node> m_previousFocusedNode;
+    RefPtr<Element> m_previousFocusedElement;
 };    
 
 } // namespace WebCore
