@@ -124,6 +124,14 @@ class CHROMEOS_EXPORT ManagedNetworkConfigurationHandler
                  const std::string& userhash,
                  const base::ListValue& network_configs_onc);
 
+  // Returns the user policy for user |userhash| or device policy, which has
+  // |guid|. If |userhash| is empty, only looks for a device policy. If such
+  // doesn't exist, returns NULL. Sets |onc_source| accordingly.
+  const base::DictionaryValue* FindPolicyByGUID(
+      const std::string userhash,
+      const std::string& guid,
+      onc::ONCSource* onc_source) const;
+
   // NetworkProfileObserver overrides
   virtual void OnProfileAdded(const NetworkProfile& profile) OVERRIDE;
   virtual void OnProfileRemoved(const NetworkProfile& profile) OVERRIDE;

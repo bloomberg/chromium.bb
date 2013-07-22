@@ -694,6 +694,36 @@ void ManagedNetworkConfigurationHandler::OnProfileAdded(
   applicator->Run();
 }
 
+const base::DictionaryValue*
+ManagedNetworkConfigurationHandler::FindPolicyByGUID(
+    const std::string userhash,
+    const std::string& guid,
+    onc::ONCSource* onc_source) const {
+  *onc_source = onc::ONC_SOURCE_NONE;
+
+  if (!userhash.empty()) {
+    const GuidToPolicyMap* user_policies = GetPoliciesForUser(userhash);
+    if (user_policies) {
+      GuidToPolicyMap::const_iterator found = user_policies->find(guid);
+      if (found != user_policies->end()) {
+        *onc_source = onc::ONC_SOURCE_USER_POLICY;
+        return found->second;
+      }
+    }
+  }
+
+  const GuidToPolicyMap* device_policies = GetPoliciesForUser(std::string());
+  if (device_policies) {
+    GuidToPolicyMap::const_iterator found = device_policies->find(guid);
+    if (found != device_policies->end()) {
+      *onc_source = onc::ONC_SOURCE_DEVICE_POLICY;
+      return found->second;
+    }
+  }
+
+  return NULL;
+}
+
 void ManagedNetworkConfigurationHandler::OnProfileRemoved(
     const NetworkProfile& profile) {
   // Nothing to do in this case.
