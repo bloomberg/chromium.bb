@@ -67,11 +67,11 @@ bool ScriptValue::getString(String& result, v8::Isolate* isolate) const
     if (hasNoValue())
         return false;
 
-    if (!m_value->isString())
-        return false;
-
     v8::HandleScope handleScope(isolate);
-    result = toWebCoreString(v8Value());
+    v8::Handle<v8::Value> string = v8Value();
+    if (string.IsEmpty() || !string->IsString())
+        return false;
+    result = toWebCoreString(string);
     return true;
 }
 

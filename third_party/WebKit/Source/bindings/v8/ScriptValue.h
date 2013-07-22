@@ -93,10 +93,13 @@ public:
         return operator==(value);
     }
 
+    // Note: This creates a new local Handle; not to be used in cases where is
+    // is an efficiency problem.
     bool isFunction() const
     {
         ASSERT(!hasNoValue());
-        return m_value->isFunction();
+        v8::Handle<v8::Value> value = v8Value();
+        return !value.IsEmpty() && value->IsFunction();
     }
 
     bool operator!=(const ScriptValue& value) const
@@ -116,10 +119,13 @@ public:
         return m_value->isUndefined();
     }
 
+    // Note: This creates a new local Handle; not to be used in cases where is
+    // is an efficiency problem.
     bool isObject() const
     {
         ASSERT(!hasNoValue());
-        return m_value->isObject();
+        v8::Handle<v8::Value> value = v8Value();
+        return !value.IsEmpty() && value->IsObject();
     }
 
     bool hasNoValue() const

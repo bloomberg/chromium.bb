@@ -69,9 +69,6 @@ public:
     // a hack and should be removed asap.
     bool isNull() { return deprecatedHandle()->IsNull(); }
     bool isUndefined() { return deprecatedHandle()->IsUndefined(); }
-    bool isFunction() { return deprecatedHandle()->IsFunction(); }
-    bool isObject() { return deprecatedHandle()->IsObject(); }
-    bool isString() { return deprecatedHandle()->IsString(); }
 
     void set(v8::Isolate* isolate, v8::Handle<T> handle)
     {

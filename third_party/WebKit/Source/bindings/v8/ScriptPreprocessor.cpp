@@ -63,8 +63,8 @@ ScriptPreprocessor::ScriptPreprocessor(const String& preprocessorScript, ScriptC
         return;
     }
 
-    ScriptValue preprocessorFunction = scriptResults[0];
-    if (!preprocessorFunction.isFunction()) {
+    v8::Handle<v8::Value> preprocessorFunction = scriptResults[0].v8Value();
+    if (!preprocessorFunction->IsFunction()) {
         console->addMessage(JSMessageSource, ErrorMessageLevel, "The preprocessor must compile to a function.");
         return;
     }
@@ -75,7 +75,7 @@ ScriptPreprocessor::ScriptPreprocessor(const String& preprocessorScript, ScriptC
     m_isolate = context->GetIsolate();
 
     m_context.set(m_isolate, context);
-    m_preprocessorFunction.set(m_isolate, v8::Handle<v8::Function>::Cast(preprocessorFunction.v8Value()));
+    m_preprocessorFunction.set(m_isolate, v8::Handle<v8::Function>::Cast(preprocessorFunction));
 }
 
 String ScriptPreprocessor::preprocessSourceCode(const String& sourceCode, const String& sourceName)
