@@ -900,13 +900,14 @@ void VPNConfigView::ParseVPNUIProperty(NetworkPropertyUIData* property_ui_data,
                                        Network* network,
                                        const std::string& dict_key,
                                        const std::string& key) {
-  NetworkLibrary* network_library = NetworkLibrary::Get();
+  onc::ONCSource onc_source = onc::ONC_SOURCE_NONE;
   const base::DictionaryValue* onc =
-      network_library->FindOncForNetwork(network->unique_id());
-  VLOG_IF(1, !onc) << "No ONC found for VPN network " << network->unique_id();
+      NetworkConfigView::FindPolicyForActiveUser(network, &onc_source);
 
+  VLOG_IF(1, !onc) << "No ONC found for VPN network " << network->unique_id();
   property_ui_data->ParseOncProperty(
-      network->ui_data().onc_source(), onc,
+      onc_source,
+      onc,
       base::StringPrintf("%s.%s.%s",
                          onc::network_config::kVPN,
                          dict_key.c_str(),

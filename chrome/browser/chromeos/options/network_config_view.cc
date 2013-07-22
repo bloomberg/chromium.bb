@@ -286,6 +286,14 @@ gfx::Size ControlledSettingIndicatorView::GetPreferredSize() {
                                  : gfx::Size();
 }
 
+// static
+const base::DictionaryValue* NetworkConfigView::FindPolicyForActiveUser(
+    const Network* network,
+    onc::ONCSource* onc_source) {
+  *onc_source = network->ui_data().onc_source();
+  return NetworkLibrary::Get()->FindOncForNetwork(network->unique_id());
+}
+
 void ControlledSettingIndicatorView::Layout() {
   image_view_->SetBounds(0, 0, width(), height());
 }

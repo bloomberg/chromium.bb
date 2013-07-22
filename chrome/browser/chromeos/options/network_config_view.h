@@ -74,6 +74,10 @@ class NetworkConfigView : public views::DialogDelegateView,
     delegate_ = delegate;
   }
 
+  static const base::DictionaryValue* FindPolicyForActiveUser(
+      const Network* network,
+      onc::ONCSource* onc_source);
+
  protected:
   // views::View overrides:
   virtual void Layout() OVERRIDE;

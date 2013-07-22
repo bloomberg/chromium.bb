@@ -1246,10 +1246,13 @@ void WifiConfigView::ParseWiFiUIProperty(
     NetworkPropertyUIData* property_ui_data,
     Network* network,
     const std::string& key) {
-  NetworkLibrary* network_library = NetworkLibrary::Get();
+  onc::ONCSource onc_source = onc::ONC_SOURCE_NONE;
+  const base::DictionaryValue* onc =
+      NetworkConfigView::FindPolicyForActiveUser(network, &onc_source);
+
   property_ui_data->ParseOncProperty(
-      network->ui_data().onc_source(),
-      network_library->FindOncForNetwork(network->unique_id()),
+      onc_source,
+      onc,
       base::StringPrintf("%s.%s", onc::network_config::kWiFi, key.c_str()));
 }
 

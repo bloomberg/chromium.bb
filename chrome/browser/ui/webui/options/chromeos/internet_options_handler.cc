@@ -279,6 +279,13 @@ void SetNetworkProperty(const std::string& service_path,
       base::Bind(&ShillError, "SetNetworkProperty"));
 }
 
+const base::DictionaryValue* FindPolicyForActiveUser(
+    const NetworkState* network,
+    onc::ONCSource* onc_source) {
+  *onc_source = network->onc_source();
+  return NetworkLibrary::Get()->FindOncForNetwork(network->guid());
+}
+
 std::string ActivationStateString(const std::string& activation_state) {
   int id;
   if (activation_state == flimflam::kActivationStateActivated)
@@ -636,12 +643,13 @@ void PopulateVPNDetails(const NetworkState* vpn,
     shill_properties.GetString(flimflam::kL2tpIpsecUserProperty, &username);
   dictionary->SetString(kTagUsername, username);
 
-  // TODO(stevenjb): Move FindOncFornetwork()
-  const base::DictionaryValue* onc = NetworkLibrary::Get()->
-      FindOncForNetwork(vpn->guid());
+  onc::ONCSource onc_source = onc::ONC_SOURCE_NONE;
+  const base::DictionaryValue* onc = FindPolicyForActiveUser(vpn, &onc_source);
+
   NetworkPropertyUIData hostname_ui_data;
   hostname_ui_data.ParseOncProperty(
-      vpn->onc_source(), onc,
+      onc_source,
+      onc,
       base::StringPrintf("%s.%s", onc::network_config::kVPN, onc::vpn::kHost));
   std::string provider_host;
   shill_properties.GetString(flimflam::kProviderHostProperty, &provider_host);
@@ -1422,9 +1430,10 @@ void InternetOptionsHandler::PopulateDictionaryDetailsCallback(
     return;
   }
 
-  const NetworkPropertyUIData property_ui_data(network->onc_source());
-  const base::DictionaryValue* onc = NetworkLibrary::Get()->
-      FindOncForNetwork(network->guid());
+  onc::ONCSource onc_source = onc::ONC_SOURCE_NONE;
+  const base::DictionaryValue* onc =
+      FindPolicyForActiveUser(network, &onc_source);
+  const NetworkPropertyUIData property_ui_data(onc_source);
 
   base::DictionaryValue dictionary;
 
@@ -1496,7 +1505,7 @@ void InternetOptionsHandler::PopulateDictionaryDetailsCallback(
                      new base::FundamentalValue(preferred),
                      property_ui_data);
 
-  NetworkPropertyUIData auto_connect_ui_data(network->onc_source());
+  NetworkPropertyUIData auto_connect_ui_data(onc_source);
   std::string onc_path_to_auto_connect;
   if (type == flimflam::kTypeWifi) {
     onc_path_to_auto_connect = base::StringPrintf(
@@ -1511,9 +1520,7 @@ void InternetOptionsHandler::PopulateDictionaryDetailsCallback(
   }
   if (!onc_path_to_auto_connect.empty()) {
     auto_connect_ui_data.ParseOncProperty(
-        network->onc_source(),
-        onc,
-        onc_path_to_auto_connect);
+        onc_source, onc, onc_path_to_auto_connect);
   }
   SetValueDictionary(&dictionary, kTagAutoConnect,
                      new base::FundamentalValue(network->auto_connect()),
