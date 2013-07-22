@@ -15,6 +15,8 @@
 class StatusIconLinuxWrapper : public StatusIcon,
                                public StatusIconLinux::Delegate {
  public:
+  virtual ~StatusIconLinuxWrapper();
+
   // StatusIcon overrides:
   virtual void SetImage(const gfx::ImageSkia& image) OVERRIDE;
   virtual void SetPressedImage(const gfx::ImageSkia& image) OVERRIDE;

@@ -9,6 +9,8 @@ StatusIconLinuxWrapper::StatusIconLinuxWrapper(StatusIconLinux* status_icon) {
   status_icon_->set_delegate(this);
 }
 
+StatusIconLinuxWrapper::~StatusIconLinuxWrapper() {}
+
 void StatusIconLinuxWrapper::SetImage(const gfx::ImageSkia& image) {
   status_icon_->SetImage(image);
 }

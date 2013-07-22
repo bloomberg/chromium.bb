@@ -6,6 +6,7 @@
 #define UI_LINUX_UI_STATUS_ICON_LINUX_H_
 
 #include "base/strings/string16.h"
+#include "ui/linux_ui/linux_ui_export.h"
 
 namespace gfx {
 class ImageSkia;
@@ -19,7 +20,7 @@ class MenuModel;
 // we cannot inherit from StatusIcon. So we implement the necessary methods
 // and let a wrapper class implement the StatusIcon interface and defer the
 // callbacks to a delegate.
-class StatusIconLinux {
+class LINUX_UI_EXPORT StatusIconLinux {
  public:
   class Delegate {
    public:
