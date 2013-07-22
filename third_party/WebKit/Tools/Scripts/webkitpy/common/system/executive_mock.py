@@ -143,6 +143,9 @@ class MockExecutive(object):
             self._proc = MockProcess()
         return self._proc
 
+    def call(self, args, **kwargs):
+        _log.info('Mock call: %s' % args)
+
     def run_in_parallel(self, commands):
         num_previous_calls = len(self.calls)
         command_outputs = []

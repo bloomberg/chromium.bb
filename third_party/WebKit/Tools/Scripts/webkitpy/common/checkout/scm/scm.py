@@ -209,6 +209,9 @@ class SCM:
     def last_svn_commit_log(self):
         self._subclass_must_implement()
 
+    def blame(self, path):
+        self._subclass_must_implement()
+
     def svn_blame(self, path):
         self._subclass_must_implement()
 

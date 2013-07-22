@@ -32,6 +32,8 @@ from webkitpy.common.system.executive_mock import MockExecutive
 
 
 class MockSCM(object):
+    executable_name = "MockSCM"
+
     def __init__(self, filesystem=None, executive=None):
         self.checkout_root = "/mock-checkout"
         self.added_paths = set()
@@ -50,6 +52,21 @@ class MockSCM(object):
         return False
 
     def discard_working_directory_changes(self):
+        pass
+
+    def ensure_cleanly_tracking_remote_master(self):
+        pass
+
+    def current_branch(self):
+        return "mock-branch-name"
+
+    def checkout_branch(self, name):
+        pass
+
+    def checkout_clean_branch(self, name):
+        pass
+
+    def delete_branch(self, name):
         pass
 
     def supports_local_commits(self):
@@ -125,6 +142,15 @@ class MockSCM(object):
 
     def svn_revision_from_commit_text(self, commit_text):
         return "49824"
+
+    def svn_revision_from_git_commit(self, git_commit):
+        if git_commit == '6469e754a1':
+            return 1234
+        if git_commit == '624c3081c0':
+            return 5678
+        if git_commit == '624caaaaaa':
+            return 10000
+        return None
 
     def delete(self, path):
         return self.delete_list([path])

@@ -361,6 +361,9 @@ class SVN(SCM, SVNRepository):
         # http://svnbook.red-bean.com/en/1.0/ch03s03.html
         return self.svn_commit_log('BASE')
 
+    def blame(self, path):
+        return self._run_svn(['blame', path])
+
     def svn_blame(self, path):
         return self._run_svn(['blame', path])
 

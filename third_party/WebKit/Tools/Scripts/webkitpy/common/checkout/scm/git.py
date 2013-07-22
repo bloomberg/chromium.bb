@@ -178,11 +178,11 @@ class Git(SCM, SVNRepository):
     def _branch_from_ref(self, ref):
         return ref.replace('refs/heads/', '')
 
-    def _current_branch(self):
+    def current_branch(self):
         return self._branch_from_ref(self._run_git(['symbolic-ref', '-q', 'HEAD']).strip())
 
     def _upstream_branch(self):
-        current_branch = self._current_branch()
+        current_branch = self.current_branch()
         return self._branch_from_ref(self.read_git_config('branch.%s.merge' % current_branch, cwd=self.checkout_root, executive=self._executive).strip())
 
     def merge_base(self, git_commit):
@@ -393,8 +393,14 @@ class Git(SCM, SVNRepository):
         self.commit_locally_with_message(message)
         return self.push_local_commits_to_server(username=username, password=password)
 
+    def checkout_branch(self, name):
+        self._run_git(['checkout', '-q', name])
+
+    def create_clean_branch(self, name):
+        self._run_git(['checkout', '-q', '-b', name, self.remote_branch_ref()])
+
     def _commit_on_branch(self, message, git_commit, username=None, password=None):
-        branch_name = self._current_branch()
+        branch_name = self.current_branch()
         commit_ids = self.commit_ids_from_commitish_arguments([git_commit])
 
         # We want to squash all this branch's commits into one commit with the proper description.
@@ -412,7 +418,7 @@ class Git(SCM, SVNRepository):
         # We wrap in a try...finally block so if anything goes wrong, we clean up the branches.
         commit_succeeded = True
         try:
-            self._run_git(['checkout', '-q', '-b', MERGE_BRANCH_NAME, self.remote_branch_ref()])
+            self.create_clean_branch(MERGE_BRANCH_NAME)
 
             for commit in commit_ids:
                 # We're on a different branch now, so convert "head" to the branch name.
@@ -430,7 +436,7 @@ class Git(SCM, SVNRepository):
         finally:
             # And then swap back to the original branch and clean up.
             self.discard_working_directory_changes()
-            self._run_git(['checkout', '-q', branch_name])
+            self.checkout_branch(branch_name)
             self.delete_branch(MERGE_BRANCH_NAME)
 
         return output
@@ -441,6 +447,9 @@ class Git(SCM, SVNRepository):
 
     def last_svn_commit_log(self):
         return self._run_git(['svn', 'log', '--limit=1'])
+
+    def blame(self, path):
+        return self._run_git(['blame', path])
 
     def svn_blame(self, path):
         return self._run_git(['svn', 'blame', path])
@@ -548,7 +557,7 @@ class Git(SCM, SVNRepository):
     def is_cleanly_tracking_remote_master(self):
         if self.has_working_directory_changes():
             return False
-        if self._current_branch() != self._branch_tracking_remote_master():
+        if self.current_branch() != self._branch_tracking_remote_master():
             return False
         if len(self.local_commits(self._branch_tracking_remote_master())) > 0:
             return False

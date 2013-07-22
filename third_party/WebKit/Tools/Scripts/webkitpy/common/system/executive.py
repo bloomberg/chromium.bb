@@ -484,6 +484,9 @@ class Executive(object):
             string_args = self._stringify_args(args)
         return subprocess.Popen(string_args, **kwargs)
 
+    def call(self, args, **kwargs):
+        return subprocess.call(self._stringify_args(args), **kwargs)
+
     def run_in_parallel(self, command_lines_and_cwds, processes=None):
         """Runs a list of (cmd_line list, cwd string) tuples in parallel and returns a list of (retcode, stdout, stderr) tuples."""
         assert len(command_lines_and_cwds)
