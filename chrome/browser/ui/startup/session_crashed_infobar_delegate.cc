@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/startup/session_crashed_infobar_delegate.h"
 
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/sessions/session_restore.h"
@@ -16,7 +15,6 @@
 #include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/storage_partition.h"
-#include "content/public/browser/web_contents.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -25,30 +23,29 @@
 
 // static
 void SessionCrashedInfoBarDelegate::Create(Browser* browser) {
-  // Assume that if the user is launching incognito they were previously
-  // running incognito so that we have nothing to restore from.
-  if (browser->profile()->IsOffTheRecord())
-    return;
-
-  // In ChromeBot tests, there might be a race. This line appears to get
-  // called during shutdown and |web_contents| can be NULL.
-  content::WebContents* tab =
+  // Assume that if the user is launching incognito they were previously running
+  // incognito so that we have nothing to restore from.
+  // Also, in ChromeBot tests, there might be a race.  This code appears to be
+  // called during shutdown when there is no active WebContents.
+  Profile* profile = browser->profile();
+  content::WebContents* web_contents =
       browser->tab_strip_model()->GetActiveWebContents();
-  if (!tab)
+  if (profile->IsOffTheRecord() || !web_contents)
     return;
 
-  InfoBarService* infobar_service = InfoBarService::FromWebContents(tab);
+  InfoBarService* infobar_service =
+      InfoBarService::FromWebContents(web_contents);
   infobar_service->AddInfoBar(scoped_ptr<InfoBarDelegate>(
-      new SessionCrashedInfoBarDelegate(infobar_service, browser)));
+      new SessionCrashedInfoBarDelegate(infobar_service, profile)));
 }
 
 SessionCrashedInfoBarDelegate::SessionCrashedInfoBarDelegate(
     InfoBarService* infobar_service,
-    Browser* browser)
+    Profile* profile)
     : ConfirmInfoBarDelegate(infobar_service),
       accepted_(false),
       removed_notification_received_(false),
-      profile_(browser->profile()) {
+      profile_(profile) {
   // TODO(pkasting,marja): Once InfoBars own they delegates, this is not needed
   // any more. Then we can rely on delegates getting destroyed, and we can
   // initiate the session storage scavenging only in the destructor. (Currently,
@@ -61,8 +58,8 @@ SessionCrashedInfoBarDelegate::~SessionCrashedInfoBarDelegate() {
   // If the info bar wasn't accepted, it was either dismissed or expired. In
   // that case, session restore won't happen.
   if (!accepted_ && !removed_notification_received_) {
-    content::BrowserContext::GetDefaultStoragePartition(profile_)
-        ->GetDOMStorageContext()->StartScavengingUnusedSessionStorage();
+    content::BrowserContext::GetDefaultStoragePartition(profile_)->
+        GetDOMStorageContext()->StartScavengingUnusedSessionStorage();
   }
 }
 
@@ -98,9 +95,9 @@ bool SessionCrashedInfoBarDelegate::Accept() {
       behavior = SessionRestore::CLOBBER_CURRENT_TAB;
     }
   }
-  SessionRestore::RestoreSession(
-      browser->profile(), browser, browser->host_desktop_type(), behavior,
-      std::vector<GURL>());
+  SessionRestore::RestoreSession(browser->profile(), browser,
+                                 browser->host_desktop_type(), behavior,
+                                 std::vector<GURL>());
   accepted_ = true;
   return true;
 }

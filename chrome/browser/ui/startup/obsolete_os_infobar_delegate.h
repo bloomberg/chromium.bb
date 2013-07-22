@@ -16,7 +16,7 @@ class InfoBarService;
 // a "Learn More" link.
 class ObsoleteOSInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  // Creates an obsolete OS delegate and adds it to |infobar_service|.
+  // Creates an obsolete OS infobar delegate and adds it to |infobar_service|.
   static void Create(InfoBarService* infobar_service);
 
  private:

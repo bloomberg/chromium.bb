@@ -36,7 +36,7 @@ namespace {
 // The delegate for the infobar shown when Chrome is auto-launched.
 class AutolaunchInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  // Creates an autolaunch delegate and adds it to |infobar_service|.
+  // Creates an autolaunch infobar delegate and adds it to |infobar_service|.
   static void Create(InfoBarService* infobar_service, Profile* profile);
 
  private:

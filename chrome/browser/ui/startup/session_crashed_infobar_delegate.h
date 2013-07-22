@@ -18,8 +18,8 @@ class Profile;
 class SessionCrashedInfoBarDelegate : public ConfirmInfoBarDelegate,
                                       public content::NotificationObserver {
  public:
-  // If |browser| is not incognito, creates a session crashed delegate and adds
-  // it to the InfoBarService for |browser|.
+  // If |browser| is not incognito, creates a session crashed infobar delegate
+  // and adds it to the InfoBarService for |browser|.
   static void Create(Browser* browser);
 
  private:
@@ -30,7 +30,7 @@ class SessionCrashedInfoBarDelegate : public ConfirmInfoBarDelegate,
 #endif
 
   SessionCrashedInfoBarDelegate(InfoBarService* infobar_service,
-                                Browser* browser);
+                                Profile* profile);
   virtual ~SessionCrashedInfoBarDelegate();
 
   // ConfirmInfoBarDelegate:

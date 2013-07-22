@@ -58,7 +58,8 @@ void SetChromeAsDefaultBrowser(bool interactive_flow, PrefService* prefs) {
 // The delegate for the infobar shown when Chrome is not the default browser.
 class DefaultBrowserInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  // Creates a default browser delegate and adds it to |infobar_service|.
+  // Creates a default browser infobar delegate and adds it to
+  // |infobar_service|.
   static void Create(InfoBarService* infobar_service,
                      PrefService* prefs,
                      bool interactive_flow_required);

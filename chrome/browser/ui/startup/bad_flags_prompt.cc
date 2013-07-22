@@ -45,9 +45,8 @@ void ShowBadFlagsPrompt(Browser* browser) {
           InfoBarService::FromWebContents(web_contents),
           InfoBarDelegate::kNoIconID,
           l10n_util::GetStringFUTF16(IDS_BAD_FLAGS_WARNING_MESSAGE,
-                                      UTF8ToUTF16(std::string("--") + *flag)),
+                                     UTF8ToUTF16(std::string("--") + *flag)),
           false);
-
       return;
     }
   }
