@@ -8396,6 +8396,13 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Network.Shill.Wifi.ApMode" enum="WiFiApMode">
+  <summary>
+    Chrome OS network usage metric.  The AP mode setting for each successful
+    WiFi connection.
+  </summary>
+</histogram>
+
 <histogram name="Network.Shill.Wifi.Channel" enum="NetworkChannelType">
   <summary>
     Chrome OS network usage metric.  The channel used for each successful WiFi
@@ -21364,6 +21371,12 @@ other types of suffix sets.
 <enum name="WebSocketPerMessageDeflateContextTakeOverMode" type="int">
   <int value="0" label="DoNotTakeOverContext"/>
   <int value="1" label="TakeOverContext"/>
+</enum>
+
+<enum name="WiFiApMode" type="int">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Managed"/>
+  <int value="2" label="AdHoc"/>
 </enum>
 
 <enum name="WiFiReasonCode" type="int">
