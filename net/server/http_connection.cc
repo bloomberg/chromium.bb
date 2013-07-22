@@ -32,29 +32,13 @@ void HttpConnection::Send(HttpStatusCode status_code,
   if (!socket_.get())
     return;
 
-  std::string status_message;
-  switch (status_code) {
-    case HTTP_OK:
-      status_message = "OK";
-      break;
-    case HTTP_NOT_FOUND:
-      status_message = "Not Found";
-      break;
-    case HTTP_INTERNAL_SERVER_ERROR:
-      status_message = "Internal Error";
-      break;
-    default:
-      status_message = "";
-      break;
-  }
-
   socket_->Send(base::StringPrintf(
       "HTTP/1.1 %d %s\r\n"
       "Content-Type:%s\r\n"
       "Content-Length:%d\r\n"
       "\r\n",
       status_code,
-      status_message.c_str(),
+      GetHttpReasonPhrase(status_code),
       content_type.c_str(),
       static_cast<int>(data.length())));
   socket_->Send(data);
