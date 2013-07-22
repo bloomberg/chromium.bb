@@ -255,6 +255,8 @@ public:
     void removeMultisamplingChangedObserver(MultisamplingChangedObserver*);
     void multisamplingChanged();
 
+    void didCommitLoad(Frame*);
+
 protected:
     PageLifecycleNotifier* lifecycleNotifier();
 

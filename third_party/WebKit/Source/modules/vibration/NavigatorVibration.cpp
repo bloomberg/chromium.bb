@@ -128,6 +128,13 @@ void NavigatorVibration::pageVisibilityChanged()
         cancelVibration();
 }
 
+void NavigatorVibration::didCommitLoad(Frame* frame)
+{
+    // A new load has been committed, which means the current page will be
+    // unloaded. Cancel all running vibrations.
+    cancelVibration();
+}
+
 bool NavigatorVibration::vibrate(Navigator* navigator, unsigned time)
 {
     VibrationPattern pattern;

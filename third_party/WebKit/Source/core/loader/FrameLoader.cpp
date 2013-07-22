@@ -2269,6 +2269,8 @@ void FrameLoader::dispatchDidCommitLoad()
 
     InspectorInstrumentation::didCommitLoad(m_frame, m_documentLoader.get());
 
+    m_frame->page()->didCommitLoad(m_frame);
+
     if (m_frame->page()->mainFrame() == m_frame)
         m_frame->page()->useCounter()->didCommitLoad();
 

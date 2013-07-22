@@ -31,6 +31,7 @@
 
 namespace WebCore {
 
+class Frame;
 class Page;
 
 class PageLifecycleObserver : public LifecycleObserver {
@@ -41,6 +42,7 @@ public:
     Page* page() const;
 
     virtual void pageVisibilityChanged() { }
+    virtual void didCommitLoad(Frame*) { }
 };
 
 } // namespace WebCore

@@ -734,6 +734,11 @@ void Page::multisamplingChanged()
         (*it)->multisamplingChanged(m_settings->openGLMultisamplingEnabled());
 }
 
+void Page::didCommitLoad(Frame* frame)
+{
+    lifecycleNotifier()->notifyDidCommitLoad(frame);
+}
+
 PageLifecycleNotifier* Page::lifecycleNotifier()
 {
     return static_cast<PageLifecycleNotifier*>(LifecycleContext::lifecycleNotifier());

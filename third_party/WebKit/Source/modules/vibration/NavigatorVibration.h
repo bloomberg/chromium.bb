@@ -28,6 +28,7 @@
 
 namespace WebCore {
 
+class Frame;
 class Navigator;
 
 class NavigatorVibration
@@ -45,6 +46,7 @@ public:
 
     // Inherited from PageLifecycleObserver
     virtual void pageVisibilityChanged() OVERRIDE;
+    virtual void didCommitLoad(Frame*) OVERRIDE;
 
     static bool vibrate(Navigator*, unsigned time);
     static bool vibrate(Navigator*, const VibrationPattern&);
