@@ -280,7 +280,7 @@ void PageSerializer::serializeCSSStyleSheet(CSSStyleSheet* styleSheet, const KUR
 
 void PageSerializer::addImageToResources(CachedImage* image, RenderObject* imageRenderer, const KURL& url)
 {
-    if (!url.isValid() || m_resourceURLs.contains(url) || url.protocolIsData())
+    if (!url.isValid() || m_resourceURLs.contains(url))
         return;
 
     if (!image || image->image() == Image::nullImage())
