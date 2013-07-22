@@ -1250,6 +1250,12 @@ internal_paladin.add_config('stumpy-paladin',
   upload_hw_test_artifacts=True,
 )
 
+internal_paladin.add_config('wolf-paladin',
+  boards=['wolf'],
+  paladin_builder_name='wolf paladin',
+  important=False,
+)
+
 internal_paladin.add_config('zgb-paladin',
   boards=['x86-zgb'],
   important=False,
@@ -1474,6 +1480,12 @@ _release.add_config('stumpy-release',
   boards=['stumpy'],
 )
 
+_release.add_config('wolf-release',
+  boards=['wolf'],
+  hw_tests=[],
+  vm_tests=None,
+)
+
 ### Arm release configs.
 
 _arm_release = _release.derive(arm)
@@ -1546,6 +1558,7 @@ _x86_firmware_boards = (
   'stout32',
   'slippy',
   'stumpy',
+  'wolf',
   'x86-mario',
 )
 
