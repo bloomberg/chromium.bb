@@ -20,6 +20,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
+class Profile;
+
 namespace {
 
 class FakePageDelegate : public InstantPage::Delegate {
@@ -27,8 +29,6 @@ class FakePageDelegate : public InstantPage::Delegate {
   virtual ~FakePageDelegate() {
   }
 
-  MOCK_METHOD1(InstantPageRenderViewCreated,
-               void(const content::WebContents* contents));
   MOCK_METHOD2(InstantSupportDetermined,
                void(const content::WebContents* contents,
                     bool supports_instant));
@@ -55,7 +55,7 @@ class FakePageDelegate : public InstantPage::Delegate {
 class FakePage : public InstantPage {
  public:
   FakePage(Delegate* delegate, const std::string& instant_url,
-           bool is_incognito);
+           Profile* profile, bool is_incognito);
   virtual ~FakePage();
 
   // InstantPage overrride.
@@ -75,16 +75,12 @@ class FakePage : public InstantPage {
 };
 
 FakePage::FakePage(Delegate* delegate, const std::string& instant_url,
-                   bool is_incognito)
-    : InstantPage(delegate, instant_url, is_incognito),
+                   Profile* profile, bool is_incognito)
+    : InstantPage(delegate, instant_url, profile, is_incognito),
       should_handle_messages_(true) {
 }
 
 FakePage::~FakePage() {
-}
-
-void FakePage::set_should_handle_messages(bool should_handle_messages) {
-  should_handle_messages_ = should_handle_messages;
 }
 
 bool FakePage::ShouldProcessDeleteMostVisitedItem() {
@@ -97,6 +93,10 @@ bool FakePage::ShouldProcessUndoMostVisitedDeletion() {
 
 bool FakePage::ShouldProcessUndoAllMostVisitedDeletions() {
   return should_handle_messages_;
+}
+
+void FakePage::set_should_handle_messages(bool should_handle_messages) {
+  should_handle_messages_ = should_handle_messages;
 }
 
 }  // namespace
@@ -121,7 +121,7 @@ void InstantPageTest::SetUp() {
 }
 
 TEST_F(InstantPageTest, IsLocal) {
-  page.reset(new FakePage(&delegate, "", false));
+  page.reset(new FakePage(&delegate, "", NULL, false));
   EXPECT_FALSE(page->supports_instant());
   EXPECT_FALSE(page->IsLocal());
   page->SetContents(web_contents());
@@ -132,7 +132,7 @@ TEST_F(InstantPageTest, IsLocal) {
 }
 
 TEST_F(InstantPageTest, DetermineIfPageSupportsInstant_Local) {
-  page.reset(new FakePage(&delegate, "", false));
+  page.reset(new FakePage(&delegate, "", NULL, false));
   EXPECT_FALSE(page->supports_instant());
   page->SetContents(web_contents());
   NavigateAndCommit(GURL(chrome::kChromeSearchLocalNtpUrl));
@@ -145,7 +145,7 @@ TEST_F(InstantPageTest, DetermineIfPageSupportsInstant_Local) {
 }
 
 TEST_F(InstantPageTest, DetermineIfPageSupportsInstant_NonLocal) {
-  page.reset(new FakePage(&delegate, "", false));
+  page.reset(new FakePage(&delegate, "", NULL, false));
   EXPECT_FALSE(page->supports_instant());
   page->SetContents(web_contents());
   NavigateAndCommit(GURL("chrome-search://foo/bar"));
@@ -160,7 +160,7 @@ TEST_F(InstantPageTest, DetermineIfPageSupportsInstant_NonLocal) {
 }
 
 TEST_F(InstantPageTest, DispatchRequestToDeleteMostVisitedItem) {
-  page.reset(new FakePage(&delegate, "", false));
+  page.reset(new FakePage(&delegate, "", NULL, false));
   page->SetContents(web_contents());
   NavigateAndCommit(GURL(chrome::kChromeSearchLocalNtpUrl));
   GURL item_url("www.foo.com");
@@ -172,7 +172,7 @@ TEST_F(InstantPageTest, DispatchRequestToDeleteMostVisitedItem) {
 }
 
 TEST_F(InstantPageTest, DispatchRequestToUndoMostVisitedDeletion) {
-  page.reset(new FakePage(&delegate, "", false));
+  page.reset(new FakePage(&delegate, "", NULL, false));
   page->SetContents(web_contents());
   NavigateAndCommit(GURL(chrome::kChromeSearchLocalNtpUrl));
   GURL item_url("www.foo.com");
@@ -184,7 +184,7 @@ TEST_F(InstantPageTest, DispatchRequestToUndoMostVisitedDeletion) {
 }
 
 TEST_F(InstantPageTest, DispatchRequestToUndoAllMostVisitedDeletions) {
-  page.reset(new FakePage(&delegate, "", false));
+  page.reset(new FakePage(&delegate, "", NULL, false));
   page->SetContents(web_contents());
   NavigateAndCommit(GURL(chrome::kChromeSearchLocalNtpUrl));
   int page_id = web_contents()->GetController().GetActiveEntry()->GetPageID();
@@ -195,7 +195,7 @@ TEST_F(InstantPageTest, DispatchRequestToUndoAllMostVisitedDeletions) {
 }
 
 TEST_F(InstantPageTest, IgnoreMessageReceivedFromIncognitoPage) {
-  page.reset(new FakePage(&delegate, "", true));
+  page.reset(new FakePage(&delegate, "", NULL, true));
   page->SetContents(web_contents());
   NavigateAndCommit(GURL(chrome::kChromeSearchLocalNtpUrl));
   GURL item_url("www.foo.com");
@@ -220,7 +220,7 @@ TEST_F(InstantPageTest, IgnoreMessageReceivedFromIncognitoPage) {
 }
 
 TEST_F(InstantPageTest, IgnoreMessageIfThePageIsNotActive) {
-  page.reset(new FakePage(&delegate, "", false));
+  page.reset(new FakePage(&delegate, "", NULL, false));
   page->SetContents(web_contents());
   NavigateAndCommit(GURL(chrome::kChromeSearchLocalNtpUrl));
   GURL item_url("www.foo.com");
@@ -245,7 +245,7 @@ TEST_F(InstantPageTest, IgnoreMessageIfThePageIsNotActive) {
 }
 
 TEST_F(InstantPageTest, IgnoreMessageReceivedFromThePage) {
-  page.reset(new FakePage(&delegate, "", false));
+  page.reset(new FakePage(&delegate, "", NULL, false));
   page->SetContents(web_contents());
 
   // Ignore the messages received from the page.
@@ -271,7 +271,7 @@ TEST_F(InstantPageTest, IgnoreMessageReceivedFromThePage) {
 }
 
 TEST_F(InstantPageTest, PageURLDoesntBelongToInstantRenderer) {
-  page.reset(new FakePage(&delegate, "", false));
+  page.reset(new FakePage(&delegate, "", NULL, false));
   EXPECT_FALSE(page->supports_instant());
   NavigateAndCommit(GURL(chrome::kChromeSearchLocalNtpUrl));
   page->SetContents(web_contents());
@@ -296,7 +296,7 @@ TEST_F(InstantPageTest, PageURLDoesntBelongToInstantRenderer) {
 // Test to verify that ChromeViewMsg_DetermineIfPageSupportsInstant message
 // reply handler updates the instant support state in InstantPage.
 TEST_F(InstantPageTest, PageSupportsInstant) {
-  page.reset(new FakePage(&delegate, "", false));
+  page.reset(new FakePage(&delegate, "", NULL, false));
   EXPECT_FALSE(page->supports_instant());
   page->SetContents(web_contents());
   NavigateAndCommit(GURL("chrome-search://foo/bar"));
@@ -322,7 +322,7 @@ TEST_F(InstantPageTest, PageSupportsInstant) {
 }
 
 TEST_F(InstantPageTest, AppropriateMessagesSentToIncognitoPages) {
-  page.reset(new FakePage(&delegate, "", true));
+  page.reset(new FakePage(&delegate, "", NULL, true));
   page->SetContents(web_contents());
   NavigateAndCommit(GURL(chrome::kChromeSearchLocalNtpUrl));
   process()->sink().ClearMessages();

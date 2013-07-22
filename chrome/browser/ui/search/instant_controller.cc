@@ -19,7 +19,6 @@
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser_instant_controller.h"
-#include "chrome/browser/ui/search/instant_ntp.h"
 #include "chrome/browser/ui/search/instant_tab.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/common/chrome_switches.h"
@@ -102,16 +101,6 @@ void EnsureSearchTermsAreSet(content::WebContents* contents,
   SearchTabHelper::FromWebContents(contents)->NavigationEntryUpdated();
 }
 
-template <typename T>
-void DeletePageSoon(scoped_ptr<T> page) {
-  if (page->contents()) {
-    base::MessageLoop::current()->DeleteSoon(
-        FROM_HERE, page->ReleaseContents().release());
-  }
-
-  base::MessageLoop::current()->DeleteSoon(FROM_HERE, page.release());
-}
-
 }  // namespace
 
 InstantController::InstantController(BrowserInstantController* browser,
@@ -121,41 +110,9 @@ InstantController::InstantController(BrowserInstantController* browser,
       omnibox_focus_state_(OMNIBOX_FOCUS_NONE),
       omnibox_focus_change_reason_(OMNIBOX_FOCUS_CHANGE_EXPLICIT),
       omnibox_bounds_(-1, -1, 0, 0) {
-
-  // When the InstantController lives, the InstantService should live.
-  // InstantService sets up profile-level facilities such as the ThemeSource for
-  // the NTP.
-  // However, in some tests, browser_ may be null.
-  if (browser_) {
-    InstantService* instant_service = GetInstantService();
-    instant_service->AddObserver(this);
-  }
 }
 
 InstantController::~InstantController() {
-  if (browser_) {
-    InstantService* instant_service = GetInstantService();
-    instant_service->RemoveObserver(this);
-  }
-}
-
-scoped_ptr<content::WebContents> InstantController::ReleaseNTPContents() {
-  if (!extended_enabled() || !browser_->profile() ||
-      browser_->profile()->IsOffTheRecord() ||
-      !chrome::ShouldShowInstantNTP())
-    return scoped_ptr<content::WebContents>();
-
-  LOG_INSTANT_DEBUG_EVENT(this, "ReleaseNTPContents");
-
-  if (ShouldSwitchToLocalNTP())
-    ResetNTP(GetLocalInstantURL());
-
-  scoped_ptr<content::WebContents> ntp_contents = ntp_->ReleaseContents();
-
-  // Preload a new Instant NTP.
-  ResetNTP(GetInstantURL());
-
-  return ntp_contents.Pass();
 }
 
 void InstantController::SetOmniboxBounds(const gfx::Rect& bounds) {
@@ -163,17 +120,8 @@ void InstantController::SetOmniboxBounds(const gfx::Rect& bounds) {
     return;
 
   omnibox_bounds_ = bounds;
-  if (ntp_)
-    ntp_->sender()->SetOmniboxBounds(omnibox_bounds_);
   if (instant_tab_)
     instant_tab_->sender()->SetOmniboxBounds(omnibox_bounds_);
-}
-
-void InstantController::OnDefaultSearchProviderChanged() {
-  if (ntp_ && extended_enabled()) {
-    ntp_.reset();
-    ResetNTP(GetInstantURL());
-  }
 }
 
 void InstantController::ToggleVoiceSearch() {
@@ -190,36 +138,26 @@ void InstantController::InstantPageLoadFailed(content::WebContents* contents) {
     return;
   }
 
-  if (IsContentsFrom(instant_tab(), contents)) {
-    // Verify we're not already on a local page and that the URL precisely
-    // equals the instant_url (minus the query params, as those will be filled
-    // in by template values).  This check is necessary to make sure we don't
-    // inadvertently redirect to the local NTP if someone, say, reloads a SRP
-    // while offline, as a committed results page still counts as an instant
-    // url.  We also check to make sure there's no forward history, as if
-    // someone hits the back button a lot when offline and returns to a NTP
-    // we don't want to redirect and nuke their forward history stack.
-    const GURL& current_url = contents->GetURL();
-    if (instant_tab_->IsLocal() ||
-        !chrome::MatchesOriginAndPath(GURL(GetInstantURL()), current_url) ||
-        !current_url.ref().empty() ||
-        contents->GetController().CanGoForward())
-      return;
-    LOG_INSTANT_DEBUG_EVENT(this, "InstantPageLoadFailed: instant_tab");
-    RedirectToLocalNTP(contents);
-  } else if (IsContentsFrom(ntp(), contents)) {
-    LOG_INSTANT_DEBUG_EVENT(this, "InstantPageLoadFailed: ntp");
-    bool is_local = ntp_->IsLocal();
-    DeletePageSoon(ntp_.Pass());
-    if (!is_local)
-      ResetNTP(GetLocalInstantURL());
-  } else {
-    NOTREACHED();
-  }
-}
+  DCHECK(IsContentsFrom(instant_tab(), contents));
 
-content::WebContents* InstantController::GetNTPContents() const {
-  return ntp_ ? ntp_->contents() : NULL;
+  // Verify we're not already on a local page and that the URL precisely
+  // equals the instant_url (minus the query params, as those will be filled
+  // in by template values).  This check is necessary to make sure we don't
+  // inadvertently redirect to the local NTP if someone, say, reloads a SRP
+  // while offline, as a committed results page still counts as an instant
+  // url.  We also check to make sure there's no forward history, as if
+  // someone hits the back button a lot when offline and returns to a NTP
+  // we don't want to redirect and nuke their forward history stack.
+  const GURL& current_url = contents->GetURL();
+  GURL instant_url = chrome::GetInstantURL(profile(),
+                                           chrome::kDisableStartMargin);
+  if (instant_tab_->IsLocal() ||
+      !chrome::MatchesOriginAndPath(instant_url, current_url) ||
+      !current_url.ref().empty() ||
+      contents->GetController().CanGoForward())
+    return;
+  LOG_INSTANT_DEBUG_EVENT(this, "InstantPageLoadFailed: instant_tab");
+  RedirectToLocalNTP(contents);
 }
 
 bool InstantController::SubmitQuery(const string16& search_terms) {
@@ -291,17 +229,6 @@ void InstantController::TabDeactivated(content::WebContents* contents) {
     InstantTab::EmitMouseoverCount(contents);
 }
 
-void InstantController::ThemeInfoChanged(
-    const ThemeBackgroundInfo& theme_info) {
-  if (!extended_enabled())
-    return;
-
-  if (ntp_)
-    ntp_->sender()->SendThemeBackgroundInfo(theme_info);
-  if (instant_tab_)
-    instant_tab_->sender()->SendThemeBackgroundInfo(theme_info);
-}
-
 void InstantController::LogDebugEvent(const std::string& info) const {
   DVLOG(1) << info;
 
@@ -314,19 +241,6 @@ void InstantController::LogDebugEvent(const std::string& info) const {
 
 void InstantController::ClearDebugEvents() {
   debug_events_.clear();
-}
-
-void InstantController::MostVisitedItemsChanged(
-    const std::vector<InstantMostVisitedItem>& items) {
-  if (ntp_)
-    ntp_->sender()->SendMostVisitedItems(items);
-  if (instant_tab_)
-    instant_tab_->sender()->SendMostVisitedItems(items);
-
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_INSTANT_SENT_MOST_VISITED_ITEMS,
-      content::Source<InstantController>(this),
-      content::NotificationService::NoDetails());
 }
 
 void InstantController::DeleteMostVisitedItem(const GURL& url) {
@@ -363,45 +277,6 @@ InstantTab* InstantController::instant_tab() const {
   return instant_tab_.get();
 }
 
-InstantNTP* InstantController::ntp() const {
-  return ntp_.get();
-}
-
-void InstantController::OnNetworkChanged(
-    net::NetworkChangeNotifier::ConnectionType type) {
-  // Not interested in events conveying change to offline
-  if (type == net::NetworkChangeNotifier::CONNECTION_NONE)
-    return;
-  if (!extended_enabled_)
-    return;
-  if (!ntp_ || ntp_->IsLocal())
-    ResetNTP(GetInstantURL());
-}
-
-// TODO(shishir): We assume that the WebContent's current RenderViewHost is the
-// RenderViewHost being created which is not always true. Fix this.
-void InstantController::InstantPageRenderViewCreated(
-    const content::WebContents* contents) {
-  if (!extended_enabled())
-    return;
-
-  // Update theme info so that the page picks it up.
-  InstantService* instant_service = GetInstantService();
-  if (instant_service) {
-    instant_service->UpdateThemeInfo();
-    instant_service->UpdateMostVisitedItemsInfo();
-  }
-
-  // Ensure the searchbox API has the correct initial state.
-  if (IsContentsFrom(ntp(), contents)) {
-    ntp_->sender()->SetOmniboxBounds(omnibox_bounds_);
-    ntp_->InitializeFonts();
-    ntp_->InitializePromos();
-  } else {
-    NOTREACHED();
-  }
-}
-
 void InstantController::InstantSupportChanged(
     InstantSupportState instant_support) {
   // Handle INSTANT_SUPPORT_YES here because InstantPage is not hooked up to the
@@ -416,53 +291,25 @@ void InstantController::InstantSupportChanged(
 void InstantController::InstantSupportDetermined(
     const content::WebContents* contents,
     bool supports_instant) {
-  if (IsContentsFrom(instant_tab(), contents)) {
-    if (!supports_instant)
-      base::MessageLoop::current()->DeleteSoon(FROM_HERE,
-                                               instant_tab_.release());
+  DCHECK(IsContentsFrom(instant_tab(), contents));
 
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_INSTANT_TAB_SUPPORT_DETERMINED,
-        content::Source<InstantController>(this),
-        content::NotificationService::NoDetails());
-  } else if (IsContentsFrom(ntp(), contents)) {
-    if (!supports_instant) {
-      bool is_local = ntp_->IsLocal();
-      DeletePageSoon(ntp_.Pass());
-      // Preload a local NTP in place of the broken online one.
-      if (!is_local)
-        ResetNTP(GetLocalInstantURL());
-    }
+  if (!supports_instant)
+    base::MessageLoop::current()->DeleteSoon(FROM_HERE, instant_tab_.release());
 
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_INSTANT_NTP_SUPPORT_DETERMINED,
-        content::Source<InstantController>(this),
-        content::NotificationService::NoDetails());
-
-  } else {
-    NOTREACHED();
-  }
-}
-
-void InstantController::InstantPageRenderProcessGone(
-    const content::WebContents* contents) {
-  if (IsContentsFrom(ntp(), contents)) {
-    DeletePageSoon(ntp_.Pass());
-  } else {
-    NOTREACHED();
-  }
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_INSTANT_TAB_SUPPORT_DETERMINED,
+      content::Source<InstantController>(this),
+      content::NotificationService::NoDetails());
 }
 
 void InstantController::InstantPageAboutToNavigateMainFrame(
     const content::WebContents* contents,
     const GURL& url) {
-  if (IsContentsFrom(instant_tab(), contents)) {
-    // The Instant tab navigated.  Send it the data it needs to display
-    // properly.
-    UpdateInfoForInstantTab();
-  } else {
-    NOTREACHED();
-  }
+  DCHECK(IsContentsFrom(instant_tab(), contents));
+
+  // The Instant tab navigated.  Send it the data it needs to display
+  // properly.
+  UpdateInfoForInstantTab();
 }
 
 void InstantController::FocusOmnibox(const content::WebContents* contents,
@@ -518,88 +365,15 @@ void InstantController::NavigateToURL(const content::WebContents* contents,
   browser_->OpenURL(url, transition, disposition);
 }
 
-std::string InstantController::GetLocalInstantURL() const {
-  return chrome::GetLocalInstantURL(profile()).spec();
-}
-
-std::string InstantController::GetInstantURL() const {
-  if (extended_enabled() && net::NetworkChangeNotifier::IsOffline())
-    return GetLocalInstantURL();
-
-  const GURL instant_url = chrome::GetInstantURL(profile(),
-                                                 omnibox_bounds_.x());
-  if (instant_url.is_valid())
-    return instant_url.spec();
-
-  // Only extended mode has a local fallback.
-  return extended_enabled() ? GetLocalInstantURL() : std::string();
-}
-
 bool InstantController::extended_enabled() const {
   return extended_enabled_;
-}
-
-bool InstantController::PageIsCurrent(const InstantPage* page) const {
-
-  const std::string& instant_url = GetInstantURL();
-  if (instant_url.empty() ||
-      !chrome::MatchesOriginAndPath(GURL(page->instant_url()),
-                                    GURL(instant_url)))
-    return false;
-
-  return page->supports_instant();
-}
-
-void InstantController::ResetNTP(const std::string& instant_url) {
-  // Never load the Instant NTP if it is disabled.
-  if (!chrome::ShouldShowInstantNTP())
-    return;
-
-  // Instant NTP is only used in extended mode so we should always have a
-  // non-empty URL to use.
-  DCHECK(!instant_url.empty());
-  ntp_.reset(new InstantNTP(this, instant_url,
-                            browser_->profile()->IsOffTheRecord()));
-  ntp_->InitContents(profile(), browser_->GetActiveWebContents(),
-                     base::Bind(&InstantController::ReloadStaleNTP,
-                                base::Unretained(this)));
-  LOG_INSTANT_DEBUG_EVENT(this, base::StringPrintf(
-      "ResetNTP: instant_url='%s'", instant_url.c_str()));
-}
-
-void InstantController::ReloadStaleNTP() {
-  if (extended_enabled())
-    ResetNTP(GetInstantURL());
-}
-
-bool InstantController::ShouldSwitchToLocalNTP() const {
-  if (!ntp())
-    return true;
-
-  // Assume users with Javascript disabled do not want the online experience.
-  if (!IsJavascriptEnabled())
-    return true;
-
-  // Already a local page. Not calling IsLocal() because we want to distinguish
-  // between the Google-specific and generic local NTP.
-  if (extended_enabled() && ntp()->instant_url() == GetLocalInstantURL())
-    return false;
-
-  if (PageIsCurrent(ntp()))
-    return false;
-
-  // The preloaded NTP does not support instant yet. If we're not in startup,
-  // always fall back to the local NTP. If we are in startup, use the local NTP
-  // (unless the finch flag to use the remote NTP is set).
-  return !(InStartup() && chrome::ShouldPreferRemoteNTPOnStartup());
 }
 
 void InstantController::ResetInstantTab() {
   if (!search_mode_.is_origin_default()) {
     content::WebContents* active_tab = browser_->GetActiveWebContents();
     if (!instant_tab_ || active_tab != instant_tab_->contents()) {
-      instant_tab_.reset(
-          new InstantTab(this, browser_->profile()->IsOffTheRecord()));
+      instant_tab_.reset(new InstantTab(this, browser_->profile()));
       instant_tab_->Init(active_tab);
       UpdateInfoForInstantTab();
     }
@@ -638,37 +412,13 @@ bool InstantController::UsingLocalPage() const {
 
 void InstantController::RedirectToLocalNTP(content::WebContents* contents) {
   contents->GetController().LoadURL(
-    chrome::GetLocalInstantURL(browser_->profile()),
-    content::Referrer(),
-    content::PAGE_TRANSITION_SERVER_REDIRECT,
-    std::string());  // No extra headers.
+      GURL(chrome::kChromeSearchLocalNtpUrl),
+      content::Referrer(),
+      content::PAGE_TRANSITION_SERVER_REDIRECT,
+      std::string());  // No extra headers.
   // TODO(dcblack): Remove extraneous history entry caused by 404s.
   // Note that the base case of a 204 being returned doesn't push a history
   // entry.
-}
-
-bool InstantController::IsJavascriptEnabled() const {
-  GURL instant_url(GetInstantURL());
-  GURL origin(instant_url.GetOrigin());
-  ContentSetting js_setting = profile()->GetHostContentSettingsMap()->
-      GetContentSetting(origin, origin, CONTENT_SETTINGS_TYPE_JAVASCRIPT,
-                        NO_RESOURCE_IDENTIFIER);
-  // Javascript can be disabled either in content settings or via a WebKit
-  // preference, so check both. Disabling it through the Settings page affects
-  // content settings. I'm not sure how to disable the WebKit preference, but
-  // it's theoretically possible some users have it off.
-  bool js_content_enabled =
-      js_setting == CONTENT_SETTING_DEFAULT ||
-      js_setting == CONTENT_SETTING_ALLOW;
-  bool js_webkit_enabled = profile()->GetPrefs()->GetBoolean(
-      prefs::kWebKitJavascriptEnabled);
-  return js_content_enabled && js_webkit_enabled;
-}
-
-bool InstantController::InStartup() const {
-  // TODO(shishir): This is not completely reliable. Find a better way to detect
-  // startup time.
-  return !browser_->GetActiveWebContents();
 }
 
 InstantService* InstantController::GetInstantService() const {

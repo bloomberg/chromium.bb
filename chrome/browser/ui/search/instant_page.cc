@@ -6,6 +6,10 @@
 
 #include "apps/app_launcher.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search/instant_service.h"
+#include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/search/instant_tab.h"
 #include "chrome/browser/ui/search/search_model.h"
@@ -15,6 +19,8 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -26,6 +32,13 @@ InstantPage::Delegate::~Delegate() {
 InstantPage::~InstantPage() {
   if (contents())
     SearchTabHelper::FromWebContents(contents())->model()->RemoveObserver(this);
+
+  // |profile_| may be NULL during unit tests.
+  if (profile_) {
+    InstantService* instant_service =
+        InstantServiceFactory::GetForProfile(profile_);
+    instant_service->RemoveObserver(this);
+  }
 }
 
 bool InstantPage::supports_instant() const {
@@ -62,11 +75,18 @@ void InstantPage::InitializePromos() {
 }
 
 InstantPage::InstantPage(Delegate* delegate, const std::string& instant_url,
-                         bool is_incognito)
-    : delegate_(delegate),
+                         Profile* profile, bool is_incognito)
+    : profile_(profile),
+      delegate_(delegate),
       ipc_sender_(InstantIPCSender::Create(is_incognito)),
       instant_url_(instant_url),
       is_incognito_(is_incognito) {
+  // |profile_| may be NULL during unit tests.
+  if (profile_) {
+    InstantService* instant_service =
+        InstantServiceFactory::GetForProfile(profile_);
+    instant_service->AddObserver(this);
+  }
 }
 
 void InstantPage::SetContents(content::WebContents* web_contents) {
@@ -159,6 +179,20 @@ void InstantPage::DidFailProvisionalLoad(
     content::RenderViewHost* /* render_view_host */) {
   if (is_main_frame)
     delegate_->InstantPageLoadFailed(contents());
+}
+
+void InstantPage::ThemeInfoChanged(const ThemeBackgroundInfo& theme_info) {
+  sender()->SendThemeBackgroundInfo(theme_info);
+}
+
+void InstantPage::MostVisitedItemsChanged(
+    const std::vector<InstantMostVisitedItem>& items) {
+  sender()->SendMostVisitedItems(items);
+
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_INSTANT_SENT_MOST_VISITED_ITEMS,
+      content::Source<InstantPage>(this),
+      content::NotificationService::NoDetails());
 }
 
 void InstantPage::ModelChanged(const SearchModel::State& old_state,

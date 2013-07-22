@@ -24,8 +24,7 @@ class WebContents;
 }
 
 // InstantLoader is used to create and maintain a WebContents where we can
-// preload a page into. It is used by InstantOverlay and InstantNTP to
-// preload an Instant page.
+// preload a page into. It is used by InstantNTP to preload an Instant page.
 class InstantLoader : public content::NotificationObserver,
                       public content::WebContentsDelegate,
                       public CoreTabHelperDelegate {
@@ -37,15 +36,6 @@ class InstantLoader : public content::NotificationObserver,
     // Called after someone has swapped in a different WebContents for ours.
     virtual void OnSwappedContents() = 0;
 
-    // Called when the underlying contents receive focus.
-    virtual void OnFocus() = 0;
-
-    // Called when the mouse pointer is down.
-    virtual void OnMouseDown() = 0;
-
-    // Called when the mouse pointer is released (or a drag event ends).
-    virtual void OnMouseUp() = 0;
-
     // Called to open a URL using the underlying contents (see
     // WebContentsDelegate::OpenURLFromTab). The Delegate should return the
     // WebContents the URL is opened in, or NULL if the URL wasn't opened
@@ -53,9 +43,6 @@ class InstantLoader : public content::NotificationObserver,
     virtual content::WebContents* OpenURLFromTab(
         content::WebContents* source,
         const content::OpenURLParams& params) = 0;
-
-    // Called when a main frame load is complete.
-    virtual void LoadCompletedMainFrame() = 0;
 
    protected:
     ~Delegate();
@@ -66,12 +53,10 @@ class InstantLoader : public content::NotificationObserver,
 
   // Creates a new WebContents in the context of |profile| that will be used to
   // load |instant_url|. The page is not actually loaded until Load() is
-  // called. Uses |active_contents|, if non-NULL, to initialize the size of the
-  // new contents. |on_stale_callback| will be called after kStalePageTimeoutMS
+  // called. |on_stale_callback| will be called after kStalePageTimeoutMS
   // has elapsed after Load() being called.
   void Init(const GURL& instant_url,
             Profile* profile,
-            const content::WebContents* active_contents,
             const base::Closure& on_stale_callback);
 
   // Loads |instant_url_| in |contents_|.
@@ -101,17 +86,10 @@ class InstantLoader : public content::NotificationObserver,
   // Overridden from content::WebContentsDelegate:
   virtual bool ShouldSuppressDialogs() OVERRIDE;
   virtual bool ShouldFocusPageAfterCrash() OVERRIDE;
-  virtual void LostCapture() OVERRIDE;
-  virtual void WebContentsFocused(content::WebContents* contents) OVERRIDE;
   virtual void CanDownload(content::RenderViewHost* render_view_host,
                            int request_id,
                            const std::string& request_method,
                            const base::Callback<void(bool)>& callback) OVERRIDE;
-  virtual void HandleMouseDown() OVERRIDE;
-  virtual void HandleMouseUp() OVERRIDE;
-  virtual void HandlePointerActivate() OVERRIDE;
-  virtual void HandleGestureEnd() OVERRIDE;
-  virtual void DragEnded() OVERRIDE;
   virtual bool OnGoToEntryOffset(int offset) OVERRIDE;
   virtual content::WebContents* OpenURLFromTab(
       content::WebContents* source,

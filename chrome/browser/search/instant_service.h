@@ -12,21 +12,29 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/history/history_types.h"
+#include "chrome/browser/ui/search/instant_ntp_prerenderer.h"
 #include "chrome/common/instant_types.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
 class GURL;
+class InstantExtendedTest;
 class InstantIOContext;
 class InstantServiceObserver;
+class InstantTestBase;
 class Profile;
 class ThemeService;
+
+namespace content {
+class WebContents;
+}
 
 namespace net {
 class URLRequest;
@@ -78,7 +86,33 @@ class InstantService : public BrowserContextKeyedService,
   // NTP.
   void UpdateMostVisitedItemsInfo();
 
+  // Forwards the request to InstantNTPPrerenderer to release and return the
+  // preloaded InstantNTP WebContents. May be NULL. InstantNTPPrerenderer will
+  // load a new InstantNTP after releasing the preloaded contents.
+  scoped_ptr<content::WebContents> ReleaseNTPContents() WARN_UNUSED_RESULT;
+
+  // The NTP WebContents. May be NULL. InstantNTPPrerenderer retains ownership.
+  content::WebContents* GetNTPContents() const;
+
+  // Notifies InstantService about the creation of a BrowserInstantController
+  // object. Used to preload InstantNTP.
+  void OnBrowserInstantControllerCreated();
+
+  // Notifies InstantService about the destruction of a BrowserInstantController
+  // object. Used to destroy the preloaded InstantNTP.
+  void OnBrowserInstantControllerDestroyed();
+
  private:
+  friend class InstantExtendedTest;
+  friend class InstantTestBase;
+
+  FRIEND_TEST_ALL_PREFIXES(InstantExtendedNetworkTest,
+                           NTPReactsToNetworkChanges);
+  FRIEND_TEST_ALL_PREFIXES(InstantExtendedManualTest,
+                           MANUAL_ShowsGoogleNTP);
+  FRIEND_TEST_ALL_PREFIXES(InstantExtendedManualTest,
+                           MANUAL_SearchesFromFakebox);
+
   // Overridden from BrowserContextKeyedService:
   virtual void Shutdown() OVERRIDE;
 
@@ -98,6 +132,9 @@ class InstantService : public BrowserContextKeyedService,
   // Theme changed notification handler.
   void OnThemeChanged(ThemeService* theme_service);
 
+  // Used by tests.
+  InstantNTPPrerenderer* ntp_prerenderer();
+
   Profile* const profile_;
 
   // The process ids associated with Instant processes.
@@ -114,6 +151,12 @@ class InstantService : public BrowserContextKeyedService,
   content::NotificationRegistrar registrar_;
 
   scoped_refptr<InstantIOContext> instant_io_context_;
+
+  InstantNTPPrerenderer ntp_prerenderer_;
+
+  // Total number of BrowserInstantController objects (does not include objects
+  // created for OTR browser windows). Used to preload and delete InstantNTP.
+  size_t browser_instant_controller_object_count_;
 
   // Used for Top Sites async retrieval.
   base::WeakPtrFactory<InstantService> weak_ptr_factory_;

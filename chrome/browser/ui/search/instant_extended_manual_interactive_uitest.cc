@@ -4,6 +4,8 @@
 
 #include "base/strings/string_util.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/search/instant_service.h"
+#include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/browser/task_manager/task_manager_browsertest_util.h"
@@ -11,7 +13,7 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
-#include "chrome/browser/ui/search/instant_ntp.h"
+#include "chrome/browser/ui/search/instant_ntp_prerenderer.h"
 #include "chrome/browser/ui/search/instant_test_utils.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/omnibox_focus_state.h"
@@ -93,9 +95,12 @@ class InstantExtendedManualTest : public InProcessBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest, MANUAL_ShowsGoogleNTP) {
   set_browser(browser());
-  instant()->ReloadStaleNTP();
-  FocusOmniboxAndWaitForInstantNTPSupport();
+  InstantService* instant_service =
+      InstantServiceFactory::GetForProfile(browser()->profile());
+  ASSERT_NE(static_cast<InstantService*>(NULL), instant_service);
+  instant_service->ntp_prerenderer()->ReloadStaleNTP();
 
+  FocusOmniboxAndWaitForInstantNTPSupport();
   content::WindowedNotificationObserver observer(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::NotificationService::AllSources());
@@ -112,9 +117,12 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest, MANUAL_ShowsGoogleNTP) {
 
 IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest, MANUAL_SearchesFromFakebox) {
   set_browser(browser());
-  instant()->ReloadStaleNTP();
-  FocusOmniboxAndWaitForInstantNTPSupport();
+  InstantService* instant_service =
+      InstantServiceFactory::GetForProfile(browser()->profile());
+  ASSERT_NE(static_cast<InstantService*>(NULL), instant_service);
+  instant_service->ntp_prerenderer()->ReloadStaleNTP();
 
+  FocusOmniboxAndWaitForInstantNTPSupport();
   // Open a new tab page.
   content::WindowedNotificationObserver observer(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,

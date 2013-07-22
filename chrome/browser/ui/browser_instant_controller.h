@@ -13,7 +13,6 @@
 #include "chrome/browser/ui/search/instant_controller.h"
 #include "chrome/browser/ui/search/instant_unload_handler.h"
 #include "chrome/browser/ui/search/search_model_observer.h"
-#include "net/base/network_change_notifier.h"
 #include "ui/base/window_open_disposition.h"
 
 class Browser;
@@ -28,9 +27,7 @@ namespace gfx {
 class Rect;
 }
 
-class BrowserInstantController
-    : public SearchModelObserver,
-      public net::NetworkChangeNotifier::NetworkChangeObserver {
+class BrowserInstantController : public SearchModelObserver {
  public:
   explicit BrowserInstantController(Browser* browser);
   virtual ~BrowserInstantController();
@@ -83,10 +80,6 @@ class BrowserInstantController
   void ToggleVoiceSearch();
 
  private:
-  // Sets the value of |instant_| based on value from profile. Invoked
-  // on pref change.
-  void ResetInstant(const std::string& pref_name);
-
   // Overridden from search::SearchModelObserver:
   virtual void ModelChanged(const SearchModel::State& old_state,
                             const SearchModel::State& new_state) OVERRIDE;
@@ -96,10 +89,6 @@ class BrowserInstantController
   // default search provider) by simply reloading all such WebContents. This
   // ensures that they are reloaded in a non-privileged renderer process.
   void OnDefaultSearchProviderChanged(const std::string& pref_name);
-
-  // Overridden from net::NetworkChangeNotifier::NetworkChangeObserver:
-  virtual void OnNetworkChanged(net::NetworkChangeNotifier::ConnectionType type)
-      OVERRIDE;
 
   // Replaces the contents at tab |index| with |new_contents| and deletes the
   // existing contents.

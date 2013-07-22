@@ -13,6 +13,8 @@
 #include "chrome/browser/printing/background_printing_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/search/instant_service.h"
+#include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/task_manager/renderer_resource.h"
@@ -21,7 +23,6 @@
 #include "chrome/browser/task_manager/task_manager_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_instant_controller.h"
 #include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 #include "content/public/browser/notification_service.h"
@@ -207,14 +208,6 @@ void TabContentsResourceProvider::StartUpdating() {
   for (TabContentsIterator iterator; !iterator.done(); iterator.Next())
     Add(*iterator);
 
-  // Add all the Instant pages.
-  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
-    if (it->instant_controller()) {
-      if (it->instant_controller()->instant()->GetNTPContents())
-        Add(it->instant_controller()->instant()->GetNTPContents());
-    }
-  }
-
   // Add all the prerender pages.
   std::vector<Profile*> profiles(
       g_browser_process->profile_manager()->GetLoadedProfiles());
@@ -227,6 +220,14 @@ void TabContentsResourceProvider::StartUpdating() {
       for (size_t j = 0; j < contentses.size(); ++j)
         Add(contentses[j]);
     }
+  }
+
+  // Add all the Instant Extended prerendered NTPs.
+  for (size_t i = 0; i < profiles.size(); ++i) {
+    const InstantService* instant_service =
+        InstantServiceFactory::GetForProfile(profiles[i]);
+    if (instant_service && instant_service->GetNTPContents())
+      Add(instant_service->GetNTPContents());
   }
 
   // Add all the pages being background printed.

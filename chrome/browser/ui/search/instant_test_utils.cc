@@ -9,10 +9,13 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search/instant_service.h"
+#include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/search/instant_ntp.h"
+#include "chrome/browser/ui/search/instant_ntp_prerenderer.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/interactive_test_utils.h"
@@ -52,7 +55,10 @@ void InstantTestBase::SetupInstant(Browser* browser) {
   service->Add(template_url);  // Takes ownership of |template_url|.
   service->SetDefaultSearchProvider(template_url);
 
-  instant()->ReloadStaleNTP();
+  InstantService* instant_service =
+      InstantServiceFactory::GetForProfile(browser_->profile());
+  ASSERT_NE(static_cast<InstantService*>(NULL), instant_service);
+  instant_service->ntp_prerenderer()->ReloadStaleNTP();
 }
 
 void InstantTestBase::SetInstantURL(const std::string& url) {
@@ -88,7 +94,12 @@ void InstantTestBase::FocusOmniboxAndWaitForInstantNTPSupport() {
       chrome::NOTIFICATION_INSTANT_NTP_SUPPORT_DETERMINED,
       content::NotificationService::AllSources());
   FocusOmnibox();
-  if (!instant()->ntp() || !instant()->ntp()->supports_instant())
+
+  InstantService* instant_service =
+      InstantServiceFactory::GetForProfile(browser_->profile());
+  ASSERT_NE(static_cast<InstantService*>(NULL), instant_service);
+  if (!instant_service->ntp_prerenderer()->ntp() ||
+      !instant_service->ntp_prerenderer()->ntp()->supports_instant())
     ntp_observer.Wait();
 }
 
@@ -127,7 +138,11 @@ bool InstantTestBase::GetStringFromJS(content::WebContents* contents,
 }
 
 bool InstantTestBase::ExecuteScript(const std::string& script) {
-  return content::ExecuteScript(instant()->GetNTPContents(), script);
+  InstantService* instant_service =
+      InstantServiceFactory::GetForProfile(browser_instant()->profile());
+  if (!instant_service)
+    return false;
+  return content::ExecuteScript(instant_service->GetNTPContents(), script);
 }
 
 bool InstantTestBase::CheckVisibilityIs(content::WebContents* contents,

@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
+#include "chrome/browser/ui/search/instant_ntp.h"
 #include "chrome/browser/ui/search/search_model.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -41,21 +42,22 @@ BrowserInstantController::BrowserInstantController(Browser* browser)
       instant_unload_handler_(browser) {
   profile_pref_registrar_.Init(profile()->GetPrefs());
   profile_pref_registrar_.Add(
-      prefs::kSearchSuggestEnabled,
-      base::Bind(&BrowserInstantController::ResetInstant,
-                 base::Unretained(this)));
-  profile_pref_registrar_.Add(
       prefs::kDefaultSearchProviderID,
       base::Bind(&BrowserInstantController::OnDefaultSearchProviderChanged,
                  base::Unretained(this)));
-  ResetInstant(std::string());
   browser_->search_model()->AddObserver(this);
-  net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
+
+  InstantService* instant_service =
+      InstantServiceFactory::GetForProfile(profile());
+  instant_service->OnBrowserInstantControllerCreated();
 }
 
 BrowserInstantController::~BrowserInstantController() {
   browser_->search_model()->RemoveObserver(this);
-  net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
+
+  InstantService* instant_service =
+      InstantServiceFactory::GetForProfile(profile());
+  instant_service->OnBrowserInstantControllerDestroyed();
 }
 
 bool BrowserInstantController::MaybeSwapInInstantNTPContents(
@@ -71,7 +73,10 @@ bool BrowserInstantController::MaybeSwapInInstantNTPContents(
     return false;
   }
 
-  scoped_ptr<content::WebContents> instant_ntp = instant_.ReleaseNTPContents();
+  InstantService* instant_service =
+      InstantServiceFactory::GetForProfile(profile());
+  scoped_ptr<content::WebContents> instant_ntp =
+      instant_service->ReleaseNTPContents();
   if (!instant_ntp)
     return false;
 
@@ -192,11 +197,6 @@ void BrowserInstantController::ToggleVoiceSearch() {
   instant_.ToggleVoiceSearch();
 }
 
-void BrowserInstantController::ResetInstant(const std::string& pref_name) {
-  if (chrome::ShouldPreloadInstantNTP(profile()))
-    instant_.ReloadStaleNTP();
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserInstantController, SearchModelObserver implementation:
 
@@ -221,15 +221,6 @@ void BrowserInstantController::ModelChanged(
 
   if (old_state.instant_support != new_state.instant_support)
     instant_.InstantSupportChanged(new_state.instant_support);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// BrowserInstantController, net::NetworkChangeNotifier::NetworkChangeObserver
-// implementation:
-
-void BrowserInstantController::OnNetworkChanged(
-    net::NetworkChangeNotifier::ConnectionType type) {
-  instant_.OnNetworkChanged(type);
 }
 
 void BrowserInstantController::OnDefaultSearchProviderChanged(
@@ -269,5 +260,4 @@ void BrowserInstantController::OnDefaultSearchProviderChanged(
     // renderer.
     contents->GetController().Reload(false);
   }
-  instant_.OnDefaultSearchProviderChanged();
 }

@@ -45,6 +45,7 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/search/instant_ntp.h"
+#include "chrome/browser/ui/search/instant_ntp_prerenderer.h"
 #include "chrome/browser/ui/search/instant_tab.h"
 #include "chrome/browser/ui/search/instant_test_utils.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
@@ -350,26 +351,33 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedNetworkTest, NTPReactsToNetworkChanges) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
   FocusOmniboxAndWaitForInstantNTPSupport();
 
+  InstantService* instant_service =
+      InstantServiceFactory::GetForProfile(browser()->profile());
+  ASSERT_NE(static_cast<InstantService*>(NULL), instant_service);
+
   // The setup first initializes the platform specific NetworkChangeNotifier.
   // The InstantExtendedNetworkTest replaces it with a fake, but by the time,
-  // instant controller has already registered itself. So the instant controller
-  // needs to register itself as NetworkChangeObserver again.
-  net::NetworkChangeNotifier::AddNetworkChangeObserver(browser_instant());
+  // InstantNTPPrerenderer has already registered itself. So the
+  // InstantNTPPrerenderer needs to register itself as NetworkChangeObserver
+  // again.
+  net::NetworkChangeNotifier::AddNetworkChangeObserver(
+      instant_service->ntp_prerenderer());
 
   // The fake network change notifier will provide the network state to be
   // offline, so the ntp will be local.
-  ASSERT_NE(static_cast<InstantNTP*>(NULL), instant()->ntp());
-  EXPECT_TRUE(instant()->ntp()->IsLocal());
+  ASSERT_NE(static_cast<InstantNTP*>(NULL),
+            instant_service->ntp_prerenderer()->ntp());
+  EXPECT_TRUE(instant_service->ntp_prerenderer()->ntp()->IsLocal());
 
   // Change the connect state, and wait for the notifications to be run, and NTP
   // support to be determined.
   SetConnectionType(net::NetworkChangeNotifier::CONNECTION_ETHERNET);
   FocusOmniboxAndWaitForInstantNTPSupport();
 
-  // Verify the network state is fine, and instant controller doesn't want to
-  // switch to local NTP anymore.
+  // Verify the network state is fine, and InstantNTPPrerenderer doesn't want
+  // to switch to local NTP anymore.
   EXPECT_FALSE(net::NetworkChangeNotifier::IsOffline());
-  EXPECT_FALSE(instant()->ShouldSwitchToLocalNTP());
+  EXPECT_FALSE(instant_service->ntp_prerenderer()->ShouldSwitchToLocalNTP());
 
   // Open new tab.
   ui_test_utils::NavigateToURLWithDisposition(
@@ -382,17 +390,19 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedNetworkTest, NTPReactsToNetworkChanges) {
 
   // Verify new NTP is not local.
   EXPECT_TRUE(chrome::IsInstantNTP(active_tab));
-  EXPECT_NE(instant()->GetLocalInstantURL(), active_tab->GetURL().spec());
-  ASSERT_NE(static_cast<InstantNTP*>(NULL), instant()->ntp());
-  EXPECT_FALSE(instant()->ntp()->IsLocal());
+  EXPECT_NE(instant_service->ntp_prerenderer()->GetLocalInstantURL(),
+            active_tab->GetURL().spec());
+  ASSERT_NE(static_cast<InstantNTP*>(NULL),
+            instant_service->ntp_prerenderer()->ntp());
+  EXPECT_FALSE(instant_service->ntp_prerenderer()->ntp()->IsLocal());
 
   SetConnectionType(net::NetworkChangeNotifier::CONNECTION_NONE);
   FocusOmniboxAndWaitForInstantNTPSupport();
 
-  // Verify the network state is fine, and instant controller doesn't want to
-  // switch to local NTP anymore.
+  // Verify the network state is fine, and InstantNTPPrerenderer doesn't want
+  // to switch to local NTP anymore.
   EXPECT_TRUE(net::NetworkChangeNotifier::IsOffline());
-  EXPECT_TRUE(instant()->ShouldSwitchToLocalNTP());
+  EXPECT_TRUE(instant_service->ntp_prerenderer()->ShouldSwitchToLocalNTP());
 
   // Open new tab. Preloaded NTP contents should have been used.
   ui_test_utils::NavigateToURLWithDisposition(
@@ -404,9 +414,11 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedNetworkTest, NTPReactsToNetworkChanges) {
 
   // Verify new NTP is not local.
   EXPECT_TRUE(chrome::IsInstantNTP(active_tab));
-  EXPECT_EQ(instant()->GetLocalInstantURL(), active_tab->GetURL().spec());
-  ASSERT_NE(static_cast<InstantNTP*>(NULL), instant()->ntp());
-  EXPECT_TRUE(instant()->ntp()->IsLocal());
+  EXPECT_EQ(instant_service->ntp_prerenderer()->GetLocalInstantURL(),
+            active_tab->GetURL().spec());
+  ASSERT_NE(static_cast<InstantNTP*>(NULL),
+            instant_service->ntp_prerenderer()->ntp());
+  EXPECT_TRUE(instant_service->ntp_prerenderer()->ntp()->IsLocal());
 }
 
 #if defined(HTML_INSTANT_EXTENDED_POPUP)

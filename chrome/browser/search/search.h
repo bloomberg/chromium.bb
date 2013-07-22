@@ -105,9 +105,6 @@ GURL GetLocalInstantURL(Profile* profile);
 // to always show the remote NTP on browser startup.
 bool ShouldPreferRemoteNTPOnStartup();
 
-// Returns true if the Instant NTP should be preloaded before it is shown.
-bool ShouldPreloadInstantNTP(Profile* profile);
-
 // Returns true if the Instant NTP should be shown and false if not.
 bool ShouldShowInstantNTP();
 

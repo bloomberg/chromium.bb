@@ -7,7 +7,6 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
-#include "chrome/browser/history/history_tab_helper.h"
 #include "chrome/browser/safe_browsing/safe_browsing_tab_observer.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/tab_contents/tab_util.h"
@@ -42,7 +41,6 @@ InstantLoader::~InstantLoader() {
 
 void InstantLoader::Init(const GURL& instant_url,
                          Profile* profile,
-                         const content::WebContents* active_tab,
                          const base::Closure& on_stale_callback) {
   content::WebContents::CreateParams create_params(profile);
   create_params.site_instance = content::SiteInstance::CreateForURL(
@@ -104,9 +102,7 @@ void InstantLoader::SetContents(scoped_ptr<content::WebContents> new_contents) {
   CoreTabHelper::CreateForWebContents(contents());
   CoreTabHelper::FromWebContents(contents())->set_delegate(this);
 
-  // Tab helpers used when committing an overlay.
   SearchTabHelper::CreateForWebContents(contents());
-  HistoryTabHelper::CreateForWebContents(contents());
 
   // Observers.
   extensions::WebNavigationTabObserver::CreateForWebContents(contents());
@@ -127,11 +123,6 @@ void InstantLoader::SetContents(scoped_ptr<content::WebContents> new_contents) {
                  content::Source<content::NavigationController>(
                      &contents_->GetController()));
 #endif
-
-  // When the WebContents finishes loading it should be checked to ensure that
-  // it is in the instant process.
-  registrar_.Add(this, content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
-                 content::Source<content::WebContents>(contents_.get()));
 }
 
 scoped_ptr<content::WebContents> InstantLoader::ReleaseContents() {
@@ -155,23 +146,12 @@ scoped_ptr<content::WebContents> InstantLoader::ReleaseContents() {
                     content::Source<content::NavigationController>(
                         &contents_->GetController()));
 #endif
-  registrar_.Remove(this, content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
-                    content::Source<content::WebContents>(contents_.get()));
-
   return contents_.Pass();
 }
 
 void InstantLoader::Observe(int type,
                             const content::NotificationSource& source,
                             const content::NotificationDetails& details) {
-  if (type == content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME) {
-    const content::WebContents* web_contents =
-        content::Source<content::WebContents>(source).ptr();
-    DCHECK_EQ(contents_.get(), web_contents);
-    delegate_->LoadCompletedMainFrame();
-    return;
-  }
-
 #if defined(OS_MACOSX)
   if (type == content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED) {
     if (content::RenderWidgetHostView* rwhv =
@@ -202,43 +182,12 @@ bool InstantLoader::ShouldFocusPageAfterCrash() {
   return false;
 }
 
-void InstantLoader::LostCapture() {
-  delegate_->OnMouseUp();
-}
-
-void InstantLoader::WebContentsFocused(content::WebContents* /* contents */) {
-  delegate_->OnFocus();
-}
-
 void InstantLoader::CanDownload(content::RenderViewHost* /* render_view_host */,
                                 int /* request_id */,
                                 const std::string& /* request_method */,
                                 const base::Callback<void(bool)>& callback) {
   // Downloads are disabled.
   callback.Run(false);
-}
-
-void InstantLoader::HandleMouseDown() {
-  delegate_->OnMouseDown();
-}
-
-void InstantLoader::HandleMouseUp() {
-  delegate_->OnMouseUp();
-}
-
-void InstantLoader::HandlePointerActivate() {
-  delegate_->OnMouseDown();
-}
-
-void InstantLoader::HandleGestureEnd() {
-  delegate_->OnMouseUp();
-}
-
-void InstantLoader::DragEnded() {
-  // If the user drags, we won't get a mouse up (at least on Linux). Commit
-  // the Instant result when the drag ends, so that during the drag the page
-  // won't move around.
-  delegate_->OnMouseUp();
 }
 
 bool InstantLoader::OnGoToEntryOffset(int /* offset */) {

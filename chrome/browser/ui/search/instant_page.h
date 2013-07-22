@@ -12,6 +12,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
+#include "chrome/browser/search/instant_service_observer.h"
 #include "chrome/browser/ui/search/instant_ipc_sender.h"
 #include "chrome/browser/ui/search/search_model_observer.h"
 #include "chrome/common/instant_types.h"
@@ -20,6 +21,8 @@
 #include "content/public/common/page_transition_types.h"
 
 class GURL;
+class InstantService;
+class Profile;
 
 namespace content {
 struct FrameNavigateParams;
@@ -36,6 +39,7 @@ class Rect;
 // InstantPage is not used directly but via one of its derived classes,
 // InstantNTP and InstantTab.
 class InstantPage : public content::WebContentsObserver,
+                    public InstantServiceObserver,
                     public SearchModelObserver {
  public:
   // InstantPage calls its delegate in response to messages received from the
@@ -43,18 +47,10 @@ class InstantPage : public content::WebContentsObserver,
   // we are observing.
   class Delegate {
    public:
-    // Called when a RenderView is created, so that state can be initialized.
-    virtual void InstantPageRenderViewCreated(
-        const content::WebContents* contents) = 0;
-
     // Called upon determination of Instant API support. Either in response to
     // the page loading or because we received some other message.
     virtual void InstantSupportDetermined(const content::WebContents* contents,
                                           bool supports_instant) = 0;
-
-    // Called when the underlying RenderView's process crashed.
-    virtual void InstantPageRenderProcessGone(
-        const content::WebContents* contents) = 0;
 
     // Called when the page is about to navigate to |url|.
     virtual void InstantPageAboutToNavigateMainFrame(
@@ -120,13 +116,15 @@ class InstantPage : public content::WebContentsObserver,
 
  protected:
   InstantPage(Delegate* delegate, const std::string& instant_url,
-              bool is_incognito);
+              Profile* profile, bool is_incognito);
 
   // Sets |web_contents| as the page to communicate with. |web_contents| may be
   // NULL, which effectively stops all communication.
   void SetContents(content::WebContents* web_contents);
 
   Delegate* delegate() const { return delegate_; }
+
+  Profile* profile() const { return profile_; }
 
   // These functions are called before processing messages received from the
   // page. By default, all messages are handled, but any derived classes may
@@ -172,6 +170,11 @@ class InstantPage : public content::WebContentsObserver,
       const string16& error_description,
       content::RenderViewHost* render_view_host) OVERRIDE;
 
+  // Overridden from InstantServiceObserver:
+  virtual void ThemeInfoChanged(const ThemeBackgroundInfo& theme_info) OVERRIDE;
+  virtual void MostVisitedItemsChanged(
+      const std::vector<InstantMostVisitedItem>& items) OVERRIDE;
+
   // Overridden from SearchModelObserver:
   virtual void ModelChanged(const SearchModel::State& old_state,
                             const SearchModel::State& new_state) OVERRIDE;
@@ -192,6 +195,10 @@ class InstantPage : public content::WebContentsObserver,
 
   void ClearContents();
 
+  // Returns the InstantService for the |profile_|.
+  InstantService* GetInstantService();
+
+  Profile* profile_;
   Delegate* const delegate_;
   scoped_ptr<InstantIPCSender> ipc_sender_;
   const std::string instant_url_;

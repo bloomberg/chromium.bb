@@ -56,6 +56,8 @@ RGBAColor SkColorToRGBAColor(const SkColor& sKColor) {
 
 InstantService::InstantService(Profile* profile)
     : profile_(profile),
+      ntp_prerenderer_(profile, profile->GetPrefs()),
+      browser_instant_controller_object_count_(0),
       weak_ptr_factory_(this) {
   // Stub for unit tests.
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI))
@@ -172,6 +174,37 @@ void InstantService::Shutdown() {
                    instant_io_context_));
   }
   instant_io_context_ = NULL;
+}
+
+scoped_ptr<content::WebContents> InstantService::ReleaseNTPContents() {
+  return ntp_prerenderer_.ReleaseNTPContents();
+}
+
+content::WebContents* InstantService::GetNTPContents() const {
+  return ntp_prerenderer_.GetNTPContents();
+}
+
+void InstantService::OnBrowserInstantControllerCreated() {
+  if (profile_->IsOffTheRecord())
+    return;
+
+  ++browser_instant_controller_object_count_;
+
+  if (browser_instant_controller_object_count_ == 1)
+    ntp_prerenderer_.PreloadInstantNTP();
+}
+
+void InstantService::OnBrowserInstantControllerDestroyed() {
+  if (profile_->IsOffTheRecord())
+    return;
+
+  DCHECK_GT(browser_instant_controller_object_count_, 0U);
+  --browser_instant_controller_object_count_;
+
+  // All browser windows have closed, so release the InstantNTP resources to
+  // work around http://crbug.com/180810.
+  if (browser_instant_controller_object_count_ == 0)
+    ntp_prerenderer_.DeleteNTPContents();
 }
 
 void InstantService::Observe(int type,
@@ -347,4 +380,8 @@ void InstantService::OnThemeChanged(ThemeService* theme_service) {
 
   FOR_EACH_OBSERVER(InstantServiceObserver, observers_,
                     ThemeInfoChanged(*theme_info_));
+}
+
+InstantNTPPrerenderer* InstantService::ntp_prerenderer() {
+  return &ntp_prerenderer_;
 }

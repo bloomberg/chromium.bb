@@ -1376,6 +1376,8 @@
         'browser/ui/search/instant_loader.h',
         'browser/ui/search/instant_ntp.cc',
         'browser/ui/search/instant_ntp.h',
+        'browser/ui/search/instant_ntp_prerenderer.cc',
+        'browser/ui/search/instant_ntp_prerenderer.h',
         'browser/ui/search/instant_overlay_controller.cc',
         'browser/ui/search/instant_overlay_controller.h',
         'browser/ui/search/instant_overlay_model.cc',

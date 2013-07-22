@@ -9,15 +9,18 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process_util.h"
 #include "chrome/browser/ui/search/instant_loader.h"
 #include "chrome/browser/ui/search/instant_page.h"
 
+class InstantNTPPrerenderer;
 class Profile;
 
 namespace content {
 class RenderViewHost;
+class WebContents;
 }
 
 // InstantNTP is used to preload an Instant page that will be swapped in when a
@@ -26,40 +29,38 @@ class RenderViewHost;
 class InstantNTP : public InstantPage,
                    public InstantLoader::Delegate {
  public:
-  InstantNTP(InstantPage::Delegate* delegate, const std::string& instant_url,
-             bool is_incognito);
+  InstantNTP(InstantNTPPrerenderer* delegate,
+             const std::string& instant_url,
+             Profile* profile);
   virtual ~InstantNTP();
 
-  // Creates a new WebContents and loads |instant_url_| into it. Uses
-  // |active_tab|, if non-NULL, to initialize the size of the WebContents.
+  // Creates a new WebContents and loads |instant_url_| into it.
   // |on_stale_callback| will be called when |loader_| determines the page to
   // be stale.
-  void InitContents(Profile* profile,
-                    const content::WebContents* active_tab,
-                    const base::Closure& on_stale_callback);
+  void InitContents(const base::Closure& on_stale_callback);
 
   // Releases the WebContents for the Instant page.  This should be called when
   // the page is about to be committed.
   scoped_ptr<content::WebContents> ReleaseContents();
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(InstantExtendedNetworkTest,
+                           NTPReactsToNetworkChanges);
+
   // Overridden from content::WebContentsObserver:
   virtual void RenderViewCreated(
       content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void RenderProcessGone(
       base::TerminationStatus status) OVERRIDE;
 
-  // Overriden from InstantLoader::Delegate:
+  // Overridden from InstantLoader::Delegate:
   virtual void OnSwappedContents() OVERRIDE;
-  virtual void OnFocus() OVERRIDE;
-  virtual void OnMouseDown() OVERRIDE;
-  virtual void OnMouseUp() OVERRIDE;
   virtual content::WebContents* OpenURLFromTab(
       content::WebContents* source,
       const content::OpenURLParams& params) OVERRIDE;
-  virtual void LoadCompletedMainFrame() OVERRIDE;
 
   InstantLoader loader_;
+  InstantNTPPrerenderer* const ntp_prerenderer_;
 
   DISALLOW_COPY_AND_ASSIGN(InstantNTP);
 };
