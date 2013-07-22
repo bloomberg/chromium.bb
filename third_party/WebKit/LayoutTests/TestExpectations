@@ -1723,9 +1723,6 @@ crbug.com/255407 plugins/npruntime/leak-window-scriptable-object.html [ Pass Fai
 crbug.com/260744 [ Debug ] fast/js/regress/function-dot-apply.html  [ Timeout ]
 crbug.com/260744 [ Debug ] fast/js/regress/inline-arguments-local-escape.html  [ Timeout ]
 
-Bug(ajuma) css3/filters/effect-reference-ordering.html [ NeedsRebaseline ]
-Bug(ajuma) css3/filters/effect-reference-ordering-hw.html [ NeedsRebaseline ]
-
 # Below test case need to rebaseline after crbug.com/254914
 crbug.com/254914 [ Win Mac ] tables/mozilla_expected_failures/bugs/bug58402-2.html [ Failure ]
 crbug.com/254914 [ Win Mac ] tables/mozilla/core/bloomberg.html [ Failure ]
