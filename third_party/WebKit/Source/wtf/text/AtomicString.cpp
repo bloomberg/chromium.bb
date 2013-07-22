@@ -299,7 +299,7 @@ struct SubstringTranslator {
 
     static void translate(StringImpl*& location, const SubstringLocation& buffer, unsigned hash)
     {
-        location = StringImpl::create(buffer.baseString, buffer.start, buffer.length).leakRef();
+        location = buffer.baseString->substring(buffer.start, buffer.length).leakRef();
         location->setHash(hash);
         location->setIsAtomic(true);
     }

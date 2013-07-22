@@ -99,7 +99,16 @@ void StringBuilder::resize(unsigned newSize)
     ASSERT(m_length == m_string.length());
     ASSERT(newSize < m_string.length());
     m_length = newSize;
-    m_string = StringImpl::create(m_string.impl(), 0, newSize);
+    RefPtr<StringImpl> string = m_string.releaseImpl();
+    if (string->hasOneRef()) {
+        // If we're the only ones with a reference to the string, we can
+        // re-purpose the string as m_buffer and continue mutating it.
+        m_buffer = string;
+    } else {
+        // Otherwise, we need to make a copy of the string so that we don't
+        // mutate a String that's held elsewhere.
+        m_buffer = string->substring(0, m_length);
+    }
 }
 
 // Allocate a new 8 bit buffer, copying in currentCharacters (these may come from either m_string

@@ -205,19 +205,12 @@ unsigned StringStats::s_stringRemovesTillPrintStats = StringStats::s_printString
 void StringStats::removeString(StringImpl* string)
 {
     unsigned length = string->length();
-    bool isSubString = string->isSubString();
-
     --m_totalNumberStrings;
 
-    if (string->is8Bit()) {
+    if (string->is8Bit())
         --m_number8BitStrings;
-        if (!isSubString)
-            m_total8BitData -= length;
-    } else {
+    else
         --m_number16BitStrings;
-        if (!isSubString)
-            m_total16BitData -= length;
-    }
 
     if (!--s_stringRemovesTillPrintStats) {
         s_stringRemovesTillPrintStats = s_printStringStatsFrequency;
@@ -269,9 +262,7 @@ StringImpl::~StringImpl()
         fastFree(const_cast<LChar*>(m_data8));
         return;
     }
-    ASSERT(ownership == BufferSubstring);
-    ASSERT(m_substringBuffer);
-    m_substringBuffer->deref();
+    ASSERT_NOT_REACHED();
 }
 
 PassRefPtr<StringImpl> StringImpl::createFromLiteral(const char* characters, unsigned length)
@@ -1996,7 +1987,6 @@ PassRefPtr<StringImpl> StringImpl::adopt(StringBuffer<UChar>& buffer)
 
 size_t StringImpl::sizeInBytes() const
 {
-    // FIXME: support substrings
     size_t size = length();
     if (!is8Bit())
         size *= 2;
