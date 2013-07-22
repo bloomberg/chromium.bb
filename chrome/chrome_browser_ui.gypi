@@ -511,6 +511,8 @@
         'browser/ui/cocoa/bookmarks/bookmark_model_observer_for_cocoa.mm',
         'browser/ui/cocoa/bookmarks/bookmark_name_folder_controller.h',
         'browser/ui/cocoa/bookmarks/bookmark_name_folder_controller.mm',
+        'browser/ui/cocoa/bookmarks/bookmark_sync_promo_controller.h',
+        'browser/ui/cocoa/bookmarks/bookmark_sync_promo_controller.mm',
         'browser/ui/cocoa/bookmarks/bookmark_tree_browser_cell.h',
         'browser/ui/cocoa/bookmarks/bookmark_tree_browser_cell.mm',
         'browser/ui/cocoa/browser/avatar_button_controller.h',

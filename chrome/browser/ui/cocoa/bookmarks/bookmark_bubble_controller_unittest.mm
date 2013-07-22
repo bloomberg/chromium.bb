@@ -5,14 +5,20 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/basictypes.h"
+#include "base/command_line.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/signin/signin_manager.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bubble_controller.h"
 #include "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
+#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/notification_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
@@ -57,6 +63,9 @@ using content::WebContents;
 
 namespace {
 
+// URL of the test bookmark.
+const char kTestBookmarkURL[] = "http://www.google.com";
+
 class BookmarkBubbleControllerTest : public CocoaProfileTest {
  public:
   static int edits_;
@@ -66,7 +75,13 @@ class BookmarkBubbleControllerTest : public CocoaProfileTest {
     edits_ = 0;
   }
 
-  virtual void TearDown() {
+  virtual void SetUp() OVERRIDE {
+    CocoaProfileTest::SetUp();
+    CommandLine* command_line = CommandLine::ForCurrentProcess();
+    command_line->AppendSwitch(switches::kEnableBookmarkSyncPromo);
+  }
+
+  virtual void TearDown() OVERRIDE {
     [controller_ close];
     CocoaProfileTest::TearDown();
   }
@@ -79,11 +94,10 @@ class BookmarkBubbleControllerTest : public CocoaProfileTest {
       controller_ = nil;
     }
     controller_ = [[BookmarkBubbleController alloc]
-                      initWithParentWindow:test_window()
-                                     model:BookmarkModelFactory::GetForProfile(
-                                         profile())
-                                      node:node
-                         alreadyBookmarked:YES];
+        initWithParentWindow:browser()->window()->GetNativeWindow()
+                       model:BookmarkModelFactory::GetForProfile(profile())
+                        node:node
+           alreadyBookmarked:YES];
     EXPECT_TRUE([controller_ window]);
     // The window must be gone or we'll fail a unit test with windows left open.
     [static_cast<InfoBubbleWindow*>([controller_ window])
@@ -94,6 +108,14 @@ class BookmarkBubbleControllerTest : public CocoaProfileTest {
 
   BookmarkModel* GetBookmarkModel() {
     return BookmarkModelFactory::GetForProfile(profile());
+  }
+
+  const BookmarkNode* CreateTestBookmark() {
+    BookmarkModel* model = GetBookmarkModel();
+    return model->AddURL(model->bookmark_bar_node(),
+                         0,
+                         ASCIIToUTF16("Bookie markie title"),
+                         GURL(kTestBookmarkURL));
   }
 
   bool IsWindowClosing() {
@@ -107,32 +129,24 @@ int BookmarkBubbleControllerTest::edits_;
 // Confirm basics about the bubble window (e.g. that it is inside the
 // parent window)
 TEST_F(BookmarkBubbleControllerTest, TestBubbleWindow) {
-  BookmarkModel* model = GetBookmarkModel();
-  const BookmarkNode* node = model->AddURL(model->bookmark_bar_node(),
-                                           0,
-                                           ASCIIToUTF16("Bookie markie title"),
-                                           GURL("http://www.google.com"));
+  const BookmarkNode* node = CreateTestBookmark();
   BookmarkBubbleController* controller = ControllerForNode(node);
   EXPECT_TRUE(controller);
   NSWindow* window = [controller window];
   EXPECT_TRUE(window);
-  EXPECT_TRUE(NSContainsRect([test_window() frame],
+  EXPECT_TRUE(NSContainsRect([browser()->window()->GetNativeWindow() frame],
                              [window frame]));
 }
 
 // Test that we can handle closing the parent window
 TEST_F(BookmarkBubbleControllerTest, TestClosingParentWindow) {
-  BookmarkModel* model = GetBookmarkModel();
-  const BookmarkNode* node = model->AddURL(model->bookmark_bar_node(),
-                                           0,
-                                           ASCIIToUTF16("Bookie markie title"),
-                                           GURL("http://www.google.com"));
+  const BookmarkNode* node = CreateTestBookmark();
   BookmarkBubbleController* controller = ControllerForNode(node);
   EXPECT_TRUE(controller);
   NSWindow* window = [controller window];
   EXPECT_TRUE(window);
   base::mac::ScopedNSAutoreleasePool pool;
-  [test_window() performClose:NSApp];
+  [browser()->window()->GetNativeWindow() performClose:NSApp];
 }
 
 
@@ -155,10 +169,10 @@ TEST_F(BookmarkBubbleControllerTest, TestFillInFolder) {
   const BookmarkNode* node4 = model->AddFolder(node2, 0, ASCIIToUTF16("sub"));
   EXPECT_TRUE(node4);
   const BookmarkNode* node5 = model->AddURL(node1, 0, ASCIIToUTF16("title1"),
-                                            GURL("http://www.google.com"));
+                                            GURL(kTestBookmarkURL));
   EXPECT_TRUE(node5);
   const BookmarkNode* node6 = model->AddURL(node3, 0, ASCIIToUTF16("title2"),
-                                            GURL("http://www.google.com"));
+                                            GURL(kTestBookmarkURL));
   EXPECT_TRUE(node6);
   const BookmarkNode* node7 = model->AddURL(
       node4, 0, ASCIIToUTF16("title3"), GURL("http://www.google.com/reader"));
@@ -204,7 +218,7 @@ TEST_F(BookmarkBubbleControllerTest, TestFolderWithBlankName) {
                                                ASCIIToUTF16("three"));
   EXPECT_TRUE(node3);
   const BookmarkNode* node2_1 = model->AddURL(node2, 0, ASCIIToUTF16("title1"),
-                                              GURL("http://www.google.com"));
+                                              GURL(kTestBookmarkURL));
   EXPECT_TRUE(node2_1);
 
   BookmarkBubbleController* controller = ControllerForNode(node1);
@@ -228,11 +242,7 @@ TEST_F(BookmarkBubbleControllerTest, TestFolderWithBlankName) {
 
 // Click on edit; bubble gets closed.
 TEST_F(BookmarkBubbleControllerTest, TestEdit) {
-  BookmarkModel* model = GetBookmarkModel();
-  const BookmarkNode* node = model->AddURL(model->bookmark_bar_node(),
-                                           0,
-                                           ASCIIToUTF16("Bookie markie title"),
-                                           GURL("http://www.google.com"));
+  const BookmarkNode* node = CreateTestBookmark();
   BookmarkBubbleController* controller = ControllerForNode(node);
   EXPECT_TRUE(controller);
 
@@ -246,10 +256,7 @@ TEST_F(BookmarkBubbleControllerTest, TestEdit) {
 // CallClose; bubble gets closed.
 // Also confirm pulse notifications get sent.
 TEST_F(BookmarkBubbleControllerTest, TestClose) {
-    BookmarkModel* model = GetBookmarkModel();
-    const BookmarkNode* node = model->AddURL(
-        model->bookmark_bar_node(), 0, ASCIIToUTF16("Bookie markie title"),
-        GURL("http://www.google.com"));
+  const BookmarkNode* node = CreateTestBookmark();
   EXPECT_EQ(edits_, 0);
 
   base::scoped_nsobject<BookmarkPulseObserver> observer(
@@ -274,7 +281,7 @@ TEST_F(BookmarkBubbleControllerTest, TestUserEdit) {
   const BookmarkNode* node = model->AddURL(bookmarkBarNode,
                                            0,
                                            ASCIIToUTF16("short-title"),
-                                           GURL("http://www.google.com"));
+                                           GURL(kTestBookmarkURL));
   const BookmarkNode* grandma = model->AddFolder(bookmarkBarNode, 0,
                                                  ASCIIToUTF16("grandma"));
   EXPECT_TRUE(grandma);
@@ -304,7 +311,7 @@ TEST_F(BookmarkBubbleControllerTest, TestNewParentSameName) {
     const BookmarkNode* node = model->AddURL(bookmarkBarNode,
                                              0,
                                              ASCIIToUTF16("short-title"),
-                                             GURL("http://www.google.com"));
+                                             GURL(kTestBookmarkURL));
     EXPECT_TRUE(node);
     const BookmarkNode* folder = model->AddFolder(bookmarkBarNode, 0,
                                                  ASCIIToUTF16("NAME"));
@@ -353,28 +360,24 @@ TEST_F(BookmarkBubbleControllerTest, TestDuplicateNodeNames) {
 
 // Click the "remove" button
 TEST_F(BookmarkBubbleControllerTest, TestRemove) {
-  BookmarkModel* model = GetBookmarkModel();
-  GURL gurl("http://www.google.com");
-  const BookmarkNode* node = model->AddURL(model->bookmark_bar_node(),
-                                           0,
-                                           ASCIIToUTF16("Bookie markie title"),
-                                           gurl);
+  const BookmarkNode* node = CreateTestBookmark();
   BookmarkBubbleController* controller = ControllerForNode(node);
   EXPECT_TRUE(controller);
-  EXPECT_TRUE(model->IsBookmarked(gurl));
+
+  BookmarkModel* model = GetBookmarkModel();
+  EXPECT_TRUE(model->IsBookmarked(GURL(kTestBookmarkURL)));
 
   [controller remove:controller];
-  EXPECT_FALSE(model->IsBookmarked(gurl));
+  EXPECT_FALSE(model->IsBookmarked(GURL(kTestBookmarkURL)));
   EXPECT_TRUE(IsWindowClosing());
 }
 
 // Confirm picking "choose another folder" caused edit: to be called.
 TEST_F(BookmarkBubbleControllerTest, PopUpSelectionChanged) {
   BookmarkModel* model = GetBookmarkModel();
-  GURL gurl("http://www.google.com");
   const BookmarkNode* node = model->AddURL(model->bookmark_bar_node(),
                                            0, ASCIIToUTF16("super-title"),
-                                           gurl);
+                                           GURL(kTestBookmarkURL));
   BookmarkBubbleController* controller = ControllerForNode(node);
   EXPECT_TRUE(controller);
 
@@ -390,38 +393,29 @@ TEST_F(BookmarkBubbleControllerTest, PopUpSelectionChanged) {
 // them pressing escape. The bookmark should not be there.
 TEST_F(BookmarkBubbleControllerTest, EscapeRemovesNewBookmark) {
   BookmarkModel* model = GetBookmarkModel();
-  GURL gurl("http://www.google.com");
-  const BookmarkNode* node = model->AddURL(model->bookmark_bar_node(),
-                                           0,
-                                           ASCIIToUTF16("Bookie markie title"),
-                                           gurl);
+  const BookmarkNode* node = CreateTestBookmark();
   BookmarkBubbleController* controller =
       [[BookmarkBubbleController alloc]
-          initWithParentWindow:test_window()
-                         model:BookmarkModelFactory::GetForProfile(profile())
+          initWithParentWindow:browser()->window()->GetNativeWindow()
+                         model:model
                           node:node
              alreadyBookmarked:NO];  // The last param is the key difference.
   EXPECT_TRUE([controller window]);
   // Calls release on controller.
   [controller cancel:nil];
-  EXPECT_FALSE(model->IsBookmarked(gurl));
+  EXPECT_FALSE(model->IsBookmarked(GURL(kTestBookmarkURL)));
 }
 
 // Create a controller where the bookmark already existed prior to clicking
 // the star and test that sending a cancel command doesn't change the state
 // of the bookmark.
 TEST_F(BookmarkBubbleControllerTest, EscapeDoesntTouchExistingBookmark) {
-  BookmarkModel* model = GetBookmarkModel();
-  GURL gurl("http://www.google.com");
-  const BookmarkNode* node = model->AddURL(model->bookmark_bar_node(),
-                                           0,
-                                           ASCIIToUTF16("Bookie markie title"),
-                                           gurl);
+  const BookmarkNode* node = CreateTestBookmark();
   BookmarkBubbleController* controller = ControllerForNode(node);
   EXPECT_TRUE(controller);
 
   [(id)controller cancel:nil];
-  EXPECT_TRUE(model->IsBookmarked(gurl));
+  EXPECT_TRUE(GetBookmarkModel()->IsBookmarked(GURL(kTestBookmarkURL)));
 }
 
 // Confirm indentation of items in pop-up menu
@@ -456,6 +450,25 @@ TEST_F(BookmarkBubbleControllerTest, TestMenuIndentation) {
     EXPECT_EQ(kExpectedIndent[itemNo], [item indentationLevel])
         << "Unexpected indent for menu item #" << itemNo;
   }
+}
+
+// Confirm that the sync promo is displayed when the user is not signed in.
+TEST_F(BookmarkBubbleControllerTest, SyncPromoNotSignedIn) {
+  const BookmarkNode* node = CreateTestBookmark();
+  BookmarkBubbleController* controller = ControllerForNode(node);
+
+  EXPECT_EQ(1u, [[controller.syncPromoPlaceholder subviews] count]);
+}
+
+// Confirm that the sync promo is not displayed when the user is signed in.
+TEST_F(BookmarkBubbleControllerTest, SyncPromoSignedIn) {
+  SigninManager* signin = SigninManagerFactory::GetForProfile(profile());
+  signin->SetAuthenticatedUsername("fake_username");
+
+  const BookmarkNode* node = CreateTestBookmark();
+  BookmarkBubbleController* controller = ControllerForNode(node);
+
+  EXPECT_EQ(0u, [[controller.syncPromoPlaceholder subviews] count]);
 }
 
 }  // namespace

@@ -4,6 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_model_observer_for_cocoa.h"
@@ -11,6 +12,7 @@
 class BookmarkModel;
 class BookmarkNode;
 @class BookmarkBubbleController;
+@class BookmarkSyncPromoController;
 
 // Controller for the bookmark bubble.  The bookmark bubble is a
 // bubble that pops up when clicking on the STAR next to the URL to
@@ -30,9 +32,13 @@ class BookmarkNode;
   // Ping me when the bookmark model changes out from under us.
   scoped_ptr<BookmarkModelObserverForCocoa> bookmarkObserver_;
 
+  // Sync promo controller, if the sync promo is displayed.
+  base::scoped_nsobject<BookmarkSyncPromoController> syncPromoController_;
+
   IBOutlet NSTextField* bigTitle_;   // "Bookmark" or "Bookmark Added!"
   IBOutlet NSTextField* nameTextField_;
   IBOutlet NSPopUpButton* folderPopUpButton_;
+  IBOutlet NSView* syncPromoPlaceholder_;
 }
 
 @property(readonly, nonatomic) const BookmarkNode* node;
@@ -62,6 +68,9 @@ class BookmarkNode;
 
 // Exposed only for unit testing.
 @interface BookmarkBubbleController (ExposedForUnitTesting)
+
+@property(nonatomic, readonly) NSView* syncPromoPlaceholder;
+
 - (void)addFolderNodes:(const BookmarkNode*)parent
          toPopUpButton:(NSPopUpButton*)button
            indentation:(int)indentation;
