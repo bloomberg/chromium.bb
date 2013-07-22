@@ -11,11 +11,6 @@ tfoot, thead, tr, th, td, button {
   margin: 0;
   padding: 0;
   border: 0;
-  font-weight: inherit;
-  font-style: inherit;
-  font-size: 100%;
-  font-family: inherit;
-  vertical-align: baseline;
 }
 
 body {
@@ -515,12 +510,10 @@ button {
 .waiting {
   background-image: url('spinner.gif');
   background-repeat: no-repeat;
-  background-position: top __MSG_@@bidi_start_edge__;
+  background-position-y: 3px;
   padding-__MSG_@@bidi_start_edge__: 30px;
-  padding-top: 2px;
-  padding-bottom: 4px;
+  padding-top: 5px;
   color: rgb(180, 180, 180);
-  line-height: 27px; /* Same as line-height for buttons */
 }
 
 .prominent {
