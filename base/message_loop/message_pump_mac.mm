@@ -616,6 +616,9 @@ void MessagePumpNSApplication::Quit() {
 MessagePumpCrApplication::MessagePumpCrApplication() {
 }
 
+MessagePumpCrApplication::~MessagePumpCrApplication() {
+}
+
 // Prevents an autorelease pool from being created if the app is in the midst of
 // handling a UI event because various parts of AppKit depend on objects that
 // are created while handling a UI event to be autoreleased in the event loop.

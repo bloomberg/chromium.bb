@@ -160,6 +160,13 @@ MessagePumpGlib::MessagePumpGlib()
   g_source_attach(work_source_, context_);
 }
 
+MessagePumpGlib::~MessagePumpGlib() {
+  g_source_destroy(work_source_);
+  g_source_unref(work_source_);
+  close(wakeup_pipe_read_);
+  close(wakeup_pipe_write_);
+}
+
 void MessagePumpGlib::RunWithDispatcher(Delegate* delegate,
                                         MessagePumpDispatcher* dispatcher) {
 #ifndef NDEBUG
@@ -318,13 +325,6 @@ void MessagePumpGlib::ScheduleDelayedWork(const TimeTicks& delayed_work_time) {
   // adjusted.  This will cause us to try to do work, but that's ok.
   delayed_work_time_ = delayed_work_time;
   ScheduleWork();
-}
-
-MessagePumpGlib::~MessagePumpGlib() {
-  g_source_destroy(work_source_);
-  g_source_unref(work_source_);
-  close(wakeup_pipe_read_);
-  close(wakeup_pipe_write_);
 }
 
 MessagePumpDispatcher* MessagePumpGlib::GetDispatcher() {

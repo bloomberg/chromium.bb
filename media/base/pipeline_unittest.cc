@@ -689,14 +689,14 @@ static void TestNoCallsAfterError(
   CHECK(message_loop);
 
   // When we get to this stage, the message loop should be empty.
-  message_loop->AssertIdle();
+  EXPECT_TRUE(message_loop->IsIdleForTesting());
 
   // Make calls on pipeline after error has occurred.
   pipeline->SetPlaybackRate(0.5f);
   pipeline->SetVolume(0.5f);
 
   // No additional tasks should be queued as a result of these calls.
-  message_loop->AssertIdle();
+  EXPECT_TRUE(message_loop->IsIdleForTesting());
 }
 
 TEST_F(PipelineTest, NoMessageDuringTearDownFromError) {

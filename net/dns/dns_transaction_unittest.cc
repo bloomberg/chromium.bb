@@ -621,7 +621,7 @@ TEST_F(DnsTransactionTest, Timeout) {
 
   TransactionHelper helper0(kT0HostName, kT0Qtype, ERR_DNS_TIMED_OUT);
   EXPECT_TRUE(helper0.RunUntilDone(transaction_factory_.get()));
-  base::MessageLoop::current()->AssertIdle();
+  EXPECT_TRUE(base::MessageLoop::current()->IsIdleForTesting());
 }
 
 TEST_F(DnsTransactionTest, ServerFallbackAndRotate) {
