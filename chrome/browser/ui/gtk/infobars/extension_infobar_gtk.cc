@@ -189,6 +189,7 @@ void ExtensionInfoBarGtk::OnImageLoaded(const gfx::Image& image) {
 ExtensionInfoBarDelegate* ExtensionInfoBarGtk::GetDelegate() {
   return delegate_ ? delegate_->AsExtensionInfoBarDelegate() : NULL;
 }
+
 Browser* ExtensionInfoBarGtk::GetBrowser() {
   DCHECK(icon_);
   // Get the Browser object this infobar is attached to.
