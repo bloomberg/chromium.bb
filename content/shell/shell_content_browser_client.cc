@@ -145,6 +145,9 @@ void ShellContentBrowserClient::AppendExtraCommandLineSwitches(
     CommandLine* command_line, int child_process_id) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
     command_line->AppendSwitch(switches::kDumpRenderTree);
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kExposeInternalsForTesting))
+    command_line->AppendSwitch(switches::kExposeInternalsForTesting);
 }
 
 void ShellContentBrowserClient::OverrideWebkitPrefs(
