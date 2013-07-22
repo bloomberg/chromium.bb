@@ -45,6 +45,57 @@
                        jsvalues=".idb_origin_url:url;.idb_partition_path:$partition_path">Download</a>
                     <span class="download-status" style="display: none">Loading...</span>
                 </div>
+                <div class="indexeddb-database" jsselect="$this.databases">
+
+                  <span>Open database:</span>
+                  <span jscontent="name"></span>
+
+                  <div>
+                    <span>Connections:</span>
+
+                    <span class="indexeddb-connection-count"
+                          jsdisplay="connection_count">
+                      <span>open:</span>
+                      <span jscontent="connection_count"></span>
+                    </span>
+
+                    <span class="indexeddb-connection-count pending"
+                          jsdisplay="pending_opens">
+                      <span>pending opens:</span>
+                      <span jscontent="pending_opens"></span>
+                    </span>
+
+                    <span class="indexeddb-connection-count pending"
+                          jsdisplay="pending_upgrades">
+                      <span>pending upgrades:</span>
+                      <span jscontent="pending_upgrades"></span>
+                    </span>
+
+                    <span class="indexeddb-connection-count pending"
+                          jsdisplay="running_upgrades">
+                      <span>running upgrades:</span>
+                      <span jscontent="running_upgrades"></span>
+                    </span>
+
+                    <span class="indexeddb-connection-count pending"
+                          jsdisplay="pending_deletes">
+                      <span>pending deletes:</span>
+                      <span jscontent="pending_deletes"></span>
+                    </span>
+
+                  </div>
+                  <div class="indexeddb-transaction"
+                       jsselect="$this.transactions"
+                       jseval="this.classList.add($this.running ? 'running' : 'waiting')">
+                    <span>Transaction:</span>
+                    <span class="indexeddb-transaction-mode" jscontent="mode"></span>
+                    <span class="indexeddb-transaction-scope" jsdisplay="scope">
+                      <span>scope:</span> <span jscontent="'[ ' + scope.join(', ') + ' ]'"></span>
+                    </span>
+                    <span class="indexeddb-transaction-state"
+                          jscontent="running ? '(running)' : '(blocked)'"></span>
+                  </div>
+                </div>
             </div>
         </div>
     </div>

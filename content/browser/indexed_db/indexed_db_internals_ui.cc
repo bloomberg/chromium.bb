@@ -4,7 +4,6 @@
 
 #include "content/browser/indexed_db/indexed_db_internals_ui.h"
 
-#include <algorithm>
 #include <string>
 
 #include "base/bind.h"
@@ -83,18 +82,14 @@ void IndexedDBInternalsUI::GetAllOrigins(const base::ListValue* args) {
   BrowserContext::ForEachStoragePartition(browser_context, cb);
 }
 
-static bool HostNameComparator(const IndexedDBInfo& i, const IndexedDBInfo& j) {
-  return i.origin_.host() < j.origin_.host();
-}
-
 void IndexedDBInternalsUI::GetAllOriginsOnIndexedDBThread(
     scoped_refptr<IndexedDBContext> context,
     const base::FilePath& context_path) {
   DCHECK(context->TaskRunner()->RunsTasksOnCurrentThread());
 
-  scoped_ptr<std::vector<IndexedDBInfo> > info_list(
-      new std::vector<IndexedDBInfo>(context->GetAllOriginsInfo()));
-  std::sort(info_list->begin(), info_list->end(), HostNameComparator);
+  scoped_ptr<ListValue> info_list(static_cast<IndexedDBContextImpl*>(
+      context.get())->GetAllOriginsDetails());
+
   BrowserThread::PostTask(BrowserThread::UI,
                           FROM_HERE,
                           base::Bind(&IndexedDBInternalsUI::OnOriginsReady,
@@ -103,24 +98,11 @@ void IndexedDBInternalsUI::GetAllOriginsOnIndexedDBThread(
                                      context_path));
 }
 
-void IndexedDBInternalsUI::OnOriginsReady(
-    scoped_ptr<std::vector<IndexedDBInfo> > origins,
-    const base::FilePath& path) {
+void IndexedDBInternalsUI::OnOriginsReady(scoped_ptr<ListValue> origins,
+                                          const base::FilePath& path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  base::ListValue urls;
-  for (std::vector<IndexedDBInfo>::const_iterator iter = origins->begin();
-       iter != origins->end();
-       ++iter) {
-    base::DictionaryValue* info = new base::DictionaryValue;
-    info->SetString("url", iter->origin_.spec());
-    info->SetString("size", ui::FormatBytes(iter->size_));
-    info->SetDouble("last_modified", iter->last_modified_.ToJsTime());
-    info->SetString("path", iter->path_.value());
-    info->SetDouble("connection_count", iter->connection_count_);
-    urls.Append(info);
-  }
   web_ui()->CallJavascriptFunction(
-      "indexeddb.onOriginsReady", urls, base::StringValue(path.value()));
+      "indexeddb.onOriginsReady", *origins, base::StringValue(path.value()));
 }
 
 static void FindContext(const base::FilePath& partition_path,

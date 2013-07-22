@@ -44,6 +44,8 @@ class CONTENT_EXPORT IndexedDBDatabase
   };
 
   typedef std::vector<IndexedDBKey> IndexKeys;
+  // Identifier is pair of (origin identifier, database name).
+  typedef std::pair<std::string, base::string16> Identifier;
 
   static const int64 kInvalidId = 0;
   static const int64 kMinimumIndexId = 30;
@@ -52,10 +54,12 @@ class CONTENT_EXPORT IndexedDBDatabase
       const string16& name,
       IndexedDBBackingStore* database,
       IndexedDBFactory* factory,
-      const string16& unique_identifier);
+      const Identifier& unique_identifier);
   scoped_refptr<IndexedDBBackingStore> BackingStore() const;
 
   int64 id() const { return metadata_.id; }
+  const base::string16& name() const { return metadata_.name; }
+
   void AddObjectStore(const IndexedDBObjectStoreMetadata& metadata,
                       int64 new_max_object_store_id);
   void RemoveObjectStore(int64 object_store_id);
@@ -104,6 +108,9 @@ class CONTENT_EXPORT IndexedDBDatabase
   void DeleteIndex(int64 transaction_id, int64 object_store_id, int64 index_id);
 
   IndexedDBTransactionCoordinator& transaction_coordinator() {
+    return transaction_coordinator_;
+  }
+  const IndexedDBTransactionCoordinator& transaction_coordinator() const {
     return transaction_coordinator_;
   }
 
@@ -155,13 +162,25 @@ class CONTENT_EXPORT IndexedDBDatabase
              int64 object_store_id,
              scoped_refptr<IndexedDBCallbacks> callbacks);
 
+  // Number of connections that have progressed passed initial open call.
+  size_t ConnectionCount() const;
+  // Number of open calls that are blocked on other connections.
+  size_t PendingOpenCount() const;
+  // Number of pending upgrades (0 or 1). Also included in ConnectionCount().
+  size_t PendingUpgradeCount() const;
+  // Number of running upgrades (0 or 1). Also included in ConnectionCount().
+  size_t RunningUpgradeCount() const;
+  // Number of pending deletes, blocked on other connections.
+  size_t PendingDeleteCount() const;
+
  private:
   friend class base::RefCounted<IndexedDBDatabase>;
 
-  IndexedDBDatabase(const string16& name,
-                    IndexedDBBackingStore* database,
-                    IndexedDBFactory* factory,
-                    const string16& unique_identifier);
+  IndexedDBDatabase(
+      const string16& name,
+      IndexedDBBackingStore* database,
+      IndexedDBFactory* factory,
+      const Identifier& unique_identifier);
   ~IndexedDBDatabase();
 
   bool IsOpenConnectionBlocked() const;
@@ -182,7 +201,6 @@ class CONTENT_EXPORT IndexedDBDatabase
       int64 transaction_id,
       int64 requested_version,
       WebKit::WebIDBCallbacks::DataLoss data_loss);
-  size_t ConnectionCount() const;
   void ProcessPendingCalls();
 
   bool IsDeleteDatabaseBlocked() const;
@@ -207,7 +225,7 @@ class CONTENT_EXPORT IndexedDBDatabase
   scoped_refptr<IndexedDBBackingStore> backing_store_;
   IndexedDBDatabaseMetadata metadata_;
 
-  string16 identifier_;
+  const Identifier identifier_;
   // This might not need to be a scoped_refptr since the factory's lifetime is
   // that of the page group, but it's better to be conservitive than sorry.
   scoped_refptr<IndexedDBFactory> factory_;

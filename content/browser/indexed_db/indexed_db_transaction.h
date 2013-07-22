@@ -69,6 +69,7 @@ class IndexedDBTransaction : public base::RefCounted<IndexedDBTransaction> {
 
   IndexedDBDatabase* database() const { return database_; }
   IndexedDBDatabaseCallbacks* connection() const { return callbacks_; }
+  bool IsRunning() const { return state_ == RUNNING; }
 
  protected:
   virtual ~IndexedDBTransaction();

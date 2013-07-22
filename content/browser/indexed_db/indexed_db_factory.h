@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "content/browser/indexed_db/indexed_db_callbacks.h"
+#include "content/browser/indexed_db/indexed_db_database.h"
 #include "content/browser/indexed_db/indexed_db_database_callbacks.h"
 #include "content/browser/indexed_db/indexed_db_factory.h"
 #include "content/common/content_export.h"
@@ -21,7 +22,6 @@
 namespace content {
 
 class IndexedDBBackingStore;
-class IndexedDBDatabase;
 
 class CONTENT_EXPORT IndexedDBFactory
     : NON_EXPORTED_BASE(public base::RefCounted<IndexedDBFactory>) {
@@ -29,7 +29,8 @@ class CONTENT_EXPORT IndexedDBFactory
   IndexedDBFactory();
 
   // Notifications from weak pointers.
-  void RemoveIDBDatabaseBackend(const string16& unique_identifier);
+  void RemoveIDBDatabaseBackend(
+      const IndexedDBDatabase::Identifier& unique_identifier);
 
   void GetDatabaseNames(scoped_refptr<IndexedDBCallbacks> callbacks,
                         const std::string& origin_identifier,
@@ -47,6 +48,10 @@ class CONTENT_EXPORT IndexedDBFactory
                       const std::string& origin_identifier,
                       const base::FilePath& data_directory);
 
+  // Iterates over all databases; for diagnostics only.
+  std::vector<IndexedDBDatabase*> GetOpenDatabasesForOrigin(
+      const std::string& origin_identifier) const;
+
  protected:
   friend class base::RefCounted<IndexedDBFactory>;
 
@@ -58,8 +63,8 @@ class CONTENT_EXPORT IndexedDBFactory
       WebKit::WebIDBCallbacks::DataLoss* data_loss);
 
  private:
-  typedef std::map<string16, scoped_refptr<IndexedDBDatabase> >
-      IndexedDBDatabaseMap;
+  typedef std::map<IndexedDBDatabase::Identifier,
+                   scoped_refptr<IndexedDBDatabase> > IndexedDBDatabaseMap;
   IndexedDBDatabaseMap database_backend_map_;
 
   typedef std::map<std::string, base::WeakPtr<IndexedDBBackingStore> >

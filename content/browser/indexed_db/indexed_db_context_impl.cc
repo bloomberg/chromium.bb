@@ -4,6 +4,8 @@
 
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 
+#include <algorithm>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
@@ -13,18 +15,24 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/values.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"
+#include "content/browser/indexed_db/indexed_db_database.h"
 #include "content/browser/indexed_db/indexed_db_factory.h"
 #include "content/browser/indexed_db/indexed_db_quota_client.h"
+#include "content/browser/indexed_db/indexed_db_transaction.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/indexed_db_info.h"
 #include "content/public/common/content_switches.h"
+#include "ui/base/text/bytes_formatting.h"
 #include "webkit/browser/database/database_util.h"
 #include "webkit/browser/quota/quota_manager.h"
 #include "webkit/browser/quota/special_storage_policy.h"
 #include "webkit/common/database/database_identifier.h"
 
+using base::DictionaryValue;
+using base::ListValue;
 using webkit_database::DatabaseUtil;
 
 namespace content {
@@ -105,13 +113,13 @@ IndexedDBContextImpl::IndexedDBContextImpl(
 
 IndexedDBFactory* IndexedDBContextImpl::GetIDBFactory() {
   DCHECK(TaskRunner()->RunsTasksOnCurrentThread());
-  if (!idb_factory_) {
+  if (!factory_) {
     // Prime our cache of origins with existing databases so we can
     // detect when dbs are newly created.
     GetOriginSet();
-    idb_factory_ = new IndexedDBFactory();
+    factory_ = new IndexedDBFactory();
   }
-  return idb_factory_;
+  return factory_;
 }
 
 std::vector<GURL> IndexedDBContextImpl::GetAllOrigins() {
@@ -144,6 +152,98 @@ std::vector<IndexedDBInfo> IndexedDBContextImpl::GetAllOriginsInfo() {
                                    connection_count));
   }
   return result;
+}
+
+static bool HostNameComparator(const GURL& i, const GURL& j) {
+  return i.host() < j.host();
+}
+
+ListValue* IndexedDBContextImpl::GetAllOriginsDetails() {
+  DCHECK(TaskRunner()->RunsTasksOnCurrentThread());
+  std::vector<GURL> origins = GetAllOrigins();
+
+  std::sort(origins.begin(), origins.end(), HostNameComparator);
+
+  scoped_ptr<ListValue> list(new ListValue());
+  for (std::vector<GURL>::const_iterator iter = origins.begin();
+       iter != origins.end();
+       ++iter) {
+    const GURL& origin_url = *iter;
+
+    scoped_ptr<DictionaryValue> info(new DictionaryValue());
+    info->SetString("url", origin_url.spec());
+    info->SetString("size", ui::FormatBytes(GetOriginDiskUsage(origin_url)));
+    info->SetDouble("last_modified",
+                    GetOriginLastModified(origin_url).ToJsTime());
+    info->SetString("path", GetFilePath(origin_url).value());
+    info->SetDouble("connection_count", GetConnectionCount(origin_url));
+
+    // This ends up being O(n^2) since we iterate over all open databases
+    // to extract just those in the origin, and we're iterating over all
+    // origins in the outer loop.
+
+    if (factory_) {
+      std::vector<IndexedDBDatabase*> databases =
+          factory_->GetOpenDatabasesForOrigin(
+              webkit_database::GetIdentifierFromOrigin(origin_url));
+      // TODO(jsbell): Sort by name?
+      scoped_ptr<ListValue> database_list(new ListValue());
+
+      for (std::vector<IndexedDBDatabase*>::iterator it = databases.begin();
+           it != databases.end();
+           ++it) {
+
+        const IndexedDBDatabase* db = *it;
+        scoped_ptr<DictionaryValue> db_info(new DictionaryValue());
+
+        db_info->SetString("name", db->name());
+        db_info->SetDouble("pending_opens", db->PendingOpenCount());
+        db_info->SetDouble("pending_upgrades", db->PendingUpgradeCount());
+        db_info->SetDouble("running_upgrades", db->RunningUpgradeCount());
+        db_info->SetDouble("pending_deletes", db->PendingDeleteCount());
+        db_info->SetDouble("connection_count",
+                           db->ConnectionCount() - db->PendingUpgradeCount() -
+                               db->RunningUpgradeCount());
+
+        scoped_ptr<ListValue> transaction_list(new ListValue());
+        std::vector<const IndexedDBTransaction*> transactions =
+            db->transaction_coordinator().GetTransactions();
+        for (std::vector<const IndexedDBTransaction*>::iterator trans_it =
+                 transactions.begin();
+             trans_it != transactions.end();
+             ++trans_it) {
+
+          const IndexedDBTransaction* transaction = *trans_it;
+          scoped_ptr<DictionaryValue> transaction_info(new DictionaryValue());
+
+          const char* kModes[] = { "readonly", "readwrite", "versionchange" };
+          transaction_info->SetString("mode", kModes[transaction->mode()]);
+          transaction_info->SetBoolean("running", transaction->IsRunning());
+
+          scoped_ptr<ListValue> scope(new ListValue());
+          for (std::set<int64>::const_iterator scope_it =
+                   transaction->scope().begin();
+               scope_it != transaction->scope().end();
+               ++scope_it) {
+            IndexedDBDatabaseMetadata::ObjectStoreMap::const_iterator it =
+                db->metadata().object_stores.find(*scope_it);
+            if (it != db->metadata().object_stores.end())
+              scope->AppendString(it->second.name);
+          }
+
+          transaction_info->Set("scope", scope.release());
+          transaction_list->Append(transaction_info.release());
+        }
+        db_info->Set("transactions", transaction_list.release());
+
+        database_list->Append(db_info.release());
+      }
+      info->Set("databases", database_list.release());
+    }
+
+    list->Append(info.release());
+  }
+  return list.release();
 }
 
 int64 IndexedDBContextImpl::GetOriginDiskUsage(const GURL& origin_url) {
@@ -297,10 +397,10 @@ quota::QuotaManagerProxy* IndexedDBContextImpl::quota_manager_proxy() {
 }
 
 IndexedDBContextImpl::~IndexedDBContextImpl() {
-  if (idb_factory_) {
-    IndexedDBFactory* factory = idb_factory_;
+  if (factory_) {
+    IndexedDBFactory* factory = factory_;
     factory->AddRef();
-    idb_factory_ = NULL;
+    factory_ = NULL;
     if (!task_runner_->ReleaseSoon(FROM_HERE, factory)) {
       factory->Release();
     }

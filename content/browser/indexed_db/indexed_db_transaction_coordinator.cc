@@ -37,11 +37,10 @@ void IndexedDBTransactionCoordinator::DidFinishTransaction(
   DCHECK(transactions_.find(transaction) != transactions_.end());
 
   if (queued_transactions_.has(transaction)) {
-    DCHECK(started_transactions_.find(transaction) ==
-           started_transactions_.end());
+    DCHECK(!started_transactions_.has(transaction));
     queued_transactions_.erase(transaction);
   } else {
-    if (started_transactions_.find(transaction) != started_transactions_.end())
+    if (started_transactions_.has(transaction))
       started_transactions_.erase(transaction);
   }
   transactions_.erase(transaction);
@@ -56,7 +55,7 @@ bool IndexedDBTransactionCoordinator::IsActive(
   bool found = false;
   if (queued_transactions_.has(transaction))
     found = true;
-  if (started_transactions_.find(transaction) != started_transactions_.end()) {
+  if (started_transactions_.has(transaction)) {
     DCHECK(!found);
     found = true;
   }
@@ -64,6 +63,26 @@ bool IndexedDBTransactionCoordinator::IsActive(
   return found;
 }
 #endif
+
+std::vector<const IndexedDBTransaction*>
+IndexedDBTransactionCoordinator::GetTransactions() const {
+  std::vector<const IndexedDBTransaction*> result;
+
+  for (list_set<IndexedDBTransaction*>::const_iterator it =
+           started_transactions_.begin();
+       it != started_transactions_.end();
+       ++it) {
+    result.push_back(*it);
+  }
+  for (list_set<IndexedDBTransaction*>::const_iterator it =
+           queued_transactions_.begin();
+       it != queued_transactions_.end();
+       ++it) {
+    result.push_back(*it);
+  }
+
+  return result;
+}
 
 void IndexedDBTransactionCoordinator::ProcessStartedTransactions() {
   if (queued_transactions_.empty())
@@ -109,7 +128,7 @@ bool IndexedDBTransactionCoordinator::CanRunTransaction(
       return true;
 
     case indexed_db::TRANSACTION_READ_WRITE:
-      for (std::set<IndexedDBTransaction*>::const_iterator it =
+      for (list_set<IndexedDBTransaction*>::const_iterator it =
                started_transactions_.begin();
            it != started_transactions_.end();
            ++it) {

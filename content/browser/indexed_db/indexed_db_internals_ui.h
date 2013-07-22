@@ -33,7 +33,7 @@ class IndexedDBInternalsUI : public WebUIController {
   void GetAllOrigins(const base::ListValue* args);
   void GetAllOriginsOnIndexedDBThread(scoped_refptr<IndexedDBContext> context,
                                       const base::FilePath& context_path);
-  void OnOriginsReady(scoped_ptr<std::vector<IndexedDBInfo> > origins,
+  void OnOriginsReady(scoped_ptr<base::ListValue> origins,
                       const base::FilePath& path);
 
   void AddContextFromStoragePartition(StoragePartition* partition);

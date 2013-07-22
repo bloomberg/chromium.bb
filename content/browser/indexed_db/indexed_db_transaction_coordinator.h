@@ -7,6 +7,7 @@
 
 #include <map>
 #include <set>
+#include <vector>
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -31,6 +32,9 @@ class IndexedDBTransactionCoordinator {
   bool IsActive(IndexedDBTransaction* transaction);
 #endif
 
+  // Makes a snapshot of the transaction queue. For diagnostics only.
+  std::vector<const IndexedDBTransaction*> GetTransactions() const;
+
  private:
   void ProcessStartedTransactions();
   bool CanRunTransaction(IndexedDBTransaction* transaction);
@@ -38,9 +42,12 @@ class IndexedDBTransactionCoordinator {
   // This is just an efficient way to keep references to all transactions.
   std::map<IndexedDBTransaction*, scoped_refptr<IndexedDBTransaction> >
       transactions_;
+
   // Transactions in different states are grouped below.
+  // list_set is used to provide stable ordering; required by spec
+  // for the queue, convenience for diagnostics for the rest.
   list_set<IndexedDBTransaction*> queued_transactions_;
-  std::set<IndexedDBTransaction*> started_transactions_;
+  list_set<IndexedDBTransaction*> started_transactions_;
 };
 
 }  // namespace content

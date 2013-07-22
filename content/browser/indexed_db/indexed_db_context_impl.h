@@ -22,6 +22,7 @@
 class GURL;
 
 namespace base {
+class ListValue;
 class FilePath;
 class SequencedTaskRunner;
 }
@@ -73,6 +74,7 @@ class CONTENT_EXPORT IndexedDBContextImpl
 
   quota::QuotaManagerProxy* quota_manager_proxy();
 
+  base::ListValue* GetAllOriginsDetails();
   void ForceClose(const GURL& origin_url);
   base::FilePath GetFilePath(const GURL& origin_url);
   base::FilePath data_path() const { return data_path_; }
@@ -122,7 +124,7 @@ class CONTENT_EXPORT IndexedDBContextImpl
   // Only for testing.
   void ResetCaches();
 
-  scoped_refptr<IndexedDBFactory> idb_factory_;
+  scoped_refptr<IndexedDBFactory> factory_;
   base::FilePath data_path_;
   // If true, nothing (not even session-only data) should be deleted on exit.
   bool force_keep_session_state_;

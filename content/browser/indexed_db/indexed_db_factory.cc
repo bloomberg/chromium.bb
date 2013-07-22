@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
-#include "content/browser/indexed_db/indexed_db_database.h"
 #include "content/browser/indexed_db/indexed_db_tracing.h"
 #include "content/browser/indexed_db/indexed_db_transaction_coordinator.h"
 #include "third_party/WebKit/public/platform/WebIDBDatabaseException.h"
@@ -31,17 +30,12 @@ static std::string ComputeFileIdentifier(const std::string& origin_identifier) {
   return origin_identifier + "@1";
 }
 
-static string16 ComputeUniqueIdentifier(const string16& name,
-                                        const std::string& origin_identifier) {
-  return ASCIIToUTF16(ComputeFileIdentifier(origin_identifier)) + name;
-}
-
 IndexedDBFactory::IndexedDBFactory() {}
 
 IndexedDBFactory::~IndexedDBFactory() {}
 
 void IndexedDBFactory::RemoveIDBDatabaseBackend(
-    const string16& unique_identifier) {
+    const IndexedDBDatabase::Identifier& unique_identifier) {
   DCHECK(database_backend_map_.find(unique_identifier) !=
          database_backend_map_.end());
   database_backend_map_.erase(unique_identifier);
@@ -73,9 +67,7 @@ void IndexedDBFactory::DeleteDatabase(
     const std::string& origin_identifier,
     const base::FilePath& data_directory) {
   IDB_TRACE("IndexedDBFactory::DeleteDatabase");
-  const string16 unique_identifier =
-      ComputeUniqueIdentifier(name, origin_identifier);
-
+  IndexedDBDatabase::Identifier unique_identifier(origin_identifier, name);
   IndexedDBDatabaseMap::iterator it =
       database_backend_map_.find(unique_identifier);
   if (it != database_backend_map_.end()) {
@@ -158,10 +150,8 @@ void IndexedDBFactory::Open(
     const std::string& origin_identifier,
     const base::FilePath& data_directory) {
   IDB_TRACE("IndexedDBFactory::Open");
-  const string16 unique_identifier =
-      ComputeUniqueIdentifier(name, origin_identifier);
-
   scoped_refptr<IndexedDBDatabase> database_backend;
+  IndexedDBDatabase::Identifier unique_identifier(origin_identifier, name);
   IndexedDBDatabaseMap::iterator it =
       database_backend_map_.find(unique_identifier);
   WebKit::WebIDBCallbacks::DataLoss data_loss =
@@ -194,6 +184,17 @@ void IndexedDBFactory::Open(
 
   database_backend->OpenConnection(
       callbacks, database_callbacks, transaction_id, version, data_loss);
+}
+
+std::vector<IndexedDBDatabase*> IndexedDBFactory::GetOpenDatabasesForOrigin(
+    const std::string& origin_identifier) const {
+  std::vector<IndexedDBDatabase*> result;
+  for (IndexedDBDatabaseMap::const_iterator it = database_backend_map_.begin();
+       it != database_backend_map_.end(); ++it) {
+    if (it->first.first == origin_identifier)
+      result.push_back(it->second.get());
+  }
+  return result;
 }
 
 }  // namespace content

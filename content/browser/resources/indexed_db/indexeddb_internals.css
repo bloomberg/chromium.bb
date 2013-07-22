@@ -29,6 +29,43 @@
     white-space: nowrap;
 }
 
+.indexeddb-database {
+    margin-bottom: 6px;
+    margin-top: 6px;
+    margin-left: 12px;
+
+    position: relative;
+}
+
+.indexeddb-database > div {
+    margin-left: 12px;
+}
+
+.indexeddb-connection-count {
+    margin: 0 8px;
+}
+.indexeddb-connection-count.pending {
+    font-weight: bold;
+}
+
+.indexeddb-transaction {
+    background-color: rgb(235, 239, 249);
+    margin: 4px 0;
+    border-radius: 4px;
+    padding: 2px;
+    position: relative;
+}
+
+.indexeddb-transaction.running {
+    font-weight: bold;
+}
+
+.indexeddb-transaction-mode,
+.indexeddb-transaction-scope,
+.indexeddb-transaction-state {
+    margin: 0 8px;
+}
+
 .controls a {
     -webkit-margin-end: 16px;
     color: #777;
