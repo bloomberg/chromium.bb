@@ -1063,3 +1063,11 @@
    fun:~MessageLoop
    fun:~StorageMonitorLinuxTest
 }
+{
+   bug_262974
+   Heapcheck:Leak
+   fun:std::basic_string::_Rep::_S_create
+   fun:base::FilePath::Append
+   fun:base::FilePath::AppendASCII
+   fun:SetUp
+}
