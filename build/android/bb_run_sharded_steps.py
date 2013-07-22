@@ -165,6 +165,7 @@ def _PrintAllStepsOutput(steps):
 
 def _KillPendingServers():
   for retry in range(5):
+    forwarder.Forwarder.KillHost()
     for server in ['lighttpd', 'web-page-replay']:
       pids = cmd_helper.GetCmdOutput(['pgrep', '-f', server])
       pids = [pid.strip() for pid in pids.split('\n') if pid.strip()]
@@ -199,8 +200,6 @@ def main(argv):
   # At this point, we should kill everything that may have been left over from
   # previous runs.
   _KillPendingServers()
-
-  forwarder.Forwarder.UseMultiprocessing()
 
   # Reset the test port allocation. It's important to do it before starting
   # to dispatch any step.

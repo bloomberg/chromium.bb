@@ -154,13 +154,11 @@ class TestRunner(base_test_runner.BaseTestRunner):
     http_server_ports = self.LaunchTestHttpServer(
         os.path.join(constants.DIR_SOURCE_ROOT), self._lighttp_port)
     if self.ports_to_forward:
-      self.ForwardPorts([(port, port) for port in self.ports_to_forward])
+      self.StartForwarder([(port, port) for port in self.ports_to_forward])
     self.flags.AddFlags(['--enable-test-intents'])
 
   def TearDown(self):
     """Cleans up the test harness and saves outstanding data from test run."""
-    if self.ports_to_forward:
-      self._UnmapPorts([(port, port) for port in self.ports_to_forward])
     super(TestRunner, self).TearDown()
 
   def TestSetup(self, test):
@@ -174,7 +172,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
     self.tool.SetupEnvironment()
 
     # Make sure the forwarder is still running.
-    self._RestartHttpServerForwarderIfNecessary()
+    self.RestartHttpServerForwarderIfNecessary()
 
   def _IsPerfTest(self, test):
     """Determines whether a test is a performance test.

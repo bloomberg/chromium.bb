@@ -44,12 +44,14 @@ class BaseTestRunner(object):
     self.adb = android_commands.AndroidCommands(device=device)
     self.tool = CreateTool(tool, self.adb)
     self._http_server = None
+    self._forwarder = None
     self._forwarder_device_port = 8000
     self.forwarder_base_url = ('http://localhost:%d' %
         self._forwarder_device_port)
     self.flags = FlagChanger(self.adb)
     self.flags.AddFlags(['--disable-fre'])
     self._spawning_server = None
+    self._spawner_forwarder = None
     # We will allocate port for test server spawner when calling method
     # LaunchChromeTestServerSpawner and allocate port for test server when
     # starting it in TestServerThread.
@@ -88,6 +90,7 @@ class BaseTestRunner(object):
 
   def SetUp(self):
     """Run once before all tests are run."""
+    Forwarder.KillDevice(self.adb, self.tool)
     self.InstallTestPackage()
     push_size_before = self.adb.GetPushSizeInfo()
     if self._push_deps:
@@ -125,47 +128,49 @@ class BaseTestRunner(object):
                    self._http_server.port)
     else:
       logging.critical('Failed to start http server')
-    self._ForwardPortsForHttpServer()
+    self.StartForwarderForHttpServer()
     return (self._forwarder_device_port, self._http_server.port)
 
-  def _ForwardPorts(self, port_pairs):
-    """Forwards a port."""
-    Forwarder.Map(port_pairs, self.adb, self.build_type, self.tool)
+  def _ForwardPort(self, port_pairs):
+    """Creates a forwarder instance if needed and forward a port."""
+    if not self._forwarder:
+      self._forwarder = Forwarder(self.adb, self.build_type)
+    self._forwarder.Run(port_pairs, self.tool)
 
-  def _UnmapPorts(self, port_pairs):
-    """Unmap previously forwarded ports."""
-    for (device_port, _) in port_pairs:
-      Forwarder.UnmapDevicePort(device_port, self.adb)
-
-  # Deprecated: Use ForwardPorts instead.
   def StartForwarder(self, port_pairs):
     """Starts TCP traffic forwarding for the given |port_pairs|.
 
     Args:
       host_port_pairs: A list of (device_port, local_port) tuples to forward.
     """
-    self._ForwardPorts(port_pairs)
+    self._ForwardPort(port_pairs)
 
-  def _ForwardPortsForHttpServer(self):
+  def StartForwarderForHttpServer(self):
     """Starts a forwarder for the HTTP server.
 
     The forwarder forwards HTTP requests and responses between host and device.
     """
-    self._ForwardPorts([(self._forwarder_device_port, self._http_server.port)])
+    self._ForwardPort([(self._forwarder_device_port, self._http_server.port)])
 
-  def _RestartHttpServerForwarderIfNecessary(self):
+  def RestartHttpServerForwarderIfNecessary(self):
     """Restarts the forwarder if it's not open."""
     # Checks to see if the http server port is being used.  If not forwards the
     # request.
     # TODO(dtrainor): This is not always reliable because sometimes the port
     # will be left open even after the forwarder has been killed.
-    if not ports.IsDevicePortUsed(self.adb, self._forwarder_device_port):
-      self._ForwardPortsForHttpServer()
+    if not ports.IsDevicePortUsed(self.adb,
+        self._forwarder_device_port):
+      self.StartForwarderForHttpServer()
 
   def ShutdownHelperToolsForTestSuite(self):
     """Shuts down the server and the forwarder."""
+    # Forwarders should be killed before the actual servers they're forwarding
+    # to as they are clients potentially with open connections and to allow for
+    # proper hand-shake/shutdown.
+    Forwarder.KillDevice(self.adb, self.tool)
+    if self._forwarder:
+      self._forwarder.Close()
     if self._http_server:
-      self._UnmapPorts([(self._forwarder_device_port, self._http_server.port)])
       self._http_server.ShutdownHttpServer()
     if self._spawning_server:
       self._spawning_server.Stop()
@@ -190,11 +195,12 @@ class BaseTestRunner(object):
     # Try 3 times to launch test spawner server.
     for i in xrange(0, 3):
       self.test_server_spawner_port = ports.AllocateTestServerPort()
-      self._ForwardPorts(
+      self._ForwardPort(
           [(self.test_server_spawner_port, self.test_server_spawner_port)])
       self._spawning_server = SpawningServer(self.test_server_spawner_port,
                                              self.adb,
                                              self.tool,
+                                             self._forwarder,
                                              self.build_type)
       self._spawning_server.Start()
       server_ready, error_msg = ports.IsHttpServerConnectable(
