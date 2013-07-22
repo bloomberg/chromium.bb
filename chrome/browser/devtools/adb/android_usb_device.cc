@@ -153,6 +153,20 @@ static void ClaimInterface(
                                            zero_mask, devices));
 }
 
+static void InterfacesListed(
+    crypto::RSAPrivateKey* rsa_key,
+    scoped_refptr<UsbDevice> usb_device,
+    scoped_refptr<UsbConfigDescriptor> config,
+    AndroidUsbDevices* devices,
+    bool success) {
+  if (!success)
+    return;
+  for (size_t j = 0; j < config->GetNumInterfaces(); ++j) {
+    ClaimInterface(rsa_key, usb_device, config->GetInterface(j),
+                   devices);
+  }
+}
+
 static uint32 Checksum(const std::string& data) {
   unsigned char* x = (unsigned char*)data.data();
   int count = data.length();
@@ -209,7 +223,7 @@ AdbMessage::~AdbMessage() {
 // static
 void AndroidUsbDevice::Enumerate(Profile* profile,
                                  crypto::RSAPrivateKey* rsa_key,
-                                 AndroidUsbDevices* devices) {
+                                 const AndroidUsbDevicesCallback& callback) {
   UsbService* service =
       UsbServiceFactory::GetInstance()->GetForProfile(profile);
   UsbDevices usb_devices;
@@ -237,21 +251,18 @@ void AndroidUsbDevice::Enumerate(Profile* profile,
   }
 
   // Add new devices.
-  AndroidUsbDevices new_devices;
   for (UsbDevices::iterator it = usb_devices.begin(); it != usb_devices.end();
        ++it) {
-    UsbDevice* usb_device = *it;
-    if (claimed_devices.find(usb_device) != claimed_devices.end())
+    scoped_refptr<UsbDevice> usb_device = *it;
+    if (claimed_devices.find(usb_device.get()) != claimed_devices.end())
       continue;
     scoped_refptr<UsbConfigDescriptor> config = new UsbConfigDescriptor();
-    usb_device->ListInterfaces(config.get(), base::Bind(&BoolNoop));
-    for (size_t j = 0; j < config->GetNumInterfaces(); ++j) {
-      ClaimInterface(rsa_key, usb_device, config->GetInterface(j),
-                     &g_devices.Get());
-    }
+    usb_device->ListInterfaces(config.get(),
+                               base::Bind(&InterfacesListed, rsa_key,
+                                          usb_device, config,
+                                          &g_devices.Get()));
   }
-
-  *devices = g_devices.Get();
+  callback.Run(g_devices.Get());
 }
 
 AndroidUsbDevice::AndroidUsbDevice(crypto::RSAPrivateKey* rsa_key,

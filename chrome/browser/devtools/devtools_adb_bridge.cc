@@ -23,7 +23,6 @@
 #include "base/threading/thread.h"
 #include "base/values.h"
 #include "chrome/browser/devtools/adb/android_rsa.h"
-#include "chrome/browser/devtools/adb/android_usb_device.h"
 #include "chrome/browser/devtools/adb_client_socket.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/devtools/tethering_adb_filter.h"
@@ -865,22 +864,16 @@ DevToolsAdbBridge::DevToolsAdbBridge(Profile* profile)
 
 void DevToolsAdbBridge::EnumerateDevices(
     const AndroidDevicesCallback& callback) {
-  AdbClientSocket::AdbQuery(
-      kAdbPort, kHostDevicesCommand,
-      base::Bind(&DevToolsAdbBridge::ReceivedDevices, this, callback));
-}
+  DCHECK_EQ(base::MessageLoop::current(), adb_thread_->message_loop());
 
-void DevToolsAdbBridge::Query(
-    const std::string query,
-    const Callback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!has_message_loop_) {
-    callback.Run(net::ERR_FAILED, "Could not start ADB thread");
-    return;
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kRemoteDebuggingRawUSB)) {
+    AndroidUsbDevice::Enumerate(
+        profile_, rsa_key_.get(),
+        base::Bind(&DevToolsAdbBridge::ReceivedUsbDevices, this, callback));
+  } else {
+    ReceivedUsbDevices(callback, AndroidUsbDevices());
   }
-  scoped_refptr<AdbQueryCommand> command(new AdbQueryCommand(query, callback));
-  adb_thread_->message_loop()->PostTask(FROM_HERE,
-      base::Bind(&AdbQueryCommand::Run, command));
 }
 
 void DevToolsAdbBridge::Attach(const std::string& serial,
@@ -900,12 +893,14 @@ void DevToolsAdbBridge::Attach(const std::string& serial,
 }
 
 void DevToolsAdbBridge::AddListener(Listener* listener) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (listeners_.empty())
     RequestPages();
   listeners_.push_back(listener);
 }
 
 void DevToolsAdbBridge::RemoveListener(Listener* listener) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   Listeners::iterator it =
       std::find(listeners_.begin(), listeners_.end(), listener);
   DCHECK(it != listeners_.end());
@@ -913,28 +908,36 @@ void DevToolsAdbBridge::RemoveListener(Listener* listener) {
 }
 
 DevToolsAdbBridge::~DevToolsAdbBridge() {
-  DCHECK(listeners_.empty());
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(listeners_.empty());
 }
 
-void DevToolsAdbBridge::ReceivedDevices(const AndroidDevicesCallback& callback,
-                                        int result,
-                                        const std::string& response) {
+void DevToolsAdbBridge::ReceivedUsbDevices(
+    const AndroidDevicesCallback& callback,
+    const AndroidUsbDevices& usb_devices) {
   AndroidDevices devices;
+
 #if defined(DEBUG_DEVTOOLS)
   devices.push_back(new AdbDeviceImpl(""));  // For desktop remote debugging.
 #endif  // defined(DEBUG_DEVTOOLS)
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kRemoteDebuggingRawUSB)) {
-    AndroidUsbDevices usb_devices;
-    AndroidUsbDevice::Enumerate(profile_, rsa_key_.get(), &usb_devices);
-    for (AndroidUsbDevices::iterator it = usb_devices.begin();
-         it != usb_devices.end(); ++it) {
-      devices.push_back(new UsbDeviceImpl(*it));
-    }
+  for (AndroidUsbDevices::const_iterator it = usb_devices.begin();
+       it != usb_devices.end(); ++it) {
+    devices.push_back(new UsbDeviceImpl(*it));
   }
 
+  AdbClientSocket::AdbQuery(
+      kAdbPort, kHostDevicesCommand,
+      base::Bind(&DevToolsAdbBridge::ReceivedAdbDevices, this, callback,
+                 devices));
+
+}
+
+void DevToolsAdbBridge::ReceivedAdbDevices(
+    const AndroidDevicesCallback& callback,
+    AndroidDevices devices,
+    int result,
+    const std::string& response) {
   if (result != net::OK) {
     callback.Run(devices);
     return;

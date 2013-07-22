@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/devtools/adb/android_usb_device.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
 #include "net/socket/tcp_client_socket.h"
@@ -162,7 +163,7 @@ class DevToolsAdbBridge
   explicit DevToolsAdbBridge(Profile* profile);
 
   void EnumerateDevices(const AndroidDevicesCallback& callback);
-  void Query(const std::string query, const Callback& callback);
+
   void Attach(const std::string& serial,
               const std::string& socket,
               const std::string& debug_url,
@@ -184,8 +185,6 @@ class DevToolsAdbBridge
   friend class AdbWebSocket;
   friend class AgentHostDelegate;
 
-  virtual ~DevToolsAdbBridge();
-
   class RefCountedAdbThread : public base::RefCounted<RefCountedAdbThread> {
    public:
     static scoped_refptr<RefCountedAdbThread> GetInstance();
@@ -201,9 +200,13 @@ class DevToolsAdbBridge
     base::Thread* thread_;
   };
 
-  void ReceivedDevices(const AndroidDevicesCallback& callback,
-                       int result,
-                       const std::string& response);
+  virtual ~DevToolsAdbBridge();
+  void ReceivedUsbDevices(const AndroidDevicesCallback& callback,
+                          const AndroidUsbDevices& usb_devices);
+  void ReceivedAdbDevices(const AndroidDevicesCallback& callback,
+                          AndroidDevices devices,
+                          int result,
+                          const std::string& response);
 
   void RequestPages();
   void ReceivedPages(int result, RemotePages* pages);

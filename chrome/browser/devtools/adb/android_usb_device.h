@@ -62,12 +62,14 @@ class AdbMessage : public base::RefCounted<AdbMessage> {
 
 class AndroidUsbDevice;
 typedef std::vector<scoped_refptr<AndroidUsbDevice> > AndroidUsbDevices;
+typedef base::Callback<void(const AndroidUsbDevices&)>
+    AndroidUsbDevicesCallback;
 
 class AndroidUsbDevice : public base::RefCountedThreadSafe<AndroidUsbDevice> {
  public:
   static void Enumerate(Profile* profile,
                         crypto::RSAPrivateKey* rsa_key,
-                        AndroidUsbDevices* devices);
+                        const AndroidUsbDevicesCallback& callback);
 
   AndroidUsbDevice(crypto::RSAPrivateKey* rsa_key,
                    scoped_refptr<UsbDevice> device,
