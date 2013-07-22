@@ -46,7 +46,7 @@ PassRefPtr<Database> WorkerGlobalScopeWebDatabase::openDatabase(WorkerGlobalScop
     DatabaseManager& dbManager = DatabaseManager::manager();
     RefPtr<Database> database;
     DatabaseError error = DatabaseError::None;
-    if (RuntimeEnabledFeatures::databaseEnabled() && context->securityOrigin()->canAccessDatabase(context->topOrigin())) {
+    if (RuntimeEnabledFeatures::databaseEnabled() && context->securityOrigin()->canAccessDatabase()) {
         database = dbManager.openDatabase(context, name, version, displayName, estimatedSize, creationCallback, error);
         ASSERT(database || error != DatabaseError::None);
         if (error != DatabaseError::None)
@@ -63,7 +63,7 @@ PassRefPtr<DatabaseSync> WorkerGlobalScopeWebDatabase::openDatabaseSync(WorkerGl
     DatabaseManager& dbManager = DatabaseManager::manager();
     RefPtr<DatabaseSync> database;
     DatabaseError error =  DatabaseError::None;
-    if (RuntimeEnabledFeatures::databaseEnabled() && context->securityOrigin()->canAccessDatabase(context->topOrigin())) {
+    if (RuntimeEnabledFeatures::databaseEnabled() && context->securityOrigin()->canAccessDatabase()) {
         database = dbManager.openDatabaseSync(context, name, version, displayName, estimatedSize, creationCallback, error);
         ASSERT(database || error != DatabaseError::None);
         if (error != DatabaseError::None)

@@ -80,7 +80,7 @@ PassRefPtr<IDBRequest> IDBFactory::getDatabaseNames(ScriptExecutionContext* cont
     IDB_TRACE("IDBFactory::getDatabaseNames");
     if (!isContextValid(context))
         return 0;
-    if (!context->securityOrigin()->canAccessDatabase(context->topOrigin())) {
+    if (!context->securityOrigin()->canAccessDatabase()) {
         es.throwDOMException(SecurityError);
         return 0;
     }
@@ -110,7 +110,7 @@ PassRefPtr<IDBOpenDBRequest> IDBFactory::openInternal(ScriptExecutionContext* co
     }
     if (!isContextValid(context))
         return 0;
-    if (!context->securityOrigin()->canAccessDatabase(context->topOrigin())) {
+    if (!context->securityOrigin()->canAccessDatabase()) {
         es.throwDOMException(SecurityError);
         return 0;
     }
@@ -138,7 +138,7 @@ PassRefPtr<IDBOpenDBRequest> IDBFactory::deleteDatabase(ScriptExecutionContext* 
     }
     if (!isContextValid(context))
         return 0;
-    if (!context->securityOrigin()->canAccessDatabase(context->topOrigin())) {
+    if (!context->securityOrigin()->canAccessDatabase()) {
         es.throwDOMException(SecurityError);
         return 0;
     }

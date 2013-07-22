@@ -49,7 +49,7 @@ PassRefPtr<Database> DOMWindowWebDatabase::openDatabase(DOMWindow* window, const
     RefPtr<Database> database = 0;
     DatabaseManager& dbManager = DatabaseManager::manager();
     DatabaseError error = DatabaseError::None;
-    if (RuntimeEnabledFeatures::databaseEnabled() && window->document()->securityOrigin()->canAccessDatabase(window->document()->topOrigin())) {
+    if (RuntimeEnabledFeatures::databaseEnabled() && window->document()->securityOrigin()->canAccessDatabase()) {
         database = dbManager.openDatabase(window->document(), name, version, displayName, estimatedSize, creationCallback, error);
         ASSERT(database || error != DatabaseError::None);
         if (error != DatabaseError::None)

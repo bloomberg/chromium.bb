@@ -375,11 +375,6 @@ bool SecurityOrigin::canDisplay(const KURL& url) const
     return true;
 }
 
-bool SecurityOrigin::canAccessStorage(const SecurityOrigin* topOrigin) const
-{
-    return !isUnique();
-}
-
 SecurityOrigin::Policy SecurityOrigin::canShowNotifications() const
 {
     if (m_universalAccess)
@@ -387,20 +382,6 @@ SecurityOrigin::Policy SecurityOrigin::canShowNotifications() const
     if (isUnique())
         return AlwaysDeny;
     return Ask;
-}
-
-bool SecurityOrigin::isThirdParty(const SecurityOrigin* child) const
-{
-    if (child->m_universalAccess)
-        return false;
-
-    if (this == child)
-        return false;
-
-    if (isUnique() || child->isUnique())
-        return true;
-
-    return !isSameSchemeHostPort(child);
 }
 
 void SecurityOrigin::grantLoadLocalResources()

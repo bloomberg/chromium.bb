@@ -645,7 +645,7 @@ Storage* DOMWindow::sessionStorage(ExceptionCode& ec) const
     if (!document)
         return 0;
 
-    if (!document->securityOrigin()->canAccessLocalStorage(document->topOrigin())) {
+    if (!document->securityOrigin()->canAccessLocalStorage()) {
         ec = SecurityError;
         return 0;
     }
@@ -681,7 +681,7 @@ Storage* DOMWindow::localStorage(ExceptionCode& ec) const
     if (!document)
         return 0;
 
-    if (!document->securityOrigin()->canAccessLocalStorage(document->topOrigin())) {
+    if (!document->securityOrigin()->canAccessLocalStorage()) {
         ec = SecurityError;
         return 0;
     }
