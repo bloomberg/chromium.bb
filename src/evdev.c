@@ -112,15 +112,13 @@ evdev_process_touch(struct evdev_device *device, struct input_event *e)
 	case ABS_MT_POSITION_X:
 		device->mt.x[device->mt.slot] =
 			(e->value - device->abs.min_x) * screen_width /
-			(device->abs.max_x - device->abs.min_x) +
-			device->output->x;
+			(device->abs.max_x - device->abs.min_x);
 		device->pending_events |= EVDEV_ABSOLUTE_MT_MOTION;
 		break;
 	case ABS_MT_POSITION_Y:
 		device->mt.y[device->mt.slot] =
 			(e->value - device->abs.min_y) * screen_height /
-			(device->abs.max_y - device->abs.min_y) +
-			device->output->y;
+			(device->abs.max_y - device->abs.min_y);
 		device->pending_events |= EVDEV_ABSOLUTE_MT_MOTION;
 		break;
 	}
@@ -250,10 +248,13 @@ static void
 evdev_flush_motion(struct evdev_device *device, uint32_t time)
 {
 	struct weston_seat *master = device->seat;
+	wl_fixed_t x, y;
+	int slot;
 
 	if (!(device->pending_events & EVDEV_SYN))
 		return;
 
+	slot = device->mt.slot;
 	device->pending_events &= ~EVDEV_SYN;
 	if (device->pending_events & EVDEV_RELATIVE_MOTION) {
 		notify_motion(master, time, device->rel.dx, device->rel.dy);
@@ -262,20 +263,22 @@ evdev_flush_motion(struct evdev_device *device, uint32_t time)
 		device->rel.dy = 0;
 	}
 	if (device->pending_events & EVDEV_ABSOLUTE_MT_DOWN) {
+		weston_output_transform_coordinate(device->output,
+						   device->mt.x[slot],
+						   device->mt.y[slot],
+						   &x, &y);
 		notify_touch(master, time,
-			     device->mt.slot,
-			     wl_fixed_from_int(device->mt.x[device->mt.slot]),
-			     wl_fixed_from_int(device->mt.y[device->mt.slot]),
-			     WL_TOUCH_DOWN);
+			     device->mt.slot, x, y, WL_TOUCH_DOWN);
 		device->pending_events &= ~EVDEV_ABSOLUTE_MT_DOWN;
 		device->pending_events &= ~EVDEV_ABSOLUTE_MT_MOTION;
 	}
 	if (device->pending_events & EVDEV_ABSOLUTE_MT_MOTION) {
+		weston_output_transform_coordinate(device->output,
+						   device->mt.x[slot],
+						   device->mt.y[slot],
+						   &x, &y);
 		notify_touch(master, time,
-			     device->mt.slot,
-			     wl_fixed_from_int(device->mt.x[device->mt.slot]),
-			     wl_fixed_from_int(device->mt.y[device->mt.slot]),
-			     WL_TOUCH_MOTION);
+			     device->mt.slot, x, y, WL_TOUCH_MOTION);
 		device->pending_events &= ~EVDEV_ABSOLUTE_MT_DOWN;
 		device->pending_events &= ~EVDEV_ABSOLUTE_MT_MOTION;
 	}
@@ -286,9 +289,10 @@ evdev_flush_motion(struct evdev_device *device, uint32_t time)
 	}
 	if (device->pending_events & EVDEV_ABSOLUTE_MOTION) {
 		transform_absolute(device);
-		notify_motion_absolute(master, time,
-			      wl_fixed_from_int(device->abs.x),
-			      wl_fixed_from_int(device->abs.y));
+		weston_output_transform_coordinate(device->output,
+						   device->abs.x,
+						   device->abs.y, &x, &y);
+		notify_motion_absolute(master, time, x, y);
 		device->pending_events &= ~EVDEV_ABSOLUTE_MOTION;
 	}
 }
