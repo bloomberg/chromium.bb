@@ -875,11 +875,6 @@ chrome_perf = chrome_info.derive(
   nowithdebug=True,
   use_chrome_lkgm=True,
   use_lkgm=False,
-
-
-  # TODO(sosa): Really shouldn't be necessary in addition with
-  # nowithdebug. One should imply the other.
-  useflags=official['useflags'] + ['-chrome_debug'],
 )
 
 chrome_perf.add_config('daisy-chrome-perf',
