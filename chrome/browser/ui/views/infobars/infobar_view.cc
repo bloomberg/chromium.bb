@@ -61,7 +61,7 @@ InfoBarView::InfoBarView(InfoBarService* owner, InfoBarDelegate* delegate)
       icon_(NULL),
       close_button_(NULL) {
   set_owned_by_client();  // InfoBar deletes itself at the appropriate time.
-  set_background(new InfoBarBackground(delegate->GetInfoBarType()));
+  set_background(new InfoBarBackground(InfoBar::delegate()->GetInfoBarType()));
 }
 
 InfoBarView::~InfoBarView() {
@@ -355,7 +355,7 @@ void InfoBarView::GetAccessibleState(ui::AccessibleViewState* state) {
   if (delegate()) {
     state->name = l10n_util::GetStringUTF16(
         (delegate()->GetInfoBarType() == InfoBarDelegate::WARNING_TYPE) ?
-        IDS_ACCNAME_INFOBAR_WARNING : IDS_ACCNAME_INFOBAR_PAGE_ACTION);
+            IDS_ACCNAME_INFOBAR_WARNING : IDS_ACCNAME_INFOBAR_PAGE_ACTION);
   }
   state->role = ui::AccessibilityTypes::ROLE_ALERT;
 }

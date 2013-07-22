@@ -20,9 +20,9 @@ class ExtensionInfoBar : public InfoBarView,
                          public ExtensionInfoBarDelegate::DelegateObserver,
                          public views::MenuButtonListener {
  public:
-  ExtensionInfoBar(Browser* browser,
-                   InfoBarService* owner,
-                   ExtensionInfoBarDelegate* delegate);
+  ExtensionInfoBar(InfoBarService* owner,
+                   ExtensionInfoBarDelegate* delegate,
+                   Browser* browser);
 
  private:
   virtual ~ExtensionInfoBar();

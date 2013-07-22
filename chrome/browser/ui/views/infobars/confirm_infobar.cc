@@ -11,11 +11,13 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
 
+
 // ConfirmInfoBarDelegate -----------------------------------------------------
 
 InfoBar* ConfirmInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
   return new ConfirmInfoBar(owner, this);
 }
+
 
 // ConfirmInfoBar -------------------------------------------------------------
 

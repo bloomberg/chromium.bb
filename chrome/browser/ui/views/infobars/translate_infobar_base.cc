@@ -16,6 +16,7 @@
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/label.h"
 
+
 // TranslateInfoBarDelegate ---------------------------------------------------
 
 InfoBar* TranslateInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
@@ -25,6 +26,7 @@ InfoBar* TranslateInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
     return new AfterTranslateInfoBar(owner, this);
   return new TranslateMessageInfoBar(owner, this);
 }
+
 
 // TranslateInfoBarBase -------------------------------------------------------
 

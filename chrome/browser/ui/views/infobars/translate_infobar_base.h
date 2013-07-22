@@ -24,8 +24,6 @@ class TranslateInfoBarBase : public InfoBarView {
                                 const string16& text);
 
  protected:
-  static const int kButtonInLabelSpacing;
-
   TranslateInfoBarBase(InfoBarService* owner,
                        TranslateInfoBarDelegate* delegate);
   virtual ~TranslateInfoBarBase();
@@ -36,6 +34,8 @@ class TranslateInfoBarBase : public InfoBarView {
 
   // Convenience to retrieve the TranslateInfoBarDelegate for this infobar.
   TranslateInfoBarDelegate* GetDelegate();
+
+  static const int kButtonInLabelSpacing;
 
  private:
   // InfoBarView:

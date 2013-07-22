@@ -10,11 +10,13 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
 
+
 // AlternateNavInfoBarDelegate -------------------------------------------------
 
 InfoBar* AlternateNavInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
   return new AlternateNavInfoBarView(owner, this);
 }
+
 
 // AlternateNavInfoBarView -----------------------------------------------------
 

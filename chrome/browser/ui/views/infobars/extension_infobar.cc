@@ -30,7 +30,7 @@
 // ExtensionInfoBarDelegate ----------------------------------------------------
 
 InfoBar* ExtensionInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
-  return new ExtensionInfoBar(browser_, owner, this);
+  return new ExtensionInfoBar(owner, this, browser_);
 }
 
 
@@ -78,9 +78,9 @@ class MenuImageSource: public gfx::CanvasImageSource {
 
 }  // namespace
 
-ExtensionInfoBar::ExtensionInfoBar(Browser* browser,
-                                   InfoBarService* owner,
-                                   ExtensionInfoBarDelegate* delegate)
+ExtensionInfoBar::ExtensionInfoBar(InfoBarService* owner,
+                                   ExtensionInfoBarDelegate* delegate,
+                                   Browser* browser)
     : InfoBarView(owner, delegate),
       delegate_(delegate),
       browser_(browser),
@@ -88,9 +88,9 @@ ExtensionInfoBar::ExtensionInfoBar(Browser* browser,
       icon_as_menu_(NULL),
       icon_as_image_(NULL),
       weak_ptr_factory_(this) {
-  delegate->set_observer(this);
+  GetDelegate()->set_observer(this);
 
-  int height = delegate->height();
+  int height = GetDelegate()->height();
   SetBarTargetHeight((height > 0) ? (height + kSeparatorLineHeight) : 0);
 }
 
@@ -173,8 +173,8 @@ void ExtensionInfoBar::OnMenuButtonClicked(views::View* source,
                                            const gfx::Point& point) {
   if (!owner())
     return;  // We're closing; don't call anything, it might access the owner.
-  const extensions::Extension* extension = GetDelegate()->extension_host()->
-      extension();
+  const extensions::Extension* extension =
+      GetDelegate()->extension_host()->extension();
   DCHECK(icon_as_menu_);
 
   scoped_refptr<ExtensionContextMenuModel> options_menu_contents =
