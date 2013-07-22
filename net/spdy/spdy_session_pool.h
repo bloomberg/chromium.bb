@@ -144,7 +144,7 @@ class NET_EXPORT SpdySessionPool
  private:
   friend class SpdySessionPoolPeer;  // For testing.
 
-  typedef std::set<scoped_refptr<SpdySession> > SessionSet;
+  typedef std::set<SpdySession*> SessionSet;
   typedef std::vector<base::WeakPtr<SpdySession> > WeakSessionList;
   typedef std::map<SpdySessionKey, base::WeakPtr<SpdySession> >
       AvailableSessionMap;
@@ -189,6 +189,8 @@ class NET_EXPORT SpdySessionPool
 
   // The set of all sessions. This is a superset of the sessions in
   // |available_sessions_|.
+  //
+  // |sessions_| owns all its SpdySession objects.
   SessionSet sessions_;
 
   // This is a map of available sessions by key. A session may appear

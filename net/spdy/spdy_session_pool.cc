@@ -85,7 +85,7 @@ net::Error SpdySessionPool::CreateAvailableSessionFromSocket(
   UMA_HISTOGRAM_ENUMERATION(
       "Net.SpdySessionGet", IMPORTED_FROM_SOCKET, SPDY_SESSION_GET_MAX);
 
-  scoped_refptr<SpdySession> new_session(
+  scoped_ptr<SpdySession> new_session(
       new SpdySession(key,
                       http_server_properties_,
                       verify_domain_authentication_,
@@ -106,13 +106,12 @@ net::Error SpdySessionPool::CreateAvailableSessionFromSocket(
   DCHECK_NE(error, ERR_IO_PENDING);
 
   if (error != OK) {
-    new_session = NULL;
     available_session->reset();
     return error;
   }
 
-  sessions_.insert(new_session);
   *available_session = new_session->GetWeakPtr();
+  sessions_.insert(new_session.release());
   MapKeyToAvailableSession(key, *available_session);
 
   net_log.AddEvent(
@@ -231,10 +230,8 @@ void SpdySessionPool::RemoveUnavailableSession(
 
   SessionSet::iterator it = sessions_.find(unavailable_session.get());
   CHECK(it != sessions_.end());
-  scoped_refptr<SpdySession> last_ref(*it);
+  scoped_ptr<SpdySession> owned_session(*it);
   sessions_.erase(it);
-
-  CHECK(last_ref->HasOneRef());
 }
 
 // Make a copy of |sessions_| in the Close* functions below to avoid
@@ -323,7 +320,7 @@ const SpdySessionKey& SpdySessionPool::NormalizeListKey(
 void SpdySessionPool::MapKeyToAvailableSession(
     const SpdySessionKey& key,
     const base::WeakPtr<SpdySession>& session) {
-  DCHECK(ContainsKey(sessions_, scoped_refptr<SpdySession>(session.get())));
+  DCHECK(ContainsKey(sessions_, session.get()));
   const SpdySessionKey& normalized_key = NormalizeListKey(key);
   std::pair<AvailableSessionMap::iterator, bool> result =
       available_sessions_.insert(std::make_pair(normalized_key, session));

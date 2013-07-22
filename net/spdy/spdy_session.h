@@ -180,8 +180,7 @@ class NET_EXPORT_PRIVATE SpdyStreamRequest {
   DISALLOW_COPY_AND_ASSIGN(SpdyStreamRequest);
 };
 
-class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
-                               public BufferedSpdyFramerVisitorInterface,
+class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
                                public SpdyFramerDebugVisitorInterface,
                                public LayeredPool {
  public:
@@ -214,6 +213,8 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
               TimeFunc time_func,
               const HostPortPair& trusted_spdy_proxy,
               NetLog* net_log);
+
+  virtual ~SpdySession();
 
   const HostPortPair& host_port_pair() const {
     return spdy_session_key_.host_port_proxy_pair().first;
@@ -551,8 +552,6 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
     // |pool_|.
     SESSION_CLOSED_AND_REMOVED,
   };
-
-  virtual ~SpdySession();
 
   // Checks whether a stream for the given |url| can be created or
   // retrieved from the set of unclaimed push streams. Returns OK if
