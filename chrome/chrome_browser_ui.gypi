@@ -2417,7 +2417,6 @@
             '../net/net.gyp:net_with_v8',
             '../printing/printing.gyp:printing',
             '../third_party/adobe/flash/flash_player.gyp:flapper_version_h',
-            '../third_party/cld/cld.gyp:cld',
             '../third_party/expat/expat.gyp:expat',
             '../third_party/hunspell/hunspell.gyp:hunspell',
             '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
@@ -2443,9 +2442,6 @@
               '<@(nacl_defines)',
             ],
           },
-          'include_dirs': [
-            '../third_party/cld',
-          ],
         }, {  # OS == "ios"
           'dependencies': [
             '../net/net.gyp:net',

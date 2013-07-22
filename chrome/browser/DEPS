@@ -74,7 +74,6 @@ include_rules = [
   "+libxml",  # For search engine definition parsing.
   "+third_party/apple_sample_code",  # Apple code ImageAndTextCell.
   "+third_party/bzip2",
-  "+third_party/cld",
   "+third_party/expat",
   "+third_party/iaccessible2",
   "+third_party/icu/source/common/unicode",

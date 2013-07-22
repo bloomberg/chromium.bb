@@ -39,6 +39,9 @@ bool IsSameOrSimilarLanguages(const std::string& page_language,
 bool MaybeServerWrongConfiguration(const std::string& page_language,
                                    const std::string& cld_language);
 
+// Returns the version string of CLD.
+std::string GetCLDVersion();
+
 }  // namespace LanguageDetectionUtil
 
 #endif  // CHROME_COMMON_TRANSLATE_LANGUAGE_DETECTION_UTIL_H_

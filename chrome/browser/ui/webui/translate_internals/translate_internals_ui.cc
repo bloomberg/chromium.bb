@@ -14,6 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/translate_internals/translate_internals_handler.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/translate/language_detection_util.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -22,10 +23,6 @@
 #include "grit/translate_internals_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-
-#if !defined(OS_IOS)
-#include "third_party/cld/encodings/compact_lang_det/compact_lang_det.h"
-#endif
 
 namespace {
 
@@ -69,10 +66,8 @@ content::WebUIDataSource* CreateTranslateInternalsHTMLSource() {
       command_line.HasSwitch(switches::kEnableTranslateSettings);
   source->AddBoolean("enable-translate-settings", enable_translate_settings);
 
-#if !defined(OS_IOS)
-  std::string cld_version = CompactLangDet::DetectLanguageVersion();
+  std::string cld_version = LanguageDetectionUtil::GetCLDVersion();
   source->AddString("cld-version", cld_version);
-#endif
 
   return source;
 }

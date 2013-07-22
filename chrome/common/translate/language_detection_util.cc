@@ -13,6 +13,7 @@
 #include "chrome/common/translate/translate_util.h"
 
 #if defined(ENABLE_LANGUAGE_DETECTION)
+#include "third_party/cld/encodings/compact_lang_det/compact_lang_det.h"
 #include "third_party/cld/encodings/compact_lang_det/win/cld_unicodetext.h"
 #endif
 
@@ -299,6 +300,14 @@ bool MaybeServerWrongConfiguration(const std::string& page_language,
       return true;
   }
   return false;
+}
+
+std::string GetCLDVersion() {
+#if defined(ENABLE_LANGUAGE_DETECTION)
+  return CompactLangDet::DetectLanguageVersion();
+#else
+  return ""
+#endif
 }
 
 }  // namespace LanguageDetectionUtil

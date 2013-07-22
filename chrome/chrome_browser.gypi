@@ -2844,10 +2844,6 @@
             'browser/language_usage_metrics.cc',
             'browser/language_usage_metrics.h',
           ],
-        }, {   # enable_language_detection==1
-          'dependencies': [
-            '../third_party/cld/cld.gyp:cld',
-          ],
         }],
         ['enable_printing!=1', {
           'sources/': [

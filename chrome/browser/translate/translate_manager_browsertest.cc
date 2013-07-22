@@ -51,7 +51,6 @@
 #include "net/url_request/url_fetcher_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/WebKit/public/web/WebContextMenuData.h"
-#include "third_party/cld/languages/public/languages.h"
 
 using content::NavigationController;
 using content::RenderViewHostTester;
@@ -560,69 +559,36 @@ TEST_F(TranslateManagerBrowserTest, TranslateUnknownLanguage) {
   EXPECT_EQ(TranslateErrors::UNKNOWN_LANGUAGE, infobar->error_type());
 }
 
-// Tests that we show/don't show an info-bar for all languages the CLD can
-// report.
-TEST_F(TranslateManagerBrowserTest, TestAllLanguages) {
-  // The index in kExpectation are the Language enum (see languages.pb.h).
-  // true if we expect a translate infobar for that language.
-  // Note the supported languages are in translation_manager.cc, see
-  // kSupportedLanguages.
-  bool kExpectations[] = {
-    // 0-9
-    false, true, true, true, true, true, false, true, true, true,
-    // 10-19
-    false, true, true, true, true, true, true, true, true, true,
-    // 20-29
-    true, true, true, true, true, false, false, true, true, true,
-    // 30-39
-    true, true, false, true, true, true, true, false, true, false,
-    // 40-49
-    true, false, true, false, false, true, false, true, false, false,
-    // 50-59
-    false, false, false, true, true, true, true, false, false, false,
-    // 60-69
-    false, false, true, true, false, true, true, false, true, true,
-    // 70-79
-    false, false, false, false, false, false, false, true, false, false,
-    // 80-89
-    false, true, true, false, false, false, false, false, false, false,
-    // 90-99
-    false, true, false, false, false, false, false, false, false, false,
-    // 100-109
-    false, true, false, false, false, false, false, false, false, false,
-    // 110-119
-    false, false, false, false, false, false, false, false, false, false,
-    // 120-129
-    false, false, false, false, false, false, false, false, false, false,
-    // 130-139
-    false, false, false, false, false, false, false, false, false, true,
-    // 140-149
-    false, false, false, false, false, false, false, false, false, false,
-    // 150-159
-    false, false, false, false, false, false, false, false, false, false,
-    // 160
-    true
-  };
+// Tests that we show/don't show an info-bar for the languages.
+TEST_F(TranslateManagerBrowserTest, TestLanguages) {
+  std::vector<std::string> languages;
+  languages.push_back("en");
+  languages.push_back("ja");
+  languages.push_back("fr");
+  languages.push_back("ht");
+  languages.push_back("xx");
+  languages.push_back("zh");
+  languages.push_back("zh-CN");
+  languages.push_back("und");
 
   GURL url("http://www.google.com");
-  for (size_t i = 0; i < arraysize(kExpectations); ++i) {
-    ASSERT_LT(i, static_cast<size_t>(NUM_LANGUAGES));
-
-    std::string lang = LanguageCodeWithDialects(static_cast<Language>(i));
+  for (size_t i = 0; i < languages.size(); ++i) {
+    std::string lang = languages[i];
     SCOPED_TRACE(::testing::Message() << "Iteration " << i <<
-        " language=" << lang);
+                 " language=" << lang);
 
     // We should not have a translate infobar.
     TranslateInfoBarDelegate* infobar = GetTranslateInfoBar();
     ASSERT_TRUE(infobar == NULL);
 
     // Simulate navigating to a page.
-    NavigateAndCommit(url);
-    SimulateOnTranslateLanguageDetermined(lang, true);
+    SimulateNavigation(url, lang, true);
 
     // Verify we have/don't have an info-bar as expected.
     infobar = GetTranslateInfoBar();
-    EXPECT_EQ(kExpectations[i], infobar != NULL);
+    bool expected = TranslateManager::IsSupportedLanguage(lang) &&
+        lang != "en";
+    EXPECT_EQ(expected, infobar != NULL);
 
     // Close the info-bar if applicable.
     if (infobar != NULL)
