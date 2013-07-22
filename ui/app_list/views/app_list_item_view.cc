@@ -208,6 +208,11 @@ void AppListItemView::ItemIsInstallingChanged() {
 }
 
 void AppListItemView::ItemPercentDownloadedChanged() {
+  // A percent_downloaded() of -1 can mean it's not known how much percent is
+  // completed, or the download hasn't been marked complete, as is the case
+  // while an extension is being installed after being downloaded.
+  if (model_->percent_downloaded() == -1)
+    return;
   progress_bar_->SetValue(model_->percent_downloaded() / 100.0);
 }
 
