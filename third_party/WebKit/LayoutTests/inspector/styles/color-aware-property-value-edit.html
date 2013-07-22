@@ -68,6 +68,7 @@ function test()
 
             function callbackName()
             {
+                treeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("U+001B"));
                 treeElement.valueElement.textContent = "hsl(120, 100%, 25%)";
                 treeElement.kickFreeFlowStyleEditForTest();
                 InspectorTest.runAfterPendingDispatches(kicked);
