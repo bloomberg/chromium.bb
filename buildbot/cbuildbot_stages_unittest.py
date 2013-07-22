@@ -573,7 +573,7 @@ class UnitTestStageTest(AbstractStageTest):
     self.mox.StubOutWithMock(os.path, 'exists')
     self.build_config['quick_unit'] = True
     commands.RunUnitTests(self.build_root, self._current_board, full=False,
-                          nowithdebug=mox.IgnoreArg(), blacklist=[])
+                          blacklist=[], extra_env=mox.IgnoreArg())
     image_dir = os.path.join(self.build_root,
                              'src/build/images/x86-generic/latest-cbuildbot')
     os.path.exists(os.path.join(image_dir,
@@ -587,7 +587,7 @@ class UnitTestStageTest(AbstractStageTest):
     self.mox.StubOutWithMock(os.path, 'exists')
     self.build_config['quick_unit'] = True
     commands.RunUnitTests(self.build_root, self._current_board, full=False,
-                          nowithdebug=mox.IgnoreArg(), blacklist=[])
+                          blacklist=[], extra_env=mox.IgnoreArg())
     image_dir = os.path.join(self.build_root,
                              'src/build/images/x86-generic/latest-cbuildbot')
     os.path.exists(os.path.join(image_dir,
@@ -601,7 +601,7 @@ class UnitTestStageTest(AbstractStageTest):
     self.mox.StubOutWithMock(os.path, 'exists')
     self.build_config['quick_unit'] = False
     commands.RunUnitTests(self.build_root, self._current_board, full=True,
-                          nowithdebug=mox.IgnoreArg(), blacklist=[])
+                          blacklist=[], extra_env=mox.IgnoreArg())
     image_dir = os.path.join(self.build_root,
                              'src/build/images/x86-generic/latest-cbuildbot')
     os.path.exists(os.path.join(image_dir,
@@ -857,8 +857,6 @@ class BuildPackagesStageTest(AbstractStageTest):
       rc.assertCommandContains(['./build_packages', '--skip_chroot_upgrade'])
       rc.assertCommandContains(['./build_packages', '--nousepkg'],
                                expected=not cfg['usepkg_build_packages'])
-      rc.assertCommandContains(['./build_packages', '--nowithdebug'],
-                               expected=cfg['nowithdebug'])
       build_tests = cfg['build_tests'] and self.options.tests
       rc.assertCommandContains(['./build_packages', '--nowithautotest'],
                                expected=not build_tests)

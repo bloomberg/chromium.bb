@@ -257,10 +257,6 @@ _settings = dict(
 #                on other factors.  If True/False, we always do that.
   sync_chrome=None,
 
-# nowithdebug -- Pass the --nowithdebug flag to build_packages (sets the
-#                -DNDEBUG compiler flag).
-  nowithdebug=False,
-
 # latest_toolchain -- Use the newest ebuilds for all the toolchain packages.
   latest_toolchain=False,
 
@@ -895,9 +891,9 @@ chrome_perf = chrome_info.derive(
   hw_tests=[HWTestConfig('perf_v2', pool=constants.HWTEST_CHROME_PERF_POOL,
                          timeout=90 * 60, critical=True, num=1,
                          copy_perf_results=True)],
-  nowithdebug=True,
   use_chrome_lkgm=True,
   use_lkgm=False,
+  useflags=official['useflags'] + ['-cros-debug'],
 )
 
 chrome_perf.add_config('daisy-chrome-perf',
@@ -1330,13 +1326,12 @@ _toolchain_minor.add_config('internal-toolchain-minor', internal, official,
 
 _release = full.derive(official, internal,
   build_type=constants.CANARY_TYPE,
-  useflags=official['useflags'] + ['-highdpi'],
+  useflags=official['useflags'] + ['-cros-debug', '-highdpi'],
   build_tests=True,
   manifest_version=True,
   images=['base', 'test', 'factory_test', 'factory_install'],
   push_image=True,
   upload_symbols=True,
-  nowithdebug=True,
   binhost_bucket='gs://chromeos-dev-installer',
   binhost_key='RELEASE_BINHOST',
   binhost_base_url=

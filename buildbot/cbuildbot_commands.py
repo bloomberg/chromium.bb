@@ -334,7 +334,7 @@ def SetupBoard(buildroot, board, usepkg, chrome_binhost_only=False,
 
 
 def Build(buildroot, board, build_autotest, usepkg, chrome_binhost_only,
-          nowithdebug, packages=(), skip_chroot_upgrade=True, extra_env=None,
+          packages=(), skip_chroot_upgrade=True, extra_env=None,
           chrome_root=None):
   """Wrapper around build_packages.
 
@@ -345,8 +345,6 @@ def Build(buildroot, board, build_autotest, usepkg, chrome_binhost_only,
     usepkg: Whether to use binary packages.
     chrome_binhost_only: If set, only use binary packages on the board for
       Chrome itself.
-    nowithdebug: Pass the --nowithdebug flag to build_packages (sets the
-      -DNDEBUG compiler flag).
     packages: Tuple of specific packages we want to build. If empty,
       build_packages will calculate a list of packages automatically.
     skip_chroot_upgrade: Whether to skip the chroot update. If the chroot is
@@ -368,9 +366,6 @@ def Build(buildroot, board, build_autotest, usepkg, chrome_binhost_only,
 
   if chrome_binhost_only:
     cmd.append('--chrome_binhost_only')
-
-  if nowithdebug:
-    cmd.append('--nowithdebug')
 
   chroot_args = []
   if chrome_root:
@@ -448,11 +443,8 @@ def RunSignerTests(buildroot, board):
   _RunBuildScript(buildroot, cmd, enter_chroot=True)
 
 
-def RunUnitTests(buildroot, board, full, nowithdebug, blacklist=None):
+def RunUnitTests(buildroot, board, full, blacklist=None, extra_env=None):
   cmd = ['cros_run_unit_tests', '--board=%s' % board]
-
-  if nowithdebug:
-    cmd.append('--nowithdebug')
 
   # If we aren't running ALL tests, then restrict to just the packages
   #   uprev noticed were changed.
@@ -463,7 +455,7 @@ def RunUnitTests(buildroot, board, full, nowithdebug, blacklist=None):
   if blacklist:
     cmd += ['--blacklist_packages=%s' % ' '.join(blacklist)]
 
-  _RunBuildScript(buildroot, cmd, enter_chroot=True)
+  _RunBuildScript(buildroot, cmd, enter_chroot=True, extra_env=extra_env or {})
 
 
 def RunTestSuite(buildroot, board, image_dir, results_dir, test_type,

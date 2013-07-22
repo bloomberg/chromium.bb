@@ -1809,7 +1809,6 @@ class BuildPackagesStage(ArchivingStage):
                    build_autotest=self._build_autotest,
                    usepkg=config['usepkg_build_packages'],
                    chrome_binhost_only=config['chrome_binhost_only'],
-                   nowithdebug=config['nowithdebug'],
                    packages=config['packages'],
                    skip_chroot_upgrade=True,
                    chrome_root=self._options.chrome_root,
@@ -1961,12 +1960,15 @@ class UnitTestStage(BoardSpecificBuilderStage):
   UNIT_TEST_TIMEOUT = 70 * 60
 
   def PerformStage(self):
+    extra_env = {}
+    if self._build_config['useflags']:
+      extra_env['USE'] = ' '.join(self._build_config['useflags'])
     with cros_build_lib.SubCommandTimeout(self.UNIT_TEST_TIMEOUT):
       commands.RunUnitTests(self._build_root,
                             self._current_board,
                             full=(not self._build_config['quick_unit']),
-                            nowithdebug=self._build_config['nowithdebug'],
-                            blacklist=self._build_config['unittest_blacklist'])
+                            blacklist=self._build_config['unittest_blacklist'],
+                            extra_env=extra_env)
 
     if os.path.exists(os.path.join(self.GetImageDirSymlink(),
                                    'au-generator.zip')):
