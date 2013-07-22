@@ -89,6 +89,11 @@ namespace WebCore {
         NotAboutToInstantiatePlugin
     };
 
+    enum ReloadPolicy {
+        NormalReload,
+        EndToEndReload
+    };
+
 }
 
 #endif

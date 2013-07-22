@@ -1058,7 +1058,7 @@ bool FrameLoader::willLoadMediaElementURL(KURL& url)
     return error.isNull();
 }
 
-void FrameLoader::reload(bool endToEndReload, const KURL& overrideURL, const String& overrideEncoding)
+void FrameLoader::reload(ReloadPolicy reloadPolicy, const KURL& overrideURL, const String& overrideEncoding)
 {
     DocumentLoader* documentLoader = activeDocumentLoader();
     if (!documentLoader)
@@ -1077,7 +1077,7 @@ void FrameLoader::reload(bool endToEndReload, const KURL& overrideURL, const Str
     else if (!documentLoader->unreachableURL().isEmpty())
         request.setURL(documentLoader->unreachableURL());
 
-    FrameLoadType type = endToEndReload ? FrameLoadTypeReloadFromOrigin : FrameLoadTypeReload;
+    FrameLoadType type = reloadPolicy == EndToEndReload ? FrameLoadTypeReloadFromOrigin : FrameLoadTypeReload;
     NavigationAction action(request, type, request.httpMethod() == "POST");
     loadWithNavigationAction(request, action, type, 0, SubstituteData(), overrideEncoding);
 }
@@ -2178,8 +2178,7 @@ void FrameLoader::loadDifferentDocumentItem(HistoryItem* item)
     loadWithNavigationAction(request, NavigationAction(request, FrameLoadTypeBackForward, false), FrameLoadTypeBackForward, 0, SubstituteData());
 }
 
-// Loads content into this frame, as specified by history item
-void FrameLoader::loadItem(HistoryItem* item)
+void FrameLoader::loadHistoryItem(HistoryItem* item)
 {
     m_requestedHistoryItem = item;
     HistoryItem* currentItem = history()->currentItem();

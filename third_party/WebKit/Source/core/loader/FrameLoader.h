@@ -94,8 +94,8 @@ public:
 
     // These functions start a load. All eventually call into loadWithNavigationAction() or loadInSameDocument().
     void load(const FrameLoadRequest&); // The entry point for non-reload, non-history loads.
-    void reload(bool endToEndReload = false, const KURL& overrideURL = KURL(), const String& overrideEncoding = String());
-    void loadItem(HistoryItem*); // The entry point for all back/forward loads
+    void reload(ReloadPolicy = NormalReload, const KURL& overrideURL = KURL(), const String& overrideEncoding = String());
+    void loadHistoryItem(HistoryItem*); // The entry point for all back/forward loads
     void submitForm(PassRefPtr<FormSubmission>); // Schedules a form submission, which will eventually call load() in the target frame.
 
     // FIXME: This doesn't really belong here, since we don't load Frames synchronously.

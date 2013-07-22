@@ -1997,7 +1997,7 @@ void Internals::setUsesOverlayScrollbars(bool enabled)
 
 void Internals::forceReload(bool endToEnd)
 {
-    frame()->loader()->reload(endToEnd);
+    frame()->loader()->reload(endToEnd ? EndToEndReload : NormalReload);
 }
 
 PassRefPtr<ClientRect> Internals::selectionBounds(ExceptionCode& ec)

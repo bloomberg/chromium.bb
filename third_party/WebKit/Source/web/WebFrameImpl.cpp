@@ -906,13 +906,13 @@ v8::Handle<v8::Value> WebFrameImpl::createFileEntry(WebFileSystemType type, cons
 void WebFrameImpl::reload(bool ignoreCache)
 {
     ASSERT(frame());
-    frame()->loader()->reload(ignoreCache);
+    frame()->loader()->reload(ignoreCache ? EndToEndReload : NormalReload);
 }
 
 void WebFrameImpl::reloadWithOverrideURL(const WebURL& overrideUrl, bool ignoreCache)
 {
     ASSERT(frame());
-    frame()->loader()->reload(ignoreCache, overrideUrl);
+    frame()->loader()->reload(ignoreCache ? EndToEndReload : NormalReload, overrideUrl);
 }
 
 void WebFrameImpl::loadRequest(const WebURLRequest& request)
@@ -2177,7 +2177,7 @@ PassRefPtr<Frame> WebFrameImpl::createChildFrame(const FrameLoadRequest& request
         childItem = parentItem->childItemWithTarget(childFrame->tree()->uniqueName());
 
     if (childItem)
-        childFrame->loader()->loadItem(childItem);
+        childFrame->loader()->loadHistoryItem(childItem);
     else
         childFrame->loader()->load(FrameLoadRequest(0, request.resourceRequest(), "_self"));
 

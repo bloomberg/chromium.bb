@@ -448,7 +448,7 @@ void InspectorPageAgent::reload(ErrorString*, const bool* const optionalIgnoreCa
 {
     m_pendingScriptToEvaluateOnLoadOnce = optionalScriptToEvaluateOnLoad ? *optionalScriptToEvaluateOnLoad : "";
     m_pendingScriptPreprocessor = optionalScriptPreprocessor ? *optionalScriptPreprocessor : "";
-    m_page->mainFrame()->loader()->reload(optionalIgnoreCache ? *optionalIgnoreCache : false);
+    m_page->mainFrame()->loader()->reload(optionalIgnoreCache && *optionalIgnoreCache ? EndToEndReload : NormalReload);
 }
 
 void InspectorPageAgent::navigate(ErrorString*, const String& url)

@@ -650,7 +650,7 @@ void HistoryController::recursiveGoToItem(HistoryItem* item, HistoryItem* fromIt
             childFrame->loader()->history()->recursiveGoToItem(childItems[i].get(), fromChildItem);
         }
     } else {
-        m_frame->loader()->loadItem(item);
+        m_frame->loader()->loadHistoryItem(item);
     }
 }
 
