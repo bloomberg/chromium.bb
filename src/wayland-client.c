@@ -325,6 +325,25 @@ wl_proxy_add_listener(struct wl_proxy *proxy,
 	return 0;
 }
 
+/** Get a proxy's listener
+ *
+ * \param proxy The proxy object
+ * \return The address of the proxy's listener or NULL if no listener is set
+ *
+ * Gets the address to the proxy's listener; which is the listener set with
+ * \ref wl_proxy_add_listener.
+ *
+ * This function is useful in client with multiple listeners on the same
+ * interface to allow the identification of which code to eexecute.
+ *
+ * \memberof wl_proxy
+ */
+WL_EXPORT const void *
+wl_proxy_get_listener(struct wl_proxy *proxy)
+{
+	return proxy->object.implementation;
+}
+
 /** Prepare a request to be sent to the compositor
  *
  * \param proxy The proxy object
