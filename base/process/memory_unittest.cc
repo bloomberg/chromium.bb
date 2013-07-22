@@ -131,7 +131,7 @@ TEST(ProcessMemoryTest, MacMallocFailureDoesNotTerminate) {
 
 TEST(ProcessMemoryTest, MacTerminateOnHeapCorruption) {
   // Assert that freeing an unallocated pointer will crash the process.
-  char buf[3];
+  char buf[9];
   asm("" : "=r" (buf));  // Prevent clang from being too smart.
 #if ARCH_CPU_64_BITS
   // On 64 bit Macs, the malloc system automatically abort()s on heap corruption
