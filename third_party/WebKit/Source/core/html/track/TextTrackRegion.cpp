@@ -464,7 +464,7 @@ void TextTrackRegion::prepareRegionDisplayTree()
     // gradually scrolled out as multiple cues are appended to the region.
     m_cueContainer = HTMLDivElement::create(ownerDocument());
     m_cueContainer->setInlineStyleProperty(CSSPropertyTop,
-        0.0f,
+        0.0,
         CSSPrimitiveValue::CSS_PX);
 
     m_cueContainer->setPseudo(textTrackCueContainerShadowPseudoId());

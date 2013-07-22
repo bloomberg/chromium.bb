@@ -124,15 +124,15 @@ void TextTrackCueBox::applyCSSProperties(const IntSize&)
     setInlineStyleProperty(CSSPropertyDirection, m_cue->getCSSWritingDirection());
 
     // the 'writing-mode' property must be set to writing-mode
-    setInlineStyleProperty(CSSPropertyWebkitWritingMode, m_cue->getCSSWritingMode(), false);
+    setInlineStyleProperty(CSSPropertyWebkitWritingMode, m_cue->getCSSWritingMode());
 
     std::pair<float, float> position = m_cue->getCSSPosition();
 
     // the 'top' property must be set to top,
-    setInlineStyleProperty(CSSPropertyTop, static_cast<double>(position.second), CSSPrimitiveValue::CSS_PERCENTAGE);
+    setInlineStyleProperty(CSSPropertyTop, position.second, CSSPrimitiveValue::CSS_PERCENTAGE);
 
     // the 'left' property must be set to left
-    setInlineStyleProperty(CSSPropertyLeft, static_cast<double>(position.first), CSSPrimitiveValue::CSS_PERCENTAGE);
+    setInlineStyleProperty(CSSPropertyLeft, position.first, CSSPrimitiveValue::CSS_PERCENTAGE);
 
     // the 'width' property must be set to width, and the 'height' property  must be set to height
     if (m_cue->vertical() == horizontalKeyword()) {

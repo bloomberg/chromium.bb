@@ -798,7 +798,7 @@ void MediaControlTextTrackContainerElement::updateSizes(bool forceUpdate)
     float fontSize = smallestDimension * 0.05f;
     if (fontSize != m_fontSize) {
         m_fontSize = fontSize;
-        setInlineStyleProperty(CSSPropertyFontSize, String::number(fontSize) + "px");
+        setInlineStyleProperty(CSSPropertyFontSize, fontSize, CSSPrimitiveValue::CSS_PX);
     }
 
     CueList activeCues = mediaElement->currentlyActiveCues();
