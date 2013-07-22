@@ -145,14 +145,10 @@ void MaybeAddEntryToResult(
       (query && !FindAndHighlight(entry.base_name(), query, &highlighted)))
     return;
 
-  base::FilePath path = resource_metadata->GetFilePath(entry.resource_id());
-  if (path.empty())
-    return;
-
   // Make space for |entry| when appropriate.
   if (result_candidates->size() == at_most_num_matches)
     result_candidates->pop();
-  result_candidates->push(new MetadataSearchResult(path, entry, highlighted));
+  result_candidates->push(new MetadataSearchResult(entry, highlighted));
 }
 
 // Implements SearchMetadata().
@@ -181,8 +177,17 @@ scoped_ptr<MetadataSearchResultVector> SearchMetadataOnBlockingPool(
   // Prepare the result.
   scoped_ptr<MetadataSearchResultVector> results(
       new MetadataSearchResultVector);
-  for (; !result_candidates.empty(); result_candidates.pop())
+  for (; !result_candidates.empty(); result_candidates.pop()) {
+    // The path field of entries in result_candidates are empty at this point,
+    // because we don't want to run the expensive metadata DB look up except for
+    // the final results. Hence, here we fill the part.
+    base::FilePath path = resource_metadata->GetFilePath(
+        result_candidates.top()->entry.resource_id());
+    if (path.empty())
+      continue;
     results->push_back(*result_candidates.top());
+    results->back().path = path;
+  }
 
   // Reverse the order here because |result_candidates| puts the most
   // uninteresting candidate at the top.
