@@ -1261,20 +1261,24 @@ bool OmniboxEditModel::IsSpaceCharForAcceptingKeyword(wchar_t c) {
 metrics::OmniboxEventProto::PageClassification
     OmniboxEditModel::ClassifyPage() const {
   if (!delegate_->CurrentPageExists())
-    return metrics::OmniboxEventProto_PageClassification_OTHER;
+    return metrics::OmniboxEventProto::OTHER;
   if (delegate_->IsInstantNTP())
-    return metrics::OmniboxEventProto_PageClassification_INSTANT_NEW_TAB_PAGE;
+    return metrics::OmniboxEventProto::INSTANT_NEW_TAB_PAGE;
   const GURL& gurl = delegate_->GetURL();
   if (!gurl.is_valid())
-    return metrics::OmniboxEventProto_PageClassification_INVALID_SPEC;
+    return metrics::OmniboxEventProto::INVALID_SPEC;
   const std::string& url = gurl.spec();
   if (url == chrome::kChromeUINewTabURL)
-    return metrics::OmniboxEventProto_PageClassification_NEW_TAB_PAGE;
+    return metrics::OmniboxEventProto::NEW_TAB_PAGE;
   if (url == content::kAboutBlankURL)
-    return metrics::OmniboxEventProto_PageClassification_BLANK;
+    return metrics::OmniboxEventProto::BLANK;
   if (url == profile()->GetPrefs()->GetString(prefs::kHomePage))
-    return metrics::OmniboxEventProto_PageClassification_HOMEPAGE;
-  return metrics::OmniboxEventProto_PageClassification_OTHER;
+    return metrics::OmniboxEventProto::HOMEPAGE;
+  if (view_->toolbar_model()->WouldReplaceSearchURLWithSearchTerms(true)) {
+    return metrics::
+        OmniboxEventProto::SEARCH_RESULT_PAGE_DOING_SEARCH_TERM_REPLACEMENT;
+  }
+  return metrics::OmniboxEventProto::OTHER;
 }
 
 void OmniboxEditModel::ClassifyStringForPasteAndGo(
