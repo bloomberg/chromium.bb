@@ -441,7 +441,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   friend class base::RefCounted<Layer>;
 
   void SetParent(Layer* layer);
-  bool HasAncestor(Layer* ancestor) const;
+  bool HasAncestor(const Layer* ancestor) const;
   bool DescendantIsFixedToContainerLayer() const;
 
   // Returns the index of the child or -1 if not found.
