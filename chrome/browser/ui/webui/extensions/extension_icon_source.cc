@@ -65,7 +65,7 @@ ExtensionIconSource::ExtensionIconSource(Profile* profile)
 
 struct ExtensionIconSource::ExtensionIconRequest {
   content::URLDataSource::GotDataCallback callback;
-  const extensions::Extension* extension;
+  scoped_refptr<const extensions::Extension> extension;
   bool grayscale;
   int size;
   ExtensionIconSet::MatchType match;
