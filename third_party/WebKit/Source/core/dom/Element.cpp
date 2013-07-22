@@ -1464,12 +1464,12 @@ bool Element::recalcStyle(StyleChange change)
         willRecalcStyle(change);
 
     // Ref currentStyle in case it would otherwise be deleted when setting the new style in the renderer.
-    RefPtr<RenderStyle> currentStyle(renderStyle());
-    bool hasParentStyle = parentNodeForRenderingAndStyle() ? static_cast<bool>(parentNodeForRenderingAndStyle()->renderStyle()) : false;
+    RefPtr<RenderStyle> currentStyle = renderStyle();
+    bool hasParentStyle = static_cast<bool>(parentRenderStyle());
     bool hasDirectAdjacentRules = childrenAffectedByDirectAdjacentRules();
     bool hasIndirectAdjacentRules = childrenAffectedByForwardPositionalRules();
 
-    if ((change > NoChange || needsStyleRecalc())) {
+    if (change > NoChange || needsStyleRecalc()) {
         if (hasRareData())
             elementRareData()->resetComputedStyle();
     }

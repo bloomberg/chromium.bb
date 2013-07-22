@@ -55,7 +55,7 @@
 #include "core/dom/MutationEvent.h"
 #include "core/dom/NameNodeList.h"
 #include "core/dom/NodeRareData.h"
-#include "core/dom/NodeRenderingContext.h"
+#include "core/dom/NodeRenderingTraversal.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/ProcessingInstruction.h"
 #include "core/dom/SelectorQuery.h"
@@ -1138,11 +1138,6 @@ Node *Node::nextLeafNode() const
         node = node->nextNodeConsideringAtomicNodes();
     }
     return 0;
-}
-
-ContainerNode* Node::parentNodeForRenderingAndStyle()
-{
-    return NodeRenderingContext(this).parentNodeForRenderingAndStyle();
 }
 
 RenderStyle* Node::virtualComputedStyle(PseudoId pseudoElementSpecifier)

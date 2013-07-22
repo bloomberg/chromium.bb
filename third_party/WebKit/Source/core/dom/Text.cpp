@@ -298,10 +298,7 @@ bool Text::recalcTextStyle(StyleChange change)
 bool Text::needsWhitespaceRenderer()
 {
     ASSERT(!renderer());
-    ContainerNode* parent = parentNodeForRenderingAndStyle();
-    if (!parent)
-        return false;
-    if (RenderStyle* style = parent->renderStyle())
+    if (RenderStyle* style = parentRenderStyle())
         return style->preserveNewline();
     return false;
 }

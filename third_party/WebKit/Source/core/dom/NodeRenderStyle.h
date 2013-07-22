@@ -26,6 +26,7 @@
 #define NodeRenderStyle_h
 
 #include "core/dom/Node.h"
+#include "core/dom/NodeRenderingTraversal.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/style/RenderStyle.h"
 
@@ -38,6 +39,12 @@ inline RenderStyle* Node::renderStyle() const
     if (RenderObject* renderer = this->renderer())
         return renderer->style();
     return nonRendererStyle();
+}
+
+inline RenderStyle* Node::parentRenderStyle() const
+{
+    ContainerNode* parent = NodeRenderingTraversal::parent(this);
+    return parent ? parent->renderStyle() : 0;
 }
 
 }

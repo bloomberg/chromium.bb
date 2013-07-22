@@ -67,10 +67,10 @@ void HTMLSummaryElement::didAddUserAgentShadowRoot(ShadowRoot* root)
 
 HTMLDetailsElement* HTMLSummaryElement::detailsElement() const
 {
-    Node* mayDetails = const_cast<HTMLSummaryElement*>(this)->parentNodeForRenderingAndStyle();
-    if (!mayDetails || !mayDetails->hasTagName(detailsTag))
-        return 0;
-    return static_cast<HTMLDetailsElement*>(mayDetails);
+    Node* parent = NodeRenderingTraversal::parent(this);
+    if (parent && isHTMLDetailsElement(parent))
+        return toHTMLDetailsElement(parent);
+    return 0;
 }
 
 bool HTMLSummaryElement::isMainSummary() const

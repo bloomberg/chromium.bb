@@ -44,6 +44,22 @@ private:
     bool m_isOpen;
 };
 
+inline bool isHTMLDetailsElement(const Node* node)
+{
+    return node->hasTagName(HTMLNames::detailsTag);
+}
+
+inline bool isHTMLDetailsElement(const Element* element)
+{
+    return element->hasTagName(HTMLNames::detailsTag);
+}
+
+inline HTMLDetailsElement* toHTMLDetailsElement(Node* node)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!node || isHTMLDetailsElement(node));
+    return static_cast<HTMLDetailsElement*>(node);
+}
+
 } // namespace WebCore
 
 #endif // HTMLDetailsElement_h

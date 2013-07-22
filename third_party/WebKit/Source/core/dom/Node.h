@@ -570,10 +570,10 @@ public:
 
     void reattach(const AttachContext& = AttachContext());
     void lazyReattachIfAttached();
-    ContainerNode* parentNodeForRenderingAndStyle();
 
     // Wrapper for nodes that don't have a renderer, but still cache the style (like HTMLOptionElement).
     RenderStyle* renderStyle() const;
+    RenderStyle* parentRenderStyle() const;
 
     RenderStyle* computedStyle(PseudoId pseudoElementSpecifier = NOPSEUDO) { return virtualComputedStyle(pseudoElementSpecifier); }
 
