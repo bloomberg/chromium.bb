@@ -85,6 +85,7 @@ class AppListServiceMac : public AppListServiceImpl,
   AppListServiceMac() {}
 
   base::scoped_nsobject<AppListWindowController> window_controller_;
+  base::scoped_nsobject<NSRunningApplication> previously_active_application_;
 
   // App shim hosts observing when the app list is dismissed. In normal user
   // usage there should only be one. However, it can't be guaranteed, so use
@@ -203,6 +204,21 @@ void CreateShortcutsInDefaultLocation(
                            web_app::ALLOW_DUPLICATE_SHORTCUTS);
 }
 
+NSRunningApplication* ActiveApplicationNotChrome() {
+  NSArray* applications = [[NSWorkspace sharedWorkspace] runningApplications];
+  for (NSRunningApplication* application in applications) {
+    if (![application isActive])
+      continue;
+
+    if ([application isEqual:[NSRunningApplication currentApplication]])
+      return nil;  // Chrome is active.
+
+    return application;
+  }
+
+  return nil;
+}
+
 AppListControllerDelegateCocoa::AppListControllerDelegateCocoa() {}
 
 AppListControllerDelegateCocoa::~AppListControllerDelegateCocoa() {}
@@ -307,6 +323,22 @@ void AppListServiceMac::ShowForProfile(Profile* requested_profile) {
 
 void AppListServiceMac::DismissAppList() {
   if (!IsAppListVisible())
+    return;
+
+  // If the app list is currently the main window, it will activate the next
+  // Chrome window when dismissed. But if a different application was active
+  // when the app list was shown, activate that instead.
+  base::scoped_nsobject<NSRunningApplication> prior_app;
+  if ([[window_controller_ window] isMainWindow])
+    prior_app.swap(previously_active_application_);
+  else
+    previously_active_application_.reset();
+
+  // If activation is successful, the app list will lose main status and try to
+  // close itself again. It can't be closed in this runloop iteration without
+  // OSX deciding to raise the next Chrome window, and _then_ activating the
+  // application on top. This also occurs if no activation option is given.
+  if ([prior_app activateWithOptions:NSApplicationActivateIgnoringOtherApps])
     return;
 
   [[window_controller_ window] close];
@@ -457,6 +489,11 @@ void AppListServiceMac::ShowWindowNearDock() {
   NSWindow* window = GetAppListWindow();
   DCHECK(window);
   [window setFrameOrigin:GetAppListWindowOrigin(window)];
+
+  // Before activating, see if an application other than Chrome is currently the
+  // active application, so that it can be reactivated when dismissing.
+  previously_active_application_.reset([ActiveApplicationNotChrome() retain]);
+
   [window makeKeyAndOrderFront:nil];
   [NSApp activateIgnoringOtherApps:YES];
 }
