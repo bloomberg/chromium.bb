@@ -32,6 +32,7 @@
 #include "chromeos/network/network_ui_data.h"
 #include "chromeos/network/onc/onc_constants.h"
 #include "chromeos/network/onc/onc_merger.h"
+#include "chromeos/network/onc/onc_normalizer.h"
 #include "chromeos/network/onc/onc_signature.h"
 #include "chromeos/network/onc/onc_translator.h"
 #include "chromeos/network/onc/onc_utils.h"
@@ -156,7 +157,7 @@ void RemoveFakeCredentials(
 
 // Creates a Shill property dictionary from the given arguments. The resulting
 // dictionary will be sent to Shill by the caller. Depending on the profile
-// path, |policy| is interpreted as the user or device policy and |settings| as
+// type, |policy| is interpreted as the user or device policy and |settings| as
 // the user or shared settings.
 scoped_ptr<base::DictionaryValue> CreateShillConfiguration(
     const NetworkProfile& profile,
@@ -196,6 +197,11 @@ scoped_ptr<base::DictionaryValue> CreateShillConfiguration(
                         effective.get());
 
   effective->SetStringWithoutPathExpansion(onc::network_config::kGUID, guid);
+
+  // Remove irrelevant fields.
+  onc::Normalizer normalizer(true /* remove recommended fields */);
+  effective = normalizer.NormalizeObject(&onc::kNetworkConfigurationSignature,
+                                         *effective);
 
   scoped_ptr<base::DictionaryValue> shill_dictionary(
       onc::TranslateONCObjectToShill(&onc::kNetworkConfigurationSignature,
@@ -294,6 +300,50 @@ void TranslatePropertiesToOncAndRunCallback(
 
 }  // namespace
 
+// This class compares (entry point is Run()) |modified_policies| with the
+// existing entries in the provided Shill profile |profile|. It fetches all
+// entries in parallel (GetProfilePropertiesCallback), compares each entry with
+// the current policies (GetEntryCallback) and adds all missing policies
+// (~PolicyApplicator).
+class ManagedNetworkConfigurationHandler::PolicyApplicator
+    : public base::RefCounted<PolicyApplicator> {
+ public:
+  typedef ManagedNetworkConfigurationHandler::GuidToPolicyMap GuidToPolicyMap;
+
+  // |modified_policies| must not be NULL and will be empty afterwards.
+  PolicyApplicator(base::WeakPtr<ManagedNetworkConfigurationHandler> handler,
+                   const NetworkProfile& profile,
+                   std::set<std::string>* modified_policies);
+
+  void Run();
+
+ private:
+  friend class base::RefCounted<PolicyApplicator>;
+
+  // Called with the properties of the profile |profile_|. Requests the
+  // properties of each entry, which are processed by GetEntryCallback.
+  void GetProfilePropertiesCallback(
+      const base::DictionaryValue& profile_properties);
+
+  // Called with the properties of the profile entry |entry|. Checks whether the
+  // entry was previously managed, whether a current policy applies and then
+  // either updates, deletes or not touches the entry.
+  void GetEntryCallback(const std::string& entry,
+                        const base::DictionaryValue& entry_properties);
+
+  // Sends Shill the command to delete profile entry |entry| from |profile_|.
+  void DeleteEntry(const std::string& entry);
+
+  // Creates new entries for all remaining policies, i.e. for which not matching
+  // entry was found.
+  virtual ~PolicyApplicator();
+
+  std::set<std::string> remaining_policies_;
+  base::WeakPtr<ManagedNetworkConfigurationHandler> handler_;
+  NetworkProfile profile_;
+
+  DISALLOW_COPY_AND_ASSIGN(PolicyApplicator);
+};
 
 // static
 scoped_ptr<NetworkUIData> ManagedNetworkConfigurationHandler::GetUIData(
@@ -479,7 +529,7 @@ void ManagedNetworkConfigurationHandler::SetProperties(
   onc::Validator validator(false,  // Ignore unknown fields.
                            false,  // Ignore invalid recommended field names.
                            false,  // Ignore missing fields.
-                           false);  // This ONC does not comes from policy.
+                           false);  // This ONC does not come from policy.
 
   onc::Validator::Result validation_result;
   scoped_ptr<base::DictionaryValue> validated_user_settings =
@@ -501,8 +551,8 @@ void ManagedNetworkConfigurationHandler::SetProperties(
   const base::DictionaryValue* policy = GetByGUID(*policies, guid);
   VLOG(2) << "This configuration is " << (policy ? "" : "not ") << "managed.";
 
-  scoped_ptr<base::DictionaryValue> shill_dictionary(
-      CreateShillConfiguration(*profile, guid, policy, &user_settings));
+  scoped_ptr<base::DictionaryValue> shill_dictionary(CreateShillConfiguration(
+      *profile, guid, policy, validated_user_settings.get()));
 
   network_configuration_handler_->SetProperties(
       service_path, *shill_dictionary, callback, error_callback);
@@ -560,229 +610,6 @@ void ManagedNetworkConfigurationHandler::RemoveConfiguration(
   network_configuration_handler_->RemoveConfiguration(
       service_path, callback, error_callback);
 }
-
-// This class compares (entry point is Run()) |modified_policies| with the
-// existing entries in the provided Shill profile |profile|. It fetches all
-// entries in parallel (GetProfileProperties), compares each entry with the
-// current policies (GetEntry) and adds all missing policies
-// (~PolicyApplicator).
-class ManagedNetworkConfigurationHandler::PolicyApplicator
-    : public base::RefCounted<PolicyApplicator> {
- public:
-  typedef ManagedNetworkConfigurationHandler::GuidToPolicyMap GuidToPolicyMap;
-
-  // |modified_policies| must not be NULL and will be empty afterwards.
-  PolicyApplicator(base::WeakPtr<ManagedNetworkConfigurationHandler> handler,
-                   const NetworkProfile& profile,
-                   std::set<std::string>* modified_policies)
-      : handler_(handler),
-        profile_(profile) {
-    remaining_policies_.swap(*modified_policies);
-  }
-
-  void Run() {
-    DBusThreadManager::Get()->GetShillProfileClient()->GetProperties(
-        dbus::ObjectPath(profile_.path),
-        base::Bind(&PolicyApplicator::GetProfileProperties, this),
-        base::Bind(&LogErrorMessage, FROM_HERE));
-  }
-
- private:
-  friend class base::RefCounted<PolicyApplicator>;
-
-  void GetProfileProperties(const base::DictionaryValue& profile_properties) {
-    if (!handler_) {
-      LOG(WARNING) << "Handler destructed during policy application to profile "
-                   << profile_.ToDebugString();
-      return;
-    }
-
-    VLOG(2) << "Received properties for profile " << profile_.ToDebugString();
-    const base::ListValue* entries = NULL;
-    if (!profile_properties.GetListWithoutPathExpansion(
-            flimflam::kEntriesProperty, &entries)) {
-      LOG(ERROR) << "Profile " << profile_.ToDebugString()
-                 << " doesn't contain the property "
-                 << flimflam::kEntriesProperty;
-      return;
-    }
-
-    for (base::ListValue::const_iterator it = entries->begin();
-         it != entries->end(); ++it) {
-      std::string entry;
-      (*it)->GetAsString(&entry);
-
-      std::ostringstream entry_failure;
-      DBusThreadManager::Get()->GetShillProfileClient()->GetEntry(
-          dbus::ObjectPath(profile_.path),
-          entry,
-          base::Bind(&PolicyApplicator::GetEntry, this, entry),
-          base::Bind(&LogErrorMessage, FROM_HERE));
-    }
-  }
-
-  void GetEntry(const std::string& entry,
-                const base::DictionaryValue& entry_properties) {
-    if (!handler_) {
-      LOG(WARNING) << "Handler destructed during policy application to profile "
-                   << profile_.ToDebugString();
-      return;
-    }
-
-    VLOG(2) << "Received properties for entry " << entry << " of profile "
-            << profile_.ToDebugString();
-
-    scoped_ptr<base::DictionaryValue> onc_part(
-        onc::TranslateShillServiceToONCPart(
-            entry_properties,
-            &onc::kNetworkWithStateSignature));
-
-    std::string old_guid;
-    if (!onc_part->GetStringWithoutPathExpansion(onc::network_config::kGUID,
-                                                 &old_guid)) {
-      LOG(WARNING) << "Entry " << entry << " of profile "
-                   << profile_.ToDebugString() << " doesn't contain a GUID.";
-      // This might be an entry of an older ChromeOS version. Assume it to be
-      // unmanaged.
-      return;
-    }
-
-    scoped_ptr<NetworkUIData> ui_data = GetUIData(entry_properties);
-    if (!ui_data) {
-      VLOG(1) << "Entry " << entry << " of profile "
-              << profile_.ToDebugString()
-              << " contains no or no valid UIData.";
-      // This might be an entry of an older ChromeOS version. Assume it to be
-      // unmanaged.
-      return;
-    }
-
-    bool was_managed =
-        (ui_data->onc_source() == onc::ONC_SOURCE_DEVICE_POLICY ||
-         ui_data->onc_source() == onc::ONC_SOURCE_USER_POLICY);
-
-    // The relevant policy must have been initialized, otherwise we hadn't Run
-    // this PolicyApplicator.
-    const GuidToPolicyMap& policies =
-        *handler_->GetPoliciesForProfile(profile_);
-
-    const base::DictionaryValue* new_policy = NULL;
-    if (was_managed) {
-      // If we have a GUID that might match a current policy, do a lookup using
-      // that GUID at first. In particular this is necessary, as some networks
-      // can't be matched to policies by properties (e.g. VPN).
-      new_policy = GetByGUID(policies, old_guid);
-    }
-
-    if (!new_policy) {
-      // If we didn't find a policy by GUID, still a new policy might match.
-      new_policy = FindMatchingPolicy(policies, *onc_part);
-    }
-
-    if (new_policy) {
-      std::string new_guid;
-      new_policy->GetStringWithoutPathExpansion(onc::network_config::kGUID,
-                                                &new_guid);
-
-      VLOG_IF(1, was_managed && old_guid != new_guid)
-          << "Updating configuration previously managed by policy " << old_guid
-          << " with new policy " << new_guid << ".";
-      VLOG_IF(1, !was_managed)
-          << "Applying policy " << new_guid << " to previously unmanaged "
-          << "configuration.";
-
-      if (old_guid == new_guid &&
-          remaining_policies_.find(new_guid) == remaining_policies_.end()) {
-        VLOG(1) << "Not updating existing managed configuration with guid "
-                << new_guid << " because the policy didn't change.";
-      } else {
-        VLOG_IF(1, old_guid == new_guid)
-            << "Updating previously managed configuration with the updated "
-            << "policy " << new_guid << ".";
-
-        // Update the existing configuration with the maybe changed
-        // policy. Thereby the GUID might change.
-        scoped_ptr<base::DictionaryValue> shill_dictionary =
-            CreateShillConfiguration(profile_, new_guid, new_policy,
-                                     ui_data->user_settings());
-        handler_->network_configuration_handler()->
-            CreateConfiguration(*shill_dictionary,
-                                base::Bind(&IgnoreString),
-                                base::Bind(&LogErrorWithDict, FROM_HERE));
-        remaining_policies_.erase(new_guid);
-      }
-    } else if (was_managed) {
-      VLOG(1) << "Removing configuration previously managed by policy "
-              << old_guid << ", because the policy was removed.";
-
-      // Remove the entry, because the network was managed but isn't anymore.
-      // Note: An alternative might be to preserve the user settings, but it's
-      // unclear which values originating the policy should be removed.
-      DeleteEntry(entry);
-    } else {
-      VLOG(2) << "Ignore unmanaged entry.";
-
-      // The entry wasn't managed and doesn't match any current policy. Thus
-      // leave it as it is.
-    }
-  }
-
-  void DeleteEntry(const std::string& entry) {
-    DBusThreadManager::Get()->GetShillProfileClient()->DeleteEntry(
-        dbus::ObjectPath(profile_.path),
-        entry,
-        base::Bind(&base::DoNothing),
-        base::Bind(&LogErrorMessage, FROM_HERE));
-  }
-
-  virtual ~PolicyApplicator() {
-    if (!handler_) {
-      LOG(WARNING) << "Handler destructed during policy application to profile "
-                   << profile_.ToDebugString();
-      return;
-    }
-
-    if (remaining_policies_.empty())
-      return;
-
-    VLOG(2) << "Create new managed network configurations in profile"
-            << profile_.ToDebugString() << ".";
-    // All profile entries were compared to policies. |configureGUIDs_| contains
-    // all matched policies. From the remainder of policies, new configurations
-    // have to be created.
-
-    // The relevant policy must have been initialized, otherwise we hadn't Run
-    // this PolicyApplicator.
-    const GuidToPolicyMap& policies =
-        *handler_->GetPoliciesForProfile(profile_);
-
-    for (std::set<std::string>::iterator it = remaining_policies_.begin();
-         it != remaining_policies_.end(); ++it) {
-      const base::DictionaryValue* policy = GetByGUID(policies, *it);
-      if (!policy) {
-        LOG(ERROR) << "Policy " << *it << " doesn't exist anymore.";
-        continue;
-      }
-
-      VLOG(1) << "Creating new configuration managed by policy " << *it
-              << " in profile " << profile_.ToDebugString() << ".";
-
-      scoped_ptr<base::DictionaryValue> shill_dictionary =
-          CreateShillConfiguration(profile_, *it, policy,
-                                   NULL /* no user settings */);
-      handler_->network_configuration_handler()->CreateConfiguration(
-          *shill_dictionary,
-          base::Bind(&IgnoreString),
-          base::Bind(&LogErrorWithDict, FROM_HERE));
-    }
-  }
-
-  std::set<std::string> remaining_policies_;
-  base::WeakPtr<ManagedNetworkConfigurationHandler> handler_;
-  NetworkProfile profile_;
-
-  DISALLOW_COPY_AND_ASSIGN(PolicyApplicator);
-};
 
 void ManagedNetworkConfigurationHandler::SetPolicy(
     onc::ONCSource onc_source,
@@ -912,6 +739,219 @@ void ManagedNetworkConfigurationHandler::Init(
   network_profile_handler_ = network_profile_handler;
   network_configuration_handler_ = network_configuration_handler;
   network_profile_handler_->AddObserver(this);
+}
+
+ManagedNetworkConfigurationHandler::PolicyApplicator::PolicyApplicator(
+    base::WeakPtr<ManagedNetworkConfigurationHandler> handler,
+    const NetworkProfile& profile,
+    std::set<std::string>* modified_policies)
+    : handler_(handler), profile_(profile) {
+  remaining_policies_.swap(*modified_policies);
+}
+
+void ManagedNetworkConfigurationHandler::PolicyApplicator::Run() {
+  DBusThreadManager::Get()->GetShillProfileClient()->GetProperties(
+      dbus::ObjectPath(profile_.path),
+      base::Bind(&PolicyApplicator::GetProfilePropertiesCallback, this),
+      base::Bind(&LogErrorMessage, FROM_HERE));
+}
+
+void ManagedNetworkConfigurationHandler::PolicyApplicator::
+    GetProfilePropertiesCallback(
+        const base::DictionaryValue& profile_properties) {
+  if (!handler_) {
+    LOG(WARNING) << "Handler destructed during policy application to profile "
+                 << profile_.ToDebugString();
+    return;
+  }
+
+  VLOG(2) << "Received properties for profile " << profile_.ToDebugString();
+  const base::ListValue* entries = NULL;
+  if (!profile_properties.GetListWithoutPathExpansion(
+          flimflam::kEntriesProperty, &entries)) {
+    LOG(ERROR) << "Profile " << profile_.ToDebugString()
+               << " doesn't contain the property "
+               << flimflam::kEntriesProperty;
+    return;
+  }
+
+  for (base::ListValue::const_iterator it = entries->begin();
+       it != entries->end();
+       ++it) {
+    std::string entry;
+    (*it)->GetAsString(&entry);
+
+    std::ostringstream entry_failure;
+    DBusThreadManager::Get()->GetShillProfileClient()
+        ->GetEntry(dbus::ObjectPath(profile_.path),
+                   entry,
+                   base::Bind(&PolicyApplicator::GetEntryCallback, this, entry),
+                   base::Bind(&LogErrorMessage, FROM_HERE));
+  }
+}
+
+void ManagedNetworkConfigurationHandler::PolicyApplicator::GetEntryCallback(
+    const std::string& entry,
+    const base::DictionaryValue& entry_properties) {
+  if (!handler_) {
+    LOG(WARNING) << "Handler destructed during policy application to profile "
+                 << profile_.ToDebugString();
+    return;
+  }
+
+  VLOG(2) << "Received properties for entry " << entry << " of profile "
+          << profile_.ToDebugString();
+
+  scoped_ptr<base::DictionaryValue> onc_part(
+      onc::TranslateShillServiceToONCPart(entry_properties,
+                                          &onc::kNetworkWithStateSignature));
+
+  std::string old_guid;
+  if (!onc_part->GetStringWithoutPathExpansion(onc::network_config::kGUID,
+                                               &old_guid)) {
+    VLOG(1) << "Entry " << entry << " of profile " << profile_.ToDebugString()
+            << " doesn't contain a GUID.";
+    // This might be an entry of an older ChromeOS version. Assume it to be
+    // unmanaged.
+  }
+
+  scoped_ptr<NetworkUIData> ui_data = GetUIData(entry_properties);
+  if (!ui_data) {
+    VLOG(1) << "Entry " << entry << " of profile " << profile_.ToDebugString()
+            << " contains no or no valid UIData.";
+    // This might be an entry of an older ChromeOS version. Assume it to be
+    // unmanaged. It's an inconsistency if there is a GUID but no UIData, thus
+    // clear the GUID just in case.
+    old_guid.clear();
+  }
+
+  bool was_managed = !old_guid.empty() && ui_data &&
+                     (ui_data->onc_source() == onc::ONC_SOURCE_DEVICE_POLICY ||
+                      ui_data->onc_source() == onc::ONC_SOURCE_USER_POLICY);
+
+  // The relevant policy must have been initialized, otherwise we hadn't Run
+  // this PolicyApplicator.
+  const GuidToPolicyMap& policies = *handler_->GetPoliciesForProfile(profile_);
+
+  const base::DictionaryValue* new_policy = NULL;
+  if (was_managed) {
+    // If we have a GUID that might match a current policy, do a lookup using
+    // that GUID at first. In particular this is necessary, as some networks
+    // can't be matched to policies by properties (e.g. VPN).
+    new_policy = GetByGUID(policies, old_guid);
+  }
+
+  if (!new_policy) {
+    // If we didn't find a policy by GUID, still a new policy might match.
+    new_policy = FindMatchingPolicy(policies, *onc_part);
+  }
+
+  if (new_policy) {
+    std::string new_guid;
+    new_policy->GetStringWithoutPathExpansion(onc::network_config::kGUID,
+                                              &new_guid);
+
+    VLOG_IF(1, was_managed && old_guid != new_guid)
+        << "Updating configuration previously managed by policy " << old_guid
+        << " with new policy " << new_guid << ".";
+    VLOG_IF(1, !was_managed) << "Applying policy " << new_guid
+                             << " to previously unmanaged "
+                             << "configuration.";
+
+    if (old_guid == new_guid &&
+        remaining_policies_.find(new_guid) == remaining_policies_.end()) {
+      VLOG(1) << "Not updating existing managed configuration with guid "
+              << new_guid << " because the policy didn't change.";
+    } else {
+      // Delete the entry to ensure that no old configuration remains.
+      // Don't do this if a policy is reapplied (e.g. after reboot) or updated
+      // (i.e. the GUID didn't change), in order to keep implicit state of
+      // Shill like "connected successfully before".
+      if (old_guid == new_guid) {
+        VLOG(1) << "Updating previously managed configuration with the "
+                << "updated policy " << new_guid << ".";
+      } else {
+        DeleteEntry(entry);
+      }
+
+      const base::DictionaryValue* user_settings =
+          ui_data ? ui_data->user_settings() : NULL;
+
+      // Write the new configuration.
+      scoped_ptr<base::DictionaryValue> shill_dictionary =
+          CreateShillConfiguration(
+              profile_, new_guid, new_policy, user_settings);
+      handler_->network_configuration_handler()
+          ->CreateConfiguration(*shill_dictionary,
+                                base::Bind(&IgnoreString),
+                                base::Bind(&LogErrorWithDict, FROM_HERE));
+      remaining_policies_.erase(new_guid);
+    }
+  } else if (was_managed) {
+    VLOG(1) << "Removing configuration previously managed by policy "
+            << old_guid << ", because the policy was removed.";
+
+    // Remove the entry, because the network was managed but isn't anymore.
+    // Note: An alternative might be to preserve the user settings, but it's
+    // unclear which values originating the policy should be removed.
+    DeleteEntry(entry);
+  } else {
+    VLOG(2) << "Ignore unmanaged entry.";
+
+    // The entry wasn't managed and doesn't match any current policy. Thus
+    // leave it as it is.
+  }
+}
+
+void ManagedNetworkConfigurationHandler::PolicyApplicator::DeleteEntry(
+    const std::string& entry) {
+  DBusThreadManager::Get()->GetShillProfileClient()
+      ->DeleteEntry(dbus::ObjectPath(profile_.path),
+                    entry,
+                    base::Bind(&base::DoNothing),
+                    base::Bind(&LogErrorMessage, FROM_HERE));
+}
+
+ManagedNetworkConfigurationHandler::PolicyApplicator::~PolicyApplicator() {
+  if (!handler_) {
+    LOG(WARNING) << "Handler destructed during policy application to profile "
+                 << profile_.ToDebugString();
+    return;
+  }
+
+  if (remaining_policies_.empty())
+    return;
+
+  VLOG(2) << "Create new managed network configurations in profile"
+          << profile_.ToDebugString() << ".";
+  // All profile entries were compared to policies. |configureGUIDs_| contains
+  // all matched policies. From the remainder of policies, new configurations
+  // have to be created.
+
+  // The relevant policy must have been initialized, otherwise we hadn't Run
+  // this PolicyApplicator.
+  const GuidToPolicyMap& policies = *handler_->GetPoliciesForProfile(profile_);
+
+  for (std::set<std::string>::iterator it = remaining_policies_.begin();
+       it != remaining_policies_.end();
+       ++it) {
+    const base::DictionaryValue* policy = GetByGUID(policies, *it);
+    if (!policy) {
+      LOG(ERROR) << "Policy " << *it << " doesn't exist anymore.";
+      continue;
+    }
+
+    VLOG(1) << "Creating new configuration managed by policy " << *it
+            << " in profile " << profile_.ToDebugString() << ".";
+
+    scoped_ptr<base::DictionaryValue> shill_dictionary =
+        CreateShillConfiguration(
+            profile_, *it, policy, NULL /* no user settings */);
+    handler_->network_configuration_handler()
+        ->CreateConfiguration(*shill_dictionary,
+                              base::Bind(&IgnoreString),
+                              base::Bind(&LogErrorWithDict, FROM_HERE));
+  }
 }
 
 }  // namespace chromeos
