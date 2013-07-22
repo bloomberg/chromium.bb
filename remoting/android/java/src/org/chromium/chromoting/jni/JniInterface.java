@@ -118,12 +118,12 @@ public class JniInterface {
 
     /** Reports whenever the connection status changes. */
     private static void reportConnectionStatus(int state, int error) {
-        if (state==SUCCESSFUL_CONNECTION) {
+        if (state == SUCCESSFUL_CONNECTION) {
             sSuccessCallback.run();
         }
 
         Toast.makeText(sContext, sContext.getResources().getStringArray(
-                R.array.protoc_states)[state] + (error!=0 ? ": " +
+                R.array.protoc_states)[state] + (error != 0 ? ": " +
                         sContext.getResources().getStringArray(R.array.protoc_errors)[error] : ""),
                 Toast.LENGTH_SHORT).show();
     }
@@ -188,7 +188,7 @@ public class JniInterface {
      * This should not be called from the UI thread. (We prefer the native graphics thread.)
      */
     public static Bitmap retrieveVideoFrame() {
-        if (Looper.myLooper()==Looper.getMainLooper()) {
+        if (Looper.myLooper() == Looper.getMainLooper()) {
             Log.w("deskview", "Canvas being redrawn on UI thread");
         }
 

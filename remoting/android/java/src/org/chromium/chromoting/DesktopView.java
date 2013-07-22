@@ -57,6 +57,12 @@ public class DesktopView extends SurfaceView implements Runnable, SurfaceHolder.
     /** Specifies the dimension by which the zoom level is being lower-bounded. */
     private Constraint mConstraint;
 
+    /** Whether the right edge of the image was visible on-screen during the last render. */
+    private boolean mRightUsedToBeOut;
+
+    /** Whether the bottom edge of the image was visible on-screen during the last render. */
+    private boolean mBottomUsedToBeOut;
+
     /** Whether the device has just been rotated, necessitating a canvas redraw. */
     private boolean mJustRotated;
 
@@ -71,6 +77,11 @@ public class DesktopView extends SurfaceView implements Runnable, SurfaceHolder.
         mScreenWidth = 0;
         mScreenHeight = 0;
         mConstraint = Constraint.UNDEFINED;
+
+        mRightUsedToBeOut = false;
+        mBottomUsedToBeOut = false;
+
+        mJustRotated = false;
     }
 
     /**
@@ -80,46 +91,88 @@ public class DesktopView extends SurfaceView implements Runnable, SurfaceHolder.
      */
     @Override
     public void run() {
-        if (Looper.myLooper()==Looper.getMainLooper()) {
+        if (Looper.myLooper() == Looper.getMainLooper()) {
             Log.w("deskview", "Canvas being redrawn on UI thread");
         }
 
-        Canvas canvas = getHolder().lockCanvas();
         Bitmap image = JniInterface.retrieveVideoFrame();
+        Canvas canvas = getHolder().lockCanvas();
         synchronized (mTransform) {
             canvas.setMatrix(mTransform);
 
+            // Internal parameters of the transformation matrix.
             float[] values = new float[9];
             mTransform.getValues(values);
+
+            // Screen coordinates of two defining points of the image.
             float[] topleft = {0, 0};
             mTransform.mapPoints(topleft);
             float[] bottomright = {image.getWidth(), image.getHeight()};
             mTransform.mapPoints(bottomright);
 
-            if (mConstraint==Constraint.UNDEFINED) {
+            // Whether to rescale and recenter the view.
+            boolean recenter = false;
+
+            if (mConstraint == Constraint.UNDEFINED) {
                 mConstraint = image.getWidth()/image.getHeight() > mScreenWidth/mScreenHeight ?
-                        Constraint.HEIGHT : Constraint.WIDTH;
+                        Constraint.WIDTH : Constraint.HEIGHT;
+                recenter = true;  // We always rescale and recenter after a rotation.
             }
 
-            if (mConstraint==Constraint.WIDTH && bottomright[0] - topleft[0] < mScreenWidth) {
-                mTransform.setPolyToPoly(new float[] {0, 0, image.getWidth(), 0}, 0,
-                        new float[] {0, 0, mScreenWidth, 0}, 0, 2);
-            } else if (mConstraint==Constraint.HEIGHT &&
-                    bottomright[1] - topleft[1] < mScreenHeight) {
-                mTransform.setPolyToPoly(new float[] {0, 0, 0, image.getHeight()}, 0,
-                        new float[] {0, 0, 0, mScreenHeight}, 0, 2);
+            if (mConstraint == Constraint.WIDTH &&
+                    ((int)(bottomright[0] - topleft[0] + 0.5) < mScreenWidth || recenter)) {
+                // The vertical edges of the image are flush against the device's screen edges
+                // when the entire host screen is visible, and the user has zoomed out too far.
+                float imageMiddle = (float)image.getHeight() / 2;
+                float screenMiddle = (float)mScreenHeight / 2;
+                mTransform.setPolyToPoly(
+                        new float[] {0, imageMiddle, image.getWidth(), imageMiddle}, 0,
+                        new float[] {0, screenMiddle, mScreenWidth, screenMiddle}, 0, 2);
+            } else if (mConstraint == Constraint.HEIGHT &&
+                    ((int)(bottomright[1] - topleft[1] + 0.5) < mScreenHeight || recenter)) {
+                // The horizontal image edges are flush against the device's screen edges when
+                // the entire host screen is visible, and the user has zoomed out too far.
+                float imageCenter = (float)image.getWidth() / 2;
+                float screenCenter = (float)mScreenWidth / 2;
+                mTransform.setPolyToPoly(
+                        new float[] {imageCenter, 0, imageCenter, image.getHeight()}, 0,
+                        new float[] {screenCenter, 0, screenCenter, mScreenHeight}, 0, 2);
             } else {
-                if (values[Matrix.MTRANS_X] > 0) {
-                    values[Matrix.MTRANS_X] = 0;
+                // It's fine for both members of a pair of image edges to be within the screen
+                // edges (or "out of bounds"); that simply means that the image is zoomed out as
+                // far as permissible. And both members of a pair can obviously be outside the
+                // screen's edges, which indicates that the image is zoomed in to far to see the
+                // whole host screen. However, if only one of a pair of edges has entered the
+                // screen, the user is attempting to scroll into a blank area of the canvas.
+
+                // A value of true means the corresponding edge has entered the screen's borders.
+                boolean leftEdgeOutOfBounds = values[Matrix.MTRANS_X] > 0;
+                boolean topEdgeOutOfBounds = values[Matrix.MTRANS_Y] > 0;
+                boolean rightEdgeOutOfBounds = bottomright[0] < mScreenWidth;
+                boolean bottomEdgeOutOfBounds = bottomright[1] < mScreenHeight;
+
+                if (leftEdgeOutOfBounds != rightEdgeOutOfBounds) {
+                    if (leftEdgeOutOfBounds != mRightUsedToBeOut) {
+                        values[Matrix.MTRANS_X] = 0;
+                    }
+                    else {
+                        values[Matrix.MTRANS_X] += mScreenWidth - bottomright[0];
+                    }
                 }
-                if (values[Matrix.MTRANS_Y] > 0) {
-                    values[Matrix.MTRANS_Y] = 0;
+                else {  // The view would oscillate if this were updated while scrolling off-screen.
+                    mRightUsedToBeOut = rightEdgeOutOfBounds;
                 }
-                if (bottomright[0] < mScreenWidth) {
-                    values[Matrix.MTRANS_X] += mScreenWidth - bottomright[0];
+
+                if (topEdgeOutOfBounds != bottomEdgeOutOfBounds) {
+                    if (topEdgeOutOfBounds != mBottomUsedToBeOut) {
+                        values[Matrix.MTRANS_Y] = 0;
+                    }
+                    else {
+                        values[Matrix.MTRANS_Y] += mScreenHeight - bottomright[1];
+                    }
                 }
-                if (bottomright[1] < mScreenHeight) {
-                    values[Matrix.MTRANS_Y] += mScreenHeight - bottomright[1];
+                else {  // The view would oscillate if this were updated while scrolling off-screen.
+                    mBottomUsedToBeOut = bottomEdgeOutOfBounds;
                 }
 
                 mTransform.setValues(values);
