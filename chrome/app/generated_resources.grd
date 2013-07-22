@@ -13081,7 +13081,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_ZIP_UNEXPECTED_ERROR" desc="File Manager error message.">
         Zipping failed, unexpected error: $1
       </message>
-
+      <message name="IDS_FILE_BROWSER_SHARE_ERROR" desc="File Manager error message when sharing a file or a directory on Drive fails because of internet connection problems.">
+        Sharing failed. Check your connection and try again later.
+      </message>
       <message name="IDS_FILE_BROWSER_DELETED_MESSAGE_PLURAL" desc="Message informing about deleting multiple items.">
         Deleted <ph name="COUNT">$1<ex>10</ex></ph> items
       </message>

@@ -897,9 +897,11 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     var d = cr.ui.dialogs;
     d.BaseDialog.OK_LABEL = str('OK_LABEL');
     d.BaseDialog.CANCEL_LABEL = str('CANCEL_LABEL');
+    this.error = new ErrorDialog(this.dialogDom_);
     this.alert = new d.AlertDialog(this.dialogDom_);
     this.confirm = new d.ConfirmDialog(this.dialogDom_);
     this.prompt = new d.PromptDialog(this.dialogDom_);
+    this.shareDialog_ = new ShareDialog(this.dialogDom_, this.metadataCache_);
     this.defaultTaskPicker =
         new cr.filebrowser.DefaultActionDialog(this.dialogDom_);
   };
@@ -2214,10 +2216,17 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   };
 
   /**
-   * Shows the share dialog for the selected file.
+   * Shows the share dialog for the selected file or directory.
    */
   FileManager.prototype.shareSelection = function() {
-    // TODO(mtomasz): Implement it. crbug.com/141396
+    var entries = this.getSelection().entries;
+    if (entries.length != 1) {
+      console.warn('Unable to share multiple items at once.');
+      return;
+    }
+    this.shareDialog_.show(entries[0], function() {
+      this.error.show(str('SHARE_ERROR'));
+    }.bind(this));
   };
 
   /**

@@ -27,6 +27,7 @@
     "metricsPrivate",
     "commandLinePrivate",
     "unlimitedStorage",
+    "webview",
     // Comment out chrome:// permissions to debug on a desktop browser.
     "chrome://extension-icon/",
     "chrome://resources/",
@@ -229,6 +230,6 @@
         "js/background.js"]
     },
     // chrome-extension://pmfjbimdmchhbnneeidfognadeopoehp is the image loader extension.
-    "content_security_policy": "default-src 'none'; script-src 'self' chrome://resources chrome-extension://pmfjbimdmchhbnneeidfognadeopoehp; style-src 'self' 'unsafe-inline' chrome://resources; frame-src 'self' about:; img-src 'self' chrome://resources chrome://theme data: https://docs.google.com https://*.googleusercontent.com chrome://extension-icon; media-src 'self' https://*.googleusercontent.com; connect-src https://drive.google.com"
+    "content_security_policy": "default-src 'none'; script-src 'self' chrome://resources chrome-extension://pmfjbimdmchhbnneeidfognadeopoehp; style-src 'self' 'unsafe-inline' chrome://resources; frame-src 'self' about:; img-src 'self' chrome://resources chrome://theme data: https://docs.google.com https://*.googleusercontent.com chrome://extension-icon; media-src 'self' https://*.googleusercontent.com; connect-src https://drive.google.com; object-src 'self'"
   }
 }

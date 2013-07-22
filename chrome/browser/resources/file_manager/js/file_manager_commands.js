@@ -537,7 +537,8 @@ Commands.shareCommand = {
     var selection = fileManager.getSelection();
     event.canExecute = fileManager.isOnDrive() &&
         !fileManager.isDriveOffline() &&
-        selection && selection.totalCount == 1;
+        selection && selection.totalCount == 1 &&
+        selection.directoryCount == 0;
     event.command.setHidden(!fileManager.isOnDrive());
   }
 };
