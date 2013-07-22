@@ -477,8 +477,6 @@ void RenderWidgetHostViewMac::EnableCoreAnimation() {
     LOG(ERROR) << "Failed to create CALayer for software rendering";
   [software_layer_ setBackgroundColor:CGColorGetConstantColor(kCGColorWhite)];
   [software_layer_ setDelegate:cocoa_view_];
-  [software_layer_ setAutoresizingMask:kCALayerWidthSizable |
-                                       kCALayerHeightSizable];
   [software_layer_ setContentsGravity:kCAGravityTopLeft];
   [software_layer_ setFrame:NSRectToCGRect([cocoa_view_ bounds])];
   [software_layer_ setNeedsDisplay];
@@ -488,7 +486,7 @@ void RenderWidgetHostViewMac::EnableCoreAnimation() {
   [cocoa_view_ setWantsLayer:YES];
 
   if (compositing_iosurface_) {
-    if (!CreateCompositedIOSurfaceAndLayer()) {
+    if (!CreateCompositedIOSurfaceLayer()) {
       LOG(ERROR) << "Failed to create CALayer for existing IOSurface";
       GotAcceleratedCompositingError();
       return;
@@ -496,7 +494,10 @@ void RenderWidgetHostViewMac::EnableCoreAnimation() {
   }
 }
 
-bool RenderWidgetHostViewMac::CreateCompositedIOSurfaceAndLayer() {
+bool RenderWidgetHostViewMac::CreateCompositedIOSurface() {
+  if (compositing_iosurface_context_ && compositing_iosurface_)
+    return true;
+
   ScopedCAActionDisabler disabler;
 
   // Create the GL context and shaders.
@@ -521,18 +522,25 @@ bool RenderWidgetHostViewMac::CreateCompositedIOSurfaceAndLayer() {
   // by the view.
   compositing_iosurface_->SetContext(compositing_iosurface_context_);
 
-  if (use_core_animation_ && !compositing_iosurface_layer_) {
-    // Create the GL CoreAnimation layer.
-    ScopedCAActionDisabler disabler;
+  return true;
+}
+
+bool RenderWidgetHostViewMac::CreateCompositedIOSurfaceLayer() {
+  CHECK(compositing_iosurface_context_ && compositing_iosurface_);
+  if (compositing_iosurface_layer_ || !use_core_animation_)
+    return true;
+
+  ScopedCAActionDisabler disabler;
+
+  // Create the GL CoreAnimation layer.
+  if (!compositing_iosurface_layer_) {
+    compositing_iosurface_layer_.reset([[CompositingIOSurfaceLayer alloc]
+        initWithRenderWidgetHostViewMac:this]);
     if (!compositing_iosurface_layer_) {
-      compositing_iosurface_layer_.reset([[CompositingIOSurfaceLayer alloc]
-          initWithRenderWidgetHostViewMac:this]);
-      if (!compositing_iosurface_layer_) {
-        LOG(ERROR) << "Failed to create CALayer for IOSurface";
-        return false;
-      }
-      [cocoa_view_ setLayer:compositing_iosurface_layer_];
+      LOG(ERROR) << "Failed to create CALayer for IOSurface";
+      return false;
     }
+    [software_layer_ addSublayer:compositing_iosurface_layer_];
   }
 
   // Creating the CompositingIOSurfaceLayer may attempt to draw in setLayer,
@@ -548,10 +556,8 @@ void RenderWidgetHostViewMac::DestroyCompositedIOSurfaceAndLayer() {
 
   compositing_iosurface_.reset();
   if (compositing_iosurface_layer_) {
-    if (cocoa_view_) {
-      DCHECK([[cocoa_view_ layer] isEqual:compositing_iosurface_layer_]);
-      [cocoa_view_ setLayer:software_layer_];
-    }
+    [software_layer_ setNeedsDisplay];
+    [compositing_iosurface_layer_ removeFromSuperlayer];
     [compositing_iosurface_layer_ disableCompositing];
     compositing_iosurface_layer_.reset();
   }
@@ -1272,8 +1278,8 @@ void RenderWidgetHostViewMac::CompositorSwapBuffers(
     return;
   }
 
-  if (!CreateCompositedIOSurfaceAndLayer()) {
-    LOG(ERROR) << "Failed to create CompositingIOSurface or its layer";
+  if (!CreateCompositedIOSurface()) {
+    LOG(ERROR) << "Failed to create CompositingIOSurface";
     GotAcceleratedCompositingError();
     return;
   }
@@ -1281,6 +1287,14 @@ void RenderWidgetHostViewMac::CompositorSwapBuffers(
   if (!compositing_iosurface_->SetIOSurface(
           surface_handle, size, surface_scale_factor, latency_info)) {
     LOG(ERROR) << "Failed SetIOSurface on CompositingIOSurfaceMac";
+    GotAcceleratedCompositingError();
+    return;
+  }
+
+  // Create the layer for the composited content only after the IOSurface has
+  // been initialized.
+  if (!CreateCompositedIOSurfaceLayer()) {
+    LOG(ERROR) << "Failed to create CompositingIOSurface layer";
     GotAcceleratedCompositingError();
     return;
   }
@@ -2528,7 +2542,11 @@ void RenderWidgetHostViewMac::FrameSwapped() {
   // size to be available before the resize completes. Calling only
   // setLayerContentsRedrawPolicy:NSViewLayerContentsRedrawOnSetNeedsDisplay on
   // this is not sufficient.
+  ScopedCAActionDisabler disabler;
+  CGRect frame = NSRectToCGRect([renderWidgetHostView_->cocoa_view() bounds]);
+  [renderWidgetHostView_->software_layer_ setFrame:frame];
   [renderWidgetHostView_->software_layer_ setNeedsDisplay];
+  [renderWidgetHostView_->compositing_iosurface_layer_ setFrame:frame];
   [renderWidgetHostView_->compositing_iosurface_layer_ setNeedsDisplay];
 }
 

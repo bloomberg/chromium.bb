@@ -25,7 +25,6 @@
 
     ScopedCAActionDisabler disabler;
     [self setBackgroundColor:CGColorGetConstantColor(kCGColorWhite)];
-    [self setAutoresizingMask:kCALayerWidthSizable | kCALayerHeightSizable];
     [self setContentsGravity:kCAGravityTopLeft];
     [self setFrame:NSRectToCGRect(
         [renderWidgetHostView_->cocoa_view() bounds])];
@@ -97,22 +96,31 @@
 
   DCHECK(glContext == context_->cgl_context());
 
+  // Cache a copy of renderWidgetHostView_ because it may be reset if
+  // a software frame is received in GetBackingStore.
+  content::RenderWidgetHostViewMac* cached_view = renderWidgetHostView_;
+
   // If a resize is in progress then GetBackingStore request a frame of the
   // current window size and block until a frame of the right size comes in.
   // This makes the window content not lag behind the resize (at the cost of
   // blocking on the browser's main thread).
-  if (renderWidgetHostView_->render_widget_host_) {
-    renderWidgetHostView_->about_to_validate_and_paint_ = true;
-    (void)renderWidgetHostView_->render_widget_host_->GetBackingStore(true);
-    renderWidgetHostView_->about_to_validate_and_paint_ = false;
-    CGLSetCurrentContext(glContext);
+  if (cached_view->render_widget_host_) {
+    cached_view->about_to_validate_and_paint_ = true;
+    (void)cached_view->render_widget_host_->GetBackingStore(true);
+    cached_view->about_to_validate_and_paint_ = false;
   }
+
+  // If a transition to software mode has occurred, this layer should be
+  // removed from the heirarchy now, so don't draw anything.
+  if (!renderWidgetHostView_)
+    return;
 
   gfx::Size window_size([self frame].size);
   float window_scale_factor = 1.f;
   if ([self respondsToSelector:(@selector(contentsScale))])
     window_scale_factor = [self contentsScale];
 
+  CGLSetCurrentContext(glContext);
   if (!renderWidgetHostView_->compositing_iosurface_->DrawIOSurface(
         window_size,
         window_scale_factor,

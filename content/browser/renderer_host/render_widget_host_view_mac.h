@@ -461,7 +461,8 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
   // invoke it from the message loop.
   void ShutdownHost();
 
-  bool CreateCompositedIOSurfaceAndLayer();
+  bool CreateCompositedIOSurface();
+  bool CreateCompositedIOSurfaceLayer();
   void DestroyCompositedIOSurfaceAndLayer();
 
   // Unbind the GL context (if any) that is bound to |cocoa_view_|.
@@ -469,6 +470,7 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
 
   // Called when a GPU SwapBuffers is received.
   void GotAcceleratedFrame();
+
   // Called when a software DIB is received.
   void GotSoftwareFrame();
 
