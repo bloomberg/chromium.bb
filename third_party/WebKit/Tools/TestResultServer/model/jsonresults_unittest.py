@@ -848,7 +848,7 @@ class JsonResultsTest(unittest.TestCase):
             {"builds": ["2", "1"],
              "tests": {"001.html": {
                            "results": [[200, PASS]],
-                           "times": [[200, 2 * jsonresults.JSON_RESULTS_MIN_TIME]]},
+                           "times": [[200, 3 * jsonresults.JSON_RESULTS_MIN_TIME]]},
                        "002.html": {
                            "results": [[10, TEXT]],
                            "times": [[10, 0]]}}},
@@ -867,7 +867,7 @@ class JsonResultsTest(unittest.TestCase):
             {"builds": ["3", "2", "1"],
              "tests": {"001.html": {
                            "results": [[201, PASS]],
-                           "times": [[1, 1], [200, 2 * jsonresults.JSON_RESULTS_MIN_TIME]]},
+                           "times": [[1, 1], [200, 3 * jsonresults.JSON_RESULTS_MIN_TIME]]},
                        "002.html": {
                            "results": [[1, PASS], [10, TEXT]],
                            "times": [[11, 0]]}}})

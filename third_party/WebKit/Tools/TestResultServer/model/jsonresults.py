@@ -449,7 +449,7 @@ class JsonResults(object):
         aggregated_json[builder][FAILURE_MAP_KEY] = CHAR_TO_FAILURE
 
         is_debug_builder = re.search(r"(Debug|Dbg)", builder, re.I)
-        run_time_pruning_threshold = 2 * JSON_RESULTS_MIN_TIME if is_debug_builder else JSON_RESULTS_MIN_TIME
+        run_time_pruning_threshold = 3 * JSON_RESULTS_MIN_TIME if is_debug_builder else JSON_RESULTS_MIN_TIME
         cls._normalize_results(aggregated_json[builder][TESTS_KEY], num_runs, run_time_pruning_threshold)
         return cls._generate_file_data(aggregated_json, sort_keys), 200
 
