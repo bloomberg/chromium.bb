@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_CHROMEOS_DRIVE_FILE_SYSTEM_BACKEND_DELEGATE_H_
 
 #include "base/basictypes.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend_delegate.h"
 
@@ -16,7 +15,6 @@ class BrowserContext;
 
 namespace fileapi {
 class AsyncFileUtil;
-class ExternalMountPoints;
 }  // namespace fileapi
 
 namespace drive {
@@ -25,9 +23,8 @@ namespace drive {
 // for Drive file system.
 class FileSystemBackendDelegate : public chromeos::FileSystemBackendDelegate {
  public:
-  // |browser_context| is currently used to take the ExternalMountPoints.
-  explicit FileSystemBackendDelegate(
-      content::BrowserContext* browser_context);
+  // |browser_context| is used to obtain |profile_id_|.
+  explicit FileSystemBackendDelegate(content::BrowserContext* browser_context);
   virtual ~FileSystemBackendDelegate();
 
   // FileSystemBackend::Delegate overrides.
@@ -44,8 +41,6 @@ class FileSystemBackendDelegate : public chromeos::FileSystemBackendDelegate {
       fileapi::FileSystemContext* context) OVERRIDE;
 
  private:
-  scoped_refptr<fileapi::ExternalMountPoints> mount_points_;
-
   // The profile for processing Drive accesses. Should not be NULL.
   void* profile_id_;
   scoped_ptr<fileapi::AsyncFileUtil> async_file_util_;

@@ -16,11 +16,9 @@
 #include "content/public/browser/browser_thread.h"
 #include "webkit/browser/blob/file_stream_reader.h"
 #include "webkit/browser/fileapi/async_file_util.h"
-#include "webkit/browser/fileapi/external_mount_points.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_task_runners.h"
 #include "webkit/browser/fileapi/file_system_url.h"
-#include "webkit/browser/fileapi/remote_file_system_proxy.h"
 
 using content::BrowserThread;
 
@@ -28,8 +26,7 @@ namespace drive {
 
 FileSystemBackendDelegate::FileSystemBackendDelegate(
     content::BrowserContext* browser_context)
-    : mount_points_(content::BrowserContext::GetMountPoints(browser_context)),
-      profile_id_(Profile::FromBrowserContext(browser_context)),
+    : profile_id_(Profile::FromBrowserContext(browser_context)),
       async_file_util_(new internal::AsyncFileUtil(
           base::Bind(&util::GetFileSystemByProfileId, profile_id_))) {
   DCHECK(profile_id_);

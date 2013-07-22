@@ -29,7 +29,6 @@ class DownloadHandler;
 class DriveAppRegistry;
 class DriveServiceInterface;
 class FileSystemInterface;
-class FileSystemProxy;
 class FileWriteHelper;
 class JobListInterface;
 
@@ -117,7 +116,7 @@ class DriveIntegrationService
   // Must be called on UI thread.
   bool IsDriveEnabled();
 
-  // Registers remote file system proxy for drive mount point.
+  // Registers remote file system for drive mount point.
   void AddDriveMountPoint();
   // Unregisters drive mount point from File API.
   void RemoveDriveMountPoint();
@@ -155,7 +154,6 @@ class DriveIntegrationService
   scoped_ptr<FileSystemInterface> file_system_;
   scoped_ptr<FileWriteHelper> file_write_helper_;
   scoped_ptr<DownloadHandler> download_handler_;
-  scoped_refptr<FileSystemProxy> file_system_proxy_;
   scoped_ptr<DebugInfoCollector> debug_info_collector_;
 
   ObserverList<DriveIntegrationServiceObserver> observers_;

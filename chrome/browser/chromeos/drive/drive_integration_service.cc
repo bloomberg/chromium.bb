@@ -15,7 +15,6 @@
 #include "chrome/browser/chromeos/drive/drive_app_registry.h"
 #include "chrome/browser/chromeos/drive/file_cache.h"
 #include "chrome/browser/chromeos/drive/file_system.h"
-#include "chrome/browser/chromeos/drive/file_system_proxy.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/file_write_helper.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
@@ -307,19 +306,15 @@ void DriveIntegrationService::AddBackDriveMountPoint(
 
 void DriveIntegrationService::AddDriveMountPoint() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!file_system_proxy_.get());
 
   const base::FilePath drive_mount_point = util::GetDriveMountPointPath();
   fileapi::ExternalMountPoints* mount_points =
       BrowserContext::GetMountPoints(profile_);
   DCHECK(mount_points);
 
-  file_system_proxy_ = new FileSystemProxy(file_system_.get());
-
-  bool success = mount_points->RegisterRemoteFileSystem(
+  bool success = mount_points->RegisterFileSystem(
       drive_mount_point.BaseName().AsUTF8Unsafe(),
       fileapi::kFileSystemTypeDrive,
-      file_system_proxy_.get(),
       drive_mount_point);
 
   if (success) {
@@ -343,10 +338,6 @@ void DriveIntegrationService::RemoveDriveMountPoint() {
 
   mount_points->RevokeFileSystem(
       util::GetDriveMountPointPath().BaseName().AsUTF8Unsafe());
-  if (file_system_proxy_.get()) {
-    file_system_proxy_->DetachFromFileSystem();
-    file_system_proxy_ = NULL;
-  }
   util::Log("Drive mount point is removed");
 }
 

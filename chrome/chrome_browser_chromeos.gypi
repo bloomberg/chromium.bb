@@ -281,8 +281,6 @@
         'browser/chromeos/drive/file_system_metadata.cc',
         'browser/chromeos/drive/file_system_metadata.h',
         'browser/chromeos/drive/file_system_observer.h',
-        'browser/chromeos/drive/file_system_proxy.cc',
-        'browser/chromeos/drive/file_system_proxy.h',
         'browser/chromeos/drive/file_system_util.cc',
         'browser/chromeos/drive/file_system_util.h',
         'browser/chromeos/drive/file_task_executor.cc',
