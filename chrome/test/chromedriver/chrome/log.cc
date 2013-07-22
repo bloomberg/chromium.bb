@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/test/chromedriver/chrome/log.h"
+
 #include <stdio.h>
 
 #include "base/json/json_reader.h"
@@ -9,7 +11,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
-#include "chrome/test/chromedriver/logging.h"
 
 namespace {
 

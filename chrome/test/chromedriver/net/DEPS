@@ -1,0 +1,6 @@
+include_rules = [
+  # These files should not depend on chromedriver code.
+  "-chrome/test/chromedriver",
+
+  "+chrome/test/chromedriver/net",
+]
