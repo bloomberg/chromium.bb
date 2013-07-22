@@ -1,3 +1,4 @@
+
 // Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -205,6 +206,13 @@ void AwSettings::UpdateWebkitPreferencesLocked(JNIEnv* env, jobject obj) {
 
   prefs.support_deprecated_target_density_dpi =
       Java_AwSettings_getSupportDeprecatedTargetDensityDPILocked(env, obj);
+
+  // TODO(primiano): deferred image decoding seems to cause increased memory
+  // usage in WebView chromium after http://crrev.com/19838002  (at least on
+  // some tests, for instance +18MB on moz and moz2). Thus, deferred image
+  // decoding is being disabled until the root of the problem is found.
+  // See http://crbug.com/262957 .
+  prefs.deferred_image_decoding_enabled = false;
 
   render_view_host->UpdateWebkitPreferences(prefs);
 }
