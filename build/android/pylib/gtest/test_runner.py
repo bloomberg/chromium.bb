@@ -115,10 +115,10 @@ class TestRunner(base_test_runner.BaseTestRunner):
       webkit_src = os.path.join(constants.DIR_SOURCE_ROOT, '..', '..', '..')
 
     self.adb.PushIfNeeded(
-        os.path.join(webkit_src, 'Source/WebKit/chromium/tests/data'),
+        os.path.join(webkit_src, 'Source/web/tests/data'),
         os.path.join(
             self.adb.GetExternalStorage(),
-            'third_party/WebKit/Source/WebKit/chromium/tests/data'))
+            'third_party/WebKit/Source/web/tests/data'))
     self.adb.PushIfNeeded(
         os.path.join(constants.DIR_SOURCE_ROOT,
                      'third_party/hyphen/hyph_en_US.dic'),
