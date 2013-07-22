@@ -137,12 +137,11 @@ default_grab_button(struct weston_pointer_grab *grab,
 	struct wl_resource *resource;
 	uint32_t serial;
 	enum wl_pointer_button_state state = state_w;
-	struct wl_display *display;
+	struct wl_display *display = compositor->wl_display;
 	wl_fixed_t sx, sy;
 
 	resource = pointer->focus_resource;
 	if (resource) {
-		display = wl_client_get_display(wl_resource_get_client(resource));
 		serial = wl_display_next_serial(display);
 		wl_pointer_send_button(resource, serial, time, button, state_w);
 	}
@@ -170,11 +169,10 @@ default_grab_touch_down(struct weston_touch_grab *grab, uint32_t time,
 			int touch_id, wl_fixed_t sx, wl_fixed_t sy)
 {
 	struct weston_touch *touch = grab->touch;
-	struct wl_display *display;
+	struct wl_display *display = touch->seat->compositor->wl_display;
 	uint32_t serial;
 
 	if (touch->focus_resource && touch->focus) {
-		display = wl_client_get_display(wl_resource_get_client(touch->focus_resource));
 		serial = wl_display_next_serial(display);
 		wl_touch_send_down(touch->focus_resource, serial, time,
 				   touch->focus->resource,
@@ -187,11 +185,10 @@ default_grab_touch_up(struct weston_touch_grab *grab,
 		      uint32_t time, int touch_id)
 {
 	struct weston_touch *touch = grab->touch;
-	struct wl_display *display;
+	struct wl_display *display = touch->seat->compositor->wl_display;
 	uint32_t serial;
 
 	if (touch->focus_resource) {
-		display = wl_client_get_display(wl_resource_get_client(touch->focus_resource));
 		serial = wl_display_next_serial(display);
 		wl_touch_send_up(touch->focus_resource, serial, time, touch_id);
 	}
@@ -221,12 +218,11 @@ default_grab_key(struct weston_keyboard_grab *grab,
 {
 	struct weston_keyboard *keyboard = grab->keyboard;
 	struct wl_resource *resource;
-	struct wl_display *display;
+	struct wl_display *display = keyboard->seat->compositor->wl_display;
 	uint32_t serial;
 
 	resource = keyboard->focus_resource;
 	if (resource) {
-		display = wl_client_get_display(wl_resource_get_client(resource));
 		serial = wl_display_next_serial(display);
 		wl_keyboard_send_key(resource, serial, time, key, state);
 	}
@@ -423,12 +419,11 @@ weston_pointer_set_focus(struct weston_pointer *pointer,
 {
 	struct weston_keyboard *kbd = pointer->seat->keyboard;
 	struct wl_resource *resource, *kr;
-	struct wl_display *display;
+	struct wl_display *display = pointer->seat->compositor->wl_display;
 	uint32_t serial;
 
 	resource = pointer->focus_resource;
 	if (resource && pointer->focus != surface) {
-		display = wl_client_get_display(wl_resource_get_client(resource));
 		serial = wl_display_next_serial(display);
 		wl_pointer_send_leave(resource, serial,
 				      pointer->focus->resource);
@@ -440,7 +435,6 @@ weston_pointer_set_focus(struct weston_pointer *pointer,
 	if (resource &&
 	    (pointer->focus != surface ||
 	     pointer->focus_resource != resource)) {
-		display = wl_client_get_display(wl_resource_get_client(resource));
 		serial = wl_display_next_serial(display);
 		if (kbd) {
 			kr = find_resource_for_surface(&kbd->resource_list,
@@ -471,12 +465,11 @@ weston_keyboard_set_focus(struct weston_keyboard *keyboard,
 			  struct weston_surface *surface)
 {
 	struct wl_resource *resource;
-	struct wl_display *display;
+	struct wl_display *display = keyboard->seat->compositor->wl_display;
 	uint32_t serial;
 
 	if (keyboard->focus_resource && keyboard->focus != surface) {
 		resource = keyboard->focus_resource;
-		display = wl_client_get_display(wl_resource_get_client(resource));
 		serial = wl_display_next_serial(display);
 		wl_keyboard_send_leave(resource, serial,
 				       keyboard->focus->resource);
@@ -488,7 +481,6 @@ weston_keyboard_set_focus(struct weston_keyboard *keyboard,
 	if (resource &&
 	    (keyboard->focus != surface ||
 	     keyboard->focus_resource != resource)) {
-		display = wl_client_get_display(wl_resource_get_client(resource));
 		serial = wl_display_next_serial(display);
 		wl_keyboard_send_modifiers(resource, serial,
 					   keyboard->modifiers.mods_depressed,

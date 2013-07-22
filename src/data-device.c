@@ -210,7 +210,7 @@ weston_drag_set_focus(struct weston_drag *drag, struct weston_surface *surface,
 {
 	struct weston_pointer *pointer = drag->grab.pointer;
 	struct wl_resource *resource, *offer = NULL;
-	struct wl_display *display;
+	struct wl_display *display = pointer->seat->compositor->wl_display;
 	uint32_t serial;
 
 	if (drag->focus_resource) {
@@ -232,7 +232,6 @@ weston_drag_set_focus(struct weston_drag *drag, struct weston_surface *surface,
 	if (!resource)
 		return;
 
-	display = wl_client_get_display(wl_resource_get_client(resource));
 	serial = wl_display_next_serial(display);
 
 	if (drag->data_source)

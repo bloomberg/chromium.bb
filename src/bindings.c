@@ -155,11 +155,10 @@ binding_key(struct weston_keyboard_grab *grab,
 	struct binding_keyboard_grab *b =
 		container_of(grab, struct binding_keyboard_grab, grab);
 	struct wl_resource *resource;
-	struct wl_client *client;
-	struct wl_display *display;
 	enum wl_keyboard_key_state state = state_w;
 	uint32_t serial;
 	struct weston_keyboard *keyboard = grab->keyboard;
+	struct wl_display *display = keyboard->seat->compositor->wl_display;
 
 	resource = grab->keyboard->focus_resource;
 	if (key == b->key) {
@@ -170,8 +169,6 @@ binding_key(struct weston_keyboard_grab *grab,
 			free(b);
 		}
 	} else if (resource) {
-		client = wl_resource_get_client(resource);
-		display = wl_client_get_display(client);
 		serial = wl_display_next_serial(display);
 		wl_keyboard_send_key(resource, serial, time, key, state);
 	}
