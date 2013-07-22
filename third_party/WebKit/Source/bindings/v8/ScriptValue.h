@@ -107,16 +107,22 @@ public:
         return !operator==(value);
     }
 
+    // Note: This creates a new local Handle; not to be used in cases where is
+    // is an efficiency problem.
     bool isNull() const
     {
         ASSERT(!hasNoValue());
-        return m_value->isNull();
+        v8::Handle<v8::Value> value = v8Value();
+        return !value.IsEmpty() && value->IsNull();
     }
 
+    // Note: This creates a new local Handle; not to be used in cases where is
+    // is an efficiency problem.
     bool isUndefined() const
     {
         ASSERT(!hasNoValue());
-        return m_value->isUndefined();
+        v8::Handle<v8::Value> value = v8Value();
+        return !value.IsEmpty() && value->IsUndefined();
     }
 
     // Note: This creates a new local Handle; not to be used in cases where is

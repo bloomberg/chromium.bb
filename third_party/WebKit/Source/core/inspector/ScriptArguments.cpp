@@ -31,6 +31,7 @@
 #include "config.h"
 #include "core/inspector/ScriptArguments.h"
 
+#include "bindings/v8/ScriptScope.h"
 #include "bindings/v8/ScriptValue.h"
 
 namespace WebCore {
@@ -67,6 +68,7 @@ bool ScriptArguments::getFirstArgumentAsString(String& result, bool checkForNull
         return false;
 
     const ScriptValue& value = argumentAt(0);
+    ScriptScope scope(m_scriptState.get());
     if (checkForNullOrUndefined && (value.isNull() || value.isUndefined()))
         return false;
 

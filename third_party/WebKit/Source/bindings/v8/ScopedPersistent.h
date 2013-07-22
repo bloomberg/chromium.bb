@@ -64,11 +64,6 @@ public:
     }
 
     bool isEmpty() const { return m_handle.IsEmpty(); }
-    // FIXME: We can guarantee that the memory pointed by the Handle stays
-    // alive, since calling these functions won't cause a GC. But still, this is
-    // a hack and should be removed asap.
-    bool isNull() { return deprecatedHandle()->IsNull(); }
-    bool isUndefined() { return deprecatedHandle()->IsUndefined(); }
 
     void set(v8::Isolate* isolate, v8::Handle<T> handle)
     {
@@ -90,17 +85,6 @@ public:
     }
 
 private:
-    // FIXME: Do not introduce new calls to this function. We can guarantee that
-    // the memory pointed by the Persistent stays alive, if we can guarantee
-    // that whatever we do with the resulting Handle doesn't cause a GC (this is
-    // true for functions like IsNull etc. used in this file). However, even in
-    // that case, we shouldn't reinterpret_cast.
-    ALWAYS_INLINE v8::Handle<T> deprecatedHandle() const
-    {
-        const v8::Handle<T>* handle = reinterpret_cast<const v8::Handle<T>*>(&m_handle);
-        return *handle;
-    }
-
     // FIXME: This function does an unsafe handle access. Remove it.
     friend class V8AbstractEventListener;
     friend class V8PerIsolateData;

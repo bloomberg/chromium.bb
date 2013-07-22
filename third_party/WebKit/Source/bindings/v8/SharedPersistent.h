@@ -53,8 +53,6 @@ namespace WebCore {
         }
 
         bool isEmpty() { return m_value.isEmpty(); }
-        bool isNull() { return m_value.isNull(); }
-        bool isUndefined() { return m_value.isUndefined(); }
 
         bool operator==(const SharedPersistent<T>& other)
         {
