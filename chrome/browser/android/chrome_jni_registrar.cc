@@ -11,6 +11,7 @@
 #include "chrome/browser/android/content_view_util.h"
 #include "chrome/browser/android/dev_tools_server.h"
 #include "chrome/browser/android/favicon_helper.h"
+#include "chrome/browser/android/field_trial_helper.h"
 #include "chrome/browser/android/intent_helper.h"
 #include "chrome/browser/android/most_visited_sites.h"
 #include "chrome/browser/android/provider/chrome_browser_provider.h"
@@ -66,6 +67,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
   { "ContentViewUtil", RegisterContentViewUtil },
   { "DevToolsServer", RegisterDevToolsServer },
   { "FaviconHelper", FaviconHelper::RegisterFaviconHelper },
+  { "FieldTrialHelper", RegisterFieldTrialHelper },
   { "IntentHelper", RegisterIntentHelper },
   { "JavascriptAppModalDialog",
     JavascriptAppModalDialogAndroid::RegisterJavascriptAppModalDialog },
