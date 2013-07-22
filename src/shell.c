@@ -236,7 +236,6 @@ struct shell_grab {
 	struct weston_pointer_grab grab;
 	struct shell_surface *shsurf;
 	struct wl_listener shsurf_destroy_listener;
-	struct weston_pointer *pointer;
 };
 
 struct weston_move_grab {
@@ -332,8 +331,6 @@ shell_grab_start(struct shell_grab *grab,
 	wl_signal_add(&shsurf->destroy_signal,
 		      &grab->shsurf_destroy_listener);
 
-	grab->pointer = pointer;
-
 	weston_pointer_start_grab(pointer, &grab->grab);
 	if (shell->child.desktop_shell) {
 		desktop_shell_send_grab_cursor(shell->child.desktop_shell,
@@ -350,7 +347,7 @@ shell_grab_end(struct shell_grab *grab)
 	if (grab->shsurf)
 		wl_list_remove(&grab->shsurf_destroy_listener.link);
 
-	weston_pointer_end_grab(grab->pointer);
+	weston_pointer_end_grab(grab->grab.pointer);
 }
 
 static void
