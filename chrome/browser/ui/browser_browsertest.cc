@@ -86,6 +86,10 @@
 #include "chrome/browser/browser_process.h"
 #endif
 
+#if defined(OS_WIN) && defined(USE_ASH)
+#include "base/win/windows_version.h"
+#endif
+
 using content::InterstitialPage;
 using content::HostZoomMap;
 using content::NavigationController;
@@ -1949,6 +1953,12 @@ class AppModeTest : public BrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(AppModeTest, EnableAppModeTest) {
+#if defined(OS_WIN) && defined(USE_ASH)
+  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+    return;
+#endif
+
   // Test that an application browser window loads correctly.
 
   // Verify the browser is in application mode.

@@ -37,6 +37,10 @@
 #include "base/mac/scoped_nsautorelease_pool.h"
 #endif
 
+#if defined(OS_WIN) && defined(USE_ASH)
+#include "base/win/windows_version.h"
+#endif
+
 using content::BrowserThread;
 using content::URLRequestMockHTTPJob;
 
@@ -562,6 +566,12 @@ const char* const PepperContentSettingsTest::kExternalClearKeyMimeType =
 
 // Tests Pepper plugins that use JavaScript instead of Plug-ins settings.
 IN_PROC_BROWSER_TEST_F(PepperContentSettingsTest, PluginSpecialCases) {
+#if defined(OS_WIN) && defined(USE_ASH)
+  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+    return;
+#endif
+
   HostContentSettingsMap* content_settings =
       browser()->profile()->GetHostContentSettingsMap();
 

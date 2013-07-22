@@ -24,6 +24,10 @@
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/common/id_util.h"
 
+#if defined(OS_WIN) && defined(USE_ASH)
+#include "base/win/windows_version.h"
+#endif
+
 using content::WebContents;
 using extensions::Extension;
 
@@ -70,6 +74,12 @@ class ExtensionInstallUIBrowserTest : public ExtensionBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
                        MAYBE_TestThemeInstallUndoResetsToDefault) {
+#if defined(OS_WIN) && defined(USE_ASH)
+  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+    return;
+#endif
+
   // Install theme once and undo to verify we go back to default theme.
   base::FilePath theme_crx = PackExtension(test_data_dir_.AppendASCII("theme"));
   ASSERT_TRUE(InstallExtensionWithUIAutoConfirm(theme_crx, 1, browser()));
@@ -94,6 +104,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
                        TestThemeInstallUndoResetsToPreviousTheme) {
+#if defined(OS_WIN) && defined(USE_ASH)
+  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+    return;
+#endif
+
   // Install first theme.
   InstallThemeAndVerify("theme", "camo theme");
   const Extension* theme = GetTheme();

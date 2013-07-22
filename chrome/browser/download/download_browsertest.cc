@@ -83,6 +83,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if defined(OS_WIN) && defined(USE_ASH)
+#include "base/win/windows_version.h"
+#endif
+
 using content::BrowserContext;
 using content::BrowserThread;
 using content::DownloadItem;
@@ -2772,6 +2776,12 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, HiddenDownload) {
 
 // Verify the multiple downloads infobar.
 IN_PROC_BROWSER_TEST_F(DownloadTest, TestMultipleDownloadsInfobar) {
+#if defined(OS_WIN) && defined(USE_ASH)
+  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+    return;
+#endif
+
   ASSERT_TRUE(test_server()->Start());
 
   // Create a downloads observer.

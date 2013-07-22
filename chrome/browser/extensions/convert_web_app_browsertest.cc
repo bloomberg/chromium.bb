@@ -24,6 +24,10 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 
+#if defined(OS_WIN) && defined(USE_ASH)
+#include "base/win/windows_version.h"
+#endif
+
 namespace extensions {
 
 class ExtensionFromWebAppTest
@@ -59,6 +63,12 @@ class ExtensionFromWebAppTest
 #endif
 
 IN_PROC_BROWSER_TEST_F(ExtensionFromWebAppTest, MAYBE_Basic) {
+#if defined(OS_WIN) && defined(USE_ASH)
+  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+    return;
+#endif
+
   browser()->profile()->GetExtensionService()->set_show_extensions_prompts(
       false);
 

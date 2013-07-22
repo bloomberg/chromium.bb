@@ -20,6 +20,10 @@
 #include "content/public/test/browser_test_utils.h"
 #include "net/base/net_util.h"
 
+#if defined(OS_WIN) && defined(USE_ASH)
+#include "base/win/windows_version.h"
+#endif
+
 using content::NavigationController;
 using content::WebContents;
 using extensions::Extension;
@@ -124,6 +128,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_PluginLoadUnload) {
 #endif
 // Tests that private extension plugins are only visible to the extension.
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_PluginPrivate) {
+#if defined(OS_WIN) && defined(USE_ASH)
+  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+    return;
+#endif
+
   if (!content::PluginService::GetInstance()->NPAPIPluginsSupported())
     return;
 

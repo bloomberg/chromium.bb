@@ -45,6 +45,10 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "url/gurl.h"
 
+#if defined(OS_WIN) && defined(USE_ASH)
+#include "base/win/windows_version.h"
+#endif
+
 using apps::ShellWindow;
 using content::WebContents;
 using web_modal::WebContentsModalDialogManager;
@@ -792,6 +796,11 @@ void PlatformAppDevToolsBrowserTest::RunTestWithDevTools(
 #define MAYBE_ReOpenedWithID ReOpenedWithID
 #endif
 IN_PROC_BROWSER_TEST_F(PlatformAppDevToolsBrowserTest, MAYBE_ReOpenedWithID) {
+#if defined(OS_WIN) && defined(USE_ASH)
+  // Disable this test in Metro+Ash for now (http://crbug.com/179830).
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+    return;
+#endif
   RunTestWithDevTools("minimal_id", RELAUNCH | HAS_ID);
 }
 

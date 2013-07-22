@@ -22,6 +22,10 @@
 #include "content/public/browser/web_contents.h"
 #include "net/base/net_util.h"
 
+#if defined(OS_WIN) && defined(USE_ASH)
+#include "base/win/windows_version.h"
+#endif
+
 // These tests don't apply to the Mac version; see GetCommandLineForRelaunch
 // for details.
 #if !defined(OS_MACOSX)
@@ -37,6 +41,12 @@ class ChromeMainTest : public InProcessBrowserTest {
 
 // Make sure that the second invocation creates a new window.
 IN_PROC_BROWSER_TEST_F(ChromeMainTest, SecondLaunch) {
+#if defined(OS_WIN) && defined(USE_ASH)
+  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+    return;
+#endif
+
   ui_test_utils::BrowserAddedObserver observer;
   Relaunch(GetCommandLineForRelaunch());
   observer.WaitForSingleNewBrowser();
@@ -45,6 +55,12 @@ IN_PROC_BROWSER_TEST_F(ChromeMainTest, SecondLaunch) {
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeMainTest, ReuseBrowserInstanceWhenOpeningFile) {
+#if defined(OS_WIN) && defined(USE_ASH)
+  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+    return;
+#endif
+
   base::FilePath test_file_path = ui_test_utils::GetTestFilePath(
       base::FilePath(), base::FilePath().AppendASCII("empty.html"));
   CommandLine new_command_line(GetCommandLineForRelaunch());
@@ -94,6 +110,12 @@ IN_PROC_BROWSER_TEST_F(ChromeMainTest, MAYBE_SecondLaunchWithIncognitoUrl) {
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeMainTest, SecondLaunchFromIncognitoWithNormalUrl) {
+#if defined(OS_WIN) && defined(USE_ASH)
+  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+    return;
+#endif
+
   // We should start with one normal window.
   ASSERT_EQ(1u, chrome::GetTabbedBrowserCount(browser()->profile(),
                                               browser()->host_desktop_type()));

@@ -50,6 +50,10 @@ using sessions::SerializedNavigationEntryTestHelper;
 #include "base/mac/scoped_nsautorelease_pool.h"
 #endif
 
+#if defined(OS_WIN) && defined(USE_ASH)
+#include "base/win/windows_version.h"
+#endif
+
 class SessionRestoreTest : public InProcessBrowserTest {
  public:
   SessionRestoreTest() : active_browser_list_(NULL) {}
@@ -851,6 +855,12 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, NormalAndPopup) {
 // If this test flakes, use http://crbug.com/29110
 IN_PROC_BROWSER_TEST_F(SessionRestoreTest,
                        RestoreAfterClosingTabbedBrowserWithAppAndLaunching) {
+#if defined(OS_WIN) && defined(USE_ASH)
+  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+    return;
+#endif
+
   ui_test_utils::NavigateToURL(browser(), url1_);
 
   // Launch an app.
