@@ -19,6 +19,8 @@
 #include "nacl_io/osunistd.h"
 #include "pepper_interface_mock.h"
 
+using namespace nacl_io;
+
 using ::testing::_;
 using ::testing::DoAll;
 using ::testing::Mock;

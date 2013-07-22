@@ -5,7 +5,7 @@
 
 #include "mount_node_mock.h"
 
-MountNodeMock::MountNodeMock(Mount* mount) : MountNode(mount) {}
+MountNodeMock::MountNodeMock(nacl_io::Mount* mount) : MountNode(mount) {}
 
 MountNodeMock::~MountNodeMock() {}
 

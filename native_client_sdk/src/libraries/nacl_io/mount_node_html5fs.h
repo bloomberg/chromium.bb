@@ -8,6 +8,8 @@
 #include <ppapi/c/pp_resource.h>
 #include "nacl_io/mount_node.h"
 
+namespace nacl_io {
+
 class MountHtml5Fs;
 
 class MountNodeHtml5Fs : public MountNode {
@@ -48,5 +50,7 @@ class MountNodeHtml5Fs : public MountNode {
 
   friend class MountHtml5Fs;
 };
+
+}  // namespace nacl_io
 
 #endif  // LIBRARIES_NACL_IO_MOUNT_HTML5FS_NODE_H_

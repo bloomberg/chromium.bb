@@ -19,6 +19,8 @@
 #define snprintf _snprintf
 #endif
 
+namespace nacl_io {
+
 namespace {
 
 // If we're attempting to read a partial request, but the server returns a full
@@ -538,4 +540,6 @@ Error MountNodeHttp::DownloadToBuffer(PP_Resource loader,
   *out_bytes = count;
   return 0;
 }
+
+}  // namespace nacl_io
 

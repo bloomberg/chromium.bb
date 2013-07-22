@@ -17,10 +17,12 @@
 #include "sdk_util/scoped_ref.h"
 #include "sdk_util/simple_lock.h"
 
+namespace nacl_io {
+
 // KernelHandle provides a reference counted container for the open
 // file information, such as it's mount, node, access type and offset.
 // KernelHandle can only be referenced when the KernelProxy lock is held.
-class KernelHandle : public RefObject {
+class KernelHandle : public sdk_util::RefObject {
  public:
   KernelHandle();
   KernelHandle(const ScopedMount& mnt, const ScopedMountNode& node);
@@ -36,19 +38,21 @@ class KernelHandle : public RefObject {
   Error Write(const void* buf, size_t nbytes, int* bytes_written);
   Error GetDents(struct dirent* pdir, size_t count, int* bytes_written);
 
-  const ScopedRef<MountNode>& node();
-  const ScopedRef<Mount>& mount();
+  const ScopedMountNode& node() { return node_; }
+  const ScopedMount& mount() { return mount_; }
 
 private:
-  ScopedRef<MountNode> node_;
-  ScopedRef<Mount> mount_;
-  SimpleLock offs_lock_;
+  ScopedMountNode node_;
+  ScopedMount mount_;
+  sdk_util::SimpleLock offs_lock_;
   size_t offs_;
 
   friend class KernelProxy;
   DISALLOW_COPY_AND_ASSIGN(KernelHandle);
 };
 
-typedef ScopedRef<KernelHandle> ScopedKernelHandle;
+typedef sdk_util::ScopedRef<KernelHandle> ScopedKernelHandle;
+
+}  // namespace nacl_io
 
 #endif  // LIBRARIES_NACL_IO_KERNEL_HANDLE_H_

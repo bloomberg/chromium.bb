@@ -17,6 +17,8 @@
 #include "nacl_io/osdirent.h"
 #include "nacl_io/osunistd.h"
 
+using namespace nacl_io;
+
 namespace {
 
 class MountMemMock : public MountMem {

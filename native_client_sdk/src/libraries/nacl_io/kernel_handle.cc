@@ -14,6 +14,8 @@
 
 #include "sdk_util/auto_lock.h"
 
+namespace nacl_io {
+
 // It is only legal to construct a handle while the kernel lock is held.
 KernelHandle::KernelHandle()
     : mount_(NULL), node_(NULL), offs_(0) {}
@@ -104,5 +106,4 @@ Error KernelHandle::GetDents(struct dirent* pdir, size_t nbytes, int* cnt) {
   return error;
 }
 
-const ScopedRef<MountNode>& KernelHandle::node() { return node_; }
-const ScopedRef<Mount>& KernelHandle::mount() { return mount_; }
+}  // namespace nacl_io

@@ -15,6 +15,8 @@
 #include "nacl_io/mount_node_html5fs.h"
 #include "sdk_util/auto_lock.h"
 
+namespace nacl_io {
+
 namespace {
 
 #if defined(WIN32)
@@ -184,4 +186,6 @@ void MountHtml5Fs::FilesystemOpenCallback(int32_t result) {
   filesystem_open_error_ = PPErrorToErrno(result);
   pthread_cond_signal(&filesystem_open_cond_);
 }
+
+}  // namespace nacl_io
 

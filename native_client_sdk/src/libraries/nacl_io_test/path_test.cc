@@ -9,6 +9,8 @@
 
 #include "gtest/gtest.h"
 
+using namespace nacl_io;
+
 TEST(PathTest, SanityChecks) {
   // can we construct and delete?
   Path ph1(".");

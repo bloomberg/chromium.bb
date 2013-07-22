@@ -8,6 +8,8 @@
 #include <string.h>
 #include <string>
 
+namespace nacl_io {
+
 Path::Path() {}
 
 Path::Path(const Path& path) {
@@ -201,4 +203,6 @@ Path& Path::operator =(const Path& p) {
 Path& Path::operator =(const std::string& p) {
   return Set(p);
 }
+
+}  // namespace nacl_io
 

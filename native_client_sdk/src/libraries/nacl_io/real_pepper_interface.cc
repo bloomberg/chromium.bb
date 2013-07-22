@@ -9,6 +9,7 @@
 
 #include <ppapi/c/pp_errors.h>
 
+namespace nacl_io {
 
 #include "nacl_io/pepper/undef_macros.h"
 #define BEGIN_INTERFACE(BaseClass, PPInterface, InterfaceString) \
@@ -136,4 +137,6 @@ int32_t RealPepperInterface::InitializeMessageLoop() {
 
   return PP_OK;
 }
+
+}  // namespace nacl_io
 

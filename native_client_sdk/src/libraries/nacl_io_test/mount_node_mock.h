@@ -10,9 +10,12 @@
 
 #include "nacl_io/mount.h"
 
-class MountNodeMock : public MountNode {
+class MountNodeMock : public nacl_io::MountNode {
  public:
-  explicit MountNodeMock(Mount*);
+  typedef nacl_io::Error Error;
+  typedef nacl_io::ScopedMountNode ScopedMountNode;
+
+  explicit MountNodeMock(nacl_io::Mount*);
   virtual ~MountNodeMock();
 
   MOCK_METHOD1(Init, Error(int));

@@ -9,6 +9,8 @@
 #include "pthread.h"
 #include "sdk_util/macros.h"
 
+namespace sdk_util {
+
 /*
  * SimpleLock
  *
@@ -32,6 +34,8 @@ class SimpleLock {
 
   DISALLOW_COPY_AND_ASSIGN(SimpleLock);
 };
+
+}  // namespace sdk_util
 
 #endif  // LIBRARIES_SDK_UTIL_SIMPLE_LOCK_H_
 

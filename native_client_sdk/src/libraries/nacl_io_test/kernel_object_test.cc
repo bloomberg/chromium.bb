@@ -18,6 +18,8 @@
 
 #include "gtest/gtest.h"
 
+using namespace nacl_io;
+
 namespace {
 
 class MountNodeRefMock : public MountNode {

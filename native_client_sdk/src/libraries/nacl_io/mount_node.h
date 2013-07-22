@@ -8,23 +8,23 @@
 #include <string>
 
 #include "nacl_io/error.h"
+#include "nacl_io/osdirent.h"
 #include "nacl_io/osstat.h"
 
 #include "sdk_util/ref_object.h"
 #include "sdk_util/scoped_ref.h"
 #include "sdk_util/simple_lock.h"
 
-struct dirent;
-struct stat;
+namespace nacl_io {
 
 class Mount;
 class MountNode;
 
-typedef ScopedRef<MountNode> ScopedMountNode;
+typedef sdk_util::ScopedRef<MountNode> ScopedMountNode;
 
 // NOTE: The KernelProxy is the only class that should be setting errno. All
 // other classes should return Error (as defined by nacl_io/error.h).
-class MountNode : public RefObject {
+class MountNode : public sdk_util::RefObject {
  protected:
   explicit MountNode(Mount* mount);
   virtual ~MountNode();
@@ -97,7 +97,7 @@ class MountNode : public RefObject {
 
  protected:
   struct stat stat_;
-  SimpleLock node_lock_;
+  sdk_util::SimpleLock node_lock_;
 
   // We use a pointer directly to avoid cycles in the ref count.
   // TODO(noelallen) We should change this so it's unnecessary for the node
@@ -112,5 +112,7 @@ class MountNode : public RefObject {
   friend class MountMem;
   friend class MountNodeDir;
 };
+
+}  // namespace nacl_io
 
 #endif  // LIBRARIES_NACL_IO_MOUNT_NODE_H_

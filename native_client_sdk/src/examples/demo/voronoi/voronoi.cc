@@ -26,6 +26,8 @@
 
 #include "sdk_util/thread_pool.h"
 
+using namespace sdk_util;  // For sdk_util::ThreadPool
+
 // Global properties used to setup Voronoi demo.
 namespace {
 const int kMinRectSize = 4;

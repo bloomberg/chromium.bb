@@ -11,6 +11,8 @@
 
 #include "sdk_util/atomicops.h"
 
+namespace sdk_util {
+
 class ScopedRefBase;
 
 /*
@@ -66,6 +68,8 @@ class RefObject {
 
   friend class ScopedRefBase;
 };
+
+}  // namespace sdk_util
 
 #endif  // LIBRARIES_SDK_UTIL_REF_OBJECT
 

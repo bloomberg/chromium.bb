@@ -31,6 +31,8 @@
 #include "sdk_util/macros.h"
 #include "sdk_util/thread_pool.h"
 
+using namespace sdk_util;  // For sdk_util::ThreadPool
+
 // Global properties used to setup Earth demo.
 namespace {
 const float kHugeZ = 1.0e38f;

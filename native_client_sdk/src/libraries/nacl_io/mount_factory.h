@@ -11,6 +11,8 @@
 #include "nacl_io/error.h"
 #include "sdk_util/scoped_ref.h"
 
+namespace nacl_io {
+
 class PepperInterface;
 class Mount;
 
@@ -22,8 +24,10 @@ class MountFactory {
   virtual Error CreateMount(int dev,
                             StringMap_t& args,
                             PepperInterface* ppapi,
-                            ScopedRef<Mount>* out_mount) = 0;
+                            sdk_util::ScopedRef<Mount>* out_mount) = 0;
 };
+
+}  // namespace nacl_io
 
 #endif  // LIBRARIES_NACL_IO_MOUNT_FACTORY_H_
 

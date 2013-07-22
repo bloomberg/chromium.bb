@@ -8,6 +8,8 @@
 #include "nacl_io/mount.h"
 #include "nacl_io/typed_mount_factory.h"
 
+namespace nacl_io {
+
 class MountMem : public Mount {
  protected:
   MountMem();
@@ -45,5 +47,7 @@ private:
   friend class TypedMountFactory<MountMem>;
   DISALLOW_COPY_AND_ASSIGN(MountMem);
 };
+
+}  // namespace nacl_io
 
 #endif  // LIBRARIES_NACL_IO_MOUNT_MEM_H_

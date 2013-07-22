@@ -20,6 +20,8 @@
 #include <windows.h>
 #endif
 
+namespace nacl_io {
+
 Mount::Mount() : dev_(0) {}
 
 Mount::~Mount() {}
@@ -59,4 +61,6 @@ void Mount::OnNodeDestroyed(MountNode* node) {
   if (node->stat_.st_ino)
     inode_pool_.Release(node->stat_.st_ino);
 }
+
+}  // namespace nacl_io
 

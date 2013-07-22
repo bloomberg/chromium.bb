@@ -19,6 +19,8 @@
 #include "nacl_io/pepper_interface.h"
 #include "sdk_util/auto_lock.h"
 
+namespace nacl_io {
+
 namespace {
 
 struct OutputBuffer {
@@ -304,4 +306,6 @@ void MountNodeHtml5Fs::Destroy() {
   fileref_resource_ = 0;
   MountNode::Destroy();
 }
+
+}  // namespace nacl_io
 

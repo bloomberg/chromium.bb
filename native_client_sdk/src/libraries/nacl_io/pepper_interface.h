@@ -23,6 +23,8 @@
 
 #include <sdk_util/macros.h>
 
+namespace nacl_io {
+
 // Note: To add a new interface:
 //
 // 1. Using one of the other interfaces as a template, add your interface to
@@ -97,5 +99,7 @@ class ScopedResource {
 
   DISALLOW_COPY_AND_ASSIGN(ScopedResource);
 };
+
+}  // namespace nacl_io
 
 #endif  // LIBRARIES_NACL_IO_PEPPER_INTERFACE_H_

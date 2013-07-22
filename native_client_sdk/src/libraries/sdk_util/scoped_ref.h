@@ -11,6 +11,8 @@
 #include "sdk_util/macros.h"
 #include "sdk_util/ref_object.h"
 
+namespace sdk_util {
+
 class ScopedRefBase {
  protected:
   ScopedRefBase() : ptr_(NULL) {}
@@ -79,5 +81,7 @@ class ScopedRef : public ScopedRefBase {
     return (ptr_ != NULL) ? &ScopedRef::bool_as_func_impl : 0;
   }
 };
+
+}  // namespace sdk_util
 
 #endif  // LIBRARIES_SDK_UTIL_SCOPED_REF_H_

@@ -23,6 +23,8 @@
 #include "nacl_io/osinttypes.h"
 #include "nacl_io/osunistd.h"
 
+namespace nacl_io {
+
 namespace {
 
 typedef std::vector<char*> StringList_t;
@@ -399,3 +401,5 @@ std::string MountHttp::MakeUrl(const Path& path) {
   return url_root_ +
          (path.IsAbsolute() ? path.Range(1, path.Size()) : path.Join());
 }
+
+}  // namespace nacl_io

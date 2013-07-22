@@ -11,6 +11,8 @@
 #include "nacl_io/kernel_wrap.h"
 #include "kernel_proxy_mock.h"
 
+using namespace nacl_io;
+
 using ::testing::_;
 using ::testing::Return;
 using ::testing::StrEq;

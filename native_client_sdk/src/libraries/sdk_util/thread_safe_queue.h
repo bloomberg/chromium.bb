@@ -12,6 +12,7 @@
 #include "sdk_util/auto_lock.h"
 #include "sdk_util/macros.h"
 
+namespace sdk_util {
 
 // ThreadSafeQueue
 //
@@ -56,6 +57,8 @@ template<class T> class ThreadSafeQueue {
   SimpleLock lock_;
   DISALLOW_COPY_AND_ASSIGN(ThreadSafeQueue);
 };
+
+}  // namespace sdk_util
 
 #endif  // LIBRARIES_SDK_UTIL_THREAD_SAFE_QUEUE_H_
 

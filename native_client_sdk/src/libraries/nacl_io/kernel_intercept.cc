@@ -10,6 +10,7 @@
 #include "nacl_io/pepper_interface.h"
 #include "nacl_io/real_pepper_interface.h"
 
+using namespace nacl_io;
 
 static KernelProxy* s_kp;
 

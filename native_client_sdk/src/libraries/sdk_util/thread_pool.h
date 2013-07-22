@@ -12,6 +12,8 @@
 
 #include "sdk_util/atomicops.h"
 
+namespace sdk_util {
+
 // typdef helper for work function
 typedef void (*WorkFunction)(int task_index, void* data);
 
@@ -43,5 +45,8 @@ class ThreadPool {
   sem_t work_sem_;
   sem_t done_sem_;
 };
+
+}  // namespace sdk_util
+
 #endif  // LIBRARIES_SDK_UTIL_THREAD_POOL_H_
 

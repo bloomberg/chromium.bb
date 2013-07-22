@@ -10,6 +10,8 @@
 
 #include "sdk_util/macros.h"
 
+namespace nacl_io {
+
 typedef std::vector<std::string> StringArray_t;
 
 class Path {
@@ -65,5 +67,7 @@ class Path {
   // path.
   StringArray_t paths_;
 };
+
+}  // namespace nacl_io
 
 #endif  // PACKAGES_LIBRARIES_NACL_IO_PATH_H_

@@ -13,6 +13,7 @@
 #include "pthread.h"
 #include "sdk_util/auto_lock.h"
 
+namespace nacl_io {
 
 class INodePool {
  public:
@@ -52,7 +53,9 @@ class INodePool {
   size_t num_nodes_;
   size_t max_nodes_;
   std::vector<ino_t> inos_;
-  SimpleLock lock_;
+  sdk_util::SimpleLock lock_;
 };
+
+}  // namespace nacl_io
 
 #endif  // LIBRARIES_NACL_IO_INODE_POOL_H_

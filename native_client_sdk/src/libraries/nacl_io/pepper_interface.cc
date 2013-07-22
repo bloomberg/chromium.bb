@@ -6,6 +6,8 @@
 #include <errno.h>
 #include <ppapi/c/pp_errors.h>
 
+namespace nacl_io {
+
 ScopedResource::ScopedResource(PepperInterface* ppapi, PP_Resource resource)
     : ppapi_(ppapi),
       resource_(resource) {
@@ -53,3 +55,4 @@ int PPErrorToErrno(int32_t err) {
   return EINVAL;
 }
 
+}  // namespace nacl_io

@@ -11,8 +11,11 @@
 #include "nacl_io/pepper_interface.h"
 #include "nacl_io/typed_mount_factory.h"
 
-class MountNode;
 class MountHttpMock;
+
+namespace nacl_io {
+
+class MountNode;
 
 std::string NormalizeHeaderKey(const std::string& s);
 
@@ -55,7 +58,9 @@ class MountHttp : public Mount {
 
   friend class TypedMountFactory<MountHttp>;
   friend class MountNodeHttp;
-  friend class MountHttpMock;
+  friend class ::MountHttpMock;
 };
+
+}  // namespace nacl_io
 
 #endif  // LIBRARIES_NACL_IO_MOUNT_HTTP_H_

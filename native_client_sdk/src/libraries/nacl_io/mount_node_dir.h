@@ -10,7 +10,7 @@
 
 #include "nacl_io/mount_node.h"
 
-struct dirent;
+namespace nacl_io {
 
 class MountDev;
 class MountHtml5Fs;
@@ -18,7 +18,7 @@ class MountHttp;
 class MountMem;
 class MountNodeDir;
 
-typedef ScopedRef<MountNodeDir> ScopedMountNodeDir;
+typedef sdk_util::ScopedRef<MountNodeDir> ScopedMountNodeDir;
 
 class MountNodeDir : public MountNode {
  protected:
@@ -56,5 +56,7 @@ private:
   friend class MountHttp;
   friend class MountHtml5Fs;
 };
+
+}  // namespace nacl_io
 
 #endif  // LIBRARIES_NACL_IO_MOUNT_NODE_DIR_H_

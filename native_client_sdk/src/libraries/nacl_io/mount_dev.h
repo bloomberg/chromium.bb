@@ -8,6 +8,8 @@
 #include "nacl_io/mount.h"
 #include "nacl_io/typed_mount_factory.h"
 
+namespace nacl_io {
+
 class MountNode;
 
 class MountDev : public Mount {
@@ -30,5 +32,7 @@ class MountDev : public Mount {
   friend class TypedMountFactory<MountDev>;
   DISALLOW_COPY_AND_ASSIGN(MountDev);
 };
+
+}  // namespace nacl_io
 
 #endif  // LIBRARIES_NACL_IO_MOUNT_DEV_H_

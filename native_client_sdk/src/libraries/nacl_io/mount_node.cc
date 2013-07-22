@@ -17,6 +17,8 @@
 #include "nacl_io/osmman.h"
 #include "sdk_util/auto_lock.h"
 
+namespace nacl_io {
+
 static const int USR_ID = 1001;
 static const int GRP_ID = 1002;
 
@@ -148,4 +150,6 @@ int MountNode::ChildCount() { return 0; }
 void MountNode::Link() { stat_.st_nlink++; }
 
 void MountNode::Unlink() { stat_.st_nlink--; }
+
+}  // namespace nacl_io
 

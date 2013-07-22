@@ -14,6 +14,8 @@
 #include "nacl_io/mount_node.h"
 #include "nacl_io/pepper_interface.h"
 
+namespace nacl_io {
+
 typedef std::map<std::string, std::string> StringMap_t;
 
 class MountNodeHttp : public MountNode {
@@ -66,5 +68,7 @@ class MountNodeHttp : public MountNode {
 
   friend class MountHttp;
 };
+
+}  // namespace nacl_io
 
 #endif  // LIBRARIES_NACL_IO_MOUNT_NODE_HTTP_H_

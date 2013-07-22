@@ -13,6 +13,8 @@
 #include "nacl_io/ostypes.h"
 #include "nacl_io/osutime.h"
 
+namespace nacl_io {
+
 class PepperInterface;
 
 // KernelProxy provide one-to-one mapping for libc kernel calls.  Calls to the
@@ -123,5 +125,7 @@ protected:
 
   DISALLOW_COPY_AND_ASSIGN(KernelProxy);
 };
+
+}  // namespace nacl_io
 
 #endif  // LIBRARIES_NACL_IO_KERNEL_PROXY_H_

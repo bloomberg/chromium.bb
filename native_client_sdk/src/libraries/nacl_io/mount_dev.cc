@@ -28,6 +28,8 @@
 #include <stdlib.h>
 #endif
 
+namespace nacl_io {
+
 namespace {
 
 class RealNode : public MountNode {
@@ -412,4 +414,6 @@ Error MountDev::Init(int dev, StringMap_t& args, PepperInterface* ppapi) {
 
   return 0;
 }
+
+}  // namespace nacl_io
 

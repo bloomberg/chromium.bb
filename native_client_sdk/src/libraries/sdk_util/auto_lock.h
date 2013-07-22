@@ -10,11 +10,12 @@
 #include "sdk_util/macros.h"
 #include "sdk_util/simple_lock.h"
 
+namespace sdk_util {
 
 // This macro is provided to allow us to quickly instrument locking for
 // debugging purposes.
 #define AUTO_LOCK(lock)                         \
-  AutoLock Lock##__LINE__(lock);
+  ::sdk_util::AutoLock Lock##__LINE__(lock);
 
 class AutoLock {
  public:
@@ -37,6 +38,8 @@ class AutoLock {
 
   DISALLOW_COPY_AND_ASSIGN(AutoLock);
 };
+
+}  // namespace sdk_util
 
 #endif  // LIBRARIES_SDK_UTIL_AUTO_LOCK_H_
 

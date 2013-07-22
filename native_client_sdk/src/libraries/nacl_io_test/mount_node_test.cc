@@ -19,6 +19,8 @@
 
 #define NULL_NODE ((MountNode*) NULL)
 
+using namespace nacl_io;
+
 static int s_AllocNum = 0;
 
 class MockMemory : public MountNodeMem {

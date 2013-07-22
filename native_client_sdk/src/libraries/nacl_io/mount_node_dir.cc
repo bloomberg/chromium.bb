@@ -12,6 +12,8 @@
 #include "sdk_util/auto_lock.h"
 #include "sdk_util/macros.h"
 
+namespace nacl_io {
+
 MountNodeDir::MountNodeDir(Mount* mount) : MountNode(mount), cache_(NULL) {
   stat_.st_mode |= S_IFDIR;
 }
@@ -142,4 +144,6 @@ void MountNodeDir::BuildCache() {
     }
   }
 }
+
+}  // namespace nacl_io
 

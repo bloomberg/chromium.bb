@@ -7,6 +7,8 @@
 
 #include "nacl_io/mount_node.h"
 
+namespace nacl_io {
+
 class MountNodeMem : public MountNode {
  public:
   explicit MountNodeMem(Mount* mount);
@@ -28,5 +30,7 @@ class MountNodeMem : public MountNode {
   size_t capacity_;
   friend class MountMem;
 };
+
+}  // namespace nacl_io
 
 #endif  // LIBRARIES_NACL_IO_MOUNT_NODE_MEM_H_

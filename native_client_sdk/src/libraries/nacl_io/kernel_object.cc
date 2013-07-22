@@ -22,6 +22,8 @@
 #include "sdk_util/ref_object.h"
 #include "sdk_util/scoped_ref.h"
 
+namespace nacl_io {
+
 KernelObject::KernelObject() {
   cwd_ = "/";
 }
@@ -182,7 +184,7 @@ void KernelObject::FreeAndReassignFD(int fd, const ScopedKernelHandle& handle) {
 
     // If the required FD is larger than the current set, grow the set
     if (fd >= handle_map_.size())
-      handle_map_.resize(fd + 1, ScopedRef<KernelHandle>());
+      handle_map_.resize(fd + 1);
 
     handle_map_[fd] = handle;
   }
@@ -197,3 +199,5 @@ void KernelObject::FreeFD(int fd) {
   // Force lower numbered FD to be available first.
   std::push_heap(free_fds_.begin(), free_fds_.end(), std::greater<int>());
 }
+
+}  // namespace nacl_io

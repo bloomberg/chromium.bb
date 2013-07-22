@@ -8,6 +8,8 @@
 #include "nacl_io/mount.h"
 #include "nacl_io/typed_mount_factory.h"
 
+namespace nacl_io {
+
 class MountPassthrough : public Mount {
  protected:
   MountPassthrough();
@@ -28,5 +30,7 @@ private:
  friend class TypedMountFactory<MountPassthrough>;
  DISALLOW_COPY_AND_ASSIGN(MountPassthrough);
 };
+
+}  // namespace nacl_io
 
 #endif  // LIBRARIES_NACL_IO_MOUNT_PASSTHROUGH_H_

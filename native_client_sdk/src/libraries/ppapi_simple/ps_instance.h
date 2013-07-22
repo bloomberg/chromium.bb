@@ -124,7 +124,7 @@ class PSInstance : public pp::Instance, pp::MouseLock, pp::Graphics3DClient {
   pp::MessageLoop* main_loop_;
 
   PropertyMap_t properties_;
-  ThreadSafeQueue<PSEvent> event_queue_;
+  sdk_util::ThreadSafeQueue<PSEvent> event_queue_;
   uint32_t events_enabled_;
   Verbosity verbosity_;
   int fd_tty_;
@@ -134,9 +134,6 @@ class PSInstance : public pp::Instance, pp::MouseLock, pp::Graphics3DClient {
   const PPB_Core* ppb_core_;
   const PPB_Var* ppb_var_;
   const PPB_View* ppb_view_;
-
-  friend class PSGraphics3DClient;
-  friend class PSMouseLock;
 };
 
 #endif  // PPAPI_MAIN_PS_INSTANCE_H_

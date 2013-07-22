@@ -11,6 +11,8 @@
 
 #include "sdk_util/auto_lock.h"
 
+namespace sdk_util {
+
 // Initializes mutex, semaphores and a pool of threads.  If 0 is passed for
 // num_threads, all work will be performed on the dispatch thread.
 ThreadPool::ThreadPool(int num_threads)
@@ -133,4 +135,6 @@ void ThreadPool::Dispatch(int num_tasks, WorkFunction work, void* data) {
   else
     DispatchHere(num_tasks, work, data);
 }
+
+}  // namespace sdk_util
 

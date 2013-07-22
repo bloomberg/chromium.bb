@@ -6,6 +6,8 @@
 #include <errno.h>
 #include "nacl_io/kernel_wrap_real.h"
 
+namespace nacl_io {
+
 class MountNodePassthrough : public MountNode {
  public:
   explicit MountNodePassthrough(Mount* mount, int real_fd)
@@ -155,4 +157,6 @@ Error MountPassthrough::Remove(const Path& path) {
   // Not implemented by NaCl.
   return ENOSYS;
 }
+
+}  // namespace nacl_io
 

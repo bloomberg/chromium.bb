@@ -33,9 +33,7 @@
 #define MAXPATHLEN 256
 #endif
 
-// TODO(noelallen) : Grab/Redefine these in the kernel object once available.
-#define USR_ID 1002
-#define GRP_ID 1003
+namespace nacl_io {
 
 KernelProxy::KernelProxy() : dev_(0), ppapi_(NULL) {
 }
@@ -641,4 +639,6 @@ int KernelProxy::munmap(void* addr, size_t length) {
   // free().
   return 0;
 }
+
+}  // namespace nacl_io
 

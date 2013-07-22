@@ -10,6 +10,8 @@
 #include "nacl_io/osstat.h"
 #include "sdk_util/auto_lock.h"
 
+namespace nacl_io {
+
 #define BLOCK_SIZE (1 << 16)
 #define BLOCK_MASK (BLOCK_SIZE - 1)
 
@@ -92,4 +94,6 @@ Error MountNodeMem::FTruncate(off_t new_size) {
   stat_.st_size = static_cast<off_t>(new_size);
   return EIO;
 }
+
+}  // namespace nacl_io
 

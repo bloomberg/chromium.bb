@@ -11,7 +11,7 @@
 // Mock interface class definitions.
 #include "nacl_io/pepper/undef_macros.h"
 #define BEGIN_INTERFACE(BaseClass, PPInterface, InterfaceString) \
-    class BaseClass##Mock : public BaseClass { \
+    class BaseClass##Mock : public nacl_io::BaseClass { \
      public: \
       BaseClass##Mock(); \
       virtual ~BaseClass##Mock();
@@ -31,7 +31,7 @@
 #include "nacl_io/pepper/all_interfaces.h"
 
 
-class PepperInterfaceMock : public PepperInterface {
+class PepperInterfaceMock : public nacl_io::PepperInterface {
  public:
   explicit PepperInterfaceMock(PP_Instance instance);
   ~PepperInterfaceMock();

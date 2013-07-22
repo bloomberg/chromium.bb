@@ -12,7 +12,7 @@
 
 #include "nacl_io/kernel_proxy.h"
 
-class KernelProxyMock : public KernelProxy {
+class KernelProxyMock : public nacl_io::KernelProxy {
  public:
   KernelProxyMock();
   virtual ~KernelProxyMock();

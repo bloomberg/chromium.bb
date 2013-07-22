@@ -10,8 +10,14 @@
 
 #include "nacl_io/mount.h"
 
-class MountMock : public Mount {
+class MountMock : public nacl_io::Mount {
  public:
+  typedef nacl_io::Error Error;
+  typedef nacl_io::Path Path;
+  typedef nacl_io::PepperInterface PepperInterface;
+  typedef nacl_io::ScopedMountNode ScopedMountNode;
+  typedef nacl_io::StringMap_t StringMap_t;
+
   MountMock();
   virtual ~MountMock();
 
