@@ -15,6 +15,7 @@ namespace {
 const int kBlueNormalImages[] = IMAGE_GRID(IDR_BLUE_BUTTON_NORMAL);
 const int kBlueHoveredImages[] = IMAGE_GRID(IDR_BLUE_BUTTON_HOVER);
 const int kBluePressedImages[] = IMAGE_GRID(IDR_BLUE_BUTTON_PRESSED);
+const int kBlueDisabledImages[] = IMAGE_GRID(IDR_BLUE_BUTTON_DISABLED);
 const int kBlueFocusedNormalImages[] = IMAGE_GRID(
     IDR_BLUE_BUTTON_FOCUSED_NORMAL);
 const int kBlueFocusedHoveredImages[] = IMAGE_GRID(
@@ -46,7 +47,7 @@ BlueButton::BlueButton(ButtonListener* listener, const string16& text)
   button_border->SetPainter(false, STATE_PRESSED,
       Painter::CreateImageGridPainter(kBluePressedImages));
   button_border->SetPainter(false, STATE_DISABLED,
-      Painter::CreateImageGridPainter(kBlueNormalImages));
+      Painter::CreateImageGridPainter(kBlueDisabledImages));
   button_border->SetPainter(true, STATE_NORMAL,
       Painter::CreateImageGridPainter(kBlueFocusedNormalImages));
   button_border->SetPainter(true, STATE_HOVERED,
@@ -54,7 +55,7 @@ BlueButton::BlueButton(ButtonListener* listener, const string16& text)
   button_border->SetPainter(true, STATE_PRESSED,
       Painter::CreateImageGridPainter(kBlueFocusedPressedImages));
   button_border->SetPainter(true, STATE_DISABLED,
-      Painter::CreateImageGridPainter(kBlueNormalImages));
+      Painter::CreateImageGridPainter(kBlueDisabledImages));
 
   if (!gfx::IsInvertedColorScheme()) {
     for (size_t state = STATE_NORMAL; state < STATE_COUNT; ++state)

@@ -173,6 +173,15 @@
       <structure type="chrome_scaled_image" name="IDR_BUY_WITH_GOOGLE_BUTTON" file="common/buy_with_google_button.png" />
       <structure type="chrome_scaled_image" name="IDR_BUY_WITH_GOOGLE_BUTTON_H" file="common/buy_with_google_button_hover.png" />
       <structure type="chrome_scaled_image" name="IDR_BUY_WITH_GOOGLE_BUTTON_P" file="common/buy_with_google_button_pressed.png" />
+      <structure type="chrome_scaled_image" name="IDR_BLUE_BUTTON_DISABLED_BOTTOM" file="common/blue_button_inactive_bottom.png" />
+      <structure type="chrome_scaled_image" name="IDR_BLUE_BUTTON_DISABLED_BOTTOM_LEFT" file="common/blue_button_inactive_bottom_left.png" />
+      <structure type="chrome_scaled_image" name="IDR_BLUE_BUTTON_DISABLED_BOTTOM_RIGHT" file="common/blue_button_inactive_bottom_right.png" />
+      <structure type="chrome_scaled_image" name="IDR_BLUE_BUTTON_DISABLED_CENTER" file="common/blue_button_inactive_center.png" />
+      <structure type="chrome_scaled_image" name="IDR_BLUE_BUTTON_DISABLED_LEFT" file="common/blue_button_inactive_left.png" />
+      <structure type="chrome_scaled_image" name="IDR_BLUE_BUTTON_DISABLED_RIGHT" file="common/blue_button_inactive_right.png" />
+      <structure type="chrome_scaled_image" name="IDR_BLUE_BUTTON_DISABLED_TOP" file="common/blue_button_inactive_top.png" />
+      <structure type="chrome_scaled_image" name="IDR_BLUE_BUTTON_DISABLED_TOP_LEFT" file="common/blue_button_inactive_top_left.png" />
+      <structure type="chrome_scaled_image" name="IDR_BLUE_BUTTON_DISABLED_TOP_RIGHT" file="common/blue_button_inactive_top_right.png" />
       <structure type="chrome_scaled_image" name="IDR_BLUE_BUTTON_FOCUSED_HOVER_BOTTOM" file="common/blue_button_focused_hover_bottom.png" />
       <structure type="chrome_scaled_image" name="IDR_BLUE_BUTTON_FOCUSED_HOVER_BOTTOM_LEFT" file="common/blue_button_focused_hover_bottom_left.png" />
       <structure type="chrome_scaled_image" name="IDR_BLUE_BUTTON_FOCUSED_HOVER_BOTTOM_RIGHT" file="common/blue_button_focused_hover_bottom_right.png" />

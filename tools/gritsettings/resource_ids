@@ -54,8 +54,8 @@
     "structures": [5500],
   },
   "ash/resources/ash_resources.grd": {
-    "includes": [5900],
-    "structures": [6000],
+    "includes": [6100],
+    "structures": [6150],
   },
   "chrome/app/theme/theme_resources.grd": {
     "structures": [6500],
