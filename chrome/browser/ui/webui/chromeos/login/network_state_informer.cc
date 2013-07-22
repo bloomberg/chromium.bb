@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/net/proxy_config_handler.h"
 #include "chrome/browser/prefs/proxy_config_dictionary.h"
@@ -216,9 +217,10 @@ NetworkStateInformer::State NetworkStateInformer::GetNetworkState(
 
 bool NetworkStateInformer::IsProxyConfigured(const NetworkState* network) {
   DCHECK(network);
-
-  scoped_ptr<ProxyConfigDictionary> proxy_dict(
-      proxy_config::GetProxyConfigForNetwork(*network));
+  onc::ONCSource onc_source = onc::ONC_SOURCE_NONE;
+  scoped_ptr<ProxyConfigDictionary> proxy_dict =
+      proxy_config::GetProxyConfigForNetwork(
+          NULL, g_browser_process->local_state(), *network, &onc_source);
   ProxyPrefs::ProxyMode mode;
   return (proxy_dict &&
           proxy_dict->GetMode(&mode) &&

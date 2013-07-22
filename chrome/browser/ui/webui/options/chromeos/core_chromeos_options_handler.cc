@@ -104,20 +104,24 @@ void CoreChromeOSOptionsHandler::RegisterMessages() {
 }
 
 void CoreChromeOSOptionsHandler::InitializeHandler() {
-  // In case the options page is reloaded, forget the last selected network.
+  // This function is both called on the initial page load and on each reload.
+  // For the latter case, forget the last selected network.
   proxy_config_service_.SetCurrentNetwork(std::string());
+  // And clear the cached configuration.
+  proxy_config_service_.UpdateFromPrefs();
 
   CoreOptionsHandler::InitializeHandler();
 
+  PrefService* profile_prefs = NULL;
   Profile* profile = Profile::FromWebUI(web_ui());
-  PrefService* prefs = profile->GetPrefs();
-  proxy_prefs_.Init(prefs);
-  proxy_prefs_.Add(prefs::kProxy,
-                   base::Bind(&CoreChromeOSOptionsHandler::OnPreferenceChanged,
-                              base::Unretained(this),
-                              prefs));
-  proxy_config_service_.SetPrefs(ProfileHelper::IsSigninProfile(profile),
-                                 prefs);
+  if (!ProfileHelper::IsSigninProfile(profile)) {
+    profile_prefs = profile->GetPrefs();
+    ObservePref(prefs::kOpenNetworkConfiguration);
+  }
+  ObservePref(prefs::kProxy);
+  ObservePref(prefs::kDeviceOpenNetworkConfiguration);
+  proxy_config_service_.SetPrefs(profile_prefs,
+                                 g_browser_process->local_state());
 }
 
 base::Value* CoreChromeOSOptionsHandler::FetchPref(
@@ -215,12 +219,6 @@ void CoreChromeOSOptionsHandler::Observe(
   ::options::CoreOptionsHandler::Observe(type, source, details);
 }
 
-void CoreChromeOSOptionsHandler::SelectNetwork(
-    const std::string& service_path) {
-  proxy_config_service_.SetCurrentNetwork(service_path);
-  NotifyProxyPrefsChanged();
-}
-
 void CoreChromeOSOptionsHandler::SelectNetworkCallback(
     const base::ListValue* args) {
   std::string service_path;
@@ -229,18 +227,24 @@ void CoreChromeOSOptionsHandler::SelectNetworkCallback(
     NOTREACHED();
     return;
   }
-  SelectNetwork(service_path);
+  proxy_config_service_.SetCurrentNetwork(service_path);
+  NotifyProxyPrefsChanged();
 }
 
 void CoreChromeOSOptionsHandler::OnPreferenceChanged(
     PrefService* service,
     const std::string& pref_name) {
-  // Special handling for preferences kUseSharedProxies and kProxy, the latter
-  // controls the former and decides if it's managed by policy/extension.
-  const PrefService* pref_service = Profile::FromWebUI(web_ui())->GetPrefs();
-  if (service == pref_service &&
-      (proxy_prefs_.IsObserved(pref_name) ||
-       pref_name == prefs::kUseSharedProxies)) {
+  // Redetermine the current proxy settings and notify the UI if any of these
+  // preferences change.
+  if (pref_name == prefs::kOpenNetworkConfiguration ||
+      pref_name == prefs::kDeviceOpenNetworkConfiguration ||
+      pref_name == prefs::kProxy) {
+    NotifyProxyPrefsChanged();
+    return;
+  }
+  if (pref_name == prefs::kUseSharedProxies) {
+    // kProxy controls kUseSharedProxies and decides if it's managed by
+    // policy/extension.
     NotifyPrefChanged(prefs::kUseSharedProxies, prefs::kProxy);
     return;
   }
@@ -257,6 +261,7 @@ void CoreChromeOSOptionsHandler::NotifySettingsChanged(
 }
 
 void CoreChromeOSOptionsHandler::NotifyProxyPrefsChanged() {
+  proxy_config_service_.UpdateFromPrefs();
   for (size_t i = 0; i < kProxySettingsCount; ++i) {
     base::Value* value = NULL;
     proxy_cros_settings_parser::GetProxyPrefValue(

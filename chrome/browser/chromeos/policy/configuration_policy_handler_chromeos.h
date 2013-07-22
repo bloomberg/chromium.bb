@@ -36,7 +36,8 @@ class NetworkConfigurationPolicyHandler : public TypeCheckingPolicyHandler {
  private:
   explicit NetworkConfigurationPolicyHandler(
       const char* policy_name,
-      chromeos::onc::ONCSource onc_source);
+      chromeos::onc::ONCSource onc_source,
+      const char* pref_path);
 
   // Takes network policy in Value representation and produces an output Value
   // that contains a pretty-printed and sanitized version. In particular, we
@@ -47,6 +48,9 @@ class NetworkConfigurationPolicyHandler : public TypeCheckingPolicyHandler {
   // The kind of ONC source that this handler represents. ONCSource
   // distinguishes between user and device policy.
   const chromeos::onc::ONCSource onc_source_;
+
+  // The name of the pref to apply the policy to.
+  const char* pref_path_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkConfigurationPolicyHandler);
 };

@@ -259,6 +259,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   chromeos::KioskAppManager::RegisterPrefs(registry);
   chromeos::LoginUtils::RegisterPrefs(registry);
   chromeos::Preferences::RegisterPrefs(registry);
+  chromeos::proxy_config::RegisterPrefs(registry);
   chromeos::RegisterDisplayLocalStatePrefs(registry);
   chromeos::ServicesCustomizationDocument::RegisterPrefs(registry);
   chromeos::system::AutomaticRebootManager::RegisterPrefs(registry);

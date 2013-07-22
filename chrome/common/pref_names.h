@@ -320,6 +320,7 @@ extern const char kUsedPolicyCertificatesOnce[];
 extern const char kAttestationEnabled[];
 extern const char kAttestationExtensionWhitelist[];
 extern const char kTouchHudProjectionEnabled[];
+extern const char kOpenNetworkConfiguration[];
 #endif  // defined(OS_CHROMEOS)
 extern const char kIpcDisabledMessages[];
 extern const char kShowHomeButton[];
@@ -472,6 +473,8 @@ extern const char kVariationsRestrictParameter[];
 extern const char kVariationsSeed[];
 extern const char kVariationsSeedDate[];
 extern const char kVariationsSeedHash[];
+
+extern const char kDeviceOpenNetworkConfiguration[];
 
 extern const char kProfileLastUsed[];
 extern const char kProfilesLastActive[];

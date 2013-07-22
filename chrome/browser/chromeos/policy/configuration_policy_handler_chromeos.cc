@@ -35,14 +35,18 @@ namespace policy {
 NetworkConfigurationPolicyHandler*
 NetworkConfigurationPolicyHandler::CreateForUserPolicy() {
   return new NetworkConfigurationPolicyHandler(
-      key::kOpenNetworkConfiguration, onc::ONC_SOURCE_USER_POLICY);
+      key::kOpenNetworkConfiguration,
+      onc::ONC_SOURCE_USER_POLICY,
+      prefs::kOpenNetworkConfiguration);
 }
 
 // static
 NetworkConfigurationPolicyHandler*
 NetworkConfigurationPolicyHandler::CreateForDevicePolicy() {
   return new NetworkConfigurationPolicyHandler(
-      key::kDeviceOpenNetworkConfiguration, onc::ONC_SOURCE_DEVICE_POLICY);
+      key::kDeviceOpenNetworkConfiguration,
+      onc::ONC_SOURCE_DEVICE_POLICY,
+      prefs::kDeviceOpenNetworkConfiguration);
 }
 
 NetworkConfigurationPolicyHandler::~NetworkConfigurationPolicyHandler() {}
@@ -76,12 +80,10 @@ bool NetworkConfigurationPolicyHandler::CheckPolicySettings(
     onc::Validator::Result validation_result;
     root_dict = validator.ValidateAndRepairObject(
         &onc::kToplevelConfigurationSignature, *root_dict, &validation_result);
-    if (validation_result == onc::Validator::VALID_WITH_WARNINGS) {
-      errors->AddError(policy_name(),
-                       IDS_POLICY_NETWORK_CONFIG_IMPORT_PARTIAL);
-    } else if (validation_result == onc::Validator::INVALID) {
+    if (validation_result == onc::Validator::VALID_WITH_WARNINGS)
+      errors->AddError(policy_name(), IDS_POLICY_NETWORK_CONFIG_IMPORT_PARTIAL);
+    else if (validation_result == onc::Validator::INVALID)
       errors->AddError(policy_name(), IDS_POLICY_NETWORK_CONFIG_IMPORT_FAILED);
-    }
 
     // In any case, don't reject the policy as some networks or certificates
     // could still be applied.
@@ -93,8 +95,19 @@ bool NetworkConfigurationPolicyHandler::CheckPolicySettings(
 void NetworkConfigurationPolicyHandler::ApplyPolicySettings(
     const PolicyMap& policies,
     PrefValueMap* prefs) {
-  // Network policy is read directly from the provider and injected into
-  // NetworkLibrary, so no need to convert the policy settings into prefs.
+  const base::Value* value = policies.GetValue(policy_name());
+  if (!value)
+    return;
+
+  std::string onc_blob;
+  value->GetAsString(&onc_blob);
+
+  scoped_ptr<base::ListValue> network_configs(new base::ListValue);
+  base::ListValue certificates;
+  chromeos::onc::ParseAndValidateOncForImport(
+      onc_blob, onc_source_, "", network_configs.get(), &certificates);
+
+  prefs->SetValue(pref_path_, network_configs.release());
 }
 
 void NetworkConfigurationPolicyHandler::PrepareForDisplaying(
@@ -112,9 +125,11 @@ void NetworkConfigurationPolicyHandler::PrepareForDisplaying(
 
 NetworkConfigurationPolicyHandler::NetworkConfigurationPolicyHandler(
     const char* policy_name,
-    chromeos::onc::ONCSource onc_source)
+    chromeos::onc::ONCSource onc_source,
+    const char* pref_path)
     : TypeCheckingPolicyHandler(policy_name, base::Value::TYPE_STRING),
-      onc_source_(onc_source) {
+      onc_source_(onc_source),
+      pref_path_(pref_path) {
 }
 
 // static

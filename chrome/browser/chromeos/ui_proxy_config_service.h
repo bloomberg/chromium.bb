@@ -28,18 +28,18 @@ class UIProxyConfigService {
   UIProxyConfigService();
   ~UIProxyConfigService();
 
-  // |signin_screen| indicates whether this object is used for the
-  // signin screen, in which case proxies of (shared) networks are
-  // unconditionally respected. After signin, proxy settings of shared networks
-  // may be ignored, e.g. depending on the kUseSharedProxies flag. After this
-  // call, proxy settings are read from
-  // |prefs|.
-  void SetPrefs(bool signin_screen, PrefService* prefs);
+  // After this call, proxy settings are read from |profile_prefs| and
+  // |local_state_prefs|. In case of usage for the sign-in screen,
+  // |profile_prefs| must be NULL because sign-in screen should depend only on
+  // shared settings.
+  void SetPrefs(PrefService* profile_prefs, PrefService* local_state_prefs);
 
   // Called by UI to set the network with service path |current_network| to be
   // displayed or edited.  Subsequent Set*/Get* methods will use this
   // network, until this method is called again.
   void SetCurrentNetwork(const std::string& current_network);
+
+  void UpdateFromPrefs();
 
   // Called from UI to retrieve the stored proxy configuration, which is either
   // the last proxy config of the current network or the one last set by
@@ -65,7 +65,12 @@ class UIProxyConfigService {
   UIProxyConfig current_ui_config_;
 
   bool signin_screen_;
-  PrefService* pref_service_;
+
+  // Not owned.
+  PrefService* profile_prefs_;
+
+  // Not owned.
+  PrefService* local_state_prefs_;
 
   DISALLOW_COPY_AND_ASSIGN(UIProxyConfigService);
 };

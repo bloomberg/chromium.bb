@@ -172,7 +172,7 @@ class PreferencesBrowserTest : public InProcessBrowserTest {
   // the tab.
   content::RenderViewHost* render_view_host_;
 
-  // Mock user policy provider.
+  // Mock policy provider for both user and device policies.
   policy::MockConfigurationPolicyProvider policy_provider_;
 
   // Pref change registrar that detects changes to user-modified pref values

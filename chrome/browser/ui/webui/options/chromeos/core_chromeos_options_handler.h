@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS_CHROMEOS_CORE_CHROMEOS_OPTIONS_HANDLER_H_
 
 #include "base/compiler_specific.h"
-#include "base/prefs/pref_change_registrar.h"
 #include "chrome/browser/chromeos/ui_proxy_config_service.h"
 #include "chrome/browser/ui/webui/options/core_options_handler.h"
 
@@ -38,10 +37,6 @@ class CoreChromeOSOptionsHandler : public ::options::CoreOptionsHandler {
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // Select the network to show proxy settings for. Triggers pref notifications
-  // about the updated proxy settings.
-  void SelectNetwork(const std::string& service_path);
-
  private:
   virtual void OnPreferenceChanged(PrefService* service,
                                    const std::string& pref_name) OVERRIDE;
@@ -55,7 +50,6 @@ class CoreChromeOSOptionsHandler : public ::options::CoreOptionsHandler {
   void NotifyProxyPrefsChanged();
 
   UIProxyConfigService proxy_config_service_;
-  PrefChangeRegistrar proxy_prefs_;
 };
 
 }  // namespace options

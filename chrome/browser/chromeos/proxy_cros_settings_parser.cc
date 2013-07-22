@@ -366,7 +366,8 @@ bool GetProxyPrefValue(const UIProxyConfigService& config_service,
     data = new base::StringValue("");
   dict->Set("value", data);
   if (path == kProxyType) {
-    dict->SetString("controlledBy", controlled_by);
+    if (!controlled_by.empty())
+      dict->SetString("controlledBy", controlled_by);
     dict->SetBoolean("disabled", !config.user_modifiable);
   } else {
     dict->SetBoolean("disabled", false);

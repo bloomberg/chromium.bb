@@ -894,6 +894,11 @@ const char kAttestationExtensionWhitelist[] = "attestation.extension_whitelist";
 
 // A boolean pref indicating whether the projection touch HUD is enabled or not.
 const char kTouchHudProjectionEnabled[] = "touch_hud.projection_enabled";
+
+// A pref to configure networks. Its value must be a list of
+// NetworkConfigurations according to the OpenNetworkConfiguration
+// specification.
+const char kOpenNetworkConfiguration[] = "onc";
 #endif  // defined(OS_CHROMEOS)
 
 // The disabled messages in IPC logging.
@@ -1252,6 +1257,11 @@ extern const char kMessageCenterEnabledSyncNotifierIds[] =
 
 // *************** LOCAL STATE ***************
 // These are attached to the machine/installation
+
+// A pref to configure networks device-wide. Its value must be a list of
+// NetworkConfigurations according to the OpenNetworkConfiguration
+// specification.
+const char kDeviceOpenNetworkConfiguration[] = "device_onc";
 
 // Directory of the last profile used.
 const char kProfileLastUsed[] = "profile.last_used";

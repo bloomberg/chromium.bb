@@ -5,6 +5,8 @@
 #include "chrome/browser/chromeos/proxy_config_service_impl.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/callback.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
@@ -27,12 +29,17 @@ namespace chromeos {
 
 namespace {
 
-// Writes the proxy config of |network| to |proxy_config|.  Returns false if no
+// Writes the proxy config of |network| to |proxy_config|.  Set |onc_source| to
+// the source of this configuration. Returns false if no
 // proxy was configured for this network.
-bool GetProxyConfig(const NetworkState& network,
-                    net::ProxyConfig* proxy_config) {
+bool GetProxyConfig(const PrefService* profile_prefs,
+                    const PrefService* local_state_prefs,
+                    const NetworkState& network,
+                    net::ProxyConfig* proxy_config,
+                    onc::ONCSource* onc_source) {
   scoped_ptr<ProxyConfigDictionary> proxy_dict =
-      proxy_config::GetProxyConfigForNetwork(network);
+      proxy_config::GetProxyConfigForNetwork(
+          profile_prefs, local_state_prefs, network, onc_source);
   if (!proxy_dict)
     return false;
   return PrefProxyConfigTrackerImpl::PrefConfigToNetConfig(*proxy_dict,
@@ -47,16 +54,21 @@ ProxyConfigServiceImpl::ProxyConfigServiceImpl(PrefService* profile_prefs,
                                                : local_state_prefs),
       active_config_state_(ProxyPrefs::CONFIG_UNSET),
       profile_prefs_(profile_prefs),
+      local_state_prefs_(local_state_prefs),
       pointer_factory_(this) {
-  // Register for notifications of UseSharedProxies user preference.
+  const base::Closure proxy_change_callback = base::Bind(
+      &ProxyConfigServiceImpl::OnProxyPrefChanged, base::Unretained(this));
+
   if (profile_prefs) {
-    DCHECK(profile_prefs->FindPreference(prefs::kUseSharedProxies));
-    use_shared_proxies_.Init(
-        prefs::kUseSharedProxies,
-        profile_prefs,
-        base::Bind(&ProxyConfigServiceImpl::OnUseSharedProxiesChanged,
-                   base::Unretained(this)));
+    profile_pref_registrar_.Init(profile_prefs);
+    profile_pref_registrar_.Add(prefs::kOpenNetworkConfiguration,
+                                proxy_change_callback);
+    profile_pref_registrar_.Add(prefs::kUseSharedProxies,
+                                proxy_change_callback);
   }
+  local_state_pref_registrar_.Init(local_state_prefs);
+  local_state_pref_registrar_.Add(prefs::kDeviceOpenNetworkConfiguration,
+                                  proxy_change_callback);
 
   // Register for changes to the default network.
   NetworkStateHandler* state_handler =
@@ -81,8 +93,7 @@ void ProxyConfigServiceImpl::OnProxyConfigChanged(
   DetermineEffectiveConfigFromDefaultNetwork();
 }
 
-void ProxyConfigServiceImpl::OnUseSharedProxiesChanged() {
-  VLOG(1) << "use-shared-proxies pref changed.";
+void ProxyConfigServiceImpl::OnProxyPrefChanged() {
   DetermineEffectiveConfigFromDefaultNetwork();
 }
 
@@ -116,9 +127,11 @@ bool ProxyConfigServiceImpl::IgnoreProxy(const PrefService* profile_prefs,
     return false;
   }
 
-  const NetworkProfile* profile =
-      NetworkHandler::Get()->network_profile_handler()->
-      GetProfileForPath(network_profile_path);
+  if (network_profile_path.empty())
+    return true;
+
+  const NetworkProfile* profile = NetworkHandler::Get()
+      ->network_profile_handler()->GetProfileForPath(network_profile_path);
   if (!profile) {
     LOG(WARNING) << "Unknown profile_path '" << network_profile_path
                  << "'. Ignoring proxy.";
@@ -133,7 +146,7 @@ bool ProxyConfigServiceImpl::IgnoreProxy(const PrefService* profile_prefs,
         g_browser_process->browser_policy_connector();
     const User* logged_in_user = UserManager::Get()->GetLoggedInUser();
     if (connector->GetUserAffiliation(logged_in_user->email()) ==
-            policy::USER_AFFILIATION_MANAGED) {
+        policy::USER_AFFILIATION_MANAGED) {
       VLOG(1) << "Respecting proxy for network, as logged-in user belongs to "
               << "the domain the device is enrolled to.";
       return false;
@@ -160,16 +173,19 @@ void ProxyConfigServiceImpl::DetermineEffectiveConfigFromDefaultNetwork() {
       net::ProxyConfigService::CONFIG_UNSET;
   bool ignore_proxy = true;
   if (network) {
-    ignore_proxy = IgnoreProxy(
-        profile_prefs_, network->profile_path(), network->onc_source());
+    onc::ONCSource onc_source = onc::ONC_SOURCE_NONE;
+    const bool network_proxy_configured = chromeos::GetProxyConfig(
+        prefs(), local_state_prefs_, *network, &network_config, &onc_source);
+    ignore_proxy =
+        IgnoreProxy(profile_prefs_, network->profile_path(), onc_source);
+
     // If network is shared but use-shared-proxies is off, use direct mode.
     if (ignore_proxy) {
-      VLOG(1) << "Shared network && !use-shared-proxies, use direct";
+      network_config = net::ProxyConfig();
       network_availability = net::ProxyConfigService::CONFIG_VALID;
-    } else if (chromeos::GetProxyConfig(*network, &network_config)) {
+    } else if (network_proxy_configured) {
       // Network is private or shared with user using shared proxies.
-      VLOG(1) << this << ": using network proxy: "
-              << network->proxy_config();
+      VLOG(1) << this << ": using proxy of network " << network->path();
       network_availability = net::ProxyConfigService::CONFIG_VALID;
     }
   }
@@ -186,8 +202,8 @@ void ProxyConfigServiceImpl::DetermineEffectiveConfigFromDefaultNetwork() {
   bool update_now = update_pending();
   if (!update_now) {  // Otherwise, only update now if there're changes.
     update_now = active_config_state_ != effective_config_state ||
-        (active_config_state_ != ProxyPrefs::CONFIG_UNSET &&
-         !active_config_.Equals(effective_config));
+                 (active_config_state_ != ProxyPrefs::CONFIG_UNSET &&
+                  !active_config_.Equals(effective_config));
   }
   if (update_now) {  // Activate and store new effective config.
     active_config_state_ = effective_config_state;
@@ -201,13 +217,13 @@ void ProxyConfigServiceImpl::DetermineEffectiveConfigFromDefaultNetwork() {
       effective_config_state = ProxyPrefs::CONFIG_OTHER_PRECEDE;
     // If config is manual, add rule to bypass local host.
     if (effective_config.proxy_rules().type !=
-        net::ProxyConfig::ProxyRules::TYPE_NO_RULES)
+        net::ProxyConfig::ProxyRules::TYPE_NO_RULES) {
       effective_config.proxy_rules().bypass_rules.AddRuleToBypassLocal();
+    }
     PrefProxyConfigTrackerImpl::OnProxyConfigChanged(effective_config_state,
                                                      effective_config);
     if (VLOG_IS_ON(1) && !update_pending()) {  // Update was successful.
-      scoped_ptr<base::DictionaryValue> config_dict(
-          effective_config.ToValue());
+      scoped_ptr<base::DictionaryValue> config_dict(effective_config.ToValue());
       VLOG(1) << this << ": Proxy changed: "
               << ProxyPrefs::ConfigStateToDebugString(active_config_state_)
               << ", " << *config_dict;

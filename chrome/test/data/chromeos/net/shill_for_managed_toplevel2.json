@@ -6,7 +6,6 @@
     "GUID": "{77db0089-0bc8-4358-929c-123xcv}",
     "Mode": "managed",
     "Profile": "user",
-    "ProxyConfig": "{\"mode\":\"pac_script\",\"pac_mandatory\":false,\"pac_url\":\"https://proxycfg.my.domain.com/proxy.dat\"}",
     "SSID": "SomeWifi-XY",
     "SaveCredentials": true,
     "Security": "802_1x",
@@ -39,7 +38,6 @@
     "Profile": "user",
     "Provider.Host": "vpn.my.domain.com",
     "Provider.Type": "openvpn",
-    "ProxyConfig": "{\"mode\":\"pac_script\",\"pac_mandatory\":false,\"pac_url\":\"http://proxycfg.my.domain/proxy.dat\"}",
     "SaveCredentials": false,
     "Type": "vpn",
     "UIData": "{\"certificate_pattern\":{\"EnrollmentURI\":[\"chrome-extension://deicdjjibodjclmdijflfnimdmgdagfk/keygen-cert.html\"],\"IssuerCAPEMs\":[\"pem3\",\"pem4\"]},\"certificate_type\":\"pattern\",\"onc_source\":\"user_policy\"}"

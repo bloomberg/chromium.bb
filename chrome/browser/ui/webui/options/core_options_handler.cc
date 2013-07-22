@@ -212,7 +212,11 @@ void CoreOptionsHandler::ObservePref(const std::string& pref_name) {
         base::Bind(&CoreOptionsHandler::OnPreferenceChanged,
                    base::Unretained(this),
                    local_state_registrar_.prefs()));
-  } else {
+  }
+  // TODO(pneubeck): change this to if/else once kProxy is only used as a user
+  // pref. Currently, it is both a user and a local state pref.
+  if (Profile::FromWebUI(web_ui())->GetPrefs()->FindPreference(
+          pref_name.c_str())) {
     registrar_.Add(
         pref_name.c_str(),
         base::Bind(&CoreOptionsHandler::OnPreferenceChanged,

@@ -9,7 +9,6 @@
 #include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/browser/extensions/event_router.h"
 
-class PrefChangeRegistrar;
 class Profile;
 
 namespace extensions {

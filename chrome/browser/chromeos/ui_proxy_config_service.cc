@@ -35,51 +35,57 @@ const char* ModeToString(UIProxyConfig::Mode mode) {
   return "";
 }
 
-// Writes the proxy config of |network| to |proxy_config|.  Returns false if no
-// proxy was configured for this network.
-bool GetProxyConfig(const NetworkState& network,
-                    net::ProxyConfig* proxy_config) {
+// Writes the proxy config of |network| to |proxy_config|.  Sets |onc_source| to
+// the source of this configuration. Returns false if no proxy was configured
+// for this network.
+bool GetProxyConfig(const PrefService* profile_prefs,
+                    const PrefService* local_state_prefs,
+                    const NetworkState& network,
+                    net::ProxyConfig* proxy_config,
+                    onc::ONCSource* onc_source) {
   scoped_ptr<ProxyConfigDictionary> proxy_dict =
-      proxy_config::GetProxyConfigForNetwork(network);
+      proxy_config::GetProxyConfigForNetwork(
+          profile_prefs, local_state_prefs, network, onc_source);
   if (!proxy_dict)
     return false;
   return PrefProxyConfigTrackerImpl::PrefConfigToNetConfig(*proxy_dict,
                                                            proxy_config);
 }
 
-// Returns true if proxy settings of |network| are editable.
-bool IsNetworkProxySettingsEditable(const NetworkState& network) {
-  onc::ONCSource source = network.onc_source();
-  return source != onc::ONC_SOURCE_DEVICE_POLICY &&
-      source != onc::ONC_SOURCE_USER_POLICY;
+// Returns true if proxy settings from |onc_source| are editable.
+bool IsNetworkProxySettingsEditable(const onc::ONCSource onc_source) {
+  return onc_source != onc::ONC_SOURCE_DEVICE_POLICY &&
+         onc_source != onc::ONC_SOURCE_USER_POLICY;
 }
 
 }  // namespace
 
 UIProxyConfigService::UIProxyConfigService()
-    : signin_screen_(false),
-      pref_service_(NULL) {
+    : profile_prefs_(NULL), local_state_prefs_(NULL) {
 }
 
 UIProxyConfigService::~UIProxyConfigService() {
 }
 
-void UIProxyConfigService::SetPrefs(bool signin_screen,
-                                    PrefService* pref_service) {
-  signin_screen_ = signin_screen;
-  pref_service_ = pref_service;
+void UIProxyConfigService::SetPrefs(PrefService* profile_prefs,
+                                    PrefService* local_state_prefs) {
+  profile_prefs_ = profile_prefs;
+  local_state_prefs_ = local_state_prefs;
 }
 
 void UIProxyConfigService::SetCurrentNetwork(
     const std::string& current_network) {
-  const NetworkState* network = NULL;
-  if (!current_network.empty()) {
-    network = NetworkHandler::Get()->network_state_handler()->GetNetworkState(
-        current_network);
-    LOG_IF(ERROR, !network)
-        << "Can't find requested network " << current_network;
-  }
   current_ui_network_ = current_network;
+}
+
+void UIProxyConfigService::UpdateFromPrefs() {
+  const NetworkState* network = NULL;
+  if (!current_ui_network_.empty()) {
+    network = NetworkHandler::Get()->network_state_handler()
+        ->GetNetworkState(current_ui_network_);
+    LOG_IF(ERROR, !network) << "Can't find requested network "
+                            << current_ui_network_;
+  }
   if (!network) {
     current_ui_network_.clear();
     current_ui_config_ = UIProxyConfig();
@@ -87,9 +93,8 @@ void UIProxyConfigService::SetCurrentNetwork(
   }
 
   DetermineEffectiveConfig(*network);
-  VLOG(1) << "Current ui network: "
-          << network->name()
-          << ", " << ModeToString(current_ui_config_.mode) << ", "
+  VLOG(1) << "Current ui network: " << network->name() << ", "
+          << ModeToString(current_ui_config_.mode) << ", "
           << ProxyPrefs::ConfigStateToDebugString(current_ui_config_.state)
           << ", modifiable:" << current_ui_config_.user_modifiable;
 }
@@ -125,20 +130,30 @@ void UIProxyConfigService::SetProxyConfig(const UIProxyConfig& config) {
 
 void UIProxyConfigService::DetermineEffectiveConfig(
     const NetworkState& network) {
-  DCHECK(pref_service_);
+  DCHECK(local_state_prefs_);
+
+  // The pref service to read proxy settings that apply to all networks.
+  // Settings from the profile overrule local state.
+  PrefService* top_pref_service =
+      profile_prefs_ ? profile_prefs_ : local_state_prefs_;
 
   // Get prefs proxy config if available.
   net::ProxyConfig pref_config;
   ProxyPrefs::ConfigState pref_state = ProxyConfigServiceImpl::ReadPrefConfig(
-      pref_service_, &pref_config);
+      top_pref_service, &pref_config);
 
   // Get network proxy config if available.
   net::ProxyConfig network_config;
   net::ProxyConfigService::ConfigAvailability network_availability =
       net::ProxyConfigService::CONFIG_UNSET;
-  if (chromeos::GetProxyConfig(network, &network_config)) {
+  onc::ONCSource onc_source = onc::ONC_SOURCE_NONE;
+  if (chromeos::GetProxyConfig(profile_prefs_,
+                               local_state_prefs_,
+                               network,
+                               &network_config,
+                               &onc_source)) {
     // Network is private or shared with user using shared proxies.
-    VLOG(1) << this << ": using network proxy: " << network.proxy_config();
+    VLOG(1) << this << ": using proxy of network: " << network.path();
     network_availability = net::ProxyConfigService::CONFIG_VALID;
   }
 
@@ -155,16 +170,12 @@ void UIProxyConfigService::DetermineEffectiveConfig(
   current_ui_config_.state = effective_config_state;
   if (ProxyConfigServiceImpl::PrefPrecedes(effective_config_state)) {
     current_ui_config_.user_modifiable = false;
-  } else if (!IsNetworkProxySettingsEditable(network)) {
-    // TODO(xiyuan): Figure out the right way to set config state for managed
-    // network.
+  } else if (!IsNetworkProxySettingsEditable(onc_source)) {
     current_ui_config_.state = ProxyPrefs::CONFIG_POLICY;
     current_ui_config_.user_modifiable = false;
   } else {
     current_ui_config_.user_modifiable = !ProxyConfigServiceImpl::IgnoreProxy(
-        signin_screen_ ? NULL : pref_service_,
-        network.profile_path(),
-        network.onc_source());
+        profile_prefs_, network.profile_path(), onc_source);
   }
 }
 

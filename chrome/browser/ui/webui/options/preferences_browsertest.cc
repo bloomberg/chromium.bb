@@ -18,13 +18,13 @@
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/external_data_fetcher.h"
 #include "chrome/browser/policy/policy_map.h"
+#include "chrome/browser/policy/policy_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_view_host.h"
@@ -36,13 +36,19 @@
 
 #if defined(OS_CHROMEOS)
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/net/proxy_config_handler.h"
 #include "chrome/browser/chromeos/proxy_cros_settings_parser.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
 #include "chrome/browser/prefs/proxy_config_dictionary.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/shill_profile_client.h"
+#include "chromeos/dbus/shill_service_client.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
+#include "content/public/test/test_utils.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 #endif
 
 using testing::AllOf;
@@ -93,8 +99,8 @@ void PreferencesBrowserTest::SetUpPrefs() {
   ASSERT_TRUE(web_contents);
   render_view_host_ = web_contents->GetRenderViewHost();
   ASSERT_TRUE(render_view_host_);
-  pref_change_registrar_.Init(user_prefs::UserPrefs::Get(browser()->profile()));
   pref_service_ = browser()->profile()->GetPrefs();
+  pref_change_registrar_.Init(pref_service_);
   ASSERT_TRUE(content::ExecuteScript(render_view_host_,
       "function TestEnv() {"
       "  this.sentinelName_ = 'download.prompt_for_download';"
@@ -180,8 +186,8 @@ void PreferencesBrowserTest::OnPreferenceChanged(const std::string& pref_name) {
   OnCommit(pref_service_->FindPreference(pref_name.c_str()));
 }
 
-// Sets up a mock user policy provider.
 void PreferencesBrowserTest::SetUpInProcessBrowserTestFixture() {
+  // Sets up a mock policy provider for user and device policies.
   EXPECT_CALL(policy_provider_, IsInitializationComplete(_))
       .WillRepeatedly(Return(true));
   EXPECT_CALL(policy_provider_, RegisterPolicyDomain(_))
@@ -712,19 +718,26 @@ IN_PROC_BROWSER_TEST_F(PreferencesBrowserTest, ChromeOSDeviceFetchPrefs) {
   STLDeleteElements(&decorated_non_default_values);
 }
 
+namespace {
+
+const char* kUserProfilePath = "user_profile";
+
+}  // namespace
+
 class ProxyPreferencesBrowserTest : public PreferencesBrowserTest {
  public:
   virtual void SetUpOnMainThread() OVERRIDE {
+    SetupNetworkEnvironment();
+    content::RunAllPendingInMessageLoop();
+
     scoped_ptr<base::DictionaryValue> proxy_config_dict(
-        ProxyConfigDictionary::CreateFixedServers(
-            "127.0.0.1:8080",
-            "*.google.com, 1.2.3.4:22"));
+        ProxyConfigDictionary::CreateFixedServers("127.0.0.1:8080",
+                                                  "*.google.com, 1.2.3.4:22"));
 
     ProxyConfigDictionary proxy_config(proxy_config_dict.get());
 
     const chromeos::NetworkState* network = GetDefaultNetwork();
-    chromeos::proxy_config::SetProxyConfigForNetwork(
-        proxy_config, *network);
+    chromeos::proxy_config::SetProxyConfigForNetwork(proxy_config, *network);
 
     std::string url = base::StringPrintf("%s?network=%s",
                                          chrome::kChromeUIProxySettingsURL,
@@ -735,9 +748,62 @@ class ProxyPreferencesBrowserTest : public PreferencesBrowserTest {
   }
 
  protected:
+  void SetupNetworkEnvironment() {
+    chromeos::ShillProfileClient::TestInterface* profile_test =
+        chromeos::DBusThreadManager::Get()->GetShillProfileClient()
+            ->GetTestInterface();
+    chromeos::ShillServiceClient::TestInterface* service_test =
+        chromeos::DBusThreadManager::Get()->GetShillServiceClient()
+            ->GetTestInterface();
+
+    profile_test->AddProfile(kUserProfilePath, "user");
+
+    service_test->ClearServices();
+    service_test->AddService("stub_ethernet",
+                             "eth0",
+                             flimflam::kTypeEthernet,
+                             flimflam::kStateOnline,
+                             true,   // add to visible
+                             true);  // add to watchlist
+    service_test->SetServiceProperty("stub_ethernet",
+                                     flimflam::kGuidProperty,
+                                     base::StringValue("stub_ethernet"));
+    service_test->SetServiceProperty("stub_ethernet",
+                                     flimflam::kProfileProperty,
+                                     base::StringValue(kUserProfilePath));
+    profile_test->AddService(kUserProfilePath, "stub_wifi2");
+  }
+
+  void SetONCPolicy(const char* policy_name, policy::PolicyScope scope) {
+    std::string onc_policy =
+        "{ \"NetworkConfigurations\": ["
+        "    { \"GUID\": \"stub_ethernet\","
+        "      \"Type\": \"Ethernet\","
+        "      \"Name\": \"My Ethernet\","
+        "      \"Ethernet\": {"
+        "        \"Authentication\": \"None\" },"
+        "      \"ProxySettings\": {"
+        "        \"PAC\": \"http://domain.com/x\","
+        "        \"Type\": \"PAC\" }"
+        "    }"
+        "  ],"
+        "  \"Type\": \"UnencryptedConfiguration\""
+        "}";
+
+    policy::PolicyMap map;
+    map.Set(policy_name,
+            policy::POLICY_LEVEL_MANDATORY,
+            scope,
+            new base::StringValue(onc_policy),
+            NULL);
+    policy_provider_.UpdateChromePolicy(map);
+
+    content::RunAllPendingInMessageLoop();
+  }
+
   const chromeos::NetworkState* GetDefaultNetwork() {
-    return chromeos::NetworkHandler::Get()->network_state_handler()->
-        DefaultNetwork();
+    return chromeos::NetworkHandler::Get()->network_state_handler()
+        ->DefaultNetwork();
   }
 
   void SetProxyPref(const std::string& name, const base::Value& value) {
@@ -760,24 +826,30 @@ class ProxyPreferencesBrowserTest : public PreferencesBrowserTest {
     SetPref(name, type, &value, true, &observed_json);
   }
 
-  void VerifyCurrentProxyServer(const std::string& expected_server) {
-    scoped_ptr<ProxyConfigDictionary> proxy_dict(
-        chromeos::proxy_config::GetProxyConfigForNetwork(*GetDefaultNetwork()));
+  void VerifyCurrentProxyServer(const std::string& expected_server,
+                                chromeos::onc::ONCSource expected_source) {
+    chromeos::onc::ONCSource actual_source;
+    scoped_ptr<ProxyConfigDictionary> proxy_dict =
+        chromeos::proxy_config::GetProxyConfigForNetwork(
+            pref_service_,
+            g_browser_process->local_state(),
+            *GetDefaultNetwork(),
+            &actual_source);
     std::string actual_proxy_server;
     EXPECT_TRUE(proxy_dict->GetProxyServer(&actual_proxy_server));
     EXPECT_EQ(expected_server, actual_proxy_server);
+    EXPECT_EQ(expected_source, actual_source);
   }
 };
 
 // Verifies that proxy settings are correctly pushed to JavaScript during
 // initialization of the proxy settings page.
-IN_PROC_BROWSER_TEST_F(ProxyPreferencesBrowserTest,
-                       ChromeOSInitializeProxy) {
+IN_PROC_BROWSER_TEST_F(ProxyPreferencesBrowserTest, ChromeOSInitializeProxy) {
   // Boolean pref.
   pref_names_.push_back(chromeos::kProxySingle);
   non_default_values_.push_back(new base::FundamentalValue(true));
 
-  // Integer pref.
+  // Integer prefs.
   pref_names_.push_back(chromeos::kProxySingleHttpPort);
   non_default_values_.push_back(new base::FundamentalValue(8080));
 
@@ -792,10 +864,91 @@ IN_PROC_BROWSER_TEST_F(ProxyPreferencesBrowserTest,
   list->Append(new base::StringValue("1.2.3.4:22"));
   non_default_values_.push_back(list);
 
+  // Verify that no policy is presented to the UI. This must be verified on the
+  // kProxyType and the kUseSharedProxies prefs.
+  pref_names_.push_back(chromeos::kProxyType);
+  non_default_values_.push_back(new base::FundamentalValue(2));
+
+  pref_names_.push_back(prefs::kUseSharedProxies);
+  non_default_values_.push_back(new base::FundamentalValue(false));
+
   std::string observed_json;
   SetupJavaScriptTestEnvironment(pref_names_, &observed_json);
-  VerifyObservedPrefs(observed_json, pref_names_, non_default_values_,
-                      "", false, false);
+  VerifyObservedPrefs(
+      observed_json, pref_names_, non_default_values_, "", false, false);
+}
+
+IN_PROC_BROWSER_TEST_F(ProxyPreferencesBrowserTest, ONCPolicy) {
+  SetONCPolicy(policy::key::kOpenNetworkConfiguration,
+               policy::POLICY_SCOPE_USER);
+
+  // Verify that per-network policy is presented to the UI. This must be
+  // verified on the kProxyType.
+  pref_names_.push_back(chromeos::kProxyType);
+  non_default_values_.push_back(new base::FundamentalValue(3));
+
+  std::string observed_json;
+  SetupJavaScriptTestEnvironment(pref_names_, &observed_json);
+  VerifyObservedPrefs(
+      observed_json, pref_names_, non_default_values_, "policy", true, false);
+
+  // Verify that 'use-shared-proxies' is not affected by per-network policy.
+  pref_names_.clear();
+  STLDeleteElements(&non_default_values_);
+  pref_names_.push_back(prefs::kUseSharedProxies);
+  non_default_values_.push_back(new base::FundamentalValue(false));
+
+  SetupJavaScriptTestEnvironment(pref_names_, &observed_json);
+  VerifyObservedPrefs(
+      observed_json, pref_names_, non_default_values_, "", false, false);
+}
+
+IN_PROC_BROWSER_TEST_F(ProxyPreferencesBrowserTest, DeviceONCPolicy) {
+  SetONCPolicy(policy::key::kDeviceOpenNetworkConfiguration,
+               policy::POLICY_SCOPE_MACHINE);
+
+  // Verify that the policy is presented to the UI. This verification must be
+  // done on the kProxyType pref.
+  pref_names_.push_back(chromeos::kProxyType);
+  non_default_values_.push_back(new base::FundamentalValue(3));
+
+  std::string observed_json;
+  SetupJavaScriptTestEnvironment(pref_names_, &observed_json);
+  VerifyObservedPrefs(
+      observed_json, pref_names_, non_default_values_, "policy", true, false);
+
+  // Verify that 'use-shared-proxies' is not affected by per-network policy.
+  pref_names_.clear();
+  STLDeleteElements(&non_default_values_);
+  pref_names_.push_back(prefs::kUseSharedProxies);
+  non_default_values_.push_back(new base::FundamentalValue(false));
+
+  SetupJavaScriptTestEnvironment(pref_names_, &observed_json);
+  VerifyObservedPrefs(
+      observed_json, pref_names_, non_default_values_, "", false, false);
+}
+
+IN_PROC_BROWSER_TEST_F(ProxyPreferencesBrowserTest, UserProxyPolicy) {
+  policy_names_.push_back(policy::key::kProxyMode);
+  default_values_.push_back(
+      new base::StringValue(ProxyPrefs::kAutoDetectProxyModeName));
+  SetUserPolicies(
+      policy_names_, default_values_, policy::POLICY_LEVEL_MANDATORY);
+  content::RunAllPendingInMessageLoop();
+
+  // Verify that the policy is presented to the UI. This verification must be
+  // done on the kProxyType pref.
+  pref_names_.push_back(chromeos::kProxyType);
+  non_default_values_.push_back(new base::FundamentalValue(3));
+
+  // Verify that 'use-shared-proxies' is controlled by the policy.
+  pref_names_.push_back(prefs::kUseSharedProxies);
+  non_default_values_.push_back(new base::FundamentalValue(false));
+
+  std::string observed_json;
+  SetupJavaScriptTestEnvironment(pref_names_, &observed_json);
+  VerifyObservedPrefs(
+      observed_json, pref_names_, non_default_values_, "policy", true, false);
 }
 
 // Verifies that modifications to the proxy settings are correctly pushed from
@@ -806,7 +959,8 @@ IN_PROC_BROWSER_TEST_F(ProxyPreferencesBrowserTest, ChromeOSSetProxy) {
   SetProxyPref(chromeos::kProxySingleHttpPort, base::FundamentalValue(123));
   SetProxyPref(chromeos::kProxySingleHttp, base::StringValue("www.adomain.xy"));
 
-  VerifyCurrentProxyServer("www.adomain.xy:123");
+  VerifyCurrentProxyServer("www.adomain.xy:123",
+                           chromeos::onc::ONC_SOURCE_NONE);
 }
 
 // Verify that default proxy ports are used and that ports can be updated
@@ -825,7 +979,8 @@ IN_PROC_BROWSER_TEST_F(ProxyPreferencesBrowserTest, ChromeOSProxyDefaultPorts) {
 
   // Verify default ports.
   VerifyCurrentProxyServer(
-      "http=a.com:80;https=4.3.2.1:80;ftp=c.com:80;socks=socks4://d.com:1080");
+      "http=a.com:80;https=4.3.2.1:80;ftp=c.com:80;socks=socks4://d.com:1080",
+      chromeos::onc::ONC_SOURCE_NONE);
 
   // Set and verify the ports.
   SetProxyPref(chromeos::kProxyHttpPort, base::FundamentalValue(1));
@@ -834,7 +989,8 @@ IN_PROC_BROWSER_TEST_F(ProxyPreferencesBrowserTest, ChromeOSProxyDefaultPorts) {
   SetProxyPref(chromeos::kProxySocksPort, base::FundamentalValue(4));
 
   VerifyCurrentProxyServer(
-      "http=a.com:1;https=4.3.2.1:2;ftp=c.com:3;socks=socks4://d.com:4");
+      "http=a.com:1;https=4.3.2.1:2;ftp=c.com:3;socks=socks4://d.com:4",
+      chromeos::onc::ONC_SOURCE_NONE);
 }
 
 #endif
