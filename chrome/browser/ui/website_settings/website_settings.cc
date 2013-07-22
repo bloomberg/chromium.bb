@@ -24,7 +24,6 @@
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/content_settings/local_shared_objects_container.h"
 #include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/profile.h"

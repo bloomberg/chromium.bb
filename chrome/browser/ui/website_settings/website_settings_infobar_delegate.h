@@ -16,7 +16,8 @@ class InfoBarService;
 // the reload right from the infobar.
 class WebsiteSettingsInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  // Creates a website settings delegate and adds it to |infobar_service|.
+  // Creates a website settings infobar delegate and adds it to
+  // |infobar_service|.
   static void Create(InfoBarService* infobar_service);
 
  private:
