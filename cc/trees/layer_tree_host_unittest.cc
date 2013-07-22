@@ -3035,6 +3035,7 @@ class LayerTreeHostTestDeferredInitialize : public LayerTreeHostTest {
   virtual void BeginTest() OVERRIDE {
     did_initialize_gl_ = false;
     did_release_gl_ = false;
+    last_source_frame_number_drawn_ = -1;  // Never drawn.
     PostSetNeedsCommitToMainThread();
   }
 
@@ -3052,8 +3053,19 @@ class LayerTreeHostTestDeferredInitialize : public LayerTreeHostTest {
     ASSERT_TRUE(host_impl->RootLayer());
     FakePictureLayerImpl* layer_impl =
         static_cast<FakePictureLayerImpl*>(host_impl->RootLayer());
+
+    // The same frame can be draw multiple times if new visible tiles are
+    // rasterized. But we want to make sure we only post DeferredInitialize
+    // and ReleaseGL once, so early out if the same frame is drawn again.
+    if (last_source_frame_number_drawn_ ==
+        host_impl->active_tree()->source_frame_number())
+      return;
+
+    last_source_frame_number_drawn_ =
+        host_impl->active_tree()->source_frame_number();
+
     if (!did_initialize_gl_) {
-      EXPECT_EQ(1u, layer_impl->append_quads_count());
+      EXPECT_LE(1u, layer_impl->append_quads_count());
       ImplThreadTaskRunner()->PostTask(
           FROM_HERE,
           base::Bind(
@@ -3061,7 +3073,7 @@ class LayerTreeHostTestDeferredInitialize : public LayerTreeHostTest {
               base::Unretained(this),
               base::Unretained(host_impl)));
     } else if (did_initialize_gl_ && !did_release_gl_) {
-      EXPECT_EQ(2u, layer_impl->append_quads_count());
+      EXPECT_LE(2u, layer_impl->append_quads_count());
       ImplThreadTaskRunner()->PostTask(
           FROM_HERE,
           base::Bind(
@@ -3069,7 +3081,7 @@ class LayerTreeHostTestDeferredInitialize : public LayerTreeHostTest {
               base::Unretained(this),
               base::Unretained(host_impl)));
     } else if (did_initialize_gl_ && did_release_gl_) {
-      EXPECT_EQ(3u, layer_impl->append_quads_count());
+      EXPECT_LE(3u, layer_impl->append_quads_count());
       EndTest();
     }
   }
@@ -3102,6 +3114,7 @@ class LayerTreeHostTestDeferredInitialize : public LayerTreeHostTest {
   scoped_refptr<FakePictureLayer> layer_;
   bool did_initialize_gl_;
   bool did_release_gl_;
+  int last_source_frame_number_drawn_;
 };
 
 MULTI_THREAD_TEST_F(LayerTreeHostTestDeferredInitialize);
