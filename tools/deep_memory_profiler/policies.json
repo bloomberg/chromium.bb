@@ -7,6 +7,10 @@
     "file": "policy.android.renderer.json",
     "format": "json"
   },
+  "android.webview": {
+    "file": "policy.android.webview.json",
+    "format": "json"
+  },
   "sourcefile": {
     "file": "policy.sourcefile.json",
     "format": "json"
