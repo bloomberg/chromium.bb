@@ -346,12 +346,14 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
   // and is about to be destroyed.
   bool IsClosed() const { return availability_state_ == STATE_CLOSED; }
 
-  // Closes this session.  This will close all active streams and mark
-  // the session as permanently closed.
-  // |err| should not be OK; this function is intended to be called on
-  // error.
-  // |remove_from_pool| indicates whether to also remove the session from the
-  // session pool.
+  // Closes this session. This will close all active streams and mark
+  // the session as permanently closed. Callers must assume that the
+  // session is destroyed after this is called. (However, it may not
+  // be destroyed right away, e.g. when a SpdySession function is
+  // present in the call stack.)
+  //
+  // |err| should be < ERR_IO_PENDING; this function is intended to be
+  // called on error.
   // |description| indicates the reason for the error.
   void CloseSessionOnError(Error err, const std::string& description);
 
@@ -532,6 +534,18 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
     WRITE_STATE_DO_WRITE_COMPLETE,
   };
 
+  // The return value of DoCloseSession() describing what was done.
+  enum CloseSessionResult {
+    // The session was already closed so nothing was done.
+    SESSION_ALREADY_CLOSED,
+    // The session was moved into the closed state but was not removed
+    // from |pool_| (because we're in an IO loop).
+    SESSION_CLOSED_BUT_NOT_REMOVED,
+    // The session was moved into the closed state and removed from
+    // |pool_|.
+    SESSION_CLOSED_AND_REMOVED,
+  };
+
   virtual ~SpdySession();
 
   // Checks whether a stream for the given |url| can be created or
@@ -583,15 +597,34 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
                             SpdyRstStreamStatus status,
                             const std::string& description);
 
+  // Calls DoReadLoop and then if |availability_state_| is
+  // STATE_CLOSED, calls RemoveFromPool().
+  //
+  // Use this function instead of DoReadLoop when posting a task to
+  // pump the read loop.
+  void PumpReadLoop(ReadState expected_read_state, int result);
+
   // Advance the ReadState state machine. |expected_read_state| is the
   // expected starting read state.
+  //
+  // This function must always be called via PumpReadLoop() except for
+  // from InitializeWithSocket().
   int DoReadLoop(ReadState expected_read_state, int result);
   // The implementations of the states of the ReadState state machine.
   int DoRead();
   int DoReadComplete(int result);
 
+  // Calls DoWriteLoop and then if |availability_state_| is
+  // STATE_CLOSED, calls RemoveFromPool().
+  //
+  // Use this function instead of DoWriteLoop when posting a task to
+  // pump the write loop.
+  void PumpWriteLoop(WriteState expected_write_state, int result);
+
   // Advance the WriteState state machine. |expected_write_state| is
   // the expected starting write state.
+  //
+  // This function must always be called via PumpWriteLoop().
   int DoWriteLoop(WriteState expected_write_state, int result);
   // The implementations of the states of the WriteState state machine.
   int DoWrite();
@@ -702,11 +735,19 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
   // isn't closed yet, close it.
   void MaybeFinishGoingAway();
 
-  // Sets |availability_state_| to STATE_CLOSED, closes all streams,
-  // and clears the write queue. Must be called only when
-  // |availability_state_| < STATE_CLOSED. After this function,
-  // DcheckClosed() will pass.
-  void DoCloseSession(Error status);
+  // If the stream is already closed, does nothing. Otherwise, moves
+  // the session to a closed state. Then, if we're in an IO loop,
+  // returns (as the IO loop will do the pool removal itself when its
+  // done). Otherwise, also removes |this| from |pool_|. The returned
+  // result describes what was done.
+  CloseSessionResult DoCloseSession(Error err, const std::string& description);
+
+  // Remove this session from its pool, which must exist. Must be
+  // called only when the session is closed.
+  //
+  // Must be called only via Pump{Read,Write}Loop() or
+  // DoCloseSession().
+  void RemoveFromPool();
 
   // Called right before closing a (possibly-inactive) stream for a
   // reason other than being requested to by the stream.
@@ -867,6 +908,10 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
   // alive if the last reference is within a RunnableMethod.  Just revoke the
   // method.
   base::WeakPtrFactory<SpdySession> weak_factory_;
+
+  // Whether Do{Read,Write}Loop() is in the call stack. Useful for
+  // making sure we don't destroy ourselves prematurely in that case.
+  bool in_io_loop_;
 
   // The key used to identify this session.
   const SpdySessionKey spdy_session_key_;

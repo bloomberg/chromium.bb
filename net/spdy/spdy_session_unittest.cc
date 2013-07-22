@@ -183,6 +183,15 @@ INSTANTIATE_TEST_CASE_P(
     SpdySessionTest,
     testing::Values(kProtoSPDY2, kProtoSPDY3, kProtoSPDY31, kProtoSPDY4a2));
 
+// Try to create a SPDY session that will fail during
+// initialization. Nothing should blow up.
+TEST_P(SpdySessionTest, InitialReadError) {
+  CreateDeterministicNetworkSession();
+
+  TryCreateFakeSpdySessionExpectingFailure(
+      spdy_session_pool_, key_, ERR_FAILED);
+}
+
 // A session receiving a GOAWAY frame with no active streams should
 // immediately close.
 TEST_P(SpdySessionTest, GoAwayWithNoActiveStreams) {
@@ -220,6 +229,33 @@ TEST_P(SpdySessionTest, GoAwayWithNoActiveStreams) {
 
   // Delete the session.
   session = NULL;
+}
+
+// A session receiving a GOAWAY frame immediately with no active
+// streams should then close.
+TEST_P(SpdySessionTest, GoAwayImmediatelyWithNoActiveStreams) {
+  session_deps_.host_resolver->set_synchronous_mode(true);
+
+  MockConnect connect_data(SYNCHRONOUS, OK);
+  scoped_ptr<SpdyFrame> goaway(spdy_util_.ConstructSpdyGoAway(1));
+  MockRead reads[] = {
+    CreateMockRead(*goaway, 0, SYNCHRONOUS),
+  };
+  DeterministicSocketData data(reads, arraysize(reads), NULL, 0);
+  data.set_connect_data(connect_data);
+  session_deps_.deterministic_socket_factory->AddSocketDataProvider(&data);
+
+  SSLSocketDataProvider ssl(SYNCHRONOUS, OK);
+  session_deps_.deterministic_socket_factory->AddSSLSocketDataProvider(&ssl);
+
+  CreateDeterministicNetworkSession();
+
+  data.StopAfter(1);
+
+  TryCreateInsecureSpdySessionExpectingFailure(
+      http_session_, key_, ERR_CONNECTION_CLOSED, BoundNetLog());
+
+  EXPECT_FALSE(HasSpdySession(spdy_session_pool_, key_));
 }
 
 // A session receiving a GOAWAY frame with active streams should close
@@ -812,7 +848,10 @@ TEST_P(SpdySessionTest, DeleteExpiredPushStreams) {
   SpdyHeaderBlock headers;
   spdy_util_.AddUrlToHeaderBlock("http://www.google.com/a.dat", &headers);
 
+  // OnSynStream() expects |in_io_loop_| to be true.
+  session->in_io_loop_ = true;
   session->OnSynStream(2, 1, 0, 0, true, false, headers);
+  session->in_io_loop_ = false;
 
   // Verify that there is one unclaimed push stream.
   EXPECT_EQ(1u, session->num_unclaimed_pushed_streams());
@@ -825,7 +864,9 @@ TEST_P(SpdySessionTest, DeleteExpiredPushStreams) {
   g_time_delta = base::TimeDelta::FromSeconds(301);
 
   spdy_util_.AddUrlToHeaderBlock("http://www.google.com/b.dat", &headers);
+  session->in_io_loop_ = true;
   session->OnSynStream(4, 1, 0, 0, true, false, headers);
+  session->in_io_loop_ = false;
 
   // Verify that the second pushed stream evicted the first pushed stream.
   EXPECT_EQ(1u, session->num_unclaimed_pushed_streams());
@@ -1307,6 +1348,11 @@ TEST_P(SpdySessionTest, CloseSessionOnError) {
   } else {
     ADD_FAILURE();
   }
+
+  // Release the last session reference here so it doesn't try to
+  // access |log| after its destroyed.
+  EXPECT_TRUE(session->HasOneRef());
+  session = NULL;
 }
 
 // Queue up a low-priority SYN_STREAM followed by a high-priority
@@ -3017,9 +3063,12 @@ TEST_P(SpdySessionTest, AdjustRecvWindowSize) {
 
   data.RunFor(1);
 
+  // DecreaseRecvWindowSize() expects |in_io_loop_| to be true.
+  session->in_io_loop_ = true;
   session->DecreaseRecvWindowSize(
       kSpdySessionInitialWindowSize + delta_window_size +
       kSpdySessionInitialWindowSize);
+  session->in_io_loop_ = false;
   EXPECT_EQ(0, session->session_recv_window_size_);
   EXPECT_EQ(0, session->session_unacked_recv_window_bytes_);
 }

@@ -493,6 +493,7 @@ scoped_refptr<SpdySession> CreateSpdySessionHelper(
     const scoped_refptr<HttpNetworkSession>& http_session,
     const SpdySessionKey& key,
     const BoundNetLog& net_log,
+    Error expected_status,
     bool is_secure) {
   EXPECT_FALSE(HasSpdySession(http_session->spdy_session_pool(), key));
 
@@ -544,11 +545,13 @@ scoped_refptr<SpdySession> CreateSpdySessionHelper(
 
   scoped_refptr<SpdySession> spdy_session;
   EXPECT_EQ(
-      OK,
+      expected_status,
       http_session->spdy_session_pool()->CreateAvailableSessionFromSocket(
           key, connection.Pass(), net_log, OK, &spdy_session,
           is_secure));
-  EXPECT_TRUE(HasSpdySession(http_session->spdy_session_pool(), key));
+  EXPECT_EQ(expected_status == OK, spdy_session != NULL);
+  EXPECT_EQ(expected_status == OK,
+            HasSpdySession(http_session->spdy_session_pool(), key));
   return spdy_session;
 }
 
@@ -559,7 +562,17 @@ scoped_refptr<SpdySession> CreateInsecureSpdySession(
     const SpdySessionKey& key,
     const BoundNetLog& net_log) {
   return CreateSpdySessionHelper(http_session, key, net_log,
-                                 false /* is_secure */);
+                                 OK, false /* is_secure */);
+}
+
+void TryCreateInsecureSpdySessionExpectingFailure(
+    const scoped_refptr<HttpNetworkSession>& http_session,
+    const SpdySessionKey& key,
+    Error expected_error,
+    const BoundNetLog& net_log) {
+  DCHECK_LT(expected_error, ERR_IO_PENDING);
+  CreateSpdySessionHelper(http_session, key, net_log,
+                          expected_error, false /* is_secure */);
 }
 
 scoped_refptr<SpdySession> CreateSecureSpdySession(
@@ -567,7 +580,7 @@ scoped_refptr<SpdySession> CreateSecureSpdySession(
     const SpdySessionKey& key,
     const BoundNetLog& net_log) {
   return CreateSpdySessionHelper(http_session, key, net_log,
-                                 true /* is_secure */);
+                                 OK, true /* is_secure */);
 }
 
 namespace {
@@ -575,12 +588,15 @@ namespace {
 // A ClientSocket used for CreateFakeSpdySession() below.
 class FakeSpdySessionClientSocket : public MockClientSocket {
  public:
-  FakeSpdySessionClientSocket() : MockClientSocket(BoundNetLog()) {}
+  FakeSpdySessionClientSocket(int read_result)
+      : MockClientSocket(BoundNetLog()),
+        read_result_(read_result) {}
+
   virtual ~FakeSpdySessionClientSocket() {}
 
   virtual int Read(IOBuffer* buf, int buf_len,
                    const CompletionCallback& callback) OVERRIDE {
-    return ERR_IO_PENDING;
+    return read_result_;
   }
 
   virtual int Write(IOBuffer* buf, int buf_len,
@@ -619,23 +635,43 @@ class FakeSpdySessionClientSocket : public MockClientSocket {
     ADD_FAILURE();
     return false;
   }
+
+ private:
+  int read_result_;
 };
+
+scoped_refptr<SpdySession> CreateFakeSpdySessionHelper(
+    SpdySessionPool* pool,
+    const SpdySessionKey& key,
+    Error expected_status) {
+  EXPECT_NE(expected_status, ERR_IO_PENDING);
+  EXPECT_FALSE(HasSpdySession(pool, key));
+  scoped_refptr<SpdySession> spdy_session;
+  scoped_ptr<ClientSocketHandle> handle(new ClientSocketHandle());
+  handle->set_socket(new FakeSpdySessionClientSocket(
+      expected_status == OK ? ERR_IO_PENDING : expected_status));
+  EXPECT_EQ(
+      expected_status,
+      pool->CreateAvailableSessionFromSocket(
+          key, handle.Pass(), BoundNetLog(), OK, &spdy_session,
+          true /* is_secure */));
+  EXPECT_EQ(expected_status == OK, spdy_session != NULL);
+  EXPECT_EQ(expected_status == OK, HasSpdySession(pool, key));
+  return spdy_session;
+}
 
 }  // namespace
 
 scoped_refptr<SpdySession> CreateFakeSpdySession(SpdySessionPool* pool,
                                                  const SpdySessionKey& key) {
-  EXPECT_FALSE(HasSpdySession(pool, key));
-  scoped_refptr<SpdySession> spdy_session;
-  scoped_ptr<ClientSocketHandle> handle(new ClientSocketHandle());
-  handle->set_socket(new FakeSpdySessionClientSocket());
-  EXPECT_EQ(
-      OK,
-      pool->CreateAvailableSessionFromSocket(
-          key, handle.Pass(), BoundNetLog(), OK, &spdy_session,
-          true /* is_secure */));
-  EXPECT_TRUE(HasSpdySession(pool, key));
-  return spdy_session;
+  return CreateFakeSpdySessionHelper(pool, key, OK);
+}
+
+void TryCreateFakeSpdySessionExpectingFailure(SpdySessionPool* pool,
+                                              const SpdySessionKey& key,
+                                              Error expected_error) {
+  DCHECK_LT(expected_error, ERR_IO_PENDING);
+  CreateFakeSpdySessionHelper(pool, key, expected_error);
 }
 
 SpdySessionPoolPeer::SpdySessionPoolPeer(SpdySessionPool* pool) : pool_(pool) {

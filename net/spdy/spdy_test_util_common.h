@@ -245,6 +245,15 @@ scoped_refptr<SpdySession> CreateInsecureSpdySession(
     const SpdySessionKey& key,
     const BoundNetLog& net_log);
 
+// Tries to create a SPDY session for the given key but expects the
+// attempt to fail with the given error. A SPDY session for |key| must
+// not already exist.
+void TryCreateInsecureSpdySessionExpectingFailure(
+    const scoped_refptr<HttpNetworkSession>& http_session,
+    const SpdySessionKey& key,
+    Error expected_error,
+    const BoundNetLog& net_log);
+
 // Like CreateInsecureSpdySession(), but uses TLS.
 scoped_refptr<SpdySession> CreateSecureSpdySession(
     const scoped_refptr<HttpNetworkSession>& http_session,
@@ -252,10 +261,18 @@ scoped_refptr<SpdySession> CreateSecureSpdySession(
     const BoundNetLog& net_log);
 
 // Creates an insecure SPDY session for the given key and puts it in
-// |pool|. The returned session will neither receiver nor send any
+// |pool|. The returned session will neither receive nor send any
 // data. A SPDY session for |key| must not already exist.
 scoped_refptr<SpdySession> CreateFakeSpdySession(SpdySessionPool* pool,
                                                  const SpdySessionKey& key);
+
+// Tries to create an insecure SPDY session for the given key but
+// expects the attempt to fail with the given error. The session will
+// neither receive nor send any data. A SPDY session for |key| must
+// not already exist.
+void TryCreateFakeSpdySessionExpectingFailure(SpdySessionPool* pool,
+                                              const SpdySessionKey& key,
+                                              Error expected_error);
 
 class SpdySessionPoolPeer {
  public:

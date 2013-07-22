@@ -418,15 +418,13 @@ void SpdySessionPoolTest::RunIPPoolingTest(
   // Cleanup the sessions.
   switch (close_sessions_type) {
     case SPDY_POOL_CLOSE_SESSIONS_MANUALLY:
-      spdy_session_pool_->MakeSessionUnavailable(session);
-      spdy_session_pool_->RemoveUnavailableSession(session);
+      session->CloseSessionOnError(ERR_ABORTED, std::string());
       session = NULL;
-      spdy_session_pool_->MakeSessionUnavailable(session2);
-      spdy_session_pool_->RemoveUnavailableSession(session2);
+      session2->CloseSessionOnError(ERR_ABORTED, std::string());
       session2 = NULL;
       break;
     case SPDY_POOL_CLOSE_CURRENT_SESSIONS:
-      spdy_session_pool_->CloseCurrentSessions(net::ERR_ABORTED);
+      spdy_session_pool_->CloseCurrentSessions(ERR_ABORTED);
       break;
     case SPDY_POOL_CLOSE_IDLE_SESSIONS:
       GURL url(test_hosts[0].url);
@@ -472,8 +470,7 @@ void SpdySessionPoolTest::RunIPPoolingTest(
       EXPECT_EQ(NULL, spdy_stream.get());
       EXPECT_EQ(NULL, spdy_stream1.get());
       EXPECT_EQ(NULL, spdy_stream2.get());
-      spdy_session_pool_->MakeSessionUnavailable(session2);
-      spdy_session_pool_->RemoveUnavailableSession(session2);
+      session2->CloseSessionOnError(ERR_ABORTED, std::string());
       session2 = NULL;
       break;
   }
