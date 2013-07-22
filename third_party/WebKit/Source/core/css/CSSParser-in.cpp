@@ -9121,7 +9121,7 @@ enum CharacterType {
     CharacterOther,
     CharacterNull,
     CharacterWhiteSpace,
-    CharacterEndMediaQuery,
+    CharacterEndMediaQueryOrSupports,
     CharacterEndNthChild,
     CharacterQuote,
     CharacterExclamationMark,
@@ -9200,7 +9200,7 @@ static const CharacterType typesOfASCIICharacters[128] = {
 /*  56 - 8                  */ CharacterNumber,
 /*  57 - 9                  */ CharacterNumber,
 /*  58 - :                  */ CharacterOther,
-/*  59 - ;                  */ CharacterEndMediaQuery,
+/*  59 - ;                  */ CharacterEndMediaQueryOrSupports,
 /*  60 - <                  */ CharacterLess,
 /*  61 - =                  */ CharacterOther,
 /*  62 - >                  */ CharacterOther,
@@ -9264,7 +9264,7 @@ static const CharacterType typesOfASCIICharacters[128] = {
 /* 120 - x                  */ CharacterIdentifierStart,
 /* 121 - y                  */ CharacterIdentifierStart,
 /* 122 - z                  */ CharacterIdentifierStart,
-/* 123 - {                  */ CharacterEndMediaQuery,
+/* 123 - {                  */ CharacterEndMediaQueryOrSupports,
 /* 124 - |                  */ CharacterVerticalBar,
 /* 125 - }                  */ CharacterOther,
 /* 126 - ~                  */ CharacterTilde,
@@ -10472,8 +10472,8 @@ restartAfterComment:
         } while (*currentCharacter<SrcCharacterType>() <= ' ' && (typesOfASCIICharacters[*currentCharacter<SrcCharacterType>()] == CharacterWhiteSpace));
         break;
 
-    case CharacterEndMediaQuery:
-        if (m_parsingMode == MediaQueryMode)
+    case CharacterEndMediaQueryOrSupports:
+        if (m_parsingMode == MediaQueryMode || m_parsingMode == SupportsMode)
             m_parsingMode = NormalMode;
         break;
 
