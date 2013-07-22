@@ -259,6 +259,7 @@ WebKit::WebMouseWheelEvent MakeWebMouseWheelEventFromAuraEvent(
   webkit_event.timeStampSeconds = event->time_stamp().InSecondsF();
   webkit_event.deltaX = event->x_offset();
   webkit_event.deltaY = event->y_offset();
+  webkit_event.wheelTicksX = webkit_event.deltaX / kPixelsPerTick;
   webkit_event.wheelTicksY = webkit_event.deltaY / kPixelsPerTick;
 
   return webkit_event;
