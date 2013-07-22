@@ -41,6 +41,7 @@
 #include "core/platform/graphics/opentype/OpenTypeVerticalData.h"
 #include "wtf/Forward.h"
 #include "wtf/HashTableDeletedValueType.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
@@ -160,7 +161,7 @@ private:
     int m_paintTextFlags; // cached from m_font
 
     mutable SCRIPT_CACHE m_scriptCache;
-    mutable SCRIPT_FONTPROPERTIES* m_scriptFontProperties;
+    mutable OwnPtr<SCRIPT_FONTPROPERTIES> m_scriptFontProperties;
 };
 
 } // WebCore
