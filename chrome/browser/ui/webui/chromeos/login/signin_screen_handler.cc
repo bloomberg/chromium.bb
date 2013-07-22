@@ -1016,11 +1016,19 @@ void SigninScreenHandler::UpdateAuthParams(DictionaryValue* params) {
   // Allow locally managed user creation only if:
   // 1. Enterprise managed device > is allowed by policy.
   // 2. Consumer device > owner exists.
+  // 3. New users are allowed by owner.
+
+  CrosSettings* cros_settings = CrosSettings::Get();
+  bool allow_new_user = false;
+  cros_settings->GetBoolean(kAccountsPrefAllowNewUser, &allow_new_user);
+
   bool managed_users_allowed =
       UserManager::Get()->AreLocallyManagedUsersAllowed();
   bool managed_users_can_create = false;
-  if (managed_users_allowed)
-    managed_users_can_create = delegate_->GetUsers().size() > 0;
+  if (managed_users_allowed) {
+    managed_users_can_create =
+        (delegate_->GetUsers().size() > 0) && allow_new_user;
+  }
   params->SetBoolean("managedUsersEnabled", managed_users_allowed);
   params->SetBoolean("managedUsersCanCreate", managed_users_can_create);
 }
