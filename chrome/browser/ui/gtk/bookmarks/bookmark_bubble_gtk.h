@@ -17,6 +17,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/gtk/bubble/bubble_gtk.h"
@@ -50,6 +51,11 @@ class BookmarkBubbleGtk : public BubbleDelegateGtk,
                        const content::NotificationDetails& details) OVERRIDE;
 
  private:
+  friend class BookmarkBubbleGtkBrowserTest;
+  FRIEND_TEST_ALL_PREFIXES(BookmarkBubbleGtkBrowserTest, SyncPromoSignedIn);
+  FRIEND_TEST_ALL_PREFIXES(BookmarkBubbleGtkBrowserTest, SyncPromoNotSignedIn);
+  FRIEND_TEST_ALL_PREFIXES(BookmarkBubbleGtkBrowserTest, SyncPromoLink);
+
   BookmarkBubbleGtk(GtkWidget* anchor,
                     Profile* profile,
                     const GURL& url,
@@ -63,6 +69,18 @@ class BookmarkBubbleGtk : public BubbleDelegateGtk,
   CHROMEGTK_CALLBACK_0(BookmarkBubbleGtk, void, OnEditClicked);
   CHROMEGTK_CALLBACK_0(BookmarkBubbleGtk, void, OnCloseClicked);
   CHROMEGTK_CALLBACK_0(BookmarkBubbleGtk, void, OnRemoveClicked);
+  CHROMEGTK_CALLBACK_1(BookmarkBubbleGtk,
+                       gboolean,
+                       OnSignInClicked,
+                       gchar*);
+  CHROMEGTK_CALLBACK_0(BookmarkBubbleGtk, void, OnSyncPromoRealize);
+  CHROMEGTK_CALLBACK_1(BookmarkBubbleGtk,
+                       gboolean,
+                       OnSyncPromoExpose,
+                       GdkEventExpose*);
+
+  // Sets the colors used in the sync promo according to the current theme.
+  void UpdatePromoColors();
 
   // Update the bookmark with any edits that have been made.
   void ApplyEdits();
@@ -74,6 +92,10 @@ class BookmarkBubbleGtk : public BubbleDelegateGtk,
   std::string GetTitle();
 
   void InitFolderComboModel();
+
+  // We basically have a singleton, since a bubble is sort of app-modal.  This
+  // keeps track of the currently open bubble, or NULL if none is open.
+  static BookmarkBubbleGtk* bookmark_bubble_;
 
   // The URL of the bookmark.
   GURL url_;
@@ -92,6 +114,12 @@ class BookmarkBubbleGtk : public BubbleDelegateGtk,
 
   // The button that removes the bookmark.
   GtkWidget* remove_button_;
+
+  // The bookmark sync promo, if shown.
+  GtkWidget* promo_;
+
+  // The label in the bookmark sync promo, if shown.
+  GtkWidget* promo_label_;
 
   // The various labels in the interface. We keep track of them for theme
   // changes.

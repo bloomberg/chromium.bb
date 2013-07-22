@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
@@ -18,31 +19,62 @@
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/bookmarks/bookmark_editor.h"
 #include "chrome/browser/ui/bookmarks/recently_used_folders_combo_model.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
+#include "chrome/browser/ui/sync/sync_promo_ui.h"
+#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/user_metrics.h"
 #include "grit/generated_resources.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/canvas_paint_gtk.h"
 
 using content::UserMetricsAction;
 
 namespace {
-
-// We basically have a singleton, since a bubble is sort of app-modal.  This
-// keeps track of the currently open bubble, or NULL if none is open.
-BookmarkBubbleGtk* g_bubble = NULL;
 
 enum {
   COLUMN_NAME,
   COLUMN_IS_SEPARATOR,
   COLUMN_COUNT
 };
+
+// Thickness of the bubble's border.
+const int kBubbleBorderThickness = 1;
+
+// Color of the bubble's border.
+const SkColor kBubbleBorderColor = SkColorSetRGB(0x63, 0x63, 0x63);
+
+// Background color of the sync promo.
+const GdkColor kPromoBackgroundColor = GDK_COLOR_RGB(0xf5, 0xf5, 0xf5);
+
+// Color of the border of the sync promo.
+const SkColor kPromoBorderColor = SkColorSetRGB(0xe5, 0xe5, 0xe5);
+
+// Color of the text in the sync promo.
+const GdkColor kPromoTextColor = GDK_COLOR_RGB(0x66, 0x66, 0x66);
+
+// Vertical padding inside the sync promo.
+const int kPromoVerticalPadding = 15;
+
+// Pango markup for the "Sign in" link in the sync promo.
+const char kPromoLinkMarkup[] =
+    "<a href='signin'><span underline='none'>%s</span></a>";
+
+// Style to make the sync promo link blue.
+const char kPromoLinkStyle[] =
+    "style \"sign-in-link\" {\n"
+    "  GtkWidget::link-color=\"blue\"\n"
+    "}\n"
+    "widget \"*sign-in-link\" style \"sign-in-link\"\n";
 
 gboolean IsSeparator(GtkTreeModel* model, GtkTreeIter* iter, gpointer data) {
   gboolean is_separator;
@@ -52,6 +84,8 @@ gboolean IsSeparator(GtkTreeModel* model, GtkTreeIter* iter, gpointer data) {
 
 }  // namespace
 
+BookmarkBubbleGtk* BookmarkBubbleGtk::bookmark_bubble_ = NULL;
+
 // static
 void BookmarkBubbleGtk::Show(GtkWidget* anchor,
                              Profile* profile,
@@ -59,9 +93,12 @@ void BookmarkBubbleGtk::Show(GtkWidget* anchor,
                              bool newly_bookmarked) {
   // Sometimes Ctrl+D may get pressed more than once on top level window
   // before the bookmark bubble window is shown and takes the keyboad focus.
-  if (g_bubble)
+  if (bookmark_bubble_)
     return;
-  g_bubble = new BookmarkBubbleGtk(anchor, profile, url, newly_bookmarked);
+  bookmark_bubble_ = new BookmarkBubbleGtk(anchor,
+                                           profile,
+                                           url,
+                                           newly_bookmarked);
 }
 
 void BookmarkBubbleGtk::BubbleClosing(BubbleGtk* bubble,
@@ -88,6 +125,8 @@ void BookmarkBubbleGtk::Observe(int type,
       gtk_widget_modify_fg(*it, GTK_STATE_NORMAL, &ui::kGdkBlack);
     }
   }
+
+  UpdatePromoColors();
 }
 
 BookmarkBubbleGtk::BookmarkBubbleGtk(GtkWidget* anchor,
@@ -99,6 +138,8 @@ BookmarkBubbleGtk::BookmarkBubbleGtk(GtkWidget* anchor,
       model_(BookmarkModelFactory::GetForProfile(profile)),
       theme_service_(GtkThemeService::GetFrom(profile_)),
       anchor_(anchor),
+      promo_(NULL),
+      promo_label_(NULL),
       name_entry_(NULL),
       folder_combo_(NULL),
       bubble_(NULL),
@@ -117,13 +158,20 @@ BookmarkBubbleGtk::BookmarkBubbleGtk(GtkWidget* anchor,
   GtkWidget* close_button = gtk_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_DONE).c_str());
 
+  GtkWidget* bubble_container = gtk_vbox_new(FALSE, 0);
+
+  // Prevent the content of the bubble to be drawn on the border.
+  gtk_container_set_border_width(GTK_CONTAINER(bubble_container),
+                                 kBubbleBorderThickness);
+
   // Our content is arranged in 3 rows.  |top| contains a left justified
   // message, and a right justified remove link button.  |table| is the middle
   // portion with the name entry and the folder combo.  |bottom| is the final
   // row with a spacer, and the edit... and close buttons on the right.
   GtkWidget* content = gtk_vbox_new(FALSE, 5);
-  gtk_container_set_border_width(GTK_CONTAINER(content),
-                                 ui::kContentAreaBorder);
+  gtk_container_set_border_width(
+      GTK_CONTAINER(content),
+      ui::kContentAreaBorder - kBubbleBorderThickness);
   GtkWidget* top = gtk_hbox_new(FALSE, 0);
 
   gtk_misc_set_alignment(GTK_MISC(label), 0, 1);
@@ -164,9 +212,57 @@ BookmarkBubbleGtk::BookmarkBubbleGtk(GtkWidget* anchor,
   // We want the focus to start on the entry, not on the remove button.
   gtk_container_set_focus_child(GTK_CONTAINER(content), table);
 
+  gtk_box_pack_start(GTK_BOX(bubble_container), content, TRUE, TRUE, 0);
+
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kEnableBookmarkSyncPromo) &&
+      SyncPromoUI::ShouldShowSyncPromo(profile_)) {
+    std::string link_text =
+        l10n_util::GetStringUTF8(IDS_BOOKMARK_SYNC_PROMO_LINK);
+    char* link_markup = g_markup_printf_escaped(kPromoLinkMarkup,
+                                                link_text.c_str());
+    string16 link_markup_utf16;
+    base::UTF8ToUTF16(link_markup, strlen(link_markup), &link_markup_utf16);
+    g_free(link_markup);
+
+    std::string promo_markup = l10n_util::GetStringFUTF8(
+        IDS_BOOKMARK_SYNC_PROMO_MESSAGE,
+        link_markup_utf16);
+
+    promo_ = gtk_event_box_new();
+    gtk_widget_set_app_paintable(promo_, TRUE);
+
+    promo_label_ = gtk_label_new(NULL);
+    gtk_label_set_markup(GTK_LABEL(promo_label_), promo_markup.c_str());
+    gtk_misc_set_alignment(GTK_MISC(promo_label_), 0.0, 0.0);
+    gtk_misc_set_padding(GTK_MISC(promo_label_),
+                         ui::kContentAreaBorder,
+                         kPromoVerticalPadding);
+
+    // Custom link color.
+    gtk_rc_parse_string(kPromoLinkStyle);
+
+    UpdatePromoColors();
+
+    gtk_container_add(GTK_CONTAINER(promo_), promo_label_);
+    gtk_box_pack_start(GTK_BOX(bubble_container), promo_, TRUE, TRUE, 0);
+    g_signal_connect(promo_,
+                     "realize",
+                     G_CALLBACK(&OnSyncPromoRealizeThunk),
+                     this);
+    g_signal_connect(promo_,
+                     "expose-event",
+                     G_CALLBACK(&OnSyncPromoExposeThunk),
+                     this);
+    g_signal_connect(promo_label_,
+                     "activate-link",
+                     G_CALLBACK(&OnSignInClickedThunk),
+                     this);
+  }
+
   bubble_ = BubbleGtk::Show(anchor_,
                             NULL,
-                            content,
+                            bubble_container,
                             BubbleGtk::ANCHOR_TOP_RIGHT,
                             BubbleGtk::MATCH_SYSTEM_THEME |
                                 BubbleGtk::POPUP_WINDOW |
@@ -197,8 +293,8 @@ BookmarkBubbleGtk::BookmarkBubbleGtk(GtkWidget* anchor,
 }
 
 BookmarkBubbleGtk::~BookmarkBubbleGtk() {
-  DCHECK(g_bubble);
-  g_bubble = NULL;
+  DCHECK(bookmark_bubble_);
+  bookmark_bubble_ = NULL;
 
   if (apply_edits_) {
     ApplyEdits();
@@ -249,6 +345,70 @@ void BookmarkBubbleGtk::OnRemoveClicked(GtkWidget* widget) {
   apply_edits_ = false;
   remove_bookmark_ = true;
   bubble_->Close();
+}
+
+gboolean BookmarkBubbleGtk::OnSignInClicked(GtkWidget* widget, gchar* uri) {
+  GtkWindow* window = GTK_WINDOW(gtk_widget_get_toplevel(anchor_));
+  Browser* browser = chrome::FindBrowserWithWindow(window);
+  chrome::ShowBrowserSignin(browser, SyncPromoUI::SOURCE_BOOKMARK_BUBBLE);
+  bubble_->Close();
+  return TRUE;
+}
+
+void BookmarkBubbleGtk::OnSyncPromoRealize(GtkWidget* widget) {
+  int width = gtk_util::GetWidgetSize(widget).width();
+  gtk_util::SetLabelWidth(promo_label_, width);
+}
+
+gboolean BookmarkBubbleGtk::OnSyncPromoExpose(GtkWidget* widget,
+                                              GdkEventExpose* event) {
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+
+  gfx::CanvasSkiaPaint canvas(event);
+
+  // Draw a border on top of the promo.
+  canvas.DrawLine(gfx::Point(0, 0),
+                  gfx::Point(allocation.width + 1, 0),
+                  kPromoBorderColor);
+
+  // Redraw the rounded corners of the bubble that are hidden by the
+  // background of the promo.
+  SkPaint points_paint;
+  points_paint.setColor(kBubbleBorderColor);
+  points_paint.setStrokeWidth(SkIntToScalar(1));
+  canvas.DrawPoint(gfx::Point(0, allocation.height - 1), points_paint);
+  canvas.DrawPoint(gfx::Point(allocation.width - 1, allocation.height - 1),
+                   points_paint);
+
+  return FALSE; // Propagate expose to children.
+}
+
+void BookmarkBubbleGtk::UpdatePromoColors() {
+  if (!promo_)
+    return;
+
+  GdkColor promo_background_color;
+
+  if (!theme_service_->UsingNativeTheme()) {
+    promo_background_color = kPromoBackgroundColor;
+    gtk_widget_set_name(promo_label_, "sign-in-link");
+    gtk_util::SetLabelColor(promo_label_, &kPromoTextColor);
+  } else {
+    promo_background_color = theme_service_->GetGdkColor(
+        ThemeProperties::COLOR_TOOLBAR);
+    gtk_widget_set_name(promo_label_, "sign-in-link-theme-color");
+  }
+
+  gtk_widget_modify_bg(promo_, GTK_STATE_NORMAL, &promo_background_color);
+
+  // No visible highlight color when the mouse is over the link.
+  gtk_widget_modify_base(promo_label_,
+                         GTK_STATE_ACTIVE,
+                         &promo_background_color);
+  gtk_widget_modify_base(promo_label_,
+                         GTK_STATE_PRELIGHT,
+                         &promo_background_color);
 }
 
 void BookmarkBubbleGtk::ApplyEdits() {
