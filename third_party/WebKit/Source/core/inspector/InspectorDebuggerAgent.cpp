@@ -385,6 +385,14 @@ void InspectorDebuggerAgent::getStepInPositions(ErrorString* errorString, const 
     injectedScript.getStepInPositions(errorString, m_currentCallStack, callFrameId, positions);
 }
 
+void InspectorDebuggerAgent::getBacktrace(ErrorString* errorString, RefPtr<Array<TypeBuilder::Debugger::CallFrame> >& callFrames)
+{
+    if (!assertPaused(errorString))
+        return;
+    scriptDebugServer().updateCallStack(&m_currentCallStack);
+    callFrames = currentCallFrames();
+}
+
 bool InspectorDebuggerAgent::shouldSkipPause(RefPtr<JavaScriptCallFrame>& topFrame)
 {
     // Prepare top frame parameters;

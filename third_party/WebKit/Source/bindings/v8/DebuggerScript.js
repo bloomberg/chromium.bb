@@ -367,7 +367,6 @@ DebuggerScript._frameMirrorToJSCallFrame = function(frameMirror, callerFrame)
     // Get this object.
     var thisObject = frameMirror.details_.receiver();
 
-    // Get scope chain array in format: [<scope type>, <scope object>, <scope type>, <scope object>,...]
     var scopeChain = [];
     var scopeType = [];
     for (var i = 0; i < frameMirror.scopeCount(); i++) {
