@@ -75,20 +75,19 @@ class KeystonePromotionInfoBarDelegate : public ConfirmInfoBarDelegate {
 // static
 void KeystonePromotionInfoBarDelegate::Create() {
   Browser* browser = chrome::GetLastActiveBrowser();
-  if (browser) {
-    content::WebContents* webContents =
-        browser->tab_strip_model()->GetActiveWebContents();
-
-    if (webContents) {
-      InfoBarService* infobar_service =
-          InfoBarService::FromWebContents(webContents);
-      infobar_service->AddInfoBar(scoped_ptr<InfoBarDelegate>(
-          new KeystonePromotionInfoBarDelegate(
-              infobar_service,
-              Profile::FromBrowserContext(
-                  webContents->GetBrowserContext())->GetPrefs())));
-    }
-  }
+  if (!browser)
+    return;
+  content::WebContents* webContents =
+      browser->tab_strip_model()->GetActiveWebContents();
+  if (!webContents)
+    return;
+  InfoBarService* infobar_service =
+      InfoBarService::FromWebContents(webContents);
+  infobar_service->AddInfoBar(scoped_ptr<InfoBarDelegate>(
+      new KeystonePromotionInfoBarDelegate(
+          infobar_service,
+          Profile::FromBrowserContext(
+              webContents->GetBrowserContext())->GetPrefs())));
 }
 
 KeystonePromotionInfoBarDelegate::KeystonePromotionInfoBarDelegate(

@@ -32,15 +32,12 @@ class AutoLoginInfoBarDelegate : public ConfirmInfoBarDelegate,
     std::string username;
   };
 
-  // Creates an autologin delegate and adds it to |infobar_service|.
+  // Creates an autologin infobar delegate and adds it to |infobar_service|.
   static void Create(InfoBarService* infobar_service, const Params& params);
 
  protected:
   AutoLoginInfoBarDelegate(InfoBarService* owner, const Params& params);
   virtual ~AutoLoginInfoBarDelegate();
-
-  // ConfirmInfoBarDelegate:
-  virtual string16 GetMessageText() const OVERRIDE;
 
  private:
   // Enum values used for UMA histograms.
@@ -59,6 +56,7 @@ class AutoLoginInfoBarDelegate : public ConfirmInfoBarDelegate,
   virtual int GetIconID() const OVERRIDE;
   virtual Type GetInfoBarType() const OVERRIDE;
   virtual AutoLoginInfoBarDelegate* AsAutoLoginInfoBarDelegate() OVERRIDE;
+  virtual string16 GetMessageText() const OVERRIDE;
   virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
   virtual bool Accept() OVERRIDE;
   virtual bool Cancel() OVERRIDE;

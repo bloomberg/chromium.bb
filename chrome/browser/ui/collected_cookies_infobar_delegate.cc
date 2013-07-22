@@ -11,6 +11,7 @@
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+
 // static
 void CollectedCookiesInfoBarDelegate::Create(InfoBarService* infobar_service) {
   infobar_service->AddInfoBar(scoped_ptr<InfoBarDelegate>(

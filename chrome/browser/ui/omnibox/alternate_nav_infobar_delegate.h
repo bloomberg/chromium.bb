@@ -12,7 +12,7 @@
 
 class AlternateNavInfoBarDelegate : public InfoBarDelegate {
  public:
-  // Creates an alternate nav delegate and adds it to |infobar_service|.
+  // Creates an alternate nav infobar delegate and adds it to |infobar_service|.
   static void Create(InfoBarService* infobar_service,
                      const GURL& alternate_nav_url);
 

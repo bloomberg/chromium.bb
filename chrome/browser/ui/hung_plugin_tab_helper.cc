@@ -131,8 +131,8 @@ void KillPluginOnIOThread(int child_id) {
 
 class HungPluginInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  // Creates a hung plugin delegate and adds it to |infobar_service|.  Returns
-  // the delegate if it was successfully added.
+  // Creates a hung plugin infobar delegate and adds it to |infobar_service|.
+  // Returns the delegate if it was successfully added.
   static HungPluginInfoBarDelegate* Create(InfoBarService* infobar_service,
                                            HungPluginTabHelper* helper,
                                            int plugin_child_id,
@@ -234,8 +234,7 @@ struct HungPluginTabHelper::PluginState {
   base::Timer timer;
 
  private:
-  // Delay in seconds before re-showing the hung plugin message. This will be
-  // increased each time.
+  // Initial delay in seconds before re-showing the hung plugin message.
   static const int kInitialReshowDelaySec;
 
   // Since the scope of the timer manages our callback, this struct should
@@ -329,7 +328,6 @@ void HungPluginTabHelper::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   DCHECK_EQ(chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED, type);
-
   // Note: do not dereference. The InfoBarContainer will delete the object when
   // it gets this notification, we only remove our tracking info, if we have
   // any.
@@ -338,7 +336,6 @@ void HungPluginTabHelper::Observe(
   // InfoBars own their delegates.
   InfoBarDelegate* infobar =
       content::Details<InfoBarRemovedDetails>(details)->first;
-
   for (PluginStateMap::iterator i = hung_plugins_.begin();
        i != hung_plugins_.end(); ++i) {
     PluginState* state = i->second.get();
@@ -421,9 +418,8 @@ void HungPluginTabHelper::ShowBar(int child_id, PluginState* state) {
     return;
 
   DCHECK(!state->infobar);
-  state->infobar =
-      HungPluginInfoBarDelegate::Create(infobar_service, this, child_id,
-                                        state->name);
+  state->infobar = HungPluginInfoBarDelegate::Create(infobar_service, this,
+                                                     child_id, state->name);
 }
 
 void HungPluginTabHelper::CloseBar(PluginState* state) {

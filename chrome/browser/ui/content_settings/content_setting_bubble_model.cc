@@ -460,7 +460,7 @@ ContentSettingCookiesBubbleModel::ContentSettingCookiesBubbleModel(
 
 ContentSettingCookiesBubbleModel::~ContentSettingCookiesBubbleModel() {
   // On some plattforms e.g. MacOS X it is possible to close a tab while the
-  // cookies settubgs bubble is open. This resets the web contents to NULL.
+  // cookies settings bubble is open. This resets the web contents to NULL.
   if (settings_changed() && web_contents()) {
     CollectedCookiesInfoBarDelegate::Create(
         InfoBarService::FromWebContents(web_contents()));
