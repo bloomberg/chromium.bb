@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../js/resources/js-test-pre.js"></script>
+</head>
+<body>
+<script>
+description("Tests the RTCPeerConnection lifetime.");
+
+// This test times out if the Peer connection object is garbage collected.
+
+var dc = null;
+
+function dataChannelMessage(m)
+{
+    testPassed("dataChannelMessage");
+    finishJSTest();
+}
+
+function dataChannelOpen()
+{
+    testPassed("dataChannelOpen");
+    dc.onmessage = dataChannelMessage;
+    shouldNotThrow("dc.send('xyzzy');");
+}
+
+function createPeerConnection()
+{
+    // The Peer Connection object is leaked
+    var pc = new webkitRTCPeerConnection({iceServers:[]}, null);
+    dc = pc.createDataChannel("label");
+    dc.onopen = dataChannelOpen;
+}
+
+createPeerConnection();
+gc();
+
+window.jsTestIsAsync = true;
+window.successfullyParsed = true;
+</script>
+<script src="../js/resources/js-test-post.js"></script>
+</body>
+</html>

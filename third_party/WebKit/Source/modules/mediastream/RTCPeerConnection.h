@@ -124,6 +124,7 @@ public:
 
     // ActiveDOMObject
     virtual void stop() OVERRIDE;
+    virtual bool hasPendingActivity() const OVERRIDE { return !m_stopped; }
 
     using RefCounted<RTCPeerConnection>::ref;
     using RefCounted<RTCPeerConnection>::deref;
