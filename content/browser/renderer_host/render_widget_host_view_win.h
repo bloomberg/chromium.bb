@@ -473,8 +473,8 @@ class RenderWidgetHostViewWin
   // true if we are currently tracking WM_MOUSEEXIT messages.
   bool track_mouse_leave_;
 
-  // Wrapper class for IME input.
-  // (See "ui/base/win/ime_input.h" for its details.)
+  // Wrapper class for IMM32 APIs.
+  // (See "ui/base/ime/win/imm32_manager.h" for its details.)
   ui::IMM32Manager imm32_manager_;
 
   // Represents whether or not this browser process is receiving status
