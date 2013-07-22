@@ -2751,6 +2751,57 @@ weston_output_init(struct weston_output *output, struct weston_compositor *c,
 	wl_signal_emit(&c->output_created_signal, output);
 }
 
+WL_EXPORT void
+weston_output_transform_coordinate(struct weston_output *output,
+				   int device_x, int device_y,
+				   wl_fixed_t *x, wl_fixed_t *y)
+{
+	wl_fixed_t tx, ty;
+	wl_fixed_t width, height;
+
+	width = wl_fixed_from_int(output->width * output->scale - 1);
+	height = wl_fixed_from_int(output->height * output->scale - 1);
+
+	switch(output->transform) {
+	case WL_OUTPUT_TRANSFORM_NORMAL:
+	default:
+		tx = wl_fixed_from_int(device_x);
+		ty = wl_fixed_from_int(device_y);
+		break;
+	case WL_OUTPUT_TRANSFORM_90:
+		tx = wl_fixed_from_int(device_y);
+		ty = height - wl_fixed_from_int(device_x);
+		break;
+	case WL_OUTPUT_TRANSFORM_180:
+		tx = width - wl_fixed_from_int(device_x);
+		ty = height - wl_fixed_from_int(device_y);
+		break;
+	case WL_OUTPUT_TRANSFORM_270:
+		tx = width - wl_fixed_from_int(device_y);
+		ty = wl_fixed_from_int(device_x);
+		break;
+	case WL_OUTPUT_TRANSFORM_FLIPPED:
+		tx = width - wl_fixed_from_int(device_x);
+		ty = wl_fixed_from_int(device_y);
+		break;
+	case WL_OUTPUT_TRANSFORM_FLIPPED_90:
+		tx = width - wl_fixed_from_int(device_y);
+		ty = height - wl_fixed_from_int(device_x);
+		break;
+	case WL_OUTPUT_TRANSFORM_FLIPPED_180:
+		tx = wl_fixed_from_int(device_x);
+		ty = height - wl_fixed_from_int(device_y);
+		break;
+	case WL_OUTPUT_TRANSFORM_FLIPPED_270:
+		tx = wl_fixed_from_int(device_y);
+		ty = wl_fixed_from_int(device_x);
+		break;
+	}
+
+	*x = tx / output->scale + wl_fixed_from_int(output->x);
+	*y = ty / output->scale + wl_fixed_from_int(output->y);
+}
+
 static void
 compositor_bind(struct wl_client *client,
 		void *data, uint32_t version, uint32_t id)

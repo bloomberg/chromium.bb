@@ -1059,61 +1059,6 @@ x11_compositor_deliver_button_event(struct x11_compositor *c,
 }
 
 static void
-x11_output_transform_coordinate(struct x11_output *x11_output,
-						wl_fixed_t *x, wl_fixed_t *y)
-{
-	struct weston_output *output = &x11_output->base;
-	wl_fixed_t tx, ty;
-	wl_fixed_t width = wl_fixed_from_int(output->width * output->scale - 1);
-	wl_fixed_t height = wl_fixed_from_int(output->height * output->scale - 1);
-
-	switch(output->transform) {
-	case WL_OUTPUT_TRANSFORM_NORMAL:
-	default:
-		tx = *x;
-		ty = *y;
-		break;
-	case WL_OUTPUT_TRANSFORM_90:
-		tx = *y;
-		ty = height - *x;
-		break;
-	case WL_OUTPUT_TRANSFORM_180:
-		tx = width - *x;
-		ty = height - *y;
-		break;
-	case WL_OUTPUT_TRANSFORM_270:
-		tx = width - *y;
-		ty = *x;
-		break;
-	case WL_OUTPUT_TRANSFORM_FLIPPED:
-		tx = width - *x;
-		ty = *y;
-		break;
-	case WL_OUTPUT_TRANSFORM_FLIPPED_90:
-		tx = width - *y;
-		ty = height - *x;
-		break;
-	case WL_OUTPUT_TRANSFORM_FLIPPED_180:
-		tx = *x;
-		ty = height - *y;
-		break;
-	case WL_OUTPUT_TRANSFORM_FLIPPED_270:
-		tx = *y;
-		ty = *x;
-		break;
-	}
-
-	tx /= output->scale;
-	ty /= output->scale;
-
-	tx += wl_fixed_from_int(output->x);
-	ty += wl_fixed_from_int(output->y);
-
-	*x = tx;
-	*y = ty;
-}
-
-static void
 x11_compositor_deliver_motion_event(struct x11_compositor *c,
 					xcb_generic_event_t *event)
 {
@@ -1125,9 +1070,9 @@ x11_compositor_deliver_motion_event(struct x11_compositor *c,
 	if (!c->has_xkb)
 		update_xkb_state_from_core(c, motion_notify->state);
 	output = x11_compositor_find_output(c, motion_notify->event);
-	x = wl_fixed_from_int(motion_notify->event_x);
-	y = wl_fixed_from_int(motion_notify->event_y);
-	x11_output_transform_coordinate(output, &x, &y);
+	weston_output_transform_coordinate(&output->base,
+					   motion_notify->event_x,
+					   motion_notify->event_y, &x, &y);
 
 	notify_motion(&c->core_seat, weston_compositor_get_time(),
 		      x - c->prev_x, y - c->prev_y);
@@ -1150,9 +1095,9 @@ x11_compositor_deliver_enter_event(struct x11_compositor *c,
 	if (!c->has_xkb)
 		update_xkb_state_from_core(c, enter_notify->state);
 	output = x11_compositor_find_output(c, enter_notify->event);
-	x = wl_fixed_from_int(enter_notify->event_x);
-	y = wl_fixed_from_int(enter_notify->event_y);
-	x11_output_transform_coordinate(output, &x, &y);
+	weston_output_transform_coordinate(&output->base,
+					   enter_notify->event_x,
+					   enter_notify->event_y, &x, &y);
 
 	notify_pointer_focus(&c->core_seat, &output->base, x, y);
 

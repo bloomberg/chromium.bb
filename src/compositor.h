@@ -1075,6 +1075,10 @@ weston_output_init(struct weston_output *output, struct weston_compositor *c,
 		   int x, int y, int width, int height, uint32_t transform, int32_t scale);
 void
 weston_output_destroy(struct weston_output *output);
+void
+weston_output_transform_coordinate(struct weston_output *x11_output,
+				   int device_x, int device_y,
+				   wl_fixed_t *x, wl_fixed_t *y);
 
 void
 weston_seat_init(struct weston_seat *seat, struct weston_compositor *ec,
