@@ -36,17 +36,8 @@ namespace {
 // TODO(zork): Remove this blacklist when fonts are added to Chrome OS.
 // see: crbug.com/240586
 
-const char* kLanguageBlacklist[] = {
-  "km", // Khmer language
-  "si", // Sinhala language
-};
-
 bool IsBlacklisted(const std::string& language_code) {
-  for (size_t i = 0; i < arraysize(kLanguageBlacklist); ++i) {
-    if (language_code == kLanguageBlacklist[i])
-      return true;
-  }
-  return false;
+  return language_code == "si"; // Sinhala
 }
 
 } // namespace
