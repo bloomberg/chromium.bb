@@ -17,8 +17,8 @@ class ProfileSyncService;
 
 namespace browser_sync {
 
-// A pool for managing free/used tab sync nodes for the *local* session.
-// Performs lazy creation of sync nodes when necessary.
+// A pool for managing free/used tab sync nodes. Performs lazy creation
+// of sync nodes when necessary.
 // Note: We make use of the following "id's"
 // - a sync_id: an int64 used in |syncer::InitByIdLookup|
 // - a tab_id: created by session service, unique to this client
@@ -54,8 +54,6 @@ class TabNodePool {
 
   // Maximum limit of FreeNodes allowed on the client.
   static const size_t kFreeNodesHighWatermark;
-
-  static const size_t kInvalidTabNodeID;
 
   // Build a sync tag from tab_node_id.
   static std::string TabIdToTag(const std::string machine_tag,

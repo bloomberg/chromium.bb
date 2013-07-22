@@ -24,12 +24,7 @@ const size_t TabNodePool::kFreeNodesLowWatermark = 25;
 const size_t TabNodePool::kFreeNodesHighWatermark = 100;
 
 TabNodePool::TabNodePool(ProfileSyncService* sync_service)
-    : max_used_tab_node_id_(kInvalidTabNodeID),
-      sync_service_(sync_service) {}
-
-// static
-// We start vending node ids at 1.
-const size_t TabNodePool::kInvalidTabNodeID = 0;
+    : max_used_tab_node_id_(0), sync_service_(sync_service) {}
 
 TabNodePool::~TabNodePool() {}
 
