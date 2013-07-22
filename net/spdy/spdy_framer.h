@@ -136,49 +136,6 @@ class NET_EXPORT_PRIVATE SpdyFramerVisitorInterface {
   // Called if an error is detected in the SpdyFrame protocol.
   virtual void OnError(SpdyFramer* framer) = 0;
 
-  // Called when a SYN_STREAM frame is received.
-  // Note that header block data is not included. See
-  // OnControlFrameHeaderData().
-  virtual void OnSynStream(SpdyStreamId stream_id,
-                           SpdyStreamId associated_stream_id,
-                           SpdyPriority priority,
-                           uint8 credential_slot,
-                           bool fin,
-                           bool unidirectional) = 0;
-
-  // Called when a SYN_REPLY frame is received.
-  // Note that header block data is not included. See
-  // OnControlFrameHeaderData().
-  virtual void OnSynReply(SpdyStreamId stream_id, bool fin) = 0;
-
-  // Called when a HEADERS frame is received.
-  // Note that header block data is not included. See
-  // OnControlFrameHeaderData().
-  virtual void OnHeaders(SpdyStreamId stream_id, bool fin) = 0;
-
-  // Called when a chunk of header data is available. This is called
-  // after OnSynStream, OnPushPromise, OnSynReply, or OnHeaders().
-  // |stream_id| The stream receiving the header data.
-  // |header_data| A buffer containing the header data chunk received.
-  // |len| The length of the header data buffer. A length of zero indicates
-  //       that the header data block has been completely sent.
-  // When this function returns true the visitor indicates that it accepted
-  // all of the data. Returning false indicates that that an unrecoverable
-  // error has occurred, such as bad header data or resource exhaustion.
-  virtual bool OnControlFrameHeaderData(SpdyStreamId stream_id,
-                                        const char* header_data,
-                                        size_t len) = 0;
-
-  // Called when a chunk of payload data for a credential frame is available.
-  // |header_data| A buffer containing the header data chunk received.
-  // |len| The length of the header data buffer. A length of zero indicates
-  //       that the header data block has been completely sent.
-  // When this function returns true the visitor indicates that it accepted
-  // all of the data. Returning false indicates that that an unrecoverable
-  // error has occurred, such as bad header data or resource exhaustion.
-  virtual bool OnCredentialFrameData(const char* credential_data,
-                                     size_t len) = 0;
-
   // Called when a data frame header is received. The frame's data
   // payload will be provided via subsequent calls to
   // OnStreamFrameData().
@@ -197,6 +154,38 @@ class NET_EXPORT_PRIVATE SpdyFramerVisitorInterface {
                                  size_t len,
                                  bool fin) = 0;
 
+  // Called when a chunk of header data is available. This is called
+  // after OnSynStream, OnSynReply, OnHeaders(), or OnPushPromise.
+  // |stream_id| The stream receiving the header data.
+  // |header_data| A buffer containing the header data chunk received.
+  // |len| The length of the header data buffer. A length of zero indicates
+  //       that the header data block has been completely sent.
+  // When this function returns true the visitor indicates that it accepted
+  // all of the data. Returning false indicates that that an unrecoverable
+  // error has occurred, such as bad header data or resource exhaustion.
+  virtual bool OnControlFrameHeaderData(SpdyStreamId stream_id,
+                                        const char* header_data,
+                                        size_t len) = 0;
+
+  // Called when a SYN_STREAM frame is received.
+  // Note that header block data is not included. See
+  // OnControlFrameHeaderData().
+  virtual void OnSynStream(SpdyStreamId stream_id,
+                           SpdyStreamId associated_stream_id,
+                           SpdyPriority priority,
+                           uint8 credential_slot,
+                           bool fin,
+                           bool unidirectional) = 0;
+
+  // Called when a SYN_REPLY frame is received.
+  // Note that header block data is not included. See
+  // OnControlFrameHeaderData().
+  virtual void OnSynReply(SpdyStreamId stream_id, bool fin) = 0;
+
+  // Called when a RST_STREAM frame has been parsed.
+  virtual void OnRstStream(SpdyStreamId stream_id,
+                           SpdyRstStreamStatus status) = 0;
+
   // Called when a SETTINGS frame is received.
   // |clear_persisted| True if the respective flag is set on the SETTINGS frame.
   virtual void OnSettings(bool clear_persisted) {}
@@ -208,17 +197,28 @@ class NET_EXPORT_PRIVATE SpdyFramerVisitorInterface {
   // Called when a PING frame has been parsed.
   virtual void OnPing(uint32 unique_id) = 0;
 
-  // Called when a RST_STREAM frame has been parsed.
-  virtual void OnRstStream(SpdyStreamId stream_id,
-                           SpdyRstStreamStatus status) = 0;
-
   // Called when a GOAWAY frame has been parsed.
   virtual void OnGoAway(SpdyStreamId last_accepted_stream_id,
                         SpdyGoAwayStatus status) = 0;
 
+  // Called when a HEADERS frame is received.
+  // Note that header block data is not included. See
+  // OnControlFrameHeaderData().
+  virtual void OnHeaders(SpdyStreamId stream_id, bool fin) = 0;
+
   // Called when a WINDOW_UPDATE frame has been parsed.
   virtual void OnWindowUpdate(SpdyStreamId stream_id,
                               uint32 delta_window_size) = 0;
+
+  // Called when a chunk of payload data for a credential frame is available.
+  // |header_data| A buffer containing the header data chunk received.
+  // |len| The length of the header data buffer. A length of zero indicates
+  //       that the header data block has been completely sent.
+  // When this function returns true the visitor indicates that it accepted
+  // all of the data. Returning false indicates that that an unrecoverable
+  // error has occurred, such as bad header data or resource exhaustion.
+  virtual bool OnCredentialFrameData(const char* credential_data,
+                                     size_t len) = 0;
 
   // Called when a BLOCKED frame has been parsed.
   virtual void OnBlocked(SpdyStreamId stream_id) {}
@@ -351,6 +351,18 @@ class NET_EXPORT_PRIVATE SpdyFramer {
                                 size_t header_length,
                                 SpdyHeaderBlock* block) const;
 
+  // Create a data frame.
+  // |stream_id| is the stream  for this frame
+  // |data| is the data to be included in the frame.
+  // |len| is the length of the data
+  // |flags| is the flags to use with the data.
+  //    To mark this frame as the last data frame, enable DATA_FLAG_FIN.
+  SpdyFrame* CreateDataFrame(SpdyStreamId stream_id, const char* data,
+                             uint32 len, SpdyDataFlags flags) const;
+  SpdySerializedFrame* SerializeData(const SpdyDataIR& data) const;
+  // Serializes just the data frame header, excluding actual data payload.
+  SpdySerializedFrame* SerializeDataFrameHeader(const SpdyDataIR& data) const;
+
   // Creates and serializes a SYN_STREAM frame.
   // |stream_id| is the id for this stream.
   // |associated_stream_id| is the associated stream id for this stream.
@@ -451,18 +463,6 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   // and eliminate this method.
   static bool ParseCredentialData(const char* data, size_t len,
                                   SpdyCredential* credential);
-
-  // Create a data frame.
-  // |stream_id| is the stream  for this frame
-  // |data| is the data to be included in the frame.
-  // |len| is the length of the data
-  // |flags| is the flags to use with the data.
-  //    To mark this frame as the last data frame, enable DATA_FLAG_FIN.
-  SpdyFrame* CreateDataFrame(SpdyStreamId stream_id, const char* data,
-                             uint32 len, SpdyDataFlags flags) const;
-  SpdySerializedFrame* SerializeData(const SpdyDataIR& data) const;
-  // Serializes just the data frame header, excluding actual data payload.
-  SpdySerializedFrame* SerializeDataFrameHeader(const SpdyDataIR& data) const;
 
   // Serialize a frame of unknown type.
   SpdySerializedFrame* SerializeFrame(const SpdyFrameIR& frame);
