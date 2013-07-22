@@ -1,0 +1,13 @@
+Description
+
+This test validates the values in resource timing for cross-origin redirect chain.
+
+
+
+PASS window.performance is defined 
+PASS Starting document.location.hostname is correct (127.0.0.1:8000) 
+PASS redirectStart should be 0 in cross-origin redirect!  
+PASS redirectEnd should be 0 in cross-origin redirect!  
+PASS fetchStart should be 3 secs later than navigationStart 
+PASS startTime should be the same to fetchStart in cross-origin redirect! 
+

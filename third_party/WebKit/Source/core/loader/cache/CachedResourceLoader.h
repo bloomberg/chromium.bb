@@ -56,6 +56,7 @@ class Frame;
 class FrameLoader;
 class ImageLoader;
 class KURL;
+class ResourceTimingInfo;
 
 // The CachedResourceLoader provides a per-context interface to the MemoryCache
 // and enforces a bunch of security checks and rules for resource revalidation.
@@ -132,6 +133,7 @@ public:
     virtual void incrementRequestCount(const CachedResource*) OVERRIDE;
     virtual void decrementRequestCount(const CachedResource*) OVERRIDE;
     virtual void didLoadResource(CachedResource*) OVERRIDE;
+    virtual void redirectReceived(CachedResource*, const ResourceResponse&) OVERRIDE;
     virtual void didFinishLoading(const CachedResource*, double finishTime, const ResourceLoaderOptions&) OVERRIDE;
     virtual void didChangeLoadingPriority(const CachedResource*, ResourceLoadPriority) OVERRIDE;
     virtual void didFailLoading(const CachedResource*, const ResourceError&, const ResourceLoaderOptions&) OVERRIDE;
@@ -196,7 +198,8 @@ private:
 
     Timer<CachedResourceLoader> m_garbageCollectDocumentResourcesTimer;
 
-    HashMap<CachedResource*, CachedResourceInitiatorInfo> m_initiatorMap;
+    typedef HashMap<CachedResource*, RefPtr<ResourceTimingInfo> > ResourceTimingInfoMap;
+    ResourceTimingInfoMap m_resourceTimingInfoMap;
 
     // 29 bits left
     bool m_autoLoadImages : 1;

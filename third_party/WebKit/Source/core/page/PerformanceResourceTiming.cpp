@@ -35,10 +35,9 @@
 #include "core/dom/Document.h"
 #include "core/loader/DocumentLoadTiming.h"
 #include "core/loader/DocumentLoader.h"
+#include "core/page/ResourceTimingInfo.h"
 #include "core/platform/network/ResourceRequest.h"
 #include "core/platform/network/ResourceResponse.h"
-#include "weborigin/SecurityOrigin.h"
-#include "wtf/Vector.h"
 
 namespace WebCore {
 
@@ -48,38 +47,15 @@ static double monotonicTimeToDocumentMilliseconds(Document* document, double sec
     return document->loader()->timing()->monotonicTimeToZeroBasedDocumentTime(seconds) * 1000.0;
 }
 
-static bool passesTimingAllowCheck(const ResourceResponse& response, Document* requestingDocument)
-{
-    AtomicallyInitializedStatic(AtomicString&, timingAllowOrigin = *new AtomicString("timing-allow-origin"));
-
-    RefPtr<SecurityOrigin> resourceOrigin = SecurityOrigin::create(response.url());
-    if (resourceOrigin->isSameSchemeHostPort(requestingDocument->securityOrigin()))
-        return true;
-
-    const String& timingAllowOriginString = response.httpHeaderField(timingAllowOrigin);
-    if (timingAllowOriginString.isEmpty() || equalIgnoringCase(timingAllowOriginString, "null"))
-        return false;
-
-    if (timingAllowOriginString == "*")
-        return true;
-
-    const String& securityOrigin = requestingDocument->securityOrigin()->toString();
-    Vector<String> timingAllowOrigins;
-    timingAllowOriginString.split(" ", timingAllowOrigins);
-    for (size_t i = 0; i < timingAllowOrigins.size(); ++i)
-        if (timingAllowOrigins[i] == securityOrigin)
-            return true;
-
-    return false;
-}
-
-PerformanceResourceTiming::PerformanceResourceTiming(const AtomicString& initiatorType, const ResourceRequest& request, const ResourceResponse& response, double initiationTime, double finishTime, Document* requestingDocument)
-    : PerformanceEntry(request.url().string(), "resource", monotonicTimeToDocumentMilliseconds(requestingDocument, initiationTime), monotonicTimeToDocumentMilliseconds(requestingDocument, finishTime))
-    , m_initiatorType(initiatorType)
-    , m_timing(response.resourceLoadTiming())
-    , m_finishTime(finishTime)
-    , m_didReuseConnection(response.connectionReused())
-    , m_shouldReportDetails(passesTimingAllowCheck(response, requestingDocument))
+PerformanceResourceTiming::PerformanceResourceTiming(const ResourceTimingInfo& info, Document* requestingDocument, double startTime, double lastRedirectEndTime, bool allowTimingDetails, bool allowRedirectDetails)
+    : PerformanceEntry(info.initialRequest().url().string(), "resource", monotonicTimeToDocumentMilliseconds(requestingDocument, startTime), monotonicTimeToDocumentMilliseconds(requestingDocument, info.loadFinishTime()))
+    , m_initiatorType(info.initiatorType())
+    , m_timing(info.finalResponse().resourceLoadTiming())
+    , m_lastRedirectEndTime(lastRedirectEndTime)
+    , m_finishTime(info.loadFinishTime())
+    , m_didReuseConnection(info.finalResponse().connectionReused())
+    , m_allowTimingDetails(allowTimingDetails)
+    , m_allowRedirectDetails(allowRedirectDetails)
     , m_requestingDocument(requestingDocument)
 {
     ScriptWrappable::init(this);
@@ -96,28 +72,35 @@ AtomicString PerformanceResourceTiming::initiatorType() const
 
 double PerformanceResourceTiming::redirectStart() const
 {
-    // FIXME: Need to track and report redirects for resources.
-    if (!m_shouldReportDetails)
+    if (!m_lastRedirectEndTime || !m_allowRedirectDetails)
         return 0.0;
-    return 0;
+
+    return PerformanceEntry::startTime();
 }
 
 double PerformanceResourceTiming::redirectEnd() const
 {
-    if (!m_shouldReportDetails)
+    if (!m_lastRedirectEndTime || !m_allowRedirectDetails)
         return 0.0;
-    return 0;
+
+    return monotonicTimeToDocumentMilliseconds(m_requestingDocument.get(), m_lastRedirectEndTime);
 }
 
 double PerformanceResourceTiming::fetchStart() const
 {
-    // FIXME: This should be different depending on redirects.
-    return (startTime());
+    if (m_lastRedirectEndTime) {
+        // FIXME: ASSERT(m_timing) should be in constructor once timeticks of
+        // AppCache is exposed from chrome network stack, crbug/251100
+        ASSERT(m_timing);
+        return monotonicTimeToDocumentMilliseconds(m_requestingDocument.get(), m_timing->requestTime);
+    }
+
+    return PerformanceEntry::startTime();
 }
 
 double PerformanceResourceTiming::domainLookupStart() const
 {
-    if (!m_shouldReportDetails)
+    if (!m_allowTimingDetails)
         return 0.0;
 
     if (!m_timing || m_timing->dnsStart == 0.0)
@@ -128,7 +111,7 @@ double PerformanceResourceTiming::domainLookupStart() const
 
 double PerformanceResourceTiming::domainLookupEnd() const
 {
-    if (!m_shouldReportDetails)
+    if (!m_allowTimingDetails)
         return 0.0;
 
     if (!m_timing || m_timing->dnsEnd == 0.0)
@@ -139,7 +122,7 @@ double PerformanceResourceTiming::domainLookupEnd() const
 
 double PerformanceResourceTiming::connectStart() const
 {
-    if (!m_shouldReportDetails)
+    if (!m_allowTimingDetails)
         return 0.0;
 
     // connectStart will be zero when a network request is not made.
@@ -156,7 +139,7 @@ double PerformanceResourceTiming::connectStart() const
 
 double PerformanceResourceTiming::connectEnd() const
 {
-    if (!m_shouldReportDetails)
+    if (!m_allowTimingDetails)
         return 0.0;
 
     // connectStart will be zero when a network request is not made.
@@ -168,7 +151,7 @@ double PerformanceResourceTiming::connectEnd() const
 
 double PerformanceResourceTiming::secureConnectionStart() const
 {
-    if (!m_shouldReportDetails)
+    if (!m_allowTimingDetails)
         return 0.0;
 
     if (!m_timing || m_timing->sslStart == 0.0) // Secure connection not negotiated.
@@ -179,7 +162,7 @@ double PerformanceResourceTiming::secureConnectionStart() const
 
 double PerformanceResourceTiming::requestStart() const
 {
-    if (!m_shouldReportDetails)
+    if (!m_allowTimingDetails)
         return 0.0;
 
     if (!m_timing)
@@ -190,7 +173,7 @@ double PerformanceResourceTiming::requestStart() const
 
 double PerformanceResourceTiming::responseStart() const
 {
-    if (!m_shouldReportDetails)
+    if (!m_allowTimingDetails)
         return 0.0;
 
     if (!m_timing)

@@ -40,6 +40,8 @@
 #include "core/page/PerformanceResourceTiming.h"
 #include "core/page/PerformanceTiming.h"
 #include "core/page/PerformanceUserTiming.h"
+#include "core/page/ResourceTimingInfo.h"
+#include "weborigin/SecurityOrigin.h"
 #include "wtf/CurrentTime.h"
 
 #include "core/page/Frame.h"
@@ -159,13 +161,79 @@ void Performance::webkitSetResourceTimingBufferSize(unsigned size)
         dispatchEvent(Event::create(eventNames().webkitresourcetimingbufferfullEvent, false, false));
 }
 
-void Performance::addResourceTiming(const String& initiatorName, Document* initiatorDocument, const ResourceRequest& request, const ResourceResponse& response, double initiationTime, double finishTime)
+static bool passesTimingAllowCheck(const ResourceResponse& response, Document* requestingDocument)
+{
+    AtomicallyInitializedStatic(AtomicString&, timingAllowOrigin = *new AtomicString("timing-allow-origin"));
+
+    RefPtr<SecurityOrigin> resourceOrigin = SecurityOrigin::create(response.url());
+    if (resourceOrigin->isSameSchemeHostPort(requestingDocument->securityOrigin()))
+        return true;
+
+    const String& timingAllowOriginString = response.httpHeaderField(timingAllowOrigin);
+    if (timingAllowOriginString.isEmpty() || equalIgnoringCase(timingAllowOriginString, "null"))
+        return false;
+
+    if (timingAllowOriginString == "*")
+        return true;
+
+    const String& securityOrigin = requestingDocument->securityOrigin()->toString();
+    Vector<String> timingAllowOrigins;
+    timingAllowOriginString.split(" ", timingAllowOrigins);
+    for (size_t i = 0; i < timingAllowOrigins.size(); ++i) {
+        if (timingAllowOrigins[i] == securityOrigin)
+            return true;
+    }
+
+    return false;
+}
+
+static bool allowsTimingRedirect(const Vector<ResourceResponse>& redirectChain, const ResourceResponse& finalResponse, Document* initiatorDocument)
+{
+    if (!passesTimingAllowCheck(finalResponse, initiatorDocument))
+        return false;
+
+    for (size_t i = 0; i < redirectChain.size(); i++) {
+        if (!passesTimingAllowCheck(redirectChain[i], initiatorDocument))
+            return false;
+    }
+
+    return true;
+}
+
+void Performance::addResourceTiming(const ResourceTimingInfo& info, Document* initiatorDocument)
 {
     if (isResourceTimingBufferFull())
         return;
 
-    RefPtr<PerformanceEntry> entry = PerformanceResourceTiming::create(initiatorName, request, response, initiationTime, finishTime, initiatorDocument);
+    const ResourceResponse& finalResponse = info.finalResponse();
+    bool allowTimingDetails = passesTimingAllowCheck(finalResponse, initiatorDocument);
+    double startTime = info.initialTime();
 
+    if (info.redirectChain().isEmpty()) {
+        RefPtr<PerformanceEntry> entry = PerformanceResourceTiming::create(info, initiatorDocument, startTime, allowTimingDetails);
+        addResourceTimingBuffer(entry);
+        return;
+    }
+
+    const Vector<ResourceResponse>& redirectChain = info.redirectChain();
+    bool allowRedirectDetails = allowsTimingRedirect(redirectChain, finalResponse, initiatorDocument);
+
+    if (!allowRedirectDetails) {
+        ResourceLoadTiming* finalTiming = finalResponse.resourceLoadTiming();
+        ASSERT(finalTiming);
+        startTime = finalTiming->requestTime;
+    }
+
+    ResourceLoadTiming* lastRedirectTiming = redirectChain.last().resourceLoadTiming();
+    ASSERT(lastRedirectTiming);
+    double lastRedirectEndTime = lastRedirectTiming->receiveHeadersEnd;
+
+    RefPtr<PerformanceEntry> entry = PerformanceResourceTiming::create(info, initiatorDocument, startTime, lastRedirectEndTime, allowTimingDetails, allowRedirectDetails);
+    addResourceTimingBuffer(entry);
+}
+
+void Performance::addResourceTimingBuffer(PassRefPtr<PerformanceEntry> entry)
+{
     m_resourceTimingBuffer.append(entry);
 
     if (isResourceTimingBufferFull())

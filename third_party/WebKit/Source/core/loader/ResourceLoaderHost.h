@@ -54,6 +54,7 @@ public:
     virtual void incrementRequestCount(const CachedResource*) = 0;
     virtual void decrementRequestCount(const CachedResource*) = 0;
     virtual void didLoadResource(CachedResource*) = 0;
+    virtual void redirectReceived(CachedResource*, const ResourceResponse&) = 0;
 
     virtual void didFinishLoading(const CachedResource*, double finishTime, const ResourceLoaderOptions&) = 0;
     virtual void didChangeLoadingPriority(const CachedResource*, ResourceLoadPriority) = 0;

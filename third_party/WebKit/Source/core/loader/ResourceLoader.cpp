@@ -246,7 +246,7 @@ void ResourceLoader::willSendRequest(ResourceHandle*, ResourceRequest& request, 
             cancel();
             return;
         }
-
+        m_host->redirectReceived(m_resource, redirectResponse);
         m_resource->willSendRequest(request, redirectResponse);
     }
 
@@ -254,6 +254,7 @@ void ResourceLoader::willSendRequest(ResourceHandle*, ResourceRequest& request, 
         return;
 
     m_host->willSendRequest(m_resource, request, redirectResponse, m_options);
+    request.setReportLoadTiming(true);
     m_request = request;
 
     if (request.isNull())
