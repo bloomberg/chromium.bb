@@ -68,21 +68,23 @@ double DOMTimer::visiblePageAlignmentInterval()
     return 0;
 }
 
-int DOMTimer::install(ScriptExecutionContext* context, PassOwnPtr<ScheduledAction> action, int timeout, bool singleShot)
+int DOMTimer::install(ScriptExecutionContext* context, Type type, PassOwnPtr<ScheduledAction> action, int timeout)
 {
-    int timeoutID = context->installNewTimeout(action, timeout, singleShot);
-    InspectorInstrumentation::didInstallTimer(context, timeoutID, timeout, singleShot);
+    int timeoutID = context->installNewTimeout(type, action, timeout);
+    InspectorInstrumentation::didInstallTimer(context, timeoutID, timeout, type == TimeoutType); // FIXME: Fix inspector so it can accept a DOMTimer::Type value.
     return timeoutID;
 }
 
-void DOMTimer::removeByID(ScriptExecutionContext* context, int timeoutID)
+void DOMTimer::removeByIDIfTypeMatches(ScriptExecutionContext* context, Type type, int timeoutID)
 {
-    context->removeTimeoutByID(timeoutID);
+    // FIXME: Invoke didRemoveTimer() if a timer is actually removed.
+    context->removeTimeoutByIDIfTypeMatches(type, timeoutID);
     InspectorInstrumentation::didRemoveTimer(context, timeoutID);
 }
 
-DOMTimer::DOMTimer(ScriptExecutionContext* context, PassOwnPtr<ScheduledAction> action, int interval, bool singleShot, int timeoutID)
+DOMTimer::DOMTimer(ScriptExecutionContext* context, Type type, PassOwnPtr<ScheduledAction> action, int interval, int timeoutID)
     : SuspendableTimer(context)
+    , m_type(type)
     , m_timeoutID(timeoutID)
     , m_nestingLevel(timerNestingLevel + 1)
     , m_action(action)
@@ -94,10 +96,14 @@ DOMTimer::DOMTimer(ScriptExecutionContext* context, PassOwnPtr<ScheduledAction> 
     double intervalMilliseconds = max(oneMillisecond, interval * oneMillisecond);
     if (intervalMilliseconds < minimumInterval && m_nestingLevel >= maxTimerNestingLevel)
         intervalMilliseconds = minimumInterval;
-    if (singleShot)
+    switch (type) {
+    case TimeoutType:
         startOneShot(intervalMilliseconds);
-    else
+        break;
+    case IntervalType:
         startRepeating(intervalMilliseconds);
+        break;
+    }
 }
 
 DOMTimer::~DOMTimer()
@@ -107,6 +113,11 @@ DOMTimer::~DOMTimer()
 int DOMTimer::timeoutID() const
 {
     return m_timeoutID;
+}
+
+DOMTimer::Type DOMTimer::type() const
+{
+    return m_type;
 }
 
 void DOMTimer::fired()
@@ -139,7 +150,8 @@ void DOMTimer::fired()
     OwnPtr<ScheduledAction> action = m_action.release();
 
     // This timer is being deleted; no access to member variables allowed after this point.
-    context->removeTimeoutByID(m_timeoutID);
+    bool removed = context->removeTimeoutByIDIfTypeMatches(m_type, m_timeoutID);
+    ASSERT_UNUSED(removed, removed);
 
     action->execute(context);
 

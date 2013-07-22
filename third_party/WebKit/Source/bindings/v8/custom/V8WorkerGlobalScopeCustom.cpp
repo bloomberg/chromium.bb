@@ -48,7 +48,7 @@
 
 namespace WebCore {
 
-void SetTimeoutOrInterval(const v8::FunctionCallbackInfo<v8::Value>& args, bool singleShot)
+void SetTimeoutOrInterval(const v8::FunctionCallbackInfo<v8::Value>& args, DOMTimer::Type timerType)
 {
     WorkerGlobalScope* workerGlobalScope = V8WorkerGlobalScope::toNative(args.Holder());
 
@@ -87,10 +87,14 @@ void SetTimeoutOrInterval(const v8::FunctionCallbackInfo<v8::Value>& args, bool 
 
     int32_t timeout = argumentCount >= 2 ? args[1]->Int32Value() : 0;
     int timerId;
-    if (singleShot)
+    switch (timerType) {
+    case DOMTimer::TimeoutType:
         timerId = DOMWindowTimers::setTimeout(workerGlobalScope, action.release(), timeout);
-    else
+        break;
+    case DOMTimer::IntervalType:
         timerId = DOMWindowTimers::setInterval(workerGlobalScope, action.release(), timeout);
+        break;
+    }
 
     v8SetReturnValue(args, timerId);
 }
@@ -117,12 +121,12 @@ void V8WorkerGlobalScope::importScriptsMethodCustom(const v8::FunctionCallbackIn
 
 void V8WorkerGlobalScope::setTimeoutMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    return SetTimeoutOrInterval(args, true);
+    return SetTimeoutOrInterval(args, DOMTimer::TimeoutType);
 }
 
 void V8WorkerGlobalScope::setIntervalMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    return SetTimeoutOrInterval(args, false);
+    return SetTimeoutOrInterval(args, DOMTimer::IntervalType);
 }
 
 v8::Handle<v8::Value> toV8(WorkerGlobalScope* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)

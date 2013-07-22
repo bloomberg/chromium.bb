@@ -42,24 +42,24 @@ namespace DOMWindowTimers {
 
 int setTimeout(EventTarget* eventTarget, PassOwnPtr<ScheduledAction> action, int timeout)
 {
-    return DOMTimer::install(eventTarget->scriptExecutionContext(), action, timeout, true);
+    return DOMTimer::install(eventTarget->scriptExecutionContext(), DOMTimer::TimeoutType, action, timeout);
 }
 
 int setInterval(EventTarget* eventTarget, PassOwnPtr<ScheduledAction> action, int timeout)
 {
-    return DOMTimer::install(eventTarget->scriptExecutionContext(), action, timeout, false);
+    return DOMTimer::install(eventTarget->scriptExecutionContext(), DOMTimer::IntervalType, action, timeout);
 }
 
 void clearTimeout(EventTarget* eventTarget, int timeoutID)
 {
     if (ScriptExecutionContext* context = eventTarget->scriptExecutionContext())
-        DOMTimer::removeByID(context, timeoutID);
+        DOMTimer::removeByIDIfTypeMatches(context, DOMTimer::TimeoutType, timeoutID);
 }
 
 void clearInterval(EventTarget* eventTarget, int timeoutID)
 {
     if (ScriptExecutionContext* context = eventTarget->scriptExecutionContext())
-        DOMTimer::removeByID(context, timeoutID);
+        DOMTimer::removeByIDIfTypeMatches(context, DOMTimer::IntervalType, timeoutID);
 }
 
 } // namespace DOMWindowTimers

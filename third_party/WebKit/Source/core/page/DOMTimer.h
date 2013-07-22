@@ -40,13 +40,19 @@ class ScriptExecutionContext;
 
 class DOMTimer : public SuspendableTimer {
 public:
+    enum Type {
+        TimeoutType,
+        IntervalType
+    };
+
     // Creates a new timer owned by the ScriptExecutionContext, starts it and returns its ID.
-    static int install(ScriptExecutionContext*, PassOwnPtr<ScheduledAction>, int timeout, bool singleShot);
-    static void removeByID(ScriptExecutionContext*, int timeoutID);
+    static int install(ScriptExecutionContext*, Type, PassOwnPtr<ScheduledAction>, int timeout);
+    static void removeByIDIfTypeMatches(ScriptExecutionContext*, Type, int timeoutID);
 
     virtual ~DOMTimer();
 
     int timeoutID() const;
+    Type type() const;
 
     // ActiveDOMObject
     virtual void contextDestroyed() OVERRIDE;
@@ -60,17 +66,18 @@ private:
     friend class ScriptExecutionContext; // For create().
 
     // Should only be used by ScriptExecutionContext.
-    static PassOwnPtr<DOMTimer> create(ScriptExecutionContext* context, PassOwnPtr<ScheduledAction> action, int timeout, bool singleShot, int timeoutID)
+    static PassOwnPtr<DOMTimer> create(ScriptExecutionContext* context, Type type, PassOwnPtr<ScheduledAction> action, int timeout, int timeoutID)
     {
-        return adoptPtr(new DOMTimer(context, action, timeout, singleShot, timeoutID));
+        return adoptPtr(new DOMTimer(context, type, action, timeout, timeoutID));
     }
 
-    DOMTimer(ScriptExecutionContext*, PassOwnPtr<ScheduledAction>, int interval, bool singleShot, int timeoutID);
-    virtual void fired();
+    DOMTimer(ScriptExecutionContext*, Type, PassOwnPtr<ScheduledAction>, int interval, int timeoutID);
+    virtual void fired() OVERRIDE;
 
-    // Retuns timer fire time rounded to the next multiple of timer alignment interval.
-    virtual double alignedFireTime(double) const;
+    // Returns timer fire time rounded to the next multiple of timer alignment interval.
+    virtual double alignedFireTime(double) const OVERRIDE;
 
+    Type m_type;
     int m_timeoutID;
     int m_nestingLevel;
     OwnPtr<ScheduledAction> m_action;

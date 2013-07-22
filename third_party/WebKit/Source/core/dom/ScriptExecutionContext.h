@@ -168,8 +168,8 @@ private:
     virtual PassOwnPtr<LifecycleNotifier> createLifecycleNotifier() OVERRIDE;
 
     // Implementation details for DOMTimer. No other classes should call these functions.
-    int installNewTimeout(PassOwnPtr<ScheduledAction>, int timeout, bool singleShot);
-    void removeTimeoutByID(int timeoutID); // This makes underlying DOMTimer instance destructed.
+    int installNewTimeout(DOMTimer::Type, PassOwnPtr<ScheduledAction>, int timeout);
+    bool removeTimeoutByIDIfTypeMatches(DOMTimer::Type, int timeoutID); // This makes underlying DOMTimer instance destructed. Returns true if removed.
 
     HashSet<MessagePort*> m_messagePorts;
 

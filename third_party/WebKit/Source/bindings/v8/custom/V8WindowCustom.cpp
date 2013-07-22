@@ -74,7 +74,7 @@ namespace WebCore {
 
 // FIXME: There is a lot of duplication with SetTimeoutOrInterval() in V8WorkerGlobalScopeCustom.cpp.
 // We should refactor this.
-void WindowSetTimeoutImpl(const v8::FunctionCallbackInfo<v8::Value>& args, bool singleShot)
+void WindowSetTimeoutImpl(const v8::FunctionCallbackInfo<v8::Value>& args, DOMTimer::Type timerType)
 {
     int argumentCount = args.Length();
 
@@ -113,6 +113,8 @@ void WindowSetTimeoutImpl(const v8::FunctionCallbackInfo<v8::Value>& args, bool 
     if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame()))
         return;
 
+    ASSERT(imp->frame());
+
     OwnPtr<ScheduledAction> action;
     if (function->IsFunction()) {
         int paramCount = argumentCount >= 2 ? argumentCount - 2 : 0;
@@ -126,23 +128,25 @@ void WindowSetTimeoutImpl(const v8::FunctionCallbackInfo<v8::Value>& args, bool 
         }
 
         // params is passed to action, and released in action's destructor
-        ASSERT(imp->frame());
         action = adoptPtr(new ScheduledAction(imp->frame()->script()->currentWorldContext(), v8::Handle<v8::Function>::Cast(function), paramCount, params.get(), args.GetIsolate()));
     } else {
         if (imp->document() && !imp->document()->contentSecurityPolicy()->allowEval()) {
             v8SetReturnValue(args, 0);
             return;
         }
-        ASSERT(imp->frame());
         action = adoptPtr(new ScheduledAction(imp->frame()->script()->currentWorldContext(), functionString, KURL(), args.GetIsolate()));
     }
 
     int32_t timeout = argumentCount >= 2 ? args[1]->Int32Value() : 0;
     int timerId;
-    if (singleShot)
+    switch (timerType) {
+    case DOMTimer::TimeoutType:
         timerId = DOMWindowTimers::setTimeout(imp, action.release(), timeout);
-    else
+        break;
+    case DOMTimer::IntervalType:
         timerId = DOMWindowTimers::setInterval(imp, action.release(), timeout);
+        break;
+    }
 
     // Try to do the idle notification before the timeout expires to get better
     // use of any idle time. Aim for the middle of the interval for simplicity.
@@ -422,13 +426,13 @@ void V8Window::namedPropertyGetterCustom(v8::Local<v8::String> name, const v8::P
 
 void V8Window::setTimeoutMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    WindowSetTimeoutImpl(args, true);
+    WindowSetTimeoutImpl(args, DOMTimer::TimeoutType);
 }
 
 
 void V8Window::setIntervalMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    WindowSetTimeoutImpl(args, false);
+    WindowSetTimeoutImpl(args, DOMTimer::IntervalType);
 }
 
 bool V8Window::namedSecurityCheckCustom(v8::Local<v8::Object> host, v8::Local<v8::Value> key, v8::AccessType type, v8::Local<v8::Value>)

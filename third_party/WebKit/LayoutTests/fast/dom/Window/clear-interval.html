@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>clearInterval test</title>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<link rel="stylesheet" href="../../../resources/testharness.css">
+</head>
+<body>
+<script>
+var clearIntervalTest = async_test('Actions registered with setInterval should be cleared by clearInterval.');
+
+clearIntervalTest.step(function ()
+{
+    var count = 0;
+    var intervalID;
+
+    // Fire |action| every 5ms for three times, and then clear the action.
+    function action()
+    {
+        ++count;
+        if (count == 3) {
+            window.clearInterval(intervalID);
+            // Wait for a reasonably long time (50ms here) to make sure |action| is not fired anymore.
+            window.setTimeout(clearIntervalTest.step_func(function ()
+            {
+                assert_equals(count, 3);
+                clearIntervalTest.done();
+            }, 50));
+        }
+    }
+    intervalID = window.setInterval(action, 5);
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,3 @@
+
+PASS Actions registered with setInterval should be cleared by clearInterval. 
+
