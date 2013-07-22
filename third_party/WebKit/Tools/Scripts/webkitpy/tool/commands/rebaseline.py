@@ -29,7 +29,10 @@
 import json
 import logging
 import optparse
+import re
 import sys
+import time
+import urllib2
 
 from webkitpy.common.checkout.baselineoptimizer import BaselineOptimizer
 from webkitpy.common.memoized import memoized
@@ -299,7 +302,7 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
             verbose_args = ['--verbose'] if verbose else []
             stderr = self._tool.executive.run_command([self._tool.path()] + verbose_args + args, cwd=self._tool.scm().checkout_root, return_stderr=True)
             for line in stderr.splitlines():
-                print >> sys.stderr, line
+                _log.warning(line)
         except ScriptError, e:
             _log.error(e)
 
@@ -524,3 +527,178 @@ class Rebaseline(AbstractParallelRebaselineCommand):
             _log.debug("rebaseline-json: " + str(test_prefix_list))
 
         self._rebaseline(options, test_prefix_list)
+
+
+class AutoRebaseline(AbstractParallelRebaselineCommand):
+    name = "auto-rebaseline"
+    help_text = "Rebaselines any NeedsRebaseline lines in TestExpectations that have cycled through all the bots."
+    AUTO_REBASELINE_BRANCH_NAME = "auto-rebaseline-temporary-branch"
+
+    def __init__(self):
+        super(AutoRebaseline, self).__init__(options=[
+            # FIXME: Remove this option.
+            self.no_optimize_option,
+            # FIXME: Remove this option.
+            self.results_directory_option,
+            ])
+
+    def latest_revision_processed_on_all_bots(self):
+        revisions = []
+        for builder_name in self._release_builders():
+            builder = self._tool.buildbot_for_builder_name(builder_name).builder_with_name(builder_name)
+            result = builder.latest_layout_test_results()
+            if result.run_was_interrupted():
+                _log.error("Can't rebaseline. The latest run on %s did not complete." % builder_name)
+                return 0
+            revisions.append(result.blink_revision())
+        return int(min(revisions))
+
+    def tests_to_rebaseline(self, tool, min_revision, print_revisions):
+        port = tool.port_factory.get()
+        expectations_file_path = port.path_to_generic_test_expectations_file()
+
+        tests = set()
+        revision = None
+        author = None
+        bugs = set()
+
+        for line in tool.scm().blame(expectations_file_path).split("\n"):
+            if "NeedsRebaseline" not in line:
+                continue
+            parsed_line = re.match("^(\S*)[^(]*\((\S*).*?([^ ]*)\ \[[^[]*$", line)
+
+            commit_hash = parsed_line.group(1)
+            svn_revision = tool.scm().svn_revision_from_git_commit(commit_hash)
+
+            test = parsed_line.group(3)
+            if print_revisions:
+                _log.info("%s is waiting for r%s" % (test, svn_revision))
+
+            if not svn_revision or svn_revision > min_revision:
+                continue
+
+            if revision and svn_revision != revision:
+                continue
+
+            if not revision:
+                revision = svn_revision
+                author = parsed_line.group(2)
+
+            bugs.update(re.findall("crbug\.com\/(\d+)", line))
+            tests.add(test)
+
+        return tests, revision, author, bugs
+
+    def link_to_patch(self, revision):
+        return "http://src.chromium.org/viewvc/blink?view=revision&revision=" + str(revision)
+
+    def commit_message(self, author, revision, bugs):
+        bug_string = ""
+        if bugs:
+            bug_string = "BUG=%s\n" % ",".join(bugs)
+
+        return """Auto-rebaseline for r%s
+
+%s
+
+%sTBR=%s
+""" % (revision, self.link_to_patch(revision), bug_string, author)
+
+    def get_test_prefix_list(self, tests):
+        test_prefix_list = {}
+
+        for builder_name in self._release_builders():
+            port_name = builders.port_name_for_builder_name(builder_name)
+            port = self._tool.port_factory.get(port_name)
+            expectations = TestExpectations(port, include_overrides=True)
+            for test in expectations.get_needs_rebaseline_failures():
+                if test not in tests:
+                    continue
+                if test not in test_prefix_list:
+                    test_prefix_list[test] = {}
+                test_prefix_list[test][builder_name] = BASELINE_SUFFIX_LIST
+
+        return test_prefix_list
+
+    def _run_git_cl_command(self, options, command):
+        subprocess_command = ['git', 'cl'] + command
+        if options.verbose:
+            subprocess_command.append('--verbose')
+        # Use call instead of run_command so that stdout doesn't get swallowed.
+        self._tool.executive.call(subprocess_command)
+
+    # FIXME: Move this somewhere more general.
+    def tree_status(self):
+        blink_tree_status_url = "http://blink-status.appspot.com/status"
+        status = urllib2.urlopen(blink_tree_status_url).read().lower()
+        if status.find('closed') != -1 or status == 0:
+            return 'closed'
+        elif status.find('open') != -1 or status == 1:
+            return 'open'
+        return 'unknown'
+
+    def execute(self, options, args, tool):
+        if tool.scm().executable_name == "svn":
+            _log.error("Auto rebaseline only works with a git checkout.")
+            return
+
+        if tool.scm().has_working_directory_changes():
+            _log.error("Cannot proceed with working directory changes. Clean working directory first.")
+            return
+
+        min_revision = self.latest_revision_processed_on_all_bots()
+        if not min_revision:
+            return
+
+        if options.verbose:
+            _log.info("Bot min revision is %s." % min_revision)
+
+        tests, revision, author, bugs = self.tests_to_rebaseline(tool, min_revision, print_revisions=options.verbose)
+        test_prefix_list = self.get_test_prefix_list(tests)
+
+        if not tests:
+            _log.debug('No tests to rebaseline.')
+            return
+        _log.info('Rebaselining %s for r%s by %s.' % (list(tests), revision, author))
+
+        if self.tree_status() == 'closed':
+            _log.info('Cannot proceed. Tree is closed.')
+            return
+
+        try:
+            old_branch_name = tool.scm().current_branch()
+            tool.scm().delete_branch(self.AUTO_REBASELINE_BRANCH_NAME)
+            tool.scm().create_clean_branch(self.AUTO_REBASELINE_BRANCH_NAME)
+
+            self._rebaseline(options, test_prefix_list)
+
+            tool.scm().commit_locally_with_message(self.commit_message(author, revision, bugs))
+
+            # FIXME: It would be nice if we could dcommit the patch without uploading, but still
+            # go through all the precommit hooks. For rebaselines with lots of files, uploading
+            # takes a long time and sometimes fails, but we don't want to commit if, e.g. the
+            # tree is closed.
+            self._run_git_cl_command(options, ['upload', '-f'])
+            self._run_git_cl_command(options, ['dcommit', '-f'])
+        finally:
+            self._run_git_cl_command(options, ['set_close'])
+            tool.scm().ensure_cleanly_tracking_remote_master()
+            tool.scm().checkout_branch(old_branch_name)
+            tool.scm().delete_branch(self.AUTO_REBASELINE_BRANCH_NAME)
+
+
+class RebaselineOMatic(AbstractDeclarativeCommand):
+    name = "rebaseline-o-matic"
+    help_text = "Calls webkit-patch auto-rebaseline in a loop."
+
+    SLEEP_TIME_IN_SECONDS = 30
+
+    def execute(self, options, args, tool):
+        while True:
+            tool.executive.run_command(['git', 'pull'])
+            rebaseline_command = [tool.filesystem.join(tool.scm().checkout_root, 'Tools', 'Scripts', 'webkit-patch'), 'auto-rebaseline']
+            if options.verbose:
+                rebaseline_command.append('--verbose')
+            # Use call instead of run_command so that stdout doesn't get swallowed.
+            tool.executive.call(rebaseline_command)
+            time.sleep(self.SLEEP_TIME_IN_SECONDS)

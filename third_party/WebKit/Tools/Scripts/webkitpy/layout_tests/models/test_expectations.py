@@ -984,6 +984,9 @@ class TestExpectations(object):
     def model(self):
         return self._model
 
+    def get_needs_rebaseline_failures(self):
+        return self._model.get_test_set_for_keyword(TestExpectationParser.NEEDS_REBASELINE_MODIFIER)
+
     def get_rebaselining_failures(self):
         return self._model.get_test_set(REBASELINE)
 

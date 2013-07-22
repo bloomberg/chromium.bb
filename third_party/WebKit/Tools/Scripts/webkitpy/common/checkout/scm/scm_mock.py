@@ -63,7 +63,7 @@ class MockSCM(object):
     def checkout_branch(self, name):
         pass
 
-    def checkout_clean_branch(self, name):
+    def create_clean_branch(self, name):
         pass
 
     def delete_branch(self, name):
