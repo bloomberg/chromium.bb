@@ -150,6 +150,8 @@ static inline double calculateTransformedTime(double currentIteration, double it
     ASSERT(isNull(iterationTime) || (iterationTime >= 0 && iterationTime <= iterationDuration));
 
     double directedTime = calculateDirectedTime(currentIteration, iterationDuration, iterationTime, specified);
+    if (isNull(directedTime))
+        return nullValue();
     return specified.timingFunction ?
         iterationDuration * specified.timingFunction->evaluate(directedTime / iterationDuration, accuracyForDuration(iterationDuration)) :
         directedTime;

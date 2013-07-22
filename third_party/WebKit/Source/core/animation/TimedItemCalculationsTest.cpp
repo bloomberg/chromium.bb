@@ -203,6 +203,8 @@ TEST(TimedItemCalculations, TransformedTime)
     ASSERT_EQ(5, calculateTransformedTime(0, 20, 12, timing));
     ASSERT_EQ(5, calculateTransformedTime(1, 20, 12, timing));
 
+    // Timing function when directed time is null.
+    ASSERT_TRUE(isNull(calculateTransformedTime(1, 2, nullValue(), timing)));
 }
 
 }
