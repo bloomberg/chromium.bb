@@ -46,14 +46,14 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-#ifndef WEBKIT_CHILD_MULTIPART_RESPONSE_DELEGATE_H_
-#define WEBKIT_CHILD_MULTIPART_RESPONSE_DELEGATE_H_
+#ifndef WEBKIT_GLUE_MULTIPART_RESPONSE_DELEGATE_H_
+#define WEBKIT_GLUE_MULTIPART_RESPONSE_DELEGATE_H_
 
 #include <string>
 
 #include "base/basictypes.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
-#include "webkit/child/webkit_child_export.h"
+#include "webkit/common/webkit_common_export.h"
 
 namespace WebKit {
 class WebURLLoader;
@@ -65,7 +65,7 @@ namespace webkit_glue {
 // Used by unit tests to access private members.
 class MultipartResponseDelegateTester;
 
-class WEBKIT_CHILD_EXPORT MultipartResponseDelegate {
+class WEBKIT_COMMON_EXPORT MultipartResponseDelegate {
  public:
   MultipartResponseDelegate(WebKit::WebURLLoaderClient* client,
                             WebKit::WebURLLoader* loader,
@@ -150,4 +150,4 @@ class WEBKIT_CHILD_EXPORT MultipartResponseDelegate {
 
 }  // namespace webkit_glue
 
-#endif  // WEBKIT_CHILD_MULTIPART_RESPONSE_DELEGATE_H_
+#endif

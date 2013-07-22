@@ -8,7 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_message_filter.h"
-#include "webkit/common/resource_type.h"
+#include "webkit/glue/resource_type.h"
 
 namespace fileapi {
 class FileSystemContext;

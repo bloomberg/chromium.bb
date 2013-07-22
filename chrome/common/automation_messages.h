@@ -145,7 +145,7 @@ IPC_STRUCT_BEGIN(AutomationURLRequest)
   IPC_STRUCT_MEMBER(std::string, referrer)
   IPC_STRUCT_MEMBER(std::string, extra_request_headers)
   IPC_STRUCT_MEMBER(scoped_refptr<net::UploadData>, upload_data)
-  IPC_STRUCT_MEMBER(int, resource_type)  // see webkit/common/resource_type.h
+  IPC_STRUCT_MEMBER(int, resource_type)  // see webkit/glue/resource_type.h
   IPC_STRUCT_MEMBER(int, load_flags) // see net/base/load_flags.h
 IPC_STRUCT_END()
 

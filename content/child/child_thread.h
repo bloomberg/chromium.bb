@@ -13,7 +13,7 @@
 #include "content/common/content_export.h"
 #include "content/common/message_router.h"
 #include "ipc/ipc_message.h"  // For IPC_MESSAGE_LOG_ENABLED.
-#include "webkit/child/resource_loader_bridge.h"
+#include "webkit/glue/resource_loader_bridge.h"
 
 namespace base {
 class MessageLoop;

@@ -23,7 +23,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "url/gurl.h"
-#include "webkit/common/resource_type.h"
+#include "webkit/glue/resource_type.h"
 
 class PredictorsHandler;
 class Profile;

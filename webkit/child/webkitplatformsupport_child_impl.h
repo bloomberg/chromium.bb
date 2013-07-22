@@ -8,7 +8,7 @@
 #include "base/threading/thread_local_storage.h"
 #include "webkit/child/webfallbackthemeengine_impl.h"
 #include "webkit/child/webkit_child_export.h"
-#include "webkit/child/webkitplatformsupport_impl.h"
+#include "webkit/glue/webkitplatformsupport_impl.h"
 
 #if defined(USE_DEFAULT_RENDER_THEME)
 #include "webkit/child/webthemeengine_impl_default.h"

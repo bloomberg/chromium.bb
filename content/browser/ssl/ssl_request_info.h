@@ -10,7 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "net/cert/cert_status_flags.h"
 #include "url/gurl.h"
-#include "webkit/common/resource_type.h"
+#include "webkit/glue/resource_type.h"
 
 namespace content {
 

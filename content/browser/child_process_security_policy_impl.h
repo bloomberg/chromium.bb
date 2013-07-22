@@ -16,7 +16,7 @@
 #include "base/synchronization/lock.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "webkit/common/fileapi/file_system_types.h"
-#include "webkit/common/resource_type.h"
+#include "webkit/glue/resource_type.h"
 
 class GURL;
 

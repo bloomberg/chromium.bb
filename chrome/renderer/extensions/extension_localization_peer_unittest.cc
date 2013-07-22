@@ -14,7 +14,7 @@
 #include "net/url_request/url_request_status.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/child/resource_loader_bridge.h"
+#include "webkit/glue/resource_loader_bridge.h"
 
 using testing::_;
 using testing::DoAll;

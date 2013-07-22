@@ -10,7 +10,7 @@
 #include "webkit/browser/appcache/appcache_entry.h"
 #include "webkit/browser/appcache/appcache_host.h"
 #include "webkit/browser/webkit_storage_browser_export.h"
-#include "webkit/common/resource_type.h"
+#include "webkit/glue/resource_type.h"
 
 namespace net {
 class NetworkDelegate;

@@ -33,7 +33,7 @@
 #include "chrome/renderer/content_settings_observer.h"
 #include "chrome/renderer/extensions/extension_localization_peer.h"
 #include "chrome/renderer/security_filter_peer.h"
-#include "content/public/child/resource_dispatcher_delegate.h"
+#include "content/public/common/resource_dispatcher_delegate.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/render_view_visitor.h"
@@ -41,6 +41,7 @@
 #include "media/base/media_switches.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_module.h"
+#include "third_party/sqlite/sqlite3.h"
 #include "third_party/WebKit/public/web/WebCache.h"
 #include "third_party/WebKit/public/web/WebCrossOriginPreflightResultCache.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
@@ -49,7 +50,6 @@
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
 #include "third_party/WebKit/public/web/WebSecurityPolicy.h"
 #include "third_party/WebKit/public/web/WebView.h"
-#include "third_party/sqlite/sqlite3.h"
 #include "v8/include/v8.h"
 
 #if defined(OS_WIN)

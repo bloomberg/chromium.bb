@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_CHILD_WEBURLREQUEST_EXTRADATA_IMPL_H_
-#define WEBKIT_CHILD_WEBURLREQUEST_EXTRADATA_IMPL_H_
+#ifndef WEBKIT_GLUE_WEBURLREQUEST_EXTRADATA_IMPL_H_
+#define WEBKIT_GLUE_WEBURLREQUEST_EXTRADATA_IMPL_H_
 
 #include "base/compiler_specific.h"
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
-#include "webkit/child/webkit_child_export.h"
+#include "webkit/common/webkit_common_export.h"
 
 namespace webkit_glue {
 
 // Base class for Chrome's implementation of the "extra data" stored in each
 // ResourceRequest.
-class WEBKIT_CHILD_EXPORT WebURLRequestExtraDataImpl :
+class WEBKIT_COMMON_EXPORT WebURLRequestExtraDataImpl :
     public NON_EXPORTED_BASE(WebKit::WebURLRequest::ExtraData) {
  public:
   // |custom_user_agent| is used to communicate an overriding custom user agent
@@ -42,4 +42,4 @@ class WEBKIT_CHILD_EXPORT WebURLRequestExtraDataImpl :
 
 }  // namespace webkit_glue
 
-#endif  // WEBKIT_CHILD_WEBURLREQUEST_EXTRADATA_IMPL_H_
+#endif  // WEBKIT_GLUE_WEBURLREQUEST_EXTRADATA_IMPL_H_

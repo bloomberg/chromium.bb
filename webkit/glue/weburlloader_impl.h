@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_CHILD_WEBURLLOADER_IMPL_H_
-#define WEBKIT_CHILD_WEBURLLOADER_IMPL_H_
+#ifndef WEBKIT_GLUE_WEBURLLOADER_IMPL_H_
+#define WEBKIT_GLUE_WEBURLLOADER_IMPL_H_
 
 #include "base/memory/ref_counted.h"
 #include "third_party/WebKit/public/platform/WebURLLoader.h"
+#include "webkit/glue/webkit_glue_export.h"
 
 namespace webkit_glue {
 
@@ -41,4 +42,4 @@ class WebURLLoaderImpl : public WebKit::WebURLLoader {
 
 }  // namespace webkit_glue
 
-#endif  // WEBKIT_CHILD_WEBURLLOADER_IMPL_H_
+#endif  // WEBKIT_GLUE_WEBURLLOADER_IMPL_H_

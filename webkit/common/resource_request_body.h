@@ -62,4 +62,4 @@ class WEBKIT_COMMON_EXPORT ResourceRequestBody
 
 }  // namespace webkit_glue
 
-#endif  // WEBKIT_COMMON_RESOURCE_REQUEST_BODY_H_
+#endif  // WEBKIT_GLUE_RESOURCE_REQUEST_BODY_H_

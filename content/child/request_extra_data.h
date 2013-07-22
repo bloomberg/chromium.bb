@@ -8,7 +8,7 @@
 #include "base/compiler_specific.h"
 #include "content/common/content_export.h"
 #include "content/public/common/page_transition_types.h"
-#include "webkit/child/weburlrequest_extradata_impl.h"
+#include "webkit/glue/weburlrequest_extradata_impl.h"
 
 namespace content {
 

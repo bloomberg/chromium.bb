@@ -1,5 +1,4 @@
 include_rules = [
-  "+content/public/common",
   "+jni",  # Needed for Android's java-generated bindings.
   "+ui/base",
   "+ui/native_theme",

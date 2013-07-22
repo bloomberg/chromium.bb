@@ -20,7 +20,7 @@
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "url/gurl.h"
-#include "webkit/common/resource_type.h"
+#include "webkit/glue/resource_type.h"
 
 namespace base {
 class ListValue;

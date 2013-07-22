@@ -41,7 +41,7 @@
 #include "ipc/ipc_message.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/url_request/url_request.h"
-#include "webkit/common/resource_type.h"
+#include "webkit/glue/resource_type.h"
 
 class ResourceHandler;
 struct ResourceHostMsg_Request;

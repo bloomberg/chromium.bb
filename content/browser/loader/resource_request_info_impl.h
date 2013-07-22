@@ -14,7 +14,7 @@
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/referrer.h"
 #include "net/base/load_states.h"
-#include "webkit/common/resource_type.h"
+#include "webkit/glue/resource_type.h"
 
 namespace webkit_blob {
 class BlobData;

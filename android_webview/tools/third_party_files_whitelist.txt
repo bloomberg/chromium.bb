@@ -186,13 +186,13 @@ webkit/browser/appcache/manifest_parser.cc
 # code is taken from WebKit, the license for which we already pick up from
 # webkit/.
 webkit/browser/appcache/manifest_parser.h
-# Copyright The Chromium Authors and Netscape Communications Corporation; BSD
-# and (MPL, GPL v2 or LGPL v2) licenses. This third-party code is taken from
-# Mozilla, the license for which we already pick up from third_party/npapi/.
-webkit/child/multipart_response_delegate.h
 # Copyright Tim Copperfield and Christian Dywan; LGPL license. Not used on
 # Android.
 webkit/common/cursors/webcursor_gtk_data.h
+# Copyright The Chromium Authors and Netscape Communications Corporation; BSD
+# and (MPL, GPL v2 or LGPL v2) licenses. This third-party code is taken from
+# Mozilla, the license for which we already pick up from third_party/npapi/.
+webkit/glue/multipart_response_delegate.h
 # This third-party code is taken from Mozilla, but is copyright Google and has
 # been re-licensed under the Chromium license.
 webkit/support/webkit_support_gfx.cc

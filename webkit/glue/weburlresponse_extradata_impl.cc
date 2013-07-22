@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/child/weburlresponse_extradata_impl.h"
+#include "webkit/glue/weburlresponse_extradata_impl.h"
 
 namespace webkit_glue {
 

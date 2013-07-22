@@ -4,7 +4,7 @@
 
 // An implementation of WebURLLoader in terms of ResourceLoaderBridge.
 
-#include "webkit/child/weburlloader_impl.h"
+#include "webkit/glue/weburlloader_impl.h"
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
@@ -24,18 +24,18 @@
 #include "third_party/WebKit/public/platform/WebHTTPLoadInfo.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
-#include "third_party/WebKit/public/platform/WebURLLoadTiming.h"
 #include "third_party/WebKit/public/platform/WebURLLoaderClient.h"
+#include "third_party/WebKit/public/platform/WebURLLoadTiming.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "third_party/WebKit/public/web/WebSecurityPolicy.h"
-#include "webkit/child/ftp_directory_listing_response_delegate.h"
-#include "webkit/child/multipart_response_delegate.h"
-#include "webkit/child/resource_loader_bridge.h"
-#include "webkit/child/webkitplatformsupport_impl.h"
-#include "webkit/child/weburlrequest_extradata_impl.h"
-#include "webkit/child/weburlresponse_extradata_impl.h"
 #include "webkit/common/resource_request_body.h"
+#include "webkit/glue/ftp_directory_listing_response_delegate.h"
+#include "webkit/glue/multipart_response_delegate.h"
+#include "webkit/glue/resource_loader_bridge.h"
+#include "webkit/glue/webkitplatformsupport_impl.h"
+#include "webkit/glue/weburlrequest_extradata_impl.h"
+#include "webkit/glue/weburlresponse_extradata_impl.h"
 
 using base::Time;
 using base::TimeTicks;

@@ -9,7 +9,7 @@
 #include "net/base/load_flags.h"
 #include "net/http/http_response_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/common/resource_type.h"
+#include "webkit/glue/resource_type.h"
 
 namespace content {
 

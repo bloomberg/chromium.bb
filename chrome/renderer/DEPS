@@ -2,7 +2,6 @@ include_rules = [
   "+components/autofill/content/renderer",
   "+components/autofill/core/common",
   "+components/visitedlink/renderer",
-  "+content/public/child",
   "+content/public/renderer",
   "+extensions/common",
   "+grit",  # For generated headers
@@ -14,7 +13,6 @@ include_rules = [
   "+sandbox/win/src",
   "+skia",
 
-  "+webkit/child",
   "+webkit/common",
   "+webkit/glue",
   "+webkit/glue/plugins",

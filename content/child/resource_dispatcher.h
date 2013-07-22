@@ -18,7 +18,7 @@
 #include "content/common/content_export.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
-#include "webkit/child/resource_loader_bridge.h"
+#include "webkit/glue/resource_loader_bridge.h"
 
 namespace content {
 class ResourceDispatcherDelegate;

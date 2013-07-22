@@ -13,7 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/request_stage.h"
 #include "chrome/common/extensions/api/events.h"
-#include "webkit/common/resource_type.h"
+#include "webkit/glue/resource_type.h"
 
 namespace base {
 class Value;

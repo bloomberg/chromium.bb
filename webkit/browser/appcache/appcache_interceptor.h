@@ -9,7 +9,7 @@
 #include "net/url_request/url_request.h"
 #include "url/gurl.h"
 #include "webkit/browser/webkit_storage_browser_export.h"
-#include "webkit/common/resource_type.h"
+#include "webkit/glue/resource_type.h"
 
 namespace appcache {
 

@@ -14,7 +14,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
-#include "webkit/common/resource_type.h"
+#include "webkit/glue/resource_type.h"
 
 class GURL;
 class Profile;

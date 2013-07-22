@@ -25,7 +25,7 @@
 #include "net/base/completion_callback.h"
 #include "net/base/network_delegate.h"
 #include "net/http/http_request_headers.h"
-#include "webkit/common/resource_type.h"
+#include "webkit/glue/resource_type.h"
 
 class ExtensionInfoMap;
 class ExtensionWebRequestTimeTracker;

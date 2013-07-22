@@ -21,7 +21,7 @@
 #include "content/public/common/ssl_status.h"
 #include "content/public/common/url_constants.h"
 #include "net/ssl/ssl_info.h"
-#include "webkit/common/resource_type.h"
+#include "webkit/glue/resource_type.h"
 
 
 namespace {

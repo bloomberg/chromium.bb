@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_COMMON_RESOURCE_TYPE_H__
-#define WEBKIT_COMMON_RESOURCE_TYPE_H__
+#ifndef WEBKIT_GLUE_RESOURCE_TYPE_H__
+#define WEBKIT_GLUE_RESOURCE_TYPE_H__
 
 #include "base/basictypes.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
-#include "webkit/common/webkit_common_export.h"
+#include "webkit/glue/webkit_glue_export.h"
 
 class ResourceType {
  public:
@@ -41,7 +41,7 @@ class ResourceType {
     return static_cast<Type>(type);
   }
 
-  WEBKIT_COMMON_EXPORT static Type FromTargetType(
+  WEBKIT_GLUE_EXPORT static Type FromTargetType(
       WebKit::WebURLRequest::TargetType type);
 
   static bool IsFrame(ResourceType::Type type) {
@@ -67,4 +67,4 @@ class ResourceType {
   ResourceType();
   ~ResourceType();
 };
-#endif  // WEBKIT_COMMON_RESOURCE_TYPE_H__
+#endif  // WEBKIT_GLUE_RESOURCE_TYPE_H__

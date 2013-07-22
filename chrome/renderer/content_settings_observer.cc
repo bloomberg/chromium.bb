@@ -19,7 +19,7 @@
 #include "third_party/WebKit/public/web/WebFrameClient.h"
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/web/WebView.h"
-#include "webkit/child/weburlresponse_extradata_impl.h"
+#include "webkit/glue/weburlresponse_extradata_impl.h"
 
 using WebKit::WebDataSource;
 using WebKit::WebFrame;

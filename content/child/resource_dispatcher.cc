@@ -18,13 +18,13 @@
 #include "content/child/request_extra_data.h"
 #include "content/common/inter_process_time_ticks_converter.h"
 #include "content/common/resource_messages.h"
-#include "content/public/child/resource_dispatcher_delegate.h"
+#include "content/public/common/resource_dispatcher_delegate.h"
 #include "content/public/common/resource_response.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_response_headers.h"
-#include "webkit/common/resource_type.h"
+#include "webkit/glue/resource_type.h"
 
 using webkit_glue::ResourceLoaderBridge;
 using webkit_glue::ResourceRequestBody;

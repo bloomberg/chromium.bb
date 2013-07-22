@@ -13,8 +13,8 @@
 // In turn, the bridge's owner on the WebKit end will implement the Peer
 // interface, which we will use to communicate notifications back.
 
-#ifndef WEBKIT_CHILD_RESOURCE_LOADER_BRIDGE_H_
-#define WEBKIT_CHILD_RESOURCE_LOADER_BRIDGE_H_
+#ifndef WEBKIT_GLUE_RESOURCE_LOADER_BRIDGE_H_
+#define WEBKIT_GLUE_RESOURCE_LOADER_BRIDGE_H_
 
 #include <utility>
 
@@ -29,9 +29,9 @@
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "url/gurl.h"
-#include "webkit/child/webkit_child_export.h"
 #include "webkit/common/resource_response_info.h"
-#include "webkit/common/resource_type.h"
+#include "webkit/glue/resource_type.h"
+#include "webkit/glue/webkit_glue_export.h"
 
 namespace webkit_glue {
 class ResourceRequestBody;
@@ -40,7 +40,7 @@ class ResourceLoaderBridge {
  public:
   // Structure used when calling
   // WebKitPlatformSupportImpl::CreateResourceLoader().
-  struct WEBKIT_CHILD_EXPORT RequestInfo {
+  struct WEBKIT_GLUE_EXPORT RequestInfo {
     RequestInfo();
     ~RequestInfo();
 
@@ -106,8 +106,8 @@ class ResourceLoaderBridge {
   // See the SyncLoad method declared below.  (The name of this struct is not
   // suffixed with "Info" because it also contains the response data.)
   struct SyncLoadResponse : ResourceResponseInfo {
-    WEBKIT_CHILD_EXPORT SyncLoadResponse();
-    WEBKIT_CHILD_EXPORT ~SyncLoadResponse();
+    SyncLoadResponse();
+    ~SyncLoadResponse();
 
     // The response error code.
     int error_code;
@@ -182,7 +182,7 @@ class ResourceLoaderBridge {
 
   // use WebKitPlatformSupportImpl::CreateResourceLoader() for construction, but
   // anybody can delete at any time, INCLUDING during processing of callbacks.
-  WEBKIT_CHILD_EXPORT virtual ~ResourceLoaderBridge();
+  WEBKIT_GLUE_EXPORT virtual ~ResourceLoaderBridge();
 
   // Call this method before calling Start() to set the request body.
   // May only be used with HTTP(S) POST requests.
@@ -221,7 +221,7 @@ class ResourceLoaderBridge {
   // WebKitPlatformSupportImpl::CreateResourceLoader()
   // For HTTP(S) POST requests, the AppendDataToUpload and AppendFileToUpload
   // methods may be called to construct the body of the request.
-  WEBKIT_CHILD_EXPORT ResourceLoaderBridge();
+  WEBKIT_GLUE_EXPORT ResourceLoaderBridge();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ResourceLoaderBridge);
@@ -229,4 +229,4 @@ class ResourceLoaderBridge {
 
 }  // namespace webkit_glue
 
-#endif  // WEBKIT_CHILD_RESOURCE_LOADER_BRIDGE_H_
+#endif  // WEBKIT_GLUE_RESOURCE_LOADER_BRIDGE_H_

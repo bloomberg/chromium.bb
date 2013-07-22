@@ -26,6 +26,12 @@
         '../common/webkit_common_export.h',
         '../common/webpreferences.cc',
         '../common/webpreferences.h',
+        'multipart_response_delegate.cc',
+        'multipart_response_delegate.h',
+        'weburlrequest_extradata_impl.cc',
+        'weburlrequest_extradata_impl.h',
+        'weburlresponse_extradata_impl.cc',
+        'weburlresponse_extradata_impl.h',
       ],
       'conditions': [
         ['toolkit_uses_gtk == 1', {

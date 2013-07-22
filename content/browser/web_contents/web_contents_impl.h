@@ -31,7 +31,7 @@
 #include "ui/gfx/rect_f.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/vector2d.h"
-#include "webkit/common/resource_type.h"
+#include "webkit/glue/resource_type.h"
 
 struct BrowserPluginHostMsg_ResizeGuest_Params;
 struct ViewHostMsg_DateTimeDialogValue_Params;

@@ -17,10 +17,10 @@
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
 #include "url/url_util.h"
-#include "webkit/child/webkitplatformsupport_impl.h"
 #include "webkit/common/user_agent/user_agent.h"
 #include "webkit/common/user_agent/user_agent_util.h"
 #include "webkit/glue/webkit_glue.h"
+#include "webkit/glue/webkitplatformsupport_impl.h"
 #include "webkit/support/platform_support.h"
 #include "webkit/support/test_webkit_platform_support.h"
 

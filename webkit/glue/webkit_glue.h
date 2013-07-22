@@ -46,6 +46,12 @@ WEBKIT_GLUE_EXPORT WebKit::WebCanvas* ToWebCanvas(SkCanvas*);
 // used to get memory usage statistics.
 WEBKIT_GLUE_EXPORT int GetGlyphPageCount();
 
+// Returns an estimate of the memory usage of the renderer process. Different
+// platforms implement this function differently, and count in different
+// allocations. Results are not comparable across platforms. The estimate is
+// computed inside the sandbox and thus its not always accurate.
+WEBKIT_GLUE_EXPORT size_t MemoryUsageKB();
+
 }  // namespace webkit_glue
 
 #endif  // WEBKIT_GLUE_WEBKIT_GLUE_H_
