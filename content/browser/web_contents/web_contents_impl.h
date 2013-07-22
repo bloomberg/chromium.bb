@@ -371,7 +371,7 @@ class CONTENT_EXPORT WebContentsImpl
                               const Referrer& referrer,
                               WindowOpenDisposition disposition,
                               int64 source_frame_id,
-                              bool is_cross_site_redirect,
+                              bool should_replace_current_entry,
                               bool user_gesture) OVERRIDE;
   virtual void RequestTransferURL(
       const GURL& url,
@@ -379,7 +379,7 @@ class CONTENT_EXPORT WebContentsImpl
       WindowOpenDisposition disposition,
       int64 source_frame_id,
       const GlobalRequestID& transferred_global_request_id,
-      bool is_cross_site_redirect,
+      bool should_replace_current_entry,
       bool user_gesture) OVERRIDE;
   virtual void RouteCloseEvent(RenderViewHost* rvh) OVERRIDE;
   virtual void RouteMessageEvent(

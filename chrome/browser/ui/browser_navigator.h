@@ -208,9 +208,9 @@ struct NavigateParams {
   // explicitly or inferred from an existing Browser instance.
   chrome::HostDesktopType host_desktop_type;
 
-  // Indicates whether this navigation involves a cross-process redirect,
-  // in which case it should replace the current navigation entry.
-  bool is_cross_site_redirect;
+  // Indicates whether this navigation  should replace the current
+  // navigation entry.
+  bool should_replace_current_entry;
 
  private:
   NavigateParams();

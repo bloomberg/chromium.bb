@@ -151,9 +151,9 @@ class NavigationController {
     // True if this URL should be able to access local resources.
     bool can_load_local_resources;
 
-    // Indicates whether this navigation involves a cross-process redirect,
-    // in which case it should replace the current navigation entry.
-    bool is_cross_site_redirect;
+    // Indicates whether this navigation should replace the current
+    // navigation entry.
+    bool should_replace_current_entry;
 
     // Used to specify which frame to navigate. If empty, the main frame is
     // navigated. This is currently only used in tests.

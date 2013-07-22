@@ -64,9 +64,9 @@ struct CONTENT_EXPORT OpenURLParams {
   // transferred to a new renderer.
   GlobalRequestID transferred_global_request_id;
 
-  // Indicates whether this navigation involves a cross-process redirect,
-  // in which case it should replace the current navigation entry.
-  bool is_cross_site_redirect;
+  // Indicates whether this navigation should replace the current
+  // navigation entry.
+  bool should_replace_current_entry;
 
   // Indicates whether this navigation was triggered while processing a user
   // gesture if the navigation was initiated by the renderer.

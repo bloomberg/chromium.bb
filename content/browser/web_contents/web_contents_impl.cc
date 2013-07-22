@@ -3222,7 +3222,7 @@ void WebContentsImpl::RequestOpenURL(RenderViewHost* rvh,
                                      const Referrer& referrer,
                                      WindowOpenDisposition disposition,
                                      int64 source_frame_id,
-                                     bool is_cross_site_redirect,
+                                     bool should_replace_current_entry,
                                      bool user_gesture) {
   // If this came from a swapped out RenderViewHost, we only allow the request
   // if we are still in the same BrowsingInstance.
@@ -3234,7 +3234,8 @@ void WebContentsImpl::RequestOpenURL(RenderViewHost* rvh,
   // Delegate to RequestTransferURL because this is just the generic
   // case where |old_request_id| is empty.
   RequestTransferURL(url, referrer, disposition, source_frame_id,
-                     GlobalRequestID(), is_cross_site_redirect, user_gesture);
+                     GlobalRequestID(),
+                     should_replace_current_entry, user_gesture);
 }
 
 void WebContentsImpl::RequestTransferURL(
@@ -3243,7 +3244,7 @@ void WebContentsImpl::RequestTransferURL(
     WindowOpenDisposition disposition,
     int64 source_frame_id,
     const GlobalRequestID& old_request_id,
-    bool is_cross_site_redirect,
+    bool should_replace_current_entry,
     bool user_gesture) {
   WebContents* new_contents = NULL;
   PageTransition transition_type = PAGE_TRANSITION_LINK;
@@ -3266,7 +3267,7 @@ void WebContentsImpl::RequestTransferURL(
     OpenURLParams params(url, referrer, source_frame_id, disposition,
         PAGE_TRANSITION_LINK, true /* is_renderer_initiated */);
     params.transferred_global_request_id = old_request_id;
-    params.is_cross_site_redirect = is_cross_site_redirect;
+    params.should_replace_current_entry = should_replace_current_entry;
     params.user_gesture = user_gesture;
     new_contents = OpenURL(params);
   }

@@ -247,7 +247,8 @@ void LoadURLInContents(WebContents* target_contents,
   load_url_params.referrer = params->referrer;
   load_url_params.transition_type = params->transition;
   load_url_params.extra_headers = params->extra_headers;
-  load_url_params.is_cross_site_redirect = params->is_cross_site_redirect;
+  load_url_params.should_replace_current_entry =
+      params->should_replace_current_entry;
 
   if (params->transferred_global_request_id != GlobalRequestID()) {
     load_url_params.is_renderer_initiated = params->is_renderer_initiated;
@@ -392,7 +393,7 @@ NavigateParams::NavigateParams(Browser* a_browser,
       browser(a_browser),
       initiating_profile(NULL),
       host_desktop_type(GetHostDesktop(a_browser)),
-      is_cross_site_redirect(false) {
+      should_replace_current_entry(false) {
 }
 
 NavigateParams::NavigateParams(Browser* a_browser,
@@ -411,7 +412,7 @@ NavigateParams::NavigateParams(Browser* a_browser,
       browser(a_browser),
       initiating_profile(NULL),
       host_desktop_type(GetHostDesktop(a_browser)),
-      is_cross_site_redirect(false) {
+      should_replace_current_entry(false) {
 }
 
 NavigateParams::NavigateParams(Profile* a_profile,
@@ -432,7 +433,7 @@ NavigateParams::NavigateParams(Profile* a_profile,
       browser(NULL),
       initiating_profile(a_profile),
       host_desktop_type(chrome::GetActiveDesktop()),
-      is_cross_site_redirect(false) {
+      should_replace_current_entry(false) {
 }
 
 NavigateParams::~NavigateParams() {}
@@ -446,7 +447,8 @@ void FillNavigateParamsFromOpenURLParams(chrome::NavigateParams* nav_params,
   nav_params->is_renderer_initiated = params.is_renderer_initiated;
   nav_params->transferred_global_request_id =
       params.transferred_global_request_id;
-  nav_params->is_cross_site_redirect = params.is_cross_site_redirect;
+  nav_params->should_replace_current_entry =
+      params.should_replace_current_entry;
 }
 
 void Navigate(NavigateParams* params) {

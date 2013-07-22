@@ -2030,9 +2030,9 @@ void RenderViewImpl::OpenURL(WebFrame* frame,
   params.frame_id = frame->identifier();
   WebDataSource* ds = frame->provisionalDataSource();
   if (ds) {
-    params.is_cross_site_redirect = ds->isClientRedirect();
+    params.should_replace_current_entry = ds->replacesCurrentHistoryItem();
   } else {
-    params.is_cross_site_redirect = false;
+    params.should_replace_current_entry = false;
   }
   params.user_gesture = WebUserGestureIndicator::isProcessingUserGesture();
 
