@@ -2712,8 +2712,9 @@ class ArchiveStage(ArchivingStage):
           self.bot_archive_root, self._GetGSUtilArchiveDir(), filename, debug)
 
     try:
-      BuildAndArchiveArtifacts()
-      MarkAsLatest()
+      if not self._build_config['pgo_generate']:
+        BuildAndArchiveArtifacts()
+        MarkAsLatest()
     finally:
       commands.RemoveOldArchives(self.bot_archive_root,
                                  self._options.max_archive_builds)

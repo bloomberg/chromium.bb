@@ -382,6 +382,7 @@ class SimpleBuilder(Builder):
     """Run background board-specific stages for the specified board."""
     archive_stage = self.archive_stages[BoardConfig(board, config['name'])]
     if config['pgo_generate']:
+      self._RunParallelStages([archive_stage])
       return
     if compilecheck:
       self._RunStage(stages.BuildPackagesStage, board, archive_stage,
