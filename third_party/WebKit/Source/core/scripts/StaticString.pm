@@ -47,7 +47,6 @@ sub GenerateStrings($)
         push(@result, <<END);
 static StringImpl::StaticASCIILiteral ${name}Data = {
     ${name}String8,
-    0,
     StringImpl::StaticASCIILiteral::s_initialRefCount,
     $length,
     StringImpl::StaticASCIILiteral::s_initialFlags | (${hash} << StringImpl::StaticASCIILiteral::s_hashShift)

@@ -46,7 +46,7 @@ namespace WTF {
 
 using namespace Unicode;
 
-COMPILE_ASSERT(sizeof(StringImpl) == 2 * sizeof(int) + 3 * sizeof(void*), StringImpl_should_stay_small);
+COMPILE_ASSERT(sizeof(StringImpl) == 2 * sizeof(int) + 2 * sizeof(void*), StringImpl_should_stay_small);
 
 #ifdef STRING_STATS
 
