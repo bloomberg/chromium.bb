@@ -15,6 +15,15 @@ namespace net {
 class MDnsClient;
 }
 
+namespace base {
+class TaskRunner;
+class Thread;
+}
+
+namespace tracked_objects {
+class Location;
+}
+
 namespace local_discovery {
 
 class ServiceDiscoveryClient;
@@ -35,7 +44,9 @@ class ServiceDiscoveryMessageHandler : public chrome::UtilityMessageHandler {
   typedef std::map<uint64, linked_ptr<ServiceResolver> > ServiceResolvers;
 
   // Lazy initializes ServiceDiscoveryClient.
-  bool Initialize();
+  bool InitializeThread();
+  void PostTask(const tracked_objects::Location& from_here,
+                const base::Closure& task);
 
   // IPC message handlers.
   void OnStartWatcher(uint64 id, const std::string& service_type);
@@ -43,6 +54,13 @@ class ServiceDiscoveryMessageHandler : public chrome::UtilityMessageHandler {
   void OnDestroyWatcher(uint64 id);
   void OnResolveService(uint64 id, const std::string& service_name);
   void OnDestroyResolver(uint64 id);
+
+  void InitializeMdns();
+  void StartWatcher(uint64 id, const std::string& service_type);
+  void DiscoverServices(uint64 id, bool force_update);
+  void DestroyWatcher(uint64 id);
+  void ResolveService(uint64 id, const std::string& service_name);
+  void DestroyResolver(uint64 id);
 
   // Is called by ServiceWatcher as callback.
   void OnServiceUpdated(uint64 id,
@@ -59,6 +77,10 @@ class ServiceDiscoveryMessageHandler : public chrome::UtilityMessageHandler {
 
   scoped_ptr<net::MDnsClient> mdns_client_;
   scoped_ptr<ServiceDiscoveryClient> service_discovery_client_;
+
+  scoped_refptr<base::TaskRunner> utility_task_runner_;
+  scoped_refptr<base::TaskRunner> discovery_task_runner_;
+  scoped_ptr<base::Thread> discovery_thread_;
 };
 
 }  // namespace local_discovery

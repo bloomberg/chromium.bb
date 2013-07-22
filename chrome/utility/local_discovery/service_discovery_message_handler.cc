@@ -18,6 +18,8 @@
 
 #endif  // OS_WIN
 
+namespace local_discovery {
+
 namespace {
 
 bool NeedsSockets() {
@@ -117,38 +119,63 @@ class ScopedSocketFactorySetter {
 
 #endif  // OS_WIN
 
-}  // namespace
+void SendServiceResolved(uint64 id, ServiceResolver::RequestStatus status,
+                         const ServiceDescription& description) {
+  content::UtilityThread::Get()->Send(
+      new LocalDiscoveryHostMsg_ResolverCallback(id, status, description));
+}
 
-namespace local_discovery {
+void SendServiceUpdated(uint64 id, ServiceWatcher::UpdateType update,
+                        const std::string& name) {
+  content::UtilityThread::Get()->Send(
+      new LocalDiscoveryHostMsg_WatcherCallback(id, update, name));
+}
+
+
+}  // namespace
 
 ServiceDiscoveryMessageHandler::ServiceDiscoveryMessageHandler() {
 }
 
 ServiceDiscoveryMessageHandler::~ServiceDiscoveryMessageHandler() {
+  discovery_thread_.reset();
 }
 
 void ServiceDiscoveryMessageHandler::PreSandboxStartup() {
   ScopedSocketFactorySetter::Initialize();
 }
 
-bool ServiceDiscoveryMessageHandler::Initialize() {
-  if (service_discovery_client_)
-    return true;
-
-  if (mdns_client_)  // We tried but failed before.
-    return false;
+void ServiceDiscoveryMessageHandler::InitializeMdns() {
+  if (service_discovery_client_ || mdns_client_)
+    return;
 
   mdns_client_ = net::MDnsClient::CreateDefault();
   {
     // Temporarily redirect network code to use pre-created sockets.
     ScopedSocketFactorySetter socket_factory_setter;
     if (!mdns_client_->StartListening())
-      return false;
+      return;
   }
 
   service_discovery_client_.reset(
       new local_discovery::ServiceDiscoveryClientImpl(mdns_client_.get()));
-  return true;
+}
+
+bool ServiceDiscoveryMessageHandler::InitializeThread() {
+  if (discovery_task_runner_)
+    return true;
+  if (discovery_thread_)
+    return false;
+  utility_task_runner_ = base::MessageLoop::current()->message_loop_proxy();
+  discovery_thread_.reset(new base::Thread("ServiceDiscoveryThread"));
+  base::Thread::Options thread_options(base::MessageLoop::TYPE_IO, 0);
+  if (discovery_thread_->StartWithOptions(thread_options)) {
+    discovery_task_runner_ = discovery_thread_->message_loop_proxy();
+    discovery_task_runner_->PostTask(FROM_HERE,
+        base::Bind(&ServiceDiscoveryMessageHandler::InitializeMdns,
+                    base::Unretained(this)));
+  }
+  return discovery_task_runner_ != NULL;
 }
 
 bool ServiceDiscoveryMessageHandler::OnMessageReceived(
@@ -165,10 +192,53 @@ bool ServiceDiscoveryMessageHandler::OnMessageReceived(
   return handled;
 }
 
+void ServiceDiscoveryMessageHandler::PostTask(
+    const tracked_objects::Location& from_here,
+    const base::Closure& task) {
+  if (!InitializeThread())
+    return;
+  discovery_task_runner_->PostTask(from_here, task);
+}
+
 void ServiceDiscoveryMessageHandler::OnStartWatcher(
     uint64 id,
     const std::string& service_type) {
-  if (!Initialize())
+  PostTask(FROM_HERE,
+           base::Bind(&ServiceDiscoveryMessageHandler::StartWatcher,
+                      base::Unretained(this), id, service_type));
+}
+
+void ServiceDiscoveryMessageHandler::OnDiscoverServices(uint64 id,
+                                                        bool force_update) {
+  PostTask(FROM_HERE,
+           base::Bind(&ServiceDiscoveryMessageHandler::DiscoverServices,
+                      base::Unretained(this), id, force_update));
+}
+
+void ServiceDiscoveryMessageHandler::OnDestroyWatcher(uint64 id) {
+  PostTask(FROM_HERE,
+           base::Bind(&ServiceDiscoveryMessageHandler::DestroyWatcher,
+                      base::Unretained(this), id));
+}
+
+void ServiceDiscoveryMessageHandler::OnResolveService(
+    uint64 id,
+    const std::string& service_name) {
+  PostTask(FROM_HERE,
+           base::Bind(&ServiceDiscoveryMessageHandler::ResolveService,
+                      base::Unretained(this), id, service_name));
+}
+
+void ServiceDiscoveryMessageHandler::OnDestroyResolver(uint64 id) {
+  PostTask(FROM_HERE,
+           base::Bind(&ServiceDiscoveryMessageHandler::DestroyResolver,
+                      base::Unretained(this), id));
+}
+
+void ServiceDiscoveryMessageHandler::StartWatcher(
+    uint64 id,
+    const std::string& service_type) {
+  if (!service_discovery_client_)
     return;
   DCHECK(!ContainsKey(service_watchers_, id));
   scoped_ptr<ServiceWatcher> watcher(
@@ -180,25 +250,25 @@ void ServiceDiscoveryMessageHandler::OnStartWatcher(
   service_watchers_[id].reset(watcher.release());
 }
 
-void ServiceDiscoveryMessageHandler::OnDiscoverServices(uint64 id,
-                                                        bool force_update) {
+void ServiceDiscoveryMessageHandler::DiscoverServices(uint64 id,
+                                                      bool force_update) {
   if (!service_discovery_client_)
     return;
   DCHECK(ContainsKey(service_watchers_, id));
   service_watchers_[id]->DiscoverNewServices(force_update);
 }
 
-void ServiceDiscoveryMessageHandler::OnDestroyWatcher(uint64 id) {
+void ServiceDiscoveryMessageHandler::DestroyWatcher(uint64 id) {
   if (!service_discovery_client_)
     return;
   DCHECK(ContainsKey(service_watchers_, id));
   service_watchers_.erase(id);
 }
 
-void ServiceDiscoveryMessageHandler::OnResolveService(
+void ServiceDiscoveryMessageHandler::ResolveService(
     uint64 id,
     const std::string& service_name) {
-  if (!Initialize())
+  if (!service_discovery_client_)
     return;
   DCHECK(!ContainsKey(service_resolvers_, id));
   scoped_ptr<ServiceResolver> resolver(
@@ -210,7 +280,7 @@ void ServiceDiscoveryMessageHandler::OnResolveService(
   service_resolvers_[id].reset(resolver.release());
 }
 
-void ServiceDiscoveryMessageHandler::OnDestroyResolver(uint64 id) {
+void ServiceDiscoveryMessageHandler::DestroyResolver(uint64 id) {
   if (!service_discovery_client_)
     return;
   DCHECK(ContainsKey(service_resolvers_, id));
@@ -222,8 +292,8 @@ void ServiceDiscoveryMessageHandler::OnServiceUpdated(
     ServiceWatcher::UpdateType update,
     const std::string& name) {
   DCHECK(service_discovery_client_);
-  content::UtilityThread::Get()->Send(
-      new LocalDiscoveryHostMsg_WatcherCallback(id, update, name));
+  utility_task_runner_->PostTask(FROM_HERE,
+      base::Bind(&SendServiceUpdated, id, update, name));
 }
 
 void ServiceDiscoveryMessageHandler::OnServiceResolved(
@@ -231,8 +301,8 @@ void ServiceDiscoveryMessageHandler::OnServiceResolved(
     ServiceResolver::RequestStatus status,
     const ServiceDescription& description) {
   DCHECK(service_discovery_client_);
-  content::UtilityThread::Get()->Send(
-      new LocalDiscoveryHostMsg_ResolverCallback(id, status, description));
+  utility_task_runner_->PostTask(FROM_HERE,
+      base::Bind(&SendServiceResolved, id, status, description));
 }
 
 }  // namespace local_discovery
