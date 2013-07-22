@@ -43,13 +43,12 @@
 namespace WebCore {
 
 class ScriptPromiseResolver;
-
-typedef int ExceptionCode;
+class ExceptionState;
 
 class CryptoOperation : public ScriptWrappable, public WebKit::WebCryptoOperationResult, public RefCounted<CryptoOperation> {
 public:
     ~CryptoOperation();
-    static PassRefPtr<CryptoOperation> create(const WebKit::WebCryptoAlgorithm&, ExceptionCode*);
+    static PassRefPtr<CryptoOperation> create(const WebKit::WebCryptoAlgorithm&, ExceptionState*);
 
     CryptoOperation* process(ArrayBuffer* data);
     CryptoOperation* process(ArrayBufferView* data);
@@ -83,7 +82,7 @@ private:
         Done,
     };
 
-    CryptoOperation(const WebKit::WebCryptoAlgorithm&, ExceptionCode*);
+    CryptoOperation(const WebKit::WebCryptoAlgorithm&, ExceptionState*);
 
     void process(const unsigned char*, size_t);
 
@@ -100,7 +99,7 @@ private:
 
     RefPtr<ScriptPromiseResolver> m_promiseResolver;
 
-    ExceptionCode* m_exceptionCode;
+    ExceptionState* m_exceptionState;
 };
 
 } // namespace WebCore

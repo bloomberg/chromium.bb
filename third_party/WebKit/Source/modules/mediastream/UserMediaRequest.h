@@ -43,16 +43,15 @@ namespace WebCore {
 
 class Dictionary;
 class Document;
+class ExceptionState;
 class MediaConstraints;
 class MediaConstraintsImpl;
 class MediaStreamDescriptor;
 class UserMediaController;
 
-typedef int ExceptionCode;
-
 class UserMediaRequest : public RefCounted<UserMediaRequest>, public ContextLifecycleObserver {
 public:
-    static PassRefPtr<UserMediaRequest> create(ScriptExecutionContext*, UserMediaController*, const Dictionary& options, PassRefPtr<NavigatorUserMediaSuccessCallback>, PassRefPtr<NavigatorUserMediaErrorCallback>, ExceptionCode&);
+    static PassRefPtr<UserMediaRequest> create(ScriptExecutionContext*, UserMediaController*, const Dictionary& options, PassRefPtr<NavigatorUserMediaSuccessCallback>, PassRefPtr<NavigatorUserMediaErrorCallback>, ExceptionState&);
     ~UserMediaRequest();
 
     NavigatorUserMediaSuccessCallback* successCallback() const { return m_successCallback.get(); }

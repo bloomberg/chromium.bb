@@ -41,6 +41,7 @@ namespace WebCore {
 
 class AbstractSQLTransactionBackend;
 class Database;
+class ExceptionState;
 class SQLError;
 class SQLStatementCallback;
 class SQLStatementErrorCallback;
@@ -58,7 +59,7 @@ public:
     void performPendingCallback();
 
     void executeSQL(const String& sqlStatement, const Vector<SQLValue>& arguments,
-        PassRefPtr<SQLStatementCallback>, PassRefPtr<SQLStatementErrorCallback>, ExceptionCode&);
+        PassRefPtr<SQLStatementCallback>, PassRefPtr<SQLStatementErrorCallback>, ExceptionState&);
 
     Database* database() { return m_database.get(); }
 

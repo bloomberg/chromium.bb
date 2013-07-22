@@ -46,6 +46,8 @@ class DatabaseTaskSynchronizer;
 class SecurityOrigin;
 class ScriptExecutionContext;
 
+typedef int ExceptionCode;
+
 class DatabaseManager {
     WTF_MAKE_NONCOPYABLE(DatabaseManager); WTF_MAKE_FAST_ALLOCATED;
 public:

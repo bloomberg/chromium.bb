@@ -29,7 +29,6 @@
 #include "config.h"
 #include "modules/webdatabase/SQLTransactionBackend.h"
 
-#include "core/dom/ExceptionCode.h"
 #include "core/platform/Logging.h"
 #include "core/platform/sql/SQLValue.h"
 #include "core/platform/sql/SQLiteTransaction.h"

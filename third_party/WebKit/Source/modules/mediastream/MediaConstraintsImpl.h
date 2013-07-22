@@ -39,12 +39,12 @@ namespace WebCore {
 
 class Dictionary;
 
-typedef int ExceptionCode;
+class ExceptionState;
 
 class MediaConstraintsImpl : public MediaConstraints {
 public:
     static PassRefPtr<MediaConstraintsImpl> create();
-    static PassRefPtr<MediaConstraintsImpl> create(const Dictionary&, ExceptionCode&);
+    static PassRefPtr<MediaConstraintsImpl> create(const Dictionary&, ExceptionState&);
     virtual ~MediaConstraintsImpl();
 
     virtual void getMandatoryConstraints(Vector<MediaConstraint>&) const OVERRIDE;

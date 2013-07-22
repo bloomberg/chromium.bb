@@ -31,6 +31,7 @@
 #include "config.h"
 #include "modules/crypto/SubtleCrypto.h"
 
+#include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "modules/crypto/CryptoOperation.h"
 #include "modules/crypto/NormalizeAlgorithm.h"
@@ -121,13 +122,13 @@ WebKit::WebCrypto* mockPlatformCrypto()
     return &crypto;
 }
 
-PassRefPtr<CryptoOperation> doDummyOperation(const Dictionary& rawAlgorithm, AlgorithmOperation operationType, ExceptionCode& ec)
+PassRefPtr<CryptoOperation> doDummyOperation(const Dictionary& rawAlgorithm, AlgorithmOperation operationType, ExceptionState& es)
 {
     WebKit::WebCryptoAlgorithm algorithm;
-    if (!normalizeAlgorithm(rawAlgorithm, operationType, algorithm, ec))
+    if (!normalizeAlgorithm(rawAlgorithm, operationType, algorithm, es))
         return 0;
 
-    RefPtr<CryptoOperation> op = CryptoOperation::create(algorithm, &ec);
+    RefPtr<CryptoOperation> op = CryptoOperation::create(algorithm, &es);
     op->initializationSucceded(new DummyOperation(op.get()));
     return op.release();
 }
@@ -140,39 +141,39 @@ SubtleCrypto::SubtleCrypto()
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<CryptoOperation> SubtleCrypto::encrypt(const Dictionary& rawAlgorithm, ExceptionCode& ec)
+PassRefPtr<CryptoOperation> SubtleCrypto::encrypt(const Dictionary& rawAlgorithm, ExceptionState& es)
 {
-    return doDummyOperation(rawAlgorithm, Encrypt, ec);
+    return doDummyOperation(rawAlgorithm, Encrypt, es);
 }
 
-PassRefPtr<CryptoOperation> SubtleCrypto::decrypt(const Dictionary& rawAlgorithm, ExceptionCode& ec)
+PassRefPtr<CryptoOperation> SubtleCrypto::decrypt(const Dictionary& rawAlgorithm, ExceptionState& es)
 {
-    return doDummyOperation(rawAlgorithm, Decrypt, ec);
+    return doDummyOperation(rawAlgorithm, Decrypt, es);
 }
 
-PassRefPtr<CryptoOperation> SubtleCrypto::sign(const Dictionary& rawAlgorithm, ExceptionCode& ec)
+PassRefPtr<CryptoOperation> SubtleCrypto::sign(const Dictionary& rawAlgorithm, ExceptionState& es)
 {
-    return doDummyOperation(rawAlgorithm, Sign, ec);
+    return doDummyOperation(rawAlgorithm, Sign, es);
 }
 
-PassRefPtr<CryptoOperation> SubtleCrypto::verifySignature(const Dictionary& rawAlgorithm, ExceptionCode& ec)
+PassRefPtr<CryptoOperation> SubtleCrypto::verifySignature(const Dictionary& rawAlgorithm, ExceptionState& es)
 {
-    return doDummyOperation(rawAlgorithm, Verify, ec);
+    return doDummyOperation(rawAlgorithm, Verify, es);
 }
 
-PassRefPtr<CryptoOperation> SubtleCrypto::digest(const Dictionary& rawAlgorithm, ExceptionCode& ec)
+PassRefPtr<CryptoOperation> SubtleCrypto::digest(const Dictionary& rawAlgorithm, ExceptionState& es)
 {
     WebKit::WebCrypto* platformCrypto = mockPlatformCrypto();
     if (!platformCrypto) {
-        ec = NotSupportedError;
+        es.throwDOMException(NotSupportedError);
         return 0;
     }
 
     WebKit::WebCryptoAlgorithm algorithm;
-    if (!normalizeAlgorithm(rawAlgorithm, Digest, algorithm, ec))
+    if (!normalizeAlgorithm(rawAlgorithm, Digest, algorithm, es))
         return 0;
 
-    RefPtr<CryptoOperation> op = CryptoOperation::create(algorithm, &ec);
+    RefPtr<CryptoOperation> op = CryptoOperation::create(algorithm, &es);
     platformCrypto->digest(algorithm, op.get());
     return op.release();
 }

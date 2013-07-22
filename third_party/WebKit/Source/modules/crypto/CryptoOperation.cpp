@@ -31,6 +31,7 @@
 #include "config.h"
 #include "modules/crypto/CryptoOperation.h"
 
+#include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/custom/V8ArrayBufferCustom.h" // MUST precede ScriptPromiseResolver for compilation to work.
 #include "bindings/v8/ScriptPromiseResolver.h"
 #include "core/dom/ExceptionCode.h"
@@ -48,18 +49,18 @@ CryptoOperation::~CryptoOperation()
     ASSERT(!m_impl);
 }
 
-PassRefPtr<CryptoOperation> CryptoOperation::create(const WebKit::WebCryptoAlgorithm& algorithm, ExceptionCode* ec)
+PassRefPtr<CryptoOperation> CryptoOperation::create(const WebKit::WebCryptoAlgorithm& algorithm, ExceptionState* es)
 {
-    return adoptRef(new CryptoOperation(algorithm, ec));
+    return adoptRef(new CryptoOperation(algorithm, es));
 }
 
-CryptoOperation::CryptoOperation(const WebKit::WebCryptoAlgorithm& algorithm, ExceptionCode* ec)
+CryptoOperation::CryptoOperation(const WebKit::WebCryptoAlgorithm& algorithm, ExceptionState* es)
     : m_algorithm(algorithm)
     , m_impl(0)
-    , m_exceptionCode(ec)
+    , m_exceptionState(es)
     , m_state(Initializing)
 {
-    ASSERT(ec);
+    ASSERT(es);
     ScriptWrappable::init(this);
 }
 
@@ -116,9 +117,9 @@ void CryptoOperation::initializationFailed()
 {
     ASSERT(m_state == Initializing);
 
-    *m_exceptionCode = NotSupportedError;
+    m_exceptionState->throwDOMException(NotSupportedError);
 
-    m_exceptionCode = 0;
+    m_exceptionState = 0;
     m_state = Done;
 }
 
@@ -128,7 +129,7 @@ void CryptoOperation::initializationSucceded(WebKit::WebCryptoOperation* operati
     ASSERT(operationImpl);
     ASSERT(!m_impl);
 
-    m_exceptionCode = 0;
+    m_exceptionState = 0;
     m_impl = operationImpl;
     m_state = Processing;
 }

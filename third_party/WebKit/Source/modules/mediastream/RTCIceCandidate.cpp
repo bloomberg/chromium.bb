@@ -33,17 +33,18 @@
 #include "modules/mediastream/RTCIceCandidate.h"
 
 #include "bindings/v8/Dictionary.h"
+#include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "public/platform/WebRTCICECandidate.h"
 
 namespace WebCore {
 
-PassRefPtr<RTCIceCandidate> RTCIceCandidate::create(const Dictionary& dictionary, ExceptionCode& ec)
+PassRefPtr<RTCIceCandidate> RTCIceCandidate::create(const Dictionary& dictionary, ExceptionState& es)
 {
     String candidate;
     bool ok = dictionary.get("candidate", candidate);
     if (!ok || !candidate.length()) {
-        ec = TypeMismatchError;
+        es.throwDOMException(TypeMismatchError);
         return 0;
     }
 

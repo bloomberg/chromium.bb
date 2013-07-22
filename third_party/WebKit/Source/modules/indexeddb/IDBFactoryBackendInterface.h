@@ -39,8 +39,6 @@ class IDBDatabase;
 class IDBDatabaseCallbacks;
 class ScriptExecutionContext;
 
-typedef int ExceptionCode;
-
 // This class is shared by IDBFactory (async) and IDBFactorySync (sync).
 // This is implemented by IDBFactoryBackendImpl and optionally others (in order to proxy
 // calls across process barriers). All calls to these classes should be non-blocking and

@@ -26,7 +26,9 @@
 #include "config.h"
 #include "modules/mediastream/MediaStreamTrack.h"
 
+#include "bindings/v8/ExceptionState.h"
 #include "core/dom/Event.h"
+#include "core/dom/ExceptionCode.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/platform/mediastream/MediaStreamCenter.h"
 #include "core/platform/mediastream/MediaStreamComponent.h"
@@ -119,12 +121,12 @@ String MediaStreamTrack::readyState() const
     return String();
 }
 
-void MediaStreamTrack::getSources(ScriptExecutionContext* context, PassRefPtr<MediaStreamTrackSourcesCallback> callback, ExceptionCode& ec)
+void MediaStreamTrack::getSources(ScriptExecutionContext* context, PassRefPtr<MediaStreamTrackSourcesCallback> callback, ExceptionState& es)
 {
     RefPtr<MediaStreamTrackSourcesRequest> request = MediaStreamTrackSourcesRequest::create(context, callback);
     bool ok = MediaStreamCenter::instance().getMediaStreamTrackSources(request.release());
     if (!ok)
-        ec = NotSupportedError;
+        es.throwDOMException(NotSupportedError);
 }
 
 bool MediaStreamTrack::ended() const

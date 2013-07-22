@@ -25,7 +25,6 @@
 #ifndef DelayNode_h
 #define DelayNode_h
 
-#include "core/dom/ExceptionCode.h"
 #include "modules/webaudio/AudioBasicProcessorNode.h"
 #include "modules/webaudio/DelayProcessor.h"
 #include "wtf/PassRefPtr.h"
@@ -33,18 +32,19 @@
 namespace WebCore {
 
 class AudioParam;
+class ExceptionState;
 
 class DelayNode : public AudioBasicProcessorNode {
 public:
-    static PassRefPtr<DelayNode> create(AudioContext* context, float sampleRate, double maxDelayTime, ExceptionCode& ec)
+    static PassRefPtr<DelayNode> create(AudioContext* context, float sampleRate, double maxDelayTime, ExceptionState& es)
     {
-        return adoptRef(new DelayNode(context, sampleRate, maxDelayTime, ec));      
+        return adoptRef(new DelayNode(context, sampleRate, maxDelayTime, es));
     }
 
     AudioParam* delayTime();
 
 private:
-    DelayNode(AudioContext*, float sampleRate, double maxDelayTime, ExceptionCode&);
+    DelayNode(AudioContext*, float sampleRate, double maxDelayTime, ExceptionState&);
 
     DelayProcessor* delayProcessor() { return static_cast<DelayProcessor*>(processor()); }
 };

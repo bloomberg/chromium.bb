@@ -31,7 +31,6 @@
 namespace WebCore {
 
 typedef int DatabaseGuid;
-typedef int ExceptionCode;
 
 ENUM_CLASS(DatabaseType) {
     Async,

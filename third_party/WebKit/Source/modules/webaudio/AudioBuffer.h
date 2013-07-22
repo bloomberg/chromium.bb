@@ -39,8 +39,7 @@
 namespace WebCore {
 
 class AudioBus;
-
-typedef int ExceptionCode;
+class ExceptionState;
 
 class AudioBuffer : public ScriptWrappable, public RefCounted<AudioBuffer> {
 public:
@@ -56,7 +55,7 @@ public:
 
     // Channel data access
     unsigned numberOfChannels() const { return m_channels.size(); }
-    Float32Array* getChannelData(unsigned channelIndex, ExceptionCode&);
+    Float32Array* getChannelData(unsigned channelIndex, ExceptionState&);
     Float32Array* getChannelData(unsigned channelIndex);
     void zero();
 

@@ -29,6 +29,8 @@
 
 namespace WebCore {
 
+class ExceptionState;
+
 // AudioBasicInspectorNode is an AudioNode with one input and one output where the output might not necessarily connect to another node's input.
 // If the output is not connected to any other node, then the AudioBasicInspectorNode's processIfNecessary() function will be called automatically by
 // AudioContext before the end of each render quantum so that it can inspect the audio stream.
@@ -38,8 +40,8 @@ public:
 
     // AudioNode
     virtual void pullInputs(size_t framesToProcess);
-    virtual void connect(AudioNode*, unsigned outputIndex, unsigned inputIndex, ExceptionCode&);
-    virtual void disconnect(unsigned outputIndex, ExceptionCode&);
+    virtual void connect(AudioNode*, unsigned outputIndex, unsigned inputIndex, ExceptionState&);
+    virtual void disconnect(unsigned outputIndex, ExceptionState&);
     virtual void checkNumberOfChannelsForInput(AudioNodeInput*);
 
 private:

@@ -34,7 +34,6 @@
 
 #include "bindings/v8/ScriptCallStackFactory.h"
 #include "core/dom/Document.h"
-#include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/fileapi/Blob.h"
 #include "core/fileapi/FileError.h"

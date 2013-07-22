@@ -33,6 +33,7 @@
 #include "modules/mediastream/RTCSessionDescription.h"
 
 #include "bindings/v8/Dictionary.h"
+#include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "public/platform/WebRTCSessionDescription.h"
 
@@ -43,19 +44,19 @@ static bool verifyType(const String& type)
     return type == "offer" || type == "pranswer" || type == "answer";
 }
 
-PassRefPtr<RTCSessionDescription> RTCSessionDescription::create(const Dictionary& dictionary, ExceptionCode& ec)
+PassRefPtr<RTCSessionDescription> RTCSessionDescription::create(const Dictionary& dictionary, ExceptionState& es)
 {
     String type;
     bool ok = dictionary.get("type", type);
     if (!ok || !verifyType(type)) {
-        ec = TypeMismatchError;
+        es.throwDOMException(TypeMismatchError);
         return 0;
     }
 
     String sdp;
     ok = dictionary.get("sdp", sdp);
     if (!ok || sdp.isEmpty()) {
-        ec = TypeMismatchError;
+        es.throwDOMException(TypeMismatchError);
         return 0;
     }
 
@@ -82,12 +83,12 @@ String RTCSessionDescription::type()
     return m_webSessionDescription.type();
 }
 
-void RTCSessionDescription::setType(const String& type, ExceptionCode& ec)
+void RTCSessionDescription::setType(const String& type, ExceptionState& es)
 {
     if (verifyType(type))
         m_webSessionDescription.setType(type);
     else
-        ec = TypeMismatchError;
+        es.throwDOMException(TypeMismatchError);
 }
 
 String RTCSessionDescription::sdp()
@@ -95,7 +96,7 @@ String RTCSessionDescription::sdp()
     return m_webSessionDescription.sdp();
 }
 
-void RTCSessionDescription::setSdp(const String& sdp, ExceptionCode& ec)
+void RTCSessionDescription::setSdp(const String& sdp, ExceptionState& es)
 {
     m_webSessionDescription.setSDP(sdp);
 }

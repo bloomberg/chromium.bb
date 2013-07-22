@@ -32,7 +32,6 @@
 
 #include "modules/filesystem/FileWriterBase.h"
 
-#include "core/dom/ExceptionCode.h"
 #include "core/dom/ProgressEvent.h"
 #include "core/fileapi/Blob.h"
 #include "core/fileapi/FileError.h"

@@ -39,6 +39,8 @@
 
 namespace WebCore {
 
+class ExceptionState;
+
 class MediaSource : public MediaSourceBase, public ScriptWrappable {
 public:
     static PassRefPtr<MediaSource> create(ScriptExecutionContext*);
@@ -47,8 +49,8 @@ public:
     // MediaSource.idl methods
     SourceBufferList* sourceBuffers() { return m_sourceBuffers.get(); }
     SourceBufferList* activeSourceBuffers() { return m_activeSourceBuffers.get(); }
-    SourceBuffer* addSourceBuffer(const String& type, ExceptionCode&);
-    void removeSourceBuffer(SourceBuffer*, ExceptionCode&);
+    SourceBuffer* addSourceBuffer(const String& type, ExceptionState&);
+    void removeSourceBuffer(SourceBuffer*, ExceptionState&);
     static bool isTypeSupported(const String& type);
 
     // EventTarget interface

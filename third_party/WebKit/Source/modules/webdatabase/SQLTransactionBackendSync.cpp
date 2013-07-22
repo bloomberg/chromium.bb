@@ -33,6 +33,7 @@
 #include "modules/webdatabase/SQLTransactionBackendSync.h"
 
 #include "bindings/v8/ExceptionState.h"
+#include "core/dom/ExceptionCode.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/platform/sql/SQLValue.h"
 #include "core/platform/sql/SQLiteTransaction.h"
