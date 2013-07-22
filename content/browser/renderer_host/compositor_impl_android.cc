@@ -234,6 +234,7 @@ void CompositorImpl::SetVisible(bool visible) {
     settings.compositor_name = "BrowserCompositor";
     settings.refresh_rate = 60.0;
     settings.impl_side_painting = false;
+    settings.allow_antialiasing = false;
     settings.calculate_top_controls_position = false;
     settings.top_controls_height = 0.f;
     settings.use_memory_management = false;

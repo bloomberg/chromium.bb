@@ -16,6 +16,10 @@ const char kBackgroundColorInsteadOfCheckerboard[] =
 
 const char kDisableThreadedAnimation[] = "disable-threaded-animation";
 
+// Disables layer-edge anti-aliasing in the compositor.
+const char kDisableCompositedAntialiasing[] =
+    "disable-composited-antialiasing";
+
 // Paint content on the main thread instead of the compositor thread.
 // Overrides the kEnableImplSidePainting flag.
 const char kDisableImplSidePainting[] = "disable-impl-side-painting";

@@ -14,6 +14,7 @@ namespace cc {
 
 LayerTreeSettings::LayerTreeSettings()
     : impl_side_painting(false),
+      allow_antialiasing(true),
       throttle_frame_production(true),
       begin_frame_scheduling_enabled(false),
       using_synchronous_renderer_compositor(false),

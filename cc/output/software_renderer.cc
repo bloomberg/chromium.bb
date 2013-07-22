@@ -226,7 +226,8 @@ void SoftwareRenderer::DoDrawQuad(DrawingFrame* frame, const DrawQuad* quad) {
                                        quad->IsLeftEdge() &&
                                        quad->IsBottomEdge() &&
                                        quad->IsRightEdge();
-    if (all_four_edges_are_exterior)
+    if (Settings().allow_antialiasing &&
+        all_four_edges_are_exterior)
       current_paint_.setAntiAlias(true);
     current_paint_.setFilterBitmap(true);
   }

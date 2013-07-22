@@ -1124,8 +1124,10 @@ bool GLRenderer::SetupQuadForAntialiasing(
   bool is_nearest_rect_within_epsilon = is_axis_aligned_in_target &&
       gfx::IsNearestRectWithinDistance(device_layer_quad.BoundingBox(),
                                        kAntiAliasingEpsilon);
-  bool use_aa = !clipped && !is_nearest_rect_within_epsilon && quad->IsEdge();
-
+  bool use_aa = Settings().allow_antialiasing &&
+                !clipped &&
+                !is_nearest_rect_within_epsilon &&
+                quad->IsEdge();
   if (!use_aa)
     return false;
 
