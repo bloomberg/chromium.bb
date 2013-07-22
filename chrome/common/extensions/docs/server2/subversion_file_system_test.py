@@ -37,25 +37,27 @@ class SubversionFileSystemTest(unittest.TestCase):
         file_system.Read(['test1.txt', 'test2.txt', 'test3.txt']).Get())
 
   def testListDir(self):
-    expected = ['dir/']
-    for i in range(7):
-      expected.append('file%d.html' % i)
+    expected = ['dir/'] + ['file%d.html' % i for i in range(7)]
     file_system = self._CreateSubversionFileSystem()
     self.assertEqual(expected, sorted(file_system.ReadSingle('list/')))
+
+  def testListSubDir(self):
+    expected = ['empty.txt'] + ['file%d.html' % i for i in range(3)]
+    file_system = self._CreateSubversionFileSystem()
+    self.assertEqual(expected, sorted(file_system.ReadSingle('list/dir/')))
 
   def testDirStat(self):
     file_system = self._CreateSubversionFileSystem()
     stat_info = file_system.Stat('stat/')
     expected = StatInfo(
       '151113',
-      child_versions=json.loads(self._ReadLocalFile('stat_result.json'))
-    )
-    self.assertEquals(expected, stat_info)
+      child_versions=json.loads(self._ReadLocalFile('stat_result.json')))
+    self.assertEqual(expected, stat_info)
 
   def testFileStat(self):
     file_system = self._CreateSubversionFileSystem()
     stat_info = file_system.Stat('stat/extension_api.h')
-    self.assertEquals(StatInfo('146163'), stat_info)
+    self.assertEqual(StatInfo('146163'), stat_info)
 
   def testRevisions(self):
     # This is a super hacky test. Record the path that was fetched then exit the

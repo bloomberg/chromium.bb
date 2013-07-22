@@ -45,6 +45,7 @@ class TemplateDataSource(object):
                  sidenav_data_source_factory,
                  compiled_fs_factory,
                  ref_resolver_factory,
+                 manifest_data_source,
                  public_template_path,
                  private_template_path,
                  base_path):
@@ -58,6 +59,7 @@ class TemplateDataSource(object):
       self._ref_resolver = ref_resolver_factory.Create()
       self._public_template_path = public_template_path
       self._private_template_path = private_template_path
+      self._manifest_data_source = manifest_data_source
       self._base_path = base_path
 
     def _CreateTemplate(self, template_name, text):
@@ -73,6 +75,7 @@ class TemplateDataSource(object):
           self._samples_data_source_factory.Create(request),
           self._sidenav_data_source_factory.Create(path),
           self._cache,
+          self._manifest_data_source,
           self._public_template_path,
           self._private_template_path,
           self._base_path)
@@ -84,6 +87,7 @@ class TemplateDataSource(object):
                samples_data_source,
                sidenav_data_source,
                cache,
+               manifest_data_source,
                public_template_path,
                private_template_path,
                base_path):
@@ -95,6 +99,7 @@ class TemplateDataSource(object):
     self._cache = cache
     self._public_template_path = public_template_path
     self._private_template_path = private_template_path
+    self._manifest_data_source = manifest_data_source
     self._base_path = base_path
 
   def Render(self, template_name):
@@ -112,6 +117,7 @@ class TemplateDataSource(object):
       'intros': self._intro_data_source,
       'sidenavs': self._sidenav_data_source,
       'partials': self,
+      'manifest_source': self._manifest_data_source,
       'samples': self._samples_data_source,
       'apps_samples_url': url_constants.GITHUB_BASE,
       'extensions_samples_url': url_constants.EXTENSIONS_SAMPLES,
@@ -132,5 +138,5 @@ class TemplateDataSource(object):
     try:
       return self._cache.GetFromFile(
           '/'.join((base_path, FormatKey(template_name))))
-    except FileNotFoundError as e:
+    except FileNotFoundError:
       return None

@@ -83,13 +83,13 @@ followed by more detailed summaries of what these changes mean and why they were
     that need to access resources (like images and scripts)
     that are contained in the extension’s package?</li>
     <ul>
-      <li>Define the <a href="manifest.html#web_accessible_resources">web_accessible_resources</a>
+      <li>Define the <a href="manifest/web_accessible_resources.html">web_accessible_resources</a>
         property and list the resources
         (and optionally a separate Content Security Policy for those resources).</li>
     </ul>
   <li>Does your extension embed external Web pages?</li>
     <ul>
-      <li>Define the <a href="manifest.html#sandbox">sandbox</a> property.</li>
+      <li>Define the <a href="manifest/sandbox.html">sandbox</a> property.</li>
     </ul>
   <li>Is your code or library using <code>eval()</code>, new <code>Function()</code>,
     <code>innerHTML</code>, <code>setTimeout()</code>, or otherwise passing strings
@@ -264,7 +264,7 @@ that can be used externally or come from an external source.
 If your extension embeds resources (like images, script, CSS styles, etc)
 that are used in content scripts that are injected into web pages,
 you need to use the
-<a href="manifest.html#web_accessible_resources">web_accessible_resources</a> property
+<a href="manifest/web_accessible_resources.html">web_accessible_resources</a> property
 to whitelist these resources so that external Web pages can use them:
 </p>
 

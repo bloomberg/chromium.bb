@@ -4,9 +4,7 @@
 
 import copy
 import json
-
-import compiled_file_system as compiled_fs
-from third_party.json_schema_compiler.model import UnixName
+import logging
 
 class SidenavDataSource(object):
   """This class reads in and caches a JSON file representing the side navigation
