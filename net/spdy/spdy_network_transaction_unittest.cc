@@ -188,7 +188,7 @@ class SpdyNetworkTransactionTest
       HttpStreamFactory::set_force_spdy_over_ssl(false);
       HttpStreamFactory::set_force_spdy_always(false);
 
-      std::vector<std::string> next_protos = SpdyNextProtos();
+      std::vector<NextProto> next_protos = SpdyNextProtos();
 
       switch (test_params_.ssl_type) {
         case SPDYNPN:

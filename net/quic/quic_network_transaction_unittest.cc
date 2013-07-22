@@ -82,7 +82,7 @@ class QuicNetworkTransactionTest : public PlatformTest {
     NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
     base::MessageLoop::current()->RunUntilIdle();
     HttpStreamFactory::set_use_alternate_protocols(false);
-    HttpStreamFactory::SetNextProtos(std::vector<std::string>());
+    HttpStreamFactory::SetNextProtos(std::vector<NextProto>());
   }
 
   scoped_ptr<QuicEncryptedPacket> ConstructRstPacket(

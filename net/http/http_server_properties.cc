@@ -52,6 +52,29 @@ AlternateProtocol AlternateProtocolFromString(const std::string& protocol) {
   return UNINITIALIZED_ALTERNATE_PROTOCOL;
 }
 
+AlternateProtocol AlternateProtocolFromNextProto(NextProto next_proto) {
+  switch (next_proto) {
+    case kProtoSPDY2:
+      return NPN_SPDY_2;
+    case kProtoSPDY3:
+      return NPN_SPDY_3;
+    case kProtoSPDY31:
+      return NPN_SPDY_3_1;
+    case kProtoSPDY4a2:
+      return NPN_SPDY_4A2;
+    case kProtoQUIC1SPDY3:
+      return QUIC;
+
+    case kProtoUnknown:
+    case kProtoHTTP11:
+    case kProtoSPDY1:
+    case kProtoSPDY21:
+      break;
+  }
+
+  NOTREACHED() << "Invalid NextProto: " << next_proto;
+  return UNINITIALIZED_ALTERNATE_PROTOCOL;
+}
 
 std::string PortAlternateProtocolPair::ToString() const {
   return base::StringPrintf("%d:%s", port,

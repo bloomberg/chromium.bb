@@ -280,7 +280,7 @@ class NET_EXPORT HttpStreamFactory {
 
   // Sets the protocols supported by NPN (next protocol negotiation) during the
   // SSL handshake as well as by HTTP Alternate-Protocol.
-  static void SetNextProtos(const std::vector<std::string>& value);
+  static void SetNextProtos(const std::vector<NextProto>& value);
   static bool has_next_protos() { return next_protos_ != NULL; }
   static const std::vector<std::string>& next_protos() {
     return *next_protos_;

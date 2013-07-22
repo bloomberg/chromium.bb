@@ -82,26 +82,6 @@ const base::string16 kSecond(ASCIIToUTF16("second"));
 const base::string16 kTestingNTLM(ASCIIToUTF16("testing-ntlm"));
 const base::string16 kWrongPassword(ASCIIToUTF16("wrongpassword"));
 
-// MakeNextProtos is a utility function that returns a vector of std::strings
-// from its arguments. Don't forget to terminate the argument list with a NULL.
-std::vector<std::string> MakeNextProtos(const char* a, ...) {
-  std::vector<std::string> ret;
-  ret.push_back(a);
-
-  va_list args;
-  va_start(args, a);
-
-  for (;;) {
-    const char* value = va_arg(args, const char*);
-    if (value == NULL)
-      break;
-    ret.push_back(value);
-  }
-  va_end(args);
-
-  return ret;
-}
-
 int GetIdleSocketCountInTransportSocketPool(net::HttpNetworkSession* session) {
   return session->GetTransportSocketPool(
       net::HttpNetworkSession::NORMAL_SOCKET_POOL)->IdleSocketCount();
@@ -272,7 +252,7 @@ class HttpNetworkTransactionTest
     NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
     base::MessageLoop::current()->RunUntilIdle();
     HttpStreamFactory::set_use_alternate_protocols(false);
-    HttpStreamFactory::SetNextProtos(std::vector<std::string>());
+    HttpStreamFactory::SetNextProtos(std::vector<NextProto>());
   }
 
   // This is the expected return from a current server advertising SPDY.
@@ -7977,8 +7957,6 @@ TEST_P(HttpNetworkTransactionTest, HonorAlternateProtocolHeader) {
   expected_alternate.port = 443;
   expected_alternate.protocol = AlternateProtocolFromNextProto(GetParam());
   EXPECT_TRUE(expected_alternate.Equals(alternate));
-
-  HttpStreamFactory::SetNextProtos(std::vector<std::string>());
 }
 
 TEST_P(HttpNetworkTransactionTest,
@@ -9480,8 +9458,9 @@ TEST_P(HttpNetworkTransactionTest, MultiRoundAuth) {
 // npn is negotiated.
 TEST_P(HttpNetworkTransactionTest, NpnWithHttpOverSSL) {
   HttpStreamFactory::set_use_alternate_protocols(true);
-  HttpStreamFactory::SetNextProtos(
-      MakeNextProtos("http/1.1", "http1.1", NULL));
+  std::vector<NextProto> next_protos;
+  next_protos.push_back(kProtoHTTP11);
+  HttpStreamFactory::SetNextProtos(next_protos);
   HttpRequestInfo request;
   request.method = "GET";
   request.url = GURL("https://www.google.com/");
@@ -11447,8 +11426,6 @@ TEST_P(HttpNetworkTransactionTest, CloseIdleSpdySessionToOpenNewOne) {
       HasSpdySession(session->spdy_session_pool(), spdy_session_key_a));
   EXPECT_FALSE(
       HasSpdySession(session->spdy_session_pool(), spdy_session_key_b));
-
-  HttpStreamFactory::SetNextProtos(std::vector<std::string>());
 }
 
 TEST_P(HttpNetworkTransactionTest, HttpSyncConnectError) {

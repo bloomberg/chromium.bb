@@ -48,9 +48,9 @@ const char kDefaultURL[] = "http://www.google.com";
 const char kUploadData[] = "hello!";
 const int kUploadDataSize = arraysize(kUploadData)-1;
 
-// SpdyNextProtos returns a vector of NPN protocol strings for negotiating
+// SpdyNextProtos returns a vector of next protocols for negotiating
 // SPDY.
-std::vector<std::string> SpdyNextProtos();
+std::vector<NextProto> SpdyNextProtos();
 
 // Chop a frame into an array of MockWrites.
 // |data| is the frame to chop.
@@ -294,8 +294,6 @@ NextProto NextProtoFromSpdyVersion(SpdyMajorVersion spdy_version);
 // TODO(akalin): Merge this with NPNToSpdyVersion() in
 // spdy_session.cc.
 SpdyMajorVersion SpdyVersionFromNextProto(NextProto next_proto);
-
-AlternateProtocol AlternateProtocolFromNextProto(NextProto next_proto);
 
 class SpdyTestUtil {
  public:

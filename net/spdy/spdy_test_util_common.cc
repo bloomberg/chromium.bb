@@ -51,11 +51,12 @@ void ParseUrl(base::StringPiece url, std::string* scheme, std::string* host,
 
 }  // namespace
 
-std::vector<std::string> SpdyNextProtos() {
-  std::vector<std::string> next_protos;
+std::vector<NextProto> SpdyNextProtos() {
+  std::vector<NextProto> next_protos;
   for (int i = kProtoMinimumVersion; i <= kProtoMaximumVersion; ++i) {
-    next_protos.push_back(SSLClientSocket::NextProtoToString(
-        static_cast<NextProto>(i)));
+    NextProto proto = static_cast<NextProto>(i);
+    if (proto != kProtoSPDY1 && proto != kProtoSPDY21)
+      next_protos.push_back(proto);
   }
   return next_protos;
 }
@@ -717,30 +718,6 @@ SpdyMajorVersion SpdyVersionFromNextProto(NextProto next_proto) {
     NOTREACHED();
     return SPDY2;
   }
-}
-
-AlternateProtocol AlternateProtocolFromNextProto(NextProto next_proto) {
-  switch (next_proto) {
-    case kProtoSPDY2:
-      return NPN_SPDY_2;
-    case kProtoSPDY3:
-      return NPN_SPDY_3;
-    case kProtoSPDY31:
-      return NPN_SPDY_3_1;
-    case kProtoSPDY4a2:
-      return NPN_SPDY_4A2;
-    case kProtoQUIC1SPDY3:
-      return QUIC;
-
-    case kProtoUnknown:
-    case kProtoHTTP11:
-    case kProtoSPDY1:
-    case kProtoSPDY21:
-      break;
-  }
-
-  NOTREACHED();
-  return NPN_SPDY_2;
 }
 
 SpdyTestUtil::SpdyTestUtil(NextProto protocol)
