@@ -105,22 +105,9 @@ inline v8::Handle<v8::Value> toV8Fast(TestEventTarget* impl, const CallbackInfo&
     return wrap(impl, callbackInfo.Holder(), callbackInfo.GetIsolate());
 }
 
-template<class CallbackInfo, class Wrappable>
-inline v8::Handle<v8::Value> toV8FastForMainWorld(TestEventTarget* impl, const CallbackInfo& callbackInfo, Wrappable* wrappable)
+inline v8::Handle<v8::Value> toV8ForMainWorld(PassRefPtr< TestEventTarget > impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
-    ASSERT(worldType(callbackInfo.GetIsolate()) == MainWorld);
-    if (UNLIKELY(!impl))
-        return v8::Null(callbackInfo.GetIsolate());
-    v8::Handle<v8::Object> wrapper = DOMDataStore::getWrapperForMainWorld<V8TestEventTarget>(impl);
-    if (!wrapper.IsEmpty())
-        return wrapper;
-    return wrap(impl, callbackInfo.Holder(), callbackInfo.GetIsolate());
-}
-
-template<class CallbackInfo, class Wrappable>
-inline v8::Handle<v8::Value> toV8FastForMainWorld(PassRefPtr< TestEventTarget > impl, const CallbackInfo& callbackInfo, Wrappable* wrappable)
-{
-    return toV8FastForMainWorld(impl.get(), callbackInfo, wrappable);
+    return toV8ForMainWorld(impl.get(), creationContext, isolate);
 }
 
 

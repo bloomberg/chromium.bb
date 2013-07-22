@@ -117,24 +117,10 @@ inline v8::Handle<v8::Value> toV8Fast(ArrayBuffer* impl, const CallbackInfo& cal
     return wrap(impl, callbackInfo.Holder(), callbackInfo.GetIsolate());
 }
 
-template<class CallbackInfo, class Wrappable>
-inline v8::Handle<v8::Value> toV8FastForMainWorld(ArrayBuffer* impl, const CallbackInfo& callbackInfo, Wrappable* wrappable)
+inline v8::Handle<v8::Value> toV8ForMainWorld(PassRefPtr< ArrayBuffer > impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
-    ASSERT(worldType(callbackInfo.GetIsolate()) == MainWorld);
-    if (UNLIKELY(!impl))
-        return v8Null(callbackInfo.GetIsolate());
-    v8::Handle<v8::Object> wrapper = DOMDataStore::getWrapperForMainWorld<V8ArrayBuffer>(impl);
-    if (!wrapper.IsEmpty())
-        return wrapper;
-    return wrap(impl, callbackInfo.Holder(), callbackInfo.GetIsolate());
+    return toV8ForMainWorld(impl.get(), creationContext, isolate);
 }
-
-template<class CallbackInfo, class Wrappable>
-inline v8::Handle<v8::Value> toV8FastForMainWorld(PassRefPtr< ArrayBuffer > impl, const CallbackInfo& callbackInfo, Wrappable* wrappable)
-{
-    return toV8FastForMainWorld(impl.get(), callbackInfo, wrappable);
-}
-
 
 template<class CallbackInfo, class Wrappable>
 inline v8::Handle<v8::Value> toV8Fast(PassRefPtr< ArrayBuffer > impl, const CallbackInfo& callbackInfo, Wrappable* wrappable)

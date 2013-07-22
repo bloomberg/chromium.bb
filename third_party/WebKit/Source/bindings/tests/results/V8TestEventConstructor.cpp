@@ -106,7 +106,6 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& args)
     }
 
     RefPtr<TestEventConstructor> event = TestEventConstructor::create(type, eventInit);
-
     v8::Handle<v8::Object> wrapper = args.Holder();
     V8DOMWrapper::associateObjectWithWrapper<V8TestEventConstructor>(event.release(), &V8TestEventConstructor::info, wrapper, args.GetIsolate(), WrapperConfiguration::Dependent);
     v8SetReturnValue(args, wrapper);

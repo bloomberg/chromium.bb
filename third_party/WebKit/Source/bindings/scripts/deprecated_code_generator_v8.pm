@@ -828,11 +828,6 @@ inline v8::Handle<v8::Value> toV8Fast(${nativeType}* impl, const CallbackInfo& c
     return toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate());
 }
 
-template<class CallbackInfo, class Wrappable>
-inline v8::Handle<v8::Value> toV8FastForMainWorld(${nativeType}* impl, const CallbackInfo& callbackInfo, Wrappable*)
-{
-    return toV8ForMainWorld(impl, callbackInfo.Holder(), callbackInfo.GetIsolate());
-}
 END
     } else {
 
@@ -889,22 +884,9 @@ inline v8::Handle<v8::Value> toV8Fast(${nativeType}* impl, const CallbackInfo& c
     return wrap(impl, callbackInfo.Holder(), callbackInfo.GetIsolate());
 }
 
-template<class CallbackInfo, class Wrappable>
-inline v8::Handle<v8::Value> toV8FastForMainWorld(${nativeType}* impl, const CallbackInfo& callbackInfo, Wrappable* wrappable)
+inline v8::Handle<v8::Value> toV8ForMainWorld(PassRefPtr< ${nativeType} > impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
-    ASSERT(worldType(callbackInfo.GetIsolate()) == MainWorld);
-    if (UNLIKELY(!impl))
-        return v8::Null(callbackInfo.GetIsolate());
-    v8::Handle<v8::Object> wrapper = DOMDataStore::getWrapperForMainWorld<${v8ClassName}>(impl);
-    if (!wrapper.IsEmpty())
-        return wrapper;
-    return wrap(impl, callbackInfo.Holder(), callbackInfo.GetIsolate());
-}
-
-template<class CallbackInfo, class Wrappable>
-inline v8::Handle<v8::Value> toV8FastForMainWorld(PassRefPtr< ${nativeType} > impl, const CallbackInfo& callbackInfo, Wrappable* wrappable)
-{
-    return toV8FastForMainWorld(impl.get(), callbackInfo, wrappable);
+    return toV8ForMainWorld(impl.get(), creationContext, isolate);
 }
 
 END
@@ -1534,7 +1516,11 @@ END
         AddToImplIncludes("V8$attrType.h");
         my $svgNativeType = GetSVGTypeNeedingTearOff($attrType);
         # Convert from abstract SVGProperty to real type, so the right toJS() method can be invoked.
-        $code .= "    v8SetReturnValue(info, toV8Fast$forMainWorldSuffix(static_cast<$svgNativeType*>($expression), info, imp));\n";
+        if ($forMainWorldSuffix eq "ForMainWorld") {
+            $code .= "    v8SetReturnValue(info, toV8ForMainWorld(static_cast<$svgNativeType*>($expression), info.Holder(), info.GetIsolate()));\n";
+        } else {
+            $code .= "    v8SetReturnValue(info, toV8Fast(static_cast<$svgNativeType*>($expression), info, imp));\n";
+        }
         $code .= "    return;\n";
     } elsif (IsSVGTypeNeedingTearOff($attrType) and not $interfaceName =~ /List$/) {
         AddToImplIncludes("V8$attrType.h");
@@ -1567,7 +1553,11 @@ END
         } else {
                 $wrappedValue = "WTF::getPtr(${tearOffType}::create($expression))";
         }
-        $code .= "    v8SetReturnValue(info, toV8Fast$forMainWorldSuffix($wrappedValue, info, imp));\n";
+        if ($forMainWorldSuffix eq "ForMainWorld") {
+            $code .= "    v8SetReturnValue(info, toV8ForMainWorld($wrappedValue, info.Holder(), info.GetIsolate()));\n";
+        } else {
+            $code .= "    v8SetReturnValue(info, toV8Fast($wrappedValue, info, imp));\n";
+        }
         $code .= "    return;\n";
     } elsif ($attribute->type eq "SerializedScriptValue" && $attrExt->{"CachedAttribute"}) {
         my $getterFunc = ToMethodName($attribute->name);
@@ -4936,7 +4926,11 @@ sub GenerateFunctionCallString
         my $svgNativeType = GetSVGTypeNeedingTearOff($returnType);
         # FIXME: Update for all ScriptWrappables.
         if (IsDOMNodeType($interfaceName)) {
-            $code .= $indent . "v8SetReturnValue(args, toV8Fast${forMainWorldSuffix}(WTF::getPtr(${svgNativeType}::create($return)), args, imp));\n";
+            if ($forMainWorldSuffix eq "ForMainWorld") {
+                $code .= $indent . "v8SetReturnValue(args, toV8ForMainWorld(WTF::getPtr(${svgNativeType}::create($return)), args.Holder(), args.GetIsolate()));\n";
+            } else {
+                $code .= $indent . "v8SetReturnValue(args, toV8Fast(WTF::getPtr(${svgNativeType}::create($return)), args, imp));\n";
+            }
         } else {
             $code .= $indent . "v8SetReturnValue(args, toV8${forMainWorldSuffix}(WTF::getPtr(${svgNativeType}::create($return)), args.Holder(), args.GetIsolate()));\n";
         }
@@ -5479,8 +5473,16 @@ sub NativeToJSValue
 
     if ($getScriptWrappable) {
         # FIXME: Use safe handles
-        return "${indent}v8SetReturnValue(${getCallbackInfo}, toV8Fast${forMainWorldSuffix}($nativeValue$getCallbackInfoArg$getScriptWrappableArg));" if $isReturnValue;
-        return "$indent$receiver toV8Fast${forMainWorldSuffix}($nativeValue$getCallbackInfoArg$getScriptWrappableArg);";
+        if ($isReturnValue) {
+            if ($forMainWorldSuffix eq "ForMainWorld") {
+                return "${indent}v8SetReturnValue(${getCallbackInfo}, toV8ForMainWorld($nativeValue, $getCallbackInfo.Holder(), $getCallbackInfo.GetIsolate()));";
+            }
+            return "${indent}v8SetReturnValue(${getCallbackInfo}, toV8Fast($nativeValue$getCallbackInfoArg$getScriptWrappableArg));";
+        }
+        if ($forMainWorldSuffix eq "ForMainWorld") {
+            return "$indent$receiver toV8ForMainWorld($nativeValue, $getCallbackInfo.Holder(), $getCallbackInfo.GetIsolate());";
+        }
+        return "$indent$receiver toV8Fast($nativeValue$getCallbackInfoArg$getScriptWrappableArg);";
     }
     # FIXME: Use safe handles
     return "${indent}v8SetReturnValue(${getCallbackInfo}, toV8($nativeValue, $getCreationContext, $getIsolate));" if $isReturnValue;
