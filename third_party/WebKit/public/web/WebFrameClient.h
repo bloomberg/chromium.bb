@@ -166,16 +166,6 @@ public:
     // The provisional load failed.
     virtual void didFailProvisionalLoad(WebFrame*, const WebURLError&) { }
 
-    // Notifies the client to commit data for the given frame.  The client
-    // may optionally prevent default processing by setting preventDefault
-    // to true before returning.  If default processing is prevented, then
-    // it is up to the client to manually call commitDocumentData on the
-    // WebFrame.  It is only valid to call commitDocumentData within a call
-    // to didReceiveDocumentData.  If commitDocumentData is not called,
-    // then an empty document will be loaded.
-    virtual void didReceiveDocumentData(
-        WebFrame*, const char* data, size_t length, bool& preventDefault) { }
-
     // The provisional datasource is now committed.  The first part of the
     // response body has been received, and the encoding of the response
     // body is known.

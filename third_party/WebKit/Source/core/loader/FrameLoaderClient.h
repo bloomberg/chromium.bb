@@ -130,8 +130,6 @@ namespace WebCore {
 
         virtual void loadURLExternally(const ResourceRequest&, NavigationPolicy, const String& suggestedName = String()) = 0;
 
-        virtual void didReceiveDocumentData(const char*, int) = 0;
-
         virtual bool shouldGoToHistoryItem(HistoryItem*) const = 0;
         virtual bool shouldStopLoadingForHistoryItem(HistoryItem*) const = 0;
 

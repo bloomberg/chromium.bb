@@ -671,7 +671,6 @@ void DocumentLoader::dataReceived(CachedResource* resource, const char* data, in
         return;
     if (isArchiveMIMEType(response().mimeType()))
         return;
-    frameLoader()->client()->didReceiveDocumentData(data, length);
     commitData(data, length);
 
     // If we are sending data to MediaDocument, we should stop here

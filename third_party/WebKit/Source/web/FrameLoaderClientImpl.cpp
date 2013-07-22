@@ -533,14 +533,6 @@ void FrameLoaderClientImpl::loadURLExternally(const ResourceRequest& request, Na
     }
 }
 
-void FrameLoaderClientImpl::didReceiveDocumentData(const char* data, int length)
-{
-    if (m_webFrame->client()) {
-        bool preventDefault = false;
-        m_webFrame->client()->didReceiveDocumentData(m_webFrame, data, length, preventDefault);
-    }
-}
-
 bool FrameLoaderClientImpl::shouldGoToHistoryItem(HistoryItem* item) const
 {
     const KURL& url = item->url();
