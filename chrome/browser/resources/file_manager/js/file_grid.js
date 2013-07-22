@@ -57,7 +57,7 @@ FileGrid.decorate = function(self, metadataCache) {
 /**
  * Updates items to reflect metadata changes.
  * @param {string} type Type of metadata changed.
- * @param {Object<string, Object>} props Map from entry URLs to metadata props.
+ * @param {Object.<string, Object>} props Map from entry URLs to metadata props.
  */
 FileGrid.prototype.updateListItemsMetadata = function(type, props) {
   var boxes = this.querySelectorAll('.img-container');
@@ -198,6 +198,10 @@ FileGrid.Item = function() {
 FileGrid.Item.prototype.__proto__ = cr.ui.ListItem.prototype;
 
 Object.defineProperty(FileGrid.Item.prototype, 'label', {
+  /**
+   * @this {FileGrid.Item}
+   * @return {string} Label of the item.
+   */
   get: function() {
     return this.querySelector('filename-label').textContent;
   }

@@ -8,6 +8,8 @@
  * A volume list model. This model combines the 2 lists.
  * @param {cr.ui.ArrayDataModel} volumesList The first list of the model.
  * @param {cr.ui.ArrayDataModel} pinnedList The second list of the model.
+ * @constructor
+ * @extends {cr.EventTarget}
  */
 function VolumeListModel(volumesList, pinnedList) {
   this.volumesList_ = volumesList;

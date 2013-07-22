@@ -419,7 +419,7 @@ Commands.togglePinnedCommand = {
   execute: function(event, fileManager) {
     var pin = !event.command.checked;
     event.command.checked = pin;
-    var entries = this.getTargetEntries_();
+    var entries = Commands.togglePinnedCommand.getTargetEntries_();
     var currentEntry;
     var error = false;
     var steps = {
@@ -468,7 +468,7 @@ Commands.togglePinnedCommand = {
   },
 
   canExecute: function(event, fileManager) {
-    var entries = this.getTargetEntries_();
+    var entries = Commands.togglePinnedCommand.getTargetEntries_();
     var checked = true;
     for (var i = 0; i < entries.length; i++) {
       checked = checked && entries[i].pinned;

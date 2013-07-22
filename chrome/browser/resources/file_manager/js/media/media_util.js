@@ -127,7 +127,7 @@ ThumbnailLoader.THUMBNAIL_MAX_HEIGHT = 500;
  * @param {ThumbnailLoader.FillMode} fillMode Fill mode.
  * @param {ThumbnailLoader.OptimizationMode=} opt_optimizationMode Optimization
  *     for downloading thumbnails. By default optimizations are disabled.
- * @param {function(Image, object} opt_onSuccess Success callback,
+ * @param {function(Image, Object)} opt_onSuccess Success callback,
  *     accepts the image and the transform.
  * @param {function} opt_onError Error callback.
  * @param {function} opt_onGeneric Callback for generic image used.

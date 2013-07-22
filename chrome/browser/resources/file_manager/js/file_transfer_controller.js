@@ -737,6 +737,7 @@ FileTransferController.prototype = {
 
   /**
    * @this {FileTransferController}
+   * @return {boolean} True if the current directory is read only.
    */
   get readonly() {
     return this.directoryModel_.isReadOnly();
@@ -744,6 +745,7 @@ FileTransferController.prototype = {
 
   /**
    * @this {FileTransferController}
+   * @return {boolean} True if the current directory is on Drive.
    */
   get isOnDrive() {
     return PathUtil.isDriveBasedPath(this.directoryModel_.getCurrentRootPath());
@@ -762,7 +764,7 @@ FileTransferController.prototype = {
 
   /**
    * @this {FileTransferController}
-   * @type {Array.<Entry>}
+   * @return {Array.<Entry>} Array of the selected entries.
    */
   get selectedEntries_() {
     var list = this.directoryModel_.getFileList();

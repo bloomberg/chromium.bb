@@ -805,8 +805,8 @@ DirectoryModel.prototype.changeDirectory = function(path, opt_errorCallback) {
  * mounting, callbacks will be called after the mount is completed.
  *
  * @param {string} path Path to the directory.
- * @param {function(DirectoryEntry} successCallback Success callback.
- * @param {function(FileError} errorCallback Error callback.
+ * @param {function(DirectoryEntry)} successCallback Success callback.
+ * @param {function(FileError)} errorCallback Error callback.
  */
 DirectoryModel.prototype.resolveDirectory = function(
     path, successCallback, errorCallback) {

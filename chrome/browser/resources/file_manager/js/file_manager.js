@@ -238,8 +238,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
   /**
    * Changed metadata observers for the new directory.
-   * @override
-   * @param {?DirectoryEntry} entry New watched directory entry.
+   *
+   * @param {DirectoryEntry} entry New watched directory entry.
    * @override
    */
   FileManager.MetadataFileWatcher.prototype.changeWatchedEntry = function(
@@ -1874,7 +1874,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   /**
    * @param {string} type Type of metadata changed.
    * @param {Array.<string>} urls Array of urls.
-   * @param {Object<string, Object>} props Map from entry URLs to metadata
+   * @param {Object.<string, Object>} props Map from entry URLs to metadata
    *     props.
    * @private
    */
@@ -2172,7 +2172,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
   /**
    * Return full path of the current directory or null.
-   * @return {string=} The full path of the current directory.
+   * @return {?string} The full path of the current directory.
    */
   FileManager.prototype.getCurrentDirectory = function() {
     return this.directoryModel_ &&

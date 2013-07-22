@@ -21,7 +21,7 @@ function FileTasks(fileManager, opt_params) {
    * List of invocations to be called once tasks are available.
    *
    * @private
-   * @type {Array,<Object>}
+   * @type {Array.<Object>}
    */
   this.pendingInvocations_ = [];
 }
