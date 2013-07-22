@@ -73,6 +73,7 @@ struct weston_launch {
 
 	pid_t child;
 	int verbose;
+	char *new_user;
 };
 
 union cmsg_data { unsigned char b[4]; int fd; };
@@ -416,11 +417,13 @@ quit(struct weston_launch *wl, int status)
 	close(wl->signalfd);
 	close(wl->sock[0]);
 
-	err = pam_close_session(wl->ph, 0);
-	if (err)
-		fprintf(stderr, "pam_close_session failed: %d: %s\n",
-			err, pam_strerror(wl->ph, err));
-	pam_end(wl->ph, err);
+	if (wl->new_user) {
+		err = pam_close_session(wl->ph, 0);
+		if (err)
+			fprintf(stderr, "pam_close_session failed: %d: %s\n",
+				err, pam_strerror(wl->ph, err));
+		pam_end(wl->ph, err);
+	}
 
 	exit(status);
 }
@@ -474,7 +477,9 @@ setup_tty(struct weston_launch *wl, const char *tty)
 	struct stat buf;
 	char *t;
 
-	if (tty) {
+	if (!wl->new_user) {
+		wl->tty = STDIN_FILENO;
+	} else if (tty) {
 		t = ttyname(STDIN_FILENO);
 		if (t && strcmp(t, tty) == 0)
 			wl->tty = STDIN_FILENO;
@@ -512,14 +517,12 @@ setup_tty(struct weston_launch *wl, const char *tty)
 }
 
 static void
-launch_compositor(struct weston_launch *wl, int argc, char *argv[])
+setup_session(struct weston_launch *wl)
 {
-	char *child_argv[MAX_ARGV_SIZE];
 	char **env;
+	char *term;
 	int i;
 
-	if (wl->verbose)
-		printf("weston-launch: spawned weston with pid: %d\n", getpid());
 	if (wl->tty != STDIN_FILENO) {
 		if (setsid() < 0)
 			error(1, errno, "setsid failed");
@@ -534,6 +537,14 @@ launch_compositor(struct weston_launch *wl, int argc, char *argv[])
 	    setuid(wl->pw->pw_uid) < 0)
 		error(1, errno, "dropping privileges failed");
 
+	term = getenv("TERM");
+	clearenv();
+	setenv("TERM", term, 1);
+	setenv("USER", wl->pw->pw_name, 1);
+	setenv("LOGNAME", wl->pw->pw_name, 1);
+	setenv("HOME", wl->pw->pw_dir, 1);
+	setenv("SHELL", wl->pw->pw_shell, 1);
+
 	env = pam_getenvlist(wl->ph);
 	if (env) {
 		for (i = 0; env[i]; ++i) {
@@ -542,6 +553,18 @@ launch_compositor(struct weston_launch *wl, int argc, char *argv[])
 		}
 		free(env);
 	}
+}
+
+static void
+launch_compositor(struct weston_launch *wl, int argc, char *argv[])
+{
+	char *child_argv[MAX_ARGV_SIZE];
+	int i;
+
+	if (wl->verbose)
+		printf("weston-launch: spawned weston with pid: %d\n", getpid());
+	if (wl->new_user)
+		setup_session(wl);
 
 	if (wl->tty != STDIN_FILENO)
 		setenv_fd("WESTON_TTY_FD", wl->tty);
@@ -578,8 +601,7 @@ main(int argc, char *argv[])
 {
 	struct weston_launch wl;
 	int i, c;
-	char *tty = NULL, *new_user = NULL;
-	char *term;
+	char *tty = NULL;
 	struct option opts[] = {
 		{ "user",    required_argument, NULL, 'u' },
 		{ "tty",     required_argument, NULL, 't' },
@@ -593,7 +615,7 @@ main(int argc, char *argv[])
 	while ((c = getopt_long(argc, argv, "u:t::vh", opts, &i)) != -1) {
 		switch (c) {
 		case 'u':
-			new_user = optarg;
+			wl.new_user = optarg;
 			if (getuid() != 0)
 				error(1, 0, "Permission denied. -u allowed for root only");
 			break;
@@ -612,20 +634,12 @@ main(int argc, char *argv[])
 	if ((argc - optind) > (MAX_ARGV_SIZE - 6))
 		error(1, E2BIG, "Too many arguments to pass to weston");
 
-	if (new_user)
-		wl.pw = getpwnam(new_user);
+	if (wl.new_user)
+		wl.pw = getpwnam(wl.new_user);
 	else
 		wl.pw = getpwuid(getuid());
 	if (wl.pw == NULL)
 		error(1, errno, "failed to get username");
-
-	term = getenv("TERM");
-	clearenv();
-	setenv("TERM", term, 1);
-	setenv("USER", wl.pw->pw_name, 1);
-	setenv("LOGNAME", wl.pw->pw_name, 1);
-	setenv("HOME", wl.pw->pw_dir, 1);
-	setenv("SHELL", wl.pw->pw_shell, 1);
 
 	if (!weston_launch_allowed(&wl))
 		error(1, 0, "Permission denied. You should either:\n"
@@ -639,7 +653,7 @@ main(int argc, char *argv[])
 	if (setup_tty(&wl, tty) < 0)
 		exit(EXIT_FAILURE);
 
-	if (setup_pam(&wl) < 0)
+	if (wl.new_user && setup_pam(&wl) < 0)
 		exit(EXIT_FAILURE);
 
 	wl.epollfd = epoll_create1(EPOLL_CLOEXEC);
