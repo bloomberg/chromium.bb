@@ -35,7 +35,6 @@ class BASE_EXPORT MessagePumpAuraX11 : public MessagePumpGlib,
                                        public MessagePumpDispatcher {
  public:
   MessagePumpAuraX11();
-  virtual ~MessagePumpAuraX11();
 
   // Returns default X Display.
   static Display* GetDefaultXDisplay();
@@ -72,6 +71,9 @@ class BASE_EXPORT MessagePumpAuraX11 : public MessagePumpGlib,
   // asynchronous (and we receive an XEvent when mapped), while there are also
   // functions which require a mapped window.
   void BlockUntilWindowMapped(unsigned long xid);
+
+ protected:
+  virtual ~MessagePumpAuraX11();
 
  private:
   typedef std::map<unsigned long, MessagePumpDispatcher*> DispatchersMap;

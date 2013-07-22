@@ -22,7 +22,6 @@ class TimeTicks;
 class BASE_EXPORT MessagePumpForUI : public MessagePump {
  public:
   MessagePumpForUI();
-  virtual ~MessagePumpForUI();
 
   virtual void Run(Delegate* delegate) OVERRIDE;
   virtual void Quit() OVERRIDE;
@@ -32,6 +31,9 @@ class BASE_EXPORT MessagePumpForUI : public MessagePump {
   virtual void Start(Delegate* delegate);
 
   static bool RegisterBindings(JNIEnv* env);
+
+ protected:
+  virtual ~MessagePumpForUI();
 
  private:
   RunLoop* run_loop_;

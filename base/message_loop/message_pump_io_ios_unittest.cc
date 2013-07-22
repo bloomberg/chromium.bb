@@ -126,7 +126,7 @@ class DeleteWatcher : public BaseWatcher {
 };
 
 TEST_F(MessagePumpIOSForIOTest, DeleteWatcher) {
-  scoped_ptr<MessagePumpIOSForIO> pump(new MessagePumpIOSForIO);
+  scoped_refptr<MessagePumpIOSForIO> pump(new MessagePumpIOSForIO);
   MessagePumpIOSForIO::FileDescriptorWatcher* watcher =
       new MessagePumpIOSForIO::FileDescriptorWatcher;
   DeleteWatcher delegate(watcher);
@@ -162,9 +162,9 @@ class StopWatcher : public BaseWatcher {
 };
 
 TEST_F(MessagePumpIOSForIOTest, StopWatcher) {
-  scoped_ptr<MessagePumpIOSForIO> pump(new MessagePumpIOSForIO);
+  scoped_refptr<MessagePumpIOSForIO> pump(new MessagePumpIOSForIO);
   MessagePumpIOSForIO::FileDescriptorWatcher watcher;
-  StopWatcher delegate(&watcher, pump.get());
+  StopWatcher delegate(&watcher, pump);
   pump->WatchFileDescriptor(pipefds_[1],
       false, MessagePumpIOSForIO::WATCH_READ_WRITE, &watcher, &delegate);
 
@@ -173,9 +173,9 @@ TEST_F(MessagePumpIOSForIOTest, StopWatcher) {
 }
 
 TEST_F(MessagePumpIOSForIOTest, StopWatcherAndWatchSomethingElse) {
-  scoped_ptr<MessagePumpIOSForIO> pump(new MessagePumpIOSForIO);
+  scoped_refptr<MessagePumpIOSForIO> pump(new MessagePumpIOSForIO);
   MessagePumpIOSForIO::FileDescriptorWatcher watcher;
-  StopWatcher delegate(&watcher, pump.get(), alternate_pipefds_[1]);
+  StopWatcher delegate(&watcher, pump, alternate_pipefds_[1]);
   pump->WatchFileDescriptor(pipefds_[1],
       false, MessagePumpIOSForIO::WATCH_READ_WRITE, &watcher, &delegate);
 

@@ -20,7 +20,6 @@ class BASE_EXPORT MessagePumpOzone : public MessagePumpLibevent,
                                      public MessagePumpDispatcher {
  public:
   MessagePumpOzone();
-  virtual ~MessagePumpOzone();
 
   // Returns the UI message pump.
   static MessagePumpOzone* Current();
@@ -40,6 +39,7 @@ class BASE_EXPORT MessagePumpOzone : public MessagePumpLibevent,
   virtual bool Dispatch(const NativeEvent& event) OVERRIDE;
 
  private:
+  virtual ~MessagePumpOzone();
   std::vector<MessagePumpDispatcher*> dispatcher_;
 
   DISALLOW_COPY_AND_ASSIGN(MessagePumpOzone);

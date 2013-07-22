@@ -65,11 +65,6 @@ MessagePumpGtk::MessagePumpGtk() : MessagePumpGlib() {
   gdk_event_handler_set(&EventDispatcher, this, NULL);
 }
 
-MessagePumpGtk::~MessagePumpGtk() {
-  gdk_event_handler_set(reinterpret_cast<GdkEventFunc>(gtk_main_do_event),
-                        this, NULL);
-}
-
 void MessagePumpGtk::DispatchEvents(GdkEvent* event) {
   UNSHIPPED_TRACE_EVENT1("task", "MessagePumpGtk::DispatchEvents",
                          "type", EventToTypeString(event));
@@ -95,6 +90,11 @@ Display* MessagePumpGtk::GetDefaultXDisplay() {
     return xdisplay;
   }
   return GDK_DISPLAY_XDISPLAY(display);
+}
+
+MessagePumpGtk::~MessagePumpGtk() {
+  gdk_event_handler_set(reinterpret_cast<GdkEventFunc>(gtk_main_do_event),
+                        this, NULL);
 }
 
 void MessagePumpGtk::WillProcessEvent(GdkEvent* event) {

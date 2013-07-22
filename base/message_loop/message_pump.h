@@ -6,13 +6,13 @@
 #define BASE_MESSAGE_LOOP_MESSAGE_PUMP_H_
 
 #include "base/base_export.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/memory/ref_counted.h"
 
 namespace base {
 
 class TimeTicks;
 
-class BASE_EXPORT MessagePump : public NonThreadSafe {
+class BASE_EXPORT MessagePump : public RefCountedThreadSafe<MessagePump> {
  public:
   // Please see the comments above the Run method for an illustration of how
   // these delegate methods are used.
@@ -42,7 +42,6 @@ class BASE_EXPORT MessagePump : public NonThreadSafe {
   };
 
   MessagePump();
-  virtual ~MessagePump();
 
   // The Run method is called to enter the message pump's run loop.
   //
@@ -119,6 +118,10 @@ class BASE_EXPORT MessagePump : public NonThreadSafe {
   // cancelling any pending DoDelayedWork callback.  This method may only be
   // used on the thread that called Run.
   virtual void ScheduleDelayedWork(const TimeTicks& delayed_work_time) = 0;
+
+ protected:
+  virtual ~MessagePump();
+  friend class RefCountedThreadSafe<MessagePump>;
 };
 
 }  // namespace base

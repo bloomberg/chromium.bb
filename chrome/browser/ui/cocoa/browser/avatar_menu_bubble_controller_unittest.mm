@@ -5,7 +5,6 @@
 #import "chrome/browser/ui/cocoa/browser/avatar_menu_bubble_controller.h"
 
 #include "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_pump_mac.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
@@ -143,7 +142,7 @@ TEST_F(AvatarMenuBubbleControllerTest, PerformLayout) {
 @interface TestingAvatarMenuItemController : AvatarMenuItemController
                                                  <NSAnimationDelegate> {
  @private
-  scoped_ptr<base::MessagePumpNSRunLoop> pump_;
+  scoped_refptr<base::MessagePumpNSRunLoop> pump_;
 }
 // After calling |-highlightForEventType:| an animation will possibly be
 // started. Since the animation is non-blocking, the run loop will need to be
@@ -153,8 +152,8 @@ TEST_F(AvatarMenuBubbleControllerTest, PerformLayout) {
 
 @implementation TestingAvatarMenuItemController
 - (void)runMessagePump {
-  if (!pump_)
-    pump_.reset(new base::MessagePumpNSRunLoop);
+  if (!pump_.get())
+    pump_ = new base::MessagePumpNSRunLoop;
   pump_->Run(NULL);
 }
 

@@ -9,7 +9,6 @@
 #include "base/mac/scoped_cffiledescriptorref.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_pump_mac.h"
 #include "base/observer_list.h"
 
@@ -71,8 +70,8 @@ class BASE_EXPORT MessagePumpIOSForIO : public MessagePumpNSRunLoop {
               CFRunLoopSourceRef fd_source,
               bool is_persistent);
 
-    void set_pump(base::WeakPtr<MessagePumpIOSForIO> pump) { pump_ = pump; }
-    const base::WeakPtr<MessagePumpIOSForIO>& pump() const { return pump_; }
+    void set_pump(MessagePumpIOSForIO* pump) { pump_ = pump; }
+    MessagePumpIOSForIO* pump() const { return pump_; }
 
     void set_watcher(Watcher* watcher) { watcher_ = watcher; }
 
@@ -83,7 +82,7 @@ class BASE_EXPORT MessagePumpIOSForIO : public MessagePumpNSRunLoop {
     base::mac::ScopedCFFileDescriptorRef fdref_;
     CFOptionFlags callback_types_;
     base::ScopedCFTypeRef<CFRunLoopSourceRef> fd_source_;
-    base::WeakPtr<MessagePumpIOSForIO> pump_;
+    scoped_refptr<MessagePumpIOSForIO> pump_;
     Watcher* watcher_;
 
     DISALLOW_COPY_AND_ASSIGN(FileDescriptorWatcher);
@@ -96,7 +95,6 @@ class BASE_EXPORT MessagePumpIOSForIO : public MessagePumpNSRunLoop {
   };
 
   MessagePumpIOSForIO();
-  virtual ~MessagePumpIOSForIO();
 
   // Have the current thread's message loop watch for a a situation in which
   // reading/writing to the FD can be performed without blocking.
@@ -120,6 +118,9 @@ class BASE_EXPORT MessagePumpIOSForIO : public MessagePumpNSRunLoop {
   void AddIOObserver(IOObserver* obs);
   void RemoveIOObserver(IOObserver* obs);
 
+ protected:
+  virtual ~MessagePumpIOSForIO();
+
  private:
   friend class MessagePumpIOSForIOTest;
 
@@ -132,8 +133,6 @@ class BASE_EXPORT MessagePumpIOSForIO : public MessagePumpNSRunLoop {
 
   ObserverList<IOObserver> io_observers_;
   ThreadChecker watch_file_descriptor_caller_checker_;
-
-  base::WeakPtrFactory<MessagePumpIOSForIO> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MessagePumpIOSForIO);
 };

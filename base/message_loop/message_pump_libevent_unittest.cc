@@ -122,7 +122,7 @@ class DeleteWatcher : public BaseWatcher {
 };
 
 TEST_F(MessagePumpLibeventTest, DeleteWatcher) {
-  scoped_ptr<MessagePumpLibevent> pump(new MessagePumpLibevent);
+  scoped_refptr<MessagePumpLibevent> pump(new MessagePumpLibevent);
   MessagePumpLibevent::FileDescriptorWatcher* watcher =
       new MessagePumpLibevent::FileDescriptorWatcher;
   DeleteWatcher delegate(watcher);
@@ -147,7 +147,7 @@ class StopWatcher : public BaseWatcher {
 };
 
 TEST_F(MessagePumpLibeventTest, StopWatcher) {
-  scoped_ptr<MessagePumpLibevent> pump(new MessagePumpLibevent);
+  scoped_refptr<MessagePumpLibevent> pump(new MessagePumpLibevent);
   MessagePumpLibevent::FileDescriptorWatcher watcher;
   StopWatcher delegate(&watcher);
   pump->WatchFileDescriptor(pipefds_[1],

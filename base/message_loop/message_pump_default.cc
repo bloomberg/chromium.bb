@@ -18,9 +18,6 @@ MessagePumpDefault::MessagePumpDefault()
       event_(false, false) {
 }
 
-MessagePumpDefault::~MessagePumpDefault() {
-}
-
 void MessagePumpDefault::Run(Delegate* delegate) {
   DCHECK(keep_running_) << "Quit must have been called outside of Run!";
 

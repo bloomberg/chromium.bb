@@ -13,10 +13,7 @@
 #include "base/callback_forward.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
-#include "base/message_loop/incoming_task_queue.h"
 #include "base/message_loop/message_loop_proxy.h"
-#include "base/message_loop/message_loop_proxy_impl.h"
 #include "base/message_loop/message_pump.h"
 #include "base/observer_list.h"
 #include "base/pending_task.h"
@@ -49,12 +46,12 @@
 namespace base {
 
 class HistogramBase;
+class MessageLoopLockTest;
 class RunLoop;
 class ThreadTaskRunnerHandle;
 #if defined(OS_ANDROID)
 class MessagePumpForUI;
 #endif
-class WaitableEvent;
 
 // A MessageLoop is used to process events for a particular thread.  There is
 // at most one MessageLoop instance per thread.
@@ -286,7 +283,7 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
 
   // Gets the message loop proxy associated with this message loop.
   scoped_refptr<MessageLoopProxy> message_loop_proxy() {
-    return message_loop_proxy_;
+    return message_loop_proxy_.get();
   }
 
   // Enables or disables the recursive task processing. This happens in the case
@@ -362,9 +359,22 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
   void AddTaskObserver(TaskObserver* task_observer);
   void RemoveTaskObserver(TaskObserver* task_observer);
 
+  // Returns true if the message loop has high resolution timers enabled.
+  // Provided for testing.
+  bool high_resolution_timers_enabled() {
+#if defined(OS_WIN)
+    return !high_resolution_timer_expiration_.is_null();
+#else
+    return true;
+#endif
+  }
+
   // When we go into high resolution timer mode, we will stay in hi-res mode
   // for at least 1s.
   static const int kHighResolutionTimerModeLeaseTimeMs = 1000;
+
+  // Asserts that the MessageLoop is "idle".
+  void AssertIdle() const;
 
 #if defined(OS_WIN)
   void set_os_modal_loop(bool os_modal_loop) {
@@ -379,18 +389,6 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
   // Can only be called from the thread that owns the MessageLoop.
   bool is_running() const;
 
-  // Returns true if the message loop has high resolution timers enabled.
-  // Provided for testing.
-  bool IsHighResolutionTimerEnabledForTesting();
-
-  // Returns true if the message loop is "idle". Provided for testing.
-  bool IsIdleForTesting();
-
-  // Takes the incoming queue lock, signals |caller_wait| and waits until
-  // |caller_signal| is signalled.
-  void LockWaitUnLockForTesting(WaitableEvent* caller_wait,
-                                WaitableEvent* caller_signal);
-
   //----------------------------------------------------------------------------
  protected:
 
@@ -404,11 +402,11 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
   }
 #endif
 
-  scoped_ptr<MessagePump> pump_;
+  scoped_refptr<MessagePump> pump_;
 
  private:
-  friend class internal::IncomingTaskQueue;
   friend class RunLoop;
+  friend class MessageLoopLockTest;
 
   // A function to encapsulate all the exception handling capability in the
   // stacks around the running of a main message loop.  It will run the message
@@ -438,23 +436,34 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
   // Adds the pending task to delayed_work_queue_.
   void AddToDelayedWorkQueue(const PendingTask& pending_task);
 
+  // This function attempts to add pending task to our incoming_queue_.
+  // The append can only possibly fail when |use_try_lock| is true.
+  //
+  // When |use_try_lock| is true, then this call will avoid blocking if
+  // the related lock is already held, and will in that case (when the
+  // lock is contended) fail to perform the append, and will return false.
+  //
+  // If the call succeeds to append to the queue, then this call
+  // will return true.
+  //
+  // In all cases, the caller retains ownership of |pending_task|, but this
+  // function will reset the value of pending_task->task.  This is needed to
+  // ensure that the posting call stack does not retain pending_task->task
+  // beyond this function call.
+  bool AddToIncomingQueue(PendingTask* pending_task, bool use_try_lock);
+
+  // Load tasks from the incoming_queue_ into work_queue_ if the latter is
+  // empty.  The former requires a lock to access, while the latter is directly
+  // accessible on this thread.
+  void ReloadWorkQueue();
+
   // Delete tasks that haven't run yet without running them.  Used in the
   // destructor to make sure all the task's destructors get called.  Returns
   // true if some work was done.
   bool DeletePendingTasks();
 
-  // Creates a process-wide unique ID to represent this task in trace events.
-  // This will be mangled with a Process ID hash to reduce the likelyhood of
-  // colliding with MessageLoop pointers on other processes.
-  uint64 GetTaskTraceID(const PendingTask& task);
-
-  // Loads tasks from the incoming queue to |work_queue_| if the latter is
-  // empty.
-  void ReloadWorkQueue();
-
-  // Wakes up the message pump. Can be called on any thread. The caller is
-  // responsible for synchronizing ScheduleWork() calls.
-  void ScheduleWork(bool was_empty);
+  // Calculates the time at which a PendingTask should run.
+  TimeTicks CalculateDelayedRuntime(TimeDelta delay);
 
   // Start recording histogram info about events and action IF it was enabled
   // and IF the statistics recorder can accept a registration of our histogram.
@@ -489,30 +498,40 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
 
   ObserverList<DestructionObserver> destruction_observers_;
 
-  bool exception_restoration_;
-
   // A recursion block that prevents accidentally running additional tasks when
   // insider a (accidentally induced?) nested message pump.
   bool nestable_tasks_allowed_;
 
-#if defined(OS_WIN)
-  // Should be set to true before calling Windows APIs like TrackPopupMenu, etc
-  // which enter a modal message loop.
-  bool os_modal_loop_;
-#endif
+  bool exception_restoration_;
 
   std::string thread_name_;
   // A profiling histogram showing the counts of various messages and events.
   HistogramBase* message_histogram_;
 
+  // An incoming queue of tasks that are acquired under a mutex for processing
+  // on this instance's thread. These tasks have not yet been sorted out into
+  // items for our work_queue_ vs delayed_work_queue_.
+  TaskQueue incoming_queue_;
+  // Protect access to incoming_queue_.
+  mutable Lock incoming_queue_lock_;
+
   RunLoop* run_loop_;
+
+#if defined(OS_WIN)
+  TimeTicks high_resolution_timer_expiration_;
+  // Should be set to true before calling Windows APIs like TrackPopupMenu, etc
+  // which enter a modal message loop.
+  bool os_modal_loop_;
+#endif
+
+  // The next sequence number to use for delayed tasks. Updating this counter is
+  // protected by incoming_queue_lock_.
+  int next_sequence_num_;
 
   ObserverList<TaskObserver> task_observers_;
 
-  scoped_refptr<internal::IncomingTaskQueue> incoming_task_queue_;
-
-  // The message loop proxy associated with this message loop.
-  scoped_refptr<internal::MessageLoopProxyImpl> message_loop_proxy_;
+  // The message loop proxy associated with this message loop, if one exists.
+  scoped_refptr<MessageLoopProxy> message_loop_proxy_;
   scoped_ptr<ThreadTaskRunnerHandle> thread_task_runner_handle_;
 
   template <class T, class R> friend class base::subtle::DeleteHelperInternal;

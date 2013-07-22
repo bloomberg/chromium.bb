@@ -43,7 +43,6 @@ class MessagePumpDispatcher {
 class BASE_EXPORT MessagePumpGtk : public MessagePumpGlib {
  public:
   MessagePumpGtk();
-  virtual ~MessagePumpGtk();
 
   // Dispatch an available GdkEvent. Essentially this allows a subclass to do
   // some task before/after calling the default handler (EventDispatcher).
@@ -51,6 +50,9 @@ class BASE_EXPORT MessagePumpGtk : public MessagePumpGlib {
 
   // Returns default X Display.
   static Display* GetDefaultXDisplay();
+
+ protected:
+  virtual ~MessagePumpGtk();
 
  private:
   // Invoked from EventDispatcher. Notifies all observers we're about to

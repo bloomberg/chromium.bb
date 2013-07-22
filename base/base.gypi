@@ -300,8 +300,6 @@
           'memory/singleton.h',
           'memory/weak_ptr.cc',
           'memory/weak_ptr.h',
-          'message_loop/incoming_task_queue.cc',
-          'message_loop/incoming_task_queue.h',
           'message_loop/message_loop.cc',
           'message_loop/message_loop.h',
           'message_loop/message_loop_proxy.cc',

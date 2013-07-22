@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_pump_mac.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_animation.h"
@@ -13,7 +12,7 @@
                                                    <NSAnimationDelegate> {
  @private
   CGFloat frameCount_;
-  scoped_ptr<base::MessagePumpNSRunLoop> message_pump_;
+  scoped_refptr<base::MessagePumpNSRunLoop> message_pump_;
 }
 
 - (void)runAnimation:(NSAnimation*)animation;
@@ -24,7 +23,7 @@
 
 - (id)init {
   if ((self = [super init]))
-    message_pump_.reset(new base::MessagePumpNSRunLoop);
+    message_pump_ = new base::MessagePumpNSRunLoop;
   return self;
 }
 

@@ -6,24 +6,17 @@
 #define BASE_MESSAGE_LOOP_MESSAGE_LOOP_PROXY_IMPL_H_
 
 #include "base/base_export.h"
-#include "base/memory/ref_counted.h"
+#include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
-#include "base/pending_task.h"
-#include "base/threading/platform_thread.h"
+#include "base/synchronization/lock.h"
 
 namespace base {
-namespace internal {
-
-class IncomingTaskQueue;
 
 // A stock implementation of MessageLoopProxy that is created and managed by a
 // MessageLoop. For now a MessageLoopProxyImpl can only be created as part of a
 // MessageLoop.
 class BASE_EXPORT MessageLoopProxyImpl : public MessageLoopProxy {
  public:
-  explicit MessageLoopProxyImpl(
-      scoped_refptr<IncomingTaskQueue> incoming_queue);
-
   // MessageLoopProxy implementation
   virtual bool PostDelayedTask(const tracked_objects::Location& from_here,
                                const base::Closure& task,
@@ -34,20 +27,36 @@ class BASE_EXPORT MessageLoopProxyImpl : public MessageLoopProxy {
       base::TimeDelta delay) OVERRIDE;
   virtual bool RunsTasksOnCurrentThread() const OVERRIDE;
 
- private:
-  friend class RefCountedThreadSafe<MessageLoopProxyImpl>;
+ protected:
   virtual ~MessageLoopProxyImpl();
 
-  // THe incoming queue receiving all posted tasks.
-  scoped_refptr<IncomingTaskQueue> incoming_queue_;
+  // Override OnDestruct so that we can delete the object on the target message
+  // loop if it still exists.
+  virtual void OnDestruct() const OVERRIDE;
 
-  // ID of the thread |this| was created on.
-  PlatformThreadId valid_thread_id_;
+ private:
+  // Allow the MessageLoop to create a MessageLoopProxyImpl.
+  friend class MessageLoop;
+  friend class DeleteHelper<MessageLoopProxyImpl>;
+
+  MessageLoopProxyImpl();
+
+  // Called directly by MessageLoop::~MessageLoop.
+  virtual void WillDestroyCurrentMessageLoop();
+
+
+  bool PostTaskHelper(const tracked_objects::Location& from_here,
+                      const base::Closure& task,
+                      base::TimeDelta delay,
+                      bool nestable);
+
+  // The lock that protects access to target_message_loop_.
+  mutable base::Lock message_loop_lock_;
+  MessageLoop* target_message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageLoopProxyImpl);
 };
 
-}  // namespace internal
 }  // namespace base
 
 #endif  // BASE_MESSAGE_LOOP_MESSAGE_LOOP_PROXY_IMPL_H_

@@ -72,8 +72,6 @@ class Waitable {
 
 // The MessagePumpForUI implementation for test purpose.
 class MessagePumpForUIStub : public base::MessagePumpForUI {
-  virtual ~MessagePumpForUIStub() {}
-
   virtual void Start(base::MessagePump::Delegate* delegate) OVERRIDE {
     NOTREACHED() << "The Start() method shouldn't be called in test, using"
         " Run() method should be used.";
@@ -131,6 +129,9 @@ class MessagePumpForUIStub : public base::MessagePumpForUI {
       const base::TimeTicks& delayed_work_time) OVERRIDE {
     Waitable::GetInstance()->Signal();
   }
+
+ protected:
+  virtual ~MessagePumpForUIStub() {}
 };
 
 base::MessagePump* CreateMessagePumpForUIStub() {
