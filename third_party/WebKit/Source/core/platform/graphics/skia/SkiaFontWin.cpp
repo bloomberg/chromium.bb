@@ -37,12 +37,12 @@
 #include "core/platform/graphics/SimpleFontData.h"
 #include "core/platform/graphics/chromium/FontPlatformDataChromiumWin.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"
-
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkDevice.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "third_party/skia/include/core/SkTemplates.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 
@@ -193,10 +193,8 @@ void paintSkiaText(GraphicsContext* context,
 {
     int size;
     int paintTextFlags;
-    SkTypeface* face = CreateTypefaceFromHFont(hfont, &size, &paintTextFlags);
-    SkAutoUnref aur(face);
-
-    paintSkiaText(context, hfont, face, size, paintTextFlags, numGlyphs, glyphs, advances, offsets, origin, textRect);
+    RefPtr<SkTypeface> face = CreateTypefaceFromHFont(hfont, &size, &paintTextFlags);
+    paintSkiaText(context, hfont, face.get(), size, paintTextFlags, numGlyphs, glyphs, advances, offsets, origin, textRect);
 }
 
 }  // namespace WebCore

@@ -102,7 +102,7 @@ static int computePaintTextFlags(const LOGFONT& lf)
     return textFlags & getDefaultGDITextFlags();
 }
 
-SkTypeface* CreateTypefaceFromHFont(HFONT hfont, int* size, int* paintTextFlags)
+PassRefPtr<SkTypeface> CreateTypefaceFromHFont(HFONT hfont, int* size, int* paintTextFlags)
 {
     LOGFONT info;
     GetObject(hfont, sizeof(info), &info);
@@ -114,7 +114,7 @@ SkTypeface* CreateTypefaceFromHFont(HFONT hfont, int* size, int* paintTextFlags)
     }
     if (paintTextFlags)
         *paintTextFlags = computePaintTextFlags(info);
-    return SkCreateTypefaceFromLOGFONT(info);
+    return adoptRef(SkCreateTypefaceFromLOGFONT(info));
 }
 
 FontPlatformData::FontPlatformData(WTF::HashTableDeletedValueType)
@@ -123,7 +123,6 @@ FontPlatformData::FontPlatformData(WTF::HashTableDeletedValueType)
     , m_orientation(Horizontal)
     , m_scriptCache(0)
     , m_scriptFontProperties(0)
-    , m_typeface(0)
     , m_paintTextFlags(0)
 {
 }
@@ -134,7 +133,6 @@ FontPlatformData::FontPlatformData()
     , m_orientation(Horizontal)
     , m_scriptCache(0)
     , m_scriptFontProperties(0)
-    , m_typeface(0)
     , m_paintTextFlags(0)
 {
 }
@@ -156,7 +154,6 @@ FontPlatformData::FontPlatformData(float size, bool bold, bool oblique)
     , m_orientation(Horizontal)
     , m_scriptCache(0)
     , m_scriptFontProperties(0)
-    , m_typeface(0)
     , m_paintTextFlags(0)
 {
 }
@@ -170,7 +167,6 @@ FontPlatformData::FontPlatformData(const FontPlatformData& data)
     , m_typeface(data.m_typeface)
     , m_paintTextFlags(data.m_paintTextFlags)
 {
-    SkSafeRef(m_typeface);
 }
 
 FontPlatformData::FontPlatformData(const FontPlatformData& data, float textSize)
@@ -182,7 +178,6 @@ FontPlatformData::FontPlatformData(const FontPlatformData& data, float textSize)
     , m_typeface(data.m_typeface)
     , m_paintTextFlags(data.m_paintTextFlags)
 {
-    SkSafeRef(m_typeface);
 }
 
 FontPlatformData& FontPlatformData::operator=(const FontPlatformData& data)
@@ -191,7 +186,7 @@ FontPlatformData& FontPlatformData::operator=(const FontPlatformData& data)
         m_font = data.m_font;
         m_size = data.m_size;
         m_orientation = data.m_orientation;
-        SkRefCnt_SafeAssign(m_typeface, data.m_typeface);
+        m_typeface = data.m_typeface;
         m_paintTextFlags = data.m_paintTextFlags;
 
         // The following fields will get re-computed if necessary.
@@ -206,8 +201,6 @@ FontPlatformData& FontPlatformData::operator=(const FontPlatformData& data)
 
 FontPlatformData::~FontPlatformData()
 {
-    SkSafeUnref(m_typeface);
-
     ScriptFreeCache(&m_scriptCache);
     m_scriptCache = 0;
 
