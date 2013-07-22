@@ -25,15 +25,31 @@
 #include "chrome/common/nacl_paths.h"
 #include "components/nacl/common/nacl_switches.h"
 
-NaClForkDelegate::NaClForkDelegate()
-    : status_(kNaClHelperUnused),
-      fd_(-1) {}
+namespace {
+
+// Using nacl_helper_bootstrap is not necessary on x86-64 because
+// NaCl's x86-64 sandbox is not zero-address-based.  Starting
+// nacl_helper through nacl_helper_bootstrap works on x86-64, but it
+// leaves nacl_helper_bootstrap mapped at a fixed address at the
+// bottom of the address space, which is undesirable because it
+// effectively defeats ASLR.
+#if defined(ARCH_CPU_X86_64)
+const bool kUseNaClBootstrap = false;
+#else
+const bool kUseNaClBootstrap = true;
+#endif
 
 // Note these need to match up with their counterparts in nacl_helper_linux.c
 // and nacl_helper_bootstrap_linux.c.
 const char kNaClHelperReservedAtZero[] =
     "--reserved_at_zero=0xXXXXXXXXXXXXXXXX";
 const char kNaClHelperRDebug[] = "--r_debug=0xXXXXXXXXXXXXXXXX";
+
+}
+
+NaClForkDelegate::NaClForkDelegate()
+    : status_(kNaClHelperUnused),
+      fd_(-1) {}
 
 void NaClForkDelegate::Init(const int sandboxdesc) {
   VLOG(1) << "NaClForkDelegate::Init()";
@@ -53,16 +69,22 @@ void NaClForkDelegate::Init(const int sandboxdesc) {
   base::FilePath helper_bootstrap_exe;
   if (!PathService::Get(nacl::FILE_NACL_HELPER, &helper_exe)) {
     status_ = kNaClHelperMissing;
-  } else if (!PathService::Get(nacl::FILE_NACL_HELPER_BOOTSTRAP,
+  } else if (kUseNaClBootstrap &&
+             !PathService::Get(nacl::FILE_NACL_HELPER_BOOTSTRAP,
                                &helper_bootstrap_exe)) {
     status_ = kNaClHelperBootstrapMissing;
   } else if (RunningOnValgrind()) {
     status_ = kNaClHelperValgrind;
   } else {
-    CommandLine cmd_line(helper_bootstrap_exe);
-    cmd_line.AppendArgPath(helper_exe);
-    cmd_line.AppendArgNative(kNaClHelperReservedAtZero);
-    cmd_line.AppendArgNative(kNaClHelperRDebug);
+    CommandLine cmd_line(CommandLine::NO_PROGRAM);
+    if (kUseNaClBootstrap) {
+      cmd_line.SetProgram(helper_bootstrap_exe);
+      cmd_line.AppendArgPath(helper_exe);
+      cmd_line.AppendArgNative(kNaClHelperReservedAtZero);
+      cmd_line.AppendArgNative(kNaClHelperRDebug);
+    } else {
+      cmd_line.SetProgram(helper_exe);
+    }
     base::LaunchOptions options;
     options.fds_to_remap = &fds_to_map;
     options.clone_flags = CLONE_FS | SIGCHLD;
