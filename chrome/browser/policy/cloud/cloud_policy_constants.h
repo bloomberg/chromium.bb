@@ -104,6 +104,12 @@ enum DeviceMode {
 // A pair that combines a policy fetch type and entity ID.
 typedef std::pair<std::string, std::string> PolicyNamespaceKey;
 
+// Returns the Chrome user policy type to use. This allows overridding the
+// default user policy type on Android for testing purposes.
+// TODO(joaodasilva): remove this once the server is ready.
+// http://crbug.com/248527
+const char* GetChromeUserPolicyType();
+
 }  // namespace policy
 
 #endif  // CHROME_BROWSER_POLICY_CLOUD_CLOUD_POLICY_CONSTANTS_H_

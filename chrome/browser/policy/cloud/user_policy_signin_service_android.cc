@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
@@ -18,10 +19,22 @@
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "net/base/network_change_notifier.h"
 
 namespace policy {
+
+namespace {
+
+enterprise_management::DeviceRegisterRequest::Type GetRegistrationType() {
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kFakeCloudPolicyType))
+    return enterprise_management::DeviceRegisterRequest::BROWSER;
+  return enterprise_management::DeviceRegisterRequest::ANDROID_BROWSER;
+}
+
+}  // namespace
 
 UserPolicySigninService::UserPolicySigninService(Profile* profile)
     : UserPolicySigninServiceBase(profile),
@@ -43,14 +56,12 @@ void UserPolicySigninService::RegisterPolicyClient(
 
   // Fire off the registration process. Callback keeps the CloudPolicyClient
   // alive for the length of the registration process.
-  // TODO(joaodasilva): use DeviceRegisterRequest::ANDROID_BROWSER here once
-  // the server is ready. http://crbug.com/248527
   const bool force_load_policy = false;
   registration_helper_.reset(new CloudPolicyClientRegistrationHelper(
       profile()->GetRequestContext(),
       policy_client.get(),
       force_load_policy,
-      enterprise_management::DeviceRegisterRequest::BROWSER));
+      GetRegistrationType()));
   registration_helper_->StartRegistration(
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile()),
       username,
@@ -132,14 +143,12 @@ void UserPolicySigninService::RegisterCloudPolicyService() {
   profile()->GetPrefs()->SetInt64(prefs::kLastPolicyCheckTime,
                                   base::Time::Now().ToInternalValue());
 
-  // TODO(joaodasilva): use DeviceRegisterRequest::ANDROID_BROWSER here once
-  // the server is ready. http://crbug.com/248527
   const bool force_load_policy = false;
   registration_helper_.reset(new CloudPolicyClientRegistrationHelper(
       profile()->GetRequestContext(),
       GetManager()->core()->client(),
       force_load_policy,
-      enterprise_management::DeviceRegisterRequest::BROWSER));
+      GetRegistrationType()));
   registration_helper_->StartRegistration(
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile()),
       username,

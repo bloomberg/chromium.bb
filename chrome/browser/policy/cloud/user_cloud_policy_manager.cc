@@ -21,7 +21,7 @@ UserCloudPolicyManager::UserCloudPolicyManager(
     Profile* profile,
     scoped_ptr<UserCloudPolicyStore> store)
     : CloudPolicyManager(
-          PolicyNamespaceKey(dm_protocol::kChromeUserPolicyType, std::string()),
+          PolicyNamespaceKey(GetChromeUserPolicyType(), std::string()),
           store.get()),
       profile_(profile),
       store_(store.Pass()) {

@@ -393,9 +393,10 @@ extern const char kEnableSpdyProxyAuth[];
 #endif  // defined(OS_ANDROID) || defined(OS_IOS)
 
 #if defined(OS_ANDROID)
-extern const char kEnableTranslate[];
-extern const char kTabletUI[];
 extern const char kEnableNewNTP[];
+extern const char kEnableTranslate[];
+extern const char kFakeCloudPolicyType[];
+extern const char kTabletUI[];
 #endif
 
 #if defined(USE_ASH)

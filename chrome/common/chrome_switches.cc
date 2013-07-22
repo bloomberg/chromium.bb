@@ -1442,14 +1442,19 @@ const char kEnableSpdyProxyAuth[]           = "enable-spdy-proxy-auth";
 #endif  // defined(OS_ANDROID) || defined(OS_IOS)
 
 #if defined(OS_ANDROID)
+// Enables the new NTP.
+const char kEnableNewNTP[]                  = "enable-new-ntp";
+
 // Pops the translate infobar if possible.
 const char kEnableTranslate[]               = "enable-translate";
 
+// Registers for cloud policy using the BROWSER client type instead of the
+// ANDROID_BROWSER type. This enables skipping the server whitelist.
+// TODO(joaodasilva): remove this. http://crbug.com/248527
+const char kFakeCloudPolicyType[]           = "fake-cloud-policy-type";
+
 // Uses the tablet specific UI components when available.
 const char kTabletUI[]                      = "tablet-ui";
-
-// Enables the new NTP.
-const char kEnableNewNTP[]                  = "enable-new-ntp";
 #endif
 
 #if defined(USE_ASH)

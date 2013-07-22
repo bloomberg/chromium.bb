@@ -4,6 +4,9 @@
 
 #include "chrome/browser/policy/cloud/cloud_policy_constants.h"
 
+#include "base/command_line.h"
+#include "chrome/common/chrome_switches.h"
+
 namespace policy {
 
 // Constants related to the device management protocol.
@@ -32,10 +35,10 @@ const char kValueUserAffiliationManaged[] = "managed";
 const char kValueUserAffiliationNone[] = "none";
 
 const char kChromeDevicePolicyType[] = "google/chromeos/device";
-// TODO(joaodasilva): add a new constant for Android here.
-// http://crbug.com/248527
 #if defined(OS_CHROMEOS)
 const char kChromeUserPolicyType[] = "google/chromeos/user";
+#elif defined(OS_ANDROID)
+const char kChromeUserPolicyType[] = "google/android/user";
 #else
 const char kChromeUserPolicyType[] = "google/chrome/user";
 #endif
@@ -43,5 +46,14 @@ const char kChromePublicAccountPolicyType[] = "google/chromeos/publicaccount";
 const char kChromeExtensionPolicyType[] = "google/chrome/extension";
 
 }  // namespace dm_protocol
+
+const char* GetChromeUserPolicyType() {
+#if defined(OS_ANDROID)
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kFakeCloudPolicyType))
+    return "google/chrome/user";
+#endif
+  return dm_protocol::kChromeUserPolicyType;
+}
 
 }  // namespace policy
