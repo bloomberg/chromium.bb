@@ -57,7 +57,8 @@ interface PPB_NaCl_Private {
                              [in] PP_Bool enable_ppapi_dev,
                              [in] PP_Bool enable_dyncode_syscalls,
                              [in] PP_Bool enable_exception_handling,
-                             [out] mem_t imc_handle);
+                             [out] mem_t imc_handle,
+                             [out] PP_Var error_message);
 
   /* This function starts the IPC proxy so the nexe can communicate with the
    * browser. Returns PP_NACL_OK on success, otherwise a result code indicating

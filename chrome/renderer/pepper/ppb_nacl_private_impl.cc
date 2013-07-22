@@ -85,10 +85,12 @@ PP_NaClResult LaunchSelLdr(PP_Instance instance,
                            PP_Bool enable_ppapi_dev,
                            PP_Bool enable_dyncode_syscalls,
                            PP_Bool enable_exception_handling,
-                           void* imc_handle) {
+                           void* imc_handle,
+                           struct PP_Var* error_message) {
   nacl::FileDescriptor result_socket;
   IPC::Sender* sender = content::RenderThread::Get();
   DCHECK(sender);
+  *error_message = PP_MakeUndefined();
   int routing_id = 0;
   // If the nexe uses ppapi APIs, we need a routing ID.
   // To get the routing ID, we must be on the main thread.
@@ -111,6 +113,8 @@ PP_NaClResult LaunchSelLdr(PP_Instance instance,
     perm_bits |= ppapi::PERMISSION_DEV;
   instance_info.permissions =
       ppapi::PpapiPermissions::GetForCommandLine(perm_bits);
+  std::string error_message_string;
+  nacl::NaClLaunchResult launch_result;
 
   if (!sender->Send(new NaClHostMsg_LaunchNaCl(
           nacl::NaClLaunchParams(instance_info.url.spec(),
@@ -119,13 +123,18 @@ PP_NaClResult LaunchSelLdr(PP_Instance instance,
                                  PP_ToBool(uses_irt),
                                  PP_ToBool(enable_dyncode_syscalls),
                                  PP_ToBool(enable_exception_handling)),
-          &result_socket,
-          &instance_info.channel_handle,
-          &instance_info.plugin_pid,
-          &instance_info.plugin_child_id))) {
+          &launch_result,
+          &error_message_string))) {
     return PP_NACL_FAILED;
   }
-
+  if (!error_message_string.empty()) {
+    *error_message = ppapi::StringVar::StringToPPVar(error_message_string);
+    return PP_NACL_FAILED;
+  }
+  result_socket = launch_result.imc_channel_handle;
+  instance_info.channel_handle = launch_result.ipc_channel_handle;
+  instance_info.plugin_pid = launch_result.plugin_pid;
+  instance_info.plugin_child_id = launch_result.plugin_child_id;
   // Don't save instance_info if channel handle is invalid.
   bool invalid_handle = instance_info.channel_handle.name.empty();
 #if defined(OS_POSIX)

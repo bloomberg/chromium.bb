@@ -29,6 +29,13 @@ IPC_STRUCT_TRAITS_BEGIN(nacl::NaClLaunchParams)
   IPC_STRUCT_TRAITS_MEMBER(enable_exception_handling)
 IPC_STRUCT_TRAITS_END()
 
+IPC_STRUCT_TRAITS_BEGIN(nacl::NaClLaunchResult)
+  IPC_STRUCT_TRAITS_MEMBER(imc_channel_handle)
+  IPC_STRUCT_TRAITS_MEMBER(ipc_channel_handle)
+  IPC_STRUCT_TRAITS_MEMBER(plugin_pid)
+  IPC_STRUCT_TRAITS_MEMBER(plugin_child_id)
+IPC_STRUCT_TRAITS_END()
+
 IPC_STRUCT_TRAITS_BEGIN(nacl::PnaclCacheInfo)
   IPC_STRUCT_TRAITS_MEMBER(pexe_url)
   IPC_STRUCT_TRAITS_MEMBER(abi_version)
@@ -41,12 +48,10 @@ IPC_STRUCT_TRAITS_END()
 // a new instance of the Native Client process. The browser will launch
 // the process and return an IPC channel handle. This handle will only
 // be valid if the NaCl IPC proxy is enabled.
-IPC_SYNC_MESSAGE_CONTROL1_4(NaClHostMsg_LaunchNaCl,
+IPC_SYNC_MESSAGE_CONTROL1_2(NaClHostMsg_LaunchNaCl,
                             nacl::NaClLaunchParams /* launch_params */,
-                            nacl::FileDescriptor /* imc channel handle */,
-                            IPC::ChannelHandle /* ipc_channel_handle */,
-                            base::ProcessId /* plugin_pid */,
-                            int /* plugin_child_id */)
+                            nacl::NaClLaunchResult /* launch_result */,
+                            std::string /* error_message */)
 
 // A renderer sends this to the browser process when it wants to
 // open a file for from the Pnacl component directory.

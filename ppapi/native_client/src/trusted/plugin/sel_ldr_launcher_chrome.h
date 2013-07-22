@@ -19,7 +19,8 @@ class SelLdrLauncherChrome : public nacl::SelLdrLauncherBase {
                      bool uses_ppapi,
                      bool enable_ppapi_dev,
                      bool enable_dyncode_syscalls,
-                     bool enable_exception_handling);
+                     bool enable_exception_handling,
+                     nacl::string* error_message);
 };
 
 }  // namespace plugin

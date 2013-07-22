@@ -1415,7 +1415,8 @@ void Plugin::ReportLoadError(const ErrorInfo& error_info) {
   nacl::string message = nacl::string("NaCl module load failed: ") +
       error_info.message();
   set_last_error_string(message);
-  AddToConsole(message);
+  AddToConsole(nacl::string("NaCl module load failed: ") +
+               error_info.console_message());
   // Inform JavaScript that loading encountered an error and is complete.
   EnqueueProgressEvent(kProgressEventError);
   EnqueueProgressEvent(kProgressEventLoadEnd);

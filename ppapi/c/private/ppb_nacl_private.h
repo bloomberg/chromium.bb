@@ -13,6 +13,7 @@
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_macros.h"
 #include "ppapi/c/pp_stdint.h"
+#include "ppapi/c/pp_var.h"
 
 #define PPB_NACL_PRIVATE_INTERFACE_1_0 "PPB_NaCl_Private;1.0"
 #define PPB_NACL_PRIVATE_INTERFACE PPB_NACL_PRIVATE_INTERFACE_1_0
@@ -83,7 +84,8 @@ struct PPB_NaCl_Private_1_0 {
                                 PP_Bool enable_ppapi_dev,
                                 PP_Bool enable_dyncode_syscalls,
                                 PP_Bool enable_exception_handling,
-                                void* imc_handle);
+                                void* imc_handle,
+                                struct PP_Var* error_message);
   /* This function starts the IPC proxy so the nexe can communicate with the
    * browser. Returns PP_NACL_OK on success, otherwise a result code indicating
    * the failure. PP_NACL_FAILED is returned if LaunchSelLdr wasn't called with

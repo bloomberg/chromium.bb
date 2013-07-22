@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/common/nacl_types.h"
+#include "ipc/ipc_platform_file.h"
 
 namespace nacl {
 
@@ -50,6 +51,27 @@ NaClLaunchParams::NaClLaunchParams(const NaClLaunchParams& l) {
 }
 
 NaClLaunchParams::~NaClLaunchParams() {
+}
+
+NaClLaunchResult::NaClLaunchResult()
+    : imc_channel_handle(IPC::InvalidPlatformFileForTransit()),
+      ipc_channel_handle(),
+      plugin_pid(base::kNullProcessId),
+      plugin_child_id(0) {
+}
+
+NaClLaunchResult::NaClLaunchResult(
+    FileDescriptor imc_channel_handle,
+    const IPC::ChannelHandle& ipc_channel_handle,
+    base::ProcessId plugin_pid,
+    int plugin_child_id)
+    : imc_channel_handle(imc_channel_handle),
+      ipc_channel_handle(ipc_channel_handle),
+      plugin_pid(plugin_pid),
+      plugin_child_id(plugin_child_id) {
+}
+
+NaClLaunchResult::~NaClLaunchResult() {
 }
 
 }  // namespace nacl

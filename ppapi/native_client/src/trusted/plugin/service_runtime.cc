@@ -728,17 +728,21 @@ bool ServiceRuntime::StartSelLdr(const SelLdrStartParams& params) {
         "ServiceRuntime: failed to create sel_ldr launcher");
     return false;
   }
+  nacl::string error_message;
   bool started = tmp_subprocess->Start(plugin_->pp_instance(),
                                        params.url.c_str(),
                                        params.uses_irt,
                                        params.uses_ppapi,
                                        params.enable_dev_interfaces,
                                        params.enable_dyncode_syscalls,
-                                       params.enable_exception_handling);
+                                       params.enable_exception_handling,
+                                       &error_message);
   if (!started) {
     NaClLog(LOG_ERROR, "ServiceRuntime::Start (start failed)\n");
-    params.error_info->SetReport(ERROR_SEL_LDR_LAUNCH,
-                                 "ServiceRuntime: failed to start");
+    params.error_info->SetReportWithConsoleOnlyError(
+        ERROR_SEL_LDR_LAUNCH,
+        "ServiceRuntime: failed to start",
+        error_message);
     return false;
   }
 

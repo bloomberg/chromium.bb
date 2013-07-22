@@ -24,7 +24,8 @@ typedef PP_NaClResult (*LaunchNaClProcessFunc)(
     PP_Bool enable_ppapi_dev,
     PP_Bool enable_dyncode_syscalls,
     PP_Bool enable_exception_handling,
-    NaClHandle* result_socket);
+    NaClHandle* result_socket,
+    struct PP_Var* error_message);
 
 
 extern LaunchNaClProcessFunc launch_nacl_process;

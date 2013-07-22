@@ -289,8 +289,8 @@ void NaClProcessHost::Launch(
   NaClBrowser* nacl_browser = NaClBrowser::GetInstance();
   nacl_browser->EnsureAllResourcesAvailable();
   if (!nacl_browser->IsOk()) {
-    LOG(ERROR) << "NaCl process launch failed: could not find all the "
-        "resources needed to launch the process";
+    SendErrorToRenderer("could not find all the resources needed"
+                        " to launch the process");
     delete this;
     return;
   }
@@ -307,7 +307,7 @@ void NaClProcessHost::Launch(
   NaClHandle pair[2];
   // Create a connected socket
   if (NaClSocketPair(pair) == -1) {
-    LOG(ERROR) << "NaCl process launch failed: could not create a socket pair";
+    SendErrorToRenderer("NaClSocketPair() failed");
     delete this;
     return;
   }
@@ -393,7 +393,7 @@ bool NaClProcessHost::LaunchNaClGdb() {
 bool NaClProcessHost::LaunchSelLdr() {
   std::string channel_id = process_->GetHost()->CreateChannel();
   if (channel_id.empty()) {
-    LOG(ERROR) << "NaCl process launch failed: could not create channel";
+    SendErrorToRenderer("CreateChannel() failed");
     return false;
   }
 
@@ -428,6 +428,7 @@ bool NaClProcessHost::LaunchSelLdr() {
   // On Windows 64-bit NaCl loader is called nacl64.exe instead of chrome.exe
   if (RunningOnWOW64()) {
     if (!NaClBrowser::GetInstance()->GetNaCl64ExePath(&exe_path)) {
+      SendErrorToRenderer("could not get path to nacl64.exe");
       return false;
     }
   }
@@ -450,8 +451,7 @@ bool NaClProcessHost::LaunchSelLdr() {
   if (RunningOnWOW64()) {
     if (!NaClBrokerService::GetInstance()->LaunchLoader(
             weak_factory_.GetWeakPtr(), channel_id)) {
-      LOG(ERROR) << "NaCl process launch failed: broker service did not launch "
-          "process";
+      SendErrorToRenderer("broker service did not launch process");
       return false;
     }
   } else {
@@ -496,8 +496,7 @@ void NaClProcessHost::OnProcessLaunched() {
 void NaClProcessHost::OnResourcesReady() {
   NaClBrowser* nacl_browser = NaClBrowser::GetInstance();
   if (!nacl_browser->IsReady()) {
-    LOG(ERROR) << "NaCl process launch failed: could not acquire shared "
-        "resources needed by NaCl";
+    SendErrorToRenderer("could not acquire shared resources needed by NaCl");
     delete this;
   } else if (!SendStart()) {
     delete this;
@@ -514,7 +513,7 @@ bool NaClProcessHost::ReplyToRenderer(
   // BrokerDuplicateHandle().
   if (RunningOnWOW64()) {
     if (!content::BrokerAddTargetPeer(process_->GetData().handle)) {
-      LOG(ERROR) << "Failed to add NaCl process PID";
+      SendErrorToRenderer("BrokerAddTargetPeer() failed");
       return false;
     }
   }
@@ -532,7 +531,7 @@ bool NaClProcessHost::ReplyToRenderer(
                        0,  // Unused given DUPLICATE_SAME_ACCESS.
                        FALSE,
                        DUPLICATE_CLOSE_SOURCE | DUPLICATE_SAME_ACCESS)) {
-    LOG(ERROR) << "DuplicateHandle() failed";
+    SendErrorToRenderer("DuplicateHandle() failed");
     return false;
   }
   handle_for_renderer = reinterpret_cast<nacl::FileDescriptor>(
@@ -547,14 +546,33 @@ bool NaClProcessHost::ReplyToRenderer(
 #endif
 
   const ChildProcessData& data = process_->GetData();
-  NaClHostMsg_LaunchNaCl::WriteReplyParams(
-      reply_msg_, handle_for_renderer,
-      channel_handle, base::GetProcId(data.handle), data.id);
-  nacl_host_message_filter_->Send(reply_msg_);
-  nacl_host_message_filter_ = NULL;
-  reply_msg_ = NULL;
+  SendMessageToRenderer(
+      nacl::NaClLaunchResult(handle_for_renderer,
+                             channel_handle,
+                             base::GetProcId(data.handle),
+                             data.id),
+      std::string() /* error_message */);
   internal_->socket_for_renderer = NACL_INVALID_HANDLE;
   return true;
+}
+
+void NaClProcessHost::SendErrorToRenderer(const std::string& error_message) {
+  LOG(ERROR) << "NaCl process launch failed: " << error_message;
+  SendMessageToRenderer(nacl::NaClLaunchResult(), error_message);
+}
+
+void NaClProcessHost::SendMessageToRenderer(
+    const nacl::NaClLaunchResult& result,
+    const std::string& error_message) {
+  DCHECK(nacl_host_message_filter_);
+  DCHECK(reply_msg_);
+  if (nacl_host_message_filter_ != NULL && reply_msg_ != NULL) {
+    NaClHostMsg_LaunchNaCl::WriteReplyParams(
+        reply_msg_, result, error_message);
+    nacl_host_message_filter_->Send(reply_msg_);
+    nacl_host_message_filter_ = NULL;
+    reply_msg_ = NULL;
+  }
 }
 
 // TCP port we chose for NaCl debug stub. It can be any other number.
@@ -755,8 +773,7 @@ bool NaClProcessHost::StartWithLaunchedProcess() {
                    weak_factory_.GetWeakPtr()));
     return true;
   } else {
-    LOG(ERROR) << "NaCl process failed to launch: previously failed to acquire "
-        "shared resources";
+    SendErrorToRenderer("previously failed to acquire shared resources");
     return false;
   }
 }

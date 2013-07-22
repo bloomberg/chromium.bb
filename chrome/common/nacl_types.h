@@ -9,7 +9,9 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/process.h"
 #include "build/build_config.h"
+#include "ipc/ipc_channel.h"
 
 #if defined(OS_POSIX)
 #include "base/file_descriptor_posix.h"
@@ -23,10 +25,9 @@
 namespace nacl {
 
 #if defined(OS_WIN)
-// We assume that HANDLE always uses less than 32 bits
-typedef int FileDescriptor;
+typedef HANDLE FileDescriptor;
 inline HANDLE ToNativeHandle(const FileDescriptor& desc) {
-  return reinterpret_cast<HANDLE>(desc);
+  return desc;
 }
 #elif defined(OS_POSIX)
 typedef base::FileDescriptor FileDescriptor;
@@ -79,6 +80,20 @@ struct NaClLaunchParams {
   bool uses_irt;
   bool enable_dyncode_syscalls;
   bool enable_exception_handling;
+};
+
+struct NaClLaunchResult {
+  NaClLaunchResult();
+  NaClLaunchResult(FileDescriptor imc_channel_handle,
+                   const IPC::ChannelHandle& ipc_channel_handle,
+                   base::ProcessId plugin_pid,
+                   int plugin_child_id);
+  ~NaClLaunchResult();
+
+  FileDescriptor imc_channel_handle;
+  IPC::ChannelHandle ipc_channel_handle;
+  base::ProcessId plugin_pid;
+  int plugin_child_id;
 };
 
 }  // namespace nacl
