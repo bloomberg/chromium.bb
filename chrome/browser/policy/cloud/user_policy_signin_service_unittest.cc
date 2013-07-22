@@ -98,8 +98,7 @@ class SigninManagerFake : public FakeSigninManager {
 
 class FakeProfileOAuth2TokenService : public AndroidProfileOAuth2TokenService {
  public:
-  explicit FakeProfileOAuth2TokenService(Profile* profile)
-      : AndroidProfileOAuth2TokenService(profile->GetRequestContext()) {
+  explicit FakeProfileOAuth2TokenService(Profile* profile) {
     Initialize(profile);
   }
 
