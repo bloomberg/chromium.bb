@@ -12,8 +12,11 @@
 #include "content/public/common/content_client.h"
 #include "ipc/ipc_message_macros.h"
 #include "ppapi/host/resource_host.h"
+#include "ppapi/proxy/ppapi_message_utils.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/resource_message_params.h"
+
+#include "content/common/view_messages.h"
 
 namespace content {
 
@@ -73,10 +76,26 @@ void PepperRendererConnection::OnMsgCreateResourceHostFromHost(
     DLOG(ERROR) << "Invalid plugin process ID.";
     pending_resource_host_id = 0;
   } else {
-    scoped_ptr<ppapi::host::ResourceHost> resource_host =
-        host->GetPpapiHost()->CreateResourceHost(params,
-                                                 instance,
-                                                 nested_msg);
+    // FileRef_CreateExternal is only permitted from the renderer. Because of
+    // this, we handle this message here and not in
+    // content_browser_pepper_host_factory.cc.
+    scoped_ptr<ppapi::host::ResourceHost> resource_host;
+    if (host->IsValidInstance(instance)) {
+      if (nested_msg.type() == PpapiHostMsg_FileRef_CreateExternal::ID) {
+        base::FilePath external_path;
+        if (ppapi::UnpackMessage<PpapiHostMsg_FileRef_CreateExternal>(
+            nested_msg, &external_path)) {
+          resource_host.reset(new PepperFileRefHost(
+              host, instance, params.pp_resource(), external_path));
+        }
+      }
+    }
+
+    if (!resource_host.get()) {
+      resource_host = host->GetPpapiHost()->CreateResourceHost(params,
+                                                               instance,
+                                                               nested_msg);
+    }
     pending_resource_host_id =
         host->GetPpapiHost()->AddPendingResourceHost(resource_host.Pass());
   }
