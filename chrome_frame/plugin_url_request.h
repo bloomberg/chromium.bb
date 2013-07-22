@@ -17,7 +17,7 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/upload_data.h"
 #include "net/url_request/url_request_status.h"
-#include "webkit/glue/resource_type.h"
+#include "webkit/common/resource_type.h"
 
 class PluginUrlRequest;
 class PluginUrlRequestDelegate;

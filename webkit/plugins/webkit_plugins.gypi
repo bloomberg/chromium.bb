@@ -41,6 +41,7 @@
         '<(DEPTH)/webkit/plugins/webkit_plugins.gyp:plugins_common',
         '<(DEPTH)/webkit/renderer/compositor_bindings/compositor_bindings.gyp:webkit_compositor_support',
         '<(DEPTH)/webkit/storage_common.gyp:webkit_storage_common',
+        'glue_child',
       ],
       'sources': [
         # This list contains all .h, .cc, and .mm files in glue except for

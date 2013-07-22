@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/glue/resource_loader_bridge.h"
+#include "webkit/child/resource_loader_bridge.h"
 
 #include "net/http/http_response_headers.h"
 #include "webkit/common/appcache/appcache_interfaces.h"
+#include "webkit/common/resource_response_info.h"
 
 namespace webkit_glue {
 

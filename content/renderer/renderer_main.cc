@@ -33,6 +33,7 @@
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/renderer_main_platform_delegate.h"
 #include "ui/base/ui_base_switches.h"
+#include "webkit/child/webkit_child_helpers.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/plugins/ppapi/ppapi_interface_factory.h"
 

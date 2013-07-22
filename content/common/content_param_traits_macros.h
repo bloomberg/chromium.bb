@@ -12,7 +12,7 @@
 #include "ipc/ipc_message_macros.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/base/latency_info.h"
-#include "webkit/glue/resource_type.h"
+#include "webkit/common/resource_type.h"
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/glue/multipart_response_delegate.h"
+#include "webkit/child/multipart_response_delegate.h"
 
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"

@@ -6,7 +6,7 @@
 #define WEBKIT_MOCKS_MOCK_WEBURLLOADER_H_
 
 #include "testing/gmock/include/gmock/gmock.h"
-#include "webkit/glue/weburlloader_impl.h"
+#include "webkit/child/weburlloader_impl.h"
 
 namespace webkit_glue {
 

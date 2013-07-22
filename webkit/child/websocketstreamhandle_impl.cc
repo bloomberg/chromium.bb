@@ -4,7 +4,7 @@
 
 // An implementation of WebSocketStreamHandle.
 
-#include "webkit/glue/websocketstreamhandle_impl.h"
+#include "webkit/child/websocketstreamhandle_impl.h"
 
 #include <vector>
 
@@ -17,9 +17,9 @@
 #include "third_party/WebKit/public/platform/WebSocketStreamError.h"
 #include "third_party/WebKit/public/platform/WebSocketStreamHandleClient.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
-#include "webkit/glue/webkitplatformsupport_impl.h"
+#include "webkit/child/webkitplatformsupport_impl.h"
+#include "webkit/child/websocketstreamhandle_delegate.h"
 #include "webkit/glue/websocketstreamhandle_bridge.h"
-#include "webkit/glue/websocketstreamhandle_delegate.h"
 
 using WebKit::WebData;
 using WebKit::WebSocketStreamError;

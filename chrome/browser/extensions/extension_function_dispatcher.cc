@@ -36,7 +36,7 @@
 #include "content/public/common/result_codes.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
-#include "webkit/glue/resource_type.h"
+#include "webkit/common/resource_type.h"
 
 using extensions::Extension;
 using extensions::ExtensionAPI;

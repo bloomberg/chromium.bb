@@ -73,7 +73,6 @@
     'public/common/referrer.h',
     'public/common/renderer_preferences.cc',
     'public/common/renderer_preferences.h',
-    'public/common/resource_dispatcher_delegate.h',
     'public/common/resource_response.h',
     'public/common/result_codes.h',
     'public/common/result_codes_list.h',

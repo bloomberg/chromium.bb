@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/glue/webkitplatformsupport_impl.h"
+#include "webkit/child/webkitplatformsupport_impl.h"
 
 #include <math.h>
 
@@ -26,6 +26,7 @@
 #include "base/synchronization/lock.h"
 #include "base/sys_info.h"
 #include "base/time/time.h"
+#include "content/public/common/webplugininfo.h"
 #include "grit/webkit_chromium_resources.h"
 #include "grit/webkit_resources.h"
 #include "grit/webkit_strings.h"
@@ -36,6 +37,7 @@
 #include "third_party/WebKit/public/platform/WebData.h"
 #include "third_party/WebKit/public/platform/WebDiscardableMemory.h"
 #include "third_party/WebKit/public/platform/WebGestureCurve.h"
+#include "third_party/WebKit/public/platform/WebPluginListBuilder.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
@@ -44,10 +46,11 @@
 #include "third_party/WebKit/public/web/WebScreenInfo.h"
 #include "third_party/tcmalloc/chromium/src/gperftools/heap-profiler.h"
 #include "ui/base/layout.h"
+#include "webkit/child/webkit_child_helpers.h"
+#include "webkit/child/websocketstreamhandle_impl.h"
+#include "webkit/child/weburlloader_impl.h"
 #include "webkit/common/user_agent/user_agent.h"
 #include "webkit/glue/webkit_glue.h"
-#include "webkit/glue/websocketstreamhandle_impl.h"
-#include "webkit/glue/weburlloader_impl.h"
 
 using WebKit::WebAudioBus;
 using WebKit::WebCookie;

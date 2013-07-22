@@ -8,7 +8,7 @@
 #include <string>
 
 #include "ipc/ipc_sender.h"
-#include "webkit/glue/resource_loader_bridge.h"
+#include "webkit/child/resource_loader_bridge.h"
 
 // The ExtensionLocalizationPeer is a proxy to a
 // webkit_glue::ResourceLoaderBridge::Peer instance.  It is used to pre-process

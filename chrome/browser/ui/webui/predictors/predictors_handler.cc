@@ -13,7 +13,7 @@
 #include "chrome/browser/predictors/resource_prefetch_predictor_tables.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/web_ui.h"
-#include "webkit/glue/resource_type.h"
+#include "webkit/common/resource_type.h"
 
 using predictors::AutocompleteActionPredictor;
 using predictors::ResourcePrefetchPredictor;
