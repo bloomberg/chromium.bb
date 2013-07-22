@@ -129,30 +129,13 @@ bool IsUnicodeBidiControlCharacter(char16 c) {
          c == base::i18n::kRightToLeftOverride;
 }
 
-// Returns the corresponding glyph range of the given character range.
-ui::Range CharRangeToGlyphRange(const internal::TextRun& run,
-                                const ui::Range& range) {
-    DCHECK(run.range.Contains(ui::Range(range.start() + run.range.start(),
-                                        range.end() + run.range.start())));
-    DCHECK(!range.is_reversed());
-    DCHECK(!range.is_empty());
-    if (run.script_analysis.fRTL) {
-      return ui::Range(run.logical_clusters[range.end() - 1],
-          range.start() > 0 ? run.logical_clusters[range.start() - 1]
-                            : run.glyph_count);
-    } else {
-      return ui::Range(run.logical_clusters[range.start()],
-          range.end() < run.range.length() ? run.logical_clusters[range.end()]
-                                           : run.glyph_count);
-    }
-}
-
 }  // namespace
 
 namespace internal {
 
 TextRun::TextRun()
-  : font_style(0),
+  : foreground(0),
+    font_style(0),
     strike(false),
     diagonal_strike(false),
     underline(false),
@@ -357,6 +340,14 @@ SelectionModel RenderTextWin::AdjacentWordSelectionModel(
   return SelectionModel(pos, CURSOR_FORWARD);
 }
 
+void RenderTextWin::SetSelectionModel(const SelectionModel& model) {
+  RenderText::SetSelectionModel(model);
+  // TODO(xji|msw): The text selection color is applied in ItemizeLogicalText().
+  // So, the layout must be updated in order to draw the proper selection range.
+  // Colors should be applied in DrawVisualText(), as done by RenderTextLinux.
+  ResetLayout();
+}
+
 ui::Range RenderTextWin::GetGlyphBounds(size_t index) {
   const size_t run_index =
       GetRunContainingCaret(SelectionModel(index, CURSOR_FORWARD));
@@ -468,8 +459,6 @@ void RenderTextWin::DrawVisualText(Canvas* canvas) {
   renderer.SetFontSmoothingSettings(
       smoothing_enabled, cleartype_enabled && !background_is_transparent());
 
-  ApplyCompositionAndSelectionStyles();
-
   for (size_t i = 0; i < runs_.size(); ++i) {
     // Get the run specified by the visual-to-logical map.
     internal::TextRun* run = runs_[visual_to_logical_[i]];
@@ -488,30 +477,13 @@ void RenderTextWin::DrawVisualText(Canvas* canvas) {
 
     renderer.SetTextSize(run->font.GetFontSize());
     renderer.SetFontFamilyWithStyle(run->font.GetFontName(), run->font_style);
-
-    for (BreakList<SkColor>::const_iterator it =
-             colors().GetBreak(run->range.start());
-         it != colors().breaks().end() && it->first < run->range.end();
-         ++it) {
-      ui::Range intersection = colors().GetRange(it).Intersect(run->range);
-      ui::Range glyphs = CharRangeToGlyphRange(*run,
-          ui::Range(intersection.start() - run->range.start(),
-                    intersection.end() - run->range.start()));
-      renderer.SetForegroundColor(it->second);
-      renderer.DrawPosText(&pos[glyphs.start()], &run->glyphs[glyphs.start()],
-                           glyphs.length());
-      SkScalar width = (static_cast<int>(glyphs.end()) < run->glyph_count ?
-          pos[glyphs.end()].x() : pos[0].x() + SkIntToScalar(run->width))
-          - pos[glyphs.start()].x();
-      renderer.DrawDecorations(pos[glyphs.start()].x(), y,
-                               SkScalarCeilToInt(width), run->underline,
-                               run->strike, run->diagonal_strike);
-    }
+    renderer.SetForegroundColor(run->foreground);
+    renderer.DrawPosText(&pos[0], run->glyphs.get(), run->glyph_count);
+    renderer.DrawDecorations(x, y, run->width, run->underline, run->strike,
+                             run->diagonal_strike);
 
     x = glyph_x;
   }
-
-  UndoCompositionAndSelectionStyles();
 }
 
 void RenderTextWin::ItemizeLogicalText() {
@@ -548,11 +520,9 @@ void RenderTextWin::ItemizeLogicalText() {
   // Temporarily apply composition underlines and selection colors.
   ApplyCompositionAndSelectionStyles();
 
-  // Build the list of runs from the script items and ranged styles. Use an
-  // empty color BreakList to avoid breaking runs at color boundaries.
-  BreakList<SkColor> empty_colors;
-  empty_colors.SetMax(text().length());
-  internal::StyleIterator style(empty_colors, styles());
+  // Build the list of runs from the script items and ranged colors/styles.
+  // TODO(msw): Only break for bold/italic, not color etc. See TextRun comment.
+  internal::StyleIterator style(colors(), styles());
   SCRIPT_ITEM* script_item = &script_items[0];
   const size_t max_run_length = kMaxGlyphs / 2;
   for (size_t run_break = 0; run_break < layout_text_length;) {
@@ -563,6 +533,7 @@ void RenderTextWin::ItemizeLogicalText() {
                       (style.style(ITALIC) ? Font::ITALIC : 0);
     DeriveFontIfNecessary(run->font.GetFontSize(), run->font.GetHeight(),
                           run->font_style, &run->font);
+    run->foreground = style.color();
     run->strike = style.style(STRIKE);
     run->diagonal_strike = style.style(DIAGONAL_STRIKE);
     run->underline = style.style(UNDERLINE);
