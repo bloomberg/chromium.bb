@@ -480,7 +480,7 @@ void ContinueViewItem(Profile* profile,
 void CheckIfDirectoryExistsOnIOThread(
     scoped_refptr<fileapi::FileSystemContext> file_system_context,
     const GURL& url,
-    const fileapi::FileSystemOperation::StatusCallback& callback) {
+    const fileapi::FileSystemOperationRunner::StatusCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   fileapi::FileSystemURL file_system_url = file_system_context->CrackURL(url);
@@ -492,7 +492,7 @@ void CheckIfDirectoryExistsOnIOThread(
 void CheckIfDirectoryExists(
     scoped_refptr<fileapi::FileSystemContext> file_system_context,
     const GURL& url,
-    const fileapi::FileSystemOperation::StatusCallback& callback) {
+    const fileapi::FileSystemOperationRunner::StatusCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   BrowserThread::PostTask(
