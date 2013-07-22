@@ -1,0 +1,81 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="editor-test.js"></script>
+<script>
+function codeSnippet() {
+    return document.getElementById("codeSnippet").textContent;
+}
+
+function test()
+{
+    var textEditor = InspectorTest.createTestEditor();
+    textEditor.setMimeType("text/javascript");
+    textEditor.setReadOnly(false);
+    textEditor.element.focus();
+
+    var completionDictionary = new WebInspector.SampleCompletionDictionary();
+    textEditor.setCompletionDictionary(completionDictionary);
+
+    InspectorTest.runTestSuite([
+        function testSetInitialText(next)
+        {
+            textEditor.setText("one two three3_\nfour five\na_b\nsix\n123foo\n132\nseven");
+            dumpDictionary();
+            next();
+        },
+
+        function testAlphaNumericWords(next)
+        {
+            textEditor.setText("2 2foo foo2 2foo4 foo3bar");
+            dumpDictionary();
+            next();
+        },
+
+
+        function testSetText(next)
+        {
+            textEditor.setText("dog cat 'mouse';dog bird");
+            dumpDictionary();
+            next();
+        },
+
+        function testSimpleEdit(next)
+        {
+            textEditor.setSelection(WebInspector.TextRange.createFromLocation(0, 3));
+            eventSender.keyDown("\b");
+            dumpDictionary();
+            next();
+        },
+
+        function testDeleteOneDogAndOneCat(next)
+        {
+            textEditor.setSelection(WebInspector.TextRange.createFromLocation(0, 6));
+            for(var i = 0; i < 6; ++i)
+                eventSender.keyDown("\b");
+            dumpDictionary();
+            next();
+        },
+
+    ]);
+
+    function dumpDictionary() {
+        var wordsInDictionary = completionDictionary.wordsWithPrefix("");
+        InspectorTest.addResult("========= Text in editor =========");
+        InspectorTest.dumpTextWithSelection(textEditor);
+        InspectorTest.addResult("======= Words in dictionary =======");
+        InspectorTest.addResult("[" + wordsInDictionary.sort().join(", ") + "]");
+        InspectorTest.addResult("=============");
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest();">
+<p>
+This test checks how text editor updates autocompletion dictionary in a response
+to user input.
+</p>
+</body>
+</html>
