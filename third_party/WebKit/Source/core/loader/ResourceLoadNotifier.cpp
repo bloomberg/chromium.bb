@@ -83,10 +83,6 @@ void ResourceLoadNotifier::dispatchDidFail(DocumentLoader* loader, unsigned long
 {
     if (Page* page = m_frame->page())
         page->progress()->completeProgress(identifier);
-
-    if (!error.isNull())
-        m_frame->loader()->client()->dispatchDidFailLoading(loader, identifier, error);
-
     InspectorInstrumentation::didFailLoading(m_frame, identifier, loader, error);
 }
 

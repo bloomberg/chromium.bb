@@ -207,7 +207,6 @@ protected:
     void didReceiveResponse(WebKit::WebFrame*, unsigned identifier, const WebKit::WebURLResponse&);
     void didChangeResourcePriority(WebKit::WebFrame*, unsigned identifier, const WebKit::WebURLRequest::Priority&);
     void didFinishResourceLoad(WebKit::WebFrame*, unsigned identifier);
-    void didFailResourceLoad(WebKit::WebFrame*, unsigned identifier, const WebKit::WebURLError&);
     WebKit::WebNavigationPolicy decidePolicyForNavigation(WebKit::WebFrame*, const WebKit::WebURLRequest&, WebKit::WebNavigationType, WebKit::WebNavigationPolicy defaultPolicy, bool isRedirect);
     bool willCheckAndDispatchMessageEvent(WebKit::WebFrame* sourceFrame, WebKit::WebFrame* targetFrame, WebKit::WebSecurityOrigin target, WebKit::WebDOMMessageEvent);
     void resetInputMethod();
@@ -546,11 +545,6 @@ public:
     {
         WebTestProxyBase::didFinishResourceLoad(frame, identifier);
         Base::didFinishResourceLoad(frame, identifier);
-    }
-    virtual void didFailResourceLoad(WebKit::WebFrame* frame, unsigned identifier, const WebKit::WebURLError& error)
-    {
-        WebTestProxyBase::didFailResourceLoad(frame, identifier, error);
-        Base::didFailResourceLoad(frame, identifier, error);
     }
     virtual void didAddMessageToConsole(const WebKit::WebConsoleMessage& message, const WebKit::WebString& sourceName, unsigned sourceLine)
     {

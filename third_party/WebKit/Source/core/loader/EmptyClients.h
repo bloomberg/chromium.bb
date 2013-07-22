@@ -193,7 +193,6 @@ public:
     virtual void dispatchWillSendRequest(DocumentLoader*, unsigned long, ResourceRequest&, const ResourceResponse&) OVERRIDE { }
     virtual void dispatchDidReceiveResponse(DocumentLoader*, unsigned long, const ResourceResponse&) OVERRIDE { }
     virtual void dispatchDidFinishLoading(DocumentLoader*, unsigned long) OVERRIDE { }
-    virtual void dispatchDidFailLoading(DocumentLoader*, unsigned long, const ResourceError&) OVERRIDE { }
     virtual void dispatchDidLoadResourceFromMemoryCache(DocumentLoader*, const ResourceRequest&, const ResourceResponse&, int) OVERRIDE { }
 
     virtual void dispatchDidHandleOnloadEvents() OVERRIDE { }

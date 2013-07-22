@@ -78,7 +78,6 @@ public:
     virtual void dispatchDidReceiveResponse(WebCore::DocumentLoader*, unsigned long identifier, const WebCore::ResourceResponse&);
     virtual void dispatchDidChangeResourcePriority(unsigned long identifier, WebCore::ResourceLoadPriority);
     virtual void dispatchDidFinishLoading(WebCore::DocumentLoader*, unsigned long identifier);
-    virtual void dispatchDidFailLoading(WebCore::DocumentLoader*, unsigned long identifier, const WebCore::ResourceError&);
     virtual void dispatchDidLoadResourceFromMemoryCache(WebCore::DocumentLoader*, const WebCore::ResourceRequest&, const WebCore::ResourceResponse&, int length);
     virtual void dispatchDidHandleOnloadEvents();
     virtual void dispatchDidReceiveServerRedirectForProvisionalLoad();

@@ -250,10 +250,6 @@ public:
     virtual void didFinishResourceLoad(
         WebFrame*, unsigned identifier) { }
 
-    // The resource request given by identifier failed.
-    virtual void didFailResourceLoad(
-        WebFrame*, unsigned identifier, const WebURLError&) { }
-
     // The specified request was satified from WebCore's memory cache.
     virtual void didLoadResourceFromMemoryCache(
         WebFrame*, const WebURLRequest&, const WebURLResponse&) { }

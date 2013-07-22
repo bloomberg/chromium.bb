@@ -208,11 +208,6 @@ void DocumentLoader::setMainDocumentError(const ResourceError& error)
 void DocumentLoader::mainReceivedError(const ResourceError& error)
 {
     ASSERT(!error.isNull());
-    if (m_identifierForLoadWithoutResourceLoader) {
-        ASSERT(!mainResourceLoader());
-        frameLoader()->client()->dispatchDidFailLoading(this, m_identifierForLoadWithoutResourceLoader, error);
-    }
-
     ASSERT(!mainResourceLoader() || !mainResourceLoader()->defersLoading());
 
     m_applicationCacheHost->failedLoadingMainResource();

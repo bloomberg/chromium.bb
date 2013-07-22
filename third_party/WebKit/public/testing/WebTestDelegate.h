@@ -95,9 +95,6 @@ public:
     virtual WebPreferences* preferences() = 0;
     virtual void applyPreferences() = 0;
 
-    // Returns a textual description of given error.
-    virtual std::string makeURLErrorDescription(const WebKit::WebURLError&) = 0;
-
     // Resizes the WebView to the given size.
     virtual void setClientWindowRect(const WebKit::WebRect&) = 0;
 

@@ -321,14 +321,6 @@ void FrameLoaderClientImpl::dispatchDidFinishLoading(DocumentLoader* loader,
         m_webFrame->client()->didFinishResourceLoad(m_webFrame, identifier);
 }
 
-void FrameLoaderClientImpl::dispatchDidFailLoading(DocumentLoader* loader,
-                                                  unsigned long identifier,
-                                                  const ResourceError& error)
-{
-    if (m_webFrame->client())
-        m_webFrame->client()->didFailResourceLoad(m_webFrame, identifier, error);
-}
-
 void FrameLoaderClientImpl::dispatchDidFinishDocumentLoad()
 {
     if (m_webFrame->client())

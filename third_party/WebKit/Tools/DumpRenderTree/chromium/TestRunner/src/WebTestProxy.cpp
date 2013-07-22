@@ -1400,20 +1400,6 @@ void WebTestProxyBase::didFinishResourceLoad(WebFrame*, unsigned identifier)
     m_resourceIdentifierMap.erase(identifier);
 }
 
-void WebTestProxyBase::didFailResourceLoad(WebFrame*, unsigned identifier, const WebKit::WebURLError& error)
-{
-    if (m_testInterfaces->testRunner()->shouldDumpResourceLoadCallbacks()) {
-        if (m_resourceIdentifierMap.find(identifier) == m_resourceIdentifierMap.end())
-            m_delegate->printMessage("<unknown>");
-        else
-            m_delegate->printMessage(m_resourceIdentifierMap[identifier]);
-        m_delegate->printMessage(" - didFailLoadingWithError: ");
-        m_delegate->printMessage(m_delegate->makeURLErrorDescription(error));
-        m_delegate->printMessage("\n");
-    }
-    m_resourceIdentifierMap.erase(identifier);
-}
-
 void WebTestProxyBase::didAddMessageToConsole(const WebConsoleMessage& message, const WebString& sourceName, unsigned sourceLine)
 {
     // This matches win DumpRenderTree's UIDelegate.cpp.

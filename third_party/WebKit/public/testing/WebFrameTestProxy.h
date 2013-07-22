@@ -154,12 +154,6 @@ public:
     {
         Base::didFinishResourceLoad(frame, identifier);
     }
-    virtual void didFailResourceLoad(WebKit::WebFrame* frame, unsigned identifier, const WebKit::WebURLError& error)
-    {
-        if (m_version > 1)
-            m_baseProxy->didFailResourceLoad(frame, identifier, error);
-        Base::didFailResourceLoad(frame, identifier, error);
-    }
     virtual WebKit::WebNavigationPolicy decidePolicyForNavigation(WebKit::WebFrame* frame, const WebKit::WebURLRequest& request, WebKit::WebNavigationType type, WebKit::WebNavigationPolicy defaultPolicy, bool isRedirect)
     {
         return Base::decidePolicyForNavigation(frame, request, type, defaultPolicy, isRedirect);
