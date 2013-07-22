@@ -39,6 +39,7 @@
 #include "bindings/v8/CustomElementBinding.h"
 #include "bindings/v8/DOMWrapperWorld.h"
 #include "bindings/v8/Dictionary.h"
+#include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/UnsafePersistent.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8CustomElementLifecycleCallbacks.h"
@@ -307,13 +308,11 @@ static void constructCustomElement(const v8::FunctionCallbackInfo<v8::Value>& ar
     v8::Handle<v8::Value> maybeType = args.Callee()->GetHiddenValue(V8HiddenPropertyName::customElementType());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, type, maybeType);
 
-    ExceptionCode ec = 0;
+    ExceptionState es(args.GetIsolate());
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
-    RefPtr<Element> element = document->createElementNS(namespaceURI, tagName, maybeType->IsNull() ? nullAtom : type, ec);
-    if (ec) {
-        setDOMException(ec, isolate);
+    RefPtr<Element> element = document->createElementNS(namespaceURI, tagName, maybeType->IsNull() ? nullAtom : type, es);
+    if (es.throwIfNeeded())
         return;
-    }
     v8SetReturnValue(args, toV8Fast(element.release(), args, document));
 }
 

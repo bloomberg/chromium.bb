@@ -36,7 +36,6 @@
 #include "bindings/v8/V8DOMWrapper.h"
 #include "bindings/v8/V8MutationCallback.h"
 #include "bindings/v8/V8Utilities.h"
-#include "core/dom/ExceptionCode.h"
 #include "core/dom/MutationObserver.h"
 
 namespace WebCore {

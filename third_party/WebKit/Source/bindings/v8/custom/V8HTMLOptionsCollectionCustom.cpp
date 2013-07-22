@@ -31,16 +31,16 @@
 #include "config.h"
 #include "V8HTMLOptionsCollection.h"
 
+#include "V8HTMLOptionElement.h"
+#include "V8Node.h"
+#include "V8NodeList.h"
+#include "bindings/v8/ExceptionState.h"
+#include "bindings/v8/V8Binding.h"
+#include "bindings/v8/custom/V8HTMLSelectElementCustom.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/NamedNodesCollection.h"
 #include "core/html/HTMLOptionElement.h"
 #include "core/html/HTMLOptionsCollection.h"
-
-#include "V8HTMLOptionElement.h"
-#include "V8Node.h"
-#include "V8NodeList.h"
-#include "bindings/v8/V8Binding.h"
-#include "bindings/v8/custom/V8HTMLSelectElementCustom.h"
 #include "core/html/HTMLSelectElement.h"
 
 namespace WebCore {
@@ -86,21 +86,19 @@ void V8HTMLOptionsCollection::addMethodCustom(const v8::FunctionCallbackInfo<v8:
     HTMLOptionsCollection* imp = V8HTMLOptionsCollection::toNative(args.Holder());
     HTMLOptionElement* option = V8HTMLOptionElement::toNative(v8::Handle<v8::Object>(v8::Handle<v8::Object>::Cast(args[0])));
 
-    ExceptionCode ec = 0;
+    ExceptionState es(args.GetIsolate());
     if (args.Length() < 2)
-        imp->add(option, ec);
+        imp->add(option, es);
     else {
         bool ok;
         V8TRYCATCH_VOID(int, index, toInt32(args[1], ok));
         if (!ok)
-            ec = TypeMismatchError;
+            es.throwDOMException(TypeMismatchError);
         else
-            imp->add(option, index, ec);
+            imp->add(option, index, es);
     }
 
-    if (!ec)
-        return;
-    setDOMException(ec, args.GetIsolate());
+    es.throwIfNeeded();
 }
 
 void V8HTMLOptionsCollection::lengthAttrSetterCustom(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
@@ -108,19 +106,20 @@ void V8HTMLOptionsCollection::lengthAttrSetterCustom(v8::Local<v8::String> name,
     HTMLOptionsCollection* imp = V8HTMLOptionsCollection::toNative(info.Holder());
     double v = value->NumberValue();
     unsigned newLength = 0;
-    ExceptionCode ec = 0;
+    ExceptionState es(info.GetIsolate());
     if (!std::isnan(v) && !std::isinf(v)) {
         if (v < 0.0)
-            ec = IndexSizeError;
+            es.throwDOMException(IndexSizeError);
         else if (v > static_cast<double>(UINT_MAX))
             newLength = UINT_MAX;
         else
             newLength = static_cast<unsigned>(v);
     }
-    if (!ec)
-        imp->setLength(newLength, ec);
 
-    setDOMException(ec, info.GetIsolate());
+    if (es.throwIfNeeded())
+        return;
+
+    imp->setLength(newLength, es);
 }
 
 } // namespace WebCore

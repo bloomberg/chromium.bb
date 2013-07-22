@@ -40,7 +40,6 @@
 #include "bindings/v8/V8ScriptRunner.h"
 #include "bindings/v8/WrapperTypeInfo.h"
 #include "core/dom/Document.h"
-#include "core/dom/ExceptionCode.h"
 #include "core/page/DOMWindow.h"
 #include "core/platform/Task.h"
 #include "wtf/Functional.h"

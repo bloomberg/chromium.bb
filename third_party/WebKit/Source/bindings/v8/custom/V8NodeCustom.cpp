@@ -46,6 +46,7 @@
 #include "V8SVGElement.h"
 #include "V8ShadowRoot.h"
 #include "V8Text.h"
+#include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/V8AbstractEventListener.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8EventListener.h"
@@ -65,14 +66,13 @@ void V8Node::insertBeforeMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&
 
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
 
-    ExceptionCode ec = 0;
+    ExceptionState es(args.GetIsolate());
     Node* newChild = V8Node::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate())) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(args[0])) : 0;
     Node* refChild = V8Node::HasInstance(args[1], args.GetIsolate(), worldType(args.GetIsolate())) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(args[1])) : 0;
-    imp->insertBefore(newChild, refChild, ec, AttachLazily);
-    if (ec)
-        setDOMException(ec, args.GetIsolate());
-    else
-        v8SetReturnValue(args, args[0]);
+    imp->insertBefore(newChild, refChild, es, AttachLazily);
+    if (es.throwIfNeeded())
+        return;
+    v8SetReturnValue(args, args[0]);
 }
 
 // This function is customized to take advantage of the optional 4th argument: AttachBehavior
@@ -83,14 +83,13 @@ void V8Node::replaceChildMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&
 
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
 
-    ExceptionCode ec = 0;
+    ExceptionState es(args.GetIsolate());
     Node* newChild = V8Node::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate())) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(args[0])) : 0;
     Node* oldChild = V8Node::HasInstance(args[1], args.GetIsolate(), worldType(args.GetIsolate())) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(args[1])) : 0;
-    imp->replaceChild(newChild, oldChild, ec, AttachLazily);
-    if (ec)
-        setDOMException(ec, args.GetIsolate());
-    else
-        v8SetReturnValue(args, args[1]);
+    imp->replaceChild(newChild, oldChild, es, AttachLazily);
+    if (es.throwIfNeeded())
+        return;
+    v8SetReturnValue(args, args[1]);
 }
 
 void V8Node::removeChildMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -100,13 +99,12 @@ void V8Node::removeChildMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& 
 
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
 
-    ExceptionCode ec = 0;
+    ExceptionState es(args.GetIsolate());
     Node* oldChild = V8Node::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate())) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(args[0])) : 0;
-    imp->removeChild(oldChild, ec);
-    if (ec)
-        setDOMException(ec, args.GetIsolate());
-    else
-        v8SetReturnValue(args, args[0]);
+    imp->removeChild(oldChild, es);
+    if (es.throwIfNeeded())
+        return;
+    v8SetReturnValue(args, args[0]);
 }
 
 // This function is customized to take advantage of the optional 4th argument: AttachBehavior
@@ -117,13 +115,12 @@ void V8Node::appendChildMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& 
 
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
 
-    ExceptionCode ec = 0;
+    ExceptionState es(args.GetIsolate());
     Node* newChild = V8Node::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate())) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(args[0])) : 0;
-    imp->appendChild(newChild, ec, AttachLazily);
-    if (ec)
-        setDOMException(ec, args.GetIsolate());
-    else
-        v8SetReturnValue(args, args[0]);
+    imp->appendChild(newChild, es, AttachLazily);
+    if (es.throwIfNeeded())
+        return;
+    v8SetReturnValue(args, args[0]);
 }
 
 v8::Handle<v8::Object> wrap(Node* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)

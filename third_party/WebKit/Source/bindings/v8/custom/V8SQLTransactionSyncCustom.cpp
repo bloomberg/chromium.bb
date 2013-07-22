@@ -29,7 +29,6 @@
  */
 
 #include "config.h"
-
 #include "V8SQLTransactionSync.h"
 
 #include "V8SQLResultSet.h"

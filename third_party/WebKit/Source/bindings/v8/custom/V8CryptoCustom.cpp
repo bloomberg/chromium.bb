@@ -26,11 +26,10 @@
 #include "V8Crypto.h"
 
 #include "V8ArrayBufferView.h"
+#include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8Utilities.h"
-#include "core/dom/ExceptionCode.h"
 #include "modules/crypto/Crypto.h"
-
 #include "wtf/ArrayBufferView.h"
 
 namespace WebCore {
@@ -54,13 +53,11 @@ void V8Crypto::getRandomValuesMethodCustom(const v8::FunctionCallbackInfo<v8::Va
     ArrayBufferView* arrayBufferView = V8ArrayBufferView::toNative(v8::Handle<v8::Object>::Cast(buffer));
     ASSERT(arrayBufferView);
 
-    ExceptionCode ec = 0;
-    Crypto::getRandomValues(arrayBufferView, ec);
+    ExceptionState es(args.GetIsolate());
+    Crypto::getRandomValues(arrayBufferView, es);
 
-    if (ec) {
-        setDOMException(ec, args.GetIsolate());
+    if (es.throwIfNeeded())
         return;
-    }
 
     v8SetReturnValue(args, buffer);
 }

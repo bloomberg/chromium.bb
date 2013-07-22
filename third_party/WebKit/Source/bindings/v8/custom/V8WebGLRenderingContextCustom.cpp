@@ -29,7 +29,6 @@
  */
 
 #include "config.h"
-
 #include "V8WebGLRenderingContext.h"
 
 #include "V8ANGLEInstancedArrays.h"
@@ -70,6 +69,7 @@
 #include "V8WebGLTexture.h"
 #include "V8WebGLUniformLocation.h"
 #include "V8WebGLVertexArrayObjectOES.h"
+#include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8HiddenPropertyName.h"
 #include "core/dom/ExceptionCode.h"
@@ -267,33 +267,31 @@ static void getObjectParameter(const v8::FunctionCallbackInfo<v8::Value>& args, 
         return;
     }
 
-    ExceptionCode ec = 0;
+    ExceptionState es(args.GetIsolate());
     WebGLRenderingContext* context = V8WebGLRenderingContext::toNative(args.Holder());
     unsigned target = toInt32(args[0]);
     unsigned pname = toInt32(args[1]);
     WebGLGetInfo info;
     switch (objectType) {
     case kBuffer:
-        info = context->getBufferParameter(target, pname, ec);
+        info = context->getBufferParameter(target, pname, es);
         break;
     case kRenderbuffer:
-        info = context->getRenderbufferParameter(target, pname, ec);
+        info = context->getRenderbufferParameter(target, pname, es);
         break;
     case kTexture:
-        info = context->getTexParameter(target, pname, ec);
+        info = context->getTexParameter(target, pname, es);
         break;
     case kVertexAttrib:
         // target => index
-        info = context->getVertexAttrib(target, pname, ec);
+        info = context->getVertexAttrib(target, pname, es);
         break;
     default:
         notImplemented();
         break;
     }
-    if (ec) {
-        setDOMException(ec, args.GetIsolate());
+    if (es.throwIfNeeded())
         return;
-    }
     v8SetReturnValue(args, toV8Object(info, args.Holder(), args.GetIsolate()));
 }
 
@@ -319,7 +317,7 @@ void V8WebGLRenderingContext::getAttachedShadersMethodCustom(const v8::FunctionC
         return;
     }
 
-    ExceptionCode ec = 0;
+    ExceptionState es(args.GetIsolate());
     WebGLRenderingContext* context = V8WebGLRenderingContext::toNative(args.Holder());
     if (args.Length() > 0 && !isUndefinedOrNull(args[0]) && !V8WebGLProgram::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate()))) {
         throwTypeError(args.GetIsolate());
@@ -327,9 +325,8 @@ void V8WebGLRenderingContext::getAttachedShadersMethodCustom(const v8::FunctionC
     }
     WebGLProgram* program = V8WebGLProgram::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate())) ? V8WebGLProgram::toNative(v8::Handle<v8::Object>::Cast(args[0])) : 0;
     Vector<RefPtr<WebGLShader> > shaders;
-    bool succeed = context->getAttachedShaders(program, shaders, ec);
-    if (ec) {
-        setDOMException(ec, args.GetIsolate());
+    bool succeed = context->getAttachedShaders(program, shaders, es);
+    if (es.throwIfNeeded()) {
         v8SetReturnValueNull(args);
         return;
     }
@@ -367,14 +364,13 @@ void V8WebGLRenderingContext::getFramebufferAttachmentParameterMethodCustom(cons
         return;
     }
 
-    ExceptionCode ec = 0;
+    ExceptionState es(args.GetIsolate());
     WebGLRenderingContext* context = V8WebGLRenderingContext::toNative(args.Holder());
     unsigned target = toInt32(args[0]);
     unsigned attachment = toInt32(args[1]);
     unsigned pname = toInt32(args[2]);
-    WebGLGetInfo info = context->getFramebufferAttachmentParameter(target, attachment, pname, ec);
-    if (ec) {
-        setDOMException(ec, args.GetIsolate());
+    WebGLGetInfo info = context->getFramebufferAttachmentParameter(target, attachment, pname, es);
+    if (es.throwIfNeeded()) {
         return;
     }
     v8SetReturnValue(args, toV8Object(info, args.Holder(), args.GetIsolate()));
@@ -387,14 +383,12 @@ void V8WebGLRenderingContext::getParameterMethodCustom(const v8::FunctionCallbac
         return;
     }
 
-    ExceptionCode ec = 0;
+    ExceptionState es(args.GetIsolate());
     WebGLRenderingContext* context = V8WebGLRenderingContext::toNative(args.Holder());
     unsigned pname = toInt32(args[0]);
-    WebGLGetInfo info = context->getParameter(pname, ec);
-    if (ec) {
-        setDOMException(ec, args.GetIsolate());
+    WebGLGetInfo info = context->getParameter(pname, es);
+    if (es.throwIfNeeded())
         return;
-    }
     v8SetReturnValue(args, toV8Object(info, args.Holder(), args.GetIsolate()));
 }
 
@@ -405,7 +399,7 @@ void V8WebGLRenderingContext::getProgramParameterMethodCustom(const v8::Function
         return;
     }
 
-    ExceptionCode ec = 0;
+    ExceptionState es(args.GetIsolate());
     WebGLRenderingContext* context = V8WebGLRenderingContext::toNative(args.Holder());
     if (args.Length() > 0 && !isUndefinedOrNull(args[0]) && !V8WebGLProgram::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate()))) {
         throwTypeError(args.GetIsolate());
@@ -413,11 +407,9 @@ void V8WebGLRenderingContext::getProgramParameterMethodCustom(const v8::Function
     }
     WebGLProgram* program = V8WebGLProgram::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate())) ? V8WebGLProgram::toNative(v8::Handle<v8::Object>::Cast(args[0])) : 0;
     unsigned pname = toInt32(args[1]);
-    WebGLGetInfo info = context->getProgramParameter(program, pname, ec);
-    if (ec) {
-        setDOMException(ec, args.GetIsolate());
+    WebGLGetInfo info = context->getProgramParameter(program, pname, es);
+    if (es.throwIfNeeded())
         return;
-    }
     v8SetReturnValue(args, toV8Object(info, args.Holder(), args.GetIsolate()));
 }
 
@@ -433,7 +425,7 @@ void V8WebGLRenderingContext::getShaderParameterMethodCustom(const v8::FunctionC
         return;
     }
 
-    ExceptionCode ec = 0;
+    ExceptionState es(args.GetIsolate());
     WebGLRenderingContext* context = V8WebGLRenderingContext::toNative(args.Holder());
     if (args.Length() > 0 && !isUndefinedOrNull(args[0]) && !V8WebGLShader::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate()))) {
         throwTypeError(args.GetIsolate());
@@ -441,11 +433,9 @@ void V8WebGLRenderingContext::getShaderParameterMethodCustom(const v8::FunctionC
     }
     WebGLShader* shader = V8WebGLShader::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate())) ? V8WebGLShader::toNative(v8::Handle<v8::Object>::Cast(args[0])) : 0;
     unsigned pname = toInt32(args[1]);
-    WebGLGetInfo info = context->getShaderParameter(shader, pname, ec);
-    if (ec) {
-        setDOMException(ec, args.GetIsolate());
+    WebGLGetInfo info = context->getShaderParameter(shader, pname, es);
+    if (es.throwIfNeeded())
         return;
-    }
     v8SetReturnValue(args, toV8Object(info, args.Holder(), args.GetIsolate()));
 }
 
@@ -476,7 +466,7 @@ void V8WebGLRenderingContext::getUniformMethodCustom(const v8::FunctionCallbackI
         return;
     }
 
-    ExceptionCode ec = 0;
+    ExceptionState es(args.GetIsolate());
     WebGLRenderingContext* context = V8WebGLRenderingContext::toNative(args.Holder());
     if (args.Length() > 0 && !isUndefinedOrNull(args[0]) && !V8WebGLProgram::HasInstance(args[0], args.GetIsolate(), worldType(args.GetIsolate()))) {
         throwTypeError(args.GetIsolate());
@@ -491,11 +481,9 @@ void V8WebGLRenderingContext::getUniformMethodCustom(const v8::FunctionCallbackI
     bool ok = false;
     WebGLUniformLocation* location = toWebGLUniformLocation(args[1], ok, args.GetIsolate());
 
-    WebGLGetInfo info = context->getUniform(program, location, ec);
-    if (ec) {
-        setDOMException(ec, args.GetIsolate());
+    WebGLGetInfo info = context->getUniform(program, location, es);
+    if (es.throwIfNeeded())
         return;
-    }
     v8SetReturnValue(args, toV8Object(info, args.Holder(), args.GetIsolate()));
 }
 
@@ -567,22 +555,19 @@ static void vertexAttribAndUniformHelperf(const v8::FunctionCallbackInfo<v8::Val
     if (V8Float32Array::HasInstance(args[1], args.GetIsolate(), worldType(args.GetIsolate()))) {
         Float32Array* array = V8Float32Array::toNative(args[1]->ToObject());
         ASSERT(array != NULL);
-        ExceptionCode ec = 0;
+        ExceptionState es(args.GetIsolate());
         switch (functionToCall) {
-            case kUniform1v: context->uniform1fv(location, array, ec); break;
-            case kUniform2v: context->uniform2fv(location, array, ec); break;
-            case kUniform3v: context->uniform3fv(location, array, ec); break;
-            case kUniform4v: context->uniform4fv(location, array, ec); break;
-            case kVertexAttrib1v: context->vertexAttrib1fv(index, array); break;
-            case kVertexAttrib2v: context->vertexAttrib2fv(index, array); break;
-            case kVertexAttrib3v: context->vertexAttrib3fv(index, array); break;
-            case kVertexAttrib4v: context->vertexAttrib4fv(index, array); break;
-            default: ASSERT_NOT_REACHED(); break;
+        case kUniform1v: context->uniform1fv(location, array, es); break;
+        case kUniform2v: context->uniform2fv(location, array, es); break;
+        case kUniform3v: context->uniform3fv(location, array, es); break;
+        case kUniform4v: context->uniform4fv(location, array, es); break;
+        case kVertexAttrib1v: context->vertexAttrib1fv(index, array); break;
+        case kVertexAttrib2v: context->vertexAttrib2fv(index, array); break;
+        case kVertexAttrib3v: context->vertexAttrib3fv(index, array); break;
+        case kVertexAttrib4v: context->vertexAttrib4fv(index, array); break;
+        default: ASSERT_NOT_REACHED(); break;
         }
-        if (ec) {
-            setDOMException(ec, args.GetIsolate());
-            return;
-        }
+        es.throwIfNeeded();
         return;
     }
 
@@ -599,23 +584,20 @@ static void vertexAttribAndUniformHelperf(const v8::FunctionCallbackInfo<v8::Val
         setDOMException(SyntaxError, args.GetIsolate());
         return;
     }
-    ExceptionCode ec = 0;
+    ExceptionState es(args.GetIsolate());
     switch (functionToCall) {
-        case kUniform1v: context->uniform1fv(location, data, len, ec); break;
-        case kUniform2v: context->uniform2fv(location, data, len, ec); break;
-        case kUniform3v: context->uniform3fv(location, data, len, ec); break;
-        case kUniform4v: context->uniform4fv(location, data, len, ec); break;
-        case kVertexAttrib1v: context->vertexAttrib1fv(index, data, len); break;
-        case kVertexAttrib2v: context->vertexAttrib2fv(index, data, len); break;
-        case kVertexAttrib3v: context->vertexAttrib3fv(index, data, len); break;
-        case kVertexAttrib4v: context->vertexAttrib4fv(index, data, len); break;
-        default: ASSERT_NOT_REACHED(); break;
+    case kUniform1v: context->uniform1fv(location, data, len, es); break;
+    case kUniform2v: context->uniform2fv(location, data, len, es); break;
+    case kUniform3v: context->uniform3fv(location, data, len, es); break;
+    case kUniform4v: context->uniform4fv(location, data, len, es); break;
+    case kVertexAttrib1v: context->vertexAttrib1fv(index, data, len); break;
+    case kVertexAttrib2v: context->vertexAttrib2fv(index, data, len); break;
+    case kVertexAttrib3v: context->vertexAttrib3fv(index, data, len); break;
+    case kVertexAttrib4v: context->vertexAttrib4fv(index, data, len); break;
+    default: ASSERT_NOT_REACHED(); break;
     }
     fastFree(data);
-    if (ec) {
-        setDOMException(ec, args.GetIsolate());
-        return;
-    }
+    es.throwIfNeeded();
 }
 
 static void uniformHelperi(const v8::FunctionCallbackInfo<v8::Value>& args, FunctionToCall functionToCall)
@@ -646,18 +628,15 @@ static void uniformHelperi(const v8::FunctionCallbackInfo<v8::Value>& args, Func
     if (V8Int32Array::HasInstance(args[1], args.GetIsolate(), worldType(args.GetIsolate()))) {
         Int32Array* array = V8Int32Array::toNative(args[1]->ToObject());
         ASSERT(array != NULL);
-        ExceptionCode ec = 0;
+        ExceptionState es(args.GetIsolate());
         switch (functionToCall) {
-            case kUniform1v: context->uniform1iv(location, array, ec); break;
-            case kUniform2v: context->uniform2iv(location, array, ec); break;
-            case kUniform3v: context->uniform3iv(location, array, ec); break;
-            case kUniform4v: context->uniform4iv(location, array, ec); break;
-            default: ASSERT_NOT_REACHED(); break;
+        case kUniform1v: context->uniform1iv(location, array, es); break;
+        case kUniform2v: context->uniform2iv(location, array, es); break;
+        case kUniform3v: context->uniform3iv(location, array, es); break;
+        case kUniform4v: context->uniform4iv(location, array, es); break;
+        default: ASSERT_NOT_REACHED(); break;
         }
-        if (ec) {
-            setDOMException(ec, args.GetIsolate());
-            return;
-        }
+        es.throwIfNeeded();
         return;
     }
 
@@ -674,19 +653,16 @@ static void uniformHelperi(const v8::FunctionCallbackInfo<v8::Value>& args, Func
         setDOMException(SyntaxError, args.GetIsolate());
         return;
     }
-    ExceptionCode ec = 0;
+    ExceptionState es(args.GetIsolate());
     switch (functionToCall) {
-        case kUniform1v: context->uniform1iv(location, data, len, ec); break;
-        case kUniform2v: context->uniform2iv(location, data, len, ec); break;
-        case kUniform3v: context->uniform3iv(location, data, len, ec); break;
-        case kUniform4v: context->uniform4iv(location, data, len, ec); break;
-        default: ASSERT_NOT_REACHED(); break;
+    case kUniform1v: context->uniform1iv(location, data, len, es); break;
+    case kUniform2v: context->uniform2iv(location, data, len, es); break;
+    case kUniform3v: context->uniform3iv(location, data, len, es); break;
+    case kUniform4v: context->uniform4iv(location, data, len, es); break;
+    default: ASSERT_NOT_REACHED(); break;
     }
     fastFree(data);
-    if (ec) {
-        setDOMException(ec, args.GetIsolate());
-        return;
-    }
+    es.throwIfNeeded();
 }
 
 void V8WebGLRenderingContext::uniform1fvMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -758,17 +734,14 @@ static void uniformMatrixHelper(const v8::FunctionCallbackInfo<v8::Value>& args,
     if (V8Float32Array::HasInstance(args[2], args.GetIsolate(), worldType(args.GetIsolate()))) {
         Float32Array* array = V8Float32Array::toNative(args[2]->ToObject());
         ASSERT(array != NULL);
-        ExceptionCode ec = 0;
+        ExceptionState es(args.GetIsolate());
         switch (matrixSize) {
-            case 2: context->uniformMatrix2fv(location, transpose, array, ec); break;
-            case 3: context->uniformMatrix3fv(location, transpose, array, ec); break;
-            case 4: context->uniformMatrix4fv(location, transpose, array, ec); break;
-            default: ASSERT_NOT_REACHED(); break;
+        case 2: context->uniformMatrix2fv(location, transpose, array, es); break;
+        case 3: context->uniformMatrix3fv(location, transpose, array, es); break;
+        case 4: context->uniformMatrix4fv(location, transpose, array, es); break;
+        default: ASSERT_NOT_REACHED(); break;
         }
-        if (ec) {
-            setDOMException(ec, args.GetIsolate());
-            return;
-        }
+        es.throwIfNeeded();
         return;
     }
 
@@ -785,18 +758,15 @@ static void uniformMatrixHelper(const v8::FunctionCallbackInfo<v8::Value>& args,
         setDOMException(SyntaxError, args.GetIsolate());
         return;
     }
-    ExceptionCode ec = 0;
+    ExceptionState es(args.GetIsolate());
     switch (matrixSize) {
-        case 2: context->uniformMatrix2fv(location, transpose, data, len, ec); break;
-        case 3: context->uniformMatrix3fv(location, transpose, data, len, ec); break;
-        case 4: context->uniformMatrix4fv(location, transpose, data, len, ec); break;
-        default: ASSERT_NOT_REACHED(); break;
+    case 2: context->uniformMatrix2fv(location, transpose, data, len, es); break;
+    case 3: context->uniformMatrix3fv(location, transpose, data, len, es); break;
+    case 4: context->uniformMatrix4fv(location, transpose, data, len, es); break;
+    default: ASSERT_NOT_REACHED(); break;
     }
     fastFree(data);
-    if (ec) {
-        setDOMException(ec, args.GetIsolate());
-        return;
-    }
+    es.throwIfNeeded();
 }
 
 void V8WebGLRenderingContext::uniformMatrix2fvMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)

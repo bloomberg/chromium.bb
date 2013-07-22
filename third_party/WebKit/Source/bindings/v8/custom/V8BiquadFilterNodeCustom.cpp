@@ -29,7 +29,6 @@
 #include "V8BiquadFilterNode.h"
 
 #include "bindings/v8/V8Binding.h"
-#include "core/dom/ExceptionCode.h"
 #include "modules/webaudio/BiquadFilterNode.h"
 
 namespace WebCore {
@@ -43,7 +42,7 @@ void V8BiquadFilterNode::typeAttrSetterCustom(v8::Local<v8::String> name, v8::Lo
         uint32_t type = toUInt32(value, ok);
         ASSERT(ok);
         if (!imp->setType(type))
-            throwError(v8TypeError, "Illegal BiquadFilterNode type", info.GetIsolate());
+            throwTypeError("Illegal BiquadFilterNode type", info.GetIsolate());
         return;
     }
 
@@ -55,7 +54,7 @@ void V8BiquadFilterNode::typeAttrSetterCustom(v8::Local<v8::String> name, v8::Lo
         }
     }
     
-    throwError(v8TypeError, "Illegal BiquadFilterNode type", info.GetIsolate());
+    throwTypeError("Illegal BiquadFilterNode type", info.GetIsolate());
 }
 
 } // namespace WebCore

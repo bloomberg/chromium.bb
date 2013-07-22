@@ -32,6 +32,7 @@
 #include "V8History.h"
 
 #include "V8Window.h"
+#include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/SerializedScriptValue.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8HiddenPropertyName.h"
@@ -68,11 +69,11 @@ void V8History::pushStateMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithUndefinedOrNullCheck>, title, args[1]);
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithUndefinedOrNullCheck>, url, argumentOrNull(args, 2));
 
-    ExceptionCode ec = 0;
+    ExceptionState es(args.GetIsolate());
     History* history = V8History::toNative(args.Holder());
-    history->stateObjectAdded(historyState.release(), title, url, History::StateObjectPush, ec);
+    history->stateObjectAdded(historyState.release(), title, url, History::StateObjectPush, es);
     args.Holder()->DeleteHiddenValue(V8HiddenPropertyName::state());
-    v8SetReturnValue(args, setDOMException(ec, args.GetIsolate()));
+    es.throwIfNeeded();
 }
 
 void V8History::replaceStateMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -85,11 +86,11 @@ void V8History::replaceStateMethodCustom(const v8::FunctionCallbackInfo<v8::Valu
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithUndefinedOrNullCheck>, title, args[1]);
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithUndefinedOrNullCheck>, url, argumentOrNull(args, 2));
 
-    ExceptionCode ec = 0;
+    ExceptionState es(args.GetIsolate());
     History* history = V8History::toNative(args.Holder());
-    history->stateObjectAdded(historyState.release(), title, url, History::StateObjectReplace, ec);
+    history->stateObjectAdded(historyState.release(), title, url, History::StateObjectReplace, es);
     args.Holder()->DeleteHiddenValue(V8HiddenPropertyName::state());
-    v8SetReturnValue(args, setDOMException(ec, args.GetIsolate()));
+    es.throwIfNeeded();
 }
 
 } // namespace WebCore

@@ -31,13 +31,6 @@
 #include "config.h"
 #include "V8CanvasRenderingContext2D.h"
 
-#include "core/dom/ExceptionCode.h"
-#include "core/html/canvas/CanvasGradient.h"
-#include "core/html/canvas/CanvasPattern.h"
-#include "core/html/canvas/CanvasRenderingContext2D.h"
-#include "core/html/canvas/CanvasStyle.h"
-#include "core/platform/graphics/FloatRect.h"
-
 #include "V8CanvasGradient.h"
 #include "V8CanvasPattern.h"
 #include "V8HTMLCanvasElement.h"
@@ -45,6 +38,11 @@
 #include "V8HTMLVideoElement.h"
 #include "V8ImageData.h"
 #include "bindings/v8/V8Binding.h"
+#include "core/html/canvas/CanvasGradient.h"
+#include "core/html/canvas/CanvasPattern.h"
+#include "core/html/canvas/CanvasRenderingContext2D.h"
+#include "core/html/canvas/CanvasStyle.h"
+#include "core/platform/graphics/FloatRect.h"
 
 namespace WebCore {
 

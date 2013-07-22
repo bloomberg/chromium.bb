@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
  
-#include <config.h>
-
+#include "config.h"
 #include "V8SVGLength.h"
 
+#include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/V8Binding.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/svg/SVGLengthContext.h"
@@ -43,13 +43,11 @@ void V8SVGLength::valueAttrGetterCustom(v8::Local<v8::String> name, const v8::Pr
 {
     SVGPropertyTearOff<SVGLength>* wrapper = V8SVGLength::toNative(info.Holder());
     SVGLength& imp = wrapper->propertyReference();
-    ExceptionCode ec = 0;
+    ExceptionState es(info.GetIsolate());
     SVGLengthContext lengthContext(wrapper->contextElement());
-    float value = imp.value(lengthContext, ec);
-    if (UNLIKELY(ec)) {
-        setDOMException(ec, info.GetIsolate());
+    float value = imp.value(lengthContext, es);
+    if (es.throwIfNeeded())
         return;
-    }
     v8SetReturnValue(info, value);
 }
 
@@ -67,13 +65,12 @@ void V8SVGLength::valueAttrSetterCustom(v8::Local<v8::String> name, v8::Local<v8
     }
 
     SVGLength& imp = wrapper->propertyReference();
-    ExceptionCode ec = 0;
+    ExceptionState es(info.GetIsolate());
     SVGLengthContext lengthContext(wrapper->contextElement());
-    imp.setValue(static_cast<float>(value->NumberValue()), lengthContext, ec);
-    if (UNLIKELY(ec))
-        setDOMException(ec, info.GetIsolate());
-    else
-        wrapper->commitChange();
+    imp.setValue(static_cast<float>(value->NumberValue()), lengthContext, es);
+    if (es.throwIfNeeded())
+        return;
+    wrapper->commitChange();
 }
 
 void V8SVGLength::convertToSpecifiedUnitsMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -90,15 +87,12 @@ void V8SVGLength::convertToSpecifiedUnitsMethodCustom(const v8::FunctionCallback
     }
 
     SVGLength& imp = wrapper->propertyReference();
-    ExceptionCode ec = 0;
+    ExceptionState es(args.GetIsolate());
     V8TRYCATCH_VOID(int, unitType, toUInt32(args[0]));
     SVGLengthContext lengthContext(wrapper->contextElement());
-    imp.convertToSpecifiedUnits(unitType, lengthContext, ec);
-    if (UNLIKELY(ec)) {
-        setDOMException(ec, args.GetIsolate());
+    imp.convertToSpecifiedUnits(unitType, lengthContext, es);
+    if (es.throwIfNeeded())
         return;
-    }
-
     wrapper->commitChange();
 }
 

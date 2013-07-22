@@ -35,6 +35,7 @@
 #include "V8CanvasRenderingContext2D.h"
 #include "V8Node.h"
 #include "V8WebGLRenderingContext.h"
+#include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/V8Binding.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/canvas/Canvas2DContextAttributes.h"
@@ -127,7 +128,7 @@ void V8HTMLCanvasElement::toDataURLMethodCustom(const v8::FunctionCallbackInfo<v
 {
     v8::Handle<v8::Object> holder = args.Holder();
     HTMLCanvasElement* canvas = V8HTMLCanvasElement::toNative(holder);
-    ExceptionCode ec = 0;
+    ExceptionState es(args.GetIsolate());
 
     String type = toWebCoreString(args[0]);
     double quality;
@@ -137,8 +138,8 @@ void V8HTMLCanvasElement::toDataURLMethodCustom(const v8::FunctionCallbackInfo<v
         qualityPtr = &quality;
     }
 
-    String result = canvas->toDataURL(type, qualityPtr, ec);
-    setDOMException(ec, args.GetIsolate());
+    String result = canvas->toDataURL(type, qualityPtr, es);
+    es.throwIfNeeded();
     v8SetReturnValueStringOrUndefined(args, result, args.GetIsolate());
 }
 

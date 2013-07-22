@@ -41,6 +41,7 @@
 #include "V8WebGLRenderingContext.h"
 #include "V8XPathNSResolver.h"
 #include "V8XPathResult.h"
+#include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMWrapper.h"
@@ -62,7 +63,7 @@ namespace WebCore {
 void V8Document::evaluateMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     RefPtr<Document> document = V8Document::toNative(args.Holder());
-    ExceptionCode ec = 0;
+    ExceptionState es(args.GetIsolate());
     String expression = toWebCoreString(args[0]);
     RefPtr<Node> contextNode;
     if (V8Node::HasInstance(args[1], args.GetIsolate(), worldType(args.GetIsolate())))
@@ -79,11 +80,9 @@ void V8Document::evaluateMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&
     if (V8XPathResult::HasInstance(args[4], args.GetIsolate(), worldType(args.GetIsolate())))
         inResult = V8XPathResult::toNative(v8::Handle<v8::Object>::Cast(args[4]));
 
-    V8TRYCATCH_VOID(RefPtr<XPathResult>, result, DocumentXPathEvaluator::evaluate(document.get(), expression, contextNode.get(), resolver.get(), type, inResult.get(), ec));
-    if (ec) {
-        setDOMException(ec, args.GetIsolate());
+    V8TRYCATCH_VOID(RefPtr<XPathResult>, result, DocumentXPathEvaluator::evaluate(document.get(), expression, contextNode.get(), resolver.get(), type, inResult.get(), es));
+    if (es.throwIfNeeded())
         return;
-    }
 
     v8SetReturnValue(args, toV8Fast(result.release(), args, document.get()));
 }

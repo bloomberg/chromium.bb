@@ -29,7 +29,6 @@
 #include "V8OscillatorNode.h"
 
 #include "bindings/v8/V8Binding.h"
-#include "core/dom/ExceptionCode.h"
 #include "modules/webaudio/OscillatorNode.h"
 
 namespace WebCore {
@@ -43,7 +42,7 @@ void V8OscillatorNode::typeAttrSetterCustom(v8::Local<v8::String> name, v8::Loca
         bool ok = false;
         uint32_t type = toUInt32(value, ok);
         if (!ok || !imp->setType(type))
-            throwError(v8TypeError, "Illegal OscillatorNode type", info.GetIsolate());
+            throwTypeError("Illegal OscillatorNode type", info.GetIsolate());
         return;
     }
 
@@ -55,7 +54,7 @@ void V8OscillatorNode::typeAttrSetterCustom(v8::Local<v8::String> name, v8::Loca
         }
     }
     
-    throwError(v8TypeError, "Illegal OscillatorNode type", info.GetIsolate());
+    throwTypeError("Illegal OscillatorNode type", info.GetIsolate());
 }
 
 } // namespace WebCore

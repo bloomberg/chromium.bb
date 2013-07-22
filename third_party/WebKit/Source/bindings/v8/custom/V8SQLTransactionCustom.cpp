@@ -34,6 +34,7 @@
 
 #include "V8SQLStatementCallback.h"
 #include "V8SQLStatementErrorCallback.h"
+#include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/V8Binding.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/platform/sql/SQLValue.h"
@@ -108,9 +109,9 @@ void V8SQLTransaction::executeSqlMethodCustom(const v8::FunctionCallbackInfo<v8:
         errorCallback = V8SQLStatementErrorCallback::create(args[3], scriptExecutionContext);
     }
 
-    ExceptionCode ec = 0;
-    transaction->executeSQL(statement, sqlValues, callback, errorCallback, ec);
-    setDOMException(ec, args.GetIsolate());
+    ExceptionState es(args.GetIsolate());
+    transaction->executeSQL(statement, sqlValues, callback, errorCallback, es);
+    es.throwIfNeeded();
 }
 
 } // namespace WebCore

@@ -32,8 +32,6 @@
 #include "bindings/v8/custom/V8ArrayBufferCustom.h"
 
 #include "bindings/v8/V8Binding.h"
-#include "core/dom/ExceptionCode.h"
-
 #include "wtf/ArrayBuffer.h"
 #include "wtf/StdLibExtras.h"
 
@@ -66,7 +64,6 @@ void V8ArrayBuffer::derefObject(void* object)
 {
     static_cast<ArrayBuffer*>(object)->deref();
 }
-
 
 v8::Handle<v8::Object> V8ArrayBuffer::createWrapper(PassRefPtr<ArrayBuffer> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
@@ -102,6 +99,5 @@ ArrayBuffer* V8ArrayBuffer::toNative(v8::Handle<v8::Object> object)
     ASSERT(arraybufferPtr);
     return reinterpret_cast<ArrayBuffer*>(arraybufferPtr);
 }
-
 
 } // namespace WebCore

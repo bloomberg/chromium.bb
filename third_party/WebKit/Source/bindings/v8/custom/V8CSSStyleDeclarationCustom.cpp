@@ -32,15 +32,14 @@
 #include "V8CSSStyleDeclaration.h"
 
 #include "CSSPropertyNames.h"
+#include "bindings/v8/ExceptionState.h"
+#include "bindings/v8/V8Binding.h"
 #include "core/css/CSSParser.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSStyleDeclaration.h"
 #include "core/css/CSSValue.h"
 #include "core/dom/EventTarget.h"
 #include "core/page/RuntimeCSSEnabled.h"
-
-#include "bindings/v8/V8Binding.h"
-
 #include "wtf/ASCIICType.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
@@ -234,13 +233,11 @@ void V8CSSStyleDeclaration::namedPropertySetterCustom(v8::Local<v8::String> name
     if (propInfo->hadPixelOrPosPrefix)
         propertyValue.append("px");
 
-    ExceptionCode ec = 0;
-    imp->setPropertyInternal(static_cast<CSSPropertyID>(propInfo->propID), propertyValue, false, ec);
+    ExceptionState es(info.GetIsolate());
+    imp->setPropertyInternal(static_cast<CSSPropertyID>(propInfo->propID), propertyValue, false, es);
 
-    if (ec) {
-        setDOMException(ec, info.GetIsolate());
+    if (es.throwIfNeeded())
         return;
-    }
 
     v8SetReturnValue(info, value);
 }
