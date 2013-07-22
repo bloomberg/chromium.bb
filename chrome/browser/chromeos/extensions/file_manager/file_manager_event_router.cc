@@ -176,6 +176,30 @@ scoped_ptr<base::DictionaryValue> JobInfoToDictionaryValue(
   return result.Pass();
 }
 
+// Checks for availability of the Google+ Photos app.
+bool IsGooglePhotosInstalled(Profile *profile) {
+  ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile)->extension_service();
+  if (!service)
+    return false;
+
+  // Google+ Photos uses several ids for different channels. Therefore, all of
+  // them should be checked.
+  const std::string kGooglePlusPhotosIds[] = {
+    "ebpbnabdhheoknfklmpddcdijjkmklkp",  // G+ Photos staging
+    "efjnaogkjbogokcnohkmnjdojkikgobo",  // G+ Photos prod
+    "ejegoaikibpmikoejfephaneibodccma"   // G+ Photos dev
+  };
+
+  for (size_t i = 0; i < arraysize(kGooglePlusPhotosIds); ++i) {
+    if (service->GetExtensionById(kGooglePlusPhotosIds[i],
+                                  false /* include_disable */) != NULL)
+      return true;
+  }
+
+  return false;
+}
+
 }  // namespace
 
 // Pass dummy value to JobInfo's constructor for make it default constructible.
@@ -716,24 +740,11 @@ void FileManagerEventRouter::ShowRemovableDeviceInFileManager(
   const base::FilePath dcim_path = mount_path.Append(
       FILE_PATH_LITERAL("DCIM"));
 
-  // TODO(mtomasz): Temporarily for M26. Remove it on M27.
-  // If an external photo importer is installed, then do not show the action
-  // choice dialog.
-  ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile_)->extension_service();
-  if (!service)
-    return;
-  const std::string kExternalPhotoImporterExtensionId =
-      "efjnaogkjbogokcnohkmnjdojkikgobo";
-  const bool external_photo_importer_available =
-      service->GetExtensionById(kExternalPhotoImporterExtensionId,
-                                false /* include_disable */) != NULL;
-
   // If there is no DCIM folder or an external photo importer is not available,
   // then launch Files.app.
   DirectoryExistsOnUIThread(
       dcim_path,
-      external_photo_importer_available ?
+      IsGooglePhotosInstalled(profile_) ?
         base::Bind(&base::DoNothing) :
         base::Bind(&file_manager_util::ViewRemovableDrive, mount_path),
       base::Bind(&file_manager_util::ViewRemovableDrive, mount_path));
