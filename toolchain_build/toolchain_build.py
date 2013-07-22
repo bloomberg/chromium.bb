@@ -8,7 +8,6 @@
 The real entry plumbing is in toolchain_main.py.
 """
 
-import os
 import platform
 import sys
 
@@ -45,8 +44,8 @@ MAKE_DESTDIR_CMD = ['make', 'DESTDIR=%(abs_output)s']
 # This file gets installed by multiple packages' install steps, but it is
 # never useful when installed in isolation.  So we remove it from the
 # installation directories before packaging up.
-REMOVE_INFO_DIR = command.Remove(os.path.join('%(output)s',
-                                              'share', 'info', 'dir'))
+REMOVE_INFO_DIR = command.Remove(command.path.join('%(output)s',
+                                                   'share', 'info', 'dir'))
 
 CONFIGURE_HOST_ARCH = []
 if sys.platform.startswith('linux'):
@@ -96,12 +95,12 @@ CONFIGURE_HOST_TOOL = CONFIGURE_HOST_COMMON + [
 
 
 def InstallDocFiles(subdir, files):
-  doc_dir = os.path.join('%(output)s', 'share', 'doc', subdir)
-  dirs = sorted(set([os.path.dirname(os.path.join(doc_dir, file))
+  doc_dir = command.path.join('%(output)s', 'share', 'doc', subdir)
+  dirs = sorted(set([command.path.dirname(command.path.join(doc_dir, file))
                      for file in files]))
   commands = ([command.Mkdir(dir, parents=True) for dir in dirs] +
-              [command.Copy(os.path.join('%(src)s', file),
-                            os.path.join(doc_dir, file))
+              [command.Copy(command.path.join('%(src)s', file),
+                            command.path.join(doc_dir, file))
                for file in files])
   return commands
 
@@ -272,8 +271,8 @@ HOST_GCC_LIBS = {
                 # The .pc files wind up containing some absolute paths
                 # that make the output depend on the build directory name.
                 # The dependents' configure scripts don't need them anyway.
-                command.RemoveDirectory(os.path.join('%(output)s',
-                                                     'lib', 'pkgconfig')),
+                command.RemoveDirectory(command.path.join('%(output)s',
+                                                          'lib', 'pkgconfig')),
                 ],
         },
     'cloog': {
@@ -296,8 +295,8 @@ HOST_GCC_LIBS = {
                 # The .pc files wind up containing some absolute paths
                 # that make the output depend on the build directory name.
                 # The dependents' configure scripts don't need them anyway.
-                command.RemoveDirectory(os.path.join('%(output)s',
-                                                     'lib', 'pkgconfig')),
+                command.RemoveDirectory(command.path.join('%(output)s',
+                                                          'lib', 'pkgconfig')),
                 ],
         },
     }
@@ -309,7 +308,8 @@ GCC_GIT_URL = GIT_BASE_URL + '/nacl-gcc.git'
 
 def GccCommand(target, cmd):
   return command.Command(
-      cmd, path_dirs=[os.path.join('%(abs_binutils_' + target + ')s', 'bin')])
+      cmd, path_dirs=[command.path.join('%(abs_binutils_' + target + ')s',
+                                        'bin')])
 
 
 def ConfigureGccCommand(target, extra_args=[]):
@@ -358,11 +358,12 @@ def HostTools(target):
               REMOVE_INFO_DIR,
               ] + InstallDocFiles('binutils',
                                   ['COPYING3'] +
-                                  [os.path.join(subdir, 'NEWS') for subdir in
+                                  [command.path.join(subdir, 'NEWS')
+                                   for subdir in
                                    ['binutils', 'gas', 'ld', 'gold']]) +
               # The top-level lib* directories contain host libraries
               # that we don't want to include in the distribution.
-              [command.RemoveDirectory(os.path.join('%(output)s', name))
+              [command.RemoveDirectory(command.path.join('%(output)s', name))
                for name in ['lib', 'lib32', 'lib64']],
           },
 
@@ -408,7 +409,7 @@ def HostTools(target):
                                          (component, component)
                                          for component in HOST_GCC_LIBS_DEPS] +
                                         ['s@%(cwd)s@...@g']),
-                               os.path.join('gcc', 'configargs.h')]),
+                               command.path.join('gcc', 'configargs.h')]),
               # gcc/Makefile's install rules ordinarily look at the
               # installed include directory for a limits.h to decide
               # whether the lib/gcc/.../include-fixed/limits.h header
@@ -419,7 +420,8 @@ def HostTools(target):
                                                       'LIMITS_H_TEST=true']),
               # gcc/Makefile's install targets populate this directory
               # only if it already exists.
-              command.Mkdir(os.path.join('%(output)s', target + '-nacl', 'bin'),
+              command.Mkdir(command.path.join('%(output)s',
+                                              target + '-nacl', 'bin'),
                             True),
               GccCommand(target, MAKE_DESTDIR_CMD + ['install-strip-gcc']),
               REMOVE_INFO_DIR,
@@ -454,7 +456,7 @@ def TargetCommands(target, command_list):
   # compiler looks for the assembler and linker relative to itself.
   commands = PopulateDeps(['%(binutils_' + target + ')s',
                            '%(gcc_' + target + ')s'])
-  bindir = os.path.join('%(cwd)s', 'all_deps', 'bin')
+  bindir = command.path.join('%(cwd)s', 'all_deps', 'bin')
   commands += [command.Command(cmd, path_dirs=[bindir])
                for cmd in command_list]
   return commands
@@ -469,21 +471,22 @@ def TargetLibs(target):
   # 'unpack_commands' stage, these files will be part of the input hash and
   # so we don't need to do anything else to keep track of when they might
   # have changed in the native_client source tree.
-  newlib_sys_nacl = os.path.join('%(src)s', 'newlib', 'libc', 'sys', 'nacl')
-  newlib_unpack = [command.RemoveDirectory(os.path.join(newlib_sys_nacl,
-                                                        dirname))
+  newlib_sys_nacl = command.path.join('%(src)s',
+                                      'newlib', 'libc', 'sys', 'nacl')
+  newlib_unpack = [command.RemoveDirectory(command.path.join(newlib_sys_nacl,
+                                                             dirname))
                    for dirname in ['bits', 'sys', 'machine']]
   newlib_unpack.append(command.Command([
       'python',
-      os.path.join('%(top_srcdir)s',
-                   'src', 'trusted', 'service_runtime', 'export_header.py'),
-      os.path.join('%(top_srcdir)s',
-                   'src', 'trusted', 'service_runtime', 'include'),
+      command.path.join('%(top_srcdir)s', 'src',
+                        'trusted', 'service_runtime', 'export_header.py'),
+      command.path.join('%(top_srcdir)s', 'src',
+                        'trusted', 'service_runtime', 'include'),
       newlib_sys_nacl,
       ]))
 
   def NewlibFile(subdir, name):
-    return os.path.join('%(output)s', target + '-nacl', subdir, name)
+    return command.path.join('%(output)s', target + '-nacl', subdir, name)
 
   newlib_sysroot = '%(abs_newlib_' + target + ')s'
   newlib_tooldir = '%s/%s-nacl' % (newlib_sysroot, target)

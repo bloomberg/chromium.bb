@@ -16,6 +16,17 @@ import sys
 import file_tools
 
 
+# MSYS tools do not always work with combinations of Windows and MSYS
+# path conventions, e.g. '../foo\\bar' doesn't find '../foo/bar'.
+# Since we convert all the directory names to MSYS conventions, we
+# should not be using Windows separators with those directory names.
+# As this is really an implementation detail of this module, we export
+# 'command.path' to use in place of 'os.path', rather than having
+# users of the module know which flavor to use.
+import posixpath
+path = posixpath
+
+
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 NACL_DIR = os.path.dirname(SCRIPT_DIR)
 
