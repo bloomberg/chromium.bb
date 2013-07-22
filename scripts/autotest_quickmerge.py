@@ -103,7 +103,7 @@ def GetStalePackageNames(change_list, autotest_sysroot):
     change_list: A list of ItemizedChange objects corresponding to changed
                  or modified files.
     autotest_sysroot: Absolute path of autotest in the sysroot,
-                      e.g. '/build/lumpy/usr/local/autotest'
+                      e.g. '/build/lumpy/usr/local/build/autotest'
 
   Returns:
     A list of test package names, eg ['factory_Leds', 'login_UserPolicyKeys'].
@@ -258,7 +258,7 @@ def RemoveBzipPackages(autotest_sysroot):
 
   Arguments:
     autotest_sysroot: Absolute path of autotest in the sysroot,
-                      e.g. '/build/lumpy/usr/local/autotest'
+                      e.g. '/build/lumpy/usr/local/build/autotest'
   """
   osutils.RmDir(os.path.join(autotest_sysroot, 'packages'),
                              ignore_missing=True)
@@ -334,6 +334,12 @@ def ParseArguments(argv):
   parser.add_argument('--verbose', action='store_true',
                       help='Print detailed change report.')
 
+  # Used only if test_that is calling autotest_quickmerge and has detected that
+  # the sysroot autotest path is still in usr/local/autotest (ie the build
+  # pre-dates https://chromium-review.googlesource.com/#/c/62880/ )
+  parser.add_argument('--legacy_path', action='store_true',
+                      help=argparse.SUPPRESS)
+
   return parser.parse_args(argv)
 
 
@@ -362,8 +368,11 @@ def main(argv):
 
   # TODO: Determine the following string programatically.
   sysroot_path = os.path.join('/build', args.board, '')
-  sysroot_autotest_path = os.path.join(sysroot_path, 'usr', 'local',
-                                       'autotest', '')
+  sysroot_autotest_path = os.path.join(sysroot_path,
+                                       constants.AUTOTEST_BUILD_PATH, '')
+  if args.legacy_path:
+    sysroot_autotest_path = os.path.join(sysroot_path, 'usr/local/autotest',
+                                         '')
 
   if not args.force:
     newest_dest_time = GetNewestFileTime(sysroot_autotest_path, IGNORE_SUBDIRS)

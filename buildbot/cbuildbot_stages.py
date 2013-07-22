@@ -2216,8 +2216,10 @@ class BuildImageStage(BuildPackagesStage):
   def _BuildAutotestTarballs(self):
     with osutils.TempDir(prefix='cbuildbot-autotest') as tempdir:
       with self.ArtifactUploader() as queue:
-        cwd = os.path.join(self._build_root, 'chroot', 'build',
-                           self._current_board, 'usr', 'local')
+        cwd = os.path.abspath(
+            os.path.join(self._build_root, 'chroot', 'build',
+                         self._current_board, constants.AUTOTEST_BUILD_PATH,
+                         '..'))
 
         # Find the control files in autotest/
         control_files = commands.FindFilesWithPattern(
@@ -2486,7 +2488,8 @@ class SDKPackageStage(bs.BuilderStage):
   # Version of the Manifest file being generated. Should be incremented for
   # Major format changes.
   MANIFEST_VERSION = '1'
-  _EXCLUDED_PATHS = ('usr/lib/debug', 'usr/local/autotest', 'packages', 'tmp')
+  _EXCLUDED_PATHS = ('usr/lib/debug', constants.AUTOTEST_BUILD_PATH,
+                     'packages', 'tmp')
 
   def PerformStage(self):
     tarball_name = 'built-sdk.tar.xz'

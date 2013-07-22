@@ -1038,7 +1038,8 @@ def GenerateDebugTarball(buildroot, board, archive_path, gdb_symbols):
   inputs = None
 
   if gdb_symbols:
-    extra_args = ['--exclude', 'debug/usr/local/autotest',
+    extra_args = ['--exclude',
+                  os.path.join('debug', constants.AUTOTEST_BUILD_PATH),
                   '--exclude', 'debug/tests']
     inputs = ['debug']
   else:
@@ -1405,13 +1406,15 @@ def BuildFullAutotestTarball(buildroot, board, tarball_dir):
   """
 
   tarball = os.path.join(tarball_dir, 'autotest.tar.bz2')
-  cwd = os.path.join(buildroot, 'chroot', 'build', board, 'usr', 'local')
+  cwd = os.path.abspath(os.path.join(buildroot, 'chroot', 'build', board,
+                                     constants.AUTOTEST_BUILD_PATH, '..'))
   result = BuildTarball(buildroot, ['autotest'], tarball, cwd=cwd,
                         error_code_ok=True)
 
   # Emerging the autotest package to the factory test image while this is
-  # running modifies the timestamp on /usr/local/autotest/server by adding a
-  # tmp directory underneath it. When tar spots this, it flags this and returns
+  # running modifies the timestamp on /build/autotest/server by
+  # adding a tmp directory underneath it.
+  # When tar spots this, it flags this and returns
   # status code 1. The tarball is still OK, although there might be a few
   # unneeded (and garbled) tmp files. If tar fails in a different way, it'll
   # return an error code other than 1.
