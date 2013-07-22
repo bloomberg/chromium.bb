@@ -82,12 +82,14 @@ enum InstallStatus {
   WAIT_FOR_EXISTING_FAILED,    // 48. OS error waiting for existing setup.exe.
   PATCH_INVALID_ARGUMENTS,     // 49. The arguments of --patch were missing or
                                // they were invalid for any reason.
+  DIFF_PATCH_SOURCE_MISSING,   // 50. No previous version archive found for
+                               // differential update.
   // Friendly reminder: note the COMPILE_ASSERT below.
 };
 
 
 // Existing InstallStatus values must not change.  Always add to the end.
-COMPILE_ASSERT(installer::PATCH_INVALID_ARGUMENTS == 49,
+COMPILE_ASSERT(installer::DIFF_PATCH_SOURCE_MISSING == 50,
                dont_change_enum);
 
 // The type of an update archive.
@@ -173,6 +175,7 @@ extern const char kSelfDestruct[];
 extern const char kSystemLevel[];
 extern const char kUninstall[];
 extern const char kUpdateSetupExe[];
+extern const char kUncompressedArchive[];
 extern const char kVerboseLogging[];
 extern const char kShowEula[];
 extern const char kShowEulaForMetro[];

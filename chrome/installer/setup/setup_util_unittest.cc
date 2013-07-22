@@ -12,39 +12,35 @@
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
+#include "base/version.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
-#include "chrome/common/chrome_paths.h"
 #include "chrome/installer/setup/setup_util.h"
+#include "chrome/installer/setup/setup_constants.h"
+#include "chrome/installer/util/installation_state.h"
+#include "chrome/installer/util/installer_state.h"
+#include "chrome/installer/util/util_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
 
 class SetupUtilTestWithDir : public testing::Test {
  protected:
-  virtual void SetUp() {
-    ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &data_dir_));
-    data_dir_ = data_dir_.AppendASCII("installer");
-    ASSERT_TRUE(base::PathExists(data_dir_));
-
+  virtual void SetUp() OVERRIDE {
     // Create a temp directory for testing.
     ASSERT_TRUE(test_dir_.CreateUniqueTempDir());
   }
 
-  virtual void TearDown() {
+  virtual void TearDown() OVERRIDE {
     // Clean up test directory manually so we can fail if it leaks.
     ASSERT_TRUE(test_dir_.Delete());
   }
 
   // The temporary directory used to contain the test operations.
   base::ScopedTempDir test_dir_;
-
-  // The path to input data used in tests.
-  base::FilePath data_dir_;
 };
 
 // The privilege tested in ScopeTokenPrivilege tests below.
@@ -93,26 +89,6 @@ bool CurrentProcessHasPrivilege(const wchar_t* privilege_name) {
 }
 
 }  // namespace
-
-// Test that we are parsing Chrome version correctly.
-TEST_F(SetupUtilTestWithDir, ApplyDiffPatchTest) {
-  base::FilePath work_dir(test_dir_.path());
-  work_dir = work_dir.AppendASCII("ApplyDiffPatchTest");
-  ASSERT_FALSE(base::PathExists(work_dir));
-  EXPECT_TRUE(file_util::CreateDirectory(work_dir));
-  ASSERT_TRUE(base::PathExists(work_dir));
-
-  base::FilePath src = data_dir_.AppendASCII("archive1.7z");
-  base::FilePath patch = data_dir_.AppendASCII("archive.diff");
-  base::FilePath dest = work_dir.AppendASCII("archive2.7z");
-  EXPECT_EQ(installer::ApplyDiffPatch(src, patch, dest, NULL), 0);
-  base::FilePath base = data_dir_.AppendASCII("archive2.7z");
-  EXPECT_TRUE(base::ContentsEqual(dest, base));
-
-  EXPECT_EQ(installer::ApplyDiffPatch(base::FilePath(), base::FilePath(),
-                                      base::FilePath(), NULL),
-            6);
-}
 
 // Test that we are parsing Chrome version correctly.
 TEST_F(SetupUtilTestWithDir, GetMaxVersionFromArchiveDirTest) {
@@ -276,4 +252,147 @@ TEST(SetupUtilTest, AdjustFromBelowNormalPriority) {
     EXPECT_EQ(PCCR_CHANGED, RelaunchAndDoProcessPriorityAdjustment());
   else
     EXPECT_EQ(PCCR_UNCHANGED, RelaunchAndDoProcessPriorityAdjustment());
+}
+
+namespace {
+
+// A test fixture that configures an InstallationState and an InstallerState
+// with a product being updated.
+class FindArchiveToPatchTest : public SetupUtilTestWithDir {
+ protected:
+  class FakeInstallationState : public installer::InstallationState {
+  };
+
+  class FakeProductState : public installer::ProductState {
+   public:
+    static FakeProductState* FromProductState(const ProductState* product) {
+      return static_cast<FakeProductState*>(const_cast<ProductState*>(product));
+    }
+
+    void set_version(const Version& version) {
+      if (version.IsValid())
+        version_.reset(new Version(version));
+      else
+        version_.reset();
+    }
+
+    void set_uninstall_command(const CommandLine& uninstall_command) {
+      uninstall_command_ = uninstall_command;
+    }
+  };
+
+  virtual void SetUp() OVERRIDE {
+    SetupUtilTestWithDir::SetUp();
+    product_version_ = Version("30.0.1559.0");
+    max_version_ = Version("47.0.1559.0");
+
+    // Install the product according to the version.
+    original_state_.reset(new FakeInstallationState());
+    InstallProduct();
+
+    // Prepare to update the product in the temp dir.
+    installer_state_.reset(new installer::InstallerState(
+        kSystemInstall_ ? installer::InstallerState::SYSTEM_LEVEL :
+        installer::InstallerState::USER_LEVEL));
+    installer_state_->AddProductFromState(
+        kProductType_,
+        *original_state_->GetProductState(kSystemInstall_, kProductType_));
+
+    // Create archives in the two version dirs.
+    ASSERT_TRUE(
+        file_util::CreateDirectory(GetProductVersionArchivePath().DirName()));
+    ASSERT_EQ(1, file_util::WriteFile(GetProductVersionArchivePath(), "a", 1));
+    ASSERT_TRUE(
+        file_util::CreateDirectory(GetMaxVersionArchivePath().DirName()));
+    ASSERT_EQ(1, file_util::WriteFile(GetMaxVersionArchivePath(), "b", 1));
+  }
+
+  virtual void TearDown() OVERRIDE {
+    original_state_.reset();
+    SetupUtilTestWithDir::TearDown();
+  }
+
+  base::FilePath GetArchivePath(const Version& version) const {
+    return test_dir_.path()
+        .AppendASCII(version.GetString())
+        .Append(installer::kInstallerDir)
+        .Append(installer::kChromeArchive);
+  }
+
+  base::FilePath GetMaxVersionArchivePath() const {
+    return GetArchivePath(max_version_);
+  }
+
+  base::FilePath GetProductVersionArchivePath() const {
+    return GetArchivePath(product_version_);
+  }
+
+  void InstallProduct() {
+    FakeProductState* product = FakeProductState::FromProductState(
+        original_state_->GetNonVersionedProductState(kSystemInstall_,
+                                                     kProductType_));
+
+    product->set_version(product_version_);
+    CommandLine uninstall_command(
+        test_dir_.path().AppendASCII(product_version_.GetString())
+        .Append(installer::kInstallerDir)
+        .Append(installer::kSetupExe));
+    uninstall_command.AppendSwitch(installer::switches::kUninstall);
+    product->set_uninstall_command(uninstall_command);
+  }
+
+  void UninstallProduct() {
+    FakeProductState::FromProductState(
+        original_state_->GetNonVersionedProductState(kSystemInstall_,
+                                                     kProductType_))
+        ->set_version(Version());
+  }
+
+  static const bool kSystemInstall_;
+  static const BrowserDistribution::Type kProductType_;
+  Version product_version_;
+  Version max_version_;
+  scoped_ptr<FakeInstallationState> original_state_;
+  scoped_ptr<installer::InstallerState> installer_state_;
+};
+
+const bool FindArchiveToPatchTest::kSystemInstall_ = false;
+const BrowserDistribution::Type FindArchiveToPatchTest::kProductType_ =
+    BrowserDistribution::CHROME_BROWSER;
+
+}  // namespace
+
+// Test that the path to the advertised product version is found.
+TEST_F(FindArchiveToPatchTest, ProductVersionFound) {
+  base::FilePath patch_source(installer::FindArchiveToPatch(
+      *original_state_, *installer_state_));
+  EXPECT_EQ(GetProductVersionArchivePath().value(), patch_source.value());
+}
+
+// Test that the path to the max version is found if the advertised version is
+// missing.
+TEST_F(FindArchiveToPatchTest, MaxVersionFound) {
+  // The patch file is absent.
+  ASSERT_TRUE(base::DeleteFile(GetProductVersionArchivePath(), false));
+  base::FilePath patch_source(installer::FindArchiveToPatch(
+      *original_state_, *installer_state_));
+  EXPECT_EQ(GetMaxVersionArchivePath().value(), patch_source.value());
+
+  // The product doesn't appear to be installed, so the max version is found.
+  UninstallProduct();
+  patch_source = installer::FindArchiveToPatch(
+      *original_state_, *installer_state_);
+  EXPECT_EQ(GetMaxVersionArchivePath().value(), patch_source.value());
+}
+
+// Test that an empty path is returned if no version is found.
+TEST_F(FindArchiveToPatchTest, NoVersionFound) {
+  // The product doesn't appear to be installed and no archives are present.
+  UninstallProduct();
+  ASSERT_TRUE(base::DeleteFile(GetProductVersionArchivePath(), false));
+  ASSERT_TRUE(base::DeleteFile(GetMaxVersionArchivePath(), false));
+
+  base::FilePath patch_source(installer::FindArchiveToPatch(
+      *original_state_, *installer_state_));
+  EXPECT_EQ(base::FilePath::StringType(), patch_source.value());
 }

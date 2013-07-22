@@ -30,17 +30,6 @@ class InstallationState;
 class InstallerState;
 class ProductState;
 
-// Apply a diff patch to source file. First tries to apply it using Courgette
-// since it checks for Courgette header and fails quickly. If that fails
-// tries to apply the patch using regular bsdiff. Returns status code as
-// defined by the bsdiff code (see third_party/bspatch/mbspatch.h for the
-// definitions of the codes).
-// The installer stage is updated if |installer_state| is non-NULL.
-int ApplyDiffPatch(const base::FilePath& src,
-                   const base::FilePath& patch,
-                   const base::FilePath& dest,
-                   const InstallerState* installer_state);
-
 // Applies a patch file to source file using Courgette. Returns 0 in case of
 // success. In case of errors, it returns kCourgetteErrorOffset + a Courgette
 // status code, as defined in courgette/courgette.h
@@ -60,6 +49,11 @@ int BsdiffPatchFiles(const base::FilePath& src,
 // Chrome_path should contain at least one version folder.
 // Returns the maximum version found or NULL if no version is found.
 Version* GetMaxVersionFromArchiveDir(const base::FilePath& chrome_path);
+
+// Returns the uncompressed archive of the installed version that serves as the
+// source for patching.
+base::FilePath FindArchiveToPatch(const InstallationState& original_state,
+                                  const InstallerState& installer_state);
 
 // Spawns a new process that waits for a specified amount of time before
 // attempting to delete |path|.  This is useful for setup to delete the

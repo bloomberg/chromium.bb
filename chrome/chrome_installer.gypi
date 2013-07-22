@@ -264,6 +264,8 @@
           },
           'sources': [
             'installer/mini_installer/chrome.release',
+            'installer/setup/archive_patch_helper.cc',
+            'installer/setup/archive_patch_helper.h',
             'installer/setup/chrome_frame_quick_enable.cc',
             'installer/setup/chrome_frame_quick_enable.h',
             'installer/setup/chrome_frame_ready_mode.cc',
@@ -420,6 +422,9 @@
             'installer/mini_installer/mini_string.cc',
             'installer/mini_installer/mini_string.h',
             'installer/mini_installer/mini_string_test.cc',
+            'installer/setup/archive_patch_helper.cc',  # Move to lib
+            'installer/setup/archive_patch_helper.h',   # Move to lib
+            'installer/setup/archive_patch_helper_unittest.cc',
             'installer/setup/install.cc',               # Move to lib
             'installer/setup/install.h',                # Move to lib
             'installer/setup/install_unittest.cc',

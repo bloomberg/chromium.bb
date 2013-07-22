@@ -17,6 +17,7 @@
 #include "base/strings/string_util.h"
 #include "base/version.h"
 #include "base/win/windows_version.h"
+#include "chrome/installer/setup/setup_constants.h"
 #include "chrome/installer/util/copy_tree_work_item.h"
 #include "chrome/installer/util/installation_state.h"
 #include "chrome/installer/util/installer_state.h"
@@ -134,53 +135,6 @@ int BsdiffPatchFiles(const base::FilePath& src,
   return exit_code;
 }
 
-int ApplyDiffPatch(const base::FilePath& src,
-                   const base::FilePath& patch,
-                   const base::FilePath& dest,
-                   const InstallerState* installer_state) {
-  VLOG(1) << "Applying patch " << patch.value() << " to file "
-          << src.value() << " and generating file " << dest.value();
-
-  if (installer_state != NULL)
-    installer_state->UpdateStage(installer::ENSEMBLE_PATCHING);
-
-  // Try Courgette first.  Courgette checks the patch file first and fails
-  // quickly if the patch file does not have a valid Courgette header.
-  courgette::Status patch_status =
-      courgette::ApplyEnsemblePatch(src.value().c_str(),
-                                    patch.value().c_str(),
-                                    dest.value().c_str());
-  if (patch_status == courgette::C_OK)
-    return 0;
-
-  LOG(ERROR)
-        << "Failed to apply patch " << patch.value()
-        << " to file " << src.value() << " and generating file " << dest.value()
-        << " using courgette. err=" << patch_status;
-
-  // If we ran out of memory or disk space, then these are likely the errors
-  // we will see.  If we run into them, return an error and stay on the
-  // 'ENSEMBLE_PATCHING' update stage.
-  if (patch_status == courgette::C_DISASSEMBLY_FAILED ||
-      patch_status == courgette::C_STREAM_ERROR) {
-    return MEM_ERROR;
-  }
-
-  if (installer_state != NULL)
-    installer_state->UpdateStage(installer::BINARY_PATCHING);
-
-  int binary_patch_status = ApplyBinaryPatch(src.value().c_str(),
-                                             patch.value().c_str(),
-                                             dest.value().c_str());
-
-  LOG_IF(ERROR, binary_patch_status != OK)
-      << "Failed to apply patch " << patch.value()
-      << " to file " << src.value() << " and generating file " << dest.value()
-      << " using bsdiff. err=" << binary_patch_status;
-
-  return binary_patch_status;
-}
-
 Version* GetMaxVersionFromArchiveDir(const base::FilePath& chrome_path) {
   VLOG(1) << "Looking for Chrome version folder under " << chrome_path.value();
   Version* version = NULL;
@@ -206,6 +160,32 @@ Version* GetMaxVersionFromArchiveDir(const base::FilePath& chrome_path) {
   }
 
   return (version_found ? max_version.release() : NULL);
+}
+
+base::FilePath FindArchiveToPatch(const InstallationState& original_state,
+                                  const InstallerState& installer_state) {
+  // Check based on the version number advertised to Google Update, since that
+  // is the value used to select a specific differential update. If an archive
+  // can't be found using that, fallback to using the newest version present.
+  base::FilePath patch_source;
+  const ProductState* product =
+      original_state.GetProductState(installer_state.system_install(),
+                                     installer_state.state_type());
+  if (product) {
+    patch_source = installer_state.GetInstallerDirectory(product->version())
+        .Append(installer::kChromeArchive);
+    if (base::PathExists(patch_source))
+      return patch_source;
+  }
+  scoped_ptr<Version> version(
+      installer::GetMaxVersionFromArchiveDir(installer_state.target_path()));
+  if (version) {
+    patch_source = installer_state.GetInstallerDirectory(*version)
+        .Append(installer::kChromeArchive);
+    if (base::PathExists(patch_source))
+      return patch_source;
+  }
+  return base::FilePath();
 }
 
 bool DeleteFileFromTempProcess(const base::FilePath& path,
