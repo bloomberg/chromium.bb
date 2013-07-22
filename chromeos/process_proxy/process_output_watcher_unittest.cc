@@ -46,7 +46,7 @@ class ProcessWatcherExpectations {
 
   bool CheckExpectations(const std::string& data, ProcessOutputType type) {
     EXPECT_EQ(PROCESS_OUTPUT_TYPE_OUT, type);
-    if (!type == PROCESS_OUTPUT_TYPE_OUT)
+    if (type != PROCESS_OUTPUT_TYPE_OUT)
       return false;
 
     EXPECT_LT(received_from_out_, out_expectations_.length());
