@@ -15,7 +15,7 @@
 #include "chrome/browser/profile_resetter/brandcode_config_fetcher.h"
 #include "chrome/browser/profile_resetter/profile_resetter_test_base.h"
 #include "chrome/browser/search_engines/template_url_service.h"
-#include "chrome/browser/search_engines/template_url_service_test_util.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -72,36 +72,33 @@ const char kXmlConfig[] = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
 using extensions::Extension;
 using extensions::Manifest;
 
-class ProfileResetterTest : public testing::Test,
+// ProfileResetterTest sets up the extension, WebData and TemplateURL services.
+class ProfileResetterTest : public ExtensionServiceTestBase,
                             public ProfileResetterTestBase {
  protected:
-  // testing::Test:
   virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
 
-  TemplateURLServiceTestUtil test_util_;
+  TestingProfile* profile() { return profile_.get(); }
+
+  static BrowserContextKeyedService* CreateTemplateURLService(
+      content::BrowserContext* context);
 };
 
 void ProfileResetterTest::SetUp() {
-  test_util_.SetUp();
-  resetter_.reset(new ProfileResetter(test_util_.profile()));
-}
-
-void ProfileResetterTest::TearDown() {
-  test_util_.TearDown();
-}
-
-// ExtensionsResetTest sets up the extension service.
-class ExtensionsResetTest : public ExtensionServiceTestBase,
-                            public ProfileResetterTestBase {
- protected:
-  virtual void SetUp() OVERRIDE;
-};
-
-void ExtensionsResetTest::SetUp() {
   ExtensionServiceTestBase::SetUp();
   InitializeEmptyExtensionService();
-  resetter_.reset(new ProfileResetter(profile_.get()));
+
+  profile()->CreateWebDataService();
+  TemplateURLServiceFactory::GetInstance()->SetTestingFactory(
+      profile(),
+      &ProfileResetterTest::CreateTemplateURLService);
+  resetter_.reset(new ProfileResetter(profile()));
+}
+
+// static
+BrowserContextKeyedService* ProfileResetterTest::CreateTemplateURLService(
+    content::BrowserContext* context) {
+  return new TemplateURLService(static_cast<Profile*>(context));
 }
 
 scoped_refptr<Extension> CreateExtension(const std::string& name,
@@ -113,7 +110,8 @@ scoped_refptr<Extension> CreateExtension(const std::string& name,
   manifest.SetString(extension_manifest_keys::kName, name);
   manifest.SetString("app.launch.web_url", "http://www.google.com");
   if (theme)
-    manifest.Set(extension_manifest_keys::kTheme, new DictionaryValue());
+    manifest.Set(extension_manifest_keys::kTheme, new DictionaryValue);
+  manifest.SetString(extension_manifest_keys::kOmniboxKeyword, name);
   std::string error;
   scoped_refptr<Extension> extension = Extension::Create(
       path,
@@ -211,25 +209,42 @@ void ReplaceString(std::string* str,
 
 TEST_F(ProfileResetterTest, ResetDefaultSearchEngine) {
   // Search engine's logic is tested by
-  // TemplateURLServiceTest.ResetNonExtensionURLs.
-  PrefService* prefs = test_util_.profile()->GetPrefs();
+  // TemplateURLServiceTest.ResetURLs.
+  PrefService* prefs = profile()->GetPrefs();
   DCHECK(prefs);
   prefs->SetString(prefs::kLastPromptedGoogleURL, "http://www.foo.com/");
 
+  scoped_refptr<Extension> extension = CreateExtension(
+      "xxx",
+      base::FilePath(FILE_PATH_LITERAL("//nonexistent")),
+      Manifest::COMPONENT,
+      false);
+  service_->AddExtension(extension.get());
+
   ResetAndWait(ProfileResetter::DEFAULT_SEARCH_ENGINE);
 
+  // TemplateURLService should reset extension search engines.
+  TemplateURLService* model =
+      TemplateURLServiceFactory::GetForProfile(profile());
+  TemplateURL* ext_url = model->GetTemplateURLForKeyword(ASCIIToUTF16("xxx"));
+  ASSERT_TRUE(ext_url);
+  EXPECT_TRUE(ext_url->IsExtensionKeyword());
+  EXPECT_EQ(ASCIIToUTF16("xxx"), ext_url->keyword());
+  EXPECT_EQ(ASCIIToUTF16("xxx"), ext_url->short_name());
   EXPECT_EQ("", prefs->GetString(prefs::kLastPromptedGoogleURL));
 }
 
 TEST_F(ProfileResetterTest, ResetDefaultSearchEngineNonOrganic) {
-  PrefService* prefs = test_util_.profile()->GetPrefs();
+  PrefService* prefs = profile()->GetPrefs();
   DCHECK(prefs);
   prefs->SetString(prefs::kLastPromptedGoogleURL, "http://www.foo.com/");
 
   ResetAndWait(ProfileResetter::DEFAULT_SEARCH_ENGINE, kDistributionConfig);
 
-  EXPECT_EQ(1u, test_util_.model()->GetTemplateURLs().size());
-  TemplateURL* default_engine = test_util_.model()->GetDefaultSearchProvider();
+  TemplateURLService* model =
+      TemplateURLServiceFactory::GetForProfile(profile());
+  EXPECT_EQ(1u, model->GetTemplateURLs().size());
+  TemplateURL* default_engine = model->GetDefaultSearchProvider();
   ASSERT_NE(static_cast<TemplateURL*>(NULL), default_engine);
   EXPECT_EQ(ASCIIToUTF16("first"), default_engine->short_name());
   EXPECT_EQ(ASCIIToUTF16("firstkey"), default_engine->keyword());
@@ -239,7 +254,7 @@ TEST_F(ProfileResetterTest, ResetDefaultSearchEngineNonOrganic) {
 }
 
 TEST_F(ProfileResetterTest, ResetHomepage) {
-  PrefService* prefs = test_util_.profile()->GetPrefs();
+  PrefService* prefs = profile()->GetPrefs();
   DCHECK(prefs);
   prefs->SetBoolean(prefs::kHomePageIsNewTabPage, false);
   prefs->SetString(prefs::kHomePage, "http://google.com");
@@ -253,7 +268,7 @@ TEST_F(ProfileResetterTest, ResetHomepage) {
 }
 
 TEST_F(ProfileResetterTest, ResetHomepageNonOrganic) {
-  PrefService* prefs = test_util_.profile()->GetPrefs();
+  PrefService* prefs = profile()->GetPrefs();
   DCHECK(prefs);
   prefs->SetBoolean(prefs::kHomePageIsNewTabPage, true);
   prefs->SetString(prefs::kHomePage, "http://google.com");
@@ -268,9 +283,9 @@ TEST_F(ProfileResetterTest, ResetHomepageNonOrganic) {
 
 TEST_F(ProfileResetterTest, ResetContentSettings) {
   HostContentSettingsMap* host_content_settings_map =
-      test_util_.profile()->GetHostContentSettingsMap();
+      profile()->GetHostContentSettingsMap();
   DesktopNotificationService* notification_service =
-      DesktopNotificationServiceFactory::GetForProfile(test_util_.profile());
+      DesktopNotificationServiceFactory::GetForProfile(profile());
   ContentSettingsPattern pattern =
       ContentSettingsPattern::FromString("[*.]example.org");
   std::map<ContentSettingsType, ContentSetting> default_settings;
@@ -297,7 +312,7 @@ TEST_F(ProfileResetterTest, ResetContentSettings) {
           default_setting == CONTENT_SETTING_ALLOW ? CONTENT_SETTING_ALLOW
                                                    : CONTENT_SETTING_BLOCK;
       if (HostContentSettingsMap::IsSettingAllowedForType(
-              test_util_.profile()->GetPrefs(),
+              profile()->GetPrefs(),
               wildcard_setting,
               content_type)) {
         host_content_settings_map->SetDefaultContentSetting(
@@ -306,7 +321,7 @@ TEST_F(ProfileResetterTest, ResetContentSettings) {
       }
       if (!HostContentSettingsMap::ContentTypeHasCompoundValue(content_type) &&
           HostContentSettingsMap::IsSettingAllowedForType(
-              test_util_.profile()->GetPrefs(),
+              profile()->GetPrefs(),
               site_setting,
               content_type)) {
         host_content_settings_map->SetContentSetting(
@@ -361,7 +376,7 @@ TEST_F(ProfileResetterTest, ResetContentSettings) {
   }
 }
 
-TEST_F(ExtensionsResetTest, ResetExtensionsByDisabling) {
+TEST_F(ProfileResetterTest, ResetExtensionsByDisabling) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
@@ -374,7 +389,7 @@ TEST_F(ExtensionsResetTest, ResetExtensionsByDisabling) {
 
   // ThemeService isn't compiled for Android.
   ThemeService* theme_service =
-      ThemeServiceFactory::GetForProfile(profile_.get());
+      ThemeServiceFactory::GetForProfile(profile());
   EXPECT_FALSE(theme_service->UsingDefaultTheme());
 
   scoped_refptr<Extension> ext2 = CreateExtension(
@@ -406,7 +421,7 @@ TEST_F(ExtensionsResetTest, ResetExtensionsByDisabling) {
   EXPECT_TRUE(theme_service->UsingDefaultTheme());
 }
 
-TEST_F(ExtensionsResetTest, ResetExtensionsByDisablingNonOrganic) {
+TEST_F(ProfileResetterTest, ResetExtensionsByDisablingNonOrganic) {
   scoped_refptr<Extension> ext2 = CreateExtension(
       "example2",
       base::FilePath(FILE_PATH_LITERAL("//nonexistent")),
@@ -432,7 +447,7 @@ TEST_F(ExtensionsResetTest, ResetExtensionsByDisablingNonOrganic) {
 }
 
 TEST_F(ProfileResetterTest, ResetStartPage) {
-  PrefService* prefs = test_util_.profile()->GetPrefs();
+  PrefService* prefs = profile()->GetPrefs();
   DCHECK(prefs);
 
   SessionStartupPref startup_pref(SessionStartupPref::URLS);
@@ -448,7 +463,7 @@ TEST_F(ProfileResetterTest, ResetStartPage) {
 }
 
 TEST_F(ProfileResetterTest, ResetStartPageNonOrganic) {
-  PrefService* prefs = test_util_.profile()->GetPrefs();
+  PrefService* prefs = profile()->GetPrefs();
   DCHECK(prefs);
 
   SessionStartupPref startup_pref(SessionStartupPref::LAST);
@@ -502,7 +517,8 @@ TEST_F(PinnedTabsResetTest, ResetPinnedTabs) {
 TEST_F(ProfileResetterTest, ResetFewFlags) {
   // mock_object_ is a StrictMock, so we verify that it is called only once.
   ResetAndWait(ProfileResetter::DEFAULT_SEARCH_ENGINE |
-               ProfileResetter::HOMEPAGE);
+               ProfileResetter::HOMEPAGE |
+               ProfileResetter::CONTENT_SETTINGS);
 }
 
 // Tries to load unavailable config file.

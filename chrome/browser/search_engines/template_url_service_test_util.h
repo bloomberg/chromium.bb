@@ -24,21 +24,14 @@ class TestingTemplateURLService;
 class TestingProfile;
 class WebDataService;
 
-// Implements functionality to make it easier to test TemplateURLService and
-// make changes to it.
-class TemplateURLServiceTestUtil : public TemplateURLServiceObserver {
+// TemplateURLServiceTestUtilBase contains basic API to ease testing of
+// TemplateURLService. User should take care of the infrastructure separately.
+class TemplateURLServiceTestUtilBase : public TemplateURLServiceObserver {
  public:
-  TemplateURLServiceTestUtil();
+  TemplateURLServiceTestUtilBase();
+  virtual ~TemplateURLServiceTestUtilBase();
 
-  virtual ~TemplateURLServiceTestUtil();
-
-  // Sets up the data structures for this class (mirroring gtest standard
-  // methods).
-  void SetUp();
-
-  // Cleans up data structures for this class  (mirroring gtest standard
-  // methods).
-  void TearDown();
+  void CreateTemplateUrlService();
 
   // TemplateURLServiceObserver implemementation.
   virtual void OnTemplateURLServiceChanged() OVERRIDE;
@@ -82,15 +75,15 @@ class TemplateURLServiceTestUtil : public TemplateURLServiceObserver {
   // notification. If |alternate_url| is empty, uses an empty list of alternate
   // URLs, otherwise use a list containing a single entry.
   void SetManagedDefaultSearchPreferences(
-    bool enabled,
-    const std::string& name,
-    const std::string& keyword,
-    const std::string& search_url,
-    const std::string& suggest_url,
-    const std::string& icon_url,
-    const std::string& encodings,
-    const std::string& alternate_url,
-    const std::string& search_terms_replacement_key);
+      bool enabled,
+      const std::string& name,
+      const std::string& keyword,
+      const std::string& search_url,
+      const std::string& suggest_url,
+      const std::string& icon_url,
+      const std::string& encodings,
+      const std::string& alternate_url,
+      const std::string& search_terms_replacement_key);
 
   // Remove all the managed preferences for the default search provider and
   // trigger notification.
@@ -100,7 +93,31 @@ class TemplateURLServiceTestUtil : public TemplateURLServiceObserver {
   TemplateURLService* model() const;
 
   // Returns the TestingProfile.
-  TestingProfile* profile() const;
+  virtual TestingProfile* profile() const = 0;
+
+ private:
+  int changed_count_;
+
+  DISALLOW_COPY_AND_ASSIGN(TemplateURLServiceTestUtilBase);
+};
+
+// TemplateURLServiceTestUtil sets up TestingProfile, TemplateURLService and
+// required threads.
+class TemplateURLServiceTestUtil : public TemplateURLServiceTestUtilBase {
+ public:
+  TemplateURLServiceTestUtil();
+  virtual ~TemplateURLServiceTestUtil();
+
+  // Sets up the data structures for this class (mirroring gtest standard
+  // methods).
+  void SetUp();
+
+  // Cleans up data structures for this class  (mirroring gtest standard
+  // methods).
+  void TearDown();
+
+  // Returns the TestingProfile.
+  virtual TestingProfile* profile() const OVERRIDE;
 
   // Starts an I/O thread.
   void StartIOThread();
@@ -116,7 +133,6 @@ class TemplateURLServiceTestUtil : public TemplateURLServiceObserver {
   content::TestBrowserThread db_thread_;
   content::TestBrowserThread io_thread_;
   scoped_ptr<TestingProfile> profile_;
-  int changed_count_;
   base::ScopedTempDir temp_dir_;
 
   DISALLOW_COPY_AND_ASSIGN(TemplateURLServiceTestUtil);

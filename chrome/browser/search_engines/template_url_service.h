@@ -79,6 +79,18 @@ class TemplateURLService : public WebDataServiceConsumer,
     const char* const content;
   };
 
+  // Struct describes a search engine added by an extension.
+  struct ExtensionKeyword {
+    ExtensionKeyword(const std::string& id,
+                     const std::string& name,
+                     const std::string& keyword);
+    ~ExtensionKeyword();
+
+    std::string extension_id;
+    std::string extension_name;
+    std::string extension_keyword;
+  };
+
   explicit TemplateURLService(Profile* profile);
   // The following is for testing.
   TemplateURLService(const Initializer* initializers, const int count);
@@ -225,10 +237,12 @@ class TemplateURLService : public WebDataServiceConsumer,
   // destroyed at any time so should be used right after the call.
   TemplateURL* FindNewDefaultSearchProvider();
 
-  // Resets the search providers to the prepopulated engines plus any
-  // extension-supplied engines.  Also resets the default search engine unless
-  // it's managed.
-  void ResetNonExtensionURLs();
+  // Resets the search providers to the prepopulated engines plus any keywords
+  // from currently-installed extensions.  The user will lose all auto-added
+  // keywords from webpages, all edits to both normal and extension keywords,
+  // and any keywords belonging to no-longer-installed extensions.
+  // Modifications will be synced later.
+  void ResetURLs();
 
   // Observers used to listen for changes to the model.
   // TemplateURLService does NOT delete the observers when deleted.
@@ -362,7 +376,7 @@ class TemplateURLService : public WebDataServiceConsumer,
                            IsLocalTemplateURLBetter);
   FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceSyncTest, MergeInSyncTemplateURL);
 
-  friend class TemplateURLServiceTestUtil;
+  friend class TemplateURLServiceTestUtilBase;
 
   typedef std::map<string16, TemplateURL*> KeywordToTemplateMap;
   typedef std::map<std::string, TemplateURL*> GUIDToTemplateMap;
@@ -604,6 +618,10 @@ class TemplateURLService : public WebDataServiceConsumer,
   // If there is no current default search provider, sets the default to the
   // result of calling FindNewDefaultSearchProvider().
   void EnsureDefaultSearchProviderExists();
+
+  // Returns a new TemplateURL for the given extension.
+  TemplateURL* CreateTemplateURLForExtension(
+      const ExtensionKeyword& extension_keyword) const;
 
   content::NotificationRegistrar notification_registrar_;
   PrefChangeRegistrar pref_change_registrar_;

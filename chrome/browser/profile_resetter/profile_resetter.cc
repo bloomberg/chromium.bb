@@ -123,7 +123,8 @@ void ProfileResetter::ResetDefaultSearchEngine() {
       ListPrefUpdate update(prefs, prefs::kSearchProviderOverrides);
       update->Swap(search_engines.get());
     }
-    template_url_service_->ResetNonExtensionURLs();
+
+    template_url_service_->ResetURLs();
 
     // Reset Google search URL.
     prefs->ClearPref(prefs::kLastPromptedGoogleURL);

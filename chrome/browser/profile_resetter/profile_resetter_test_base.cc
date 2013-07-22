@@ -14,6 +14,7 @@ void ProfileResetterMockObject::RunLoop() {
   EXPECT_CALL(*this, Callback());
   runner_ = new content::MessageLoopRunner;
   runner_->Run();
+  runner_ = NULL;
 }
 
 void ProfileResetterMockObject::StopLoop() {

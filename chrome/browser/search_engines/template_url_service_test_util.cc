@@ -54,6 +54,9 @@ static void WaitForThreadToProcessRequests(BrowserThread::ID identifier) {
 
 }  // namespace
 
+
+// TestingTemplateURLService --------------------------------------------------
+
 // Trivial subclass of TemplateURLService that records the last invocation of
 // SetKeywordSearchTermsForURL.
 class TestingTemplateURLService : public TemplateURLService {
@@ -85,90 +88,45 @@ class TestingTemplateURLService : public TemplateURLService {
   DISALLOW_COPY_AND_ASSIGN(TestingTemplateURLService);
 };
 
-TemplateURLServiceTestUtil::TemplateURLServiceTestUtil()
-    : ui_thread_(BrowserThread::UI, &message_loop_),
-      db_thread_(BrowserThread::DB),
-      io_thread_(BrowserThread::IO),
-      changed_count_(0) {
+
+// TemplateURLServiceTestUtilBase ---------------------------------------------
+
+TemplateURLServiceTestUtilBase::TemplateURLServiceTestUtilBase()
+    : changed_count_(0) {
 }
 
-TemplateURLServiceTestUtil::~TemplateURLServiceTestUtil() {
-}
+TemplateURLServiceTestUtilBase::~TemplateURLServiceTestUtilBase() {}
 
-void TemplateURLServiceTestUtil::SetUp() {
-  // Make unique temp directory.
-  ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-  profile_.reset(new TestingProfile(temp_dir_.path()));
-  db_thread_.Start();
-  profile_->CreateWebDataService();
+void TemplateURLServiceTestUtilBase::CreateTemplateUrlService() {
+  profile()->CreateWebDataService();
 
   TemplateURLService* service = static_cast<TemplateURLService*>(
       TemplateURLServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-          profile_.get(), TestingTemplateURLService::Build));
+          profile(), TestingTemplateURLService::Build));
   service->AddObserver(this);
-
-#if defined(OS_CHROMEOS)
-  google_util::chromeos::ClearBrandForCurrentSession();
-#endif
 }
 
-void TemplateURLServiceTestUtil::TearDown() {
-  if (profile_.get()) {
-    // Clear the request context so it will get deleted. This should be done
-    // before shutting down the I/O thread to avoid memory leaks.
-    profile_->ResetRequestContext();
-    profile_.reset();
-  }
-
-  // Wait for the delete of the request context to happen.
-  if (io_thread_.IsRunning())
-    TemplateURLServiceTestUtil::BlockTillIOThreadProcessesRequests();
-
-  // The I/O thread must be shutdown before the DB thread.
-  io_thread_.Stop();
-
-  // Note that we must ensure the DB thread is stopped after WDS
-  // shutdown (so it can commit pending transactions) but before
-  // deleting the test profile directory, otherwise we may not be
-  // able to delete it due to an open transaction.
-  // Schedule another task on the DB thread to notify us that it's safe to
-  // carry on with the test.
-  base::WaitableEvent done(false, false);
-  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      base::Bind(&base::WaitableEvent::Signal, base::Unretained(&done)));
-  done.Wait();
-  base::MessageLoop::current()->PostTask(FROM_HERE,
-                                         base::MessageLoop::QuitClosure());
-  base::MessageLoop::current()->Run();
-  db_thread_.Stop();
-
-  UIThreadSearchTermsData::SetGoogleBaseURL(std::string());
-
-  // Flush the message loop to make application verifiers happy.
-  message_loop_.RunUntilIdle();
-}
-
-void TemplateURLServiceTestUtil::OnTemplateURLServiceChanged() {
+void TemplateURLServiceTestUtilBase::OnTemplateURLServiceChanged() {
   changed_count_++;
 }
 
-int TemplateURLServiceTestUtil::GetObserverCount() {
+int TemplateURLServiceTestUtilBase::GetObserverCount() {
   return changed_count_;
 }
 
-void TemplateURLServiceTestUtil::ResetObserverCount() {
+void TemplateURLServiceTestUtilBase::ResetObserverCount() {
   changed_count_ = 0;
 }
 
-void TemplateURLServiceTestUtil::BlockTillServiceProcessesRequests() {
+void TemplateURLServiceTestUtilBase::BlockTillServiceProcessesRequests() {
   WaitForThreadToProcessRequests(BrowserThread::DB);
 }
 
-void TemplateURLServiceTestUtil::BlockTillIOThreadProcessesRequests() {
+void TemplateURLServiceTestUtilBase::BlockTillIOThreadProcessesRequests() {
   WaitForThreadToProcessRequests(BrowserThread::IO);
 }
 
-void TemplateURLServiceTestUtil::VerifyLoad() {
+void TemplateURLServiceTestUtilBase::VerifyLoad() {
   ASSERT_FALSE(model()->loaded());
   model()->Load();
   BlockTillServiceProcessesRequests();
@@ -176,47 +134,48 @@ void TemplateURLServiceTestUtil::VerifyLoad() {
   ResetObserverCount();
 }
 
-void TemplateURLServiceTestUtil::ChangeModelToLoadState() {
+void TemplateURLServiceTestUtilBase::ChangeModelToLoadState() {
   model()->ChangeToLoadedState();
   // Initialize the web data service so that the database gets updated with
   // any changes made.
 
-  model()->service_ = WebDataService::FromBrowserContext(profile_.get());
+  model()->service_ = WebDataService::FromBrowserContext(profile());
   BlockTillServiceProcessesRequests();
 }
 
-void TemplateURLServiceTestUtil::ClearModel() {
+void TemplateURLServiceTestUtilBase::ClearModel() {
   TemplateURLServiceFactory::GetInstance()->SetTestingFactory(
-      profile_.get(), NULL);
+      profile(), NULL);
 }
 
-void TemplateURLServiceTestUtil::ResetModel(bool verify_load) {
+void TemplateURLServiceTestUtilBase::ResetModel(bool verify_load) {
   TemplateURLServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-      profile_.get(), TestingTemplateURLService::Build);
+      profile(), TestingTemplateURLService::Build);
   model()->AddObserver(this);
   changed_count_ = 0;
   if (verify_load)
     VerifyLoad();
 }
 
-string16 TemplateURLServiceTestUtil::GetAndClearSearchTerm() {
+string16 TemplateURLServiceTestUtilBase::GetAndClearSearchTerm() {
   return
       static_cast<TestingTemplateURLService*>(model())->GetAndClearSearchTerm();
 }
 
-void TemplateURLServiceTestUtil::SetGoogleBaseURL(const GURL& base_url) const {
+void TemplateURLServiceTestUtilBase::SetGoogleBaseURL(
+    const GURL& base_url) const {
   DCHECK(base_url.is_valid());
-  UIThreadSearchTermsData data(profile_.get());
+  UIThreadSearchTermsData data(profile());
   GoogleURLTracker::UpdatedDetails urls(GURL(data.GoogleBaseURLValue()),
                                         base_url);
   UIThreadSearchTermsData::SetGoogleBaseURL(base_url.spec());
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_GOOGLE_URL_UPDATED,
-      content::Source<Profile>(profile_.get()),
+      content::Source<Profile>(profile()),
       content::Details<GoogleURLTracker::UpdatedDetails>(&urls));
 }
 
-void TemplateURLServiceTestUtil::SetManagedDefaultSearchPreferences(
+void TemplateURLServiceTestUtilBase::SetManagedDefaultSearchPreferences(
     bool enabled,
     const std::string& name,
     const std::string& keyword,
@@ -226,7 +185,7 @@ void TemplateURLServiceTestUtil::SetManagedDefaultSearchPreferences(
     const std::string& encodings,
     const std::string& alternate_url,
     const std::string& search_terms_replacement_key) {
-  TestingPrefServiceSyncable* pref_service = profile_->GetTestingPrefService();
+  TestingPrefServiceSyncable* pref_service = profile()->GetTestingPrefService();
   pref_service->SetManagedPref(prefs::kDefaultSearchProviderEnabled,
                                Value::CreateBooleanValue(enabled));
   pref_service->SetManagedPref(prefs::kDefaultSearchProviderName,
@@ -252,8 +211,8 @@ void TemplateURLServiceTestUtil::SetManagedDefaultSearchPreferences(
                    content::NotificationService::NoDetails());
 }
 
-void TemplateURLServiceTestUtil::RemoveManagedDefaultSearchPreferences() {
-  TestingPrefServiceSyncable* pref_service = profile_->GetTestingPrefService();
+void TemplateURLServiceTestUtilBase::RemoveManagedDefaultSearchPreferences() {
+  TestingPrefServiceSyncable* pref_service = profile()->GetTestingPrefService();
   pref_service->RemoveManagedPref(prefs::kDefaultSearchProviderEnabled);
   pref_service->RemoveManagedPref(prefs::kDefaultSearchProviderName);
   pref_service->RemoveManagedPref(prefs::kDefaultSearchProviderKeyword);
@@ -271,8 +230,69 @@ void TemplateURLServiceTestUtil::RemoveManagedDefaultSearchPreferences() {
                    content::NotificationService::NoDetails());
 }
 
-TemplateURLService* TemplateURLServiceTestUtil::model() const {
-  return TemplateURLServiceFactory::GetForProfile(profile_.get());
+TemplateURLService* TemplateURLServiceTestUtilBase::model() const {
+  return TemplateURLServiceFactory::GetForProfile(profile());
+}
+
+
+// TemplateURLServiceTestUtil -------------------------------------------------
+
+TemplateURLServiceTestUtil::TemplateURLServiceTestUtil()
+    : ui_thread_(BrowserThread::UI, &message_loop_),
+      db_thread_(BrowserThread::DB),
+      io_thread_(BrowserThread::IO) {
+}
+
+TemplateURLServiceTestUtil::~TemplateURLServiceTestUtil() {
+}
+
+void TemplateURLServiceTestUtil::SetUp() {
+  // Make unique temp directory.
+  ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+  profile_.reset(new TestingProfile(temp_dir_.path()));
+  db_thread_.Start();
+
+  TemplateURLServiceTestUtilBase::CreateTemplateUrlService();
+
+#if defined(OS_CHROMEOS)
+  google_util::chromeos::ClearBrandForCurrentSession();
+#endif
+}
+
+void TemplateURLServiceTestUtil::TearDown() {
+  if (profile_.get()) {
+    // Clear the request context so it will get deleted. This should be done
+    // before shutting down the I/O thread to avoid memory leaks.
+    profile_->ResetRequestContext();
+    profile_.reset();
+  }
+
+  // Wait for the delete of the request context to happen.
+  if (io_thread_.IsRunning())
+    TemplateURLServiceTestUtilBase::BlockTillIOThreadProcessesRequests();
+
+  // The I/O thread must be shutdown before the DB thread.
+  io_thread_.Stop();
+
+  // Note that we must ensure the DB thread is stopped after WDS
+  // shutdown (so it can commit pending transactions) but before
+  // deleting the test profile directory, otherwise we may not be
+  // able to delete it due to an open transaction.
+  // Schedule another task on the DB thread to notify us that it's safe to
+  // carry on with the test.
+  base::WaitableEvent done(false, false);
+  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
+      base::Bind(&base::WaitableEvent::Signal, base::Unretained(&done)));
+  done.Wait();
+  base::MessageLoop::current()->PostTask(FROM_HERE,
+                                         base::MessageLoop::QuitClosure());
+  base::MessageLoop::current()->Run();
+  db_thread_.Stop();
+
+  UIThreadSearchTermsData::SetGoogleBaseURL(std::string());
+
+  // Flush the message loop to make application verifiers happy.
+  message_loop_.RunUntilIdle();
 }
 
 TestingProfile* TemplateURLServiceTestUtil::profile() const {
