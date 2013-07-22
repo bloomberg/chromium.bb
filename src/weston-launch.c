@@ -220,6 +220,10 @@ setup_signals(struct weston_launch *wl)
 	ret = sigaction(SIGCHLD, &sa, NULL);
 	assert(ret == 0);
 
+	sa.sa_handler = SIG_IGN;
+	sa.sa_flags = 0;
+	sigaction(SIGHUP, &sa, NULL);
+
 	ret = sigemptyset(&mask);
 	assert(ret == 0);
 	sigaddset(&mask, SIGCHLD);
