@@ -45,8 +45,9 @@ device_added(struct udev_device *udev_device, struct udev_input *input)
 {
 	struct weston_compositor *c;
 	struct evdev_device *device;
+	struct weston_output *output;
 	const char *devnode;
-	const char *device_seat, *seat_name;
+	const char *device_seat, *seat_name, *output_name;
 	const char *calibration_values;
 	int fd;
 	struct udev_seat *seat;
@@ -119,6 +120,13 @@ device_added(struct udev_device *udev_device, struct udev_input *input)
 		weston_pointer_clamp(seat->base.pointer,
 				     &seat->base.pointer->x,
 				     &seat->base.pointer->y);
+
+	output_name = udev_device_get_property_value(udev_device, "WL_OUTPUT");
+	if (output_name) {
+		wl_list_for_each(output, &c->output_list, link)
+			if (strcmp(output->name, output_name) == 0)
+				device->output = output;
+	}
 
 	return 0;
 }
