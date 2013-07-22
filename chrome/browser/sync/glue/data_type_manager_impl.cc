@@ -444,9 +444,8 @@ void DataTypeManagerImpl::OnModelAssociationDone(
   }
 
   DCHECK(result.status == PARTIAL_SUCCESS || result.status == OK);
-  DCHECK(!result.status == OK ||
-         (result.needs_crypto.Empty() &&
-          result.failed_data_types.empty()));
+  DCHECK(result.status != OK ||
+         (result.needs_crypto.Empty() && result.failed_data_types.empty()));
 
   // It's possible this is a retry to disable failed types, in which case
   // the association would be SUCCESS, but the overall configuration should
