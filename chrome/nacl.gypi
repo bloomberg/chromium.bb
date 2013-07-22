@@ -108,17 +108,18 @@
                 '../native_client/src/trusted/service_runtime/service_runtime.gyp:sel_main_chrome64',
                 '../ppapi/ppapi_internal.gyp:ppapi_shared_win64',
                 '../ppapi/ppapi_internal.gyp:ppapi_ipc_win64',
+                '../components/nacl_common.gyp:nacl_common_win64',
               ],
               'export_dependent_settings': [
                 '../ppapi/ppapi_internal.gyp:ppapi_ipc_win64',
               ],
               'sources': [
-                'common/nacl_cmd_line.cc',
                 'common/nacl_debug_exception_handler_win.cc',
                 'common/nacl_messages.cc',
                 'common/nacl_types.cc',
                 'nacl/nacl_broker_listener.cc',
                 'nacl/nacl_broker_listener.h',
+                '../components/nacl/common/nacl_cmd_line.cc',
               ],
               'include_dirs': [
                 '..',
