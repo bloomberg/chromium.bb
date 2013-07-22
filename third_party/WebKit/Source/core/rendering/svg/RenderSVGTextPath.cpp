@@ -40,7 +40,7 @@ Path RenderSVGTextPath::layoutPath() const
     if (!targetElement || !targetElement->hasTagName(SVGNames::pathTag))
         return Path();
     
-    SVGPathElement* pathElement = static_cast<SVGPathElement*>(targetElement);
+    SVGPathElement* pathElement = toSVGPathElement(targetElement);
     
     Path pathData;
     updatePathFromGraphicsElement(pathElement, pathData);
