@@ -42,6 +42,8 @@ class ExtensionInfoBarGtk : public InfoBarGtk,
 
   void OnImageLoaded(const gfx::Image& image);
 
+  ExtensionInfoBarDelegate* GetDelegate();
+
   // Looks at the window the infobar is in and gets the browser. Can return
   // NULL if we aren't attached.
   Browser* GetBrowser();
@@ -59,7 +61,10 @@ class ExtensionInfoBarGtk : public InfoBarGtk,
   CHROMEGTK_CALLBACK_1(ExtensionInfoBarGtk, gboolean, OnExpose,
                        GdkEventExpose*);
 
-  ExtensionInfoBarDelegate* delegate_;
+  // TODO(pkasting): This shadows InfoBarView::delegate_.  Get rid of this once
+  // InfoBars own their delegates (and thus we don't need the DelegateObserver
+  // functionality).  For now, almost everyone should use GetDelegate() instead.
+  InfoBarDelegate* delegate_;
 
   ExtensionViewGtk* view_;
 

@@ -47,15 +47,15 @@ ExtensionInfoBarGtk::ExtensionInfoBarGtk(InfoBarService* owner,
       icon_(NULL),
       alignment_(NULL),
       weak_ptr_factory_(this) {
-  delegate->set_observer(this);
+  GetDelegate()->set_observer(this);
 
-  int height = delegate->height();
+  int height = GetDelegate()->height();
   SetBarTargetHeight((height > 0) ? (height + kSeparatorLineHeight) : 0);
 }
 
 ExtensionInfoBarGtk::~ExtensionInfoBarGtk() {
-  if (delegate_)
-    delegate_->set_observer(NULL);
+  if (GetDelegate())
+    GetDelegate()->set_observer(NULL);
 }
 
 void ExtensionInfoBarGtk::PlatformSpecificHide(bool animate) {
@@ -75,42 +75,6 @@ void ExtensionInfoBarGtk::GetBottomColor(InfoBarDelegate::Type type,
   *r = *g = *b = 218.0 / 255.0;
 }
 
-void ExtensionInfoBarGtk::OnImageLoaded(const gfx::Image& image) {
-
-  DCHECK(icon_);
-  // TODO(erg): IDR_EXTENSIONS_SECTION should have an IDR_INFOBAR_EXTENSIONS
-  // icon of the correct size with real subpixel shading and such.
-  const gfx::ImageSkia* icon = NULL;
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  if (image.IsEmpty())
-    icon = rb.GetImageSkiaNamed(IDR_EXTENSIONS_SECTION);
-  else
-    icon = image.ToImageSkia();
-
-  SkBitmap bitmap;
-  if (button_) {
-    gfx::ImageSkia* drop_image = rb.GetImageSkiaNamed(IDR_APP_DROPARROW);
-
-    int image_size = extension_misc::EXTENSION_ICON_BITTY;
-    // The margin between the extension icon and the drop-down arrow bitmap.
-    static const int kDropArrowLeftMargin = 3;
-    scoped_ptr<gfx::Canvas> canvas(new gfx::Canvas(
-        gfx::Size(image_size + kDropArrowLeftMargin + drop_image->width(),
-                  image_size), ui::SCALE_FACTOR_100P, false));
-    canvas->DrawImageInt(*icon, 0, 0, icon->width(), icon->height(), 0, 0,
-                         image_size, image_size, false);
-    canvas->DrawImageInt(*drop_image, image_size + kDropArrowLeftMargin,
-                         image_size / 2);
-    bitmap = canvas->ExtractImageRep().sk_bitmap();
-  } else {
-    bitmap = *icon->bitmap();
-  }
-
-  GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(bitmap);
-  gtk_image_set_from_pixbuf(GTK_IMAGE(icon_), pixbuf);
-  g_object_unref(pixbuf);
-}
-
 void ExtensionInfoBarGtk::InitWidgets() {
   InfoBarGtk::InitWidgets();
 
@@ -124,7 +88,7 @@ void ExtensionInfoBarGtk::InitWidgets() {
   icon_ = gtk_image_new();
   gtk_misc_set_alignment(GTK_MISC(icon_), 0.5, 0.5);
 
-  extensions::ExtensionHost* extension_host = delegate_->extension_host();
+  extensions::ExtensionHost* extension_host = GetDelegate()->extension_host();
   const extensions::Extension* extension = extension_host->extension();
 
   if (extension->ShowConfigureContextMenus()) {
@@ -147,7 +111,7 @@ void ExtensionInfoBarGtk::InitWidgets() {
           ExtensionIconSet::MATCH_EXACTLY);
   // Load image asynchronously, calling back OnImageLoaded.
   extensions::ImageLoader* loader =
-      extensions::ImageLoader::Get(delegate_->extension_host()->profile());
+      extensions::ImageLoader::Get(extension_host->profile());
   loader->LoadImageAsync(extension, icon_resource,
                          gfx::Size(extension_misc::EXTENSION_ICON_BITTY,
                                    extension_misc::EXTENSION_ICON_BITTY),
@@ -186,6 +150,45 @@ void ExtensionInfoBarGtk::OnDelegateDeleted() {
   delegate_ = NULL;
 }
 
+void ExtensionInfoBarGtk::OnImageLoaded(const gfx::Image& image) {
+
+  DCHECK(icon_);
+  // TODO(erg): IDR_EXTENSIONS_SECTION should have an IDR_INFOBAR_EXTENSIONS
+  // icon of the correct size with real subpixel shading and such.
+  const gfx::ImageSkia* icon = NULL;
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  if (image.IsEmpty())
+    icon = rb.GetImageSkiaNamed(IDR_EXTENSIONS_SECTION);
+  else
+    icon = image.ToImageSkia();
+
+  SkBitmap bitmap;
+  if (button_) {
+    gfx::ImageSkia* drop_image = rb.GetImageSkiaNamed(IDR_APP_DROPARROW);
+
+    int image_size = extension_misc::EXTENSION_ICON_BITTY;
+    // The margin between the extension icon and the drop-down arrow bitmap.
+    static const int kDropArrowLeftMargin = 3;
+    scoped_ptr<gfx::Canvas> canvas(new gfx::Canvas(
+        gfx::Size(image_size + kDropArrowLeftMargin + drop_image->width(),
+                  image_size), ui::SCALE_FACTOR_100P, false));
+    canvas->DrawImageInt(*icon, 0, 0, icon->width(), icon->height(), 0, 0,
+                         image_size, image_size, false);
+    canvas->DrawImageInt(*drop_image, image_size + kDropArrowLeftMargin,
+                         image_size / 2);
+    bitmap = canvas->ExtractImageRep().sk_bitmap();
+  } else {
+    bitmap = *icon->bitmap();
+  }
+
+  GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(bitmap);
+  gtk_image_set_from_pixbuf(GTK_IMAGE(icon_), pixbuf);
+  g_object_unref(pixbuf);
+}
+
+ExtensionInfoBarDelegate* ExtensionInfoBarGtk::GetDelegate() {
+  return delegate_ ? delegate_->AsExtensionInfoBarDelegate() : NULL;
+}
 Browser* ExtensionInfoBarGtk::GetBrowser() {
   DCHECK(icon_);
   // Get the Browser object this infobar is attached to.
@@ -196,7 +199,7 @@ Browser* ExtensionInfoBarGtk::GetBrowser() {
 }
 
 ExtensionContextMenuModel* ExtensionInfoBarGtk::BuildMenuModel() {
-  const extensions::Extension* extension = delegate_->extension();
+  const extensions::Extension* extension = GetDelegate()->extension();
   if (!extension->ShowConfigureContextMenus())
     return NULL;
 
@@ -211,7 +214,7 @@ void ExtensionInfoBarGtk::OnSizeAllocate(GtkWidget* widget,
                                          GtkAllocation* allocation) {
   gfx::Size new_size(allocation->width, allocation->height);
 
-  delegate_->extension_host()->view()->render_view_host()->GetView()->
+  GetDelegate()->extension_host()->view()->render_view_host()->GetView()->
       SetSize(new_size);
 }
 
