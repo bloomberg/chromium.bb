@@ -4458,7 +4458,7 @@ END
 v8::Handle<v8::ObjectTemplate> V8Window::GetShadowObjectTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     if (currentWorldType == MainWorld) {
-        static v8::Persistent<v8::ObjectTemplate> V8WindowShadowObjectCacheForMainWorld;
+        DEFINE_STATIC_LOCAL(v8::Persistent<v8::ObjectTemplate>, V8WindowShadowObjectCacheForMainWorld, ());
         if (V8WindowShadowObjectCacheForMainWorld.IsEmpty()) {
             TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "BuildDOMTemplate");
             v8::Handle<v8::ObjectTemplate> templ = v8::ObjectTemplate::New();
@@ -4468,7 +4468,7 @@ v8::Handle<v8::ObjectTemplate> V8Window::GetShadowObjectTemplate(v8::Isolate* is
         }
         return v8::Local<v8::ObjectTemplate>::New(isolate, V8WindowShadowObjectCacheForMainWorld);
     } else {
-        static v8::Persistent<v8::ObjectTemplate> V8WindowShadowObjectCacheForNonMainWorld;
+        DEFINE_STATIC_LOCAL(v8::Persistent<v8::ObjectTemplate>, V8WindowShadowObjectCacheForNonMainWorld, ());
         if (V8WindowShadowObjectCacheForNonMainWorld.IsEmpty()) {
             TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "BuildDOMTemplate");
             v8::Handle<v8::ObjectTemplate> templ = v8::ObjectTemplate::New();
