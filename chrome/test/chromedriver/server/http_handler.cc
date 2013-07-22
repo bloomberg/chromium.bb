@@ -32,6 +32,7 @@
 #include "chrome/test/chromedriver/session_map.h"
 #include "chrome/test/chromedriver/util.h"
 #include "chrome/test/chromedriver/window_commands.h"
+#include "net/server/http_server_request_info.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
@@ -52,13 +53,6 @@ Status UnimplementedCommand(
 }
 
 }  // namespace
-
-HttpRequest::HttpRequest(HttpMethod method,
-                         const std::string& path,
-                         const std::string& body)
-    : method(method), path(path), body(body) {}
-
-HttpRequest::~HttpRequest() {}
 
 CommandMapping::CommandMapping(HttpMethod method,
                                const std::string& path_pattern,
@@ -341,19 +335,14 @@ HttpHandler::HttpHandler(Log* log, const std::string& url_base)
 
 HttpHandler::~HttpHandler() {}
 
-void HttpHandler::Handle(const HttpRequest& request,
+void HttpHandler::Handle(const net::HttpServerRequestInfo& request,
                          HttpResponse* response) {
-  const char* method = "GET";
-  if (request.method == kPost)
-    method = "POST";
-  else if (request.method == kDelete)
-    method = "DELETE";
   log_->AddEntry(
       Log::kLog,
       base::StringPrintf("received WebDriver request: %s %s %s",
-                         method,
+                         request.method.c_str(),
                          request.path.c_str(),
-                         request.body.c_str()));
+                         request.data.c_str()));
 
   HandleInternal(request, response);
 
@@ -364,7 +353,7 @@ void HttpHandler::Handle(const HttpRequest& request,
                          response->body().c_str()));
 }
 
-bool HttpHandler::ShouldShutdown(const HttpRequest& request) {
+bool HttpHandler::ShouldShutdown(const net::HttpServerRequestInfo& request) {
   return request.path == url_base_ + kShutdownPath;
 }
 
@@ -385,7 +374,7 @@ Command HttpHandler::WrapToCommand(
       base::Bind(&ExecuteElementCommand, element_command));
 }
 
-void HttpHandler::HandleInternal(const HttpRequest& request,
+void HttpHandler::HandleInternal(const net::HttpServerRequestInfo& request,
                                  HttpResponse* response) {
   std::string path = request.path;
   if (!StartsWithASCII(path, url_base_, true)) {
@@ -404,7 +393,7 @@ void HttpHandler::HandleInternal(const HttpRequest& request,
 }
 
 bool HttpHandler::HandleWebDriverCommand(
-    const HttpRequest& request,
+    const net::HttpServerRequestInfo& request,
     const std::string& trimmed_path,
     HttpResponse* response) {
   base::DictionaryValue params;
@@ -421,9 +410,9 @@ bool HttpHandler::HandleWebDriverCommand(
     ++iter;
   }
 
-  if (request.method == kPost && request.body.length()) {
+  if (request.data.length()) {
     base::DictionaryValue* body_params;
-    scoped_ptr<base::Value> parsed_body(base::JSONReader::Read(request.body));
+    scoped_ptr<base::Value> parsed_body(base::JSONReader::Read(request.data));
     if (!parsed_body || !parsed_body->GetAsDictionary(&body_params)) {
       *response = HttpResponse(HttpResponse::kBadRequest);
       response->set_body("missing command parameters");
@@ -482,12 +471,25 @@ namespace internal {
 
 const char kNewSessionPathPattern[] = "session";
 
-bool MatchesCommand(HttpMethod method,
+bool MatchesMethod(HttpMethod command_method, const std::string& method) {
+  std::string lower_method = StringToLowerASCII(method);
+  switch (command_method) {
+  case kGet:
+    return lower_method == "get";
+  case kPost:
+    return lower_method == "post" || lower_method == "put";
+  case kDelete:
+    return lower_method == "delete";
+  }
+  return false;
+}
+
+bool MatchesCommand(const std::string& method,
                     const std::string& path,
                     const CommandMapping& command,
                     std::string* session_id,
                     base::DictionaryValue* out_params) {
-  if (method != command.method)
+  if (!MatchesMethod(command.method, method))
     return false;
 
   std::vector<std::string> path_parts;

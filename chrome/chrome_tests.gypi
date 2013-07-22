@@ -991,6 +991,8 @@
       'dependencies': [
         'chromedriver2_lib',
         '../base/base.gyp:base',
+        '../net/net.gyp:http_server',
+        '../net/net.gyp:net',
       ],
       'include_dirs': [
         '..',
@@ -1030,6 +1032,8 @@
         'chromedriver2_server_lib',
         '../base/base.gyp:base',
         '../base/base.gyp:run_all_unittests',
+        '../net/net.gyp:http_server',
+        '../net/net.gyp:net',
         '../testing/gtest.gyp:gtest',
         '../ui/ui.gyp:ui',
       ],

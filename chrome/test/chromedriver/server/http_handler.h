@@ -23,6 +23,10 @@ namespace base {
 class DictionaryValue;
 }
 
+namespace net {
+class HttpServerRequestInfo;
+}
+
 class Adb;
 class DeviceManager;
 class Log;
@@ -30,20 +34,9 @@ class HttpResponse;
 class URLRequestContextGetter;
 
 enum HttpMethod {
-  kGet = 0,
+  kGet,
   kPost,
   kDelete,
-};
-
-struct HttpRequest {
-  HttpRequest(HttpMethod method,
-              const std::string& path,
-              const std::string& body);
-  ~HttpRequest();
-
-  HttpMethod method;
-  std::string path;
-  std::string body;
 };
 
 struct CommandMapping {
@@ -62,8 +55,9 @@ class HttpHandler {
   HttpHandler(Log* log, const std::string& url_base);
   ~HttpHandler();
 
-  void Handle(const HttpRequest& request, HttpResponse* response);
-  bool ShouldShutdown(const HttpRequest& request);
+  void Handle(const net::HttpServerRequestInfo& request,
+              HttpResponse* response);
+  bool ShouldShutdown(const net::HttpServerRequestInfo& request);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(HttpHandlerTest, HandleUnknownCommand);
@@ -76,9 +70,10 @@ class HttpHandler {
   Command WrapToCommand(const SessionCommand& session_command);
   Command WrapToCommand(const WindowCommand& window_command);
   Command WrapToCommand(const ElementCommand& element_command);
-  void HandleInternal(const HttpRequest& request, HttpResponse* response);
+  void HandleInternal(const net::HttpServerRequestInfo& request,
+                      HttpResponse* response);
   bool HandleWebDriverCommand(
-      const HttpRequest& request,
+      const net::HttpServerRequestInfo& request,
       const std::string& trimmed_path,
       HttpResponse* response);
 
@@ -99,7 +94,7 @@ namespace internal {
 
 extern const char kNewSessionPathPattern[];
 
-bool MatchesCommand(HttpMethod method,
+bool MatchesCommand(const std::string& method,
                     const std::string& path,
                     const CommandMapping& command,
                     std::string* session_id,

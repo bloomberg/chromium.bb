@@ -12,6 +12,7 @@
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/server/http_handler.h"
 #include "chrome/test/chromedriver/server/http_response.h"
+#include "net/server/http_server_request_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -32,7 +33,10 @@ Status DummyCommand(
 TEST(HttpHandlerTest, HandleOutsideOfBaseUrl) {
   Logger log;
   HttpHandler handler(&log, "base/url/");
-  HttpRequest request(kGet, "base/path", "body");
+  net::HttpServerRequestInfo request;
+  request.method = "get";
+  request.path = "base/path";
+  request.data = "body";
   HttpResponse response;
   handler.Handle(request, &response);
   ASSERT_EQ(HttpResponse::kBadRequest, response.status());
@@ -41,7 +45,9 @@ TEST(HttpHandlerTest, HandleOutsideOfBaseUrl) {
 TEST(HttpHandlerTest, HandleUnknownCommand) {
   Logger log;
   HttpHandler handler(&log, "/");
-  HttpRequest request(kGet, "/path", std::string());
+  net::HttpServerRequestInfo request;
+  request.method = "get";
+  request.path = "/path";
   HttpResponse response;
   handler.Handle(request, &response);
   ASSERT_EQ(HttpResponse::kNotFound, response.status());
@@ -54,7 +60,9 @@ TEST(HttpHandlerTest, HandleNewSession) {
   handler.command_map_->push_back(
       CommandMapping(kPost, internal::kNewSessionPathPattern,
                      base::Bind(&DummyCommand, Status(kOk))));
-  HttpRequest request(kPost, "/base/session", std::string());
+  net::HttpServerRequestInfo request;
+  request.method = "post";
+  request.path = "/base/session";
   HttpResponse response;
   handler.Handle(request, &response);
   ASSERT_EQ(HttpResponse::kSeeOther, response.status());
@@ -69,7 +77,10 @@ TEST(HttpHandlerTest, HandleInvalidPost) {
   HttpHandler handler(&log, "/");
   handler.command_map_->push_back(
       CommandMapping(kPost, "path", base::Bind(&DummyCommand, Status(kOk))));
-  HttpRequest request(kPost, "/path", "should be a dictionary");
+  net::HttpServerRequestInfo request;
+  request.method = "post";
+  request.path = "/path";
+  request.data = "should be a dictionary";
   HttpResponse response;
   handler.Handle(request, &response);
   ASSERT_EQ(HttpResponse::kBadRequest, response.status());
@@ -81,7 +92,9 @@ TEST(HttpHandlerTest, HandleUnimplementedCommand) {
   handler.command_map_->push_back(
       CommandMapping(kPost, "path",
                      base::Bind(&DummyCommand, Status(kUnknownCommand))));
-  HttpRequest request(kPost, "/path", std::string());
+  net::HttpServerRequestInfo request;
+  request.method = "post";
+  request.path = "/path";
   HttpResponse response;
   handler.Handle(request, &response);
   ASSERT_EQ(HttpResponse::kNotImplemented, response.status());
@@ -92,7 +105,9 @@ TEST(HttpHandlerTest, HandleCommand) {
   HttpHandler handler(&log, "/");
   handler.command_map_->push_back(
       CommandMapping(kPost, "path", base::Bind(&DummyCommand, Status(kOk))));
-  HttpRequest request(kPost, "/path", std::string());
+  net::HttpServerRequestInfo request;
+  request.method = "post";
+  request.path = "/path";
   HttpResponse response;
   handler.Handle(request, &response);
   ASSERT_EQ(HttpResponse::kOk, response.status());
@@ -112,7 +127,7 @@ TEST(MatchesCommandTest, DiffMethod) {
   std::string session_id;
   base::DictionaryValue params;
   ASSERT_FALSE(internal::MatchesCommand(
-      kGet, "path", command, &session_id, &params));
+      "get", "path", command, &session_id, &params));
   ASSERT_STREQ("", session_id.c_str());
   ASSERT_EQ(0u, params.size());
 }
@@ -123,13 +138,13 @@ TEST(MatchesCommandTest, DiffPathLength) {
   std::string session_id;
   base::DictionaryValue params;
   ASSERT_FALSE(internal::MatchesCommand(
-      kPost, "path", command, &session_id, &params));
+      "post", "path", command, &session_id, &params));
   ASSERT_FALSE(internal::MatchesCommand(
-      kPost, std::string(), command, &session_id, &params));
+      "post", std::string(), command, &session_id, &params));
   ASSERT_FALSE(
-      internal::MatchesCommand(kPost, "/", command, &session_id, &params));
+      internal::MatchesCommand("post", "/", command, &session_id, &params));
   ASSERT_FALSE(internal::MatchesCommand(
-      kPost, "path/path/path", command, &session_id, &params));
+      "post", "path/path/path", command, &session_id, &params));
 }
 
 TEST(MatchesCommandTest, DiffPaths) {
@@ -138,7 +153,7 @@ TEST(MatchesCommandTest, DiffPaths) {
   std::string session_id;
   base::DictionaryValue params;
   ASSERT_FALSE(internal::MatchesCommand(
-      kPost, "path/bpath", command, &session_id, &params));
+      "post", "path/bpath", command, &session_id, &params));
 }
 
 TEST(MatchesCommandTest, Substitution) {
@@ -147,7 +162,7 @@ TEST(MatchesCommandTest, Substitution) {
   std::string session_id;
   base::DictionaryValue params;
   ASSERT_TRUE(internal::MatchesCommand(
-      kPost, "path/1/space/2/3", command, &session_id, &params));
+      "post", "path/1/space/2/3", command, &session_id, &params));
   ASSERT_EQ("1", session_id);
   ASSERT_EQ(2u, params.size());
   std::string param;

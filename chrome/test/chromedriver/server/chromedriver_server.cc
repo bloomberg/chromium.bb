@@ -19,6 +19,7 @@
 #include "chrome/test/chromedriver/chrome/version.h"
 #include "chrome/test/chromedriver/server/http_handler.h"
 #include "chrome/test/chromedriver/server/http_response.h"
+#include "net/server/http_server_request_info.h"
 #include "third_party/mongoose/mongoose.h"
 
 #if defined(OS_POSIX)
@@ -68,17 +69,11 @@ void* ProcessHttpRequest(mg_event event_raised,
   MongooseUserData* user_data =
       reinterpret_cast<MongooseUserData*>(request_info->user_data);
 
-  std::string method_str = request_info->request_method;
-  HttpMethod method = kGet;
-  if (method_str == "PUT" || method_str == "POST")
-    method = kPost;
-  else if (method_str == "DELETE")
-    method = kDelete;
-  std::string body;
-  if (method == kPost)
-    ReadRequestBody(request_info, connection, &body);
+  net::HttpServerRequestInfo request;
+  request.method = request_info->request_method;
+  request.path = request_info->uri;
+  ReadRequestBody(request_info, connection, &request.data);
 
-  HttpRequest request(method, request_info->uri, body);
   HttpResponse response;
   user_data->handler->Handle(request, &response);
 
