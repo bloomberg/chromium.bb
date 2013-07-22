@@ -29,31 +29,36 @@ void SVGAttributeToPropertyMap::addProperties(const SVGAttributeToPropertyMap& m
 {
     AttributeToPropertiesMap::const_iterator end = map.m_map.end();
     for (AttributeToPropertiesMap::const_iterator it = map.m_map.begin(); it != end; ++it) {
-        const PropertiesVector* vector = it->value.get();
-        ASSERT(vector);
+        const PropertiesVector* mapVector = it->value.get();
+        ASSERT(mapVector);
 
-        // FIXME: This looks up the attribute name in the hash table for each property, even though all the
-        // properties in a single vector are guaranteed to have the same attribute name.
-        // FIXME: This grows the vector one item at a time, even though we know up front exactly how many
-        // elements we are adding to the vector.
-        PropertiesVector::const_iterator vectorEnd = vector->end();
-        for (PropertiesVector::const_iterator vectorIt = vector->begin(); vectorIt != vectorEnd; ++vectorIt)
-            addProperty(*vectorIt);
+        if (!mapVector->isEmpty()) {
+            const SVGPropertyInfo* firstProperty = mapVector->first();
+            ASSERT(firstProperty);
+            const QualifiedName& attributeName = firstProperty->attributeName;
+
+            // All of the properties in mapVector are guaranteed to have the same attribute name.
+            // Add them to our properties vector for that attribute name, reserving capacity up
+            // front.
+            PropertiesVector* vector = getOrCreatePropertiesVector(attributeName);
+            ASSERT(vector);
+            vector->reserveCapacity(vector->size() + mapVector->size());
+            const PropertiesVector::const_iterator mapVectorEnd = mapVector->end();
+            for (PropertiesVector::const_iterator mapVectorIt = mapVector->begin(); mapVectorIt != mapVectorEnd; ++mapVectorIt) {
+                ASSERT(*mapVectorIt);
+                ASSERT(attributeName == (*mapVectorIt)->attributeName);
+                vector->append(*mapVectorIt);
+            }
+        }
     }
 }
 
 void SVGAttributeToPropertyMap::addProperty(const SVGPropertyInfo* info)
 {
     ASSERT(info);
-    ASSERT(info->attributeName != anyQName());
-    if (PropertiesVector* vector = m_map.get(info->attributeName)) {
-        vector->append(info);
-        return;
-    }
-    // FIXME: This does a second hash table lookup, but with HashMap::add we could instead do only one.
-    OwnPtr<PropertiesVector> vector = adoptPtr(new PropertiesVector);
+    PropertiesVector* vector = getOrCreatePropertiesVector(info->attributeName);
+    ASSERT(vector);
     vector->append(info);
-    m_map.set(info->attributeName, vector.release());
 }
 
 void SVGAttributeToPropertyMap::animatedPropertiesForAttribute(SVGElement* ownerType, const QualifiedName& attributeName, Vector<RefPtr<SVGAnimatedProperty> >& properties)
@@ -63,7 +68,8 @@ void SVGAttributeToPropertyMap::animatedPropertiesForAttribute(SVGElement* owner
     if (!vector)
         return;
 
-    PropertiesVector::iterator vectorEnd = vector->end();
+    properties.reserveCapacity(properties.size() + vector->size());
+    const PropertiesVector::iterator vectorEnd = vector->end();
     for (PropertiesVector::iterator vectorIt = vector->begin(); vectorIt != vectorEnd; ++vectorIt)
         properties.append(animatedProperty(ownerType, attributeName, *vectorIt));
 }
@@ -74,7 +80,8 @@ void SVGAttributeToPropertyMap::animatedPropertyTypeForAttribute(const Qualified
     if (!vector)
         return;
 
-    PropertiesVector::iterator vectorEnd = vector->end();
+    propertyTypes.reserveCapacity(propertyTypes.size() + vector->size());
+    const PropertiesVector::iterator vectorEnd = vector->end();
     for (PropertiesVector::iterator vectorIt = vector->begin(); vectorIt != vectorEnd; ++vectorIt)
         propertyTypes.append((*vectorIt)->animatedPropertyType);
 }
@@ -82,12 +89,12 @@ void SVGAttributeToPropertyMap::animatedPropertyTypeForAttribute(const Qualified
 void SVGAttributeToPropertyMap::synchronizeProperties(SVGElement* contextElement)
 {
     ASSERT(contextElement);
-    AttributeToPropertiesMap::iterator end = m_map.end();
+    const AttributeToPropertiesMap::iterator end = m_map.end();
     for (AttributeToPropertiesMap::iterator it = m_map.begin(); it != end; ++it) {
         PropertiesVector* vector = it->value.get();
         ASSERT(vector);
 
-        PropertiesVector::iterator vectorEnd = vector->end();
+        const PropertiesVector::iterator vectorEnd = vector->end();
         for (PropertiesVector::iterator vectorIt = vector->begin(); vectorIt != vectorEnd; ++vectorIt)
             synchronizeProperty(contextElement, it->key, *vectorIt);
     } 
@@ -100,11 +107,25 @@ bool SVGAttributeToPropertyMap::synchronizeProperty(SVGElement* contextElement, 
     if (!vector)
         return false;
 
-    PropertiesVector::iterator vectorEnd = vector->end();
+    const PropertiesVector::iterator vectorEnd = vector->end();
     for (PropertiesVector::iterator vectorIt = vector->begin(); vectorIt != vectorEnd; ++vectorIt)
         synchronizeProperty(contextElement, attributeName, *vectorIt);
 
     return true;
+}
+
+SVGAttributeToPropertyMap::PropertiesVector* SVGAttributeToPropertyMap::getOrCreatePropertiesVector(const QualifiedName& attributeName)
+{
+    ASSERT(attributeName != anyQName());
+    AttributeToPropertiesMap::AddResult addResult = m_map.add(attributeName, PassOwnPtr<PropertiesVector>());
+    PropertiesVector* vector = addResult.iterator->value.get();
+    if (addResult.isNewEntry) {
+        ASSERT(!vector);
+        vector = (addResult.iterator->value = adoptPtr(new PropertiesVector)).get();
+    }
+    ASSERT(vector);
+    ASSERT(addResult.iterator->value.get() == vector);
+    return vector;
 }
 
 void SVGAttributeToPropertyMap::synchronizeProperty(SVGElement* contextElement, const QualifiedName& attributeName, const SVGPropertyInfo* info)

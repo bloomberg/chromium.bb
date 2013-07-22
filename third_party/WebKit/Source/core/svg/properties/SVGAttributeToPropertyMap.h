@@ -29,6 +29,10 @@ class SVGAnimatedProperty;
 class SVGElement;
 
 class SVGAttributeToPropertyMap {
+private:
+    typedef Vector<const SVGPropertyInfo*> PropertiesVector;
+    typedef HashMap<QualifiedName, OwnPtr<PropertiesVector> > AttributeToPropertiesMap;
+
 public:
     bool isEmpty() const { return m_map.isEmpty(); }
 
@@ -44,11 +48,10 @@ public:
     bool synchronizeProperty(SVGElement* contextElement, const QualifiedName& attributeName);
 
 private:
+    PropertiesVector* getOrCreatePropertiesVector(const QualifiedName&);
     void synchronizeProperty(SVGElement* contextElement, const QualifiedName& attributeName, const SVGPropertyInfo*);
     PassRefPtr<SVGAnimatedProperty> animatedProperty(SVGElement* contextElement, const QualifiedName& attributeName, const SVGPropertyInfo*);
 
-    typedef Vector<const SVGPropertyInfo*> PropertiesVector;
-    typedef HashMap<QualifiedName, OwnPtr<PropertiesVector> > AttributeToPropertiesMap;
     AttributeToPropertiesMap m_map;
 };
 
