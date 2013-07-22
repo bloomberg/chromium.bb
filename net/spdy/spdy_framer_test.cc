@@ -751,6 +751,130 @@ TEST_P(SpdyFramerTest, OutOfOrderHeaders) {
                                               &new_headers));
 }
 
+// Test that if we receive a SYN_STREAM with stream ID zero, we signal an error
+// (but don't crash).
+TEST_P(SpdyFramerTest, SynStreamWithStreamIdZero) {
+  testing::StrictMock<net::test::MockVisitor> visitor;
+  SpdyFramer framer(spdy_version_);
+  framer.set_visitor(&visitor);
+
+  SpdyHeaderBlock headers;
+  headers["alpha"] = "beta";
+  scoped_ptr<SpdySerializedFrame> frame(
+      framer.CreateSynStream(0,  // stream id
+                             0,  // associated stream id
+                             1,  // priority
+                             0,  // credential slot
+                             CONTROL_FLAG_NONE,
+                             true,  // compress
+                             &headers));
+  ASSERT_TRUE(frame.get() != NULL);
+
+  // We shouldn't have to read the whole frame before we signal an error.
+  EXPECT_CALL(visitor, OnError(testing::Eq(&framer)));
+  EXPECT_GT(frame->size(), framer.ProcessInput(frame->data(), frame->size()));
+  EXPECT_TRUE(framer.HasError());
+  EXPECT_EQ(SpdyFramer::SPDY_INVALID_CONTROL_FRAME, framer.error_code());
+}
+
+// Test that if we receive a SYN_REPLY with stream ID zero, we signal an error
+// (but don't crash).
+TEST_P(SpdyFramerTest, SynReplyWithStreamIdZero) {
+  testing::StrictMock<net::test::MockVisitor> visitor;
+  SpdyFramer framer(spdy_version_);
+  framer.set_visitor(&visitor);
+
+  SpdyHeaderBlock headers;
+  headers["alpha"] = "beta";
+  scoped_ptr<SpdySerializedFrame> frame(
+      framer.CreateSynReply(0,  // stream id
+                            CONTROL_FLAG_NONE,
+                            true,  // compress
+                            &headers));
+  ASSERT_TRUE(frame.get() != NULL);
+
+  // We shouldn't have to read the whole frame before we signal an error.
+  EXPECT_CALL(visitor, OnError(testing::Eq(&framer)));
+  EXPECT_GT(frame->size(), framer.ProcessInput(frame->data(), frame->size()));
+  EXPECT_TRUE(framer.HasError());
+  EXPECT_EQ(SpdyFramer::SPDY_INVALID_CONTROL_FRAME, framer.error_code());
+}
+
+// Test that if we receive a HEADERS with stream ID zero, we signal an error
+// (but don't crash).
+TEST_P(SpdyFramerTest, HeadersWithStreamIdZero) {
+  testing::StrictMock<net::test::MockVisitor> visitor;
+  SpdyFramer framer(spdy_version_);
+  framer.set_visitor(&visitor);
+
+  SpdyHeaderBlock headers;
+  headers["alpha"] = "beta";
+  scoped_ptr<SpdySerializedFrame> frame(
+      framer.CreateHeaders(0,  // stream id
+                           CONTROL_FLAG_NONE,
+                           true,  // compress
+                           &headers));
+  ASSERT_TRUE(frame.get() != NULL);
+
+  // We shouldn't have to read the whole frame before we signal an error.
+  EXPECT_CALL(visitor, OnError(testing::Eq(&framer)));
+  EXPECT_GT(frame->size(), framer.ProcessInput(frame->data(), frame->size()));
+  EXPECT_TRUE(framer.HasError());
+  EXPECT_EQ(SpdyFramer::SPDY_INVALID_CONTROL_FRAME, framer.error_code());
+}
+
+// Test that if we receive a PUSH_PROMISE with stream ID zero, we signal an
+// error (but don't crash).
+TEST_P(SpdyFramerTest, PushPromiseWithStreamIdZero) {
+  if (spdy_version_ < SPDY4) {
+    return;
+  }
+
+  testing::StrictMock<net::test::MockVisitor> visitor;
+  SpdyFramer framer(spdy_version_);
+  framer.set_visitor(&visitor);
+
+  SpdyHeaderBlock headers;
+  headers["alpha"] = "beta";
+  scoped_ptr<SpdySerializedFrame> frame(
+      framer.CreatePushPromise(0,  // stream id
+                               4,  // promised stream id
+                               &headers));
+  ASSERT_TRUE(frame.get() != NULL);
+
+  // We shouldn't have to read the whole frame before we signal an error.
+  EXPECT_CALL(visitor, OnError(testing::Eq(&framer)));
+  EXPECT_GT(frame->size(), framer.ProcessInput(frame->data(), frame->size()));
+  EXPECT_TRUE(framer.HasError());
+  EXPECT_EQ(SpdyFramer::SPDY_INVALID_CONTROL_FRAME, framer.error_code());
+}
+
+// Test that if we receive a PUSH_PROMISE with promised stream ID zero, we
+// signal an error (but don't crash).
+TEST_P(SpdyFramerTest, PushPromiseWithPromisedStreamIdZero) {
+  if (spdy_version_ < SPDY4) {
+    return;
+  }
+
+  testing::StrictMock<net::test::MockVisitor> visitor;
+  SpdyFramer framer(spdy_version_);
+  framer.set_visitor(&visitor);
+
+  SpdyHeaderBlock headers;
+  headers["alpha"] = "beta";
+  scoped_ptr<SpdySerializedFrame> frame(
+      framer.CreatePushPromise(3,  // stream id
+                               0,  // promised stream id
+                               &headers));
+  ASSERT_TRUE(frame.get() != NULL);
+
+  // We shouldn't have to read the whole frame before we signal an error.
+  EXPECT_CALL(visitor, OnError(testing::Eq(&framer)));
+  EXPECT_GT(frame->size(), framer.ProcessInput(frame->data(), frame->size()));
+  EXPECT_TRUE(framer.HasError());
+  EXPECT_EQ(SpdyFramer::SPDY_INVALID_CONTROL_FRAME, framer.error_code());
+}
+
 TEST_P(SpdyFramerTest, CreateCredential) {
   SpdyFramer framer(spdy_version_);
 

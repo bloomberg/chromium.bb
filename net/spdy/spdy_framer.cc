@@ -1097,6 +1097,10 @@ size_t SpdyFramer::ProcessControlFrameBeforeHeaderBlock(const char* data,
             successful_read = reader.ReadUInt31(&current_frame_stream_id_);
             DCHECK(successful_read);
           }
+          if (current_frame_stream_id_ == 0) {
+            set_error(SPDY_INVALID_CONTROL_FRAME);
+            break;
+          }
 
           SpdyStreamId associated_to_stream_id = kInvalidStream;
           successful_read = reader.ReadUInt31(&associated_to_stream_id);
@@ -1140,10 +1144,18 @@ size_t SpdyFramer::ProcessControlFrameBeforeHeaderBlock(const char* data,
       case PUSH_PROMISE:
         {
           DCHECK_LE(4, protocol_version());
+          if (current_frame_stream_id_ == 0) {
+            set_error(SPDY_INVALID_CONTROL_FRAME);
+            break;
+          }
           SpdyStreamId promised_stream_id = kInvalidStream;
           bool successful_read = reader.ReadUInt31(&promised_stream_id);
           DCHECK(successful_read);
           DCHECK(reader.IsDoneReading());
+          if (promised_stream_id == 0) {
+            set_error(SPDY_INVALID_CONTROL_FRAME);
+            break;
+          }
           if (debug_visitor_) {
             debug_visitor_->OnReceiveCompressedFrame(
                 current_frame_stream_id_,
@@ -1162,6 +1174,10 @@ size_t SpdyFramer::ProcessControlFrameBeforeHeaderBlock(const char* data,
           if (spdy_version_ < 4) {
             successful_read = reader.ReadUInt31(&current_frame_stream_id_);
             DCHECK(successful_read);
+          }
+          if (current_frame_stream_id_ == 0) {
+            set_error(SPDY_INVALID_CONTROL_FRAME);
+            break;
           }
           if (protocol_version() < 3) {
             // SPDY 2 had two unused bytes here. Seek past them.
@@ -2175,6 +2191,9 @@ bool SpdyFramer::IncrementallyDecompressControlFrameHeaderData(
 
   decomp->next_in = reinterpret_cast<Bytef*>(const_cast<char*>(data));
   decomp->avail_in = len;
+  // If we get a SYN_STREAM/SYN_REPLY/HEADERS frame with stream ID zero, we
+  // signal an error back in ProcessControlFrameBeforeHeaderBlock.  So if we've
+  // reached this method successfully, stream_id should be nonzero.
   DCHECK_LT(0u, stream_id);
   while (decomp->avail_in > 0 && processed_successfully) {
     decomp->next_out = reinterpret_cast<Bytef*>(buffer);
