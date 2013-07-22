@@ -39,12 +39,13 @@ void SetPlatformDevice(SkDevice* device, PlatformDevice* platform_behaviour) {
 }
 
 PlatformDevice* GetPlatformDevice(SkDevice* device) {
-  SkMetaData& meta_data = device->getMetaData();
-  PlatformDevice* device_behaviour = NULL;
-  if (meta_data.findPtr(kDevicePlatformBehaviour,
-                        reinterpret_cast<void**>(&device_behaviour)))
-    return device_behaviour;
-
+  if (device) {
+    SkMetaData& meta_data = device->getMetaData();
+    PlatformDevice* device_behaviour = NULL;
+    if (meta_data.findPtr(kDevicePlatformBehaviour,
+                          reinterpret_cast<void**>(&device_behaviour)))
+      return device_behaviour;
+  }
   return NULL;
 }
 

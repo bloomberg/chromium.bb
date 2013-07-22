@@ -99,9 +99,7 @@ SK_API size_t PlatformCanvasStrideForWidth(unsigned width);
 // clip. In practice, this is usually either the top layer or nothing, since
 // we usually set the clip to new layers when we make them.
 //
-// If there is no layer that is not all clipped out, this will return a
-// dummy device so callers do not have to check. If you are concerned about
-// performance, check the clip before doing any painting.
+// This may return NULL, so callers need to check.
 //
 // This is different than SkCanvas' getDevice, because that returns the
 // bottommost device.
