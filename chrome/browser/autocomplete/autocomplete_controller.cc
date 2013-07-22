@@ -151,12 +151,6 @@ AutocompleteController::AutocompleteController(
   bool use_hqp = !!(provider_types & AutocompleteProvider::TYPE_HISTORY_QUICK);
   // TODO(mrossetti): Permanently modify the HistoryURLProvider to not search
   // titles once HQP is turned on permanently.
-  // History quick provider can be used on all platforms other than Android.
-  // TODO(jcivelli): Enable the History Quick Provider and figure out why it
-  // reports the wrong results for some pages.
-#if defined(OS_ANDROID)
-  use_hqp = false;
-#endif
 
   if (provider_types & AutocompleteProvider::TYPE_BUILTIN)
     providers_.push_back(new BuiltinProvider(this, profile));
