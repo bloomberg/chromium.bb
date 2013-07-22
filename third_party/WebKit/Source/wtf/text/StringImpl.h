@@ -65,12 +65,14 @@ struct StringStats {
     {
         ++m_totalNumberStrings;
         ++m_number8BitStrings;
+        m_total8BitData += length;
     }
 
     inline void add16BitString(unsigned length)
     {
         ++m_totalNumberStrings;
         ++m_number16BitStrings;
+        m_total16BitData += length;
     }
 
     void removeString(StringImpl*);

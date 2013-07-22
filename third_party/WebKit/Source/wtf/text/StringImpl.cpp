@@ -140,7 +140,7 @@ public:
     void print()
     {
         const char* status = "ok";
-        else if (m_unnecessarilyWide)
+        if (m_unnecessarilyWide)
             status = "16";
         dataLogF("%8u copies (%s) of length %8u %s\n", m_numberOfCopies, status, m_length, m_snippet.data());
     }
@@ -207,10 +207,13 @@ void StringStats::removeString(StringImpl* string)
     unsigned length = string->length();
     --m_totalNumberStrings;
 
-    if (string->is8Bit())
+    if (string->is8Bit()) {
         --m_number8BitStrings;
-    else
+        m_total8BitData -= length;
+    } else {
         --m_number16BitStrings;
+        m_total16BitData -= length;
+    }
 
     if (!--s_stringRemovesTillPrintStats) {
         s_stringRemovesTillPrintStats = s_printStringStatsFrequency;
@@ -237,6 +240,10 @@ void StringStats::printStats()
     unsigned long long totalSavedBytes = m_total8BitData;
     double percentSavings = totalSavedBytes ? ((double)totalSavedBytes * 100) / (double)(totalDataBytes + totalSavedBytes) : 0.0;
     dataLogF("         Total savings %12llu bytes (%5.2f%%)\n", totalSavedBytes, percentSavings);
+
+    unsigned totalOverhead = m_totalNumberStrings * sizeof(StringImpl);
+    double overheadPercent = (double)totalOverhead / (double)totalDataBytes * 100;
+    dataLogF("         StringImpl overheader: %8u (%5.2f%%)\n", totalOverhead, overheadPercent);
 
     callOnMainThread(printLiveStringStats, 0);
 }
