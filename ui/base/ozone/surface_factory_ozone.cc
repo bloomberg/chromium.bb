@@ -11,6 +11,34 @@ namespace ui {
 // static
 SurfaceFactoryOzone* SurfaceFactoryOzone::impl_ = NULL;
 
+class SurfaceFactoryOzoneStub : public SurfaceFactoryOzone {
+ public:
+  SurfaceFactoryOzoneStub() {}
+  virtual ~SurfaceFactoryOzoneStub() {}
+
+  virtual void InitializeHardware() OVERRIDE {}
+  virtual void ShutdownHardware() OVERRIDE {}
+  virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE { return 0; }
+  virtual gfx::AcceleratedWidget RealizeAcceleratedWidget(
+      gfx::AcceleratedWidget w) OVERRIDE {
+    return 0;
+  }
+  virtual bool LoadEGLGLES2Bindings() OVERRIDE { return true; }
+  virtual bool AttemptToResizeAcceleratedWidget(
+      gfx::AcceleratedWidget w,
+      const gfx::Rect& bounds) OVERRIDE {
+    return false;
+  }
+  virtual bool AcceleratedWidgetCanBeResized(
+      gfx::AcceleratedWidget w) OVERRIDE {
+    return false;
+  }
+  virtual gfx::VSyncProvider* GetVSyncProvider(
+      gfx::AcceleratedWidget w) OVERRIDE {
+    return NULL;
+  }
+};
+
 SurfaceFactoryOzone::SurfaceFactoryOzone() {
 }
 
@@ -31,6 +59,11 @@ const char* SurfaceFactoryOzone::DefaultDisplaySpec() {
   if (envvar)
     return envvar;
   return  "720x1280*2";
+}
+
+// static
+SurfaceFactoryOzone* SurfaceFactoryOzone::CreateTestHelper() {
+  return new SurfaceFactoryOzoneStub;
 }
 
 }  // namespace ui

@@ -15,6 +15,7 @@ class MessageLoopForUI;
 namespace ui {
 class InputMethod;
 class ScopedAnimationDurationScaleMode;
+class SurfaceFactoryOzone;
 }
 
 namespace aura {
@@ -63,6 +64,10 @@ class AuraTestHelper {
   scoped_ptr<client::FocusClient> focus_client_;
   scoped_ptr<TestScreen> test_screen_;
   scoped_ptr<ui::ScopedAnimationDurationScaleMode> zero_duration_mode_;
+
+#if defined(USE_OZONE)
+  scoped_ptr<ui::SurfaceFactoryOzone> surface_factory_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(AuraTestHelper);
 };

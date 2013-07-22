@@ -72,6 +72,9 @@ class SurfaceFactoryOzone {
   // in InitializeHardware. Returns NULL on error.
   virtual gfx::VSyncProvider* GetVSyncProvider(gfx::AcceleratedWidget w) = 0;
 
+  // Create a default SufaceFactoryOzone implementation useful for tests.
+  UI_EXPORT static SurfaceFactoryOzone* CreateTestHelper();
+
  private:
   static SurfaceFactoryOzone* impl_; // not owned
 };
