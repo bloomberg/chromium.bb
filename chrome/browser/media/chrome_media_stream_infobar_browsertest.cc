@@ -8,7 +8,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/test_timeouts.h"
 #include "base/time/time.h"
-#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/infobars/infobar.h"
@@ -16,7 +15,6 @@
 #include "chrome/browser/media/media_stream_infobar_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
@@ -286,21 +284,4 @@ IN_PROC_BROWSER_TEST_F(MediaStreamInfobarTest,
                                              kAudioVideoCallConstraints);
 
   // TODO(phoglund): verify the requester actually only gets video tracks.
-}
-
-IN_PROC_BROWSER_TEST_F(MediaStreamInfobarTest,
-                       BrutallyReloadAfterGettingUserMedia) {
-  content::WebContents* tab_contents = LoadTestPageInTab();
-
-  for (int i = 0; i < 10; ++i) {
-    if (i % 3 == 0) {
-      // Launch the infobar and click allow.
-      TestAcceptOnInfobar(tab_contents);
-    } else {
-      // Just trigger the launching of the infobar.
-      GetUserMedia(kAudioVideoCallConstraints, tab_contents);
-    }
-    chrome::ExecuteCommand(browser(), IDC_RELOAD);
-    content::WaitForLoadStop(tab_contents);
-  }
 }
