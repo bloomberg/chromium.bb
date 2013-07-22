@@ -150,7 +150,7 @@ scoped_refptr<ImageData> ImageDataInstanceCache::Get(
   for (int i = 0; i < kCacheSize; i++) {
     if (!images_[i].usable)
       continue;
-    if (!images_[i].image->type() == type)
+    if (images_[i].image->type() != type)
       continue;
     const PP_ImageDataDesc& desc = images_[i].image->desc();
     if (desc.format == format &&
