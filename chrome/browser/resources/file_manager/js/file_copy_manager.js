@@ -4,12 +4,6 @@
 
 'use strict';
 
-if (chrome.extension) {
-  var getContentWindows = function() {
-    return chrome.extension.getViews();
-  };
-}
-
 /**
  * @constructor
  */
