@@ -4077,6 +4077,11 @@ void Document::finishedParsing()
     if (!m_documentTiming.domContentLoadedEventEnd)
         m_documentTiming.domContentLoadedEventEnd = monotonicallyIncreasingTime();
 
+    // The loader's finishedParsing() method may invoke script that causes this object to
+    // be dereferenced (when this document is in an iframe and the onload causes the iframe's src to change).
+    // Keep it alive until we are done.
+    RefPtr<Document> protect(this);
+
     if (RefPtr<Frame> f = frame()) {
         // FrameLoader::finishedParsing() might end up calling Document::implicitClose() if all
         // resource loads are complete. HTMLObjectElements can start loading their resources from
