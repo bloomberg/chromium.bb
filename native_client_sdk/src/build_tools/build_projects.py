@@ -263,7 +263,7 @@ def main(args):
     print 'Filter by name: ' + str(options.project)
 
   try:
-    project_tree = parse_dsc.LoadProjectTree(SDK_SRC_DIR, filters=filters)
+    project_tree = parse_dsc.LoadProjectTree(SDK_SRC_DIR, include=filters)
   except parse_dsc.ValidationError as e:
     buildbot_common.ErrorExit(str(e))
   parse_dsc.PrintProjectTree(project_tree)

@@ -98,7 +98,7 @@ def main(args):
   filters['TOOLS'] = toolchains
   filters['DEST'] = ['examples/api', 'examples/getting_started',
                      'examples/demo', 'examples/tutorial']
-  tree = parse_dsc.LoadProjectTree(SDK_SRC_DIR, filters=filters)
+  tree = parse_dsc.LoadProjectTree(SDK_SRC_DIR, include=filters)
   build_projects.UpdateHelpers(app_dir, platform, clobber=True)
   build_projects.UpdateProjects(app_dir, platform, tree, clobber=False,
                                 toolchains=toolchains, configs=[config],

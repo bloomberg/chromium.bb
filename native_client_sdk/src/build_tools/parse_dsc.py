@@ -150,11 +150,56 @@ def LoadProject(filename):
   return desc
 
 
-def AcceptProject(desc, filters):
-  # Check if we should filter node this on toolchain
-  if not filters:
-    return True
+def LoadProjectTreeUnfiltered(srcpath):
+  # Build the tree
+  out = collections.defaultdict(list)
+  for root, _, files in os.walk(srcpath):
+    for filename in files:
+      if fnmatch.fnmatch(filename, '*.dsc'):
+        filepath = os.path.join(root, filename)
+        try:
+          desc = LoadProject(filepath)
+        except ValidationError as e:
+          raise ValidationError("Failed to validate: %s: %s" % (filepath, e))
+        if desc:
+          key = desc['DEST']
+          out[key].append(desc)
+  return out
 
+
+def LoadProjectTree(srcpath, include, exclude=None):
+  out = LoadProjectTreeUnfiltered(srcpath)
+  return FilterTree(out, MakeDefaultFilterFn(include, exclude))
+
+
+def GenerateProjects(tree):
+  for key in tree:
+    for val in tree[key]:
+      yield key, val
+
+
+def FilterTree(tree, filter_fn):
+  out = collections.defaultdict(list)
+  for branch, desc in GenerateProjects(tree):
+    if filter_fn(desc):
+      out[branch].append(desc)
+  return out
+
+
+def MakeDefaultFilterFn(include, exclude):
+  def DefaultFilterFn(desc):
+    matches_include = not include or DescMatchesFilter(desc, include)
+    matches_exclude = exclude and DescMatchesFilter(desc, exclude)
+
+    # Exclude list overrides include list.
+    if matches_exclude:
+      return False
+    return matches_include
+
+  return DefaultFilterFn
+
+
+def DescMatchesFilter(desc, filters):
   for key, expected in filters.iteritems():
     # For any filtered key which is unspecified, assumed False
     value = desc.get(key, False)
@@ -172,37 +217,6 @@ def AcceptProject(desc, filters):
   return True
 
 
-def PruneTree(tree, filters):
-  out = collections.defaultdict(list)
-  for branch, projects in tree.iteritems():
-    for desc in projects:
-      if AcceptProject(desc, filters):
-        out[branch].append(desc)
-
-  return out
-
-
-def LoadProjectTree(srcpath, filters=None):
-  # Build the tree
-  out = collections.defaultdict(list)
-  for root, _, files in os.walk(srcpath):
-    for filename in files:
-      if fnmatch.fnmatch(filename, '*.dsc'):
-        filepath = os.path.join(root, filename)
-        try:
-          desc = LoadProject(filepath)
-        except ValidationError as e:
-          raise ValidationError("Failed to validate: %s: %s" % (filepath, e))
-        if desc:
-          key = desc['DEST']
-          out[key].append(desc)
-
-  # Filter if needed
-  if filters:
-    out = PruneTree(out, filters)
-  return out
-
-
 def PrintProjectTree(tree):
   for key in tree:
     print key + ':'
@@ -210,26 +224,23 @@ def PrintProjectTree(tree):
       print '\t' + val['NAME']
 
 
-def GenerateProjects(tree):
-  for key in tree:
-    for val in tree[key]:
-      yield key, val
-
-
 def main(argv):
-  parser = optparse.OptionParser()
+  parser = optparse.OptionParser(usage='%prog [options] <dir>')
   parser.add_option('-e', '--experimental',
       help='build experimental examples and libraries', action='store_true')
   parser.add_option('-t', '--toolchain',
       help='Build using toolchain. Can be passed more than once.',
       action='append')
 
-  options, files = parser.parse_args(argv[1:])
+  options, args = parser.parse_args(argv[1:])
   filters = {}
 
-  if len(files):
-    parser.error('Not expecting files.')
-    return 1
+  load_from_dir = '.'
+  if len(args) > 1:
+    parser.error('Expected 0 or 1 args, got %d.' % len(args))
+
+  if args:
+    load_from_dir = args[0]
 
   if options.toolchain:
     filters['TOOLS'] = options.toolchain
@@ -238,7 +249,7 @@ def main(argv):
     filters['EXPERIMENTAL'] = False
 
   try:
-    tree = LoadProjectTree('.', filters=filters)
+    tree = LoadProjectTree(load_from_dir, include=filters)
   except ValidationError as e:
     sys.stderr.write(str(e) + '\n')
     return 1

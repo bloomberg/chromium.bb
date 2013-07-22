@@ -672,7 +672,7 @@ def BuildStepUpdateUserProjects(pepperdir, toolchains,
     'src'
   ]
 
-  tree = parse_dsc.LoadProjectTree(SDK_SRC_DIR, filters=filters)
+  tree = parse_dsc.LoadProjectTree(SDK_SRC_DIR, include=filters)
   build_projects.UpdateProjects(pepperdir, tree, clobber=clobber,
                                 toolchains=toolchains)
 
