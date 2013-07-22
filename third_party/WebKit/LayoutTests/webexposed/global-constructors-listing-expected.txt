@@ -177,6 +177,7 @@ IDBRequest
 IDBTransaction
 IDBVersionChangeEvent
 Image
+ImageBitmap
 ImageData
 InputMethodContext
 Int16Array

@@ -3,7 +3,13 @@ Ensure correct behavior of drawImage with ImageBitmaps.
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
+PASS testBitmap.width is imageWidth
+PASS testBitmap.height is imageHeight
+PASS testBitmap.width is imageWidth
+PASS testBitmap.height is imageHeight
 checkNoCrop with HTMLImageElement
+PASS bitmap.width is imageWidth
+PASS bitmap.height is imageHeight
 PASS d[0] == 255 is true
 PASS d[1] == 0 is true
 PASS d[2] == 0 is true
@@ -126,6 +132,8 @@ PASS d[2] == 0 is true
 PASS d[3] == 0 is true
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 checkCrop with HTMLImageElement
+PASS bitmap.width is 100
+PASS bitmap.height is 100
 PASS d[0] == 255 is true
 PASS d[1] == 0 is true
 PASS d[2] == 0 is true
@@ -168,6 +176,8 @@ PASS d[2] == 0 is true
 PASS d[3] == 0 is true
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 checkCropRight with HTMLImageElement
+PASS bitmap.width is 100
+PASS bitmap.height is 100
 PASS d[0] == 0 is true
 PASS d[1] == 0 is true
 PASS d[2] == 0 is true
@@ -190,6 +200,8 @@ PASS d[2] == 0 is true
 PASS d[3] == 0 is true
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 checkOverCrop with HTMLImageElement
+PASS bitmap.width is 600
+PASS bitmap.height is 600
 PASS d[0] == 0 is true
 PASS d[1] == 0 is true
 PASS d[2] == 0 is true
@@ -280,6 +292,8 @@ PASS d[2] == 0 is true
 PASS d[3] == 0 is true
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 checkOverCropRight with HTMLImageElement
+PASS bitmap.width is 500
+PASS bitmap.height is 500
 PASS d[0] == 0 is true
 PASS d[1] == 0 is true
 PASS d[2] == 0 is true
@@ -342,6 +356,8 @@ PASS d[2] == 0 is true
 PASS d[3] == 0 is true
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 checkNegativeCrop with HTMLImageElement
+PASS bitmap.width is 100
+PASS bitmap.height is 100
 PASS d[0] == 255 is true
 PASS d[1] == 0 is true
 PASS d[2] == 0 is true
@@ -384,6 +400,8 @@ PASS d[2] == 0 is true
 PASS d[3] == 0 is true
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 checkEmpty with HTMLImageElement
+PASS bitmap.width is 300
+PASS bitmap.height is 300
 PASS d[0] == 0 is true
 PASS d[1] == 0 is true
 PASS d[2] == 0 is true
@@ -402,6 +420,8 @@ PASS d[2] == 0 is true
 PASS d[3] == 0 is true
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 checkEmpty2 with HTMLImageElement
+PASS bitmap.width is 300
+PASS bitmap.height is 300
 PASS d[0] == 0 is true
 PASS d[1] == 0 is true
 PASS d[2] == 0 is true
@@ -420,6 +440,8 @@ PASS d[2] == 0 is true
 PASS d[3] == 0 is true
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 checkImmutable with HTMLImageElement
+PASS bitmap.width is imageWidth
+PASS bitmap.height is imageHeight
 PASS d[0] == 255 is true
 PASS d[1] == 0 is true
 PASS d[2] == 0 is true
@@ -542,6 +564,8 @@ PASS d[2] == 0 is true
 PASS d[3] == 0 is true
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 checkNoCrop with HTMLCanvasElement
+PASS bitmap.width is imageWidth
+PASS bitmap.height is imageHeight
 PASS d[0] == 255 is true
 PASS d[1] == 0 is true
 PASS d[2] == 0 is true
@@ -664,6 +688,8 @@ PASS d[2] == 0 is true
 PASS d[3] == 0 is true
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 checkCrop with HTMLCanvasElement
+PASS bitmap.width is 100
+PASS bitmap.height is 100
 PASS d[0] == 255 is true
 PASS d[1] == 0 is true
 PASS d[2] == 0 is true
@@ -706,6 +732,8 @@ PASS d[2] == 0 is true
 PASS d[3] == 0 is true
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 checkCropRight with HTMLCanvasElement
+PASS bitmap.width is 100
+PASS bitmap.height is 100
 PASS d[0] == 0 is true
 PASS d[1] == 0 is true
 PASS d[2] == 0 is true
@@ -728,6 +756,8 @@ PASS d[2] == 0 is true
 PASS d[3] == 0 is true
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 checkOverCrop with HTMLCanvasElement
+PASS bitmap.width is 600
+PASS bitmap.height is 600
 PASS d[0] == 0 is true
 PASS d[1] == 0 is true
 PASS d[2] == 0 is true
@@ -818,6 +848,8 @@ PASS d[2] == 0 is true
 PASS d[3] == 0 is true
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 checkOverCropRight with HTMLCanvasElement
+PASS bitmap.width is 500
+PASS bitmap.height is 500
 PASS d[0] == 0 is true
 PASS d[1] == 0 is true
 PASS d[2] == 0 is true
@@ -880,6 +912,8 @@ PASS d[2] == 0 is true
 PASS d[3] == 0 is true
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 checkNegativeCrop with HTMLCanvasElement
+PASS bitmap.width is 100
+PASS bitmap.height is 100
 PASS d[0] == 255 is true
 PASS d[1] == 0 is true
 PASS d[2] == 0 is true
@@ -922,6 +956,8 @@ PASS d[2] == 0 is true
 PASS d[3] == 0 is true
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 checkEmpty with HTMLCanvasElement
+PASS bitmap.width is 300
+PASS bitmap.height is 300
 PASS d[0] == 0 is true
 PASS d[1] == 0 is true
 PASS d[2] == 0 is true
@@ -940,6 +976,8 @@ PASS d[2] == 0 is true
 PASS d[3] == 0 is true
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 checkEmpty2 with HTMLCanvasElement
+PASS bitmap.width is 300
+PASS bitmap.height is 300
 PASS d[0] == 0 is true
 PASS d[1] == 0 is true
 PASS d[2] == 0 is true
@@ -958,6 +996,8 @@ PASS d[2] == 0 is true
 PASS d[3] == 0 is true
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 checkImmutable with HTMLCanvasElement
+PASS bitmap.width is imageWidth
+PASS bitmap.height is imageHeight
 PASS d[0] == 255 is true
 PASS d[1] == 0 is true
 PASS d[2] == 0 is true
@@ -1080,6 +1120,8 @@ PASS d[2] == 0 is true
 PASS d[3] == 0 is true
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 checkNoCrop with ImageData
+PASS bitmap.width is imageWidth
+PASS bitmap.height is imageHeight
 PASS d[0] == 255 is true
 PASS d[1] == 0 is true
 PASS d[2] == 0 is true
@@ -1202,6 +1244,8 @@ PASS d[2] == 0 is true
 PASS d[3] == 0 is true
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 checkCrop with ImageData
+PASS bitmap.width is 100
+PASS bitmap.height is 100
 PASS d[0] == 255 is true
 PASS d[1] == 0 is true
 PASS d[2] == 0 is true
@@ -1244,6 +1288,8 @@ PASS d[2] == 0 is true
 PASS d[3] == 0 is true
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 checkCropRight with ImageData
+PASS bitmap.width is 100
+PASS bitmap.height is 100
 PASS d[0] == 0 is true
 PASS d[1] == 0 is true
 PASS d[2] == 0 is true
@@ -1266,6 +1312,8 @@ PASS d[2] == 0 is true
 PASS d[3] == 0 is true
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 checkOverCrop with ImageData
+PASS bitmap.width is 600
+PASS bitmap.height is 600
 PASS d[0] == 0 is true
 PASS d[1] == 0 is true
 PASS d[2] == 0 is true
@@ -1356,6 +1404,8 @@ PASS d[2] == 0 is true
 PASS d[3] == 0 is true
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 checkOverCropRight with ImageData
+PASS bitmap.width is 500
+PASS bitmap.height is 500
 PASS d[0] == 0 is true
 PASS d[1] == 0 is true
 PASS d[2] == 0 is true
@@ -1418,6 +1468,8 @@ PASS d[2] == 0 is true
 PASS d[3] == 0 is true
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 checkNegativeCrop with ImageData
+PASS bitmap.width is 100
+PASS bitmap.height is 100
 PASS d[0] == 255 is true
 PASS d[1] == 0 is true
 PASS d[2] == 0 is true
@@ -1460,6 +1512,8 @@ PASS d[2] == 0 is true
 PASS d[3] == 0 is true
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 checkEmpty with ImageData
+PASS bitmap.width is 300
+PASS bitmap.height is 300
 PASS d[0] == 0 is true
 PASS d[1] == 0 is true
 PASS d[2] == 0 is true
@@ -1478,6 +1532,8 @@ PASS d[2] == 0 is true
 PASS d[3] == 0 is true
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 checkEmpty2 with ImageData
+PASS bitmap.width is 300
+PASS bitmap.height is 300
 PASS d[0] == 0 is true
 PASS d[1] == 0 is true
 PASS d[2] == 0 is true
@@ -1496,6 +1552,8 @@ PASS d[2] == 0 is true
 PASS d[3] == 0 is true
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 checkImmutable with ImageData
+PASS bitmap.width is imageWidth
+PASS bitmap.height is imageHeight
 PASS d[0] == 255 is true
 PASS d[1] == 0 is true
 PASS d[2] == 0 is true
@@ -1618,6 +1676,8 @@ PASS d[2] == 0 is true
 PASS d[3] == 0 is true
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 checkNoCrop with CanvasRenderingContext2D
+PASS bitmap.width is imageWidth
+PASS bitmap.height is imageHeight
 PASS d[0] == 255 is true
 PASS d[1] == 0 is true
 PASS d[2] == 0 is true
@@ -1740,6 +1800,8 @@ PASS d[2] == 0 is true
 PASS d[3] == 0 is true
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 checkCrop with CanvasRenderingContext2D
+PASS bitmap.width is 100
+PASS bitmap.height is 100
 PASS d[0] == 255 is true
 PASS d[1] == 0 is true
 PASS d[2] == 0 is true
@@ -1782,6 +1844,8 @@ PASS d[2] == 0 is true
 PASS d[3] == 0 is true
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 checkCropRight with CanvasRenderingContext2D
+PASS bitmap.width is 100
+PASS bitmap.height is 100
 PASS d[0] == 0 is true
 PASS d[1] == 0 is true
 PASS d[2] == 0 is true
@@ -1804,6 +1868,8 @@ PASS d[2] == 0 is true
 PASS d[3] == 0 is true
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 checkOverCrop with CanvasRenderingContext2D
+PASS bitmap.width is 600
+PASS bitmap.height is 600
 PASS d[0] == 0 is true
 PASS d[1] == 0 is true
 PASS d[2] == 0 is true
@@ -1894,6 +1960,8 @@ PASS d[2] == 0 is true
 PASS d[3] == 0 is true
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 checkOverCropRight with CanvasRenderingContext2D
+PASS bitmap.width is 500
+PASS bitmap.height is 500
 PASS d[0] == 0 is true
 PASS d[1] == 0 is true
 PASS d[2] == 0 is true
@@ -1956,6 +2024,8 @@ PASS d[2] == 0 is true
 PASS d[3] == 0 is true
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 checkNegativeCrop with CanvasRenderingContext2D
+PASS bitmap.width is 100
+PASS bitmap.height is 100
 PASS d[0] == 255 is true
 PASS d[1] == 0 is true
 PASS d[2] == 0 is true
@@ -1998,6 +2068,8 @@ PASS d[2] == 0 is true
 PASS d[3] == 0 is true
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 checkEmpty with CanvasRenderingContext2D
+PASS bitmap.width is 300
+PASS bitmap.height is 300
 PASS d[0] == 0 is true
 PASS d[1] == 0 is true
 PASS d[2] == 0 is true
@@ -2016,6 +2088,8 @@ PASS d[2] == 0 is true
 PASS d[3] == 0 is true
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 checkEmpty2 with CanvasRenderingContext2D
+PASS bitmap.width is 300
+PASS bitmap.height is 300
 PASS d[0] == 0 is true
 PASS d[1] == 0 is true
 PASS d[2] == 0 is true
@@ -2034,6 +2108,8 @@ PASS d[2] == 0 is true
 PASS d[3] == 0 is true
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 checkImmutable with CanvasRenderingContext2D
+PASS bitmap.width is imageWidth
+PASS bitmap.height is imageHeight
 PASS d[0] == 255 is true
 PASS d[1] == 0 is true
 PASS d[2] == 0 is true
@@ -2156,6 +2232,8 @@ PASS d[2] == 0 is true
 PASS d[3] == 0 is true
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 checkNoCrop with ImageBitmap
+PASS bitmap.width is imageWidth
+PASS bitmap.height is imageHeight
 PASS d[0] == 255 is true
 PASS d[1] == 0 is true
 PASS d[2] == 0 is true
@@ -2278,6 +2356,8 @@ PASS d[2] == 0 is true
 PASS d[3] == 0 is true
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 checkCrop with ImageBitmap
+PASS bitmap.width is 100
+PASS bitmap.height is 100
 PASS d[0] == 255 is true
 PASS d[1] == 0 is true
 PASS d[2] == 0 is true
@@ -2320,6 +2400,8 @@ PASS d[2] == 0 is true
 PASS d[3] == 0 is true
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 checkCropRight with ImageBitmap
+PASS bitmap.width is 100
+PASS bitmap.height is 100
 PASS d[0] == 0 is true
 PASS d[1] == 0 is true
 PASS d[2] == 0 is true
@@ -2342,6 +2424,8 @@ PASS d[2] == 0 is true
 PASS d[3] == 0 is true
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 checkOverCrop with ImageBitmap
+PASS bitmap.width is 600
+PASS bitmap.height is 600
 PASS d[0] == 0 is true
 PASS d[1] == 0 is true
 PASS d[2] == 0 is true
@@ -2432,6 +2516,8 @@ PASS d[2] == 0 is true
 PASS d[3] == 0 is true
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 checkOverCropRight with ImageBitmap
+PASS bitmap.width is 500
+PASS bitmap.height is 500
 PASS d[0] == 0 is true
 PASS d[1] == 0 is true
 PASS d[2] == 0 is true
@@ -2494,6 +2580,8 @@ PASS d[2] == 0 is true
 PASS d[3] == 0 is true
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 checkNegativeCrop with ImageBitmap
+PASS bitmap.width is 100
+PASS bitmap.height is 100
 PASS d[0] == 255 is true
 PASS d[1] == 0 is true
 PASS d[2] == 0 is true
@@ -2536,6 +2624,8 @@ PASS d[2] == 0 is true
 PASS d[3] == 0 is true
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 checkEmpty with ImageBitmap
+PASS bitmap.width is 300
+PASS bitmap.height is 300
 PASS d[0] == 0 is true
 PASS d[1] == 0 is true
 PASS d[2] == 0 is true
@@ -2554,6 +2644,8 @@ PASS d[2] == 0 is true
 PASS d[3] == 0 is true
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 checkEmpty2 with ImageBitmap
+PASS bitmap.width is 300
+PASS bitmap.height is 300
 PASS d[0] == 0 is true
 PASS d[1] == 0 is true
 PASS d[2] == 0 is true
@@ -2572,6 +2664,8 @@ PASS d[2] == 0 is true
 PASS d[3] == 0 is true
 PASS jsWrapperClass(bitmap) is 'ImageBitmap'
 checkImmutable with ImageBitmap
+PASS bitmap.width is imageWidth
+PASS bitmap.height is imageHeight
 PASS d[0] == 255 is true
 PASS d[1] == 0 is true
 PASS d[2] == 0 is true

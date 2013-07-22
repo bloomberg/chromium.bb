@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 [
-    NoInterfaceObject
 ] interface ImageBitmap {
-
+    readonly attribute long width;
+    readonly attribute long height;
 };

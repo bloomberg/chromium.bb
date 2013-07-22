@@ -90,10 +90,13 @@ var d;          // image.imageData
 var checks;
 var elements;
 
+var imageWidth = 200;
+var imageHeight = 200;
+
 // Create auxiliary canvas to draw to and create an image from.
 var aCanvas = document.createElement("canvas");
-aCanvas.setAttribute("width", "200");
-aCanvas.setAttribute("height", "200");
+aCanvas.width = imageWidth;
+aCanvas.height = imageHeight;
 var aCtx = aCanvas.getContext("2d");
 drawPattern(aCtx);
 
@@ -118,6 +121,16 @@ function imageLoaded() {
 
 function imageBitmapLoadedCallback(imageBitmap) {
     testBitmap = imageBitmap;
+
+    shouldBe("testBitmap.width", "imageWidth");
+    shouldBe("testBitmap.height", "imageHeight");
+
+    // width and height are readonly
+    testBitmap.width = 42;
+    testBitmap.height = 42;
+    shouldBe("testBitmap.width", "imageWidth");
+    shouldBe("testBitmap.height", "imageHeight");
+
     imageBitmapLoaded = true;
     loaded();
 }
@@ -195,6 +208,10 @@ function checkImmutable(element) {
 }
 
 function callbackNoCrop(imageBitmap) {
+    bitmap = imageBitmap;
+    shouldBe("bitmap.width", "imageWidth");
+    shouldBe("bitmap.height", "imageHeight");
+
     // should be drawn to (0, 0), (200, 200)
     clearContext(ctx);
     ctx.drawImage(imageBitmap, 0, 0);
@@ -245,6 +262,10 @@ function callbackNoCrop(imageBitmap) {
 }
 
 function callbackCrop(imageBitmap) {
+    bitmap = imageBitmap;
+    shouldBe("bitmap.width", "100");
+    shouldBe("bitmap.height", "100");
+
     // red should be drawn to (0, 0), (100, 100)
     clearContext(ctx);
     ctx.drawImage(imageBitmap, 0, 0);
@@ -267,6 +288,10 @@ function callbackCrop(imageBitmap) {
 }
 
 function callbackCropCenter(imageBitmap) {
+    bitmap = imageBitmap;
+    shouldBe("bitmap.width", "100");
+    shouldBe("bitmap.height", "100");
+
     // should be drawn to (0, 0), (100, 100) with all four colors
     clearContext(ctx);
     ctx.drawImage(imageBitmap, 0, 0);
@@ -295,6 +320,10 @@ function callbackCropCenter(imageBitmap) {
 }
 
 function callbackCropRight(imageBitmap) {
+    bitmap = imageBitmap;
+    shouldBe("bitmap.width", "100");
+    shouldBe("bitmap.height", "100");
+
     // black should be drawn to (0, 0), (100, 100)
     clearContext(ctx);
     ctx.drawImage(imageBitmap, 0, 0);
@@ -308,6 +337,10 @@ function callbackCropRight(imageBitmap) {
 }
 
 function callbackOverCrop(imageBitmap) {
+    bitmap = imageBitmap;
+    shouldBe("bitmap.width", "600");
+    shouldBe("bitmap.height", "600");
+
     // should be drawn to (100, 100), (300, 300)
     clearContext(ctx);
     ctx.drawImage(imageBitmap, 0, 0);
@@ -342,6 +375,10 @@ function callbackOverCrop(imageBitmap) {
 }
 
 function callbackOverCropRight(imageBitmap) {
+    bitmap = imageBitmap;
+    shouldBe("bitmap.width", "500");
+    shouldBe("bitmap.height", "500");
+
     // black should be drawn to (0, 0), (100, 100)
     clearContext(ctx);
     ctx.drawImage(imageBitmap, 0, 0);
@@ -373,6 +410,10 @@ function callbackOverCropRight(imageBitmap) {
 }
 
 function callbackEmpty(imageBitmap) {
+    bitmap = imageBitmap;
+    shouldBe("bitmap.width", "300");
+    shouldBe("bitmap.height", "300");
+
     // nothing should be drawn
     clearContext(ctx);
     ctx.drawImage(imageBitmap, 0, 0);
