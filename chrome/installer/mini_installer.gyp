@@ -132,7 +132,7 @@
               '<(branding_dir)/BRANDING',
             ],
             'outputs': [
-              '<(INTERMEDIATE_DIR)/mini_installer_exe_version.rc',
+              '<(PRODUCT_DIR)/mini_installer_exe_version.rc',
             ],
             'action': [
               'python', '<(version_py)',
