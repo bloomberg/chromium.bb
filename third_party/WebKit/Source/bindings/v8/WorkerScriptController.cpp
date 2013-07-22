@@ -165,8 +165,9 @@ ScriptValue WorkerScriptController::evaluate(const String& script, const String&
         state->hadException = true;
         state->errorMessage = toWebCoreString(message->Get());
         state->lineNumber = message->GetLineNumber();
+        state->columnNumber = message->GetStartColumn();
         state->sourceURL = toWebCoreString(message->GetScriptResourceName());
-        if (m_workerGlobalScope->sanitizeScriptError(state->errorMessage, state->lineNumber, state->sourceURL))
+        if (m_workerGlobalScope->sanitizeScriptError(state->errorMessage, state->lineNumber, state->columnNumber, state->sourceURL))
             state->exception = throwError(v8GeneralError, state->errorMessage.utf8().data(), m_isolate);
         else
             state->exception = ScriptValue(block.Exception());
@@ -192,7 +193,7 @@ void WorkerScriptController::evaluate(const ScriptSourceCode& sourceCode, Script
         if (exception)
             *exception = state.exception;
         else
-            m_workerGlobalScope->reportException(state.errorMessage, state.lineNumber, state.sourceURL, 0);
+            m_workerGlobalScope->reportException(state.errorMessage, state.lineNumber, state.columnNumber, state.sourceURL, 0);
     }
 }
 

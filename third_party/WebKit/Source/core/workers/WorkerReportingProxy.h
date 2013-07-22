@@ -41,7 +41,7 @@ namespace WebCore {
     public:
         virtual ~WorkerReportingProxy() {}
 
-        virtual void postExceptionToWorkerObject(const String& errorMessage, int lineNumber, const String& sourceURL) = 0;
+        virtual void postExceptionToWorkerObject(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL) = 0;
 
         virtual void postConsoleMessageToWorkerObject(MessageSource, MessageLevel, const String& message, int lineNumber, const String& sourceURL) = 0;
         virtual void postMessageToPageInspector(const String&) = 0;

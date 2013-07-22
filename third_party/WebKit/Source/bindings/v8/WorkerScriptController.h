@@ -48,6 +48,7 @@ namespace WebCore {
         WorkerGlobalScopeExecutionState()
             : hadException(false)
             , lineNumber(0)
+            , columnNumber(0)
         {
         }
 
@@ -55,6 +56,7 @@ namespace WebCore {
         ScriptValue exception;
         String errorMessage;
         int lineNumber;
+        int columnNumber;
         String sourceURL;
     };
 

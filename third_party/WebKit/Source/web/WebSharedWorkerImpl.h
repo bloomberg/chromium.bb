@@ -73,7 +73,7 @@ public:
         PassRefPtr<WebCore::SerializedScriptValue>,
         PassOwnPtr<WebCore::MessagePortChannelArray>);
     virtual void postExceptionToWorkerObject(
-        const WTF::String&, int, const WTF::String&);
+        const WTF::String&, int, int, const WTF::String&);
     virtual void postConsoleMessageToWorkerObject(
         WebCore::MessageSource, WebCore::MessageLevel,
         const WTF::String&, int, const WTF::String&);

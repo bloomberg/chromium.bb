@@ -94,7 +94,7 @@ static void messageHandlerInMainThread(v8::Handle<v8::Message> message, v8::Hand
     v8::Handle<v8::Value> resourceName = message->GetScriptResourceName();
     bool shouldUseDocumentURL = resourceName.IsEmpty() || !resourceName->IsString();
     String resource = shouldUseDocumentURL ? firstWindow->document()->url() : toWebCoreString(resourceName);
-    firstWindow->document()->reportException(errorMessage, message->GetLineNumber(), resource, callStack);
+    firstWindow->document()->reportException(errorMessage, message->GetLineNumber(), message->GetStartColumn(), resource, callStack);
 }
 
 static void failedAccessCheckCallbackInMainThread(v8::Local<v8::Object> host, v8::AccessType type, v8::Local<v8::Value> data)
@@ -168,8 +168,9 @@ static void messageHandlerInWorker(v8::Handle<v8::Message> message, v8::Handle<v
     if (ScriptExecutionContext* context = getScriptExecutionContext()) {
         String errorMessage = toWebCoreString(message->Get());
         int lineNumber = message->GetLineNumber();
+        int columnNumber = message->GetStartColumn();
         String sourceURL = toWebCoreString(message->GetScriptResourceName());
-        context->reportException(errorMessage, lineNumber, sourceURL, 0);
+        context->reportException(errorMessage, lineNumber, columnNumber, sourceURL, 0);
     }
 
     isReportingException = false;

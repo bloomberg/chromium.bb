@@ -182,6 +182,7 @@ void WebSharedWorkerImpl::postMessageTask(ScriptExecutionContext* context,
 
 void WebSharedWorkerImpl::postExceptionToWorkerObject(const String& errorMessage,
                                                       int lineNumber,
+                                                      int columnNumber,
                                                       const String& sourceURL)
 {
     WebWorkerBase::dispatchTaskToMainThread(

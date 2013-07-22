@@ -34,5 +34,9 @@
     [InitializedByEventConstructor] readonly attribute DOMString message;
     [InitializedByEventConstructor] readonly attribute DOMString filename;
     [InitializedByEventConstructor] readonly attribute unsigned long lineno;
+
+    // FIXME: Part of the specification but not exposed yet.
+    // No other browser seems to support it (except IE10 as 'colno').
+    // [InitializedByEventConstructor] readonly attribute unsigned long column;
 };
 
