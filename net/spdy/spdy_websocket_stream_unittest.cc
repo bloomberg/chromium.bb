@@ -277,7 +277,7 @@ class SpdyWebSocketStreamTest
   SpdySessionDependencies session_deps_;
   scoped_ptr<OrderedSocketData> data_;
   scoped_refptr<HttpNetworkSession> http_session_;
-  scoped_refptr<SpdySession> session_;
+  base::WeakPtr<SpdySession> session_;
   scoped_ptr<SpdyWebSocketStream> websocket_stream_;
   SpdyStreamId stream_id_;
   SpdyStreamId created_stream_id_;
@@ -336,7 +336,7 @@ TEST_P(SpdyWebSocketStreamTest, Basic) {
       base::Bind(&SpdyWebSocketStreamTest::DoSendClosingFrame,
                  base::Unretained(this)));
 
-  websocket_stream_.reset(new SpdyWebSocketStream(session_.get(), &delegate));
+  websocket_stream_.reset(new SpdyWebSocketStream(session_, &delegate));
 
   BoundNetLog net_log;
   GURL url("ws://example.com/echo");
@@ -408,7 +408,7 @@ TEST_P(SpdyWebSocketStreamTest, DestructionBeforeClose) {
       base::Bind(&SpdyWebSocketStreamTest::DoSync,
                  base::Unretained(this)));
 
-  websocket_stream_.reset(new SpdyWebSocketStream(session_.get(), &delegate));
+  websocket_stream_.reset(new SpdyWebSocketStream(session_, &delegate));
 
   BoundNetLog net_log;
   GURL url("ws://example.com/echo");
@@ -470,7 +470,7 @@ TEST_P(SpdyWebSocketStreamTest, DestructionAfterExplicitClose) {
       base::Bind(&SpdyWebSocketStreamTest::DoClose,
                  base::Unretained(this)));
 
-  websocket_stream_.reset(new SpdyWebSocketStream(session_.get(), &delegate));
+  websocket_stream_.reset(new SpdyWebSocketStream(session_, &delegate));
 
   BoundNetLog net_log;
   GURL url("ws://example.com/echo");
@@ -535,7 +535,7 @@ TEST_P(SpdyWebSocketStreamTest, IOPending) {
   SpdyWebSocketStreamEventRecorder block_delegate((CompletionCallback()));
 
   scoped_ptr<SpdyWebSocketStream> block_stream(
-      new SpdyWebSocketStream(session_.get(), &block_delegate));
+      new SpdyWebSocketStream(session_, &block_delegate));
   BoundNetLog block_net_log;
   GURL block_url("ws://example.com/block");
   ASSERT_EQ(OK,
@@ -553,7 +553,7 @@ TEST_P(SpdyWebSocketStreamTest, IOPending) {
       base::Bind(&SpdyWebSocketStreamTest::DoSendClosingFrame,
                  base::Unretained(this)));
 
-  websocket_stream_.reset(new SpdyWebSocketStream(session_.get(), &delegate));
+  websocket_stream_.reset(new SpdyWebSocketStream(session_, &delegate));
   BoundNetLog net_log;
   GURL url("ws://example.com/echo");
   ASSERT_EQ(ERR_IO_PENDING, websocket_stream_->InitializeStream(

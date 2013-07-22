@@ -111,7 +111,7 @@ TEST_P(SpdySessionPoolTest, CloseCurrentSessions) {
   CreateNetworkSession();
 
   // Setup the first session to the first host.
-  scoped_refptr<SpdySession> session =
+  base::WeakPtr<SpdySession> session =
       CreateInsecureSpdySession(http_session_, test_key, BoundNetLog());
 
   // Flush the SpdySession::OnReadComplete() task.
@@ -156,7 +156,7 @@ TEST_P(SpdySessionPoolTest, CloseCurrentIdleSessions) {
   HostPortPair test_host_port_pair1(kTestHost1, 80);
   SpdySessionKey key1(test_host_port_pair1, ProxyServer::Direct(),
                       kPrivacyModeDisabled);
-  scoped_refptr<SpdySession> session1 =
+  base::WeakPtr<SpdySession> session1 =
       CreateInsecureSpdySession(http_session_, key1, BoundNetLog());
   GURL url1(kTestHost1);
   base::WeakPtr<SpdyStream> spdy_stream1 =
@@ -170,7 +170,7 @@ TEST_P(SpdySessionPoolTest, CloseCurrentIdleSessions) {
   HostPortPair test_host_port_pair2(kTestHost2, 80);
   SpdySessionKey key2(test_host_port_pair2, ProxyServer::Direct(),
                       kPrivacyModeDisabled);
-  scoped_refptr<SpdySession> session2 =
+  base::WeakPtr<SpdySession> session2 =
       CreateInsecureSpdySession(http_session_, key2, BoundNetLog());
   GURL url2(kTestHost2);
   base::WeakPtr<SpdyStream> spdy_stream2 =
@@ -184,7 +184,7 @@ TEST_P(SpdySessionPoolTest, CloseCurrentIdleSessions) {
   HostPortPair test_host_port_pair3(kTestHost3, 80);
   SpdySessionKey key3(test_host_port_pair3, ProxyServer::Direct(),
                       kPrivacyModeDisabled);
-  scoped_refptr<SpdySession> session3 =
+  base::WeakPtr<SpdySession> session3 =
       CreateInsecureSpdySession(http_session_, key3, BoundNetLog());
   GURL url3(kTestHost3);
   base::WeakPtr<SpdyStream> spdy_stream3 =
@@ -224,12 +224,10 @@ TEST_P(SpdySessionPoolTest, CloseCurrentIdleSessions) {
 
   // Should close session 1 and 3, 2 should be left open
   spdy_session_pool_->CloseCurrentIdleSessions();
-  EXPECT_FALSE(session1->is_active());
-  EXPECT_TRUE(session1->IsClosed());
+  EXPECT_TRUE(session1 == NULL);
   EXPECT_TRUE(session2->is_active());
   EXPECT_FALSE(session2->IsClosed());
-  EXPECT_FALSE(session3->is_active());
-  EXPECT_TRUE(session3->IsClosed());
+  EXPECT_TRUE(session3 == NULL);
 
   // Should not do anything
   spdy_session_pool_->CloseCurrentIdleSessions();
@@ -244,8 +242,7 @@ TEST_P(SpdySessionPoolTest, CloseCurrentIdleSessions) {
 
   // This should close session 2
   spdy_session_pool_->CloseCurrentIdleSessions();
-  EXPECT_FALSE(session2->is_active());
-  EXPECT_TRUE(session2->IsClosed());
+  EXPECT_TRUE(session2 == NULL);
 }
 
 // Set up a SpdyStream to create a new session when it is closed.
@@ -277,7 +274,7 @@ TEST_P(SpdySessionPoolTest, CloseAllSessions) {
   CreateNetworkSession();
 
   // Setup the first session to the first host.
-  scoped_refptr<SpdySession> session =
+  base::WeakPtr<SpdySession> session =
       CreateInsecureSpdySession(http_session_, test_key, BoundNetLog());
 
   // Flush the SpdySession::OnReadComplete() task.
@@ -364,7 +361,7 @@ void SpdySessionPoolTest::RunIPPoolingTest(
   CreateNetworkSession();
 
   // Setup the first session to the first host.
-  scoped_refptr<SpdySession> session =
+  base::WeakPtr<SpdySession> session =
       CreateInsecureSpdySession(
           http_session_, test_hosts[0].key, BoundNetLog());
 
@@ -388,7 +385,7 @@ void SpdySessionPoolTest::RunIPPoolingTest(
 
   // Create a new session to host 2.
   session_deps_.socket_factory->AddSocketDataProvider(&data);
-  scoped_refptr<SpdySession> session2 =
+  base::WeakPtr<SpdySession> session2 =
       CreateInsecureSpdySession(
           http_session_, test_hosts[2].key, BoundNetLog());
 
@@ -399,7 +396,7 @@ void SpdySessionPoolTest::RunIPPoolingTest(
 
   // Grab the session to host 1 and verify that it is the same session
   // we got with host 0, and that is a different from host 2's session.
-  scoped_refptr<SpdySession> session1 =
+  base::WeakPtr<SpdySession> session1 =
       spdy_session_pool_->FindAvailableSession(
           test_hosts[1].key, BoundNetLog());
   EXPECT_EQ(session.get(), session1.get());
@@ -419,9 +416,9 @@ void SpdySessionPoolTest::RunIPPoolingTest(
   switch (close_sessions_type) {
     case SPDY_POOL_CLOSE_SESSIONS_MANUALLY:
       session->CloseSessionOnError(ERR_ABORTED, std::string());
-      session = NULL;
+      EXPECT_TRUE(session == NULL);
       session2->CloseSessionOnError(ERR_ABORTED, std::string());
-      session2 = NULL;
+      EXPECT_TRUE(session2 == NULL);
       break;
     case SPDY_POOL_CLOSE_CURRENT_SESSIONS:
       spdy_session_pool_->CloseCurrentSessions(ERR_ABORTED);
@@ -459,10 +456,8 @@ void SpdySessionPoolTest::RunIPPoolingTest(
       spdy_session_pool_->CloseCurrentIdleSessions();
 
       // Verify spdy_session and spdy_session1 are closed.
-      EXPECT_FALSE(session->is_active());
-      EXPECT_TRUE(session->IsClosed());
-      EXPECT_FALSE(session1->is_active());
-      EXPECT_TRUE(session1->IsClosed());
+      EXPECT_TRUE(session == NULL);
+      EXPECT_TRUE(session1 == NULL);
       EXPECT_TRUE(session2->is_active());
       EXPECT_FALSE(session2->IsClosed());
 
@@ -471,7 +466,7 @@ void SpdySessionPoolTest::RunIPPoolingTest(
       EXPECT_EQ(NULL, spdy_stream1.get());
       EXPECT_EQ(NULL, spdy_stream2.get());
       session2->CloseSessionOnError(ERR_ABORTED, std::string());
-      session2 = NULL;
+      EXPECT_TRUE(session2 == NULL);
       break;
   }
 

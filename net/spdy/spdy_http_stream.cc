@@ -25,9 +25,11 @@
 
 namespace net {
 
-SpdyHttpStream::SpdyHttpStream(SpdySession* spdy_session, bool direct)
+SpdyHttpStream::SpdyHttpStream(const base::WeakPtr<SpdySession>& spdy_session,
+                               bool direct)
     : weak_factory_(this),
       spdy_session_(spdy_session),
+      is_reused_(spdy_session_->IsReused()),
       stream_closed_(false),
       closed_stream_status_(ERR_FAILED),
       closed_stream_id_(0),
@@ -53,7 +55,9 @@ int SpdyHttpStream::InitializeStream(const HttpRequestInfo* request_info,
                                      RequestPriority priority,
                                      const BoundNetLog& stream_net_log,
                                      const CompletionCallback& callback) {
-  DCHECK(!stream_.get());
+  DCHECK(!stream_);
+  if (!spdy_session_)
+    return ERR_CONNECTION_CLOSED;
 
   request_info_ = request_info;
   if (request_info_->method == "GET") {
@@ -161,7 +165,7 @@ bool SpdyHttpStream::CanFindEndOfResponse() const {
 }
 
 bool SpdyHttpStream::IsConnectionReused() const {
-  return spdy_session_->IsReused();
+  return is_reused_;
 }
 
 void SpdyHttpStream::SetConnectionReused() {
@@ -174,19 +178,21 @@ bool SpdyHttpStream::IsConnectionReusable() const {
 }
 
 bool SpdyHttpStream::GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const {
+  if (stream_closed_) {
+    if (!closed_stream_has_load_timing_info_)
+      return false;
+    *load_timing_info = closed_stream_load_timing_info_;
+    return true;
+  }
+
   // If |stream_| has yet to be created, or does not yet have an ID, fail.
   // The reused flag can only be correctly set once a stream has an ID.  Streams
   // get their IDs once the request has been successfully sent, so this does not
   // behave that differently from other stream types.
-  if (!spdy_session_.get() || (!stream_.get() && !stream_closed_))
+  if (!stream_ || stream_->stream_id() == 0)
     return false;
 
-  SpdyStreamId stream_id =
-      stream_closed_ ? closed_stream_id_ : stream_->stream_id();
-  if (stream_id == 0)
-    return false;
-
-  return spdy_session_->GetLoadTimingInfo(stream_id, load_timing_info);
+  return stream_->GetLoadTimingInfo(load_timing_info);
 }
 
 int SpdyHttpStream::SendRequest(const HttpRequestHeaders& request_headers,
@@ -317,7 +323,7 @@ SpdyResponseHeadersStatus SpdyHttpStream::OnResponseHeadersUpdated(
   response_info_->npn_negotiated_protocol =
       SSLClientSocket::NextProtoToString(protocol_negotiated);
   response_info_->request_time = stream_->GetRequestTime();
-  switch (spdy_session_->GetProtocolVersion()) {
+  switch (stream_->GetProtocolVersion()) {
     case SPDY2:
       response_info_->connection_info = HttpResponseInfo::CONNECTION_INFO_SPDY2;
       break;
@@ -368,6 +374,8 @@ void SpdyHttpStream::OnClose(int status) {
     stream_closed_ = true;
     closed_stream_status_ = status;
     closed_stream_id_ = stream_->stream_id();
+    closed_stream_has_load_timing_info_ =
+        stream_->GetLoadTimingInfo(&closed_stream_load_timing_info_);
   }
   stream_.reset();
   bool invoked_callback = false;

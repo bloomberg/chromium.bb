@@ -63,7 +63,7 @@ class HttpStreamFactoryImpl::Request : public HttpStreamRequest {
 
   // Called by an attached Job if it sets up a SpdySession.
   void OnNewSpdySessionReady(Job* job,
-                             scoped_refptr<SpdySession> spdy_session,
+                             const base::WeakPtr<SpdySession>& spdy_session,
                              bool direct);
 
   WebSocketStreamBase::Factory* websocket_stream_factory() {

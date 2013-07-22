@@ -759,7 +759,7 @@ TEST_F(SSLClientSocketPoolTest, IPPooling) {
   socket_factory_.AddSSLSocketDataProvider(&ssl);
 
   CreatePool(true /* tcp pool */, false, false);
-  scoped_refptr<SpdySession> spdy_session =
+  base::WeakPtr<SpdySession> spdy_session =
       CreateSecureSpdySession(session_, test_hosts[0].key, BoundNetLog());
 
   EXPECT_TRUE(
@@ -812,7 +812,7 @@ void SSLClientSocketPoolTest::TestIPPoolingDisabled(
   socket_factory_.AddSSLSocketDataProvider(ssl);
 
   CreatePool(true /* tcp pool */, false, false);
-  scoped_refptr<SpdySession> spdy_session =
+  base::WeakPtr<SpdySession> spdy_session =
       CreateSecureSpdySession(session_, test_hosts[0].key, BoundNetLog());
 
   EXPECT_TRUE(

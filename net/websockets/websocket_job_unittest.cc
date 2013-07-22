@@ -297,7 +297,7 @@ class MockHttpTransactionFactory : public HttpTransactionFactory {
   OrderedSocketData* data_;
   scoped_ptr<SpdySessionDependencies> session_deps_;
   scoped_refptr<HttpNetworkSession> http_session_;
-  scoped_refptr<SpdySession> session_;
+  base::WeakPtr<SpdySession> session_;
   HostPortPair host_port_pair_;
   SpdySessionKey spdy_session_key_;
 };

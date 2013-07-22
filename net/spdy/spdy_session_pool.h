@@ -84,23 +84,23 @@ class NET_EXPORT SpdySessionPool
       scoped_ptr<ClientSocketHandle> connection,
       const BoundNetLog& net_log,
       int certificate_error_code,
-      scoped_refptr<SpdySession>* available_session,
+      base::WeakPtr<SpdySession>* available_session,
       bool is_secure);
 
   // Find an available session for the given key, or NULL if there isn't one.
-  scoped_refptr<SpdySession> FindAvailableSession(const SpdySessionKey& key,
+  base::WeakPtr<SpdySession> FindAvailableSession(const SpdySessionKey& key,
                                                   const BoundNetLog& net_log);
 
   // Remove all mappings and aliases for the given session, which must
   // still be available. Except for in tests, this must be called by
   // the given session itself.
   void MakeSessionUnavailable(
-      const scoped_refptr<SpdySession>& available_session);
+      const base::WeakPtr<SpdySession>& available_session);
 
   // Removes an unavailable session from the pool.  Except for in
   // tests, this must be called by the given session itself.
   void RemoveUnavailableSession(
-      const scoped_refptr<SpdySession>& unavailable_session);
+      const base::WeakPtr<SpdySession>& unavailable_session);
 
   // Close only the currently existing SpdySessions with |error|.
   // Let any new ones created while this method is running continue to
@@ -144,12 +144,12 @@ class NET_EXPORT SpdySessionPool
   friend class SpdySessionPoolPeer;  // For testing.
 
   typedef std::set<scoped_refptr<SpdySession> > SessionSet;
-  typedef std::map<SpdySessionKey, scoped_refptr<SpdySession> >
+  typedef std::map<SpdySessionKey, base::WeakPtr<SpdySession> >
       AvailableSessionMap;
   typedef std::map<IPEndPoint, SpdySessionKey> AliasMap;
 
   // Returns true iff |session| is in |available_sessions_|.
-  bool IsSessionAvailable(const scoped_refptr<SpdySession>& session) const;
+  bool IsSessionAvailable(const base::WeakPtr<SpdySession>& session) const;
 
   // Returns a normalized version of the given key suitable for lookup
   // into |available_sessions_|.
@@ -158,7 +158,7 @@ class NET_EXPORT SpdySessionPool
   // Map the given key to the given session. There must not already be
   // a mapping for |key|.
   void MapKeyToAvailableSession(const SpdySessionKey& key,
-                                const scoped_refptr<SpdySession>& session);
+                                const base::WeakPtr<SpdySession>& session);
 
   // Returns an iterator into |available_sessions_| for the given key,
   // which may be equal to |available_sessions_.end()|.

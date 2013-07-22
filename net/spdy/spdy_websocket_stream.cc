@@ -18,7 +18,7 @@
 namespace net {
 
 SpdyWebSocketStream::SpdyWebSocketStream(
-    SpdySession* spdy_session, Delegate* delegate)
+    const base::WeakPtr<SpdySession>& spdy_session, Delegate* delegate)
     : weak_ptr_factory_(this),
       spdy_session_(spdy_session),
       pending_send_data_length_(0),
@@ -35,7 +35,7 @@ SpdyWebSocketStream::~SpdyWebSocketStream() {
 int SpdyWebSocketStream::InitializeStream(const GURL& url,
                                           RequestPriority request_priority,
                                           const BoundNetLog& net_log) {
-  if (spdy_session_->IsClosed())
+  if (!spdy_session_)
     return ERR_SOCKET_NOT_CONNECTED;
 
   int rv = stream_request_.StartRequest(

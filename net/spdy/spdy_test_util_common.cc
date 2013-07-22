@@ -269,7 +269,7 @@ bool GetSpdyPriority(SpdyMajorVersion version,
 
 base::WeakPtr<SpdyStream> CreateStreamSynchronously(
     SpdyStreamType type,
-    const scoped_refptr<SpdySession>& session,
+    const base::WeakPtr<SpdySession>& session,
     const GURL& url,
     RequestPriority priority,
     const BoundNetLog& net_log) {
@@ -489,7 +489,7 @@ bool HasSpdySession(SpdySessionPool* pool, const SpdySessionKey& key) {
 
 namespace {
 
-scoped_refptr<SpdySession> CreateSpdySessionHelper(
+base::WeakPtr<SpdySession> CreateSpdySessionHelper(
     const scoped_refptr<HttpNetworkSession>& http_session,
     const SpdySessionKey& key,
     const BoundNetLog& net_log,
@@ -543,7 +543,7 @@ scoped_refptr<SpdySession> CreateSpdySessionHelper(
 
   EXPECT_EQ(OK, rv);
 
-  scoped_refptr<SpdySession> spdy_session;
+  base::WeakPtr<SpdySession> spdy_session;
   EXPECT_EQ(
       expected_status,
       http_session->spdy_session_pool()->CreateAvailableSessionFromSocket(
@@ -557,7 +557,7 @@ scoped_refptr<SpdySession> CreateSpdySessionHelper(
 
 }  // namespace
 
-scoped_refptr<SpdySession> CreateInsecureSpdySession(
+base::WeakPtr<SpdySession> CreateInsecureSpdySession(
     const scoped_refptr<HttpNetworkSession>& http_session,
     const SpdySessionKey& key,
     const BoundNetLog& net_log) {
@@ -575,7 +575,7 @@ void TryCreateInsecureSpdySessionExpectingFailure(
                           expected_error, false /* is_secure */);
 }
 
-scoped_refptr<SpdySession> CreateSecureSpdySession(
+base::WeakPtr<SpdySession> CreateSecureSpdySession(
     const scoped_refptr<HttpNetworkSession>& http_session,
     const SpdySessionKey& key,
     const BoundNetLog& net_log) {
@@ -640,13 +640,13 @@ class FakeSpdySessionClientSocket : public MockClientSocket {
   int read_result_;
 };
 
-scoped_refptr<SpdySession> CreateFakeSpdySessionHelper(
+base::WeakPtr<SpdySession> CreateFakeSpdySessionHelper(
     SpdySessionPool* pool,
     const SpdySessionKey& key,
     Error expected_status) {
   EXPECT_NE(expected_status, ERR_IO_PENDING);
   EXPECT_FALSE(HasSpdySession(pool, key));
-  scoped_refptr<SpdySession> spdy_session;
+  base::WeakPtr<SpdySession> spdy_session;
   scoped_ptr<ClientSocketHandle> handle(new ClientSocketHandle());
   handle->set_socket(new FakeSpdySessionClientSocket(
       expected_status == OK ? ERR_IO_PENDING : expected_status));
@@ -662,7 +662,7 @@ scoped_refptr<SpdySession> CreateFakeSpdySessionHelper(
 
 }  // namespace
 
-scoped_refptr<SpdySession> CreateFakeSpdySession(SpdySessionPool* pool,
+base::WeakPtr<SpdySession> CreateFakeSpdySession(SpdySessionPool* pool,
                                                  const SpdySessionKey& key) {
   return CreateFakeSpdySessionHelper(pool, key, OK);
 }

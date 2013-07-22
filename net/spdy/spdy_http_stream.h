@@ -31,7 +31,7 @@ class NET_EXPORT_PRIVATE SpdyHttpStream : public SpdyStream::Delegate,
                                           public HttpStream {
  public:
   // |spdy_session| must not be NULL.
-  SpdyHttpStream(SpdySession* spdy_session, bool direct);
+  SpdyHttpStream(const base::WeakPtr<SpdySession>& spdy_session, bool direct);
   virtual ~SpdyHttpStream();
 
   SpdyStream* stream() { return stream_.get(); }
@@ -109,7 +109,8 @@ class NET_EXPORT_PRIVATE SpdyHttpStream : public SpdyStream::Delegate,
 
   base::WeakPtrFactory<SpdyHttpStream> weak_factory_;
 
-  const scoped_refptr<SpdySession> spdy_session_;
+  const base::WeakPtr<SpdySession> spdy_session_;
+  bool is_reused_;
   SpdyStreamRequest stream_request_;
   base::WeakPtr<SpdyStream> stream_;
 
@@ -118,6 +119,8 @@ class NET_EXPORT_PRIVATE SpdyHttpStream : public SpdyStream::Delegate,
   // Set only when |stream_closed_| is true.
   int closed_stream_status_;
   SpdyStreamId closed_stream_id_;
+  bool closed_stream_has_load_timing_info_;
+  LoadTimingInfo closed_stream_load_timing_info_;
 
   // The request to send.
   const HttpRequestInfo* request_info_;

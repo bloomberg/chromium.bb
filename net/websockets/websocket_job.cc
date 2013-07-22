@@ -597,7 +597,7 @@ int WebSocketJob::TrySpdyStream() {
                            socket_->proxy_server(), privacy_mode);
   // Forbid wss downgrade to SPDY without SSL.
   // TODO(toyoshim): Does it realize the same policy with HTTP?
-  scoped_refptr<SpdySession> spdy_session =
+  base::WeakPtr<SpdySession> spdy_session =
       spdy_pool->FindAvailableSession(key, *socket_->net_log());
   if (!spdy_session)
     return OK;
@@ -612,8 +612,7 @@ int WebSocketJob::TrySpdyStream() {
 
   // Create SpdyWebSocketStream.
   spdy_protocol_version_ = spdy_session->GetProtocolVersion();
-  spdy_websocket_stream_.reset(
-      new SpdyWebSocketStream(spdy_session.get(), this));
+  spdy_websocket_stream_.reset(new SpdyWebSocketStream(spdy_session, this));
 
   int result = spdy_websocket_stream_->InitializeStream(
       socket_->url(), MEDIUM, *socket_->net_log());

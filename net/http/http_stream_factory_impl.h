@@ -94,7 +94,7 @@ class NET_EXPORT_PRIVATE HttpStreamFactoryImpl :
   // Called when a SpdySession is ready. It will find appropriate Requests and
   // fulfill them. |direct| indicates whether or not |spdy_session| uses a
   // proxy.
-  void OnNewSpdySessionReady(scoped_refptr<SpdySession> spdy_session,
+  void OnNewSpdySessionReady(const base::WeakPtr<SpdySession>& spdy_session,
                              bool direct,
                              const SSLConfig& used_ssl_config,
                              const ProxyInfo& used_proxy_info,

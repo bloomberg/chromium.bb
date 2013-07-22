@@ -78,7 +78,7 @@ class SpdyStream::SynStreamBufferProducer : public SpdyBufferProducer {
 };
 
 SpdyStream::SpdyStream(SpdyStreamType type,
-                       SpdySession* session,
+                       const base::WeakPtr<SpdySession>& session,
                        const GURL& url,
                        RequestPriority priority,
                        int32 initial_send_window_size,

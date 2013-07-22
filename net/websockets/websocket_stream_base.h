@@ -34,7 +34,7 @@ class NET_EXPORT WebSocketStreamBase {
 
     // Create a WebSocketSpdyStream.
     virtual WebSocketStreamBase* CreateSpdyStream(
-        SpdySession* session,
+        const base::WeakPtr<SpdySession>& session,
         bool use_relative_url) = 0;
   };
 

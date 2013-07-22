@@ -121,7 +121,7 @@ class SpdyHttpStreamTest : public testing::Test,
   scoped_ptr<OrderedSocketData> data_;
   scoped_ptr<DeterministicSocketData> deterministic_data_;
   scoped_refptr<HttpNetworkSession> http_session_;
-  scoped_refptr<SpdySession> session_;
+  base::WeakPtr<SpdySession> session_;
 
  private:
   MockECSignatureCreatorFactory ec_signature_creator_factory_;
@@ -144,7 +144,7 @@ TEST_P(SpdyHttpStreamTest, GetUploadProgressBeforeInitialization) {
                      kPrivacyModeDisabled);
   InitSession(reads, arraysize(reads), NULL, 0, key);
 
-  SpdyHttpStream stream(session_.get(), false);
+  SpdyHttpStream stream(session_, false);
   UploadProgress progress = stream.GetUploadProgress();
   EXPECT_EQ(0u, progress.size());
   EXPECT_EQ(0u, progress.position());
@@ -174,8 +174,7 @@ TEST_P(SpdyHttpStreamTest, SendRequest) {
   HttpResponseInfo response;
   HttpRequestHeaders headers;
   BoundNetLog net_log;
-  scoped_ptr<SpdyHttpStream> http_stream(
-      new SpdyHttpStream(session_.get(), true));
+  scoped_ptr<SpdyHttpStream> http_stream(new SpdyHttpStream(session_, true));
   // Make sure getting load timing information the stream early does not crash.
   LoadTimingInfo load_timing_info;
   EXPECT_FALSE(http_stream->GetLoadTimingInfo(&load_timing_info));
@@ -251,8 +250,7 @@ TEST_P(SpdyHttpStreamTest, LoadTimingTwoRequests) {
   TestCompletionCallback callback1;
   HttpResponseInfo response1;
   HttpRequestHeaders headers1;
-  scoped_ptr<SpdyHttpStream> http_stream1(
-      new SpdyHttpStream(session_.get(), true));
+  scoped_ptr<SpdyHttpStream> http_stream1(new SpdyHttpStream(session_, true));
 
   HttpRequestInfo request2;
   request2.method = "GET";
@@ -260,8 +258,7 @@ TEST_P(SpdyHttpStreamTest, LoadTimingTwoRequests) {
   TestCompletionCallback callback2;
   HttpResponseInfo response2;
   HttpRequestHeaders headers2;
-  scoped_ptr<SpdyHttpStream> http_stream2(
-      new SpdyHttpStream(session_.get(), true));
+  scoped_ptr<SpdyHttpStream> http_stream2(new SpdyHttpStream(session_, true));
 
   // First write.
   ASSERT_EQ(OK,
@@ -354,7 +351,7 @@ TEST_P(SpdyHttpStreamTest, SendChunkedPost) {
   HttpResponseInfo response;
   HttpRequestHeaders headers;
   BoundNetLog net_log;
-  SpdyHttpStream http_stream(session_.get(), true);
+  SpdyHttpStream http_stream(session_, true);
   ASSERT_EQ(
       OK,
       http_stream.InitializeStream(&request, DEFAULT_PRIORITY,
@@ -423,8 +420,7 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPost) {
   upload_stream.AppendChunk(kUploadData, kUploadDataSize, false);
 
   BoundNetLog net_log;
-  scoped_ptr<SpdyHttpStream> http_stream(
-      new SpdyHttpStream(session_.get(), true));
+  scoped_ptr<SpdyHttpStream> http_stream(new SpdyHttpStream(session_, true));
   ASSERT_EQ(OK, http_stream->InitializeStream(&request, DEFAULT_PRIORITY,
                                               net_log, CompletionCallback()));
 
@@ -512,8 +508,7 @@ TEST_P(SpdyHttpStreamTest, SpdyURLTest) {
   HttpResponseInfo response;
   HttpRequestHeaders headers;
   BoundNetLog net_log;
-  scoped_ptr<SpdyHttpStream> http_stream(
-      new SpdyHttpStream(session_.get(), true));
+  scoped_ptr<SpdyHttpStream> http_stream(new SpdyHttpStream(session_, true));
   ASSERT_EQ(OK,
             http_stream->InitializeStream(
                 &request, DEFAULT_PRIORITY, net_log, CompletionCallback()));
@@ -656,8 +651,7 @@ void SpdyHttpStreamTest::TestSendCredentials(
   HttpResponseInfo response;
   HttpRequestHeaders headers;
   BoundNetLog net_log;
-  scoped_ptr<SpdyHttpStream> http_stream(
-      new SpdyHttpStream(session_.get(), true));
+  scoped_ptr<SpdyHttpStream> http_stream(new SpdyHttpStream(session_, true));
   ASSERT_EQ(
       OK,
       http_stream->InitializeStream(&request, DEFAULT_PRIORITY,
@@ -676,8 +670,7 @@ void SpdyHttpStreamTest::TestSendCredentials(
   callback.WaitForResult();
 
   // Start up second request for resource on a new origin.
-  scoped_ptr<SpdyHttpStream> http_stream2(
-      new SpdyHttpStream(session_.get(), true));
+  scoped_ptr<SpdyHttpStream> http_stream2(new SpdyHttpStream(session_, true));
   request.url = GURL(kUrl2);
   ASSERT_EQ(
       OK,
@@ -739,8 +732,7 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPostWithWindowUpdate) {
   upload_stream.AppendChunk(kUploadData, kUploadDataSize, true);
 
   BoundNetLog net_log;
-  scoped_ptr<SpdyHttpStream> http_stream(
-      new SpdyHttpStream(session_.get(), true));
+  scoped_ptr<SpdyHttpStream> http_stream(new SpdyHttpStream(session_, true));
   ASSERT_EQ(OK, http_stream->InitializeStream(&request, DEFAULT_PRIORITY,
                                               net_log, CompletionCallback()));
 
@@ -866,8 +858,7 @@ TEST_P(SpdyHttpStreamTest, DontSendCredentialsForHttpUrlsEC) {
   HttpResponseInfo response;
   HttpRequestHeaders headers;
   BoundNetLog net_log;
-  scoped_ptr<SpdyHttpStream> http_stream(
-      new SpdyHttpStream(session_.get(), true));
+  scoped_ptr<SpdyHttpStream> http_stream(new SpdyHttpStream(session_, true));
   ASSERT_EQ(
       OK,
       http_stream->InitializeStream(&request, DEFAULT_PRIORITY,
@@ -882,8 +873,7 @@ TEST_P(SpdyHttpStreamTest, DontSendCredentialsForHttpUrlsEC) {
   EXPECT_EQ(OK, callback.WaitForResult());
 
   // Start up second request for resource on a new origin.
-  scoped_ptr<SpdyHttpStream> http_stream2(
-      new SpdyHttpStream(session_.get(), true));
+  scoped_ptr<SpdyHttpStream> http_stream2(new SpdyHttpStream(session_, true));
   request.url = GURL(kUrl2);
   ASSERT_EQ(
       OK,

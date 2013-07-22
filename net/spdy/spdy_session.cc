@@ -240,7 +240,7 @@ SpdyStreamRequest::~SpdyStreamRequest() {
 
 int SpdyStreamRequest::StartRequest(
     SpdyStreamType type,
-    const scoped_refptr<SpdySession>& session,
+    const base::WeakPtr<SpdySession>& session,
     const GURL& url,
     RequestPriority priority,
     const BoundNetLog& net_log,
@@ -304,7 +304,7 @@ void SpdyStreamRequest::OnRequestCompleteFailure(int rv) {
 
 void SpdyStreamRequest::Reset() {
   type_ = SPDY_BIDIRECTIONAL_STREAM;
-  session_ = NULL;
+  session_.reset();
   stream_.reset();
   url_ = GURL();
   priority_ = MINIMUM_PRIORITY;
@@ -632,7 +632,8 @@ int SpdySession::CreateStream(const SpdyStreamRequest& request,
   }
 
   scoped_ptr<SpdyStream> new_stream(
-      new SpdyStream(request.type(), this, request.url(), request.priority(),
+      new SpdyStream(request.type(), GetWeakPtr(), request.url(),
+                     request.priority(),
                      stream_initial_send_window_size_,
                      stream_initial_recv_window_size_,
                      request.net_log()));
@@ -721,6 +722,10 @@ void SpdySession::AddPooledAlias(const SpdySessionKey& alias_key) {
 int SpdySession::GetProtocolVersion() const {
   DCHECK(buffered_spdy_framer_.get());
   return buffered_spdy_framer_->protocol_version();
+}
+
+base::WeakPtr<SpdySession> SpdySession::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }
 
 bool SpdySession::CloseOneIdleConnection() {
@@ -1325,7 +1330,7 @@ int SpdySession::DoWrite() {
 int SpdySession::DoWriteComplete(int result) {
   CHECK(in_io_loop_);
   DCHECK_NE(availability_state_, STATE_CLOSED);
-
+  DCHECK_NE(result, ERR_IO_PENDING);
   DCHECK_GT(in_flight_write_->GetRemainingSize(), 0u);
 
   last_activity_time_ = time_func_();
@@ -1466,7 +1471,7 @@ SpdySession::CloseSessionResult SpdySession::DoCloseSession(
   // |pool_| will be NULL when |InitializeWithSocket()| is in the
   // call stack.
   if (pool_ && availability_state_ != STATE_GOING_AWAY)
-    pool_->MakeSessionUnavailable(make_scoped_refptr(this));
+    pool_->MakeSessionUnavailable(GetWeakPtr());
 
   availability_state_ = STATE_CLOSED;
   error_on_close_ = err;
@@ -1489,7 +1494,7 @@ void SpdySession::RemoveFromPool() {
 
   SpdySessionPool* pool = pool_;
   pool_ = NULL;
-  pool->RemoveUnavailableSession(make_scoped_refptr(this));
+  pool->RemoveUnavailableSession(GetWeakPtr());
 }
 
 void SpdySession::LogAbandonedStream(SpdyStream* stream, Error status) {
@@ -2028,7 +2033,7 @@ void SpdySession::OnSynStream(SpdyStreamId stream_id,
   }
 
   scoped_ptr<SpdyStream> stream(
-      new SpdyStream(SPDY_PUSH_STREAM, this, gurl,
+      new SpdyStream(SPDY_PUSH_STREAM, GetWeakPtr(), gurl,
                      request_priority,
                      stream_initial_send_window_size_,
                      stream_initial_recv_window_size_,
@@ -2225,7 +2230,7 @@ void SpdySession::OnGoAway(SpdyStreamId last_accepted_stream_id,
     // |pool_| will be NULL when |InitializeWithSocket()| is in the
     // call stack.
     if (pool_)
-      pool_->MakeSessionUnavailable(make_scoped_refptr(this));
+      pool_->MakeSessionUnavailable(GetWeakPtr());
   }
   StartGoingAway(last_accepted_stream_id, ERR_ABORTED);
   // This is to handle the case when we already don't have any active

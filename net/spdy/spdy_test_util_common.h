@@ -114,7 +114,7 @@ bool GetSpdyPriority(SpdyMajorVersion version,
 // on failure.
 base::WeakPtr<SpdyStream> CreateStreamSynchronously(
     SpdyStreamType type,
-    const scoped_refptr<SpdySession>& session,
+    const base::WeakPtr<SpdySession>& session,
     const GURL& url,
     RequestPriority priority,
     const BoundNetLog& net_log);
@@ -240,7 +240,7 @@ bool HasSpdySession(SpdySessionPool* pool, const SpdySessionKey& key);
 // Creates a SPDY session for the given key and puts it in the SPDY
 // session pool in |http_session|. A SPDY session for |key| must not
 // already exist.
-scoped_refptr<SpdySession> CreateInsecureSpdySession(
+base::WeakPtr<SpdySession> CreateInsecureSpdySession(
     const scoped_refptr<HttpNetworkSession>& http_session,
     const SpdySessionKey& key,
     const BoundNetLog& net_log);
@@ -255,7 +255,7 @@ void TryCreateInsecureSpdySessionExpectingFailure(
     const BoundNetLog& net_log);
 
 // Like CreateInsecureSpdySession(), but uses TLS.
-scoped_refptr<SpdySession> CreateSecureSpdySession(
+base::WeakPtr<SpdySession> CreateSecureSpdySession(
     const scoped_refptr<HttpNetworkSession>& http_session,
     const SpdySessionKey& key,
     const BoundNetLog& net_log);
@@ -263,7 +263,7 @@ scoped_refptr<SpdySession> CreateSecureSpdySession(
 // Creates an insecure SPDY session for the given key and puts it in
 // |pool|. The returned session will neither receive nor send any
 // data. A SPDY session for |key| must not already exist.
-scoped_refptr<SpdySession> CreateFakeSpdySession(SpdySessionPool* pool,
+base::WeakPtr<SpdySession> CreateFakeSpdySession(SpdySessionPool* pool,
                                                  const SpdySessionKey& key);
 
 // Tries to create an insecure SPDY session for the given key but

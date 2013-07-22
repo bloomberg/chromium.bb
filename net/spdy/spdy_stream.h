@@ -157,7 +157,7 @@ class NET_EXPORT_PRIVATE SpdyStream {
 
   // SpdyStream constructor
   SpdyStream(SpdyStreamType type,
-             SpdySession* session,
+             const base::WeakPtr<SpdySession>& session,
              const GURL& url,
              RequestPriority priority,
              int32 initial_send_window_size,
@@ -334,7 +334,7 @@ class NET_EXPORT_PRIVATE SpdyStream {
   // it.
   void Close();
 
-  // Must be used only by the SpdySession.
+  // Must be used only by |session_|.
   base::WeakPtr<SpdyStream> GetWeakPtr();
 
   // Interface for the delegate to use.
@@ -490,7 +490,7 @@ class NET_EXPORT_PRIVATE SpdyStream {
 
   ScopedBandwidthMetrics metrics_;
 
-  scoped_refptr<SpdySession> session_;
+  const base::WeakPtr<SpdySession> session_;
 
   // The transaction should own the delegate.
   SpdyStream::Delegate* delegate_;

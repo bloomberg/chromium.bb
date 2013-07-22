@@ -263,7 +263,7 @@ void HttpStreamFactoryImpl::OrphanJob(Job* job, const Request* request) {
 }
 
 void HttpStreamFactoryImpl::OnNewSpdySessionReady(
-    scoped_refptr<SpdySession> spdy_session,
+    const base::WeakPtr<SpdySession>& spdy_session,
     bool direct,
     const SSLConfig& used_ssl_config,
     const ProxyInfo& used_proxy_info,
@@ -271,15 +271,16 @@ void HttpStreamFactoryImpl::OnNewSpdySessionReady(
     NextProto protocol_negotiated,
     bool using_spdy,
     const BoundNetLog& net_log) {
-  const SpdySessionKey& spdy_session_key =
-      spdy_session->spdy_session_key();
-  while (!spdy_session->IsClosed()) {
-    // Each iteration may empty out the RequestSet for |spdy_session_key_ in
+  while (true) {
+    if (!spdy_session)
+      break;
+    const SpdySessionKey& spdy_session_key = spdy_session->spdy_session_key();
+    // Each iteration may empty out the RequestSet for |spdy_session_key| in
     // |spdy_session_request_map_|. So each time, check for RequestSet and use
     // the first one.
     //
     // TODO(willchan): If it's important, switch RequestSet out for a FIFO
-    // pqueue (Order by priority first, then FIFO within same priority). Unclear
+    // queue (Order by priority first, then FIFO within same priority). Unclear
     // that it matters here.
     if (!ContainsKey(spdy_session_request_map_, spdy_session_key))
       break;
@@ -297,14 +298,14 @@ void HttpStreamFactoryImpl::OnNewSpdySessionReady(
           NULL,
           used_ssl_config,
           used_proxy_info,
-          factory->CreateSpdyStream(spdy_session.get(), use_relative_url));
+          factory->CreateSpdyStream(spdy_session, use_relative_url));
     } else {
       bool use_relative_url = direct || request->url().SchemeIs("https");
       request->OnStreamReady(
           NULL,
           used_ssl_config,
           used_proxy_info,
-          new SpdyHttpStream(spdy_session.get(), use_relative_url));
+          new SpdyHttpStream(spdy_session, use_relative_url));
     }
   }
   // TODO(mbelshe): Alert other valid requests.

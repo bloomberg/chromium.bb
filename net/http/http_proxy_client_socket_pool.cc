@@ -302,7 +302,7 @@ int HttpProxyConnectJob::DoSpdyProxyCreateStream() {
                      ProxyServer::Direct(),
                      kPrivacyModeDisabled);
   SpdySessionPool* spdy_pool = params_->spdy_session_pool();
-  scoped_refptr<SpdySession> spdy_session =
+  base::WeakPtr<SpdySession> spdy_session =
       spdy_pool->FindAvailableSession(key, net_log());
   // It's possible that a session to the proxy has recently been created
   if (spdy_session) {

@@ -307,10 +307,10 @@ class HttpStreamFactoryImpl::Job {
   int num_streams_;
 
   // Initialized when we create a new SpdySession.
-  scoped_refptr<SpdySession> new_spdy_session_;
+  base::WeakPtr<SpdySession> new_spdy_session_;
 
   // Initialized when we have an existing SpdySession.
-  scoped_refptr<SpdySession> existing_spdy_session_;
+  base::WeakPtr<SpdySession> existing_spdy_session_;
 
   // Only used if |new_spdy_session_| is non-NULL.
   bool spdy_session_direct_;

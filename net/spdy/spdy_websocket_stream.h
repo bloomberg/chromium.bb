@@ -58,7 +58,8 @@ class NET_EXPORT_PRIVATE SpdyWebSocketStream
     virtual ~Delegate() {}
   };
 
-  SpdyWebSocketStream(SpdySession* spdy_session, Delegate* delegate);
+  SpdyWebSocketStream(const base::WeakPtr<SpdySession>& spdy_session,
+                      Delegate* delegate);
   virtual ~SpdyWebSocketStream();
 
   // Initializes SPDY stream for the WebSocket.
@@ -90,7 +91,7 @@ class NET_EXPORT_PRIVATE SpdyWebSocketStream
   base::WeakPtrFactory<SpdyWebSocketStream> weak_ptr_factory_;
   SpdyStreamRequest stream_request_;
   base::WeakPtr<SpdyStream> stream_;
-  scoped_refptr<SpdySession> spdy_session_;
+  const base::WeakPtr<SpdySession> spdy_session_;
   size_t pending_send_data_length_;
   Delegate* delegate_;
 

@@ -80,7 +80,7 @@ net::Error SpdySessionPool::CreateAvailableSessionFromSocket(
     scoped_ptr<ClientSocketHandle> connection,
     const BoundNetLog& net_log,
     int certificate_error_code,
-    scoped_refptr<SpdySession>* available_session,
+    base::WeakPtr<SpdySession>* available_session,
     bool is_secure) {
   UMA_HISTOGRAM_ENUMERATION(
       "Net.SpdySessionGet", IMPORTED_FROM_SOCKET, SPDY_SESSION_GET_MAX);
@@ -107,12 +107,12 @@ net::Error SpdySessionPool::CreateAvailableSessionFromSocket(
 
   if (error != OK) {
     new_session = NULL;
-    *available_session = NULL;
+    available_session->reset();
     return error;
   }
 
   sessions_.insert(new_session);
-  available_session->swap(new_session);
+  *available_session = new_session->GetWeakPtr();
   MapKeyToAvailableSession(key, *available_session);
 
   net_log.AddEvent(
@@ -133,7 +133,7 @@ net::Error SpdySessionPool::CreateAvailableSessionFromSocket(
   return error;
 }
 
-scoped_refptr<SpdySession> SpdySessionPool::FindAvailableSession(
+base::WeakPtr<SpdySession> SpdySessionPool::FindAvailableSession(
     const SpdySessionKey& key,
     const BoundNetLog& net_log) {
   AvailableSessionMap::iterator it = LookupAvailableSessionByKey(key);
@@ -147,7 +147,7 @@ scoped_refptr<SpdySession> SpdySessionPool::FindAvailableSession(
   }
 
   if (!enable_ip_pooling_)
-    return scoped_refptr<SpdySession>();
+    return base::WeakPtr<SpdySession>();
 
   // Look up the key's from the resolver's cache.
   net::HostResolver::RequestInfo resolve_info(key.host_port_pair());
@@ -155,7 +155,7 @@ scoped_refptr<SpdySession> SpdySessionPool::FindAvailableSession(
   int rv = resolver_->ResolveFromCache(resolve_info, &addresses, net_log);
   DCHECK_NE(rv, ERR_IO_PENDING);
   if (rv != OK)
-    return scoped_refptr<SpdySession>();
+    return base::WeakPtr<SpdySession>();
 
   // Check if we have a session through a domain alias.
   for (AddressList::const_iterator address_it = addresses.begin();
@@ -181,9 +181,9 @@ scoped_refptr<SpdySession> SpdySessionPool::FindAvailableSession(
       continue;
     }
 
-    const scoped_refptr<SpdySession>& available_session =
+    const base::WeakPtr<SpdySession>& available_session =
         available_session_it->second;
-    DCHECK(ContainsKey(sessions_, available_session));
+    DCHECK(ContainsKey(sessions_, available_session.get()));
     // If the session is a secure one, we need to verify that the
     // server is authenticated to serve traffic for |host_port_proxy_pair| too.
     if (!available_session->VerifyDomainAuthentication(
@@ -205,11 +205,11 @@ scoped_refptr<SpdySession> SpdySessionPool::FindAvailableSession(
     return available_session;
   }
 
-  return scoped_refptr<SpdySession>();
+  return base::WeakPtr<SpdySession>();
 }
 
 void SpdySessionPool::MakeSessionUnavailable(
-    const scoped_refptr<SpdySession>& available_session) {
+    const base::WeakPtr<SpdySession>& available_session) {
   UnmapKey(available_session->spdy_session_key());
   RemoveAliases(available_session->spdy_session_key());
   const std::set<SpdySessionKey>& aliases = available_session->pooled_aliases();
@@ -222,14 +222,14 @@ void SpdySessionPool::MakeSessionUnavailable(
 }
 
 void SpdySessionPool::RemoveUnavailableSession(
-    const scoped_refptr<SpdySession>& unavailable_session) {
+    const base::WeakPtr<SpdySession>& unavailable_session) {
   DCHECK(!IsSessionAvailable(unavailable_session));
 
   unavailable_session->net_log().AddEvent(
       NetLog::TYPE_SPDY_SESSION_POOL_REMOVE_SESSION,
       unavailable_session->net_log().source().ToEventParametersCallback());
 
-  SessionSet::iterator it = sessions_.find(unavailable_session);
+  SessionSet::iterator it = sessions_.find(unavailable_session.get());
   CHECK(it != sessions_.end());
   sessions_.erase(it);
 }
@@ -293,10 +293,10 @@ void SpdySessionPool::OnCertTrustChanged(const X509Certificate* cert) {
 }
 
 bool SpdySessionPool::IsSessionAvailable(
-    const scoped_refptr<SpdySession>& session) const {
+    const base::WeakPtr<SpdySession>& session) const {
   for (AvailableSessionMap::const_iterator it = available_sessions_.begin();
        it != available_sessions_.end(); ++it) {
-    if (it->second == session)
+    if (it->second.get() == session.get())
       return true;
   }
   return false;
@@ -319,8 +319,8 @@ const SpdySessionKey& SpdySessionPool::NormalizeListKey(
 
 void SpdySessionPool::MapKeyToAvailableSession(
     const SpdySessionKey& key,
-    const scoped_refptr<SpdySession>& session) {
-  DCHECK(ContainsKey(sessions_, session));
+    const base::WeakPtr<SpdySession>& session) {
+  DCHECK(ContainsKey(sessions_, scoped_refptr<SpdySession>(session.get())));
   const SpdySessionKey& normalized_key = NormalizeListKey(key);
   std::pair<AvailableSessionMap::iterator, bool> result =
       available_sessions_.insert(std::make_pair(normalized_key, session));
@@ -368,7 +368,7 @@ void SpdySessionPool::CloseCurrentSessionsHelper(
       continue;
 
     (*it)->CloseSessionOnError(error, description);
-    DCHECK(!IsSessionAvailable(*it));
+    DCHECK(!IsSessionAvailable((*it)->GetWeakPtr()));
     DCHECK(!ContainsKey(sessions_, *it));
   }
 }

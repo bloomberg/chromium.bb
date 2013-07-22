@@ -201,7 +201,7 @@ class StreamRequestWaiter : public HttpStreamRequest::Delegate {
 
 class WebSocketSpdyStream : public MockWebSocketStream {
  public:
-  explicit WebSocketSpdyStream(SpdySession* spdy_session)
+  explicit WebSocketSpdyStream(const base::WeakPtr<SpdySession>& spdy_session)
       : MockWebSocketStream(kStreamTypeSpdy), spdy_session_(spdy_session) {}
 
   virtual ~WebSocketSpdyStream() {}
@@ -209,7 +209,7 @@ class WebSocketSpdyStream : public MockWebSocketStream {
   SpdySession* spdy_session() { return spdy_session_.get(); }
 
  private:
-  scoped_refptr<SpdySession> spdy_session_;
+  base::WeakPtr<SpdySession> spdy_session_;
 };
 
 class WebSocketBasicStream : public MockWebSocketStream {
@@ -237,7 +237,7 @@ class WebSocketStreamFactory : public WebSocketStreamBase::Factory {
   }
 
   virtual WebSocketStreamBase* CreateSpdyStream(
-      SpdySession* spdy_session,
+      const base::WeakPtr<SpdySession>& spdy_session,
       bool use_relative_url) OVERRIDE {
     return new WebSocketSpdyStream(spdy_session);
   }
@@ -1022,17 +1022,20 @@ TEST_P(HttpStreamFactoryTest, RequestSpdyHttpStream) {
                                        ProxyService::CreateDirect());
 
   MockRead mock_read(ASYNC, OK);
-  StaticSocketDataProvider socket_data(&mock_read, 1, NULL, 0);
+  DeterministicSocketData socket_data(&mock_read, 1, NULL, 0);
   socket_data.set_connect_data(MockConnect(ASYNC, OK));
-  session_deps.socket_factory->AddSocketDataProvider(&socket_data);
+  session_deps.deterministic_socket_factory->AddSocketDataProvider(
+      &socket_data);
 
   SSLSocketDataProvider ssl_socket_data(ASYNC, OK);
   ssl_socket_data.SetNextProto(GetParam());
-  session_deps.socket_factory->AddSSLSocketDataProvider(&ssl_socket_data);
+  session_deps.deterministic_socket_factory->AddSSLSocketDataProvider(
+      &ssl_socket_data);
 
   HostPortPair host_port_pair("www.google.com", 443);
   scoped_refptr<HttpNetworkSession>
-      session(SpdySessionDependencies::SpdyCreateSession(&session_deps));
+      session(SpdySessionDependencies::SpdyCreateSessionDeterministic(
+          &session_deps));
 
   // Now request a stream.
   HttpRequestInfo request_info;
@@ -1149,21 +1152,25 @@ TEST_P(HttpStreamFactoryTest, OrphanedWebSocketStream) {
                                        ProxyService::CreateDirect());
 
   MockRead mock_read(ASYNC, OK);
-  StaticSocketDataProvider socket_data(&mock_read, 1, NULL, 0);
+  DeterministicSocketData socket_data(&mock_read, 1, NULL, 0);
   socket_data.set_connect_data(MockConnect(ASYNC, OK));
-  session_deps.socket_factory->AddSocketDataProvider(&socket_data);
+  session_deps.deterministic_socket_factory->AddSocketDataProvider(
+      &socket_data);
 
   MockRead mock_read2(ASYNC, OK);
-  StaticSocketDataProvider socket_data2(&mock_read2, 1, NULL, 0);
+  DeterministicSocketData socket_data2(&mock_read2, 1, NULL, 0);
   socket_data2.set_connect_data(MockConnect(ASYNC, ERR_IO_PENDING));
-  session_deps.socket_factory->AddSocketDataProvider(&socket_data2);
+  session_deps.deterministic_socket_factory->AddSocketDataProvider(
+      &socket_data2);
 
   SSLSocketDataProvider ssl_socket_data(ASYNC, OK);
   ssl_socket_data.SetNextProto(GetParam());
-  session_deps.socket_factory->AddSSLSocketDataProvider(&ssl_socket_data);
+  session_deps.deterministic_socket_factory->AddSSLSocketDataProvider(
+      &ssl_socket_data);
 
   scoped_refptr<HttpNetworkSession>
-      session(SpdySessionDependencies::SpdyCreateSession(&session_deps));
+      session(SpdySessionDependencies::SpdyCreateSessionDeterministic(
+          &session_deps));
 
   // Now request a stream.
   HttpRequestInfo request_info;

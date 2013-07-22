@@ -133,7 +133,7 @@ class NET_EXPORT_PRIVATE SpdyStreamRequest {
   // ReleaseStream() being called first. Otherwise, in case of an
   // immediate error, this may be called again.
   int StartRequest(SpdyStreamType type,
-                   const scoped_refptr<SpdySession>& session,
+                   const base::WeakPtr<SpdySession>& session,
                    const GURL& url,
                    RequestPriority priority,
                    const BoundNetLog& net_log,
@@ -170,7 +170,7 @@ class NET_EXPORT_PRIVATE SpdyStreamRequest {
   void Reset();
 
   SpdyStreamType type_;
-  scoped_refptr<SpdySession> session_;
+  base::WeakPtr<SpdySession> session_;
   base::WeakPtr<SpdyStream> stream_;
   GURL url_;
   RequestPriority priority_;
@@ -344,6 +344,9 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
 
   // Whether the stream is closed, i.e. it has stopped processing data
   // and is about to be destroyed.
+  //
+  // TODO(akalin): This is only used in tests. Remove this function
+  // and have tests test the WeakPtr instead.
   bool IsClosed() const { return availability_state_ == STATE_CLOSED; }
 
   // Closes this session. This will close all active streams and mark
@@ -462,6 +465,9 @@ class NET_EXPORT SpdySession : public base::RefCounted<SpdySession>,
   size_t GetDataFrameMaximumPayload() const {
     return buffered_spdy_framer_->GetDataFrameMaximumPayload();
   }
+
+  // Must be used only by |pool_|.
+  base::WeakPtr<SpdySession> GetWeakPtr();
 
   // LayeredPool implementation:
   virtual bool CloseOneIdleConnection() OVERRIDE;
