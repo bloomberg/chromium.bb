@@ -86,7 +86,6 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/drive/drive_protocol_handler.h"
 #include "chrome/browser/chromeos/policy/policy_cert_verifier.h"
-#include "chrome/browser/chromeos/proxy_config_service_impl.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
@@ -261,11 +260,9 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   params->protocol_handler_interceptor =
       protocol_handler_registry->CreateJobInterceptorFactory();
 
-  ChromeProxyConfigService* proxy_config_service =
-      ProxyServiceFactory::CreateProxyConfigService();
-  params->proxy_config_service.reset(proxy_config_service);
-  profile->GetProxyConfigTracker()->SetChromeProxyConfigService(
-      proxy_config_service);
+  params->proxy_config_service
+      .reset(ProxyServiceFactory::CreateProxyConfigService(
+           profile->GetProxyConfigTracker()));
 #if defined(ENABLE_MANAGED_USERS)
   ManagedUserService* managed_user_service =
       ManagedUserServiceFactory::GetForProfile(profile);

@@ -140,13 +140,17 @@ PrefProxyConfigTrackerImpl::~PrefProxyConfigTrackerImpl() {
   DCHECK(pref_service_ == NULL);
 }
 
-void PrefProxyConfigTrackerImpl::SetChromeProxyConfigService(
-    ChromeProxyConfigService* chrome_proxy_config_service) {
+scoped_ptr<net::ProxyConfigService>
+PrefProxyConfigTrackerImpl::CreateTrackingProxyConfigService(
+    scoped_ptr<net::ProxyConfigService> base_service) {
+  chrome_proxy_config_service_ =
+      new ChromeProxyConfigService(base_service.release());
   VLOG(1) << this << ": set chrome proxy config service to "
-          << chrome_proxy_config_service;
-  chrome_proxy_config_service_ = chrome_proxy_config_service;
+          << chrome_proxy_config_service_;
   if (chrome_proxy_config_service_ && update_pending_)
     OnProxyConfigChanged(config_state_, pref_config_);
+
+  return scoped_ptr<net::ProxyConfigService>(chrome_proxy_config_service_);
 }
 
 void PrefProxyConfigTrackerImpl::DetachFromPrefService() {
@@ -154,7 +158,7 @@ void PrefProxyConfigTrackerImpl::DetachFromPrefService() {
   // Stop notifications.
   proxy_prefs_.RemoveAll();
   pref_service_ = NULL;
-  SetChromeProxyConfigService(NULL);
+  chrome_proxy_config_service_ = NULL;
 }
 
 // static

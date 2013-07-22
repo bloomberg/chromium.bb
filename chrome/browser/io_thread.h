@@ -22,7 +22,7 @@
 
 class ChromeNetLog;
 class CommandLine;
-class PrefProxyConfigTrackerImpl;
+class PrefProxyConfigTracker;
 class PrefService;
 class PrefRegistrySimple;
 class SystemURLRequestContextGetter;
@@ -300,7 +300,7 @@ class IOThread : public content::BrowserThreadDelegate {
   // which gets posted by calling certain member functions of IOThread.
   scoped_ptr<net::ProxyConfigService> system_proxy_config_service_;
 
-  scoped_ptr<PrefProxyConfigTrackerImpl> pref_proxy_config_tracker_;
+  scoped_ptr<PrefProxyConfigTracker> pref_proxy_config_tracker_;
 
   scoped_refptr<net::URLRequestContextGetter>
       system_url_request_context_getter_;

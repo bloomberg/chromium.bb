@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/prefs/pref_change_registrar.h"
+#include "chrome/browser/net/pref_proxy_config_tracker.h"
 #include "chrome/browser/prefs/proxy_config_dictionary.h"
 #include "net/proxy/proxy_config.h"
 #include "net/proxy/proxy_config_service.h"
@@ -81,18 +82,18 @@ class ChromeProxyConfigService
 // A class that tracks proxy preferences. It translates the configuration
 // to net::ProxyConfig and pushes the result over to the IO thread for
 // ChromeProxyConfigService::UpdateProxyConfig to use.
-class PrefProxyConfigTrackerImpl {
+class PrefProxyConfigTrackerImpl : public PrefProxyConfigTracker {
  public:
   explicit PrefProxyConfigTrackerImpl(PrefService* pref_service);
   virtual ~PrefProxyConfigTrackerImpl();
 
-  // Sets the proxy config service to push the preference proxy to.
-  void SetChromeProxyConfigService(
-      ChromeProxyConfigService* proxy_config_service);
+  // PrefProxyConfigTracker implementation:
+  virtual scoped_ptr<net::ProxyConfigService> CreateTrackingProxyConfigService(
+      scoped_ptr<net::ProxyConfigService> base_service) OVERRIDE;
 
   // Notifies the tracker that the pref service passed upon construction is
   // about to go away. This must be called from the UI thread.
-  void DetachFromPrefService();
+  virtual void DetachFromPrefService() OVERRIDE;
 
   // Determines if |config_state| takes precedence regardless, which happens if
   // config is from policy or extension or other-precede.

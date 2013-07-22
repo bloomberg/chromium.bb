@@ -5,18 +5,39 @@
 #ifndef CHROME_BROWSER_NET_PREF_PROXY_CONFIG_TRACKER_H_
 #define CHROME_BROWSER_NET_PREF_PROXY_CONFIG_TRACKER_H_
 
-#include "chrome/browser/net/pref_proxy_config_tracker_impl.h"
+#include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 
-#if defined(OS_CHROMEOS)
-namespace chromeos {
-class ProxyConfigServiceImpl;
+namespace net {
+class ProxyConfigService;
 }
-#endif  // defined(OS_CHROMEOS)
 
-#if defined(OS_CHROMEOS)
-typedef chromeos::ProxyConfigServiceImpl PrefProxyConfigTracker;
-#else
-typedef PrefProxyConfigTrackerImpl PrefProxyConfigTracker;
-#endif  // defined(OS_CHROMEOS)
+// Interface for a class that tracks proxy preferences. The purpose of the
+// concrete class is to track changes in the Preferences, to translates the
+// preferences to net::ProxyConfig and to push the result over to a
+// net::ProxyConfigService onto the IO thread.
+class PrefProxyConfigTracker {
+ public:
+  PrefProxyConfigTracker();
+  virtual ~PrefProxyConfigTracker();
+
+  // Creates a net::ProxyConfigService and keeps a pointer to it. After this
+  // call, this tracker forwards any changes of proxy preferences to the created
+  // ProxyConfigService. The returned ProxyConfigService must not be deleted
+  // before DetachFromPrefService was called. Takes ownership of the passed
+  // |base_service|, which can be NULL. This |base_service| provides the proxy
+  // settings of the OS (except of ChromeOS). This must be called on the
+  // UI thread.
+  virtual scoped_ptr<net::ProxyConfigService> CreateTrackingProxyConfigService(
+      scoped_ptr<net::ProxyConfigService> base_service) = 0;
+
+  // Releases the PrefService passed upon construction and the |base_service|
+  // passed to CreateTrackingProxyConfigService. This must be called on the UI
+  // thread.
+  virtual void DetachFromPrefService() = 0;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PrefProxyConfigTracker);
+};
 
 #endif  // CHROME_BROWSER_NET_PREF_PROXY_CONFIG_TRACKER_H_

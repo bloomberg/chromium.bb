@@ -9,7 +9,7 @@
 #include "base/threading/thread.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/io_thread.h"
-#include "chrome/browser/net/pref_proxy_config_tracker.h"
+#include "chrome/browser/net/pref_proxy_config_tracker_impl.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/net_log.h"
@@ -27,12 +27,13 @@
 using content::BrowserThread;
 
 // static
-ChromeProxyConfigService* ProxyServiceFactory::CreateProxyConfigService() {
+net::ProxyConfigService* ProxyServiceFactory::CreateProxyConfigService(
+    PrefProxyConfigTracker* tracker) {
   // The linux gconf-based proxy settings getter relies on being initialized
   // from the UI thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  net::ProxyConfigService* base_service = NULL;
+  scoped_ptr<net::ProxyConfigService> base_service;
 
 #if !defined(OS_CHROMEOS)
   // On ChromeOS, base service is NULL; chromeos::ProxyConfigServiceImpl
@@ -46,12 +47,13 @@ ChromeProxyConfigService* ProxyServiceFactory::CreateProxyConfigService() {
   // TODO(port): the IO and FILE message loops are only used by Linux.  Can
   // that code be moved to chrome/browser instead of being in net, so that it
   // can use BrowserThread instead of raw MessageLoop pointers? See bug 25354.
-  base_service = net::ProxyService::CreateSystemProxyConfigService(
+  base_service.reset(net::ProxyService::CreateSystemProxyConfigService(
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO).get(),
-      BrowserThread::UnsafeGetMessageLoopForThread(BrowserThread::FILE));
+      BrowserThread::UnsafeGetMessageLoopForThread(BrowserThread::FILE)));
 #endif  // !defined(OS_CHROMEOS)
 
-  return new ChromeProxyConfigService(base_service);
+  return tracker->CreateTrackingProxyConfigService(base_service.Pass())
+      .release();
 }
 
 // static

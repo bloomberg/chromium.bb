@@ -85,10 +85,6 @@
 #include "net/proxy/proxy_resolver_v8.h"
 #endif
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/proxy_config_service_impl.h"
-#endif  // defined(OS_CHROMEOS)
-
 using content::BrowserThread;
 
 class SafeBrowsingURLRequestContext;
@@ -915,10 +911,9 @@ void IOThread::InitSystemRequestContext() {
   // If we're in unit_tests, IOThread may not be run.
   if (!BrowserThread::IsMessageLoopValid(BrowserThread::IO))
     return;
-  ChromeProxyConfigService* proxy_config_service =
-      ProxyServiceFactory::CreateProxyConfigService();
-  system_proxy_config_service_.reset(proxy_config_service);
-  pref_proxy_config_tracker_->SetChromeProxyConfigService(proxy_config_service);
+  system_proxy_config_service_.reset(
+      ProxyServiceFactory::CreateProxyConfigService(
+          pref_proxy_config_tracker_.get()));
   system_url_request_context_getter_ =
       new SystemURLRequestContextGetter(this);
   // Safe to post an unretained this pointer, since IOThread is

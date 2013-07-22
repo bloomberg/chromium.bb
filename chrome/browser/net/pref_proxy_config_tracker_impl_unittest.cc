@@ -87,11 +87,10 @@ class PrefProxyConfigTrackerImplTestBase : public TESTBASE {
     delegate_service_ =
         new TestProxyConfigService(fixed_config_,
                                    net::ProxyConfigService::CONFIG_VALID);
-    proxy_config_service_.reset(
-        new ChromeProxyConfigService(delegate_service_));
     proxy_config_tracker_.reset(new PrefProxyConfigTrackerImpl(pref_service));
-    proxy_config_tracker_->SetChromeProxyConfigService(
-        proxy_config_service_.get());
+    proxy_config_service_ =
+        proxy_config_tracker_->CreateTrackingProxyConfigService(
+            scoped_ptr<net::ProxyConfigService>(delegate_service_));
     // SetChromeProxyConfigService triggers update of initial prefs proxy
     // config by tracker to chrome proxy config service, so flush all pending
     // tasks so that tests start fresh.
@@ -107,7 +106,7 @@ class PrefProxyConfigTrackerImplTestBase : public TESTBASE {
 
   base::MessageLoop loop_;
   TestProxyConfigService* delegate_service_; // weak
-  scoped_ptr<ChromeProxyConfigService> proxy_config_service_;
+  scoped_ptr<net::ProxyConfigService> proxy_config_service_;
   net::ProxyConfig fixed_config_;
 
  private:

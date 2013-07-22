@@ -1119,6 +1119,7 @@
         'browser/net/preconnect.h',
         'browser/net/predictor.cc',
         'browser/net/predictor.h',
+        'browser/net/pref_proxy_config_tracker.cc',
         'browser/net/pref_proxy_config_tracker.h',
         'browser/net/pref_proxy_config_tracker_impl.cc',
         'browser/net/pref_proxy_config_tracker_impl.h',
