@@ -131,6 +131,13 @@ def RelativePath(path, relative_to):
   path = os.path.realpath(path)
   relative_to = os.path.realpath(relative_to)
 
+  # On Windows, we can't create a relative path to a different drive, so just
+  # use the absolute path.
+  if sys.platform == 'win32':
+    if (os.path.splitdrive(path)[0].lower() !=
+        os.path.splitdrive(relative_to)[0].lower()):
+      return path
+
   # Split the paths into components.
   path_split = path.split(os.path.sep)
   relative_to_split = relative_to.split(os.path.sep)
