@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/ozone/touch_event_converter_ozone.h"
+#include "ui/base/ozone/evdev/touch_event_converter_ozone.h"
 
 #include <fcntl.h>
 #include <linux/input.h>

@@ -10,21 +10,33 @@
 #include <unistd.h>
 
 #include "base/message_loop/message_pump_ozone.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
-#include "ui/base/ozone/key_event_converter_ozone.h"
-#include "ui/base/ozone/touch_event_converter_ozone.h"
+#include "ui/base/ozone/evdev/key_event_converter_ozone.h"
+#include "ui/base/ozone/evdev/touch_event_converter_ozone.h"
+#include "ui/base/ozone/event_factory_delegate_ozone.h"
 
 namespace ui {
+
+// static
+EventFactoryDelegateOzone* EventFactoryOzone::delegate_ = NULL;
 
 EventFactoryOzone::EventFactoryOzone() {}
 
 EventFactoryOzone::~EventFactoryOzone() {
-  for (unsigned i = 0; i < fd_controllers_.size(); i++) {
-    fd_controllers_[i]->StopWatchingFileDescriptor();
-  }
+  // Always delete watchers before converters to prevent a possible race.
+  STLDeleteValues<std::map<int, FDWatcher> >(&watchers_);
+  STLDeleteValues<std::map<int, Converter> >(&converters_);
 }
 
-void EventFactoryOzone::CreateEvdevWatchers() {
+void EventFactoryOzone::CreateStartupEventConverters() {
+  if (delegate_) {
+    delegate_->CreateStartupEventConverters(this);
+    return;
+  }
+
+  // If there is no |delegate_| set, read events from /dev/input/*
+
   // The number of devices in the directory is unknown without reading
   // the contents of the directory. Further, with hot-plugging,  the entries
   // might decrease during the execution of this loop. So exciting from the
@@ -43,24 +55,52 @@ void EventFactoryOzone::CreateEvdevWatchers() {
       continue;
     }
 
-    EventConverterOzone* watcher = NULL;
+    scoped_ptr<EventConverterOzone> converter;
     // TODO(rjkroege) Add more device types. Support hot-plugging.
     if (evtype & (1 << EV_ABS))
-      watcher = new TouchEventConverterOzone(fd, id);
+      converter.reset(new TouchEventConverterOzone(fd, id));
     else if (evtype & (1 << EV_KEY))
-      watcher = new KeyEventConverterOzone();
+      converter.reset(new KeyEventConverterOzone());
 
-    if (watcher) {
-      base::MessagePumpLibevent::FileDescriptorWatcher* controller =
-          new base::MessagePumpLibevent::FileDescriptorWatcher();
-      base::MessagePumpOzone::Current()->WatchFileDescriptor(
-          fd, true, base::MessagePumpLibevent::WATCH_READ, controller, watcher);
-      evdev_watchers_.push_back(watcher);
-      fd_controllers_.push_back(controller);
+    if (converter) {
+      AddEventConverter(fd, converter.Pass());
     } else {
       close(fd);
     }
   }
+}
+
+void EventFactoryOzone::SetEventFactoryDelegateOzone(
+    EventFactoryDelegateOzone* delegate) {
+  // It should be unnecessary to call this more than once.
+  DCHECK(!delegate_);
+  delegate_ = delegate;
+}
+
+void EventFactoryOzone::AddEventConverter(
+    int fd,
+    scoped_ptr<EventConverterOzone> converter) {
+  CHECK(watchers_.count(fd) == 0 && converters_.count(fd) == 0);
+
+  FDWatcher watcher = new base::MessagePumpLibevent::FileDescriptorWatcher();
+
+  base::MessagePumpOzone::Current()->WatchFileDescriptor(
+      fd,
+      true,
+      base::MessagePumpLibevent::WATCH_READ,
+      watcher,
+      converter.get());
+
+  converters_[fd] = converter.release();
+  watchers_[fd] = watcher;
+}
+
+void EventFactoryOzone::RemoveEventConverter(int fd) {
+  // Always delete watchers before converters to prevent a possible race.
+  delete watchers_[fd];
+  delete converters_[fd];
+  watchers_.erase(fd);
+  converters_.erase(fd);
 }
 
 }  // namespace ui

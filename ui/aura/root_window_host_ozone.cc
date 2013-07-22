@@ -10,11 +10,11 @@
 namespace aura {
 
 RootWindowHostOzone::RootWindowHostOzone(const gfx::Rect& bounds)
-    : delegate_(NULL),
+   : delegate_(NULL),
       widget_(0),
       bounds_(bounds),
       factory_(new ui::EventFactoryOzone()) {
-  factory_->CreateEvdevWatchers();
+  factory_->CreateStartupEventConverters();
   ui::SurfaceFactoryOzone* surface_factory =
       ui::SurfaceFactoryOzone::GetInstance();
   widget_ = surface_factory->GetAcceleratedWidget();

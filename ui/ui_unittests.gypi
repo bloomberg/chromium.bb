@@ -158,7 +158,7 @@
         'base/models/list_model_unittest.cc',
         'base/models/list_selection_model_unittest.cc',
         'base/models/tree_node_model_unittest.cc',
-        'base/ozone/touch_event_converter_ozone_unittest.cc',
+        'base/ozone/evdev/touch_event_converter_ozone_unittest.cc',
         'base/test/data/resource.h',
         'base/text/bytes_formatting_unittest.cc',
         'base/text/utf16_indexing_unittest.cc',

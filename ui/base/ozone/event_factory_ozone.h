@@ -5,27 +5,52 @@
 #ifndef UI_BASE_OZONE_EVENT_FACTORY_OZONE_H_
 #define UI_BASE_OZONE_EVENT_FACTORY_OZONE_H_
 
-#include "base/memory/scoped_vector.h"
+#include <map>
+
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_pump_libevent.h"
 #include "ui/base/ozone/event_converter_ozone.h"
 #include "ui/base/ui_export.h"
 
 namespace ui {
 
-// Sets up and manages watcher instances for event sources in /dev/input/*.
+class EventFactoryDelegateOzone;
+
+// Creates and dispatches |ui.Event|'s. Ozone assumes that events arrive on file
+// descriptors with one  |EventConverterOzone| instance for each descriptor.
+// Ozone presumes that the set of file desctiprtors can vary at runtime so this
+// class supports dynamically adding and removing |EventConverterOzone|
+// instances as necessary.
 class UI_EXPORT EventFactoryOzone {
  public:
   EventFactoryOzone();
-  virtual ~EventFactoryOzone();
+  ~EventFactoryOzone();
 
-  // Opens /dev/input/* event sources as appropriate and set up watchers.
-  void CreateEvdevWatchers();
+  // Sets an optional delegate responsible for creating the starting set of
+  // EventConvertOzones under management. This permits embedders to override the
+  // Linux /dev/input/*-based default as desired. The caller must manage the
+  // scope of this object.
+  static void SetEventFactoryDelegateOzone(EventFactoryDelegateOzone* delegate);
+
+  // Called from RootWindowHostOzone to create the starting set of event
+  // converters.
+  void CreateStartupEventConverters();
+
+  // Add an |EventConverterOzone| instances for the given file descriptor.
+  // Transfers ownership of the |EventConverterOzone| to this class.
+  void AddEventConverter(int fd, scoped_ptr<EventConverterOzone> converter);
+
+  // Remote the |EventConverterOzone|
+  void RemoveEventConverter(int fd);
 
  private:
-  // FileDescriptorWatcher instances for each watched source of events.
-  ScopedVector<EventConverterOzone> evdev_watchers_;
-  ScopedVector<base::MessagePumpLibevent::FileDescriptorWatcher>
-      fd_controllers_;
+  // |EventConverterOzone| for each file descriptor.
+  typedef EventConverterOzone* Converter;
+  typedef base::MessagePumpLibevent::FileDescriptorWatcher* FDWatcher;
+  std::map<int, Converter> converters_;
+  std::map<int, FDWatcher> watchers_;
+
+  static EventFactoryDelegateOzone* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(EventFactoryOzone);
 };

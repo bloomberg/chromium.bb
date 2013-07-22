@@ -57,8 +57,9 @@ class RootWindowHostOzone : public RootWindowHost,
   gfx::AcceleratedWidget widget_;
   gfx::Rect bounds_;
 
-  // EventFactoryEvdev reads from /dev/input/* file descriptors and creates
-  // ui::Events from them.
+  // EventFactoryOzone creates converters that obtain input events from the
+  // underlying input system and dispatch them as |ui::Event| instances into
+  // Aura.
   scoped_ptr<ui::EventFactoryOzone> factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RootWindowHostOzone);

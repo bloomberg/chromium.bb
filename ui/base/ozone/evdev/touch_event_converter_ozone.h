@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_OZONE_TOUCH_EVENT_CONVERTER_OZONE_H_
-#define UI_BASE_OZONE_TOUCH_EVENT_CONVERTER_OZONE_H_
+#ifndef UI_BASE_OZONE_EVDEV_TOUCH_EVENT_CONVERTER_OZONE_H_
+#define UI_BASE_OZONE_EVDEV_TOUCH_EVENT_CONVERTER_OZONE_H_
 
 #include <bitset>
 
@@ -74,4 +74,4 @@ class UI_EXPORT TouchEventConverterOzone : public EventConverterOzone {
 
 }  // namespace ui
 
-#endif  // UI_BASE_OZONE_TOUCH_EVENT_CONVERTER_OZONE_H_
+#endif  // UI_BASE_OZONE_EVDEV_TOUCH_EVENT_CONVERTER_OZONE_H_
