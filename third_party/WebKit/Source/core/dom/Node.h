@@ -244,10 +244,15 @@ public:
     bool isAfterPseudoElement() const { return pseudoId() == AFTER; }
     PseudoId pseudoId() const { return (isElementNode() && hasCustomStyleCallbacks()) ? customPseudoId() : NOPSEUDO; }
 
-    bool isCustomElement() const { return getFlag(IsCustomElement); }
-    void setIsCustomElement();
-    bool isUpgradedCustomElement() const { return getFlag(IsUpgradedCustomElement); }
-    void setIsUpgradedCustomElement();
+    enum CustomElementState {
+        NotCustomElement,
+        UpgradeCandidate,
+        Defined,
+        Upgraded
+    };
+    bool isCustomElement() const { return customElementState() != NotCustomElement; }
+    CustomElementState customElementState() const { return CustomElementState((getFlag(CustomElementHasDefinitionOrIsUpgraded) ? 2 : 0) | (getFlag(CustomElementIsUpgradeCandidateOrUpgraded) ? 1 : 0)); }
+    void setCustomElementState(CustomElementState newState);
 
     virtual bool isMediaControlElement() const { return false; }
     virtual bool isMediaControls() const { return false; }
@@ -744,11 +749,11 @@ private:
         V8CollectableDuringMinorGCFlag = 1 << 23,
         IsInsertionPointFlag = 1 << 24,
         IsInShadowTreeFlag = 1 << 25,
-        IsCustomElement = 1 << 26,
 
-        NotifyRendererWithIdenticalStyles = 1 << 27,
+        NotifyRendererWithIdenticalStyles = 1 << 26,
 
-        IsUpgradedCustomElement = 1 << 28,
+        CustomElementIsUpgradeCandidateOrUpgraded = 1 << 27,
+        CustomElementHasDefinitionOrIsUpgraded = 1 << 28,
 
         DefaultNodeFlags = IsParsingChildrenFinishedFlag
     };

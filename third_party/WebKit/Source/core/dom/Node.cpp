@@ -2681,17 +2681,34 @@ bool Node::isUserActionElementFocused() const
     return document()->userActionElements().isFocused(this);
 }
 
-void Node::setIsCustomElement()
+void Node::setCustomElementState(CustomElementState newState)
 {
-    ASSERT(isHTMLElement() || isSVGElement());
-    setFlag(IsCustomElement);
-}
+    CustomElementState oldState = customElementState();
 
-void Node::setIsUpgradedCustomElement()
-{
-    ASSERT(isCustomElement());
-    setFlag(IsUpgradedCustomElement);
-    setNeedsStyleRecalc(); // :unresolved has changed
+    switch (newState) {
+    case NotCustomElement:
+        ASSERT_NOT_REACHED(); // Everything starts in this state
+        return;
+
+    case UpgradeCandidate:
+        ASSERT(NotCustomElement == oldState);
+        break;
+
+    case Defined:
+        ASSERT(UpgradeCandidate == oldState || NotCustomElement == oldState);
+        break;
+
+    case Upgraded:
+        ASSERT(Defined == oldState);
+        break;
+    }
+
+    ASSERT(isHTMLElement() || isSVGElement());
+    setFlag(newState & 1, CustomElementIsUpgradeCandidateOrUpgraded);
+    setFlag(newState & 2, CustomElementHasDefinitionOrIsUpgraded);
+
+    if (oldState == NotCustomElement || newState == Upgraded)
+        setNeedsStyleRecalc(); // :unresolved has changed
 }
 
 } // namespace WebCore

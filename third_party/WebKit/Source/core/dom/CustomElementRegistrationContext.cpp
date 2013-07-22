@@ -145,7 +145,6 @@ PassRefPtr<Element> ActiveRegistrationContext::createCustomTagElement(Document* 
         return Element::create(tagName, document);
     }
 
-    element->setIsCustomElement();
     resolve(element.get());
     return element.release();
 }
@@ -157,8 +156,6 @@ void ActiveRegistrationContext::didGiveTypeExtension(Element* element)
 
 void ActiveRegistrationContext::resolve(Element* element)
 {
-    ASSERT(element->isCustomElement());
-    ASSERT(!element->isUpgradedCustomElement());
     const CustomElementDescriptor& descriptor = describe(element);
     CustomElementDefinition* definition = m_registry.find(descriptor);
     if (definition)
@@ -169,16 +166,19 @@ void ActiveRegistrationContext::resolve(Element* element)
 
 void ActiveRegistrationContext::didResolveElement(CustomElementDefinition* definition, Element* element)
 {
+    element->setCustomElementState(Element::Defined);
     CustomElementCallbackScheduler::scheduleCreatedCallback(definition->callbacks(), element);
 }
 
 void ActiveRegistrationContext::didCreateUnresolvedElement(const CustomElementDescriptor& descriptor, Element* element)
 {
+    element->setCustomElementState(Element::UpgradeCandidate);
     m_candidates.add(descriptor, element);
 }
 
 CustomElementDefinition* ActiveRegistrationContext::definitionFor(Element* element) const
 {
+    ASSERT(element->customElementState() == Element::Defined || element->customElementState() == Element::Upgraded);
     ASSERT(element->document()->registrationContext() == this);
     const CustomElementDescriptor& descriptor = describe(element);
     return m_registry.find(descriptor);
@@ -186,21 +186,21 @@ CustomElementDefinition* ActiveRegistrationContext::definitionFor(Element* eleme
 
 void ActiveRegistrationContext::customElementAttributeDidChange(Element* element, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue)
 {
-    ASSERT(element->isUpgradedCustomElement());
+    ASSERT(element->customElementState() == Element::Upgraded);
     CustomElementDefinition* definition = definitionFor(element);
     CustomElementCallbackScheduler::scheduleAttributeChangedCallback(definition->callbacks(), element, name, oldValue, newValue);
 }
 
 void ActiveRegistrationContext::customElementDidEnterDocument(Element* element)
 {
-    ASSERT(element->isUpgradedCustomElement());
+    ASSERT(element->customElementState() == Element::Upgraded);
     CustomElementDefinition* definition = definitionFor(element);
     CustomElementCallbackScheduler::scheduleEnteredDocumentCallback(definition->callbacks(), element);
 }
 
 void ActiveRegistrationContext::customElementDidLeaveDocument(Element* element)
 {
-    ASSERT(element->isUpgradedCustomElement());
+    ASSERT(element->customElementState() == Element::Upgraded);
     CustomElementDefinition* definition = definitionFor(element);
     CustomElementCallbackScheduler::scheduleLeftDocumentCallback(definition->callbacks(), element);
 }
@@ -246,8 +246,6 @@ bool CustomElementRegistrationContext::isCustomTagName(const AtomicString& local
 
 CustomElementDescriptor CustomElementRegistrationContext::describe(Element* element)
 {
-    ASSERT(element->isCustomElement());
-
     // If an element has a custom tag name it takes precedence over
     // the "is" attribute (if any).
     const AtomicString& type = isCustomTagName(element->localName())
@@ -275,7 +273,6 @@ void CustomElementRegistrationContext::setTypeExtension(Element* element, const 
 
     TypeExtensionMap::AddResult result = typeExtensionMap()->add(element, type);
     ASSERT(result.isNewEntry); // Type extensions should only be set once
-    element->setIsCustomElement();
     element->document()->registrationContext()->didGiveTypeExtension(element);
 }
 

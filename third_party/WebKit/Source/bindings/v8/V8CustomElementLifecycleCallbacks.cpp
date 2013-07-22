@@ -110,7 +110,7 @@ void V8CustomElementLifecycleCallbacks::created(Element* element)
     if (!canInvokeCallback())
         return;
 
-    element->setIsUpgradedCustomElement();
+    element->setCustomElementState(Element::Upgraded);
 
     v8::HandleScope handleScope;
     v8::Handle<v8::Context> context = toV8Context(scriptExecutionContext(), m_world.get());
