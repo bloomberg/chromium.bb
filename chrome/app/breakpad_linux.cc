@@ -946,11 +946,13 @@ void ExecUploadProcessOrTerminate(const BreakpadInfo& info,
   char pid_buf[kUint64StringSize];
   uint64_t pid_str_length = my_uint64_len(info.pid);
   my_uint64tos(pid_buf, info.pid, pid_str_length);
+  pid_buf[pid_str_length] = '\0';
 
   char uid_buf[kUint64StringSize];
   uid_t uid = geteuid();
   uint64_t uid_str_length = my_uint64_len(uid);
   my_uint64tos(uid_buf, uid, uid_str_length);
+  uid_buf[uid_str_length] = '\0';
   const char* args[] = {
     kCrashReporterBinary,
     "--chrome",
@@ -1014,6 +1016,7 @@ const char* GetCrashingProcessName(const BreakpadInfo& info,
     "/proc/";
   uint64_t pid_value_len = my_uint64_len(info.pid);
   my_uint64tos(linkpath + sizeof("/proc/") - 1, info.pid, pid_value_len);
+  linkpath[sizeof("/proc/") - 1 + pid_value_len] = '\0';
   my_strlcat(linkpath, "/exe", sizeof(linkpath));
 
   const int kMaxSize = 4096;
