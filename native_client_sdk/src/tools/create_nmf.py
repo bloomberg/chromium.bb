@@ -49,6 +49,7 @@ MAIN_NEXE = 'main.nexe'  # Name of entry point for execution
 PROGRAM_KEY = 'program'  # Key of the program section in an nmf file
 URL_KEY = 'url'  # Key of the url field for a particular file in an nmf file
 FILES_KEY = 'files'  # Key of the files section in an nmf file
+PNACL_OPTLEVEL_KEY = 'optlevel' # key for PNaCl optimization level
 PORTABLE_KEY = 'portable' # key for portable section of manifest
 TRANSLATE_KEY = 'pnacl-translate' # key for translatable objects
 
@@ -213,7 +214,7 @@ class NmfUtils(object):
 
   def __init__(self, main_files=None, objdump=None,
                lib_path=None, extra_files=None, lib_prefix=None,
-               remap=None):
+               remap=None, pnacl_optlevel=None):
     '''Constructor
 
     Args:
@@ -226,6 +227,7 @@ class NmfUtils(object):
           both for staging the libraries and for inclusion into the nmf file.
           Examples:  ['..'], ['lib_dir']
       remap: Remaps the library name in the manifest.
+      pnacl_optlevel: Optimization level for PNaCl translation.
       '''
     self.objdump = objdump
     self.main_files = main_files or []
@@ -236,6 +238,7 @@ class NmfUtils(object):
     self.lib_prefix = lib_prefix or []
     self.remap = remap or {}
     self.pnacl = main_files and main_files[0].endswith('pexe')
+    self.pnacl_optlevel = pnacl_optlevel
 
     for filename in self.main_files:
       if not os.path.exists(filename):
@@ -434,9 +437,12 @@ class NmfUtils(object):
     manifest = {}
     manifest[PROGRAM_KEY] = {}
     manifest[PROGRAM_KEY][PORTABLE_KEY] = {}
-    manifest[PROGRAM_KEY][PORTABLE_KEY][TRANSLATE_KEY] = {
+    translate_dict =  {
       "url": os.path.basename(self.main_files[0]),
     }
+    if self.pnacl_optlevel is not None:
+      translate_dict[PNACL_OPTLEVEL_KEY] = self.pnacl_optlevel
+    manifest[PROGRAM_KEY][PORTABLE_KEY][TRANSLATE_KEY] = translate_dict
     self.manifest = manifest
 
   def _GenerateManifest(self):
@@ -659,6 +665,9 @@ def main(argv):
                     help=('Add extra key:file tuple to the "files"' +
                           ' section of the .nmf'),
                     action='append', default=[], metavar='FILE')
+  parser.add_option('-O', '--pnacl-optlevel',
+                    help='Set the optimization level to N in PNaCl manifests',
+                    metavar='N')
   parser.add_option('-v', '--verbose',
                     help='Verbose output', action='store_true')
   parser.add_option('-d', '--debug-mode',
@@ -702,12 +711,21 @@ def main(argv):
     config = options.debug_libs and 'Debug' or 'Release'
     options.lib_path += GetDefaultLibPath(config)
 
+  pnacl_optlevel = None
+  if options.pnacl_optlevel is not None:
+    pnacl_optlevel = int(options.pnacl_optlevel)
+    if pnacl_optlevel < 0 or pnacl_optlevel > 3:
+      sys.stderr.write(
+          'warning: PNaCl optlevel %d is unsupported (< 0 or > 3)\n' %
+          pnacl_optlevel)
+
   nmf = NmfUtils(objdump=options.objdump,
                  main_files=args,
                  lib_path=options.lib_path,
                  extra_files=canonicalized,
                  lib_prefix=path_prefix,
-                 remap=remap)
+                 remap=remap,
+                 pnacl_optlevel=pnacl_optlevel)
 
   nmf.GetManifest()
   if not options.output:
