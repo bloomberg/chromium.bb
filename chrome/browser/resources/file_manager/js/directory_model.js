@@ -291,6 +291,37 @@ DirectoryModel.prototype.isPathReadOnly = function(path) {
 };
 
 /**
+ * Updates the selection by using the updateFunc and publish the change event.
+ * If updateFunc returns true, it force to dispatch the change event even if the
+ * selection index is not changed.
+ *
+ * @param {cr.ui.ListSingleSelectionModel} selection Selection to be updated.
+ * @param {function(): boolean} updateFunc Function updating the selection.
+ * @private
+ */
+DirectoryModel.prototype.updateSelectionAndPublishEvent_ =
+    function(selection, updateFunc) {
+  // Begin change.
+  selection.beginChange();
+
+  // If dispatchNeeded is true, we should ensure the change evnet is
+  // dispatched.
+  var dispatchNeeded = updateFunc();
+
+  // Check if the change event is dispatched in the endChange function
+  // or not.
+  var eventDispatched = function() { dispatchNeeded = false; };
+  selection.addEventListener('change', eventDispatched);
+  selection.endChange();
+  selection.removeEventListener('change', eventDispatched);
+
+  // If the change evnet have been already dispatched, dispatchNeeded is false.
+  if (dispatchNeeded) {
+    selection.dispatchEvent(selection.createChangeEvent('change'));
+  }
+};
+
+/**
  * Invoked when filters are changed.
  * @private
  */
@@ -592,31 +623,33 @@ DirectoryModel.prototype.scan_ = function(
  */
 DirectoryModel.prototype.replaceDirectoryContents_ = function(dirContents) {
   cr.dispatchSimpleEvent(this, 'begin-update-files');
-  this.fileListSelection_.beginChange();
+  this.updateSelectionAndPublishEvent_(this.fileListSelection_, function() {
+    var selectedPaths = this.getSelectedPaths_();
+    var selectedIndices = this.fileListSelection_.selectedIndexes;
 
-  var selectedPaths = this.getSelectedPaths_();
-  var selectedIndices = this.fileListSelection_.selectedIndexes;
+    // Restore leadIndex in case leadName no longer exists.
+    var leadIndex = this.fileListSelection_.leadIndex;
+    var leadPath = this.getLeadPath_();
 
-  // Restore leadIndex in case leadName no longer exists.
-  var leadIndex = this.fileListSelection_.leadIndex;
-  var leadPath = this.getLeadPath_();
+    this.currentDirContents_ = dirContents;
+    dirContents.replaceContextFileList();
 
-  this.currentDirContents_ = dirContents;
-  dirContents.replaceContextFileList();
+    this.setSelectedPaths_(selectedPaths);
+    this.fileListSelection_.leadIndex = leadIndex;
+    this.setLeadPath_(leadPath);
 
-  this.setSelectedPaths_(selectedPaths);
-  this.fileListSelection_.leadIndex = leadIndex;
-  this.setLeadPath_(leadPath);
-
-  // If nothing is selected after update, then select file next to the
-  // latest selection
-  if (this.fileListSelection_.selectedIndexes.length == 0 &&
-      selectedIndices.length != 0) {
-    var maxIdx = Math.max.apply(null, selectedIndices);
-    this.selectIndex(Math.min(maxIdx - selectedIndices.length + 2,
-                              this.getFileList().length) - 1);
-  }
-  this.fileListSelection_.endChange();
+    // If nothing is selected after update, then select file next to the
+    // latest selection
+    var forceChangeEvent = false;
+    if (this.fileListSelection_.selectedIndexes.length == 0 &&
+        selectedIndices.length != 0) {
+      var maxIdx = Math.max.apply(null, selectedIndices);
+      this.selectIndex(Math.min(maxIdx - selectedIndices.length + 2,
+                                this.getFileList().length) - 1);
+      forceChangeEvent = true;
+    }
+    return forceChangeEvent;
+  }.bind(this));
 
   cr.dispatchSimpleEvent(this, 'end-update-files');
 };

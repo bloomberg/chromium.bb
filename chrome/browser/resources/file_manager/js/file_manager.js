@@ -3921,6 +3921,10 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    */
   FileManager.prototype.setCtrlKeyPressed_ = function(flag) {
     this.ctrlKeyPressed_ = flag;
-    this.document_.querySelector('#drive-clear-local-cache').canExecuteChange();
+    // Before the DOM is constructed, the key event can be handled.
+    var cacheClearCommand =
+        this.document_.querySelector('#drive-clear-local-cache');
+    if (cacheClearCommand)
+      cacheClearCommand.canExecuteChange();
   };
 })();
