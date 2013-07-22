@@ -31,7 +31,6 @@
 //////////////////////////////////////////////////////////////////////////////
 var FORWARD = 'forward';
 var BACKWARD = 'backward';
-var GTEST_MODIFIERS = ['FLAKY', 'FAILS', 'MAYBE', 'DISABLED'];
 var TEST_URL_BASE_PATH_FOR_BROWSING = 'http://src.chromium.org/viewvc/blink/trunk/LayoutTests/';
 var TEST_URL_BASE_PATH_FOR_XHR = 'http://src.chromium.org/blink/trunk/LayoutTests/';
 var TEST_RESULTS_BASE_PATH = 'http://build.chromium.org/f/chromium/layout_test_results/';
@@ -110,7 +109,8 @@ function handleValidHashParameter(historyInstance, key, value)
             function() {
                 // Get all possible headers since the actual used set of headers
                 // depends on the values in historyInstance.dashboardSpecificState, which are currently being set.
-                var headers = tableHeaders(true);
+                var getAllTableHeaders = true;
+                var headers = tableHeaders(getAllTableHeaders);
                 for (var i = 0; i < headers.length; i++) {
                     if (value == sortColumnFromTableHeader(headers[i]))
                         return true;
@@ -315,29 +315,16 @@ function individualTests()
     return individualTestsForSubstringList();
 }
 
-function substringList()
+function splitTestList()
 {
-    // Convert windows slashes to unix slashes.
-    var tests = g_history.dashboardSpecificState.tests.replace(/\\/g, '/');
-    var separator = string.contains(tests, ' ') ? ' ' : ',';
-    var testList = tests.split(separator);
-
-    if (g_history.isLayoutTestResults())
-        return testList;
-
-    var testListWithoutModifiers = [];
-    testList.forEach(function(path) {
-        GTEST_MODIFIERS.forEach(function(modifier) {
-            path = path.replace('.' + modifier + '_', '.');
-        });
-        testListWithoutModifiers.push(path);
-    });
-    return testListWithoutModifiers;
+    // Convert windows slashes to unix slashes and spaces/newlines to commas.
+    var tests = g_history.dashboardSpecificState.tests.replace(/\\/g, '/').replace('\n', ' ').replace(/\s+/g, ',');
+    return tests.split(',');
 }
 
 function individualTestsForSubstringList()
 {
-    var testList = substringList();
+    var testList = splitTestList();
     // If listing a lot of tests, assume you've passed in an explicit list of tests
     // instead of patterns to match against. The matching code below is super slow.
     //
@@ -662,19 +649,15 @@ function linkifyBugs(bugs)
     return html;
 }
 
-function htmlForSingleTestRow(test)
+function htmlForSingleTestRow(test, showBuilderNames)
 {
     var headers = tableHeaders();
     var html = '';
     for (var i = 0; i < headers.length; i++) {
         var header = headers[i];
         if (string.startsWith(header, 'test') || string.startsWith(header, 'builder')) {
-            // If isCrossBuilderView() is true, we're just viewing a single test
-            // with results for many builders, so the first column is builder names
-            // instead of test paths.
-            var testCellClassName = 'test-link' + (isCrossBuilderView() ? ' builder-name' : '');
-            var testCellHTML = isCrossBuilderView() ? test.builder : '<span class="link" onclick="g_history.setQueryParameter(\'tests\',\'' + test.test +'\');">' + test.test + '</span>';
-
+            var testCellClassName = 'test-link' + (showBuilderNames ? ' builder-name' : '');
+            var testCellHTML = showBuilderNames ? test.builder : '<span class="link" onclick="g_history.setQueryParameter(\'tests\',\'' + test.test +'\');">' + test.test + '</span>';
             html += '<tr><td class="' + testCellClassName + '">' + testCellHTML;
         } else if (string.startsWith(header, 'bugs'))
             // FIXME: linkify bugs.
@@ -812,7 +795,8 @@ function htmlForIndividualTestOnAllBuilders(test)
     var shownBuilders = [];
     for (var j = 0; j < testResults.length; j++) {
         shownBuilders.push(testResults[j].builder);
-        html += htmlForSingleTestRow(testResults[j]);
+        var showBuilderNames = true;
+        html += htmlForSingleTestRow(testResults[j], showBuilderNames);
     }
 
     var skippedBuilders = []
@@ -1061,7 +1045,7 @@ function loadNonWebKitResultsForBuilder(builder, test, expectationsContainer)
     expectationsContainer.appendChild(container);
     for (var i = 0; i < failureIndexes.length; i++) {
         // FIXME: This doesn't seem to work anymore. Did the paths change?
-        // Once that's resolved, see if we need to try each GTEST_MODIFIERS prefix as well.
+        // Once that's resolved, see if we need to try each gtest modifier prefix as well.
         var buildNumber = g_resultsByBuilder[builder].buildNumbers[failureIndexes[i]];
         var pathToLog = builders.master(builder).logPath(builder, buildNumber) + pathToFailureLog(test);
         appendNonWebKitResults(container, pathToLog, 'non-webkit-results');
@@ -1276,8 +1260,9 @@ function generatePageForBuilder(builderName)
     var testsHTML = '';
     if (filteredResults.length) {
         var tableRowsHTML = '';
+        var showBuilderNames = false;
         for (var i = 0; i < filteredResults.length; i++)
-            tableRowsHTML += htmlForSingleTestRow(filteredResults[i])
+            tableRowsHTML += htmlForSingleTestRow(filteredResults[i], showBuilderNames)
         testsHTML = htmlForTestTable(tableRowsHTML);
     } else {
         if (g_history.isLayoutTestResults())

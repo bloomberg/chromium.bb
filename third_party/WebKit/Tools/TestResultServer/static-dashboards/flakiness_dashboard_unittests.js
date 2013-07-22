@@ -62,17 +62,12 @@ function resetGlobals()
 var FAILURE_MAP = {"A": "AUDIO", "C": "CRASH", "F": "TEXT", "I": "IMAGE", "O": "MISSING",
     "N": "NO DATA", "P": "PASS", "T": "TIMEOUT", "Y": "NOTRUN", "X": "SKIP", "Z": "IMAGE+TEXT"}
 
-test('substringList', 2, function() {
+test('splitTestList', 1, function() {
     var historyInstance = new history.History(flakinessConfig);
     // FIXME(jparent): Remove this once global isn't used.
     g_history = historyInstance;
-    historyInstance.crossDashboardState.testType = 'gtest';
-    historyInstance.dashboardSpecificState.tests = 'test.FLAKY_foo test.FAILS_foo1 test.DISABLED_foo2 test.MAYBE_foo3 test.foo4';
-    equal(substringList().toString(), 'test.foo,test.foo1,test.foo2,test.foo3,test.foo4');
-
-    historyInstance.crossDashboardState.testType = 'layout-tests';
-    historyInstance.dashboardSpecificState.tests = 'foo/bar.FLAKY_foo.html';
-    equal(substringList().toString(), 'foo/bar.FLAKY_foo.html');
+    historyInstance.dashboardSpecificState.tests = 'test.foo test.foo1\ntest.foo2\ntest.foo3,foo\\bar\\baz.html';
+    equal(splitTestList().toString(), 'test.foo,test.foo1,test.foo2,test.foo3,foo/bar/baz.html');
 });
 
 test('headerForTestTableHtml', 1, function() {
@@ -147,7 +142,7 @@ test('htmlForIndividualTestOnAllBuildersWithResultsLinks', 1, function() {
                 '<th sortValue=flakiness colspan=10000><div class=table-header-content><span></span><span class=header-text>flakiness (numbers are runtimes in seconds)</span></div></th>' +
             '</tr></thead>' +
             '<tbody><tr>' +
-                '<td class="test-link"><span class="link" onclick="g_history.setQueryParameter(\'tests\',\'dummytest.html\');">dummytest.html</span>' +
+                '<td class="test-link builder-name">WebKit Linux' +
                 '<td class=options-container>' +
                     '<div><a href="http://crbug.com/1234">crbug.com/1234</a></div>' +
                     '<div><a href="http://webkit.org/5678">webkit.org/5678</a></div>' +
