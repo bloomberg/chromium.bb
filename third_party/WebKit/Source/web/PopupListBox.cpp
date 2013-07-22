@@ -142,13 +142,13 @@ bool PopupListBox::handleMouseReleaseEvent(const PlatformMouseEvent& event)
     // Need to check before calling acceptIndex(), because m_popupClient might
     // be removed in acceptIndex() calling because of event handler.
     bool isSelectPopup = m_popupClient->menuStyle().menuType() == PopupMenuStyle::SelectPopup;
-    if (acceptIndex(pointToRowIndex(event.position())) && m_focusedNode && isSelectPopup) {
-        m_focusedNode->dispatchMouseEvent(event, eventNames().mouseupEvent);
-        m_focusedNode->dispatchMouseEvent(event, eventNames().clickEvent);
+    if (acceptIndex(pointToRowIndex(event.position())) && m_focusedElement && isSelectPopup) {
+        m_focusedElement->dispatchMouseEvent(event, eventNames().mouseupEvent);
+        m_focusedElement->dispatchMouseEvent(event, eventNames().clickEvent);
 
-        // Clear m_focusedNode here, because we cannot clear in hidePopup()
+        // Clear m_focusedElement here, because we cannot clear in hidePopup()
         // which is called before dispatchMouseEvent() is called.
-        m_focusedNode = 0;
+        m_focusedElement = 0;
     }
 
     return true;
@@ -230,7 +230,7 @@ bool PopupListBox::handleKeyEvent(const PlatformKeyboardEvent& event)
         // of the text area should selected when you press shift + up arrow.
         // shift + down should be the similar way to shift + up.
         if (event.modifiers() && m_popupClient->menuStyle().menuType() == PopupMenuStyle::AutofillPopup)
-            m_focusedNode->dispatchKeyEvent(event);
+            m_focusedElement->dispatchKeyEvent(event);
         else if (event.windowsVirtualKeyCode() == VKEY_UP)
             selectPreviousRow();
         else

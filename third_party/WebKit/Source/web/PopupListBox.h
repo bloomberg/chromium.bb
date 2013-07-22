@@ -31,7 +31,7 @@
 #ifndef PopupListBox_h
 #define PopupListBox_h
 
-#include "core/dom/Node.h"
+#include "core/dom/Element.h"
 #include "core/platform/chromium/FramelessScrollView.h"
 #include "core/platform/text/TextDirection.h"
 #include "wtf/text/WTFString.h"
@@ -295,7 +295,7 @@ private:
     int m_maxWindowWidth;
 
     // To forward last mouse release event.
-    RefPtr<Node> m_focusedNode;
+    RefPtr<Element> m_focusedElement;
 };
 
 } // namespace WebCore
