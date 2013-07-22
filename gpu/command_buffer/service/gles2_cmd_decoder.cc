@@ -3134,7 +3134,6 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
   state_.texture_units.clear();
   state_.bound_array_buffer = NULL;
   state_.current_query = NULL;
-  state_.current_program = NULL;
   state_.bound_read_framebuffer = NULL;
   state_.bound_draw_framebuffer = NULL;
   state_.bound_renderbuffer = NULL;
@@ -3155,7 +3154,6 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
     if (state_.current_program.get()) {
       program_manager()->UnuseProgram(shader_manager(),
                                       state_.current_program.get());
-      state_.current_program = NULL;
     }
 
     if (attrib_0_buffer_id_) {
@@ -3238,6 +3236,11 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
     context_->ReleaseCurrent(NULL);
     context_ = NULL;
   }
+
+  // Current program must be cleared after calling
+  // ProgramManager::UnuseProgram. Otherwise, we can
+  // leak objects. http://crbug.com/258772
+  state_.current_program = NULL;
 
 #if defined(OS_MACOSX)
   for (TextureToIOSurfaceMap::iterator it = texture_to_io_surface_map_.begin();
