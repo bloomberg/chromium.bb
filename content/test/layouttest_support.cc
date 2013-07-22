@@ -61,7 +61,6 @@ RenderFrameImpl* CreateWebFrameTestProxy(
   WebTestProxyBase* base = static_cast<WebTestProxyBase*>(render_view_proxy);
   FrameProxy* render_frame_proxy = new FrameProxy(render_view, routing_id);
   render_frame_proxy->setBaseProxy(base);
-  render_frame_proxy->setVersion(2);
 
   return render_frame_proxy;
 }

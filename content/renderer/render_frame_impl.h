@@ -201,7 +201,7 @@ class CONTENT_EXPORT RenderFrameImpl
                                    int arb_robustness_status_code);
 
   // RenderFrameImpl methods
-  int GetRoutingID() const;
+  int routing_id() { return routing_id_; }
 
  protected:
   RenderFrameImpl(RenderViewImpl* render_view, int32 routing_id);
