@@ -9,7 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/native_library.h"
-#include "chrome/common/chrome_sandbox_type_mac.h"
+#include "components/nacl/common/nacl_sandbox_type_mac.h"
 #include "components/nacl/common/nacl_switches.h"
 #include "content/public/common/sandbox_init.h"
 
@@ -55,7 +55,7 @@ void NaClMainPlatformDelegate::InitSandboxTests(bool no_sandbox) {
 }
 
 void NaClMainPlatformDelegate::EnableSandbox() {
-  CHECK(content::InitializeSandbox(CHROME_SANDBOX_TYPE_NACL_LOADER,
+  CHECK(content::InitializeSandbox(NACL_SANDBOX_TYPE_NACL_LOADER,
                                    base::FilePath()))
       << "Error initializing sandbox for " << switches::kNaClLoaderProcess;
 }

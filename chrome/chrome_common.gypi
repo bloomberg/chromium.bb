@@ -127,7 +127,6 @@
         'common/chrome_content_client_constants.cc',
         'common/chrome_content_client_ios.mm',
         'common/chrome_result_codes.h',
-        'common/chrome_sandbox_type_mac.h',
         'common/chrome_utility_messages.h',
         'common/chrome_version_info.cc',
         'common/chrome_version_info_android.cc',
@@ -483,6 +482,7 @@
         'common/worker_thread_ticker.cc',
         'common/worker_thread_ticker.h',
         '../components/nacl/common/nacl_process_type.h',
+        '../components/nacl/common/nacl_sandbox_type_mac.h',
       ],
       'conditions': [
         ['enable_extensions==1', {
