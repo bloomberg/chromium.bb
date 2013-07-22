@@ -177,7 +177,7 @@ TEST_F(BrowserCommandsTest, BackForwardInNewTab) {
 
   // The new tab should be like the first one but navigated back. Since we
   // didn't wait for the load to complete, we can't use GetLastCommittedURL.
-  EXPECT_EQ(url1, first->GetActiveURL());
+  EXPECT_EQ(url1, first->GetVisibleURL());
   EXPECT_FALSE(first->GetController().CanGoBack());
   EXPECT_TRUE(first->GetController().CanGoForward());
 
@@ -202,7 +202,7 @@ TEST_F(BrowserCommandsTest, BackForwardInNewTab) {
   WebContents* second = browser()->tab_strip_model()->GetWebContentsAt(2);
   // Since we didn't wait for load to complete, we can't use
   // GetLastCommittedURL.
-  EXPECT_EQ(url2, second->GetActiveURL());
+  EXPECT_EQ(url2, second->GetVisibleURL());
   EXPECT_TRUE(second->GetController().CanGoBack());
   EXPECT_FALSE(second->GetController().CanGoForward());
 
@@ -215,7 +215,7 @@ TEST_F(BrowserCommandsTest, BackForwardInNewTab) {
   ASSERT_EQ(3, browser()->tab_strip_model()->active_index());
   ASSERT_EQ(url1,
             browser()->tab_strip_model()->GetActiveWebContents()->
-                GetActiveURL());
+                GetVisibleURL());
 
   // Same thing again for forward.
   // TODO(brettw) bug 11055: see the comment above about why we need this.
@@ -225,5 +225,5 @@ TEST_F(BrowserCommandsTest, BackForwardInNewTab) {
   ASSERT_EQ(4, browser()->tab_strip_model()->active_index());
   ASSERT_EQ(url2,
             browser()->tab_strip_model()->GetActiveWebContents()->
-                GetActiveURL());
+                GetVisibleURL());
 }

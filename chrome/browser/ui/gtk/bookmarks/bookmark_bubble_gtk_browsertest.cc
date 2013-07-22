@@ -72,7 +72,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkBubbleGtkBrowserTest, SyncPromoNotSignedIn) {
 // Verifies that a new tab is opened when the "Sign in" link is clicked.
 IN_PROC_BROWSER_TEST_F(BookmarkBubbleGtkBrowserTest, SyncPromoLink) {
   GURL initial_url =
-      browser()->tab_strip_model()->GetActiveWebContents()->GetActiveURL();
+      browser()->tab_strip_model()->GetActiveWebContents()->GetVisibleURL();
   CreateBookmarkBubble();
 
   // Simulate clicking the "Sign in" link.
@@ -80,6 +80,6 @@ IN_PROC_BROWSER_TEST_F(BookmarkBubbleGtkBrowserTest, SyncPromoLink) {
 
   EXPECT_NE(
       initial_url,
-      browser()->tab_strip_model()->GetActiveWebContents()->GetActiveURL());
+      browser()->tab_strip_model()->GetActiveWebContents()->GetVisibleURL());
 }
 

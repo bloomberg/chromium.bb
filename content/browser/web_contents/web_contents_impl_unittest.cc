@@ -429,7 +429,7 @@ TEST_F(WebContentsImplTest, CrossSiteBoundaries) {
   EXPECT_FALSE(contents()->cross_navigation_pending());
   EXPECT_EQ(orig_rvh, contents()->GetRenderViewHost());
   EXPECT_EQ(url, contents()->GetLastCommittedURL());
-  EXPECT_EQ(url, contents()->GetActiveURL());
+  EXPECT_EQ(url, contents()->GetVisibleURL());
 
   // Navigate to new site
   const GURL url2("http://www.yahoo.com");
@@ -437,7 +437,7 @@ TEST_F(WebContentsImplTest, CrossSiteBoundaries) {
       url2, Referrer(), PAGE_TRANSITION_TYPED, std::string());
   EXPECT_TRUE(contents()->cross_navigation_pending());
   EXPECT_EQ(url, contents()->GetLastCommittedURL());
-  EXPECT_EQ(url2, contents()->GetActiveURL());
+  EXPECT_EQ(url2, contents()->GetVisibleURL());
   TestRenderViewHost* pending_rvh =
       static_cast<TestRenderViewHost*>(contents()->GetPendingRenderViewHost());
   int pending_rvh_delete_count = 0;
@@ -462,7 +462,7 @@ TEST_F(WebContentsImplTest, CrossSiteBoundaries) {
   EXPECT_FALSE(contents()->cross_navigation_pending());
   EXPECT_EQ(pending_rvh, contents()->GetRenderViewHost());
   EXPECT_EQ(url2, contents()->GetLastCommittedURL());
-  EXPECT_EQ(url2, contents()->GetActiveURL());
+  EXPECT_EQ(url2, contents()->GetVisibleURL());
   EXPECT_NE(instance1, instance2);
   EXPECT_TRUE(contents()->GetPendingRenderViewHost() == NULL);
   // We keep the original RVH around, swapped out.
@@ -630,7 +630,7 @@ TEST_F(WebContentsImplTest, NavigateDoesNotUseUpSiteInstance) {
   EXPECT_FALSE(contents()->cross_navigation_pending());
   EXPECT_EQ(orig_rvh, contents()->GetRenderViewHost());
   EXPECT_EQ(native_url, contents()->GetLastCommittedURL());
-  EXPECT_EQ(native_url, contents()->GetActiveURL());
+  EXPECT_EQ(native_url, contents()->GetVisibleURL());
   EXPECT_EQ(orig_instance, contents()->GetSiteInstance());
   EXPECT_EQ(GURL(), contents()->GetSiteInstance()->GetSiteURL());
   EXPECT_FALSE(orig_instance->HasSite());
@@ -642,7 +642,7 @@ TEST_F(WebContentsImplTest, NavigateDoesNotUseUpSiteInstance) {
       url, Referrer(), PAGE_TRANSITION_TYPED, std::string());
   EXPECT_FALSE(contents()->cross_navigation_pending());
   EXPECT_EQ(native_url, contents()->GetLastCommittedURL());
-  EXPECT_EQ(url, contents()->GetActiveURL());
+  EXPECT_EQ(url, contents()->GetVisibleURL());
   EXPECT_FALSE(contents()->GetPendingRenderViewHost());
   contents()->TestDidNavigate(orig_rvh, 1, url, PAGE_TRANSITION_TYPED);
 
@@ -663,7 +663,7 @@ TEST_F(WebContentsImplTest, NavigateDoesNotUseUpSiteInstance) {
       url2, Referrer(), PAGE_TRANSITION_TYPED, std::string());
   EXPECT_TRUE(contents()->cross_navigation_pending());
   EXPECT_EQ(url, contents()->GetLastCommittedURL());
-  EXPECT_EQ(url2, contents()->GetActiveURL());
+  EXPECT_EQ(url2, contents()->GetVisibleURL());
   TestRenderViewHost* pending_rvh =
       static_cast<TestRenderViewHost*>(contents()->GetPendingRenderViewHost());
   int pending_rvh_delete_count = 0;
@@ -682,7 +682,7 @@ TEST_F(WebContentsImplTest, NavigateDoesNotUseUpSiteInstance) {
   EXPECT_FALSE(contents()->cross_navigation_pending());
   EXPECT_EQ(pending_rvh, contents()->GetRenderViewHost());
   EXPECT_EQ(url2, contents()->GetLastCommittedURL());
-  EXPECT_EQ(url2, contents()->GetActiveURL());
+  EXPECT_EQ(url2, contents()->GetVisibleURL());
   EXPECT_NE(new_instance, orig_instance);
   EXPECT_FALSE(contents()->GetPendingRenderViewHost());
   // We keep the original RVH around, swapped out.

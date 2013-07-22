@@ -542,14 +542,14 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     if (!active_contents)
       return true;
 
-    GURL active_url = active_contents->GetActiveURL();
+    GURL visible_url = active_contents->GetLastCommittedURL();
     std::string display_settings_url =
         std::string(chrome::kChromeUISettingsURL) + kDisplaySettingsSubPageName;
     std::string display_overscan_url =
         std::string(chrome::kChromeUISettingsURL) +
         kDisplayOverscanSettingsSubPageName;
-    return (active_url.spec() != display_settings_url) &&
-        (active_url.spec() != display_overscan_url);
+    return (visible_url.spec() != display_settings_url) &&
+        (visible_url.spec() != display_overscan_url);
   }
 
   virtual void ShowDriveSettings() OVERRIDE {

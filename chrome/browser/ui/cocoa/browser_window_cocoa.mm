@@ -317,8 +317,8 @@ void BrowserWindowCocoa::ZoomChangedForActiveTab(bool can_show_bubble) {
           browser_->type(), browser_->app_type(),
           browser_->app_name().c_str()));
   base::debug::ScopedCrashKey url(crash_keys::mac::kZoomBubbleURL,
-      browser_->tab_strip_model()->GetActiveWebContents()->GetActiveURL().
-          possibly_invalid_spec());
+      browser_->tab_strip_model()->GetActiveWebContents()->
+          GetLastCommittedURL().possibly_invalid_spec());
 
   [controller_ zoomChangedForActiveTab:can_show_bubble ? YES : NO];
 }

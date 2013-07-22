@@ -134,7 +134,7 @@ class WebContents : public PageNavigator,
   virtual content::BrowserContext* GetBrowserContext() const = 0;
 
   // Gets the URL that is currently being displayed, if there is one.
-  // This method is deprecated. DO NOT USE! Pick either |GetActiveURL| or
+  // This method is deprecated. DO NOT USE! Pick either |GetVisibleURL| or
   // |GetLastCommittedURL| as appropriate.
   virtual const GURL& GetURL() const = 0;
 
@@ -143,7 +143,7 @@ class WebContents : public PageNavigator,
   // not guaranteed to match the current page in this WebContents. A typical
   // example of this is interstitials, which show the URL of the new/loading
   // page (active) but the security context is of the old page (last committed).
-  virtual const GURL& GetActiveURL() const = 0;
+  virtual const GURL& GetVisibleURL() const = 0;
 
   // Gets the last committed URL. It represents the current page that is
   // displayed in  this WebContents. It represents the current security

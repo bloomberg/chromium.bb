@@ -612,7 +612,7 @@ void TranslateManager::PageTranslated(WebContents* web_contents,
       !web_contents->GetBrowserContext()->IsOffTheRecord()) {
     TranslateErrorDetails error_details;
     error_details.time = base::Time::Now();
-    error_details.url = web_contents->GetActiveURL();
+    error_details.url = web_contents->GetLastCommittedURL();
     error_details.error = details->error_type;
     NotifyTranslateError(error_details);
   }
