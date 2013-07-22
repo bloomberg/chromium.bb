@@ -440,6 +440,7 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
       if (!framer_.ParseCredentialData(credential_buffer_.get(),
                                        credential_buffer_length_,
                                        &credential_)) {
+        LOG(INFO) << "Error parsing credential data.";
         ++error_count_;
       }
       return true;
@@ -3745,6 +3746,39 @@ TEST_P(SpdyFramerTest, ReadCredentialFrameWithCorruptCertificate) {
   visitor.SimulateInFramer(
       data, control_frame->size());
   EXPECT_EQ(1, visitor.error_count_);
+}
+
+// Regression test for parsing issue found in b/8278897.
+TEST_P(SpdyFramerTest, ReadCredentialFrameFollowedByAnotherFrame) {
+  SpdyCredential credential;
+  credential.slot = 3;
+  credential.proof = "proof";
+  credential.certs.push_back("a cert");
+  credential.certs.push_back("another cert");
+  credential.certs.push_back("final cert");
+  SpdyFramer framer(spdy_version_);
+  scoped_ptr<SpdyFrame> credential_frame(
+      framer.CreateCredentialFrame(credential));
+  EXPECT_TRUE(credential_frame.get() != NULL);
+  TestSpdyVisitor visitor(spdy_version_);
+  visitor.use_compression_ = false;
+  string multiple_frame_data(credential_frame->data(),
+                             credential_frame->size());
+  scoped_ptr<SpdyFrame> goaway_frame(framer.CreateGoAway(0, GOAWAY_OK));
+  multiple_frame_data.append(string(goaway_frame->data(),
+                                    goaway_frame->size()));
+  visitor.SimulateInFramer(
+      reinterpret_cast<unsigned const char*>(multiple_frame_data.data()),
+      multiple_frame_data.length());
+  EXPECT_EQ(0, visitor.error_count_);
+  EXPECT_EQ(credential_frame->size() - framer.GetControlFrameHeaderSize(),
+            visitor.credential_buffer_length_);
+  EXPECT_EQ(credential.slot, visitor.credential_.slot);
+  EXPECT_EQ(credential.proof, visitor.credential_.proof);
+  EXPECT_EQ(credential.certs.size(), visitor.credential_.certs.size());
+  for (size_t i = 0; i < credential.certs.size(); i++) {
+    EXPECT_EQ(credential.certs[i], visitor.credential_.certs[i]);
+  }
 }
 
 TEST_P(SpdyFramerTest, ReadCompressedPushPromise) {

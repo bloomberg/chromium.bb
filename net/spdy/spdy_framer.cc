@@ -1462,6 +1462,10 @@ size_t SpdyFramer::ProcessControlFramePayload(const char* data, size_t len) {
 
 size_t SpdyFramer::ProcessCredentialFramePayload(const char* data, size_t len) {
   if (len > 0) {
+    // Clamp to the actual remaining payload.
+    if (len > remaining_data_length_) {
+      len = remaining_data_length_;
+    }
     bool processed_succesfully = visitor_->OnCredentialFrameData(data, len);
     remaining_data_length_ -= len;
     if (!processed_succesfully) {
