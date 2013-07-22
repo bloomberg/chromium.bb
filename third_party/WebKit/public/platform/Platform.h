@@ -568,7 +568,7 @@ public:
     // The callbacks object is deleted when the callback method is called
     // and does not need to be (and should not be) deleted manually.
     virtual void queryStorageUsageAndQuota(
-        const WebString& storagePartition,
+        const WebURL& storagePartition,
         WebStorageQuotaType,
         WebStorageQuotaCallbacks*) { }
 
