@@ -25,7 +25,16 @@ class WEBKIT_STORAGE_BROWSER_EXPORT CopyOrMoveFileValidator {
 
   virtual ~CopyOrMoveFileValidator() {}
 
-  virtual void StartValidation(const ResultCallback& result_callback) = 0;
+  // Called on a source file before copying or moving to the final
+  // destination.
+  virtual void StartPreWriteValidation(
+      const ResultCallback& result_callback) = 0;
+
+  // Called on a destination file after copying or moving to the final
+  // destination. Suitable for running Anti-Virus checks.
+  virtual void StartPostWriteValidation(
+      const base::FilePath& dest_platform_path,
+      const ResultCallback& result_callback) = 0;
 };
 
 class CopyOrMoveFileValidatorFactory {

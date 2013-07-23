@@ -111,8 +111,8 @@ bool SupportedImageTypeValidator::SupportsFileType(const base::FilePath& path) {
          extension == FILE_PATH_LITERAL(".webp");
 }
 
-void SupportedImageTypeValidator::StartValidation(
-    const fileapi::CopyOrMoveFileValidator::ResultCallback& result_callback) {
+void SupportedImageTypeValidator::StartPreWriteValidation(
+    const ResultCallback& result_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(callback_.is_null());
   callback_ = result_callback;
@@ -123,6 +123,19 @@ void SupportedImageTypeValidator::StartValidation(
       base::Bind(&ReadOnFileThread, path_),
       base::Bind(&SupportedImageTypeValidator::OnFileOpen,
                  weak_factory_.GetWeakPtr()));
+}
+
+void SupportedImageTypeValidator::StartPostWriteValidation(
+    const base::FilePath& dest_platform_path,
+    const ResultCallback& result_callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  post_write_callback_ = result_callback;
+
+  // TODO(gbillock): Insert AV call here in the right validator.
+  BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(post_write_callback_, base::PLATFORM_FILE_OK));
 }
 
 SupportedImageTypeValidator::SupportedImageTypeValidator(

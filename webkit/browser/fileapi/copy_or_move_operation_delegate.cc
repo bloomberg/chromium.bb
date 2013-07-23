@@ -110,12 +110,14 @@ void CopyOrMoveOperationDelegate::DidTryRemoveDestRoot(
   // and operation==MOVE case, probably we can just rename the root directory.
   // http://crbug.com/172187
   StartRecursiveOperation(
-      src_root_, base::Bind(&CopyOrMoveOperationDelegate::DidFinishCopy,
-                            AsWeakPtr(), src_root_, callback_));
+      src_root_, base::Bind(&CopyOrMoveOperationDelegate::DidFinishCopyDir,
+                            AsWeakPtr(), src_root_,
+                            callback_));
 }
 
-void CopyOrMoveOperationDelegate::CopyOrMoveFile(const URLPair& url_pair,
-                                            const StatusCallback& callback) {
+void CopyOrMoveOperationDelegate::CopyOrMoveFile(
+    const URLPair& url_pair,
+    const StatusCallback& callback) {
   // Same filesystem case.
   if (same_file_system_) {
     if (operation_type_ == OPERATION_MOVE) {
@@ -131,7 +133,7 @@ void CopyOrMoveOperationDelegate::CopyOrMoveFile(const URLPair& url_pair,
   // copy_callback which removes the source file if operation_type == MOVE.
   StatusCallback copy_callback =
       base::Bind(&CopyOrMoveOperationDelegate::DidFinishCopy, AsWeakPtr(),
-                 url_pair.src, callback);
+                 url_pair, callback);
   operation_runner()->CreateSnapshotFile(
       url_pair.src,
       base::Bind(&CopyOrMoveOperationDelegate::DidCreateSnapshot, AsWeakPtr(),
@@ -169,7 +171,7 @@ void CopyOrMoveOperationDelegate::DidCreateSnapshot(
 
   validator_.reset(
       factory->CreateCopyOrMoveFileValidator(url_pair.src, platform_path));
-  validator_->StartValidation(
+  validator_->StartPreWriteValidation(
       base::Bind(&CopyOrMoveOperationDelegate::DidValidateFile, AsWeakPtr(),
                  url_pair.dest, callback, file_info, platform_path));
 }
@@ -188,7 +190,7 @@ void CopyOrMoveOperationDelegate::DidValidateFile(
   operation_runner()->CopyInForeignFile(platform_path, dest, callback);
 }
 
-void CopyOrMoveOperationDelegate::DidFinishCopy(
+void CopyOrMoveOperationDelegate::DidFinishCopyDir(
     const FileSystemURL& src,
     const StatusCallback& callback,
     base::PlatformFileError error) {
@@ -198,11 +200,89 @@ void CopyOrMoveOperationDelegate::DidFinishCopy(
     return;
   }
 
-  DCHECK_EQ(OPERATION_MOVE, operation_type_);
+  DCHECK_EQ(operation_type_, OPERATION_MOVE);
 
   // Remove the source for finalizing move operation.
   operation_runner()->Remove(
       src, true /* recursive */,
+      base::Bind(&CopyOrMoveOperationDelegate::DidRemoveSourceForMove,
+                 AsWeakPtr(), callback));
+}
+
+void CopyOrMoveOperationDelegate::DidFinishCopy(
+    const URLPair& url_pair,
+    const StatusCallback& callback,
+    base::PlatformFileError error) {
+  if (error != base::PLATFORM_FILE_OK) {
+    callback.Run(error);
+    return;
+  }
+
+  // |validator_| is NULL in the same-filesystem case or when the destination
+  // filesystem does not do validation.
+  if (!validator_.get()) {
+    scoped_refptr<webkit_blob::ShareableFileReference> file_ref;
+    DidPostWriteValidation(url_pair, callback, file_ref,
+                           base::PLATFORM_FILE_OK);
+    return;
+  }
+
+  DCHECK(!same_file_system_);
+  operation_runner()->CreateSnapshotFile(
+      url_pair.dest,
+      base::Bind(&CopyOrMoveOperationDelegate::DoPostWriteValidation,
+                 AsWeakPtr(), url_pair, callback));
+}
+
+void CopyOrMoveOperationDelegate::DoPostWriteValidation(
+    const URLPair& url_pair,
+    const StatusCallback& callback,
+    base::PlatformFileError error,
+    const base::PlatformFileInfo& file_info,
+    const base::FilePath& platform_path,
+    const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref) {
+  if (error != base::PLATFORM_FILE_OK) {
+    operation_runner()->Remove(
+        url_pair.dest, true,
+        base::Bind(&CopyOrMoveOperationDelegate::DidRemoveDestForError,
+                   AsWeakPtr(), error, callback));
+    return;
+  }
+
+  DCHECK(validator_.get());
+  // Note: file_ref passed here to keep the file alive until after
+  // the StartPostWriteValidation operation finishes.
+  validator_->StartPostWriteValidation(
+      platform_path,
+      base::Bind(&CopyOrMoveOperationDelegate::DidPostWriteValidation,
+                 AsWeakPtr(), url_pair, callback, file_ref));
+}
+
+// |file_ref| is unused; it is passed here to make sure the reference is
+// alive until after post-write validation is complete.
+void CopyOrMoveOperationDelegate::DidPostWriteValidation(
+    const URLPair& url_pair,
+    const StatusCallback& callback,
+    const scoped_refptr<webkit_blob::ShareableFileReference>& /*file_ref*/,
+    base::PlatformFileError error) {
+  if (error != base::PLATFORM_FILE_OK) {
+    operation_runner()->Remove(
+        url_pair.dest, true,
+        base::Bind(&CopyOrMoveOperationDelegate::DidRemoveDestForError,
+                   AsWeakPtr(), error, callback));
+    return;
+  }
+
+  if (operation_type_ == OPERATION_COPY) {
+    callback.Run(error);
+    return;
+  }
+
+  DCHECK_EQ(OPERATION_MOVE, operation_type_);
+
+  // Remove the source for finalizing move operation.
+  operation_runner()->Remove(
+      url_pair.src, true /* recursive */,
       base::Bind(&CopyOrMoveOperationDelegate::DidRemoveSourceForMove,
                  AsWeakPtr(), callback));
 }
@@ -227,6 +307,17 @@ FileSystemURL CopyOrMoveOperationDelegate::CreateDestURL(
       dest_root_.origin(),
       dest_root_.mount_type(),
       relative);
+}
+
+void CopyOrMoveOperationDelegate::DidRemoveDestForError(
+    base::PlatformFileError prior_error,
+    const StatusCallback& callback,
+    base::PlatformFileError error) {
+  if (error != base::PLATFORM_FILE_OK) {
+    VLOG(1) << "Error removing destination file after validation error: "
+            << error;
+  }
+  callback.Run(prior_error);
 }
 
 }  // namespace fileapi

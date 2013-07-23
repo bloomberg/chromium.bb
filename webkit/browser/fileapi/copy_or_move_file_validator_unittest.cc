@@ -18,6 +18,7 @@
 #include "webkit/browser/fileapi/mock_file_system_context.h"
 #include "webkit/browser/fileapi/test_file_system_backend.h"
 #include "webkit/browser/quota/mock_special_storage_policy.h"
+#include "webkit/common/blob/shareable_file_reference.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
 namespace fileapi {
@@ -184,46 +185,61 @@ class TestCopyOrMoveFileValidatorFactory
     : public CopyOrMoveFileValidatorFactory {
  public:
   // A factory that creates validators that accept everything or nothing.
-  explicit TestCopyOrMoveFileValidatorFactory(bool all_valid)
-      : all_valid_(all_valid) {}
+  explicit TestCopyOrMoveFileValidatorFactory(bool all_valid,
+                                              bool all_valid_write)
+      : all_valid_(all_valid),
+        all_valid_write_(all_valid_write) {}
   virtual ~TestCopyOrMoveFileValidatorFactory() {}
 
   virtual CopyOrMoveFileValidator* CreateCopyOrMoveFileValidator(
       const FileSystemURL& /*src_url*/,
       const base::FilePath& /*platform_path*/) OVERRIDE {
-    return new TestCopyOrMoveFileValidator(all_valid_);
+    return new TestCopyOrMoveFileValidator(all_valid_, all_valid_write_);
   }
 
  private:
   class TestCopyOrMoveFileValidator : public CopyOrMoveFileValidator {
    public:
-    explicit TestCopyOrMoveFileValidator(bool all_valid)
-        : result_(all_valid ? base::PLATFORM_FILE_OK
-                            : base::PLATFORM_FILE_ERROR_SECURITY) {
+    explicit TestCopyOrMoveFileValidator(bool pre_copy_valid,
+                                         bool post_copy_valid)
+        : result_(pre_copy_valid ? base::PLATFORM_FILE_OK
+                                 : base::PLATFORM_FILE_ERROR_SECURITY),
+          write_result_(post_copy_valid ? base::PLATFORM_FILE_OK
+                                        : base::PLATFORM_FILE_ERROR_SECURITY) {
     }
     virtual ~TestCopyOrMoveFileValidator() {}
 
-    virtual void StartValidation(
+    virtual void StartPreWriteValidation(
         const ResultCallback& result_callback) OVERRIDE {
       // Post the result since a real validator must do work asynchronously.
       base::MessageLoop::current()->PostTask(
           FROM_HERE, base::Bind(result_callback, result_));
     }
 
+    virtual void StartPostWriteValidation(
+        const base::FilePath& dest_platform_path,
+        const ResultCallback& result_callback) OVERRIDE {
+      // Post the result since a real validator must do work asynchronously.
+      base::MessageLoop::current()->PostTask(
+          FROM_HERE, base::Bind(result_callback, write_result_));
+    }
+
    private:
     base::PlatformFileError result_;
+    base::PlatformFileError write_result_;
 
     DISALLOW_COPY_AND_ASSIGN(TestCopyOrMoveFileValidator);
   };
 
   bool all_valid_;
+  bool all_valid_write_;
 
   DISALLOW_COPY_AND_ASSIGN(TestCopyOrMoveFileValidatorFactory);
 };
 
 }  // namespace
 
-TEST(CopyOrMoveFileValidatorTest, NoValidatorWithin6ameFSType) {
+TEST(CopyOrMoveFileValidatorTest, NoValidatorWithinSameFSType) {
   // Within a file system type, validation is not expected, so it should
   // work for kWithValidatorType without a validator set.
   CopyOrMoveFileValidatorTestHelper helper(GURL("http://foo"),
@@ -236,7 +252,7 @@ TEST(CopyOrMoveFileValidatorTest, NoValidatorWithin6ameFSType) {
 
 TEST(CopyOrMoveFileValidatorTest, MissingValidator) {
   // Copying or moving into a kWithValidatorType requires a file
-  // validator.  An error is expect if copy is attempted without a validator.
+  // validator.  An error is expected if copy is attempted without a validator.
   CopyOrMoveFileValidatorTestHelper helper(GURL("http://foo"),
                                            kNoValidatorType,
                                            kWithValidatorType);
@@ -251,7 +267,7 @@ TEST(CopyOrMoveFileValidatorTest, AcceptAll) {
                                            kWithValidatorType);
   helper.SetUp();
   scoped_ptr<CopyOrMoveFileValidatorFactory> factory(
-      new TestCopyOrMoveFileValidatorFactory(true /*accept_all*/));
+      new TestCopyOrMoveFileValidatorFactory(true, true /*accept_all*/));
   helper.SetMediaCopyOrMoveFileValidatorFactory(factory.Pass());
 
   helper.CopyTest(base::PLATFORM_FILE_OK);
@@ -264,7 +280,7 @@ TEST(CopyOrMoveFileValidatorTest, AcceptNone) {
                                            kWithValidatorType);
   helper.SetUp();
   scoped_ptr<CopyOrMoveFileValidatorFactory> factory(
-      new TestCopyOrMoveFileValidatorFactory(false /*accept_all*/));
+      new TestCopyOrMoveFileValidatorFactory(false, false /*accept_all*/));
   helper.SetMediaCopyOrMoveFileValidatorFactory(factory.Pass());
 
   helper.CopyTest(base::PLATFORM_FILE_ERROR_SECURITY);
@@ -278,12 +294,26 @@ TEST(CopyOrMoveFileValidatorTest, OverrideValidator) {
                                            kWithValidatorType);
   helper.SetUp();
   scoped_ptr<CopyOrMoveFileValidatorFactory> reject_factory(
-      new TestCopyOrMoveFileValidatorFactory(false /*accept_all*/));
+      new TestCopyOrMoveFileValidatorFactory(false, false /*accept_all*/));
   helper.SetMediaCopyOrMoveFileValidatorFactory(reject_factory.Pass());
 
   scoped_ptr<CopyOrMoveFileValidatorFactory> accept_factory(
-      new TestCopyOrMoveFileValidatorFactory(true /*accept_all*/));
+      new TestCopyOrMoveFileValidatorFactory(true, true /*accept_all*/));
   helper.SetMediaCopyOrMoveFileValidatorFactory(accept_factory.Pass());
+
+  helper.CopyTest(base::PLATFORM_FILE_ERROR_SECURITY);
+  helper.MoveTest(base::PLATFORM_FILE_ERROR_SECURITY);
+}
+
+TEST(CopyOrMoveFileValidatorTest, RejectPostWrite) {
+  CopyOrMoveFileValidatorTestHelper helper(GURL("http://foo"),
+                                           kNoValidatorType,
+                                           kWithValidatorType);
+  helper.SetUp();
+  scoped_ptr<CopyOrMoveFileValidatorFactory> factory(
+      // accept pre-copy, reject post-copy
+      new TestCopyOrMoveFileValidatorFactory(true, false));
+  helper.SetMediaCopyOrMoveFileValidatorFactory(factory.Pass());
 
   helper.CopyTest(base::PLATFORM_FILE_ERROR_SECURITY);
   helper.MoveTest(base::PLATFORM_FILE_ERROR_SECURITY);

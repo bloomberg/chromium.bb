@@ -13,12 +13,14 @@
 #include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/fileapi/async_file_test_helper.h"
+#include "webkit/browser/fileapi/copy_or_move_file_validator.h"
 #include "webkit/browser/fileapi/file_system_backend.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_operation.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/mock_file_system_context.h"
 #include "webkit/browser/fileapi/test_file_set.h"
+#include "webkit/browser/fileapi/test_file_system_backend.h"
 #include "webkit/browser/quota/mock_quota_manager.h"
 #include "webkit/browser/quota/quota_manager.h"
 #include "webkit/common/fileapi/file_system_util.h"
@@ -34,6 +36,61 @@ void ExpectOk(const GURL& origin_url,
               base::PlatformFileError error) {
   ASSERT_EQ(base::PLATFORM_FILE_OK, error);
 }
+
+class TestValidatorFactory : public CopyOrMoveFileValidatorFactory {
+ public:
+  // A factory that creates validators that accept everything or nothing.
+  TestValidatorFactory() {}
+  virtual ~TestValidatorFactory() {}
+
+  virtual CopyOrMoveFileValidator* CreateCopyOrMoveFileValidator(
+      const FileSystemURL& /*src_url*/,
+      const base::FilePath& /*platform_path*/) OVERRIDE {
+    return new TestValidator(true, true, std::string("2"));
+  }
+
+ private:
+  class TestValidator : public CopyOrMoveFileValidator {
+   public:
+    explicit TestValidator(bool pre_copy_valid,
+                           bool post_copy_valid,
+                           const std::string& reject_string)
+        : result_(pre_copy_valid ? base::PLATFORM_FILE_OK
+                                 : base::PLATFORM_FILE_ERROR_SECURITY),
+          write_result_(post_copy_valid ? base::PLATFORM_FILE_OK
+                                        : base::PLATFORM_FILE_ERROR_SECURITY),
+          reject_string_(reject_string) {
+    }
+    virtual ~TestValidator() {}
+
+    virtual void StartPreWriteValidation(
+        const ResultCallback& result_callback) OVERRIDE {
+      // Post the result since a real validator must do work asynchronously.
+      base::MessageLoop::current()->PostTask(
+          FROM_HERE, base::Bind(result_callback, result_));
+    }
+
+    virtual void StartPostWriteValidation(
+        const base::FilePath& dest_platform_path,
+        const ResultCallback& result_callback) OVERRIDE {
+      base::PlatformFileError result = write_result_;
+      std::string unsafe = dest_platform_path.BaseName().AsUTF8Unsafe();
+      if (unsafe.find(reject_string_) != std::string::npos) {
+        result = base::PLATFORM_FILE_ERROR_SECURITY;
+      }
+      // Post the result since a real validator must do work asynchronously.
+      base::MessageLoop::current()->PostTask(
+          FROM_HERE, base::Bind(result_callback, result));
+    }
+
+   private:
+    base::PlatformFileError result_;
+    base::PlatformFileError write_result_;
+    std::string reject_string_;
+
+    DISALLOW_COPY_AND_ASSIGN(TestValidator);
+  };
+};
 
 }  // namespace
 
@@ -79,6 +136,14 @@ class CopyOrMoveOperationTestHelper {
         base::Bind(&ExpectOk));
     mount_point_provider =
         file_system_context_->GetFileSystemBackend(dest_type_);
+    if (dest_type_ == kFileSystemTypeTest) {
+      TestFileSystemBackend* test_provider =
+          static_cast<TestFileSystemBackend*>(mount_point_provider);
+      scoped_ptr<CopyOrMoveFileValidatorFactory> factory(
+          new TestValidatorFactory);
+      test_provider->set_require_copy_or_move_validator(true);
+      test_provider->InitializeCopyOrMoveFileValidatorFactory(factory.Pass());
+    }
     mount_point_provider->InitializeFileSystem(
         origin_, dest_type_,
         OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
@@ -154,10 +219,11 @@ class CopyOrMoveOperationTestHelper {
       const test::TestCaseRecord* const test_cases,
       size_t test_case_size) {
     std::map<base::FilePath, const test::TestCaseRecord*> test_case_map;
-    for (size_t i = 0; i < test_case_size; ++i)
+    for (size_t i = 0; i < test_case_size; ++i) {
       test_case_map[
           base::FilePath(test_cases[i].path).NormalizePathSeparators()] =
               &test_cases[i];
+    }
 
     std::queue<FileSystemURL> directories;
     FileEntryList entries;
@@ -186,6 +252,10 @@ class CopyOrMoveOperationTestHelper {
       }
     }
     EXPECT_TRUE(test_case_map.empty());
+    std::map<base::FilePath, const test::TestCaseRecord*>::const_iterator it;
+    for (it = test_case_map.begin(); it != test_case_map.end(); ++it) {
+      LOG(ERROR) << "Extra entry: " << it->first.LossyDisplayName();
+    }
   }
 
   base::PlatformFileError ReadDirectory(const FileSystemURL& url,
@@ -428,6 +498,40 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, MoveDirectory) {
 
   int64 dest_increase = helper.GetDestUsage() - dest_initial_usage;
   ASSERT_EQ(src_increase, dest_increase);
+}
+
+TEST(LocalFileSystemCopyOrMoveOperationTest,
+     MoveDirectoryFailPostWriteValidation) {
+  CopyOrMoveOperationTestHelper helper(GURL("http://foo"),
+                                       kFileSystemTypeTemporary,
+                                       kFileSystemTypeTest);
+  helper.SetUp();
+
+  FileSystemURL src = helper.SourceURL("a");
+  FileSystemURL dest = helper.DestURL("b");
+
+  // Set up a source directory.
+  ASSERT_EQ(base::PLATFORM_FILE_OK, helper.CreateDirectory(src));
+  ASSERT_EQ(base::PLATFORM_FILE_OK,
+            helper.SetUpTestCaseFiles(src,
+                                      test::kRegularTestCases,
+                                      test::kRegularTestCaseSize));
+
+  // Move it.
+  helper.Move(src, dest);
+
+  // Verify.
+  ASSERT_TRUE(helper.DirectoryExists(src));
+  ASSERT_TRUE(helper.DirectoryExists(dest));
+
+  test::TestCaseRecord kMoveDirResultCases[] = {
+    {false, FILE_PATH_LITERAL("file 0"), 38},
+    {false, FILE_PATH_LITERAL("file 3"), 0},
+  };
+
+  helper.VerifyTestCaseFiles(dest,
+                             kMoveDirResultCases,
+                             arraysize(kMoveDirResultCases));
 }
 
 }  // namespace fileapi
