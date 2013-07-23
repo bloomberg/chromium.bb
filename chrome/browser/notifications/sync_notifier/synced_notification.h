@@ -71,6 +71,7 @@ class SyncedNotification : public NotificationBitmapFetcherDelegate {
   size_t GetButtonCount() const;
   std::string GetContainedNotificationTitle(int index) const;
   std::string GetContainedNotificationMessage(int index) const;
+  std::string GetSendingServiceId() const;
 
 
   bool EqualsIgnoringReadState(const SyncedNotification& other) const;

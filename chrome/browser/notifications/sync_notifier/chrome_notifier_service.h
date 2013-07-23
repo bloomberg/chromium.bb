@@ -98,6 +98,7 @@ class ChromeNotifierService : public syncer::SyncableService,
   Profile* const profile_;
   NotificationUIManager* const notification_manager_;
   scoped_ptr<syncer::SyncChangeProcessor> sync_processor_;
+  std::vector<std::string> enabled_sending_services_;
   static bool avoid_bitmap_fetching_for_test_;
 
   // TODO(petewil): Consider whether a map would better suit our data.

@@ -22,6 +22,13 @@
 namespace {
 const char kExtensionScheme[] = "chrome-extension://";
 
+// The name of our first synced notification service.
+// TODO(petewil): remove this hardcoding once we have the synced notification
+// signalling sync data type set up to provide this.
+// crbug.com/248337
+const char kFirstSyncedNotificationServiceId[] = "Google+";
+
+
 // Today rich notifications only supports two buttons, make sure we don't
 // try to supply them with more than this number of buttons.
 const unsigned int kMaxNotificationButtonIndex = 2;
@@ -470,7 +477,9 @@ int SyncedNotification::GetPriority() const {
     return message_center::DEFAULT_PRIORITY;
   } else if (protobuf_priority ==
              sync_pb::CoalescedSyncedNotification_Priority_HIGH) {
-    return message_center::HIGH_PRIORITY;
+    // High priority synced notifications are considered default priority in
+    // Chrome.
+    return message_center::DEFAULT_PRIORITY;
   } else {
     // Complain if this is a new priority we have not seen before.
     DCHECK(protobuf_priority <
@@ -573,6 +582,14 @@ std::string SyncedNotification::GetContainedNotificationMessage(
 
   return specifics_.coalesced_notification().render_info().expanded_info().
       collapsed_info(index).simple_collapsed_layout().description();
+}
+
+std::string SyncedNotification::GetSendingServiceId() const {
+  // TODO(petewil): We are building a new protocol (a new sync datatype) to send
+  // the service name and icon from the server.  For now this method is
+  // hardcoded to the name of our first service using synced notifications.
+  // Once the new protocol is built, remove this hardcoding.
+  return kFirstSyncedNotificationServiceId;
 }
 
 }  // namespace notifier

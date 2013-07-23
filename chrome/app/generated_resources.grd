@@ -15738,6 +15738,11 @@ Do you accept?
       More Apps
     </message>
 
+    <!-- Synced Notification display strings -->
+    <message name="IDS_FIRST_SYNCED_NOTIFICATION_SERVICE_NAME" desc="The name of the first service source for synced notifications.">
+      Google+
+    </message>
+
     </messages>
 
     <structures fallback_to_english="true">

@@ -8,12 +8,16 @@
 
 #include "chrome/browser/notifications/sync_notifier/chrome_notifier_service.h"
 
+#include <string>
+#include <vector>
+
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/profiles/profile.h"
-#include "grit/ui_strings.h"
+#include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_change_processor.h"
 #include "sync/api/sync_error_factory.h"
@@ -21,13 +25,14 @@
 #include "sync/protocol/synced_notification_specifics.pb.h"
 #include "third_party/WebKit/public/web/WebTextDirection.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/message_center/notifier_settings.h"
 #include "url/gurl.h"
 
 namespace notifier {
 namespace {
 
-const char kSampleSyncedNotificationServiceId[] = "sample-synced-service";
+const char kFirstSyncedNotificationServiceId[] = "Google+";
 
 }
 
@@ -35,7 +40,8 @@ bool ChromeNotifierService::avoid_bitmap_fetching_for_test_ = false;
 
 ChromeNotifierService::ChromeNotifierService(Profile* profile,
                                              NotificationUIManager* manager)
-    : profile_(profile), notification_manager_(manager) {}
+    : profile_(profile), notification_manager_(manager) {
+}
 ChromeNotifierService::~ChromeNotifierService() {}
 
 // Methods from BrowserContextKeyedService.
@@ -270,20 +276,31 @@ void ChromeNotifierService::GetSyncedNotificationServices(
   // TODO(mukai|petewil): Check the profile's eligibility before adding the
   // sample app.
 
-  // Currently we just use kSampleSyncedNotificationServiceId as a place holder.
-  // TODO(petewil): Really obtain the list of apps from the server and create
-  // the list of ids here.
+  // TODO(petewil): Really obtain the list of synced notification sending
+  // services from the server and create the list of ids here.  Until then, we
+  // are hardcoding the service names.  Once that is done, remove this
+  // hardcoding.
+  // crbug.com/248337
   DesktopNotificationService* desktop_notification_service =
       DesktopNotificationServiceFactory::GetForProfile(profile_);
   message_center::NotifierId notifier_id(
       message_center::NotifierId::SYNCED_NOTIFICATION_SERVICE,
-      kSampleSyncedNotificationServiceId);
-  notifiers->push_back(new message_center::Notifier(
+      kFirstSyncedNotificationServiceId);
+  message_center::Notifier* notifier_service = new message_center::Notifier(
       notifier_id,
       l10n_util::GetStringUTF16(
-          IDS_MESSAGE_CENTER_SAMPLE_SYNCED_NOTIFICATION_SERVICE_NAME),
-      desktop_notification_service->IsNotifierEnabled(notifier_id)));
-  // TODO(mukai): Add icon for the sample app.
+          IDS_FIRST_SYNCED_NOTIFICATION_SERVICE_NAME),
+      desktop_notification_service->IsNotifierEnabled(notifier_id));
+
+  // Add icons for our sending services.
+  // TODO(petewil): Replace this temporary hardcoding with a new sync datatype
+  // to dynamically get the name and icon for each synced notification sending
+  // service.  Until then, we use hardcoded service icons for all services.
+  // crbug.com/248337
+  notifier_service->icon = ui::ResourceBundle::GetSharedInstance().
+      GetImageNamed(IDR_TEMPORARY_GOOGLE_PLUS_ICON);
+
+  notifiers->push_back(notifier_service);
 }
 
 void ChromeNotifierService::MarkNotificationAsDismissed(
@@ -311,6 +328,15 @@ void ChromeNotifierService::Add(scoped_ptr<SyncedNotification> notification) {
   // Take ownership of the object and put it into our local storage.
   notification_data_.push_back(notification.release());
 
+  // If the user is not interested in this type of notification, ignore it.
+  std::vector<std::string>::iterator iter =
+      find(enabled_sending_services_.begin(),
+           enabled_sending_services_.end(),
+           notification_copy->GetSendingServiceId());
+  if (iter == enabled_sending_services_.end()) {
+    return;
+  }
+
   Display(notification_copy);
 }
 
@@ -320,6 +346,7 @@ void ChromeNotifierService::AddForTest(
   }
 
 void ChromeNotifierService::Display(SyncedNotification* notification) {
+
   // Set up to fetch the bitmaps.
   notification->QueueBitmapFetchJobs(notification_manager_,
                                           this,
@@ -337,7 +364,23 @@ void ChromeNotifierService::Display(SyncedNotification* notification) {
 
 void ChromeNotifierService::OnSyncedNotificationServiceEnabled(
     const std::string& notifier_id, bool enabled) {
-  // TODO(petewil): start/stop syncing
+  std::vector<std::string>::iterator iter;
+
+  iter = find(enabled_sending_services_.begin(),
+              enabled_sending_services_.end(),
+              notifier_id);
+
+  // Add the notifier_id if it is enabled and not already there.
+  if (iter == enabled_sending_services_.end() && enabled) {
+    enabled_sending_services_.push_back(notifier_id);
+    // TODO(petewil) Check now for any outstanding notifications.
+  // Remove the notifier_id if it is disabled and present.
+  } else if (iter != enabled_sending_services_.end() && !enabled) {
+    enabled_sending_services_.erase(iter);
+  }
+
+  // Otherwise, nothing to do, we can exit.
+  return;
 }
 
 }  // namespace notifier
