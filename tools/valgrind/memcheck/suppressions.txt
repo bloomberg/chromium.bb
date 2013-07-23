@@ -7379,4 +7379,12 @@
    fun:_ZN15webkit_database15DatabaseTracker23GetAllOriginIdentifiersEPSt6vectorISsSaISsEE
    fun:_ZN15webkit_database12_GLOBAL__N_120GetOriginsOnDBThreadEPNS_15DatabaseTrackerEPSt3setI4GURLSt4lessIS4_ESaIS4_EE
 }
-
+{
+   bug_263315
+   Memcheck:Uninitialized
+   ...
+   fun:snprintf
+   ...
+   fun:_ZN7testing13PrintToStringIN5media12_GLOBAL__N_112TestScenarioEEESsRKT_
+   fun:_ZN7testing8internal25ParameterizedTestCaseInfoIN5media21AudioPowerMonitorTestEE13RegisterTestsEv
+}
