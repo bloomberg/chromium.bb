@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/file_util.h"
-#include "base/process.h"
+#include "base/process/process_handle.h"
 #include "net/test/spawned_test_server/base_test_server.h"
 
 #if defined(OS_WIN)

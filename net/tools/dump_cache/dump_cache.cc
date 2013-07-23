@@ -10,7 +10,6 @@
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
-#include "base/process_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -19,6 +18,7 @@
 #include "net/tools/dump_cache/simple_cache_dumper.h"
 
 #if defined(OS_WIN)
+#include "base/process/launch.h"
 #include "base/win/scoped_handle.h"
 #include "net/tools/dump_cache/upgrade_win.h"
 #endif

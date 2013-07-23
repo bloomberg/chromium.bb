@@ -31,7 +31,7 @@
 #include "base/i18n/icu_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
-#include "base/process_util.h"
+#include "base/process/memory.h"
 #include "net/tools/tld_cleanup/tld_cleanup_util.h"
 
 int main(int argc, const char* argv[]) {
