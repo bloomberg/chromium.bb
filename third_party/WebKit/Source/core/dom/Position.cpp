@@ -852,6 +852,7 @@ ContainerNode* Position::findParent(const Node* node)
     return node->parentNode();
 }
 
+#if ENABLE(USERSELECT_ALL)
 bool Position::nodeIsUserSelectAll(const Node* node)
 {
     return node && node->renderer() && node->renderer()->style()->userSelect() == SELECT_ALL;
@@ -878,6 +879,7 @@ Node* Position::rootUserSelectAllForNode(Node* node)
     }
     return candidateRoot;
 }
+#endif
 
 bool Position::isCandidate() const
 {
