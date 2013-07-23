@@ -63,6 +63,7 @@ namespace {
 static const char kDataFile[] = "targets-data.json";
 static const char kAdbPages[] = "adb-pages";
 
+static const char kAppTargetType[] = "app";
 static const char kExtensionTargetType[]  = "extension";
 static const char kPageTargetType[]  = "page";
 static const char kWorkerTargetType[]  = "worker";
@@ -138,7 +139,12 @@ DictionaryValue* BuildTargetDescriptor(RenderViewHost* rvh, bool is_tab) {
       const extensions::Extension* extension = extension_service->
           extensions()->GetByID(url.host());
       if (extension) {
-        target_type = kExtensionTargetType;
+        if (extension->is_hosted_app()
+            || extension->is_legacy_packaged_app()
+            || extension->is_platform_app())
+          target_type = kAppTargetType;
+        else
+          target_type = kExtensionTargetType;
         title = extension->name();
       }
     }

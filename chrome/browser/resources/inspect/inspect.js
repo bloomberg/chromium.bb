@@ -63,6 +63,7 @@ function populateLists() {
 
   removeChildren('pages');
   removeChildren('extensions');
+  removeChildren('apps');
   removeChildren('workers');
   removeChildren('others');
 
@@ -73,6 +74,8 @@ function populateLists() {
       addToWorkersList(data[i]);
     else if (data[i].type === 'extension')
       addToExtensionsList(data[i]);
+    else if (data[i].type === 'app')
+      addToAppsList(data[i]);
     else
       addToOthersList(data[i]);
   }
@@ -133,6 +136,10 @@ function addToPagesList(data) {
 
 function addToExtensionsList(data) {
   addTargetToList(data, 'extensions', ['name', 'url']);
+}
+
+function addToAppsList(data) {
+  addTargetToList(data, 'apps', ['name', 'url']);
 }
 
 function addToWorkersList(data) {
