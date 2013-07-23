@@ -85,11 +85,9 @@ void WebDataSourceImpl::redirectChain(WebVector<WebURL>& result) const
     result.assign(m_redirectChain);
 }
 
-// FIXME: isClientRedirect() actually means something slightly different, but its external caller depends on
-// that wrong definition. Once that caller is updated, this can change to return DocumentLoader::isClientRedirect().
 bool WebDataSourceImpl::isClientRedirect() const
 {
-    return DocumentLoader::replacesCurrentHistoryItem();
+    return DocumentLoader::isClientRedirect();
 }
 
 bool WebDataSourceImpl::replacesCurrentHistoryItem() const
