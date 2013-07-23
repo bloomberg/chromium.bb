@@ -260,7 +260,10 @@ private:
 
     SubstituteData defaultSubstituteDataForURL(const KURL&);
     
-    bool fireBeforeUnloadEvent(Chrome&);
+    bool fireBeforeUnloadEvent(Chrome&, FrameLoader*);
+    bool hasAllowedNavigationViaBeforeUnloadConfirmationPanel() const { return m_hasAllowedNavigationViaBeforeUnloadConfirmationPanel; }
+    void didAllowNavigationViaBeforeUnloadConfirmationPanel() { m_hasAllowedNavigationViaBeforeUnloadConfirmationPanel = true; }
+    void clearAllowNavigationViaBeforeUnloadConfirmationPanel() { m_hasAllowedNavigationViaBeforeUnloadConfirmationPanel = false; }
 
     void checkNavigationPolicyAndContinueLoad(PassRefPtr<FormState>, FrameLoadType);
     void checkNavigationPolicyAndContinueFragmentScroll(const NavigationAction&, bool isNewNavigation);
@@ -358,6 +361,8 @@ private:
     bool m_startingClientRedirect;
 
     SandboxFlags m_forcedSandboxFlags;
+
+    bool m_hasAllowedNavigationViaBeforeUnloadConfirmationPanel;
 
     RefPtr<HistoryItem> m_requestedHistoryItem;
 };

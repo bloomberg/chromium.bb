@@ -176,6 +176,7 @@ FrameLoader::FrameLoader(Frame* frame, FrameLoaderClient* client)
     , m_suppressOpenerInNewFrame(false)
     , m_startingClientRedirect(false)
     , m_forcedSandboxFlags(SandboxNone)
+    , m_hasAllowedNavigationViaBeforeUnloadConfirmationPanel(false)
 {
 }
 
@@ -1266,6 +1267,8 @@ void FrameLoader::transitionToCommitted()
     if (m_state != FrameStateProvisional)
         return;
 
+    clearAllowNavigationViaBeforeUnloadConfirmationPanel();
+
     if (FrameView* view = m_frame->view()) {
         if (ScrollAnimator* scrollAnimator = view->existingScrollAnimator())
             scrollAnimator->cancelAnimations();
@@ -1823,7 +1826,7 @@ bool FrameLoader::shouldClose()
         for (i = 0; i < targetFrames.size(); i++) {
             if (!targetFrames[i]->tree()->isDescendantOf(m_frame))
                 continue;
-            if (!targetFrames[i]->loader()->fireBeforeUnloadEvent(page->chrome()))
+            if (!targetFrames[i]->loader()->fireBeforeUnloadEvent(page->chrome(), this))
                 break;
         }
 
@@ -1837,7 +1840,7 @@ bool FrameLoader::shouldClose()
     return shouldClose;
 }
 
-bool FrameLoader::fireBeforeUnloadEvent(Chrome& chrome)
+bool FrameLoader::fireBeforeUnloadEvent(Chrome& chrome, FrameLoader* navigatingFrameLoader)
 {
     DOMWindow* domWindow = m_frame->domWindow();
     if (!domWindow)
@@ -1857,8 +1860,17 @@ bool FrameLoader::fireBeforeUnloadEvent(Chrome& chrome)
     if (beforeUnloadEvent->result().isNull())
         return true;
 
+    if (navigatingFrameLoader->hasAllowedNavigationViaBeforeUnloadConfirmationPanel()) {
+        m_frame->document()->addConsoleMessage(JSMessageSource, ErrorMessageLevel, "Blocked attempt to show multiple 'beforeunload' confirmation panels for a single navigation.");
+        return true;
+    }
+
     String text = document->displayStringModifiedByEncoding(beforeUnloadEvent->result());
-    return chrome.runBeforeUnloadConfirmPanel(text, m_frame);
+    if (chrome.runBeforeUnloadConfirmPanel(text, m_frame)) {
+        navigatingFrameLoader->didAllowNavigationViaBeforeUnloadConfirmationPanel();
+        return true;
+    }
+    return false;
 }
 
 void FrameLoader::checkNavigationPolicyAndContinueLoad(PassRefPtr<FormState> formState, FrameLoadType type)
