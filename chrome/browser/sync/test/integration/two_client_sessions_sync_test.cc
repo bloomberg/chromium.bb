@@ -43,13 +43,11 @@ static const char* kURL2 = "http://127.0.0.1/bubba2";
 #define MAYBE_SingleClientEnabledEncryptionAndChanged DISABLED_SingleClientEnabledEncryptionAndChanged
 #define MAYBE_BothChanged DISABLED_BothChanged
 #define MAYBE_DeleteIdleSession DISABLED_DeleteIdleSession
-#define MAYBE_DeleteActiveSession DISABLED_DeleteActiveSession
 #else
 #define MAYBE_SingleClientChanged SingleClientChanged
 #define MAYBE_SingleClientEnabledEncryptionAndChanged SingleClientEnabledEncryptionAndChanged
 #define MAYBE_BothChanged BothChanged
 #define MAYBE_DeleteIdleSession DeleteIdleSession
-#define MAYBE_DeleteActiveSession DeleteActiveSession
 #endif
 
 
@@ -188,7 +186,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest, MAYBE_DeleteIdleSession) {
   ASSERT_FALSE(GetSessionData(1, &sessions1));
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest, MAYBE_DeleteActiveSession) {
+// Fails all release trybots. crbug.com/263369.
+IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
+                       DISABLED_DeleteActiveSession) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   ASSERT_TRUE(CheckInitialState(0));
