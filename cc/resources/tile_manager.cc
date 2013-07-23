@@ -54,7 +54,26 @@ inline ManagedTileBin BinFromTilePriority(const TilePriority& prio,
   return EVENTUALLY_BIN;
 }
 
+// Limit to the number of raster tasks that can be scheduled.
+// This is high enough to not cause unnecessary scheduling but
+// gives us an insurance that we're not spending a huge amount
+// of time scheduling one enormous set of tasks.
+const size_t kMaxRasterTasks = 256u;
+
 }  // namespace
+
+RasterTaskCompletionStats::RasterTaskCompletionStats()
+    : completed_count(0u),
+      canceled_count(0u) {
+}
+
+scoped_ptr<base::Value> RasterTaskCompletionStatsAsValue(
+    const RasterTaskCompletionStats& stats) {
+  scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue());
+  state->SetInteger("completed_count", stats.completed_count);
+  state->SetInteger("canceled_count", stats.canceled_count);
+  return state.PassAs<base::Value>();
+}
 
 // static
 scoped_ptr<TileManager> TileManager::Create(
@@ -86,8 +105,9 @@ TileManager::TileManager(
     : client_(client),
       resource_pool_(ResourcePool::Create(resource_provider)),
       raster_worker_pool_(raster_worker_pool.Pass()),
-      all_tiles_required_for_activation_have_been_initialized_(true),
+      all_tiles_that_need_to_be_rasterized_have_memory_(true),
       all_tiles_required_for_activation_have_memory_(true),
+      all_tiles_required_for_activation_have_been_initialized_(true),
       ever_exceeded_memory_budget_(false),
       rendering_stats_instrumentation_(rendering_stats_instrumentation),
       did_initialize_visible_tile_(false),
@@ -144,7 +164,7 @@ void TileManager::DidFinishRunningTasks() {
 
   // When OOM, keep re-assigning memory until we reach a steady state
   // where top-priority tiles are initialized.
-  if (!memory_stats_from_last_assign_.bytes_over)
+  if (all_tiles_that_need_to_be_rasterized_have_memory_)
     return;
 
   raster_worker_pool_->CheckForCompletedTasks();
@@ -172,7 +192,6 @@ void TileManager::DidFinishRunningTasks() {
       tile_version.set_rasterize_on_demand();
   }
 
-  DCHECK(all_tiles_required_for_activation_have_been_initialized_);
   client_->NotifyReadyToActivate();
 }
 
@@ -342,13 +361,21 @@ void TileManager::ManageTiles() {
   ScheduleTasks(tiles_that_need_to_be_rasterized);
 }
 
-void TileManager::CheckForCompletedTileUploads() {
+bool TileManager::UpdateVisibleTiles() {
+  TRACE_EVENT0("cc", "TileManager::UpdateVisibleTiles");
+
   raster_worker_pool_->CheckForCompletedTasks();
 
-  if (did_initialize_visible_tile_) {
-    client_->DidInitializeVisibleTile();
-    did_initialize_visible_tile_ = false;
-  }
+  TRACE_EVENT_INSTANT1(
+      "cc", "DidUpdateVisibleTiles", TRACE_EVENT_SCOPE_THREAD,
+      "stats", TracedValue::FromValue(
+          RasterTaskCompletionStatsAsValue(
+              update_visible_tiles_stats_).release()));
+  update_visible_tiles_stats_ = RasterTaskCompletionStats();
+
+  bool did_initialize_visible_tile = did_initialize_visible_tile_;
+  did_initialize_visible_tile_ = false;
+  return did_initialize_visible_tile;
 }
 
 void TileManager::GetMemoryStats(
@@ -437,10 +464,6 @@ void TileManager::AssignGpuMemoryToTiles(
     TileVector* tiles_that_need_to_be_rasterized) {
   TRACE_EVENT0("cc", "TileManager::AssignGpuMemoryToTiles");
 
-  // Reset activation tiles flag, to ensure we can activate
-  // if we don't have any required-for-activation tiles here.
-  all_tiles_required_for_activation_have_been_initialized_ = true;
-
   // Now give memory out to the tiles until we're out, and build
   // the needs-to-be-rasterized queue.
   size_t bytes_releasable = 0;
@@ -455,7 +478,9 @@ void TileManager::AssignGpuMemoryToTiles(
     }
   }
 
+  all_tiles_that_need_to_be_rasterized_have_memory_ = true;
   all_tiles_required_for_activation_have_memory_ = true;
+  all_tiles_required_for_activation_have_been_initialized_ = true;
 
   // Cast to prevent overflow.
   int64 bytes_available =
@@ -468,8 +493,7 @@ void TileManager::AssignGpuMemoryToTiles(
 
   size_t bytes_that_exceeded_memory_budget = 0;
   size_t bytes_left = bytes_allocatable;
-  size_t bytes_oom_tiles_that_need_to_be_initialized_for_activation = 0;
-  bool higher_priority_tile_oomed = false;
+  bool oomed = false;
   for (TileRefVector::const_iterator it = sorted_tiles.begin();
        it != sorted_tiles.end();
        ++it) {
@@ -499,59 +523,56 @@ void TileManager::AssignGpuMemoryToTiles(
         tile_bytes += tile->bytes_consumed_if_allocated();
     }
 
-    // If we don't have the required version, and it's not in flight
-    // then we'll have to pay to create a new task.
-    if (!tile_version.resource_ && tile_version.raster_task_.is_null())
-      tile_bytes += tile->bytes_consumed_if_allocated();
+    // Allow lower priority tiles with initialized resources to keep
+    // their memory by only assigning memory to new raster tasks if
+    // they can be scheduled.
+    if (tiles_that_need_to_be_rasterized->size() < kMaxRasterTasks) {
+      // If we don't have the required version, and it's not in flight
+      // then we'll have to pay to create a new task.
+      if (!tile_version.resource_ && tile_version.raster_task_.is_null())
+        tile_bytes += tile->bytes_consumed_if_allocated();
+    }
 
     // Tile is OOM.
     if (tile_bytes > bytes_left) {
-      if (tile->required_for_activation()) {
-        // Immediately mark tiles for on-demand raster once the amount
-        // of memory for oom tiles required for activation exceeds our
-        // memory limit.
-        if (bytes_oom_tiles_that_need_to_be_initialized_for_activation <
-            global_state_.memory_limit_in_bytes) {
-          all_tiles_required_for_activation_have_memory_ = false;
-          bytes_oom_tiles_that_need_to_be_initialized_for_activation +=
-              tile_bytes;
-        } else {
-          tile_version.set_rasterize_on_demand();
-        }
-      }
       FreeResourcesForTile(tile);
 
-      // This tile was already on screen and now its resoruces have been
+      // This tile was already on screen and now its resources have been
       // released. In order to prevent checkerboarding, set this tile as
       // rasterize on demand immediately.
       if (mts.visible_and_ready_to_draw)
         tile_version.set_rasterize_on_demand();
 
-      higher_priority_tile_oomed = true;
+      oomed = true;
       bytes_that_exceeded_memory_budget += tile_bytes;
-      continue;
+    } else {
+      bytes_left -= tile_bytes;
+
+      if (tile_version.resource_)
+        continue;
     }
 
-    bytes_left -= tile_bytes;
+    DCHECK(!tile_version.resource_);
 
-    // Tile shouldn't be rasterized if we've failed to assign
-    // gpu memory to a higher priority tile. This is important for
-    // two reasons:
+    if (tile->required_for_activation())
+      all_tiles_required_for_activation_have_been_initialized_ = false;
+
+    // Tile shouldn't be rasterized if |tiles_that_need_to_be_rasterized|
+    // has reached it's limit or we've failed to assign gpu memory to this
+    // or any higher priority tile. Preventing tiles that fit into memory
+    // budget to be rasterized when higher priority tile is oom is
+    // important for two reasons:
     // 1. Tile size should not impact raster priority.
-    // 2. Tile with unreleasable memory could otherwise incorrectly
-    //    be added as it's not affected by |bytes_allocatable|.
-    if (higher_priority_tile_oomed) {
+    // 2. Tiles with existing raster task could otherwise incorrectly
+    //    be added as they are not affected by |bytes_allocatable|.
+    if (oomed || tiles_that_need_to_be_rasterized->size() >= kMaxRasterTasks) {
+      all_tiles_that_need_to_be_rasterized_have_memory_ = false;
       if (tile->required_for_activation())
         all_tiles_required_for_activation_have_memory_ = false;
       continue;
     }
 
-    if (!tile_version.resource_)
-      tiles_that_need_to_be_rasterized->push_back(tile);
-
-    if (!tile->IsReadyToDraw() && tile->required_for_activation()) {
-      all_tiles_required_for_activation_have_been_initialized_ = false;
-    }
+    tiles_that_need_to_be_rasterized->push_back(tile);
   }
 
   ever_exceeded_memory_budget_ |= bytes_that_exceeded_memory_budget > 0;
@@ -749,11 +770,9 @@ void TileManager::OnRasterTaskCompleted(
     RasterMode raster_mode,
     const PicturePileImpl::Analysis& analysis,
     bool was_canceled) {
-  TRACE_EVENT1("cc", "TileManager::OnRasterTaskCompleted",
-               "was_canceled", was_canceled);
-
   TileMap::iterator it = tiles_.find(tile_id);
   if (it == tiles_.end()) {
+    ++update_visible_tiles_stats_.canceled_count;
     resource_pool_->ReleaseResource(resource.Pass());
     return;
   }
@@ -766,9 +785,12 @@ void TileManager::OnRasterTaskCompleted(
   tile_version.raster_task_.Reset();
 
   if (was_canceled) {
+    ++update_visible_tiles_stats_.canceled_count;
     resource_pool_->ReleaseResource(resource.Pass());
     return;
   }
+
+  ++update_visible_tiles_stats_.completed_count;
 
   tile_version.set_has_text(analysis.has_text);
   if (analysis.is_solid_color) {

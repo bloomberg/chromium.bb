@@ -196,7 +196,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       overdraw_bottom_height_(0.f),
       animation_registrar_(AnimationRegistrar::Create()),
       rendering_stats_instrumentation_(rendering_stats_instrumentation),
-      need_check_for_completed_tile_uploads_before_draw_(false) {
+      need_to_update_visible_tiles_before_draw_(false) {
   DCHECK(proxy_->IsImplThread());
   DidVisibilityChange(this, visible_);
 
@@ -949,9 +949,10 @@ bool LayerTreeHostImpl::PrepareToDraw(FrameData* frame,
                "SourceFrameNumber",
                active_tree_->source_frame_number());
 
-  if (need_check_for_completed_tile_uploads_before_draw_) {
+  if (need_to_update_visible_tiles_before_draw_) {
     DCHECK(tile_manager_);
-    tile_manager_->CheckForCompletedTileUploads();
+    if (tile_manager_->UpdateVisibleTiles())
+      DidInitializeVisibleTile();
   }
 
   active_tree_->UpdateDrawProperties();
@@ -1042,7 +1043,7 @@ void LayerTreeHostImpl::DidInitializeVisibleTile() {
 
 void LayerTreeHostImpl::NotifyReadyToActivate() {
   if (pending_tree_) {
-    need_check_for_completed_tile_uploads_before_draw_ = true;
+    need_to_update_visible_tiles_before_draw_ = true;
     ActivatePendingTree();
   }
 }
@@ -1369,14 +1370,14 @@ void LayerTreeHostImpl::CreatePendingTree() {
                           "PendingTree", pending_tree_.get(), "waiting");
 }
 
-void LayerTreeHostImpl::CheckForCompletedTileUploads() {
+void LayerTreeHostImpl::UpdateVisibleTiles() {
   DCHECK(!client_->IsInsideDraw()) <<
-      "Checking for completed uploads within a draw may trigger "
+      "Updating visible tiles within a draw may trigger "
       "spurious redraws.";
-  if (tile_manager_)
-    tile_manager_->CheckForCompletedTileUploads();
+  if (tile_manager_ && tile_manager_->UpdateVisibleTiles())
+    DidInitializeVisibleTile();
 
-  need_check_for_completed_tile_uploads_before_draw_ = false;
+  need_to_update_visible_tiles_before_draw_ = false;
 }
 
 void LayerTreeHostImpl::ActivatePendingTreeIfNeeded() {
@@ -1523,7 +1524,7 @@ void LayerTreeHostImpl::CreateAndSetTileManager(
                                       rendering_stats_instrumentation_,
                                       using_map_image);
   UpdateTileManagerMemoryPolicy(ActualManagedMemoryPolicy());
-  need_check_for_completed_tile_uploads_before_draw_ = false;
+  need_to_update_visible_tiles_before_draw_ = false;
 }
 
 void LayerTreeHostImpl::EnforceZeroBudget(bool zero_budget) {

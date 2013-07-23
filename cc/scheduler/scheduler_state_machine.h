@@ -62,7 +62,7 @@ class CC_EXPORT SchedulerStateMachine {
     ACTION_NONE,
     ACTION_SEND_BEGIN_FRAME_TO_MAIN_THREAD,
     ACTION_COMMIT,
-    ACTION_CHECK_FOR_COMPLETED_TILE_UPLOADS,
+    ACTION_UPDATE_VISIBLE_TILES,
     ACTION_ACTIVATE_PENDING_TREE_IF_NEEDED,
     ACTION_DRAW_IF_POSSIBLE,
     ACTION_DRAW_FORCED,
@@ -164,10 +164,10 @@ class CC_EXPORT SchedulerStateMachine {
   bool ShouldDraw() const;
   bool ShouldAttemptTreeActivation() const;
   bool ShouldAcquireLayerTexturesForMainThread() const;
-  bool ShouldCheckForCompletedTileUploads() const;
+  bool ShouldUpdateVisibleTiles() const;
   bool HasDrawnThisFrame() const;
   bool HasAttemptedTreeActivationThisFrame() const;
-  bool HasCheckedForCompletedTileUploadsThisFrame() const;
+  bool HasUpdatedVisibleTilesThisFrame() const;
 
   const SchedulerSettings settings_;
 
@@ -177,7 +177,7 @@ class CC_EXPORT SchedulerStateMachine {
   int current_frame_number_;
   int last_frame_number_where_draw_was_called_;
   int last_frame_number_where_tree_activation_attempted_;
-  int last_frame_number_where_check_for_completed_tile_uploads_called_;
+  int last_frame_number_where_update_visible_tiles_was_called_;
   int consecutive_failed_draws_;
   int maximum_number_of_failed_draws_before_draw_is_forced_;
   bool needs_redraw_;

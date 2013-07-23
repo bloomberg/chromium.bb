@@ -191,7 +191,6 @@ class CC_EXPORT LayerTreeHostImpl
   virtual bool AllowPartialSwap() const OVERRIDE;
 
   // TileManagerClient implementation.
-  virtual void DidInitializeVisibleTile() OVERRIDE;
   virtual void NotifyReadyToActivate() OVERRIDE;
 
   // OutputSurfaceClient implementation.
@@ -240,7 +239,7 @@ class CC_EXPORT LayerTreeHostImpl
   const LayerTreeImpl* pending_tree() const { return pending_tree_.get(); }
   const LayerTreeImpl* recycle_tree() const { return recycle_tree_.get(); }
   virtual void CreatePendingTree();
-  void CheckForCompletedTileUploads();
+  void UpdateVisibleTiles();
   virtual void ActivatePendingTreeIfNeeded();
 
   // Shortcuts to layers on the active tree.
@@ -440,6 +439,8 @@ class CC_EXPORT LayerTreeHostImpl
   void SetManagedMemoryPolicy(const ManagedMemoryPolicy& policy);
   void EnforceManagedMemoryPolicy(const ManagedMemoryPolicy& policy);
 
+  void DidInitializeVisibleTile();
+
   scoped_ptr<OutputSurface> output_surface_;
 
   // |resource_provider_| and |tile_manager_| can be NULL, e.g. when using tile-
@@ -533,7 +534,7 @@ class CC_EXPORT LayerTreeHostImpl
 
   RenderingStatsInstrumentation* rendering_stats_instrumentation_;
 
-  bool need_check_for_completed_tile_uploads_before_draw_;
+  bool need_to_update_visible_tiles_before_draw_;
 
   // Optional callback to notify of new tree activations.
   base::Closure tree_activiation_callback_;

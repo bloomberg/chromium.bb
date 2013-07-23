@@ -211,8 +211,8 @@ void Scheduler::ProcessScheduledActions() {
       case SchedulerStateMachine::ACTION_COMMIT:
         client_->ScheduledActionCommit();
         break;
-      case SchedulerStateMachine::ACTION_CHECK_FOR_COMPLETED_TILE_UPLOADS:
-        client_->ScheduledActionCheckForCompletedTileUploads();
+      case SchedulerStateMachine::ACTION_UPDATE_VISIBLE_TILES:
+        client_->ScheduledActionUpdateVisibleTiles();
         break;
       case SchedulerStateMachine::ACTION_ACTIVATE_PENDING_TREE_IF_NEEDED:
         client_->ScheduledActionActivatePendingTreeIfNeeded();

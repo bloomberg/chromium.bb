@@ -40,7 +40,7 @@ class SchedulerClient {
   virtual ScheduledActionDrawAndSwapResult
   ScheduledActionDrawAndSwapForced() = 0;
   virtual void ScheduledActionCommit() = 0;
-  virtual void ScheduledActionCheckForCompletedTileUploads() = 0;
+  virtual void ScheduledActionUpdateVisibleTiles() = 0;
   virtual void ScheduledActionActivatePendingTreeIfNeeded() = 0;
   virtual void ScheduledActionBeginOutputSurfaceCreation() = 0;
   virtual void ScheduledActionAcquireLayerTexturesForMainThread() = 0;

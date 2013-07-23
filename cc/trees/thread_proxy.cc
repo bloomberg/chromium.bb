@@ -883,11 +883,10 @@ void ThreadProxy::ScheduledActionCommit() {
   scheduler_on_impl_thread_->SetVisible(layer_tree_host_impl_->visible());
 }
 
-void ThreadProxy::ScheduledActionCheckForCompletedTileUploads() {
+void ThreadProxy::ScheduledActionUpdateVisibleTiles() {
   DCHECK(IsImplThread());
-  TRACE_EVENT0("cc",
-               "ThreadProxy::ScheduledActionCheckForCompletedTileUploads");
-  layer_tree_host_impl_->CheckForCompletedTileUploads();
+  TRACE_EVENT0("cc", "ThreadProxy::ScheduledActionUpdateVisibleTiles");
+  layer_tree_host_impl_->UpdateVisibleTiles();
 }
 
 void ThreadProxy::ScheduledActionActivatePendingTreeIfNeeded() {

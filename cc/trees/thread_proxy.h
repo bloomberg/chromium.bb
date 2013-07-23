@@ -98,7 +98,7 @@ class ThreadProxy : public Proxy,
   virtual ScheduledActionDrawAndSwapResult ScheduledActionDrawAndSwapForced()
       OVERRIDE;
   virtual void ScheduledActionCommit() OVERRIDE;
-  virtual void ScheduledActionCheckForCompletedTileUploads() OVERRIDE;
+  virtual void ScheduledActionUpdateVisibleTiles() OVERRIDE;
   virtual void ScheduledActionActivatePendingTreeIfNeeded() OVERRIDE;
   virtual void ScheduledActionBeginOutputSurfaceCreation() OVERRIDE;
   virtual void ScheduledActionAcquireLayerTexturesForMainThread() OVERRIDE;

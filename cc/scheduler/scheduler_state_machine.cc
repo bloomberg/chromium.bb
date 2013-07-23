@@ -17,7 +17,7 @@ SchedulerStateMachine::SchedulerStateMachine(const SchedulerSettings& settings)
       current_frame_number_(0),
       last_frame_number_where_draw_was_called_(-1),
       last_frame_number_where_tree_activation_attempted_(-1),
-      last_frame_number_where_check_for_completed_tile_uploads_called_(-1),
+      last_frame_number_where_update_visible_tiles_was_called_(-1),
       consecutive_failed_draws_(0),
       maximum_number_of_failed_draws_before_draw_is_forced_(3),
       needs_redraw_(false),
@@ -56,8 +56,8 @@ std::string SchedulerStateMachine::ToString() {
       last_frame_number_where_tree_activation_attempted_);
   base::StringAppendF(
       &str,
-      "last_frame_number_where_check_for_completed_tile_uploads_called_ = %d; ",
-      last_frame_number_where_check_for_completed_tile_uploads_called_);
+      "last_frame_number_where_update_visible_tiles_was_called_ = %d; ",
+      last_frame_number_where_update_visible_tiles_was_called_);
   base::StringAppendF(
       &str, "consecutive_failed_draws_ = %d; ", consecutive_failed_draws_);
   base::StringAppendF(
@@ -111,9 +111,9 @@ bool SchedulerStateMachine::HasAttemptedTreeActivationThisFrame() const {
          last_frame_number_where_tree_activation_attempted_;
 }
 
-bool SchedulerStateMachine::HasCheckedForCompletedTileUploadsThisFrame() const {
+bool SchedulerStateMachine::HasUpdatedVisibleTilesThisFrame() const {
   return current_frame_number_ ==
-         last_frame_number_where_check_for_completed_tile_uploads_called_;
+         last_frame_number_where_update_visible_tiles_was_called_;
 }
 
 bool SchedulerStateMachine::DrawSuspendedUntilCommit() const {
@@ -154,10 +154,10 @@ bool SchedulerStateMachine::ShouldAttemptTreeActivation() const {
          !HasAttemptedTreeActivationThisFrame();
 }
 
-bool SchedulerStateMachine::ShouldCheckForCompletedTileUploads() const {
+bool SchedulerStateMachine::ShouldUpdateVisibleTiles() const {
   if (!settings_.impl_side_painting)
     return false;
-  if (HasCheckedForCompletedTileUploadsThisFrame())
+  if (HasUpdatedVisibleTilesThisFrame())
     return false;
 
   return ShouldAttemptTreeActivation() || ShouldDraw() ||
@@ -197,8 +197,8 @@ SchedulerStateMachine::Action SchedulerStateMachine::NextAction() const {
         return ACTION_BEGIN_OUTPUT_SURFACE_CREATION;
       if (output_surface_state_ == OUTPUT_SURFACE_CREATING)
         return ACTION_NONE;
-      if (ShouldCheckForCompletedTileUploads())
-        return ACTION_CHECK_FOR_COMPLETED_TILE_UPLOADS;
+      if (ShouldUpdateVisibleTiles())
+        return ACTION_UPDATE_VISIBLE_TILES;
       if (ShouldAttemptTreeActivation())
         return ACTION_ACTIVATE_PENDING_TREE_IF_NEEDED;
       if (ShouldDraw()) {
@@ -214,8 +214,8 @@ SchedulerStateMachine::Action SchedulerStateMachine::NextAction() const {
       return ACTION_NONE;
 
     case COMMIT_STATE_FRAME_IN_PROGRESS:
-      if (ShouldCheckForCompletedTileUploads())
-        return ACTION_CHECK_FOR_COMPLETED_TILE_UPLOADS;
+      if (ShouldUpdateVisibleTiles())
+        return ACTION_UPDATE_VISIBLE_TILES;
       if (ShouldAttemptTreeActivation())
         return ACTION_ACTIVATE_PENDING_TREE_IF_NEEDED;
       if (ShouldDraw()) {
@@ -228,8 +228,8 @@ SchedulerStateMachine::Action SchedulerStateMachine::NextAction() const {
       return ACTION_COMMIT;
 
     case COMMIT_STATE_WAITING_FOR_FIRST_DRAW: {
-      if (ShouldCheckForCompletedTileUploads())
-        return ACTION_CHECK_FOR_COMPLETED_TILE_UPLOADS;
+      if (ShouldUpdateVisibleTiles())
+        return ACTION_UPDATE_VISIBLE_TILES;
       if (ShouldAttemptTreeActivation())
         return ACTION_ACTIVATE_PENDING_TREE_IF_NEEDED;
       if (ShouldDraw() || output_surface_state_ == OUTPUT_SURFACE_LOST) {
@@ -247,8 +247,8 @@ SchedulerStateMachine::Action SchedulerStateMachine::NextAction() const {
     }
 
     case COMMIT_STATE_WAITING_FOR_FIRST_FORCED_DRAW:
-      if (ShouldCheckForCompletedTileUploads())
-        return ACTION_CHECK_FOR_COMPLETED_TILE_UPLOADS;
+      if (ShouldUpdateVisibleTiles())
+        return ACTION_UPDATE_VISIBLE_TILES;
       if (ShouldAttemptTreeActivation())
         return ACTION_ACTIVATE_PENDING_TREE_IF_NEEDED;
       if (needs_forced_redraw_)
@@ -264,8 +264,8 @@ void SchedulerStateMachine::UpdateState(Action action) {
     case ACTION_NONE:
       return;
 
-    case ACTION_CHECK_FOR_COMPLETED_TILE_UPLOADS:
-      last_frame_number_where_check_for_completed_tile_uploads_called_ =
+    case ACTION_UPDATE_VISIBLE_TILES:
+      last_frame_number_where_update_visible_tiles_was_called_ =
           current_frame_number_;
       return;
 

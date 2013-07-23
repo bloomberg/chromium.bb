@@ -98,8 +98,8 @@ class FakeSchedulerClient : public SchedulerClient {
     actions_.push_back("ScheduledActionCommit");
     states_.push_back(scheduler_->StateAsStringForTesting());
   }
-  virtual void ScheduledActionCheckForCompletedTileUploads() OVERRIDE {
-    actions_.push_back("ScheduledActionCheckForCompletedTileUploads");
+  virtual void ScheduledActionUpdateVisibleTiles() OVERRIDE {
+    actions_.push_back("ScheduledActionUpdateVisibleTiles");
     states_.push_back(scheduler_->StateAsStringForTesting());
   }
   virtual void ScheduledActionActivatePendingTreeIfNeeded() OVERRIDE {
