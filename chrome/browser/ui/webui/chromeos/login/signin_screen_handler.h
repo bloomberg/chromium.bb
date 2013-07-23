@@ -193,6 +193,9 @@ class SigninScreenHandler
   virtual void UpdateState(NetworkStateInformer::State state,
                            ErrorScreenActor::ErrorReason reason) OVERRIDE;
 
+  // Required Local State preferences.
+  static void RegisterPrefs(PrefRegistrySimple* registry);
+
  private:
   enum UIState {
     UI_STATE_UNKNOWN = 0,
@@ -378,6 +381,12 @@ class SigninScreenHandler
 
   // Attempts login for test.
   void SubmitLoginFormForTest();
+
+  // Update current input method (namely keyboard layout) to LRU by this user.
+  void SetUserInputMethod(const std::string& username);
+
+  // Update current input method to HW default.
+  void SetUserInputMethodHWDefault();
 
   // Current UI state of the signin screen.
   UIState ui_state_;

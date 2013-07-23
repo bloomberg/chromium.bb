@@ -56,6 +56,15 @@
 #   XKB layout), you should also update IsMod3UsedByCurrentInputMethod() method
 #   in chrome/browser/ui/ash/event_rewriter.cc. Otherwise, Mod3Mask might be
 #   removed unexpectedly by the rewriter.
+#
+#   If you add a new language such that some of its layouts can be used at
+#   signin screen (e.g. it is "Full Latin Keyboard Layout" therefore allowing
+#   input of gmail password), you should also update
+#   kHasLatinKeyboardLanguageList[] in
+#   chrome/browser/chromeos/input_method/input_method_manager_impl_ll.cc
+#
+#   If you add a new keyboard layout for existing language, please ensure
+#   that information in kHasLatinKeyboardLanguageList[] is still correct.
 
 # U.S. English
 xkb:us::eng	us	en-US

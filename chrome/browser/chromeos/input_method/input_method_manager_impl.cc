@@ -110,6 +110,12 @@ const struct MigrationHangulKeyboardToInputMethodID {
 
 }  // namespace
 
+bool InputMethodManagerImpl::IsFullLatinKeyboard(
+    const std::string& layout) const {
+  const std::string& lang = util_.GetLanguageCodeFromInputMethodId(layout);
+  return full_latin_keyboard_checker.IsFullLatinKeyboard(layout, lang);
+}
+
 InputMethodManagerImpl::InputMethodManagerImpl(
     scoped_ptr<InputMethodDelegate> delegate)
     : delegate_(delegate.Pass()),
@@ -207,6 +213,11 @@ InputMethodManagerImpl::GetActiveInputMethods() const {
   return result.Pass();
 }
 
+const std::vector<std::string>&
+InputMethodManagerImpl::GetActiveInputMethodIds() const {
+  return active_input_method_ids_;
+}
+
 size_t InputMethodManagerImpl::GetNumActiveInputMethods() const {
   return active_input_method_ids_.size();
 }
@@ -250,6 +261,46 @@ void InputMethodManagerImpl::EnableLayouts(const std::string& language_code,
   ChangeInputMethod(initial_layout);  // you can pass empty |initial_layout|.
 }
 
+// Adds new input method to given list.
+bool InputMethodManagerImpl::EnableInputMethodImpl(
+    const std::string& input_method_id,
+    std::vector<std::string>& new_active_input_method_ids) const {
+  if (!util_.IsValidInputMethodId(input_method_id)) {
+    DVLOG(1) << "EnableInputMethod: Invalid ID: " << input_method_id;
+    return false;
+  }
+
+  if (!Contains(new_active_input_method_ids, input_method_id))
+    new_active_input_method_ids.push_back(input_method_id);
+
+  return true;
+}
+
+// Starts or stops the system input method framework as needed.
+void InputMethodManagerImpl::ReconfigureIMFramework() {
+  if (component_extension_ime_manager_->IsInitialized())
+    LoadNecessaryComponentExtensions();
+
+  if (ContainsOnlyKeyboardLayout(active_input_method_ids_)) {
+    // Do NOT call ibus_controller_->Stop(); here to work around a crash issue
+    // at crbug.com/27051.
+    // TODO(yusukes): We can safely call Stop(); here once crbug.com/26443
+    // is implemented.
+  } else {
+    MaybeInitializeCandidateWindowController();
+    IBusDaemonController::GetInstance()->Start();
+  }
+}
+
+bool InputMethodManagerImpl::EnableInputMethod(
+    const std::string& input_method_id) {
+  if (!EnableInputMethodImpl(input_method_id, active_input_method_ids_))
+    return false;
+
+  ReconfigureIMFramework();
+  return true;
+}
+
 bool InputMethodManagerImpl::EnableInputMethods(
     const std::vector<std::string>& new_active_input_method_ids) {
   if (state_ == STATE_TERMINATING)
@@ -258,13 +309,9 @@ bool InputMethodManagerImpl::EnableInputMethods(
   // Filter unknown or obsolete IDs.
   std::vector<std::string> new_active_input_method_ids_filtered;
 
-  for (size_t i = 0; i < new_active_input_method_ids.size(); ++i) {
-    const std::string& input_method_id = new_active_input_method_ids[i];
-    if (util_.IsValidInputMethodId(input_method_id))
-      new_active_input_method_ids_filtered.push_back(input_method_id);
-    else
-      DVLOG(1) << "EnableInputMethods: Invalid ID: " << input_method_id;
-  }
+  for (size_t i = 0; i < new_active_input_method_ids.size(); ++i)
+    EnableInputMethodImpl(new_active_input_method_ids[i],
+                          new_active_input_method_ids_filtered);
 
   if (new_active_input_method_ids_filtered.empty()) {
     DVLOG(1) << "EnableInputMethods: No valid input method ID";
@@ -280,18 +327,7 @@ bool InputMethodManagerImpl::EnableInputMethods(
   }
   active_input_method_ids_.swap(new_active_input_method_ids_filtered);
 
-  if (component_extension_ime_manager_->IsInitialized())
-    LoadNecessaryComponentExtensions();
-
-  if (ContainOnlyKeyboardLayout(active_input_method_ids_)) {
-    // Do NOT call ibus_controller_->Stop(); here to work around a crash issue
-    // at crosbug.com/27051.
-    // TODO(yusukes): We can safely call Stop(); here once crosbug.com/26443
-    // is implemented.
-  } else {
-    MaybeInitializeCandidateWindowController();
-    IBusDaemonController::GetInstance()->Start();
-  }
+  ReconfigureIMFramework();
 
   // If |current_input_method| is no longer in |active_input_method_ids_|,
   // ChangeInputMethod() picks the first one in |active_input_method_ids_|.
@@ -564,7 +600,7 @@ void InputMethodManagerImpl::RemoveInputMethodExtension(const std::string& id) {
     active_input_method_ids_.erase(i);
   extra_input_methods_.erase(id);
 
-  if (ContainOnlyKeyboardLayout(active_input_method_ids_)) {
+  if (ContainsOnlyKeyboardLayout(active_input_method_ids_)) {
     // Do NOT call ibus_controller_->Stop(); here to work around a crash issue
     // at crosbug.com/27051.
     // TODO(yusukes): We can safely call Stop(); here once crosbug.com/26443
@@ -918,7 +954,7 @@ bool InputMethodManagerImpl::InputMethodIsActivated(
   return Contains(active_input_method_ids_, input_method_id);
 }
 
-bool InputMethodManagerImpl::ContainOnlyKeyboardLayout(
+bool InputMethodManagerImpl::ContainsOnlyKeyboardLayout(
     const std::vector<std::string>& value) {
   for (size_t i = 0; i < value.size(); ++i) {
     if (!InputMethodUtil::IsKeyboardLayout(value[i]))

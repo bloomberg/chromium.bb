@@ -14,6 +14,7 @@
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/chromeos/input_method/candidate_window_controller.h"
 #include "chrome/browser/chromeos/input_method/ibus_controller.h"
+#include "chrome/browser/chromeos/input_method/input_method_manager_impl_ll.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chromeos/ime/ibus_daemon_controller.h"
 #include "chromeos/ime/input_method_manager.h"
@@ -58,11 +59,15 @@ class InputMethodManagerImpl : public InputMethodManager,
       GetSupportedInputMethods() const OVERRIDE;
   virtual scoped_ptr<InputMethodDescriptors>
       GetActiveInputMethods() const OVERRIDE;
+  virtual const std::vector<std::string>& GetActiveInputMethodIds() const
+      OVERRIDE;
   virtual size_t GetNumActiveInputMethods() const OVERRIDE;
   virtual void EnableLayouts(const std::string& language_code,
                              const std::string& initial_layout) OVERRIDE;
   virtual bool EnableInputMethods(
       const std::vector<std::string>& new_active_input_method_ids) OVERRIDE;
+  virtual bool EnableInputMethod(const std::string& new_active_input_method_id)
+      OVERRIDE;
   virtual bool MigrateOldInputMethods(
       std::vector<std::string>* input_method_ids) OVERRIDE;
   virtual bool MigrateKoreanKeyboard(
@@ -95,6 +100,7 @@ class InputMethodManagerImpl : public InputMethodManager,
   virtual InputMethodUtil* GetInputMethodUtil() OVERRIDE;
   virtual ComponentExtensionIMEManager*
       GetComponentExtensionIMEManager() OVERRIDE;
+  virtual bool IsFullLatinKeyboard(const std::string& layout) const OVERRIDE;
 
   // Sets |ibus_controller_|.
   void SetIBusControllerForTesting(IBusController* ibus_controller);
@@ -135,7 +141,7 @@ class InputMethodManagerImpl : public InputMethodManager,
 
   // Returns true if the given input method config value is a string list
   // that only contains an input method ID of a keyboard layout.
-  bool ContainOnlyKeyboardLayout(const std::vector<std::string>& value);
+  bool ContainsOnlyKeyboardLayout(const std::vector<std::string>& value);
 
   // Returns true if the connection to ibus-daemon is established.
   bool IsIBusConnectionAlive();
@@ -164,6 +170,15 @@ class InputMethodManagerImpl : public InputMethodManager,
   // Loads necessary component extensions.
   // TODO(nona): Support dynamical unloading.
   void LoadNecessaryComponentExtensions();
+
+  // Adds new input method to given list if possible
+  bool EnableInputMethodImpl(
+      const std::string& input_method_id,
+      std::vector<std::string>& new_active_input_method_ids) const;
+
+  // Starts or stops the system input method framework as needed.
+  // (after list of enabled input methods has been updated)
+  void ReconfigureIMFramework();
 
   scoped_ptr<InputMethodDelegate> delegate_;
 
@@ -222,6 +237,10 @@ class InputMethodManagerImpl : public InputMethodManager,
   base::ThreadChecker thread_checker_;
 
   base::WeakPtrFactory<InputMethodManagerImpl> weak_ptr_factory_;
+
+  // Check if input method id allows full latin input (for entering passwords on
+  // login screen)
+  FullLatinKeyboardLayoutChecker full_latin_keyboard_checker;
 
   DISALLOW_COPY_AND_ASSIGN(InputMethodManagerImpl);
 };

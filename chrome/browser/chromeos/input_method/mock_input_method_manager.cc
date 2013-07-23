@@ -11,6 +11,7 @@ MockInputMethodManager::MockInputMethodManager()
     : add_observer_count_(0),
       remove_observer_count_(0),
       util_(&delegate_, whitelist_.GetSupportedInputMethods()) {
+  active_input_method_ids_.push_back("xkb:us::eng");
 }
 
 MockInputMethodManager::~MockInputMethodManager() {
@@ -50,6 +51,11 @@ MockInputMethodManager::GetActiveInputMethods() const {
   return result.Pass();
 }
 
+const std::vector<std::string>&
+MockInputMethodManager::GetActiveInputMethodIds() const {
+  return active_input_method_ids_;
+}
+
 size_t MockInputMethodManager::GetNumActiveInputMethods() const {
   return 1;
 }
@@ -60,6 +66,11 @@ void MockInputMethodManager::EnableLayouts(const std::string& language_code,
 
 bool MockInputMethodManager::EnableInputMethods(
     const std::vector<std::string>& new_active_input_method_ids) {
+  return true;
+}
+
+bool MockInputMethodManager::EnableInputMethod(
+    const std::string& new_active_input_method_id) {
   return true;
 }
 
@@ -162,5 +173,9 @@ void MockInputMethodManager::set_hardware_keyboard_layout(
   delegate_.set_hardware_keyboard_layout(value);
 }
 
+bool MockInputMethodManager::IsFullLatinKeyboard(
+    const std::string& layout) const {
+  return true;
+}
 }  // namespace input_method
 }  // namespace chromeos

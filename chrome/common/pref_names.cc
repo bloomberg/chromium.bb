@@ -2122,6 +2122,10 @@ const char kDeviceEnrollmentAutoStart[] = "enrollment.auto_start";
 
 // Whether the user may exit enrollment.
 const char kDeviceEnrollmentCanExit[] = "enrollment.can_exit";
+
+// Dictionary of per-user Least Recently Used input method (used at login
+// screen).
+extern const char kUsersLRUInputMethod[] = "UsersLRUInputMethod";
 #endif
 
 // Whether there is a Flash version installed that supports clearing LSO data.

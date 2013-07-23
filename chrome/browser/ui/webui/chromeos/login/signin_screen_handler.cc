@@ -5,11 +5,13 @@
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 
 #include "base/callback.h"
+#include "base/chromeos/chromeos_version.h"
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
+#include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
@@ -20,6 +22,7 @@
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
+#include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
 #include "chrome/browser/chromeos/login/hwid_checker.h"
 #include "chrome/browser/chromeos/login/login_display_host_impl.h"
@@ -32,6 +35,7 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
+#include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/native_window_delegate.h"
@@ -101,6 +105,12 @@ void ClearDnsCache(IOThread* io_thread) {
     return;
 
   io_thread->ClearHostCache();
+}
+
+static bool Contains(const std::vector<std::string>& container,
+                     const std::string& value) {
+  return std::find(container.begin(), container.end(), value) !=
+         container.end();
 }
 
 }  // namespace
@@ -310,6 +320,59 @@ void RecordNetworkPortalDetectorStats(const std::string& service_path) {
       NOTREACHED();
       break;
   }
+}
+
+static bool SetUserInputMethodImpl(
+    const std::string& username,
+    chromeos::input_method::InputMethodManager* manager) {
+  PrefService* const local_state = g_browser_process->local_state();
+
+  const base::DictionaryValue* users_lru_input_methods =
+      local_state->GetDictionary(prefs::kUsersLRUInputMethod);
+
+  if (users_lru_input_methods == NULL) {
+    DLOG(WARNING) << "SetUserInputMethod('" << username
+                  << "'): no kUsersLRUInputMethod";
+    return false;
+  }
+
+  std::string input_method;
+
+  if (!users_lru_input_methods->GetStringWithoutPathExpansion(username,
+                                                              &input_method)) {
+    DLOG(INFO) << "SetUserInputMethod('" << username
+               << "'): no input method for this user";
+    return false;
+  }
+
+  if (input_method.empty())
+    return false;
+
+  if (!manager->IsFullLatinKeyboard(input_method)) {
+    LOG(WARNING) << "SetUserInputMethod('" << username
+                 << "'): stored user LRU input method '" << input_method
+                 << "' is no longer Full Latin Keyboard Language"
+                 << " (entry dropped). Use hardware default instead.";
+
+    DictionaryPrefUpdate updater(local_state, prefs::kUsersLRUInputMethod);
+
+    base::DictionaryValue* const users_lru_input_methods = updater.Get();
+    if (users_lru_input_methods != NULL) {
+      users_lru_input_methods->SetStringWithoutPathExpansion(username, "");
+    }
+    return false;
+  }
+
+  if (!Contains(manager->GetActiveInputMethodIds(), input_method)) {
+    if (!manager->EnableInputMethod(input_method)) {
+      DLOG(ERROR) << "SigninScreenHandler::SetUserInputMethod('" << username
+                  << "'): user input method '" << input_method
+                  << "' is not enabled and enabling failed (ignored!).";
+    }
+  }
+  manager->ChangeInputMethod(input_method);
+
+  return true;
 }
 
 }  // namespace
@@ -814,6 +877,10 @@ void SigninScreenHandler::RegisterMessages() {
               &SigninScreenHandler::HandleUpdateOfflineLogin);
 }
 
+void SigninScreenHandler::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterDictionaryPref(prefs::kUsersLRUInputMethod);
+}
+
 void SigninScreenHandler::HandleGetUsers() {
   SendUserList(false);
 }
@@ -970,6 +1037,35 @@ void SigninScreenHandler::OnDnsCleared() {
   ShowSigninScreenIfReady();
 }
 
+void SigninScreenHandler::SetUserInputMethodHWDefault() {
+  chromeos::input_method::InputMethodManager* manager =
+      chromeos::input_method::InputMethodManager::Get();
+  manager->ChangeInputMethod(
+      manager->GetInputMethodUtil()->GetHardwareInputMethodId());
+}
+
+// Update keyboard layout to least recently used by the user.
+void SigninScreenHandler::SetUserInputMethod(const std::string& username) {
+  chromeos::input_method::InputMethodManager* const manager =
+      chromeos::input_method::InputMethodManager::Get();
+
+  const chromeos::input_method::InputMethodUtil& ime_util =
+      *manager->GetInputMethodUtil();
+
+  const bool succeed = SetUserInputMethodImpl(username, manager);
+
+  // This is also a case when LRU layout is set only for a few local users,
+  // thus others need to be switched to default locale.
+  // Otherwise they will end up using another user's locale to log in.
+  if (!succeed) {
+    DLOG(INFO) << "SetUserInputMethod('" << username
+               << "'): failed to set user layout. Switching to default '"
+               << ime_util.GetHardwareInputMethodId() << "'";
+
+    SetUserInputMethodHWDefault();
+  }
+}
+
 void SigninScreenHandler::ShowSigninScreenIfReady() {
   if (!dns_cleared_ || !cookies_cleared_ || !delegate_)
     return;
@@ -990,6 +1086,10 @@ void SigninScreenHandler::ShowSigninScreenIfReady() {
     delegate_->LoadSigninWallpaper();
   else
     delegate_->LoadWallpaper(email_);
+
+  // Set Least Recently Used input method for the user.
+  if (!email_.empty())
+    SetUserInputMethod(email_);
 
   LoadAuthExtension(!gaia_silent_load_, false, false);
   UpdateUIState(UI_STATE_GAIA_SIGNIN, NULL);
@@ -1210,6 +1310,7 @@ void SigninScreenHandler::HandleShowAddUser(const base::ListValue* args) {
         &SigninScreenHandler::ShowSigninScreenIfReady,
         weak_factory_.GetWeakPtr()));
   }
+  SetUserInputMethodHWDefault();
 }
 
 void SigninScreenHandler::HandleToggleEnrollmentScreen() {
