@@ -115,13 +115,10 @@ void ScrollingCoordinator::setShouldHandleScrollGestureOnMainThreadRegion(const 
 
 void ScrollingCoordinator::frameViewLayoutUpdated(FrameView* frameView)
 {
-    if (!touchHitTestingEnabled())
-        return;
-
     TRACE_EVENT0("input", "ScrollingCoordinator::frameViewLayoutUpdated");
 
-    // Compute the region of the page that we can't handle scroll gestures on impl thread:
-    // This currently includes:
+    // Compute the region of the page where we can't handle scroll gestures and mousewheel events
+    // on the impl thread. This currently includes:
     // 1. All scrollable areas, such as subframes, overflow divs and list boxes, whose composited
     // scrolling are not enabled. We need to do this even if the frame view whose layout was updated
     // is not the main frame.
@@ -130,9 +127,13 @@ void ScrollingCoordinator::frameViewLayoutUpdated(FrameView* frameView)
     // 3. Plugin areas.
     Region shouldHandleScrollGestureOnMainThreadRegion = computeShouldHandleScrollGestureOnMainThreadRegion(m_page->mainFrame(), IntPoint());
     setShouldHandleScrollGestureOnMainThreadRegion(shouldHandleScrollGestureOnMainThreadRegion);
-    LayerHitTestRects touchEventTargetRects;
-    computeTouchEventTargetRects(touchEventTargetRects);
-    setTouchEventTargetRects(touchEventTargetRects);
+
+    if (touchHitTestingEnabled()) {
+        LayerHitTestRects touchEventTargetRects;
+        computeTouchEventTargetRects(touchEventTargetRects);
+        setTouchEventTargetRects(touchEventTargetRects);
+    }
+
     if (WebLayer* scrollLayer = scrollingWebLayerForScrollableArea(frameView))
         scrollLayer->setBounds(frameView->contentsSize());
 }

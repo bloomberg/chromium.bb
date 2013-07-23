@@ -1747,8 +1747,6 @@ crbug.com/254914 [ Linux ] tables/mozilla/core/bloomberg.html [ ImageOnlyFailure
 crbug.com/254914 [ Mac ] fast/table/table-rowspan-height-distribution-in-rows-1.html [ Failure ]
 crbug.com/254914 [ Mac ] fast/table/table-rowspan-height-distribution-in-rows-2.html [ Failure ]
 
-crbug.com/263120 [ Debug ] compositing/iframes/iframe-content-flipping.html [ ImageOnlyFailure Pass ]
-
 crbug.com/263058 compositing/iframes/iframe-copy-on-scroll.html [ NeedsRebaseline ]
 crbug.com/263058 css1/basic/class_as_selector.html [ NeedsRebaseline ]
 crbug.com/263058 css1/basic/comments.html [ NeedsRebaseline ]
