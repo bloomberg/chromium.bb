@@ -22,6 +22,7 @@
 #ifndef ElementRareData_h
 #define ElementRareData_h
 
+#include "core/animation/ActiveAnimations.h"
 #include "core/dom/DatasetDOMStringMap.h"
 #include "core/dom/NamedNodeMap.h"
 #include "core/dom/NodeRareData.h"
@@ -34,7 +35,6 @@
 
 namespace WebCore {
 
-class Animation;
 class HTMLElement;
 
 class ElementRareData : public NodeRareData {
@@ -128,10 +128,10 @@ public:
     IntSize savedLayerScrollOffset() const { return m_savedLayerScrollOffset; }
     void setSavedLayerScrollOffset(IntSize size) { m_savedLayerScrollOffset = size; }
 
-    Vector<Animation*>* activeAnimations() { return m_activeAnimations.get(); }
-    void setActiveAnimations(PassOwnPtr<Vector<Animation*> > animations)
+    ActiveAnimations* activeAnimations() { return m_activeAnimations.get(); }
+    void setActiveAnimations(PassOwnPtr<ActiveAnimations> activeAnimations)
     {
-        m_activeAnimations = animations;
+        m_activeAnimations = activeAnimations;
     }
 
     bool hasPendingResources() const { return m_hasPendingResources; }
@@ -178,8 +178,7 @@ private:
     OwnPtr<ElementShadow> m_shadow;
     OwnPtr<NamedNodeMap> m_attributeMap;
     OwnPtr<InputMethodContext> m_inputMethodContext;
-
-    OwnPtr<Vector<Animation*> > m_activeAnimations;
+    OwnPtr<ActiveAnimations> m_activeAnimations;
 
     RefPtr<PseudoElement> m_generatedBefore;
     RefPtr<PseudoElement> m_generatedAfter;

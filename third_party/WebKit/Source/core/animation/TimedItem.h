@@ -36,6 +36,8 @@
 
 namespace WebCore {
 
+class Player;
+
 static inline bool isNull(double value)
 {
     return std::isnan(value);
@@ -47,6 +49,7 @@ static inline double nullValue()
 }
 
 class TimedItem : public RefCounted<TimedItem> {
+    friend class Player; // Calls attach/detach, updateInheritedTime.
 public:
     virtual ~TimedItem() { }
 
@@ -60,6 +63,7 @@ public:
     double currentIteration() const { return ensureCalculated().currentIteration; }
     double activeDuration() const { return ensureCalculated().activeDuration; }
     double timeFraction() const { return ensureCalculated().timeFraction; }
+    Player* player() const { return m_player; }
 
 protected:
     TimedItem(const Timing&);
@@ -70,14 +74,21 @@ protected:
     void updateInheritedTime(double inheritedTime) const;
     virtual void updateChildrenAndEffects(bool wasActiveOrInEffect) const = 0;
     virtual double intrinsicIterationDuration() const { return 0; };
-
-    friend class Player; // Calls updateInheritedTime.
+    virtual void willDetach() = 0;
 
 private:
+    void attach(Player* player) { m_player = player; };
+    void detach()
+    {
+        ASSERT(m_player);
+        willDetach();
+        m_player = 0;
+    };
+
     // FIXME: m_parent and m_startTime are placeholders, they depend on timing groups.
     TimedItem* const m_parent;
     const double m_startTime;
-
+    Player* m_player;
     Timing m_specified;
 
     // FIXME: Should be versioned by monotonic value on player.

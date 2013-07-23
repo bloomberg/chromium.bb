@@ -52,6 +52,8 @@ public:
     void updateChildrenAndEffects(bool wasActiveOrInEffect) const FINAL OVERRIDE {
     }
 
+    void willDetach() { }
+
 private:
     TestTimedItem(const Timing& specified)
         : TimedItem(specified)

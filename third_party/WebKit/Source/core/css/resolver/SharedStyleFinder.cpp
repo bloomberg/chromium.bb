@@ -31,7 +31,6 @@
 
 #include "HTMLNames.h"
 #include "XMLNames.h"
-#include "core/css/RuleFeature.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/dom/ContainerNode.h"

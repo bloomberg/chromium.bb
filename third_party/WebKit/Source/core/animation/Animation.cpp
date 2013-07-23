@@ -31,6 +31,8 @@
 #include "config.h"
 #include "core/animation/Animation.h"
 
+#include "core/animation/DocumentTimeline.h"
+#include "core/animation/Player.h"
 #include "core/dom/Element.h"
 
 namespace WebCore {
@@ -44,21 +46,27 @@ Animation::Animation(PassRefPtr<Element> target, PassRefPtr<AnimationEffect> eff
     : TimedItem(timing)
     , m_target(target)
     , m_effect(effect)
-    , m_isInTargetActiveAnimationsList(false)
+    , m_activeInAnimationStack(false)
 {
 }
 
-Animation::~Animation()
+void Animation::willDetach()
 {
-    if (m_isInTargetActiveAnimationsList)
-        m_target->removeActiveAnimation(this);
+    if (m_activeInAnimationStack)
+        clearEffects();
+}
+
+static AnimationStack* ensureAnimationStack(Element* element)
+{
+    return element->ensureActiveAnimations()->defaultStack();
 }
 
 void Animation::applyEffects(bool previouslyActiveOrInEffect)
 {
+    ASSERT(player());
     if (!previouslyActiveOrInEffect) {
-        m_target->addActiveAnimation(this);
-        m_isInTargetActiveAnimationsList = true;
+        ensureAnimationStack(m_target.get())->add(this);
+        m_activeInAnimationStack = true;
     }
     m_compositableValues = m_effect->sample(currentIteration(), timeFraction());
     m_target->setNeedsStyleRecalc(LocalStyleChange, StyleChangeFromRenderer);
@@ -66,15 +74,17 @@ void Animation::applyEffects(bool previouslyActiveOrInEffect)
 
 void Animation::clearEffects()
 {
-    m_target->removeActiveAnimation(this);
-    m_isInTargetActiveAnimationsList = false;
+    ASSERT(player());
+    ASSERT(m_activeInAnimationStack);
+    ensureAnimationStack(m_target.get())->remove(this);
+    m_activeInAnimationStack = false;
     m_compositableValues.clear();
 }
 
 void Animation::updateChildrenAndEffects(bool wasActiveOrInEffect) const
 {
     const bool isActiveOrInEffect = isActive() || isInEffect();
-    ASSERT(m_isInTargetActiveAnimationsList == wasActiveOrInEffect);
+    ASSERT(m_activeInAnimationStack == wasActiveOrInEffect);
     if (wasActiveOrInEffect && !isActiveOrInEffect)
         const_cast<Animation*>(this)->clearEffects();
     else if (isActiveOrInEffect)

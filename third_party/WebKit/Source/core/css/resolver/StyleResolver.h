@@ -49,6 +49,7 @@ class CSSStyleSheet;
 class CSSValue;
 class ContainerNode;
 class Document;
+class DocumentTimeline;
 class Element;
 class ElementRuleCollector;
 class KeyframeList;
@@ -293,7 +294,7 @@ private:
     template <StyleApplicationPass pass>
     void applyProperties(StyleResolverState&, const StylePropertySet* properties, StyleRule*, bool isImportant, bool inheritedOnly, PropertyWhitelistType = PropertyWhitelistNone);
     template <StyleApplicationPass pass>
-    void applyAnimatedProperties(StyleResolverState&, const Element* target);
+    void applyAnimatedProperties(StyleResolverState&, const Element*, const DocumentTimeline*);
     void resolveVariables(StyleResolverState&, CSSPropertyID, CSSValue*, Vector<std::pair<CSSPropertyID, String> >& knownExpressions);
     void matchPageRules(MatchResult&, RuleSet*, bool isLeftPage, bool isFirstPage, const String& pageName);
     void matchPageRulesForList(Vector<StyleRulePage*>& matchedRules, const Vector<StyleRulePage*>&, bool isLeftPage, bool isFirstPage, const String& pageName);

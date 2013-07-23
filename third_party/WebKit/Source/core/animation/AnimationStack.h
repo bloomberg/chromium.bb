@@ -28,49 +28,36 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef Player_h
-#define Player_h
+#ifndef AnimationStack_h
+#define AnimationStack_h
 
-#include "core/animation/TimedItem.h"
+#include "wtf/HashMap.h"
 #include "wtf/RefPtr.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 
-class DocumentTimeline;
+class Element;
+class Animation;
 
-class Player FINAL : public RefCounted<Player> {
+class AnimationStack {
 
 public:
-    ~Player();
-    static PassRefPtr<Player> create(DocumentTimeline*, TimedItem*);
-
-    // Returns whether this player is still current or in effect.
-    bool update();
-    double currentTime() const;
-    void setCurrentTime(double);
-    bool paused() const { return !isNull(m_pauseStartTime); }
-    void setPaused(bool);
-    double playbackRate() const { return m_playbackRate; }
-    void setPlaybackRate(double);
-    double startTime() const { return m_startTime; }
-    double timeDrift() const;
-    DocumentTimeline* timeline() { return m_timeline; }
+    void add(Animation* animation) { m_activeAnimations.append(animation); }
+    void remove(Animation* animation)
+    {
+        size_t position = m_activeAnimations.find(animation);
+        ASSERT(position != notFound);
+        m_activeAnimations.remove(position);
+    }
+    bool hasActiveAnimations() const { return !m_activeAnimations.isEmpty(); }
+    // FIXME: This should be PassRefPtr<CompositableValue> composite(Element*, CSSPropertyId)
+    const Vector<Animation*>& activeAnimations(const Element* element) const { return m_activeAnimations; }
 
 private:
-    Player(DocumentTimeline*, TimedItem*);
-    static double effectiveTime(double time) { return isNull(time) ? 0 : time; }
-    inline double pausedTimeDrift() const;
-    inline double currentTimeBeforeDrift() const;
-
-    double m_pauseStartTime;
-    double m_playbackRate;
-    double m_timeDrift;
-    const double m_startTime;
-
-    RefPtr<TimedItem> m_content;
-    DocumentTimeline* const m_timeline;
+    Vector<Animation*> m_activeAnimations;
 };
 
-} // namespace
+} // namespace WebCore
 
 #endif

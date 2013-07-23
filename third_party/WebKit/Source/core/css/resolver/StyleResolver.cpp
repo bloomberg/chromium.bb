@@ -35,6 +35,7 @@
 #include "StylePropertyShorthand.h"
 #include "core/animation/AnimatableValue.h"
 #include "core/animation/Animation.h"
+#include "core/animation/DocumentTimeline.h"
 #include "core/css/CSSCalculationValue.h"
 #include "core/css/CSSDefaultStyleSheets.h"
 #include "core/css/CSSFontSelector.h"
@@ -980,17 +981,17 @@ PassRefPtr<CSSRuleList> StyleResolver::pseudoStyleRulesForElement(Element* e, Ps
 // this is mostly boring stuff on how to apply a certain rule to the renderstyle...
 
 template <StyleResolver::StyleApplicationPass pass>
-void StyleResolver::applyAnimatedProperties(StyleResolverState& state, const Element* target)
+void StyleResolver::applyAnimatedProperties(StyleResolverState& state, const Element* target, const DocumentTimeline* timeline)
 {
     ASSERT(pass != VariableDefinitions);
     ASSERT(pass != AnimationProperties);
-    if (!target->hasActiveAnimations())
+    AnimationStack* animationStack = timeline->animationStack(target);
+    if (!animationStack)
         return;
+    const Vector<Animation*>& animations = animationStack->activeAnimations(target);
 
-    Vector<Animation*>* animations = target->activeAnimations();
-
-    for (size_t i = 0; i < animations->size(); ++i) {
-        RefPtr<Animation> animation = animations->at(i);
+    for (size_t i = 0; i < animations.size(); ++i) {
+        RefPtr<Animation> animation = animations.at(i);
         const AnimationEffect::CompositableValueMap* compositableValues = animation->compositableValues();
         for (AnimationEffect::CompositableValueMap::const_iterator iter = compositableValues->begin(); iter != compositableValues->end(); ++iter) {
             CSSPropertyID property = iter->key;
@@ -1234,7 +1235,7 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
     applyMatchedProperties<HighPriorityProperties>(state, matchResult, false, 0, matchResult.matchedProperties.size() - 1, applyInheritedOnly);
     // Animation contributions are processed here because CSS Animations are overridable by user !important rules.
     if (RuntimeEnabledFeatures::webAnimationsEnabled())
-        applyAnimatedProperties<HighPriorityProperties>(state, element);
+        applyAnimatedProperties<HighPriorityProperties>(state, element, element->document()->timeline());
     applyMatchedProperties<HighPriorityProperties>(state, matchResult, true, matchResult.ranges.firstAuthorRule, matchResult.ranges.lastAuthorRule, applyInheritedOnly);
     applyMatchedProperties<HighPriorityProperties>(state, matchResult, true, matchResult.ranges.firstUserRule, matchResult.ranges.lastUserRule, applyInheritedOnly);
     applyMatchedProperties<HighPriorityProperties>(state, matchResult, true, matchResult.ranges.firstUARule, matchResult.ranges.lastUARule, applyInheritedOnly);
@@ -1264,7 +1265,7 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
     // Now do the author and user normal priority properties and all the !important properties.
     applyMatchedProperties<LowPriorityProperties>(state, matchResult, false, matchResult.ranges.lastUARule + 1, matchResult.matchedProperties.size() - 1, applyInheritedOnly);
     if (RuntimeEnabledFeatures::webAnimationsEnabled())
-        applyAnimatedProperties<LowPriorityProperties>(state, element);
+        applyAnimatedProperties<LowPriorityProperties>(state, element, element->document()->timeline());
     applyMatchedProperties<LowPriorityProperties>(state, matchResult, true, matchResult.ranges.firstAuthorRule, matchResult.ranges.lastAuthorRule, applyInheritedOnly);
     applyMatchedProperties<LowPriorityProperties>(state, matchResult, true, matchResult.ranges.firstUserRule, matchResult.ranges.lastUserRule, applyInheritedOnly);
     applyMatchedProperties<LowPriorityProperties>(state, matchResult, true, matchResult.ranges.firstUARule, matchResult.ranges.lastUARule, applyInheritedOnly);

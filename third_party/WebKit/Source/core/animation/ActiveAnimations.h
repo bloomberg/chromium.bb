@@ -28,49 +28,28 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef Player_h
-#define Player_h
+#ifndef ActiveAnimations_h
+#define ActiveAnimations_h
 
-#include "core/animation/TimedItem.h"
+#include "core/animation/AnimationStack.h"
+#include "wtf/HashMap.h"
 #include "wtf/RefPtr.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 
-class DocumentTimeline;
+class AnimationStack;
 
-class Player FINAL : public RefCounted<Player> {
-
+class ActiveAnimations {
 public:
-    ~Player();
-    static PassRefPtr<Player> create(DocumentTimeline*, TimedItem*);
-
-    // Returns whether this player is still current or in effect.
-    bool update();
-    double currentTime() const;
-    void setCurrentTime(double);
-    bool paused() const { return !isNull(m_pauseStartTime); }
-    void setPaused(bool);
-    double playbackRate() const { return m_playbackRate; }
-    void setPlaybackRate(double);
-    double startTime() const { return m_startTime; }
-    double timeDrift() const;
-    DocumentTimeline* timeline() { return m_timeline; }
-
+    AnimationStack* defaultStack() { return &m_defaultStack; }
+    bool isEmpty() const { return !m_defaultStack.hasActiveAnimations(); }
 private:
-    Player(DocumentTimeline*, TimedItem*);
-    static double effectiveTime(double time) { return isNull(time) ? 0 : time; }
-    inline double pausedTimeDrift() const;
-    inline double currentTimeBeforeDrift() const;
-
-    double m_pauseStartTime;
-    double m_playbackRate;
-    double m_timeDrift;
-    const double m_startTime;
-
-    RefPtr<TimedItem> m_content;
-    DocumentTimeline* const m_timeline;
+    AnimationStack m_defaultStack;
+    // FIXME: Add AnimationStack for CSS Transitions
+    // FIXME: Add tracking data for CSS Animations
 };
 
-} // namespace
+} // namespace WebCore
 
 #endif

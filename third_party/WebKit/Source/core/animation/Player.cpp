@@ -52,7 +52,15 @@ Player::Player(DocumentTimeline* timeline, TimedItem* content)
     , m_timeline(timeline)
 {
     ASSERT(m_startTime >= 0);
+    if (m_content)
+        m_content->attach(this);
     update();
+}
+
+Player::~Player()
+{
+    if (m_content)
+        m_content->detach();
 }
 
 double Player::currentTimeBeforeDrift() const

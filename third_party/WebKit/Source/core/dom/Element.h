@@ -37,7 +37,7 @@
 
 namespace WebCore {
 
-class Animation;
+class ActiveAnimations;
 class Attr;
 class Attribute;
 class ClientRect;
@@ -622,10 +622,9 @@ public:
     IntSize savedLayerScrollOffset() const;
     void setSavedLayerScrollOffset(const IntSize&);
 
-    void addActiveAnimation(Animation*);
-    void removeActiveAnimation(Animation*);
+    ActiveAnimations* activeAnimations() const;
+    ActiveAnimations* ensureActiveAnimations();
     bool hasActiveAnimations() const;
-    Vector<Animation*>* activeAnimations() const;
 
     InputMethodContext* getInputContext();
 

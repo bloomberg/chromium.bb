@@ -33,6 +33,7 @@
 #include "SVGNames.h"
 #include "XMLNames.h"
 #include "core/accessibility/AXObjectCache.h"
+#include "core/animation/DocumentTimeline.h"
 #include "core/css/CSSParser.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/CSSValuePool.h"
@@ -374,34 +375,31 @@ NamedNodeMap* Element::attributes() const
     return rareData->attributeMap();
 }
 
-void Element::addActiveAnimation(Animation* animation)
+ActiveAnimations* Element::activeAnimations() const
 {
-    ElementRareData* rareData = ensureElementRareData();
-    if (!rareData->activeAnimations())
-        rareData->setActiveAnimations(adoptPtr(new Vector<Animation*>));
-    rareData->activeAnimations()->append(animation);
+    if (hasActiveAnimations())
+        return elementRareData()->activeAnimations();
+    return 0;
 }
 
-void Element::removeActiveAnimation(Animation* animation)
+ActiveAnimations* Element::ensureActiveAnimations()
 {
-    ElementRareData* rareData = elementRareData();
-    ASSERT(rareData);
-    size_t position = rareData->activeAnimations()->find(animation);
-    ASSERT(position != notFound);
-    rareData->activeAnimations()->remove(position);
+    ElementRareData* rareData = ensureElementRareData();
+    if (!elementRareData()->activeAnimations())
+        rareData->setActiveAnimations(adoptPtr(new ActiveAnimations()));
+    return rareData->activeAnimations();
 }
 
 bool Element::hasActiveAnimations() const
 {
-    return hasRareData() && elementRareData()->activeAnimations()
-        && elementRareData()->activeAnimations()->size();
-}
+    if (!RuntimeEnabledFeatures::webAnimationsEnabled())
+        return false;
 
-Vector<Animation*>* Element::activeAnimations() const
-{
-    if (!elementRareData())
-        return 0;
-    return elementRareData()->activeAnimations();
+    if (!hasRareData())
+        return false;
+
+    ActiveAnimations* activeAnimations = elementRareData()->activeAnimations();
+    return activeAnimations && !activeAnimations->isEmpty();
 }
 
 Node::NodeType Element::nodeType() const

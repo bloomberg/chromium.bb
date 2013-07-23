@@ -45,6 +45,7 @@ TimedItem::TimedItem(const Timing& timing)
 
 void TimedItem::updateInheritedTime(double inheritedTime) const
 {
+    ASSERT(player());
     const double localTime = inheritedTime - m_startTime;
     const double iterationDuration = m_specified.hasIterationDuration
         ? m_specified.iterationDuration

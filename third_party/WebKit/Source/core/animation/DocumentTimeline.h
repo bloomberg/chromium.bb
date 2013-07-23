@@ -31,7 +31,9 @@
 #ifndef DocumentTimeline_h
 #define DocumentTimeline_h
 
+#include "core/animation/ActiveAnimations.h"
 #include "core/animation/Player.h"
+#include "core/dom/Element.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
@@ -50,6 +52,12 @@ public:
     PassRefPtr<Player> play(TimedItem*);
     double currentTime() { return m_currentTime; }
     void pauseAnimationsForTesting(double);
+    AnimationStack* animationStack(const Element* element) const
+    {
+        if (ActiveAnimations* animations = element->activeAnimations())
+            return animations->defaultStack();
+        return 0;
+    }
 
 private:
     DocumentTimeline(Document*);
