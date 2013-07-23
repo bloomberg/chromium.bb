@@ -626,8 +626,8 @@ const char* ToolbarView::GetClassName() const {
 
 bool ToolbarView::AcceleratorPressed(const ui::Accelerator& accelerator) {
   const views::View* focused_view = focus_manager()->GetFocusedView();
-  if (focused_view == location_bar_)
-    return false;  // Let location bar handle all accelerator events.
+  if (focused_view && (focused_view->id() == VIEW_ID_OMNIBOX))
+    return false;  // Let the omnibox handle all accelerator events.
   return AccessiblePaneView::AcceleratorPressed(accelerator);
 }
 
