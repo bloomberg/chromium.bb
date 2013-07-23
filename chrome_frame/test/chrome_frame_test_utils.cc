@@ -9,6 +9,7 @@
 #include <iepmapi.h>
 #include <sddl.h>
 #include <shlobj.h>
+#include <TlHelp32.h>
 #include <winsock2.h>
 
 #include "base/command_line.h"
@@ -17,8 +18,10 @@
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
-#include "base/process.h"
-#include "base/process_util.h"
+#include "base/process/kill.h"
+#include "base/process/launch.h"
+#include "base/process/process.h"
+#include "base/process/process_iterator.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"

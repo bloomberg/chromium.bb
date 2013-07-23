@@ -4,9 +4,11 @@
 
 #include <atlbase.h>
 #include <atlcom.h>
+
 #include "base/at_exit.h"
 #include "base/command_line.h"
-#include "base/process.h"
+#include "base/process/kill.h"
+#include "base/process/process.h"
 #include "chrome_frame/crash_server_init.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
 #include "gtest/gtest.h"

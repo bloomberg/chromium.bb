@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/process_util.h"
+#include "base/process/process_handle.h"
 
 namespace simulate_input {
 

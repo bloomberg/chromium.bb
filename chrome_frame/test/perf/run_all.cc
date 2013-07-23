@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/memory/scoped_ptr.h"
+#include "base/process/kill.h"
 #include "base/test/perf_test_suite.h"
 #include "base/threading/platform_thread.h"
 #include "chrome/common/chrome_paths.h"

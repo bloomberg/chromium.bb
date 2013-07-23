@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 #include "chrome_frame/test/perf/chrome_frame_perftest.h"
 
-#include <atlwin.h>
 #include <atlhost.h>
+#include <atlwin.h>
 
 #include <map>
 #include <string>
@@ -15,7 +15,9 @@
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
-#include "base/process_util.h"
+#include "base/process/kill.h"
+#include "base/process/launch.h"
+#include "base/process/process_iterator.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"

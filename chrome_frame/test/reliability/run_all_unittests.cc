@@ -5,6 +5,7 @@
 #include "chrome_frame/test/reliability/reliability_test_suite.h"
 
 #include "base/command_line.h"
+#include "base/process/kill.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
 #include "chrome_frame/test_utils.h"

@@ -7,7 +7,7 @@
 #include <algorithm>
 
 #include "base/logging.h"
-#include "base/process_util.h"
+#include "base/process/memory.h"
 #include "base/win/scoped_comptr.h"
 #include "chrome_frame/exception_barrier.h"
 #include "chrome_frame/function_stub.h"

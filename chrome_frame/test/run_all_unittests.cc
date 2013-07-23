@@ -5,7 +5,8 @@
 #include <atlbase.h>
 
 #include "base/command_line.h"
-#include "base/process_util.h"
+#include "base/process/kill.h"
+#include "base/process/memory.h"
 #include "base/test/test_suite.h"
 #include "base/threading/platform_thread.h"
 #include "base/win/scoped_com_initializer.h"
