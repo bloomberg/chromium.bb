@@ -10,7 +10,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/process_util.h"
+#include "base/process/launch.h"
 #include "chrome/installer/launcher_support/chrome_launcher_support.h"
 
 int APIENTRY wWinMain(HINSTANCE, HINSTANCE, wchar_t*, int) {

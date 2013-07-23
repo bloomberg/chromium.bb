@@ -7,6 +7,7 @@
 // and when chrome is started from scratch.
 
 #include "apps/switches.h"
+#include "base/process/launch.h"
 #include "base/test/test_timeouts.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
