@@ -30,7 +30,7 @@
 
 namespace WebCore {
 
-void mapAttributeToCSSProperty(HashMap<AtomicStringImpl*, CSSPropertyID>* propertyNameToIdMap, const QualifiedName& attrName);
+void mapAttributeToCSSProperty(HashMap<StringImpl*, CSSPropertyID>* propertyNameToIdMap, const QualifiedName& attrName);
 
 class CSSValue;
 class CSSStyleDeclaration;

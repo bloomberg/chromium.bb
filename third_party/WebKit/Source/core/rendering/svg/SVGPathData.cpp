@@ -146,9 +146,9 @@ void updatePathFromGraphicsElement(SVGElement* element, Path& path)
     ASSERT(path.isEmpty());
 
     typedef void (*PathUpdateFunction)(SVGElement*, Path&);
-    static HashMap<AtomicStringImpl*, PathUpdateFunction>* map = 0;
+    static HashMap<StringImpl*, PathUpdateFunction>* map = 0;
     if (!map) {
-        map = new HashMap<AtomicStringImpl*, PathUpdateFunction>;
+        map = new HashMap<StringImpl*, PathUpdateFunction>;
         map->set(SVGNames::circleTag.localName().impl(), updatePathFromCircleElement);
         map->set(SVGNames::ellipseTag.localName().impl(), updatePathFromEllipseElement);
         map->set(SVGNames::lineTag.localName().impl(), updatePathFromLineElement);

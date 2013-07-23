@@ -453,7 +453,7 @@ static v8::Handle<v8::Value> getNamedProperty(HTMLDocument* htmlDocument, const 
 
 static void getter(v8::Local<v8::String> property, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    // FIXME: Consider passing AtomicStringImpl directly.
+    // FIXME: Consider passing StringImpl directly.
     AtomicString name = toWebCoreAtomicString(property);
     HTMLDocument* htmlDocument = V8HTMLDocument::toNative(info.Holder());
     ASSERT(htmlDocument);

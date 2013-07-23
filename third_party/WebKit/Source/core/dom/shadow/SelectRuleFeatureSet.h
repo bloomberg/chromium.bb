@@ -68,19 +68,19 @@ private:
 inline bool SelectRuleFeatureSet::hasSelectorForId(const AtomicString& idValue) const
 {
     ASSERT(!idValue.isEmpty());
-    return m_cssRuleFeatureSet.idsInRules.contains(idValue.impl());
+    return m_cssRuleFeatureSet.idsInRules.contains(idValue);
 }
 
 inline bool SelectRuleFeatureSet::hasSelectorForClass(const AtomicString& classValue) const
 {
     ASSERT(!classValue.isEmpty());
-    return m_cssRuleFeatureSet.classesInRules.contains(classValue.impl());
+    return m_cssRuleFeatureSet.classesInRules.contains(classValue);
 }
 
 inline bool SelectRuleFeatureSet::hasSelectorForAttribute(const AtomicString& attributeName) const
 {
     ASSERT(!attributeName.isEmpty());
-    return m_cssRuleFeatureSet.attrsInRules.contains(attributeName.impl());
+    return m_cssRuleFeatureSet.attrsInRules.contains(attributeName);
 }
 
 }

@@ -305,7 +305,7 @@ bool ScopedStyleResolver::checkRegionStyle(Element* regionElement)
     return false;
 }
 
-const StyleRuleKeyframes* ScopedStyleResolver::keyframeStylesForAnimation(const AtomicStringImpl* animationName)
+const StyleRuleKeyframes* ScopedStyleResolver::keyframeStylesForAnimation(const StringImpl* animationName)
 {
     if (m_keyframesRuleMap.isEmpty())
         return 0;

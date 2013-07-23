@@ -220,7 +220,7 @@ void HTMLDocument::setVlinkColor(const String& value)
 // not part of the DOM
 // --------------------------------------------------------------------------
 
-void HTMLDocument::addItemToMap(HashCountedSet<AtomicStringImpl*>& map, const AtomicString& name)
+void HTMLDocument::addItemToMap(HashCountedSet<StringImpl*>& map, const AtomicString& name)
 {
     if (name.isEmpty())
         return;
@@ -229,7 +229,7 @@ void HTMLDocument::addItemToMap(HashCountedSet<AtomicStringImpl*>& map, const At
         f->script()->namedItemAdded(this, name);
 }
 
-void HTMLDocument::removeItemFromMap(HashCountedSet<AtomicStringImpl*>& map, const AtomicString& name)
+void HTMLDocument::removeItemFromMap(HashCountedSet<StringImpl*>& map, const AtomicString& name)
 {
     if (name.isEmpty())
         return;
@@ -258,16 +258,16 @@ void HTMLDocument::removeExtraNamedItem(const AtomicString& name)
     removeItemFromMap(m_extraNamedItemCounts, name);
 }
 
-static void addLocalNameToSet(HashSet<AtomicStringImpl*>* set, const QualifiedName& qName)
+static void addLocalNameToSet(HashSet<StringImpl*>* set, const QualifiedName& qName)
 {
     set->add(qName.localName().impl());
 }
 
-static HashSet<AtomicStringImpl*>* createHtmlCaseInsensitiveAttributesSet()
+static HashSet<StringImpl*>* createHtmlCaseInsensitiveAttributesSet()
 {
     // This is the list of attributes in HTML 4.01 with values marked as "[CI]" or case-insensitive
     // Mozilla treats all other values as case-sensitive, thus so do we.
-    HashSet<AtomicStringImpl*>* attrSet = new HashSet<AtomicStringImpl*>;
+    HashSet<StringImpl*>* attrSet = new HashSet<StringImpl*>;
 
     addLocalNameToSet(attrSet, accept_charsetAttr);
     addLocalNameToSet(attrSet, acceptAttr);
@@ -320,7 +320,7 @@ static HashSet<AtomicStringImpl*>* createHtmlCaseInsensitiveAttributesSet()
 
 bool HTMLDocument::isCaseSensitiveAttribute(const QualifiedName& attributeName)
 {
-    static HashSet<AtomicStringImpl*>* htmlCaseInsensitiveAttributesSet = createHtmlCaseInsensitiveAttributesSet();
+    static HashSet<StringImpl*>* htmlCaseInsensitiveAttributesSet = createHtmlCaseInsensitiveAttributesSet();
     bool isPossibleHTMLAttr = !attributeName.hasPrefix() && (attributeName.namespaceURI() == nullAtom);
     return !isPossibleHTMLAttr || !htmlCaseInsensitiveAttributesSet->contains(attributeName.localName().impl());
 }

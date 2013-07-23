@@ -213,7 +213,7 @@ public:
     // FIXME: Used by SharingStyleFinder, but should be removed.
     bool styleSharingCandidateMatchesRuleSet(const ElementResolveContext&, RenderStyle*, RuleSet*);
 
-    const StyleRuleKeyframes* matchScopedKeyframesRule(Element*, const AtomicStringImpl* animationName);
+    const StyleRuleKeyframes* matchScopedKeyframesRule(Element*, const StringImpl* animationName);
     PassRefPtr<RenderStyle> styleForKeyframe(Element*, const RenderStyle*, const StyleKeyframe*, KeyframeValue&);
 
     // These methods will give back the set of rules that matched for a given element (or a pseudo-element).
@@ -309,7 +309,7 @@ private:
     DocumentRuleSets m_ruleSets;
 
     // FIXME: This likely belongs on RuleSet.
-    typedef HashMap<AtomicStringImpl*, RefPtr<StyleRuleKeyframes> > KeyframesRuleMap;
+    typedef HashMap<StringImpl*, RefPtr<StyleRuleKeyframes> > KeyframesRuleMap;
     KeyframesRuleMap m_keyframesRuleMap;
 
     static RenderStyle* s_styleNotYetAvailable;

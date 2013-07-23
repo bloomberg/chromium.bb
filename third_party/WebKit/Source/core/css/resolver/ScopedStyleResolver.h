@@ -63,7 +63,7 @@ public:
 
 public:
     bool checkRegionStyle(Element*);
-    const StyleRuleKeyframes* keyframeStylesForAnimation(const AtomicStringImpl* animationName);
+    const StyleRuleKeyframes* keyframeStylesForAnimation(const StringImpl* animationName);
     void addKeyframeStyle(PassRefPtr<StyleRuleKeyframes>);
 
     void matchHostRules(ElementRuleCollector&, bool includeEmptyRules);
@@ -89,7 +89,7 @@ private:
     OwnPtr<RuleSet> m_authorStyle;
     HashMap<const ShadowRoot*, OwnPtr<RuleSet> > m_atHostRules;
 
-    typedef HashMap<const AtomicStringImpl*, RefPtr<StyleRuleKeyframes> > KeyframesRuleMap;
+    typedef HashMap<const StringImpl*, RefPtr<StyleRuleKeyframes> > KeyframesRuleMap;
     KeyframesRuleMap m_keyframesRuleMap;
 };
 

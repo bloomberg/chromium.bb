@@ -34,6 +34,7 @@
 #include "wtf/HashMap.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/StringBuilder.h"
+#include "wtf/text/StringHash.h"
 
 namespace WebCore {
 
@@ -257,7 +258,7 @@ PseudoId CSSSelector::pseudoId(PseudoType type)
     return NOPSEUDO;
 }
 
-static HashMap<AtomicStringImpl*, CSSSelector::PseudoType>* nameToPseudoTypeMap()
+static HashMap<StringImpl*, CSSSelector::PseudoType>* nameToPseudoTypeMap()
 {
     DEFINE_STATIC_LOCAL(AtomicString, active, ("active", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(AtomicString, after, ("after", AtomicString::ConstructFromLiteral));
@@ -337,9 +338,9 @@ static HashMap<AtomicStringImpl*, CSSSelector::PseudoType>* nameToPseudoTypeMap(
     DEFINE_STATIC_LOCAL(AtomicString, scope, ("scope", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(AtomicString, unresolved, ("unresolved", AtomicString::ConstructFromLiteral));
 
-    static HashMap<AtomicStringImpl*, CSSSelector::PseudoType>* nameToPseudoType = 0;
+    static HashMap<StringImpl*, CSSSelector::PseudoType>* nameToPseudoType = 0;
     if (!nameToPseudoType) {
-        nameToPseudoType = new HashMap<AtomicStringImpl*, CSSSelector::PseudoType>;
+        nameToPseudoType = new HashMap<StringImpl*, CSSSelector::PseudoType>;
         nameToPseudoType->set(active.impl(), CSSSelector::PseudoActive);
         nameToPseudoType->set(after.impl(), CSSSelector::PseudoAfter);
         nameToPseudoType->set(anyLink.impl(), CSSSelector::PseudoAnyLink);
@@ -425,8 +426,8 @@ CSSSelector::PseudoType CSSSelector::parsePseudoType(const AtomicString& name)
 {
     if (name.isNull())
         return PseudoUnknown;
-    HashMap<AtomicStringImpl*, CSSSelector::PseudoType>* nameToPseudoType = nameToPseudoTypeMap();
-    HashMap<AtomicStringImpl*, CSSSelector::PseudoType>::iterator slot = nameToPseudoType->find(name.impl());
+    HashMap<StringImpl*, CSSSelector::PseudoType>* nameToPseudoType = nameToPseudoTypeMap();
+    HashMap<StringImpl*, CSSSelector::PseudoType>::iterator slot = nameToPseudoType->find(name.impl());
 
     if (slot != nameToPseudoType->end())
         return slot->value;
@@ -737,7 +738,7 @@ bool CSSSelector::matchNth(int count) const
     return m_data.m_rareData->matchNth(count);
 }
 
-CSSSelector::RareData::RareData(PassRefPtr<AtomicStringImpl> value)
+CSSSelector::RareData::RareData(PassRefPtr<StringImpl> value)
     : m_value(value.leakRef())
     , m_a(0)
     , m_b(0)

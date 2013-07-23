@@ -65,11 +65,11 @@ public:
 
     void addNamedItem(const AtomicString& name);
     void removeNamedItem(const AtomicString& name);
-    bool hasNamedItem(AtomicStringImpl* name);
+    bool hasNamedItem(StringImpl* name);
 
     void addExtraNamedItem(const AtomicString& name);
     void removeExtraNamedItem(const AtomicString& name);
-    bool hasExtraNamedItem(AtomicStringImpl* name);
+    bool hasExtraNamedItem(StringImpl* name);
 
     static bool isCaseSensitiveAttribute(const QualifiedName&);
 
@@ -78,20 +78,20 @@ protected:
 
 private:
     HTMLBodyElement* bodyAsHTMLBodyElement() const;
-    void addItemToMap(HashCountedSet<AtomicStringImpl*>&, const AtomicString&);
-    void removeItemFromMap(HashCountedSet<AtomicStringImpl*>&, const AtomicString&);
+    void addItemToMap(HashCountedSet<StringImpl*>&, const AtomicString&);
+    void removeItemFromMap(HashCountedSet<StringImpl*>&, const AtomicString&);
 
-    HashCountedSet<AtomicStringImpl*> m_namedItemCounts;
-    HashCountedSet<AtomicStringImpl*> m_extraNamedItemCounts;
+    HashCountedSet<StringImpl*> m_namedItemCounts;
+    HashCountedSet<StringImpl*> m_extraNamedItemCounts;
 };
 
-inline bool HTMLDocument::hasNamedItem(AtomicStringImpl* name)
+inline bool HTMLDocument::hasNamedItem(StringImpl* name)
 {
     ASSERT(name);
     return m_namedItemCounts.contains(name);
 }
 
-inline bool HTMLDocument::hasExtraNamedItem(AtomicStringImpl* name)
+inline bool HTMLDocument::hasExtraNamedItem(StringImpl* name)
 {
     ASSERT(name);
     return m_extraNamedItemCounts.contains(name);

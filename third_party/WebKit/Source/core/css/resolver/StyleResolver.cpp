@@ -692,7 +692,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForKeyframe(Element* e, const Render
     return state.takeStyle();
 }
 
-const StyleRuleKeyframes* StyleResolver::matchScopedKeyframesRule(Element* e, const AtomicStringImpl* animationName)
+const StyleRuleKeyframes* StyleResolver::matchScopedKeyframesRule(Element* e, const StringImpl* animationName)
 {
     if (m_styleTree.hasOnlyScopedResolverForDocument())
         return m_styleTree.scopedStyleResolverForDocument()->keyframeStylesForAnimation(animationName);

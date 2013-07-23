@@ -33,7 +33,7 @@
 
 #include "wtf/HashCountedSet.h"
 #include "wtf/HashMap.h"
-#include "wtf/text/AtomicStringImpl.h"
+#include "wtf/text/StringImpl.h"
 
 namespace WebCore {
 
@@ -42,38 +42,38 @@ class TreeScope;
 
 class DocumentOrderedMap {
 public:
-    void add(AtomicStringImpl*, Element*);
-    void remove(AtomicStringImpl*, Element*);
+    void add(StringImpl*, Element*);
+    void remove(StringImpl*, Element*);
     void clear();
 
-    bool contains(AtomicStringImpl*) const;
-    bool containsMultiple(AtomicStringImpl*) const;
+    bool contains(StringImpl*) const;
+    bool containsMultiple(StringImpl*) const;
     // concrete instantiations of the get<>() method template
-    Element* getElementById(AtomicStringImpl*, const TreeScope*) const;
-    Element* getElementByMapName(AtomicStringImpl*, const TreeScope*) const;
-    Element* getElementByLowercasedMapName(AtomicStringImpl*, const TreeScope*) const;
-    Element* getElementByLabelForAttribute(AtomicStringImpl*, const TreeScope*) const;
+    Element* getElementById(StringImpl*, const TreeScope*) const;
+    Element* getElementByMapName(StringImpl*, const TreeScope*) const;
+    Element* getElementByLowercasedMapName(StringImpl*, const TreeScope*) const;
+    Element* getElementByLabelForAttribute(StringImpl*, const TreeScope*) const;
 
     void checkConsistency() const;
 
 private:
-    template<bool keyMatches(AtomicStringImpl*, Element*)> Element* get(AtomicStringImpl*, const TreeScope*) const;
+    template<bool keyMatches(StringImpl*, Element*)> Element* get(StringImpl*, const TreeScope*) const;
 
-    typedef HashMap<AtomicStringImpl*, Element*> Map;
+    typedef HashMap<StringImpl*, Element*> Map;
 
     // We maintain the invariant that m_duplicateCounts is the count of all elements with a given key
     // excluding the one referenced in m_map, if any. This means it one less than the total count
     // when the first node with a given key is cached, otherwise the same as the total count.
     mutable Map m_map;
-    mutable HashCountedSet<AtomicStringImpl*> m_duplicateCounts;
+    mutable HashCountedSet<StringImpl*> m_duplicateCounts;
 };
 
-inline bool DocumentOrderedMap::contains(AtomicStringImpl* id) const
+inline bool DocumentOrderedMap::contains(StringImpl* id) const
 {
     return m_map.contains(id) || m_duplicateCounts.contains(id);
 }
 
-inline bool DocumentOrderedMap::containsMultiple(AtomicStringImpl* id) const
+inline bool DocumentOrderedMap::containsMultiple(StringImpl* id) const
 {
     return m_duplicateCounts.contains(id);
 }

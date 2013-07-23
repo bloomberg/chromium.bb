@@ -30,7 +30,7 @@
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
 #include "wtf/PassOwnPtr.h"
-#include "wtf/text/AtomicString.h"
+#include "wtf/text/StringHash.h"
 
 namespace WebCore {
 
@@ -50,7 +50,7 @@ private:
     void notifyObserversInternal(const AtomicString& id);
 
     typedef HashSet<IdTargetObserver*> ObserverSet;
-    typedef HashMap<AtomicStringImpl*, OwnPtr<ObserverSet> > IdToObserverSetMap;
+    typedef HashMap<StringImpl*, OwnPtr<ObserverSet> > IdToObserverSetMap;
     IdToObserverSetMap m_registry;
     ObserverSet* m_notifyingObserversInSet;
 };

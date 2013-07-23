@@ -260,7 +260,7 @@ void CheckedRadioButtons::removeButton(HTMLInputElement* element)
     if (it->value->isEmpty()) {
         // FIXME: We may skip deallocating the empty RadioButtonGroup for
         // performance improvement. If we do so, we need to change the key type
-        // of m_nameToGroupMap from AtomicStringImpl* to RefPtr<AtomicStringImpl>.
+        // of m_nameToGroupMap from StringImpl* to AtomicString.
         m_nameToGroupMap->remove(it);
         if (m_nameToGroupMap->isEmpty())
             m_nameToGroupMap.clear();

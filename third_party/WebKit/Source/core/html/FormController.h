@@ -26,7 +26,7 @@
 #include "wtf/Forward.h"
 #include "wtf/ListHashSet.h"
 #include "wtf/Vector.h"
-#include "wtf/text/WTFString.h"
+#include "wtf/text/AtomicStringHash.h"
 
 namespace WebCore {
 
@@ -96,7 +96,7 @@ public:
 
 private:
     typedef ListHashSet<RefPtr<HTMLFormControlElementWithState>, 64> FormElementListHashSet;
-    typedef HashMap<RefPtr<AtomicStringImpl>, OwnPtr<SavedFormState> > SavedFormStateMap;
+    typedef HashMap<AtomicString, OwnPtr<SavedFormState> > SavedFormStateMap;
 
     FormController();
     static PassOwnPtr<SavedFormStateMap> createSavedFormStateMap(const FormElementListHashSet&);
