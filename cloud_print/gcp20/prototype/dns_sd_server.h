@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "cloud_print/gcp20/prototype/service_parameters.h"
 #include "net/base/ip_endpoint.h"
 #include "net/udp/udp_socket.h"
@@ -26,7 +27,7 @@ class DnsResponseBuilder;
 // Class for sending multicast announcements, receiving queries and answering on
 // them.
 // TODO(maksymb): Implement probing.
-class DnsSdServer {
+class DnsSdServer : public base::SupportsWeakPtr<DnsSdServer> {
  public:
   // Constructor does not start server.
   DnsSdServer();

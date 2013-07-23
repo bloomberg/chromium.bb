@@ -38,8 +38,21 @@ class PrivetHttpServer: public net::HttpServer::Delegate {
     ~DeviceInfo();
 
     std::string version;
+    std::string name;
+    std::string description;
+    std::string url;
+    std::string id;
+    std::string device_state;
+    std::string connection_state;
     std::string manufacturer;
+    std::string model;
+    std::string serial_number;
+    std::string firmware;
+    int uptime;
+    std::string x_privet_token;
+
     std::vector<std::string> api;
+    std::vector<std::string> type;
   };
 
   class Delegate {
@@ -72,6 +85,8 @@ class PrivetHttpServer: public net::HttpServer::Delegate {
 
     // Invoked if /privet/info is called.
     virtual void CreateInfo(DeviceInfo* info) = 0;
+
+    virtual bool CheckXPrivetTokenHeader(const std::string& token) const = 0;
   };
 
   // Constructor doesn't start server.

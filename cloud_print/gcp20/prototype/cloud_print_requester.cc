@@ -18,6 +18,8 @@
 #include "net/url_request/url_request_context_builder.h"
 #include "url/gurl.h"
 
+const char* kCloudPrintUrl = "https://www.google.com/cloudprint";
+
 namespace {
 
 const char kProxyIdValue[] = "proxy";
@@ -28,12 +30,8 @@ const char kPrinterUserValue[] = "user";
 
 const int kGaiaMaxRetries = 3;
 
-std::string GetCloudPrintUrl() {
-  return "https://www.google.com/cloudprint";
-}
-
 GURL CreateRegisterUrl() {
-  return GURL(GetCloudPrintUrl() + "/register");
+  return GURL(std::string(kCloudPrintUrl) + "/register");
 }
 
 }  // namespace
@@ -123,7 +121,7 @@ bool CloudPrintRequester::StartRegistration(const std::string& proxy_id,
   if (!CreateRequest(
       CreateRegisterUrl(), net::URLFetcher::POST,
       base::Bind(&CloudPrintRequester::ParseRegisterStartResponse,
-                 base::Unretained(this)))) {
+                 AsWeakPtr()))) {
     return false;
   }
   fetcher_->SetUploadData(mime_type, data);
@@ -137,7 +135,7 @@ bool CloudPrintRequester::CompleteRegistration() {
       GURL(polling_url_ + oauth_client_info_.client_id),
       net::URLFetcher::GET,
       base::Bind(&CloudPrintRequester::ParseRegisterCompleteResponse,
-                 base::Unretained(this)))) {
+                 AsWeakPtr()))) {
     return false;
   }
   fetcher_->Start();

@@ -4,6 +4,7 @@
 
 #include "cloud_print/gcp20/prototype/privet_http_server.h"
 
+#include "base/command_line.h"
 #include "base/json/json_writer.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
@@ -41,7 +42,7 @@ scoped_ptr<base::DictionaryValue> CreateErrorWithTimeout(
 
 }  // namespace
 
-PrivetHttpServer::DeviceInfo::DeviceInfo() {
+PrivetHttpServer::DeviceInfo::DeviceInfo() : uptime(0) {
 }
 
 PrivetHttpServer::DeviceInfo::~DeviceInfo() {
@@ -85,11 +86,29 @@ void PrivetHttpServer::OnHttpRequest(int connection_id,
   VLOG(1) << "Processing HTTP request: " << info.path;
   GURL url("http://host" + info.path);
 
-  // TODO(maksymb): Add checking for X-PrivetToken.
+  if (!CommandLine::ForCurrentProcess()->HasSwitch("disable-x-token")) {
+    net::HttpServerRequestInfo::HeadersMap::const_iterator iter =
+        info.headers.find("X-Privet-Token");
+    if (iter == info.headers.end()) {
+      server_->Send(connection_id, net::HTTP_BAD_REQUEST,
+                    "Missing X-Privet-Token header.", "text/plain");
+      return;
+    }
+
+    if (url.path() != "/privet/info" &&
+        !delegate_->CheckXPrivetTokenHeader(iter->second)) {
+      server_->Send(connection_id, net::HTTP_BAD_REQUEST,
+                    "{\"error\":\"invalid_x_privet_token\"}",
+                    "application/json");
+      return;
+    }
+  }
+
   std::string response;
   net::HttpStatusCode status_code = ProcessHttpRequest(url, &response);
+  // TODO(maksymb): Add checking for right |info.method| in query.
 
-  server_->Send(connection_id, status_code, response, "text/plain");
+  server_->Send(connection_id, status_code, response, "application/json");
 }
 
 void PrivetHttpServer::OnWebSocketRequest(
@@ -139,12 +158,28 @@ scoped_ptr<base::DictionaryValue> PrivetHttpServer::ProcessInfo(
 
   scoped_ptr<base::DictionaryValue> response(new base::DictionaryValue);
   response->SetString("version", info.version);
+  response->SetString("name", info.name);
+  response->SetString("description", info.description);
+  response->SetString("url", info.url);
+  response->SetString("id", info.id);
+  response->SetString("device_state", info.device_state);
+  response->SetString("connection_state", info.connection_state);
   response->SetString("manufacturer", info.manufacturer);
+  response->SetString("model", info.model);
+  response->SetString("serial_number", info.serial_number);
+  response->SetString("firmware", info.firmware);
+  response->SetInteger("uptime", info.uptime);
+  response->SetString("x-privet-token", info.x_privet_token);
 
   base::ListValue api;
   for (size_t i = 0; i < info.api.size(); ++i)
     api.AppendString(info.api[i]);
   response->Set("api", api.DeepCopy());
+
+  base::ListValue type;
+  for (size_t i = 0; i < info.type.size(); ++i)
+    type.AppendString(info.type[i]);
+  response->Set("type", type.DeepCopy());
 
   *status_code = net::HTTP_OK;
   return response.Pass();

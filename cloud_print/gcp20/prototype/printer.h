@@ -11,6 +11,7 @@
 #include "cloud_print/gcp20/prototype/cloud_print_requester.h"
 #include "cloud_print/gcp20/prototype/dns_sd_server.h"
 #include "cloud_print/gcp20/prototype/privet_http_server.h"
+#include "cloud_print/gcp20/prototype/x_privet_token.h"
 
 // This class maintain work of DNS-SD server, HTTP server and others.
 class Printer : public PrivetHttpServer::Delegate,
@@ -79,6 +80,8 @@ class Printer : public PrivetHttpServer::Delegate,
   virtual void GetRegistrationServerError(std::string* description) OVERRIDE;
   virtual void CreateInfo(PrivetHttpServer::DeviceInfo* info) OVERRIDE;
 
+  virtual bool CheckXPrivetTokenHeader(const std::string& token) const OVERRIDE;
+
   // CloudRequester::Delegate methods:
   virtual void OnRegistrationStartResponseParsed(
       const std::string& registration_token,
@@ -89,16 +92,22 @@ class Printer : public PrivetHttpServer::Delegate,
   virtual void OnRegistrationError(const std::string& description) OVERRIDE;
 
   // Checks if register call is called correctly (|user| is correct,
-  // error is no set etc).
-  bool CheckRegistrationState(
-      const std::string& user,
-      bool ignore_error,
-      PrivetHttpServer::RegistrationErrorStatus* status) const;
+  // error is no set etc). Returns |false| if error status is put into |status|.
+  // Otherwise no error was occurred.
+  PrivetHttpServer::RegistrationErrorStatus CheckCommonRegErrors(
+      const std::string& user) const;
+
+  // Generates ProxyId for this device.
+  std::string GenerateProxyId() const;
 
   // Creates data for DNS TXT respond.
   std::vector<std::string> CreateTxt() const;
 
   RegistrationInfo reg_info_;
+
+  // Saving and loading registration info from file.
+  void SaveToFile(const base::FilePath& file_path) const;
+  bool LoadFromFile(const base::FilePath& file_path);
 
   // Contains DNS-SD server.
   DnsSdServer dns_server_;
@@ -108,6 +117,11 @@ class Printer : public PrivetHttpServer::Delegate,
 
   // Contains Cloud Print client.
   scoped_ptr<CloudPrintRequester> requester_;
+
+  XPrivetToken xtoken_;
+
+  // Uses for calculating uptime.
+  base::Time starttime_;
 
   DISALLOW_COPY_AND_ASSIGN(Printer);
 };

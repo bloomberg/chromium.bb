@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
 #include "net/url_request/url_fetcher.h"
@@ -20,8 +21,11 @@ typedef base::Callback<void(const std::string&)> ParserCallback;
 
 class CloudPrintURLRequestContextGetter;
 
+extern const char* kCloudPrintUrl;
+
 // Class for requesting CloudPrint server and parsing responses.
-class CloudPrintRequester : public net::URLFetcherDelegate,
+class CloudPrintRequester : public base::SupportsWeakPtr<CloudPrintRequester>,
+                            public net::URLFetcherDelegate,
                             public gaia::GaiaOAuthClient::Delegate {
  public:
   class Delegate {
