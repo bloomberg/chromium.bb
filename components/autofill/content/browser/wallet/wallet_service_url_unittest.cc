@@ -18,10 +18,9 @@ TEST(WalletServiceUrl, CheckDefaultUrls) {
   EXPECT_EQ("https://wallet-web.sandbox.google.com/online-secure/v2/"
             "autocheckout/v1/getFullWalletJwtless?s7e=otp",
             GetGetFullWalletUrl().spec());
-  EXPECT_EQ("https://wallet-web.sandbox.google.com/manage/w/0/#paymentMethods:",
+  EXPECT_EQ("https://wallet-web.sandbox.google.com/manage/paymentMethods",
             GetManageInstrumentsUrl().spec());
-  EXPECT_EQ("https://wallet-web.sandbox.google.com/manage/w/0/"
-            "#settings:addresses",
+  EXPECT_EQ("https://wallet-web.sandbox.google.com/manage/settings/addresses",
             GetManageAddressesUrl().spec());
   EXPECT_EQ("https://payments-form-dogfood.sandbox.google.com/online/v2/wallet/"
             "autocheckout/v1/acceptLegalDocument",

@@ -85,11 +85,11 @@ GURL GetGetFullWalletUrl() {
 }
 
 GURL GetManageInstrumentsUrl() {
-  return GetBaseSecureUrl().Resolve("manage/w/0/#paymentMethods:");
+  return GetBaseSecureUrl().Resolve("manage/paymentMethods");
 }
 
 GURL GetManageAddressesUrl() {
-  return GetBaseSecureUrl().Resolve("manage/w/0/#settings:addresses");
+  return GetBaseSecureUrl().Resolve("manage/settings/addresses");
 }
 
 GURL GetAcceptLegalDocumentsUrl() {
