@@ -39,20 +39,23 @@ RootWindow* TestScreen::CreateRootWindowForPrimaryDisplay() {
 }
 
 void TestScreen::SetDeviceScaleFactor(float device_scale_factor) {
-  gfx::Rect bounds = display_.bounds();
-  gfx::Rect bounds_in_pixel = gfx::ToNearestRect(
-      gfx::ScaleRect(bounds, display_.device_scale_factor()));
+  gfx::Rect bounds_in_pixel(display_.GetSizeInPixel());
   display_.SetScaleAndBounds(device_scale_factor, bounds_in_pixel);
   root_window_->OnHostResized(bounds_in_pixel.size());
 }
 
 void TestScreen::SetDisplayRotation(gfx::Display::Rotation rotation) {
   display_.set_rotation(rotation);
+  // TODO(oshima|mukai): Update the display_ as well.
   root_window_->SetTransform(GetRotationTransform() * GetUIScaleTransform());
 }
 
 void TestScreen::SetUIScale(float ui_scale) {
   ui_scale_ = ui_scale;
+  gfx::Rect bounds_in_pixel(display_.GetSizeInPixel());
+  gfx::Rect new_bounds = gfx::ToNearestRect(
+      gfx::ScaleRect(bounds_in_pixel, 1.0f / ui_scale));
+  display_.SetScaleAndBounds(display_.device_scale_factor(), new_bounds);
   root_window_->SetTransform(GetRotationTransform() * GetUIScaleTransform());
 }
 

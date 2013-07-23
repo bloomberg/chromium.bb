@@ -767,6 +767,9 @@ void RenderWidgetHostViewAura::SetSize(const gfx::Size& size) {
 }
 
 void RenderWidgetHostViewAura::SetBounds(const gfx::Rect& rect) {
+  if (HasDisplayPropertyChanged(window_))
+    host_->InvalidateScreenInfo();
+
   window_->SetBounds(rect);
   host_->WasResized();
   MaybeCreateResizeLock();

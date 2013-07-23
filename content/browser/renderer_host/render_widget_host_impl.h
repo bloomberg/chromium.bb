@@ -184,6 +184,11 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // Notification that the screen info has changed.
   void NotifyScreenInfoChanged();
 
+  // Invalidates the cached screen info so that next resize request
+  // will carry the up to date screen info. Unlike
+  // |NotifyScreenInfoChanged|, this doesn't send a message to the renderer.
+  void InvalidateScreenInfo();
+
   // Sets the View of this RenderWidgetHost.
   void SetView(RenderWidgetHostView* view);
 

@@ -88,6 +88,10 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   // Notification that a resize or move session ended on the native widget.
   void UpdateScreenInfo(gfx::NativeView view);
 
+  // Tells if the display property (work area/scale factor) has
+  // changed since the last time.
+  bool HasDisplayPropertyChanged(gfx::NativeView view);
+
 #if defined(OS_WIN)
   // The callback that DetachPluginsHelper calls for each child window. Call
   // this directly if you want to do custom filtering on plugin windows first.

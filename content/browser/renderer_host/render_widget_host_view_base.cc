@@ -456,16 +456,20 @@ void RenderWidgetHostViewBase::UpdateScreenInfo(gfx::NativeView view) {
   if (impl)
     impl->SendScreenRects();
 
+  if (HasDisplayPropertyChanged(view) && impl)
+    impl->NotifyScreenInfoChanged();
+}
+
+bool RenderWidgetHostViewBase::HasDisplayPropertyChanged(gfx::NativeView view) {
   gfx::Display display =
       gfx::Screen::GetScreenFor(view)->GetDisplayNearestWindow(view);
   if (current_display_area_ == display.work_area() &&
       current_device_scale_factor_ == display.device_scale_factor()) {
-    return;
+    return false;
   }
   current_display_area_ = display.work_area();
   current_device_scale_factor_ = display.device_scale_factor();
-  if (impl)
-    impl->NotifyScreenInfoChanged();
+  return true;
 }
 
 SmoothScrollGesture* RenderWidgetHostViewBase::CreateSmoothScrollGesture(

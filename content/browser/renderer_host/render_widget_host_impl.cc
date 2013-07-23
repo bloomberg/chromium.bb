@@ -129,7 +129,6 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
       is_accelerated_compositing_active_(false),
       repaint_ack_pending_(false),
       resize_ack_pending_(false),
-      screen_info_out_of_date_(false),
       overdraw_bottom_height_(0.f),
       should_auto_resize_(false),
       waiting_for_screen_rects_ack_(false),
@@ -566,7 +565,7 @@ void RenderWidgetHostImpl::WasResized() {
 
   bool size_changed = new_size != last_requested_size_;
   bool side_payload_changed =
-      screen_info_out_of_date_ ||
+      !screen_info_.get() ||
       old_physical_backing_size != physical_backing_size_ ||
       was_fullscreen != is_fullscreen_ ||
       old_overdraw_bottom_height != overdraw_bottom_height_;
@@ -1140,9 +1139,12 @@ void RenderWidgetHostImpl::NotifyScreenInfoChanged() {
   // The resize message (which may not happen immediately) will carry with it
   // the screen info as well as the new size (if the screen has changed scale
   // factor).
-  screen_info_.reset();
-  screen_info_out_of_date_ = true;
+  InvalidateScreenInfo();
   WasResized();
+}
+
+void RenderWidgetHostImpl::InvalidateScreenInfo() {
+  screen_info_.reset();
 }
 
 void RenderWidgetHostImpl::GetSnapshotFromRenderer(

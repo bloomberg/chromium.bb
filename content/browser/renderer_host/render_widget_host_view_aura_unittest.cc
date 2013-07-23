@@ -18,6 +18,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
+#include "ui/aura/layout_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/aura_test_helper.h"
 #include "ui/aura/test/test_cursor_client.h"
@@ -133,6 +134,40 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAuraTest);
+};
+
+// A layout manager that always resizes a child to the root window size.
+class FullscreenLayoutManager : public aura::LayoutManager {
+ public:
+  explicit FullscreenLayoutManager(aura::RootWindow* owner)
+      : owner_(owner) {}
+  virtual ~FullscreenLayoutManager() {}
+
+  // Overridden from aura::LayoutManager:
+  virtual void OnWindowResized() OVERRIDE {
+    aura::Window::Windows::const_iterator i;
+    for (i = owner_->children().begin(); i != owner_->children().end(); ++i) {
+      (*i)->SetBounds(gfx::Rect());
+    }
+  }
+  virtual void OnWindowAddedToLayout(aura::Window* child) OVERRIDE {
+    child->SetBounds(gfx::Rect());
+  }
+  virtual void OnWillRemoveWindowFromLayout(aura::Window* child) OVERRIDE {
+  }
+  virtual void OnWindowRemovedFromLayout(aura::Window* child) OVERRIDE {
+  }
+  virtual void OnChildWindowVisibilityChanged(aura::Window* child,
+                                              bool visible) OVERRIDE {
+  }
+  virtual void SetChildBounds(aura::Window* child,
+                              const gfx::Rect& requested_bounds) OVERRIDE {
+    SetChildBoundsDirect(child, gfx::Rect(owner_->bounds().size()));
+  }
+
+ private:
+  aura::RootWindow* owner_;
+  DISALLOW_COPY_AND_ASSIGN(FullscreenLayoutManager);
 };
 
 }  // namespace
@@ -507,6 +542,46 @@ TEST_F(RenderWidgetHostViewAuraTest, CursorVisibilityChange) {
       InputMsg_CursorVisibilityChange::ID));
 
   cursor_client.RemoveObserver(view_);
+}
+
+// Resizing in fullscreen mode should send the up-to-date screen info.
+TEST_F(RenderWidgetHostViewAuraTest, FullscreenResize) {
+  aura::RootWindow* root_window = aura_test_helper_->root_window();
+  root_window->SetLayoutManager(new FullscreenLayoutManager(root_window));
+  view_->InitAsFullscreen(parent_view_);
+  view_->WasShown();
+  widget_host_->ResetSizeAndRepaintPendingFlags();
+  sink_->ClearMessages();
+
+  // Call WasResized to flush the old screen info.
+  view_->GetRenderWidgetHost()->WasResized();
+  {
+    // 0 is CreatingNew message.
+    const IPC::Message* msg = sink_->GetMessageAt(0);
+    EXPECT_EQ(ViewMsg_Resize::ID, msg->type());
+    ViewMsg_Resize::Param params;
+    ViewMsg_Resize::Read(msg, &params);
+    EXPECT_EQ("0,0 800x600",
+              gfx::Rect(params.a.screen_info.availableRect).ToString());
+    EXPECT_EQ("800x600", params.a.new_size.ToString());
+  }
+
+  widget_host_->ResetSizeAndRepaintPendingFlags();
+  sink_->ClearMessages();
+
+  // Make sure the corrent screen size is set along in the resize
+  // request when the screen size has changed.
+  aura_test_helper_->test_screen()->SetUIScale(0.5);
+  EXPECT_EQ(1u, sink_->message_count());
+  {
+    const IPC::Message* msg = sink_->GetMessageAt(0);
+    EXPECT_EQ(ViewMsg_Resize::ID, msg->type());
+    ViewMsg_Resize::Param params;
+    ViewMsg_Resize::Read(msg, &params);
+    EXPECT_EQ("0,0 1600x1200",
+              gfx::Rect(params.a.screen_info.availableRect).ToString());
+    EXPECT_EQ("1600x1200", params.a.new_size.ToString());
+  }
 }
 
 }  // namespace content
