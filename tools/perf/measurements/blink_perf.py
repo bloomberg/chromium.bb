@@ -27,17 +27,17 @@ def CreatePageSetFromPath(path):
                                    'file://' + path.replace('\\', '/')})
 
   def _AddDir(dir_path, skipped):
-    for path in os.listdir(dir_path):
-      if path == 'resources':
+    for candidate_path in os.listdir(dir_path):
+      if candidate_path == 'resources':
         continue
-      path = os.path.join(dir_path, path)
-      if path.startswith(tuple([os.path.join(path, s)
-                                for s in skipped])):
+      candidate_path = os.path.join(dir_path, candidate_path)
+      if candidate_path.startswith(tuple([os.path.join(path, s)
+                                          for s in skipped])):
         continue
-      if os.path.isdir(path):
-        _AddDir(path, skipped)
+      if os.path.isdir(candidate_path):
+        _AddDir(candidate_path, skipped)
       else:
-        _AddPage(path)
+        _AddPage(candidate_path)
 
   if os.path.isdir(path):
     skipped = []
