@@ -19,6 +19,7 @@
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/color_constants.h"
+#include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/focusable_border.h"
 #include "ui/views/controls/menu/menu_runner.h"
@@ -97,7 +98,9 @@ NativeComboboxViews::~NativeComboboxViews() {
 
 bool NativeComboboxViews::OnMousePressed(const ui::MouseEvent& mouse_event) {
   combobox_->RequestFocus();
-  if (mouse_event.IsLeftMouseButton()) {
+  const base::TimeDelta delta = base::Time::Now() - closed_time_;
+  if (mouse_event.IsLeftMouseButton() &&
+      (delta.InMilliseconds() > MenuButton::kMinimumTimeBetweenButtonClicks)) {
     UpdateFromModel();
     ShowDropDownMenu(ui::MENU_SOURCE_MOUSE);
   }
@@ -369,7 +372,6 @@ void NativeComboboxViews::PaintText(gfx::Canvas* canvas) {
 }
 
 void NativeComboboxViews::ShowDropDownMenu(ui::MenuSourceType source_type) {
-
   if (!dropdown_list_menu_runner_.get())
     UpdateFromModel();
 
@@ -401,6 +403,7 @@ void NativeComboboxViews::ShowDropDownMenu(ui::MenuSourceType source_type) {
       MenuRunner::MENU_DELETED)
     return;
   dropdown_open_ = false;
+  closed_time_ = base::Time::Now();
 
   // Need to explicitly clear mouse handler so that events get sent
   // properly after the menu finishes running. If we don't do this, then

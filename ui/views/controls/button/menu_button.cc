@@ -26,18 +26,15 @@ using base::TimeDelta;
 
 namespace views {
 
-// The amount of time, in milliseconds, we wait before allowing another mouse
-// pressed event to show the menu.
-static const int64 kMinimumTimeBetweenButtonClicks = 100;
-
 // Default menu offset.
 static const int kDefaultMenuOffsetX = -2;
 static const int kDefaultMenuOffsetY = -4;
 
 // static
+const char MenuButton::kViewClassName[] = "MenuButton";
+const int64 MenuButton::kMinimumTimeBetweenButtonClicks = 100;
 const int MenuButton::kMenuMarkerPaddingLeft = 3;
 const int MenuButton::kMenuMarkerPaddingRight = -1;
-const char MenuButton::kViewClassName[] = "MenuButton";
 
 ////////////////////////////////////////////////////////////////////////////////
 //

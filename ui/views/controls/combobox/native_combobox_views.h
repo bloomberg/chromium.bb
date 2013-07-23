@@ -5,6 +5,7 @@
 #ifndef UI_VIEWS_CONTROLS_COMBOBOX_NATIVE_COMBOBOX_VIEWS_H_
 #define UI_VIEWS_CONTROLS_COMBOBOX_NATIVE_COMBOBOX_VIEWS_H_
 
+#include "base/time/time.h"
 #include "ui/views/controls/combobox/native_combobox_wrapper.h"
 #include "ui/views/controls/menu/menu_delegate.h"
 #include "ui/views/view.h"
@@ -89,6 +90,14 @@ class NativeComboboxViews : public views::View,
 
   // Is the drop down list showing
   bool dropdown_open_;
+
+  // Like MenuButton, we use a time object in order to keep track of when the
+  // combobox was closed. The time is used for simulating menu behavior; that
+  // is, if the menu is shown and the button is pressed, we need to close the
+  // menu. There is no clean way to get the second click event because the
+  // menu is displayed using a modal loop and, unlike regular menus in Windows,
+  // the button is not part of the displayed menu.
+  base::Time closed_time_;
 
   // The selected index in the model. The default value is -1, which means no
   // selection.
