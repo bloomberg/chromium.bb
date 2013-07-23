@@ -288,9 +288,6 @@ private:
     void loadWithNavigationAction(const ResourceRequest&, const NavigationAction&,
         FrameLoadType, PassRefPtr<FormState>, const SubstituteData&, const String& overrideEncoding = String());
 
-
-    bool shouldReload(const KURL& currentURL, const KURL& destinationURL);
-
     void requestFromDelegate(ResourceRequest&, unsigned long& identifier, ResourceError&);
 
     void detachChildren();

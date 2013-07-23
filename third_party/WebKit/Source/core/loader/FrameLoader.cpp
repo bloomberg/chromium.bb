@@ -985,6 +985,10 @@ void FrameLoader::load(const FrameLoadRequest& passedRequest)
     }
 
     TemporaryChange<bool> changeClientRedirect(m_startingClientRedirect, request.clientRedirect());
+    if (shouldPerformFragmentNavigation(request.formState(), request.resourceRequest().httpMethod(), newLoadType, request.resourceRequest().url())) {
+        checkNavigationPolicyAndContinueFragmentScroll(action, newLoadType != FrameLoadTypeRedirectWithLockedBackForwardList);
+        return;
+    }
     bool sameURL = shouldTreatURLAsSameAsCurrent(request.resourceRequest().url());
     loadWithNavigationAction(request.resourceRequest(), action, newLoadType, request.formState(), request.substituteData());
     // Example of this case are sites that reload the same URL with a different cookie
@@ -1025,15 +1029,8 @@ void FrameLoader::loadWithNavigationAction(const ResourceRequest& request, const
 
     loader->setReplacesCurrentHistoryItem(type == FrameLoadTypeRedirectWithLockedBackForwardList);
     loader->setIsClientRedirect(m_startingClientRedirect);
-
-    bool isFormSubmission = formState;
-
-    if (shouldPerformFragmentNavigation(isFormSubmission, request.httpMethod(), type, request.url()))
-        checkNavigationPolicyAndContinueFragmentScroll(action, type != FrameLoadTypeRedirectWithLockedBackForwardList);
-    else {
-        setPolicyDocumentLoader(loader.get());
-        checkNavigationPolicyAndContinueLoad(formState, type);
-    }
+    setPolicyDocumentLoader(loader.get());
+    checkNavigationPolicyAndContinueLoad(formState, type);
 }
 
 void FrameLoader::reportLocalLoadFailed(Frame* frame, const String& url)
@@ -1305,16 +1302,6 @@ void FrameLoader::transitionToCommitted()
 
     if (!m_stateMachine.creatingInitialEmptyDocument() && !m_stateMachine.committedFirstRealDocumentLoad())
         m_stateMachine.advanceTo(FrameLoaderStateMachine::DisplayingInitialEmptyDocumentPostCommit);
-}
-
-bool FrameLoader::shouldReload(const KURL& currentURL, const KURL& destinationURL)
-{
-    // This function implements the rule: "Don't reload if navigating by fragment within
-    // the same URL, but do reload if going to a new URL or to the same URL with no
-    // fragment identifier at all."
-    if (!destinationURL.hasFragmentIdentifier())
-        return true;
-    return !equalIgnoringFragmentIdentifier(currentURL, destinationURL);
 }
 
 void FrameLoader::closeOldDataSources()
@@ -1772,17 +1759,16 @@ void FrameLoader::checkNavigationPolicyAndContinueFragmentScroll(const Navigatio
 
 bool FrameLoader::shouldPerformFragmentNavigation(bool isFormSubmission, const String& httpMethod, FrameLoadType loadType, const KURL& url)
 {
+    ASSERT(loadType != FrameLoadTypeBackForward);
+    ASSERT(loadType != FrameLoadTypeReloadFromOrigin);
+    ASSERT(loadType != FrameLoadTypeReplace);
     // We don't do this if we are submitting a form with method other than "GET", explicitly reloading,
     // currently displaying a frameset, or if the URL does not have a fragment.
-    // These rules were originally based on what KHTML was doing in KHTMLPart::openURL.
-
-    // FIXME: What about load types other than Standard and Reload?
-
     return (!isFormSubmission || equalIgnoringCase(httpMethod, "GET"))
         && loadType != FrameLoadTypeReload
-        && loadType != FrameLoadTypeReloadFromOrigin
         && loadType != FrameLoadTypeSame
-        && !shouldReload(m_frame->document()->url(), url)
+        && url.hasFragmentIdentifier()
+        && equalIgnoringFragmentIdentifier(m_frame->document()->url(), url)
         // We don't want to just scroll if a link from within a
         // frameset is trying to reload the frameset into _top.
         && !m_frame->document()->isFrameSet();
