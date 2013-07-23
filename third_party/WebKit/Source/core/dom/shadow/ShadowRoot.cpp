@@ -192,7 +192,7 @@ void ShadowRoot::recalcStyle(StyleChange change)
 bool ShadowRoot::isActive() const
 {
     for (ShadowRoot* shadowRoot = youngerShadowRoot(); shadowRoot; shadowRoot = shadowRoot->youngerShadowRoot())
-        if (!ScopeContentDistribution::hasShadowElement(shadowRoot))
+        if (!shadowRoot->containsShadowElements())
             return false;
     return true;
 }
@@ -300,6 +300,26 @@ ScopeContentDistribution* ShadowRoot::ensureScopeDistribution()
 
     m_scopeDistribution = adoptPtr(new ScopeContentDistribution);
     return m_scopeDistribution.get();
+}
+
+bool ShadowRoot::containsShadowElements() const
+{
+    return m_scopeDistribution ? m_scopeDistribution->hasShadowElementChildren() : 0;
+}
+
+bool ShadowRoot::containsContentElements() const
+{
+    return m_scopeDistribution ? m_scopeDistribution->hasContentElementChildren() : 0;
+}
+
+bool ShadowRoot::containsShadowRoots() const
+{
+    return m_scopeDistribution ? m_scopeDistribution->numberOfElementShadowChildren() : 0;
+}
+
+InsertionPoint* ShadowRoot::insertionPoint() const
+{
+    return m_scopeDistribution ? m_scopeDistribution->insertionPointAssignedTo() : 0;
 }
 
 }

@@ -92,13 +92,6 @@ public:
 
     bool isUsedForRendering() const;
 
-    static bool hasShadowElement(const ShadowRoot*);
-    static bool hasContentElement(const ShadowRoot*);
-    static bool hasInsertionPoint(const ShadowRoot*);
-    static bool hasElementShadow(const ShadowRoot* holder) { return countElementShadow(holder); }
-    static unsigned countElementShadow(const ShadowRoot*);
-    static InsertionPoint* assignedTo(const ShadowRoot*);
-
 private:
     InsertionPoint* m_insertionPointAssignedTo;
     unsigned m_numberOfShadowElementChildren;

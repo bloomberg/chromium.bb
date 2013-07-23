@@ -62,14 +62,14 @@ void EventPathWalker::moveToParent()
     }
     if (!m_node->isShadowRoot()) {
         m_node = m_node->parentNode();
-        if (!(m_node && m_node->isShadowRoot() && ScopeContentDistribution::assignedTo(toShadowRoot(m_node))))
+        if (!(m_node && m_node->isShadowRoot() && toShadowRoot(m_node)->insertionPoint()))
             m_distributedNode = m_node;
         m_isVisitingInsertionPointInReprojection = false;
         return;
     }
 
     const ShadowRoot* shadowRoot = toShadowRoot(m_node);
-    if (InsertionPoint* insertionPoint = ScopeContentDistribution::assignedTo(shadowRoot)) {
+    if (InsertionPoint* insertionPoint = shadowRoot->insertionPoint()) {
         m_node = insertionPoint;
         m_isVisitingInsertionPointInReprojection = true;
         return;

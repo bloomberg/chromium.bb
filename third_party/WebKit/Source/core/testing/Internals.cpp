@@ -451,7 +451,7 @@ void Internals::pauseAnimations(double pauseTime, ExceptionCode& ec)
 bool Internals::hasShadowInsertionPoint(const Node* root, ExceptionCode& ec) const
 {
     if (root && root->isShadowRoot())
-        return ScopeContentDistribution::hasShadowElement(toShadowRoot(root));
+        return toShadowRoot(root)->containsShadowElements();
 
     ec = InvalidAccessError;
     return 0;
@@ -460,7 +460,7 @@ bool Internals::hasShadowInsertionPoint(const Node* root, ExceptionCode& ec) con
 bool Internals::hasContentElement(const Node* root, ExceptionCode& ec) const
 {
     if (root && root->isShadowRoot())
-        return ScopeContentDistribution::hasContentElement(toShadowRoot(root));
+        return toShadowRoot(root)->containsContentElements();
 
     ec = InvalidAccessError;
     return 0;
@@ -472,8 +472,9 @@ size_t Internals::countElementShadow(const Node* root, ExceptionCode& ec) const
         ec = InvalidAccessError;
         return 0;
     }
-
-    return ScopeContentDistribution::countElementShadow(toShadowRoot(root));
+    if (const ScopeContentDistribution* distribution = toShadowRoot(root)->scopeDistribution())
+        return distribution->numberOfElementShadowChildren();
+    return 0;
 }
 
 bool Internals::attached(Node* node, ExceptionCode& ec)

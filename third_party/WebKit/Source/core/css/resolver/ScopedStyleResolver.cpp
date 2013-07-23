@@ -349,7 +349,7 @@ void ScopedStyleResolver::matchHostRules(ElementRuleCollector& collector, bool i
     // by using the flag.
     ShadowRoot* shadowRoot = shadow->youngestShadowRoot();
     for (; shadowRoot; shadowRoot = shadowRoot->olderShadowRoot())
-        if (!ScopeContentDistribution::hasShadowElement(shadowRoot))
+        if (!shadowRoot->containsShadowElements())
             break;
     // All shadow roots have <shadow>.
     if (!shadowRoot)

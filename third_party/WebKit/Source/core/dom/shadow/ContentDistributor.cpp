@@ -99,7 +99,7 @@ const Vector<RefPtr<InsertionPoint> >& ScopeContentDistribution::ensureInsertion
     m_insertionPointListIsValid = true;
     ASSERT(m_insertionPointList.isEmpty());
 
-    if (!hasInsertionPoint(shadowRoot))
+    if (!shadowRoot->containsInsertionPoints())
         return m_insertionPointList;
 
     for (Element* element = ElementTraversal::firstWithin(shadowRoot); element; element = ElementTraversal::next(element, shadowRoot)) {
@@ -138,43 +138,6 @@ void ScopeContentDistribution::unregisterInsertionPoint(InsertionPoint* point)
     }
 
     invalidateInsertionPointList();
-}
-
-bool ScopeContentDistribution::hasShadowElement(const ShadowRoot* holder)
-{
-    if (!holder->scopeDistribution())
-        return false;
-
-    return holder->scopeDistribution()->hasShadowElementChildren();
-}
-
-bool ScopeContentDistribution::hasContentElement(const ShadowRoot* holder)
-{
-    if (!holder->scopeDistribution())
-        return false;
-
-    return holder->scopeDistribution()->hasContentElementChildren();
-}
-
-unsigned ScopeContentDistribution::countElementShadow(const ShadowRoot* holder)
-{
-    if (!holder->scopeDistribution())
-        return 0;
-
-    return holder->scopeDistribution()->numberOfElementShadowChildren();
-}
-
-bool ScopeContentDistribution::hasInsertionPoint(const ShadowRoot* holder)
-{
-    return hasShadowElement(holder) || hasContentElement(holder);
-}
-
-InsertionPoint* ScopeContentDistribution::assignedTo(const ShadowRoot* holder)
-{
-    if (!holder->scopeDistribution())
-        return 0;
-
-    return holder->scopeDistribution()->insertionPointAssignedTo();
 }
 
 ContentDistributor::ContentDistributor()
@@ -395,14 +358,14 @@ const SelectRuleFeatureSet& ContentDistributor::ensureSelectFeatureSet(ElementSh
 
 void ContentDistributor::collectSelectFeatureSetFrom(ShadowRoot* root)
 {
-    if (ScopeContentDistribution::hasElementShadow(root)) {
+    if (root->containsShadowRoots()) {
         for (Element* element = ElementTraversal::firstWithin(root); element; element = ElementTraversal::next(element)) {
             if (ElementShadow* elementShadow = element->shadow())
                 m_selectFeatures.add(elementShadow->distributor().ensureSelectFeatureSet(elementShadow));
         }
     }
 
-    if (ScopeContentDistribution::hasContentElement(root)) {
+    if (root->containsContentElements()) {
         for (Element* element = ElementTraversal::firstWithin(root); element; element = ElementTraversal::next(element)) {
             if (!isHTMLContentElement(element))
                 continue;

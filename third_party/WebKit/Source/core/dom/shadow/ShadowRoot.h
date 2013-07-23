@@ -38,6 +38,7 @@
 namespace WebCore {
 
 class ElementShadow;
+class InsertionPoint;
 class ScopeContentDistribution;
 
 class ShadowRoot FINAL : public DocumentFragment, public TreeScope, public DoublyLinkedListNode<ShadowRoot> {
@@ -92,6 +93,12 @@ public:
     ScopeContentDistribution* scopeDistribution() { return m_scopeDistribution.get(); }
     const ScopeContentDistribution* scopeDistribution() const { return m_scopeDistribution.get(); }
     ScopeContentDistribution* ensureScopeDistribution();
+
+    bool containsShadowElements() const;
+    bool containsContentElements() const;
+    bool containsInsertionPoints() const { return containsShadowElements() || containsContentElements(); }
+    bool containsShadowRoots() const;
+    InsertionPoint* insertionPoint() const;
 
     ShadowRootType type() const { return static_cast<ShadowRootType>(m_type); }
 

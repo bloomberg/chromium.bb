@@ -50,7 +50,7 @@ static inline bool nodeCanBeDistributed(const Node* node)
         return false;
 
     if (ShadowRoot* shadowRoot = parent->isShadowRoot() ? toShadowRoot(parent) : 0)
-        return ScopeContentDistribution::assignedTo(shadowRoot);
+        return shadowRoot->insertionPoint();
 
     if (parent->isElementNode() && toElement(parent)->shadow())
         return true;
@@ -185,7 +185,7 @@ Node* ComposedShadowTreeWalker::traverseBackToYoungerShadowRoot(const Node* node
     if (node->parentNode() && node->parentNode()->isShadowRoot()) {
         ShadowRoot* parentShadowRoot = toShadowRoot(node->parentNode());
         if (!parentShadowRoot->isYoungest()) {
-            InsertionPoint* assignedInsertionPoint = ScopeContentDistribution::assignedTo(parentShadowRoot);
+            InsertionPoint* assignedInsertionPoint = parentShadowRoot->insertionPoint();
             ASSERT(assignedInsertionPoint);
             return traverseSiblingInCurrentTree(assignedInsertionPoint, direction);
         }
@@ -254,7 +254,7 @@ inline Node* ComposedShadowTreeWalker::traverseParentInCurrentTree(const Node* n
 Node* ComposedShadowTreeWalker::traverseParentBackToYoungerShadowRootOrHost(const ShadowRoot* shadowRoot, ParentTraversalDetails* details) const
 {
     ASSERT(shadowRoot);
-    ASSERT(!ScopeContentDistribution::assignedTo(shadowRoot));
+    ASSERT(!shadowRoot->insertionPoint());
 
     if (shadowRoot->isYoungest()) {
         if (canCrossUpperBoundary()) {

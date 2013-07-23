@@ -201,7 +201,7 @@ void InsertionPoint::setResetStyleInheritance(bool value)
 
 bool InsertionPoint::contains(const Node* node) const
 {
-    return m_distribution.contains(const_cast<Node*>(node)) || (node->isShadowRoot() && ScopeContentDistribution::assignedTo(toShadowRoot(node)) == this);
+    return m_distribution.contains(const_cast<Node*>(node)) || (node->isShadowRoot() && toShadowRoot(node)->insertionPoint() == this);
 }
 
 const CSSSelectorList& InsertionPoint::emptySelectorList()
@@ -228,7 +228,7 @@ InsertionPoint* resolveReprojection(const Node* projectedNode)
         }
 
         if (Node* parent = parentNodeForDistribution(current)) {
-            if (InsertionPoint* insertedTo = parent->isShadowRoot() ? ScopeContentDistribution::assignedTo(toShadowRoot(parent)) : 0) {
+            if (InsertionPoint* insertedTo = parent->isShadowRoot() ? toShadowRoot(parent)->insertionPoint() : 0) {
                 current = insertedTo;
                 insertionPoint = insertedTo;
                 continue;
@@ -255,7 +255,7 @@ void collectInsertionPointsWhereNodeIsDistributed(const Node* node, Vector<Inser
             }
         }
         if (Node* parent = parentNodeForDistribution(current)) {
-            if (InsertionPoint* insertedTo = parent->isShadowRoot() ? ScopeContentDistribution::assignedTo(toShadowRoot(parent)) : 0) {
+            if (InsertionPoint* insertedTo = parent->isShadowRoot() ? toShadowRoot(parent)->insertionPoint() : 0) {
                 current = insertedTo;
                 results.append(insertedTo);
                 continue;
