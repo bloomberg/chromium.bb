@@ -73,13 +73,6 @@ def GetAVDs():
   return avds
 
 
-def GetEmulators():
-  """Backwards compatibility call to get emulators.
-
-    Deprecated: use GetAttachedDevices(hardware=False) instead.
-  """
-  return GetAttachedDevices(hardware=False)
-
 def GetAttachedDevices(hardware=True, emulator=True, offline=False):
   """Returns a list of attached, android devices and emulators.
 
