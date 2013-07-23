@@ -45,6 +45,7 @@
 #else
 #include "chrome/browser/ui/webui/ntp/android/bookmarks_handler.h"
 #include "chrome/browser/ui/webui/ntp/android/context_menu_handler.h"
+#include "chrome/browser/ui/webui/ntp/android/navigation_handler.h"
 #include "chrome/browser/ui/webui/ntp/android/new_tab_page_ready_handler.h"
 #include "chrome/browser/ui/webui/ntp/android/promo_handler.h"
 #endif
@@ -104,8 +105,8 @@ NewTabUI::NewTabUI(content::WebUI* web_ui)
     web_ui->AddMessageHandler(new browser_sync::ForeignSessionHandler());
     web_ui->AddMessageHandler(new MostVisitedHandler());
     web_ui->AddMessageHandler(new RecentlyClosedTabsHandler());
-    web_ui->AddMessageHandler(new MetricsHandler());
 #if !defined(OS_ANDROID)
+    web_ui->AddMessageHandler(new MetricsHandler());
     web_ui->AddMessageHandler(new NewTabPageHandler());
     if (NewTabUI::IsDiscoveryInNTPEnabled())
       web_ui->AddMessageHandler(new SuggestionsHandler());
@@ -128,6 +129,7 @@ NewTabUI::NewTabUI(content::WebUI* web_ui)
   // These handlers are specific to the Android NTP page.
   web_ui->AddMessageHandler(new BookmarksHandler());
   web_ui->AddMessageHandler(new ContextMenuHandler());
+  web_ui->AddMessageHandler(new NavigationHandler());
   web_ui->AddMessageHandler(new NewTabPageReadyHandler());
   if (!GetProfile()->IsOffTheRecord())
     web_ui->AddMessageHandler(new PromoHandler());

@@ -8824,6 +8824,15 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="NewTabPage.ActionAndroid" enum="NewTabPageActionAndroid">
+  <summary>
+    Actions taken by users from the new tab page on Android. These actions may
+    navigate away from the NTP (e.g. searching in the omnibox or opening a
+    bookmark), but can also happen without navigating away from the NTP (e.g.
+    opening a bookmark in a new tab).
+  </summary>
+</histogram>
+
 <histogram name="NewTabPage.AppsPageDragSource" enum="AppsPageDragSource">
   <summary>
     Histogram for the source of app page drags. For any succesful drop onto an
@@ -19229,6 +19238,16 @@ other types of suffix sets.
   <int value="12" label="INTERNAL"/>
   <int value="13" label="DNS_LOOKUP_FAILED"/>
   <int value="14" label="HTTP_GET_FAILED"/>
+</enum>
+
+<enum name="NewTabPageActionAndroid" type="int">
+  <int value="0" label="Searched using the omnibox"/>
+  <int value="1" label="Navigated to Google search homepage using the omnibox"/>
+  <int value="2" label="Navigated to any other page using the omnibox"/>
+  <int value="3" label="Opened a most visited page"/>
+  <int value="4" label="Opened a recently closed tab"/>
+  <int value="5" label="Opened a bookmark"/>
+  <int value="6" label="Opened a foreign session (from other devices section)"/>
 </enum>
 
 <enum name="NewTabPageMobilePromo" type="int">

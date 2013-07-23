@@ -535,6 +535,7 @@ cr.define('ntp', function() {
    *     reopen a tab.
    */
   function openRecentlyClosedTab(item, evt) {
+    chrome.send('openedRecentlyClosed');
     chrome.send('reopenTab', [item.sessionId]);
   }
 
@@ -946,7 +947,7 @@ cr.define('ntp', function() {
       return;
 
     var clickFunction = function(item) {
-      chrome.send('metricsHandler:recordAction', ['MobileNTPMostVisited']);
+      chrome.send('openedMostVisited');
       window.location = item.url;
     };
     populateData(findList('most_visited'), SectionType.MOST_VISITED, data,
@@ -1018,7 +1019,7 @@ cr.define('ntp', function() {
         if (item['folder']) {
           browseToBookmarkFolder(item.id);
         } else if (!!item.url) {
-          chrome.send('metricsHandler:recordAction', ['MobileNTPBookmark']);
+          chrome.send('openedBookmark');
           window.location = item.url;
         }
       };
@@ -1195,6 +1196,25 @@ cr.define('ntp', function() {
    *     when chrome.send('showContextMenu') was called.
    */
   function onCustomMenuSelected(itemId) {
+    if (contextMenuUrl != null) {
+      switch (itemId) {
+        case ContextMenuItemIds.BOOKMARK_OPEN_IN_NEW_TAB:
+        case ContextMenuItemIds.BOOKMARK_OPEN_IN_INCOGNITO_TAB:
+          chrome.send('openedBookmark');
+          break;
+
+        case ContextMenuItemIds.MOST_VISITED_OPEN_IN_NEW_TAB:
+        case ContextMenuItemIds.MOST_VISITED_OPEN_IN_INCOGNITO_TAB:
+          chrome.send('openedMostVisited');
+          break;
+
+        case ContextMenuItemIds.RECENTLY_CLOSED_OPEN_IN_NEW_TAB:
+        case ContextMenuItemIds.RECENTLY_CLOSED_OPEN_IN_INCOGNITO_TAB:
+          chrome.send('openedRecentlyClosed');
+          break;
+      }
+    }
+
     switch (itemId) {
       case ContextMenuItemIds.BOOKMARK_OPEN_IN_NEW_TAB:
       case ContextMenuItemIds.MOST_VISITED_OPEN_IN_NEW_TAB:
@@ -1835,7 +1855,7 @@ cr.define('ntp', function() {
           metaKeyPressed = evt.metaKey;
           shiftKeyPressed = evt.shiftKey;
         }
-        chrome.send('metricsHandler:recordAction', ['MobileNTPForeignSession']);
+        chrome.send('openedForeignSession');
         chrome.send('openForeignSession', [String(item.sessionTag),
             String(item.winNum), String(item.sessionId), buttonIndex,
             altKeyPressed, ctrlKeyPressed, metaKeyPressed, shiftKeyPressed]);
