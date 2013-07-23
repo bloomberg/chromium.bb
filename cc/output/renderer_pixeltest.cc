@@ -102,8 +102,12 @@ scoped_ptr<TextureDrawQuad> CreateTestTextureDrawQuad(
     bool premultiplied_alpha,
     SharedQuadState* shared_state,
     ResourceProvider* resource_provider) {
-  uint32_t pixel_color = premultiplied_alpha ?
-      SkPreMultiplyColor(texel_color) : texel_color;
+  SkPMColor pixel_color = premultiplied_alpha ?
+      SkPreMultiplyColor(texel_color) :
+      SkPackARGB32NoCheck(SkColorGetA(texel_color),
+                          SkColorGetR(texel_color),
+                          SkColorGetG(texel_color),
+                          SkColorGetB(texel_color));
   std::vector<uint32_t> pixels(rect.size().GetArea(), pixel_color);
 
   ResourceProvider::ResourceId resource = resource_provider->CreateResource(
@@ -294,11 +298,11 @@ TYPED_TEST(RendererPixelTest, PremultipliedTextureWithBackground) {
 
   scoped_ptr<SharedQuadState> texture_quad_state =
       CreateTestSharedQuadState(gfx::Transform(), rect);
-  texture_quad_state->opacity = 0.5f;
+  texture_quad_state->opacity = 0.8f;
 
   scoped_ptr<TextureDrawQuad> texture_quad = CreateTestTextureDrawQuad(
       gfx::Rect(this->device_viewport_size_),
-      SK_ColorTRANSPARENT,  // Texel color.
+      SkColorSetARGB(204, 120, 255, 120),  // Texel color.
       SK_ColorGREEN,  // Background color.
       true,  // Premultiplied alpha.
       texture_quad_state.get(),
@@ -361,11 +365,11 @@ TEST_F(GLRendererPixelTest, NonPremultipliedTextureWithBackground) {
 
   scoped_ptr<SharedQuadState> texture_quad_state =
       CreateTestSharedQuadState(gfx::Transform(), rect);
-  texture_quad_state->opacity = 0.5f;
+  texture_quad_state->opacity = 0.8f;
 
   scoped_ptr<TextureDrawQuad> texture_quad = CreateTestTextureDrawQuad(
       gfx::Rect(this->device_viewport_size_),
-      SK_ColorTRANSPARENT,  // Texel color.
+      SkColorSetARGB(204, 120, 255, 120),  // Texel color.
       SK_ColorGREEN,  // Background color.
       false,  // Premultiplied alpha.
       texture_quad_state.get(),

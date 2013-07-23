@@ -840,6 +840,7 @@ std::string FragmentShaderTexBackgroundPremultiplyAlpha::GetShaderString(
     precision mediump float;
     varying TexCoordPrecision vec2 v_texCoord;
     varying float v_alpha;
+    uniform vec4 background_color;
     uniform sampler2D s_texture;
     void main() {
       vec4 texColor = texture2D(s_texture, v_texCoord);

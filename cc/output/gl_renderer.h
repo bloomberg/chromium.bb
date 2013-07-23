@@ -262,7 +262,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
                          FragmentShaderTexBackgroundVaryingAlpha>
       TextureBackgroundProgram;
   typedef ProgramBinding<VertexShaderPosTexTransform,
-                         FragmentShaderTexBackgroundVaryingAlpha>
+                         FragmentShaderTexBackgroundPremultiplyAlpha>
       NonPremultipliedTextureBackgroundProgram;
   typedef ProgramBinding<VertexShaderPosTexTransform,
                          FragmentShaderRGBATexRectVaryingAlpha>
