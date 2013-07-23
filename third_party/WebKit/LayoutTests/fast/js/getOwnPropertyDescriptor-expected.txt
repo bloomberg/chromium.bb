@@ -159,6 +159,16 @@ PASS Object.getOwnPropertyDescriptor(document.getElementsByClassName('pass'), 'l
 PASS Object.getOwnPropertyDescriptor(document.getElementsByClassName('pass'), 'length').hasOwnProperty('set') is false
 FAIL Object.getOwnPropertyDescriptor(document.getElementsByClassName('pass'), 'length').enumerable should be true. Was false.
 FAIL Object.getOwnPropertyDescriptor(document.getElementsByClassName('pass'), 'length').configurable should be false. Was true.
+PASS Object.getOwnPropertyDescriptor(canvasPixelArray, 'length').value is canvasPixelArray.length
+PASS Object.getOwnPropertyDescriptor(canvasPixelArray, 'length').hasOwnProperty('get') is false
+PASS Object.getOwnPropertyDescriptor(canvasPixelArray, 'length').hasOwnProperty('set') is false
+PASS Object.getOwnPropertyDescriptor(canvasPixelArray, 'length').enumerable is true
+FAIL Object.getOwnPropertyDescriptor(canvasPixelArray, 'length').configurable should be false. Was true.
+PASS Object.getOwnPropertyDescriptor(canvasPixelArray, 0).value is canvasPixelArray[0]
+PASS Object.getOwnPropertyDescriptor(canvasPixelArray, 0).hasOwnProperty('get') is false
+PASS Object.getOwnPropertyDescriptor(canvasPixelArray, 0).hasOwnProperty('set') is false
+PASS Object.getOwnPropertyDescriptor(canvasPixelArray, 0).enumerable is true
+FAIL Object.getOwnPropertyDescriptor(canvasPixelArray, 0).configurable should be false. Was true.
 PASS Object.getOwnPropertyDescriptor(select, 'length').value is select.length
 PASS Object.getOwnPropertyDescriptor(select, 'length').hasOwnProperty('get') is false
 PASS Object.getOwnPropertyDescriptor(select, 'length').hasOwnProperty('set') is false
