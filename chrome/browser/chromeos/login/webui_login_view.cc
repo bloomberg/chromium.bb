@@ -150,7 +150,7 @@ WebUILoginView::WebUILoginView()
       should_emit_login_prompt_visible_(true),
       forward_keyboard_event_(true) {
   registrar_.Add(this,
-                 chrome::NOTIFICATION_LOGIN_WEBUI_VISIBLE,
+                 chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
                  content::NotificationService::AllSources());
   registrar_.Add(this,
                  chrome::NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN,
@@ -372,7 +372,7 @@ void WebUILoginView::Observe(int type,
                              const content::NotificationSource& source,
                              const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_LOGIN_WEBUI_VISIBLE:
+    case chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE:
     case chrome::NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN: {
       OnLoginPromptVisible();
       registrar_.RemoveAll();

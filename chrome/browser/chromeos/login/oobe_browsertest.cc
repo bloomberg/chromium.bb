@@ -47,7 +47,7 @@ class TestBrowserMainExtraParts
 
   // ChromeBrowserMainExtraParts implementation.
   virtual void PreEarlyInitialization() OVERRIDE {
-    registrar_.Add(this, chrome::NOTIFICATION_LOGIN_WEBUI_VISIBLE,
+    registrar_.Add(this, chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
                    content::NotificationService::AllSources());
     registrar_.Add(this, chrome::NOTIFICATION_SESSION_STARTED,
                    content::NotificationService::AllSources());
@@ -62,8 +62,8 @@ class TestBrowserMainExtraParts
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE {
-    if (type == chrome::NOTIFICATION_LOGIN_WEBUI_VISIBLE) {
-      LOG(INFO) << "NOTIFICATION_LOGIN_WEBUI_VISIBLE";
+    if (type == chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE) {
+      LOG(INFO) << "NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE";
       webui_visible_ = true;
       if (browsing_data_removed_ && !signin_screen_shown_) {
         signin_screen_shown_ = true;

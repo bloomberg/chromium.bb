@@ -261,7 +261,7 @@ void PowerPolicyLoginScreenBrowserTest::SetUpOnMainThread() {
 
   // Wait for the login screen to be shown.
   content::WindowedNotificationObserver(
-      chrome::NOTIFICATION_LOGIN_WEBUI_VISIBLE,
+      chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
       content::NotificationService::AllSources()).Wait();
 }
 

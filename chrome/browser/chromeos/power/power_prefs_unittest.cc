@@ -165,7 +165,7 @@ TEST_F(PowerPrefsTest, LoginScreen) {
   login_profile->set_incognito(true);
 
   // Inform power_prefs_ that the login screen is being shown.
-  power_prefs_->Observe(chrome::NOTIFICATION_LOGIN_WEBUI_VISIBLE,
+  power_prefs_->Observe(chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
                         content::Source<PowerPrefsTest>(this),
                         content::NotificationService::NoDetails());
 
@@ -236,7 +236,7 @@ TEST_F(PowerPrefsTest, UserSession) {
             GetCurrentAllowScreenWakeLocks());
 
   // Simulate the login screen coming up as part of screen locking.
-  power_prefs_->Observe(chrome::NOTIFICATION_LOGIN_WEBUI_VISIBLE,
+  power_prefs_->Observe(chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
                         content::Source<PowerPrefsTest>(this),
                         content::NotificationService::NoDetails());
 

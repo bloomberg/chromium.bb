@@ -115,7 +115,7 @@ class KioskAppLaunchScenarioHandler : public TestBrowserMainExtraParts {
  private:
   // ChromeBrowserMainExtraParts implementation.
   virtual void PreEarlyInitialization() OVERRIDE {
-    registrar_.Add(this, chrome::NOTIFICATION_LOGIN_WEBUI_VISIBLE,
+    registrar_.Add(this, chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
                    content::NotificationService::AllSources());
     registrar_.Add(this, chrome::NOTIFICATION_KIOSK_APPS_LOADED,
                    content::NotificationService::AllSources());
@@ -127,8 +127,8 @@ class KioskAppLaunchScenarioHandler : public TestBrowserMainExtraParts {
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE {
-    if (type == chrome::NOTIFICATION_LOGIN_WEBUI_VISIBLE) {
-      LOG(INFO) << "NOTIFICATION_LOGIN_WEBUI_VISIBLE";
+    if (type == chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE) {
+      LOG(INFO) << "NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE";
       SetupSigninScreen();
     } else if (type == chrome::NOTIFICATION_KIOSK_APPS_LOADED) {
       LOG(INFO) << "chrome::NOTIFICATION_KIOSK_APPS_LOADED";
@@ -282,7 +282,7 @@ class KioskEnableScenarioHandler
  private:
   // ChromeBrowserMainExtraParts implementation.
   virtual void PreEarlyInitialization() OVERRIDE {
-    registrar_.Add(this, chrome::NOTIFICATION_LOGIN_WEBUI_VISIBLE,
+    registrar_.Add(this, chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
                    content::NotificationService::AllSources());
     registrar_.Add(this, chrome::NOTIFICATION_KIOSK_ENABLE_WARNING_VISIBLE,
                    content::NotificationService::AllSources());
@@ -298,8 +298,8 @@ class KioskEnableScenarioHandler
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE {
     switch (type) {
-      case chrome::NOTIFICATION_LOGIN_WEBUI_VISIBLE: {
-        LOG(INFO) << "NOTIFICATION_LOGIN_WEBUI_VISIBLE";
+      case chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE: {
+        LOG(INFO) << "NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE";
         SetupSigninScreen();
         content::WebUI* web_ui = static_cast<chromeos::LoginDisplayHostImpl*>(
             chromeos::LoginDisplayHostImpl::default_host())->

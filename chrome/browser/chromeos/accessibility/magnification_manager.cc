@@ -46,7 +46,7 @@ class MagnificationManagerImpl : public MagnificationManager,
         type_(ash::kDefaultMagnifierType),
         enabled_(false) {
     registrar_.Add(this,
-                   chrome::NOTIFICATION_LOGIN_WEBUI_VISIBLE,
+                   chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
                    content::NotificationService::AllSources());
     registrar_.Add(this,
                    chrome::NOTIFICATION_SESSION_STARTED,
@@ -199,7 +199,7 @@ class MagnificationManagerImpl : public MagnificationManager,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE {
     switch (type) {
-      case chrome::NOTIFICATION_LOGIN_WEBUI_VISIBLE: {
+      case chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE: {
         // Update |profile_| when entering the login screen.
         Profile* profile = ProfileManager::GetDefaultProfile();
         if (ProfileHelper::IsSigninProfile(profile))

@@ -1552,7 +1552,7 @@ void SigninScreenHandler::HandleLoginVisible(const std::string& source) {
     // There might be multiple messages from OOBE UI so send notifications after
     // the first one only.
     content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_LOGIN_WEBUI_VISIBLE,
+        chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
         content::NotificationService::AllSources(),
         content::NotificationService::NoDetails());
     TRACE_EVENT_ASYNC_END0(

@@ -28,7 +28,7 @@ PowerPrefs::PowerPrefs(PowerPolicyController* power_policy_controller)
     : power_policy_controller_(power_policy_controller),
       profile_(NULL) {
   notification_registrar_.Add(this,
-                              chrome::NOTIFICATION_LOGIN_WEBUI_VISIBLE,
+                              chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
                               content::NotificationService::AllSources());
   notification_registrar_.Add(this,
                               chrome::NOTIFICATION_SESSION_STARTED,
@@ -75,7 +75,7 @@ void PowerPrefs::Observe(int type,
                          const content::NotificationSource& source,
                          const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_LOGIN_WEBUI_VISIBLE: {
+    case chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE: {
       // Update |profile_| when entering the login screen.
       ProfileManager* profile_manager = g_browser_process->profile_manager();
       if (!profile_manager || !profile_manager->IsLoggedIn())

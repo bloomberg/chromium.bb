@@ -64,7 +64,7 @@ OOBEWebuiReadyObserver::OOBEWebuiReadyObserver(AutomationProvider* automation)
       WizardController::default_controller()->current_screen()) {
     OOBEWebuiReady();
   } else {
-    registrar_.Add(this, chrome::NOTIFICATION_LOGIN_WEBUI_VISIBLE,
+    registrar_.Add(this, chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
                    content::NotificationService::AllSources());
   }
 }
@@ -73,7 +73,7 @@ void OOBEWebuiReadyObserver::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  DCHECK(type == chrome::NOTIFICATION_LOGIN_WEBUI_VISIBLE);
+  DCHECK(type == chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE);
   OOBEWebuiReady();
 }
 

@@ -246,7 +246,7 @@ LoginDisplayHostImpl::LoginDisplayHostImpl(const gfx::Rect& background_bounds)
   // these notifications.
   if ((waiting_for_user_pods_ || waiting_for_wallpaper_load_)
       && initialize_webui_hidden_) {
-    registrar_.Add(this, chrome::NOTIFICATION_LOGIN_WEBUI_VISIBLE,
+    registrar_.Add(this, chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
                    content::NotificationService::AllSources());
     registrar_.Add(this, chrome::NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN,
                    content::NotificationService::AllSources());
@@ -558,7 +558,7 @@ void LoginDisplayHostImpl::Observe(
     registrar_.Remove(this,
                       chrome::NOTIFICATION_WALLPAPER_ANIMATION_FINISHED,
                       content::NotificationService::AllSources());
-  } else if (chrome::NOTIFICATION_LOGIN_WEBUI_VISIBLE == type ||
+  } else if (chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE == type ||
              chrome::NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN == type) {
     LOG(WARNING) << "Login WebUI >> WEBUI_VISIBLE";
     if (waiting_for_user_pods_ && initialize_webui_hidden_) {
@@ -570,7 +570,7 @@ void LoginDisplayHostImpl::Observe(
       ShowWebUI();
     }
     registrar_.Remove(this,
-                      chrome::NOTIFICATION_LOGIN_WEBUI_VISIBLE,
+                      chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
                       content::NotificationService::AllSources());
     registrar_.Remove(this,
                       chrome::NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN,

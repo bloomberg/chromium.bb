@@ -925,8 +925,8 @@ enum NotificationType {
   // Sent when webui lock screen wallpaper is loaded and displayed.
   NOTIFICATION_LOCK_BACKGROUND_DISPLAYED,
 
-  // Sent when GAIA iframe has been loaded.
-  // First paint event after this fires NOTIFICATION_LOGIN_WEBUI_VISIBLE.
+  // Sent when GAIA iframe has been loaded. First paint event after this fires
+  // NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE.
   // Possible scenarios:
   // 1. Boot into device that has user pods display disabled or no users.
   //    Note that booting with network not connected would first generate
@@ -942,26 +942,26 @@ enum NotificationType {
   NOTIFICATION_LOGIN_WEBUI_LOADED,
 
   // Sent when the login screen has loaded in retail mode. The first paint event
-  // after this fires NOTIFICATION_LOGIN_WEBUI_VISIBLE.
+  // after this fires NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE.
   NOTIFICATION_DEMO_WEBUI_LOADED,
 
   // Sent when the user images on the WebUI login screen have all been loaded.
   // "Normal boot" i.e. for the device with at least one user would generate
-  // this one on boot.
-  // First paint event after this fires NOTIFICATION_LOGIN_WEBUI_VISIBLE.
+  // this one on boot. First paint event after this fires
+  // NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE.
   NOTIFICATION_LOGIN_USER_IMAGES_LOADED,
 
   // Sent when a network error message is displayed on the WebUI login screen.
-  // First paint event of this fires NOTIFICATION_LOGIN_WEBUI_VISIBLE.
+  // First paint event of this fires NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE.
   NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN,
 
   // Sent when the first OOBE screen has been displayed. Note that the screen
-  // may not be fully rendered at this point.
-  // First paint event after this fires NOTIFICATION_LOGIN_WEBUI_VISIBLE.
+  // may not be fully rendered at this point. First paint event after this fires
+  // NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE.
   NOTIFICATION_WIZARD_FIRST_SCREEN_SHOWN,
 
-  // Sent when the specific part of login WebUI is considered to be visible.
-  // That moment is tracked as the first paint event after one of the:
+  // Sent when the specific part of login/lock WebUI is considered to be
+  // visible. That moment is tracked as the first paint event after one of the:
   // 1. NOTIFICATION_LOGIN_USER_IMAGES_LOADED
   // 2. NOTIFICATION_LOGIN_WEBUI_LOADED
   // 3. NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN
@@ -971,22 +971,22 @@ enum NotificationType {
   // Possible series of notifications:
   // 1. Boot into fresh OOBE
   //    NOTIFICATION_WIZARD_FIRST_SCREEN_SHOWN
-  //    NOTIFICATION_LOGIN_WEBUI_VISIBLE
-  // 2. Boot into user pods list (normal boot)
+  //    NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE
+  // 2. Boot into user pods list (normal boot). Same for lock screen.
   //    NOTIFICATION_LOGIN_USER_IMAGES_LOADED
-  //    NOTIFICATION_LOGIN_WEBUI_VISIBLE
+  //    NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE
   // 3. Boot into GAIA sign in UI (user pods display disabled or no users):
   //    if no network is connected or flaky network
   //    (NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN +
-  //     NOTIFICATION_LOGIN_WEBUI_VISIBLE)
+  //     NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE)
   //    NOTIFICATION_LOGIN_WEBUI_LOADED
-  //    NOTIFICATION_LOGIN_WEBUI_VISIBLE
+  //    NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE
   // 4. Boot into retail mode
   //    NOTIFICATION_DEMO_WEBUI_LOADED
-  //    NOTIFICATION_LOGIN_WEBUI_VISIBLE
+  //    NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE
   // 5. Boot into kiosk mode
   //    NOTIFICATION_KIOSK_APP_LAUNCHED
-  NOTIFICATION_LOGIN_WEBUI_VISIBLE,
+  NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
 
   // Sent when proxy dialog is closed.
   NOTIFICATION_LOGIN_PROXY_CHANGED,
