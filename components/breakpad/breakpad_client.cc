@@ -4,6 +4,7 @@
 
 #include "components/breakpad/breakpad_client.h"
 
+#include "base/files/file_path.h"
 #include "base/logging.h"
 
 namespace breakpad {
@@ -52,6 +53,10 @@ bool BreakpadClient::AboutToRestart() {
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_IOS)
 void BreakpadClient::GetProductNameAndVersion(std::string* product_name,
                                               std::string* version) {
+}
+
+base::FilePath BreakpadClient::GetReporterLogFilename() {
+  return base::FilePath();
 }
 #endif
 

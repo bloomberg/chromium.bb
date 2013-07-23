@@ -22,6 +22,7 @@
 #endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_IOS)
+#include "chrome/browser/crash_upload_list.h"
 #include "chrome/common/chrome_version_info_posix.h"
 #endif
 
@@ -138,6 +139,10 @@ void ChromeBreakpadClient::GetProductNameAndVersion(std::string* product_name,
 #endif
 
   *version = PRODUCT_VERSION;
+}
+
+base::FilePath ChromeBreakpadClient::GetReporterLogFilename() {
+  return base::FilePath(CrashUploadList::kReporterLogFilename);
 }
 #endif
 

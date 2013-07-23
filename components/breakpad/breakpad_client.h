@@ -61,6 +61,8 @@ class BreakpadClient {
   // in the crash report.
   virtual void GetProductNameAndVersion(std::string* product_name,
                                         std::string* version);
+
+  virtual base::FilePath GetReporterLogFilename();
 #endif
 
   // The location where minidump files should be written. Returns true if

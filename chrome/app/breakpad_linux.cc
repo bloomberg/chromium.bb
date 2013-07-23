@@ -38,7 +38,6 @@
 #include "breakpad/src/common/linux/linux_libc_support.h"
 #include "breakpad/src/common/memory.h"
 #include "chrome/app/breakpad_linux_impl.h"
-#include "chrome/browser/crash_upload_list.h"
 #include "chrome/common/child_process_logging.h"
 #include "components/breakpad/breakpad_client.h"
 #include "content/public/common/content_descriptors.h"
@@ -651,8 +650,8 @@ void EnableCrashDumping(bool unattended) {
 
   base::FilePath dumps_path(tmp_path);
   if (breakpad::GetBreakpadClient()->GetCrashDumpLocation(&dumps_path)) {
-    base::FilePath logfile =
-        dumps_path.AppendASCII(CrashUploadList::kReporterLogFilename);
+    base::FilePath logfile = dumps_path.Append(
+        breakpad::GetBreakpadClient()->GetReporterLogFilename());
     std::string logfile_str = logfile.value();
     const size_t crash_log_path_len = logfile_str.size() + 1;
     g_crash_log_path = new char[crash_log_path_len];

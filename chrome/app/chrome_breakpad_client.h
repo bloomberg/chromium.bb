@@ -33,6 +33,7 @@ class ChromeBreakpadClient : public breakpad::BreakpadClient {
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_IOS)
   virtual void GetProductNameAndVersion(std::string* product_name,
                                         std::string* version) OVERRIDE;
+  virtual base::FilePath GetReporterLogFilename() OVERRIDE;
 #endif
 
   virtual bool GetCrashDumpLocation(base::FilePath* crash_dir) OVERRIDE;
