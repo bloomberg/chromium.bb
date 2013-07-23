@@ -30,7 +30,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "content/shell/minimal_ash.h"
+#include "content/shell/minimal_shell.h"
 #include "ui/aura/test/test_screen.h"
 #endif
 
@@ -273,7 +273,7 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
 }  // namespace
 
 #if defined(OS_CHROMEOS)
-MinimalAsh* Shell::minimal_ash_ = NULL;
+MinimalShell* Shell::minimal_shell_ = NULL;
 #endif
 views::ViewsDelegate* Shell::views_delegate_ = NULL;
 
@@ -283,7 +283,7 @@ void Shell::PlatformInitialize(const gfx::Size& default_window_size) {
   chromeos::DBusThreadManager::Initialize();
   gfx::Screen::SetScreenInstance(
       gfx::SCREEN_TYPE_NATIVE, aura::TestScreen::Create());
-  minimal_ash_ = new content::MinimalAsh(default_window_size);
+  minimal_shell_ = new content::MinimalShell(default_window_size);
 #else
   gfx::Screen::SetScreenInstance(
       gfx::SCREEN_TYPE_NATIVE, views::CreateDesktopScreen());
@@ -293,8 +293,8 @@ void Shell::PlatformInitialize(const gfx::Size& default_window_size) {
 
 void Shell::PlatformExit() {
 #if defined(OS_CHROMEOS)
-  if (minimal_ash_)
-    delete minimal_ash_;
+  if (minimal_shell_)
+    delete minimal_shell_;
 #endif
   if (views_delegate_)
     delete views_delegate_;
@@ -336,7 +336,7 @@ void Shell::PlatformCreateWindow(int width, int height) {
   window_widget_ =
       views::Widget::CreateWindowWithContextAndBounds(
           new ShellWindowDelegateView(this),
-          minimal_ash_->GetDefaultParent(NULL, NULL, gfx::Rect()),
+          minimal_shell_->GetDefaultParent(NULL, NULL, gfx::Rect()),
           gfx::Rect(0, 0, width, height));
 #else
   window_widget_ =
@@ -345,7 +345,7 @@ void Shell::PlatformCreateWindow(int width, int height) {
 #endif
 
   window_ = window_widget_->GetNativeWindow();
-  // Call ShowRootWindow on RootWindow created by MinimalAsh without
+  // Call ShowRootWindow on RootWindow created by MinimalShell without
   // which XWindow owned by RootWindow doesn't get mapped.
   window_->GetRootWindow()->ShowRootWindow();
   window_widget_->Show();

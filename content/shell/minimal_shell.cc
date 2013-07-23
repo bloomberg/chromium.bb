@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/shell/minimal_ash.h"
+#include "content/shell/minimal_shell.h"
 
 #include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/focus_manager.h"
@@ -13,7 +13,7 @@
 
 namespace content {
 
-MinimalAsh::MinimalAsh(const gfx::Size& default_window_size) {
+MinimalShell::MinimalShell(const gfx::Size& default_window_size) {
   root_window_.reset(new aura::RootWindow(
       aura::RootWindow::CreateParams(
           gfx::Rect(default_window_size))));
@@ -40,11 +40,11 @@ MinimalAsh::MinimalAsh(const gfx::Size& default_window_size) {
       new aura::client::DefaultCaptureClient(root_window_.get()));
 }
 
-MinimalAsh::~MinimalAsh() {
+MinimalShell::~MinimalShell() {
   root_window_event_filter_->RemoveHandler(input_method_filter_.get());
 }
 
-aura::Window* MinimalAsh::GetDefaultParent(
+aura::Window* MinimalShell::GetDefaultParent(
     aura::Window* context,
     aura::Window* window,
     const gfx::Rect& bounds) {
