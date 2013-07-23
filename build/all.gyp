@@ -742,14 +742,9 @@
               'target_name': 'chrome_official_builder',
               'type': 'none',
               'dependencies': [
-                '../chrome/chrome.gyp:chromedriver',
                 '../chrome/chrome.gyp:crash_service',
-                '../chrome/chrome.gyp:interactive_ui_tests',
                 '../chrome/chrome.gyp:policy_templates',
-                '../chrome/chrome.gyp:reliability_tests',
-                '../chrome/chrome.gyp:automated_ui_tests',
                 '../chrome/installer/mini_installer.gyp:mini_installer',
-                '../chrome_frame/chrome_frame.gyp:npchrome_frame',
                 '../courgette/courgette.gyp:courgette',
                 '../cloud_print/cloud_print.gyp:cloud_print',
                 '../remoting/remoting.gyp:remoting_webapp',
@@ -771,7 +766,13 @@
                 ['target_arch=="ia32"', {
                   'dependencies': [
                     '../chrome/chrome.gyp:crash_service_win64',
+                    '../chrome_frame/chrome_frame.gyp:npchrome_frame',
                     '../courgette/courgette.gyp:courgette64',
+                    # Omitting tests from Win64 to speed up cycle times.
+                    '../chrome/chrome.gyp:automated_ui_tests',
+                    '../chrome/chrome.gyp:chromedriver',
+                    '../chrome/chrome.gyp:interactive_ui_tests',
+                    '../chrome/chrome.gyp:reliability_tests',
                   ],
                 }],
                 ['component != "shared_library" and wix_exists == "True" and \
@@ -781,13 +782,6 @@
                   ],
                 }], # component != "shared_library"
                 ['target_arch=="x64"', {
-                  'dependencies!': [
-                    '../chrome_frame/chrome_frame.gyp:npchrome_frame',
-                    # Temporarily removing these to speed up win64 cycle times.
-                    '../chrome/chrome.gyp:interactive_ui_tests',
-                    '../chrome/chrome.gyp:reliability_tests',
-                    '../chrome/chrome.gyp:automated_ui_tests',
-                  ],
                   'defines': [
                     'OMIT_CHROME_FRAME',
                   ],
