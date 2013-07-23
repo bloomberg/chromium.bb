@@ -101,7 +101,7 @@ def main():
     if verbose:
         print idl_filename
 
-    definitions = idl_reader.read_idl_definitions(idl_filename, options.interface_dependencies_file, options.additional_idl_files, options.idl_attributes_file, verbose=options.verbose)
+    definitions = idl_reader.read_idl_definitions(idl_filename, options.interface_dependencies_file, options.additional_idl_files, options.idl_attributes_file, verbose=options.verbose, outputdir=options.output_directory)
     if not definitions:
         # We generate dummy .h and .cpp files just to tell build scripts
         # that outputs have been created.

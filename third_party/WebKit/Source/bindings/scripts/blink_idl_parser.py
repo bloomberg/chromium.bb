@@ -344,14 +344,14 @@ class BlinkIDLParser(IDLParser):
             keys.remove('p_' + rule)
         return list(keys)
 
-    def __init__(self, lexer=None, verbose=False, debug=False, mute_error=False):
+    def __init__(self, lexer=None, verbose=False, debug=False, mute_error=False, outputdir=''):
         lexer = lexer or BlinkIDLLexer()
         self.lexer = lexer
         self.tokens = lexer.KnownTokens()
         # Using SLR (instead of LALR) generates the table faster,
         # but produces the same output. This is ok b/c Web IDL (and Blink IDL)
         # is an LL(1) grammar, so SLR can parse it.
-        self.yaccobj = yacc.yacc(module=self, debug=debug, method='SLR')
+        self.yaccobj = yacc.yacc(module=self, debug=debug, method='SLR', outputdir=outputdir)
         self.parse_debug = debug
         self.verbose = verbose
         self.mute_error = mute_error

@@ -36,13 +36,13 @@ import idl_validator
 import interface_dependency_resolver
 
 
-def read_idl_definitions(idl_filename, interface_dependencies_filename, additional_idl_filenames, idl_attributes_filename, verbose=False):
+def read_idl_definitions(idl_filename, interface_dependencies_filename, additional_idl_filenames, idl_attributes_filename, verbose=False, outputdir=''):
     """Returns an IdlDefinitions object for an IDL file, including all dependencies."""
     basename = os.path.basename(idl_filename)
 
-    definitions = read_idl_file(idl_filename)
+    definitions = read_idl_file(idl_filename, outputdir=outputdir)
     if interface_dependencies_filename:
-        should_generate_bindings = interface_dependency_resolver.resolve_dependencies(definitions, idl_filename, interface_dependencies_filename, additional_idl_filenames, verbose=verbose)
+        should_generate_bindings = interface_dependency_resolver.resolve_dependencies(definitions, idl_filename, interface_dependencies_filename, additional_idl_filenames, verbose=verbose, outputdir=outputdir)
         if not should_generate_bindings:
             return None
     if idl_attributes_filename:
@@ -50,8 +50,8 @@ def read_idl_definitions(idl_filename, interface_dependencies_filename, addition
     return definitions
 
 
-def read_idl_file(idl_filename, verbose=False):
+def read_idl_file(idl_filename, verbose=False, outputdir=''):
     """Returns an IdlDefinitions object for an IDL file, without any dependencies."""
-    parser = blink_idl_parser.BlinkIDLParser(verbose=verbose)
+    parser = blink_idl_parser.BlinkIDLParser(verbose=verbose, outputdir=outputdir)
     ast = blink_idl_parser.parse_file(parser, idl_filename)
     return idl_definitions_builder.build_idl_definitions_from_ast(ast)

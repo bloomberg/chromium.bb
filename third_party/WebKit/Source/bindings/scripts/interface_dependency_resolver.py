@@ -52,7 +52,7 @@ class InvalidPartialInterfaceError(Exception):
     pass
 
 
-def resolve_dependencies(definitions, idl_filename, interface_dependencies_filename, additional_idl_filenames, verbose=False):
+def resolve_dependencies(definitions, idl_filename, interface_dependencies_filename, additional_idl_filenames, verbose=False, outputdir=''):
     """Resolves dependencies, merging them into IDL definitions of main file.
 
     Dependencies consist of 'partial interface' for the same interface as in the
@@ -84,7 +84,7 @@ def resolve_dependencies(definitions, idl_filename, interface_dependencies_filen
         target_interface = definitions.interfaces[interface_name]
     except KeyError:
         raise InterfaceNotFoundError('Could not find interface or exception "%s" in %s' % (interface_name, basename))
-    merge_interface_dependencies(target_interface, idl_filename, dependency_idl_filenames, verbose=verbose)
+    merge_interface_dependencies(target_interface, idl_filename, dependency_idl_filenames, verbose=verbose, outputdir=outputdir)
 
     return definitions
 
@@ -136,7 +136,7 @@ def compute_dependency_idl_files(target_idl_basename, interface_dependencies_fil
     return None
 
 
-def merge_interface_dependencies(target_interface, idl_filename, dependency_idl_filenames, verbose=False):
+def merge_interface_dependencies(target_interface, idl_filename, dependency_idl_filenames, verbose=False, outputdir=''):
     """Merge dependencies ('partial interface' and 'implements') in dependency_idl_filenames into target_interface.
 
     No return: modifies target_document in place.
@@ -144,7 +144,7 @@ def merge_interface_dependencies(target_interface, idl_filename, dependency_idl_
     # Sort so order consistent, so can compare output from run to run.
     for dependency_idl_filename in sorted(dependency_idl_filenames):
         dependency_interface_name, _ = os.path.splitext(os.path.basename(dependency_idl_filename))
-        definitions = idl_reader.read_idl_file(dependency_idl_filename, verbose=verbose)
+        definitions = idl_reader.read_idl_file(dependency_idl_filename, verbose=verbose, outputdir=outputdir)
 
         for dependency_interface in definitions.interfaces.itervalues():
             # Dependency files contain either partial interfaces for
