@@ -943,7 +943,7 @@ bool FrameLoader::prepareRequestForThisFrame(FrameLoadRequest& request)
         return false;
     }
 
-    if (request.requester() && request.frameName().isEmpty())
+    if (request.requester() && !request.formState() && request.frameName().isEmpty())
         request.setFrameName(m_frame->document()->baseTarget());
 
     // If the requesting SecurityOrigin is not this Frame's SecurityOrigin, the request was initiated by a different frame that should
