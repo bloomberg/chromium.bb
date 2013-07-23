@@ -8,7 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/process_util.h"
+#include "base/process/launch.h"
 #include "base/win/registry.h"
 #include "chrome/installer/util/chrome_app_host_operations.h"
 #include "chrome/installer/util/chrome_binaries_operations.h"

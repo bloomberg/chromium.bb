@@ -7,7 +7,6 @@
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
-#include "base/process_util.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/installer/util/lzma_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
