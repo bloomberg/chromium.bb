@@ -3064,7 +3064,17 @@ void RenderViewImpl::ClearEditCommands() {
 }
 
 SSLStatus RenderViewImpl::GetSSLStatusOfFrame(WebKit::WebFrame* frame) const {
-  return SSLStatus();
+  std::string security_info;
+  if (frame && frame->dataSource())
+    security_info = frame->dataSource()->response().securityInfo();
+
+  SSLStatus ssl_status;
+  DeserializeSecurityInfo(security_info,
+                          &ssl_status.cert_id,
+                          &ssl_status.cert_status,
+                          &ssl_status.security_bits,
+                          &ssl_status.connection_status);
+  return ssl_status;
 }
 
 void RenderViewImpl::loadURLExternally(

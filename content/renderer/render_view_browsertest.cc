@@ -7,6 +7,7 @@
 #include "base/memory/shared_memory.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/common/ssl_status_serialization.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/web_ui_controller_factory.h"
@@ -21,11 +22,15 @@
 #include "content/shell/shell_content_browser_client.h"
 #include "content/test/mock_keyboard.h"
 #include "net/base/net_errors.h"
+#include "net/cert/cert_status_flags.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebData.h"
 #include "third_party/WebKit/public/platform/WebHTTPBody.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
+#include "third_party/WebKit/public/platform/WebURLResponse.h"
+#include "third_party/WebKit/public/web/WebDataSource.h"
+#include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebHistoryItem.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "third_party/WebKit/public/web/WebWindowFeatures.h"
@@ -1971,6 +1976,20 @@ TEST_F(RenderViewImplTest, TextInputTypeWithPepper) {
                                          &can_compose_inline,
                                          &input_mode);
   EXPECT_EQ(ui::TEXT_INPUT_TYPE_EMAIL, type);
+}
+
+TEST_F(RenderViewImplTest, GetSSLStatusOfFrame) {
+  LoadHTML("<!DOCTYPE html><html><body></body></html>");
+
+  WebFrame* frame = GetMainFrame();
+  SSLStatus ssl_status = view()->GetSSLStatusOfFrame(frame);
+  EXPECT_FALSE(net::IsCertStatusError(ssl_status.cert_status));
+
+  const_cast<WebKit::WebURLResponse&>(frame->dataSource()->response()).
+      setSecurityInfo(
+          SerializeSecurityInfo(0, net::CERT_STATUS_ALL_ERRORS, 0, 0));
+  ssl_status = view()->GetSSLStatusOfFrame(frame);
+  EXPECT_TRUE(net::IsCertStatusError(ssl_status.cert_status));
 }
 
 }  // namespace content
