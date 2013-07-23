@@ -15,6 +15,8 @@
 #include <sys/stat.h>
 #include "nacl_io/kernel_intercept.h"
 
+#include <windows.h>
+
 namespace {
 
 template <typename SrcStat, typename DstStat>
@@ -317,7 +319,7 @@ uint64_t usec_since_epoch() {
   ularge.HighPart = ft.dwHighDateTime;
 
   // Truncate to usec resolution.
-  return usecs = ularge.QuadPart / 10;
+  return ularge.QuadPart / 10;
 }
 
 // Do nothing for Windows, we replace the library at link time.
