@@ -175,8 +175,13 @@ void ShellBrowserContext::RequestMIDISysExPermission(
       int render_view_id,
       const GURL& requesting_frame,
       const MIDISysExPermissionCallback& callback) {
-  // Always reject requests for testing.
+  // Always reject requests for LayoutTests for now.
   // TODO(toyoshim): Make it programmable to improve test coverage.
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree)) {
+    callback.Run(false);
+    return;
+  }
+  // TODO(toyoshim): Implement. http://crbug.com/257618 .
   callback.Run(false);
 }
 

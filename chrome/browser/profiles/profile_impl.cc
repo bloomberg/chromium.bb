@@ -867,7 +867,7 @@ void ProfileImpl::RequestMIDISysExPermission(
       int render_view_id,
       const GURL& requesting_frame,
       const MIDISysExPermissionCallback& callback) {
-  // TODO(toyoshim): Implement.
+  // TODO(toyoshim): Implement. http://crbug.com/257618 .
   callback.Run(false);
 }
 
