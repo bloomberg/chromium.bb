@@ -499,6 +499,8 @@ public:
     virtual void histogramCustomCounts(const char* name, int sample, int min, int max, int bucketCount) { }
     // Enumeration histogram buckets are linear, boundaryValue should be larger than any possible sample value.
     virtual void histogramEnumeration(const char* name, int sample, int boundaryValue) { }
+    // Unlike enumeration histograms, sparse histograms only allocate memory for non-empty buckets.
+    virtual void histogramSparse(const char* name, int sample) { }
 
 
     // GPU ----------------------------------------------------------------
