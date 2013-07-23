@@ -283,12 +283,7 @@
                 shouldBeTrue("canGetDescriptor(targetLocation, '" + locationPropertiesAllowed[i] + "')");
 
             log("----- tests access to cross domain history object -----");
-            window.targetHistory = targetWindow.history;
-            var historyProperties = [
-                "length", "back", "forward", "go", "pushState", "replaceState", "customProperty"
-            ];
-            for (var i = 0; i < historyProperties.length; i++)
-                shouldBeFalse("canGetDescriptor(targetHistory, '" + historyProperties[i] + "')");
+            shouldThrowException("targetWindow.history");
         }
     </script>
 </head>

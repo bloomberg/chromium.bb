@@ -26,9 +26,13 @@ window.onload = function()
 		location = "javascript:(\"\x3C?xml-stylesheet type='text/xsl' href='" + url + "'?\x3E\x3Croot/\x3E\")";
 	} else {
 		victim = opener;
-		open("javascript:void(0)", "_self");
-		if (victim.eval)
-			victim.eval("alert(document.body.innerHTML)");
+        open("javascript:void(0)", "_self");
+        try {
+            if (victim.eval)
+                victim.eval("alert(document.body.innerHTML)");
+        } catch (e) {
+            console.log("PASS: Caught exception while trying to access victim's properties.");
+        }
 
 		if (window.testRunner)
 			testRunner.notifyDone();

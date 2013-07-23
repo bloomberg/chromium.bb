@@ -18,7 +18,7 @@
         {
             targetWindow = document.getElementById("target").contentWindow;
 
-            shouldBeUndefined("Object.getPrototypeOf(targetWindow)");
+            shouldThrowException("Object.getPrototypeOf(targetWindow)");
 
             if (window.testRunner)
                 testRunner.notifyDone();

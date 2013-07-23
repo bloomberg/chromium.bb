@@ -58,6 +58,17 @@ function canGet(keyPath)
     }
 }
 
+function shouldThrowException(a) {
+    try {
+        var evalA = eval(e);
+        log("FAIL: " + a + " should have thrown an exception, but instead returned " + evalA + ".");
+        return false;
+    } catch (e) {
+        log("PASS: " + a + " should have thrown an exception, and did.");
+        return true;
+    }
+}
+
 function accessThrowsException(keyPath) {
     try {
         eval("window." + keyPath);
