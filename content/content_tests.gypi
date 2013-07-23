@@ -597,7 +597,6 @@
             '../webkit/support/webkit_support.gyp:glue_child',
             '../webkit/support/webkit_support.gyp:plugins',
             '../webkit/plugins/webkit_plugins.gyp:plugins_common',
-            '../webkit/support/webkit_support.gyp:webkit_media',
           ],
         }],
         ['enable_plugins==0', {

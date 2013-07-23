@@ -9,19 +9,15 @@
 #include "media/crypto/aes_decryptor.h"
 
 #if defined(ENABLE_PEPPER_CDMS)
+#include "content/renderer/media/crypto/ppapi_decryptor.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebMediaPlayerClient.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppapi_webplugin_impl.h"
-#include "webkit/renderer/media/crypto/ppapi_decryptor.h"
 #elif defined(OS_ANDROID)
 #include "content/renderer/media/android/proxy_media_keys.h"
 #include "content/renderer/media/android/webmediaplayer_proxy_android.h"
-#endif  // defined(ENABLE_PEPPER_CDMS)
-
-#if defined(ENABLE_PEPPER_CDMS)
-using webkit_media::PpapiDecryptor;
 #endif  // defined(ENABLE_PEPPER_CDMS)
 
 namespace content {

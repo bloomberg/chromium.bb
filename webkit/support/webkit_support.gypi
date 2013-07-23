@@ -35,7 +35,6 @@
         'glue',
         'glue_child',
         'plugins',
-        'webkit_media',
         'webkit_support_common',
       ],
       'include_dirs': [

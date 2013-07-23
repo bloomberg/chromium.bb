@@ -148,7 +148,6 @@
         '<(DEPTH)/webkit/webkit_resources.gyp:webkit_resources',
         '<(DEPTH)/webkit/webkit_resources.gyp:webkit_strings',
         'plugins',
-        'webkit_media',
       ],
       'include_dirs': [
         '<(INTERMEDIATE_DIR)',

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/renderer/media/crypto/ppapi_decryptor.h"
+#include "content/renderer/media/crypto/ppapi_decryptor.h"
 
 #include <string>
 
@@ -20,9 +20,9 @@
 #include "webkit/plugins/ppapi/content_decryptor_delegate.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 
-namespace webkit_media {
+namespace content {
 
-scoped_ptr<webkit_media::PpapiDecryptor> PpapiDecryptor::Create(
+scoped_ptr<PpapiDecryptor> PpapiDecryptor::Create(
     const std::string& key_system,
     const scoped_refptr<webkit::ppapi::PluginInstance>& plugin_instance,
     const media::KeyAddedCB& key_added_cb,
@@ -33,18 +33,17 @@ scoped_ptr<webkit_media::PpapiDecryptor> PpapiDecryptor::Create(
       plugin_instance->GetContentDecryptorDelegate();
   if (!plugin_cdm_delegate) {
     DVLOG(1) << "PpapiDecryptor: plugin cdm delegate creation failed.";
-    return scoped_ptr<webkit_media::PpapiDecryptor>();
+    return scoped_ptr<PpapiDecryptor>();
   }
 
   plugin_cdm_delegate->Initialize(key_system);
 
-  return scoped_ptr<webkit_media::PpapiDecryptor>(
-      new PpapiDecryptor(plugin_instance,
-                         plugin_cdm_delegate,
-                         key_added_cb,
-                         key_error_cb,
-                         key_message_cb,
-                         destroy_plugin_cb));
+  return scoped_ptr<PpapiDecryptor>(new PpapiDecryptor(plugin_instance,
+                                                       plugin_cdm_delegate,
+                                                       key_added_cb,
+                                                       key_error_cb,
+                                                       key_message_cb,
+                                                       destroy_plugin_cb));
 }
 
 PpapiDecryptor::PpapiDecryptor(
@@ -305,4 +304,4 @@ void PpapiDecryptor::KeyMessage(const std::string& session_id,
   key_message_cb_.Run(session_id, message, default_url);
 }
 
-}  // namespace webkit_media
+}  // namespace content

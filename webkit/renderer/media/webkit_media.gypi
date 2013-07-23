@@ -20,44 +20,6 @@
   },
   'targets': [
     {
-      'target_name': 'webkit_media',
-      'type': 'static_library',
-      'variables': { 'enable_wexit_time_destructors': 1, },
-      'dependencies': [
-        '<(DEPTH)/base/base.gyp:base',
-        '<(DEPTH)/base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
-        '<(DEPTH)/cc/cc.gyp:cc',
-        '<(DEPTH)/media/media.gyp:media',
-        '<(DEPTH)/media/media.gyp:shared_memory_support',
-        '<(DEPTH)/skia/skia.gyp:skia',
-        '<(DEPTH)/third_party/WebKit/public/blink.gyp:blink',
-        '<(DEPTH)/webkit/renderer/compositor_bindings/compositor_bindings.gyp:webkit_compositor_bindings',
-      ],
-      'sources': [
-        'crypto/ppapi_decryptor.cc',
-        'crypto/ppapi_decryptor.h',
-      ],
-      'conditions': [
-        ['OS == "android"', {
-          'dependencies': [
-            '<(DEPTH)/media/media.gyp:player_android',
-          ],
-        }, { # OS != "android"'
-          'sources/': [
-            ['exclude', '^android/'],
-          ],
-        }],
-        ['enable_pepper_cdms != 1', {
-          'sources!': [
-            'crypto/ppapi_decryptor.cc',
-            'crypto/ppapi_decryptor.h',
-          ],
-        }],
-      ],
-      # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-      'msvs_disabled_warnings': [ 4267, ],
-    },
-    {
       'target_name': 'clearkeycdm',
       'type': 'none',
       # TODO(tomfinegan): Simplify this by unconditionally including all the

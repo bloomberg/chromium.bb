@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_RENDERER_MEDIA_CRYPTO_PPAPI_DECRYPTOR_H_
-#define WEBKIT_RENDERER_MEDIA_CRYPTO_PPAPI_DECRYPTOR_H_
+#ifndef CONTENT_RENDERER_MEDIA_CRYPTO_PPAPI_DECRYPTOR_H_
+#define CONTENT_RENDERER_MEDIA_CRYPTO_PPAPI_DECRYPTOR_H_
 
 #include <string>
 #include <vector>
@@ -26,14 +26,14 @@ class PluginInstance;
 }
 }
 
-namespace webkit_media {
+namespace content {
 
 // PpapiDecryptor implements media::Decryptor and forwards all calls to the
 // PluginInstance.
 // This class should always be created & destroyed on the main renderer thread.
 class PpapiDecryptor : public media::MediaKeys, public media::Decryptor {
  public:
-  static scoped_ptr<webkit_media::PpapiDecryptor> Create(
+  static scoped_ptr<PpapiDecryptor> Create(
       // TODO(ddorwin): Remove after updating the delegate.
       const std::string& key_system,
       const scoped_refptr<webkit::ppapi::PluginInstance>& plugin_instance,
@@ -124,6 +124,6 @@ class PpapiDecryptor : public media::MediaKeys, public media::Decryptor {
   DISALLOW_COPY_AND_ASSIGN(PpapiDecryptor);
 };
 
-}  // namespace webkit_media
+}  // namespace content
 
-#endif  // WEBKIT_RENDERER_MEDIA_CRYPTO_PPAPI_DECRYPTOR_H_
+#endif  // CONTENT_RENDERER_MEDIA_CRYPTO_PPAPI_DECRYPTOR_H_

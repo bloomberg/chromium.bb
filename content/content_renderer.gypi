@@ -28,7 +28,6 @@
     '../webkit/support/webkit_support.gyp:glue',
     '../webkit/support/webkit_support.gyp:glue_child',
     '../webkit/support/webkit_support.gyp:plugins',
-    '../webkit/support/webkit_support.gyp:webkit_media',
   ],
   'include_dirs': [
     '..',
@@ -188,6 +187,8 @@
     'renderer/media/crypto/key_systems.h',
     'renderer/media/crypto/key_systems_info.cc',
     'renderer/media/crypto/key_systems_info.h',
+    'renderer/media/crypto/ppapi_decryptor.cc',
+    'renderer/media/crypto/ppapi_decryptor.h',
     'renderer/media/crypto/proxy_decryptor.cc',
     'renderer/media/crypto/proxy_decryptor.h',
     'renderer/media/media_stream_audio_renderer.cc',
@@ -592,6 +593,12 @@
       'sources!': [
         'renderer/render_widget_fullscreen_pepper.cc',
         'renderer/render_widget_fullscreen_pepper.h',
+      ],
+    }],
+    ['enable_pepper_cdms != 1', {
+      'sources!': [
+        'renderer/media/crypto/ppapi_decryptor.cc',
+        'renderer/media/crypto/ppapi_decryptor.h',
       ],
     }],
   ],

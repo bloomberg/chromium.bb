@@ -1219,11 +1219,11 @@
           'cflags': [
             '-mmmx',
           ],
-          'include_dirs': [
-            '..',
-          ],
           'defines': [
             'MEDIA_IMPLEMENTATION',
+          ],
+          'include_dirs': [
+            '..',
           ],
           'conditions': [
             # TODO(jschuh): Get MMX enabled on Win64. crbug.com/179657
@@ -1240,11 +1240,11 @@
           'cflags': [
             '-msse',
           ],
-          'include_dirs': [
-            '..',
-          ],
           'defines': [
             'MEDIA_IMPLEMENTATION',
+          ],
+          'include_dirs': [
+            '..',
           ],
           'sources': [
             'base/simd/sinc_resampler_sse.cc',
@@ -1256,11 +1256,11 @@
           'cflags': [
             '-msse2',
           ],
-          'include_dirs': [
-            '..',
-          ],
           'defines': [
             'MEDIA_IMPLEMENTATION',
+          ],
+          'include_dirs': [
+            '..',
           ],
           'sources': [
             'base/simd/convert_rgb_to_yuv_sse2.cc',
@@ -1274,11 +1274,11 @@
           'cflags': [
             '-msse',
           ],
-          'include_dirs': [
-            '..',
-          ],
           'defines': [
             'MEDIA_IMPLEMENTATION',
+          ],
+          'include_dirs': [
+            '..',
           ],
           'sources': [
             'base/simd/vector_math_sse.cc',
@@ -1516,6 +1516,9 @@
             '../ui/gl/gl.gyp:gl',
             '../url/url.gyp:url_lib',
             'media_android_jni_headers',
+          ],
+          'defines': [
+            'MEDIA_IMPLEMENTATION',
           ],
           'include_dirs': [
             '<(SHARED_INTERMEDIATE_DIR)/media',

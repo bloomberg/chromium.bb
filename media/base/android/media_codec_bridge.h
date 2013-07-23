@@ -140,7 +140,7 @@ class AudioCodecBridge : public MediaCodecBridge {
                             const uint8* extra_data, size_t extra_data_size);
 };
 
-class VideoCodecBridge : public MediaCodecBridge {
+class MEDIA_EXPORT VideoCodecBridge : public MediaCodecBridge {
  public:
   // Returns an VideoCodecBridge instance if |codec| is supported, or a NULL
   // pointer otherwise.
