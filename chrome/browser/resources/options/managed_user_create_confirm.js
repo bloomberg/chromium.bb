@@ -67,19 +67,27 @@ cr.define('options', function() {
                        .replace(/'/g, '&#39;');
       }
 
+      var MAX_LENGTH = 50;
+      function elide(original) {
+        if (original.length <= MAX_LENGTH)
+          return original;
+        return original.substring(0, MAX_LENGTH - 3) + '...';
+      }
+
       this.profileInfo_ = info;
+      var elidedName = elide(info.name);
       $('managed-user-created-title').textContent =
-          loadTimeData.getStringF('managedUserCreatedTitle', info.name);
+          loadTimeData.getStringF('managedUserCreatedTitle', elidedName);
       $('managed-user-created-switch').textContent =
-          loadTimeData.getStringF('managedUserCreatedSwitch', info.name);
+          loadTimeData.getStringF('managedUserCreatedSwitch', elidedName);
 
       // HTML-escape the user-supplied strings before putting them into
       // innerHTML. This is probably excessive for the email address, but
       // belt-and-suspenders is cheap here.
       $('managed-user-created-text').innerHTML =
           loadTimeData.getStringF('managedUserCreatedText',
-                                  HTMLEscape(info.name),
-                                  HTMLEscape(info.custodianEmail));
+                                  HTMLEscape(elidedName),
+                                  HTMLEscape(elide(info.custodianEmail)));
     },
 
     /** @override */

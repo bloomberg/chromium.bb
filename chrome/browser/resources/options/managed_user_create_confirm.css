@@ -6,6 +6,10 @@
   width: 722px;
 }
 
+#managed-user-created-title {
+  word-wrap: break-word;
+}
+
 #managed-user-created-image {
   background-image: -webkit-image-set(
       url('../../../../ui/resources/default_100_percent/supervised_illustration_done.png') 1x,
@@ -16,5 +20,10 @@
 #managed-user-created-text {
   margin-top: 10px;
   white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+#managed-user-created-switch {
+  max-width: 600px;
   word-wrap: break-word;
 }
