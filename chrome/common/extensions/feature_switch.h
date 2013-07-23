@@ -17,7 +17,6 @@ namespace extensions {
 // command-line switches but can be overridden, e.g., for testing.
 class FeatureSwitch {
  public:
-  static FeatureSwitch* action_box();
   static FeatureSwitch* easy_off_store_install();
   static FeatureSwitch* script_badges();
   static FeatureSwitch* script_bubble();

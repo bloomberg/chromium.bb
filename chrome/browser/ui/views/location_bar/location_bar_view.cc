@@ -38,7 +38,6 @@
 #include "chrome/browser/ui/views/bookmarks/bookmark_prompt_view.h"
 #include "chrome/browser/ui/views/browser_dialogs.h"
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
-#include "chrome/browser/ui/views/location_bar/action_box_button_view.h"
 #include "chrome/browser/ui/views/location_bar/autofill_credit_card_view.h"
 #include "chrome/browser/ui/views/location_bar/content_setting_image_view.h"
 #include "chrome/browser/ui/views/location_bar/ev_bubble_view.h"
@@ -76,6 +75,7 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/skia_util.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/button_drag_utils.h"
@@ -96,7 +96,6 @@
 
 #if !defined(OS_CHROMEOS)
 #include "chrome/browser/ui/views/first_run_bubble.h"
-#include "ui/native_theme/native_theme.h"
 #endif
 
 #if defined(USE_AURA)
@@ -187,7 +186,6 @@ LocationBarView::LocationBarView(Browser* browser,
       open_pdf_in_reader_view_(NULL),
       script_bubble_icon_view_(NULL),
       star_view_(NULL),
-      action_box_button_view_(NULL),
       is_popup_mode_(is_popup_mode),
       show_focus_rect_(false),
       template_url_service_(NULL),
@@ -343,14 +341,6 @@ void LocationBarView::Init() {
   star_view_->SetVisible(false);
   AddChildView(star_view_);
 
-  if (extensions::FeatureSwitch::action_box()->IsEnabled() && !is_popup_mode_ &&
-      browser_) {
-    action_box_button_view_ = new ActionBoxButtonView(
-        browser_,
-        gfx::Point(GetHorizontalEdgeThickness(), vertical_edge_thickness()));
-    AddChildView(action_box_button_view_);
-  }
-
   registrar_.Add(this,
                  chrome::NOTIFICATION_EXTENSION_LOCATION_BAR_UPDATED,
                  content::Source<Profile>(profile_));
@@ -487,11 +477,8 @@ void LocationBarView::Update(const WebContents* tab_for_state_restoring) {
   command_updater_->UpdateCommandEnabled(IDC_BOOKMARK_PAGE, star_enabled);
   command_updater_->UpdateCommandEnabled(IDC_BOOKMARK_PAGE_FROM_STAR,
                                          star_enabled);
-  if (star_view_ && !extensions::FeatureSwitch::action_box()->IsEnabled())
+  if (star_view_)
     star_view_->SetVisible(star_enabled);
-
-  if (action_box_button_view_)
-    action_box_button_view_->SetVisible(!model_->GetInputInProgress());
 
   location_entry_->Update(tab_for_state_restoring);
 
@@ -588,22 +575,13 @@ views::View* LocationBarView::GetPageActionView(ExtensionAction *page_action) {
 }
 
 void LocationBarView::SetStarToggled(bool on) {
-  if (!star_view_)
-    return;
-  star_view_->SetToggled(on);
-  if (action_box_button_view_ && (star_view_->visible() != on)) {
-    star_view_->SetVisible(on);
-    Layout();
-  }
+  if (star_view_)
+    star_view_->SetToggled(on);
 }
 
 void LocationBarView::ShowBookmarkPrompt() {
-  if (action_box_button_view_) {
-    BookmarkPromptView::ShowPrompt(action_box_button_view_,
-                                   profile_->GetPrefs());
-  } else if (star_view_ && star_view_->visible()) {
+  if (star_view_ && star_view_->visible())
     BookmarkPromptView::ShowPrompt(star_view_, profile_->GetPrefs());
-  }
 }
 
 void LocationBarView::ZoomChangedForActiveTab(bool can_show_bubble) {
@@ -737,12 +715,6 @@ void LocationBarView::Layout() {
         location_icon_view_);
   }
 
-  if (action_box_button_view_ && action_box_button_view_->visible()) {
-    trailing_decorations.AddDecoration(
-        vertical_edge_thickness(), location_height,
-        action_box_button_view_->GetBuiltInHorizontalPadding(),
-        action_box_button_view_);
-  }
   if (star_view_ && star_view_->visible()) {
     trailing_decorations.AddDecoration(
         vertical_edge_thickness(), location_height,
@@ -1160,8 +1132,6 @@ void LocationBarView::RefreshPageActionViews() {
       right_anchor = star_view_;
     if (!right_anchor)
       right_anchor = script_bubble_icon_view_;
-    if (!right_anchor)
-      right_anchor = action_box_button_view_;
     DCHECK(right_anchor);
 
     // Add the page actions in reverse order, so that the child views are
@@ -1485,11 +1455,6 @@ void LocationBarView::TestPageActionPressed(size_t index) {
   }
 
   NOTREACHED();
-}
-
-void LocationBarView::TestActionBoxMenuItemSelected(int command_id) {
-  action_box_button_view_->action_box_button_controller()->
-      ExecuteCommand(command_id, 0);
 }
 
 bool LocationBarView::GetBookmarkStarVisibility() {

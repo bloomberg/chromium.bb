@@ -6522,12 +6522,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_APP_WINDOW_CONTROLS_DESCRIPTION" desc="Description of the 'Enable 'window-controls' element' lab.">
         Enables using 'window-controls' HTML elements in packaged apps.
       </message>
-      <message name="IDS_FLAGS_ACTION_BOX_NAME" desc="Name of the 'Action Box' lab.">
-        Action box
-      </message>
-      <message name="IDS_FLAGS_ACTION_BOX_DESCRIPTION" desc="Description of the 'Action Box' lab.">
-        Enable or disable the "Action Box" experimental toolbar UI.
-      </message>
       <message name="IDS_FLAGS_SCRIPT_BADGES_NAME" desc="Name of the 'Script Badges' lab.">
         Script badges
       </message>
@@ -7989,9 +7983,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_TOOLTIP_NEW_TAB" desc="The tooltip for the new tab button">
         New tab
       </message>
-      <message name="IDS_TOOLTIP_ACTION_BOX_BUTTON" desc="The tooltip for action box button">
-        Actions
-      </message>
       <message name="IDS_TOOLTIP_MIC_SEARCH" desc="The tooltip for search-by-voice button">
         Voice search
       </message>
@@ -8095,9 +8086,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_ACCNAME_WEB_CONTENTS" desc="The accessible name for the web contents.">
         Web Contents
-      </message>
-      <message name="IDS_ACCNAME_ACTION_BOX_BUTTON" desc="The accessible name for the action box button.">
-        Actions
       </message>
       <if expr="pp_ifdef('ios')">
         <message name="IDS_ACCNAME_CLEAR_TEXT" desc="The accessibility label for the clear text button in the location bar [Length: unlimited].">

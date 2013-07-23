@@ -196,11 +196,6 @@ const ActionInfo* ActionInfo::GetScriptBadgeInfo(const Extension* extension) {
 }
 
 // static
-const ActionInfo* ActionInfo::GetPageLauncherInfo(const Extension* extension) {
-  return GetActionInfo(extension, keys::kPageLauncher);
-}
-
-// static
 const ActionInfo* ActionInfo::GetSystemIndicatorInfo(
     const Extension* extension) {
   return GetActionInfo(extension, keys::kSystemIndicator);
@@ -222,11 +217,6 @@ void ActionInfo::SetPageActionInfo(Extension* extension, ActionInfo* info) {
 void ActionInfo::SetScriptBadgeInfo(Extension* extension, ActionInfo* info) {
   extension->SetManifestData(keys::kScriptBadge,
                              new ActionInfoData(info));
-}
-
-// static
-void ActionInfo::SetPageLauncherInfo(Extension* extension, ActionInfo* info) {
-  extension->SetManifestData(keys::kPageLauncher, new ActionInfoData(info));
 }
 
 // static

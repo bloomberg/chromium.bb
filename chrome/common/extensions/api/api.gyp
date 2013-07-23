@@ -79,7 +79,6 @@
           'notifications.idl',
           'omnibox.json',
           'page_capture.json',
-          'page_launcher.idl',
           'permissions.json',
           'preferences_private.json',
           'power.idl',

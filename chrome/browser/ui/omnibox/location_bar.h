@@ -104,10 +104,6 @@ class LocationBarTesting {
   // Simulates a left mouse pressed on the visible page action at |index|.
   virtual void TestPageActionPressed(size_t index) = 0;
 
-  // Simulates a left mouse pressed on the action box decoration, followed by
-  // a menu item selection.
-  virtual void TestActionBoxMenuItemSelected(int command_id) = 0;
-
   // Returns whether or not the bookmark star decoration is visible.
   virtual bool GetBookmarkStarVisibility() = 0;
 

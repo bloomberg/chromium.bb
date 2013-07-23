@@ -193,8 +193,6 @@
         'common/extensions/api/media_galleries_private/media_galleries_handler.cc',
         'common/extensions/api/omnibox/omnibox_handler.cc',
         'common/extensions/api/omnibox/omnibox_handler.h',
-        'common/extensions/api/page_launcher/page_launcher_handler.cc',
-        'common/extensions/api/page_launcher/page_launcher_handler.h',
         'common/extensions/api/plugins/plugins_handler.cc',
         'common/extensions/api/plugins/plugins_handler.h',
         'common/extensions/api/speech/tts_engine_manifest_handler.cc',

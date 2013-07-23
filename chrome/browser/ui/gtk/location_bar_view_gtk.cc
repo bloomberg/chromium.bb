@@ -47,7 +47,6 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/browser/ui/content_settings/content_setting_image_model.h"
-#include "chrome/browser/ui/gtk/action_box_button_gtk.h"
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_bubble_gtk.h"
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_utils_gtk.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
@@ -486,19 +485,6 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
   // tab_to_search_hint_ gets hidden initially in OnChanged.  Hiding it here
   // doesn't work, someone is probably calling show_all on our parent box.
   gtk_box_pack_end(GTK_BOX(entry_box_), tab_to_search_hint_, FALSE, FALSE, 0);
-
-  if (extensions::FeatureSwitch::action_box()->IsEnabled()) {
-    // TODO(mpcomplete): should we hide this if ShouldOnlyShowLocation()==true?
-    action_box_button_.reset(new ActionBoxButtonGtk(browser_));
-
-    GtkWidget* alignment = gtk_alignment_new(0, 0, 1, 1);
-    gtk_alignment_set_padding(GTK_ALIGNMENT(alignment),
-                              0, 0, 0, InnerPadding());
-    gtk_container_add(GTK_CONTAINER(alignment), action_box_button_->widget());
-
-    gtk_box_pack_end(GTK_BOX(hbox_.get()), alignment,
-                     FALSE, FALSE, 0);
-  }
 
   if (browser_defaults::bookmarks_enabled && !ShouldOnlyShowLocation()) {
     // Hide the star icon in popups, app windows, etc.
@@ -1027,11 +1013,6 @@ void LocationBarViewGtk::TestPageActionPressed(size_t index) {
   }
 
   page_action_views_[index]->TestActivatePageAction();
-}
-
-void LocationBarViewGtk::TestActionBoxMenuItemSelected(int command_id) {
-  action_box_button_->action_box_button_controller()->
-      ExecuteCommand(command_id, 0);
 }
 
 bool LocationBarViewGtk::GetBookmarkStarVisibility() {
@@ -1622,9 +1603,6 @@ void LocationBarViewGtk::UpdateStarIcon() {
   command_updater_->UpdateCommandEnabled(IDC_BOOKMARK_PAGE, star_enabled);
   command_updater_->UpdateCommandEnabled(IDC_BOOKMARK_PAGE_FROM_STAR,
                                          star_enabled);
-  if (extensions::FeatureSwitch::action_box()->IsEnabled() && !starred_) {
-    star_enabled = false;
-  }
   if (star_enabled) {
     gtk_widget_show_all(star_.get());
     int id = starred_ ? IDR_STAR_LIT : IDR_STAR;

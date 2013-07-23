@@ -183,8 +183,6 @@
         'browser/ui/cocoa/infobars/infobar_controller.mm',
         'browser/ui/cocoa/infobars/infobar_gradient_view.h',
         'browser/ui/cocoa/infobars/infobar_gradient_view.mm',
-        'browser/ui/cocoa/location_bar/action_box_menu_bubble_controller.h',
-        'browser/ui/cocoa/location_bar/action_box_menu_bubble_controller.mm',
         'browser/ui/cocoa/location_bar/autocomplete_text_field.h',
         'browser/ui/cocoa/location_bar/autocomplete_text_field.mm',
         'browser/ui/cocoa/location_bar/autocomplete_text_field_cell.h',

@@ -19,7 +19,6 @@
 #include "chrome/common/extensions/api/managed_mode_private/managed_mode_handler.h"
 #include "chrome/common/extensions/api/media_galleries_private/media_galleries_handler.h"
 #include "chrome/common/extensions/api/omnibox/omnibox_handler.h"
-#include "chrome/common/extensions/api/page_launcher/page_launcher_handler.h"
 #include "chrome/common/extensions/api/plugins/plugins_handler.h"
 #include "chrome/common/extensions/api/speech/tts_engine_manifest_handler.h"
 #include "chrome/common/extensions/api/spellcheck/spellcheck_handler.h"
@@ -81,7 +80,6 @@ void RegisterChromeManifestHandlers() {
   (new OmniboxHandler)->Register();
   (new OptionsPageHandler)->Register();
   (new PageActionHandler)->Register();
-  (new PageLauncherHandler)->Register();
   (new PluginsHandler)->Register();
   (new RequirementsHandler)->Register();
   (new SandboxedPageHandler)->Register();

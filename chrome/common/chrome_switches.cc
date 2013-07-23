@@ -21,9 +21,6 @@ namespace switches {
 // all work out.
 // -----------------------------------------------------------------------------
 
-// Enables or disables the "action box" UI in the toolbar.
-const char kActionBox[]                     = "action-box";
-
 // Allows third-party content included on a page to prompt for a HTTP basic
 // auth username/password pair.
 const char kAllowCrossOriginAuthPrompt[]    = "allow-cross-origin-auth-prompt";

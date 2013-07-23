@@ -310,7 +310,6 @@ class LocationBarView : public LocationBar,
   virtual ExtensionAction* GetPageAction(size_t index) OVERRIDE;
   virtual ExtensionAction* GetVisiblePageAction(size_t index) OVERRIDE;
   virtual void TestPageActionPressed(size_t index) OVERRIDE;
-  virtual void TestActionBoxMenuItemSelected(int command_id) OVERRIDE;
   virtual bool GetBookmarkStarVisibility() OVERRIDE;
 
   // TemplateURLServiceObserver:
@@ -501,9 +500,6 @@ class LocationBarView : public LocationBar,
 
   // The star.
   StarView* star_view_;
-
-  // The action box button (plus).
-  ActionBoxButtonView* action_box_button_view_;
 
   // Whether we're in popup mode.
   const bool is_popup_mode_;

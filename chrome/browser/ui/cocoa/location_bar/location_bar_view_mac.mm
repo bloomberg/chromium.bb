@@ -39,7 +39,6 @@
 #import "chrome/browser/ui/cocoa/location_bar/keyword_hint_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_icon_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/page_action_decoration.h"
-#import "chrome/browser/ui/cocoa/location_bar/plus_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/selected_keyword_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/star_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/zoom_decoration.h"
@@ -104,9 +103,6 @@ LocationBarViewMac::LocationBarViewMac(
           content::PAGE_TRANSITION_TYPED |
           content::PAGE_TRANSITION_FROM_ADDRESS_BAR)),
       weak_ptr_factory_(this) {
-  if (extensions::FeatureSwitch::action_box()->IsEnabled()) {
-    plus_decoration_.reset(new PlusDecoration(this, browser_));
-  }
 
   for (size_t i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
     DCHECK_EQ(i, content_setting_decorations_.size());
@@ -238,7 +234,6 @@ void LocationBarViewMac::Update(const WebContents* contents,
   command_updater_->UpdateCommandEnabled(IDC_BOOKMARK_PAGE_FROM_STAR,
                                          IsStarEnabled());
   UpdateStarDecorationVisibility();
-  UpdatePlusDecorationVisibility();
   UpdateZoomDecoration();
   RefreshPageActionDecorations();
   RefreshContentSettingsDecorations();
@@ -467,11 +462,6 @@ void LocationBarViewMac::TestPageActionPressed(size_t index) {
     page_action_decorations_[index]->OnMousePressed(NSZeroRect);
 }
 
-void LocationBarViewMac::TestActionBoxMenuItemSelected(int command_id) {
-  plus_decoration_->action_box_button_controller()->ExecuteCommand(
-      command_id, 0);
-}
-
 bool LocationBarViewMac::GetBookmarkStarVisibility() {
   DCHECK(star_decoration_.get());
   return star_decoration_->IsVisible();
@@ -480,7 +470,6 @@ bool LocationBarViewMac::GetBookmarkStarVisibility() {
 void LocationBarViewMac::SetEditable(bool editable) {
   [field_ setEditable:editable ? YES : NO];
   UpdateStarDecorationVisibility();
-  UpdatePlusDecorationVisibility();
   UpdateZoomDecoration();
   UpdatePageActions();
   Layout();
@@ -504,26 +493,12 @@ void LocationBarViewMac::SetStarred(bool starred) {
   OnDecorationsChanged();
 }
 
-void LocationBarViewMac::ResetActionBoxIcon() {
-  plus_decoration_->ResetIcon();
-  OnDecorationsChanged();
-}
-
-void LocationBarViewMac::SetActionBoxIcon(int image_id) {
-  plus_decoration_->SetTemporaryIcon(image_id);
-  OnDecorationsChanged();
-}
-
 void LocationBarViewMac::ZoomChangedForActiveTab(bool can_show_bubble) {
   UpdateZoomDecoration();
   OnDecorationsChanged();
 
   if (can_show_bubble && zoom_decoration_->IsVisible())
     zoom_decoration_->ToggleBubble(YES);
-}
-
-NSPoint LocationBarViewMac::GetActionBoxAnchorPoint() const {
-  return plus_decoration_->GetActionBoxAnchorPoint();
 }
 
 NSPoint LocationBarViewMac::GetBookmarkBubblePoint() const {
@@ -667,8 +642,6 @@ void LocationBarViewMac::Layout() {
   [cell addLeftDecoration:location_icon_decoration_.get()];
   [cell addLeftDecoration:selected_keyword_decoration_.get()];
   [cell addLeftDecoration:ev_bubble_decoration_.get()];
-  if (plus_decoration_.get())
-    [cell addRightDecoration:plus_decoration_.get()];
   [cell addRightDecoration:star_decoration_.get()];
   [cell addRightDecoration:zoom_decoration_.get()];
 
@@ -749,17 +722,5 @@ void LocationBarViewMac::UpdateZoomDecoration() {
 }
 
 void LocationBarViewMac::UpdateStarDecorationVisibility() {
-  // If the action box is enabled, only show the star if it's lit.
-  bool visible = IsStarEnabled();
-  if (!star_decoration_->starred() &&
-      extensions::FeatureSwitch::action_box()->IsEnabled())
-    visible = false;
-  star_decoration_->SetVisible(visible);
-}
-
-void LocationBarViewMac::UpdatePlusDecorationVisibility() {
-  if (extensions::FeatureSwitch::action_box()->IsEnabled()) {
-    // If the action box is enabled, hide it when input is in progress.
-    plus_decoration_->SetVisible(!toolbar_model_->GetInputInProgress());
-  }
+  star_decoration_->SetVisible(IsStarEnabled());
 }

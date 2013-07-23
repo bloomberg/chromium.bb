@@ -577,14 +577,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableAppWindowControls)
   },
   {
-    "action-box",
-    IDS_FLAGS_ACTION_BOX_NAME,
-    IDS_FLAGS_ACTION_BOX_DESCRIPTION,
-    kOsDesktop,
-    ENABLE_DISABLE_VALUE_TYPE_AND_VALUE(switches::kActionBox, "1",
-                                        switches::kActionBox, "0")
-  },
-  {
     "script-badges",
     IDS_FLAGS_SCRIPT_BADGES_NAME,
     IDS_FLAGS_SCRIPT_BADGES_DESCRIPTION,

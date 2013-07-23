@@ -36,7 +36,6 @@
 #include "ui/base/window_open_disposition.h"
 #include "url/gurl.h"
 
-class ActionBoxButtonGtk;
 class Browser;
 class CommandUpdater;
 class ContentSettingImageModel;
@@ -150,7 +149,6 @@ class LocationBarViewGtk : public OmniboxEditController,
   virtual ExtensionAction* GetPageAction(size_t index) OVERRIDE;
   virtual ExtensionAction* GetVisiblePageAction(size_t index) OVERRIDE;
   virtual void TestPageActionPressed(size_t index) OVERRIDE;
-  virtual void TestActionBoxMenuItemSelected(int command_id) OVERRIDE;
   virtual bool GetBookmarkStarVisibility() OVERRIDE;
 
   // content::NotificationObserver:
@@ -483,8 +481,6 @@ class LocationBarViewGtk : public OmniboxEditController,
 
   // Alignment used to wrap |location_entry_|.
   GtkWidget* location_entry_alignment_;
-
-  scoped_ptr<ActionBoxButtonGtk> action_box_button_;
 
   CommandUpdater* command_updater_;
   ToolbarModel* toolbar_model_;

@@ -235,7 +235,6 @@
         'browser/ui/fullscreen/fullscreen_controller_state_interactive_browsertest.cc',
         'browser/ui/gtk/bookmarks/bookmark_bar_gtk_interactive_uitest.cc',
         'browser/ui/gtk/bookmarks/bookmark_bubble_gtk_browsertest.cc',
-        'browser/ui/omnibox/action_box_browsertest.cc',
         'browser/ui/omnibox/omnibox_view_browsertest.cc',
         'browser/ui/panels/base_panel_browser_test.cc',
         'browser/ui/panels/base_panel_browser_test.h',
