@@ -360,6 +360,8 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
       IDS_OPTIONS_SETTINGS_ACCESSIBILITY_SCREEN_MAGNIFIER_PARTIAL },
     { "accessibilityLargeCursor",
       IDS_OPTIONS_SETTINGS_ACCESSIBILITY_LARGE_CURSOR_DESCRIPTION },
+    { "accessibilityStickyKeys",
+      IDS_OPTIONS_SETTINGS_ACCESSIBILITY_STICKY_KEYS_DESCRIPTION },
     { "accessibilitySpokenFeedback",
       IDS_OPTIONS_SETTINGS_ACCESSIBILITY_SPOKEN_FEEDBACK_DESCRIPTION },
     { "accessibilityTitle",
@@ -500,6 +502,10 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
   magnifier_list->Append(option_partial.release());
 
   values->Set("magnifierList", magnifier_list.release());
+
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  values->SetBoolean("enableStickyKeys",
+                     command_line.HasSwitch(switches::kEnableStickyKeys));
 #endif
 
 #if defined(OS_MACOSX)

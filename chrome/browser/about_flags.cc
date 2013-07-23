@@ -1585,6 +1585,13 @@ const Experiment kExperiments[] = {
     kOsCrOS,
     SINGLE_VALUE_TYPE(switches::kEnableQuickofficeEdit),
   },
+  {
+    "enable-sticky-keys",
+    IDS_FLAGS_ENABLE_STICKY_KEYS_NAME,
+    IDS_FLAGS_ENABLE_STICKY_KEYS_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(switches::kEnableStickyKeys),
+  },
 #endif
   {
     "enable-translate-settings",

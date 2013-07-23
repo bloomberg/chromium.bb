@@ -7196,6 +7196,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_ASH_NEW_LOCK_ANIMATIONS_DESCRIPTION" desc="Description for the flag to switch lock animations.">
           Disables new lock animations.
         </message>
+        <message name="IDS_FLAGS_ENABLE_STICKY_KEYS_NAME" desc="Name for the flag to enable sticky keys.">
+          Enable sticky keys.
+        </message>
+        <message name="IDS_FLAGS_ENABLE_STICKY_KEYS_DESCRIPTION" desc="Description for the flag to enable sticky keys.">
+          StickyKeys allows the user to press and release a modifier key, such as Shift, Ctrl, or Alt, and have it remain active until any other key is pressed.
+        </message>
       </if>
       <message name="IDS_FLAGS_FULL_HISTORY_SYNC_NAME" desc="Name of the flag to disable full history sync.">
         Disable full history sync

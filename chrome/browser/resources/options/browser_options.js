@@ -430,6 +430,8 @@ cr.define('options', function() {
           chrome.send('highContrastChange',
                       [$('accessibility-high-contrast-check').checked]);
         };
+        $('accessibility-sticky-keys').hidden =
+            !loadTimeData.getBoolean('enableStickyKeys');
       }
 
       // Display management section (CrOS only).
