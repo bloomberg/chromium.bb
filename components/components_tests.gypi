@@ -79,6 +79,14 @@
                 '../sync/sync.gyp:sync',
               ],
             }],
+            ['OS=="linux" and component=="shared_library" and linux_use_tcmalloc==1', {
+            'dependencies': [
+                '<(DEPTH)/base/allocator/allocator.gyp:allocator',
+            ],
+            'link_settings': {
+                'ldflags': ['-rdynamic'],
+            },
+            }],
           ],
           # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
           'msvs_disabled_warnings': [4267, ],

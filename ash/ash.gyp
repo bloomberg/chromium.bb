@@ -810,6 +810,14 @@
             '../chromeos/chromeos.gyp:power_manager_proto',
           ],
         }],
+        ['OS=="linux" and component=="shared_library" and linux_use_tcmalloc==1', {
+          'dependencies': [
+            '<(DEPTH)/base/allocator/allocator.gyp:allocator',
+          ],
+          'link_settings': {
+            'ldflags': ['-rdynamic'],
+          },
+        }],
       ],
     },
     {

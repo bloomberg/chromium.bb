@@ -199,11 +199,6 @@
             }],
           ],
         }],
-        ['OS=="linux" and component=="shared_library" and linux_use_tcmalloc==1', {
-          'dependencies': [
-            '<(DEPTH)/base/allocator/allocator.gyp:allocator',
-          ],
-        }],
       ],
     },
   ],
