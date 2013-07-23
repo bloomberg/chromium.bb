@@ -1,8 +1,8 @@
-# False positives in libfontconfig. http://crbug.com/39050
-leak:*libfontconfig*
-
 # HeapCheck sanity test
 leak:base::ToolsSanityTest_MemoryLeak_Test::TestBody
+
+# False positives in libfontconfig. http://crbug.com/39050
+leak:libfontconfig
 
 # V8 leak, expect 1024 bytes leaked per process. http://crbug.com/99304
 leak:v8::internal::V8::Initialize
@@ -13,5 +13,24 @@ leak:net::(anonymous namespace)::ProxyResolverV8WithMockBindings::SetPacScriptFr
 leak:net::(anonymous namespace)::InitResolver
 
 # NSS leaks. http://crbug.com/51988
-leak:net::NSSCertDatabase::*
+leak:net::NSSCertDatabase::
 leak:crypto::ScopedTestNSSDB::ScopedTestNSSDB
+# The two suppressions above will not fire when the fast stack unwinder is used,
+# because it can't unwind through libnssutil. Just suppress it for the time being.
+leak:libnssutil
+
+## Global singleton instance of SkFontConfigDirect in Skia. http://crbug.com/186086
+#leak:SkFontConfigInterfaceDirect::SkFontConfigInterfaceDirect
+
+# Skia leaks. http://crbug.com/189170
+leak:SkFontHost::CreateTypeface
+
+# Angle leaks. http://crbug.com/181691
+leak:InitializeGlobalParseContext
+leak:InitializeGlobalPools
+
+# Skia leaks GrGpuGL::ProgramCache::Entry. http://crbug.com/262934
+leak:GrGpuGL::flushGraphicsState
+
+# Small test-only leak in ppapi_unittests. http://crbug.com/258113
+leak:ppapi::proxy::PPP_Instance_Private_ProxyTest_PPPInstancePrivate_Test
