@@ -1008,7 +1008,7 @@ class AndroidCommands(object):
   def GetWifiIP(self):
     """Returns the wifi IP on the device."""
     wifi_ip = self.RunShellCommand('getprop dhcp.wlan0.ipaddress')[0]
-    assert wifi_ip
+    # Do not assert here. Devices (e.g. emulators) may not have a WifiIP.
     return wifi_ip
 
   def GetSubscriberInfo(self):

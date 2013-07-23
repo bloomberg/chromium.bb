@@ -17,6 +17,7 @@ import bb_annotations
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from pylib import android_commands
 from pylib import constants
+from pylib import perf_tests_helper
 from pylib.cmd_helper import GetCmdOutput
 
 
@@ -31,21 +32,16 @@ def DeviceInfo(serial, options):
     boolean indicating whether or not device can be used for testing.
   """
 
-  def AdbShellCmd(cmd):
-    return GetCmdOutput('adb -s %s shell %s' % (serial, cmd),
-                        shell=True).strip()
-
   device_adb = android_commands.AndroidCommands(serial)
 
   # TODO(navabi): Replace AdbShellCmd with device_adb.
-  device_type = AdbShellCmd('getprop ro.build.product')
-  device_build = AdbShellCmd('getprop ro.build.id')
-  device_build_type = AdbShellCmd('getprop ro.build.type')
-  device_product_name = AdbShellCmd('getprop ro.product.name')
+  device_type = device_adb.GetBuildProduct()
+  device_build = device_adb.GetBuildId()
+  device_build_type = device_adb.GetBuildType()
+  device_product_name = device_adb.GetProductName()
 
-  setup_wizard_disabled = AdbShellCmd(
-      'getprop ro.setupwizard.mode') == 'DISABLED'
-  battery = AdbShellCmd('dumpsys battery')
+  setup_wizard_disabled = device_adb.GetSetupWizardStatus() == 'DISABLED'
+  battery = device_adb.GetBatteryInfo()
   install_output = GetCmdOutput(
     ['%s/build/android/adb_install_apk.py' % constants.DIR_SOURCE_ROOT, '--apk',
      '%s/build/android/CheckInstallApk-debug.apk' % constants.DIR_SOURCE_ROOT])
@@ -62,15 +58,15 @@ def DeviceInfo(serial, options):
     ac_power = re.findall('AC powered: (\w+)', battery)[0]
     battery_level = int(re.findall('level: (\d+)', battery)[0])
     battery_temp = float(re.findall('temperature: (\d+)', battery)[0]) / 10
+  sub_info = device_adb.GetSubscriberInfo()
+  imei_slice = re.findall('Device ID = (\d+)', sub_info)[0][-6:]
   report = ['Device %s (%s)' % (serial, device_type),
-            '  Build: %s (%s)' % (device_build,
-                                  AdbShellCmd('getprop ro.build.fingerprint')),
+            '  Build: %s (%s)' %
+              (device_build, device_adb.GetBuildFingerprint()),
             '  Battery: %s%%' % battery_level,
             '  Battery temp: %s' % battery_temp,
-            '  IMEI slice: %s' % AdbShellCmd('dumpsys iphonesubinfo '
-                                             '| grep Device'
-                                             "| awk '{print $4}'")[-6:],
-            '  Wifi IP: %s' % AdbShellCmd('getprop dhcp.wlan0.ipaddress'),
+            '  IMEI slice: %s' % imei_slice,
+            '  Wifi IP: %s' % device_adb.GetWifiIP(),
             '  Install Speed: %s KB/s' % install_speed,
             '']
 
@@ -92,8 +88,9 @@ def DeviceInfo(serial, options):
   # Turn off devices with low battery and the step does not fail.
   if battery_level < 15:
     device_adb.EnableAdbRoot()
-    AdbShellCmd('reboot -p')
-  return device_type, device_build, '\n'.join(report), errors, True
+    device_adb.Shutdown()
+  full_report = '\n'.join(report)
+  return device_type, device_build, battery_level, full_report, errors, True
 
 
 def CheckForMissingDevices(options, adb_online_devs):
@@ -189,15 +186,21 @@ def main():
                     default=os.path.join(constants.DIR_SOURCE_ROOT, 'out'))
   parser.add_option('--no-provisioning-check',
                     help='Will not check if devices are provisioned properly.')
-
+  parser.add_option('--device-status-dashboard',
+                    help='Output device status data for dashboard.')
   options, args = parser.parse_args()
   if args:
     parser.error('Unknown options %s' % args)
   devices = android_commands.GetAttachedDevices()
-  types, builds, reports, errors = [], [], [], []
+  # TODO(navabi): Test to make sure this fails and then fix call
+  offline_devices = android_commands.GetAttachedDevices(hardware=False,
+                                                        emulator=False,
+                                                        offline=True)
+
+  types, builds, batteries, reports, errors = [], [], [], [], []
   fail_step_lst = []
   if devices:
-    types, builds, reports, errors, fail_step_lst = (
+    types, builds, batteries, reports, errors, fail_step_lst = (
         zip(*[DeviceInfo(dev, options) for dev in devices]))
 
   err_msg = CheckForMissingDevices(options, devices) or []
@@ -219,6 +222,16 @@ def main():
     msg = '\n'.join(err_msg)
     print msg
     SendDeviceStatusAlert(msg)
+
+  if options.device_status_dashboard:
+    perf_tests_helper.PrintPerfResult('BotDevices', 'OnlineDevices',
+                                      [len(devices)], 'devices')
+    perf_tests_helper.PrintPerfResult('BotDevices', 'OfflineDevices',
+                                      [len(offline_devices)], 'devices',
+                                      'unimportant')
+    for serial, battery in zip(devices, batteries):
+      perf_tests_helper.PrintPerfResult('DeviceBattery', serial, [battery], '%',
+                                        'unimportant')
 
   if False in fail_step_lst:
     # TODO(navabi): Build fails on device status check step if there exists any
