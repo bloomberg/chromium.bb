@@ -486,7 +486,8 @@ TEST_F(EndToEndTest, InvalidStream) {
   EXPECT_EQ(QUIC_PACKET_FOR_NONEXISTENT_STREAM, client_->connection_error());
 }
 
-TEST_F(EndToEndTest, MultipleTermination) {
+// TODO(rch): this test seems to cause net_unittests timeouts :|
+TEST_F(EndToEndTest, DISABLED_MultipleTermination) {
   // TODO(rtenneti): Delete this when NSS is supported.
   if (!Aes128Gcm12Encrypter::IsSupported()) {
     LOG(INFO) << "AES GCM not supported. Test skipped.";
