@@ -14,7 +14,7 @@
         '../../../../base/base.gyp:base',
         '../../../../base/base.gyp:base_i18n',
         '../../../../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
-        '../../../../content/content.gyp:content',
+        '../../../../content/content.gyp:content_browser',
         '../../../../skia/skia.gyp:skia',
         '../../../../url/url.gyp:url_lib',
         '../../../ui.gyp:ui',

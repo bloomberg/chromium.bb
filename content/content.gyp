@@ -112,7 +112,7 @@
             'content_resources.gyp:content_resources',
           ],
           'conditions': [
-            ['OS != "ios"', {
+            ['OS != "ios" and chrome_multiple_dll != 1', {
               'dependencies': [
                 'content_gpu',
                 'content_utility',
@@ -172,6 +172,7 @@
                 'content_gpu.gypi',
               ],
               'dependencies': [
+                'content_child',
                 'content_common',
               ],
             },
@@ -225,6 +226,7 @@
                 'content_utility.gypi',
               ],
               'dependencies': [
+                'content_child',
                 'content_common',
               ],
             },

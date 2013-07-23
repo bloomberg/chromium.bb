@@ -83,8 +83,10 @@ class CONTENT_EXPORT UtilityProcessHostImpl
 
   scoped_ptr<BrowserChildProcessHostImpl> process_;
 
+#if !defined(CHROME_MULTIPLE_DLL)
   // Used in single-process mode instead of process_.
   scoped_ptr<UtilityMainThread> in_process_thread_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(UtilityProcessHostImpl);
 };

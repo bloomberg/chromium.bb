@@ -214,7 +214,9 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   bool swiftshader_rendering_;
   GpuProcessKind kind_;
 
+#if !defined(CHROME_MULTIPLE_DLL)
   scoped_ptr<GpuMainThread> in_process_gpu_thread_;
+#endif
 
   // Whether we actually launched a GPU process.
   bool process_launched_;

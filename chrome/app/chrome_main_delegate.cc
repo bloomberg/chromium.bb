@@ -93,19 +93,19 @@
 #include "chrome/app/breakpad_linux.h"
 #endif
 
-#if !defined(CHROME_MULTIPLE_DLL) || defined(CHROME_MULTIPLE_DLL_BROWSER)
+#if !defined(CHROME_MULTIPLE_DLL_CHILD)
 base::LazyInstance<chrome::ChromeContentBrowserClient>
     g_chrome_content_browser_client = LAZY_INSTANCE_INITIALIZER;
 #endif
 
-#if !defined(CHROME_MULTIPLE_DLL) || defined(CHROME_MULTIPLE_DLL_CHILD)
+#if !defined(CHROME_MULTIPLE_DLL_BROWSER)
 base::LazyInstance<chrome::ChromeContentRendererClient>
     g_chrome_content_renderer_client = LAZY_INSTANCE_INITIALIZER;
 base::LazyInstance<chrome::ChromeContentUtilityClient>
     g_chrome_content_utility_client = LAZY_INSTANCE_INITIALIZER;
 base::LazyInstance<chrome::ChromeContentPluginClient>
     g_chrome_content_plugin_client = LAZY_INSTANCE_INITIALIZER;
-#endif  // !CHROME_MULTIPLE_DLL || CHROME_MULTIPLE_DLL_CHILD
+#endif
 
 #if defined(OS_POSIX)
 base::LazyInstance<chrome::ChromeBreakpadClient>::Leaky
