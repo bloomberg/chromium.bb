@@ -451,6 +451,8 @@ class CONTENT_EXPORT WebContentsImpl
   virtual void RequestMediaAccessPermission(
       const MediaStreamRequest& request,
       const MediaResponseCallback& callback) OVERRIDE;
+  virtual SessionStorageNamespace* GetSessionStorageNamespace(
+      SiteInstance* instance) OVERRIDE;
 
   // RenderWidgetHostDelegate --------------------------------------------------
 

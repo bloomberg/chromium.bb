@@ -33,8 +33,7 @@ class TestRenderViewHostFactory : public RenderViewHostFactory {
       RenderWidgetHostDelegate* widget_delegate,
       int routing_id,
       int main_frame_routing_id,
-      bool swapped_out,
-      SessionStorageNamespace* session_storage) OVERRIDE;
+      bool swapped_out) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestRenderViewHostFactory);

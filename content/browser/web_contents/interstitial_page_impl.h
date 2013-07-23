@@ -128,6 +128,9 @@ class CONTENT_EXPORT InterstitialPageImpl
                                  const gfx::Rect& initial_pos) OVERRIDE;
   virtual void ShowCreatedFullscreenWidget(int route_id) OVERRIDE;
 
+  virtual SessionStorageNamespace* GetSessionStorageNamespace(
+      SiteInstance* instance) OVERRIDE;
+
   // RenderWidgetHostDelegate implementation:
   virtual void RenderWidgetDeleted(
       RenderWidgetHostImpl* render_widget_host) OVERRIDE;
@@ -239,6 +242,8 @@ class CONTENT_EXPORT InterstitialPageImpl
   scoped_ptr<InterstitialPageDelegate> delegate_;
 
   base::WeakPtrFactory<InterstitialPageImpl> weak_ptr_factory_;
+
+  scoped_refptr<SessionStorageNamespace> session_storage_namespace_;
 
   DISALLOW_COPY_AND_ASSIGN(InterstitialPageImpl);
 };

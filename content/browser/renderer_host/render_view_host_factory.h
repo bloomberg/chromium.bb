@@ -29,8 +29,7 @@ class RenderViewHostFactory {
       RenderWidgetHostDelegate* widget_delegate,
       int routing_id,
       int main_frame_routing_id,
-      bool swapped_out,
-      SessionStorageNamespace* session_storage);
+      bool swapped_out);
 
   // Returns true if there is currently a globally-registered factory.
   static bool has_factory() {
@@ -49,8 +48,7 @@ class RenderViewHostFactory {
       RenderWidgetHostDelegate* widget_delegate,
       int routing_id,
       int main_frame_routing_id,
-      bool swapped_out,
-      SessionStorageNamespace* session_storage_namespace) = 0;
+      bool swapped_out) = 0;
 
   // Registers your factory to be called when new RenderViewHosts are created.
   // We have only one global factory, so there must be no factory registered

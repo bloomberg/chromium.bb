@@ -1706,6 +1706,11 @@ void WebContentsImpl::RequestMediaAccessPermission(
     callback.Run(MediaStreamDevices(), scoped_ptr<MediaStreamUI>());
 }
 
+SessionStorageNamespace* WebContentsImpl::GetSessionStorageNamespace(
+    SiteInstance* instance) {
+  return controller_.GetSessionStorageNamespace(instance);
+}
+
 void WebContentsImpl::DidSendScreenRects(RenderWidgetHostImpl* rwh) {
   if (browser_plugin_embedder_)
     browser_plugin_embedder_->DidSendScreenRects();

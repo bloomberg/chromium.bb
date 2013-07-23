@@ -58,6 +58,7 @@ struct GlobalRequestID;
 struct NativeWebKeyboardEvent;
 struct Referrer;
 struct RendererPreferences;
+class SiteInstance;
 
 //
 // RenderViewHostDelegate
@@ -413,6 +414,11 @@ class CONTENT_EXPORT RenderViewHostDelegate {
   virtual void RequestMediaAccessPermission(
       const MediaStreamRequest& request,
       const MediaResponseCallback& callback) {}
+
+  // Returns the SessionStorageNamespace the render view should use. Might
+  // create the SessionStorageNamespace on the fly.
+  virtual SessionStorageNamespace* GetSessionStorageNamespace(
+      SiteInstance* instance);
 
  protected:
   virtual ~RenderViewHostDelegate() {}

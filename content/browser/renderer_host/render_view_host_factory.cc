@@ -19,17 +19,14 @@ RenderViewHost* RenderViewHostFactory::Create(
     RenderWidgetHostDelegate* widget_delegate,
     int routing_id,
     int main_frame_routing_id,
-    bool swapped_out,
-    SessionStorageNamespace* session_storage_namespace) {
+    bool swapped_out) {
   if (factory_) {
     return factory_->CreateRenderViewHost(instance, delegate, widget_delegate,
                                           routing_id, main_frame_routing_id,
-                                          swapped_out,
-                                          session_storage_namespace);
+                                          swapped_out);
   }
   return new RenderViewHostImpl(instance, delegate, widget_delegate, routing_id,
-                                main_frame_routing_id, swapped_out,
-                                session_storage_namespace);
+                                main_frame_routing_id, swapped_out);
 }
 
 // static
