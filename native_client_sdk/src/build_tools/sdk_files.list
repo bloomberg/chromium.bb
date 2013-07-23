@@ -1181,6 +1181,15 @@ toolchain/${PLATFORM}_x86_pnacl/newlib/sdk/include/nacl/nacl_thread.h
 toolchain/${PLATFORM}_x86_pnacl/newlib/sdk/include/pnacl.h
 toolchain/${PLATFORM}_x86_pnacl/newlib/sdk/include/pthread.h
 toolchain/${PLATFORM}_x86_pnacl/newlib/sdk/include/semaphore.h
+toolchain/${PLATFORM}_x86_pnacl/newlib/sdk/lib/libminidump_generator.a
+toolchain/${PLATFORM}_x86_pnacl/newlib/sdk/lib/libnacl.a
+toolchain/${PLATFORM}_x86_pnacl/newlib/sdk/lib/libnacl_dyncode.a
+toolchain/${PLATFORM}_x86_pnacl/newlib/sdk/lib/libnacl_exception.a
+toolchain/${PLATFORM}_x86_pnacl/newlib/sdk/lib/libnacl_list_mappings.a
+toolchain/${PLATFORM}_x86_pnacl/newlib/sdk/lib/libnosys.a
+toolchain/${PLATFORM}_x86_pnacl/newlib/sdk/lib/libppapi.a
+toolchain/${PLATFORM}_x86_pnacl/newlib/sdk/lib/libppapi_stub.a
+toolchain/${PLATFORM}_x86_pnacl/newlib/sdk/lib/libpthread.a
 tools/common.mk
 tools/compiler-wrapper.py
 tools/create_html.py

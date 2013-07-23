@@ -61,28 +61,22 @@ GYPBUILD_DIR = 'gypbuild'
 options = None
 
 
-def GetGlibcToolchain(arch):
+def GetGlibcToolchain(host_arch):
   tcdir = os.path.join(NACL_DIR, 'toolchain', '.tars')
-  tcname = 'toolchain_%s_%s.tar.bz2' % (getos.GetPlatform(), arch)
+  tcname = 'toolchain_%s_%s.tar.bz2' % (getos.GetPlatform(), host_arch)
   return os.path.join(tcdir, tcname)
 
 
-def GetNewlibToolchain(arch):
+def GetNewlibToolchain(host_arch):
   tcdir = os.path.join(NACL_DIR, 'toolchain', '.tars')
-  tcname = 'naclsdk_%s_%s.tgz' % (getos.GetPlatform(), arch)
+  tcname = 'naclsdk_%s_%s.tgz' % (getos.GetPlatform(), host_arch)
   return os.path.join(tcdir, tcname)
 
 
-def GetPNaClToolchain(arch):
+def GetPNaClToolchain(host_arch):
   tcdir = os.path.join(NACL_DIR, 'toolchain', '.tars')
-  tcname = 'naclsdk_pnacl_%s_%s.tgz' % (getos.GetPlatform(), arch)
+  tcname = 'naclsdk_pnacl_%s_%s.tgz' % (getos.GetPlatform(), host_arch)
   return os.path.join(tcdir, tcname)
-
-
-def GetArchName(arch, xarch=None):
-  if xarch:
-    return arch + '-' + str(xarch)
-  return arch
 
 
 def GetToolchainNaClInclude(tcname, tcpath, arch):
@@ -96,43 +90,55 @@ def GetToolchainNaClInclude(tcname, tcpath, arch):
     buildbot_common.ErrorExit('Unknown architecture: %s' % arch)
 
 
-def GetToolchainNaClLib(tcname, tcpath, arch, xarch):
-  if arch == 'x86':
-    if tcname == 'pnacl':
-      return os.path.join(tcpath, 'newlib', 'sdk', 'lib')
-    if str(xarch) == '32':
-      return os.path.join(tcpath, 'x86_64-nacl', 'lib32')
-    if str(xarch) == '64':
-      return os.path.join(tcpath, 'x86_64-nacl', 'lib')
-    if str(xarch) == 'arm':
-      return os.path.join(tcpath, 'arm-nacl', 'lib')
-  buildbot_common.ErrorExit('Unknown architecture: %s' % arch)
+def GetGypGenDir(xarch):
+  if xarch == 'arm':
+    build_dir = GYPBUILD_DIR + '-arm'
+  else:
+    build_dir = GYPBUILD_DIR
+  return os.path.join(OUT_DIR, build_dir, 'Release', 'gen')
+
+
+def GetGypBuiltLib(tcname, xarch=None):
+  if tcname == 'pnacl':
+    tcname = 'pnacl_newlib'
+  if not xarch:
+    xarch = ''
+  return os.path.join(GetGypGenDir(xarch), 'tc_' + tcname, 'lib' + xarch)
+
+
+def GetToolchainNaClLib(tcname, tcpath, xarch):
+  if tcname == 'pnacl':
+    return os.path.join(tcpath, 'newlib', 'sdk', 'lib')
+  if xarch == '32':
+    return os.path.join(tcpath, 'x86_64-nacl', 'lib32')
+  if xarch == '64':
+    return os.path.join(tcpath, 'x86_64-nacl', 'lib')
+  if xarch == 'arm':
+    return os.path.join(tcpath, 'arm-nacl', 'lib')
+
+
+def GetToolchainDirName(tcname, xarch):
+  if xarch != 'arm':
+    xarch = 'x86'
+  return '%s_%s_%s' % (getos.GetPlatform(), xarch, tcname)
+
+
+def GetGypToolchainLib(tcname, xarch):
+  tcpath = os.path.join(GetGypGenDir(xarch), 'sdk', 'toolchain',
+                        GetToolchainDirName(tcname, xarch))
+  return GetToolchainNaClLib(tcname, tcpath, xarch)
+
+
+def GetOutputToolchainLib(pepperdir, tcname, xarch):
+  tcpath = os.path.join(pepperdir, 'toolchain',
+                        GetToolchainDirName(tcname, xarch))
+  return GetToolchainNaClLib(tcname, tcpath, xarch)
 
 
 def GetPNaClNativeLib(tcpath, arch):
   if arch not in ['arm', 'x86-32', 'x86-64']:
     buildbot_common.ErrorExit('Unknown architecture %s.' % arch)
   return os.path.join(tcpath, 'lib-' + arch)
-
-
-def GetSconsArgs(tcpath, outdir, arch, xarch=None):
-  """Return list of scons build arguments to generate user libraries.
-
-  Only used for pnacl builds.
-  """
-  if getos.GetPlatform() == 'win':
-    scons = 'scons.bat'
-  else:
-    scons = './scons'
-  mode = '--mode=opt-host,nacl'
-  arch_name = GetArchName(arch, xarch)
-  plat = 'platform=' + arch_name
-  binarg = 'bindir=' + os.path.join(outdir, 'tools')
-  lib = 'libdir=' + GetToolchainNaClLib('pnacl', tcpath, arch, xarch)
-  args = [scons, mode, plat, binarg, lib, '-j10', 'install_lib', 'bitcode=1']
-
-  print "Building pnacl (%s): %s" % (arch, ' '.join(args))
-  return args
 
 
 def BuildStepDownloadToolchains():
@@ -365,6 +371,17 @@ TOOLCHAIN_LIBS = {
     'libppapi.a',
     'libppapi.so',
     'libppapi_stub.a',
+  ],
+  'pnacl': [
+    'libminidump_generator.a',
+    'libnacl.a',
+    'libnacl_dyncode.a',
+    'libnacl_exception.a',
+    'libnacl_list_mappings.a',
+    'libnosys.a',
+    'libppapi.a',
+    'libppapi_stub.a',
+    'libpthread.a',
   ]
 }
 
@@ -410,31 +427,23 @@ def GypNinjaInstall(pepperdir, toolchains):
 
   InstallFiles(ninja_out_dir, os.path.join(pepperdir, 'tools'), tools_files)
 
-  for tc in set(toolchains) & set(['newlib', 'glibc']):
-    for archname in ('arm', '32', '64'):
-      if tc == 'glibc' and archname == 'arm':
+  for tc in set(toolchains) & set(['newlib', 'glibc', 'pnacl']):
+    if tc == 'pnacl':
+      xarches = (None,)
+    else:
+      xarches = ('arm', '32', '64')
+
+    for xarch in xarches:
+      if tc == 'glibc' and xarch == 'arm':
         continue
-      tc_dir = 'tc_' + tc
-      lib_dir = 'lib' + archname
-      if archname == 'arm':
-        build_dir = GYPBUILD_DIR + '-arm'
-        tcdir = '%s_arm_%s' % (platform, tc)
-      else:
-        build_dir = GYPBUILD_DIR
-        tcdir = '%s_x86_%s' % (platform, tc)
 
-      ninja_out_dir = os.path.join(OUT_DIR, build_dir, 'Release')
-      src_dir = os.path.join(ninja_out_dir, 'gen', tc_dir, lib_dir)
-      tcpath = os.path.join(pepperdir, 'toolchain', tcdir)
-      dst_dir = GetToolchainNaClLib(tc, tcpath, 'x86', archname)
-
+      src_dir = GetGypBuiltLib(tc, xarch)
+      dst_dir = GetOutputToolchainLib(pepperdir, tc, xarch)
       InstallFiles(src_dir, dst_dir, TOOLCHAIN_LIBS[tc])
 
-      ninja_tcpath = os.path.join(ninja_out_dir, 'gen', 'sdk', 'toolchain',
-                      tcdir)
-      lib_dir = GetToolchainNaClLib(tc, ninja_tcpath, 'x86', archname)
-      buildbot_common.CopyFile(os.path.join(lib_dir, 'crt1.o'), dst_dir)
-
+      if tc != 'pnacl':
+        src_dir = GetGypToolchainLib(tc, xarch)
+        InstallFiles(src_dir, dst_dir, ['crt1.o'])
 
 
 def GypNinjaBuild_NaCl(rel_out_dir):
@@ -499,16 +508,6 @@ def GypNinjaBuild_Pnacl(rel_out_dir, target_arch):
   gyp_file = os.path.join(SRC_DIR, 'ppapi', 'native_client', 'src',
                           'untrusted', 'pnacl_irt_shim', 'pnacl_irt_shim.gyp')
   targets = ['pnacl_irt_shim']
-  GypNinjaBuild(target_arch, gyp_py, gyp_file, targets, out_dir, False)
-
-  gyp_py = os.path.join(NACL_DIR, 'build', 'gyp_nacl')
-  gyp_file = os.path.join(NACL_DIR, 'src', 'untrusted', 'minidump_generator',
-                          'minidump_generator.gyp')
-  targets = ['minidump_generator_lib']
-  GypNinjaBuild(target_arch, gyp_py, gyp_file, targets, out_dir, False)
-
-  gyp_file = os.path.join(NACL_DIR, 'src', 'untrusted', 'nacl', 'nacl.gyp')
-  targets = ['nacl_exception_lib']
   GypNinjaBuild(target_arch, gyp_py, gyp_file, targets, out_dir, False)
 
 
@@ -582,14 +581,6 @@ def BuildStepBuildToolchains(pepperdir, toolchains):
                        'arm')
 
   if 'pnacl' in toolchains:
-    # shell=True is needed on windows to enable searching of the PATH:
-    # http://bugs.python.org/issue8557
-    shell = platform == 'win'
-    buildbot_common.Run(
-        GetSconsArgs(pnacldir, pepperdir, 'x86', '32'),
-        cwd=NACL_DIR,
-        shell=shell)
-
     # NOTE: For ia32, gyp builds both x86-32 and x86-64 by default.
     for arch in ('ia32', 'arm'):
       # Fill in the latest native pnacl shim library from the chrome build.
@@ -610,23 +601,8 @@ def BuildStepBuildToolchains(pepperdir, toolchains):
             os.path.join(release_build_dir, 'libpnacl_irt_shim.a'),
             GetPNaClNativeLib(pnacldir, nacl_arch))
 
-        # TODO: should these next couple of bitcode libraries really be
-        # installed to the native library directory instead of bitcode
-        # library directory?
-        release_build_dir = os.path.join(OUT_DIR, build_dir, 'Release',
-                                         'gen', 'tc_pnacl_newlib', 'lib')
-        buildbot_common.CopyFile(
-            os.path.join(release_build_dir, 'libminidump_generator.a'),
-            GetPNaClNativeLib(pnacldir, nacl_arch))
-
-        buildbot_common.CopyFile(
-            os.path.join(release_build_dir, 'libnacl_exception.a'),
-            GetPNaClNativeLib(pnacldir, nacl_arch))
-
     InstallNaClHeaders(GetToolchainNaClInclude('pnacl', pnacldir, 'x86'),
                        'newlib')
-
-
 
 
 def MakeDirectoryOrClobber(pepperdir, dirname, clobber):
