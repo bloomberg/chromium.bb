@@ -16,9 +16,38 @@ class Browser;
 class FullscreenController;
 class FullscreenNotificationObserver;
 
-// Test fixture testing Fullscreen Controller through its states. --------------
+// Utility definition for mapping enum values to strings in switch statements.
+#define ENUM_TO_STRING(enum) case enum: return #enum
+
+// Test fixture used to test Fullscreen Controller through exhaustive sequences
+// of events in unit and interactive tests.
+//
+// Because operating system window managers are too unreliable (they result in
+// flakiness at around 1 out of 1000 runs) this fixture is designed to be run
+// on testing infrastructure in unit tests mocking out the platforms' behavior.
+// To verify that behavior interactive tests exist but are left disabled and
+// only run manually when verifying the consistency of the
+// FullscreenControllerTestWindow.
 class FullscreenControllerStateTest {
  public:
+  // Events names for FullscreenController methods.
+  enum Event {
+    TOGGLE_FULLSCREEN,         // ToggleFullscreenMode()
+    TOGGLE_FULLSCREEN_CHROME,  // ToggleFullscreenWithChrome()
+    TAB_FULLSCREEN_TRUE,       // ToggleFullscreenModeForTab(, true)
+    TAB_FULLSCREEN_FALSE,      // ToggleFullscreenModeForTab(, false)
+    METRO_SNAP_TRUE,           // SetMetroSnapMode(true)
+    METRO_SNAP_FALSE,          // SetMetroSnapMode(false)
+    BUBBLE_EXIT_LINK,          // ExitTabOrBrowserFullscreenToPreviousState()
+    BUBBLE_ALLOW,              // OnAcceptFullscreenPermission()
+    BUBBLE_DENY,               // OnDenyFullscreenPermission()
+    WINDOW_CHANGE,             // ChangeWindowFullscreenState()
+    NUM_EVENTS,
+    EVENT_INVALID,
+  };
+
+  // Conceptual states of the Fullscreen Controller, these do not correspond
+  // to particular implemenation details.
   enum State {
     // The window is not in fullscreen.
     STATE_NORMAL,
@@ -46,33 +75,8 @@ class FullscreenControllerStateTest {
     STATE_INVALID,
   };
 
-  enum Event {
-    // FullscreenController::ToggleFullscreenMode()
-    TOGGLE_FULLSCREEN,
-    // FullscreenController::ToggleFullscreenWithChrome()
-    TOGGLE_FULLSCREEN_CHROME,
-    // FullscreenController::ToggleFullscreenModeForTab(, true)
-    TAB_FULLSCREEN_TRUE,
-    // FullscreenController::ToggleFullscreenModeForTab(, false)
-    TAB_FULLSCREEN_FALSE,
-    // FullscreenController::SetMetroSnapMode(true)
-    METRO_SNAP_TRUE,
-    // FullscreenController::SetMetroSnapMode(flase)
-    METRO_SNAP_FALSE,
-    // FullscreenController::ExitTabOrBrowserFullscreenToPreviousState
-    BUBBLE_EXIT_LINK,
-    // FullscreenController::OnAcceptFullscreenPermission
-    BUBBLE_ALLOW,
-    // FullscreenController::OnDenyFullscreenPermission
-    BUBBLE_DENY,
-    // FullscreenController::ChangeWindowFullscreenState()
-    WINDOW_CHANGE,
-    NUM_EVENTS,
-    EVENT_INVALID,
-  };
-
-  static const int MAX_STATE_NAME_LENGTH = 39;
-  static const int MAX_EVENT_NAME_LENGTH = 24;
+  static const int kMaxStateNameLength = 39;
+  static const int kMaxEventNameLength = 24;
 
   FullscreenControllerStateTest();
   virtual ~FullscreenControllerStateTest();
@@ -80,9 +84,10 @@ class FullscreenControllerStateTest {
   static const char* GetStateString(State state);
   static const char* GetEventString(Event event);
 
-  // Returns true if WindowFullscreenStateChanged() is called synchronously as a
-  // result of calling BrowserWindow's fullscreen related modifiers.
-  static bool IsReentrant();
+  // Returns true if FullscreenController::WindowFullscreenStateChanged()
+  // will be called and re-enter FullscreenController before
+  // FullscreenController methods complete.
+  static bool IsWindowFullscreenStateChangedReentrant();
 
   // Returns true if |state| can be persistent. This is true for all of the
   // states without "_TO_" in their name.
@@ -90,12 +95,18 @@ class FullscreenControllerStateTest {
 
   // Causes Fullscreen Controller to transition to an arbitrary state.
   void TransitionToState(State state);
+
   // Makes one state change to approach |destination_state| via shortest path.
   // Returns true if a state change is made.
   // Repeated calls are needed to reach the destination.
   bool TransitionAStepTowardState(State destination_state);
 
+  // Calls FullscreenController::ChangeWindowFullscreenState if needed because
+  // a mock BrowserWindow is being used.
   virtual void ChangeWindowFullscreenState() {}
+
+  // Returns a description of the window's state, may return NULL.
+  // FullscreenControllerStateTest owns the returned pointer.
   virtual const char* GetWindowStateString();
 
   // Causes the |event| to occur and return true on success.
@@ -124,6 +135,21 @@ class FullscreenControllerStateTest {
   std::string GetStateTransitionsAsString() const;
 
  protected:
+  // Set of enumerations (created with a helper macro) for _FALSE, _TRUE, and
+  // _NO_EXPECTATION values to be passed to VerifyWindowStateExpectations().
+  #define EXPECTATION_ENUM(enum_name, enum_prefix) \
+      enum enum_name { \
+        enum_prefix##_FALSE, \
+        enum_prefix##_TRUE, \
+        enum_prefix##_NO_EXPECTATION \
+      }
+  EXPECTATION_ENUM(FullscreenWithChromeExpectation, FULLSCREEN_WITH_CHROME);
+  EXPECTATION_ENUM(FullscreenWithoutChromeExpectation,
+                   FULLSCREEN_WITHOUT_CHROME);
+  EXPECTATION_ENUM(FullscreenForBrowserExpectation, FULLSCREEN_FOR_BROWSER);
+  EXPECTATION_ENUM(FullscreenForTabExpectation, FULLSCREEN_FOR_TAB);
+  EXPECTATION_ENUM(InMetroSnapExpectation, IN_METRO_SNAP);
+
   // Generated information about the transitions between states.
   struct StateTransitionInfo {
     StateTransitionInfo()
@@ -140,6 +166,8 @@ class FullscreenControllerStateTest {
                                                    State destination,
                                                    int search_limit);
 
+  // Returns a detailed log of what FullscreenControllerStateTest has done
+  // up to this point, to be reported when tests fail.
   std::string GetAndClearDebugLog();
 
   // Returns true if the |state| & |event| pair should be skipped.
@@ -151,9 +179,23 @@ class FullscreenControllerStateTest {
   // Runs one test of transitioning to a state and invoking an event.
   virtual void TestStateAndEvent(State state, Event event);
 
+  // Checks that window state matches the expected controller state.
+  virtual void VerifyWindowStateExpectations(
+      FullscreenWithChromeExpectation fullscreen_with_chrome,
+      FullscreenWithoutChromeExpectation fullscreen_without_chrome,
+      FullscreenForBrowserExpectation fullscreen_for_browser,
+      FullscreenForTabExpectation fullscreen_for_tab,
+      InMetroSnapExpectation in_metro_snap);
+
+
   virtual Browser* GetBrowser() = 0;
   FullscreenController* GetFullscreenController();
 
+  // The state the FullscreenController is expected to be in.
+  State state() const { return state_; }
+
+ private:
+  // The state the FullscreenController is expected to be in.
   State state_;
 
   // The state when the previous NOTIFICATION_FULLSCREEN_CHANGED notification

@@ -179,6 +179,7 @@
         'browser/ui/find_bar/find_bar_host_unittest_util.h',
         'browser/ui/fullscreen/fullscreen_controller_state_test.cc',
         'browser/ui/fullscreen/fullscreen_controller_state_test.h',
+        'browser/ui/fullscreen/fullscreen_controller_state_tests.h',
         'browser/ui/fullscreen/fullscreen_controller_test.cc',
         'browser/ui/fullscreen/fullscreen_controller_test.h',
         'browser/ui/gtk/find_bar_host_unittest_util_gtk.cc',
