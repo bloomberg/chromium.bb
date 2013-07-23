@@ -2139,6 +2139,7 @@ WebView* RenderViewImpl::createView(
   params.disposition = NavigationPolicyToDisposition(policy);
   if (!request.isNull())
     params.target_url = request.url();
+  params.features = features;
 
   int32 routing_id = MSG_ROUTING_NONE;
   int32 main_frame_routing_id = MSG_ROUTING_NONE;

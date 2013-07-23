@@ -128,6 +128,7 @@ bool WebContentsDelegate::ShouldCreateWebContents(
     const string16& frame_name,
     const GURL& target_url,
     WindowOpenDisposition disposition,
+    const WebKit::WebWindowFeatures& features,
     bool user_gesture) {
   return true;
 }

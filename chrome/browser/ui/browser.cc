@@ -179,6 +179,7 @@
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/url_request/url_request_context.h"
+#include "third_party/WebKit/public/web/WebWindowFeatures.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/point.h"
@@ -216,6 +217,7 @@ using content::WebContents;
 using extensions::Extension;
 using ui::WebDialogDelegate;
 using web_modal::WebContentsModalDialogManager;
+using WebKit::WebWindowFeatures;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -1482,6 +1484,7 @@ bool Browser::ShouldCreateWebContents(
     const string16& frame_name,
     const GURL& target_url,
     WindowOpenDisposition disposition,
+    const WebWindowFeatures& features,
     bool user_gesture) {
   if (window_container_type == WINDOW_CONTAINER_TYPE_BACKGROUND) {
     // If a BackgroundContents is created, suppress the normal WebContents.
@@ -1508,9 +1511,24 @@ bool Browser::ShouldCreateWebContents(
     // TODO(jochen): route missing information to here:
     //   referrer, extra_headers, override_encoding
     nav_params.source_contents = web_contents;
-    nav_params.tabstrip_add_types = TabStripModel::ADD_NONE;
+    nav_params.tabstrip_add_types = TabStripModel::ADD_ACTIVE;
     nav_params.window_action = chrome::NavigateParams::SHOW_WINDOW;
     nav_params.user_gesture = user_gesture;
+    web_contents->GetView()->GetContainerBounds(&nav_params.window_bounds);
+    if (features.xSet)
+      nav_params.window_bounds.set_x(features.x);
+    if (features.ySet)
+      nav_params.window_bounds.set_y(features.y);
+    if (features.widthSet)
+      nav_params.window_bounds.set_width(features.width);
+    if (features.heightSet)
+      nav_params.window_bounds.set_height(features.height);
+
+    // Compare RenderViewImpl::show().
+    if (!user_gesture)
+      nav_params.disposition = NEW_POPUP;
+    else
+      nav_params.disposition = disposition;
 
     return !popup_blocker_helper->MaybeBlockPopup(nav_params);
   }

@@ -1437,9 +1437,15 @@ void WebContentsImpl::CreateNewWindow(
     int main_frame_route_id,
     const ViewHostMsg_CreateWindow_Params& params,
     SessionStorageNamespace* session_storage_namespace) {
-  if (delegate_ && !delegate_->ShouldCreateWebContents(
-          this, route_id, params.window_container_type, params.frame_name,
-          params.target_url, params.disposition, params.user_gesture)) {
+  if (delegate_ &&
+      !delegate_->ShouldCreateWebContents(this,
+                                          route_id,
+                                          params.window_container_type,
+                                          params.frame_name,
+                                          params.target_url,
+                                          params.disposition,
+                                          params.features,
+                                          params.user_gesture)) {
     GetRenderViewHost()->GetProcess()->ResumeRequestsForView(route_id);
     GetRenderViewHost()->GetProcess()->ResumeRequestsForView(
         main_frame_route_id);

@@ -54,6 +54,7 @@ class Size;
 
 namespace WebKit {
 class WebLayer;
+struct WebWindowFeatures;
 }
 
 namespace content {
@@ -295,6 +296,7 @@ class CONTENT_EXPORT WebContentsDelegate {
       const string16& frame_name,
       const GURL& target_url,
       WindowOpenDisposition disposition,
+      const WebKit::WebWindowFeatures& features,
       bool user_gesture);
 
   // Notifies the delegate about the creation of a new WebContents. This

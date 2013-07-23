@@ -30,6 +30,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -278,6 +279,50 @@ IN_PROC_BROWSER_TEST_F(BetterPopupBlockerBrowserTest,
   popup_blocker_helper->ShowBlockedPopup(iter.GetCurrentKey());
 
   observer.Wait();
+}
+
+IN_PROC_BROWSER_TEST_F(BetterPopupBlockerBrowserTest, WindowFeatures) {
+  GURL url(ui_test_utils::GetTestUrl(
+      base::FilePath(kTestDir),
+      base::FilePath(FILE_PATH_LITERAL("popup-window-open.html"))));
+
+  CountRenderViewHosts counter;
+
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // If the popup blocker blocked the blank post, there should be only one tab.
+  EXPECT_EQ(1u, chrome::GetBrowserCount(browser()->profile(),
+                                        browser()->host_desktop_type()));
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
+  WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_EQ(url, web_contents->GetURL());
+
+  // And no new RVH created.
+  EXPECT_EQ(0, counter.GetRenderViewHostCreatedCount());
+
+  content::WindowedNotificationObserver observer(
+      chrome::NOTIFICATION_TAB_ADDED,
+      content::NotificationService::AllSources());
+  ui_test_utils::BrowserAddedObserver browser_observer;
+
+  // Launch the blocked popup.
+  PopupBlockerTabHelper* popup_blocker_helper =
+      PopupBlockerTabHelper::FromWebContents(web_contents);
+  EXPECT_EQ(1u, popup_blocker_helper->GetBlockedPopupsCount());
+  IDMap<chrome::NavigateParams, IDMapOwnPointer>::const_iterator iter(
+      &popup_blocker_helper->GetBlockedPopupRequests());
+  ASSERT_FALSE(iter.IsAtEnd());
+  popup_blocker_helper->ShowBlockedPopup(iter.GetCurrentKey());
+
+  observer.Wait();
+  Browser* new_browser = browser_observer.WaitForSingleNewBrowser();
+
+  // Check that the new popup has (roughly) the requested size.
+  web_contents = new_browser->tab_strip_model()->GetActiveWebContents();
+  gfx::Size window_size = web_contents->GetView()->GetContainerSize();
+  EXPECT_TRUE(349 <= window_size.width() && window_size.width() <= 351);
+  EXPECT_TRUE(249 <= window_size.height() && window_size.height() <= 251);
 }
 
 }  // namespace
