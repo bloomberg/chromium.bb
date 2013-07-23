@@ -8,7 +8,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
-#include "base/process_util.h"
+#include "base/process/process_handle.h"
 #include "base/single_thread_task_runner.h"
 #include "ipc/ipc_sender.h"
 #include "remoting/host/audio_capturer.h"
