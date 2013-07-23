@@ -161,12 +161,15 @@ void AwContentsClientBridge::ConfirmJsResult(JNIEnv* env,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   content::JavaScriptDialogManager::DialogClosedCallback* callback =
       pending_js_dialog_callbacks_.Lookup(id);
+  if (!callback) {
+    LOG(WARNING) << "Unexpected JS dialog confirm. " << id;
+    return;
+  }
   string16 prompt_text;
   if (prompt) {
     prompt_text = ConvertJavaStringToUTF16(env, prompt);
   }
-  if (callback)
-    callback->Run(true, prompt_text);
+  callback->Run(true, prompt_text);
   pending_js_dialog_callbacks_.Remove(id);
 }
 
@@ -174,8 +177,11 @@ void AwContentsClientBridge::CancelJsResult(JNIEnv*, jobject, int id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   content::JavaScriptDialogManager::DialogClosedCallback* callback =
       pending_js_dialog_callbacks_.Lookup(id);
-  if (callback)
-    callback->Run(false, string16());
+  if (!callback) {
+    LOG(WARNING) << "Unexpected JS dialog cancel. " << id;
+    return;
+  }
+  callback->Run(false, string16());
   pending_js_dialog_callbacks_.Remove(id);
 }
 
