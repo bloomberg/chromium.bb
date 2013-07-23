@@ -156,7 +156,7 @@ void SVGTRefElement::updateReferencedText(Element* target)
     ASSERT(shadow());
     ShadowRoot* root = shadow()->oldestShadowRoot();
     if (!root->firstChild())
-        root->appendChild(Text::create(document(), textContent), ASSERT_NO_EXCEPTION);
+        root->appendChild(Text::create(document(), textContent), ASSERT_NO_EXCEPTION, AttachLazily);
     else {
         ASSERT(root->firstChild()->isTextNode());
         root->firstChild()->setTextContent(textContent, ASSERT_NO_EXCEPTION);

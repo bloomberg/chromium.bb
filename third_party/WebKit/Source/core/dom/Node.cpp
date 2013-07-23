@@ -1662,7 +1662,7 @@ void Node::setTextContent(const String& text, ExceptionCode& ec)
             ChildListMutationScope mutation(this);
             container->removeChildren();
             if (!text.isEmpty())
-                container->appendChild(document()->createTextNode(text), ec);
+                container->appendChild(document()->createTextNode(text), ec, AttachLazily);
             return;
         }
         case DOCUMENT_NODE:
