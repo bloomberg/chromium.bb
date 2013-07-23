@@ -57,28 +57,8 @@ function VolumeListModel(volumesList, pinnedList) {
   this.volumesList_.addEventListener('change', changeHandler.bind(this, 1));
   this.pinnedList_.addEventListener('change', changeHandler.bind(this, 2));
 
-  // Generates a combined 'splice' event from an event of either list.
-  var spliceHandler = function(listNum, e) {
-    var spliceEvent = new Event('splice');
-    spliceEvent.index =
-        (listNum == 1) ? e.index : (e.index + this.volumesList_.length);
-
-    // spliceEvent.removed, spliceEvent.add are not supported yet.
-    spliceEvent.removed = null;
-    spliceEvent.add = null;
-
-    this.dispatchEvent(spliceEvent);
-  };
-  this.volumesList_.addEventListener('splice', spliceHandler.bind(this, 1));
-  this.pinnedList_.addEventListener('splice', spliceHandler.bind(this, 2));
-
-  // Generates a combined 'sorted' event from an event of either list.
-  var sortedHandler = function(listNum, e) {
-    var sortedEvent = new Event('sorted');
-    this.dispatchEvent(sortedEvent);
-  }
-  this.volumesList_.addEventListener('sorted', sortedHandler.bind(this, 1));
-  this.pinnedList_.addEventListener('sorted', sortedHandler.bind(this, 2));
+  // 'splice' and 'sorted' events are not implemented, since they are not used
+  // in list.js.
 }
 
 /**

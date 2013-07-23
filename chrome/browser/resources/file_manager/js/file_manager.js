@@ -1160,7 +1160,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     this.directoryModel_.start();
 
-    this.pinnedFolderModel_ = new cr.ui.ArrayDataModel([]);
+    this.folderShortcutsModel_ = new FolderShortcutsDataModel();
 
     this.selectionHandler_ = new FileSelectionHandler(this);
     this.selectionHandler_.addEventListener('show-preview-panel',
@@ -1256,7 +1256,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.volumeList_ = this.dialogDom_.querySelector('#volume-list');
     VolumeList.decorate(this.volumeList_,
                         this.directoryModel_,
-                        this.pinnedFolderModel_);
+                        this.folderShortcutsModel_);
   };
 
   /**
@@ -2250,8 +2250,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     if (this.isFolderPinned(entry.fullPath))
       return;
 
-    this.pinnedFolderModel_.splice(0, 0, entry.fullPath);
-    this.pinnedFolderModel_.sort('name', 'asc');
+    this.folderShortcutsModel_.add(entry.fullPath);
   };
 
   /**
@@ -2259,13 +2258,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    * @param {string} path Path of the folder to be checked.
    */
   FileManager.prototype.isFolderPinned = function(path) {
-    for (var i = 0; i < this.pinnedFolderModel_.length; i++) {
-      var pinnedPath = this.pinnedFolderModel_.item(i);
-      if (pinnedPath == path) {
-        return true;
-      }
-    }
-    return false;
+    return this.folderShortcutsModel_.exists(path);
   };
 
   /**
@@ -2273,13 +2266,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    * @param {string} path Path of the pinned folder to be unpinnned.
    */
   FileManager.prototype.unpinFolder = function(path) {
-    for (var i = 0; i < this.pinnedFolderModel_.length; i++) {
-      var pinnedPath = this.pinnedFolderModel_.item(i);
-      if (pinnedPath == path) {
-        this.pinnedFolderModel_.splice(i, 1);
-        return;
-      }
-    }
+    this.folderShortcutsModel_.remove(path);
   };
 
   /**
