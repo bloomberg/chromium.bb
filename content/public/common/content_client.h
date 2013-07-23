@@ -38,12 +38,6 @@ namespace sandbox {
 class TargetPolicy;
 }
 
-namespace webkit {
-namespace ppapi {
-class HostGlobals;
-}
-}
-
 namespace content {
 
 class ContentBrowserClient;
@@ -80,10 +74,6 @@ CONTENT_EXPORT ContentUtilityClient* SetUtilityClientForTesting(
 // static values of the user agent. This will be fixed when we clean up
 // webkit_glue.
 CONTENT_EXPORT const std::string& GetUserAgent(const GURL& url);
-
-// Returns the PPAPI global singleton. See webkit/plugins/ppapi/host_globals.h
-// TODO(dpranke): Also needed since webkit_glue is a library.
-CONTENT_EXPORT webkit::ppapi::HostGlobals* GetHostGlobals();
 
 // Interface that the embedder implements.
 class CONTENT_EXPORT ContentClient {

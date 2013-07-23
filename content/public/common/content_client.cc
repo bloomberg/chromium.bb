@@ -9,10 +9,6 @@
 #include "ui/gfx/image/image.h"
 #include "webkit/common/user_agent/user_agent.h"
 
-#if defined(ENABLE_PLUGINS)
-#include "webkit/plugins/ppapi/host_globals.h"
-#endif
-
 namespace content {
 
 static ContentClient* g_client;
@@ -68,14 +64,6 @@ ContentUtilityClient* SetUtilityClientForTesting(ContentUtilityClient* u) {
 const std::string& GetUserAgent(const GURL& url) {
   DCHECK(g_client);
   return webkit_glue::GetUserAgent(url);
-}
-
-webkit::ppapi::HostGlobals* GetHostGlobals() {
-#if defined(ENABLE_PLUGINS)
-  return webkit::ppapi::HostGlobals::Get();
-#else
-  return NULL;
-#endif
 }
 
 ContentClient::ContentClient()

@@ -89,9 +89,10 @@ class ImageSkia;
 }
 
 namespace ppapi {
+class Resource;
+class VarTracker;
 struct InputEventData;
 struct PPP_Instance_Combined;
-class Resource;
 struct URLRequestInfoData;
 }
 
@@ -514,6 +515,10 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   // Returns the v8::Isolate that was current when this Instance was created.
   // This is not inlined so as to avoid an unnecessary header include of v8.h.
   v8::Isolate* GetIsolate() const;
+
+  static PluginInstance* Get(PP_Instance instance_id);
+
+  ::ppapi::VarTracker* GetVarTracker();
 
   // Returns a reference to a file with the given path.
   // The returned object will have a refcount of 0 (just like "new").

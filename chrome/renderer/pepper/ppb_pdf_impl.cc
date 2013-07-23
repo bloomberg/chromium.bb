@@ -13,7 +13,6 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/printing/print_web_view_helper.h"
 #include "content/public/common/child_process_sandbox_support_linux.h"
-#include "content/public/common/content_client.h"
 #include "content/public/common/referrer.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
@@ -21,6 +20,7 @@
 #include "grit/webkit_strings.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/private/ppb_pdf.h"
+#include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/shared_impl/resource_tracker.h"
 #include "ppapi/shared_impl/var.h"
@@ -34,11 +34,9 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "webkit/plugins/ppapi/host_globals.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 
 using ppapi::PpapiGlobals;
-using webkit::ppapi::HostGlobals;
 using webkit::ppapi::PluginInstance;
 using WebKit::WebElement;
 using WebKit::WebView;
@@ -135,7 +133,7 @@ static const ResourceImageInfo kResourceImageMap[] = {
 #if defined(ENABLE_PRINTING)
 
 WebKit::WebElement GetWebElement(PP_Instance instance_id) {
-  PluginInstance* instance = HostGlobals::Get()->GetInstance(instance_id);
+  PluginInstance* instance = PluginInstance::Get(instance_id);
   if (!instance)
     return WebKit::WebElement();
   return instance->container()->element();
@@ -168,8 +166,7 @@ bool IsPrintingEnabled(PP_Instance instance_id) {
 
 PP_Var GetLocalizedString(PP_Instance instance_id,
                           PP_ResourceString string_id) {
-  PluginInstance* instance =
-      content::GetHostGlobals()->GetInstance(instance_id);
+  PluginInstance* instance = PluginInstance::Get(instance_id);
   if (!instance)
     return PP_MakeUndefined();
 
@@ -195,7 +192,7 @@ PP_Resource GetFontFileWithFallback(
     PP_PrivateFontCharset charset) {
 #if defined(OS_LINUX) || defined(OS_OPENBSD)
   // Validate the instance before using it below.
-  if (!content::GetHostGlobals()->GetInstance(instance_id))
+  if (!PluginInstance::Get(instance_id))
     return 0;
 
   scoped_refptr<ppapi::StringVar> face_name(ppapi::StringVar::FromPPVar(
@@ -289,24 +286,21 @@ void SearchString(PP_Instance instance,
 }
 
 void DidStartLoading(PP_Instance instance_id) {
-  PluginInstance* instance =
-      content::GetHostGlobals()->GetInstance(instance_id);
+  PluginInstance* instance = PluginInstance::Get(instance_id);
   if (!instance)
     return;
   instance->render_view()->DidStartLoading();
 }
 
 void DidStopLoading(PP_Instance instance_id) {
-  PluginInstance* instance =
-      content::GetHostGlobals()->GetInstance(instance_id);
+  PluginInstance* instance = PluginInstance::Get(instance_id);
   if (!instance)
     return;
   instance->render_view()->DidStopLoading();
 }
 
 void SetContentRestriction(PP_Instance instance_id, int restrictions) {
-  PluginInstance* instance =
-      content::GetHostGlobals()->GetInstance(instance_id);
+  PluginInstance* instance = PluginInstance::Get(instance_id);
   if (!instance)
     return;
   instance->render_view()->Send(
@@ -326,8 +320,7 @@ void UserMetricsRecordAction(PP_Instance /*instance*/, PP_Var action) {
 }
 
 void HasUnsupportedFeature(PP_Instance instance_id) {
-  PluginInstance* instance =
-      content::GetHostGlobals()->GetInstance(instance_id);
+  PluginInstance* instance = PluginInstance::Get(instance_id);
   if (!instance)
     return;
 
@@ -342,8 +335,7 @@ void HasUnsupportedFeature(PP_Instance instance_id) {
 }
 
 void SaveAs(PP_Instance instance_id) {
-  PluginInstance* instance =
-      content::GetHostGlobals()->GetInstance(instance_id);
+  PluginInstance* instance = PluginInstance::Get(instance_id);
   if (!instance)
     return;
   GURL url = instance->plugin_url();
@@ -380,8 +372,7 @@ PP_Resource GetResourceImageForScale(PP_Instance instance_id,
     return 0;
 
   // Validate the instance.
-  PluginInstance* instance =
-      content::GetHostGlobals()->GetInstance(instance_id);
+  PluginInstance* instance = PluginInstance::Get(instance_id);
   if (!instance)
     return 0;
 

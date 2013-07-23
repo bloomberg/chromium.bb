@@ -12,7 +12,8 @@
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "ppapi/host/ppapi_host.h"
 #include "ppapi/proxy/ppapi_messages.h"
-#include "webkit/plugins/ppapi/host_globals.h"
+#include "ppapi/shared_impl/var_tracker.h"
+#include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 
 namespace chrome {
 
@@ -54,8 +55,8 @@ void PepperSharedMemoryMessageFilter::OnHostMsgCreateSharedMemory(
 
   base::SharedMemoryHandle host_shm_handle;
   shm->ShareToProcess(base::GetCurrentProcessHandle(), &host_shm_handle);
-  *host_handle_id = content::GetHostGlobals()->GetVarTracker()->
-      TrackSharedMemoryHandle(instance, host_shm_handle, size);
+  *host_handle_id = webkit::ppapi::PluginInstance::Get(instance)->
+      GetVarTracker()->TrackSharedMemoryHandle(instance, host_shm_handle, size);
 
   base::PlatformFile host_handle =
 #if defined(OS_WIN)

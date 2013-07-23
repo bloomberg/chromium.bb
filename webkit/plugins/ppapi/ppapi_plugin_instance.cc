@@ -2543,6 +2543,14 @@ v8::Isolate* PluginInstance::GetIsolate() const {
   return isolate_;
 }
 
+PluginInstance* PluginInstance::Get(PP_Instance instance_id) {
+  return HostGlobals::Get()->GetInstance(instance_id);
+}
+
+::ppapi::VarTracker* PluginInstance::GetVarTracker() {
+  return HostGlobals::Get()->GetVarTracker();
+}
+
 PP_Resource PluginInstance::CreateExternalFileReference(
     const base::FilePath& external_file_path) {
   webkit::ppapi::PPB_FileRef_Impl* ref =

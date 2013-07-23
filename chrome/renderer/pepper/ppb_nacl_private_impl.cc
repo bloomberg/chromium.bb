@@ -32,7 +32,6 @@
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
 #include "third_party/WebKit/public/web/WebView.h"
-#include "webkit/plugins/ppapi/host_globals.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 
@@ -161,7 +160,7 @@ PP_NaClResult StartPpapiProxy(PP_Instance instance) {
   map.erase(it);
 
   webkit::ppapi::PluginInstance* plugin_instance =
-      content::GetHostGlobals()->GetInstance(instance);
+      webkit::ppapi::PluginInstance::Get(instance);
   if (!plugin_instance) {
     DLOG(ERROR) << "GetInstance() failed";
     return PP_NACL_ERROR_MODULE;
