@@ -31,7 +31,6 @@ SyncSetupWebUITest.prototype = {
    * Verifies starting point is not synced.
    */
   verifyUnsynced: function() {
-    assertFalse(BrowserOptions.getInstance().setupCompleted_);
     assertFalse(BrowserOptions.getInstance().signedIn_);
   },
 
