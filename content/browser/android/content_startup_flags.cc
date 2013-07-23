@@ -72,6 +72,9 @@ void SetContentCommandLineFlags(int max_render_process_count,
   parsed_command_line->AppendSwitch(switches::kEnableFixedLayout);
   parsed_command_line->AppendSwitch(switches::kEnableViewport);
 
+  // Disable <canvas> path antialiasing.
+  parsed_command_line->AppendSwitch(switches::kDisable2dCanvasAntialiasing);
+
   if (!plugin_descriptor.empty()) {
     parsed_command_line->AppendSwitchNative(
       switches::kRegisterPepperPlugins, plugin_descriptor);
