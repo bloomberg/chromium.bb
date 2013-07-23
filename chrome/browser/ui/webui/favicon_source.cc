@@ -11,8 +11,6 @@
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/instant_io_context.h"
-#include "chrome/browser/search/instant_service.h"
-#include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/common/favicon/favicon_url_parser.h"
 #include "chrome/common/url_constants.h"
 #include "grit/locale_settings.h"
