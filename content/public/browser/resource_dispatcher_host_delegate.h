@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
-#include "webkit/glue/resource_type.h"
+#include "webkit/common/resource_type.h"
 
 class GURL;
 template <class T> class ScopedVector;

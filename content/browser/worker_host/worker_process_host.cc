@@ -50,7 +50,7 @@
 #include "ui/base/ui_base_switches.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/sandbox_file_system_backend.h"
-#include "webkit/glue/resource_type.h"
+#include "webkit/common/resource_type.h"
 
 #if defined(OS_WIN)
 #include "content/common/sandbox_win.h"

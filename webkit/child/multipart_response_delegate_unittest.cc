@@ -5,12 +5,12 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebURLLoaderClient.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
-#include "webkit/glue/multipart_response_delegate.h"
-#include "testing/gtest/include/gtest/gtest.h"
+#include "webkit/child/multipart_response_delegate.h"
 
 using std::string;
 using WebKit::WebString;

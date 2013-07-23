@@ -6,7 +6,6 @@
 
 #include "net/base/load_timing_info.h"
 #include "net/http/http_response_headers.h"
-#include "webkit/glue/resource_loader_bridge.h"
 
 namespace IPC {
 

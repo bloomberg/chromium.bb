@@ -15,7 +15,7 @@
 #include "webkit/browser/appcache/appcache_storage.h"
 #include "webkit/browser/webkit_storage_browser_export.h"
 #include "webkit/common/appcache/appcache_interfaces.h"
-#include "webkit/glue/resource_type.h"
+#include "webkit/common/resource_type.h"
 
 namespace net {
 class URLRequest;

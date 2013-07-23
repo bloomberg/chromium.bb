@@ -14,7 +14,7 @@
 #include "content/common/content_export.h"
 #include "net/url_request/url_request_status.h"
 #include "url/gurl.h"
-#include "webkit/glue/resource_loader_bridge.h"
+#include "webkit/common/resource_response_info.h"
 
 namespace content {
 

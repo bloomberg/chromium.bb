@@ -18,7 +18,7 @@
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "url/gurl.h"
 #include "url/url_util.h"
-#include "webkit/glue/weburlrequest_extradata_impl.h"
+#include "webkit/child/weburlrequest_extradata_impl.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppb_file_ref_impl.h"

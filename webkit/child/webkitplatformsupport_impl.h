@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_PLATFORM_SUPPORT_IMPL_H_
-#define WEBKIT_PLATFORM_SUPPORT_IMPL_H_
+#ifndef WEBKIT_CHILD_WEBKITPLATFORMSUPPORT_IMPL_H_
+#define WEBKIT_CHILD_WEBKITPLATFORMSUPPORT_IMPL_H_
 
 #include "base/compiler_specific.h"
 #include "base/debug/trace_event.h"
@@ -12,8 +12,8 @@
 #include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "ui/base/layout.h"
-#include "webkit/glue/resource_loader_bridge.h"
-#include "webkit/glue/webkit_glue_export.h"
+#include "webkit/child/resource_loader_bridge.h"
+#include "webkit/child/webkit_child_export.h"
 
 namespace base {
 class MessageLoop;
@@ -28,7 +28,7 @@ namespace webkit_glue {
 class WebSocketStreamHandleDelegate;
 class WebSocketStreamHandleBridge;
 
-class WEBKIT_GLUE_EXPORT WebKitPlatformSupportImpl :
+class WEBKIT_CHILD_EXPORT WebKitPlatformSupportImpl :
     NON_EXPORTED_BASE(public WebKit::Platform) {
  public:
   WebKitPlatformSupportImpl();
@@ -152,4 +152,4 @@ class WEBKIT_GLUE_EXPORT WebKitPlatformSupportImpl :
 
 }  // namespace webkit_glue
 
-#endif  // WEBKIT_PLATFORM_SUPPORT_IMPL_H_
+#endif  // WEBKIT_CHILD_WEBKITPLATFORMSUPPORT_IMPL_H_

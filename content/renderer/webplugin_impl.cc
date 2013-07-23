@@ -48,7 +48,7 @@
 #include "ui/gfx/rect.h"
 #include "url/gurl.h"
 #include "url/url_util.h"
-#include "webkit/glue/multipart_response_delegate.h"
+#include "webkit/child/multipart_response_delegate.h"
 #include "webkit/plugins/plugin_constants.h"
 #include "webkit/renderer/appcache/web_application_cache_host_impl.h"
 #include "webkit/renderer/compositor_bindings/web_layer_impl.h"

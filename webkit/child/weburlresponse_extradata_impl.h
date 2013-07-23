@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_GLUE_WEBURLRESPONSE_EXTRADATA_IMPL_H_
-#define WEBKIT_GLUE_WEBURLRESPONSE_EXTRADATA_IMPL_H_
+#ifndef WEBKIT_CHILD_WEBURLRESPONSE_EXTRADATA_IMPL_H_
+#define WEBKIT_CHILD_WEBURLRESPONSE_EXTRADATA_IMPL_H_
 
 #include <string>
 
@@ -11,12 +11,12 @@
 #include "base/compiler_specific.h"
 #include "net/http/http_response_info.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
-#include "webkit/common/webkit_common_export.h"
+#include "webkit/child/webkit_child_export.h"
 
 namespace webkit_glue {
 
 // Base class for Chrome's implementation of the "extra data".
-class WEBKIT_COMMON_EXPORT WebURLResponseExtraDataImpl :
+class WEBKIT_CHILD_EXPORT WebURLResponseExtraDataImpl :
     public NON_EXPORTED_BASE(WebKit::WebURLResponse::ExtraData) {
  public:
   explicit WebURLResponseExtraDataImpl(
@@ -93,4 +93,4 @@ class WEBKIT_COMMON_EXPORT WebURLResponseExtraDataImpl :
 
 }  // namespace webkit_glue
 
-#endif  // WEBKIT_GLUE_WEBURLRESPONSE_EXTRADATA_IMPL_H_
+#endif  // WEBKIT_CHILD_WEBURLRESPONSE_EXTRADATA_IMPL_H_

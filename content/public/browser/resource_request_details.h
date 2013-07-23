@@ -11,7 +11,7 @@
 #include "net/cert/cert_status_flags.h"
 #include "net/url_request/url_request_status.h"
 #include "url/gurl.h"
-#include "webkit/glue/resource_type.h"
+#include "webkit/common/resource_type.h"
 
 namespace net {
 class URLRequest;

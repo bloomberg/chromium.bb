@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/glue/ftp_directory_listing_response_delegate.h"
+#include "webkit/child/ftp_directory_listing_response_delegate.h"
 
 #include <vector>
 
@@ -19,7 +19,7 @@
 #include "net/ftp/ftp_directory_listing_parser.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebURLLoaderClient.h"
-#include "webkit/glue/weburlresponse_extradata_impl.h"
+#include "webkit/child/weburlresponse_extradata_impl.h"
 
 using net::FtpDirectoryListingEntry;
 

@@ -4,7 +4,7 @@
 
 #include "content/common/socket_stream_handle_data.h"
 
-#include "webkit/glue/websocketstreamhandle_impl.h"
+#include "webkit/child/websocketstreamhandle_impl.h"
 
 using webkit_glue::WebSocketStreamHandleImpl;
 using WebKit::WebSocketStreamHandle;

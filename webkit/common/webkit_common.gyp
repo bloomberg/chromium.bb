@@ -15,8 +15,8 @@
         'WEBKIT_COMMON_IMPLEMENTATION',
       ],
       'dependencies': [
-        '<(DEPTH)/base/base.gyp:base_i18n',
         '<(DEPTH)/base/base.gyp:base',
+        '<(DEPTH)/base/base.gyp:base_i18n',
         '<(DEPTH)/base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '<(DEPTH)/net/net.gyp:net',
         '<(DEPTH)/skia/skia.gyp:skia',
@@ -39,10 +39,10 @@
         'cursors/webcursor_aura.cc',
         'cursors/webcursor_aurawin.cc',
         'cursors/webcursor_aurax11.cc',
-        'cursors/webcursor_null.cc',
         'cursors/webcursor_gtk.cc',
         'cursors/webcursor_gtk_data.h',
         'cursors/webcursor_mac.mm',
+        'cursors/webcursor_null.cc',
         'cursors/webcursor_win.cc',
         'data_element.cc',
         'data_element.h',
@@ -52,6 +52,8 @@
         'resource_request_body.h',
         'resource_response_info.cc',
         'resource_response_info.h',
+        'resource_type.cc',
+        'resource_type.h',
       ],
 
       'conditions': [

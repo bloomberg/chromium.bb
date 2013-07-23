@@ -40,7 +40,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "third_party/WebKit/public/web/WebContextMenuData.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
-#include "webkit/glue/resource_type.h"
+#include "webkit/common/resource_type.h"
 
 using content::WebContents;
 

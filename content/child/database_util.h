@@ -5,7 +5,7 @@
 #ifndef CONTENT_CHILD_DATABASE_UTIL_H_
 #define CONTENT_CHILD_DATABASE_UTIL_H_
 
-#include "webkit/glue/webkitplatformsupport_impl.h"
+#include "webkit/child/webkitplatformsupport_impl.h"
 
 namespace IPC {
 class SyncMessageFilter;

@@ -15,7 +15,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "webkit/glue/resource_type.h"
+#include "webkit/common/resource_type.h"
 
 class GURL;
 class URLPattern;
