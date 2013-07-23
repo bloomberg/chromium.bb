@@ -207,8 +207,7 @@ bool Text::textRendererIsNeeded(const NodeRenderingContext& context)
     if (context.style()->display() == NONE)
         return false;
 
-    bool onlyWS = containsOnlyWhitespace();
-    if (!onlyWS)
+    if (!containsOnlyWhitespace())
         return true;
 
     RenderObject* parent = context.parentRenderer();
@@ -230,9 +229,13 @@ bool Text::textRendererIsNeeded(const NodeRenderingContext& context)
     } else {
         if (parent->isRenderBlock() && !parent->childrenInline() && (!prev || !prev->isInline()))
             return false;
-        
+
+        // Avoiding creation of a Renderer for the text node is a non-essential memory optimization.
+        // So to avoid blowing up on very wide DOMs, we limit the number of siblings to visit.
+        unsigned maxSiblingsToVisit = 50;
+
         RenderObject* first = parent->firstChild();
-        while (first && first->isFloatingOrOutOfFlowPositioned())
+        while (first && first->isFloatingOrOutOfFlowPositioned() && maxSiblingsToVisit--)
             first = first->nextSibling();
         RenderObject* next = context.nextRenderer();
         if (!first || next == first)
@@ -240,7 +243,6 @@ bool Text::textRendererIsNeeded(const NodeRenderingContext& context)
             // make a render object for this text.
             return false;
     }
-    
     return true;
 }
 
