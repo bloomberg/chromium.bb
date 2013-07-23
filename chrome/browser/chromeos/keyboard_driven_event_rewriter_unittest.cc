@@ -133,10 +133,8 @@ TEST_F(KeyboardDrivenEventRewriterTest, PassThrough) {
 }
 
 TEST_F(KeyboardDrivenEventRewriterTest, Rewrite) {
-  const int kModifierMask = (ui::EF_CONTROL_DOWN |
-                             ui::EF_ALT_DOWN |
-                             ui::EF_SHIFT_DOWN);
-  const unsigned int kXState = (ControlMask | Mod1Mask | ShiftMask);
+  const int kModifierMask = ui::EF_SHIFT_DOWN;
+  const unsigned int kXState = ShiftMask;
 
   struct {
     ui::KeyboardCode ui_keycode;

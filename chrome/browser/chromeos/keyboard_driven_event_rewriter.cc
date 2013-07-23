@@ -14,9 +14,7 @@ namespace chromeos {
 
 namespace {
 
-const int kModifierMask = (ui::EF_CONTROL_DOWN |
-                           ui::EF_ALT_DOWN |
-                           ui::EF_SHIFT_DOWN);
+const int kModifierMask = ui::EF_SHIFT_DOWN;
 
 // Returns true if and only if it is on login screen (i.e. user is not logged
 // in) and the keyboard driven flag in the OEM manifest is on.
