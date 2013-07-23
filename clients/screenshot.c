@@ -249,7 +249,7 @@ int main(int argc, char *argv[])
 	int width, height;
 
 	if (getenv("WAYLAND_SOCKET") == NULL) {
-		fprintf(stderr, "%s is must be launched by weston.\n"
+		fprintf(stderr, "%s must be launched by weston.\n"
 			"Use the MOD+S shortcut to take a screenshot.",
 			argv[0]);
 		return -1;
