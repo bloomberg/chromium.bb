@@ -65,8 +65,8 @@ class BookmarkPromptControllerTest : public BrowserWithTestWindowTest {
     TestingBrowserProcess::GetGlobal()->
         SetBookmarkPromptController(new BookmarkPromptController);
     BrowserWithTestWindowTest::SetUp();
-    static_cast<TestingProfile*>(browser()->profile())->
-        CreateHistoryService(true, false);
+    ASSERT_TRUE(static_cast<TestingProfile*>(browser()->profile())->
+        CreateHistoryService(true, false));
     static_cast<TestingProfile*>(browser()->profile())->
         BlockUntilHistoryIndexIsRefreshed();
     // Simulate browser activation.

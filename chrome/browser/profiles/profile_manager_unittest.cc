@@ -220,14 +220,14 @@ TEST_F(ProfileManagerTest, CreateAndUseTwoProfiles) {
   ASSERT_TRUE(profile2);
 
   // Force lazy-init of some profile services to simulate use.
-  profile1->CreateHistoryService(true, false);
+  ASSERT_TRUE(profile1->CreateHistoryService(true, false));
   EXPECT_TRUE(HistoryServiceFactory::GetForProfile(profile1,
                                                    Profile::EXPLICIT_ACCESS));
   profile1->CreateBookmarkModel(true);
   EXPECT_TRUE(BookmarkModelFactory::GetForProfile(profile1));
   profile2->CreateBookmarkModel(true);
   EXPECT_TRUE(BookmarkModelFactory::GetForProfile(profile2));
-  profile2->CreateHistoryService(true, false);
+  ASSERT_TRUE(profile2->CreateHistoryService(true, false));
   EXPECT_TRUE(HistoryServiceFactory::GetForProfile(profile2,
                                                    Profile::EXPLICIT_ACCESS));
 

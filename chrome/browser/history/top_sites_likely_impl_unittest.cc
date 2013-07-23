@@ -149,7 +149,7 @@ class TopSitesLikelyImplTest : public HistoryUnitTestBase {
   virtual void SetUp() {
     profile_.reset(new TestingProfile);
     if (CreateHistoryAndTopSites()) {
-      profile_->CreateHistoryService(false, false);
+      ASSERT_TRUE(profile_->CreateHistoryService(false, false));
       profile_->CreateTopSites();
       profile_->BlockUntilTopSitesLoaded();
     }
@@ -361,7 +361,7 @@ class TopSitesLikelyMigrationTest : public TopSitesLikelyImplTest {
         data_path.AppendASCII("thumbnails.3.sql"),
         profile()->GetPath().Append(chrome::kThumbnailsFilename)));
 
-    profile()->CreateHistoryService(false, false);
+    ASSERT_TRUE(profile()->CreateHistoryService(false, false));
     profile()->CreateTopSites();
     profile()->BlockUntilTopSitesLoaded();
   }
@@ -915,7 +915,7 @@ TEST_F(TopSitesLikelyMigrationTest, Migrate) {
                    profile()->GetPath().Append(chrome::kThumbnailsFilename)));
 
   // Recreate top sites and make sure everything is still there.
-  profile()->CreateHistoryService(false, false);
+  ASSERT_TRUE(profile()->CreateHistoryService(false, false));
   RecreateTopSitesAndBlock();
 
   ASSERT_NO_FATAL_FAILURE(MigrationAssertions());
@@ -1208,7 +1208,7 @@ TEST_F(TopSitesLikelyImplTest, CreateTopSitesThenHistory) {
   EXPECT_FALSE(IsTopSitesLoaded());
 
   // Load history, which should make TopSites finish loading too.
-  profile()->CreateHistoryService(false, false);
+  ASSERT_TRUE(profile()->CreateHistoryService(false, false));
   profile()->BlockUntilTopSitesLoaded();
   EXPECT_TRUE(IsTopSitesLoaded());
 }
@@ -1228,7 +1228,7 @@ class TopSitesLikelyUnloadTest : public TopSitesLikelyImplTest {
 // Makes sure if history is unloaded after topsites is loaded we don't hit any
 // assertions.
 TEST_F(TopSitesLikelyUnloadTest, UnloadHistoryTest) {
-  profile()->CreateHistoryService(false, false);
+  ASSERT_TRUE(profile()->CreateHistoryService(false, false));
   profile()->CreateTopSites();
   profile()->BlockUntilTopSitesLoaded();
   HistoryServiceFactory::GetForProfile(
@@ -1251,7 +1251,7 @@ TEST_F(TopSitesLikelyUnloadTest, UnloadWithMigration) {
       profile()->GetPath().Append(chrome::kThumbnailsFilename)));
 
   // Create history and block until it's loaded.
-  profile()->CreateHistoryService(false, false);
+  ASSERT_TRUE(profile()->CreateHistoryService(false, false));
   profile()->BlockUntilHistoryProcessesPendingRequests();
 
   // Create top sites and unload history.

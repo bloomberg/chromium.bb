@@ -194,7 +194,7 @@ TEST_F(ProfileWriterTest, CheckBookmarksAfterWritingDataTwice) {
 // Verify that history entires are not duplicated when added twice.
 TEST_F(ProfileWriterTest, CheckHistoryAfterWritingDataTwice) {
   TestingProfile profile;
-  profile.CreateHistoryService(true, false);
+  ASSERT_TRUE(profile.CreateHistoryService(true, false));
   profile.BlockUntilHistoryProcessesPendingRequests();
 
   CreateHistoryPageEntries();

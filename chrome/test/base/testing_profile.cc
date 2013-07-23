@@ -351,12 +351,13 @@ static BrowserContextKeyedService* BuildHistoryService(
   return new HistoryService(static_cast<Profile*>(profile));
 }
 
-void TestingProfile::CreateHistoryService(bool delete_file, bool no_db) {
+bool TestingProfile::CreateHistoryService(bool delete_file, bool no_db) {
   DestroyHistoryService();
   if (delete_file) {
     base::FilePath path = GetPath();
     path = path.Append(chrome::kHistoryFilename);
-    base::DeleteFile(path, false);
+    if (!base::DeleteFile(path, false) || base::PathExists(path))
+      return false;
   }
   // This will create and init the history service.
   HistoryService* history_service = static_cast<HistoryService*>(
@@ -369,6 +370,7 @@ void TestingProfile::CreateHistoryService(bool delete_file, bool no_db) {
   }
   // Disable WebHistoryService by default, since it makes network requests.
   WebHistoryServiceFactory::GetInstance()->SetTestingFactory(this, NULL);
+  return true;
 }
 
 void TestingProfile::DestroyHistoryService() {

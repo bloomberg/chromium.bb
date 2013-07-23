@@ -179,7 +179,7 @@ void ShortcutsProviderTest::SetUp() {
       &profile_, &ShortcutsBackendFactory::BuildProfileNoDatabaseForTesting);
   backend_ = ShortcutsBackendFactory::GetForProfile(&profile_);
   ASSERT_TRUE(backend_.get());
-  profile_.CreateHistoryService(true, false);
+  ASSERT_TRUE(profile_.CreateHistoryService(true, false));
   provider_ = new ShortcutsProvider(this, &profile_);
   FillData(shortcut_test_db, arraysize(shortcut_test_db));
 }

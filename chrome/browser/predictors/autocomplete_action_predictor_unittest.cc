@@ -102,7 +102,7 @@ class AutocompleteActionPredictorTest : public testing::Test {
         switches::kPrerenderFromOmniboxSwitchValueEnabled);
 
     predictor_->CreateLocalCachesFromDatabase();
-    profile_->CreateHistoryService(true, false);
+    ASSERT_TRUE(profile_->CreateHistoryService(true, false));
     profile_->BlockUntilHistoryProcessesPendingRequests();
 
     ASSERT_TRUE(predictor_->initialized_);
