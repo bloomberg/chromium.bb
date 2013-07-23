@@ -79,7 +79,6 @@ class FakeAPIUtil : public APIUtilInterface {
                                const ResourceListCallback& callback) OVERRIDE;
   virtual void DownloadFile(const std::string& resource_id,
                             const std::string& local_file_md5,
-                            const base::FilePath& local_file_path,
                             const DownloadFileCallback& callback) OVERRIDE;
   virtual void UploadNewFile(const std::string& directory_resource_id,
                              const base::FilePath& local_file_path,

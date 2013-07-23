@@ -56,13 +56,12 @@ class RemoteSyncDelegate : public base::SupportsWeakPtr<RemoteSyncDelegate> {
                             SyncStatusCode status);
   void DeleteMetadata(const SyncStatusCallback& callback);
   void DownloadFile(const SyncStatusCallback& callback);
-  void DidGetTemporaryFileForDownload(const SyncStatusCallback& callback,
-                                      bool success);
   void DidDownloadFile(const SyncStatusCallback& callback,
                        google_apis::GDataErrorCode error,
                        const std::string& md5_checksum,
                        int64 file_size,
-                       const base::Time& updated_time);
+                       const base::Time& updated_time,
+                       scoped_ptr<webkit_blob::ScopedFile> downloaded_file);
   void HandleConflict(const SyncStatusCallback& callback,
                       SyncFileType remote_file_type);
   void HandleLocalWin(const SyncStatusCallback& callback);

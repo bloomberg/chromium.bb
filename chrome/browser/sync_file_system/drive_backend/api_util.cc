@@ -9,6 +9,7 @@
 #include <sstream>
 #include <string>
 
+#include "base/file_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -137,9 +138,24 @@ std::string GetMimeTypeFromTitle(const std::string& title) {
   return mime_type;
 }
 
+bool CreateTemporaryFile(const base::FilePath& dir_path,
+                         webkit_blob::ScopedFile* temp_file) {
+  base::FilePath temp_file_path;
+  const bool success = file_util::CreateDirectory(dir_path) &&
+      file_util::CreateTemporaryFileInDir(dir_path, &temp_file_path);
+  if (!success)
+    return success;
+  *temp_file =
+      webkit_blob::ScopedFile(temp_file_path,
+                              webkit_blob::ScopedFile::DELETE_ON_SCOPE_OUT,
+                              base::MessageLoopProxy::current().get());
+  return success;
+}
+
 }  // namespace
 
-APIUtil::APIUtil(Profile* profile)
+APIUtil::APIUtil(Profile* profile,
+                 const base::FilePath& temp_dir_path)
     : wapi_url_generator_(
           GURL(google_apis::GDataWapiUrlGenerator::kBaseUrlForProduction),
           GURL(google_apis::GDataWapiUrlGenerator::
@@ -148,7 +164,8 @@ APIUtil::APIUtil(Profile* profile)
           GURL(google_apis::DriveApiUrlGenerator::kBaseUrlForProduction),
           GURL(google_apis::DriveApiUrlGenerator::
                kBaseDownloadUrlForProduction)),
-      upload_next_key_(0) {
+      upload_next_key_(0),
+      temp_dir_path_(temp_dir_path) {
   if (IsDriveAPIDisabled()) {
     drive_service_.reset(new drive::GDataWapiService(
         profile->GetRequestContext(),
@@ -175,10 +192,12 @@ APIUtil::APIUtil(Profile* profile)
 
 scoped_ptr<APIUtil> APIUtil::CreateForTesting(
     Profile* profile,
+    const base::FilePath& temp_dir_path,
     scoped_ptr<drive::DriveServiceInterface> drive_service,
     scoped_ptr<drive::DriveUploaderInterface> drive_uploader) {
   return make_scoped_ptr(new APIUtil(
       profile,
+      temp_dir_path,
       GURL(kFakeServerBaseUrl),
       GURL(kFakeDownloadServerBaseUrl),
       drive_service.Pass(),
@@ -186,13 +205,15 @@ scoped_ptr<APIUtil> APIUtil::CreateForTesting(
 }
 
 APIUtil::APIUtil(Profile* profile,
+                 const base::FilePath& temp_dir_path,
                  const GURL& base_url,
                  const GURL& base_download_url,
                  scoped_ptr<drive::DriveServiceInterface> drive_service,
                  scoped_ptr<drive::DriveUploaderInterface> drive_uploader)
     : wapi_url_generator_(base_url, base_download_url),
       drive_api_url_generator_(base_url, base_download_url),
-      upload_next_key_(0) {
+      upload_next_key_(0),
+      temp_dir_path_(temp_dir_path) {
   drive_service_ = drive_service.Pass();
   drive_service_->Initialize(profile);
   drive_service_->AddObserver(this);
@@ -484,20 +505,19 @@ void APIUtil::ContinueListing(const GURL& feed_url,
 
 void APIUtil::DownloadFile(const std::string& resource_id,
                            const std::string& local_file_md5,
-                           const base::FilePath& local_file_path,
                            const DownloadFileCallback& callback) {
   DCHECK(CalledOnValidThread());
+  DCHECK(!temp_dir_path_.empty());
   DVLOG(2) << "Downloading file [" << resource_id << "]";
 
-  drive_service_->GetResourceEntry(
-      resource_id,
-      base::Bind(&APIUtil::DidGetResourceEntry,
-                 AsWeakPtr(),
-                 base::Bind(&APIUtil::DownloadFileInternal,
-                            AsWeakPtr(),
-                            local_file_md5,
-                            local_file_path,
-                            callback)));
+  scoped_ptr<webkit_blob::ScopedFile> temp_file(new webkit_blob::ScopedFile);
+  webkit_blob::ScopedFile* temp_file_ptr = temp_file.get();
+  content::BrowserThread::PostTaskAndReplyWithResult(
+      content::BrowserThread::FILE, FROM_HERE,
+      base::Bind(&CreateTemporaryFile, temp_dir_path_, temp_file_ptr),
+      base::Bind(&APIUtil::DidGetTemporaryFileForDownload,
+                 AsWeakPtr(), resource_id, local_file_md5,
+                 base::Passed(&temp_file), callback));
 }
 
 void APIUtil::UploadNewFile(const std::string& directory_resource_id,
@@ -699,9 +719,33 @@ void APIUtil::DidGetResourceEntry(
   callback.Run(error, entry.Pass());
 }
 
+void APIUtil::DidGetTemporaryFileForDownload(
+    const std::string& resource_id,
+    const std::string& local_file_md5,
+    scoped_ptr<webkit_blob::ScopedFile> local_file,
+    const DownloadFileCallback& callback,
+    bool success) {
+  if (!success) {
+    DVLOG(2) << "Error in creating a temp file under "
+             << temp_dir_path_.value();
+    callback.Run(google_apis::GDATA_FILE_ERROR, std::string(), 0, base::Time(),
+                 local_file.Pass());
+    return;
+  }
+  drive_service_->GetResourceEntry(
+      resource_id,
+      base::Bind(&APIUtil::DidGetResourceEntry,
+                 AsWeakPtr(),
+                 base::Bind(&APIUtil::DownloadFileInternal,
+                            AsWeakPtr(),
+                            local_file_md5,
+                            base::Passed(&local_file),
+                            callback)));
+}
+
 void APIUtil::DownloadFileInternal(
     const std::string& local_file_md5,
-    const base::FilePath& local_file_path,
+    scoped_ptr<webkit_blob::ScopedFile> local_file,
     const DownloadFileCallback& callback,
     google_apis::GDataErrorCode error,
     scoped_ptr<google_apis::ResourceEntry> entry) {
@@ -709,7 +753,8 @@ void APIUtil::DownloadFileInternal(
 
   if (error != google_apis::HTTP_SUCCESS) {
     DVLOG(2) << "Error on getting resource entry for download";
-    callback.Run(error, std::string(), 0, base::Time());
+    callback.Run(error, std::string(), 0, base::Time(),
+                 local_file.Pass());
     return;
   }
   DCHECK(entry);
@@ -720,23 +765,27 @@ void APIUtil::DownloadFileInternal(
     callback.Run(google_apis::HTTP_NOT_MODIFIED,
                  local_file_md5,
                  entry->file_size(),
-                 entry->updated_time());
+                 entry->updated_time(),
+                 local_file.Pass());
     return;
   }
 
   DVLOG(2) << "Downloading file: " << entry->resource_id();
   const std::string& resource_id = entry->resource_id();
+  const base::FilePath& local_file_path = local_file->path();
   drive_service_->DownloadFile(local_file_path,
                                resource_id,
                                base::Bind(&APIUtil::DidDownloadFile,
                                           AsWeakPtr(),
                                           base::Passed(&entry),
+                                          base::Passed(&local_file),
                                           callback),
                                google_apis::GetContentCallback(),
                                google_apis::ProgressCallback());
 }
 
 void APIUtil::DidDownloadFile(scoped_ptr<google_apis::ResourceEntry> entry,
+                              scoped_ptr<webkit_blob::ScopedFile> local_file,
                               const DownloadFileCallback& callback,
                               google_apis::GDataErrorCode error,
                               const base::FilePath& downloaded_file_path) {
@@ -747,7 +796,8 @@ void APIUtil::DidDownloadFile(scoped_ptr<google_apis::ResourceEntry> entry,
     DVLOG(2) << "Error on downloading file: " << error;
 
   callback.Run(
-      error, entry->file_md5(), entry->file_size(), entry->updated_time());
+      error, entry->file_md5(), entry->file_size(), entry->updated_time(),
+      local_file.Pass());
 }
 
 void APIUtil::DidUploadNewFile(const std::string& parent_resource_id,

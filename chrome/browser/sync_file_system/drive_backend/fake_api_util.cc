@@ -10,6 +10,7 @@
 #include "base/location.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "chrome/browser/google_apis/drive_entry_kinds.h"
+#include "webkit/common/blob/scoped_file.h"
 
 namespace sync_file_system {
 namespace drive_backend {
@@ -145,7 +146,6 @@ void FakeAPIUtil::ContinueListing(const GURL& feed_url,
 
 void FakeAPIUtil::DownloadFile(const std::string& resource_id,
                                const std::string& local_file_md5,
-                               const base::FilePath& local_file_path,
                                const DownloadFileCallback& callback) {
   RemoteResourceByResourceId::iterator found =
       remote_resources_.find(resource_id);
@@ -163,9 +163,12 @@ void FakeAPIUtil::DownloadFile(const std::string& resource_id,
     error = google_apis::HTTP_SUCCESS;
   }
 
+  scoped_ptr<webkit_blob::ScopedFile> dummy_local_file(
+      new webkit_blob::ScopedFile);
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
-      base::Bind(callback, error, file_md5, file_size, updated_time));
+      base::Bind(callback, error, file_md5, file_size, updated_time,
+                 base::Passed(&dummy_local_file)));
 }
 
 void FakeAPIUtil::UploadNewFile(const std::string& directory_resource_id,

@@ -207,6 +207,7 @@ class DriveFileSyncServiceFakeTest : public testing::Test {
 
     api_util_ = APIUtil::CreateForTesting(
         profile_.get(),
+        fake_drive_helper_->base_dir_path().AppendASCII("tmp"),
         scoped_ptr<DriveServiceInterface>(fake_drive_service_),
         scoped_ptr<DriveUploaderInterface>(drive_uploader)).Pass();
     metadata_store_.reset(new DriveMetadataStore(

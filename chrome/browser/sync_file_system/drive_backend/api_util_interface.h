@@ -22,6 +22,10 @@ namespace google_apis {
 class DriveUploaderInterface;
 }
 
+namespace webkit_blob {
+class ScopedFile;
+}
+
 namespace sync_file_system {
 namespace drive_backend {
 
@@ -46,7 +50,8 @@ class APIUtilInterface {
   typedef base::Callback<void(google_apis::GDataErrorCode error,
                               const std::string& file_md5,
                               int64 file_size,
-                              const base::Time& last_updated)>
+                              const base::Time& last_updated,
+                              scoped_ptr<webkit_blob::ScopedFile> downloaded)>
       DownloadFileCallback;
   typedef base::Callback<void(google_apis::GDataErrorCode error,
                               const std::string& resource_id,
@@ -130,7 +135,6 @@ class APIUtilInterface {
   // empty.
   virtual void DownloadFile(const std::string& resource_id,
                             const std::string& local_file_md5,
-                            const base::FilePath& local_file_path,
                             const DownloadFileCallback& callback) = 0;
 
   // Uploads the new file |local_file_path| with specified |title| into the

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sync_file_system/drive_backend/api_util.h"
 
+#include "base/file_util.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
@@ -214,8 +215,10 @@ class APIUtilTest : public testing::Test {
     fake_drive_helper_.reset(new FakeDriveServiceHelper(
         fake_drive_service_, fake_drive_uploader_));
 
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     api_util_ = APIUtil::CreateForTesting(
         &profile_,
+        temp_dir_.path(),
         scoped_ptr<DriveServiceInterface>(fake_drive_service_),
         scoped_ptr<DriveUploaderInterface>(fake_drive_uploader_));
 
@@ -324,6 +327,7 @@ class APIUtilTest : public testing::Test {
  private:
   content::TestBrowserThreadBundle thread_bundle_;
 
+  base::ScopedTempDir temp_dir_;
   TestingProfile profile_;
   scoped_ptr<APIUtil> api_util_;
   FakeDriveServiceWrapper* fake_drive_service_;
@@ -363,8 +367,10 @@ void DidDownloadFile(Output* output,
                      GDataErrorCode error,
                      const std::string& file_md5,
                      int64 file_size,
-                     const base::Time& updated_time) {
+                     const base::Time& updated_time,
+                     scoped_ptr<webkit_blob::ScopedFile> file) {
   ASSERT_TRUE(output);
+  ASSERT_TRUE(base::PathExists(file->path()));
   output->error = error;
   output->file_md5 = file_md5;
 }
@@ -585,15 +591,10 @@ void APIUtilTest::TestDownloadFile() {
   scoped_ptr<ResourceEntry> file;
   SetUpFile(origin_root_id, kFileContent, kFileTitle, &file);
 
-  base::ScopedTempDir temp_dir;
-  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  base::FilePath output_file_path = temp_dir.path().AppendASCII(file->title());
-
   Output output;
   api_util()->DownloadFile(
       file->resource_id(),
       "",  // local_file_md5
-      output_file_path,
       base::Bind(&DidDownloadFile, &output));
   base::MessageLoop::current()->RunUntilIdle();
 
@@ -610,17 +611,12 @@ void APIUtilTest::TestDownloadFileInNotModified() {
   scoped_ptr<ResourceEntry> file;
   SetUpFile(origin_root_id, kFileContent, kFileTitle, &file);
 
-  base::ScopedTempDir temp_dir;
-  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  base::FilePath output_file_path = temp_dir.path().AppendASCII(file->title());
-
   // Since local file's hash value is equal to remote file's one, it is expected
   // to cancel download the file and to return NOT_MODIFIED status code.
   Output output;
   api_util()->DownloadFile(
       file->resource_id(),
       file->file_md5(),
-      output_file_path,
       base::Bind(&DidDownloadFile, &output));
   base::MessageLoop::current()->RunUntilIdle();
 

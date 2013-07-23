@@ -11,6 +11,7 @@
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "webkit/common/blob/scoped_file.h"
 
 namespace sync_file_system {
 namespace drive_backend {
@@ -22,7 +23,8 @@ void DidDownloadFile(google_apis::GDataErrorCode* error_out,
                      google_apis::GDataErrorCode error,
                      const std::string& file_md5,
                      int64 file_size,
-                     const base::Time& updated_time) {
+                     const base::Time& updated_time,
+                     scoped_ptr<webkit_blob::ScopedFile> downloaded_file) {
   *error_out = error;
   *file_md5_out = file_md5;
 }
@@ -55,7 +57,6 @@ TEST(FakeAPIUtilTest, ChangeSquashTest) {
   std::string kMD5_1("md5 1");
   std::string kMD5_2("md5 2");
   std::string kMD5_3("md5 3");
-  base::FilePath kTempFilePath(FILE_PATH_LITERAL("tmp_file"));
 
   api_util.PushRemoteChange(kParentResourceId,
                             kParentTitle,
@@ -97,7 +98,6 @@ TEST(FakeAPIUtilTest, ChangeSquashTest) {
   std::string md5;
   api_util.DownloadFile(kResourceId1,
                         kMD5_1,
-                        kTempFilePath,
                         base::Bind(DidDownloadFile, &error, &md5));
   message_loop.RunUntilIdle();
   EXPECT_EQ(google_apis::HTTP_NOT_FOUND, error);

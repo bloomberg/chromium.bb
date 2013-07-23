@@ -58,20 +58,6 @@ const base::FilePath::CharType* GetSyncFileSystemDir() {
       ? kSyncFileSystemDirDev : kSyncFileSystemDir;
 }
 
-bool CreateTemporaryFile(const base::FilePath& dir_path,
-                         webkit_blob::ScopedFile* temp_file) {
-  base::FilePath temp_file_path;
-  const bool success = file_util::CreateDirectory(dir_path) &&
-      file_util::CreateTemporaryFileInDir(dir_path, &temp_file_path);
-  if (!success)
-    return success;
-  *temp_file =
-      webkit_blob::ScopedFile(temp_file_path,
-                              webkit_blob::ScopedFile::DELETE_ON_SCOPE_OUT,
-                              base::MessageLoopProxy::current().get());
-  return success;
-}
-
 void EmptyStatusCallback(SyncStatusCode status) {}
 
 }  // namespace
@@ -325,7 +311,7 @@ void DriveFileSyncService::Initialize(
   temporary_file_dir_ =
       profile_->GetPath().Append(GetSyncFileSystemDir()).Append(kTempDirName);
 
-  api_util_.reset(new drive_backend::APIUtil(profile_));
+  api_util_.reset(new drive_backend::APIUtil(profile_, temporary_file_dir_));
   api_util_->AddObserver(this);
 
   metadata_store_.reset(new DriveMetadataStore(

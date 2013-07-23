@@ -15,6 +15,7 @@
 #include "chrome/browser/google_apis/gdata_wapi_url_generator.h"
 #include "chrome/browser/sync_file_system/drive_backend/api_util_interface.h"
 #include "net/base/network_change_notifier.h"
+#include "webkit/common/blob/scoped_file.h"
 
 class GURL;
 class Profile;
@@ -44,7 +45,7 @@ class APIUtil : public APIUtilInterface,
                               scoped_ptr<google_apis::ResourceEntry> entry)>
       EnsureUniquenessCallback;
 
-  explicit APIUtil(Profile* profile);
+  APIUtil(Profile* profile, const base::FilePath& temp_dir_path);
   virtual ~APIUtil();
 
   virtual void AddObserver(APIUtilObserver* observer) OVERRIDE;
@@ -52,6 +53,7 @@ class APIUtil : public APIUtilInterface,
 
   static scoped_ptr<APIUtil> CreateForTesting(
       Profile* profile,
+      const base::FilePath& temp_dir_path,
       scoped_ptr<drive::DriveServiceInterface> drive_service,
       scoped_ptr<drive::DriveUploaderInterface> drive_uploader);
 
@@ -74,7 +76,6 @@ class APIUtil : public APIUtilInterface,
                                const ResourceListCallback& callback) OVERRIDE;
   virtual void DownloadFile(const std::string& resource_id,
                             const std::string& local_file_md5,
-                            const base::FilePath& local_file_path,
                             const DownloadFileCallback& callback) OVERRIDE;
   virtual void UploadNewFile(const std::string& directory_resource_id,
                              const base::FilePath& local_file_path,
@@ -115,6 +116,7 @@ class APIUtil : public APIUtilInterface,
 
   // Constructor for test use.
   APIUtil(Profile* profile,
+          const base::FilePath& temp_dir_path,
           const GURL& base_url,
           const GURL& base_download_url,
           scoped_ptr<drive::DriveServiceInterface> drive_service,
@@ -169,13 +171,21 @@ class APIUtil : public APIUtilInterface,
                            google_apis::GDataErrorCode error,
                            scoped_ptr<google_apis::ResourceEntry> entry);
 
+  void DidGetTemporaryFileForDownload(
+      const std::string& resource_id,
+      const std::string& local_file_md5,
+      scoped_ptr<webkit_blob::ScopedFile> local_file,
+      const DownloadFileCallback& callback,
+      bool success);
+
   void DownloadFileInternal(const std::string& local_file_md5,
-                            const base::FilePath& local_file_path,
+                            scoped_ptr<webkit_blob::ScopedFile> local_file,
                             const DownloadFileCallback& callback,
                             google_apis::GDataErrorCode error,
                             scoped_ptr<google_apis::ResourceEntry> entry);
 
   void DidDownloadFile(scoped_ptr<google_apis::ResourceEntry> entry,
+                       scoped_ptr<webkit_blob::ScopedFile> local_file,
                        const DownloadFileCallback& callback,
                        google_apis::GDataErrorCode error,
                        const base::FilePath& downloaded_file_path);
@@ -242,6 +252,8 @@ class APIUtil : public APIUtilInterface,
 
   UploadCallbackMap upload_callback_map_;
   UploadKey upload_next_key_;
+
+  base::FilePath temp_dir_path_;
 
   std::string root_resource_id_;
 

@@ -15,20 +15,6 @@ using fileapi::FileSystemURL;
 
 namespace {
 
-bool CreateTemporaryFile(const base::FilePath& dir_path,
-                         webkit_blob::ScopedFile* temp_file) {
-  base::FilePath temp_file_path;
-  const bool success = file_util::CreateDirectory(dir_path) &&
-      file_util::CreateTemporaryFileInDir(dir_path, &temp_file_path);
-  if (!success)
-    return success;
-  *temp_file =
-      webkit_blob::ScopedFile(temp_file_path,
-                              webkit_blob::ScopedFile::DELETE_ON_SCOPE_OUT,
-                              base::MessageLoopProxy::current().get());
-  return success;
-}
-
 void EmptyStatusCallback(sync_file_system::SyncStatusCode status) {}
 
 }  // namespace
@@ -201,25 +187,6 @@ void RemoteSyncDelegate::DeleteMetadata(const SyncStatusCallback& callback) {
 }
 
 void RemoteSyncDelegate::DownloadFile(const SyncStatusCallback& callback) {
-  content::BrowserThread::PostTaskAndReplyWithResult(
-      content::BrowserThread::FILE, FROM_HERE,
-      base::Bind(&CreateTemporaryFile,
-                 sync_service_->temporary_file_dir_,
-                 &temporary_file_),
-      base::Bind(&RemoteSyncDelegate::DidGetTemporaryFileForDownload,
-                 AsWeakPtr(), callback));
-}
-
-void RemoteSyncDelegate::DidGetTemporaryFileForDownload(
-    const SyncStatusCallback& callback,
-    bool success) {
-  if (!success) {
-    AbortSync(callback, SYNC_FILE_ERROR_FAILED);
-    return;
-  }
-
-  DCHECK(!temporary_file_.path().empty());
-
   // We should not use the md5 in metadata for FETCH type to avoid the download
   // finishes due to NOT_MODIFIED.
   std::string md5_checksum;
@@ -229,7 +196,6 @@ void RemoteSyncDelegate::DidGetTemporaryFileForDownload(
   api_util()->DownloadFile(
       remote_change_.resource_id,
       md5_checksum,
-      temporary_file_.path(),
       base::Bind(&RemoteSyncDelegate::DidDownloadFile,
                  AsWeakPtr(),
                  callback));
@@ -240,7 +206,8 @@ void RemoteSyncDelegate::DidDownloadFile(
     google_apis::GDataErrorCode error,
     const std::string& md5_checksum,
     int64 file_size,
-    const base::Time& updated_time) {
+    const base::Time& updated_time,
+    scoped_ptr<webkit_blob::ScopedFile> downloaded_file) {
   if (error == google_apis::HTTP_NOT_MODIFIED) {
     sync_action_ = SYNC_ACTION_NONE;
     DidApplyRemoteChange(callback, SYNC_STATUS_OK);
@@ -253,6 +220,7 @@ void RemoteSyncDelegate::DidDownloadFile(
     return;
   }
 
+  temporary_file_ = downloaded_file->Pass();
   drive_metadata_.set_md5_checksum(md5_checksum);
   remote_change_processor()->ApplyRemoteChange(
       remote_file_change(), temporary_file_.path(), url(),

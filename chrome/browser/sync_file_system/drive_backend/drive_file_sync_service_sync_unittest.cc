@@ -118,6 +118,7 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
 
     scoped_ptr<APIUtil> api_util(APIUtil::CreateForTesting(
         &profile_,
+        fake_drive_helper_->base_dir_path().AppendASCII("tmp"),
         scoped_ptr<drive::DriveServiceInterface>(fake_drive_service_),
         scoped_ptr<drive::DriveUploaderInterface>(drive_uploader_)));
 
