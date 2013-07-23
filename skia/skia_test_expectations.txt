@@ -58,4 +58,7 @@ crbug.com/258850 svg/custom/marker-opacity.svg [ ImageOnlyFailure ]
 crbug.com/258850 svg/batik/text/smallFonts.svg [ ImageOnlyFailure ]
 crbug.com/258850 svg/batik/text/textFeatures.svg [ ImageOnlyFailure ]
 
+# Image scaling difference due to ongoing Skia image resizing changes
+crbug.com/263331 virtual/deferred/fast/images/webp-color-profile-lossy.html [ ImageOnlyFailure ]
+
 # END OVERRIDES HERE (this line ensures that the file is newline-terminated)
