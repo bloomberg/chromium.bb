@@ -5,7 +5,7 @@
 // Defines messages between the browser and NaCl process.
 
 // Multiply-included message file, no traditional include guard.
-#include "base/process.h"
+#include "base/process/process.h"
 #include "chrome/common/nacl_types.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"

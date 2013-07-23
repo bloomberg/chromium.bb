@@ -6,6 +6,7 @@
 #include "base/environment.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/process/kill.h"
 #include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/multiprocess_test.h"

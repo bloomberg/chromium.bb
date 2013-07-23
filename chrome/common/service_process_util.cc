@@ -8,7 +8,6 @@
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/path_service.h"
-#include "base/process_util.h"
 #include "base/sha1.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"

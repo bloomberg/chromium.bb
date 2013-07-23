@@ -7,7 +7,7 @@
 
 #include "base/callback.h"
 #include "base/message_loop/message_loop.h"
-#include "base/process.h"
+#include "base/process/process.h"
 
 void NaClStartDebugExceptionHandlerThread(
     base::ProcessHandle nacl_process,

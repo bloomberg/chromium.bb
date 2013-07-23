@@ -7,7 +7,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/process.h"
+#include "base/process/process.h"
 #include "build/build_config.h"
 #include "chrome/common/common_param_traits.h"
 #include "chrome/common/nacl_types.h"

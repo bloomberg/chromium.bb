@@ -5,7 +5,6 @@
 #include "chrome/common/nacl_debug_exception_handler_win.h"
 
 #include "base/bind.h"
-#include "base/process_util.h"
 #include "base/threading/platform_thread.h"
 #include "base/win/scoped_handle.h"
 #include "native_client/src/trusted/service_runtime/win/debug_exception_handler.h"
