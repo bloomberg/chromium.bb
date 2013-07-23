@@ -35,6 +35,11 @@ class WebstoreProviderTest : public InProcessBrowserTest {
   virtual ~WebstoreProviderTest() {}
 
   // InProcessBrowserTest overrides:
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    command_line->AppendSwitchASCII(switches::kForceFieldTrials,
+                                    "LauncherUseWebstoreSearch/Enable/");
+  }
+
   virtual void SetUpOnMainThread() OVERRIDE {
     test_server_.reset(new EmbeddedTestServer(
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));

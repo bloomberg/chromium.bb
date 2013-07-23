@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/metrics/field_trial.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -26,6 +27,13 @@ const char kKeyId[] = "id";
 const char kKeyLocalizedName[] = "localized_name";
 const char kKeyIconUrl[] = "icon_url";
 
+// Returns true if the launcher should send queries to the web store server.
+bool UseWebstoreSearch() {
+  const char kFieldTrialName[] = "LauncherUseWebstoreSearch";
+  const char kEnable[] = "Enable";
+  return base::FieldTrialList::FindFullName(kFieldTrialName) == kEnable;
+}
+
 }  // namespace
 
 WebstoreProvider::WebstoreProvider(Profile* profile,
@@ -36,16 +44,18 @@ WebstoreProvider::WebstoreProvider(Profile* profile,
 WebstoreProvider::~WebstoreProvider() {}
 
 void WebstoreProvider::Start(const base::string16& query) {
-  if (!webstore_search_) {
-    webstore_search_.reset(new WebstoreSearchFetcher(
-        base::Bind(&WebstoreProvider::OnWebstoreSearchFetched,
-                   base::Unretained(this)),
-        profile_->GetRequestContext()));
-  }
-
   const std::string query_utf8 = UTF16ToUTF8(query);
-  webstore_search_->Start(query_utf8,
-                          g_browser_process->GetApplicationLocale());
+
+  if (UseWebstoreSearch()) {
+    if (!webstore_search_) {
+      webstore_search_.reset(new WebstoreSearchFetcher(
+          base::Bind(&WebstoreProvider::OnWebstoreSearchFetched,
+                     base::Unretained(this)),
+          profile_->GetRequestContext()));
+    }
+    webstore_search_->Start(query_utf8,
+                            g_browser_process->GetApplicationLocale());
+  }
 
   // Add a placeholder result which when clicked will run the user's query in a
   // browser. This placeholder is removed when the search results arrive.
