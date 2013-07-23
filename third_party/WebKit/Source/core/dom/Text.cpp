@@ -237,8 +237,7 @@ bool Text::textRendererIsNeeded(const NodeRenderingContext& context)
         RenderObject* first = parent->firstChild();
         while (first && first->isFloatingOrOutOfFlowPositioned() && maxSiblingsToVisit--)
             first = first->nextSibling();
-        RenderObject* next = context.nextRenderer();
-        if (!first || next == first)
+        if (!first || context.nextRenderer() == first)
             // Whitespace at the start of a block just goes away.  Don't even
             // make a render object for this text.
             return false;
