@@ -106,3 +106,10 @@ int main(int argc, char* argv[]) {
 #endif
   return 0;
 }
+
+#if defined(LEAK_SANITIZER)
+// XOpenDisplay leaks memory if it takes more than one try to connect. This
+// causes LSan bots to fail. We don't care about memory leaks in xdisplaycheck
+// anyway, so just disable LSan completely.
+extern "C" int __lsan_is_turned_off() { return 1; }
+#endif
