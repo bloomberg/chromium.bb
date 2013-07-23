@@ -10,7 +10,11 @@ onmessage = function(event) {
   chrome.test.assertEq(undefined, event.data);
 
   // And we can't read theirs.
-  chrome.test.assertEq(undefined, sandboxedWindow.secret);
+  sandboxedWindowSecret = undefined;
+  try {
+    sandboxedWindowSecret = sandboxedWindow.secret;
+  } catch (e) {}
+  chrome.test.assertEq(undefined, sandboxedWindowSecret);
 
   chrome.test.succeed();
 };

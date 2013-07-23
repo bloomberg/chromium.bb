@@ -11,6 +11,10 @@ onload = function() {
   }
 
   var mainWindow = window.opener || window.top;
-  mainWindow.postMessage(mainWindow.secret, '*');
+  var mainWindowSecret = undefined;
+  try {
+    mainWindowSecret = mainWindow.secret;
+  } catch(e) {}
+  mainWindow.postMessage(mainWindowSecret, '*');
 };
 </script>
