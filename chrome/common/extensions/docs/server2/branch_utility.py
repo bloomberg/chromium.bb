@@ -31,6 +31,7 @@ class BranchUtility(object):
 
   @staticmethod
   def NewestChannel(channels):
+    channels = set(channels)
     for channel in reversed(BranchUtility.GetAllChannelNames()):
       if channel in channels:
         return channel

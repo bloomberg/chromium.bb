@@ -133,6 +133,11 @@ CANNED_API_FILE_SYSTEM_DATA = {
         'declarativeContent': {
           'channel': 'trunk'
         },
+        'declarativeWebRequest': [
+          { 'channel': 'beta' },
+          # whitelist
+          { 'channel': 'stable'}
+        ],
         'falseBetaAPI': {
           'channel': 'beta'
         },
@@ -218,6 +223,11 @@ CANNED_API_FILE_SYSTEM_DATA = {
         'declarativeContent': {
           'channel': 'trunk'
         },
+        'declarativeWebRequest': [
+          { 'channel': 'beta' },
+          # whitelist
+          { 'channel': 'stable'}
+        ],
         'downloads': {
           'channel': 'beta'
         }
@@ -272,6 +282,11 @@ CANNED_API_FILE_SYSTEM_DATA = {
         'declarativeContent': {
           'channel': 'trunk'
         },
+        'declarativeWebRequest': [
+          { 'channel': 'beta' },
+          # whitelist
+          { 'channel': 'stable'}
+        ],
         'downloads': {
           'channel': 'dev'
         }
@@ -318,6 +333,11 @@ CANNED_API_FILE_SYSTEM_DATA = {
         'declarativeContent': {
           'channel': 'trunk'
         },
+        'declarativeWebRequest': [
+          { 'channel': 'beta' },
+          # whitelist
+          { 'channel': 'stable'}
+        ],
         'systemInfo.display': {
           'channel': 'stable'
         }

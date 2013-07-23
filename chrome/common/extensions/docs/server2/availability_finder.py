@@ -34,12 +34,11 @@ def _GetChannelFromFeatures(api_name, file_system, path):
   if feature is None:
     return None
   if isinstance(feature, collections.Mapping):
-    # The channel information dict is nested within a list for whitelisting
-    # purposes.
+    # The channel information exists as a solitary dict.
     return feature.get('channel')
-  # Features can contain a list of entries. Take the newest branch.
-  return BranchUtility.NewestChannel(entry.get('channel')
-                                     for entry in feature)
+  # The channel information dict is nested within a list for whitelisting
+  # purposes. Take the newest channel out of all of the entries.
+  return BranchUtility.NewestChannel(entry.get('channel') for entry in feature)
 
 def _GetChannelFromApiFeatures(api_name, file_system):
   try:
