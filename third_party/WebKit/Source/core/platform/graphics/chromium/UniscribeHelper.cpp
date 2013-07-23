@@ -1040,7 +1040,7 @@ bool UniscribeHelper::containsMissingGlyphs(const Shaping& shaping,
         // is not a zero width whitespace.
         if (glyph == properties->wgDefault
             || (glyph == properties->wgInvalid && glyph != properties->wgBlank)
-            || (glyph == properties->wgBlank && shaping.m_visualAttributes[glyphIndex].fZeroWidth))
+            || (glyph == properties->wgBlank && shaping.m_visualAttributes[glyphIndex].fZeroWidth && !Font::treatAsZeroWidthSpace(c)))
             return true;
     }
     return false;
