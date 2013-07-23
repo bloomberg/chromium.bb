@@ -13,11 +13,21 @@
 
 namespace base {
 
-inline bool IsFinite(const double& number) {
+template <typename Float>
+inline bool IsFinite(const Float& number) {
 #if defined(OS_POSIX)
   return std::isfinite(number) != 0;
 #elif defined(OS_WIN)
   return _finite(number) != 0;
+#endif
+}
+
+template <typename Float>
+inline bool IsNaN(const Float& number) {
+#if defined(OS_POSIX)
+  return std::isnan(number) != 0;
+#elif defined(OS_WIN)
+  return _isnan(number) != 0;
 #endif
 }
 

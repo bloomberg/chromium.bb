@@ -480,11 +480,10 @@ void MediaCaptureDevicesDispatcher::OnMediaRequestStateChanged(
 
 void MediaCaptureDevicesDispatcher::OnAudioStreamPlayingChanged(
     int render_process_id, int render_view_id, int stream_id,
-    bool is_playing_and_audible) {
-  audio_stream_indicator_->UpdateWebContentsStatus(render_process_id,
-                                                   render_view_id,
-                                                   stream_id,
-                                                   is_playing_and_audible);
+    bool is_playing, float power_dbfs, bool clipped) {
+  audio_stream_indicator_->UpdateWebContentsStatus(
+      render_process_id, render_view_id, stream_id,
+      is_playing, power_dbfs, clipped);
 }
 
 void MediaCaptureDevicesDispatcher::OnCreatingAudioStream(

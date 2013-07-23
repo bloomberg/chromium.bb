@@ -63,7 +63,7 @@ class AudioRendererHost::AudioEntry
   // media::AudioOutputController::EventHandler implementation.
   virtual void OnCreated() OVERRIDE;
   virtual void OnPlaying() OVERRIDE;
-  virtual void OnAudible(bool is_audible) OVERRIDE;
+  virtual void OnPowerMeasured(float power_dbfs, bool clipped) OVERRIDE;
   virtual void OnPaused() OVERRIDE;
   virtual void OnError() OVERRIDE;
   virtual void OnDeviceChange(int new_buffer_size, int new_sample_rate)
@@ -144,7 +144,7 @@ void AudioRendererHost::AudioEntry::OnCreated() {
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
-      base::Bind(&AudioRendererHost::DoCompleteCreation, host_, this));
+      base::Bind(&AudioRendererHost::DoCompleteCreation, host_, stream_id_));
 }
 
 void AudioRendererHost::AudioEntry::OnPlaying() {
@@ -157,12 +157,13 @@ void AudioRendererHost::AudioEntry::OnPlaying() {
               stream_id_, media::AudioOutputIPCDelegate::kPlaying)));
 }
 
-void AudioRendererHost::AudioEntry::OnAudible(bool is_audible) {
+void AudioRendererHost::AudioEntry::OnPowerMeasured(float power_dbfs,
+                                                    bool clipped) {
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
-      base::Bind(&AudioRendererHost::DoNotifyAudibleState, host_,
-                 this, is_audible));
+      base::Bind(&AudioRendererHost::DoNotifyAudioPowerLevel, host_,
+                 stream_id_, power_dbfs, clipped));
 }
 
 void AudioRendererHost::AudioEntry::OnPaused() {
@@ -192,12 +193,18 @@ void AudioRendererHost::AudioEntry::OnDeviceChange(int new_buffer_size,
                      stream_id_, new_buffer_size, new_sample_rate)));
 }
 
-void AudioRendererHost::DoCompleteCreation(AudioEntry* entry) {
+void AudioRendererHost::DoCompleteCreation(int stream_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (!PeerHandle()) {
     NOTREACHED() << "Renderer process handle is invalid.";
-    ReportErrorAndClose(entry->stream_id());
+    ReportErrorAndClose(stream_id);
+    return;
+  }
+
+  AudioEntry* const entry = LookupById(stream_id);
+  if (!entry) {
+    ReportErrorAndClose(stream_id);
     return;
   }
 
@@ -235,22 +242,22 @@ void AudioRendererHost::DoCompleteCreation(AudioEntry* entry) {
       media::PacketSizeInBytes(entry->shared_memory()->requested_size())));
 }
 
-void AudioRendererHost::DoNotifyAudibleState(AudioEntry* entry,
-                                             bool is_audible) {
+void AudioRendererHost::DoNotifyAudioPowerLevel(int stream_id,
+                                                float power_dbfs,
+                                                bool clipped) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   MediaObserver* const media_observer =
       GetContentClient()->browser()->GetMediaObserver();
   if (media_observer) {
-    DVLOG(1) << "AudioRendererHost@" << this
-             << "::DoNotifyAudibleState(is_audible=" << is_audible
-             << ") for stream_id=" << entry->stream_id();
-
     if (CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kEnableAudibleNotifications)) {
-      media_observer->OnAudioStreamPlayingChanged(
-          render_process_id_, entry->render_view_id(), entry->stream_id(),
-          is_audible);
+      AudioEntry* const entry = LookupById(stream_id);
+      if (entry) {
+        media_observer->OnAudioStreamPlayingChanged(
+            render_process_id_, entry->render_view_id(), entry->stream_id(),
+            true, power_dbfs, clipped);
+      }
     }
   }
 }
@@ -432,7 +439,8 @@ void AudioRendererHost::DeleteEntry(scoped_ptr<AudioEntry> entry) {
       GetContentClient()->browser()->GetMediaObserver();
   if (media_observer) {
     media_observer->OnAudioStreamPlayingChanged(
-        render_process_id_, entry->render_view_id(), entry->stream_id(), false);
+        render_process_id_, entry->render_view_id(), entry->stream_id(),
+        false, -std::numeric_limits<float>::infinity(), false);
   }
 
   // Notify the media observer.

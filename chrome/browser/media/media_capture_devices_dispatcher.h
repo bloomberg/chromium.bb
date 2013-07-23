@@ -125,7 +125,9 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver,
       int render_process_id,
       int render_view_id,
       int stream_id,
-      bool is_playing_and_audible) OVERRIDE;
+      bool is_playing,
+      float power_dBFS,
+      bool clipped) OVERRIDE;
   virtual void OnCreatingAudioStream(int render_process_id,
                                      int render_view_id) OVERRIDE;
 

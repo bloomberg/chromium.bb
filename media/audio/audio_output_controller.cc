@@ -11,7 +11,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "media/audio/audio_silence_detector.h"
+#include "media/audio/audio_power_monitor.h"
 #include "media/audio/audio_util.h"
 #include "media/audio/shared_memory_util.h"
 #include "media/base/scoped_histogram_timer.h"
@@ -21,16 +21,13 @@ using base::TimeDelta;
 
 namespace media {
 
-// Amount of contiguous time where all audio is silent before considering the
-// stream to have transitioned and EventHandler::OnAudible() should be called.
-static const int kQuestionableSilencePeriodMillis = 50;
+// Time constant for AudioPowerMonitor.  See AudioPowerMonitor ctor comments for
+// semantics.  This value was arbitrarily chosen, but seems to work well.
+static const int kPowerMeasurementTimeConstantMillis = 10;
 
-// Sample value range below which audio is considered indistinguishably silent.
-//
-// TODO(miu): This value should be specified in dbFS units rather than full
-// scale.  See TODO in audio_silence_detector.h.
-static const float kIndistinguishableSilenceThreshold =
-    1.0f / 4096.0f;  // Note: This is approximately -72 dbFS.
+// Desired frequency of calls to EventHandler::OnPowerMeasured() for reporting
+// power levels in the audio signal.
+static const int kPowerMeasurementsPerSecond = 30;
 
 // Polling-related constants.
 const int AudioOutputController::kPollNumAttempts = 3;
@@ -158,20 +155,24 @@ void AudioOutputController::DoPlay() {
   sync_reader_->UpdatePendingBytes(0);
 
   state_ = kPlaying;
-  silence_detector_.reset(new AudioSilenceDetector(
+
+  // Start monitoring power levels and send an initial notification that we're
+  // starting in silence.
+  handler_->OnPowerMeasured(AudioPowerMonitor::zero_power(), false);
+  power_monitor_callback_.Reset(
+      base::Bind(&EventHandler::OnPowerMeasured, base::Unretained(handler_)));
+  power_monitor_.reset(new AudioPowerMonitor(
       params_.sample_rate(),
-      TimeDelta::FromMilliseconds(kQuestionableSilencePeriodMillis),
-      kIndistinguishableSilenceThreshold));
+      TimeDelta::FromMilliseconds(kPowerMeasurementTimeConstantMillis),
+      TimeDelta::FromSeconds(1) / kPowerMeasurementsPerSecond,
+      base::MessageLoop::current(),
+      power_monitor_callback_.callback()));
 
   // We start the AudioOutputStream lazily.
   AllowEntryToOnMoreIOData();
   stream_->Start(this);
 
-  // Tell the event handler that we are now playing, and also start the silence
-  // detection notifications.
   handler_->OnPlaying();
-  silence_detector_->Start(
-      base::Bind(&EventHandler::OnAudible, base::Unretained(handler_)));
 }
 
 void AudioOutputController::StopStream() {
@@ -180,8 +181,13 @@ void AudioOutputController::StopStream() {
   if (state_ == kPlaying) {
     stream_->Stop();
     DisallowEntryToOnMoreIOData();
-    silence_detector_->Stop(true);
-    silence_detector_.reset();
+
+    // Stop monitoring power levels.  By canceling power_monitor_callback_, any
+    // tasks posted to |message_loop_| by AudioPowerMonitor during the
+    // stream_->Stop() call above will not run.
+    power_monitor_.reset();
+    power_monitor_callback_.Cancel();
+
     state_ = kPaused;
   }
 }
@@ -197,6 +203,9 @@ void AudioOutputController::DoPause() {
 
   // Send a special pause mark to the low-latency audio thread.
   sync_reader_->UpdatePendingBytes(kPauseMark);
+
+  // Paused means silence follows.
+  handler_->OnPowerMeasured(AudioPowerMonitor::zero_power(), false);
 
   handler_->OnPaused();
 }
@@ -270,7 +279,7 @@ int AudioOutputController::OnMoreIOData(AudioBus* source,
   sync_reader_->UpdatePendingBytes(
       buffers_state.total_bytes() + frames * params_.GetBytesPerFrame());
 
-  silence_detector_->Scan(dest, frames);
+  power_monitor_->Scan(*dest, frames);
 
   AllowEntryToOnMoreIOData();
   return frames;

@@ -5,23 +5,14 @@
 #include "base/time/time.h"
 
 #include <math.h>
-#if defined(OS_WIN)
-#include <float.h>
-#endif
-
 #include <limits>
 
+#include "base/float_util.h"
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/third_party/nspr/prtime.h"
 
 namespace base {
-
-namespace {
-#if defined(OS_WIN)
-inline bool isnan(double num) { return !!_isnan(num); }
-#endif
-}
 
 // TimeDelta ------------------------------------------------------------------
 
@@ -95,7 +86,7 @@ time_t Time::ToTimeT() const {
 
 // static
 Time Time::FromDoubleT(double dt) {
-  if (dt == 0 || isnan(dt))
+  if (dt == 0 || IsNaN(dt))
     return Time();  // Preserve 0 so we can tell it doesn't exist.
   if (dt == std::numeric_limits<double>::max())
     return Max();

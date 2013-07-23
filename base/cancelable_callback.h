@@ -195,6 +195,76 @@ class CancelableCallback<void(A1)> {
   DISALLOW_COPY_AND_ASSIGN(CancelableCallback);
 };
 
+template <typename A1, typename A2>
+class CancelableCallback<void(A1, A2)> {
+ public:
+  CancelableCallback() : weak_factory_(this) {}
+
+  // |callback| must not be null.
+  explicit CancelableCallback(const base::Callback<void(A1, A2)>& callback)
+      : weak_factory_(this),
+        callback_(callback) {
+    DCHECK(!callback.is_null());
+    InitializeForwarder();
+  }
+
+  ~CancelableCallback() {}
+
+  // Cancels and drops the reference to the wrapped callback.
+  void Cancel() {
+    weak_factory_.InvalidateWeakPtrs();
+    forwarder_.Reset();
+    callback_.Reset();
+  }
+
+  // Returns true if the wrapped callback has been cancelled.
+  bool IsCancelled() const {
+    return callback_.is_null();
+  }
+
+  // Sets |callback| as the closure that may be cancelled. |callback| may not
+  // be null. Outstanding and any previously wrapped callbacks are cancelled.
+  void Reset(const base::Callback<void(A1, A2)>& callback) {
+    DCHECK(!callback.is_null());
+
+    // Outstanding tasks (e.g., posted to a message loop) must not be called.
+    Cancel();
+
+    // |forwarder_| is no longer valid after Cancel(), so re-bind.
+    InitializeForwarder();
+
+    callback_ = callback;
+  }
+
+  // Returns a callback that can be disabled by calling Cancel().
+  const base::Callback<void(A1, A2)>& callback() const {
+    return forwarder_;
+  }
+
+ private:
+  void Forward(A1 a1, A2 a2) const {
+    callback_.Run(a1, a2);
+  }
+
+  // Helper method to bind |forwarder_| using a weak pointer from
+  // |weak_factory_|.
+  void InitializeForwarder() {
+    forwarder_ = base::Bind(&CancelableCallback<void(A1, A2)>::Forward,
+                            weak_factory_.GetWeakPtr());
+  }
+
+  // Used to ensure Forward() is not run when this object is destroyed.
+  base::WeakPtrFactory<CancelableCallback<void(A1, A2)> > weak_factory_;
+
+  // The wrapper closure.
+  base::Callback<void(A1, A2)> forwarder_;
+
+  // The stored closure that may be cancelled.
+  base::Callback<void(A1, A2)> callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(CancelableCallback);
+};
+
 typedef CancelableCallback<void(void)> CancelableClosure;
 
 }  // namespace base

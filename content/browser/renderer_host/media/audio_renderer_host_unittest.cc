@@ -25,13 +25,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;
-using ::testing::AtLeast;
+using ::testing::Assign;
 using ::testing::DoAll;
-using ::testing::InSequence;
 using ::testing::NotNull;
-using ::testing::Return;
-using ::testing::SaveArg;
-using ::testing::SetArgumentPointee;
 
 namespace content {
 
@@ -163,7 +159,7 @@ ACTION_P(QuitMessageLoop, message_loop) {
 
 class AudioRendererHostTest : public testing::Test {
  public:
-  AudioRendererHostTest() {}
+  AudioRendererHostTest() : is_stream_active_(false) {}
 
  protected:
   virtual void SetUp() {
@@ -199,6 +195,10 @@ class AudioRendererHostTest : public testing::Test {
     SyncWithAudioThread();
     audio_manager_.reset();
 
+    // Make sure the stream has been deleted before continuing.
+    while (is_stream_active_)
+      message_loop_->Run();
+
     io_thread_.reset();
     ui_thread_.reset();
 
@@ -207,25 +207,39 @@ class AudioRendererHostTest : public testing::Test {
     message_loop_.reset();
   }
 
-  void Create() {
+  void Create(bool unified_stream) {
     EXPECT_CALL(*observer_,
                 OnSetAudioStreamStatus(_, kStreamId, "created"));
     EXPECT_CALL(*host_.get(), OnStreamCreated(kStreamId, _))
-        .WillOnce(QuitMessageLoop(message_loop_.get()));
+        .WillOnce(DoAll(Assign(&is_stream_active_, true),
+                        QuitMessageLoop(message_loop_.get())));
     EXPECT_CALL(mirroring_manager_,
                 AddDiverter(kRenderProcessId, kRenderViewId, NotNull()))
         .RetiresOnSaturation();
 
     // Send a create stream message to the audio output stream and wait until
     // we receive the created message.
-    host_->OnCreateStream(kStreamId,
-                          kRenderViewId,
-                          0,
-                          media::AudioParameters(
-                              media::AudioParameters::AUDIO_FAKE,
-                              media::CHANNEL_LAYOUT_STEREO,
-                              media::AudioParameters::kAudioCDSampleRate, 16,
-                              media::AudioParameters::kAudioCDSampleRate / 10));
+    int session_id;
+    media::AudioParameters params;
+    if (unified_stream) {
+      // Use AudioInputDeviceManager::kFakeOpenSessionId as the session id to
+      // pass the permission check.
+      session_id = AudioInputDeviceManager::kFakeOpenSessionId;
+      params = media::AudioParameters(
+          media::AudioParameters::AUDIO_FAKE,
+          media::CHANNEL_LAYOUT_STEREO,
+          2,
+          media::AudioParameters::kAudioCDSampleRate, 16,
+          media::AudioParameters::kAudioCDSampleRate / 10);
+    } else {
+      session_id = 0;
+      params = media::AudioParameters(
+          media::AudioParameters::AUDIO_FAKE,
+          media::CHANNEL_LAYOUT_STEREO,
+          media::AudioParameters::kAudioCDSampleRate, 16,
+          media::AudioParameters::kAudioCDSampleRate / 10);
+    }
+    host_->OnCreateStream(kStreamId, kRenderViewId, session_id, params);
     message_loop_->Run();
 
     // At some point in the future, a corresponding RemoveDiverter() call must
@@ -239,51 +253,19 @@ class AudioRendererHostTest : public testing::Test {
                 OnSetAudioStreamStatus(_, kStreamId, "closed"));
 
     // Expect the audio stream will be deleted at some later point.
-    EXPECT_CALL(*observer_, OnDeleteAudioStream(_, kStreamId));
-  }
-
-  void CreateUnifiedStream() {
-    EXPECT_CALL(*observer_,
-                OnSetAudioStreamStatus(_, kStreamId, "created"));
-    EXPECT_CALL(*host_.get(), OnStreamCreated(kStreamId, _))
-        .WillOnce(QuitMessageLoop(message_loop_.get()));
-    EXPECT_CALL(mirroring_manager_,
-                AddDiverter(kRenderProcessId, kRenderViewId, NotNull()))
-        .RetiresOnSaturation();
-    // Send a create stream message to the audio output stream and wait until
-    // we receive the created message.
-    // Use AudioInputDeviceManager::kFakeOpenSessionId as the session id to
-    // pass the permission check.
-    host_->OnCreateStream(kStreamId,
-                          kRenderViewId,
-                          AudioInputDeviceManager::kFakeOpenSessionId,
-                          media::AudioParameters(
-                              media::AudioParameters::AUDIO_FAKE,
-                              media::CHANNEL_LAYOUT_STEREO,
-                              2,
-                              media::AudioParameters::kAudioCDSampleRate, 16,
-                              media::AudioParameters::kAudioCDSampleRate / 10));
-    message_loop_->Run();
-
-    // At some point in the future, a corresponding RemoveDiverter() call must
-    // be made.
-    EXPECT_CALL(mirroring_manager_,
-                RemoveDiverter(kRenderProcessId, kRenderViewId, NotNull()))
-        .RetiresOnSaturation();
-
-    // All created streams should ultimately be closed.
-    EXPECT_CALL(*observer_,
-                OnSetAudioStreamStatus(_, kStreamId, "closed"));
-
-    // Expect the audio stream will be deleted at some later point.
-    EXPECT_CALL(*observer_, OnDeleteAudioStream(_, kStreamId));
+    EXPECT_CALL(*observer_, OnDeleteAudioStream(_, kStreamId))
+        .WillOnce(DoAll(Assign(&is_stream_active_, false),
+                        QuitMessageLoop(message_loop_.get())));
   }
 
   void Close() {
     // Send a message to AudioRendererHost to tell it we want to close the
     // stream.
     host_->OnCloseStream(kStreamId);
-    message_loop_->RunUntilIdle();
+    if (is_stream_active_)
+      message_loop_->Run();
+    else
+      message_loop_->RunUntilIdle();
   }
 
   void Play() {
@@ -367,34 +349,36 @@ class AudioRendererHostTest : public testing::Test {
   scoped_ptr<media::AudioManager> audio_manager_;
   scoped_ptr<MediaStreamManager> media_stream_manager_;
 
+  bool is_stream_active_;
+
   DISALLOW_COPY_AND_ASSIGN(AudioRendererHostTest);
 };
 
 TEST_F(AudioRendererHostTest, CreateAndClose) {
-  Create();
+  Create(false);
   Close();
 }
 
 // Simulate the case where a stream is not properly closed.
 TEST_F(AudioRendererHostTest, CreateAndShutdown) {
-  Create();
+  Create(false);
 }
 
 TEST_F(AudioRendererHostTest, CreatePlayAndClose) {
-  Create();
+  Create(false);
   Play();
   Close();
 }
 
 TEST_F(AudioRendererHostTest, CreatePlayPauseAndClose) {
-  Create();
+  Create(false);
   Play();
   Pause();
   Close();
 }
 
 TEST_F(AudioRendererHostTest, SetVolume) {
-  Create();
+  Create(false);
   SetVolume(0.5);
   Play();
   Pause();
@@ -403,19 +387,19 @@ TEST_F(AudioRendererHostTest, SetVolume) {
 
 // Simulate the case where a stream is not properly closed.
 TEST_F(AudioRendererHostTest, CreatePlayAndShutdown) {
-  Create();
+  Create(false);
   Play();
 }
 
 // Simulate the case where a stream is not properly closed.
 TEST_F(AudioRendererHostTest, CreatePlayPauseAndShutdown) {
-  Create();
+  Create(false);
   Play();
   Pause();
 }
 
 TEST_F(AudioRendererHostTest, SimulateError) {
-  Create();
+  Create(false);
   Play();
   SimulateError();
 }
@@ -424,14 +408,14 @@ TEST_F(AudioRendererHostTest, SimulateError) {
 // the audio device is closed but the render process try to close the
 // audio stream again.
 TEST_F(AudioRendererHostTest, SimulateErrorAndClose) {
-  Create();
+  Create(false);
   Play();
   SimulateError();
   Close();
 }
 
 TEST_F(AudioRendererHostTest, CreateUnifiedStreamAndClose) {
-  CreateUnifiedStream();
+  Create(true);
   Close();
 }
 

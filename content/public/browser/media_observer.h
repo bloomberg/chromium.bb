@@ -30,13 +30,18 @@ class MediaObserver {
       const MediaStreamDevice& device,
       MediaRequestState state) = 0;
 
-  // Called when an audio stream transitions into playing audible or silent
-  // sound, and when the stream is stopped.
+  // Called when an audio stream transitions into a playing or paused state, and
+  // also at regular intervals to report the current power level of the audio
+  // signal in dBFS (decibels relative to full-scale) units.  |clipped| is true
+  // if any part of the audio signal has been clipped since the last call.  See
+  // media/audio/audio_power_monitor.h for more info.
   virtual void OnAudioStreamPlayingChanged(
       int render_process_id,
       int render_view_id,
       int stream_id,
-      bool is_playing_and_audible) = 0;
+      bool is_playing,
+      float power_dbfs,
+      bool clipped) = 0;
 
   // Called when the audio stream is being created.
   virtual void OnCreatingAudioStream(int render_process_id,

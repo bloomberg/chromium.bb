@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_MEDIA_AUDIO_STREAM_INDICATOR_H_
 
 #include <map>
-#include <set>
+#include <vector>
 
 #include "base/memory/ref_counted.h"
 
@@ -23,22 +23,34 @@ class AudioStreamIndicator
   void UpdateWebContentsStatus(int render_process_id,
                                int render_view_id,
                                int stream_id,
-                               bool is_playing_and_audible);
+                               bool is_playing,
+                               float power_dbfs,
+                               bool clipped);
 
   // This method should be called on the UI thread.
-  bool IsPlayingAudio(content::WebContents* contents);
+  bool IsPlayingAudio(const content::WebContents* contents);
+
+  // Returns the audible |level| in the range [0.0,1.0], where 0.0 means the
+  // audio signal is imperceivably silent and 1.0 means it is at maximum
+  // volume.  |signal_has_clipped| is set to true if any part of the audio
+  // signal has clipped since the last call to this method.
+  //
+  // This method should be called on the UI thread.
+  void CurrentAudibleLevel(const content::WebContents* contents,
+                           float* level, bool* signal_has_clipped);
 
  private:
-  struct RenderViewId {
-    RenderViewId(int render_process_id,
-                 int render_view_id);
-
-    // Required to use this struct in the std::multiset below.
-    bool operator<(const RenderViewId& other) const;
-
-    int render_process_id;
-    int render_view_id;
+  // <render process ID, render view ID>
+  // Note: Using std::pair<> to reduce binary-size bloat.
+  typedef std::pair<int, int> RenderViewId;
+  struct StreamPowerLevel {
+    int stream_id;
+    float power_dbfs;
+    bool clipped;
   };
+  typedef std::vector<StreamPowerLevel> StreamPowerLevels;
+  // Container for the power levels of streams playing from each render view.
+  typedef std::map<RenderViewId, StreamPowerLevels> RenderViewStreamMap;
 
   friend class base::RefCountedThreadSafe<AudioStreamIndicator>;
   virtual ~AudioStreamIndicator();
@@ -46,11 +58,11 @@ class AudioStreamIndicator
   void UpdateWebContentsStatusOnUIThread(int render_process_id,
                                          int render_view_id,
                                          int stream_id,
-                                         bool playing);
+                                         bool is_playing,
+                                         float power_dbfs,
+                                         bool clipped);
 
-  // A map from RenderViews to sets of streams playing in them (each RenderView
-  // might have more than one stream).
-  std::map<RenderViewId, std::set<int> > audio_streams_;
+  RenderViewStreamMap audio_streams_;
 };
 
 #endif  // CHROME_BROWSER_MEDIA_AUDIO_STREAM_INDICATOR_H_

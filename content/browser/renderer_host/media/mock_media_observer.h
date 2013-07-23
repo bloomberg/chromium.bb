@@ -29,11 +29,13 @@ class MockMediaObserver : public MediaObserver {
                     int page_request_id,
                     const MediaStreamDevice& device,
                     const MediaRequestState state));
-  MOCK_METHOD4(OnAudioStreamPlayingChanged,
+  MOCK_METHOD6(OnAudioStreamPlayingChanged,
                void(int render_process_id,
                     int render_view_id,
                     int stream_id,
-                    bool playing));
+                    bool is_playing,
+                    float power_dbfs,
+                    bool clipped));
 };
 
 class MockMediaInternals : public MediaInternals {

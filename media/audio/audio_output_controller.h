@@ -7,6 +7,7 @@
 
 #include "base/atomic_ref_count.h"
 #include "base/callback.h"
+#include "base/cancelable_callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"
@@ -52,7 +53,7 @@
 
 namespace media {
 
-class AudioSilenceDetector;
+class AudioPowerMonitor;
 
 class MEDIA_EXPORT AudioOutputController
     : public base::RefCountedThreadSafe<AudioOutputController>,
@@ -66,7 +67,7 @@ class MEDIA_EXPORT AudioOutputController
    public:
     virtual void OnCreated() = 0;
     virtual void OnPlaying() = 0;
-    virtual void OnAudible(bool is_audible) = 0;
+    virtual void OnPowerMeasured(float power_dbfs, bool clipped) = 0;
     virtual void OnPaused() = 0;
     virtual void OnError() = 0;
     virtual void OnDeviceChange(int new_buffer_size, int new_sample_rate) = 0;
@@ -234,9 +235,10 @@ class MEDIA_EXPORT AudioOutputController
   int number_polling_attempts_left_;
 
   // Scans audio samples from OnMoreIOData() as input and causes
-  // EventHandler::OnAudbile() to be called whenever a transition to a period of
-  // silence or non-silence is detected.
-  scoped_ptr<AudioSilenceDetector> silence_detector_;
+  // EventHandler::OnPowerMeasured() to be called with power level measurements
+  // at regular intervals.
+  scoped_ptr<AudioPowerMonitor> power_monitor_;
+  base::CancelableCallback<void(float, bool)> power_monitor_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioOutputController);
 };
