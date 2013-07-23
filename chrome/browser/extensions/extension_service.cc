@@ -2896,19 +2896,11 @@ bool ExtensionService::IsBeingReloaded(
 }
 
 void ExtensionService::SetBeingReloaded(const std::string& extension_id,
-                                         bool isBeingReloaded) {
-  LOG(INFO) << "****** " << __FUNCTION__;
-  LOG(INFO) << "****** " << __FUNCTION__ << " extension_id is: "
-            << extension_id << " and isBeingReloaded is " << isBeingReloaded;
-  LOG(INFO) << "****** " << __FUNCTION__ << " Set size is "
-            << extensions_being_reloaded_.size();
-  if (isBeingReloaded) {
+                                        bool isBeingReloaded) {
+  if (isBeingReloaded)
     extensions_being_reloaded_.insert(extension_id);
-    LOG(INFO) << "****** " << __FUNCTION__ << " insert succeeded.";
-  } else {
+  else
     extensions_being_reloaded_.erase(extension_id);
-    LOG(INFO) << "****** " << __FUNCTION__ << " erase succeeded.";
-  }
 }
 
 bool ExtensionService::HasUsedWebRequest(const Extension* extension) const {
