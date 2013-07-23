@@ -85,6 +85,12 @@ inline RenderVideo* toRenderVideo(RenderObject* object)
     return static_cast<RenderVideo*>(object);
 }
 
+inline const RenderVideo* toRenderVideo(const RenderObject* object)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isVideo());
+    return static_cast<const RenderVideo*>(object);
+}
+
 // This will catch anyone doing an unnecessary cast.
 void toRenderVideo(const RenderVideo*);
 

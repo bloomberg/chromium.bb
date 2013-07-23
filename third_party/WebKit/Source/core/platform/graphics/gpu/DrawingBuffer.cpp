@@ -306,6 +306,7 @@ WebKit::WebLayer* DrawingBuffer::platformLayer()
         m_layer = adoptPtr(WebKit::Platform::current()->compositorSupport()->createExternalTextureLayer(this));
 
         m_layer->setOpaque(!m_attributes.alpha);
+        m_layer->setBlendBackgroundColor(m_attributes.alpha);
         m_layer->setPremultipliedAlpha(m_attributes.premultipliedAlpha);
         GraphicsLayer::registerContentsLayer(m_layer->layer());
     }

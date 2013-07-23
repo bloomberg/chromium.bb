@@ -55,6 +55,10 @@ public:
     // Sets whether this layer's texture has premultiplied alpha or not. Defaults to true.
     virtual void setPremultipliedAlpha(bool) = 0;
 
+    // Sets whether the texture should be blended with the background color
+    // at draw time. Defaults to false.
+    virtual void setBlendBackgroundColor(bool) = 0;
+
     // Sets whether this context should be rate limited by the compositor. Rate limiting works by blocking
     // invalidate() and invalidateRect() calls if the compositor is too many frames behind.
     virtual void setRateLimitContext(bool) = 0;

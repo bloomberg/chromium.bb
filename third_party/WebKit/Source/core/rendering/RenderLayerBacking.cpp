@@ -67,10 +67,44 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-static bool hasBoxDecorationsOrBackgroundImage(const RenderStyle*);
 static IntRect clipBox(RenderBox* renderer);
 
-static inline bool isAcceleratedCanvas(RenderObject* renderer)
+static IntRect contentsRect(const RenderObject* renderer)
+{
+    if (!renderer->isBox())
+        return IntRect();
+
+    return renderer->isVideo() ?
+        toRenderVideo(renderer)->videoBox() :
+        pixelSnappedIntRect(toRenderBox(renderer)->contentBoxRect());
+}
+
+static IntRect backgroundRect(const RenderObject* renderer)
+{
+    if (!renderer->isBox())
+        return IntRect();
+
+    LayoutRect rect;
+    const RenderBox* box = toRenderBox(renderer);
+    EFillBox clip = box->style()->backgroundClip();
+    switch (clip) {
+    case BorderFillBox:
+        rect = box->borderBoxRect();
+        break;
+    case PaddingFillBox:
+        rect = box->paddingBoxRect();
+        break;
+    case ContentFillBox:
+        rect = box->contentBoxRect();
+        break;
+    case TextFillBox:
+        break;
+    }
+
+    return pixelSnappedIntRect(rect);
+}
+
+static inline bool isAcceleratedCanvas(const RenderObject* renderer)
 {
     if (renderer->isCanvas()) {
         HTMLCanvasElement* canvas = toHTMLCanvasElement(renderer->node());
@@ -78,6 +112,31 @@ static inline bool isAcceleratedCanvas(RenderObject* renderer)
             return context->isAccelerated();
     }
     return false;
+}
+
+static bool hasBoxDecorations(const RenderStyle* style)
+{
+    return style->hasBorder() || style->hasBorderRadius() || style->hasOutline() || style->hasAppearance() || style->boxShadow() || style->hasFilter();
+}
+
+static bool hasBoxDecorationsOrBackgroundImage(const RenderStyle* style)
+{
+    return hasBoxDecorations(style) || style->hasBackgroundImage();
+}
+
+static bool contentLayerSupportsDirectBackgroundComposition(const RenderObject* renderer)
+{
+    // No support for decorations - border, border-radius or outline.
+    // Only simple background - solid color or transparent.
+    if (hasBoxDecorationsOrBackgroundImage(renderer->style()))
+        return false;
+
+    // If there is no background, there is nothing to support.
+    if (!renderer->style()->hasBackground())
+        return true;
+
+    // Simple background that is contained within the contents rect.
+    return contentsRect(renderer).contains(backgroundRect(renderer));
 }
 
 // Get the scrolling coordinator in a way that works inside RenderLayerBacking's destructor.
@@ -766,6 +825,19 @@ void RenderLayerBacking::updateDrawsContent(bool isSimpleContainer)
     }
 
     bool hasPaintedContent = containsPaintedContent(isSimpleContainer);
+    if (hasPaintedContent && isAcceleratedCanvas(renderer())) {
+        HTMLCanvasElement* canvas = static_cast<HTMLCanvasElement*>(renderer()->node());
+        CanvasRenderingContext* context = canvas->renderingContext();
+        // Content layer may be null if context is lost.
+        if (WebKit::WebLayer* contentLayer = context->platformLayer()) {
+            Color bgColor;
+            if (contentLayerSupportsDirectBackgroundComposition(renderer())) {
+                bgColor = rendererBackgroundColor();
+                hasPaintedContent = false;
+            }
+            contentLayer->setBackgroundColor(bgColor.rgb());
+        }
+    }
 
     // FIXME: we could refine this to only allocate backing for one of these layers if possible.
     m_graphicsLayer->setDrawsContent(hasPaintedContent);
@@ -1076,16 +1148,6 @@ float RenderLayerBacking::compositingOpacity(float rendererOpacity) const
     return finalOpacity;
 }
 
-static bool hasBoxDecorations(const RenderStyle* style)
-{
-    return style->hasBorder() || style->hasBorderRadius() || style->hasOutline() || style->hasAppearance() || style->boxShadow() || style->hasFilter();
-}
-
-static bool hasBoxDecorationsOrBackgroundImage(const RenderStyle* style)
-{
-    return hasBoxDecorations(style) || style->hasBackgroundImage();
-}
-
 Color RenderLayerBacking::rendererBackgroundColor() const
 {
     RenderObject* backgroundRenderer = renderer();
@@ -1269,9 +1331,6 @@ bool RenderLayerBacking::containsPaintedContent(bool isSimpleContainer) const
     if (renderer()->isVideo() && toRenderVideo(renderer())->shouldDisplayVideo())
         return m_owningLayer->hasBoxDecorationsOrBackground();
 
-    if (isAcceleratedCanvas(renderer()))
-        return m_owningLayer->hasBoxDecorationsOrBackground();
-
     return true;
 }
 
@@ -1380,46 +1439,16 @@ IntSize RenderLayerBacking::contentOffsetInCompostingLayer() const
 
 IntRect RenderLayerBacking::contentsBox() const
 {
-    if (!renderer()->isBox())
-        return IntRect();
-
-    IntRect contentsRect;
-    if (renderer()->isVideo()) {
-        RenderVideo* videoRenderer = toRenderVideo(renderer());
-        contentsRect = videoRenderer->videoBox();
-    } else
-        contentsRect = pixelSnappedIntRect(toRenderBox(renderer())->contentBoxRect());
-
-    contentsRect.move(contentOffsetInCompostingLayer());
-    return contentsRect;
-}
-
-static LayoutRect backgroundRectForBox(const RenderBox* box)
-{
-    EFillBox clip = box->style()->backgroundClip();
-    switch (clip) {
-    case BorderFillBox:
-        return box->borderBoxRect();
-    case PaddingFillBox:
-        return box->paddingBoxRect();
-    case ContentFillBox:
-        return box->contentBoxRect();
-    case TextFillBox:
-        break;
-    }
-
-    ASSERT_NOT_REACHED();
-    return LayoutRect();
+    IntRect contentsBox = contentsRect(renderer());
+    contentsBox.move(contentOffsetInCompostingLayer());
+    return contentsBox;
 }
 
 IntRect RenderLayerBacking::backgroundBox() const
 {
-    if (!renderer()->isBox())
-        return IntRect();
-
-    IntRect pixelSnappedBackgroundBox = pixelSnappedIntRect(backgroundRectForBox(toRenderBox(renderer())));
-    pixelSnappedBackgroundBox.move(contentOffsetInCompostingLayer());
-    return pixelSnappedBackgroundBox;
+    IntRect backgroundBox = backgroundRect(renderer());
+    backgroundBox.move(contentOffsetInCompostingLayer());
+    return backgroundBox;
 }
 
 GraphicsLayer* RenderLayerBacking::parentForSublayers() const

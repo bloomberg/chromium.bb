@@ -1600,12 +1600,9 @@ String Internals::elementLayerTreeAsText(Element* element, unsigned flags, Excep
     }
 
     RenderLayer* layer = toRenderBox(renderer)->layer();
-    if (!layer) {
-        ec = InvalidAccessError;
-        return String();
-    }
-
-    if (!layer->backing() || !layer->backing()->graphicsLayer()) {
+    if (!layer
+        || !layer->backing()
+        || !layer->backing()->graphicsLayer()) {
         // Don't raise exception in these cases which may be normally used in tests.
         return String();
     }
