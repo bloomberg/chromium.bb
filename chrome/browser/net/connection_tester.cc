@@ -37,7 +37,7 @@
 #include "net/url_request/url_request_context_storage.h"
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
-#include "chrome/browser/importer/firefox_proxy_settings.h"
+#include "chrome/browser/net/firefox_proxy_settings.h"
 #endif
 
 namespace {

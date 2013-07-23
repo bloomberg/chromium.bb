@@ -1,10 +1,12 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/importer/firefox_proxy_settings.h"
+#include "chrome/browser/net/firefox_proxy_settings.h"
 
+#include "base/file_util.h"
 #include "base/files/file_path.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
@@ -55,6 +57,84 @@ FirefoxProxySettings::SOCKSVersion IntToSOCKSVersion(int type) {
       LOG(ERROR) << "Unknown Firefox proxy config type: " << type;
       return FirefoxProxySettings::UNKNONW;
   }
+}
+
+// Parses the prefs found in the file |pref_file| and puts the key/value pairs
+// in |prefs|. Keys are strings, and values can be strings, booleans or
+// integers.  Returns true if it succeeded, false otherwise (in which case
+// |prefs| is not filled).
+// Note: for strings, only valid UTF-8 string values are supported. If a
+// key/pair is not valid UTF-8, it is ignored and will not appear in |prefs|.
+bool ParsePrefFile(const base::FilePath& pref_file, DictionaryValue* prefs) {
+  // The string that is before a pref key.
+  const std::string kUserPrefString = "user_pref(\"";
+  std::string contents;
+  if (!file_util::ReadFileToString(pref_file, &contents))
+    return false;
+
+  std::vector<std::string> lines;
+  Tokenize(contents, "\n", &lines);
+
+  for (std::vector<std::string>::const_iterator iter = lines.begin();
+       iter != lines.end(); ++iter) {
+    const std::string& line = *iter;
+    size_t start_key = line.find(kUserPrefString);
+    if (start_key == std::string::npos)
+      continue;  // Could be a comment or a blank line.
+    start_key += kUserPrefString.length();
+    size_t stop_key = line.find('"', start_key);
+    if (stop_key == std::string::npos) {
+      LOG(ERROR) << "Invalid key found in Firefox pref file '" <<
+          pref_file.value() << "' line is '" << line << "'.";
+      continue;
+    }
+    std::string key = line.substr(start_key, stop_key - start_key);
+    size_t start_value = line.find(',', stop_key + 1);
+    if (start_value == std::string::npos) {
+      LOG(ERROR) << "Invalid value found in Firefox pref file '" <<
+          pref_file.value() << "' line is '" << line << "'.";
+      continue;
+    }
+    size_t stop_value = line.find(");", start_value + 1);
+    if (stop_value == std::string::npos) {
+      LOG(ERROR) << "Invalid value found in Firefox pref file '" <<
+          pref_file.value() << "' line is '" << line << "'.";
+      continue;
+    }
+    std::string value = line.substr(start_value + 1,
+                                    stop_value - start_value - 1);
+    TrimWhitespace(value, TRIM_ALL, &value);
+    // Value could be a boolean.
+    bool is_value_true = LowerCaseEqualsASCII(value, "true");
+    if (is_value_true || LowerCaseEqualsASCII(value, "false")) {
+      prefs->SetBoolean(key, is_value_true);
+      continue;
+    }
+
+    // Value could be a string.
+    if (value.size() >= 2U &&
+        value[0] == '"' && value[value.size() - 1] == '"') {
+      value = value.substr(1, value.size() - 2);
+      // ValueString only accept valid UTF-8.  Simply ignore that entry if it is
+      // not UTF-8.
+      if (IsStringUTF8(value))
+        prefs->SetString(key, value);
+      else
+        VLOG(1) << "Non UTF8 value for key " << key << ", ignored.";
+      continue;
+    }
+
+    // Or value could be an integer.
+    int int_value = 0;
+    if (base::StringToInt(value, &int_value)) {
+      prefs->SetInteger(key, int_value);
+      continue;
+    }
+
+    LOG(ERROR) << "Invalid value found in Firefox pref file '"
+               << pref_file.value() << "' value is '" << value << "'.";
+  }
+  return true;
 }
 
 }  // namespace

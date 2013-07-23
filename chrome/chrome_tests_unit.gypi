@@ -912,7 +912,6 @@
         'browser/history/visit_filter_unittest.cc',
         'browser/history/visit_tracker_unittest.cc',
         'browser/importer/firefox_profile_lock_unittest.cc',
-        'browser/importer/firefox_proxy_settings_unittest.cc',
         'browser/importer/profile_writer_unittest.cc',
         'browser/internal_auth_unittest.cc',
         'browser/invalidation/invalidation_service_android_unittest.cc',
@@ -958,6 +957,7 @@
         'browser/net/dns_probe_runner_unittest.cc',
         'browser/net/dns_probe_service_unittest.cc',
         'browser/net/evicted_domain_cookie_counter_unittest.cc',
+        'browser/net/firefox_proxy_settings_unittest.cc',
         'browser/net/gaia/gaia_oauth_fetcher_unittest.cc',
         'browser/net/http_pipelining_compatibility_client_unittest.cc',
         'browser/net/http_server_properties_manager_unittest.cc',
@@ -2437,7 +2437,7 @@
 
             # Android uses a different invaliator.
             'browser/invalidation/ticl_invalidation_service_unittest.cc',
-            
+
             # The importer code is not used on Android.
             'common/importer/firefox_importer_utils_unittest.cc',
           ],
@@ -2447,6 +2447,7 @@
             ['exclude', '^browser/first_run/'],
             ['exclude', '^browser/lifetime/'],
             ['exclude', '^browser/media_galleries/'],
+            ['exclude', '^browser/net/firefox_*'],
             ['exclude', '^browser/profile_resetter/'],
             ['exclude', '^browser/speech/'],
             ['exclude', '^browser/sync/glue/app_'],
