@@ -84,6 +84,7 @@ void WorkerFileWriterCallbacksBridge::postShutdownToMainThread(PassRefPtr<Worker
 {
     ASSERT(m_workerGlobalScope->isContextThread());
     m_clientOnWorkerThread = 0;
+    stopObserving();
     dispatchTaskToMainThread(createCallbackTask(&shutdownOnMainThread, bridge));
 }
 
