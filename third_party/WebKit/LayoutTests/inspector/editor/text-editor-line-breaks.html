@@ -1,6 +1,7 @@
 <html>
 <head>
 <script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="editor-test.js"></script>
 <script>
 
 function test()
@@ -8,35 +9,35 @@ function test()
     InspectorTest.runTestSuite([
         function testCRInitial(next)
         {
-            var textModel = new WebInspector.TextEditorModel();
-            textModel.setText("1\n2\n3\n");
-            InspectorTest.addResult(encodeURI(textModel.text()));
+            var textEditor = InspectorTest.createTestEditor();
+            textEditor.setText("1\n2\n3\n");
+            InspectorTest.addResult(encodeURI(textEditor.text()));
             next();
         },
 
         function testCRLFInitial(next)
         {
-            var textModel = new WebInspector.TextEditorModel();
-            textModel.setText("1\r\n2\r\n3\r\n");
-            InspectorTest.addResult(encodeURI(textModel.text()));
+            var textEditor = InspectorTest.createTestEditor();
+            textEditor.setText("1\r\n2\r\n3\r\n");
+            InspectorTest.addResult(encodeURI(textEditor.text()));
             next();
         },
 
         function testCREdit(next)
         {
-            var textModel = new WebInspector.TextEditorModel();
-            textModel.setText("1\n2\n3\n");
-            textModel.editRange(new WebInspector.TextRange(1, 0, 1, 0), "foo\r\nbar");
-            InspectorTest.addResult(encodeURI(textModel.text()));
+            var textEditor = InspectorTest.createTestEditor();
+            textEditor.setText("1\n2\n3\n");
+            textEditor.editRange(new WebInspector.TextRange(1, 0, 1, 0), "foo\r\nbar");
+            InspectorTest.addResult(encodeURI(textEditor.text()));
             next();
         },
 
         function testCRLFEdit(next)
         {
-            var textModel = new WebInspector.TextEditorModel();
-            textModel.setText("1\r\n2\r\n3\r\n");
-            textModel.editRange(new WebInspector.TextRange(1, 0, 1, 0), "foo\r\nbar");
-            InspectorTest.addResult(encodeURI(textModel.text()));
+            var textEditor = InspectorTest.createTestEditor();
+            textEditor.setText("1\r\n2\r\n3\r\n");
+            textEditor.editRange(new WebInspector.TextRange(1, 0, 1, 0), "foo\r\nbar");
+            InspectorTest.addResult(encodeURI(textEditor.text()));
             next();
         }
     ]);
