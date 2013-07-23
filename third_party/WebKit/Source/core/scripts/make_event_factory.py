@@ -60,7 +60,6 @@ class EventFactoryWriter(name_macros.Writer):
         'ImplementedAs': None,
         'Conditional': None,
         'EnabledAtRuntime': None,
-        'AllowJSCreationOnlyIfFeatureEnabled': None,
     }
     default_parameters = {
         'namespace': '',
@@ -75,7 +74,7 @@ class EventFactoryWriter(name_macros.Writer):
 
     def _factory_implementation(self, event):
         runtime_condition = ''
-        if event['EnabledAtRuntime'] and event['AllowJSCreationOnlyIfFeatureEnabled']:
+        if event['EnabledAtRuntime']:
             runtime_condition = ' && RuntimeEnabledFeatures::' + event['EnabledAtRuntime'] + '()'
         name = os.path.basename(event['name'])
         class_name = self._class_name_for_entry(event)
