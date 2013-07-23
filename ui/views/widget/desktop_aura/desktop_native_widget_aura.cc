@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/stacking_client.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
@@ -166,7 +167,8 @@ DesktopNativeWidgetAura::DesktopNativeWidgetAura(
       window_(new aura::Window(this)),
       native_widget_delegate_(delegate),
       last_drop_operation_(ui::DragDropTypes::DRAG_NONE),
-      restore_focus_on_activate_(false) {
+      restore_focus_on_activate_(false),
+      cursor_(gfx::kNullCursor) {
   window_->SetProperty(kDesktopNativeWidgetAuraKey, this);
   aura::client::SetFocusChangeObserver(window_, this);
   aura::client::SetActivationChangeObserver(window_, this);
@@ -550,11 +552,17 @@ void DesktopNativeWidgetAura::SchedulePaintInRect(const gfx::Rect& rect) {
 }
 
 void DesktopNativeWidgetAura::SetCursor(gfx::NativeCursor cursor) {
-  desktop_root_window_host_->AsRootWindowHost()->SetCursor(cursor);
+  cursor_ = cursor;
+  aura::client::CursorClient* cursor_client =
+      aura::client::GetCursorClient(window_->GetRootWindow());
+  if (cursor_client)
+    cursor_client->SetCursor(cursor);
 }
 
 bool DesktopNativeWidgetAura::IsMouseEventsEnabled() const {
-  return true;
+  aura::client::CursorClient* cursor_client =
+      aura::client::GetCursorClient(window_->GetRootWindow());
+  return cursor_client ? cursor_client->IsMouseEventsEnabled() : true;
 }
 
 void DesktopNativeWidgetAura::ClearNativeFocus() {
@@ -619,7 +627,7 @@ void DesktopNativeWidgetAura::OnBoundsChanged(const gfx::Rect& old_bounds,
 }
 
 gfx::NativeCursor DesktopNativeWidgetAura::GetCursor(const gfx::Point& point) {
-  return gfx::kNullCursor;
+  return cursor_;
 }
 
 int DesktopNativeWidgetAura::GetNonClientComponent(

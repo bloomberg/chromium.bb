@@ -248,6 +248,8 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   // See comments in OnLostActive().
   bool restore_focus_on_activate_;
 
+  gfx::NativeCursor cursor_;
+
   scoped_ptr<corewm::ShadowController> shadow_controller_;
 
   // Reorders child windows of |window_| associated with a view based on the
