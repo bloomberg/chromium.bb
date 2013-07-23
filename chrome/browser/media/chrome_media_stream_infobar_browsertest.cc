@@ -13,6 +13,7 @@
 #include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/media/media_stream_infobar_delegate.h"
+#include "chrome/browser/media/webrtc_browsertest_common.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
@@ -115,7 +116,7 @@ class MediaStreamInfobarTest : public InProcessBrowserTest {
     CloseInfobarInTab(tab_contents, media_infobar);
 
     // Wait for WebRTC to call the success callback.
-    EXPECT_TRUE(UglyPollingWaitUntil(
+    EXPECT_TRUE(PollingWaitUntil(
         "obtainGetUserMediaResult()", kOkGotStream, tab_contents));
   }
 
@@ -134,9 +135,9 @@ class MediaStreamInfobarTest : public InProcessBrowserTest {
     CloseInfobarInTab(tab_contents, media_infobar);
 
     // Wait for WebRTC to call the fail callback.
-    EXPECT_TRUE(UglyPollingWaitUntil("obtainGetUserMediaResult()",
-                                     kFailedWithErrorPermissionDenied,
-                                     tab_contents));
+    EXPECT_TRUE(PollingWaitUntil("obtainGetUserMediaResult()",
+                                 kFailedWithErrorPermissionDenied,
+                                 tab_contents));
   }
 
   void TestDismissOnInfobar(content::WebContents* tab_contents) {
@@ -148,35 +149,9 @@ class MediaStreamInfobarTest : public InProcessBrowserTest {
     CloseInfobarInTab(tab_contents, media_infobar);
 
     // A dismiss should be treated like a deny.
-    EXPECT_TRUE(UglyPollingWaitUntil("obtainGetUserMediaResult()",
-                                     kFailedWithErrorPermissionDenied,
-                                     tab_contents));
-  }
-
-  // TODO(phoglund): de-dupe
-  // TODO(phoglund): This ugly poll method is only here while we transition
-  // the test javascript to just post events when things happen. Right now they
-  // don't because the webrtc_call.py and other tests use this polling way of
-  // communicating when we are waiting from an asynchronous event in the
-  // javascript. This method is meant to emulate WaitUntil in the PyAuto
-  // framework.
-  bool UglyPollingWaitUntil(const std::string& javascript,
-                            const std::string& evaluates_to,
-                            content::WebContents* tab_contents) {
-    const base::Time start_time = base::Time::Now();
-    const base::TimeDelta timeout = TestTimeouts::action_max_timeout();
-    std::string result;
-
-    while (base::Time::Now() - start_time < timeout) {
-      result = ExecuteJavascript(javascript, tab_contents);
-      LOG(INFO) << result;
-      if (evaluates_to == result)
-        return true;
-    }
-    LOG(ERROR) << "Timed out while waiting for " << javascript
-               << " to evaluate to " << evaluates_to << "; last result was '"
-               << result << "'";
-    return false;
+    EXPECT_TRUE(PollingWaitUntil("obtainGetUserMediaResult()",
+                                 kFailedWithErrorPermissionDenied,
+                                 tab_contents));
   }
 
   void GetUserMedia(const std::string& constraints,
@@ -219,9 +194,9 @@ IN_PROC_BROWSER_TEST_F(MediaStreamInfobarTest,
 
   // Should fail with permission denied right away with no infobar popping up.
   GetUserMedia(kAudioVideoCallConstraints, tab_contents);
-  EXPECT_TRUE(UglyPollingWaitUntil("obtainGetUserMediaResult()",
-                                   kFailedWithErrorPermissionDenied,
-                                   tab_contents));
+  EXPECT_TRUE(PollingWaitUntil("obtainGetUserMediaResult()",
+                               kFailedWithErrorPermissionDenied,
+                               tab_contents));
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(tab_contents);
   EXPECT_EQ(0u, infobar_service->infobar_count());

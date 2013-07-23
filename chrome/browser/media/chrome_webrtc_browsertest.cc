@@ -16,6 +16,7 @@
 #include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/media/media_stream_infobar_delegate.h"
+#include "chrome/browser/media/webrtc_browsertest_common.h"
 #include "chrome/browser/media/webrtc_log_uploader.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -98,30 +99,6 @@ class WebrtcBrowserTest : public InProcessBrowserTest {
         switches::kUseFakeUIForMediaStream));
   }
 
-  // TODO(phoglund): This ugly poll method is only here while we transition
-  // the test javascript to just post events when things happen. Right now they
-  // don't because the webrtc_call.py and other tests use this polling way of
-  // communicating when we are waiting from an asynchronous event in the
-  // javascript. This method is meant to emulate WaitUntil in the PyAuto
-  // framework.
-  bool UglyPollingWaitUntil(const std::string& javascript,
-                            const std::string& evaluates_to,
-                            content::WebContents* tab_contents) {
-    base::Time start_time = base::Time::Now();
-    base::TimeDelta timeout = base::TimeDelta::FromSeconds(20);
-    std::string result;
-
-    while (base::Time::Now() - start_time < timeout) {
-      result = ExecuteJavascript(javascript, tab_contents);
-      if (evaluates_to == result)
-        return true;
-    }
-    LOG(ERROR) << "Timed out while waiting for " << javascript <<
-        " to evaluate to " << evaluates_to << "; last result was '" << result <<
-        "'";
-    return false;
-  }
-
   // Convenience method which executes the provided javascript in the context
   // of the provided web contents and returns what it evaluated to.
   std::string ExecuteJavascript(const std::string& javascript,
@@ -149,9 +126,9 @@ class WebrtcBrowserTest : public InProcessBrowserTest {
     media_infobar->Accept();
 
     // Wait for WebRTC to call the success callback.
-    EXPECT_TRUE(UglyPollingWaitUntil("obtainGetUserMediaResult();",
-                                     "ok-got-stream",
-                                     tab_contents));
+    EXPECT_TRUE(PollingWaitUntil("obtainGetUserMediaResult();",
+                                 "ok-got-stream",
+                                 tab_contents));
   }
 
   // Ensures we didn't get any errors asynchronously (e.g. while no javascript
@@ -187,10 +164,10 @@ class WebrtcBrowserTest : public InProcessBrowserTest {
               ExecuteJavascript("negotiateCall()", from_tab));
 
     // Ensure the call gets up on both sides.
-    EXPECT_TRUE(UglyPollingWaitUntil("getPeerConnectionReadyState()",
-                                     "active", from_tab));
-    EXPECT_TRUE(UglyPollingWaitUntil("getPeerConnectionReadyState()",
-                                     "active", to_tab));
+    EXPECT_TRUE(PollingWaitUntil("getPeerConnectionReadyState()",
+                                 "active", from_tab));
+    EXPECT_TRUE(PollingWaitUntil("getPeerConnectionReadyState()",
+                                 "active", to_tab));
   }
 
   void StartDetectingVideo(content::WebContents* tab_contents,
@@ -202,13 +179,13 @@ class WebrtcBrowserTest : public InProcessBrowserTest {
   }
 
   void WaitForVideoToPlay(content::WebContents* tab_contents) {
-    EXPECT_TRUE(UglyPollingWaitUntil("isVideoPlaying()", "video-playing",
-                                     tab_contents));
+    EXPECT_TRUE(PollingWaitUntil("isVideoPlaying()", "video-playing",
+                                 tab_contents));
   }
 
   void WaitForVideoToStopPlaying(content::WebContents* tab_contents) {
-    EXPECT_TRUE(UglyPollingWaitUntil("isVideoPlaying()", "video-not-playing",
-                                     tab_contents));
+    EXPECT_TRUE(PollingWaitUntil("isVideoPlaying()", "video-not-playing",
+                                 tab_contents));
   }
 
   void HangUp(content::WebContents* from_tab) {
@@ -216,8 +193,8 @@ class WebrtcBrowserTest : public InProcessBrowserTest {
   }
 
   void WaitUntilHangupVerified(content::WebContents* tab_contents) {
-    EXPECT_TRUE(UglyPollingWaitUntil("getPeerConnectionReadyState()",
-                                     "no-peer-connection", tab_contents));
+    EXPECT_TRUE(PollingWaitUntil("getPeerConnectionReadyState()",
+                                 "no-peer-connection", tab_contents));
   }
 
   std::string ToggleLocalVideoTrack(content::WebContents* tab_contents) {
