@@ -109,6 +109,7 @@ public:
     void optionSelectionStateChanged(HTMLOptionElement*, bool optionIsSelected);
     bool isParsingInProgress() const { return m_isParsingInProgress; }
     bool anonymousIndexedSetter(unsigned, PassRefPtr<HTMLOptionElement>, ExceptionCode&);
+    bool anonymousIndexedSetterRemove(unsigned, ExceptionCode&);
 
 protected:
     HTMLSelectElement(const QualifiedName&, Document*, HTMLFormElement*, bool createdByParser);

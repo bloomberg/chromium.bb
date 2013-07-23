@@ -33,7 +33,7 @@ interface HTMLSelectElement : HTMLElement {
     [SetterRaisesException] attribute unsigned long length;
 
     getter Node item([IsIndex,Default=Undefined] optional unsigned long index);
-    [ImplementedAs=anonymousIndexedSetter, RaisesException] setter HTMLOptionElement (unsigned long index, HTMLOptionElement value);
+    [ImplementedAs=anonymousIndexedSetter, RaisesException] setter HTMLOptionElement (unsigned long index, [TreatNullAs=anonymousIndexedSetterRemove, TreatUndefinedAs=anonymousIndexedSetterRemove] HTMLOptionElement value);
     Node namedItem([Default=Undefined] optional DOMString name);
      [RaisesException] void add([Default=Undefined] optional HTMLElement element,
                             [Default=Undefined] optional HTMLElement before);
