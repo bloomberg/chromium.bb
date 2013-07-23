@@ -34,6 +34,7 @@
       <structure type="chrome_scaled_image" name="IDR_ALLOWED_JAVASCRIPT" file="common/allowed_script.png" />
       <structure type="chrome_scaled_image" name="IDR_ALLOWED_LOCATION" file="common/allowed_location.png" />
       <structure type="chrome_scaled_image" name="IDR_ALLOWED_MICROPHONE" file="common/allowed_mic_only.png" />
+      <structure type="chrome_scaled_image" name="IDR_ALLOWED_MIDI_SYSEX" file="common/allowed_midi.png" />
       <structure type="chrome_scaled_image" name="IDR_ALLOWED_MOUSE_CURSOR" file="common/allowed_mouse_cursor.png" />
       <structure type="chrome_scaled_image" name="IDR_ALLOWED_NOTIFICATION" file="common/allowed_notifications.png" />
       <structure type="chrome_scaled_image" name="IDR_ALLOWED_PLUGINS" file="common/allowed_plugins.png" />
@@ -98,6 +99,7 @@
       <structure type="chrome_scaled_image" name="IDR_BLOCKED_LOCATION" file="common/blocked_location.png" />
       <structure type="chrome_scaled_image" name="IDR_BLOCKED_MEDIA" file="common/blocked_media.png" />
       <structure type="chrome_scaled_image" name="IDR_BLOCKED_MICROPHONE" file="common/blocked_mic_only.png" />
+      <structure type="chrome_scaled_image" name="IDR_BLOCKED_MIDI_SYSEX" file="common/blocked_midi.png" />
       <structure type="chrome_scaled_image" name="IDR_BLOCKED_MOUSE_CURSOR" file="common/blocked_mouse_cursor.png" />
       <structure type="chrome_scaled_image" name="IDR_BLOCKED_MIXED_CONTENT" file="common/blocked_mixed_content.png" />
       <structure type="chrome_scaled_image" name="IDR_BLOCKED_NOTIFICATION" file="common/blocked_notifications.png" />
@@ -400,6 +402,7 @@
       <structure type="chrome_scaled_image" name="IDR_INFOBAR_DESKTOP_NOTIFICATIONS" file="infobar_desktop_notifications.png" />
       <structure type="chrome_scaled_image" name="IDR_INFOBAR_INCOMPLETE" file="infobar_incomplete.png" />
       <structure type="chrome_scaled_image" name="IDR_INFOBAR_MEDIA_STREAM_CAMERA" file="common/infobar_camera.png" />
+      <structure type="chrome_scaled_image" name="IDR_INFOBAR_MIDI_SYSEX" file="common/infobar_midi.png" />
       <structure type="chrome_scaled_image" name="IDR_INFOBAR_MEDIA_STREAM_MIC" file="common/infobar_microphone.png" />
       <structure type="chrome_scaled_image" name="IDR_INFOBAR_MULTIPLE_DOWNLOADS" file="infobar_multiple_downloads.png" />
       <structure type="chrome_scaled_image" name="IDR_INFOBAR_PLUGIN_CRASHED" file="infobar_plugin_crashed.png" />
