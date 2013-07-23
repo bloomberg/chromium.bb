@@ -62,6 +62,7 @@ MediaStream status=stable
 Notifications status=stable
 PagePopup status=stable
 ParseSVGAsHTML
+PathOpsSVGClipping
 PeerConnection depends_on=MediaStream, status=stable
 ProgrammaticScrollNotifications status=test
 Promise status=experimental

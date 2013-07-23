@@ -24,6 +24,7 @@
 
 #include "core/rendering/svg/RenderSVGResourceClipper.h"
 
+#include "RuntimeEnabledFeatures.h"
 #include "SVGNames.h"
 #include "core/page/FrameView.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
@@ -114,12 +115,16 @@ bool RenderSVGResourceClipper::pathOnlyClipping(GraphicsContext* context, const 
             continue;
         }
 
-        // Attempt to generate a combined clip path, fall back to masking if not possible.
-        Path subPath;
-        styled->toClipPath(subPath);
-        subPath.setWindRule(svgStyle->clipRule());
-        if (!clipPath.unionPath(subPath))
+        if (RuntimeEnabledFeatures::pathOpsSVGClippingEnabled()) {
+            // Attempt to generate a combined clip path, fall back to masking if not possible.
+            Path subPath;
+            styled->toClipPath(subPath);
+            subPath.setWindRule(svgStyle->clipRule());
+            if (!clipPath.unionPath(subPath))
+                return false;
+        } else {
             return false;
+        }
     }
     // Only one visible shape/path was found. Directly continue clipping and transform the content to userspace if necessary.
     if (static_cast<SVGClipPathElement*>(node())->clipPathUnitsCurrentValue() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX) {
