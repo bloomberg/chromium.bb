@@ -174,6 +174,10 @@ bool Printer::CheckXPrivetTokenHeader(const std::string& token) const {
   return xtoken_.CheckValidXToken(token);
 }
 
+bool Printer::IsRegistered() const {
+  return reg_info_.state == RegistrationInfo::DEV_REG_REGISTERED;
+}
+
 PrivetHttpServer::RegistrationErrorStatus Printer::RegistrationGetClaimToken(
     const std::string& user,
     std::string* token,
@@ -290,8 +294,7 @@ void Printer::OnRegistrationError(const std::string& description) {
 
 PrivetHttpServer::RegistrationErrorStatus Printer::CheckCommonRegErrors(
     const std::string& user) const {
-  if (reg_info_.state == RegistrationInfo::DEV_REG_REGISTERED)
-    return PrivetHttpServer::REG_ERROR_REGISTERED;
+  DCHECK(!IsRegistered());
 
   if (reg_info_.state != RegistrationInfo::DEV_REG_UNREGISTERED &&
       user != reg_info_.user) {
@@ -324,7 +327,7 @@ std::vector<std::string> Printer::CreateTxt() const {
 void Printer::SaveToFile(const base::FilePath& file_path) const {
   base::DictionaryValue json;
   // TODO(maksymb): Get rid of in-place constants.
-  if (reg_info_.state == RegistrationInfo::DEV_REG_REGISTERED) {
+  if (IsRegistered()) {
     json.SetBoolean("registered", true);
     json.SetString("user", reg_info_.user);
     json.SetString("device_id", reg_info_.device_id);

@@ -79,7 +79,7 @@ class Printer : public PrivetHttpServer::Delegate,
       const std::string& user) OVERRIDE;
   virtual void GetRegistrationServerError(std::string* description) OVERRIDE;
   virtual void CreateInfo(PrivetHttpServer::DeviceInfo* info) OVERRIDE;
-
+  virtual bool IsRegistered() const OVERRIDE;
   virtual bool CheckXPrivetTokenHeader(const std::string& token) const OVERRIDE;
 
   // CloudRequester::Delegate methods:
