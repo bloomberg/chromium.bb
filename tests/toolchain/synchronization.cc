@@ -42,6 +42,43 @@
     }                                           \
   } while (0)
 
+// Test that using some synchronization primitives without using the
+// return value works. Do this by modifying volatile globals.
+volatile uint8_t g_uint8_t = 0;
+volatile uint16_t g_uint16_t = 0;
+volatile uint32_t g_uint32_t = 0;
+volatile uint64_t g_uint64_t = 0;
+#define SINK_ADDR(TYPE) (&CONCAT(g_, TYPE))
+
+// Test that base+displacement as synchronization address also works,
+// with small and big displacements (which should affect unrolling).
+//
+// Small displacement.
+static const size_t gsmall_ArrSize = 8;
+volatile struct GS8 { void *ptr; uint8_t arr[gsmall_ArrSize]; }
+  gsmall_uint8_t = { 0, { 0 } };
+volatile struct GS16 { void *ptr; uint16_t arr[gsmall_ArrSize]; }
+  gsmall_uint16_t = { 0, { 0 } };
+volatile struct GS32 { void *ptr; uint32_t arr[gsmall_ArrSize]; }
+  gsmall_uint32_t = { 0, { 0 } };
+volatile struct GS64 { void *ptr; uint64_t arr[gsmall_ArrSize]; }
+  gsmall_uint64_t = { 0, { 0 } };
+#define SMALL_SINK_ADDR(TYPE) (                                         \
+    CONCAT(gsmall_, TYPE).ptr = (void*) CONCAT(gsmall_, TYPE).arr,      \
+    (TYPE*) CONCAT(gsmall_, TYPE).ptr)
+// Big displacement.
+static const size_t gbig_ArrSize = 128;
+volatile struct GB8 { void *ptr; uint8_t arr[gbig_ArrSize]; }
+  gbig_uint8_t = { 0, { 0 } };
+volatile struct GB16 { void *ptr; uint16_t arr[gbig_ArrSize]; }
+  gbig_uint16_t = { 0, { 0 } };
+volatile struct GB32 { void *ptr; uint32_t arr[gbig_ArrSize]; }
+  gbig_uint32_t = { 0, { 0 } };
+volatile struct GB64 { void *ptr; uint64_t arr[gbig_ArrSize]; }
+  gbig_uint64_t = { 0, { 0 } };
+#define BIG_SINK_ADDR(TYPE) (                                   \
+    CONCAT(gbig_, TYPE).ptr = (void*) CONCAT(gbig_, TYPE).arr,  \
+    (TYPE*) CONCAT(gbig_, TYPE).ptr)
 
 /*
  * GCC Legacy __sync Built-in Functions for Atomic Memory Access.
@@ -80,6 +117,31 @@ void test_legacy_sync() {
         &loc, value);                                                   \
     loc_ = loc_ OPERATION value_; res_ = loc_;                          \
     CHECK_EQ(res, res_, "__sync_" STR(OPERATION_NAME) "_and_fetch");    \
+    /* Test the above two variants, without reading the result back. */ \
+    { /* In just one variable. */                                       \
+      volatile TYPE *sink = SINK_ADDR(TYPE);                            \
+      (void) CONCAT(__sync_fetch_and_, OPERATION_NAME)(sink, value);    \
+      (void) CONCAT(CONCAT(__sync_, OPERATION_NAME), _and_fetch)(       \
+          sink, value);                                                 \
+    }                                                                   \
+    { /* In a small array. */                                           \
+      volatile TYPE *small_sink = SMALL_SINK_ADDR(TYPE);                \
+      for (size_t i = 0; i != gsmall_ArrSize; ++i) {                    \
+        (void) CONCAT(__sync_fetch_and_, OPERATION_NAME)(               \
+            &small_sink[i], value);                                     \
+        (void) CONCAT(CONCAT(__sync_, OPERATION_NAME), _and_fetch)(     \
+            &small_sink[i], value);                                     \
+      }                                                                 \
+    }                                                                   \
+    { /* In a big array. */                                             \
+      volatile TYPE *big_sink = BIG_SINK_ADDR(TYPE);                    \
+      for (size_t i = 0; i != gbig_ArrSize; ++i) {                      \
+        (void) CONCAT(__sync_fetch_and_, OPERATION_NAME)(               \
+            &big_sink[i], value);                                       \
+        (void) CONCAT(CONCAT(__sync_, OPERATION_NAME), _and_fetch)(     \
+            &big_sink[i], value);                                       \
+      }                                                                 \
+    }                                                                   \
   } while (0)
 # define FETCH_TEST_ALL_TYPES(OPERATION_NAME, OPERATION) do {   \
     FETCH_TEST(OPERATION_NAME, OPERATION, uint8_t);             \
@@ -105,31 +167,55 @@ void test_legacy_sync() {
    * Note: LLVM also has __sync_swap, which is ignored because it isn't
    * C11/C++11 and isn't in GCC.
    */
-# define CAS_TEST(TYPE) do {                                    \
-    TYPE res, loc, oldval, newval;                              \
-    printf("Testing CAS with " STR(TYPE) "\n");                 \
-    /* Test __sync_bool_compare_and_swap */                     \
-    loc = 5;                                                    \
-    oldval = 29;                                                \
-    newval = 41;                                                \
-    res = __sync_bool_compare_and_swap(&loc, oldval, newval);   \
-    CHECK_EQ(res, 0, "__sync_bool_compare_and_swap");           \
-    CHECK_EQ(loc, 5, "__sync_bool_compare_and_swap");           \
-    loc = oldval;                                               \
-    res = __sync_bool_compare_and_swap(&loc, oldval, newval);   \
-    CHECK_EQ(res, 1, "__sync_bool_compare_and_swap");           \
-    CHECK_EQ(loc, 41, "__sync_bool_compare_and_swap");          \
-    /* Test __sync_val_compare_and_swap */                      \
-    loc = 5;                                                    \
-    oldval = 29;                                                \
-    newval = 41;                                                \
-    res = __sync_val_compare_and_swap(&loc, oldval, newval);    \
-    CHECK_EQ(res, 5, "__sync_val_compare_and_swap");            \
-    CHECK_EQ(loc, 5, "__sync_val_compare_and_swap");            \
-    loc = oldval;                                               \
-    res = __sync_val_compare_and_swap(&loc, oldval, newval);    \
-    CHECK_EQ(res, oldval, "__sync_val_compare_and_swap");       \
-    CHECK_EQ(loc, 41, "__sync_val_compare_and_swap");           \
+# define CAS_TEST(TYPE) do {                                            \
+    TYPE res, loc, oldval, newval;                                      \
+    printf("Testing CAS with " STR(TYPE) "\n");                         \
+    /* Test __sync_bool_compare_and_swap */                             \
+    loc = 5;                                                            \
+    oldval = 29;                                                        \
+    newval = 41;                                                        \
+    res = __sync_bool_compare_and_swap(&loc, oldval, newval);           \
+    CHECK_EQ(res, 0, "__sync_bool_compare_and_swap");                   \
+    CHECK_EQ(loc, 5, "__sync_bool_compare_and_swap");                   \
+    loc = oldval;                                                       \
+    res = __sync_bool_compare_and_swap(&loc, oldval, newval);           \
+    CHECK_EQ(res, 1, "__sync_bool_compare_and_swap");                   \
+    CHECK_EQ(loc, 41, "__sync_bool_compare_and_swap");                  \
+    /* Test __sync_val_compare_and_swap */                              \
+    loc = 5;                                                            \
+    oldval = 29;                                                        \
+    newval = 41;                                                        \
+    res = __sync_val_compare_and_swap(&loc, oldval, newval);            \
+    CHECK_EQ(res, 5, "__sync_val_compare_and_swap");                    \
+    CHECK_EQ(loc, 5, "__sync_val_compare_and_swap");                    \
+    loc = oldval;                                                       \
+    res = __sync_val_compare_and_swap(&loc, oldval, newval);            \
+    CHECK_EQ(res, oldval, "__sync_val_compare_and_swap");               \
+    CHECK_EQ(loc, 41, "__sync_val_compare_and_swap");                   \
+    /* Test the above two variants, without reading the result back. */ \
+    { /* In just one variable. */                                       \
+      volatile TYPE *sink = SINK_ADDR(TYPE);                            \
+      (void) __sync_bool_compare_and_swap(sink, oldval, newval);        \
+      (void) __sync_val_compare_and_swap(sink, oldval, newval);         \
+    }                                                                   \
+    { /* In a small array. */                                           \
+      volatile TYPE *small_sink = SMALL_SINK_ADDR(TYPE);                \
+      for (size_t i = 0; i != gsmall_ArrSize; ++i) {                    \
+        (void) __sync_bool_compare_and_swap(                            \
+            &small_sink[i], oldval, newval);                            \
+        (void) __sync_val_compare_and_swap(                             \
+            &small_sink[i], oldval, newval);                            \
+      }                                                                 \
+    }                                                                   \
+    { /* In a big array. */                                             \
+      volatile TYPE *big_sink = BIG_SINK_ADDR(TYPE);                    \
+      for (size_t i = 0; i != gbig_ArrSize; ++i) {                      \
+        (void) __sync_bool_compare_and_swap(                            \
+            &big_sink[i], oldval, newval);                              \
+        (void) __sync_val_compare_and_swap(                             \
+            &big_sink[i], oldval, newval);                              \
+      }                                                                 \
+    }                                                                   \
   } while (0)
   CAS_TEST(uint8_t);
   CAS_TEST(uint16_t);
@@ -174,16 +260,38 @@ void test_legacy_sync() {
    * following memory reads are not prevented from being speculated to
    * before the barrier.
    */
-# define TAS_TEST(TYPE) do {                            \
-    TYPE res, loc, value;                               \
-    printf("Testing TAS with " STR(TYPE) "\n");         \
-    loc = 5;                                            \
-    value = 41;                                         \
-    res = __sync_lock_test_and_set(&loc, value);        \
-    CHECK_EQ(res, 5, "__sync_lock_test_and_set");       \
-    CHECK_EQ(loc, 41, "__sync_lock_test_and_set");      \
-    __sync_lock_release(&loc);                          \
-    CHECK_EQ(loc, 0,  "__sync_lock_release");           \
+# define TAS_TEST(TYPE) do {                                            \
+    TYPE res, loc, value;                                               \
+    printf("Testing TAS with " STR(TYPE) "\n");                         \
+    /* Test __sync_lock_test_and_set. */                                \
+    loc = 5;                                                            \
+    value = 41;                                                         \
+    res = __sync_lock_test_and_set(&loc, value);                        \
+    CHECK_EQ(res, 5, "__sync_lock_test_and_set");                       \
+    CHECK_EQ(loc, 41, "__sync_lock_test_and_set");                      \
+    /* Test __sync_lock_release. */                                     \
+    __sync_lock_release(&loc);                                          \
+    CHECK_EQ(loc, 0,  "__sync_lock_release");                           \
+    { /* In just one variable. */                                       \
+      volatile TYPE *sink = SINK_ADDR(TYPE);                            \
+      (void) __sync_lock_test_and_set(sink, value);                     \
+      __sync_lock_release(sink);                                        \
+    }                                                                   \
+    /* Test the above two variants, without reading the result back. */ \
+    { /* In a small array. */                                           \
+      volatile TYPE *small_sink = SMALL_SINK_ADDR(TYPE);                \
+      for (size_t i = 0; i != gsmall_ArrSize; ++i) {                    \
+        (void) __sync_lock_test_and_set(&small_sink[i], value);         \
+        __sync_lock_release(&small_sink[i]);                            \
+      }                                                                 \
+    }                                                                   \
+    { /* In a big array. */                                             \
+      volatile TYPE *big_sink = BIG_SINK_ADDR(TYPE);                    \
+      for (size_t i = 0; i != gbig_ArrSize; ++i) {                      \
+        (void) __sync_lock_test_and_set(&big_sink[i], value);           \
+        __sync_lock_release(&big_sink[i]);                              \
+      }                                                                 \
+    }                                                                   \
   } while (0)
   TAS_TEST(uint8_t);
   TAS_TEST(uint16_t);
