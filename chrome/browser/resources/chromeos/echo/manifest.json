@@ -20,7 +20,8 @@
   "default_locale": "en",
   "web_accessible_resources": [
     "broker.html",
-    "broker.js"
+    "broker.js",
+    "error.html"
   ],
   "background": {
     "scripts": ["main.js"],
