@@ -113,6 +113,15 @@ scoped_ptr<ServiceResolver> ServiceDiscoveryHostClient::CreateServiceResolver(
       new ServiceResolverProxy(this, service_name, callback));
 }
 
+scoped_ptr<LocalDomainResolver>
+ServiceDiscoveryHostClient::CreateLocalDomainResolver(
+    const std::string& domain,
+    net::AddressFamily address_family,
+    const LocalDomainResolver::IPAddressCallback& callback) {
+  NOTIMPLEMENTED();  // TODO(noamsml): Multiprocess domain resolver
+  return scoped_ptr<LocalDomainResolver>();
+}
+
 uint64 ServiceDiscoveryHostClient::RegisterWatcherCallback(
     const ServiceWatcher::UpdatedCallback& callback) {
   DCHECK(CalledOnValidThread());

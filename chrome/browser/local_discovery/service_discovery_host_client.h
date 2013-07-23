@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_LOCAL_DISCOVERY_SERVICE_DISCOVERY_HOST_CLIENT_H_
 
 #include <map>
+#include <string>
 
 #include "base/threading/non_thread_safe.h"
 #include "chrome/common/local_discovery/service_discovery_client.h"
@@ -42,6 +43,10 @@ class ServiceDiscoveryHostClient : public base::NonThreadSafe,
   virtual scoped_ptr<ServiceResolver> CreateServiceResolver(
       const std::string& service_name,
       const ServiceResolver::ResolveCompleteCallback& callback) OVERRIDE;
+  virtual scoped_ptr<LocalDomainResolver> CreateLocalDomainResolver(
+      const std::string& domain,
+      net::AddressFamily address_family,
+      const LocalDomainResolver::IPAddressCallback& callback) OVERRIDE;
 
   // UtilityProcessHostClient implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;

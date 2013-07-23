@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/utility/local_discovery/local_domain_resolver.h"
+#include "chrome/utility/local_discovery/service_discovery_client_impl.h"
 #include "net/dns/mdns_client_impl.h"
 #include "net/dns/mock_mdns_socket_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -101,15 +101,15 @@ class LocalDomainResolverTest : public testing::Test {
 };
 
 TEST_F(LocalDomainResolverTest, ResolveDomainA) {
-  LocalDomainResolver resolver(
-      &mdns_client_, "myhello.local", net::ADDRESS_FAMILY_IPV4,
+  LocalDomainResolverImpl resolver(
+      "myhello.local", net::ADDRESS_FAMILY_IPV4,
       base::Bind(&LocalDomainResolverTest::AddressCallback,
-                 base::Unretained(this)));
+                 base::Unretained(this)), &mdns_client_);
 
   EXPECT_CALL(*socket_factory_, OnSendTo(_))
       .Times(2);  // Twice per query
 
-  EXPECT_TRUE(resolver.Start());
+  resolver.Start();
 
   EXPECT_CALL(*this, AddressCallbackInternal(true, "1.2.3.4"));
 
@@ -118,15 +118,15 @@ TEST_F(LocalDomainResolverTest, ResolveDomainA) {
 }
 
 TEST_F(LocalDomainResolverTest, ResolveDomainAAAA) {
-  LocalDomainResolver resolver(
-      &mdns_client_, "myhello.local", net::ADDRESS_FAMILY_IPV6,
+  LocalDomainResolverImpl resolver(
+      "myhello.local", net::ADDRESS_FAMILY_IPV6,
       base::Bind(&LocalDomainResolverTest::AddressCallback,
-                 base::Unretained(this)));
+                 base::Unretained(this)), &mdns_client_);
 
   EXPECT_CALL(*socket_factory_, OnSendTo(_))
       .Times(2);  // Twice per query
 
-  EXPECT_TRUE(resolver.Start());
+  resolver.Start();
 
   EXPECT_CALL(*this, AddressCallbackInternal(true, "a::1:2:3:4"));
 
@@ -135,15 +135,15 @@ TEST_F(LocalDomainResolverTest, ResolveDomainAAAA) {
 }
 
 TEST_F(LocalDomainResolverTest, ResolveDomainAny) {
-  LocalDomainResolver resolver(
-      &mdns_client_, "myhello.local", net::ADDRESS_FAMILY_UNSPECIFIED,
+  LocalDomainResolverImpl resolver(
+      "myhello.local", net::ADDRESS_FAMILY_UNSPECIFIED,
       base::Bind(&LocalDomainResolverTest::AddressCallback,
-                 base::Unretained(this)));
+                 base::Unretained(this)), &mdns_client_);
 
   EXPECT_CALL(*socket_factory_, OnSendTo(_))
       .Times(4);  // Twice per query
 
-  EXPECT_TRUE(resolver.Start());
+  resolver.Start();
 
   EXPECT_CALL(*this, AddressCallbackInternal(true, "a::1:2:3:4"));
 
@@ -152,15 +152,15 @@ TEST_F(LocalDomainResolverTest, ResolveDomainAny) {
 }
 
 TEST_F(LocalDomainResolverTest, ResolveDomainNone) {
-  LocalDomainResolver resolver(
-      &mdns_client_, "myhello.local", net::ADDRESS_FAMILY_UNSPECIFIED,
+  LocalDomainResolverImpl resolver(
+      "myhello.local", net::ADDRESS_FAMILY_UNSPECIFIED,
       base::Bind(&LocalDomainResolverTest::AddressCallback,
-                 base::Unretained(this)));
+                 base::Unretained(this)), &mdns_client_);
 
   EXPECT_CALL(*socket_factory_, OnSendTo(_))
       .Times(4);  // Twice per query
 
-  EXPECT_TRUE(resolver.Start());
+  resolver.Start();
 
   EXPECT_CALL(*this, AddressCallbackInternal(false, ""));
 

@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
+#include "net/base/address_family.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_util.h"
 
@@ -91,6 +92,16 @@ class ServiceResolver {
   virtual std::string GetName() const = 0;
 };
 
+class LocalDomainResolver {
+ public:
+  typedef base::Callback<void(bool, const net::IPAddressNumber&)>
+      IPAddressCallback;
+
+  virtual ~LocalDomainResolver() {}
+
+  virtual void Start() = 0;
+};
+
 class ServiceDiscoveryClient {
  public:
   virtual ~ServiceDiscoveryClient() {}
@@ -106,6 +117,12 @@ class ServiceDiscoveryClient {
   virtual scoped_ptr<ServiceResolver> CreateServiceResolver(
       const std::string& service_name,
       const ServiceResolver::ResolveCompleteCallback& callback) = 0;
+
+  // Create a resolver for local domain, both ipv4 or ipv6.
+  virtual scoped_ptr<LocalDomainResolver> CreateLocalDomainResolver(
+      const std::string& domain,
+      net::AddressFamily address_family,
+      const LocalDomainResolver::IPAddressCallback& callback) = 0;
 };
 
 }  // namespace local_discovery

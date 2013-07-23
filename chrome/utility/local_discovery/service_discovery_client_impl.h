@@ -33,6 +33,12 @@ class ServiceDiscoveryClientImpl : public ServiceDiscoveryClient {
   virtual scoped_ptr<ServiceResolver> CreateServiceResolver(
       const std::string& service_name,
       const ServiceResolver::ResolveCompleteCallback& callback) OVERRIDE;
+
+  virtual scoped_ptr<LocalDomainResolver> CreateLocalDomainResolver(
+      const std::string& domain,
+      net::AddressFamily address_family,
+      const LocalDomainResolver::IPAddressCallback& callback) OVERRIDE;
+
  private:
   net::MDnsClient* mdns_client_;
 
@@ -186,6 +192,40 @@ class ServiceResolverImpl
 
   DISALLOW_COPY_AND_ASSIGN(ServiceResolverImpl);
 };
+
+class LocalDomainResolverImpl : public LocalDomainResolver {
+ public:
+  LocalDomainResolverImpl(const std::string& domain,
+                          net::AddressFamily address_family,
+                          const IPAddressCallback& callback,
+                          net::MDnsClient* mdns_client);
+  virtual ~LocalDomainResolverImpl();
+
+  virtual void Start() OVERRIDE;
+
+  const std::string& domain() { return domain_; }
+
+ private:
+  void OnTransactionComplete(
+      net::MDnsTransaction::Result result,
+      const net::RecordParsed* record);
+
+  scoped_ptr<net::MDnsTransaction> CreateTransaction(uint16 type);
+
+  std::string domain_;
+  net::AddressFamily address_family_;
+  IPAddressCallback callback_;
+
+  scoped_ptr<net::MDnsTransaction> transaction_a_;
+  scoped_ptr<net::MDnsTransaction> transaction_aaaa_;
+
+  int transaction_failures_;
+
+  net::MDnsClient* mdns_client_;
+
+  DISALLOW_COPY_AND_ASSIGN(LocalDomainResolverImpl);
+};
+
 
 }  // namespace local_discovery
 

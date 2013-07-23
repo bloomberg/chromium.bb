@@ -129,6 +129,15 @@ class MockServiceDiscoveryClient : public ServiceDiscoveryClient {
     return mock_service_resolver.PassAs<ServiceResolver>();
   }
 
+  // Not used in this test.
+  virtual scoped_ptr<LocalDomainResolver> CreateLocalDomainResolver(
+    const std::string& domain,
+    net::AddressFamily address_family,
+    const LocalDomainResolver::IPAddressCallback& callback) OVERRIDE {
+    NOTREACHED();
+    return scoped_ptr<LocalDomainResolver>();
+  }
+
  private:
   ServiceDiscoveryMockDelegate* mock_delegate_;
 };

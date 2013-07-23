@@ -35,6 +35,15 @@ scoped_ptr<ServiceResolver> ServiceDiscoveryClientImpl::CreateServiceResolver(
       service_name, callback, mdns_client_));
 }
 
+scoped_ptr<LocalDomainResolver>
+ServiceDiscoveryClientImpl::CreateLocalDomainResolver(
+      const std::string& domain,
+      net::AddressFamily address_family,
+      const LocalDomainResolver::IPAddressCallback& callback) {
+  return scoped_ptr<LocalDomainResolver>(new LocalDomainResolverImpl(
+      domain, address_family, callback, mdns_client_));
+}
+
 ServiceWatcherImpl::ServiceWatcherImpl(
     const std::string& service_type,
     const ServiceWatcher::UpdatedCallback& callback,
@@ -376,6 +385,71 @@ const net::IPAddressNumber& ServiceResolverImpl::RecordToIPAddress(
   const net::ARecordRdata* a_rdata = record->rdata<net::ARecordRdata>();
   DCHECK(a_rdata);
   return a_rdata->address();
+}
+
+LocalDomainResolverImpl::LocalDomainResolverImpl(
+    const std::string& domain,
+    net::AddressFamily address_family,
+    const IPAddressCallback& callback,
+    net::MDnsClient* mdns_client)
+    : domain_(domain), address_family_(address_family), callback_(callback),
+      transaction_failures_(0), mdns_client_(mdns_client) {
+}
+
+LocalDomainResolverImpl::~LocalDomainResolverImpl() {
+}
+
+void LocalDomainResolverImpl::Start() {
+  if (address_family_ == net::ADDRESS_FAMILY_IPV4 ||
+      address_family_ == net::ADDRESS_FAMILY_UNSPECIFIED) {
+    transaction_a_ = CreateTransaction(net::dns_protocol::kTypeA);
+    transaction_a_->Start();
+  }
+
+  if (address_family_ == net::ADDRESS_FAMILY_IPV6 ||
+      address_family_ == net::ADDRESS_FAMILY_UNSPECIFIED) {
+    transaction_aaaa_ = CreateTransaction(net::dns_protocol::kTypeAAAA);
+    transaction_aaaa_->Start();
+  }
+}
+
+scoped_ptr<net::MDnsTransaction> LocalDomainResolverImpl::CreateTransaction(
+    uint16 type) {
+  return mdns_client_->CreateTransaction(
+      type, domain_, net::MDnsTransaction::SINGLE_RESULT |
+                     net::MDnsTransaction::QUERY_CACHE |
+                     net::MDnsTransaction::QUERY_NETWORK,
+      base::Bind(&LocalDomainResolverImpl::OnTransactionComplete,
+                 base::Unretained(this)));
+}
+
+void LocalDomainResolverImpl::OnTransactionComplete(
+    net::MDnsTransaction::Result result, const net::RecordParsed* record) {
+  if (result != net::MDnsTransaction::RESULT_RECORD &&
+      address_family_ == net::ADDRESS_FAMILY_UNSPECIFIED) {
+    transaction_failures_++;
+
+    if (transaction_failures_ < 2) {
+      return;
+    }
+  }
+
+  transaction_a_.reset();
+  transaction_aaaa_.reset();
+
+  net::IPAddressNumber address;
+  if (result == net::MDnsTransaction::RESULT_RECORD) {
+    if (record->type() == net::dns_protocol::kTypeA) {
+      const net::ARecordRdata* rdata = record->rdata<net::ARecordRdata>();
+      address = rdata->address();
+    } else {
+      DCHECK_EQ(net::dns_protocol::kTypeAAAA, record->type());
+      const net::AAAARecordRdata* rdata = record->rdata<net::AAAARecordRdata>();
+      address = rdata->address();
+    }
+  }
+
+  callback_.Run(result == net::MDnsTransaction::RESULT_RECORD, address);
 }
 
 }  // namespace local_discovery
