@@ -84,6 +84,10 @@ namespace content {
 class RenderView;
 }
 
+namespace gfx {
+class ImageSkia;
+}
+
 namespace ppapi {
 struct InputEventData;
 struct PPP_Instance_Combined;
@@ -515,6 +519,9 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   // The returned object will have a refcount of 0 (just like "new").
   PP_Resource CreateExternalFileReference(
       const base::FilePath& external_file_path);
+
+  // Creates a PPB_ImageData given a Skia image.
+  PP_Resource CreateImage(gfx::ImageSkia* source_image, float scale);
 
  private:
   friend class PpapiUnittest;

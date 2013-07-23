@@ -29,7 +29,6 @@
 #include "ui/gfx/rect.h"
 #include "url/gurl.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
-#include "webkit/plugins/ppapi/ppb_image_data_impl.h"
 
 using ppapi::thunk::EnterResourceNoLock;
 using ppapi::thunk::PPB_ImageData_API;
@@ -106,17 +105,6 @@ int32_t PepperFlashRendererHost::OnDrawGlyphs(
       params.glyph_indices.empty())
     return PP_ERROR_FAILED;
 
-  EnterResourceNoLock<PPB_ImageData_API> enter(
-      params.image_data.host_resource(), true);
-  if (enter.failed())
-    return PP_ERROR_FAILED;
-  webkit::ppapi::PPB_ImageData_Impl* image_resource =
-      static_cast<webkit::ppapi::PPB_ImageData_Impl*>(enter.object());
-
-  webkit::ppapi::ImageDataAutoMapper mapper(image_resource);
-  if (!mapper.is_valid())
-    return PP_ERROR_FAILED;
-
   // Set up the typeface.
   int style = SkTypeface::kNormal;
   if (static_cast<PP_BrowserFont_Trusted_Weight>(params.font_desc.weight) >=
@@ -130,8 +118,24 @@ int32_t PepperFlashRendererHost::OnDrawGlyphs(
   if (!typeface)
     return PP_ERROR_FAILED;
 
+  EnterResourceNoLock<PPB_ImageData_API> enter(
+      params.image_data.host_resource(), true);
+  if (enter.failed())
+    return PP_ERROR_FAILED;
+
   // Set up the canvas.
-  SkCanvas* canvas = image_resource->GetPlatformCanvas();
+  PPB_ImageData_API* image = static_cast<PPB_ImageData_API*>(
+      enter.object());
+  SkCanvas* canvas = image->GetPlatformCanvas();
+  bool needs_unmapping = false;
+  if (!canvas) {
+    needs_unmapping = true;
+    image->Map();
+    canvas = image->GetPlatformCanvas();
+    if (!canvas)
+      return PP_ERROR_FAILED;  // Failure mapping.
+  }
+
   SkAutoCanvasRestore acr(canvas, true);
 
   // Clip is applied in pixels before the transform.
@@ -173,19 +177,22 @@ int32_t PepperFlashRendererHost::OnDrawGlyphs(
 
   // Build up the skia advances.
   size_t glyph_count = params.glyph_indices.size();
-  if (glyph_count == 0)
-    return PP_OK;
-  std::vector<SkPoint> storage;
-  storage.resize(glyph_count);
-  SkPoint* sk_positions = &storage[0];
-  for (uint32_t i = 0; i < glyph_count; i++) {
-    sk_positions[i].set(x, y);
-    x += SkFloatToScalar(params.glyph_advances[i].x);
-    y += SkFloatToScalar(params.glyph_advances[i].y);
+  if (glyph_count) {
+    std::vector<SkPoint> storage;
+    storage.resize(glyph_count);
+    SkPoint* sk_positions = &storage[0];
+    for (uint32_t i = 0; i < glyph_count; i++) {
+      sk_positions[i].set(x, y);
+      x += SkFloatToScalar(params.glyph_advances[i].x);
+      y += SkFloatToScalar(params.glyph_advances[i].y);
+    }
+
+    canvas->drawPosText(&params.glyph_indices[0], glyph_count * 2, sk_positions,
+                        paint);
   }
 
-  canvas->drawPosText(&params.glyph_indices[0], glyph_count * 2, sk_positions,
-                      paint);
+  if (needs_unmapping)
+    image->Unmap();
 
   return PP_OK;
 }

@@ -24,7 +24,6 @@
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/shared_impl/resource_tracker.h"
 #include "ppapi/shared_impl/var.h"
-#include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
@@ -35,11 +34,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/image/image_skia.h"
-#include "ui/gfx/image/image_skia_rep.h"
 #include "webkit/plugins/ppapi/host_globals.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
-#include "webkit/plugins/ppapi/ppb_image_data_impl.h"
 
 using ppapi::PpapiGlobals;
 using webkit::ppapi::HostGlobals;
@@ -383,7 +379,11 @@ PP_Resource GetResourceImageForScale(PP_Instance instance_id,
   if (res_id == 0)
     return 0;
 
-  ui::ScaleFactor scale_factor = ui::GetScaleFactorFromScale(scale);
+  // Validate the instance.
+  PluginInstance* instance =
+      content::GetHostGlobals()->GetInstance(instance_id);
+  if (!instance)
+    return 0;
 
   gfx::ImageSkia* res_image_skia =
       ResourceBundle::GetSharedInstance().GetImageSkiaNamed(res_id);
@@ -391,38 +391,7 @@ PP_Resource GetResourceImageForScale(PP_Instance instance_id,
   if (!res_image_skia)
     return 0;
 
-  // Validate the instance.
-  if (!content::GetHostGlobals()->GetInstance(instance_id))
-    return 0;
-
-  gfx::ImageSkiaRep image_skia_rep = res_image_skia->GetRepresentation(
-      scale_factor);
-
-  if (image_skia_rep.is_null() || image_skia_rep.scale_factor() != scale_factor)
-    return 0;
-
-  scoped_refptr<webkit::ppapi::PPB_ImageData_Impl> image_data(
-      new webkit::ppapi::PPB_ImageData_Impl(
-          instance_id,
-          webkit::ppapi::PPB_ImageData_Impl::PLATFORM));
-  if (!image_data->Init(
-          webkit::ppapi::PPB_ImageData_Impl::GetNativeImageDataFormat(),
-          image_skia_rep.pixel_width(),
-          image_skia_rep.pixel_height(),
-          false)) {
-    return 0;
-  }
-
-  webkit::ppapi::ImageDataAutoMapper mapper(image_data.get());
-  if (!mapper.is_valid())
-    return 0;
-
-  skia::PlatformCanvas* canvas = image_data->GetPlatformCanvas();
-  // Note: Do not skBitmap::copyTo the canvas bitmap directly because it will
-  // ignore the allocated pixels in shared memory and re-allocate a new buffer.
-  canvas->writePixels(image_skia_rep.sk_bitmap(), 0, 0);
-
-  return image_data->GetReference();
+  return instance->CreateImage(res_image_skia, scale);
 }
 
 PP_Resource GetResourceImage(PP_Instance instance_id,

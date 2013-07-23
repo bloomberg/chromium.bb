@@ -19,8 +19,11 @@
 #include "ppapi/proxy/host_dispatcher.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppb_image_data_proxy.h"
+#include "ppapi/shared_impl/ppb_image_data_shared.h"
 #include "ppapi/shared_impl/scoped_pp_resource.h"
 #include "ppapi/thunk/enter.h"
+#include "ppapi/thunk/ppb_image_data_api.h"
+#include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
@@ -34,7 +37,6 @@
 #include "ui/gfx/image/image_skia_rep.h"
 #include "ui/gfx/point.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
-#include "webkit/plugins/ppapi/ppb_image_data_impl.h"
 
 using webkit::ppapi::PluginInstance;
 
@@ -314,7 +316,7 @@ int32_t PepperPDFHost::OnHostMsgGetResourceImage(
   uint32_t byte_count = 0;
   bool success = CreateImageData(
       pp_instance(),
-      webkit::ppapi::PPB_ImageData_Impl::GetNativeImageDataFormat(),
+      ppapi::PPB_ImageData_Shared::GetNativeImageDataFormat(),
       pp_size,
       image_skia_rep.sk_bitmap(),
       &host_resource,
@@ -371,16 +373,25 @@ bool PepperPDFHost::CreateImageData(
   if (enter_resource.failed())
     return false;
 
-  webkit::ppapi::PPB_ImageData_Impl* image_data =
-      static_cast<webkit::ppapi::PPB_ImageData_Impl*>(enter_resource.object());
-  webkit::ppapi::ImageDataAutoMapper mapper(image_data);
-  if (!mapper.is_valid())
-    return false;
+  ppapi::thunk::PPB_ImageData_API* image_data =
+      static_cast<ppapi::thunk::PPB_ImageData_API*>(enter_resource.object());
+  SkCanvas* canvas = image_data->GetCanvas();
+  bool needs_unmapping = false;
+  if (!canvas) {
+    needs_unmapping = true;
+    image_data->Map();
+    canvas = image_data->GetCanvas();
+    if (!canvas)
+      return false;  // Failure mapping.
+  }
 
-  const SkBitmap* bitmap = image_data->GetMappedBitmap();
+  const SkBitmap* bitmap = &skia::GetTopDevice(*canvas)->accessBitmap(false);
   pixels_to_write.copyPixelsTo(bitmap->getPixels(),
                                bitmap->getSize(),
                                bitmap->rowBytes());
+
+  if (needs_unmapping)
+    image_data->Unmap();
 
   return true;
 }
