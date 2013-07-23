@@ -6,10 +6,11 @@
 
 #include "base/command_line.h"
 #include "base/environment.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/nix/xdg_util.h"
-#include "base/process_util.h"
+#include "base/process/launch.h"
 #include "base/stl_util.h"
 #include "media/audio/audio_output_dispatcher.h"
 #include "media/audio/audio_parameters.h"

@@ -8,7 +8,6 @@
 #include "base/environment.h"
 #include "base/logging.h"
 #include "base/nix/xdg_util.h"
-#include "base/process_util.h"
 #include "base/stl_util.h"
 #include "media/audio/audio_util.h"
 #include "media/audio/cras/cras_input.h"
