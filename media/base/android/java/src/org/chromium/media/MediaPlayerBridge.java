@@ -145,10 +145,6 @@ public class MediaPlayerBridge {
         getLocalPlayer().setOnVideoSizeChangedListener(listener);
     }
 
-    protected void setWakeMode(Context context, int mode) {
-        getLocalPlayer().setWakeMode(context, mode);
-    }
-
     private static class AllowedOperations {
         private final boolean mCanPause;
         private final boolean mCanSeekForward;

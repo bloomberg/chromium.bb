@@ -876,7 +876,7 @@ void WebMediaPlayerAndroid::SetNeedsEstablishPeer(bool needs_establish_peer) {
 
 void WebMediaPlayerAndroid::UpdatePlayingState(bool is_playing) {
   is_playing_ = is_playing;
-  if (source_type_ != MediaPlayerAndroid::SOURCE_TYPE_MSE || !delegate_)
+  if (!delegate_)
     return;
   if (is_playing)
     delegate_->DidPlay(this);
