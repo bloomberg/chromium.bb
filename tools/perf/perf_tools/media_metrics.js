@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,10 +13,6 @@
     this.metrics = {};
     this.id = '';
     this.element = element;
-    // Listen to when a Telemetry 'Play' action gets called.
-    // TODO(shadi): Add event listeners for other media actions here.
-    if (this.element)
-      this.element.addEventListener('willPlay', this.onWillPlay, false);
   }
 
   MediaMetricBase.prototype.getMetrics = function() {
@@ -28,10 +24,6 @@
       'id': this.id,
       'metrics': this.getMetrics()
     };
-  };
-
-  MediaMetricBase.prototype.onWillPlay = function() {
-    this.playbackTimer = new Timer();
   };
 
   function HTMLMediaMetric(element) {
@@ -54,10 +46,19 @@
         metric.onEnded(e);
       });
     this.setID();
+
+    // Listen to when a Telemetry actions gets called.
+    this.element.addEventListener('willPlay', function (e) {
+        metric.onWillPlay(e);
+      }, false);
+    this.element.addEventListener('willSeek', function (e) {
+        metric.onWillSeek(e);
+      }, false);
   }
 
   HTMLMediaMetric.prototype = new MediaMetricBase();
   HTMLMediaMetric.prototype.constructor = HTMLMediaMetric;
+
   HTMLMediaMetric.prototype.setID = function() {
     if (this.element.src)
       this.id = this.element.src.substring(this.element.src.lastIndexOf("/")+1);
@@ -65,6 +66,39 @@
       this.id = this.element.id;
     else
       this.id = 'media_' + window.__globalCounter++;
+  };
+
+  HTMLMediaMetric.prototype.onWillPlay = function(e) {
+    this.playbackTimer = new Timer();
+  };
+
+  HTMLMediaMetric.prototype.onWillSeek = function(e) {
+    var seekLabel = '';
+    if (e.seekLabel)
+      seekLabel = '_' + e.seekLabel;
+    var metric = this;
+    var onSeeked = function(e) {
+        metric.appendMetric('seek' + seekLabel, metric.seekTimer.stop())
+        e.target.removeEventListener('seeked', onSeeked);
+      };
+    this.seekTimer = new Timer();
+    this.element.addEventListener('seeked', onSeeked);
+  };
+
+  HTMLMediaMetric.prototype.appendMetric = function(metric, value) {
+    if (!this.metrics[metric])
+      this.metrics[metric] = [];
+    this.metrics[metric].push(value);
+  }
+
+  HTMLMediaMetric.prototype.onPlaying = function(event) {
+    // Playing event can fire more than once if seeking.
+    if (!this.metrics['time_to_play'])
+      this.metrics['time_to_play'] = this.playbackTimer.stop();
+  };
+
+  HTMLMediaMetric.prototype.onEnded = function(event) {
+    this.metrics['playback_time'] = this.playbackTimer.stop();
   };
 
   HTMLMediaMetric.prototype.getMetrics = function() {
@@ -75,16 +109,6 @@
     this.metrics['decoded_audio_bytes'] =
         this.element.webkitAudioDecodedByteCount;
     return this.metrics;
-  };
-
-  HTMLMediaMetric.prototype.onPlaying = function(event) {
-    // Playing event can fire more than once if seeking.
-    if (!this.metrics['time_to_play'])
-      this.metrics['time_to_play'] = this.playbackTimer.stop();
-  };
-
-  HTMLMediaMetric.prototype.onEnded = function(event) {
-    this.metrics['playback_time'] = this.playbackTimer.stop();
   };
 
   function MediaMetric(element) {

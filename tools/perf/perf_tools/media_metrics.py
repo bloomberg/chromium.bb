@@ -1,4 +1,4 @@
-# Copyright 2013 The Chromium Authors. All rights reserved.
+# Copyright (c) 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -29,9 +29,9 @@ class MediaMetrics(object):
     """Reports all recorded metrics as Telemetry perf results."""
     media_metrics = self.tab.EvaluateJavaScript('window.__getAllMetrics()')
     for media_metric in media_metrics:
-      self.AddResultForMediaElement(media_metric, results)
+      self.AddResultsForMediaElement(media_metric, results)
 
-  def AddResultForMediaElement(self, media_metric, results):
+  def AddResultsForMediaElement(self, media_metric, results):
     """Reports metrics for one media element.
 
     Media metrics contain an ID identifying the media element and values:
@@ -44,20 +44,22 @@ class MediaMetrics(object):
       }
     }
     """
-    def AddResult(metric, unit):
+    def AddResults(metric, unit):
       metrics = media_metric['metrics']
-      if metric in metrics:
-        results.Add(trace, unit, str(metrics[metric]), chart_name=metric,
-                    data_type='default')
+      for m in metrics:
+        if m.startswith(metric):
+          special_label = m[len(metric):]
+          results.Add(trace + special_label, unit, str(metrics[m]),
+                      chart_name=metric, data_type='default')
 
     trace = media_metric['id']
     if not trace:
       logging.error('Metrics ID is missing in results.')
       return
-
-    AddResult('time_to_play', 'sec')
-    AddResult('playback_time', 'sec')
-    AddResult('decoded_audio_bytes', 'bytes')
-    AddResult('decoded_video_bytes', 'bytes')
-    AddResult('decoded_frame_count', 'frames')
-    AddResult('dropped_frame_count', 'frames')
+    AddResults('decoded_audio_bytes', 'bytes')
+    AddResults('decoded_video_bytes', 'bytes')
+    AddResults('decoded_frame_count', 'frames')
+    AddResults('dropped_frame_count', 'frames')
+    AddResults('playback_time', 'sec')
+    AddResults('seek', 'sec')
+    AddResults('time_to_play', 'sec')
