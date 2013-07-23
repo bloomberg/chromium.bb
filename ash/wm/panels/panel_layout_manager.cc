@@ -712,6 +712,10 @@ void PanelLayoutManager::UpdateStacking(aura::Window* active_panel) {
     active_panel = last_active_panel_;
   }
 
+  ShelfAlignment alignment = launcher_->alignment();
+  bool horizontal = alignment == SHELF_ALIGNMENT_TOP ||
+                    alignment == SHELF_ALIGNMENT_BOTTOM;
+
   // We want to to stack the panels like a deck of cards:
   // ,--,--,--,-------.--.--.
   // |  |  |  |       |  |  |
@@ -725,7 +729,9 @@ void PanelLayoutManager::UpdateStacking(aura::Window* active_panel) {
   for (PanelList::const_iterator it = panel_windows_.begin();
        it != panel_windows_.end(); ++it) {
     gfx::Rect bounds = it->window->bounds();
-    window_ordering.insert(std::make_pair(bounds.x() + bounds.width() / 2,
+    window_ordering.insert(std::make_pair(horizontal ?
+                                              bounds.x() + bounds.width() / 2 :
+                                              bounds.y() + bounds.height() / 2,
                                           it->window));
   }
 
