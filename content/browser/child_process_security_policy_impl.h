@@ -44,7 +44,7 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   virtual bool IsWebSafeScheme(const std::string& scheme) OVERRIDE;
   virtual void GrantReadFile(int child_id, const base::FilePath& file) OVERRIDE;
   virtual void GrantCreateReadWriteFile(int child_id,
-                                  const base::FilePath& file) OVERRIDE;
+                                        const base::FilePath& file) OVERRIDE;
   virtual void GrantCreateWriteFile(int child_id,
                                     const base::FilePath& file) OVERRIDE;
   virtual void GrantReadFileSystem(
@@ -61,6 +61,10 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
       const std::string& filesystem_id) OVERRIDE;
   virtual void GrantScheme(int child_id, const std::string& scheme) OVERRIDE;
   virtual bool CanReadFile(int child_id, const base::FilePath& file) OVERRIDE;
+  virtual bool CanWriteFile(int child_id, const base::FilePath& file) OVERRIDE;
+  virtual bool CanCreateFile(int child_id, const base::FilePath& file) OVERRIDE;
+  virtual bool CanCreateWriteFile(int child_id,
+                                  const base::FilePath& file) OVERRIDE;
   virtual bool CanReadFileSystem(int child_id,
                                  const std::string& filesystem_id) OVERRIDE;
   virtual bool CanReadWriteFileSystem(
@@ -134,17 +138,26 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   // the browser should call this method to check for the capability.
   bool CanReadDirectory(int child_id, const base::FilePath& directory);
 
+  // Deprecated: Use CanReadFile, etc. methods instead.
   // Determines if certain permissions were granted for a file. |permissions|
   // must be a bitwise-or'd value of base::PlatformFileFlags.
   bool HasPermissionsForFile(int child_id,
                              const base::FilePath& file,
                              int permissions);
 
+  // Deprecated: Use CanReadFileSystemFile, etc. methods instead.
   // Determines if certain permissions were granted for a file in FileSystem
   // API. |permissions| must be a bitwise-or'd value of base::PlatformFileFlags.
   bool HasPermissionsForFileSystemFile(int child_id,
                                        const fileapi::FileSystemURL& url,
                                        int permissions);
+
+  // Explicit permissions checks for FileSystemURL specified files.
+  bool CanReadFileSystemFile(int child_id, const fileapi::FileSystemURL& url);
+  bool CanWriteFileSystemFile(int child_id, const fileapi::FileSystemURL& url);
+  bool CanCreateFileSystemFile(int child_id, const fileapi::FileSystemURL& url);
+  bool CanCreateWriteFileSystemFile(int child_id,
+                                    const fileapi::FileSystemURL& url);
 
   // Returns true if the specified child_id has been granted WebUIBindings.
   // The browser should check this property before assuming the child process is
