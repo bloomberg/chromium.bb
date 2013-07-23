@@ -752,6 +752,7 @@ public:
     String title() const { return m_title.string(); }
     void setTitle(const String&);
 
+    Element* titleElement() const { return m_titleElement.get(); }
     void setTitleElement(const StringWithDirection&, Element* titleElement);
     void removeTitle(Element* titleElement);
 
