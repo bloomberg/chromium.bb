@@ -683,9 +683,9 @@ or verify this branch is set up to track another (via the --track argument to
     return self.RpcServer().get(
         '/download/issue%s_%s.diff' % (issue, patchset))
 
-  def GetApprovingReviewers(self, issue):
+  def GetApprovingReviewers(self):
     return get_approving_reviewers(
-        self.RpcServer().get_issue_properties(int(issue), True))
+        self.RpcServer().get_issue_properties(self.GetIssue(), True))
 
   def SetIssue(self, issue):
     """Set this branch's issue.  If issue=0, clears the issue."""
@@ -1577,7 +1577,7 @@ def SendUpstream(parser, args, cmd):
   # the commit viewvc url.
   # Keep a separate copy for the commit message.
   if cl.GetIssue():
-    change_desc.update_reviewers(cl.GetApprovingReviewers(cl.GetIssue()))
+    change_desc.update_reviewers(cl.GetApprovingReviewers())
 
   commit_desc = ChangeDescription(change_desc.description)
   if cl.GetIssue():
