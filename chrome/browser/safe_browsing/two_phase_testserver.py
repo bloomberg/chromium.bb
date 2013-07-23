@@ -99,12 +99,6 @@ class ServerRunner(testserver_base.TestServerRunner):
 
     return server
 
-  def add_options(self):
-    testserver_base.TestServerRunner.add_options(self)
-    self.option_parser.add_option('--data-file', dest='data_file',
-                                  help='File containing safebrowsing test '
-                                  'data and expectations')
-
 
 if __name__ == '__main__':
   sys.exit(ServerRunner().main())
