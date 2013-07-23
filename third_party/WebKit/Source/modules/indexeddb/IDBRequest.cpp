@@ -309,6 +309,11 @@ void IDBRequest::onSuccess(PassRefPtr<SharedBuffer> valueBuffer)
     if (!shouldEnqueueEvent())
         return;
 
+    if (m_pendingCursor) {
+        m_pendingCursor->close();
+        m_pendingCursor.clear();
+    }
+
     DOMRequestState::Scope scope(m_requestState);
     ScriptValue value = deserializeIDBValueBuffer(requestState(), valueBuffer);
     onSuccessInternal(value);
@@ -375,10 +380,7 @@ void IDBRequest::onSuccessInternal(PassRefPtr<SerializedScriptValue> value)
 void IDBRequest::onSuccessInternal(const ScriptValue& value)
 {
     m_result = IDBAny::create(value);
-    if (m_pendingCursor) {
-        m_pendingCursor->close();
-        m_pendingCursor.clear();
-    }
+    ASSERT(!m_pendingCursor);
     enqueueEvent(createSuccessEvent());
 }
 

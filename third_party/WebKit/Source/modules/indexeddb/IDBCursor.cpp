@@ -93,35 +93,6 @@ IDBCursor::~IDBCursor()
 {
 }
 
-const String& IDBCursor::direction() const
-{
-    IDB_TRACE("IDBCursor::direction");
-    return directionToString(m_direction);
-}
-
-const ScriptValue& IDBCursor::key() const
-{
-    IDB_TRACE("IDBCursor::key");
-    return m_currentKeyValue;
-}
-
-const ScriptValue& IDBCursor::primaryKey() const
-{
-    IDB_TRACE("IDBCursor::primaryKey");
-    return m_currentPrimaryKeyValue;
-}
-
-const ScriptValue& IDBCursor::value() const
-{
-    IDB_TRACE("IDBCursor::value");
-    return m_currentValue;
-}
-
-IDBAny* IDBCursor::source() const
-{
-    return m_source.get();
-}
-
 PassRefPtr<IDBRequest> IDBCursor::update(ScriptState* state, ScriptValue& value, ExceptionState& es)
 {
     IDB_TRACE("IDBCursor::update");
@@ -291,16 +262,20 @@ PassRefPtr<IDBRequest> IDBCursor::deleteFunction(ScriptExecutionContext* context
 
 void IDBCursor::postSuccessHandlerCallback()
 {
-    m_backend->postSuccessHandlerCallback();
+    if (m_backend)
+        m_backend->postSuccessHandlerCallback();
 }
 
 void IDBCursor::close()
 {
+    // The notifier may be the last reference to this cursor.
+    RefPtr<IDBCursor> protect(this);
     m_transactionNotifier.cursorFinished();
     if (m_request) {
         m_request->finishCursor();
         m_request.clear();
     }
+    m_backend.clear();
 }
 
 void IDBCursor::setValueReady(DOMRequestState* state, PassRefPtr<IDBKey> key, PassRefPtr<IDBKey> primaryKey, ScriptValue& value)

@@ -59,11 +59,11 @@ public:
     virtual ~IDBCursor();
 
     // Implement the IDL
-    const String& direction() const;
-    const ScriptValue& key() const;
-    const ScriptValue& primaryKey() const;
-    const ScriptValue& value() const;
-    IDBAny* source() const;
+    const String& direction() const { return directionToString(m_direction); }
+    const ScriptValue& key() const { return m_currentKeyValue; }
+    const ScriptValue& primaryKey() const { return m_currentPrimaryKeyValue; }
+    const ScriptValue& value() const { return m_currentValue; }
+    IDBAny* source() const { return m_source.get(); }
 
     PassRefPtr<IDBRequest> update(ScriptState*, ScriptValue&, ExceptionState&);
     void advance(unsigned long, ExceptionState&);
