@@ -770,7 +770,7 @@ inline void Node::markAncestorsWithChildNeedsStyleRecalc()
     for (ContainerNode* p = parentOrShadowHostNode(); p && !p->childNeedsStyleRecalc(); p = p->parentOrShadowHostNode())
         p->setChildNeedsStyleRecalc();
 
-    if (document()->childNeedsStyleRecalc())
+    if (document()->needsStyleRecalc() || document()->childNeedsStyleRecalc())
         document()->scheduleStyleRecalc();
 }
 

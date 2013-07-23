@@ -333,7 +333,7 @@ void Page::scheduleForcedStyleRecalcForAllPages()
     HashSet<Page*>::iterator end = allPages->end();
     for (HashSet<Page*>::iterator it = allPages->begin(); it != end; ++it)
         for (Frame* frame = (*it)->mainFrame(); frame; frame = frame->tree()->traverseNext())
-            frame->document()->scheduleForcedStyleRecalc();
+            frame->document()->setNeedsStyleRecalc();
 }
 
 void Page::setNeedsRecalcStyleInAllFrames()

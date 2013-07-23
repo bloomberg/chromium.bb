@@ -1348,7 +1348,7 @@ void InspectorCSSAgent::forcePseudoState(ErrorString* errorString, int nodeId, c
         m_nodeIdToForcedPseudoState.set(nodeId, forcedPseudoState);
     else
         m_nodeIdToForcedPseudoState.remove(nodeId);
-    element->ownerDocument()->scheduleForcedStyleRecalc();
+    element->ownerDocument()->setNeedsStyleRecalc();
 }
 
 void InspectorCSSAgent::getNamedFlowCollection(ErrorString* errorString, int documentNodeId, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::NamedFlow> >& result)
@@ -1883,7 +1883,7 @@ void InspectorCSSAgent::resetPseudoStates()
 
     m_nodeIdToForcedPseudoState.clear();
     for (HashSet<Document*>::iterator it = documentsToChange.begin(), end = documentsToChange.end(); it != end; ++it)
-        (*it)->scheduleForcedStyleRecalc();
+        (*it)->setNeedsStyleRecalc();
 }
 
 } // namespace WebCore
