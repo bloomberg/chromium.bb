@@ -31,6 +31,7 @@
 #ifndef MIDIOutput_h
 #define MIDIOutput_h
 
+#include "modules/webmidi/MIDIAccess.h"
 #include "modules/webmidi/MIDIPort.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Uint8Array.h"
