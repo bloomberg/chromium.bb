@@ -798,7 +798,7 @@ ALWAYS_INLINE PassRefPtr<StringImpl> StringImpl::removeCharacters(const CharType
 
     data.shrink(outc);
 
-    return adopt(data);
+    return data.release();
 }
 
 PassRefPtr<StringImpl> StringImpl::removeCharacters(CharacterMatchFunctionPtr findMatch)
@@ -842,7 +842,7 @@ inline PassRefPtr<StringImpl> StringImpl::simplifyMatchedCharactersToSpace(UChar
 
     data.shrink(outc);
 
-    return adopt(data);
+    return data.release();
 }
 
 PassRefPtr<StringImpl> StringImpl::simplifyWhiteSpace()
@@ -1974,22 +1974,6 @@ WTF::Unicode::Direction StringImpl::defaultWritingDirection(bool* hasStrongDirec
     if (hasStrongDirectionality)
         *hasStrongDirectionality = false;
     return WTF::Unicode::LeftToRight;
-}
-
-PassRefPtr<StringImpl> StringImpl::adopt(StringBuffer<LChar>& buffer)
-{
-    unsigned length = buffer.length();
-    if (!length)
-        return empty();
-    return adoptRef(new StringImpl(buffer.release(), length));
-}
-
-PassRefPtr<StringImpl> StringImpl::adopt(StringBuffer<UChar>& buffer)
-{
-    unsigned length = buffer.length();
-    if (!length)
-        return empty();
-    return adoptRef(new StringImpl(buffer.release(), length));
 }
 
 size_t StringImpl::sizeInBytes() const

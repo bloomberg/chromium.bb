@@ -142,10 +142,16 @@ public:
 
     void swap(String& o) { m_impl.swap(o.m_impl); }
 
-    static String adopt(StringBuffer<LChar>& buffer) { return StringImpl::adopt(buffer); }
-    static String adopt(StringBuffer<UChar>& buffer) { return StringImpl::adopt(buffer); }
-    template<typename CharacterType, size_t inlineCapacity>
-    static String adopt(Vector<CharacterType, inlineCapacity>& vector) { return StringImpl::adopt(vector); }
+    template<typename CharType>
+    static String adopt(StringBuffer<CharType>& buffer)
+    {
+        if (!buffer.length())
+            return StringImpl::empty();
+        return String(buffer.release());
+    }
+
+    template<typename CharType, size_t inlineCapacity>
+    static String adopt(Vector<CharType, inlineCapacity>& vector) { return StringImpl::adopt(vector); }
 
     bool isNull() const { return !m_impl; }
     bool isEmpty() const { return !m_impl || !m_impl->length(); }

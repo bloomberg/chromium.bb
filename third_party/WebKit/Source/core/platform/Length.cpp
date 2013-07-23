@@ -85,7 +85,7 @@ Vector<Length> parseHTMLAreaElementCoords(const String& string)
         else
             spacified[i] = cc;
     }
-    RefPtr<StringImpl> str = StringImpl::adopt(spacified);
+    RefPtr<StringImpl> str = spacified.release();
     str = str->simplifyWhiteSpace();
     ASSERT(str->is8Bit());
 

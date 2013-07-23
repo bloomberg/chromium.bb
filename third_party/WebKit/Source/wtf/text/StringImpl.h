@@ -332,9 +332,6 @@ public:
         return empty();
     }
 
-    static PassRefPtr<StringImpl> adopt(StringBuffer<UChar>&);
-    static PassRefPtr<StringImpl> adopt(StringBuffer<LChar>&);
-
     unsigned length() const { return m_length; }
     bool is8Bit() const { return m_hashAndFlags & s_hashFlag8BitBuffer; }
     bool hasInternalBuffer() const { return bufferOwnership() == BufferInternal; }
