@@ -520,6 +520,7 @@ def WriteFirmware(options):
   servo = []
   silent = []
   verbose_arg = []
+  ro_uboot = []
 
   bl2 = ['--bl2', '%s/spl/%s-spl.bin' % (outdir, smdk)]
 
@@ -557,6 +558,13 @@ def WriteFirmware(options):
 
   if options.flash:
     flash = ['-F', 'spi']
+
+    # The small builds don't have the command line interpreter so cannot
+    # run the magic flasher script. So use the standard U-Boot in this
+    # case.
+    if options.small:
+      cros_build_lib.Warning('Using standard U-Boot as flasher')
+      flash += ['-U', '##/build/%s/firmware/u-boot.bin' % options.board]
 
   if options.mmc:
     flash = ['-F', 'sdmmc']
@@ -609,6 +617,14 @@ def WriteFirmware(options):
   else:
     uboot_fname = '%s/u-boot.bin' % outdir
 
+  if options.ro:
+    # RO U-Boot is passed through as blob 'ro-boot'. We use the standard
+    # ebuild one as RW.
+    # TODO(sjg@chromium.org): Option to build U-Boot a second time to get
+    # a fresh RW U-Boot.
+    cros_build_lib.Warning('Using standard U-Boot for RW')
+    ro_uboot = ['--add-blob', 'ro-boot', uboot_fname]
+    uboot_fname = '##/build/%s/firmware/u-boot.bin' % options.board
   cbf = ['%s/platform/dev/host/cros_bundle_firmware' % src_root,
          '-b', options.board,
          '-d', dts_file,
@@ -618,7 +634,7 @@ def WriteFirmware(options):
          '-M', family]
 
   for other in [bl1, bl2, bmpblk, defaults, dest, ecro, ecrw, flash, kernel,
-                run, seabios, secure, servo, silent, verbose_arg]:
+                run, seabios, secure, servo, silent, verbose_arg, ro_uboot]:
     if other:
       cbf += other
   if options.cbfargs:
