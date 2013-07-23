@@ -1898,7 +1898,8 @@ bool LayerTreeHostImpl::ScrollBy(gfx::Point viewport_point,
 
   gfx::Vector2dF pending_delta = scroll_delta;
   gfx::Vector2dF unused_root_delta;
-  bool did_scroll = false;
+  bool did_scroll_x = false;
+  bool did_scroll_y = false;
   bool consume_by_top_controls = top_controls_manager_ &&
       (CurrentlyScrollingLayer() == RootScrollLayer() || scroll_delta.y() < 0);
 
@@ -1935,8 +1936,12 @@ bool LayerTreeHostImpl::ScrollBy(gfx::Point viewport_point,
     }
 
     // If the layer wasn't able to move, try the next one in the hierarchy.
-    float move_threshold_squared = 0.1f * 0.1f;
-    if (applied_delta.LengthSquared() < move_threshold_squared) {
+    float move_threshold = 0.1f;
+    bool did_move_layer_x = std::abs(applied_delta.x()) > move_threshold;
+    bool did_move_layer_y = std::abs(applied_delta.y()) > move_threshold;
+    did_scroll_x |= did_move_layer_x;
+    did_scroll_y |= did_move_layer_y;
+    if (!did_move_layer_x && !did_move_layer_y) {
       if (should_bubble_scrolls_ || !did_lock_scrolling_layer_)
         continue;
       else
@@ -1946,7 +1951,6 @@ bool LayerTreeHostImpl::ScrollBy(gfx::Point viewport_point,
     if (layer_impl == RootScrollLayer())
       unused_root_delta.Subtract(applied_delta);
 
-    did_scroll = true;
     did_lock_scrolling_layer_ = true;
     if (!should_bubble_scrolls_) {
       active_tree_->SetCurrentlyScrollingLayer(layer_impl);
@@ -1972,14 +1976,18 @@ bool LayerTreeHostImpl::ScrollBy(gfx::Point viewport_point,
       break;
   }
 
+  bool did_scroll = did_scroll_x || did_scroll_y;
   if (did_scroll) {
     client_->SetNeedsCommitOnImplThread();
     client_->SetNeedsRedrawOnImplThread();
     client_->RenewTreePriority();
-
-    // Scrolling of any layer will reset root overscroll accumulation.
-    accumulated_root_overscroll_ = gfx::Vector2dF();
   }
+
+  // Scrolling along an axis resets accumulated root overscroll for that axis.
+  if (did_scroll_x)
+    accumulated_root_overscroll_.set_x(0);
+  if (did_scroll_y)
+    accumulated_root_overscroll_.set_y(0);
 
   accumulated_root_overscroll_ += unused_root_delta;
   bool did_overscroll = !gfx::ToRoundedVector2d(unused_root_delta).IsZero();
