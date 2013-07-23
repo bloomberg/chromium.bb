@@ -196,10 +196,10 @@ Chrome supports. -->
         </message>
         <message name="IDS_CHROME_FRAME_TURNDOWN_TEXT_IE_OLDER" desc="Text of Chrome Frame turndown prompt for IE 6, 7, and 8">
           This site is using the Chrome Frame plug-in which will soon be unsupported. Please uninstall it and upgrade to a modern browser.
-	</message>
+        </message>
         <message name="IDS_CHROME_FRAME_TURNDOWN_TEXT_IE_NEWER" desc="Text of Chrome Frame turndown prompt for IE 9 and 10">
           This site is using the Chrome Frame plug-in that will soon be unsupported. Please uninstall it and download a compatible browser.
-	</message>
+        </message>
         <message name="IDS_SHORTCUT_NEW_WINDOW" desc="The text label of the New window shortcut context menu entry as of Windows 8">
           New window
         </message>
@@ -796,13 +796,13 @@ Signing in anyway will merge Chrome information like bookmarks, history, and oth
         Important information regarding your Chrome data
       </message>
       <message name="IDS_ENTERPRISE_SIGNIN_PROFILE_LINK_MESSAGE" desc="The warning message displayed to an enterprise user about to link their profile to their Google account. This message is followed by a 'Learn more' link.">
-	You are signing in with a managed account and giving its administrator control over your Google Chrome profile. Your Chrome data, such as your apps, bookmarks, history, passwords, and other settings will become permanently tied to <ph name="USER_NAME">$1<ex>pat@example.com</ex></ph>. You will be able to delete this data via the Google Accounts Dashboard, but you will not be able to associate this data with another account.
+        You are signing in with a managed account and giving its administrator control over your Google Chrome profile. Your Chrome data, such as your apps, bookmarks, history, passwords, and other settings will become permanently tied to <ph name="USER_NAME">$1<ex>pat@example.com</ex></ph>. You will be able to delete this data via the Google Accounts Dashboard, but you will not be able to associate this data with another account.
       </message>
       <message name="IDS_ENTERPRISE_SIGNIN_CREATE_NEW_PROFILE_PROMPT" desc="The text of the prompt to create a new profile after signing into an enterprise account">
-	If you prefer to keep your existing Chrome data separate, you can create a new Chrome user for <ph name="USER_NAME">$1<ex>pat@example.com</ex></ph>.
+        If you prefer to keep your existing Chrome data separate, you can create a new Chrome user for <ph name="USER_NAME">$1<ex>pat@example.com</ex></ph>.
       </message>
       <message name="IDS_ENTERPRISE_SIGNIN_CREATE_NEW_PROFILE_NO" desc="Text of the button to link the current profile with the signed-in enterprise account">
-	Link my Chrome data to this account
+        Link my Chrome data to this account
       </message>
 
       <!-- Enterprise sign-in dialog (new-style) -->

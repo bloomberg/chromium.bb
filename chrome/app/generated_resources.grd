@@ -3519,10 +3519,10 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
 
       <!-- Administrator-provided certificate notifications -->
       <message name="IDS_CERT_POLICY_PROVIDED_CERT_HEADER" desc="Text that is displayed in the header of the Website Settings popup when using an administrator-provided certificate">
-	Using an administrator-provided certificate
+        Using an administrator-provided certificate
       </message>
       <message name="IDS_CERT_POLICY_PROVIDED_CERT_MESSAGE" desc="Text that is displayed in the Website Settings popup when using an administrator-provided certificate">
-	You have accessed content using an administrator-provided certificate. Data you provide to <ph name="DOMAIN">$1<ex>www.google.com</ex></ph> can be intercepted by your administrator.
+        You have accessed content using an administrator-provided certificate. Data you provide to <ph name="DOMAIN">$1<ex>www.google.com</ex></ph> can be intercepted by your administrator.
       </message>
 
       <!-- Win certificate selector dialog strings.  -->
@@ -4165,7 +4165,7 @@ Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS">$3<ex>24</ex></ph> bits):
         Untrusted
       </message>
       <message name="IDS_CERT_MANAGER_POLICY_INSTALLED" desc="The text of the popup bubble shown when the user clicks the controlled setting indicator next to a certificate entry.">
-	This certificate has been installed by your system administrator.
+        This certificate has been installed by your system administrator.
       </message>
       <message name="IDS_CERT_MANAGER_PKCS12_IMPORT_ERROR_TITLE" desc="The title in the error dialog for PKCS #12 file import errors.">
         PKCS #12 Import Error
@@ -6954,10 +6954,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Enable the new network configuration handlers which handle Shill connection requests without using NetworkLibrary.
       </message>
       <message name="IDS_FLAGS_CHROMEOS_USE_NEW_NETWORK_CONNECTION_HANDLER_NAME" desc="Title for the flag to enable using the new network connection handler.">
-	Enables new network connection handler
+        Enables new network connection handler
       </message>
       <message name="IDS_FLAGS_CHROMEOS_USE_NEW_NETWORK_CONNECTION_HANDLER_DESCRIPTION" desc="Description for the flag to enable using the new network connection handler.">
-	Enable the new network connection handler.
+        Enable the new network connection handler.
       </message>
       <message name="IDS_FLAGS_ASH_ENABLE_NEW_AUDIO_HANDLER_NAME" desc="Title for the flag to enable using the new audio handler.">
         Enables new audio handler
@@ -7335,13 +7335,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Specifies quality setting for images captured if scaling down.
       </message>
       <message name="IDS_FLAGS_TAB_CAPTURE_SCALE_QUALITY_FAST" desc="">
-	fast
+        fast
       </message>
       <message name="IDS_FLAGS_TAB_CAPTURE_SCALE_QUALITY_GOOD" desc="">
-	good
+        good
       </message>
       <message name="IDS_FLAGS_TAB_CAPTURE_SCALE_QUALITY_BEST" desc="">
-	best
+        best
       </message>
       <message name="IDS_FLAGS_DEFAULT_TILE_WIDTH_NAME" desc="Name of about:flags option for default tile width.">
         Default tile width
@@ -11330,13 +11330,13 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
 
       <!-- Enterprise sign-in profile linking -->
       <message name="IDS_ENTERPRISE_SIGNIN_PROFILE_LINK_LEARN_MORE" desc="The link to get more information about profile linking after signing into an enterprise account">
-	Learn more
+        Learn more
       </message>
       <message name="IDS_ENTERPRISE_SIGNIN_CREATE_NEW_PROFILE" desc="Text of the button to create a new profile after enterprise account signin">
-	Create a new user
+        Create a new user
       </message>
       <message name="IDS_ENTERPRISE_SIGNIN_CANCEL" desc="Text of the button to cancel signin">
-	Cancel
+        Cancel
       </message>
 
       <!-- Enterprise sign-in profile linking -->
@@ -11929,7 +11929,7 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         Users
       </message>
       <message name="IDS_PROFILES_GUEST_PROFILE_NAME" desc="Name of the guest profile.">
-	Guest
+        Guest
       </message>
       <message name="IDS_PROFILES_PROFILE_GUEST_BUTTON" desc="Button in the avatar menu bubble view for guest browsing.">
         Guest browsing
