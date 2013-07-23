@@ -1110,6 +1110,7 @@ private:
     void processHttpEquivRefresh(const String& content);
     void processHttpEquivSetCookie(const String& content);
     void processHttpEquivXFrameOptions(const String& content);
+    void processHttpEquivContentSecurityPolicy(const String& equiv, const String& content);
 
     Timer<Document> m_styleResolverThrowawayTimer;
     double m_lastStyleResolverAccessTime;

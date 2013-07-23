@@ -2628,7 +2628,16 @@ void Document::processHttpEquiv(const String& equiv, const String& content)
         parseDNSPrefetchControlHeader(content);
     else if (equalIgnoringCase(equiv, "x-frame-options"))
         processHttpEquivXFrameOptions(content);
-    else if (equalIgnoringCase(equiv, "content-security-policy"))
+    else if (equalIgnoringCase(equiv, "content-security-policy")
+        || equalIgnoringCase(equiv, "content-security-policy-report-only")
+        || equalIgnoringCase(equiv, "x-webkit-csp")
+        || equalIgnoringCase(equiv, "x-webkit-csp-report-only"))
+        processHttpEquivContentSecurityPolicy(equiv, content);
+}
+
+void Document::processHttpEquivContentSecurityPolicy(const String& equiv, const String& content)
+{
+    if (equalIgnoringCase(equiv, "content-security-policy"))
         contentSecurityPolicy()->didReceiveHeader(content, ContentSecurityPolicy::Enforce);
     else if (equalIgnoringCase(equiv, "content-security-policy-report-only"))
         contentSecurityPolicy()->didReceiveHeader(content, ContentSecurityPolicy::Report);
@@ -2636,6 +2645,8 @@ void Document::processHttpEquiv(const String& equiv, const String& content)
         contentSecurityPolicy()->didReceiveHeader(content, ContentSecurityPolicy::PrefixedEnforce);
     else if (equalIgnoringCase(equiv, "x-webkit-csp-report-only"))
         contentSecurityPolicy()->didReceiveHeader(content, ContentSecurityPolicy::PrefixedReport);
+    else
+        ASSERT_NOT_REACHED();
 }
 
 void Document::processHttpEquivDefaultStyle(const String& content)
