@@ -52,7 +52,7 @@ void MIDIClientImpl::requestSysExPermission(PassRefPtr<MIDIAccess> access)
     if (m_client)
         m_client->requestSysExPermission(WebMIDIPermissionRequest(access));
     else
-        access->enableSysEx(false);
+        access->setSysExEnabled(false);
 }
 
 void MIDIClientImpl::cancelSysExPermissionRequest(MIDIAccess* access)

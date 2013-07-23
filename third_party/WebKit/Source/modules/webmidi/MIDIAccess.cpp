@@ -61,17 +61,17 @@ MIDIAccess::MIDIAccess(ScriptExecutionContext* context, MIDIAccessPromise* promi
     : ActiveDOMObject(context)
     , m_promise(promise)
     , m_hasAccess(false)
-    , m_enableSysEx(false)
+    , m_sysExEnabled(false)
     , m_requesting(false)
 {
     ScriptWrappable::init(this);
     m_accessor = MIDIAccessor::create(this);
 }
 
-void MIDIAccess::enableSysEx(bool enable)
+void MIDIAccess::setSysExEnabled(bool enable)
 {
     m_requesting = false;
-    m_enableSysEx = enable;
+    m_sysExEnabled = enable;
     if (enable)
         m_accessor->startSession();
     else
@@ -82,7 +82,7 @@ void MIDIAccess::didAddInputPort(const String& id, const String& manufacturer, c
 {
     ASSERT(isMainThread());
 
-    // FIXME: Pass m_enableSysEx flag to filter system exclusive messages correctly.
+    // FIXME: Pass in |this| to create() method so we can filter system exclusive messages correctly.
     m_inputs.append(MIDIInput::create(scriptExecutionContext(), id, manufacturer, name, version));
 }
 
@@ -90,8 +90,8 @@ void MIDIAccess::didAddOutputPort(const String& id, const String& manufacturer, 
 {
     ASSERT(isMainThread());
 
-    // FIXME: Pass m_enableSysEx flag to filter system exclusive messages correctly.
-    m_outputs.append(MIDIOutput::create(scriptExecutionContext(), id, manufacturer, name, version));
+    unsigned portIndex = m_outputs.size();
+    m_outputs.append(MIDIOutput::create(this, portIndex, scriptExecutionContext(), id, manufacturer, name, version));
 }
 
 void MIDIAccess::didStartSession()
@@ -119,6 +119,28 @@ void MIDIAccess::didReceiveMIDIData(unsigned portIndex, const unsigned char* dat
     }
 }
 
+void MIDIAccess::sendMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStampInMilliseconds)
+{
+    if (m_hasAccess && portIndex < m_outputs.size() && data && length > 1) {
+        // Convert from a time in milliseconds (a DOMHighResTimeStamp) according to the same time coordinate system as performance.now()
+        // into a time in seconds which is based on the time coordinate system of monotonicallyIncreasingTime().
+        double timeStamp;
+
+        if (!timeStampInMilliseconds) {
+            // We treat a value of 0 (which is the default value) as special, meaning "now".
+            // We need to translate it exactly to 0 seconds.
+            timeStamp = 0;
+        } else {
+            Document* document = toDocument(scriptExecutionContext());
+            ASSERT(document);
+            double documentStartTime = document->loader()->timing()->referenceMonotonicTime();
+            timeStamp = documentStartTime + 0.001 * timeStampInMilliseconds;
+        }
+
+        m_accessor->sendMIDIData(portIndex, data, length, timeStamp);
+    }
+}
+
 void MIDIAccess::stop()
 {
     m_hasAccess = false;
@@ -130,6 +152,8 @@ void MIDIAccess::stop()
     MIDIController* controller = MIDIController::from(document->page());
     ASSERT(controller);
     controller->cancelSysExPermissionRequest(this);
+
+    m_accessor.clear();
 }
 
 void MIDIAccess::startRequest()
@@ -157,7 +181,5 @@ void MIDIAccess::permissionDenied()
     RefPtr<DOMError> error = DOMError::create("SecurityError");
     m_promise->reject(error);
 }
-
-
 
 } // namespace WebCore

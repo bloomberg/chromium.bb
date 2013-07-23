@@ -32,6 +32,7 @@
 #define MIDIOutput_h
 
 #include "modules/webmidi/MIDIPort.h"
+#include "wtf/RefPtr.h"
 #include "wtf/Uint8Array.h"
 
 namespace WebCore {
@@ -40,14 +41,21 @@ class ScriptExecutionContext;
 
 class MIDIOutput : public MIDIPort {
 public:
-    static PassRefPtr<MIDIOutput> create(ScriptExecutionContext*, const String& id, const String& manufacturer, const String& name, const String& version);
+    static PassRefPtr<MIDIOutput> create(MIDIAccess*, unsigned portIndex, ScriptExecutionContext*, const String& id, const String& manufacturer, const String& name, const String& version);
     virtual ~MIDIOutput() { }
 
-    void send(Uint8Array*, double timestamp = 0);
-    void send(Vector<unsigned>, double timestamp = 0);
+    void send(Uint8Array*, double timestamp, ExceptionCode&);
+    void send(Vector<unsigned>, double timestamp, ExceptionCode&);
+
+    // send() without optional |timestamp|.
+    void send(Uint8Array*, ExceptionCode&);
+    void send(Vector<unsigned>, ExceptionCode&);
 
 private:
-    MIDIOutput(ScriptExecutionContext*, const String& id, const String& manufacturer, const String& name, const String& version);
+    MIDIOutput(MIDIAccess*, unsigned portIndex, ScriptExecutionContext*, const String& id, const String& manufacturer, const String& name, const String& version);
+
+    RefPtr<MIDIAccess> m_access;
+    unsigned m_portIndex;
 };
 
 typedef Vector<RefPtr<MIDIOutput> > MIDIOutputVector;
