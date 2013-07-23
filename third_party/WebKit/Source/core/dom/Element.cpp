@@ -1199,37 +1199,6 @@ RenderObject* Element::createRenderer(RenderStyle* style)
     return RenderObject::createObject(this, style);
 }
 
-#if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
-bool Element::isDateTimeEditElement() const
-{
-    return false;
-}
-
-bool Element::isDateTimeFieldElement() const
-{
-    return false;
-}
-
-bool Element::isPickerIndicatorElement() const
-{
-    return false;
-}
-#endif
-
-bool Element::isClearButtonElement() const
-{
-    return false;
-}
-
-bool Element::wasChangedSinceLastFormControlChangeEvent() const
-{
-    return false;
-}
-
-void Element::setChangedSinceLastFormControlChangeEvent(bool)
-{
-}
-
 bool Element::isInert() const
 {
     const Element* dialog = document()->activeModalDialog();
@@ -2151,11 +2120,6 @@ String Element::textFromChildren()
     return content.toString();
 }
 
-String Element::title() const
-{
-    return String();
-}
-
 const AtomicString& Element::pseudo() const
 {
     return getAttribute(pseudoAttr);
@@ -2469,16 +2433,6 @@ RenderObject* Element::pseudoElementRenderer(PseudoId pseudoId) const
     return 0;
 }
 
-bool Element::matchesReadOnlyPseudoClass() const
-{
-    return false;
-}
-
-bool Element::matchesReadWritePseudoClass() const
-{
-    return false;
-}
-
 bool Element::webkitMatchesSelector(const String& selector, ExceptionCode& ec)
 {
     if (selector.isEmpty()) {
@@ -2490,11 +2444,6 @@ bool Element::webkitMatchesSelector(const String& selector, ExceptionCode& ec)
     if (!selectorQuery)
         return false;
     return selectorQuery->matches(this);
-}
-
-bool Element::shouldAppearIndeterminate() const
-{
-    return false;
 }
 
 DOMTokenList* Element::classList()

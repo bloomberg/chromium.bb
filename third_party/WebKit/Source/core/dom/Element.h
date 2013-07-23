@@ -513,7 +513,7 @@ public:
  
     String textFromChildren();
 
-    virtual String title() const;
+    virtual String title() const { return String(); }
 
     const AtomicString& pseudo() const;
     void setPseudo(const AtomicString&);
@@ -531,10 +531,10 @@ public:
     PseudoElement* pseudoElement(PseudoId) const;
     RenderObject* pseudoElementRenderer(PseudoId) const;
 
-    virtual bool matchesReadOnlyPseudoClass() const;
-    virtual bool matchesReadWritePseudoClass() const;
+    virtual bool matchesReadOnlyPseudoClass() const { return false; }
+    virtual bool matchesReadWritePseudoClass() const { return false; }
     bool webkitMatchesSelector(const String& selectors, ExceptionCode&);
-    virtual bool shouldAppearIndeterminate() const;
+    virtual bool shouldAppearIndeterminate() const { return false; }
 
     DOMTokenList* classList();
 
@@ -547,9 +547,9 @@ public:
     virtual bool isInputFieldSpeechButtonElement() const { return false; }
 #endif
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
-    virtual bool isDateTimeEditElement() const;
-    virtual bool isDateTimeFieldElement() const;
-    virtual bool isPickerIndicatorElement() const;
+    virtual bool isDateTimeEditElement() const { return false; }
+    virtual bool isDateTimeFieldElement() const { return false; }
+    virtual bool isPickerIndicatorElement() const { return false; }
 #endif
 
     virtual bool isFormControlElement() const { return false; }
@@ -564,14 +564,15 @@ public:
     virtual bool isOutOfRange() const { return false; }
     virtual bool isFrameElementBase() const { return false; }
     virtual bool isPasswordGeneratorButtonElement() const { return false; }
-    virtual bool isClearButtonElement() const;
+    virtual bool isClearButtonElement() const { return false; }
 
     virtual bool canContainRangeEndPoint() const { return true; }
 
     virtual const AtomicString& formControlType() const { return nullAtom; }
 
-    virtual bool wasChangedSinceLastFormControlChangeEvent() const;
-    virtual void setChangedSinceLastFormControlChangeEvent(bool);
+    // FIXME: Only HTMLInputElement uses these, they don't need to be virtual.
+    virtual bool wasChangedSinceLastFormControlChangeEvent() const { return false; }
+    virtual void setChangedSinceLastFormControlChangeEvent(bool) { }
     virtual void dispatchFormControlChangeEvent() { }
 
     // Used for disabled form elements; if true, prevents mouse events from being dispatched
