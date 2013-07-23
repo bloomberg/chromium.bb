@@ -778,42 +778,78 @@ TEST_F(InputMethodManagerImplTest, TestPreviousInputMethod) {
   manager_->AddObserver(&observer);
   InitComponentExtension();
   InitIBusBus();
+
+  ui::Accelerator keydown_accelerator(ui::VKEY_SPACE, ui::EF_CONTROL_DOWN);
+  keydown_accelerator.set_type(ui::ET_KEY_PRESSED);
+  ui::Accelerator keyup_accelerator(ui::VKEY_SPACE, ui::EF_CONTROL_DOWN);
+  keyup_accelerator.set_type(ui::ET_KEY_RELEASED);
+
   manager_->EnableLayouts("en-US", "xkb:us::eng");
   EXPECT_EQ(5U, manager_->GetNumActiveInputMethods());
   EXPECT_EQ("xkb:us::eng", manager_->GetCurrentInputMethod().id());
   EXPECT_EQ("us", xkeyboard_->last_layout_);
-  manager_->SwitchToNextInputMethod();
+  EXPECT_TRUE(manager_->SwitchToNextInputMethod());
   EXPECT_TRUE(observer.last_show_message_);
   EXPECT_EQ("xkb:us:intl:eng", manager_->GetCurrentInputMethod().id());
   EXPECT_EQ("us(intl)", xkeyboard_->last_layout_);
-  manager_->SwitchToPreviousInputMethod();
+  EXPECT_TRUE(manager_->SwitchToPreviousInputMethod(keydown_accelerator));
+  EXPECT_TRUE(manager_->SwitchToPreviousInputMethod(keyup_accelerator));
   EXPECT_TRUE(observer.last_show_message_);
   EXPECT_EQ("xkb:us::eng", manager_->GetCurrentInputMethod().id());
   EXPECT_EQ("us", xkeyboard_->last_layout_);
-  manager_->SwitchToPreviousInputMethod();
+  EXPECT_TRUE(manager_->SwitchToPreviousInputMethod(keydown_accelerator));
+  EXPECT_TRUE(manager_->SwitchToPreviousInputMethod(keyup_accelerator));
   EXPECT_TRUE(observer.last_show_message_);
   EXPECT_EQ("xkb:us:intl:eng", manager_->GetCurrentInputMethod().id());
   EXPECT_EQ("us(intl)", xkeyboard_->last_layout_);
-  manager_->SwitchToPreviousInputMethod();
+  EXPECT_TRUE(manager_->SwitchToPreviousInputMethod(keydown_accelerator));
+  EXPECT_TRUE(manager_->SwitchToPreviousInputMethod(keyup_accelerator));
   EXPECT_TRUE(observer.last_show_message_);
   EXPECT_EQ("xkb:us::eng", manager_->GetCurrentInputMethod().id());
   EXPECT_EQ("us", xkeyboard_->last_layout_);
-  manager_->SwitchToNextInputMethod();
+  EXPECT_TRUE(manager_->SwitchToNextInputMethod());
   EXPECT_TRUE(observer.last_show_message_);
   EXPECT_EQ("xkb:us:intl:eng", manager_->GetCurrentInputMethod().id());
   EXPECT_EQ("us(intl)", xkeyboard_->last_layout_);
-  manager_->SwitchToNextInputMethod();
+  EXPECT_TRUE(manager_->SwitchToNextInputMethod());
   EXPECT_TRUE(observer.last_show_message_);
   EXPECT_EQ("xkb:us:altgr-intl:eng", manager_->GetCurrentInputMethod().id());
   EXPECT_EQ("us(altgr-intl)", xkeyboard_->last_layout_);
-  manager_->SwitchToPreviousInputMethod();
+  EXPECT_TRUE(manager_->SwitchToPreviousInputMethod(keydown_accelerator));
+  EXPECT_TRUE(manager_->SwitchToPreviousInputMethod(keyup_accelerator));
   EXPECT_TRUE(observer.last_show_message_);
   EXPECT_EQ("xkb:us:intl:eng", manager_->GetCurrentInputMethod().id());
   EXPECT_EQ("us(intl)", xkeyboard_->last_layout_);
-  manager_->SwitchToPreviousInputMethod();
+  EXPECT_TRUE(manager_->SwitchToPreviousInputMethod(keydown_accelerator));
+  EXPECT_TRUE(manager_->SwitchToPreviousInputMethod(keyup_accelerator));
   EXPECT_TRUE(observer.last_show_message_);
   EXPECT_EQ("xkb:us:altgr-intl:eng", manager_->GetCurrentInputMethod().id());
   EXPECT_EQ("us(altgr-intl)", xkeyboard_->last_layout_);
+
+  manager_->RemoveObserver(&observer);
+}
+
+TEST_F(InputMethodManagerImplTest,
+       TestSwitchToPreviousInputMethodForOneActiveInputMethod) {
+  TestObserver observer;
+  manager_->AddObserver(&observer);
+  InitComponentExtension();
+  InitIBusBus();
+
+  ui::Accelerator keydown_accelerator(ui::VKEY_SPACE, ui::EF_CONTROL_DOWN);
+  keydown_accelerator.set_type(ui::ET_KEY_PRESSED);
+  ui::Accelerator keyup_accelerator(ui::VKEY_SPACE, ui::EF_CONTROL_DOWN);
+  keyup_accelerator.set_type(ui::ET_KEY_RELEASED);
+
+  std::vector<std::string> ids;
+  ids.push_back("xkb:us:dvorak:eng");
+  EXPECT_TRUE(manager_->EnableInputMethods(ids));
+  EXPECT_EQ(1U, manager_->GetNumActiveInputMethods());
+
+  // Ctrl+Space accelerator should not be consumed if there is only one active
+  // input method.
+  EXPECT_FALSE(manager_->SwitchToPreviousInputMethod(keydown_accelerator));
+  EXPECT_FALSE(manager_->SwitchToPreviousInputMethod(keyup_accelerator));
 
   manager_->RemoveObserver(&observer);
 }
@@ -855,6 +891,12 @@ TEST_F(InputMethodManagerImplTest, TestSwitchInputMethodWithJpLayout) {
   // Enable "xkb:jp::jpn" and press Muhenkan/ZenkakuHankaku.
   InitComponentExtension();
   InitIBusBus();
+
+  ui::Accelerator keydown_accelerator(ui::VKEY_SPACE, ui::EF_CONTROL_DOWN);
+  keydown_accelerator.set_type(ui::ET_KEY_PRESSED);
+  ui::Accelerator keyup_accelerator(ui::VKEY_SPACE, ui::EF_CONTROL_DOWN);
+  keyup_accelerator.set_type(ui::ET_KEY_RELEASED);
+
   manager_->EnableLayouts("ja", "xkb:us::eng");
   EXPECT_EQ(2U, manager_->GetNumActiveInputMethods());
   EXPECT_EQ("xkb:us::eng", manager_->GetCurrentInputMethod().id());
@@ -863,14 +905,16 @@ TEST_F(InputMethodManagerImplTest, TestSwitchInputMethodWithJpLayout) {
       ui::Accelerator(ui::VKEY_NONCONVERT, ui::EF_NONE)));
   EXPECT_EQ("xkb:jp::jpn", manager_->GetCurrentInputMethod().id());
   EXPECT_EQ("jp", xkeyboard_->last_layout_);
-  manager_->SwitchToPreviousInputMethod();
+  EXPECT_TRUE(manager_->SwitchToPreviousInputMethod(keydown_accelerator));
+  EXPECT_TRUE(manager_->SwitchToPreviousInputMethod(keyup_accelerator));
   EXPECT_EQ("xkb:us::eng", manager_->GetCurrentInputMethod().id());
   EXPECT_EQ("us", xkeyboard_->last_layout_);
   EXPECT_TRUE(manager_->SwitchInputMethod(
       ui::Accelerator(ui::VKEY_DBE_SBCSCHAR, ui::EF_NONE)));
   EXPECT_EQ("xkb:jp::jpn", manager_->GetCurrentInputMethod().id());
   EXPECT_EQ("jp", xkeyboard_->last_layout_);
-  manager_->SwitchToPreviousInputMethod();
+  EXPECT_TRUE(manager_->SwitchToPreviousInputMethod(keydown_accelerator));
+  EXPECT_TRUE(manager_->SwitchToPreviousInputMethod(keyup_accelerator));
   EXPECT_EQ("xkb:us::eng", manager_->GetCurrentInputMethod().id());
   EXPECT_EQ("us", xkeyboard_->last_layout_);
   EXPECT_TRUE(manager_->SwitchInputMethod(

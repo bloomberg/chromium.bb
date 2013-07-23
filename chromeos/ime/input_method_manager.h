@@ -190,7 +190,8 @@ class CHROMEOS_EXPORT InputMethodManager {
   virtual bool SwitchToNextInputMethod() = 0;
 
   // Switches the current input method (or keyboard layout) to the previous one.
-  virtual bool SwitchToPreviousInputMethod() = 0;
+  virtual bool SwitchToPreviousInputMethod(
+      const ui::Accelerator& accelerator) = 0;
 
   // Switches to an input method (or keyboard layout) which is associated with
   // the |accelerator|.

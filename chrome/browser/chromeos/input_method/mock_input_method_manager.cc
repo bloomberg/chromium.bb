@@ -124,7 +124,8 @@ bool MockInputMethodManager::SwitchToNextInputMethod() {
   return true;
 }
 
-bool MockInputMethodManager::SwitchToPreviousInputMethod() {
+bool MockInputMethodManager::SwitchToPreviousInputMethod(
+    const ui::Accelerator& accelerator) {
   return true;
 }
 

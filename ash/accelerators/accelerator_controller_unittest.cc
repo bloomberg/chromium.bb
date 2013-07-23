@@ -214,8 +214,9 @@ class DummyImeControlDelegate : public ImeControlDelegate {
     ++handle_next_ime_count_;
     return consume_;
   }
-  virtual bool HandlePreviousIme() OVERRIDE {
+  virtual bool HandlePreviousIme(const ui::Accelerator& accelerator) OVERRIDE {
     ++handle_previous_ime_count_;
+    last_accelerator_ = accelerator;
     return consume_;
   }
   virtual bool HandleSwitchIme(const ui::Accelerator& accelerator) OVERRIDE {

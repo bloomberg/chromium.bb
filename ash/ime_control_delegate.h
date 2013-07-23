@@ -17,7 +17,7 @@ class ImeControlDelegate {
   virtual ~ImeControlDelegate() {}
 
   virtual bool HandleNextIme() = 0;
-  virtual bool HandlePreviousIme() = 0;
+  virtual bool HandlePreviousIme(const ui::Accelerator& accelerator) = 0;
   // Switches to another IME depending on the |accelerator|.
   virtual bool HandleSwitchIme(const ui::Accelerator& accelerator) = 0;
 

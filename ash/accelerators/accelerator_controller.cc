@@ -759,7 +759,7 @@ bool AcceleratorController::PerformAction(int action,
       break;
     case PREVIOUS_IME:
       if (ime_control_delegate_)
-        return ime_control_delegate_->HandlePreviousIme();
+        return ime_control_delegate_->HandlePreviousIme(accelerator);
       break;
     case PRINT_UI_HIERARCHIES:
       return HandlePrintUIHierarchies();

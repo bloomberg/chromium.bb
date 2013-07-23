@@ -13,10 +13,10 @@ bool ImeController::HandleNextIme() {
   return manager->SwitchToNextInputMethod();
 }
 
-bool ImeController::HandlePreviousIme() {
+bool ImeController::HandlePreviousIme(const ui::Accelerator& accelerator) {
   chromeos::input_method::InputMethodManager* manager =
       chromeos::input_method::InputMethodManager::Get();
-  return manager->SwitchToPreviousInputMethod();
+  return manager->SwitchToPreviousInputMethod(accelerator);
 }
 
 bool ImeController::HandleSwitchIme(const ui::Accelerator& accelerator) {

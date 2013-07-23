@@ -698,7 +698,8 @@ bool InputMethodManagerImpl::SwitchToNextInputMethod() {
   return true;
 }
 
-bool InputMethodManagerImpl::SwitchToPreviousInputMethod() {
+bool InputMethodManagerImpl::SwitchToPreviousInputMethod(
+    const ui::Accelerator& accelerator) {
   // Sanity check.
   if (active_input_method_ids_.empty()) {
     DVLOG(1) << "active input method is empty";
@@ -709,6 +710,9 @@ bool InputMethodManagerImpl::SwitchToPreviousInputMethod() {
   // Ctrl+Space or Alt+Shift may be used by other application.
   if (active_input_method_ids_.size() == 1)
     return false;
+
+  if (accelerator.type() == ui::ET_KEY_RELEASED)
+    return true;
 
   if (previous_input_method_.id().empty() ||
       previous_input_method_.id() == current_input_method_.id()) {
