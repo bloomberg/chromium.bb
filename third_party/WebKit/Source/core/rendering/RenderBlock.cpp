@@ -5916,6 +5916,8 @@ void RenderBlock::computePreferredLogicalWidths()
     m_minPreferredLogicalWidth = 0;
     m_maxPreferredLogicalWidth = 0;
 
+    // FIXME: The isFixed() calls here should probably be checking for isSpecified since you
+    // should be able to use percentage, calc or viewport relative values for width.
     RenderStyle* styleToUse = style();
     if (!isTableCell() && styleToUse->logicalWidth().isFixed() && styleToUse->logicalWidth().value() >= 0 
         && !(isDeprecatedFlexItem() && !styleToUse->logicalWidth().intValue()))
