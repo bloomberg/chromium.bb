@@ -127,6 +127,10 @@ const char kFileManagerEnableSharing[]      = "file-manager-enable-sharing";
 const char kFileManagerEnableFolderShortcuts[] =
     "file-manager-enable-folder-shortcuts";
 
+// Enables the webstore integration feature in the Files.app.
+const char kFileManagerEnableWebstoreIntegration[] =
+    "file-manager-enable-webstore-integration";
+
 // Passed to Chrome on first boot. Not passed on restart after sign out.
 const char kFirstBoot[]                     = "first-boot";
 

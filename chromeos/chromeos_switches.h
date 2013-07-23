@@ -53,6 +53,7 @@ CHROMEOS_EXPORT extern const char kEnterpriseEnrollmentModulusLimit[];
 CHROMEOS_EXPORT extern const char kFileManagerShowCheckboxes[];
 CHROMEOS_EXPORT extern const char kFileManagerEnableSharing[];
 CHROMEOS_EXPORT extern const char kFileManagerEnableFolderShortcuts[];
+CHROMEOS_EXPORT extern const char kFileManagerEnableWebstoreIntegration[];
 CHROMEOS_EXPORT extern const char kFirstBoot[];
 CHROMEOS_EXPORT extern const char kForceLoginManagerInTests[];
 CHROMEOS_EXPORT extern const char kGuestSession[];

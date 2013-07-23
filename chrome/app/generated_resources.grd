@@ -12554,6 +12554,12 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FLAGS_FILE_MANAGER_ENABLE_FOLDER_SHORTCUTS_DESCRIPTION" desc="Description of the about:flag option of folder shortcuts feature in Files app.">
         Enables the folder shortcuts feature in Files.app, which allows you to create shortcuts to folders in the left panel.
       </message>
+      <message name="IDS_FLAGS_FILE_MANAGER_ENABLE_WEBSTORE_INTEGRATION" desc="Name of the about:flag option to enable the webstore integration feature in Files app.">
+        Enable the integration of Webstore and Files.app.
+      </message>
+      <message name="IDS_FLAGS_FILE_MANAGER_ENABLE_WEBSTORE_INTEGRATION_DESCRIPTION" desc="Description of the about:flag option to enable the webstore integration feature in Files app.">
+        Enables the webstore integration feature in Files.app.
+      </message>
       <message name="IDS_FILE_BROWSER_ROOT_DIRECTORY_LABEL" desc="Root directory label.">
         Files
       </message>
