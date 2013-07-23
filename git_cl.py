@@ -13,10 +13,12 @@ import json
 import logging
 import optparse
 import os
+import Queue
 import re
 import stat
 import sys
 import textwrap
+import threading
 import urllib2
 import urlparse
 
@@ -412,7 +414,7 @@ def ShortBranchName(branch):
 
 
 class Changelist(object):
-  def __init__(self, branchref=None):
+  def __init__(self, branchref=None, issue=None):
     # Poke settings so we get the "configure your server" message if necessary.
     global settings
     if not settings:
@@ -426,16 +428,17 @@ class Changelist(object):
       self.branch = None
     self.rietveld_server = None
     self.upstream_branch = None
-    self.has_issue = False
-    self.issue = None
+    self.lookedup_issue = False
+    self.issue = issue or None
     self.has_description = False
     self.description = None
-    self.has_patchset = False
+    self.lookedup_patchset = False
     self.patchset = None
     self._rpc_server = None
     self.cc = None
     self.watchers = ()
     self._remote = None
+    self._props = None
 
   def GetCCList(self):
     """Return the users cc'd on this CL.
@@ -601,13 +604,10 @@ or verify this branch is set up to track another (via the --track argument to
 
   def GetIssue(self):
     """Returns the issue number as a int or None if not set."""
-    if not self.has_issue:
+    if self.issue is None and not self.lookedup_issue:
       issue = RunGit(['config', self._IssueSetting()], error_ok=True).strip()
-      if issue:
-        self.issue = int(issue)
-      else:
-        self.issue = None
-      self.has_issue = True
+      self.issue = int(issue) or None if issue else None
+      self.lookedup_issue = True
     return self.issue
 
   def GetRietveldServer(self):
@@ -656,47 +656,53 @@ or verify this branch is set up to track another (via the --track argument to
 
   def GetPatchset(self):
     """Returns the patchset number as a int or None if not set."""
-    if not self.has_patchset:
+    if self.patchset is None and not self.lookedup_patchset:
       patchset = RunGit(['config', self._PatchsetSetting()],
                         error_ok=True).strip()
-      if patchset:
-        self.patchset = int(patchset)
-      else:
-        self.patchset = None
-      self.has_patchset = True
+      self.patchset = int(patchset) or None if patchset else None
+      self.lookedup_patchset = True
     return self.patchset
 
   def SetPatchset(self, patchset):
     """Set this branch's patchset.  If patchset=0, clears the patchset."""
     if patchset:
       RunGit(['config', self._PatchsetSetting(), str(patchset)])
+      self.patchset = patchset
     else:
       RunGit(['config', '--unset', self._PatchsetSetting()],
              stderr=subprocess2.PIPE, error_ok=True)
-    self.has_patchset = False
+      self.patchset = None
 
-  def GetMostRecentPatchset(self, issue):
-    return self.RpcServer().get_issue_properties(
-        int(issue), False)['patchsets'][-1]
+  def GetMostRecentPatchset(self):
+    return self.GetIssueProperties()['patchsets'][-1]
 
   def GetPatchSetDiff(self, issue, patchset):
     return self.RpcServer().get(
         '/download/issue%s_%s.diff' % (issue, patchset))
 
+  def GetIssueProperties(self):
+    if self._props is None:
+      issue = self.GetIssue()
+      if not issue:
+        self._props = {}
+      else:
+        self._props = self.RpcServer().get_issue_properties(issue, True)
+    return self._props
+
   def GetApprovingReviewers(self):
-    return get_approving_reviewers(
-        self.RpcServer().get_issue_properties(self.GetIssue(), True))
+    return get_approving_reviewers(self.GetIssueProperties())
 
   def SetIssue(self, issue):
     """Set this branch's issue.  If issue=0, clears the issue."""
     if issue:
+      self.issue = issue
       RunGit(['config', self._IssueSetting(), str(issue)])
       if self.rietveld_server:
         RunGit(['config', self._RietveldServer(), self.rietveld_server])
     else:
       RunGit(['config', '--unset', self._IssueSetting()])
-      self.SetPatchset(0)
-    self.has_issue = False
+      self.issue = None
+      self.SetPatchset(None)
 
   def GetChange(self, upstream_branch, author):
     if not self.GitSanityChecks(upstream_branch):
@@ -1064,6 +1070,8 @@ def CMDstatus(parser, args):
   """show status of changelists"""
   parser.add_option('--field',
                     help='print only specific field (desc|id|patch|url)')
+  parser.add_option('-f', '--fast', action='store_true',
+                    help='Do not retrieve review status')
   (options, args) = parser.parse_args(args)
 
   if options.field:
@@ -1093,8 +1101,57 @@ def CMDstatus(parser, args):
   branches = dict((c.GetBranch(), c.GetIssueURL()) for c in changes)
   alignment = max(5, max(len(b) for b in branches))
   print 'Branches associated with reviews:'
+  # Adhoc thread pool to request data concurrently.
+  output = Queue.Queue()
+
+  # Silence upload.py otherwise it becomes unweldly.
+  upload.verbosity = 0
+
+  if not options.fast:
+    def fetch(b):
+      c = Changelist(branchref=b)
+      i = c.GetIssueURL()
+      try:
+        props = c.GetIssueProperties()
+        r = c.GetApprovingReviewers() if i else None
+        if not props.get('messages'):
+          r = None
+      except urllib2.HTTPError:
+        # The issue probably doesn't exist anymore.
+        i += ' (broken)'
+        r = None
+      output.put((b, i, r))
+
+    threads = [threading.Thread(target=fetch, args=(b,)) for b in branches]
+    for t in threads:
+      t.daemon = True
+      t.start()
+  else:
+    # Do not use GetApprovingReviewers(), since it requires an HTTP request.
+    for b in branches:
+      c = Changelist(branchref=b)
+      output.put((b, c.GetIssue(), None))
+
+  tmp = {}
+  alignment = max(5, max(len(ShortBranchName(b)) for b in branches))
   for branch in sorted(branches):
-    print "  %*s: %s" % (alignment, branch, branches[branch])
+    while branch not in tmp:
+      b, i, r = output.get()
+      tmp[b] = (i, r)
+    issue, reviewers = tmp.pop(branch)
+    if not issue:
+      color = Fore.WHITE
+    elif reviewers:
+      # Was approved.
+      color = Fore.GREEN
+    elif reviewers is None:
+      # No message was sent.
+      color = Fore.RED
+    else:
+      color = Fore.BLUE
+    print '  %*s: %s%s%s' % (
+          alignment, ShortBranchName(branch), color, issue, Fore.RESET)
+
   cl = Changelist()
   print
   print 'Current branch:',
@@ -1136,7 +1193,7 @@ def CMDcomments(parser, args):
 
   cl = Changelist()
   if cl.GetIssue():
-    data = cl.RpcServer().get_issue_properties(cl.GetIssue(), True)
+    data = cl.GetIssueProperties()
     for message in sorted(data['messages'], key=lambda x: x['date']):
       if message['disapproval']:
         color = Fore.RED
@@ -1434,7 +1491,7 @@ def CMDupload(parser, args):
       options.reviewers = hook_results.reviewers.split(',')
 
   if cl.GetIssue():
-    latest_patchset = cl.GetMostRecentPatchset(cl.GetIssue())
+    latest_patchset = cl.GetMostRecentPatchset()
     local_patchset = cl.GetPatchset()
     if latest_patchset and local_patchset and local_patchset != latest_patchset:
       print ('The last upload made from this repository was patchset #%d but '
@@ -1673,12 +1730,12 @@ def SendUpstream(parser, args, cmd):
            '(you may be prompted for your codereview password)...')
     cl.UpdateDescription(change_desc.description)
     cl.CloseIssue()
-    props = cl.RpcServer().get_issue_properties(cl.GetIssue(), False)
+    props = cl.GetIssueProperties()
     patch_num = len(props['patchsets'])
     comment = "Committed patchset #%d manually as r%s" % (patch_num, revision)
     comment += ' (presubmit successful).' if not options.bypass_hooks else '.'
     cl.RpcServer().add_comment(cl.GetIssue(), comment)
-    cl.SetIssue(0)
+    cl.SetIssue(None)
 
   if retcode == 0:
     hook = POSTUPSTREAM_HOOK_PATTERN % cmd
@@ -1737,9 +1794,9 @@ def CMDpatch(parser, args):
 
   if issue_arg.isdigit():
     # Input is an issue id.  Figure out the URL.
-    cl = Changelist()
     issue = int(issue_arg)
-    patchset = cl.GetMostRecentPatchset(issue)
+    cl = Changelist(issue)
+    patchset = cl.GetMostRecentPatchset()
     patch_data = cl.GetPatchSetDiff(issue, patchset)
   else:
     # Assume it's a URL to the patch. Default to https.
@@ -1946,7 +2003,7 @@ def CMDtry(parser, args):
 
   patchset = cl.GetPatchset()
   if not cl.GetPatchset():
-    patchset = cl.GetMostRecentPatchset(cl.GetIssue())
+    patchset = cl.GetMostRecentPatchset()
 
   cl.RpcServer().trigger_try_jobs(
       cl.GetIssue(), patchset, options.name, options.clobber, options.revision,
