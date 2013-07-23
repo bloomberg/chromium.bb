@@ -165,6 +165,25 @@ chrome.test.getConfig(function(config) {
       });
     },
 
+    // Tests that a message which fails to serialize prints an error and
+    // doesn't send (http://crbug.com/263077).
+    function unserializableMessage() {
+      var consoleError = console.error;
+      var errored = false;
+      console.error = function() {
+        errored = true;
+      };
+      try {
+        chrome.tabs.connect(testTab.id).postMessage(function(){});
+        chrome.test.assertTrue(errored);
+        chrome.test.succeed();
+      } catch (e) {
+        chrome.test.fail(e.stack);
+      } finally {
+        console.error = consoleError;
+      }
+    },
+
     // Tests that we get the disconnect event when the tab context closes.
     function disconnectOnClose() {
       var port = chrome.tabs.connect(testTab.id);

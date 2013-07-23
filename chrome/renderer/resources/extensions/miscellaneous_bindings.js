@@ -54,7 +54,19 @@
     // JSON.stringify doesn't support a root object which is undefined.
     if (msg === undefined)
       msg = null;
-    miscNatives.PostMessage(this.portId_, $JSON.stringify(msg));
+    msg = $JSON.stringify(msg);
+    if (msg === undefined) {
+      // JSON.stringify can fail with unserializable objects. Log an error and
+      // drop the message.
+      //
+      // TODO(kalman/mpcomplete): it would be better to do the same validation
+      // here that we do for runtime.sendMessage (and variants), i.e. throw an
+      // schema validation Error, but just maintain the old behaviour until
+      // there's a good reason not to (http://crbug.com/263077).
+      console.error('Illegal argument to Port.postMessage');
+      return;
+    }
+    miscNatives.PostMessage(this.portId_, msg);
   };
 
   // Disconnects the port from the other end.
