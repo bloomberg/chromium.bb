@@ -36,7 +36,6 @@ class ColorChooserClient;
 class DateTimeChooser;
 class DateTimeChooserClient;
 class FileChooser;
-class FileIconLoader;
 class FloatRect;
 class Frame;
 class Geolocation;
@@ -129,7 +128,6 @@ public:
     PassRefPtr<DateTimeChooser> openDateTimeChooser(DateTimeChooserClient*, const DateTimeChooserParameters&);
 
     void runOpenPanel(Frame*, PassRefPtr<FileChooser>);
-    void loadIconForFiles(const Vector<String>&, FileIconLoader*);
     void enumerateChosenDirectory(FileChooser*);
 
     void dispatchViewportPropertiesDidChange(const ViewportArguments&) const;

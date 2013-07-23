@@ -34,7 +34,6 @@
 
 #include "core/html/BaseClickableWithKeyInputType.h"
 #include "core/platform/FileChooser.h"
-#include "core/platform/FileIconLoader.h"
 #include "wtf/RefPtr.h"
 
 namespace WebCore {
@@ -42,7 +41,7 @@ namespace WebCore {
 class DragData;
 class FileList;
 
-class FileInputType : public BaseClickableWithKeyInputType, private FileChooserClient, private FileIconLoaderClient {
+class FileInputType : public BaseClickableWithKeyInputType, private FileChooserClient {
 public:
     static PassOwnPtr<InputType> create(HTMLInputElement*);
     static Vector<FileChooserFileInfo> filesFromFormControlState(const FormControlState&);
@@ -66,7 +65,6 @@ private:
     virtual void setValue(const String&, bool valueChanged, TextFieldEventBehavior) OVERRIDE;
     virtual bool receiveDroppedFiles(const DragData*) OVERRIDE;
     virtual String droppedFileSystemId() OVERRIDE;
-    virtual Icon* icon() const OVERRIDE;
     virtual bool isFileUpload() const OVERRIDE;
     virtual void createShadowSubtree() OVERRIDE;
     virtual void disabledAttributeChanged() OVERRIDE;
@@ -76,15 +74,10 @@ private:
     // FileChooserClient implementation.
     virtual void filesChosen(const Vector<FileChooserFileInfo>&) OVERRIDE;
 
-    // FileIconLoaderClient implementation.
-    virtual void updateRendering(PassRefPtr<Icon>) OVERRIDE;
-
     PassRefPtr<FileList> createFileList(const Vector<FileChooserFileInfo>& files) const;
     void receiveDropForDirectoryUpload(const Vector<String>&);
-    void requestIcon(const Vector<String>&);
 
     RefPtr<FileList> m_fileList;
-    RefPtr<Icon> m_icon;
 
     String m_droppedFileSystemId;
 };

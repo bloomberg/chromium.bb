@@ -1376,11 +1376,6 @@ String HTMLInputElement::droppedFileSystemId()
     return m_inputType->droppedFileSystemId();
 }
 
-Icon* HTMLInputElement::icon() const
-{
-    return m_inputType->icon();
-}
-
 bool HTMLInputElement::canReceiveDroppedFiles() const
 {
     return m_canReceiveDroppedFiles;

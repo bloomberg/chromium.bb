@@ -702,12 +702,6 @@ String InputType::droppedFileSystemId()
     return String();
 }
 
-Icon* InputType::icon() const
-{
-    ASSERT_NOT_REACHED();
-    return 0;
-}
-
 bool InputType::shouldResetOnDocumentActivation()
 {
     return false;

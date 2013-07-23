@@ -840,7 +840,6 @@
             ['include', 'platform/chromium/ClipboardChromiumLinux\\.cpp$'],
             ['include', 'platform/chromium/FileSystemChromiumLinux\\.cpp$'],
             ['include', 'platform/graphics/chromium/GlyphPageTreeNodeLinux\\.cpp$'],
-            ['exclude', 'platform/graphics/chromium/IconChromium\\.cpp$'],
             ['include', 'platform/graphics/chromium/VDMXParser\\.cpp$'],
             ['exclude', 'platform/graphics/skia/FontCacheSkia\\.cpp$'],
           ],

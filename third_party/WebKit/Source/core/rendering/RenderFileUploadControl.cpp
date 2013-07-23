@@ -30,7 +30,6 @@
 #include "core/html/HTMLInputElement.h"
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
-#include "core/platform/graphics/Icon.h"
 #include "core/platform/graphics/TextRun.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderButton.h"
@@ -43,9 +42,6 @@ namespace WebCore {
 using namespace HTMLNames;
 
 const int afterButtonSpacing = 4;
-const int iconHeight = 16;
-const int iconWidth = 16;
-const int iconFilenameSpacing = 2;
 const int defaultWidthNumChars = 34;
 const int buttonShadowHeight = 2;
 
@@ -93,8 +89,7 @@ static int nodeWidth(Node* node)
 int RenderFileUploadControl::maxFilenameWidth() const
 {
     HTMLInputElement* input = toHTMLInputElement(node());
-    return max(0, contentBoxRect().pixelSnappedWidth() - nodeWidth(uploadButton()) - afterButtonSpacing
-        - (input->icon() ? iconWidth + iconFilenameSpacing : 0));
+    return max(0, contentBoxRect().pixelSnappedWidth() - nodeWidth(uploadButton()) - afterButtonSpacing);
 }
 
 void RenderFileUploadControl::paintObject(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
@@ -127,14 +122,13 @@ void RenderFileUploadControl::paintObject(PaintInfo& paintInfo, const LayoutPoin
 
         HTMLInputElement* input = toHTMLInputElement(node());
         LayoutUnit buttonWidth = nodeWidth(button);
-        LayoutUnit buttonAndIconWidth = buttonWidth + afterButtonSpacing
-            + (input->icon() ? iconWidth + iconFilenameSpacing : 0);
+        LayoutUnit buttonAndSpacingWidth = buttonWidth + afterButtonSpacing;
         float textWidth = font.width(textRun);
         LayoutUnit textX;
         if (style()->isLeftToRightDirection())
-            textX = contentLeft + buttonAndIconWidth;
+            textX = contentLeft + buttonAndSpacingWidth;
         else
-            textX = contentLeft + contentWidth() - buttonAndIconWidth - textWidth;
+            textX = contentLeft + contentWidth() - buttonAndSpacingWidth - textWidth;
 
         LayoutUnit textY = 0;
         // We want to match the button's baseline
@@ -153,19 +147,6 @@ void RenderFileUploadControl::paintObject(PaintInfo& paintInfo, const LayoutPoin
 
         // Draw the filename
         paintInfo.context->drawBidiText(font, textRunPaintInfo, IntPoint(roundToInt(textX), roundToInt(textY)));
-
-        if (input->icon()) {
-            // Determine where the icon should be placed
-            LayoutUnit iconY = paintOffset.y() + borderTop() + paddingTop() + (contentHeight() - iconHeight) / 2;
-            LayoutUnit iconX;
-            if (style()->isLeftToRightDirection())
-                iconX = contentLeft + buttonWidth + afterButtonSpacing;
-            else
-                iconX = contentLeft + contentWidth() - buttonWidth - afterButtonSpacing - iconWidth;
-
-            // Draw the file icon
-            input->icon()->paint(paintInfo.context, IntRect(roundToInt(iconX), roundToInt(iconY), iconWidth, iconHeight));
-        }
     }
 
     // Paint the children.

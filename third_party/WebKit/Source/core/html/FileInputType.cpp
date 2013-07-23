@@ -37,7 +37,6 @@
 #include "core/platform/DragData.h"
 #include "core/platform/FileSystem.h"
 #include "core/platform/LocalizedStrings.h"
-#include "core/platform/graphics/Icon.h"
 #include "core/rendering/RenderFileUploadControl.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/StringBuilder.h"
@@ -212,7 +211,6 @@ bool FileInputType::getTypeSpecificValue(String& value)
 void FileInputType::setValue(const String&, bool, TextFieldEventBehavior)
 {
     m_fileList->clear();
-    m_icon.clear();
     element()->setNeedsStyleRecalc();
 }
 
@@ -278,15 +276,6 @@ void FileInputType::multipleAttributeChanged()
         button->setAttribute(valueAttr, element()->multiple() ? fileButtonChooseMultipleFilesLabel() : fileButtonChooseFileLabel());
 }
 
-void FileInputType::requestIcon(const Vector<String>& paths)
-{
-    if (!paths.size())
-        return;
-
-    if (Chrome* chrome = this->chrome())
-        chrome->loadIconForFiles(paths, newFileIconLoader());
-}
-
 void FileInputType::setFiles(PassRefPtr<FileList> files)
 {
     if (!files)
@@ -315,7 +304,6 @@ void FileInputType::setFiles(PassRefPtr<FileList> files)
     Vector<String> paths;
     for (unsigned i = 0; i < m_fileList->length(); ++i)
         paths.append(m_fileList->item(i)->path());
-    requestIcon(paths);
 
     if (input->renderer())
         input->renderer()->repaint();
@@ -345,16 +333,6 @@ void FileInputType::receiveDropForDirectoryUpload(const Vector<String>& paths)
         settings.acceptFileExtensions = input->acceptFileExtensions();
         chrome->enumerateChosenDirectory(newFileChooser(settings));
     }
-}
-
-void FileInputType::updateRendering(PassRefPtr<Icon> icon)
-{
-    if (m_icon == icon)
-        return;
-
-    m_icon = icon;
-    if (element()->renderer())
-        element()->renderer()->repaint();
 }
 
 bool FileInputType::receiveDroppedFiles(const DragData* dragData)
@@ -389,11 +367,6 @@ bool FileInputType::receiveDroppedFiles(const DragData* dragData)
 String FileInputType::droppedFileSystemId()
 {
     return m_droppedFileSystemId;
-}
-
-Icon* FileInputType::icon() const
-{
-    return m_icon.get();
 }
 
 String FileInputType::defaultToolTip() const

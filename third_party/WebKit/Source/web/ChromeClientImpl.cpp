@@ -49,7 +49,6 @@
 #include "WebFileChooserCompletionImpl.h"
 #include "WebFrameClient.h"
 #include "WebFrameImpl.h"
-#include "WebIconLoadingCompletionImpl.h"
 #include "WebInputElement.h"
 #include "WebInputEvent.h"
 #include "WebKit.h"
@@ -86,12 +85,10 @@
 #include "core/platform/Cursor.h"
 #include "core/platform/DateTimeChooser.h"
 #include "core/platform/FileChooser.h"
-#include "core/platform/FileIconLoader.h"
 #include "core/platform/PlatformScreen.h"
 #include "core/platform/chromium/support/WrappedResourceRequest.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/GraphicsLayer.h"
-#include "core/platform/graphics/Icon.h"
 #include "core/platform/graphics/IntRect.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderWidget.h"
@@ -660,15 +657,6 @@ void ChromeClientImpl::runOpenPanel(Frame* frame, PassRefPtr<FileChooser> fileCh
 
     // Choosing failed, so do callback with an empty list.
     chooserCompletion->didChooseFile(WebVector<WebString>());
-}
-
-void ChromeClientImpl::loadIconForFiles(const Vector<String>& filenames, FileIconLoader* loader)
-{
-    if (!m_webView->client())
-        return;
-    WebIconLoadingCompletionImpl* iconCompletion = new WebIconLoadingCompletionImpl(loader);
-    if (!m_webView->client()->queryIconForFiles(filenames, iconCompletion))
-        iconCompletion->didLoadIcon(WebData());
 }
 
 void ChromeClientImpl::enumerateChosenDirectory(FileChooser* fileChooser)

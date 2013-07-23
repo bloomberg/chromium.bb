@@ -134,7 +134,6 @@ public:
     PassOwnPtr<WebColorChooser> createWebColorChooser(WebColorChooserClient*, const WebColor&);
     virtual PassRefPtr<WebCore::DateTimeChooser> openDateTimeChooser(WebCore::DateTimeChooserClient*, const WebCore::DateTimeChooserParameters&) OVERRIDE;
     virtual void runOpenPanel(WebCore::Frame*, PassRefPtr<WebCore::FileChooser>);
-    virtual void loadIconForFiles(const Vector<WTF::String>&, WebCore::FileIconLoader*);
     virtual void enumerateChosenDirectory(WebCore::FileChooser*);
     virtual void setCursor(const WebCore::Cursor&);
     virtual void formStateDidChange(const WebCore::Node*);

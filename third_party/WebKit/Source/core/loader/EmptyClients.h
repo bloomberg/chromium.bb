@@ -151,7 +151,6 @@ public:
     virtual PassRefPtr<DateTimeChooser> openDateTimeChooser(DateTimeChooserClient*, const DateTimeChooserParameters&) OVERRIDE;
 
     virtual void runOpenPanel(Frame*, PassRefPtr<FileChooser>) OVERRIDE;
-    virtual void loadIconForFiles(const Vector<String>&, FileIconLoader*) OVERRIDE { }
 
     virtual void formStateDidChange(const Node*) OVERRIDE { }
 

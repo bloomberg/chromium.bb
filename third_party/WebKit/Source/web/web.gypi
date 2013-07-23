@@ -177,8 +177,6 @@
       'WebIDBKeyPath.cpp',
       'WebIDBKeyRange.cpp',
       'WebIDBMetadata.cpp',
-      'WebIconLoadingCompletionImpl.cpp',
-      'WebIconLoadingCompletionImpl.h',
       'WebImageCache.cpp',
       'WebImageDecoder.cpp',
       'WebImageSkia.cpp',
