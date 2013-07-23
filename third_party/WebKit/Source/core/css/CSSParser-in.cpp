@@ -9988,217 +9988,146 @@ inline void CSSParser::detectAtToken(int length, bool hasEscape)
     CharacterType* name = tokenStart<CharacterType>();
     ASSERT(name[0] == '@' && length >= 2);
 
+    // Ignore leading @.
+    ++name;
+    --length;
+
     // charset, font-face, import, media, namespace, page, supports,
     // -webkit-keyframes, and -webkit-mediaquery are not affected by hasEscape.
-    switch (toASCIILowerUnchecked(name[1])) {
-    case 'b':
-        if (hasEscape)
-            return;
-
-        switch (length) {
-        case 12:
-            if (isEqualToCSSIdentifier(name + 2, "ottom-left"))
+    SWITCH(name, length) {
+        CASE("bottom-left") {
+            if (LIKELY(!hasEscape))
                 m_token = BOTTOMLEFT_SYM;
-            return;
-
-        case 13:
-            if (isEqualToCSSIdentifier(name + 2, "ottom-right"))
-                m_token = BOTTOMRIGHT_SYM;
-            return;
-
-        case 14:
-            if (isEqualToCSSIdentifier(name + 2, "ottom-center"))
-                m_token = BOTTOMCENTER_SYM;
-            return;
-
-        case 19:
-            if (isEqualToCSSIdentifier(name + 2, "ottom-left-corner"))
-                m_token = BOTTOMLEFTCORNER_SYM;
-            return;
-
-        case 20:
-            if (isEqualToCSSIdentifier(name + 2, "ottom-right-corner"))
-                m_token = BOTTOMRIGHTCORNER_SYM;
-            return;
         }
-        return;
-
-    case 'c':
-        if (length == 8 && isEqualToCSSIdentifier(name + 2, "harset") && name == dataStart<CharacterType>())
-            m_token = CHARSET_SYM;
-        return;
-
-    case 'f':
-        if (length == 10 && isEqualToCSSIdentifier(name + 2, "ont-face"))
+        CASE("bottom-right") {
+            if (LIKELY(!hasEscape))
+                m_token = BOTTOMRIGHT_SYM;
+        }
+        CASE("bottom-center") {
+            if (LIKELY(!hasEscape))
+                m_token = BOTTOMCENTER_SYM;
+        }
+        CASE("bottom-left-corner") {
+            if (LIKELY(!hasEscape))
+                m_token = BOTTOMLEFTCORNER_SYM;
+        }
+        CASE("bottom-right-corner") {
+            if (LIKELY(!hasEscape))
+                m_token = BOTTOMRIGHTCORNER_SYM;
+        }
+        CASE("charset") {
+            if (name - 1 == dataStart<CharacterType>())
+                m_token = CHARSET_SYM;
+        }
+        CASE("font-face") {
             m_token = FONT_FACE_SYM;
-        return;
-
-    case 'h':
-        if (length == 5 && isEqualToCSSIdentifier(name + 2, "ost"))
+        }
+        CASE("host") {
             m_token = HOST_SYM;
-        return;
-
-    case 'i':
-        if (length == 7 && isEqualToCSSIdentifier(name + 2, "mport")) {
+        }
+        CASE("import") {
             m_parsingMode = MediaQueryMode;
             m_token = IMPORT_SYM;
         }
-        return;
-
-    case 'l':
-        if (hasEscape)
-            return;
-
-        if (length == 9) {
-            if (isEqualToCSSIdentifier(name + 2, "eft-top"))
+        CASE("left-top") {
+            if (LIKELY(!hasEscape))
                 m_token = LEFTTOP_SYM;
-        } else if (length == 12) {
-            // Checking the last character first could further reduce the possibile cases.
-            if (isASCIIAlphaCaselessEqual(name[11], 'e') && isEqualToCSSIdentifier(name + 2, "eft-middl"))
+        }
+        CASE("left-middle") {
+            if (LIKELY(!hasEscape))
                 m_token = LEFTMIDDLE_SYM;
-            else if (isASCIIAlphaCaselessEqual(name[11], 'm') && isEqualToCSSIdentifier(name + 2, "eft-botto"))
+        }
+        CASE("left-bottom") {
+            if (LIKELY(!hasEscape))
                 m_token = LEFTBOTTOM_SYM;
         }
-        return;
-
-    case 'm':
-        if (length == 6 && isEqualToCSSIdentifier(name + 2, "edia")) {
+        CASE("media") {
             m_parsingMode = MediaQueryMode;
             m_token = MEDIA_SYM;
         }
-        return;
-
-    case 'n':
-        if (length == 10 && isEqualToCSSIdentifier(name + 2, "amespace"))
+        CASE("namespace") {
             m_token = NAMESPACE_SYM;
-        return;
-
-    case 'p':
-        if (length == 5 && isEqualToCSSIdentifier(name + 2, "age"))
+        }
+        CASE("page") {
             m_token = PAGE_SYM;
-        return;
-
-    case 'r':
-        if (hasEscape)
-            return;
-
-        if (length == 10) {
-            if (isEqualToCSSIdentifier(name + 2, "ight-top"))
+        }
+        CASE("right-top") {
+            if (LIKELY(!hasEscape))
                 m_token = RIGHTTOP_SYM;
-        } else if (length == 13) {
-            // Checking the last character first could further reduce the possibile cases.
-            if (isASCIIAlphaCaselessEqual(name[12], 'e') && isEqualToCSSIdentifier(name + 2, "ight-middl"))
+        }
+        CASE("right-middle") {
+            if (LIKELY(!hasEscape))
                 m_token = RIGHTMIDDLE_SYM;
-            else if (isASCIIAlphaCaselessEqual(name[12], 'm') && isEqualToCSSIdentifier(name + 2, "ight-botto"))
+        }
+        CASE("right-bottom") {
+            if (LIKELY(!hasEscape))
                 m_token = RIGHTBOTTOM_SYM;
         }
-        return;
-
-    case 's':
-        if (length == 9 && isEqualToCSSIdentifier(name + 2, "upports")) {
+        CASE("supports") {
             m_parsingMode = SupportsMode;
             m_token = SUPPORTS_SYM;
         }
-        return;
-
-    case 't':
-        if (hasEscape)
-            return;
-
-        switch (length) {
-        case 9:
-            if (isEqualToCSSIdentifier(name + 2, "op-left"))
+        CASE("top-left") {
+            if (LIKELY(!hasEscape))
                 m_token = TOPLEFT_SYM;
-            return;
-
-        case 10:
-            if (isEqualToCSSIdentifier(name + 2, "op-right"))
-                m_token = TOPRIGHT_SYM;
-            return;
-
-        case 11:
-            if (isEqualToCSSIdentifier(name + 2, "op-center"))
-                m_token = TOPCENTER_SYM;
-            return;
-
-        case 16:
-            if (isEqualToCSSIdentifier(name + 2, "op-left-corner"))
-                m_token = TOPLEFTCORNER_SYM;
-            return;
-
-        case 17:
-            if (isEqualToCSSIdentifier(name + 2, "op-right-corner"))
-                m_token = TOPRIGHTCORNER_SYM;
-            return;
         }
-        return;
-
-    case 'v':
-        if (length == 9 && isEqualToCSSIdentifier(name + 2, "iewport"))
+        CASE("top-right") {
+            if (LIKELY(!hasEscape))
+                m_token = TOPRIGHT_SYM;
+        }
+        CASE("top-center") {
+            if (LIKELY(!hasEscape))
+                m_token = TOPCENTER_SYM;
+        }
+        CASE("top-left-corner") {
+            if (LIKELY(!hasEscape))
+                m_token = TOPLEFTCORNER_SYM;
+        }
+        CASE("top-right-corner") {
+            if (LIKELY(!hasEscape))
+                m_token = TOPRIGHTCORNER_SYM;
+        }
+        CASE("viewport") {
             m_token = VIEWPORT_RULE_SYM;
-        return;
-
-    case '-':
-        switch (length) {
-        case 15:
-            if (hasEscape)
-                return;
-
-            if (isEqualToCSSIdentifier(name + 2, "internal-rule")) {
+        }
+        CASE("-internal-rule") {
+            if (LIKELY(!hasEscape))
                 m_token = INTERNAL_RULE_SYM;
-                return;
-            }
-
-            if (isASCIIAlphaCaselessEqual(name[14], 'n') && isEqualToCSSIdentifier(name + 2, "webkit-regio")) {
+        }
+        CASE("-webkit-region") {
+            if (LIKELY(!hasEscape))
                 m_token = WEBKIT_REGION_RULE_SYM;
-                return;
-            }
-
-            if (isASCIIAlphaCaselessEqual(name[14], 'r') && isEqualToCSSIdentifier(name + 2, "webkit-filte")) {
+        }
+        CASE("-webkit-filter") {
+            if (LIKELY(!hasEscape))
                 m_token = WEBKIT_FILTER_RULE_SYM;
-                return;
-            }
-            return;
-
-        case 16:
-            if (hasEscape)
-                return;
-
-            // Checking the last character first could further reduce the possibile cases.
-            if (isASCIIAlphaCaselessEqual(name[15], 's') && isEqualToCSSIdentifier(name + 2, "internal-decl"))
+        }
+        CASE("-internal-decls") {
+            if (LIKELY(!hasEscape))
                 m_token = INTERNAL_DECLS_SYM;
-            else if (isASCIIAlphaCaselessEqual(name[15], 'e') && isEqualToCSSIdentifier(name + 2, "internal-valu"))
+        }
+        CASE("-internal-value") {
+            if (LIKELY(!hasEscape))
                 m_token = INTERNAL_VALUE_SYM;
-            return;
-
-        case 18:
-            if (isEqualToCSSIdentifier(name + 2, "webkit-keyframes"))
-                m_token = WEBKIT_KEYFRAMES_SYM;
-            return;
-
-        case 19:
-            if (!hasEscape && isASCIIAlphaCaselessEqual(name[18], 'r') && isEqualToCSSIdentifier(name + 2, "internal-selecto"))
+        }
+        CASE("-webkit-keyframes") {
+            m_token = WEBKIT_KEYFRAMES_SYM;
+        }
+        CASE("-internal-selector") {
+            if (LIKELY(!hasEscape))
                 m_token = INTERNAL_SELECTOR_SYM;
-            return;
-
-        case 20:
-            if (isEqualToCSSIdentifier(name + 2, "internal-medialist")) {
-                m_parsingMode = MediaQueryMode;
-                m_token = INTERNAL_MEDIALIST_SYM;
-            }
-            return;
-
-        case 24:
-            if (!hasEscape && isEqualToCSSIdentifier(name + 2, "internal-keyframe-rule"))
+        }
+        CASE("-internal-medialist") {
+            m_parsingMode = MediaQueryMode;
+            m_token = INTERNAL_MEDIALIST_SYM;
+        }
+        CASE("-internal-keyframe-rule") {
+            if (LIKELY(!hasEscape))
                 m_token = INTERNAL_KEYFRAME_RULE_SYM;
-            return;
-
-        case 29:
-            if (isEqualToCSSIdentifier(name + 2, "internal-supports-condition")) {
-                m_parsingMode = SupportsMode;
-                m_token = INTERNAL_SUPPORTS_CONDITION_SYM;
-            }
-            return;
+        }
+        CASE("-internal-supports-condition") {
+            m_parsingMode = SupportsMode;
+            m_token = INTERNAL_SUPPORTS_CONDITION_SYM;
         }
     }
 }
