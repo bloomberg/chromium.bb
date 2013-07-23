@@ -70,6 +70,14 @@ const struct {
   { "m17n:zh:quick", "\xe9\x80\x9f" },  // U+901F
   // For Hangul input method.
   { "mozc-hangul", "\xed\x95\x9c" },  // U+D55C
+  { "_comp_ime_bdgdidmhaijohebebipajioienkglgfohangul_2set", "\xed\x95\x9c" },
+  { "_comp_ime_bdgdidmhaijohebebipajioienkglgfohangul_3set390",
+    "\xed\x95\x9c" },
+  { "_comp_ime_bdgdidmhaijohebebipajioienkglgfohangul_3setfinal",
+    "\xed\x95\x9c" },
+  { "_comp_ime_bdgdidmhaijohebebipajioienkglgfohangul_3setnoshift",
+    "\xed\x95\x9c" },
+  { "_comp_ime_bdgdidmhaijohebebipajioienkglgfohangul_romaja", "\xed\x95\x9c" },
 };
 
 const size_t kMappingFromIdToIndicatorTextLen =
