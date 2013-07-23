@@ -106,6 +106,7 @@ NewTabUI::NewTabUI(content::WebUI* web_ui)
     web_ui->AddMessageHandler(new MostVisitedHandler());
     web_ui->AddMessageHandler(new RecentlyClosedTabsHandler());
 #if !defined(OS_ANDROID)
+    web_ui->AddMessageHandler(new FaviconWebUIHandler());
     web_ui->AddMessageHandler(new MetricsHandler());
     web_ui->AddMessageHandler(new NewTabPageHandler());
     if (NewTabUI::IsDiscoveryInNTPEnabled())
@@ -121,14 +122,13 @@ NewTabUI::NewTabUI(content::WebUI* web_ui)
         web_ui->AddMessageHandler(new AppLauncherHandler(service));
     }
 #endif
-
-    web_ui->AddMessageHandler(new FaviconWebUIHandler());
   }
 
 #if defined(OS_ANDROID)
   // These handlers are specific to the Android NTP page.
   web_ui->AddMessageHandler(new BookmarksHandler());
   web_ui->AddMessageHandler(new ContextMenuHandler());
+  web_ui->AddMessageHandler(new FaviconWebUIHandler());
   web_ui->AddMessageHandler(new NavigationHandler());
   web_ui->AddMessageHandler(new NewTabPageReadyHandler());
   if (!GetProfile()->IsOffTheRecord())
