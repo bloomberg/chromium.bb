@@ -7,6 +7,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace content {
 
@@ -15,6 +16,8 @@ namespace {
 base::FilePath::CharType kFooPath[] = FILE_PATH_LITERAL("/plugins/foo.plugin");
 base::FilePath::CharType kBarPath[] = FILE_PATH_LITERAL("/plugins/bar.plugin");
 const char* kFooName = "Foo Plugin";
+const char* kFooMimeType = "application/x-foo-mime-type";
+const char* kFooFileType = "foo";
 
 bool Equals(const WebPluginInfo& a, const WebPluginInfo& b) {
   return (a.name == b.name &&
@@ -51,6 +54,8 @@ class PluginListTest : public testing::Test {
   virtual void SetUp() {
     plugin_list_.DisablePluginsDiscovery();
     plugin_list_.RegisterInternalPlugin(bar_plugin_, false);
+    foo_plugin_.mime_types.push_back(
+        WebPluginMimeType(kFooMimeType, kFooFileType, std::string()));
     plugin_list_.RegisterInternalPlugin(foo_plugin_, false);
   }
 
@@ -79,6 +84,56 @@ TEST_F(PluginListTest, BadPluginDescription) {
   std::vector<WebPluginInfo> plugins;
   plugin_list_.GetPlugins(&plugins, true);
   ASSERT_TRUE(Contains(plugins, plugin_3043));
+}
+
+TEST_F(PluginListTest, GetPluginInfoArray) {
+  const char kTargetUrl[] = "http://example.com/test.foo";
+  GURL target_url(kTargetUrl);
+  std::vector<WebPluginInfo> plugins;
+  std::vector<std::string> actual_mime_types;
+
+  // The file type of the URL is supported by foo_plugin_. However,
+  // GetPluginInfoArray should not match foo_plugin_ because the MIME type is
+  // application/octet-stream.
+  plugin_list_.GetPluginInfoArray(target_url,
+                                  "application/octet-stream",
+                                  false, // allow_wildcard
+                                  NULL,  // use_stale
+                                  false, // include_npapi
+                                  &plugins,
+                                  &actual_mime_types);
+  EXPECT_EQ(0u, plugins.size());
+  EXPECT_EQ(0u, actual_mime_types.size());
+
+  // foo_plugin_ matches due to the MIME type.
+  plugins.clear();
+  actual_mime_types.clear();
+  plugin_list_.GetPluginInfoArray(target_url,
+                                  kFooMimeType,
+                                  false, // allow_wildcard
+                                  NULL,  // use_stale
+                                  false, // include_npapi
+                                  &plugins,
+                                  &actual_mime_types);
+  EXPECT_EQ(1u, plugins.size());
+  EXPECT_TRUE(Contains(plugins, foo_plugin_));
+  ASSERT_EQ(1u, actual_mime_types.size());
+  EXPECT_EQ(kFooMimeType, actual_mime_types.front());
+
+  // foo_plugin_ matches due to the file type and empty MIME type.
+  plugins.clear();
+  actual_mime_types.clear();
+  plugin_list_.GetPluginInfoArray(target_url,
+                                  "",
+                                  false, // allow_wildcard
+                                  NULL,  // use_stale
+                                  false, // include_npapi
+                                  &plugins,
+                                  &actual_mime_types);
+  EXPECT_EQ(1u, plugins.size());
+  EXPECT_TRUE(Contains(plugins, foo_plugin_));
+  ASSERT_EQ(1u, actual_mime_types.size());
+  EXPECT_EQ(kFooMimeType, actual_mime_types.front());
 }
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)

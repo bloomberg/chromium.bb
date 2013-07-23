@@ -25,30 +25,7 @@ namespace content {
 
 namespace {
 
-const char kApplicationOctetStream[] = "application/octet-stream";
-
 base::LazyInstance<PluginList> g_singleton = LAZY_INSTANCE_INITIALIZER;
-
-bool AllowMimeTypeMismatch(const std::string& orig_mime_type,
-                           const std::string& actual_mime_type) {
-  if (orig_mime_type == actual_mime_type) {
-    NOTREACHED();
-    return true;
-  }
-
-  // We do not permit URL-sniff based plug-in MIME type overrides aside from
-  // the case where the "type" was initially missing or generic
-  // (application/octet-stream).
-  // We collected stats to determine this approach isn't a major compat issue,
-  // and we defend against content confusion attacks in various cases, such
-  // as when the user doesn't have the Flash plug-in enabled.
-  bool allow = orig_mime_type.empty() ||
-               orig_mime_type == kApplicationOctetStream;
-  LOG_IF(INFO, !allow) << "Ignoring plugin with unexpected MIME type "
-                       << actual_mime_type << " (expected " << orig_mime_type
-                       << ")";
-  return allow;
-}
 
 }  // namespace
 
@@ -365,16 +342,20 @@ void PluginList::GetPluginInfoArray(
   }
 
   // Add in plugins by url.
+  // We do not permit URL-sniff based plug-in MIME type overrides aside from
+  // the case where the "type" was initially missing.
+  // We collected stats to determine this approach isn't a major compat issue,
+  // and we defend against content confusion attacks in various cases, such
+  // as when the user doesn't have the Flash plug-in enabled.
   std::string path = url.path();
   std::string::size_type last_dot = path.rfind('.');
-  if (last_dot != std::string::npos) {
+  if (last_dot != std::string::npos && mime_type.empty()) {
     std::string extension = StringToLowerASCII(std::string(path, last_dot+1));
     std::string actual_mime_type;
     for (size_t i = 0; i < plugins_list_.size(); ++i) {
       if (SupportsExtension(plugins_list_[i], extension, &actual_mime_type)) {
         base::FilePath path = plugins_list_[i].path;
-        if (visited_plugins.insert(path).second &&
-            AllowMimeTypeMismatch(mime_type, actual_mime_type)) {
+        if (visited_plugins.insert(path).second) {
           info->push_back(plugins_list_[i]);
           if (actual_mime_types)
             actual_mime_types->push_back(actual_mime_type);

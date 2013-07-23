@@ -10,15 +10,18 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "content/browser/byte_stream.h"
 #include "content/browser/download/download_file_factory.h"
 #include "content/browser/download/download_file_impl.h"
 #include "content/browser/download/download_item_impl.h"
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/download/download_resource_handler.h"
+#include "content/browser/plugin_service_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/power_save_blocker.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/webplugininfo.h"
 #include "content/public/test/download_test_observer.h"
 #include "content/public/test/test_file_error_injector.h"
 #include "content/public/test/test_utils.h"
@@ -778,6 +781,28 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, MultiDownload) {
   ASSERT_TRUE(base::ContentsEqual(
       file2, GetTestFilePath("download", "download-test.lib")));
 }
+
+#if defined(ENABLE_PLUGINS)
+// Content served with a MIME type of application/octet-stream should be
+// downloaded even when a plugin can be found that handles the file type.
+IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadOctetStream) {
+  const base::FilePath::CharType kTestFilePath[] =
+      FILE_PATH_LITERAL("octet-stream.abc");
+  const char kTestPluginName[] = "TestPlugin";
+  const char kTestMimeType[] = "application/x-test-mime-type";
+  const char kTestFileType[] = "abc";
+
+  WebPluginInfo plugin_info;
+  plugin_info.name = base::ASCIIToUTF16(kTestPluginName);
+  plugin_info.mime_types.push_back(
+      WebPluginMimeType(kTestMimeType, kTestFileType, ""));
+  PluginServiceImpl::GetInstance()->RegisterInternalPlugin(plugin_info, false);
+
+  // The following is served with a Content-Type of application/octet-stream.
+  GURL url(URLRequestMockHTTPJob::GetMockUrl(base::FilePath(kTestFilePath)));
+  DownloadAndWait(shell(), url, DownloadItem::COMPLETE);
+}
+#endif
 
 // Try to cancel just before we release the download file, by delaying final
 // rename callback.
