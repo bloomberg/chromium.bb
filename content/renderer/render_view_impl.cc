@@ -504,7 +504,8 @@ static bool IsTopLevelNavigation(WebFrame* frame) {
 // Returns false unless this is a top-level navigation that crosses origins.
 static bool IsNonLocalTopLevelNavigation(const GURL& url,
                                          WebFrame* frame,
-                                         WebNavigationType type) {
+                                         WebNavigationType type,
+                                         bool is_form_post) {
   if (!IsTopLevelNavigation(frame))
     return false;
 
@@ -517,19 +518,15 @@ static bool IsNonLocalTopLevelNavigation(const GURL& url,
   if (!url.SchemeIs(chrome::kHttpScheme) && !url.SchemeIs(chrome::kHttpsScheme))
     return false;
 
-  // Not interested in reloads/form submits/resubmits/back forward navigations.
   if (type != WebKit::WebNavigationTypeReload &&
-      type != WebKit::WebNavigationTypeFormSubmitted &&
-      type != WebKit::WebNavigationTypeFormResubmitted &&
-      type != WebKit::WebNavigationTypeBackForward) {
+      type != WebKit::WebNavigationTypeBackForward && !is_form_post) {
     // The opener relationship between the new window and the parent allows the
     // new window to script the parent and vice versa. This is not allowed if
     // the origins of the two domains are different. This can be treated as a
     // top level navigation and routed back to the host.
     WebKit::WebFrame* opener = frame->opener();
-    if (!opener) {
+    if (!opener)
       return true;
-    }
 
     if (url.GetOrigin() != GURL(opener->document().url()).GetOrigin())
       return true;
@@ -3157,9 +3154,12 @@ WebNavigationPolicy RenderViewImpl::decidePolicyForNavigation(
 
   // If the browser is interested, then give it a chance to look at the request.
   if (is_content_initiated) {
+    bool is_form_post = ((type == WebKit::WebNavigationTypeFormSubmitted) ||
+                         (type == WebKit::WebNavigationTypeFormResubmitted)) &&
+                        EqualsASCII(request.httpMethod(), "POST");
     bool browser_handles_request =
         renderer_preferences_.browser_handles_non_local_top_level_requests &&
-        IsNonLocalTopLevelNavigation(url, frame, type);
+        IsNonLocalTopLevelNavigation(url, frame, type, is_form_post);
     if (!browser_handles_request) {
       browser_handles_request =
           renderer_preferences_.browser_handles_all_top_level_requests &&
