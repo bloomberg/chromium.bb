@@ -211,23 +211,21 @@ void CompositeAnimation::updateKeyframeAnimations(RenderObject* renderer, Render
             it->value->setIndex(-1);
             
         // Toss the animation order map.
-        m_keyframeAnimationOrderMap.clear();
+        m_keyframeAnimationOrderList.clear();
 
         DEFINE_STATIC_LOCAL(const AtomicString, none, ("none", AtomicString::ConstructFromLiteral));
-        
+
         // Now mark any still active animations as active and add any new animations.
         if (targetStyle->animations()) {
             int numAnims = targetStyle->animations()->size();
             for (int i = 0; i < numAnims; ++i) {
                 const CSSAnimationData* anim = targetStyle->animations()->animation(i);
-                AtomicString animationName(anim->name());
-
                 if (!anim->isValidAnimation())
                     continue;
                 
                 // See if there is a current animation for this name.
-                RefPtr<KeyframeAnimation> keyframeAnim = m_keyframeAnimations.get(animationName.impl());
-                
+                AtomicString name(anim->name());
+                RefPtr<KeyframeAnimation> keyframeAnim = m_keyframeAnimations.get(name);
                 if (keyframeAnim) {
                     // If this animation is postActive, skip it so it gets removed at the end of this function.
                     if (keyframeAnim->postActive())
@@ -241,33 +239,44 @@ void CompositeAnimation::updateKeyframeAnimations(RenderObject* renderer, Render
                     // Set the saved animation to this new one, just in case the play state has changed.
                     keyframeAnim->setAnimation(anim);
                     keyframeAnim->setIndex(i);
-                } else if ((anim->duration() || anim->delay()) && anim->iterationCount() && animationName != none) {
+                } else if ((anim->duration() || anim->delay()) && anim->iterationCount() && name != none) {
                     keyframeAnim = KeyframeAnimation::create(const_cast<CSSAnimationData*>(anim), renderer, i, this, targetStyle);
-                    m_keyframeAnimations.set(keyframeAnim->name().impl(), keyframeAnim);
+                    m_keyframeAnimations.set(name, keyframeAnim);
                 }
                 
                 // Add this to the animation order map.
                 if (keyframeAnim)
-                    m_keyframeAnimationOrderMap.append(keyframeAnim->name().impl());
+                    m_keyframeAnimationOrderList.append(name);
             }
         }
     }
-    
+
     // Make a list of animations to be removed.
-    Vector<AtomicStringImpl*> animsToBeRemoved;
+    Vector<AtomicString> animsToBeRemoved;
     kfend = m_keyframeAnimations.end();
     for (AnimationNameMap::const_iterator it = m_keyframeAnimations.begin(); it != kfend; ++it) {
         KeyframeAnimation* keyframeAnim = it->value.get();
         if (keyframeAnim->index() < 0) {
-            animsToBeRemoved.append(keyframeAnim->name().impl());
+            animsToBeRemoved.append(keyframeAnim->name());
             animationController()->animationWillBeRemoved(keyframeAnim);
             keyframeAnim->clear();
         }
     }
     
-    // Now remove the animations from the list.
-    for (size_t j = 0; j < animsToBeRemoved.size(); ++j)
-        m_keyframeAnimations.remove(animsToBeRemoved[j]);
+    // Now remove the animations from the list, and keep stale keys out of the order list.
+    if (animsToBeRemoved.size()) {
+        for (size_t j = 0; j < animsToBeRemoved.size(); ++j) {
+            ASSERT(m_keyframeAnimations.contains(animsToBeRemoved[j]));
+            m_keyframeAnimations.remove(animsToBeRemoved[j]);
+        }
+        Vector<AtomicString> newOrderList;
+        for (size_t j = 0; j < m_keyframeAnimationOrderList.size(); ++j) {
+            AtomicString key = m_keyframeAnimationOrderList[j];
+            if (m_keyframeAnimations.contains(key))
+                newOrderList.append(key);
+        }
+        m_keyframeAnimationOrderList.swap(newOrderList);
+    }
 }
 
 PassRefPtr<RenderStyle> CompositeAnimation::animate(RenderObject* renderer, RenderStyle* currentStyle, RenderStyle* targetStyle)
@@ -293,10 +302,10 @@ PassRefPtr<RenderStyle> CompositeAnimation::animate(RenderObject* renderer, Rend
 
     // Now that we have animation objects ready, let them know about the new goal state.  We want them
     // to fill in a RenderStyle*& only if needed.
-    for (Vector<AtomicStringImpl*>::const_iterator it = m_keyframeAnimationOrderMap.begin(); it != m_keyframeAnimationOrderMap.end(); ++it) {
+    for (Vector<AtomicString>::const_iterator it = m_keyframeAnimationOrderList.begin(); it != m_keyframeAnimationOrderList.end(); ++it) {
         RefPtr<KeyframeAnimation> keyframeAnim = m_keyframeAnimations.get(*it);
-        if (keyframeAnim)
-            keyframeAnim->animate(this, renderer, currentStyle, targetStyle, resultStyle);
+        ASSERT(keyframeAnim);
+        keyframeAnim->animate(this, renderer, currentStyle, targetStyle, resultStyle);
     }
 
     return resultStyle ? resultStyle.release() : targetStyle;
@@ -313,10 +322,10 @@ PassRefPtr<RenderStyle> CompositeAnimation::getAnimatedStyle() const
 
     m_keyframeAnimations.checkConsistency();
 
-    for (Vector<AtomicStringImpl*>::const_iterator it = m_keyframeAnimationOrderMap.begin(); it != m_keyframeAnimationOrderMap.end(); ++it) {
+    for (Vector<AtomicString>::const_iterator it = m_keyframeAnimationOrderList.begin(); it != m_keyframeAnimationOrderList.end(); ++it) {
         RefPtr<KeyframeAnimation> keyframeAnimation = m_keyframeAnimations.get(*it);
-        if (keyframeAnimation)
-            keyframeAnimation->getAnimatedStyle(resultStyle);
+        ASSERT(keyframeAnimation);
+        keyframeAnimation->getAnimatedStyle(resultStyle);
     }
     
     return resultStyle;

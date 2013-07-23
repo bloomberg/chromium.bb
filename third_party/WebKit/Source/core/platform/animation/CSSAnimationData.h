@@ -126,7 +126,7 @@ public:
     void setDuration(double d) { ASSERT(d >= 0); m_duration = d; m_durationSet = true; }
     void setFillMode(unsigned f) { m_fillMode = f; m_fillModeSet = true; }
     void setIterationCount(double c) { m_iterationCount = c; m_iterationCountSet = true; }
-    void setName(const String& n) { m_name = n; m_nameSet = true; }
+    void setName(const AtomicString& n) { m_name = n; m_nameSet = true; }
     void setPlayState(EAnimPlayState d) { m_playState = d; m_playStateSet = true; }
     void setProperty(CSSPropertyID t) { m_property = t; m_propertySet = true; }
     void setTimingFunction(PassRefPtr<TimingFunction> f) { m_timingFunction = f; m_timingFunctionSet = true; }
@@ -150,7 +150,7 @@ private:
     CSSAnimationData();
     CSSAnimationData(const CSSAnimationData& o);
 
-    String m_name;
+    AtomicString m_name;
     CSSPropertyID m_property;
     AnimationMode m_mode;
     double m_iterationCount;
