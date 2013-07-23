@@ -55,7 +55,7 @@ class DomPerfMeasurement(page_measurement.PageMeasurement):
     finally:
       tab.EvaluateJavaScript('document.cookie = "__domperf_finished=0"')
 
-  def DidRunTest(self, tab, results):
+  def DidRunPageSet(self, tab, results):
     # Now give the geometric mean as the total for the combined runs.
     scores = []
     for result in results.page_results:
