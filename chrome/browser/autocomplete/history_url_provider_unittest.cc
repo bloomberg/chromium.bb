@@ -152,12 +152,12 @@ class HistoryURLProviderTest : public testing::Test,
 
   // testing::Test
   virtual void SetUp() {
-    ASSERT_TRUE(SetUpImpl(false));
+    SetUpImpl(false);
   }
   virtual void TearDown();
 
   // Does the real setup.
-  bool SetUpImpl(bool no_db) WARN_UNUSED_RESULT;
+  void SetUpImpl(bool no_db);
 
   // Fills test data into the history system.
   void FillData();
@@ -195,7 +195,7 @@ class HistoryURLProviderTest : public testing::Test,
 class HistoryURLProviderTestNoDB : public HistoryURLProviderTest {
  protected:
   virtual void SetUp() {
-    ASSERT_TRUE(SetUpImpl(true));
+    SetUpImpl(true);
   }
 };
 
@@ -204,10 +204,9 @@ void HistoryURLProviderTest::OnProviderUpdate(bool updated_matches) {
     base::MessageLoop::current()->Quit();
 }
 
-bool HistoryURLProviderTest::SetUpImpl(bool no_db) {
+void HistoryURLProviderTest::SetUpImpl(bool no_db) {
   profile_.reset(new TestingProfile());
-  if (!(profile_->CreateHistoryService(true, no_db)))
-    return false;
+  profile_->CreateHistoryService(true, no_db);
   if (!no_db) {
     profile_->BlockUntilHistoryProcessesPendingRequests();
     profile_->BlockUntilHistoryIndexIsRefreshed();
@@ -220,7 +219,6 @@ bool HistoryURLProviderTest::SetUpImpl(bool no_db) {
   TemplateURLServiceFactory::GetInstance()->SetTestingFactoryAndUse(
       profile_.get(), &HistoryURLProviderTest::CreateTemplateURLService);
   FillData();
-  return true;
 }
 
 void HistoryURLProviderTest::TearDown() {

@@ -497,7 +497,7 @@ TEST_F(BackFwdMenuModelTest, EscapeLabel) {
 
 // Test asynchronous loading of favicon from history service.
 TEST_F(BackFwdMenuModelTest, FaviconLoadTest) {
-  ASSERT_TRUE(profile()->CreateHistoryService(true, false));
+  profile()->CreateHistoryService(true, false);
   profile()->CreateFaviconService();
   Browser::CreateParams native_params(profile(), chrome::GetActiveDesktop());
   scoped_ptr<Browser> browser(

@@ -151,7 +151,7 @@ class HistoryQuickProviderTest : public testing::Test,
 
 void HistoryQuickProviderTest::SetUp() {
   profile_.reset(new TestingProfile());
-  ASSERT_TRUE(profile_->CreateHistoryService(true, false));
+  profile_->CreateHistoryService(true, false);
   profile_->CreateBookmarkModel(true);
   ui_test_utils::WaitForBookmarkModelToLoad(profile_.get());
   profile_->BlockUntilHistoryIndexIsRefreshed();

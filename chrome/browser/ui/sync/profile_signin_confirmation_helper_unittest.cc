@@ -138,7 +138,7 @@ class ProfileSigninConfirmationHelperTest : public testing::Test {
     profile_->CreateBookmarkModel(true);
     model_ = BookmarkModelFactory::GetForProfile(profile_.get());
     ui_test_utils::WaitForBookmarkModelToLoad(model_);
-    ASSERT_TRUE(profile_->CreateHistoryService(true, false));
+    profile_->CreateHistoryService(true, false);
     extensions::TestExtensionSystem* system =
         static_cast<extensions::TestExtensionSystem*>(
             extensions::ExtensionSystem::Get(profile_.get()));

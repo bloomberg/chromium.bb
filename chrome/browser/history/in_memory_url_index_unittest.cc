@@ -186,7 +186,7 @@ bool InMemoryURLIndexTest::DeleteURL(const GURL& url) {
 
 void InMemoryURLIndexTest::SetUp() {
   // We cannot access the database until the backend has been loaded.
-  ASSERT_TRUE(profile_.CreateHistoryService(true, false));
+  profile_.CreateHistoryService(true, false);
   profile_.CreateBookmarkModel(true);
   ui_test_utils::WaitForBookmarkModelToLoad(&profile_);
   profile_.BlockUntilHistoryProcessesPendingRequests();

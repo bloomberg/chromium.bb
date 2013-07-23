@@ -53,7 +53,7 @@ class AndroidHistoryProviderServiceTest : public testing::Test {
 
     testing_profile_->CreateBookmarkModel(true);
     ui_test_utils::WaitForBookmarkModelToLoad(testing_profile_);
-    ASSERT_TRUE(testing_profile_->CreateHistoryService(true, false));
+    testing_profile_->CreateHistoryService(true, false);
     service_.reset(new AndroidHistoryProviderService(testing_profile_));
   }
 

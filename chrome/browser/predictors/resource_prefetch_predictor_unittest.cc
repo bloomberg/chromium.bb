@@ -186,7 +186,7 @@ ResourcePrefetchPredictorTest::~ResourcePrefetchPredictorTest() {
 void ResourcePrefetchPredictorTest::SetUp() {
   InitializeSampleData();
 
-  ASSERT_TRUE(profile_->CreateHistoryService(true, false));
+  profile_->CreateHistoryService(true, false);
   profile_->BlockUntilHistoryProcessesPendingRequests();
   EXPECT_TRUE(HistoryServiceFactory::GetForProfile(profile_.get(),
                                                    Profile::EXPLICIT_ACCESS));

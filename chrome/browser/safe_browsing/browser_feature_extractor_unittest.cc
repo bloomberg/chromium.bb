@@ -51,8 +51,7 @@ class BrowserFeatureExtractorTest : public ChromeRenderViewHostTestHarness {
  protected:
   virtual void SetUp() {
     ChromeRenderViewHostTestHarness::SetUp();
-    ASSERT_TRUE(profile()->CreateHistoryService(
-        true /* delete_file */, false /* no_db */));
+    profile()->CreateHistoryService(true /* delete_file */, false /* no_db */);
     service_.reset(new StrictMock<MockClientSideDetectionService>());
     extractor_.reset(
         new BrowserFeatureExtractor(web_contents(), service_.get()));

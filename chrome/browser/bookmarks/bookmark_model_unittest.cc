@@ -910,6 +910,15 @@ class BookmarkModelTestWithProfile : public testing::Test {
     ui_test_utils::WaitForBookmarkModelToLoad(bb_model_);
   }
 
+  // Destroys the current profile, creates a new one and creates the history
+  // service.
+  void RecreateProfile() {
+    // Need to shutdown the old one before creating a new one.
+    profile_.reset(NULL);
+    profile_.reset(new TestingProfile());
+    profile_->CreateHistoryService(true, false);
+  }
+
   // The profile.
   scoped_ptr<TestingProfile> profile_;
   BookmarkModel* bb_model_;
@@ -945,7 +954,7 @@ TEST_F(BookmarkModelTestWithProfile, CreateAndRestore) {
     profile_.reset(NULL);
     profile_.reset(new TestingProfile());
     profile_->CreateBookmarkModel(true);
-    ASSERT_TRUE(profile_->CreateHistoryService(true, false));
+    profile_->CreateHistoryService(true, false);
     BlockTillBookmarkModelLoaded();
 
     TestNode bbn;

@@ -42,7 +42,7 @@ class ExtensionAppProviderTest : public testing::Test {
 
 void ExtensionAppProviderTest::SetUp() {
   profile_.reset(new TestingProfile());
-  ASSERT_TRUE(profile_->CreateHistoryService(true, false));
+  profile_->CreateHistoryService(true, false);
   profile_->BlockUntilHistoryProcessesPendingRequests();
   history_service_ =
       HistoryServiceFactory::GetForProfile(profile_.get(),

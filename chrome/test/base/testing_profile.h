@@ -132,8 +132,8 @@ class TestingProfile : public Profile {
   // deletes the directory containing the files used by HistoryService, this
   // only matters if you're recreating the HistoryService.  If |no_db| is true,
   // the history backend will fail to initialize its database; this is useful
-  // for testing error conditions. Returns true on success.
-  bool CreateHistoryService(bool delete_file, bool no_db) WARN_UNUSED_RESULT;
+  // for testing error conditions.
+  void CreateHistoryService(bool delete_file, bool no_db);
 
   // Shuts down and nulls out the reference to HistoryService.
   void DestroyHistoryService();

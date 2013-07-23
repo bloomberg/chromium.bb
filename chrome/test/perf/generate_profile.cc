@@ -229,10 +229,7 @@ bool GenerateProfile(GenerateProfileTypes types,
   content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop);
   content::TestBrowserThread db_thread(BrowserThread::DB, &message_loop);
   TestingProfile profile;
-  if (!profile.CreateHistoryService(false, false)) {
-      PLOG(ERROR) << "Creating history service failed";
-      return false;
-  }
+  profile.CreateHistoryService(false, false);
   if (types & TOP_SITES) {
     profile.CreateTopSites();
     profile.BlockUntilTopSitesLoaded();

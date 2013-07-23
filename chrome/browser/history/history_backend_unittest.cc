@@ -2791,7 +2791,7 @@ TEST_F(HistoryBackendSegmentDurationTest, SegmentDuration) {
 TEST_F(HistoryBackendTest, RemoveNotification) {
   scoped_ptr<TestingProfile> profile(new TestingProfile());
 
-  ASSERT_TRUE(profile->CreateHistoryService(false, false));
+  profile->CreateHistoryService(false, false);
   profile->CreateBookmarkModel(true);
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile.get());
   ui_test_utils::WaitForBookmarkModelToLoad(model);

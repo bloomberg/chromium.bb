@@ -1194,7 +1194,7 @@ TEST_F(TemplateURLServiceTest, ChangeGoogleBaseValue) {
 // KEYWORD visits.
 TEST_F(TemplateURLServiceTest, GenerateVisitOnKeyword) {
   test_util_.VerifyLoad();
-  ASSERT_TRUE(test_util_.profile()->CreateHistoryService(true, false));
+  test_util_.profile()->CreateHistoryService(true, false);
 
   // Create a keyword.
   TemplateURL* t_url = AddKeywordWithDate(

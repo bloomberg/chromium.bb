@@ -191,7 +191,7 @@ void SearchProviderTest::SetUp() {
   test_factory_.set_remove_fetcher_on_delete(true);
 
   // We need both the history service and template url model loaded.
-  ASSERT_TRUE(profile_.CreateHistoryService(true, false));
+  profile_.CreateHistoryService(true, false);
   TemplateURLServiceFactory::GetInstance()->SetTestingFactoryAndUse(
       &profile_, &TemplateURLServiceFactory::BuildInstanceFor);
 

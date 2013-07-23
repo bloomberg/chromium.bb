@@ -236,7 +236,7 @@ TEST_F(BookmarkIndexTest, GetResultsSortedByTypedCount) {
   content::TestBrowserThreadBundle thread_bundle;
 
   TestingProfile profile;
-  ASSERT_TRUE(profile.CreateHistoryService(true, false));
+  profile.CreateHistoryService(true, false);
   profile.BlockUntilHistoryProcessesPendingRequests();
   profile.CreateBookmarkModel(true);
 
