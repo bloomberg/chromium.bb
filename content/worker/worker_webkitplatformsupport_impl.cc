@@ -12,6 +12,7 @@
 #include "content/child/database_util.h"
 #include "content/child/fileapi/webfilesystem_impl.h"
 #include "content/child/indexed_db/proxy_webidbfactory_impl.h"
+#include "content/child/quota_dispatcher.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/child/webblobregistry_impl.h"
 #include "content/child/webmessageportchannel_impl.h"
@@ -24,6 +25,7 @@
 #include "third_party/WebKit/public/platform/WebFileInfo.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
+#include "webkit/common/quota/quota_types.h"
 #include "webkit/glue/webfileutilities_impl.h"
 #include "webkit/glue/webkit_glue.h"
 
@@ -294,6 +296,16 @@ WebBlobRegistry* WorkerWebKitPlatformSupportImpl::blobRegistry() {
   if (!blob_registry_.get() && thread_safe_sender_.get())
     blob_registry_.reset(new WebBlobRegistryImpl(thread_safe_sender_.get()));
   return blob_registry_.get();
+}
+
+void WorkerWebKitPlatformSupportImpl::queryStorageUsageAndQuota(
+    const WebKit::WebURL& storage_partition,
+    WebKit::WebStorageQuotaType type,
+    WebKit::WebStorageQuotaCallbacks* callbacks) {
+  ChildThread::current()->quota_dispatcher()->QueryStorageUsageAndQuota(
+      storage_partition,
+      static_cast<quota::StorageType>(type),
+      QuotaDispatcher::CreateWebStorageQuotaCallbacksWrapper(callbacks));
 }
 
 }  // namespace content

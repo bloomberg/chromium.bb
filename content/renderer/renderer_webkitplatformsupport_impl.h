@@ -141,6 +141,10 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
   virtual void setDeviceMotionListener(
       WebKit::WebDeviceMotionListener* listener) OVERRIDE;
   virtual WebKit::WebCrypto* crypto() OVERRIDE;
+  virtual void queryStorageUsageAndQuota(
+      const WebKit::WebURL& storage_partition,
+      WebKit::WebStorageQuotaType,
+      WebKit::WebStorageQuotaCallbacks*) OVERRIDE;
 
 #if defined(OS_ANDROID)
   virtual void vibrate(unsigned int milliseconds);
