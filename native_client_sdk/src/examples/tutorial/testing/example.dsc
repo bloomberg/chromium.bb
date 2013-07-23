@@ -1,5 +1,5 @@
 {
-  'TOOLS': ['glibc', 'newlib', 'pnacl', 'win'],
+  'TOOLS': ['glibc', 'newlib', 'pnacl'],
   'SEL_LDR': True,
   'TARGETS': [
     {
