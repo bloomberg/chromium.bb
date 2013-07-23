@@ -43,24 +43,28 @@ remoting.HostDispatcher = function(createPluginCallback) {
   /** @type {Array.<function()>} */
   this.pendingRequests_ = [];
 
-  /** @param {boolean} success */
-  var onNativeMessagingInit = function(success) {
-    if (success) {
-      console.log('Native Messaging supported.');
-      that.state_ = remoting.HostDispatcher.State.NATIVE_MESSAGING;
-    } else {
-      console.log('Native Messaging unsupported, falling back to NPAPI.');
-      that.npapiHost_ = createPluginCallback();
-      that.state_ = remoting.HostDispatcher.State.NPAPI;
-    }
-    // Send pending requests.
+  function sendPendingRequests() {
     for (var i = 0; i < that.pendingRequests_.length; i++) {
       that.pendingRequests_[i]();
     }
     that.pendingRequests_ = null;
-  };
+  }
 
-  this.nativeMessagingHost_.initialize(onNativeMessagingInit);
+  function onNativeMessagingInit() {
+    console.log('Native Messaging supported.');
+    that.state_ = remoting.HostDispatcher.State.NATIVE_MESSAGING;
+    sendPendingRequests();
+  }
+
+  function onNativeMessagingFailed(error) {
+    console.log('Native Messaging unsupported, falling back to NPAPI.');
+    that.npapiHost_ = createPluginCallback();
+    that.state_ = remoting.HostDispatcher.State.NPAPI;
+    sendPendingRequests();
+  }
+
+  this.nativeMessagingHost_.initialize(onNativeMessagingInit,
+                                       onNativeMessagingFailed);
 };
 
 /** @enum {number} */

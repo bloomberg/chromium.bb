@@ -56,14 +56,15 @@ remoting.HostNativeMessaging.PendingReply = function(type, callback, onError) {
  * 'hello' messages. If Native Messaging is not available or the host
  * process is not installed, this returns false to the callback.
  *
- * @param {function(boolean): void} onDone Called with the result of
- *     initialization.
+ * @param {function(): void} onDone Called after successful initialization.
+ * @param {function(remoting.Error): void} onError Called if initialization
+ *     failed.
  * @return {void} Nothing.
  */
-remoting.HostNativeMessaging.prototype.initialize = function(onDone) {
+remoting.HostNativeMessaging.prototype.initialize = function(onDone, onError) {
   if (!chrome.runtime.connectNative) {
     console.log('Native Messaging API not available');
-    onDone(false);
+    onError(remoting.Error.UNEXPECTED);
     return;
   }
 
@@ -73,7 +74,7 @@ remoting.HostNativeMessaging.prototype.initialize = function(onDone) {
   var majorVersion = navigator.appVersion.match('Chrome/(\\d+)\.')[1];
   if (!majorVersion || majorVersion <= 26) {
     console.log('Native Messaging not supported on this version of Chrome');
-    onDone(false);
+    onError(remoting.Error.UNEXPECTED);
     return;
   }
 
@@ -82,12 +83,12 @@ remoting.HostNativeMessaging.prototype.initialize = function(onDone) {
         'com.google.chrome.remote_desktop');
     this.port_.onMessage.addListener(this.onIncomingMessage_.bind(this));
     this.port_.onDisconnect.addListener(this.onDisconnect_.bind(this));
-    this.postMessage_({type: 'hello'}, onDone.bind(null, true),
-                      onDone.bind(null, false));
+    this.postMessage_({type: 'hello'}, onDone,
+                      onError.bind(null, remoting.Error.UNEXPECTED));
   } catch (err) {
     console.log('Native Messaging initialization failed: ',
                 /** @type {*} */ (err));
-    onDone(false);
+    onError(remoting.Error.UNEXPECTED);
     return;
   }
 };
