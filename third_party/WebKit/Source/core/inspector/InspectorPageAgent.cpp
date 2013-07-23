@@ -816,6 +816,11 @@ void InspectorPageAgent::loadEventFired(Frame* frame)
     m_frontend->loadEventFired(currentTime());
 }
 
+void InspectorPageAgent::childDocumentOpened(Document* document)
+{
+    m_frontend->frameNavigated(buildObjectForFrame(document->frame()));
+}
+
 void InspectorPageAgent::didCommitLoad(Frame*, DocumentLoader* loader)
 {
     if (loader->frame() == m_page->mainFrame()) {

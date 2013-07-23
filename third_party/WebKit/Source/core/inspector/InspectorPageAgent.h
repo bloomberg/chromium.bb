@@ -43,6 +43,7 @@ namespace WebCore {
 
 class CachedResource;
 class DOMWrapperWorld;
+class Document;
 class DocumentLoader;
 class Frame;
 class GraphicsContext;
@@ -128,6 +129,7 @@ public:
     void didClearWindowObjectInWorld(Frame*, DOMWrapperWorld*);
     void domContentLoadedEventFired(Frame*);
     void loadEventFired(Frame*);
+    void childDocumentOpened(Document*);
     void didCommitLoad(Frame*, DocumentLoader*);
     void frameDetachedFromParent(Frame*);
     void loaderDetachedFromFrame(DocumentLoader*);

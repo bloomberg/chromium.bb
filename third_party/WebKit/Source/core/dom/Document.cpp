@@ -2035,6 +2035,7 @@ void Document::open(Document* ownerDocument)
         setURL(ownerDocument->url());
         m_cookieURL = ownerDocument->cookieURL();
         setSecurityOrigin(ownerDocument->securityOrigin());
+        InspectorInstrumentation::childDocumentOpened(this);
     }
 
     if (m_frame) {
