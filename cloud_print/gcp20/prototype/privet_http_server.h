@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/values.h"
+#include "net/http/http_status_code.h"
 #include "net/server/http_server.h"
 #include "net/server/http_server_request_info.h"
 

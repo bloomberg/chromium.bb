@@ -16,6 +16,7 @@
 #include "content/public/browser/devtools_http_handler.h"
 #include "content/public/browser/devtools_http_handler_delegate.h"
 #include "content/public/browser/worker_service.h"
+#include "net/http/http_status_code.h"
 #include "net/server/http_server.h"
 
 namespace base {

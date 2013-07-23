@@ -13,6 +13,7 @@
 #include "build/build_config.h"
 #include "net/server/http_connection.h"
 #include "net/server/http_server_request_info.h"
+#include "net/server/http_server_response_info.h"
 #include "net/server/web_socket.h"
 #include "net/socket/tcp_listen_socket.h"
 
@@ -45,14 +46,21 @@ void HttpServer::SendOverWebSocket(int connection_id,
   connection->web_socket_->Send(data);
 }
 
+void HttpServer::SendResponse(int connection_id,
+                              const HttpServerResponseInfo& response) {
+  HttpConnection* connection = FindConnection(connection_id);
+  if (connection == NULL)
+    return;
+  connection->Send(response);
+}
+
 void HttpServer::Send(int connection_id,
                       HttpStatusCode status_code,
                       const std::string& data,
                       const std::string& content_type) {
-  HttpConnection* connection = FindConnection(connection_id);
-  if (connection == NULL)
-    return;
-  connection->Send(status_code, data, content_type);
+  HttpServerResponseInfo response(status_code);
+  response.SetBody(data, content_type);
+  SendResponse(connection_id, response);
 }
 
 void HttpServer::Send200(int connection_id,
@@ -62,11 +70,11 @@ void HttpServer::Send200(int connection_id,
 }
 
 void HttpServer::Send404(int connection_id) {
-  Send(connection_id, HTTP_NOT_FOUND, std::string(), "text/html");
+  SendResponse(connection_id, HttpServerResponseInfo::CreateFor404());
 }
 
 void HttpServer::Send500(int connection_id, const std::string& message) {
-  Send(connection_id, HTTP_INTERNAL_SERVER_ERROR, message, "text/html");
+  SendResponse(connection_id, HttpServerResponseInfo::CreateFor500(message));
 }
 
 void HttpServer::Close(int connection_id) {

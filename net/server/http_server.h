@@ -17,6 +17,7 @@ namespace net {
 
 class HttpConnection;
 class HttpServerRequestInfo;
+class HttpServerResponseInfo;
 class IPEndPoint;
 class WebSocket;
 
@@ -46,6 +47,7 @@ class HttpServer : public StreamListenSocket::Delegate,
   void AcceptWebSocket(int connection_id,
                        const HttpServerRequestInfo& request);
   void SendOverWebSocket(int connection_id, const std::string& data);
+  void SendResponse(int connection_id, const HttpServerResponseInfo& response);
   void Send(int connection_id,
             HttpStatusCode status_code,
             const std::string& data,

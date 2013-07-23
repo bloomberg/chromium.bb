@@ -15,6 +15,7 @@
 namespace net {
 
 class HttpServer;
+class HttpServerResponseInfo;
 class StreamListenSocket;
 class WebSocket;
 
@@ -24,9 +25,7 @@ class HttpConnection {
 
   void Send(const std::string& data);
   void Send(const char* bytes, int len);
-  void Send(HttpStatusCode status_code,
-            const std::string& data,
-            const std::string& content_type);
+  void Send(const HttpServerResponseInfo& response);
 
   void Shift(int num_bytes);
 

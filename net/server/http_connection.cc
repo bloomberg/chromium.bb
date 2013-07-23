@@ -4,9 +4,8 @@
 
 #include "net/server/http_connection.h"
 
-#include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "net/server/http_server.h"
+#include "net/server/http_server_response_info.h"
 #include "net/server/web_socket.h"
 #include "net/socket/stream_listen_socket.h"
 
@@ -26,22 +25,8 @@ void HttpConnection::Send(const char* bytes, int len) {
   socket_->Send(bytes, len);
 }
 
-void HttpConnection::Send(HttpStatusCode status_code,
-                          const std::string& data,
-                          const std::string& content_type) {
-  if (!socket_.get())
-    return;
-
-  socket_->Send(base::StringPrintf(
-      "HTTP/1.1 %d %s\r\n"
-      "Content-Type:%s\r\n"
-      "Content-Length:%d\r\n"
-      "\r\n",
-      status_code,
-      GetHttpReasonPhrase(status_code),
-      content_type.c_str(),
-      static_cast<int>(data.length())));
-  socket_->Send(data);
+void HttpConnection::Send(const HttpServerResponseInfo& response) {
+  Send(response.Serialize());
 }
 
 HttpConnection::HttpConnection(HttpServer* server, StreamListenSocket* sock)

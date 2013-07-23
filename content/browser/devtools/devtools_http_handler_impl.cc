@@ -43,6 +43,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
 #include "net/server/http_server_request_info.h"
+#include "net/server/http_server_response_info.h"
 #include "ui/base/layout.h"
 #include "url/gurl.h"
 #include "webkit/common/user_agent/user_agent.h"
@@ -754,19 +755,15 @@ void DevToolsHttpHandlerImpl::SendJson(int connection_id,
   scoped_ptr<base::Value> message_object(new base::StringValue(message));
   base::JSONWriter::Write(message_object.get(), &json_message);
 
-  std::string response;
-  std::string mime_type = "application/json; charset=UTF-8";
-
-  response = base::StringPrintf("%s%s", json_value.c_str(), message.c_str());
+  net::HttpServerResponseInfo response(status_code);
+  response.SetBody(json_value + message, "application/json; charset=UTF-8");
 
   thread_->message_loop()->PostTask(
       FROM_HERE,
-      base::Bind(&net::HttpServer::Send,
+      base::Bind(&net::HttpServer::SendResponse,
                  server_.get(),
                  connection_id,
-                 status_code,
-                 response,
-                 mime_type));
+                 response));
 }
 
 void DevToolsHttpHandlerImpl::Send200(int connection_id,
