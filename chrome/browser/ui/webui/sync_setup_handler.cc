@@ -735,7 +735,15 @@ void SyncSetupHandler::HandleShowSetupUI(const ListValue* args) {
     return;
   }
 
-  // Bring up the existing wizard, or just display it on this page.
+  // If a setup wizard is already present, but not on this page, close the
+  // blank setup overlay on this page. This can happen if the user navigates to
+  // chrome://settings/syncSetup in more than one tab. See crbug.com/261566.
+  // Note: The following block will transfer focus to the existing wizard.
+  if (IsExistingWizardPresent() && !IsActiveLogin())
+    CloseOverlay();
+
+  // If a setup wizard is present on this page or another, bring it to focus.
+  // Otherwise, display a new one on this page.
   if (!FocusExistingWizardIfPresent())
     OpenSyncSetup();
 }
@@ -880,10 +888,18 @@ void SyncSetupHandler::CloseUI() {
   CloseOverlay();
 }
 
-bool SyncSetupHandler::FocusExistingWizardIfPresent() {
+bool SyncSetupHandler::IsExistingWizardPresent() {
   LoginUIService* service = GetLoginUIService();
-  if (!service->current_login_ui())
+  DCHECK(service);
+  return service->current_login_ui() != NULL;
+}
+
+bool SyncSetupHandler::FocusExistingWizardIfPresent() {
+  if (!IsExistingWizardPresent())
     return false;
+
+  LoginUIService* service = GetLoginUIService();
+  DCHECK(service);
   service->current_login_ui()->FocusUI();
   return true;
 }

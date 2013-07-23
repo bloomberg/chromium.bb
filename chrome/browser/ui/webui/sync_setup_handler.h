@@ -141,6 +141,9 @@ class SyncSetupHandler : public options::OptionsPageUIHandler,
   // Returns true if this object is the active login object.
   bool IsActiveLogin() const;
 
+  // If a wizard already exists, return true. Otherwise, return false.
+  bool IsExistingWizardPresent();
+
   // If a wizard already exists, focus it and return true.
   bool FocusExistingWizardIfPresent();
 
