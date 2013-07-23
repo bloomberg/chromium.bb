@@ -2,7 +2,7 @@
 # This file is in a simple "key=value" format so that the commit IDs
 # can easily be read from either Python or a shell script or makefile.
 
-NACL_BINUTILS_COMMIT=10cd99c241c75cd4a68e7a5693d784ab7d93ac5b
+NACL_BINUTILS_COMMIT=80605460ee5ab0c1a80585e9ca2d131e3c58044d
 NACL_GCC_COMMIT=f96a3cbfb8777e1e47471b357929b8a1e3340a23
 NACL_GDB_COMMIT=055a0f7ef7642781c771aff664435f836f0cbb75
 NACL_GLIBC_COMMIT=f6905ead6866abd2689b9ec691d3be02f77fcd77
