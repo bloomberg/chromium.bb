@@ -1031,6 +1031,7 @@ def GetPreferredTrySlaves(project, change):
       'win7_aura',
       'win_rel',
       'win:compile',
+      'win_x64_rel:compile',
   ]
 
   # Match things like path/aura/file.cc and path/file_aura.cc.
