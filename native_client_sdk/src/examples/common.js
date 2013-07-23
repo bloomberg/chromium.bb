@@ -14,6 +14,52 @@ var isTest = false;
 // code.
 var common = (function() {
 
+  function isHostToolchain(tool) {
+    return tool == 'win' || tool == 'linux' || tool == 'mac';
+  }
+
+  /**
+   * Return the mime type for NaCl plugin.
+   *
+   * @param {string} tool The name of the toolchain, e.g. "glibc", "newlib" etc.
+   * @param {bool} isRelease True if this is a release build.
+   * @return {string} The mime-type for the kind of NaCl plugin matching
+   * the given toolchain.
+   */
+  function mimeTypeForTool(tool, isRelease) {
+    // For NaCl modules use application/x-nacl.
+    var mimetype = 'application/x-nacl';
+    if (isHostToolchain(tool)) {
+      // For non-NaCl PPAPI plugins use the x-ppapi-debug/release
+      // mime type.
+      if (isRelease)
+        mimetype = 'application/x-ppapi-release';
+      else
+        mimetype = 'application/x-ppapi-debug';
+    } else if (tool == 'pnacl') {
+      mimetype = 'application/x-pnacl';
+    }
+    return mimetype;
+  }
+
+  /**
+   * Check if the browser supports NaCl plugins.
+   *
+   * @param {string} tool The name of the toolchain, e.g. "glibc", "newlib" etc.
+   * @return {bool} True if the browser supports the type of NaCl plugin
+   * produced by the given toolchain.
+   */
+  function browserSupportsNaCl(tool) {
+    // Assume host toolchains always work with the given browser.
+    // The below mime-type checking might not work with
+    // --register-pepper-plugins.
+    if (isHostToolchain(tool)) {
+      return true;
+    }
+    var mimetype = mimeTypeForTool(tool);
+    return navigator.mimeTypes[mimetype] !== undefined;
+  }
+
   /**
    * Create the Native Client <embed> element as a child of the DOM element
    * named "listener".
@@ -41,19 +87,7 @@ var common = (function() {
       }
     }
 
-    // For NaCL modules use application/x-nacl.
-    var mimetype = 'application/x-nacl';
-    var isHost = tool == 'win' || tool == 'linux' || tool == 'mac';
-    if (isHost) {
-      // For non-nacl PPAPI plugins use the x-ppapi-debug/release
-      // mime type.
-      if (path.toLowerCase().indexOf('release') != -1)
-        mimetype = 'application/x-ppapi-release';
-      else
-        mimetype = 'application/x-ppapi-debug';
-    } else if (tool == 'pnacl') {
-      mimetype = 'application/x-pnacl';
-    }
+    var mimetype = mimeTypeForTool(tool);
     moduleEl.setAttribute('type', mimetype);
 
     // The <EMBED> element is wrapped inside a <DIV>, which has both a 'load'
@@ -65,6 +99,7 @@ var common = (function() {
     listenerDiv.appendChild(moduleEl);
 
     // Host plugins don't send a moduleDidLoad message. We'll fake it here.
+    var isHost = isHostToolchain(tool);
     if (isHost) {
       window.setTimeout(function() {
         var evt = document.createEvent('Event');
@@ -258,7 +293,11 @@ var common = (function() {
     // status message indicating that the module is still loading.  Otherwise,
     // do not change the status message.
     updateStatus('Page loaded.');
-    if (common.naclModule == null) {
+    var isRelease = path.toLowerCase().indexOf('release') != -1;
+    if (!browserSupportsNaCl(tool, isRelease)) {
+      updateStatus(
+          'Browser does not support NaCl (' + tool + '), or NaCl is disabled');
+    } else if (common.naclModule == null) {
       updateStatus('Creating embed: ' + tool);
 
       // We use a non-zero sized embed to give Chrome space to place the bad
