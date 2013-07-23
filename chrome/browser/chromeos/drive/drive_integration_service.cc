@@ -252,6 +252,9 @@ void DriveIntegrationService::OnNotificationReceived() {
 }
 
 void DriveIntegrationService::OnPushNotificationEnabled(bool enabled) {
+  if (enabled)
+    drive_app_registry_->Update();
+
   const char* status = (enabled ? "enabled" : "disabled");
   util::Log("Push notification is %s", status);
 }
@@ -368,9 +371,11 @@ void DriveIntegrationService::InitializeAfterMetadataInitialized(
         drive_notification_manager->push_notification_registered();
     const char* status = (registered ? "registered" : "not registered");
     util::Log("Push notification is %s", status);
+
+    if (drive_notification_manager->push_notification_enabled())
+      drive_app_registry_->Update();
   }
 
-  drive_app_registry_->Update();
   AddDriveMountPoint();
 }
 
