@@ -2087,6 +2087,11 @@ int32_t NaClSysMprotectInternal(struct NaClApp  *nap,
     retval = -NACL_ABI_EACCES;
     goto cleanup;
   }
+
+  NaClXMutexLock(&nap->mu);
+
+  holding_app_lock = 1;
+
   if (!NaClVmmapCheckExistingMapping(
            &nap->mem_map, NaClSysToUser(nap, sysaddr) >> NACL_PAGESHIFT,
            length >> NACL_PAGESHIFT, prot)) {
@@ -2094,10 +2099,6 @@ int32_t NaClSysMprotectInternal(struct NaClApp  *nap,
     retval = -NACL_ABI_EACCES;
     goto cleanup;
   }
-
-  NaClXMutexLock(&nap->mu);
-
-  holding_app_lock = 1;
 
   /*
    * User should be unable to change protection of any executable pages.
