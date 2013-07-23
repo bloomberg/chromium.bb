@@ -60,6 +60,7 @@
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/content_restriction.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/net/url_util.h"
 #include "chrome/common/pref_names.h"
@@ -78,7 +79,6 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/content_restriction.h"
 #include "content/public/common/menu_item.h"
 #include "content/public/common/ssl_status.h"
 #include "content/public/common/url_utils.h"
@@ -1122,15 +1122,18 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       return observer->IsCommandIdEnabled(id);
   }
 
+  CoreTabHelper* core_tab_helper =
+      CoreTabHelper::FromWebContents(source_web_contents_);
+  int content_restrictions = 0;
+  if (core_tab_helper)
+    content_restrictions = core_tab_helper->content_restrictions();
   if (id == IDC_PRINT &&
-      (source_web_contents_->GetContentRestrictions() &
-          content::CONTENT_RESTRICTION_PRINT)) {
+      (content_restrictions & CONTENT_RESTRICTION_PRINT)) {
     return false;
   }
 
   if (id == IDC_SAVE_PAGE &&
-      (source_web_contents_->GetContentRestrictions() &
-          content::CONTENT_RESTRICTION_SAVE)) {
+      (content_restrictions & CONTENT_RESTRICTION_SAVE)) {
     return false;
   }
 

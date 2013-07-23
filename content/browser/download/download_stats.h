@@ -85,11 +85,6 @@ enum DownloadSource {
   // (e.g. by Alt-click) through the IPC ViewHostMsg_DownloadUrl.
   INITIATED_BY_RENDERER,
 
-  // The download was initiated by a renderer or plugin process through
-  // the IPC ViewHostMsg_SaveURLAs; currently this is only used by the
-  // Pepper plugin API.
-  INITIATED_BY_PEPPER_SAVE,
-
   DOWNLOAD_SOURCE_LAST_ENTRY
 };
 

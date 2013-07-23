@@ -80,6 +80,10 @@ namespace cc {
 class TextureLayer;
 }
 
+namespace content {
+class RenderView;
+}
+
 namespace ppapi {
 struct InputEventData;
 struct PPP_Instance_Combined;
@@ -122,6 +126,7 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   // function. If the plugin does not support any valid PPP_Instance interface,
   // returns NULL.
   static PluginInstance* Create(PluginDelegate* delegate,
+                                content::RenderView* render_view,
                                 PluginModule* module,
                                 WebKit::WebPluginContainer* container,
                                 const GURL& plugin_url);
@@ -129,6 +134,7 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   virtual ~PluginInstance();
 
   PluginDelegate* delegate() const { return delegate_; }
+  content::RenderView* render_view() const {return render_view_; }
   PluginModule* module() const { return module_.get(); }
   MessageChannel& message_channel() { return *message_channel_; }
 
@@ -552,6 +558,7 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   // details while still having 1 constructor to maintain for member
   // initialization.
   PluginInstance(PluginDelegate* delegate,
+                 content::RenderView* render_view,
                  PluginModule* module,
                  ::ppapi::PPP_Instance_Combined* instance_interface,
                  WebKit::WebPluginContainer* container,
@@ -641,6 +648,7 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   void ResetSizeAttributesAfterFullscreen();
 
   PluginDelegate* delegate_;
+  content::RenderView* render_view_;
   scoped_refptr<PluginModule> module_;
   scoped_ptr< ::ppapi::PPP_Instance_Combined> instance_interface_;
   // If this is the NaCl plugin, we create a new module when we switch to the

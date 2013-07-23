@@ -305,10 +305,6 @@ class CONTENT_EXPORT WebContentsDelegate {
                                   const GURL& target_url,
                                   WebContents* new_contents) {}
 
-  // Notifies the delegate that the content restrictions for this tab has
-  // changed.
-  virtual void ContentRestrictionsChanged(WebContents* source) {}
-
   // Notification that the tab is hung.
   virtual void RendererUnresponsive(WebContents* source) {}
 

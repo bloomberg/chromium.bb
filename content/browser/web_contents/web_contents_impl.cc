@@ -72,7 +72,6 @@
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_constants.h"
-#include "content/public/common/content_restriction.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/mime_util.h"
@@ -356,7 +355,6 @@ WebContentsImpl::WebContentsImpl(
       minimum_zoom_percent_(static_cast<int>(kMinimumZoomFactor * 100)),
       maximum_zoom_percent_(static_cast<int>(kMaximumZoomFactor * 100)),
       temporary_zoom_settings_(false),
-      content_restrictions_(0),
       color_chooser_identifier_(0),
       message_source_(NULL),
       fullscreen_widget_routing_id_(MSG_ROUTING_NONE) {
@@ -692,11 +690,8 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidFinishLoad, OnDidFinishLoad)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidFailLoadWithError,
                         OnDidFailLoadWithError)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateContentRestrictions,
-                        OnUpdateContentRestrictions)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GoToEntryAtOffset, OnGoToEntryAtOffset)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateZoomLimits, OnUpdateZoomLimits)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_SaveURLAs, OnSaveURL)
     IPC_MESSAGE_HANDLER(ViewHostMsg_EnumerateDirectory, OnEnumerateDirectory)
     IPC_MESSAGE_HANDLER(ViewHostMsg_JSOutOfMemory, OnJSOutOfMemory)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RegisterProtocolHandler,
@@ -1883,7 +1878,7 @@ void WebContentsImpl::OnSavePage() {
   // If we can not save the page, try to download it.
   if (!IsSavable()) {
     RecordDownloadSource(INITIATED_BY_SAVE_PACKAGE_ON_NON_HTML);
-    SaveURL(GetURL(), Referrer(), true);
+    SaveFrame(GetURL(), Referrer());
     return;
   }
 
@@ -1907,6 +1902,33 @@ bool WebContentsImpl::SavePage(const base::FilePath& main_file,
 
   save_package_ = new SavePackage(this, save_type, main_file, dir_path);
   return save_package_->Init(SavePackageDownloadCreatedCallback());
+}
+
+void WebContentsImpl::SaveFrame(const GURL& url,
+                                const Referrer& referrer) {
+  if (!GetURL().is_valid())
+    return;
+  bool is_main_frame = (url == GetURL());
+
+  DownloadManager* dlm =
+      BrowserContext::GetDownloadManager(GetBrowserContext());
+  if (!dlm)
+    return;
+  int64 post_id = -1;
+  if (is_main_frame) {
+    const NavigationEntry* entry = controller_.GetActiveEntry();
+    if (entry)
+      post_id = entry->GetPostID();
+  }
+  scoped_ptr<DownloadUrlParameters> params(
+      DownloadUrlParameters::FromWebContents(this, url));
+  params->set_referrer(referrer);
+  params->set_post_id(post_id);
+  params->set_prefer_cache(true);
+  if (post_id >= 0)
+    params->set_method("POST");
+  params->set_prompt(true);
+  dlm->DownloadUrl(params.Pass());
 }
 
 void WebContentsImpl::GenerateMHTML(
@@ -2053,10 +2075,6 @@ int WebContentsImpl::GetMaximumZoomPercent() const {
 
 gfx::Size WebContentsImpl::GetPreferredSize() const {
   return preferred_size_;
-}
-
-int WebContentsImpl::GetContentRestrictions() const {
-  return content_restrictions_;
 }
 
 bool WebContentsImpl::GotResponseToLockMouseRequest(bool allowed) {
@@ -2315,12 +2333,6 @@ void WebContentsImpl::OnDidFailLoadWithError(
                                 message_source_));
 }
 
-void WebContentsImpl::OnUpdateContentRestrictions(int restrictions) {
-  content_restrictions_ = restrictions;
-  if (delegate_)
-    delegate_->ContentRestrictionsChanged(this);
-}
-
 void WebContentsImpl::OnGoToEntryAtOffset(int offset) {
   if (!delegate_ || delegate_->OnGoToEntryOffset(offset)) {
     NavigationEntryImpl* entry = NavigationEntryImpl::FromNavigationEntry(
@@ -2352,19 +2364,6 @@ void WebContentsImpl::OnUpdateZoomLimits(int minimum_percent,
   minimum_zoom_percent_ = minimum_percent;
   maximum_zoom_percent_ = maximum_percent;
   temporary_zoom_settings_ = !remember;
-}
-
-void WebContentsImpl::OnSaveURL(const GURL& url,
-                                const Referrer& referrer) {
-  RecordDownloadSource(INITIATED_BY_PEPPER_SAVE);
-  // Check if the URL to save matches the URL of the main frame. Since this
-  // message originates from Pepper plugins, it may not be the case if the
-  // plugin is an embedded element.
-  GURL main_frame_url = GetURL();
-  if (!main_frame_url.is_valid())
-    return;
-  bool is_main_frame = (url == main_frame_url);
-  SaveURL(url, referrer, is_main_frame);
 }
 
 void WebContentsImpl::OnEnumerateDirectory(int request_id,
@@ -3134,9 +3133,6 @@ void WebContentsImpl::RequestMove(const gfx::Rect& new_bounds) {
 void WebContentsImpl::DidStartLoading(RenderViewHost* render_view_host) {
   SetIsLoading(true, NULL);
 
-  if (delegate_ && content_restrictions_)
-    OnUpdateContentRestrictions(0);
-
   // Notify observers about navigation.
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                     DidStartLoading(render_view_host));
@@ -3679,30 +3675,6 @@ void WebContentsImpl::OnDialogClosed(RenderViewHost* rvh,
 void WebContentsImpl::SetEncoding(const std::string& encoding) {
   encoding_ = GetContentClient()->browser()->
       GetCanonicalEncodingNameByAliasName(encoding);
-}
-
-void WebContentsImpl::SaveURL(const GURL& url,
-                              const Referrer& referrer,
-                              bool is_main_frame) {
-  DownloadManager* dlm =
-      BrowserContext::GetDownloadManager(GetBrowserContext());
-  if (!dlm)
-    return;
-  int64 post_id = -1;
-  if (is_main_frame) {
-    const NavigationEntry* entry = controller_.GetActiveEntry();
-    if (entry)
-      post_id = entry->GetPostID();
-  }
-  scoped_ptr<DownloadUrlParameters> params(
-      DownloadUrlParameters::FromWebContents(this, url));
-  params->set_referrer(referrer);
-  params->set_post_id(post_id);
-  params->set_prefer_cache(true);
-  if (post_id >= 0)
-    params->set_method("POST");
-  params->set_prompt(true);
-  dlm->DownloadUrl(params.Pass());
 }
 
 void WebContentsImpl::CreateViewAndSetSizeForRVH(RenderViewHost* rvh) {

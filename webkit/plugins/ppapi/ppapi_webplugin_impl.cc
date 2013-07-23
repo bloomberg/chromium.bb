@@ -49,6 +49,7 @@ namespace ppapi {
 struct WebPluginImpl::InitData {
   scoped_refptr<PluginModule> module;
   base::WeakPtr<PluginDelegate> delegate;
+  base::WeakPtr<content::RenderView> render_view;
   std::vector<std::string> arg_names;
   std::vector<std::string> arg_values;
   GURL url;
@@ -57,7 +58,8 @@ struct WebPluginImpl::InitData {
 WebPluginImpl::WebPluginImpl(
     PluginModule* plugin_module,
     const WebPluginParams& params,
-    const base::WeakPtr<PluginDelegate>& plugin_delegate)
+    const base::WeakPtr<PluginDelegate>& plugin_delegate,
+    const base::WeakPtr<content::RenderView>& render_view)
     : init_data_(new InitData()),
       full_frame_(params.loadManually),
       instance_object_(PP_MakeUndefined()),
@@ -65,6 +67,7 @@ WebPluginImpl::WebPluginImpl(
   DCHECK(plugin_module);
   init_data_->module = plugin_module;
   init_data_->delegate = plugin_delegate;
+  init_data_->render_view = render_view;
   for (size_t i = 0; i < params.attributeNames.size(); ++i) {
     init_data_->arg_names.push_back(params.attributeNames[i].utf8());
     init_data_->arg_values.push_back(params.attributeValues[i].utf8());
@@ -87,8 +90,9 @@ bool WebPluginImpl::initialize(WebPluginContainer* container) {
   if (!init_data_->delegate.get())
     return false;
 
-  instance_ = init_data_->module
-      ->CreateInstance(init_data_->delegate.get(), container, init_data_->url);
+  instance_ = init_data_->module->CreateInstance(
+      init_data_->delegate.get(), init_data_->render_view.get(), container,
+      init_data_->url);
   if (!instance_.get())
     return false;
 

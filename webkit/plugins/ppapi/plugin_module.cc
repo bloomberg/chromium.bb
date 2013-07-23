@@ -537,10 +537,11 @@ bool PluginModule::SupportsInterface(const char* name) {
 
 PluginInstance* PluginModule::CreateInstance(
     PluginDelegate* delegate,
+    content::RenderView* render_view,
     WebKit::WebPluginContainer* container,
     const GURL& plugin_url) {
-  PluginInstance* instance = PluginInstance::Create(delegate, this, container,
-                                                    plugin_url);
+  PluginInstance* instance = PluginInstance::Create(delegate, render_view, this,
+                                                    container, plugin_url);
   if (!instance) {
     LOG(WARNING) << "Plugin doesn't support instance interface, failing.";
     return NULL;

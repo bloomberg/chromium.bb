@@ -14,6 +14,7 @@
 #include "chrome/renderer/printing/print_web_view_helper.h"
 #include "content/public/common/child_process_sandbox_support_linux.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/referrer.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "grit/webkit_resources.h"
@@ -29,6 +30,7 @@
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
+#include "third_party/WebKit/public/web/WebView.h"
 #include "third_party/icu/source/i18n/unicode/usearch.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
@@ -36,7 +38,6 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_rep.h"
 #include "webkit/plugins/ppapi/host_globals.h"
-#include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppb_image_data_impl.h"
 
@@ -296,7 +297,7 @@ void DidStartLoading(PP_Instance instance_id) {
       content::GetHostGlobals()->GetInstance(instance_id);
   if (!instance)
     return;
-  instance->delegate()->DidStartLoading();
+  instance->render_view()->DidStartLoading();
 }
 
 void DidStopLoading(PP_Instance instance_id) {
@@ -304,7 +305,7 @@ void DidStopLoading(PP_Instance instance_id) {
       content::GetHostGlobals()->GetInstance(instance_id);
   if (!instance)
     return;
-  instance->delegate()->DidStopLoading();
+  instance->render_view()->DidStopLoading();
 }
 
 void SetContentRestriction(PP_Instance instance_id, int restrictions) {
@@ -312,7 +313,9 @@ void SetContentRestriction(PP_Instance instance_id, int restrictions) {
       content::GetHostGlobals()->GetInstance(instance_id);
   if (!instance)
     return;
-  instance->delegate()->SetContentRestriction(restrictions);
+  instance->render_view()->Send(
+      new ChromeViewHostMsg_PDFUpdateContentRestrictions(
+          instance->render_view()->GetRoutingID(), restrictions));
 }
 
 void HistogramPDFPageCount(PP_Instance /*instance*/, int count) {
@@ -347,7 +350,14 @@ void SaveAs(PP_Instance instance_id) {
       content::GetHostGlobals()->GetInstance(instance_id);
   if (!instance)
     return;
-  instance->delegate()->SaveURLAs(instance->plugin_url());
+  GURL url = instance->plugin_url();
+
+  content::RenderView* render_view = instance->render_view();
+  WebKit::WebFrame* frame = render_view->GetWebView()->mainFrame();
+  content::Referrer referrer(frame->document().url(),
+                             frame->document().referrerPolicy());
+  render_view->Send(new ChromeViewHostMsg_PDFSaveURLAs(
+      render_view->GetRoutingID(), url, referrer));
 }
 
 PP_Bool IsFeatureEnabled(PP_Instance instance, PP_PDFFeature feature) {

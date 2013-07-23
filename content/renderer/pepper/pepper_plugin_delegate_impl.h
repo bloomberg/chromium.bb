@@ -315,10 +315,6 @@ class PepperPluginDelegateImpl
   virtual std::string GetDefaultEncoding() OVERRIDE;
   virtual void ZoomLimitsChanged(double minimum_factor, double maximum_factor)
       OVERRIDE;
-  virtual void DidStartLoading() OVERRIDE;
-  virtual void DidStopLoading() OVERRIDE;
-  virtual void SetContentRestriction(int restrictions) OVERRIDE;
-  virtual void SaveURLAs(const GURL& url) OVERRIDE;
   virtual base::SharedMemory* CreateAnonymousSharedMemory(size_t size)
       OVERRIDE;
   virtual ::ppapi::Preferences GetPreferences() OVERRIDE;

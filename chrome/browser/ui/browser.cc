@@ -166,7 +166,6 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
-#include "content/public/common/content_restriction.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/renderer_preferences.h"
@@ -1541,10 +1540,6 @@ void Browser::WebContentsCreated(WebContents* source_contents,
       chrome::NOTIFICATION_RETARGETING,
       content::Source<Profile>(profile_),
       content::Details<RetargetingDetails>(&details));
-}
-
-void Browser::ContentRestrictionsChanged(WebContents* source) {
-  command_controller_->ContentRestrictionsChanged();
 }
 
 void Browser::RendererUnresponsive(WebContents* source) {

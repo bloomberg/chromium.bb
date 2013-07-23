@@ -34,7 +34,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/public/common/media_stream_request.h"
-#include "content/public/common/referrer.h"
 #include "content/public/common/webplugininfo.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/renderer_restrict_dispatch_group.h"
@@ -357,7 +356,7 @@ WebKit::WebPlugin* PepperPluginDelegateImpl::CreatePepperWebPlugin(
     if (!pepper_module.get())
       return NULL;
     return new webkit::ppapi::WebPluginImpl(
-        pepper_module.get(), params, AsWeakPtr());
+        pepper_module.get(), params, AsWeakPtr(), render_view_->AsWeakPtr());
   }
 
   return NULL;
@@ -1303,27 +1302,6 @@ void PepperPluginDelegateImpl::ZoomLimitsChanged(double minimum_factor,
   double minimum_level = WebView::zoomFactorToZoomLevel(minimum_factor);
   double maximum_level = WebView::zoomFactorToZoomLevel(maximum_factor);
   render_view_->webview()->zoomLimitsChanged(minimum_level, maximum_level);
-}
-
-void PepperPluginDelegateImpl::DidStartLoading() {
-  render_view_->didStartLoading();
-}
-
-void PepperPluginDelegateImpl::DidStopLoading() {
-  render_view_->didStopLoading();
-}
-
-void PepperPluginDelegateImpl::SetContentRestriction(int restrictions) {
-  render_view_->Send(new ViewHostMsg_UpdateContentRestrictions(
-      render_view_->routing_id(), restrictions));
-}
-
-void PepperPluginDelegateImpl::SaveURLAs(const GURL& url) {
-  WebFrame* frame = render_view_->webview()->mainFrame();
-  Referrer referrer(frame->document().url(),
-                             frame->document().referrerPolicy());
-  render_view_->Send(new ViewHostMsg_SaveURLAs(
-      render_view_->routing_id(), url, referrer));
 }
 
 void PepperPluginDelegateImpl::HandleDocumentLoad(

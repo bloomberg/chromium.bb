@@ -15,9 +15,16 @@ include_rules = [
 
   "+webkit/common",
   "+webkit/glue",
-  "+webkit/glue/plugins",
-  "+webkit/plugins",
   "+webkit/renderer",
+
+  # TODO(jam): eliminate all of these. http://crbug.com/263054
+  "!webkit/plugins/ppapi/ppb_file_ref_impl.h",
+  "!webkit/plugins/ppapi/ppapi_interface_factory.h",
+  "!webkit/plugins/ppapi/ppb_image_data_impl.h",
+  "!webkit/plugins/ppapi/host_globals.h",
+  "!webkit/plugins/ppapi/plugin_module.h",
+  "!webkit/plugins/ppapi/ppapi_plugin_instance.h",
+  "!webkit/plugins/plugin_constants.h",
 
   "+third_party/npapi/bindings",
   "+third_party/re2",

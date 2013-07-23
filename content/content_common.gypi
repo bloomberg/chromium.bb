@@ -32,7 +32,6 @@
     'public/common/content_descriptors.h',
     'public/common/content_ipc_logging.h',
     'public/common/content_paths.h',
-    'public/common/content_restriction.h',
     'public/common/content_switches.cc',
     'public/common/content_switches.h',
     'public/common/context_menu_params.cc',

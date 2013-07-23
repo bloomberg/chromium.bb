@@ -41,7 +41,10 @@ class PDFTabHelper : public content::WebContentsObserver,
   void UpdateLocationBar();
 
   // Message handlers.
-  void OnPDFHasUnsupportedFeature();
+  void OnHasUnsupportedFeature();
+  void OnSaveURLAs(const GURL& url,
+                   const content::Referrer& referrer);
+  void OnUpdateContentRestrictions(int content_restrictions);
 
   // The model for the confirmation prompt to open a PDF in Adobe Reader.
   scoped_ptr<OpenPDFInReaderPromptDelegate> open_in_reader_prompt_;

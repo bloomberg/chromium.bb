@@ -732,6 +732,8 @@ class CONTENT_EXPORT RenderViewImpl
       WebKit::WebFrame* frame,
       const WebKit::WebURLRequest& request,
       WebKit::WebNavigationPolicy policy) OVERRIDE;
+  virtual void DidStartLoading() OVERRIDE;
+  virtual void DidStopLoading() OVERRIDE;
   virtual void Repaint(const gfx::Size& size) OVERRIDE;
   virtual void SetEditCommandForNextKeyEvent(const std::string& name,
                                              const std::string& value) OVERRIDE;

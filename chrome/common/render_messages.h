@@ -27,6 +27,7 @@
 #include "chrome/common/translate/language_detection_details.h"
 #include "chrome/common/translate/translate_errors.h"
 #include "content/public/common/common_param_traits.h"
+#include "content/public/common/referrer.h"
 #include "content/public/common/top_controls_state.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
@@ -612,6 +613,15 @@ IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_FocusedNodeTouched,
 
 // The currently displayed PDF has an unsupported feature.
 IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_PDFHasUnsupportedFeature)
+
+// Brings up SaveAs... dialog to save specified URL.
+IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_PDFSaveURLAs,
+                    GURL /* url */,
+                    content::Referrer /* referrer */)
+
+// Updates the content restrictions, i.e. to disable print/copy.
+IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_PDFUpdateContentRestrictions,
+                    int /* restrictions */)
 
 // This message indicates the error appeared in the frame.
 IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_FrameLoadingError,

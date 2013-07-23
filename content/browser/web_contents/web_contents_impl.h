@@ -264,6 +264,8 @@ class CONTENT_EXPORT WebContentsImpl
   virtual bool SavePage(const base::FilePath& main_file,
                         const base::FilePath& dir_path,
                         SavePageType save_type) OVERRIDE;
+  virtual void SaveFrame(const GURL& url,
+                         const Referrer& referrer) OVERRIDE;
   virtual void GenerateMHTML(
       const base::FilePath& file,
       const base::Callback<void(const base::FilePath&, int64)>& callback)
@@ -289,7 +291,6 @@ class CONTENT_EXPORT WebContentsImpl
   virtual int GetMinimumZoomPercent() const OVERRIDE;
   virtual int GetMaximumZoomPercent() const OVERRIDE;
   virtual gfx::Size GetPreferredSize() const OVERRIDE;
-  virtual int GetContentRestrictions() const OVERRIDE;
   virtual bool GotResponseToLockMouseRequest(bool allowed) OVERRIDE;
   virtual bool HasOpener() const OVERRIDE;
   virtual void DidChooseColorInColorChooser(SkColor color) OVERRIDE;
@@ -571,12 +572,10 @@ class CONTENT_EXPORT WebContentsImpl
                               bool is_main_frame,
                               int error_code,
                               const string16& error_description);
-  void OnUpdateContentRestrictions(int restrictions);
   void OnGoToEntryAtOffset(int offset);
   void OnUpdateZoomLimits(int minimum_percent,
                           int maximum_percent,
                           bool remember);
-  void OnSaveURL(const GURL& url, const Referrer& referrer);
   void OnEnumerateDirectory(int request_id, const base::FilePath& path);
   void OnJSOutOfMemory();
 
@@ -735,11 +734,6 @@ class CONTENT_EXPORT WebContentsImpl
   void NotifyNavigationEntryCommitted(const LoadCommittedDetails& load_details);
 
   void SetEncoding(const std::string& encoding);
-
-  // Save a URL to the local filesystem.
-  void SaveURL(const GURL& url,
-               const Referrer& referrer,
-               bool is_main_frame);
 
   RenderViewHostImpl* GetRenderViewHostImpl();
 
@@ -914,10 +908,6 @@ class CONTENT_EXPORT WebContentsImpl
 
   // The intrinsic size of the page.
   gfx::Size preferred_size_;
-
-  // Content restrictions, used to disable print/copy etc based on content's
-  // (full-page plugins for now only) permissions.
-  int content_restrictions_;
 
 #if defined(OS_ANDROID)
   // Date time chooser opened by this tab.

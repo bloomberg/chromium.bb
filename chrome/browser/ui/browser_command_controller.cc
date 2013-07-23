@@ -27,6 +27,7 @@
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_utils.h"
+#include "chrome/common/content_restriction.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/profiling.h"
 #include "content/public/browser/native_web_keyboard_event.h"
@@ -35,7 +36,6 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/common/content_restriction.h"
 #include "content/public/common/url_constants.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 
@@ -1042,11 +1042,11 @@ void BrowserCommandController::UpdateCommandsForContentRestrictionState() {
   int restrictions = GetContentRestrictions(browser_);
 
   command_updater_.UpdateCommandEnabled(
-      IDC_COPY, !(restrictions & content::CONTENT_RESTRICTION_COPY));
+      IDC_COPY, !(restrictions & CONTENT_RESTRICTION_COPY));
   command_updater_.UpdateCommandEnabled(
-      IDC_CUT, !(restrictions & content::CONTENT_RESTRICTION_CUT));
+      IDC_CUT, !(restrictions & CONTENT_RESTRICTION_CUT));
   command_updater_.UpdateCommandEnabled(
-      IDC_PASTE, !(restrictions & content::CONTENT_RESTRICTION_PASTE));
+      IDC_PASTE, !(restrictions & CONTENT_RESTRICTION_PASTE));
   UpdateSaveAsState();
   UpdatePrintingState();
 }

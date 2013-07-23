@@ -146,6 +146,11 @@ class CONTENT_EXPORT RenderView : public IPC::Sender {
       const WebKit::WebURLRequest& request,
       WebKit::WebNavigationPolicy policy) = 0;
 
+  // Used by plugins that load data in this RenderView to update the loading
+  // notifications.
+  virtual void DidStartLoading() = 0;
+  virtual void DidStopLoading() = 0;
+
   // Notifies the renderer that a paint is to be generated for the size
   // passed in.
   virtual void Repaint(const gfx::Size& size) = 0;

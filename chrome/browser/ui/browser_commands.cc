@@ -50,12 +50,14 @@
 #include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/status_bubble.h"
+#include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
+#include "chrome/common/content_restriction.h"
 #include "chrome/common/pref_names.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/devtools_agent_host.h"
@@ -67,7 +69,6 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
-#include "content/public/common/content_restriction.h"
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
@@ -242,16 +243,18 @@ int GetContentRestrictions(const Browser* browser) {
   int content_restrictions = 0;
   WebContents* current_tab = browser->tab_strip_model()->GetActiveWebContents();
   if (current_tab) {
-    content_restrictions = current_tab->GetContentRestrictions();
+    CoreTabHelper* core_tab_helper =
+        CoreTabHelper::FromWebContents(current_tab);
+    content_restrictions = core_tab_helper->content_restrictions();
     NavigationEntry* active_entry =
         current_tab->GetController().GetActiveEntry();
     // See comment in UpdateCommandsForTabState about why we call url().
     if (!content::IsSavableURL(
             active_entry ? active_entry->GetURL() : GURL()) ||
         current_tab->ShowingInterstitialPage())
-      content_restrictions |= content::CONTENT_RESTRICTION_SAVE;
+      content_restrictions |= CONTENT_RESTRICTION_SAVE;
     if (current_tab->ShowingInterstitialPage())
-      content_restrictions |= content::CONTENT_RESTRICTION_PRINT;
+      content_restrictions |= CONTENT_RESTRICTION_PRINT;
   }
   return content_restrictions;
 }
@@ -694,7 +697,7 @@ bool CanSavePage(const Browser* browser) {
     return false;
   }
   return !browser->is_devtools() &&
-      !(GetContentRestrictions(browser) & content::CONTENT_RESTRICTION_SAVE);
+      !(GetContentRestrictions(browser) & CONTENT_RESTRICTION_SAVE);
 }
 
 void ShowFindBar(Browser* browser) {
@@ -726,7 +729,7 @@ bool CanPrint(const Browser* browser) {
   // Do not print when a constrained window is showing. It's confusing.
   return browser->profile()->GetPrefs()->GetBoolean(prefs::kPrintingEnabled) &&
       !(IsShowingWebContentsModalDialog(browser) ||
-      GetContentRestrictions(browser) & content::CONTENT_RESTRICTION_PRINT);
+      GetContentRestrictions(browser) & CONTENT_RESTRICTION_PRINT);
 }
 
 void AdvancedPrint(Browser* browser) {

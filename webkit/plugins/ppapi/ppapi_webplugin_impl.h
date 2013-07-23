@@ -18,6 +18,10 @@
 
 struct _NPP;
 
+namespace content {
+class RenderView;
+}
+
 namespace WebKit {
 struct WebPluginParams;
 struct WebPrintParams;
@@ -36,7 +40,8 @@ class WebPluginImpl : public WebKit::WebPlugin {
   WEBKIT_PLUGINS_EXPORT WebPluginImpl(
       PluginModule* module,
       const WebKit::WebPluginParams& params,
-      const base::WeakPtr<PluginDelegate>& plugin_delegate);
+      const base::WeakPtr<PluginDelegate>& plugin_delegate,
+      const base::WeakPtr<content::RenderView>& render_view);
 
   PluginInstance* instance() { return instance_.get(); }
 

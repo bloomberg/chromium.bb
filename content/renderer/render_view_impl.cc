@@ -4766,6 +4766,14 @@ void RenderViewImpl::LoadURLExternally(
   loadURLExternally(frame, request, policy);
 }
 
+void RenderViewImpl::DidStartLoading() {
+  didStartLoading();
+}
+
+void RenderViewImpl::DidStopLoading() {
+  didStopLoading();
+}
+
 void RenderViewImpl::DidPlay(WebKit::WebMediaPlayer* player) {
   Send(new ViewHostMsg_MediaNotification(routing_id_,
                                          reinterpret_cast<int64>(player),

@@ -7,6 +7,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/printing/print_web_view_helper.h"
+#include "content/public/common/referrer.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
@@ -24,6 +25,7 @@
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
+#include "third_party/WebKit/public/web/WebView.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
@@ -178,7 +180,7 @@ int32_t PepperPDFHost::OnHostMsgDidStartLoading(
   PluginInstance* instance = host_->GetPluginInstance(pp_instance());
   if (!instance)
     return PP_ERROR_FAILED;
-  instance->delegate()->DidStartLoading();
+  instance->render_view()->DidStartLoading();
   return PP_OK;
 }
 
@@ -187,7 +189,7 @@ int32_t PepperPDFHost::OnHostMsgDidStopLoading(
   PluginInstance* instance = host_->GetPluginInstance(pp_instance());
   if (!instance)
     return PP_ERROR_FAILED;
-  instance->delegate()->DidStopLoading();
+  instance->render_view()->DidStopLoading();
   return PP_OK;
 }
 
@@ -196,7 +198,9 @@ int32_t PepperPDFHost::OnHostMsgSetContentRestriction(
   PluginInstance* instance = host_->GetPluginInstance(pp_instance());
   if (!instance)
     return PP_ERROR_FAILED;
-  instance->delegate()->SetContentRestriction(restrictions);
+  instance->render_view()->Send(
+      new ChromeViewHostMsg_PDFUpdateContentRestrictions(
+          instance->render_view()->GetRoutingID(), restrictions));
   return PP_OK;
 }
 
@@ -262,7 +266,13 @@ int32_t PepperPDFHost::OnHostMsgSaveAs(
   PluginInstance* instance = host_->GetPluginInstance(pp_instance());
   if (!instance)
     return PP_ERROR_FAILED;
-  instance->delegate()->SaveURLAs(instance->plugin_url());
+  GURL url = instance->plugin_url();
+  content::RenderView* render_view = instance->render_view();
+  WebKit::WebFrame* frame = render_view->GetWebView()->mainFrame();
+  content::Referrer referrer(frame->document().url(),
+                             frame->document().referrerPolicy());
+  render_view->Send(new ChromeViewHostMsg_PDFSaveURLAs(
+      render_view->GetRoutingID(), url, referrer));
   return PP_OK;
 }
 

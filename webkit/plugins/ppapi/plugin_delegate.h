@@ -613,16 +613,6 @@ class PluginDelegate {
   virtual void ZoomLimitsChanged(double minimum_factor,
                                  double maximum_factor) = 0;
 
-  // Tell the browser when resource loading starts/ends.
-  virtual void DidStartLoading() = 0;
-  virtual void DidStopLoading() = 0;
-
-  // Sets restrictions on how the content can be used (i.e. no print/copy).
-  virtual void SetContentRestriction(int restrictions) = 0;
-
-  // Tells the browser to bring up SaveAs dialog to save specified URL.
-  virtual void SaveURLAs(const GURL& url) = 0;
-
   // Create an anonymous shared memory segment of size |size| bytes, and return
   // a pointer to it, or NULL on error.  Caller owns the returned pointer.
   virtual base::SharedMemory* CreateAnonymousSharedMemory(size_t size) = 0;

@@ -312,6 +312,7 @@ scoped_ptr<const char*[]> StringVectorToArgArray(
 
 // static
 PluginInstance* PluginInstance::Create(PluginDelegate* delegate,
+                                       content::RenderView* render_view,
                                        PluginModule* module,
                                        WebPluginContainer* container,
                                        const GURL& plugin_url) {
@@ -321,8 +322,8 @@ PluginInstance* PluginInstance::Create(PluginDelegate* delegate,
       PPP_Instance_Combined::Create(get_plugin_interface_func);
   if (!ppp_instance_combined)
     return NULL;
-  return new PluginInstance(delegate, module, ppp_instance_combined, container,
-                            plugin_url);
+  return new PluginInstance(delegate, render_view, module,
+                            ppp_instance_combined, container, plugin_url);
 }
 
 PluginInstance::NaClDocumentLoader::NaClDocumentLoader()
@@ -389,11 +390,13 @@ void PluginInstance::GamepadImpl::Sample(PP_Instance /* instance */,
 
 PluginInstance::PluginInstance(
     PluginDelegate* delegate,
+    content::RenderView* render_view,
     PluginModule* module,
     ::ppapi::PPP_Instance_Combined* instance_interface,
     WebPluginContainer* container,
     const GURL& plugin_url)
     : delegate_(delegate),
+      render_view_(render_view),
       module_(module),
       instance_interface_(instance_interface),
       pp_instance_(0),

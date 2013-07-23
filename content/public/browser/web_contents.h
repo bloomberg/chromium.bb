@@ -332,6 +332,10 @@ class WebContents : public PageNavigator,
                         const base::FilePath& dir_path,
                         SavePageType save_type) = 0;
 
+  // Saves the given frame's URL to the local filesystem..
+  virtual void SaveFrame(const GURL& url,
+                         const Referrer& referrer) = 0;
+
   // Generate an MHTML representation of the current page in the given file.
   virtual void GenerateMHTML(
       const base::FilePath& file,
@@ -401,9 +405,6 @@ class WebContents : public PageNavigator,
 
   // Gets the preferred size of the contents.
   virtual gfx::Size GetPreferredSize() const = 0;
-
-  // Get the content restrictions (see content::ContentRestriction).
-  virtual int GetContentRestrictions() const = 0;
 
   // Called when the reponse to a pending mouse lock request has arrived.
   // Returns true if |allowed| is true and the mouse has been successfully

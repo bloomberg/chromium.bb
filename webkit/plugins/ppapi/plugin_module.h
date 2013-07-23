@@ -32,6 +32,10 @@ namespace base {
 class FilePath;
 }
 
+namespace content {
+class RenderView;
+}
+
 namespace ppapi {
 class CallbackTracker;
 class WebKitForwarding;
@@ -158,6 +162,7 @@ class WEBKIT_PLUGINS_EXPORT PluginModule :
   const ::ppapi::PpapiPermissions& permissions() const { return permissions_; }
 
   PluginInstance* CreateInstance(PluginDelegate* delegate,
+                                 content::RenderView* render_view,
                                  WebKit::WebPluginContainer* container,
                                  const GURL& plugin_url);
 

@@ -183,6 +183,9 @@ enum ChromeDownloadSource {
   // The download was initiated by the plugin installer.
   INITIATED_BY_PLUGIN_INSTALLER,
 
+  // The download was initiated by the PDF plugin..
+  INITIATED_BY_PDF_SAVE,
+
   CHROME_DOWNLOAD_SOURCE_LAST_ENTRY,
 };
 
