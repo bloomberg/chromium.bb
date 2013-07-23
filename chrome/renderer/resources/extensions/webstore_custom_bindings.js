@@ -11,9 +11,8 @@ function Installer() {
 }
 
 Installer.prototype.install = function(url, onSuccess, onFailure) {
-  if (this._pendingInstall) {
+  if (this._pendingInstall)
     throw 'A Chrome Web Store installation is already pending.';
-  }
   var installId = webstoreNatives.Install(url, onSuccess, onFailure);
   if (installId !== undefined) {
     this._pendingInstall = {
@@ -36,6 +35,9 @@ Installer.prototype.onInstallResponse = function(installId, success, error) {
       pendingInstall.onSuccess();
     else if (!success && pendingInstall.onFailure)
       pendingInstall.onFailure(error);
+  } catch (e) {
+    console.error('Exception in chrome.webstore.install response handler: ' +
+                  e.stack);
   } finally {
     this._pendingInstall = null;
   }

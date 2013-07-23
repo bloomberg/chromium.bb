@@ -17,33 +17,25 @@ var extensionId = process.GetExtensionId();
 var logActivity = requireNative('activityLogger');
 
 function wrapForLogging(fun) {
-  var id = extensionId;
-  return (function() {
+  if (!extensionId)
+    return fun;  // nothing interesting to log without an extension
+
+  return function() {
     // TODO(ataly): We need to make sure we use the right prototype for
     // fun.apply. Array slice can either be rewritten or similarly defined.
-    logActivity.LogAPICall(id, "app." + fun.name,
+    logActivity.LogAPICall(extensionId, "app." + fun.name,
         $Array.slice(arguments));
     return $Function.apply(fun, this, arguments);
-  });
+  };
 }
 
 // This becomes chrome.app
-var app;
-if (!extensionId) {
-  app = {
-    getIsInstalled: appNatives.GetIsInstalled,
-    getDetails: appNatives.GetDetails,
-    getDetailsForFrame: appNatives.GetDetailsForFrame,
-    runningState: appNatives.GetRunningState
-  };
-} else {
-  app = {
-    getIsInstalled: wrapForLogging(appNatives.GetIsInstalled),
-    getDetails: wrapForLogging(appNatives.GetDetails),
-    getDetailsForFrame: wrapForLogging(appNatives.GetDetailsForFrame),
-    runningState: wrapForLogging(appNatives.GetRunningState)
-  };
-}
+var app = {
+  getIsInstalled: wrapForLogging(appNatives.GetIsInstalled),
+  getDetails: wrapForLogging(appNatives.GetDetails),
+  getDetailsForFrame: wrapForLogging(appNatives.GetDetailsForFrame),
+  runningState: wrapForLogging(appNatives.GetRunningState)
+};
 
 // Tricky; "getIsInstalled" is actually exposed as the getter "isInstalled",
 // but we don't have a way to express this in the schema JSON (nor is it
@@ -51,18 +43,20 @@ if (!extensionId) {
 //
 // So, define it manually, and let the getIsInstalled function act as its
 // documentation.
-if (!extensionId)
-  app.__defineGetter__('isInstalled', appNatives.GetIsInstalled);
-else
-  app.__defineGetter__('isInstalled',
-                       wrapForLogging(appNatives.GetIsInstalled));
+app.__defineGetter__('isInstalled', wrapForLogging(appNatives.GetIsInstalled));
 
 // Called by app_bindings.cc.
 function onInstallStateResponse(state, callbackId) {
   var callback = callbacks[callbackId];
   delete callbacks[callbackId];
-  if (typeof(callback) == 'function')
-    callback(state);
+  if (typeof(callback) == 'function') {
+    try {
+      callback(state);
+    } catch (e) {
+      console.error('Exception in chrome.app.installState response handler: ' +
+                    e.stack);
+    }
+  }
 }
 
 // TODO(kalman): move this stuff to its own custom bindings.
