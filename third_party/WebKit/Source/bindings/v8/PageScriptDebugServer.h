@@ -38,7 +38,6 @@
 namespace WebCore {
 
 class Page;
-class ScriptController;
 
 class PageScriptDebugServer : public ScriptDebugServer {
     WTF_MAKE_NONCOPYABLE(PageScriptDebugServer);
@@ -59,12 +58,11 @@ public:
     virtual void compileScript(ScriptState*, const String& expression, const String& sourceURL, String* scriptId, String* exceptionMessage);
     virtual void clearCompiledScripts();
     virtual void runScript(ScriptState*, const String& scriptId, ScriptValue* result, bool* wasThrown, String* exceptionMessage);
-    virtual ScriptController* scriptController(v8::Handle<v8::Context>);
 
 private:
     PageScriptDebugServer();
     virtual ~PageScriptDebugServer() { }
-
+    
     virtual ScriptDebugListener* getDebugListenerForContext(v8::Handle<v8::Context>);
     virtual void runMessageLoopOnPause(v8::Handle<v8::Context>);
     virtual void quitMessageLoopOnPause();

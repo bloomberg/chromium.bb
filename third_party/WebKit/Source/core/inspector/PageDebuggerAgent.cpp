@@ -33,11 +33,9 @@
 
 #include "bindings/v8/DOMWrapperWorld.h"
 #include "bindings/v8/PageScriptDebugServer.h"
-#include "bindings/v8/ScriptController.h"
 #include "core/inspector/InspectorOverlay.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InstrumentingAgents.h"
-#include "core/page/Frame.h"
 #include "core/page/Page.h"
 #include "core/page/PageConsole.h"
 
@@ -138,10 +136,7 @@ void PageDebuggerAgent::didClearWindowObjectInWorld(Frame* frame, DOMWrapperWorl
         return;
 
     reset();
-
-    // ScriptController::clearWindowShell() clears its ScriptPreprocessor before didClearWindowObjectInWorld is dispatched.
-    if (!m_pageAgent->scriptPreprocessor().isEmpty())
-        frame->script()->setScriptPreprocessor(m_pageAgent->scriptPreprocessor());
+    scriptDebugServer().setScriptPreprocessor(m_pageAgent->scriptPreprocessor());
 }
 
 } // namespace WebCore

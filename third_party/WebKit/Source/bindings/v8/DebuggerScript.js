@@ -302,49 +302,6 @@ DebuggerScript.getBreakpointNumbers = function(eventData)
     return numbers;
 }
 
-// Matched enum in V8 objects.h
-DebuggerScript.ScriptCompilationType = {
-    Host: 0,
-    Eval: 1,
-    JSON: 2
-};
-
-DebuggerScript._getScriptCompilationTypeInfo = function(script)
-{
-    var result = "";
-    var fromScript = script.evalFromScript();
-    if (script.compilationType() == DebuggerScript.ScriptCompilationType.Eval && fromScript) {
-        result += 'eval from ';
-        if (fromScript.compilationType() == DebuggerScript.ScriptCompilationType.Eval) {
-            result += DebuggerScript._getScriptCompilationTypeInfo(fromScript);
-        } else {
-            var name = fromScript.name();
-            if (name) {
-                var location = script.evalFromLocation();
-                result += name + (location ? ':' + (location.line + 1) + ':' + (location.column + 1) : '');
-            } else {
-                result += '(unknown source)';
-            }
-        }
-        return result;
-    } else if (script.compilationType() ==  Debug.ScriptCompilationType.JSON) {
-        result += 'JSON ';
-    } else {  // script.compilation == Debug.ScriptCompilationType.Host
-        result += '[unnamed] ';
-    }
-    return result || 'Failed to extract info';
-}
-
-DebuggerScript.getScriptCompilationTypeInfo = function(eventData)
-{
-    try {
-        var script = eventData.script();
-        return DebuggerScript._getScriptCompilationTypeInfo(script);
-    } catch (exc) {
-        return exc + '';
-    }
-}
-
 DebuggerScript._frameMirrorToJSCallFrame = function(frameMirror, callerFrame)
 {
     // Get function name.

@@ -135,7 +135,6 @@ void V8LazyEventListener::prepareListenerObject(ScriptExecutionContext* context)
         return;
 
     v8::Context::Scope scope(v8Context);
-    String listenerSource = frame->script()->preprocess(m_code, m_functionName);
 
     // FIXME: Remove the following 'with' hack.
     //
@@ -159,7 +158,7 @@ void V8LazyEventListener::prepareListenerObject(ScriptExecutionContext* context)
         "with (this[1]) {"
         "with (this[0]) {"
             "return function(" + m_eventParameterName + ") {" +
-                listenerSource + "\n" // Insert '\n' otherwise //-style comments could break the handler.
+                m_code + "\n" // Insert '\n' otherwise //-style comments could break the handler.
             "};"
         "}}}})";
 

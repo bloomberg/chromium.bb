@@ -64,14 +64,6 @@ static Frame* retrieveFrameWithGlobalObjectCheck(v8::Handle<v8::Context> context
     return toFrameIfNotDetached(context);
 }
 
-ScriptController* PageScriptDebugServer::scriptController(v8::Handle<v8::Context> context)
-{
-    Frame* frame = retrieveFrameWithGlobalObjectCheck(context);
-    if (frame)
-        return frame->script();
-    return 0;
-}
-
 PageScriptDebugServer& PageScriptDebugServer::shared()
 {
     DEFINE_STATIC_LOCAL(PageScriptDebugServer, server, ());
