@@ -26,6 +26,10 @@
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 
+#if defined(OS_WIN) && defined(USE_ASH)
+#include "base/win/windows_version.h"
+#endif
+
 static const char kMainWebrtcTestHtmlPage[] =
     "files/webrtc/webrtc_jsep01_test.html";
 static const char kFailedWithErrorPermissionDenied[] =
@@ -202,6 +206,12 @@ IN_PROC_BROWSER_TEST_F(MediaStreamInfobarTest, TestDismissingInfobar) {
 
 IN_PROC_BROWSER_TEST_F(MediaStreamInfobarTest,
                        TestAcceptThenDenyWhichShouldBeSticky) {
+#if defined(OS_WIN) && defined(USE_ASH)
+  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+    return;
+#endif
+
   content::WebContents* tab_contents = LoadTestPageInTab();
 
   TestAcceptOnInfobar(tab_contents);

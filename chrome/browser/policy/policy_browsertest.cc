@@ -131,6 +131,10 @@
 #include "chromeos/audio/audio_pref_handler.h"
 #endif
 
+#if defined(OS_WIN) && defined(USE_ASH)
+#include "base/win/windows_version.h"
+#endif
+
 using content::BrowserThread;
 using content::URLRequestMockHTTPJob;
 using testing::AnyNumber;
@@ -656,6 +660,12 @@ IN_PROC_BROWSER_TEST_F(LocalePolicyTest, ApplicationLocaleValue) {
 #endif
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, BookmarkBarEnabled) {
+#if defined(OS_WIN) && defined(USE_ASH)
+  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+    return;
+#endif
+
   // Verifies that the bookmarks bar can be forced to always or never show up.
 
   // Test starts in about:blank.
@@ -1189,6 +1199,12 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DeveloperToolsDisabled) {
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, WebStoreIconHidden) {
+#if defined(OS_WIN) && defined(USE_ASH)
+  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+    return;
+#endif
+
   // Verifies that the web store icons can be hidden from the new tab page.
 
   // Open new tab page and look for the web store icons.
@@ -1472,6 +1488,12 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallSources) {
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, HomepageLocation) {
+#if defined(OS_WIN) && defined(USE_ASH)
+  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+    return;
+#endif
+
   // Verifies that the homepage can be configured with policies.
   // Set a default, and check that the home button navigates there.
   browser()->profile()->GetPrefs()->SetString(

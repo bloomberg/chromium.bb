@@ -33,6 +33,10 @@
 #include "net/dns/mock_host_resolver.h"
 #include "url/gurl.h"
 
+#if defined(OS_WIN) && defined(USE_ASH)
+#include "base/win/windows_version.h"
+#endif
+
 using content::WebContents;
 using extensions::DictionaryBuilder;
 using extensions::Extension;
@@ -236,6 +240,12 @@ IN_PROC_BROWSER_TEST_F(WebstoreStartupInstallerTest, InstallFromHostedApp) {
 
 IN_PROC_BROWSER_TEST_F(WebstoreStartupInstallerTest,
                        InstallProhibitedForManagedUsers) {
+#if defined(OS_WIN) && defined(USE_ASH)
+  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+    return;
+#endif
+
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kAppsGalleryInstallAutoConfirmForTests, "accept");
 

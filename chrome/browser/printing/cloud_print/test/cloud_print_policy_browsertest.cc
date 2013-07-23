@@ -14,6 +14,10 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/result_codes.h"
 
+#if defined(OS_WIN) && defined(USE_ASH)
+#include "base/win/windows_version.h"
+#endif
+
 // These tests don't apply to the Mac version; see GetCommandLineForRelaunch
 // for details.
 #if defined(OS_MACOSX)
@@ -28,6 +32,12 @@ class CloudPrintPolicyTest : public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(CloudPrintPolicyTest, NormalPassedFlag) {
+#if defined(OS_WIN) && defined(USE_ASH)
+  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+    return;
+#endif
+
   base::FilePath test_file_path = ui_test_utils::GetTestFilePath(
       base::FilePath(), base::FilePath().AppendASCII("empty.html"));
   CommandLine new_command_line(GetCommandLineForRelaunch());

@@ -64,6 +64,10 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
+#if defined(OS_WIN) && defined(USE_ASH)
+#include "base/win/windows_version.h"
+#endif
+
 using content::BrowserThread;
 using content::DevToolsAgentHost;
 using content::DevToolsClientHost;
@@ -2695,6 +2699,12 @@ class PrerenderBrowserTestWithNaCl : public PrerenderBrowserTest {
 // Check that NaCl plugins work when enabled, with prerendering.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTestWithNaCl,
                        PrerenderNaClPluginEnabled) {
+#if defined(OS_WIN) && defined(USE_ASH)
+  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+    return;
+#endif
+
   PrerenderTestURL("files/prerender/prerender_plugin_nacl_enabled.html",
                    FINAL_STATUS_USED,
                    1);

@@ -1202,6 +1202,12 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, InvalidCreditCardNumberIsNotAggregated) {
 // http://www.merriampark.com/anatomycc.htm
 IN_PROC_BROWSER_TEST_F(AutofillTest,
                        WhitespacesAndSeparatorCharsStrippedForValidCCNums) {
+#if defined(OS_WIN) && defined(USE_ASH)
+  // Disable this test in Metro+Ash for now (http://crbug.com/179830).
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+    return;
+#endif
+
   ASSERT_TRUE(test_server()->Start());
   SubmitCreditCard("Bob Smith", "4408 0412 3456 7893", "12", "2014");
   SubmitCreditCard("Jane Doe", "4417-1234-5678-9113", "10", "2013");

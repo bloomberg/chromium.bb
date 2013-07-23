@@ -29,6 +29,10 @@
 #include "chrome/browser/extensions/shell_window_registry.h"
 #endif
 
+#if defined(OS_WIN) && defined(USE_ASH)
+#include "base/win/windows_version.h"
+#endif
+
 #if defined(USE_ASH) && !defined(OS_WIN)
 // TODO(stevenjb): Figure out the correct behavior for Ash + Win
 #define USE_ASH_PANELS
@@ -254,6 +258,12 @@ IN_PROC_BROWSER_TEST_F(WindowOpenPanelTest, MAYBE_WindowOpenPanelDetached) {
 
 IN_PROC_BROWSER_TEST_F(WindowOpenPanelTest,
                        CloseNonExtensionPanelsOnUninstall) {
+#if defined(OS_WIN) && defined(USE_ASH)
+  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+    return;
+#endif
+
 #if defined(USE_ASH_PANELS)
   // On Ash, new panel windows open as popup windows instead.
   int num_popups, num_panels;

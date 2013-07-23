@@ -21,6 +21,10 @@
 #include "ui/message_center/message_center_switches.h"
 #include "ui/message_center/message_center_util.h"
 
+#if defined(OS_WIN) && defined(USE_ASH)
+#include "base/win/windows_version.h"
+#endif
+
 class TestAddObserver : public message_center::MessageCenterObserver {
  public:
   TestAddObserver(const std::string& id,
@@ -177,6 +181,12 @@ IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest, MAYBE_BasicAddCancel) {
 #endif
 
 IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest, MAYBE_BasicDelegate) {
+#if defined(OS_WIN) && defined(USE_ASH)
+  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+    return;
+#endif
+
   EXPECT_TRUE(NotificationUIManager::DelegatesToMessageCenter());
   TestDelegate* delegate;
   manager()->Add(CreateTestNotification("hey", &delegate), profile());
@@ -197,6 +207,12 @@ IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest, MAYBE_BasicDelegate) {
 
 IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest,
                        MAYBE_ButtonClickedDelegate) {
+#if defined(OS_WIN) && defined(USE_ASH)
+  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+    return;
+#endif
+
   EXPECT_TRUE(NotificationUIManager::DelegatesToMessageCenter());
   TestDelegate* delegate;
   manager()->Add(CreateTestNotification("n", &delegate), profile());
@@ -215,6 +231,12 @@ IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest,
 
 IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest,
                        MAYBE_UpdateExistingNotification) {
+#if defined(OS_WIN) && defined(USE_ASH)
+  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+    return;
+#endif
+
   EXPECT_TRUE(NotificationUIManager::DelegatesToMessageCenter());
   TestDelegate* delegate;
   manager()->Add(CreateTestNotification("n", &delegate), profile());

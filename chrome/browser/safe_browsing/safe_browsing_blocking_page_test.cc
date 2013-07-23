@@ -35,6 +35,10 @@
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_utils.h"
 
+#if defined(OS_WIN) && defined(USE_ASH)
+#include "base/win/windows_version.h"
+#endif
+
 using content::BrowserThread;
 using content::InterstitialPage;
 using content::NavigationController;
@@ -616,6 +620,12 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest,
 }
 
 IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, MalwareDontProceed) {
+#if defined(OS_WIN) && defined(USE_ASH)
+  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+    return;
+#endif
+
   SetupWarningAndNavigate(SB_THREAT_TYPE_URL_MALWARE);
 
   EXPECT_EQ(VISIBLE, GetVisibility("malware-icon"));
@@ -661,6 +671,12 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest,
 
 IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest,
                        MalwareIframeDontProceed) {
+#if defined(OS_WIN) && defined(USE_ASH)
+  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+    return;
+#endif
+
   SetupMalwareIframeWarningAndNavigate();
 
   EXPECT_EQ(HIDDEN, GetVisibility("malware-icon"));
@@ -717,6 +733,12 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest,
 // by the corresponding policy. Also verifies that sending the "proceed"
 // command anyway doesn't advance to the malware site.
 IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, ProceedDisabled) {
+#if defined(OS_WIN) && defined(USE_ASH)
+  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+    return;
+#endif
+
   // Simulate a policy disabling the "proceed anyway" link.
   browser()->profile()->GetPrefs()->SetBoolean(
       prefs::kSafeBrowsingProceedAnywayDisabled, true);
@@ -744,6 +766,12 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, ProceedDisabled) {
 // TODO(mattm): Should also verify that no report is sent, but there isn't a
 // good way to do that in the current design.
 IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, ReportingDisabled) {
+#if defined(OS_WIN) && defined(USE_ASH)
+  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+    return;
+#endif
+
   browser()->profile()->GetPrefs()->SetBoolean(
       prefs::kSafeBrowsingReportingEnabled, true);
 
@@ -771,6 +799,12 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, ReportingDisabled) {
 }
 
 IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, PhishingDontProceed) {
+#if defined(OS_WIN) && defined(USE_ASH)
+  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+    return;
+#endif
+
   SetupWarningAndNavigate(SB_THREAT_TYPE_URL_PHISHING);
 
   EXPECT_EQ(HIDDEN, GetVisibility("malware-icon"));

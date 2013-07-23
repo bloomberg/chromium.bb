@@ -19,6 +19,10 @@
 #include "content/public/browser/notification_service.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
+#if defined(OS_WIN) && defined(USE_ASH)
+#include "base/win/windows_version.h"
+#endif
+
 class InfoBarsTest : public InProcessBrowserTest {
  public:
   InfoBarsTest() {}
@@ -51,6 +55,12 @@ class InfoBarsTest : public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(InfoBarsTest, TestInfoBarsCloseOnNewTheme) {
+#if defined(OS_WIN) && defined(USE_ASH)
+  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+    return;
+#endif
+
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   ui_test_utils::NavigateToURL(

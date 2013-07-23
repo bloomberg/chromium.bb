@@ -23,6 +23,10 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "ui/gfx/rect.h"
 
+#if defined(OS_WIN) && defined(USE_ASH)
+#include "base/win/windows_version.h"
+#endif
+
 // On GTK, resizing happens asynchronously and we currently don't have a way to
 // get called back (it's probably possible, but we don't have that code). Since
 // the GTK code is going away, not spending more time on this.
@@ -42,6 +46,12 @@ IN_PROC_BROWSER_TEST_F(PreservedWindowPlacement, PRE_Test) {
 #define MAYBE_Test Test
 #endif
 IN_PROC_BROWSER_TEST_F(PreservedWindowPlacement, MAYBE_Test) {
+#if defined(OS_WIN) && defined(USE_ASH)
+  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+    return;
+#endif
+
   gfx::Rect bounds = browser()->window()->GetBounds();
   gfx::Rect expected_bounds(gfx::Rect(20, 30, 400, 500));
   ASSERT_EQ(expected_bounds.ToString(), bounds.ToString());
@@ -112,6 +122,12 @@ class PreservedWindowPlacementIsLoaded : public PreferenceServiceTest {
 };
 
 IN_PROC_BROWSER_TEST_F(PreservedWindowPlacementIsLoaded, Test) {
+#if defined(OS_WIN) && defined(USE_ASH)
+  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+    return;
+#endif
+
   // The window should open with the new reference profile, with window
   // placement values stored in the user data directory.
   JSONFileValueSerializer deserializer(tmp_pref_file_);
@@ -165,6 +181,12 @@ class PreservedWindowPlacementIsMigrated : public PreferenceServiceTest {
 };
 
 IN_PROC_BROWSER_TEST_F(PreservedWindowPlacementIsMigrated, Test) {
+#if defined(OS_WIN) && defined(USE_ASH)
+  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+    return;
+#endif
+
   // The window should open with the old reference profile, with window
   // placement values stored in Local State.
 
