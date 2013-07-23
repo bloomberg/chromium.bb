@@ -183,7 +183,7 @@ void KernelObject::FreeAndReassignFD(int fd, const ScopedKernelHandle& handle) {
     AUTO_LOCK(handle_lock_);
 
     // If the required FD is larger than the current set, grow the set
-    if (fd >= handle_map_.size())
+    if (fd >= (int)handle_map_.size())
       handle_map_.resize(fd + 1);
 
     handle_map_[fd] = handle;

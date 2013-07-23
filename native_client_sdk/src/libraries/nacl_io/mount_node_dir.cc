@@ -33,7 +33,7 @@ Error MountNodeDir::Read(size_t offs, void* buf, size_t count, int* out_bytes) {
 Error MountNodeDir::FTruncate(off_t size) { return EISDIR; }
 
 Error MountNodeDir::Write(size_t offs,
-                          void* buf,
+                          const void* buf,
                           size_t count,
                           int* out_bytes) {
   *out_bytes = 0;

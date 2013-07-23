@@ -135,7 +135,7 @@ int32_t ReadUrl(pp::Instance* instance,
 
   url_request.SetRecordDownloadProgress(false);
 
-  const size_t kReadBufferSize = 16 * 1024;
+  const int32_t kReadBufferSize = 16 * 1024;
   uint8_t* buffer_ = new uint8_t[kReadBufferSize];
 
   do {
@@ -257,7 +257,6 @@ int32_t InsertFile(pp::Instance* instance,
                    Json::Value* root) {
   static const char base_url[] =
       "https://www.googleapis.com/upload/drive/v2/files";
-  const char* method = "POST";
 
   ReadUrlParams p;
   p.url = base_url;
@@ -335,8 +334,8 @@ class Instance : public pp::Instance {
 
 Instance::Instance(PP_Instance instance)
     : pp::Instance(instance),
-      callback_factory_(this),
       worker_thread_(this),
+      callback_factory_(this),
       is_processing_request_(false) {}
 
 bool Instance::Init(uint32_t /*argc*/,

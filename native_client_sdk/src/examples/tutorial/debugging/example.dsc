@@ -12,7 +12,7 @@
       'SOURCES' : [
         'debugging.c',
       ],
-      'CCFLAGS': ['-fno-omit-frame-pointer'],
+      'CFLAGS': ['-fno-omit-frame-pointer'],
       'DEPS' : ['error_handling'],
       'LIBS' : ['ppapi', 'pthread']
     }

@@ -22,11 +22,11 @@ class MountNodeMock : public nacl_io::MountNode {
   MOCK_METHOD0(Destroy, void());
   MOCK_METHOD0(FSync, Error());
   MOCK_METHOD1(FTruncate, Error(off_t));
-  MOCK_METHOD4(GetDents, Error(size_t, struct dirent*, size_t, int*));
+  MOCK_METHOD4(GetDents, Error(size_t, struct dirent*, size_t, size_t*));
   MOCK_METHOD1(GetStat, Error(struct stat*));
   MOCK_METHOD2(Ioctl, Error(int, char*));
-  MOCK_METHOD4(Read, Error(size_t, void*, size_t, int*));
-  MOCK_METHOD4(Write, Error(size_t, const void*, size_t, int*));
+  MOCK_METHOD4(Read, Error(size_t, void*, size_t, size_t*));
+  MOCK_METHOD4(Write, Error(size_t, const void*, size_t, size_t*));
   MOCK_METHOD6(MMap, Error(void*, size_t, int, int, size_t, void**));
   MOCK_METHOD0(GetLinks, int());
   MOCK_METHOD0(GetMode, int());

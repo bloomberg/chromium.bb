@@ -36,9 +36,14 @@ EXTRA_INC_PATHS={{' '.join(target['INCLUDES'])}}
 include $(NACL_SDK_ROOT)/tools/common.mk
 
 TARGET = {{target['NAME']}}
-[[flags = target.get('CCFLAGS', [])]]
+[[flags = target.get('CFLAGS', [])]]
 [[flags.extend(target.get('CXXFLAGS', []))]]
 [[ExpandDict('CFLAGS', flags)]]
+[[if 'CFLAGS_GCC' in target:]]
+ifneq ($(TOOLCHAIN),pnacl)
+CFLAGS += {{' '.join(target['CFLAGS_GCC'])}}
+endif
+[[]]
 
 SOURCES = \
 [[for source in sorted(target['SOURCES']):]]
@@ -57,3 +62,4 @@ ifeq ($(TOOLCHAIN),glibc)
 $(eval $(call SO_RULE,$(TARGET),$(SOURCES)))
 endif
 [[]]
+{{post}}

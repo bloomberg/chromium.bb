@@ -66,7 +66,10 @@ class MountNodePassthrough : public MountNode {
     return ENOSYS;
   }
 
-  virtual Error GetDents(size_t offs, struct dirent* pdir, size_t count) {
+  virtual Error GetDents(size_t offs,
+                         struct dirent* pdir,
+                         size_t count,
+                         int* out_bytes) {
     size_t nread;
     int err = _real_getdents(real_fd_, pdir, count, &nread);
     if (err)

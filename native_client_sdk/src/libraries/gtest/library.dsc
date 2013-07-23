@@ -23,8 +23,11 @@
       ],
       # Ignore warnings:
       #   gtest.cc:2555: error: enumeration value ‘COLOR_DEFAULT’ not handled in switch
-      #   gtest-typed-test.h:239:47: error: anonymous variadic macros were introduced in C99 [-Werror=variadic-macros]
-      'CXXFLAGS': ['-Wno-switch-enum', '-Wno-variadic-macros'],
+      #   gtest-typed-test.h:239:47: error: anonymous variadic macros were introduced in C99
+      #   gtest-internal-inl.h:213:8: error: private field 'pretty_' is not used
+      'CXXFLAGS': ['-Wno-switch-enum', '-Wno-variadic-macros', '-Wno-unused-private-field'],
+      'CFLAGS_GCC': ['-Wno-unused-local-typedefs'],
+
       'INCLUDES': [
         # See comment below about gtest-internal-inl.h
         '$(NACL_SDK_ROOT)/include/gtest/internal',

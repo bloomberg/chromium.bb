@@ -42,8 +42,8 @@ class KernelHandle : public sdk_util::RefObject {
   const ScopedMount& mount() { return mount_; }
 
 private:
-  ScopedMountNode node_;
   ScopedMount mount_;
+  ScopedMountNode node_;
   sdk_util::SimpleLock offs_lock_;
   size_t offs_;
 

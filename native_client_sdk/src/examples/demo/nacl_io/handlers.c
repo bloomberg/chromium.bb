@@ -120,15 +120,6 @@ static void RemoveFileFromMap(int i) {
 }
 
 /**
- * Get a file handle from the g_OpenFiles map.
- * @param[in] i The index of the file handle to get.
- * @return the FILE*, or NULL of there is no open file with that handle.
- */
-static FILE* GetFileFromMap(int i) {
-  return (FILE*)GetFromMap((void**)g_OpenFiles, MAX_OPEN_FILES, i);
-}
-
-/**
  * Get a file, given a string containing the index.
  * @param[in] s The string containing the file index.
  * @param[out] file_index The index of this file.
@@ -155,14 +146,6 @@ static int AddDirToMap(DIR* dir) {
  * @param[in] i The index of the dir handle to remove. */
 static void RemoveDirFromMap(int i) {
   RemoveFromMap((void**)g_OpenDirs, MAX_OPEN_DIRS, i);
-}
-/**
- * Get a dir handle from the g_OpenDirs map.
- * @param[in] i The index of the dir handle to get.
- * @return the DIR*, or NULL of there is no open dir with that handle.
- */
-static DIR* GetDirFromMap(int i) {
-  return (DIR*)GetFromMap((void**)g_OpenDirs, MAX_OPEN_DIRS, i);
 }
 
 /**
@@ -450,10 +433,7 @@ int HandleFclose(int num_params, char** params, char** output) {
  * @param[out] output A string to write informational function output to.
  * @return An errorcode; 0 means success, anything else is a failure. */
 int HandleStat(int num_params, char** params, char** output) {
-  FILE* file;
-  int file_index;
   const char* filename;
-  const char* mode;
   int result;
   struct stat buf;
 

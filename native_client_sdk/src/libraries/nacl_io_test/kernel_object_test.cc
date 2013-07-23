@@ -173,7 +173,7 @@ TEST_F(KernelObjectTest, FreeAndReassignFD) {
   EXPECT_EQ(2, node->RefCount());
   EXPECT_EQ(1, raw_handle->RefCount());
 
-  int fd1 = proxy->AllocateFD(handle);
+  proxy->AllocateFD(handle);
   EXPECT_EQ(2, mnt->RefCount());
   EXPECT_EQ(2, node->RefCount());
   EXPECT_EQ(2, raw_handle->RefCount());

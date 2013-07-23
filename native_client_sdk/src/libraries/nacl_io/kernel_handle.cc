@@ -31,7 +31,6 @@ KernelHandle::~KernelHandle() {
 
 Error KernelHandle::Init(int open_mode) {
   if (open_mode & O_APPEND) {
-    size_t node_size;
     Error error = node_->GetSize(&offs_);
     if (error)
       return error;

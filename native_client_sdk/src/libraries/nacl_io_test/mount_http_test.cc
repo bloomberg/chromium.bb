@@ -295,7 +295,6 @@ void MountHttpNodeTest::SetResponseExpectFail(int status_code,
   ON_CALL(*response_, GetProperty(response_resource_, _))
       .WillByDefault(Return(PP_MakeUndefined()));
 
-  PP_Var var_headers = MakeString(348);
   EXPECT_CALL(*response_,
               GetProperty(response_resource_,
                           PP_URLRESPONSEPROPERTY_STATUSCODE))

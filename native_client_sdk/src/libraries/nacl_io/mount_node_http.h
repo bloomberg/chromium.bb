@@ -51,12 +51,12 @@ class MountNodeHttp : public MountNode {
   Error DownloadToCache();
   Error ReadPartialFromCache(size_t offs,
                              void* buf,
-                             size_t count,
+                             int count,
                              int* out_bytes);
   Error DownloadPartial(size_t offs, void* buf, size_t count, int* out_bytes);
   Error DownloadToBuffer(PP_Resource loader,
                          void* buf,
-                         size_t count,
+                         int count,
                          int* out_bytes);
 
   std::string url_;

@@ -17,7 +17,7 @@
         'symtable.c',
         'xray.c'
       ],
-      'CCFLAGS': [
+      'CFLAGS': [
         '-DXRAY -DXRAY_ANNOTATE -O2'
       ]
     }

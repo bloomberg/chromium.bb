@@ -264,7 +264,7 @@ int mount(const char* source, const char* target, const char* filesystemtype,
 int WRAP(munmap)(void* addr, size_t length) {
   // Always let the real munmap run on the address range. It is not an error if
   // there are no mapped pages in that range.
-  int result = ki_munmap(addr, length);
+  ki_munmap(addr, length);
   return REAL(munmap)(addr, length);
 }
 

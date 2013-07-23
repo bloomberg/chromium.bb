@@ -17,7 +17,7 @@ namespace nacl_io {
 
 class INodePool {
  public:
-  INodePool() : max_nodes_(0), num_nodes_(0) {}
+  INodePool() : num_nodes_(0), max_nodes_(0) {}
 
   ino_t Acquire() {
     AUTO_LOCK(lock_);

@@ -93,8 +93,8 @@ PSInstance::PSInstance(PP_Instance instance, const char *argv[])
       pp::MouseLock(this),
       pp::Graphics3DClient(this),
       main_loop_(NULL),
-      verbosity_(PSV_WARN),
       events_enabled_(PSE_NONE),
+      verbosity_(PSV_WARN),
       fd_tty_(-1) {
   // Set the single Instance object
   s_InstanceObject = this;

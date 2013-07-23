@@ -27,8 +27,8 @@ $(error Unable to find gcc in PATH while building Host build)
 endif
 
 
-LINUX_WARNINGS ?= -Wno-long-long
-LINUX_CCFLAGS = -fPIC -pthread $(LINUX_WARNINGS) -I$(NACL_SDK_ROOT)/include -I$(NACL_SDK_ROOT)/include/linux
+LINUX_WARNINGS ?= -Wno-long-long -Wall -Werror
+LINUX_CFLAGS = -fPIC -pthread $(LINUX_WARNINGS) -I$(NACL_SDK_ROOT)/include -I$(NACL_SDK_ROOT)/include/linux
 
 
 #
@@ -40,14 +40,14 @@ LINUX_CCFLAGS = -fPIC -pthread $(LINUX_WARNINGS) -I$(NACL_SDK_ROOT)/include -I$(
 define C_COMPILER_RULE
 -include $(call SRC_TO_DEP,$(1))
 $(call SRC_TO_OBJ,$(1)): $(1) $(TOP_MAKE) | $(dir $(call SRC_TO_OBJ,$(1)))dir.stamp
-	$(call LOG,CC  ,$$@,$(HOST_CC) -o $$@ -c $$< -fPIC $(POSIX_FLAGS) $(2) $(LINUX_FLAGS))
+	$(call LOG,CC  ,$$@,$(HOST_CC) -o $$@ -c $$< -fPIC $(POSIX_FLAGS) $(2) $(LINUX_CFLAGS))
 	@$(FIXDEPS) $(call SRC_TO_DEP_PRE_FIXUP,$(1))
 endef
 
 define CXX_COMPILER_RULE
 -include $(call SRC_TO_DEP,$(1))
 $(call SRC_TO_OBJ,$(1)): $(1) $(TOP_MAKE) | $(dir $(call SRC_TO_OBJ,$(1)))dir.stamp
-	$(call LOG,CXX ,$$@,$(HOST_CXX) -o $$@ -c $$< -fPIC $(POSIX_FLAGS) $(2) $(LINUX_FLAGS))
+	$(call LOG,CXX ,$$@,$(HOST_CXX) -o $$@ -c $$< -fPIC $(POSIX_FLAGS) $(2) $(LINUX_CFLAGS))
 	@$(FIXDEPS) $(call SRC_TO_DEP_PRE_FIXUP,$(1))
 endef
 

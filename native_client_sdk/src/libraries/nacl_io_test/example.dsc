@@ -33,6 +33,8 @@
       # referenced before ppapi.
       'LIBS': ['gmock', 'ppapi_cpp', 'ppapi', 'gtest', 'pthread'],
       'INCLUDES': ['$(NACL_SDK_ROOT)/include/gtest/internal'],
+      'CXXFLAGS': ['-Wno-sign-compare', '-Wno-unused-private-field'],
+      'CFLAGS_GCC': ['-Wno-unused-local-typedefs'],
     }
   ],
   'DATA': [

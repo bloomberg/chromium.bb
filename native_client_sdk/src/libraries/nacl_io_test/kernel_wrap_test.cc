@@ -275,7 +275,7 @@ TEST_F(KernelWrapTest, unlink) {
 }
 
 TEST_F(KernelWrapTest, utime) {
-  const struct utimbuf* times;
+  const struct utimbuf* times = NULL;
   EXPECT_CALL(mock, utime(StrEq("utime"), times));
   utime("utime", times);
 }

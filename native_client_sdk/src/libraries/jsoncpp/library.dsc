@@ -17,6 +17,7 @@
         'json_value.cpp',
         'json_writer.cpp',
       ],
+      'CXXFLAGS': ['-Wno-strict-aliasing']
     }
   ],
   'HEADERS': [
