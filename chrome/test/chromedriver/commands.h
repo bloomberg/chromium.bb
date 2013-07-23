@@ -12,7 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/test/chromedriver/command.h"
 #include "chrome/test/chromedriver/net/sync_websocket_factory.h"
-#include "chrome/test/chromedriver/session_thread_map.h"
+#include "chrome/test/chromedriver/session_map.h"
 
 namespace base {
 class DictionaryValue;
@@ -21,63 +21,55 @@ class Value;
 
 class DeviceManager;
 class Log;
-struct Session;
 class Status;
 class URLRequestContextGetter;
 
 // Gets status/info about ChromeDriver.
-void ExecuteGetStatus(
+Status ExecuteGetStatus(
     const base::DictionaryValue& params,
     const std::string& session_id,
-    const CommandCallback& callback);
+    scoped_ptr<base::Value>* out_value,
+    std::string* out_session_id);
 
 struct NewSessionParams {
   NewSessionParams(Log* log,
-                   SessionThreadMap* session_thread_map,
+                   SessionMap* session_map,
                    scoped_refptr<URLRequestContextGetter> context_getter,
                    const SyncWebSocketFactory& socket_factory,
                    DeviceManager* device_manager);
   ~NewSessionParams();
 
   Log* log;
-  SessionThreadMap* session_thread_map;
+  SessionMap* session_map;
   scoped_refptr<URLRequestContextGetter> context_getter;
   SyncWebSocketFactory socket_factory;
   DeviceManager* device_manager;
 };
 
 // Creates a new session.
-void ExecuteNewSession(
+Status ExecuteNewSession(
     const NewSessionParams& bound_params,
     const base::DictionaryValue& params,
     const std::string& session_id,
-    const CommandCallback& callback);
+    scoped_ptr<base::Value>* out_value,
+    std::string* out_session_id);
+
+// Quits a particular session.
+Status ExecuteQuit(
+    bool allow_detach,
+    SessionMap* session_map,
+    const base::DictionaryValue& params,
+    const std::string& session_id,
+    scoped_ptr<base::Value>* out_value,
+    std::string* out_session_id);
 
 // Quits all sessions.
-void ExecuteQuitAll(
-    const Command& quit_command,
-    SessionThreadMap* session_thread_map,
+Status ExecuteQuitAll(
+    Command quit_command,
+    SessionMap* session_map,
     const base::DictionaryValue& params,
     const std::string& session_id,
-    const CommandCallback& callback);
-
-typedef base::Callback<Status(
-    Session* session,
-    const base::DictionaryValue&,
-    scoped_ptr<base::Value>*)> SessionCommand;
-
-// Executes a given session command, after acquiring access to the appropriate
-// session.
-void ExecuteSessionCommand(
-    SessionThreadMap* session_thread_map,
-    const SessionCommand& command,
-    bool return_ok_without_session,
-    const base::DictionaryValue& params,
-    const std::string& session_id,
-    const CommandCallback& callback);
-
-namespace internal {
-void CreateSessionOnSessionThreadForTesting(const std::string& id);
-}  // namespace internal
+    scoped_ptr<base::Value>* out_value,
+    std::string* out_session_id);
 
 #endif  // CHROME_TEST_CHROMEDRIVER_COMMANDS_H_

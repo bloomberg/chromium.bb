@@ -17,14 +17,10 @@ class Value;
 
 class Status;
 
-typedef base::Callback<void(
-    const Status&,
-    scoped_ptr<base::Value>,
-    const std::string&)> CommandCallback;
-
-typedef base::Callback<void(
+typedef base::Callback<Status(
     const base::DictionaryValue&,
     const std::string&,
-    const CommandCallback&)> Command;
+    scoped_ptr<base::Value>*,
+    std::string*)> Command;
 
 #endif  // CHROME_TEST_CHROMEDRIVER_COMMAND_H_

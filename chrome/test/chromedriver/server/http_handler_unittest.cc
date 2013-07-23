@@ -10,7 +10,6 @@
 #include "base/values.h"
 #include "chrome/test/chromedriver/chrome/log.h"
 #include "chrome/test/chromedriver/chrome/status.h"
-#include "chrome/test/chromedriver/command.h"
 #include "chrome/test/chromedriver/server/http_handler.h"
 #include "chrome/test/chromedriver/server/http_response.h"
 #include "net/server/http_server_request_info.h"
@@ -18,19 +17,15 @@
 
 namespace {
 
-void DummyCommand(
-    const Status& status,
+Status DummyCommand(
+    Status status,
     const base::DictionaryValue& params,
     const std::string& session_id,
-    const CommandCallback& callback) {
-  callback.Run(status,
-               scoped_ptr<base::Value>(new base::FundamentalValue(1)),
-               "session_id");
-}
-
-void OnResponse(HttpResponse* response_to_set,
-                scoped_ptr<HttpResponse> response) {
-  *response_to_set = *response;
+    scoped_ptr<base::Value>* value,
+    std::string* out_session_id) {
+  value->reset(new base::FundamentalValue(1));
+  *out_session_id = "session_id";
+  return status;
 }
 
 }  // namespace
@@ -43,7 +38,7 @@ TEST(HttpHandlerTest, HandleOutsideOfBaseUrl) {
   request.path = "base/path";
   request.data = "body";
   HttpResponse response;
-  handler.Handle(request, base::Bind(&OnResponse, &response));
+  handler.Handle(request, &response);
   ASSERT_EQ(HttpResponse::kBadRequest, response.status());
 }
 
@@ -54,7 +49,7 @@ TEST(HttpHandlerTest, HandleUnknownCommand) {
   request.method = "get";
   request.path = "/path";
   HttpResponse response;
-  handler.Handle(request, base::Bind(&OnResponse, &response));
+  handler.Handle(request, &response);
   ASSERT_EQ(HttpResponse::kNotFound, response.status());
 }
 
@@ -69,7 +64,7 @@ TEST(HttpHandlerTest, HandleNewSession) {
   request.method = "post";
   request.path = "/base/session";
   HttpResponse response;
-  handler.Handle(request, base::Bind(&OnResponse, &response));
+  handler.Handle(request, &response);
   ASSERT_EQ(HttpResponse::kSeeOther, response.status());
   std::string location;
   ASSERT_TRUE(response.GetHeader("Location", &location));
@@ -87,7 +82,7 @@ TEST(HttpHandlerTest, HandleInvalidPost) {
   request.path = "/path";
   request.data = "should be a dictionary";
   HttpResponse response;
-  handler.Handle(request, base::Bind(&OnResponse, &response));
+  handler.Handle(request, &response);
   ASSERT_EQ(HttpResponse::kBadRequest, response.status());
 }
 
@@ -101,7 +96,7 @@ TEST(HttpHandlerTest, HandleUnimplementedCommand) {
   request.method = "post";
   request.path = "/path";
   HttpResponse response;
-  handler.Handle(request, base::Bind(&OnResponse, &response));
+  handler.Handle(request, &response);
   ASSERT_EQ(HttpResponse::kNotImplemented, response.status());
 }
 
@@ -114,7 +109,7 @@ TEST(HttpHandlerTest, HandleCommand) {
   request.method = "post";
   request.path = "/path";
   HttpResponse response;
-  handler.Handle(request, base::Bind(&OnResponse, &response));
+  handler.Handle(request, &response);
   ASSERT_EQ(HttpResponse::kOk, response.status());
   std::string mime;
   ASSERT_TRUE(response.GetHeader("Content-Type", &mime));

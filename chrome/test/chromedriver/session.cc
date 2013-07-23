@@ -24,7 +24,7 @@ const int Session::kDefaultPageLoadTimeoutMs = 5 * 60 * 1000;
 
 Session::Session(const std::string& id)
     : id(id),
-      quit(false),
+      thread(("SessionThread_" + id).c_str()),
       detach(false),
       sticky_modifiers(0),
       mouse_position(0, 0),
@@ -35,7 +35,7 @@ Session::Session(const std::string& id)
 
 Session::Session(const std::string& id, scoped_ptr<Chrome> chrome)
     : id(id),
-      quit(false),
+      thread(("SessionThread_" + id).c_str()),
       detach(false),
       chrome(chrome.Pass()),
       sticky_modifiers(0),
@@ -96,3 +96,17 @@ scoped_ptr<base::DictionaryValue> Session::CreateCapabilities() {
   caps->SetBoolean("nativeEvents", true);
   return caps.Pass();
 }
+
+SessionAccessorImpl::SessionAccessorImpl(scoped_ptr<Session> session)
+    : session_(session.Pass()) {}
+
+Session* SessionAccessorImpl::Access(scoped_ptr<base::AutoLock>* lock) {
+  lock->reset(new base::AutoLock(session_lock_));
+  return session_.get();
+}
+
+void SessionAccessorImpl::DeleteSession() {
+  session_.reset();
+}
+
+SessionAccessorImpl::~SessionAccessorImpl() {}

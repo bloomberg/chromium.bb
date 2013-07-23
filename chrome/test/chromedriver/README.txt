@@ -4,12 +4,10 @@ contribute.
 ChromeDriver is an implementation of the WebDriver standard,
 which allows users to automate testing of their website across browsers.
 
-See the user site at http://code.google.com/p/chromedriver.
-
 =====Getting started=====
 Build ChromeDriver by building the 'chromedriver2_server' target. This will
-create an executable binary in the build folder named
-'chromedriver2_server[.exe]'.
+create an executable binary in the build folder named 'chromedriver2_server.exe'
+on Windows or 'chromedriver2_server' on Mac and Linux.
 
 Once built, ChromeDriver can be used interactively with python.
 
@@ -33,30 +31,26 @@ more detailed instructions see the wiki:
 
 =====Architecture=====
 ChromeDriver is shipped separately from Chrome. It controls Chrome out of
-process through DevTools. ChromeDriver is a standalone server which
-communicates with the WebDriver client via the WebDriver wire protocol, which
-is essentially synchronous JSON commands over HTTP. WebDriver clients are
-available in many languages, and many are available from the open source
-selenium/webdriver project: http://code.google.com/p/selenium.
+process through DevTools (WebKit Inspector). ChromeDriver is a standalone server
+executable which communicates via the WebDriver JSON wire protocol. This can be
+used with the open source WebDriver client libraries.
 
-ChromeDriver has several threads. The webserver code, third_party/mongoose,
-spawns a thread for the server socket and a certain amount of request handling
-threads. When a request is received, the command is processed on the message
-loop of the main thread, also called the command thread. Commands may be handled
-asynchronously on the command thread, but the request handler threads
-will block waiting for the response. One of the commands allows the user to
-create a session, which includes spawning a dedicated session thread. Session
-commands will be dispatched to the session thread and handled synchronously
-there. Lastly, there is an IO/net thread on which the net/ code operates.
-This is used to keep reading incoming data from Chrome in the background.
+When a new session is created, a new thread is started that is dedicated to the
+session. All commands for the session runs on this thread. This thread is
+stopped when the session is deleted. Besides, there is an IO thread and it is
+used to keep reading incoming data from Chrome in the background.
 
 =====Code structure=====
+Code under the 'chrome' subdirectory is intended to be unaware of WebDriver and
+serve as a basic C++ interface for controlling Chrome remotely via DevTools.
+As such, it should not have any WebDriver-related dependencies.
+
 1) chrome/test/chromedriver
 Implements chromedriver commands.
 
 2) chrome/test/chromedriver/chrome
-A basic interface for controlling Chrome via DevTools. Should not have
-knowledge about WebDriver, and thus not depend on chrome/test/chromedriver.
+Code to deal with chrome specific stuff, like starting Chrome on different OS
+platforms, controlling Chrome via DevTools, handling events from DevTools, etc.
 
 3) chrome/test/chromedriver/js
 Javascript helper scripts.
@@ -76,9 +70,6 @@ An extension used for automating the desktop browser.
 
 8) chrome/test/chromedriver/third_party
 Third party libraries used by chromedriver.
-
-9) third_party/mongoose
-The webserver for chromedriver.
 
 =====Testing=====
 There are 4 test suites for verifying ChromeDriver's correctness:

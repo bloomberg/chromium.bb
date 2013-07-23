@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
-#include "base/single_thread_task_runner.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_tokenizer.h"
@@ -71,10 +71,10 @@ void ExecuteCommandOnIOThread(
 }  // namespace
 
 AdbImpl::AdbImpl(
-    const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
+    const scoped_refptr<base::MessageLoopProxy>& io_message_loop_proxy,
     Log* log)
-    : io_task_runner_(io_task_runner), log_(log) {
-  CHECK(io_task_runner_.get());
+    : io_message_loop_proxy_(io_message_loop_proxy), log_(log) {
+  CHECK(io_message_loop_proxy_.get());
 }
 
 AdbImpl::~AdbImpl() {}
@@ -185,7 +185,7 @@ Status AdbImpl::ExecuteCommand(
     const std::string& command, std::string* response) {
   scoped_refptr<ResponseBuffer> response_buffer = new ResponseBuffer;
   log_->AddEntry(Log::kDebug, "Sending adb command: " + command);
-  io_task_runner_->PostTask(
+  io_message_loop_proxy_->PostTask(
       FROM_HERE,
       base::Bind(&ExecuteCommandOnIOThread, command, response_buffer));
   Status status = response_buffer->GetResponse(
