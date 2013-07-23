@@ -21,7 +21,6 @@
         '<(DEPTH)/ui/ui.gyp:ui',
         '<(DEPTH)/url/url.gyp:url_lib',
         '<(DEPTH)/webkit/common/webkit_common.gyp:webkit_common',
-        '<(DEPTH)/webkit/glue/webkit_glue_common.gyp:glue_common',
       ],
       'sources': [
         'cpp_bound_class.cc',

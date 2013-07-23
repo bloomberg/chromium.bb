@@ -19,7 +19,7 @@
         '../../skia/skia.gyp:skia',
         '../../ui/ui.gyp:ui',
         '../../webkit/common/user_agent/webkit_user_agent.gyp:user_agent',
-        '../../webkit/glue/webkit_glue_common.gyp:glue_common',
+        '../../webkit/common/webkit_common.gyp:webkit_common',
         '../../webkit/storage_browser.gyp:webkit_storage_browser',
         '../../webkit/storage_common.gyp:webkit_storage_common',
         'android_webview_native_jni',

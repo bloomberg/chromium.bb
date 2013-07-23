@@ -26,7 +26,6 @@
         '<(DEPTH)/webkit/common/gpu/webkit_gpu.gyp:webkit_gpu',
         '<(DEPTH)/webkit/common/user_agent/webkit_user_agent.gyp:user_agent',
         '<(DEPTH)/webkit/common/webkit_common.gyp:webkit_common',
-        '<(DEPTH)/webkit/glue/webkit_glue_common.gyp:glue_common',
         '<(DEPTH)/webkit/renderer/compositor_bindings/compositor_bindings.gyp:webkit_compositor_bindings',
         '<(DEPTH)/webkit/renderer/compositor_bindings/compositor_bindings.gyp:webkit_compositor_support',
         '<(DEPTH)/webkit/renderer/webkit_renderer.gyp:webkit_renderer',

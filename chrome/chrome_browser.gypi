@@ -2385,7 +2385,7 @@
             '../ui/surface/surface.gyp:surface',
             '../ui/web_dialogs/web_dialogs.gyp:web_dialogs',
             '../v8/tools/gyp/v8.gyp:v8',
-            '../webkit/glue/webkit_glue_common.gyp:glue_common',
+            '../webkit/common/webkit_common.gyp:webkit_common',
             '../webkit/plugins/webkit_plugins.gyp:plugins_common',
             '../webkit/storage_browser.gyp:webkit_storage_browser',
             '../webkit/storage_common.gyp:webkit_storage_common',

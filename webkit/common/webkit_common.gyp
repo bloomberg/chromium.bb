@@ -54,6 +54,9 @@
         'resource_response_info.h',
         'resource_type.cc',
         'resource_type.h',
+        'webkit_common_export.h',
+        'webpreferences.cc',
+        'webpreferences.h',
       ],
 
       'conditions': [

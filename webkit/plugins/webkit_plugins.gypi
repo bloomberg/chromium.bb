@@ -37,7 +37,6 @@
         '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
         '<(DEPTH)/webkit/common/user_agent/webkit_user_agent.gyp:user_agent',
         '<(DEPTH)/webkit/common/webkit_common.gyp:webkit_common',
-        '<(DEPTH)/webkit/glue/webkit_glue_common.gyp:glue_common',
         '<(DEPTH)/webkit/plugins/webkit_plugins.gyp:plugins_common',
         '<(DEPTH)/webkit/renderer/compositor_bindings/compositor_bindings.gyp:webkit_compositor_support',
         '<(DEPTH)/webkit/storage_common.gyp:webkit_storage_common',

@@ -588,7 +588,6 @@
             '../ui/gl/gl.gyp:gl',
             '../v8/tools/gyp/v8.gyp:v8',
             '../webkit/common/webkit_common.gyp:webkit_common',
-            '../webkit/glue/webkit_glue_common.gyp:glue_common',
             '../webkit/plugins/webkit_plugins.gyp:plugins_common',
             '../webkit/renderer/webkit_renderer.gyp:webkit_renderer',
             '../webkit/storage_browser.gyp:webkit_storage_browser',

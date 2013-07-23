@@ -19,7 +19,6 @@
     '../v8/tools/gyp/v8.gyp:v8',
     '../webkit/common/gpu/webkit_gpu.gyp:webkit_gpu',
     '../webkit/common/webkit_common.gyp:webkit_common',
-    '../webkit/glue/webkit_glue_common.gyp:glue_common',
     '../webkit/plugins/webkit_plugins.gyp:plugins_common',
     '../webkit/renderer/compositor_bindings/compositor_bindings.gyp:webkit_compositor_bindings',
     '../webkit/renderer/compositor_bindings/compositor_bindings.gyp:webkit_compositor_support',
