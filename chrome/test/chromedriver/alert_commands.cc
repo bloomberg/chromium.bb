@@ -4,6 +4,7 @@
 
 #include "chrome/test/chromedriver/alert_commands.h"
 
+#include "base/callback.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/chrome/chrome.h"
 #include "chrome/test/chromedriver/chrome/devtools_client.h"

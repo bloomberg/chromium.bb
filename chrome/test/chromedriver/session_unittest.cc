@@ -5,24 +5,12 @@
 #include <list>
 #include <string>
 
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/synchronization/lock.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/chrome/stub_chrome.h"
 #include "chrome/test/chromedriver/chrome/stub_web_view.h"
 #include "chrome/test/chromedriver/session.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-TEST(SessionAccessorTest, LocksSession) {
-  scoped_ptr<Session> scoped_session(new Session("id"));
-  Session* session = scoped_session.get();
-  scoped_refptr<SessionAccessor> accessor(
-      new SessionAccessorImpl(scoped_session.Pass()));
-  scoped_ptr<base::AutoLock> lock;
-  ASSERT_EQ(session, accessor->Access(&lock));
-  ASSERT_TRUE(lock.get());
-}
 
 namespace {
 

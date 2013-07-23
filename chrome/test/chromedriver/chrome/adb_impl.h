@@ -13,7 +13,7 @@
 #include "chrome/test/chromedriver/chrome/adb.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 class Log;
@@ -22,7 +22,7 @@ class Status;
 class AdbImpl : public Adb {
  public:
   explicit AdbImpl(
-      const scoped_refptr<base::MessageLoopProxy>& io_message_loop_proxy,
+      const scoped_refptr<base::SingleThreadTaskRunner>& io_message_loop_proxy,
       Log* log);
   virtual ~AdbImpl();
 
@@ -53,7 +53,7 @@ class AdbImpl : public Adb {
                                  const std::string& shell_command,
                                  std::string* response);
 
-  scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
+  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
   Log* log_;
 };
