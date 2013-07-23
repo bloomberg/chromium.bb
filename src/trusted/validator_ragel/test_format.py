@@ -165,17 +165,16 @@ class TestRunner(object):
 
   def Test(self, options, items_list):
     info = dict(items_list)
+    assert self.SECTION_NAME in info
 
-    if self.SECTION_NAME in info:
-      content = self.GetSectionContent(options, info)
-
-      print '  Checking %s field...' % self.SECTION_NAME
-      if options.update:
-        if content != info[self.SECTION_NAME]:
-          print '  Updating %s field...' % self.SECTION_NAME
-          info[self.SECTION_NAME] = content
-      else:
-        AssertEquals(content, info[self.SECTION_NAME])
+    content = self.GetSectionContent(options, info)
+    print '  Checking %s field...' % self.SECTION_NAME
+    if options.update:
+      if content != info[self.SECTION_NAME]:
+        print '  Updating %s field...' % self.SECTION_NAME
+        info[self.SECTION_NAME] = content
+    else:
+      AssertEquals(content, info[self.SECTION_NAME])
 
     # Update field values, but preserve their order.
     items_list = [(field, info[field]) for field, _ in items_list]
