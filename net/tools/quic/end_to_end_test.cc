@@ -220,7 +220,9 @@ TEST_F(EndToEndTest, SimpleRequestResponse) {
   EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
 }
 
-TEST_F(EndToEndTest, SimpleRequestResponsev6) {
+// TODO(rch): figure out how to detect missing v6 supprt (like on the linux
+// try bots) and selectively disable this test.
+TEST_F(EndToEndTest, DISABLED_SimpleRequestResponsev6) {
   // TODO(rtenneti): Delete this when NSS is supported.
   if (!Aes128Gcm12Encrypter::IsSupported()) {
     LOG(INFO) << "AES GCM not supported. Test skipped.";
@@ -512,12 +514,24 @@ TEST_F(EndToEndTest, MultipleTermination) {
   // Override this to test the server handling buggy clients.
   ReliableQuicStreamPeer::SetWriteSideClosed(
       false, client_->GetOrCreateStream());
+
+#if !defined(WIN32) && defined(GTEST_HAS_DEATH_TEST)
+#if !defined(DCHECK_ALWAYS_ON)
   EXPECT_DEBUG_DEATH({
-    client_->SendData("eep", true);
-    client_->WaitForResponse();
-    EXPECT_EQ(QUIC_MULTIPLE_TERMINATION_OFFSETS, client_->stream_error());
-  },
-  "Check failed: !fin_buffered_");
+      client_->SendData("eep", true);
+      client_->WaitForResponse();
+      EXPECT_EQ(QUIC_MULTIPLE_TERMINATION_OFFSETS, client_->stream_error());
+    },
+    "Check failed: !fin_buffered_");
+#else
+  EXPECT_DEATH({
+      client_->SendData("eep", true);
+      client_->WaitForResponse();
+      EXPECT_EQ(QUIC_MULTIPLE_TERMINATION_OFFSETS, client_->stream_error());
+    },
+    "Check failed: !fin_buffered_");
+#endif
+#endif
 }
 
 TEST_F(EndToEndTest, Timeout) {

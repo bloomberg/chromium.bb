@@ -1476,7 +1476,7 @@
         '../third_party/zlib/zlib.gyp:zlib',
         '../url/url.gyp:url_lib',
         'net',
-        'net_test_support',
+        'net_test_support'
       ],
       'sources': [
         'android/keystore_unittest.cc',
@@ -1843,6 +1843,36 @@
         'websockets/websocket_throttle_unittest.cc',
       ],
       'conditions': [
+        ['os_posix == 1 and OS != "mac" and OS != "ios" and OS != "android"', {
+          'dependencies': [
+            'quic_library'
+          ],
+          'sources': [
+            'tools/flip_server/simple_buffer.cc',
+            'tools/flip_server/simple_buffer.h',
+            'tools/quic/end_to_end_test.cc',
+            'tools/quic/quic_client_session_test.cc',
+            'tools/quic/quic_dispatcher_test.cc',
+            'tools/quic/quic_epoll_clock_test.cc',
+            'tools/quic/quic_epoll_connection_helper_test.cc',
+            'tools/quic/quic_in_memory_cache_test.cc',
+            'tools/quic/quic_reliable_client_stream_test.cc',
+            'tools/quic/quic_reliable_server_stream_test.cc',
+            'tools/quic/quic_spdy_server_stream_test.cc',
+            'tools/quic/test_tools/http_message_test_utils.cc',
+            'tools/quic/test_tools/http_message_test_utils.h',
+            'tools/quic/test_tools/mock_epoll_server.cc',
+            'tools/quic/test_tools/mock_epoll_server.h',
+            'tools/quic/test_tools/quic_client_peer.cc',
+            'tools/quic/test_tools/quic_client_peer.h',
+            'tools/quic/test_tools/quic_epoll_connection_helper_peer.cc',
+            'tools/quic/test_tools/quic_epoll_connection_helper_peer.h',
+            'tools/quic/test_tools/quic_test_client.cc',
+            'tools/quic/test_tools/quic_test_client.h',
+            'tools/quic/test_tools/quic_test_utils.cc',
+            'tools/quic/test_tools/quic_test_utils.h',
+          ],
+        }],
         ['chromeos==1', {
           'sources!': [
             'base/network_change_notifier_linux_unittest.cc',
@@ -2686,87 +2716,6 @@
           'sources': [
             'tools/quic/quic_server_bin.cc',
           ],
-        },
-        {
-          'target_name': 'quic_unittests',
-          'type': '<(gtest_target_type)',
-          'dependencies': [
-            '../base/base.gyp:test_support_base',
-            '../crypto/crypto.gyp:crypto',
-            '../testing/gmock.gyp:gmock',
-            '../testing/gtest.gyp:gtest',
-            'net',
-            'net_test_support',
-            'quic_library',
-          ],
-          'sources': [
-            'quic/test_tools/quic_session_peer.cc',
-            'quic/test_tools/quic_session_peer.h',
-            'quic/test_tools/crypto_test_utils.cc',
-            'quic/test_tools/crypto_test_utils.h',
-            'quic/test_tools/crypto_test_utils_chromium.cc',
-            'quic/test_tools/crypto_test_utils_nss.cc',
-            'quic/test_tools/crypto_test_utils_openssl.cc',
-            'quic/test_tools/mock_clock.cc',
-            'quic/test_tools/mock_clock.h',
-            'quic/test_tools/mock_random.cc',
-            'quic/test_tools/mock_random.h',
-            'quic/test_tools/simple_quic_framer.cc',
-            'quic/test_tools/simple_quic_framer.h',
-            'quic/test_tools/quic_connection_peer.cc',
-            'quic/test_tools/quic_connection_peer.h',
-            'quic/test_tools/quic_framer_peer.cc',
-            'quic/test_tools/quic_framer_peer.h',
-            'quic/test_tools/quic_session_peer.cc',
-            'quic/test_tools/quic_session_peer.h',
-            'quic/test_tools/quic_test_utils.cc',
-            'quic/test_tools/quic_test_utils.h',
-            'quic/test_tools/reliable_quic_stream_peer.cc',
-            'quic/test_tools/reliable_quic_stream_peer.h',
-            'tools/flip_server/simple_buffer.cc',
-            'tools/flip_server/simple_buffer.h',
-            'tools/quic/end_to_end_test.cc',
-            'tools/quic/quic_client_session_test.cc',
-            'tools/quic/quic_dispatcher_test.cc',
-            'tools/quic/quic_epoll_clock_test.cc',
-            'tools/quic/quic_epoll_connection_helper_test.cc',
-            'tools/quic/quic_in_memory_cache_test.cc',
-            'tools/quic/quic_reliable_client_stream_test.cc',
-            'tools/quic/quic_reliable_server_stream_test.cc',
-            'tools/quic/quic_spdy_server_stream_test.cc',
-            'tools/quic/test_tools/http_message_test_utils.cc',
-            'tools/quic/test_tools/http_message_test_utils.h',
-            'tools/quic/test_tools/mock_epoll_server.cc',
-            'tools/quic/test_tools/mock_epoll_server.h',
-            'tools/quic/test_tools/quic_client_peer.cc',
-            'tools/quic/test_tools/quic_client_peer.h',
-            'tools/quic/test_tools/quic_epoll_connection_helper_peer.cc',
-            'tools/quic/test_tools/quic_epoll_connection_helper_peer.h',
-            'tools/quic/test_tools/quic_test_client.cc',
-            'tools/quic/test_tools/quic_test_client.h',
-            'tools/quic/test_tools/quic_test_utils.cc',
-            'tools/quic/test_tools/quic_test_utils.h',
-            'tools/quic/test_tools/run_all_unittests.cc',
-          ],
-	  'conditions': [
-	    [ 'use_glib == 1', {
-		'dependencies': [
-		  '../build/linux/system.gyp:ssl',
-		],
-	      },
-	    ],
-	    [ 'use_openssl==1', {
-		# When building for OpenSSL, we need to exclude NSS specific tests.
-		'sources!': [
-                  'quic/test_tools/crypto_test_utils_nss.cc',
-		],
-	      }, {  # else !use_openssl: remove the unneeded files
-		'sources!': [
-                  'quic/test_tools/crypto_test_utils_openssl.cc',
-		],
-	      },
-	    ],
-	  ],
         }
       ]
     }],

@@ -73,9 +73,9 @@ class TestConnection : public QuicConnection {
   using QuicConnection::SendOrQueuePacket;
 };
 
-class QuicConnectionHelperTest : public ::testing::Test {
+class QuicEpollConnectionHelperTest : public ::testing::Test {
  protected:
-  QuicConnectionHelperTest()
+  QuicEpollConnectionHelperTest()
       : guid_(42),
         framer_(kQuicVersion1, QuicTime::Zero(), false),
         send_algorithm_(new testing::StrictMock<MockSendAlgorithm>),
@@ -118,7 +118,7 @@ class QuicConnectionHelperTest : public ::testing::Test {
   QuicStreamFrame frame1_;
 };
 
-TEST_F(QuicConnectionHelperTest, DISABLED_TestRetransmission) {
+TEST_F(QuicEpollConnectionHelperTest, DISABLED_TestRetransmission) {
   //FLAGS_fake_packet_loss_percentage = 100;
   const int64 kDefaultRetransmissionTimeMs = 500;
 
@@ -139,7 +139,7 @@ TEST_F(QuicConnectionHelperTest, DISABLED_TestRetransmission) {
   EXPECT_EQ(2u, helper_->header()->packet_sequence_number);
 }
 
-TEST_F(QuicConnectionHelperTest, InitialTimeout) {
+TEST_F(QuicEpollConnectionHelperTest, InitialTimeout) {
   EXPECT_TRUE(connection_.connected());
 
   EXPECT_CALL(*send_algorithm_, SentPacket(_, 1, _, NOT_RETRANSMISSION));
@@ -149,7 +149,7 @@ TEST_F(QuicConnectionHelperTest, InitialTimeout) {
   EXPECT_EQ(kDefaultInitialTimeoutSecs * 1000000, epoll_server_.NowInUsec());
 }
 
-TEST_F(QuicConnectionHelperTest, TimeoutAfterSend) {
+TEST_F(QuicEpollConnectionHelperTest, TimeoutAfterSend) {
   EXPECT_TRUE(connection_.connected());
   EXPECT_EQ(0, epoll_server_.NowInUsec());
 
@@ -176,7 +176,7 @@ TEST_F(QuicConnectionHelperTest, TimeoutAfterSend) {
   EXPECT_FALSE(connection_.connected());
 }
 
-TEST_F(QuicConnectionHelperTest, SendSchedulerDelayThenSend) {
+TEST_F(QuicEpollConnectionHelperTest, SendSchedulerDelayThenSend) {
   // Test that if we send a packet with a delay, it ends up queued.
   QuicPacket* packet = ConstructDataPacket(1, 0);
   EXPECT_CALL(

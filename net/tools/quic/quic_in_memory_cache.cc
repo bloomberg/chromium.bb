@@ -131,6 +131,12 @@ void QuicInMemoryCache::Initialize() {
 
   FilePath file = file_list.Next();
   while (!file.empty()) {
+    // Need to skip files in .svn directories
+    if (file.value().find("/.svn/") != std::string::npos) {
+      file = file_list.Next();
+      continue;
+    }
+
     BalsaHeaders request_headers, response_headers;
 
     string file_contents;
