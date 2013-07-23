@@ -58,6 +58,7 @@
 #include "WebFrameImpl.h"
 #include "WebPermissionClient.h"
 #include "WebViewImpl.h"
+#include "WorkerFileSystemClient.h"
 #include "core/dom/default/chromium/PlatformMessagePortChannelChromium.h"
 #include "public/platform/WebFileSystemCallbacks.h"
 #include "public/platform/WebMessagePortChannel.h"
@@ -76,7 +77,9 @@ WorkerGlobalScopeProxy* WebWorkerClientImpl::createWorkerGlobalScopeProxy(Worker
     if (worker->scriptExecutionContext()->isDocument()) {
         Document* document = toDocument(worker->scriptExecutionContext());
         WebFrameImpl* webFrame = WebFrameImpl::fromFrame(document->frame());
-        WebWorkerClientImpl* proxy = new WebWorkerClientImpl(worker, webFrame, WorkerClients::create());
+        OwnPtr<WorkerClients> workerClients = WorkerClients::create();
+        provideLocalFileSystemToWorker(workerClients.get(), WorkerFileSystemClient::create());
+        WebWorkerClientImpl* proxy = new WebWorkerClientImpl(worker, webFrame, workerClients.release());
         return proxy;
     }
     ASSERT_NOT_REACHED();

@@ -69,7 +69,7 @@ void DOMWindowFileSystem::webkitRequestFileSystem(DOMWindow* window, int type, l
         return;
     }
 
-    LocalFileSystem::localFileSystem().requestFileSystem(document, fileSystemType, size, FileSystemCallbacks::create(successCallback, errorCallback, document, fileSystemType), AsynchronousFileSystem);
+    LocalFileSystem::from(document)->requestFileSystem(document, fileSystemType, size, FileSystemCallbacks::create(successCallback, errorCallback, document, fileSystemType), AsynchronousFileSystem);
 }
 
 void DOMWindowFileSystem::webkitResolveLocalFileSystemURL(DOMWindow* window, const String& url, PassRefPtr<EntryCallback> successCallback, PassRefPtr<ErrorCallback> errorCallback)
@@ -95,7 +95,7 @@ void DOMWindowFileSystem::webkitResolveLocalFileSystemURL(DOMWindow* window, con
         return;
     }
 
-    LocalFileSystem::localFileSystem().readFileSystem(document, type, ResolveURICallbacks::create(successCallback, errorCallback, document, type, filePath));
+    LocalFileSystem::from(document)->readFileSystem(document, type, ResolveURICallbacks::create(successCallback, errorCallback, document, type, filePath));
 }
 
 COMPILE_ASSERT(static_cast<int>(DOMWindowFileSystem::TEMPORARY) == static_cast<int>(FileSystemTypeTemporary), enum_mismatch);

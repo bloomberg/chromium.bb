@@ -41,8 +41,8 @@
 #include "modules/filesystem/FileSystemCallback.h"
 #include "modules/filesystem/FileSystemCallbacks.h"
 #include "modules/filesystem/FileSystemType.h"
-#include "modules/filesystem/LocalFileSystem.h"
 #include "modules/filesystem/SyncCallbackHelper.h"
+#include "modules/filesystem/WorkerLocalFileSystem.h"
 #include "weborigin/SecurityOrigin.h"
 
 namespace WebCore {
@@ -61,7 +61,7 @@ void WorkerGlobalScopeFileSystem::webkitRequestFileSystem(WorkerGlobalScope* wor
         return;
     }
 
-    LocalFileSystem::localFileSystem().requestFileSystem(worker, fileSystemType, size, FileSystemCallbacks::create(successCallback, errorCallback, worker, fileSystemType), AsynchronousFileSystem);
+    WorkerLocalFileSystem::from(worker)->requestFileSystem(worker, fileSystemType, size, FileSystemCallbacks::create(successCallback, errorCallback, worker, fileSystemType), AsynchronousFileSystem);
 }
 
 PassRefPtr<DOMFileSystemSync> WorkerGlobalScopeFileSystem::webkitRequestFileSystemSync(WorkerGlobalScope* worker, int type, long long size, ExceptionState& es)
@@ -83,7 +83,7 @@ PassRefPtr<DOMFileSystemSync> WorkerGlobalScopeFileSystem::webkitRequestFileSyst
     OwnPtr<FileSystemCallbacks> callbacks = FileSystemCallbacks::create(helper.successCallback(), helper.errorCallback(), worker, fileSystemType);
     callbacks->setShouldBlockUntilCompletion(true);
 
-    LocalFileSystem::localFileSystem().requestFileSystem(worker, fileSystemType, size, callbacks.release(), SynchronousFileSystem);
+    WorkerLocalFileSystem::from(worker)->requestFileSystem(worker, fileSystemType, size, callbacks.release(), SynchronousFileSystem);
     return helper.getResult(es);
 }
 
@@ -103,7 +103,7 @@ void WorkerGlobalScopeFileSystem::webkitResolveLocalFileSystemURL(WorkerGlobalSc
         return;
     }
 
-    LocalFileSystem::localFileSystem().readFileSystem(worker, type, ResolveURICallbacks::create(successCallback, errorCallback, worker, type, filePath));
+    WorkerLocalFileSystem::from(worker)->readFileSystem(worker, type, ResolveURICallbacks::create(successCallback, errorCallback, worker, type, filePath));
 }
 
 PassRefPtr<EntrySync> WorkerGlobalScopeFileSystem::webkitResolveLocalFileSystemSyncURL(WorkerGlobalScope* worker, const String& url, ExceptionState& es)
@@ -124,7 +124,7 @@ PassRefPtr<EntrySync> WorkerGlobalScopeFileSystem::webkitResolveLocalFileSystemS
     }
 
     FileSystemSyncCallbackHelper readFileSystemHelper;
-    LocalFileSystem::localFileSystem().readFileSystem(worker, type, FileSystemCallbacks::create(readFileSystemHelper.successCallback(), readFileSystemHelper.errorCallback(), worker, type), SynchronousFileSystem);
+    WorkerLocalFileSystem::from(worker)->readFileSystem(worker, type, FileSystemCallbacks::create(readFileSystemHelper.successCallback(), readFileSystemHelper.errorCallback(), worker, type), SynchronousFileSystem);
     RefPtr<DOMFileSystemSync> fileSystem = readFileSystemHelper.getResult(es);
     if (!fileSystem)
         return 0;

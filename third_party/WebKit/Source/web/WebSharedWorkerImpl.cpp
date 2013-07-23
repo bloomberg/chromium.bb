@@ -43,6 +43,7 @@
 #include "WebSettings.h"
 #include "WebSharedWorkerClient.h"
 #include "WebView.h"
+#include "WorkerFileSystemClient.h"
 #include "core/dom/CrossThreadTask.h"
 #include "core/dom/Document.h"
 #include "core/dom/MessageEvent.h"
@@ -371,6 +372,7 @@ void WebSharedWorkerImpl::startWorkerContext(const WebURL& url, const WebString&
 
     WorkerThreadStartMode startMode = m_pauseWorkerContextOnStart ? PauseWorkerGlobalScopeOnStart : DontPauseWorkerGlobalScopeOnStart;
     OwnPtr<WorkerClients> workerClients = WorkerClients::create();
+    provideLocalFileSystemToWorker(workerClients.get(), WorkerFileSystemClient::create());
     OwnPtr<WorkerThreadStartupData> startupData = WorkerThreadStartupData::create(url, userAgent, sourceCode, startMode, contentSecurityPolicy, static_cast<WebCore::ContentSecurityPolicy::HeaderType>(policyType), 0, workerClients.release());
     setWorkerThread(SharedWorkerThread::create(name, *this, *this, startupData.release()));
 

@@ -56,6 +56,7 @@
 #include "GraphicsLayerFactoryChromium.h"
 #include "HTMLNames.h"
 #include "LinkHighlight.h"
+#include "LocalFileSystemClient.h"
 #include "PageWidgetDelegate.h"
 #include "PinchViewports.h"
 #include "PopupContainer.h"
@@ -454,6 +455,8 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     provideDeviceOrientationTo(m_page.get(), m_deviceOrientationClientProxy.get());
     provideGeolocationTo(m_page.get(), m_geolocationClientProxy.get());
     m_geolocationClientProxy->setController(GeolocationController::from(m_page.get()));
+
+    provideLocalFileSystemTo(m_page.get(), LocalFileSystemClient::create());
 
     m_page->setGroupType(Page::SharedPageGroup);
 

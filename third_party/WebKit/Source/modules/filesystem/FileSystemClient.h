@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,52 +28,42 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef LocalFileSystem_h
-#define LocalFileSystem_h
+#ifndef FileSystemClient_h
+#define FileSystemClient_h
 
-#include "core/page/Page.h"
 #include "modules/filesystem/FileSystemType.h"
 #include "wtf/Forward.h"
+#include "wtf/Noncopyable.h"
 
 namespace WebCore {
 
 class AsyncFileSystemCallbacks;
-class FileSystemClient;
+class Page;
 class ScriptExecutionContext;
+class WorkerClients;
 
-// Base class of LocalFileSystem and WorkerLocalFileSystem.
-class LocalFileSystemBase {
-    WTF_MAKE_NONCOPYABLE(LocalFileSystemBase);
-public:
-    virtual ~LocalFileSystemBase();
-
-    // Does not create the new file system if it doesn't exist, just reads it if available.
-    void readFileSystem(ScriptExecutionContext*, FileSystemType, PassOwnPtr<AsyncFileSystemCallbacks>, FileSystemSynchronousType = AsynchronousFileSystem);
-
-    void requestFileSystem(ScriptExecutionContext*, FileSystemType, long long size, PassOwnPtr<AsyncFileSystemCallbacks>, FileSystemSynchronousType = AsynchronousFileSystem);
-
-    void deleteFileSystem(ScriptExecutionContext*, FileSystemType, PassOwnPtr<AsyncFileSystemCallbacks>);
-
-    FileSystemClient* client() { return m_client.get(); }
-
-protected:
-    explicit LocalFileSystemBase(PassOwnPtr<FileSystemClient>);
-
-    OwnPtr<FileSystemClient> m_client;
+enum OpenFileSystemMode {
+    OpenExistingFileSystem,
+    CreateFileSystemIfNotPresent
 };
 
-class LocalFileSystem : public LocalFileSystemBase, public Supplement<Page> {
+class FileSystemClient {
+    WTF_MAKE_NONCOPYABLE(FileSystemClient);
 public:
-    static PassOwnPtr<LocalFileSystem> create(PassOwnPtr<FileSystemClient>);
-    static const char* supplementName();
-    static LocalFileSystem* from(ScriptExecutionContext*);
-    virtual ~LocalFileSystem();
+    FileSystemClient() { }
+    virtual ~FileSystemClient() { }
 
-private:
-    explicit LocalFileSystem(PassOwnPtr<FileSystemClient>);
+    virtual bool allowFileSystem(ScriptExecutionContext*) = 0;
+
+    // FIXME: move these methods to platform.
+    virtual void openFileSystem(ScriptExecutionContext*, FileSystemType, PassOwnPtr<AsyncFileSystemCallbacks>, FileSystemSynchronousType, long long size, OpenFileSystemMode) = 0;
+    virtual void deleteFileSystem(ScriptExecutionContext*, FileSystemType, PassOwnPtr<AsyncFileSystemCallbacks>) = 0;
 };
 
+void provideLocalFileSystemTo(Page*, PassOwnPtr<FileSystemClient>);
+
+void provideLocalFileSystemToWorker(WorkerClients*, PassOwnPtr<FileSystemClient>);
 
 } // namespace WebCore
 
-#endif // LocalFileSystem_h
+#endif // FileSystemClient_h
