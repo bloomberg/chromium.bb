@@ -307,6 +307,19 @@ int _real_write(int fd, const void *buf, size_t count, size_t *nwrote) {
   return 0;
 }
 
+#define USECS_FROM_WIN_TO_TO_UNIX_EPOCH 11644473600000LL
+uint64_t usec_since_epoch() {
+  FILETIME ft;
+  ULARGE_INTEGER ularge;
+  GetSystemTimeAsFileTime(&ft);
+
+  ularge.LowPart = ft.dwLowDateTime;
+  ularge.HighPart = ft.dwHighDateTime;
+
+  // Truncate to usec resolution.
+  return usecs = ularge.QuadPart / 10;
+}
+
 // Do nothing for Windows, we replace the library at link time.
 void kernel_wrap_init() {
 }

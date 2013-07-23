@@ -13,6 +13,7 @@
 #define S_IFIFO _S_IFIFO
 #define S_IFREG _S_IFREG
 #define S_IFMT _S_IFMT
+#define S_IFSOCK _S_IFIFO
 
 #define S_IREAD _S_IREAD
 #define S_IWRITE _S_IWRITE

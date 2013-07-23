@@ -6,7 +6,9 @@
 #define LIBRARIES_NACL_IO_KERNEL_WRAP_H_
 
 #include <sys/types.h>
+#include <stdint.h>
 #include <stdlib.h>
+
 #include "nacl_io/ostypes.h"
 #include "nacl_io/osutime.h"
 #include "sdk_util/macros.h"
@@ -39,11 +41,11 @@ void kernel_wrap_init();
 int NAME(access)(const char* path, int amode) NOTHROW;
 int NAME(chdir)(const char* path) NOTHROW;
 int NAME(chmod)(const char* path, chmod_mode_t mode) NOTHROW;
-int chown(const char* path, uid_t owner, gid_t group);
+int chown(const char* path, uid_t owner, gid_t group) NOTHROW;
 int NAME(close)(int fd);
 int NAME(dup)(int oldfd) NOTHROW;
 int NAME(dup2)(int oldfd, int newfd) NOTHROW;
-int fchown(int fd, uid_t owner, gid_t group);
+int fchown(int fd, uid_t owner, gid_t group) NOTHROW;
 #if defined(WIN32)
 int _fstat32(int fd, struct _stat32* buf);
 int _fstat64(int fd, struct _stat64* buf);
@@ -60,7 +62,7 @@ char* getwd(char* buf) NOTHROW;
 int getdents(int fd, void* buf, unsigned int count) NOTHROW;
 int ioctl(int d, int request, char* argp) NOTHROW;
 int NAME(isatty)(int fd) NOTHROW;
-int lchown(const char* path, uid_t owner, gid_t group);
+int lchown(const char* path, uid_t owner, gid_t group) NOTHROW;
 int link(const char* oldpath, const char* newpath) NOTHROW;
 off_t NAME(lseek)(int fd, off_t offset, int whence) NOTHROW;
 #if defined(WIN32)
@@ -90,6 +92,8 @@ int umount(const char* path) NOTHROW;
 int NAME(unlink)(const char* path) NOTHROW;
 int utime(const char* filename, const struct utimbuf* times);
 read_ssize_t NAME(write)(int fd, const void* buf, size_t nbyte);
+
+uint64_t usec_since_epoch();
 
 EXTERN_C_END
 

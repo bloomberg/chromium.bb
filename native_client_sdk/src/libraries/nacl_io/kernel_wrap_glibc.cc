@@ -18,6 +18,7 @@
 #include <string.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
+#include <sys/time.h>
 #include "nacl_io/kernel_intercept.h"
 
 
@@ -137,7 +138,7 @@ int WRAP(chdir) (const char* pathname) {
   return (ki_chdir(pathname)) ? errno : 0;
 }
 
-int chown(const char* path, uid_t owner, gid_t group) {
+int chown(const char* path, uid_t owner, gid_t group) NOTHROW {
   return ki_chown(path, owner, group);
 }
 
@@ -154,7 +155,7 @@ int WRAP(dup2)(int fd, int newfd) NOTHROW {
   return (ki_dup2(fd, newfd) < 0) ? errno : 0;
 }
 
-int fchown(int fd, uid_t owner, gid_t group) {
+int fchown(int fd, uid_t owner, gid_t group) NOTHROW {
   return ki_fchown(fd, owner, group);
 }
 
@@ -230,7 +231,7 @@ int isatty(int fd) NOTHROW {
   return ki_isatty(fd);
 }
 
-int lchown(const char* path, uid_t owner, gid_t group) {
+int lchown(const char* path, uid_t owner, gid_t group) NOTHROW {
   return ki_lchown(path, owner, group);
 }
 
@@ -423,6 +424,11 @@ int _real_write(int fd, const void *buf, size_t count, size_t *nwrote) {
   return REAL(write)(fd, buf, count, nwrote);
 }
 
+uint64_t usec_since_epoch() {
+  struct timeval tv;
+  gettimeofday(&tv, NULL);
+  return tv.tv_usec + (tv.tv_sec * 1000000);
+}
 
 void kernel_wrap_init() {
   static bool wrapped = false;

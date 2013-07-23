@@ -9,6 +9,8 @@
       'NAME' : 'nacl_io',
       'TYPE' : 'lib',
       'SOURCES' : [
+        "event_emitter.cc",
+        "event_listener.cc",
         "kernel_handle.cc",
         "kernel_intercept.cc",
         "kernel_object.cc",
@@ -37,6 +39,8 @@
   'HEADERS': [
     {
       'FILES': [
+        "event_emitter.h",
+        "event_listener.h",
         "error.h",
         "inode_pool.h",
         "ioctl.h",
@@ -63,6 +67,7 @@
         "osinttypes.h",
         "osmman.h",
         "osstat.h",
+        "ostime.h",
         "ostypes.h",
         "osunistd.h",
         "osutime.h",

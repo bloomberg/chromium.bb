@@ -9,6 +9,7 @@
       'NAME' : 'nacl_io_test',
       'TYPE' : 'main',
       'SOURCES' : [
+        'event_test.cc',
         'kernel_object_test.cc',
         'kernel_proxy_mock.cc',
         'kernel_proxy_mock.h',

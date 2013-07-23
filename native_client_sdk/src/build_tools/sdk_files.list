@@ -302,6 +302,8 @@ include/json/reader.h
 include/json/value.h
 include/json/writer.h
 include/KHR/khrplatform.h
+include/nacl_io/event_emitter.h
+include/nacl_io/event_listener.h
 include/nacl_io/error.h
 include/nacl_io/inode_pool.h
 include/nacl_io/ioctl.h
@@ -328,6 +330,7 @@ include/nacl_io/osdirent.h
 include/nacl_io/osinttypes.h
 include/nacl_io/osmman.h
 include/nacl_io/osstat.h
+include/nacl_io/ostime.h
 include/nacl_io/ostypes.h
 include/nacl_io/osunistd.h
 include/nacl_io/osutime.h
@@ -801,6 +804,8 @@ src/jsoncpp/Makefile
 src/jsoncpp/README.chromium
 [win]src/make.bat
 src/Makefile
+src/nacl_io/event_emitter.cc
+src/nacl_io/event_listener.cc
 src/nacl_io/kernel_handle.cc
 src/nacl_io/kernel_intercept.cc
 src/nacl_io/kernel_object.cc
