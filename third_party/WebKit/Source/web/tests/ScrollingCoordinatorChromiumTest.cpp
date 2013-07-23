@@ -296,7 +296,7 @@ TEST_F(ScrollingCoordinatorChromiumTest, overflowScrolling)
     ASSERT(layerBacking->scrollingContentsLayer());
 
     GraphicsLayer* graphicsLayer = layerBacking->scrollingContentsLayer();
-    ASSERT_EQ(layer, graphicsLayer->scrollableArea());
+    ASSERT_EQ(layer->scrollableArea(), graphicsLayer->scrollableArea());
 
     WebLayer* webScrollLayer = layerBacking->scrollingContentsLayer()->platformLayer();
     ASSERT_TRUE(webScrollLayer->scrollable());
