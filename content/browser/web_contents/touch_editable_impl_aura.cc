@@ -113,6 +113,7 @@ bool TouchEditableImplAura::HandleInputEvent(const ui::Event* event) {
       static_cast<const ui::GestureEvent*>(event);
   switch (event->type()) {
     case ui::ET_GESTURE_TAP:
+      tap_gesture_tap_count_queue_.push(gesture_event->details().tap_count());
       if (gesture_event->details().tap_count() > 1)
         selection_gesture_in_process_ = true;
       // When the user taps, we want to show touch editing handles if user
@@ -131,9 +132,10 @@ bool TouchEditableImplAura::HandleInputEvent(const ui::Event* event) {
       }
       // For single taps, not inside selected region, we want to show handles
       // only when the tap is on an already focused textfield.
+      is_tap_on_focused_textfield_ = false;
       if (gesture_event->details().tap_count() == 1 &&
           text_input_type_ != ui::TEXT_INPUT_TYPE_NONE)
-        selection_gesture_in_process_ = true;
+        is_tap_on_focused_textfield_ = true;
       break;
     case ui::ET_GESTURE_LONG_PRESS:
       selection_gesture_in_process_ = true;
@@ -166,15 +168,19 @@ void TouchEditableImplAura::GestureEventAck(int gesture_event_type) {
   DCHECK(rwhva_);
   if (gesture_event_type == WebKit::WebInputEvent::GestureTap &&
       text_input_type_ != ui::TEXT_INPUT_TYPE_NONE &&
-      selection_gesture_in_process_) {
+      is_tap_on_focused_textfield_) {
     StartTouchEditing();
     if (touch_selection_controller_)
       touch_selection_controller_->SelectionChanged();
   }
 
-  if (gesture_event_type == WebKit::WebInputEvent::GestureLongPress ||
-      gesture_event_type == WebKit::WebInputEvent::GestureTap)
+  if (gesture_event_type == WebKit::WebInputEvent::GestureLongPress)
     selection_gesture_in_process_ = false;
+  if (gesture_event_type == WebKit::WebInputEvent::GestureTap) {
+    if (tap_gesture_tap_count_queue_.front() > 1)
+      selection_gesture_in_process_ = false;
+    tap_gesture_tap_count_queue_.pop();
+  }
 }
 
 void TouchEditableImplAura::OnViewDestroyed() {
@@ -323,7 +329,8 @@ TouchEditableImplAura::TouchEditableImplAura()
     : text_input_type_(ui::TEXT_INPUT_TYPE_NONE),
       rwhva_(NULL),
       selection_gesture_in_process_(false),
-      handles_hidden_due_to_scroll_(false) {
+      handles_hidden_due_to_scroll_(false),
+      is_tap_on_focused_textfield_(false) {
 }
 
 void TouchEditableImplAura::Cleanup() {

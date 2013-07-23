@@ -84,10 +84,19 @@ class CONTENT_EXPORT TouchEditableImplAura
   scoped_ptr<ui::TouchSelectionController> touch_selection_controller_;
 
   // True if |rwhva_| is currently handling a gesture that could result in a
-  // change in selection.
+  // change in selection (long press, double tap or triple tap).
   bool selection_gesture_in_process_;
 
   bool handles_hidden_due_to_scroll_;
+
+  // Used to track if the current tap gesture is on a focused textfield.
+  bool is_tap_on_focused_textfield_;
+
+  // When we receive ack for a ET_GESTURE_TAP, we do not know if the ack is for
+  // a tap or a double tap (we only get the event type in the ack). So we have
+  // this queue to keep track of the the tap count so that we can distinguish
+  // between double and single tap when we get the ack.
+  std::queue<int> tap_gesture_tap_count_queue_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchEditableImplAura);
 };
