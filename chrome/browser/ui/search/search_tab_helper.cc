@@ -49,8 +49,6 @@ SearchTabHelper::SearchTabHelper(content::WebContents* web_contents)
     : WebContentsObserver(web_contents),
       is_search_enabled_(chrome::IsInstantExtendedAPIEnabled()),
       user_input_in_progress_(false),
-      popup_is_open_(false),
-      user_text_is_empty_(true),
       web_contents_(web_contents) {
   if (!is_search_enabled_)
     return;
@@ -73,15 +71,11 @@ void SearchTabHelper::InitForPreloadedNTP() {
 }
 
 void SearchTabHelper::OmniboxEditModelChanged(bool user_input_in_progress,
-                                              bool cancelling,
-                                              bool popup_is_open,
-                                              bool user_text_is_empty) {
+                                              bool cancelling) {
   if (!is_search_enabled_)
     return;
 
   user_input_in_progress_ = user_input_in_progress;
-  popup_is_open_ = popup_is_open;
-  user_text_is_empty_ = user_text_is_empty;
   if (!user_input_in_progress && !cancelling)
     return;
 
@@ -195,21 +189,7 @@ void SearchTabHelper::UpdateMode(bool update_origin, bool is_preloaded_ntp) {
     origin = model_.mode().origin;
   if (user_input_in_progress_)
     type = SearchMode::MODE_SEARCH_SUGGESTIONS;
-
-  if (type == SearchMode::MODE_NTP && origin == SearchMode::ORIGIN_NTP &&
-      !popup_is_open_ && !user_text_is_empty_) {
-    // We're switching back (|popup_is_open_| is false) to an NTP (type and
-    // mode are |NTP|) with suggestions (|user_text_is_empty_| is false), don't
-    // modify visibility of top bars or voice search support.  This specific
-    // omnibox state is set when OmniboxEditModelChanged() is called from
-    // OmniboxEditModel::SetInputInProgress() which is called from
-    // OmniboxEditModel::Revert().
-    model_.SetState(SearchModel::State(SearchMode(type, origin),
-                                       model_.instant_support(),
-                                       model_.state().voice_search_supported));
-  } else {
-    model_.SetMode(SearchMode(type, origin));
-  }
+  model_.SetMode(SearchMode(type, origin));
 }
 
 void SearchTabHelper::DetermineIfPageSupportsInstant() {

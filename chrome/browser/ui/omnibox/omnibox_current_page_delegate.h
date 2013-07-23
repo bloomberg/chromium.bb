@@ -54,9 +54,7 @@ class OmniboxCurrentPageDelegate {
   // Notifies the SearchTabHelper, if one exists, of relevant changes to the
   // omnibox state.
   virtual void NotifySearchTabHelper(bool user_input_in_progress,
-                                     bool cancelling,
-                                     bool popup_is_open,
-                                     bool user_text_is_empty) = 0;
+                                     bool cancelling) = 0;
 
   // Performs prerendering for |match|.
   virtual void DoPrerender(const AutocompleteMatch& match) = 0;

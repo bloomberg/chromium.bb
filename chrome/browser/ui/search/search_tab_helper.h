@@ -42,10 +42,7 @@ class SearchTabHelper : public content::NotificationObserver,
 
   // Invoked when the OmniboxEditModel changes state in some way that might
   // affect the search mode.
-  void OmniboxEditModelChanged(bool user_input_in_progress,
-                               bool cancelling,
-                               bool popup_is_open,
-                               bool user_text_is_empty);
+  void OmniboxEditModelChanged(bool user_input_in_progress, bool cancelling);
 
   // Invoked when the active navigation entry is updated in some way that might
   // affect the search mode. This is used by Instant when it "fixes up" the
@@ -111,8 +108,6 @@ class SearchTabHelper : public content::NotificationObserver,
 
   // Tracks the last value passed to OmniboxEditModelChanged().
   bool user_input_in_progress_;
-  bool popup_is_open_;
-  bool user_text_is_empty_;
 
   // Model object for UI that cares about search state.
   SearchModel model_;

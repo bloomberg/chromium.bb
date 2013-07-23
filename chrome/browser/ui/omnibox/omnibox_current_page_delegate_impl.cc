@@ -74,15 +74,12 @@ bool OmniboxCurrentPageDelegateImpl::ProcessExtensionKeyword(
 
 void OmniboxCurrentPageDelegateImpl::NotifySearchTabHelper(
     bool user_input_in_progress,
-    bool cancelling,
-    bool popup_is_open,
-    bool user_text_is_empty) {
+    bool cancelling) {
   if (!controller_->GetWebContents())
     return;
   SearchTabHelper::FromWebContents(
       controller_->GetWebContents())->OmniboxEditModelChanged(
-          user_input_in_progress, cancelling, popup_is_open,
-          user_text_is_empty);
+          user_input_in_progress, cancelling);
 }
 
 void OmniboxCurrentPageDelegateImpl::DoPrerender(
