@@ -17,6 +17,45 @@
 
 namespace courgette {
 
+CheckBool DisassemblerElf32ARM::TypedRVAARM::ComputeRelativeTarget(
+    const uint8* op_pointer) {
+  uint32 temp = 0;
+
+  switch (type_) {
+    case ARM_OFF24:
+      // The offset is given by the lower 24-bits of the op, shifted
+      // left 2 bits, and sign extended.
+      temp = Read32LittleEndian(op_pointer);
+      temp = (temp & 0x00FFFFFF) << 2;
+      if (temp & 0x02000000)
+        temp |= 0xFC000000;
+      temp += 8;
+      break;
+    case ARM_OFF8:
+      // The offset is given by lower 8 bits of the op.  It is a 9-bit
+      // offset, shifted right one bit and signed extended.
+      temp = (Read16LittleEndian(op_pointer) & 0x00FF) << 1;
+      if (temp & 0x0100)
+        temp |= 0xFFFFFE00;
+      temp += 4;  // Offset from _next_ PC.
+      break;
+    case ARM_OFF11:
+      // The offset is given by lower 11 bits of the op, and is a
+      // 12-bit offset, shifted right one bit and sign extended.
+      temp = (Read16LittleEndian(op_pointer) & 0x07FF) << 1;
+      if (temp & 0x00000800)
+        temp |= 0xFFFFF000;
+      temp += 4;  // Offset from _next_ PC.
+      break;
+    default:
+      return false;
+  }
+
+  set_relative_target(temp);
+
+  return true;
+}
+
 DisassemblerElf32ARM::DisassemblerElf32ARM(const void* start, size_t length)
   : DisassemblerElf32(start, length) {
 }

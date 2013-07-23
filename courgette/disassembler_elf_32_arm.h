@@ -14,8 +14,24 @@ namespace courgette {
 
 class AssemblyProgram;
 
+enum ARM_RVA {
+  ARM_OFF8,
+  ARM_OFF11,
+  ARM_OFF24,
+};
+
 class DisassemblerElf32ARM : public DisassemblerElf32 {
  public:
+  class TypedRVAARM : public TypedRVA {
+   public:
+    TypedRVAARM(ARM_RVA type, RVA rva) : TypedRVA(rva), type_(type) { }
+
+    virtual CheckBool ComputeRelativeTarget(const uint8* op_pointer) OVERRIDE;
+
+   private:
+    ARM_RVA type_;
+  };
+
   explicit DisassemblerElf32ARM(const void* start, size_t length);
 
   virtual ExecutableType kind() { return EXE_ELF_32_ARM; }

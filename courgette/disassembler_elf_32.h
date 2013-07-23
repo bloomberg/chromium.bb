@@ -6,6 +6,7 @@
 #define COURGETTE_DISASSEMBLER_ELF_32_H_
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_vector.h"
 #include "courgette/disassembler.h"
 #include "courgette/memory_allocator.h"
 #include "courgette/types_elf.h"
@@ -24,7 +25,51 @@ class AssemblyProgram;
 // architecture's machine code.
 class DisassemblerElf32 : public Disassembler {
  public:
+  // Different instructions encode the target rva differently.  This
+  // class encapsulates this behavior.  public for use in unit tests.
+  class TypedRVA {
+   public:
+    explicit TypedRVA(RVA rva) : rva_(rva), offset_(-1) {
+    }
+
+    virtual ~TypedRVA() { };
+
+    RVA rva() {
+      return rva_;
+    }
+
+    RVA relative_target() {
+      return relative_target_;
+    }
+
+    void set_relative_target(RVA relative_target) {
+      relative_target_ = relative_target;
+    }
+
+    size_t get_offset() {
+      return offset_;
+    }
+
+    void set_offset(size_t offset) {
+      offset_ = offset;
+    }
+
+    virtual CheckBool ComputeRelativeTarget(const uint8* op_pointer) = 0;
+
+    static bool IsLessThan(TypedRVA *a, TypedRVA *b) {
+      return a->rva() < b->rva();
+    }
+
+  private:
+    const RVA rva_;
+    RVA relative_target_;
+    size_t offset_;
+  };
+
+ public:
   explicit DisassemblerElf32(const void* start, size_t length);
+
+  virtual ~DisassemblerElf32() { };
 
   virtual ExecutableType kind() = 0;
 
@@ -39,7 +84,7 @@ class DisassemblerElf32 : public Disassembler {
 
   // Public for unittests only
   std::vector<RVA> &Abs32Locations() { return abs32_locations_; }
-  std::vector<RVA> &Rel32Locations() { return rel32_locations_; }
+  ScopedVector<TypedRVA> &Rel32Locations() { return rel32_locations_; }
 
  protected:
 
@@ -111,6 +156,8 @@ class DisassemblerElf32 : public Disassembler {
   CheckBool RVAsToOffsets(std::vector<RVA>* rvas /*in*/,
                           std::vector<size_t>* offsets /*out*/);
 
+  CheckBool RVAsToOffsets(ScopedVector<TypedRVA>* rvas /*in and out*/);
+
   // Parsing Code used to really implement Disassemble
 
   CheckBool ParseFile(AssemblyProgram* target) WARN_UNUSED_RESULT;
@@ -121,8 +168,8 @@ class DisassemblerElf32 : public Disassembler {
       const Elf32_Shdr *section_header,
       std::vector<size_t>::iterator* current_abs_offset,
       std::vector<size_t>::iterator end_abs_offset,
-      std::vector<size_t>::iterator* current_rel_offset,
-      std::vector<size_t>::iterator end_rel_offset,
+      ScopedVector<TypedRVA>::iterator* current_rel,
+      ScopedVector<TypedRVA>::iterator end_rel,
       AssemblyProgram* program) WARN_UNUSED_RESULT;
   CheckBool ParseSimpleRegion(size_t start_file_offset,
                               size_t end_file_offset,
@@ -145,7 +192,7 @@ class DisassemblerElf32 : public Disassembler {
   const char *default_string_section_;
 
   std::vector<RVA> abs32_locations_;
-  std::vector<RVA> rel32_locations_;
+  ScopedVector<TypedRVA> rel32_locations_;
 
   DISALLOW_COPY_AND_ASSIGN(DisassemblerElf32);
 };

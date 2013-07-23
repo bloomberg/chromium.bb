@@ -67,6 +67,10 @@ class Disassembler {
     return *reinterpret_cast<const uint32*>(address);
   }
 
+  static uint16 Read16LittleEndian(const void* address) {
+    return *reinterpret_cast<const uint16*>(address);
+  }
+
   // Reduce the length of the image in memory. Does not actually free
   // (or realloc) any memory. Usually only called via ParseHeader()
   void ReduceLength(size_t reduced_length);

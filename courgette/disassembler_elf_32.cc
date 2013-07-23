@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/memory/scoped_vector.h"
 
 #include "courgette/assembly_program.h"
 #include "courgette/courgette.h"
@@ -203,7 +204,7 @@ RVA DisassemblerElf32::FileOffsetToRVA(size_t offset) const {
 }
 
 CheckBool DisassemblerElf32::RVAsToOffsets(std::vector<RVA>* rvas,
-                                              std::vector<size_t>* offsets) {
+                                           std::vector<size_t>* offsets) {
   offsets->clear();
 
   for (std::vector<RVA>::iterator rva = rvas->begin();
@@ -221,24 +222,39 @@ CheckBool DisassemblerElf32::RVAsToOffsets(std::vector<RVA>* rvas,
   return true;
 }
 
+CheckBool DisassemblerElf32::RVAsToOffsets(ScopedVector<TypedRVA>* rvas) {
+  for (ScopedVector<TypedRVA>::iterator rva = rvas->begin();
+       rva != rvas->end();
+       rva++) {
+
+    size_t offset;
+
+    if (!RVAToFileOffset((*rva)->rva(), &offset))
+      return false;
+
+    (*rva)->set_offset(offset);
+  }
+
+  return true;
+}
+
 CheckBool DisassemblerElf32::ParseFile(AssemblyProgram* program) {
   // Walk all the bytes in the file, whether or not in a section.
   uint32 file_offset = 0;
 
   std::vector<size_t> abs_offsets;
-  std::vector<size_t> rel_offsets;
 
   if (!RVAsToOffsets(&abs32_locations_, &abs_offsets))
     return false;
 
-  if (!RVAsToOffsets(&rel32_locations_, &rel_offsets))
+  if (!RVAsToOffsets(&rel32_locations_))
     return false;
 
   std::vector<size_t>::iterator current_abs_offset = abs_offsets.begin();
-  std::vector<size_t>::iterator current_rel_offset = rel_offsets.begin();
+  ScopedVector<TypedRVA>::iterator current_rel = rel32_locations_.begin();
 
   std::vector<size_t>::iterator end_abs_offset = abs_offsets.end();
-  std::vector<size_t>::iterator end_rel_offset = rel_offsets.end();
+  ScopedVector<TypedRVA>::iterator end_rel = rel32_locations_.end();
 
   for (int section_id = 0;
        section_id < SectionHeaderCount();
@@ -261,7 +277,7 @@ CheckBool DisassemblerElf32::ParseFile(AssemblyProgram* program) {
       case SHT_PROGBITS:
         if (!ParseProgbitsSection(section_header,
                                   &current_abs_offset, end_abs_offset,
-                                  &current_rel_offset, end_rel_offset,
+                                  &current_rel, end_rel,
                                   program))
           return false;
         file_offset = section_header->sh_offset + section_header->sh_size;
@@ -306,8 +322,8 @@ CheckBool DisassemblerElf32::ParseProgbitsSection(
     const Elf32_Shdr *section_header,
     std::vector<size_t>::iterator* current_abs_offset,
     std::vector<size_t>::iterator end_abs_offset,
-    std::vector<size_t>::iterator* current_rel_offset,
-    std::vector<size_t>::iterator end_rel_offset,
+    ScopedVector<TypedRVA>::iterator* current_rel,
+    ScopedVector<TypedRVA>::iterator end_rel,
     AssemblyProgram* program) {
 
   // Walk all the bytes in the file, whether or not in a section.
@@ -325,9 +341,9 @@ CheckBool DisassemblerElf32::ParseProgbitsSection(
         file_offset > **current_abs_offset)
       return false;
 
-    while (*current_rel_offset != end_rel_offset &&
-           file_offset > **current_rel_offset) {
-      (*current_rel_offset)++;
+    while (*current_rel != end_rel &&
+           file_offset > (**current_rel)->get_offset()) {
+      (*current_rel)++;
     }
 
     size_t next_relocation = section_end;
@@ -339,9 +355,9 @@ CheckBool DisassemblerElf32::ParseProgbitsSection(
     // Rel offsets are heuristically derived, and might (incorrectly) overlap
     // an Abs value, or the end of the section, so +3 to make sure there is
     // room for the full 4 byte value.
-    if (*current_rel_offset != end_rel_offset &&
-        next_relocation > (**current_rel_offset + 3))
-      next_relocation = **current_rel_offset;
+    if (*current_rel != end_rel &&
+        next_relocation > ((**current_rel)->get_offset() + 3))
+      next_relocation = (**current_rel)->get_offset();
 
     if (next_relocation > file_offset) {
       if (!ParseSimpleRegion(file_offset, next_relocation, program))
@@ -364,20 +380,19 @@ CheckBool DisassemblerElf32::ParseProgbitsSection(
       continue;
     }
 
-    if (*current_rel_offset != end_rel_offset &&
-        file_offset == **current_rel_offset) {
+    if (*current_rel != end_rel &&
+        file_offset == (**current_rel)->get_offset()) {
 
-      const uint8* p = OffsetToPointer(file_offset);
-      uint32 relative_target = Read32LittleEndian(p);
+      uint32 relative_target = (**current_rel)->relative_target();
       // This cast is for 64 bit systems, and is only safe because we
       // are working on 32 bit executables.
       RVA target_rva = (RVA)(origin + (file_offset - origin_offset) +
-                             4 + relative_target);
+                             relative_target);
 
       if (!program->EmitRel32(program->FindOrMakeRel32Label(target_rva)))
         return false;
       file_offset += sizeof(RVA);
-      (*current_rel_offset)++;
+      (*current_rel)++;
       continue;
     }
   }
@@ -482,7 +497,9 @@ CheckBool DisassemblerElf32::ParseRel32RelocsFromSections() {
       return false;
   }
 
-  std::sort(rel32_locations_.begin(), rel32_locations_.end());
+  std::sort(rel32_locations_.begin(),
+            rel32_locations_.end(),
+            TypedRVA::IsLessThan);
   return true;
 }
 

@@ -104,6 +104,7 @@
         'ensemble_unittest.cc',
         'run_all_unittests.cc',
         'streams_unittest.cc',
+        'typedrva_unittest.cc',
         'versioning_unittest.cc',
         'third_party/paged_array_unittest.cc'
       ],

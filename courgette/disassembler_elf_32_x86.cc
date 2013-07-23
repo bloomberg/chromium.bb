@@ -150,9 +150,14 @@ CheckBool DisassemblerElf32X86::ParseRel32RelocsFromSection(
       }
     }
     if (rel32) {
-      RVA rel32_rva = static_cast<RVA>(rel32 - adjust_pointer_to_rva);
+      RVA rva = static_cast<RVA>(rel32 - adjust_pointer_to_rva);
+      TypedRVAX86* rel32_rva = new TypedRVAX86(rva);
 
-      RVA target_rva = rel32_rva + 4 + Read32LittleEndian(rel32);
+      if (!rel32_rva->ComputeRelativeTarget(rel32)) {
+        return false;
+      }
+
+      RVA target_rva = rel32_rva->rva() + rel32_rva->relative_target();
       // To be valid, rel32 target must be within image, and within this
       // section.
       if (IsValidRVA(target_rva)) {
