@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/i18n/rtl.h"
-#include "base/process_util.h"
+#include "base/process/kill.h"
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
 #include "content/public/common/javascript_message_type.h"

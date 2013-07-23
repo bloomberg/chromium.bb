@@ -6,7 +6,7 @@
 #define CONTENT_BROWSER_PROFILER_CONTROLLER_IMPL_H_
 
 #include "base/memory/singleton.h"
-#include "base/process.h"
+#include "base/process/process.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/profiler_controller.h"
 #include "content/public/common/process_type.h"

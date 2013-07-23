@@ -13,7 +13,6 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram.h"
-#include "base/process_util.h"
 #include "base/sha1.h"
 #include "base/threading/thread.h"
 #include "content/browser/browser_child_process_host_impl.h"

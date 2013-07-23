@@ -13,7 +13,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
-#include "base/process_util.h"
+#include "base/process/kill.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/site_instance_impl.h"

@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/pickle.h"
-#include "base/process_util.h"
+#include "base/process/kill.h"
 #include "base/synchronization/lock.h"
 #include "content/public/browser/file_descriptor_info.h"
 #include "content/public/browser/zygote_host_linux.h"

@@ -6,7 +6,6 @@
 #define CONTENT_BROWSER_BROWSER_PLUGIN_TEST_BROWSER_PLUGIN_GUEST_H_
 
 #include "base/compiler_specific.h"
-#include "base/process_util.h"
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
 #include "content/public/test/test_utils.h"
 #include "ui/gfx/size.h"

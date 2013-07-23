@@ -13,7 +13,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
-#include "base/process_util.h"
+#include "base/process/kill.h"
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
 #include "base/values.h"

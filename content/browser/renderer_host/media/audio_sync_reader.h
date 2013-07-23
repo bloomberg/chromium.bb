@@ -6,7 +6,7 @@
 #define CONTENT_BROWSER_RENDERER_HOST_MEDIA_AUDIO_SYNC_READER_H_
 
 #include "base/file_descriptor_posix.h"
-#include "base/process.h"
+#include "base/process/process.h"
 #include "base/sync_socket.h"
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"

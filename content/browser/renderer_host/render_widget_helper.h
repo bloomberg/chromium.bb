@@ -11,7 +11,7 @@
 #include "base/atomic_sequence_num.h"
 #include "base/containers/hash_tables.h"
 #include "base/memory/ref_counted.h"
-#include "base/process.h"
+#include "base/process/process.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "content/public/browser/browser_thread.h"

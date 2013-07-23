@@ -11,8 +11,8 @@
 #include <mach/mach.h>
 
 #include "base/memory/singleton.h"
-#include "base/process.h"
-#include "base/process_util.h"
+#include "base/process/process_handle.h"
+#include "base/process/process_metrics.h"
 #include "base/synchronization/lock.h"
 #include "content/public/browser/browser_child_process_observer.h"
 #include "content/public/browser/notification_observer.h"

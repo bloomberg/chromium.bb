@@ -4,7 +4,6 @@
 
 #include "content/browser/renderer_host/pepper/browser_ppapi_host_test.h"
 
-#include "base/process_util.h"
 #include "content/browser/renderer_host/pepper/browser_ppapi_host_impl.h"
 
 namespace content {

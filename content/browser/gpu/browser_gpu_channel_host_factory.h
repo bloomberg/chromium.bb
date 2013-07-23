@@ -7,7 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/process.h"
+#include "base/process/process.h"
 #include "base/synchronization/waitable_event.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
 #include "ipc/ipc_channel_handle.h"

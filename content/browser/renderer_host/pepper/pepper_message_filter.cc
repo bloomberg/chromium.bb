@@ -12,7 +12,6 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/process_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/worker_pool.h"
 #include "build/build_config.h"

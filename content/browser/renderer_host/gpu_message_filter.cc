@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/process_util.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"

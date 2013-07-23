@@ -9,7 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/process.h"
+#include "base/process/process.h"
 #include "base/synchronization/waitable_event_watcher.h"
 #include "content/browser/child_process_launcher.h"
 #include "content/public/browser/browser_child_process_host.h"

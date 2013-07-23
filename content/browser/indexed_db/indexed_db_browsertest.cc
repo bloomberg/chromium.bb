@@ -8,7 +8,6 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
-#include "base/process_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/thread_test_helper.h"
 #include "content/browser/browser_main_loop.h"

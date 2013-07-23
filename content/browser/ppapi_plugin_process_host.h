@@ -12,7 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/process.h"
+#include "base/process/process.h"
 #include "base/strings/string16.h"
 #include "content/browser/renderer_host/pepper/browser_ppapi_host_impl.h"
 #include "content/browser/renderer_host/pepper/pepper_message_filter.h"

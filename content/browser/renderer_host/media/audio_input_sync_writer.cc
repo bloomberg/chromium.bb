@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "base/memory/shared_memory.h"
-#include "base/process_util.h"
 
 namespace content {
 

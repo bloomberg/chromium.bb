@@ -13,6 +13,7 @@
 #include "base/metrics/histogram.h"
 #include "base/pending_task.h"
 #include "base/power_monitor/power_monitor.h"
+#include "base/process/process_metrics.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/system_monitor/system_monitor.h"
@@ -91,7 +92,6 @@
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 #include <sys/stat.h>
 
-#include "base/process_util.h"
 #include "content/browser/renderer_host/render_sandbox_host_linux.h"
 #include "content/browser/zygote_host/zygote_host_impl_linux.h"
 #endif

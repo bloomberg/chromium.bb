@@ -8,7 +8,7 @@
 #include <map>
 #include "base/basictypes.h"
 #include "base/memory/singleton.h"
-#include "base/process.h"
+#include "base/process/process.h"
 #include "build/build_config.h"  // USE_TCMALLOC
 #include "net/url_request/url_request_simple_job.h"
 

@@ -6,7 +6,6 @@
 #include "base/environment.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "base/process_util.h"
 #include "base/sync_socket.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/renderer_host/media/audio_input_device_manager.h"

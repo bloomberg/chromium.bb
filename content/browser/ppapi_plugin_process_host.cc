@@ -10,7 +10,6 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/metrics/field_trial.h"
-#include "base/process_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/browser_child_process_host_impl.h"
 #include "content/browser/plugin_service_impl.h"

@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
-#include "base/process_util.h"
 #include "content/browser/browser_child_process_host_impl.h"
 #include "content/browser/plugin_process_host.h"
 #include "content/public/browser/browser_thread.h"

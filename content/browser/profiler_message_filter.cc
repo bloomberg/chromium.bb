@@ -5,7 +5,6 @@
 #include "content/browser/profiler_message_filter.h"
 
 #include "base/tracked_objects.h"
-#include "base/process_util.h"
 #include "content/browser/profiler_controller_impl.h"
 #include "content/browser/tcmalloc_internals_request_job.h"
 #include "content/common/child_process_messages.h"

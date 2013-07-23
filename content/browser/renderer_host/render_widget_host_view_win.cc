@@ -18,7 +18,6 @@
 #include "base/debug/trace_event.h"
 #include "base/i18n/rtl.h"
 #include "base/metrics/histogram.h"
-#include "base/process_util.h"
 #include "base/threading/thread.h"
 #include "base/win/metro.h"
 #include "base/win/scoped_comptr.h"

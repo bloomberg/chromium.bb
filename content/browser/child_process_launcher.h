@@ -7,7 +7,8 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
-#include "base/process_util.h"
+#include "base/process/kill.h"
+#include "base/process/launch.h"
 #include "content/common/content_export.h"
 
 class CommandLine;

@@ -6,7 +6,6 @@
 
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
-#include "base/process_util.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/render_process_host.h"
