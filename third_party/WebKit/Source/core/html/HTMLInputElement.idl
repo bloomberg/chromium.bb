@@ -30,6 +30,8 @@
     [Reflect] attribute DOMString dirName;
     [Reflect] attribute boolean disabled;
     readonly attribute HTMLFormElement form;
+    // The 'files' attribute is intentionally not readonly.
+    // https://www.w3.org/Bugs/Public/show_bug.cgi?id=22682
     attribute FileList files;
     [Reflect, URL] attribute DOMString formAction;
     [TreatNullAs=NullString] attribute DOMString formEnctype;
