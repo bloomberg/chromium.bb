@@ -6,6 +6,7 @@
 #include "base/files/file_path.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_result.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -232,16 +233,41 @@ IN_PROC_BROWSER_TEST_F(BetterPopupBlockerBrowserTest,
 
   ui_test_utils::NavigateToURL(browser(), GetTestURL());
 
+  // Wait until the request actually has hit the popup blocker. The
+  // NavigateToURL call above returns as soon as the main tab stopped loading
+  // which can happen before the popup request was processed.
+  WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  PopupBlockerTabHelper* popup_blocker_helper =
+      PopupBlockerTabHelper::FromWebContents(web_contents);
+  if (!popup_blocker_helper->GetBlockedPopupsCount()) {
+    content::WindowedNotificationObserver observer(
+        chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED,
+        content::NotificationService::AllSources());
+    observer.Wait();
+  }
+
   // If the popup blocker blocked the blank post, there should be only one tab.
   EXPECT_EQ(1u, chrome::GetBrowserCount(browser()->profile(),
                                         browser()->host_desktop_type()));
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
-  WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_EQ(GetTestURL(), web_contents->GetURL());
 
   // And no new RVH created.
   EXPECT_EQ(0, counter.GetRenderViewHostCreatedCount());
+
+  content::WindowedNotificationObserver observer(
+      chrome::NOTIFICATION_TAB_ADDED,
+      content::NotificationService::AllSources());
+
+  // Launch the blocked popup.
+  EXPECT_EQ(1u, popup_blocker_helper->GetBlockedPopupsCount());
+  IDMap<chrome::NavigateParams, IDMapOwnPointer>::const_iterator iter(
+      &popup_blocker_helper->GetBlockedPopupRequests());
+  ASSERT_FALSE(iter.IsAtEnd());
+  popup_blocker_helper->ShowBlockedPopup(iter.GetCurrentKey());
+
+  observer.Wait();
 }
 
 IN_PROC_BROWSER_TEST_F(BetterPopupBlockerBrowserTest,
@@ -323,6 +349,50 @@ IN_PROC_BROWSER_TEST_F(BetterPopupBlockerBrowserTest, WindowFeatures) {
   gfx::Size window_size = web_contents->GetView()->GetContainerSize();
   EXPECT_TRUE(349 <= window_size.width() && window_size.width() <= 351);
   EXPECT_TRUE(249 <= window_size.height() && window_size.height() <= 251);
+}
+
+IN_PROC_BROWSER_TEST_F(BetterPopupBlockerBrowserTest, CorrectReferrer) {
+  GURL url(ui_test_utils::GetTestUrl(
+      base::FilePath(kTestDir),
+      base::FilePath(FILE_PATH_LITERAL("popup-referrer.html"))));
+
+  CountRenderViewHosts counter;
+
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // If the popup blocker blocked the blank post, there should be only one tab.
+  EXPECT_EQ(1u, chrome::GetBrowserCount(browser()->profile(),
+                                        browser()->host_desktop_type()));
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
+  WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_EQ(url, web_contents->GetURL());
+
+  // And no new RVH created.
+  EXPECT_EQ(0, counter.GetRenderViewHostCreatedCount());
+
+  content::WindowedNotificationObserver observer(
+      chrome::NOTIFICATION_TAB_ADDED,
+      content::NotificationService::AllSources());
+  ui_test_utils::BrowserAddedObserver browser_observer;
+
+  // Launch the blocked popup.
+  PopupBlockerTabHelper* popup_blocker_helper =
+      PopupBlockerTabHelper::FromWebContents(web_contents);
+  EXPECT_EQ(1u, popup_blocker_helper->GetBlockedPopupsCount());
+  IDMap<chrome::NavigateParams, IDMapOwnPointer>::const_iterator iter(
+      &popup_blocker_helper->GetBlockedPopupRequests());
+  ASSERT_FALSE(iter.IsAtEnd());
+  popup_blocker_helper->ShowBlockedPopup(iter.GetCurrentKey());
+
+  observer.Wait();
+  Browser* new_browser = browser_observer.WaitForSingleNewBrowser();
+
+  // Check that the referrer was correctly set.
+  web_contents = new_browser->tab_strip_model()->GetActiveWebContents();
+  base::string16 expected_title(base::ASCIIToUTF16("PASS"));
+  content::TitleWatcher title_watcher(web_contents, expected_title);
+  EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 }
 
 }  // namespace

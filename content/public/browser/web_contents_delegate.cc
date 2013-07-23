@@ -127,9 +127,11 @@ bool WebContentsDelegate::ShouldCreateWebContents(
     WindowContainerType window_container_type,
     const string16& frame_name,
     const GURL& target_url,
+    const Referrer& referrer,
     WindowOpenDisposition disposition,
     const WebKit::WebWindowFeatures& features,
-    bool user_gesture) {
+    bool user_gesture,
+    bool opener_suppressed) {
   return true;
 }
 

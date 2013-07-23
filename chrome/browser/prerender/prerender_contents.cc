@@ -95,9 +95,11 @@ class PrerenderContents::WebContentsDelegateImpl
       WindowContainerType window_container_type,
       const string16& frame_name,
       const GURL& target_url,
+      const content::Referrer& referrer,
       WindowOpenDisposition disposition,
       const WebKit::WebWindowFeatures& features,
-      bool user_gesture) OVERRIDE {
+      bool user_gesture,
+      bool opener_suppressed) OVERRIDE {
     // Since we don't want to permit child windows that would have a
     // window.opener property, terminate prerendering.
     prerender_contents_->Destroy(FINAL_STATUS_CREATE_NEW_WINDOW);

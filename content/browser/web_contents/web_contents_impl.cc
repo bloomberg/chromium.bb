@@ -1443,9 +1443,11 @@ void WebContentsImpl::CreateNewWindow(
                                           params.window_container_type,
                                           params.frame_name,
                                           params.target_url,
+                                          params.referrer,
                                           params.disposition,
                                           params.features,
-                                          params.user_gesture)) {
+                                          params.user_gesture,
+                                          params.opener_suppressed)) {
     GetRenderViewHost()->GetProcess()->ResumeRequestsForView(route_id);
     GetRenderViewHost()->GetProcess()->ResumeRequestsForView(
         main_frame_route_id);

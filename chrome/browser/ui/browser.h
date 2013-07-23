@@ -566,9 +566,11 @@ class Browser : public TabStripModelObserver,
       WindowContainerType window_container_type,
       const string16& frame_name,
       const GURL& target_url,
+      const content::Referrer& referrer,
       WindowOpenDisposition disposition,
       const WebKit::WebWindowFeatures& features,
-      bool user_action) OVERRIDE;
+      bool user_action,
+      bool opener_suppressed) OVERRIDE;
   virtual void WebContentsCreated(content::WebContents* source_contents,
                                   int64 source_frame_id,
                                   const string16& frame_name,

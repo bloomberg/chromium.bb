@@ -370,6 +370,10 @@ IPC_STRUCT_BEGIN(ViewHostMsg_CreateWindow_Params)
   // sepcified).
   IPC_STRUCT_MEMBER(GURL, target_url)
 
+  // The referrer that will be used to load |target_url| (empty if none has
+  // been specified).
+  IPC_STRUCT_MEMBER(content::Referrer, referrer)
+
   // The window features to use for the new view.
   IPC_STRUCT_MEMBER(WebKit::WebWindowFeatures, features)
 IPC_STRUCT_END()

@@ -1483,9 +1483,11 @@ bool Browser::ShouldCreateWebContents(
     WindowContainerType window_container_type,
     const string16& frame_name,
     const GURL& target_url,
+    const content::Referrer& referrer,
     WindowOpenDisposition disposition,
     const WebWindowFeatures& features,
-    bool user_gesture) {
+    bool user_gesture,
+    bool opener_suppressed) {
   if (window_container_type == WINDOW_CONTAINER_TYPE_BACKGROUND) {
     // If a BackgroundContents is created, suppress the normal WebContents.
     return !MaybeCreateBackgroundContents(
@@ -1508,9 +1510,11 @@ bool Browser::ShouldCreateWebContents(
           switches::kDisablePopupBlocking)) {
     chrome::NavigateParams nav_params(
         this, target_url, content::PAGE_TRANSITION_LINK);
-    // TODO(jochen): route missing information to here:
-    //   referrer, extra_headers, override_encoding
-    nav_params.source_contents = web_contents;
+    // TODO(jochen): route window features here.
+    nav_params.referrer = referrer;
+    if (!opener_suppressed)
+      nav_params.source_contents = web_contents;
+    nav_params.is_renderer_initiated = true;
     nav_params.tabstrip_add_types = TabStripModel::ADD_ACTIVE;
     nav_params.window_action = chrome::NavigateParams::SHOW_WINDOW;
     nav_params.user_gesture = user_gesture;
@@ -1525,7 +1529,7 @@ bool Browser::ShouldCreateWebContents(
       nav_params.window_bounds.set_height(features.height);
 
     // Compare RenderViewImpl::show().
-    if (!user_gesture)
+    if (!user_gesture && disposition != NEW_BACKGROUND_TAB)
       nav_params.disposition = NEW_POPUP;
     else
       nav_params.disposition = disposition;

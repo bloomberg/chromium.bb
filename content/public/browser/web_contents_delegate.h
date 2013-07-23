@@ -43,6 +43,7 @@ struct ContextMenuParams;
 struct DropData;
 struct FileChooserParams;
 struct NativeWebKeyboardEvent;
+struct Referrer;
 struct SSLStatus;
 }
 
@@ -295,9 +296,11 @@ class CONTENT_EXPORT WebContentsDelegate {
       WindowContainerType window_container_type,
       const string16& frame_name,
       const GURL& target_url,
+      const Referrer& referrer,
       WindowOpenDisposition disposition,
       const WebKit::WebWindowFeatures& features,
-      bool user_gesture);
+      bool user_gesture,
+      bool opener_suppressed);
 
   // Notifies the delegate about the creation of a new WebContents. This
   // typically happens when popups are created.

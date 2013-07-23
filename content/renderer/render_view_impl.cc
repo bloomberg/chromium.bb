@@ -422,6 +422,13 @@ static WebReferrerPolicy GetReferrerPolicyFromRequest(
       frame->document().referrerPolicy();
 }
 
+static Referrer GetReferrerFromRequest(
+    WebFrame* frame,
+    const WebURLRequest& request) {
+  return Referrer(GURL(request.httpHeaderField(WebString::fromUTF8("Referer"))),
+                  GetReferrerPolicyFromRequest(frame, request));
+}
+
 static WebURLResponseExtraDataImpl* GetExtraDataFromResponse(
     const WebURLResponse& response) {
   return static_cast<WebURLResponseExtraDataImpl*>(
@@ -1909,9 +1916,7 @@ void RenderViewImpl::UpdateURL(WebFrame* frame) {
     } else {
       // Bug 654101: the referrer will be empty on https->http transitions. It
       // would be nice if we could get the real referrer from somewhere.
-      params.referrer = Referrer(GURL(
-          original_request.httpHeaderField(WebString::fromUTF8("Referer"))),
-          GetReferrerPolicyFromRequest(frame, original_request));
+      params.referrer = GetReferrerFromRequest(frame, original_request);
     }
 
     string16 method = request.httpMethod();
@@ -2139,8 +2144,10 @@ WebView* RenderViewImpl::createView(
   params.opener_security_origin = security_url;
   params.opener_suppressed = creator->willSuppressOpenerInNewFrame();
   params.disposition = NavigationPolicyToDisposition(policy);
-  if (!request.isNull())
+  if (!request.isNull()) {
     params.target_url = request.url();
+    params.referrer = GetReferrerFromRequest(creator, request);
+  }
   params.features = features;
 
   int32 routing_id = MSG_ROUTING_NONE;
@@ -3067,9 +3074,7 @@ void RenderViewImpl::loadURLExternally(
     WebFrame* frame, const WebURLRequest& request,
     WebNavigationPolicy policy,
     const WebString& suggested_name) {
-  Referrer referrer(
-      GURL(request.httpHeaderField(WebString::fromUTF8("Referer"))),
-      GetReferrerPolicyFromRequest(frame, request));
+  Referrer referrer(GetReferrerFromRequest(frame, request));
   if (policy == WebKit::WebNavigationPolicyDownload) {
     Send(new ViewHostMsg_DownloadUrl(routing_id_, request.url(), referrer,
                                      suggested_name));
@@ -3089,9 +3094,7 @@ WebNavigationPolicy RenderViewImpl::decidePolicyForNavigation(
     return WebKit::WebNavigationPolicyIgnore;
   }
 
-  Referrer referrer(
-      GURL(request.httpHeaderField(WebString::fromUTF8("Referer"))),
-      GetReferrerPolicyFromRequest(frame, request));
+  Referrer referrer(GetReferrerFromRequest(frame, request));
 
   if (is_swapped_out_) {
     if (request.url() != GURL(kSwappedOutURL)) {
