@@ -565,9 +565,10 @@ void LayerTreeImpl::AddLayerWithCopyOutputRequest(LayerImpl* layer) {
   // they are aborted if not serviced during draw.
   DCHECK(IsActiveTree());
 
-  DCHECK(std::find(layers_with_copy_output_request_.begin(),
-                   layers_with_copy_output_request_.end(),
-                   layer) == layers_with_copy_output_request_.end());
+  if (std::find(layers_with_copy_output_request_.begin(),
+                layers_with_copy_output_request_.end(),
+                layer) != layers_with_copy_output_request_.end())
+    return;
   layers_with_copy_output_request_.push_back(layer);
 }
 

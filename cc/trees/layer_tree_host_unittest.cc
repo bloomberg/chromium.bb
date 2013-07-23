@@ -2947,6 +2947,77 @@ class LayerTreeHostTestAsyncReadbackClippedOut : public LayerTreeHostTest {
 SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_TEST_F(
     LayerTreeHostTestAsyncReadbackClippedOut);
 
+class LayerTreeHostTestAsyncTwoReadbacksWithoutDraw : public LayerTreeHostTest {
+ protected:
+  virtual void SetupTree() OVERRIDE {
+    root_ = FakeContentLayer::Create(&client_);
+    root_->SetBounds(gfx::Size(20, 20));
+
+    copy_layer_ = FakeContentLayer::Create(&client_);
+    copy_layer_->SetBounds(gfx::Size(10, 10));
+    root_->AddChild(copy_layer_);
+
+    layer_tree_host()->SetRootLayer(root_);
+    LayerTreeHostTest::SetupTree();
+  }
+
+  void AddCopyRequest(Layer* layer) {
+    layer->RequestCopyOfOutput(
+        CopyOutputRequest::CreateBitmapRequest(base::Bind(
+            &LayerTreeHostTestAsyncTwoReadbacksWithoutDraw::CopyOutputCallback,
+            base::Unretained(this))));
+  }
+
+  virtual void BeginTest() OVERRIDE {
+    saw_copy_request_ = false;
+    callback_count_ = 0;
+    PostSetNeedsCommitToMainThread();
+
+    // Prevent drawing.
+    layer_tree_host()->SetViewportSize(gfx::Size(0, 0));
+
+    AddCopyRequest(copy_layer_.get());
+  }
+
+  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+    if (impl->active_tree()->source_frame_number() == 0) {
+      LayerImpl* root = impl->active_tree()->root_layer();
+      EXPECT_TRUE(root->children()[0]->HasCopyRequest());
+      saw_copy_request_ = true;
+    }
+  }
+
+  virtual void DidCommit() OVERRIDE {
+    if (layer_tree_host()->commit_number() == 1) {
+      // Allow drawing.
+      layer_tree_host()->SetViewportSize(gfx::Size(root_->bounds()));
+
+      AddCopyRequest(copy_layer_.get());
+    }
+  }
+
+  void CopyOutputCallback(scoped_ptr<CopyOutputResult> result) {
+    EXPECT_TRUE(layer_tree_host()->proxy()->IsMainThread());
+    EXPECT_EQ(copy_layer_->bounds().ToString(), result->size().ToString());
+    ++callback_count_;
+
+    if (callback_count_ == 2)
+      EndTest();
+  }
+
+  virtual void AfterTest() OVERRIDE { EXPECT_TRUE(saw_copy_request_); }
+
+  bool saw_copy_request_;
+  int callback_count_;
+  FakeContentLayerClient client_;
+  scoped_refptr<FakeContentLayer> root_;
+  scoped_refptr<FakeContentLayer> copy_layer_;
+};
+
+// No output to copy for delegated renderers.
+SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_TEST_F(
+    LayerTreeHostTestAsyncTwoReadbacksWithoutDraw);
+
 class LayerTreeHostTestNumFramesPending : public LayerTreeHostTest {
  public:
   virtual void BeginTest() OVERRIDE {

@@ -108,8 +108,6 @@ void LayerImpl::PassCopyRequests(ScopedPtrVector<CopyOutputRequest>* requests) {
   if (requests->empty())
     return;
 
-  DCHECK(copy_requests_.empty());
-
   copy_requests_.insert_and_take(copy_requests_.end(), *requests);
   requests->clear();
 
