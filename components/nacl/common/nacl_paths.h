@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_NACL_PATHS_H_
-#define CHROME_COMMON_NACL_PATHS_H_
+#ifndef COMPONENTS_NACL_COMMON_NACL_PATHS_H_
+#define COMPONENTS_NACL_COMMON_NACL_PATHS_H_
 
 #include "build/build_config.h"
 
@@ -28,4 +28,4 @@ void RegisterPathProvider();
 
 }  // namespace nacl
 
-#endif  // CHROME_COMMON_NACL_PATHS_H_
+#endif  // COMPONENTS_NACL_COMMON_NACL_PATHS_H_

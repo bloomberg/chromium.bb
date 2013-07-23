@@ -7,7 +7,7 @@
 
 #include <map>
 
-#include "chrome/common/pnacl_types.h"
+#include "components/nacl/common/pnacl_types.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_platform_file.h"
 #include "ppapi/c/private/pp_file_handle.h"

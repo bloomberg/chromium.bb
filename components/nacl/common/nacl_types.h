@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_NACL_TYPES_H_
-#define CHROME_COMMON_NACL_TYPES_H_
+#ifndef COMPONENTS_NACL_COMMON_NACL_TYPES_H_
+#define COMPONENTS_NACL_COMMON_NACL_TYPES_H_
 
 #include <string>
 #include <vector>
@@ -98,4 +98,4 @@ struct NaClLaunchResult {
 
 }  // namespace nacl
 
-#endif  // CHROME_COMMON_NACL_TYPES_H_
+#endif  // COMPONENTS_NACL_COMMON_NACL_TYPES_H_

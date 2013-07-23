@@ -21,6 +21,10 @@
       'sources': [
         'nacl/common/nacl_cmd_line.cc',
         'nacl/common/nacl_cmd_line.h',
+        'nacl/common/nacl_messages.cc',
+        'nacl/common/nacl_messages.h',
+        'nacl/common/nacl_types.cc',
+        'nacl/common/nacl_types.h',
       ],
       'include_dirs': [
         '..',
@@ -52,6 +56,10 @@
           'sources': [
             'nacl/common/nacl_cmd_line.cc',
             'nacl/common/nacl_cmd_line.h',
+            'nacl/common/nacl_messages.cc',
+            'nacl/common/nacl_messages.h',
+            'nacl/common/nacl_types.cc',
+            'nacl/common/nacl_types.h',
           ],
           'include_dirs': [
             '..',

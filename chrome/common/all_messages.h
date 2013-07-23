@@ -22,4 +22,4 @@
 #endif
 
 #include "chrome/common/common_message_generator.h"
-#include "chrome/common/nacl_messages.h"
+#include "components/nacl/common/nacl_messages.h"

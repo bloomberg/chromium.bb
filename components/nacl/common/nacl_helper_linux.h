@@ -1,9 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_NACL_HELPER_LINUX_H_
-#define CHROME_COMMON_NACL_HELPER_LINUX_H_
+#ifndef COMPONENTS_NACL_COMMON_NACL_HELPER_LINUX_H_
+#define COMPONENTS_NACL_COMMON_NACL_HELPER_LINUX_H_
 
 // A mini-zygote specifically for Native Client. This file defines
 // constants used to implement communication between the nacl_helper
@@ -39,4 +39,4 @@
 #define kNaClDummyFDIndex 1
 #define kNaClParentFDIndex 2
 
-#endif  // CHROME_COMMON_NACL_HELPER_LINUX_H_
+#endif  // COMPONENTS_NACL_COMMON_NACL_HELPER_LINUX_H_

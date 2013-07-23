@@ -5,7 +5,7 @@
 #include "pnacl_translation_resource_host.h"
 
 #ifndef DISABLE_NACL
-#include "chrome/common/nacl_host_messages.h"
+#include "components/nacl/common/nacl_host_messages.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
 

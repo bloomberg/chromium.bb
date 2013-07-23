@@ -12,7 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/nacl_host/nacl_file_host.h"
-#include "chrome/common/pnacl_types.h"
+#include "components/nacl/common/pnacl_types.h"
 #include "ipc/ipc_platform_file.h"
 
 namespace pnacl {

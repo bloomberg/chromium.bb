@@ -10,7 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
-#include "chrome/common/nacl_types.h"
+#include "components/nacl/common/nacl_types.h"
 #include "ipc/ipc_listener.h"
 
 namespace IPC {

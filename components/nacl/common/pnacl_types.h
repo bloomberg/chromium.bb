@@ -1,9 +1,9 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_PNACL_TYPES_H_
-#define CHROME_COMMON_PNACL_TYPES_H_
+#ifndef COMPONENTS_NACL_COMMON_PNACL_TYPES_H_
+#define COMPONENTS_NACL_COMMON_PNACL_TYPES_H_
 
 // This file exists (instead of putting this type into nacl_types.h) because
 // nacl_types is built into nacl_helper in addition to chrome, and we don't
@@ -30,4 +30,4 @@ struct PnaclCacheInfo {
 
 }  // namespace nacl
 
-#endif  // CHROME_COMMON_PNACL_TYPES_H_
+#endif  // COMPONENTS_NACL_COMMON_PNACL_TYPES_H_

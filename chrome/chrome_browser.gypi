@@ -2506,8 +2506,8 @@
             'browser/nacl_host/pnacl_host.h',
             'browser/nacl_host/pnacl_translation_cache.cc',
             'browser/nacl_host/pnacl_translation_cache.h',
-            'common/nacl_debug_exception_handler_win.cc',
-            'common/nacl_debug_exception_handler_win.h',
+            '../components/nacl/common/nacl_debug_exception_handler_win.cc',
+            '../components/nacl/common/nacl_debug_exception_handler_win.h',
           ],
           'dependencies': [
             '../native_client/src/trusted/service_runtime/service_runtime.gyp:sel',

@@ -54,8 +54,8 @@
             'sources': [
               'app/nacl_fork_delegate_linux.cc',
               'app/nacl_fork_delegate_linux.h',
-              'common/nacl_paths.cc',
-              'common/nacl_paths.h',
+              '../components/nacl/common/nacl_paths.cc',
+              '../components/nacl/common/nacl_paths.h',
             ],
           },],
         ],
@@ -114,12 +114,9 @@
                 '../ppapi/ppapi_internal.gyp:ppapi_ipc_win64',
               ],
               'sources': [
-                'common/nacl_debug_exception_handler_win.cc',
-                'common/nacl_messages.cc',
-                'common/nacl_types.cc',
                 'nacl/nacl_broker_listener.cc',
                 'nacl/nacl_broker_listener.h',
-                '../components/nacl/common/nacl_cmd_line.cc',
+                '../components/nacl/common/nacl_debug_exception_handler_win.cc',
               ],
               'include_dirs': [
                 '..',
@@ -150,6 +147,7 @@
                 '..',
               ],
               'dependencies': [
+                '../components/nacl_common.gyp:nacl_common',
                 '../crypto/crypto.gyp:crypto',
                 '../sandbox/sandbox.gyp:libc_urandom_override',
                 '../sandbox/sandbox.gyp:sandbox',
@@ -159,8 +157,6 @@
                 'nacl/nacl_helper_linux.cc',
                 'nacl/nacl_sandbox_linux.cc',
                 '../base/posix/unix_domain_socket_linux.cc',
-                '../chrome/common/nacl_messages.cc',
-                '../chrome/common/nacl_types.cc',
                 '../content/common/child_process_sandbox_support_impl_shm_linux.cc',
                 '../content/common/sandbox_init_linux.cc',
                 '../content/common/sandbox_seccomp_bpf_linux.cc',

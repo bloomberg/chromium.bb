@@ -21,8 +21,8 @@
 #include "base/process_util.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/nacl_helper_linux.h"
-#include "chrome/common/nacl_paths.h"
+#include "components/nacl/common/nacl_helper_linux.h"
+#include "components/nacl/common/nacl_paths.h"
 #include "components/nacl/common/nacl_switches.h"
 
 namespace {

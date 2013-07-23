@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_NACL_DEBUG_EXCEPTION_HANDLER_WIN_H_
-#define CHROME_COMMON_NACL_DEBUG_EXCEPTION_HANDLER_WIN_H_
+#ifndef COMPONENTS_NACL_COMMON_NACL_DEBUG_EXCEPTION_HANDLER_WIN_H_
+#define COMPONENTS_NACL_COMMON_NACL_DEBUG_EXCEPTION_HANDLER_WIN_H_
 
 #include "base/callback.h"
 #include "base/message_loop/message_loop.h"
@@ -15,4 +15,4 @@ void NaClStartDebugExceptionHandlerThread(
     base::MessageLoopProxy* message_loop,
     const base::Callback<void(bool)>& on_connected);
 
-#endif  // CHROME_COMMON_NACL_DEBUG_EXCEPTION_HANDLER_WIN_H_
+#endif  // COMPONENTS_NACL_COMMON_NACL_DEBUG_EXCEPTION_HANDLER_WIN_H_

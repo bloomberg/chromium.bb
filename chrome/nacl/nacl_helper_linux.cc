@@ -4,7 +4,7 @@
 
 // A mini-zygote specifically for Native Client.
 
-#include "chrome/common/nacl_helper_linux.h"
+#include "components/nacl/common/nacl_helper_linux.h"
 
 #include <errno.h>
 #include <fcntl.h>

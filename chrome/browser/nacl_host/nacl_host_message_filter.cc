@@ -9,7 +9,7 @@
 #include "chrome/browser/nacl_host/nacl_file_host.h"
 #include "chrome/browser/nacl_host/nacl_process_host.h"
 #include "chrome/browser/nacl_host/pnacl_host.h"
-#include "chrome/common/nacl_host_messages.h"
+#include "components/nacl/common/nacl_host_messages.h"
 #include "extensions/common/constants.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
