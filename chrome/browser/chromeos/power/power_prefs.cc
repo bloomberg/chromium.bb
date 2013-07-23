@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "base/prefs/pref_service.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -74,10 +75,13 @@ void PowerPrefs::Observe(int type,
                          const content::NotificationSource& source,
                          const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_LOGIN_WEBUI_VISIBLE:
+    case chrome::NOTIFICATION_LOGIN_WEBUI_VISIBLE: {
       // Update |profile_| when entering the login screen.
-      SetProfile(ProfileHelper::GetSigninProfile());
+      ProfileManager* profile_manager = g_browser_process->profile_manager();
+      if (!profile_manager || !profile_manager->IsLoggedIn())
+        SetProfile(ProfileHelper::GetSigninProfile());
       break;
+    }
     case chrome::NOTIFICATION_SESSION_STARTED:
       // Update |profile_| when entering a session.
       SetProfile(ProfileManager::GetDefaultProfile());

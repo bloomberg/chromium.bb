@@ -235,6 +235,18 @@ TEST_F(PowerPrefsTest, UserSession) {
   EXPECT_EQ(GetExpectedAllowScreenWakeLocksForProfile(user_profile),
             GetCurrentAllowScreenWakeLocks());
 
+  // Simulate the login screen coming up as part of screen locking.
+  power_prefs_->Observe(chrome::NOTIFICATION_LOGIN_WEBUI_VISIBLE,
+                        content::Source<PowerPrefsTest>(this),
+                        content::NotificationService::NoDetails());
+
+  // Verify that power policy didn't revert to login screen settings.
+  EXPECT_EQ(user_profile, GetProfile());
+  EXPECT_EQ(GetExpectedPowerPolicyForProfile(user_profile),
+            GetCurrentPowerPolicy());
+  EXPECT_EQ(GetExpectedAllowScreenWakeLocksForProfile(user_profile),
+            GetCurrentAllowScreenWakeLocks());
+
   // Inform power_prefs_ that the session has ended and the user profile has
   // been destroyed.
   power_prefs_->Observe(chrome::NOTIFICATION_PROFILE_DESTROYED,
