@@ -54,9 +54,6 @@ def AddCommonOptions(option_parser):
 
   AddBuildTypeOption(option_parser)
 
-  option_parser.add_option('--out-directory', dest='out_directory',
-                           help=('Path to the out/ directory, irrespective of '
-                                 'the build type. Only for non-Chromium uses.'))
   option_parser.add_option('-c', dest='cleanup_test_files',
                            help='Cleanup test files on the device after run',
                            action='store_true')
@@ -97,8 +94,6 @@ def AddCommonOptions(option_parser):
 
 def ProcessCommonOptions(options):
   """Processes and handles all common options."""
-  if options.out_directory:
-    cmd_helper.OutDirectory.set(options.out_directory)
   run_tests_helper.SetLogLevel(options.verbose_count)
 
 
@@ -111,10 +106,6 @@ def AddCoreGTestOptions(option_parser):
                            help='googletest-style filter string.')
   option_parser.add_option('-a', '--test_arguments', dest='test_arguments',
                            help='Additional arguments to pass to the test.')
-  # TODO(gkanwar): Possible deprecate this flag. Waiting on word from Peter
-  # Beverloo.
-  option_parser.add_option('--webkit', action='store_true',
-                           help='Run the tests from a WebKit checkout.')
   option_parser.add_option('--exe', action='store_true',
                            help='If set, use the exe test runner instead of '
                            'the APK.')
@@ -360,8 +351,7 @@ def _RunGTests(options, error_func):
     runner_factory, tests = gtest_setup.Setup(
         options.exe, suite_name, options.test_arguments,
         options.timeout, options.cleanup_test_files, options.tool,
-        options.build_type, options.webkit, options.push_deps,
-        options.test_filter)
+        options.build_type, options.push_deps, options.test_filter)
 
     results, test_exit_code = test_dispatcher.RunTests(
         tests, runner_factory, False, options.test_device,
@@ -390,7 +380,7 @@ def _RunContentBrowserTests(options, error_func):
   """Subcommand of RunTestsCommands which runs content_browsertests."""
   runner_factory, tests = browsertests_setup.Setup(
       options.test_arguments, options.timeout, options.cleanup_test_files,
-      options.tool, options.build_type, options.webkit, options.push_deps,
+      options.tool, options.build_type, options.push_deps,
       options.test_filter)
 
   # TODO(nileshagrawal): remove this abnormally long setup timeout once fewer

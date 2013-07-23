@@ -29,7 +29,7 @@ def _TestSuiteRequiresMockTestServer(suite_basename):
 class TestRunner(base_test_runner.BaseTestRunner):
   def __init__(self, device, suite_name, test_arguments, timeout,
                cleanup_test_files, tool_name, build_type,
-               in_webkit_checkout, push_deps, test_apk_package_name=None,
+               push_deps, test_apk_package_name=None,
                test_activity_name=None, command_line_file=None):
     """Single test suite attached to a single device.
 
@@ -41,7 +41,6 @@ class TestRunner(base_test_runner.BaseTestRunner):
       cleanup_test_files: Whether or not to cleanup test files on device.
       tool_name: Name of the Valgrind tool.
       build_type: 'Release' or 'Debug'.
-      in_webkit_checkout: Whether the suite is being run from a WebKit checkout.
       push_deps: If True, push all dependencies to the device.
       test_apk_package_name: Apk package name for tests running in APKs.
       test_activity_name: Test activity to invoke for APK tests.
@@ -50,7 +49,6 @@ class TestRunner(base_test_runner.BaseTestRunner):
     super(TestRunner, self).__init__(device, tool_name, build_type, push_deps,
                                      cleanup_test_files)
     self._test_arguments = test_arguments
-    self.in_webkit_checkout = in_webkit_checkout
     if timeout == 0:
       timeout = 60
     # On a VM (e.g. chromium buildbots), this timeout is way too small.
@@ -88,10 +86,6 @@ class TestRunner(base_test_runner.BaseTestRunner):
   def PushDataDeps(self):
     self.adb.WaitForSdCardReady(20)
     self.tool.CopyFiles()
-    if self.test_package.suite_basename == 'webkit_unit_tests':
-      self.PushWebKitUnitTestsData()
-      return
-
     if os.path.exists(constants.ISOLATE_DEPS_DIR):
       device_dir = self.adb.GetExternalStorage()
       # TODO(frankf): linux_dumper_unittest_helper needs to be in the same dir
@@ -102,28 +96,6 @@ class TestRunner(base_test_runner.BaseTestRunner):
         self.adb.PushIfNeeded(
             os.path.join(constants.ISOLATE_DEPS_DIR, p),
             os.path.join(device_dir, p))
-
-  def PushWebKitUnitTestsData(self):
-    """Pushes the webkit_unit_tests data files to the device.
-
-    The path of this directory is different when the suite is being run as
-    part of a WebKit check-out.
-    """
-    webkit_src = os.path.join(constants.DIR_SOURCE_ROOT, 'third_party',
-                              'WebKit')
-    if self.in_webkit_checkout:
-      webkit_src = os.path.join(constants.DIR_SOURCE_ROOT, '..', '..', '..')
-
-    self.adb.PushIfNeeded(
-        os.path.join(webkit_src, 'Source/web/tests/data'),
-        os.path.join(
-            self.adb.GetExternalStorage(),
-            'third_party/WebKit/Source/web/tests/data'))
-    self.adb.PushIfNeeded(
-        os.path.join(constants.DIR_SOURCE_ROOT,
-                     'third_party/hyphen/hyph_en_US.dic'),
-        os.path.join(self.adb.GetExternalStorage(),
-                     'third_party/hyphen/hyph_en_US.dic'))
 
   def _ParseTestOutput(self, p):
     """Process the test output.

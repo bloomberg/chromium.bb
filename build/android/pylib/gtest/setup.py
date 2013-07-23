@@ -37,6 +37,8 @@ _ISOLATE_FILE_PATHS = {
     'net_unittests': 'net/net_unittests.isolate',
     'ui_unittests': 'ui/ui_unittests.isolate',
     'unit_tests': 'chrome/unit_tests.isolate',
+    'webkit_unit_tests':
+      'third_party/WebKit/Source/web/WebKitUnitTests.isolate',
 }
 
 # Used for filtering large data deps at a finer grain than what's allowed in
@@ -288,7 +290,7 @@ def GetTestsFiltered(suite_name, gtest_filter, runner_factory, devices):
 
 
 def Setup(use_exe_test_runner, suite_name, test_arguments, timeout,
-          cleanup_test_files, tool, build_type, webkit, push_deps,
+          cleanup_test_files, tool, build_type, push_deps,
           gtest_filter):
   """Create the test runner factory and tests.
 
@@ -300,7 +302,6 @@ def Setup(use_exe_test_runner, suite_name, test_arguments, timeout,
     cleanup_test_files: Whether or not to cleanup test files on device.
     tool: Name of the Valgrind tool.
     build_type: 'Release' or 'Debug'.
-    webkit: Whether the suite is being run from a WebKit checkout.
     push_deps: If True, push all dependencies to the device.
     gtest_filter: Filter for tests.
 
@@ -328,7 +329,6 @@ def Setup(use_exe_test_runner, suite_name, test_arguments, timeout,
         cleanup_test_files,
         tool,
         build_type,
-        webkit,
         push_deps,
         constants.GTEST_TEST_PACKAGE_NAME,
         constants.GTEST_TEST_ACTIVITY_NAME,

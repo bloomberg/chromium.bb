@@ -19,7 +19,7 @@ from pylib.utils import report_results
 
 
 def Setup(test_arguments, timeout, cleanup_test_files, tool, build_type,
-          webkit, push_deps, gtest_filter):
+          push_deps, gtest_filter):
   """Create the test runner factory and tests.
 
   Args:
@@ -28,7 +28,6 @@ def Setup(test_arguments, timeout, cleanup_test_files, tool, build_type,
     cleanup_test_files: Whether or not to cleanup test files on device.
     tool: Name of the Valgrind tool.
     build_type: 'Release' or 'Debug'.
-    webkit: Whether the suite is being run from a WebKit checkout.
     push_deps: If True, push all dependencies to the device.
     gtest_filter: filter for tests.
 
@@ -55,7 +54,6 @@ def Setup(test_arguments, timeout, cleanup_test_files, tool, build_type,
         cleanup_test_files,
         tool,
         build_type,
-        webkit,
         push_deps,
         constants.BROWSERTEST_TEST_PACKAGE_NAME,
         constants.BROWSERTEST_TEST_ACTIVITY_NAME,
