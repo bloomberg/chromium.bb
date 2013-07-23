@@ -398,6 +398,7 @@ void RenderTextLinux::DrawVisualText(Canvas* canvas) {
   for (GSList* it = current_line_->runs; it; it = it->next) {
     PangoLayoutRun* run = reinterpret_cast<PangoLayoutRun*>(it->data);
     int glyph_count = run->glyphs->num_glyphs;
+    // TODO(msw): Skip painting runs outside the display rect area, like Win.
     if (glyph_count == 0)
       continue;
 

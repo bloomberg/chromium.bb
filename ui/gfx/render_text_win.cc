@@ -463,8 +463,12 @@ void RenderTextWin::DrawVisualText(Canvas* canvas) {
     // Get the run specified by the visual-to-logical map.
     internal::TextRun* run = runs_[visual_to_logical_[i]];
 
-    if (run->glyph_count == 0)
+    // Skip painting empty runs and runs outside the display rect area.
+    if ((run->glyph_count == 0) || (x >= display_rect().right()) ||
+        (x + run->width <= display_rect().x())) {
+      x += run->width;
       continue;
+    }
 
     // Based on WebCore::skiaDrawText.
     pos.resize(run->glyph_count);
@@ -482,6 +486,7 @@ void RenderTextWin::DrawVisualText(Canvas* canvas) {
     renderer.DrawDecorations(x, y, run->width, run->underline, run->strike,
                              run->diagonal_strike);
 
+    DCHECK_EQ(glyph_x - x, run->width);
     x = glyph_x;
   }
 }
