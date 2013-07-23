@@ -199,11 +199,6 @@ String quoteAndEscapeNonPrintables(const String& s)
     return result.toString();
 }
 
-static inline Color colorWithFallback(const RenderObject& o, const Color& color)
-{
-    return color.isValid() ? color : o.resolveColor(CSSPropertyColor);
-}
-
 void RenderTreeAsText::writeRenderObject(TextStream& ts, const RenderObject& o, RenderAsTextBehavior behavior)
 {
     ts << o.renderName();
@@ -304,7 +299,7 @@ void RenderTreeAsText::writeRenderObject(TextStream& ts, const RenderObject& o, 
             else {
                 ts << " (" << box.borderTop() << "px ";
                 printBorderStyle(ts, o.style()->borderTopStyle());
-                Color col = colorWithFallback(o, o.style()->borderTopColor());
+                Color col = o.resolveColor(CSSPropertyBorderTopColor);
                 ts << col.nameForRenderTreeAsText() << ")";
             }
 
@@ -315,7 +310,7 @@ void RenderTreeAsText::writeRenderObject(TextStream& ts, const RenderObject& o, 
                 else {
                     ts << " (" << box.borderRight() << "px ";
                     printBorderStyle(ts, o.style()->borderRightStyle());
-                    Color col = colorWithFallback(o, o.style()->borderRightColor());
+                    Color col = o.resolveColor(CSSPropertyBorderRightColor);
                     ts << col.nameForRenderTreeAsText() << ")";
                 }
             }
@@ -327,7 +322,7 @@ void RenderTreeAsText::writeRenderObject(TextStream& ts, const RenderObject& o, 
                 else {
                     ts << " (" << box.borderBottom() << "px ";
                     printBorderStyle(ts, o.style()->borderBottomStyle());
-                    Color col = colorWithFallback(o, o.style()->borderBottomColor());
+                    Color col = o.resolveColor(CSSPropertyBorderBottomColor);
                     ts << col.nameForRenderTreeAsText() << ")";
                 }
             }
@@ -339,7 +334,7 @@ void RenderTreeAsText::writeRenderObject(TextStream& ts, const RenderObject& o, 
                 else {
                     ts << " (" << box.borderLeft() << "px ";
                     printBorderStyle(ts, o.style()->borderLeftStyle());
-                    Color col = colorWithFallback(o, o.style()->borderLeftColor());
+                    Color col = o.resolveColor(CSSPropertyBorderLeftColor);
                     ts << col.nameForRenderTreeAsText() << ")";
                 }
             }

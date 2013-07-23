@@ -114,7 +114,6 @@ class RenderStyle: public RefCounted<RenderStyle> {
     friend class EditingStyle; // Editing has to only reveal unvisited info.
     friend class CSSComputedStyleDeclaration; // Ignores visited styles, so needs to be able to see unvisited info.
     friend class PropertyWrapperMaybeInvalidColor; // Used by CSS animations. We can't allow them to animate based off visited colors.
-    friend class RenderTreeAsText; // FIXME: Only needed so the render tree can keep lying and dump the wrong colors.  Rebaselining would allow this to be yanked.
     friend class StyleBuilderFunctions; // Sets color styles
     friend class StyleBuilder; // FIXME: Revove this! StyleBuilder::oldApplyProperty reads color().
     friend class StyleResolver; // Sets members directly.
