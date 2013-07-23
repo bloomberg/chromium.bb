@@ -18,7 +18,11 @@ blankWindow.onload = function() {
     blankWindow.eval("location = 'about:blank'");
 
     setTimeout(function() {
-        blankFunc = blankFunc("return window.Function")();
+        try {
+            blankFunc = blankFunc("return window.Function")();
+        } catch (e) {
+            blankFunc = false;
+        }
         if (!blankFunc && window.testRunner) {
             testRunner.notifyDone()
             return;

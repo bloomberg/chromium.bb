@@ -6,10 +6,11 @@ if (window.testRunner)
 
 window.onload = function() {
     var frame = document.getElementsByTagName("iframe")[0];
-    var secret = frame.contentWindow.secret;
-    if (secret)
+    try {
+        var secret = frame.contentWindow.secret;
         alert("FAIL: Iframe was not in a unique origin: " + secret);
-    else
+    } catch (e) {
         alert("PASS: Iframe was in a unique origin");
+    }
 };
 </script>

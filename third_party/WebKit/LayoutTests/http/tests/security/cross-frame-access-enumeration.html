@@ -45,17 +45,23 @@
             }
             log("PASS: Cross frame access by enumerating the window object was denied.");
 
-            var b_winKeys = Object.keys(b_win);
-            if (b_winKeys.indexOf("customWindowProperty") != -1) { 
-                log("FAIL: Cross frame access by getting the keys of the window object was allowed.");
-                return;
+            try {
+                var b_winKeys = Object.keys(b_win);
+                if (b_winKeys.indexOf("customWindowProperty") != -1) { 
+                    log("FAIL: Cross frame access by getting the keys of the window object was allowed.");
+                    return;
+                }
+            } catch (e) {
             }
             log("PASS: Cross frame access by getting the keys of the window object was denied.");
 
-            var b_winPropertyNames = Object.getOwnPropertyNames(b_win);
-            if (b_winPropertyNames.indexOf("customWindowProperty") != -1) {
-                log("FAIL: Cross frame access by getting the property names of the window object was allowed.");
-                return;
+            try {
+                var b_winPropertyNames = Object.getOwnPropertyNames(b_win);
+                if (b_winPropertyNames.indexOf("customWindowProperty") != -1) {
+                    log("FAIL: Cross frame access by getting the property names of the window object was allowed.");
+                    return;
+                }
+            } catch (e) {
             }
             log("PASS: Cross frame access by getting the property names of the window object was denied.");
 
@@ -92,9 +98,8 @@
                     return;
                 }
             } catch (e) {
-                log("PASS: Cross frame access by getting the keys of the Location object was denied.");
+                log("PASS: Cross frame access by getting the property names of the Location object was denied.");
             }
-            log("PASS: Cross frame access by getting the property names of the Location object was denied.");
         }
     </script>
 </head>
