@@ -35,7 +35,7 @@ class FilterOperationResolver {
 private:
     FilterOperationResolver();
 public:
-    static bool createFilterOperations(CSSValue* inValue, RenderStyle* inStyle, const RenderStyle* rootStyle, FilterOperations& outOperations, StyleCustomFilterProgramCache*, StyleResolverState&);
+    static bool createFilterOperations(CSSValue* inValue, const RenderStyle* inStyle, const RenderStyle* rootStyle, FilterOperations& outOperations, StyleCustomFilterProgramCache*, StyleResolverState&);
 };
 
 } // namespace WebCore

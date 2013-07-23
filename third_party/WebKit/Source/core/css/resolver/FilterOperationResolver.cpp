@@ -360,7 +360,7 @@ static PassRefPtr<CustomFilterOperation> createCustomFilterOperation(CSSFilterVa
 }
 
 
-bool FilterOperationResolver::createFilterOperations(CSSValue* inValue, RenderStyle* style, const RenderStyle* rootStyle, FilterOperations& outOperations, StyleCustomFilterProgramCache* customFilterProgramCache, StyleResolverState& state)
+bool FilterOperationResolver::createFilterOperations(CSSValue* inValue, const RenderStyle* style, const RenderStyle* rootStyle, FilterOperations& outOperations, StyleCustomFilterProgramCache* customFilterProgramCache, StyleResolverState& state)
 {
     ASSERT(outOperations.isEmpty());
 

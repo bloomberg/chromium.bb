@@ -51,7 +51,7 @@ TransformBuilder::~TransformBuilder()
 {
 }
 
-static Length convertToFloatLength(CSSPrimitiveValue* primitiveValue, RenderStyle* style, RenderStyle* rootStyle, double multiplier)
+static Length convertToFloatLength(CSSPrimitiveValue* primitiveValue, const RenderStyle* style, const RenderStyle* rootStyle, double multiplier)
 {
     return primitiveValue ? primitiveValue->convertToLength<FixedFloatConversion | PercentConversion | FractionConversion>(style, rootStyle, multiplier) : Length(Undefined);
 }
@@ -85,7 +85,7 @@ static TransformOperation::OperationType getTransformOperationType(CSSTransformV
     return TransformOperation::NONE;
 }
 
-bool TransformBuilder::createTransformOperations(CSSValue* inValue, RenderStyle* style, RenderStyle* rootStyle, TransformOperations& outOperations)
+bool TransformBuilder::createTransformOperations(CSSValue* inValue, const RenderStyle* style, const RenderStyle* rootStyle, TransformOperations& outOperations)
 {
     if (!inValue || !inValue->isValueList()) {
         outOperations.clear();

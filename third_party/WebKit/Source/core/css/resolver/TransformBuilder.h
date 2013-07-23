@@ -45,7 +45,7 @@ public:
     TransformBuilder();
     ~TransformBuilder();
 
-    static bool createTransformOperations(CSSValue* inValue, RenderStyle* inStyle, RenderStyle* rootStyle, TransformOperations& outOperations);
+    static bool createTransformOperations(CSSValue* inValue, const RenderStyle* inStyle, const RenderStyle* rootStyle, TransformOperations& outOperations);
 };
 
 } // namespace WebCore
