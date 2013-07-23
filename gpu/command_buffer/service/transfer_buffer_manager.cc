@@ -8,8 +8,8 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/process_util.h"
 #include "base/debug/trace_event.h"
+#include "base/process/process_handle.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 
 using ::base::SharedMemory;

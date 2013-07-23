@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/process_util.h"
+#include "base/process/process_handle.h"
 #include "build/build_config.h"
 
 using base::SharedMemory;
