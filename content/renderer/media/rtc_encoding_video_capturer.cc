@@ -9,6 +9,12 @@
 
 namespace content {
 
+namespace {
+
+static const unsigned int kMaxBitrateKbps = 50 * 1000;
+
+}  // namespace
+
 // Client of EncodedVideoSource. This object is created and owned by the
 // RtcEncodingVideoCapturer.
 class RtcEncodingVideoCapturer::EncodedVideoSourceClient :
@@ -33,6 +39,12 @@ class RtcEncodingVideoCapturer::EncodedVideoSourceClient :
   media::RuntimeVideoEncodingParameters runtime_params() const;
   void set_round_trip_time(base::TimeDelta round_trip_time);
   void set_callback(webrtc::EncodedImageCallback* callback);
+
+  // Sets target bitrate and framerate.
+  void SetRates(uint32_t target_bitrate, uint32_t frame_rate);
+
+  // Requests key frame.
+  void RequestKeyFrame();
 
  private:
   // Convert buffer to webrtc types and invoke encode complete callback.
@@ -112,6 +124,17 @@ void RtcEncodingVideoCapturer::EncodedVideoSourceClient::OnConfigChanged(
   params_.runtime_params = params;
 }
 
+void RtcEncodingVideoCapturer::EncodedVideoSourceClient::SetRates(
+    uint32_t target_bitrate, uint32_t frame_rate) {
+  params_.runtime_params.target_bitrate = target_bitrate;
+  params_.runtime_params.frames_per_second = frame_rate;
+  encoded_video_source_->TrySetBitstreamConfig(params_.runtime_params);
+}
+
+void RtcEncodingVideoCapturer::EncodedVideoSourceClient::RequestKeyFrame() {
+  encoded_video_source_->RequestKeyFrame();
+}
+
 void RtcEncodingVideoCapturer::EncodedVideoSourceClient::ReportEncodedFrame(
     scoped_refptr<const media::EncodedBitstreamBuffer> buffer) {
   if (!callback_)
@@ -173,13 +196,16 @@ int32_t RtcEncodingVideoCapturer::InitEncode(
   DCHECK(!encoded_video_source_client_);
   if (codecSettings->codecType != rtc_codec_type_)
     return WEBRTC_VIDEO_CODEC_ERR_PARAMETER;
+  if (codecSettings->startBitrate > kMaxBitrateKbps ||
+      codecSettings->maxBitrate > kMaxBitrateKbps)
+    return WEBRTC_VIDEO_CODEC_ERR_PARAMETER;
 
   // Convert |codecSettings| to |params|.
   media::VideoEncodingParameters params;
   params.codec_name = codecSettings->plName;
   params.resolution = gfx::Size(codecSettings->width, codecSettings->height);
-  params.runtime_params.target_bitrate = codecSettings->startBitrate;
-  params.runtime_params.max_bitrate = codecSettings->maxBitrate;
+  params.runtime_params.target_bitrate = codecSettings->startBitrate * 1000;
+  params.runtime_params.max_bitrate = codecSettings->maxBitrate * 1000;
   params.runtime_params.frames_per_second = codecSettings->maxFramerate;
   encoded_video_source_client_.reset(new EncodedVideoSourceClient(
       encoded_video_source_, params, rtc_codec_type_));
@@ -190,7 +216,11 @@ int32_t RtcEncodingVideoCapturer::Encode(
     const webrtc::I420VideoFrame& /* inputImage */,
     const webrtc::CodecSpecificInfo* codecSpecificInfo,
     const std::vector<webrtc::VideoFrameType>* frame_types) {
-  // TODO(hshi): request specific frame type.
+  if (frame_types && !frame_types->empty()) {
+    webrtc::VideoFrameType type = frame_types->front();
+    if (type == webrtc::kKeyFrame)
+      encoded_video_source_client_->RequestKeyFrame();
+  }
   return WEBRTC_VIDEO_CODEC_OK;
 }
 
@@ -221,7 +251,9 @@ int32_t RtcEncodingVideoCapturer::SetRates(uint32_t newBitRate,
                                            uint32_t frameRate) {
   if (!encoded_video_source_client_)
     return WEBRTC_VIDEO_CODEC_UNINITIALIZED;
-  // TODO(hshi): wire up runtime rate control.
+  if (newBitRate > kMaxBitrateKbps)
+    return WEBRTC_VIDEO_CODEC_ERR_PARAMETER;
+  encoded_video_source_client_->SetRates(newBitRate * 1000, frameRate);
   return WEBRTC_VIDEO_CODEC_OK;
 }
 

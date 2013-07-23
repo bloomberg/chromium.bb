@@ -88,6 +88,8 @@ class VideoCaptureImplTest : public ::testing::Test {
                             DeviceCloseEncodedBitstream)
         IPC_MESSAGE_HANDLER(EncodedVideoCaptureHostMsg_TryConfigureBitstream,
                             DeviceSetEncodingConfig)
+        IPC_MESSAGE_HANDLER(EncodedVideoCaptureHostMsg_RequestKeyFrame,
+                            DeviceRequestKeyFrame)
         IPC_MESSAGE_HANDLER(EncodedVideoCaptureHostMsg_BitstreamBufferConsumed,
                             DeviceReturnEncodedBuffer)
         IPC_MESSAGE_UNHANDLED(handled = false)
@@ -122,6 +124,8 @@ class VideoCaptureImplTest : public ::testing::Test {
 
     void DeviceSetEncodingConfig(
         int device_id, media::RuntimeVideoEncodingParameters params) {}
+
+    void DeviceRequestKeyFrame(int device_id) {}
 
     void DeviceReturnEncodedBuffer(int device_id, int buffer_id) {}
   };

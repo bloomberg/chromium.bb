@@ -97,6 +97,7 @@ class CONTENT_EXPORT VideoCaptureImpl
       scoped_refptr<const media::EncodedBitstreamBuffer> buffer) OVERRIDE;
   virtual void TrySetBitstreamConfig(
       const media::RuntimeVideoEncodingParameters& params) OVERRIDE;
+  virtual void RequestKeyFrame() OVERRIDE;
 
   // Stop/resume delivering video frames to clients, based on flag |suspend|.
   virtual void SuspendCapture(bool suspend);

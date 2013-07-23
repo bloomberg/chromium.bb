@@ -15,22 +15,24 @@
 namespace media {
 
 // Data to represent limitations for a particular encoder config.
+// The |max_bitrate| value is in bits per second.
 struct VideoEncodingConfig {
   VideoCodec codec_type;
   std::string codec_name;
   gfx::Size max_resolution;
-  int max_frames_per_second;
-  int max_bitrate;
+  uint32 max_frames_per_second;
+  uint32 max_bitrate;
 };
 
 typedef std::vector<VideoEncodingConfig> VideoEncodingCapabilities;
 
 // Encoding parameters that can be configured during streaming without removing
-// the bitstream first.
+// the bitstream first. The |target_bitrate| and |max_bitrate| values are in
+// bits per second.
 struct RuntimeVideoEncodingParameters {
-  int target_bitrate;
-  int max_bitrate;
-  int frames_per_second;
+  uint32 target_bitrate;
+  uint32 max_bitrate;
+  uint32 frames_per_second;
 };
 
 // Generic video encoding parameters to be configured during initialization

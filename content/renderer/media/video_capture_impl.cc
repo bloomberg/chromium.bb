@@ -143,6 +143,10 @@ void VideoCaptureImpl::TrySetBitstreamConfig(
       device_id_, params));
 }
 
+void VideoCaptureImpl::RequestKeyFrame() {
+  Send(new EncodedVideoCaptureHostMsg_RequestKeyFrame(device_id_));
+}
+
 void VideoCaptureImpl::OnEncodingCapabilitiesAvailable(
     const media::VideoEncodingCapabilities& capabilities) {
   capture_message_loop_proxy_->PostTask(FROM_HERE, base::Bind(

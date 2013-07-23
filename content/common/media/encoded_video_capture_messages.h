@@ -77,6 +77,13 @@ IPC_MESSAGE_CONTROL2(EncodedVideoCaptureHostMsg_TryConfigureBitstream,
                      int /* device_id */,
                      media::RuntimeVideoEncodingParameters /* params */)
 
+// Requests a key frame in the encoded bitstream. Upon receiving this request,
+// browser will try to encode an upcoming captured frame as a key frame. This
+// allows the receiver to quickly recover from data loss. The request is served
+// on a best-effort basis and there is no explicit acknowledgement.
+IPC_MESSAGE_CONTROL1(EncodedVideoCaptureHostMsg_RequestKeyFrame,
+                     int /* device_id */)
+
 // Notifies that the data within a buffer has been processed and it can be
 // reused to encode upcoming bitstream.
 IPC_MESSAGE_CONTROL2(EncodedVideoCaptureHostMsg_BitstreamBufferConsumed,

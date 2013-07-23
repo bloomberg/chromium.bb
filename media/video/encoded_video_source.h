@@ -68,6 +68,9 @@ class EncodedVideoSource {
   // signaling successful change.
   virtual void TrySetBitstreamConfig(
       const RuntimeVideoEncodingParameters& params) = 0;
+
+  // RequestKeyFrame requests a key frame.
+  virtual void RequestKeyFrame() = 0;
 };
 
 }  // namespace media
