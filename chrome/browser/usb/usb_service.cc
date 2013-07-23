@@ -10,7 +10,9 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
+#include "base/synchronization/waitable_event.h"
 #include "chrome/browser/usb/usb_device_handle.h"
+#include "third_party/libusb/src/libusb/interrupt.h"
 #include "third_party/libusb/src/libusb/libusb.h"
 
 #if defined(OS_CHROMEOS)
@@ -27,34 +29,38 @@ using std::vector;
 class UsbEventHandler : public base::PlatformThread::Delegate {
  public:
   explicit UsbEventHandler(PlatformUsbContext context)
-      : running_(true), context_(context) {
-    base::PlatformThread::CreateNonJoinable(0, this);
+      : running_(true),
+        context_(context),
+        thread_handle_(0),
+        started_event_(false, false) {
+    base::PlatformThread::Create(0, this, &thread_handle_);
+    started_event_.Wait();
   }
 
   virtual ~UsbEventHandler() {}
 
   virtual void ThreadMain() OVERRIDE {
     base::PlatformThread::SetName("UsbEventHandler");
-
-    DLOG(INFO) << "UsbEventHandler started.";
-    while (running_) {
+    VLOG(1) << "UsbEventHandler started.";
+    started_event_.Signal();
+    while (running_)
       libusb_handle_events(context_);
-    }
-    DLOG(INFO) << "UsbEventHandler shutting down.";
-    libusb_exit(context_);
-
-    delete this;
+    VLOG(1) << "UsbEventHandler shutting down.";
   }
 
   void Stop() {
     running_ = false;
+    base::subtle::MemoryBarrier();
+    libusb_interrupt_handle_event(context_);
+    base::PlatformThread::Join(thread_handle_);
   }
 
  private:
-  bool running_;
+  volatile bool running_;
   PlatformUsbContext context_;
-
-  DISALLOW_EVIL_CONSTRUCTORS(UsbEventHandler);
+  base::PlatformThreadHandle thread_handle_;
+  base::WaitableEvent started_event_;
+  DISALLOW_COPY_AND_ASSIGN(UsbEventHandler);
 };
 
 UsbService::UsbService() {
@@ -64,9 +70,11 @@ UsbService::UsbService() {
 
 UsbService::~UsbService() {}
 
-void UsbService::Cleanup() {
+void UsbService::Shutdown() {
   event_handler_->Stop();
-  event_handler_ = NULL;
+  delete event_handler_;
+  libusb_exit(context_);
+  context_ = NULL;
 }
 
 void UsbService::FindDevices(const uint16 vendor_id,

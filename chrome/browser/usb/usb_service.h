@@ -27,9 +27,9 @@ class UsbService : public BrowserContextKeyedService {
   UsbService();
   virtual ~UsbService();
 
-  // Cleanup must be invoked before the service is destroyed. It interrupts the
+  // Shutdown must be invoked before the service is destroyed. It interrupts the
   // event handling thread and disposes of open devices.
-  void Cleanup();
+  virtual void Shutdown() OVERRIDE;
 
   // Find all of the devices attached to the system that are identified by
   // |vendor_id| and |product_id|, inserting them into |devices|. Clears
