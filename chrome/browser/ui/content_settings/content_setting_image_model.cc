@@ -174,18 +174,18 @@ void ContentSettingGeolocationImageModel::UpdateFromWebContents(
       TabSpecificContentSettings::FromWebContents(web_contents);
   if (!content_settings)
     return;
-  const GeolocationSettingsState& settings_state = content_settings->
-      geolocation_settings_state();
-  if (settings_state.state_map().empty())
+  const ContentSettingsUsagesState& usages_state = content_settings->
+      geolocation_usages_state();
+  if (usages_state.state_map().empty())
     return;
   set_visible(true);
 
   // If any embedded site has access the allowed icon takes priority over the
   // blocked icon.
-  unsigned int tab_state_flags = 0;
-  settings_state.GetDetailedInfo(NULL, &tab_state_flags);
+  unsigned int state_flags = 0;
+  usages_state.GetDetailedInfo(NULL, &state_flags);
   bool allowed =
-      !!(tab_state_flags & GeolocationSettingsState::TABSTATE_HAS_ANY_ALLOWED);
+      !!(state_flags & ContentSettingsUsagesState::TABSTATE_HAS_ANY_ALLOWED);
   set_icon(allowed ? IDR_ALLOWED_LOCATION : IDR_BLOCKED_LOCATION);
   set_tooltip(l10n_util::GetStringUTF8(allowed ?
       IDS_GEOLOCATION_ALLOWED_TOOLTIP : IDS_GEOLOCATION_BLOCKED_TOOLTIP));

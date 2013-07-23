@@ -12,8 +12,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
+#include "chrome/browser/content_settings/content_settings_usages_state.h"
 #include "chrome/browser/content_settings/local_shared_objects_container.h"
-#include "chrome/browser/geolocation/geolocation_settings_state.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_types.h"
 #include "chrome/common/custom_handlers/protocol_handler.h"
@@ -188,10 +188,10 @@ class TabSpecificContentSettings
   const std::set<std::string>& BlockedResourcesForType(
       ContentSettingsType content_type) const;
 
-  // Returns the GeolocationSettingsState that controls the
+  // Returns the ContentSettingsUsagesState that controls the
   // geolocation API usage on this page.
-  const GeolocationSettingsState& geolocation_settings_state() const {
-    return geolocation_settings_state_;
+  const ContentSettingsUsagesState& geolocation_usages_state() const {
+    return geolocation_usages_state_;
   }
 
   // Call to indicate that there is a protocol handler pending user approval.
@@ -353,7 +353,7 @@ class TabSpecificContentSettings
   LocalSharedObjectsContainer blocked_local_shared_objects_;
 
   // Manages information about Geolocation API usage in this page.
-  GeolocationSettingsState geolocation_settings_state_;
+  ContentSettingsUsagesState geolocation_usages_state_;
 
   // The pending protocol handler, if any. This can be set if
   // registerProtocolHandler was invoked without user gesture.

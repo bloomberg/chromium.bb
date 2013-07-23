@@ -1,14 +1,15 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_GEOLOCATION_GEOLOCATION_SETTINGS_STATE_H_
-#define CHROME_BROWSER_GEOLOCATION_GEOLOCATION_SETTINGS_STATE_H_
+#ifndef CHROME_BROWSER_CONTENT_SETTINGS_CONTENT_SETTINGS_USAGES_STATE_H_
+#define CHROME_BROWSER_CONTENT_SETTINGS_CONTENT_SETTINGS_USAGES_STATE_H_
 
 #include <map>
 #include <set>
 
 #include "chrome/common/content_settings.h"
+#include "chrome/common/content_settings_types.h"
 #include "url/gurl.h"
 
 class Profile;
@@ -17,12 +18,13 @@ namespace content {
 struct LoadCommittedDetails;
 }
 
-// This class manages the geolocation state per tab, and provides information
-// and presentation data about the geolocation usage.
-class GeolocationSettingsState {
+// This class manages a content setting state per tab for a given
+// |ContentSettingsType|, and provides information and presentation data about
+// the content setting usage.
+class ContentSettingsUsagesState {
  public:
-  explicit GeolocationSettingsState(Profile* profile);
-  virtual ~GeolocationSettingsState();
+  ContentSettingsUsagesState(Profile* profile, ContentSettingsType type);
+  virtual ~ContentSettingsUsagesState();
 
   typedef std::map<GURL, ContentSetting> StateMap;
   const StateMap& state_map() const {
@@ -30,7 +32,7 @@ class GeolocationSettingsState {
   }
 
   // Sets the state for |requesting_origin|.
-  void OnGeolocationPermissionSet(const GURL& requesting_origin, bool allowed);
+  void OnPermissionSet(const GURL& requesting_origin, bool allowed);
 
   // Delegated by WebContents to indicate a navigation has happened and we
   // may need to clear our settings.
@@ -62,10 +64,11 @@ class GeolocationSettingsState {
   std::string GURLToFormattedHost(const GURL& url) const;
 
   Profile* profile_;
+  ContentSettingsType type_;
   StateMap state_map_;
   GURL embedder_url_;
 
-  DISALLOW_COPY_AND_ASSIGN(GeolocationSettingsState);
+  DISALLOW_COPY_AND_ASSIGN(ContentSettingsUsagesState);
 };
 
-#endif  // CHROME_BROWSER_GEOLOCATION_GEOLOCATION_SETTINGS_STATE_H_
+#endif  // CHROME_BROWSER_CONTENT_SETTINGS_CONTENT_SETTINGS_USAGES_STATE_H_

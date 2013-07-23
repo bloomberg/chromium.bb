@@ -79,7 +79,7 @@ TabSpecificContentSettings::TabSpecificContentSettings(WebContents* tab)
       profile_(Profile::FromBrowserContext(tab->GetBrowserContext())),
       allowed_local_shared_objects_(profile_),
       blocked_local_shared_objects_(profile_),
-      geolocation_settings_state_(profile_),
+      geolocation_usages_state_(profile_, CONTENT_SETTINGS_TYPE_GEOLOCATION),
       pending_protocol_handler_(ProtocolHandler::EmptyProtocolHandler()),
       previous_protocol_handler_(ProtocolHandler::EmptyProtocolHandler()),
       pending_protocol_handler_setting_(CONTENT_SETTING_DEFAULT),
@@ -450,8 +450,7 @@ void TabSpecificContentSettings::OnFileSystemAccessed(
 void TabSpecificContentSettings::OnGeolocationPermissionSet(
     const GURL& requesting_origin,
     bool allowed) {
-  geolocation_settings_state_.OnGeolocationPermissionSet(requesting_origin,
-                                                         allowed);
+  geolocation_usages_state_.OnPermissionSet(requesting_origin, allowed);
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED,
       content::Source<WebContents>(web_contents()),
@@ -547,11 +546,11 @@ void TabSpecificContentSettings::SetPopupsBlocked(bool blocked) {
 
 void TabSpecificContentSettings::GeolocationDidNavigate(
       const content::LoadCommittedDetails& details) {
-  geolocation_settings_state_.DidNavigate(details);
+  geolocation_usages_state_.DidNavigate(details);
 }
 
 void TabSpecificContentSettings::ClearGeolocationContentSettings() {
-  geolocation_settings_state_.ClearStateMap();
+  geolocation_usages_state_.ClearStateMap();
 }
 
 void TabSpecificContentSettings::SetPepperBrokerAllowed(bool allowed) {

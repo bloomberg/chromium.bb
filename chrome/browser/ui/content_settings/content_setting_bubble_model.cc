@@ -953,11 +953,11 @@ void ContentSettingDomainListBubbleModel::MaybeAddDomainList(
 void ContentSettingDomainListBubbleModel::SetDomainsAndCustomLink() {
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents());
-  const GeolocationSettingsState& settings =
-      content_settings->geolocation_settings_state();
-  GeolocationSettingsState::FormattedHostsPerState formatted_hosts_per_state;
+  const ContentSettingsUsagesState& usages =
+      content_settings->geolocation_usages_state();
+  ContentSettingsUsagesState::FormattedHostsPerState formatted_hosts_per_state;
   unsigned int tab_state_flags = 0;
-  settings.GetDetailedInfo(&formatted_hosts_per_state, &tab_state_flags);
+  usages.GetDetailedInfo(&formatted_hosts_per_state, &tab_state_flags);
   // Divide the tab's current geolocation users into sets according to their
   // permission state.
   MaybeAddDomainList(formatted_hosts_per_state[CONTENT_SETTING_ALLOW],
@@ -966,12 +966,12 @@ void ContentSettingDomainListBubbleModel::SetDomainsAndCustomLink() {
   MaybeAddDomainList(formatted_hosts_per_state[CONTENT_SETTING_BLOCK],
                      IDS_GEOLOCATION_BUBBLE_SECTION_DENIED);
 
-  if (tab_state_flags & GeolocationSettingsState::TABSTATE_HAS_EXCEPTION) {
+  if (tab_state_flags & ContentSettingsUsagesState::TABSTATE_HAS_EXCEPTION) {
     set_custom_link(l10n_util::GetStringUTF8(
         IDS_GEOLOCATION_BUBBLE_CLEAR_LINK));
     set_custom_link_enabled(true);
   } else if (tab_state_flags &
-             GeolocationSettingsState::TABSTATE_HAS_CHANGED) {
+             ContentSettingsUsagesState::TABSTATE_HAS_CHANGED) {
     set_custom_link(l10n_util::GetStringUTF8(
         IDS_GEOLOCATION_BUBBLE_REQUIRE_RELOAD_TO_CLEAR));
   }
@@ -985,12 +985,12 @@ void ContentSettingDomainListBubbleModel::OnCustomLinkClicked() {
   const GURL& embedder_url = web_contents()->GetURL();
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents());
-  const GeolocationSettingsState::StateMap& state_map =
-      content_settings->geolocation_settings_state().state_map();
+  const ContentSettingsUsagesState::StateMap& state_map =
+      content_settings->geolocation_usages_state().state_map();
   HostContentSettingsMap* settings_map =
       profile()->GetHostContentSettingsMap();
 
-  for (GeolocationSettingsState::StateMap::const_iterator it =
+  for (ContentSettingsUsagesState::StateMap::const_iterator it =
        state_map.begin(); it != state_map.end(); ++it) {
     settings_map->SetContentSetting(
         ContentSettingsPattern::FromURLNoWildcard(it->first),

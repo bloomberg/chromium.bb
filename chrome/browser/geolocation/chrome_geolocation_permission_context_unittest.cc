@@ -221,11 +221,11 @@ void GeolocationPermissionContextTests::CheckTabContentsState(
     ContentSetting expected_content_setting) {
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents());
-  const GeolocationSettingsState::StateMap& state_map =
-      content_settings->geolocation_settings_state().state_map();
+  const ContentSettingsUsagesState::StateMap& state_map =
+      content_settings->geolocation_usages_state().state_map();
   EXPECT_EQ(1U, state_map.count(requesting_frame.GetOrigin()));
   EXPECT_EQ(0U, state_map.count(requesting_frame));
-  GeolocationSettingsState::StateMap::const_iterator settings =
+  ContentSettingsUsagesState::StateMap::const_iterator settings =
       state_map.find(requesting_frame.GetOrigin());
   ASSERT_FALSE(settings == state_map.end())
       << "geolocation state not found " << requesting_frame;

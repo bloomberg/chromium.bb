@@ -9,9 +9,9 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/content_settings/content_settings_usages_state.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
-#include "chrome/browser/geolocation/geolocation_settings_state.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -376,9 +376,9 @@ void GeolocationBrowserTest::SetInfoBarResponse(const GURL& requesting_url,
       current_browser_->tab_strip_model()->GetActiveWebContents();
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents);
-  const GeolocationSettingsState& settings_state =
-      content_settings->geolocation_settings_state();
-  size_t state_map_size = settings_state.state_map().size();
+  const ContentSettingsUsagesState& usages_state =
+      content_settings->geolocation_usages_state();
+  size_t state_map_size = usages_state.state_map().size();
   ASSERT_TRUE(infobar_);
   LOG(WARNING) << "will set infobar response";
   {
@@ -395,13 +395,13 @@ void GeolocationBrowserTest::SetInfoBarResponse(const GURL& requesting_url,
   InfoBarService::FromWebContents(web_contents)->RemoveInfoBar(infobar_);
   LOG(WARNING) << "infobar response set";
   infobar_ = NULL;
-  EXPECT_GT(settings_state.state_map().size(), state_map_size);
+  EXPECT_GT(usages_state.state_map().size(), state_map_size);
   GURL requesting_origin(requesting_url.GetOrigin());
-  EXPECT_EQ(1U, settings_state.state_map().count(requesting_origin));
+  EXPECT_EQ(1U, usages_state.state_map().count(requesting_origin));
   ContentSetting expected_setting =
         allowed ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK;
   EXPECT_EQ(expected_setting,
-            settings_state.state_map().find(requesting_origin)->second);
+            usages_state.state_map().find(requesting_origin)->second);
 }
 
 void GeolocationBrowserTest::CheckStringValueFromJavascriptForTab(

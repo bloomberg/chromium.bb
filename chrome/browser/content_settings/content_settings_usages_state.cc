@@ -1,8 +1,8 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/geolocation/geolocation_settings_state.h"
+#include "chrome/browser/content_settings/content_settings_usages_state.h"
 
 #include <string>
 
@@ -16,20 +16,22 @@
 #include "content/public/browser/navigation_entry.h"
 #include "net/base/net_util.h"
 
-GeolocationSettingsState::GeolocationSettingsState(Profile* profile)
-  : profile_(profile) {
+ContentSettingsUsagesState::ContentSettingsUsagesState(Profile* profile,
+                                                       ContentSettingsType type)
+    : profile_(profile),
+      type_(type) {
 }
 
-GeolocationSettingsState::~GeolocationSettingsState() {
+ContentSettingsUsagesState::~ContentSettingsUsagesState() {
 }
 
-void GeolocationSettingsState::OnGeolocationPermissionSet(
+void ContentSettingsUsagesState::OnPermissionSet(
     const GURL& requesting_origin, bool allowed) {
   state_map_[requesting_origin] =
       allowed ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK;
 }
 
-void GeolocationSettingsState::DidNavigate(
+void ContentSettingsUsagesState::DidNavigate(
     const content::LoadCommittedDetails& details) {
   if (details.entry)
     embedder_url_ = details.entry->GetURL();
@@ -47,18 +49,18 @@ void GeolocationSettingsState::DidNavigate(
     state_map_.clear();
 }
 
-void GeolocationSettingsState::ClearStateMap() {
+void ContentSettingsUsagesState::ClearStateMap() {
   state_map_.clear();
 }
 
-void GeolocationSettingsState::GetDetailedInfo(
+void ContentSettingsUsagesState::GetDetailedInfo(
     FormattedHostsPerState* formatted_hosts_per_state,
     unsigned int* tab_state_flags) const {
   DCHECK(tab_state_flags);
   DCHECK(embedder_url_.is_valid());
   ContentSetting default_setting =
       profile_->GetHostContentSettingsMap()->GetDefaultContentSetting(
-          CONTENT_SETTINGS_TYPE_GEOLOCATION, NULL);
+          type_, NULL);
   std::set<std::string> formatted_hosts;
   std::set<std::string> repeated_formatted_hosts;
 
@@ -87,10 +89,7 @@ void GeolocationSettingsState::GetDetailedInfo(
 
     const ContentSetting saved_setting =
         profile_->GetHostContentSettingsMap()->GetContentSetting(
-            i->first,
-            embedder_url_,
-            CONTENT_SETTINGS_TYPE_GEOLOCATION,
-            std::string());
+            i->first, embedder_url_, type_, std::string());
     if (saved_setting != default_setting)
       *tab_state_flags |= TABSTATE_HAS_EXCEPTION;
     if (saved_setting != i->second)
@@ -100,7 +99,7 @@ void GeolocationSettingsState::GetDetailedInfo(
   }
 }
 
-std::string GeolocationSettingsState::GURLToFormattedHost(
+std::string ContentSettingsUsagesState::GURLToFormattedHost(
     const GURL& url) const {
   string16 display_host;
   net::AppendFormattedHost(url,
