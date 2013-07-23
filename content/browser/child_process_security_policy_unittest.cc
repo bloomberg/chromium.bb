@@ -13,6 +13,7 @@
 #include "content/test/test_content_browser_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+#include "webkit/browser/fileapi/isolated_context.h"
 
 namespace content {
 namespace {
@@ -276,6 +277,89 @@ TEST_F(ChildProcessSecurityPolicyTest, SpecificFile) {
   EXPECT_TRUE(p->CanRequestURL(kRendererID, sensitive_url));
 
   p->Remove(kRendererID);
+}
+
+TEST_F(ChildProcessSecurityPolicyTest, FileSystemGrantsTest) {
+  ChildProcessSecurityPolicyImpl* p =
+      ChildProcessSecurityPolicyImpl::GetInstance();
+
+  p->Add(kRendererID);
+  std::string read_id = fileapi::IsolatedContext::GetInstance()->
+      RegisterFileSystemForVirtualPath(fileapi::kFileSystemTypeTest,
+                                       "read_filesystem",
+                                       base::FilePath());
+  std::string read_write_id = fileapi::IsolatedContext::GetInstance()->
+      RegisterFileSystemForVirtualPath(fileapi::kFileSystemTypeTest,
+                                       "read_write_filesystem",
+                                       base::FilePath());
+  std::string copy_into_id = fileapi::IsolatedContext::GetInstance()->
+      RegisterFileSystemForVirtualPath(fileapi::kFileSystemTypeTest,
+                                       "copy_into_filesystem",
+                                       base::FilePath());
+
+  // Test initially having no permissions.
+  EXPECT_FALSE(p->CanReadFileSystem(kRendererID, read_id));
+  EXPECT_FALSE(p->CanReadWriteFileSystem(kRendererID, read_id));
+  EXPECT_FALSE(p->CanCopyIntoFileSystem(kRendererID, read_id));
+
+  EXPECT_FALSE(p->CanReadFileSystem(kRendererID, read_write_id));
+  EXPECT_FALSE(p->CanReadWriteFileSystem(kRendererID, read_write_id));
+  EXPECT_FALSE(p->CanCopyIntoFileSystem(kRendererID, read_write_id));
+
+  EXPECT_FALSE(p->CanReadFileSystem(kRendererID, copy_into_id));
+  EXPECT_FALSE(p->CanReadWriteFileSystem(kRendererID, copy_into_id));
+  EXPECT_FALSE(p->CanCopyIntoFileSystem(kRendererID, copy_into_id));
+
+  // Testing varying combinations of grants and checks.
+  p->GrantReadFileSystem(kRendererID, read_id);
+  EXPECT_TRUE(p->CanReadFileSystem(kRendererID, read_id));
+  EXPECT_FALSE(p->CanReadWriteFileSystem(kRendererID, read_id));
+  EXPECT_FALSE(p->CanCopyIntoFileSystem(kRendererID, read_id));
+
+  p->GrantReadFileSystem(kRendererID, read_write_id);
+  p->GrantWriteFileSystem(kRendererID, read_write_id);
+  EXPECT_TRUE(p->CanReadFileSystem(kRendererID, read_write_id));
+  EXPECT_TRUE(p->CanReadWriteFileSystem(kRendererID, read_write_id));
+  EXPECT_FALSE(p->CanCopyIntoFileSystem(kRendererID, read_write_id));
+
+  p->GrantCopyIntoFileSystem(kRendererID, copy_into_id);
+  EXPECT_FALSE(p->CanReadFileSystem(kRendererID, copy_into_id));
+  EXPECT_FALSE(p->CanReadWriteFileSystem(kRendererID, copy_into_id));
+  EXPECT_TRUE(p->CanCopyIntoFileSystem(kRendererID, copy_into_id));
+
+  // Test revoke permissions on renderer ID removal.
+  p->Remove(kRendererID);
+  EXPECT_FALSE(p->CanReadFileSystem(kRendererID, read_id));
+  EXPECT_FALSE(p->CanReadWriteFileSystem(kRendererID, read_id));
+  EXPECT_FALSE(p->CanCopyIntoFileSystem(kRendererID, read_id));
+
+  EXPECT_FALSE(p->CanReadFileSystem(kRendererID, read_write_id));
+  EXPECT_FALSE(p->CanReadWriteFileSystem(kRendererID, read_write_id));
+  EXPECT_FALSE(p->CanCopyIntoFileSystem(kRendererID, read_write_id));
+
+  EXPECT_FALSE(p->CanReadFileSystem(kRendererID, copy_into_id));
+  EXPECT_FALSE(p->CanReadWriteFileSystem(kRendererID, copy_into_id));
+  EXPECT_FALSE(p->CanCopyIntoFileSystem(kRendererID, copy_into_id));
+
+  // Test having no permissions upon re-adding same renderer ID.
+  p->Add(kRendererID);
+  EXPECT_FALSE(p->CanReadFileSystem(kRendererID, read_id));
+  EXPECT_FALSE(p->CanReadWriteFileSystem(kRendererID, read_id));
+  EXPECT_FALSE(p->CanCopyIntoFileSystem(kRendererID, read_id));
+
+  EXPECT_FALSE(p->CanReadFileSystem(kRendererID, read_write_id));
+  EXPECT_FALSE(p->CanReadWriteFileSystem(kRendererID, read_write_id));
+  EXPECT_FALSE(p->CanCopyIntoFileSystem(kRendererID, read_write_id));
+
+  EXPECT_FALSE(p->CanReadFileSystem(kRendererID, copy_into_id));
+  EXPECT_FALSE(p->CanReadWriteFileSystem(kRendererID, copy_into_id));
+  EXPECT_FALSE(p->CanCopyIntoFileSystem(kRendererID, copy_into_id));
+
+  // Cleanup.
+  p->Remove(kRendererID);
+  fileapi::IsolatedContext::GetInstance()->RevokeFileSystem(read_id);
+  fileapi::IsolatedContext::GetInstance()->RevokeFileSystem(read_write_id);
+  fileapi::IsolatedContext::GetInstance()->RevokeFileSystem(copy_into_id);
 }
 
 TEST_F(ChildProcessSecurityPolicyTest, CanReadFiles) {

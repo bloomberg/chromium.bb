@@ -56,6 +56,9 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   virtual void GrantCreateFileForFileSystem(
       int child_id,
       const std::string& filesystem_id) OVERRIDE;
+  virtual void GrantCopyIntoFileSystem(
+      int child_id,
+      const std::string& filesystem_id) OVERRIDE;
   virtual void GrantScheme(int child_id, const std::string& scheme) OVERRIDE;
   virtual bool CanReadFile(int child_id, const base::FilePath& file) OVERRIDE;
   virtual bool CanReadFileSystem(int child_id,
@@ -63,6 +66,8 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   virtual bool CanReadWriteFileSystem(
       int child_id,
       const std::string& filesystem_id) OVERRIDE;
+  virtual bool CanCopyIntoFileSystem(int child_id,
+                                     const std::string& filesystem_id) OVERRIDE;
 
   // Pseudo schemes are treated differently than other schemes because they
   // cannot be requested like normal URLs.  There is no mechanism for revoking

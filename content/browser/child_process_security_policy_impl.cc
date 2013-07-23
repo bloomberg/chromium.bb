@@ -485,6 +485,14 @@ void ChildProcessSecurityPolicyImpl::GrantCreateFileForFileSystem(
                                 kCreateFilePermissions);
 }
 
+void ChildProcessSecurityPolicyImpl::GrantCopyIntoFileSystem(
+    int child_id, const std::string& filesystem_id) {
+  // TODO(tommycli): These granted permissions a bit too broad, but not abused.
+  // We are fixing in http://crbug.com/262142 and associated CL.
+  GrantPermissionsForFileSystem(child_id, filesystem_id,
+                                kCreateFilePermissions);
+}
+
 void ChildProcessSecurityPolicyImpl::GrantScheme(int child_id,
                                                  const std::string& scheme) {
   base::AutoLock lock(lock_);
@@ -621,6 +629,15 @@ bool ChildProcessSecurityPolicyImpl::CanReadWriteFileSystem(
                                      filesystem_id,
                                      kReadFilePermissions |
                                      kWriteFilePermissions);
+}
+
+bool ChildProcessSecurityPolicyImpl::CanCopyIntoFileSystem(
+    int child_id, const std::string& filesystem_id) {
+  // TODO(tommycli): These granted permissions a bit too broad, but not abused.
+  // We are fixing in http://crbug.com/262142 and associated CL.
+  return HasPermissionsForFileSystem(child_id,
+                                     filesystem_id,
+                                     kCreateFilePermissions);
 }
 
 bool ChildProcessSecurityPolicyImpl::HasPermissionsForFile(
