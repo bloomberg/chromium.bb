@@ -1438,11 +1438,12 @@ TEST_F(GLES2ImplementationTest, ReadPixels2Reads) {
   Cmds expected;
   expected.read1.Init(
       0, 0, kWidth, kHeight / 2, kFormat, kType,
-      mem1.id, mem1.offset, result1.id, result1.offset);
+      mem1.id, mem1.offset, result1.id, result1.offset,
+      false);
   expected.set_token1.Init(GetNextToken());
   expected.read2.Init(
       0, kHeight / 2, kWidth, kHeight / 2, kFormat, kType,
-      mem2.id, mem2.offset, result2.id, result2.offset);
+      mem2.id, mem2.offset, result2.id, result2.offset, false);
   expected.set_token2.Init(GetNextToken());
   scoped_ptr<int8[]> buffer(new int8[kWidth * kHeight * kBytesPerPixel]);
 
@@ -1474,7 +1475,7 @@ TEST_F(GLES2ImplementationTest, ReadPixelsBadFormatType) {
   Cmds expected;
   expected.read.Init(
       0, 0, kWidth, kHeight, kFormat, kType,
-      mem1.id, mem1.offset, result1.id, result1.offset);
+      mem1.id, mem1.offset, result1.id, result1.offset, false);
   expected.set_token.Init(GetNextToken());
   scoped_ptr<int8[]> buffer(new int8[kWidth * kHeight * kBytesPerPixel]);
 

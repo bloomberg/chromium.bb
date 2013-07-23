@@ -114,6 +114,8 @@ class TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
   // Takes ownership of the |callback|.
   virtual void signalSyncPoint(unsigned sync_point,
                                WebGraphicsSyncPointCallback* callback);
+  virtual void signalQuery(WebKit::WebGLId query,
+                           WebGraphicsSyncPointCallback* callback);
 
   virtual void setSwapBuffersCompleteCallbackCHROMIUM(
       WebGraphicsSwapBuffersCompleteCallbackCHROMIUM* callback);

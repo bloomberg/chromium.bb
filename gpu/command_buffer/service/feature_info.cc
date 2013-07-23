@@ -119,7 +119,8 @@ FeatureInfo::FeatureFlags::FeatureFlags()
       enable_shader_name_hashing(false),
       enable_samplers(false),
       ext_draw_buffers(false),
-      ext_frag_depth(false) {
+      ext_frag_depth(false),
+      use_async_readpixels(false) {
 }
 
 FeatureInfo::Workarounds::Workarounds() :
@@ -640,6 +641,16 @@ void FeatureInfo::AddFeatures(const CommandLine& command_line) {
   if (extensions.Contains("GL_EXT_frag_depth") || gfx::HasDesktopGLFeatures()) {
     AddExtensionString("GL_EXT_frag_depth");
     feature_flags_.ext_frag_depth = true;
+  }
+
+  bool ui_gl_fence_works =
+      extensions.Contains("GL_NV_fence") ||
+      extensions.Contains("GL_ARB_sync");
+
+  if (ui_gl_fence_works &&
+      extensions.Contains("GL_ARB_pixel_buffer_object") &&
+      !workarounds_.disable_async_readpixels) {
+    feature_flags_.use_async_readpixels = true;
   }
 
   if (!disallowed_features_.swap_buffer_complete_callback)

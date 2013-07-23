@@ -389,8 +389,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
     {
       "id": 25,
       "cr_bugs": [152225],
-      "description":
-          "Intel OSX drivers prior to mountain lion crashes when using PBOs",
+      "description": "GL_ARB_sync doesn't work on OSX 10.7",
       "os": {
         "type": "macosx",
         "version": {
@@ -398,7 +397,6 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
           "number": "10.8"
         }
       },
-      "vendor_id": "0x8086",
       "features": [
         "disable_async_readpixels"
       ]

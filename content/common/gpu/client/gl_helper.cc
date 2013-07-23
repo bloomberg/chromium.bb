@@ -195,20 +195,24 @@ class GLHelper::CopyTextureToImpl :
             int32 row_stride_bytes_,
             unsigned char* pixels_,
             const base::Callback<void(bool)>& callback_)
-        : size(size_),
+        : done(false),
+          size(size_),
           bytes_per_row(bytes_per_row_),
           row_stride_bytes(row_stride_bytes_),
           pixels(pixels_),
           callback(callback_),
-          buffer(0) {
+          buffer(0),
+          query(0) {
     }
 
+    bool done;
     gfx::Size size;
     int bytes_per_row;
     int row_stride_bytes;
     unsigned char* pixels;
     base::Callback<void(bool)> callback;
     GLuint buffer;
+    WebKit::WebGLId query;
   };
 
   // A readback pipeline that also converts the data to YUV before
@@ -301,7 +305,7 @@ class GLHelper::CopyTextureToImpl :
                        GLHelper::ScalerQuality quality);
 
   static void nullcallback(bool success) {}
-  void ReadbackDone(Request* request);
+  void ReadbackDone(Request *request);
   void FinishRequest(Request* request, bool result);
   void CancelRequests();
 
@@ -389,12 +393,16 @@ void GLHelper::CopyTextureToImpl::ReadbackAsync(
                        NULL,
                        GL_STREAM_READ);
 
+  request->query = context_->createQueryEXT();
+  context_->beginQueryEXT(GL_ASYNC_READ_PIXELS_COMPLETED_CHROMIUM,
+                          request->query);
   context_->readPixels(0, 0, dst_size.width(), dst_size.height(),
                        GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+  context_->endQueryEXT(GL_ASYNC_READ_PIXELS_COMPLETED_CHROMIUM);
   context_->bindBuffer(GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM, 0);
-  cc::SyncPointHelper::SignalSyncPoint(
+  cc::SyncPointHelper::SignalQuery(
       context_,
-      context_->insertSyncPoint(),
+      request->query,
       base::Bind(&CopyTextureToImpl::ReadbackDone, AsWeakPtr(), request));
 }
 
@@ -472,45 +480,59 @@ WebKit::WebGLId GLHelper::CopyTextureToImpl::CopyAndScaleTexture(
                       quality);
 }
 
-void GLHelper::CopyTextureToImpl::ReadbackDone(Request* request) {
+void GLHelper::CopyTextureToImpl::ReadbackDone(Request* finished_request) {
   TRACE_EVENT0("mirror",
                "GLHelper::CopyTextureToImpl::CheckReadbackFramebufferComplete");
-  DCHECK(request == request_queue_.front());
+  finished_request->done = true;
 
-  bool result = false;
-  if (request->buffer != 0) {
-    context_->bindBuffer(GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM,
-                         request->buffer);
-    unsigned char* data = static_cast<unsigned char *>(
-        context_->mapBufferCHROMIUM(
-            GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM, GL_READ_ONLY));
-    if (data) {
-      result = true;
-      if (request->bytes_per_row == request->size.width() * 4 &&
-          request->bytes_per_row == request->row_stride_bytes) {
-        memcpy(request->pixels, data, request->size.GetArea() * 4);
-      } else {
-        unsigned char* out = request->pixels;
-        for (int y = 0; y < request->size.height(); y++) {
-          memcpy(out, data, request->bytes_per_row);
-          out += request->row_stride_bytes;
-          data += request->size.width() * 4;
-        }
-      }
-      context_->unmapBufferCHROMIUM(GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM);
+  // We process transfer requests in the order they were received, regardless
+  // of the order we get the callbacks in.
+  while (!request_queue_.empty()) {
+    Request* request = request_queue_.front();
+    if (!request->done) {
+      break;
     }
-    context_->bindBuffer(GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM, 0);
-  }
 
-  FinishRequest(request, result);
+    bool result = false;
+    if (request->buffer != 0) {
+      context_->bindBuffer(GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM,
+                           request->buffer);
+      unsigned char* data = static_cast<unsigned char *>(
+          context_->mapBufferCHROMIUM(
+              GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM, GL_READ_ONLY));
+      if (data) {
+        result = true;
+        if (request->bytes_per_row == request->size.width() * 4 &&
+            request->bytes_per_row == request->row_stride_bytes) {
+          memcpy(request->pixels, data, request->size.GetArea() * 4);
+        } else {
+          unsigned char* out = request->pixels;
+          for (int y = 0; y < request->size.height(); y++) {
+            memcpy(out, data, request->bytes_per_row);
+            out += request->row_stride_bytes;
+            data += request->size.width() * 4;
+          }
+        }
+        context_->unmapBufferCHROMIUM(GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM);
+      }
+      context_->bindBuffer(GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM, 0);
+    }
+
+    FinishRequest(request, result);
+  }
 }
 
 void GLHelper::CopyTextureToImpl::FinishRequest(Request* request,
                                                 bool result) {
+  TRACE_EVENT0("mirror", "GLHelper::CopyTextureToImpl::FinishRequest");
   DCHECK(request_queue_.front() == request);
   request_queue_.pop();
   request->callback.Run(result);
   ScopedFlush flush(context_);
+  if (request->query != 0) {
+    context_->deleteQueryEXT(request->query);
+    request->query = 0;
+  }
   if (request->buffer != 0) {
     context_->deleteBuffer(request->buffer);
     request->buffer = 0;

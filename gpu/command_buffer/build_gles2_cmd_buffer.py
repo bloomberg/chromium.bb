@@ -826,6 +826,7 @@ _ENUM_LISTS = {
       'GL_COMMANDS_ISSUED_CHROMIUM',
       'GL_LATENCY_QUERY_CHROMIUM',
       'GL_ASYNC_PIXEL_TRANSFERS_COMPLETED_CHROMIUM',
+      'GL_ASYNC_READ_PIXELS_COMPLETED_CHROMIUM',
     ],
   },
   'RenderBufferParameter': {
@@ -1908,7 +1909,8 @@ _FUNCTION_INFO = {
         'GLint x, GLint y, GLsizei width, GLsizei height, '
         'GLenumReadPixelFormat format, GLenumReadPixelType type, '
         'uint32 pixels_shm_id, uint32 pixels_shm_offset, '
-        'uint32 result_shm_id, uint32 result_shm_offset',
+        'uint32 result_shm_id, uint32 result_shm_offset, '
+        'GLboolean async',
     'result': ['uint32'],
     'defer_reads': True,
   },

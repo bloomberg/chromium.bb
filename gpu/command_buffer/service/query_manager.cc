@@ -288,6 +288,62 @@ void CommandLatencyQuery::Destroy(bool /* have_context */) {
 CommandLatencyQuery::~CommandLatencyQuery() {
 }
 
+
+class AsyncReadPixelsCompletedQuery
+    : public QueryManager::Query,
+      public base::SupportsWeakPtr<AsyncReadPixelsCompletedQuery> {
+ public:
+  AsyncReadPixelsCompletedQuery(
+      QueryManager* manager, GLenum target, int32 shm_id, uint32 shm_offset);
+
+  virtual bool Begin() OVERRIDE;
+  virtual bool End(uint32 submit_count) OVERRIDE;
+  virtual bool Process() OVERRIDE;
+  virtual void Destroy(bool have_context) OVERRIDE;
+
+ protected:
+  void Complete();
+  virtual ~AsyncReadPixelsCompletedQuery();
+};
+
+AsyncReadPixelsCompletedQuery::AsyncReadPixelsCompletedQuery(
+    QueryManager* manager, GLenum target, int32 shm_id, uint32 shm_offset)
+    : Query(manager, target, shm_id, shm_offset) {
+}
+
+bool AsyncReadPixelsCompletedQuery::Begin() {
+  return true;
+}
+
+bool AsyncReadPixelsCompletedQuery::End(uint32 submit_count) {
+  if (!AddToPendingQueue(submit_count)) {
+    return false;
+  }
+  manager()->decoder()->WaitForReadPixels(
+      base::Bind(&AsyncReadPixelsCompletedQuery::Complete,
+                 AsWeakPtr()));
+
+  return true;
+}
+
+void AsyncReadPixelsCompletedQuery::Complete() {
+  MarkAsCompleted(1);
+}
+
+bool AsyncReadPixelsCompletedQuery::Process() {
+  return true;
+}
+
+void AsyncReadPixelsCompletedQuery::Destroy(bool /* have_context */) {
+  if (!IsDeleted()) {
+    MarkAsDeleted();
+  }
+}
+
+AsyncReadPixelsCompletedQuery::~AsyncReadPixelsCompletedQuery() {
+}
+
+
 class GetErrorQuery : public QueryManager::Query {
  public:
   GetErrorQuery(
@@ -377,6 +433,10 @@ QueryManager::Query* QueryManager::CreateQuery(
       break;
     case GL_ASYNC_PIXEL_TRANSFERS_COMPLETED_CHROMIUM:
       query = new AsyncPixelTransfersCompletedQuery(
+          this, target, shm_id, shm_offset);
+      break;
+    case GL_ASYNC_READ_PIXELS_COMPLETED_CHROMIUM:
+      query = new AsyncReadPixelsCompletedQuery(
           this, target, shm_id, shm_offset);
       break;
     case GL_GET_ERROR_QUERY_CHROMIUM:

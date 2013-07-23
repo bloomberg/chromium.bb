@@ -48,6 +48,7 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     bool enable_samplers;
     bool ext_draw_buffers;
     bool ext_frag_depth;
+    bool use_async_readpixels;
   };
 
   struct Workarounds {

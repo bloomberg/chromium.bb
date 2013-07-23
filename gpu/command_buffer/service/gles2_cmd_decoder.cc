@@ -59,6 +59,7 @@
 #include "gpu/command_buffer/service/vertex_array_manager.h"
 #include "gpu/command_buffer/service/vertex_attrib_manager.h"
 #include "ui/gl/gl_bindings.h"
+#include "ui/gl/gl_fence.h"
 #include "ui/gl/gl_image.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
@@ -477,6 +478,19 @@ class BackFramebuffer {
   DISALLOW_COPY_AND_ASSIGN(BackFramebuffer);
 };
 
+struct FenceCallback {
+  explicit FenceCallback()
+      : fence(gfx::GLFence::Create()) {
+    DCHECK(fence);
+  }
+  void AddCallback(base::Closure cb) {
+    callbacks.push_back(cb);
+  }
+  std::vector<base::Closure> callbacks;
+  scoped_ptr<gfx::GLFence> fence;
+};
+
+
 // }  // anonymous namespace.
 
 bool GLES2Decoder::GetServiceTextureId(uint32 client_texture_id,
@@ -586,6 +600,8 @@ class GLES2DecoderImpl : public GLES2Decoder {
   virtual bool ProcessPendingQueries() OVERRIDE;
   virtual bool HasMoreIdleWork() OVERRIDE;
   virtual void PerformIdleWork() OVERRIDE;
+
+  virtual void WaitForReadPixels(base::Closure callback) OVERRIDE;
 
   virtual void SetResizeCallback(
       const base::Callback<void(gfx::Size, float)>& callback) OVERRIDE;
@@ -1561,6 +1577,9 @@ class GLES2DecoderImpl : public GLES2Decoder {
            surface_->DeferDraws();
   }
 
+  void ProcessPendingReadPixels();
+  void FinishReadPixels(const cmds::ReadPixels& c, GLuint buffer);
+
   void ForceCompileShaderIfPending(Shader* shader);
 
   // Generate a member function prototype for each command in an automated and
@@ -1728,6 +1747,8 @@ class GLES2DecoderImpl : public GLES2Decoder {
   base::TimeDelta total_processing_commands_time_;
 
   scoped_ptr<GPUTracer> gpu_tracer_;
+
+  std::queue<linked_ptr<FenceCallback> > pending_readpixel_fences_;
 
   DISALLOW_COPY_AND_ASSIGN(GLES2DecoderImpl);
 };
@@ -2820,6 +2841,7 @@ bool GLES2DecoderImpl::MakeCurrent() {
 }
 
 void GLES2DecoderImpl::ProcessFinishedAsyncTransfers() {
+  ProcessPendingReadPixels();
   if (engine() && query_manager_.get())
     query_manager_->ProcessPendingTransferQueries();
 
@@ -3548,6 +3570,7 @@ bool GLES2DecoderImpl::CreateShaderHelper(GLenum type, GLuint client_id) {
 
 void GLES2DecoderImpl::DoFinish() {
   glFinish();
+  ProcessPendingReadPixels();
   ProcessPendingQueries();
 }
 
@@ -6762,6 +6785,96 @@ error::Error GLES2DecoderImpl::HandleVertexAttribDivisorANGLE(
   return error::kNoError;
 }
 
+void GLES2DecoderImpl::FinishReadPixels(
+    const cmds::ReadPixels& c,
+    GLuint buffer) {
+  TRACE_EVENT0("gpu", "GLES2DecoderImpl::FinishReadPixels");
+  GLsizei width = c.width;
+  GLsizei height = c.height;
+  GLenum format = c.format;
+  GLenum type = c.type;
+  typedef cmds::ReadPixels::Result Result;
+  uint32 pixels_size;
+  Result* result = NULL;
+  if (c.result_shm_id != 0) {
+    result = GetSharedMemoryAs<Result*>(
+        c.result_shm_id, c.result_shm_offset, sizeof(*result));
+    if (!result) {
+      if (buffer != 0) {
+        glDeleteBuffersARB(1, &buffer);
+      }
+      return;
+    }
+  }
+  GLES2Util::ComputeImageDataSizes(
+      width, height, format, type, state_.pack_alignment, &pixels_size,
+      NULL, NULL);
+  void* pixels = GetSharedMemoryAs<void*>(
+      c.pixels_shm_id, c.pixels_shm_offset, pixels_size);
+  if (!pixels) {
+    if (buffer != 0) {
+      glDeleteBuffersARB(1, &buffer);
+    }
+    return;
+  }
+
+  if (buffer != 0) {
+    glBindBuffer(GL_PIXEL_PACK_BUFFER_ARB, buffer);
+    void* data = glMapBuffer(GL_PIXEL_PACK_BUFFER_ARB, GL_READ_ONLY);
+    memcpy(pixels, data, pixels_size);
+    // GL_PIXEL_PACK_BUFFER_ARB is currently unused, so we don't
+    // have to restore the state.
+    glUnmapBuffer(GL_PIXEL_PACK_BUFFER_ARB);
+    glBindBuffer(GL_PIXEL_PACK_BUFFER_ARB, 0);
+    glDeleteBuffersARB(1, &buffer);
+  }
+
+  if (result != NULL) {
+    *result = true;
+  }
+
+  GLenum read_format = GetBoundReadFrameBufferInternalFormat();
+  uint32 channels_exist = GLES2Util::GetChannelsForFormat(read_format);
+  if ((channels_exist & 0x0008) == 0 &&
+      workarounds().clear_alpha_in_readpixels) {
+    // Set the alpha to 255 because some drivers are buggy in this regard.
+    uint32 temp_size;
+
+    uint32 unpadded_row_size;
+    uint32 padded_row_size;
+    if (!GLES2Util::ComputeImageDataSizes(
+            width, 2, format, type, state_.pack_alignment, &temp_size,
+            &unpadded_row_size, &padded_row_size)) {
+      return;
+    }
+    // NOTE: Assumes the type is GL_UNSIGNED_BYTE which was true at the time
+    // of this implementation.
+    if (type != GL_UNSIGNED_BYTE) {
+      return;
+    }
+    switch (format) {
+      case GL_RGBA:
+      case GL_BGRA_EXT:
+      case GL_ALPHA: {
+        int offset = (format == GL_ALPHA) ? 0 : 3;
+        int step = (format == GL_ALPHA) ? 1 : 4;
+        uint8* dst = static_cast<uint8*>(pixels) + offset;
+        for (GLint yy = 0; yy < height; ++yy) {
+          uint8* end = dst + unpadded_row_size;
+          for (uint8* d = dst; d < end; d += step) {
+            *d = 255;
+          }
+          dst += padded_row_size;
+        }
+        break;
+      }
+      default:
+        break;
+    }
+  }
+}
+
+
 error::Error GLES2DecoderImpl::HandleReadPixels(
     uint32 immediate_data_size, const cmds::ReadPixels& c) {
   if (ShouldDeferReads())
@@ -6772,6 +6885,7 @@ error::Error GLES2DecoderImpl::HandleReadPixels(
   GLsizei height = c.height;
   GLenum format = c.format;
   GLenum type = c.type;
+  GLboolean async = c.async;
   if (width < 0 || height < 0) {
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glReadPixels", "dimensions < 0");
     return error::kNoError;
@@ -6871,6 +6985,25 @@ error::Error GLES2DecoderImpl::HandleReadPixels(
       dst += padded_row_size;
     }
   } else {
+    if (async && features().use_async_readpixels) {
+      GLuint buffer;
+      glGenBuffersARB(1, &buffer);
+      glBindBuffer(GL_PIXEL_PACK_BUFFER_ARB, buffer);
+      glBufferData(GL_PIXEL_PACK_BUFFER_ARB, pixels_size, NULL, GL_STREAM_READ);
+      GLenum error = glGetError();
+      if (error == GL_NO_ERROR) {
+        glReadPixels(x, y, width, height, format, type, 0);
+        pending_readpixel_fences_.push(linked_ptr<FenceCallback>(
+            new FenceCallback()));
+        WaitForReadPixels(base::Bind(
+            &GLES2DecoderImpl::FinishReadPixels,
+            base::internal::SupportsWeakPtrBase::StaticAsWeakPtr
+            <GLES2DecoderImpl>(this),
+            c, buffer));
+        glBindBuffer(GL_PIXEL_PACK_BUFFER_ARB, 0);
+        return error::kNoError;
+      }
+    }
     glReadPixels(x, y, width, height, format, type, pixels);
   }
   GLenum error = LOCAL_PEEK_GL_ERROR("glReadPixels");
@@ -6878,51 +7011,7 @@ error::Error GLES2DecoderImpl::HandleReadPixels(
     if (result != NULL) {
       *result = true;
     }
-
-    GLenum read_format = GetBoundReadFrameBufferInternalFormat();
-    uint32 channels_exist = GLES2Util::GetChannelsForFormat(read_format);
-    if ((channels_exist & 0x0008) == 0 &&
-        workarounds().clear_alpha_in_readpixels) {
-      // Set the alpha to 255 because some drivers are buggy in this regard.
-      uint32 temp_size;
-
-      uint32 unpadded_row_size;
-      uint32 padded_row_size;
-      if (!GLES2Util::ComputeImageDataSizes(
-          width, 2, format, type, state_.pack_alignment, &temp_size,
-          &unpadded_row_size, &padded_row_size)) {
-        LOCAL_SET_GL_ERROR(
-            GL_INVALID_VALUE, "glReadPixels", "dimensions out of range");
-        return error::kNoError;
-      }
-      // NOTE: Assumes the type is GL_UNSIGNED_BYTE which was true at the time
-      // of this implementation.
-      if (type != GL_UNSIGNED_BYTE) {
-        LOCAL_SET_GL_ERROR(
-            GL_INVALID_OPERATION, "glReadPixels",
-            "unsupported readPixel format");
-        return error::kNoError;
-      }
-      switch (format) {
-        case GL_RGBA:
-        case GL_BGRA_EXT:
-        case GL_ALPHA: {
-          int offset = (format == GL_ALPHA) ? 0 : 3;
-          int step = (format == GL_ALPHA) ? 1 : 4;
-          uint8* dst = static_cast<uint8*>(pixels) + offset;
-          for (GLint yy = 0; yy < height; ++yy) {
-            uint8* end = dst + unpadded_row_size;
-            for (uint8* d = dst; d < end; d += step) {
-              *d = 255;
-            }
-            dst += padded_row_size;
-          }
-          break;
-        }
-        default:
-          break;
-      }
-    }
+    FinishReadPixels(c, 0);
   }
 
   return error::kNoError;
@@ -9124,11 +9213,35 @@ bool GLES2DecoderImpl::ProcessPendingQueries() {
   return query_manager_->HavePendingQueries();
 }
 
+// Note that if there are no pending readpixels right now,
+// this function will call the callback immediately.
+void GLES2DecoderImpl::WaitForReadPixels(base::Closure callback) {
+  if (features().use_async_readpixels && !pending_readpixel_fences_.empty()) {
+    pending_readpixel_fences_.back()->callbacks.push_back(callback);
+  } else {
+    callback.Run();
+  }
+}
+
+void GLES2DecoderImpl::ProcessPendingReadPixels() {
+  while (!pending_readpixel_fences_.empty() &&
+         pending_readpixel_fences_.front()->fence->HasCompleted()) {
+    std::vector<base::Closure> callbacks =
+        pending_readpixel_fences_.front()->callbacks;
+    pending_readpixel_fences_.pop();
+    for (size_t i = 0; i < callbacks.size(); i++) {
+      callbacks[i].Run();
+    }
+  }
+}
+
 bool GLES2DecoderImpl::HasMoreIdleWork() {
-  return async_pixel_transfer_manager_->NeedsProcessMorePendingTransfers();
+  return !pending_readpixel_fences_.empty() ||
+      async_pixel_transfer_manager_->NeedsProcessMorePendingTransfers();
 }
 
 void GLES2DecoderImpl::PerformIdleWork() {
+  ProcessPendingReadPixels();
   if (!async_pixel_transfer_manager_->NeedsProcessMorePendingTransfers())
     return;
   async_pixel_transfer_manager_->ProcessMorePendingTransfers();
@@ -9146,6 +9259,7 @@ error::Error GLES2DecoderImpl::HandleBeginQueryEXT(
     case GL_COMMANDS_ISSUED_CHROMIUM:
     case GL_LATENCY_QUERY_CHROMIUM:
     case GL_ASYNC_PIXEL_TRANSFERS_COMPLETED_CHROMIUM:
+    case GL_ASYNC_READ_PIXELS_COMPLETED_CHROMIUM:
     case GL_GET_ERROR_QUERY_CHROMIUM:
       break;
     default:
@@ -9158,6 +9272,8 @@ error::Error GLES2DecoderImpl::HandleBeginQueryEXT(
       break;
   }
 
+  // TODO(hubbe): Make it possible to have one query per type running at the
+  // same time.
   if (state_.current_query.get()) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_OPERATION, "glBeginQueryEXT", "query already in progress");

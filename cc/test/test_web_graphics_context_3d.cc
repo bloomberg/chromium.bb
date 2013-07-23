@@ -415,6 +415,12 @@ void TestWebGraphicsContext3D::signalSyncPoint(
   sync_point_callbacks_.push_back(callback);
 }
 
+void TestWebGraphicsContext3D::signalQuery(
+    WebKit::WebGLId query,
+    WebGraphicsSyncPointCallback* callback) {
+  sync_point_callbacks_.push_back(callback);
+}
+
 void TestWebGraphicsContext3D::setSwapBuffersCompleteCallbackCHROMIUM(
     WebGraphicsSwapBuffersCompleteCallbackCHROMIUM* callback) {
   if (support_swapbuffers_complete_callback_)

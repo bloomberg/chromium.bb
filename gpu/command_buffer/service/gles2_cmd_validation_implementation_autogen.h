@@ -300,6 +300,7 @@ static const GLenum valid_query_target_table[] = {
   GL_COMMANDS_ISSUED_CHROMIUM,
   GL_LATENCY_QUERY_CHROMIUM,
   GL_ASYNC_PIXEL_TRANSFERS_COMPLETED_CHROMIUM,
+  GL_ASYNC_READ_PIXELS_COMPLETED_CHROMIUM,
 };
 
 static const GLenum valid_read_pixel_format_table[] = {
