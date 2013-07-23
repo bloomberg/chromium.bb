@@ -23,7 +23,6 @@
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/manifest.h"
-#include "chrome/common/url_constants.h"
 #include "content/public/child/image_decoder_utils.h"
 #include "content/public/common/common_param_traits.h"
 #include "extensions/common/constants.h"
@@ -37,7 +36,6 @@
 
 namespace errors = extension_manifest_errors;
 namespace keys = extension_manifest_keys;
-namespace filenames = extension_filenames;
 
 namespace {
 
@@ -162,7 +160,7 @@ bool Unpacker::Run() {
 
   // <profile>/Extensions/CRX_INSTALL
   temp_install_dir_ =
-      extension_path_.DirName().AppendASCII(filenames::kTempExtensionName);
+      extension_path_.DirName().AppendASCII(kTempExtensionName);
 
   if (!file_util::CreateDirectory(temp_install_dir_)) {
     SetUTF16Error(
@@ -229,7 +227,7 @@ bool Unpacker::DumpImagesToFile() {
   IPC::WriteParam(&pickle, internal_data_->decoded_images);
 
   base::FilePath path = extension_path_.DirName().AppendASCII(
-      filenames::kDecodedImagesFilename);
+      kDecodedImagesFilename);
   if (!file_util::WriteFile(path, static_cast<const char*>(pickle.data()),
                             pickle.size())) {
     SetError("Could not write image data to disk.");
@@ -244,7 +242,7 @@ bool Unpacker::DumpMessageCatalogsToFile() {
   IPC::WriteParam(&pickle, *parsed_catalogs_.get());
 
   base::FilePath path = extension_path_.DirName().AppendASCII(
-      filenames::kDecodedMessageCatalogsFilename);
+      kDecodedMessageCatalogsFilename);
   if (!file_util::WriteFile(path, static_cast<const char*>(pickle.data()),
                             pickle.size())) {
     SetError("Could not write message catalogs to disk.");

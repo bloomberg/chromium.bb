@@ -17,12 +17,12 @@
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/feature_switch.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_interrupt_reasons.h"
+#include "extensions/common/constants.h"
 #include "grit/generated_resources.h"
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -551,7 +551,7 @@ bool DownloadTargetDeterminer::ShouldPromptForDownload(
   //    don't bother asking where to keep it.
   if (download_prefs_->PromptForDownload() &&
       !download_crx_util::IsExtensionDownload(*download_) &&
-      !extensions::Extension::IsExtension(filename) &&
+      !filename.MatchesExtension(extensions::kExtensionFileExtension) &&
       !download_prefs_->IsAutoOpenEnabledBasedOnExtension(filename))
     return true;
 

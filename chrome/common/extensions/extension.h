@@ -178,9 +178,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // Checks to see if the extension has a valid ID.
   static bool IdIsValid(const std::string& id);
 
-  // Returns true if the specified file is an extension.
-  static bool IsExtension(const base::FilePath& file_name);
-
   // See Type definition in Manifest.
   Manifest::Type GetType() const;
 

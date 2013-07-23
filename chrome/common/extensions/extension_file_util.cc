@@ -18,7 +18,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
-#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "chrome/common/extensions/extension.h"
@@ -208,7 +207,7 @@ std::vector<base::FilePath> FindPrivateKeyFiles(
                                  base::FileEnumerator::FILES);
   for (base::FilePath current = traversal.Next(); !current.empty();
        current = traversal.Next()) {
-    if (!current.MatchesExtension(chrome::kExtensionKeyFileExtension))
+    if (!current.MatchesExtension(extensions::kExtensionKeyFileExtension))
       continue;
 
     std::string key_contents;

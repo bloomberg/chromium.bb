@@ -482,7 +482,7 @@ ExtensionProtocolHandler::MaybeCreateJob(
 
   std::string path = request->url().path();
   if (path.size() > 1 &&
-      path.substr(1) == extension_filenames::kGeneratedBackgroundPageFilename) {
+      path.substr(1) == extensions::kGeneratedBackgroundPageFilename) {
     return new GeneratedBackgroundPageJob(
         request, network_delegate, extension, content_security_policy);
   }

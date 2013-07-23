@@ -9,7 +9,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_creator.h"
-#include "chrome/common/chrome_constants.h"
+#include "extensions/common/constants.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -45,11 +45,11 @@ PackExtensionJob::~PackExtensionJob() {}
 
 void PackExtensionJob::Run() {
   crx_file_out_ = base::FilePath(root_directory_.value() +
-                           chrome::kExtensionFileExtension);
+                                 kExtensionFileExtension);
 
   if (key_file_.empty())
     key_file_out_ = base::FilePath(root_directory_.value() +
-                             chrome::kExtensionKeyFileExtension);
+                                   kExtensionKeyFileExtension);
 
   // TODO(aa): Need to internationalize the errors that ExtensionCreator
   // returns. See bug 20734.

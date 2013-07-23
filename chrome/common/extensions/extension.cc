@@ -20,7 +20,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/version.h"
-#include "chrome/common/chrome_constants.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/manifest_handler.h"
@@ -28,7 +27,7 @@
 #include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/common/extensions/permissions/permissions_data.h"
 #include "chrome/common/extensions/permissions/permissions_info.h"
-#include "chrome/common/url_constants.h"
+#include "content/public/common/url_constants.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/id_util.h"
@@ -183,11 +182,6 @@ bool Extension::IdIsValid(const std::string& id) {
       return false;
 
   return true;
-}
-
-// static
-bool Extension::IsExtension(const base::FilePath& file_name) {
-  return file_name.MatchesExtension(chrome::kExtensionFileExtension);
 }
 
 Manifest::Type Extension::GetType() const {

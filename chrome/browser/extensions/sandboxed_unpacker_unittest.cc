@@ -97,8 +97,7 @@ class SandboxedUnpackerTest : public testing::Test {
   }
 
   base::FilePath GetInstallPath() {
-    return client_->temp_dir().AppendASCII(
-        extension_filenames::kTempExtensionName);
+    return client_->temp_dir().AppendASCII(kTempExtensionName);
   }
 
  protected:

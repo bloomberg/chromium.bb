@@ -4,6 +4,8 @@
 
 #include "extensions/common/constants.h"
 
+#include "base/files/file_path.h"
+
 namespace extensions {
 
 const char kExtensionScheme[] = "chrome-extension";
@@ -19,4 +21,20 @@ const base::FilePath::CharType kPlatformSpecificFolder[] =
 
 const char kInstallDirectoryName[] = "Extensions";
 
-} // namespace extensions
+const char kTempExtensionName[] = "CRX_INSTALL";
+
+const char kDecodedImagesFilename[] = "DECODED_IMAGES";
+
+const char kDecodedMessageCatalogsFilename[] = "DECODED_MESSAGE_CATALOGS";
+
+const char kGeneratedBackgroundPageFilename[] =
+    "_generated_background_page.html";
+
+const char kModulesDir[] = "_modules";
+
+const base::FilePath::CharType kExtensionFileExtension[] =
+    FILE_PATH_LITERAL(".crx");
+const base::FilePath::CharType kExtensionKeyFileExtension[] =
+    FILE_PATH_LITERAL(".pem");
+
+}  // namespace extensions

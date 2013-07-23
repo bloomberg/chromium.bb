@@ -13,6 +13,9 @@
 
   'target_defaults': {
     'sources': [
+      # TODO(yoz): Create an extension_constants target for these.
+      '../extensions/common/constants.cc',
+      '../extensions/common/constants.h',
       'common/chrome_constants.cc',
       'common/chrome_constants.h',
       'common/chrome_paths.cc',

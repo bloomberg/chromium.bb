@@ -10,9 +10,9 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/version.h"
-#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
 
 namespace keys = extension_manifest_keys;
@@ -50,7 +50,7 @@ void SharedModuleInfo::ParseImportedPath(const std::string& path,
                                          std::string* import_relative_path) {
   std::vector<std::string> tokens;
   Tokenize(path, std::string("/"), &tokens);
-  if (tokens.size() > 2 && tokens[0] == extension_filenames::kModulesDir &&
+  if (tokens.size() > 2 && tokens[0] == kModulesDir &&
       Extension::IdIsValid(tokens[1])) {
     *import_id = tokens[1];
     *import_relative_path = tokens[2];
@@ -63,7 +63,7 @@ void SharedModuleInfo::ParseImportedPath(const std::string& path,
 bool SharedModuleInfo::IsImportedPath(const std::string& path) {
   std::vector<std::string> tokens;
   Tokenize(path, std::string("/"), &tokens);
-  if (tokens.size() > 2 && tokens[0] == extension_filenames::kModulesDir &&
+  if (tokens.size() > 2 && tokens[0] == kModulesDir &&
       Extension::IdIsValid(tokens[1])) {
     return true;
   }
@@ -224,5 +224,4 @@ const std::vector<std::string> SharedModuleHandler::Keys() const {
   return std::vector<std::string>(keys, keys + arraysize(keys));
 }
 
-}  // extensions
-
+}  // namespace extensions

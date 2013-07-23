@@ -11,11 +11,11 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/permissions/api_permission_set.h"
 #include "chrome/common/extensions/permissions/permissions_data.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -57,8 +57,7 @@ GURL BackgroundInfo::GetBackgroundURL(const Extension* extension) {
   const BackgroundInfo& info = GetBackgroundInfo(extension);
   if (info.background_scripts_.empty())
     return info.background_url_;
-  return extension->GetResourceURL(
-      extension_filenames::kGeneratedBackgroundPageFilename);
+  return extension->GetResourceURL(kGeneratedBackgroundPageFilename);
 }
 
 // static

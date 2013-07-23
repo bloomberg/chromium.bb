@@ -56,26 +56,6 @@ namespace extension_urls {
   extern const char kGalleryBrowsePrefix[];
 }  // namespace extension_urls
 
-namespace extension_filenames {
-  // The name of a temporary directory to install an extension into for
-  // validation before finalizing install.
-  extern const char kTempExtensionName[];
-
-  // The file to write our decoded images to, relative to the extension_path.
-  extern const char kDecodedImagesFilename[];
-
-  // The file to write our decoded message catalogs to, relative to the
-  // extension_path.
-  extern const char kDecodedMessageCatalogsFilename[];
-
-  // The filename to use for a background page generated from
-  // background.scripts.
-  extern const char kGeneratedBackgroundPageFilename[];
-
-  // Path to imported modules.
-  extern const char kModulesDir[];
-}
-
 namespace extension_misc {
   // Matches chrome.windows.WINDOW_ID_NONE.
   const int kUnknownWindowId = -1;

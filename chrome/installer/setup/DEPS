@@ -1,4 +1,5 @@
 include_rules = [
   "+chrome/app",
   "+courgette",
+  "+extensions/common/constants.h",
 ]

@@ -10,14 +10,13 @@
 #include "base/values.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/utility/extensions/unpacker.h"
+#include "extensions/common/constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace errors = extension_manifest_errors;
-namespace filenames = extension_filenames;
 namespace keys = extension_manifest_keys;
 
 namespace extensions {
@@ -134,7 +133,7 @@ TEST_F(UnpackerTest, UnzipDirectoryError) {
   const char* kExpected = "Could not create directory for unzipping: ";
   SetupUnpacker("good_package.crx");
   base::FilePath path =
-      temp_dir_.path().AppendASCII(filenames::kTempExtensionName);
+      temp_dir_.path().AppendASCII(kTempExtensionName);
   ASSERT_TRUE(file_util::WriteFile(path, "foo", 3));
   EXPECT_FALSE(unpacker_->Run());
   EXPECT_TRUE(StartsWith(unpacker_->error_message(),

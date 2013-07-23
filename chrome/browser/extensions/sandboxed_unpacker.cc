@@ -24,7 +24,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_utility_messages.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
@@ -182,7 +181,7 @@ bool FindWritableTempLocation(const base::FilePath& extensions_dir,
 bool ReadImagesFromFile(const base::FilePath& extension_path,
                         DecodedImages* images) {
   base::FilePath path =
-      extension_path.AppendASCII(extension_filenames::kDecodedImagesFilename);
+      extension_path.AppendASCII(kDecodedImagesFilename);
   std::string file_str;
   if (!file_util::ReadFileToString(path, &file_str))
     return false;
@@ -198,7 +197,7 @@ bool ReadImagesFromFile(const base::FilePath& extension_path,
 bool ReadMessageCatalogsFromFile(const base::FilePath& extension_path,
                                  base::DictionaryValue* catalogs) {
   base::FilePath path = extension_path.AppendASCII(
-      extension_filenames::kDecodedMessageCatalogsFilename);
+      kDecodedMessageCatalogsFilename);
   std::string file_str;
   if (!file_util::ReadFileToString(path, &file_str))
     return false;
@@ -264,8 +263,7 @@ void SandboxedUnpacker::Start() {
     return;  // ReportFailure() already called.
 
   // Initialize the path that will eventually contain the unpacked extension.
-  extension_root_ = temp_dir_.path().AppendASCII(
-      extension_filenames::kTempExtensionName);
+  extension_root_ = temp_dir_.path().AppendASCII(kTempExtensionName);
   PATH_LENGTH_HISTOGRAM("Extensions.SandboxUnpackUnpackedCrxPathLength",
                         extension_root_);
 

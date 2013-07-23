@@ -144,8 +144,6 @@ const char    kInitialProfile[] = "Default";
 const char    kMultiProfileDirPrefix[] = "Profile ";
 const base::FilePath::CharType kGuestProfileDir[] = FPL("Guest Profile");
 const wchar_t kBrowserResourcesDll[] = L"chrome.dll";
-const base::FilePath::CharType kExtensionFileExtension[] = FPL(".crx");
-const base::FilePath::CharType kExtensionKeyFileExtension[] = FPL(".pem");
 
 // filenames
 #if defined(OS_ANDROID)

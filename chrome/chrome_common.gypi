@@ -53,8 +53,6 @@
       'sources': [
         '../apps/app_shim/app_shim_launch.h',
         '../apps/app_shim/app_shim_messages.h',
-        '../extensions/common/constants.cc',
-        '../extensions/common/constants.h',
         '../extensions/common/crx_file.cc',
         '../extensions/common/crx_file.h',
         '../extensions/common/draggable_region.cc',

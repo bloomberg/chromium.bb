@@ -13,6 +13,7 @@
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/features/base_feature_provider.h"
 #include "chrome/common/extensions/features/feature.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -46,7 +47,7 @@ TEST_F(ExtensionManifestBackgroundTest, BackgroundScripts) {
 
   EXPECT_TRUE(BackgroundInfo::HasBackgroundPage(extension.get()));
   EXPECT_EQ(
-      std::string("/") + extension_filenames::kGeneratedBackgroundPageFilename,
+      std::string("/") + kGeneratedBackgroundPageFilename,
       BackgroundInfo::GetBackgroundURL(extension.get()).path());
 
   manifest->SetString("background_page", "monkey.html");

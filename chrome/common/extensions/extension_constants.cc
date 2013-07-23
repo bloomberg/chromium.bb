@@ -90,24 +90,6 @@ const char kGalleryBrowsePrefix[] = "https://chrome.google.com/webstore";
 
 }  // namespace extension_urls
 
-namespace extension_filenames {
-
-const char kTempExtensionName[] = "CRX_INSTALL";
-
-// The file to write our decoded images to, relative to the extension_path.
-const char kDecodedImagesFilename[] = "DECODED_IMAGES";
-
-// The file to write our decoded message catalogs to, relative to the
-// extension_path.
-const char kDecodedMessageCatalogsFilename[] = "DECODED_MESSAGE_CATALOGS";
-
-const char kGeneratedBackgroundPageFilename[] =
-    "_generated_background_page.html";
-
-const char kModulesDir[] = "_modules";
-
-}  // namespace extension_filenames
-
 namespace extension_misc {
 
 const char kBookmarkManagerId[] = "eemcgdkfndhakfknompkggombfjjjeno";
