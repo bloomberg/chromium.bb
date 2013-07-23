@@ -13,16 +13,18 @@ namespace devtools_instrumentation {
 namespace internal {
 const char kCategory[] = "cc,devtools";
 const char kLayerId[] = "layerId";
+const char kLayerTreeId[] = "layerTreeId";
 }
 
 const char kPaintLayer[] = "PaintLayer";
 const char kRasterTask[] = "RasterTask";
 const char kImageDecodeTask[] = "ImageDecodeTask";
 const char kPaintSetup[] = "PaintSetup";
+const char kUpdateLayer[] = "UpdateLayer";
 
 class ScopedLayerTask {
  public:
-  explicit ScopedLayerTask(const char* event_name, int layer_id)
+  ScopedLayerTask(const char* event_name, int layer_id)
     : event_name_(event_name) {
     TRACE_EVENT_BEGIN1(internal::kCategory, event_name_,
         internal::kLayerId, layer_id);
@@ -32,6 +34,26 @@ class ScopedLayerTask {
   }
  private:
   const char* event_name_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedLayerTask);
+};
+
+class ScopedLayerTreeTask {
+ public:
+  ScopedLayerTreeTask(const char* event_name,
+                      int layer_id,
+                      uint64 tree_id)
+    : event_name_(event_name) {
+    TRACE_EVENT_BEGIN2(internal::kCategory, event_name_,
+        internal::kLayerId, layer_id, internal::kLayerTreeId, tree_id);
+  }
+  ~ScopedLayerTreeTask() {
+    TRACE_EVENT_END0(internal::kCategory, event_name_);
+  }
+ private:
+  const char* event_name_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedLayerTreeTask);
 };
 
 struct ScopedLayerObjectTracker
@@ -43,6 +65,7 @@ struct ScopedLayerObjectTracker
             layer_id) {
   }
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(ScopedLayerObjectTracker);
 };
 

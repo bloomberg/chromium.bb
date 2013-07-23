@@ -18,6 +18,7 @@
 #include "cc/animation/layer_animation_controller.h"
 #include "cc/base/math_util.h"
 #include "cc/debug/benchmark_instrumentation.h"
+#include "cc/debug/devtools_instrumentation.h"
 #include "cc/debug/overdraw_metrics.h"
 #include "cc/debug/rendering_stats_instrumentation.h"
 #include "cc/input/top_controls_manager.h"
@@ -73,6 +74,8 @@ scoped_ptr<LayerTreeHost> LayerTreeHost::Create(
   return layer_tree_host.Pass();
 }
 
+static int s_next_tree_id = 1;
+
 LayerTreeHost::LayerTreeHost(LayerTreeHostClient* client,
                              const LayerTreeSettings& settings)
     : animating_(false),
@@ -97,11 +100,11 @@ LayerTreeHost::LayerTreeHost(LayerTreeHostClient* client,
       has_transparent_background_(false),
       partial_texture_update_requests_(0),
       in_paint_layer_contents_(false),
-      total_frames_used_for_lcd_text_metrics_(0) {
+      total_frames_used_for_lcd_text_metrics_(0),
+      tree_id_(s_next_tree_id++) {
   if (settings_.accelerated_animation_enabled)
     animation_registrar_ = AnimationRegistrar::Create();
   s_num_layer_tree_instances++;
-
   rendering_stats_instrumentation_->set_record_rendering_stats(
       debug_state_.RecordRenderingStats());
 }
@@ -883,6 +886,10 @@ void LayerTreeHost::PaintMasksForRenderSurface(Layer* render_surface_layer,
 
   Layer* mask_layer = render_surface_layer->mask_layer();
   if (mask_layer) {
+    devtools_instrumentation::ScopedLayerTreeTask
+        update_layer(devtools_instrumentation::kUpdateLayer,
+                     mask_layer->id(),
+                     id());
     *did_paint_content |= mask_layer->Update(queue, NULL);
     *need_more_updates |= mask_layer->NeedMoreUpdates();
   }
@@ -891,6 +898,10 @@ void LayerTreeHost::PaintMasksForRenderSurface(Layer* render_surface_layer,
       render_surface_layer->replica_layer() ?
       render_surface_layer->replica_layer()->mask_layer() : NULL;
   if (replica_mask_layer) {
+    devtools_instrumentation::ScopedLayerTreeTask
+        update_layer(devtools_instrumentation::kUpdateLayer,
+                     replica_mask_layer->id(),
+                     id());
     *did_paint_content |= replica_mask_layer->Update(queue, NULL);
     *need_more_updates |= replica_mask_layer->NeedMoreUpdates();
   }
@@ -934,6 +945,8 @@ void LayerTreeHost::PaintLayerContents(
       PaintMasksForRenderSurface(
           *it, queue, did_paint_content, need_more_updates);
     } else if (it.represents_itself()) {
+      devtools_instrumentation::ScopedLayerTreeTask
+          update_layer(devtools_instrumentation::kUpdateLayer, it->id(), id());
       DCHECK(!it->paint_properties().bounds.IsEmpty());
       *did_paint_content |= it->Update(queue, &occlusion_tracker);
       *need_more_updates |= it->NeedMoreUpdates();

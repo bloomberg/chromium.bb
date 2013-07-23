@@ -253,6 +253,7 @@ class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
   bool in_paint_layer_contents() const { return in_paint_layer_contents_; }
 
   bool UsingSharedMemoryResources();
+  int id() const { return tree_id_; }
 
  protected:
   LayerTreeHost(LayerTreeHostClient* client, const LayerTreeSettings& settings);
@@ -367,6 +368,7 @@ class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
     int64 total_num_cc_layers_will_use_lcd_text;
   };
   LCDTextMetrics lcd_text_metrics_;
+  int tree_id_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerTreeHost);
 };

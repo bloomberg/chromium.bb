@@ -359,6 +359,10 @@ void RenderWidgetCompositor::SetLatencyInfo(
   layer_tree_host_->SetLatencyInfo(latency_info);
 }
 
+int RenderWidgetCompositor::GetLayerTreeId() const {
+  return layer_tree_host_->id();
+}
+
 bool RenderWidgetCompositor::initialize(cc::LayerTreeSettings settings) {
   scoped_refptr<base::MessageLoopProxy> compositor_message_loop_proxy =
       RenderThreadImpl::current()->compositor_message_loop_proxy();

@@ -49,6 +49,7 @@ class RenderWidgetCompositor : public WebKit::WebLayerTreeView,
   void SetOverdrawBottomHeight(float overdraw_bottom_height);
   void SetNeedsRedrawRect(gfx::Rect damage_rect);
   void SetLatencyInfo(const ui::LatencyInfo& latency_info);
+  int GetLayerTreeId() const;
 
   // WebLayerTreeView implementation.
   virtual void setSurfaceReady();

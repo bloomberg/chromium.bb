@@ -939,8 +939,10 @@ void RenderViewImpl::Initialize(RenderViewImplParams* params) {
   // The next group of objects all implement RenderViewObserver, so are deleted
   // along with the RenderView automatically.
   devtools_agent_ = new DevToolsAgent(this);
+  if (RenderWidgetCompositor* rwc = compositor()) {
+    webview()->devToolsAgent()->setLayerTreeId(rwc->GetLayerTreeId());
+  }
   mouse_lock_dispatcher_ = new RenderViewMouseLockDispatcher(this);
-
   new ImageLoadingHelper(this);
 
   // Create renderer_accessibility_ if needed.
@@ -2814,6 +2816,14 @@ void RenderViewImpl::didHandleGestureEvent(
   RenderWidget::didHandleGestureEvent(event, event_cancelled);
   FOR_EACH_OBSERVER(RenderViewObserver, observers_,
                     DidHandleGestureEvent(event));
+}
+
+void RenderViewImpl::initializeLayerTreeView() {
+  RenderWidget::initializeLayerTreeView();
+  RenderWidgetCompositor* rwc = compositor();
+  if (!rwc || !webview() || !webview()->devToolsAgent())
+    return;
+  webview()->devToolsAgent()->setLayerTreeId(rwc->GetLayerTreeId());
 }
 
 // WebKit::WebFrameClient -----------------------------------------------------

@@ -410,6 +410,7 @@ class CONTENT_EXPORT RenderViewImpl
   virtual void didActivateCompositor(int input_handler_identifier);
   virtual void didHandleGestureEvent(const WebKit::WebGestureEvent& event,
                                      bool event_cancelled) OVERRIDE;
+  virtual void initializeLayerTreeView() OVERRIDE;
 
   // WebKit::WebViewClient implementation --------------------------------------
 
