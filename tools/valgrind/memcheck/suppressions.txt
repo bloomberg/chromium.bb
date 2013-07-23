@@ -7395,3 +7395,19 @@
    fun:_ZN7testing13PrintToStringIN5media12_GLOBAL__N_112TestScenarioEEESsRKT_
    fun:_ZN7testing8internal25ParameterizedTestCaseInfoIN5media21AudioPowerMonitorTestEE13RegisterTestsEv
 }
+{
+   quic_socket_utils_write_packet_msg_name
+   Memcheck:Param
+   socketcall.sendmsg(msg.msg_name)
+   obj:/lib/x86_64-linux-gnu/libpthread-2.15.so
+   fun:_ZN3net5tools15QuicSocketUtils11WritePacketEiPKcmRKSt6vectorIhSaIhEERKNS_10IPEndPointEPi
+   ...
+}
+{
+   quic_socket_utils_write_packet_msg_control
+   Memcheck:Param
+   socketcall.sendmsg(msg.msg_control)
+   obj:/lib/x86_64-linux-gnu/libpthread-2.15.so
+   fun:_ZN3net5tools15QuicSocketUtils11WritePacketEiPKcmRKSt6vectorIhSaIhEERKNS_10IPEndPointEPi
+   ...
+}

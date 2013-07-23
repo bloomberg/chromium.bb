@@ -89,6 +89,7 @@ int QuicSocketUtils::ReadPacket(int fd, char* buffer, size_t buf_len,
   hdr.msg_namelen = sizeof(sockaddr_storage);
   hdr.msg_iov = &iov;
   hdr.msg_iovlen = 1;
+  hdr.msg_flags = 0;
 
   struct cmsghdr *cmsg = (struct cmsghdr *) cbuf;
   cmsg->cmsg_len = arraysize(cbuf);
@@ -143,6 +144,7 @@ int QuicSocketUtils::WritePacket(int fd, const char* buffer, size_t buf_len,
   hdr.msg_namelen = sizeof(raw_address);
   hdr.msg_iov = &iov;
   hdr.msg_iovlen = 1;
+  hdr.msg_flags  = 0;
 
   const int kSpaceForIp = CMSG_SPACE(sizeof(in6_pktinfo));
   char cbuf[kSpaceForIp];
