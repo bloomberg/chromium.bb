@@ -19,6 +19,9 @@ class HeapcheckWrapper(object):
   SANITY_TEST_SUPPRESSION = "Heapcheck sanity test"
   LEAK_REPORT_RE = re.compile(
      'Leak of ([0-9]*) bytes in ([0-9]*) objects allocated from:')
+  # Workaround for http://crbug.com/132867, see below.
+  HOOKED_ALLOCATOR_RE = re.compile(
+     'Hooked allocator frame not found, returning empty trace')
   STACK_LINE_RE = re.compile('\s*@\s*(?:0x)?[0-9a-fA-F]+\s*([^\n]*)')
   BORING_CALLERS = common.BoringCallers(mangled=False, use_re_wildcards=True)
 
@@ -91,6 +94,7 @@ class HeapcheckWrapper(object):
     # Statistics grouped by suppression description:
     # [hit count, bytes, objects].
     used_suppressions = {}
+    hooked_allocator_line_encountered = False
     for line in log_lines:
       line = line.rstrip()  # remove the trailing \n
       match = self.STACK_LINE_RE.match(line)
@@ -165,7 +169,11 @@ class HeapcheckWrapper(object):
         if match:
           cur_leak_signature = map(int, match.groups())
         else:
-          print line
+          match = self.HOOKED_ALLOCATOR_RE.match(line)
+          if match:
+            hooked_allocator_line_encountered = True
+          else:
+            print line
     # Print the list of suppressions used.
     is_sane = False
     if used_suppressions:
@@ -189,6 +197,10 @@ class HeapcheckWrapper(object):
         for line in histo[count]:
           print line
       print '-----------------------------------------------------'
+    if hooked_allocator_line_encountered:
+      print ('WARNING: Workaround for http://crbug.com/132867 (tons of '
+             '"Hooked allocator frame not found, returning empty trace") '
+             'in effect.')
     if check_sanity and not is_sane:
       logging.error("Sanity check failed")
       return 2
