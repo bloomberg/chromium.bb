@@ -60,6 +60,10 @@ html[dir=rtl] #downloads-actions {
   -webkit-margin-start: 0;
 }
 
+#open-downloads-folder {
+  -webkit-margin-end: 16px;
+}
+
 #downloads-display {
   max-width: 740px;
 }
