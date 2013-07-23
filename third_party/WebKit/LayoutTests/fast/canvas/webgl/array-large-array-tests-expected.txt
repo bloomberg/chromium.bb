@@ -1,0 +1,14 @@
+Verifies allocation of large array buffers
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+PASS Construction of huge Float32Array threw exception
+PASS Construction of huge Float64Array threw exception
+PASS Construction of huge Int16Array threw exception
+PASS Construction of huge Int32Array threw exception
+PASS Construction of huge Uint16Array threw exception
+PASS Construction of huge Uint32Array threw exception
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

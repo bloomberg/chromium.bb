@@ -31,7 +31,6 @@
 #include "config.h"
 #include "V8XMLHttpRequest.h"
 
-#include "V8ArrayBufferView.h"
 #include "V8Blob.h"
 #include "V8Document.h"
 #include "V8FormData.h"
@@ -40,6 +39,7 @@
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8Utilities.h"
 #include "bindings/v8/custom/V8ArrayBufferCustom.h"
+#include "bindings/v8/custom/V8ArrayBufferViewCustom.h"
 #include "core/dom/Document.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/page/Frame.h"

@@ -25,32 +25,63 @@
 #include "config.h"
 #include "bindings/v8/custom/V8ArrayBufferViewCustom.h"
 
-#include "V8ArrayBufferViewCustomScript.h"
-#include "bindings/v8/V8HiddenPropertyName.h"
-#include "bindings/v8/V8ScriptRunner.h"
+#include "bindings/v8/custom/V8DataViewCustom.h"
+#include "bindings/v8/custom/V8Float32ArrayCustom.h"
+#include "bindings/v8/custom/V8Float64ArrayCustom.h"
+#include "bindings/v8/custom/V8Int16ArrayCustom.h"
+#include "bindings/v8/custom/V8Int32ArrayCustom.h"
+#include "bindings/v8/custom/V8Int8ArrayCustom.h"
+#include "bindings/v8/custom/V8Uint16ArrayCustom.h"
+#include "bindings/v8/custom/V8Uint32ArrayCustom.h"
+#include "bindings/v8/custom/V8Uint8ArrayCustom.h"
+#include "bindings/v8/custom/V8Uint8ClampedArrayCustom.h"
 
 #include <v8.h>
 
 namespace WebCore {
 
-bool copyElements(v8::Handle<v8::Object> destArray, v8::Handle<v8::Object> srcArray, uint32_t length, uint32_t offset, v8::Isolate* isolate)
+using namespace WTF;
+
+ArrayBufferView* V8ArrayBufferView::toNative(v8::Handle<v8::Object> object)
 {
-    v8::Handle<v8::Value> prototype_value = destArray->GetPrototype();
-    if (prototype_value.IsEmpty() || !prototype_value->IsObject())
-        return false;
-    v8::Handle<v8::Object> prototype = prototype_value.As<v8::Object>();
-    v8::Handle<v8::Value> value = prototype->GetHiddenValue(V8HiddenPropertyName::typedArrayHiddenCopyMethod());
-    if (value.IsEmpty()) {
-        String source(reinterpret_cast<const char*>(V8ArrayBufferViewCustomScript_js), sizeof(V8ArrayBufferViewCustomScript_js));
-        value = V8ScriptRunner::compileAndRunInternalScript(v8String(source, isolate), isolate);
-        prototype->SetHiddenValue(V8HiddenPropertyName::typedArrayHiddenCopyMethod(), value);
+    ASSERT(object->IsArrayBufferView());
+    void* viewPtr = object->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex);
+    if (viewPtr)
+        return reinterpret_cast<ArrayBufferView*>(viewPtr);
+
+    if (object->IsUint8Array()) {
+        return V8Uint8Array::toNative(object);
     }
-    if (value.IsEmpty() || !value->IsFunction())
-        return false;
-    v8::Handle<v8::Function> copy_method = value.As<v8::Function>();
-    v8::Handle<v8::Value> arguments[3] = { srcArray, v8::Uint32::New(length), v8::Uint32::New(offset) };
-    V8ScriptRunner::callInternalFunction(copy_method, destArray, WTF_ARRAY_LENGTH(arguments), arguments, isolate);
-    return true;
+    if (object->IsInt8Array()) {
+        return V8Int8Array::toNative(object);
+    }
+    if (object->IsUint16Array()) {
+        return V8Uint16Array::toNative(object);
+    }
+    if (object->IsInt16Array()) {
+        return V8Int16Array::toNative(object);
+    }
+    if (object->IsUint32Array()) {
+        return V8Uint32Array::toNative(object);
+    }
+    if (object->IsInt32Array()) {
+        return V8Int32Array::toNative(object);
+    }
+    if (object->IsFloat32Array()) {
+        return V8Float32Array::toNative(object);
+    }
+    if (object->IsFloat64Array()) {
+        return V8Float64Array::toNative(object);
+    }
+    if (object->IsUint8ClampedArray()) {
+        return V8Uint8ClampedArray::toNative(object);
+    }
+    if (object->IsDataView()) {
+        return V8DataView::toNative(object);
+    }
+    ASSERT_NOT_REACHED();
+    return 0;
 }
 
-}
+
+} // namespace WebCore
