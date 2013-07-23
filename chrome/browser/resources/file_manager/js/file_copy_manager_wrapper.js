@@ -10,27 +10,18 @@
  * @constructor
  */
 function FileCopyManagerWrapper() {
-  this.status_ = {
-    pendingItems: 0,
-    pendingFiles: 0,
-    pendingDirectories: 0,
-    pendingBytes: 0,
+  this.running_ = false;
 
-    completedItems: 0,
-    completedFiles: 0,
-    completedDirectories: 0,
-    completedBytes: 0,
+  var onEventBound = this.onEvent_.bind(this);
+  chrome.runtime.getBackgroundPage(function(backgroundPage) {
+    var fileCopyManager = backgroundPage.FileCopyManager.getInstance();
+    fileCopyManager.addListener(onEventBound);
 
-    totalItems: 0,
-    totalFiles: 0,
-    totalDirectories: 0,
-    totalBytes: 0,
-
-    percentage: NaN,
-    pendingCopies: 0,
-    pendingMoves: 0,
-    filename: ''  // In case pendingItems == 1
-  };
+    // Register removing the listener when the window is closed.
+    chrome.app.window.current().onClosed.addListener(function() {
+      fileCopyManager.removeListener(onEventBound);
+    });
+  });
 }
 
 /**
@@ -50,24 +41,13 @@ FileCopyManagerWrapper.getInstance = function() {
 };
 
 /**
- * Load background page and call callback with copy manager as an argument.
- * @param {function} callback Function with FileCopyManager as a parameter.
- * @private
- */
-FileCopyManagerWrapper.prototype.getCopyManagerAsync_ = function(callback) {
-  chrome.runtime.getBackgroundPage(function(backgroundPage) {
-    var fileCopyManager = backgroundPage.FileCopyManager.getInstance();
-    fileCopyManager.initialize(callback.bind(this, fileCopyManager));
-  });
-};
-
-/**
  * Called be FileCopyManager to raise an event in this instance of FileManager.
  * @param {string} eventName Event name.
  * @param {Object} eventArgs Arbitratry field written to event object.
+ * @private
  */
-FileCopyManagerWrapper.prototype.onEvent = function(eventName, eventArgs) {
-  this.status_ = eventArgs.status;
+FileCopyManagerWrapper.prototype.onEvent_ = function(eventName, eventArgs) {
+  this.running_ = eventArgs.status.totalFiles > 0;
 
   var event = new cr.Event(eventName);
   for (var arg in eventArgs)
@@ -78,10 +58,22 @@ FileCopyManagerWrapper.prototype.onEvent = function(eventName, eventArgs) {
 };
 
 /**
- * @return {Object} Status object.
+ * @return {boolean} True if there is a running task.
  */
-FileCopyManagerWrapper.prototype.getStatus = function() {
-  return this.status_;
+FileCopyManagerWrapper.prototype.isRunning = function() {
+  return this.running_;
+};
+
+/**
+ * Load background page and call callback with copy manager as an argument.
+ * @param {function} callback Function with FileCopyManager as a parameter.
+ * @private
+ */
+FileCopyManagerWrapper.prototype.getCopyManagerAsync_ = function(callback) {
+  chrome.runtime.getBackgroundPage(function(backgroundPage) {
+    var fileCopyManager = backgroundPage.FileCopyManager.getInstance();
+    fileCopyManager.initialize(callback.bind(this, fileCopyManager));
+  });
 };
 
 /**

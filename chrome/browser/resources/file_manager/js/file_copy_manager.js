@@ -14,26 +14,24 @@ function FileCopyManager() {
   this.cancelRequested_ = false;
   this.cancelCallback_ = null;
   this.unloadTimeout_ = null;
+  this.listeners_ = [];
 
   window.addEventListener('error', function(e) {
     this.log_('Unhandled error: ', e.message, e.filename + ':' + e.lineno);
   }.bind(this));
 }
 
-var fileCopyManagerInstance = null;
-
 /**
  * Get FileCopyManager instance. In case is hasn't been initialized, a new
  * instance is created.
  *
- * @param {DirectoryEntry} root Root entry.
  * @return {FileCopyManager} A FileCopyManager instance.
  */
-FileCopyManager.getInstance = function(root) {
-  if (fileCopyManagerInstance === null) {
-    fileCopyManagerInstance = new FileCopyManager(root);
-  }
-  return fileCopyManagerInstance;
+FileCopyManager.getInstance = function() {
+  if (!FileCopyManager.instance_)
+    FileCopyManager.instance_ = new FileCopyManager();
+
+  return FileCopyManager.instance_;
 };
 
 /**
@@ -347,13 +345,28 @@ FileCopyManager.prototype.sendEvent_ = function(eventName, eventArgs) {
     return;  // Swallow events until cancellation complete.
 
   eventArgs.status = this.getStatus();
-
-  var windows = getContentWindows();
-  for (var i = 0; i < windows.length; i++) {
-    var w = windows[i];
-    if (w.FileCopyManagerWrapper)
-      w.FileCopyManagerWrapper.getInstance().onEvent(eventName, eventArgs);
+  for (var i = 0; i < this.listeners_.length; ++i) {
+    this.listeners_[i](eventName, eventArgs);
   }
+};
+
+/**
+ * Adds a listener for running task events.
+ * @param {function(string, Object)} listener A listener to be added.
+ */
+FileCopyManager.prototype.addListener = function(listener) {
+  this.listeners_.push(listener);
+};
+
+/**
+ * Removes the listener for running task events. If the listener is not added
+ * by addListener(), it is simply ignored.
+ * @param {function(string, Object)} listener A listener to be removed.
+ */
+FileCopyManager.prototype.removeListener = function(listener) {
+  var index = this.listeners_.indexOf(listener);
+  if (index >= 0)
+    this.listeners_.splice(index, 1);
 };
 
 /**

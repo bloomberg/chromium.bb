@@ -2956,8 +2956,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         return;
 
       case '27':  // Escape => Cancel dialog.
-        if (this.copyManager_ &&
-            this.copyManager_.getStatus().totalFiles != 0) {
+        if (this.copyManager_ && this.copyManager_.isRunning()) {
           // If there is a copy in progress, ESC will cancel it.
           event.preventDefault();
           this.copyManager_.requestCancel();

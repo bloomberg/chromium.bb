@@ -237,10 +237,13 @@ ButterBar.prototype.transferType_ = function() {
 
 /**
  * Set up butter bar for showing copy progress.
+ *
+ * @param {Object} progress Copy status object created by
+ *     FileCopyManager.getStatus().
  * @private
  */
-ButterBar.prototype.showProgress_ = function() {
-  this.progress_ = this.copyManager_.getStatus();
+ButterBar.prototype.showProgress_ = function(progress) {
+  this.progress_ = progress;
   var options = {
     progress: this.progress_.percentage,
     actions: {},
@@ -278,12 +281,12 @@ ButterBar.prototype.onCopyProgress_ = function(event) {
     case 'BEGIN':
       this.showTimeout_ = setTimeout(function() {
         this.showTimeout_ = null;
-        this.showProgress_();
+        this.showProgress_(event.status);
       }.bind(this), 500);
       break;
 
     case 'PROGRESS':
-      this.showProgress_();
+      this.showProgress_(event.status);
       break;
 
     case 'SUCCESS':
@@ -296,7 +299,7 @@ ButterBar.prototype.onCopyProgress_ = function(event) {
       break;
 
     case 'ERROR':
-      this.progress_ = this.copyManager_.getStatus();
+      this.progress_ = event.status;
       if (event.error.reason === 'TARGET_EXISTS') {
         var name = event.error.data.name;
         if (event.error.data.isDirectory)
