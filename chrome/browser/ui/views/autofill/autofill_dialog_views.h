@@ -123,6 +123,7 @@ class AutofillDialogViews : public AutofillDialogView,
   virtual views::View* CreateOverlayView() OVERRIDE;
   virtual int GetDialogButtons() const OVERRIDE;
   virtual string16 GetDialogButtonLabel(ui::DialogButton button) const OVERRIDE;
+  virtual bool ShouldDefaultButtonBeBlue() const OVERRIDE;
   virtual bool IsDialogButtonEnabled(ui::DialogButton button) const OVERRIDE;
   virtual views::View* CreateExtraView() OVERRIDE;
   virtual views::View* CreateTitlebarExtraView() OVERRIDE;

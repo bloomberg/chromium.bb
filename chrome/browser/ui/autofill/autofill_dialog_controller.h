@@ -194,12 +194,14 @@ class AutofillDialogController {
   // A button in the dialog's overlay has been pressed.
   virtual void OverlayButtonPressed() = 0;
 
-  // Called when the view has been cancelled.
-  virtual void OnCancel() = 0;
+  // Called when the view has been cancelled. Returns true if the dialog should
+  // now close, or false to keep it open.
+  virtual bool OnCancel() = 0;
 
   // Called when the view has been accepted. This could be to submit the payment
-  // info or to handle a required action.
-  virtual void OnAccept() = 0;
+  // info or to handle a required action. Returns true if the dialog should now
+  // close, or false to keep it open.
+  virtual bool OnAccept() = 0;
 
   // Returns the profile for this dialog.
   virtual Profile* profile() = 0;

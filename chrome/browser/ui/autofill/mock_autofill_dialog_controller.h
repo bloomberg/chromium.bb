@@ -70,8 +70,8 @@ class MockAutofillDialogController : public AutofillDialogController {
                void(DialogNotification::Type, bool));
   MOCK_METHOD1(LegalDocumentLinkClicked, void(const ui::Range&));
   MOCK_METHOD0(OverlayButtonPressed, void());
-  MOCK_METHOD0(OnCancel, void());
-  MOCK_METHOD0(OnAccept, void());
+  MOCK_METHOD0(OnCancel, bool());
+  MOCK_METHOD0(OnAccept, bool());
   MOCK_METHOD0(profile, Profile*());
   MOCK_METHOD0(web_contents, content::WebContents*());
  private:

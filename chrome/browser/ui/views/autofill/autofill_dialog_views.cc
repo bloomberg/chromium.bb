@@ -1470,6 +1470,10 @@ string16 AutofillDialogViews::GetDialogButtonLabel(ui::DialogButton button)
       controller_->ConfirmButtonText() : controller_->CancelButtonText();
 }
 
+bool AutofillDialogViews::ShouldDefaultButtonBeBlue() const {
+  return true;
+}
+
 bool AutofillDialogViews::IsDialogButtonEnabled(ui::DialogButton button) const {
   return controller_->IsDialogButtonEnabled(button);
 }
@@ -1510,17 +1514,15 @@ views::View* AutofillDialogViews::CreateOverlayView() {
 }
 
 bool AutofillDialogViews::Cancel() {
-  controller_->OnCancel();
-  return true;
+  return controller_->OnCancel();
 }
 
 bool AutofillDialogViews::Accept() {
   if (ValidateForm())
-    controller_->OnAccept();
-  else if (!validity_map_.empty())
-    validity_map_.begin()->first->RequestFocus();
+    return controller_->OnAccept();
 
-  // |controller_| decides when to hide the dialog.
+  if (!validity_map_.empty())
+    validity_map_.begin()->first->RequestFocus();
   return false;
 }
 

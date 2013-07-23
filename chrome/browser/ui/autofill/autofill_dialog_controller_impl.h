@@ -172,8 +172,8 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
                                                 bool checked) OVERRIDE;
   virtual void LegalDocumentLinkClicked(const ui::Range& range) OVERRIDE;
   virtual void OverlayButtonPressed() OVERRIDE;
-  virtual void OnCancel() OVERRIDE;
-  virtual void OnAccept() OVERRIDE;
+  virtual bool OnCancel() OVERRIDE;
+  virtual bool OnAccept() OVERRIDE;
   virtual Profile* profile() OVERRIDE;
   virtual content::WebContents* web_contents() OVERRIDE;
 

@@ -715,14 +715,15 @@ string16 AutofillDialogControllerImpl::EditSuggestionText() const {
 }
 
 string16 AutofillDialogControllerImpl::CancelButtonText() const {
-  if (autocheckout_state_ == AUTOCHECKOUT_ERROR)
-    return l10n_util::GetStringUTF16(IDS_OK);
-  if (autocheckout_state_ == AUTOCHECKOUT_SUCCESS)
-    return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_CONTINUE_BUTTON);
   return l10n_util::GetStringUTF16(IDS_CANCEL);
 }
 
 string16 AutofillDialogControllerImpl::ConfirmButtonText() const {
+  if (autocheckout_state_ == AUTOCHECKOUT_ERROR)
+    return l10n_util::GetStringUTF16(IDS_OK);
+  if (autocheckout_state_ == AUTOCHECKOUT_SUCCESS)
+    return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_CONTINUE_BUTTON);
+
   return l10n_util::GetStringUTF16(IsSubmitPausedOn(wallet::VERIFY_CVV) ?
       IDS_AUTOFILL_DIALOG_VERIFY_BUTTON : IDS_AUTOFILL_DIALOG_SUBMIT_BUTTON);
 }
@@ -786,9 +787,11 @@ bool AutofillDialogControllerImpl::ShouldOfferToSaveInChrome() const {
 }
 
 int AutofillDialogControllerImpl::GetDialogButtons() const {
-  if (autocheckout_state_ != AUTOCHECKOUT_NOT_STARTED)
+  if (autocheckout_state_ == AUTOCHECKOUT_IN_PROGRESS)
     return ui::DIALOG_BUTTON_CANCEL;
-  return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
+  if (autocheckout_state_ == AUTOCHECKOUT_NOT_STARTED)
+    return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
+  return ui::DIALOG_BUTTON_OK;
 }
 
 bool AutofillDialogControllerImpl::IsDialogButtonEnabled(
@@ -796,14 +799,20 @@ bool AutofillDialogControllerImpl::IsDialogButtonEnabled(
   if (button == ui::DIALOG_BUTTON_OK) {
     if (IsSubmitPausedOn(wallet::VERIFY_CVV))
       return true;
-    if (is_submitting_ || ShouldShowSpinner())
+
+    if (ShouldShowSpinner())
       return false;
+
+    if (is_submitting_) {
+      return autocheckout_state_ == AUTOCHECKOUT_SUCCESS ||
+             autocheckout_state_ == AUTOCHECKOUT_ERROR;
+    }
+
     return true;
   }
 
   DCHECK_EQ(ui::DIALOG_BUTTON_CANCEL, button);
-  return !is_submitting_ || autocheckout_state_ != AUTOCHECKOUT_NOT_STARTED ||
-         IsSubmitPausedOn(wallet::VERIFY_CVV);
+  return !is_submitting_ || IsSubmitPausedOn(wallet::VERIFY_CVV);
 }
 
 DialogOverlayState AutofillDialogControllerImpl::GetDialogOverlay() const {
@@ -1921,7 +1930,7 @@ void AutofillDialogControllerImpl::OverlayButtonPressed() {
   FinishSubmit();
 }
 
-void AutofillDialogControllerImpl::OnCancel() {
+bool AutofillDialogControllerImpl::OnCancel() {
   HidePopup();
   if (autocheckout_state_ == AUTOCHECKOUT_NOT_STARTED && !is_submitting_)
     LogOnCancelMetrics();
@@ -1931,9 +1940,15 @@ void AutofillDialogControllerImpl::OnCancel() {
         AutofillMetrics::AUTOCHECKOUT_CANCELLED);
   }
   callback_.Run(NULL, std::string());
+  return true;
 }
 
-void AutofillDialogControllerImpl::OnAccept() {
+bool AutofillDialogControllerImpl::OnAccept() {
+  // If autocheckout has already started, the only thing left to do is to
+  // close the dialog.
+  if (autocheckout_state_ != AUTOCHECKOUT_NOT_STARTED)
+    return true;
+
   choose_another_instrument_or_address_ = false;
   wallet_server_validation_recoverable_ = true;
   HidePopup();
@@ -1968,6 +1983,8 @@ void AutofillDialogControllerImpl::OnAccept() {
   } else {
     FinishSubmit();
   }
+
+  return false;
 }
 
 Profile* AutofillDialogControllerImpl::profile() {

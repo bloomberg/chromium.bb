@@ -1757,8 +1757,8 @@ TEST_F(AutofillDialogControllerTest, OnAutocheckoutError) {
   EXPECT_TRUE(ReadSetVisuallyDeemphasizedIpc());
   controller()->OnAutocheckoutError();
 
-  EXPECT_TRUE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_CANCEL));
-  EXPECT_FALSE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
+  EXPECT_FALSE(controller()->GetDialogButtons() & ui::DIALOG_BUTTON_CANCEL);
+  EXPECT_TRUE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
   EXPECT_EQ(0U, NotificationsOfType(
       DialogNotification::AUTOCHECKOUT_SUCCESS).size());
   EXPECT_EQ(1U, NotificationsOfType(
@@ -1799,8 +1799,8 @@ TEST_F(AutofillDialogControllerTest, OnAutocheckoutSuccess) {
   controller()->OnAutocheckoutSuccess();
   EXPECT_TRUE(controller()->GetDialogOverlay().image.IsEmpty());
 
-  EXPECT_TRUE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_CANCEL));
-  EXPECT_FALSE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
+  EXPECT_FALSE(controller()->GetDialogButtons() & ui::DIALOG_BUTTON_CANCEL);
+  EXPECT_TRUE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
   EXPECT_EQ(1U, NotificationsOfType(
       DialogNotification::AUTOCHECKOUT_SUCCESS).size());
   EXPECT_EQ(0U, NotificationsOfType(

@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/views/controls/button/blue_button.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
@@ -350,8 +351,15 @@ void DialogClientView::ChildVisibilityChanged(View* child) {
 
 LabelButton* DialogClientView::CreateDialogButton(ui::DialogButton type) {
   const string16 title = GetDialogDelegate()->GetDialogButtonLabel(type);
-  LabelButton* button = new LabelButton(this, title);
-  button->SetStyle(Button::STYLE_NATIVE_TEXTBUTTON);
+  LabelButton* button = NULL;
+  if (GetDialogDelegate()->UseNewStyleForThisDialog() &&
+      GetDialogDelegate()->GetDefaultDialogButton() == type &&
+      GetDialogDelegate()->ShouldDefaultButtonBeBlue()) {
+    button = new BlueButton(this, title);
+  } else {
+    button = new LabelButton(this, title);
+    button->SetStyle(Button::STYLE_NATIVE_TEXTBUTTON);
+  }
   button->set_focusable(true);
 
   const int kDialogMinButtonWidth = 75;
