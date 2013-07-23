@@ -390,3 +390,48 @@ TEST_F(WebPageNewSerializeTest, NamespaceElementsDontCrash)
 }
 
 }
+
+TEST_F(WebPageNewSerializeTest, TestMHTMLEncodingWithDataURL)
+{
+    // Load a page with some data urls.
+    WebURL topFrameURL = toKURL("http://www.test.com");
+    registerMockedURLLoad(topFrameURL, WebString::fromUTF8("page_with_data.html"), WebString::fromUTF8("pageserializer/"), htmlMimeType());
+    loadURLInTopFrame(topFrameURL);
+
+    WebCString mhtmlData = WebPageSerializer::serializeToMHTML(m_webView);
+    ASSERT_FALSE(mhtmlData.isEmpty());
+
+    // Read the MHTML data line and check that the string data:image is found
+    // exactly one time.
+    size_t nbDataURLs = 0;
+    LineReader lineReader(std::string(mhtmlData.data()));
+    std::string line;
+    while (lineReader.getNextLine(&line)) {
+        if (line.find("data:image") != std::string::npos)
+            nbDataURLs++;
+    }
+    EXPECT_EQ(1u, nbDataURLs);
+}
+
+
+TEST_F(WebPageNewSerializeTest, TestMHTMLEncodingWithMorphingDataURL)
+{
+    // Load a page with some data urls.
+    WebURL topFrameURL = toKURL("http://www.test.com");
+    registerMockedURLLoad(topFrameURL, WebString::fromUTF8("page_with_morphing_data.html"), WebString::fromUTF8("pageserializer/"), htmlMimeType());
+    loadURLInTopFrame(topFrameURL);
+
+    WebCString mhtmlData = WebPageSerializer::serializeToMHTML(m_webView);
+    ASSERT_FALSE(mhtmlData.isEmpty());
+
+    // Read the MHTML data line and check that the string data:image is found
+    // exactly two times.
+    size_t nbDataURLs = 0;
+    LineReader lineReader(std::string(mhtmlData.data()));
+    std::string line;
+    while (lineReader.getNextLine(&line)) {
+        if (line.find("data:text") != std::string::npos)
+            nbDataURLs++;
+    }
+    EXPECT_EQ(2u, nbDataURLs);
+}
