@@ -806,7 +806,7 @@ def GetEditor(git, git_editor=None):
 
 def RunEditor(content, git, git_editor=None):
   """Opens up the default editor in the system to get the CL description."""
-  file_handle, filename = tempfile.mkstemp(text=True)
+  file_handle, filename = tempfile.mkstemp(text=True, prefix='cl_description')
   # Make sure CRLF is handled properly by requiring none.
   if '\r' in content:
     print >> sys.stderr, (
