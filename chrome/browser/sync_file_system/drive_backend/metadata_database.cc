@@ -55,6 +55,57 @@ std::string RemovePrefix(const std::string& str, const std::string& prefix) {
   return str;
 }
 
+base::FilePath ReverseConcatPathComponents(
+    const std::vector<base::FilePath>& components) {
+  if (components.empty())
+    return base::FilePath(FILE_PATH_LITERAL("/")).NormalizePathSeparators();
+
+  size_t total_size = 0;
+  typedef std::vector<base::FilePath> PathComponents;
+  for (PathComponents::const_iterator itr = components.begin();
+       itr != components.end(); ++itr)
+    total_size += itr->value().size() + 1;
+
+  base::FilePath::StringType result;
+  result.reserve(total_size);
+  for (PathComponents::const_reverse_iterator itr = components.rbegin();
+       itr != components.rend(); ++itr) {
+    result.append(1, base::FilePath::kSeparators[0]);
+    result.append(itr->value());
+  }
+
+  return base::FilePath(result).NormalizePathSeparators();
+}
+
+void PopulateFileDetailsFromFileResource(
+    int64 change_id,
+    const google_apis::FileResource& file_resource,
+    DriveFileMetadata::Details* details) {
+  details->set_change_id(change_id);
+  for (ScopedVector<google_apis::ParentReference>::const_iterator itr =
+           file_resource.parents().begin();
+       itr != file_resource.parents().end();
+       ++itr) {
+    details->add_parent_folder_id((*itr)->file_id());
+  }
+  details->set_title(file_resource.title());
+
+  google_apis::DriveEntryKind kind = file_resource.GetKind();
+  if (kind == google_apis::ENTRY_KIND_FILE)
+    details->set_kind(KIND_FILE);
+  else if (kind == google_apis::ENTRY_KIND_FOLDER)
+    details->set_kind(KIND_FOLDER);
+  else
+    details->set_kind(KIND_UNSUPPORTED);
+
+  details->set_md5(file_resource.md5_checksum());
+  details->set_etag(file_resource.etag());
+  details->set_creation_time(file_resource.created_date().ToInternalValue());
+  details->set_modification_time(
+      file_resource.modified_date().ToInternalValue());
+  details->set_deleted(false);
+}
+
 void AdaptLevelDBStatusToSyncStatusCode(const SyncStatusCallback& callback,
                                         const leveldb::Status& status) {
   callback.Run(LevelDBStatusToSyncStatusCode(status));
@@ -251,7 +302,7 @@ SyncStatusCode RemoveUnreachableFiles(DatabaseContents* contents,
       unvisited_files.erase(found);
       reachable_files.push_back(metadata);
 
-      if (!metadata->active())
+      if (!metadata->active() && !metadata->is_app_root())
         continue;
     }
 
@@ -449,14 +500,75 @@ bool MetadataDatabase::FindActiveFileByPath(const std::string& app_id,
 
 bool MetadataDatabase::BuildPathForFile(const std::string& file_id,
                                         base::FilePath* path) const {
-  NOTIMPLEMENTED();
-  return false;
+  DriveFileMetadata current;
+  if (!FindFileByFileID(file_id, &current) || !current.active())
+    return false;
+
+  std::vector<base::FilePath> components;
+  while (!current.is_app_root()) {
+    components.push_back(base::FilePath::FromUTF8Unsafe(
+        current.synced_details().title()));
+    if (!FindFileByFileID(current.parent_folder_id(), &current) ||
+        !current.active())
+      return false;
+  }
+
+  if (path)
+    *path = ReverseConcatPathComponents(components);
+
+  return true;
 }
 
 void MetadataDatabase::UpdateByChangeList(
     ScopedVector<google_apis::ChangeResource> changes,
     const SyncStatusCallback& callback) {
-  NOTIMPLEMENTED();
+  scoped_ptr<leveldb::WriteBatch> batch(new leveldb::WriteBatch);
+
+  for (ScopedVector<google_apis::ChangeResource>::iterator itr =
+           changes.begin();
+       itr != changes.end();
+       ++itr) {
+    const google_apis::ChangeResource& change = **itr;
+    DriveFileMetadata file;
+
+    // If the remote file already has an entry in the database, update its
+    // |remote_detais| and mark it dirty.
+    if (FindFileByFileID(change.file_id(), NULL)) {
+      const google_apis::FileResource* file_resource = NULL;
+      if (!change.is_deleted())
+        file_resource = change.file();
+      UpdateRemoteDetails(change.change_id(), change.file_id(), file_resource,
+                          batch.get());
+      continue;
+    }
+
+    // Deletion of an unknown file can be safely ignorable.
+    if (change.is_deleted())
+      continue;
+
+    // Find first active parent.
+    std::string parent_folder_id;
+    DriveFileMetadata parent;
+    for (ScopedVector<google_apis::ParentReference>::const_iterator itr =
+             change.file()->parents().begin();
+         itr != change.file()->parents().end();
+         ++itr) {
+      if (FindFileByFileID((*itr)->file_id(), &parent) &&
+          (parent.active() || parent.is_app_root())) {
+        parent_folder_id = parent.file_id();
+        break;
+      }
+    }
+
+    // If the remote file doesn't have active parent, ignore the file.
+    if (parent_folder_id.empty())
+      continue;
+
+    RegisterNewFile(change.change_id(), parent, *change.file(),
+                    batch.get());
+  }
+
+  WriteToDatabase(batch.Pass(), callback);
 }
 
 void MetadataDatabase::PopulateFolder(
@@ -694,6 +806,56 @@ void MetadataDatabase::RemoveFile(const std::string& file_id,
     active_file_by_parent_and_title_.erase(key);
   }
   dirty_files_.erase(file.get());
+}
+
+void MetadataDatabase::UpdateRemoteDetails(
+    int64 change_id,
+    const std::string& file_id,
+    const google_apis::FileResource* file_resource,
+    leveldb::WriteBatch* batch) {
+  DriveFileMetadata* file = file_by_file_id_[file_id];
+
+  file->clear_remote_details();
+  DriveFileMetadata::Details* details = file->mutable_remote_details();
+  if (file_resource) {
+    PopulateFileDetailsFromFileResource(change_id, *file_resource, details);
+  } else {
+    details->set_deleted(true);
+    details->set_change_id(change_id);
+  }
+
+  file->set_dirty(true);
+  PutFileToBatch(*file, batch);
+
+  dirty_files_.insert(file);
+}
+
+void MetadataDatabase::RegisterNewFile(
+    int64 change_id,
+    const DriveFileMetadata& parent_folder,
+    const google_apis::FileResource& new_file_resource,
+    leveldb::WriteBatch* batch) {
+  scoped_ptr<DriveFileMetadata> file(new DriveFileMetadata);
+  std::string file_id = new_file_resource.file_id();
+  file->set_file_id(file_id);
+  file->set_parent_folder_id(parent_folder.file_id());
+  file->set_app_id(parent_folder.app_id());
+  file->set_is_app_root(false);
+
+  PopulateFileDetailsFromFileResource(
+      change_id, new_file_resource, file->mutable_remote_details());
+
+  file->set_dirty(true);
+  file->set_active(false);
+  file->set_needs_folder_listing(
+      new_file_resource.GetKind() == google_apis::ENTRY_KIND_FOLDER);
+
+  PutFileToBatch(*file, batch);
+
+  files_by_parent_[parent_folder.file_id()].insert(file.get());
+  dirty_files_.insert(file.get());
+
+  file_by_file_id_[file_id] = file.release();
 }
 
 void MetadataDatabase::WriteToDatabase(scoped_ptr<leveldb::WriteBatch> batch,

@@ -191,14 +191,22 @@ class MetadataDatabase {
   void RegisterFolderAsAppRoot(const std::string& app_id,
                                const std::string& folder,
                                leveldb::WriteBatch* batch);
-  void MakeFileActive(const std::string& file,
+  void MakeFileActive(const std::string& file_id,
                       leveldb::WriteBatch* batch);
-  void MakeFileInactive(const std::string& file,
+  void MakeFileInactive(const std::string& file_id,
                         leveldb::WriteBatch* batch);
   void UnregisterFolderAsAppRoot(const std::string& app_id,
                                  leveldb::WriteBatch* batch);
-  void RemoveFile(const std::string& file,
+  void RemoveFile(const std::string& file_id,
                   leveldb::WriteBatch* batch);
+  void UpdateRemoteDetails(int64 change_id,
+                           const std::string& file_id,
+                           const google_apis::FileResource* file,
+                           leveldb::WriteBatch* batch);
+  void RegisterNewFile(int64 change_id,
+                       const DriveFileMetadata& parent_folder,
+                       const google_apis::FileResource& new_file,
+                       leveldb::WriteBatch* batch);
 
   void WriteToDatabase(scoped_ptr<leveldb::WriteBatch> batch,
                        const SyncStatusCallback& callback);
