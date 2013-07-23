@@ -30,6 +30,7 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/format_macros.h"
+#include "base/md5.h"
 #include "base/platform_file.h"
 #include "base/process_util.h"
 #include "base/stl_util.h"
@@ -44,6 +45,7 @@
 #include "base/threading/thread.h"
 #include "content/common/gpu/media/rendering_helper.h"
 #include "content/public/common/content_switches.h"
+#include "ui/gfx/codec/png_codec.h"
 
 #if defined(OS_WIN)
 #include "content/common/gpu/media/dxva_video_decode_accelerator.h"
@@ -124,6 +126,12 @@ struct TestVideoFile {
   std::string data_str;
 };
 
+// Presumed minimal display size.
+const gfx::Size kThumbnailsDisplaySize(1366, 768);
+const gfx::Size kThumbnailsPageSize(1600, 1200);
+const gfx::Size kThumbnailSize(160, 120);
+const int kMD5StringLength = 32;
+
 // Parse |data| into its constituent parts, set the various output fields
 // accordingly, and read in video stream. CHECK-fails on unexpected or
 // missing required data. Unspecified optional fields are set to -1.
@@ -177,6 +185,31 @@ void ParseAndReadTestVideoData(base::FilePath::StringType data,
 
     test_video_files->push_back(video_file);
   }
+}
+
+// Read in golden MD5s for the thumbnailed rendering of this video
+void ReadGoldenThumbnailMD5s(const TestVideoFile* video_file,
+                             std::vector<std::string>* md5_strings) {
+  base::FilePath filepath(video_file->file_name);
+  filepath = filepath.AddExtension(FILE_PATH_LITERAL(".md5"));
+  std::string all_md5s;
+  file_util::ReadFileToString(filepath, &all_md5s);
+  base::SplitString(all_md5s, '\n', md5_strings);
+  // Check these are legitimate MD5s.
+  for (std::vector<std::string>::iterator md5_string = md5_strings->begin();
+      md5_string != md5_strings->end(); ++md5_string) {
+      // Ignore the empty string added by SplitString
+      if (!md5_string->length())
+        continue;
+
+      CHECK_EQ(static_cast<int>(md5_string->length()),
+               kMD5StringLength) << *md5_string;
+      bool hex_only = std::count_if(md5_string->begin(),
+                                    md5_string->end(), isxdigit) ==
+                                    kMD5StringLength;
+      CHECK(hex_only) << *md5_string;
+  }
+  CHECK_GE(md5_strings->size(), 1U) << all_md5s;
 }
 
 // State of the GLRenderingVDAClient below.  Order matters here as the test
@@ -716,18 +749,19 @@ double GLRenderingVDAClient::frames_per_second() {
 // - reset_after_frame_num: see GLRenderingVDAClient ctor.
 // - delete_decoder_phase: see GLRenderingVDAClient ctor.
 // - whether to test slow rendering by delaying ReusePictureBuffer().
+// - whether the video frames are rendered as thumbnails.
 class VideoDecodeAcceleratorTest
     : public ::testing::TestWithParam<
-  Tuple7<int, int, int, int, ResetPoint, ClientState, bool> > {
+  Tuple8<int, int, int, int, ResetPoint, ClientState, bool, bool> > {
 };
 
 // Helper so that gtest failures emit a more readable version of the tuple than
 // its byte representation.
 ::std::ostream& operator<<(
     ::std::ostream& os,
-    const Tuple6<int, int, int, int, ResetPoint, ClientState>& t) {
+    const Tuple8<int, int, int, int, ResetPoint, ClientState, bool, bool>& t) {
   return os << t.a << ", " << t.b << ", " << t.c << ", " << t.d << ", " << t.e
-            << ", " << t.f;
+            << ", " << t.f << ", " << t.g << ", " << t.h;
 }
 
 // Wait for |note| to report a state and if it's not |expected_state| then
@@ -763,6 +797,7 @@ TEST_P(VideoDecodeAcceleratorTest, TestSimpleDecode) {
   const int reset_point = GetParam().e;
   const int delete_decoder_state = GetParam().f;
   bool test_reuse_delay = GetParam().g;
+  const bool render_as_thumbnails = GetParam().h;
 
   std::vector<TestVideoFile*> test_video_files;
   ParseAndReadTestVideoData(test_video_data, num_concurrent_decoders,
@@ -790,17 +825,32 @@ TEST_P(VideoDecodeAcceleratorTest, TestSimpleDecode) {
   scoped_ptr<RenderingHelper> rendering_helper(RenderingHelper::Create());
 
   base::WaitableEvent done(false, false);
-  std::vector<gfx::Size> frame_dimensions;
-  for (size_t index = 0; index < test_video_files.size(); ++index) {
-    frame_dimensions.push_back(gfx::Size(
-        test_video_files[index]->width, test_video_files[index]->height));
+  RenderingHelperParams helper_params;
+  helper_params.num_windows = num_concurrent_decoders;
+  helper_params.render_as_thumbnails = render_as_thumbnails;
+  if (render_as_thumbnails) {
+    // Only one decoder is supported with thumbnail rendering
+    CHECK_EQ(num_concurrent_decoders, 1U);
+    gfx::Size frame_size(test_video_files[0]->width,
+                         test_video_files[0]->height);
+    helper_params.frame_dimensions.push_back(frame_size);
+    helper_params.window_dimensions.push_back(kThumbnailsDisplaySize);
+    helper_params.thumbnails_page_size = kThumbnailsPageSize;
+    helper_params.thumbnail_size = kThumbnailSize;
+  } else {
+    for (size_t index = 0; index < test_video_files.size(); ++index) {
+      gfx::Size frame_size(test_video_files[index]->width,
+                           test_video_files[index]->height);
+      helper_params.frame_dimensions.push_back(frame_size);
+      helper_params.window_dimensions.push_back(frame_size);
+    }
   }
   rendering_thread.message_loop()->PostTask(
       FROM_HERE,
       base::Bind(&RenderingHelper::Initialize,
                  base::Unretained(rendering_helper.get()),
-                 num_concurrent_decoders,
-                 frame_dimensions, &done));
+                 helper_params,
+                 &done));
   done.Wait();
 
   // First kick off all the decoders.
@@ -895,10 +945,53 @@ TEST_P(VideoDecodeAcceleratorTest, TestSimpleDecode) {
                      num_fragments_per_decode));
     }
     LOG(INFO) << "Decoder " << i << " fps: " << client->frames_per_second();
-    int min_fps = suppress_rendering ?
-        video_file->min_fps_no_render : video_file->min_fps_render;
-    if (min_fps > 0 && !test_reuse_delay)
-      EXPECT_GT(client->frames_per_second(), min_fps);
+    if (!render_as_thumbnails) {
+      int min_fps = suppress_rendering ?
+          video_file->min_fps_no_render : video_file->min_fps_render;
+      if (min_fps > 0 && !test_reuse_delay)
+        EXPECT_GT(client->frames_per_second(), min_fps);
+    }
+  }
+
+  if (render_as_thumbnails) {
+    std::vector<unsigned char> rgb;
+    bool alpha_solid;
+    rendering_thread.message_loop()->PostTask(
+      FROM_HERE,
+      base::Bind(&RenderingHelper::GetThumbnailsAsRGB,
+                 base::Unretained(rendering_helper.get()),
+                 &rgb, &alpha_solid, &done));
+    done.Wait();
+
+    std::vector<std::string> golden_md5s;
+    std::string md5_string = base::MD5String(
+        base::StringPiece(reinterpret_cast<char*>(&rgb[0]), rgb.size()));
+    ReadGoldenThumbnailMD5s(test_video_files[0], &golden_md5s);
+    std::vector<std::string>::iterator match =
+        find(golden_md5s.begin(), golden_md5s.end(), md5_string);
+    if (match == golden_md5s.end()) {
+      // Convert raw RGB into PNG for export.
+      std::vector<unsigned char> png;
+      gfx::PNGCodec::Encode(&rgb[0],
+                            gfx::PNGCodec::FORMAT_RGB,
+                            kThumbnailsPageSize,
+                            kThumbnailsPageSize.width() * 3,
+                            true,
+                            std::vector<gfx::PNGCodec::Comment>(),
+                            &png);
+
+      LOG(ERROR) << "Unknown thumbnails MD5: " << md5_string;
+
+      base::FilePath filepath(test_video_files[0]->file_name);
+      filepath = filepath.AddExtension(FILE_PATH_LITERAL(".bad_thumbnails"));
+      filepath = filepath.AddExtension(FILE_PATH_LITERAL(".png"));
+      int num_bytes = file_util::WriteFile(filepath,
+                                           reinterpret_cast<char*>(&png[0]),
+                                           png.size());
+      ASSERT_EQ(num_bytes, static_cast<int>(png.size()));
+    }
+    ASSERT_NE(match, golden_md5s.end());
+    EXPECT_EQ(alpha_solid, true) << "RGBA frame had incorrect alpha";
   }
 
   // Output the frame delivery time to file
@@ -941,58 +1034,60 @@ TEST_P(VideoDecodeAcceleratorTest, TestSimpleDecode) {
 INSTANTIATE_TEST_CASE_P(
     ReplayAfterEOS, VideoDecodeAcceleratorTest,
     ::testing::Values(
-        MakeTuple(1, 1, 1, 4, END_OF_STREAM_RESET, CS_RESET, false)));
+        MakeTuple(1, 1, 1, 4, END_OF_STREAM_RESET, CS_RESET, false, false)));
 
 // Test that Reset() mid-stream works fine and doesn't affect decoding even when
 // Decode() calls are made during the reset.
 INSTANTIATE_TEST_CASE_P(
     MidStreamReset, VideoDecodeAcceleratorTest,
     ::testing::Values(
-        MakeTuple(1, 1, 1, 1, MID_STREAM_RESET, CS_RESET, false)));
+        MakeTuple(1, 1, 1, 1, MID_STREAM_RESET, CS_RESET, false, false)));
 
 INSTANTIATE_TEST_CASE_P(
     SlowRendering, VideoDecodeAcceleratorTest,
     ::testing::Values(
-        MakeTuple(1, 1, 1, 1, END_OF_STREAM_RESET, CS_RESET, true)));
+        MakeTuple(1, 1, 1, 1, END_OF_STREAM_RESET, CS_RESET, true, false)));
 
 // Test that Destroy() mid-stream works fine (primarily this is testing that no
 // crashes occur).
 INSTANTIATE_TEST_CASE_P(
     TearDownTiming, VideoDecodeAcceleratorTest,
     ::testing::Values(
-        MakeTuple(1, 1, 1, 1, END_OF_STREAM_RESET, CS_DECODER_SET, false),
-        MakeTuple(1, 1, 1, 1, END_OF_STREAM_RESET, CS_INITIALIZED, false),
-        MakeTuple(1, 1, 1, 1, END_OF_STREAM_RESET, CS_FLUSHING, false),
-        MakeTuple(1, 1, 1, 1, END_OF_STREAM_RESET, CS_FLUSHED, false),
-        MakeTuple(1, 1, 1, 1, END_OF_STREAM_RESET, CS_RESETTING, false),
-        MakeTuple(1, 1, 1, 1, END_OF_STREAM_RESET, CS_RESET, false),
+        MakeTuple(1, 1, 1, 1, END_OF_STREAM_RESET, CS_DECODER_SET, false,
+                  false),
+        MakeTuple(1, 1, 1, 1, END_OF_STREAM_RESET, CS_INITIALIZED, false,
+                  false),
+        MakeTuple(1, 1, 1, 1, END_OF_STREAM_RESET, CS_FLUSHING, false, false),
+        MakeTuple(1, 1, 1, 1, END_OF_STREAM_RESET, CS_FLUSHED, false, false),
+        MakeTuple(1, 1, 1, 1, END_OF_STREAM_RESET, CS_RESETTING, false, false),
+        MakeTuple(1, 1, 1, 1, END_OF_STREAM_RESET, CS_RESET, false, false),
         MakeTuple(1, 1, 1, 1, END_OF_STREAM_RESET,
-                  static_cast<ClientState>(-1), false),
+                  static_cast<ClientState>(-1), false, false),
         MakeTuple(1, 1, 1, 1, END_OF_STREAM_RESET,
-                  static_cast<ClientState>(-10), false),
+                  static_cast<ClientState>(-10), false, false),
         MakeTuple(1, 1, 1, 1, END_OF_STREAM_RESET,
-                  static_cast<ClientState>(-100), false)));
+                  static_cast<ClientState>(-100), false, false)));
 
 // Test that decoding various variation works: multiple fragments per Decode()
 // call and multiple in-flight decodes.
 INSTANTIATE_TEST_CASE_P(
     DecodeVariations, VideoDecodeAcceleratorTest,
     ::testing::Values(
-        MakeTuple(1, 1, 1, 1, END_OF_STREAM_RESET, CS_RESET, false),
-        MakeTuple(1, 1, 10, 1, END_OF_STREAM_RESET, CS_RESET, false),
+        MakeTuple(1, 1, 1, 1, END_OF_STREAM_RESET, CS_RESET, false, false),
+        MakeTuple(1, 1, 10, 1, END_OF_STREAM_RESET, CS_RESET, false, false),
         // Tests queuing.
-        MakeTuple(1, 1, 15, 1, END_OF_STREAM_RESET, CS_RESET, false),
-        MakeTuple(2, 1, 1, 1, END_OF_STREAM_RESET, CS_RESET, false),
-        MakeTuple(3, 1, 1, 1, END_OF_STREAM_RESET, CS_RESET, false),
-        MakeTuple(5, 1, 1, 1, END_OF_STREAM_RESET, CS_RESET, false),
-        MakeTuple(8, 1, 1, 1, END_OF_STREAM_RESET, CS_RESET, false),
+        MakeTuple(1, 1, 15, 1, END_OF_STREAM_RESET, CS_RESET, false, false),
+        MakeTuple(2, 1, 1, 1, END_OF_STREAM_RESET, CS_RESET, false, false),
+        MakeTuple(3, 1, 1, 1, END_OF_STREAM_RESET, CS_RESET, false, false),
+        MakeTuple(5, 1, 1, 1, END_OF_STREAM_RESET, CS_RESET, false, false),
+        MakeTuple(8, 1, 1, 1, END_OF_STREAM_RESET, CS_RESET, false, false),
         // TODO(fischman): decoding more than 15 NALUs at once breaks decode -
         // visual artifacts are introduced as well as spurious frames are
         // delivered (more pictures are returned than NALUs are fed to the
         // decoder).  Increase the "15" below when
         // http://code.google.com/p/chrome-os-partner/issues/detail?id=4378 is
         // fixed.
-        MakeTuple(15, 1, 1, 1, END_OF_STREAM_RESET, CS_RESET, false)));
+        MakeTuple(15, 1, 1, 1, END_OF_STREAM_RESET, CS_RESET, false, false)));
 
 // Find out how many concurrent decoders can go before we exhaust system
 // resources.
@@ -1001,9 +1096,15 @@ INSTANTIATE_TEST_CASE_P(
     ::testing::Values(
         // +0 hack below to promote enum to int.
         MakeTuple(1, kMinSupportedNumConcurrentDecoders + 0, 1, 1,
-                  END_OF_STREAM_RESET, CS_RESET, false),
+                  END_OF_STREAM_RESET, CS_RESET, false, false),
         MakeTuple(1, kMinSupportedNumConcurrentDecoders + 1, 1, 1,
-                  END_OF_STREAM_RESET, CS_RESET, false)));
+                  END_OF_STREAM_RESET, CS_RESET, false, false)));
+
+// Thumbnailing test
+INSTANTIATE_TEST_CASE_P(
+    Thumbnail, VideoDecodeAcceleratorTest,
+    ::testing::Values(
+        MakeTuple(1, 1, 1, 1, END_OF_STREAM_RESET, CS_RESET, false, true)));
 
 // TODO(fischman, vrk): add more tests!  In particular:
 // - Test life-cycle: Seek/Stop/Pause/Play for a single decoder.

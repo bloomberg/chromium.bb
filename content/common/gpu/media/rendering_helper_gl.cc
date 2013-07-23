@@ -89,14 +89,17 @@ std::string GLContextStubWithExtensions::GetExtensions() {
 
 namespace content {
 
+RenderingHelperParams::RenderingHelperParams() {}
+
+RenderingHelperParams::~RenderingHelperParams() {}
+
 class RenderingHelperGL : public RenderingHelper {
  public:
   RenderingHelperGL();
   virtual ~RenderingHelperGL();
 
   // Implement RenderingHelper.
-  virtual void Initialize(int num_windows,
-                          const std::vector<gfx::Size>& dimensions,
+  virtual void Initialize(const RenderingHelperParams& params,
                           base::WaitableEvent* done) OVERRIDE;
   virtual void UnInitialize(base::WaitableEvent* done) OVERRIDE;
   virtual void CreateTexture(int window_id,
@@ -107,6 +110,9 @@ class RenderingHelperGL : public RenderingHelper {
   virtual void DeleteTexture(uint32 texture_id) OVERRIDE;
   virtual void* GetGLContext() OVERRIDE;
   virtual void* GetGLDisplay() OVERRIDE;
+  virtual void GetThumbnailsAsRGB(std::vector<unsigned char>* rgb,
+                                  bool* alpha_solid,
+                                  base::WaitableEvent* done) OVERRIDE;
 
   static const gfx::GLImplementation kGLImplementation;
 
@@ -119,7 +125,8 @@ class RenderingHelperGL : public RenderingHelper {
 
 
   base::MessageLoop* message_loop_;
-  std::vector<gfx::Size> dimensions_;
+  std::vector<gfx::Size> window_dimensions_;
+  std::vector<gfx::Size> frame_dimensions_;
 
   NativeContextType gl_context_;
   std::map<uint32, int> texture_id_to_surface_index_;
@@ -137,6 +144,14 @@ class RenderingHelperGL : public RenderingHelper {
   Display* x_display_;
   std::vector<Window> x_windows_;
 #endif
+
+  bool render_as_thumbnails_;
+  int frame_count_;
+  GLuint thumbnails_fbo_id_;
+  GLuint thumbnails_texture_id_;
+  gfx::Size thumbnails_fbo_size_;
+  gfx::Size thumbnail_size_;
+  GLuint program_;
 };
 
 // static
@@ -160,7 +175,8 @@ RenderingHelperGL::RenderingHelperGL() {
 }
 
 RenderingHelperGL::~RenderingHelperGL() {
-  CHECK_EQ(dimensions_.size(), 0U) << "Must call UnInitialize before dtor.";
+  CHECK_EQ(window_dimensions_.size(), 0U) <<
+    "Must call UnInitialize before dtor.";
   Clear();
 }
 
@@ -184,13 +200,11 @@ void RenderingHelperGL::MakeCurrent(int window_id) {
 #endif
 }
 
-void RenderingHelperGL::Initialize(
-    int num_windows,
-    const std::vector<gfx::Size>& dimensions,
-    base::WaitableEvent* done) {
-  // Use dimensions_.size() != 0 as a proxy for the class having already been
-  // Initialize()'d, and UnInitialize() before continuing.
-  if (dimensions_.size()) {
+void RenderingHelperGL::Initialize(const RenderingHelperParams& params,
+                                   base::WaitableEvent* done) {
+  // Use window_dimensions_.size() != 0 as a proxy for the class having already
+  // been Initialize()'d, and UnInitialize() before continuing.
+  if (window_dimensions_.size()) {
     base::WaitableEvent done(false, false);
     UnInitialize(&done);
     done.Wait();
@@ -200,10 +214,13 @@ void RenderingHelperGL::Initialize(
   scoped_refptr<GLContextStubWithExtensions> stub_context(
       new GLContextStubWithExtensions());
 
-  CHECK_GT(dimensions.size(), 0U);
-  dimensions_ = dimensions;
+  CHECK_GT(params.window_dimensions.size(), 0U);
+  CHECK_EQ(params.frame_dimensions.size(), params.window_dimensions.size());
+  window_dimensions_ = params.window_dimensions;
+  frame_dimensions_ = params.frame_dimensions;
+  render_as_thumbnails_ = params.render_as_thumbnails;
   message_loop_ = base::MessageLoop::current();
-  CHECK_GT(num_windows, 0);
+  CHECK_GT(params.num_windows, 0);
 
 #if GL_VARIANT_GLX
   x_display_ = base::MessagePumpForUI::GetDefaultXDisplay();
@@ -269,11 +286,11 @@ void RenderingHelperGL::Initialize(
 #endif
 
   // Per-window/surface X11 & EGL initialization.
-  for (int i = 0; i < num_windows; ++i) {
+  for (int i = 0; i < params.num_windows; ++i) {
     // Arrange X windows whimsically, with some padding.
-    int j = i % dimensions_.size();
-    int width = dimensions_[j].width();
-    int height = dimensions_[j].height();
+    int j = i % window_dimensions_.size();
+    int width = window_dimensions_[j].width();
+    int height = window_dimensions_[j].height();
     CHECK_GT(width, 0);
     CHECK_GT(height, 0);
     int top_left_x = (width + 20) * (i % 4);
@@ -323,29 +340,69 @@ void RenderingHelperGL::Initialize(
   // Must be done after a context is made current.
   gfx::InitializeGLExtensionBindings(kGLImplementation, stub_context.get());
 
+  if (render_as_thumbnails_) {
+    CHECK_EQ(window_dimensions_.size(), 1U);
+
+    GLint max_texture_size;
+    glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size);
+    CHECK_GE(max_texture_size, params.thumbnails_page_size.width());
+    CHECK_GE(max_texture_size, params.thumbnails_page_size.height());
+
+    thumbnails_fbo_size_ = params.thumbnails_page_size;
+    thumbnail_size_ = params.thumbnail_size;
+
+    glGenFramebuffersEXT(1, &thumbnails_fbo_id_);
+    glGenTextures(1, &thumbnails_texture_id_);
+    glBindTexture(GL_TEXTURE_2D, thumbnails_texture_id_);
+    glTexImage2D(GL_TEXTURE_2D,
+                 0,
+                 GL_RGB,
+                 thumbnails_fbo_size_.width(),
+                 thumbnails_fbo_size_.height(),
+                 0,
+                 GL_RGB,
+                 GL_UNSIGNED_SHORT_5_6_5,
+                 NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+    glBindFramebufferEXT(GL_FRAMEBUFFER, thumbnails_fbo_id_);
+    glFramebufferTexture2DEXT(GL_FRAMEBUFFER,
+                              GL_COLOR_ATTACHMENT0,
+                              GL_TEXTURE_2D,
+                              thumbnails_texture_id_,
+                              0);
+
+    GLenum fb_status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER);
+    CHECK(fb_status == GL_FRAMEBUFFER_COMPLETE) << fb_status;
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glBindFramebufferEXT(GL_FRAMEBUFFER, 0);
+  }
+
+  // These vertices and texture coords. map (0,0) in the texture to the
+  // bottom left of the viewport.  Since we get the video frames with the
+  // the top left at (0,0) we need to flip the texture y coordinate
+  // in the vertex shader for this to be rendered the right way up.
+  // In the case of thumbnail rendering we use the same vertex shader
+  // to render the FBO the screen, where we do not want this flipping.
   static const float kVertices[] =
       { -1.f, 1.f, -1.f, -1.f, 1.f, 1.f, 1.f, -1.f, };
   static const float kTextureCoords[] = { 0, 1, 0, 0, 1, 1, 1, 0, };
-// On Windows the textures from Direct3D which renders them flipped.
-#if GL_VARIANT_GLX || defined(OS_WIN)
   static const char kVertexShader[] = STRINGIZE(
       varying vec2 interp_tc;
       attribute vec4 in_pos;
       attribute vec2 in_tc;
+      uniform bool tex_flip;
       void main() {
-        interp_tc = vec2(in_tc.x, 1.0 - in_tc.y);
+        if (tex_flip)
+          interp_tc = vec2(in_tc.x, 1.0 - in_tc.y);
+        else
+          interp_tc = in_tc;
         gl_Position = in_pos;
       });
-#else
-  static const char kVertexShader[] = STRINGIZE(
-      varying vec2 interp_tc;
-      attribute vec4 in_pos;
-      attribute vec2 in_tc;
-      void main() {
-        interp_tc = in_tc;
-        gl_Position = in_pos;
-      });
-#endif
 
 #if GL_VARIANT_EGL
   static const char kFragmentShader[] = STRINGIZE(
@@ -363,27 +420,30 @@ void RenderingHelperGL::Initialize(
         gl_FragColor = texture2D(tex, interp_tc);
       });
 #endif
-  GLuint program = glCreateProgram();
-  CreateShader(program, GL_VERTEX_SHADER,
-               kVertexShader, arraysize(kVertexShader));
-  CreateShader(program, GL_FRAGMENT_SHADER,
-               kFragmentShader, arraysize(kFragmentShader));
-  glLinkProgram(program);
+  program_ = glCreateProgram();
+  CreateShader(
+      program_, GL_VERTEX_SHADER, kVertexShader, arraysize(kVertexShader));
+  CreateShader(program_,
+               GL_FRAGMENT_SHADER,
+               kFragmentShader,
+               arraysize(kFragmentShader));
+  glLinkProgram(program_);
   int result = GL_FALSE;
-  glGetProgramiv(program, GL_LINK_STATUS, &result);
+  glGetProgramiv(program_, GL_LINK_STATUS, &result);
   if (!result) {
     char log[4096];
-    glGetShaderInfoLog(program, arraysize(log), NULL, log);
+    glGetShaderInfoLog(program_, arraysize(log), NULL, log);
     LOG(FATAL) << log;
   }
-  glUseProgram(program);
-  glDeleteProgram(program);
+  glUseProgram(program_);
+  glDeleteProgram(program_);
 
-  glUniform1i(glGetUniformLocation(program, "tex"), 0);
-  int pos_location = glGetAttribLocation(program, "in_pos");
+  glUniform1i(glGetUniformLocation(program_, "tex_flip"), 0);
+  glUniform1i(glGetUniformLocation(program_, "tex"), 0);
+  int pos_location = glGetAttribLocation(program_, "in_pos");
   glEnableVertexAttribArray(pos_location);
   glVertexAttribPointer(pos_location, 2, GL_FLOAT, GL_FALSE, 0, kVertices);
-  int tc_location = glGetAttribLocation(program, "in_tc");
+  int tc_location = glGetAttribLocation(program_, "in_tc");
   glEnableVertexAttribArray(tc_location);
   glVertexAttribPointer(tc_location, 2, GL_FLOAT, GL_FALSE, 0, kTextureCoords);
   done->Signal();
@@ -391,6 +451,10 @@ void RenderingHelperGL::Initialize(
 
 void RenderingHelperGL::UnInitialize(base::WaitableEvent* done) {
   CHECK_EQ(base::MessageLoop::current(), message_loop_);
+  if (render_as_thumbnails_) {
+    glDeleteTextures(1, &thumbnails_texture_id_);
+    glDeleteFramebuffersEXT(1, &thumbnails_fbo_id_);
+  }
 #if GL_VARIANT_GLX
 
   glXDestroyContext(x_display_, gl_context_);
@@ -421,10 +485,16 @@ void RenderingHelperGL::CreateTexture(int window_id,
   MakeCurrent(window_id);
   glGenTextures(1, texture_id);
   glBindTexture(GL_TEXTURE_2D, *texture_id);
-  int dimensions_id = window_id % dimensions_.size();
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, dimensions_[dimensions_id].width(),
-               dimensions_[dimensions_id].height(), 0, GL_RGBA,
-               GL_UNSIGNED_BYTE, NULL);
+  int dimensions_id = window_id % frame_dimensions_.size();
+  glTexImage2D(GL_TEXTURE_2D,
+               0,
+               GL_RGBA,
+               frame_dimensions_[dimensions_id].width(),
+               frame_dimensions_[dimensions_id].height(),
+               0,
+               GL_RGBA,
+               GL_UNSIGNED_BYTE,
+               NULL);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   // OpenGLES2.0.25 section 3.8.2 requires CLAMP_TO_EDGE for NPOT textures.
@@ -440,16 +510,47 @@ void RenderingHelperGL::RenderTexture(uint32 texture_id) {
   CHECK_EQ(base::MessageLoop::current(), message_loop_);
   size_t window_id = texture_id_to_surface_index_[texture_id];
   MakeCurrent(window_id);
-  int dimensions_id = window_id % dimensions_.size();
-  int width = dimensions_[dimensions_id].width();
-  int height = dimensions_[dimensions_id].height();
-  glViewport(0, 0, width, height);
-  glScissor(0, 0, width, height);
+
+  int dimensions_id = window_id % window_dimensions_.size();
+  int width = window_dimensions_[dimensions_id].width();
+  int height = window_dimensions_[dimensions_id].height();
+
+  if (render_as_thumbnails_) {
+    glBindFramebufferEXT(GL_FRAMEBUFFER, thumbnails_fbo_id_);
+    const int thumbnails_in_row =
+        thumbnails_fbo_size_.width() / thumbnail_size_.width();
+    const int thumbnails_in_column =
+        thumbnails_fbo_size_.height() / thumbnail_size_.height();
+    const int row = (frame_count_ / thumbnails_in_row) % thumbnails_in_column;
+    const int col = frame_count_ % thumbnails_in_row;
+    const int x = col * thumbnail_size_.width();
+    const int y = row * thumbnail_size_.height();
+
+    glViewport(x, y, thumbnail_size_.width(), thumbnail_size_.height());
+    glScissor(x, y, thumbnail_size_.width(), thumbnail_size_.height());
+    glUniform1i(glGetUniformLocation(program_, "tex_flip"), 0);
+  } else {
+    glViewport(0, 0, width, height);
+    glScissor(0, 0, width, height);
+    glUniform1i(glGetUniformLocation(program_, "tex_flip"), 1);
+  }
 
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, texture_id);
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
   CHECK_EQ(static_cast<int>(glGetError()), GL_NO_ERROR);
+
+  ++frame_count_;
+
+  if (render_as_thumbnails_) {
+    // Copy from FBO to screen
+    glUniform1i(glGetUniformLocation(program_, "tex_flip"), 1);
+    glBindFramebufferEXT(GL_FRAMEBUFFER, 0);
+    glViewport(0, 0, width, height);
+    glScissor(0, 0, width, height);
+    glBindTexture(GL_TEXTURE_2D, thumbnails_texture_id_);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+  }
 
 #if GL_VARIANT_GLX
   glXSwapBuffers(x_display_, x_windows_[window_id]);
@@ -477,7 +578,8 @@ void* RenderingHelperGL::GetGLDisplay() {
 }
 
 void RenderingHelperGL::Clear() {
-  dimensions_.clear();
+  window_dimensions_.clear();
+  frame_dimensions_.clear();
   texture_id_to_surface_index_.clear();
   message_loop_ = NULL;
   gl_context_ = NULL;
@@ -485,6 +587,10 @@ void RenderingHelperGL::Clear() {
   gl_display_ = EGL_NO_DISPLAY;
   gl_surfaces_.clear();
 #endif
+  render_as_thumbnails_ = false;
+  frame_count_ = 0;
+  thumbnails_fbo_id_ = 0;
+  thumbnails_texture_id_ = 0;
 
 #if defined(OS_WIN)
   for (size_t i = 0; i < windows_.size(); ++i) {
@@ -501,6 +607,41 @@ void RenderingHelperGL::Clear() {
   x_display_ = NULL;
   x_windows_.clear();
 #endif
+}
+
+void RenderingHelperGL::GetThumbnailsAsRGB(std::vector<unsigned char>* rgb,
+                                           bool* alpha_solid,
+                                           base::WaitableEvent* done) {
+  CHECK(render_as_thumbnails_);
+
+  const size_t num_pixels = thumbnails_fbo_size_.GetArea();
+  std::vector<unsigned char> rgba;
+  rgba.resize(num_pixels * 4);
+  glBindFramebufferEXT(GL_FRAMEBUFFER, thumbnails_fbo_id_);
+  glPixelStorei(GL_PACK_ALIGNMENT, 1);
+  // We can only count on GL_RGBA/GL_UNSIGNED_BYTE support.
+  glReadPixels(0,
+               0,
+               thumbnails_fbo_size_.width(),
+               thumbnails_fbo_size_.height(),
+               GL_RGBA,
+               GL_UNSIGNED_BYTE,
+               &rgba[0]);
+  rgb->resize(num_pixels * 3);
+  // Drop the alpha channel, but check as we go that it is all 0xff.
+  bool solid = true;
+  unsigned char* rgb_ptr = &((*rgb)[0]);
+  unsigned char* rgba_ptr = &rgba[0];
+  for (size_t i = 0; i < num_pixels; ++i) {
+    *rgb_ptr++ = *rgba_ptr++;
+    *rgb_ptr++ = *rgba_ptr++;
+    *rgb_ptr++ = *rgba_ptr++;
+    solid = solid && (*rgba_ptr == 0xff);
+    rgba_ptr++;
+  }
+  *alpha_solid = solid;
+
+  done->Signal();
 }
 
 }  // namespace content

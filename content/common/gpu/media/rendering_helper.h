@@ -16,20 +16,39 @@ class WaitableEvent;
 
 namespace content {
 
+struct RenderingHelperParams {
+  RenderingHelperParams();
+  ~RenderingHelperParams();
+
+  bool suppress_swap_to_display;
+  int num_windows;
+  // Dimensions of window(s) created for displaying frames. In the
+  // case of thumbnail rendering, these won't match the frame dimensions.
+  std::vector<gfx::Size> window_dimensions;
+  // Dimensions of video frame texture(s).
+  std::vector<gfx::Size> frame_dimensions;
+  // Whether the frames are rendered as scaled thumbnails within a
+  // larger FBO that is in turn rendered to the window.
+  bool render_as_thumbnails;
+  // The size of the FBO containing all visible thumbnails.
+  gfx::Size thumbnails_page_size;
+  // The size of each thumbnail within the FBO.
+  gfx::Size thumbnail_size;
+};
+
 // Creates and draws textures used by the video decoder.
 // This class is not thread safe and thus all the methods of this class
 // (except for ctor/dtor) ensure they're being run on a single thread.
 class RenderingHelper {
  public:
-  // Create a platform specifc implementation this object.
+  // Create a platform specific implementation of this object.
   static RenderingHelper* Create();
 
   RenderingHelper() {}
   virtual ~RenderingHelper() {}
 
   // Create the render context and windows by the specified dimensions.
-  virtual void Initialize(int num_windows,
-                          const std::vector<gfx::Size>& dimensions,
+  virtual void Initialize(const RenderingHelperParams& params,
                           base::WaitableEvent* done) = 0;
 
   // Undo the effects of Initialize() and signal |*done|.
@@ -53,6 +72,12 @@ class RenderingHelper {
 
   // Get the platform specific handle to the OpenGL display.
   virtual void* GetGLDisplay() = 0;
+
+  // Get rendered thumbnails as RGB.
+  // Sets alpha_solid to true if the alpha channel is entirely 0xff.
+  virtual void GetThumbnailsAsRGB(std::vector<unsigned char>* rgb,
+                                  bool* alpha_solid,
+                                  base::WaitableEvent* done) = 0;
 };
 
 }  // namespace content
