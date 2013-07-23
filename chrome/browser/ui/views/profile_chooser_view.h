@@ -16,6 +16,10 @@ namespace gfx {
 class Image;
 }
 
+namespace views {
+class LabelButton;
+}
+
 class AvatarMenuModel;
 class Browser;
 class ProfileItemView;
@@ -42,6 +46,7 @@ class ProfileChooserView : public views::BubbleDelegateView,
  private:
   friend class AvatarMenuButtonTest;
   FRIEND_TEST_ALL_PREFIXES(AvatarMenuButtonTest, NewSignOut);
+  FRIEND_TEST_ALL_PREFIXES(AvatarMenuButtonTest, LaunchUserManagerScreen);
 
   typedef std::vector<size_t> Indexes;
   typedef std::map<views::View*, int> ViewIndexes;
@@ -77,7 +82,8 @@ class ProfileChooserView : public views::BubbleDelegateView,
   scoped_ptr<AvatarMenuModel> avatar_menu_model_;
   Browser* browser_;
   views::View* current_profile_view_;
-  views::View* guest_button_view_;
+  views::LabelButton* guest_button_view_;
+  views::LabelButton* users_button_view_;
   ViewIndexes open_other_profile_indexes_map_;
   views::View* other_profiles_view_;
   views::View* signout_current_profile_view_;

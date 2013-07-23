@@ -10,6 +10,8 @@
 #include "chrome/browser/profiles/avatar_menu_model.h"
 #include "chrome/browser/profiles/profile_info_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/singleton_tabs.h"
+#include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -67,6 +69,7 @@ ProfileChooserView::ProfileChooserView(
       browser_(browser),
       current_profile_view_(NULL),
       guest_button_view_(NULL),
+      users_button_view_(NULL),
       other_profiles_view_(NULL),
       signout_current_profile_view_(NULL) {
   avatar_menu_model_.reset(new AvatarMenuModel(
@@ -113,11 +116,12 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
 
   if (sender == guest_button_view_) {
     avatar_menu_model_->SwitchToGuestProfileWindow(browser_);
-    return;
+  } else if (sender == users_button_view_) {
+    chrome::ShowSingletonTab(browser_, GURL(chrome::kChromeUIUserChooserURL));
+  } else {
+    DCHECK_EQ(sender, signout_current_profile_view_);
+    avatar_menu_model_->BeginSignOut();
   }
-
-  DCHECK_EQ(sender, signout_current_profile_view_);
-  avatar_menu_model_->BeginSignOut();
 }
 
 void ProfileChooserView::OnAvatarMenuModelChanged(
@@ -126,6 +130,7 @@ void ProfileChooserView::OnAvatarMenuModelChanged(
   // will actually delete them.
   current_profile_view_ = NULL;
   guest_button_view_ = NULL;
+  users_button_view_ = NULL;
   open_other_profile_indexes_map_.clear();
   other_profiles_view_ = NULL;
   signout_current_profile_view_ = NULL;
@@ -293,22 +298,19 @@ views::View* ProfileChooserView::CreateOtherProfilesView(
 }
 
 views::View* ProfileChooserView::CreateOptionsView() {
-  views::View* view = new views::View();
-
-  views::LabelButton* users_button = new views::LabelButton(
+  users_button_view_ = new views::LabelButton(
       this,
       l10n_util::GetStringUTF16(IDS_PROFILES_PROFILE_USERS_BUTTON));
-  users_button->SetHorizontalAlignment(gfx::ALIGN_CENTER);
-  users_button->set_tag(IDS_PROFILES_PROFILE_USERS_BUTTON);
-  views::LabelButton* guest_button = new views::LabelButton(
+  users_button_view_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
+  users_button_view_->set_tag(IDS_PROFILES_PROFILE_USERS_BUTTON);
+
+ guest_button_view_ = new views::LabelButton(
       this,
       l10n_util::GetStringUTF16(IDS_PROFILES_PROFILE_GUEST_BUTTON));
-  guest_button->SetHorizontalAlignment(gfx::ALIGN_CENTER);
-  guest_button->set_tag(IDS_PROFILES_PROFILE_GUEST_BUTTON);
+  guest_button_view_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
+  guest_button_view_->set_tag(IDS_PROFILES_PROFILE_GUEST_BUTTON);
 
-  DCHECK(!guest_button_view_);
-  guest_button_view_ = guest_button;
-
+  views::View* view = new views::View();
   views::GridLayout* layout = new views::GridLayout(view);
   view->SetLayoutManager(layout);
 
@@ -323,11 +325,11 @@ views::View* ProfileChooserView::CreateOptionsView() {
 
   const int kButtonHeight = 40;
   layout->StartRow(0, 0);
-  layout->AddView(users_button, 1, 1,
+  layout->AddView(users_button_view_, 1, 1,
                   views::GridLayout::FILL, views::GridLayout::FILL,
                   0, kButtonHeight);
   layout->AddView(new views::Separator(views::Separator::VERTICAL));
-  layout->AddView(guest_button, 1, 1,
+  layout->AddView(guest_button_view_, 1, 1,
                   views::GridLayout::FILL, views::GridLayout::FILL,
                   0, kButtonHeight);
 

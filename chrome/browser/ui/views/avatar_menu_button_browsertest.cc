@@ -12,11 +12,13 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/avatar_menu_bubble_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/profile_chooser_view.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "content/public/test/test_utils.h"
@@ -101,7 +103,6 @@ void AvatarMenuButtonTest::StartAvatarMenu() {
             ProfileChooserView::IsShowing());
 }
 
-
 IN_PROC_BROWSER_TEST_P(AvatarMenuButtonTest, HideOnSecondClick) {
   if (!profiles::IsMultipleProfilesEnabled() ||
       UsingNewProfileChooser()) {
@@ -122,7 +123,6 @@ IN_PROC_BROWSER_TEST_P(AvatarMenuButtonTest, HideOnSecondClick) {
   EXPECT_FALSE(AvatarMenuBubbleView::IsShowing());
   EXPECT_FALSE(ProfileChooserView::IsShowing());
 }
-
 
 IN_PROC_BROWSER_TEST_P(AvatarMenuButtonTest, NewSignOut) {
   if (!profiles::IsMultipleProfilesEnabled() ||
@@ -159,6 +159,34 @@ IN_PROC_BROWSER_TEST_P(AvatarMenuButtonTest, NewSignOut) {
   EXPECT_TRUE(browser_list->empty());
 }
 
+IN_PROC_BROWSER_TEST_P(AvatarMenuButtonTest, LaunchUserManagerScreen) {
+  if (!profiles::IsMultipleProfilesEnabled() ||
+      !UsingNewProfileChooser()) {
+    return;
+  }
+
+  CreateTestingProfile();
+  StartAvatarMenu();
+
+  int starting_tab_count = browser()->tab_strip_model()->count();
+  BrowserList* browser_list =
+      BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_NATIVE);
+  EXPECT_EQ(1U, browser_list->size());
+
+  ui::MouseEvent mouse_ev(ui::ET_MOUSE_RELEASED, gfx::Point(), gfx::Point(), 0);
+  ProfileChooserView::profile_bubble_->ButtonPressed(
+      static_cast<views::Button*>(
+          ProfileChooserView::profile_bubble_->users_button_view_),
+      mouse_ev);
+
+  // The user manager screen should go into a new, active tab.
+  int final_tab_count = browser()->tab_strip_model()->count();
+  EXPECT_EQ(1U, browser_list->size());
+  EXPECT_EQ(starting_tab_count + 1, final_tab_count);
+
+  GURL tab_url = browser()->tab_strip_model()->GetActiveWebContents()->GetURL();
+  EXPECT_EQ(std::string(chrome::kChromeUIUserChooserURL), tab_url.spec());
+}
 
 INSTANTIATE_TEST_CASE_P(Old, AvatarMenuButtonTest, testing::Values(false));
 INSTANTIATE_TEST_CASE_P(New, AvatarMenuButtonTest, testing::Values(true));
