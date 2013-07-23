@@ -25,18 +25,13 @@ namespace autofill {
 AutofillCreditCardBubbleViews::~AutofillCreditCardBubbleViews() {}
 
 void AutofillCreditCardBubbleViews::Show() {
-  views::BubbleDelegateView::CreateBubble(this);
   // TODO(dbeam): investigate why this steals focus from the web contents.
+  views::BubbleDelegateView::CreateBubble(this);
 
-  views::BubbleFrameView* frame_view = GetBubbleFrameView();
-  frame_view->SetTitle(controller_->BubbleTitle());
+  GetBubbleFrameView()->SetTitle(controller_->BubbleTitle());
 
-  views::Widget* widget = GetWidget();
-  widget->SetSize(frame_view->GetPreferredSize());
-  // Calls |frame_view_->Layout()| if necessary.
-  frame_view->SetBoundsRect(frame_view->bounds());
-
-  widget->Show();
+  GetWidget()->Show();
+  SizeToContents();
 }
 
 void AutofillCreditCardBubbleViews::Hide() {
