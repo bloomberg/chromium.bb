@@ -4,6 +4,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -1895,7 +1896,7 @@ TEST_F(TemplateURLServiceSyncTest, PreSyncUpdates) {
 
   // Merge the prepopulate search engines.
   base::Time pre_merge_time = base::Time::Now();
-  test_util_a_.BlockTillServiceProcessesRequests();
+  base::RunLoop().RunUntilIdle();
   test_util_a_.ResetModel(true);
 
   // The newly added search engine should have been safely merged, with an

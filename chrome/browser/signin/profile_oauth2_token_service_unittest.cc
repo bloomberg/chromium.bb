@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/run_loop.h"
 #include "chrome/browser/signin/oauth2_token_service.h"
 #include "chrome/browser/signin/oauth2_token_service_test_util.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
@@ -27,12 +28,9 @@ class ProfileOAuth2TokenServiceTest : public TokenServiceTestHarness,
 
   virtual void SetUp() OVERRIDE {
     TokenServiceTestHarness::SetUp();
-    io_thread_.reset(new content::TestBrowserThread(content::BrowserThread::IO,
-                                                    &message_loop_));
-    service_->UpdateCredentials(credentials_);
-    profile_->CreateRequestContext();
+    UpdateCredentialsOnService();
     oauth2_service_ = ProfileOAuth2TokenServiceFactory::GetForProfile(
-        profile_.get());
+        profile());
 
     oauth2_service_->AddObserver(this);
   }
@@ -106,7 +104,6 @@ class ProfileOAuth2TokenServiceTest : public TokenServiceTestHarness,
   }
 
  protected:
-  scoped_ptr<content::TestBrowserThread> io_thread_;
   net::TestURLFetcherFactory factory_;
   ProfileOAuth2TokenService* oauth2_service_;
   TestingOAuth2TokenServiceConsumer consumer_;
@@ -118,12 +115,12 @@ class ProfileOAuth2TokenServiceTest : public TokenServiceTestHarness,
 
 TEST_F(ProfileOAuth2TokenServiceTest, Notifications) {
   EXPECT_EQ(0, oauth2_service_->cache_size_for_testing());
-  service_->IssueAuthTokenForTest(GaiaConstants::kGaiaOAuth2LoginRefreshToken,
-                                  "refreshToken");
+  service()->IssueAuthTokenForTest(GaiaConstants::kGaiaOAuth2LoginRefreshToken,
+                                   "refreshToken");
   ExpectOneTokenAvailableNotification();
 
-  service_->EraseTokensFromDB();
-  service_->ResetCredentialsInMemory();
+  service()->EraseTokensFromDB();
+  service()->ResetCredentialsInMemory();
   ExpectOneTokensClearedNotification();
 }
 
@@ -133,11 +130,11 @@ TEST_F(ProfileOAuth2TokenServiceTest, LsoNotification) {
   EXPECT_EQ(0, oauth2_service_->cache_size_for_testing());
 
   // Get a valid token.
-  service_->IssueAuthTokenForTest(GaiaConstants::kGaiaOAuth2LoginRefreshToken,
-                                  "refreshToken");
+  service()->IssueAuthTokenForTest(GaiaConstants::kGaiaOAuth2LoginRefreshToken,
+                                   "refreshToken");
   ExpectOneTokenAvailableNotification();
 
-  service_->OnIssueAuthTokenFailure(
+  service()->OnIssueAuthTokenFailure(
       GaiaConstants::kLSOService,
       GoogleServiceAuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
   ExpectOneTokenRevokedNotification();
@@ -147,22 +144,22 @@ TEST_F(ProfileOAuth2TokenServiceTest, LsoNotification) {
 // should translate to finish token loading in ProfileOAuth2TokenService.
 TEST_F(ProfileOAuth2TokenServiceTest, TokensLoaded) {
   EXPECT_EQ(0, oauth2_service_->cache_size_for_testing());
-  service_->LoadTokensFromDB();
-  WaitForDBLoadCompletion();
+  service()->LoadTokensFromDB();
+  base::RunLoop().RunUntilIdle();
   ExpectOneTokensLoadedNotification();
 }
 
 TEST_F(ProfileOAuth2TokenServiceTest, UnknownNotificationsAreNoops) {
   EXPECT_EQ(0, oauth2_service_->cache_size_for_testing());
-  service_->IssueAuthTokenForTest("foo", "toto");
+  service()->IssueAuthTokenForTest("foo", "toto");
   ExpectNoNotifications();
 
   // Get a valid token.
-  service_->IssueAuthTokenForTest(GaiaConstants::kGaiaOAuth2LoginRefreshToken,
-                                  "refreshToken");
+  service()->IssueAuthTokenForTest(GaiaConstants::kGaiaOAuth2LoginRefreshToken,
+                                   "refreshToken");
   ExpectOneTokenAvailableNotification();
 
-  service_->IssueAuthTokenForTest("bar", "baz");
+  service()->IssueAuthTokenForTest("bar", "baz");
   ExpectNoNotifications();
 }
 
@@ -170,12 +167,12 @@ TEST_F(ProfileOAuth2TokenServiceTest, TokenServiceUpdateClearsCache) {
   EXPECT_EQ(0, oauth2_service_->cache_size_for_testing());
   std::set<std::string> scope_list;
   scope_list.insert("scope");
-  service_->IssueAuthTokenForTest(GaiaConstants::kGaiaOAuth2LoginRefreshToken,
-                                  "refreshToken");
+  service()->IssueAuthTokenForTest(GaiaConstants::kGaiaOAuth2LoginRefreshToken,
+                                   "refreshToken");
   ExpectOneTokenAvailableNotification();
   scoped_ptr<OAuth2TokenService::Request> request(oauth2_service_->StartRequest(
       scope_list, &consumer_));
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   net::TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
   fetcher->set_response_code(net::HTTP_OK);
   fetcher->SetResponseString(GetValidTokenResponse("token", 3600));
@@ -186,19 +183,19 @@ TEST_F(ProfileOAuth2TokenServiceTest, TokenServiceUpdateClearsCache) {
   EXPECT_EQ(1, oauth2_service_->cache_size_for_testing());
 
   // Signs out and signs in
-  service_->IssueAuthTokenForTest(GaiaConstants::kGaiaOAuth2LoginRefreshToken,
+  service()->IssueAuthTokenForTest(GaiaConstants::kGaiaOAuth2LoginRefreshToken,
                                   "");
   ExpectOneTokenAvailableNotification();
-  service_->EraseTokensFromDB();
+  service()->EraseTokensFromDB();
   ExpectOneTokensClearedNotification();
 
   EXPECT_EQ(0, oauth2_service_->cache_size_for_testing());
-  service_->IssueAuthTokenForTest(GaiaConstants::kGaiaOAuth2LoginRefreshToken,
+  service()->IssueAuthTokenForTest(GaiaConstants::kGaiaOAuth2LoginRefreshToken,
                                   "refreshToken");
   ExpectOneTokenAvailableNotification();
 
   request = oauth2_service_->StartRequest(scope_list, &consumer_);
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   fetcher = factory_.GetFetcherByID(0);
   fetcher->set_response_code(net::HTTP_OK);
   fetcher->SetResponseString(GetValidTokenResponse("another token", 3600));
@@ -212,19 +209,19 @@ TEST_F(ProfileOAuth2TokenServiceTest, TokenServiceUpdateClearsCache) {
 // Android doesn't use the current profile's TokenService login refresh token.
 #if !defined(OS_ANDROID)
 TEST_F(ProfileOAuth2TokenServiceTest, StaleRefreshTokensNotCached) {
-  EXPECT_FALSE(service_->HasOAuthLoginToken());
-  EXPECT_FALSE(oauth2_service_->ShouldCacheForRefreshToken(service_, "T1"));
+  EXPECT_FALSE(service()->HasOAuthLoginToken());
+  EXPECT_FALSE(oauth2_service_->ShouldCacheForRefreshToken(service(), "T1"));
 
-  service_->IssueAuthTokenForTest(GaiaConstants::kGaiaOAuth2LoginRefreshToken,
+  service()->IssueAuthTokenForTest(GaiaConstants::kGaiaOAuth2LoginRefreshToken,
                                   "T1");
   ExpectOneTokenAvailableNotification();
-  EXPECT_TRUE(oauth2_service_->ShouldCacheForRefreshToken(service_, "T1"));
-  EXPECT_FALSE(oauth2_service_->ShouldCacheForRefreshToken(service_, "T2"));
+  EXPECT_TRUE(oauth2_service_->ShouldCacheForRefreshToken(service(), "T1"));
+  EXPECT_FALSE(oauth2_service_->ShouldCacheForRefreshToken(service(), "T2"));
 
-  service_->IssueAuthTokenForTest(GaiaConstants::kGaiaOAuth2LoginRefreshToken,
+  service()->IssueAuthTokenForTest(GaiaConstants::kGaiaOAuth2LoginRefreshToken,
                                   "T2");
   ExpectOneTokenAvailableNotification();
-  EXPECT_TRUE(oauth2_service_->ShouldCacheForRefreshToken(service_, "T2"));
+  EXPECT_TRUE(oauth2_service_->ShouldCacheForRefreshToken(service(), "T2"));
   EXPECT_FALSE(oauth2_service_->ShouldCacheForRefreshToken(NULL, "T2"));
 }
 #endif

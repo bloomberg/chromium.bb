@@ -100,8 +100,7 @@ void RunAnimationForWidget(views::Widget* widget) {
 class DesktopBackgroundControllerTest : public test::AshTestBase {
  public:
   DesktopBackgroundControllerTest()
-      : ui_thread_(content::BrowserThread::UI, base::MessageLoop::current()),
-        command_line_(CommandLine::NO_PROGRAM),
+      : command_line_(CommandLine::NO_PROGRAM),
         controller_(NULL) {
   }
   virtual ~DesktopBackgroundControllerTest() {}
@@ -246,8 +245,6 @@ class DesktopBackgroundControllerTest : public test::AshTestBase {
 
     controller_->set_command_line_for_testing(&command_line_);
   }
-
-  content::TestBrowserThread ui_thread_;
 
   // Custom command line passed to DesktopBackgroundController by
   // WriteWallpapersAndSetFlags().

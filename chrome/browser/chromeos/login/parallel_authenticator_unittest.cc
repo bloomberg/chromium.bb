@@ -27,7 +27,7 @@
 #include "chromeos/cryptohome/mock_cryptohome_library.h"
 #include "chromeos/dbus/fake_cryptohome_client.h"
 #include "chromeos/dbus/mock_dbus_thread_manager_without_gmock.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/gaia/mock_url_fetcher_factory.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request_status.h"
@@ -36,13 +36,9 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "url/gurl.h"
 
-using ::testing::AnyNumber;
-using ::testing::DoAll;
 using ::testing::Invoke;
 using ::testing::Return;
-using ::testing::SetArgPointee;
 using ::testing::_;
-using content::BrowserThread;
 
 namespace chromeos {
 
@@ -57,15 +53,10 @@ class TestOnlineAttempt : public OnlineAttempt {
 class ParallelAuthenticatorTest : public testing::Test {
  public:
   ParallelAuthenticatorTest()
-      : message_loop_(base::MessageLoop::TYPE_UI),
-        ui_thread_(BrowserThread::UI, &message_loop_),
-        file_thread_(BrowserThread::FILE, &message_loop_),
-        io_thread_(BrowserThread::IO),
-        username_("me@nowhere.org"),
+      : username_("me@nowhere.org"),
         password_("fakepass"),
+        hash_ascii_("0a010000000000a0" + std::string(16, '0')),
         user_manager_enabler_(new MockUserManager) {
-    hash_ascii_.assign("0a010000000000a0");
-    hash_ascii_.append(std::string(16, '0'));
   }
 
   virtual ~ParallelAuthenticatorTest() {
@@ -78,8 +69,6 @@ class ParallelAuthenticatorTest : public testing::Test {
 
     mock_cryptohome_library_ .reset(new MockCryptohomeLibrary());
     CryptohomeLibrary::SetForTest(mock_cryptohome_library_.get());
-
-    io_thread_.Start();
 
     auth_ = new ParallelAuthenticator(&consumer_);
     state_.reset(new TestAttemptState(UserContext(username_,
@@ -177,7 +166,7 @@ class ParallelAuthenticatorTest : public testing::Test {
 
   void RunResolve(ParallelAuthenticator* auth) {
     auth->Resolve();
-    message_loop_.RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
   }
 
   void SetAttemptState(ParallelAuthenticator* auth, TestAttemptState* state) {
@@ -198,10 +187,7 @@ class ParallelAuthenticatorTest : public testing::Test {
     auth_->set_online_attempt(new TestOnlineAttempt(state_.get(), auth_.get()));
   }
 
-  base::MessageLoop message_loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_thread_;
-  content::TestBrowserThread io_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
 
   std::string username_;
   std::string password_;
@@ -390,7 +376,7 @@ TEST_F(ParallelAuthenticatorTest, DriveGuestLogin) {
       .RetiresOnSaturation();
 
   auth_->LoginOffTheRecord();
-  message_loop_.Run();
+  base::MessageLoop::current()->Run();
 }
 
 TEST_F(ParallelAuthenticatorTest, DriveGuestLoginButFail) {
@@ -405,7 +391,7 @@ TEST_F(ParallelAuthenticatorTest, DriveGuestLoginButFail) {
       .RetiresOnSaturation();
 
   auth_->LoginOffTheRecord();
-  message_loop_.Run();
+  base::MessageLoop::current()->Run();
 }
 
 TEST_F(ParallelAuthenticatorTest, DriveRetailModeUserLogin) {
@@ -420,7 +406,7 @@ TEST_F(ParallelAuthenticatorTest, DriveRetailModeUserLogin) {
       .RetiresOnSaturation();
 
   auth_->LoginRetailMode();
-  message_loop_.Run();
+  base::MessageLoop::current()->Run();
 }
 
 TEST_F(ParallelAuthenticatorTest, DriveRetailModeLoginButFail) {
@@ -435,7 +421,7 @@ TEST_F(ParallelAuthenticatorTest, DriveRetailModeLoginButFail) {
       .RetiresOnSaturation();
 
   auth_->LoginRetailMode();
-  message_loop_.Run();
+  base::MessageLoop::current()->Run();
 }
 
 TEST_F(ParallelAuthenticatorTest, DriveDataResync) {
@@ -464,7 +450,7 @@ TEST_F(ParallelAuthenticatorTest, DriveDataResync) {
   SetAttemptState(auth_.get(), state_.release());
 
   auth_->ResyncEncryptedData();
-  message_loop_.Run();
+  base::MessageLoop::current()->Run();
 }
 
 TEST_F(ParallelAuthenticatorTest, DriveResyncFail) {
@@ -480,7 +466,7 @@ TEST_F(ParallelAuthenticatorTest, DriveResyncFail) {
   SetAttemptState(auth_.get(), state_.release());
 
   auth_->ResyncEncryptedData();
-  message_loop_.Run();
+  base::MessageLoop::current()->Run();
 }
 
 TEST_F(ParallelAuthenticatorTest, DriveRequestOldPassword) {
@@ -521,7 +507,7 @@ TEST_F(ParallelAuthenticatorTest, DriveDataRecover) {
   SetAttemptState(auth_.get(), state_.release());
 
   auth_->RecoverEncryptedData(std::string());
-  message_loop_.Run();
+  base::MessageLoop::current()->Run();
 }
 
 TEST_F(ParallelAuthenticatorTest, DriveDataRecoverButFail) {
@@ -541,7 +527,7 @@ TEST_F(ParallelAuthenticatorTest, DriveDataRecoverButFail) {
   SetAttemptState(auth_.get(), state_.release());
 
   auth_->RecoverEncryptedData(std::string());
-  message_loop_.Run();
+  base::MessageLoop::current()->Run();
 }
 
 TEST_F(ParallelAuthenticatorTest, ResolveNoMount) {
@@ -652,7 +638,7 @@ TEST_F(ParallelAuthenticatorTest, DriveUnlock) {
   auth_->AuthenticateToUnlock(UserContext(username_,
                                           std::string(),
                                           std::string()));
-  message_loop_.Run();
+  base::MessageLoop::current()->Run();
 }
 
 }  // namespace chromeos

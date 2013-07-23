@@ -12,10 +12,11 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/test/mock_resource_context.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "grit/browser_resources.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -73,11 +74,10 @@ class IframeSourceTest : public testing::Test {
   // else happen on the IO thread. This setup is a hacky way to satisfy all
   // those constraints.
   IframeSourceTest()
-    : message_loop_(base::MessageLoop::TYPE_IO),
-      ui_thread_(content::BrowserThread::UI, &message_loop_),
-      io_thread_(content::BrowserThread::IO, &message_loop_),
-      instant_io_context_(NULL),
-      response_(NULL) {
+      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+        resource_context_(&test_url_request_context_),
+        instant_io_context_(NULL),
+        response_(NULL) {
   }
 
   TestIframeSource* source() { return source_.get(); }
@@ -121,7 +121,7 @@ class IframeSourceTest : public testing::Test {
   }
 
  private:
-  virtual void SetUp() {
+  virtual void SetUp() OVERRIDE {
     source_.reset(new TestIframeSource());
     callback_ = base::Bind(&IframeSourceTest::SaveResponse,
                            base::Unretained(this));
@@ -140,10 +140,9 @@ class IframeSourceTest : public testing::Test {
     response_ = data;
   }
 
-  base::MessageLoop message_loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread io_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
 
+  net::TestURLRequestContext test_url_request_context_;
   content::MockResourceContext resource_context_;
   scoped_ptr<TestIframeSource> source_;
   content::URLDataSource::GotDataCallback callback_;

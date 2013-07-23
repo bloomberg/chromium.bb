@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/json/json_reader.h"
-#include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
@@ -102,7 +101,7 @@ void MockFetcher::Start() {
 }
 
 class GaiaAuthFetcherTest : public testing::Test {
- public:
+ protected:
   GaiaAuthFetcherTest()
       : client_login_source_(GaiaUrls::GetInstance()->client_login_url()),
         issue_auth_token_source_(

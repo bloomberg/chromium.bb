@@ -9,11 +9,11 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/platform_file.h"
 #include "base/prefs/pref_service.h"
+#include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/synchronization/waitable_event.h"
 #include "base/time/time.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/password_manager/password_form_data.h"
@@ -23,15 +23,15 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/test/mock_notification_observer.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using base::WaitableEvent;
 using content::BrowserThread;
 using testing::_;
 using testing::DoAll;
@@ -56,44 +56,25 @@ class MockPasswordStoreConsumer : public PasswordStoreConsumer {
 
 // This class will add and remove a mock notification observer from
 // the DB thread.
-class DBThreadObserverHelper
-    : public base::RefCountedThreadSafe<DBThreadObserverHelper,
-                                        BrowserThread::DeleteOnDBThread> {
+class DBThreadObserverHelper {
  public:
-  DBThreadObserverHelper() : done_event_(true, false) {}
+  DBThreadObserverHelper() {}
+
+  ~DBThreadObserverHelper() {
+    registrar_.RemoveAll();
+  }
 
   void Init(PasswordStore* password_store) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    BrowserThread::PostTask(
-        BrowserThread::DB,
-        FROM_HERE,
-        base::Bind(&DBThreadObserverHelper::AddObserverTask,
-                   this, make_scoped_refptr(password_store)));
-    done_event_.Wait();
+    registrar_.Add(&observer_,
+                   chrome::NOTIFICATION_LOGINS_CHANGED,
+                   content::Source<PasswordStore>(password_store));
   }
 
   content::MockNotificationObserver& observer() {
     return observer_;
   }
 
- protected:
-  friend struct BrowserThread::DeleteOnThread<BrowserThread::DB>;
-  friend class base::DeleteHelper<DBThreadObserverHelper>;
-
-  virtual ~DBThreadObserverHelper() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
-    registrar_.RemoveAll();
-  }
-
-  void AddObserverTask(PasswordStore* password_store) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
-    registrar_.Add(&observer_,
-                   chrome::NOTIFICATION_LOGINS_CHANGED,
-                   content::Source<PasswordStore>(password_store));
-    done_event_.Signal();
-  }
-
-  WaitableEvent done_event_;
+ private:
   content::NotificationRegistrar registrar_;
   content::MockNotificationObserver observer_;
 };
@@ -269,13 +250,7 @@ enum BackendType {
 
 class PasswordStoreXTest : public testing::TestWithParam<BackendType> {
  protected:
-  PasswordStoreXTest()
-      : ui_thread_(BrowserThread::UI, &message_loop_),
-        db_thread_(BrowserThread::DB) {
-  }
-
   virtual void SetUp() {
-    ASSERT_TRUE(db_thread_.Start());
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     profile_.reset(new TestingProfile());
@@ -285,10 +260,7 @@ class PasswordStoreXTest : public testing::TestWithParam<BackendType> {
   }
 
   virtual void TearDown() {
-    base::MessageLoop::current()->PostTask(FROM_HERE,
-                                           base::MessageLoop::QuitClosure());
-    base::MessageLoop::current()->Run();
-    db_thread_.Stop();
+    base::RunLoop().RunUntilIdle();
   }
 
   PasswordStoreX::NativeBackend* GetBackend() {
@@ -302,10 +274,7 @@ class PasswordStoreXTest : public testing::TestWithParam<BackendType> {
     }
   }
 
-  base::MessageLoopForUI message_loop_;
-  content::TestBrowserThread ui_thread_;
-  // PasswordStore, WDS schedule work on this thread.
-  content::TestBrowserThread db_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
 
   scoped_ptr<LoginDatabase> login_db_;
   scoped_ptr<TestingProfile> profile_;
@@ -314,11 +283,6 @@ class PasswordStoreXTest : public testing::TestWithParam<BackendType> {
 
 ACTION(STLDeleteElements0) {
   STLDeleteContainerPointers(arg0.begin(), arg0.end());
-}
-
-ACTION(QuitUIMessageLoop) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  base::MessageLoop::current()->Quit();
 }
 
 TEST_P(PasswordStoreXTest, Notifications) {
@@ -341,15 +305,15 @@ TEST_P(PasswordStoreXTest, Notifications) {
     true, false, 1 };
   scoped_ptr<PasswordForm> form(CreatePasswordFormFromData(form_data));
 
-  scoped_refptr<DBThreadObserverHelper> helper = new DBThreadObserverHelper;
-  helper->Init(store.get());
+  DBThreadObserverHelper helper;
+  helper.Init(store.get());
 
   const PasswordStoreChange expected_add_changes[] = {
     PasswordStoreChange(PasswordStoreChange::ADD, *form),
   };
 
   EXPECT_CALL(
-      helper->observer(),
+      helper.observer(),
       Observe(int(chrome::NOTIFICATION_LOGINS_CHANGED),
               content::Source<PasswordStore>(store.get()),
               Property(&content::Details<const PasswordStoreChangeList>::ptr,
@@ -358,12 +322,9 @@ TEST_P(PasswordStoreXTest, Notifications) {
   // Adding a login should trigger a notification.
   store->AddLogin(*form);
 
-  // The PasswordStore schedules tasks to run on the DB thread so we schedule
-  // yet another task to notify us that it's safe to carry on with the test.
-  WaitableEvent done(false, false);
-  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      base::Bind(&WaitableEvent::Signal, base::Unretained(&done)));
-  done.Wait();
+  // The PasswordStore schedules tasks to run on the DB thread. Wait for them
+  // to complete.
+  base::RunLoop().RunUntilIdle();
 
   // Change the password.
   form->password_value = WideToUTF16(L"a different password");
@@ -373,7 +334,7 @@ TEST_P(PasswordStoreXTest, Notifications) {
   };
 
   EXPECT_CALL(
-      helper->observer(),
+      helper.observer(),
       Observe(int(chrome::NOTIFICATION_LOGINS_CHANGED),
               content::Source<PasswordStore>(store.get()),
               Property(&content::Details<const PasswordStoreChangeList>::ptr,
@@ -382,17 +343,15 @@ TEST_P(PasswordStoreXTest, Notifications) {
   // Updating the login with the new password should trigger a notification.
   store->UpdateLogin(*form);
 
-  // Wait for PasswordStore to send the notification.
-  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      base::Bind(&WaitableEvent::Signal, base::Unretained(&done)));
-  done.Wait();
+  // Wait for PasswordStore to send execute.
+  base::RunLoop().RunUntilIdle();
 
   const PasswordStoreChange expected_delete_changes[] = {
     PasswordStoreChange(PasswordStoreChange::REMOVE, *form),
   };
 
   EXPECT_CALL(
-      helper->observer(),
+      helper.observer(),
       Observe(int(chrome::NOTIFICATION_LOGINS_CHANGED),
               content::Source<PasswordStore>(store.get()),
               Property(&content::Details<const PasswordStoreChangeList>::ptr,
@@ -401,10 +360,8 @@ TEST_P(PasswordStoreXTest, Notifications) {
   // Deleting the login should trigger a notification.
   store->RemoveLogin(*form);
 
-  // Wait for PasswordStore to send the notification.
-  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      base::Bind(&WaitableEvent::Signal, base::Unretained(&done)));
-  done.Wait();
+  // Wait for PasswordStore to execute.
+  base::RunLoop().RunUntilIdle();
 
   // Public in PasswordStore, protected in PasswordStoreX.
   static_cast<PasswordStore*>(store.get())->ShutdownOnUIThread();
@@ -428,25 +385,12 @@ TEST_P(PasswordStoreXTest, NativeMigration) {
   // Populate the login DB with logins that should be migrated.
   for (VectorOfForms::iterator it = expected_autofillable.begin();
        it != expected_autofillable.end(); ++it) {
-    BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-                            base::Bind(
-                                base::IgnoreResult(&LoginDatabase::AddLogin),
-                                base::Unretained(login_db), **it));
+    login_db->AddLogin(**it);
   }
   for (VectorOfForms::iterator it = expected_blacklisted.begin();
        it != expected_blacklisted.end(); ++it) {
-    BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-                            base::Bind(
-                                base::IgnoreResult(&LoginDatabase::AddLogin),
-                                base::Unretained(login_db), **it));
+    login_db->AddLogin(**it);
   }
-
-  // Schedule another task on the DB thread to notify us that it's safe to
-  // carry on with the test.
-  WaitableEvent done(false, false);
-  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      base::Bind(&WaitableEvent::Signal, base::Unretained(&done)));
-  done.Wait();
 
   // Get the new size of the login DB file. We expect it to be larger.
   base::PlatformFileInfo db_file_full_info;
@@ -462,27 +406,23 @@ TEST_P(PasswordStoreXTest, NativeMigration) {
 
   MockPasswordStoreConsumer consumer;
 
-  // Make sure we quit the MessageLoop even if the test fails.
-  ON_CALL(consumer, OnPasswordStoreRequestDone(_, _))
-      .WillByDefault(QuitUIMessageLoop());
-
   // The autofillable forms should have been migrated to the native backend.
   EXPECT_CALL(consumer,
       OnPasswordStoreRequestDone(_,
           ContainsAllPasswordForms(expected_autofillable)))
-      .WillOnce(DoAll(WithArg<1>(STLDeleteElements0()), QuitUIMessageLoop()));
+      .WillOnce(WithArg<1>(STLDeleteElements0()));
 
   store->GetAutofillableLogins(&consumer);
-  base::MessageLoop::current()->Run();
+  base::RunLoop().RunUntilIdle();
 
   // The blacklisted forms should have been migrated to the native backend.
   EXPECT_CALL(consumer,
       OnPasswordStoreRequestDone(_,
           ContainsAllPasswordForms(expected_blacklisted)))
-      .WillOnce(DoAll(WithArg<1>(STLDeleteElements0()), QuitUIMessageLoop()));
+      .WillOnce(WithArg<1>(STLDeleteElements0()));
 
   store->GetBlacklistLogins(&consumer);
-  base::MessageLoop::current()->Run();
+  base::RunLoop().RunUntilIdle();
 
   VectorOfForms empty;
   MockLoginDatabaseReturn ld_return;
@@ -499,14 +439,10 @@ TEST_P(PasswordStoreXTest, NativeMigration) {
         .WillOnce(WithArg<0>(STLDeleteElements0()));
   }
 
-  BrowserThread::PostTask(
-      BrowserThread::DB, FROM_HERE,
-      base::Bind(&LoginDatabaseQueryCallback, login_db, true, &ld_return));
+  LoginDatabaseQueryCallback(login_db, true, &ld_return);
 
-  // Wait for the login DB methods to execute on the DB thread.
-  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      base::Bind(&WaitableEvent::Signal, base::Unretained(&done)));
-  done.Wait();
+  // Wait for the login DB methods to execute.
+  base::RunLoop().RunUntilIdle();
 
   if (GetParam() == WORKING_BACKEND) {
     // Likewise, no blacklisted logins should be left in the login DB.
@@ -520,14 +456,10 @@ TEST_P(PasswordStoreXTest, NativeMigration) {
         .WillOnce(WithArg<0>(STLDeleteElements0()));
   }
 
-  BrowserThread::PostTask(
-      BrowserThread::DB, FROM_HERE,
-      base::Bind(&LoginDatabaseQueryCallback, login_db, false, &ld_return));
+  LoginDatabaseQueryCallback(login_db, false, &ld_return);
 
-  // Wait for the login DB methods to execute on the DB thread.
-  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      base::Bind(&WaitableEvent::Signal, base::Unretained(&done)));
-  done.Wait();
+  // Wait for the login DB methods to execute.
+  base::RunLoop().RunUntilIdle();
 
   if (GetParam() == WORKING_BACKEND) {
     // If the migration succeeded, then not only should there be no logins left

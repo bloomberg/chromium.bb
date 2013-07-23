@@ -33,7 +33,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/url_request/test_url_fetcher_factory.h"
@@ -75,9 +75,7 @@ const char kOAuth2AccessTokenData[] =
 class UserCloudPolicyManagerChromeOSTest : public testing::Test {
  protected:
   UserCloudPolicyManagerChromeOSTest()
-      : ui_thread_(content::BrowserThread::UI, &loop_),
-        io_thread_(content::BrowserThread::IO, &loop_),
-        store_(NULL),
+      : store_(NULL),
         profile_(NULL),
         signin_profile_(NULL) {}
 
@@ -90,14 +88,13 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
     profile_ = profile_manager_->CreateTestingProfile(
         chrome::kInitialProfile, scoped_ptr<PrefServiceSyncable>(),
         UTF8ToUTF16("testing_profile"), 0);
-    signin_profile_ = profile_manager_->CreateTestingProfile("signin_profile");
+    signin_profile_ = profile_manager_->CreateTestingProfile(kSigninProfile);
     signin_profile_->set_incognito(true);
     // Usually the signin Profile and the main Profile are separate, but since
     // the signin Profile is an OTR Profile then for this test it suffices to
     // attach it to the main Profile.
     profile_->SetOffTheRecordProfile(signin_profile_);
     signin_profile_->SetOriginalProfile(profile_);
-    signin_profile_->CreateRequestContext();
     ASSERT_EQ(signin_profile_, chromeos::ProfileHelper::GetSigninProfile());
 
     chrome::RegisterLocalState(prefs_.registry());
@@ -136,7 +133,10 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
       manager_->RemoveObserver(&observer_);
       manager_->Shutdown();
     }
-    signin_profile_->ResetRequestContext();
+    signin_profile_ = NULL;
+    profile_ = NULL;
+    profile_manager_->DeleteTestingProfile(kSigninProfile);
+    profile_manager_->DeleteTestingProfile(chrome::kInitialProfile);
   }
 
   void CreateManager(bool wait_for_fetch) {
@@ -265,11 +265,9 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
     EXPECT_TRUE(manager_->policies().Equals(expected_bundle_));
   }
 
-  // Required by the refresh scheduler that's created by the manager.
-  base::MessageLoop loop_;
-  content::TestBrowserThread ui_thread_;
-  // Required to cleanup the URLRequestContextGetter of the |signin_profile_|.
-  content::TestBrowserThread io_thread_;
+  // Required by the refresh scheduler that's created by the manager and
+  // for the cleanup of URLRequestContextGetter in the |signin_profile_|.
+  content::TestBrowserThreadBundle thread_bundle_;
 
   // Convenience policy objects.
   em::PolicyData policy_data_;
@@ -292,9 +290,14 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
   TestingProfile* profile_;
   TestingProfile* signin_profile_;
 
+  static const char kSigninProfile[];
+
  private:
   DISALLOW_COPY_AND_ASSIGN(UserCloudPolicyManagerChromeOSTest);
 };
+
+const char UserCloudPolicyManagerChromeOSTest::kSigninProfile[] =
+    "signin_profile";
 
 TEST_F(UserCloudPolicyManagerChromeOSTest, BlockingFirstFetch) {
   // Tests the initialization of a manager whose Profile is waiting for the

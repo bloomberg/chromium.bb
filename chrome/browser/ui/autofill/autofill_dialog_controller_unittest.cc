@@ -320,7 +320,6 @@ class AutofillDialogControllerTest : public ChromeRenderViewHostTestHarness {
   // testing::Test implementation:
   virtual void SetUp() OVERRIDE {
     ChromeRenderViewHostTestHarness::SetUp();
-    profile()->CreateRequestContext();
 
     test_bubble_controller_ =
         new testing::NiceMock<TestAutofillCreditCardBubbleController>(
@@ -342,7 +341,6 @@ class AutofillDialogControllerTest : public ChromeRenderViewHostTestHarness {
   void Reset() {
     if (controller_)
       controller_->ViewClosed();
-    profile()->CreateRequestContext();
 
     test_bubble_controller_ =
         new testing::NiceMock<TestAutofillCreditCardBubbleController>(

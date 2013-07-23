@@ -124,7 +124,6 @@ class ProfileSyncServicePreferenceTest
   virtual void SetUp() {
     AbstractProfileSyncServiceTest::SetUp();
     profile_.reset(new TestingProfile());
-    profile_->CreateRequestContext();
     invalidation::InvalidationServiceFactory::GetInstance()->
         SetBuildOnlyFakeInvalidatorsForTest(true);
     prefs_ = profile_->GetTestingPrefService();

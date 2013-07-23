@@ -371,8 +371,13 @@ void WaitForBookmarkModelToLoad(Profile* profile) {
 void WaitForTemplateURLServiceToLoad(TemplateURLService* service) {
   if (service->loaded())
     return;
+
+  content::WindowedNotificationObserver observer(
+      chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED,
+      content::Source<TemplateURLService>(service));
   service->Load();
-  TemplateURLServiceTestUtil::BlockTillServiceProcessesRequests();
+  observer.Wait();
+
   ASSERT_TRUE(service->loaded());
 }
 

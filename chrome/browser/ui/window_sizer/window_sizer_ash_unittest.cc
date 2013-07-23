@@ -76,32 +76,6 @@ int AlignToGridRoundDown(int location, int grid_size) {
   return location / grid_size * grid_size;
 }
 
-// A special test class for use with browser creation - it will create a
-// browser thread and deletes it after all other things have been destroyed.
-class WindowSizerTestWithBrowser : public WindowSizerTest {
- public:
-  WindowSizerTestWithBrowser();
-  virtual ~WindowSizerTestWithBrowser();
-
- private:
-  // Note: It is important to delete the thread after the browser instances got
-  // deleted. For this we transfer the thread here.
-  scoped_ptr<content::TestBrowserThread> ui_thread_;
-
-  DISALLOW_COPY_AND_ASSIGN(WindowSizerTestWithBrowser);
-};
-
-// The class function definitions from window_sizer_common_unittest.h
-WindowSizerTestWithBrowser::WindowSizerTestWithBrowser() {
-  // Set up a UI message thread.
-  base::MessageLoopForUI* ui_loop = message_loop();
-  ui_thread_.reset(
-      new content::TestBrowserThread(content::BrowserThread::UI, ui_loop));
-}
-
-WindowSizerTestWithBrowser::~WindowSizerTestWithBrowser() {
-}
-
 }  // namespace
 
 // Test that the window is sized appropriately for the first run experience
@@ -456,7 +430,7 @@ TEST_F(WindowSizerTest, LastWindowOffscreenWithNonAggressiveRepositioning) {
 }
 
 // Test the placement of newly created windows.
-TEST_F(WindowSizerTestWithBrowser, PlaceNewWindows) {
+TEST_F(WindowSizerTest, PlaceNewWindows) {
   // Create a dummy window.
   scoped_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
   window->SetBounds(gfx::Rect(16, 32, 640, 320));
@@ -576,7 +550,7 @@ TEST_F(WindowSizerTestWithBrowser, PlaceNewWindows) {
 // Test the placement of newly created windows on an empty desktop.
 // This test supplements "PlaceNewWindows" by testing the creation of a newly
 // created browser window on an empty desktop.
-TEST_F(WindowSizerTestWithBrowser, PlaceNewBrowserWindowOnEmptyDesktop) {
+TEST_F(WindowSizerTest, PlaceNewBrowserWindowOnEmptyDesktop) {
   // Create a browser which we can use to pass into the GetWindowBounds
   // function.
   scoped_ptr<TestingProfile> profile(new TestingProfile());
@@ -652,7 +626,7 @@ TEST_F(WindowSizerTestWithBrowser, PlaceNewBrowserWindowOnEmptyDesktop) {
 #endif
 
 // Test the placement of newly created windows on multiple dislays.
-TEST_F(WindowSizerTestWithBrowser, MAYBE_PlaceNewWindowsOnMultipleDisplays) {
+TEST_F(WindowSizerTest, MAYBE_PlaceNewWindowsOnMultipleDisplays) {
   UpdateDisplay("1600x1200,1600x1200");
   const gfx::Rect secondary(1600, 0, 1600, 1200);
 
@@ -741,7 +715,7 @@ TEST_F(WindowSizerTestWithBrowser, MAYBE_PlaceNewWindowsOnMultipleDisplays) {
 }
 
 // Test that the show state is properly returned for non default cases.
-TEST_F(WindowSizerTestWithBrowser, TestShowState) {
+TEST_F(WindowSizerTest, TestShowState) {
   // Creating a browser & window to play with.
   scoped_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
   window->SetBounds(gfx::Rect(16, 32, 640, 320));
@@ -846,7 +820,7 @@ TEST_F(WindowSizerTestWithBrowser, TestShowState) {
 }
 
 // Test that the default show state override behavior is properly handled.
-TEST_F(WindowSizerTestWithBrowser, TestShowStateDefaults) {
+TEST_F(WindowSizerTest, TestShowStateDefaults) {
   // Creating a browser & window to play with.
   scoped_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
   window->SetBounds(gfx::Rect(16, 32, 640, 320));

@@ -6,7 +6,6 @@
 #include <cstring>
 
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/run_loop.h"
@@ -22,19 +21,13 @@
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
 
 class UserManagerTest : public testing::Test {
- public:
-  UserManagerTest()
-      : message_loop_(base::MessageLoop::TYPE_UI),
-        ui_thread_(content::BrowserThread::UI, &message_loop_),
-        file_thread_(content::BrowserThread::FILE, &message_loop_) {
-  }
-
+ protected:
   virtual void SetUp() OVERRIDE {
     cros_settings_ = CrosSettings::Get();
 
@@ -126,9 +119,7 @@ class UserManagerTest : public testing::Test {
   }
 
  protected:
-  base::MessageLoop message_loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
 
   CrosSettings* cros_settings_;
   CrosSettingsProvider* device_settings_provider_;

@@ -7,7 +7,6 @@
 #include <string>
 #include <vector>
 
-#include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
@@ -155,8 +154,7 @@ const std::string kDummyTokenInfoResult =
 namespace gaia {
 
 class GaiaOAuthClientTest : public testing::Test {
- public:
-  GaiaOAuthClientTest() {}
+ protected:
   virtual void SetUp() OVERRIDE {
     client_info_.client_id = "test_client_id";
     client_info_.client_secret = "test_client_secret";

@@ -11,9 +11,12 @@
 #include "base/message_loop/message_loop.h"
 #include "base/process_util.h"
 #include "base/rand_util.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/test/multiprocess_test.h"
 #include "base/test/test_timeouts.h"
+#include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
+#include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service_factory.h"
 #include "chrome/browser/service/service_process_control.h"
@@ -26,13 +29,14 @@
 #include "chrome/service/service_process.h"
 #include "chrome/test/base/test_launcher_utils.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "chrome/test/base/testing_io_thread_state.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "ipc/ipc_descriptors.h"
 #include "ipc/ipc_multiprocess_test.h"
 #include "ipc/ipc_switches.h"
@@ -57,6 +61,7 @@ using ::testing::Property;
 using ::testing::Return;
 using ::testing::WithoutArgs;
 using ::testing::_;
+using content::BrowserThread;
 
 namespace {
 
@@ -205,16 +210,22 @@ typedef base::Callback<void(MockServiceIPCServer* server)>
 int CloudPrintMockService_Main(SetExpectationsCallback set_expectations) {
   base::MessageLoopForUI main_message_loop;
   main_message_loop.set_thread_name("Main Thread");
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
 
 #if defined(OS_MACOSX)
-  CommandLine* cl = CommandLine::ForCurrentProcess();
-  if (!cl->HasSwitch(kTestExecutablePath))
+  if (!command_line->HasSwitch(kTestExecutablePath))
     return kMissingSwitch;
-  base::FilePath executable_path = cl->GetSwitchValuePath(kTestExecutablePath);
+  base::FilePath executable_path =
+      command_line->GetSwitchValuePath(kTestExecutablePath);
   EXPECT_FALSE(executable_path.empty());
   MockLaunchd mock_launchd(executable_path, &main_message_loop, true, true);
   Launchd::ScopedInstance use_mock(&mock_launchd);
 #endif
+
+  base::FilePath user_data_dir =
+      command_line->GetSwitchValuePath(switches::kUserDataDir);
+  CHECK(!user_data_dir.empty());
+  CHECK(test_launcher_utils::OverrideUserDataDir(user_data_dir));
 
   ServiceProcessState* state(new ServiceProcessState);
   bool service_process_state_initialized = state->Initialize();
@@ -289,8 +300,8 @@ class CloudPrintProxyPolicyStartupTest : public base::MultiProcessTest,
   virtual ~CloudPrintProxyPolicyStartupTest();
 
   virtual void SetUp();
-  base::MessageLoopProxy* IOMessageLoopProxy() {
-    return io_thread_.message_loop_proxy().get();
+  scoped_refptr<base::MessageLoopProxy> IOMessageLoopProxy() {
+    return BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
   }
   base::ProcessHandle Launch(const std::string& name);
   void WaitForConnect();
@@ -316,9 +327,8 @@ class CloudPrintProxyPolicyStartupTest : public base::MultiProcessTest,
   }
 
  protected:
-  base::MessageLoopForUI message_loop_;
-  content::TestBrowserThread ui_thread_;
-  base::Thread io_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
+  base::ScopedTempDir temp_user_data_dir_;
 
   std::string startup_channel_id_;
   scoped_ptr<IPC::ChannelProxy> startup_channel_;
@@ -359,28 +369,43 @@ class CloudPrintProxyPolicyStartupTest : public base::MultiProcessTest,
 };
 
 CloudPrintProxyPolicyStartupTest::CloudPrintProxyPolicyStartupTest()
-    : ui_thread_(content::BrowserThread::UI, &message_loop_),
-      io_thread_("CloudPrintProxyPolicyTestThread") {
+    : thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD) {
 }
 
 CloudPrintProxyPolicyStartupTest::~CloudPrintProxyPolicyStartupTest() {
 }
 
 void CloudPrintProxyPolicyStartupTest::SetUp() {
-  base::Thread::Options options(base::MessageLoop::TYPE_IO, 0);
-  ASSERT_TRUE(io_thread_.StartWithOptions(options));
-
 #if defined(OS_MACOSX)
   EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
   EXPECT_TRUE(MockLaunchd::MakeABundle(temp_dir_.path(),
                                        "CloudPrintProxyTest",
                                        &bundle_path_,
                                        &executable_path_));
-  mock_launchd_.reset(new MockLaunchd(executable_path_, &message_loop_,
+  mock_launchd_.reset(new MockLaunchd(executable_path_,
+                                      base::MessageLoopForUI::current(),
                                       true, false));
   scoped_launchd_instance_.reset(
       new Launchd::ScopedInstance(mock_launchd_.get()));
 #endif
+
+  // Ensure test does not use the standard profile directory. This is copied
+  // from InProcessBrowserTest::SetUp(). These tests require a more complex
+  // process startup so they are unable to just inherit from
+  // InProcessBrowserTest.
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::FilePath user_data_dir =
+      command_line->GetSwitchValuePath(switches::kUserDataDir);
+  if (user_data_dir.empty()) {
+    ASSERT_TRUE(temp_user_data_dir_.CreateUniqueTempDir() &&
+                temp_user_data_dir_.IsValid())
+        << "Could not create temporary user data directory \""
+        << temp_user_data_dir_.path().value() << "\".";
+
+    user_data_dir = temp_user_data_dir_.path();
+    command_line->AppendSwitchPath(switches::kUserDataDir, user_data_dir);
+  }
+  ASSERT_TRUE(test_launcher_utils::OverrideUserDataDir(user_data_dir));
 }
 
 base::ProcessHandle CloudPrintProxyPolicyStartupTest::Launch(
@@ -452,10 +477,21 @@ CommandLine CloudPrintProxyPolicyStartupTest::MakeCmdLine(
 }
 
 TEST_F(CloudPrintProxyPolicyStartupTest, StartAndShutdown) {
+  TestingBrowserProcess* browser_process =
+      TestingBrowserProcess::GetGlobal();
+  TestingProfileManager profile_manager(browser_process);
+  ASSERT_TRUE(profile_manager.SetUp());
+
+  // Must be created after the TestingProfileManager since that creates the
+  // LocalState for the BrowserProcess.  Must be created before profiles are
+  // constructed.
+  chrome::TestingIOThreadState testing_io_thread_state;
+
   base::ProcessHandle handle =
       Launch("CloudPrintMockService_StartEnabledWaitForQuit");
   WaitForConnect();
   ShutdownAndWaitForExitWithTimeout(handle);
+  content::RunAllPendingInMessageLoop();
 }
 
 BrowserContextKeyedService* CloudPrintProxyServiceFactoryForPolicyTest(
@@ -470,10 +506,17 @@ TEST_F(CloudPrintProxyPolicyStartupTest, StartBrowserWithoutPolicy) {
   base::ProcessHandle handle =
       Launch("CloudPrintMockService_StartEnabledWaitForQuit");
 
+  // Setup the Browser Process with a full IOThread::Globals.
   TestingBrowserProcess* browser_process =
       TestingBrowserProcess::GetGlobal();
+
   TestingProfileManager profile_manager(browser_process);
   ASSERT_TRUE(profile_manager.SetUp());
+
+  // Must be created after the TestingProfileManager since that creates the
+  // LocalState for the BrowserProcess.  Must be created before profiles are
+  // constructed.
+  chrome::TestingIOThreadState testing_io_thread_state;
 
   TestingProfile* profile =
       profile_manager.CreateTestingProfile("StartBrowserWithoutPolicy");
@@ -490,20 +533,22 @@ TEST_F(CloudPrintProxyPolicyStartupTest, StartBrowserWithoutPolicy) {
   test_launcher_utils::PrepareBrowserCommandLineForTests(&command_line);
 
   WaitForConnect();
+  base::RunLoop run_loop;
   base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
-      base::MessageLoop::QuitClosure(),
+      run_loop.QuitClosure(),
       TestTimeouts::action_timeout());
 
-  bool run_loop = LaunchBrowser(command_line, profile);
-  EXPECT_FALSE(run_loop);
-  if (run_loop)
-    base::MessageLoop::current()->Run();
+  bool should_run_loop = LaunchBrowser(command_line, profile);
+  EXPECT_FALSE(should_run_loop);
+  if (should_run_loop)
+    run_loop.Run();
 
   EXPECT_EQ(MockServiceIPCServer::EnabledUserId(),
             prefs->GetString(prefs::kCloudPrintEmail));
 
   ShutdownAndWaitForExitWithTimeout(handle);
+  content::RunAllPendingInMessageLoop();
   profile_manager.DeleteTestingProfile("StartBrowserWithoutPolicy");
 }
 
@@ -515,6 +560,11 @@ TEST_F(CloudPrintProxyPolicyStartupTest, StartBrowserWithPolicy) {
       TestingBrowserProcess::GetGlobal();
   TestingProfileManager profile_manager(browser_process);
   ASSERT_TRUE(profile_manager.SetUp());
+
+  // Must be created after the TestingProfileManager since that creates the
+  // LocalState for the BrowserProcess.  Must be created before profiles are
+  // constructed.
+  chrome::TestingIOThreadState testing_io_thread_state;
 
   TestingProfile* profile =
       profile_manager.CreateTestingProfile("StartBrowserWithPolicy");
@@ -533,20 +583,22 @@ TEST_F(CloudPrintProxyPolicyStartupTest, StartBrowserWithPolicy) {
   test_launcher_utils::PrepareBrowserCommandLineForTests(&command_line);
 
   WaitForConnect();
+  base::RunLoop run_loop;
   base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
-      base::MessageLoop::QuitClosure(),
+      run_loop.QuitClosure(),
       TestTimeouts::action_timeout());
 
-  bool run_loop = LaunchBrowser(command_line, profile);
+  bool should_run_loop = LaunchBrowser(command_line, profile);
 
   // No expectations on run_loop being true here; that would be a race
   // condition.
-  if (run_loop)
-    base::MessageLoop::current()->Run();
+  if (should_run_loop)
+    run_loop.Run();
 
   EXPECT_EQ("", prefs->GetString(prefs::kCloudPrintEmail));
 
   ShutdownAndWaitForExitWithTimeout(handle);
+  content::RunAllPendingInMessageLoop();
   profile_manager.DeleteTestingProfile("StartBrowserWithPolicy");
 }

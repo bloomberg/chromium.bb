@@ -10,11 +10,19 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/resource_context.h"
 
+namespace net {
+class URLRequestContext;
+}
+
 namespace content {
 
 class MockResourceContext : public ResourceContext {
  public:
   MockResourceContext();
+
+  // Does not take ownership of |test_request_context|.
+  explicit MockResourceContext(net::URLRequestContext* test_request_context);
+
   virtual ~MockResourceContext();
 
   // ResourceContext implementation:
@@ -22,7 +30,7 @@ class MockResourceContext : public ResourceContext {
   virtual net::URLRequestContext* GetRequestContext() OVERRIDE;
 
  private:
-  scoped_ptr<net::URLRequestContext> test_request_context_;
+  net::URLRequestContext* test_request_context_;
 
   DISALLOW_COPY_AND_ASSIGN(MockResourceContext);
 };

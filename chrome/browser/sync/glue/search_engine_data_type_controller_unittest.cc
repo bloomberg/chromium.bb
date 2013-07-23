@@ -6,6 +6,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/run_loop.h"
 #include "base/tracked_objects.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -143,7 +144,7 @@ TEST_F(SyncSearchEngineDataTypeControllerTest, StartURLServiceNotReady) {
   EXPECT_EQ(DataTypeController::MODEL_LOADED, search_engine_dtc_->state());
 
   // Wait until WebDB is loaded before we shut it down.
-  test_util_.BlockTillServiceProcessesRequests();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(SyncSearchEngineDataTypeControllerTest, StartFirstRun) {
@@ -222,7 +223,7 @@ TEST_F(SyncSearchEngineDataTypeControllerTest,
   Start();
   // This should cause search_engine_dtc_->Stop() to be called.
   search_engine_dtc_->OnSingleDatatypeUnrecoverableError(FROM_HERE, "Test");
-  test_util_.PumpLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(DataTypeController::NOT_RUNNING, search_engine_dtc_->state());
   EXPECT_FALSE(syncable_service_.syncing());
 }

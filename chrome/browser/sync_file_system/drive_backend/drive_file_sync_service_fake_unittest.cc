@@ -7,8 +7,8 @@
 #include <utility>
 
 #include "base/command_line.h"
-#include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/run_loop.h"
 #include "chrome/browser/drive/drive_uploader.h"
 #include "chrome/browser/drive/fake_drive_service.h"
 #include "chrome/browser/extensions/test_extension_service.h"
@@ -28,7 +28,6 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_builder.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/common/id_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -216,7 +215,7 @@ class DriveFileSyncServiceFakeTest : public testing::Test {
 
     bool done = false;
     metadata_store_->Initialize(base::Bind(&DidInitialize, &done));
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(done);
 
     fake_drive_service_->LoadResourceListForWapi(
@@ -241,7 +240,7 @@ class DriveFileSyncServiceFakeTest : public testing::Test {
     sync_service_->AddFileStatusObserver(&mock_file_status_observer_);
     sync_service_->SetRemoteChangeProcessor(mock_remote_processor());
     sync_service_->SetSyncEnabled(enabled);
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   virtual void TearDown() OVERRIDE {
@@ -257,7 +256,7 @@ class DriveFileSyncServiceFakeTest : public testing::Test {
 
     extension_service_ = NULL;
     profile_.reset();
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void SetSyncEnabled(bool enabled) {
@@ -284,7 +283,7 @@ class DriveFileSyncServiceFakeTest : public testing::Test {
   void UpdateRegisteredOrigins() {
     sync_service_->UpdateRegisteredOrigins();
     // Wait for completion of uninstalling origin.
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void VerifySizeOfRegisteredOrigins(size_t b_size,
@@ -353,7 +352,7 @@ class DriveFileSyncServiceFakeTest : public testing::Test {
 
     sync_service_->ProcessRemoteChange(
         base::Bind(&DidProcessRemoteChange, &actual_status, &actual_url));
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
 
     EXPECT_EQ(expected_status, actual_status);
     EXPECT_EQ(expected_url, actual_url);
@@ -446,7 +445,7 @@ void DriveFileSyncServiceFakeTest::TestRegisterNewOrigin() {
   sync_service()->RegisterOriginForTrackingChanges(
       ExtensionNameToGURL(kExtensionName1),
       base::Bind(&ExpectEqStatus, &done, SYNC_STATUS_OK));
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(done);
 
   VerifySizeOfRegisteredOrigins(0u, 1u, 0u);
@@ -474,7 +473,7 @@ void DriveFileSyncServiceFakeTest::TestRegisterExistingOrigin() {
   sync_service()->RegisterOriginForTrackingChanges(
       ExtensionNameToGURL(kExtensionName1),
       base::Bind(&ExpectEqStatus, &done, SYNC_STATUS_OK));
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(done);
 
   // The origin should be registered as an incremental sync origin.
@@ -494,7 +493,7 @@ void DriveFileSyncServiceFakeTest::TestRegisterOriginWithSyncDisabled() {
   sync_service()->RegisterOriginForTrackingChanges(
       ExtensionNameToGURL(kExtensionName1),
       base::Bind(&ExpectEqStatus, &done, SYNC_STATUS_OK));
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(done);
 
   // We must not have started batch sync for the newly registered origin,
@@ -516,7 +515,7 @@ void DriveFileSyncServiceFakeTest::TestUnregisterOrigin() {
   sync_service()->UnregisterOriginForTrackingChanges(
       ExtensionNameToGURL(kExtensionName1),
       base::Bind(&ExpectEqStatus, &done, SYNC_STATUS_OK));
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(done);
 
   VerifySizeOfRegisteredOrigins(0u, 1u, 0u);

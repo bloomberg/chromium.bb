@@ -14,7 +14,7 @@
 #include "chrome/common/content_settings.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::HistogramBase;
@@ -136,11 +136,7 @@ private:
 class InstantNTPPrerendererTest : public testing::Test {
  public:
   InstantNTPPrerendererTest()
-      : ui_thread_(content::BrowserThread::UI),
-        instant_ntp_prerenderer_(new TestableInstantNTPPrerenderer(&profile_)) {
-  }
-
-  virtual void SetUp() OVERRIDE {
+      : instant_ntp_prerenderer_(new TestableInstantNTPPrerenderer(&profile_)) {
     base::StatisticsRecorder::Initialize();
   }
 
@@ -153,7 +149,7 @@ class InstantNTPPrerendererTest : public testing::Test {
   }
 
  private:
-  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<TestableInstantNTPPrerenderer> instant_ntp_prerenderer_;
   mutable TestingProfile profile_;
 };

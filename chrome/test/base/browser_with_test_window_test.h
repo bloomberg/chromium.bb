@@ -11,7 +11,7 @@
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/test/base/test_browser_window.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_renderer_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -99,8 +99,6 @@ class BrowserWithTestWindowTest : public testing::Test {
 
   TestingProfile* GetProfile() { return profile_.get(); }
 
-  base::MessageLoop* message_loop() { return &ui_loop_; }
-
   BrowserWindow* release_browser_window() WARN_UNUSED_RESULT {
     return window_.release();
   }
@@ -142,12 +140,8 @@ class BrowserWithTestWindowTest : public testing::Test {
 
  private:
   // We need to create a MessageLoop, otherwise a bunch of things fails.
-  base::MessageLoopForUI ui_loop_;
+  content::TestBrowserThreadBundle thread_bundle_;
   base::ShadowingAtExitManager at_exit_manager_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread db_thread_;
-  content::TestBrowserThread file_thread_;
-  content::TestBrowserThread file_user_blocking_thread_;
 
 #if defined(OS_CHROMEOS)
   chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;

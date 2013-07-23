@@ -28,7 +28,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "net/http/http_status_code.h"
@@ -140,10 +140,7 @@ class FakeProfileOAuth2TokenService : public AndroidProfileOAuth2TokenService {
 class UserPolicySigninServiceTest : public testing::Test {
  public:
   UserPolicySigninServiceTest()
-      : loop_(base::MessageLoop::TYPE_IO),
-        ui_thread_(content::BrowserThread::UI, &loop_),
-        file_thread_(content::BrowserThread::FILE, &loop_),
-        io_thread_(content::BrowserThread::IO, &loop_),
+      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
         register_completed_(false) {}
 
   MOCK_METHOD1(OnPolicyRefresh, void(bool));
@@ -186,7 +183,6 @@ class UserPolicySigninServiceTest : public testing::Test {
     TestingProfile::Builder builder;
     builder.SetPrefService(scoped_ptr<PrefServiceSyncable>(prefs.Pass()));
     profile_ = builder.Build().Pass();
-    profile_->CreateRequestContext();
 
     mock_store_ = new MockUserCloudPolicyStore();
     EXPECT_CALL(*mock_store_, Load()).Times(AnyNumber());
@@ -340,10 +336,7 @@ class UserPolicySigninServiceTest : public testing::Test {
 
   // BrowserPolicyConnector and UrlFetcherFactory want to initialize and free
   // various components asynchronously via tasks, so create fake threads here.
-  base::MessageLoop loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_thread_;
-  content::TestBrowserThread io_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
 
   net::TestURLFetcherFactory url_factory_;
 

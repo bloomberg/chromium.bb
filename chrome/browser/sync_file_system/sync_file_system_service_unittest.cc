@@ -15,6 +15,9 @@
 #include "chrome/browser/sync_file_system/sync_file_system_service.h"
 #include "chrome/browser/sync_file_system/sync_file_system_test_util.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/syncable/canned_syncable_file_system.h"
@@ -25,6 +28,7 @@
 #include "webkit/browser/fileapi/syncable/sync_status_code.h"
 #include "webkit/browser/fileapi/syncable/syncable_file_system_util.h"
 
+using content::BrowserThread;
 using fileapi::FileSystemURL;
 using fileapi::FileSystemURLSet;
 using ::testing::AnyNumber;
@@ -63,11 +67,11 @@ void AssignValueAndQuit(base::RunLoop* run_loop,
 }
 
 // This is called on IO thread.
-void VerifyFileError(base::WaitableEvent* event,
+void VerifyFileError(base::RunLoop* run_loop,
                      base::PlatformFileError error) {
-  DCHECK(event);
+  DCHECK(run_loop);
   EXPECT_EQ(base::PLATFORM_FILE_OK, error);
-  event->Signal();
+  run_loop->Quit();
 }
 
 }  // namespace
@@ -112,16 +116,15 @@ ACTION_P2(MockSyncFileCallback, status, url) {
 
 class SyncFileSystemServiceTest : public testing::Test {
  protected:
-  SyncFileSystemServiceTest() {}
-  virtual ~SyncFileSystemServiceTest() {}
+  SyncFileSystemServiceTest()
+      : thread_bundle_(content::TestBrowserThreadBundle::REAL_FILE_THREAD |
+                       content::TestBrowserThreadBundle::REAL_IO_THREAD) {}
 
   virtual void SetUp() OVERRIDE {
-    thread_helper_.SetUp();
-
     file_system_.reset(new CannedSyncableFileSystem(
         GURL(kOrigin),
-        thread_helper_.io_task_runner(),
-        thread_helper_.file_task_runner()));
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)));
 
     local_service_ = new LocalFileSyncService(&profile_);
     remote_service_ = new StrictMock<MockRemoteFileSyncService>;
@@ -150,10 +153,9 @@ class SyncFileSystemServiceTest : public testing::Test {
 
   virtual void TearDown() OVERRIDE {
     sync_service_->Shutdown();
-
     file_system_->TearDown();
     RevokeSyncableFileSystem();
-    thread_helper_.TearDown();
+    content::RunAllPendingInMessageLoop(BrowserThread::FILE);
   }
 
   void InitializeApp() {
@@ -237,7 +239,7 @@ class SyncFileSystemServiceTest : public testing::Test {
 
   ScopedEnableSyncFSDirectoryOperation enable_directory_operation_;
 
-  MultiThreadTestHelper thread_helper_;
+  content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
   scoped_ptr<CannedSyncableFileSystem> file_system_;
 
@@ -392,17 +394,20 @@ TEST_F(SyncFileSystemServiceTest, SimpleSyncFlowWithFileBusy) {
   mock_remote_service()->NotifyRemoteChangeQueueUpdated(1);
 
   // Start a local operation on the same file (to make it BUSY).
-  base::WaitableEvent event(false, false);
-  thread_helper_.io_task_runner()->PostTask(
-      FROM_HERE, base::Bind(&CannedSyncableFileSystem::DoCreateFile,
-                            base::Unretained(file_system_.get()),
-                            kFile, base::Bind(&VerifyFileError, &event)));
+  base::RunLoop verify_file_error_run_loop;
+  BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&CannedSyncableFileSystem::DoCreateFile,
+                 base::Unretained(file_system_.get()),
+                 kFile, base::Bind(&VerifyFileError,
+                                   &verify_file_error_run_loop)));
 
   run_loop.Run();
 
   mock_remote_service()->NotifyRemoteChangeQueueUpdated(0);
 
-  event.Wait();
+  verify_file_error_run_loop.Run();
 }
 
 TEST_F(SyncFileSystemServiceTest, GetFileSyncStatus) {

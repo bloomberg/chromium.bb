@@ -11,7 +11,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "content/public/test/mock_render_process_host.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
@@ -19,10 +19,7 @@ namespace extensions {
 namespace {
 
 class BrowserPermissionsPolicyDelegateTest : public testing::Test {
-public:
- BrowserPermissionsPolicyDelegateTest()
-     : loop_(base::MessageLoop::TYPE_UI),
-       ui_thread_(content::BrowserThread::UI, &loop_) {}
+ protected:
   virtual void SetUp() {
     profile_manager_.reset(
         new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
@@ -35,8 +32,7 @@ public:
     profile_manager_.reset();
   }
  protected:
-  base::MessageLoop loop_;
-  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<TestingProfileManager> profile_manager_;
   TestingProfile* profile_;
 };

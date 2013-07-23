@@ -9,6 +9,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
+#include "chrome/browser/predictors/predictor_database.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -23,6 +24,8 @@
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "chrome/test/base/testing_io_thread_state.h"
+#include "content/public/test/test_utils.h"
 #include "grit/theme_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/controls/single_split_view.h"
@@ -80,6 +83,8 @@ class BrowserViewTest : public BrowserWithTestWindowTest {
  private:
   BrowserView* browser_view_;  // Not owned.
   scoped_ptr<ScopedTestingLocalState> local_state_;
+  scoped_ptr<predictors::PredictorDatabase> predictor_db_;
+  scoped_ptr<chrome::TestingIOThreadState> testing_io_thread_state_;
   DISALLOW_COPY_AND_ASSIGN(BrowserViewTest);
 };
 
@@ -101,7 +106,10 @@ void BrowserViewTest::TearDown() {
   // the Profile.
   browser_view_->GetWidget()->CloseNow();
   browser_view_ = NULL;
+  content::RunAllPendingInMessageLoop(content::BrowserThread::DB);
   BrowserWithTestWindowTest::TearDown();
+  testing_io_thread_state_.reset();
+  predictor_db_.reset();
 #if defined(OS_CHROMEOS)
   chromeos::input_method::Shutdown();
 #endif
@@ -134,7 +142,9 @@ void BrowserViewTest::Init() {
   chromeos::input_method::InitializeForTesting(
       new chromeos::input_method::MockInputMethodManager);
 #endif
+  testing_io_thread_state_.reset(new chrome::TestingIOThreadState());
   BrowserWithTestWindowTest::SetUp();
+  predictor_db_.reset(new predictors::PredictorDatabase(GetProfile()));
   browser_view_ = static_cast<BrowserView*>(browser()->window());
 }
 
@@ -289,7 +299,6 @@ class BrowserViewIncognitoSwitcherTest : public BrowserViewTest {
 
   BrowserViewIncognitoSwitcherTest()
       : browser_view_(NULL) {}
-  virtual ~BrowserViewIncognitoSwitcherTest() {}
 
   virtual void SetUp() OVERRIDE {
     Init();

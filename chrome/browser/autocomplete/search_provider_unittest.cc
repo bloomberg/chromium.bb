@@ -31,7 +31,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_status.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -78,10 +78,7 @@ class SearchProviderTest : public testing::Test,
         term1_(ASCIIToUTF16("term1")),
         keyword_t_url_(NULL),
         keyword_term_(ASCIIToUTF16("keyword")),
-        ui_thread_(content::BrowserThread::UI, &message_loop_),
-        io_thread_(content::BrowserThread::IO),
-        quit_when_done_(false) {
-    io_thread_.Start();
+        run_loop_(NULL) {
   }
 
   static void SetUpTestCase();
@@ -117,9 +114,6 @@ class SearchProviderTest : public testing::Test,
   // If we're waiting for the provider to finish, this exits the message loop.
   virtual void OnProviderUpdate(bool updated_matches) OVERRIDE;
 
-  // Waits until the provider instantiates a URLFetcher and returns it.
-  net::TestURLFetcher* WaitUntilURLFetcherIsReady(int fetcher_id);
-
   // Runs a nested message loop until provider_ is done. The message loop is
   // exited by way of OnProviderUpdate.
   void RunTillProviderDone();
@@ -147,9 +141,7 @@ class SearchProviderTest : public testing::Test,
   const string16 keyword_term_;
   GURL keyword_url_;
 
-  base::MessageLoopForUI message_loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread io_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
 
   // URLFetcherFactory implementation registered.
   net::TestURLFetcherFactory test_factory_;
@@ -160,8 +152,8 @@ class SearchProviderTest : public testing::Test,
   // The provider.
   scoped_refptr<SearchProvider> provider_;
 
-  // If true, OnProviderUpdate exits out of the current message loop.
-  bool quit_when_done_;
+  // If non-NULL, OnProviderUpdate quits the current |run_loop_|.
+  base::RunLoop* run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchProviderTest);
 };
@@ -238,7 +230,7 @@ void SearchProviderTest::SetUp() {
 }
 
 void SearchProviderTest::TearDown() {
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Shutdown the provider before the profile.
   provider_ = NULL;
@@ -273,32 +265,19 @@ void SearchProviderTest::RunTest(TestData* cases,
 }
 
 void SearchProviderTest::OnProviderUpdate(bool updated_matches) {
-  if (quit_when_done_ && provider_->done()) {
-    quit_when_done_ = false;
-    message_loop_.Quit();
+  if (run_loop_ && provider_->done()) {
+    run_loop_->Quit();
+    run_loop_ = NULL;
   }
-}
-
-net::TestURLFetcher* SearchProviderTest::WaitUntilURLFetcherIsReady(
-    int fetcher_id) {
-  net::TestURLFetcher* url_fetcher = test_factory_.GetFetcherByID(fetcher_id);
-  for (; !url_fetcher; url_fetcher = test_factory_.GetFetcherByID(fetcher_id))
-    message_loop_.RunUntilIdle();
-  return url_fetcher;
 }
 
 void SearchProviderTest::RunTillProviderDone() {
   if (provider_->done())
     return;
 
-  quit_when_done_ = true;
-#if defined(OS_ANDROID)
-  // Android doesn't have Run(), only Start().
-  message_loop_.Start();
-#else
   base::RunLoop run_loop;
+  run_loop_ = &run_loop;
   run_loop.Run();
-#endif
 }
 
 void SearchProviderTest::QueryForInput(const string16& text,
@@ -312,7 +291,7 @@ void SearchProviderTest::QueryForInput(const string16& text,
 
   // RunUntilIdle so that the task scheduled by SearchProvider to create the
   // URLFetchers runs.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 void SearchProviderTest::QueryForInputAndSetWYTMatch(
@@ -372,8 +351,9 @@ bool SearchProviderTest::FindMatchWithDestination(const GURL& url,
 }
 
 void SearchProviderTest::FinishDefaultSuggestQuery() {
-  net::TestURLFetcher* default_fetcher = WaitUntilURLFetcherIsReady(
-      SearchProvider::kDefaultProviderURLFetcherID);
+  net::TestURLFetcher* default_fetcher =
+      test_factory_.GetFetcherByID(
+          SearchProvider::kDefaultProviderURLFetcherID);
   ASSERT_TRUE(default_fetcher);
 
   // Tell the SearchProvider the default suggest query is done.
@@ -1041,8 +1021,9 @@ TEST_F(SearchProviderTest, DefaultFetcherSuggestRelevance) {
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); i++) {
     QueryForInput(ASCIIToUTF16("a"), false, false);
-    net::TestURLFetcher* fetcher = WaitUntilURLFetcherIsReady(
-        SearchProvider::kDefaultProviderURLFetcherID);
+    net::TestURLFetcher* fetcher =
+        test_factory_.GetFetcherByID(
+            SearchProvider::kDefaultProviderURLFetcherID);
     ASSERT_TRUE(fetcher);
     fetcher->set_response_code(200);
     fetcher->SetResponseString(cases[i].json);
@@ -1506,16 +1487,18 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevance) {
     QueryForInput(ASCIIToUTF16("k a"), false, true);
 
     // Set up a default fetcher with no results.
-    net::TestURLFetcher* default_fetcher = WaitUntilURLFetcherIsReady(
-        SearchProvider::kDefaultProviderURLFetcherID);
+    net::TestURLFetcher* default_fetcher =
+        test_factory_.GetFetcherByID(
+            SearchProvider::kDefaultProviderURLFetcherID);
     ASSERT_TRUE(default_fetcher);
     default_fetcher->set_response_code(200);
     default_fetcher->delegate()->OnURLFetchComplete(default_fetcher);
     default_fetcher = NULL;
 
     // Set up a keyword fetcher with provided results.
-    net::TestURLFetcher* keyword_fetcher = WaitUntilURLFetcherIsReady(
-        SearchProvider::kKeywordProviderURLFetcherID);
+    net::TestURLFetcher* keyword_fetcher =
+        test_factory_.GetFetcherByID(
+            SearchProvider::kKeywordProviderURLFetcherID);
     ASSERT_TRUE(keyword_fetcher);
     keyword_fetcher->set_response_code(200);
     keyword_fetcher->SetResponseString(cases[i].json);
@@ -1626,8 +1609,9 @@ TEST_F(SearchProviderTest, LocalAndRemoteRelevances) {
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); i++) {
     QueryForInput(cases[i].input, false, false);
-    net::TestURLFetcher* fetcher = WaitUntilURLFetcherIsReady(
-        SearchProvider::kDefaultProviderURLFetcherID);
+    net::TestURLFetcher* fetcher =
+        test_factory_.GetFetcherByID(
+            SearchProvider::kDefaultProviderURLFetcherID);
     ASSERT_TRUE(fetcher);
     fetcher->set_response_code(200);
     fetcher->SetResponseString(cases[i].json);
@@ -1726,8 +1710,9 @@ TEST_F(SearchProviderTest, DefaultProviderSuggestRelevanceScoringUrlInput) {
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); i++) {
     QueryForInput(ASCIIToUTF16(cases[i].input), false, false);
-    net::TestURLFetcher* fetcher = WaitUntilURLFetcherIsReady(
-        SearchProvider::kDefaultProviderURLFetcherID);
+    net::TestURLFetcher* fetcher =
+        test_factory_.GetFetcherByID(
+            SearchProvider::kDefaultProviderURLFetcherID);
     ASSERT_TRUE(fetcher);
     fetcher->set_response_code(200);
     fetcher->SetResponseString(cases[i].json);

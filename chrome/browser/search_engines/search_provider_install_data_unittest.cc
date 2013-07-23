@@ -8,6 +8,7 @@
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/search_engines/search_provider_install_data.h"
@@ -30,113 +31,72 @@ namespace {
 // TestGetInstallState --------------------------------------------------------
 
 // Test the SearchProviderInstallData::GetInstallState.
-class TestGetInstallState :
-    public base::RefCountedThreadSafe<TestGetInstallState> {
+class TestGetInstallState {
  public:
   explicit TestGetInstallState(SearchProviderInstallData* install_data);
 
-  void set_search_provider_host(
-      const std::string& search_provider_host) {
-    search_provider_host_ = search_provider_host;
-  }
-
-  void set_default_search_provider_host(
-      const std::string& default_search_provider_host) {
-    default_search_provider_host_ = default_search_provider_host;
-  }
-
-  // Runs the test. Returns true if all passed. False if any failed.
-  bool RunTests();
+  // Runs all of the test cases.
+  void RunTests(const std::string& search_provider_host,
+                const std::string& default_search_provider_host);
 
  private:
-  friend class base::RefCountedThreadSafe<TestGetInstallState>;
-  ~TestGetInstallState();
-
-  // Starts the test run on the IO thread.
-  void StartTestOnIOThread();
-
   // Callback for when SearchProviderInstallData is ready to have
   // GetInstallState called. Runs all of the test cases.
-  void DoInstallStateTests();
+  void DoInstallStateTests(const std::string& search_provider_host,
+                           const std::string& default_search_provider_host);
 
   // Does a verification for one url and its expected state.
   void VerifyInstallState(SearchProviderInstallData::State expected_state,
                           const std::string& url);
 
   SearchProviderInstallData* install_data_;
-  base::MessageLoop* main_loop_;
-
-  // A host which should be a search provider but not the default.
-  std::string search_provider_host_;
-
-  // A host which should be a search provider but not the default.
-  std::string default_search_provider_host_;
-
-  // Used to indicate if DoInstallStateTests passed all test.
-  bool passed_;
 
   DISALLOW_COPY_AND_ASSIGN(TestGetInstallState);
 };
 
 TestGetInstallState::TestGetInstallState(
     SearchProviderInstallData* install_data)
-    : install_data_(install_data),
-      main_loop_(NULL),
-      passed_(false) {
+    : install_data_(install_data) {
 }
 
-bool TestGetInstallState::RunTests() {
-  passed_ = true;
-
-  main_loop_ = base::MessageLoop::current();
-
-  BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)->PostTask(
-      FROM_HERE,
-      base::Bind(&TestGetInstallState::StartTestOnIOThread, this));
-  // Run the current message loop. When the test is finished on the I/O thread,
-  // it invokes Quit, which unblocks this.
-  base::MessageLoop::current()->Run();
-  main_loop_ = NULL;
-
-  // Let the testing code know what the result is.
-  return passed_;
-}
-
-TestGetInstallState::~TestGetInstallState() {
-}
-
-void TestGetInstallState::StartTestOnIOThread() {
+void TestGetInstallState::RunTests(
+    const std::string& search_provider_host,
+    const std::string& default_search_provider_host) {
   install_data_->CallWhenLoaded(
-      base::Bind(&TestGetInstallState::DoInstallStateTests, this));
+      base::Bind(&TestGetInstallState::DoInstallStateTests,
+                 base::Unretained(this),
+                 search_provider_host, default_search_provider_host));
+  base::RunLoop().RunUntilIdle();
 }
 
-void TestGetInstallState::DoInstallStateTests() {
+void TestGetInstallState::DoInstallStateTests(
+    const std::string& search_provider_host,
+    const std::string& default_search_provider_host) {
+  SCOPED_TRACE("search provider: " + search_provider_host +
+               ", default search provider: " + default_search_provider_host);
   // Installed but not default.
   VerifyInstallState(SearchProviderInstallData::INSTALLED_BUT_NOT_DEFAULT,
-                     "http://" + search_provider_host_ + "/");
+                     "http://" + search_provider_host + "/");
   VerifyInstallState(SearchProviderInstallData::INSTALLED_BUT_NOT_DEFAULT,
-                     "http://" + search_provider_host_ + ":80/");
+                     "http://" + search_provider_host + ":80/");
 
   // Not installed.
   VerifyInstallState(SearchProviderInstallData::NOT_INSTALLED,
-                     "http://" + search_provider_host_ + ":96/");
+                     "http://" + search_provider_host + ":96/");
 
   // Not installed due to different scheme.
   VerifyInstallState(SearchProviderInstallData::NOT_INSTALLED,
-                     "https://" + search_provider_host_ + "/");
+                     "https://" + search_provider_host + "/");
 
   // Not installed.
   VerifyInstallState(SearchProviderInstallData::NOT_INSTALLED,
-                     "http://a" + search_provider_host_ + "/");
+                     "http://a" + search_provider_host + "/");
 
   // Installed as default.
-  if (!default_search_provider_host_.empty()) {
+  if (!default_search_provider_host.empty()) {
     VerifyInstallState(SearchProviderInstallData::INSTALLED_AS_DEFAULT,
-                       "http://" + default_search_provider_host_ + "/");
+                       "http://" + default_search_provider_host + "/");
   }
-
-  // All done.
-  main_loop_->PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
 }
 
 void TestGetInstallState::VerifyInstallState(
@@ -145,16 +105,12 @@ void TestGetInstallState::VerifyInstallState(
 
   SearchProviderInstallData::State actual_state =
       install_data_->GetInstallState(GURL(url));
-  if (expected_state == actual_state)
-    return;
-
-  passed_ = false;
-  LOG(ERROR) << "GetInstallState for " << url << " failed. Expected " <<
-      expected_state << ".  Actual " << actual_state << ".";
+  EXPECT_EQ(expected_state, actual_state)
+      << "GetInstallState for " << url << " failed. Expected "
+      << expected_state << ".  Actual " << actual_state << ".";
 }
 
-};  // namespace
-
+}  // namespace
 
 // SearchProviderInstallDataTest ----------------------------------------------
 
@@ -193,7 +149,6 @@ void SearchProviderInstallDataTest::SetUp() {
       std::string() /* unknown country code */);
 #endif
   util_.SetUp();
-  util_.StartIOThread();
   install_data_ = new SearchProviderInstallData(util_.profile(),
       content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
       content::Source<SearchProviderInstallDataTest>(this));
@@ -247,7 +202,6 @@ TemplateURL* SearchProviderInstallDataTest::AddNewTemplateURL(
   return t_url;
 }
 
-
 // Actual tests ---------------------------------------------------------------
 
 TEST_F(SearchProviderInstallDataTest, GetInstallState) {
@@ -257,23 +211,19 @@ TEST_F(SearchProviderInstallDataTest, GetInstallState) {
   AddNewTemplateURL("http://" + host + "/path", ASCIIToUTF16("unittest"));
 
   // Wait for the changes to be saved.
-  TemplateURLServiceTestUtil::BlockTillServiceProcessesRequests();
+  base::RunLoop().RunUntilIdle();
 
   // Verify the search providers install state (with no default set).
-  scoped_refptr<TestGetInstallState> test_get_install_state(
-      new TestGetInstallState(install_data_));
-  test_get_install_state->set_search_provider_host(host);
-  EXPECT_TRUE(test_get_install_state->RunTests());
+  TestGetInstallState test_get_install_state(install_data_);
+  test_get_install_state.RunTests(host, std::string());
 
   // Set-up a default and try it all one more time.
   std::string default_host = "www.mmm.com";
   TemplateURL* default_url =
       AddNewTemplateURL("http://" + default_host + "/", ASCIIToUTF16("mmm"));
   util_.model()->SetDefaultSearchProvider(default_url);
-  test_get_install_state->set_default_search_provider_host(default_host);
-  EXPECT_TRUE(test_get_install_state->RunTests());
+  test_get_install_state.RunTests(host, default_host);
 }
-
 
 TEST_F(SearchProviderInstallDataTest, ManagedDefaultSearch) {
   // Set up the database.
@@ -288,28 +238,23 @@ TEST_F(SearchProviderInstallDataTest, ManagedDefaultSearch) {
   EXPECT_TRUE(util_.model()->is_default_search_managed());
 
   // Wait for the changes to be saved.
-  util_.BlockTillServiceProcessesRequests();
+  base::RunLoop().RunUntilIdle();
 
   // Verify the search providers install state.  The default search should be
   // the managed one we previously set.
-  scoped_refptr<TestGetInstallState> test_get_install_state(
-      new TestGetInstallState(install_data_));
-  test_get_install_state->set_search_provider_host(host);
-  test_get_install_state->set_default_search_provider_host(host2);
-  EXPECT_TRUE(test_get_install_state->RunTests());
+  TestGetInstallState test_get_install_state(install_data_);
+  test_get_install_state.RunTests(host, host2);
 }
 
-
 TEST_F(SearchProviderInstallDataTest, GoogleBaseUrlChange) {
-  scoped_refptr<TestGetInstallState> test_get_install_state(
-      new TestGetInstallState(install_data_));
+  TestGetInstallState test_get_install_state(install_data_);
 
   // Set up the database.
   util_.ChangeModelToLoadState();
   std::string google_host = "w.com";
   util_.SetGoogleBaseURL(GURL("http://" + google_host + "/"));
   // Wait for the I/O thread to process the update notification.
-  TemplateURLServiceTestUtil::BlockTillIOThreadProcessesRequests();
+  base::RunLoop().RunUntilIdle();
 
   AddNewTemplateURL("{google:baseURL}?q={searchTerms}", ASCIIToUTF16("t"));
   TemplateURL* default_url =
@@ -317,19 +262,17 @@ TEST_F(SearchProviderInstallDataTest, GoogleBaseUrlChange) {
   util_.model()->SetDefaultSearchProvider(default_url);
 
   // Wait for the changes to be saved.
-  TemplateURLServiceTestUtil::BlockTillServiceProcessesRequests();
+  base::RunLoop().RunUntilIdle();
 
   // Verify the search providers install state (with no default set).
-  test_get_install_state->set_search_provider_host(google_host);
-  EXPECT_TRUE(test_get_install_state->RunTests());
+  test_get_install_state.RunTests(google_host, std::string());
 
   // Change the Google base url.
   google_host = "foo.com";
   util_.SetGoogleBaseURL(GURL("http://" + google_host + "/"));
   // Wait for the I/O thread to process the update notification.
-  TemplateURLServiceTestUtil::BlockTillIOThreadProcessesRequests();
+  base::RunLoop().RunUntilIdle();
 
   // Verify that the change got picked up.
-  test_get_install_state->set_search_provider_host(google_host);
-  EXPECT_TRUE(test_get_install_state->RunTests());
+  test_get_install_state.RunTests(google_host, std::string());
 }

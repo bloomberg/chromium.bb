@@ -113,8 +113,7 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
  public:
   BookmarkBarViewEventTestBase()
       : ViewEventTestBase(),
-        model_(NULL),
-        file_thread_(BrowserThread::FILE, base::MessageLoop::current()) {}
+        model_(NULL) {}
 
   virtual void SetUp() OVERRIDE {
     views::MenuController::TurnOffContextMenuSelectionHoldForTest();
@@ -243,7 +242,6 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<Browser> browser_;
   scoped_ptr<ScopedTestingLocalState> local_state_;
-  content::TestBrowserThread file_thread_;
   ChromeViewsDelegate views_delegate_;
 };
 

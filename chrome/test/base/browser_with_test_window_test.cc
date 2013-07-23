@@ -4,7 +4,7 @@
 
 #include "chrome/test/base/browser_with_test_window_test.h"
 
-#include "base/synchronization/waitable_event.h"
+#include "base/run_loop.h"
 #include "chrome/browser/profiles/profile_destroyer.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
@@ -25,24 +25,16 @@
 #include "ash/test/ash_test_helper.h"
 #endif
 
-using content::BrowserThread;
 using content::NavigationController;
 using content::RenderViewHost;
 using content::RenderViewHostTester;
 using content::WebContents;
 
 BrowserWithTestWindowTest::BrowserWithTestWindowTest()
-    : ui_thread_(BrowserThread::UI, message_loop()),
-      db_thread_(BrowserThread::DB),
-      file_thread_(BrowserThread::FILE, message_loop()),
-      file_user_blocking_thread_(
-          BrowserThread::FILE_USER_BLOCKING, message_loop()),
-      host_desktop_type_(chrome::HOST_DESKTOP_TYPE_NATIVE) {
-  db_thread_.Start();
+    : host_desktop_type_(chrome::HOST_DESKTOP_TYPE_NATIVE) {
 }
 
 BrowserWithTestWindowTest::~BrowserWithTestWindowTest() {
-  db_thread_.Stop();
 }
 
 void BrowserWithTestWindowTest::SetHostDesktopType(
@@ -57,10 +49,12 @@ void BrowserWithTestWindowTest::SetUp() {
   // TODO(jamescook): Windows Ash support. This will require refactoring
   // AshTestHelper and AuraTestHelper so they can be used at the same time,
   // perhaps by AshTestHelper owning an AuraTestHelper.
-  ash_test_helper_.reset(new ash::test::AshTestHelper(&ui_loop_));
+  ash_test_helper_.reset(new ash::test::AshTestHelper(
+      base::MessageLoopForUI::current()));
   ash_test_helper_->SetUp();
 #elif defined(USE_AURA)
-  aura_test_helper_.reset(new aura::test::AuraTestHelper(&ui_loop_));
+  aura_test_helper_.reset(new aura::test::AuraTestHelper(
+      base::MessageLoopForUI::current()));
   aura_test_helper_->SetUp();
 #endif  // USE_AURA
 
@@ -79,10 +73,7 @@ void BrowserWithTestWindowTest::SetUp() {
 void BrowserWithTestWindowTest::TearDown() {
   // Some tests end up posting tasks to the DB thread that must be completed
   // before the profile can be destroyed and the test safely shut down.
-  base::WaitableEvent done(false, false);
-  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      base::Bind(&base::WaitableEvent::Signal, base::Unretained(&done)));
-  done.Wait();
+  base::RunLoop().RunUntilIdle();
 
   // Reset the profile here because some profile keyed services (like the
   // audio service) depend on test stubs that the helpers below will remove.

@@ -7,7 +7,6 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/sync/glue/autofill_data_type_controller.h"
@@ -24,7 +23,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "sync/api/sync_error.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -153,10 +152,9 @@ class MockWebDataServiceWrapperSyncable : public MockWebDataServiceWrapper {
 class SyncAutofillDataTypeControllerTest : public testing::Test {
  public:
   SyncAutofillDataTypeControllerTest()
-      : weak_ptr_factory_(this),
-        ui_thread_(BrowserThread::UI, &message_loop_),
-        db_thread_(BrowserThread::DB),
-        last_start_result_(DataTypeController::OK) {}
+      : thread_bundle_(content::TestBrowserThreadBundle::REAL_DB_THREAD),
+        last_start_result_(DataTypeController::OK),
+        weak_ptr_factory_(this) {}
 
   virtual ~SyncAutofillDataTypeControllerTest() {}
 
@@ -174,8 +172,6 @@ class SyncAutofillDataTypeControllerTest : public testing::Test {
         new AutofillDataTypeController(&profile_sync_factory_,
                                        &profile_,
                                        &service_);
-
-    db_thread_.Start();
   }
 
   // Passed to AutofillDTC::Start().
@@ -204,10 +200,7 @@ class SyncAutofillDataTypeControllerTest : public testing::Test {
   }
 
  protected:
-  base::WeakPtrFactory<SyncAutofillDataTypeControllerTest> weak_ptr_factory_;
-  base::MessageLoopForUI message_loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread db_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
 
   scoped_refptr<NiceMock<SharedChangeProcessorMock> > change_processor_;
   ProfileSyncComponentsFactoryMock profile_sync_factory_;
@@ -218,6 +211,7 @@ class SyncAutofillDataTypeControllerTest : public testing::Test {
   // Stores arguments of most recent call of OnStartFinished().
   DataTypeController::StartResult last_start_result_;
   syncer::SyncError last_start_error_;
+  base::WeakPtrFactory<SyncAutofillDataTypeControllerTest> weak_ptr_factory_;
 };
 
 // Load the WDS's database, then start the Autofill DTC.  It should

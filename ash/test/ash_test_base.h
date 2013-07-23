@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/aura/client/window_types.h"
@@ -53,8 +54,6 @@ class AshTestBase : public testing::Test {
  public:
   AshTestBase();
   virtual ~AshTestBase();
-
-  base::MessageLoopForUI* message_loop() { return &message_loop_; }
 
   // testing::Test:
   virtual void SetUp() OVERRIDE;
@@ -114,7 +113,7 @@ class AshTestBase : public testing::Test {
  private:
   bool setup_called_;
   bool teardown_called_;
-  base::MessageLoopForUI message_loop_;
+  content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<AshTestHelper> ash_test_helper_;
   scoped_ptr<aura::test::EventGenerator> event_generator_;
 #if defined(OS_WIN)

@@ -50,7 +50,6 @@ class AudioMirroringManager;
 class AudioRendererHost;
 class ContentRendererClient;
 class MediaStreamManager;
-class MockResourceContext;
 class RenderThreadImpl;
 class ResourceContext;
 class TestBrowserThread;

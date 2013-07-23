@@ -18,13 +18,12 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class GoogleURLTrackerTest;
-
 
 namespace {
 
@@ -249,8 +248,7 @@ class GoogleURLTrackerTest : public testing::Test {
 
   // These are required by the TestURLFetchers GoogleURLTracker will create (see
   // test_url_fetcher_factory.h).
-  base::MessageLoop message_loop_;
-  content::TestBrowserThread io_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
   // Creating this allows us to call
   // net::NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests().
   scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
@@ -283,8 +281,7 @@ void GoogleURLTrackerTest::OnInfoBarClosed(scoped_ptr<InfoBarDelegate> infobar,
 }
 
 GoogleURLTrackerTest::GoogleURLTrackerTest()
-    : message_loop_(base::MessageLoop::TYPE_IO),
-      io_thread_(content::BrowserThread::IO, &message_loop_) {
+    : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {
   GoogleURLTrackerFactory::GetInstance()->RegisterUserPrefsOnBrowserContext(
       &profile_);
 }

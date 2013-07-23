@@ -1,5 +1,5 @@
 specific_include_rules = {
   ".*_[a-z]*test\.cc": [
-    "+content/public/test/test_browser_thread.h",
+    "+content/public/test/test_browser_thread_bundle.h",
   ]
 }

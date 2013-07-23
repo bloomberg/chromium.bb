@@ -13,7 +13,7 @@
 #include "base/guid.h"
 #include "base/location.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -48,6 +48,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_browser_thread.h"
 #include "google_apis/gaia/gaia_constants.h"
+#include "net/url_request/test_url_fetcher_factory.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/change_record.h"
 #include "sync/internal_api/public/read_node.h"
@@ -202,8 +203,7 @@ class ProfileSyncServiceSessionTest
       public content::NotificationObserver {
  public:
   ProfileSyncServiceSessionTest()
-      : io_thread_(BrowserThread::IO),
-        window_bounds_(0, 1, 2, 3),
+      : window_bounds_(0, 1, 2, 3),
         notified_of_update_(false),
         notified_of_refresh_(false) {}
   ProfileSyncService* sync_service() { return sync_service_.get(); }
@@ -222,8 +222,6 @@ class ProfileSyncServiceSessionTest
   virtual void SetUp() {
     // BrowserWithTestWindowTest implementation.
     BrowserWithTestWindowTest::SetUp();
-    io_thread_.StartIOThread();
-    profile()->CreateRequestContext();
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     registrar_.Add(this, chrome::NOTIFICATION_FOREIGN_SESSION_UPDATED,
         content::NotificationService::AllSources());
@@ -250,7 +248,6 @@ class ProfileSyncServiceSessionTest
   virtual void TearDown() {
     sync_service_->Shutdown();
     sync_service_.reset();
-    profile()->ResetRequestContext();
 
     // We need to destroy the profile before shutting down the threads, because
     // some of the ref counted objects in the profile depend on their
@@ -260,9 +257,7 @@ class ProfileSyncServiceSessionTest
 
     // Pump messages posted by the sync core thread (which may end up
     // posting on the IO thread).
-    base::MessageLoop::current()->RunUntilIdle();
-    io_thread_.Stop();
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     BrowserWithTestWindowTest::TearDown();
   }
 
@@ -312,7 +307,6 @@ class ProfileSyncServiceSessionTest
     return true;
   }
 
-  content::TestBrowserThread io_thread_;
   // Path used in testing.
   base::ScopedTempDir temp_dir_;
   SessionModelAssociator* model_associator_;
@@ -323,6 +317,7 @@ class ProfileSyncServiceSessionTest
   bool notified_of_update_;
   bool notified_of_refresh_;
   content::NotificationRegistrar registrar_;
+  net::TestURLFetcherFactory fetcher_factory_;
 };
 
 class CreateRootHelper {
@@ -1222,7 +1217,7 @@ TEST_F(ProfileSyncServiceSessionTest, Favicons) {
   // Update associator.
   model_associator_->AssociateForeignSpecifics(meta, base::Time());
   model_associator_->AssociateForeignSpecifics(tab, base::Time());
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   ASSERT_FALSE(model_associator_->GetSyncedFaviconForPageURL(url, &favicon));
 
   // Now add a favicon.
@@ -1230,7 +1225,7 @@ TEST_F(ProfileSyncServiceSessionTest, Favicons) {
   tab.mutable_tab()->set_favicon_type(sync_pb::SessionTab::TYPE_WEB_FAVICON);
   tab.mutable_tab()->set_favicon("data");
   model_associator_->AssociateForeignSpecifics(tab, base::Time());
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(model_associator_->GetSyncedFaviconForPageURL(url, &favicon));
   ASSERT_TRUE(CompareMemoryToString("data", favicon));
 
@@ -1241,7 +1236,7 @@ TEST_F(ProfileSyncServiceSessionTest, Favicons) {
   tab.mutable_tab()->clear_favicon_type();
   tab.mutable_tab()->clear_favicon();
   model_associator_->AssociateForeignSpecifics(tab, base::Time());
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(model_associator_->GetSyncedFaviconForPageURL(url, &favicon));
 }
 

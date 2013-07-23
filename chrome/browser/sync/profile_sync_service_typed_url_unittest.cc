@@ -174,8 +174,7 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
 
   virtual void SetUp() {
     AbstractProfileSyncServiceTest::SetUp();
-    profile_.reset(new ProfileMock);
-    profile_->CreateRequestContext();
+    profile_.reset(new ProfileMock());
     invalidation::InvalidationServiceFactory::GetInstance()->
         SetBuildOnlyFakeInvalidatorsForTest(true);
     history_backend_ = new HistoryBackendMock();
@@ -194,7 +193,6 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
     ProfileSyncServiceFactory::GetInstance()->SetTestingFactory(
         profile_.get(), NULL);
     history_thread_.Stop();
-    profile_->ResetRequestContext();
     profile_.reset();
     AbstractProfileSyncServiceTest::TearDown();
   }

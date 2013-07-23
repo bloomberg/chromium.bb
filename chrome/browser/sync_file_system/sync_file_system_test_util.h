@@ -5,17 +5,13 @@
 #ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_SYNC_FILE_SYSTEM_TEST_UTIL_H_
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_SYNC_FILE_SYSTEM_TEST_UTIL_H_
 
+#include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
 
 namespace base {
 class RunLoop;
 class SingleThreadTaskRunner;
-}
-
-namespace content {
-class TestBrowserThreadBundle;
 }
 
 namespace sync_file_system {
@@ -25,36 +21,6 @@ void AssignAndQuit(base::RunLoop* run_loop, R* result_out, R result);
 
 template <typename R> base::Callback<void(R)>
 AssignAndQuitCallback(base::RunLoop* run_loop, R* result);
-
-// This sets up FILE, IO and UI browser threads for testing.
-// (UI thread is set to the current thread.)
-class MultiThreadTestHelper {
- public:
-  MultiThreadTestHelper();
-  ~MultiThreadTestHelper();
-
-  void SetUp();
-  void TearDown();
-
-  base::SingleThreadTaskRunner* ui_task_runner() {
-    return ui_task_runner_.get();
-  }
-
-  base::SingleThreadTaskRunner* file_task_runner() {
-    return file_task_runner_.get();
-  }
-
-  base::SingleThreadTaskRunner* io_task_runner() {
-    return io_task_runner_.get();
-  }
-
- private:
-  scoped_ptr<content::TestBrowserThreadBundle> thread_bundle_;
-
-  scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
-};
 
 }  // namespace sync_file_system
 

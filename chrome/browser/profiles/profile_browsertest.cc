@@ -186,6 +186,7 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, ProfileDeletedBeforeReadmeCreated) {
   // for README creation).
   profile.reset();
   content::RunAllPendingInMessageLoop();
+  content::RunAllPendingInMessageLoop(content::BrowserThread::DB);
   content::RunAllPendingInMessageLoop(content::BrowserThread::FILE);
 }
 

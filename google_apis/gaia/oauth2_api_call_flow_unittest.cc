@@ -109,10 +109,6 @@ class MockApiCallFlow : public OAuth2ApiCallFlow {
 }  // namespace
 
 class OAuth2ApiCallFlowTest : public testing::Test {
- public:
-  OAuth2ApiCallFlowTest() {}
-  virtual ~OAuth2ApiCallFlowTest() {}
-
  protected:
   void SetupAccessTokenFetcher(
       const std::string& rt, const std::vector<std::string>& scopes) {

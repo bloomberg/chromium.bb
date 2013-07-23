@@ -578,13 +578,6 @@ void ExtensionServiceTestBase::InitializeExtensionServiceHelper(
   InitializeExtensionService(params);
 }
 
-void ExtensionServiceTestBase::InitializeRequestContext() {
-  ASSERT_TRUE(profile_.get());
-  TestingProfile* profile =
-      static_cast<TestingProfile*>(profile_.get());
-  profile->CreateRequestContext();
-}
-
 // static
 void ExtensionServiceTestBase::SetUpTestCase() {
   ExtensionErrorReporter::Init(false);  // no noisy errors
@@ -1974,7 +1967,6 @@ TEST_F(ExtensionServiceTest, GrantedPermissions) {
 // default apps.
 TEST_F(ExtensionServiceTest, DefaultAppsGrantedPermissions) {
   InitializeEmptyExtensionService();
-  InitializeRequestContext();
   base::FilePath path = data_dir_
       .AppendASCII("permissions");
 
@@ -2607,7 +2599,6 @@ TEST_F(ExtensionServiceTest, EnsureCWSOrdinalsInitialized) {
 
 TEST_F(ExtensionServiceTest, InstallAppsWithUnlimitedStorage) {
   InitializeEmptyExtensionService();
-  InitializeRequestContext();
   EXPECT_TRUE(service_->extensions()->is_empty());
 
   int pref_count = 0;
@@ -2659,7 +2650,6 @@ TEST_F(ExtensionServiceTest, InstallAppsWithUnlimitedStorage) {
 
 TEST_F(ExtensionServiceTest, InstallAppsAndCheckStorageProtection) {
   InitializeEmptyExtensionService();
-  InitializeRequestContext();
   EXPECT_TRUE(service_->extensions()->is_empty());
 
   int pref_count = 0;
@@ -3744,7 +3734,6 @@ TEST_F(ExtensionServiceTest, ExternalExtensionAutoAcknowledgement) {
 // This tests if default apps are installed correctly.
 TEST_F(ExtensionServiceTest, DefaultAppsInstall) {
   InitializeEmptyExtensionService();
-  InitializeRequestContext();
   set_extensions_enabled(true);
 
   {
@@ -3853,7 +3842,6 @@ TEST_F(ExtensionServiceTest, DisableAllExtensions) {
 // Tests reloading extensions.
 TEST_F(ExtensionServiceTest, ReloadExtensions) {
   InitializeEmptyExtensionService();
-  InitializeRequestContext();
 
   // Simple extension that should install without error.
   base::FilePath path = data_dir_.AppendASCII("good.crx");
@@ -4184,7 +4172,6 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
 // Verifies app state is removed upon uninstall.
 TEST_F(ExtensionServiceTest, ClearAppData) {
   InitializeEmptyExtensionService();
-  InitializeRequestContext();
   ExtensionCookieCallback callback;
 
   int pref_count = 0;
@@ -5641,7 +5628,6 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataTerminatedExtension) {
 
 TEST_F(ExtensionServiceTest, ProcessSyncDataVersionCheck) {
   InitializeExtensionServiceWithUpdater();
-  InitializeRequestContext();
   TestSyncProcessorStub processor;
   service_->MergeDataAndStartSyncing(
       syncer::EXTENSIONS, syncer::SyncDataList(),
@@ -5709,7 +5695,6 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataVersionCheck) {
 
 TEST_F(ExtensionServiceTest, ProcessSyncDataNotInstalled) {
   InitializeExtensionServiceWithUpdater();
-  InitializeRequestContext();
   TestSyncProcessorStub processor;
   service_->MergeDataAndStartSyncing(
       syncer::EXTENSIONS, syncer::SyncDataList(),

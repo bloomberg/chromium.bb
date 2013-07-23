@@ -20,7 +20,7 @@
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/common/autocheckout_status.h"
 #include "content/public/test/test_browser_context.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_request_headers.h"
@@ -658,8 +658,6 @@ class MockWalletClientDelegate : public WalletClientDelegate {
 
 class WalletClientTest : public testing::Test {
  public:
-  WalletClientTest() {}
-
   virtual void SetUp() OVERRIDE {
     wallet_client_.reset(
         new WalletClient(browser_context_.GetRequestContext(), &delegate_));
@@ -771,6 +769,9 @@ class WalletClientTest : public testing::Test {
     base::JSONWriter::Write(dict, &clean_upload_data);
     return clean_upload_data;
   }
+
+  // The profile's request context must be released on the IO thread.
+  content::TestBrowserThreadBundle thread_bundle_;
 
   net::TestURLFetcherFactory factory_;
 };

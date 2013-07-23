@@ -4,24 +4,19 @@
 
 #include "ui/views/test/webview_test_helper.h"
 
-#include "base/message_loop/message_loop.h"
-#include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_content_client_initializer.h"
 #include "ui/views/controls/webview/webview.h"
 
 namespace views {
 
-WebViewTestHelper::WebViewTestHelper(base::MessageLoopForUI* ui_loop) {
+WebViewTestHelper::WebViewTestHelper() {
   test_content_client_initializer_.reset(
-      new content::TestContentClientInitializer);
+      new content::TestContentClientInitializer());
 
   // Setup to register a new RenderViewHost factory which manufactures
   // mock render process hosts. This ensures that we never create a 'real'
   // render view host since support for it doesn't exist in unit tests.
   test_content_client_initializer_->CreateTestRenderViewHosts();
-
-  ui_thread_.reset(
-      new content::TestBrowserThread(content::BrowserThread::UI, ui_loop));
 }
 
 WebViewTestHelper::~WebViewTestHelper() {

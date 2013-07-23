@@ -18,7 +18,6 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_utils.h"
 #include "ui/aura/root_window.h"
 #include "ui/message_center/message_center_switches.h"
@@ -30,8 +29,7 @@ class ScreenshotTakerTest : public AshTestBase,
                             public ScreenshotTakerObserver {
  public:
   ScreenshotTakerTest()
-      : ui_thread_(content::BrowserThread::UI, message_loop()),
-        running_(false),
+      : running_(false),
         screenshot_complete_(false),
         screenshot_result_(ScreenshotTakerObserver::SCREENSHOT_SUCCESS) {
   }
@@ -90,7 +88,6 @@ class ScreenshotTakerTest : public AshTestBase,
   }
 
   scoped_ptr<ScopedTestingLocalState> local_state_;
-  content::TestBrowserThread ui_thread_;
   bool running_;
   bool screenshot_complete_;
   ScreenshotTakerObserver::Result screenshot_result_;

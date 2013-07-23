@@ -287,7 +287,6 @@ void AutofillMetricsTest::SetUp() {
   // Ensure Mac OS X does not pop up a modal dialog for the Address Book.
   autofill::test::DisableSystemServices(profile());
 
-  profile()->CreateRequestContext();
   PersonalDataManagerFactory::GetInstance()->SetTestingFactory(profile(), NULL);
 
   TabAutofillManagerDelegate::CreateForWebContents(web_contents());
@@ -315,7 +314,6 @@ void AutofillMetricsTest::TearDown() {
   autofill_manager_.reset();
   autofill_driver_.reset();
   personal_data_.reset();
-  profile()->ResetRequestContext();
   ChromeRenderViewHostTestHarness::TearDown();
 }
 

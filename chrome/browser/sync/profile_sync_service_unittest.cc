@@ -6,7 +6,7 @@
 #include "base/compiler_specific.h"
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/values.h"
 #include "chrome/browser/invalidation/invalidation_service_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
@@ -21,7 +21,8 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_utils.h"
 #include "google/cacheinvalidation/include/types.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "sync/js/js_arg_list.h"
@@ -38,7 +39,6 @@ namespace browser_sync {
 
 namespace {
 
-using content::BrowserThread;
 using testing::_;
 using testing::AtLeast;
 using testing::AtMost;
@@ -49,18 +49,13 @@ using testing::StrictMock;
 class ProfileSyncServiceTestHarness {
  public:
   ProfileSyncServiceTestHarness()
-      : ui_thread_(BrowserThread::UI, &ui_loop_),
-        db_thread_(BrowserThread::DB),
-        file_thread_(BrowserThread::FILE),
-        io_thread_(BrowserThread::IO) {}
-
-  ~ProfileSyncServiceTestHarness() {}
+      : thread_bundle_(content::TestBrowserThreadBundle::REAL_DB_THREAD |
+                       content::TestBrowserThreadBundle::REAL_FILE_THREAD |
+                       content::TestBrowserThreadBundle::REAL_IO_THREAD) {
+   }
 
   void SetUp() {
-    file_thread_.Start();
-    io_thread_.StartIOThread();
     profile.reset(new TestingProfile());
-    profile->CreateRequestContext();
     invalidation::InvalidationServiceFactory::GetInstance()->
         SetBuildOnlyFakeInvalidatorsForTest(true);
     ProfileOAuth2TokenServiceFactory::GetInstance()->SetTestingFactory(
@@ -76,11 +71,9 @@ class ProfileSyncServiceTestHarness {
     profile.reset();
     // Pump messages posted by the sync thread (which may end up
     // posting on the IO thread).
-    ui_loop_.RunUntilIdle();
-    io_thread_.Stop();
-    file_thread_.Stop();
-    // Ensure that the sync objects destruct to avoid memory leaks.
-    ui_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
+    content::RunAllPendingInMessageLoop(content::BrowserThread::IO);
+    base::RunLoop().RunUntilIdle();
   }
 
   // TODO(akalin): Refactor the StartSyncService*() functions below.
@@ -140,14 +133,7 @@ class ProfileSyncServiceTestHarness {
   scoped_ptr<TestingProfile> profile;
 
  private:
-  base::MessageLoop ui_loop_;
-  // Needed by |service|.
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread db_thread_;
-  // Needed by DisableAndEnableSyncTemporarily test case.
-  content::TestBrowserThread file_thread_;
-  // Needed by |service| and |profile|'s request context.
-  content::TestBrowserThread io_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
 };
 
 class TestProfileSyncServiceObserver : public ProfileSyncServiceObserver {

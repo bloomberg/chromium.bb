@@ -7,13 +7,14 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
+#include "base/run_loop.h"
 #include "chrome/browser/sync/test_profile_sync_service.h"
+#include "content/public/test/test_utils.h"
 #include "sync/internal_api/public/test/test_user_share.h"
 #include "sync/internal_api/public/write_transaction.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/util/cryptographer.h"
 
-using content::BrowserThread;
 using syncer::ModelType;
 using syncer::UserShare;
 
@@ -41,10 +42,9 @@ syncer::ImmutableChangeRecordList
 }
 
 AbstractProfileSyncServiceTest::AbstractProfileSyncServiceTest()
-    : ui_thread_(BrowserThread::UI, &ui_loop_),
-      db_thread_(BrowserThread::DB),
-      file_thread_(BrowserThread::FILE),
-      io_thread_(BrowserThread::IO),
+    : thread_bundle_(content::TestBrowserThreadBundle::REAL_DB_THREAD |
+                     content::TestBrowserThreadBundle::REAL_FILE_THREAD |
+                     content::TestBrowserThreadBundle::REAL_IO_THREAD),
       token_service_(NULL),
       sync_service_(NULL) {
 }
@@ -52,19 +52,14 @@ AbstractProfileSyncServiceTest::AbstractProfileSyncServiceTest()
 AbstractProfileSyncServiceTest::~AbstractProfileSyncServiceTest() {}
 
 void AbstractProfileSyncServiceTest::SetUp() {
-  db_thread_.Start();
-  file_thread_.Start();
-  io_thread_.StartIOThread();
 }
 
 void AbstractProfileSyncServiceTest::TearDown() {
   // Pump messages posted by the sync core thread (which may end up
   // posting on the IO thread).
-  ui_loop_.RunUntilIdle();
-  io_thread_.Stop();
-  file_thread_.Stop();
-  db_thread_.Stop();
-  ui_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
+  content::RunAllPendingInMessageLoop(content::BrowserThread::IO);
+  base::RunLoop().RunUntilIdle();
 }
 
 bool AbstractProfileSyncServiceTest::CreateRoot(ModelType model_type) {

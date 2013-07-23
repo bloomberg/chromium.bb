@@ -7,6 +7,7 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
+#include "base/run_loop.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -40,72 +41,6 @@ using ::testing::Return;
 using ::testing::StrictMock;
 
 namespace {
-
-// TestGenerateSearchURL ------------------------------------------------------
-
-// Test the GenerateSearchURL on a thread or the main thread.
-class TestGenerateSearchURL
-    : public base::RefCountedThreadSafe<TestGenerateSearchURL> {
- public:
-  explicit TestGenerateSearchURL(SearchTermsData* search_terms_data);
-
-  // Run the test cases for GenerateSearchURL.
-  void RunTest();
-
-  // Did the test pass?
-  bool passed() const { return passed_; }
-
- private:
-  friend class base::RefCountedThreadSafe<TestGenerateSearchURL>;
-  ~TestGenerateSearchURL();
-
-  SearchTermsData* search_terms_data_;
-  bool passed_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestGenerateSearchURL);
-};
-
-TestGenerateSearchURL::TestGenerateSearchURL(SearchTermsData* search_terms_data)
-    : search_terms_data_(search_terms_data),
-      passed_(false) {
-}
-
-void TestGenerateSearchURL::RunTest() {
-  struct GenerateSearchURLCase {
-    const char* test_name;
-    const char* url;
-    const char* expected;
-  } generate_url_cases[] = {
-    { "invalid URL", "foo{searchTerms}", "" },
-    { "URL with no replacements", "http://foo/", "http://foo/" },
-    { "basic functionality", "http://foo/{searchTerms}",
-      "http://foo/blah.blah.blah.blah.blah" }
-  };
-
-  // Don't use ASSERT/EXPECT since this is run on a thread in one test
-  // and those macros aren't meant for threads at this time according to
-  // gtest documentation.
-  bool everything_passed = true;
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(generate_url_cases); ++i) {
-    TemplateURLData data;
-    data.SetURL(generate_url_cases[i].url);
-    TemplateURL t_url(NULL, data);
-    std::string result = (search_terms_data_ ?
-        TemplateURLService::GenerateSearchURLUsingTermsData(&t_url,
-            *search_terms_data_) :
-        TemplateURLService::GenerateSearchURL(&t_url)).spec();
-    if (result != generate_url_cases[i].expected) {
-      LOG(ERROR) << generate_url_cases[i].test_name << " failed. Expected " <<
-          generate_url_cases[i].expected << " Actual " << result;
-      everything_passed = false;
-    }
-  }
-  passed_ = everything_passed;
-}
-
-TestGenerateSearchURL::~TestGenerateSearchURL() {
-}
-
 
 // TestSearchTermsData --------------------------------------------------------
 
@@ -303,6 +238,36 @@ class TemplateURLServiceTest : public testing::Test {
  protected:
   TemplateURLServiceTestUtil test_util_;
 
+  void TestGenerateSearchURL(SearchTermsData* search_terms_data) {
+    struct GenerateSearchURLCase {
+      const char* test_name;
+      const char* url;
+      const char* expected;
+    } generate_url_cases[] = {
+      { "invalid URL", "foo{searchTerms}", "" },
+      { "URL with no replacements", "http://foo/", "http://foo/" },
+      { "basic functionality", "http://foo/{searchTerms}",
+        "http://foo/blah.blah.blah.blah.blah" }
+    };
+
+    for (size_t i = 0; i < ARRAYSIZE_UNSAFE(generate_url_cases); ++i) {
+      TemplateURLData data;
+      data.SetURL(generate_url_cases[i].url);
+      TemplateURL t_url(NULL, data);
+      std::string result;
+      if (search_terms_data) {
+          result = TemplateURLService::GenerateSearchURLUsingTermsData(
+              &t_url, *search_terms_data).spec();
+      } else {
+          result = TemplateURLService::GenerateSearchURL(&t_url).spec();
+      }
+      EXPECT_EQ(result,  generate_url_cases[i].expected)
+          << generate_url_cases[i].test_name << " failed. Expected "
+          << generate_url_cases[i].expected << " Actual " << result;
+    }
+  }
+
+
   DISALLOW_COPY_AND_ASSIGN(TemplateURLServiceTest);
 };
 
@@ -405,7 +370,7 @@ void TemplateURLServiceTest::TestLoadUpdatingPreloadedURL(
   ASSERT_TRUE(keyword_url != NULL);
   EXPECT_EQ(t_url, keyword_url);
   EXPECT_EQ(original_url, keyword_url->url_ref().DisplayURL());
-  test_util_.BlockTillServiceProcessesRequests();
+  base::RunLoop().RunUntilIdle();
 
   // Now reload the model and verify that the merge updates the url, and
   // preserves the sync GUID.
@@ -416,7 +381,7 @@ void TemplateURLServiceTest::TestLoadUpdatingPreloadedURL(
   EXPECT_EQ(original_guid, keyword_url->sync_guid());
 
   // Wait for any saves to finish.
-  test_util_.BlockTillServiceProcessesRequests();
+  base::RunLoop().RunUntilIdle();
 
   // Reload the model to verify that change was saved correctly.
   test_util_.ResetModel(true);
@@ -462,7 +427,7 @@ TEST_F(TemplateURLServiceTest, AddUpdateRemove) {
   ASSERT_TRUE(model()->CanReplaceKeyword(ASCIIToUTF16("keyword"), GURL(),
                                          NULL));
   VerifyObserverCount(1);
-  test_util_.BlockTillServiceProcessesRequests();
+  base::RunLoop().RunUntilIdle();
   ASSERT_EQ(initial_count + 1, model()->GetTemplateURLs().size());
   ASSERT_EQ(t_url, model()->GetTemplateURLForKeyword(t_url->keyword()));
   // We need to make a second copy as the model takes ownership of |t_url| and
@@ -499,7 +464,7 @@ TEST_F(TemplateURLServiceTest, AddUpdateRemove) {
                                          NULL));
   ASSERT_FALSE(model()->CanReplaceKeyword(ASCIIToUTF16("b"), GURL(), NULL));
   cloned_url.reset(new TemplateURL(loaded_url->profile(), loaded_url->data()));
-  test_util_.BlockTillServiceProcessesRequests();
+  base::RunLoop().RunUntilIdle();
   test_util_.ResetModel(true);
   ASSERT_EQ(initial_count + 1, model()->GetTemplateURLs().size());
   loaded_url = model()->GetTemplateURLForKeyword(ASCIIToUTF16("b"));
@@ -676,25 +641,14 @@ TEST_F(TemplateURLServiceTest, GenerateKeyword) {
 }
 
 TEST_F(TemplateURLServiceTest, GenerateSearchURL) {
-  scoped_refptr<TestGenerateSearchURL> test_generate_search_url(
-      new TestGenerateSearchURL(NULL));
-  test_generate_search_url->RunTest();
-  EXPECT_TRUE(test_generate_search_url->passed());
+  TestGenerateSearchURL(NULL);
 }
 
 TEST_F(TemplateURLServiceTest, GenerateSearchURLUsingTermsData) {
   // Run the test for GenerateSearchURLUsingTermsData on the "IO" thread and
   // wait for it to finish.
   TestSearchTermsData search_terms_data("http://google.com/");
-  scoped_refptr<TestGenerateSearchURL> test_generate_search_url(
-      new TestGenerateSearchURL(&search_terms_data));
-
-  test_util_.StartIOThread();
-  BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)->PostTask(
-          FROM_HERE, base::Bind(&TestGenerateSearchURL::RunTest,
-                                test_generate_search_url.get()));
-  TemplateURLServiceTestUtil::BlockTillIOThreadProcessesRequests();
-  EXPECT_TRUE(test_generate_search_url->passed());
+  TestGenerateSearchURL(&search_terms_data);
 }
 
 TEST_F(TemplateURLServiceTest, ClearBrowsingData_Keywords) {
@@ -826,7 +780,7 @@ TEST_F(TemplateURLServiceTest, Reset) {
   model()->Add(t_url);
 
   VerifyObserverCount(1);
-  test_util_.BlockTillServiceProcessesRequests();
+  base::RunLoop().RunUntilIdle();
 
   StrictMock<base::MockTimeProvider> mock_time;
   model()->set_time_provider(&base::MockTimeProvider::StaticNow);
@@ -874,7 +828,7 @@ TEST_F(TemplateURLServiceTest, DefaultSearchProvider) {
 
   // Setting the default search provider should have caused notification.
   VerifyObserverCount(1);
-  test_util_.BlockTillServiceProcessesRequests();
+  base::RunLoop().RunUntilIdle();
 
   scoped_ptr<TemplateURL> cloned_url(new TemplateURL(t_url->profile(),
                                                      t_url->data()));
@@ -953,7 +907,7 @@ TEST_F(TemplateURLServiceTest, DefaultSearchProviderLoadedFromPrefs) {
   const TemplateURLID id = t_url->id();
 
   model()->SetDefaultSearchProvider(t_url);
-  test_util_.BlockTillServiceProcessesRequests();
+  base::RunLoop().RunUntilIdle();
   scoped_ptr<TemplateURL> cloned_url(new TemplateURL(t_url->profile(),
                                                      t_url->data()));
 
@@ -1243,7 +1197,7 @@ TEST_F(TemplateURLServiceTest, LoadDeletesUnusedProvider) {
   model()->Add(t_url);
   ASSERT_TRUE(
       model()->GetTemplateURLForKeyword(ASCIIToUTF16("unittest")) != NULL);
-  test_util_.BlockTillServiceProcessesRequests();
+  base::RunLoop().RunUntilIdle();
 
   // Ensure that merging clears this engine.
   test_util_.ResetModel(true);
@@ -1251,7 +1205,7 @@ TEST_F(TemplateURLServiceTest, LoadDeletesUnusedProvider) {
       model()->GetTemplateURLForKeyword(ASCIIToUTF16("unittest")) == NULL);
 
   // Wait for any saves to finish.
-  test_util_.BlockTillServiceProcessesRequests();
+  base::RunLoop().RunUntilIdle();
 
   // Reload the model to verify that the database was updated as a result of the
   // merge.
@@ -1274,7 +1228,7 @@ TEST_F(TemplateURLServiceTest, LoadRetainsModifiedProvider) {
   ASSERT_EQ(t_url, model()->GetTemplateURLForKeyword(ASCIIToUTF16("unittest")));
 
   // Wait for any saves to finish.
-  test_util_.BlockTillServiceProcessesRequests();
+  base::RunLoop().RunUntilIdle();
 
   // Ensure that merging won't clear it if the user has edited it.
   test_util_.ResetModel(true);
@@ -1284,7 +1238,7 @@ TEST_F(TemplateURLServiceTest, LoadRetainsModifiedProvider) {
   AssertEquals(*cloned_url, *url_for_unittest);
 
   // Wait for any saves to finish.
-  test_util_.BlockTillServiceProcessesRequests();
+  base::RunLoop().RunUntilIdle();
 
   // Reload the model to verify that save/reload retains the item.
   test_util_.ResetModel(true);
@@ -1304,7 +1258,7 @@ TEST_F(TemplateURLServiceTest, LoadSavesPrepopulatedDefaultSearchProvider) {
                                                      default_search->data()));
 
   // Wait for any saves to finish.
-  test_util_.BlockTillServiceProcessesRequests();
+  base::RunLoop().RunUntilIdle();
 
   // Reload the model and check that the default search provider
   // was properly saved.
@@ -1368,7 +1322,7 @@ TEST_F(TemplateURLServiceTest, LoadRetainsDefaultProvider) {
 
   ASSERT_EQ(t_url, model()->GetTemplateURLForKeyword(ASCIIToUTF16("unittest")));
   ASSERT_EQ(t_url, model()->GetDefaultSearchProvider());
-  test_util_.BlockTillServiceProcessesRequests();
+  base::RunLoop().RunUntilIdle();
 
   // Ensure that merging won't clear the prepopulated template url
   // which is no longer present if it's the default engine.
@@ -1382,7 +1336,7 @@ TEST_F(TemplateURLServiceTest, LoadRetainsDefaultProvider) {
   }
 
   // Wait for any saves to finish.
-  test_util_.BlockTillServiceProcessesRequests();
+  base::RunLoop().RunUntilIdle();
 
   // Reload the model to verify that the update was saved.
   test_util_.ResetModel(true);
@@ -1418,7 +1372,7 @@ TEST_F(TemplateURLServiceTest, LoadEnsuresDefaultSearchProviderExists) {
   // Now remove it.
   model()->SetDefaultSearchProvider(NULL);
   model()->Remove(old_default);
-  test_util_.BlockTillServiceProcessesRequests();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(model()->GetDefaultSearchProvider());
 
@@ -1432,7 +1386,7 @@ TEST_F(TemplateURLServiceTest, LoadEnsuresDefaultSearchProviderExists) {
   model()->ResetTemplateURL(model()->GetDefaultSearchProvider(),
                             ASCIIToUTF16("test"), ASCIIToUTF16("test"),
                             "http://example.com/");
-  test_util_.BlockTillServiceProcessesRequests();
+  base::RunLoop().RunUntilIdle();
 
   // Reset the model and load it. There should be a usable default search
   // provider.
@@ -1454,7 +1408,7 @@ TEST_F(TemplateURLServiceTest, FailedInit) {
 
   test_util_.ResetModel(false);
   model()->Load();
-  test_util_.BlockTillServiceProcessesRequests();
+  base::RunLoop().RunUntilIdle();
 
   ASSERT_TRUE(model()->GetDefaultSearchProvider());
 }
@@ -1610,7 +1564,7 @@ TEST_F(TemplateURLServiceTest, PatchEmptySyncGUID) {
   model()->Add(t_url);
 
   VerifyObserverCount(1);
-  test_util_.BlockTillServiceProcessesRequests();
+  base::RunLoop().RunUntilIdle();
   ASSERT_EQ(initial_count + 1, model()->GetTemplateURLs().size());
 
   // Reload the model to verify it was actually saved to the database and
@@ -1647,7 +1601,7 @@ TEST_F(TemplateURLServiceTest, DuplicateInputEncodings) {
   model()->Add(t_url);
 
   VerifyObserverCount(1);
-  test_util_.BlockTillServiceProcessesRequests();
+  base::RunLoop().RunUntilIdle();
   ASSERT_EQ(initial_count + 1, model()->GetTemplateURLs().size());
   const TemplateURL* loaded_url =
       model()->GetTemplateURLForKeyword(ASCIIToUTF16("keyword"));

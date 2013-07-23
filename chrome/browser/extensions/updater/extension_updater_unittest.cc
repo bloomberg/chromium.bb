@@ -239,7 +239,6 @@ class MockService : public TestExtensionService {
       : prefs_(prefs),
         pending_extension_manager_(*this),
         blacklist_(prefs_->prefs()) {
-    profile_.CreateRequestContext();
   }
 
   virtual ~MockService() {}
@@ -498,11 +497,8 @@ static void VerifyQueryAndExtractParameters(
 class ExtensionUpdaterTest : public testing::Test {
  public:
   ExtensionUpdaterTest()
-      : test_browser_thread_bundle_(
+      : thread_bundle_(
             content::TestBrowserThreadBundle::IO_MAINLOOP) {
-  }
-
-  virtual ~ExtensionUpdaterTest() {
   }
 
   virtual void SetUp() OVERRIDE {
@@ -751,7 +747,6 @@ class ExtensionUpdaterTest : public testing::Test {
 
   void TestDetermineUpdates() {
     TestingProfile profile;
-    profile.CreateRequestContext();
     MockExtensionDownloaderDelegate delegate;
     ExtensionDownloader downloader(&delegate, profile.GetRequestContext());
 
@@ -795,7 +790,6 @@ class ExtensionUpdaterTest : public testing::Test {
     SetupPendingExtensionManagerForTest(3, GURL(), pending_extension_manager);
 
     TestingProfile profile;
-    profile.CreateRequestContext();
     MockExtensionDownloaderDelegate delegate;
     ExtensionDownloader downloader(&delegate, profile.GetRequestContext());
 
@@ -1502,7 +1496,7 @@ class ExtensionUpdaterTest : public testing::Test {
   scoped_ptr<TestExtensionPrefs> prefs_;
 
  private:
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::TestBrowserThreadBundle thread_bundle_;
 
 #if defined OS_CHROMEOS
   chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;

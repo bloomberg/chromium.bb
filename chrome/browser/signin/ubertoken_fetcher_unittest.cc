@@ -11,8 +11,6 @@
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using content::BrowserThread;
-
 class MockUbertokenConsumer : public UbertokenConsumer {
  public:
   MockUbertokenConsumer()
@@ -43,8 +41,8 @@ class UbertokenFetcherTest : public TokenServiceTestHarness {
  public:
   virtual void SetUp() OVERRIDE {
     TokenServiceTestHarness::SetUp();
-    service_->UpdateCredentials(credentials_);
-    fetcher_.reset(new UbertokenFetcher(profile_.get(), &consumer_));
+    UpdateCredentialsOnService();
+    fetcher_.reset(new UbertokenFetcher(profile(), &consumer_));
   }
 
   virtual void TearDown() OVERRIDE {
@@ -61,10 +59,10 @@ TEST_F(UbertokenFetcherTest, TestSuccessWithoutRefreshToken) {
   fetcher_->StartFetchingToken();
   TokenService::TokenAvailableDetails
       details(GaiaConstants::kGaiaOAuth2LoginRefreshToken, "refreshToken");
-  service_->IssueAuthTokenForTest(GaiaConstants::kGaiaOAuth2LoginRefreshToken,
-                                 "refreshToken");
+  service()->IssueAuthTokenForTest(GaiaConstants::kGaiaOAuth2LoginRefreshToken,
+                                   "refreshToken");
   fetcher_->Observe(chrome::NOTIFICATION_TOKEN_AVAILABLE,
-                    content::Source<TokenService>(service_),
+                    content::Source<TokenService>(service()),
                     content::Details<const TokenService::TokenAvailableDetails>(
                         &details));
   fetcher_->OnRefreshTokenResponse("accessToken", 3600);
@@ -75,8 +73,8 @@ TEST_F(UbertokenFetcherTest, TestSuccessWithoutRefreshToken) {
 }
 
 TEST_F(UbertokenFetcherTest, TestSuccessWithRefreshToken) {
-  service_->IssueAuthTokenForTest(GaiaConstants::kGaiaOAuth2LoginRefreshToken,
-                                 "refreshToken");
+  service()->IssueAuthTokenForTest(GaiaConstants::kGaiaOAuth2LoginRefreshToken,
+                                   "refreshToken");
   fetcher_->StartFetchingToken();
   fetcher_->OnRefreshTokenResponse("accessToken", 3600);
   fetcher_->OnUberAuthTokenSuccess("uberToken");
@@ -93,7 +91,7 @@ TEST_F(UbertokenFetcherTest, TestFailures) {
       details(GaiaConstants::kGaiaOAuth2LoginRefreshToken, error);
   fetcher_->Observe(
       chrome::NOTIFICATION_TOKEN_REQUEST_FAILED,
-      content::Source<TokenService>(service_),
+      content::Source<TokenService>(service()),
       content::Details<const TokenService::TokenRequestFailedDetails>(
           &details));
   EXPECT_EQ(1, consumer_.nb_error_);

@@ -504,7 +504,6 @@ class ProfileSyncServiceAutofillTest
   virtual void SetUp() OVERRIDE {
     AbstractProfileSyncServiceTest::SetUp();
     profile_.reset(new ProfileMock());
-    profile_->CreateRequestContext();
     web_database_.reset(new WebDatabaseFake(&autofill_table_));
     MockWebDataServiceWrapper* wrapper =
         static_cast<MockWebDataServiceWrapper*>(
@@ -542,7 +541,6 @@ class ProfileSyncServiceAutofillTest
     web_data_service_->ShutdownOnUIThread();
     web_data_service_->ShutdownSyncableService();
     web_data_service_ = NULL;
-    profile_->ResetRequestContext();
     // To prevent a leak, fully release TestURLRequestContext to ensure its
     // destruction on the IO message loop.
     profile_.reset();

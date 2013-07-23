@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_bar_gtk.h"
 
 #include "base/compiler_specific.h"
-#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -14,10 +14,8 @@
 #include "chrome/test/base/test_browser_window.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-using content::BrowserThread;
 
 // Dummy implementation that's good enough for the tests; we don't test
 // rendering here so all we need is a non-NULL object.
@@ -30,11 +28,6 @@ class EmptyTabstripOriginProvider : public TabstripOriginProvider {
 
 class BookmarkBarGtkUnittest : public testing::Test {
  protected:
-  BookmarkBarGtkUnittest()
-      : ui_thread_(BrowserThread::UI, &message_loop_),
-        file_thread_(BrowserThread::FILE, &message_loop_) {
-  }
-
   virtual void SetUp() OVERRIDE {
     profile_.reset(new TestingProfile());
     profile_->CreateBookmarkModel(true);
@@ -51,7 +44,7 @@ class BookmarkBarGtkUnittest : public testing::Test {
   }
 
   virtual void TearDown() OVERRIDE {
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
 
     bookmark_bar_.reset();
     origin_provider_.reset();
@@ -61,9 +54,7 @@ class BookmarkBarGtkUnittest : public testing::Test {
 
   BookmarkModel* model_;
 
-  base::MessageLoopForUI message_loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
 
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<Browser> browser_;

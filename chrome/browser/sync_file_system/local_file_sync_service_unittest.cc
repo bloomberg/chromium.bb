@@ -14,6 +14,9 @@
 #include "chrome/browser/sync_file_system/mock_local_change_processor.h"
 #include "chrome/browser/sync_file_system/sync_file_system_test_util.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/fileapi/file_system_context.h"
@@ -27,6 +30,7 @@
 #include "webkit/browser/fileapi/syncable/sync_status_code.h"
 #include "webkit/browser/fileapi/syncable/syncable_file_system_util.h"
 
+using content::BrowserThread;
 using fileapi::FileSystemURL;
 using ::testing::_;
 using ::testing::AtLeast;
@@ -95,19 +99,18 @@ class LocalFileSyncServiceTest
     : public testing::Test,
       public LocalFileSyncService::Observer {
  protected:
-  LocalFileSyncServiceTest() : num_changes_(0) {}
-
-  virtual ~LocalFileSyncServiceTest() {}
+  LocalFileSyncServiceTest()
+      : thread_bundle_(content::TestBrowserThreadBundle::REAL_FILE_THREAD |
+                        content::TestBrowserThreadBundle::REAL_IO_THREAD),
+        num_changes_(0) {}
 
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
-    thread_helper_.SetUp();
-
     file_system_.reset(new CannedSyncableFileSystem(
         GURL(kOrigin),
-        thread_helper_.io_task_runner(),
-        thread_helper_.file_task_runner()));
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)));
 
     local_service_.reset(new LocalFileSyncService(&profile_));
 
@@ -132,8 +135,7 @@ class LocalFileSyncServiceTest
     local_service_->Shutdown();
     file_system_->TearDown();
     RevokeSyncableFileSystem();
-
-    thread_helper_.TearDown();
+    content::RunAllPendingInMessageLoop(BrowserThread::FILE);
   }
 
   // LocalChangeObserver overrides.
@@ -173,10 +175,10 @@ class LocalFileSyncServiceTest
     return file_system_->file_system_context()->change_tracker()->num_changes();
   }
 
+  content::TestBrowserThreadBundle thread_bundle_;
+
   ScopedEnableSyncFSDirectoryOperation enable_directory_operation_;
   TestingProfile profile_;
-
-  MultiThreadTestHelper thread_helper_;
 
   base::ScopedTempDir temp_dir_;
 
@@ -277,9 +279,10 @@ TEST_F(LocalFileSyncServiceTest, LocalChangeObserver) {
 
 TEST_F(LocalFileSyncServiceTest, MAYBE_LocalChangeObserverMultipleContexts) {
   const char kOrigin2[] = "http://foo";
-  CannedSyncableFileSystem file_system2(GURL(kOrigin2),
-                                        thread_helper_.io_task_runner(),
-                                        thread_helper_.file_task_runner());
+  CannedSyncableFileSystem file_system2(
+      GURL(kOrigin2),
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
   file_system2.SetUp();
 
   base::RunLoop run_loop;

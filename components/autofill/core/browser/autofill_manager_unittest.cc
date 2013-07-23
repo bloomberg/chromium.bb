@@ -770,12 +770,6 @@ class AutofillManagerTest : public ChromeRenderViewHostTestHarness {
     personal_data_.SetBrowserContext(NULL);
   }
 
-  virtual content::BrowserContext* CreateBrowserContext() OVERRIDE {
-    TestingProfile* profile = new TestingProfile();
-    profile->CreateRequestContext();
-    return profile;
-  }
-
   void GetAutofillSuggestions(int query_id,
                               const FormData& form,
                               const FormFieldData& field) {

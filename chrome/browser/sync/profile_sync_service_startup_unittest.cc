@@ -7,6 +7,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
+#include "base/run_loop.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/signin/fake_signin_manager.h"
 #include "chrome/browser/signin/oauth2_token_service.h"
@@ -27,7 +28,8 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_utils.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -71,10 +73,9 @@ class FakeTokenService : public TokenService {
 class ProfileSyncServiceStartupTest : public testing::Test {
  public:
   ProfileSyncServiceStartupTest()
-      : ui_thread_(BrowserThread::UI, &ui_loop_),
-        db_thread_(BrowserThread::DB),
-        file_thread_(BrowserThread::FILE),
-        io_thread_(BrowserThread::IO),
+      : thread_bundle_(content::TestBrowserThreadBundle::REAL_DB_THREAD |
+                       content::TestBrowserThreadBundle::REAL_FILE_THREAD |
+                       content::TestBrowserThreadBundle::REAL_IO_THREAD),
         profile_(new TestingProfile),
         sync_(NULL) {}
 
@@ -82,9 +83,6 @@ class ProfileSyncServiceStartupTest : public testing::Test {
   }
 
   virtual void SetUp() {
-    file_thread_.Start();
-    io_thread_.StartIOThread();
-    profile_->CreateRequestContext();
 #if defined(OS_CHROMEOS)
     SigninManagerFactory::GetInstance()->SetTestingFactory(
         profile_.get(), FakeSigninManagerBase::Build);
@@ -104,10 +102,9 @@ class ProfileSyncServiceStartupTest : public testing::Test {
 
     // Pump messages posted by the sync core thread (which may end up
     // posting on the IO thread).
-    ui_loop_.RunUntilIdle();
-    io_thread_.Stop();
-    file_thread_.Stop();
-    ui_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
+    content::RunAllPendingInMessageLoop(content::BrowserThread::IO);
+    base::RunLoop().RunUntilIdle();
   }
 
   static BrowserContextKeyedService* BuildService(
@@ -139,11 +136,7 @@ class ProfileSyncServiceStartupTest : public testing::Test {
     return data_type_manager;
   }
 
-  base::MessageLoop ui_loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread db_thread_;
-  content::TestBrowserThread file_thread_;
-  content::TestBrowserThread io_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<TestingProfile> profile_;
   TestProfileSyncService* sync_;
   ProfileSyncServiceObserverMock observer_;

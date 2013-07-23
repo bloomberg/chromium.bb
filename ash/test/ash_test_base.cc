@@ -87,7 +87,7 @@ AshTestBase::AshTestBase()
       teardown_called_(false) {
   // Must initialize |ash_test_helper_| here because some tests rely on
   // AshTestBase methods before they call AshTestBase::SetUp().
-  ash_test_helper_.reset(new AshTestHelper(&message_loop_));
+  ash_test_helper_.reset(new AshTestHelper(base::MessageLoopForUI::current()));
 }
 
 AshTestBase::~AshTestBase() {

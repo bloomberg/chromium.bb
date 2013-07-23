@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/speech/speech_recognition_bubble_controller.h"
 #include "chrome/browser/ui/browser.h"
@@ -79,7 +80,6 @@ class SpeechRecognitionBubbleControllerTest
  public:
   SpeechRecognitionBubbleControllerTest()
       : BrowserWithTestWindowTest(),
-        io_thread_(BrowserThread::IO),  // constructs a new thread and loop
         cancel_clicked_(false),
         try_again_clicked_(false),
         focus_changed_(false),
@@ -103,14 +103,12 @@ class SpeechRecognitionBubbleControllerTest
     } else if (button == SpeechRecognitionBubble::BUTTON_TRY_AGAIN) {
       try_again_clicked_ = true;
     }
-    message_loop()->PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
   }
 
   virtual void InfoBubbleFocusChanged(int session_id) OVERRIDE {
     VLOG(1) << "Received InfoBubbleFocusChanged";
     EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
     focus_changed_ = true;
-    message_loop()->PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
   }
 
   // testing::Test methods.
@@ -118,12 +116,10 @@ class SpeechRecognitionBubbleControllerTest
     BrowserWithTestWindowTest::SetUp();
     SpeechRecognitionBubble::set_factory(
         &SpeechRecognitionBubbleControllerTest::CreateBubble);
-    io_thread_.Start();
   }
 
   virtual void TearDown() {
     SpeechRecognitionBubble::set_factory(NULL);
-    io_thread_.Stop();
     BrowserWithTestWindowTest::TearDown();
   }
 
@@ -157,9 +153,6 @@ class SpeechRecognitionBubbleControllerTest
   }
 
  protected:
-  // The main thread of the test is marked as the IO thread and we create a new
-  // one for the UI thread.
-  content::TestBrowserThread io_thread_;
   bool cancel_clicked_;
   bool try_again_clicked_;
   bool focus_changed_;
@@ -184,7 +177,7 @@ TEST_F(SpeechRecognitionBubbleControllerTest, TestFocusChanged) {
       MockSpeechRecognitionBubble::BUBBLE_TEST_FOCUS_CHANGED);
 
   controller_->CreateBubble(kBubbleSessionId, 1, 1, gfx::Rect(1, 1));
-  base::MessageLoop::current()->Run();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(focus_changed_);
   EXPECT_FALSE(cancel_clicked_);
   EXPECT_FALSE(try_again_clicked_);
@@ -198,7 +191,7 @@ TEST_F(SpeechRecognitionBubbleControllerTest, TestRecognitionCancelled) {
       MockSpeechRecognitionBubble::BUBBLE_TEST_CLICK_CANCEL);
 
   controller_->CreateBubble(kBubbleSessionId, 1, 1, gfx::Rect(1, 1));
-  base::MessageLoop::current()->Run();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(cancel_clicked_);
   EXPECT_FALSE(try_again_clicked_);
   EXPECT_FALSE(focus_changed_);
@@ -212,7 +205,7 @@ TEST_F(SpeechRecognitionBubbleControllerTest, TestTryAgainClicked) {
       MockSpeechRecognitionBubble::BUBBLE_TEST_CLICK_TRY_AGAIN);
 
   controller_->CreateBubble(kBubbleSessionId, 1, 1, gfx::Rect(1, 1));
-  base::MessageLoop::current()->Run();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(cancel_clicked_);
   EXPECT_TRUE(try_again_clicked_);
   EXPECT_FALSE(focus_changed_);

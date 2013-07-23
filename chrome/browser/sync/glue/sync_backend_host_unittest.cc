@@ -20,7 +20,8 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_utils.h"
 #include "google/cacheinvalidation/include/types.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "sync/internal_api/public/base/model_type.h"
@@ -135,16 +136,13 @@ class FakeSyncManagerFactory : public syncer::SyncManagerFactory {
 class SyncBackendHostTest : public testing::Test {
  protected:
   SyncBackendHostTest()
-      : ui_thread_(BrowserThread::UI, &ui_loop_),
-        io_thread_(BrowserThread::IO),
+      : thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD),
         fake_manager_(NULL) {}
 
   virtual ~SyncBackendHostTest() {}
 
   virtual void SetUp() OVERRIDE {
-    io_thread_.StartIOThread();
     profile_.reset(new TestingProfile());
-    profile_->CreateRequestContext();
     sync_prefs_.reset(new SyncPrefs(profile_->GetPrefs()));
     backend_.reset(new SyncBackendHost(
         profile_->GetDebugName(),
@@ -178,10 +176,10 @@ class SyncBackendHostTest : public testing::Test {
     profile_.reset();
     // Pump messages posted by the sync thread (which may end up
     // posting on the IO thread).
-    ui_loop_.RunUntilIdle();
-    io_thread_.Stop();
+    base::RunLoop().RunUntilIdle();
+    content::RunAllPendingInMessageLoop(BrowserThread::IO);
     // Pump any messages posted by the IO thread.
-    ui_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   // Synchronously initializes the backend.
@@ -196,9 +194,11 @@ class SyncBackendHostTest : public testing::Test {
                          &fake_manager_factory_,
                          &handler_,
                          NULL);
-    ui_loop_.PostDelayedTask(FROM_HERE,
-        ui_loop_.QuitClosure(), TestTimeouts::action_timeout());
-    ui_loop_.Run();
+    base::RunLoop run_loop;
+    BrowserThread::PostDelayedTask(BrowserThread::UI, FROM_HERE,
+                                   run_loop.QuitClosure(),
+                                   TestTimeouts::action_timeout());
+    run_loop.Run();
     // |fake_manager_factory_|'s fake_manager() is set on the sync
     // thread, but we can rely on the message loop barriers to
     // guarantee that we see the updated value.
@@ -226,9 +226,11 @@ class SyncBackendHostTest : public testing::Test {
                    base::Unretained(this)),
         base::Bind(&SyncBackendHostTest::OnDownloadRetry,
                    base::Unretained(this)));
-    ui_loop_.PostDelayedTask(FROM_HERE,
-        ui_loop_.QuitClosure(), TestTimeouts::action_timeout());
-    ui_loop_.Run();
+    base::RunLoop run_loop;
+    BrowserThread::PostDelayedTask(BrowserThread::UI, FROM_HERE,
+                                   run_loop.QuitClosure(),
+                                   TestTimeouts::action_timeout());
+    run_loop.Run();
   }
 
   void IssueRefreshRequest(syncer::ModelTypeSet types) {
@@ -250,9 +252,7 @@ class SyncBackendHostTest : public testing::Test {
     NOTIMPLEMENTED();
   }
 
-  base::MessageLoop ui_loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread io_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
   StrictMock<MockSyncFrontend> mock_frontend_;
   syncer::SyncCredentials credentials_;
   syncer::TestUnrecoverableErrorHandler handler_;

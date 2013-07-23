@@ -15,7 +15,7 @@
 #include "base/compiler_specific.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -141,9 +141,7 @@ class ViewEventTestBase : public views::WidgetDelegate,
   // Thread for posting background MouseMoves.
   scoped_ptr<base::Thread> dnd_thread_;
 
-  base::MessageLoopForUI message_loop_;
-
-  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
 
 #if defined(OS_WIN)
   ui::ScopedOleInitializer ole_initializer_;

@@ -5,12 +5,16 @@
 #include "content/public/test/mock_resource_context.h"
 
 #include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_test_util.h"
 
 namespace content {
 
 MockResourceContext::MockResourceContext()
-    : test_request_context_(new net::TestURLRequestContext) {
+  : test_request_context_(NULL) {
+}
+
+MockResourceContext::MockResourceContext(
+    net::URLRequestContext* test_request_context)
+  : test_request_context_(test_request_context) {
 }
 
 MockResourceContext::~MockResourceContext() {}
@@ -20,7 +24,8 @@ net::HostResolver* MockResourceContext::GetHostResolver()  {
 }
 
 net::URLRequestContext* MockResourceContext::GetRequestContext()  {
-  return test_request_context_.get();
+  CHECK(test_request_context_);
+  return test_request_context_;
 }
 
 }  // namespace content

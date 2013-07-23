@@ -6,10 +6,11 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/time/time.h"
 #include "chrome/browser/captive_portal/testing_utils.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_fetcher.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -72,7 +73,7 @@ class CaptivePortalDetectorTest : public testing::Test,
                    base::Unretained(&client)));
 
     ASSERT_TRUE(FetchingURL());
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
 
     CompleteURLFetch(net_error, status_code, response_headers);
 
@@ -96,7 +97,7 @@ class CaptivePortalDetectorTest : public testing::Test,
                    base::Unretained(&client)));
 
     ASSERT_TRUE(FetchingURL());
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
 
     detector()->Cancel();
 
@@ -105,7 +106,7 @@ class CaptivePortalDetectorTest : public testing::Test,
   }
 
  private:
-  base::MessageLoop message_loop_;
+  content::TestBrowserThreadBundle thread_bundle_;
 
   // Definition order does matter.
   TestingProfile profile_;

@@ -71,8 +71,7 @@ const int kMouseMoveDelayMS = 200;
 
 ViewEventTestBase::ViewEventTestBase()
   : window_(NULL),
-    content_view_(NULL),
-    ui_thread_(content::BrowserThread::UI, &message_loop_) {
+    content_view_(NULL) {
 }
 
 void ViewEventTestBase::Done() {
@@ -119,7 +118,8 @@ void ViewEventTestBase::SetUp() {
 #elif defined(USE_AURA)
   // Instead of using the ash shell, use an AuraTestHelper to create and manage
   // the test screen.
-  aura_test_helper_.reset(new aura::test::AuraTestHelper(&message_loop_));
+  aura_test_helper_.reset(
+      new aura::test::AuraTestHelper(base::MessageLoopForUI::current()));
   aura_test_helper_->SetUp();
   context = aura_test_helper_->root_window();
 #endif

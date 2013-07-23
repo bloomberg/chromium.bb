@@ -170,6 +170,7 @@ TestingProfile::TestingProfile()
       last_session_exited_cleanly_(true),
       browser_context_dependency_manager_(
           BrowserContextDependencyManager::GetInstance()),
+      resource_context_(NULL),
       delegate_(NULL) {
   CreateTempProfileDir();
   profile_path_ = temp_dir_.path();
@@ -187,6 +188,7 @@ TestingProfile::TestingProfile(const base::FilePath& path)
       profile_path_(path),
       browser_context_dependency_manager_(
           BrowserContextDependencyManager::GetInstance()),
+      resource_context_(NULL),
       delegate_(NULL) {
   Init();
   FinishInit();
@@ -202,6 +204,7 @@ TestingProfile::TestingProfile(const base::FilePath& path,
       profile_path_(path),
       browser_context_dependency_manager_(
           BrowserContextDependencyManager::GetInstance()),
+      resource_context_(NULL),
       delegate_(delegate) {
   Init();
   if (delegate_) {
@@ -228,6 +231,7 @@ TestingProfile::TestingProfile(
       profile_path_(path),
       browser_context_dependency_manager_(
           BrowserContextDependencyManager::GetInstance()),
+      resource_context_(NULL),
       delegate_(delegate) {
 
   // If no profile path was supplied, create one.
@@ -320,6 +324,9 @@ void TestingProfile::FinishInit() {
 }
 
 TestingProfile::~TestingProfile() {
+  // Any objects holding live URLFetchers should be deleted before teardown.
+  TemplateURLFetcherFactory::ShutdownForProfile(this);
+
   MaybeSendDestroyedNotification();
 
   browser_context_dependency_manager_->DestroyBrowserContextServices(this);
@@ -331,6 +338,14 @@ TestingProfile::~TestingProfile() {
 
   if (pref_proxy_config_tracker_.get())
     pref_proxy_config_tracker_->DetachFromPrefService();
+  // Failing a post == leaks == heapcheck failure. Make that an immediate test
+  // failure.
+  if (resource_context_) {
+    CHECK(BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE,
+                                    resource_context_));
+    resource_context_ = NULL;
+    content::RunAllPendingInMessageLoop(BrowserThread::IO);
+  }
 }
 
 static BrowserContextKeyedService* BuildFaviconService(
@@ -596,12 +611,13 @@ DownloadManagerDelegate* TestingProfile::GetDownloadManagerDelegate() {
 }
 
 net::URLRequestContextGetter* TestingProfile::GetRequestContext() {
-  return request_context_.get();
+  return GetDefaultStoragePartition(this)->GetURLRequestContext();
 }
 
 net::URLRequestContextGetter* TestingProfile::CreateRequestContext(
     content::ProtocolHandlerMap* protocol_handlers) {
-  return request_context_.get();
+  return new net::TestURLRequestContextGetter(
+            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
 }
 
 net::URLRequestContextGetter* TestingProfile::GetRequestContextForRenderProcess(
@@ -609,20 +625,6 @@ net::URLRequestContextGetter* TestingProfile::GetRequestContextForRenderProcess(
   content::RenderProcessHost* rph = content::RenderProcessHost::FromID(
       renderer_child_id);
   return rph->GetStoragePartition()->GetURLRequestContext();
-}
-
-void TestingProfile::CreateRequestContext() {
-  if (!request_context_.get())
-    request_context_ = new net::TestURLRequestContextGetter(
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
-}
-
-void TestingProfile::ResetRequestContext() {
-  // Any objects holding live URLFetchers should be deleted before the request
-  // context is shut down.
-  TemplateURLFetcherFactory::ShutdownForProfile(this);
-
-  request_context_ = NULL;
 }
 
 net::URLRequestContextGetter* TestingProfile::GetMediaRequestContext() {
@@ -674,9 +676,9 @@ TestingProfile::CreateRequestContextForStoragePartition(
 }
 
 content::ResourceContext* TestingProfile::GetResourceContext() {
-  if (!resource_context_.get())
-    resource_context_.reset(new content::MockResourceContext());
-  return resource_context_.get();
+  if (!resource_context_)
+    resource_context_ = new content::MockResourceContext();
+  return resource_context_;
 }
 
 HostContentSettingsMap* TestingProfile::GetHostContentSettingsMap() {

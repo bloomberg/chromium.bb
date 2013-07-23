@@ -55,8 +55,6 @@ class ExtensionServiceTestBase : public testing::Test {
 
   void InitializeExtensionServiceWithUpdater();
 
-  void InitializeRequestContext();
-
   static void SetUpTestCase();
 
   virtual void SetUp() OVERRIDE;

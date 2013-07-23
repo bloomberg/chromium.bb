@@ -26,13 +26,14 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
 #include "net/url_request/url_request.h"
+#include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;
 using testing::Eq;
-using testing::Property;
 using testing::Ne;
+using testing::Property;
 using testing::Return;
 
 namespace navigation_interception {
@@ -117,7 +118,8 @@ class TestIOThreadState {
                     const std::string& request_method,
                     RedirectMode redirect_mode,
                     MockInterceptCallbackReceiver* callback_receiver)
-      : request_(url, NULL, resource_context_.GetRequestContext()) {
+      : resource_context_(&test_url_request_context_),
+        request_(url, NULL, resource_context_.GetRequestContext()) {
     DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
       if (render_process_id != MSG_ROUTING_NONE &&
           render_view_id != MSG_ROUTING_NONE) {
@@ -164,6 +166,7 @@ class TestIOThreadState {
   }
 
  private:
+  net::TestURLRequestContext test_url_request_context_;
   content::MockResourceContext resource_context_;
   net::URLRequest request_;
   scoped_ptr<InterceptNavigationResourceThrottle> throttle_;

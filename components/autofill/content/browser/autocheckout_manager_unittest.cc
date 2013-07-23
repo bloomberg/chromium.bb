@@ -7,7 +7,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/tuple.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
-#include "chrome/test/base/testing_profile.h"
 #include "components/autofill/content/browser/autocheckout_manager.h"
 #include "components/autofill/core/browser/autofill_common_test.h"
 #include "components/autofill/core/browser/autofill_manager.h"
@@ -417,7 +416,6 @@ class AutocheckoutManagerTest : public ChromeRenderViewHostTestHarness {
   virtual void SetUp() OVERRIDE {
     SetThreadBundleOptions(content::TestBrowserThreadBundle::REAL_IO_THREAD);
     ChromeRenderViewHostTestHarness::SetUp();
-    profile()->CreateRequestContext();
     autofill_manager_delegate_.reset(new MockAutofillManagerDelegate());
     autofill_driver_.reset(new TestAutofillDriver(web_contents()));
     autofill_manager_.reset(new TestAutofillManager(
@@ -432,7 +430,6 @@ class AutocheckoutManagerTest : public ChromeRenderViewHostTestHarness {
     autofill_manager_delegate_.reset();
     autofill_manager_.reset();
     autofill_driver_.reset();
-    profile()->ResetRequestContext();
     ChromeRenderViewHostTestHarness::TearDown();
   }
 

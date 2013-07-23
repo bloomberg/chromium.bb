@@ -15,7 +15,7 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/search_engines/template_url_service_observer.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 
 class GURL;
 class TemplateURLService;
@@ -41,14 +41,6 @@ class TemplateURLServiceTestUtilBase : public TemplateURLServiceObserver {
 
   // Sets the observer count to 0.
   void ResetObserverCount();
-
-  // Blocks the caller until the service has finished servicing all pending
-  // requests.
-  static void BlockTillServiceProcessesRequests();
-
-  // Blocks the caller until the I/O thread has finished servicing all pending
-  // requests.
-  static void BlockTillIOThreadProcessesRequests();
 
   // Makes sure the load was successful and sent the correct notification.
   void VerifyLoad();
@@ -119,19 +111,10 @@ class TemplateURLServiceTestUtil : public TemplateURLServiceTestUtilBase {
   // Returns the TestingProfile.
   virtual TestingProfile* profile() const OVERRIDE;
 
-  // Starts an I/O thread.
-  void StartIOThread();
-
-  // Runs all pending tasks on the UI loop.
-  void PumpLoop();
-
  private:
-  base::MessageLoopForUI message_loop_;
   // Needed to make the DeleteOnUIThread trait of WebDataService work
   // properly.
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread db_thread_;
-  content::TestBrowserThread io_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<TestingProfile> profile_;
   base::ScopedTempDir temp_dir_;
 

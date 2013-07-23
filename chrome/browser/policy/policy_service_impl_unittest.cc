@@ -9,7 +9,6 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/values.h"
 #include "chrome/browser/policy/external_data_fetcher.h"
@@ -18,7 +17,7 @@
 #include "chrome/browser/policy/policy_domain_descriptor.h"
 #include "chrome/common/policy/policy_schema.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -155,7 +154,7 @@ class PolicyServiceTest : public testing::Test {
   PolicyMap policy1_;
   PolicyMap policy2_;
   scoped_ptr<PolicyServiceImpl> policy_service_;
-  base::MessageLoop loop_;
+  content::TestBrowserThreadBundle thread_bundle_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PolicyServiceTest);
@@ -436,10 +435,6 @@ TEST_F(PolicyServiceTest, PolicyChangeRegistrar) {
 }
 
 TEST_F(PolicyServiceTest, RefreshPolicies) {
-  content::TestBrowserThread ui_thread(content::BrowserThread::UI, &loop_);
-  content::TestBrowserThread file_thread(content::BrowserThread::FILE, &loop_);
-  content::TestBrowserThread io_thread(content::BrowserThread::IO, &loop_);
-
   EXPECT_CALL(provider0_, RefreshPolicies()).Times(AnyNumber());
   EXPECT_CALL(provider1_, RefreshPolicies()).Times(AnyNumber());
   EXPECT_CALL(provider2_, RefreshPolicies()).Times(AnyNumber());

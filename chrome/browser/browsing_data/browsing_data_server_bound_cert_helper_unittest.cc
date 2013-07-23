@@ -5,10 +5,10 @@
 #include "chrome/browser/browsing_data/browsing_data_server_bound_cert_helper.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
-#include "base/synchronization/waitable_event.h"
+#include "base/run_loop.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/ssl/server_bound_cert_service.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -24,12 +24,7 @@ class BrowsingDataServerBoundCertHelperTest
   }
 
   virtual void SetUp() OVERRIDE {
-    ui_thread_.reset(new content::TestBrowserThread(BrowserThread::UI,
-                                                    &message_loop_));
-    io_thread_.reset(new content::TestBrowserThread(BrowserThread::IO,
-                                                    &message_loop_));
     testing_profile_.reset(new TestingProfile());
-    testing_profile_->CreateRequestContext();
 
     testing_profile_->GetSSLConfigService()->AddObserver(this);
   }
@@ -57,7 +52,6 @@ class BrowsingDataServerBoundCertHelperTest
       const net::ServerBoundCertStore::ServerBoundCertList& certs) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     server_bound_cert_list_ = certs;
-    base::MessageLoop::current()->Quit();
   }
 
   // net::SSLConfigService::Observer implementation:
@@ -66,9 +60,7 @@ class BrowsingDataServerBoundCertHelperTest
   }
 
  protected:
-  base::MessageLoop message_loop_;
-  scoped_ptr<content::TestBrowserThread> ui_thread_;
-  scoped_ptr<content::TestBrowserThread> io_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<TestingProfile> testing_profile_;
 
   net::ServerBoundCertStore::ServerBoundCertList server_bound_cert_list_;
@@ -87,7 +79,7 @@ TEST_F(BrowsingDataServerBoundCertHelperTest, FetchData) {
 
   // Blocks until BrowsingDataServerBoundCertHelperTest::FetchCallback is
   // notified.
-  base::MessageLoop::current()->Run();
+  base::RunLoop().RunUntilIdle();
 
   ASSERT_EQ(2UL, server_bound_cert_list_.size());
   net::ServerBoundCertStore::ServerBoundCertList::const_iterator it =
@@ -116,7 +108,7 @@ TEST_F(BrowsingDataServerBoundCertHelperTest, DeleteCert) {
   helper->StartFetching(
       base::Bind(&BrowsingDataServerBoundCertHelperTest::FetchCallback,
                  base::Unretained(this)));
-  base::MessageLoop::current()->Run();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(1, ssl_config_changed_count_);
   ASSERT_EQ(1UL, server_bound_cert_list_.size());
@@ -133,7 +125,8 @@ TEST_F(BrowsingDataServerBoundCertHelperTest, DeleteCert) {
   helper->StartFetching(
       base::Bind(&BrowsingDataServerBoundCertHelperTest::FetchCallback,
                  base::Unretained(this)));
-  base::MessageLoop::current()->Run();
+  base::RunLoop().RunUntilIdle();
+
   EXPECT_EQ(2, ssl_config_changed_count_);
   ASSERT_EQ(0UL, server_bound_cert_list_.size());
 }
@@ -155,7 +148,7 @@ TEST_F(BrowsingDataServerBoundCertHelperTest, CannedUnique) {
   helper->StartFetching(
       base::Bind(&BrowsingDataServerBoundCertHelperTest::FetchCallback,
                  base::Unretained(this)));
-  base::MessageLoop::current()->Run();
+  base::RunLoop().RunUntilIdle();
 
   ASSERT_EQ(1UL, server_bound_cert_list_.size());
   net::ServerBoundCertStore::ServerBoundCert& cert =

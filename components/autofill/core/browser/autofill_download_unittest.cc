@@ -15,14 +15,13 @@
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/common/form_data.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_status.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/web/WebInputElement.h"
 
-using content::BrowserThread;
 using WebKit::WebInputElement;
 
 namespace autofill {
@@ -65,18 +64,7 @@ class AutofillDownloadTest : public AutofillDownloadManager::Observer,
                              public testing::Test {
  public:
   AutofillDownloadTest()
-      : download_manager_(&profile_, this),
-        io_thread_(BrowserThread::IO) {
-  }
-
-  virtual void SetUp() {
-    io_thread_.StartIOThread();
-    profile_.CreateRequestContext();
-  }
-
-  virtual void TearDown() {
-    profile_.ResetRequestContext();
-    io_thread_.Stop();
+      : download_manager_(&profile_, this) {
   }
 
   void LimitCache(size_t cache_size) {
@@ -128,16 +116,12 @@ class AutofillDownloadTest : public AutofillDownloadManager::Observer,
   };
   std::list<ResponseData> responses_;
 
+  content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
   AutofillDownloadManager download_manager_;
-
- private:
-  // The profile's request context must be released on the IO thread.
-  content::TestBrowserThread io_thread_;
 };
 
 TEST_F(AutofillDownloadTest, QueryAndUploadTest) {
-  base::MessageLoopForUI message_loop;
   // Create and register factory.
   net::TestURLFetcherFactory factory;
 
@@ -349,7 +333,6 @@ TEST_F(AutofillDownloadTest, QueryAndUploadTest) {
 }
 
 TEST_F(AutofillDownloadTest, CacheQueryTest) {
-  base::MessageLoopForUI message_loop;
   // Create and register factory.
   net::TestURLFetcherFactory factory;
 

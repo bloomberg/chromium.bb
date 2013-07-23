@@ -13,7 +13,7 @@
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/sync/profile_sync_components_factory_mock.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/change_record.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -52,11 +52,7 @@ class AbstractProfileSyncServiceTest : public testing::Test {
       content::BrowserContext* profile);
 
  protected:
-  base::MessageLoopForUI ui_loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread db_thread_;
-  content::TestBrowserThread file_thread_;
-  content::TestBrowserThread io_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
   TokenService* token_service_;
   TestProfileSyncService* sync_service_;
 };

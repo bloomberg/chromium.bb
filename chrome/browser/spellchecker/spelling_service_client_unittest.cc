@@ -16,6 +16,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/spellcheck_result.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -191,12 +192,6 @@ class TestingSpellingServiceClient : public SpellingServiceClient {
 // monitor the class calls the callback with expected results.
 class SpellingServiceClientTest : public testing::Test {
  public:
-  SpellingServiceClientTest() {}
-  virtual ~SpellingServiceClientTest() {}
-
-  virtual void SetUp() OVERRIDE {
-  }
-
   void OnTextCheckComplete(int tag,
                            bool success,
                            const string16& text,
@@ -205,6 +200,7 @@ class SpellingServiceClientTest : public testing::Test {
   }
 
  protected:
+  content::TestBrowserThreadBundle thread_bundle_;
   TestingSpellingServiceClient client_;
   TestingProfile profile_;
 };

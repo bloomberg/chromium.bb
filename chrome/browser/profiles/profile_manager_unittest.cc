@@ -7,8 +7,8 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -34,7 +34,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -95,10 +95,7 @@ class ProfileManagerTest : public testing::Test {
   };
 
   ProfileManagerTest()
-      : local_state_(TestingBrowserProcess::GetGlobal()),
-        ui_thread_(BrowserThread::UI, &message_loop_),
-        db_thread_(BrowserThread::DB, &message_loop_),
-        file_thread_(BrowserThread::FILE, &message_loop_) {
+      : local_state_(TestingBrowserProcess::GetGlobal()) {
   }
 
   virtual void SetUp() {
@@ -115,7 +112,7 @@ class ProfileManagerTest : public testing::Test {
 
   virtual void TearDown() {
     TestingBrowserProcess::GetGlobal()->SetProfileManager(NULL);
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   // Helper function to create a profile with |name| for a profile |manager|.
@@ -139,10 +136,8 @@ class ProfileManagerTest : public testing::Test {
   // The path to temporary directory used to contain the test operations.
   base::ScopedTempDir temp_dir_;
   ScopedTestingLocalState local_state_;
-  base::MessageLoopForUI message_loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread db_thread_;
-  content::TestBrowserThread file_thread_;
+
+  content::TestBrowserThreadBundle thread_bundle_;
 
 #if defined(OS_CHROMEOS)
   chromeos::ScopedTestUserManager test_user_manager_;
@@ -232,12 +227,12 @@ TEST_F(ProfileManagerTest, CreateAndUseTwoProfiles) {
                                                    Profile::EXPLICIT_ACCESS));
 
   // Make sure any pending tasks run before we destroy the profiles.
-  message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
 
   TestingBrowserProcess::GetGlobal()->SetProfileManager(NULL);
 
   // Make sure history cleans up correctly.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 MATCHER(NotFail, "Profile creation failure status is not reported.") {
@@ -255,7 +250,7 @@ TEST_F(ProfileManagerTest, DISABLED_CreateProfileAsync) {
   CreateProfileAsync(g_browser_process->profile_manager(),
                      "New Profile", &mock_observer);
 
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 MATCHER(SameNotNull, "The same non-NULL value for all calls.") {
@@ -283,7 +278,7 @@ TEST_F(ProfileManagerTest, CreateProfileAsyncMultipleRequests) {
   CreateProfileAsync(profile_manager, profile_name, &mock_observer2);
   CreateProfileAsync(profile_manager, profile_name, &mock_observer3);
 
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ProfileManagerTest, CreateProfilesAsync) {
@@ -299,7 +294,7 @@ TEST_F(ProfileManagerTest, CreateProfilesAsync) {
   CreateProfileAsync(profile_manager, profile_name1, &mock_observer);
   CreateProfileAsync(profile_manager, profile_name2, &mock_observer);
 
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ProfileManagerTest, GetGuestProfilePath) {
@@ -645,7 +640,7 @@ TEST_F(ProfileManagerTest, ActiveProfileDeleted) {
 
   CreateProfileAsync(profile_manager, profile_name1, &mock_observer);
   CreateProfileAsync(profile_manager, profile_name2, &mock_observer);
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(2u, profile_manager->GetLoadedProfiles().size());
   EXPECT_EQ(2u, profile_manager->GetProfileInfoCache().GetNumberOfProfiles());
@@ -658,7 +653,7 @@ TEST_F(ProfileManagerTest, ActiveProfileDeleted) {
   profile_manager->ScheduleProfileForDeletion(dest_path1,
                                               ProfileManager::CreateCallback());
   // Spin the message loop so that all the callbacks can finish running.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(dest_path2, profile_manager->GetLastUsedProfile()->GetPath());
   EXPECT_EQ(profile_name2, local_state->GetString(prefs::kProfileLastUsed));
@@ -684,13 +679,13 @@ TEST_F(ProfileManagerTest, ActiveProfileDeletedNeedsToLoadNextProfile) {
   EXPECT_CALL(mock_observer, OnProfileCreated(
       testing::NotNull(), NotFail())).Times(testing::AtLeast(2));
   CreateProfileAsync(profile_manager, profile_name1, &mock_observer);
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Track the profile, but don't load it.
   ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
   cache.AddProfileToCache(dest_path2, ASCIIToUTF16(profile_name2),
                           string16(), 0, false);
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(1u, profile_manager->GetLoadedProfiles().size());
   EXPECT_EQ(2u, cache.GetNumberOfProfiles());
@@ -706,7 +701,7 @@ TEST_F(ProfileManagerTest, ActiveProfileDeletedNeedsToLoadNextProfile) {
                                               ProfileManager::CreateCallback());
 
   // Spin the message loop so that all the callbacks can finish running.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(dest_path2, profile_manager->GetLastUsedProfile()->GetPath());
   EXPECT_EQ(profile_name2, local_state->GetString(prefs::kProfileLastUsed));
@@ -735,7 +730,7 @@ TEST_F(ProfileManagerTest, ActiveProfileDeletedNextProfileDeletedToo) {
   EXPECT_CALL(mock_observer, OnProfileCreated(
       testing::NotNull(), NotFail())).Times(testing::AtLeast(2));
   CreateProfileAsync(profile_manager, profile_name1, &mock_observer);
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Create the other profiles, but don't load them. Assign a fake avatar icon
   // to ensure that profiles in the info cache are sorted by the profile name,
@@ -746,7 +741,7 @@ TEST_F(ProfileManagerTest, ActiveProfileDeletedNextProfileDeletedToo) {
   cache.AddProfileToCache(dest_path3, ASCIIToUTF16(profile_name3),
                           ASCIIToUTF16(profile_name3), 2, false);
 
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(1u, profile_manager->GetLoadedProfiles().size());
   EXPECT_EQ(3u, cache.GetNumberOfProfiles());
@@ -770,7 +765,7 @@ TEST_F(ProfileManagerTest, ActiveProfileDeletedNextProfileDeletedToo) {
   profile_manager->ScheduleProfileForDeletion(dest_path2,
                                               ProfileManager::CreateCallback());
   // Spin the message loop so that all the callbacks can finish running.
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(dest_path3, profile_manager->GetLastUsedProfile()->GetPath());
   EXPECT_EQ(profile_name3, local_state->GetString(prefs::kProfileLastUsed));

@@ -249,6 +249,8 @@
         'test/base/testing_browser_process.h',
         'test/base/testing_browser_process_platform_part.h',
         'test/base/testing_browser_process_platform_part.cc',
+        'test/base/testing_io_thread_state.cc',
+        'test/base/testing_io_thread_state.h',
         'test/base/testing_pref_service_syncable.cc',
         'test/base/testing_pref_service_syncable.h',
         'test/base/testing_profile.cc',

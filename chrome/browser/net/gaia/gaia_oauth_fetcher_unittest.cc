@@ -8,10 +8,10 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "chrome/browser/net/gaia/gaia_oauth_consumer.h"
 #include "chrome/browser/net/gaia/gaia_oauth_fetcher.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -22,8 +22,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
-
-using ::testing::_;
 
 class MockGaiaOAuthConsumer : public GaiaOAuthConsumer {
  public:
@@ -123,7 +121,10 @@ TEST(GaiaOAuthFetcherTest, GetOAuthToken) {
 }
 #endif  // 0  // Suppressing for now
 
-typedef testing::Test GaiaOAuthFetcherTest;
+class GaiaOAuthFetcherTest : public testing::Test {
+ private:
+  content::TestBrowserThreadBundle thread_bundle_;
+};
 
 TEST_F(GaiaOAuthFetcherTest, OAuthGetAccessToken) {
   const std::string oauth_token =

@@ -12,7 +12,7 @@
 #include "chrome/browser/safe_browsing/safe_browsing_database.h"
 #include "chrome/browser/safe_browsing/safe_browsing_store_file.h"
 #include "chrome/browser/safe_browsing/safe_browsing_store_unittest_helper.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "crypto/sha2.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
@@ -21,7 +21,6 @@
 #include "url/gurl.h"
 
 using base::Time;
-using content::BrowserThread;
 
 namespace {
 
@@ -1252,10 +1251,9 @@ TEST_F(SafeBrowsingDatabaseTest, ContainsDownloadUrl) {
 // Checks that the whitelists are handled properly.
 TEST_F(SafeBrowsingDatabaseTest, Whitelists) {
   database_.reset();
-  base::MessageLoop loop(base::MessageLoop::TYPE_DEFAULT);
   // We expect all calls to ContainsCsdWhitelistedUrl in particular to be made
   // from the IO thread.  In general the whitelist lookups are thread-safe.
-  content::TestBrowserThread io_thread(BrowserThread::IO, &loop);
+  content::TestBrowserThreadBundle thread_bundle_;
 
   // If the whitelist is disabled everything should match the whitelist.
   database_.reset(new SafeBrowsingDatabaseNew(new SafeBrowsingStoreFile(),

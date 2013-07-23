@@ -154,8 +154,7 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
 
   virtual void SetUp() {
     AbstractProfileSyncServiceTest::SetUp();
-    profile_.reset(new ProfileMock);
-    profile_->CreateRequestContext();
+    profile_.reset(new ProfileMock());
     invalidation::InvalidationServiceFactory::GetInstance()->
         SetBuildOnlyFakeInvalidatorsForTest(true);
     password_store_ = static_cast<MockPasswordStore*>(
@@ -168,7 +167,6 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
       password_store_->ShutdownOnUIThread();
       ProfileSyncServiceFactory::GetInstance()->SetTestingFactory(
           profile_.get(), NULL);
-      profile_->ResetRequestContext();
       profile_.reset();
       AbstractProfileSyncServiceTest::TearDown();
   }

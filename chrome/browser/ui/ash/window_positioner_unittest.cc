@@ -16,7 +16,6 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/render_view_test.h"
-#include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
@@ -59,7 +58,6 @@ TestBrowserWindowAura::~TestBrowserWindowAura() {}
 class WindowPositionerTest : public AshTestBase {
  public:
   WindowPositionerTest();
-  virtual ~WindowPositionerTest();
 
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
@@ -80,8 +78,7 @@ class WindowPositionerTest : public AshTestBase {
   WindowPositioner* window_positioner_;
 
   // These two need to be deleted after everything else is gone.
-  scoped_ptr<content::TestBrowserThread> ui_thread_;
-  scoped_ptr<TestingProfile> profile_;
+  TestingProfile profile_;
 
   // These get created for each session.
   scoped_ptr<aura::Window> window_;
@@ -99,18 +96,6 @@ class WindowPositionerTest : public AshTestBase {
 WindowPositionerTest::WindowPositionerTest()
     : grid_size_(WindowPositioner::kMinimumWindowOffset),
       window_positioner_(NULL) {
-  // Create a message loop.
-  base::MessageLoopForUI* ui_loop = message_loop();
-  ui_thread_.reset(
-      new content::TestBrowserThread(content::BrowserThread::UI, ui_loop));
-
-  // Create a browser profile.
-  profile_.reset(new TestingProfile());
-}
-
-WindowPositionerTest::~WindowPositionerTest() {
-  profile_.reset(NULL);
-  ui_thread_.reset(NULL);
 }
 
 void WindowPositionerTest::SetUp() {
@@ -123,14 +108,14 @@ void WindowPositionerTest::SetUp() {
 
   // Create a browser for the window.
   browser_window_.reset(new TestBrowserWindowAura(window_.get()));
-  Browser::CreateParams window_params(profile_.get(),
+  Browser::CreateParams window_params(&profile_,
                                       chrome::HOST_DESKTOP_TYPE_ASH);
   window_params.window = browser_window_.get();
   window_owning_browser_.reset(new Browser(window_params));
 
   // Creating a browser for the popup.
   browser_popup_.reset(new TestBrowserWindowAura(popup_.get()));
-  Browser::CreateParams popup_params(Browser::TYPE_POPUP, profile_.get(),
+  Browser::CreateParams popup_params(Browser::TYPE_POPUP, &profile_,
                                      chrome::HOST_DESKTOP_TYPE_ASH);
   popup_params.window = browser_popup_.get();
   popup_owning_browser_.reset(new Browser(popup_params));

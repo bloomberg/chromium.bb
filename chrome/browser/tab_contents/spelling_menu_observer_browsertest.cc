@@ -62,11 +62,6 @@ class MockRenderViewContextMenu : public RenderViewContextMenuProxy {
   virtual WebContents* GetWebContents() const OVERRIDE;
   virtual Profile* GetProfile() const OVERRIDE;
 
-  // Create a testing URL request context.
-  void CreateRequestContext() {
-    profile_->CreateRequestContext();
-  }
-
   // Attaches a RenderViewContextMenuObserver to be tested.
   void SetObserver(RenderViewContextMenuObserver* observer);
 
@@ -327,9 +322,6 @@ IN_PROC_BROWSER_TEST_F(SpellingMenuObserverTest, SeparatorAfterSuggestions) {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   command_line->AppendSwitch(switches::kUseSpellingSuggestions);
 
-  // Make sure we can pretend to handle the JSON request.
-  menu()->CreateRequestContext();
-
   // Force a non-empty locale so SUGGEST is available.
   menu()->GetPrefs()->SetString(prefs::kSpellCheckDictionary, "en");
   EXPECT_TRUE(SpellingServiceClient::IsAvailable(menu()->GetProfile(),
@@ -369,9 +361,6 @@ IN_PROC_BROWSER_TEST_F(SpellingMenuObserverTest, SeparatorAfterSuggestions) {
 IN_PROC_BROWSER_TEST_F(SpellingMenuObserverTest,
                        NoMoreSuggestionsNotDisplayed) {
   menu()->GetPrefs()->SetBoolean(prefs::kSpellCheckUseSpellingService, true);
-
-  // Make sure we can pretend to handle the JSON request.
-  menu()->CreateRequestContext();
 
   // Force a non-empty locale so SPELLCHECK is available.
   menu()->GetPrefs()->SetString(prefs::kSpellCheckDictionary, "en");
@@ -478,7 +467,6 @@ IN_PROC_BROWSER_TEST_F(SpellingMenuObserverTest, SuggestionsForceTopSeparator) {
   menu()->GetPrefs()->SetBoolean(prefs::kSpellCheckUseSpellingService, true);
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   command_line->AppendSwitch(switches::kUseSpellingSuggestions);
-  menu()->CreateRequestContext();
   InitMenu("asdfkj", NULL);
 
   // Should have at least 2 entries. Separator, suggestion.

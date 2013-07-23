@@ -15,7 +15,6 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_per_browser.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/test/test_browser_thread.h"
 #include "ui/aura/root_window.h"
 
 class TestChromeLauncherControllerPerBrowser :
@@ -39,8 +38,7 @@ class LauncherContextMenuTest : public ash::test::AshTestBase {
   }
 
   LauncherContextMenuTest()
-      : profile_(new TestingProfile()),
-        browser_thread_(content::BrowserThread::UI, message_loop()) {}
+      : profile_(new TestingProfile()) {}
 
   virtual void SetUp() OVERRIDE {
     ash::test::AshTestBase::SetUp();
@@ -66,7 +64,6 @@ class LauncherContextMenuTest : public ash::test::AshTestBase {
 
  private:
   scoped_ptr<TestingProfile> profile_;
-  content::TestBrowserThread browser_thread_;
   ash::LauncherModel launcher_model_;
   scoped_ptr<ChromeLauncherController> controller_;
 

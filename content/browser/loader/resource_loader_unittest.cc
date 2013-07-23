@@ -4,16 +4,18 @@
 
 #include "content/browser/loader/resource_loader.h"
 
-#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/loader/resource_loader_delegate.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/test/mock_resource_context.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/test/test_content_browser_client.h"
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/client_cert_store.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/url_request/url_request.h"
+#include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -144,13 +146,9 @@ class SelectCertificateBrowserClient : public TestContentBrowserClient {
 class ResourceLoaderTest : public testing::Test,
                            public ResourceLoaderDelegate {
  protected:
-  // testing::Test:
-  virtual void SetUp() OVERRIDE {
-    message_loop_.reset(new base::MessageLoop(base::MessageLoop::TYPE_IO));
-    ui_thread_.reset(
-        new BrowserThreadImpl(BrowserThread::UI, message_loop_.get()));
-    io_thread_.reset(new BrowserThreadImpl(BrowserThread::IO,
-                                           message_loop_.get()));
+  ResourceLoaderTest()
+    : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+      resource_context_(&test_url_request_context_) {
   }
 
   // ResourceLoaderDelegate:
@@ -179,10 +177,9 @@ class ResourceLoaderTest : public testing::Test,
   virtual void DidReceiveResponse(ResourceLoader* loader) OVERRIDE {}
   virtual void DidFinishLoading(ResourceLoader* loader) OVERRIDE {}
 
-  scoped_ptr<base::MessageLoop> message_loop_;
-  scoped_ptr<BrowserThreadImpl> ui_thread_;
-  scoped_ptr<BrowserThreadImpl> io_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
 
+  net::TestURLRequestContext test_url_request_context_;
   content::MockResourceContext resource_context_;
 };
 
@@ -236,7 +233,7 @@ TEST_F(ResourceLoaderTest, ClientCertStoreLookup) {
   // Everything is set up. Trigger the resource loader certificate request event
   // and run the message loop.
   loader.OnCertificateRequested(raw_ptr_to_request, cert_request_info.get());
-  message_loop_->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Restore the original content browser client.
   SetBrowserClientForTesting(old_client);

@@ -223,7 +223,6 @@ class RemoveCookieTester {
 class RemoveProfileCookieTester : public RemoveCookieTester {
  public:
   explicit RemoveProfileCookieTester(TestingProfile* profile) {
-    profile->CreateRequestContext();
     SetMonster(profile->GetRequestContext()->GetURLRequestContext()->
         cookie_store()->GetCookieMonster());
   }
@@ -265,7 +264,6 @@ class RemoveServerBoundCertTester : public net::SSLConfigService::Observer {
  public:
   explicit RemoveServerBoundCertTester(TestingProfile* profile)
       : ssl_config_changed_count_(0) {
-    profile->CreateRequestContext();
     server_bound_cert_service_ = profile->GetRequestContext()->
         GetURLRequestContext()->server_bound_cert_service();
     ssl_config_service_ = profile->GetSSLConfigService();

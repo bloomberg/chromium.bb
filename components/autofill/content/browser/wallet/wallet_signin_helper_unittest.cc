@@ -78,9 +78,7 @@ class WalletSigninHelperForTesting : public WalletSigninHelper {
 }  // namespace
 
 class WalletSigninHelperTest : public testing::Test {
- public:
-  WalletSigninHelperTest() {}
-
+ protected:
   virtual void SetUp() OVERRIDE {
     signin_helper_.reset(new WalletSigninHelperForTesting(
         &mock_delegate_,
@@ -92,7 +90,6 @@ class WalletSigninHelperTest : public testing::Test {
     signin_helper_.reset();
   }
 
- protected:
   // Sets up a response for the mock URLFetcher and completes the request.
   void SetUpFetcherResponseAndCompleteRequest(
       const std::string& url,
@@ -158,8 +155,9 @@ class WalletSigninHelperTest : public testing::Test {
   content::TestBrowserContext browser_context_;
 
  private:
-  net::TestURLFetcherFactory factory_;
+  // The profile's request context must be released on the IO thread.
   content::TestBrowserThreadBundle thread_bundle_;
+  net::TestURLFetcherFactory factory_;
 };
 
 TEST_F(WalletSigninHelperTest, PassiveSigninSuccessful) {

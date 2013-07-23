@@ -9,7 +9,7 @@
 #include "chrome/common/spellcheck_marker.h"
 #include "chrome/common/spellcheck_messages.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "ipc/ipc_message.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -17,7 +17,6 @@ class TestingSpellCheckMessageFilter : public SpellCheckMessageFilter {
  public:
   TestingSpellCheckMessageFilter()
       : SpellCheckMessageFilter(0),
-        ui_thread_(content::BrowserThread::UI, &message_loop_),
         spellcheck_(new SpellcheckService(&profile_)) {}
 
   virtual bool Send(IPC::Message* message) OVERRIDE {
@@ -46,8 +45,7 @@ class TestingSpellCheckMessageFilter : public SpellCheckMessageFilter {
  private:
   virtual ~TestingSpellCheckMessageFilter() {}
 
-  base::MessageLoop message_loop_;
-  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
   scoped_ptr<SpellcheckService> spellcheck_;
 

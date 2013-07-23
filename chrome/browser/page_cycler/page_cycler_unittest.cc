@@ -5,6 +5,7 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/prefs/testing_pref_service.h"
+#include "base/run_loop.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -150,7 +151,7 @@ class PageCyclerTest : public BrowserWithTestWindowTest {
 
   void PumpLoop() {
     content::BrowserThread::GetBlockingPool()->FlushForTesting();
-    message_loop()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void CloseBrowser() {
@@ -310,7 +311,7 @@ TEST_F(PageCyclerTest, KillBrowserAndAbort) {
       DidFinishLoad(kFrameID, kAboutURL, kIsMainFrame, _))
       .WillOnce(Invoke(page_cycler(),
                        &MockPageCycler::PageCyclerDidFinishLoad));
-  message_loop()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   FinishLoad();
 

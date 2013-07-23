@@ -174,14 +174,6 @@ class TestingProfile : public Profile {
   virtual bool IsOffTheRecord() const OVERRIDE;
   virtual content::DownloadManagerDelegate*
       GetDownloadManagerDelegate() OVERRIDE;
-  // Returns a testing ContextGetter (if one has been created via
-  // CreateRequestContext) or NULL. This is not done on-demand for two reasons:
-  // (1) Some tests depend on GetRequestContext() returning NULL. (2) Because
-  // of the special memory management considerations for the
-  // TestURLRequestContextGetter class, many tests would find themseleves
-  // leaking if they called this method without the necessary IO thread. This
-  // getter is currently only capable of returning a Context that helps test
-  // the CookieMonster. See implementation comments for more details.
   virtual net::URLRequestContextGetter* GetRequestContext() OVERRIDE;
   virtual net::URLRequestContextGetter* CreateRequestContext(
       content::ProtocolHandlerMap* protocol_handlers) OVERRIDE;
@@ -207,20 +199,15 @@ class TestingProfile : public Profile {
       ExtensionSpecialStoragePolicy* extension_special_storage_policy);
   virtual ExtensionSpecialStoragePolicy*
       GetExtensionSpecialStoragePolicy() OVERRIDE;
-  // The CookieMonster will only be returned if a Context has been created. Do
-  // this by calling CreateRequestContext(). See the note at GetRequestContext
-  // for more information.
+  // TODO(ajwong): Remove this API in favor of directly retrieving the
+  // CookieStore from the StoragePartition after ExtensionURLRequestContext
+  // has been removed.
   net::CookieMonster* GetCookieMonster();
 
   virtual PrefService* GetPrefs() OVERRIDE;
 
   virtual history::TopSites* GetTopSites() OVERRIDE;
   virtual history::TopSites* GetTopSitesWithoutCreating() OVERRIDE;
-
-  void CreateRequestContext();
-  // Clears out the created request context (which must be done before shutting
-  // down the IO thread to avoid leaks).
-  void ResetRequestContext();
 
   virtual net::URLRequestContextGetter* GetMediaRequestContext() OVERRIDE;
   virtual net::URLRequestContextGetter* GetMediaRequestContextForRenderProcess(
@@ -313,7 +300,6 @@ class TestingProfile : public Profile {
 
   // Internally, this is a TestURLRequestContextGetter that creates a dummy
   // request context. Currently, only the CookieMonster is hooked up.
-  scoped_refptr<net::URLRequestContextGetter> request_context_;
   scoped_refptr<net::URLRequestContextGetter> extensions_request_context_;
 
   std::wstring id_;
@@ -349,7 +335,9 @@ class TestingProfile : public Profile {
   // testing.
   BrowserContextDependencyManager* browser_context_dependency_manager_;
 
-  scoped_ptr<content::MockResourceContext> resource_context_;
+  // Owned, but must be deleted on the IO thread so not placing in a
+  // scoped_ptr<>.
+  content::MockResourceContext* resource_context_;
 
   scoped_ptr<policy::ProfilePolicyConnector> profile_policy_connector_;
 

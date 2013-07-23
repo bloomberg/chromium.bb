@@ -18,8 +18,8 @@ class ScreensaverViewTest : public ash::test::AshTestBase {
  public:
   ScreensaverViewTest() {
     url_ = GURL("http://www.google.com");
-    views_delegate_.reset(new AshTestViewsDelegate);
-    webview_test_helper_.reset(new views::WebViewTestHelper(message_loop()));
+    views_delegate_.reset(new AshTestViewsDelegate());
+    webview_test_helper_.reset(new views::WebViewTestHelper());
   }
 
   virtual ~ScreensaverViewTest() {}

@@ -13,7 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
@@ -23,7 +23,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_CHROMEOS)
@@ -38,9 +38,7 @@ using extensions::Manifest;
 class ChromeLauncherControllerPerBrowserTest : public testing::Test {
  protected:
   ChromeLauncherControllerPerBrowserTest()
-      : ui_thread_(content::BrowserThread::UI, &loop_),
-        file_thread_(content::BrowserThread::FILE, &loop_),
-        profile_(new TestingProfile()),
+      : profile_(new TestingProfile()),
         extension_service_(NULL) {
     DictionaryValue manifest;
     manifest.SetString("name", "launcher controller test extension");
@@ -81,7 +79,7 @@ class ChromeLauncherControllerPerBrowserTest : public testing::Test {
   virtual void TearDown() OVERRIDE {
     profile_.reset();
     // Execute any pending deletion tasks.
-    loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void InsertPrefValue(base::ListValue* pref_value,
@@ -145,9 +143,7 @@ class ChromeLauncherControllerPerBrowserTest : public testing::Test {
   }
 
   // Needed for extension service & friends to work.
-  base::MessageLoop loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
 
 #if defined OS_CHROMEOS
   chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;

@@ -6,12 +6,12 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/string_split.h"
 #include "chrome/browser/policy/cloud/cloud_policy_constants.h"
 #include "chrome/browser/policy/cloud/device_management_service.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -22,7 +22,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using content::BrowserThread;
 using testing::Mock;
 using testing::_;
 
@@ -49,16 +48,14 @@ const char kRobotAuthCode[] = "robot-oauth-auth-code";
 // without calling into the actual network stack.
 class DeviceManagementServiceTestBase : public testing::Test {
  protected:
-  DeviceManagementServiceTestBase()
-      : ui_thread_(BrowserThread::UI, &loop_),
-        io_thread_(BrowserThread::IO, &loop_) {
+  DeviceManagementServiceTestBase() {
     ResetService();
     InitializeService();
   }
 
-  virtual void TearDown() {
+  ~DeviceManagementServiceTestBase() {
     service_.reset();
-    loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void ResetService() {
@@ -67,7 +64,7 @@ class DeviceManagementServiceTestBase : public testing::Test {
 
   void InitializeService() {
     service_->ScheduleInitialization(0);
-    loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   net::TestURLFetcher* GetFetcher() {
@@ -166,9 +163,7 @@ class DeviceManagementServiceTestBase : public testing::Test {
   scoped_ptr<DeviceManagementService> service_;
 
  private:
-  base::MessageLoopForUI loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread io_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
 };
 
 struct FailedRequestParams {

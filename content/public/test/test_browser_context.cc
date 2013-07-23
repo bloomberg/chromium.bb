@@ -9,6 +9,7 @@
 #include "content/public/test/mock_resource_context.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/quota/special_storage_policy.h"
 
@@ -16,13 +17,12 @@ namespace {
 
 class TestContextURLRequestContextGetter : public net::URLRequestContextGetter {
  public:
-  explicit TestContextURLRequestContextGetter(net::URLRequestContext* context)
-      : context_(context),
-        null_task_runner_(new base::NullTaskRunner) {
+  TestContextURLRequestContextGetter()
+      : null_task_runner_(new base::NullTaskRunner) {
   }
 
   virtual net::URLRequestContext* GetURLRequestContext() OVERRIDE {
-    return context_;
+    return &context_;
   }
 
   virtual scoped_refptr<base::SingleThreadTaskRunner>
@@ -33,7 +33,7 @@ class TestContextURLRequestContextGetter : public net::URLRequestContextGetter {
  private:
   virtual ~TestContextURLRequestContextGetter() {}
 
-  net::URLRequestContext* context_;
+  net::TestURLRequestContext context_;
   scoped_refptr<base::SingleThreadTaskRunner> null_task_runner_;
 };
 
@@ -71,8 +71,7 @@ DownloadManagerDelegate* TestBrowserContext::GetDownloadManagerDelegate() {
 
 net::URLRequestContextGetter* TestBrowserContext::GetRequestContext() {
   if (!request_context_.get()) {
-    request_context_ = new TestContextURLRequestContextGetter(
-        GetResourceContext()->GetRequestContext());
+    request_context_ = new TestContextURLRequestContextGetter();
   }
   return request_context_.get();
 }
@@ -110,7 +109,8 @@ void TestBrowserContext::RequestMIDISysExPermission(
 
 ResourceContext* TestBrowserContext::GetResourceContext() {
   if (!resource_context_)
-    resource_context_.reset(new MockResourceContext());
+    resource_context_.reset(new MockResourceContext(
+        GetRequestContext()->GetURLRequestContext()));
   return resource_context_.get();
 }
 

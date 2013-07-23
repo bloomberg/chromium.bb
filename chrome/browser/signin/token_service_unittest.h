@@ -13,7 +13,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_notification_tracker.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -56,19 +56,24 @@ class TokenFailedTracker : public content::TestNotificationTracker {
 };
 
 class TokenServiceTestHarness : public testing::Test {
- public:
+ protected:
   TokenServiceTestHarness();
   virtual ~TokenServiceTestHarness();
 
   virtual void SetUp() OVERRIDE;
-
   virtual void TearDown() OVERRIDE;
 
-  void WaitForDBLoadCompletion();
+  void UpdateCredentialsOnService();
+  TestingProfile* profile() const { return profile_.get(); }
+  TokenService* service() const { return service_; }
+  const GaiaAuthConsumer::ClientLoginResult& credentials() const {
+    return credentials_;
+  }
+  TokenAvailableTracker* success_tracker() { return &success_tracker_; }
+  TokenFailedTracker* failure_tracker() { return &failure_tracker_; }
 
-  base::MessageLoopForUI message_loop_;
-  content::TestBrowserThread ui_thread_;  // Mostly so DCHECKS pass.
-  content::TestBrowserThread db_thread_;  // WDS on here
+ private:
+  content::TestBrowserThreadBundle thread_bundle_;
 
   TokenService* service_;
   TokenAvailableTracker success_tracker_;
