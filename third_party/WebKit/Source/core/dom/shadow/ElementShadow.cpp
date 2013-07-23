@@ -96,32 +96,6 @@ void ElementShadow::detach(const Node::AttachContext& context)
     }
 }
 
-bool ElementShadow::childNeedsStyleRecalc() const
-{
-    ASSERT(youngestShadowRoot());
-    for (ShadowRoot* root = youngestShadowRoot(); root; root = root->olderShadowRoot())
-        if (root->childNeedsStyleRecalc())
-            return true;
-
-    return false;
-}
-
-bool ElementShadow::needsStyleRecalc() const
-{
-    ASSERT(youngestShadowRoot());
-    for (ShadowRoot* root = youngestShadowRoot(); root; root = root->olderShadowRoot())
-        if (root->needsStyleRecalc())
-            return true;
-
-    return false;
-}
-
-void ElementShadow::recalcStyle(Node::StyleChange change)
-{
-    for (ShadowRoot* root = youngestShadowRoot(); root; root = root->olderShadowRoot())
-        root->recalcStyle(change);
-}
-
 void ElementShadow::removeAllEventListeners()
 {
     for (ShadowRoot* root = youngestShadowRoot(); root; root = root->olderShadowRoot()) {

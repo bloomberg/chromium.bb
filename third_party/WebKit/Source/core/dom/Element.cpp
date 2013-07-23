@@ -1528,11 +1528,12 @@ bool Element::recalcStyle(StyleChange change)
     }
     StyleResolverParentPusher parentPusher(this);
 
-    // FIXME: This does not care about sibling combinators. Will be necessary in XBL2 world.
     if (ElementShadow* shadow = this->shadow()) {
-        if (shouldRecalcStyle(change, shadow)) {
-            parentPusher.push();
-            shadow->recalcStyle(change);
+        for (ShadowRoot* root = shadow->youngestShadowRoot(); root; root = root->olderShadowRoot()) {
+            if (shouldRecalcStyle(change, root)) {
+                parentPusher.push();
+                root->recalcStyle(change);
+            }
         }
     }
 

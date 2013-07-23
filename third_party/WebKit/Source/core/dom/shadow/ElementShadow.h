@@ -59,9 +59,6 @@ public:
     void attach(const Node::AttachContext&);
     void detach(const Node::AttachContext&);
 
-    bool childNeedsStyleRecalc() const;
-    bool needsStyleRecalc() const;
-    void recalcStyle(Node::StyleChange);
     void removeAllEventListeners();
 
     void invalidateDistribution() { m_distributor.invalidateDistribution(host()); }
