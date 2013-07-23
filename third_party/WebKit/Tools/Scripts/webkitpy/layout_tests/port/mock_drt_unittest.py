@@ -45,10 +45,13 @@ mock_options = mocktool.MockOptions(configuration='Release')
 
 class MockDRTPortTest(port_testcase.PortTestCase):
 
-    def make_port(self, options=mock_options):
-        host = MockSystemHost()
+    def make_port(self, host=None, options=mock_options):
+        host = host or MockSystemHost()
         test.add_unit_tests_to_mock_filesystem(host.filesystem)
         return mock_drt.MockDRTPort(host, port_name='mock-mac', options=options)
+
+    def make_wdiff_available(self, port):
+        port._make_wdiff_available()
 
     def test_port_name_in_constructor(self):
         self.assertTrue(mock_drt.MockDRTPort(MockSystemHost(), port_name='mock-test'))

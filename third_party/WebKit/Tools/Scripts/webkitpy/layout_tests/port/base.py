@@ -1139,6 +1139,8 @@ class Port(object):
             error_handler=self._handle_wdiff_error)
         return self._format_wdiff_output_as_html(wdiff)
 
+    _wdiff_error_html = "Failed to run wdiff, see error log."
+
     def wdiff_text(self, actual_filename, expected_filename):
         """Returns a string of HTML indicating the word-level diff of the
         contents of the two filenames. Returns an empty string if word-level
@@ -1148,12 +1150,16 @@ class Port(object):
         try:
             # It's possible to raise a ScriptError we pass wdiff invalid paths.
             return self._run_wdiff(actual_filename, expected_filename)
-        except OSError, e:
+        except OSError as e:
             if e.errno in [errno.ENOENT, errno.EACCES, errno.ECHILD]:
                 # Silently ignore cases where wdiff is missing.
                 self._wdiff_available = False
                 return ""
             raise
+        except ScriptError as e:
+            _log.error("Failed to run wdiff: %s" % e)
+            self._wdiff_available = False
+            return self._wdiff_error_html
 
     # This is a class variable so we can test error output easily.
     _pretty_patch_error_html = "Failed to run PrettyPatch, see error log."

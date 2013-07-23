@@ -125,6 +125,9 @@ class MockDRTPort(object):
     def show_results_html_file(self, results_filename):
         pass
 
+    def _make_wdiff_available(self):
+        self.__delegate._wdiff_available = True
+
 
 def main(argv, host, stdin, stdout, stderr):
     """Run the tests."""

@@ -88,6 +88,9 @@ class PortTestCase(unittest.TestCase):
         port._config.build_directory = lambda configuration: '/mock-build'
         return port
 
+    def make_wdiff_available(self, port):
+        port._wdiff_available = True
+
     def test_default_max_locked_shards(self):
         port = self.make_port()
         port.default_child_processes = lambda: 16
@@ -173,6 +176,20 @@ class PortTestCase(unittest.TestCase):
     def test_check_wdiff(self):
         port = self.make_port()
         port.check_wdiff()
+
+    def test_wdiff_text_fails(self):
+        host = MockSystemHost(os_name=self.os_name, os_version=self.os_version)
+        host.executive = MockExecutive(should_throw=True)
+        port = self.make_port(host=host)
+        port._executive = host.executive  # AndroidPortTest.make_port sets its own executive, so reset that as well.
+
+        # This should raise a ScriptError that gets caught and turned into the
+        # error text, and also mark wdiff as not available.
+        self.make_wdiff_available(port)
+        self.assertTrue(port.wdiff_available())
+        diff_txt = port.wdiff_text("/tmp/foo.html", "/tmp/bar.html")
+        self.assertEqual(diff_txt, port._wdiff_error_html)
+        self.assertFalse(port.wdiff_available())
 
     def test_test_configuration(self):
         port = self.make_port()

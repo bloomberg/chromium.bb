@@ -145,6 +145,10 @@ class AndroidPortTest(chromium_port_testcase.ChromiumPortTestCase):
         port._executive = MockExecutive2(run_command_fn=port._mock_adb.run_command)
         return port
 
+    def make_wdiff_available(self, port):
+        port._wdiff_available = True
+        port._host_port._wdiff_available = True
+
     # Test that content_shell currently is the only supported driver.
     def test_non_content_shell_driver(self):
         self.assertRaises(self.make_port, options=optparse.Values({'driver_name': 'foobar'}))
