@@ -61,6 +61,7 @@ class ServiceDiscoveryHostClient : public base::NonThreadSafe,
   void ShutdownOnIOThread();
 
   void Send(IPC::Message* msg);
+  void SendOnIOThread(IPC::Message* msg);
 
   uint64 RegisterWatcherCallback(
       const ServiceWatcher::UpdatedCallback& callback);

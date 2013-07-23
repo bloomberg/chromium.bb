@@ -179,8 +179,13 @@ void ServiceDiscoveryHostClient::Send(IPC::Message* msg) {
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
-      base::Bind(base::IgnoreResult(&content::UtilityProcessHost::Send),
-                 utility_host_, msg));
+      base::Bind(&ServiceDiscoveryHostClient::SendOnIOThread, this, msg));
+}
+
+void ServiceDiscoveryHostClient::SendOnIOThread(IPC::Message* msg) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (utility_host_)
+    utility_host_->Send(msg);
 }
 
 bool ServiceDiscoveryHostClient::OnMessageReceived(
