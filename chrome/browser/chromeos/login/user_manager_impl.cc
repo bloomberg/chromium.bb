@@ -1126,13 +1126,14 @@ User* UserManagerImpl::FindUserInListAndModify(const std::string& email) {
 
 void UserManagerImpl::GuestUserLoggedIn() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  WallpaperManager::Get()->SetInitialUserWallpaper(UserManager::kGuestUserName,
-                                                   false);
   active_user_ = User::CreateGuestUser();
   // TODO(nkostylev): Add support for passing guest session cryptohome
   // mount point. Legacy (--login-profile) value will be used for now.
   // http://crosbug.com/230859
   active_user_->SetStubImage(User::kInvalidImageIndex, false);
+  // Initializes wallpaper after active_user_ is set.
+  WallpaperManager::Get()->SetInitialUserWallpaper(UserManager::kGuestUserName,
+                                                   false);
 }
 
 void UserManagerImpl::RegularUserLoggedIn(const std::string& email,
@@ -1234,9 +1235,9 @@ void UserManagerImpl::KioskAppLoggedIn(const std::string& username) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(policy::IsKioskAppUser(username));
 
-  WallpaperManager::Get()->SetInitialUserWallpaper(username, false);
   active_user_ = User::CreateKioskAppUser(username);
   active_user_->SetStubImage(User::kInvalidImageIndex, false);
+  WallpaperManager::Get()->SetInitialUserWallpaper(username, false);
 
   // TODO(bartfab): Add KioskAppUsers to the users_ list and keep metadata like
   // the kiosk_app_id in these objects, removing the need to re-parse the

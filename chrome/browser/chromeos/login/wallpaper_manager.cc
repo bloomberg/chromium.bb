@@ -267,6 +267,14 @@ void WallpaperManager::InitializeWallpaper() {
     return;
   }
 
+  if (CommandLine::ForCurrentProcess()->
+          HasSwitch(chromeos::switches::kGuestSession)) {
+    // Guest wallpaper should be initialized when guest login.
+    // Note: This maybe called before login. So IsLoggedInAsGuest can not be
+    // used here to determine if current user is guest.
+    return;
+  }
+
   if (!user_manager->IsUserLoggedIn()) {
     if (!StartupUtils::IsDeviceRegistered())
       SetDefaultWallpaper();
