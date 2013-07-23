@@ -145,6 +145,7 @@ class Shell : public WebContentsDelegate,
   virtual void RendererUnresponsive(WebContents* source) OVERRIDE;
   virtual void ActivateContents(WebContents* contents) OVERRIDE;
   virtual void DeactivateContents(WebContents* contents) OVERRIDE;
+  virtual void WorkerCrashed(WebContents* source) OVERRIDE;
 
  private:
   enum UIControl {

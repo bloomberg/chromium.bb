@@ -298,6 +298,12 @@ void WebKitTestController::RendererUnresponsive() {
   LOG(WARNING) << "renderer unresponsive";
 }
 
+void WebKitTestController::WorkerCrashed() {
+  DCHECK(CalledOnValidThread());
+  printer_->AddErrorMessage("#CRASHED - worker");
+  DiscardMainWindow();
+}
+
 void WebKitTestController::OverrideWebkitPrefs(WebPreferences* prefs) {
   if (should_override_prefs_) {
     *prefs = prefs_;

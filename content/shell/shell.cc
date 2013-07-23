@@ -323,6 +323,12 @@ void Shell::DeactivateContents(WebContents* contents) {
   contents->GetRenderViewHost()->Blur();
 }
 
+void Shell::WorkerCrashed(WebContents* source) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
+    return;
+  WebKitTestController::Get()->WorkerCrashed();
+}
+
 void Shell::Observe(int type,
                     const NotificationSource& source,
                     const NotificationDetails& details) {
