@@ -1334,7 +1334,7 @@ void PepperPluginDelegateImpl::HandleDocumentLoad(
     // PPP_Instance function directly.
     scoped_refptr<ppapi::proxy::URLLoaderResource> loader_resource(
         new ppapi::proxy::URLLoaderResource(
-            host_impl->in_process_router()->GetPluginConnection(),
+            host_impl->in_process_router()->GetPluginConnection(pp_instance),
             pp_instance, pending_host_id, data));
 
     PP_Resource loader_pp_resource = loader_resource->GetReference();

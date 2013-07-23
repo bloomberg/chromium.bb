@@ -6,6 +6,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "ppapi/c/pp_instance.h"
 #include "ppapi/proxy/connection.h"
 #include "ppapi/proxy/resource_message_params.h"
 
@@ -62,7 +63,7 @@ class PepperInProcessRouter {
   // Returns a connection pair for use by a resource proxy. This includes
   // the plugin->renderer sender as well as a dummy sender to the browser
   // process. See the class comment above about the dummy sender.
-  ppapi::proxy::Connection GetPluginConnection();
+  ppapi::proxy::Connection GetPluginConnection(PP_Instance instance);
 
  private:
   bool SendToHost(IPC::Message *msg);

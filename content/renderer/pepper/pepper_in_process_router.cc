@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
+#include "content/public/renderer/render_view.h"
 #include "content/renderer/pepper/renderer_ppapi_host_impl.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_sender.h"
@@ -58,9 +59,15 @@ IPC::Sender* PepperInProcessRouter::GetRendererToPluginSender() {
   return host_to_plugin_router_.get();
 }
 
-ppapi::proxy::Connection PepperInProcessRouter::GetPluginConnection() {
+ppapi::proxy::Connection PepperInProcessRouter::GetPluginConnection(
+    PP_Instance instance) {
+  int routing_id = 0;
+  RenderView* view = host_impl_->GetRenderViewForInstance(instance);
+  if (view)
+    routing_id = view->GetRoutingID();
   return ppapi::proxy::Connection(dummy_browser_channel_.get(),
-                                  plugin_to_host_router_.get());
+                                  plugin_to_host_router_.get(),
+                                  routing_id);
 }
 
 bool PepperInProcessRouter::SendToHost(IPC::Message* msg) {

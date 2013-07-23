@@ -5,6 +5,8 @@
 #ifndef PPAPI_PROXY_CONNECTION_H_
 #define PPAPI_PROXY_CONNECTION_H_
 
+#include "ipc/ipc_message.h"
+
 namespace IPC {
 class Sender;
 }
@@ -15,15 +17,31 @@ namespace proxy {
 // This struct holds the channels that a resource uses to send message to the
 // browser and renderer.
 struct Connection {
-  Connection() : browser_sender(0), renderer_sender(0) {
+  Connection() : browser_sender(0),
+                 renderer_sender(0),
+                 in_process(false),
+                 browser_sender_routing_id(MSG_ROUTING_NONE) {
   }
   Connection(IPC::Sender* browser, IPC::Sender* renderer)
       : browser_sender(browser),
-        renderer_sender(renderer) {
+        renderer_sender(renderer),
+        in_process(false),
+        browser_sender_routing_id(MSG_ROUTING_NONE) {
+  }
+  Connection(IPC::Sender* browser, IPC::Sender* renderer, int routing_id)
+      : browser_sender(browser),
+        renderer_sender(renderer),
+        in_process(true),
+        browser_sender_routing_id(routing_id) {
   }
 
   IPC::Sender* browser_sender;
   IPC::Sender* renderer_sender;
+  bool in_process;
+  // We need to use a routing ID when a plugin is in-process, and messages are
+  // sent back from the browser to the renderer. This is so that messages are
+  // routed to the proper RenderViewImpl.
+  int browser_sender_routing_id;
 };
 
 }  // namespace proxy
