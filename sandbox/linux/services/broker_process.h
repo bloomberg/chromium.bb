@@ -10,7 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/pickle.h"
-#include "base/process.h"
+#include "base/process/process.h"
 
 namespace sandbox {
 
