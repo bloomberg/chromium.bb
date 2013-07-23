@@ -24,7 +24,7 @@
 
 #include "wtf/Forward.h"
 #include "wtf/HashSet.h"
-#include "wtf/text/AtomicString.h"
+#include "wtf/text/AtomicStringHash.h"
 
 namespace WebCore {
 
@@ -77,9 +77,9 @@ public:
         return idsInRules.contains(idValue.impl());
     }
 
-    HashSet<AtomicStringImpl*> idsInRules;
-    HashSet<AtomicStringImpl*> classesInRules;
-    HashSet<AtomicStringImpl*> attrsInRules;
+    HashSet<AtomicString> idsInRules;
+    HashSet<AtomicString> classesInRules;
+    HashSet<AtomicString> attrsInRules;
     Vector<RuleFeature> siblingRules;
     Vector<RuleFeature> uncommonAttributeRules;
 private:

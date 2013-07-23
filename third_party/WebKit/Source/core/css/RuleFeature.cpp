@@ -56,14 +56,14 @@ void RuleFeatureSet::collectFeaturesFromSelector(const CSSSelector* selector)
 
 void RuleFeatureSet::add(const RuleFeatureSet& other)
 {
-    HashSet<AtomicStringImpl*>::const_iterator end = other.idsInRules.end();
-    for (HashSet<AtomicStringImpl*>::const_iterator it = other.idsInRules.begin(); it != end; ++it)
+    HashSet<AtomicString>::const_iterator end = other.idsInRules.end();
+    for (HashSet<AtomicString>::const_iterator it = other.idsInRules.begin(); it != end; ++it)
         idsInRules.add(*it);
     end = other.classesInRules.end();
-    for (HashSet<AtomicStringImpl*>::const_iterator it = other.classesInRules.begin(); it != end; ++it)
+    for (HashSet<AtomicString>::const_iterator it = other.classesInRules.begin(); it != end; ++it)
         classesInRules.add(*it);
     end = other.attrsInRules.end();
-    for (HashSet<AtomicStringImpl*>::const_iterator it = other.attrsInRules.begin(); it != end; ++it)
+    for (HashSet<AtomicString>::const_iterator it = other.attrsInRules.begin(); it != end; ++it)
         attrsInRules.add(*it);
     siblingRules.append(other.siblingRules);
     uncommonAttributeRules.append(other.uncommonAttributeRules);
