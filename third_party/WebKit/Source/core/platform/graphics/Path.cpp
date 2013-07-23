@@ -69,9 +69,7 @@ bool Path::operator==(const Path& other) const
 
 bool Path::contains(const FloatPoint& point, WindRule rule) const
 {
-    // After crbug.com/236559 is fixed, SkPathContainsPoint should take a const path so this will be unnecessary.
-    SkPath* path = const_cast<SkPath*>(&m_path);
-    return SkPathContainsPoint(path, point, rule == RULE_NONZERO ? SkPath::kWinding_FillType : SkPath::kEvenOdd_FillType);
+    return SkPathContainsPoint(m_path, point, rule == RULE_NONZERO ? SkPath::kWinding_FillType : SkPath::kEvenOdd_FillType);
 }
 
 bool Path::strokeContains(const FloatPoint& point, const StrokeData& strokeData) const
@@ -81,7 +79,7 @@ bool Path::strokeContains(const FloatPoint& point, const StrokeData& strokeData)
     SkPath strokePath;
     paint.getFillPath(m_path, &strokePath);
 
-    return SkPathContainsPoint(&strokePath, point, SkPath::kWinding_FillType);
+    return SkPathContainsPoint(strokePath, point, SkPath::kWinding_FillType);
 }
 
 FloatRect Path::boundingRect() const

@@ -139,9 +139,9 @@ void ClipRectToCanvas(const GraphicsContext* context, const SkRect& srcRect, SkR
         destRect->setEmpty();
 }
 
-bool SkPathContainsPoint(SkPath* originalPath, const FloatPoint& point, SkPath::FillType ft)
+bool SkPathContainsPoint(const SkPath& originalPath, const FloatPoint& point, SkPath::FillType ft)
 {
-    SkRect bounds = originalPath->getBounds();
+    SkRect bounds = originalPath.getBounds();
 
     // We can immediately return false if the point is outside the bounding
     // rect.  We don't use bounds.contains() here, since it would exclude
@@ -167,21 +167,17 @@ bool SkPathContainsPoint(SkPath* originalPath, const FloatPoint& point, SkPath::
     SkRegion rgn;  
     SkRegion clip;
     SkMatrix m;
-    SkPath scaledPath;
+    SkPath scaledPath(originalPath);
 
-    SkPath::FillType originalFillType = originalPath->getFillType();
-    originalPath->setFillType(ft);
-
+    scaledPath.setFillType(ft);
     m.setScale(scale, scale);
-    originalPath->transform(m, &scaledPath);
+    scaledPath.transform(m, 0);
 
     int x = static_cast<int>(floorf(0.5f + point.x() * scale));
     int y = static_cast<int>(floorf(0.5f + point.y() * scale));
     clip.setRect(x - 1, y - 1, x + 1, y + 1);
 
-    bool contains = rgn.setPath(scaledPath, clip);
-    originalPath->setFillType(originalFillType);
-    return contains;
+    return rgn.setPath(scaledPath, clip);
 }
 
 }  // namespace WebCore

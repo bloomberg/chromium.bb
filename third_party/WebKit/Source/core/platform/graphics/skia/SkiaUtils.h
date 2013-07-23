@@ -76,7 +76,7 @@ inline SkRect WebCoreFloatRectToSKRect(const FloatRect& rect)
 void ClipRectToCanvas(const GraphicsContext*, const SkRect& srcRect, SkRect* destRect);
 
 // Determine if a given WebKit point is contained in a path
-bool SkPathContainsPoint(SkPath*, const FloatPoint&, SkPath::FillType);
+bool SkPathContainsPoint(const SkPath&, const FloatPoint&, SkPath::FillType);
 
 }  // namespace WebCore
 
