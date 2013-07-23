@@ -900,6 +900,8 @@
         'browser/lifetime/application_lifetime_mac.mm',
         'browser/lifetime/application_lifetime_stub.cc',
         'browser/lifetime/application_lifetime_win.cc',
+        'browser/local_discovery/privet_confirm_api_flow.cc',
+        'browser/local_discovery/privet_confirm_api_flow.h',
         'browser/local_discovery/privet_constants.h',
         'browser/local_discovery/privet_constants.cc',
         'browser/local_discovery/privet_url_fetcher.cc',
