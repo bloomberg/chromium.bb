@@ -819,17 +819,10 @@ void Node::lazyAttach(ShouldSetAttached shouldSetAttached)
     }
     setStyleChange(SubtreeStyleChange);
     markAncestorsWithChildNeedsStyleRecalc();
-    for (Node* node = this; node; node = NodeTraversal::next(node, this)) {
-        // FIXME: This flag is only used by HTMLFrameElementBase and doesn't look needed.
-        if (shouldSetAttached == SetAttached)
-            node->setAttached();
-        if (!node->isElementNode())
-            continue;
-        if (ElementShadow* shadow = toElement(node)->shadow()) {
-            for (ShadowRoot* root = shadow->youngestShadowRoot(); root; root = root->olderShadowRoot())
-                root->lazyAttach(shouldSetAttached);
-        }
-    }
+    if (shouldSetAttached == DoNotSetAttached)
+        return;
+    for (Node* node = this; node; node = NodeTraversal::next(node, this))
+        node->setAttached();
 }
 
 bool Node::supportsFocus() const

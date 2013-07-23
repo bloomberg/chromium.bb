@@ -35,23 +35,13 @@ ShadowRoot* ElementShadow::addShadowRoot(Element* shadowHost, ShadowRoot::Shadow
 {
     RefPtr<ShadowRoot> shadowRoot = ShadowRoot::create(shadowHost->document(), type);
 
-    // FIXME: didShadowBoundaryChange calls invalidateDistribution which will trigger
-    // a call to lazyReattachIfAttached on descendants of the host which is bad
-    // since the new ShadowRoot here has setValidity to Undetermined. To avoid calling
-    // lazyAttach twice on nodes and avoid hitting an ASSERT in ContentDistributor::distribute
-    // we detach first before notifying of the shadow boundary change. In the future
-    // we should decouple distribition from attachment and style recalc.
-    bool wasAttached = shadowHost->attached();
-    if (wasAttached)
-        shadowHost->detach();
-
     shadowRoot->setParentOrShadowHostNode(shadowHost);
     shadowRoot->setParentTreeScope(shadowHost->treeScope());
     m_shadowRoots.push(shadowRoot.get());
     m_distributor.didShadowBoundaryChange(shadowHost);
     ChildNodeInsertionNotifier(shadowHost).notify(shadowRoot.get());
 
-    if (wasAttached)
+    if (shadowHost->attached())
         shadowHost->lazyReattach();
 
     InspectorInstrumentation::didPushShadowRoot(shadowHost, shadowRoot.get());
