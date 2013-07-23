@@ -15,22 +15,22 @@ channel.port1.postMessage("zero ports", []);
 channel.port1.postMessage("two ports", [channel2.port1, channel2.port2]);
 
 // Now test various failure cases
-shouldThrow('channel.port1.postMessage("same port", [channel.port1])');
-shouldThrow('channel.port1.postMessage("entangled port", [channel.port2])');
-shouldThrow('channel.port1.postMessage("null port", [channel3.port1, null, channel3.port2])');
-shouldThrow('channel.port1.postMessage("notAPort", [channel3.port1, {}, channel3.port2])');
-shouldThrow('channel.port1.postMessage("duplicate port", [channel3.port1, channel3.port1])');
+shouldThrow('channel.port1.postMessage("same port", [channel.port1])', "'DataCloneError: An object could not be cloned.'");
+shouldThrow('channel.port1.postMessage("entangled port", [channel.port2])', "'DataCloneError: An object could not be cloned.'");
+shouldThrow('channel.port1.postMessage("null port", [channel3.port1, null, channel3.port2])', "'DataCloneError: An object could not be cloned.'");
+shouldThrow('channel.port1.postMessage("notAPort", [channel3.port1, {}, channel3.port2])', "'DataCloneError: An object could not be cloned.'");
+shouldThrow('channel.port1.postMessage("duplicate port", [channel3.port1, channel3.port1])', "'DataCloneError: An object could not be cloned.'");
 // Should be OK to send channel3.port1 (should not have been disentangled by the previous failed calls).
 channel.port1.postMessage("entangled ports", [channel3.port1, channel3.port2]);
 
-shouldThrow('channel.port1.postMessage("notAnArray", channel3.port1)')
-shouldThrow('channel.port1.postMessage("notASequence", [{length: 3}])');
+shouldThrow('channel.port1.postMessage("notAnArray", channel3.port1)', "'TypeError: Type error'")
+shouldThrow('channel.port1.postMessage("notASequence", [{length: 3}])', "'DataCloneError: An object could not be cloned.'");
 
 // Should not crash (we should figure out that the array contains undefined
 // entries).
 var largePortArray = [];
 largePortArray[1234567890] = channel4.port1;
-shouldThrow('channel.port1.postMessage("largeSequence", largePortArray)');
+shouldThrow('channel.port1.postMessage("largeSequence", largePortArray)', "'DataCloneError: An object could not be cloned.'");
 
 channel.port1.postMessage("done");
 

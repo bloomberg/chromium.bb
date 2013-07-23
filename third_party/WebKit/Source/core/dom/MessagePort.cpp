@@ -68,7 +68,7 @@ void MessagePort::postMessage(PassRefPtr<SerializedScriptValue> message, const M
         for (unsigned int i = 0; i < ports->size(); ++i) {
             MessagePort* dataPort = (*ports)[i].get();
             if (dataPort == this || m_entangledChannel->isConnectedTo(dataPort)) {
-                es.throwDOMException(InvalidStateError);
+                es.throwDOMException(DataCloneError);
                 return;
             }
         }

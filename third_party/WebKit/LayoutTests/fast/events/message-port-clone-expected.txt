@@ -1,12 +1,21 @@
 Tests various use cases when cloning MessagePorts.
 
-Should be a series of SUCCESS messages, followed with DONE.
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-SUCCESS: Posting port to itself: InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable.
-SUCCESS: Posting entangled port: InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable.
-SUCCESS: Posting cloned port.
-SUCCESS: Posted messages to cloned port.
-SUCCESS: Cloned both endpoints of a channel.
-SUCCESS: Got closed port with event message closed
-DONE
+
+PASS channel.port1.postMessage('msg', [channel.port1]) threw exception DataCloneError: An object could not be cloned..
+PASS channel.port1.postMessage('msg', [channel.port2]) threw exception DataCloneError: An object could not be cloned..
+PASS channel.port1.postMessage('msg', [channel2.port1]) threw exception DataCloneError: An object could not be cloned..
+PASS testEvent.ports.length is 1
+PASS parseInt(testEvent.data) is 1
+PASS parseInt(testEvent.data) is 2
+PASS parseInt(testEvent.data) is 3
+PASS Posted messages to cloned port.
+PASS testEvent.data is 'testme'
+PASS testEvent.ports is not null
+PASS testEvent.ports.length is 1
+PASS testEvent.data is 'closed'
+PASS successfullyParsed is true
+
+TEST COMPLETE
 

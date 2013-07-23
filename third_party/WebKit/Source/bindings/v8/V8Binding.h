@@ -403,8 +403,11 @@ namespace WebCore {
     };
 
     template <class T, class V8T>
-    Vector<RefPtr<T> > toRefPtrNativeArray(v8::Handle<v8::Value> value, v8::Isolate* isolate)
+    Vector<RefPtr<T> > toRefPtrNativeArray(v8::Handle<v8::Value> value, v8::Isolate* isolate, bool* success = 0)
     {
+        if (success)
+            *success = true;
+
         if (!value->IsArray())
             return Vector<RefPtr<T> >();
 
@@ -419,6 +422,8 @@ namespace WebCore {
                 v8::Handle<v8::Object> object = v8::Handle<v8::Object>::Cast(element);
                 result.append(V8T::toNative(object));
             } else {
+                if (success)
+                    *success = false;
                 throwTypeError("Invalid Array element type", isolate);
                 return Vector<RefPtr<T> >();
             }
