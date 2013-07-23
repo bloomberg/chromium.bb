@@ -12,7 +12,7 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/process_util.h"
+#include "base/process/process_handle.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
 #include "rlz/lib/assert.h"
