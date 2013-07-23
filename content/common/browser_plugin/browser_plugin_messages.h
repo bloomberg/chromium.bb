@@ -44,6 +44,8 @@ IPC_STRUCT_BEGIN(BrowserPluginHostMsg_AutoSize_Params)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(BrowserPluginHostMsg_ResizeGuest_Params)
+  // Indicates whether the parameters have been populated or not.
+  IPC_STRUCT_MEMBER(bool, size_changed)
   // The sequence number used to uniquely identify the damage buffer for the
   // current container size.
   IPC_STRUCT_MEMBER(uint32, damage_buffer_sequence_id)

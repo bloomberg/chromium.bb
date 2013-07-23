@@ -1217,6 +1217,7 @@ void BrowserPlugin::SwapDamageBuffers() {
 void BrowserPlugin::PopulateResizeGuestParameters(
     BrowserPluginHostMsg_ResizeGuest_Params* params,
     const gfx::Rect& view_rect) {
+  params->size_changed = true;
   params->view_rect = view_rect;
   params->scale_factor = GetDeviceScaleFactor();
   if (last_device_scale_factor_ != params->scale_factor){
