@@ -1066,21 +1066,8 @@ def CMDstatus(parser, args):
                     help='print only specific field (desc|id|patch|url)')
   (options, args) = parser.parse_args(args)
 
-  # TODO: maybe make show_branches a flag if necessary.
-  show_branches = not options.field
-
-  if show_branches:
-    branches = RunGit(['for-each-ref', '--format=%(refname)', 'refs/heads'])
-    if branches:
-      changes = (Changelist(branchref=b) for b in branches.splitlines())
-      branches = dict((cl.GetBranch(), cl.GetIssueURL()) for cl in changes)
-      alignment = max(5, max(len(b) for b in branches))
-      print 'Branches associated with reviews:'
-      for branch in sorted(branches):
-        print "  %*s: %s" % (alignment, branch, branches[branch])
-
-  cl = Changelist()
   if options.field:
+    cl = Changelist()
     if options.field.startswith('desc'):
       print cl.GetDescription()
     elif options.field == 'id':
@@ -1095,16 +1082,29 @@ def CMDstatus(parser, args):
       url = cl.GetIssueURL()
       if url:
         print url
-  else:
-    print
-    print 'Current branch:',
-    if not cl.GetIssue():
-      print 'no issue assigned.'
-      return 0
-    print cl.GetBranch()
-    print 'Issue number: %s (%s)' % (cl.GetIssue(), cl.GetIssueURL())
-    print 'Issue description:'
-    print cl.GetDescription(pretty=True)
+    return 0
+
+  branches = RunGit(['for-each-ref', '--format=%(refname)', 'refs/heads'])
+  if not branches:
+    print('No local branch found.')
+    return 0
+
+  changes = (Changelist(branchref=b) for b in branches.splitlines())
+  branches = dict((c.GetBranch(), c.GetIssueURL()) for c in changes)
+  alignment = max(5, max(len(b) for b in branches))
+  print 'Branches associated with reviews:'
+  for branch in sorted(branches):
+    print "  %*s: %s" % (alignment, branch, branches[branch])
+  cl = Changelist()
+  print
+  print 'Current branch:',
+  if not cl.GetIssue():
+    print 'no issue assigned.'
+    return 0
+  print cl.GetBranch()
+  print 'Issue number: %s (%s)' % (cl.GetIssue(), cl.GetIssueURL())
+  print 'Issue description:'
+  print cl.GetDescription(pretty=True)
   return 0
 
 
