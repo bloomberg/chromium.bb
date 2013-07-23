@@ -1356,7 +1356,6 @@
             'rendering/RenderLayerCompositor.h',
             'rendering/RenderLayerFilterInfo.cpp',
             'rendering/RenderLayerFilterInfo.h',
-            'rendering/RenderLayerScrollableArea.cpp',
             'rendering/RenderLayerModelObject.cpp',
             'rendering/RenderLazyBlock.cpp',
             'rendering/RenderLazyBlock.h',

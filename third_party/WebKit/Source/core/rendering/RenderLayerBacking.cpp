@@ -852,9 +852,9 @@ bool RenderLayerBacking::updateOverflowControlsLayers(bool needsHorizontalScroll
 
     if (ScrollingCoordinator* scrollingCoordinator = scrollingCoordinatorFromLayer(m_owningLayer)) {
         if (horizontalScrollbarLayerChanged)
-            scrollingCoordinator->scrollableAreaScrollbarLayerDidChange(m_owningLayer->scrollableArea(), HorizontalScrollbar);
+            scrollingCoordinator->scrollableAreaScrollbarLayerDidChange(m_owningLayer, HorizontalScrollbar);
         if (verticalScrollbarLayerChanged)
-            scrollingCoordinator->scrollableAreaScrollbarLayerDidChange(m_owningLayer->scrollableArea(), VerticalScrollbar);
+            scrollingCoordinator->scrollableAreaScrollbarLayerDidChange(m_owningLayer, VerticalScrollbar);
     }
 
     return horizontalScrollbarLayerChanged || verticalScrollbarLayerChanged || scrollCornerLayerChanged;
@@ -1016,14 +1016,14 @@ bool RenderLayerBacking::updateScrollingLayers(bool needsScrollingLayers)
 
             layerChanged = true;
             if (scrollingCoordinator)
-                scrollingCoordinator->scrollableAreaScrollLayerDidChange(m_owningLayer->scrollableArea());
+                scrollingCoordinator->scrollableAreaScrollLayerDidChange(m_owningLayer);
         }
     } else if (m_scrollingLayer) {
         m_scrollingLayer = nullptr;
         m_scrollingContentsLayer = nullptr;
         layerChanged = true;
         if (scrollingCoordinator)
-            scrollingCoordinator->scrollableAreaScrollLayerDidChange(m_owningLayer->scrollableArea());
+            scrollingCoordinator->scrollableAreaScrollLayerDidChange(m_owningLayer);
     }
 
     if (layerChanged) {
