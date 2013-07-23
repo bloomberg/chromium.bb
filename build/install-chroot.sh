@@ -497,26 +497,62 @@ while [ "$#" -ne 0 ]; do
   esac
 done
 
+# Start a new chroot session and keep track of the session id. We inject this
+# id into all processes that run inside the chroot. Unless they go out of their
+# way to clear their environment, we can then later identify our child and
+# grand-child processes by scanning their environment.
 session="$(schroot -c "${chroot}" -b)"
+export CHROOT_SESSION_ID="${session}"
 
 if [ $# -eq 0 ]; then
+  # Run an interactive shell session
   schroot -c "${session}" -r -p
 else
+  # Run a command inside of the chroot environment
   p="$1"; shift
   schroot -c "${session}" -r -p "$p" -- "$@"
 fi
 rc=$?
 
+# Compute the inode of the root directory inside of the chroot environment.
 i=$(schroot -c "${session}" -r -p ls -- -id /proc/self/root/. |
      awk '{ print $1 }') 2>/dev/null
+other_pids=
 while [ -n "$i" ]; do
-  pids=$(ls -id1 /proc/*/root/. 2>/dev/null |
+  # Identify processes by the inode number of their root directory. Then
+  # remove all processes that we know belong to other sessions. We use
+  # "sort | uniq -u" to do what amounts to a "set substraction operation".
+  pids=$({ ls -id1 /proc/*/root/. 2>/dev/null |
          sed -e 's,^[^0-9]*'$i'.*/\([1-9][0-9]*\)/.*$,\1,
                  t
-                 d') >/dev/null 2>&1
-  [ -z "$pids" ] && break
-  kill -9 $pids
+                 d';
+         echo "${other_pids}";
+         echo "${other_pids}"; } | sort | uniq -u) >/dev/null 2>&1
+  # Kill all processes that are still left running in the session. This is
+  # typically an assortment of daemon processes that were started
+  # automatically. They result in us being unable to tear down the session
+  # cleanly.
+  [ -z "${pids}" ] && break
+  for j in $pids; do
+    # Unfortunately, the way that schroot sets up sessions has the
+    # side-effect of being unable to tell one session apart from another.
+    # This can result in us attempting to kill processes in other sessions.
+    # We make a best-effort to avoid doing so.
+    k="$( ( xargs -0 -n1 </proc/$j/environ ) 2>/dev/null |
+         sed 's/^CHROOT_SESSION_ID=/x/;t1;d;:1;q')"
+    if [ -n "${k}" -a "${k#x}" != "${session}" ]; then
+      other_pids="${other_pids}
+${j}"
+      continue
+    fi
+    kill -9 $pids
+  done
 done
+# End the chroot session. This should clean up all temporary files. But if we
+# earlier failed to terminate all (daemon) processes inside of the session,
+# deleting the session could fail. When that happens, the user has to manually
+# clean up the stale files by invoking us with "--clean" after having killed
+# all running processes.
 schroot -c "${session}" -e
 exit $rc
 EOF
