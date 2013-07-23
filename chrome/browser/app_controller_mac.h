@@ -81,6 +81,9 @@ class WorkAreaWatcherObserver;
 
   scoped_ptr<PrefChangeRegistrar> profilePrefRegistrar_;
   PrefChangeRegistrar localPrefRegistrar_;
+
+  // The main menu item showing the name of a currently focused packaged app.
+  base::scoped_nsobject<NSMenuItem> appMenuItem_;
 }
 
 @property(readonly, nonatomic) BOOL startupComplete;

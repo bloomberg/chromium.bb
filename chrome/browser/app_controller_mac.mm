@@ -4,6 +4,7 @@
 
 #import "chrome/browser/app_controller_mac.h"
 
+#include "apps/shell_window.h"
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -26,6 +27,7 @@
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/printing/print_dialog_cloud.h"
@@ -69,6 +71,7 @@
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/cloud_print/cloud_print_class_mac.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/mac/app_mode_common.h"
 #include "chrome/common/pref_names.h"
@@ -193,6 +196,7 @@ void RecordLastRunAppBundlePath() {
 - (BOOL)shouldQuitWithInProgressDownloads;
 - (void)executeApplication:(id)sender;
 - (void)profileWasRemoved:(const base::FilePath&)profilePath;
+- (void)showOrHideMenuItemsForPackagedApp:(NSNotification*)notification;
 @end
 
 class AppControllerProfileObserver : public ProfileInfoCacheObserver {
@@ -307,6 +311,12 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
 
   // Set up the command updater for when there are no windows open
   [self initMenuState];
+
+  [[NSNotificationCenter defaultCenter]
+      addObserver:self
+         selector:@selector(showOrHideMenuItemsForPackagedApp:)
+             name:NSWindowDidBecomeMainNotification
+           object:nil];
 
   // Initialize the Profile menu.
   [self initProfileMenu];
@@ -1376,6 +1386,52 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
 - (void)delayedScreenParametersUpdate {
   FOR_EACH_OBSERVER(ui::WorkAreaWatcherObserver, workAreaChangeObservers_,
       WorkAreaChanged());
+}
+
+// If the window is an app window, show the menu bar for that app, otherwise
+// restore the Chrome menu bar.
+- (void)showOrHideMenuItemsForPackagedApp:(NSNotification*)notification {
+  NSMenu* mainMenu = [NSApp mainMenu];
+  apps::ShellWindow* shellWindow =
+      extensions::ShellWindowRegistry::GetShellWindowForNativeWindowAnyProfile(
+          [notification object]);
+
+  if (!shellWindow) {
+    if (!appMenuItem_)
+      return;
+
+    [mainMenu removeItem:appMenuItem_];
+    appMenuItem_.reset();
+
+    // Restore the Chrome main menu bar.
+    for (NSMenuItem* item in [mainMenu itemArray])
+      [item setHidden:NO];
+
+    return;
+  }
+
+  const extensions::Extension* app = shellWindow->extension();
+  NSString* appId = base::SysUTF8ToNSString(app->id());
+  NSString* title = base::SysUTF8ToNSString(app->name());
+
+  if (appMenuItem_) {
+    if ([[appMenuItem_ title] isEqualToString:appId])
+      return;
+
+    [mainMenu removeItem:appMenuItem_];
+  } else {
+    // Hide everything and add a menu item for the app.
+    for (NSMenuItem* item in [mainMenu itemArray])
+      [item setHidden:YES];
+  }
+
+  appMenuItem_.reset(
+      [[NSMenuItem alloc] initWithTitle:appId
+                                 action:nil
+                          keyEquivalent:@""]);
+  base::scoped_nsobject<NSMenu> appMenu([[NSMenu alloc] initWithTitle:title]);
+  [appMenuItem_ setSubmenu:appMenu];
+  [mainMenu addItem:appMenuItem_];
 }
 
 @end  // @implementation AppController

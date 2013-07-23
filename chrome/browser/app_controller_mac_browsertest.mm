@@ -6,10 +6,15 @@
 
 #include "base/command_line.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/strings/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #import "chrome/browser/app_controller_mac.h"
+#include "chrome/browser/extensions/extension_test_message_listener.h"
+#include "chrome/browser/extensions/platform_app_browsertest_util.h"
+#include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #import "chrome/common/chrome_switches.h"
@@ -19,7 +24,8 @@
 
 namespace {
 
-class AppControllerPlatformAppBrowserTest : public InProcessBrowserTest {
+class AppControllerPlatformAppBrowserTest
+    : public extensions::PlatformAppBrowserTest {
  protected:
   AppControllerPlatformAppBrowserTest()
       : active_browser_list_(BrowserList::GetInstance(
@@ -27,6 +33,7 @@ class AppControllerPlatformAppBrowserTest : public InProcessBrowserTest {
   }
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    PlatformAppBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(switches::kAppId,
                                     "1234");
   }
@@ -46,6 +53,72 @@ IN_PROC_BROWSER_TEST_F(AppControllerPlatformAppBrowserTest,
   EXPECT_TRUE(result);
   EXPECT_EQ(old_window_count, [[NSApp windows] count]);
   EXPECT_EQ(1u, active_browser_list_->size());
+}
+
+// Test that focusing an app window changes the menu bar.
+IN_PROC_BROWSER_TEST_F(AppControllerPlatformAppBrowserTest,
+                       PlatformAppFocusUpdatesMenuBar) {
+  base::scoped_nsobject<AppController> app_controller(
+      [[AppController alloc] init]);
+
+  // Start two apps and wait for them to be launched.
+  ExtensionTestMessageListener listener_1("Launched", false);
+  const extensions::Extension* app_1 =
+      InstallAndLaunchPlatformApp("minimal_id");
+  ASSERT_TRUE(listener_1.WaitUntilSatisfied());
+  ExtensionTestMessageListener listener_2("Launched", false);
+  const extensions::Extension* app_2 =
+      InstallAndLaunchPlatformApp("minimal");
+  ASSERT_TRUE(listener_2.WaitUntilSatisfied());
+
+  NSMenu* main_menu = [NSApp mainMenu];
+  NSUInteger initial_menu_item_count = [[main_menu itemArray] count];
+
+  // When an app is focused, all Chrome menu items should be hidden, and a menu
+  // item for the app should be added.
+  apps::ShellWindow* app_1_shell_window =
+      extensions::ShellWindowRegistry::Get(profile())->
+          GetShellWindowsForApp(app_1->id()).front();
+  [[NSNotificationCenter defaultCenter]
+      postNotificationName:NSWindowDidBecomeMainNotification
+                    object:app_1_shell_window->GetNativeWindow()];
+  NSArray* item_array = [main_menu itemArray];
+  EXPECT_EQ(initial_menu_item_count + 1, [item_array count]);
+  for (NSUInteger i = 0; i < initial_menu_item_count; ++i)
+    EXPECT_TRUE([[item_array objectAtIndex:i] isHidden]);
+  NSMenuItem* last_item = [item_array lastObject];
+  EXPECT_EQ(app_1->id(), base::SysNSStringToUTF8([last_item title]));
+  EXPECT_EQ(app_1->name(),
+            base::SysNSStringToUTF8([[last_item submenu] title]));
+  EXPECT_FALSE([last_item isHidden]);
+
+  // When another app is focused, the menu item for the app should change.
+  apps::ShellWindow* app_2_shell_window =
+      extensions::ShellWindowRegistry::Get(profile())->
+          GetShellWindowsForApp(app_2->id()).front();
+  [[NSNotificationCenter defaultCenter]
+      postNotificationName:NSWindowDidBecomeMainNotification
+                    object:app_2_shell_window->GetNativeWindow()];
+  item_array = [main_menu itemArray];
+  EXPECT_EQ(initial_menu_item_count + 1, [item_array count]);
+  for (NSUInteger i = 0; i < initial_menu_item_count; ++i)
+    EXPECT_TRUE([[item_array objectAtIndex:i] isHidden]);
+  last_item = [item_array lastObject];
+  EXPECT_EQ(app_2->id(), base::SysNSStringToUTF8([last_item title]));
+  EXPECT_EQ(app_2->name(),
+            base::SysNSStringToUTF8([[last_item submenu] title]));
+  EXPECT_FALSE([last_item isHidden]);
+
+  // When Chrome is focused, the menu item for the app should be removed.
+  NSWindow* browser_native_window =
+      active_browser_list_->get(0)->window()->GetNativeWindow();
+  [[NSNotificationCenter defaultCenter]
+      postNotificationName:NSWindowDidBecomeMainNotification
+                    object:browser_native_window];
+  item_array = [main_menu itemArray];
+  EXPECT_EQ(initial_menu_item_count, [item_array count]);
+  for (NSUInteger i = 0; i < initial_menu_item_count; ++i)
+    EXPECT_FALSE([[item_array objectAtIndex:i] isHidden]);
 }
 
 class AppControllerWebAppBrowserTest : public InProcessBrowserTest {
