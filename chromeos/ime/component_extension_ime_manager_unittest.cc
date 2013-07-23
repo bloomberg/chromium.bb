@@ -41,21 +41,21 @@ class ComponentExtensionIMEManagerTest :
     ComponentExtensionEngine ext1_engine1;
     ext1_engine1.engine_id = "ext1_engine1_engine_id";
     ext1_engine1.display_name = "ext1_engine_1_display_name";
-    ext1_engine1.language_code = "en";
+    ext1_engine1.language_codes.push_back("en");
     ext1_engine1.layouts.push_back("us");
     ext1.engines.push_back(ext1_engine1);
 
     ComponentExtensionEngine ext1_engine2;
     ext1_engine2.engine_id = "ext1_engine2_engine_id";
     ext1_engine2.display_name = "ext1_engine2_display_name";
-    ext1_engine2.language_code = "en";
+    ext1_engine2.language_codes.push_back("en");
     ext1_engine2.layouts.push_back("us");
     ext1.engines.push_back(ext1_engine2);
 
     ComponentExtensionEngine ext1_engine3;
     ext1_engine3.engine_id = "ext1_engine3_engine_id";
     ext1_engine3.display_name = "ext1_engine3_display_name";
-    ext1_engine3.language_code = "ja";
+    ext1_engine3.language_codes.push_back("ja");
     ext1_engine3.layouts.push_back("us");
     ext1.engines.push_back(ext1_engine3);
 
@@ -69,21 +69,21 @@ class ComponentExtensionIMEManagerTest :
     ComponentExtensionEngine ext2_engine1;
     ext2_engine1.engine_id = "ext2_engine1_engine_id";
     ext2_engine1.display_name = "ext2_engine_1_display_name";
-    ext2_engine1.language_code = "en";
+    ext2_engine1.language_codes.push_back("en");
     ext2_engine1.layouts.push_back("us");
     ext2.engines.push_back(ext2_engine1);
 
     ComponentExtensionEngine ext2_engine2;
     ext2_engine2.engine_id = "ext2_engine2_engine_id";
     ext2_engine2.display_name = "ext2_engine2_display_name";
-    ext2_engine2.language_code = "hi";
+    ext2_engine2.language_codes.push_back("hi");
     ext2_engine2.layouts.push_back("us");
     ext2.engines.push_back(ext2_engine2);
 
     ComponentExtensionEngine ext2_engine3;
     ext2_engine3.engine_id = "ext2_engine3_engine_id";
     ext2_engine3.display_name = "ext2_engine3_display_name";
-    ext2_engine3.language_code = "ja";
+    ext2_engine3.language_codes.push_back("ja");
     ext2_engine3.layouts.push_back("jp");
     ext2.engines.push_back(ext2_engine3);
 
@@ -92,28 +92,28 @@ class ComponentExtensionIMEManagerTest :
     ComponentExtensionIME ext3;
     ext3.id = "ext3_id";
     ext3.description = "ext3_description";
-    ext1.options_page_url =
-        GURL("chrome-extension://" + ext3.id + "/options.html");
+    ext3.options_page_url =
+    GURL("chrome-extension://" + ext3.id + "/options.html");
     ext3.path = base::FilePath("ext3_file_path");
 
     ComponentExtensionEngine ext3_engine1;
     ext3_engine1.engine_id = "ext3_engine1_engine_id";
     ext3_engine1.display_name = "ext3_engine_1_display_name";
-    ext3_engine1.language_code = "hi";
+    ext3_engine1.language_codes.push_back("hi");
     ext3_engine1.layouts.push_back("us");
     ext3.engines.push_back(ext3_engine1);
 
     ComponentExtensionEngine ext3_engine2;
     ext3_engine2.engine_id = "ext3_engine2_engine_id";
     ext3_engine2.display_name = "ext3_engine2_display_name";
-    ext3_engine2.language_code = "en";
+    ext3_engine2.language_codes.push_back("en");
     ext3_engine2.layouts.push_back("us");
     ext3.engines.push_back(ext3_engine2);
 
     ComponentExtensionEngine ext3_engine3;
     ext3_engine3.engine_id = "ext3_engine3_engine_id";
     ext3_engine3.display_name = "ext3_engine3_display_name";
-    ext3_engine3.language_code = "en";
+    ext3_engine3.language_codes.push_back("en");
     ext3_engine3.layouts.push_back("us");
     ext3.engines.push_back(ext3_engine3);
 

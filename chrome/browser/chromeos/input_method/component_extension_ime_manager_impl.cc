@@ -190,8 +190,26 @@ bool ComponentExtensionIMEManagerImpl::ReadEngineComponent(
     return false;
   if (!dict.GetString(extension_manifest_keys::kName, &out->display_name))
     return false;
-  if (!dict.GetString(extension_manifest_keys::kLanguage, &out->language_code))
-    return false;
+
+  std::set<std::string> languages;
+  const base::Value* language_value = NULL;
+  if (dict.Get(extension_manifest_keys::kLanguage, &language_value)) {
+    if (language_value->GetType() == base::Value::TYPE_STRING) {
+      std::string language_str;
+      language_value->GetAsString(&language_str);
+      languages.insert(language_str);
+    } else if (language_value->GetType() == base::Value::TYPE_LIST) {
+      const base::ListValue* language_list = NULL;
+      language_value->GetAsList(&language_list);
+      for (size_t j = 0; j < language_list->GetSize(); ++j) {
+        std::string language_str;
+        if (language_list->GetString(j, &language_str))
+          languages.insert(language_str);
+      }
+    }
+  }
+  DCHECK(!languages.empty());
+  out->language_codes.assign(languages.begin(), languages.end());
 
   const ListValue* layouts = NULL;
   if (!dict.GetList(extension_manifest_keys::kLayouts, &layouts))

@@ -19,7 +19,7 @@ struct CHROMEOS_EXPORT ComponentExtensionEngine {
   ~ComponentExtensionEngine();
   std::string engine_id;  // The engine id.
   std::string display_name;  // The display name.
-  std::string language_code;  // The engine's language(ex. "en").
+  std::vector<std::string> language_codes;  // The engine's language(ex. "en").
   std::string description;  // The engine description.
   std::vector<std::string> layouts;  // The list of keyboard layout of engine.
 };

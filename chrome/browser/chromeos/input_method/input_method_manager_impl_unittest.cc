@@ -84,14 +84,14 @@ class InputMethodManagerImplTest :  public testing::Test {
     ComponentExtensionEngine ext1_engine1;
     ext1_engine1.engine_id = "nacl_mozc_us";
     ext1_engine1.display_name = "ext1_engine_1_display_name";
-    ext1_engine1.language_code = "ja";
+    ext1_engine1.language_codes.push_back("ja");
     ext1_engine1.layouts.push_back("us");
     ext1.engines.push_back(ext1_engine1);
 
     ComponentExtensionEngine ext1_engine2;
     ext1_engine2.engine_id = "nacl_mozc_jp";
     ext1_engine2.display_name = "ext1_engine_1_display_name";
-    ext1_engine2.language_code = "ja";
+    ext1_engine2.language_codes.push_back("ja");
     ext1_engine2.layouts.push_back("jp");
     ext1.engines.push_back(ext1_engine2);
 
@@ -105,14 +105,14 @@ class InputMethodManagerImplTest :  public testing::Test {
     ComponentExtensionEngine ext2_engine1;
     ext2_engine1.engine_id = "ext2_engine1_engine_id";
     ext2_engine1.display_name = "ext2_engine_1_display_name";
-    ext2_engine1.language_code = "en";
+    ext2_engine1.language_codes.push_back("en");
     ext2_engine1.layouts.push_back("us");
     ext2.engines.push_back(ext2_engine1);
 
     ComponentExtensionEngine ext2_engine2;
     ext2_engine2.engine_id = "ext2_engine2_engine_id";
     ext2_engine2.display_name = "ext2_engine_2_display_name";
-    ext2_engine2.language_code = "en";
+    ext2_engine2.language_codes.push_back("en");
     ext2_engine2.layouts.push_back("us(dvorak)");
     ext2.engines.push_back(ext2_engine2);
 
