@@ -101,6 +101,12 @@ class AccessibilityManager : public content::NotificationObserver {
   virtual ~AccessibilityManager();
 
  private:
+  void LoadChromeVox();
+  void LoadChromeVoxToUserScreen();
+  void LoadChromeVoxToLockScreen();
+  void UnloadChromeVox();
+  void UnloadChromeVoxFromLockScreen();
+
   void UpdateLargeCursorFromPref();
   void UpdateStickyKeysFromPref();
   void UpdateSpokenFeedbackFromPref();
@@ -116,7 +122,14 @@ class AccessibilityManager : public content::NotificationObserver {
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  // Profile which has the current a11y context.
   Profile* profile_;
+
+  // Profile which ChromeVox is currently loaded to. If NULL, ChromeVox is not
+  // loaded to any profile.
+  bool chrome_vox_loaded_on_lock_screen_;
+  bool chrome_vox_loaded_on_user_screen_;
+
   content::NotificationRegistrar notification_registrar_;
   scoped_ptr<PrefChangeRegistrar> pref_change_registrar_;
   scoped_ptr<PrefChangeRegistrar> local_state_pref_change_registrar_;

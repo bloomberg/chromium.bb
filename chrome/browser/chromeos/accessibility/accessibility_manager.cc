@@ -119,6 +119,63 @@ class ContentScriptLoader {
   std::queue<extensions::ExtensionResource> resources_;
 };
 
+void LoadChromeVoxExtension(Profile* profile, content::WebUI* login_web_ui) {
+  ExtensionService* extension_service =
+      extensions::ExtensionSystem::Get(profile)->extension_service();
+  base::FilePath path = base::FilePath(extension_misc::kChromeVoxExtensionPath);
+  std::string extension_id =
+      extension_service->component_loader()->Add(IDR_CHROMEVOX_MANIFEST,
+                                                 path);
+  if (login_web_ui) {
+    ExtensionService* extension_service =
+        extensions::ExtensionSystem::Get(profile)->extension_service();
+    const extensions::Extension* extension =
+        extension_service->extensions()->GetByID(extension_id);
+
+    RenderViewHost* render_view_host =
+        login_web_ui->GetWebContents()->GetRenderViewHost();
+    // Set a flag to tell ChromeVox that it's just been enabled,
+    // so that it won't interrupt our speech feedback enabled message.
+    ExtensionMsg_ExecuteCode_Params params;
+    params.request_id = 0;
+    params.extension_id = extension->id();
+    params.is_javascript = true;
+    params.code = "window.INJECTED_AFTER_LOAD = true;";
+    params.run_at = extensions::UserScript::DOCUMENT_IDLE;
+    params.all_frames = true;
+    params.in_main_world = false;
+    render_view_host->Send(new ExtensionMsg_ExecuteCode(
+        render_view_host->GetRoutingID(), params));
+
+    // Inject ChromeVox' content scripts.
+    ContentScriptLoader* loader = new ContentScriptLoader(
+        extension->id(), render_view_host->GetProcess()->GetID(),
+        render_view_host->GetRoutingID());
+
+    const extensions::UserScriptList& content_scripts =
+        extensions::ContentScriptsInfo::GetContentScripts(extension);
+    for (size_t i = 0; i < content_scripts.size(); i++) {
+      const extensions::UserScript& script = content_scripts[i];
+      for (size_t j = 0; j < script.js_scripts().size(); ++j) {
+        const extensions::UserScript::File &file = script.js_scripts()[j];
+        extensions::ExtensionResource resource = extension->GetResource(
+            file.relative_path());
+        loader->AppendScript(resource);
+      }
+    }
+    loader->Run();  // It cleans itself up when done.
+  }
+  DLOG(INFO) << "ChromeVox was Loaded.";
+}
+
+void UnloadChromeVoxExtension(Profile* profile) {
+  ExtensionService* extension_service =
+      extensions::ExtensionSystem::Get(profile)->extension_service();
+  base::FilePath path = base::FilePath(extension_misc::kChromeVoxExtensionPath);
+  extension_service->component_loader()->Remove(path);
+  DLOG(INFO) << "ChromeVox was Unloaded.";
+}
+
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -202,6 +259,8 @@ AccessibilityManager* AccessibilityManager::Get() {
 
 AccessibilityManager::AccessibilityManager()
     : profile_(NULL),
+      chrome_vox_loaded_on_lock_screen_(false),
+      chrome_vox_loaded_on_user_screen_(false),
       large_cursor_pref_handler_(prefs::kLargeCursorEnabled),
       spoken_feedback_pref_handler_(prefs::kSpokenFeedbackEnabled),
       high_contrast_pref_handler_(prefs::kHighContrastEnabled),
@@ -210,6 +269,7 @@ AccessibilityManager::AccessibilityManager()
       spoken_feedback_enabled_(false),
       high_contrast_enabled_(false),
       spoken_feedback_notification_(ash::A11Y_NOTIFICATION_NONE) {
+
   notification_registrar_.Add(this,
                               chrome::NOTIFICATION_LOGIN_WEBUI_VISIBLE,
                               content::NotificationService::AllSources());
@@ -218,6 +278,9 @@ AccessibilityManager::AccessibilityManager()
                               content::NotificationService::AllSources());
   notification_registrar_.Add(this,
                               chrome::NOTIFICATION_PROFILE_DESTROYED,
+                              content::NotificationService::AllSources());
+  notification_registrar_.Add(this,
+                              chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
                               content::NotificationService::AllSources());
 }
 
@@ -333,74 +396,77 @@ void AccessibilityManager::UpdateSpokenFeedbackFromPref() {
       enabled ? IDS_CHROMEOS_ACC_SPOKEN_FEEDBACK_ENABLED :
       IDS_CHROMEOS_ACC_SPOKEN_FEEDBACK_DISABLED).c_str());
 
-  // Determine whether an OOBE screen or the screen locker is currently being
-  // shown. If so, ChromeVox will be injected directly into that screen.
+  if (enabled)
+    LoadChromeVox();
+  else
+    UnloadChromeVox();
+}
+
+void AccessibilityManager::LoadChromeVox() {
+  ScreenLocker* screen_locker = ScreenLocker::default_screen_locker();
+  if (screen_locker && screen_locker->locked()) {
+    // If on the lock screen, loads ChromeVox only to the lock screen as for
+    // now. On unlock, it will be loaded to the user screen.
+    // (see. AccessibilityManager::Observe())
+    LoadChromeVoxToLockScreen();
+    return;
+  }
+
+  LoadChromeVoxToUserScreen();
+}
+
+void AccessibilityManager::LoadChromeVoxToUserScreen() {
+  if (chrome_vox_loaded_on_user_screen_)
+    return;
+
+  // Determine whether an OOBE screen is currently being shown. If so,
+  // ChromeVox will be injected directly into that screen.
   content::WebUI* login_web_ui = NULL;
-  LoginDisplayHost* login_display_host = LoginDisplayHostImpl::default_host();
-  if (login_display_host) {
-    WebUILoginView* web_ui_login_view = login_display_host->GetWebUILoginView();
-    if (web_ui_login_view)
-      login_web_ui = web_ui_login_view->GetWebUI();
-  }
-  if (!login_web_ui) {
-    ScreenLocker* screen_locker = ScreenLocker::default_screen_locker();
-    if (screen_locker && screen_locker->locked())
-      login_web_ui = screen_locker->GetAssociatedWebUI();
-  }
 
-  // Load/Unload ChromeVox
-  Profile* profile = login_web_ui ? Profile::FromWebUI(login_web_ui) :
-                                    ProfileManager::GetDefaultProfile();
-  ExtensionService* extension_service =
-      extensions::ExtensionSystem::Get(profile)->extension_service();
-  base::FilePath path = base::FilePath(extension_misc::kChromeVoxExtensionPath);
-  if (enabled) {  // Load ChromeVox
-    std::string extension_id =
-        extension_service->component_loader()->Add(IDR_CHROMEVOX_MANIFEST,
-                                                   path);
-    const extensions::Extension* extension =
-        extension_service->extensions()->GetByID(extension_id);
-
-    if (login_web_ui) {
-      RenderViewHost* render_view_host =
-          login_web_ui->GetWebContents()->GetRenderViewHost();
-      // Set a flag to tell ChromeVox that it's just been enabled,
-      // so that it won't interrupt our speech feedback enabled message.
-      ExtensionMsg_ExecuteCode_Params params;
-      params.request_id = 0;
-      params.extension_id = extension->id();
-      params.is_javascript = true;
-      params.code = "window.INJECTED_AFTER_LOAD = true;";
-      params.run_at = extensions::UserScript::DOCUMENT_IDLE;
-      params.all_frames = true;
-      params.in_main_world = false;
-      render_view_host->Send(new ExtensionMsg_ExecuteCode(
-          render_view_host->GetRoutingID(), params));
-
-      // Inject ChromeVox' content scripts.
-      ContentScriptLoader* loader = new ContentScriptLoader(
-          extension->id(), render_view_host->GetProcess()->GetID(),
-          render_view_host->GetRoutingID());
-
-      const extensions::UserScriptList& content_scripts =
-          extensions::ContentScriptsInfo::GetContentScripts(extension);
-      for (size_t i = 0; i < content_scripts.size(); i++) {
-        const extensions::UserScript& script = content_scripts[i];
-        for (size_t j = 0; j < script.js_scripts().size(); ++j) {
-          const extensions::UserScript::File &file = script.js_scripts()[j];
-          extensions::ExtensionResource resource = extension->GetResource(
-              file.relative_path());
-          loader->AppendScript(resource);
-        }
-      }
-      loader->Run();  // It cleans itself up when done.
+  if (ProfileHelper::IsSigninProfile(profile_)) {
+    LoginDisplayHost* login_display_host = LoginDisplayHostImpl::default_host();
+    if (login_display_host) {
+      WebUILoginView* web_ui_login_view =
+          login_display_host->GetWebUILoginView();
+      if (web_ui_login_view)
+        login_web_ui = web_ui_login_view->GetWebUI();
     }
-
-    DLOG(INFO) << "ChromeVox was Loaded.";
-  } else {  // Unload ChromeVox
-    extension_service->component_loader()->Remove(path);
-    DLOG(INFO) << "ChromeVox was Unloaded.";
   }
+
+  LoadChromeVoxExtension(profile_, login_web_ui);
+  chrome_vox_loaded_on_user_screen_ = true;
+}
+
+void AccessibilityManager::LoadChromeVoxToLockScreen() {
+  if (chrome_vox_loaded_on_lock_screen_)
+    return;
+
+  ScreenLocker* screen_locker = ScreenLocker::default_screen_locker();
+  if (screen_locker && screen_locker->locked()) {
+    content::WebUI* lock_web_ui = screen_locker->GetAssociatedWebUI();
+    if (lock_web_ui) {
+      Profile* profile = Profile::FromWebUI(lock_web_ui);
+      LoadChromeVoxExtension(profile, lock_web_ui);
+      chrome_vox_loaded_on_lock_screen_ = true;
+    }
+  }
+}
+
+void AccessibilityManager::UnloadChromeVox() {
+  if (chrome_vox_loaded_on_lock_screen_)
+    UnloadChromeVoxFromLockScreen();
+
+  if (chrome_vox_loaded_on_user_screen_) {
+    UnloadChromeVoxExtension(profile_);
+    chrome_vox_loaded_on_user_screen_ = false;
+  }
+}
+
+void AccessibilityManager::UnloadChromeVoxFromLockScreen() {
+  // Lock screen uses the signin progile.
+  Profile* signin_profile = ProfileHelper::GetSigninProfile();
+  UnloadChromeVoxExtension(signin_profile);
+  chrome_vox_loaded_on_lock_screen_ = false;
 }
 
 bool AccessibilityManager::IsSpokenFeedbackEnabled() {
@@ -581,6 +647,18 @@ void AccessibilityManager::Observe(
       if (profile_ == profile)
         SetProfile(NULL);
       break;
+    }
+    case chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED: {
+      bool is_screen_locked = *content::Details<bool>(details).ptr();
+      if (is_screen_locked) {
+        if (spoken_feedback_enabled_)
+          LoadChromeVoxToLockScreen();
+      } else {
+        UnloadChromeVoxFromLockScreen();
+
+        if (spoken_feedback_enabled_)
+          LoadChromeVoxToUserScreen();
+      }
     }
   }
 }
