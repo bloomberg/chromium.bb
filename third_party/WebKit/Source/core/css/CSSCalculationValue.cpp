@@ -178,7 +178,7 @@ double CSSCalcValue::doubleValue() const
     return clampToPermittedRange(m_expression->doubleValue());
 }
 
-double CSSCalcValue::computeLengthPx(RenderStyle* currentStyle, RenderStyle* rootStyle, double multiplier, bool computingFontSize) const
+double CSSCalcValue::computeLengthPx(const RenderStyle* currentStyle, const RenderStyle* rootStyle, double multiplier, bool computingFontSize) const
 {
     return clampToPermittedRange(m_expression->computeLengthPx(currentStyle, rootStyle, multiplier, computingFontSize));
 }
@@ -223,7 +223,7 @@ public:
         return m_value->isVariableName();
     }
 
-    virtual PassOwnPtr<CalcExpressionNode> toCalcValue(RenderStyle* style, RenderStyle* rootStyle, double zoom) const
+    virtual PassOwnPtr<CalcExpressionNode> toCalcValue(const RenderStyle* style, const RenderStyle* rootStyle, double zoom) const
     {
         switch (m_category) {
         case CalcNumber:
@@ -255,7 +255,7 @@ public:
         return 0;
     }
     
-    virtual double computeLengthPx(RenderStyle* currentStyle, RenderStyle* rootStyle, double multiplier, bool computingFontSize) const
+    virtual double computeLengthPx(const RenderStyle* currentStyle, const RenderStyle* rootStyle, double multiplier, bool computingFontSize) const
     {
         switch (m_category) {
         case CalcLength:
@@ -420,7 +420,7 @@ public:
         return !doubleValue();
     }
 
-    virtual PassOwnPtr<CalcExpressionNode> toCalcValue(RenderStyle* style, RenderStyle* rootStyle, double zoom) const
+    virtual PassOwnPtr<CalcExpressionNode> toCalcValue(const RenderStyle* style, const RenderStyle* rootStyle, double zoom) const
     {
         OwnPtr<CalcExpressionNode> left(m_leftSide->toCalcValue(style, rootStyle, zoom));
         if (!left)
@@ -436,7 +436,7 @@ public:
         return evaluate(m_leftSide->doubleValue(), m_rightSide->doubleValue());
     }
     
-    virtual double computeLengthPx(RenderStyle* currentStyle, RenderStyle* rootStyle, double multiplier, bool computingFontSize) const
+    virtual double computeLengthPx(const RenderStyle* currentStyle, const RenderStyle* rootStyle, double multiplier, bool computingFontSize) const
     {
         const double leftValue = m_leftSide->computeLengthPx(currentStyle, rootStyle, multiplier, computingFontSize);
         const double rightValue = m_rightSide->computeLengthPx(currentStyle, rootStyle, multiplier, computingFontSize);

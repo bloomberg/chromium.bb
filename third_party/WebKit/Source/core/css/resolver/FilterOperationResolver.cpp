@@ -50,11 +50,10 @@
 
 namespace WebCore {
 
-static Length convertToFloatLength(CSSPrimitiveValue* primitiveValue, RenderStyle* style, RenderStyle* rootStyle, double multiplier)
+static Length convertToFloatLength(CSSPrimitiveValue* primitiveValue, const RenderStyle* style, const RenderStyle* rootStyle, double multiplier)
 {
     return primitiveValue ? primitiveValue->convertToLength<FixedFloatConversion | PercentConversion | FractionConversion>(style, rootStyle, multiplier) : Length(Undefined);
 }
-
 
 static FilterOperation::OperationType filterOperationForType(CSSFilterValue::FilterOperationType type)
 {
@@ -361,7 +360,7 @@ static PassRefPtr<CustomFilterOperation> createCustomFilterOperation(CSSFilterVa
 }
 
 
-bool FilterOperationResolver::createFilterOperations(CSSValue* inValue, RenderStyle* style, RenderStyle* rootStyle, FilterOperations& outOperations, StyleCustomFilterProgramCache* customFilterProgramCache, StyleResolverState& state)
+bool FilterOperationResolver::createFilterOperations(CSSValue* inValue, RenderStyle* style, const RenderStyle* rootStyle, FilterOperations& outOperations, StyleCustomFilterProgramCache* customFilterProgramCache, StyleResolverState& state)
 {
     ASSERT(outOperations.isEmpty());
 
