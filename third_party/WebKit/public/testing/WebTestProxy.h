@@ -371,13 +371,6 @@ public:
             return 0;
         return Base::createView(creator, request, features, frameName, policy);
     }
-    WebKit::WebPlugin* createPlugin(WebKit::WebFrame* frame, const WebKit::WebPluginParams& params)
-    {
-        WebKit::WebPlugin* plugin = WebTestProxyBase::createPlugin(frame, params);
-        if (plugin)
-            return plugin;
-        return Base::createPlugin(frame, params);
-    }
     virtual void setStatusText(const WebKit::WebString& text)
     {
         WebTestProxyBase::setStatusText(text);

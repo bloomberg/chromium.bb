@@ -57,6 +57,14 @@ public:
         m_version = version;
     }
 
+    WebKit::WebPlugin* createPlugin(WebKit::WebFrame* frame, const WebKit::WebPluginParams& params)
+    {
+        WebKit::WebPlugin* plugin = m_baseProxy->createPlugin(frame, params);
+        if (plugin)
+            return plugin;
+        return Base::createPlugin(frame, params);
+    }
+
     // WebFrameClient implementation.
     virtual void willPerformClientRedirect(WebKit::WebFrame* frame, const WebKit::WebURL& from, const WebKit::WebURL& to, double interval, double fireTime)
     {
