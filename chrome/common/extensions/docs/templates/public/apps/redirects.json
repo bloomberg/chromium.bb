@@ -3,5 +3,6 @@
   "index.html": "about_apps.html",
   "app_csp.html": "contentSecurityPolicy.html",
   "systemInfo_cpu.html": "system_cpu.html",
-  "systemInfo_display.html": "system_display.html"
+  "systemInfo_display.html": "system_display.html",
+  "systemInfo_memory.html": "system_memory.html"
 }

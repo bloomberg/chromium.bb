@@ -196,7 +196,8 @@ const char* const kNames[] = {
     "system.cpu.getInfo",
     "system.display.getInfo",
     "system.display.onDisplayChanged",
-    "system.display.setDisplayProperties"
+    "system.display.setDisplayProperties",
+    "system.memory.getInfo"
 };
 
 }  // namespace activity_log_api_name_constants

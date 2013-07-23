@@ -136,7 +136,7 @@ class APIPermission {
     kWebstorePrivate,
     kWebView,
     kSystemCpu,
-    kSystemInfoMemory,
+    kSystemMemory,
     kEnumBoundary
   };
 

@@ -648,7 +648,7 @@ TEST(PermissionsTest, PermissionMessages) {
   skip.insert(APIPermission::kScreensaver);
   skip.insert(APIPermission::kStorage);
   skip.insert(APIPermission::kSystemCpu);
-  skip.insert(APIPermission::kSystemInfoMemory);
+  skip.insert(APIPermission::kSystemMemory);
   skip.insert(APIPermission::kSystemDisplay);
   skip.insert(APIPermission::kTts);
   skip.insert(APIPermission::kUnlimitedStorage);

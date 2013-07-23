@@ -16634,6 +16634,7 @@ other types of suffix sets.
   <int value="506" label="SYSTEM_CPU_GETINFO"/>
   <int value="507" label="SYSTEM_DISPLAY_GETINFO"/>
   <int value="508" label="SYSTEM_DISPLAY_SETDISPLAYPROPERTIES"/>
+  <int value="509" label="SYSTEM_MEMORY_GETINFO"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

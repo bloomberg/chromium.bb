@@ -1342,7 +1342,7 @@
         'browser/extensions/api/system_indicator/system_indicator_apitest.cc',
         'browser/extensions/api/system_cpu/system_cpu_apitest.cc',
         'browser/extensions/api/system_display/system_display_apitest.cc',
-        'browser/extensions/api/system_info_memory/system_info_memory_apitest.cc',
+        'browser/extensions/api/system_memory/system_memory_apitest.cc',
         'browser/extensions/api/system_info_storage/system_info_storage_apitest.cc',
         'browser/extensions/api/system_private/system_private_apitest.cc',
         'browser/extensions/api/system_info_storage/system_info_storage_eject_apitest.cc',
