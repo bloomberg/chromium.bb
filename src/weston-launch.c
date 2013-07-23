@@ -26,6 +26,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <poll.h>
 #include <errno.h>
 
 #include <error.h>
@@ -36,7 +37,6 @@
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <sys/socket.h>
-#include <sys/epoll.h>
 #include <sys/signalfd.h>
 #include <signal.h>
 #include <unistd.h>
@@ -68,7 +68,6 @@ struct weston_launch {
 	int sock[2];
 	struct passwd *pw;
 
-	int epollfd;
 	int signalfd;
 
 	pid_t child;
@@ -191,18 +190,10 @@ setup_pam(struct weston_launch *wl)
 static int
 setup_launcher_socket(struct weston_launch *wl)
 {
-	struct epoll_event ev;
-
 	if (socketpair(AF_LOCAL, SOCK_DGRAM, 0, wl->sock) < 0)
 		error(1, errno, "socketpair failed");
 	
 	fcntl(wl->sock[0], F_SETFD, O_CLOEXEC);
-
-	memset(&ev, 0, sizeof ev);
-	ev.events = EPOLLIN;
-	ev.data.fd = wl->sock[0];
-	if (epoll_ctl(wl->epollfd, EPOLL_CTL_ADD, ev.data.fd, &ev) < 0)
-		return -errno;
 
 	return 0;
 }
@@ -213,7 +204,6 @@ setup_signals(struct weston_launch *wl)
 	int ret;
 	sigset_t mask;
 	struct sigaction sa;
-	struct epoll_event ev;
 
 	memset(&sa, 0, sizeof sa);
 	sa.sa_handler = SIG_DFL;
@@ -235,12 +225,6 @@ setup_signals(struct weston_launch *wl)
 
 	wl->signalfd = signalfd(-1, &mask, SFD_NONBLOCK | SFD_CLOEXEC);
 	if (wl->signalfd < 0)
-		return -errno;
-
-	memset(&ev, 0, sizeof ev);
-	ev.events = EPOLLIN;
-	ev.data.fd = wl->signalfd;
-	if (epoll_ctl(wl->epollfd, EPOLL_CTL_ADD, ev.data.fd, &ev) < 0)
 		return -errno;
 
 	return 0;
@@ -413,7 +397,6 @@ quit(struct weston_launch *wl, int status)
 {
 	int err;
 
-	close(wl->epollfd);
 	close(wl->signalfd);
 	close(wl->sock[0]);
 
@@ -656,10 +639,6 @@ main(int argc, char *argv[])
 	if (wl.new_user && setup_pam(&wl) < 0)
 		exit(EXIT_FAILURE);
 
-	wl.epollfd = epoll_create1(EPOLL_CLOEXEC);
-	if (wl.epollfd < 0)
-		error(1, errno, "epoll create failed");
-
 	if (setup_launcher_socket(&wl) < 0)
 		exit(EXIT_FAILURE);
 
@@ -680,18 +659,20 @@ main(int argc, char *argv[])
 		close(wl.tty);
 
 	while (1) {
-		struct epoll_event ev;
+		struct pollfd fds[2];
 		int n;
 
-		n = epoll_wait(wl.epollfd, &ev, 1, -1);
-		if (n < 0)
-			error(0, errno, "epoll_wait failed");
-		if (n != 1)
-			continue;
+		fds[0].fd = wl.sock[0];
+		fds[0].events = POLLIN;
+		fds[1].fd = wl.signalfd;
+		fds[1].events = POLLIN;
 
-		if (ev.data.fd == wl.sock[0])
+		n = poll(fds, 2, -1);
+		if (n < 0)
+			error(0, errno, "poll failed");
+		if (fds[0].revents & POLLIN)
 			handle_socket_msg(&wl);
-		else if (ev.data.fd == wl.signalfd)
+		if (fds[1].revents)
 			handle_signal(&wl);
 	}
 
