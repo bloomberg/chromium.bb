@@ -41,7 +41,8 @@ class BreakpadClient {
   virtual void GetProductNameAndVersion(const base::FilePath& exe_path,
                                         base::string16* product_name,
                                         base::string16* version,
-                                        base::string16* special_build);
+                                        base::string16* special_build,
+                                        base::string16* channel_name);
 
   // Returns true if a restart dialog should be displayed. In that case,
   // |message| and |title| are set to a message to display in a dialog box with
@@ -54,6 +55,18 @@ class BreakpadClient {
   // Returns true if it is ok to restart the application. Invoked right before
   // restarting after a crash.
   virtual bool AboutToRestart();
+
+  // Returns a GUID to embed in the crash report.
+  virtual base::string16 GetCrashGUID();
+
+  // Returns true if the crash report uploader supports deferred uploads.
+  virtual bool GetDeferredUploadsSupported(bool is_per_user_install);
+
+  // Returns true if the running binary is a per-user installation.
+  virtual bool GetIsPerUserInstall(const base::FilePath& exe_path);
+
+  // Returns true if larger crash dumps should be dumped.
+  virtual bool GetShouldDumpLargerDumps(bool is_per_user_install);
 #endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_IOS)
@@ -81,6 +94,11 @@ class BreakpadClient {
 
   // Returns true if running in unattended mode (for automated testing).
   virtual bool IsRunningUnattended();
+
+#if defined(OS_WIN) || defined(OS_MACOSX)
+  // Returns true if the user has given consent to collect stats.
+  virtual bool GetCollectStatsConsent();
+#endif
 };
 
 }  // namespace breakpad

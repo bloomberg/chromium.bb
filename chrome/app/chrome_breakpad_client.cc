@@ -18,7 +18,11 @@
 #include "chrome/common/env_vars.h"
 
 #if defined(OS_WIN)
+#include <windows.h>
+
 #include "base/file_version_info.h"
+#include "chrome/installer/util/google_chrome_sxs_distribution.h"
+#include "chrome/installer/util/install_util.h"
 #endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_IOS)
@@ -30,7 +34,21 @@
 #include "chrome/common/dump_without_crashing.h"
 #endif
 
+#if defined(OS_WIN) || defined(OS_MACOSX)
+#include "chrome/installer/util/google_update_settings.h"
+#endif
+
 namespace chrome {
+
+namespace {
+
+#if defined(OS_WIN)
+// This is the minimum version of google update that is required for deferred
+// crash uploads to work.
+const char kMinUpdateVersion[] = "1.3.21.115";
+#endif
+
+}  // namespace
 
 ChromeBreakpadClient::ChromeBreakpadClient() {}
 
@@ -55,10 +73,12 @@ void ChromeBreakpadClient::GetProductNameAndVersion(
     const base::FilePath& exe_path,
     base::string16* product_name,
     base::string16* version,
-    base::string16* special_build) {
+    base::string16* special_build,
+    base::string16* channel_name) {
   DCHECK(product_name);
   DCHECK(version);
   DCHECK(special_build);
+  DCHECK(channel_name);
 
   scoped_ptr<FileVersionInfo> version_info(
       FileVersionInfo::CreateFileVersionInfo(exe_path));
@@ -82,6 +102,11 @@ void ChromeBreakpadClient::GetProductNameAndVersion(
     *product_name = base::ASCIIToUTF16("Chrome");
     *version = base::ASCIIToUTF16("0.0.0.0-devel");
   }
+
+  std::wstring channel_string;
+  GoogleUpdateSettings::GetChromeChannelAndModifiers(
+      !GetIsPerUserInstall(exe_path), &channel_string);
+  *channel_name = base::WideToUTF16(channel_string);
 }
 
 bool ChromeBreakpadClient::ShouldShowRestartDialog(base::string16* title,
@@ -118,6 +143,39 @@ bool ChromeBreakpadClient::AboutToRestart() {
 
   env->SetVar(env_vars::kShowRestart, "1");
   return true;
+}
+
+base::string16 ChromeBreakpadClient::GetCrashGUID() {
+  std::wstring guid;
+  GoogleUpdateSettings::GetMetricsId(&guid);
+  return base::WideToUTF16(guid);
+}
+
+bool ChromeBreakpadClient::GetDeferredUploadsSupported(
+    bool is_per_user_install) {
+  Version update_version = GoogleUpdateSettings::GetGoogleUpdateVersion(
+      !is_per_user_install);
+  if (!update_version.IsValid() ||
+      update_version.IsOlderThan(std::string(kMinUpdateVersion)))
+    return false;
+
+  return true;
+}
+
+bool ChromeBreakpadClient::GetIsPerUserInstall(const base::FilePath& exe_path) {
+  return InstallUtil::IsPerUserInstall(exe_path.value().c_str());
+}
+
+bool ChromeBreakpadClient::GetShouldDumpLargerDumps(bool is_per_user_install) {
+  base::string16 channel_name(base::WideToUTF16(
+      GoogleUpdateSettings::GetChromeChannel(!is_per_user_install)));
+
+  // Capture more detail in crash dumps for beta and dev channel builds.
+  if (channel_name == base::ASCIIToUTF16("dev") ||
+      channel_name == base::ASCIIToUTF16("beta") ||
+      channel_name == GoogleChromeSxSDistribution::ChannelName())
+    return true;
+  return false;
 }
 #endif
 
@@ -174,5 +232,11 @@ bool ChromeBreakpadClient::IsRunningUnattended() {
   scoped_ptr<base::Environment> env(base::Environment::Create());
   return env->HasVar(env_vars::kHeadless);
 }
+
+#if defined(OS_WIN) || defined(OS_MACOSX)
+bool ChromeBreakpadClient::GetCollectStatsConsent() {
+  return GoogleUpdateSettings::GetCollectStatsConsent();
+}
+#endif
 
 }  // namespace chrome

@@ -36,7 +36,8 @@ bool BreakpadClient::GetAlternativeCrashDumpLocation(
 void BreakpadClient::GetProductNameAndVersion(const base::FilePath& exe_path,
                                               base::string16* product_name,
                                               base::string16* version,
-                                              base::string16* special_build) {
+                                              base::string16* special_build,
+                                              base::string16* channel_name) {
 }
 
 bool BreakpadClient::ShouldShowRestartDialog(base::string16* title,
@@ -47,6 +48,22 @@ bool BreakpadClient::ShouldShowRestartDialog(base::string16* title,
 
 bool BreakpadClient::AboutToRestart() {
   return true;
+}
+
+base::string16 BreakpadClient::GetCrashGUID() {
+  return base::string16();
+}
+
+bool BreakpadClient::GetDeferredUploadsSupported(bool is_per_usr_install) {
+  return false;
+}
+
+bool BreakpadClient::GetIsPerUserInstall(const base::FilePath& exe_path) {
+  return false;
+}
+
+bool BreakpadClient::GetShouldDumpLargerDumps(bool is_per_user_install) {
+  return false;
 }
 #endif
 
@@ -76,5 +93,11 @@ size_t BreakpadClient::RegisterCrashKeys() {
 bool BreakpadClient::IsRunningUnattended() {
   return false;
 }
+
+#if defined(OS_WIN) || defined(OS_MACOSX)
+bool BreakpadClient::GetCollectStatsConsent() {
+  return false;
+}
+#endif
 
 }  // namespace breakpad

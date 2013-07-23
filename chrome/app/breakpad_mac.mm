@@ -24,7 +24,6 @@
 #include "base/threading/thread_restrictions.h"
 #import "breakpad/src/client/mac/Framework/Breakpad.h"
 #include "chrome/common/child_process_logging.h"
-#include "chrome/installer/util/google_update_settings.h"
 #include "content/public/common/content_switches.h"
 #include "components/breakpad/breakpad_client.h"
 #include "components/nacl/common/nacl_switches.h"
@@ -191,7 +190,8 @@ void InitCrashReporter() {
       // Controlled by the user. The crash reporter may be enabled by
       // preference or through an environment variable, but the kDisableBreakpad
       // switch overrides both.
-      enable_breakpad = GoogleUpdateSettings::GetCollectStatsConsent() ||
+      enable_breakpad =
+          breakpad::GetBreakpadClient()->GetCollectStatsConsent() ||
           breakpad::GetBreakpadClient()->IsRunningUnattended();
       enable_breakpad &= !command_line->HasSwitch(switches::kDisableBreakpad);
     }
