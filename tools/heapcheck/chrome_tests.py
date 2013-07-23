@@ -84,6 +84,8 @@ class ChromeTests(object):
       "base": self.TestBase,            "base_unittests": self.TestBase,
       "browser": self.TestBrowser,      "browser_tests": self.TestBrowser,
       "chromeos": self.TestChromeOS,    "chromeos_unittests": self.TestChromeOS,
+      "components": self.TestComponents,
+      "components_unittests": self.TestComponents,
       "compositor": self.TestCompositor,
       "compositor_unittests": self.TestCompositor,
       "content": self.TestContent,      "content_unittests": self.TestContent,
@@ -252,6 +254,7 @@ class ChromeTests(object):
       os.putenv("LD_LIBRARY_PATH", self._options.build_dir)
     return heapcheck_test.RunTool(cmd, supp, module)
 
+  # TODO(glider): it's an overkill to define a method for each simple test.
   def TestAppList(self):
     return self.SimpleTest("app_list", "app_list_unittests")
 
@@ -269,6 +272,9 @@ class ChromeTests(object):
 
   def TestChromeOS(self):
     return self.SimpleTest("chromeos", "chromeos_unittests")
+
+  def TestComponents(self):
+    return self.SimpleTest("components", "components_unittests")
 
   def TestCompositor(self):
     return self.SimpleTest("compositor", "compositor_unittests")
