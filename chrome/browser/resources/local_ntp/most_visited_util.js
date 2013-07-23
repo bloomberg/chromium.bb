@@ -107,13 +107,23 @@ function getMostVisitedStyles(params, isTitle) {
 function fillMostVisited(location, fill) {
   var params = parseQueryParams(document.location);
   params.rid = parseInt(params.rid, 10);
-  if (!isFinite(params.rid))
+  if (!isFinite(params.rid) && !params.url)
     return;
-  var apiHandle = chrome.embeddedSearch.searchBox;
-  var data = apiHandle.getMostVisitedItemData(params.rid);
-  if (!data)
-    return;
-  if (/^javascript:/i.test(data.url))
+  var data = {};
+  if (params.url) {
+    // Means that we get suggestion data from the server. Create data object.
+    data.url = params.url;
+    data.thumbnailUrl = params.tu || '';
+    data.title = params.ti || '';
+    data.direction = params.di || '';
+  } else {
+    var apiHandle = chrome.embeddedSearch.searchBox;
+    data = apiHandle.getMostVisitedItemData(params.rid);
+    if (!data)
+      return;
+  }
+  if (/^javascript:/i.test(data.url) ||
+      /^javascript:/i.test(data.thumbnailUrl))
     return;
   if (data.direction)
     document.body.dir = data.direction;
