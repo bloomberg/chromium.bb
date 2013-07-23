@@ -207,14 +207,18 @@ TEST(OutputUtilTest, ParseBrokenOverscanData) {
 TEST(OutputUtilTest, IsInternalOutputName) {
   EXPECT_TRUE(IsInternalOutputName("LVDS"));
   EXPECT_TRUE(IsInternalOutputName("eDP"));
+  EXPECT_TRUE(IsInternalOutputName("DSI"));
   EXPECT_TRUE(IsInternalOutputName("LVDSxx"));
   EXPECT_TRUE(IsInternalOutputName("eDPzz"));
+  EXPECT_TRUE(IsInternalOutputName("DSIyy"));
 
   EXPECT_FALSE(IsInternalOutputName("xyz"));
   EXPECT_FALSE(IsInternalOutputName("abcLVDS"));
   EXPECT_FALSE(IsInternalOutputName("cdeeDP"));
+  EXPECT_FALSE(IsInternalOutputName("abcDSI"));
   EXPECT_FALSE(IsInternalOutputName("LVD"));
   EXPECT_FALSE(IsInternalOutputName("eD"));
+  EXPECT_FALSE(IsInternalOutputName("DS"));
 }
 
 TEST(OutputUtilTest, GetDisplayId) {

@@ -19,6 +19,7 @@ namespace {
 // Prefixes for the built-in displays.
 const char kInternal_LVDS[] = "LVDS";
 const char kInternal_eDP[] = "eDP";
+const char kInternal_DSI[] = "DSI";
 
 // Returns 64-bit persistent ID for the specified manufacturer's ID and
 // product_code_hash, and the index of the output it is connected to.
@@ -316,7 +317,8 @@ bool ParseOutputOverscanFlag(const unsigned char* prop,
 }
 
 bool IsInternalOutputName(const std::string& name) {
-  return name.find(kInternal_LVDS) == 0 || name.find(kInternal_eDP) == 0;
+  return name.find(kInternal_LVDS) == 0 || name.find(kInternal_eDP) == 0 ||
+      name.find(kInternal_DSI) == 0;
 }
 
 }  // namespace chromeos
