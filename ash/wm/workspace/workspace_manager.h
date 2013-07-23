@@ -58,10 +58,6 @@ class ASH_EXPORT WorkspaceManager : public ash::ShellObserver {
   explicit WorkspaceManager(aura::Window* viewport);
   virtual ~WorkspaceManager();
 
-  // Returns true if |window| is minimized and will restore to a window which
-  // exists in its own workspace.
-  static bool WillRestoreToWorkspace(aura::Window* window);
-
   // Returns the current window state.
   WorkspaceWindowState GetWindowState() const;
 
@@ -109,14 +105,7 @@ class ASH_EXPORT WorkspaceManager : public ash::ShellObserver {
   // the animation.
   enum SwitchReason {
     SWITCH_WINDOW_MADE_ACTIVE,
-    SWITCH_WINDOW_REMOVED,
-    SWITCH_VISIBILITY_CHANGED,
-    SWITCH_MINIMIZED,
     SWITCH_MAXIMIZED_OR_RESTORED,
-    // Switch a normal window in a fullscreen workspace to get fullscreen.
-    // TODO(mukai): this should be removed in the future. Normal windows should
-    // not be in a fullscreen workspace.  See crbug.com/249154
-    SWITCH_FULLSCREEN_FROM_FULLSCREEN_WORKSPACE,
     SWITCH_TRACKED_BY_WORKSPACE_CHANGED,
 
     // Switch as the result of DoInitialAnimation(). This isn't a real switch,
@@ -151,9 +140,9 @@ class ASH_EXPORT WorkspaceManager : public ash::ShellObserver {
   Workspace* desktop_workspace() { return workspaces_[0]; }
   const Workspace* desktop_workspace() const { return workspaces_[0]; }
 
-  // Creates a new workspace. The Workspace is not added to anything and is
-  // owned by the caller.
-  Workspace* CreateWorkspace(bool fullscren);
+  // Creates a new workspace to test multiple workspaces. The Workspace is not
+  // added to anything and is owned by the caller.
+  Workspace* CreateWorkspaceForTest();
 
   // Moves all the non-maximized child windows of |workspace| to the desktop
   // stacked beneath |stack_beneath| (if non-NULL). After moving child windows
@@ -178,9 +167,6 @@ class ASH_EXPORT WorkspaceManager : public ash::ShellObserver {
   // any layers.
   void ProcessDeletion();
 
-  // Sets |unminimizing_workspace_| to |workspace|.
-  void SetUnminimizingWorkspace(Workspace* workspace);
-
   // Fades the desktop. This is only used when maximizing or restoring a
   // window. The actual fade is handled by
   // DesktopBackgroundFadeController. |window| is used when restoring and
@@ -192,9 +178,7 @@ class ASH_EXPORT WorkspaceManager : public ash::ShellObserver {
   void ShowWorkspace(Workspace* workspace,
                      Workspace* last_active,
                      SwitchReason reason) const;
-  void HideWorkspace(Workspace* workspace,
-                     SwitchReason reason,
-                     bool is_unminimizing_maximized_window) const;
+  void HideWorkspace(Workspace* workspace, SwitchReason reason) const;
 
   // These methods are forwarded from the LayoutManager installed on the
   // Workspace's window.
@@ -208,8 +192,7 @@ class ASH_EXPORT WorkspaceManager : public ash::ShellObserver {
                                            aura::Window* child);
   void OnWorkspaceWindowShowStateChanged(Workspace* workspace,
                                          aura::Window* child,
-                                         ui::WindowShowState last_show_state,
-                                         ui::Layer* old_layer);
+                                         ui::WindowShowState last_show_state);
   void OnTrackedByWorkspaceChanged(Workspace* workspace,
                                    aura::Window* window);
 
@@ -245,12 +228,6 @@ class ASH_EXPORT WorkspaceManager : public ash::ShellObserver {
   // no longer contain layers are deleted.
   std::set<Workspace*> to_delete_;
   base::OneShotTimer<WorkspaceManager> delete_timer_;
-
-  // See comments in SetUnminimizingWorkspace() for details.
-  base::WeakPtrFactory<WorkspaceManager> clear_unminimizing_workspace_factory_;
-
-  // See comments in SetUnminimizingWorkspace() for details.
-  Workspace* unminimizing_workspace_;
 
   // Set to true if the app is terminating. If true we don't animate the
   // background, otherwise it can get stuck in the fading position when chrome

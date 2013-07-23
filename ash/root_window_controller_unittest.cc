@@ -196,10 +196,23 @@ TEST_F(RootWindowControllerTest, MoveWindows_Basic) {
 
   // Maximized area on primary display has 3px (given as
   // kAutoHideSize in shelf_layout_manager.cc) inset at the bottom.
+
+  // First clear fullscreen status, since both fullscreen and maximized windows
+  // share the same desktop workspace, which cancels the shelf status.
+  fullscreen->SetFullscreen(false);
   EXPECT_EQ(root_windows[0], maximized->GetNativeView()->GetRootWindow());
   EXPECT_EQ("0,0 600x597",
             maximized->GetWindowBoundsInScreen().ToString());
   EXPECT_EQ("0,0 600x597",
+            maximized->GetNativeView()->GetBoundsInRootWindow().ToString());
+
+  // Set fullscreen to true. In that case the 3px inset becomes invisible so
+  // the maximized window can also use the area fully.
+  fullscreen->SetFullscreen(true);
+  EXPECT_EQ(root_windows[0], maximized->GetNativeView()->GetRootWindow());
+  EXPECT_EQ("0,0 600x600",
+            maximized->GetWindowBoundsInScreen().ToString());
+  EXPECT_EQ("0,0 600x600",
             maximized->GetNativeView()->GetBoundsInRootWindow().ToString());
 
   EXPECT_EQ(root_windows[0], minimized->GetNativeView()->GetRootWindow());
@@ -377,13 +390,9 @@ TEST_F(RootWindowControllerTest, GetFullscreenWindow) {
   w3->Activate();
   EXPECT_EQ(w2->GetNativeWindow(), controller->GetFullscreenWindow());
 
-  // Activate the maximized window's workspace. GetFullscreenWindow() should
-  // fail because the fullscreen window's workspace is no longer active.
+  // Since there's only one desktop workspace, it always returns the same
+  // fullscreen window.
   w1->Activate();
-  EXPECT_FALSE(controller->GetFullscreenWindow());
-
-  // If the fullscreen window is active, GetFullscreenWindow() should find it.
-  w2->Activate();
   EXPECT_EQ(w2->GetNativeWindow(), controller->GetFullscreenWindow());
 }
 

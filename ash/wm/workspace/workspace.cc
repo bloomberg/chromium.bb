@@ -19,10 +19,8 @@ namespace ash {
 namespace internal {
 
 Workspace::Workspace(WorkspaceManager* manager,
-                     aura::Window* parent,
-                     bool is_fullscreen)
-    : is_fullscreen_(is_fullscreen),
-      workspace_manager_(manager),
+                     aura::Window* parent)
+    : workspace_manager_(manager),
       window_(new aura::Window(NULL)),
       event_handler_(new WorkspaceEventHandler(window_)),
       workspace_layout_manager_(NULL) {
@@ -69,39 +67,6 @@ aura::Window* Workspace::ReleaseWindow() {
   aura::Window* window = window_;
   window_ = NULL;
   return window;
-}
-
-bool Workspace::ShouldMoveToPending() const {
-  if (!is_fullscreen_)
-    return false;
-
-  for (size_t i = 0; i < window_->children().size(); ++i) {
-    aura::Window* child(window_->children()[i]);
-    if (!child->TargetVisibility() || wm::IsWindowMinimized(child))
-      continue;
-
-    // If we have a fullscreen window don't move to pending.
-    if (wm::IsWindowFullscreen(child))
-      return false;
-
-    if (GetTrackedByWorkspace(child) && !GetPersistsAcrossAllWorkspaces(child))
-      return false;
-  }
-  return true;
-}
-
-int Workspace::GetNumFullscreenWindows() const {
-  int count = 0;
-  for (size_t i = 0; i < window_->children().size(); ++i) {
-    aura::Window* child = window_->children()[i];
-    if (GetTrackedByWorkspace(child) &&
-        (wm::IsWindowFullscreen(child) ||
-         WorkspaceManager::WillRestoreToWorkspace(child))) {
-      if (++count == 2)
-        return count;
-    }
-  }
-  return count;
 }
 
 }  // namespace internal

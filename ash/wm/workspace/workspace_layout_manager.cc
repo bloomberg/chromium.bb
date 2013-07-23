@@ -191,36 +191,8 @@ void WorkspaceLayoutManager::OnWindowPropertyChanged(Window* window,
       SetRestoreBoundsInScreen(window, window->GetBoundsInScreen());
     }
 
-    // If the new state requires |window| to be in a workspace, clone the layer.
-    // WorkspaceManager will use it (and take ownership of it) when animating.
-    // Ideally we could use that of BaseLayoutManager, but that proves
-    // problematic. In particular when restoring we need to animate on top of
-    // the workspace animating in.
-    ui::Layer* cloned_layer = NULL;
-    BoundsMap bounds_map;
-    if (wm::IsActiveWindow(window) &&
-        ((new_state == ui::SHOW_STATE_FULLSCREEN &&
-          wm::IsWindowStateNormal(old_state)) ||
-         (new_state != ui::SHOW_STATE_FULLSCREEN &&
-          old_state == ui::SHOW_STATE_FULLSCREEN &&
-          new_state != ui::SHOW_STATE_MINIMIZED))) {
-      BuildWindowBoundsMap(window, &bounds_map);
-      cloned_layer = views::corewm::RecreateWindowLayers(window, false);
-      // Constrained windows don't get their bounds reset when we update the
-      // window bounds. Leaving them empty is unexpected, so we reset them now.
-      ResetConstrainedWindowBoundsIfNecessary(bounds_map, window);
-    }
     UpdateBoundsFromShowState(window);
-
-    if (cloned_layer) {
-      // Even though we just set the bounds not all descendants may have valid
-      // bounds. For example, constrained windows don't resize with the parent.
-      // Ensure that all windows that had a bounds before we cloned the layer
-      // have a bounds now.
-      ResetBoundsIfNecessary(bounds_map, window);
-    }
-
-    ShowStateChanged(window, old_state, cloned_layer);
+    ShowStateChanged(window, old_state);
 
     // Set the restore rectangle to the previously set restore rectangle.
     if (!restore.IsEmpty())
@@ -230,8 +202,7 @@ void WorkspaceLayoutManager::OnWindowPropertyChanged(Window* window,
   if (key == internal::kWindowTrackedByWorkspaceKey &&
       GetTrackedByWorkspace(window)) {
     workspace_manager()->OnTrackedByWorkspaceChanged(workspace_, window);
-    if (wm::IsWindowMaximized(window))
-      SetMaximizedOrFullscreenBounds(window);
+    SetMaximizedOrFullscreenBounds(window);
   }
 
   if (key == aura::client::kAlwaysOnTopKey &&
@@ -260,16 +231,14 @@ void WorkspaceLayoutManager::OnWindowBoundsChanged(
 
 void WorkspaceLayoutManager::ShowStateChanged(
     Window* window,
-    ui::WindowShowState last_show_state,
-    ui::Layer* cloned_layer) {
+    ui::WindowShowState last_show_state) {
   if (wm::IsWindowMinimized(window)) {
-    DCHECK(!cloned_layer);
     // Save the previous show state so that we can correctly restore it.
     window->SetProperty(aura::client::kRestoreShowStateKey, last_show_state);
     views::corewm::SetWindowVisibilityAnimationType(
         window, WINDOW_VISIBILITY_ANIMATION_TYPE_MINIMIZE);
     workspace_manager()->OnWorkspaceWindowShowStateChanged(
-        workspace_, window, last_show_state, NULL);
+        workspace_, window, last_show_state);
     window->Hide();
     if (wm::IsActiveWindow(window))
       wm::DeactivateWindow(window);
@@ -287,7 +256,7 @@ void WorkspaceLayoutManager::ShowStateChanged(
       window->ClearProperty(internal::kWindowRestoresToRestoreBounds);
     }
     workspace_manager()->OnWorkspaceWindowShowStateChanged(
-        workspace_, window, last_show_state, cloned_layer);
+        workspace_, window, last_show_state);
   }
 }
 
@@ -379,7 +348,8 @@ void WorkspaceLayoutManager::UpdateBoundsFromShowState(Window* window) {
           window->parent()->parent()));
       break;
     case ui::SHOW_STATE_FULLSCREEN:
-      SetMaximizedOrFullscreenBounds(window);
+      CrossFadeToBounds(window, ScreenAsh::GetDisplayBoundsInParent(
+          window->parent()->parent()));
       break;
 
     default:

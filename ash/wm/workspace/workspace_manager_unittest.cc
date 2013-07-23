@@ -128,10 +128,6 @@ class WorkspaceManagerTest : public test::AshTestBase {
     return Shell::GetScreen()->GetDisplayNearestWindow(window).bounds();
   }
 
-  Workspace* active_workspace() {
-    return manager_->active_workspace_;
-  }
-
   ShelfWidget* shelf_widget() {
     return Shell::GetPrimaryRootWindowController()->shelf();
   }
@@ -148,53 +144,8 @@ class WorkspaceManagerTest : public test::AshTestBase {
     return manager_->FindBy(window);
   }
 
-  std::string WorkspaceStateString(Workspace* workspace) {
-    return (workspace->is_fullscreen() ? "F" : "") +
-        base::IntToString(static_cast<int>(
-                              workspace->window()->children().size()));
-  }
-
-  int active_index() {
-    return static_cast<int>(
-        manager_->FindWorkspace(manager_->active_workspace_) -
-        manager_->workspaces_.begin());
-  }
-
-  // Returns a string description of the current state. The string has the
-  // following format:
-  // W* P=W* active=N
-  // Each W corresponds to a workspace. Each workspace is prefixed with an 'F'
-  // if the workspace is fullscreen and is followed by the number of windows in
-  // the workspace.
-  // 'P=' is used for the pending workspaces (see
-  // WorkspaceManager::pending_workspaces_ for details on pending workspaces).
-  // N is the index of the active workspace (index into
-  // WorkspaceManager::workspaces_).
-  // For example, '2 F1 P=F1 active=1' means the first workspace (the desktop)
-  // has 2 windows, the second workspace is a maximized workspace with 1 window,
-  // there is a pending maximized workspace with 1 window and the second
-  // workspace is active.
-  std::string StateString() {
-    std::string result;
-    for (size_t i = 0; i < manager_->workspaces_.size(); ++i) {
-      if (i > 0)
-        result += " ";
-      result += WorkspaceStateString(manager_->workspaces_[i]);
-    }
-
-    if (!manager_->pending_workspaces_.empty()) {
-      result += " P=";
-      for (std::set<Workspace*>::const_iterator i =
-               manager_->pending_workspaces_.begin();
-           i != manager_->pending_workspaces_.end(); ++i) {
-        if (i != manager_->pending_workspaces_.begin())
-          result += " ";
-        result += WorkspaceStateString(*i);
-      }
-    }
-
-    result += " active=" + base::IntToString(active_index());
-    return result;
+  Workspace* CreateWorkspace() {
+    return manager_->CreateWorkspaceForTest();
   }
 
   // Overridden from AshTestBase:
@@ -235,8 +186,6 @@ TEST_F(WorkspaceManagerTest, AddNormalWindowWhenEmpty) {
 
   EXPECT_EQ("0,0 250x251", w1->bounds().ToString());
 
-  // Should be 1 workspace for the desktop, not maximized.
-  ASSERT_EQ("1 active=0", StateString());
   EXPECT_EQ(w1.get(), workspaces()[0]->window()->children()[0]);
 }
 
@@ -260,8 +209,6 @@ TEST_F(WorkspaceManagerTest, SingleMaximizeWindow) {
 
   EXPECT_TRUE(wm::IsActiveWindow(w1.get()));
 
-  // Should be 1 workspace, maximized window doesn't create its own workspace.
-  ASSERT_EQ("1 active=0", StateString());
   EXPECT_EQ(w1.get(), workspaces()[0]->window()->children()[0]);
   EXPECT_EQ(ScreenAsh::GetMaximizedWindowBoundsInParent(w1.get()).width(),
             w1->bounds().width());
@@ -273,50 +220,6 @@ TEST_F(WorkspaceManagerTest, SingleMaximizeWindow) {
 
   EXPECT_EQ(w1.get(), workspaces()[0]->window()->children()[0]);
   EXPECT_EQ("0,0 250x251", w1->bounds().ToString());
-}
-
-// Assertions around closing the last window in a workspace.
-TEST_F(WorkspaceManagerTest, CloseLastWindowInWorkspace) {
-  scoped_ptr<Window> w1(CreateTestWindow());
-  scoped_ptr<Window> w2(CreateTestWindow());
-  w1->SetBounds(gfx::Rect(0, 0, 250, 251));
-  w1->Show();
-  w2->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
-  w2->Show();
-  wm::ActivateWindow(w1.get());
-
-  // Should be 1 workspace and 1 pending, !fullscreen and fullsceen. The second
-  // workspace is pending since the window wasn't active.
-  ASSERT_EQ("1 P=F1 active=0", StateString());
-  EXPECT_EQ(w1.get(), workspaces()[0]->window()->children()[0]);
-
-  // Close w2.
-  w2.reset();
-
-  // Should have one workspace.
-  ASSERT_EQ("1 active=0", StateString());
-  EXPECT_EQ(w1.get(), workspaces()[0]->window()->children()[0]);
-  EXPECT_TRUE(w1->IsVisible());
-}
-
-// Assertions around adding a fullscreen window when empty.
-TEST_F(WorkspaceManagerTest, AddFullscreenWindowWhenEmpty) {
-  scoped_ptr<Window> w1(CreateTestWindow());
-  w1->SetBounds(gfx::Rect(0, 0, 250, 251));
-  w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
-  w1->Show();
-  wm::ActivateWindow(w1.get());
-
-  ASSERT_TRUE(w1->layer() != NULL);
-  EXPECT_TRUE(w1->layer()->visible());
-  gfx::Rect work_area(
-      ScreenAsh::GetMaximizedWindowBoundsInParent(w1.get()));
-  EXPECT_EQ(work_area.width(), w1->bounds().width());
-  EXPECT_EQ(work_area.height(), w1->bounds().height());
-
-  // Should be 2 workspaces (since we always keep the desktop).
-  ASSERT_EQ("0 F1 active=1", StateString());
-  EXPECT_EQ(w1.get(), workspaces()[1]->window()->children()[0]);
 }
 
 // Assertions around two windows and toggling one to be fullscreen.
@@ -334,10 +237,9 @@ TEST_F(WorkspaceManagerTest, FullscreenWithNormalWindow) {
   w2->Show();
   wm::ActivateWindow(w2.get());
 
-  // Should now be two workspaces.
-  ASSERT_EQ("1 F1 active=1", StateString());
+  // Both windows should be in the same workspace.
   EXPECT_EQ(w1.get(), workspaces()[0]->window()->children()[0]);
-  EXPECT_EQ(w2.get(), workspaces()[1]->window()->children()[0]);
+  EXPECT_EQ(w2.get(), workspaces()[0]->window()->children()[1]);
 
   gfx::Rect work_area(
       ScreenAsh::GetMaximizedWindowBoundsInParent(w1.get()));
@@ -346,118 +248,9 @@ TEST_F(WorkspaceManagerTest, FullscreenWithNormalWindow) {
 
   // Restore w2, which should then go back to one workspace.
   w2->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
-  ASSERT_EQ("2 active=0", StateString());
-  EXPECT_EQ(w1.get(), workspaces()[0]->window()->children()[0]);
-  EXPECT_EQ(w2.get(), workspaces()[0]->window()->children()[1]);
   EXPECT_EQ(50, w2->bounds().width());
   EXPECT_EQ(51, w2->bounds().height());
   EXPECT_TRUE(wm::IsActiveWindow(w2.get()));
-}
-
-// Assertions around two fullscreen windows.
-TEST_F(WorkspaceManagerTest, TwoFullscreen) {
-  scoped_ptr<Window> w1(CreateTestWindow());
-  scoped_ptr<Window> w2(CreateTestWindow());
-  w1->SetBounds(gfx::Rect(0, 0, 250, 251));
-  w1->Show();
-  wm::ActivateWindow(w1.get());
-  w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
-  ASSERT_EQ("1 F1 active=1", StateString());
-
-  w2->SetBounds(gfx::Rect(0, 0, 50, 51));
-  w2->Show();
-  wm::ActivateWindow(w2.get());
-  ASSERT_EQ("1 F1 active=0", StateString());
-
-  w2->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
-  EXPECT_TRUE(wm::IsActiveWindow(w2.get()));
-  ASSERT_EQ("0 F1 F1 active=2", StateString());
-
-  // The last stacked window (|w2|) should be last since it was fullscreen last.
-  EXPECT_EQ(w1.get(), workspaces()[1]->window()->children()[0]);
-  EXPECT_EQ(w2.get(), workspaces()[2]->window()->children()[0]);
-}
-
-// Get the index of the layer inside its parent. This index can be used to
-// determine the z-order / draw-order of objects in the render tree.
-size_t IndexOfLayerInParent(ui::Layer* layer) {
-  ui::Layer* parent = layer->parent();
-  for (size_t i = 0; i < parent->children().size(); i++) {
-    if (layer == parent->children()[i])
-      return i;
-  }
-  // This should never be reached.
-  NOTREACHED();
-  return 0;
-}
-
-// Make sure that the layer z-order is correct for the time of the animation
-// when in a workspace with a normal and a fullscreen window the normal window
-// gets fullscreen. See crbug.com/232399.
-TEST_F(WorkspaceManagerTest, FullscreenSecondInWorkspace) {
-  // Create a fullscreen window.
-  scoped_ptr<Window> w1(CreateTestWindow());
-  ASSERT_EQ(1U, w1->layer()->parent()->children().size());
-  w1->SetBounds(gfx::Rect(0, 0, 250, 251));
-  w1->Show();
-  wm::ActivateWindow(w1.get());
-  w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
-  wm::ActivateWindow(w1.get());
-  // There are two workspaces: A normal and a fullscreen one.
-  ASSERT_EQ("0 F1 active=1", StateString());
-
-  // Create a second window and make it part of the fullscreen workspace.
-  scoped_ptr<Window> w2(CreateAppTestWindow(w1->parent()));
-  w2->SetBounds(gfx::Rect(0, 0, 50, 51));
-  w2->Show();
-  wm::ActivateWindow(w2.get());
-  // There are still two workspaces and two windows in the (fullscreen)
-  // workspace.
-  ASSERT_EQ("0 F2 active=1", StateString());
-  ASSERT_EQ(w1->layer()->parent()->children()[0], w1->layer());
-  ASSERT_EQ(w1->layer()->parent()->children()[1], w2->layer());
-
-  // Now we need to enable all animations since the incorrect layer ordering we
-  // want to test against happens only while the animation is going on.
-  scoped_ptr<ui::ScopedAnimationDurationScaleMode> animation_duration(
-      new ui::ScopedAnimationDurationScaleMode(
-          ui::ScopedAnimationDurationScaleMode::FAST_DURATION));
-
-  ui::Layer* old_w2_layer = w2->layer();
-
-  // Maximize the second window and make sure that the workspace changes.
-  w2->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
-
-  // Check the correct window hierarchy - (|w2|) should be last since it got
-  // fullscreen last.
-  ASSERT_EQ("0 F1 F1 active=2", StateString());
-  EXPECT_EQ(3U, workspaces().size());
-  EXPECT_EQ(w1.get(), workspaces()[1]->window()->children()[0]);
-  EXPECT_EQ(w2.get(), workspaces()[2]->window()->children()[0]);
-
-  // Check the workspace layer visibility.
-  EXPECT_EQ(1, workspaces()[1]->window()->layer()->opacity());
-  EXPECT_EQ(1, workspaces()[2]->window()->layer()->opacity());
-
-  // Check that |w2| got a new layer and that the old layer is still visible,
-  // while the new one is not. Further and foremost the old layer should be a
-  // member of the workspace's window and it should be the second last of the
-  // list to be properly stacked while the animation is going on.
-  EXPECT_NE(w2->layer(), old_w2_layer);
-  EXPECT_EQ(0, w2->layer()->opacity());
-  EXPECT_EQ(1, old_w2_layer->opacity());
-
-  // For the animation to look right we need the following ordering:
-  // workspace_1_layer_index < old_layer_index < workspace_2_layer_index.
-  ASSERT_EQ(workspaces()[1]->window()->parent()->layer(),
-            old_w2_layer->parent());
-  const size_t workspace_1_layer_index = IndexOfLayerInParent(
-      workspaces()[1]->window()->layer());
-  const size_t workspace_2_layer_index = IndexOfLayerInParent(
-      workspaces()[2]->window()->layer());
-  const size_t old_layer_index = IndexOfLayerInParent(old_w2_layer);
-  EXPECT_LT(workspace_1_layer_index, old_layer_index);
-  EXPECT_LT(old_layer_index, workspace_2_layer_index);
 }
 
 // Makes sure requests to change the bounds of a normal window go through.
@@ -493,9 +286,7 @@ TEST_F(WorkspaceManagerTest, SingleFullscreenWindow) {
   w1->Show();
   wm::ActivateWindow(w1.get());
 
-  // Should be 2 workspaces, normal and fullscreen.
-  ASSERT_EQ("0 F1 active=1", StateString());
-  EXPECT_EQ(w1.get(), workspaces()[1]->window()->children()[0]);
+  EXPECT_EQ(w1.get(), workspaces()[0]->window()->children()[0]);
   EXPECT_EQ(GetFullscreenBounds(w1.get()).width(), w1->bounds().width());
   EXPECT_EQ(GetFullscreenBounds(w1.get()).height(), w1->bounds().height());
 
@@ -504,70 +295,17 @@ TEST_F(WorkspaceManagerTest, SingleFullscreenWindow) {
   w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_DEFAULT);
   EXPECT_EQ("0,0 250x251", w1->bounds().ToString());
 
-  // Should be 1 workspace for the desktop.
-  ASSERT_EQ("1 active=0", StateString());
   EXPECT_EQ(w1.get(), workspaces()[0]->window()->children()[0]);
   EXPECT_EQ(250, w1->bounds().width());
   EXPECT_EQ(251, w1->bounds().height());
 
   // Back to fullscreen.
   w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
-  ASSERT_EQ("0 F1 active=1", StateString());
-  EXPECT_EQ(w1.get(), workspaces()[1]->window()->children()[0]);
+  EXPECT_EQ(w1.get(), workspaces()[0]->window()->children()[0]);
   EXPECT_EQ(GetFullscreenBounds(w1.get()).width(), w1->bounds().width());
   EXPECT_EQ(GetFullscreenBounds(w1.get()).height(), w1->bounds().height());
   ASSERT_TRUE(GetRestoreBoundsInScreen(w1.get()));
   EXPECT_EQ("0,0 250x251", GetRestoreBoundsInScreen(w1.get())->ToString());
-}
-
-// Makes sure switching workspaces doesn't show transient windows.
-TEST_F(WorkspaceManagerTest, DontShowTransientsOnSwitch) {
-  scoped_ptr<Window> w1(CreateTestWindow());
-  scoped_ptr<Window> w2(CreateTestWindow());
-
-  w1->SetBounds(gfx::Rect(0, 0, 250, 251));
-  w2->SetBounds(gfx::Rect(0, 0, 250, 251));
-  w1->AddTransientChild(w2.get());
-
-  w1->Show();
-
-  scoped_ptr<Window> w3(CreateTestWindow());
-  w3->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
-  w3->Show();
-  wm::ActivateWindow(w3.get());
-
-  EXPECT_FALSE(w1->layer()->IsDrawn());
-  EXPECT_FALSE(w2->layer()->IsDrawn());
-  EXPECT_TRUE(w3->layer()->IsDrawn());
-
-  wm::ActivateWindow(w1.get());
-  EXPECT_TRUE(w1->layer()->IsDrawn());
-  EXPECT_FALSE(w2->layer()->IsDrawn());
-  EXPECT_FALSE(w3->layer()->IsDrawn());
-}
-
-// Persists-across-all-workspace flag should not cause a transient child
-// to be activated at desktop workspace.
-TEST_F(WorkspaceManagerTest, PersistsTransientChildStayInSameWorkspace) {
-  scoped_ptr<Window> w1(CreateTestWindow());
-  SetPersistsAcrossAllWorkspaces(
-      w1.get(),
-      WINDOW_PERSISTS_ACROSS_ALL_WORKSPACES_VALUE_YES);
-  w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
-  w1->Show();
-  wm::ActivateWindow(w1.get());
-  ASSERT_EQ("0 F1 active=1", StateString());
-
-  scoped_ptr<Window> w2(CreateTestWindowUnparented());
-  w1->AddTransientChild(w2.get());
-  SetPersistsAcrossAllWorkspaces(
-      w2.get(),
-      WINDOW_PERSISTS_ACROSS_ALL_WORKSPACES_VALUE_YES);
-  SetDefaultParentByPrimaryRootWindow(w2.get());
-  w2->Show();
-  wm::ActivateWindow(w2.get());
-
-  ASSERT_EQ("0 F2 active=1", StateString());
 }
 
 // Assertions around minimizing a single window.
@@ -575,16 +313,13 @@ TEST_F(WorkspaceManagerTest, MinimizeSingleWindow) {
   scoped_ptr<Window> w1(CreateTestWindow());
 
   w1->Show();
-  ASSERT_EQ("1 active=0", StateString());
 
   w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MINIMIZED);
-  ASSERT_EQ("1 active=0", StateString());
   EXPECT_FALSE(w1->layer()->IsDrawn());
 
   // Show the window.
   w1->Show();
   EXPECT_TRUE(wm::IsWindowNormal(w1.get()));
-  ASSERT_EQ("1 active=0", StateString());
   EXPECT_TRUE(w1->layer()->IsDrawn());
 }
 
@@ -597,26 +332,21 @@ TEST_F(WorkspaceManagerTest, MinimizeFullscreenWindow) {
   w2->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
   w2->Show();
   wm::ActivateWindow(w2.get());
-  ASSERT_EQ("1 F1 active=1", StateString());
 
   // Minimize w2.
   w2->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MINIMIZED);
-  ASSERT_EQ("1 P=F1 active=0", StateString());
   EXPECT_TRUE(w1->layer()->IsDrawn());
   EXPECT_FALSE(w2->layer()->IsDrawn());
 
   // Show the window, which should trigger unminimizing.
   w2->Show();
-  ASSERT_EQ("1 P=F1 active=0", StateString());
-
   wm::ActivateWindow(w2.get());
-  ASSERT_EQ("1 F1 active=1", StateString());
 
   EXPECT_TRUE(wm::IsWindowFullscreen(w2.get()));
-  EXPECT_FALSE(w1->layer()->IsDrawn());
+  EXPECT_TRUE(w1->layer()->IsDrawn());
   EXPECT_TRUE(w2->layer()->IsDrawn());
 
-  // Minimize the window, which should hide the window and activate another.
+  // Minimize the window, which should hide the window.
   EXPECT_TRUE(wm::IsActiveWindow(w2.get()));
   w2->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MINIMIZED);
   EXPECT_FALSE(wm::IsActiveWindow(w2.get()));
@@ -625,10 +355,47 @@ TEST_F(WorkspaceManagerTest, MinimizeFullscreenWindow) {
 
   // Make the window normal.
   w2->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
-  ASSERT_EQ("2 active=0", StateString());
   EXPECT_EQ(w1.get(), workspaces()[0]->window()->children()[0]);
   EXPECT_EQ(w2.get(), workspaces()[0]->window()->children()[1]);
   EXPECT_TRUE(w2->layer()->IsDrawn());
+}
+
+// Verifies the basic behavior of multiple workspaces.
+TEST_F(WorkspaceManagerTest, MultiWorkspaces) {
+  scoped_ptr<Window> w1(CreateTestWindow());
+  w1->SetBounds(gfx::Rect(10, 11, 250, 251));
+  w1->Show();
+  wm::ActivateWindow(w1.get());
+  EXPECT_TRUE(w1->layer()->IsDrawn());
+  EXPECT_EQ(w1.get(), workspaces()[0]->window()->children()[0]);
+
+  // Creates a secondary workspace and a window in it.
+  Workspace* secondary_workspace = CreateWorkspace();
+  scoped_ptr<Window> w2(CreateTestWindowUnparented());
+  w2->SetBounds(gfx::Rect(8, 9, 150, 151));
+  secondary_workspace->window()->AddChild(w2.get());
+  w2->Show();
+  wm::ActivateWindow(w2.get());
+  EXPECT_FALSE(w1->layer()->IsDrawn());
+  EXPECT_TRUE(w2->layer()->IsDrawn());
+  // As the result of activation, |secondary_workspace| has been added to
+  // the list of workspaces managed by |workspace_manager|.
+  ASSERT_EQ(2u, workspaces().size());
+  EXPECT_EQ(secondary_workspace, workspaces()[1]);
+  EXPECT_EQ(w1.get(), workspaces()[0]->window()->children()[0]);
+  EXPECT_EQ(w2.get(), workspaces()[1]->window()->children()[0]);
+
+  // Activates w1 again, w2 should be hidden.
+  wm::ActivateWindow(w1.get());
+  EXPECT_TRUE(w1->layer()->IsDrawn());
+  EXPECT_FALSE(w2->layer()->IsDrawn());
+
+  // Activates and then removes the w2. |secondary_workspace| remains and
+  // active.
+  wm::ActivateWindow(w2.get());
+  w2.reset();
+  EXPECT_FALSE(w1->layer()->IsDrawn());
+  EXPECT_EQ(2u, workspaces().size());
 }
 
 // Verifies ShelfLayoutManager's visibility/auto-hide state is correctly
@@ -725,14 +492,12 @@ TEST_F(WorkspaceManagerTest, ShelfStateUpdated) {
   w2->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
   w2->Show();
   wm::ActivateWindow(w2.get());
-  EXPECT_EQ(0, active_index());
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
   EXPECT_EQ("0,1 101x102", w1->bounds().ToString());
 
   // Switch to w1.
   wm::ActivateWindow(w1.get());
-  EXPECT_EQ(0, active_index());
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
   EXPECT_EQ("0,1 101x102", w1->bounds().ToString());
   EXPECT_EQ(ScreenAsh::GetMaximizedWindowBoundsInParent(
@@ -741,7 +506,6 @@ TEST_F(WorkspaceManagerTest, ShelfStateUpdated) {
 
   // Switch to w2.
   wm::ActivateWindow(w2.get());
-  EXPECT_EQ(0, active_index());
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
   EXPECT_EQ("0,1 101x102", w1->bounds().ToString());
@@ -766,97 +530,6 @@ TEST_F(WorkspaceManagerTest, ShelfStateUpdated) {
   // Restore w2.
   w2->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
   EXPECT_TRUE(GetWindowOverlapsShelf());
-}
-
-// Verifies persist across all workspaces.
-TEST_F(WorkspaceManagerTest, PersistAcrossAllWorkspaces) {
-  // Create a fullscreen window.
-  scoped_ptr<Window> w1(CreateTestWindow());
-  w1->Show();
-  w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
-  wm::ActivateWindow(w1.get());
-  ASSERT_EQ("0 F1 active=1", StateString());
-
-  // Create a window that persists across all workspaces. It should be placed in
-  // the current fullscreen workspace.
-  scoped_ptr<Window> w2(CreateTestWindow());
-  SetPersistsAcrossAllWorkspaces(
-      w2.get(),
-      WINDOW_PERSISTS_ACROSS_ALL_WORKSPACES_VALUE_YES);
-  w2->Show();
-  ASSERT_EQ("1 F1 active=1", StateString());
-
-  // Activate w2, which should move it to the 2nd workspace.
-  wm::ActivateWindow(w2.get());
-  ASSERT_EQ("0 F2 active=1", StateString());
-
-  // Restoring w2 should drop the persists window back to the desktop, and drop
-  // it to the bottom of the stack.
-  w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
-  ASSERT_EQ("2 active=0", StateString());
-  EXPECT_EQ(w2.get(), workspaces()[0]->window()->children()[0]);
-  EXPECT_EQ(w1.get(), workspaces()[0]->window()->children()[1]);
-
-  // Repeat, but this time minimize. The minimized window should end up in
-  // pending.
-  w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
-  ASSERT_EQ("1 P=F1 active=0", StateString());
-  w2.reset(CreateTestWindow());
-  SetPersistsAcrossAllWorkspaces(
-      w2.get(),
-      WINDOW_PERSISTS_ACROSS_ALL_WORKSPACES_VALUE_YES);
-  w2->Show();
-  ASSERT_EQ("1 P=F1 active=0", StateString());
-  wm::ActivateWindow(w2.get());
-  ASSERT_EQ("1 P=F1 active=0", StateString());
-  w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MINIMIZED);
-  ASSERT_EQ("1 P=F1 active=0", StateString());
-  EXPECT_EQ(w2.get(), workspaces()[0]->window()->children()[0]);
-}
-
-// Verifies that when a window persists across all workpaces is activated that
-// it moves to the current workspace.
-TEST_F(WorkspaceManagerTest, ActivatePersistAcrossAllWorkspacesWhenNotActive) {
-  // Create a window that persists across all workspaces.
-  scoped_ptr<Window> w2(CreateTestWindow());
-  SetPersistsAcrossAllWorkspaces(
-      w2.get(),
-      WINDOW_PERSISTS_ACROSS_ALL_WORKSPACES_VALUE_YES);
-  w2->Show();
-  ASSERT_EQ("1 active=0", StateString());
-
-  // Create a maximized window.
-  scoped_ptr<Window> w1(CreateTestWindow());
-  w1->Show();
-  w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
-  wm::ActivateWindow(w1.get());
-  ASSERT_EQ("1 F1 active=1", StateString());
-
-  // Activate the persists across all workspace window. It should move to the
-  // current workspace.
-  wm::ActivateWindow(w2.get());
-  ASSERT_EQ("0 F2 active=1", StateString());
-  // The window that persists across all workspaces should be moved to the top
-  // of the stacking order.
-  EXPECT_EQ(w1.get(), workspaces()[1]->window()->children()[0]);
-  EXPECT_EQ(w2.get(), workspaces()[1]->window()->children()[1]);
-  EXPECT_TRUE(wm::IsActiveWindow(w2.get()));
-}
-
-// Verifies Show()ing a minimized window that persists across all workspaces
-// unminimizes the window.
-TEST_F(WorkspaceManagerTest, ShowMinimizedPersistWindow) {
-  // Create a window that persists across all workspaces.
-  scoped_ptr<Window> w1(CreateTestWindow());
-  SetPersistsAcrossAllWorkspaces(
-      w1.get(),
-      WINDOW_PERSISTS_ACROSS_ALL_WORKSPACES_VALUE_YES);
-  w1->Show();
-  wm::ActivateWindow(w1.get());
-  w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MINIMIZED);
-  EXPECT_FALSE(w1->IsVisible());
-  w1->Show();
-  EXPECT_TRUE(w1->IsVisible());
 }
 
 // Test that a persistent window across all workspaces which got fullscreen
@@ -887,108 +560,6 @@ TEST_F(WorkspaceManagerTest, MaximizeMinimizeRestoreDoesNotCrash) {
   EXPECT_TRUE(w2->IsVisible());
 }
 
-// Test that we report we're in the fullscreen state even if the fullscreen
-// window isn't being managed by us (http://crbug.com/123931).
-TEST_F(WorkspaceManagerTest, GetWindowStateWithUnmanagedFullscreenWindow) {
-  ShelfLayoutManager* shelf = shelf_layout_manager();
-
-  // We need to create a regular window first so there's an active workspace.
-  scoped_ptr<Window> w1(CreateTestWindow());
-  w1->Show();
-
-  scoped_ptr<Window> w2(CreateTestWindow());
-  w2->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
-  SetPersistsAcrossAllWorkspaces(
-      w2.get(),
-      WINDOW_PERSISTS_ACROSS_ALL_WORKSPACES_VALUE_YES);
-  w2->Show();
-  wm::ActivateWindow(w2.get());
-
-  ASSERT_EQ("1 F1 active=1", StateString());
-
-  EXPECT_EQ(SHELF_HIDDEN, shelf->visibility_state());
-  EXPECT_EQ(WORKSPACE_WINDOW_STATE_FULL_SCREEN, manager_->GetWindowState());
-
-  w2->Hide();
-  ASSERT_EQ("1 P=F1 active=0", StateString());
-  EXPECT_EQ(SHELF_VISIBLE, shelf->visibility_state());
-
-  w2->Show();
-  ASSERT_EQ("1 P=F1 active=0", StateString());
-  EXPECT_EQ(SHELF_VISIBLE, shelf->visibility_state());
-  EXPECT_EQ(WORKSPACE_WINDOW_STATE_DEFAULT, manager_->GetWindowState());
-
-  wm::ActivateWindow(w2.get());
-  ASSERT_EQ("1 F1 active=1", StateString());
-  EXPECT_EQ(SHELF_HIDDEN, shelf->visibility_state());
-  EXPECT_EQ(WORKSPACE_WINDOW_STATE_FULL_SCREEN, manager_->GetWindowState());
-
-  w2.reset();
-  ASSERT_EQ("1 active=0", StateString());
-  EXPECT_EQ(SHELF_VISIBLE, shelf->visibility_state());
-  EXPECT_EQ(WORKSPACE_WINDOW_STATE_DEFAULT, manager_->GetWindowState());
-}
-
-// Variant of GetWindowStateWithUnmanagedFullscreenWindow that uses a maximized
-// window rather than a normal window. It should be same as the normal window.
-TEST_F(WorkspaceManagerTest,
-       GetWindowStateWithUnmanagedFullscreenWindowWithMaximized) {
-  ShelfLayoutManager* shelf = shelf_layout_manager();
-  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
-
-  // Make the first window maximized.
-  scoped_ptr<Window> w1(CreateTestWindow());
-  w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
-  w1->Show();
-
-  scoped_ptr<Window> w2(CreateTestWindow());
-  w2->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
-  SetPersistsAcrossAllWorkspaces(
-      w2.get(),
-      WINDOW_PERSISTS_ACROSS_ALL_WORKSPACES_VALUE_YES);
-  w2->Show();
-  wm::ActivateWindow(w2.get());
-
-  // Even though auto-hide behavior is NEVER full-screen windows cause the shelf
-  // to hide.
-  EXPECT_EQ(SHELF_HIDDEN, shelf->visibility_state());
-  EXPECT_EQ(WORKSPACE_WINDOW_STATE_FULL_SCREEN,
-            manager_->GetWindowState());
-
-  w2->Hide();
-  EXPECT_EQ(SHELF_VISIBLE, shelf->visibility_state());
-
-  w2->Show();
-  wm::ActivateWindow(w2.get());
-  EXPECT_EQ(SHELF_HIDDEN, shelf->visibility_state());
-  EXPECT_EQ(WORKSPACE_WINDOW_STATE_FULL_SCREEN,
-            manager_->GetWindowState());
-
-  w2.reset();
-  EXPECT_EQ(SHELF_VISIBLE, shelf->visibility_state());
-}
-
-// Verifies a window marked as persisting across all workspaces ends up in its
-// own workspace when got fullscreen.
-TEST_F(WorkspaceManagerTest, FullscreenDontPersistEndsUpInOwnWorkspace) {
-  scoped_ptr<Window> w1(CreateTestWindow());
-
-  SetPersistsAcrossAllWorkspaces(
-      w1.get(),
-      WINDOW_PERSISTS_ACROSS_ALL_WORKSPACES_VALUE_YES);
-  w1->Show();
-
-  ASSERT_EQ("1 active=0", StateString());
-
-  // Maximize should trigger containing the window.
-  w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
-  ASSERT_EQ("0 P=F1 active=0", StateString());
-
-  // And resetting to normal should remove it.
-  w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
-  ASSERT_EQ("1 active=0", StateString());
-}
-
 // Verifies going from maximized to minimized sets the right state for painting
 // the background of the launcher.
 TEST_F(WorkspaceManagerTest, MinimizeResetsVisibility) {
@@ -1002,39 +573,6 @@ TEST_F(WorkspaceManagerTest, MinimizeResetsVisibility) {
   EXPECT_EQ(SHELF_VISIBLE,
             shelf_layout_manager()->visibility_state());
   EXPECT_EQ(SHELF_BACKGROUND_DEFAULT, shelf_widget()->GetBackgroundType());
-}
-
-// Verifies transients are moved when fullscreen.
-TEST_F(WorkspaceManagerTest, MoveTransientOnFullscreen) {
-  scoped_ptr<Window> w1(CreateTestWindow());
-  w1->Show();
-  scoped_ptr<Window> w2(CreateTestWindow());
-  w1->AddTransientChild(w2.get());
-  w2->Show();
-  wm::ActivateWindow(w1.get());
-  ASSERT_EQ("2 active=0", StateString());
-
-  w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
-  ASSERT_EQ("0 F2 active=1", StateString());
-  EXPECT_TRUE(wm::IsActiveWindow(w1.get()));
-
-  // Create another transient child of |w1|. We do this unparented, set up the
-  // transient parent then set parent. This is how NativeWidgetAura does things
-  // too.
-  scoped_ptr<Window> w3(CreateTestWindowUnparented());
-  w1->AddTransientChild(w3.get());
-  SetDefaultParentByPrimaryRootWindow(w3.get());
-  w3->Show();
-  ASSERT_EQ("0 F3 active=1", StateString());
-
-  // Minimize the window. All the transients are hidden as a result, so it ends
-  // up in pending.
-  w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MINIMIZED);
-  ASSERT_EQ("0 P=F3 active=0", StateString());
-
-  // Restore and everything should go back to the first workspace.
-  w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
-  ASSERT_EQ("3 active=0", StateString());
 }
 
 // Verifies window visibility during various workspace changes.
@@ -1051,19 +589,19 @@ TEST_F(WorkspaceManagerTest, VisibilityTests) {
   w2->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
   EXPECT_TRUE(w2->IsVisible());
   EXPECT_EQ(1.0f, w2->layer()->GetCombinedOpacity());
-  EXPECT_FALSE(w1->IsVisible());
+  EXPECT_TRUE(w1->IsVisible());
 
-  // Switch to w1. |w1| should be visible and |w2| hidden.
+  // Switch to w1. |w1| should be visible on top of |w2|.
   wm::ActivateWindow(w1.get());
   EXPECT_TRUE(w1->IsVisible());
   EXPECT_EQ(1.0f, w1->layer()->GetCombinedOpacity());
-  EXPECT_FALSE(w2->IsVisible());
+  EXPECT_TRUE(w2->IsVisible());
 
   // Switch back to |w2|.
   wm::ActivateWindow(w2.get());
   EXPECT_TRUE(w2->IsVisible());
   EXPECT_EQ(1.0f, w2->layer()->GetCombinedOpacity());
-  EXPECT_FALSE(w1->IsVisible());
+  EXPECT_TRUE(w1->IsVisible());
 
   // Restore |w2|, both windows should be visible.
   w2->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
@@ -1154,26 +692,6 @@ TEST_F(WorkspaceManagerTest, MoveOnSwitch) {
   // Switch to w1. The window should have moved.
   wm::ActivateWindow(w1.get());
   EXPECT_NE(w1_bounds.ToString(), w1->bounds().ToString());
-}
-
-// Verifies Focus() works in a window that isn't in the active workspace.
-TEST_F(WorkspaceManagerTest, FocusOnFullscreenInSeparateWorkspace) {
-  scoped_ptr<Window> w1(CreateTestWindow());
-  w1->SetBounds(gfx::Rect(10, 11, 250, 251));
-  w1->Show();
-  wm::ActivateWindow(w1.get());
-
-  scoped_ptr<Window> w2(CreateTestWindow());
-  w2->SetBounds(gfx::Rect(10, 11, 250, 251));
-  w2->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
-  w2->Show();
-  EXPECT_FALSE(w2->IsVisible());
-  EXPECT_FALSE(wm::IsActiveWindow(w2.get()));
-
-  w2->Focus();
-  EXPECT_TRUE(w2->IsVisible());
-  EXPECT_TRUE(wm::IsActiveWindow(w2.get()));
-  EXPECT_FALSE(w1->IsVisible());
 }
 
 namespace {
@@ -1287,40 +805,13 @@ TEST_F(WorkspaceManagerTest, TrackedByWorkspace) {
   w2->SetBounds(bounds);
   EXPECT_EQ(bounds.ToString(), w2->bounds().ToString());
 
-  // Transition it to tracked by worskpace. It should end up in its own
+  // Transition it to tracked by worskpace. It should end up in the desktop
   // workspace.
   SetTrackedByWorkspace(w2.get(), true);
   EXPECT_TRUE(wm::IsActiveWindow(w2.get()));
-  EXPECT_FALSE(w1->IsVisible());
-  EXPECT_TRUE(w2->IsVisible());
-  EXPECT_NE(w1->parent(), w2->parent());
-}
-
-// Verifies a window marked as persisting across all workspaces ends up in its
-// own workspace when get fullscreen.
-TEST_F(WorkspaceManagerTest, DeactivateDropsToDesktop) {
-  // Create a fullscreen window.
-  scoped_ptr<Window> w1(CreateTestWindow());
-  w1->Show();
-  wm::ActivateWindow(w1.get());
-  w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
-  EXPECT_TRUE(wm::IsActiveWindow(w1.get()));
   EXPECT_TRUE(w1->IsVisible());
-
-  // Create another window that persists across all workspaces. It should end
-  // up with the same parent as |w1|.
-  scoped_ptr<Window> w2(CreateTestWindow());
-  SetPersistsAcrossAllWorkspaces(
-      w2.get(),
-      WINDOW_PERSISTS_ACROSS_ALL_WORKSPACES_VALUE_YES);
-  w2->Show();
-  wm::ActivateWindow(w2.get());
+  EXPECT_TRUE(w2->IsVisible());
   EXPECT_EQ(w1->parent(), w2->parent());
-  ASSERT_EQ("0 F2 active=1", StateString());
-
-  // Activate |w1|, should result in dropping |w2| to the desktop.
-  wm::ActivateWindow(w1.get());
-  ASSERT_EQ("1 F1 active=1", StateString());
 }
 
 // Test the basic auto placement of one and or two windows in a "simulated
@@ -1759,16 +1250,11 @@ TEST_F(WorkspaceManagerTest, DragFullscreenNonTrackedWindow) {
   w1->parent()->parent()->AddObserver(&observer);
   const gfx::Rect max_bounds(w1->bounds());
 
-  // There should be two workspace, one for the desktop and one for the
-  // maximized window with the maximized active.
-  EXPECT_EQ("0 F1 active=1", StateString());
-
   generator.PressLeftButton();
   generator.MoveMouseTo(100, 100);
   // The bounds shouldn't change (drag should result in nothing happening
   // now.
   EXPECT_EQ(max_bounds.ToString(), w1->bounds().ToString());
-  EXPECT_EQ("0 F1 active=1", StateString());
 
   generator.ReleaseLeftButton();
   EXPECT_EQ(0, observer.change_count());
@@ -1781,12 +1267,10 @@ TEST_F(WorkspaceManagerTest, DragFullscreenNonTrackedWindow) {
   EXPECT_EQ(gfx::Rect(max_bounds.x() + 100, max_bounds.y() + 100,
                       max_bounds.width(), max_bounds.height()).ToString(),
             w1->bounds().ToString());
-  EXPECT_EQ("0 F1 active=1", StateString());
 
   generator.ReleaseLeftButton();
   SetTrackedByWorkspace(w1.get(), true);
   // Marking the window tracked again should snap back to origin.
-  EXPECT_EQ("0 F1 active=1", StateString());
   EXPECT_EQ(max_bounds.ToString(), w1->bounds().ToString());
   EXPECT_EQ(0, observer.change_count());
 

@@ -113,15 +113,13 @@ WorkspaceManager::WorkspaceManager(Window* contents_window)
       active_workspace_(NULL),
       shelf_(NULL),
       in_move_(false),
-      clear_unminimizing_workspace_factory_(this),
-      unminimizing_workspace_(NULL),
       app_terminating_(false),
       creating_fade_(false) {
   // Clobber any existing event filter.
   contents_window->SetEventFilter(NULL);
   // |contents_window| takes ownership of LayoutManagerImpl.
   contents_window->SetLayoutManager(new LayoutManagerImpl(this));
-  active_workspace_ = CreateWorkspace(false);
+  active_workspace_ = new Workspace(this, contents_window_);
   workspaces_.push_back(active_workspace_);
   active_workspace_->window()->Show();
   Shell::GetInstance()->AddShellObserver(this);
@@ -145,18 +143,10 @@ WorkspaceManager::~WorkspaceManager() {
   STLDeleteElements(&to_delete_);
 }
 
-// static
-bool WorkspaceManager::WillRestoreToWorkspace(Window* window) {
-  return wm::IsWindowMinimized(window) &&
-      window->GetProperty(aura::client::kRestoreShowStateKey) ==
-      ui::SHOW_STATE_FULLSCREEN;
-}
-
 WorkspaceWindowState WorkspaceManager::GetWindowState() const {
   if (!shelf_)
     return WORKSPACE_WINDOW_STATE_DEFAULT;
 
-  const bool is_active_fullscreen = active_workspace_->is_fullscreen();
   const gfx::Rect shelf_bounds(shelf_->GetIdealBounds());
   const Window::Windows& windows(active_workspace_->window()->children());
   bool window_overlaps_launcher = false;
@@ -172,11 +162,7 @@ WorkspaceWindowState WorkspaceManager::GetWindowState() const {
       // An untracked window may still be fullscreen so we keep iterating when
       // we hit a maximized window.
       has_maximized_window = true;
-    } else if (is_active_fullscreen && wm::IsWindowFullscreen(*i)) {
-      // Ignore fullscreen windows if we're in the desktop. Such a state
-      // is transitory and means we haven't yet switched. If we did consider
-      // such windows we'll return the wrong thing, which can lead to
-      // prematurely anging the launcher state and clobbering restore bounds.
+    } else if (wm::IsWindowFullscreen(*i)) {
       return WORKSPACE_WINDOW_STATE_FULL_SCREEN;
     }
     if (!window_overlaps_launcher && (*i)->bounds().Intersects(shelf_bounds))
@@ -218,17 +204,11 @@ void WorkspaceManager::SetActiveWorkspaceByWindow(Window* window) {
     //   own workspace.
     if (!GetTrackedByWorkspace(window) ||
         (GetPersistsAcrossAllWorkspaces(window) &&
-         !wm::IsWindowFullscreen(window) && !WillRestoreToWorkspace(window))) {
+         !wm::IsWindowFullscreen(window))) {
       ReparentWindow(window, active_workspace_->window(), NULL);
     } else {
       SetActiveWorkspace(workspace, SWITCH_WINDOW_MADE_ACTIVE);
     }
-  }
-
-  if (workspace->is_fullscreen() && wm::IsWindowFullscreen(window)) {
-    // Clicking on the fullscreen window in a fullscreen workspace. Force all
-    // other windows to drop to the desktop.
-    MoveChildrenToDesktop(workspace->window(), NULL);
   }
 }
 
@@ -239,7 +219,7 @@ Window* WorkspaceManager::GetActiveWorkspaceWindow() {
 Window* WorkspaceManager::GetParentForNewWindow(Window* window) {
   // Try to put windows with transient parents in the same workspace as their
   // transient parent.
-  if (window->transient_parent() && !wm::IsWindowFullscreen(window)) {
+  if (window->transient_parent()) {
     Workspace* workspace = FindBy(window->transient_parent());
     if (workspace)
       return workspace->window();
@@ -247,16 +227,6 @@ Window* WorkspaceManager::GetParentForNewWindow(Window* window) {
   }
 
   if (!GetTrackedByWorkspace(window))
-    return active_workspace_->window();
-
-  if (wm::IsWindowFullscreen(window)) {
-    // Wait for the window to be made active before showing the workspace.
-    Workspace* workspace = CreateWorkspace(true);
-    pending_workspaces_.insert(workspace);
-    return workspace->window();
-  }
-
-  if (!GetTrackedByWorkspace(window) || GetPersistsAcrossAllWorkspaces(window))
     return active_workspace_->window();
 
   return desktop_workspace()->window();
@@ -339,24 +309,9 @@ void WorkspaceManager::SetActiveWorkspace(Workspace* workspace,
   active_workspace_->workspace_layout_manager()->
       OnDisplayWorkAreaInsetsChanged();
 
-  const bool is_unminimizing_fullscreen_window =
-      unminimizing_workspace_ && unminimizing_workspace_ == active_workspace_ &&
-      active_workspace_->is_fullscreen();
-  if (is_unminimizing_fullscreen_window) {
-    // If we're unminimizing a window it needs to be on the top, otherwise you
-    // won't see the animation.
-    contents_window_->StackChildAtTop(active_workspace_->window());
-  } else if (active_workspace_->is_fullscreen() &&
-             last_active->is_fullscreen() &&
-             reason != SWITCH_FULLSCREEN_FROM_FULLSCREEN_WORKSPACE) {
-    // When switching between fullscreen windows we need the last active
-    // workspace on top of the new, otherwise the animations won't look
-    // right. Since only one workspace is visible at a time stacking order of
-    // the workspace windows ultimately doesn't matter.
-    contents_window_->StackChildAtTop(last_active->window());
-  }
+  contents_window_->StackChildAtTop(last_active->window());
 
-  HideWorkspace(last_active, reason, is_unminimizing_fullscreen_window);
+  HideWorkspace(last_active, reason);
   ShowWorkspace(workspace, last_active, reason);
 
   UpdateShelfVisibility();
@@ -371,8 +326,8 @@ WorkspaceManager::FindWorkspace(Workspace* workspace)  {
   return std::find(workspaces_.begin(), workspaces_.end(), workspace);
 }
 
-Workspace* WorkspaceManager::CreateWorkspace(bool fullscreen) {
-  return new Workspace(this, contents_window_, fullscreen);
+Workspace* WorkspaceManager::CreateWorkspaceForTest() {
+  return new Workspace(this, contents_window_);
 }
 
 void WorkspaceManager::MoveWorkspaceToPendingOrDelete(
@@ -404,8 +359,6 @@ void WorkspaceManager::MoveWorkspaceToPendingOrDelete(
   }
 
   if (workspace->window()->children().empty()) {
-    if (workspace == unminimizing_workspace_)
-      unminimizing_workspace_ = NULL;
     pending_workspaces_.erase(workspace);
     ScheduleDelete(workspace);
   } else {
@@ -420,8 +373,7 @@ void WorkspaceManager::MoveChildrenToDesktop(aura::Window* window,
   Window::Windows to_move;
   for (size_t i = 0; i < window->children().size(); ++i) {
     Window* child = window->children()[i];
-    if (!child->transient_parent() && !wm::IsWindowFullscreen(child) &&
-        !WillRestoreToWorkspace(child)) {
+    if (!child->transient_parent() && !wm::IsWindowFullscreen(child)) {
       to_move.push_back(child);
     }
   }
@@ -452,24 +404,6 @@ void WorkspaceManager::ScheduleDelete(Workspace* workspace) {
   delete_timer_.Stop();
   delete_timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(1), this,
                       &WorkspaceManager::ProcessDeletion);
-}
-
-void WorkspaceManager::SetUnminimizingWorkspace(Workspace* workspace) {
-  // The normal sequence of unminimizing a window is: Show() the window, which
-  // triggers changing the kShowStateKey to NORMAL and lastly the window is made
-  // active. This means at the time the window is unminimized we don't know if
-  // the workspace it is in is going to become active. To track this
-  // |unminimizing_workspace_| is set at the time we unminimize and a task is
-  // schedule to reset it. This way when we get the activate we know we're in
-  // the process unminimizing and can do the right animation.
-  unminimizing_workspace_ = workspace;
-  if (unminimizing_workspace_) {
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&WorkspaceManager::SetUnminimizingWorkspace,
-                   clear_unminimizing_workspace_factory_.GetWeakPtr(),
-                   static_cast<Workspace*>(NULL)));
-  }
 }
 
 void WorkspaceManager::FadeDesktop(aura::Window* window,
@@ -512,9 +446,6 @@ void WorkspaceManager::ShowWorkspace(
   switch (reason) {
     case SWITCH_WINDOW_MADE_ACTIVE:
     case SWITCH_TRACKED_BY_WORKSPACE_CHANGED:
-    case SWITCH_WINDOW_REMOVED:
-    case SWITCH_VISIBILITY_CHANGED:
-    case SWITCH_MINIMIZED:
       details.animate = details.animate_scale = true;
       details.animate_opacity = last_active == desktop_workspace();
       break;
@@ -533,8 +464,7 @@ void WorkspaceManager::ShowWorkspace(
 
 void WorkspaceManager::HideWorkspace(
     Workspace* workspace,
-    SwitchReason reason,
-    bool is_unminimizing_fullscreen_window) const {
+    SwitchReason reason) const {
   WorkspaceAnimationDetails details;
   details.direction = active_workspace_ == desktop_workspace() ?
       WORKSPACE_ANIMATE_UP : WORKSPACE_ANIMATE_DOWN;
@@ -543,27 +473,9 @@ void WorkspaceManager::HideWorkspace(
     case SWITCH_TRACKED_BY_WORKSPACE_CHANGED:
       details.animate_opacity =
           ((active_workspace_ == desktop_workspace() ||
-            workspace != desktop_workspace()) &&
-           !is_unminimizing_fullscreen_window);
+            workspace != desktop_workspace()));
       details.animate_scale = true;
       details.animate = true;
-      break;
-
-    case SWITCH_VISIBILITY_CHANGED:
-      // The window is most likely closing. Make the workspace visible for the
-      // duration of the switch so that the close animation is visible.
-      details.animate = true;
-      details.animate_scale = true;
-      break;
-
-    case SWITCH_FULLSCREEN_FROM_FULLSCREEN_WORKSPACE:
-    case SWITCH_MAXIMIZED_OR_RESTORED:
-      if (active_workspace_->is_fullscreen()) {
-        // Delay the hide until the animation is done.
-        details.duration =
-            base::TimeDelta::FromMilliseconds(kCrossFadeSwitchTimeMS);
-        details.animate = true;
-      }
       break;
 
     // Remaining cases require no animation.
@@ -615,25 +527,19 @@ void WorkspaceManager::OnWillRemoveWindowFromWorkspace(Workspace* workspace,
 
 void WorkspaceManager::OnWindowRemovedFromWorkspace(Workspace* workspace,
                                                     Window* child) {
-  if (workspace->ShouldMoveToPending())
-    MoveWorkspaceToPendingOrDelete(workspace, NULL, SWITCH_WINDOW_REMOVED);
   UpdateShelfVisibility();
 }
 
 void WorkspaceManager::OnWorkspaceChildWindowVisibilityChanged(
     Workspace* workspace,
     Window* child) {
-  if (workspace->ShouldMoveToPending()) {
-    MoveWorkspaceToPendingOrDelete(workspace, NULL, SWITCH_VISIBILITY_CHANGED);
-  } else {
-    if (child->TargetVisibility())
-      RearrangeVisibleWindowOnShow(child);
-    else
-      RearrangeVisibleWindowOnHideOrRemove(child);
-    if (workspace == active_workspace_) {
-      UpdateShelfVisibility();
-      FramePainter::UpdateSoloWindowHeader(child->GetRootWindow());
-    }
+  if (child->TargetVisibility())
+    RearrangeVisibleWindowOnShow(child);
+  else
+    RearrangeVisibleWindowOnHideOrRemove(child);
+  if (workspace == active_workspace_) {
+    UpdateShelfVisibility();
+    FramePainter::UpdateSoloWindowHeader(child->GetRootWindow());
   }
 }
 
@@ -647,109 +553,37 @@ void WorkspaceManager::OnWorkspaceWindowChildBoundsChanged(
 void WorkspaceManager::OnWorkspaceWindowShowStateChanged(
     Workspace* workspace,
     Window* child,
-    ui::WindowShowState last_show_state,
-    ui::Layer* old_layer) {
+    ui::WindowShowState last_show_state) {
   // |child| better still be in |workspace| else things have gone wrong.
   DCHECK_EQ(workspace, child->GetProperty(kWorkspaceKey));
 
-  if (wm::IsWindowMinimized(child)) {
-    if (workspace->ShouldMoveToPending())
-      MoveWorkspaceToPendingOrDelete(workspace, NULL, SWITCH_MINIMIZED);
-    DCHECK(!old_layer);
-  } else {
-    // Set of cases to deal with:
-    // . More than one fullscreen window: move newly fullscreen window into
-    //   own workspace.
-    // . One fullscreen window and not in a fullscreen workspace: move window
-    //   into own workspace.
-    // . No fullscreen window and not in desktop: move to desktop and further
-    //   any existing windows are stacked beneath |child|.
-    const bool is_active = wm::IsActiveWindow(child);
-    Workspace* new_workspace = NULL;
-    const int full_count = workspace->GetNumFullscreenWindows();
-    base::TimeDelta duration = (old_layer && !wm::IsWindowFullscreen(child)) ?
-            GetCrossFadeDuration(old_layer->bounds(), child->bounds()) :
-            base::TimeDelta::FromMilliseconds(kCrossFadeSwitchTimeMS);
-    if (full_count == 0) {
-      if (workspace != desktop_workspace()) {
-        {
-          base::AutoReset<bool> setter(&in_move_, true);
-          ReparentWindow(child, desktop_workspace()->window(), NULL);
-        }
-        DCHECK(!is_active || old_layer);
-        new_workspace = desktop_workspace();
-        SetActiveWorkspace(new_workspace, SWITCH_MAXIMIZED_OR_RESTORED);
-        MoveWorkspaceToPendingOrDelete(workspace, child,
-                                       SWITCH_MAXIMIZED_OR_RESTORED);
-        if (FindWorkspace(workspace) == workspaces_.end())
-          workspace = NULL;
-      }
-    } else if ((full_count == 1 && workspace == desktop_workspace()) ||
-               full_count > 1) {
-      new_workspace = CreateWorkspace(true);
-      pending_workspaces_.insert(new_workspace);
-      ReparentWindow(child, new_workspace->window(), NULL);
+  if (!wm::IsWindowMinimized(child) && workspace != desktop_workspace()) {
+    {
+      base::AutoReset<bool> setter(&in_move_, true);
+      ReparentWindow(child, desktop_workspace()->window(), NULL);
     }
-    if (is_active && new_workspace) {
-      // |old_layer| may be NULL if as part of processing
-      // WorkspaceLayoutManager::OnWindowPropertyChanged() the window is made
-      // active.
-      if (old_layer) {
-        SetActiveWorkspace(new_workspace,
-                           full_count >= 2 ?
-                               SWITCH_FULLSCREEN_FROM_FULLSCREEN_WORKSPACE :
-                               SWITCH_MAXIMIZED_OR_RESTORED);
-        CrossFadeWindowBetweenWorkspaces(new_workspace->window(), child,
-                                         old_layer);
-        if (workspace == desktop_workspace() ||
-            new_workspace == desktop_workspace()) {
-          FadeDesktop(child, duration);
-        }
-      } else {
-        SetActiveWorkspace(new_workspace, SWITCH_OTHER);
-      }
-    } else {
-      if (last_show_state == ui::SHOW_STATE_MINIMIZED)
-        SetUnminimizingWorkspace(new_workspace ? new_workspace : workspace);
-      DCHECK(!old_layer);
-    }
+    SetActiveWorkspace(desktop_workspace(), SWITCH_MAXIMIZED_OR_RESTORED);
+    MoveWorkspaceToPendingOrDelete(workspace,
+                                   child,
+                                   SWITCH_MAXIMIZED_OR_RESTORED);
   }
   UpdateShelfVisibility();
 }
 
 void WorkspaceManager::OnTrackedByWorkspaceChanged(Workspace* workspace,
                                                    aura::Window* window) {
-  Workspace* new_workspace = NULL;
-  if (wm::IsWindowFullscreen(window)) {
-    if (workspace->is_fullscreen() &&
-        workspace->GetNumFullscreenWindows() == 1) {
-      // If |window| is the only window in a fullscreen workspace then leave
-      // it there. Additionally animate it back to the origin.
-      ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
-      // All bounds changes get routed through WorkspaceLayoutManager and since
-      // the window is fullscreen WorkspaceLayoutManager is going to force a
-      // value. In other words, it doesn't matter what we supply to SetBounds()
-      // here.
-      window->SetBounds(gfx::Rect());
-      return;
-    }
-    new_workspace = CreateWorkspace(true);
-    pending_workspaces_.insert(new_workspace);
-  } else if (workspace->is_fullscreen()) {
-    new_workspace = desktop_workspace();
-  } else {
+  if (workspace == active_workspace_)
     return;
-  }
+
   // If the window is active we need to make sure the destination Workspace
   // window is showing. Otherwise the window will be parented to a hidden window
   // and lose activation.
   const bool is_active = wm::IsActiveWindow(window);
   if (is_active)
-    new_workspace->window()->Show();
-  ReparentWindow(window, new_workspace->window(), NULL);
-  if (is_active) {
-    SetActiveWorkspace(new_workspace, SWITCH_TRACKED_BY_WORKSPACE_CHANGED);
-  }
+    workspace->window()->Show();
+  ReparentWindow(window, workspace->window(), NULL);
+  if (is_active)
+    SetActiveWorkspace(workspace, SWITCH_TRACKED_BY_WORKSPACE_CHANGED);
 }
 
 }  // namespace internal

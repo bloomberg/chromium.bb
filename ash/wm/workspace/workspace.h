@@ -26,14 +26,12 @@ class WorkspaceEventHandler;
 class WorkspaceLayoutManager;
 class WorkspaceManager;
 
-// Workspace is used to maintain either a single fullscreen windows (including
-// transients and other windows) or any number of windows (for the
-// desktop). Workspace is used by WorkspaceManager to manage a set of windows.
+// Workspace is used to maintain any number of windows (for the desktop).
+// Workspace is used by WorkspaceManager to manage a set of windows.
 class ASH_EXPORT Workspace {
  public:
   Workspace(WorkspaceManager* manager,
-            aura::Window* parent,
-            bool is_fullscreen);
+            aura::Window* parent);
   ~Workspace();
 
   // Returns the topmost activatable window. This corresponds to the most
@@ -42,8 +40,6 @@ class ASH_EXPORT Workspace {
 
   // Resets state. This should be used before destroying the Workspace.
   aura::Window* ReleaseWindow();
-
-  bool is_fullscreen() const { return is_fullscreen_; }
 
   aura::Window* window() { return window_; }
 
@@ -59,18 +55,7 @@ class ASH_EXPORT Workspace {
   }
   WorkspaceManager* workspace_manager() { return workspace_manager_; }
 
-  // Returns true if the Workspace should be moved to pending. This is true
-  // if there are no visible fullscreen windows.
-  bool ShouldMoveToPending() const;
-
-  // Returns the number of fullscreen windows (including minimized windows that
-  // would be fullscreen on restore). This does not consider visibility.
-  int GetNumFullscreenWindows() const;
-
  private:
-  // Is this a workspace for fullscreen windows?
-  const bool is_fullscreen_;
-
   WorkspaceManager* workspace_manager_;
 
   // Our Window, owned by |parent| passed to the constructor.

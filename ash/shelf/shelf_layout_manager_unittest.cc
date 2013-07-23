@@ -571,7 +571,10 @@ void ShelfLayoutManagerTest::RunGestureDragTests(gfx::Vector2d delta) {
   EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS, shelf->auto_hide_behavior());
   EXPECT_EQ(bounds_fullscreen.ToString(), window->bounds().ToString());
 
+  // Close actually, otherwise further event may be affected since widget
+  // is fullscreen status.
   widget->Close();
+  RunAllPendingInMessageLoop();
 }
 
 // Fails on Mac only.  Need to be implemented.  http://crbug.com/111279.
@@ -1260,13 +1263,22 @@ TEST_F(ShelfLayoutManagerTest, MAYBE_SetAlignment) {
 
 TEST_F(ShelfLayoutManagerTest, MAYBE_GestureDrag) {
   ShelfLayoutManager* shelf = GetShelfLayoutManager();
-  RunGestureDragTests(gfx::Vector2d(0, 100));
+  {
+    SCOPED_TRACE("BOTTOM");
+    RunGestureDragTests(gfx::Vector2d(0, 100));
+  }
 
-  shelf->SetAlignment(SHELF_ALIGNMENT_LEFT);
-  RunGestureDragTests(gfx::Vector2d(-100, 0));
+  {
+    SCOPED_TRACE("LEFT");
+    shelf->SetAlignment(SHELF_ALIGNMENT_LEFT);
+    RunGestureDragTests(gfx::Vector2d(-100, 0));
+  }
 
-  shelf->SetAlignment(SHELF_ALIGNMENT_RIGHT);
-  RunGestureDragTests(gfx::Vector2d(100, 0));
+  {
+    SCOPED_TRACE("RIGHT");
+    shelf->SetAlignment(SHELF_ALIGNMENT_RIGHT);
+    RunGestureDragTests(gfx::Vector2d(100, 0));
+  }
 }
 
 TEST_F(ShelfLayoutManagerTest, WindowVisibilityDisablesAutoHide) {

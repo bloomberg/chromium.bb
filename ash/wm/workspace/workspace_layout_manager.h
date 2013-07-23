@@ -70,13 +70,9 @@ class ASH_EXPORT WorkspaceLayoutManager
  private:
   typedef std::set<aura::Window*> WindowSet;
 
-  // Invoked when the show state of a window changes. |cloned_layer| is a clone
-  // of the windows layer tree. |cloned_layer| is only non-NULL if a cross fade
-  // should happen between the states. This method takes ownership of
-  // |cloned_layer|.
+  // Invoked when the show state of a window changes.
   void ShowStateChanged(aura::Window* window,
-                        ui::WindowShowState last_show_state,
-                        ui::Layer* cloned_layer);
+                        ui::WindowShowState last_show_state);
 
   enum AdjustWindowReason {
     ADJUST_WINDOW_SCREEN_SIZE_CHANGED,
