@@ -411,7 +411,7 @@ const int ThreadWatcherList::kSleepSeconds = 1;
 // static
 const int ThreadWatcherList::kUnresponsiveSeconds = 2;
 // static
-const int ThreadWatcherList::kUnresponsiveCount = 9;
+const int ThreadWatcherList::kUnresponsiveCount = 7;
 // static
 const int ThreadWatcherList::kLiveThreadsThreshold = 2;
 
