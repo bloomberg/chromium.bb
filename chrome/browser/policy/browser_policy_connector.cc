@@ -60,7 +60,6 @@
 #include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
 #include "chrome/browser/chromeos/policy/network_configuration_updater.h"
 #include "chrome/browser/chromeos/policy/network_configuration_updater_impl.h"
-#include "chrome/browser/chromeos/policy/network_configuration_updater_impl_cros.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/cros_settings_provider.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
@@ -208,19 +207,10 @@ void BrowserPolicyConnector::Init(
   policy_statistics_collector_->Initialize();
 
 #if defined(OS_CHROMEOS)
-  if (command_line->HasSwitch(
-          chromeos::switches::kUseNewNetworkConfigurationHandlers)) {
-    network_configuration_updater_.reset(
-        new NetworkConfigurationUpdaterImpl(
-            GetPolicyService(),
-            make_scoped_ptr(new chromeos::CertificateHandler)));
-  } else {
-    network_configuration_updater_.reset(
-        new NetworkConfigurationUpdaterImplCros(
-            GetPolicyService(),
-            chromeos::NetworkLibrary::Get(),
-            make_scoped_ptr(new chromeos::CertificateHandler)));
-  }
+  network_configuration_updater_.reset(
+      new NetworkConfigurationUpdaterImpl(
+          GetPolicyService(),
+          make_scoped_ptr(new chromeos::CertificateHandler)));
 #endif
 
   is_initialized_ = true;

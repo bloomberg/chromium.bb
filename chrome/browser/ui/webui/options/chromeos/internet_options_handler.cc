@@ -33,6 +33,8 @@
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/cros/network_property_ui_data.h"
 #include "chrome/browser/chromeos/enrollment_dialog_view.h"
+#include "chrome/browser/chromeos/login/user.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/mobile_config.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
 #include "chrome/browser/chromeos/options/network_connect.h"
@@ -51,6 +53,7 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/network/device_state.h"
 #include "chromeos/network/favorite_state.h"
+#include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_device_handler.h"
@@ -282,8 +285,10 @@ void SetNetworkProperty(const std::string& service_path,
 const base::DictionaryValue* FindPolicyForActiveUser(
     const NetworkState* network,
     onc::ONCSource* onc_source) {
-  *onc_source = network->onc_source();
-  return NetworkLibrary::Get()->FindOncForNetwork(network->guid());
+  const User* user = UserManager::Get()->GetActiveUser();
+  std::string username_hash = user ? user->username_hash() : std::string();
+  return NetworkHandler::Get()->managed_network_configuration_handler()
+      ->FindPolicyByGUID(username_hash, network->guid(), onc_source);
 }
 
 std::string ActivationStateString(const std::string& activation_state) {

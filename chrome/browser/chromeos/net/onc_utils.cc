@@ -170,7 +170,11 @@ void ExpandStringPlaceholdersInNetworksForUser(
     const std::string& hashed_username,
     base::ListValue* network_configs) {
   const chromeos::User* user = GetLoggedInUserByHash(hashed_username);
-  DCHECK(user);
+  if (!user) {
+    // In tests no user may be logged in. It's not harmful if we just don't
+    // expand the strings.
+    return;
+  }
   UserStringSubstitution substitution(user);
   chromeos::onc::ExpandStringsInNetworks(substitution, network_configs);
 }

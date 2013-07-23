@@ -11,6 +11,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/network_property_ui_data.h"
 #include "chrome/browser/chromeos/login/login_display_host_impl.h"
+#include "chrome/browser/chromeos/login/user.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/options/vpn_config_view.h"
 #include "chrome/browser/chromeos/options/wifi_config_view.h"
 #include "chrome/browser/chromeos/options/wimax_config_view.h"
@@ -19,6 +21,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/host_desktop.h"
+#include "chromeos/network/managed_network_configuration_handler.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -290,8 +293,11 @@ gfx::Size ControlledSettingIndicatorView::GetPreferredSize() {
 const base::DictionaryValue* NetworkConfigView::FindPolicyForActiveUser(
     const Network* network,
     onc::ONCSource* onc_source) {
-  *onc_source = network->ui_data().onc_source();
-  return NetworkLibrary::Get()->FindOncForNetwork(network->unique_id());
+  const User* user = UserManager::Get()->GetActiveUser();
+  std::string username_hash = user ? user->username_hash() : std::string();
+  std::string guid = network->unique_id();
+  return NetworkHandler::Get()->managed_network_configuration_handler()
+      ->FindPolicyByGUID(username_hash, guid, onc_source);
 }
 
 void ControlledSettingIndicatorView::Layout() {
