@@ -158,6 +158,11 @@ bool ContentRendererClient::HandleSetCookieRequest(
   return false;
 }
 
+const void* ContentRendererClient::CreatePPAPIInterface(
+    const std::string& interface_name) {
+  return NULL;
+}
+
 bool ContentRendererClient::IsPluginAllowedToCallRequestOSFileHandle(
     WebKit::WebPluginContainer* container) const {
   return false;

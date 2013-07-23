@@ -126,8 +126,8 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
                                       const std::string& value) OVERRIDE;
   virtual bool AllowBrowserPlugin(
       WebKit::WebPluginContainer* container) const OVERRIDE;
-  virtual void RegisterPPAPIInterfaceFactories(
-      webkit::ppapi::PpapiInterfaceFactoryManager* factory_manager) OVERRIDE;
+  virtual const void* CreatePPAPIInterface(
+      const std::string& interface_name) OVERRIDE;
   // TODO(victorhsieh): move to ChromeContentBrowserClient once we migrate
   // PPAPI FileIO host to browser.
   virtual bool IsPluginAllowedToCallRequestOSFileHandle(

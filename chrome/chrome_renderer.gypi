@@ -234,8 +234,6 @@
         'renderer/external_extension.h',
         'renderer/page_load_histograms.cc',
         'renderer/page_load_histograms.h',
-        'renderer/pepper/chrome_ppapi_interfaces.cc',
-        'renderer/pepper/chrome_ppapi_interfaces.h',
         'renderer/pepper/chrome_renderer_pepper_host_factory.cc',
         'renderer/pepper/chrome_renderer_pepper_host_factory.h',
         'renderer/pepper/pepper_extensions_common_host.cc',

@@ -47,12 +47,6 @@ struct WebPluginParams;
 struct WebURLError;
 }
 
-namespace webkit {
-namespace ppapi {
-class PpapiInterfaceFactoryManager;
-}
-}
-
 namespace content {
 
 class RenderView;
@@ -232,8 +226,9 @@ class CONTENT_EXPORT ContentRendererClient {
                                       const GURL& first_party_for_cookies,
                                       const std::string& value);
 
-  virtual void RegisterPPAPIInterfaceFactories(
-      webkit::ppapi::PpapiInterfaceFactoryManager* factory_manager) {}
+  // Allows an embedder to return custom PPAPI interfaces.
+  virtual const void* CreatePPAPIInterface(
+      const std::string& interface_name);
 
   // Returns true if plugin living in the container can use
   // pp::FileIO::RequestOSFileHandle.

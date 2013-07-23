@@ -48,8 +48,9 @@
 #include "chrome/renderer/net_benchmarking_extension.h"
 #include "chrome/renderer/one_click_signin_agent.h"
 #include "chrome/renderer/page_load_histograms.h"
-#include "chrome/renderer/pepper/chrome_ppapi_interfaces.h"
 #include "chrome/renderer/pepper/pepper_helper.h"
+#include "chrome/renderer/pepper/ppb_nacl_private_impl.h"
+#include "chrome/renderer/pepper/ppb_pdf_impl.h"
 #include "chrome/renderer/playback_extension.h"
 #include "chrome/renderer/plugins/plugin_placeholder.h"
 #include "chrome/renderer/plugins/plugin_uma.h"
@@ -80,6 +81,8 @@
 #include "grit/renderer_resources.h"
 #include "ipc/ipc_sync_channel.h"
 #include "net/base/net_errors.h"
+#include "ppapi/c/private/ppb_nacl_private.h"
+#include "ppapi/c/private/ppb_pdf.h"
 #include "ppapi/shared_impl/ppapi_switches.h"
 #include "third_party/WebKit/public/web/WebCache.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
@@ -98,8 +101,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/webui/jstemplate_builder.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
-#include "webkit/plugins/ppapi/ppapi_interface_factory.h"
-
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
 
 #if defined(ENABLE_WEBRTC)
@@ -1204,11 +1205,17 @@ bool ChromeContentRendererClient::IsOtherExtensionWithWebRequestInstalled() {
       IsOtherExtensionWithWebRequestInstalled();
 }
 
-void ChromeContentRendererClient::RegisterPPAPIInterfaceFactories(
-    webkit::ppapi::PpapiInterfaceFactoryManager* factory_manager) {
+const void* ChromeContentRendererClient::CreatePPAPIInterface(
+    const std::string& interface_name) {
 #if defined(ENABLE_PLUGINS)
-  factory_manager->RegisterFactory(ChromePPAPIInterfaceFactory);
+#if !defined(DISABLE_NACL)
+  if (interface_name == PPB_NACL_PRIVATE_INTERFACE)
+    return PPB_NaCl_Private_Impl::GetInterface();
+#endif  // DISABLE_NACL
+  if (interface_name == PPB_PDF_INTERFACE)
+    return PPB_PDF_Impl::GetInterface();
 #endif
+  return NULL;
 }
 
 bool ChromeContentRendererClient::IsPluginAllowedToCallRequestOSFileHandle(

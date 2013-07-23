@@ -52,7 +52,7 @@
 #endif
 
 namespace content {
-
+namespace {
 // This function provides some ways to test crash and assertion handling
 // behavior of the renderer.
 static void HandleRendererErrorTestParameters(const CommandLine& command_line) {
@@ -109,6 +109,13 @@ class MemoryObserver : public base::MessageLoop::TaskObserver {
   DISALLOW_COPY_AND_ASSIGN(MemoryObserver);
 };
 
+
+const void* ContentPPAPIInterfaceFactory(const std::string& interface_name) {
+  return GetContentClient()->renderer()->CreatePPAPIInterface(interface_name);
+}
+
+}  // namespace
+
 // mainline routine for running as the Renderer process
 int RendererMain(const MainFunctionParams& parameters) {
   TRACE_EVENT_BEGIN_ETW("RendererMain", 0, "");
@@ -144,8 +151,7 @@ int RendererMain(const MainFunctionParams& parameters) {
 
   webkit::ppapi::PpapiInterfaceFactoryManager* factory_manager =
       webkit::ppapi::PpapiInterfaceFactoryManager::GetInstance();
-  GetContentClient()->renderer()->RegisterPPAPIInterfaceFactories(
-      factory_manager);
+  factory_manager->RegisterFactory(ContentPPAPIInterfaceFactory);
 
   base::StatsCounterTimer stats_counter_timer("Content.RendererInit");
   base::StatsScope<base::StatsCounterTimer> startup_timer(stats_counter_timer);
