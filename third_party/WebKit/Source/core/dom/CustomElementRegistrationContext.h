@@ -54,8 +54,11 @@ public:
     virtual ~CustomElementRegistrationContext() { }
 
     // Model
+    // FIXME: Move this to CustomElementRegistry
     static bool isValidTypeName(const AtomicString& type);
+    // FIXME: Move this to CustomElement
     static bool isCustomTagName(const AtomicString& localName);
+    // FIXME: Privatize this when CustomElementWrapper uses the definition map.
     static CustomElementDescriptor describe(Element*);
 
     // Definitions
@@ -67,10 +70,7 @@ public:
     static void setTypeExtension(Element*, const AtomicString& type);
 
     // Instance lifecycle
-    virtual void customElementAttributeDidChange(Element*, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue) = 0;
-    virtual void customElementDidEnterDocument(Element*) = 0;
-    virtual void customElementDidLeaveDocument(Element*) = 0;
-    virtual void customElementIsBeingDestroyed(Element*);
+    virtual void customElementWasDestroyed(Element*);
 
 protected:
     CustomElementRegistrationContext() { }

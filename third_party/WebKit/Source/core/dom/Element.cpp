@@ -43,6 +43,7 @@
 #include "core/dom/Attribute.h"
 #include "core/dom/ClientRect.h"
 #include "core/dom/ClientRectList.h"
+#include "core/dom/CustomElement.h"
 #include "core/dom/CustomElementRegistrationContext.h"
 #include "core/dom/DatasetDOMStringMap.h"
 #include "core/dom/Document.h"
@@ -208,8 +209,8 @@ Element::~Element()
         data->clearShadow();
     }
 
-    if (isCustomElement() && document() && document()->registrationContext())
-        document()->registrationContext()->customElementIsBeingDestroyed(this);
+    if (isCustomElement())
+        CustomElement::wasDestroyed(this);
 
     if (hasSyntheticAttrChildNodes())
         detachAllAttrNodesFromElement();
@@ -1265,7 +1266,7 @@ Node::InsertionNotificationRequest Element::insertedInto(ContainerNode* insertio
         return InsertionDone;
 
     if (isUpgradedCustomElement())
-        document()->registrationContext()->customElementDidEnterDocument(this);
+        CustomElement::didEnterDocument(this);
 
     const AtomicString& idValue = getIdAttribute();
     if (!idValue.isNull())
@@ -1326,8 +1327,8 @@ void Element::removedFrom(ContainerNode* insertionPoint)
         if (hasPendingResources())
             document()->accessSVGExtensions()->removeElementFromPendingResources(this);
 
-        if (isUpgradedCustomElement() && document()->registrationContext())
-            document()->registrationContext()->customElementDidLeaveDocument(this);
+        if (isUpgradedCustomElement())
+            CustomElement::didLeaveDocument(this);
     }
 }
 
@@ -2817,7 +2818,7 @@ void Element::willModifyAttribute(const QualifiedName& name, const AtomicString&
            setNeedsStyleRecalc();
 
         if (isUpgradedCustomElement())
-            document()->registrationContext()->customElementAttributeDidChange(this, name.localName(), oldValue, newValue);
+            CustomElement::attributeDidChange(this, name.localName(), oldValue, newValue);
     }
 
     if (OwnPtr<MutationObserverInterestGroup> recipients = MutationObserverInterestGroup::createForAttributesMutation(this, name))

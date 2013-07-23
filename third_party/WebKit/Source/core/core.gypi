@@ -1731,6 +1731,8 @@
             'dom/ContextLifecycleNotifier.cpp',
             'dom/ContextLifecycleNotifier.h',
             'dom/CrossThreadTask.h',
+            'dom/CustomElement.cpp',
+            'dom/CustomElement.h',
             'dom/CustomElementCallbackDispatcher.cpp',
             'dom/CustomElementCallbackDispatcher.h',
             'dom/CustomElementCallbackInvocation.cpp',

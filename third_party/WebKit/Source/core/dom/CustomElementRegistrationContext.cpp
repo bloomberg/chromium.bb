@@ -34,7 +34,7 @@
 #include "HTMLNames.h"
 #include "MathMLNames.h"
 #include "SVGNames.h"
-#include "core/dom/CustomElementCallbackScheduler.h"
+#include "core/dom/CustomElement.h"
 #include "core/dom/CustomElementDefinition.h"
 #include "core/dom/CustomElementRegistry.h"
 #include "core/dom/CustomElementUpgradeCandidateMap.h"
@@ -56,10 +56,6 @@ public:
 
     virtual PassRefPtr<Element> createCustomTagElement(Document*, const QualifiedName&) OVERRIDE;
     virtual void didGiveTypeExtension(Element*) OVERRIDE { }
-
-    virtual void customElementAttributeDidChange(Element*, const AtomicString&, const AtomicString&, const AtomicString&) OVERRIDE { }
-    virtual void customElementDidEnterDocument(Element*) OVERRIDE { }
-    virtual void customElementDidLeaveDocument(Element*) OVERRIDE { }
 };
 
 PassRefPtr<Element> NullRegistrationContext::createCustomTagElement(Document* document, const QualifiedName& tagName)
@@ -96,17 +92,12 @@ public:
     virtual PassRefPtr<Element> createCustomTagElement(Document*, const QualifiedName&) OVERRIDE;
     virtual void didGiveTypeExtension(Element*) OVERRIDE;
 
-    virtual void customElementAttributeDidChange(Element*, const AtomicString&, const AtomicString&, const AtomicString&) OVERRIDE;
-    virtual void customElementDidEnterDocument(Element*) OVERRIDE;
-    virtual void customElementDidLeaveDocument(Element*) OVERRIDE;
-    virtual void customElementIsBeingDestroyed(Element*) OVERRIDE;
+    virtual void customElementWasDestroyed(Element*) OVERRIDE;
 
 private:
     void resolve(Element*);
     void didResolveElement(CustomElementDefinition*, Element*);
     void didCreateUnresolvedElement(const CustomElementDescriptor&, Element*);
-
-    CustomElementDefinition* definitionFor(Element*) const;
 
     CustomElementRegistry m_registry;
 
@@ -166,8 +157,7 @@ void ActiveRegistrationContext::resolve(Element* element)
 
 void ActiveRegistrationContext::didResolveElement(CustomElementDefinition* definition, Element* element)
 {
-    element->setCustomElementState(Element::Defined);
-    CustomElementCallbackScheduler::scheduleCreatedCallback(definition->callbacks(), element);
+    CustomElement::define(element, definition);
 }
 
 void ActiveRegistrationContext::didCreateUnresolvedElement(const CustomElementDescriptor& descriptor, Element* element)
@@ -176,39 +166,10 @@ void ActiveRegistrationContext::didCreateUnresolvedElement(const CustomElementDe
     m_candidates.add(descriptor, element);
 }
 
-CustomElementDefinition* ActiveRegistrationContext::definitionFor(Element* element) const
-{
-    ASSERT(element->customElementState() == Element::Defined || element->customElementState() == Element::Upgraded);
-    ASSERT(element->document()->registrationContext() == this);
-    const CustomElementDescriptor& descriptor = describe(element);
-    return m_registry.find(descriptor);
-}
-
-void ActiveRegistrationContext::customElementAttributeDidChange(Element* element, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue)
-{
-    ASSERT(element->customElementState() == Element::Upgraded);
-    CustomElementDefinition* definition = definitionFor(element);
-    CustomElementCallbackScheduler::scheduleAttributeChangedCallback(definition->callbacks(), element, name, oldValue, newValue);
-}
-
-void ActiveRegistrationContext::customElementDidEnterDocument(Element* element)
-{
-    ASSERT(element->customElementState() == Element::Upgraded);
-    CustomElementDefinition* definition = definitionFor(element);
-    CustomElementCallbackScheduler::scheduleEnteredDocumentCallback(definition->callbacks(), element);
-}
-
-void ActiveRegistrationContext::customElementDidLeaveDocument(Element* element)
-{
-    ASSERT(element->customElementState() == Element::Upgraded);
-    CustomElementDefinition* definition = definitionFor(element);
-    CustomElementCallbackScheduler::scheduleLeftDocumentCallback(definition->callbacks(), element);
-}
-
-void ActiveRegistrationContext::customElementIsBeingDestroyed(Element* element)
+void ActiveRegistrationContext::customElementWasDestroyed(Element* element)
 {
     m_candidates.remove(element);
-    CustomElementRegistrationContext::customElementIsBeingDestroyed(element);
+    CustomElementRegistrationContext::customElementWasDestroyed(element);
 }
 
 PassRefPtr<CustomElementRegistrationContext> CustomElementRegistrationContext::create()
@@ -276,7 +237,7 @@ void CustomElementRegistrationContext::setTypeExtension(Element* element, const 
     element->document()->registrationContext()->didGiveTypeExtension(element);
 }
 
-void CustomElementRegistrationContext::customElementIsBeingDestroyed(Element* element)
+void CustomElementRegistrationContext::customElementWasDestroyed(Element* element)
 {
     ASSERT(element->isCustomElement());
     typeExtensionMap()->remove(element);
